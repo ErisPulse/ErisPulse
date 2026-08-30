@@ -2581,7 +2581,7 @@
     "Dashboard 管理面板": [
       {
         "document": "user-guide/deployment.md",
-        "line": 72,
+        "line": 73,
         "level": 2,
         "title": "Dashboard 管理面板"
       }
@@ -2613,7 +2613,7 @@
     "Docker 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 252,
+        "line": 253,
         "level": 3,
         "title": "Docker 方式"
       }
@@ -3381,7 +3381,7 @@
     "Supervisor": [
       {
         "document": "user-guide/deployment.md",
-        "line": 218,
+        "line": 219,
         "level": 3,
         "title": "Supervisor"
       }
@@ -4129,7 +4129,7 @@
     "pip 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 262,
+        "line": 263,
         "level": 3,
         "title": "pip 方式"
       }
@@ -4225,7 +4225,7 @@
     "systemd (Linux)": [
       {
         "document": "user-guide/deployment.md",
-        "line": 186,
+        "line": 187,
         "level": 3,
         "title": "systemd (Linux)"
       }
@@ -5389,7 +5389,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 111,
+        "line": 112,
         "level": 2,
         "title": "健康检查"
       }
@@ -5749,7 +5749,7 @@
     "功能概览": [
       {
         "document": "user-guide/deployment.md",
-        "line": 76,
+        "line": 77,
         "level": 3,
         "title": "功能概览"
       }
@@ -5999,7 +5999,7 @@
     "反向代理": [
       {
         "document": "user-guide/deployment.md",
-        "line": 132,
+        "line": 133,
         "level": 2,
         "title": "反向代理"
       }
@@ -7129,7 +7129,7 @@
     "备份": [
       {
         "document": "user-guide/deployment.md",
-        "line": 269,
+        "line": 270,
         "level": 3,
         "title": "备份"
       }
@@ -7161,7 +7161,7 @@
     "多实例部署": [
       {
         "document": "user-guide/deployment.md",
-        "line": 242,
+        "line": 243,
         "level": 2,
         "title": "多实例部署"
       }
@@ -7461,7 +7461,7 @@
     "安全建议": [
       {
         "document": "user-guide/deployment.md",
-        "line": 233,
+        "line": 234,
         "level": 2,
         "title": "安全建议"
       }
@@ -8517,7 +8517,7 @@
     "手动部署（pip）": [
       {
         "document": "user-guide/deployment.md",
-        "line": 164,
+        "line": 165,
         "level": 2,
         "title": "手动部署（pip）"
       }
@@ -9301,7 +9301,7 @@
     "更新与维护": [
       {
         "document": "user-guide/deployment.md",
-        "line": 250,
+        "line": 251,
         "level": 2,
         "title": "更新与维护"
       }
@@ -10773,7 +10773,7 @@
     "生产环境配置": [
       {
         "document": "user-guide/deployment.md",
-        "line": 168,
+        "line": 169,
         "level": 3,
         "title": "生产环境配置"
       }
@@ -12217,7 +12217,7 @@
     "进程监督与硬重启": [
       {
         "document": "user-guide/deployment.md",
-        "line": 100,
+        "line": 101,
         "level": 2,
         "title": "进程监督与硬重启"
       }
@@ -12583,7 +12583,7 @@
     "通过 Dashboard 安装模块": [
       {
         "document": "user-guide/deployment.md",
-        "line": 91,
+        "line": 92,
         "level": 3,
         "title": "通过 Dashboard 安装模块"
       }

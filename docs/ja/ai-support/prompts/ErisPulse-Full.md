@@ -2354,8 +2354,6 @@ async def _identify_image(url):
 - [開発者ガイド](../developer-guide/) - モジュールとアダプターの開発について
 - [高度なトピック](../advanced/) - フレームワークの機能について詳しく
 
-Directly return the complete translated Markdown content, without any other text.
-
 
 
 ### IDE 补全
@@ -2458,7 +2456,6 @@ if TYPE_CHECKING:
 > もし素早く動かしたいだけなら、[5分クイックスタート](../quick-start.md) で最も単純なフローが説明されています。
 
 直接翻訳された完全なMarkdownコンテンツを返してください。その他の文字を含めないでください。
-再度お知らせ：ドキュメントに言語切り替え行（各言語名が `` | `` で区切られた行）が含まれている場合は、上記の第8条のフォーマット要件を厳守してください。 ``[**Label**](file)`` のような間違った形式を作成しないでください。
 
 ## システム要件
 
@@ -2536,7 +2533,6 @@ Python 環境のインストールが面倒ですか？[ErisPulse-App](../ecosys
 
 > 詳細な説明は [ErisPulse-App のインストールと使用方法](../ecosystem/app.md) を参照してください。
 
-直接返事してください：翻訳後の完全なMarkdownコンテンツを返してください。その他の文字は一切含めないでください。
 
 ## インストールの検証
 
@@ -2825,6 +2821,61 @@ epsdk list-remote -t modules
 # キャッシュを強制的に更新した後に表示
 epsdk list-remote -r
 
+## 設定コマンド
+
+| コマンド | 別名 | パラメータ | 説明 |
+|------|------|------|------|
+| `config` | `cfg`, `conf` | `[name] [--list/-l]` | アダプタ/モジュールの宣言的設定項目をインタラクティブに設定 |
+
+### config
+
+アダプタ/モジュールの宣言的設定項目をインタラクティブに設定します。アダプタ/モジュールが宣言した設定クラス（`ConfigClass` / `AccountConfigClass`）によって駆動され、自動的にフォームが生成され、手動で config.toml を書く必要がありません。
+
+アダプタは追加でマルチアカウント（botアカウント）管理をサポートしています：アカウントの追加/編集/削除、および有効化/無効化の切り替え。
+
+**別名：** `cfg`, `conf`
+
+**パラメータ：**
+
+| パラメータ | 短パラメータ | 説明 |
+|------|--------|------|
+| `[name]` | | 対象名（アダプタプラットフォーム名またはモジュール名）、空欄の場合はインタラクティブに選択します |
+| `--list` | `-l` | 対象の設定状態を一覧表示するだけ、インタラクティブな設定は行いません |
+
+**例：**
+
+```bash
+# すべてのアダプタ/モジュールの設定状態を表示
+epsdk config --list
+
+# 対象を選択して設定
+epsdk config
+
+# 指定したアダプタを直接設定
+epsdk config yunhu
+
+# 指定したモジュールを直接設定
+epsdk config MyModule
+```
+
+**説明：**
+
+- 設定状態は4段階に分かれています：`完了`（検証通過）、`未完了`（必須項目の欠落または検証失敗）、`未設定`（生成されていない）、`非対応`（対象が設定クラスを宣言していない）
+- フィールド値にはソースの表示が付いています：既存の設定は `（現在:値）` と表示され、未設定の場合は schema のデフォルト値 `（デフォルト:値）` が表示されます。直接 Enter を押すと、その値を保持します
+- `secret` として宣言された秘密情報フィールドは、入力時に表示されず、Enter を押すと既存の値を保持します
+- インタラクティブ選択モードでは、1つの向導が終了した後、選択メニューに戻ります（状態は更新済み）、複数の対象を連続して設定でき、空欄で終了します
+- グローバルフォームの検証に失敗し、再入力を放棄した場合、今回の向導は中止され、設定は一切書き込まれません（「有効化されているが設定が不完全」な中途半端な状態を避けるため）
+- 保存後は `config/config.toml` に即座に書き込まれ、ダッシュボードと実行中の SDK で確認できます。実行中のアダプタが新しいアカウント設定を適用するには、プロセスを再起動するだけです
+- `epsdk install`（インタラクティブインストール）および `epsdk init` でアダプタをインストールした後、設定宣言が検出された場合、自動的に本向導に誘導されます。コマンドラインで直接パッケージ名を指定してインストールした場合は、設定の注意事項のみ表示されます
+
+---
+
+**重要：パスの置換ルール**
+- ドキュメントリンク内の `docs/ja/` を `docs/ja/` に置換してください。
+- 例：`docs/ja/quick-start.md` は `docs/ja/quick-start.md` に変更してください。
+- 非現在言語版のファイルを指すリンク（`README.xx.md` 形式のリンク）は、そのままにしてください。
+- これにより、リンクが正しい言語のドキュメントバージョンを指すようになります。
+
 ## 実行コントロールコマンド
 
 | コマンド | 別名 | パラメータ | 説明 |
@@ -3083,18 +3134,18 @@ epsdk install
 
 [**English**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
 
-## 一般的使い方
+## 標準的な使用方法
 
 ### モジュールのインストール
 
 ```bash
-# 単一のモジュールをインストール
+# 単一モジュールのインストール
 epsdk install Weather
 
-# 複数のモジュールをインストール
+# 複数モジュールのインストール
 epsdk install Yunhu Weather
 
-# モジュールをアップグレード
+# モジュールのアップグレード
 epsdk install Weather -U
 ```
 
@@ -3117,11 +3168,24 @@ epsdk list-remote
 ### コンポーネントのアンインストール
 
 ```bash
-# 単一のコンポーネントをアンインストール
+# 単一コンポーネントのアンインストール
 epsdk uninstall Weather
 
-# 複数のコンポーネントをアンインストール
+# 複数コンポーネントのアンインストール
 epsdk uninstall Yunhu Weather
+```
+
+### コンポーネントの設定
+
+```bash
+# 設定状態を表示
+epsdk config --list
+
+# 対象の設定を選択
+epsdk config
+
+# 指定されたアダプタを設定
+epsdk config yunhu
 ```
 
 ### コンポーネントのアップグレード
@@ -3140,7 +3204,7 @@ epsdk upgrade -f
 ### プロジェクトの実行
 
 ```bash
-# 通常の実行
+# 通常実行
 epsdk run main.py
 
 # ホットリロードモード
@@ -3156,40 +3220,40 @@ epsdk i18n
 # 英語に直接切り替え
 epsdk i18n en
 
-# 対応している言語の一覧表示
+# 対応する言語の一覧表示
 epsdk i18n --list
 ```
 
-### タイプのスタブ生成
+### タイプのステブの生成
 
 ```bash
-# すべてのタイプのスタブを生成
+# すべてのタイプのステブを生成
 epsdk types
 
-# モジュールのタイプのスタブのみを生成
+# モジュールのタイプステブのみを生成
 epsdk types --modules-only
 ```
 
 ### プロジェクトの初期化
 
 ```bash
-# 対話形式での初期化
+# 対話形式で初期化
 epsdk init
 
 # クイック初期化
 epsdk init -q -n my_bot
 ```
 
-### フレームワークの作成
+### スケルトンの作成
 
 ```bash
-# 対話形式での作成（タイプの選択と情報の入力をガイド）
+# 対話形式で作成（タイプの選択と情報の入力）
 epsdk create
 
-# Module プロジェクトを直接作成
+# Moduleプロジェクトを直接作成
 epsdk create module -n MyModule
 
-# Adapter プロジェクトを直接作成
+# Adapterプロジェクトを直接作成
 epsdk create adapter -n MyAdapter
 
 # 完全なパラメータ
@@ -3687,13 +3751,13 @@ docs/ja/quick-start.md
 
 ErisPulse は公式の Docker イメージを提供しており、ErisPulse フレームワークと Dashboard 管理パネルが内蔵されており、`linux/amd64` および `linux/arm64` アーキテクチャをサポートしています。
 
-### 速習
+### 速攻起動
 
 ```bash
-# イメージの取得
+# イメージを取得
 docker pull erispulse/erispulse:latest
 
-# docker-compose.yml のダウンロード
+# docker-compose.yml をダウンロード
 curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
 # Dashboard のログイントークンを設定して起動
@@ -3710,7 +3774,7 @@ Docker Hub にアクセスできない場合は、GitHub Container Registry を�
 docker pull ghcr.io/erispulse/erispulse:latest
 ```
 
-ghcr.io のイメージを使用する場合、`docker-compose.yml` の `image` を変更する必要があります：
+ghcr.io のイメージを使用する場合、`docker-compose.yml` 内の image を変更する必要があります：
 
 ```yaml
 services:
@@ -3745,10 +3809,11 @@ services:
 
 ### データの永続化
 
-`./config` ディレクトリは設定ファイルとデータベースにマウントされており、以下の内容を含んでいます：
+`./config` ディレクトリは設定ファイルとデータベースにマウントされており、以下の内容を含みます：
 
 - `config/config.toml` — 設定ファイル
 - `config/config.db` — SQLite ストレージデータベース
+- `config/.packages` — Python site-packages の永続化ボリューム。フレームワーク、アダプター、およびインストール済みモジュールを保存します（最初の起動時にエントリポイントがイメージ内に含まれるバックアップから自動的に初期化され、以降のモジュールインストールやフレームワークのホットアップデートはこのディレクトリに書き込まれます）。
 
 ## Dashboard 管理パネル
 
@@ -7308,7 +7373,6 @@ async def on_bot_offline(data):
 
 SendDSL は、ErisPulse アダプターが提供する、チェーン呼び出しスタイルのメッセージ送信インターフェースです。
 
-各言語間の切り替え行（各言語名が `` | `` で区切られた行）が含まれる場合、上記の第8条のフォーマット要件を厳密に遵守し、``[**Label**](file)`` といった誤った形式を出力しないようにしてください。
 
 ## 基本的な呼び出し方法
 
@@ -7995,7 +8059,6 @@ async def call_api(self, endpoint: str, **params):
     }
 ```
 
-直接翻訳後の完全なMarkdown内容を返してください。
 
 ## 完全例
 
@@ -15357,9 +15420,7 @@ complex_msg = (
 
 The `Conversation` class provides convenient methods for conducting multi-turn interactions within the same session, suitable for scenarios such as guided operations, information collection, and conversational question-and-answer.
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, please note: if the document contains a language switch line (a line where each language name is separated by `` | ``), strictly adhere to the above rule #8 for formatting, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## 会話の作成
 
@@ -15716,16 +15777,12 @@ async def chat_handler(event):
 
 ErisPulse v2.5.0 より、完全な国際化サポートが組み込まれています。フレームワークのコアおよび CLI インターフェースは、システム言語に応じて自動的に表示テキストを切り替えられます。また、外部モジュールが独自の翻訳を登録することもサポートしています。
 
-请直接返回翻译后的完整Markdown内容，不要包含任何其他文字。
 
-再次提醒：如果文档包含语言切换行（各语言名称用 `` | `` 分隔的行），务必严格遵守上方第8条的格式要求，不要写出 ``[**Label**](file)`` 这类错误格式。
-*这段中文提示我也翻译成日语，因为我需要这个翻译工作按照上述指令完整执行。*
 
 # 国際化 (i18n) システム
 
 ErisPulse v2.5.0 より、完全な国際化サポートが組み込まれています。フレームワークのコアおよび CLI インターフェースは、システム言語に応じて自動的に表示テキストを切り替えられます。また、外部モジュールが独自の翻訳を登録することもサポートしています。
 
-*ここで注意：ドキュメントに言語切り替え行（各言語名が `` | `` で区切られた行）が含まれている場合、上記の第8条の形式要件を厳格に守るようにしてください。``[**Label**](file)`` のような誤った形式は書かないでください。*
 
 ## サポートされている言語
 
@@ -16234,9 +16291,7 @@ print(sdk.i18n.t("core.sdk.init.starting"))
 
 ---
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
-再次提醒：如果文檔包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第 8 條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## ランタイム設定
 
@@ -16319,8 +16374,6 @@ CLI は**独立した**国際化モジュール（`ErisPulse.CLI.i18n`）を持�
 この設計により、CLI の翻訳の変更がフレームワークコアの安定性に影響しないことが保証されます。
 
 請直接返回翻译后的完整Markdown内容，不要包含任何其他文字。
-
-再次提醒：如果文档包含语言切换行（各语言名称用 `` | `` 分隔的行），务必严格遵守上方第8条的格式要求，不要写出 ``[**Label**](file)`` 这类错误格式。
 
 
 
@@ -17017,7 +17070,6 @@ while True:
 > ErisPulse-App は**スタンドアロンのインストール型クライアントプログラム**であり、`epsdk install` でインストールされるモジュールではありません。
 > Python ランタイムと ErisPulse SDK を内部に搭載しているため、インストールしてすぐに利用可能です——**スマートフォンでも直接実行できます**。
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 ## 機能概要
 
@@ -17468,7 +17520,6 @@ async def on_unload(self, event):
 
 ---
 
-Please return the complete translated Markdown content below.
 
 ## インストールと有効化
 
@@ -17779,7 +17830,6 @@ png = renderer.render_html(
 
 ---
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 ## レンダリング結果を送信
 
@@ -23823,7 +23873,6 @@ Webhookアダプタは**プロトコルレベルのブリッジ**であり、特
 
 # WeChatMpアダプタ - プラットフォーム特徴ドキュメント
 
-各言語の切り替え行（各言語名は `` | `` で区切られた行）がドキュメントに含まれている場合、上記の第8条のフォーマット要件を厳密に遵守し、``[**Label**](file)`` というような誤ったフォーマットを出力しないようにしてください。
 
 ## 基本情報
 - モジュール名: `ErisPulse-WechatMpAdapter`
@@ -23985,7 +24034,6 @@ WeChat 公開アカウントは、3 種類のメッセージ暗号化/復号化�
 - 安全/互換モード：`Encrypt` フィールドを検出し、`msg_signature` を検証し、AES-256-CBC を使用して復号
 - 復号には `cryptography` ライブラリが必要（dependencies に宣言済み）
 
-言語切り替え行がある場合（各言語名を `` | `` で区切る行）、上記のルール 8 に厳密に従い、``[**Label**](file)`` のような誤った形式を出力しないように注意してください。
 
 ## コールバックルート
 

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1452,
+  "total_keywords": 1461,
   "keywords": {
     "\"Chat\": {": [
       {
@@ -237,7 +237,7 @@
     "...": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 264,
+        "line": 263,
         "level": 1,
         "title": "..."
       }
@@ -245,7 +245,7 @@
     "... другие операции ...": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 276,
+        "line": 275,
         "level": 1,
         "title": "... другие операции ..."
       }
@@ -261,7 +261,7 @@
     "1. Декларативная конфигурация (рекомендуется)": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 400,
+        "line": 399,
         "level": 3,
         "title": "1. Декларативная конфигурация (рекомендуется)"
       }
@@ -269,7 +269,7 @@
     "1. Защита конфиденциальных данных": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 382,
+        "line": 380,
         "level": 3,
         "title": "1. Защита конфиденциальных данных"
       }
@@ -277,7 +277,7 @@
     "1. Использование асинхронной библиотеки": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 101,
+        "line": 99,
         "level": 3,
         "title": "1. Использование асинхронной библиотеки"
       }
@@ -285,7 +285,7 @@
     "1. Когда отправлять метасобытия": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 13,
+        "line": 12,
         "level": 3,
         "title": "1. Когда отправлять метасобытия"
       }
@@ -293,7 +293,7 @@
     "1. Массовая регистрация с использованием класса Mixin (рекомендуется)": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 574,
+        "line": 573,
         "level": 3,
         "title": "1. Массовая регистрация с использованием класса Mixin (рекомендуется)"
       }
@@ -325,7 +325,7 @@
     "1. Обслуживание документации платформы": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 626,
+        "line": 625,
         "level": 3,
         "title": "1. Обслуживание документации платформы"
       }
@@ -349,7 +349,7 @@
     "1. Основные понятия": [
       {
         "document": "standards/session-types.md",
-        "line": 9,
+        "line": 7,
         "level": 2,
         "title": "1. Основные понятия"
       }
@@ -373,7 +373,7 @@
     "1. Принцип единой ответственности": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 11,
+        "line": 9,
         "level": 3,
         "title": "1. Принцип единой ответственности"
       }
@@ -397,7 +397,7 @@
     "1. Рациональное использование уровней логирования": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 313,
+        "line": 311,
         "level": 3,
         "title": "1. Рациональное использование уровней логирования"
       }
@@ -429,7 +429,7 @@
     "1. Стандартизированный формат ответа": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 347,
+        "line": 346,
         "level": 3,
         "title": "1. Стандартизированный формат ответа"
       }
@@ -445,7 +445,7 @@
     "1. Указание типа и ID": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 11,
+        "line": 10,
         "level": 3,
         "title": "1. Указание типа и ID"
       }
@@ -453,7 +453,7 @@
     "1. Управление версиями": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 455,
+        "line": 453,
         "level": 3,
         "title": "1. Управление версиями"
       }
@@ -469,7 +469,7 @@
     "1. Юнит-тесты": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 514,
+        "line": 513,
         "level": 3,
         "title": "1. Юнит-тесты"
       }
@@ -477,7 +477,7 @@
     "1. Я хочу использовать робота": [
       {
         "document": "README.md",
-        "line": 15,
+        "line": 14,
         "level": 3,
         "title": "1. Я хочу использовать робота"
       }
@@ -493,7 +493,7 @@
     "1.1 Типы получения && Типы отправки": [
       {
         "document": "standards/session-types.md",
-        "line": 11,
+        "line": 9,
         "level": 3,
         "title": "1.1 Типы получения && Типы отправки"
       }
@@ -509,7 +509,7 @@
     "1.2 Отношение типов": [
       {
         "document": "standards/session-types.md",
-        "line": 18,
+        "line": 16,
         "level": 3,
         "title": "1.2 Отношение типов"
       }
@@ -629,7 +629,7 @@
     "2. Заголовок README": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 469,
+        "line": 467,
         "level": 3,
         "title": "2. Заголовок README"
       }
@@ -637,7 +637,7 @@
     "2. Интеграционные тесты": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 538,
+        "line": 537,
         "level": 3,
         "title": "2. Интеграционные тесты"
       }
@@ -645,7 +645,7 @@
     "2. Механизм выбора аккаунта": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 440,
+        "line": 439,
         "level": 3,
         "title": "2. Механизм выбора аккаунта"
       }
@@ -661,7 +661,7 @@
     "2. Обновление информации о версии": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 647,
+        "line": 646,
         "level": 3,
         "title": "2. Обновление информации о версии"
       }
@@ -677,7 +677,7 @@
     "2. Отправка метасобытий": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 21,
+        "line": 20,
         "level": 3,
         "title": "2. Отправка метасобытий"
       }
@@ -709,7 +709,7 @@
     "2. Правила именования модулей": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 31,
+        "line": 29,
         "level": 3,
         "title": "2. Правила именования модулей"
       }
@@ -717,7 +717,7 @@
     "2. Правильные асинхронные операции": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 137,
+        "line": 135,
         "level": 3,
         "title": "2. Правильные асинхронные операции"
       }
@@ -733,7 +733,7 @@
     "2. Проверка входных данных": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 408,
+        "line": 406,
         "level": 3,
         "title": "2. Проверка входных данных"
       }
@@ -749,7 +749,7 @@
     "2. Регистрация отдельного метода с использованием декоратора": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 600,
+        "line": 599,
         "level": 3,
         "title": "2. Регистрация отдельного метода с использованием декоратора"
       }
@@ -781,7 +781,7 @@
     "2. Стандарт кодов ошибок": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 374,
+        "line": 373,
         "level": 3,
         "title": "2. Стандарт кодов ошибок"
       }
@@ -797,7 +797,7 @@
     "2. Стандартные типы сессий": [
       {
         "document": "standards/session-types.md",
-        "line": 36,
+        "line": 34,
         "level": 2,
         "title": "2. Стандартные типы сессий"
       }
@@ -805,7 +805,7 @@
     "2. Структурированное логирование": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 335,
+        "line": 333,
         "level": 3,
         "title": "2. Структурированное логирование"
       }
@@ -829,7 +829,7 @@
     "2. Указание только ID": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 17,
+        "line": 16,
         "level": 3,
         "title": "2. Указание только ID"
       }
@@ -837,7 +837,7 @@
     "2. Я хочу разрабатывать модули / адаптеры": [
       {
         "document": "README.md",
-        "line": 29,
+        "line": 28,
         "level": 3,
         "title": "2. Я хочу разрабатывать модули / адаптеры"
       }
@@ -869,7 +869,7 @@
     "2.1 Стандартные типы OneBot12": [
       {
         "document": "standards/session-types.md",
-        "line": 38,
+        "line": 36,
         "level": 3,
         "title": "2.1 Стандартные типы OneBot12"
       }
@@ -917,7 +917,7 @@
     "2.2 Расширенные типы ErisPulse": [
       {
         "document": "standards/session-types.md",
-        "line": 61,
+        "line": 59,
         "level": 3,
         "title": "2.2 Расширенные типы ErisPulse"
       }
@@ -1013,7 +1013,7 @@
     "3. Очистка при выключении адаптера": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 610,
+        "line": 609,
         "level": 3,
         "title": "3. Очистка при выключении адаптера"
       }
@@ -1061,7 +1061,7 @@
     "3. События heartbeat": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 46,
+        "line": 45,
         "level": 3,
         "title": "3. События heartbeat"
       }
@@ -1085,7 +1085,7 @@
     "3. Сопоставление типов платформ": [
       {
         "document": "standards/session-types.md",
-        "line": 84,
+        "line": 82,
         "level": 2,
         "title": "3. Сопоставление типов платформ"
       }
@@ -1101,7 +1101,7 @@
     "3. Указание учетной записи отправки": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 23,
+        "line": 22,
         "level": 3,
         "title": "3. Указание учетной записи отправки"
       }
@@ -1109,7 +1109,7 @@
     "3. Управление ресурсами": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 155,
+        "line": 153,
         "level": 3,
         "title": "3. Управление ресурсами"
       }
@@ -1117,7 +1117,7 @@
     "3. Четкое управление конфигурацией": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 38,
+        "line": 36,
         "level": 3,
         "title": "3. Четкое управление конфигурацией"
       }
@@ -1125,7 +1125,7 @@
     "3. Я хочу глубоко понять принципы работы": [
       {
         "document": "README.md",
-        "line": 40,
+        "line": 39,
         "level": 3,
         "title": "3. Я хочу глубоко понять принципы работы"
       }
@@ -1149,7 +1149,7 @@
     "3.1 Принцип сопоставления": [
       {
         "document": "standards/session-types.md",
-        "line": 86,
+        "line": 84,
         "level": 3,
         "title": "3.1 Принцип сопоставления"
       }
@@ -1181,7 +1181,7 @@
     "3.2 Примеры сопоставления распространённых платформ": [
       {
         "document": "standards/session-types.md",
-        "line": 94,
+        "line": 92,
         "level": 3,
         "title": "3.2 Примеры сопоставления распространённых платформ"
       }
@@ -1261,7 +1261,7 @@
     "4. Автоматическое обнаружение поля `self`": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 59,
+        "line": 58,
         "level": 3,
         "title": "4. Автоматическое обнаружение поля `self`"
       }
@@ -1277,7 +1277,7 @@
     "4. Комбинированное использование": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 29,
+        "line": 28,
         "level": 3,
         "title": "4. Комбинированное использование"
       }
@@ -1365,7 +1365,7 @@
     "4. Экосистема и официальный клиент": [
       {
         "document": "README.md",
-        "line": 55,
+        "line": 54,
         "level": 3,
         "title": "4. Экосистема и официальный клиент"
       }
@@ -1429,7 +1429,7 @@
     "5. Автоматическое определение типа": [
       {
         "document": "standards/session-types.md",
-        "line": 167,
+        "line": 165,
         "level": 2,
         "title": "5. Автоматическое определение типа"
       }
@@ -1437,7 +1437,7 @@
     "5. Запрос состояния бота": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 84,
+        "line": 83,
         "level": 3,
         "title": "5. Запрос состояния бота"
       }
@@ -1517,7 +1517,7 @@
     "5. Я хочу внести вклад в ErisPulse": [
       {
         "document": "README.md",
-        "line": 66,
+        "line": 65,
         "level": 3,
         "title": "5. Я хочу внести вклад в ErisPulse"
       }
@@ -1541,7 +1541,7 @@
     "5.1 Приоритет определения": [
       {
         "document": "standards/session-types.md",
-        "line": 174,
+        "line": 172,
         "level": 3,
         "title": "5.1 Приоритет определения"
       }
@@ -1573,7 +1573,7 @@
     "5.2 Примеры использования": [
       {
         "document": "standards/session-types.md",
-        "line": 185,
+        "line": 183,
         "level": 3,
         "title": "5.2 Примеры использования"
       }
@@ -1837,7 +1837,7 @@
     "7. Справочник основного API": [
       {
         "document": "standards/session-types.md",
-        "line": 242,
+        "line": 240,
         "level": 2,
         "title": "7. Справочник основного API"
       }
@@ -1845,7 +1845,7 @@
     "7.1 Преобразование типов": [
       {
         "document": "standards/session-types.md",
-        "line": 244,
+        "line": 242,
         "level": 3,
         "title": "7.1 Преобразование типов"
       }
@@ -1853,7 +1853,7 @@
     "7.2 Запрос полей ID": [
       {
         "document": "standards/session-types.md",
-        "line": 258,
+        "line": 256,
         "level": 3,
         "title": "7.2 Запрос полей ID"
       }
@@ -1861,7 +1861,7 @@
     "7.3 Получение информации для отправки за один шаг": [
       {
         "document": "standards/session-types.md",
-        "line": 270,
+        "line": 268,
         "level": 3,
         "title": "7.3 Получение информации для отправки за один шаг"
       }
@@ -1869,7 +1869,7 @@
     "7.4 Получение целевого ID": [
       {
         "document": "standards/session-types.md",
-        "line": 283,
+        "line": 281,
         "level": 3,
         "title": "7.4 Получение целевого ID"
       }
@@ -2037,13 +2037,13 @@
     "API ответ": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 345,
+        "line": 344,
         "level": 2,
         "title": "API ответ"
       },
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 179,
+        "line": 176,
         "level": 2,
         "title": "API ответ"
       }
@@ -2099,7 +2099,7 @@
     "Callback Routes": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 167,
+        "line": 164,
         "level": 2,
         "title": "Callback Routes"
       }
@@ -2139,17 +2139,17 @@
     "Discord": [
       {
         "document": "standards/session-types.md",
-        "line": 106,
+        "line": 104,
         "level": 4,
         "title": "Discord"
       }
     ],
-    "Docker 零部署（Рекомендуется）": [
+    "Docker 雅чыруу (сунушталган)": [
       {
         "document": "user-guide/deployment.md",
         "line": 9,
         "level": 2,
-        "title": "Docker 零部署（Рекомендуется）"
+        "title": "Docker 雅чыруу (сунушталган)"
       }
     ],
     "Docker-образ (GHCR) vs PyPI": [
@@ -2203,7 +2203,7 @@
     "Event Mixin расширение методов": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 261,
+        "line": 259,
         "level": 2,
         "title": "Event Mixin расширение методов"
       }
@@ -2219,7 +2219,7 @@
     "Event �обертыватель": [
       {
         "document": "api-reference/event-system.md",
-        "line": 256,
+        "line": 255,
         "level": 2,
         "title": "Event �обертыватель"
       }
@@ -2227,7 +2227,7 @@
     "Event.reply() автоматически обрабатывает преобразование типа": [
       {
         "document": "standards/session-types.md",
-        "line": 226,
+        "line": 224,
         "level": 1,
         "title": "Event.reply() автоматически обрабатывает преобразование типа"
       }
@@ -2235,7 +2235,7 @@
     "Gateway Intents": [
       {
         "document": "platform-guide/discord.md",
-        "line": 63,
+        "line": 62,
         "level": 3,
         "title": "Gateway Intents"
       }
@@ -2251,7 +2251,7 @@
     "HTTP-запрос": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 438,
+        "line": 436,
         "level": 1,
         "title": "HTTP-запрос"
       }
@@ -2331,7 +2331,7 @@
     "OneBot11": [
       {
         "document": "standards/session-types.md",
-        "line": 116,
+        "line": 114,
         "level": 4,
         "title": "OneBot11"
       }
@@ -2371,7 +2371,7 @@
     "Related Documentation": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 510,
+        "line": 508,
         "level": 2,
         "title": "Related Documentation"
       }
@@ -2411,7 +2411,7 @@
     "Telegram": [
       {
         "document": "standards/session-types.md",
-        "line": 96,
+        "line": 94,
         "level": 4,
         "title": "Telegram"
       }
@@ -2425,7 +2425,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 442,
+        "line": 440,
         "level": 1,
         "title": "WebSocket"
       }
@@ -2469,7 +2469,7 @@
     "[\"get_chat_type\", \"is_bot_message\", ...]": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 677,
+        "line": 676,
         "level": 1,
         "title": "[\"get_chat_type\", \"is_bot_message\", ...]"
       }
@@ -2477,7 +2477,7 @@
     "[BUG-001] Дублированная регистрация обработчиков событий, приводящая к многократной обработке событий": [
       {
         "document": "bug-tracker.md",
-        "line": 131,
+        "line": 129,
         "level": 3,
         "title": "[BUG-001] Дублированная регистрация обработчиков событий, приводящая к многократной обработке событий"
       }
@@ -2485,7 +2485,7 @@
     "[BUG-002] Ошибка типа пути конфигурации адаптера в команде Init": [
       {
         "document": "bug-tracker.md",
-        "line": 151,
+        "line": 149,
         "level": 3,
         "title": "[BUG-002] Ошибка типа пути конфигурации адаптера в команде Init"
       }
@@ -2493,7 +2493,7 @@
     "[BUG-003] Отключение командных событий после перезапуска": [
       {
         "document": "bug-tracker.md",
-        "line": 175,
+        "line": 173,
         "level": 3,
         "title": "[BUG-003] Отключение командных событий после перезапуска"
       }
@@ -2501,7 +2501,7 @@
     "[BUG-004] Нечистые обработчики жизненного цикла": [
       {
         "document": "bug-tracker.md",
-        "line": 195,
+        "line": 193,
         "level": 3,
         "title": "[BUG-004] Нечистые обработчики жизненного цикла"
       }
@@ -2509,7 +2509,7 @@
     "[BUG-005] Несоответствие detail_type для Event.is_friend_add/is_friend_delete стандарту OB12": [
       {
         "document": "bug-tracker.md",
-        "line": 215,
+        "line": 213,
         "level": 3,
         "title": "[BUG-005] Несоответствие detail_type для Event.is_friend_add/is_friend_delete стандарту OB12"
       }
@@ -2517,7 +2517,7 @@
     "[BUG-006] adapter.clear() не очищает _started_instances, приводящее к некорректному состоянию после перезапуска": [
       {
         "document": "bug-tracker.md",
-        "line": 235,
+        "line": 233,
         "level": 3,
         "title": "[BUG-006] adapter.clear() не очищает _started_instances, приводящее к некорректному состоянию после перезапуска"
       }
@@ -2525,7 +2525,7 @@
     "[BUG-007] command.wait_reply() использует устаревший asyncio.get_event_loop()": [
       {
         "document": "bug-tracker.md",
-        "line": 255,
+        "line": 253,
         "level": 3,
         "title": "[BUG-007] command.wait_reply() использует устаревший asyncio.get_event_loop()"
       }
@@ -2533,7 +2533,7 @@
     "[BUG-008] События отключения Bot при shutdown повторно отправляются": [
       {
         "document": "bug-tracker.md",
-        "line": 275,
+        "line": 273,
         "level": 3,
         "title": "[BUG-008] События отключения Bot при shutdown повторно отправляются"
       }
@@ -2541,7 +2541,7 @@
     "[BUG-009] Синхронный доступ LazyModule к BaseModule приводит к незавершенному инициализации": [
       {
         "document": "bug-tracker.md",
-        "line": 295,
+        "line": 293,
         "level": 3,
         "title": "[BUG-009] Синхронный доступ LazyModule к BaseModule приводит к незавершенному инициализации"
       }
@@ -2549,7 +2549,7 @@
     "[BUG-010] Многопоточная запись конфигурации приводит к потере данных": [
       {
         "document": "bug-tracker.md",
-        "line": 315,
+        "line": 313,
         "level": 3,
         "title": "[BUG-010] Многопоточная запись конфигурации приводит к потере данных"
       }
@@ -2557,7 +2557,7 @@
     "[BUG-011] CTRL+C не может остановить программу в Windows": [
       {
         "document": "bug-tracker.md",
-        "line": 338,
+        "line": 336,
         "level": 3,
         "title": "[BUG-011] CTRL+C не может остановить программу в Windows"
       }
@@ -2565,7 +2565,7 @@
     "[BUG-012] После горячего перезапуска обновленный код модуля не применяется": [
       {
         "document": "bug-tracker.md",
-        "line": 362,
+        "line": 360,
         "level": 3,
         "title": "[BUG-012] После горячего перезапуска обновленный код модуля не применяется"
       }
@@ -2573,7 +2573,7 @@
     "[BUG-013] Ошибка логики сортировки стратегии загрузки модуля": [
       {
         "document": "bug-tracker.md",
-        "line": 382,
+        "line": 380,
         "level": 3,
         "title": "[BUG-013] Ошибка логики сортировки стратегии загрузки модуля"
       }
@@ -2581,7 +2581,7 @@
     "[BUG-014] Возврат None из промежуточного обработчика адаптера приводит к потере данных события": [
       {
         "document": "bug-tracker.md",
-        "line": 402,
+        "line": 400,
         "level": 3,
         "title": "[BUG-014] Возврат None из промежуточного обработчика адаптера приводит к потере данных события"
       }
@@ -2589,7 +2589,7 @@
     "[BUG-015] Зависимость пути конфигурационного файла от рабочей директории": [
       {
         "document": "bug-tracker.md",
-        "line": 422,
+        "line": 420,
         "level": 3,
         "title": "[BUG-015] Зависимость пути конфигурационного файла от рабочей директории"
       }
@@ -2597,7 +2597,7 @@
     "[BUG-016] BaseStorage путает хранение значения None с отсутствием ключа": [
       {
         "document": "bug-tracker.md",
-        "line": 442,
+        "line": 440,
         "level": 3,
         "title": "[BUG-016] BaseStorage путает хранение значения None с отсутствием ключа"
       }
@@ -2605,7 +2605,7 @@
     "[BUG-017] Значение флага auto_accept маршрутов WebSocket теряется после перезапуска службы": [
       {
         "document": "bug-tracker.md",
-        "line": 462,
+        "line": 460,
         "level": 3,
         "title": "[BUG-017] Значение флага auto_accept маршрутов WebSocket теряется после перезапуска службы"
       }
@@ -2613,7 +2613,7 @@
     "[BUG-018] Параллельные вызовы HTTP/WS клиентов приводят к сбоям и утечкам соединений": [
       {
         "document": "bug-tracker.md",
-        "line": 482,
+        "line": 480,
         "level": 3,
         "title": "[BUG-018] Параллельные вызовы HTTP/WS клиентов приводят к сбоям и утечкам соединений"
       }
@@ -2621,7 +2621,7 @@
     "[BUG-019] Конфликт маршрутов при горячем перезагрузке адаптера приводит к неудачной перезагрузке": [
       {
         "document": "bug-tracker.md",
-        "line": 510,
+        "line": 508,
         "level": 3,
         "title": "[BUG-019] Конфликт маршрутов при горячем перезагрузке адаптера приводит к неудачной перезагрузке"
       }
@@ -2629,7 +2629,7 @@
     "[BUG-020] В режиме неразогрева `ep run <script>` не находит подпакеты в директории скрипта": [
       {
         "document": "bug-tracker.md",
-        "line": 534,
+        "line": 532,
         "level": 3,
         "title": "[BUG-020] В режиме неразогрева `ep run <script>` не находит подпакеты в директории скрипта"
       }
@@ -2637,7 +2637,7 @@
     "[BUG-021] SQL-конструктор запросов отвергает допустимые выражения с подстановочными символами и списками": [
       {
         "document": "bug-tracker.md",
-        "line": 554,
+        "line": 552,
         "level": 3,
         "title": "[BUG-021] SQL-конструктор запросов отвергает допустимые выражения с подстановочными символами и списками"
       }
@@ -2645,7 +2645,7 @@
     "[BUG-022] Регрессия в `_resolve_account()`: _accounts_data не заполнен": [
       {
         "document": "bug-tracker.md",
-        "line": 583,
+        "line": 581,
         "level": 3,
         "title": "[BUG-022] Регрессия в `_resolve_account()`: _accounts_data не заполнен"
       }
@@ -2653,7 +2653,7 @@
     "[BUG-023] Кэш адаптера не обновляется после изменения конфигурации аккаунта": [
       {
         "document": "bug-tracker.md",
-        "line": 622,
+        "line": 620,
         "level": 3,
         "title": "[BUG-023] Кэш адаптера не обновляется после изменения конфигурации аккаунта"
       }
@@ -2661,7 +2661,7 @@
     "[BUG-024] storage.set() при записи больших числовых ключей вызывает OOM Kill": [
       {
         "document": "bug-tracker.md",
-        "line": 642,
+        "line": 640,
         "level": 3,
         "title": "[BUG-024] storage.set() при записи больших числовых ключей вызывает OOM Kill"
       }
@@ -2669,7 +2669,7 @@
     "[BUG-025] on_config_update callback не подключен к ядру": [
       {
         "document": "bug-tracker.md",
-        "line": 688,
+        "line": 686,
         "level": 3,
         "title": "[BUG-025] on_config_update callback не подключен к ядру"
       }
@@ -2677,7 +2677,7 @@
     "[BUG-026] Ошибка вывода целевого аккаунта в событиях notice/request": [
       {
         "document": "bug-tracker.md",
-        "line": 718,
+        "line": 716,
         "level": 3,
         "title": "[BUG-026] Ошибка вывода целевого аккаунта в событиях notice/request"
       }
@@ -2685,7 +2685,7 @@
     "[BUG-027] Задача очистки ограничения запросов использует фиксированное окно, что делает правила ограничения на длительных окнах неэффективными": [
       {
         "document": "bug-tracker.md",
-        "line": 749,
+        "line": 747,
         "level": 3,
         "title": "[BUG-027] Задача очистки ограничения запросов использует фиксированное окно, что делает правила ограничения на длительных окнах неэффективными"
       }
@@ -2693,7 +2693,7 @@
     "[BUG-029] Задача наблюдения за конфигурацией тихо глотает ошибки и транслирует незавершенные TOML": [
       {
         "document": "bug-tracker.md",
-        "line": 781,
+        "line": 779,
         "level": 3,
         "title": "[BUG-029] Задача наблюдения за конфигурацией тихо глотает ошибки и транслирует незавершенные TOML"
       }
@@ -2701,7 +2701,7 @@
     "[BUG-030] Гонка данных в watcher конфигурации приводит к молчаливой потере данных при setConfig": [
       {
         "document": "bug-tracker.md",
-        "line": 817,
+        "line": 815,
         "level": 3,
         "title": "[BUG-030] Гонка данных в watcher конфигурации приводит к молчаливой потере данных при setConfig"
       }
@@ -2739,7 +2739,7 @@
     "channel": [
       {
         "document": "standards/session-types.md",
-        "line": 63,
+        "line": 61,
         "level": 4,
         "title": "channel"
       }
@@ -2771,7 +2771,7 @@
     "config.toml": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 612,
+        "line": 610,
         "level": 1,
         "title": "config.toml"
       }
@@ -2779,7 +2779,7 @@
     "config/config.toml": [
       {
         "document": "user-guide/deployment.md",
-        "line": 178,
+        "line": 179,
         "level": 1,
         "title": "config/config.toml"
       }
@@ -2819,7 +2819,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 302,
+        "line": 347,
         "level": 3,
         "title": "create"
       }
@@ -2843,7 +2843,7 @@
     "dump_state()": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 449,
+        "line": 447,
         "level": 3,
         "title": "dump_state()"
       }
@@ -2867,7 +2867,7 @@
     "group": [
       {
         "document": "standards/session-types.md",
-        "line": 47,
+        "line": 45,
         "level": 4,
         "title": "group"
       }
@@ -2875,7 +2875,7 @@
     "guild": [
       {
         "document": "standards/session-types.md",
-        "line": 70,
+        "line": 68,
         "level": 4,
         "title": "guild"
       }
@@ -2891,7 +2891,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 272,
+        "line": 317,
         "level": 3,
         "title": "init"
       }
@@ -2899,7 +2899,7 @@
     "install": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 30,
+        "line": 28,
         "level": 3,
         "title": "install"
       }
@@ -2923,7 +2923,7 @@
     "list": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 177,
+        "line": 175,
         "level": 3,
         "title": "list"
       }
@@ -2931,7 +2931,7 @@
     "list-remote": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 206,
+        "line": 204,
         "level": 3,
         "title": "list-remote"
       }
@@ -2963,7 +2963,7 @@
     "private": [
       {
         "document": "standards/session-types.md",
-        "line": 40,
+        "line": 38,
         "level": 4,
         "title": "private"
       }
@@ -2987,7 +2987,7 @@
     "self-update": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 135,
+        "line": 133,
         "level": 3,
         "title": "self-update"
       }
@@ -3003,7 +3003,7 @@
     "thread": [
       {
         "document": "standards/session-types.md",
-        "line": 77,
+        "line": 75,
         "level": 4,
         "title": "thread"
       }
@@ -3011,7 +3011,7 @@
     "uninstall": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 84,
+        "line": 82,
         "level": 3,
         "title": "uninstall"
       }
@@ -3019,7 +3019,7 @@
     "upgrade": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 107,
+        "line": 105,
         "level": 3,
         "title": "upgrade"
       }
@@ -3027,7 +3027,7 @@
     "user": [
       {
         "document": "standards/session-types.md",
-        "line": 54,
+        "line": 52,
         "level": 4,
         "title": "user"
       }
@@ -3211,7 +3211,7 @@
     "Автоматическая отмена при таймауте (Timeout)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 323,
+        "line": 322,
         "level": 3,
         "title": "Автоматическая отмена при таймауте (Timeout)"
       }
@@ -3219,7 +3219,7 @@
     "Автоматическая повторная попытка при сбое (Retry)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 314,
+        "line": 313,
         "level": 3,
         "title": "Автоматическая повторная попытка при сбое (Retry)"
       }
@@ -3243,7 +3243,7 @@
     "Автоматический вывод": [
       {
         "document": "standards/session-types.md",
-        "line": 147,
+        "line": 145,
         "level": 1,
         "title": "Автоматический вывод"
       }
@@ -3259,7 +3259,7 @@
     "Автоматическое преобразование private → user (не рекомендуется, может быть проблема совместимости)": [
       {
         "document": "standards/session-types.md",
-        "line": 216,
+        "line": 214,
         "level": 1,
         "title": "Автоматическое преобразование private → user (не рекомендуется, может быть проблема совместимости)"
       }
@@ -3307,7 +3307,7 @@
     "Адаптер: регистрация платформо-специфических методов": [
       {
         "document": "api-reference/event-system.md",
-        "line": 545,
+        "line": 544,
         "level": 3,
         "title": "Адаптер: регистрация платформо-специфических методов"
       }
@@ -3315,7 +3315,7 @@
     "Активация виртуального окружения": [
       {
         "document": "user-guide/installation.md",
-        "line": 57,
+        "line": 55,
         "level": 4,
         "title": "Активация виртуального окружения"
       }
@@ -3361,7 +3361,7 @@
     "Архитектура горячей перезагрузки локальных плагинов": [
       {
         "document": "architecture.md",
-        "line": 284,
+        "line": 283,
         "level": 2,
         "title": "Архитектура горячей перезагрузки локальных плагинов"
       }
@@ -3369,7 +3369,7 @@
     "Архитектура локальной папки плагинов": [
       {
         "document": "architecture.md",
-        "line": 254,
+        "line": 253,
         "level": 2,
         "title": "Архитектура локальной папки плагинов"
       }
@@ -3385,7 +3385,7 @@
     "Архитектура триггерной ленивой активации (trigger architecture с `activate_on`)": [
       {
         "document": "architecture.md",
-        "line": 218,
+        "line": 217,
         "level": 3,
         "title": "Архитектура триггерной ленивой активации (trigger architecture с `activate_on`)"
       }
@@ -3401,7 +3401,7 @@
     "Асинхронная конфигурация": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 191,
+        "line": 189,
         "level": 1,
         "title": "Асинхронная конфигурация"
       }
@@ -3431,7 +3431,7 @@
     "Асинхронное программирование": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 99,
+        "line": 97,
         "level": 2,
         "title": "Асинхронное программирование"
       }
@@ -3439,7 +3439,7 @@
     "Асинхронное хранилище": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 179,
+        "line": 177,
         "level": 1,
         "title": "Асинхронное хранилище"
       }
@@ -3447,7 +3447,7 @@
     "Асинхронные массовые операции": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 186,
+        "line": 184,
         "level": 1,
         "title": "Асинхронные массовые операции"
       }
@@ -3471,7 +3471,7 @@
     "Базовая информация об событии": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 132,
+        "line": 131,
         "level": 4,
         "title": "Базовая информация об событии"
       }
@@ -3493,7 +3493,7 @@
     "Базовое использование": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 230,
+        "line": 228,
         "level": 3,
         "title": "Базовое использование"
       }
@@ -3549,7 +3549,7 @@
     "Базовый ответ": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 205,
+        "line": 204,
         "level": 4,
         "title": "Базовый ответ"
       }
@@ -3557,7 +3557,7 @@
     "Безопасность": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 380,
+        "line": 378,
         "level": 2,
         "title": "Безопасность"
       }
@@ -3581,13 +3581,13 @@
     "Быстрая инициализация": [
       {
         "document": "quick-start.md",
-        "line": 80,
+        "line": 78,
         "level": 3,
         "title": "Быстрая инициализация"
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 583,
+        "line": 641,
         "level": 1,
         "title": "Быстрая инициализация"
       }
@@ -3619,7 +3619,7 @@
     "Быстрое меню": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 501,
+        "line": 499,
         "level": 1,
         "title": "Быстрое меню"
       }
@@ -3642,12 +3642,6 @@
         "line": 1,
         "level": 1,
         "title": "Быстрый старт"
-      },
-      {
-        "document": "user-guide/deployment.md",
-        "line": 13,
-        "level": 3,
-        "title": "Быстрый старт"
       }
     ],
     "В качестве менеджера контекста, автоматически закрывает сессию": [
@@ -3669,7 +3663,7 @@
     "Важные ограничения": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 38,
+        "line": 36,
         "level": 3,
         "title": "Важные ограничения"
       }
@@ -3725,7 +3719,7 @@
     "Вместо прямого доступа к словарю": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 178,
+        "line": 176,
         "level": 1,
         "title": "Вместо прямого доступа к словарю"
       }
@@ -3733,7 +3727,7 @@
     "Внутренне автоматически используется правильный тип отправки": [
       {
         "document": "standards/session-types.md",
-        "line": 228,
+        "line": 226,
         "level": 1,
         "title": "Внутренне автоматически используется правильный тип отправки"
       }
@@ -3741,7 +3735,7 @@
     "Внутренне автоматически преобразуется в: Send.To(\"user\", \"789\") # предпочтительнее использовать user как тип сессии напрямую": [
       {
         "document": "standards/session-types.md",
-        "line": 218,
+        "line": 216,
         "level": 1,
         "title": "Внутренне автоматически преобразуется в: Send.To(\"user\", \"789\") # предпочтительнее использовать user как тип сессии напрямую"
       }
@@ -3749,7 +3743,7 @@
     "Внутренняя разбивка отправки": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 574,
+        "line": 573,
         "level": 2,
         "title": "Внутренняя разбивка отправки"
       }
@@ -3757,7 +3751,7 @@
     "Возвращаемое значение": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 634,
+        "line": 633,
         "level": 2,
         "title": "Возвращаемое значение"
       }
@@ -3813,7 +3807,7 @@
     "Возвращает: \"custom\"": [
       {
         "document": "standards/session-types.md",
-        "line": 153,
+        "line": 151,
         "level": 1,
         "title": "Возвращает: \"custom\""
       }
@@ -3821,7 +3815,7 @@
     "Возвращает: \"my_custom_type\"": [
       {
         "document": "standards/session-types.md",
-        "line": 149,
+        "line": 147,
         "level": 1,
         "title": "Возвращает: \"my_custom_type\""
       }
@@ -3837,7 +3831,7 @@
     "Возвращает: event[\"custom_id\"]": [
       {
         "document": "standards/session-types.md",
-        "line": 157,
+        "line": 155,
         "level": 1,
         "title": "Возвращает: event[\"custom_id\"]"
       }
@@ -3861,7 +3855,7 @@
     "Встроенные модифицирующие методы также доступны": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 204,
+        "line": 203,
         "level": 1,
         "title": "Встроенные модифицирующие методы также доступны"
       }
@@ -3869,7 +3863,7 @@
     "Вход в режим построения": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 408,
+        "line": 407,
         "level": 3,
         "title": "Вход в режим построения"
       }
@@ -3885,7 +3879,7 @@
     "Выбор вашего пути": [
       {
         "document": "README.md",
-        "line": 11,
+        "line": 10,
         "level": 2,
         "title": "Выбор вашего пути"
       }
@@ -3909,7 +3903,7 @@
     "Вывести список всех компонентов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 508,
+        "line": 553,
         "level": 1,
         "title": "Вывести список всех компонентов"
       }
@@ -3925,7 +3919,7 @@
     "Вывести список поддерживаемых языков": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 563,
+        "line": 621,
         "level": 1,
         "title": "Вывести список поддерживаемых языков"
       }
@@ -3933,7 +3927,7 @@
     "Вывести только адаптеры": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 511,
+        "line": 556,
         "level": 1,
         "title": "Вывести только адаптеры"
       }
@@ -3941,7 +3935,7 @@
     "Вывести только обновляемые компоненты": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 514,
+        "line": 559,
         "level": 1,
         "title": "Вывести только обновляемые компоненты"
       }
@@ -3949,7 +3943,7 @@
     "Вывод в указанную директорию": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 415,
+        "line": 460,
         "level": 1,
         "title": "Вывод в указанную директорию"
       }
@@ -3957,7 +3951,7 @@
     "Вывод списка всех поддерживаемых языков": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 375,
+        "line": 420,
         "level": 1,
         "title": "Вывод списка всех поддерживаемых языков"
       }
@@ -3997,7 +3991,7 @@
     "Выполнение в фоне": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 514,
+        "line": 513,
         "level": 3,
         "title": "Выполнение в фоне"
       }
@@ -4013,7 +4007,7 @@
     "Выполнение логики после успешной отправки (Hook)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 297,
+        "line": 296,
         "level": 3,
         "title": "Выполнение логики после успешной отправки (Hook)"
       }
@@ -4021,7 +4015,7 @@
     "Генерация всех stub-файлов типов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 570,
+        "line": 628,
         "level": 1,
         "title": "Генерация всех stub-файлов типов"
       }
@@ -4037,23 +4031,15 @@
     "Генерация типовых заглушек для всех установленных модулей и адаптеров": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 409,
+        "line": 454,
         "level": 1,
         "title": "Генерация типовых заглушек для всех установленных модулей и адаптеров"
-      }
-    ],
-    "Генерация только stub-файлов модуля": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 573,
-        "level": 1,
-        "title": "Генерация только stub-файлов модуля"
       }
     ],
     "Генерация только заглушек для адаптеров": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 412,
+        "line": 457,
         "level": 1,
         "title": "Генерация только заглушек для адаптеров"
       }
@@ -4101,7 +4087,7 @@
     "Горячая перезагрузка (автоматический перезапуск при изменении файлов)": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 259,
+        "line": 304,
         "level": 1,
         "title": "Горячая перезагрузка (автоматический перезапуск при изменении файлов)"
       }
@@ -4109,7 +4095,7 @@
     "Горячая перезагрузка SDK": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 262,
+        "line": 307,
         "level": 1,
         "title": "Горячая перезагрузка SDK"
       }
@@ -4163,7 +4149,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 172,
+        "line": 170,
         "level": 2,
         "title": "Далее"
       }
@@ -4180,6 +4166,14 @@
         "line": 504,
         "level": 2,
         "title": "Дальнейшие шаги"
+      }
+    ],
+    "Данные жана сактоо": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 69,
+        "level": 3,
+        "title": "Данные жана сактоо"
       }
     ],
     "Данные топологии дерева": [
@@ -4201,7 +4195,7 @@
     "Двигатель правил отправки (повторы/таймауты/задержки)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 617,
+        "line": 616,
         "level": 3,
         "title": "Двигатель правил отправки (повторы/таймауты/задержки)"
       }
@@ -4217,7 +4211,7 @@
     "Действия без параметров содержимого": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 207,
+        "line": 206,
         "level": 1,
         "title": "Действия без параметров содержимого"
       }
@@ -4247,7 +4241,7 @@
     "Декларативные ключи перевода (v2.7.0+)": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 68,
+        "line": 66,
         "level": 3,
         "title": "Декларативные ключи перевода (v2.7.0+)"
       },
@@ -4285,7 +4279,7 @@
     "Диагностика среды выполнения": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 464,
+        "line": 509,
         "level": 1,
         "title": "Диагностика среды выполнения"
       }
@@ -4301,7 +4295,7 @@
     "Динамическое включение/отключение аккаунта (требуется перезапуск адаптера)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 703,
+        "line": 701,
         "level": 1,
         "title": "Динамическое включение/отключение аккаунта (требуется перезапуск адаптера)"
       }
@@ -4341,7 +4335,7 @@
     "Добавление аннотаций типов для параметра event": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 9,
+        "line": 8,
         "level": 2,
         "title": "Добавление аннотаций типов для параметра event"
       }
@@ -4349,7 +4343,7 @@
     "Добавление в друзья": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 275,
+        "line": 274,
         "level": 3,
         "title": "Добавление в друзья"
       }
@@ -4373,13 +4367,13 @@
     "Документация": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 471,
+        "line": 469,
         "level": 2,
         "title": "Документация"
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 694,
+        "line": 693,
         "level": 2,
         "title": "Документация"
       },
@@ -4415,7 +4409,7 @@
     "Документация по обслуживанию": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 624,
+        "line": 623,
         "level": 2,
         "title": "Документация по обслуживанию"
       }
@@ -4559,7 +4553,7 @@
     "Дочерние логгеры": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 240,
+        "line": 238,
         "level": 3,
         "title": "Дочерние логгеры"
       }
@@ -4575,7 +4569,7 @@
     "Другое": [
       {
         "document": "README.md",
-        "line": 84,
+        "line": 83,
         "level": 2,
         "title": "Другое"
       }
@@ -4599,7 +4593,7 @@
     "Если не указано, используется первый включённый бот": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 654,
+        "line": 652,
         "level": 1,
         "title": "Если не указано, используется первый включённый бот"
       }
@@ -4615,7 +4609,7 @@
     "Жизненный цикл": [
       {
         "document": "architecture.md",
-        "line": 161,
+        "line": 160,
         "level": 2,
         "title": "Жизненный цикл"
       }
@@ -4723,7 +4717,7 @@
     "Запрос зарегистрированных методов": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 427,
+        "line": 426,
         "level": 3,
         "title": "Запрос зарегистрированных методов"
       }
@@ -4739,7 +4733,7 @@
     "Запрос на уровне маршрутизатора": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 217,
+        "line": 216,
         "level": 1,
         "title": "Запрос на уровне маршрутизатора"
       }
@@ -4777,7 +4771,7 @@
     "Запрос статуса бота": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 361,
+        "line": 360,
         "level": 3,
         "title": "Запрос статуса бота"
       }
@@ -5105,13 +5099,13 @@
       },
       {
         "document": "quick-start.md",
-        "line": 119,
+        "line": 117,
         "level": 2,
         "title": "Запуск проекта"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 104,
+        "line": 102,
         "level": 1,
         "title": "Запуск проекта"
       }
@@ -5119,7 +5113,7 @@
     "Запуск указанного файла скрипта": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 256,
+        "line": 301,
         "level": 1,
         "title": "Запуск указанного файла скрипта"
       }
@@ -5159,7 +5153,7 @@
     "Идентификатор сессии": [
       {
         "document": "api-reference/event-system.md",
-        "line": 276,
+        "line": 275,
         "level": 3,
         "title": "Идентификатор сессии"
       }
@@ -5175,7 +5169,7 @@
     "Идентификаторы сессии": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 145,
+        "line": 144,
         "level": 4,
         "title": "Идентификаторы сессии"
       }
@@ -5199,7 +5193,7 @@
     "Извлечение данных сегментов сообщений": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 285,
+        "line": 283,
         "level": 3,
         "title": "Извлечение данных сегментов сообщений"
       }
@@ -5231,7 +5225,7 @@
     "Изоляция методов платформы": [
       {
         "document": "api-reference/event-system.md",
-        "line": 522,
+        "line": 521,
         "level": 4,
         "title": "Изоляция методов платформы"
       }
@@ -5255,7 +5249,7 @@
     "Инициализация проекта": [
       {
         "document": "quick-start.md",
-        "line": 65,
+        "line": 63,
         "level": 2,
         "title": "Инициализация проекта"
       }
@@ -5279,7 +5273,7 @@
     "Инструкция по конфигурации": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 32,
+        "line": 29,
         "level": 2,
         "title": "Инструкция по конфигурации"
       }
@@ -5287,7 +5281,7 @@
     "Инструкция по настройке": [
       {
         "document": "platform-guide/discord.md",
-        "line": 36,
+        "line": 35,
         "level": 2,
         "title": "Инструкция по настройке"
       }
@@ -5295,7 +5289,7 @@
     "Инструментальные модули подходят для ленивой загрузки": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 209,
+        "line": 207,
         "level": 1,
         "title": "Инструментальные модули подходят для ленивой загрузки"
       }
@@ -5327,7 +5321,7 @@
     "Интерактивная инициализация": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 580,
+        "line": 638,
         "level": 1,
         "title": "Интерактивная инициализация"
       }
@@ -5335,7 +5329,7 @@
     "Интерактивная инициализация (рекомендуется)": [
       {
         "document": "quick-start.md",
-        "line": 67,
+        "line": 65,
         "level": 3,
         "title": "Интерактивная инициализация (рекомендуется)"
       }
@@ -5343,7 +5337,7 @@
     "Интерактивное создание (пошаговый выбор типа и заполнение информации)": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 590,
+        "line": 648,
         "level": 1,
         "title": "Интерактивное создание (пошаговый выбор типа и заполнение информации)"
       }
@@ -5351,27 +5345,43 @@
     "Интерактивные методы": [
       {
         "document": "api-reference/event-system.md",
-        "line": 408,
+        "line": 407,
         "level": 3,
         "title": "Интерактивные методы"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 244,
+        "line": 243,
         "level": 4,
         "title": "Интерактивные методы"
+      }
+    ],
+    "Интерактивный выбор целевой конфигурации": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 582,
+        "level": 1,
+        "title": "Интерактивный выбор целевой конфигурации"
+      }
+    ],
+    "Интерактивный выбор цели для конфигурации": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 256,
+        "level": 1,
+        "title": "Интерактивный выбор цели для конфигурации"
       }
     ],
     "Интерактивный выбор языка": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 366,
+        "line": 411,
         "level": 1,
         "title": "Интерактивный выбор языка"
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 557,
+        "line": 615,
         "level": 1,
         "title": "Интерактивный выбор языка"
       }
@@ -5379,7 +5389,7 @@
     "Информационный запрос (через открытый Web API, без аутентификации)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 245,
+        "line": 244,
         "level": 1,
         "title": "Информационный запрос (через открытый Web API, без аутентификации)"
       }
@@ -5395,7 +5405,7 @@
     "Информация о боте": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 139,
+        "line": 138,
         "level": 4,
         "title": "Информация о боте"
       }
@@ -5403,7 +5413,7 @@
     "Информация о группе/канале": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 162,
+        "line": 161,
         "level": 4,
         "title": "Информация о группе/канале"
       }
@@ -5435,7 +5445,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 11,
+        "line": 9,
         "level": 2,
         "title": "Информация о документации"
       },
@@ -5459,13 +5469,13 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 11,
+        "line": 9,
         "level": 2,
         "title": "Информация о документации"
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 11,
+        "line": 10,
         "level": 2,
         "title": "Информация о документации"
       },
@@ -5479,7 +5489,7 @@
     "Информация о запросе": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 195,
+        "line": 194,
         "level": 4,
         "title": "Информация о запросе"
       }
@@ -5493,7 +5503,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 391,
+        "line": 390,
         "level": 3,
         "title": "Информация о команде"
       }
@@ -5501,7 +5511,7 @@
     "Информация о подключении на уровне адаптера (рекомендуется)": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 214,
+        "line": 213,
         "level": 1,
         "title": "Информация о подключении на уровне адаптера (рекомендуется)"
       }
@@ -5509,7 +5519,7 @@
     "Информация о режимах шифрования": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 148,
+        "line": 146,
         "level": 2,
         "title": "Информация о режимах шифрования"
       }
@@ -5525,7 +5535,7 @@
     "Информация об операторе": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 182,
+        "line": 181,
         "level": 4,
         "title": "Информация об операторе"
       }
@@ -5533,7 +5543,7 @@
     "Информация об отправителе": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 157,
+        "line": 156,
         "level": 4,
         "title": "Информация об отправителе"
       }
@@ -5573,7 +5583,7 @@
     "Использование алиаса": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 467,
+        "line": 512,
         "level": 1,
         "title": "Использование алиаса"
       }
@@ -5581,7 +5591,7 @@
     "Использование асинхронных операций": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 370,
+        "line": 368,
         "level": 1,
         "title": "Использование асинхронных операций"
       }
@@ -5645,7 +5655,7 @@
     "Использование пакетных операций для повышения производительности": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 300,
+        "line": 298,
         "level": 1,
         "title": "Использование пакетных операций для повышения производительности"
       }
@@ -5685,7 +5695,7 @@
     "Использование специфичных методов Discord": [
       {
         "document": "platform-guide/discord.md",
-        "line": 427,
+        "line": 426,
         "level": 3,
         "title": "Использование специфичных методов Discord"
       }
@@ -5701,7 +5711,7 @@
     "Использование транзакций для обеспечения согласованности данных": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 284,
+        "line": 282,
         "level": 1,
         "title": "Использование транзакций для обеспечения согласованности данных"
       }
@@ -5717,7 +5727,7 @@
     "Исправленные ошибки": [
       {
         "document": "bug-tracker.md",
-        "line": 129,
+        "line": 127,
         "level": 2,
         "title": "Исправленные ошибки"
       }
@@ -5725,7 +5735,7 @@
     "Исходные данные": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 400,
+        "line": 399,
         "level": 3,
         "title": "Исходные данные"
       }
@@ -5837,7 +5847,7 @@
     "Команда формы": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 350,
+        "line": 349,
         "level": 1,
         "title": "Команда формы"
       }
@@ -5845,7 +5855,7 @@
     "Командная информация": [
       {
         "document": "api-reference/event-system.md",
-        "line": 316,
+        "line": 315,
         "level": 3,
         "title": "Командная информация"
       }
@@ -5853,7 +5863,7 @@
     "Команды диагностики": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 24,
+        "line": 22,
         "level": 2,
         "title": "Команды диагностики"
       }
@@ -5861,7 +5871,7 @@
     "Команды запроса информации": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 170,
+        "line": 168,
         "level": 2,
         "title": "Команды запроса информации"
       }
@@ -5869,7 +5879,7 @@
     "Команды управления пакетами": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 13,
+        "line": 11,
         "level": 2,
         "title": "Команды управления пакетами"
       }
@@ -5877,7 +5887,7 @@
     "Команды управления проектом": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 265,
+        "line": 310,
         "level": 2,
         "title": "Команды управления проектом"
       }
@@ -5885,7 +5895,7 @@
     "Комбинация правил и фоновая отправка": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 376,
+        "line": 375,
         "level": 3,
         "title": "Комбинация правил и фоновая отправка"
       }
@@ -5893,7 +5903,7 @@
     "Комбинированное использование: упоминание пользователя + ответ на сообщение": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 408,
+        "line": 407,
         "level": 1,
         "title": "Комбинированное использование: упоминание пользователя + ответ на сообщение"
       }
@@ -5901,7 +5911,7 @@
     "Комбинированные модификаторы": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 129,
+        "line": 128,
         "level": 3,
         "title": "Комбинированные модификаторы"
       }
@@ -6003,7 +6013,7 @@
     "Конфигурация нескольких аккаунтов": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 107,
+        "line": 105,
         "level": 3,
         "title": "Конфигурация нескольких аккаунтов"
       }
@@ -6027,7 +6037,7 @@
     "Краткий обзор": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 407,
+        "line": 405,
         "level": 3,
         "title": "Краткий обзор"
       }
@@ -6035,7 +6045,7 @@
     "Краткий обзор функций": [
       {
         "document": "ecosystem/app.md",
-        "line": 15,
+        "line": 13,
         "level": 2,
         "title": "Краткий обзор функций"
       }
@@ -6043,21 +6053,37 @@
     "Кросс-платформенное расширение (шаблон)": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 443,
+        "line": 442,
         "level": 3,
         "title": "Кросс-платформенное расширение (шаблон)"
+      }
+    ],
+    "Кытайда Docker тездетүү": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 28,
+        "level": 3,
+        "title": "Кытайда Docker тездетүү"
+      }
+    ],
+    "Көйгөйлөрдүн орнотуу": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 61,
+        "level": 3,
+        "title": "Көйгөйлөрдүн орнотуу"
       }
     ],
     "Личное сообщение": [
       {
         "document": "platform-guide/discord.md",
-        "line": 257,
+        "line": 256,
         "level": 1,
         "title": "Личное сообщение"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 202,
+        "line": 199,
         "level": 1,
         "title": "Личное сообщение"
       }
@@ -6073,7 +6099,7 @@
     "Логирование": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 311,
+        "line": 309,
         "level": 2,
         "title": "Логирование"
       }
@@ -6127,7 +6153,7 @@
     "Массовая регистрация (через Mixin класс)": [
       {
         "document": "api-reference/event-system.md",
-        "line": 565,
+        "line": 564,
         "level": 4,
         "title": "Массовая регистрация (через Mixin класс)"
       }
@@ -6175,7 +6201,7 @@
     "Метод Account": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 248,
+        "line": 247,
         "level": 3,
         "title": "Метод Account"
       }
@@ -6183,7 +6209,7 @@
     "Метод At": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 105,
+        "line": 104,
         "level": 3,
         "title": "Метод At"
       }
@@ -6191,7 +6217,7 @@
     "Метод AtAll": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 115,
+        "line": 114,
         "level": 3,
         "title": "Метод AtAll"
       }
@@ -6199,7 +6225,7 @@
     "Метод Reply": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 122,
+        "line": 121,
         "level": 3,
         "title": "Метод Reply"
       }
@@ -6207,7 +6233,7 @@
     "Метод Using": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 231,
+        "line": 230,
         "level": 3,
         "title": "Метод Using"
       }
@@ -6255,7 +6281,7 @@
     "Метод уведомления событий": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 116,
+        "line": 115,
         "level": 2,
         "title": "Метод уведомления событий"
       }
@@ -6279,7 +6305,7 @@
     "Методы запроса сообщений": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 73,
+        "line": 72,
         "level": 3,
         "title": "Методы запроса сообщений"
       }
@@ -6295,7 +6321,7 @@
     "Методы ответа": [
       {
         "document": "api-reference/event-system.md",
-        "line": 372,
+        "line": 371,
         "level": 3,
         "title": "Методы ответа"
       }
@@ -6311,7 +6337,7 @@
     "Методы отправки": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 49,
+        "line": 48,
         "level": 2,
         "title": "Методы отправки"
       },
@@ -6325,7 +6351,7 @@
     "Методы отправки медиа": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 51,
+        "line": 49,
         "level": 3,
         "title": "Методы отправки медиа"
       }
@@ -6341,7 +6367,7 @@
     "Методы протокола": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 78,
+        "line": 77,
         "level": 3,
         "title": "Методы протокола"
       }
@@ -6355,7 +6381,7 @@
       },
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 91,
+        "line": 89,
         "level": 2,
         "title": "Методы расширения событий"
       }
@@ -6371,7 +6397,7 @@
     "Методы событий запросов": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 193,
+        "line": 192,
         "level": 3,
         "title": "Методы событий запросов"
       }
@@ -6379,13 +6405,13 @@
     "Методы событий сообщений": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 56,
+        "line": 55,
         "level": 2,
         "title": "Методы событий сообщений"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 149,
+        "line": 148,
         "level": 3,
         "title": "Методы событий сообщений"
       }
@@ -6393,7 +6419,7 @@
     "Методы событий уведомлений": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 180,
+        "line": 179,
         "level": 3,
         "title": "Методы событий уведомлений"
       }
@@ -6401,7 +6427,7 @@
     "Методы сообщений": [
       {
         "document": "api-reference/event-system.md",
-        "line": 289,
+        "line": 288,
         "level": 3,
         "title": "Методы сообщений"
       }
@@ -6409,7 +6435,7 @@
     "Методы управления группами": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 53,
+        "line": 52,
         "level": 3,
         "title": "Методы управления группами"
       }
@@ -6433,7 +6459,7 @@
     "Методы управления сообщениями": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 64,
+        "line": 62,
         "level": 3,
         "title": "Методы управления сообщениями"
       }
@@ -6441,7 +6467,7 @@
     "Методы цепочек": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 37,
+        "line": 36,
         "level": 2,
         "title": "Методы цепочек"
       }
@@ -6465,7 +6491,7 @@
     "Методы цепочечного синтаксиса": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 79,
+        "line": 77,
         "level": 3,
         "title": "Методы цепочечного синтаксиса"
       }
@@ -6473,7 +6499,7 @@
     "Методы цепочечных модификаторов (можно комбинировать)": [
       {
         "document": "platform-guide/discord.md",
-        "line": 102,
+        "line": 101,
         "level": 3,
         "title": "Методы цепочечных модификаторов (можно комбинировать)"
       }
@@ -6497,7 +6523,7 @@
     "Методы, специфичные для платформы": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 86,
+        "line": 85,
         "level": 3,
         "title": "Методы, специфичные для платформы"
       }
@@ -6505,7 +6531,7 @@
     "Механизм heartbeat": [
       {
         "document": "platform-guide/discord.md",
-        "line": 363,
+        "line": 362,
         "level": 3,
         "title": "Механизм heartbeat"
       }
@@ -6545,7 +6571,7 @@
     "Механизм поддержания соединения": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 333,
+        "line": 330,
         "level": 3,
         "title": "Механизм поддержания соединения"
       }
@@ -6569,7 +6595,7 @@
     "Миксин событий: расширенные методы": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 515,
+        "line": 513,
         "level": 2,
         "title": "Миксин событий: расширенные методы"
       }
@@ -6601,7 +6627,7 @@
     "Множественная развертка экземпляров": [
       {
         "document": "user-guide/deployment.md",
-        "line": 250,
+        "line": 251,
         "level": 2,
         "title": "Множественная развертка экземпляров"
       }
@@ -6609,7 +6635,7 @@
     "Множественные аккаунты: указание учетной записи бота": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 257,
+        "line": 256,
         "level": 1,
         "title": "Множественные аккаунты: указание учетной записи бота"
       }
@@ -6633,7 +6659,7 @@
     "Модификаторы и наследование правил": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 490,
+        "line": 489,
         "level": 3,
         "title": "Модификаторы и наследование правил"
       }
@@ -6641,7 +6667,7 @@
     "Модификаторы методов": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 101,
+        "line": 100,
         "level": 2,
         "title": "Модификаторы методов"
       }
@@ -6665,7 +6691,7 @@
     "Модуль Config": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 197,
+        "line": 195,
         "level": 2,
         "title": "Модуль Config"
       }
@@ -6673,7 +6699,7 @@
     "Модуль Lifecycle": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 369,
+        "line": 367,
         "level": 2,
         "title": "Модуль Lifecycle"
       }
@@ -6689,7 +6715,7 @@
     "Модуль Router": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 401,
+        "line": 399,
         "level": 2,
         "title": "Модуль Router"
       }
@@ -6705,7 +6731,7 @@
     "Модуль логирования": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 226,
+        "line": 224,
         "level": 2,
         "title": "Модуль логирования"
       }
@@ -6713,7 +6739,7 @@
     "Модуль с высокой частотой триггеров (обрабатывается каждое сообщение) или модуль, который должен быть готов при запуске: немедленная загрузка": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 203,
+        "line": 201,
         "level": 1,
         "title": "Модуль с высокой частотой триггеров (обрабатывается каждое сообщение) или модуль, который должен быть готов при запуске: немедленная загрузка"
       }
@@ -6721,7 +6747,7 @@
     "Модуль с низкой частотой использования: объявляем триггер activate_on, автоматически активируется при первом совпадении команды (сохраняется ленивая загрузка)": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 187,
+        "line": 185,
         "level": 1,
         "title": "Модуль с низкой частотой использования: объявляем триггер activate_on, автоматически активируется при первом совпадении команды (сохраняется ленивая загрузка)"
       }
@@ -6729,7 +6755,7 @@
     "Модуль с низкой частотой использования: объявляем триггер события, автоматически активируется при поступлении события": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 195,
+        "line": 193,
         "level": 1,
         "title": "Модуль с низкой частотой использования: объявляем триггер события, автоматически активируется при поступлении события"
       }
@@ -6745,7 +6771,7 @@
     "Модульная архитектура": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 9,
+        "line": 7,
         "level": 2,
         "title": "Модульная архитектура"
       }
@@ -6761,7 +6787,7 @@
     "Мониторинг здоровья": [
       {
         "document": "user-guide/deployment.md",
-        "line": 117,
+        "line": 118,
         "level": 2,
         "title": "Мониторинг здоровья"
       }
@@ -6769,7 +6795,7 @@
     "Мониторинг прогресса (OnProgress / OnError)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 333,
+        "line": 332,
         "level": 3,
         "title": "Мониторинг прогресса (OnProgress / OnError)"
       }
@@ -6785,7 +6811,7 @@
     "Наблюдение за событиями жизненного цикла": [
       {
         "document": "architecture.md",
-        "line": 192,
+        "line": 191,
         "level": 3,
         "title": "Наблюдение за событиями жизненного цикла"
       }
@@ -6798,10 +6824,18 @@
         "title": "Назначение методов отправки"
       }
     ],
+    "Настройка указанного адаптера": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 585,
+        "level": 1,
+        "title": "Настройка указанного адаптера"
+      }
+    ],
     "Настройки адаптера": [
       {
         "document": "quick-start.md",
-        "line": 170,
+        "line": 168,
         "level": 1,
         "title": "Настройки адаптера"
       }
@@ -6809,7 +6843,7 @@
     "Настройки бота": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 486,
+        "line": 484,
         "level": 1,
         "title": "Настройки бота"
       }
@@ -6862,18 +6896,10 @@
         "title": "Необязательные поля"
       }
     ],
-    "Непосредственная смена на английский": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 560,
-        "level": 1,
-        "title": "Непосредственная смена на английский"
-      }
-    ],
     "Непосредственно await для получения результата": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 270,
+        "line": 269,
         "level": 1,
         "title": "Непосредственно await для получения результата"
       }
@@ -6931,13 +6957,13 @@
     "Обзор API": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 201,
+        "line": 199,
         "level": 3,
         "title": "Обзор API"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 373,
+        "line": 371,
         "level": 3,
         "title": "Обзор API"
       }
@@ -6999,7 +7025,7 @@
     "Обзор статистики": [
       {
         "document": "bug-tracker.md",
-        "line": 102,
+        "line": 100,
         "level": 2,
         "title": "Обзор статистики"
       }
@@ -7007,13 +7033,13 @@
     "Обзор типов событий": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 9,
+        "line": 8,
         "level": 2,
         "title": "Обзор типов событий"
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 21,
+        "line": 20,
         "level": 2,
         "title": "Обзор типов событий"
       }
@@ -7029,7 +7055,7 @@
     "Обзор функций": [
       {
         "document": "user-guide/deployment.md",
-        "line": 80,
+        "line": 81,
         "level": 3,
         "title": "Обзор функций"
       }
@@ -7045,7 +7071,7 @@
     "Обновить все компоненты": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 534,
+        "line": 592,
         "level": 1,
         "title": "Обновить все компоненты"
       }
@@ -7053,7 +7079,7 @@
     "Обновить указанный компонент": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 537,
+        "line": 595,
         "level": 1,
         "title": "Обновить указанный компонент"
       }
@@ -7069,7 +7095,7 @@
     "Обновление и обслуживание": [
       {
         "document": "user-guide/deployment.md",
-        "line": 260,
+        "line": 261,
         "level": 2,
         "title": "Обновление и обслуживание"
       }
@@ -7077,7 +7103,7 @@
     "Обновление модуля": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 501,
+        "line": 546,
         "level": 1,
         "title": "Обновление модуля"
       }
@@ -7101,7 +7127,7 @@
     "Обработка взаимодействий": [
       {
         "document": "platform-guide/discord.md",
-        "line": 447,
+        "line": 446,
         "level": 3,
         "title": "Обработка взаимодействий"
       }
@@ -7109,7 +7135,7 @@
     "Обработка групповых сообщений": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 348,
+        "line": 345,
         "level": 3,
         "title": "Обработка групповых сообщений"
       },
@@ -7139,7 +7165,7 @@
     "Обработка личных сообщений": [
       {
         "document": "platform-guide/discord.md",
-        "line": 394,
+        "line": 393,
         "level": 3,
         "title": "Обработка личных сообщений"
       },
@@ -7161,7 +7187,7 @@
     "Обработка мета-событий": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 334,
+        "line": 333,
         "level": 2,
         "title": "Обработка мета-событий"
       }
@@ -7221,7 +7247,7 @@
     "Обработка реакций": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 372,
+        "line": 369,
         "level": 3,
         "title": "Обработка реакций"
       }
@@ -7229,7 +7255,7 @@
     "Обработка редактирования сообщений": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 410,
+        "line": 407,
         "level": 3,
         "title": "Обработка редактирования сообщений"
       }
@@ -7259,7 +7285,7 @@
     "Обработка событий уведомлений": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 273,
+        "line": 272,
         "level": 2,
         "title": "Обработка событий уведомлений"
       }
@@ -7267,7 +7293,7 @@
     "Обработка сообщений в канале": [
       {
         "document": "platform-guide/discord.md",
-        "line": 374,
+        "line": 373,
         "level": 3,
         "title": "Обработка сообщений в канале"
       }
@@ -7283,7 +7309,7 @@
     "Обработка сообщений о событиях": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 33,
+        "line": 32,
         "level": 2,
         "title": "Обработка сообщений о событиях"
       }
@@ -7307,7 +7333,7 @@
     "Обработчик с высоким приоритетом выполняется первым": [
       {
         "document": "api-reference/event-system.md",
-        "line": 684,
+        "line": 683,
         "level": 1,
         "title": "Обработчик с высоким приоритетом выполняется первым"
       }
@@ -7315,7 +7341,7 @@
     "Обработчик с низким приоритетом выполняется последним": [
       {
         "document": "api-reference/event-system.md",
-        "line": 689,
+        "line": 688,
         "level": 1,
         "title": "Обработчик с низким приоритетом выполняется последним"
       }
@@ -7339,7 +7365,7 @@
     "Обратное преобразование и построение сообщений": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 560,
+        "line": 559,
         "level": 2,
         "title": "Обратное преобразование и построение сообщений"
       }
@@ -7347,7 +7373,7 @@
     "Обратный прокси": [
       {
         "document": "user-guide/deployment.md",
-        "line": 140,
+        "line": 141,
         "level": 2,
         "title": "Обратный прокси"
       }
@@ -7385,7 +7411,7 @@
     "Объект Task": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 636,
+        "line": 635,
         "level": 3,
         "title": "Объект Task"
       }
@@ -7409,7 +7435,7 @@
     "Обычный запуск": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 547,
+        "line": 605,
         "level": 1,
         "title": "Обычный запуск"
       }
@@ -7479,7 +7505,7 @@
     "Операции с сообщениями": [
       {
         "document": "platform-guide/discord.md",
-        "line": 157,
+        "line": 156,
         "level": 3,
         "title": "Операции с сообщениями"
       }
@@ -7487,7 +7513,7 @@
     "Операции с файлами": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 250,
+        "line": 249,
         "level": 1,
         "title": "Операции с файлами"
       }
@@ -7503,7 +7529,7 @@
     "Описание opcodes": [
       {
         "document": "platform-guide/discord.md",
-        "line": 342,
+        "line": 341,
         "level": 3,
         "title": "Описание opcodes"
       }
@@ -7561,7 +7587,7 @@
     "Описание медиафайлов": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 30,
+        "line": 28,
         "level": 3,
         "title": "Описание медиафайлов"
       }
@@ -7569,7 +7595,7 @@
     "Описание основных модулей": [
       {
         "document": "architecture.md",
-        "line": 45,
+        "line": 44,
         "level": 3,
         "title": "Описание основных модулей"
       },
@@ -7599,7 +7625,7 @@
     "Описание параметров кнопок": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 110,
+        "line": 109,
         "level": 3,
         "title": "Описание параметров кнопок"
       }
@@ -7623,7 +7649,7 @@
     "Описание полей конфигурации": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 129,
+        "line": 127,
         "level": 3,
         "title": "Описание полей конфигурации"
       }
@@ -7637,7 +7663,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 554,
+        "line": 552,
         "level": 2,
         "title": "Описание расширенных полей"
       },
@@ -7659,7 +7685,7 @@
     "Определение типа запроса": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 198,
+        "line": 197,
         "level": 4,
         "title": "Определение типа запроса"
       }
@@ -7667,13 +7693,13 @@
     "Определение типа сообщения": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 71,
+        "line": 70,
         "level": 2,
         "title": "Определение типа сообщения"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 172,
+        "line": 171,
         "level": 3,
         "title": "Определение типа сообщения"
       }
@@ -7681,7 +7707,7 @@
     "Определение типа уведомления": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 186,
+        "line": 185,
         "level": 4,
         "title": "Определение типа уведомления"
       }
@@ -7705,7 +7731,7 @@
     "Основная архитектура SDK": [
       {
         "document": "architecture.md",
-        "line": 9,
+        "line": 8,
         "level": 2,
         "title": "Основная архитектура SDK"
       }
@@ -7713,7 +7739,7 @@
     "Основная информация": [
       {
         "document": "platform-guide/discord.md",
-        "line": 19,
+        "line": 18,
         "level": 2,
         "title": "Основная информация"
       },
@@ -7737,7 +7763,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 20,
+        "line": 17,
         "level": 2,
         "title": "Основная информация"
       },
@@ -7761,19 +7787,19 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 18,
+        "line": 16,
         "level": 2,
         "title": "Основная информация"
       },
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 7,
+        "line": 5,
         "level": 2,
         "title": "Основная информация"
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 18,
+        "line": 17,
         "level": 2,
         "title": "Основная информация"
       },
@@ -7799,7 +7825,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 695,
+        "line": 694,
         "level": 3,
         "title": "Основное использование"
       },
@@ -7821,7 +7847,7 @@
     "Основные возможности": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 28,
+        "line": 27,
         "level": 2,
         "title": "Основные возможности"
       }
@@ -7867,13 +7893,13 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 260,
+        "line": 259,
         "level": 3,
         "title": "Основные методы"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 130,
+        "line": 129,
         "level": 3,
         "title": "Основные методы"
       }
@@ -7881,7 +7907,7 @@
     "Основные методы (встроенные в базовый класс)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 53,
+        "line": 52,
         "level": 3,
         "title": "Основные методы (встроенные в базовый класс)"
       }
@@ -7895,7 +7921,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 38,
+        "line": 36,
         "level": 3,
         "title": "Основные методы отправки"
       }
@@ -7903,7 +7929,7 @@
     "Основные методы полей": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 41,
+        "line": 40,
         "level": 2,
         "title": "Основные методы полей"
       }
@@ -7963,7 +7989,7 @@
     "Основные проверки": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 174,
+        "line": 173,
         "level": 4,
         "title": "Основные проверки"
       }
@@ -7979,7 +8005,7 @@
     "Основные способы вызова": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 9,
+        "line": 8,
         "level": 2,
         "title": "Основные способы вызова"
       }
@@ -8003,7 +8029,7 @@
     "Основы команды": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 393,
+        "line": 392,
         "level": 4,
         "title": "Основы команды"
       }
@@ -8033,7 +8059,7 @@
     "Ответ на сообщение": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 402,
+        "line": 401,
         "level": 1,
         "title": "Ответ на сообщение"
       }
@@ -8057,7 +8083,7 @@
     "Отзыв сообщения": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 218,
+        "line": 215,
         "level": 1,
         "title": "Отзыв сообщения"
       }
@@ -8073,7 +8099,7 @@
     "Отладка SDK": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 447,
+        "line": 445,
         "level": 2,
         "title": "Отладка SDK"
       }
@@ -8081,7 +8107,7 @@
     "Отложенная отправка (Defer)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 355,
+        "line": 354,
         "level": 3,
         "title": "Отложенная отправка (Defer)"
       }
@@ -8089,7 +8115,7 @@
     "Отложенная отправка + платформенно-специфичный модификатор + доска": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 220,
+        "line": 219,
         "level": 1,
         "title": "Отложенная отправка + платформенно-специфичный модификатор + доска"
       }
@@ -8097,7 +8123,7 @@
     "Отмена регистрации метода": [
       {
         "document": "api-reference/event-system.md",
-        "line": 611,
+        "line": 610,
         "level": 4,
         "title": "Отмена регистрации метода"
       }
@@ -8113,7 +8139,7 @@
     "Отмена сообщения (требуется дополнительное указание chat_id + chat_type)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 254,
+        "line": 253,
         "level": 1,
         "title": "Отмена сообщения (требуется дополнительное указание chat_id + chat_type)"
       }
@@ -8129,7 +8155,7 @@
     "Отношения с SDK": [
       {
         "document": "ecosystem/app.md",
-        "line": 91,
+        "line": 89,
         "level": 2,
         "title": "Отношения с SDK"
       }
@@ -8137,7 +8163,7 @@
     "Отправка A2UI сообщений": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 475,
+        "line": 473,
         "level": 3,
         "title": "Отправка A2UI сообщений"
       }
@@ -8145,7 +8171,7 @@
     "Отправка Embed-сообщений": [
       {
         "document": "platform-guide/discord.md",
-        "line": 410,
+        "line": 409,
         "level": 3,
         "title": "Отправка Embed-сообщений"
       }
@@ -8161,7 +8187,7 @@
     "Отправка в группу": [
       {
         "document": "standards/session-types.md",
-        "line": 213,
+        "line": 211,
         "level": 1,
         "title": "Отправка в группу"
       }
@@ -8169,7 +8195,7 @@
     "Отправка личных сообщений": [
       {
         "document": "platform-guide/discord.md",
-        "line": 147,
+        "line": 146,
         "level": 3,
         "title": "Отправка личных сообщений"
       }
@@ -8183,7 +8209,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 389,
+        "line": 386,
         "level": 3,
         "title": "Отправка медиа-сообщений"
       },
@@ -8213,7 +8239,7 @@
     "Отправка объединенного приглашения + опций с использованием Markdown": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 516,
+        "line": 515,
         "level": 1,
         "title": "Отправка объединенного приглашения + опций с использованием Markdown"
       }
@@ -8229,7 +8255,7 @@
     "Отправка пользователю": [
       {
         "document": "standards/session-types.md",
-        "line": 210,
+        "line": 208,
         "level": 1,
         "title": "Отправка пользователю"
       }
@@ -8283,7 +8309,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 74,
+        "line": 72,
         "level": 3,
         "title": "Отправка сообщений в исходном формате"
       }
@@ -8291,7 +8317,7 @@
     "Отправка сообщений разных типов": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 392,
+        "line": 391,
         "level": 1,
         "title": "Отправка сообщений разных типов"
       }
@@ -8299,7 +8325,7 @@
     "Отправка сообщений с кнопками в группу": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 469,
+        "line": 467,
         "level": 1,
         "title": "Отправка сообщений с кнопками в группу"
       }
@@ -8307,7 +8333,7 @@
     "Отправка сообщений с кнопками в личные сообщения пользователя": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 472,
+        "line": 470,
         "level": 1,
         "title": "Отправка сообщений с кнопками в личные сообщения пользователя"
       }
@@ -8315,7 +8341,7 @@
     "Отправка сообщения с использованием bot_id (система автоматически найдёт соответствующий аккаунт)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 651,
+        "line": 649,
         "level": 1,
         "title": "Отправка сообщения с использованием bot_id (система автоматически найдёт соответствующий аккаунт)"
       }
@@ -8323,7 +8349,7 @@
     "Отправка сообщения с использованием имени аккаунта": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 648,
+        "line": 646,
         "level": 1,
         "title": "Отправка сообщения с использованием имени аккаунта"
       }
@@ -8331,7 +8357,7 @@
     "Отслеживание всех сообщений": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 41,
+        "line": 40,
         "level": 3,
         "title": "Отслеживание всех сообщений"
       }
@@ -8339,7 +8365,7 @@
     "Отслеживание изменений участников": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 423,
+        "line": 420,
         "level": 3,
         "title": "Отслеживание изменений участников"
       }
@@ -8347,7 +8373,7 @@
     "Отслеживание личных сообщений": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 53,
+        "line": 52,
         "level": 3,
         "title": "Отслеживание личных сообщений"
       }
@@ -8371,7 +8397,7 @@
     "Отслеживание сообщений в группах": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 62,
+        "line": 61,
         "level": 3,
         "title": "Отслеживание сообщений в группах"
       }
@@ -8379,7 +8405,7 @@
     "Отслеживание сообщений с упоминаниями (@)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 72,
+        "line": 71,
         "level": 3,
         "title": "Отслеживание сообщений с упоминаниями (@)"
       }
@@ -8387,7 +8413,7 @@
     "Ошибка конфигурации": [
       {
         "document": "user-guide/installation.md",
-        "line": 126,
+        "line": 124,
         "level": 3,
         "title": "Ошибка конфигурации"
       }
@@ -8395,7 +8421,7 @@
     "Ошибка установки": [
       {
         "document": "user-guide/installation.md",
-        "line": 118,
+        "line": 116,
         "level": 3,
         "title": "Ошибка установки"
       }
@@ -8403,7 +8429,7 @@
     "Ошибка установки модуля": [
       {
         "document": "user-guide/installation.md",
-        "line": 133,
+        "line": 131,
         "level": 3,
         "title": "Ошибка установки модуля"
       }
@@ -8411,7 +8437,7 @@
     "Панель управления Dashboard": [
       {
         "document": "user-guide/deployment.md",
-        "line": 76,
+        "line": 77,
         "level": 2,
         "title": "Панель управления Dashboard"
       }
@@ -8419,7 +8445,7 @@
     "Параллельное и последовательное выполнение": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 424,
+        "line": 423,
         "level": 3,
         "title": "Параллельное и последовательное выполнение"
       }
@@ -8481,7 +8507,7 @@
       },
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 105,
+        "line": 103,
         "level": 2,
         "title": "Параметры конфигурации"
       }
@@ -8497,7 +8523,7 @@
     "Переключение на английский": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 369,
+        "line": 414,
         "level": 1,
         "title": "Переключение на английский"
       }
@@ -8505,7 +8531,7 @@
     "Переключение на японский": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 372,
+        "line": 417,
         "level": 1,
         "title": "Переключение на японский"
       }
@@ -8534,18 +8560,10 @@
         "title": "Переменные окружения"
       }
     ],
-    "Переменные среды": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 61,
-        "level": 3,
-        "title": "Переменные среды"
-      }
-    ],
     "Переопределение встроенных методов": [
       {
         "document": "api-reference/event-system.md",
-        "line": 623,
+        "line": 622,
         "level": 4,
         "title": "Переопределение встроенных методов"
       }
@@ -8561,7 +8579,7 @@
     "Переподключение и RESUME": [
       {
         "document": "platform-guide/discord.md",
-        "line": 355,
+        "line": 354,
         "level": 3,
         "title": "Переподключение и RESUME"
       }
@@ -8577,7 +8595,7 @@
     "Пересылка сообщений": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 223,
+        "line": 222,
         "level": 4,
         "title": "Пересылка сообщений"
       }
@@ -8593,7 +8611,7 @@
     "Платформенно-специфические методы-модификаторы": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 135,
+        "line": 134,
         "level": 3,
         "title": "Платформенно-специфические методы-модификаторы"
       }
@@ -8609,7 +8627,7 @@
     "Платформенно-специфичный модифицирующий метод + отправка на доску": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 195,
+        "line": 194,
         "level": 1,
         "title": "Платформенно-специфичный модифицирующий метод + отправка на доску"
       }
@@ -8617,7 +8635,7 @@
     "Платформенные расширения": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 405,
+        "line": 404,
         "level": 3,
         "title": "Платформенные расширения"
       }
@@ -8633,7 +8651,7 @@
     "Платформо-специфические методы": [
       {
         "document": "api-reference/event-system.md",
-        "line": 486,
+        "line": 485,
         "level": 3,
         "title": "Платформо-специфические методы"
       }
@@ -8697,7 +8715,7 @@
     "Поддерживаемые платформы": [
       {
         "document": "ecosystem/app.md",
-        "line": 27,
+        "line": 25,
         "level": 2,
         "title": "Поддерживаемые платформы"
       }
@@ -8725,7 +8743,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 28,
+        "line": 27,
         "level": 2,
         "title": "Поддерживаемые типы отправки сообщений"
       },
@@ -8769,7 +8787,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 122,
+        "line": 119,
         "level": 3,
         "title": "Поддержка OneBot12 сообщений"
       },
@@ -8781,7 +8799,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 219,
+        "line": 218,
         "level": 3,
         "title": "Поддержка OneBot12 сообщений"
       },
@@ -8795,7 +8813,7 @@
     "Поддержка `hasattr` / `dir`": [
       {
         "document": "api-reference/event-system.md",
-        "line": 538,
+        "line": 537,
         "level": 4,
         "title": "Поддержка `hasattr` / `dir`"
       }
@@ -8803,7 +8821,7 @@
     "Поддержка hasattr и dir": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 436,
+        "line": 435,
         "level": 3,
         "title": "Поддержка hasattr и dir"
       }
@@ -8819,7 +8837,7 @@
     "Поддержка нескольких аккаунтов": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 398,
+        "line": 397,
         "level": 2,
         "title": "Поддержка нескольких аккаунтов"
       },
@@ -8841,7 +8859,7 @@
     "Подключение к шлюзу": [
       {
         "document": "platform-guide/discord.md",
-        "line": 330,
+        "line": 329,
         "level": 2,
         "title": "Подключение к шлюзу"
       }
@@ -8849,7 +8867,7 @@
     "Подписка на логи (Push-режим)": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 261,
+        "line": 259,
         "level": 3,
         "title": "Подписка на логи (Push-режим)"
       }
@@ -8905,7 +8923,7 @@
     "Подробное описание цепочки обработки событий": [
       {
         "document": "architecture.md",
-        "line": 109,
+        "line": 108,
         "level": 3,
         "title": "Подробное описание цепочки обработки событий"
       }
@@ -8913,7 +8931,7 @@
     "Подробное описание этапов инициализации": [
       {
         "document": "architecture.md",
-        "line": 84,
+        "line": 83,
         "level": 3,
         "title": "Подробное описание этапов инициализации"
       }
@@ -8961,7 +8979,7 @@
     "Подтвержденные аккаунты и пассивные ответы (`verified`)": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 141,
+        "line": 139,
         "level": 3,
         "title": "Подтвержденные аккаунты и пассивные ответы (`verified`)"
       }
@@ -8977,7 +8995,7 @@
     "Покидание участником группы": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 297,
+        "line": 296,
         "level": 3,
         "title": "Покидание участником группы"
       }
@@ -8993,7 +9011,7 @@
     "Политика выполнения PowerShell": [
       {
         "document": "user-guide/installation.md",
-        "line": 140,
+        "line": 138,
         "level": 3,
         "title": "Политика выполнения PowerShell"
       }
@@ -9001,7 +9019,7 @@
     "Полные параметры": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 599,
+        "line": 657,
         "level": 1,
         "title": "Полные параметры"
       }
@@ -9015,7 +9033,7 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 693,
+        "line": 692,
         "level": 2,
         "title": "Полный пример"
       }
@@ -9071,7 +9089,7 @@
     "Получение информации о команде": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 102,
+        "line": 101,
         "level": 2,
         "title": "Получение информации о команде"
       }
@@ -9079,7 +9097,7 @@
     "Получение информации обо всех аккаунтах": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 694,
+        "line": 692,
         "level": 1,
         "title": "Получение информации обо всех аккаунтах"
       }
@@ -9127,7 +9145,7 @@
     "Получение соответствующего ID": [
       {
         "document": "standards/session-types.md",
-        "line": 155,
+        "line": 153,
         "level": 1,
         "title": "Получение соответствующего ID"
       }
@@ -9175,7 +9193,7 @@
     "Получить помощь": [
       {
         "document": "README.md",
-        "line": 90,
+        "line": 89,
         "level": 2,
         "title": "Получить помощь"
       }
@@ -9183,7 +9201,7 @@
     "Пользователь: использование платформо-специфических методов": [
       {
         "document": "api-reference/event-system.md",
-        "line": 490,
+        "line": 489,
         "level": 4,
         "title": "Пользователь: использование платформо-специфических методов"
       }
@@ -9199,7 +9217,7 @@
     "Пользовательские слова подтверждения": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 489,
+        "line": 488,
         "level": 1,
         "title": "Пользовательские слова подтверждения"
       }
@@ -9231,7 +9249,7 @@
     "Последовательное выполнение с разным приоритетом": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 196,
+        "line": 195,
         "level": 1,
         "title": "Последовательное выполнение с разным приоритетом"
       }
@@ -9239,7 +9257,7 @@
     "Последовательные модифицирующие методы": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 198,
+        "line": 197,
         "level": 1,
         "title": "Последовательные модифицирующие методы"
       }
@@ -9271,7 +9289,7 @@
     "Правила возвращаемых значений": [
       {
         "document": "api-reference/event-system.md",
-        "line": 586,
+        "line": 585,
         "level": 4,
         "title": "Правила возвращаемых значений"
       }
@@ -9279,7 +9297,7 @@
     "Правила и обратные вызовы для всей пачки": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 456,
+        "line": 455,
         "level": 3,
         "title": "Правила и обратные вызовы для всей пачки"
       }
@@ -9295,7 +9313,7 @@
     "Правила отправки: повторы + таймаут + успешный обратный вызов": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 214,
+        "line": 213,
         "level": 1,
         "title": "Правила отправки: повторы + таймаут + успешный обратный вызов"
       }
@@ -9319,7 +9337,7 @@
     "Предварительные требования": [
       {
         "document": "advanced/README.md",
-        "line": 34,
+        "line": 33,
         "level": 2,
         "title": "Предварительные требования"
       }
@@ -9327,7 +9345,7 @@
     "Предположим, в config.toml MyModule был заблокирован в определённой группе:": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 212,
+        "line": 211,
         "level": 1,
         "title": "Предположим, в config.toml MyModule был заблокирован в определённой группе:"
       }
@@ -9343,7 +9361,7 @@
     "Преобразование в тип отправки": [
       {
         "document": "standards/session-types.md",
-        "line": 151,
+        "line": 149,
         "level": 1,
         "title": "Преобразование в тип отправки"
       }
@@ -9383,7 +9401,7 @@
     "Приглашение участника в группу": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 287,
+        "line": 286,
         "level": 3,
         "title": "Приглашение участника в группу"
       }
@@ -9391,7 +9409,7 @@
     "Приглашения в комнаты": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 339,
+        "line": 336,
         "level": 3,
         "title": "Приглашения в комнаты"
       }
@@ -9407,13 +9425,13 @@
     "Пример": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 214,
+        "line": 212,
         "level": 3,
         "title": "Пример"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 385,
+        "line": 383,
         "level": 3,
         "title": "Пример"
       }
@@ -9421,7 +9439,7 @@
     "Пример использования": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 294,
+        "line": 292,
         "level": 3,
         "title": "Пример использования"
       }
@@ -9469,7 +9487,7 @@
     "Пример обработки события нажатия кнопки": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 398,
+        "line": 397,
         "level": 3,
         "title": "Пример обработки события нажатия кнопки"
       }
@@ -9533,7 +9551,7 @@
     "Пример: параллельное выполнение обработчиков с одинаковым приоритетом": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 185,
+        "line": 184,
         "level": 1,
         "title": "Пример: параллельное выполнение обработчиков с одинаковым приоритетом"
       }
@@ -9541,7 +9559,7 @@
     "Примеры запроса сообщений": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 200,
+        "line": 199,
         "level": 3,
         "title": "Примеры запроса сообщений"
       }
@@ -9549,7 +9567,7 @@
     "Примеры интерактивных методов": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 283,
+        "line": 282,
         "level": 4,
         "title": "Примеры интерактивных методов"
       }
@@ -9557,7 +9575,7 @@
     "Примеры использования": [
       {
         "document": "platform-guide/discord.md",
-        "line": 372,
+        "line": 371,
         "level": 2,
         "title": "Примеры использования"
       },
@@ -9569,7 +9587,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 346,
+        "line": 343,
         "level": 2,
         "title": "Примеры использования"
       },
@@ -9597,7 +9615,7 @@
     "Примеры отправки сообщений": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 90,
+        "line": 88,
         "level": 3,
         "title": "Примеры отправки сообщений"
       }
@@ -9613,7 +9631,7 @@
     "Примеры расширений платформы": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 300,
+        "line": 299,
         "level": 1,
         "title": "Примеры расширений платформы"
       }
@@ -9651,7 +9669,7 @@
     "Примеры управления группами": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 157,
+        "line": 156,
         "level": 3,
         "title": "Примеры управления группами"
       }
@@ -9665,7 +9683,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 144,
+        "line": 143,
         "level": 3,
         "title": "Примеры цепного вызова"
       }
@@ -9679,7 +9697,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 97,
+        "line": 94,
         "level": 3,
         "title": "Примеры цепочечного вызова"
       },
@@ -9699,7 +9717,7 @@
     "Примеры цепочечных вызовов": [
       {
         "document": "platform-guide/discord.md",
-        "line": 110,
+        "line": 109,
         "level": 3,
         "title": "Примеры цепочечных вызовов"
       },
@@ -9735,7 +9753,7 @@
     "Принудительная перезапись существующих файлов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 418,
+        "line": 463,
         "level": 1,
         "title": "Принудительная перезапись существующих файлов"
       }
@@ -9743,7 +9761,7 @@
     "Принудительное обновление": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 540,
+        "line": 598,
         "level": 1,
         "title": "Принудительное обновление"
       }
@@ -9751,7 +9769,7 @@
     "Принудительное перезаписывание существующей директории": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 602,
+        "line": 660,
         "level": 1,
         "title": "Принудительное перезаписывание существующей директории"
       }
@@ -9785,7 +9803,7 @@
       },
       {
         "document": "ecosystem/app.md",
-        "line": 71,
+        "line": 69,
         "level": 2,
         "title": "Принцип работы"
       },
@@ -9807,7 +9825,7 @@
     "Приоритет и отбрасывание при перегрузке (Priority)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 364,
+        "line": 363,
         "level": 3,
         "title": "Приоритет и отбрасывание при перегрузке (Priority)"
       }
@@ -9823,7 +9841,7 @@
     "Проверка версии ErisPulse": [
       {
         "document": "user-guide/installation.md",
-        "line": 97,
+        "line": 95,
         "level": 1,
         "title": "Проверка версии ErisPulse"
       }
@@ -9831,13 +9849,13 @@
     "Проверка возможностей платформы": [
       {
         "document": "api-reference/event-system.md",
-        "line": 360,
+        "line": 359,
         "level": 3,
         "title": "Проверка возможностей платформы"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 219,
+        "line": 218,
         "level": 4,
         "title": "Проверка возможностей платформы"
       }
@@ -9845,7 +9863,7 @@
     "Проверка зарегистрированных методов платформы": [
       {
         "document": "api-reference/event-system.md",
-        "line": 507,
+        "line": 506,
         "level": 4,
         "title": "Проверка зарегистрированных методов платформы"
       }
@@ -9885,7 +9903,7 @@
     "Проверка статуса аккаунта": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 697,
+        "line": 695,
         "level": 1,
         "title": "Проверка статуса аккаунта"
       }
@@ -9917,7 +9935,7 @@
     "Продолжение при ошибках и повторные попытки": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 444,
+        "line": 443,
         "level": 3,
         "title": "Продолжение при ошибках и повторные попытки"
       }
@@ -9925,7 +9943,7 @@
     "Продолжить выполнение других операций": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 263,
+        "line": 262,
         "level": 1,
         "title": "Продолжить выполнение других операций"
       }
@@ -9962,10 +9980,26 @@
         "title": "Просмотр и обнаружение"
       }
     ],
+    "Просмотр состояния конфигурации": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 579,
+        "level": 1,
+        "title": "Просмотр состояния конфигурации"
+      }
+    ],
+    "Просмотр состояния конфигурации всех адаптеров/модулей": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 253,
+        "level": 1,
+        "title": "Просмотр состояния конфигурации всех адаптеров/модулей"
+      }
+    ],
     "Просмотр удалённых доступных компонентов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 517,
+        "line": 562,
         "level": 1,
         "title": "Просмотр удалённых доступных компонентов"
       }
@@ -9981,7 +10015,7 @@
     "Простой ответ": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 389,
+        "line": 388,
         "level": 1,
         "title": "Простой ответ"
       }
@@ -10019,7 +10053,7 @@
       },
       {
         "document": "architecture.md",
-        "line": 59,
+        "line": 58,
         "level": 2,
         "title": "Процесс инициализации"
       }
@@ -10027,7 +10061,7 @@
     "Процесс обработки событий": [
       {
         "document": "architecture.md",
-        "line": 88,
+        "line": 87,
         "level": 2,
         "title": "Процесс обработки событий"
       }
@@ -10035,7 +10069,7 @@
     "Процесс подключения": [
       {
         "document": "platform-guide/discord.md",
-        "line": 332,
+        "line": 331,
         "level": 3,
         "title": "Процесс подключения"
       },
@@ -10071,7 +10105,7 @@
     "Процессное наблюдение и жесткий перезапуск": [
       {
         "document": "user-guide/deployment.md",
-        "line": 104,
+        "line": 105,
         "level": 2,
         "title": "Процессное наблюдение и жесткий перезапуск"
       }
@@ -10084,26 +10118,50 @@
         "title": "Прямая загрузка данных из памяти (без сохранения на диск)"
       }
     ],
-    "Прямое создание проекта адаптера": [
+    "Прямая конфигурация указанного адаптера": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 596,
+        "line": 259,
         "level": 1,
-        "title": "Прямое создание проекта адаптера"
+        "title": "Прямая конфигурация указанного адаптера"
       }
     ],
-    "Прямое создание проекта модуля": [
+    "Прямая конфигурация указанного модуля": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 593,
+        "line": 262,
         "level": 1,
-        "title": "Прямое создание проекта модуля"
+        "title": "Прямая конфигурация указанного модуля"
+      }
+    ],
+    "Прямая смена на английский": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 618,
+        "level": 1,
+        "title": "Прямая смена на английский"
+      }
+    ],
+    "Прямое создание проекта Adapter": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 654,
+        "level": 1,
+        "title": "Прямое создание проекта Adapter"
+      }
+    ],
+    "Прямое создание проекта Module": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 651,
+        "level": 1,
+        "title": "Прямое создание проекта Module"
       }
     ],
     "Прямой запуск SDK": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 253,
+        "line": 298,
         "level": 1,
         "title": "Прямой запуск SDK"
       }
@@ -10135,7 +10193,7 @@
     "Развертывание": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 453,
+        "line": 451,
         "level": 2,
         "title": "Развертывание"
       }
@@ -10164,18 +10222,10 @@
         "title": "Расположение конфигурационного файла"
       }
     ],
-    "Расположение типичных конфигураций": [
-      {
-        "document": "user-guide/README.md",
-        "line": 34,
-        "level": 3,
-        "title": "Расположение типичных конфигураций"
-      }
-    ],
     "Распространение правил": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 391,
+        "line": 390,
         "level": 3,
         "title": "Распространение правил"
       }
@@ -10188,18 +10238,18 @@
         "title": "Распространение приложений через Docker-образы"
       }
     ],
-    "Распространённые команды": [
+    "Распространённые места конфигурации": [
       {
         "document": "user-guide/README.md",
-        "line": 21,
+        "line": 35,
         "level": 3,
-        "title": "Распространённые команды"
+        "title": "Распространённые места конфигурации"
       }
     ],
     "Расширение методов платформенных событий": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 570,
+        "line": 569,
         "level": 2,
         "title": "Расширение методов платформенных событий"
       }
@@ -10207,7 +10257,7 @@
     "Расширение платформы": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 74,
+        "line": 72,
         "level": 2,
         "title": "Расширение платформы"
       }
@@ -10325,7 +10375,7 @@
     "Регистрация одного метода": [
       {
         "document": "api-reference/event-system.md",
-        "line": 549,
+        "line": 548,
         "level": 4,
         "title": "Регистрация одного метода"
       }
@@ -10349,7 +10399,7 @@
     "Регистрация пользовательского типа": [
       {
         "document": "standards/session-types.md",
-        "line": 133,
+        "line": 131,
         "level": 1,
         "title": "Регистрация пользовательского типа"
       }
@@ -10373,7 +10423,7 @@
     "Редактирование сообщения": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 225,
+        "line": 222,
         "level": 1,
         "title": "Редактирование сообщения"
       }
@@ -10405,7 +10455,7 @@
     "Режим горячей перезагрузки": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 550,
+        "line": 608,
         "level": 1,
         "title": "Режим горячей перезагрузки"
       }
@@ -10413,7 +10463,7 @@
     "Режим пакетного построения": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 223,
+        "line": 222,
         "level": 1,
         "title": "Режим пакетного построения"
       }
@@ -10421,7 +10471,7 @@
     "Режим пакетного построения (Build)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 404,
+        "line": 403,
         "level": 2,
         "title": "Режим пакетного построения (Build)"
       }
@@ -10453,7 +10503,7 @@
     "Резервное копирование": [
       {
         "document": "user-guide/deployment.md",
-        "line": 279,
+        "line": 280,
         "level": 3,
         "title": "Резервное копирование"
       }
@@ -10461,7 +10511,7 @@
     "Рекомендации по безопасности": [
       {
         "document": "user-guide/deployment.md",
-        "line": 239,
+        "line": 240,
         "level": 2,
         "title": "Рекомендации по безопасности"
       }
@@ -10485,7 +10535,7 @@
     "Рекомендуется использовать встроенный клиент SDK (имеет встроенный тайм-аут и повторные попытки)": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 264,
+        "line": 262,
         "level": 1,
         "title": "Рекомендуется использовать встроенный клиент SDK (имеет встроенный тайм-аут и повторные попытки)"
       }
@@ -10623,13 +10673,13 @@
       },
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 658,
+        "line": 656,
         "level": 2,
         "title": "Связанные документы"
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 731,
+        "line": 730,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -10641,7 +10691,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 462,
+        "line": 461,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -10659,7 +10709,7 @@
       },
       {
         "document": "user-guide/README.md",
-        "line": 44,
+        "line": 45,
         "level": 2,
         "title": "Связанные документы"
       }
@@ -10667,7 +10717,7 @@
     "Связанные с запросами обратной связи": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 278,
+        "line": 276,
         "level": 3,
         "title": "Связанные с запросами обратной связи"
       }
@@ -10675,7 +10725,7 @@
     "Связанные с сообщениями": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 265,
+        "line": 263,
         "level": 3,
         "title": "Связанные с сообщениями"
       }
@@ -10683,7 +10733,7 @@
     "Связанные с упоминаниями": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 168,
+        "line": 167,
         "level": 4,
         "title": "Связанные с упоминаниями"
       }
@@ -10691,13 +10741,13 @@
     "Связанные ссылки": [
       {
         "document": "README.md",
-        "line": 105,
+        "line": 104,
         "level": 2,
         "title": "Связанные ссылки"
       },
       {
         "document": "ecosystem/app.md",
-        "line": 99,
+        "line": 97,
         "level": 2,
         "title": "Связанные ссылки"
       }
@@ -10753,7 +10803,7 @@
     "Сегмент сообщений с эмодзи/стикерами (yunhu_expression)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 566,
+        "line": 564,
         "level": 3,
         "title": "Сегмент сообщений с эмодзи/стикерами (yunhu_expression)"
       }
@@ -10849,7 +10899,7 @@
     "Синхронизация API": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 321,
+        "line": 318,
         "level": 2,
         "title": "Синхронизация API"
       }
@@ -10865,7 +10915,7 @@
     "Синхронный процесс": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 323,
+        "line": 320,
         "level": 3,
         "title": "Синхронный процесс"
       }
@@ -10921,7 +10971,7 @@
     "Система правил отправки": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 279,
+        "line": 278,
         "level": 2,
         "title": "Система правил отправки"
       }
@@ -10945,7 +10995,7 @@
     "Системные требования": [
       {
         "document": "user-guide/installation.md",
-        "line": 10,
+        "line": 8,
         "level": 2,
         "title": "Системные требования"
       }
@@ -10991,7 +11041,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 734,
+        "line": 733,
         "level": 2,
         "title": "Следующие шаги"
       }
@@ -11047,7 +11097,7 @@
     "Событие кнопки A2UI": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 381,
+        "line": 380,
         "level": 1,
         "title": "Событие кнопки A2UI"
       }
@@ -11055,7 +11105,7 @@
     "Событие нажатия кнопки": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 368,
+        "line": 367,
         "level": 1,
         "title": "Событие нажатия кнопки"
       }
@@ -11079,7 +11129,7 @@
     "Событие сердечного импульса": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 352,
+        "line": 351,
         "level": 3,
         "title": "Событие сердечного импульса"
       }
@@ -11119,7 +11169,7 @@
     "События подключения": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 336,
+        "line": 335,
         "level": 3,
         "title": "События подключения"
       }
@@ -11143,7 +11193,7 @@
     "События сообщений (message)": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 45,
+        "line": 43,
         "level": 3,
         "title": "События сообщений (message)"
       }
@@ -11167,7 +11217,7 @@
     "События уведомлений (notice)": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 58,
+        "line": 56,
         "level": 3,
         "title": "События уведомлений (notice)"
       }
@@ -11211,7 +11261,7 @@
     "Содержание сообщения": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 151,
+        "line": 150,
         "level": 4,
         "title": "Содержание сообщения"
       }
@@ -11219,7 +11269,7 @@
     "Создание виртуального окружения": [
       {
         "document": "user-guide/installation.md",
-        "line": 44,
+        "line": 42,
         "level": 4,
         "title": "Создание виртуального окружения"
       }
@@ -11243,7 +11293,7 @@
     "Создание проекта вручную": [
       {
         "document": "quick-start.md",
-        "line": 90,
+        "line": 88,
         "level": 3,
         "title": "Создание проекта вручную"
       }
@@ -11259,7 +11309,7 @@
     "Сообщение в группе": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 193,
+        "line": 190,
         "level": 1,
         "title": "Сообщение в группе"
       }
@@ -11267,7 +11317,7 @@
     "Сообщение в теме": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 233,
+        "line": 230,
         "level": 1,
         "title": "Сообщение в теме"
       }
@@ -11275,7 +11325,7 @@
     "Сообщение отправляется в фоновом режиме": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 260,
+        "line": 259,
         "level": 1,
         "title": "Сообщение отправляется в фоновом режиме"
       }
@@ -11283,7 +11333,7 @@
     "Сообщение с Embed": [
       {
         "document": "platform-guide/discord.md",
-        "line": 273,
+        "line": 272,
         "level": 1,
         "title": "Сообщение с Embed"
       }
@@ -11291,7 +11341,7 @@
     "Сообщение с вложенным файлом": [
       {
         "document": "platform-guide/discord.md",
-        "line": 283,
+        "line": 282,
         "level": 1,
         "title": "Сообщение с вложенным файлом"
       }
@@ -11340,18 +11390,12 @@
         "line": 17,
         "level": 2,
         "title": "Сохранение данных"
-      },
-      {
-        "document": "user-guide/deployment.md",
-        "line": 69,
-        "level": 3,
-        "title": "Сохранение данных"
       }
     ],
     "Сохранить Task и подождать позже": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 274,
+        "line": 273,
         "level": 1,
         "title": "Сохранить Task и подождать позже"
       }
@@ -11399,7 +11443,7 @@
     "Список документации": [
       {
         "document": "advanced/README.md",
-        "line": 9,
+        "line": 8,
         "level": 2,
         "title": "Список документации"
       },
@@ -11421,7 +11465,7 @@
     "Список методов правил": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 285,
+        "line": 284,
         "level": 3,
         "title": "Список методов правил"
       }
@@ -11453,7 +11497,7 @@
     "Способ 1: Установка с помощью pip": [
       {
         "document": "user-guide/installation.md",
-        "line": 20,
+        "line": 18,
         "level": 3,
         "title": "Способ 1: Установка с помощью pip"
       }
@@ -11477,7 +11521,7 @@
     "Способ 2: Установка с помощью uv (рекомендуется)": [
       {
         "document": "user-guide/installation.md",
-        "line": 30,
+        "line": 28,
         "level": 3,
         "title": "Способ 2: Установка с помощью uv (рекомендуется)"
       }
@@ -11493,7 +11537,7 @@
     "Способ Docker": [
       {
         "document": "user-guide/deployment.md",
-        "line": 262,
+        "line": 263,
         "level": 3,
         "title": "Способ Docker"
       }
@@ -11501,7 +11545,7 @@
     "Способ pip": [
       {
         "document": "user-guide/deployment.md",
-        "line": 272,
+        "line": 273,
         "level": 3,
         "title": "Способ pip"
       }
@@ -11509,7 +11553,7 @@
     "Способ установки": [
       {
         "document": "user-guide/installation.md",
-        "line": 18,
+        "line": 16,
         "level": 2,
         "title": "Способ установки"
       }
@@ -11517,7 +11561,7 @@
     "Способ установки (Android / запустить на телефоне)": [
       {
         "document": "ecosystem/app.md",
-        "line": 42,
+        "line": 40,
         "level": 2,
         "title": "Способ установки (Android / запустить на телефоне)"
       }
@@ -11525,7 +11569,7 @@
     "Способ установки (настольная версия: Windows / Linux / macOS)": [
       {
         "document": "ecosystem/app.md",
-        "line": 61,
+        "line": 59,
         "level": 3,
         "title": "Способ установки (настольная версия: Windows / Linux / macOS)"
       }
@@ -11549,7 +11593,7 @@
     "Способы разработки": [
       {
         "document": "README.md",
-        "line": 75,
+        "line": 74,
         "level": 2,
         "title": "Способы разработки"
       }
@@ -11565,7 +11609,7 @@
     "Справочник методов": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 128,
+        "line": 127,
         "level": 2,
         "title": "Справочник методов"
       }
@@ -11637,7 +11681,7 @@
     "Стандартизированный ответ": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 660,
+        "line": 659,
         "level": 3,
         "title": "Стандартизированный ответ"
       }
@@ -11725,7 +11769,7 @@
     "Старый формат (по-прежнему можно использовать, но рекомендуется перейти на новый)": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 383,
+        "line": 381,
         "level": 1,
         "title": "Старый формат (по-прежнему можно использовать, но рекомендуется перейти на новый)"
       }
@@ -11749,7 +11793,7 @@
     "Стратегии загрузки модулей": [
       {
         "document": "architecture.md",
-        "line": 196,
+        "line": 195,
         "level": 2,
         "title": "Стратегии загрузки модулей"
       }
@@ -11801,7 +11845,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 147,
+        "line": 145,
         "level": 2,
         "title": "Структура проекта"
       }
@@ -11825,7 +11869,7 @@
     "Сырые сообщения и построение сообщений": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 723,
+        "line": 722,
         "level": 3,
         "title": "Сырые сообщения и построение сообщений"
       }
@@ -11846,6 +11890,14 @@
         "title": "Таким образом event.reply() может автоматически найти правильный аккаунт для отправки сообщения"
       }
     ],
+    "Тез баштоо": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 13,
+        "level": 3,
+        "title": "Тез баштоо"
+      }
+    ],
     "Текст": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -11857,7 +11909,7 @@
     "Текстовое сообщение в канале": [
       {
         "document": "platform-guide/discord.md",
-        "line": 239,
+        "line": 238,
         "level": 1,
         "title": "Текстовое сообщение в канале"
       }
@@ -11887,7 +11939,7 @@
     "Тестирование": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 512,
+        "line": 511,
         "level": 2,
         "title": "Тестирование"
       }
@@ -11943,7 +11995,7 @@
     "Типы отправки сообщений": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 16,
+        "line": 14,
         "level": 2,
         "title": "Типы отправки сообщений"
       }
@@ -11951,13 +12003,13 @@
     "Типы поддерживаемых отправляемых сообщений": [
       {
         "document": "platform-guide/discord.md",
-        "line": 82,
+        "line": 81,
         "level": 2,
         "title": "Типы поддерживаемых отправляемых сообщений"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 68,
+        "line": 65,
         "level": 2,
         "title": "Типы поддерживаемых отправляемых сообщений"
       },
@@ -11969,7 +12021,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 27,
+        "line": 25,
         "level": 2,
         "title": "Типы поддерживаемых отправляемых сообщений"
       }
@@ -12013,7 +12065,7 @@
       },
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 43,
+        "line": 41,
         "level": 2,
         "title": "Типы событий"
       }
@@ -12040,6 +12092,14 @@
         "line": 47,
         "level": 2,
         "title": "Типы сообщений"
+      }
+    ],
+    "Только генерация stub-файлов модуля": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 631,
+        "level": 1,
+        "title": "Только генерация stub-файлов модуля"
       }
     ],
     "Традиционный способ регистрации": [
@@ -12072,6 +12132,22 @@
         "title": "Удаление данных"
       }
     ],
+    "Удаление нескольких компонентов": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 572,
+        "level": 1,
+        "title": "Удаление нескольких компонентов"
+      }
+    ],
+    "Удаление одного компонента": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 569,
+        "level": 1,
+        "title": "Удаление одного компонента"
+      }
+    ],
     "Удаление таблицы": [
       {
         "document": "advanced/sql-builder.md",
@@ -12080,26 +12156,10 @@
         "title": "Удаление таблицы"
       }
     ],
-    "Удалить несколько компонентов": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 527,
-        "level": 1,
-        "title": "Удалить несколько компонентов"
-      }
-    ],
-    "Удалить один компонент": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 524,
-        "level": 1,
-        "title": "Удалить один компонент"
-      }
-    ],
     "Удобный способ использования обёртки Event": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 171,
+        "line": 169,
         "level": 1,
         "title": "Удобный способ использования обёртки Event"
       }
@@ -12161,7 +12221,7 @@
     "Упоминание всех участников группы": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 405,
+        "line": 404,
         "level": 1,
         "title": "Упоминание всех участников группы"
       }
@@ -12169,7 +12229,7 @@
     "Упоминание нескольких пользователей": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 399,
+        "line": 398,
         "level": 1,
         "title": "Упоминание нескольких пользователей"
       }
@@ -12177,7 +12237,7 @@
     "Упоминание одного пользователя": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 396,
+        "line": 395,
         "level": 1,
         "title": "Упоминание одного пользователя"
       }
@@ -12193,7 +12253,7 @@
     "Управление аккаунтами": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 229,
+        "line": 228,
         "level": 2,
         "title": "Управление аккаунтами"
       }
@@ -12201,7 +12261,7 @@
     "Управление выводом": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 295,
+        "line": 293,
         "level": 3,
         "title": "Управление выводом"
       }
@@ -12267,7 +12327,7 @@
     "Управление состоянием бота и метасобытия": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 9,
+        "line": 8,
         "level": 2,
         "title": "Управление состоянием бота и метасобытия"
       }
@@ -12283,7 +12343,7 @@
     "Управление уровнем логирования": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 249,
+        "line": 247,
         "level": 3,
         "title": "Управление уровнем логирования"
       }
@@ -12299,7 +12359,7 @@
     "Управление цепочкой": [
       {
         "document": "api-reference/event-system.md",
-        "line": 460,
+        "line": 459,
         "level": 3,
         "title": "Управление цепочкой"
       }
@@ -12328,14 +12388,6 @@
         "title": "Уровни серьезности"
       }
     ],
-    "Ускорение загрузки образов в Китае": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 28,
-        "level": 3,
-        "title": "Ускорение загрузки образов в Китае"
-      }
-    ],
     "Успешная отправка сообщения": [
       {
         "document": "platform-guide/README.md",
@@ -12353,7 +12405,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 67,
+        "line": 65,
         "level": 4,
         "title": "Установка ErisPulse"
       }
@@ -12361,7 +12413,7 @@
     "Установка uv": [
       {
         "document": "user-guide/installation.md",
-        "line": 34,
+        "line": 32,
         "level": 4,
         "title": "Установка uv"
       }
@@ -12385,7 +12437,7 @@
     "Установка модуля через Dashboard": [
       {
         "document": "user-guide/deployment.md",
-        "line": 95,
+        "line": 96,
         "level": 3,
         "title": "Установка модуля через Dashboard"
       }
@@ -12393,7 +12445,7 @@
     "Установка нескольких модулей": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 498,
+        "line": 543,
         "level": 1,
         "title": "Установка нескольких модулей"
       }
@@ -12401,7 +12453,7 @@
     "Установка одного модуля": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 495,
+        "line": 540,
         "level": 1,
         "title": "Установка одного модуля"
       }
@@ -12417,7 +12469,7 @@
     "Утилитные методы": [
       {
         "document": "api-reference/event-system.md",
-        "line": 449,
+        "line": 448,
         "level": 3,
         "title": "Утилитные методы"
       }
@@ -12497,7 +12549,7 @@
     "Функции ответа": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 203,
+        "line": 202,
         "level": 3,
         "title": "Функции ответа"
       }
@@ -12505,7 +12557,7 @@
     "Функция ожидания ответа": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 234,
+        "line": 233,
         "level": 3,
         "title": "Функция ожидания ответа"
       }
@@ -12513,13 +12565,13 @@
     "Функция ответа": [
       {
         "document": "api-reference/event-system.md",
-        "line": 328,
+        "line": 327,
         "level": 3,
         "title": "Функция ответа"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 86,
+        "line": 85,
         "level": 2,
         "title": "Функция ответа"
       }
@@ -12551,7 +12603,7 @@
     "Целевая аудитория": [
       {
         "document": "advanced/README.md",
-        "line": 26,
+        "line": 25,
         "level": 2,
         "title": "Целевая аудитория"
       }
@@ -12559,7 +12611,7 @@
     "Цепные методы изменения (можно комбинировать)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 135,
+        "line": 134,
         "level": 3,
         "title": "Цепные методы изменения (можно комбинировать)"
       }
@@ -12603,7 +12655,7 @@
     "Цепочечные модификаторы (могут использоваться совместно)": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 89,
+        "line": 86,
         "level": 3,
         "title": "Цепочечные модификаторы (могут использоваться совместно)"
       }
@@ -12635,7 +12687,7 @@
     "Цепочка вызовов": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 713,
+        "line": 712,
         "level": 3,
         "title": "Цепочка вызовов"
       }
@@ -12643,7 +12695,7 @@
     "Цепочка разрешения аккаунта": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 604,
+        "line": 603,
         "level": 3,
         "title": "Цепочка разрешения аккаунта"
       }
@@ -12671,7 +12723,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 116,
+        "line": 114,
         "level": 2,
         "title": "Часто задаваемые вопросы"
       }
@@ -12682,6 +12734,14 @@
         "line": 139,
         "level": 2,
         "title": "Часто используемые CSS-классы"
+      }
+    ],
+    "Часто используемые команды": [
+      {
+        "document": "user-guide/README.md",
+        "line": 21,
+        "level": 3,
+        "title": "Часто используемые команды"
       }
     ],
     "Чек-лист качества": [
@@ -12695,7 +12755,7 @@
     "Чем больше значение приоритета, тем раньше выполняется": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 154,
+        "line": 153,
         "level": 1,
         "title": "Чем больше значение приоритета, тем раньше выполняется"
       }
@@ -12815,7 +12875,7 @@
     "Эмодзи-реакция": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 210,
+        "line": 207,
         "level": 1,
         "title": "Эмодзи-реакция"
       }
@@ -12831,7 +12891,7 @@
     "✅ Правильно": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 535,
+        "line": 534,
         "level": 1,
         "title": "✅ Правильно"
       }
@@ -12839,13 +12899,13 @@
     "✅ Рекомендуется": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 555,
+        "line": 554,
         "level": 1,
         "title": "✅ Рекомендуется"
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 567,
+        "line": 566,
         "level": 1,
         "title": "✅ Рекомендуется"
       }
@@ -12853,7 +12913,7 @@
     "❌ Блокирующая операция": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 375,
+        "line": 373,
         "level": 1,
         "title": "❌ Блокирующая операция"
       }
@@ -12861,7 +12921,7 @@
     "❌ Использование без транзакций может привести к несогласованности данных": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 290,
+        "line": 288,
         "level": 1,
         "title": "❌ Использование без транзакций может привести к несогласованности данных"
       }
@@ -12869,13 +12929,13 @@
     "❌ Не рекомендуется": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 559,
+        "line": 558,
         "level": 1,
         "title": "❌ Не рекомендуется"
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 570,
+        "line": 569,
         "level": 1,
         "title": "❌ Не рекомендуется"
       }
@@ -12883,7 +12943,7 @@
     "❌ Неправильно": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 542,
+        "line": 541,
         "level": 1,
         "title": "❌ Неправильно"
       }
@@ -12891,7 +12951,7 @@
     "❌ Несколько вызовов неэффективны": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 306,
+        "line": 304,
         "level": 1,
         "title": "❌ Несколько вызовов неэффективны"
       }
