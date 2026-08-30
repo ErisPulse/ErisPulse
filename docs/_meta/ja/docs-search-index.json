@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1508,
+  "total_keywords": 1514,
   "keywords": {
     "\"Chat\": {": [
       {
@@ -165,7 +165,7 @@
     "- \"auto\"      — システム言語を自動検出 (デフォルト)": [
       {
         "document": "advanced/i18n.md",
-        "line": 549,
+        "line": 543,
         "level": 1,
         "title": "- \"auto\"      — システム言語を自動検出 (デフォルト)"
       }
@@ -173,7 +173,7 @@
     "- \"en\"        — 英語": [
       {
         "document": "advanced/i18n.md",
-        "line": 552,
+        "line": 546,
         "level": 1,
         "title": "- \"en\"        — 英語"
       }
@@ -181,7 +181,7 @@
     "- \"ja\"        — 日本語": [
       {
         "document": "advanced/i18n.md",
-        "line": 553,
+        "line": 547,
         "level": 1,
         "title": "- \"ja\"        — 日本語"
       }
@@ -189,7 +189,7 @@
     "- \"ru\"        — ロシア語": [
       {
         "document": "advanced/i18n.md",
-        "line": 554,
+        "line": 548,
         "level": 1,
         "title": "- \"ru\"        — ロシア語"
       }
@@ -197,7 +197,7 @@
     "- \"zh-CN\"     — 簡体字中国語": [
       {
         "document": "advanced/i18n.md",
-        "line": 550,
+        "line": 544,
         "level": 1,
         "title": "- \"zh-CN\"     — 簡体字中国語"
       }
@@ -205,7 +205,7 @@
     "- \"zh-TW\"     — 繁体字中国語": [
       {
         "document": "advanced/i18n.md",
-        "line": 551,
+        "line": 545,
         "level": 1,
         "title": "- \"zh-TW\"     — 繁体字中国語"
       }
@@ -213,7 +213,7 @@
     "...": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 262,
+        "line": 261,
         "level": 1,
         "title": "..."
       }
@@ -221,7 +221,7 @@
     "... 他の操作 ...": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 274,
+        "line": 273,
         "level": 1,
         "title": "... 他の操作 ..."
       }
@@ -373,7 +373,7 @@
     "1. 型とIDを指定": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 9,
+        "line": 8,
         "level": 3,
         "title": "1. 型とIDを指定"
       }
@@ -659,7 +659,7 @@
     "2. IDのみ指定": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 15,
+        "line": 14,
         "level": 3,
         "title": "2. IDのみ指定"
       }
@@ -1163,7 +1163,7 @@
     "3. 送信アカウントを指定": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 21,
+        "line": 20,
         "level": 3,
         "title": "3. 送信アカウントを指定"
       }
@@ -1411,7 +1411,7 @@
     "4. 組み合わせて使用": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 27,
+        "line": 26,
         "level": 3,
         "title": "4. 組み合わせて使用"
       }
@@ -1675,7 +1675,7 @@
     "5秒後に送信": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 359,
+        "line": 358,
         "level": 1,
         "title": "5秒後に送信"
       }
@@ -2113,7 +2113,7 @@
     "@ユーザー + メッセージの返信": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 717,
+        "line": 715,
         "level": 1,
         "title": "@ユーザー + メッセージの返信"
       }
@@ -2137,7 +2137,7 @@
     "@全員 + 複数の修飾": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 720,
+        "line": 718,
         "level": 1,
         "title": "@全員 + 複数の修飾"
       }
@@ -2145,7 +2145,7 @@
     "@全員メンション": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 113,
+        "line": 112,
         "level": 1,
         "title": "@全員メンション"
       }
@@ -2153,7 +2153,7 @@
     "@特定のユーザー": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 103,
+        "line": 102,
         "level": 1,
         "title": "@特定のユーザー"
       }
@@ -2161,7 +2161,7 @@
     "@複数のユーザー": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 106,
+        "line": 105,
         "level": 1,
         "title": "@複数のユーザー"
       }
@@ -2193,7 +2193,7 @@
     "API のレスポンス": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 178,
+        "line": 176,
         "level": 2,
         "title": "API のレスポンス"
       }
@@ -2274,20 +2274,20 @@
         "title": "API標準"
       }
     ],
-    "Adapter プロジェクトを直接作成": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 586,
-        "level": 1,
-        "title": "Adapter プロジェクトを直接作成"
-      }
-    ],
     "AdapterManager 适配器管理器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 48,
         "level": 2,
         "title": "AdapterManager 适配器管理器"
+      }
+    ],
+    "Adapterプロジェクトを直接作成": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 654,
+        "level": 1,
+        "title": "Adapterプロジェクトを直接作成"
       }
     ],
     "BaseAdapter メソッド": [
@@ -2449,7 +2449,7 @@
     "Dashboard からモジュールをインストールする": [
       {
         "document": "user-guide/deployment.md",
-        "line": 93,
+        "line": 94,
         "level": 3,
         "title": "Dashboard からモジュールをインストールする"
       }
@@ -2457,7 +2457,7 @@
     "Dashboard 管理パネル": [
       {
         "document": "user-guide/deployment.md",
-        "line": 74,
+        "line": 75,
         "level": 2,
         "title": "Dashboard 管理パネル"
       }
@@ -2521,7 +2521,7 @@
     "Docker 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 258,
+        "line": 259,
         "level": 3,
         "title": "Docker 方式"
       }
@@ -2577,7 +2577,7 @@
     "ErisPulse のバージョンを確認": [
       {
         "document": "user-guide/installation.md",
-        "line": 92,
+        "line": 90,
         "level": 1,
         "title": "ErisPulse のバージョンを確認"
       }
@@ -2585,7 +2585,7 @@
     "ErisPulse をインストール": [
       {
         "document": "user-guide/installation.md",
-        "line": 64,
+        "line": 63,
         "level": 4,
         "title": "ErisPulse をインストール"
       }
@@ -2693,7 +2693,7 @@
     "Event 包装类中的修飾メソッドの使用": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 161,
+        "line": 160,
         "level": 2,
         "title": "Event 包装类中的修飾メソッドの使用"
       }
@@ -2741,7 +2741,7 @@
     "HTML をレンダリング": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 49,
+        "line": 48,
         "level": 3,
         "title": "HTML をレンダリング"
       }
@@ -2797,7 +2797,7 @@
     "I18nClass のキーパスルール": [
       {
         "document": "advanced/i18n.md",
-        "line": 157,
+        "line": 153,
         "level": 4,
         "title": "I18nClass のキーパスルール"
       }
@@ -2805,7 +2805,7 @@
     "I18nConfig は dataclass なので、設定テンプレートを生成するために使用できます": [
       {
         "document": "advanced/i18n.md",
-        "line": 538,
+        "line": 532,
         "level": 1,
         "title": "I18nConfig は dataclass なので、設定テンプレートを生成するために使用できます"
       }
@@ -2813,7 +2813,7 @@
     "Jinja テンプレートの例": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 160,
+        "line": 159,
         "level": 3,
         "title": "Jinja テンプレートの例"
       }
@@ -2898,20 +2898,20 @@
         "title": "MessageBuilder 詳細"
       }
     ],
-    "Module プロジェクトを直接作成": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 583,
-        "level": 1,
-        "title": "Module プロジェクトを直接作成"
-      }
-    ],
     "Module モジュール": [
       {
         "document": "api-reference/core-modules.md",
         "line": 238,
         "level": 2,
         "title": "Module モジュール"
+      }
+    ],
+    "Moduleプロジェクトを直接作成": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 651,
+        "level": 1,
+        "title": "Moduleプロジェクトを直接作成"
       }
     ],
     "MyAdapter/Converter.py": [
@@ -3101,7 +3101,7 @@
     "PascalCase 命名": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 531,
+        "line": 530,
         "level": 3,
         "title": "PascalCase 命名"
       }
@@ -3173,7 +3173,7 @@
     "SDK との関係": [
       {
         "document": "ecosystem/app.md",
-        "line": 87,
+        "line": 86,
         "level": 2,
         "title": "SDK との関係"
       }
@@ -3235,7 +3235,7 @@
     "SVG 出力の例": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 182,
+        "line": 181,
         "level": 3,
         "title": "SVG 出力の例"
       }
@@ -3395,7 +3395,7 @@
     "Text/Image/Voice/Video/File は基底クラスから継承され、自動的に Raw_ob12 に委譲されます": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 655,
+        "line": 654,
         "level": 1,
         "title": "Text/Image/Voice/Video/File は基底クラスから継承され、自動的に Raw_ob12 に委譲されます"
       }
@@ -3411,7 +3411,7 @@
     "Toの前にルールを設定しても、Toで作成されたインスタンスに伝播します": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 397,
+        "line": 396,
         "level": 1,
         "title": "Toの前にルールを設定しても、Toで作成されたインスタンスに伝播します"
       }
@@ -3521,7 +3521,7 @@
     "Windows PowerShell の実行ポリシー": [
       {
         "document": "user-guide/installation.md",
-        "line": 135,
+        "line": 133,
         "level": 3,
         "title": "Windows PowerShell の実行ポリシー"
       }
@@ -3841,7 +3841,7 @@
     "await を直接使用して結果を取得します": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 268,
+        "line": 267,
         "level": 1,
         "title": "await を直接使用して結果を取得します"
       }
@@ -3849,7 +3849,7 @@
     "bot_id を使用（イベント内の self.user_id に相当）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 239,
+        "line": 238,
         "level": 1,
         "title": "bot_id を使用（イベント内の self.user_id に相当）"
       }
@@ -3881,7 +3881,7 @@
     "choose(prompt, options, **kwargs)": [
       {
         "document": "advanced/conversation.md",
-        "line": 97,
+        "line": 95,
         "level": 3,
         "title": "choose(prompt, options, **kwargs)"
       }
@@ -3905,9 +3905,17 @@
     "collect(fields, **kwargs)": [
       {
         "document": "advanced/conversation.md",
-        "line": 131,
+        "line": 129,
         "level": 3,
         "title": "collect(fields, **kwargs)"
+      }
+    ],
+    "config": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 228,
+        "level": 3,
+        "title": "config"
       }
     ],
     "config.toml": [
@@ -3921,7 +3929,7 @@
     "config/config.toml": [
       {
         "document": "user-guide/deployment.md",
-        "line": 174,
+        "line": 175,
         "level": 1,
         "title": "config/config.toml"
       }
@@ -3937,7 +3945,7 @@
     "confirm(prompt=None, **kwargs)": [
       {
         "document": "advanced/conversation.md",
-        "line": 79,
+        "line": 77,
         "level": 3,
         "title": "confirm(prompt=None, **kwargs)"
       }
@@ -3953,7 +3961,7 @@
     "conv.context": [
       {
         "document": "advanced/conversation.md",
-        "line": 262,
+        "line": 260,
         "level": 3,
         "title": "conv.context"
       }
@@ -3985,7 +3993,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 298,
+        "line": 353,
         "level": 3,
         "title": "create"
       }
@@ -3993,7 +4001,7 @@
     "def Text(self, text: str):": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 657,
+        "line": 656,
         "level": 1,
         "title": "def Text(self, text: str):"
       }
@@ -4017,7 +4025,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 439,
+        "line": 494,
         "level": 3,
         "title": "doctor"
       }
@@ -4065,7 +4073,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 268,
+        "line": 323,
         "level": 3,
         "title": "init"
       }
@@ -4081,7 +4089,7 @@
     "is_active": [
       {
         "document": "advanced/conversation.md",
-        "line": 179,
+        "line": 177,
         "level": 3,
         "title": "is_active"
       }
@@ -4193,7 +4201,7 @@
     "pip 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 268,
+        "line": 269,
         "level": 3,
         "title": "pip 方式"
       }
@@ -4209,7 +4217,7 @@
     "results = [Text結果, Image結果, Text結果]": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 420,
+        "line": 419,
         "level": 1,
         "title": "results = [Text結果, Image結果, Text結果]"
       }
@@ -4217,7 +4225,7 @@
     "return self.Raw_ob12([{\"type\": \"text\", \"data\": {\"text\": text}}])": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 658,
+        "line": 657,
         "level": 1,
         "title": "return self.Raw_ob12([{\"type\": \"text\", \"data\": {\"text\": text}}])"
       }
@@ -4225,7 +4233,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 228,
+        "line": 283,
         "level": 3,
         "title": "run"
       }
@@ -4233,7 +4241,7 @@
     "save() / resume() / clear_saved()": [
       {
         "document": "advanced/conversation.md",
-        "line": 278,
+        "line": 276,
         "level": 3,
         "title": "save() / resume() / clear_saved()"
       }
@@ -4241,7 +4249,7 @@
     "say(content, **kwargs)": [
       {
         "document": "advanced/conversation.md",
-        "line": 48,
+        "line": 46,
         "level": 3,
         "title": "say(content, **kwargs)"
       }
@@ -4249,7 +4257,7 @@
     "sdk.i18n は直接インポートした i18n オブジェクトと同じです": [
       {
         "document": "advanced/i18n.md",
-        "line": 516,
+        "line": 512,
         "level": 1,
         "title": "sdk.i18n は直接インポートした i18n オブジェクトと同じです"
       }
@@ -4289,7 +4297,7 @@
     "stop()": [
       {
         "document": "advanced/conversation.md",
-        "line": 171,
+        "line": 169,
         "level": 3,
         "title": "stop()"
       }
@@ -4305,7 +4313,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 380,
+        "line": 435,
         "level": 3,
         "title": "types"
       }
@@ -4353,7 +4361,7 @@
     "uv のインストール": [
       {
         "document": "user-guide/installation.md",
-        "line": 31,
+        "line": 30,
         "level": 4,
         "title": "uv のインストール"
       }
@@ -4361,7 +4369,7 @@
     "wait(prompt=None, timeout=None)": [
       {
         "document": "advanced/conversation.md",
-        "line": 62,
+        "line": 60,
         "level": 3,
         "title": "wait(prompt=None, timeout=None)"
       }
@@ -4495,7 +4503,7 @@
     "すべての i18n フィールドが現在の言語の文字列に解決されています": [
       {
         "document": "advanced/i18n.md",
-        "line": 419,
+        "line": 415,
         "level": 1,
         "title": "すべての i18n フィールドが現在の言語の文字列に解決されています"
       }
@@ -4503,7 +4511,7 @@
     "すべてのコンポーネントをアップグレード": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 524,
+        "line": 592,
         "level": 1,
         "title": "すべてのコンポーネントをアップグレード"
       }
@@ -4511,7 +4519,7 @@
     "すべてのコンポーネントを一覧表示": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 498,
+        "line": 553,
         "level": 1,
         "title": "すべてのコンポーネントを一覧表示"
       }
@@ -4519,23 +4527,23 @@
     "すべてのサポート言語を表示する": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 371,
+        "line": 426,
         "level": 1,
         "title": "すべてのサポート言語を表示する"
       }
     ],
-    "すべてのタイプのスタブを生成": [
+    "すべてのタイプのステブを生成": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 560,
+        "line": 628,
         "level": 1,
-        "title": "すべてのタイプのスタブを生成"
+        "title": "すべてのタイプのステブを生成"
       }
     ],
     "その他": [
       {
         "document": "README.md",
-        "line": 86,
+        "line": 85,
         "level": 2,
         "title": "その他"
       }
@@ -4567,7 +4575,7 @@
     "なぜ I18nClass が推奨されますか？": [
       {
         "document": "advanced/i18n.md",
-        "line": 148,
+        "line": 144,
         "level": 4,
         "title": "なぜ I18nClass が推奨されますか？"
       }
@@ -4591,7 +4599,7 @@
     "まず Task を保存し、後で待機します": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 272,
+        "line": 271,
         "level": 1,
         "title": "まず Task を保存し、後で待機します"
       }
@@ -4637,7 +4645,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 111,
+        "line": 109,
         "level": 2,
         "title": "よくある質問"
       }
@@ -4677,7 +4685,7 @@
     "アカウント名を使用": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 236,
+        "line": 235,
         "level": 1,
         "title": "アカウント名を使用"
       }
@@ -4733,7 +4741,7 @@
     "アダプタのみを一覧表示": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 501,
+        "line": 556,
         "level": 1,
         "title": "アダプタのみを一覧表示"
       }
@@ -4811,7 +4819,7 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 164,
+        "line": 160,
         "level": 4,
         "title": "アダプターでの使用"
       }
@@ -4931,7 +4939,7 @@
     "アップグレード可能なコンポーネントのみを一覧表示": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 504,
+        "line": 559,
         "level": 1,
         "title": "アップグレード可能なコンポーネントのみを一覧表示"
       }
@@ -4939,7 +4947,7 @@
     "アニメーションの例": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 193,
+        "line": 192,
         "level": 3,
         "title": "アニメーションの例"
       }
@@ -5031,7 +5039,7 @@
       },
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 43,
+        "line": 42,
         "level": 2,
         "title": "イベントタイプ"
       }
@@ -5173,7 +5181,7 @@
       },
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 91,
+        "line": 90,
         "level": 2,
         "title": "イベント拡張メソッド"
       }
@@ -5229,7 +5237,7 @@
     "インストールと有効化": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 23,
+        "line": 22,
         "level": 2,
         "title": "インストールと有効化"
       }
@@ -5237,7 +5245,7 @@
     "インストールに失敗しました": [
       {
         "document": "user-guide/installation.md",
-        "line": 113,
+        "line": 111,
         "level": 3,
         "title": "インストールに失敗しました"
       }
@@ -5253,7 +5261,7 @@
     "インストール方法": [
       {
         "document": "user-guide/installation.md",
-        "line": 15,
+        "line": 14,
         "level": 2,
         "title": "インストール方法"
       }
@@ -5261,7 +5269,7 @@
     "インストール方法（Android / スマートフォン直接実行）": [
       {
         "document": "ecosystem/app.md",
-        "line": 40,
+        "line": 39,
         "level": 2,
         "title": "インストール方法（Android / スマートフォン直接実行）"
       }
@@ -5269,7 +5277,7 @@
     "インストール方法（デスクトップ：Windows / Linux / macOS）": [
       {
         "document": "ecosystem/app.md",
-        "line": 58,
+        "line": 57,
         "level": 3,
         "title": "インストール方法（デスクトップ：Windows / Linux / macOS）"
       }
@@ -5293,7 +5301,7 @@
     "インタラクティブに言語を選択": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 362,
+        "line": 417,
         "level": 1,
         "title": "インタラクティブに言語を選択"
       }
@@ -5451,7 +5459,7 @@
     "カスタムフォント": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 269,
+        "line": 268,
         "level": 3,
         "title": "カスタムフォント"
       }
@@ -5475,7 +5483,7 @@
     "ガイド付き登録": [
       {
         "document": "advanced/conversation.md",
-        "line": 303,
+        "line": 301,
         "level": 3,
         "title": "ガイド付き登録"
       }
@@ -5507,7 +5515,7 @@
     "クイックスタート": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 38,
+        "line": 37,
         "level": 2,
         "title": "クイックスタート"
       },
@@ -5524,18 +5532,12 @@
         "line": 328,
         "level": 3,
         "title": "クイックリファレンス"
-      },
-      {
-        "document": "user-guide/README.md",
-        "line": 15,
-        "level": 2,
-        "title": "クイックリファレンス"
       }
     ],
     "クイック体験": [
       {
         "document": "advanced/i18n.md",
-        "line": 26,
+        "line": 22,
         "level": 2,
         "title": "クイック体験"
       }
@@ -5557,7 +5559,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 573,
+        "line": 641,
         "level": 1,
         "title": "クイック初期化"
       }
@@ -5695,7 +5697,7 @@
     "グローバルパラメータ": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 421,
+        "line": 476,
         "level": 2,
         "title": "グローバルパラメータ"
       }
@@ -5727,7 +5729,7 @@
     "コア API": [
       {
         "document": "advanced/conversation.md",
-        "line": 46,
+        "line": 44,
         "level": 2,
         "title": "コア API"
       }
@@ -5838,14 +5840,6 @@
         "line": 6,
         "level": 2,
         "title": "コア設計原則"
-      }
-    ],
-    "コマンド": [
-      {
-        "document": "user-guide/README.md",
-        "line": 17,
-        "level": 3,
-        "title": "コマンド"
       }
     ],
     "コマンド dict 形式の宣言パラメータ": [
@@ -5963,7 +5957,7 @@
     "コンテキストと永続化": [
       {
         "document": "advanced/conversation.md",
-        "line": 260,
+        "line": 258,
         "level": 2,
         "title": "コンテキストと永続化"
       }
@@ -6051,7 +6045,7 @@
     "コード内での手動切り替え": [
       {
         "document": "advanced/i18n.md",
-        "line": 50,
+        "line": 46,
         "level": 3,
         "title": "コード内での手動切り替え"
       }
@@ -6075,7 +6069,7 @@
     "コールバックルート": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 167,
+        "line": 165,
         "level": 2,
         "title": "コールバックルート"
       }
@@ -6129,7 +6123,7 @@
     "サポートされている言語": [
       {
         "document": "advanced/i18n.md",
-        "line": 16,
+        "line": 12,
         "level": 2,
         "title": "サポートされている言語"
       }
@@ -6193,7 +6187,7 @@
     "システム要件": [
       {
         "document": "user-guide/installation.md",
-        "line": 9,
+        "line": 8,
         "level": 2,
         "title": "システム要件"
       }
@@ -6313,7 +6307,7 @@
     "セキュリティに関する推奨事項": [
       {
         "document": "user-guide/deployment.md",
-        "line": 235,
+        "line": 236,
         "level": 2,
         "title": "セキュリティに関する推奨事項"
       }
@@ -6353,7 +6347,7 @@
     "タイプ・スタブ・コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 374,
+        "line": 429,
         "level": 2,
         "title": "タイプ・スタブ・コマンド"
       }
@@ -6377,7 +6371,7 @@
     "タイムアウト + リトライ：各試行10秒、最大3回": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 330,
+        "line": 329,
         "level": 1,
         "title": "タイムアウト + リトライ：各試行10秒、最大3回"
       }
@@ -6609,7 +6603,7 @@
     "テキストを送信": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 703,
+        "line": 701,
         "level": 1,
         "title": "テキストを送信"
       }
@@ -6949,7 +6943,7 @@
     "ノードツリーの例": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 142,
+        "line": 141,
         "level": 3,
         "title": "ノードツリーの例"
       }
@@ -6957,7 +6951,7 @@
     "ノードツリーをレンダリング": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 74,
+        "line": 73,
         "level": 3,
         "title": "ノードツリーをレンダリング"
       }
@@ -7025,7 +7019,7 @@
     "バックアップ": [
       {
         "document": "user-guide/deployment.md",
-        "line": 275,
+        "line": 276,
         "level": 3,
         "title": "バックアップ"
       }
@@ -7105,7 +7099,7 @@
     "ビューポートと出力形式": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 220,
+        "line": 219,
         "level": 2,
         "title": "ビューポートと出力形式"
       }
@@ -7137,7 +7131,7 @@
     "ファイルを送信": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 709,
+        "line": 707,
         "level": 1,
         "title": "ファイルを送信"
       }
@@ -7177,7 +7171,7 @@
     "フォント": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 246,
+        "line": 245,
         "level": 2,
         "title": "フォント"
       }
@@ -7309,7 +7303,7 @@
     "プラットフォーム固有のメソッド": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 84,
+        "line": 83,
         "level": 3,
         "title": "プラットフォーム固有のメソッド"
       }
@@ -7357,7 +7351,7 @@
     "プラットフォーム固有メソッド": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 551,
+        "line": 550,
         "level": 3,
         "title": "プラットフォーム固有メソッド"
       }
@@ -7373,7 +7367,7 @@
     "プラットフォーム拡張フィールド": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 74,
+        "line": 73,
         "level": 2,
         "title": "プラットフォーム拡張フィールド"
       }
@@ -7451,7 +7445,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 99,
+        "line": 97,
         "level": 1,
         "title": "プロジェクトを実行"
       }
@@ -7489,7 +7483,7 @@
     "プロジェクト管理コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 261,
+        "line": 316,
         "level": 2,
         "title": "プロジェクト管理コマンド"
       }
@@ -7497,7 +7491,7 @@
     "プロセス監督とハードリスタート": [
       {
         "document": "user-guide/deployment.md",
-        "line": 102,
+        "line": 103,
         "level": 2,
         "title": "プロセス監督とハードリスタート"
       }
@@ -7505,7 +7499,7 @@
     "プロトコルメソッド": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 76,
+        "line": 75,
         "level": 3,
         "title": "プロトコルメソッド"
       }
@@ -7541,7 +7535,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 113,
+        "line": 114,
         "level": 2,
         "title": "ヘルスチェック"
       }
@@ -7549,7 +7543,7 @@
     "ヘルプの取得": [
       {
         "document": "README.md",
-        "line": 92,
+        "line": 91,
         "level": 2,
         "title": "ヘルプの取得"
       }
@@ -7573,7 +7567,7 @@
     "ホットリロードモード": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 540,
+        "line": 608,
         "level": 1,
         "title": "ホットリロードモード"
       }
@@ -7707,7 +7701,7 @@
     "メインフローをブロックしない": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 526,
+        "line": 525,
         "level": 1,
         "title": "メインフローをブロックしない"
       }
@@ -7715,7 +7709,7 @@
     "メインプロセスをブロックせず、ルールは正常に有効": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 380,
+        "line": 379,
         "level": 1,
         "title": "メインプロセスをブロックせず、ルールは正常に有効"
       }
@@ -7723,7 +7717,7 @@
     "メソッドチェーン": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 35,
+        "line": 34,
         "level": 2,
         "title": "メソッドチェーン"
       }
@@ -7763,7 +7757,7 @@
     "メソッド概要": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 95,
+        "line": 94,
         "level": 3,
         "title": "メソッド概要"
       }
@@ -7843,7 +7837,7 @@
     "メッセージはバックグラウンドで送信されます": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 258,
+        "line": 257,
         "level": 1,
         "title": "メッセージはバックグラウンドで送信されます"
       }
@@ -7851,7 +7845,7 @@
     "メッセージへの返信": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 120,
+        "line": 119,
         "level": 1,
         "title": "メッセージへの返信"
       },
@@ -7881,7 +7875,7 @@
     "メッセージイベント (message)": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 45,
+        "line": 44,
         "level": 3,
         "title": "メッセージイベント (message)"
       }
@@ -8141,7 +8135,7 @@
     "メディアファイルの説明": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 28,
+        "line": 27,
         "level": 3,
         "title": "メディアファイルの説明"
       }
@@ -8225,7 +8219,7 @@
     "モジュールで i18n を使用する": [
       {
         "document": "advanced/i18n.md",
-        "line": 88,
+        "line": 84,
         "level": 2,
         "title": "モジュールで i18n を使用する"
       }
@@ -8238,10 +8232,18 @@
         "title": "モジュールのみを表示"
       }
     ],
+    "モジュールのアップグレード": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 546,
+        "level": 1,
+        "title": "モジュールのアップグレード"
+      }
+    ],
     "モジュールのインストールに失敗しました": [
       {
         "document": "user-guide/installation.md",
-        "line": 128,
+        "line": 126,
         "level": 3,
         "title": "モジュールのインストールに失敗しました"
       }
@@ -8262,12 +8264,12 @@
         "title": "モジュールのコードや一時スクリプトに一行追加して位置特定"
       }
     ],
-    "モジュールのタイプのスタブのみを生成": [
+    "モジュールのタイプステブのみを生成": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 563,
+        "line": 631,
         "level": 1,
-        "title": "モジュールのタイプのスタブのみを生成"
+        "title": "モジュールのタイプステブのみを生成"
       }
     ],
     "モジュールのライフサイクル": [
@@ -8302,18 +8304,10 @@
         "title": "モジュールの許可状態を確認"
       }
     ],
-    "モジュールをアップグレード": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 491,
-        "level": 1,
-        "title": "モジュールをアップグレード"
-      }
-    ],
     "モジュールクラスでの使用": [
       {
         "document": "advanced/i18n.md",
-        "line": 235,
+        "line": 231,
         "level": 3,
         "title": "モジュールクラスでの使用"
       }
@@ -8705,7 +8699,7 @@
     "リバースプロキシ": [
       {
         "document": "user-guide/deployment.md",
-        "line": 136,
+        "line": 137,
         "level": 2,
         "title": "リバースプロキシ"
       }
@@ -8721,7 +8715,7 @@
     "リモートで利用可能なコンポーネントを確認": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 507,
+        "line": 562,
         "level": 1,
         "title": "リモートで利用可能なコンポーネントを確認"
       }
@@ -8809,7 +8803,7 @@
     "ループによる対話": [
       {
         "document": "advanced/conversation.md",
-        "line": 334,
+        "line": 332,
         "level": 3,
         "title": "ループによる対話"
       }
@@ -8865,7 +8859,7 @@
     "レンダラー インスタンス": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 289,
+        "line": 288,
         "level": 2,
         "title": "レンダラー インスタンス"
       }
@@ -8873,7 +8867,7 @@
     "レンダリング API": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 91,
+        "line": 90,
         "level": 2,
         "title": "レンダリング API"
       }
@@ -8881,7 +8875,7 @@
     "レンダリング結果を送信": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 334,
+        "line": 332,
         "level": 2,
         "title": "レンダリング結果を送信"
       }
@@ -9047,7 +9041,7 @@
     "一般的なパラメータ": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 119,
+        "line": 118,
         "level": 3,
         "title": "一般的なパラメータ"
       }
@@ -9058,6 +9052,14 @@
         "line": 118,
         "level": 2,
         "title": "一般的な問題"
+      }
+    ],
+    "一般的な設定位置": [
+      {
+        "document": "user-guide/README.md",
+        "line": 31,
+        "level": 3,
+        "title": "一般的な設定位置"
       }
     ],
     "三、内部原理を深く理解したい": [
@@ -9087,7 +9089,7 @@
     "並列（デフォルト、明示的に呼び出すことも可能）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 437,
+        "line": 436,
         "level": 1,
         "title": "並列（デフォルト、明示的に呼び出すことも可能）"
       }
@@ -9095,7 +9097,7 @@
     "中国語を登録（default と一致しても良いし、異なっても良い）": [
       {
         "document": "advanced/i18n.md",
-        "line": 383,
+        "line": 379,
         "level": 1,
         "title": "中国語を登録（default と一致しても良いし、異なっても良い）"
       }
@@ -9183,7 +9185,7 @@
     "他の操作を継続": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 388,
+        "line": 387,
         "level": 1,
         "title": "他の操作を継続"
       }
@@ -9191,7 +9193,7 @@
     "他の操作を続行します": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 261,
+        "line": 260,
         "level": 1,
         "title": "他の操作を続行します"
       }
@@ -9215,7 +9217,7 @@
     "仮想環境のアクティブ化": [
       {
         "document": "user-guide/installation.md",
-        "line": 54,
+        "line": 53,
         "level": 4,
         "title": "仮想環境のアクティブ化"
       }
@@ -9223,7 +9225,7 @@
     "仮想環境の作成": [
       {
         "document": "user-guide/installation.md",
-        "line": 41,
+        "line": 40,
         "level": 4,
         "title": "仮想環境の作成"
       }
@@ -9239,7 +9241,7 @@
     "会話の作成": [
       {
         "document": "advanced/conversation.md",
-        "line": 13,
+        "line": 11,
         "level": 2,
         "title": "会話の作成"
       }
@@ -9271,7 +9273,7 @@
     "低優先度のメッセージ、送信キューが混雑した場合に自動的に破棄": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 368,
+        "line": 367,
         "level": 1,
         "title": "低優先度のメッセージ、送信キューが混雑した場合に自動的に破棄"
       }
@@ -9279,7 +9281,7 @@
     "使用": [
       {
         "document": "advanced/i18n.md",
-        "line": 584,
+        "line": 578,
         "level": 1,
         "title": "使用"
       }
@@ -9397,7 +9399,7 @@
     "修飾メソッドは連続してメソッドチェーンで使用可能": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 158,
+        "line": 157,
         "level": 1,
         "title": "修飾メソッドは連続してメソッドチェーンで使用可能"
       }
@@ -9514,18 +9516,10 @@
         "title": "公開前チェックリスト"
       }
     ],
-    "共通設定の場所": [
-      {
-        "document": "user-guide/README.md",
-        "line": 30,
-        "level": 3,
-        "title": "共通設定の場所"
-      }
-    ],
     "典型的なフローのパターン": [
       {
         "document": "advanced/conversation.md",
-        "line": 301,
+        "line": 299,
         "level": 2,
         "title": "典型的なフローのパターン"
       }
@@ -9589,7 +9583,7 @@
     "出力形式": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 222,
+        "line": 221,
         "level": 3,
         "title": "出力形式"
       }
@@ -9605,7 +9599,7 @@
     "初回失敗後に2回リトライし、合計3回の試行": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 318,
+        "line": 317,
         "level": 1,
         "title": "初回失敗後に2回リトライし、合計3回の試行"
       }
@@ -9635,7 +9629,7 @@
     "前提知識": [
       {
         "document": "advanced/README.md",
-        "line": 34,
+        "line": 33,
         "level": 2,
         "title": "前提知識"
       }
@@ -9671,7 +9665,7 @@
       },
       {
         "document": "ecosystem/app.md",
-        "line": 67,
+        "line": 66,
         "level": 2,
         "title": "動作原理"
       },
@@ -9712,22 +9706,6 @@
         "title": "動的バインド / アンバインド"
       }
     ],
-    "単一のコンポーネントをアンインストール": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 514,
-        "level": 1,
-        "title": "単一のコンポーネントをアンインストール"
-      }
-    ],
-    "単一のモジュールをインストール": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 485,
-        "level": 1,
-        "title": "単一のモジュールをインストール"
-      }
-    ],
     "単一の要求でタイムアウトを上書き": [
       {
         "document": "advanced/http-client.md",
@@ -9736,12 +9714,28 @@
         "title": "単一の要求でタイムアウトを上書き"
       }
     ],
+    "単一コンポーネントのアンインストール": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 569,
+        "level": 1,
+        "title": "単一コンポーネントのアンインストール"
+      }
+    ],
     "単一メソッドの解除": [
       {
         "document": "api-reference/event-system.md",
         "line": 611,
         "level": 1,
         "title": "単一メソッドの解除"
+      }
+    ],
+    "単一モジュールのインストール": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 540,
+        "level": 1,
+        "title": "単一モジュールのインストール"
       }
     ],
     "単一レコードの取得": [
@@ -9755,7 +9749,7 @@
     "単回送信が10秒を超えるとキャンセル": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 327,
+        "line": 326,
         "level": 1,
         "title": "単回送信が10秒を超えるとキャンセル"
       }
@@ -9763,7 +9757,7 @@
     "単独使用（手動登録）": [
       {
         "document": "advanced/i18n.md",
-        "line": 507,
+        "line": 503,
         "level": 1,
         "title": "単独使用（手動登録）"
       }
@@ -9779,7 +9773,7 @@
     "原生 Renderer": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 291,
+        "line": 290,
         "level": 3,
         "title": "原生 Renderer"
       }
@@ -9835,7 +9829,7 @@
     "同期コールバック": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 301,
+        "line": 300,
         "level": 1,
         "title": "同期コールバック"
       }
@@ -9851,7 +9845,7 @@
     "命名規則": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 529,
+        "line": 528,
         "level": 2,
         "title": "命名規則"
       }
@@ -9925,7 +9919,7 @@
       },
       {
         "document": "advanced/i18n.md",
-        "line": 10,
+        "line": 7,
         "level": 1,
         "title": "国際化 (i18n) システム"
       }
@@ -9941,7 +9935,7 @@
     "基本メソッド（基底クラスに内蔵）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 51,
+        "line": 50,
         "level": 3,
         "title": "基本メソッド（基底クラスに内蔵）"
       }
@@ -10035,7 +10029,7 @@
       },
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 5,
+        "line": 4,
         "level": 2,
         "title": "基本情報"
       },
@@ -10109,7 +10103,7 @@
     "基本的な呼び出し方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 7,
+        "line": 6,
         "level": 2,
         "title": "基本的な呼び出し方法"
       }
@@ -10195,7 +10189,7 @@
     "多インスタンスデプロイ": [
       {
         "document": "user-guide/deployment.md",
-        "line": 246,
+        "line": 247,
         "level": 2,
         "title": "多インスタンスデプロイ"
       }
@@ -10259,7 +10253,7 @@
     "完全なパラメータ": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 589,
+        "line": 657,
         "level": 1,
         "title": "完全なパラメータ"
       }
@@ -10299,7 +10293,7 @@
     "実行コントロールコマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 222,
+        "line": 277,
         "level": 2,
         "title": "実行コントロールコマンド"
       }
@@ -10350,14 +10344,6 @@
         "title": "宣言的設定（推奨）"
       }
     ],
-    "対応している言語の一覧表示": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 553,
-        "level": 1,
-        "title": "対応している言語の一覧表示"
-      }
-    ],
     "対応するIDの取得": [
       {
         "document": "standards/session-types.md",
@@ -10374,36 +10360,52 @@
         "title": "対応するファイルタイプ"
       }
     ],
+    "対応する言語の一覧表示": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 621,
+        "level": 1,
+        "title": "対応する言語の一覧表示"
+      }
+    ],
     "対応プラットフォーム": [
       {
         "document": "ecosystem/app.md",
-        "line": 25,
+        "line": 24,
         "level": 2,
         "title": "対応プラットフォーム"
       }
     ],
-    "対話形式での作成（タイプの選択と情報の入力をガイド）": [
+    "対話形式で作成（タイプの選択と情報の入力）": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 580,
+        "line": 648,
         "level": 1,
-        "title": "対話形式での作成（タイプの選択と情報の入力をガイド）"
+        "title": "対話形式で作成（タイプの選択と情報の入力）"
       }
     ],
-    "対話形式での初期化": [
+    "対話形式で初期化": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 570,
+        "line": 638,
         "level": 1,
-        "title": "対話形式での初期化"
+        "title": "対話形式で初期化"
       }
     ],
     "対話形式で言語を選択": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 547,
+        "line": 615,
         "level": 1,
         "title": "対話形式で言語を選択"
+      }
+    ],
+    "対象の設定を選択": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 582,
+        "level": 1,
+        "title": "対象の設定を選択"
       }
     ],
     "対象読者": [
@@ -10422,6 +10424,14 @@
         "title": "導入方法"
       }
     ],
+    "常用コマンド": [
+      {
+        "document": "user-guide/README.md",
+        "line": 17,
+        "level": 3,
+        "title": "常用コマンド"
+      }
+    ],
     "常見の落とし穴": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -10433,7 +10443,7 @@
     "幅 (`width`) と高さ (`height`) について": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 231,
+        "line": 230,
         "level": 3,
         "title": "幅 (`width`) と高さ (`height`) について"
       }
@@ -10441,7 +10451,7 @@
     "強制的にアップグレード": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 530,
+        "line": 598,
         "level": 1,
         "title": "強制的にアップグレード"
       }
@@ -10458,6 +10468,14 @@
         "line": 646,
         "level": 3,
         "title": "必須フィールド"
+      }
+    ],
+    "快速参考": [
+      {
+        "document": "user-guide/README.md",
+        "line": 15,
+        "level": 2,
+        "title": "快速参考"
       }
     ],
     "快速構築モード（静的）": [
@@ -10559,7 +10577,7 @@
     "手動で英語の翻訳を提供": [
       {
         "document": "advanced/i18n.md",
-        "line": 404,
+        "line": 400,
         "level": 1,
         "title": "手動で英語の翻訳を提供"
       }
@@ -10575,7 +10593,7 @@
     "手動登録による独自翻訳の定義（旧い記法）": [
       {
         "document": "advanced/i18n.md",
-        "line": 198,
+        "line": 194,
         "level": 3,
         "title": "手動登録による独自翻訳の定義（旧い記法）"
       }
@@ -10662,10 +10680,18 @@
         "title": "拡張：より多くの機能を追加する"
       }
     ],
+    "指定されたアダプタを設定": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 585,
+        "level": 1,
+        "title": "指定されたアダプタを設定"
+      }
+    ],
     "指定されたコンポーネントをアップグレード": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 527,
+        "line": 595,
         "level": 1,
         "title": "指定されたコンポーネントをアップグレード"
       }
@@ -10757,7 +10783,7 @@
     "推奨される記法: I18nClass を用いて翻訳キーを宣言する（v2.7.0+）": [
       {
         "document": "advanced/i18n.md",
-        "line": 92,
+        "line": 88,
         "level": 3,
         "title": "推奨される記法: I18nClass を用いて翻訳キーを宣言する（v2.7.0+）"
       }
@@ -10773,7 +10799,7 @@
     "支持するメッセージ送信タイプ": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 14,
+        "line": 13,
         "level": 2,
         "title": "支持するメッセージ送信タイプ"
       },
@@ -10869,7 +10895,7 @@
     "方法 1: pip を使用してインストールする": [
       {
         "document": "user-guide/installation.md",
-        "line": 17,
+        "line": 16,
         "level": 3,
         "title": "方法 1: pip を使用してインストールする"
       }
@@ -10877,7 +10903,7 @@
     "方法 1: reply() の via パラメータ": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 168,
+        "line": 167,
         "level": 3,
         "title": "方法 1: reply() の via パラメータ"
       }
@@ -10885,7 +10911,7 @@
     "方法 2: event.send_chain()": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 185,
+        "line": 184,
         "level": 3,
         "title": "方法 2: event.send_chain()"
       }
@@ -10893,7 +10919,7 @@
     "方法 2: uv を使用してインストールする（推奨）": [
       {
         "document": "user-guide/installation.md",
-        "line": 27,
+        "line": 26,
         "level": 3,
         "title": "方法 2: uv を使用してインストールする（推奨）"
       }
@@ -10909,7 +10935,7 @@
     "既存のディレクトリを強制的に上書き": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 592,
+        "line": 660,
         "level": 1,
         "title": "既存のディレクトリを強制的に上書き"
       }
@@ -10925,7 +10951,7 @@
     "日本語に切り替える": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 368,
+        "line": 423,
         "level": 1,
         "title": "日本語に切り替える"
       }
@@ -10957,7 +10983,7 @@
     "暗号化モードの説明": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 150,
+        "line": 149,
         "level": 2,
         "title": "暗号化モードの説明"
       }
@@ -10965,7 +10991,7 @@
     "更新とメンテナンス": [
       {
         "document": "user-guide/deployment.md",
-        "line": 256,
+        "line": 257,
         "level": 2,
         "title": "更新とメンテナンス"
       }
@@ -11219,7 +11245,7 @@
     "標準メソッドをオーバーライドする場合は、asyncio.Task を返すだけです：": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 656,
+        "line": 655,
         "level": 1,
         "title": "標準メソッドをオーバーライドする場合は、asyncio.Task を返すだけです："
       }
@@ -11243,7 +11269,7 @@
     "標準装備のフォント": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 248,
+        "line": 247,
         "level": 3,
         "title": "標準装備のフォント"
       }
@@ -11275,13 +11301,13 @@
     "機能概要": [
       {
         "document": "ecosystem/app.md",
-        "line": 13,
+        "line": 12,
         "level": 2,
         "title": "機能概要"
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 78,
+        "line": 79,
         "level": 3,
         "title": "機能概要"
       }
@@ -11489,7 +11515,7 @@
     "独立 Renderer": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 303,
+        "line": 302,
         "level": 3,
         "title": "独立 Renderer"
       }
@@ -11537,7 +11563,7 @@
     "環境変数による切り替え": [
       {
         "document": "advanced/i18n.md",
-        "line": 28,
+        "line": 24,
         "level": 3,
         "title": "環境変数による切り替え"
       }
@@ -11545,7 +11571,7 @@
     "環境診断": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 437,
+        "line": 492,
         "level": 2,
         "title": "環境診断"
       }
@@ -11569,7 +11595,7 @@
     "画像を送信": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 706,
+        "line": 704,
         "level": 1,
         "title": "画像を送信"
       }
@@ -11625,7 +11651,7 @@
     "異同步コールバック": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 306,
+        "line": 305,
         "level": 1,
         "title": "異同步コールバック"
       }
@@ -11689,7 +11715,7 @@
     "直列：順番に送信": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 430,
+        "line": 429,
         "level": 1,
         "title": "直列：順番に送信"
       }
@@ -11721,7 +11747,7 @@
     "破棄された場合、result[\"status\"] == \"failed\"": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 372,
+        "line": 371,
         "level": 1,
         "title": "破棄された場合、result[\"status\"] == \"failed\""
       }
@@ -11843,7 +11869,7 @@
     "翻訳のアンインストール": [
       {
         "document": "advanced/i18n.md",
-        "line": 269,
+        "line": 265,
         "level": 3,
         "title": "翻訳のアンインストール"
       }
@@ -11851,7 +11877,7 @@
     "翻訳の使用方法": [
       {
         "document": "advanced/i18n.md",
-        "line": 220,
+        "line": 216,
         "level": 3,
         "title": "翻訳の使用方法"
       }
@@ -11859,7 +11885,7 @@
     "翻訳定義": [
       {
         "document": "advanced/i18n.md",
-        "line": 581,
+        "line": 575,
         "level": 1,
         "title": "翻訳定義"
       }
@@ -11867,7 +11893,7 @@
     "翻訳定義: \"greeting\": \"こんにちは、{name}！{place}へようこそ。\"": [
       {
         "document": "advanced/i18n.md",
-        "line": 463,
+        "line": 459,
         "level": 1,
         "title": "翻訳定義: \"greeting\": \"こんにちは、{name}！{place}へようこそ。\""
       }
@@ -11907,7 +11933,7 @@
     "自動注入": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 265,
+        "line": 264,
         "level": 3,
         "title": "自動注入"
       }
@@ -11939,7 +11965,7 @@
     "英語に切り替える": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 365,
+        "line": 420,
         "level": 1,
         "title": "英語に切り替える"
       }
@@ -11947,7 +11973,7 @@
     "英語に直接切り替え": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 550,
+        "line": 618,
         "level": 1,
         "title": "英語に直接切り替え"
       }
@@ -11955,7 +11981,7 @@
     "英語を登録": [
       {
         "document": "advanced/i18n.md",
-        "line": 388,
+        "line": 384,
         "level": 1,
         "title": "英語を登録"
       }
@@ -11979,17 +12005,9 @@
     "表示言語。オプション:": [
       {
         "document": "advanced/i18n.md",
-        "line": 548,
+        "line": 542,
         "level": 1,
         "title": "表示言語。オプション:"
-      }
-    ],
-    "複数のコンポーネントをアンインストール": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 517,
-        "level": 1,
-        "title": "複数のコンポーネントをアンインストール"
       }
     ],
     "複数のプラットフォームをサポートするには？": [
@@ -11998,14 +12016,6 @@
         "line": 137,
         "level": 3,
         "title": "複数のプラットフォームをサポートするには？"
-      }
-    ],
-    "複数のモジュールをインストール": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 488,
-        "level": 1,
-        "title": "複数のモジュールをインストール"
       }
     ],
     "複数のユーザーに @ 指定": [
@@ -12019,7 +12029,7 @@
     "複数アカウントの設定": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 107,
+        "line": 106,
         "level": 3,
         "title": "複数アカウントの設定"
       }
@@ -12048,12 +12058,28 @@
         "title": "複数アカウント：Bot アカウントを指定"
       }
     ],
+    "複数コンポーネントのアンインストール": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 572,
+        "level": 1,
+        "title": "複数コンポーネントのアンインストール"
+      }
+    ],
     "複数メッセージのバッチ送信": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 264,
         "level": 3,
         "title": "複数メッセージのバッチ送信"
+      }
+    ],
+    "複数モジュールのインストール": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 543,
+        "level": 1,
+        "title": "複数モジュールのインストール"
       }
     ],
     "要求イベントメソッド": [
@@ -12091,7 +12117,7 @@
     "言語検出メカニズム": [
       {
         "document": "advanced/i18n.md",
-        "line": 65,
+        "line": 61,
         "level": 2,
         "title": "言語検出メカニズム"
       }
@@ -12105,7 +12131,7 @@
       },
       {
         "document": "ecosystem/takumi.md",
-        "line": 358,
+        "line": 356,
         "level": 2,
         "title": "設定"
       }
@@ -12145,7 +12171,7 @@
     "設定エラー": [
       {
         "document": "user-guide/installation.md",
-        "line": 121,
+        "line": 119,
         "level": 3,
         "title": "設定エラー"
       }
@@ -12159,7 +12185,7 @@
       },
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 105,
+        "line": 104,
         "level": 2,
         "title": "設定オプション"
       }
@@ -12167,9 +12193,17 @@
     "設定クラスから description.default を自動的に抽出して zh-CN 翻訳として登録": [
       {
         "document": "advanced/i18n.md",
-        "line": 401,
+        "line": 397,
         "level": 1,
         "title": "設定クラスから description.default を自動的に抽出して zh-CN 翻訳として登録"
+      }
+    ],
+    "設定コマンド": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 222,
+        "level": 2,
+        "title": "設定コマンド"
       }
     ],
     "設定ファイル": [
@@ -12183,7 +12217,7 @@
     "設定ファイルによる切り替え": [
       {
         "document": "advanced/i18n.md",
-        "line": 39,
+        "line": 35,
         "level": 3,
         "title": "設定ファイルによる切り替え"
       }
@@ -12207,7 +12241,7 @@
     "設定フィールドの説明": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 129,
+        "line": 128,
         "level": 3,
         "title": "設定フィールドの説明"
       }
@@ -12226,6 +12260,14 @@
         "line": 135,
         "level": 3,
         "title": "設定変更"
+      }
+    ],
+    "設定状態を表示": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 579,
+        "level": 1,
+        "title": "設定状態を表示"
       }
     ],
     "設定管理": [
@@ -12307,7 +12349,7 @@
     "認証済みサービスアカウントと受動応答（verified）": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 141,
+        "line": 140,
         "level": 3,
         "title": "認証済みサービスアカウントと受動応答（verified）"
       }
@@ -12417,7 +12459,7 @@
     "近似マッピングの原則": [
       {
         "document": "advanced/i18n.md",
-        "line": 75,
+        "line": 71,
         "level": 3,
         "title": "近似マッピングの原則"
       }
@@ -12449,7 +12491,7 @@
     "返回: \"こんにちは、Alice！ErisPulseへようこそ。\"": [
       {
         "document": "advanced/i18n.md",
-        "line": 465,
+        "line": 461,
         "level": 1,
         "title": "返回: \"こんにちは、Alice！ErisPulseへようこそ。\""
       }
@@ -12583,7 +12625,7 @@
     "送信方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 47,
+        "line": 46,
         "level": 2,
         "title": "送信方法"
       }
@@ -12660,12 +12702,12 @@
         "title": "逆変換とメッセージ構築"
       }
     ],
-    "通常の実行": [
+    "通常実行": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 537,
+        "line": 605,
         "level": 1,
-        "title": "通常の実行"
+        "title": "通常実行"
       }
     ],
     "通知イベント (Notice Events)": [
@@ -12679,7 +12721,7 @@
     "通知イベント (notice)": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 58,
+        "line": 57,
         "level": 3,
         "title": "通知イベント (notice)"
       }
@@ -12730,12 +12772,12 @@
         "title": "通知操作者"
       }
     ],
-    "速習": [
+    "速攻起動": [
       {
         "document": "user-guide/deployment.md",
         "line": 11,
         "level": 3,
-        "title": "速習"
+        "title": "速攻起動"
       }
     ],
     "適用シナリオ": [
@@ -12757,7 +12799,7 @@
     "重要な制限": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 36,
+        "line": 35,
         "level": 3,
         "title": "重要な制限"
       }
@@ -12921,7 +12963,7 @@
       },
       {
         "document": "user-guide/README.md",
-        "line": 40,
+        "line": 41,
         "level": 2,
         "title": "関連ドキュメント"
       }
@@ -12929,19 +12971,19 @@
     "関連リンク": [
       {
         "document": "README.md",
-        "line": 100,
-        "level": 2,
-        "title": "関連リンク"
-      },
-      {
-        "document": "ecosystem/app.md",
         "line": 99,
         "level": 2,
         "title": "関連リンク"
       },
       {
+        "document": "ecosystem/app.md",
+        "line": 98,
+        "level": 2,
+        "title": "関連リンク"
+      },
+      {
         "document": "ecosystem/takumi.md",
-        "line": 367,
+        "line": 365,
         "level": 2,
         "title": "関連リンク"
       }
