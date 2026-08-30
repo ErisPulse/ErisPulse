@@ -43,9 +43,7 @@ ErisPulse 模块开发指南
 
 This document introduces the technical architecture of the ErisPulse SDK through visual diagrams to help you quickly understand the framework's design philosophy and module relationships.
 
-Please directly return the complete translated Markdown content without any additional text.
 
-Once again, please note: if the document contains language switch lines (lines with language names separated by `` | ``), strictly follow the formatting requirements outlined in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## SDK Core Architecture
 
@@ -320,7 +318,6 @@ flowchart TD
 - Local plugin `moduleInfo.meta.source == "plugin_folder"`, seamlessly coexists with PyPI-installed package modules
 - When names conflict, local takes precedence (for easy local override and debugging), and disabled plugins remove corresponding entry-point entries
 
-Please directly return the complete translated Markdown content, without any additional text.
 
 ## Local Plugin Hot Reload Architecture
 
@@ -342,12 +339,6 @@ flowchart TD
     L --> M["Mounts new instance to sdk attribute"]
     M --> N["File deletion → automatically removed from load results"]
 ```
-
-7. **Important: Path replacement rule**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
-   - This ensures links point to the correct language version of the document
 
 
 
@@ -2337,7 +2328,6 @@ class MyModule(BaseModule):
         return config
 ```
 
-Please return the complete translated Markdown content without any additional text.
 
 ## Storage System
 
@@ -2442,9 +2432,7 @@ self.logger.critical("Fatal error") # Fatal error
 
 The Event module provides a powerful Event wrapper class that simplifies event handling.
 
-Please directly return the complete translated Markdown content without including any other text.
 
-Once again, please note: If the document contains a language switch line (a line with language names separated by `` | ``), strictly adhere to the format requirements in point 8 above and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Type Annotations for the event Parameter
 
@@ -2463,11 +2451,6 @@ Without annotations, the IDE cannot recognize methods on Event (`get_text()` / `
 
 > **Note**: The `event` in event handler callbacks is an **Event wrapper class** (annotated as `Event`); the `event` in module lifecycle methods `on_load` / `on_unload` is a regular **dict** (annotated as `dict`), and these should not be confused.
 
-7. **Important: Path Replacement Rules**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md`), keep them unchanged
-   - This ensures that links point to the correct language version of the document
 
 ## Core Features
 
@@ -2476,7 +2459,6 @@ Without annotations, the IDE cannot recognize methods on Event (`get_text()` / `
 - **Dot-style Access**: Supports accessing event fields using dot notation
 - **Backward Compatibility**: All methods are optional
 
-Please directly return the complete translated Markdown content without any additional text.
 
 ## Core Field Methods
 
@@ -2491,11 +2473,7 @@ async def info_command(event: Event):
     print(f"ID: {event_id}, Platform: {platform}, Time: {time}")
 ```
 
-7. **Important: Path Replacement Rules**
    - Replace `docs/en/` with `docs/en/` in document links
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
-   - This ensures links point to the correct language version of the document
 
 ## Message Event Methods
 
@@ -2510,11 +2488,7 @@ async def private_handler(event: Event):
     await event.reply(f"Hello, {nickname}!")
 ```
 
-7. **Important: Path Replacement Rules**
    - Replace `docs/en/` with `docs/en/` in document links
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (such as `README.xx.md` format links), keep them unchanged
-   - This ensures links point to the correct language version of the document
 
 ## Message Type Detection
 
@@ -2529,11 +2503,6 @@ async def group_handler(event: Event):
     await event.reply(f"Type: {'Private Chat' if is_private else 'Group Chat'}")
 ```
 
-7. **Important: Path Replacement Rules**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (such as `README.xx.md`), keep them unchanged
-   - This ensures that links point to the correct language version of the document
 
 ## Reply Functionality
 
@@ -2549,11 +2518,6 @@ async def ask_command(event: Event):
         await event.reply(f"Hello, {name}!")
 ```
 
-7. **Important: Path Replacement Rules**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
-   - This ensures that links point to the correct language version of the document
 
 ## Command Information Retrieval
 
@@ -2567,11 +2531,6 @@ async def cmdinfo_command(event: Event):
     await event.reply(f"Command: {cmd_name}, Arguments: {cmd_args}")
 ```
 
-7. **Important: Path Replacement Rule**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
-   - This ensures links point to the correct language version of the document
 
 ## Notification Event Methods
 
@@ -2583,9 +2542,7 @@ async def friend_add_handler(event: Event):
     await event.reply("Welcome to add me as a friend!")
 ```
 
-Please directly return the complete translated Markdown content without any additional text.
 
-Once again, if the document contains language switch lines (where language names are separated by `` | ``), strictly follow the format requirements in item 8 above and do not write incorrect formats like ``[**Label**](file)``.
 
 ## Method Quick Reference
 
@@ -3297,11 +3254,6 @@ async def process_message(self, event: Event):
     result = self._sync_process(event)
 ```
 
-7. **Important: Path Replacement Rules**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
-   - This ensures links point to the correct language version of the document
 
 ## Security
 
@@ -3349,11 +3301,6 @@ async def process_command(self, event: Event):
         return
 ```
 
-7. **Important: Path Replacement Rules**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g. `README.xx.md` format), keep them unchanged
-   - This ensures links point to the correct language version of the document
 
 ## Testing
 
@@ -3439,10 +3386,6 @@ The README generated by `epsdk create` already includes the ErisPulse header (Lo
 ```
 
 Badges such as GitHub Stars, Downloads, etc. can be added as needed. The logo can also be downloaded to the project locally (`.github/assets/ErisPulseLogo.png`) and referenced using a relative path.
-
-Please directly return the complete translated Markdown content, without any additional text.
-
-Once again, if the document contains a language switch row (with language names separated by `` | ``), strictly follow the format requirement in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 
 
@@ -3852,7 +3795,6 @@ The ErisPulse command-line tool (`epsdk`) provides project management and packag
 
 ---
 
-docs/en/quick-start.md | docs/en/project-management.md | docs/en/package-management.md | docs/en/cli-reference.md
 
 ## Package Management Commands
 
@@ -4065,6 +4007,53 @@ epsdk list-remote -t modules
 # List after forcing cache refresh
 epsdk list-remote -r
 
+## Configuration Commands
+
+| Command | Aliases | Parameters | Description |
+|---------|---------|------------|-------------|
+| `config` | `cfg`, `conf` | `[name] [--list/-l]` | Interactively configure declarative configuration items for adapters/modules |
+
+### config
+
+Interactively fill in the declarative configuration items for adapters/modules. The wizard is driven by the configuration class (ConfigClass / AccountConfigClass) declared by the adapter/module, automatically generating forms and validating them without manually writing config.toml.
+
+Adapters additionally support multi-account (bot account) management: adding/editing/deleting accounts, and enabling/disabling switches.
+
+**Aliases:** `cfg`, `conf`
+
+**Parameters:**
+
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `[name]` | | Target name (adapter platform name or module name), leave empty to enter interactive selection |
+| `--list` | `-l` | Only list the configuration status of all targets, do not enter the wizard |
+
+**Examples:**
+
+```bash
+# View configuration status of all adapters/modules
+epsdk config --list
+
+# Interactively select target for configuration
+epsdk config
+
+# Directly configure specified adapter
+epsdk config yunhu
+
+# Directly configure specified module
+epsdk config MyModule
+```
+
+**Notes:**
+
+- Configuration status is divided into four levels: `Ready` (validation passed), `Incomplete` (missing or validation failed required fields), `Not Configured` (never generated), `No Configuration` (target did not declare a configuration class)
+- Field values are annotated with source: existing configurations display ` (current:value)`, unconfigured fields show schema default values ` (default:value)`; pressing Enter retains the value
+- Secret-type fields (declared as `secret`) do not echo input, pressing Enter retains the set value
+- In interactive selection mode, after completing a single wizard, it returns to the selection menu (status refreshed), allowing continuous configuration of multiple targets; pressing Enter exits
+- If global form validation fails and re-entry is abandoned, the current wizard is terminated and no configuration is written (to avoid creating a "enabled but incomplete configuration" semi-finished state)
+- After saving, it immediately writes to `config/config.toml`, visible to both Dashboard and running SDK; running adapters can apply new account configurations by restarting the process
+- After successful interactive installation via `epsdk install` or `epsdk init`, if configuration declaration is detected, it automatically guides into this wizard; when installing directly via command line with package name, only configuration prompts are printed
+
 ## Runtime Control Commands
 
 | Command | Alias | Parameters | Description |
@@ -4102,11 +4091,6 @@ epsdk run --reload
 
 ---
 
-7. **Important: Path Replacement Rule**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
-   - This ensures links point to the correct language version of the documentation
 
 ## Project Management Commands
 
@@ -4224,10 +4208,6 @@ epsdk i18n --list
 
 ---
 
-7. **Important: Path Replacement Rule**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md`-formatted links), keep them unchanged to ensure links point to the correct language version of the document
 
 ## Type Stub Commands
 
@@ -4281,7 +4261,6 @@ The following parameters are applicable to all commands:
 
 ---
 
-Please directly return the complete translated Markdown content, without any additional text.
 
 ## Environment Diagnosis
 
@@ -4324,8 +4303,6 @@ The interactive interface provides:
 2. Module selection
 3. Custom installation
 
-For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged to ensure links point to the correct language version of the document.
 
 ## Common Usage
 
@@ -4368,6 +4345,19 @@ epsdk uninstall Weather
 epsdk uninstall Yunhu Weather
 ```
 
+### Configure Components
+
+```bash
+# View configuration status
+epsdk config --list
+
+# Interactively select target configuration
+epsdk config
+
+# Configure a specific adapter
+epsdk config yunhu
+```
+
 ### Upgrade Components
 
 ```bash
@@ -4394,10 +4384,10 @@ epsdk run main.py --reload
 ### Switch Language
 
 ```bash
-# Interactive language selection
+# Interactively select language
 epsdk i18n
 
-# Switch directly to English
+# Directly switch to English
 epsdk i18n en
 
 # List supported languages
@@ -4430,14 +4420,14 @@ epsdk init -q -n my_bot
 # Interactive creation (guided selection of type and filling in information)
 epsdk create
 
-# Direct creation of Module project
+# Directly create a Module project
 epsdk create module -n MyModule
 
-# Direct creation of Adapter project
+# Directly create an Adapter project
 epsdk create adapter -n MyAdapter
 
 # Full parameters
-epsdk create module -n MyModule -d "Module description" -a "Author" -e "mail@example.com"
+epsdk create module -n MyModule -d "module description" -a "author" -e "mail@example.com"
 
 # Force overwrite existing directory
 epsdk create module -n MyModule -f
@@ -4949,9 +4939,7 @@ flowchart LR
     C & D & E & F & G --> H["Event Wrapper Class<br/>reply / get_text / done etc."]
 ```
 
-Please return the complete translated Markdown content directly, without including any other text.
 
-Reminder: If the document contains language switching lines (lines separated by `` | ``), strictly adhere to the format requirements above, do not write incorrect formats like ``[**Label**](file)``.
 
 ## Command Module
 
@@ -5187,7 +5175,6 @@ async def heartbeat_handler(event):
 
 After the adapter sends a meta event, the framework automatically tracks the Bot status. For the query API and lifecycle event listeners, please refer to [Adapter System API - Bot Status Management](adapter-system.md#bot-status-management).
 
-Please return the complete translated Markdown content directly, without including any other text.
 
 ## Event Wrapper Class
 
@@ -5640,9 +5627,7 @@ async def low_priority_handler(event):
 
 The `Conversation` class provides convenient methods for multi-turn interactions within the same session, suitable for scenarios such as guided operations, information collection, and conversational question-answering.
 
-Please directly return the complete translated Markdown content without including any other text.
 
-Once again, please note: if the document contains a language switch line (with each language name separated by `` | ``), strictly follow the format requirements above in item 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Creating Conversations
 
@@ -5675,7 +5660,6 @@ async def quiz_handler(event):
     conv.stop()
 ```
 
-Please directly return the complete translated Markdown content without any additional text.
 
 ## Core API
 
@@ -5892,7 +5876,6 @@ await conv.start()          # Start from the first branch
 await conv.start("settings") # Start from the specified branch
 ```
 
-Please directly return the complete translated Markdown content without including any other text.
 
 ## Context and Persistence
 
@@ -5932,7 +5915,6 @@ else:
 conv.clear_saved()
 ```
 
-Please directly return the complete translated Markdown content without any additional text.
 
 ## Typical Flow Patterns
 
@@ -6189,15 +6171,8 @@ complex_msg = (
 
 ErisPulse provides a unified network client that aggregates HTTP requests, WebSocket connections, and connection pool management. Modules and adapters **must prioritize** using this client over importing third-party libraries such as `aiohttp`, `httpx`, or `requests` directly.
 
-Please directly return the complete translated Markdown content, without any additional text.
 
-Once again, if the document contains language switch lines (with language names separated by `` | ``), strictly adhere to the format requirements in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
-7. **Important: Path Replacement Rule**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., links in the form of `README.xx.md`), keep them unchanged
-   - This ensures that links point to the correct language version of the document
 
 ## Overview
 
@@ -6212,11 +6187,6 @@ The main features of the network client are:
 - **Connection Pool Reuse**: Connection pool management based on aiohttp.ClientSession
 - **Exception System**: aiohttp exceptions are automatically converted to ErisPulse exceptions (ClientError system)
 
-7. **Important: Path Replacement Rule**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
-   - This ensures links point to the correct language version of the document
 
 ## Quick Start
 
@@ -6249,9 +6219,7 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-Please directly return the complete translated Markdown content without any additional text.
 
-Again, if the document contains a language switch line (with language names separated by `` | ``), strictly follow the format requirement in item 8 above and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## HttpResponse
 
@@ -6276,11 +6244,6 @@ data = await resp.json()       # parse JSON
 text = await resp.text("gbk")  # specify encoding
 ```
 
-7. **Important: Path Replacement Rules**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (such as `README.xx.md`), keep them unchanged
-   - This ensures that links point to the correct language version of the document
 
 ## Request Methods
 
@@ -6425,11 +6388,6 @@ client = Client(
 )
 ```
 
-7. **Important: Path Replacement Rules**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
-   - This ensures links point to the correct language version of the documentation
 
 ## Request Statistics
 
@@ -6444,11 +6402,6 @@ stats = client.stats
 client.reset_stats()
 ```
 
-7. **Important: Path replacement rules**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (such as `README.xx.md` format links), keep them unchanged
-   - This ensures links point to the correct language version of the document
 
 ## Lifecycle Events
 
@@ -6476,11 +6429,6 @@ async def on_ws_connect(event_data):
     print(f"WS Connection: {event_data['url']}")
 ```
 
-7. **Important: Path replacement rules**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (such as `README.xx.md`), keep them unchanged
-   - This ensures links point to the correct language version of the document
 
 ## Context Management
 
@@ -6700,11 +6648,6 @@ class MyAdapter(BaseAdapter):
 
 > You can also use `sdk.client` via `from ErisPulse import sdk`, which has the same effect.
 
-7. **Important: Path Replacement Rules**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
-   - This ensures links point to the correct language version of the document
 
 ## Best Practices
 
@@ -6715,10 +6658,6 @@ class MyAdapter(BaseAdapter):
 5. **Use retry mechanisms**: Enable retries for unstable APIs to improve reliability.
 6. **Monitor request statistics**: Monitor request situations through `sdk.client.stats` or lifecycle events of `client.request`.
 7. **Use advanced methods for WebSocket**: Prefer advanced methods such as `iter_text` / `iter_json`. Only use `iter_messages` when distinguishing message types is necessary.
-
-Please directly return the complete translated Markdown content without including any other text.
-
-Once again, please note: if the document contains language switch lines (with each language name separated by `` | ``), strictly adhere to the format requirements specified above in point 8. Do not write incorrect formats like ``[**Label**](file)``.
 
 
 
@@ -7529,9 +7468,7 @@ The system supports three triggering methods:
 - `lifecycle.emit_sync("event", data)` — The synchronous version (used in non-async contexts)
 - `await lifecycle.submit_event("event", ...)` — Compatible with the old version, automatically constructs standard event formats
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, if the document contains language switch lines (with language names separated by `` | ``), strictly follow the format requirements above in item 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Event Handling Mechanism
 
@@ -7888,8 +7825,6 @@ async def _poll(self):
 6. **Lifecycle cleanup**: When `sdk.uninit()` is called, all registered processors and timers are cleaned up.
 7. **Loading priority**: If you need to listen to events during the framework initialization phase, it is recommended to set a high priority and disable lazy loading.
 
-Please directly return the complete translated Markdown content, without including any other text.
-
 
 
 ### 懶加载系统
@@ -7898,9 +7833,7 @@ Please directly return the complete translated Markdown content, without includi
 
 The ErisPulse SDK provides a powerful lazy-loaded module system that allows modules to be initialized only when needed, significantly improving application startup speed and memory efficiency.
 
-Please directly return the complete translated Markdown content without any additional text.
 
-Once again, please note: if the document contains a language switch line (with language names separated by `` | ``), strictly adhere to the format requirements outlined above in point 8. Do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Overview
 
@@ -7911,7 +7844,6 @@ The lazy loading module system is one of the core features of ErisPulse. It work
 - **Automatic Dependency Management**: Module dependencies are automatically initialized when used.
 - **Lifecycle Support**: For modules that inherit from `BaseModule`, lifecycle methods are automatically invoked.
 
-Please replace all `docs/en/` in document links with `docs/en/`. For example, `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`. For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged to ensure links point to the correct language version of the document.
 
 ## How It Works
 
@@ -8032,11 +7964,6 @@ class MyModule(BaseModule):
         )
 ```
 
-7. **Important: Path Replacement Rule**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
-   - This ensures that links point to the correct language version of the document
 
 ## Using Lazy-Loaded Modules
 
@@ -8131,10 +8058,6 @@ docs/en/best-practices.md
 2. If your module contains modules that listen to Events, or other actively listening modules, there are two options: declare an `activate_on` trigger (maintain lazy loading, activate automatically when the event arrives), or declare that it needs to be loaded immediately (`lazy_load=False`), otherwise it will affect the normal operation of your module.
 3. We do not recommend disabling lazy loading unless there are special requirements, otherwise it may bring you problems such as dependency management and lifecycle events.
 4. In the command dict declaration of `activate_on`, `name` must be consistent with the real command name registered by `@command()` in the module's `on_load` — otherwise, after the module is activated, the placeholder command will be unregistered, and the declared command inconsistent with the implementation will not exist.
-
-Please directly return the complete translated Markdown content, without including any other text.
-
-Once again, if the document contains a language switch line (with each language name separated by `` | ``), be sure to strictly follow the format requirements above in item 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 
 
@@ -8744,9 +8667,7 @@ The module scope system is used to control which modules a "certain Bot" can use
 4. Supports dynamic addition and removal at runtime via `sdk.scope.bind()` / `unbind()`, which can be persisted
 {!--< /tips >!--}
 
-Please directly return the complete translated Markdown content without including any other text.
 
-Once again, if the document contains a language switch line (with language names separated by `` | ``), strictly follow the format requirement in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## How It Works
 
@@ -8767,7 +8688,6 @@ flowchart TD
 - When event data lacks `self` (Bot cannot be identified), skip bot-level and determine based on session-level / platform-level.
 - Framework-level resources (handlers with empty owner, command dispatcher, event bus) are always allowed, unaffected by scope.
 
-Please directly return the complete translated Markdown content, without any additional text.
 
 ## Configuration File
 
@@ -8966,11 +8886,6 @@ This article breaks down the startup chain into independent components, explains
 
 > This article assumes you have already run through [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This article focuses on the internal breakdown of the chain within `init()`, as well as lower-level entry points such as `init()` / `init_task()` / `init_sync()`.
 
-7. **Important: Path Replacement Rules**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (such as links in the form of `README.xx.md`), keep them unchanged
-   - This ensures that links point to the correct language version of the document
 
 ## SDK Top-Level Entry Overview
 
@@ -9422,9 +9337,7 @@ while True:
 
 This document defines the session type standard supported by ErisPulse, including received event types and sent target types.
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, if the document contains language switch lines (lines with each language name separated by `` | ``), strictly follow the format requirement in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## 1. Core Concepts
 
@@ -9596,9 +9509,7 @@ group                  group                  group
 discuss                group                  group  # Mapped to group
 ```
 
-Please directly return the complete translated Markdown content without any additional text.
 
-Once again, if the document contains language switch lines (lines with language names separated by `` | ``), strictly follow the format requirement in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## 4. Custom Type Extension
 
@@ -9680,9 +9591,7 @@ receive_type = infer_receive_type(event)
 # Returns: "group" (not "group_member_increase")
 ```
 
-Please directly return the complete translated Markdown content, without any additional text.
 
-Once again, if the document contains a language switch line (with language names separated by `` | ``), be sure to strictly follow the format requirement in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## 6. API Usage Examples
 
@@ -9796,9 +9705,7 @@ clear_custom_types()                # Clear all
 clear_custom_types(platform="discord")  # Clear only for specified platform
 ```
 
-Please directly return the complete translated Markdown content, without any additional text.
 
-Once again, if the document contains language switch lines (lines with language names separated by `` | ``), strictly follow the format requirements in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## 9. Best Practices
 
@@ -9854,8 +9761,6 @@ A: For non-generic or platform-specific types, use `{platform}_raw` and `{platfo
 
 Please directly return the translated complete Markdown content, without including any other text.
 
-Once again, if the document contains a language switch line (with each language name separated by `` | ``), be sure to strictly follow the format requirement in item 8 above, and do not write the incorrect format ``[**Label**](file)``.
-
 
 
 ====
@@ -9887,9 +9792,7 @@ without the need for a terminal, or a separate Python environment.
 - **Background Persistence**: Android foreground service keep-alive; Windows minimized to system tray, closing the window does not interrupt the instance
 - **Dynamic Module Windows**: Registered module pages automatically appear in the sidebar navigation (grouped with Dashboard), click to jump directly
 
-Please return the complete translated Markdown content directly, without including any other text.
 
-Reminder again: If the document contains language switching lines (lines with language names separated by ``|``), please strictly adhere to the format requirements in item 8 above, and do not write incorrect formats like ``[**Label**](file)``.
 
 ## Supported Platforms
 
@@ -9962,10 +9865,6 @@ The installation steps for both builds are identical:
   The view will automatically appear in the App sidebar navigation (groups are consistent with Dashboard), click to jump to the corresponding page rendering
 
 ---
-
-Please return the complete translated Markdown content directly, without any other text.
-
-Reminder again: If the document contains language switching lines (lines separated by ` | ` with language names), please strictly follow rule 8 above and do not write formats like `[**Label**](file)`.
 
 
 
@@ -10345,9 +10244,7 @@ enabled = true
 
 ---
 
-Please return the complete translated Markdown content directly, without including any other text.
 
-Again, if the document contains language switch lines (lines where language names are separated by `` | ``), please strictly adhere to the format requirement in item 8 above, and do not write incorrect formats like ``[**Label**](file)``.
 
 ## Quick Start
 

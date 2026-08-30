@@ -1,11 +1,11 @@
 {
   "version": "1.0",
-  "total_keywords": 1451,
+  "total_keywords": 1457,
   "keywords": {
     "\"Chat\": {": [
       {
         "document": "advanced/scope.md",
-        "line": 200,
+        "line": 197,
         "level": 1,
         "title": "\"Chat\": {"
       }
@@ -13,7 +13,7 @@
     "\"adapters\": {                                  # Adapter -> Bot -> Scope": [
       {
         "document": "advanced/scope.md",
-        "line": 211,
+        "line": 208,
         "level": 1,
         "title": "\"adapters\": {                                  # Adapter -> Bot -> Scope"
       }
@@ -29,7 +29,7 @@
     "\"bots\": {\"123456\": {\"status\": \"online\", \"last_active\": ..., \"info\": {...}, \"scope\": {...}}},": [
       {
         "document": "advanced/scope.md",
-        "line": 214,
+        "line": 211,
         "level": 1,
         "title": "\"bots\": {\"123456\": {\"status\": \"online\", \"last_active\": ..., \"info\": {...}, \"scope\": {...}}},"
       }
@@ -37,7 +37,7 @@
     "\"commands\": [\"chat\", \"translate\"],": [
       {
         "document": "advanced/scope.md",
-        "line": 204,
+        "line": 201,
         "level": 1,
         "title": "\"commands\": [\"chat\", \"translate\"],"
       }
@@ -61,7 +61,7 @@
     "\"handlers\": {\"message\": 2, \"notice\": 1},": [
       {
         "document": "advanced/scope.md",
-        "line": 205,
+        "line": 202,
         "level": 1,
         "title": "\"handlers\": {\"message\": 2, \"notice\": 1},"
       }
@@ -77,7 +77,7 @@
     "\"info\": {...},": [
       {
         "document": "advanced/scope.md",
-        "line": 203,
+        "line": 200,
         "level": 1,
         "title": "\"info\": {...},"
       }
@@ -85,7 +85,7 @@
     "\"lifecycle_hooks\": 3,": [
       {
         "document": "advanced/scope.md",
-        "line": 207,
+        "line": 204,
         "level": 1,
         "title": "\"lifecycle_hooks\": 3,"
       }
@@ -93,7 +93,7 @@
     "\"load_strategy\": {\"lazy\": False, \"priority\": 50},": [
       {
         "document": "advanced/scope.md",
-        "line": 202,
+        "line": 199,
         "level": 1,
         "title": "\"load_strategy\": {\"lazy\": False, \"priority\": 50},"
       }
@@ -101,7 +101,7 @@
     "\"loaded\": True, \"enabled\": True,": [
       {
         "document": "advanced/scope.md",
-        "line": 201,
+        "line": 198,
         "level": 1,
         "title": "\"loaded\": True, \"enabled\": True,"
       }
@@ -109,7 +109,7 @@
     "\"modules\": {                                   # Module -> Owned Resources": [
       {
         "document": "advanced/scope.md",
-        "line": 199,
+        "line": 196,
         "level": 1,
         "title": "\"modules\": {                                   # Module -> Owned Resources"
       }
@@ -125,7 +125,7 @@
     "\"onebot11\": {": [
       {
         "document": "advanced/scope.md",
-        "line": 212,
+        "line": 209,
         "level": 1,
         "title": "\"onebot11\": {"
       }
@@ -157,7 +157,7 @@
     "\"routes\": {\"http\": [\"/Chat/api\"], \"ws\": [], \"sse\": []},": [
       {
         "document": "advanced/scope.md",
-        "line": 206,
+        "line": 203,
         "level": 1,
         "title": "\"routes\": {\"http\": [\"/Chat/api\"], \"ws\": [], \"sse\": []},"
       }
@@ -165,7 +165,7 @@
     "\"scope\": {\"modules\": [...], \"blocked\": [...]},": [
       {
         "document": "advanced/scope.md",
-        "line": 215,
+        "line": 212,
         "level": 1,
         "title": "\"scope\": {\"modules\": [...], \"blocked\": [...]},"
       }
@@ -173,7 +173,7 @@
     "\"scope\": {\"platforms\": {...}, \"bots\": {...}, \"sessions\": {...}}   # All scopes bound": [
       {
         "document": "advanced/scope.md",
-        "line": 218,
+        "line": 215,
         "level": 1,
         "title": "\"scope\": {\"platforms\": {...}, \"bots\": {...}, \"sessions\": {...}}   # All scopes bound"
       }
@@ -181,7 +181,7 @@
     "\"scope_applies\": True,": [
       {
         "document": "advanced/scope.md",
-        "line": 208,
+        "line": 205,
         "level": 1,
         "title": "\"scope_applies\": True,"
       }
@@ -197,7 +197,7 @@
     "\"status\": \"started\", \"enabled\": True,": [
       {
         "document": "advanced/scope.md",
-        "line": 213,
+        "line": 210,
         "level": 1,
         "title": "\"status\": \"started\", \"enabled\": True,"
       }
@@ -285,7 +285,7 @@
     "...": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 270,
+        "line": 262,
         "level": 1,
         "title": "..."
       }
@@ -293,7 +293,7 @@
     "... later in the same session ...": [
       {
         "document": "advanced/conversation.md",
-        "line": 286,
+        "line": 282,
         "level": 1,
         "title": "... later in the same session ..."
       }
@@ -301,7 +301,7 @@
     "... other operations ...": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 282,
+        "line": 274,
         "level": 1,
         "title": "... other operations ..."
       }
@@ -325,7 +325,7 @@
     "1. Categorized Exception Handling": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 468,
+        "line": 459,
         "level": 3,
         "title": "1. Categorized Exception Handling"
       },
@@ -347,7 +347,7 @@
     "1. Core Concepts": [
       {
         "document": "standards/session-types.md",
-        "line": 9,
+        "line": 7,
         "level": 2,
         "title": "1. Core Concepts"
       }
@@ -395,7 +395,7 @@
     "1. Discovery Layer: Finder": [
       {
         "document": "advanced/startup.md",
-        "line": 63,
+        "line": 58,
         "level": 3,
         "title": "1. Discovery Layer: Finder"
       }
@@ -443,7 +443,7 @@
     "1. Sensitive Data Protection": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 381,
+        "line": 376,
         "level": 3,
         "title": "1. Sensitive Data Protection"
       }
@@ -459,7 +459,7 @@
     "1. Specify Type and ID": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 11,
+        "line": 9,
         "level": 3,
         "title": "1. Specify Type and ID"
       }
@@ -475,13 +475,13 @@
     "1. Unit Tests": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 526,
+        "line": 517,
         "level": 3,
         "title": "1. Unit Tests"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 433,
+        "line": 423,
         "level": 3,
         "title": "1. Unit Tests"
       }
@@ -513,7 +513,7 @@
     "1. When to Send Meta Events": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 13,
+        "line": 11,
         "level": 3,
         "title": "1. When to Send Meta Events"
       }
@@ -521,7 +521,7 @@
     "1.1 Receive Type && Send Type": [
       {
         "document": "standards/session-types.md",
-        "line": 11,
+        "line": 9,
         "level": 3,
         "title": "1.1 Receive Type && Send Type"
       }
@@ -545,7 +545,7 @@
     "1.2 Type Mapping Relationship": [
       {
         "document": "standards/session-types.md",
-        "line": 18,
+        "line": 16,
         "level": 3,
         "title": "1.2 Type Mapping Relationship"
       }
@@ -649,7 +649,7 @@
     "1xxxx - Action request errors": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 386,
+        "line": 377,
         "level": 1,
         "title": "1xxxx - Action request errors"
       }
@@ -729,7 +729,7 @@
     "2. Input Validation": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 407,
+        "line": 402,
         "level": 3,
         "title": "2. Input Validation"
       }
@@ -737,13 +737,13 @@
     "2. Integration Tests": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 550,
+        "line": 541,
         "level": 3,
         "title": "2. Integration Tests"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 446,
+        "line": 436,
         "level": 3,
         "title": "2. Integration Tests"
       }
@@ -751,7 +751,7 @@
     "2. Loading Layer: Loader": [
       {
         "document": "advanced/startup.md",
-        "line": 83,
+        "line": 78,
         "level": 3,
         "title": "2. Loading Layer: Loader"
       }
@@ -759,7 +759,7 @@
     "2. Logging": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 501,
+        "line": 492,
         "level": 3,
         "title": "2. Logging"
       }
@@ -783,7 +783,7 @@
     "2. Quick Start": [
       {
         "document": "standards/session-types.md",
-        "line": 36,
+        "line": 34,
         "level": 2,
         "title": "2. Quick Start"
       }
@@ -815,7 +815,7 @@
     "2. Sending Meta Events": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 21,
+        "line": 19,
         "level": 3,
         "title": "2. Sending Meta Events"
       }
@@ -823,7 +823,7 @@
     "2. Specify Only ID": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 17,
+        "line": 15,
         "level": 3,
         "title": "2. Specify Only ID"
       }
@@ -839,7 +839,7 @@
     "2. Standard Session Types": [
       {
         "document": "standards/session-types.md",
-        "line": 90,
+        "line": 88,
         "level": 2,
         "title": "2. Standard Session Types"
       }
@@ -879,7 +879,7 @@
     "2.1 Installation": [
       {
         "document": "standards/session-types.md",
-        "line": 40,
+        "line": 38,
         "level": 3,
         "title": "2.1 Installation"
       }
@@ -895,7 +895,7 @@
     "2.1 OneBot12 Standard Types": [
       {
         "document": "standards/session-types.md",
-        "line": 92,
+        "line": 90,
         "level": 3,
         "title": "2.1 OneBot12 Standard Types"
       }
@@ -951,7 +951,7 @@
     "2.2 Basic Usage": [
       {
         "document": "standards/session-types.md",
-        "line": 48,
+        "line": 46,
         "level": 3,
         "title": "2.2 Basic Usage"
       }
@@ -959,7 +959,7 @@
     "2.2 ErisPulse Extended Types": [
       {
         "document": "standards/session-types.md",
-        "line": 115,
+        "line": 113,
         "level": 3,
         "title": "2.2 ErisPulse Extended Types"
       }
@@ -1015,7 +1015,7 @@
     "2xxxx - Action handler errors": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 391,
+        "line": 382,
         "level": 1,
         "title": "2xxxx - Action handler errors"
       }
@@ -1031,7 +1031,7 @@
     "3. API Reference": [
       {
         "document": "standards/session-types.md",
-        "line": 70,
+        "line": 68,
         "level": 2,
         "title": "3. API Reference"
       }
@@ -1087,7 +1087,7 @@
     "3. Heartbeat Events": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 46,
+        "line": 44,
         "level": 3,
         "title": "3. Heartbeat Events"
       }
@@ -1103,7 +1103,7 @@
     "3. Platform Type Mapping": [
       {
         "document": "standards/session-types.md",
-        "line": 138,
+        "line": 136,
         "level": 2,
         "title": "3. Platform Type Mapping"
       }
@@ -1127,7 +1127,7 @@
     "3. Registration Layer: register_to_manager": [
       {
         "document": "advanced/startup.md",
-        "line": 132,
+        "line": 127,
         "level": 3,
         "title": "3. Registration Layer: register_to_manager"
       }
@@ -1151,7 +1151,7 @@
     "3. Specify Sending Account": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 23,
+        "line": 21,
         "level": 3,
         "title": "3. Specify Sending Account"
       }
@@ -1199,7 +1199,7 @@
     "3.1 Mapping Principles": [
       {
         "document": "standards/session-types.md",
-        "line": 140,
+        "line": 138,
         "level": 3,
         "title": "3.1 Mapping Principles"
       }
@@ -1215,7 +1215,7 @@
     "3.1 Session Class": [
       {
         "document": "standards/session-types.md",
-        "line": 74,
+        "line": 72,
         "level": 3,
         "title": "3.1 Session Class"
       }
@@ -1231,7 +1231,7 @@
     "3.2 Common Platform Mapping Examples": [
       {
         "document": "standards/session-types.md",
-        "line": 148,
+        "line": 146,
         "level": 3,
         "title": "3.2 Common Platform Mapping Examples"
       }
@@ -1239,7 +1239,7 @@
     "3.2 Event Class": [
       {
         "document": "standards/session-types.md",
-        "line": 78,
+        "line": 76,
         "level": 3,
         "title": "3.2 Event Class"
       }
@@ -1319,7 +1319,7 @@
     "3xxxx - Action execution errors": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 395,
+        "line": 386,
         "level": 1,
         "title": "3xxxx - Action execution errors"
       }
@@ -1335,7 +1335,7 @@
     "4. Automatic Discovery of `self` Field": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 59,
+        "line": 57,
         "level": 3,
         "title": "4. Automatic Discovery of `self` Field"
       }
@@ -1343,7 +1343,7 @@
     "4. Combination Usage": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 29,
+        "line": 27,
         "level": 3,
         "title": "4. Combination Usage"
       }
@@ -1351,7 +1351,7 @@
     "4. Contributing": [
       {
         "document": "standards/session-types.md",
-        "line": 82,
+        "line": 80,
         "level": 2,
         "title": "4. Contributing"
       }
@@ -1359,7 +1359,7 @@
     "4. Custom Type Extension": [
       {
         "document": "standards/session-types.md",
-        "line": 183,
+        "line": 179,
         "level": 2,
         "title": "4. Custom Type Extension"
       }
@@ -1439,7 +1439,7 @@
     "4. Starting Adapters": [
       {
         "document": "advanced/startup.md",
-        "line": 146,
+        "line": 141,
         "level": 3,
         "title": "4. Starting Adapters"
       }
@@ -1471,7 +1471,7 @@
     "4.1 Register Custom Type": [
       {
         "document": "standards/session-types.md",
-        "line": 185,
+        "line": 181,
         "level": 3,
         "title": "4.1 Register Custom Type"
       }
@@ -1503,7 +1503,7 @@
     "4.2 Use Custom Type": [
       {
         "document": "standards/session-types.md",
-        "line": 201,
+        "line": 197,
         "level": 3,
         "title": "4.2 Use Custom Type"
       }
@@ -1519,7 +1519,7 @@
     "4.3 Unregister Custom Type": [
       {
         "document": "standards/session-types.md",
-        "line": 219,
+        "line": 215,
         "level": 3,
         "title": "4.3 Unregister Custom Type"
       }
@@ -1535,7 +1535,7 @@
     "42 is treated as an exit code, PM2 restarts by default; set restart_delay to debounce": [
       {
         "document": "advanced/startup.md",
-        "line": 421,
+        "line": 416,
         "level": 1,
         "title": "42 is treated as an exit code, PM2 restarts by default; set restart_delay to debounce"
       }
@@ -1559,7 +1559,7 @@
     "5. Bot Status Query": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 84,
+        "line": 82,
         "level": 3,
         "title": "5. Bot Status Query"
       }
@@ -1591,7 +1591,7 @@
     "5. Initializing Modules": [
       {
         "document": "advanced/startup.md",
-        "line": 158,
+        "line": 153,
         "level": 3,
         "title": "5. Initializing Modules"
       }
@@ -1599,7 +1599,7 @@
     "5. License": [
       {
         "document": "standards/session-types.md",
-        "line": 86,
+        "line": 84,
         "level": 2,
         "title": "5. License"
       }
@@ -1767,7 +1767,7 @@
     "6. Starting the Router Server": [
       {
         "document": "advanced/startup.md",
-        "line": 170,
+        "line": 165,
         "level": 3,
         "title": "6. Starting the Router Server"
       }
@@ -1887,7 +1887,7 @@
     "7. Core API Reference": [
       {
         "document": "standards/session-types.md",
-        "line": 306,
+        "line": 300,
         "level": 2,
         "title": "7. Core API Reference"
       }
@@ -1935,7 +1935,7 @@
     "7.1 Type Conversion": [
       {
         "document": "standards/session-types.md",
-        "line": 308,
+        "line": 302,
         "level": 3,
         "title": "7.1 Type Conversion"
       }
@@ -1943,7 +1943,7 @@
     "7.2 ID Field Query": [
       {
         "document": "standards/session-types.md",
-        "line": 322,
+        "line": 316,
         "level": 3,
         "title": "7.2 ID Field Query"
       }
@@ -1951,7 +1951,7 @@
     "7.3 One-step Retrieval of Send Information": [
       {
         "document": "standards/session-types.md",
-        "line": 334,
+        "line": 328,
         "level": 3,
         "title": "7.3 One-step Retrieval of Send Information"
       }
@@ -1959,7 +1959,7 @@
     "7.4 Retrieve Target ID": [
       {
         "document": "standards/session-types.md",
-        "line": 347,
+        "line": 341,
         "level": 3,
         "title": "7.4 Retrieve Target ID"
       }
@@ -2119,7 +2119,7 @@
     "@Message Related": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 190,
+        "line": 157,
         "level": 4,
         "title": "@Message Related"
       }
@@ -2135,7 +2135,7 @@
     "A2UI button event": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 387,
+        "line": 379,
         "level": 1,
         "title": "A2UI button event"
       }
@@ -2189,7 +2189,7 @@
     "API Response": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 180,
+        "line": 171,
         "level": 2,
         "title": "API Response"
       },
@@ -2227,7 +2227,7 @@
     "About width and height": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 233,
+        "line": 231,
         "level": 3,
         "title": "About width and height"
       }
@@ -2259,7 +2259,7 @@
     "Account Configuration (EmailAdapter.accounts)": [
       {
         "document": "platform-guide/email.md",
-        "line": 44,
+        "line": 41,
         "level": 3,
         "title": "Account Configuration (EmailAdapter.accounts)"
       }
@@ -2267,7 +2267,7 @@
     "Account Identification in Events": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 446,
+        "line": 439,
         "level": 3,
         "title": "Account Identification in Events"
       },
@@ -2281,7 +2281,7 @@
     "Account Management": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 235,
+        "line": 227,
         "level": 2,
         "title": "Account Management"
       }
@@ -2289,7 +2289,7 @@
     "Account Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 254,
+        "line": 246,
         "level": 3,
         "title": "Account Method"
       }
@@ -2297,7 +2297,7 @@
     "Account Resolution Fallback Chain": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 624,
+        "line": 606,
         "level": 3,
         "title": "Account Resolution Fallback Chain"
       }
@@ -2305,7 +2305,7 @@
     "Account Resolution Priority": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 455,
+        "line": 451,
         "level": 3,
         "title": "Account Resolution Priority"
       }
@@ -2313,7 +2313,7 @@
     "Action-type methods without content parameters": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 213,
+        "line": 205,
         "level": 1,
         "title": "Action-type methods without content parameters"
       }
@@ -2345,7 +2345,7 @@
     "Adapter Architecture": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 9,
+        "line": 7,
         "level": 2,
         "title": "Adapter Architecture"
       },
@@ -2415,7 +2415,7 @@
     "Adapter Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 151,
+        "line": 149,
         "level": 3,
         "title": "Adapter Lifecycle"
       }
@@ -2463,7 +2463,7 @@
     "Adapter-level connection information (recommended)": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 214,
+        "line": 212,
         "level": 1,
         "title": "Adapter-level connection information (recommended)"
       }
@@ -2471,7 +2471,7 @@
     "AdapterManager Adapter Manager": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 50,
+        "line": 48,
         "level": 2,
         "title": "AdapterManager Adapter Manager"
       }
@@ -2479,7 +2479,7 @@
     "Adapters: Registering Platform Extension Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 547,
+        "line": 544,
         "level": 3,
         "title": "Adapters: Registering Platform Extension Methods"
       }
@@ -2487,7 +2487,7 @@
     "Add Middleware": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 210,
+        "line": 208,
         "level": 4,
         "title": "Add Middleware"
       }
@@ -2495,7 +2495,7 @@
     "Add a line in the module code or a temporary script to locate": [
       {
         "document": "advanced/scope.md",
-        "line": 173,
+        "line": 170,
         "level": 1,
         "title": "Add a line in the module code or a temporary script to locate"
       }
@@ -2503,7 +2503,7 @@
     "Additional Fields for Message Events": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 132,
+        "line": 130,
         "level": 3,
         "title": "Additional Fields for Message Events"
       }
@@ -2511,7 +2511,7 @@
     "Additional Fields for Notice Events": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 140,
+        "line": 138,
         "level": 3,
         "title": "Additional Fields for Notice Events"
       }
@@ -2551,7 +2551,7 @@
     "All events containing the self field will trigger automatic discovery": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 941,
+        "line": 936,
         "level": 1,
         "title": "All events containing the self field will trigger automatic discovery"
       }
@@ -2575,7 +2575,7 @@
     "Animation Example": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 197,
+        "line": 195,
         "level": 3,
         "title": "Animation Example"
       }
@@ -2591,7 +2591,7 @@
     "Approve request": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 176,
+        "line": 172,
         "level": 1,
         "title": "Approve request"
       }
@@ -2629,7 +2629,7 @@
     "As a context manager, it automatically closes the session": [
       {
         "document": "advanced/http-client.md",
-        "line": 301,
+        "line": 267,
         "level": 1,
         "title": "As a context manager, it automatically closes the session"
       }
@@ -2653,7 +2653,7 @@
     "Asynchronous Initialization": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 180,
+        "line": 172,
         "level": 3,
         "title": "Asynchronous Initialization"
       }
@@ -2661,7 +2661,7 @@
     "Asynchronous Processing Mechanism": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 465,
+        "line": 461,
         "level": 2,
         "title": "Asynchronous Processing Mechanism"
       },
@@ -2691,7 +2691,7 @@
     "Asynchronous callback": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 318,
+        "line": 305,
         "level": 1,
         "title": "Asynchronous callback"
       }
@@ -2699,7 +2699,7 @@
     "At Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 111,
+        "line": 103,
         "level": 3,
         "title": "At Method"
       }
@@ -2707,7 +2707,7 @@
     "AtAll Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 121,
+        "line": 113,
         "level": 3,
         "title": "AtAll Method"
       }
@@ -2729,7 +2729,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 253,
+        "line": 251,
         "level": 4,
         "title": "Attribute Access"
       }
@@ -2761,7 +2761,7 @@
     "Automatic Injection": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 265,
+        "line": 263,
         "level": 3,
         "title": "Automatic Injection"
       }
@@ -2769,7 +2769,7 @@
     "Automatically completed internally by the adapter": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 529,
+        "line": 518,
         "level": 1,
         "title": "Automatically completed internally by the adapter"
       }
@@ -2777,7 +2777,7 @@
     "Automatically convert private → user (not recommended, may have compatibility issues)": [
       {
         "document": "standards/session-types.md",
-        "line": 280,
+        "line": 274,
         "level": 1,
         "title": "Automatically convert private → user (not recommended, may have compatibility issues)"
       }
@@ -2793,7 +2793,7 @@
     "Backup": [
       {
         "document": "user-guide/deployment.md",
-        "line": 288,
+        "line": 289,
         "level": 3,
         "title": "Backup"
       }
@@ -2817,7 +2817,7 @@
     "BaseConverter Base Class (Recommended)": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 25,
+        "line": 23,
         "level": 2,
         "title": "BaseConverter Base Class (Recommended)"
       }
@@ -2833,7 +2833,7 @@
     "Basic Calling Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 9,
+        "line": 7,
         "level": 2,
         "title": "Basic Calling Methods"
       }
@@ -2841,7 +2841,7 @@
     "Basic Checks": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 196,
+        "line": 163,
         "level": 4,
         "title": "Basic Checks"
       }
@@ -2857,25 +2857,25 @@
     "Basic Information": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 646,
+        "line": 635,
         "level": 2,
         "title": "Basic Information"
       },
       {
         "document": "platform-guide/discord.md",
-        "line": 21,
+        "line": 17,
         "level": 2,
         "title": "Basic Information"
       },
       {
         "document": "platform-guide/email.md",
-        "line": 18,
+        "line": 15,
         "level": 2,
         "title": "Basic Information"
       },
       {
         "document": "platform-guide/ideaura.md",
-        "line": 19,
+        "line": 16,
         "level": 2,
         "title": "Basic Information"
       },
@@ -2887,13 +2887,13 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 16,
+        "line": 15,
         "level": 2,
         "title": "Basic Information"
       },
       {
         "document": "platform-guide/onebot11.md",
-        "line": 18,
+        "line": 16,
         "level": 2,
         "title": "Basic Information"
       },
@@ -2911,19 +2911,19 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 20,
+        "line": 16,
         "level": 2,
         "title": "Basic Information"
       },
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 7,
+        "line": 5,
         "level": 2,
         "title": "Basic Information"
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 18,
+        "line": 15,
         "level": 2,
         "title": "Basic Information"
       },
@@ -2945,7 +2945,7 @@
     "Basic Methods (Built-in in Base Class)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 59,
+        "line": 51,
         "level": 3,
         "title": "Basic Methods (Built-in in Base Class)"
       }
@@ -2961,7 +2961,7 @@
     "Basic Reply": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 227,
+        "line": 194,
         "level": 4,
         "title": "Basic Reply"
       }
@@ -2991,19 +2991,19 @@
     "Basic Sending Methods": [
       {
         "document": "platform-guide/email.md",
-        "line": 98,
+        "line": 95,
         "level": 3,
         "title": "Basic Sending Methods"
       },
       {
         "document": "platform-guide/onebot11.md",
-        "line": 50,
+        "line": 46,
         "level": 3,
         "title": "Basic Sending Methods"
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 39,
+        "line": 34,
         "level": 3,
         "title": "Basic Sending Methods"
       }
@@ -3011,31 +3011,31 @@
     "Basic Usage": [
       {
         "document": "advanced/http-client.md",
-        "line": 310,
+        "line": 276,
         "level": 3,
         "title": "Basic Usage"
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 147,
+        "line": 139,
         "level": 3,
         "title": "Basic Usage"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 62,
+        "line": 60,
         "level": 3,
         "title": "Basic Usage"
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 717,
+        "line": 697,
         "level": 3,
         "title": "Basic Usage"
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 288,
+        "line": 287,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -3065,7 +3065,7 @@
     "Batch Registration (Mixin Classes)": [
       {
         "document": "api-reference/event-system.md",
-        "line": 567,
+        "line": 564,
         "level": 4,
         "title": "Batch Registration (Mixin Classes)"
       }
@@ -3073,7 +3073,7 @@
     "Batch building mode": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 229,
+        "line": 221,
         "level": 1,
         "title": "Batch building mode"
       }
@@ -3081,7 +3081,7 @@
     "Batch registration": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 609,
+        "line": 598,
         "level": 1,
         "title": "Batch registration"
       }
@@ -3097,7 +3097,7 @@
     "Best Practices": [
       {
         "document": "advanced/http-client.md",
-        "line": 522,
+        "line": 483,
         "level": 2,
         "title": "Best Practices"
       },
@@ -3125,7 +3125,7 @@
     "Bot \"bot123\" is automatically registered (if first appearance) and active time is updated": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 948,
+        "line": 943,
         "level": 1,
         "title": "Bot \"bot123\" is automatically registered (if first appearance) and active time is updated"
       }
@@ -3141,7 +3141,7 @@
     "Bot Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 161,
+        "line": 128,
         "level": 4,
         "title": "Bot Information"
       }
@@ -3157,7 +3157,7 @@
     "Bot Status Management and Meta Events": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 9,
+        "line": 7,
         "level": 2,
         "title": "Bot Status Management and Meta Events"
       }
@@ -3171,7 +3171,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 252,
+        "line": 250,
         "level": 3,
         "title": "Bot Status Query"
       },
@@ -3209,7 +3209,7 @@
     "Built-in Fonts": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 248,
+        "line": 246,
         "level": 3,
         "title": "Built-in Fonts"
       }
@@ -3217,7 +3217,7 @@
     "Built-in modifier methods are also available": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 210,
+        "line": 202,
         "level": 1,
         "title": "Built-in modifier methods are also available"
       }
@@ -3233,7 +3233,7 @@
     "But Bot level only allows Music → This bot can ultimately only use Music, cannot use Chat!": [
       {
         "document": "advanced/scope.md",
-        "line": 154,
+        "line": 151,
         "level": 1,
         "title": "But Bot level only allows Music → This bot can ultimately only use Music, cannot use Chat!"
       }
@@ -3249,7 +3249,7 @@
     "Button Parameter Description": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 114,
+        "line": 108,
         "level": 3,
         "title": "Button Parameter Description"
       },
@@ -3263,7 +3263,7 @@
     "Button event": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 374,
+        "line": 366,
         "level": 1,
         "title": "Button event"
       }
@@ -3295,7 +3295,7 @@
     "Callback Query-related": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 279,
+        "line": 274,
         "level": 3,
         "title": "Callback Query-related"
       }
@@ -3303,7 +3303,7 @@
     "Callback Routes": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 167,
+        "line": 160,
         "level": 2,
         "title": "Callback Routes"
       }
@@ -3319,7 +3319,7 @@
     "Cancel if a single send exceeds 10 seconds": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 339,
+        "line": 326,
         "level": 1,
         "title": "Cancel if a single send exceeds 10 seconds"
       }
@@ -3375,7 +3375,7 @@
     "Chainable Modifier Methods (can be combined)": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 90,
+        "line": 86,
         "level": 3,
         "title": "Chainable Modifier Methods (can be combined)"
       }
@@ -3391,7 +3391,7 @@
     "Chained Call Examples": [
       {
         "document": "platform-guide/discord.md",
-        "line": 107,
+        "line": 102,
         "level": 3,
         "title": "Chained Call Examples"
       },
@@ -3405,7 +3405,7 @@
     "Chained Calls": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 735,
+        "line": 715,
         "level": 3,
         "title": "Chained Calls"
       }
@@ -3467,7 +3467,7 @@
     "Channel text message": [
       {
         "document": "platform-guide/discord.md",
-        "line": 238,
+        "line": 233,
         "level": 1,
         "title": "Channel text message"
       }
@@ -3475,7 +3475,7 @@
     "Check ErisPulse version": [
       {
         "document": "user-guide/installation.md",
-        "line": 90,
+        "line": 89,
         "level": 1,
         "title": "Check ErisPulse version"
       }
@@ -3483,7 +3483,7 @@
     "Check Platform Status": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 129,
+        "line": 127,
         "level": 4,
         "title": "Check Platform Status"
       }
@@ -3499,7 +3499,7 @@
     "Check if a Bot is online": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1010,
+        "line": 1005,
         "level": 1,
         "title": "Check if a Bot is online"
       }
@@ -3507,7 +3507,7 @@
     "Check if an account is enabled": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 704,
+        "line": 690,
         "level": 1,
         "title": "Check if an account is enabled"
       }
@@ -3515,7 +3515,7 @@
     "Checking if a module is allowed": [
       {
         "document": "advanced/scope.md",
-        "line": 78,
+        "line": 75,
         "level": 3,
         "title": "Checking if a module is allowed"
       }
@@ -3523,7 +3523,7 @@
     "Choose Your Path": [
       {
         "document": "README.md",
-        "line": 13,
+        "line": 11,
         "level": 2,
         "title": "Choose Your Path"
       }
@@ -3539,7 +3539,7 @@
     "Clear saved conversation": [
       {
         "document": "advanced/conversation.md",
-        "line": 293,
+        "line": 289,
         "level": 1,
         "title": "Clear saved conversation"
       }
@@ -3555,7 +3555,7 @@
     "ClientWebSocket Attributes": [
       {
         "document": "advanced/http-client.md",
-        "line": 382,
+        "line": 348,
         "level": 3,
         "title": "ClientWebSocket Attributes"
       }
@@ -3563,7 +3563,7 @@
     "Closing the Connection": [
       {
         "document": "advanced/http-client.md",
-        "line": 409,
+        "line": 375,
         "level": 3,
         "title": "Closing the Connection"
       }
@@ -3603,7 +3603,7 @@
     "Combined Modifiers": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 135,
+        "line": 127,
         "level": 3,
         "title": "Combined Modifiers"
       }
@@ -3611,7 +3611,7 @@
     "Command Basics": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 415,
+        "line": 382,
         "level": 4,
         "title": "Command Basics"
       }
@@ -3619,7 +3619,7 @@
     "Command Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 377,
+        "line": 368,
         "level": 3,
         "title": "Command Configuration"
       }
@@ -3635,7 +3635,7 @@
     "Command Dict Declaration Parameters": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 74,
+        "line": 71,
         "level": 3,
         "title": "Command Dict Declaration Parameters"
       }
@@ -3643,19 +3643,19 @@
     "Command Information": [
       {
         "document": "api-reference/event-system.md",
-        "line": 58,
+        "line": 56,
         "level": 3,
         "title": "Command Information"
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 318,
+        "line": 315,
         "level": 3,
         "title": "Command Information"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 413,
+        "line": 380,
         "level": 3,
         "title": "Command Information"
       }
@@ -3663,7 +3663,7 @@
     "Command Information Retrieval": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 118,
+        "line": 92,
         "level": 2,
         "title": "Command Information Retrieval"
       }
@@ -3671,7 +3671,7 @@
     "Command Module": [
       {
         "document": "api-reference/event-system.md",
-        "line": 22,
+        "line": 20,
         "level": 2,
         "title": "Command Module"
       }
@@ -3695,7 +3695,7 @@
     "Command System": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 202,
+        "line": 200,
         "level": 3,
         "title": "Command System"
       }
@@ -3719,7 +3719,7 @@
     "Common Configuration Locations": [
       {
         "document": "user-guide/README.md",
-        "line": 30,
+        "line": 31,
         "level": 3,
         "title": "Common Configuration Locations"
       }
@@ -3727,7 +3727,7 @@
     "Common Fields (All Event Types)": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 121,
+        "line": 119,
         "level": 3,
         "title": "Common Fields (All Event Types)"
       }
@@ -3735,7 +3735,7 @@
     "Common Parameters": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 123,
+        "line": 121,
         "level": 3,
         "title": "Common Parameters"
       }
@@ -3759,7 +3759,7 @@
     "Complete API Reference": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 274,
+        "line": 272,
         "level": 2,
         "title": "Complete API Reference"
       }
@@ -3767,7 +3767,7 @@
     "Complete Configuration Example": [
       {
         "document": "user-guide/configuration.md",
-        "line": 147,
+        "line": 140,
         "level": 2,
         "title": "Complete Configuration Example"
       }
@@ -3775,13 +3775,13 @@
     "Complete Example": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 206,
+        "line": 203,
         "level": 2,
         "title": "Complete Example"
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 715,
+        "line": 695,
         "level": 2,
         "title": "Complete Example"
       }
@@ -3797,7 +3797,7 @@
     "Complete Manual Startup Example": [
       {
         "document": "advanced/startup.md",
-        "line": 185,
+        "line": 180,
         "level": 2,
         "title": "Complete Manual Startup Example"
       }
@@ -3813,7 +3813,7 @@
     "Component Relationships": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 11,
+        "line": 9,
         "level": 3,
         "title": "Component Relationships"
       }
@@ -3843,7 +3843,7 @@
       },
       {
         "document": "ecosystem/takumi.md",
-        "line": 352,
+        "line": 350,
         "level": 2,
         "title": "Configuration"
       }
@@ -3851,15 +3851,23 @@
     "Configuration Changes": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 127,
+        "line": 125,
         "level": 3,
         "title": "Configuration Changes"
+      }
+    ],
+    "Configuration Commands": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 221,
+        "level": 2,
+        "title": "Configuration Commands"
       }
     ],
     "Configuration Description": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 393,
+        "line": 386,
         "level": 3,
         "title": "Configuration Description"
       },
@@ -3881,7 +3889,7 @@
     "Configuration Field Descriptions": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 129,
+        "line": 123,
         "level": 3,
         "title": "Configuration Field Descriptions"
       }
@@ -3889,7 +3897,7 @@
     "Configuration File": [
       {
         "document": "advanced/scope.md",
-        "line": 40,
+        "line": 37,
         "level": 2,
         "title": "Configuration File"
       }
@@ -3905,7 +3913,7 @@
     "Configuration File Location": [
       {
         "document": "user-guide/configuration.md",
-        "line": 10,
+        "line": 8,
         "level": 2,
         "title": "Configuration File Location"
       }
@@ -3913,7 +3921,7 @@
     "Configuration Guide": [
       {
         "document": "platform-guide/email.md",
-        "line": 29,
+        "line": 26,
         "level": 2,
         "title": "Configuration Guide"
       }
@@ -3921,7 +3929,7 @@
     "Configuration Hot Reload": [
       {
         "document": "user-guide/configuration.md",
-        "line": 77,
+        "line": 70,
         "level": 2,
         "title": "Configuration Hot Reload"
       }
@@ -3929,7 +3937,7 @@
     "Configuration Instructions": [
       {
         "document": "platform-guide/discord.md",
-        "line": 33,
+        "line": 28,
         "level": 2,
         "title": "Configuration Instructions"
       },
@@ -3941,7 +3949,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 32,
+        "line": 28,
         "level": 2,
         "title": "Configuration Instructions"
       },
@@ -3955,7 +3963,7 @@
     "Configuration Loading Error Handling": [
       {
         "document": "user-guide/configuration.md",
-        "line": 25,
+        "line": 21,
         "level": 2,
         "title": "Configuration Loading Error Handling"
       }
@@ -3963,7 +3971,7 @@
     "Configuration Management": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 127,
+        "line": 125,
         "level": 3,
         "title": "Configuration Management"
       },
@@ -3977,7 +3985,7 @@
     "Configuration Options": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 656,
+        "line": 645,
         "level": 2,
         "title": "Configuration Options"
       },
@@ -3989,7 +3997,7 @@
       },
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 105,
+        "line": 99,
         "level": 2,
         "title": "Configuration Options"
       }
@@ -3997,9 +4005,17 @@
     "Configure Lazy Loading": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 110,
+        "line": 107,
         "level": 2,
         "title": "Configure Lazy Loading"
+      }
+    ],
+    "Configure a specific adapter": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 568,
+        "level": 1,
+        "title": "Configure a specific adapter"
       }
     ],
     "Connection Events": [
@@ -4013,7 +4029,7 @@
     "Connection Flow": [
       {
         "document": "platform-guide/discord.md",
-        "line": 331,
+        "line": 326,
         "level": 3,
         "title": "Connection Flow"
       },
@@ -4059,13 +4075,13 @@
     "Continue executing other operations": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 269,
+        "line": 261,
         "level": 1,
         "title": "Continue executing other operations"
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 400,
+        "line": 387,
         "level": 1,
         "title": "Continue executing other operations"
       }
@@ -4089,7 +4105,7 @@
     "Control Flow": [
       {
         "document": "api-reference/event-system.md",
-        "line": 462,
+        "line": 459,
         "level": 3,
         "title": "Control Flow"
       }
@@ -4113,7 +4129,7 @@
     "Conversion Flow": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 634,
+        "line": 631,
         "level": 3,
         "title": "Conversion Flow"
       }
@@ -4129,7 +4145,7 @@
     "Converter Example": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 664,
+        "line": 661,
         "level": 3,
         "title": "Converter Example"
       }
@@ -4137,7 +4153,7 @@
     "Converter Responsibilities": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 9,
+        "line": 7,
         "level": 2,
         "title": "Converter Responsibilities"
       }
@@ -4145,7 +4161,7 @@
     "Core API": [
       {
         "document": "advanced/conversation.md",
-        "line": 42,
+        "line": 39,
         "level": 2,
         "title": "Core API"
       }
@@ -4193,7 +4209,7 @@
     "Core Differences": [
       {
         "document": "platform-guide/email.md",
-        "line": 129,
+        "line": 126,
         "level": 3,
         "title": "Core Differences"
       },
@@ -4219,13 +4235,13 @@
     "Core Features": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 54,
+        "line": 52,
         "level": 3,
         "title": "Core Features"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 32,
+        "line": 25,
         "level": 2,
         "title": "Core Features"
       }
@@ -4233,7 +4249,7 @@
     "Core Field Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 41,
+        "line": 33,
         "level": 2,
         "title": "Core Field Methods"
       }
@@ -4241,7 +4257,7 @@
     "Core Initialization": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 119,
+        "line": 117,
         "level": 3,
         "title": "Core Initialization"
       }
@@ -4249,13 +4265,13 @@
     "Core Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 262,
+        "line": 259,
         "level": 3,
         "title": "Core Methods"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 152,
+        "line": 119,
         "level": 3,
         "title": "Core Methods"
       }
@@ -4263,7 +4279,7 @@
     "Core Module Descriptions": [
       {
         "document": "architecture.md",
-        "line": 45,
+        "line": 43,
         "level": 3,
         "title": "Core Module Descriptions"
       }
@@ -4295,7 +4311,7 @@
     "Core Principles": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 17,
+        "line": 15,
         "level": 3,
         "title": "Core Principles"
       },
@@ -4325,7 +4341,7 @@
     "Create a client with custom timeouts": [
       {
         "document": "advanced/http-client.md",
-        "line": 212,
+        "line": 193,
         "level": 1,
         "title": "Create a client with custom timeouts"
       }
@@ -4341,7 +4357,7 @@
     "Creating Conversations": [
       {
         "document": "advanced/conversation.md",
-        "line": 9,
+        "line": 7,
         "level": 2,
         "title": "Creating Conversations"
       }
@@ -4357,7 +4373,7 @@
     "Cross-platform Extension (Wildcard)": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 465,
+        "line": 432,
         "level": 3,
         "title": "Cross-platform Extension (Wildcard)"
       }
@@ -4365,7 +4381,7 @@
     "Custom Fonts": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 269,
+        "line": 267,
         "level": 3,
         "title": "Custom Fonts"
       }
@@ -4413,7 +4429,7 @@
     "Dashboard Management Panel": [
       {
         "document": "user-guide/deployment.md",
-        "line": 76,
+        "line": 77,
         "level": 2,
         "title": "Dashboard Management Panel"
       }
@@ -4489,7 +4505,7 @@
     "Delayed sending + platform modifier + board": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 226,
+        "line": 218,
         "level": 1,
         "title": "Delayed sending + platform modifier + board"
       }
@@ -4513,7 +4529,7 @@
     "Detailed Event Handling Chain": [
       {
         "document": "architecture.md",
-        "line": 109,
+        "line": 107,
         "level": 3,
         "title": "Detailed Event Handling Chain"
       }
@@ -4521,7 +4537,7 @@
     "Detailed Explanation of Each Step": [
       {
         "document": "advanced/startup.md",
-        "line": 61,
+        "line": 56,
         "level": 2,
         "title": "Detailed Explanation of Each Step"
       }
@@ -4529,7 +4545,7 @@
     "Detailed Explanation of Initialization Stages": [
       {
         "document": "architecture.md",
-        "line": 84,
+        "line": 82,
         "level": 3,
         "title": "Detailed Explanation of Initialization Stages"
       }
@@ -4553,7 +4569,7 @@
     "Development Methods": [
       {
         "document": "README.md",
-        "line": 77,
+        "line": 75,
         "level": 2,
         "title": "Development Methods"
       }
@@ -4593,7 +4609,7 @@
     "Diagnostic Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 20,
+        "line": 19,
         "level": 2,
         "title": "Diagnostic Commands"
       }
@@ -4601,7 +4617,7 @@
     "Diagnostic Information on Loading Failure": [
       {
         "document": "advanced/startup.md",
-        "line": 107,
+        "line": 102,
         "level": 4,
         "title": "Diagnostic Information on Loading Failure"
       }
@@ -4609,7 +4625,7 @@
     "Direct Message Sending": [
       {
         "document": "platform-guide/discord.md",
-        "line": 144,
+        "line": 139,
         "level": 3,
         "title": "Direct Message Sending"
       }
@@ -4622,28 +4638,36 @@
         "title": "Direct call style"
       }
     ],
-    "Direct creation of Adapter project": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 590,
-        "level": 1,
-        "title": "Direct creation of Adapter project"
-      }
-    ],
-    "Direct creation of Module project": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 587,
-        "level": 1,
-        "title": "Direct creation of Module project"
-      }
-    ],
     "Directly await to get the result": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 276,
+        "line": 268,
         "level": 1,
         "title": "Directly await to get the result"
+      }
+    ],
+    "Directly create a Module project": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 634,
+        "level": 1,
+        "title": "Directly create a Module project"
+      }
+    ],
+    "Directly create an Adapter project": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 637,
+        "level": 1,
+        "title": "Directly create an Adapter project"
+      }
+    ],
+    "Directly switch to English": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 601,
+        "level": 1,
+        "title": "Directly switch to English"
       }
     ],
     "Disconnect Reconnection": [
@@ -4657,7 +4681,7 @@
     "Disconnection Reconnect and RESUME": [
       {
         "document": "platform-guide/discord.md",
-        "line": 354,
+        "line": 349,
         "level": 3,
         "title": "Disconnection Reconnect and RESUME"
       }
@@ -4673,7 +4697,7 @@
     "Discord": [
       {
         "document": "standards/session-types.md",
-        "line": 160,
+        "line": 158,
         "level": 4,
         "title": "Discord"
       }
@@ -4721,7 +4745,7 @@
     "Docker Method": [
       {
         "document": "user-guide/deployment.md",
-        "line": 271,
+        "line": 272,
         "level": 3,
         "title": "Docker Method"
       }
@@ -4737,7 +4761,7 @@
     "Document Information": [
       {
         "document": "platform-guide/discord.md",
-        "line": 11,
+        "line": 9,
         "level": 2,
         "title": "Document Information"
       },
@@ -4755,7 +4779,7 @@
       },
       {
         "document": "platform-guide/onebot11.md",
-        "line": 11,
+        "line": 9,
         "level": 2,
         "title": "Document Information"
       },
@@ -4773,7 +4797,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 11,
+        "line": 9,
         "level": 2,
         "title": "Document Information"
       },
@@ -4811,19 +4835,19 @@
     "Documentation Information": [
       {
         "document": "platform-guide/email.md",
-        "line": 11,
+        "line": 9,
         "level": 2,
         "title": "Documentation Information"
       },
       {
         "document": "platform-guide/ideaura.md",
-        "line": 11,
+        "line": 9,
         "level": 2,
         "title": "Documentation Information"
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 11,
+        "line": 9,
         "level": 2,
         "title": "Documentation Information"
       }
@@ -4847,7 +4871,7 @@
     "Does not block the main flow": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 538,
+        "line": 525,
         "level": 1,
         "title": "Does not block the main flow"
       }
@@ -4855,7 +4879,7 @@
     "Does not block the main flow, but rules still apply": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 392,
+        "line": 379,
         "level": 1,
         "title": "Does not block the main flow, but rules still apply"
       }
@@ -4871,7 +4895,7 @@
     "Dot-Structure Events": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 51,
+        "line": 49,
         "level": 3,
         "title": "Dot-Structure Events"
       }
@@ -4895,7 +4919,7 @@
     "Dynamic Binding / Unbinding": [
       {
         "document": "advanced/scope.md",
-        "line": 90,
+        "line": 87,
         "level": 3,
         "title": "Dynamic Binding / Unbinding"
       }
@@ -4903,7 +4927,7 @@
     "Dynamically enable/disable accounts (requires adapter restart)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 710,
+        "line": 696,
         "level": 1,
         "title": "Dynamically enable/disable accounts (requires adapter restart)"
       }
@@ -4935,7 +4959,7 @@
     "Emoji/Sticker Message Segment (yunhu_expression)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 573,
+        "line": 559,
         "level": 3,
         "title": "Emoji/Sticker Message Segment (yunhu_expression)"
       }
@@ -4943,7 +4967,7 @@
     "Encryption Mode Description": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 148,
+        "line": 142,
         "level": 2,
         "title": "Encryption Mode Description"
       }
@@ -4951,7 +4975,7 @@
     "Environment Diagnosis": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 440,
+        "line": 476,
         "level": 2,
         "title": "Environment Diagnosis"
       }
@@ -4959,7 +4983,7 @@
     "Environment Variable Override": [
       {
         "document": "user-guide/configuration.md",
-        "line": 48,
+        "line": 43,
         "level": 2,
         "title": "Environment Variable Override"
       }
@@ -5077,7 +5101,7 @@
     "Error Handling": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 466,
+        "line": 457,
         "level": 2,
         "title": "Error Handling"
       },
@@ -5089,13 +5113,13 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 354,
+        "line": 353,
         "level": 2,
         "title": "Error Handling"
       },
       {
         "document": "platform-guide/onebot11.md",
-        "line": 478,
+        "line": 472,
         "level": 2,
         "title": "Error Handling"
       },
@@ -5109,7 +5133,7 @@
     "Event Basic Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 154,
+        "line": 121,
         "level": 4,
         "title": "Event Basic Information"
       }
@@ -5117,7 +5141,7 @@
     "Event Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 375,
+        "line": 366,
         "level": 2,
         "title": "Event Configuration"
       }
@@ -5141,7 +5165,7 @@
     "Event Converters": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 632,
+        "line": 629,
         "level": 2,
         "title": "Event Converters"
       }
@@ -5149,7 +5173,7 @@
     "Event Distribution Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 194,
+        "line": 192,
         "level": 4,
         "title": "Event Distribution Mechanism"
       }
@@ -5157,7 +5181,7 @@
     "Event Examples": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 250,
+        "line": 246,
         "level": 3,
         "title": "Event Examples"
       }
@@ -5165,13 +5189,13 @@
     "Event Extension Methods": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 323,
+        "line": 319,
         "level": 2,
         "title": "Event Extension Methods"
       },
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 91,
+        "line": 86,
         "level": 2,
         "title": "Event Extension Methods"
       }
@@ -5195,7 +5219,7 @@
     "Event Handling Enhancement": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 490,
+        "line": 481,
         "level": 2,
         "title": "Event Handling Enhancement"
       }
@@ -5211,7 +5235,7 @@
     "Event Handling Flow": [
       {
         "document": "architecture.md",
-        "line": 88,
+        "line": 86,
         "level": 2,
         "title": "Event Handling Flow"
       }
@@ -5219,7 +5243,7 @@
     "Event Handling Mechanism": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 14,
+        "line": 12,
         "level": 2,
         "title": "Event Handling Mechanism"
       }
@@ -5227,7 +5251,7 @@
     "Event Listening": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 157,
+        "line": 155,
         "level": 3,
         "title": "Event Listening"
       },
@@ -5241,13 +5265,13 @@
     "Event Mixin Extension Methods": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 355,
+        "line": 349,
         "level": 2,
         "title": "Event Mixin Extension Methods"
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 262,
+        "line": 257,
         "level": 2,
         "title": "Event Mixin Extension Methods"
       }
@@ -5271,7 +5295,7 @@
     "Event Reception and Processing": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 163,
+        "line": 161,
         "level": 3,
         "title": "Event Reception and Processing"
       }
@@ -5311,7 +5335,7 @@
     "Event Type Mapping": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 220,
+        "line": 216,
         "level": 2,
         "title": "Event Type Mapping"
       }
@@ -5333,7 +5357,7 @@
       },
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 45,
+        "line": 41,
         "level": 2,
         "title": "Event Types"
       }
@@ -5341,7 +5365,7 @@
     "Event Wrapper Class": [
       {
         "document": "api-reference/event-system.md",
-        "line": 258,
+        "line": 255,
         "level": 2,
         "title": "Event Wrapper Class"
       }
@@ -5357,7 +5381,7 @@
     "Event has only group_id": [
       {
         "document": "standards/session-types.md",
-        "line": 247,
+        "line": 243,
         "level": 1,
         "title": "Event has only group_id"
       }
@@ -5365,7 +5389,7 @@
     "Event has only user_id": [
       {
         "document": "standards/session-types.md",
-        "line": 252,
+        "line": 248,
         "level": 1,
         "title": "Event has only user_id"
       }
@@ -5381,7 +5405,7 @@
     "Event-Driven Lazy Activation (`activate_on`)": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 38,
+        "line": 35,
         "level": 2,
         "title": "Event-Driven Lazy Activation (`activate_on`)"
       }
@@ -5389,7 +5413,7 @@
     "Event-Driven Lazy Activation (`activate_on`) Trigger Architecture": [
       {
         "document": "architecture.md",
-        "line": 218,
+        "line": 216,
         "level": 3,
         "title": "Event-Driven Lazy Activation (`activate_on`) Trigger Architecture"
       }
@@ -5397,7 +5421,7 @@
     "Event.reply() automatically handles type conversion": [
       {
         "document": "standards/session-types.md",
-        "line": 290,
+        "line": 284,
         "level": 1,
         "title": "Event.reply() automatically handles type conversion"
       }
@@ -5405,7 +5429,7 @@
     "Example of Button Click Event Handling": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 404,
+        "line": 396,
         "level": 3,
         "title": "Example of Button Click Event Handling"
       }
@@ -5441,7 +5465,7 @@
     "Exception Handling": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 356,
+        "line": 355,
         "level": 3,
         "title": "Exception Handling"
       }
@@ -5449,7 +5473,7 @@
     "Exception List": [
       {
         "document": "user-guide/configuration.md",
-        "line": 348,
+        "line": 340,
         "level": 4,
         "title": "Exception List"
       }
@@ -5457,7 +5481,7 @@
     "Extended Field Description": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 314,
+        "line": 310,
         "level": 3,
         "title": "Extended Field Description"
       },
@@ -5493,7 +5517,7 @@
     "Extension Field Description": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 561,
+        "line": 547,
         "level": 2,
         "title": "Extension Field Description"
       }
@@ -5539,7 +5563,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 80,
+        "line": 81,
         "level": 3,
         "title": "Feature Overview"
       }
@@ -5547,7 +5571,7 @@
     "Field Descriptions": [
       {
         "document": "bug-tracker.md",
-        "line": 18,
+        "line": 16,
         "level": 2,
         "title": "Field Descriptions"
       }
@@ -5555,7 +5579,7 @@
     "File operations": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 254,
+        "line": 248,
         "level": 1,
         "title": "File operations"
       }
@@ -5563,7 +5587,7 @@
     "Filtering Statistics (Debug)": [
       {
         "document": "advanced/scope.md",
-        "line": 127,
+        "line": 124,
         "level": 3,
         "title": "Filtering Statistics (Debug)"
       }
@@ -5571,7 +5595,7 @@
     "Fixed Bugs": [
       {
         "document": "bug-tracker.md",
-        "line": 129,
+        "line": 121,
         "level": 2,
         "title": "Fixed Bugs"
       }
@@ -5579,25 +5603,25 @@
     "Fluent Call Examples": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 60,
+        "line": 56,
         "level": 3,
         "title": "Fluent Call Examples"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 96,
+        "line": 92,
         "level": 3,
         "title": "Fluent Call Examples"
       },
       {
         "document": "platform-guide/onebot11.md",
-        "line": 98,
+        "line": 94,
         "level": 3,
         "title": "Fluent Call Examples"
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 148,
+        "line": 142,
         "level": 3,
         "title": "Fluent Call Examples"
       }
@@ -5605,7 +5629,7 @@
     "Fluent Modifier Methods": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 80,
+        "line": 75,
         "level": 3,
         "title": "Fluent Modifier Methods"
       }
@@ -5613,7 +5637,7 @@
     "Fluent Modifier Methods (Can Be Combined)": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 88,
+        "line": 84,
         "level": 3,
         "title": "Fluent Modifier Methods (Can Be Combined)"
       }
@@ -5621,7 +5645,7 @@
     "Fluent Modifier Methods (Can be Combined)": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 51,
+        "line": 47,
         "level": 3,
         "title": "Fluent Modifier Methods (Can be Combined)"
       }
@@ -5629,7 +5653,7 @@
     "Fluent Modifier Methods (Combinable)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 139,
+        "line": 133,
         "level": 3,
         "title": "Fluent Modifier Methods (Combinable)"
       }
@@ -5637,7 +5661,7 @@
     "Fluent Modifier Methods (can be combined)": [
       {
         "document": "platform-guide/discord.md",
-        "line": 99,
+        "line": 94,
         "level": 3,
         "title": "Fluent Modifier Methods (can be combined)"
       }
@@ -5645,7 +5669,7 @@
     "Fluent Modifier Methods (return self, can be combined)": [
       {
         "document": "platform-guide/email.md",
-        "line": 106,
+        "line": 103,
         "level": 3,
         "title": "Fluent Modifier Methods (return self, can be combined)"
       }
@@ -5653,7 +5677,7 @@
     "Fonts": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 246,
+        "line": 244,
         "level": 2,
         "title": "Fonts"
       }
@@ -5685,7 +5709,7 @@
     "For notice events, detail_type is a semantic subtype; in 2.7.0+, it is inferred from ID fields": [
       {
         "document": "standards/session-types.md",
-        "line": 257,
+        "line": 253,
         "level": 1,
         "title": "For notice events, detail_type is a semantic subtype; in 2.7.0+, it is inferred from ID fields"
       }
@@ -5693,7 +5717,7 @@
     "Force overwrite existing directory": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 596,
+        "line": 643,
         "level": 1,
         "title": "Force overwrite existing directory"
       }
@@ -5701,7 +5725,7 @@
     "Force overwrite existing files": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 421,
+        "line": 458,
         "level": 1,
         "title": "Force overwrite existing files"
       }
@@ -5709,7 +5733,7 @@
     "Force upgrade": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 534,
+        "line": 581,
         "level": 1,
         "title": "Force upgrade"
       }
@@ -5725,7 +5749,7 @@
     "Form command": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 356,
+        "line": 348,
         "level": 1,
         "title": "Form command"
       }
@@ -5733,7 +5757,7 @@
     "Forward Functionality": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 245,
+        "line": 212,
         "level": 4,
         "title": "Forward Functionality"
       }
@@ -5741,7 +5765,7 @@
     "Framework Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 295,
+        "line": 287,
         "level": 2,
         "title": "Framework Configuration"
       }
@@ -5749,7 +5773,7 @@
     "Framework logic for extracting bot_id": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 865,
+        "line": 860,
         "level": 1,
         "title": "Framework logic for extracting bot_id"
       }
@@ -5779,7 +5803,7 @@
     "Friend Operation Methods": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 86,
+        "line": 82,
         "level": 3,
         "title": "Friend Operation Methods"
       }
@@ -5787,7 +5811,7 @@
     "Friend request": [
       {
         "document": "api-reference/event-system.md",
-        "line": 213,
+        "line": 211,
         "level": 1,
         "title": "Friend request"
       }
@@ -5795,7 +5819,7 @@
     "Full parameters": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 593,
+        "line": 640,
         "level": 1,
         "title": "Full parameters"
       }
@@ -5803,7 +5827,7 @@
     "GET": [
       {
         "document": "advanced/http-client.md",
-        "line": 100,
+        "line": 81,
         "level": 3,
         "title": "GET"
       }
@@ -5811,7 +5835,7 @@
     "Gateway Connection": [
       {
         "document": "platform-guide/discord.md",
-        "line": 329,
+        "line": 324,
         "level": 2,
         "title": "Gateway Connection"
       }
@@ -5819,7 +5843,7 @@
     "Gateway Intents": [
       {
         "document": "platform-guide/discord.md",
-        "line": 60,
+        "line": 55,
         "level": 3,
         "title": "Gateway Intents"
       }
@@ -5835,7 +5859,7 @@
     "Generate all type stubs": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 564,
+        "line": 611,
         "level": 1,
         "title": "Generate all type stubs"
       }
@@ -5843,7 +5867,7 @@
     "Generate only module type stubs": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 567,
+        "line": 614,
         "level": 1,
         "title": "Generate only module type stubs"
       }
@@ -5851,7 +5875,7 @@
     "Generate stubs only for adapters": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 415,
+        "line": 452,
         "level": 1,
         "title": "Generate stubs only for adapters"
       }
@@ -5859,7 +5883,7 @@
     "Generate type stubs for all installed modules and adapters": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 412,
+        "line": 449,
         "level": 1,
         "title": "Generate type stubs for all installed modules and adapters"
       }
@@ -5867,7 +5891,7 @@
     "Generic request": [
       {
         "document": "advanced/http-client.md",
-        "line": 171,
+        "line": 152,
         "level": 3,
         "title": "Generic request"
       }
@@ -5883,7 +5907,7 @@
     "Get Adapter Instance": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 243,
+        "line": 241,
         "level": 3,
         "title": "Get Adapter Instance"
       }
@@ -5891,7 +5915,7 @@
     "Get a complete status summary (suitable for WebUI display)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1013,
+        "line": 1008,
         "level": 1,
         "title": "Get a complete status summary (suitable for WebUI display)"
       }
@@ -5899,7 +5923,7 @@
     "Get all account information": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 701,
+        "line": 687,
         "level": 1,
         "title": "Get all account information"
       }
@@ -5923,7 +5947,7 @@
     "Get information of a single Bot": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1000,
+        "line": 995,
         "level": 1,
         "title": "Get information of a single Bot"
       }
@@ -5947,7 +5971,7 @@
     "Get the first enabled account (passing None)": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 463,
+        "line": 454,
         "level": 1,
         "title": "Get the first enabled account (passing None)"
       }
@@ -5963,7 +5987,7 @@
     "Getting Help": [
       {
         "document": "README.md",
-        "line": 98,
+        "line": 93,
         "level": 2,
         "title": "Getting Help"
       }
@@ -6003,7 +6027,7 @@
     "Global Configuration": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 112,
+        "line": 109,
         "level": 3,
         "title": "Global Configuration"
       }
@@ -6011,7 +6035,7 @@
     "Global Configuration (EmailAdapter)": [
       {
         "document": "platform-guide/email.md",
-        "line": 31,
+        "line": 28,
         "level": 3,
         "title": "Global Configuration (EmailAdapter)"
       }
@@ -6019,7 +6043,7 @@
     "Global Parameters": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 424,
+        "line": 461,
         "level": 2,
         "title": "Global Parameters"
       }
@@ -6027,7 +6051,7 @@
     "Graceful Shutdown": [
       {
         "document": "advanced/startup.md",
-        "line": 298,
+        "line": 293,
         "level": 2,
         "title": "Graceful Shutdown"
       }
@@ -6035,7 +6059,7 @@
     "Group Management Examples": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 161,
+        "line": 155,
         "level": 3,
         "title": "Group Management Examples"
       }
@@ -6043,7 +6067,7 @@
     "Group Management Methods": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 57,
+        "line": 51,
         "level": 3,
         "title": "Group Management Methods"
       }
@@ -6067,7 +6091,7 @@
     "Group Operation Methods": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 61,
+        "line": 57,
         "level": 3,
         "title": "Group Operation Methods"
       }
@@ -6083,7 +6107,7 @@
     "Group invite request": [
       {
         "document": "api-reference/event-system.md",
-        "line": 220,
+        "line": 218,
         "level": 1,
         "title": "Group invite request"
       }
@@ -6091,7 +6115,7 @@
     "Group message": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 190,
+        "line": 186,
         "level": 1,
         "title": "Group message"
       }
@@ -6099,7 +6123,7 @@
     "Group/Channel Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 184,
+        "line": 151,
         "level": 4,
         "title": "Group/Channel Information"
       }
@@ -6123,7 +6147,7 @@
     "HTTP Requests": [
       {
         "document": "advanced/http-client.md",
-        "line": 36,
+        "line": 24,
         "level": 3,
         "title": "HTTP Requests"
       }
@@ -6131,7 +6155,7 @@
     "HTTP Routing": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 217,
+        "line": 215,
         "level": 3,
         "title": "HTTP Routing"
       }
@@ -6147,7 +6171,7 @@
     "Handling Channel Messages": [
       {
         "document": "platform-guide/discord.md",
-        "line": 371,
+        "line": 366,
         "level": 3,
         "title": "Handling Channel Messages"
       },
@@ -6161,7 +6185,7 @@
     "Handling Group Messages": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 343,
+        "line": 339,
         "level": 3,
         "title": "Handling Group Messages"
       },
@@ -6175,7 +6199,7 @@
     "Handling HTTP request exceptions": [
       {
         "document": "advanced/http-client.md",
-        "line": 445,
+        "line": 411,
         "level": 1,
         "title": "Handling HTTP request exceptions"
       }
@@ -6183,7 +6207,7 @@
     "Handling Interaction Events": [
       {
         "document": "platform-guide/discord.md",
-        "line": 444,
+        "line": 439,
         "level": 3,
         "title": "Handling Interaction Events"
       },
@@ -6197,7 +6221,7 @@
     "Handling Message Edits": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 405,
+        "line": 401,
         "level": 3,
         "title": "Handling Message Edits"
       }
@@ -6221,7 +6245,7 @@
     "Handling Private Messages": [
       {
         "document": "platform-guide/discord.md",
-        "line": 391,
+        "line": 386,
         "level": 3,
         "title": "Handling Private Messages"
       },
@@ -6235,7 +6259,7 @@
     "Handling Reaction Messages": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 367,
+        "line": 363,
         "level": 3,
         "title": "Handling Reaction Messages"
       }
@@ -6243,7 +6267,7 @@
     "Handling Unsupported Types": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 139,
+        "line": 135,
         "level": 3,
         "title": "Handling Unsupported Types"
       }
@@ -6251,7 +6275,7 @@
     "Handling WebSocket exceptions": [
       {
         "document": "advanced/http-client.md",
-        "line": 456,
+        "line": 422,
         "level": 1,
         "title": "Handling WebSocket exceptions"
       }
@@ -6259,7 +6283,7 @@
     "Hard Restart: Exit the process, let an external supervisor restart (see \"Supervisor Guide\" below)": [
       {
         "document": "advanced/startup.md",
-        "line": 352,
+        "line": 347,
         "level": 1,
         "title": "Hard Restart: Exit the process, let an external supervisor restart (see \"Supervisor Guide\" below)"
       }
@@ -6273,7 +6297,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 117,
+        "line": 118,
         "level": 2,
         "title": "Health Check"
       }
@@ -6289,13 +6313,13 @@
     "Heartbeat Mechanism": [
       {
         "document": "platform-guide/discord.md",
-        "line": 362,
+        "line": 357,
         "level": 3,
         "title": "Heartbeat Mechanism"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 330,
+        "line": 326,
         "level": 3,
         "title": "Heartbeat Mechanism"
       }
@@ -6303,7 +6327,7 @@
     "High priority handler executes first": [
       {
         "document": "api-reference/event-system.md",
-        "line": 686,
+        "line": 683,
         "level": 1,
         "title": "High priority handler executes first"
       }
@@ -6311,7 +6335,7 @@
     "High-Level Methods (Recommended)": [
       {
         "document": "advanced/http-client.md",
-        "line": 324,
+        "line": 290,
         "level": 4,
         "title": "High-Level Methods (Recommended)"
       }
@@ -6343,7 +6367,7 @@
     "Hook Breakpoints Overview": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 93,
+        "line": 91,
         "level": 2,
         "title": "Hook Breakpoints Overview"
       }
@@ -6351,7 +6375,7 @@
     "Hot Restart of Adapters": [
       {
         "document": "advanced/startup.md",
-        "line": 263,
+        "line": 258,
         "level": 3,
         "title": "Hot Restart of Adapters"
       }
@@ -6359,7 +6383,7 @@
     "Hot Restart: Reload within the same process (most common)": [
       {
         "document": "advanced/startup.md",
-        "line": 349,
+        "line": 344,
         "level": 1,
         "title": "Hot Restart: Reload within the same process (most common)"
       }
@@ -6367,7 +6391,7 @@
     "Hot reload mode": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 544,
+        "line": 591,
         "level": 1,
         "title": "Hot reload mode"
       }
@@ -6375,19 +6399,19 @@
     "How It Works": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 20,
+        "line": 17,
         "level": 2,
         "title": "How It Works"
       },
       {
         "document": "advanced/scope.md",
-        "line": 19,
+        "line": 17,
         "level": 2,
         "title": "How It Works"
       },
       {
         "document": "ecosystem/app.md",
-        "line": 70,
+        "line": 68,
         "level": 2,
         "title": "How It Works"
       },
@@ -6433,7 +6457,7 @@
     "HttpResponse": [
       {
         "document": "advanced/http-client.md",
-        "line": 69,
+        "line": 55,
         "level": 2,
         "title": "HttpResponse"
       }
@@ -6449,7 +6473,7 @@
     "I. I Want to Use a Bot": [
       {
         "document": "README.md",
-        "line": 17,
+        "line": 15,
         "level": 3,
         "title": "I. I Want to Use a Bot"
       }
@@ -6473,7 +6497,7 @@
     "II. I Want to Develop Modules / Adapters": [
       {
         "document": "README.md",
-        "line": 31,
+        "line": 29,
         "level": 3,
         "title": "II. I Want to Develop Modules / Adapters"
       }
@@ -6481,7 +6505,7 @@
     "III. I Want to Deeply Understand the Principles": [
       {
         "document": "README.md",
-        "line": 42,
+        "line": 40,
         "level": 3,
         "title": "III. I Want to Deeply Understand the Principles"
       }
@@ -6497,7 +6521,7 @@
     "ISO string → seconds": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 359,
+        "line": 355,
         "level": 1,
         "title": "ISO string → seconds"
       }
@@ -6505,7 +6529,7 @@
     "ISO 字符串 → 秒": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 403,
+        "line": 399,
         "level": 1,
         "title": "ISO 字符串 → 秒"
       }
@@ -6513,7 +6537,7 @@
     "IV. Ecosystem and Official Clients": [
       {
         "document": "README.md",
-        "line": 57,
+        "line": 55,
         "level": 3,
         "title": "IV. Ecosystem and Official Clients"
       }
@@ -6521,7 +6545,7 @@
     "If bot_id cannot be obtained during login, allow users to fill it in the configuration": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 353,
+        "line": 351,
         "level": 1,
         "title": "If bot_id cannot be obtained during login, allow users to fill it in the configuration"
       }
@@ -6529,7 +6553,7 @@
     "If dropped, result[\"status\"] == \"failed\"": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 384,
+        "line": 371,
         "level": 1,
         "title": "If dropped, result[\"status\"] == \"failed\""
       }
@@ -6561,7 +6585,7 @@
     "Implement conditional filtering inside the handler": [
       {
         "document": "api-reference/event-system.md",
-        "line": 167,
+        "line": 165,
         "level": 1,
         "title": "Implement conditional filtering inside the handler"
       }
@@ -6585,7 +6609,7 @@
     "Important Limitations": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 40,
+        "line": 36,
         "level": 3,
         "title": "Important Limitations"
       }
@@ -6601,7 +6625,7 @@
     "Information queries (via public Web API, no authentication required)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 249,
+        "line": 243,
         "level": 1,
         "title": "Information queries (via public Web API, no authentication required)"
       }
@@ -6609,13 +6633,13 @@
     "Initialization Process": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 26,
+        "line": 23,
         "level": 3,
         "title": "Initialization Process"
       },
       {
         "document": "architecture.md",
-        "line": 59,
+        "line": 57,
         "level": 2,
         "title": "Initialization Process"
       }
@@ -6653,7 +6677,7 @@
     "Install a single module": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 489,
+        "line": 523,
         "level": 1,
         "title": "Install a single module"
       }
@@ -6669,7 +6693,7 @@
     "Install multiple modules": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 492,
+        "line": 526,
         "level": 1,
         "title": "Install multiple modules"
       }
@@ -6685,7 +6709,7 @@
     "Installation (Android / Mobile Direct Run)": [
       {
         "document": "ecosystem/app.md",
-        "line": 42,
+        "line": 40,
         "level": 2,
         "title": "Installation (Android / Mobile Direct Run)"
       }
@@ -6693,7 +6717,7 @@
     "Installation (Desktop: Windows / Linux / macOS)": [
       {
         "document": "ecosystem/app.md",
-        "line": 60,
+        "line": 58,
         "level": 3,
         "title": "Installation (Desktop: Windows / Linux / macOS)"
       }
@@ -6725,7 +6749,7 @@
     "Installing Modules via Dashboard": [
       {
         "document": "user-guide/deployment.md",
-        "line": 95,
+        "line": 96,
         "level": 3,
         "title": "Installing Modules via Dashboard"
       }
@@ -6749,7 +6773,7 @@
     "Interactive Method Examples": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 305,
+        "line": 272,
         "level": 4,
         "title": "Interactive Method Examples"
       }
@@ -6757,13 +6781,13 @@
     "Interactive Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 410,
+        "line": 407,
         "level": 3,
         "title": "Interactive Methods"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 266,
+        "line": 233,
         "level": 4,
         "title": "Interactive Methods"
       }
@@ -6771,7 +6795,7 @@
     "Interactive creation (guided selection of type and filling in information)": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 584,
+        "line": 631,
         "level": 1,
         "title": "Interactive creation (guided selection of type and filling in information)"
       }
@@ -6779,7 +6803,7 @@
     "Interactive initialization": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 574,
+        "line": 621,
         "level": 1,
         "title": "Interactive initialization"
       }
@@ -6787,21 +6811,31 @@
     "Interactive language selection": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 366,
+        "line": 407,
         "level": 1,
         "title": "Interactive language selection"
-      },
+      }
+    ],
+    "Interactively select language": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 551,
+        "line": 598,
         "level": 1,
-        "title": "Interactive language selection"
+        "title": "Interactively select language"
+      }
+    ],
+    "Interactively select target configuration": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 565,
+        "level": 1,
+        "title": "Interactively select target configuration"
       }
     ],
     "Internal Breakdown of Hot Reload Chain": [
       {
         "document": "user-guide/configuration.md",
-        "line": 99,
+        "line": 92,
         "level": 3,
         "title": "Internal Breakdown of Hot Reload Chain"
       }
@@ -6809,7 +6843,7 @@
     "Internal Breakdown of the Send Chain": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 594,
+        "line": 576,
         "level": 2,
         "title": "Internal Breakdown of the Send Chain"
       }
@@ -6817,7 +6851,7 @@
     "Internally automatically converted to: Send.To(\"user\", \"789\") # Using user directly as session type is a better choice": [
       {
         "document": "standards/session-types.md",
-        "line": 282,
+        "line": 276,
         "level": 1,
         "title": "Internally automatically converted to: Send.To(\"user\", \"789\") # Using user directly as session type is a better choice"
       }
@@ -6825,7 +6859,7 @@
     "Internally automatically uses the correct sending type": [
       {
         "document": "standards/session-types.md",
-        "line": 292,
+        "line": 286,
         "level": 1,
         "title": "Internally automatically uses the correct sending type"
       }
@@ -6841,7 +6875,7 @@
     "Internationalization Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 410,
+        "line": 396,
         "level": 2,
         "title": "Internationalization Configuration"
       }
@@ -6849,7 +6883,7 @@
     "Item Template": [
       {
         "document": "bug-tracker.md",
-        "line": 71,
+        "line": 67,
         "level": 2,
         "title": "Item Template"
       }
@@ -6857,7 +6891,7 @@
     "Jinja Template Example": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 164,
+        "line": 162,
         "level": 3,
         "title": "Jinja Template Example"
       }
@@ -6889,7 +6923,7 @@
     "Language Switching": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 520,
+        "line": 511,
         "level": 2,
         "title": "Language Switching"
       }
@@ -6913,7 +6947,7 @@
     "LazyModule Class": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 22,
+        "line": 19,
         "level": 3,
         "title": "LazyModule Class"
       }
@@ -6935,7 +6969,7 @@
       },
       {
         "document": "architecture.md",
-        "line": 161,
+        "line": 159,
         "level": 2,
         "title": "Lifecycle Events"
       }
@@ -6943,7 +6977,7 @@
     "Lifecycle Hooks": [
       {
         "document": "advanced/http-client.md",
-        "line": 391,
+        "line": 357,
         "level": 3,
         "title": "Lifecycle Hooks"
       }
@@ -6975,7 +7009,7 @@
     "List Bots of a specific platform": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1007,
+        "line": 1002,
         "level": 1,
         "title": "List Bots of a specific platform"
       }
@@ -6983,7 +7017,7 @@
     "List Platforms": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 143,
+        "line": 141,
         "level": 4,
         "title": "List Platforms"
       }
@@ -6991,7 +7025,7 @@
     "List after forcing cache refresh": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 219,
+        "line": 218,
         "level": 1,
         "title": "List after forcing cache refresh"
       }
@@ -6999,7 +7033,7 @@
     "List all Bots": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1004,
+        "line": 999,
         "level": 1,
         "title": "List all Bots"
       }
@@ -7007,7 +7041,7 @@
     "List all components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 502,
+        "line": 536,
         "level": 1,
         "title": "List all components"
       }
@@ -7015,7 +7049,7 @@
     "List all installed components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 184,
+        "line": 183,
         "level": 1,
         "title": "List all installed components"
       }
@@ -7031,7 +7065,7 @@
     "List all remote available components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 213,
+        "line": 212,
         "level": 1,
         "title": "List all remote available components"
       }
@@ -7047,7 +7081,7 @@
     "List all supported languages": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 375,
+        "line": 416,
         "level": 1,
         "title": "List all supported languages"
       }
@@ -7055,7 +7089,7 @@
     "List only adapters": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 505,
+        "line": 539,
         "level": 1,
         "title": "List only adapters"
       }
@@ -7063,7 +7097,7 @@
     "List only upgradable components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 508,
+        "line": 542,
         "level": 1,
         "title": "List only upgradable components"
       }
@@ -7071,7 +7105,7 @@
     "List supported languages": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 557,
+        "line": 604,
         "level": 1,
         "title": "List supported languages"
       }
@@ -7079,7 +7113,7 @@
     "Listen to @ messages": [
       {
         "document": "api-reference/event-system.md",
-        "line": 152,
+        "line": 150,
         "level": 1,
         "title": "Listen to @ messages"
       }
@@ -7095,7 +7129,7 @@
     "Listen to all messages": [
       {
         "document": "api-reference/event-system.md",
-        "line": 135,
+        "line": 133,
         "level": 1,
         "title": "Listen to all messages"
       },
@@ -7109,7 +7143,7 @@
     "Listen to group messages": [
       {
         "document": "api-reference/event-system.md",
-        "line": 146,
+        "line": 144,
         "level": 1,
         "title": "Listen to group messages"
       },
@@ -7123,7 +7157,7 @@
     "Listen to private messages": [
       {
         "document": "api-reference/event-system.md",
-        "line": 140,
+        "line": 138,
         "level": 1,
         "title": "Listen to private messages"
       },
@@ -7137,7 +7171,7 @@
     "Listener Query (`has_handlers`)": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 81,
+        "line": 79,
         "level": 3,
         "title": "Listener Query (`has_handlers`)"
       }
@@ -7145,7 +7179,7 @@
     "Listening to Lifecycle Events": [
       {
         "document": "architecture.md",
-        "line": 192,
+        "line": 190,
         "level": 3,
         "title": "Listening to Lifecycle Events"
       }
@@ -7153,7 +7187,7 @@
     "Listening to Member Changes": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 418,
+        "line": 414,
         "level": 3,
         "title": "Listening to Member Changes"
       }
@@ -7185,7 +7219,7 @@
     "Local Plugin Folder Architecture": [
       {
         "document": "architecture.md",
-        "line": 254,
+        "line": 252,
         "level": 2,
         "title": "Local Plugin Folder Architecture"
       }
@@ -7193,7 +7227,7 @@
     "Local Plugin Hot Reload Architecture": [
       {
         "document": "architecture.md",
-        "line": 284,
+        "line": 281,
         "level": 2,
         "title": "Local Plugin Hot Reload Architecture"
       }
@@ -7217,7 +7251,7 @@
     "Logging": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 371,
+        "line": 370,
         "level": 3,
         "title": "Logging"
       }
@@ -7225,7 +7259,7 @@
     "Logging Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 247,
+        "line": 239,
         "level": 2,
         "title": "Logging Configuration"
       }
@@ -7241,7 +7275,7 @@
     "Low priority handler executes later": [
       {
         "document": "api-reference/event-system.md",
-        "line": 691,
+        "line": 688,
         "level": 1,
         "title": "Low priority handler executes later"
       }
@@ -7249,7 +7283,7 @@
     "Low-Level Methods": [
       {
         "document": "advanced/http-client.md",
-        "line": 350,
+        "line": 316,
         "level": 4,
         "title": "Low-Level Methods"
       }
@@ -7273,7 +7307,7 @@
     "Low-priority message, automatically dropped during queue backlog": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 380,
+        "line": 367,
         "level": 1,
         "title": "Low-priority message, automatically dropped during queue backlog"
       }
@@ -7281,7 +7315,7 @@
     "Mail with Attachment": [
       {
         "document": "platform-guide/email.md",
-        "line": 164,
+        "line": 161,
         "level": 3,
         "title": "Mail with Attachment"
       }
@@ -7297,7 +7331,7 @@
     "Management Interface": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 509,
+        "line": 498,
         "level": 2,
         "title": "Management Interface"
       },
@@ -7357,7 +7391,7 @@
     "Match by account name": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 457,
+        "line": 448,
         "level": 1,
         "title": "Match by account name"
       }
@@ -7365,7 +7399,7 @@
     "Match by bot_id (most commonly used, from event)": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 460,
+        "line": 451,
         "level": 1,
         "title": "Match by bot_id (most commonly used, from event)"
       }
@@ -7373,7 +7407,7 @@
     "Material Documentation": [
       {
         "document": "ai-support/README.md",
-        "line": 22,
+        "line": 20,
         "level": 2,
         "title": "Material Documentation"
       }
@@ -7389,7 +7423,7 @@
     "Media File Notes": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 32,
+        "line": 28,
         "level": 3,
         "title": "Media File Notes"
       }
@@ -7405,7 +7439,7 @@
     "Media Sending Methods": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 52,
+        "line": 47,
         "level": 3,
         "title": "Media Sending Methods"
       }
@@ -7421,7 +7455,7 @@
     "Message Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 393,
+        "line": 384,
         "level": 3,
         "title": "Message Configuration"
       }
@@ -7429,7 +7463,7 @@
     "Message Content": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 173,
+        "line": 140,
         "level": 4,
         "title": "Message Content"
       }
@@ -7477,13 +7511,13 @@
     "Message Event Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 60,
+        "line": 48,
         "level": 2,
         "title": "Message Event Methods"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 171,
+        "line": 138,
         "level": 3,
         "title": "Message Event Methods"
       }
@@ -7499,7 +7533,7 @@
     "Message Events (message)": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 47,
+        "line": 43,
         "level": 3,
         "title": "Message Events (message)"
       }
@@ -7515,7 +7549,7 @@
     "Message Management Methods": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 65,
+        "line": 60,
         "level": 3,
         "title": "Message Management Methods"
       }
@@ -7523,7 +7557,7 @@
     "Message Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 291,
+        "line": 288,
         "level": 3,
         "title": "Message Methods"
       }
@@ -7531,7 +7565,7 @@
     "Message Operations": [
       {
         "document": "platform-guide/discord.md",
-        "line": 154,
+        "line": 149,
         "level": 3,
         "title": "Message Operations"
       }
@@ -7539,7 +7573,7 @@
     "Message Query Examples": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 204,
+        "line": 198,
         "level": 3,
         "title": "Message Query Examples"
       }
@@ -7547,7 +7581,7 @@
     "Message Query Methods": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 77,
+        "line": 71,
         "level": 3,
         "title": "Message Query Methods"
       }
@@ -7555,7 +7589,7 @@
     "Message Segment Conversion": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 147,
+        "line": 145,
         "level": 2,
         "title": "Message Segment Conversion"
       }
@@ -7563,7 +7597,7 @@
     "Message Segment Data Extraction": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 286,
+        "line": 281,
         "level": 3,
         "title": "Message Segment Data Extraction"
       }
@@ -7593,7 +7627,7 @@
     "Message Sending": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 187,
+        "line": 185,
         "level": 3,
         "title": "Message Sending"
       }
@@ -7641,7 +7675,7 @@
     "Message Type Checks": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 194,
+        "line": 161,
         "level": 3,
         "title": "Message Type Checks"
       }
@@ -7649,7 +7683,7 @@
     "Message Type Detection": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 79,
+        "line": 63,
         "level": 2,
         "title": "Message Type Detection"
       }
@@ -7657,7 +7691,7 @@
     "Message editing": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 222,
+        "line": 218,
         "level": 1,
         "title": "Message editing"
       }
@@ -7665,7 +7699,7 @@
     "Message is sent in the background": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 266,
+        "line": 258,
         "level": 1,
         "title": "Message is sent in the background"
       }
@@ -7673,7 +7707,7 @@
     "Message retraction": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 215,
+        "line": 211,
         "level": 1,
         "title": "Message retraction"
       }
@@ -7681,7 +7715,7 @@
     "Message with Embed": [
       {
         "document": "platform-guide/discord.md",
-        "line": 272,
+        "line": 267,
         "level": 1,
         "title": "Message with Embed"
       }
@@ -7689,7 +7723,7 @@
     "Message with attachment": [
       {
         "document": "platform-guide/discord.md",
-        "line": 282,
+        "line": 277,
         "level": 1,
         "title": "Message with attachment"
       }
@@ -7697,7 +7731,7 @@
     "Message-related": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 266,
+        "line": 261,
         "level": 3,
         "title": "Message-related"
       }
@@ -7713,7 +7747,7 @@
     "Meta Event": [
       {
         "document": "api-reference/event-system.md",
-        "line": 229,
+        "line": 227,
         "level": 3,
         "title": "Meta Event"
       }
@@ -7737,7 +7771,7 @@
     "Meta Meta-Event Module": [
       {
         "document": "api-reference/event-system.md",
-        "line": 227,
+        "line": 225,
         "level": 2,
         "title": "Meta Meta-Event Module"
       }
@@ -7761,7 +7795,7 @@
     "Method Chaining": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 39,
+        "line": 35,
         "level": 2,
         "title": "Method Chaining"
       }
@@ -7769,7 +7803,7 @@
     "Method List": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 337,
+        "line": 333,
         "level": 3,
         "title": "Method List"
       }
@@ -7777,7 +7811,7 @@
     "Method Overview": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 99,
+        "line": 97,
         "level": 3,
         "title": "Method Overview"
       }
@@ -7785,7 +7819,7 @@
     "Method Quick Reference": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 150,
+        "line": 117,
         "level": 2,
         "title": "Method Quick Reference"
       }
@@ -7801,7 +7835,7 @@
     "Method Signature": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 77,
+        "line": 75,
         "level": 3,
         "title": "Method Signature"
       }
@@ -7815,7 +7849,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 208,
+        "line": 206,
         "level": 3,
         "title": "Middleware"
       }
@@ -7831,7 +7865,7 @@
     "Middleware Execution Order": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 228,
+        "line": 226,
         "level": 4,
         "title": "Middleware Execution Order"
       }
@@ -7839,7 +7873,7 @@
     "Milliseconds → seconds": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 356,
+        "line": 352,
         "level": 1,
         "title": "Milliseconds → seconds"
       }
@@ -7871,7 +7905,7 @@
     "Modifiers": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 107,
+        "line": 99,
         "level": 2,
         "title": "Modifiers"
       }
@@ -7893,7 +7927,7 @@
     "Module Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 421,
+        "line": 407,
         "level": 2,
         "title": "Module Configuration"
       }
@@ -7933,7 +7967,7 @@
     "Module Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 142,
+        "line": 140,
         "level": 3,
         "title": "Module Lifecycle"
       },
@@ -7953,7 +7987,7 @@
     "Module Loading Strategies": [
       {
         "document": "architecture.md",
-        "line": 196,
+        "line": 194,
         "level": 2,
         "title": "Module Loading Strategies"
       }
@@ -7993,7 +8027,7 @@
     "Module Usage Example": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 302,
+        "line": 300,
         "level": 2,
         "title": "Module Usage Example"
       }
@@ -8001,7 +8035,7 @@
     "Module is initialized only when first accessed": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 337,
+        "line": 336,
         "level": 1,
         "title": "Module is initialized only when first accessed"
       }
@@ -8009,7 +8043,7 @@
     "Module-Level Control": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 121,
+        "line": 118,
         "level": 3,
         "title": "Module-Level Control"
       }
@@ -8017,7 +8051,7 @@
     "Most adapters: bot_id is automatically obtained at runtime, no need to configure": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 345,
+        "line": 343,
         "level": 1,
         "title": "Most adapters: bot_id is automatically obtained at runtime, no need to configure"
       }
@@ -8025,7 +8059,7 @@
     "Multi-Account Configuration": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 391,
+        "line": 384,
         "level": 2,
         "title": "Multi-Account Configuration"
       },
@@ -8047,7 +8081,7 @@
     "Multi-Account Send Syntax": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 441,
+        "line": 437,
         "level": 3,
         "title": "Multi-Account Send Syntax"
       }
@@ -8063,7 +8097,7 @@
     "Multi-Instance Deployment": [
       {
         "document": "user-guide/deployment.md",
-        "line": 256,
+        "line": 257,
         "level": 2,
         "title": "Multi-Instance Deployment"
       }
@@ -8071,7 +8105,7 @@
     "Multi-account Configuration": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 107,
+        "line": 101,
         "level": 3,
         "title": "Multi-account Configuration"
       }
@@ -8095,7 +8129,7 @@
     "Multiple accounts: specify Bot account": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 261,
+        "line": 255,
         "level": 1,
         "title": "Multiple accounts: specify Bot account"
       }
@@ -8103,7 +8137,7 @@
     "Multiple consecutive modifier methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 204,
+        "line": 196,
         "level": 1,
         "title": "Multiple consecutive modifier methods"
       }
@@ -8127,13 +8161,13 @@
     "MyModule": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 486,
+        "line": 476,
         "level": 1,
         "title": "MyModule"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 509,
+        "line": 499,
         "level": 1,
         "title": "MyModule"
       }
@@ -8141,7 +8175,7 @@
     "Naming Convention": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 541,
+        "line": 528,
         "level": 2,
         "title": "Naming Convention"
       }
@@ -8149,7 +8183,7 @@
     "Native Renderer": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 289,
+        "line": 287,
         "level": 3,
         "title": "Native Renderer"
       }
@@ -8173,7 +8207,7 @@
     "New Mail Event (email_new)": [
       {
         "document": "platform-guide/email.md",
-        "line": 137,
+        "line": 134,
         "level": 3,
         "title": "New Mail Event (email_new)"
       }
@@ -8217,13 +8251,13 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 480,
+        "line": 465,
         "level": 2,
         "title": "Next Steps"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 145,
+        "line": 142,
         "level": 2,
         "title": "Next Steps"
       }
@@ -8231,7 +8265,7 @@
     "Node Tree Example": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 146,
+        "line": 144,
         "level": 3,
         "title": "Node Tree Example"
       }
@@ -8247,7 +8281,7 @@
     "Notice Event Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 202,
+        "line": 169,
         "level": 3,
         "title": "Notice Event Methods"
       }
@@ -8255,7 +8289,7 @@
     "Notice Events": [
       {
         "document": "api-reference/event-system.md",
-        "line": 177,
+        "line": 175,
         "level": 3,
         "title": "Notice Events"
       }
@@ -8271,7 +8305,7 @@
     "Notice Module": [
       {
         "document": "api-reference/event-system.md",
-        "line": 175,
+        "line": 173,
         "level": 2,
         "title": "Notice Module"
       }
@@ -8279,7 +8313,7 @@
     "Notice Operator": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 204,
+        "line": 171,
         "level": 4,
         "title": "Notice Operator"
       }
@@ -8287,7 +8321,7 @@
     "Notice Type Checks": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 208,
+        "line": 175,
         "level": 4,
         "title": "Notice Type Checks"
       }
@@ -8303,7 +8337,7 @@
     "Notification Event Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 136,
+        "line": 105,
         "level": 2,
         "title": "Notification Event Methods"
       }
@@ -8311,7 +8345,7 @@
     "Notification Events (notice)": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 60,
+        "line": 56,
         "level": 3,
         "title": "Notification Events (notice)"
       }
@@ -8319,7 +8353,7 @@
     "OB12 Message Segment Reverse Conversion (Raw_ob12)": [
       {
         "document": "platform-guide/email.md",
-        "line": 116,
+        "line": 113,
         "level": 3,
         "title": "OB12 Message Segment Reverse Conversion (Raw_ob12)"
       }
@@ -8327,7 +8361,7 @@
     "Old format (still usable, but migration is recommended)": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 384,
+        "line": 378,
         "level": 1,
         "title": "Old format (still usable, but migration is recommended)"
       }
@@ -8335,7 +8369,7 @@
     "On-demand Module Loading": [
       {
         "document": "advanced/startup.md",
-        "line": 289,
+        "line": 284,
         "level": 3,
         "title": "On-demand Module Loading"
       }
@@ -8351,7 +8385,7 @@
     "One-Time Registration (`once`)": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 67,
+        "line": 65,
         "level": 3,
         "title": "One-Time Registration (`once`)"
       }
@@ -8359,7 +8393,7 @@
     "OneBot11": [
       {
         "document": "standards/session-types.md",
-        "line": 170,
+        "line": 168,
         "level": 4,
         "title": "OneBot11"
       }
@@ -8375,7 +8409,7 @@
     "OneBot12 Message Support": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 95,
+        "line": 91,
         "level": 3,
         "title": "OneBot12 Message Support"
       },
@@ -8387,7 +8421,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 121,
+        "line": 117,
         "level": 3,
         "title": "OneBot12 Message Support"
       },
@@ -8399,7 +8433,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 223,
+        "line": 217,
         "level": 3,
         "title": "OneBot12 Message Support"
       },
@@ -8429,7 +8463,7 @@
     "OneBot12 Standard Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 159,
+        "line": 157,
         "level": 4,
         "title": "OneBot12 Standard Events"
       },
@@ -8459,7 +8493,7 @@
     "Only call Using if bot_id is not empty": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 868,
+        "line": 863,
         "level": 1,
         "title": "Only call Using if bot_id is not empty"
       }
@@ -8467,7 +8501,7 @@
     "Only display packages that can be upgraded": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 193,
+        "line": 192,
         "level": 1,
         "title": "Only display packages that can be upgraded"
       }
@@ -8475,7 +8509,7 @@
     "Only list adapters": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 190,
+        "line": 189,
         "level": 1,
         "title": "Only list adapters"
       }
@@ -8483,7 +8517,7 @@
     "Only list modules": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 187,
+        "line": 186,
         "level": 1,
         "title": "Only list modules"
       }
@@ -8491,7 +8525,7 @@
     "Only list remote modules": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 216,
+        "line": 215,
         "level": 1,
         "title": "Only list remote modules"
       }
@@ -8499,7 +8533,7 @@
     "Opcode Description": [
       {
         "document": "platform-guide/discord.md",
-        "line": 341,
+        "line": 336,
         "level": 3,
         "title": "Opcode Description"
       }
@@ -8507,7 +8541,7 @@
     "Optional Fields": [
       {
         "document": "bug-tracker.md",
-        "line": 33,
+        "line": 31,
         "level": 3,
         "title": "Optional Fields"
       }
@@ -8523,7 +8557,7 @@
     "Others": [
       {
         "document": "README.md",
-        "line": 88,
+        "line": 84,
         "level": 2,
         "title": "Others"
       }
@@ -8539,7 +8573,7 @@
     "Output Format": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 224,
+        "line": 222,
         "level": 3,
         "title": "Output Format"
       }
@@ -8547,7 +8581,7 @@
     "Output to a specified directory": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 418,
+        "line": 455,
         "level": 1,
         "title": "Output to a specified directory"
       }
@@ -8555,7 +8589,7 @@
     "Override timeout for a single request": [
       {
         "document": "advanced/http-client.md",
-        "line": 220,
+        "line": 201,
         "level": 1,
         "title": "Override timeout for a single request"
       }
@@ -8563,7 +8597,7 @@
     "Overriding Built-in Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 625,
+        "line": 622,
         "level": 4,
         "title": "Overriding Built-in Methods"
       }
@@ -8571,13 +8605,13 @@
     "Overview": [
       {
         "document": "advanced/http-client.md",
-        "line": 15,
+        "line": 8,
         "level": 2,
         "title": "Overview"
       },
       {
         "document": "advanced/lazy-loading.md",
-        "line": 9,
+        "line": 7,
         "level": 2,
         "title": "Overview"
       },
@@ -8603,7 +8637,7 @@
     "Overview of the Startup Process": [
       {
         "document": "advanced/startup.md",
-        "line": 31,
+        "line": 26,
         "level": 2,
         "title": "Overview of the Startup Process"
       }
@@ -8611,7 +8645,7 @@
     "POST": [
       {
         "document": "advanced/http-client.md",
-        "line": 112,
+        "line": 93,
         "level": 3,
         "title": "POST"
       }
@@ -8619,7 +8653,7 @@
     "PUT / DELETE / PATCH": [
       {
         "document": "advanced/http-client.md",
-        "line": 161,
+        "line": 142,
         "level": 3,
         "title": "PUT / DELETE / PATCH"
       }
@@ -8627,7 +8661,7 @@
     "Package Management Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 11,
+        "line": 10,
         "level": 2,
         "title": "Package Management Commands"
       }
@@ -8635,7 +8669,7 @@
     "Parallel (default, can be explicitly called)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 449,
+        "line": 436,
         "level": 1,
         "title": "Parallel (default, can be explicitly called)"
       }
@@ -8659,7 +8693,7 @@
     "PascalCase Naming": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 543,
+        "line": 530,
         "level": 3,
         "title": "PascalCase Naming"
       }
@@ -8699,7 +8733,7 @@
     "Placeholder Command Help Fallback Chain": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 89,
+        "line": 86,
         "level": 3,
         "title": "Placeholder Command Help Fallback Chain"
       }
@@ -8707,13 +8741,13 @@
     "Platform Capability Query": [
       {
         "document": "api-reference/event-system.md",
-        "line": 362,
+        "line": 359,
         "level": 3,
         "title": "Platform Capability Query"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 241,
+        "line": 208,
         "level": 4,
         "title": "Platform Capability Query"
       }
@@ -8721,13 +8755,13 @@
     "Platform Extension Fields": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 181,
+        "line": 179,
         "level": 2,
         "title": "Platform Extension Fields"
       },
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 74,
+        "line": 70,
         "level": 2,
         "title": "Platform Extension Fields"
       }
@@ -8735,13 +8769,13 @@
     "Platform Extension Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 488,
+        "line": 485,
         "level": 3,
         "title": "Platform Extension Methods"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 427,
+        "line": 394,
         "level": 3,
         "title": "Platform Extension Methods"
       }
@@ -8773,7 +8807,7 @@
     "Platform Method Isolation": [
       {
         "document": "api-reference/event-system.md",
-        "line": 524,
+        "line": 521,
         "level": 4,
         "title": "Platform Method Isolation"
       }
@@ -8781,7 +8815,7 @@
     "Platform Name Adapter Documentation": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 644,
+        "line": 633,
         "level": 1,
         "title": "Platform Name Adapter Documentation"
       }
@@ -8789,7 +8823,7 @@
     "Platform Native Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 180,
+        "line": 178,
         "level": 4,
         "title": "Platform Native Events"
       }
@@ -8797,7 +8831,7 @@
     "Platform extension example": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 304,
+        "line": 298,
         "level": 1,
         "title": "Platform extension example"
       }
@@ -8805,7 +8839,7 @@
     "Platform level only allows Chat": [
       {
         "document": "advanced/scope.md",
-        "line": 150,
+        "line": 147,
         "level": 1,
         "title": "Platform level only allows Chat"
       }
@@ -8821,7 +8855,7 @@
     "Platform-Specific Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 92,
+        "line": 84,
         "level": 3,
         "title": "Platform-Specific Methods"
       }
@@ -8829,7 +8863,7 @@
     "Platform-specific Events (onebot11_ prefix)": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 240,
+        "line": 236,
         "level": 3,
         "title": "Platform-specific Events (onebot11_ prefix)"
       }
@@ -8837,7 +8871,7 @@
     "Platform-specific Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 563,
+        "line": 550,
         "level": 3,
         "title": "Platform-specific Methods"
       }
@@ -8845,7 +8879,7 @@
     "Platform-specific Modifier Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 141,
+        "line": 133,
         "level": 3,
         "title": "Platform-specific Modifier Methods"
       }
@@ -8861,7 +8895,7 @@
     "Platform-specific modifier methods + board message": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 201,
+        "line": 193,
         "level": 1,
         "title": "Platform-specific modifier methods + board message"
       }
@@ -8877,7 +8911,7 @@
     "Prerequisites": [
       {
         "document": "advanced/README.md",
-        "line": 34,
+        "line": 32,
         "level": 2,
         "title": "Prerequisites"
       }
@@ -8885,7 +8919,7 @@
     "Priority": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 37,
+        "line": 35,
         "level": 3,
         "title": "Priority"
       }
@@ -8893,13 +8927,13 @@
     "Private message": [
       {
         "document": "platform-guide/discord.md",
-        "line": 256,
+        "line": 251,
         "level": 1,
         "title": "Private message"
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 199,
+        "line": 195,
         "level": 1,
         "title": "Private message"
       }
@@ -8907,7 +8941,7 @@
     "Proactive GC Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 316,
+        "line": 308,
         "level": 3,
         "title": "Proactive GC Configuration"
       }
@@ -8915,7 +8949,7 @@
     "Process Supervision and Hard Restart": [
       {
         "document": "user-guide/deployment.md",
-        "line": 106,
+        "line": 107,
         "level": 2,
         "title": "Process Supervision and Hard Restart"
       }
@@ -8923,7 +8957,7 @@
     "Project Management Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 265,
+        "line": 306,
         "level": 2,
         "title": "Project Management Commands"
       }
@@ -8961,7 +8995,7 @@
     "Protocol Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 84,
+        "line": 76,
         "level": 3,
         "title": "Protocol Methods"
       }
@@ -9061,7 +9095,7 @@
     "Query Bindings": [
       {
         "document": "advanced/scope.md",
-        "line": 115,
+        "line": 112,
         "level": 3,
         "title": "Query Bindings"
       }
@@ -9085,7 +9119,7 @@
     "Query Methods": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 75,
+        "line": 71,
         "level": 3,
         "title": "Query Methods"
       }
@@ -9093,7 +9127,7 @@
     "Query Platform Registered Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 509,
+        "line": 506,
         "level": 4,
         "title": "Query Platform Registered Methods"
       }
@@ -9101,7 +9135,7 @@
     "Query Registered Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 449,
+        "line": 416,
         "level": 3,
         "title": "Query Registered Methods"
       }
@@ -9155,7 +9189,7 @@
     "Quick Start": [
       {
         "document": "advanced/http-client.md",
-        "line": 34,
+        "line": 22,
         "level": 2,
         "title": "Quick Start"
       },
@@ -9173,7 +9207,7 @@
       },
       {
         "document": "ecosystem/takumi.md",
-        "line": 40,
+        "line": 38,
         "level": 2,
         "title": "Quick Start"
       },
@@ -9193,7 +9227,7 @@
     "Quick initialization": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 577,
+        "line": 624,
         "level": 1,
         "title": "Quick initialization"
       }
@@ -9217,7 +9251,7 @@
     "Raw Data": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 422,
+        "line": 389,
         "level": 3,
         "title": "Raw Data"
       }
@@ -9231,7 +9265,7 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 75,
+        "line": 70,
         "level": 3,
         "title": "Raw Message Sending"
       }
@@ -9239,7 +9273,7 @@
     "Raw Message and Message Building": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 745,
+        "line": 725,
         "level": 3,
         "title": "Raw Message and Message Building"
       }
@@ -9247,7 +9281,7 @@
     "Reaction": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 207,
+        "line": 203,
         "level": 1,
         "title": "Reaction"
       }
@@ -9255,7 +9289,7 @@
     "Recall message (requires additional chat_id + chat_type)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 258,
+        "line": 252,
         "level": 1,
         "title": "Recall message (requires additional chat_id + chat_type)"
       }
@@ -9263,7 +9297,7 @@
     "Receiving Messages": [
       {
         "document": "advanced/http-client.md",
-        "line": 322,
+        "line": 288,
         "level": 3,
         "title": "Receiving Messages"
       }
@@ -9343,7 +9377,7 @@
     "Register at adapter's start() or module level": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 592,
+        "line": 581,
         "level": 1,
         "title": "Register at adapter's start() or module level"
       }
@@ -9351,7 +9385,7 @@
     "Register command": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 317,
+        "line": 316,
         "level": 1,
         "title": "Register command"
       }
@@ -9359,7 +9393,7 @@
     "Register message handler": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 322,
+        "line": 321,
         "level": 1,
         "title": "Register message handler"
       }
@@ -9367,7 +9401,7 @@
     "Registering Commands": [
       {
         "document": "api-reference/event-system.md",
-        "line": 24,
+        "line": 22,
         "level": 3,
         "title": "Registering Commands"
       }
@@ -9375,7 +9409,7 @@
     "Registering Handlers": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 16,
+        "line": 14,
         "level": 3,
         "title": "Registering Handlers"
       }
@@ -9383,7 +9417,7 @@
     "Registering a Single Method": [
       {
         "document": "api-reference/event-system.md",
-        "line": 551,
+        "line": 548,
         "level": 4,
         "title": "Registering a Single Method"
       }
@@ -9391,7 +9425,7 @@
     "Registration and Unregistration": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 276,
+        "line": 274,
         "level": 3,
         "title": "Registration and Unregistration"
       }
@@ -9399,7 +9433,7 @@
     "Reject request": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 179,
+        "line": 175,
         "level": 1,
         "title": "Reject request"
       }
@@ -9431,7 +9465,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 696,
+        "line": 693,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9443,7 +9477,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1035,
+        "line": 1030,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -9455,7 +9489,7 @@
       },
       {
         "document": "user-guide/README.md",
-        "line": 40,
+        "line": 41,
         "level": 2,
         "title": "Related Documentation"
       }
@@ -9463,13 +9497,13 @@
     "Related Documents": [
       {
         "document": "advanced/conversation.md",
-        "line": 358,
+        "line": 353,
         "level": 2,
         "title": "Related Documents"
       },
       {
         "document": "advanced/http-client.md",
-        "line": 536,
+        "line": 495,
         "level": 2,
         "title": "Related Documents"
       },
@@ -9481,13 +9515,13 @@
       },
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 753,
+        "line": 733,
         "level": 2,
         "title": "Related Documents"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 484,
+        "line": 451,
         "level": 2,
         "title": "Related Documents"
       },
@@ -9501,19 +9535,19 @@
     "Related Links": [
       {
         "document": "README.md",
-        "line": 106,
+        "line": 101,
         "level": 2,
         "title": "Related Links"
       },
       {
         "document": "ecosystem/app.md",
-        "line": 103,
+        "line": 99,
         "level": 2,
         "title": "Related Links"
       },
       {
         "document": "ecosystem/takumi.md",
-        "line": 361,
+        "line": 359,
         "level": 2,
         "title": "Related Links"
       }
@@ -9529,7 +9563,7 @@
     "Relationship with SDK": [
       {
         "document": "ecosystem/app.md",
-        "line": 90,
+        "line": 88,
         "level": 2,
         "title": "Relationship with SDK"
       }
@@ -9545,7 +9579,7 @@
     "Render HTML": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 51,
+        "line": 49,
         "level": 3,
         "title": "Render HTML"
       }
@@ -9553,7 +9587,7 @@
     "Render Node Tree": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 76,
+        "line": 74,
         "level": 3,
         "title": "Render Node Tree"
       }
@@ -9561,7 +9595,7 @@
     "Renderer Instance": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 287,
+        "line": 285,
         "level": 2,
         "title": "Renderer Instance"
       }
@@ -9569,7 +9603,7 @@
     "Rendering API": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 95,
+        "line": 93,
         "level": 2,
         "title": "Rendering API"
       }
@@ -9577,19 +9611,19 @@
     "Reply Functionality": [
       {
         "document": "api-reference/event-system.md",
-        "line": 330,
+        "line": 327,
         "level": 3,
         "title": "Reply Functionality"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 98,
+        "line": 77,
         "level": 2,
         "title": "Reply Functionality"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 225,
+        "line": 192,
         "level": 3,
         "title": "Reply Functionality"
       }
@@ -9597,7 +9631,7 @@
     "Reply Mail Event (email_reply)": [
       {
         "document": "platform-guide/email.md",
-        "line": 187,
+        "line": 184,
         "level": 3,
         "title": "Reply Mail Event (email_reply)"
       }
@@ -9605,7 +9639,7 @@
     "Reply Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 128,
+        "line": 120,
         "level": 3,
         "title": "Reply Method"
       }
@@ -9613,7 +9647,7 @@
     "Reply Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 374,
+        "line": 371,
         "level": 3,
         "title": "Reply Methods"
       }
@@ -9667,7 +9701,7 @@
     "Request Event Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 215,
+        "line": 182,
         "level": 3,
         "title": "Request Event Methods"
       }
@@ -9683,7 +9717,7 @@
     "Request Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 217,
+        "line": 184,
         "level": 4,
         "title": "Request Information"
       }
@@ -9691,7 +9725,7 @@
     "Request Methods": [
       {
         "document": "advanced/http-client.md",
-        "line": 98,
+        "line": 79,
         "level": 2,
         "title": "Request Methods"
       }
@@ -9713,7 +9747,7 @@
     "Request Type Checks": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 220,
+        "line": 187,
         "level": 4,
         "title": "Request Type Checks"
       }
@@ -9721,7 +9755,7 @@
     "Required Field Mapping": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 119,
+        "line": 117,
         "level": 2,
         "title": "Required Field Mapping"
       }
@@ -9729,13 +9763,13 @@
     "Required Fields": [
       {
         "document": "bug-tracker.md",
-        "line": 20,
+        "line": 18,
         "level": 3,
         "title": "Required Fields"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 644,
+        "line": 641,
         "level": 3,
         "title": "Required Fields"
       }
@@ -9743,7 +9777,7 @@
     "Requirement Description Template": [
       {
         "document": "ai-support/README.md",
-        "line": 40,
+        "line": 38,
         "level": 3,
         "title": "Requirement Description Template"
       }
@@ -9767,7 +9801,7 @@
     "Reset statistics": [
       {
         "document": "advanced/http-client.md",
-        "line": 256,
+        "line": 232,
         "level": 1,
         "title": "Reset statistics"
       }
@@ -9783,7 +9817,7 @@
     "Retry 2 times after the first failure, for a total of 3 attempts": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 330,
+        "line": 317,
         "level": 1,
         "title": "Retry 2 times after the first failure, for a total of 3 attempts"
       }
@@ -9807,7 +9841,7 @@
     "Return Value Specification": [
       {
         "document": "api-reference/event-system.md",
-        "line": 588,
+        "line": 585,
         "level": 4,
         "title": "Return Value Specification"
       }
@@ -9815,7 +9849,7 @@
     "Return Value Structure": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 90,
+        "line": 88,
         "level": 3,
         "title": "Return Value Structure"
       }
@@ -9823,7 +9857,7 @@
     "Return Values": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 654,
+        "line": 636,
         "level": 2,
         "title": "Return Values"
       }
@@ -9847,7 +9881,7 @@
     "Returns: \"group\" (group_id is prioritized)": [
       {
         "document": "standards/session-types.md",
-        "line": 250,
+        "line": 246,
         "level": 1,
         "title": "Returns: \"group\" (group_id is prioritized)"
       }
@@ -9855,7 +9889,7 @@
     "Returns: \"group\" (not \"group_member_increase\")": [
       {
         "document": "standards/session-types.md",
-        "line": 260,
+        "line": 256,
         "level": 1,
         "title": "Returns: \"group\" (not \"group_member_increase\")"
       }
@@ -9863,7 +9897,7 @@
     "Returns: \"private\"": [
       {
         "document": "standards/session-types.md",
-        "line": 255,
+        "line": 251,
         "level": 1,
         "title": "Returns: \"private\""
       }
@@ -9903,7 +9937,7 @@
     "Reverse Proxy": [
       {
         "document": "user-guide/deployment.md",
-        "line": 144,
+        "line": 145,
         "level": 2,
         "title": "Reverse Proxy"
       }
@@ -9911,7 +9945,7 @@
     "Room Invitations": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 336,
+        "line": 332,
         "level": 3,
         "title": "Room Invitations"
       }
@@ -9967,7 +10001,7 @@
     "Router Server": [
       {
         "document": "advanced/startup.md",
-        "line": 279,
+        "line": 274,
         "level": 3,
         "title": "Router Server"
       }
@@ -9975,7 +10009,7 @@
     "Router-level query": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 217,
+        "line": 215,
         "level": 1,
         "title": "Router-level query"
       }
@@ -9983,7 +10017,7 @@
     "Rules set before To also propagate to the instance created by To": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 409,
+        "line": 396,
         "level": 1,
         "title": "Rules set before To also propagate to the instance created by To"
       }
@@ -9991,7 +10025,7 @@
     "Run normally": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 541,
+        "line": 588,
         "level": 1,
         "title": "Run normally"
       }
@@ -10005,7 +10039,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 97,
+        "line": 96,
         "level": 1,
         "title": "Run the project"
       }
@@ -10021,7 +10055,7 @@
     "Runtime API": [
       {
         "document": "advanced/scope.md",
-        "line": 76,
+        "line": 73,
         "level": 2,
         "title": "Runtime API"
       }
@@ -10029,7 +10063,7 @@
     "Runtime Control Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 222,
+        "line": 268,
         "level": 2,
         "title": "Runtime Control Commands"
       }
@@ -10037,7 +10071,7 @@
     "Runtime Fine-grained Control": [
       {
         "document": "advanced/startup.md",
-        "line": 259,
+        "line": 254,
         "level": 2,
         "title": "Runtime Fine-grained Control"
       }
@@ -10045,7 +10079,7 @@
     "SDK Core Architecture": [
       {
         "document": "architecture.md",
-        "line": 9,
+        "line": 7,
         "level": 2,
         "title": "SDK Core Architecture"
       }
@@ -10069,7 +10103,7 @@
     "SDK Top-Level Entry Overview": [
       {
         "document": "advanced/startup.md",
-        "line": 15,
+        "line": 10,
         "level": 2,
         "title": "SDK Top-Level Entry Overview"
       }
@@ -10093,7 +10127,7 @@
     "SVG Output Example": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 186,
+        "line": 184,
         "level": 3,
         "title": "SVG Output Example"
       }
@@ -10101,7 +10135,7 @@
     "Save conversation state": [
       {
         "document": "advanced/conversation.md",
-        "line": 282,
+        "line": 278,
         "level": 1,
         "title": "Save conversation state"
       }
@@ -10109,7 +10143,7 @@
     "Save the Task first, then wait later": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 280,
+        "line": 272,
         "level": 1,
         "title": "Save the Task first, then wait later"
       }
@@ -10125,7 +10159,7 @@
     "Scope Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 452,
+        "line": 437,
         "level": 2,
         "title": "Scope Configuration"
       }
@@ -10141,7 +10175,7 @@
     "Security": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 379,
+        "line": 374,
         "level": 2,
         "title": "Security"
       }
@@ -10157,7 +10191,7 @@
     "Security Recommendations": [
       {
         "document": "user-guide/deployment.md",
-        "line": 243,
+        "line": 244,
         "level": 2,
         "title": "Security Recommendations"
       }
@@ -10165,7 +10199,7 @@
     "Send A2UI Message": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 492,
+        "line": 478,
         "level": 1,
         "title": "Send A2UI Message"
       }
@@ -10189,7 +10223,7 @@
     "Send Method Return Value": [
       {
         "document": "platform-guide/email.md",
-        "line": 277,
+        "line": 269,
         "level": 2,
         "title": "Send Method Return Value"
       }
@@ -10197,7 +10231,7 @@
     "Send Method Return Values": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 426,
+        "line": 422,
         "level": 2,
         "title": "Send Method Return Values"
       }
@@ -10235,7 +10269,7 @@
     "Send Rule Engine (Retry/Timeout/Delay)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 637,
+        "line": 619,
         "level": 3,
         "title": "Send Rule Engine (Retry/Timeout/Delay)"
       }
@@ -10243,7 +10277,7 @@
     "Send after 5 seconds": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 371,
+        "line": 358,
         "level": 1,
         "title": "Send after 5 seconds"
       }
@@ -10259,7 +10293,7 @@
     "Send message using account name": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 655,
+        "line": 641,
         "level": 1,
         "title": "Send message using account name"
       }
@@ -10267,7 +10301,7 @@
     "Send message using bot_id (automatically matches the corresponding account)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 658,
+        "line": 644,
         "level": 1,
         "title": "Send message using bot_id (automatically matches the corresponding account)"
       }
@@ -10275,7 +10309,7 @@
     "Send rules: retry + timeout + success callback": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 220,
+        "line": 212,
         "level": 1,
         "title": "Send rules: retry + timeout + success callback"
       }
@@ -10283,7 +10317,7 @@
     "Send to group": [
       {
         "document": "standards/session-types.md",
-        "line": 277,
+        "line": 271,
         "level": 1,
         "title": "Send to group"
       }
@@ -10291,7 +10325,7 @@
     "Send to user": [
       {
         "document": "standards/session-types.md",
-        "line": 274,
+        "line": 268,
         "level": 1,
         "title": "Send to user"
       }
@@ -10315,7 +10349,7 @@
     "Sender Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 179,
+        "line": 146,
         "level": 4,
         "title": "Sender Information"
       }
@@ -10323,7 +10357,7 @@
     "Sending Embed Messages": [
       {
         "document": "platform-guide/discord.md",
-        "line": 407,
+        "line": 402,
         "level": 3,
         "title": "Sending Embed Messages"
       }
@@ -10331,7 +10365,7 @@
     "Sending Examples": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 91,
+        "line": 86,
         "level": 3,
         "title": "Sending Examples"
       }
@@ -10353,7 +10387,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 384,
+        "line": 380,
         "level": 3,
         "title": "Sending Media Messages"
       },
@@ -10381,7 +10415,7 @@
     "Sending Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 55,
+        "line": 47,
         "level": 2,
         "title": "Sending Methods"
       }
@@ -10389,7 +10423,7 @@
     "Sending Rendered Results": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 328,
+        "line": 326,
         "level": 2,
         "title": "Sending Rendered Results"
       }
@@ -10397,7 +10431,7 @@
     "Sending a Message with Buttons Using Chained Calls": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 460,
+        "line": 448,
         "level": 3,
         "title": "Sending a Message with Buttons Using Chained Calls"
       }
@@ -10421,7 +10455,7 @@
     "Sending to Different Targets": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 82,
+        "line": 78,
         "level": 3,
         "title": "Sending to Different Targets"
       }
@@ -10429,7 +10463,7 @@
     "Sequential: send in order": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 442,
+        "line": 429,
         "level": 1,
         "title": "Sequential: send in order"
       }
@@ -10445,7 +10479,7 @@
     "Session Identifier": [
       {
         "document": "api-reference/event-system.md",
-        "line": 278,
+        "line": 275,
         "level": 3,
         "title": "Session Identifier"
       }
@@ -10453,7 +10487,7 @@
     "Session Identifiers": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 167,
+        "line": 134,
         "level": 4,
         "title": "Session Identifiers"
       }
@@ -10461,7 +10495,7 @@
     "Severity Levels": [
       {
         "document": "bug-tracker.md",
-        "line": 45,
+        "line": 42,
         "level": 2,
         "title": "Severity Levels"
       }
@@ -10469,7 +10503,7 @@
     "Shutdown Adapters": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 112,
+        "line": 110,
         "level": 4,
         "title": "Shutdown Adapters"
       }
@@ -10569,7 +10603,7 @@
     "Specific Event Types": [
       {
         "document": "platform-guide/email.md",
-        "line": 127,
+        "line": 124,
         "level": 2,
         "title": "Specific Event Types"
       }
@@ -10585,7 +10619,7 @@
     "Specify account operation": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 182,
+        "line": 178,
         "level": 1,
         "title": "Specify account operation"
       }
@@ -10593,7 +10627,7 @@
     "Specify account using Using method": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 848,
+        "line": 843,
         "level": 1,
         "title": "Specify account using Using method"
       }
@@ -10601,7 +10635,7 @@
     "Standalone Renderer": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 301,
+        "line": 299,
         "level": 3,
         "title": "Standalone Renderer"
       }
@@ -10649,7 +10683,7 @@
     "Standard OB12 Mapping": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 222,
+        "line": 218,
         "level": 3,
         "title": "Standard OB12 Mapping"
       }
@@ -10673,7 +10707,7 @@
     "Standardized Response": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 680,
+        "line": 662,
         "level": 3,
         "title": "Standardized Response"
       }
@@ -10681,7 +10715,7 @@
     "Start Adapters": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 89,
+        "line": 87,
         "level": 4,
         "title": "Start Adapters"
       }
@@ -10705,7 +10739,7 @@
     "Startup and Shutdown": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 87,
+        "line": 85,
         "level": 3,
         "title": "Startup and Shutdown"
       }
@@ -10721,7 +10755,7 @@
     "Statistics Overview": [
       {
         "document": "bug-tracker.md",
-        "line": 100,
+        "line": 94,
         "level": 2,
         "title": "Statistics Overview"
       }
@@ -10777,7 +10811,7 @@
     "Storage Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 360,
+        "line": 352,
         "level": 2,
         "title": "Storage Configuration"
       }
@@ -10799,7 +10833,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 286,
+        "line": 285,
         "level": 2,
         "title": "Storage System"
       }
@@ -10807,7 +10841,7 @@
     "Strict Mode": [
       {
         "document": "user-guide/configuration.md",
-        "line": 331,
+        "line": 323,
         "level": 3,
         "title": "Strict Mode"
       }
@@ -10815,7 +10849,7 @@
     "Style 1: Global master (effective on all platforms)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 228,
+        "line": 220,
         "level": 1,
         "title": "Style 1: Global master (effective on all platforms)"
       }
@@ -10823,7 +10857,7 @@
     "Style 2: Specify master per platform (dict)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 231,
+        "line": 223,
         "level": 1,
         "title": "Style 2: Specify master per platform (dict)"
       }
@@ -10855,25 +10889,25 @@
     "Supported Message Sending Types": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 650,
+        "line": 639,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
       {
         "document": "platform-guide/discord.md",
-        "line": 79,
+        "line": 74,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
       {
         "document": "platform-guide/email.md",
-        "line": 68,
+        "line": 65,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
       {
         "document": "platform-guide/ideaura.md",
-        "line": 29,
+        "line": 25,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
@@ -10885,13 +10919,13 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 68,
+        "line": 64,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
       {
         "document": "platform-guide/onebot11.md",
-        "line": 30,
+        "line": 26,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
@@ -10909,13 +10943,13 @@
       },
       {
         "document": "platform-guide/telegram.md",
-        "line": 29,
+        "line": 24,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 31,
+        "line": 25,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
@@ -10929,7 +10963,7 @@
     "Supported Message Types": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 18,
+        "line": 14,
         "level": 2,
         "title": "Supported Message Types"
       }
@@ -10945,7 +10979,7 @@
     "Supported Platforms": [
       {
         "document": "ecosystem/app.md",
-        "line": 27,
+        "line": 25,
         "level": 2,
         "title": "Supported Platforms"
       }
@@ -10966,18 +11000,10 @@
         "title": "Supported levels (from lowest to highest):"
       }
     ],
-    "Switch directly to English": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 554,
-        "level": 1,
-        "title": "Switch directly to English"
-      }
-    ],
     "Switch to English": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 369,
+        "line": 410,
         "level": 1,
         "title": "Switch to English"
       }
@@ -10985,7 +11011,7 @@
     "Switch to Japanese": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 372,
+        "line": 413,
         "level": 1,
         "title": "Switch to Japanese"
       }
@@ -11009,7 +11035,7 @@
     "Sync API Connection": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 318,
+        "line": 314,
         "level": 2,
         "title": "Sync API Connection"
       }
@@ -11017,7 +11043,7 @@
     "Synchronization Flow": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 320,
+        "line": 316,
         "level": 3,
         "title": "Synchronization Flow"
       }
@@ -11025,7 +11051,7 @@
     "Synchronous Initialization": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 192,
+        "line": 184,
         "level": 3,
         "title": "Synchronous Initialization"
       }
@@ -11033,7 +11059,7 @@
     "Synchronous callback": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 313,
+        "line": 300,
         "level": 1,
         "title": "Synchronous callback"
       }
@@ -11103,7 +11129,7 @@
     "Task Object": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 656,
+        "line": 638,
         "level": 3,
         "title": "Task Object"
       }
@@ -11119,7 +11145,7 @@
     "Telegram": [
       {
         "document": "standards/session-types.md",
-        "line": 150,
+        "line": 148,
         "level": 4,
         "title": "Telegram"
       }
@@ -11135,13 +11161,13 @@
     "Testing": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 524,
+        "line": 515,
         "level": 2,
         "title": "Testing"
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 431,
+        "line": 421,
         "level": 2,
         "title": "Testing"
       }
@@ -11149,7 +11175,7 @@
     "The adapter automatically records: self_id(\"123456789\") → account_name(\"main\")": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 531,
+        "line": 520,
         "level": 1,
         "title": "The adapter automatically records: self_id(\"123456789\") → account_name(\"main\")"
       }
@@ -11157,7 +11183,7 @@
     "Therefore event.reply() can automatically find the correct account to send messages": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 533,
+        "line": 522,
         "level": 1,
         "title": "Therefore event.reply() can automatically find the correct account to send messages"
       }
@@ -11165,7 +11191,7 @@
     "Thread message": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 230,
+        "line": 226,
         "level": 1,
         "title": "Thread message"
       }
@@ -11173,7 +11199,7 @@
     "Timeout + Retry: Each attempt lasts 10 seconds, up to 3 attempts": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 342,
+        "line": 329,
         "level": 1,
         "title": "Timeout + Retry: Each attempt lasts 10 seconds, up to 3 attempts"
       }
@@ -11189,7 +11215,7 @@
     "Topology Tree Data": [
       {
         "document": "advanced/scope.md",
-        "line": 137,
+        "line": 134,
         "level": 3,
         "title": "Topology Tree Data"
       }
@@ -11213,7 +11239,7 @@
     "Transaction Usage": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 301,
+        "line": 300,
         "level": 3,
         "title": "Transaction Usage"
       }
@@ -11237,7 +11263,7 @@
     "Trigger Semantics": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 99,
+        "line": 96,
         "level": 3,
         "title": "Trigger Semantics"
       }
@@ -11245,7 +11271,7 @@
     "Triggering": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 284,
+        "line": 282,
         "level": 3,
         "title": "Triggering"
       }
@@ -11261,7 +11287,7 @@
     "Type Annotations for the event Parameter": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 9,
+        "line": 7,
         "level": 2,
         "title": "Type Annotations for the event Parameter"
       }
@@ -11269,7 +11295,7 @@
     "Type Classification": [
       {
         "document": "bug-tracker.md",
-        "line": 53,
+        "line": 50,
         "level": 2,
         "title": "Type Classification"
       }
@@ -11285,7 +11311,7 @@
     "Unified Module Access Entry": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 159,
+        "line": 151,
         "level": 3,
         "title": "Unified Module Access Entry"
       }
@@ -11293,7 +11319,7 @@
     "Uninstall Process": [
       {
         "document": "advanced/startup.md",
-        "line": 322,
+        "line": 317,
         "level": 2,
         "title": "Uninstall Process"
       }
@@ -11301,7 +11327,7 @@
     "Uninstall a single component": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 518,
+        "line": 552,
         "level": 1,
         "title": "Uninstall a single component"
       }
@@ -11309,7 +11335,7 @@
     "Uninstall multiple components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 521,
+        "line": 555,
         "level": 1,
         "title": "Uninstall multiple components"
       }
@@ -11317,7 +11343,7 @@
     "Unique Event Types": [
       {
         "document": "developer-guide/adapters/best-practices.md",
-        "line": 653,
+        "line": 642,
         "level": 2,
         "title": "Unique Event Types"
       },
@@ -11355,7 +11381,7 @@
     "Unregistering Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 613,
+        "line": 610,
         "level": 4,
         "title": "Unregistering Methods"
       }
@@ -11395,7 +11421,7 @@
     "Update and Maintenance": [
       {
         "document": "user-guide/deployment.md",
-        "line": 269,
+        "line": 270,
         "level": 2,
         "title": "Update and Maintenance"
       }
@@ -11403,7 +11429,7 @@
     "Upgrade a module": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 495,
+        "line": 529,
         "level": 1,
         "title": "Upgrade a module"
       }
@@ -11411,7 +11437,7 @@
     "Upgrade all components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 528,
+        "line": 575,
         "level": 1,
         "title": "Upgrade all components"
       }
@@ -11419,7 +11445,7 @@
     "Upgrade specified components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 531,
+        "line": 578,
         "level": 1,
         "title": "Upgrade specified components"
       }
@@ -11433,7 +11459,7 @@
       },
       {
         "document": "ai-support/README.md",
-        "line": 34,
+        "line": 32,
         "level": 3,
         "title": "Usage"
       }
@@ -11441,7 +11467,7 @@
     "Usage Example": [
       {
         "document": "platform-guide/telegram.md",
-        "line": 295,
+        "line": 290,
         "level": 3,
         "title": "Usage Example"
       }
@@ -11449,7 +11475,7 @@
     "Usage Examples": [
       {
         "document": "platform-guide/discord.md",
-        "line": 369,
+        "line": 364,
         "level": 2,
         "title": "Usage Examples"
       },
@@ -11461,13 +11487,13 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 341,
+        "line": 337,
         "level": 2,
         "title": "Usage Examples"
       },
       {
         "document": "platform-guide/onebot11.md",
-        "line": 349,
+        "line": 345,
         "level": 3,
         "title": "Usage Examples"
       },
@@ -11505,7 +11531,7 @@
     "Use priority to control execution order": [
       {
         "document": "api-reference/event-system.md",
-        "line": 162,
+        "line": 160,
         "level": 1,
         "title": "Use priority to control execution order"
       }
@@ -11521,7 +11547,7 @@
     "Use the first enabled bot if not specified": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 661,
+        "line": 647,
         "level": 1,
         "title": "Use the first enabled bot if not specified"
       }
@@ -11545,7 +11571,7 @@
     "Users: Using Platform Extension Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 492,
+        "line": 489,
         "level": 4,
         "title": "Users: Using Platform Extension Methods"
       }
@@ -11553,7 +11579,7 @@
     "Using Discord-Specific Methods": [
       {
         "document": "platform-guide/discord.md",
-        "line": 424,
+        "line": 419,
         "level": 3,
         "title": "Using Discord-Specific Methods"
       }
@@ -11569,7 +11595,7 @@
     "Using Lazy-Loaded Modules": [
       {
         "document": "advanced/lazy-loading.md",
-        "line": 145,
+        "line": 137,
         "level": 2,
         "title": "Using Lazy-Loaded Modules"
       }
@@ -11585,7 +11611,7 @@
     "Using Method": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 237,
+        "line": 229,
         "level": 3,
         "title": "Using Method"
       }
@@ -11593,7 +11619,7 @@
     "Using Send DSL to Specify Account": [
       {
         "document": "platform-guide/ideaura.md",
-        "line": 428,
+        "line": 421,
         "level": 3,
         "title": "Using Send DSL to Specify Account"
       }
@@ -11617,7 +11643,7 @@
     "Using account name": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 854,
+        "line": 849,
         "level": 1,
         "title": "Using account name"
       }
@@ -11633,7 +11659,7 @@
     "Using in Adapters": [
       {
         "document": "advanced/http-client.md",
-        "line": 491,
+        "line": 457,
         "level": 2,
         "title": "Using in Adapters"
       }
@@ -11673,7 +11699,7 @@
     "Using self.user_id from event (recommended, most universal)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 851,
+        "line": 846,
         "level": 1,
         "title": "Using self.user_id from event (recommended, most universal)"
       }
@@ -11689,7 +11715,7 @@
     "Utilities": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 292,
+        "line": 290,
         "level": 3,
         "title": "Utilities"
       }
@@ -11703,7 +11729,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 451,
+        "line": 448,
         "level": 3,
         "title": "Utility Methods"
       }
@@ -11719,7 +11745,7 @@
     "V. I Want to Contribute to ErisPulse": [
       {
         "document": "README.md",
-        "line": 68,
+        "line": 66,
         "level": 3,
         "title": "V. I Want to Contribute to ErisPulse"
       }
@@ -11727,7 +11753,7 @@
     "Verified Service Account and Passive Response (`verified`)": [
       {
         "document": "platform-guide/wechatmp.md",
-        "line": 141,
+        "line": 135,
         "level": 3,
         "title": "Verified Service Account and Passive Response (`verified`)"
       }
@@ -11740,10 +11766,18 @@
         "title": "Version Update Notes"
       }
     ],
+    "View configuration status": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 562,
+        "level": 1,
+        "title": "View configuration status"
+      }
+    ],
     "View remote available components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 511,
+        "line": 545,
         "level": 1,
         "title": "View remote available components"
       }
@@ -11751,7 +11785,7 @@
     "View statistics": [
       {
         "document": "advanced/http-client.md",
-        "line": 252,
+        "line": 228,
         "level": 1,
         "title": "View statistics"
       }
@@ -11759,7 +11793,7 @@
     "Viewport and Output Formats": [
       {
         "document": "ecosystem/takumi.md",
-        "line": 222,
+        "line": 220,
         "level": 2,
         "title": "Viewport and Output Formats"
       }
@@ -11775,7 +11809,7 @@
     "WSMessage": [
       {
         "document": "advanced/http-client.md",
-        "line": 373,
+        "line": 339,
         "level": 3,
         "title": "WSMessage"
       }
@@ -11783,7 +11817,7 @@
     "Wait Reply Functionality": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 256,
+        "line": 223,
         "level": 3,
         "title": "Wait Reply Functionality"
       }
@@ -11791,7 +11825,7 @@
     "Waiting for Replies": [
       {
         "document": "api-reference/event-system.md",
-        "line": 74,
+        "line": 72,
         "level": 3,
         "title": "Waiting for Replies"
       }
@@ -11799,7 +11833,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 232,
+        "line": 230,
         "level": 3,
         "title": "WebSocket"
       }
@@ -11807,7 +11841,7 @@
     "WebSocket Client": [
       {
         "document": "advanced/http-client.md",
-        "line": 306,
+        "line": 272,
         "level": 2,
         "title": "WebSocket Client"
       }
@@ -11815,7 +11849,7 @@
     "WebSocket Connection": [
       {
         "document": "advanced/http-client.md",
-        "line": 54,
+        "line": 42,
         "level": 3,
         "title": "WebSocket Connection"
       },
@@ -11883,7 +11917,7 @@
     "When an event is received, the self.user_id field is filled with bot_id": [
       {
         "document": "platform-guide/onebot11.md",
-        "line": 530,
+        "line": 519,
         "level": 1,
         "title": "When an event is received, the self.user_id field is filled with bot_id"
       }
@@ -11899,7 +11933,7 @@
     "When to Use Manual Startup?": [
       {
         "document": "advanced/startup.md",
-        "line": 249,
+        "line": 244,
         "level": 3,
         "title": "When to Use Manual Startup?"
       }
@@ -11931,7 +11965,7 @@
     "Wildcards": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 57,
+        "line": 55,
         "level": 3,
         "title": "Wildcards"
       }
@@ -11963,7 +11997,7 @@
     "[BUG-001] Event handler registered multiple times causing event to be processed multiple times": [
       {
         "document": "bug-tracker.md",
-        "line": 131,
+        "line": 123,
         "level": 3,
         "title": "[BUG-001] Event handler registered multiple times causing event to be processed multiple times"
       }
@@ -11971,7 +12005,7 @@
     "[BUG-002] Init command adapter configuration path type error": [
       {
         "document": "bug-tracker.md",
-        "line": 151,
+        "line": 143,
         "level": 3,
         "title": "[BUG-002] Init command adapter configuration path type error"
       }
@@ -11979,7 +12013,7 @@
     "[BUG-003] Commands fail after restart": [
       {
         "document": "bug-tracker.md",
-        "line": 175,
+        "line": 167,
         "level": 3,
         "title": "[BUG-003] Commands fail after restart"
       }
@@ -11987,7 +12021,7 @@
     "[BUG-004] Lifecycle event handlers not cleaned up": [
       {
         "document": "bug-tracker.md",
-        "line": 195,
+        "line": 187,
         "level": 3,
         "title": "[BUG-004] Lifecycle event handlers not cleaned up"
       }
@@ -11995,7 +12029,7 @@
     "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard": [
       {
         "document": "bug-tracker.md",
-        "line": 215,
+        "line": 207,
         "level": 3,
         "title": "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard"
       }
@@ -12003,7 +12037,7 @@
     "[BUG-006] adapter.clear() not clearing _started_instances causing incorrect state after restart": [
       {
         "document": "bug-tracker.md",
-        "line": 235,
+        "line": 227,
         "level": 3,
         "title": "[BUG-006] adapter.clear() not clearing _started_instances causing incorrect state after restart"
       }
@@ -12011,7 +12045,7 @@
     "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()": [
       {
         "document": "bug-tracker.md",
-        "line": 255,
+        "line": 247,
         "level": 3,
         "title": "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()"
       }
@@ -12019,7 +12053,7 @@
     "[BUG-008] Bot offline event repeatedly submitted during shutdown": [
       {
         "document": "bug-tracker.md",
-        "line": 275,
+        "line": 267,
         "level": 3,
         "title": "[BUG-008] Bot offline event repeatedly submitted during shutdown"
       }
@@ -12027,7 +12061,7 @@
     "[BUG-009] LazyModule synchronous access to BaseModule causing incomplete initialization": [
       {
         "document": "bug-tracker.md",
-        "line": 295,
+        "line": 287,
         "level": 3,
         "title": "[BUG-009] LazyModule synchronous access to BaseModule causing incomplete initialization"
       }
@@ -12035,7 +12069,7 @@
     "[BUG-010] Multi-threaded configuration system writing causing data loss": [
       {
         "document": "bug-tracker.md",
-        "line": 315,
+        "line": 307,
         "level": 3,
         "title": "[BUG-010] Multi-threaded configuration system writing causing data loss"
       }
@@ -12043,7 +12077,7 @@
     "[BUG-011] Windows Ctrl+C unable to stop program": [
       {
         "document": "bug-tracker.md",
-        "line": 338,
+        "line": 330,
         "level": 3,
         "title": "[BUG-011] Windows Ctrl+C unable to stop program"
       }
@@ -12051,7 +12085,7 @@
     "[BUG-012] Hot restart after module update does not take effect": [
       {
         "document": "bug-tracker.md",
-        "line": 362,
+        "line": 354,
         "level": 3,
         "title": "[BUG-012] Hot restart after module update does not take effect"
       }
@@ -12059,7 +12093,7 @@
     "[BUG-013] Module loading strategy sorting logic error": [
       {
         "document": "bug-tracker.md",
-        "line": 382,
+        "line": 374,
         "level": 3,
         "title": "[BUG-013] Module loading strategy sorting logic error"
       }
@@ -12067,7 +12101,7 @@
     "[BUG-014] Adapter middleware returning None causing event data loss": [
       {
         "document": "bug-tracker.md",
-        "line": 402,
+        "line": 394,
         "level": 3,
         "title": "[BUG-014] Adapter middleware returning None causing event data loss"
       }
@@ -12075,7 +12109,7 @@
     "[BUG-015] Configuration file path depends on working directory": [
       {
         "document": "bug-tracker.md",
-        "line": 422,
+        "line": 414,
         "level": 3,
         "title": "[BUG-015] Configuration file path depends on working directory"
       }
@@ -12083,7 +12117,7 @@
     "[BUG-016] BaseStorage confuses storing value None with key not existing": [
       {
         "document": "bug-tracker.md",
-        "line": 442,
+        "line": 434,
         "level": 3,
         "title": "[BUG-016] BaseStorage confuses storing value None with key not existing"
       }
@@ -12091,7 +12125,7 @@
     "[BUG-017] WebSocket route auto_accept flag lost after service restart": [
       {
         "document": "bug-tracker.md",
-        "line": 462,
+        "line": 454,
         "level": 3,
         "title": "[BUG-017] WebSocket route auto_accept flag lost after service restart"
       }
@@ -12099,7 +12133,7 @@
     "[BUG-018] HTTP/WS client concurrent calls causing crash and connection leak": [
       {
         "document": "bug-tracker.md",
-        "line": 482,
+        "line": 474,
         "level": 3,
         "title": "[BUG-018] HTTP/WS client concurrent calls causing crash and connection leak"
       }
@@ -12107,7 +12141,7 @@
     "[BUG-019] Adapter hot reload causes route conflict and reload failure": [
       {
         "document": "bug-tracker.md",
-        "line": 510,
+        "line": 502,
         "level": 3,
         "title": "[BUG-019] Adapter hot reload causes route conflict and reload failure"
       }
@@ -12115,7 +12149,7 @@
     "[BUG-020] Subprocess mode `ep run <script>` cannot find sub-packages in the script's directory": [
       {
         "document": "bug-tracker.md",
-        "line": 534,
+        "line": 526,
         "level": 3,
         "title": "[BUG-020] Subprocess mode `ep run <script>` cannot find sub-packages in the script's directory"
       }
@@ -12123,7 +12157,7 @@
     "[BUG-021] SQL query builder rejects valid wildcard and list expressions": [
       {
         "document": "bug-tracker.md",
-        "line": 554,
+        "line": 546,
         "level": 3,
         "title": "[BUG-021] SQL query builder rejects valid wildcard and list expressions"
       }
@@ -12131,7 +12165,7 @@
     "[BUG-022] _resolve_account() account resolution regression (_accounts_data not filled)": [
       {
         "document": "bug-tracker.md",
-        "line": 583,
+        "line": 575,
         "level": 3,
         "title": "[BUG-022] _resolve_account() account resolution regression (_accounts_data not filled)"
       }
@@ -12139,7 +12173,7 @@
     "[BUG-023] Adapter cache not refreshed after account configuration change causing account resolution failure": [
       {
         "document": "bug-tracker.md",
-        "line": 622,
+        "line": 614,
         "level": 3,
         "title": "[BUG-023] Adapter cache not refreshed after account configuration change causing account resolution failure"
       }
@@ -12147,7 +12181,7 @@
     "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill": [
       {
         "document": "bug-tracker.md",
-        "line": 642,
+        "line": 634,
         "level": 3,
         "title": "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill"
       }
@@ -12155,7 +12189,7 @@
     "[BUG-025] on_config_update callback not core-routed": [
       {
         "document": "bug-tracker.md",
-        "line": 688,
+        "line": 680,
         "level": 3,
         "title": "[BUG-025] on_config_update callback not core-routed"
       }
@@ -12163,7 +12197,7 @@
     "[BUG-026] notice/request event reply target inferred incorrectly": [
       {
         "document": "bug-tracker.md",
-        "line": 718,
+        "line": 710,
         "level": 3,
         "title": "[BUG-026] notice/request event reply target inferred incorrectly"
       }
@@ -12171,7 +12205,7 @@
     "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limit rules to fail": [
       {
         "document": "bug-tracker.md",
-        "line": 749,
+        "line": 741,
         "level": 3,
         "title": "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limit rules to fail"
       }
@@ -12179,7 +12213,7 @@
     "[BUG-029] Configuration listener task broadcasts incomplete TOML and silently swallows exceptions": [
       {
         "document": "bug-tracker.md",
-        "line": 781,
+        "line": 773,
         "level": 3,
         "title": "[BUG-029] Configuration listener task broadcasts incomplete TOML and silently swallows exceptions"
       }
@@ -12187,7 +12221,7 @@
     "[BUG-030] Configuration watcher race condition causing setConfig delayed write silently drops data": [
       {
         "document": "bug-tracker.md",
-        "line": 817,
+        "line": 809,
         "level": 3,
         "title": "[BUG-030] Configuration watcher race condition causing setConfig delayed write silently drops data"
       }
@@ -12225,7 +12259,7 @@
     "`hasattr` / `dir` Support": [
       {
         "document": "api-reference/event-system.md",
-        "line": 540,
+        "line": 537,
         "level": 4,
         "title": "`hasattr` / `dir` Support"
       }
@@ -12233,7 +12267,7 @@
     "`hasattr` and `dir` Support": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 458,
+        "line": 425,
         "level": 3,
         "title": "`hasattr` and `dir` Support"
       }
@@ -12257,7 +12291,7 @@
     "channel": [
       {
         "document": "standards/session-types.md",
-        "line": 117,
+        "line": 115,
         "level": 4,
         "title": "channel"
       }
@@ -12265,7 +12299,7 @@
     "choose(prompt, options, **kwargs)": [
       {
         "document": "advanced/conversation.md",
-        "line": 93,
+        "line": 90,
         "level": 3,
         "title": "choose(prompt, options, **kwargs)"
       }
@@ -12281,15 +12315,23 @@
     "collect(fields, **kwargs)": [
       {
         "document": "advanced/conversation.md",
-        "line": 127,
+        "line": 124,
         "level": 3,
         "title": "collect(fields, **kwargs)"
+      }
+    ],
+    "config": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 227,
+        "level": 3,
+        "title": "config"
       }
     ],
     "config.toml": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 619,
+        "line": 605,
         "level": 1,
         "title": "config.toml"
       }
@@ -12297,7 +12339,7 @@
     "config/config.toml": [
       {
         "document": "user-guide/deployment.md",
-        "line": 182,
+        "line": 183,
         "level": 1,
         "title": "config/config.toml"
       }
@@ -12305,7 +12347,7 @@
     "confirm(prompt=None, **kwargs)": [
       {
         "document": "advanced/conversation.md",
-        "line": 75,
+        "line": 72,
         "level": 3,
         "title": "confirm(prompt=None, **kwargs)"
       }
@@ -12321,7 +12363,7 @@
     "conv_id = \"user_123_group_456\"  # Automatically generated based on user and group": [
       {
         "document": "advanced/conversation.md",
-        "line": 284,
+        "line": 280,
         "level": 1,
         "title": "conv_id = \"user_123_group_456\"  # Automatically generated based on user and group"
       }
@@ -12329,7 +12371,7 @@
     "convert() Method": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 75,
+        "line": 73,
         "level": 2,
         "title": "convert() Method"
       }
@@ -12345,7 +12387,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 302,
+        "line": 343,
         "level": 3,
         "title": "create"
       }
@@ -12369,7 +12411,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 442,
+        "line": 478,
         "level": 3,
         "title": "doctor"
       }
@@ -12377,7 +12419,7 @@
     "get() Method": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 245,
+        "line": 243,
         "level": 4,
         "title": "get() Method"
       }
@@ -12401,7 +12443,7 @@
     "group": [
       {
         "document": "standards/session-types.md",
-        "line": 101,
+        "line": 99,
         "level": 4,
         "title": "group"
       }
@@ -12409,7 +12451,7 @@
     "guild": [
       {
         "document": "standards/session-types.md",
-        "line": 124,
+        "line": 122,
         "level": 4,
         "title": "guild"
       }
@@ -12433,7 +12475,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 272,
+        "line": 313,
         "level": 3,
         "title": "init"
       }
@@ -12441,7 +12483,7 @@
     "install": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 26,
+        "line": 25,
         "level": 3,
         "title": "install"
       }
@@ -12449,7 +12491,7 @@
     "is_active": [
       {
         "document": "advanced/conversation.md",
-        "line": 175,
+        "line": 172,
         "level": 3,
         "title": "is_active"
       }
@@ -12513,7 +12555,7 @@
     "pip Method": [
       {
         "document": "user-guide/deployment.md",
-        "line": 281,
+        "line": 282,
         "level": 3,
         "title": "pip Method"
       }
@@ -12521,7 +12563,7 @@
     "private": [
       {
         "document": "standards/session-types.md",
-        "line": 94,
+        "line": 92,
         "level": 4,
         "title": "private"
       }
@@ -12529,7 +12571,7 @@
     "results = [Text result, Image result, Text result]": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
-        "line": 432,
+        "line": 419,
         "level": 1,
         "title": "results = [Text result, Image result, Text result]"
       }
@@ -12537,7 +12579,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 228,
+        "line": 274,
         "level": 3,
         "title": "run"
       }
@@ -12545,7 +12587,7 @@
     "say(content, **kwargs)": [
       {
         "document": "advanced/conversation.md",
-        "line": 44,
+        "line": 41,
         "level": 3,
         "title": "say(content, **kwargs)"
       }
@@ -12569,7 +12611,7 @@
     "self-update": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 131,
+        "line": 130,
         "level": 3,
         "title": "self-update"
       }
@@ -12577,7 +12619,7 @@
     "stop()": [
       {
         "document": "advanced/conversation.md",
-        "line": 167,
+        "line": 164,
         "level": 3,
         "title": "stop()"
       }
@@ -12585,7 +12627,7 @@
     "thread": [
       {
         "document": "standards/session-types.md",
-        "line": 131,
+        "line": 129,
         "level": 4,
         "title": "thread"
       }
@@ -12593,7 +12635,7 @@
     "uninstall": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 80,
+        "line": 79,
         "level": 3,
         "title": "uninstall"
       }
@@ -12601,7 +12643,7 @@
     "upgrade": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 103,
+        "line": 102,
         "level": 3,
         "title": "upgrade"
       }
@@ -12609,7 +12651,7 @@
     "user": [
       {
         "document": "standards/session-types.md",
-        "line": 108,
+        "line": 106,
         "level": 4,
         "title": "user"
       }
@@ -12617,7 +12659,7 @@
     "users = { yunhu = [\"123456\"], telegram = [\"789012\"] }": [
       {
         "document": "user-guide/configuration.md",
-        "line": 232,
+        "line": 224,
         "level": 1,
         "title": "users = { yunhu = [\"123456\"], telegram = [\"789012\"] }"
       }
@@ -12625,7 +12667,7 @@
     "wait(prompt=None, timeout=None)": [
       {
         "document": "advanced/conversation.md",
-        "line": 58,
+        "line": 55,
         "level": 3,
         "title": "wait(prompt=None, timeout=None)"
       }
@@ -12633,7 +12675,7 @@
     "{": [
       {
         "document": "advanced/scope.md",
-        "line": 198,
+        "line": 195,
         "level": 1,
         "title": "{"
       },
@@ -12661,7 +12703,7 @@
     "{\"adapters\": {\"myplatform\": {\"status\": \"started\", \"bots\": {...}}}}": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1015,
+        "line": 1010,
         "level": 1,
         "title": "{\"adapters\": {\"myplatform\": {\"status\": \"started\", \"bots\": {...}}}}"
       }
@@ -12733,7 +12775,7 @@
     "{\"status\": \"online\", \"last_active\": 1712345678.0, \"info\": {\"nickname\": \"MyBot\"}}": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1002,
+        "line": 997,
         "level": 1,
         "title": "{\"status\": \"online\", \"last_active\": 1712345678.0, \"info\": {\"nickname\": \"MyBot\"}}"
       }
@@ -12741,7 +12783,7 @@
     "{\"total_requests\": 42, \"total_errors\": 1, \"total_bytes_sent\": 0, \"total_bytes_received\": 0}": [
       {
         "document": "advanced/http-client.md",
-        "line": 254,
+        "line": 230,
         "level": 1,
         "title": "{\"total_requests\": 42, \"total_errors\": 1, \"total_bytes_sent\": 0, \"total_bytes_received\": 0}"
       }
@@ -12749,19 +12791,19 @@
     "}": [
       {
         "document": "advanced/scope.md",
-        "line": 209,
+        "line": 206,
+        "level": 1,
+        "title": "}"
+      },
+      {
+        "document": "advanced/scope.md",
+        "line": 213,
         "level": 1,
         "title": "}"
       },
       {
         "document": "advanced/scope.md",
         "line": 216,
-        "level": 1,
-        "title": "}"
-      },
-      {
-        "document": "advanced/scope.md",
-        "line": 219,
         "level": 1,
         "title": "}"
       },
@@ -12787,13 +12829,13 @@
     "},": [
       {
         "document": "advanced/scope.md",
-        "line": 210,
+        "line": 207,
         "level": 1,
         "title": "},"
       },
       {
         "document": "advanced/scope.md",
-        "line": 217,
+        "line": 214,
         "level": 1,
         "title": "},"
       }
@@ -12801,7 +12843,7 @@
     "↑ This triggers module initialization": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 339,
+        "line": 338,
         "level": 1,
         "title": "↑ This triggers module initialization"
       }
@@ -12817,7 +12859,7 @@
     "毫秒 → 秒": [
       {
         "document": "developer-guide/adapters/converter.md",
-        "line": 400,
+        "line": 396,
         "level": 1,
         "title": "毫秒 → 秒"
       }
