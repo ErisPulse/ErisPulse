@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "ced99c31785ac3f12312d2fcb7e67e9f",
-  "file_hash": "ced99c31785ac3f12312d2fcb7e67e9f",
-  "translated_at": "2026-08-17T11:55:39.993502",
+  "hash": "0bba417dbedeacfa84dc826455122a68",
+  "file_hash": "0bba417dbedeacfa84dc826455122a68",
+  "translated_at": "2026-09-01T06:29:45.594696",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# 詳細トピック\n\nこのディレクトリには ErisPulse フレームワークの高度な機能と深掘りトピックが含まれています。"
     },
     {
-      "hash": "1b4aa804d2bd756b37b4b950bfee862e",
-      "translation": "## ドキュメントリスト\n\n- [起動フローと手動制御](startup.md) - 起動経路の分解（Finder/Loader/Manager/Router）と手動による完全な起動\n- [ラジオーディングシステム](lazy-loading.md) - ラジオーディングモジュールシステムの動作原理、設定、イベント駆動による遅延アクティベーション（activate_on）\n- [モジュールスコープシステム](scope.md) - モジュールとアダプタ Bot/プラットフォームのバインディングと隔離\n- [国際化 (i18n)](i18n.md) - 多言語サポート、翻訳の登録、言語検出\n- [ライフサイクル管理](lifecycle.md) - ライフサイクルイベントシステムの使用方法\n- [ルートマネージャー](router.md) - HTTP および WebSocket ルートの管理\n- [HTTP クライアント](http-client.md) - 統一された HTTP リクエストクライアント\n- [MessageBuilder 詳解](message-builder.md) - OneBot12 メッセージセグメントビルダーの二重モードの使用法\n- [SQL クエリビルダー](sql-builder.md) - 一般的な SQL チェーン式クエリビルダーおよびストレージバックエンドの抽象化\n- [セッションタイプシステム](../standards/session-types.md) - セッションタイプの定義、マッピング、およびカスタムタイプの登録\n- [Conversation 多輪対話](conversation.md) - 多輪対話コンテキストのインタラクション方法\n\n> [!NOTE]\n> Dashboard 視窗の登録、Takumi による画像レンダリングなどの **サードパーティエコシステムモジュール** のドキュメントは、[エコシステムモジュール](../ecosystem/README.md) 目録に移動されました。"
+      "hash": "50d1f44108e04e3d673d0251b52de38f",
+      "translation": "## ドキュメントリスト\n\n- [起動フローと手動制御](startup.md) - 開始フローの分解（Finder/Loader/Manager/Router）と手動による完全な起動\n- [遅延ロードシステム](lazy-loading.md) - 遅延ロードモジュールシステムの動作原理、設定、およびイベント駆動型の遅延アクティベーション（activate_on）\n- [統一制御面（scope）](scope.md) - 五次元の権限制御：モジュールの可用性 / イベントのアクセス制御 / コマンド ACL / テキストフィルタ / パラメータの上書き\n- [国際化 (i18n)](i8n.md) - 多言語サポート、翻訳の登録と言語の検出\n- [ライフサイクル管理](lifecycle.md) - ライフサイクルイベントシステムの使用方法\n- [ルートマネージャー](router.md) - HTTP および WebSocket のルート管理\n- [HTTP クライアント](http-client.md) - 統一された HTTP リクエストクライアント\n- [MessageBuilder 詳解](message-builder.md) - OneBot12 メッセージセグメントビルダーの二重モードの使い方\n- [SQL クエリビルダー](sql-builder.md) - 一般的な SQL チェーン式クエリビルダーとストレージバックエンドの抽象化\n- [会話タイプシステム](../standards/session-types.md) - 会話タイプの定義、マッピング、およびカスタムタイプの登録\n- [Conversation 多段対話](conversation.md) - 多段対話コンテキストのインタラクション方法\n\n> [!NOTE]\n> Dashboard 視窗の登録、Takumi による画像レンダリングなどの **サードパーティエコシステムモジュール** のドキュメントは、[エコシステムモジュール](../ecosystem/README.md) 目録に移動されました。"
     },
     {
       "hash": "81b5854fa95b29d89b547d92b77468de",

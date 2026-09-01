@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "hash": "6b8bb865b4958d566dc1102cce0c5697",
+  "file_hash": "6b8bb865b4958d566dc1102cce0c5697",
+  "translated_at": "2026-09-01T06:58:54.739214",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "1b3f0ec4bfba51e600c605ef706bd0e7",
+      "translation": "# Installation Reference\n\n> This document is a **complete reference** for installation methods (pip / uv / Docker / troubleshooting).\n> If you just want to get started quickly, [5-minute Quick Start](../quick-start.md) covers the minimal setup."
+    },
+    {
+      "hash": "0673dda01e551a4430a223406abc48f9",
+      "translation": "## System Requirements\n\n- Python 3.10 or higher\n- pip or uv (recommended)\n- Sufficient disk space (at least 100MB)"
+    },
+    {
+      "hash": "d588381833d7a59395c1506d42a2270e",
+      "translation": "## Installation Methods\n\n### Method 1: Install using pip\n\n```bash\n# Install ErisPulse\npip install ErisPulse\n\n# Upgrade to the latest version\npip install ErisPulse --upgrade\n```\n\n### Method 2: Install using uv (Recommended)\n\nuv is a faster Python toolchain, recommended for development environments.\n\n#### Install uv\n\n```bash\n# Install uv using pip\npip install uv\n\n# Verify installation\nuv --version\n```\n\n#### Create a virtual environment\n\n```bash\n# Create project directory\nmkdir my_bot && cd my_bot\n\n# Install Python 3.12\nuv python install 3.12\n\n# Create virtual environment\nuv venv\n```\n\n#### Activate the virtual environment\n\n```bash\n# Windows\n.venv\\Scripts\\activate\n\n# Linux/Mac\nsource .venv/bin/activate\n```\n\n#### Install ErisPulse\n\n```bash\n# Install ErisPulse\nuv pip install ErisPulse --upgrade\n```"
+    },
+    {
+      "hash": "358f974f4ee2f44daa4450252b751cdc",
+      "translation": "## Project Initialization and Module Installation\n\nAfter installation, the complete workflow for project initialization, module installation, and running is described in [Quick Start in 5 Minutes](../quick-start.md).\n\n### Method 3: Using the ErisPulse-App Client (No Terminal Required)\n\nDon't want to install a Python environment? [ErisPulse-App](../ecosystem/app.md) is the official cross-platform client (Android / Windows / Linux / macOS), which can be **run directly on your phone**. The desktop version supports minimizing to the system tray for background operation. It includes a built-in Python runtime and ErisPulse SDK, eliminating the need for terminal commands or manual configuration:\n\n- Download from [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) according to your platform (Android `online`/`offline` APK, Windows `setup.exe`/`zip`, Linux `tar.gz`, macOS `zip`)\n- Create and start an instance within the App, managing adapters and modules through the native interface and browsing the module store\n\n> For complete instructions, see [ErisPulse-App Installation and Usage](../ecosystem/app.md)."
+    },
+    {
+      "hash": "0cba7617f7a40bf89b6ae47d67267c5f",
+      "translation": "## Verification of Installation\n\n### Check Installation\n\n```bash\n# Check ErisPulse version\nepsdk --version\n```\n\n### Run Tests\n\n```bash\n# Run the project\nepsdk run main.py\n```\n\nIf you see similar output, the installation is successful:\n\n```\n[INFO] Initializing ErisPulse...\n[INFO] Adapter loaded: Yunhu\n[INFO] Module loaded: MyModule\n[INFO] ErisPulse initialization complete\n```"
+    },
+    {
+      "hash": "1bb3ef51791ad89cc63f9dbe11dcaf50",
+      "translation": "## FAQ\n\n### Installation Failure\n\n1. Check if the Python version is >= 3.10 (recommended 3.10 - 3.13)\n2. Try using `uv pip install ErisPulse` instead of `pip install`\n3. If permission errors occur, try `pip install --user ErisPulse` or use a virtual environment\n4. If SSL certificate errors occur in an enterprise proxy environment, try `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`\n5. Ensure network connectivity is normal and the pip source is accessible\n\n### Configuration Errors\n\n1. Check if the `config.toml` syntax is correct (TOML format is sensitive to indentation and quotes)\n2. Confirm all required configuration items are filled\n3. Check terminal logs for detailed error information\n4. Use `epsdk init` to regenerate the configuration file\n\n### Module Installation Failure\n\n1. Confirm the module name is spelled correctly (case-sensitive)\n2. Check network connectivity\n3. Use `epsdk list-remote` to view the list of available modules\n4. Confirm the module is compatible with your current SDK version\n\n### Windows PowerShell Execution Policy\n\nIf PowerShell prompts \"Cannot load the file... because running scripts is disabled on this system\":\n\n```powershell\nSet-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser\n```"
+    },
+    {
+      "hash": "f8f13704538cc520848853879c0ee83f",
+      "translation": "## Next Steps\n\n- [CLI Command Reference](cli-reference.md) - Learn about all command-line commands\n- [Configuration File Guide](configuration.md) - Learn more about configuration options"
+    }
+  ]
+}

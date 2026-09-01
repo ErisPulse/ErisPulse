@@ -1,7 +1,7 @@
 # 安裝參考
 
-> 本文是安裝方式的**完整參考**（pip / uv / Docker / 故障排查）。
-> 如果你只想快速跑起來，[5 分鐘快速開始](../quick-start.md) 已經覆蓋了最簡流程。
+> 本文是安裝方式的**完整參考**（pip / uv / Docker / 故障排除）。
+> 如果你只想快速上手，[5 分鐘快速入門](../quick-start.md) 已經涵蓋了最簡流程。
 
 ## 系統要求
 
@@ -48,7 +48,7 @@ uv python install 3.12
 uv venv
 ```
 
-#### 啟動虛擬環境
+#### 激活虛擬環境
 
 ```bash
 # Windows
@@ -63,22 +63,23 @@ source .venv/bin/activate
 ```bash
 # 安裝 ErisPulse
 uv pip install ErisPulse --upgrade
+```
 
-## 專案初始化與模組安裝
+## 項目初始化與模組安裝
 
-安裝完成後，專案初始化、模組安裝、執行的完整流程請見 [5 分鐘快速開始](../zh-TW/quick-start.md)。
+安裝完成後，項目初始化、模組安裝、運行的完整流程見 [5 分鐘快速開始](../quick-start.md)。
 
-### 方式三：使用 ErisPulse-App 用戶端（免終端）
+### 方式三：使用 ErisPulse-App 客戶端（免終端）
 
-不想安裝 Python 環境？[ErisPulse-App](../zh-TW/ecosystem/app.md) 是官方全平台用戶端
-（Android / Windows / Linux / macOS），**手機直接執行**，桌面版支援最小化到
-系統圖示後台常駐；內建 Python 執行環境與 ErisPulse SDK，無需終端機與手動設定：
+不想裝 Python 環境？[ErisPulse-App](../ecosystem/app.md) 是官方全平台客戶端
+（Android / Windows / Linux / macOS），**手機直接運行**，桌面版支援最小化到
+系統托盤後台常駐；內建 Python 運行時與 ErisPulse SDK，無需終端與手動配置：
 
 - 從 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 按平台選擇下載
   （Android `online`/`offline` APK、Windows `setup.exe`/`zip`、Linux `tar.gz`、macOS `zip`）
-- 在 App 內建立並啟動執行個體，透過原生介面管理適配器與模組、瀏覽模組商店
+- 在 App 內建立並啟動實例，透過原生介面管理適配器與模組、瀏覽模組商店
 
-> 完整說明請見 [ErisPulse-App 安裝與使用](../zh-TW/ecosystem/app.md)。
+> 完整說明見 [ErisPulse-App 安裝與使用](../ecosystem/app.md)。
 
 ## 驗證安裝
 
@@ -92,41 +93,42 @@ epsdk --version
 ### 執行測試
 
 ```bash
-# 執行專案
+# 執行項目
 epsdk run main.py
 ```
 
-如果看到類似的輸出說明安裝成功：
+如果看到類似的輸出，則表示安裝成功：
 
 ```
 [INFO] 正在初始化 ErisPulse...
-[INFO] 介面卡已載入: Yunhu
+[INFO] 適配器已載入: Yunhu
 [INFO] 模組已載入: MyModule
 [INFO] ErisPulse 初始化完成
+```
 
 ## 常見問題
 
 ### 安裝失敗
 
-1. 檢查 Python 版本是否 >= 3.10（推薦 3.10 - 3.13）
-2. 嘗試使用 `uv pip install ErisPulse` 替代 `pip install`
+1. 檢查 Python 版本是否 >= 3.10（建議 3.10 - 3.13）
+2. 嘗試使用 `uv pip install ErisPulse` 取代 `pip install`
 3. 如果提示權限錯誤，嘗試 `pip install --user ErisPulse` 或使用虛擬環境
-4. 如果在企業代理環境下遇到 SSL 憑證錯誤，嘗試 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
-5. 確保網路連線正常，pip 源可存取
+4. 如果在企業代理環境下遇到 SSL 證書錯誤，嘗試 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
+5. 確保網路連接正常，pip 源可訪問
 
 ### 配置錯誤
 
-1. 檢查 `config.toml` 語法是否正確（TOML 格式對縮排和引號敏感）
-2. 確認所有必要的配置項都已填寫
-3. 查看終端日誌取得詳細錯誤資訊
-4. 使用 `epsdk init` 重新生成配置檔案
+1. 檢查 `config.toml` 語法是否正確（TOML 格式對縮進和引號敏感）
+2. 確認所有必需的配置項都已填寫
+3. 查看終端日誌獲取詳細錯誤資訊
+4. 使用 `epsdk init` 重新生成配置文件
 
 ### 模組安裝失敗
 
-1. 確認模組名稱拼寫正確（區分大小寫）
-2. 檢查網路連線
-3. 使用 `epsdk list-remote` 查看可用模組清單
-4. 確認模組與您當前 SDK 版本相容
+1. 確認模組名稱拼寫正確（大小寫敏感）
+2. 檢查網路連接
+3. 使用 `epsdk list-remote` 查看可用模組列表
+4. 確認模組與你目前 SDK 版本相容
 
 ### Windows PowerShell 執行策略
 
@@ -136,8 +138,7 @@ epsdk run main.py
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-
 ## 下一步
 
-- [CLI 命令參考](cli-reference.md) - 了解所有命令行命令
-- [設定檔說明](configuration.md) - 詳細了解設定選項
+- [CLI 命令參考](cli-reference.md) - 瞭解所有命令列指令
+- [配置檔案說明](configuration.md) - 詳細了解配置選項

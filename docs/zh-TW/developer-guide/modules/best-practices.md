@@ -2,8 +2,6 @@
 
 本文檔提供了 ErisPulse 模組開發的最佳實踐建議。
 
-
-
 ## 模組設計
 
 ### 1. 單一職責原則
@@ -35,7 +33,7 @@ name = "ErisPulse-ModuleName"  # 使用 ErisPulse- 前綴
 
 ### 3. 清晰的配置管理
 
-推薦使用宣告式配置（`ConfigClass` + `BaseConfig`），獲得類型安全、自動範本生成、WebUI 表單支援等能力：
+推薦使用宣告式配置（`ConfigClass` + `BaseConfig`），獲得類型安全、自動模板生成、WebUI 表單支援等能力：
 
 ```python
 from dataclasses import dataclass, field
@@ -47,32 +45,32 @@ class MyModuleConfig(BaseConfig):
         "description": {"i18n": "my_module.api_url", "default": "API 位址"},
     })
     timeout: int = field(default=30, metadata={
-        "description": {"i18n": "my_module.timeout", "default": "逾時時間（秒）"},
+        "description": {"i18n": "my_module.timeout", "default": "超時時間（秒）"},
     })
     cache_ttl: int = field(default=3600, metadata={
-        "description": {"i18n": "my_module.cache_ttl", "default": "快取存活時間（秒）"},
+        "description": {"i18n": "my_module.cache_ttl", "default": "緩存存活時間（秒）"},
     })
 
 class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def do_something(self):
-        cfg = self.cfg  # 類型安全，實時讀取
+        cfg = self.cfg  # 類型安全，即時讀取
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-也可以在繼續使用手動方式讀寫配置儲存（見[模組核心概念](../zh-TW/core-concepts.md#配置管理)）。
+也可以繼續使用手動方式讀寫配置儲存（見[模組核心概念](core-concepts.md#配置管理)）。
 
 ### 宣告式翻譯鍵（v2.7.0+）
 
-模組可以透過 `I18nClass` 集中宣告翻譯鍵，框架自動註冊到 i18n 系統，無需手動呼叫 `i18n.register()`。
+模組可以透過 `I18nClass` 集中宣告翻譯鍵，框架會自動註冊到 i18n 系統，無需手動呼叫 `i18n.register()`。
 
 ```python
 from ErisPulse.Core.Bases import BaseI18n, I18nKey
 
 class MyModule(BaseModule):
     class I18nClass(BaseI18n):
-        # 帶佔位符的業務翻譯鍵
+        # 帶占位符的業務翻譯鍵
         welcome: I18nKey = I18nKey(
             default="Welcome, {name}!",
             zh_CN="歡迎你，{name}！",
@@ -92,9 +90,9 @@ class MyModule(BaseModule):
         )
 ```
 
-詳細用法見 [i18n 文檔](../../advanced/i18n.md#推薦寫法透過-i18nclass-宣告翻譯鍵-v270)。
+詳細用法見 [i18n 文檔](../../advanced/i18n.md#推薦寫法通過-i18nclass-宣告翻譯鍵-v270)。
 
-## 異步程式設計
+## 異步編程
 
 ### 1. 使用異步庫
 
@@ -135,7 +133,7 @@ class MyModule(BaseModule):
 ### 2. 正確的異步操作
 
 ```python
-from ErisPulse.Core.Event import Event  # event: Event 注解可獲得 IDE 自動補全
+from ErisPulse.Core.Event import Event  # event: Event 注解可獲得 IDE 補全
 
 async def handle_command(self, event: Event):
     # 需要等待結果的耗時操作：直接 await（生命週期明確）
@@ -148,18 +146,19 @@ async def on_load(self, event: dict):
 ```
 
 > [!NOTE]
-> 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**），而不是 `asyncio.create_task`——後者建立的裸任務不歸屬模組，卸載時不會被自動清理，會持有 `self` 引用導致模組實例無法被回收（熱重載泄漏）。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
+> 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**），而不是 `asyncio.create_task`——後者創建的裸任務不歸屬模組，卸載時不會被自動清理，會持有 `self` 引用導致模組實例無法被回收（熱重載泄漏）。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
 
 ### 3. 資源管理
 
 ```python
 async def on_load(self, event):
-    # SDK 客戶端已自動管理連接池，無需手動建立 session
+    # SDK 客戶端已自動管理連接池，無需手動創建 session
     pass
     
 async def on_unload(self, event):
-    # 如需自訂客戶端，記得清理資源
+    # 如需自定義客戶端，記得清理資源
     pass
+```
 
 ## 事件處理
 
@@ -182,7 +181,7 @@ async def info_command(event: Event):
 ### 2. 合理使用懶加載
 
 ```python
-# 低頻命令模組：聲明 activate_on 觸發器，首個匹配命令到達時自動激活（保持懶加載）
+# 低頻命令模塊：聲明 activate_on 觸發器，首個匹配命令到達時自動激活（保持懶加載）
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -190,7 +189,7 @@ class CommandModule(BaseModule):
             {"command": {"name": "dice", "help": "擲一個骰子", "aliases": ["d"]}},
         ])
 
-# 低頻監聽器模組：聲明事件觸發器，事件到達時自動激活
+# 低頻監聽器模塊：聲明事件觸發器，事件到達時自動激活
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -198,13 +197,13 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# 高頻觸發（每條消息都要處理）或啟動時就必須就緒的模組：立即加載
+# 高頻觸發（每條消息都要處理）或啟動時就必須就緒的模塊：立即加載
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# 工具模組適合懶加載
+# 工具模塊適合懶加載
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -212,7 +211,7 @@ class UtilityModule(BaseModule):
 ```
 
 > `activate_on` 的完整語法（事件三形式 / 命令簡寫與 dict 聲明 / help 回退鏈）見
-> [懶加載模組系統](../../advanced/lazy-loading.md#事件驅動懶激活activate_on)。
+> [懶加載模塊系統](../../advanced/lazy-loading.md#事件驅動懶激活activate_on)。
 
 ### 3. 事件處理器註冊
 
@@ -228,6 +227,7 @@ async def on_load(self, event):
         self.logger.info("收到群消息")
     
     # 不需要手動註銷，框架會自動處理
+```
 
 ## 錯誤處理
 
@@ -243,7 +243,7 @@ async def handle_event(self, event: Event):
         await event.reply(f"參數錯誤: {e}")
     except aiohttp.ClientError as e:
         # 網絡錯誤（推薦使用 sdk.client + ClientError 替代）
-        # 邊緣代碼直接使用 aiohttp 仍可正常運作，但新代碼推薦使用 ErisPulse 異常體系
+        # 舊代碼直接用 aiohttp 仍可正常工作，但新代碼推薦使用 ErisPulse 異常體系
         self.logger.error(f"網絡錯誤: {e}")
         await event.reply("網絡請求失敗，請稍後重試")
     except Exception as e:
@@ -256,7 +256,7 @@ async def handle_event(self, event: Event):
 ### 2. 超時處理
 
 ```python
-# 推薦使用 SDK 內建客戶端（內建超時和重試）
+# 推薦使用 SDK 內置客戶端（自帶超時和重試）
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -267,29 +267,30 @@ async def fetch_with_timeout(self, url, timeout=30):
     except ClientTimeoutError:
         self.logger.warning(f"請求超時: {url}")
         raise
+```
 
 ## 儲存系統
 
-### 1. 使用交易
+### 1. 使用事務
 
 ```python
-# 使用交易確保資料一致性
+# 使用事務確保資料一致性
 async def update_user(self, user_id, data):
     with self.sdk.storage.transaction():
         self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
         self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 
-# ❌ 不使用交易可能導致資料不一致
+# ❌ 不使用事務可能導致資料不一致
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
-    # 如果這裡出錯，上面的設定無法回滾
+    # 如果這邊出錯，上面的設定無法回滾
     self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 ```
 
 ### 2. 批次操作
 
 ```python
-# 使用批次操作提高效能
+# 使用批次操作提升效能
 def cache_multiple_items(self, items):
     self.sdk.storage.set_multi({
         f"item:{k}": v for k, v in items.items()
@@ -299,29 +300,30 @@ def cache_multiple_items(self, items):
 def cache_multiple_items(self, items):
     for k, v in items.items():
         self.sdk.storage.set(f"item:{k}", v)
+```
 
 ## 日誌記錄
 
-### 1. 合理使用日誌層級
+### 1. 合理使用日誌級別
 
 ```python
-# DEBUG: 詳細的除錯資訊（僅開發時）
+# DEBUG: 詳細的除錯資訊（僅開發時使用）
 self.logger.debug(f"輸入參數: {params}")
 
-# INFO: 正常執行資訊
+# INFO: 正常運行資訊
 self.logger.info("模組已載入")
 self.logger.info(f"處理請求: {request_id}")
 
-# WARNING: 警告訊息，不影響主要功能
+# WARNING: 警告資訊，不影響主要功能
 self.logger.warning(f"設定項 {key} 未設定，使用預設值")
-self.logger.warning("API 回應慢，可能需要最佳化")
+self.logger.warning("API 回應慢，可能需要優化")
 
-# ERROR: 錯誤訊息
+# ERROR: 錯誤資訊
 self.logger.error(f"API 請求失敗: {e}")
 self.logger.error(f"處理事件失敗: {e}", exc_info=True)
 
 # CRITICAL: 致命錯誤，需要立即處理
-self.logger.critical("資料庫連線失敗，機器人無法正常執行")
+self.logger.critical("資料庫連線失敗，機器人無法正常運行")
 ```
 
 ### 2. 結構化日誌
@@ -331,7 +333,8 @@ self.logger.critical("資料庫連線失敗，機器人無法正常執行")
 self.logger.info(f"處理請求: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
 # ❌ 使用非結構化日誌
-self.logger.info(f"處理請求了，來自使用者 {user_id}，時用 {duration} 毫秒")
+self.logger.info(f"處理請求了，來自使用者 {user_id}，用時 {duration} 毫秒")
+```
 
 ## 性能優化
 
@@ -370,14 +373,12 @@ async def process_message(self, event: Event):
     result = self._sync_process(event)
 ```
 
-
-
 ## 安全性
 
 ### 1. 敏感數據保護
 
 ```python
-# 敏感數據儲存在配置中（聲明式 ConfigClass，secret 欄位不會進入日誌/匯出）
+# 敏感數據儲存在配置中（宣告式 ConfigClass，secret 欄位不會進入日誌/匯出）
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
@@ -416,6 +417,7 @@ async def process_command(self, event: Event):
     if not re.match(r'^[a-zA-Z0-9]+$', user_input):
         await event.reply("輸入格式不正確")
         return
+```
 
 ## 測試
 
@@ -444,6 +446,7 @@ async def test_command_handling():
     # 模擬命令事件
     event = create_test_command_event("hello")
     await module.handle_command(event)
+```
 
 ## 部署
 
@@ -463,7 +466,7 @@ version = "1.0.0"
 
 ### 2. README 頭部
 
-`epsdk create` 生成的 README 已內建 ErisPulse 頭部標識（Logo + 徽章行）。兩種推薦模式：
+`epsdk create` 產生的 README 已內建 ErisPulse 頭部標識（Logo + 標章行）。兩種推薦模式：
 
 **模式 A — 僅 ErisPulse Logo（預設）：**
 
@@ -486,7 +489,7 @@ version = "1.0.0"
 </div>
 ```
 
-**模式 B — 模塊圖標 × ErisPulse Logo（有自定義圖標時）：**
+**模式 B — 模塊圖標 × ErisPulse Logo（有自訂圖標時）：**
 
 ```markdown
 <div align="center">
@@ -500,10 +503,10 @@ version = "1.0.0"
 </div>
 ```
 
-可按需追加 GitHub Stars、Downloads 等徽章。Logo 也可下載到專案本地（`.github/assets/ErisPulseLogo.png`）改為相對路徑引用。
+可依需求追加 GitHub Stars、Downloads 等徽章。Logo 也可下載到專案本地（`.github/assets/ErisPulseLogo.png`）改為相對路徑引用。
 
 ## 相關文件
 
-- [模組開發入門](getting-started.md) - 建立第一個模組
-- [模組核心概念](core-concepts.md) - 理解模組架構
-- [Event 封裝類別](event-wrapper.md) - 事件處理詳解
+- [模組開發入門](getting-started.md) - 建立第一個模組  
+- [模組核心概念](core-concepts.md) - 理解模組架構  
+- [Event 包裝類別](event-wrapper.md) - 事件處理詳解

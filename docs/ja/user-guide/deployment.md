@@ -1,20 +1,18 @@
-# 配置ガイド
+# 部署ガイド
 
 ErisPulse ロボットを本番環境にデプロイするためのベストプラクティス。
 
-docs/ja/quick-start.md
-
 ## Docker 部署（推奨）
 
-ErisPulse は公式の Docker イメージを提供しており、ErisPulse フレームワークと Dashboard 管理パネルが内蔵されており、`linux/amd64` および `linux/arm64` アーキテクチャをサポートしています。
+ErisPulse は、ErisPulse フレームワークと Dashboard 管理パネルを内蔵した公式の Docker イメージを提供しており、`linux/amd64` および `linux/arm64` アーキテクチャをサポートしています。
 
 ### 速攻起動
 
 ```bash
-# イメージを取得
+# イメージの取得
 docker pull erispulse/erispulse:latest
 
-# docker-compose.yml をダウンロード
+# docker-compose.yml のダウンロード
 curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
 # Dashboard のログイントークンを設定して起動
@@ -25,13 +23,13 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 
 ### 国内用のイメージ加速
 
-Docker Hub にアクセスできない場合は、GitHub Container Registry を使用してイメージを取得できます：
+Docker Hub にアクセスできない場合は、GitHub Container Registry を使ってイメージを取得できます：
 
 ```bash
 docker pull ghcr.io/erispulse/erispulse:latest
 ```
 
-ghcr.io のイメージを使用する場合、`docker-compose.yml` 内の image を変更する必要があります：
+ghcr.io のイメージを使用する場合は、`docker-compose.yml` の `image` を変更する必要があります：
 
 ```yaml
 services:
@@ -61,18 +59,18 @@ services:
 | 変数 | デフォルト値 | 説明 |
 |------|--------|------|
 | `ERISPULSE_PORT` | `8000` | Dashboard のポートマッピング |
-| `ERISPULSE_DASHBOARD_TOKEN` | 自動生成 | Dashboard のログイントークン（強く設定することを推奨） |
+| `ERISPULSE_DASHBOARD_TOKEN` | 自動生成 | Dashboard のログイントークン（設定を強く推奨） |
 | `TZ` | `Asia/Shanghai` | タイムゾーン |
 
 ### データの永続化
 
-`./config` ディレクトリは設定ファイルとデータベースにマウントされており、以下の内容を含みます：
+`./config` ディレクトリは、設定ファイルとデータベースをマウントしており、以下を含みます：
 
 - `config/config.toml` — 設定ファイル
 - `config/config.db` — SQLite ストレージデータベース
-- `config/.packages` — Python site-packages の永続化ボリューム。フレームワーク、アダプター、およびインストール済みモジュールを保存します（最初の起動時にエントリポイントがイメージ内に含まれるバックアップから自動的に初期化され、以降のモジュールインストールやフレームワークのホットアップデートはこのディレクトリに書き込まれます）。
+- `config/.packages` — Python site-packages の永続化ボリューム。フレームワーク、アダプター、およびインストール済みモジュールを保存します（最初の起動時にエントリポイントがイメージ内に含まれるバックアップから自動的に初期化され、その後のモジュールインストールとフレームワークのホットアップデートはこのディレクトリに書き込まれます）。
 
-## Dashboard 管理パネル
+## Dashboard 管理面板
 
 ErisPulse Docker イメージには、Web による視覚化管理インターフェースを提供する Dashboard モジュールが内蔵されています。
 
@@ -80,47 +78,47 @@ ErisPulse Docker イメージには、Web による視覚化管理インター�
 
 | 機能 | 説明 |
 |------|------|
-| 仪表盘 | システム概要、CPU/メモリ監視、稼働時間、イベント統計 |
-| ロボット管理 | 各プラットフォームのロボットのオンライン状態と情報を確認 |
-| イベント表示 | 実時イベントストリーム、タイプやプラットフォームでフィルタリング可能 |
-| ログ表示 | モジュールとレベルでフィルタリング可能なログビューア |
-| モジュール管理 | インストール済みのモジュールとアダプタの表示、読み込み、アンロード |
-| モジュールストア | リモートで利用可能なパッケージを閲覧し、ワンクリックでインストール |
-| 設定編集 | `config.toml` のオンライン編集 |
-| ストレージ管理 | Key-Value ストレージデータの閲覧と編集 |
+| 仪表盘 | システム概要、CPU/メモリの監視、稼働時間、イベント統計 |
+| ロボット管理 | 各プラットフォームのロボットのオンライン状態と情報を表示 |
+| 事件查看 | 実時イベントのストリーム、タイプやプラットフォームごとのフィルタリングが可能 |
+| ログ查看 | モジュールとレベルごとのフィルタリングが可能なログビューア |
+| モジュール管理 | インストール済みのモジュールとアダプターの表示、読み込み、アンロード |
+| モジュールストア | リモートで利用可能なパッケージを閲覧し、ワンクリックでインストール可能 |
+| 配置編集 | `config.toml` のオンライン編集 |
+| ストレージ管理 | キー値ストアデータの閲覧と編集 |
 | バックアップ | 設定とストレージデータのエクスポート/インポート |
-| 審査ログ | すべての管理操作を記録 |
+| 審計ログ | すべての管理操作の記録 |
 
-### Dashboard からモジュールをインストールする
+### Dashboard によるモジュールのインストール
 
 Dashboard にはモジュールストア機能が統合されており、以下の方法でモジュールをインストールできます。
 
 1. **ストアからインストール**：リモートのモジュールリストを閲覧し、必要なモジュールを選択してワンクリックでインストール
-2. **ローカルパッケージのアップロード**：`.whl` または `.zip` ファイルを直接アップロードしてインストール。開発中のモジュールをテストするのに便利
+2. **ローカルパッケージのアップロード**：`.whl` または `.zip` ファイルを直接アップロードしてインストール。個人開発のモジュールをテストするのに便利です。
 
-> **モジュール開発者のための迅速なテストフロー**：Docker でデプロイした後、Dashboard の「ローカルパッケージのアップロード」機能を使って、ビルドした `.whl` ファイルを直接アップロードしてテストできます。コンテナを手動で操作する必要はありません。
+> **モジュール開発者のための迅速なテストフロー**：Docker でデプロイした後、Dashboard の「ローカルパッケージのアップロード」機能を使用して、ビルドした `.whl` ファイルを直接アップロードしてテストできます。コンテナを手動で操作する必要がありません。
 
 ## プロセス監督とハードリスタート
 
-ErisPulse のハードリスタート（`sdk.hard_restart()`）は、**外部監督者**がプロセスの終了コードが 42 の場合にプロセスを再起動することに依存しています。SDK 自体は新しいプロセスを起動しません。本番環境では監督者の設定が必須です。監督者が設定されていない場合、ハードリスタート後にプロセスは自動的に復旧しません。
+ErisPulse のハードリスタート (`sdk.hard_restart()`) は、**外部の監督者**がプロセスの終了コードが 42 のときにプロセスを再起動することに依存しています。SDK 自身は新しいプロセスを起動しません。本番環境では監督者の設定が必須です。監督者が設定されていない場合、ハードリスタート後にプロセスは自動的に復旧しません。
 
-- Docker: `restart: unless-stopped`（終了コードが 42 であってもすべて再起動）
+- Docker: `restart: unless-stopped`（終了コードが 42 を含む場合もすべて再起動）
 - systemd: `Restart=on-failure` + `RestartForceExitStatus=42`
 - PM2 / supervisord: 42 を再起動可能な終了コードに追加
 - 純粋な Python によるカスタム監督者: `Popen` のループ + `returncode == 42` の検出
 
-各監督者の完全な設定例と終了コード 42 の契約内容については、[起動プロセス → 監督者ガイド](../advanced/startup.md#監督者ガイド)をご覧ください。
+各監督者の完全な設定例と終了コード 42 の契約に関する説明は、[起動プロセス → 監督者ガイド](../advanced/startup.md#監督者ガイド)をご覧ください。
 
 ## ヘルスチェック
 
-SDK にはヘルスチェックエンドポイントが内蔵されています：
+SDK には、ヘルスチェック用エンドポイントが内蔵されています。
 
 ```bash
 # ヘルスチェック
 curl http://localhost:8000/health
 ```
 
-Docker のヘルスチェックは `docker-compose.yml` に追加できます：
+Docker でのヘルスチェックは、`docker-compose.yml` に追加することで可能です。
 
 ```yaml
 services:
@@ -132,11 +130,9 @@ services:
       retries: 3
 ```
 
-[**English**](/docs/en/quick-start.md) | [**日本語**](/docs/ja/quick-start.md) | [**简体中文**](/docs/ja/quick-start.md)
-
 ## リバースプロキシ
 
-Nginx などのリバースプロキシ経由でダッシュボードを公開する必要がある場合：
+Nginx などのリバースプロキシ経由で Dashboard を公開する必要がある場合：
 
 ```nginx
 server {
@@ -150,7 +146,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
-    # WebSocket 支持（ダッシュボードのリアルタイムイベントストリームに必要）
+    # WebSocket のサポート（Dashboard のリアルタイムイベントストリームが必要）
     location /Dashboard/ws {
         proxy_pass http://127.0.0.1:8000;
         proxy_http_version 1.1;
@@ -164,8 +160,9 @@ SSL は Let's Encrypt を使用できます：
 
 ```bash
 sudo certbot --nginx -d bot.example.com
+```
 
-## 手動でのデプロイ（pip）
+## 手動デプロイ（pip）
 
 Docker を使用しない場合でも、手動でデプロイすることができます。
 
@@ -232,27 +229,24 @@ autostart=true
 autorestart=true
 stderr_logfile=/var/log/erispulse-bot/err.log
 stdout_logfile=/var/log/erispulse-bot/out.log
+```
 
 ## セキュリティに関する推奨事項
 
-1. **Dashboard トークンの設定**：強力なランダムトークンを使用し、デフォルト値を使用しないでください。
-2. **ポートをパブリックに公開しない**：リバースプロキシ + SSL を使用しない限り、Dashboard のポートをローカルネットワークに制限してください。
-3. **データディレクトリを保護する**：`config/` ディレクトリには設定とデータベースが含まれており、適切なファイル権限を設定してください。
-4. **定期的な更新**：`epsdk self-update` を使用するか、最新の Docker イメージを取得してください。
-5. **root として実行しない**：手動でのデプロイ時には専用のユーザーを作成してください。
-6. **Docker のリスタートポリシーを使用する**：`restart: unless-stopped` を使用して、異常終了後に自動的に再起動されるようにしてください。
+1. **Dashboard トークンの設定**：強力なランダムなトークンを使用し、デフォルト値は使用しないでください。
+2. **ポートをパブリックに公開しない**：リバースプロキシ + SSL を使用しない限り、Dashboard のポートをローカルネットワークに限定してください。
+3. **データディレクトリの保護**：`config/` ディレクトリには設定情報やデータベースが含まれているため、適切なファイル権限を設定してください。
+4. **定期的なアップデート**：`epsdk self-update` を使用するか、最新の Docker イメージをプルしてください。
+5. **root で実行しない**：手動でデプロイする場合は、専用のユーザーを作成してください。
+6. **Docker のリスタートポリシーの使用**：`restart: unless-stopped` を使用して、異常終了後に自動的に再起動されるようにしてください。
 
-言語切り替え: [**English**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
-
-## 多インスタンスデプロイ
+## マルチインスタンスデプロイ
 
 複数のロボットインスタンスを実行する場合：
 
-1. 各インスタンスは独立したプロジェクトディレクトリと `docker-compose.yml` を使用します
-2. 異なるポート番号を使用します：`ERISPULSE_PORT=8001`
-3. 異なるコンテナ名を使用します：`container_name: erispulse-bot2`
-
-[**English**](docs/ja/quick-start.md)
+1. 各インスタンスは独立したプロジェクトディレクトリと `docker-compose.yml` を使用します。
+2. 異なるポート番号を使用します: `ERISPULSE_PORT=8001`
+3. 異なるコンテナ名を使用します: `container_name: erispulse-bot2`
 
 ## 更新とメンテナンス
 
@@ -278,10 +272,8 @@ epsdk upgrade
 `config/` ディレクトリを定期的にバックアップしてください：
 
 ```bash
-# Docker 部署
+# Docker 部署の場合
 tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 
 # または Dashboard の「バックアップ」機能を使用してエクスポート
 ```
-
-[**English**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)

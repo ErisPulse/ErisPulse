@@ -1,0 +1,57 @@
+{
+  "version": 2,
+  "hash": "e040db8b16031374a4cd23e00684e90e",
+  "file_hash": "e040db8b16031374a4cd23e00684e90e",
+  "translated_at": "2026-09-01T06:26:31.459057",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "183fb506e111bf4f5ab6170228c31de1",
+      "translation": "# SQL 查詢建構器\n\nErisPulse 的 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的建立、查詢、更新和刪除操作。"
+    },
+    {
+      "hash": "ee7789cf8f42a612d1ae5fe25c85a346",
+      "translation": "## 架構設計\n\n```\nBases/storage.py                    Core/storage.py\n┌─────────────────────┐             ┌──────────────────────────┐\n│  BaseStorage (ABC)  │◄────────────│  StorageManager          │\n│  BaseQueryBuilder   │             │  (SQLite concrete impl)  │\n│    (ABC)            │             │                          │\n└─────────────────────┘             │  SQLiteQueryBuilder      │\n                                    │  AlterTableBuilder       │\n                                    └──────────────────────────┘\n```\n\n- `BaseStorage` / `BaseQueryBuilder` 是抽象基類，定義統一介面，支援未來拓展其他儲存介質（Redis、MySQL 等）\n- `StorageManager` 是目前 SQLite 的具體實作，完全向後相容"
+    },
+    {
+      "hash": "fbe24cf1538cfd8ae8fd473f74a0d86e",
+      "translation": "## 導入\n\n```python\nfrom ErisPulse import sdk\n# 或\nfrom ErisPulse.Core import storage\n\n# ABC 基類（用於類型註解或自定義實現）\nfrom ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder\n```"
+    },
+    {
+      "hash": "8e2dec3f89603dc56f232da3852421e9",
+      "translation": "## 表管理\n\n### 建立表格\n\n```python\nsdk.storage.CreateTable(\"users\", {\n    \"id\": \"INTEGER PRIMARY KEY AUTOINCREMENT\",\n    \"name\": \"TEXT NOT NULL\",\n    \"age\": \"INTEGER DEFAULT 0\",\n    \"email\": \"TEXT\"\n})\n```\n\n### 檢查表格是否存在\n\n```python\nif sdk.storage.HasTable(\"users\"):\n    print(\"users 表已存在\")\n```\n\n### 刪除表格\n\n```python\nsdk.storage.DropTable(\"users\")\n```\n\n### 修改表格結構\n\n```python\n# 新增欄位\nsdk.storage.AlterTable(\"users\").AddColumn(\"email\", \"TEXT\").Execute()\n\n# 重新命名表格\nsdk.storage.AlterTable(\"users\").RenameTo(\"members\").Execute()\n\n# 串接多個操作\nsdk.storage.AlterTable(\"users\") \\\n    .AddColumn(\"phone\", \"TEXT\") \\\n    .AddColumn(\"address\", \"TEXT\") \\\n    .Execute()\n```"
+    },
+    {
+      "hash": "17b4b5c8210166596143fca8655d7942",
+      "translation": "## 鏈式查詢\n\n### 插入數據\n\n```python\n# 單行插入（傳入字典）\nsdk.storage.Table(\"users\").Insert({\"name\": \"Alice\", \"age\": 30}).Execute()\n\n# 批量插入（傳入字典列表）\nsdk.storage.Table(\"users\").InsertMulti([\n    {\"name\": \"Bob\", \"age\": 25},\n    {\"name\": \"Charlie\", \"age\": 35},\n    {\"name\": \"Dave\", \"age\": 40}\n]).Execute()\n```\n\n### 查詢數據\n\n> **重要**：`Select()` 返回的是 `list[tuple]`（元組列表），不是字典。你需要按列順序用索引訪問。\n\n```python\n# 查詢所有列\nrows = sdk.storage.Table(\"users\").Select().Execute()\n# rows: [(1, \"Alice\", 30), (2, \"Bob\", 25), ...]\n\n# 查詢指定列\nrows = sdk.storage.Table(\"users\").Select(\"name\", \"age\").Execute()\n# rows: [(\"Alice\", 30), (\"Bob\", 25), ...]\n\n# 按索引取值\nfor row in rows:\n    name = row[0]   # \"Alice\"\n    age = row[1]    # 30\n```\n\n#### 將元組轉為字典\n\n```python\ncolumns = [\"id\", \"name\", \"age\"]\nrows = sdk.storage.Table(\"users\").Select(*columns).Execute()\n\n# 方式一：循環中 zip\nfor row in rows:\n    record = dict(zip(columns, row))\n    print(record[\"name\"], record[\"age\"])\n\n# 方式二：一次性轉為字典列表\nrecords = [dict(zip(columns, row)) for row in rows]\n```\n\n#### 獲取單條記錄\n\n```python\nrow = sdk.storage.Table(\"users\").Select(\"name\", \"age\") \\\n    .Where(\"id = ?\", 1) \\\n    .ExecuteOne()\n\n# row 是 tuple 或 None\nif row is not None:\n    name = row[0]  # \"Alice\"\n    age = row[1]   # 30\n```\n\n### 條件過濾\n\n> `Where(condition, *params)` 支持傳入多個參數，對應多個 `?` 佔位符。\n\n```python\n# 單條件（一個佔位符，一個參數）\nrows = sdk.storage.Table(\"users\").Select(\"name\") \\\n    .Where(\"age > ?\", 18) \\\n    .Execute()\n\n# 一個 Where 中使用多個佔位符\nrows = sdk.storage.Table(\"users\").Select(\"name\") \\\n    .Where(\"age > ? AND age < ?\", 20, 40) \\\n    .Execute()\n\n# 多次調用 Where（AND 連接）\nrows = sdk.storage.Table(\"users\").Select(\"name\") \\\n    .Where(\"age > ?\", 20) \\\n    .Where(\"age < ?\", 40) \\\n    .Execute()\n```\n\n### 排序、分頁\n\n```python\n# 升序\nrows = sdk.storage.Table(\"users\").Select(\"name\", \"age\") \\\n    .OrderBy(\"name\") \\\n    .Execute()\n\n# 降序\nrows = sdk.storage.Table(\"users\").Select(\"name\") \\\n    .OrderBy(\"age\", desc=True) \\\n    .Execute()\n\n# 分頁\nrows = sdk.storage.Table(\"users\").Select(\"name\") \\\n    .OrderBy(\"id\") \\\n    .Limit(10) \\\n    .Offset(20) \\\n    .Execute()\n```\n\n### 更新數據\n\n```python\n# 條件更新\nsdk.storage.Table(\"users\") \\\n    .Update({\"age\": 31}) \\\n    .Where(\"name = ?\", \"Alice\") \\\n    .Execute()\n\n# 全量更新\nsdk.storage.Table(\"users\") \\\n    .Update({\"status\": \"active\"}) \\\n    .Execute()\n```\n\n### 刪除數據\n\n```python\n# 條件刪除\nsdk.storage.Table(\"users\") \\\n    .Delete() \\\n    .Where(\"name = ?\", \"Bob\") \\\n    .Execute()\n\n# 全量刪除\nsdk.storage.Table(\"users\").Delete().Execute()\n```\n\n### 計數與存在性檢查\n\n```python\n# 計數\ncount = sdk.storage.Table(\"users\").Count()\ncount = sdk.storage.Table(\"users\").Where(\"age > ?\", 18).Count()\n\n# 存在性檢查\nexists = sdk.storage.Table(\"users\").Where(\"name = ?\", \"Alice\").Exists()\n```"
+    },
+    {
+      "hash": "41606e9ebec67e119168df96b04068ff",
+      "translation": "## 重複使用查詢條件\n\n使用 `copy()` 深拷貝建構器，重複使用基礎條件：\n\n```python\nbase = sdk.storage.Table(\"users\").Where(\"age > ?\", 20)\n\n# 使用相同的條件查詢\nrows = base.copy().Select(\"name\").OrderBy(\"name\").Limit(5).Execute()\n\n# 使用相同的條件計數\ncount = base.copy().Count()\n\n# 使用相同的條件檢查是否存在\nexists = base.copy().Where(\"name = ?\", \"Alice\").Exists()\n```"
+    },
+    {
+      "hash": "251be3996682b896f9e28252e2074a1c",
+      "translation": "## 重設建構器\n\n```python\nbuilder = sdk.storage.Table(\"users\").Select(\"name\").Where(\"age > ?\", 18)\nbuilder.clear()\n\n# 重新建構查詢\nbuilder.Select(\"name\", \"age\").Where(\"name = ?\", \"Alice\")\nrows = builder.Execute()\n```"
+    },
+    {
+      "hash": "614cc321db58004b1f8a1433b87a33fc",
+      "translation": "## 事務中使用\n\n鏈式操作完全支援事務：\n\n```python\n# 提交事務\nwith sdk.storage.transaction():\n    sdk.storage.Table(\"users\").Insert({\"name\": \"Eve\", \"age\": 22}).Execute()\n    sdk.storage.Table(\"users\").Update({\"age\": 23}).Where(\"name = ?\", \"Eve\").Execute()\n\n# 回滾示例\ntry:\n    with sdk.storage.transaction():\n        sdk.storage.Table(\"users\").Delete().Where(\"name = ?\", \"Alice\").Execute()\n        raise Exception(\"force rollback\")\nexcept Exception:\n    pass\n# Alice 的記錄仍然存在\n```"
+    },
+    {
+      "hash": "4c2527ff1821232aec59a016cd2a3c8d",
+      "translation": "## 返回值說明\n\n| 操作 | 返回類型 | 說明 |\n|------|---------|------|\n| `Select().Execute()` | `list[tuple]` | 元組列表，按欄位順序排列 |\n| `Select().ExecuteOne()` | `tuple \\| None` | 單條元組或 None |\n| `Insert().Execute()` | `int` | 受影響行數 |\n| `InsertMulti().Execute()` | `int` | 新增行數 |\n| `Update().Execute()` | `int` | 受影響行數 |\n| `Delete().Execute()` | `int` | 受影響行數 |\n| `Count()` | `int` | 符合條件的行數 |\n| `Exists()` | `bool` | 是否存在 |\n\n### 返回值處理範例\n\n```python\n# Select 返回元組，按索引取值\nrows = sdk.storage.Table(\"users\").Select(\"name\", \"age\").Execute()\nfirst_name = rows[0][0]  # 第一行第一欄 name\nfirst_age = rows[0][1]   # 第一行第二欄 age\n\n# 推薦：使用欄位名稱列表 + zip 轉為字典，程式碼更易讀\ncols = [\"name\", \"age\"]\nrows = sdk.storage.Table(\"users\").Select(*cols).Execute()\nfor row in rows:\n    d = dict(zip(cols, row))\n    print(d[\"name\"], d[\"age\"])\n\n# ExecuteOne 返回單條元組或 None\nrow = sdk.storage.Table(\"users\").Select(\"name\").Where(\"id = ?\", 1).ExecuteOne()\nname = row[0] if row else None\n\n# Insert/Update/Delete 返回受影響行數\naffected = sdk.storage.Table(\"users\").Delete().Where(\"age < ?\", 18).Execute()\nprint(f\"刪除 {affected} 條記錄\")\n```"
+    },
+    {
+      "hash": "a6eeeb24a47e635832c2d8ed681a6e0b",
+      "translation": "## 參數化查詢\n\n所有 WHERE 參數使用 `?` 佔位符，參數作為 `Where()` 的後續參數傳入（**不是**元組或列表）：\n\n```python\n# 正確 ✓ — 多個參數逐一傳入\nsdk.storage.Table(\"users\").Where(\"age > ? AND name = ?\", 18, \"Alice\").Execute()\n\n# 正確 ✓ — 多次 Where 調用\nsdk.storage.Table(\"users\").Where(\"age > ?\", 18).Where(\"name = ?\", \"Alice\").Execute()\n\n# 錯誤 ✗ — 不要傳入元組\nsdk.storage.Table(\"users\").Where(\"age > ? AND name = ?\", (18, \"Alice\")).Execute()\n# 這會把整個元組當成第一個佔位符的值\n\n# 錯誤 ✗ — 存在 SQL 注入風險\nsdk.storage.Table(\"users\").Where(f\"name = '{user_input}'\").Execute()\n```\n\n### Where 參數傳遞規則\n\n```python\n# Where(condition: str, *params: Any)\n# params 是可變參數，逐個傳入即可\n\n# 單個參數\n.Where(\"name = ?\", \"Alice\")\n\n# 多個參數\n.Where(\"age > ? AND age < ?\", 18, 60)\n\n# LIKE 查詢\n.Where(\"name LIKE ?\", \"A%\")\n\n# IN 查詢（需要手動構造佔位符）\n.Where(\"name IN (?, ?, ?)\", \"Alice\", \"Bob\", \"Charlie\")\n```"
+    },
+    {
+      "hash": "93229f971ab5a8711002b3a7ced11761",
+      "translation": "## 自訂儲存後端\n\n繼承 `BaseStorage` 和 `BaseQueryBuilder` 以實現自訂儲存後端：\n\n```python\nfrom ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder\n\nclass MyQueryBuilder(BaseQueryBuilder):\n    def Execute(self):\n        # 實現具體執行邏輯\n        ...\n\n    def ExecuteOne(self):\n        ...\n\n    def Count(self):\n        ...\n\n    def Exists(self):\n        ...\n\n\nclass MyStorage(BaseStorage):\n    def get(self, key, default=None):\n        ...\n\n    def set(self, key, value):\n        ...\n\n    # 實現其他抽象方法...\n    def Table(self, table_name):\n        return MyQueryBuilder(self, table_name)\n```"
+    },
+    {
+      "hash": "cd18071966e8f1ce77fab1ab7097f1b0",
+      "translation": "## 相關文件\n\n- [核心模組 API](../api-reference/core-modules.md) - Storage 模組完整 API\n- [儲存基類 API](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) - BaseStorage/BaseQueryBuilder 抽象介面\n- [訊息建構器](message-builder.md) - MessageBuilder 鏈式呼叫風格參考"
+    }
+  ]
+}

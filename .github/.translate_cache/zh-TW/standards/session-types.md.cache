@@ -1,0 +1,57 @@
+{
+  "version": 2,
+  "hash": "79be5b890c4f83fcf11676e876df99c7",
+  "file_hash": "79be5b890c4f83fcf11676e876df99c7",
+  "translated_at": "2026-09-01T06:33:35.603053",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "dd52388159675b5f7ecdfbad43d7fccf",
+      "translation": "# ErisPulse 會話類型標準\n\n本文檔定義了 ErisPulse 支援的會話類型標準，包括接收事件類型和發送目標類型。"
+    },
+    {
+      "hash": "c66c5ea7141edd6d99fa876b9376f28c",
+      "translation": "## 1. 核心概念\n\n### 1.1 接收類型 && 發送類型\n\nErisPulse 區分兩種會話類型：\n\n- **接收類型（Receive Type）**：用於接收的事件的 `detail_type` 欄位\n- **發送類型（Send Type）**：用於發送訊息時 `Send.To()` 方法的目標類型\n\n### 1.2 類型映射關係\n\n```\n接收類型 (detail_type)     發送類型 (Send.To)\n─────────────────        ────────────────\nprivate                 →        user\ngroup                   →        group\nchannel                 →        channel\nguild                   →        guild\nthread                  →        thread\nuser                    →        user\n```\n\n**關鍵點**：\n- `private` 是接收時的類型，發送時必須使用 `user`\n- `group`、`channel`、`guild`、`thread` 在接收和發送時類型相同\n- 系統會自動進行類型轉換，無需手動處理（代表著你可以直接使用獲得的接收類型進行發送），但實際上，你無需考慮這些，Event 的包裝類的存在，你可以直接使用 event.reply() 方法，而無需考慮類型轉換"
+    },
+    {
+      "hash": "4eb0f514717513a28e6c8762528d86e6",
+      "translation": "## 2. 標準會話類型\n\n### 2.1 OneBot12 標準類型\n\n#### private\n- **接收類型**：`private`\n- **發送類型**：`user`\n- **說明**：一對一私聊訊息\n- **ID 欄位**：`user_id`\n- **適用平台**：所有支援私聊的平台\n\n#### group\n- **接收類型**：`group`\n- **發送類型**：`group`\n- **說明**：群聊訊息，包括各種形式的群組（如 Telegram supergroup）\n- **ID 欄位**：`group_id`\n- **適用平台**：所有支援群聊的平台\n\n#### user\n- **接收類型**：`user`\n- **發送類型**：`user`\n- **說明**：使用者類型，某些平台（如 Telegram）將私聊表示為 user 而非 private\n- **ID 欄位**：`user_id`\n- **適用平台**：Telegram 等平台\n\n### 2.2 ErisPulse 擴展類型\n\n#### channel\n- **接收類型**：`channel`\n- **發送類型**：`channel`\n- **說明**：頻道訊息，支援多個使用者的廣播式訊息\n- **ID 欄位**：`channel_id`\n- **適用平台**：Discord, Telegram, Line 等\n\n#### guild\n- **接收類型**：`guild`\n- **發送類型**：`guild`\n- **說明**：伺服器/社群訊息，通常用於 Discord Guild 級別的事件\n- **ID 欄位**：`guild_id`\n- **適用平台**：Discord 等\n\n#### thread\n- **接收類型**：`thread`\n- **發送類型**：`thread`\n- **說明**：話題/子頻道訊息，用於社群中的子討論區\n- **ID 欄位**：`thread_id`\n- **適用平台**：Discord Threads, Telegram Topics 等"
+    },
+    {
+      "hash": "2b9cd943f7fa2739eac6e0d78408869a",
+      "translation": "## 3. 平台類型映射\n\n### 3.1 映射原則\n\n適配器負責將平台的原生類型映射到 ErisPulse 標準類型：\n\n```\n平台原生類型 → ErisPulse 標準類型 → 發送類型\n```\n\n### 3.2 常見平台映射示例\n\n#### Telegram\n```\nTelegram 類型          ErisPulse 接收類型    發送類型\n─────────────────      ────────────────       ───────────\nprivate                private                 user\ngroup                  group                   group\nsupergroup             group                   group  # 映射到 group\nchannel                channel                 channel\n```\n\n#### Discord\n```\nDiscord 類型          ErisPulse 接收類型    發送類型\n─────────────────      ────────────────       ───────────\nDirect Message         private                user\nText Channel           channel                channel\nGuild                  guild                  guild\nThread                 thread                 thread\n```\n\n#### OneBot11\n```\nOneBot11 類型        ErisPulse 接收類型    發送類型\n─────────────────      ────────────────       ───────────\nprivate                private                user\ngroup                  group                  group\ndiscuss                group                  group  # 映射到 group\n```"
+    },
+    {
+      "hash": "7a9af7cd81b15e121193cac5da8cd8f7",
+      "translation": "## 4. 自訂類型擴展\n\n### 4.1 註冊自訂類型\n\n適配器可以註冊自訂的會話類型：\n\n```python\nfrom ErisPulse.Core.Event import register_custom_type\n\n# 註冊自訂類型\nregister_custom_type(\n    receive_type=\"my_custom_type\",\n    send_type=\"custom\",\n    id_field=\"custom_id\",\n    platform=\"MyPlatform\"\n)\n```\n\n### 4.2 使用自訂類型\n\n註冊後，系統會自動處理該類型的轉換和推斷：\n\n```python\n# 自動推斷\nreceive_type = infer_receive_type(event, platform=\"MyPlatform\")\n# 返回: \"my_custom_type\"\n\n# 轉換為發送類型\nsend_type = convert_to_send_type(receive_type, platform=\"MyPlatform\")\n# 返回: \"custom\"\n\n# 獲取對應 ID\ntarget_id = get_target_id(event, platform=\"MyPlatform\")\n# 返回: event[\"custom_id\"]\n```\n\n### 4.3 解除註冊自訂類型\n\n```python\nfrom ErisPulse.Core.Event import unregister_custom_type\n\nunregister_custom_type(\"my_custom_type\", platform=\"MyPlatform\")\n```"
+    },
+    {
+      "hash": "41272650ad09a4f513ddc60c4ae93653",
+      "translation": "## 5. 自動類型推斷\n\n當事件沒有明確的 `detail_type` 欄位時，系統會根據存在的 ID 欄位自動推斷類型：\n\n> [!NOTE]\n> **2.7.0+ 行為變更**：`detail_type` 只有在是**已知會話類型**（標準或自定義）時才直接採用。notice/request 事件的 `detail_type`（如 `group_member_increase`、`friend_increase`）是**語意子類型**而非會話類型，會轉而根據 ID 欄位推斷正確的會話類型。\n\n### 5.1 推斷優先級\n\n```\n優先級（從高到低）：\n1. group_id     → group\n2. channel_id   → channel\n3. guild_id     → guild\n4. thread_id    → thread\n5. user_id      → private\n```\n\n### 5.2 使用示例\n\n```python\n# 事件只有 group_id\nevent = {\"group_id\": \"123\", \"user_id\": \"456\"}\nreceive_type = infer_receive_type(event)\n# 返回: \"group\"（優先使用 group_id）\n\n# 事件只有 user_id\nevent = {\"user_id\": \"123\"}\nreceive_type = infer_receive_type(event)\n# 返回: \"private\"\n\n# notice 事件的 detail_type 是語意子類型，2.7.0+ 會從 ID 欄位推斷\nevent = {\"type\": \"notice\", \"detail_type\": \"group_member_increase\", \"group_id\": \"123\"}\nreceive_type = infer_receive_type(event)\n# 返回: \"group\"（而非 \"group_member_increase\"）\n```"
+    },
+    {
+      "hash": "1980c78f1f20c234b70e0faace1b76e4",
+      "translation": "## 6. API 使用示例\n\n### 6.1 發送訊息\n\n```python\nfrom ErisPulse import adapter\n\n# 發送給使用者\nawait adapter.myplatform.Send.To(\"user\", \"123\").Text(\"Hello\")\n\n# 發送給群組\nawait adapter.myplatform.Send.To(\"group\", \"456\").Text(\"Hello\")\n\n# 自動轉換 private → user（不推薦，可能會有相容性問題）\nawait adapter.myplatform.Send.To(\"private\", \"789\").Text(\"Hello\")\n# 內部自動轉換為: Send.To(\"user\", \"789\") # 直接使用user作為會話類型是更優的選擇\n```\n\n### 6.2 事件回覆\n\n```python\nfrom ErisPulse.Core.Event import Event\n\n# Event.reply() 自動處理類型轉換\nawait event.reply(\"回覆內容\")\n# 內部自動使用正確的發送類型\n```\n\n### 6.3 命令處理\n\n```python\nfrom ErisPulse.Core.Event import command\n\n@command(name=\"test\")\nasync def handle_test(event):\n    # 系統自動處理會話類型\n    # 無需手動判斷 group_id 還是 user_id\n    await event.reply(\"命令執行成功\")\n```"
+    },
+    {
+      "hash": "2b28514869a631272854572571730c8a",
+      "translation": "## 7. 核心 API 參考\n\n### 7.1 類型轉換\n\n```python\nfrom ErisPulse.Core.Event import convert_to_send_type, convert_to_receive_type\n\n# 接收類型 → 發送類型\nconvert_to_send_type(\"private\")  # → \"user\"\nconvert_to_send_type(\"group\")    # → \"group\"\n\n# 發送類型 → 接收類型\nconvert_to_receive_type(\"user\")   # → \"private\"\nconvert_to_receive_type(\"group\")  # → \"group\"\n```\n\n### 7.2 ID 欄位查詢\n\n```python\nfrom ErisPulse.Core.Event import get_id_field, get_receive_type\n\nget_id_field(\"group\")    # → \"group_id\"\nget_id_field(\"private\")  # → \"user_id\"\n\nget_receive_type(\"group_id\")  # → \"group\"\nget_receive_type(\"user_id\")   # → \"private\"\n```\n\n### 7.3 一步獲取發送資訊\n\n```python\nfrom ErisPulse.Core.Event import get_send_type_and_target_id\n\nevent = {\"detail_type\": \"private\", \"user_id\": \"123\"}\nsend_type, target_id = get_send_type_and_target_id(event)\n# send_type = \"user\", target_id = \"123\"\n\n# 直接用於 Send.To()\nawait adapter.Send.To(send_type, target_id).Text(\"Hello\")\n```\n\n### 7.4 獲取目標 ID\n\n```python\nfrom ErisPulse.Core.Event import get_target_id\n\nevent = {\"detail_type\": \"group\", \"group_id\": \"456\"}\nget_target_id(event)  # → \"456\"\n```"
+    },
+    {
+      "hash": "dc9abfe9b4696216dbe2fd8439645163",
+      "translation": "## 8. 工具方法\n\n```python\nfrom ErisPulse.Core.Event import (\n    is_standard_type,\n    is_valid_send_type,\n    get_standard_types,\n    get_send_types,\n    clear_custom_types,\n)\n\nis_standard_type(\"private\")     # True\nis_standard_type(\"custom_type\") # False\n\nis_valid_send_type(\"user\")      # True\nis_valid_send_type(\"invalid\")   # False\n\nget_standard_types()  # {\"private\", \"group\", \"channel\", \"guild\", \"thread\", \"user\"}\nget_send_types()      # {\"user\", \"group\", \"channel\", \"guild\", \"thread\"}\n\nclear_custom_types()                # 清除所有\nclear_custom_types(platform=\"discord\")  # 只清除指定平台的\n```"
+    },
+    {
+      "hash": "941dfeba0682c5098002148e92a7bb89",
+      "translation": "## 9. 最佳實踐\n\n### 7.1 適配器開發者\n\n1. **使用標準映射**：盡可能映射到標準類型，而非創建新類型\n2. **正確轉換**：確保接收類型和發送類型的映射關係正確\n3. **保留原始數據**：在 `{platform}_raw` 中保留原始事件類型\n4. **文件說明**：在適配器文件中說明類型映射關係\n\n### 7.2 模塊開發者\n\n1. **使用工具方法**：使用 `get_send_type_and_target_id()` 等工具方法\n2. **避免硬編碼**：不要寫 `if group_id else \"private\"` 這樣的代碼\n3. **考慮所有類型**：代碼要支持所有標準類型，不僅是 private/group\n4. **靈活設計**：使用事件包裝器的方法，而非直接訪問字段\n\n### 7.3 類型推斷\n\n- **優先使用 detail_type**：如果有明確字段，不進行推斷\n- **合理使用推斷**：只在沒有明確類型時使用\n- **注意優先級**：了解推斷優先級，避免意外結果"
+    },
+    {
+      "hash": "5bf15994d1ec5d6ca8d7c6a0369f79ac",
+      "translation": "## 10. 常見問題\n\n### Q1: 為什麼發送時 private 要轉換為 user？\n\nA: 這是 OneBot12 標準的要求。`private` 是接收時的概念，發送時使用 `user` 更符合語義。\n\n### Q2: 如何支援新的會話類型？\n\nA: 透過 `register_custom_type()` 註冊自定義類型，或直接使用標準類型中的 `channel`、`guild` 等。\n\n### Q3: 事件沒有 detail_type 怎麼辦？\n\nA: 系統會根據存在的 ID 欄位自動推斷。優先級為：group > channel > guild > thread > user。\n\n### Q4: 適配器如何映射 Telegram supergroup？\n\nA: 在適配器的轉換邏輯中，將 `supergroup` 映射為標準的 `group` 類型。\n\n### Q5: 郵箱等特殊平台如何處理？\n\nA: 對於不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platform}_raw_type` 保留原始數據，適配器自行處理。"
+    },
+    {
+      "hash": "14c712cf83ae9e20d888899e22ee4afe",
+      "translation": "## 11. 相關文件\n\n- [事件轉換標準](event-conversion.md) - 完整的事件轉換規範\n- [發送方法規範](send-method-spec.md) - Send 類的方法命名和參數規範\n- [適配器開發指南](../developer-guide/adapters/) - 適配器開發完整指南"
+    }
+  ]
+}

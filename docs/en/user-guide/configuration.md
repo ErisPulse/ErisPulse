@@ -1,9 +1,7 @@
-# Configuration File Documentation
+# Configuration File Guide
 > This document will introduce the framework's configuration file. If third-party modules require configuration, please refer to the module's documentation.
 
-ErisPulse uses a TOML-formatted configuration file `config/config.toml` to manage project configurations.
-
-
+ErisPulse uses a TOML-formatted configuration file `config/config.toml` to manage project settings.
 
 ## Configuration File Location
 
@@ -16,33 +14,30 @@ project/
 ├── main.py
 ```
 
-
-
 ## Configuration Loading Error Handling
 
-The framework distinguishes three error states when loading `config.toml`, providing **actionable diagnostic information** instead of silently falling back to default configurations:
+When loading the `config.toml` file, the framework distinguishes three error states and provides **actionable diagnostic information** instead of silently falling back to default configuration:
 
 | Error State | Trigger Condition | Framework Behavior |
 |-------------|-------------------|--------------------|
-| File Missing | `config.toml` does not exist | On normal first startup, silently use an empty configuration (no warning issued) |
-| TOML Syntax Error | File exists but has invalid format (e.g., missing quotes, unclosed parentheses) | Output **line/column number and reason for error**, and indicate that default configuration has been reverted |
-| Permission/Other Errors | No read permission, IO errors, etc. | Output **clear reason**, and indicate that default configuration has been reverted |
+| File Missing | `config.toml` does not exist | Normal on first startup, silently uses empty configuration (no warning issued) |
+| TOML Syntax Error | File exists but is invalid (e.g., missing quotes, unclosed parentheses) | Outputs **line number/column number and reason**, and indicates fallback to default configuration |
+| Permission/Other Errors | No read permission, IO errors, etc. | Outputs **clear reason**, and indicates fallback to default configuration |
 
-For example, if you accidentally write the configuration as `port = 8000` (missing quotes around the string), the log will output something similar to:
+For example, if you accidentally write the configuration as `port = 8000` (missing quotes for a string), the log will output something like:
 
 ```
-[ERROR] [Config] Syntax error in configuration file config/config.toml (line 3, column 1): ...
-[WARNING] [Config] Failed to read configuration file. Continuing with last valid configuration; changes in this file were not applied—please fix and reload or restart
+[ERROR] [Config] Syntax error in config file config/config.toml (Line 3, Column 1): ...
+[WARNING] [Config] Failed to read configuration file. Continuing with last valid configuration; changes in this file did not take effect—please fix and reload or restart
 ```
 
-This allows you to immediately identify the issue at the **default INFO level**, rather than being confused about why your configuration changes did not take effect.
+This allows you to immediately locate the issue at the **default INFO level**, rather than being confused about why your configuration changes didn’t take effect.
 
-> **What if you accidentally corrupt the configuration file while the bot is running?** If you manually edit `config.toml` during runtime and introduce a syntax error, the framework will output "Configuration file is corrupted (syntax error, line X), unable to merge and write—please fix the configuration file and restart" on the next write (merge configuration), instead of the confusing "write failed". The configuration items awaiting write will be preserved and will not be lost.
-
+> **What if you accidentally break the configuration file while the bot is running?** If you manually edit `config.toml` during runtime and introduce a syntax error, the framework will output "Configuration file is corrupted (syntax error, line X), cannot merge and write—please fix the configuration file and restart" the next time it attempts to write (merge configuration), instead of the confusing "write failed". The pending configuration changes will be preserved and not lost.
 
 ## Environment Variable Override
 
-The framework supports **overriding** `ErisPulse.*` configuration items using environment variables (suitable for Docker / containerization / CI deployment, without modifying `config.toml`).
+The framework supports **overriding** `ErisPulse.*` configuration items using environment variables (ideal for Docker / containerized / CI deployments, without modifying `config.toml`).
 
 Naming convention: Convert the dot-separated path `ErisPulse.<section>.<key>` to all uppercase, replace `.` with `_`, and add the `ERISPULSE_` prefix:
 
@@ -54,88 +49,86 @@ Naming convention: Convert the dot-separated path `ErisPulse.<section>.<key>` to
 | `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |
 
 Behavior description:
-- **Highest priority**: Environment variables override "configuration file" and "default values", automatically converting to the original value type (`bool` / `int` / `float` / comma-separated `list` / string)
-- **Non-persistent**: The override only takes effect during runtime and is not written back to `config.toml`
-- **Supports hot reload**: After modifying environment variables during runtime, the changes take effect when combined with configuration monitoring reload
+- **Highest priority**: Environment variables override both "configuration file" and "default values", automatically converted to the original value type (`bool` / `int` / `float` / comma-separated `list` / string)
+- **Non-persistent**: The override only takes effect during runtime and does not write back to `config.toml`
+- **Supports hot reload**: After modifying environment variables during runtime, configuration reload with monitoring can take effect
 
 ```bash
-# Docker deployment example: Do not modify config.toml, directly override the port
+# Example for Docker deployment: Override port directly without modifying config.toml
 ERISPULSE_SERVER_PORT=9000 docker compose up -d
 ```
 
-> Note: Framework configurations such as `ErisPulse.server.port` that are read via APIs like `get_server_config()` are all affected by environment variable overrides.
+> Note: Framework configurations like `ErisPulse.server.port` are read via APIs such as `get_server_config()`, and are all affected by environment variable overrides.
 
+## Hot Configuration Reload
 
-
-## Configuration Hot Reload
-
-Starting from version 2.7.0, the framework provides **systematic support** for configuration hot reload. After external modification of `config.toml` (detected every 5 seconds by a background watcher), or after code calls `setConfig()`, components automatically respond:
+Starting from version 2.7.0, the framework provides **systematic support** for hot configuration reloading. After external modifications to `config.toml` (detected every 5 seconds by a background watcher) or after code calls `setConfig()`, all components automatically respond:
 
 | Component | Configurations Supporting Hot Reload | Behavior |
 |-----------|--------------------------------------|----------|
-| **Logger** | `logger.level` / `log_files` / `log_dir` (including segmentation parameters) / `memory_limit` / `format` / `exclude_levels` | Automatically reapplies (with change detection) |
-| **Command System CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | Takes effect on the next message |
+| **Logger** | `logger.level` / `log_files` / `log_dir` (including segment parameters) / `memory_limit` / `format` / `exclude_levels` | Automatically reapplies (with change detection) |
+| **Command System (CommandHandler)** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | Takes effect on the next message |
 | **Adapter Concurrency** | `framework.handler_max_concurrency` | Invalidates cached semaphore and rebuilds with new value |
-| **Proactive GC** | `framework.proactive_gc_*` | Configuration change immediately restarts GC task, supports runtime adjustment/disable/reenable |
-| **Master System Master** | `master.users` | Each `is_master()` check reads in real-time, no restart required |
+| **Proactive GC** | `framework.proactive_gc_*` | Configuration changes immediately restart GC tasks, supporting runtime adjustment/disable/enable |
+| **Master System** | `master.users` | Each call to `is_master()` checks real-time values, no restart needed |
 | **Module/Adapter Configurations** | Their respective configuration items | Triggers `on_config_update(old, new)` callback |
 
-**Configurations Requiring Restart** (cannot be safely hot-switched; a warning "Requires process restart to take effect" is output when changed):
+**Configurations Requiring Restart** (cannot be safely reloaded, warnings are output when changed: "Process needs to be restarted for changes to take effect"):
 
 | Configuration | Reason |
-|----------------|--------|
-| `router.cors.*` / `router.security.*` | Middleware is written into FastAPI at service startup, cannot be safely hot-switched at runtime |
+|---------------|--------|
+| `router.cors.*` / `router.security.*` | Middlewares are written into FastAPI at service startup, cannot be safely reloaded at runtime |
 | `storage.use_global_db` | SQLite file handle is already open at runtime, switching paths is unsafe |
 
-> **Error during editing and saving?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, and will not broadcast an empty configuration to components (to prevent `on_config_update` receiving null values and mistakenly reverting to defaults).
+> **What if editing and saving `config.toml` fails?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, without broadcasting an empty configuration to components (avoiding `on_config_update` receiving empty values and mistakenly reverting to defaults).
 
 ### Internal Breakdown of Hot Reload Chain
 
-"How do components know when the configuration is changed?" — Behind this is a chain of detection → reload → broadcast:
+"How do components know when the configuration is changed?" — Behind the scenes is a chain of detection → reload → broadcast:
 
 ```mermaid
 flowchart TD
-    A["External edit config.toml"] --> B{"Who detects first?"}
+    A["External edit to config.toml"] --> B{"Who detects it first?"}
     B -->|"Background watcher thread<br/>Polls mtime every 5 seconds"| C["_check_file_change determines change"]
     B -->|"When reading configuration<br/>Cache exceeds 60 seconds"| C
     C --> D["_load_config re-parses TOML"]
-    D --> E{"Parse successful?"}
-    E -->|"No (syntax error)"| F["Retains last valid configuration<br/>Does not broadcast, outputs diagnostic log"]
+    D --> E{"Parsing successful?"}
+    E -->|"No (syntax error)"| F["Retain last valid configuration<br/>No broadcast, diagnostic log output"]
     E -->|"Yes"| G["lifecycle.emit config.updated<br/>Carries old_config / new_config"]
     G --> H["Component listeners respond<br/>(logger / scope / command / GC ... )"]
 ```
 
-**Two detection paths** (either one is sufficient, both serve as fallback):
+**Two detection paths** (either one suffices, both provide fallback):
 
 | Path | Mechanism | Trigger Timing |
 |------|-----------|----------------|
-| Background watcher | Daemon thread `config-watcher` polls file `mtime` every **5 seconds** | Within 5 seconds after external file modification |
-| Lazy detection | Any `getConfig()` read, if cache exceeds **60 seconds**, checks file first | On next configuration read |
+| Background watcher | Daemon thread `config-watcher` polls file `mtime` every **5 seconds** | Up to 5 seconds after external file modification |
+| Lazy detection | Any `getConfig()` read checks file if cache exceeds **60 seconds** | Next time configuration is read |
 
-> **Framework does not self-damage**: When `setConfig()` writes to disk, it records the "mtime written by itself"; the watcher excludes it during comparison, treating only **external edits** as changes.
+> **The framework does not interfere with itself**: When `setConfig()` writes to disk, it records the "mtime written by itself," and the watcher excludes this from comparisons, treating only **external edits** as changes.
 
 **Two types of configuration change events:**
 
 | Event | Trigger | Data | Typical Scenario |
 |-------|---------|------|------------------|
 | `config.set` | Code / Dashboard calls `setConfig()` | `{key, old_value, new_value}` | Single key write (template generation, status recording, runtime config change) |
-| `config.updated` | Captured by watcher/lazy detection after external edit | `{old_config, new_config, config_file}` | Manual edit of `config.toml` |
+| `config.updated` | External edit detected by watcher/lazy detection | `{old_config, new_config, config_file}` | Manual edit of `config.toml` |
 
-> `setConfig()` defaults to **delayed disk write for 5 seconds** (merges multiple writes), `immediate=True` writes immediately. After watcher detects external modification, it only updates the in-memory cache, **does not** write external changes back to the file.
+> `setConfig()` defaults to **delayed disk write** (merges multiple writes) for 5 seconds; `immediate=True` writes immediately. After the watcher detects an external modification, it only updates the in-memory cache and **does not** write the external changes back to the file.
 
-**List of automatic responders** (both event types are typically subscribed, with consistent responses):
+**List of Automatic Responders** (both event types are usually subscribed to, with consistent responses):
 
-| Component | Listener | Response |
-|-----------|----------|----------|
-| Logger | `config.set` + `config.updated` | Reapplies level/file/directory segmentation/memory limit/format/exclude levels (with change detection, no change means no action) |
+| Component | Listens | Response |
+|-----------|---------|----------|
+| Logger | `config.set` + `config.updated` | Reapplies level/file/directory segments/memory limit/format/exclude levels (with change detection, no change means no action) |
 | Scope | `config.updated` | Rebuilds scope binding cache |
-| Command System | `config.updated` | Refreshes prefix/case-sensitive/space prefix/must_at_bot parsing parameters, takes effect on next message |
-| Adapter Concurrency | `config.set` + `config.updated` | Invalidates and rebuilds semaphore for `handler_max_concurrency` |
-| Proactive GC | `config.set` + `config.updated` | Immediately restarts GC background task for `proactive_gc_*` |
+| Command System | `config.updated` | Refreshes prefix/case sensitivity/space prefix/must_at_bot parameters, takes effect on next message |
+| Adapter Concurrency | `config.set` + `config.updated` | Invalidates and rebuilds semaphore with new `handler_max_concurrency` |
+| Proactive GC | `config.set` + `config.updated` | Immediately restarts GC background task with `proactive_gc_*` |
 | Adapters | Routes to `on_config_update` | Each adapter's `on_config_update(old, new)` callback |
 | Modules | Routes to `on_config_update` | Each module's `on_config_update(old, new)` callback |
-| Storage | `config.updated` | Change of `use_global_db` only warns (requires restart) |
-| Router | `config.updated` | Change of `cors.*` / `security.*` only warns (requires restart) |
+| Storage | `config.updated` | `use_global_db` change only warns (restart required) |
+| Router | `config.updated` | `cors.*` / `security.*` change only warns (restart required) |
 
 ## Complete Configuration Example
 
@@ -148,9 +141,9 @@ ssl_certfile = ""
 ssl_keyfile = ""
 
 [ErisPulse.master]
-# users supports two writing methods (choose one):
-#   Global owner (effective on all platforms): users = ["123456", "789012"]
-#   Owner specified by platform: users = { yunhu = ["123456"], telegram = ["789012"] }
+# users supports two writing formats (choose one):
+#   Global master (effective for all platforms): users = ["123456", "789012"]
+#   Master specified by platform: users = { yunhu = ["123456"], telegram = ["789012"] }
 users = {}
 
 [ErisPulse.logger]
@@ -188,6 +181,7 @@ ignore_self = true
 
 [ErisPulse.i18n]
 language = "auto"
+```
 
 ## Server Configuration
 
@@ -204,12 +198,9 @@ ssl_keyfile = "/path/to/key.pem"
 |---------|------|---------|------|
 | host | string | 0.0.0.0 | Listening address, 0.0.0.0 means all interfaces |
 | port | integer | 8000 | Listening port number |
-| auto_start | boolean | true | Whether to automatically start the routing server when `sdk.init()`. Setting to `false` skips the routing server startup (pure event/without WebUI scenario) |
+| auto_start | boolean | true | Whether to automatically start the routing server when `sdk.init()`. Setting to `false` skips routing server startup (pure event/without WebUI scenario) |
 | ssl_certfile | string | empty | SSL certificate file path |
 | ssl_keyfile | string | empty | SSL private key file path |
-
-Please directly return the translated complete Markdown content, without any additional text.
-
 
 ## Master System Configuration
 
@@ -217,24 +208,25 @@ The master system is used to identify the "framework master" account (such as Bo
 
 ```toml
 [ErisPulse.master]
-# Style 1: Global master (effective on all platforms)
+# Style 1: Global master (applies to all platforms)
 users = ["123456", "789012"]
 
-# Style 2: Specify master per platform (dict)
+# Style 2: Specify masters by platform (dict)
 # users = { yunhu = ["123456"], telegram = ["789012"] }
 ```
 
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| users | array / object | empty | List of master account IDs. In `list` form, it represents a global master (effective on all platforms); in `dict` form, it specifies masters per platform (key is the platform name, value is the list of master account IDs for that platform) |
+| users | array / object | empty | List of master account IDs. In `list` format, it applies globally (all platforms); in `dict` format, specify masters by platform (key is platform name, value is the list of master account IDs for that platform) |
 
-The code checks using `master.is_master(event)` or `master.is_master(platform, user_id)`. The configuration is read in real time during each call (supports hot updates, no restart required):
+Code checks via `master.is_master(event)` or `master.is_master(platform, user_id)`. Each call reads the configuration in real time (supports hot updates, no restart required):
 
 ```python
 from ErisPulse.Core import master
 
 if master.is_master(event):
-    await event.reply("Hello master")
+    await event.reply("Hello, Master")
+```
 
 ## Logging Configuration
 
@@ -242,27 +234,27 @@ if master.is_master(event):
 [ErisPulse.logger]
 level = "INFO"
 log_files = []                # Explicit list of log files (mutually exclusive with log_dir, higher priority)
-log_dir = ""                  # Log directory (automatically segmented and rotated upon setting)
+log_dir = ""                  # Log directory (automatic segmentation and rotation enabled)
 log_rotation = "size"         # Segmentation method: "size" / "date" / "none"
-log_max_size_mb = 10          # Maximum file size for size-based segmentation (MB)
+log_max_size_mb = 10          # Maximum single file size limit (MB) for size-based rotation
 log_backup_count = 5          # Number of historical log files to retain
-log_rotation_when = "midnight"  # Rotation cycle for date-based segmentation: S/M/H/D/midnight
+log_rotation_when = "midnight"  # Rotation period for date-based mode: S/M/H/D/midnight
 memory_limit = 1000
 exclude_levels = ["EVENT"]
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------|------|---------|------|
+|---------------------|------|---------------|-------------|
 | level | string | INFO | Log level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed internal framework debug information) |
 | format | string | rich | Log output format: `rich` (colored, default), `plain` (plain text without color, suitable for log collection/pipeline redirection), `json` (JSON structured, suitable for ELK, etc.) |
 | log_files | array | empty | List of log output files (explicit paths, no segmentation) |
-| log_dir | string | empty | Log output directory (automatically created). Upon setting, logs are written to `erispulse.log` within the directory and automatically segmented according to `log_rotation`; mutually exclusive with `log_files`, `log_files` takes precedence |
+| log_dir | string | empty | Log output directory (automatically created). When set, logs will be written to `erispulse.log` within the directory and automatically segmented according to `log_rotation`; mutually exclusive with `log_files`, `log_files` takes precedence |
 | log_rotation | string | size | Segmentation method: `size` (by size) / `date` (by time) / `none` (no segmentation) |
-| log_max_size_mb | float | 10 | Maximum file size for size-based segmentation (MB); logs exceeding this size are rotated to `.1`/`.2` backups |
-| log_backup_count | integer | 5 | Number of historical log files to retain; oldest backups beyond this limit are automatically deleted |
-| log_rotation_when | string | midnight | Rotation cycle for date-based segmentation: `S`/`M`/`H`/`D`/`midnight` (default: daily at midnight) |
+| log_max_size_mb | float | 10 | Maximum single file size limit (MB) for size-based rotation. Files exceeding this limit will be rotated into `.1`, `.2` backups |
+| log_backup_count | integer | 5 | Number of historical log files to retain. Oldest backups beyond this number are automatically deleted |
+| log_rotation_when | string | midnight | Rotation period for date-based mode: `S`/`M`/`H`/`D`/`midnight` (default: midnight daily) |
 | memory_limit | integer | 1000 | Number of log entries to keep in memory |
-| exclude_levels | array | empty | Levels of logs to suppress. Logs of suppressed levels are **completely discarded** (not written to memory, not pushed to Dashboard or other subscribers, not printed, not written to file). Supports hot updates |
+| exclude_levels | array | empty | Levels to exclude. Logs of excluded levels are **completely discarded** (not written to memory, not pushed to Dashboard or other subscribers, not printed, not written to files). Supports hot updates |
 
 You can also dynamically switch in code:
 
@@ -272,14 +264,14 @@ from ErisPulse.Core import logger
 # Segmentation by size: single file 10MB, retain 5 copies
 logger.set_output_dir("logs", rotation="size", max_size_mb=10, backup_count=5)
 
-# Segmentation by date: rotate at midnight, retain 7 copies
+# Segmentation by date: rotate daily at midnight, retain 7 copies
 logger.set_output_dir("logs", rotation="date", backup_count=7)
 ```
 
 > [!NOTE]
-> `log_dir` and related segmentation configurations require ErisPulse **2.8.0+**.
+> `log_dir` and related segmentation settings require ErisPulse **2.8.0+**.
 
-> **Privacy Protection**: Message sending and receiving content is recorded at the **EVENT** level (value 21). Setting `exclude_levels = ["EVENT"]` prevents the backend (such as the Dashboard log panel) from seeing message content in groups/private chats, without affecting logs of other levels.
+> **Privacy Protection**: Message sending and receiving content is recorded at the **EVENT level** (value 21). Setting `exclude_levels = ["EVENT"]` prevents the backend (e.g., Dashboard log panel) from seeing message content in groups/private chats, while not affecting logs of other levels.
 
 > [!NOTE]
 > The `exclude_levels` feature requires ErisPulse **2.8.0+**.
@@ -297,49 +289,49 @@ modules = []
 adapters = []
 ```
 
-| Configuration Item | Type | Default Value | Description |
-|---------|------|---------|------|
+| Configuration | Type | Default | Description |
+|---------------|------|---------|-------------|
 | enable_lazy_loading | boolean | true | Whether to enable lazy loading of modules |
-| uninit_timeout | integer | 30 | Total timeout (seconds) for graceful shutdown, after which the process is forcibly terminated. 0 means no timeout is set |
-| strict_mode | integer | 0 | Strict mode level, see the "Strict Mode" section below |
-| handler_max_concurrency | integer | 64 | Maximum number of concurrent Tasks for event handlers. Setting this higher increases throughput but also memory usage |
-| offline_bot_expiry | integer | 3600 | Automatic expiration time (seconds) for offline Bot records. 0 means no expiration |
+| uninit_timeout | integer | 30 | Graceful shutdown timeout (seconds), after which processes are forcibly terminated. 0 means no timeout |
+| strict_mode | integer | 0 | Strict mode level, see below "Strict Mode" section |
+| handler_max_concurrency | integer | 64 | Maximum number of concurrent tasks for event handlers. Larger values increase throughput but also memory usage |
+| offline_bot_expiry | integer | 3600 | Automatic expiration time for offline bot records (seconds). 0 means never expire |
 
 ### Proactive GC Configuration
 
-After SDK initialization, a background task for proactive garbage collection (GC) is started, periodically executing Python GC and internal resource cleanup (such as offline Bot cleanup). All parameters support hot updates, and the task is restarted immediately upon change.
+After SDK initialization, a background task for proactive garbage collection (GC) is started, which periodically executes Python GC and internal resource cleanup (such as offline bot cleanup). All parameters support hot updates, and the task restarts immediately when changed.
 
-| Configuration Item | Type | Default Value | Description |
-|---------|------|---------|------|
-| proactive_gc_interval | number | 300 | Recycling interval (seconds), supports decimals. 0 means disable proactive GC |
-| proactive_gc_generation | integer | 0 | Regular round recycling generation (0/1/2, clamped to 0..2). Note that `gc.collect(2)` is equivalent to full recycling, and the default of 0 keeps it lightweight; deep recycling is triggered periodically by `proactive_gc_full_every` |
-| proactive_gc_full_every | integer | 20 | Perform a full recycling every N rounds, 0 means disable periodic full recycling. Full recycling is constrained by the `proactive_gc_memory_growth_mb` threshold |
-| proactive_gc_memory_growth_mb | integer | 32 | Memory growth threshold (MB) for full recycling: compared against the memory baseline (prefer tracemalloc, then RSS) after the last full recycling, only if the growth reaches this value will a full recycling be executed. 0 means no threshold is set |
-| proactive_gc_idle_only | boolean | false | When enabled, skip Python GC during event peaks (when there are pending handlers), to avoid pauses and message processing contention; internal resource recycling is unaffected |
-| proactive_gc_gen0_min | integer | 500 | Lower bound of garbage in gen0 to trigger regular round recycling: if `gc.get_count()[0]` is below this value, skip directly (idle rounds have nearly zero overhead). 0 means always recycle |
+| Configuration | Type | Default | Description |
+|---------------|------|---------|-------------|
+| proactive_gc_interval | number | 300 | Collection interval (seconds), supports decimals. 0 means disable proactive GC |
+| proactive_gc_generation | integer | 0 | Regular round collection generation (0/1/2, clamped to 0..2). Note that `gc.collect(2)` is equivalent to full collection, default 0 keeps it lightweight; deep collection is triggered periodically by `proactive_gc_full_every` |
+| proactive_gc_full_every | integer | 20 | Perform a full collection every N rounds, 0 means disable periodic full collection. Full collection is constrained by the `proactive_gc_memory_growth_mb` threshold |
+| proactive_gc_memory_growth_mb | integer | 32 | Memory growth threshold (MB) for full collection: compared against the memory baseline after the last full collection (preferring tracemalloc, then RSS), full collection is only performed when growth reaches this value. 0 means no threshold |
+| proactive_gc_idle_only | boolean | false | When enabled, skip Python GC during event bursts (when there are unfinished pending handlers) to avoid pauses and message processing contention; internal resource cleanup is unaffected |
+| proactive_gc_gen0_min | integer | 500 | Minimum amount of gen0 garbage to trigger regular round collection: if `gc.get_count()[0]` is below this value, skip directly (near-zero overhead for idle rounds). 0 means always collect |
 
-> **Change in 2.7.1**: The default `proactive_gc_generation` was adjusted from `2` to `0`, and the default `proactive_gc_full_every` was adjusted from `0` to `20`. Previously, `generation=2` meant that the heaviest full recycling was performed every round; the new default maintains recycling coverage while significantly reducing idle overhead. Explicitly configured old values still take effect as their literal meaning.
+> **2.7.1 Change**: The default `proactive_gc_generation` is adjusted from `2` to `0`, and `proactive_gc_full_every` is adjusted from `0` to `20`. Previously, `generation=2` meant a full collection every round, which was the heaviest; the new default maintains collection coverage while significantly reducing idle round overhead. Explicitly configured old values still function as intended.
 
 ### Strict Mode
 
-Strict mode controls the handling strategy for modules/adapters that are non-compliant or fail during the loading phase. Modern modules/adapters should inherit the corresponding base class (`BaseModule`/`BaseAdapter`). Components that do not inherit the base class affect the framework's context system and fallback cleanup, potentially causing resource leaks.
+Strict mode controls the framework's handling strategy when modules/adapters are loaded with non-compliance or failures during the loading phase. Modern modules/adapters should inherit the corresponding base classes (`BaseModule`/`BaseAdapter`). Components that do not inherit these base classes affect the framework's context system and fallback cleanup, potentially leading to resource leaks.
 
-> **Change in 2.5.2**: The default level was adjusted from `1` (skip) to `0` (lenient), to reduce loading issues encountered by new users. Components that do not inherit the base class will be warned and attempted to load, rather than being directly rejected. To restore the old behavior, explicitly set `strict_mode = 1`.
+> **2.5.2 Change**: The default level is adjusted from `1` (skip) to `0` (lenient) to reduce loading issues for new users. Components that do not inherit base classes will be warned and attempted to load, rather than directly rejected. To restore the previous behavior, explicitly set `strict_mode = 1`.
 
 | Level | Name | Behavior |
-|------|------|------|
-| 0 | Lenient (Default) | Non-compliance only issues a warning; components that do not inherit the base class will still be attempted to load (compatibility with old components) |
-| 1 | Strict-Skip | Reject components that do not inherit the base class and skip them, while other components start normally |
-| 2 | Strict-Fatal | Collect all non-compliant components and report them together before terminating the entire startup process |
+|-------|------|----------|
+| 0 | Lenient (default) | Non-compliant components only warn, and components that do not inherit base classes will still be attempted to load (compatible with old components) |
+| 1 | Strict-Skip | Reject components that do not inherit base classes and skip them, while other components start normally |
+| 2 | Strict-Fatal | Collect all violations and report them together, then terminate the entire startup process |
 
-Under each level, errors reported during the "loading/registration/initialization phase" (such as component crashes) are always skipped; the difference lies in:
+In all levels, component crashes during the loading/registration/initialization phases are always skipped. The differences are as follows:
 
-- **0 → 1**: The only behavioral change is that "not inheriting the base class" changes from "still loading" to "skipping".
-- **1 → 2**: All non-compliance (not inheriting the base class, loading failure, registration failure, initialization failure, etc.) is upgraded to fatal, and a list of non-compliant components is output at the startup checkpoint before terminating.
+- **0 → 1**: The only behavioral change is that components that do not inherit base classes change from "still loaded" to "skipped".
+- **1 → 2**: All violations (not inheriting base classes, loading failure, registration failure, initialization failure, etc.) are upgraded to fatal, and a list of violations is output at the startup checkpoint before termination.
 
-#### Exception List
+#### Exemption List
 
-If certain components cannot be migrated temporarily (for example, due to dependencies on old modules), they can be added to the exception list. Components listed will be treated as lenient mode even if they are non-compliant, and will continue to be loaded:
+If certain components cannot be migrated temporarily (e.g., legacy modules they depend on), they can be added to the exemption list. Components listed will be treated as lenient mode even if non-compliant, and continue to load:
 
 ```toml
 [ErisPulse.framework.strict_mode_exceptions]
@@ -347,7 +339,7 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> When a component is rejected by strict mode, the log will clearly indicate how to restore loading (add to the exception list or lower the level).
+> When a component is rejected by strict mode, the log will explicitly prompt how to restore loading (add to the exemption list or lower the level).
 
 ## Storage Configuration
 
@@ -358,10 +350,7 @@ use_global_db = false
 
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| use_global_db | boolean | false | Whether to use the global database (within the package) instead of the project database. When set to `true`, all projects share the SQLite database within the ErisPulse package; when set to `false` (default), each project uses an independent database in the `config/` directory |
-
-Please directly return the fully translated Markdown content, without any additional text.
-
+| use_global_db | boolean | false | Whether to use the global database (within the package) instead of the project database. If `true`, all projects share the SQLite database within the ErisPulse package; if `false` (default), each project uses an independent database in the `config/` directory |
 
 ## Event Configuration
 
@@ -390,8 +379,7 @@ ignore_self = true
 
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| ignore_self | boolean | true | Whether to ignore the robot's own messages |
-
+| ignore_self | boolean | true | Whether to ignore messages from the bot itself |
 
 ## Internationalization Configuration
 
@@ -402,7 +390,7 @@ language = "auto"
 
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| language | string | auto | The display language for framework built-in text. Set to `auto` to automatically detect the system language, or set to a specific code: `zh-CN`, `zh-TW`, `en`, `ja`, `ru` |
+| language | string | auto | The display language for built-in framework text. Set to `auto` to automatically detect the system language, or specify a language code: `zh-CN`, `zh-TW`, `en`, `ja`, `ru` |
 
 ## Module Configuration
 
@@ -415,55 +403,86 @@ timeout = 30
 enabled = true
 ```
 
-Reading and writing configuration within the module:
+Read and write configuration within the module:
 
 ```python
 from ErisPulse import sdk
 
-# Reading configuration
+# Read configuration
 config = sdk.config.getConfig("MyModule", {})
 api_url = config.get("api_url", "https://default.api.com")
 
-# Writing configuration at runtime (delayed save)
+# Write configuration at runtime (with delayed save)
 sdk.config.setConfig("MyModule.timeout", 60)
 
-# Saving immediately to file
+# Save immediately to file
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> By default, `setConfig` uses delayed writing (approximately batch saving to file every 5 seconds). Setting `immediate=True` will persist immediately. Configuration changes will trigger the `config.set` lifecycle event.
+> By default, `setConfig` uses delayed writing (batch saved to file every ~5 seconds). Setting `immediate=True` will persist immediately. Configuration changes trigger the `config.set` lifecycle event.
 
-
-## Scope Configuration
+## Control Plane Configuration (scope)
 
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-The module scope system is used to control which modules a "certain Bot" can use. By default, all modules are open to all Bots, and filtering only begins after configuration binding. Modules and adapters can be adapted without any changes.
+The unified control plane is the **only** entry point for permissions and access control, organized in a five-dimensional configuration tree:
+
+| Dimension | What is controlled | Configuration Path |
+|-----------|--------------------|--------------------|
+| ① Module | Which modules are available in a platform / Bot / session | `scope.platforms / bots / sessions` |
+| ② Identity | Whether events from a user / group / Bot / adapter are accepted | `scope.identity.*` |
+| ③ Command | Who can execute a specific command (command names support glob) | `scope.commands` |
+| ④ Handler | Filtering module handlers by text | `scope.handlers` |
+| ⑤ Override | Overriding module/command implementation parameters | `scope.overrides` |
 
 ```toml
 [ErisPulse.scope]
-default_allow = true        # Allow all by default (false = implicit deny strict mode)
-cache_size = 1024           # LRU cache size for is_allowed
+default_allow = true        # Global fallback (false = strict deny mode)
+cache_size = 1024           # LRU cache size
+
+# ① Module dimension (priority: session > Bot > platform; entries support exact / glob / re: regex)
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Tool*"]
+blocked = ["re:^Danger"]
+
+# ② Identity dimension (priority: user > session > Bot > adapter; only allow or deny per level)
+[ErisPulse.scope.identity.adapters.onebot11]
+deny = true                 # All events from this platform are discarded at the entry point
+[ErisPulse.scope.identity.users.onebot11]
+allow = ["u_admin"]         # User keys support glob / re: regex
+deny = ["u_bad", "spam_*"]
+
+# ③ Command dimension (user identifier "platform:user_id")
+[ErisPulse.scope.commands."roll*"]
+allow = ["onebot11:u_vip"]
+deny = ["onebot11:u_bad"]
+
+# ④ Handler/Text dimension (AND with code-side conditions)
+[ErisPulse.scope.handlers.MyModule]
+pattern = "签到*"
+
+# ⑤ Implementation parameter override (disable via command deny, not here)
+[ErisPulse.scope.overrides.MyModule.restart]
+master = true
+hidden = true
 ```
 
-| Configuration | Type | Description |
-|---------------|------|-------------|
-| `scope.default_allow` | boolean | Allow all modules by default (`true`). `false` = implicit deny strict mode, only modules in the whitelist are available |
-| `scope.cache_size` | integer | LRU cache size for `is_allowed` (default 1024) |
-| `scope.platforms.<platform>.modules` | array | Platform-level whitelist: only listed modules are allowed (empty = no restriction) |
-| `scope.platforms.<platform>.blocked` | array | Platform-level blacklist: listed modules are disabled (empty = no restriction) |
-| `scope.bots.<platform>.<bot_id>.modules` | array | Bot-level whitelist, overrides platform-level |
-| `scope.bots.<platform>.<bot_id>.blocked` | array | Bot-level blacklist, overrides platform-level |
-| `scope.sessions.<platform>.<session_id>.modules` | array | Session-level whitelist (group/channel/private chat), highest priority |
-| `scope.sessions.<platform>.<session_id>.blocked` | array | Session-level blacklist, highest priority |
+| Configuration Item | Type | Description |
+|----------------------|------|-------------|
+| `scope.default_allow` | boolean | Global fallback: allow/deny for entries not matched by rules (`true`). Modules/identity "no rule = deny"; commands "no ACL = deny" |
+| `scope.cache_size` | integer | LRU cache size (default 1024) |
+| `scope.platforms / bots / sessions` | table | ① Module three-level binding: `{modules=[...], blocked=[...]}` |
+| `scope.identity.adapters / bots / sessions / users` | table | ② Identity four-level binding: `{allow=true}` / `{deny=true}` |
+| `scope.commands.<command name>` | table | ③ Command ACL: `{allow=[...], deny=[...]}` |
+| `scope.handlers.<module>` | table | ④ Text filtering: `{pattern="...", regex="..."}` |
+| `scope.overrides.<module>[.<command>]` | table | ⑤ Parameter override: `master` / `hidden` / `aliases` / `prefix` etc. |
 
-> Resolution priority: **Session-level > Bot-level > Platform-level**. For a complete TOML example of the three-level binding, case-insensitive module names, session identifiers isolated across platforms, and runtime `sdk.scope.bind()` / `unbind()` dynamic addition and removal (with `merge=True` for merging), please refer to the [Scope System](../advanced/scope.md).
-
-docs/en/scope.md
+> Matching entries use unified syntax: exact name / glob (`*` `?` `[seq]`) / `re:` regex, case-insensitive.
+> Detailed explanations of the five dimensions and runtime APIs (`sdk.scope.bind_module()` / `bind_identity()` / `block_user()` /
+> `allow_user()` / `override()` etc.) are available in [Unified Control Plane](../advanced/scope.md).
 
 ## Next Steps
 
 - [CLI Command Reference](cli-reference.md) - Learn about all command-line commands
 - [Developer Guide](../developer-guide/) - Learn how to develop custom modules
-
