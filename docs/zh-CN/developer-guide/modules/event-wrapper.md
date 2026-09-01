@@ -77,6 +77,14 @@ async def ask_command(event: Event):
     if reply:
         name = reply.get_text()
         await event.reply(f"你好，{name}！")
+
+@command("price")
+async def price_command(event: Event):
+    await event.reply("请输入金额（如：5元）:")
+    # 回复必须匹配正则，否则继续等待直到超时
+    reply = await event.wait_reply(timeout=30, regex=r"\d+\s*元")
+    if reply:
+        await event.reply(f"收到金额：{reply.get_text()}")
 ```
 
 ## 命令信息获取
@@ -209,12 +217,14 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 ### 等待回复功能
 
-- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text")` - 等待用户回复
+- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text", pattern=None, regex=None)` - 等待用户回复
   - `prompt`: 提示消息，如果提供会发送给用户
   - `timeout`: 等待超时时间（秒），默认60秒
   - `callback`: 回调函数，当收到回复时执行
   - `validator`: 验证函数，用于验证回复是否有效
   - `method`: 发送提示消息的方法，默认 "Text"
+  - `pattern`: glob 通配符（`*` / `?` / `[seq]`），回复文本必须匹配，不匹配则继续等待
+  - `regex`: 正则表达式，回复文本必须匹配（`pattern` 与 `regex` 二选一），不匹配则继续等待
   - 返回用户回复的 Event 对象，超时返回 None
 
 #### 交互方法

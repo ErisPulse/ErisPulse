@@ -42,6 +42,7 @@ from .config import config, ConfigManager
 from .i18n import i18n, I18nManager
 from .master import master, MasterManager
 from .scope import scope, ScopeManager
+from .text_match import compile_entry_matcher, compile_text_matcher, extract_text
 
 from . import Event
 from .Event.message_builder import MessageBuilder
@@ -99,13 +100,16 @@ __all__ = [
     "adapter",  # 适配器模块单例
     "client",  # HTTP 客户端别名
     "config",  # 配置模块单例
+    "compile_entry_matcher",  # 统一匹配条目编译
+    "compile_text_matcher",  # 统一文本匹配（pattern/regex）
     "env",  # 配置管理器别名
+    "extract_text",  # 事件纯文本提取
     "i18n",  # 国际化模块单例
     "lifecycle",  # 生命周期模块单例
     "logger",  # 日志模块单例
     "master",  # 框架主人模块单例
     "module",  # 模块模块单例
     "router",  # 路由模块单例
-    "scope",  # 作用域模块单例
+    "scope",  # 统一控制面模块单例
     "storage",  # 存储模块单例
 ]

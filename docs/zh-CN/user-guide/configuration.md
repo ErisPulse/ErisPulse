@@ -422,31 +422,66 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 
 > `setConfig` 默认采用延迟写入（约每 5 秒批量保存到文件），设置 `immediate=True` 可立即持久化。配置变更会触发 `config.set` 生命周期事件。
 
-## 作用域配置
+## 控制面配置（scope）
 
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-模块作用域系统用于控制"某个 Bot 只能使用哪些模块"。默认情况下所有模块对所有 Bot 开放，仅在配置绑定后才开始过滤，模块与适配器**无需任何改动**即可适配。
+统一控制面是权限/访问控制的**唯一**入口，五维配置树：
+
+| 维度 | 控制什么 | 配置路径 |
+|------|---------|---------|
+| ① 模块 | 某平台 / Bot / 会话里哪些模块可用 | `scope.platforms / bots / sessions` |
+| ② 身份 | 某用户 / 群 / Bot / 适配器的事件收不收 | `scope.identity.*` |
+| ③ 命令 | 谁能执行某条命令（命令名支持 glob） | `scope.commands` |
+| ④ 处理器 | 某模块的处理器按文本过滤 | `scope.handlers` |
+| ⑤ 覆盖 | 覆盖模块/命令的实现参数 | `scope.overrides` |
 
 ```toml
 [ErisPulse.scope]
-default_allow = true        # 默认允许全部（false = 隐式拒绝严格模式）
-cache_size = 1024           # is_allowed 的 LRU 缓存大小
+default_allow = true        # 全局兜底（false = 隐式拒绝严格模式）
+cache_size = 1024           # LRU 缓存大小
+
+# ① 模块维度（优先级：会话 > Bot > 平台；条目支持精确 / glob / re: 正则）
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Tool*"]
+blocked = ["re:^Danger"]
+
+# ② 身份维度（优先级：用户 > 会话 > Bot > 适配器；每级只写 allow 或 deny 之一）
+[ErisPulse.scope.identity.adapters.onebot11]
+deny = true                 # 该平台所有事件在入口丢弃
+[ErisPulse.scope.identity.users.onebot11]
+allow = ["u_admin"]         # 用户键支持 glob / re: 正则
+deny = ["u_bad", "spam_*"]
+
+# ③ 命令维度（用户标识 "platform:user_id"）
+[ErisPulse.scope.commands."roll*"]
+allow = ["onebot11:u_vip"]
+deny = ["onebot11:u_bad"]
+
+# ④ 处理器/文本维度（与代码内条件 AND）
+[ErisPulse.scope.handlers.MyModule]
+pattern = "签到*"
+
+# ⑤ 实现参数覆盖（禁用统一走命令 deny，不在这里）
+[ErisPulse.scope.overrides.MyModule.restart]
+master = true
+hidden = true
 ```
 
 | 配置项 | 类型 | 说明 |
 |---------|------|------|
-| `scope.default_allow` | boolean | 默认允许全部模块（`true`）。`false` = 隐式拒绝严格模式，仅白名单内模块可用 |
-| `scope.cache_size` | integer | `is_allowed` 的 LRU 缓存大小（默认 1024） |
-| `scope.platforms.<platform>.modules` | array | 平台级白名单：仅列出的模块允许使用（空 = 不限制） |
-| `scope.platforms.<platform>.blocked` | array | 平台级黑名单：列出的模块禁用（空 = 不限制） |
-| `scope.bots.<platform>.<bot_id>.modules` | array | Bot 级白名单，覆盖平台级 |
-| `scope.bots.<platform>.<bot_id>.blocked` | array | Bot 级黑名单，覆盖平台级 |
-| `scope.sessions.<platform>.<session_id>.modules` | array | 会话级白名单（群/频道/私聊），优先级最高 |
-| `scope.sessions.<platform>.<session_id>.blocked` | array | 会话级黑名单，优先级最高 |
+| `scope.default_allow` | boolean | 全局兜底：未命中规则的放行/拒绝（`true`）。模块/身份"无规则即拒"；命令"无 ACL 即拒" |
+| `scope.cache_size` | integer | LRU 缓存大小（默认 1024） |
+| `scope.platforms / bots / sessions` | table | ① 模块三级绑定：`{modules=[...], blocked=[...]}` |
+| `scope.identity.adapters / bots / sessions / users` | table | ② 身份四级绑定：`{allow=true}` / `{deny=true}` |
+| `scope.commands.<命令名>` | table | ③ 命令 ACL：`{allow=[...], deny=[...]}` |
+| `scope.handlers.<module>` | table | ④ 文本过滤：`{pattern="...", regex="..."}` |
+| `scope.overrides.<module>[.<command>]` | table | ⑤ 参数覆盖：`master` / `hidden` / `aliases` / `prefix` 等 |
 
-> 解析优先级：**会话级 > Bot 级 > 平台级**。三级绑定的完整 TOML 示例、模块名大小写不敏感、会话标识跨平台隔离、运行时 `sdk.scope.bind()` / `unbind()` 动态增删（`merge=True` 可合并）等详见[作用域系统](../advanced/scope.md)。
+> 匹配条目统一语法：精确名 / glob（`*` `?` `[seq]`）/ `re:` 正则，大小写不敏感。
+> 五维详解与运行时 API（`sdk.scope.bind_module()` / `bind_identity()` / `block_user()` /
+> `allow_user()` / `override()` 等）详见[统一控制面](../advanced/scope.md)。
 
 ## 下一步
 

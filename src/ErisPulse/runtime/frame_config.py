@@ -112,19 +112,35 @@ DEFAULT_ERISPULSE_CONFIG = {
     "i18n": {
         "language": DEFAULT_I18N_LANGUAGE,
     },
-    # 模块作用域系统：绑定模块与适配器 Bot / 平台 / 会话。
-    # 默认允许全部模块；配置绑定后才开始过滤。
-    # 解析优先级：会话级 > Bot 级 > 平台级。
-    # default_allow = false 时开启"隐式拒绝"严格模式（未匹配白名单即拒绝）。
-    # 平台级: platforms.<platform> = {modules: [...], blocked: [...]}
-    # Bot 级: bots.<platform>.<bot_id> = {modules: [...], blocked: [...]}
-    # 会话级: sessions.<platform>.<session_id> = {modules: [...], blocked: [...]}
+    # 统一控制面系统（scope）：权限/访问控制的唯一入口。
+    # 五维配置树：
+    # ① 模块维度（原作用域三级绑定，优先级 会话 > Bot > 平台）
+    #    platforms.<platform> = {modules: [...], blocked: [...]}（条目支持 glob / re: 正则）
+    #    bots.<platform>.<bot_id> / sessions.<platform>.<session_id> 同上
+    # ② 身份维度（原事件准入，优先级 用户 > 会话 > Bot > 适配器）
+    #    identity.adapters.<platform> = {allow/deny: true}
+    #    identity.bots.<platform>.<bot_id> / identity.sessions / identity.users 同上
+    #    identity.users 的 key 支持 glob / re: 正则
+    # ③ 命令维度（命令 ACL，命令名支持 glob）
+    #    commands.<command_name> = {allow: ["platform:uid", ...], deny: [...]}
+    # ④ 处理器/文本维度：handlers.<module> = {pattern: "...", regex: "..."}
+    # ⑤ 实现参数覆盖：overrides.<module>.<command> = {master/hidden/aliases/prefix: ...}
+    # default_allow = false 时全局"隐式拒绝"（模块/身份未命中即拒；命令无 ACL 即拒）。
     "scope": {
         "default_allow": True,
         "cache_size": 1024,
         "platforms": {},
         "bots": {},
         "sessions": {},
+        "identity": {
+            "adapters": {},
+            "bots": {},
+            "sessions": {},
+            "users": {},
+        },
+        "commands": {},
+        "handlers": {},
+        "overrides": {},
     },
 }
 
@@ -334,6 +350,25 @@ def update_erispulse_config(new_config: dict[str, Any]) -> bool:
     return True
 
 
+def set_erispulse_section(path: str, value: Any) -> bool:
+    """
+    整节替换写入 ErisPulse 配置
+
+    与 :func:`update_erispulse_config` 的深合并语义不同，本函数对目标子路径
+    **整节替换**（支持删除子键，如移除绑定、黑名单移除等场景）。
+    写入失败时抛出异常。
+
+    :param path: 相对 ``ErisPulse`` 根的配置路径，如 ``"scope.commands"``、``"scope"``
+    :param value: 新的配置节内容（通常为 dict）
+    :return: 是否写入成功
+
+    :example:
+    >>> set_erispulse_section("scope.commands", {"roll*": {"allow": ["onebot11:123456"]}})
+    """
+    config_service = _get_config_service()
+    return config_service.setConfig(f"{CONFIG_ROOT_KEY}.{path}", value)
+
+
 def get_server_config() -> dict[str, Any]:
     """
     获取服务器配置，确保结构完整
@@ -408,5 +443,6 @@ __all__ = [
     "get_master_config",
     "get_server_config",
     "get_storage_config",
+    "set_erispulse_section",
     "update_erispulse_config",
 ]

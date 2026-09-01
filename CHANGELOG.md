@@ -68,24 +68,32 @@
 
 **版本摘要**
 新增 CLI `config` 命令与安装后配置引导：`epsdk config` 按适配器/模块声明的 `ConfigClass`/`AccountConfigClass` 生成 schema 驱动的交互表单（含适配器多账户管理与启用开关），无需手写 config.toml；`epsdk install`（交互式路径）与 `epsdk init` 安装成功后自动检测新装包的配置声明并引导填写。向导已完善交互细节：字段值来源标注（已有配置/默认值）、布尔开关用字段名提问、已就绪目标提示、成功写入合并为一条汇总、账户名空输入视为取消，并统一字段描述语言（Core i18n 跟随 `epsdk i18n` 设置，消除中英混排）。另修复 Docker 部署 site-packages 持久化卷核心包半写损坏（如 click 截断导致 `module 'click' has no attribute 'Choice'` 启动失败）无法自愈的问题，入口点启动时自动探测并从镜像备份还原。
-本版另引入通用角色系统与权限覆盖机制：新增数值权重制角色系统（`ErisPulse.Core.role`，内置 everyone/admin/master 层级可调权重、blocked 黑名单短路、master 桥接主人系统），命令权限改为「开发者声明仅作默认、用户覆盖优先」——用户可通过配置 `ErisPulse.event.command.permissions` / `.acl` 或运行时 API（`command.set_permission()` / `allow_user()` / `deny_user()`）随时覆盖任意命令的权限（可升可降）；scope 作用域系统扩展用户级绑定（第四桶 `users`，优先级最高）与用户黑名单（`scope.block_user()`，命中后事件在分发入口完全丢弃）。同时修复一批测试对 i18n 本地化文案的脆弱断言与两处运行时告警根因。
+本版将权限/访问控制收敛为**统一控制面（scope）**并补齐消息过滤能力：控制权完全交给用户——在模块 / 适配器 / 命令 / 处理器注册的**上层**（配置 `ErisPulse.scope` 或运行时 `sdk.scope`）统一声明"谁 / 什么 / 什么条件下，允许或禁止"。五维配置树：**① 模块维度**（原作用域三级绑定，条目升级支持 glob / `re:` 正则）；**② 身份维度**（原事件准入 access 收敛，四级绑定 + 用户键支持 glob/正则）；**③ 命令维度**（命令 ACL 收敛，命令名支持 glob，精确键优先）；**④ 处理器/文本维度**（按模块配置 pattern/regex 过滤，与代码内条件 AND）；**⑤ 实现参数覆盖**（`scope.overrides` 覆盖模块/命令的 `master`/`hidden`/`aliases`/`prefix` 等实现参数，禁用统一走命令 deny）。全局唯一 `default_allow` 兜底三维度（false = 隐式拒绝严格模式：模块/身份无规则即拒、命令无 ACL 即拒）。`ErisPulse.access` 节与 `ErisPulse.event.command.permissions` 节移除，`sdk.access` 与 `sdk.command` 独立 ACL 实现移除（dev 阶段直接切换，不保留门面）；命令 ACL 运行时 API（`allow_user` / `deny_user` / `get_acl` / `remove_acl`）保留并委托 `sdk.scope`。匹配条目语法全系统统一（`Core/text_match.py`：精确名 / glob / `re:` 正则，默认大小写不敏感），`adapter.on()` 新增 `detail_type` / `pattern` / `regex` 条件参数，`activate_on` 事件触发器 detail_type 支持 glob。
 
 ### 新增
 - @wsu2059q
-  - **通用角色系统** `Core/role.py`（`from ErisPulse.Core import role`）：
-    - 内置层级 `everyone(0)` / `admin(50)` / `master(100)`，权重可经 `ErisPulse.role.levels` 调整（需满足 everyone ≤ admin ≤ master，违反回退默认并报错）；`blocked` 为独立短路黑名单角色（压过 master）
-    - 自定义角色：配置 `ErisPulse.role.<name>.level` + `.users` 或运行时 `role.define()` / `role.add()` / `role.remove()`；`master` 角色桥接 `ErisPulse.master.users`（单一数据源）
-    - 判定 API：`role.at_least(event, "admin")`（权重向下继承）、`role.has()`（严格匹配）、`role.get_level()` / `get_roles()` / `is_blocked()`；结果带 LRU 缓存，配置热更新自动重建
-  - **命令权限覆盖机制** `Core/Event/command.py`：
-    - 开发者声明变为默认值：`permission="内置层级名"`（新，注册期校验，非内置名告警并按用户角色动态解析兜底）/ `permission=callable`（兼容保留）/ `master=True`（≡ 默认 master），全部可被用户覆盖
-    - 用户侧配置：`ErisPulse.event.command.permissions`（按命令覆盖等级，键支持 `模块.命令` 精确与裸命令名兜底）与 `.acl`（按命令用户黑白名单）；运行时 API `command.set_permission()` / `allow_user()` / `deny_user()` / `remove_acl()` / `get_effective_permission()`（返回生效等级与来源，便于诊断）
-    - 判定链（`_check_permission`）：blocked 短路 → ACL deny → ACL allow → 用户覆盖等级 → 开发者默认 → 放行；未定义角色引用 fail-closed 拒绝并报错；提供 `get_effective_permission` 权限自省
-  - **scope 用户级绑定与用户黑名单** `Core/scope.py`：
-    - 第四桶 `ErisPulse.scope.users.<platform>.<user_id>.modules/blocked`，解析优先级 用户级 > 会话级 > Bot 级 > 平台级；`is_allowed()` 新增可选 `user_id` 参数（向后兼容）
-    - `scope.block_user()` / `unblock_user()` / `is_user_blocked()`：命中用户的所有类型事件在 adapter 分发入口**完全丢弃**（不进入中间件与任何处理器，含框架级），`BaseEventHandler._process_event` 入口防御性双保险；`get_stats()` 新增 `dropped_events` 统计
-    - `bind()` / `unbind()` 支持 `user_id` 维度；`get_topology()` 纳入 users 桶与 blocked_users
+  - **统一文本/条目匹配工具** `Core/text_match.py`（全系统共用，导出 `compile_entry_matcher` / `compile_text_matcher` / `extract_text`）：
+    - 匹配条目统一语法：**精确名**（全值比较）/ **glob**（`*` / `?` / `[seq]`）/ **`re:` 正则**（search 匹配），默认**大小写不敏感**；非法正则静默降级为不匹配
+    - `compile_entry_list()` 条目列表"任一命中"；`compile_text_matcher(pattern, regex)` 供装饰器（两者 AND）；正则编译带 LRU 缓存
+  - **统一控制面** `Core/scope.py`（`ScopeManager` 重构为五维，`from ErisPulse.Core import scope` / `sdk.scope`）：
+    - ① **模块维度**（原作用域三级绑定语义保留）：`scope.platforms / bots / sessions`，优先级 会话 > Bot > 平台；`modules` / `blocked` 条目升级支持 glob / `re:` 正则；`is_allowed` LRU 缓存与静默语义不变
+    - ② **身份维度**（原事件准入收敛）：`scope.identity.adapters / bots / sessions / users` 四级二元策略，优先级 用户 > 会话 > Bot > 适配器，deny 优先于 allow；被拒事件在分发入口完全丢弃（TRACE 级 `core.scope.identity_denied`）；绑定键支持 glob / `re:` 正则（如 `user_id = "spam_*"`）
+    - ③ **命令维度**（命令 ACL 收敛）：`scope.commands.<命令名> = {allow=[...], deny=[...]}`，命令名支持 glob（精确键优先），用户标识 `platform:user_id`；判定链 deny 命中 → allow 白名单未命中 → 未配置遵循全局 `default_allow`（true 时交给开发者默认权限链）
+    - ④ **处理器/文本维度**：`scope.handlers.<module> = {pattern, regex}`，该模块全部处理器按文本过滤（与代码内条件 AND）
+    - ⑤ **实现参数覆盖**：`scope.overrides.<module>[.<command>]` 覆盖 `master` / `hidden` / `aliases` / `prefix` / `help` / `usage` 等实现参数（命令执行时合并生效，帮助/权限判定均读取覆盖值）；**禁用统一走命令 deny，overrides 不承载禁用语义**
+    - 运行时 API：模块 `is_allowed()` / `bind_module()` / `unbind_module()` / `module_binding` 查询 `get()`；身份 `is_identity_allowed()` / `bind_identity()` / `unbind_identity()` / `block_user()` / `unblock_user()` / `is_user_blocked()` / `get_blocked_users()`；命令 `is_command_allowed()` / `allow_user()` / `deny_user()` / `get_acl()` / `remove_acl()`；处理器 `bind_handler()` / `unbind_handler()`；覆盖 `override()` / `remove_override()` / `get_override()` / `apply_override()`；通用 `list_bindings()` / `clear()` / `get_stats()` / `reset_stats()` / `get_topology()`（五维）
+    - 五维统一持久化（`bind_*` 深合并写入、`unbind_*` / `remove_*` 整节替换写入）与配置热更新；`get_stats()` 统计 `module_calls` / `module_filtered` / `identity_checks` / `identity_denied` / `command_checks` / `command_denied` / 缓存命中
+    - 修复原 `bind` 持久化路径的内存重放缺陷：`_apply_memory` 动态读取 `self._bindings`（持久化写入触发的 `config.set` 重载会整体重建缓存，闭包捕获旧引用会写入孤儿字典）；`unbind_*` 补齐缓存失效
+  - **管线接入**：
+    - `Core/adapter.py`：`emit()` 入口身份校验改读 `scope.is_identity_allowed`；`adapter.on()` 新增 `detail_type`（支持 glob）/ `pattern` / `regex` 条件参数（原生事件自动跳过文本条件）
+    - `Core/Event/base.py`：处理器过滤链升级为 条件函数 + 模块维度 + 控制面文本过滤（`scope.handlers`）三重 AND；身份准入兜底改读 scope
+    - `Core/Event/command.py`：ACL 判定改读 `scope.commands`（命令名 glob）；命令执行时合并 `scope.overrides` 覆盖（master / permission / help / usage 等生效于判定链与 `event["command"]`）；`wait_reply` 的 pattern/regex 改用统一匹配（大小写不敏感）；`command.allow_user()` 等 ACL API 保留为 `scope` 委托门面
+    - `Core/Event/message.py`：`on_message` / `on_private_message` / `on_group_message` / `on_at_message` 的 `pattern` / `regex` 改用统一匹配（大小写不敏感）；删除本地重复实现
+    - `loaders/module.py`：`activate_on` 事件触发器 detail_type 支持 glob / `re:` 匹配
+  - **消息通配符** `Core/Event/message.py` / `Core/Event/command.py`：
+    - `wait_reply` 全链路（`Event.wait_reply` → `_builtin_wait_reply` → `CommandHandler.wait_reply`）支持 `pattern` / `regex`，不匹配继续等待直至超时
   - **配置整节替换写入** `runtime/frame_config.py` 新增 `set_erispulse_section(path, value)`：与 `update_erispulse_config` 的深合并语义互补，支持删除子键（权限覆盖重置、解绑等场景）
-  - i18n 五语言（zh-CN / zh-TW / en / ja / ru）新增 `core.role.*`、`core.scope.user_*`、`core.command.permission_*` 键；`create.py` 模块模板与 `examples/example-module` 增加权限声明推荐写法示例
+  - i18n 五语言（zh-CN / zh-TW / en / ja / ru）：`core.access.*` 键迁移为 `core.scope.identity_denied` / `identity_blocked` / `identity_unblocked` / `identity_policy_required`；新增 `core.command.acl_denied`、`core.command.reply_pattern_not_matched`；`create.py` 模块模板与 `examples/example-module` 更新为控制面 / pattern 推荐写法
   - **CLI `config` 命令** `CLI/commands/config.py`：
     - `epsdk config` 列出全部适配器/模块及配置状态（已就绪/待完善/未配置/无配置），交互选择进入向导
     - `epsdk config <名称>` 直接进入目标向导（支持平台名或配置键名）；`--list` 仅展示状态
@@ -104,8 +112,23 @@
   - 配置向导交互语义修正：新增账户的未填字段正确标注"（默认:x）"（不再误标为已有配置）；全局表单校验失败且放弃重填时中止整个向导（不写入任何配置，避免产生"已启用但配置不完整"的半成品状态）；`epsdk config` 交互选择在向导结束后回到菜单，支持连续配置多个目标
   - 布尔开关 prompt 文案并入 i18n（`是否启用 {name}？`），消除中英文标点混排；本地插件目录发现失败时输出警告（不再静默吞异常）；提取 `_resolve_accounts_key()`（`.accounts`/`.bots` 兼容键解析）与 `_plugin_module_class()`（插件模块类提取）helper 消除重复
 
+### 移除
+- @wsu2059q
+  - **独立事件准入系统** `Core/access.py`（`AccessManager` / `sdk.access`）：整体并入统一控制面身份维度（`scope.identity`），配置节 `ErisPulse.access` 移除；运行时能力经 `sdk.scope.bind_identity()` / `block_user()` 等完整保留
+  - **命令 ACL 独立实现**：配置节 `ErisPulse.event.command.permissions` 移除（ACL 统一存储于 `scope.commands`）；`command.allow_user()` / `deny_user()` / `get_acl()` / `remove_acl()` 保留为 `scope` 委托门面
+  - **`bind()` / `unbind()` 旧签名**（dev.0 作用域雏形 API）：更名 `bind_module()` / `unbind_module()`，语义随五维控制面重新定义（dev 阶段直接切换，不做兼容）
+
 ### 修复
 - @wsu2059q
+  - **翻译管线丢代码块闭合围栏（约 150 个译文损坏）** `scripts/tools/translate-docs.py`：各语言大量译文（如 `quick-start.md` 丢 6 个闭合围栏）出现"标题/正文被吞进代码块"的渲染损坏。根因有二，均为架构性修复：
+    - `call_translation_api` / `call_correction_api` 的响应后处理无条件剥离"首行围栏 + 末行裸 ```` ``` ````"（本意是剥掉模型整体包装），但当译文未包装、且分块本身以代码块结尾时，末行是**文档自身合法的闭合围栏**，被误删——每个以代码块结尾的分块固定损坏，且损坏恰好保持围栏偶数，旧的奇偶校验永远漏报。改为 `_strip_response_wrapper()` 按**围栏配平**判定：仅在剥离后仍配平（或明显失衡需修复）时才剥包装，**永不无条件删除末行**
+    - 全链路无围栏完整性校验，坏块落盘后经分块缓存永久复用。新增两级**确定性校验**：分块级（译文围栏数 ≠ 源块 → 视为失败自动重试）与整文档级（装配后源/译文围栏行数不一致 → 拒绝落盘），并同步强化 `check-translation.py` 的围栏检查（奇偶 → 精确数量比对）
+    - 新增 `scripts/tools/invalidate_fence_broken_cache.py`：扫描各语言译文围栏数与源不一致的文件并删除其翻译缓存（本次清理 150 个损坏文件 / 138 个缓存），CI 下轮即以修复后脚本全量重译自愈；另修复源文档 `docs/zh-CN/platform-guide/matrix.md` 末尾代码块未闭合
+  - **翻译内嵌 AI 评审闭环** `scripts/tools/translate-docs.py`：翻译质量检查从"独立 AI 自检 + 修正"改为**评审判定协议 + 带原因重新翻译**的闭环——
+    - 评审模型按判定协议返回**特定内容**：通过为 `{"verdict": "TRANSLATION_REVIEW_PASS"}`（自检通过标记，日志与统计原样记录），不通过为 `{"verdict": "FAIL", "issues": [...]}`（给出可指导重译的具体原因）；非协议/异常返回保守放行（评审为建议性，不阻塞流程）
+    - 评审不通过时把 `issues` 作为 `review_notes` **交回翻译**整体重新翻译（注入 system 消息成为必须遵守的附加规则），再评审；共 1 次初评 + `self_check_retries` 轮"重译→重评"，最终仍不通过计入 `validation_failed` 并保留落盘
+    - 分块级围栏校验不匹配时，重译请求携带具体原因（"译文围栏数与原文不一致，不得合并/省略围栏行"）；新增 `self_check_pass` / `self_check_retranslated` 统计并在运行汇总输出
+    - 移除已被闭环取代的 `call_correction_api` / `build_correction_prompt`（修正式补丁路径，避免两套自愈机制并存）
   - **测试对 i18n 本地化文案的脆弱断言**：14 处 `pytest.raises(match=...)` / 错误文案断言依赖中文消息，环境语言解析为英文时失败（如 `tests/unit/test_unit_event.py`、`test_unit_adapter.py`、`test_unit_client.py`、`test_unit_config.py`、`test_unit_router.py`、`tests/integration/test_integration_router_*.py`）；统一改为断言各语言消息均嵌入的稳定参数（路径 / 字段名 / 值 / `account_id` 等），不再依赖运行语言
   - **aiohttp 裸 bytes 文件字段弃用告警** `Core/client.py` `_build_form_data`：`files` 传裸 bytes 时显式指定 `filename=字段名`，保持 aiohttp v3「bytes 视为文件字段」语义并消除 v4 弃用告警
   - **限流清理任务孤儿协程告警** `Core/router.py` `_start_rate_limit_cleanup`：无运行中事件循环时先于协程创建探测 loop，不再产生 `coroutine ... was never awaited` RuntimeWarning
@@ -120,9 +143,12 @@
 
 ### 测试
 - @wsu2059q
-  - 新增 `tests/unit/test_unit_role.py`（23 用例）：层级权重解析与校验回退、自定义角色、双格式成员、向下继承、blocked 短路压过 master、master 桥接、`has` 严格匹配、运行时增删与持久化写入、热更新
-  - 新增 `tests/unit/test_unit_command_permission.py`（18 用例）：判定链全分支（blocked / ACL deny>allow / 覆盖替代默认 / `模块.命令` 键优先 / 未定义角色 fail-closed / 同步与异步 callable / 异常拒绝）、运行时 API（覆盖与重置、ACL 互斥维护、别名解析、整节持久化写入）
-  - `tests/unit/test_unit_scope.py`：unbind 持久化断言改为整节写入语义，补内存同步断言与 users 桶结构
+  - 新增 `tests/unit/test_unit_text_match.py`（18 用例）：精确 / glob / `re:` 正则条目、大小写不敏感、非法正则静默降级、条目列表"任一命中"、`compile_text_matcher` AND 语义、`extract_text` 提取与异常回退
+  - 新增 `tests/unit/test_unit_scope_control.py`（48 用例）：身份维度（四级绑定解析与优先级、deny 优先、glob/正则键、绑定增删与持久化、热更新、统计、黑名单 API、adapter 分发入口丢弃兜底）、命令维度（ACL 判定 / glob 匹配 / 精确优先 / 增删持久化 / 严格模式）、处理器维度（pattern/regex 条件与增删）、覆盖维度（模块级/命令级合并、命令级优先、增删）、模块维度模式条目（glob/re: 白黑名单、运行时写入、非法正则）、通用（五维拓扑 / clear / 统计）
+  - `tests/unit/test_unit_command_acl.py`（17 用例）：ACL 判定链改读 `scope.commands`（glob 匹配实际命令名、精确键优先、配置热更新）、`command.*` 门面委托断言、message 装饰器 `pattern`/`regex`、`wait_reply` pattern/regex 不匹配继续等待
+  - `tests/unit/test_unit_scope.py`：`bind`/`unbind` 断言迁移 `bind_module`/`unbind_module` 与原始绑定形态 `get()`，统计键更新（`module_calls` / `module_filtered`），新增模式条目用例类
+  - `tests/unit/test_unit_adapter.py` 新增 `TestAdapterOnConditions`（5 用例）：`on(detail_type=...)` 精确与 glob、`pattern` / `pattern+regex` 组合过滤、无条件始终命中
+  - `tests/unit/test_unit_topology.py`：`sdk.get_topology()` 键断言更新（`access` 并入 `scope` 五维）
   - 新增 `tests/unit/test_unit_config_api.py`（45 用例）：向导字段渲染（boolean/select/secret/min-max/required 重问、空默认值无括号）、字段值来源标注（当前/默认、按存储键存在性计算）、布尔 prompt 用字段名、账户名空输入取消、目标配置状态四态检查、安装后衔接匹配与跳过、`run_wizard` 落盘与就绪提示/成功汇总/放弃中止零写入、交互选择连续配置、语言同步、`epsdk config` 命令路由、CLI i18n 占位符插值
   - Core i18n `set_language` 的 `persist` 参数行为测试（默认持久化 / `persist=False` 跳过持久化）
   - `tests/unit/test_unit_cli.py` 的 `EXPECTED_COMMANDS` 增加 `config`（别名 `cfg`/`conf`）注册断言

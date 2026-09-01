@@ -7,7 +7,8 @@ ErisPulse 文档翻译器
 - 流式输出翻译结果
 - 每个文档支持独立的审查备注
 - 自动加载已有翻译作为参考
-- 翻译后自检（长度、代码块、乱码）
+- 翻译后内嵌 AI 评审闭环：评审按判定协议返回特定内容（通过标记 / FAIL+原因），
+  不通过时把原因交回翻译重新翻译并再评审（最多 self_check_retries 轮）
 - 429 限速自动指数退避重试
 - 可配置是否启用推理/思考模式
 - 目标语言级并行翻译（语言内部仍受 concurrent 信号量约束）
@@ -148,6 +149,8 @@ class DocsTranslator:
             "skipped_files": 0,
             "failed_files": 0,
             "budget_remaining": 0,
+            "self_check_pass": 0,
+            "self_check_retranslated": 0,
             "validation_failed": [],
             "start_time": None,
             "end_time": None,
@@ -530,122 +533,59 @@ class DocsTranslator:
             f"<<<DOC_START>>>\n{content}\n<<<DOC_END>>>\n"
         )
 
-    def build_correction_prompt(
-        self,
-        source_content: str,
-        translated_content: str,
-        target_lang: str,
-        file_name: str,
-        issues: List[str],
-    ) -> str:
-        lang_name = self.LANG_CONFIG.get(target_lang, {}).get("name", target_lang)
-        issues_text = "\n".join(f"  - {issue}" for issue in issues)
-        return (
-            f"你是一个专业的技术文档翻译专家。你之前翻译的一份文档存在以下问题，请修正后重新返回完整文档。\n\n"
-            f"**目标语言**: {lang_name}\n\n"
-            f"**检测到的问题**:\n{issues_text}\n\n"
-            f"**原始文档**:\n\n{source_content}\n\n"
-            f"**你之前的翻译（有问题的版本）**:\n\n{translated_content}\n\n"
-            f"请修正上述问题，返回完整的修正后翻译文档。注意：\n"
-            f"1. 修正所有指出的问题\n"
-            f"2. 代码块中的中文注释和字符串也必须翻译为{lang_name}\n"
-            f"3. 保持Markdown格式完整\n"
-            f"4. 直接返回修正后的完整文档，不要解释修正了什么"
+
+    _FENCE_LINE_RE = re.compile(r"^\s*(?:`{3,}|~{3,})")
+
+    @classmethod
+    def count_fences(cls, text: str) -> int:
+        """
+        统计围栏行数（`` ``` `` / `` ~~~ ``，含任意 info string）
+
+        :param text: Markdown 文本
+        :return: 围栏行数量
+        """
+        return sum(
+            1 for line in text.split("\n") if cls._FENCE_LINE_RE.match(line)
         )
 
-    async def call_correction_api(
-        self,
-        source_content: str,
-        translated_content: str,
-        target_lang: str,
-        file_name: str,
-        issues: List[str],
-        buffer: Optional[FileBuffer] = None,
-        provider_index: int = 0,
-    ) -> Optional[str]:
-        try:
-            client, provider = self._pick_client(provider_index)
-            model = provider.get("model", "gpt-4")
-            temperature = self._setting("temperature", 0.3, provider_index)
-            max_tokens = self._setting("max_tokens", 8000, provider_index)
-            enable_reasoning = self._setting("enable_reasoning", False, provider_index)
-            prompt = self.build_correction_prompt(
-                source_content, translated_content, target_lang, file_name, issues
-            )
-            translated = []
-            create_kwargs = {
-                "model": model,
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": temperature,
-                "max_tokens": max_tokens,
-                "stream": True,
-            }
-            if not enable_reasoning:
-                supports = provider.get("supports_thinking", True)
-                if supports:
-                    create_kwargs["extra_body"] = {"enable_thinking": False}
+    @classmethod
+    def _strip_response_wrapper(cls, content: str) -> str:
+        """
+        剥离模型响应外层的代码围栏包装（如整体被 ```` ```markdown ... ``` ```` 包裹）
 
-            stream = await client.chat.completions.create(**create_kwargs)
-            finish_reason = None
-            has_reasoning = False
-            has_content = False
-            out = buffer if buffer else Logger
-            async for chunk in stream:
-                choice = chunk.choices[0]
-                if choice.finish_reason is not None:
-                    finish_reason = choice.finish_reason
+        核心原则：**宁可保留，不可误删**。旧实现无条件删除首行围栏与末行裸 ```` ``` ````，
+        当译文（未包装）以代码块结尾时会删掉文档自身合法的闭合围栏，
+        导致该代码块吞并后续所有内容（标题被吞、整段渲染为代码）。
+        现按围栏配平判定：
 
-                reasoning = getattr(choice.delta, "reasoning_content", None)
-                if reasoning:
-                    if not has_reasoning:
-                        out.write("    [推理过程-修正]\n")
-                        has_reasoning = True
-                    out.write(reasoning)
+        - 首行为 ```` ```markdown ```` / ```` ```md ```` → 一定是包装开头，移除；
+          若移除后其余围栏数为**奇数**且末行为裸 ```` ``` ````，则该末行是包装
+          闭合（文档自身围栏已配平），一并移除；否则末行属于文档内容，保留
+        - 首行为裸 ```` ``` ````：仅当全部围栏数为**奇数**（明显失衡，包装开头
+          无闭合）时移除首行修复配平；偶数时不做任何剥离（可能是文档自身
+          以代码块开头，误删会破坏结构）
+        - 其余情况不做任何剥离，尤其**永不**无条件删除末行
+        """
+        lines = content.split("\n")
+        if not lines:
+            return content
 
-                if choice.delta.content is not None:
-                    if not has_content:
-                        if has_reasoning:
-                            out.write("\n")
-                        out.write("    [修正结果]\n")
-                        has_content = True
-                    out.write(choice.delta.content)
-                    translated.append(choice.delta.content)
-
-            if has_reasoning or has_content:
-                out.write("\n")
-
-            if finish_reason == "length":
-                Logger.progress(
-                    file_name,
-                    target_lang,
-                    "fail",
-                    f"修正翻译被 max_tokens={self.max_tokens} 截断",
-                )
-                return None
-
-            if not translated:
-                return None
-
-            full = "".join(translated)
-            lines = full.split("\n")
-            if lines and lines[0].strip() == "```":
-                lines = lines[1:]
-            if lines and lines[-1].strip() == "```":
-                lines = lines[:-1]
-            return "\n".join(lines).strip()
-
-        except Exception as e:
-            error_msg = str(e)
-            if "429" in error_msg or "rate" in error_msg.lower() or "速率" in error_msg:
-                raise RateLimitError(error_msg)
+        first = lines[0].strip()
+        if first in ("```markdown", "```md"):
+            lines = lines[1:]
             if (
-                "403" in error_msg
-                or "401" in error_msg
-                or "insufficient" in error_msg.lower()
+                cls.count_fences("\n".join(lines)) % 2 == 1
+                and lines
+                and lines[-1].strip() == "```"
             ):
-                raise FatalApiError(error_msg)
-            Logger.log(f"  [ERROR] correction {file_name}: {e}")
-            return None
+                lines = lines[:-1]
+            return "\n".join(lines)
+
+        if first == "```" and cls.count_fences(content) % 2 == 1:
+            # 全部围栏奇数：首行是缺失闭合的包装开头，移除以修复配平
+            return "\n".join(lines[1:])
+
+        return content
 
     async def call_translation_api(
         self,
@@ -738,15 +678,7 @@ class DocsTranslator:
                 return None
 
             full_content = "".join(translated_content)
-
-            lines = full_content.split("\n")
-            if lines:
-                first = lines[0].strip()
-                if first == "```markdown" or first == "```md" or first == "```":
-                    lines = lines[1:]
-            if lines and lines[-1].strip() == "```":
-                lines = lines[:-1]
-            full_content = "\n".join(lines)
+            full_content = self._strip_response_wrapper(full_content)
 
             # 防御性清理：若模型意外回显了内容标记，将其移除
             full_content = full_content.replace("<<<DOC_START>>>", "").replace(
@@ -769,14 +701,32 @@ class DocsTranslator:
             Logger.log(f"  [ERROR] {file_name}: {e}")
             return None
 
-    async def _ai_validate_translation(
+    # AI 评审通过时的特定判定内容（评审模型必须原样返回）
+    REVIEW_PASS_MARK = "TRANSLATION_REVIEW_PASS"
+
+    async def _ai_review_translation(
         self,
         source_content: str,
         translated_content: str,
         target_lang: str,
         rel_path: str,
         provider_index: int = 0,
-    ) -> List[str]:
+    ) -> tuple[bool, List[str], str]:
+        """
+        AI 评审翻译质量（判定协议）
+
+        评审模型必须返回以下**特定内容**之一：
+
+        - 通过：只输出 ``{"verdict": "TRANSLATION_REVIEW_PASS"}``
+        - 不通过：``{"verdict": "FAIL", "issues": ["问题1", "问题2", ...]}``
+
+        :param source_content: 源文档内容
+        :param translated_content: 译文内容
+        :param target_lang: 目标语言代码
+        :param rel_path: 相对路径（日志用）
+        :param provider_index: 服务商索引
+        :return: (是否通过, 问题列表, 评审返回的原始判定内容)
+        """
         lang_name = self.LANG_CONFIG.get(target_lang, {}).get("name", target_lang)
         source_lang = self.LANG_CONFIG.get(self.config["source_lang"], {}).get(
             "name", "中文"
@@ -784,20 +734,22 @@ class DocsTranslator:
 
         prompt = (
             f"你是一个专业的多语言文档翻译质检员。请对比源文档（{source_lang}）和翻译后的文档（{lang_name}），"
-            f'仔细检查翻译质量。如果没有任何问题，只返回以下字符串：{{"status": "ok"}}。\n\n'
+            f"评审该翻译是否达到可发布质量。你**必须**只返回以下 JSON 之一（不要任何解释）：\n\n"
+            f'- 通过：{{"verdict": "{self.REVIEW_PASS_MARK}"}}\n'
+            f'- 不通过：{{"verdict": "FAIL", "issues": ["问题1", "问题2"]}}'
+            f"（issues 给出具体的、可指导重新翻译的原因）\n\n"
             f"请重点检查以下可能存在的问题（仅报告明确的问题，不确定的不报）：\n"
             f"1. 源语言（{source_lang}）的纯文字内容未翻译（保留在目标文档中）\n"
             f"2. 目标文档中混入了不属于目标语言的文字（如：{lang_name}文档中出现{source_lang}文字）\n"
-            f"3. Markdown 结构损坏：代码块未正确关闭（``` 不配对）\n"
+            f"3. Markdown 结构损坏：代码块围栏（```）未正确配对闭合、标题被吞进代码块\n"
             f"4. 标题层级不匹配：源文档和目标文档的 H1 标题数量不一致\n"
             f"5. 文档明显被截断（翻译长度远小于源文档）\n"
             f"6. 包含乱码字符（替换字符 \\ufffd）或编码错误\n"
             f"7. 代码块中的中文注释未翻译为{lang_name}（如果代码块完整可读）\n"
             f'8. 非目标语言的注释或字符串残留（如 C/C++/Java/Python 代码中的 print("中文")）\n\n'
             f"请注意：普通英文技术术语保留原样不算问题，仅报告真正的翻译质量问题。\n\n"
-            f'如果没有问题，返回：{{"status": "ok"}}。'
-            f"\n\n--- 源文档 ---\n{source_content[:8000]}\n\n"
-            f"--- {lang_name}翻译文档 ---\n{translated_content[:8000]}\n\n"
+            f"--- 源文档 ---\n{source_content[:8000]}\n\n"
+            f"--- {lang_name}翻译文档 ---\n{translated_content[:8000]}"
         )
 
         try:
@@ -815,7 +767,11 @@ class DocsTranslator:
                 messages=[
                     {
                         "role": "system",
-                        "content": "你是一个文档翻译质量检查专家。只返回JSON数组，不要任何解释。",
+                        "content": (
+                            "你是一个文档翻译质量检查专家。只返回约定格式的 JSON 判定，"
+                            "不要任何解释。通过时 verdict 必须原样为 "
+                            f'"{self.REVIEW_PASS_MARK}"。'
+                        ),
                     },
                     {"role": "user", "content": prompt},
                 ],
@@ -824,27 +780,36 @@ class DocsTranslator:
             )
 
             response = stream.choices[0].message.content.strip()
-            json_match = re.search(r"\{.*?\}", response, re.DOTALL)
+            json_match = re.search(r"\{.*\}", response, re.DOTALL)
             if json_match:
-                data = json.loads(json_match.group(0))
-                if isinstance(data, dict) and data.get("status") == "ok":
-                    return []
-                issues = data.get("issues", []) if isinstance(data, dict) else data
-                if isinstance(issues, list) and issues:
-                    Logger.progress(
-                        rel_path,
-                        target_lang,
-                        "check_fail",
-                        f"AI发现{len(issues)}个问题",
-                    )
-                return [str(i) for i in issues] if issues else []
-            elif "ok" in response.lower():
-                return []
-            else:
-                return []
+                try:
+                    data = json.loads(json_match.group(0))
+                except json.JSONDecodeError:
+                    data = None
+                if isinstance(data, dict):
+                    verdict = str(data.get("verdict", ""))
+                    if verdict == self.REVIEW_PASS_MARK:
+                        return True, [], response
+                    issues = data.get("issues") or []
+                    if isinstance(issues, list) and issues:
+                        issues = [str(i) for i in issues]
+                        Logger.progress(
+                            rel_path,
+                            target_lang,
+                            "check_fail",
+                            f"AI评审未通过，{len(issues)}个问题",
+                        )
+                        return False, issues, response
+                    # FAIL 但未给原因 → 构造兜底原因
+                    return False, ["评审判定未通过但未给出原因，请全面核对围栏配对与翻译完整性"], response
+            # 未按协议返回 → 解析失败，保守放行（评审为建议性检查，不阻塞流程）
+            Logger.log(
+                f"  [WARN] {rel_path}: AI评审未按协议返回，保守放行。原始返回: {response[:120]}"
+            )
+            return True, [], response
         except Exception as e:
-            Logger.log(f"  [WARN] AI检查失败: {e}")
-            return []
+            Logger.log(f"  [WARN] AI评审失败: {e}")
+            return True, [], f"评审异常: {e}"
 
     def _validate_translation(
         self,
@@ -943,14 +908,14 @@ class DocsTranslator:
                     )
 
                 chunk_result = None
+                chunk_notes = list(review_notes)
                 for attempt in range(1, self.max_retries + 1):
                     try:
                         chunk_result = await self.call_translation_api(
                             chunk,
                             target_lang,
                             "",  # file_name="" → 跳过 README 语言切换行提示
-                            review_notes=review_notes,
-                            reference_translation=None,
+                            review_notes=chunk_notes,
                             buffer=buf,
                             provider_index=pidx,
                         )
@@ -973,6 +938,32 @@ class DocsTranslator:
                         )
                         self.stats["failed_files"] += 1
                         return False
+
+                    # 围栏完整性校验（确定性检查）：译文围栏行数必须与源块一致，
+                    # 防止模型漏写/多写围栏导致代码块吞并后续内容；
+                    # 不一致视为该块翻译失败，并把具体原因注入下一轮重译
+                    if chunk_result is not None:
+                        src_fences = self.count_fences(chunk)
+                        dst_fences = self.count_fences(chunk_result)
+                        if src_fences != dst_fences:
+                            Logger.progress(
+                                rel_path,
+                                target_lang,
+                                "retry",
+                                (
+                                    f"块{ci + 1} 围栏数不匹配"
+                                    f"（源 {src_fences} / 译 {dst_fences}）"
+                                ),
+                            )
+                            fence_note = (
+                                f"上一版译文代码块围栏（```）数量与原文不一致"
+                                f"（原文 {src_fences} 行，译文 {dst_fences} 行）。"
+                                f"请严格保留原文中每一处代码块的开始与闭合围栏，"
+                                f"数量与原文完全一致，不得合并或省略围栏行"
+                            )
+                            if fence_note not in chunk_notes:
+                                chunk_notes.append(fence_note)
+                            chunk_result = None
 
                     if chunk_result:
                         break
@@ -1017,62 +1008,101 @@ class DocsTranslator:
                     f"已翻译 {changed_count}/{total_chunks} 块",
                 )
 
+            # ---- 翻译内嵌 AI 评审闭环 ----
+            # 评审模型按判定协议返回特定内容：
+            #   通过  → {"verdict": "TRANSLATION_REVIEW_PASS"}（自检通过标记）
+            #   不通过 → {"verdict": "FAIL", "issues": [...]}（具体原因）
+            # 不通过时把 issues 作为 review_notes 交回**翻译**重新翻译，再评审；
+            # 共 1 次初评 + self_check_retries 轮"重译→重评"。
             if self.enable_self_check and not no_check:
-                Logger.progress(
-                    rel_path, target_lang, "check", "正在 AI 自检翻译质量..."
-                )
-                issues = await self._ai_validate_translation(
-                    content, translated_content, target_lang, rel_path, pidx
-                )
-                if issues:
-                    check_passed = False
-                    for vr in range(1, self.self_check_retries + 1):
+                passed = False
+                verdict_content = ""
+                for round_no in range(1, self.self_check_retries + 2):
+                    Logger.progress(
+                        rel_path,
+                        target_lang,
+                        "check",
+                        f"AI 评审翻译质量（第 {round_no}/{self.self_check_retries + 1} 轮）...",
+                    )
+                    passed, issues, verdict_content = await self._ai_review_translation(
+                        content, translated_content, target_lang, rel_path, pidx
+                    )
+                    if passed:
+                        Logger.progress(
+                            rel_path,
+                            target_lang,
+                            "check",
+                            f"自检通过，评审判定: {verdict_content[:120]}",
+                        )
+                        self.stats["self_check_pass"] += 1
+                        break
+
+                    # 还有重译轮次 → 带评审原因交回翻译重新翻译
+                    if round_no <= self.self_check_retries:
                         Logger.progress(
                             rel_path,
                             target_lang,
                             "retry",
-                            f"自检修正 {vr}/{self.self_check_retries}: {issues[0]}",
+                            f"评审未通过（{len(issues)} 个问题），带原因重新翻译: {issues[0][:80]}",
                         )
-                        retry_content = None
+                        self.stats["self_check_retranslated"] += 1
+                        retranslated = None
                         try:
-                            retry_content = await self.call_correction_api(
+                            retranslated = await self.call_translation_api(
                                 content,
-                                translated_content,
                                 target_lang,
                                 rel_path,
-                                issues,
+                                review_notes=issues,
                                 buffer=buf,
                                 provider_index=pidx,
                             )
-                        except (RateLimitError, FatalApiError):
+                        except RateLimitError:
                             await asyncio.sleep(self.retry_base_delay)
                             continue
-
-                        if retry_content:
-                            retry_issues = await self._ai_validate_translation(
-                                content, retry_content, target_lang, rel_path, pidx
+                        except FatalApiError as e:
+                            Logger.progress(
+                                rel_path, target_lang, "fail", f"不可重试: {e}"
                             )
-                            if not retry_issues:
-                                translated_content = retry_content
-                                check_passed = True
-                                break
-                            issues = retry_issues
-                            translated_content = retry_content
+                            self.stats["failed_files"] += 1
+                            return False
+                        if retranslated:
+                            translated_content = retranslated
                         else:
-                            continue
+                            # 重译失败（如截断/接口异常），保留当前译文进入下一轮评审
+                            Logger.progress(
+                                rel_path, target_lang, "retry", "重译未返回结果"
+                            )
 
-                    if not check_passed:
-                        Logger.progress(
-                            rel_path, target_lang, "check_fail", "自检未通过，仍保存"
-                        )
-                        self.stats["validation_failed"].append(
-                            f"{rel_path} -> {target_lang}"
-                        )
+                if not passed:
+                    Logger.progress(
+                        rel_path, target_lang, "check_fail", "评审未通过，仍保存"
+                    )
+                    self.stats["validation_failed"].append(
+                        f"{rel_path} -> {target_lang}"
+                    )
 
             # 后处理：确保链接、语言切换行指向正确的语言版本
             translated_content = self._localize_links(
                 translated_content, target_lang, file_name=rel_path
             )
+
+            # 整文档围栏完整性校验：源/译文围栏行数必须一致。
+            # 不一致说明存在丢围栏的坏块（含复用了旧缓存的损坏块），
+            # 宁可判失败也不落盘损坏文档；删除对应缓存后重跑即可自愈
+            src_fences_total = self.count_fences(content)
+            dst_fences_total = self.count_fences(translated_content)
+            if src_fences_total != dst_fences_total:
+                Logger.progress(
+                    rel_path,
+                    target_lang,
+                    "fail",
+                    (
+                        f"围栏数不匹配（源 {src_fences_total} / 译 "
+                        f"{dst_fences_total}），放弃保存；请清除该文件缓存后重试"
+                    ),
+                )
+                self.stats["failed_files"] += 1
+                return False
 
             if buf:
                 buf.flush()
@@ -1164,7 +1194,9 @@ class DocsTranslator:
         Logger.log(f"服务商数: {len(self.providers)}")
         Logger.log(f"推理模式: {'开启' if self.enable_reasoning else '关闭'}")
         Logger.log(
-            f"自检: {'开启' if self.enable_self_check and not no_check else '关闭'}"
+            f"AI 评审自检: "
+            f"{'开启' if self.enable_self_check and not no_check else '关闭'}"
+            f"（不通过时带原因重译，最多 {self.self_check_retries} 轮）"
         )
         if deadline is not None:
             Logger.log(f"时间预算: {budget_minutes:g} 分钟")
@@ -1247,9 +1279,15 @@ class DocsTranslator:
         if self.stats["translated_files"] > 0 and duration > 0:
             Logger.log(f"速度: {self.stats['translated_files'] / duration:.2f} 文件/秒")
         if self.stats["validation_failed"]:
-            Logger.log(f"自检未通过: {len(self.stats['validation_failed'])} 个")
+            Logger.log(f"评审未通过: {len(self.stats['validation_failed'])} 个")
             for f in self.stats["validation_failed"]:
                 Logger.log(f"  - {f}")
+        if self.enable_self_check:
+            Logger.log(f"评审通过: {self.stats['self_check_pass']} 个")
+            if self.stats["self_check_retranslated"]:
+                Logger.log(
+                    f"评审未通过后重译: {self.stats['self_check_retranslated']} 次"
+                )
         Logger.log("=" * 60)
         # 机器可读输出：供 CI 判断是否需要续译（翻译任务因预算耗尽被跳过的数量）
         Logger.log(f"REMAINING_FILES={self.stats['budget_remaining']}")

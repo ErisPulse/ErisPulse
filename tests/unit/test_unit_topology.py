@@ -118,7 +118,7 @@ class TestSdkTopology:
     """sdk.get_topology() 聚合"""
 
     def test_sdk_topology_composes(self):
-        """聚合模块 / 适配器 / 作用域"""
+        """聚合模块 / 适配器 / 控制面"""
         from ErisPulse import sdk
 
         topo = sdk.get_topology()

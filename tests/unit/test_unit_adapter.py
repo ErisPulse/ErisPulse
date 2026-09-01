@@ -802,7 +802,8 @@ class TestBaseAdapter:
             "default": BotConfig(bot_id="123", enabled=False, token="abc"),
         }
 
-        with pytest.raises(ValueError, match="未找到可用账户"):
+        # 断言稳定参数（account_id），不依赖运行语言的本地化文案
+        with pytest.raises(ValueError, match="account_id"):
             adapter._resolve_account()
 
     def test_resolve_account_no_enabled_raises(self):
@@ -834,7 +835,8 @@ class TestBaseAdapter:
             "second": BotConfig(bot_id="456", enabled=False, token="def"),
         }
 
-        with pytest.raises(ValueError, match="未找到可用账户"):
+        # 断言稳定参数（account_id），不依赖运行语言的本地化文案
+        with pytest.raises(ValueError, match="account_id"):
             adapter._resolve_account()
 
     def test_resolve_account_adapter_override_accounts_data(self):
@@ -2679,3 +2681,137 @@ class TestAdapterUnload:
         finally:
             config.setConfig("ErisPulse.framework", {"uninit_timeout": 30}, immediate=True)
 
+
+
+# ==================== adapter.on 条件分发测试（detail_type / pattern / regex） ====================
+
+
+class TestAdapterOnConditions:
+    """adapter.on 的 detail_type / pattern / regex 条件过滤"""
+
+    @pytest.fixture(autouse=True)
+    def clean_handlers(self):
+        from ErisPulse.Core.adapter import adapter
+
+        adapter._onebot_handlers.clear()
+        adapter._raw_handlers.clear()
+        adapter._onebot_middlewares.clear()
+        adapter._bots.clear()
+        yield
+        adapter._onebot_handlers.clear()
+        adapter._raw_handlers.clear()
+        adapter._onebot_middlewares.clear()
+        adapter._bots.clear()
+
+    @staticmethod
+    def _make_msg(text, detail_type="group", user_id="u1", group_id="g1"):
+        return {
+            "id": f"id_{abs(hash(text))}",
+            "time": 1712345678,
+            "type": "message",
+            "detail_type": detail_type,
+            "platform": "onebot11",
+            "self": {"platform": "onebot11", "user_id": "bot_x"},
+            "user_id": user_id,
+            "message": [{"type": "text", "data": {"text": text}}],
+            "alt_message": text,
+            "group_id": group_id,
+        }
+
+    @pytest.mark.asyncio
+    async def test_detail_type_filter(self):
+        """detail_type 不匹配的处理器不触发"""
+        from ErisPulse.Core.adapter import adapter
+
+        received = []
+
+        @adapter.on("message", detail_type="private")
+        async def priv_handler(data):
+            received.append("priv")
+
+        @adapter.on("message", detail_type="group")
+        async def group_handler(data):
+            received.append("group")
+
+        await adapter.emit(self._make_msg("hi", detail_type="group"))
+        await asyncio.sleep(0.05)
+
+        assert received == ["group"]
+
+    @pytest.mark.asyncio
+    async def test_detail_type_glob(self):
+        """detail_type 支持 glob 模式"""
+        from ErisPulse.Core.adapter import adapter
+
+        received = []
+
+        @adapter.on("notice", detail_type="group_*")
+        async def handler(data):
+            received.append(data.get("detail_type"))
+
+        await adapter.emit(
+            {
+                "id": "n1",
+                "time": 1712345678,
+                "type": "notice",
+                "detail_type": "group_increase",
+                "platform": "onebot11",
+                "self": {"platform": "onebot11", "user_id": "bot_x"},
+                "user_id": "u1",
+            }
+        )
+        await asyncio.sleep(0.05)
+
+        assert received == ["group_increase"]
+
+    @pytest.mark.asyncio
+    async def test_pattern_filter(self):
+        """pattern 不匹配的消息不触发"""
+        from ErisPulse.Core.adapter import adapter
+
+        received = []
+
+        @adapter.on("message", pattern="签到*")
+        async def handler(data):
+            received.append(data.get("alt_message"))
+
+        await adapter.emit(self._make_msg("签到成功"))
+        await asyncio.sleep(0.05)
+        await adapter.emit(self._make_msg("打卡失败"))
+        await asyncio.sleep(0.05)
+
+        assert received == ["签到成功"]
+
+    @pytest.mark.asyncio
+    async def test_pattern_and_regex_both(self):
+        """pattern 与 regex 同时给定时须都命中"""
+        from ErisPulse.Core.adapter import adapter
+
+        received = []
+
+        @adapter.on("message", pattern="*号", regex=r"^\d+号$")
+        async def handler(data):
+            received.append(data.get("alt_message"))
+
+        await adapter.emit(self._make_msg("123号"))
+        await asyncio.sleep(0.05)
+        await adapter.emit(self._make_msg("abc号"))
+        await asyncio.sleep(0.05)
+
+        assert received == ["123号"]
+
+    @pytest.mark.asyncio
+    async def test_no_conditions_always_match(self):
+        """未设置条件时始终命中（行为不变）"""
+        from ErisPulse.Core.adapter import adapter
+
+        received = []
+
+        @adapter.on("message")
+        async def handler(data):
+            received.append("x")
+
+        await adapter.emit(self._make_msg("anything"))
+        await asyncio.sleep(0.05)
+
+        assert received == ["x"]
