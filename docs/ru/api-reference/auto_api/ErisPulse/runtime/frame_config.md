@@ -95,6 +95,25 @@ ErisPulse 框架配置管理模块
 ---
 
 
+### `set_erispulse_section(path: str, value: Any)`
+
+整节替换写入 ErisPulse 配置
+
+与 :func:`update_erispulse_config` 的深合并语义不同，本函数对目标子路径
+**整节替换**（支持删除子键，如移除绑定、黑名单移除等场景）。
+写入失败时抛出异常。
+
+- **path** (`相对`): ``ErisPulse`` 根的配置路径，如 ``"scope.commands"``、``"scope"``
+- **value** (`新的配置节内容（通常为`): dict）
+**返回值** (`是否写入成功`): 
+**示例**:
+```python
+>>> set_erispulse_section("scope.commands", {"roll*": {"allow": ["onebot11:123456"]}})
+```
+
+---
+
+
 ### `get_server_config()`
 
 获取服务器配置，确保结构完整

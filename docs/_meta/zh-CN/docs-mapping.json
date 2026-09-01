@@ -393,10 +393,10 @@
           "icon": "fa-language"
         },
         {
-          "title": "模块作用域系统",
+          "title": "统一控制面（scope）",
           "path": "advanced/scope.md",
           "level": 1,
-          "icon": "fa-fire"
+          "icon": "fa-shield-halved"
         },
         {
           "title": "启动流程与手动控制",

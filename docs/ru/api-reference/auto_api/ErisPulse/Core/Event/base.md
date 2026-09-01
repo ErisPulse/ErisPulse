@@ -122,6 +122,21 @@ ErisPulse 事件处理基础模块
 ---
 
 
+##### `_is_scope_handler_ok(handler_info: dict, event)`
+
+> **内部方法**
+判断处理器是否通过控制面文本过滤（scope.handlers.<module>）
+
+框架级处理器（scope_exempt 或 owner 为空）始终放行；
+模块级处理器按其 owner 在 ``scope.handlers`` 中配置的 pattern / regex
+条件过滤（与代码内条件 AND，需同时满足）。
+
+- **handler_info** (`处理器信息字典`): - **event**: 事件对象
+**返回值**: 是否允许执行
+
+---
+
+
 ##### `_clear_handlers()`
 
 > **内部方法**
