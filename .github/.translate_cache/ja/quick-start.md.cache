@@ -1,0 +1,45 @@
+{
+  "version": 2,
+  "hash": "2421db50d9e9f4a9b427ad8f413bb58c",
+  "file_hash": "2421db50d9e9f4a9b427ad8f413bb58c",
+  "translated_at": "2026-09-01T06:24:27.012452",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "4afb6aa3427bfc693cb05b020feca75c",
+      "translation": "# ファーストステップ\n\n> **これが最初の一歩です。** 5分でErisPulseロボットをゼロから立ち上げましょう。"
+    },
+    {
+      "hash": "89b0ad750e3c1ae469f9c09815104a99",
+      "translation": "## ErisPulse のインストール\n\n### 1 クリックインストールスクリプト（推奨）\n\nインストールスクリプトは、環境（Docker、Python、uv）を自動的に検出し、最も適したインストール方法を選択するように導きます。\n\nWindows (PowerShell):\n```powershell\nirm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1\n```\n\nmacOS / Linux:\n```bash\ncurl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh\n```\n\nスクリプトは、以下の手順をガイドします：\n\n- **Docker インストール**（Docker が検出された場合に推奨）：イメージソース（Docker Hub / GHCR）、バージョンチャネル（安定版 / プリリリース版）、Dashboard 管理パネルの構成、ポート設定を選択\n- **従来のインストール**：自動的に仮想環境を作成、ErisPulse のバージョンを選択、オプションで Dashboard 管理パネルモジュールをインストール\n\n### Docker を使用する\n\nDocker イメージには、ErisPulse フレームワークと Dashboard 管理パネルが事前インストールされています。\n\n```bash\n# docker-compose.yml をダウンロード\ncurl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml\n\n# Dashboard トークンを設定して起動\nERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d\n```\n\n<details>\n<summary>Docker Hub が利用できない場合</summary>\n\nGitHub Container Registry のイメージを使用する場合は、`docker-compose.yml` 内の image を次のように変更します：\n\n```yaml\nimage: ghcr.io/erispulse/erispulse:latest\n```\n\n</details>\n\n起動後、`http://<host>:8000/Dashboard` にアクセスし、設定したトークンでログインします。\n\n### pip を使用してインストール\n\nPython のバージョンが 3.10 以上であることを確認した上で、pip を使用してインストールします：\n\n```bash\npip install ErisPulse\n```\n\n既に [uv](https://github.com/astral-sh/uv) をインストールしている場合は、`uv pip install ErisPulse` を使用することで、より高速にインストールできます。"
+    },
+    {
+      "hash": "7e317def5cef55f71b87c93ecb0233fd",
+      "translation": "## プロジェクトの初期化\n\n### インタラクティブな初期化（推奨）\n\n```bash\nepsdk init\n```\n\nこれにより、対話形式のガイドが起動し、以下の手順を誘導します：\n- プロジェクト名の設定\n- ログレベルの設定\n- サーバー設定（ホストとポート）\n- アダプターの選択と設定\n- プロジェクト構造の作成\n\n### 速やかな初期化\n\n```bash\n# プロジェクト名を指定するクイックモード\nepsdk init -q -n my_bot\n\n# または、プロジェクト名のみを指定\nepsdk init -n my_bot\n```\n\n### 手動でのプロジェクト作成\n\n手動でプロジェクトを作成したい場合は：\n\n```bash\nmkdir my_bot && cd my_bot\nepsdk init\n```"
+    },
+    {
+      "hash": "12f6ccda4a8ab17a18437b62cbe756e3",
+      "translation": "## モジュールのインストール\n\n### CLI によるインストール\n\n```bash\nepsdk install Yunhu AIChat\n```\n\n### 利用可能なモジュールの表示\n\n```bash\nepsdk list-remote\n```\n\n### インタラクティブなインストール\n\nパッケージ名を指定しない場合、インタラクティブなインストール画面が表示されます：\n\n```bash\nepsdk install\n```"
+    },
+    {
+      "hash": "214490c59b97ac6c15713e660c339134",
+      "translation": "## プロジェクトの実行\n\n```bash\n# 通常実行\nepsdk run main.py\n\n# ホットリロードモード（開発時に推奨）\nepsdk run main.py --reload\n```"
+    },
+    {
+      "hash": "d893daa5f2e853db61247bd4839d6689",
+      "translation": "## IDE補完の有効化（オプション）\n\nErisPulse はモジュール/アダプターを動的に発見するため、IDE はデフォルトではプラットフォーム固有のメソッドを補完できません。  \n以下のコマンドを実行して型のスタブを生成してください。\n\n```bash\nepsdk types\n```\n\n生成後、インポートした型を変数の型アノテーションとして使用することで、正確な補完が得られます（詳しくは [IDE補完ガイド](./getting-started/ide-completion.md) を参照してください）：\n\n```python\nfrom _ep_types import Yunhu\nfrom ErisPulse import sdk\n\nadapter: Yunhu = sdk.adapter.get(\"yunhu\")\nawait adapter.Send.To(\"group\", \"123\").Board(...)  # プラットフォーム固有のメソッドが補完されます\n```"
+    },
+    {
+      "hash": "0940afb4931f21d421c4cbb14d715d8b",
+      "translation": "## プロジェクト構造\n\n初期化後のプロジェクト構造：\n\n```\nmy_bot/\n├── config/\n│   └── config.toml          # 設定ファイル\n└── main.py                  # エントリーポイントファイル\n\n```"
+    },
+    {
+      "hash": "bf299e0439b780fd582fae25060b35b7",
+      "translation": "## 設定ファイル\n\n基本的な `config.toml` 設定：\n\n```toml\n[ErisPulse.server]\nhost = \"0.0.0.0\"\nport = 8000\n\n[ErisPulse.logger]\nlevel = \"INFO\"\n\n[Yunhu_Adapter]\n# アダプタの設定\n```"
+    },
+    {
+      "hash": "5a9ac1241d385afd519d196a946694da",
+      "translation": "## 次に進む\n\nロボットが動作した後、必要に応じて以下を進めることができます。\n\n**フレームワークの仕組みについて知りたい場合:**\n- [基本概念](getting-started/basic-concepts.md) — アダプタ / モジュール / イベントの設計\n- [アーキテクチャ概要](architecture.md) — 可視化されたアーキテクチャ図\n\n**より多くの機能を実装したい場合:**\n- [一般的なタスクの例](getting-started/common-tasks.md) — ストレージ、スケジューリング、権限制御\n- [イベント処理の入門](getting-started/event-handling.md) — メッセージ、通知、リクエストの処理\n\n**独自のモジュール / アダプタを開発したい場合:**\n- [モジュール開発の入門](developer-guide/modules/getting-started.md)\n- [アダプタ開発の入門](developer-guide/adapters/getting-started.md)\n\n**必要に応じて参照:**\n- [設定ファイルの説明](user-guide/configuration.md) · [CLI コマンド](user-guide/cli-reference.md) · [デプロイガイド](user-guide/deployment.md)"
+    }
+  ]
+}

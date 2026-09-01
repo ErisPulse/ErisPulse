@@ -1,0 +1,53 @@
+{
+  "version": 2,
+  "hash": "641630c43ab651968836ab9950be8292",
+  "file_hash": "641630c43ab651968836ab9950be8292",
+  "translated_at": "2026-09-01T07:08:44.803518",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "6da6d1e2a755955e957e121937237f13",
+      "translation": "# 核心模組 API\n\n本文檔提供 ErisPulse 核心模組的 API 快速參考，包含方法簽名和簡要說明。詳細用法和範例請點擊各模組的「完整文件」連結。"
+    },
+    {
+      "hash": "e2cc2e561c880db842e5e35faa7852c3",
+      "translation": "## Storage 模組\n\n基於 SQLite 的鍵值儲存系統，支援通用 SQL 串接查詢。\n\n### 基本操作\n\n```python\nfrom ErisPulse import sdk\n\nsdk.storage.set(\"key\", \"value\")\nvalue = sdk.storage.get(\"key\", default_value)\nkeys = sdk.storage.keys()\nsdk.storage.delete(\"key\")\n```\n\n### 批次操作\n\n```python\nsdk.storage.set_multi({\"key1\": \"val1\", \"key2\": \"val2\"})\nvalues = sdk.storage.get_multi([\"key1\", \"key2\"])\nsdk.storage.delete_multi([\"key1\", \"key2\"])\n```\n\n### 事務操作\n\n```python\nwith sdk.storage.transaction():\n    sdk.storage.set(\"key1\", \"value1\")\n    sdk.storage.set(\"key2\", \"value2\")\n```\n\n### 屬性存取\n\n```python\nsdk.storage.my_key          # 等同於 sdk.storage.get(\"my_key\")\nsdk.storage.my_key = \"val\"  # 等同於 sdk.storage.set(\"my_key\", \"val\")\n```\n\n### SQL 串接查詢\n\nStorage 模組提供串接呼叫風格的通用 SQL 查詢建構器，支援自訂表格的 CRUD 操作。\n\n```python\nsdk.storage.CreateTable(\"users\", {\n    \"id\": \"INTEGER PRIMARY KEY AUTOINCREMENT\",\n    \"name\": \"TEXT NOT NULL\",\n})\n\nsdk.storage.Table(\"users\").Insert({\"name\": \"Alice\"}).Execute()\nrows = sdk.storage.Table(\"users\").Select(\"name\").Where(\"id > ?\", 0).Execute()\n```\n\n> 完整的串接查詢 API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、事務等）請參考 [SQL 查詢建構器](../advanced/sql-builder.md)。\n\n### 儲存後端抽象\n\n`StorageManager` 繼承自 `BaseStorage` 抽象基類，支援擴展其他儲存介質（Redis、MySQL 等）。\n\n```python\nfrom ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder\n```\n\n### 異步介面\n\nStorage 和 Config 模組均提供異步方法（前綴 `a`），可在異步處理器中安全呼叫。同步方法繼續保留，無需修改現有程式碼。\n\n```python\n# 異步儲存\nvalue = await sdk.storage.aget(\"key\")\nawait sdk.storage.aset(\"key\", \"value\")\nawait sdk.storage.adelete(\"key\")\nkeys = await sdk.storage.aget_all_keys()\nawait sdk.storage.aclear()\n\n# 異步批次操作\nvalues = await sdk.storage.aget_multi([\"k1\", \"k2\"])\nawait sdk.storage.aset_multi({\"k1\": \"v1\", \"k2\": \"v2\"})\nawait sdk.storage.adelete_multi([\"k1\", \"k2\"])\n\n# 異步配置\nvalue = await sdk.config.agetConfig(\"MyModule.key\")\nawait sdk.config.asetConfig(\"MyModule.key\", \"value\")\nawait sdk.config.aforce_save()\nawait sdk.config.areload()\n```"
+    },
+    {
+      "hash": "0ddf4b6071fdb3224e03a00e875844be",
+      "translation": "## Config 模組\n\n以 TOML 格式管理配置文件，支援點號分隔的鍵路徑。\n\n### API 概覽\n\n| 方法 | 說明 |\n|------|------|\n| `getConfig(key, default)` | 讀取配置，支援點號路徑如 `\"MyModule.subkey\"` |\n| `setConfig(key, value, immediate=False)` | 寫入配置。`immediate=True` 時立即儲存到檔案 |\n| `force_save()` | 強制將記憶體中的配置寫入檔案 |\n| `reload()` | 從檔案重新載入配置 |\n| `agetConfig(key, default)` | 異步讀取配置 |\n| `asetConfig(key, value, immediate)` | 異步寫入配置 |\n| `aforce_save()` | 異步強制儲存 |\n| `areload()` | 異步重新載入 |\n\n### 範例\n\n```python\nconfig = sdk.config.getConfig(\"MyModule\", {})\nvalue = sdk.config.getConfig(\"MyModule.timeout\", 30)\n\nsdk.config.setConfig(\"MyModule\", {\"key\": \"value\"})\nsdk.config.setConfig(\"MyModule.timeout\", 60, immediate=True)\n```\n\n> `setConfig` 預設採用延遲寫入（每 5 秒批量儲存），設定 `immediate=True` 可立即持久化到配置檔案。配置變更會觸發 `config.set` 生命週期事件。"
+    },
+    {
+      "hash": "ef34711384665dbee11016e108427987",
+      "translation": "## Logger 模組\n\n模組化日誌系統，基於 Rich 輸出，支援子日誌器和模組層級控制。\n\n### 基本用法\n\n```python\nsdk.logger.debug(\"調試資訊\")\nsdk.logger.info(\"執行資訊\")\nsdk.logger.warning(\"警告資訊\")\nsdk.logger.error(\"錯誤資訊\")\nsdk.logger.critical(\"致命錯誤\")\n```\n\n### 子日誌器\n\n```python\nchild_logger = sdk.logger.get_child(\"MyModule\")\nchild_logger.info(\"子模組日誌\")\n\nchild_logger.get_child(\"utils\")  # 支援嵌套\n```\n\n### 日誌層級控制\n\n```python\nsdk.logger.set_level(\"DEBUG\")                          # 全域層級\nsdk.logger.set_module_level(\"MyModule\", \"DEBUG\")       # 模組層級\n\n# 支援的層級（由低至高）：\n# TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL\n# TRACE 為最低層級，輸出框架內部詳細調試資訊（事件分發、路由註冊等）\nsdk.logger.set_level(\"TRACE\")                          # 開啟全部日誌\n```\n\n### 日誌訂閱（推模式）\n\n供 Dashboard 等模組即時接收結構化日誌，支援層級篩選和歷史補發。\n\n> **顯式訂閱低層級日誌**：訂閱器的 `min_level` 可低於全域日誌層級。此時低層級日誌**僅推送到符合條件的訂閱器**，不會輸出到控制台，也不會寫入記憶體，從而避免污染主日誌流。\n>\n> ```python\n> # 全域為 INFO，仍可單獨訂閱 DEBUG 日誌\n> @sdk.logger.handler(\"debug-tracer\", min_level=\"DEBUG\")\n> def on_debug(log_data: dict): ...\n> ```\n\n```python\n# 裝飾器方式\n@sdk.logger.handler(\"my-handler\", min_level=\"INFO\")\ndef on_log(log_data: dict):\n    # log_data = {\n    #     \"timestamp\": \"2026-06-29T22:00:00.123456\",\n    #     \"level\": \"WARNING\", \"level_num\": 30,\n    #     \"module\": \"ErisPulse.Core.adapter\",\n    #     \"message\": \"嚴格模式：...\",\n    # }\n    pass\n\n# 直接呼叫方式\nsdk.logger.handler(\"my-handler\", min_level=\"INFO\")(on_log)\nsdk.logger.remove_handler(\"my-handler\")\n```\n\n| 方法 | 說明 |\n|------|------|\n| `handler(id, *, min_level)(func)` | 裝飾器/直接呼叫兩用。`id` 為空時取函數名。`min_level` 可低於全域層級（低層級日誌僅推送訂閱器，不進控制台/記憶體）。註冊時自動補發歷史日誌 |\n| `remove_handler(id)` | 移除訂閱器 |\n\n### 輸出控制\n\n```python\nsdk.logger.set_output_file(\"app.log\")\nsdk.logger.save_logs(\"log.txt\")\nsdk.logger.get_logs(\"MyModule\")\nsdk.logger.set_memory_limit(1000)\n```"
+    },
+    {
+      "hash": "da72ebe8e7007cf9721e1e1ffab8918d",
+      "translation": "## Adapter 模組\n\n適配器管理器，管理多平台適配器的註冊、啟動和關閉。\n\n### API 概覽\n\n| 方法 | 說明 |\n|------|------|\n| `get(platform)` | 獲取適配器實例 |\n| `exists(platform)` | 檢查適配器是否已註冊 |\n| `enable(platform)` / `disable(platform)` | 啟用/禁用適配器 |\n| `is_enabled(platform)` | 檢查是否啟用 |\n| `startup(platforms)` / `shutdown(platforms)` | 啟動/關閉適配器 |\n| `is_running(platform)` | 檢查適配器是否正在運行 |\n| `list_running()` | 列出所有正在運行的適配器 |\n| `platforms` | 獲取所有平台名稱列表 |\n\n### 適配器事件\n\n```python\n@sdk.adapter.on(\"message\")\nasync def handle_message(event):\n    pass\n\n@sdk.adapter.on(\"message\", platform=\"yunhu\")\nasync def handle_yunhu_message(event):\n    pass\n```\n\n### Bot 狀態查詢\n\n```python\nsdk.adapter.get_bot_info(\"telegram\", \"123456\")\nsdk.adapter.list_bots(\"telegram\")\nsdk.adapter.is_bot_online(\"telegram\", \"123456\")\nsdk.adapter.get_status_summary()\n```\n\n> 完整的適配器管理 API 請參考 [適配器系統 API](adapter-system.md)。"
+    },
+    {
+      "hash": "3e33539ff6bbe87a03fdf9472c12553c",
+      "translation": "## Module 模塊\n\n模組管理器，管理插件的註冊、載入和卸載。\n\n### API 概覽\n\n| 方法 | 說明 |\n|------|------|\n| `get(name)` | 取得模組實例或懶加載代理（已註冊但未載入時返回代理） |\n| `exists(name)` | 檢查是否已註冊 |\n| `is_loaded(name)` | 檢查是否已載入 |\n| `is_enabled(name)` | 檢查是否啟用 |\n| `enable(name)` / `disable(name)` | 啟用/停用模組 |\n| `load(name)` / `unload(name)` | 載入/卸載模組 |\n| `list_registered()` | 列出已註冊模組 |\n| `list_loaded()` | 列出已載入模組 |\n| `get_info(name)` | 取得模組資訊 |\n| `get_status_summary()` | 取得模組狀態摘要 |\n\n### 屬性存取\n\n```python\nmodule = sdk.module.get(\"ModuleName\")\nmodule = sdk.module.ModuleName\nmodule = sdk.ModuleName  # 等價快捷方式\n```"
+    },
+    {
+      "hash": "f397ebb2e3d611c1e5490a9e6b6c922f",
+      "translation": "## Lifecycle 模塊\n\n事件驅動的生命周期管理器，提供事件提交和監聽功能。\n\n### API 概覽\n\n| 方法 | 說明 |\n|------|------|\n| `on(event, priority=0)` | 裝飾器註冊事件處理器，支援點號匹配和通配符 `*` |\n| `register(event, handler, priority=0)` | 函數式註冊處理器 |\n| `unregister(event, handler=None)` | 移除處理器 |\n| `emit(event, data)` | 異步觸發事件 |\n| `emit_sync(event, data)` | 同步觸發事件 |\n| `submit_event(event_type, msg, data, source)` | 提交標準格式事件（相容舊版） |\n| `start_timer(id)` / `stop_timer(id)` | 性能計時器 |\n\n### 範例\n\n```python\n@sdk.lifecycle.on(\"module.init\")\nasync def handle_module_init(event_data):\n    print(f\"模組初始化: {event_data}\")\n\n@sdk.lifecycle.on(\"module\")\nasync def handle_any_module_event(event_data):\n    print(f\"模組事件: {event_data}\")\n\nawait sdk.lifecycle.emit(\"custom.event\", {\"key\": \"value\"})\n```\n\n> 完整的標準事件列表和詳細用法請參考 [生命周期管理](../advanced/lifecycle.md)。"
+    },
+    {
+      "hash": "8fe954ad67b3b1a75618d6cea9975368",
+      "translation": "## Router 模組\n\nHTTP/WebSocket 路由管理器，基於 FastAPI + Uvicorn，支援裝飾器路由、中間件、分組、限流、CORS。\n\n> 完整的路由 API 文件（裝飾器路由、WebSocket、中間件、速率限制、CORS、安全標頭等）請參考 [路由管理器](../advanced/router.md)。\n\n### 快速參考\n\n```python\n# HTTP 路由\n@sdk.router.get(\"MyModule\", \"/api\")\nasync def handler(request: HttpRequest):\n    return {\"status\": \"ok\"}\n\n# WebSocket 路由\n@sdk.router.ws(\"MyModule\", \"/ws\")\nasync def ws_handler(ws: WebSocketConnection):\n    async for text in ws.iter_text():\n        await ws.send_text(f\"Echo: {text}\")\n\n# 路由分組\ngroup = sdk.router.group(\"MyModule\", prefix=\"/v1\")\n@group.get(\"/users\")\nasync def list_users(request: HttpRequest):\n    return {\"users\": []}\n```"
+    },
+    {
+      "hash": "52d8330e0e6aef42829fa700f53d51f1",
+      "translation": "## HTTP Client 模組\n\n統一網路客戶端，聚合 HTTP 請求、WebSocket 連接、連接池管理、自動重試、請求統計和生命週期事件整合。\n\n> 完整的網路客戶端文件（請求方法、回應物件、WebSocket 客戶端、例外體系等）請參考 [網路客戶端](../advanced/http-client.md)。\n\n### 快速參考\n\n```python\nfrom ErisPulse.Core import client\n\n# HTTP 請求\nresp = await client.get(\"https://api.example.com/users\")\ndata = await resp.json()\n\n# WebSocket\nws = await client.ws_connect(\"wss://example.com/ws\")\nasync for text in ws.iter_text():\n    await ws.send_text(f\"Echo: {text}\")\n```"
+    },
+    {
+      "hash": "b442ca5dca00e605d84d6c566c68c56e",
+      "translation": "## SDK 調試\n\n### dump_state()\n\n匯出框架當前運行狀態的快照，用於調試和診斷。\n\n```python\nimport json\nstate = sdk.dump_state()\nprint(json.dumps(state, indent=2, ensure_ascii=False, default=str))\n```\n\n返回結構包含以下子系統的狀態：\n\n| 字段 | 說明 |\n|------|------|\n| `sdk` | SDK 初始化狀態、Python 版本、運行平台、時間戳 |\n| `adapters` | 已註冊/已啟動的適配器列表、各平台 Bot 在線狀態 |\n| `modules` | 已註冊/已啟用/已禁用/懶加載的模塊列表 |\n| `events` | 各類事件處理程序數量（message/notice/request/meta/commands） |\n| `router` | 伺服器運行狀態、HTTP/WebSocket 路由數量 |\n\n> 新增於 2.5.2"
+    },
+    {
+      "hash": "6c7feffeb97b2693ba00fd40577812d2",
+      "translation": "## 相關文件\n\n- [事件系統 API](event-system.md) - Event 模組 API\n- [適配器系統 API](adapter-system.md) - Adapter 管理 API\n- [SQL 查詢建構器](../advanced/sql-builder.md) - SQL 鏈式查詢完整文件\n- [路由管理器](../advanced/router.md) - 路由管理器完整文件\n- [網路用戶端](../advanced/http-client.md) - 網路用戶端完整文件\n- [生命週期管理](../advanced/lifecycle.md) - 生命週期完整文件"
+    }
+  ]
+}

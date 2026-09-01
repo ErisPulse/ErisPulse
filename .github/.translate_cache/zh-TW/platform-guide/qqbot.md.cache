@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "hash": "c05f26aaaf5c6ce080cda93d6eb2d287",
+  "file_hash": "c05f26aaaf5c6ce080cda93d6eb2d287",
+  "translated_at": "2026-09-01T06:34:11.691216",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "f6ec31610f0bdc1aebda5b7878e56fec",
+      "translation": "# QQBot平台特性文件\n\nQQBotAdapter 是基於 QQBot（QQ 機器人文件）協議所建構的適配器，整合了 QQBot 所有功能模組，提供統一的事件處理與訊息操作介面。\n\n---"
+    },
+    {
+      "hash": "3da48a4a609518953dfcc9ee219176cc",
+      "translation": "## 文件資訊\n\n- 對應模組版本: 1.0.0\n- 維護者: ErisPulse"
+    },
+    {
+      "hash": "9fe51e2be476d0e460409546d4221436",
+      "translation": "## 基本資訊\n\n- 平台簡介：QQBot 是 QQ 官方提供的機器人的開發接口，支援群聊、私聊、頻道等多種場景\n- 適配器名稱：QQBotAdapter\n- 連接方式：WebSocket 長連接（透過 QQBot 網關）\n- 認證方式：基於 appId + clientSecret 獲取 access_token\n- 鏈式修飾支援：支援 `.Reply()`、`.At()`、`.AtAll()`、`.Keyboard()` 等鏈式修飾方法\n- OneBot12 兼容：支援發送 OneBot12 格式訊息"
+    },
+    {
+      "hash": "711d399887d2b7a6f698f6036008a3b4",
+      "translation": "## 配置說明\n\n```toml\n# config.toml\n[QQBot_Adapter]\nappid = \"YOUR_APPID\"          # QQ機器人應用ID（必填）\nsecret = \"YOUR_CLIENT_SECRET\"  # QQ機器人客戶端密鑰（必填）\nsandbox = false                 # 是否使用沙盒環境（可選，預設為false）\nintents = [1, 30, 25]          # 訂閱的事件 intents 位（可選）\ngateway_url = \"wss://api.sgroup.qq.com/websocket/\"  # 自訂網關地址（可選）\n```\n\n**配置項說明：**\n- `appid`：QQ機器人的應用ID（必填），從QQ開放平台獲取\n- `secret`：QQ機器人的客戶端密鑰（必填），從QQ開放平台獲取\n- `sandbox`：是否使用沙盒環境，沙盒環境API地址為 `https://sandbox.api.sgroup.qq.com`\n- `intents`：事件訂閱 intents 列表，每個值會被左移位後按位或運算\n  - `1`：頻道相關事件\n  - `25`：頻道訊息事件\n  - `30`：群@訊息事件\n- `gateway_url`：WebSocket 網關地址，預設為 `wss://api.sgroup.qq.com/websocket/`\n\n**API環境：**\n- 正式環境：`https://api.sgroup.qq.com`\n- 沙盒環境：`https://sandbox.api.sgroup.qq.com`"
+    },
+    {
+      "hash": "db8332692dfeca25dfd0cb153c06dc02",
+      "translation": "## 支援的消息發送類型\n\n所有發送方法均透過鏈式語法實現，例如：\n```python\nfrom ErisPulse.Core import adapter\nqqbot = adapter.get(\"qqbot\")\n\nawait qqbot.Send.To(\"user\", user_openid).Text(\"Hello World!\")\n```\n\n支援的發送類型包括：\n- `.Text(text: str)`：發送純文字訊息。\n- `.Image(file: bytes | str)`：發送圖片訊息，支援檔案路徑、URL、二進位元資料。\n- `.Markdown(content: str)`：發送Markdown格式訊息。\n- `.Ark(template_id: int, kv: list)`：發送Ark模板訊息。\n- `.Embed(embed_data: dict)`：發送Embed訊息。\n- `.Raw_ob12(message: List[Dict], **kwargs)`：發送 OneBot12 格式訊息。\n\n### 鏈式修飾方法（可組合使用）\n\n鏈式修飾方法返回 `self`，支援鏈式呼叫，必須在最終發送方法前呼叫：\n\n- `.Reply(message_id: str)`：回覆指定訊息。\n- `.At(user_id: str)`：@指定使用者（以 `<@user_id>` 格式插入內容）。\n- `.AtAll()`：@所有人（插入 `@所有人` 文字）。\n- `.Keyboard(keyboard: dict)`：新增鍵盤按鈕。\n\n### 鏈式呼叫示例\n\n```python\n# 基礎發送\nawait qqbot.Send.To(\"user\", user_openid).Text(\"Hello\")\n\n# 回覆訊息\nawait qqbot.Send.To(\"group\", group_openid).Reply(msg_id).Text(\"回覆訊息\")\n\n# 回覆 + 按鈕\nawait qqbot.Send.To(\"group\", group_openid).Reply(msg_id).Keyboard(keyboard).Text(\"帶回覆和鍵盤的訊息\")\n\n# @使用者\nawait qqbot.Send.To(\"group\", group_openid).At(\"member_openid\").Text(\"你好\")\n\n# 組合使用\nawait qqbot.Send.To(\"group\", group_openid).Reply(msg_id).At(\"member_openid\").Keyboard(keyboard).Text(\"複合訊息\")\n```\n\n### OneBot12訊息支援\n\n適配器支援發送 OneBot12 格式的訊息，便於跨平台訊息相容：\n\n```python\n# 發送 OneBot12 格式訊息\nob12_msg = [{\"type\": \"text\", \"data\": {\"text\": \"Hello\"}}]\nawait qqbot.Send.To(\"user\", user_openid).Raw_ob12(ob12_msg)\n\n# 配合鏈式修飾\nob12_msg = [{\"type\": \"text\", \"data\": {\"text\": \"回覆訊息\"}}]\nawait qqbot.Send.To(\"group\", group_openid).Reply(msg_id).Raw_ob12(ob12_msg)\n```"
+    },
+    {
+      "hash": "dcc3616baa8449b9ff4a8299732500d4",
+      "translation": "## 發送方法返回值\n\n所有發送方法均返回一個 Task 對象，可以直接 await 獲取發送結果。返回結果遵循 ErisPulse 适配器标准化返回规范：\n\n```python\n{\n    \"status\": \"ok\",           // 執行狀態: \"ok\" 或 \"failed\"\n    \"retcode\": 0,             // 返回碼\n    \"data\": {...},            // 响應數據\n    \"message_id\": \"123456\",   // 消息ID\n    \"message\": \"\",            // 錯誤信息\n    \"qqbot_raw\": {...}        // 原始響應數據\n}\n```\n\n### 錯誤碼說明\n\n| retcode | 說明 |\n|---------|------|\n| 0 | 成功 |\n| 10003 | 無法確定發送目標 |\n| 32000 | 請求超時 |\n| 33000 | API調用異常 |\n| 34000 | API返回了意外格式或業務錯誤 |"
+    },
+    {
+      "hash": "af347965b438dba017d107af71b3b86f",
+      "translation": "## 特有事件類型\n\n需要 `platform==\"qqbot\"` 檢測再使用本平台特性\n\n### 核心差異點\n\n1. **openid體系**：QQBot 使用 openid 而非 QQ號，使用者和群的標識均為 openid 字串\n2. **群消息必須@**：群內消息僅在使用者 @ 機器人時才會收到（`GROUP_AT_MESSAGE_CREATE`）\n3. **頻道系統**：QQBot 支援頻道（Guild）和子頻道（Channel）的消息和事件\n4. **消息審核**：發送的消息可能需要經過審核，透過 `qqbot_audit_pass`/`qqbot_audit_reject` 事件通知結果\n5. **被動回覆**：群消息和私聊消息支援被動回覆機制，需要在發送時攜帶 `msg_id`\n\n### 擴展欄位\n\n- 所有特有欄位均以 `qqbot_` 前綴標識\n- 保留原始資料在 `qqbot_raw` 欄位\n- `qqbot_raw_type` 標識原始QQBot事件類型（如 `C2C_MESSAGE_CREATE`）\n- 附件資料透過 `qqbot_attachment` 欄位保存原始附件資訊\n\n### 特殊欄位示例\n\n```python\n# 群@消息\n{\n  \"type\": \"message\",\n  \"detail_type\": \"group\",\n  \"user_id\": \"MEMBER_OPENID\",\n  \"group_id\": \"GROUP_OPENID\",\n  \"qqbot_group_openid\": \"GROUP_OPENID\",\n  \"qqbot_member_openid\": \"MEMBER_OPENID\",\n  \"qqbot_event_id\": \"訊息事件ID\",\n  \"qqbot_reply_token\": \"回覆token\"\n}\n\n# 私聊消息\n{\n  \"type\": \"message\",\n  \"detail_type\": \"private\",\n  \"user_id\": \"USER_OPENID\",\n  \"qqbot_openid\": \"USER_OPENID\",\n  \"qqbot_event_id\": \"訊息事件ID\",\n  \"qqbot_reply_token\": \"回覆token\"\n}\n\n# 互動事件\n{\n  \"type\": \"notice\",\n  \"detail_type\": \"qqbot_interaction\",\n  \"qqbot_interaction_id\": \"互動ID\",\n  \"qqbot_interaction_type\": \"互動類型\",\n  \"qqbot_interaction_data\": {\n    \"...\": \"互動資料\"\n  }\n}\n\n# 消息審核\n{\n  \"type\": \"notice\",\n  \"detail_type\": \"qqbot_audit_pass\",\n  \"qqbot_audit_id\": \"審核ID\",\n  \"qqbot_message_id\": \"訊息ID\"\n}\n\n# 消息刪除\n{\n  \"type\": \"notice\",\n  \"detail_type\": \"qqbot_message_delete\",\n  \"message_id\": \"被刪除的訊息ID\",\n  \"operator_id\": \"操作者ID\"\n}\n\n# 表情回應\n{\n  \"type\": \"notice\",\n  \"detail_type\": \"qqbot_reaction_add\",\n  \"qqbot_raw\": {\n    \"...\": \"原始資料\"\n  }\n}\n```\n\n### 頻道消息段\n\n頻道消息支援 `mentions` 欄位，轉換後以 `mention` 消息段表示：\n\n```json\n{\n  \"type\": \"mention\",\n  \"data\": {\n    \"user_id\": \"被@使用者ID\",\n    \"user_name\": \"被@使用者暱稱\"\n  }\n}\n```\n\n### 附件消息段\n\nQQBot 的附件根據 `content_type` 自動轉換為對應消息段：\n\n| content_type 前綴 | 轉換類型 | 說明 |\n|---|---|---|\n| `image` | `image` | 圖片訊息 |\n| `video` | `video` | 影片訊息 |\n| `audio` | `voice` | 語音訊息 |\n| 其他 | `file` | 檔案訊息 |\n\n附件訊息段結構：\n```json\n{\n  \"type\": \"image\",\n  \"data\": {\n    \"url\": \"附件URL\",\n    \"qqbot_attachment\": {\n      \"content_type\": \"image/png\",\n      \"url\": \"原始附件URL\"\n    }\n  }\n}\n```"
+    },
+    {
+      "hash": "d169d6665fe8fc0c1095f0be79a9a9b0",
+      "translation": "## WebSocket 連接\n\n### 連接流程\n\n1. 使用 appId + clientSecret 獲取 access_token\n2. 連接到 WebSocket 網關\n3. 收到 OP_HELLO（op=10）訊息，獲取心跳間隔\n4. 發送 OP_IDENTIFY（op=2）進行身份驗證\n5. 收到 READY 事件，獲取 session_id 和 bot_id\n6. 開始心跳循環（OP_HEARTBEAT，op=1）\n7. 接收事件分發（OP_DISPATCH，op=0）\n\n### 斷線重連\n\n- 支援自動重連，最大重連次數為50次\n- 重連等待時間採用指數退避演算法：`min(5 * 2^min(count, 6), 300)` 秒\n- 支援會話恢復（OP_RESUME，op=6），使用 session_id + seq 恢復\n- 收到 OP_RECONNECT（op=7）或 OP_INVALID_SESSION（op=9）時自動觸發重連\n\n### Token刷新\n\n- access_token 有效期通常為7200秒\n- 适配器自動每 7080 秒（7200-120）刷新一次 token\n- 刷新接口：`POST https://bots.qq.com/app/getAppAccessToken`"
+    },
+    {
+      "hash": "3f4683699566fd42945446e2c485b7b4",
+      "translation": "## 事件訂閱（Intents）\n\nintents 值透過位元運算組合：\n\n```python\nintents = [1, 30, 25]\nvalue = 0\nfor intent in intents:\n    value |= (1 << intent)\n```\n\n常用的 intent 位：\n| intent 值 | 說明 |\n|----------|------|\n| 1 | 頻道相關事件（GUILD_CREATE 等） |\n| 25 | 頻道訊息事件（AT_MESSAGE_CREATE 等） |\n| 30 | 群組 @ 訊息事件（GROUP_AT_MESSAGE_CREATE 等） |"
+    },
+    {
+      "hash": "88524e96a0ce6fd8cde1377af4c23d3d",
+      "translation": "## 使用示例\n\n### 處理群消息\n\n```python\nfrom ErisPulse.Core.Event import message\nfrom ErisPulse import sdk\n\nqqbot = sdk.adapter.get(\"qqbot\")\n\n@message.on_message()\nasync def handle_group_msg(event):\n    if event.get(\"platform\") != \"qqbot\":\n        return\n    if event.get(\"detail_type\") != \"group\":\n        return\n\n    text = event.get_text()\n    group_id = event.get(\"group_id\")\n\n    if text == \"hello\":\n        await qqbot.Send.To(\"group\", group_id).Reply(\n            event.get(\"message_id\")\n        ).Text(\"Hello!\")\n```\n\n### 處理互動事件\n\n```python\nfrom ErisPulse.Core.Event import notice\n\n@notice.on_notice()\nasync def handle_interaction(event):\n    if event.get(\"platform\") != \"qqbot\":\n        return\n\n    if event.get(\"detail_type\") == \"qqbot_interaction\":\n        interaction_id = event.get(\"qqbot_interaction_id\", \"\")\n        interaction_data = event.get(\"qqbot_interaction_data\", {})\n        # 處理互動...\n```\n\n### 發送媒體訊息\n\n```python\n# 發送圖片（URL）\nawait qqbot.Send.To(\"group\", group_openid).Image(\"https://example.com/image.png\")\n\n# 發送圖片（二進位）\nwith open(\"image.png\", \"rb\") as f:\n    image_bytes = f.read()\nawait qqbot.Send.To(\"user\", user_openid).Image(image_bytes)\n```\n\n### 監聽訊息審核結果\n\n```python\n@notice.on_notice()\nasync def handle_audit(event):\n    if event.get(\"platform\") != \"qqbot\":\n        return\n\n    detail_type = event.get(\"detail_type\")\n\n    if detail_type == \"qqbot_audit_pass\":\n        msg_id = event.get(\"qqbot_message_id\")\n        print(f\"訊息審核通過: {msg_id}\")\n\n    elif detail_type == \"qqbot_audit_reject\":\n        reason = event.get(\"qqbot_audit_reject_reason\", \"\")\n        print(f\"訊息審核拒絕: {reason}\")\n```"
+    }
+  ]
+}

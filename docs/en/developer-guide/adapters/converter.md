@@ -1,28 +1,24 @@
 # Event Converter Implementation Guide
 
-The Event Converter is one of the core components of the adapter, responsible for converting platform-native events into ErisPulse's unified OneBot12 standard event format.
-
-
+The Event Converter is one of the core components of an adapter, responsible for converting platform-native events into the unified OneBot12 standard event format used by ErisPulse.
 
 ## Converter Responsibilities
 
 ```
-Platform native events ──→ Converter.convert() ──→ OneBot12 standard events
+Platform-native Event ──→ Converter.convert() ──→ OneBot12 Standard Event
 ```
 
-The Converter is responsible only for **forward conversion** (receiving direction), which means converting the platform's native event data into the OneBot12 standard format. Reverse conversion (sending direction) is handled by the `Send.Raw_ob12()` method.
+The Converter is responsible only for **forward conversion** (receiving direction), transforming platform-native event data into the OneBot12 standard format. Reverse conversion (sending direction) is handled by the `Send.Raw_ob12()` method.
 
 ### Core Principles
 
-1. **Lossless conversion**: Original data must be fully preserved in the `{platform}_raw` field
-2. **Standard compatibility**: Converted events must conform to the OneBot12 standard format
-3. **Platform extensions**: Platform-specific data is stored using fields with the `{platform}_` prefix
-
-[**English**](docs/en/quick-start.md) | [**简体中文**](docs/en/quick-start.md)
+1. **Lossless Conversion**: Original data must be fully retained in the `{platform}_raw` field
+2. **Standard Compatibility**: The converted event must conform to the OneBot12 standard format
+3. **Platform Extension**: Platform-specific data is stored using fields prefixed with `{platform}_`
 
 ## BaseConverter Base Class (Recommended)
 
-Starting from version 2.7.0, the framework provides the `BaseConverter` base class (`ErisPulse.Core.Bases`), which encapsulates the **common field construction** and **common message segment helpers** for OneBot12 events, allowing converters to focus solely on type mapping:
+Since version 2.7.0, the framework provides the `BaseConverter` base class (`ErisPulse.Core.Bases`), which encapsulates the **common field construction** and **common message segment helpers** for OneBot12 events, allowing converters to focus solely on type mapping:
 
 ```python
 from ErisPulse.Core.Bases import BaseConverter
@@ -47,16 +43,16 @@ class MyConverter(BaseConverter):
         return None
 ```
 
-The `build_base_event()` method already fills in the following common fields:
+`build_base_event()` already fills in the following common fields:
 
 | Field | Source |
 |------|------|
-| `id` | `raw_event["event_id"]`, defaults to a generated UUID |
-| `time` | `raw_event["timestamp"]`, defaults to the current time |
-| `platform` | Passed during construction via `platform` |
+| `id` | `raw_event["event_id"]`, generated as UUID if missing |
+| `time` | `raw_event["timestamp"]`, current time if missing |
+| `platform` | `platform` passed during initialization |
 | `self` | `{"platform": ..., "user_id": raw_event["bot_id"]}` |
-| `{platform}_raw` | The original event (satisfies the "lossless conversion" principle) |
-| `{platform}_raw_type` | The type of the original event |
+| `{platform}_raw` | Original event (to satisfy "lossless conversion" principle) |
+| `{platform}_raw_type` | Original event type |
 
 Common message segment helper methods (all static methods, directly reusable):
 
@@ -66,9 +62,7 @@ converter.at("123456")        # {"type": "at", "data": {"user_id": "123456"}}
 converter.image("file.png")   # {"type": "image", "data": {"file": "file.png"}}
 ```
 
-> When implementing manually, the construction of common fields via `build_base_event` is boilerplate code that must be repeatedly written. Using `BaseConverter` eliminates this part and naturally ensures "lossless conversion" (the original event always goes into `{platform}_raw`).
-
-docs/en/base-converter.md
+> When implementing manually, the public field construction in `build_base_event` is boilerplate code that must be repeatedly written. Using `BaseConverter` eliminates this, and naturally ensures "lossless conversion" (original event always goes into `{platform}_raw`).
 
 ## convert() Method
 
@@ -77,7 +71,7 @@ docs/en/base-converter.md
 ```python
 def convert(self, raw_event: dict) -> dict:
     """
-    Convert platform-native events to OneBot12 standard format
+    Converts platform-native event data to OneBot12 standard format.
 
     :param raw_event: Platform-native event data
     :return: OneBot12 standard format event dictionary
@@ -87,7 +81,7 @@ def convert(self, raw_event: dict) -> dict:
 
 ### Return Value Structure
 
-The converted event dictionary should contain the following standard fields:
+The converted event dictionary should include the following standard fields:
 
 ```python
 {
@@ -103,48 +97,46 @@ The converted event dictionary should contain the following standard fields:
 
     # Message event fields
     "user_id": "sender_id",
-    "message": [...],              # OneBot12 message segment list
+    "message": [...],              # List of OneBot12 message segments
     "alt_message": "Plain text content",
 
-    # Must retain original data
-    "myplatform_raw": { ... },     # Complete platform-native event data
-    "myplatform_raw_type": "Native event type name",
+    # Original data must be preserved
+    "myplatform_raw": { ... },     # Full platform-native event data
+    "myplatform_raw_type": "Original event type name",
 }
 ```
-
-[**English**](docs/en/quick-start.md)
 
 ## Required Field Mapping
 
 ### Common Fields (All Event Types)
 
 | OB12 Field | Type | Description |
-|------------|------|-------------|
-| `id` | str | Unique identifier for the event |
+|-----------|------|------|
+| `id` | str | Unique event identifier |
 | `time` | int | Unix timestamp (seconds) |
 | `type` | str | Event type: `message` / `notice` / `request` / `meta` |
 | `detail_type` | str | Detailed type: `private` / `group` / `friend` etc. |
-| `platform` | str | Platform name, consistent with the adapter registration name |
+| `platform` | str | Platform name, consistent with adapter registration name |
 | `self` | dict | Bot information: `{"platform": "...", "user_id": "..."}` |
 
-### Additional Fields for Message Events
+### Message Event Additional Fields
 
 | OB12 Field | Type | Description |
-|------------|------|-------------|
+|-----------|------|------|
 | `user_id` | str | Sender ID |
-| `message` | list[dict] | OneBot12 message segment list |
+| `message` | list[dict] | List of OneBot12 message segments |
 | `alt_message` | str | Plain text fallback content |
 
-### Additional Fields for Notice Events
+### Notification Event Additional Fields
 
 | OB12 Field | Type | Description |
-|------------|------|-------------|
-| `user_id` | str | Relevant user ID |
+|-----------|------|------|
+| `user_id` | str | Related user ID |
 | `operator_id` | str | Operator ID (e.g., group member changes) |
 
 ## Message Segment Conversion
 
-The OneBot12 specification defines the following message segment types:
+OneBot12 standard defines the following message segment types:
 
 ```python
 # Text
@@ -162,23 +154,21 @@ The OneBot12 specification defines the following message segment types:
 # File
 {"type": "file", "data": {"file": "https://example.com/doc.pdf"}}
 
-# Mention
+# @Mention
 {"type": "mention", "data": {"user_id": "123"}}
 
-# Mention All
+# @All
 {"type": "mention_all", "data": {}}
 
 # Reply
 {"type": "reply", "data": {"message_id": "msg_123"}}
 ```
 
-If the platform does not support certain message segment types, those segments can be omitted or converted to the closest standard type.
-
-[**Quick Start**](docs/en/quick-start.md) | [**Message Segment Conversion**](docs/en/message-segment-conversion.md) | [**Event Handling**](docs/en/event-handling.md) | [**API Reference**](docs/en/api-reference.md) | [**FAQ**](docs/en/faq.md)
+If the platform does not support certain message segment types, you may omit the segment or convert it to the closest standard type.
 
 ## Platform Extension Fields
 
-Platform-specific data should be stored with a `{platform}_` prefix to avoid conflicts with standard fields:
+Platform-specific data should be stored using fields prefixed with `{platform}_` to avoid conflicts with standard fields:
 
 ```python
 {
@@ -188,8 +178,8 @@ Platform-specific data should be stored with a `{platform}_` prefix to avoid con
     # ...
 
     # Platform extension fields
-    "myplatform_raw": { ... },          # Raw event data (required)
-    "myplatform_raw_type": "chat",      # Raw event type (required)
+    "myplatform_raw": { ... },          # Original event data (required)
+    "myplatform_raw_type": "chat",      # Original event type (required)
 
     # Other platform-specific fields
     "myplatform_group_name": "Group Name",
@@ -197,12 +187,11 @@ Platform-specific data should be stored with a `{platform}_` prefix to avoid con
 }
 ```
 
-> **Important**: The `{platform}_raw` field is required; ErisPulse's event system and modules may depend on it to access raw platform data.
-
+> **Important**: The `{platform}_raw` field is required, as ErisPulse's event system and modules may depend on it to access platform-specific raw data.
 
 ## Complete Example
 
-Here is a complete implementation of a Converter:
+Here is a complete Converter implementation:
 
 ```python
 class MyConverter:
@@ -280,14 +269,15 @@ class MyConverter:
             base["user_id"] = raw.get("inviter_id", "")
 
         return base
+```
 
-## Rich Media Message Conversion Examples
+## Rich Media Message Conversion Example
 
-Platform-specific messages often contain rich media content such as images, mentions, replies, etc. Below is an example of `_convert_message_segments` handling various message types:
+Platform messages often contain rich media content such as images, @mentions, and replies. Here is an example of `_convert_message_segments` handling multiple message types:
 
 ```python
 def _convert_message_segments(self, raw_content: list) -> list:
-    """Convert a list of platform-native message segments into OneBot12 standard message segments"""
+    """Converts platform-native message segment list into OneBot12 standard message segments"""
     segments = []
 
     for item in raw_content:
@@ -330,12 +320,11 @@ def _convert_message_segments(self, raw_content: list) -> list:
     return segments
 ```
 
-
 ## Common Pitfalls
 
 ### 1. Missing `{platform}_raw` Field
 
-This is the most common mistake. Missing the raw data field will cause the module to be unable to access platform-specific information.
+This is the most common error. Missing the original data field will prevent modules from accessing platform-specific information.
 
 ```python
 base_event["myplatform_raw"] = raw_event        # Required!
@@ -344,7 +333,7 @@ base_event["myplatform_raw_type"] = event_type   # Required!
 
 ### 2. Incorrect Timestamp Format
 
-The OneBot12 standard requires the `time` field to be a Unix timestamp in seconds (integer). If your platform returns a millisecond timestamp or an ISO-formatted string, you need to convert it:
+OneBot12 requires the `time` field to be a Unix timestamp in seconds (integer). If your platform returns milliseconds or an ISO string, you must convert it:
 
 ```python
 import time
@@ -358,80 +347,34 @@ import time
 
 ### 3. Missing `self` Field
 
-The `self` field contains information about the bot itself, with `user_id` being the bot's account ID. This field is crucial in multi-bot scenarios:
+The `self` field contains bot information, with `user_id` being the bot's account ID. This field is crucial in multi-bot scenarios:
 
 ```python
 "self": {
     "platform": self.platform,
-    "user_id": raw_event.get("bot_id", ""),   # The bot's own ID
+    "user_id": raw_event.get("bot_id", ""),   # Bot's own ID
 }
 ```
 
-### 4. Using Non-standard `detail_type` Values
+### 4. Using Non-Standard `detail_type` Values
 
-The `detail_type` must use values defined by the OneBot12 standard, such as `private`, `group`, `friend_increase`, `group_member_increase`, etc. Do not use platform-specific naming.
+`detail_type` must use OneBot12 standard values, such as `private`, `group`, `friend_increase`, `group_member_increase`, etc. Do not use platform-specific naming.
 
-### 5. Round-trip Consistency
+### 5. Round-Trip Consistency
 
-Ensure that the message segment types generated by the Converter correspond to the methods supported by the Send side. For example, if the Converter converts the platform's image message to `{"type": "image", ...}`, then the `Image()` method on the Send side must be able to handle image sending.
-
-## 常见陷阱
-
-### 1. 缺少 `{platform}_raw` 字段
-
-这是最常见的错误。缺少原始数据字段会导致模块无法访问平台特有的信息。
-
-```python
-base_event["myplatform_raw"] = raw_event        # 必须！
-base_event["myplatform_raw_type"] = event_type   # 必须！
-```
-
-### 2. 时间戳格式错误
-
-OneBot12 标准要求 `time` 字段为 Unix 秒级时间戳（整数）。如果你的平台返回毫秒时间戳或 ISO 格式字符串，需要转换：
-
-```python
-import time
-
-# 毫秒 → 秒
-"time": raw_event.get("timestamp", 0) // 1000
-
-# ISO 字符串 → 秒
-"time": int(time.mktime(time.strptime(raw_event["created_at"], "%Y-%m-%dT%H:%M:%S")))
-```
-
-### 3. 缺少 `self` 字段
-
-`self` 字段包含机器人自身信息，`user_id` 为机器人的账号 ID。多 Bot 场景下此字段至关重要：
-
-```python
-"self": {
-    "platform": self.platform,
-    "user_id": raw_event.get("bot_id", ""),   # 机器人自身的 ID
-}
-```
-
-### 4. detail_type 使用了非标准值
-
-`detail_type` 必须使用 OneBot12 标准定义的值，如 `private`、`group`、`friend_increase`、`group_member_increase` 等。不要使用平台特有的命名。
-
-### 5. 往返一致性
-
-确保 Converter 生成的消息段类型与 Send 端支持的方法对应。例如，如果 Converter 将平台的图片消息转换为 `{"type": "image", ...}`，那么 Send 端的 `Image()` 方法必须能处理图片发送。
+Ensure that the message segment types generated by the Converter correspond to methods supported by the Send end. For example, if the Converter converts platform image messages into `{"type": "image", ...}`, then the `Image()` method on the Send end must be able to handle image sending.
 
 ## Best Practices
 
-1. **Always retain raw data**: The `{platform}_raw` field cannot be omitted.
-2. **Use standard message segments**: Try to convert platform messages into OneBot12 standard message segments.
-3. **Set `detail_type` appropriately**: Use standard types (`private`/`group`/`channel`, etc.), do not customize.
-4. **Handle edge cases**: Raw events may lack certain fields, use `.get()` and provide reasonable default values.
-5. **Consider performance**: `convert()` is called on each event, avoid performing time-consuming operations within it.
-
-
+1. **Always preserve original data**: The `{platform}_raw` field must not be omitted
+2. **Use standard message segments**: Try to convert platform messages into OneBot12 standard message segments
+3. **Set `detail_type` appropriately**: Use standard types (`private`/`group`/`channel` etc.), do not define custom values
+4. **Handle edge cases**: Original events may lack certain fields; use `.get()` and provide reasonable defaults
+5. **Performance considerations**: `convert()` is called for every event, avoid performing time-consuming operations within it
 
 ## Related Documentation
 
-- [Adapter Core Concepts](core-concepts.md) - The overall architecture of adapters
-- [SendDSL Detailed Explanation](send-dsl.md) - Reverse transformation (in the sending direction)
-- [Event Conversion Standard](../../standards/event-conversion.md) - The official event conversion specification
+- [Adapter Core Concepts](core-concepts.md) - Adapter architecture overview
+- [SendDSL Guide](send-dsl.md) - Reverse conversion (sending direction)
+- [Event Conversion Standard](../../standards/event-conversion.md) - Official event conversion specification
 - [Session Type System](../../standards/session-types.md) - Session type mapping rules

@@ -1,36 +1,36 @@
-# Kook Platform Features Documentation
+# Kook Platform Feature Documentation
 
-KookAdapter is an adapter built on the Kook (Kaiheiya) Bot WebSocket protocol, integrating all functional modules of Kook and providing unified event handling and message operation interfaces.
+KookAdapter is an adapter built on the Kook (Kaihei La) Bot WebSocket protocol, integrating all Kook functional modules and providing unified event handling and message operation interfaces.
 
 ---
 
 ## Document Information
 
-- Module Version: 0.1.0
+- Corresponding Module Version: 0.1.0
 - Maintainer: ShanFish
 
 ## Basic Information
 
-- Platform Introduction: Kook (formerly Kaiheiya) is a community platform that supports text, voice, and video communication, providing complete Bot development interfaces
+- Platform Introduction: Kook (formerly KaiHeiLa) is a community platform that supports text, voice, and video communication, and provides a complete Bot development interface.
 - Adapter Name: KookAdapter
-- Multi-account Support: Supports configuring multiple Kook Bots simultaneously
-- Connection Method: WebSocket Long Connection (via Kook Gateway)
-- Authentication Method: Bot Token-based authentication
-- Chain Decoration Support: Supports chain decoration methods such as `.Reply()`, `.At()`, `.AtAll()`
-- OneBot12 Compatibility: Supports sending OneBot12 format messages
+- Multi-account Support: Supports configuring multiple Kook Bots simultaneously.
+- Connection Method: WebSocket long connection (via Kook Gateway).
+- Authentication Method: Identity authentication based on Bot Token.
+- Chainable Modifier Support: Supports chainable modifier methods such as `.Reply()`, `.At()`, and `.AtAll()`.
+- OneBot12 Compatibility: Supports sending OneBot12 formatted messages.
 
-## Configuration Instructions
+## Configuration
 
-KookAdapter supports multi-account configuration, with each account corresponding to an independent Kook Bot.
+KookAdapter supports multiple account configurations, with each account corresponding to an independent Kook bot.
 
 ```toml
 # config.toml
 # Account 1
 [KookAdapter.accounts.default]
 token = "YOUR_BOT_TOKEN"     # Kook Bot Token (required, format: Bot xxx/xxx)
-bot_id = ""                   # Bot User ID (optional, will be parsed from token if not filled)
-compress = true               # Whether to enable WebSocket compression (optional, default: true)
-enabled = true                # Whether to enable (optional, default: true)
+bot_id = ""                   # Bot user ID (optional, if not filled, it will be parsed from token)
+compress = true               # Whether to enable WebSocket compression (optional, default is true)
+enabled = true                # Whether to enable the account (optional, default is true)
 
 # Account 2
 [KookAdapter.accounts.bot2]
@@ -39,21 +39,21 @@ bot_id = ""
 enabled = true
 ```
 
-> Backward Compatibility: If the old single-account `[KookAdapter]` configuration (including token) is detected, it will be automatically migrated to `accounts.default`.
+> Compatibility with old configuration: If the old single-account `[KookAdapter]` configuration (including token) is detected, it will be automatically migrated to `accounts.default`.
 
 **Configuration Item Description (per account):**
-- `token`: Kook Bot Token (required), obtained from [Kook Developer Center](https://developer.kookapp.cn), format: `Bot xxx/xxx`
-- `bot_id`: Bot User ID (optional), if not provided, the adapter will attempt to automatically parse from the token. It is recommended to fill in manually for accuracy
-- `compress`: Whether to enable WebSocket data compression (optional, default: `true`), uses zlib to decompress data when enabled
-- `enabled`: Whether to enable this account (optional, default: `true`)
+- `token`: Kook Bot's token (required), obtainable from the [Kook Developer Center](https://developer.kookapp.cn), format: `Bot xxx/xxx`
+- `bot_id`: Bot's user ID (optional), if not filled, the adapter will attempt to parse it from the token. It is recommended to manually fill it to ensure accuracy.
+- `compress`: Whether to enable WebSocket data compression (optional, default is `true`), enabling it will use zlib to decompress data.
+- `enabled`: Whether to enable this account (optional, default is `true`)
 
 **API Environment:**
-- Kook API Base URL: `https://www.kookapp.cn/api/v3`
-- WebSocket Gateway is dynamically obtained via API: `POST /gateway/index`
+- Kook API base address: `https://www.kookapp.cn/api/v3`
+- WebSocket gateway is dynamically obtained via API: `POST /gateway/index`
 
 ## Supported Message Sending Types
 
-All sending methods are implemented through chain syntax, for example:
+All sending methods are implemented using a fluent (chainable) syntax, for example:
 ```python
 from ErisPulse.Core import adapter
 kook = adapter.get("kook")
@@ -61,59 +61,60 @@ kook = adapter.get("kook")
 await kook.Send.To("group", channel_id).Text("Hello World!")
 ```
 
-Supported sending types include:
-- `.Text(text: str)`: Send pure text messages.
-- `.Image(file: bytes | str)`: Send image messages, supports file paths, URLs, and binary data.
-- `.Video(file: bytes | str)`: Send video messages, supports file paths, URLs, and binary data.
-- `.File(file: bytes | str, filename: str = None)`: Send file messages, supports file paths, URLs, and binary data.
-- `.Voice(file: bytes | str)`: Send voice messages, supports file paths, URLs, and binary data.
-- `.Markdown(text: str)`: Send KMarkdown format messages.
-- `.Card(card_data: dict)`: Send card messages (CardMessage).
-- `.Raw_ob12(message: List[Dict], **kwargs)`: Send OneBot12 format messages.
+The supported sending types include:
+- `.Text(text: str)`: Send a plain text message.
+- `.Image(file: bytes | str)`: Send an image message, supporting file paths, URLs, and binary data.
+- `.Video(file: bytes | str)`: Send a video message, supporting file paths, URLs, and binary data.
+- `.File(file: bytes | str, filename: str = None)`: Send a file message, supporting file paths, URLs, and binary data.
+- `.Voice(file: bytes | str)`: Send a voice message, supporting file paths, URLs, and binary data.
+- `.Markdown(text: str)`: Send a KMarkdown-formatted message.
+- `.Card(card_data: dict)`: Send a card message (CardMessage).
+- `.Raw_ob12(message: List[Dict], **kwargs)`: Send a OneBot12-formatted message.
 
-### Chain Decoration Methods (Can be used in combination)
+### Fluent Modifier Methods (can be combined)
 
-Chain decoration methods return `self`, support chaining, and must be called before the final sending method:
-- `.Reply(message_id: str)`: Reply (quote) to the specified message.
-- `.At(user_id: str)`: @ the specified user, can be called multiple times to @ multiple users.
-- `.AtAll()`: @ everyone.
+Fluent modifier methods return `self`, enabling chainable calls, and must be called before the final sending method:
 
-### Chaining Example
+- `.Reply(message_id: str)`: Reply (quote) a specified message.
+- `.At(user_id: str)`: Mention a specified user, can be called multiple times to mention multiple users.
+- `.AtAll()`: Mention everyone.
+
+### Fluent Call Examples
 
 ```python
 # Basic sending
 await kook.Send.To("group", channel_id).Text("Hello")
 
-# Reply to message
+# Reply to a message
 await kook.Send.To("group", channel_id).Reply(msg_id).Text("Reply message")
 
-# @ user
-await kook.Send.To("group", channel_id).At("user_id").Text("Hello")
+# Mention a user
+await kook.Send.To("group", channel_id).At("user_id").Text("你好")
 
-# @ multiple users
-await kook.Send.To("group", channel_id).At("user1").At("user2").Text("Multi-user@")
+# Mention multiple users
+await kook.Send.To("group", channel_id).At("user1").At("user2").Text("Multiple users @")
 
-# @ everyone
+# Mention everyone
 await kook.Send.To("group", channel_id).AtAll().Text("Announcement")
 
-# Combined usage
-await kook.Send.To("group", channel_id).Reply(msg_id).At("user_id").Text("Composite message")
+# Combine modifiers
+await kook.Send.To("group", channel_id).Reply(msg_id).At("user_id").Text("Complex message")
 ```
 
 ### OneBot12 Message Support
 
-The adapter supports sending OneBot12 format messages for cross-platform message compatibility:
+The adapter supports sending OneBot12-formatted messages, facilitating cross-platform message compatibility:
 
 ```python
-# Send OneBot12 format message
+# Send a OneBot12-formatted message
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await kook.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 
-# With chain decoration
+# Combine with fluent modifiers
 ob12_msg = [{"type": "text", "data": {"text": "Reply message"}}]
 await kook.Send.To("group", channel_id).Reply(msg_id).Raw_ob12(ob12_msg)
 
-# Use mention and reply message segments in Raw_ob12
+# Use mention and reply segments within Raw_ob12
 ob12_msg = [
     {"type": "text", "data": {"text": "Hello "}},
     {"type": "mention", "data": {"user_id": "user_id"}},
@@ -124,23 +125,23 @@ await kook.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 
 ### Additional Operation Methods
 
-In addition to sending messages, Kook adapter also supports the following operations:
+In addition to sending messages, the Kook adapter supports the following operations:
 
 ```python
-# Edit message (only supports KMarkdown type=9 and CardMessage type=10)
+# Edit a message (only supports KMarkdown type=9 and CardMessage type=10)
 await kook.Send.To("group", channel_id).Edit(msg_id, "**Updated content**")
 
-# Recall message
+# Recall a message
 await kook.Send.To("group", channel_id).Recall(msg_id)
 
-# Upload file (get file URL)
+# Upload a file (get file URL)
 result = await kook.Send.Upload("C:/path/to/file.jpg")
 file_url = result["data"]["url"]
 ```
 
-## Sending Method Return Values
+## Return Values of Send Methods
 
-All sending methods return a Task object that can be directly awaited to get the sending result. The return result follows the ErisPulse adapter standardized return specification:
+All send methods return a Task object, which can be directly awaited to obtain the send result. The returned result follows the ErisPulse adapter's standardized return specification:
 
 ```python
 {
@@ -153,38 +154,38 @@ All sending methods return a Task object that can be directly awaited to get the
 }
 ```
 
-### Error Code Description
+### Error Code Descriptions
 
 | retcode | Description |
 |---------|-------------|
 | 0 | Success |
-| 40100 | Token invalid or not provided |
+| 40100 | Invalid or missing Token |
 | 40101 | Token expired |
 | 40102 | Token does not match Bot |
 | 40103 | Missing permissions |
 | 40000 | Parameter error |
-| 40400 | Target not found |
-| 40300 | No permission to operate |
-| 50000 | Server internal error |
-| -1 | Adapter internal error |
+| 40400 | Target does not exist |
+| 40300 | No permission to perform operation |
+| 50000 | Internal server error |
+| -1 | Internal adapter error |
 
-## Unique Event Types
+## Platform-Specific Event Types
 
-Requires `platform=='kook'` check to use platform-specific features
+Platform-specific features require `platform=="kook"` detection.
 
 ### Core Differences
 
-1. **Channel System**: Kook uses a two-tier structure of servers (Guilds) and channels, with channels being the basic target for message sending
-2. **Message Types**: Kook supports multiple message types including text (1), image (2), video (3), file (4), voice (8), KMarkdown (9), and card messages (10)
-3. **Private Message System**: Kook distinguishes between channel messages and private messages, using different API endpoints
-4. **Message Sequence Number**: Kook WebSocket uses `sn` sequence numbers to ensure message ordering, supports message buffering and out-of-order reorganization
-5. **Message Editing and Recall**: Supports editing sent messages (only KMarkdown and CardMessage) and recalling messages
+1. **Channel System**: Kook uses a two-layer structure of servers (Guild) and channels (Channel), with channels being the basic targets for message sending.
+2. **Message Types**: Kook supports various message types, including text (1), image (2), video (3), file (4), voice (8), KMarkdown (9), and card messages (10).
+3. **Private Messaging System**: Kook distinguishes between channel messages and private messages, using different API endpoints.
+4. **Message Sequence Numbers**: Kook's WebSocket uses `sn` sequence numbers to ensure message ordering, supporting message buffering and out-of-order reordering.
+5. **Message Editing and Deletion**: Editing and deleting previously sent messages are supported (only for KMarkdown and CardMessage).
 
 ### Extended Fields
 
-- All proprietary fields are identified with a `kook_` prefix
-- Original data is preserved in the `kook_raw` field
-- `kook_raw_type` identifies the original Kook message type number (e.g., `1` for text, `255` for notification events)
+- All platform-specific fields are prefixed with `kook_`.
+- Original data is preserved in the `kook_raw` field.
+- `kook_raw_type` indicates the original Kook message type number (e.g., `1` for text, `255` for notification events).
 
 ### Special Field Examples
 
@@ -227,12 +228,11 @@ Requires `platform=='kook'` check to use platform-specific features
   "detail_type": "group",
   "user_id": "User ID",
   "group_id": "Channel ID",
-  "channel_id": "Channel ID",
   "message_id": "Message ID",
   "kook_raw": {...},
   "kook_raw_type": "9",
   "message": [
-    {"type": "text", "data": {"text": "Parsed plain text content"}}
+    {"type": "text", "data": {"text": "Parsed plain text"}}
   ]
 }
 
@@ -242,7 +242,6 @@ Requires `platform=='kook'` check to use platform-specific features
   "detail_type": "group",
   "user_id": "User ID",
   "group_id": "Channel ID",
-  "channel_id": "Channel ID",
   "message_id": "Message ID",
   "kook_raw": {...},
   "kook_raw_type": "10",
@@ -251,7 +250,7 @@ Requires `platform=='kook'` check to use platform-specific features
   ]
 }
 
-# Private message
+# Private chat message
 {
   "type": "message",
   "detail_type": "private",
@@ -260,7 +259,7 @@ Requires `platform=='kook'` check to use platform-specific features
   "kook_raw": {...},
   "kook_raw_type": "1",
   "message": [
-    {"type": "text", "data": {"text": "Private message content"}}
+    {"type": "text", "data": {"text": "Private chat content"}}
   ]
 }
 ```
@@ -269,7 +268,7 @@ Requires `platform=='kook'` check to use platform-specific features
 
 Kook's message types are automatically converted to corresponding message segments based on the `type` field:
 
-| Kook type | Conversion Type | Description |
+| Kook type | Converted Type | Description |
 |---|---|---|
 | 1 | `text` | Text message |
 | 2 | `image` | Image message |
@@ -279,7 +278,7 @@ Kook's message types are automatically converted to corresponding message segmen
 | 9 | `text` | KMarkdown message (extracts plain text content) |
 | 10 | `json` | Card message (original JSON) |
 
-Message segment structure example:
+Example message segment structure:
 ```json
 {
   "type": "image",
@@ -292,20 +291,20 @@ Message segment structure example:
 
 ### Mention Message Segment
 
-When messages contain @ information, a `mention` message segment is inserted before the message segments:
+When a message contains a mention (`@`), a `mention` message segment is inserted before the message segment:
 
 ```json
 {
   "type": "mention",
   "data": {
-    "user_id": "mentioned user ID"
+    "user_id": "Mentioned user ID"
   }
 }
 ```
 
 ### mention_all Message Segment
 
-When the message is @ everyone, a `mention_all` message segment is inserted:
+When a message is a mention to all (`@全体`), a `mention_all` message segment is inserted:
 
 ```json
 {
@@ -316,40 +315,41 @@ When the message is @ everyone, a `mention_all` message segment is inserted:
 
 ## WebSocket Connection
 
-### Connection Process
+### Connection Flow
 
-1. Use Bot Token to call `POST /gateway/index` to get WebSocket gateway address
-2. Connect to the WebSocket gateway
-3. Receive HELLO (s=1) signal to verify connection status
-4. Start heartbeat loop (PING, s=2, every 30 seconds)
-5. Receive message events (s=0), use sn sequence numbers to ensure ordering
-6. Receive heartbeat response PONG (s=3)
+1. Use Bot Token to call `POST /gateway/index` to obtain the WebSocket gateway address.
+2. Connect to the WebSocket gateway.
+3. Receive HELLO (s=1) message to verify connection status.
+4. Begin heartbeat loop (PING, s=2, every 30 seconds).
+5. Receive message events (s=0), using sn sequence number to ensure order.
+6. Receive heartbeat response PONG (s=3).
 
-### Signal Types
+### Message Types
 
-| Signal | s Value | Description |
-|--------|---------|-------------|
-| HELLO | 1 | Server welcome signal, received after successful connection |
-| PING | 2 | Client heartbeat, sent every 30 seconds, carrying the current sn |
-| PONG | 3 | Heartbeat response |
-| RESUME | 4 | Connection resume signal, carrying sn to restore session |
-| RECONNECT | 5 | Server requests reconnection, requires gateway re-obtainment |
-| RESUME_ACK | 6 | RESUME success response |
+| Message | s Value | Description |
+|---------|---------|-------------|
+| HELLO | 1 | Server welcome message, received after successful connection. |
+| PING | 2 | Client heartbeat, sent every 30 seconds, carries current sn. |
+| PONG | 3 | Heartbeat response. |
+| RESUME | 4 | Resume connection message, carries sn to resume session. |
+| RECONNECT | 5 | Server requests reconnection, requires re-obtaining gateway. |
+| RESUME_ACK | 6 | RESUME success response. |
 
-### Disconnection and Reconnection
+### Reconnection on Disconnection
 
-- After abnormal disconnection, the adapter automatically retries connection
-- If there was a previous `sn > 0`, it will first try to restore connection via RESUME (s=4)
-- After RESUME failure, reset sn and message queue, start fresh connection (HELLO process)
-- When RECONNECT (s=5) signal is received, clear state and reconnect
+- After abnormal disconnection, the adapter automatically retries connection.
+- If there was a previous `sn > 0`, it first attempts RESUME (s=4) to restore connection.
+- If RESUME fails, reset sn and message queue, and perform a new connection (HELLO flow).
+- When RECONNECT (s=5) message is received, clear the status and reconnect.
 
 ### Message Sequence Number Mechanism
 
-Kook WebSocket uses `sn` (incremental sequence number) to ensure message ordering:
-- Each time a message event (s=0) is received, sn increments
-- If the received message sn is not continuous, enter buffering mode
-- Messages in the buffer are sorted by sn, waiting for missing messages to arrive before processing in order
-- After the buffer is cleared, automatically exit buffering mode
+Kook WebSocket uses `sn` (incrementing sequence number) to ensure message order:
+
+- For each received message event (s=0), sn is incremented.
+- If a received message has a non-continuous sn, enter temporary storage mode.
+- Messages in the temporary storage area are sorted by sn, waiting for missing messages to arrive before processing in order.
+- After the temporary storage area is cleared, automatically exit temporary storage mode.
 
 ## Usage Examples
 
@@ -391,7 +391,7 @@ async def handle_private_msg(event):
     await kook.Send.To("user", user_id).Text(f"You said: {text}")
 ```
 
-### Handling Notification Events (Reaction responses, etc.)
+### Handling Notification Events (Emoji Reactions, etc.)
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -407,33 +407,33 @@ async def handle_notice(event):
         emoji = event.get("emoji", {})
         user_id = event.get("user_id")
         msg_id = event.get("message_id")
-        print(f"用户 {user_id} 对消息 {msg_id} 添加了表情回应")
+        print(f"User {user_id} added an emoji reaction to message {msg_id}")
 
     elif sub_type == "deleted_reaction":
         emoji = event.get("emoji", {})
         user_id = event.get("user_id")
         msg_id = event.get("message_id")
-        print(f"用户 {user_id} 移除了消息 {msg_id} 的表情回应")
+        print(f"User {user_id} removed an emoji reaction from message {msg_id}")
 ```
 
 ### Sending Media Messages
 
 ```python
-# Send image (URL)
+# Sending an image (URL)
 await kook.Send.To("group", channel_id).Image("https://example.com/image.png")
 
-# Send image (binary)
+# Sending an image (binary)
 with open("image.png", "rb") as f:
     image_bytes = f.read()
 await kook.Send.To("group", channel_id).Image(image_bytes)
 
-# Send video
+# Sending a video
 await kook.Send.To("group", channel_id).Video("https://example.com/video.mp4")
 
-# Send file
+# Sending a file
 await kook.Send.To("group", channel_id).File("https://example.com/file.pdf", filename="document.pdf")
 
-# Send voice
+# Sending a voice message
 await kook.Send.To("group", channel_id).Voice("https://example.com/voice.mp3")
 ```
 
@@ -441,7 +441,7 @@ await kook.Send.To("group", channel_id).Voice("https://example.com/voice.mp3")
 
 ```python
 # KMarkdown
-await kook.Send.To("group", channel_id).Markdown("**粗体** *斜体* [链接](https://example.com)")
+await kook.Send.To("group", channel_id).Markdown("**Bold** *Italic* [Link](https://example.com)")
 
 # Card message
 card = {
@@ -449,28 +449,28 @@ card = {
     "theme": "primary",
     "size": "lg",
     "modules": [
-        {"type": "header", "text": {"type": "plain-text", "content": "标题"}},
-        {"type": "section", "text": {"type": "kmarkdown", "content": "内容"}}
+        {"type": "header", "text": {"type": "plain-text", "content": "Title"}},
+        {"type": "section", "text": {"type": "kmarkdown", "content": "Content"}}
     ]
 }
 await kook.Send.To("group", channel_id).Card(card)
 ```
 
-### Message Editing and Recall
+### Editing and Deleting Messages
 
 ```python
-# Send message
-result = await kook.Send.To("group", channel_id).Markdown("**原始内容**")
+# Sending a message
+result = await kook.Send.To("group", channel_id).Markdown("**Original content**")
 msg_id = result["data"]["msg_id"]
 
-# Edit message (only supports KMarkdown and CardMessage)
-await kook.Send.To("group", channel_id).Edit(msg_id, "**更新后的内容**")
+# Editing a message (supports only KMarkdown and CardMessage)
+await kook.Send.To("group", channel_id).Edit(msg_id, "**Updated content**")
 
-# Recall message
+# Deleting a message
 await kook.Send.To("group", channel_id).Recall(msg_id)
 ```
 
-### Handling Private Message Edit and Delete Notifications
+### Handling Edit and Delete Notifications for Private Messages
 
 ```python
 @notice.on_notice()
@@ -483,8 +483,9 @@ async def handle_private_notice(event):
     if sub_type == "updated_private_message":
         msg_id = event.get("message_id")
         content = event.get("content")
-        print(f"私信消息已更新: {msg_id}, 新内容: {content}")
+        print(f"Private message updated: {msg_id}, new content: {content}")
 
     elif sub_type == "deleted_private_message":
         msg_id = event.get("message_id")
-        print(f"私信消息已删除: {msg_id}")
+        print(f"Private message deleted: {msg_id}")
+```

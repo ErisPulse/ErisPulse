@@ -1,23 +1,19 @@
 # Сетевой клиент
 
-ErisPulse предоставляет единый сетевой клиент, объединяющий HTTP-запросы, WebSocket-соединения и управление пулы соединений. Модули и адаптеры **должны использовать** этот клиент в первую очередь, а не импортировать сторонние библиотеки, такие как `aiohttp` / `httpx` / `requests`.
-
-docs/ru/quick-start.md
+ErisPulse предоставляет единый сетевой клиент, объединяющий HTTP-запросы, WebSocket-соединения и управление пулы соединений. Модули и адаптеры **должны использовать** этот клиент, а не импортировать сторонние библиотеки, такие как `aiohttp`, `httpx` или `requests`.
 
 ## Обзор
 
 Основные функции сетевого клиента:
 
 - **Единый интерфейс**: предоставляет методы `get` / `post` / `put` / `delete` / `patch` / `request`
-- **WebSocket-клиент**: установка WebSocket-соединения клиента через `ws_connect`
-- **Автоматическая регистрация в журнале**: все запросы автоматически записываются в журнал и собираются статистические данные
-- **Интеграция жизненного цикла**: каждый запрос вызывает событие жизненного цикла `client.request`, подключение WebSocket вызывает событие `client.ws.connect`
-- **Поддержка повторных попыток**: можно настроить количество и интервал автоматических повторных попыток
-- **Управление тайм-аутами**: отдельные настройки тайм-аута подключения и тайм-аута запроса
-- **Возможность повторного использования пула соединений**: управление пулом соединений на основе aiohttp.ClientSession
-- **Система исключений**: исключения aiohttp автоматически преобразуются в исключения ErisPulse (система ClientError)
-
-[**Переключить язык**](docs/ru/quick-start.md)
+- **WebSocket-клиент**: через `ws_connect` устанавливает WebSocket-соединение
+- **Автоматическая журналирование**: все запросы автоматически записываются в лог и собираются статистика
+- **Интеграция жизненного цикла**: каждый запрос вызывает событие `client.request`, а соединение WebSocket — событие `client.ws.connect`
+- **Поддержка повторных попыток**: можно настроить количество и интервал повторных попыток
+- **Управление тайм-аутами**: отдельные тайм-ауты для подключения и запроса
+- **Повторное использование соединений**: управление пулы соединений на основе aiohttp.ClientSession
+- **Система исключений**: исключения aiohttp автоматически преобразуются в исключения ErisPulse (система исключений ClientError)
 
 ## Быстрый старт
 
@@ -47,34 +43,33 @@ from ErisPulse.Core import client
 ws = await client.ws_connect("wss://example.com/ws")
 
 async for text in ws.iter_text():
-    await ws.send_text(f"Эхо: {text}")
+    await ws.send_text(f"Echo: {text}")
+```
 
 ## HttpResponse
 
-Все методы запроса возвращают объект `HttpResponse`:
+Все методы запросов возвращают объект `HttpResponse`:
 
 ```python
 from ErisPulse.Core import client
 
 resp = await client.get("https://httpbin.org/get")
 
-resp.status       # int - HTTP статус (например, 200, 404)
-resp.reason       # str | None - описание статуса (например, "OK")
+resp.status       # int - HTTP-код состояния (например, 200, 404)
+resp.reason       # str | None - описание состояния (например, "OK")
 resp.headers      # заголовки ответа (без учета регистра)
 resp.content_type # str | None - Content-Type
-resp.url          # финальный URL (может измениться из-за редиректа)
+resp.url          # конечный URL (может измениться из-за перенаправления)
 resp.raw          # базовый объект ответа (в настоящее время aiohttp.ClientResponse)
 
 # Чтение тела ответа
 body = await resp.read()       # bytes
 text = await resp.text()       # str
 data = await resp.json()       # разбор JSON
-text = await resp.text("gbk")  # указание кодировки
+text = await resp.text("gbk")  # указать кодировку
 ```
 
-[**English**](docs/ru/quick-start.md) | [**Русский**](docs/ru/quick-start.md)
-
-## Методы запроса
+## Методы запросов
 
 ### GET
 
@@ -99,7 +94,7 @@ resp = await client.post(
     json={"name": "Alice", "age": 30},
 )
 
-# Тело формы
+# Тело запроса в формате формы
 resp = await client.post(
     "https://api.example.com/login",
     data={"username": "admin", "password": "123"},
@@ -113,22 +108,22 @@ resp = await client.post(
 )
 
 # Загрузка файлов (используя параметр files, без импорта aiohttp)
-# Формат: {имя_поля: объект_файла/bytes/(имя_файла, файл)/(имя_файла, файл, тип_содержимого)}
+# Формат: {имя_поля: объект_файла/bytes/(имя_файла, файл)/(имя_файла, файл, тип_контента)}
 resp = await client.post(
     "https://api.example.com/upload",
-    data={"description": "Аватарка"},            # Необязательно: также передать обычные поля формы
+    data={"description": "аватарка"},            # необязательно: одновременно передать обычные поля формы
     files={
         "file": ("photo.png", open("photo.png", "rb"), "image/png"),
     },
 )
 
-# Упрощённый синтаксис: передача объекта файла напрямую
+# Упрощенная запись: передача объекта файла напрямую
 resp = await client.post(
     "https://api.example.com/upload",
     files={"file": open("photo.png", "rb")},
 )
 
-# Прямая загрузка данных из памяти (без сохранения на диск)
+# Загрузка данных из памяти (без сохранения на диск)
 import io
 
 resp = await client.post(
@@ -147,7 +142,7 @@ resp = await client.delete("https://api.example.com/users/1")
 resp = await client.patch("https://api.example.com/users/1", json={"age": 31})
 ```
 
-### Общий request
+### Общий запрос
 
 ```python
 from ErisPulse.Core import client
@@ -157,6 +152,7 @@ resp = await client.request(
     "https://api.example.com/resource",
     headers={"Origin": "https://example.com"},
 )
+```
 
 ## Параметры
 
@@ -164,22 +160,22 @@ resp = await client.request(
 
 | Параметр | Тип | Описание |
 |------|------|------|
-| `url` | `str` | URL-адрес запроса |
+| `url` | `str` | URL запроса |
 | `params` | `dict[str, str]` | Параметры запроса (необязательно) |
 | `headers` | `dict[str, str]` | Дополнительные заголовки запроса (необязательно) |
 | `data` | `Any` | Тело запроса (форма или сырые данные) (необязательно) |
-| `json` | `Any` | Тело запроса в формате JSON (необязательно) |
-| `files` | `dict[str, Any]` | Поля для загрузки файлов (необязательно, автоматически формируется multipart/form-data) |
-| `timeout` | `float` | Таймаут запроса (секунды) (необязательно, переопределяет значение по умолчанию) |
-| `max_retries` | `int` | Максимальное количество повторных попыток для этого запроса (необязательно, переопределяет значение по умолчанию) |
+| `json` | `Any` | JSON-тело запроса (необязательно) |
+| `files` | `dict[str, Any]` | Поля загрузки файлов (необязательно, автоматически формируется multipart/form-data) |
+| `timeout` | `float` | Тайм-аут запроса (секунды) (необязательно, переопределяет значение по умолчанию) |
+| `max_retries` | `int` | Максимальное количество повторных попыток (необязательно, переопределяет значение по умолчанию) |
 
 ### Параметры ws_connect
 
 | Параметр | Тип | Описание |
 |------|------|------|
-| `url` | `str` | URL-адрес сервера WebSocket |
+| `url` | `str` | URL WebSocket-сервера |
 | `headers` | `dict[str, str]` | Дополнительные заголовки запроса (необязательно) |
-| `heartbeat` | `float` | Интервал между心跳 сообщениями (секунды) (необязательно) |
+| `heartbeat` | `float` | Интервал心跳秒数 (необязательно) |
 
 ## Тайм-ауты и повторные попытки
 
@@ -190,8 +186,8 @@ from ErisPulse.Core import Client
 client = Client(
     timeout=60,           # Общий тайм-аут запроса 60 секунд
     connect_timeout=5,    # Тайм-аут подключения 5 секунд
-    max_retries=3,        # Автоматические повторные попытки при сбое 3 раза
-    retry_delay=2,        # Интервал между повторными попытками 2 секунды
+    max_retries=3,        # Автоматические повторные попытки 3 раза
+    retry_delay=2,        # Интервал повторных попыток 2 секунды
 )
 
 # Переопределение тайм-аута для одного запроса
@@ -199,11 +195,9 @@ resp = await client.get("https://slow-api.example.com/data", timeout=120)
 ```
 
 > [!NOTE]
-> Класс клиента с версии 2.8.0 переименован в `Client` (имя свойства `sdk.client` остается неизменным); старое имя `HttpClient` сохранено как совместимое псевдоним, старый код не требует изменений.
+> Класс клиента с версии 2.8.0 переименован в `Client` (имя свойства `sdk.client` не изменилось); старое имя `HttpClient` сохранено как совместимый псевдоним, старый код не требует изменений.
 
-[**English**](docs/ru/quick-start.md) | [**简体中文**](docs/ru/quick-start.md) | [**日本語**](README.ja.md) | [**한국어**](README.ko.md)
-
-## Пользовательские заголовки по умолчанию
+## Настройка заголовков по умолчанию
 
 ```python
 client = Client(
@@ -215,9 +209,7 @@ client = Client(
 )
 ```
 
-[**Перейти к следующему разделу**](docs/ru/quick-start.md)
-
-## Запросы статистики
+## Статистика запросов
 
 ```python
 from ErisPulse.Core import client
@@ -230,13 +222,11 @@ stats = client.stats
 client.reset_stats()
 ```
 
-[**English**](docs/ru/quick-start.md)
-
-## Жизненный цикл событий
+## Жизненные циклы событий
 
 ### События HTTP-запросов
 
-Событие `client.request` срабатывает после завершения каждого запроса и может использоваться для мониторинга:
+Каждый запрос после завершения вызывает событие `client.request`, которое можно использовать для мониторинга:
 
 ```python
 from ErisPulse.Core import lifecycle
@@ -248,7 +238,7 @@ async def on_request(event_data):
 
 ### События WebSocket-соединений
 
-Событие `client.ws.connect` срабатывает каждый раз после установления WebSocket-соединения:
+После установления каждого WebSocket-соединения вызывается событие `client.ws.connect`:
 
 ```python
 from ErisPulse.Core import lifecycle
@@ -256,21 +246,20 @@ from ErisPulse.Core import lifecycle
 @lifecycle.on("client.ws.connect")
 async def on_ws_connect(event_data):
     print(f"WS-соединение: {event_data['url']}")
+```
 
-## Управление контекстом
+## Контекстный менеджер
 
 ```python
-# В качестве менеджера контекста, автоматически закрывает сессию
+# Использование как контекстный менеджер, автоматически закрывает сессию
 async with Client(timeout=30) as client:
     resp = await client.get("https://httpbin.org/get")
     data = await resp.json()
 ```
 
-См. также: [**Справочник API**](docs/ru/api-reference.md)
+## WebSocket-клиент
 
-## WebSocket клиент
-
-Создайте подключение WebSocket-клиента с помощью `client.ws_connect()`, который возвращает объект `ClientWebSocket`. Клиент и сервер WebSocket используют один и тот же базовый класс `WebSocketConnectionBase`, а интерфейсы send/receive/iter полностью совпадают.
+С помощью `client.ws_connect()` устанавливается WebSocket-клиентское соединение, возвращается объект `ClientWebSocket`. Клиент и сервер WebSocket используют один и тот же базовый класс `WebSocketConnectionBase`, интерфейсы send/receive/iter полностью совпадают.
 
 ### Основное использование
 
@@ -279,7 +268,7 @@ from ErisPulse.Core import client
 
 ws = await client.ws_connect("wss://example.com/ws", heartbeat=30)
 
-await ws.send_text("Привет")
+await ws.send_text("Hello")
 await ws.send_bytes(b"\x00\x01\x02")
 await ws.send_json({"type": "ping"})
 ```
@@ -288,7 +277,7 @@ await ws.send_json({"type": "ping"})
 
 #### Высокоуровневые методы (рекомендуется)
 
-Автоматически фильтрует типы сообщений и выбрасывает `WebSocketDisconnect` при разрыве соединения:
+Автоматически фильтруют типы сообщений, при разрыве соединения выбрасывает `WebSocketDisconnect`:
 
 ```python
 from ErisPulse.Core import client
@@ -301,7 +290,7 @@ text = await ws.receive_text()    # str
 data = await ws.receive_bytes()   # bytes
 obj = await ws.receive_json()     # dict / list
 
-# Итерация по сообщениям (автоматически останавливается при разрыве)
+# Итерация сообщений (автоматически останавливается при разрыве соединения)
 async for text in ws.iter_text():
     print(text)
 
@@ -314,7 +303,7 @@ async for obj in ws.iter_json():
 
 #### Низкоуровневые методы
 
-Используйте `receive()` и `iter_messages()` для обработки необработанных типов сообщений, чтобы различать TEXT / BINARY / CLOSE / ERROR:
+Использование `receive()` и `iter_messages()` для обработки необработанных типов сообщений, можно различать TEXT / BINARY / CLOSE / ERROR:
 
 ```python
 from ErisPulse.Core import client
@@ -327,7 +316,7 @@ msg = await ws.receive()
 # msg.type  -> WSMessage.TEXT / WSMessage.BINARY / WSMessage.CLOSE / WSMessage.ERROR
 # msg.data  -> str | bytes | None
 
-# Итерация по необработанным сообщениям (автоматически останавливается при CLOSE/ERROR)
+# Итерация необработанных сообщений (автоматически останавливается при CLOSE/ERROR)
 async for msg in ws.iter_messages():
     if msg.type == WSMessage.TEXT:
         print(f"Текст: {msg.data}")
@@ -337,25 +326,25 @@ async for msg in ws.iter_messages():
 
 ### WSMessage
 
-`WSMessage` — это единый тип сообщения WebSocket, независимый от базовой библиотеки:
+`WSMessage` — это единый тип WebSocket-сообщения, не зависящий от底层 библиотеки:
 
 | Свойство | Тип | Описание |
 |------|------|------|
 | `type` | `str` | Тип сообщения: `WSMessage.TEXT` / `WSMessage.BINARY` / `WSMessage.CLOSE` / `WSMessage.ERROR` |
 | `data` | `Any` | Данные сообщения |
 
-### Свойства ClientWebSocket
+### Атрибуты ClientWebSocket
 
 | Свойство | Тип | Описание |
 |------|------|------|
 | `url` | `URL` | URL соединения |
 | `headers` | `Headers` | Заголовки ответа |
 | `closed` | `bool` | Закрыто ли соединение |
-| `raw` | `object` | Низкоуровневый объект (aiohttp.ClientWebSocketResponse) |
+| `raw` | `object` | Базовый объект (aiohttp.ClientWebSocketResponse) |
 
-### Жизненный цикл
+### Жизненные циклы хуки
 
-Аналогично `серверному WebSocketConnection`, поддерживает обратные вызовы `on_disconnect` и `on_error`:
+Аналогично `WebSocketConnection` сервера, поддерживаются обратные вызовы `on_disconnect` и `on_error`:
 
 ```python
 from ErisPulse.Core import client
@@ -374,24 +363,25 @@ async def handle_error(ws, error=""):
 ### Закрытие соединения
 
 ```python
-await ws.close(code=1000, reason="Нормальное закрытие")
+await ws.close(code=1000, reason="Normal closure")
+```
 
 ## Система исключений
 
-ErisPulse определяет единый иерархический уровень исключений, при этом запросы, инициированные через `sdk.client`, автоматически преобразуют исключения aiohttp в исключения ErisPulse.
+ErisPulse определяет единый иерархический уровень исключений, при запросах, инициированных через `sdk.client`, исключения aiohttp автоматически преобразуются в исключения ErisPulse.
 
-> **Обратная совместимость**: Старые модули/адаптеры, использующие напрямую `aiohttp.ClientSession`, полностью не затрагиваются. Преобразование исключений применяется только при запросах, инициированных через `sdk.client`, а код, использующий напрямую aiohttp, по-прежнему будет перехватывать исключения, такие как `aiohttp.ClientError`. Оба способа могут сосуществовать.
+> **Обратная совместимость**: старые модули/адаптеры, использующие напрямую `aiohttp.ClientSession`, полностью не затронуты. Преобразование исключений происходит только при запросах, инициированных через `sdk.client`, код, использующий напрямую aiohttp, по-прежнему перехватывает исключения `aiohttp.ClientError` и другие оригинальные исключения. Оба способа могут сосуществовать.
 
 ### Иерархия исключений
 
 ```
 ErisPulseError
 ├── ClientError                  # Базовый класс для всех исключений HTTP/WS клиентских запросов
-│   ├── ClientConnectionError    # Ошибка соединения (неудачное разрешение DNS, отказ в подключении, недоступность сети)
-│   ├── ClientTimeoutError       # Ошибка соединения или запроса по таймауту
-│   └── HTTPStatusError          # Ошибка HTTP статуса 4xx/5xx
+│   ├── ClientConnectionError    # Ошибка подключения (неудачное разрешение DNS, отказ в подключении, недоступность сети)
+│   ├── ClientTimeoutError       # Ошибка тайм-аута подключения или запроса
+│   └── HTTPStatusError          # Ошибка HTTP-статуса 4xx/5xx
 └── WebSocketError               # Базовый класс исключений WebSocket
-    └── WebSocketDisconnect      # Отключение WebSocket (общее для клиента и сервера)
+    └── WebSocketDisconnect      # Исключение разрыва WebSocket-соединения (общее для клиента и сервера)
 ```
 
 ### Обработка исключений
@@ -407,14 +397,14 @@ from ErisPulse.Core.Bases.errors import (
     WebSocketError,
 )
 
-# Обработка исключений HTTP-запросов
+# Обработка исключений HTTP-запроса
 try:
     resp = await client.get("https://api.example.com/data")
     data = await resp.json()
 except ClientConnectionError:
     print("Невозможно подключиться к серверу")
 except ClientTimeoutError:
-    print("Запрос превысил лимит времени")
+    print("Тайм-аут запроса")
 except ClientError as e:
     print(f"Запрос не удался: {e}")
 
@@ -429,9 +419,9 @@ except WebSocketError as e:
     print(f"Ошибка WebSocket: {e}")
 ```
 
-### Единое перехватывание
+### Общая обработка
 
-Используйте `ClientError` для единого перехвата всех исключений HTTP/WS клиентских запросов:
+Использование `ClientError` для общей обработки всех исключений HTTP/WS клиентских запросов:
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError
@@ -439,12 +429,12 @@ from ErisPulse.Core.Bases.errors import ClientError
 try:
     resp = await client.get("https://api.example.com/data")
 except ClientError as e:
-    print(f"Клиентская ошибка: {e}")
+    print(f"Ошибка клиента: {e}")
 ```
 
 ### HTTPStatusError
 
-Если необходимо проверить код состояния после запроса и выбросить исключение, можно использовать `HTTPStatusError` вручную:
+Когда нужно проверить статус-код и выбросить исключение после запроса, можно использовать `HTTPStatusError` вручную:
 
 ```python
 from ErisPulse.Core.Bases.errors import HTTPStatusError
@@ -452,10 +442,11 @@ from ErisPulse.Core.Bases.errors import HTTPStatusError
 resp = await client.get("https://api.example.com/data")
 if resp.status >= 400:
     raise HTTPStatusError(resp.status, await resp.text())
+```
 
 ## Использование в адаптере
 
-Адаптер может использовать глобальный клиент или создать экземпляр клиента для отправки запросов к API платформы:
+Адаптер может использовать глобальный клиент или создавать экземпляр клиента для отправки платформенных API-запросов:
 
 ```python
 from ErisPulse.Core import client
@@ -476,269 +467,20 @@ class MyAdapter(BaseAdapter):
             raise
 ```
 
-> Также можно использовать `sdk.client` через `from ErisPulse import sdk`, результат будет таким же.
-
-## Лучшие практики
-
-1. **Предпочтение глобального клиента**: Используйте `from ErisPulse.Core import client`, чтобы получить глобальный синглтон, что упрощает единое управление и мониторинг в рамках фреймворка
-2. **Избегайте прямого импорта aiohttp**: Используйте `client` вместо `aiohttp.ClientSession`, чтобы в будущем при замене реализации на более низком уровне не пришлось изменять код. Старый код, использующий напрямую aiohttp, будет продолжать работать нормально, и оба способа могут сосуществовать
-3. **Используйте систему исключений ErisPulse**: При запросах через `sdk.client` перехватывайте `ClientError`, а не `aiohttp.ClientError`, чтобы код не зависел от конкретной библиотеки HTTP. Старый код, использующий напрямую aiohttp, не будет затронут
-4. **Разумно задавайте тайм-ауты**: Устанавливайте разумные значения тайм-аутов в зависимости от скорости ответа API, чтобы избежать длительных блокировок
-5. **Используйте механизм повторных попыток**: Включайте повторные попытки для нестабильных API, чтобы повысить надежность
-6. **Мониторинг статистики запросов**: Мониторинг состояния запросов можно осуществлять через `sdk.client.stats` или события жизненного цикла `client.request`
-7. **Использование WebSocket с помощью продвинутых методов**: Предпочтение отдается продвинутым методам, таким как `iter_text` / `iter_json`, и используйте `iter_messages` только в случае необходимости различения типов сообщений
-
-## Руководство по быстрому старту
-
-Перед началом работы с ErisPulse SDK необходимо установить пакет:
-
-```bash
-pip install erispulse-sdk
-```
-
-### Инициализация глобального клиента
-
-Для начала работы с ErisPulse SDK необходимо инициализировать глобальный клиент. Это можно сделать с помощью следующего кода:
-
-```python
-from ErisPulse.Core import client
-
-# Инициализация глобального клиента
-client.init(
-    api_key="your_api_key_here",  # Замените на ваш API ключ
-    base_url="https://api.erispulse.com",  # Опционально: базовый URL API
-    timeout=30,  # Опционально: тайм-аут запроса в секундах
-)
-```
-
-### Пример использования
-
-После инициализации глобального клиента вы можете использовать его для выполнения запросов к API ErisPulse. Ниже приведен пример простого GET-запроса:
-
-```python
-import asyncio
-
-async def main():
-    try:
-        # Выполнение GET-запроса
-        response = await client.get("/some-endpoint")
-        
-        # Обработка ответа
-        if response.status == 200:
-            data = await response.json()
-            print("Данные получены успешно:", data)
-        else:
-            print(f"Ошибка: {response.status}")
-            
-    except Exception as e:
-        print(f"Произошла ошибка: {e}")
-
-# Запуск асинхронной функции
-asyncio.run(main())
-```
-
-### Дополнительные методы
-
-Кроме GET-запросов, глобальный клиент поддерживает также POST, PUT, DELETE и другие HTTP-методы:
-
-```python
-# POST-запрос
-await client.post("/some-endpoint", json={"key": "value"})
-
-# PUT-запрос
-await client.put("/some-endpoint", json={"key": "value"})
-
-# DELETE-запрос
-await client.delete("/some-endpoint")
-```
-
-### Обработка ошибок
-
-ErisPulse SDK предоставляет собственную систему исключений, которая позволяет обрабатывать ошибки HTTP-запросов:
-
-```python
-from ErisPulse.Core import ClientError
-
-try:
-    response = await client.get("/some-endpoint")
-except ClientError as e:
-    print(f"Ошибка клиента: {e}")
-except Exception as e:
-    print(f"Неизвестная ошибка: {e}")
-```
-
-### WebSocket
-
-Для работы с WebSocket можно использовать метод `client.ws_connect`:
-
-```python
-async def main():
-    async with client.ws_connect("/ws-endpoint") as ws:
-        # Отправка сообщения
-        await ws.send_json({"type": "ping"})
-        
-        # Получение сообщения
-        async for msg in ws:
-            if msg.type == aiohttp.WSMsgType.TEXT:
-                print("Получено сообщение:", msg.data)
-            elif msg.type == aiohttp.WSMsgType.CLOSED:
-                break
-            elif msg.type == aiohttp.WSMsgType.ERROR:
-                break
-
-asyncio.run(main())
-```
-
-### Мониторинг
-
-Для мониторинга статистики запросов можно использовать `client.stats`:
-
-```python
-# Получение статистики
-stats = client.stats()
-print("Общее количество запросов:", stats.total_requests)
-print("Количество успешных запросов:", stats.successful_requests)
-print("Количество ошибок:", stats.errors)
-```
-
-### Завершение работы
-
-После завершения работы с ErisPulse SDK рекомендуется закрыть глобальный клиент:
-
-```python
-await client.close()
-```
-
-## API Reference
-
-### `client.get`
-
-Выполняет GET-запрос к указанному URL.
-
-**Параметры:**
-- `url` (str): URL-адрес, к которому нужно отправить запрос.
-- `params` (Optional[Dict[str, Any]]): Параметры запроса.
-- `headers` (Optional[Dict[str, str]]): Заголовки запроса.
-- `timeout` (Optional[int]): Тайм-аут запроса в секундах.
-
-**Возвращает:**
-- `aiohttp.ClientResponse`: Объект ответа.
-
-**Пример:**
-```python
-response = await client.get("/users")
-```
-
-### `client.post`
-
-Выполняет POST-запрос к указанному URL.
-
-**Параметры:**
-- `url` (str): URL-адрес, к которому нужно отправить запрос.
-- `data` (Optional[Dict[str, Any]]): Данные для отправки.
-- `json` (Optional[Dict[str, Any]]): JSON-данные для отправки.
-- `headers` (Optional[Dict[str, str]]): Заголовки запроса.
-- `timeout` (Optional[int]): Тайм-аут запроса в секундах.
-
-**Возвращает:**
-- `aiohttp.ClientResponse`: Объект ответа.
-
-**Пример:**
-```python
-response = await client.post("/users", json={"name": "John"})
-```
-
-### `client.put`
-
-Выполняет PUT-запрос к указанному URL.
-
-**Параметры:**
-- `url` (str): URL-адрес, к которому нужно отправить запрос.
-- `data` (Optional[Dict[str, Any]]): Данные для отправки.
-- `json` (Optional[Dict[str, Any]]): JSON-данные для отправки.
-- `headers` (Optional[Dict[str, str]]): Заголовки запроса.
-- `timeout` (Optional[int]): Тайм-аут запроса в секундах.
-
-**Возвращает:**
-- `aiohttp.ClientResponse`: Объект ответа.
-
-**Пример:**
-```python
-response = await client.put("/users/1", json={"name": "Jane"})
-```
-
-### `client.delete`
-
-Выполняет DELETE-запрос к указанному URL.
-
-**Параметры:**
-- `url` (str): URL-адрес, к которому нужно отправить запрос.
-- `params` (Optional[Dict[str, Any]]): Параметры запроса.
-- `headers` (Optional[Dict[str, str]]): Заголовки запроса.
-- `timeout` (Optional[int]): Тайм-аут запроса в секундах.
-
-**Возвращает:**
-- `aiohttp.ClientResponse`: Объект ответа.
-
-**Пример:**
-```python
-response = await client.delete("/users/1")
-```
-
-### `client.ws_connect`
-
-Устанавливает WebSocket-соединение с указанным URL.
-
-**Параметры:**
-- `url` (str): URL-адрес, к которому нужно установить соединение.
-- `params` (Optional[Dict[str, Any]]): Параметры запроса.
-- `headers` (Optional[Dict[str, str]]): Заголовки запроса.
-- `timeout` (Optional[int]): Тайм-аут запроса в секундах.
-
-**Возвращает:**
-- `aiohttp.ClientWebSocketResponse`: Объект WebSocket-соединения.
-
-**Пример:**
-```python
-async with client.ws_connect("/ws-endpoint") as ws:
-    await ws.send_json({"type": "ping"})
-    async for msg in ws:
-        if msg.type == aiohttp.WSMsgType.TEXT:
-            print("Получено сообщение:", msg.data)
-```
-
-### `client.stats`
-
-Возвращает статистику запросов.
-
-**Возвращает:**
-- `ClientStats`: Объект со статистикой запросов.
-
-**Пример:**
-```python
-stats = client.stats()
-print("Общее количество запросов:", stats.total_requests)
-print("Количество успешных запросов:", stats.successful_requests)
-print("Количество ошибок:", stats.errors)
-```
-
-### `client.close`
-
-Закрывает глобальный клиент.
-
-**Пример:**
-```python
-await client.close()
-```
-
-## Лицензия
-
-ErisPulse SDK распространяется под лицензией MIT. Подробнее см. в файле [LICENSE](docs/ru/LICENSE.md).
+> Также можно использовать `from ErisPulse import sdk` и `sdk.client`, результат будет таким же.
+
+## Рекомендации
+
+1. **Предпочтение глобального клиента**: получение глобального синглтона через `from ErisPulse.Core import client` упрощает управление и мониторинг фреймворком
+2. **Избегайте прямого импорта aiohttp**: использование `client` вместо `aiohttp.ClientSession` позволит в будущем заменить底层 реализацию без изменения кода. Старый код, использующий напрямую aiohttp, по-прежнему будет работать, оба способа могут сосуществовать
+3. **Использование системы исключений ErisPulse**: при запросах через `sdk.client` перехватывайте `ClientError`, а не `aiohttp.ClientError`, чтобы код не зависел от конкретной библиотеки HTTP. Код, использующий напрямую aiohttp, не затронут
+4. **Разумная настройка тайм-аутов**: установка разумных тайм-аутов в зависимости от скорости ответа API, чтобы избежать длительных блокировок
+5. **Использование механизма повторных попыток**: включение повторных попыток для нестабильных API для повышения надежности
+6. **Мониторинг статистики запросов**: использование `sdk.client.stats` или события `client.request` для мониторинга запросов
+7. **Использование высокоуровневых методов WebSocket**: предпочтение `iter_text` / `iter_json` и другим высокоуровневым методам, использование `iter_messages` только при необходимости различать типы сообщений
 
 ## Связанные документы
 
-- [Менеджер маршрутизации](router.md) - HTTP/WebSocket маршрутизация сервера (серверное WebSocketConnection и клиент разделяют один и тот же базовый класс)
+- [Менеджер маршрутов](router.md) - HTTP/WebSocket маршруты сервера (WebSocketConnection сервера и клиента используют один и тот же базовый класс)
 - [Руководство по разработке адаптеров](../developer-guide/adapters/getting-started.md) - Использование HTTP-клиента в адаптерах
-- [Управление жизненным циклом](lifecycle.md) - Отслеживание событий запросов
-
-Пожалуйста, напрямую верните переведённый полный Markdown-контент, не добавляя никаких других слов.
+- [Управление жизненным циклом](lifecycle.md) - Наблюдение за событиями запросов

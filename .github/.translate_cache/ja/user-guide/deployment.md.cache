@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "hash": "5418ab277132c47deb1a6002eca60f27",
+  "file_hash": "5418ab277132c47deb1a6002eca60f27",
+  "translated_at": "2026-09-01T07:08:26.570281",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "79c1fe3ced542b0bad0e236e5e32635a",
+      "translation": "# 部署ガイド\n\nErisPulse ロボットを本番環境にデプロイするためのベストプラクティス。"
+    },
+    {
+      "hash": "3fa9bfe84182476aae4f16552c6b9567",
+      "translation": "## Docker 部署（推奨）\n\nErisPulse は、ErisPulse フレームワークと Dashboard 管理パネルを内蔵した公式の Docker イメージを提供しており、`linux/amd64` および `linux/arm64` アーキテクチャをサポートしています。\n\n### 速攻起動\n\n```bash\n# イメージの取得\ndocker pull erispulse/erispulse:latest\n\n# docker-compose.yml のダウンロード\ncurl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml\n\n# Dashboard のログイントークンを設定して起動\nERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d\n```\n\n起動後、`http://localhost:8000/Dashboard` にアクセスし、設定したトークンをパスワードとしてログインしてください。\n\n### 国内用のイメージ加速\n\nDocker Hub にアクセスできない場合は、GitHub Container Registry を使ってイメージを取得できます：\n\n```bash\ndocker pull ghcr.io/erispulse/erispulse:latest\n```\n\nghcr.io のイメージを使用する場合は、`docker-compose.yml` の `image` を変更する必要があります：\n\n```yaml\nservices:\n  erispulse:\n    image: ghcr.io/erispulse/erispulse:latest\n```\n\n### docker-compose.yml\n\n```yaml\nservices:\n  erispulse:\n    image: erispulse/erispulse:latest\n    container_name: erispulse\n    ports:\n      - \"${ERISPULSE_PORT:-8000}:8000\"\n    volumes:\n      - ./config:/app/config\n    environment:\n      - TZ=${TZ:-Asia/Shanghai}\n      - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}\n    restart: unless-stopped\n```\n\n### 環境変数\n\n| 変数 | デフォルト値 | 説明 |\n|------|--------|------|\n| `ERISPULSE_PORT` | `8000` | Dashboard のポートマッピング |\n| `ERISPULSE_DASHBOARD_TOKEN` | 自動生成 | Dashboard のログイントークン（設定を強く推奨） |\n| `TZ` | `Asia/Shanghai` | タイムゾーン |\n\n### データの永続化\n\n`./config` ディレクトリは、設定ファイルとデータベースをマウントしており、以下を含みます：\n\n- `config/config.toml` — 設定ファイル\n- `config/config.db` — SQLite ストレージデータベース\n- `config/.packages` — Python site-packages の永続化ボリューム。フレームワーク、アダプター、およびインストール済みモジュールを保存します（最初の起動時にエントリポイントがイメージ内に含まれるバックアップから自動的に初期化され、その後のモジュールインストールとフレームワークのホットアップデートはこのディレクトリに書き込まれます）。"
+    },
+    {
+      "hash": "1dd6fb81a95d024d49dcd5a71698e3d3",
+      "translation": "## Dashboard 管理面板\n\nErisPulse Docker イメージには、Web による視覚化管理インターフェースを提供する Dashboard モジュールが内蔵されています。\n\n### 機能概要\n\n| 機能 | 説明 |\n|------|------|\n| 仪表盘 | システム概要、CPU/メモリの監視、稼働時間、イベント統計 |\n| ロボット管理 | 各プラットフォームのロボットのオンライン状態と情報を表示 |\n| 事件查看 | 実時イベントのストリーム、タイプやプラットフォームごとのフィルタリングが可能 |\n| ログ查看 | モジュールとレベルごとのフィルタリングが可能なログビューア |\n| モジュール管理 | インストール済みのモジュールとアダプターの表示、読み込み、アンロード |\n| モジュールストア | リモートで利用可能なパッケージを閲覧し、ワンクリックでインストール可能 |\n| 配置編集 | `config.toml` のオンライン編集 |\n| ストレージ管理 | キー値ストアデータの閲覧と編集 |\n| バックアップ | 設定とストレージデータのエクスポート/インポート |\n| 審計ログ | すべての管理操作の記録 |\n\n### Dashboard によるモジュールのインストール\n\nDashboard にはモジュールストア機能が統合されており、以下の方法でモジュールをインストールできます。\n\n1. **ストアからインストール**：リモートのモジュールリストを閲覧し、必要なモジュールを選択してワンクリックでインストール\n2. **ローカルパッケージのアップロード**：`.whl` または `.zip` ファイルを直接アップロードしてインストール。個人開発のモジュールをテストするのに便利です。\n\n> **モジュール開発者のための迅速なテストフロー**：Docker でデプロイした後、Dashboard の「ローカルパッケージのアップロード」機能を使用して、ビルドした `.whl` ファイルを直接アップロードしてテストできます。コンテナを手動で操作する必要がありません。"
+    },
+    {
+      "hash": "7e10604c369bb838b73517e88f98b64a",
+      "translation": "## プロセス監督とハードリスタート\n\nErisPulse のハードリスタート (`sdk.hard_restart()`) は、**外部の監督者**がプロセスの終了コードが 42 のときにプロセスを再起動することに依存しています。SDK 自身は新しいプロセスを起動しません。本番環境では監督者の設定が必須です。監督者が設定されていない場合、ハードリスタート後にプロセスは自動的に復旧しません。\n\n- Docker: `restart: unless-stopped`（終了コードが 42 を含む場合もすべて再起動）\n- systemd: `Restart=on-failure` + `RestartForceExitStatus=42`\n- PM2 / supervisord: 42 を再起動可能な終了コードに追加\n- 純粋な Python によるカスタム監督者: `Popen` のループ + `returncode == 42` の検出\n\n各監督者の完全な設定例と終了コード 42 の契約に関する説明は、[起動プロセス → 監督者ガイド](../advanced/startup.md#監督者ガイド)をご覧ください。"
+    },
+    {
+      "hash": "2bfc91f6fdd70a66e393ffd10242a08a",
+      "translation": "## ヘルスチェック\n\nSDK には、ヘルスチェック用エンドポイントが内蔵されています。\n\n```bash\n# ヘルスチェック\ncurl http://localhost:8000/health\n```\n\nDocker でのヘルスチェックは、`docker-compose.yml` に追加することで可能です。\n\n```yaml\nservices:\n  erispulse:\n    healthcheck:\n      test: [\"CMD\", \"curl\", \"-f\", \"http://localhost:8000/health\"]\n      interval: 30s\n      timeout: 10s\n      retries: 3\n```"
+    },
+    {
+      "hash": "cf24afa4836cdd22acf5e805e6db0c87",
+      "translation": "## リバースプロキシ\n\nNginx などのリバースプロキシ経由で Dashboard を公開する必要がある場合：\n\n```nginx\nserver {\n    listen 80;\n    server_name bot.example.com;\n\n    location / {\n        proxy_pass http://127.0.0.1:8000;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n    }\n\n    # WebSocket のサポート（Dashboard のリアルタイムイベントストリームが必要）\n    location /Dashboard/ws {\n        proxy_pass http://127.0.0.1:8000;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n    }\n}\n```\n\nSSL は Let's Encrypt を使用できます：\n\n```bash\nsudo certbot --nginx -d bot.example.com\n```"
+    },
+    {
+      "hash": "7e444a39202a9c8f2054040bd5af42d9",
+      "translation": "## 手動デプロイ（pip）\n\nDocker を使用しない場合でも、手動でデプロイすることができます。\n\n### 本番環境の設定\n\n```toml\n# config/config.toml\n\n[ErisPulse.server]\nhost = \"0.0.0.0\"\nport = 8000\n\n[ErisPulse.logger]\nlevel = \"INFO\"\nlog_files = [\"app.log\"]\nmemory_limit = 5000\n\n[ErisPulse.framework]\nenable_lazy_loading = true\n```\n\n### systemd (Linux)\n\n`/etc/systemd/system/erispulse-bot.service` を作成します：\n\n```ini\n[Unit]\nDescription=ErisPulse Bot\nAfter=network.target\n\n[Service]\nType=simple\nUser=bot\nWorkingDirectory=/opt/erispulse-bot\nExecStart=/opt/erispulse-bot/venv/bin/epsdk run main.py\nRestart=always\nRestartSec=5\nStandardOutput=journal\nStandardError=journal\n\n[Install]\nWantedBy=multi-user.target\n```\n\n管理コマンド：\n\n```bash\nsudo systemctl daemon-reload\nsudo systemctl start erispulse-bot\nsudo systemctl enable erispulse-bot\nsudo journalctl -u erispulse-bot -f\n```\n\n### Supervisor\n\n`/etc/supervisor/conf.d/erispulse-bot.conf` を作成します：\n\n```ini\n[program:erispulse-bot]\ncommand=/opt/erispulse-bot/venv/bin/python -m ErisPulse run main.py\ndirectory=/opt/erispulse-bot\nuser=bot\nautostart=true\nautorestart=true\nstderr_logfile=/var/log/erispulse-bot/err.log\nstdout_logfile=/var/log/erispulse-bot/out.log\n```"
+    },
+    {
+      "hash": "b634cb064eb3e5689c793eb3ae87b330",
+      "translation": "## セキュリティに関する推奨事項\n\n1. **Dashboard トークンの設定**：強力なランダムなトークンを使用し、デフォルト値は使用しないでください。\n2. **ポートをパブリックに公開しない**：リバースプロキシ + SSL を使用しない限り、Dashboard のポートをローカルネットワークに限定してください。\n3. **データディレクトリの保護**：`config/` ディレクトリには設定情報やデータベースが含まれているため、適切なファイル権限を設定してください。\n4. **定期的なアップデート**：`epsdk self-update` を使用するか、最新の Docker イメージをプルしてください。\n5. **root で実行しない**：手動でデプロイする場合は、専用のユーザーを作成してください。\n6. **Docker のリスタートポリシーの使用**：`restart: unless-stopped` を使用して、異常終了後に自動的に再起動されるようにしてください。"
+    },
+    {
+      "hash": "4390212870747e62813e58876de81a65",
+      "translation": "## マルチインスタンスデプロイ\n\n複数のロボットインスタンスを実行する場合：\n\n1. 各インスタンスは独立したプロジェクトディレクトリと `docker-compose.yml` を使用します。\n2. 異なるポート番号を使用します: `ERISPULSE_PORT=8001`\n3. 異なるコンテナ名を使用します: `container_name: erispulse-bot2`"
+    },
+    {
+      "hash": "9d4cc1289c67a45fe6c328de63995cfe",
+      "translation": "## 更新とメンテナンス\n\n### Docker 方式\n\n```bash\n# 最新のイメージを取得\ndocker compose pull\n\n# 新しいイメージを使用して再起動\ndocker compose up -d\n```\n\n### pip 方式\n\n```bash\nepsdk self-update\nepsdk upgrade\n```\n\n### バックアップ\n\n`config/` ディレクトリを定期的にバックアップしてください：\n\n```bash\n# Docker 部署の場合\ntar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/\n\n# または Dashboard の「バックアップ」機能を使用してエクスポート\n```"
+    }
+  ]
+}

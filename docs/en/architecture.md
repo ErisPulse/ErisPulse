@@ -2,7 +2,9 @@
 
 This document introduces the technical architecture of the ErisPulse SDK through visual diagrams to help you quickly understand the framework's design philosophy and module relationships.
 
+Please directly return the complete translated Markdown content without any additional text.
 
+Once again, please note: if the document contains language switch lines (lines with language names separated by `` | ``), strictly follow the formatting requirements outlined in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## SDK Core Architecture
 
@@ -85,7 +87,7 @@ flowchart TD
 
 ## Event Handling Flow
 
-The following diagram illustrates the complete flow path of messages from the platform to the handlers:
+The following diagram illustrates the complete message flow from the platform to the handler:
 
 ```mermaid
 flowchart LR
@@ -106,7 +108,7 @@ flowchart LR
 
 ### Detailed Event Handling Chain
 
-The above diagram shows the "result"; below is a breakdown of what the framework does behind the scenes after `adapter.emit()` — this is a three-layer dispatch chain:
+The diagram above shows the "result." Below, we break down what the framework does behind the scenes after `adapter.emit()` is called—this is a three-layer dispatch chain:
 
 ```mermaid
 sequenceDiagram
@@ -122,39 +124,40 @@ sequenceDiagram
     A->>A: Process self field (meta branch / Bot auto-registration)
     A->>A: Middleware Chain (serial, can rewrite event data)
     A->>A: Collect handlers (specific type + wildcard *)
-    A->>A: Scope Filtering (silent skip before creating Task)
+    A->>A: Identity Admission + Scope Filtering (silent discard/skip before task creation)
     A->>T: asyncio.create_task (fire-and-forget)
-    A->>A: lifecycle.adapter.event.dispatched (latest hook)
-    T->>T: Get concurrency semaphore (default limit 64)
+    A->>A: lifecycle.adapter.event.dispatched (final hook)
+    T->>T: Acquire concurrency semaphore (default limit 64)
     T->>E: Call Event module-mounted handlers
     E->>E: lifecycle.event.pre_process
-    E->>E: ignore_self (messages default ignore self)
-    E->>E: Group by priority: high → low, serial between groups, concurrent within group
-    E->>E: Concurrent execution within group + field merging (conflict warning)
+    E->>E: ignore_self (message events default to ignore self)
+    E->>E: Group by priority: high → low, group inter-serial, group intra-concurrent
+    E->>E: Intra-group copy execution + field merge (conflict warning)
     E->>E: Post-group check stop() to block lower priority
-    T->>T: Slow Log (warn if > 1s, wait_reply time excluded from timeout)
+    T->>T: Slow Log (warn if over 1s, wait_reply time whitelisted)
 ```
 
-**What the framework does at each step and what you can intervene:**
+**What the framework does at each step, and what you can intervene:**
 
-| Stage | What the framework does | What you can intervene |
+| Phase | What the framework does | What you can intervene |
 |------|-------------|-----------|
-| Receive | Extract standard fields, retain `{platform}_raw` raw data; write `[Recv]` log | Listen `adapter.event.receive` to get earliest event |
-| self field | Meta events go through connect/disconnect/heartbeat branches; ordinary events auto-register Bot and trigger `adapter.bot.online` | Listen `adapter.bot.online` / `bot.offline` |
-| Middleware | **Serial** execution, if return value is not None it replaces event data | Register middleware to rewrite or intercept events |
-| Dispatch Collection | First get specific type handler, then get `*` wildcard handler | — |
-| Scope Filtering | Determine `scope.is_allowed` by owner (session level > Bot level > platform level), **silently skip if not allowed** | Configure scope whitelist/blacklist |
-| Scheduling | Each matching handler gets an independent `asyncio.Task`, `emit()` **returns immediately without waiting** for handler completion | — |
-| Priority | High priority group executes first; **serial between groups, concurrent within group** (each handler holds its own event copy, modifies fields and merges back to original event, conflict issues WARNING) | `@command(..., priority=N)` / specify priority during registration |
-| Blocking | After each group is processed, check `event.is_stopped()`, if triggered, **lower priority groups are not executed** | `event.mark_processed(stop=True)` / `event.done()` |
+| Receive | Extract standard fields, retain `{platform}_raw` raw data; write `[Recv]` log | Listen to `adapter.event.receive` to get the earliest event |
+| self field | Meta events branch into connect/disconnect/heartbeat; regular events auto-register Bot and trigger `adapter.bot.online` | Listen to `adapter.bot.online` / `bot.offline` |
+| Middleware | **Serial** execution, if return value is not None, replace event data | Register middleware to rewrite or intercept events |
+| Dispatch Collection | First get specific type handlers, then get `*` wildcard handlers | — |
+| Identity Dimension | At dispatch entry point, determine whether to accept event based on user > session > Bot > adapter (`scope.is_identity_allowed`), **discard entire event if rejected** | Bind `ErisPulse.scope.identity` |
+| Scope Filtering | Determine `scope.is_allowed` based on module owner (session level > Bot level > platform level), **silently skip if not passed** | Configure scope whitelist/blacklist |
+| Scheduling | Each matching handler runs in an independent `asyncio.Task`, `emit()` **returns immediately without waiting** for handler completion | — |
+| Priority | High-priority groups execute first; **inter-group serial, intra-group concurrent** (each group holds its own event copy, modified fields are merged back into the original event, conflicts trigger WARNING) | `@command(..., priority=N)` / specify priority at registration |
+| Blocking | After each group is processed, check `event.is_stopped()`, if triggered, **do not execute lower priority** | `event.mark_processed(stop=True)` / `event.done()` |
 
-> **Common Misunderstandings**:
-> 1. **Scope filtering is silent** — filtered handlers do not report errors or respond, only visible in TRACE-level logs (`core.scope.denied`). If "my module did not receive the message," first check scope binding.
-> 2. **Handlers are naturally concurrent** — the framework already creates independent Tasks for each handler, you **do not need** to wrap them with `asyncio.create_task` yourself.
-> 3. **No blocking within the same priority group** — `mark_processed(stop=True)` only blocks lower priority groups, handlers already running concurrently within the same group are not interrupted mid-execution.
-> 4. **Slow log threshold is fixed at 1 second** — handlers taking over 1s will issue a WARNING in the log (time spent waiting for `wait_reply` is excluded from the timeout), but execution is not interrupted.
+> **Common Misconceptions**:
+> 1. **Scope filtering is silent**—filtered handlers do not report errors or respond, only visible in TRACE-level logs (`core.scope.denied`). If "my module did not receive messages," prioritize checking scope binding.
+> 2. **Handlers are naturally concurrent**—the framework already creates independent tasks for each handler, so you **do not need** to wrap them with `asyncio.create_task`.
+> 3. **No blocking within the same priority group**—`mark_processed(stop=True)` only prevents lower-priority groups from executing, handlers already running concurrently within the same group are not interrupted.
+> 4. **Slow log threshold is fixed at 1 second**—if handler execution exceeds 1 second, a WARNING is logged (`wait_reply` waiting time is excluded from the duration), but execution is not interrupted.
 
-> For details on scope binding and priority, see [Scope System](docs/en/advanced/scope.md); for full semantics of claim/blocking, see [Event Handling Introduction](docs/en/getting-started/event-handling.md); for concurrency limit configuration, see [Configuration Guide](docs/en/user-guide/configuration.md#Framework_Configuration).
+> For details on the three-level scope binding and priority, see [Scope System](advanced/scope.md); for the full semantics of claim/blocking, see [Event Handling Introduction](getting-started/event-handling.md); for concurrency limit configuration, see [Configuration Guide](user-guide/configuration.md#Framework_Configuration).
 
 ## Lifecycle Events
 
@@ -277,6 +280,7 @@ flowchart TD
 - Local plugin `moduleInfo.meta.source == "plugin_folder"`, seamlessly coexists with PyPI-installed package modules
 - When names conflict, local takes precedence (for easy local override and debugging), and disabled plugins remove corresponding entry-point entries
 
+Please directly return the complete translated Markdown content, without any additional text.
 
 ## Local Plugin Hot Reload Architecture
 
@@ -298,3 +302,9 @@ flowchart TD
     L --> M["Mounts new instance to sdk attribute"]
     M --> N["File deletion → automatically removed from load results"]
 ```
+
+7. **Important: Path replacement rule**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
+   - This ensures links point to the correct language version of the document

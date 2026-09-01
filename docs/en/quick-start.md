@@ -1,6 +1,6 @@
 # Quick Start
 
-> **This is your first step.** Get an ErisPulse bot up and running from scratch in 5 minutes.
+> **This is your first step.** Get an ErisPulse robot up and running from scratch in 5 minutes.
 
 ## Install ErisPulse
 
@@ -20,12 +20,12 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 
 The script will guide you through:
 
-- **Docker Installation** (Recommended when Docker is detected): Select the image source (Docker Hub / GHCR), version channel (Stable / Preview), Dashboard management panel configuration, and port settings.
-- **Traditional Installation**: Automatically create virtual environment, select ErisPulse version, and optionally install the Dashboard management panel module.
+- **Docker Installation** (Recommended if Docker is detected): Select image source (Docker Hub / GHCR), version channel (Stable / Pre-release), Dashboard management panel configuration, port settings
+- **Traditional Installation**: Automatically create a virtual environment, select ErisPulse version, optionally install Dashboard management panel module
 
 ### Using Docker
 
-The Docker image comes with the ErisPulse framework and Dashboard management panel built-in.
+The Docker image already includes the ErisPulse framework and Dashboard management panel.
 
 ```bash
 # Download docker-compose.yml
@@ -36,9 +36,9 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
 <details>
-<summary>Docker Hub unavailable?</summary>
+<summary>Can't access Docker Hub?</summary>
 
-Use the GitHub Container Registry image and modify the `image` in `docker-compose.yml`:
+Use GitHub Container Registry image, modify the `image` in `docker-compose.yml`:
 
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
@@ -46,17 +46,17 @@ image: ghcr.io/erispulse/erispulse:latest
 
 </details>
 
-After starting, access `http://<host>:8000/Dashboard` and login with the set token.
+After starting, access `http://<host>:8000/Dashboard` and log in using the set token.
 
 ### Using pip
 
-Make sure your Python version is >= 3.10, then install with pip:
+Ensure your Python version is >= 3.10, then install using pip:
 
 ```bash
 pip install ErisPulse
 ```
 
-If you have already installed [uv](https://github.com/astral-sh/uv), you can also use `uv pip install ErisPulse`, which is faster.
+If you have already installed [uv](https://github.com/astral-sh/uv), you can also use `uv pip install ErisPulse` for faster installation.
 
 ## Initialize Project
 
@@ -66,7 +66,7 @@ If you have already installed [uv](https://github.com/astral-sh/uv), you can als
 epsdk init
 ```
 
-This will launch an interactive wizard to guide you through:
+This will start an interactive wizard that guides you through:
 - Project name setup
 - Log level configuration
 - Server configuration (host and port)
@@ -76,30 +76,31 @@ This will launch an interactive wizard to guide you through:
 ### Quick Initialization
 
 ```bash
-# Quick mode specifying project name
+# Quick mode with specified project name
 epsdk init -q -n my_bot
 
-# Or only specifying project name
+# Or just specify the project name
 epsdk init -n my_bot
 ```
 
 ### Manual Project Creation
 
-If you prefer to manually create the project:
+If you prefer to create the project manually:
 
 ```bash
 mkdir my_bot && cd my_bot
 epsdk init
+```
 
-## Installing Modules
+## Install Modules
 
-### Installing via CLI
+### Install via CLI
 
 ```bash
 epsdk install Yunhu AIChat
 ```
 
-### Viewing Available Modules
+### View Available Modules
 
 ```bash
 epsdk list-remote
@@ -107,23 +108,25 @@ epsdk list-remote
 
 ### Interactive Installation
 
-Enter the interactive installation interface when package name is not specified:
+When no package name is specified, the interactive installation interface is entered:
 
 ```bash
 epsdk install
+```
 
 ## Running the Project
 
 ```bash
-# Normal run
+# Run normally
 epsdk run main.py
 
 # Hot reload mode (recommended for development)
 epsdk run main.py --reload
+```
 
 ## Enable IDE Completion (Optional)
 
-ErisPulse dynamic discovery modules/adapters cannot be auto-completed by IDEs by default for platform-specific methods.
+ErisPulse dynamically discovers modules/adapters, and the IDE cannot complete platform-specific methods by default.  
 Run the following command to generate type stubs:
 
 ```bash
@@ -137,17 +140,20 @@ from _ep_types import Yunhu
 from ErisPulse import sdk
 
 adapter: Yunhu = sdk.adapter.get("yunhu")
-await adapter.Send.To("group", "123").Board(...)  # Complete platform-specific methods
+await adapter.Send.To("group", "123").Board(...)  # Completion for platform-specific methods
+```
 
 ## Project Structure
 
-The structure of the initialized project:
+The project structure after initialization:
 
 ```
 my_bot/
 ├── config/
 │   └── config.toml          # Configuration file
 └── main.py                  # Entry file
+
+```
 
 ## Configuration File
 
@@ -162,23 +168,24 @@ port = 8000
 level = "INFO"
 
 [Yunhu_Adapter]
-# Adapter Configuration
+# Adapter configuration
+```
 
 ## Next Steps
 
-Once the bot is up and running, you can continue as needed:
+After the bot is running, you can continue as needed:
 
 **Want to understand how the framework works?**
 - [Basic Concepts](getting-started/basic-concepts.md) — Adapter / Module / Event design
-- [Architecture Overview](architecture.md) — Visualized architecture diagrams
+- [Architecture Overview](architecture.md) — Visual architecture diagram
 
 **Want to implement more features?**
 - [Common Task Examples](getting-started/common-tasks.md) — Storage, scheduled tasks, permission control
-- [Event Handling Introduction](getting-started/event-handling.md) — Messages, notifications, request handling
+- [Event Handling Introduction](getting-started/event-handling.md) — Message, notification, request handling
 
-**Want to develop your own modules / adapters?**
+**Want to develop your own module / adapter?**
 - [Module Development Introduction](developer-guide/modules/getting-started.md)
 - [Adapter Development Introduction](developer-guide/adapters/getting-started.md)
 
-**For reference:**
-- [Configuration File Guide](user-guide/configuration.md) · [CLI Commands](user-guide/cli-reference.md) · [Deployment Guide](user-guide/deployment.md)
+**Check as needed:**
+- [Configuration File Reference](user-guide/configuration.md) · [CLI Commands](user-guide/cli-reference.md) · [Deployment Guide](user-guide/deployment.md)

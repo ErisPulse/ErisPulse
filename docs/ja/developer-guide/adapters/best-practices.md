@@ -1,20 +1,18 @@
-# アダプタ開発のベストプラクティス
+# アダプター開発のベストプラクティス
 
-このドキュメントは、ErisPulse アダプタ開発におけるベストプラクティスの提案を提供します。
-
-docs/ja/quick-start.md
+このドキュメントでは、ErisPulse アダプター開発におけるベストプラクティスの推奨事項を提供します。
 
 ## Bot 状態管理と Meta イベント
 
-アダプタは `adapter.emit()` を使ってメタイベントを送信し、フレームワークが Bot の接続状態、オンライン/オフライン、およびハートビート情報を自動的に追跡できるようにする必要があります。
+アダプタは、`adapter.emit()` を通じてメタイベントを送信し、フレームワークが Bot の接続状態、ログイン/ログアウト、およびハートビート情報を自動的に追跡できるようにする必要があります。
 
 ### 1. メタイベントを送信するタイミング
 
-| イベント | `detail_type` | 発生タイミング | フレームワークの動作 |
+| イベント | `detail_type` | トリガタイミング | フレームワークの動作 |
 |------|--------------|---------|---------|
-| 接続 | `"connect"` | Bot がプラットフォームに接続したとき | Bot を登録し、`adapter.bot.online` ライフサイクルイベントをトリガー |
-| 切断 | `"disconnect"` | Bot がプラットフォームから切断したとき | Bot をオフラインとマークし、`adapter.bot.offline` ライフサイクルイベントをトリガー |
-| ハートビート | `"heartbeat"` | 定期的に送信（推奨：30～60秒） | Bot のアクティブ時間とメタ情報を更新 |
+| 接続 | `"connect"` | Bot がプラットフォームと接続を確立したとき | Bot を登録し、`adapter.bot.online` ライフサイクルイベントをトリガ |
+| 切断 | `"disconnect"` | Bot がプラットフォームとの接続を切断したとき | Bot をオフライン状態に設定し、`adapter.bot.offline` ライフサイクルイベントをトリガ |
+| ハートビート | `"heartbeat"` | 定期的に送信（推奨：30-60秒） | Bot のアクティブ時間とメタ情報を更新 |
 
 ### 2. メタイベントの送信
 
@@ -25,7 +23,7 @@ class MyAdapter(BaseAdapter):
     async def _ws_handler(self, websocket):
         bot_id = self._get_bot_id()
 
-        # Bot オンライン：一行で connect イベントを送信
+        # Bot のオンライン：1行で connect イベントを送信
         await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="私のロボット")
 
         try:
@@ -37,13 +35,13 @@ class MyAdapter(BaseAdapter):
         except WebSocketDisconnect:
             pass
         finally:
-            # Bot オフライン
+            # Bot のオフライン
             await self.emit_meta("disconnect", bot_id)
 ```
 
 ### 3. ハートビートイベント
 
-アダプタは接続が有効な間、定期的にハートビートイベントを送信して Bot のアクティブ時間を更新する必要があります：
+アダプタは、接続が維持されている間、定期的にハートビートイベントを送信して Bot のアクティブ時間を更新する必要があります：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -56,10 +54,10 @@ class MyAdapter(BaseAdapter):
 
 ### 4. `self` フィールドの自動発見
 
-フレームワークの `adapter.emit()` は、すべてのイベント（メタイベントだけでなく一般のイベントも）の `self` フィールドを自動的に処理します：
+フレームワークの `adapter.emit()` は、すべてのイベント（メタイベントに限らず）の `self` フィールドを自動的に処理します：
 
-- **一般イベント**（message/notice/request）の `self` フィールドは自動的に Bot を発見して登録します
-- **`self` フィールドの拡張情報**：`user_name`、`nickname`、`avatar`、`account_id` のオプションフィールドをサポート
+- **通常のイベント**（message/notice/request）の `self` フィールドは、自動的に Bot を登録します
+- **`self` フィールドの拡張情報**：`user_name`、`nickname`、`avatar`、`account_id` などのオプションフィールドがサポートされています
 
 ```python
 # イベントコンバーターに self フィールドを含めることで Bot を自動登録できます
@@ -90,22 +88,23 @@ from ErisPulse import sdk
 info = sdk.adapter.get_bot_info("myplatform", "bot123")
 # {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
 
-# すべての Bot を取得（プラットフォームごとにグループ化）
+# すべての Bot を取得（プラットフォーム別にグループ化）
 all_bots = sdk.adapter.list_bots()
 
-# 指定のプラットフォームの Bot を取得
+# 指定されたプラットフォームの Bot を取得
 platform_bots = sdk.adapter.list_bots("myplatform")
 
 # Bot がオンラインかどうかを確認
 is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
 
-# 完全な状態サマリーを取得（WebUI での表示に適しています）
+# 完全なステータスサマリーを取得（WebUI に表示するのに適しています）
 summary = sdk.adapter.get_status_summary()
 # {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
+```
 
 ## 接続管理
 
-### 1. 接続の再試行の実装
+### 1. 接続の再試行実装
 
 ```python
 import asyncio
@@ -130,11 +129,11 @@ class MyAdapter(BaseAdapter):
                     )
                     await asyncio.sleep(wait_time)
                 else:
-                    self.logger.error("接続に失敗しました。最大再試行回数に達しました")
+                    self.logger.error("接続に失敗しました。最大試行回数に達しました")
                     raise
 ```
 
-### 2. 接続状態の管理
+### 2. 接続状態管理
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -160,7 +159,7 @@ class MyAdapter(BaseAdapter):
 
 ### 3. ハートビート保活と Meta ハートビート
 
-アダプタのハートビートは、2つのタスクを同時に実行する必要があります。プラットフォームにハートビートを送信し、フレームワークに meta heartbeat イベントを送信します。
+アダプターのハートビートは、2つのタスクを同時に完了する必要があります。プラットフォームにハートビート保活を送信し、フレームワークに meta heartbeat イベントを送信します。
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -171,10 +170,10 @@ class MyAdapter(BaseAdapter):
     async def _heartbeat_loop(self):
         while self.connection:
             try:
-                # 1. プラットフォームにハートビートを送信
+                # 1. プラットフォームにハートビート保活を送信
                 await self.connection.send_json({"type": "ping"})
 
-                # 2. フレームワークに meta heartbeat を送信（emit_meta で1行で完了）
+                # 2. フレームワークに meta heartbeat イベントを送信（emit_meta で一行で完了）
                 await self.emit_meta("heartbeat", self._bot_id)
 
                 await asyncio.sleep(30)
@@ -185,7 +184,7 @@ class MyAdapter(BaseAdapter):
 
 ### 4. 接続情報の公開
 
-アダプタが登録したルートは、ユーザーがプラットフォーム側のコールバックアドレスを設定できるように、ユーザーに見えるようにする必要があります。start() で接続情報を明示的に出力することを推奨します：
+アダプターが登録したルートは、ユーザーがプラットフォーム側のコールバックアドレスを設定できるように、ユーザーに見えるようにする必要があります。`start()` で接続情報を積極的に出力することを推奨します。
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -204,30 +203,30 @@ class MyAdapter(BaseAdapter):
                     f"{info.get('connection', {}).get('websocket_routes', [])}")
 ```
 
-ユーザーは以下の API を使用して、アダプタのすべてのルートと接続アドレスを確認できます：
+ユーザーは以下の API を使用して、アダプターのすべてのルートと接続アドレスを確認できます：
 
 ```python
 from ErisPulse import sdk
 
-# アダプタレベルの接続情報（推奨）
+# アダプター単位の接続情報（推奨）
 info = sdk.adapter.get_connection_info("myplatform")
 
-# ルートマネージャレベルのクエリ
+# ルートマネージャー単位のクエリ
 sdk.router.list_namespaces()              # すべてのネームスペースをリストアップ
 sdk.router.get_module_routes("myplatform")  # 詳細なルート情報
 sdk.router.get_module_urls("myplatform")    # 完全な接続 URL
 ```
 
-> **注意**: ルート登録時の `module_name` は、ErisPulse でアダプタが登録する `platform` 名と完全に一致している必要があります。一致しない場合、`get_connection_info()` はルートを正しく関連付けできません。複数アカウント対応のアダプタは、異なる `module_name` を使用するのではなく、それぞれのアカウントにサブパス（例: `/account1/webhook`、`/account2/webhook`）を登録する必要があります。
+> **注意**：ルート登録時の `module_name` は、ErisPulse でアダプターが登録した `platform` 名と完全に一致する必要があります。一致しない場合、`get_connection_info()` はルートと関連付けられません。複数のアカウントを持つアダプターは、異なる `module_name` を使用するのではなく、各アカウントにサブパス（例：`/account1/webhook`、`/account2/webhook`）を登録する必要があります。
 
-## イベント変換
+## 事件変換
 
 ### 1. OneBot12 標準に厳密に従う
 
 ```python
 class MyPlatformConverter:
     def convert(self, raw_event):
-        """イベントを変換する"""
+        """イベントを変換"""
         onebot_event = {
             "id": str(raw_event.get("event_id", uuid.uuid4())),
             "time": int(time.time()),
@@ -238,25 +237,25 @@ class MyPlatformConverter:
                 "platform": "myplatform",
                 "user_id": str(raw_event.get("bot_id", ""))
             },
-            "myplatform_raw": raw_event,  # 保持原始数据（必须）
-            "myplatform_raw_type": raw_event.get("type", "")  # 原始类型（必须）
+            "myplatform_raw": raw_event,  # 原始データを保持する（必須）
+            "myplatform_raw_type": raw_event.get("type", "")  # 原始のイベントタイプ（必須）
         }
         return onebot_event
 ```
 
-### 2. タイムスタンプの標準化
+### 2. 時間スタンプの標準化
 
 ```python
 def _convert_timestamp(self, timestamp):
-    """10 位の秒単位タイムスタンプに変換する"""
+    """10桁の秒単位の時間スタンプに変換"""
     if not timestamp:
         return int(time.time())
     
-    # 1000 分の 1 秒単位のタイムスタンプの場合
+    # ミリ秒単位の時間スタンプの場合
     if timestamp > 10**12:
         return int(timestamp / 1000)
     
-    # 1 秒単位のタイムスタンプの場合
+    # 秒単位の時間スタンプの場合
     return int(timestamp)
 ```
 
@@ -266,7 +265,7 @@ def _convert_timestamp(self, timestamp):
 import uuid
 
 def _generate_event_id(self, raw_event):
-    """イベント ID を生成する"""
+    """イベント ID を生成"""
     event_id = raw_event.get("event_id")
     if event_id:
         return str(event_id)
@@ -274,18 +273,16 @@ def _generate_event_id(self, raw_event):
     return str(uuid.uuid4())
 ```
 
-[**English**](docs/en/advanced/event_conversion.md) | [**中文**](docs/ja/advanced/event_conversion.md) | [**日本語**](docs/ja/advanced/event_conversion.md)
-
 ## SendDSL 実装
 
-`At`/`AtAll`/`Reply` 修飾子はフレームワークの SendDSL 基底クラスに内蔵されており、アダプタは `Raw_ob12` と具体的な送信メソッドを実装するだけでよい。開発を簡素化するために `self._apply_modifiers(message)` と `self.send_context` を使用する。
+`At`/`AtAll`/`Reply` 修飾子はフレームワークの SendDSL 基底クラスに内蔵されており、アダプタは `Raw_ob12` と具体的な送信メソッドを実装するだけでよい。`self._apply_modifiers(message)` と `self.send_context` を使用して開発を簡素化する。
 
-### 1. 必須で Task オブジェクトを返すこと
+### 1. 必ず Task オブジェクトを返す
 
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """推奨される実装：フレームワークの補助メソッドを使用"""
+        """推奨実装: フレームワークの補助メソッドを使用"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -300,7 +297,7 @@ class Send(BaseAdapter.Send):
         return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-### 2. チェーン修飾メソッドは self を返すこと
+### 2. チェーン修飾メソッドは self を返す
 
 ```python
 class Send(BaseAdapter.Send):
@@ -314,12 +311,12 @@ class Send(BaseAdapter.Send):
         return self # self を返す
 ```
 
-### 3. プラットフォーム固有のメソッドをサポートすること
+### 3. プラットフォーム特有のメソッドをサポート
 
 ```python
 class Send(BaseAdapter.Send):
     def Sticker(self, sticker_id: str):
-        """スタンプを送信"""
+        """絵文字パックを送信"""
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_sticker",
@@ -337,12 +334,13 @@ class Send(BaseAdapter.Send):
                 **self.send_context
             )
         )
+```
 
-## API レスポンス
+## APIレスポンス
 
 ### 1. 標準化されたレスポンス形式
 
-フレームワークは `make_response()` および `make_error()` メソッドを使用して標準化されたレスポンスを構築します：
+フレームワークは `make_response()` および `make_error()` メソッドを提供し、標準化されたレスポンスを構築します。
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -365,11 +363,11 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-`make_response()` は `{platform}_raw` キーを含むレスポンス辞書を自動的に生成します。`make_error()` はデフォルトで `retcode=34000`（Platform Error）を使用します。
+`make_response()` は、`{platform}_raw` というキーを含むレスポンス辞書を自動的に生成します。`make_error()` はデフォルトで `retcode=34000`（Platform Error）を使用します。
 
 ### 2. エラーコード規格
 
-OneBot12 標準エラーコードに従います：
+OneBot12 標準のエラーコードに従います：
 
 ```python
 # 1xxxx - アクションリクエストエラー
@@ -377,7 +375,7 @@ OneBot12 標準エラーコードに従います：
 10002: Unsupported Action
 10003: Bad Param
 
-# 2xxxx - アクションハンドラーエラー
+# 2xxxx - アクションハンドラエラー
 20001: Bad Handler
 20002: Internal Handler Error
 
@@ -389,17 +387,11 @@ OneBot12 標準エラーコードに従います：
 35000: Logic Error
 ```
 
-**重要：パスの置換ルール**
-- ドキュメントのリンク内の `docs/ja/` を `docs/ja/` に置換する
-- 例: `docs/ja/quick-start.md` は `docs/ja/quick-start.md` に変更する
-- 非現在言語版ファイルを指すリンク（`README.xx.md` 形式のリンク）は、変更しないでそのままにする
-- これにより、リンクが正しい言語のドキュメントバージョンを指すようにする
-
 ## 多アカウントサポート
 
 ### 1. 宣言的構成（推奨）
 
-`AccountConfigClass` を宣言構成クラスとして使用すると、フレームワークは多アカウントのロード、検証、テンプレート生成を自動的に管理します。`BotAccountConfig` 基底クラスは `enabled` および `name` フィールドを提供し、アダプタは宣言する必要がありません。
+`AccountConfigClass` を宣言構成クラスとして使用することで、フレームワークが多アカウントの自動ロード、検証、テンプレート生成を管理します。`BotAccountConfig` 基底クラスは `enabled` および `name` フィールドを提供しており、アダプタは宣言する必要がありません。
 
 ```python
 from dataclasses import dataclass, field
@@ -418,9 +410,9 @@ class MyAdapter(BaseAdapter):
     
     async def start(self):
         for name, account in self.enabled_accounts.items():
-            self.logger.info(f"アカウント {name} を起動中")
+            self.logger.info(f"アカウント {name} を起動")
             await self._connect(name, account.token)
-            # bot_id はフレームワークによってプラットフォームプロトコル/ログイン応答から自動的に取得され、再設定されます
+            # bot_id はフレームワークによってプラットフォームプロトコル/ログイン応答から自動的に取得され、再挿入されます
     
     async def call_api(self, endpoint: str, **params):
         account_id = params.pop("account_id", None)
@@ -428,7 +420,7 @@ class MyAdapter(BaseAdapter):
         # name: アカウント名, account: MyBotConfig インスタンス
 ```
 
-構成ファイルは自動的に以下のように生成されます：
+構成ファイルは自動的に生成されます：
 
 ```toml
 [MyAdapter.accounts.default]
@@ -439,10 +431,10 @@ name = ""
 
 ### 2. アカウント選択メカニズム
 
-フレームワークには `_resolve_account()` メソッドが内蔵されており、以下の優先順位でマッチします：
+フレームワークは `_resolve_account()` メソッドを内蔵しており、以下の優先順位でマッチングします：
 
-1. **アカウント名** — 構成キー名の正確な一致
-2. **`bot_id` フィールド** — 自動的に取得される bot_id（つまり `event["self"]["user_id"]`）
+1. **アカウント名** — 構成のキー名と正確に一致
+2. **`bot_id` フィールド** — 自動的に取得される bot_id（すなわち `event["self"]["user_id"]`）
 3. **任意の str フィールド** — 構成内の他の文字列フィールド
 4. **デフォルト** — 最初に有効化されたアカウント
 
@@ -457,13 +449,11 @@ name, account = self._resolve_account("bot_123")
 name, account = self._resolve_account(None)
 ```
 
-[**English**](docs/ja/quick-start.md)
-
 ## エラー処理
 
 ### 1. 分類された例外処理
 
-`make_error()` を使用して標準化されたエラー応答を構築します。`sdk.client` を通じてリクエストを実行する際、ErisPulse 例外をキャッチします：
+`make_error()` を使用して標準化されたエラーレスポンスを構築します。`sdk.client` を使用してリクエストする際には、ErisPulse の例外をキャッチします：
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
@@ -488,29 +478,30 @@ async def call_api(self, endpoint: str, **params):
         self.logger.error("JSON 解析に失敗しました")
         return self.make_error(retcode=10006, message="レスポンス形式が不正です")
     except Exception as e:
-        self.logger.error(f"未知のエラー: {e}", exc_info=True)
+        self.logger.error(f"不明なエラー: {e}", exc_info=True)
         return self.make_error(message=str(e))
 ```
 
-> **後方互換性**：`aiohttp` を直接使用する既存のアダプタコードは影響を受けず、引き続き `aiohttp.ClientError` をキャッチできます。例外の変換は `sdk.client` を通じてリクエストを発行する場合にのみ有効です。
+> **互換性の維持**：`aiohttp` を直接使用する旧いアダプタのコードは影響を受けず、`aiohttp.ClientError` をキャッチし続けることができます。例外の変換は、`sdk.client` を通じてリクエストを発行する場合にのみ有効になります。
 
 ### 2. ログ記録
 
-フレームワークは、アダプタごとにサブloggerを自動的に作成します（`sdk.logger.get_child("MyAdapter")`）。手動での初期化は不要です：
+フレームワークは自動的にアダプタ用のサブ logger を作成します（`sdk.logger.get_child("MyAdapter")`）。手動で初期化する必要はありません：
 
 ```python
 class MyAdapter(BaseAdapter):
-    # ConfigClass = ...  # 設定クラスを宣言した後、self.logger は自動的に利用可能になります
+    # ConfigClass = ...  # 設定クラスを宣言すると self.logger を自動的に使用可能になります
     
     async def start(self):
-        self.logger.info("アダプタを起動中...")
+        self.logger.info("アダプタの起動中...")
         # ...
         self.logger.info("アダプタの起動完了")
     
     async def shutdown(self):
-        self.logger.info("アダプタをシャットダウン中...")
+        self.logger.info("アダプタの停止中...")
         # ...
-        self.logger.info("アダプタのシャットダウン完了")
+        self.logger.info("アダプタの停止完了")
+```
 
 ## テスト
 
@@ -522,7 +513,7 @@ from ErisPulse.Core.Bases import BaseAdapter
 
 class TestMyAdapter:
     def test_converter(self):
-        """テストコンバーター"""
+        """変換機能のテスト"""
         converter = MyPlatformConverter()
         raw_event = {"type": "message", "content": "Hello"}
         result = converter.convert(raw_event)
@@ -531,52 +522,53 @@ class TestMyAdapter:
         assert "myplatform_raw" in result
     
     def test_api_response(self):
-        """テストAPIレスポンス形式"""
+        """APIレスポンス形式のテスト"""
         adapter = MyAdapter()
         response = adapter.call_api("/test", param="value")
         assert "status" in response
         assert "retcode" in response
 ```
 
-### 2. 統合テスト
+### 2. 集成テスト
 
 ```python
 @pytest.mark.asyncio
 async def test_adapter_start():
-    """テストアダプター起動"""
+    """アダプターの起動テスト"""
     adapter = MyAdapter()
     await adapter.start()
     assert adapter._connected is True
 
 @pytest.mark.asyncio
 async def test_send_message():
-    """テストメッセージ送信"""
+    """メッセージ送信のテスト"""
     adapter = MyAdapter()
     await adapter.start()
     
     result = await adapter.Send.To("user", "123").Text("Hello")
     assert result is not None
+```
 
 ## 逆変換とメッセージ構築
 
-`Raw_ob12` はアダプタが**必須で実装すべき**メソッドであり、OneBot12 → プラットフォームへの逆変換の統一エントリポイントです。標準メソッド（`Text`、`Image` 等）は `Raw_ob12` に委譲する必要があります。また、修飾子の状態（`At`/`Reply`/`AtAll`）は `Raw_ob12` 内でメッセージセグメントとして統合される必要があります。
+`Raw_ob12` はアダプタが**実装しなければならない**メソッドであり、OneBot12 → プラットフォームへの逆変換の統一エントリポイントです。標準メソッド（`Text`、`Image` など）は `Raw_ob12` に委譲する必要があります。修飾子ステータス（`At`/`Reply`/`AtAll`）は `Raw_ob12` 内でメッセージセグメントに統合される必要があります。
 
-`MessageBuilder` は `Raw_ob12` と併用するためのメッセージセグメント構築ツールであり、チェーン呼び出しと高速な構築をサポートしています。
+`MessageBuilder` は `Raw_ob12` と併用するためのメッセージセグメント構築ツールであり、チェーン呼び出しと高速な構築をサポートします。
 
-> 完全な実装規格、コード例および使用方法については、以下を参照してください：
+> 完全な実装規格、コード例、および使用方法については、以下を参照してください：
 > - [送信メソッド規格 §6 逆変換規格](../../standards/send-method-spec.md#6-逆変換規格onebot12--プラットフォーム)
 > - [送信メソッド規格 §11 メッセージビルダー](../../standards/send-method-spec.md#11-メッセージビルダー-messagebuilder)
 
 ## プラットフォームイベントメソッド拡張
 
-アダプターは、Eventラッパークラスにプラットフォーム固有のメソッドを登録でき、モジュール開発者がプラットフォーム固有のデータに簡単にアクセスできるようにします。
+アダプタは、Eventラッパークラスにプラットフォーム固有のメソッドを登録することで、モジュール開発者がプラットフォーム固有のデータにアクセスしやすくすることができます。
 
-### 1. Mixin クラスを使用した一括登録（推奨）
+### 1. Mixinクラスを使用した一括登録（推奨）
 
-プラットフォームに複数の固有メソッドがある場合、Mixin クラスを使用することを推奨します：
+プラットフォームに複数の固有メソッドがある場合、Mixinクラスを使用することを推奨します。
 
 ```python
-# アダプターの start() またはモジュールレベルで登録
+# アダプタの start() またはモジュールレベルで登録
 from ErisPulse.Core.Event import register_event_mixin
 
 class MyPlatformEventMixin:
@@ -607,7 +599,7 @@ def get_chat_name(self):
     return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
 ```
 
-### 3. アダプターのシャットダウン時にクリーンアップ
+### 3. アダプタ終了時のクリーンアップ
 
 ```python
 from ErisPulse.Core.Event import unregister_platform_event_methods
@@ -616,23 +608,23 @@ class MyAdapter(BaseAdapter):
     async def shutdown(self):
         # プラットフォームイベントメソッドの登録をクリーンアップ
         unregister_platform_event_methods("myplatform")
-        # ... その他のクリーンアップ
+        # ... 他のクリーンアップ処理
 ```
 
-> 詳細な登録とアンロードの説明については、[イベントシステム API - アダプターによるプラットフォーム拡張メソッドの登録](../../api-reference/event-system.md#アダプターによるプラットフォーム拡張メソッドの登録) を参照してください。
+> 詳細な登録および登録解除の説明については、[イベントシステムAPI - プラットフォーム拡張メソッドの登録](../../api-reference/event-system.md#適応器がプラットフォーム拡張メソッドを登録)を参照してください。
 
 ## ドキュメントのメンテナンス
 
-### 1. プラットフォームの機能ドキュメントのメンテナンス
+### 1. プラットフォームの機能ドキュメントの維持
 
 `docs/ja/platform-guide/` ディレクトリに `{platform}.md` ドキュメントを作成します（他の言語バージョンは自動的に生成されます）：
 
 ```markdown
-# プラットフォーム名アダプタドキュメント
+# プラットフォーム名アダプターのドキュメント
 
 ## 基本情報
-- 対応モジュールバージョン: 1.0.0
-- メンテナー: Your Name
+- 対応するモジュールのバージョン: 1.0.0
+- 維持管理者: Your Name
 
 ## 支援するメッセージ送信タイプ
 ...
@@ -646,21 +638,15 @@ class MyAdapter(BaseAdapter):
 
 ### 2. バージョン情報の更新
 
-新しいバージョンをリリースする際は、ドキュメント内のバージョン情報を更新します：
+新しいバージョンをリリースする際、ドキュメント内のバージョン情報を更新します：
 
 ```toml
 [project]
 version = "2.0.0"  # バージョン番号を更新
 ```
 
-7. **重要：パスの置換ルール**
-   - ドキュメントリンク内の `docs/ja/` を `docs/ja/` に置換します。
-   - 例：`docs/ja/quick-start.md` は `docs/ja/quick-start.md` に変更します。
-   - 非現在言語バージョンのファイルを指すリンク（例：`README.xx.md` 形式のリンク）は、変更せずにそのまま残します。
-   - これにより、リンクが正しい言語のドキュメントバージョンを指すようになります。
-
 ## 関連ドキュメント
 
-- [アダプタ開発入門](getting-started.md) - 最初のアダプタを作成する
-- [アダプタのコアコンセプト](core-concepts.md) - アダプタアーキテクチャを理解する
-- [SendDSL 詳解](send-dsl.md) - メッセージ送信の学習
+- [アダプタ開発入門](docs/ja/getting-started.md) - 最初のアダプタを作成する
+- [アダプタのコアコンセプト](docs/ja/core-concepts.md) - アダプタアーキテクチャの理解
+- [SendDSL 詳解](docs/ja/send-dsl.md) - メッセージ送信の学習

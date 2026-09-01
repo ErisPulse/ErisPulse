@@ -1,10 +1,10 @@
 # 模組開發入門
 
-本指南將引導您從零開始建立一個 ErisPulse 模組。
+本指南帶你從零開始建立一個 ErisPulse 模組。
 
-## 專案結構
+## 項目結構
 
-標準的模組結構：
+一個標準的模組結構：
 
 ```
 MyModule/
@@ -14,6 +14,7 @@ MyModule/
 └── MyModule/
     ├── __init__.py
     └── Core.py
+```
 
 ## pyproject.toml 配置
 
@@ -33,11 +34,13 @@ dependencies = []
 
 [project.entry-points."erispulse.module"]
 "MyModule" = "MyModule:Main"
+```
 
 ## __init__.py
 
 ```python
 from .Core import Main
+```
 
 ## Core.py - 基礎模組
 
@@ -60,7 +63,7 @@ class Main(BaseModule):
             lazy_load=True,
             priority=0,
             depends=[],  # 可選：依賴的其他模組列表
-            # 可選：事件驅動懶激活——聲名觸發器，首個匹配事件/命令到達時自動加載
+            # 可選：事件驅動懶激活——宣告觸發器，首個匹配事件/命令到達時自動加載
             # activate_on=[{"command": {"name": "hello", "help": "發送問候"}}],
         )
     
@@ -78,26 +81,27 @@ class Main(BaseModule):
         self.logger.info("模組已卸載")
 ```
 
-> **配置讀取**：上面的基礎示例未使用配置。需要讀取配置時，推薦聲名嵌套的 `ConfigClass` 並透過 `self.cfg` 即時讀取（見 [模組核心概念](core-concepts.md#聲名式配置推薦)）。手動調用 `_load_config()` 的舊寫法已廢棄。
+> **配置讀取**：上面的基礎範例未使用配置。需要讀取配置時，推薦宣告嵌套的 `ConfigClass` 並透過 `self.cfg` 即時讀取（見 [模組核心概念](core-concepts.md#宣告式配置推薦)）。手動呼叫 `_load_config()` 的舊寫法已廢棄。
 
 ## 測試模組
 
-### 本機測試
+### 本地測試
 
 ```bash
 # 在專案目錄安裝模組
 epsdk install ./MyModule
 
-# 執行專案
+# 運行專案
 epsdk run main.py --reload
 ```
 
-### 測試指令
+### 測試命令
 
-傳送指令測試：
+傳送命令測試：
 
 ```
 /hello
+```
 
 ## 核心概念
 
@@ -107,11 +111,11 @@ epsdk run main.py --reload
 
 | 方法 | 說明 | 必須 |
 |------|------|------|
-| `__init__(self, sdk)` | 建構函數（框架傳入 `sdk` 實例） | 否 |
+| `__init__(self, sdk)` | 建構函式（框架傳入 `sdk` 實例） | 否 |
 | `get_load_strategy()` | 返回載入策略 | 否 |
 | `get_meta()` | 返回模組介紹元資訊（可選） | 否 |
-| `on_load(self, event)` | 模組載入時呼叫 | 是 |
-| `on_unload(self, event)` | 模組卸載時呼叫 | 是 |
+| `on_load(self, event)` | 模組載入時調用 | 是 |
+| `on_unload(self, event)` | 模組卸載時調用 | 是 |
 
 ### 模組介紹 meta
 
@@ -121,7 +125,7 @@ epsdk run main.py --reload
 透過 `get_meta()` 聲明模組的介紹元資訊（這個模組是用來做什麼的、屬於哪一類等）。  
 元資訊是模組的**通用介紹資料**，供 help 模組、Dashboard 模組列表、模組商店等各類介面/生態模組消費。
 
-與 `get_load_strategy()` 返回 `ModuleLoadStrategy` 一致，**推薦返回 `ModuleMeta` 配置類實例**（屬性類型、IDE 自動補全），也相容直接返回 dict：
+與 `get_load_strategy()` 返回 `ModuleLoadStrategy` 一致，**推薦返回 `ModuleMeta` 配置類實例**（屬性鍵入、IDE 自動補全），也兼容直接返回 dict：
 
 ```python
 class MyModule(BaseModule):
@@ -153,13 +157,13 @@ class MyModule(BaseModule):
         }
 ```
 
-- `module.get_meta("MyModule")` 讀取已解析的元資訊（類宣告 > 註冊 info，自動補全該模組的命令名）。
-- `module.get_commands_overview()` 聚合「模組 meta + 其註冊的命令（別名/分組/幫助）」，按模組組織的命令總覽。
-- 命令歸屬模組透過 `cmd_info["owner"]` 取得（註冊時由上下文系統自動注入）。
+- `module.get_meta("MyModule")` 讀取已解析的元資訊（類宣告 > 註冊 info，自動補全該模組的指令名）。
+- `module.get_commands_overview()` 聚合「模組 meta + 其註冊的指令（別名/分組/幫助）」，按模組組織的指令總覽。
+- 指令歸屬模組透過 `cmd_info["owner"]` 取得（註冊時由上下文系統自動注入）。
 
 #### meta 字段的 i18n 支援
 
-元資訊字段值可用純字串，或 i18n 字典 `{"i18n": "key.path", "default": "兜底文本"}`（與配置 `description` 約定一致）。  
+元資訊字段值可用純字串，或 i18n 字典 `{"i18n": "key.path", "default": "兜底文本"}`（與設定 `description` 約定一致）。  
 翻譯鍵透過 `I18nClass` 聲明註冊，`module.get_meta()` 讀取時自動解析為當前語言文本：
 
 ```python
@@ -187,15 +191,14 @@ class MyModule(BaseModule):
 from ErisPulse import sdk
 
 sdk.storage    # 儲存系統
-sdk.config     # 配置系統
+sdk.config     # 設定系統
 sdk.logger     # 日誌系統
 sdk.adapter    # 適配器系統
 sdk.router     # 路由系統
 sdk.lifecycle  # 生命週期系統
 ```
 
-
-## 下一階段
+## 下一步
 
 - [模組核心概念](core-concepts.md) - 深入了解模組架構
 - [Event 包裝類別詳解](event-wrapper.md) - 學習 Event 物件
