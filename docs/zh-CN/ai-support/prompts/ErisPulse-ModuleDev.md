@@ -161,7 +161,7 @@ sequenceDiagram
     A->>A: 处理 self 字段（meta 分支 / Bot 自动注册）
     A->>A: 中间件链（串行，可改写事件数据）
     A->>A: 收集 handler（具体类型 + 通配符 *）
-    A->>A: 作用域过滤（创建 Task 前，静默跳过）
+    A->>A: 身份准入 + 作用域过滤（创建 Task 前，静默丢弃/跳过）
     A->>T: asyncio.create_task（fire-and-forget）
     A->>A: lifecycle.adapter.event.dispatched（最末钩子）
     T->>T: 获取并发信号量（默认上限 64）
@@ -182,7 +182,8 @@ sequenceDiagram
 | self 字段 | meta 事件走 connect/disconnect/heartbeat 分支；普通事件自动注册 Bot 并触发 `adapter.bot.online` | 监听 `adapter.bot.online` / `bot.offline` |
 | 中间件 | **串行**执行，返回值非 None 则替换事件数据 | 注册中间件改写/拦截事件 |
 | 分发收集 | 先取具体类型 handler，再取 `*` 通配符 handler | — |
-| 作用域过滤 | 按 owner 判定 `scope.is_allowed`（会话级>Bot级>平台级），**不通过则静默跳过** | 配置作用域白名单/黑名单 |
+| 身份维度 | 分发入口按 用户>会话>Bot>适配器 判定事件收不收（`scope.is_identity_allowed`），**拒绝则整个事件丢弃** | `ErisPulse.scope.identity` 绑定 |
+| 作用域过滤 | 按模块 owner 判定 `scope.is_allowed`（会话级>Bot级>平台级），**不通过则静默跳过** | 配置作用域白名单/黑名单 |
 | 调度 | 每个匹配 handler 独立 `asyncio.Task`，`emit()` **不等待** handler 完成即返回 | — |
 | 优先级 | 高优先级组先执行；**组间串行、组内并发**（组内各自持有事件副本，改字段合并回原事件，冲突打 WARNING） | `@command(..., priority=N)` / 注册时指定 priority |
 | 阻断 | 每处理完一组检查 `event.is_stopped()`，命中则**不再执行更低优先级** | `event.mark_processed(stop=True)` / `event.done()` |
@@ -1101,6 +1102,31 @@ async def at_handler(event: Event):
     await event.reply(f"你@了这些用户: {mentions}")
 ```
 
+### 通配符与正则监听
+
+四个消息装饰器（`on_message` / `on_private_message` / `on_group_message` /
+`on_at_message`）均支持 `pattern`（glob 通配符）与 `regex`（正则），不匹配的消息
+**不会触发**处理器：
+
+```python
+# glob 通配符：* 任意串、? 单字符、[seq] 字符集
+@message.on_message(pattern="签到*")
+async def signin_handler(event: Event):
+    await event.reply("签到成功")
+
+# 正则：匹配金额
+@message.on_message(regex=r"\d+\s*元")
+async def price_handler(event: Event):
+    await event.reply(f"收到金额：{event.get_text()}")
+
+# pattern 与 regex 同时给出 → 两者都须匹配
+@message.on_message(pattern="*元", regex=r"\d+\s*元")
+async def combined_handler(event: Event):
+    pass
+```
+
+`wait_reply` 同样支持这两个参数（见[等待回复](../developer-guide/modules/event-wrapper.md#等待回复功能)）。
+
 ## 命令事件处理
 
 ### 基本命令
@@ -1158,18 +1184,53 @@ async def stop_handler(event):
     await event.reply("机器人已停止")
 ```
 
-### 命令权限
+### 命令权限与访问控制
+
+命令权限分三层，从上到下逐层判定（**上层拒绝则不再看下层**）：
 
 ```python
-def is_master(event):
-    """检查用户是否为框架主人"""
-    master_list = ["user123", "user456"]
-    return event.get_user_id() in master_list
+# ① 命令权限 ACL（用户侧配置）：按命令的用户黑白名单，拒绝时回复"权限不足"
+# ② master=True —— 仅框架主人可执行（框架自动检查，拒绝时回复"权限不足"）
+@command("restart", master=True, help="重启模块")
+async def restart_handler(event):
+    await event.reply("模块已重启")
 
-@command("master", permission=is_master, help="框架主人命令")
-async def master_handler(event):
-    await event.reply("这是框架主人命令")
+# ③ permission=调用函数 —— 命令自身的控制逻辑（返回 True 才执行）
+def is_admin(event):
+    return event.get_user_id() in {"user123", "user456"}
+
+@command("panel", permission=is_admin, help="管理面板")
+async def panel_handler(event):
+    await event.reply("欢迎来到管理面板")
 ```
+
+**命令权限 ACL**（控制面 `ErisPulse.scope.commands`）：用户可为任意命令配置用户黑白名单，
+命令名支持精确与 glob 模式（如 `"roll*"`），拒绝时回复"权限不足"：
+
+```toml
+# config.toml —— 仅允许 123456 执行 restart；666 一律拒绝
+[ErisPulse.scope.commands.restart]
+allow = ["onebot11:123456"]
+deny = ["onebot11:666"]
+```
+
+判定顺序：`deny` 命中 → 拒绝；`allow` 非空且未命中 → 拒绝；否则交给开发者默认
+（`master=True` / `permission`）。运行时 API（命令名支持 glob）：
+
+```python
+from ErisPulse import sdk
+sdk.scope.allow_user("restart", "onebot11", "123456")   # 允许名单
+sdk.scope.deny_user("restart", "onebot11", "666")       # 拒绝名单
+sdk.scope.remove_acl("restart")                          # 清除黑白名单
+sdk.scope.get_acl("restart")                             # 查询当前名单
+```
+
+跨命令 / 跨用户的**事件级**访问控制（某人 / 某群 / 某 Bot 的消息收不收）
+走控制面**身份维度**（`scope.identity`）；**模块级**可用性（哪些模块能用）
+走控制面**模块维度**（`scope.platforms / bots / sessions`）。详见[统一控制面](../advanced/scope.md)。
+
+> 建议：命令内部需要联动业务逻辑的用 `master=True` / `permission`；纯按用户 / 群做
+> 访问控制的用控制面身份维度；控制模块可用性的用控制面模块维度。
 
 ### 命令优先级
 
@@ -1227,23 +1288,32 @@ async def handler_c(event):
 >
 > **慢日志**：单个处理器耗时超过 **1 秒**时，框架会在日志打 WARNING（`handler_slow`）。`wait_reply` 的等待时间会从耗时里剔除，不会因为「等人回复」误报慢。
 
-## 作用域过滤：为什么我的模块没收到消息
+## 控制面过滤：为什么我的模块没收到消息
 
-事件分发在**创建处理器 Task 之前**会做作用域过滤——按模块 owner 判定 `scope.is_allowed`（会话级 > Bot 级 > 平台级），**不通过就静默跳过**，不报错不响应。
+事件到达后有两道**静默**过滤（都不回复、不报错）：
 
-```python
-# 假设 config.toml 里把 MyModule 屏蔽在了某个群：
-[ErisPulse.scope]
-block = { yunhu = { group_123 = ["MyModule"] } }
+1. **身份维度**（`ErisPulse.scope.identity`）：事件进入分发入口时，按 用户 > 群 > Bot > 适配器 判定收不收。
+   被拒绝的**整个事件**直接丢弃，任何处理器（含命令分发器）都不会触发。
+2. **模块维度**（`ErisPulse.scope`）：事件到达某模块的处理器/命令时，按 会话 > Bot > 平台 判定
+   该模块是否可用，**不通过就静默跳过**。
+
+```toml
+# 例1：某群所有消息不传播
+[ErisPulse.scope.identity.sessions.onebot11."group_123"]
+deny = true
+
+# 例2：把 MyModule 屏蔽在某个 Bot
+[ErisPulse.scope.bots.onebot11."123456"]
+blocked = ["MyModule"]
 ```
 
-此时该群的消息到达时，`MyModule` 的命令与事件处理器**都不会被调度**。这不是 bug，是作用域机制——排查「模块没反应」时优先检查作用域绑定。
+此时该群的消息到达时，`MyModule` 的命令与事件处理器**都不会被调度**。这不是 bug，是过滤机制——排查「模块没反应」时优先检查控制面的身份与模块绑定。
 
-- 三层过滤点：适配器总线级（Task 创建前）、Event 模块级（每个优先级组内）、命令级（权限检查前）
-- 过滤日志只在 **TRACE** 级可见（`core.scope.denied`），默认 INFO 看不到任何痕迹
-- 框架级处理器（如命令分发器 `scope_exempt=True`）不受作用域影响
+- 过滤日志只在 **TRACE** 级可见（`core.scope.identity_denied` / `core.scope.denied`），默认 INFO 看不到任何痕迹
+- 框架级处理器（如命令分发器 `scope_exempt=True`）不受**模块维度**影响，但受**身份维度**影响（整个事件已丢弃）
+- 命令执行前还有第三道：命令权限 ACL（拒绝时回复"权限不足"，见上节）
 
-> 作用域三级绑定、白名单/黑名单、优先级覆盖与「default_allow」隐式拒绝语义见 [作用域系统](../../advanced/scope.md)。
+> 五维配置、匹配语法、运行时 API 见 [统一控制面](../../advanced/scope.md)。
 
 ## 链路控制：认领与阻断
 
@@ -2523,6 +2593,14 @@ async def ask_command(event: Event):
     if reply:
         name = reply.get_text()
         await event.reply(f"你好，{name}！")
+
+@command("price")
+async def price_command(event: Event):
+    await event.reply("请输入金额（如：5元）:")
+    # 回复必须匹配正则，否则继续等待直到超时
+    reply = await event.wait_reply(timeout=30, regex=r"\d+\s*元")
+    if reply:
+        await event.reply(f"收到金额：{reply.get_text()}")
 ```
 
 ## 命令信息获取
@@ -2655,12 +2733,14 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 ### 等待回复功能
 
-- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text")` - 等待用户回复
+- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text", pattern=None, regex=None)` - 等待用户回复
   - `prompt`: 提示消息，如果提供会发送给用户
   - `timeout`: 等待超时时间（秒），默认60秒
   - `callback`: 回调函数，当收到回复时执行
   - `validator`: 验证函数，用于验证回复是否有效
   - `method`: 发送提示消息的方法，默认 "Text"
+  - `pattern`: glob 通配符（`*` / `?` / `[seq]`），回复文本必须匹配，不匹配则继续等待
+  - `regex`: 正则表达式，回复文本必须匹配（`pattern` 与 `regex` 二选一），不匹配则继续等待
   - 返回用户回复的 Event 对象，超时返回 None
 
 #### 交互方法
@@ -8558,197 +8638,311 @@ CLI 拥有**独立**的国际化模块（`ErisPulse.CLI.i18n`），与框架核�
 
 
 
-### 模块作用域系统
+### 统一控制面（scope）
 
-# 模块作用域系统
+# 统一控制面（scope）
 
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-模块作用域系统用于控制"某个 Bot 只能使用哪些模块"，实现多 Bot 场景下的模块隔离。
-默认情况下所有模块对所有 Bot 开放；仅在配置绑定后才开始过滤，**模块与适配器无需任何改动**即可适配。
+统一控制面回答五个问题：**哪些模块可用、谁的事件收不收、谁能执行某条命令、
+某模块处理什么文本、覆盖哪些实现参数**。控制权完全交给用户：在模块 / 适配器 /
+命令 / 处理器注册的**上层**（配置 `ErisPulse.scope` 或运行时 `sdk.scope`）统一声明，
+事件管线在每一级自动读取并执行。
+
+控制面收敛了原有的多套权限系统，是 2.8.0 权限/访问控制的**唯一**入口：
+
+| 维度 | 控制什么 | 拒绝行为 | 配置路径 |
+|------|---------|---------|---------|
+| **① 模块** | 哪些模块可用（平台 / Bot / 会话三级） | 静默忽略（不回复、不认领） | `scope.platforms / bots / sessions` |
+| **② 身份** | 事件收不收（适配器 / Bot / 会话 / 用户四级） | 入口完全丢弃（静默） | `scope.identity.*` |
+| **③ 命令** | 谁能执行某条命令（命令名支持 glob） | 回复"权限不足"（显式） | `scope.commands` |
+| **④ 处理器** | 某模块的事件处理器按文本过滤 | 不触发（静默） | `scope.handlers` |
+| **⑤ 覆盖** | 覆盖模块/命令的实现参数（master/hidden/aliases/prefix） | ——（只改参数） | `scope.overrides` |
 
 {!--< tips >!--}
-1. 作用域以「适配器平台 + Bot 标识 + 会话标识」为维度绑定模块
-2. 支持白名单（`modules`）与黑名单（`blocked`）两种方式
-3. 被作用域禁用的模块收到消息时静默忽略，不回复提示
-4. 支持运行时 `sdk.scope.bind()` / `unbind()` 动态增删，可持久化
+1. 通过 `from ErisPulse.Core import scope` 导入单例（`sdk.scope` 同对象）
+2. `scope.is_allowed(platform, bot_id, module, session_id)` 判断模块是否可用
+3. `scope.is_identity_allowed(platform, bot_id, session_id, user_id)` 判断事件是否放行
+4. `scope.allow_user("roll*", platform, uid)` / `deny_user(...)` 命令 ACL（支持 glob）
+5. `scope.override("MyModule", "restart", master=True)` 覆盖实现参数
+6. `scope.get_stats()` 查看过滤统计；`scope.get_topology()` 查看五维拓扑
 {!--< /tips >!--}
 
-## 工作原理
+## 匹配条目语法（全系统统一）
 
-```mermaid
-flowchart TD
-    A["Bot 收到消息"] --> B["提取 (platform, bot_id, session_id)"]
-    B --> C{"查找作用域绑定<br/>（会话级 > Bot 级 > 平台级）"}
-    C -->|"会话级"| D["sessions<br/>优先级最高"]
-    C -->|"Bot 级"| E["bots<br/>覆盖平台级"]
-    C -->|"平台级"| F["platforms"]
-    D & E & F --> G{"命中绑定？"}
-    G -->|"命中"| H["按 白名单 / 黑名单 过滤模块"]
-    G -->|"未命中"| I["回退到下一级<br/>全未配置则允许全部"]
-    H --> J["被禁用的模块：命令与事件处理器均不触发<br/>（静默忽略）"]
-```
+控制面所有"名字列表"（模块名、身份键、命令名）共用同一套匹配语法
+（`ErisPulse.Core.text_match`）：
 
-- **解析优先级：会话级 > Bot 级 > 平台级**，更高优先级未绑定规则时回退到下一级；全部未配置则允许全部模块。
-- 事件数据缺少 `self`（无法识别 Bot）时，跳过 Bot 级，按会话级 / 平台级判断。
-- 框架层资源（owner 为空的处理器、命令分发器、事件总线）始终放行，不受作用域影响。
+| 语法 | 示例 | 说明 |
+|------|------|------|
+| 精确名 | `"Chat"` | 全值比较，**大小写不敏感** |
+| glob | `"Tool*"`、`"spam_*"` | `*` 任意串 / `?` 单字符 / `[seq]` 字符集，大小写不敏感 |
+| 正则 | `"re:^Danger.*"` | 以 `re:` 前缀声明，正则 `search` 匹配，默认大小写不敏感 |
+
+- 非法正则**静默降级**为"不匹配"（不抛错、不崩溃）
+- 装饰器参数（`pattern=` / `regex=`）为固定语义：`pattern` 是 glob、`regex` 是正则源码
+  （不加 `re:` 前缀）；控制面配置里的正则条目**必须**带 `re:` 前缀
+
+## 全局兜底：`default_allow`
+
+`default_allow` 是**全局唯一**的兜底开关（默认 `true`），
+对三个判定维度统一生效：
+
+- **模块维度**：未命中任何绑定 → `default_allow` 决定放行 / 拒绝
+- **身份维度**：未命中任何策略 → `default_allow` 决定放行 / 拒绝
+- **命令维度**：未配置 ACL → `default_allow=true` 交给开发者默认权限链；
+  `false`（严格模式）命令未配置 ACL 即拒绝
+
+设为 `false` 即开启"隐式拒绝"严格模式：白名单式管理，
+**没显式允许的一律拒绝**。
 
 ## 配置文件
 
 ```toml
 [ErisPulse.scope]
-default_allow = true        # 默认允许全部（false = 隐式拒绝严格模式）
-cache_size = 1024           # is_allowed 的 LRU 缓存大小
+default_allow = true        # 全局兜底（false = 隐式拒绝严格模式）
+cache_size = 1024           # LRU 缓存大小
 
-# 平台级绑定（作用于该平台所有 Bot / 会话）
+# ── ① 模块维度（优先级：会话 > Bot > 平台）──
 [ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Translate"]   # 白名单：该平台 Bot 只能使用这些模块
-blocked = ["Danger"]              # 黑名单：这些模块在该平台禁用
-
-# Bot 级绑定（作用于该 Bot 的所有会话，覆盖平台级）
+modules = ["Chat", "Tool*"]   # 白名单：精确名 / glob / re: 正则
+blocked = ["re:^Danger"]
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Chat"]
-blocked = []
-
-# 会话级绑定（作用于某个群 / 频道 / 私聊，最具体）
 [ErisPulse.scope.sessions.onebot11."789012345"]
-modules = ["Chat"]                # 该群只能使用 Chat
-blocked = []
+modules = ["Chat"]
+
+# ── ② 身份维度（优先级：用户 > 会话 > Bot > 适配器）──
+[ErisPulse.scope.identity.adapters.onebot11]
+deny = true                   # 整个适配器的事件全部丢弃
+[ErisPulse.scope.identity.bots.onebot11."123456"]
+deny = true
+[ErisPulse.scope.identity.sessions.onebot11."g_blocked"]
+deny = true
+[ErisPulse.scope.identity.users.onebot11]
+allow = ["u_admin"]           # 用户键支持 glob / re: 正则
+deny = ["u_bad", "spam_*"]
+
+# ── ③ 命令维度（命令名支持 glob）──
+[ErisPulse.scope.commands."roll*"]
+allow = ["onebot11:u_vip"]    # 用户标识 "platform:user_id"
+deny = ["onebot11:u_bad"]
+
+# ── ④ 处理器/文本维度 ──
+[ErisPulse.scope.handlers.MyModule]
+pattern = "签到*"             # 与代码内 pattern/regex 条件 AND
+regex = "re:\\d+\\s*元"
+
+# ── ⑤ 实现参数覆盖 ──
+[ErisPulse.scope.overrides.MyModule.restart]
+master = true                 # 仅框架主人可用
+hidden = true                 # 帮助中隐藏
+aliases = ["rs"]              # 追加别名
+prefix = "!"                  # 追加触发前缀
 ```
 
-语义（模块名匹配**大小写不敏感**）：
+## ① 模块维度
 
-| 配置 | 效果 |
-|------|------|
-| 仅 `modules`（白名单） | 只有列出的模块允许使用 |
-| 仅 `blocked`（黑名单） | 列出的模块被禁用，其余全部允许 |
-| 两者都配置 | 白名单限定范围，白名单内的模块再剔除黑名单 |
-| 两者都为空 / 未配置 | 遵循 `default_allow`：`true`（默认）允许全部；`false` 则隐式拒绝 |
+回答"某个上下文里，哪些模块可用"。默认全部开放；配置绑定后才开始过滤，
+**模块与适配器无需任何改动**。
 
-> `modules` 与 `blocked` 均支持字符串或字符串列表。模块名大小写不敏感（`"Chat"` 与 `"chat"` 等价）。
-> 会话标识为事件的群 ID（`group_id`）、频道 ID（`channel_id`）或私聊用户 ID（`user_id`）。
-> **会话标识跨平台隔离**：`(platform, session_id)` 组合唯一标识一个会话，`onebot11` 的 `789` 与 `telegram` 的 `789` 互不影响。
+```mermaid
+flowchart TD
+    A["事件到达某模块的处理器/命令"] --> B{"scope.is_allowed<br/>(platform, bot, module, session)"}
+    B --> C{"查找生效绑定<br/>会话级 > Bot 级 > 平台级"}
+    C -->|"命中"| D["blocked 命中 → 拒绝<br/>modules 非空 → 仅白名单放行<br/>都空 → default_allow"]
+    C -->|"未命中"| E["default_allow（默认 true = 放行）"]
+    D -->|"拒绝"| Z["静默忽略<br/>（不回复、不认领，仅 TRACE 日志）"]
+```
+
+- **解析优先级：会话级 > Bot 级 > 平台级**，高优先级绑定**整体覆盖**低优先级
+- **静默语义**：被过滤模块的命令与处理器不触发、不回复、不认领（防止跨命令误匹配），
+  仅 TRACE 级日志可见（`core.scope.denied`）
+- **框架级处理器**（`scope_exempt=True` 或 owner 为空）不受影响；模块名为空（框架层资源）始终放行
+
+## ② 身份维度（事件准入）
+
+回答"谁的事件收不收"。被拒绝的事件在**分发入口完全丢弃**——
+不进入中间件与任何处理器（含框架级），仅 TRACE 级日志可见（`core.scope.identity_denied`）。
+
+- **解析优先级：用户 > 会话 > Bot > 适配器**，取最具体的已配置策略；deny 优先于 allow
+- 每级绑定是二元策略：`{ allow = true }` 或 `{ deny = true }`
+- 用户键支持 glob / 正则（如 `"spam_*"` 拉黑一批垃圾用户）
+- 典型用法——上级 deny、个人 allow 做"例外放行"：
+
+```toml
+[ErisPulse.scope.identity.adapters.onebot11]
+deny = true
+[ErisPulse.scope.identity.users.onebot11]
+allow = ["u_admin"]   # 即使适配器级拒绝，u_admin 的事件仍然放行
+```
+
+## ③ 命令维度（命令 ACL）
+
+回答"谁能执行某条命令"。判定顺序：**deny 命中 → 拒绝；allow 白名单非空且未命中 →
+拒绝；均未配置 → 遵循 `default_allow`**（`true` 交给开发者默认权限链）。
+被拒绝的命令会显式回复"权限不足"。
+
+- 命令名支持 glob：`"roll*"` 一条规则覆盖 `roll`、`roll_dice` 等一族命令
+- 精确键优先于 glob 键（`commands.roll` 命中时不再查 `commands."roll*"`）
+- 用户标识格式 `"platform:user_id"`（与框架主人系统一致）
+- 该维度**只是用户侧的额外闸门**，与命令的 `master` / `permission` 参数串联：
+  ACL 通过后仍走开发者声明的默认权限链
+
+## ④ 处理器/文本维度
+
+按模块过滤"处理什么文本"：给某模块配置 `pattern` / `regex` 后，
+该模块的所有事件处理器只在文本命中时触发（与代码内条件 AND，需同时满足）。
+适合在不改模块代码的前提下缩小其触发范围。
+
+```toml
+[ErisPulse.scope.handlers.ChatModule]
+pattern = "闲聊*"     # ChatModule 的处理器只响应"闲聊"开头的消息
+```
+
+## ⑤ 实现参数覆盖
+
+在模块/命令注册的**上层**覆盖实现参数，不修改模块代码：
+
+```toml
+[ErisPulse.scope.overrides.MyModule.restart]
+master = true      # 覆盖为仅框架主人
+hidden = true      # 帮助列表中隐藏
+aliases = ["rs"]   # 生效别名
+```
+
+> 覆盖只改**实现参数**（master / hidden / aliases / prefix / help / usage 等）。
+> **禁用一条命令不在这里**——统一走命令维度 deny（`scope.commands` 或
+> `scope.deny_user()`），避免两套"禁用"语义打架。
 
 ## 运行时 API
 
-### 判断模块是否允许
+### 模块维度
 
 ```python
 from ErisPulse import sdk
 
-# 某个 Bot 是否允许使用某模块
-allowed = sdk.scope.is_allowed("onebot11", "123456", "Chat")
+# 判断
+sdk.scope.is_allowed("onebot11", "123456", "Chat")
+sdk.scope.is_allowed("onebot11", "123456", "Chat", "789012345")
+sdk.scope.is_allowed("onebot11", "123456", None)      # 框架层资源 -> True
 
-# 指定会话（群 / 频道 / 私聊）判断
-allowed = sdk.scope.is_allowed("onebot11", "123456", "Chat", "789012345")
+# 绑定 / 解绑
+sdk.scope.bind_module("onebot11", "123456", modules=["Chat", "Tool*"])
+sdk.scope.bind_module("onebot11", blocked=["Danger"])             # 平台级
+sdk.scope.bind_module("onebot11", "123456", "789012345", modules=["Chat"])  # 会话级
+sdk.scope.bind_module("onebot11", "123456", modules=["Music"], merge=True)  # 合并
+sdk.scope.bind_module("onebot11", "123456", modules=["Chat"], persist=False)  # 仅运行时
+sdk.scope.unbind_module("onebot11", "123456")
+
+# 查询
+sdk.scope.get("onebot11", "123456")   # {"modules": ["Chat"], "blocked": []}
 ```
 
-### 动态绑定 / 解绑
+### 身份维度
 
 ```python
-# 绑定 Bot 级白名单（持久化到配置）
-sdk.scope.bind("onebot11", "123456", modules=["Chat", "Translate"])
+# 判断事件是否放行
+sdk.scope.is_identity_allowed("onebot11", "123456", "group_9", "u1")
 
-# 绑定会话级白名单（第三参数为 session_id）
-sdk.scope.bind("onebot11", "123456", "789012345", modules=["Chat"])
+# 绑定策略（层级由参数决定：user > session > bot > adapter）
+sdk.scope.bind_identity("onebot11", user_id="u_bad", deny=True)
+sdk.scope.bind_identity("onebot11", user_id="spam_*", deny=True)   # glob
+sdk.scope.bind_identity("onebot11", "123456", "group_9", allow=True)
+sdk.scope.unbind_identity("onebot11", user_id="u_bad")
 
-# 绑定平台级黑名单
-sdk.scope.bind("onebot11", blocked=["Danger"])
-
-# 仅运行时生效（重启失效）
-sdk.scope.bind("onebot11", "123456", modules=["Chat"], persist=False)
-
-# 合并而非替换：把 Music 并入现有白名单（默认 bind 是替换）
-sdk.scope.bind("onebot11", "123456", modules=["Music"], merge=True)
-
-# 移除绑定（恢复允许全部）；可指定 session_id 移除会话级绑定
-sdk.scope.unbind("onebot11", "123456")
-sdk.scope.unbind("onebot11", "123456", "789012345")
+# 用户黑名单便捷 API
+sdk.scope.block_user("onebot11", "u_bad")
+sdk.scope.is_user_blocked("onebot11", "u_bad")
+sdk.scope.get_blocked_users()        # {"onebot11": ["u_bad"]}
+sdk.scope.unblock_user("onebot11", "u_bad")
 ```
 
-> `bind()` 默认**替换**该目标的整个绑定；`merge=True` 时将新模块/禁用并入现有绑定。
-
-### 查询绑定
+### 命令维度
 
 ```python
-# 获取生效绑定（可指定会话）
-sdk.scope.get("onebot11", "123456")              # {"modules": ["Chat"], "blocked": []}
-sdk.scope.get("onebot11", "123456", "789012345") # 会话级生效绑定
-sdk.scope.get("onebot11")                        # 平台级绑定，无则 None
+sdk.scope.is_command_allowed("roll", "onebot11", "u1")
+sdk.scope.allow_user("roll*", "onebot11", "u_vip")   # 命令名支持 glob
+sdk.scope.deny_user("roll*", "onebot11", "u_bad")
+sdk.scope.get_acl("roll*")
+sdk.scope.remove_acl("roll*")
 
-# 列出全部绑定（platforms / bots / sessions 三桶）
-sdk.scope.list_bindings()
+# 也可通过命令系统门面（等价委托）
+from ErisPulse.Core.Event import command
+command.allow_user("restart", "onebot11", "123456")
 ```
 
-### 过滤统计（调试）
+### 处理器与覆盖维度
 
 ```python
-# 查看被作用域静默过滤的次数与缓存命中情况
+sdk.scope.bind_handler("MyModule", pattern="签到*", regex=r"\d+号")
+sdk.scope.unbind_handler("MyModule")
+
+sdk.scope.override("MyModule", "restart", master=True, hidden=True)
+sdk.scope.get_override("MyModule", "restart")
+sdk.scope.remove_override("MyModule", "restart")
+```
+
+### 通用
+
+```python
+sdk.scope.list_bindings()   # 五维全量绑定
+sdk.scope.get_topology()    # 五维拓扑（供 Dashboard）
 sdk.scope.get_stats()
-# {"is_allowed_calls": 10, "filtered_count": 3, "cache_hits": 5, "cache_misses": 5}
-
+# {"module_calls": .., "module_filtered": .., "identity_checks": .., "identity_denied": ..,
+#  "command_checks": .., "command_denied": .., "cache_hits": .., "cache_misses": ..}
 sdk.scope.reset_stats()
+sdk.scope.clear()           # 清空全部绑定（仅内存生效）
 ```
 
-### 拓扑树数据
+## 缓存与热更新
 
-```python
-# 作用域部分（供 Dashboard 展示）
-sdk.scope.get_topology()
-```
+- `is_allowed` / `is_identity_allowed` 结果带 **LRU 缓存**（`scope.cache_size` 可调），
+  `bind_*` / `unbind_*` / 配置热更新（`config.updated` / `config.set`）自动失效
+- 所有维度配置改了**立即生效**，无需重启
+- 控制面是"逐事件"判断，不跨事件记忆：配置变了，下一条事件即按新规则
 
 ## 常见问题与注意事项
 
-### 1. 配置层级
+### 1. 配置层级与覆盖
 
-解析优先级：**会话级 > Bot 级 > 平台级**。高优先级绑定**整体覆盖**低优先级。
+- 模块维度：会话级 > Bot 级 > 平台级，**整体覆盖**。想"平台允许 Chat，Bot 再加 Music"，
+  必须在 Bot 级同时列出两者
+- 身份维度：用户 > 会话 > Bot > 适配器，取**最具体**的已配置策略（可做例外放行）
+- 命令维度：精确命令名优先于 glob 键
 
-```toml
-# 平台级只允许 Chat
-[ErisPulse.scope.platforms.onebot11]
-modules = ["Chat"]
+### 2. 优先用控制面而不是改模块代码
 
-# 但 Bot 级只允许 Music → 该 Bot 最终只能用 Music，不能用 Chat！
-[ErisPulse.scope.bots.onebot11."123456"]
-modules = ["Music"]
-```
+模块声明的是"开发者默认"（`master=True`、`permission=...`、`pattern=...`）；
+控制面声明的是"用户最终决定"。两者冲突时**控制面更严格的一方生效**
+（如开发者未设 master，用户可覆盖 `master = true` 收紧；用户不能通过覆盖放开
+开发者显式的限制——禁用/放行类控制走命令 deny / 身份 allow）。
 
-- 想"平台级允许 Chat，Bot 级再加 Music"，必须在 **Bot 级同时列出两者**：`modules = ["Chat", "Music"]`。
-- 同理，底层黑名单会被上层白名单覆盖：平台级 `blocked=["Danger"]` + Bot 级 `modules=["Danger"]` → Bot 级整体覆盖，Danger 可用。层级越高、越具体，越以它为准。
+### 3. 模块/命令没反应
 
-### 2. 它是"逐事件"判断，不会"粘住"
-
-作用域判断**只针对当前这一条事件**，不跨事件记忆：
-- 会话 g1 禁用了模块 A → 在 g1 的**这条**消息 A 不触发；**下一条**消息独立重新判断，若绑定没变仍不触发，绑定改了立即生效（LRU 缓存会自动失效）。
-- 会话 g2 没配绑定 → 回退到 Bot 级 / 平台级判断；都没有则按 `default_allow`。
-
-### 3. 模块没反应
-
-当你发了消息模块却没反应，先怀疑作用域而不是模块/适配器：
+先怀疑控制面而不是模块本身：
 
 ```python
-# 在模块代码或临时脚本里加一行定位
 from ErisPulse import sdk
-print(sdk.scope.is_allowed(event.get_platform(), <bot_id>, "MyModule", <session_id>))
-print(sdk.scope.get_stats())          # filtered_count > 0 说明确实被过滤了
+
+print(sdk.scope.is_allowed(event.get_platform(), bot_id, "MyModule", session_id))
+print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, user_id))
+print(sdk.scope.get_stats())   # module_filtered / identity_denied > 0 说明被静默过滤
 ```
 
-被过滤是**静默**的（不回复，避免暴露作用域规则给用户），但 `filtered_count` 会累计。
+被过滤是**静默**的（模块维度与身份维度不回复，避免暴露规则），但统计会累计；
+命令维度被 ACL 拒绝会显式回复"权限不足"。
 
 ### 4. 会话标识跨平台隔离
 
-`(platform, session_id)` 组合才是唯一标识。`[ErisPulse.scope.sessions.onebot11."789"]` 只作用于 onebot11 平台，不影响 telegram 上同为 `789` 的会话。
-
-### 5. 性能
-
-`is_allowed()` 结果带 **LRU 缓存**（默认 1024 条，`scope.cache_size` 可调），
-配置变更 / `bind()` / `unbind()` 自动失效，高频事件路径开销极小。
+`(platform, session_id)` 组合才是唯一标识。`scope.sessions.onebot11."789"`
+只作用于 onebot11，不影响 telegram 上同为 `789` 的会话。身份维度的用户键同理。
 
 ## 拓扑树 API
 
 `ModuleManager.get_topology()` 与 `AdapterManager.get_topology()` 提供模块/适配器归属关系数据，
-`sdk.get_topology()` 一键聚合三者：
+`sdk.get_topology()` 一键聚合（含控制面 `scope` 五维）：
 
 ```python
 from ErisPulse import sdk
@@ -8758,23 +8952,24 @@ topology = sdk.get_topology()
 #   "modules": {                                   # 模块 → 拥有的资源
 #     "Chat": {
 #       "loaded": True, "enabled": True,
-#       "load_strategy": {"lazy": False, "priority": 50},
-#       "info": {...},
 #       "commands": ["chat", "translate"],
 #       "handlers": {"message": 2, "notice": 1},
 #       "routes": {"http": ["/Chat/api"], "ws": [], "sse": []},
 #       "lifecycle_hooks": 3,
-#       "scope_applies": True,
 #     }
 #   },
 #   "adapters": {                                  # 适配器 → Bot → 作用域
 #     "onebot11": {
 #       "status": "started", "enabled": True,
-#       "bots": {"123456": {"status": "online", "last_active": ..., "info": {...}, "scope": {...}}},
+#       "bots": {"123456": {"status": "online", "scope": {...}}},
 #       "scope": {"modules": [...], "blocked": [...]},
 #     }
 #   },
-#   "scope": {"platforms": {...}, "bots": {...}, "sessions": {...}}   # 全部作用域绑定
+#   "scope": {                                     # 统一控制面（五维）
+#     "platforms": {...}, "bots": {...}, "sessions": {...},
+#     "identity": {"adapters": {...}, "bots": {...}, "sessions": {...}, "users": {...}},
+#     "commands": {...}, "handlers": {...}, "overrides": {...},
+#   },
 # }
 ```
 

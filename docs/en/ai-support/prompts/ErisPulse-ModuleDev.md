@@ -43,7 +43,9 @@ ErisPulse 模块开发指南
 
 This document introduces the technical architecture of the ErisPulse SDK through visual diagrams to help you quickly understand the framework's design philosophy and module relationships.
 
+Please directly return the complete translated Markdown content without any additional text.
 
+Once again, please note: if the document contains language switch lines (lines with language names separated by `` | ``), strictly follow the formatting requirements outlined in point 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## SDK Core Architecture
 
@@ -126,7 +128,7 @@ flowchart TD
 
 ## Event Handling Flow
 
-The following diagram illustrates the complete flow path of messages from the platform to the handlers:
+The following diagram illustrates the complete message flow from the platform to the handler:
 
 ```mermaid
 flowchart LR
@@ -147,7 +149,7 @@ flowchart LR
 
 ### Detailed Event Handling Chain
 
-The above diagram shows the "result"; below is a breakdown of what the framework does behind the scenes after `adapter.emit()` — this is a three-layer dispatch chain:
+The diagram above shows the "result." Below, we break down what the framework does behind the scenes after `adapter.emit()` is called—this is a three-layer dispatch chain:
 
 ```mermaid
 sequenceDiagram
@@ -163,39 +165,40 @@ sequenceDiagram
     A->>A: Process self field (meta branch / Bot auto-registration)
     A->>A: Middleware Chain (serial, can rewrite event data)
     A->>A: Collect handlers (specific type + wildcard *)
-    A->>A: Scope Filtering (silent skip before creating Task)
+    A->>A: Identity Admission + Scope Filtering (silent discard/skip before task creation)
     A->>T: asyncio.create_task (fire-and-forget)
-    A->>A: lifecycle.adapter.event.dispatched (latest hook)
-    T->>T: Get concurrency semaphore (default limit 64)
+    A->>A: lifecycle.adapter.event.dispatched (final hook)
+    T->>T: Acquire concurrency semaphore (default limit 64)
     T->>E: Call Event module-mounted handlers
     E->>E: lifecycle.event.pre_process
-    E->>E: ignore_self (messages default ignore self)
-    E->>E: Group by priority: high → low, serial between groups, concurrent within group
-    E->>E: Concurrent execution within group + field merging (conflict warning)
+    E->>E: ignore_self (message events default to ignore self)
+    E->>E: Group by priority: high → low, group inter-serial, group intra-concurrent
+    E->>E: Intra-group copy execution + field merge (conflict warning)
     E->>E: Post-group check stop() to block lower priority
-    T->>T: Slow Log (warn if > 1s, wait_reply time excluded from timeout)
+    T->>T: Slow Log (warn if over 1s, wait_reply time whitelisted)
 ```
 
-**What the framework does at each step and what you can intervene:**
+**What the framework does at each step, and what you can intervene:**
 
-| Stage | What the framework does | What you can intervene |
+| Phase | What the framework does | What you can intervene |
 |------|-------------|-----------|
-| Receive | Extract standard fields, retain `{platform}_raw` raw data; write `[Recv]` log | Listen `adapter.event.receive` to get earliest event |
-| self field | Meta events go through connect/disconnect/heartbeat branches; ordinary events auto-register Bot and trigger `adapter.bot.online` | Listen `adapter.bot.online` / `bot.offline` |
-| Middleware | **Serial** execution, if return value is not None it replaces event data | Register middleware to rewrite or intercept events |
-| Dispatch Collection | First get specific type handler, then get `*` wildcard handler | — |
-| Scope Filtering | Determine `scope.is_allowed` by owner (session level > Bot level > platform level), **silently skip if not allowed** | Configure scope whitelist/blacklist |
-| Scheduling | Each matching handler gets an independent `asyncio.Task`, `emit()` **returns immediately without waiting** for handler completion | — |
-| Priority | High priority group executes first; **serial between groups, concurrent within group** (each handler holds its own event copy, modifies fields and merges back to original event, conflict issues WARNING) | `@command(..., priority=N)` / specify priority during registration |
-| Blocking | After each group is processed, check `event.is_stopped()`, if triggered, **lower priority groups are not executed** | `event.mark_processed(stop=True)` / `event.done()` |
+| Receive | Extract standard fields, retain `{platform}_raw` raw data; write `[Recv]` log | Listen to `adapter.event.receive` to get the earliest event |
+| self field | Meta events branch into connect/disconnect/heartbeat; regular events auto-register Bot and trigger `adapter.bot.online` | Listen to `adapter.bot.online` / `bot.offline` |
+| Middleware | **Serial** execution, if return value is not None, replace event data | Register middleware to rewrite or intercept events |
+| Dispatch Collection | First get specific type handlers, then get `*` wildcard handlers | — |
+| Identity Dimension | At dispatch entry point, determine whether to accept event based on user > session > Bot > adapter (`scope.is_identity_allowed`), **discard entire event if rejected** | Bind `ErisPulse.scope.identity` |
+| Scope Filtering | Determine `scope.is_allowed` based on module owner (session level > Bot level > platform level), **silently skip if not passed** | Configure scope whitelist/blacklist |
+| Scheduling | Each matching handler runs in an independent `asyncio.Task`, `emit()` **returns immediately without waiting** for handler completion | — |
+| Priority | High-priority groups execute first; **inter-group serial, intra-group concurrent** (each group holds its own event copy, modified fields are merged back into the original event, conflicts trigger WARNING) | `@command(..., priority=N)` / specify priority at registration |
+| Blocking | After each group is processed, check `event.is_stopped()`, if triggered, **do not execute lower priority** | `event.mark_processed(stop=True)` / `event.done()` |
 
-> **Common Misunderstandings**:
-> 1. **Scope filtering is silent** — filtered handlers do not report errors or respond, only visible in TRACE-level logs (`core.scope.denied`). If "my module did not receive the message," first check scope binding.
-> 2. **Handlers are naturally concurrent** — the framework already creates independent Tasks for each handler, you **do not need** to wrap them with `asyncio.create_task` yourself.
-> 3. **No blocking within the same priority group** — `mark_processed(stop=True)` only blocks lower priority groups, handlers already running concurrently within the same group are not interrupted mid-execution.
-> 4. **Slow log threshold is fixed at 1 second** — handlers taking over 1s will issue a WARNING in the log (time spent waiting for `wait_reply` is excluded from the timeout), but execution is not interrupted.
+> **Common Misconceptions**:
+> 1. **Scope filtering is silent**—filtered handlers do not report errors or respond, only visible in TRACE-level logs (`core.scope.denied`). If "my module did not receive messages," prioritize checking scope binding.
+> 2. **Handlers are naturally concurrent**—the framework already creates independent tasks for each handler, so you **do not need** to wrap them with `asyncio.create_task`.
+> 3. **No blocking within the same priority group**—`mark_processed(stop=True)` only prevents lower-priority groups from executing, handlers already running concurrently within the same group are not interrupted.
+> 4. **Slow log threshold is fixed at 1 second**—if handler execution exceeds 1 second, a WARNING is logged (`wait_reply` waiting time is excluded from the duration), but execution is not interrupted.
 
-> For details on scope binding and priority, see [Scope System](docs/en/advanced/scope.md); for full semantics of claim/blocking, see [Event Handling Introduction](docs/en/getting-started/event-handling.md); for concurrency limit configuration, see [Configuration Guide](docs/en/user-guide/configuration.md#Framework_Configuration).
+> For details on the three-level scope binding and priority, see [Scope System](advanced/scope.md); for the full semantics of claim/blocking, see [Event Handling Introduction](getting-started/event-handling.md); for concurrency limit configuration, see [Configuration Guide](user-guide/configuration.md#Framework_Configuration).
 
 ## Lifecycle Events
 
@@ -318,6 +321,7 @@ flowchart TD
 - Local plugin `moduleInfo.meta.source == "plugin_folder"`, seamlessly coexists with PyPI-installed package modules
 - When names conflict, local takes precedence (for easy local override and debugging), and disabled plugins remove corresponding entry-point entries
 
+Please directly return the complete translated Markdown content, without any additional text.
 
 ## Local Plugin Hot Reload Architecture
 
@@ -340,6 +344,12 @@ flowchart TD
     M --> N["File deletion → automatically removed from load results"]
 ```
 
+7. **Important: Path replacement rule**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
+   - This ensures links point to the correct language version of the document
+
 
 
 ====
@@ -351,7 +361,7 @@ flowchart TD
 
 # Quick Start
 
-> **This is your first step.** Get an ErisPulse bot up and running from scratch in 5 minutes.
+> **This is your first step.** Get an ErisPulse robot up and running from scratch in 5 minutes.
 
 ## Install ErisPulse
 
@@ -371,12 +381,12 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 
 The script will guide you through:
 
-- **Docker Installation** (Recommended when Docker is detected): Select the image source (Docker Hub / GHCR), version channel (Stable / Preview), Dashboard management panel configuration, and port settings.
-- **Traditional Installation**: Automatically create virtual environment, select ErisPulse version, and optionally install the Dashboard management panel module.
+- **Docker Installation** (Recommended if Docker is detected): Select image source (Docker Hub / GHCR), version channel (Stable / Pre-release), Dashboard management panel configuration, port settings
+- **Traditional Installation**: Automatically create a virtual environment, select ErisPulse version, optionally install Dashboard management panel module
 
 ### Using Docker
 
-The Docker image comes with the ErisPulse framework and Dashboard management panel built-in.
+The Docker image already includes the ErisPulse framework and Dashboard management panel.
 
 ```bash
 # Download docker-compose.yml
@@ -387,9 +397,9 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
 <details>
-<summary>Docker Hub unavailable?</summary>
+<summary>Can't access Docker Hub?</summary>
 
-Use the GitHub Container Registry image and modify the `image` in `docker-compose.yml`:
+Use GitHub Container Registry image, modify the `image` in `docker-compose.yml`:
 
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
@@ -397,17 +407,17 @@ image: ghcr.io/erispulse/erispulse:latest
 
 </details>
 
-After starting, access `http://<host>:8000/Dashboard` and login with the set token.
+After starting, access `http://<host>:8000/Dashboard` and log in using the set token.
 
 ### Using pip
 
-Make sure your Python version is >= 3.10, then install with pip:
+Ensure your Python version is >= 3.10, then install using pip:
 
 ```bash
 pip install ErisPulse
 ```
 
-If you have already installed [uv](https://github.com/astral-sh/uv), you can also use `uv pip install ErisPulse`, which is faster.
+If you have already installed [uv](https://github.com/astral-sh/uv), you can also use `uv pip install ErisPulse` for faster installation.
 
 ## Initialize Project
 
@@ -417,7 +427,7 @@ If you have already installed [uv](https://github.com/astral-sh/uv), you can als
 epsdk init
 ```
 
-This will launch an interactive wizard to guide you through:
+This will start an interactive wizard that guides you through:
 - Project name setup
 - Log level configuration
 - Server configuration (host and port)
@@ -427,30 +437,31 @@ This will launch an interactive wizard to guide you through:
 ### Quick Initialization
 
 ```bash
-# Quick mode specifying project name
+# Quick mode with specified project name
 epsdk init -q -n my_bot
 
-# Or only specifying project name
+# Or just specify the project name
 epsdk init -n my_bot
 ```
 
 ### Manual Project Creation
 
-If you prefer to manually create the project:
+If you prefer to create the project manually:
 
 ```bash
 mkdir my_bot && cd my_bot
 epsdk init
+```
 
-## Installing Modules
+## Install Modules
 
-### Installing via CLI
+### Install via CLI
 
 ```bash
 epsdk install Yunhu AIChat
 ```
 
-### Viewing Available Modules
+### View Available Modules
 
 ```bash
 epsdk list-remote
@@ -458,23 +469,25 @@ epsdk list-remote
 
 ### Interactive Installation
 
-Enter the interactive installation interface when package name is not specified:
+When no package name is specified, the interactive installation interface is entered:
 
 ```bash
 epsdk install
+```
 
 ## Running the Project
 
 ```bash
-# Normal run
+# Run normally
 epsdk run main.py
 
 # Hot reload mode (recommended for development)
 epsdk run main.py --reload
+```
 
 ## Enable IDE Completion (Optional)
 
-ErisPulse dynamic discovery modules/adapters cannot be auto-completed by IDEs by default for platform-specific methods.
+ErisPulse dynamically discovers modules/adapters, and the IDE cannot complete platform-specific methods by default.  
 Run the following command to generate type stubs:
 
 ```bash
@@ -488,17 +501,20 @@ from _ep_types import Yunhu
 from ErisPulse import sdk
 
 adapter: Yunhu = sdk.adapter.get("yunhu")
-await adapter.Send.To("group", "123").Board(...)  # Complete platform-specific methods
+await adapter.Send.To("group", "123").Board(...)  # Completion for platform-specific methods
+```
 
 ## Project Structure
 
-The structure of the initialized project:
+The project structure after initialization:
 
 ```
 my_bot/
 ├── config/
 │   └── config.toml          # Configuration file
 └── main.py                  # Entry file
+
+```
 
 ## Configuration File
 
@@ -513,7 +529,8 @@ port = 8000
 level = "INFO"
 
 [Yunhu_Adapter]
-# Adapter Configuration
+# Adapter configuration
+```
 
 
 
@@ -1036,29 +1053,27 @@ class Main(BaseModule):
 
 This guide introduces how to handle various events in ErisPulse.
 
-Please return the complete Markdown content directly without any other text.
-
 ## Event Type Overview
 
 ErisPulse supports the following event types:
 
 | Event Type | Description | Use Cases |
-|---------|------|---------|
-| Message Event | Any message sent by a user | Chatbots, Content Filtering |
-| Command Event | Messages starting with a command prefix | Command Handling, Feature Entry Points |
-| Notice Event | System notifications (friend addition, group member changes, etc.) | Welcome Messages, Status Notifications |
-| Request Event | User requests (friend requests, group invitations) | Automatic Request Handling |
-| Meta Event | System-level events (connection, heartbeat) | Connection Monitoring, Status Checks |
+|------------|-------------|-----------|
+| Message Event | Any message sent by a user | Chatbots, content filtering |
+| Command Event | Messages starting with a command prefix | Command handling, feature entry points |
+| Notification Event | System notifications (e.g., friend added, group member changes) | Welcome messages, status notifications |
+| Request Event | User requests (e.g., friend requests, group invitations) | Automatic request handling |
+| Meta Event | System-level events (e.g., connection, heartbeat) | Connection monitoring, status checks |
 
 ## Message Event Handling
 
-> **Tip**: It is recommended to use the `Event` type annotation in event handlers to receive IDE auto-completion and type checking support.
+> **Tip**: It is recommended to use the `Event` type annotation in event handlers to get IDE auto-completion and type checking support.
 
 ```python
-from ErisPulse.Core.Event import Event  # Import the event type for annotation
+from ErisPulse.Core.Event import Event  # Import Event type for type annotation
 ```
 
-### Listen to all messages
+### Listening to All Messages
 
 ```python
 from ErisPulse.Core.Event import message, Event
@@ -1070,7 +1085,7 @@ async def message_handler(event: Event):
     sdk.logger.info(f"Received message from {user_id}: {text}")
 ```
 
-### Listen to private messages
+### Listening to Private Messages
 
 ```python
 @message.on_private_message()
@@ -1079,24 +1094,48 @@ async def private_handler(event: Event):
     await event.reply(f"Hello, {user_id}! This is a private message.")
 ```
 
-### Listen to group messages
+### Listening to Group Messages
 
 ```python
 @message.on_group_message()
 async def group_handler(event: Event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"User {user_id} sent a message in group {group_id}")
+    sdk.logger.info(f"Message sent by {user_id} in group {group_id}")
 ```
 
-### Listen to @mentions
+### Listening to @ Messages
 
 ```python
 @message.on_at_message()
 async def at_handler(event: Event):
-    # Get the list of users mentioned
+    # Get list of mentioned users
     mentions = event.get_mentions()
     await event.reply(f"You mentioned these users: {mentions}")
+```
+
+### Wildcard and Regular Expression Matching
+
+The four message decorators (`on_message`, `on_private_message`, `on_group_message`, and `on_at_message`) both support `pattern` (glob wildcard) and `regex` (regular expression). Messages that do not match will **not trigger** the handler:
+
+```python
+# Glob wildcard: * for any string, ? for single character, [seq] for character set
+@message.on_message(pattern="Sign in*")
+async def signin_handler(event: Event):
+    await event.reply("Sign-in successful")
+
+# Regular expression: match amount
+@message.on_message(regex=r"\d+\s*Yuan")
+async def price_handler(event: Event):
+    await event.reply(f"Received amount: {event.get_text()}")
+
+# Both pattern and regex provided → both must match
+@message.on_message(pattern="*Yuan", regex=r"\d+\s*Yuan")
+async def combined_handler(event: Event):
+    pass
+```
+
+The `wait_reply` also supports these two parameters (see [Wait for Reply](../developer-guide/modules/event-wrapper.md#wait-for-reply-function)).
 
 ## Command Event Handling
 
@@ -1132,7 +1171,7 @@ Users can invoke the command using any of the following:
 ### Command Parameters
 
 ```python
-@command("echo", help="Echo message")
+@command("echo", help="Echo the message")
 async def echo_handler(event):
     # Get command arguments
     args = event.get_command_args()
@@ -1150,28 +1189,58 @@ async def echo_handler(event):
 async def reload_handler(event):
     await event.reply("Module has been reloaded")
 
-@command("admin.stop", group="admin", help="Stop bot")
+@command("admin.stop", group="admin", help="Stop the bot")
 async def stop_handler(event):
     await event.reply("Bot has been stopped")
 ```
 
-### Command Permissions
+### Command Permissions and Access Control
+
+Command permissions are checked in three layers, from top to bottom (if upper layer denies, lower layers are not checked):
 
 ```python
-def is_master(event):
-    """Check if user is framework master"""
-    master_list = ["user123", "user456"]
-    return event.get_user_id() in master_list
+# ① Command ACL (user-side configuration): per-command user allow/deny list, replies "Permission denied" on denial
+# ② master=True —— Only the framework owner can execute (automatically checked by framework, replies "Permission denied" on denial)
+@command("restart", master=True, help="Restart module")
+async def restart_handler(event):
+    await event.reply("Module has been restarted")
 
-@command("master", permission=is_master, help="Master command")
-async def master_handler(event):
-    await event.reply("This is a master command")
+# ③ permission=callable —— Command-specific control logic (only executes if returns True)
+def is_admin(event):
+    return event.get_user_id() in {"user123", "user456"}
+
+@command("panel", permission=is_admin, help="Admin panel")
+async def panel_handler(event):
+    await event.reply("Welcome to the admin panel")
 ```
+
+**Command ACL** (Control Plane `ErisPulse.scope.commands`): Users can configure allow/deny lists for any command, command names support exact match and glob patterns (e.g., `"roll*"`), replies "Permission denied" on denial:
+
+```toml
+# config.toml —— Only allow user "onebot11:123456" to execute restart; deny user "onebot11:666" entirely
+[ErisPulse.scope.commands.restart]
+allow = ["onebot11:123456"]
+deny = ["onebot11:666"]
+```
+
+Evaluation order: if `deny` matches → deny; if `allow` is non-empty and does not match → deny; otherwise, proceed to developer's default (via `master=True` / `permission`). Runtime API (command names support glob):
+
+```python
+from ErisPulse import sdk
+sdk.scope.allow_user("restart", "onebot11", "123456")   # Allow list
+sdk.scope.deny_user("restart", "onebot11", "666")       # Deny list
+sdk.scope.remove_acl("restart")                          # Clear allow/deny lists
+sdk.scope.get_acl("restart")                             # Query current lists
+```
+
+Cross-command / cross-user **event-level** access control (whether a message from a specific user / group / bot is received) is handled via the control plane's **identity dimension** (`scope.identity`); **module-level** availability (which modules are available) is handled via the control plane's **module dimension** (`scope.platforms / bots / sessions`). See [Unified Control Plane](../advanced/scope.md).
+
+> Suggestion: Use `master=True` / `permission` for command logic that requires business-level coordination; use the control plane's identity dimension for access control based on user / group; use the control plane's module dimension for controlling module availability.
 
 ### Command Priority
 
 ```python
-# Higher priority number means earlier execution
+# Higher priority number executes earlier
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     await event.reply("High priority handler")
@@ -1181,28 +1250,28 @@ async def low_priority_handler(event):
     await event.reply("Low priority handler")
 ```
 
-### Parallel Event Processing
+### Parallel Event Handling
 
-ErisPulse event system uses a **parallel within same priority, serial between different priorities** scheduling model:
+ErisPulse's event system uses a **parallel execution for same priority, serial execution for different priorities** scheduling model:
 
 ```
 Event arrives
     ↓
-priority=10 group: [handler C || handler D] parallel → merge results
+priority=10 group: [Handler C || Handler D] parallel → merge results
     ↓ (if not interrupted)
-priority=0 group: [handler A || handler B] parallel → merge results
+priority=0 group: [Handler A || Handler B] parallel → merge results
     ↓
 ...
 ```
 
-- **Parallel within same priority**: Multiple handlers with the same priority execute simultaneously, increasing throughput
-- **Serial between priorities**: Groups with different priorities execute in order (higher priority numbers execute first), ensuring high-priority handlers run first
-- **Copy-On-Write**: No copy is created if handlers do not modify data, ensuring zero overhead
-- **Conflict handling**: When multiple handlers at the same priority modify the same field, the last modification is used and a warning log is recorded
-- **Interrupt mechanism**: After any handler calls `event.done()` (default) or `event.done(claim=False)`, subsequent lower priority groups are skipped. The difference between claiming and blocking is explained in the following section [**Link Control: Claiming and Blocking**](#link-control-claiming-and-blocking)
+- **Parallel within same priority**: Multiple handlers with the same priority execute simultaneously, improving throughput
+- **Serial across priorities**: Groups with different priorities execute in order (higher priority numbers execute first), ensuring high-priority handlers run first
+- **Copy-On-Write**: No copy is created if handlers do not modify the event, ensuring zero overhead
+- **Conflict handling**: When multiple handlers at the same priority modify the same field, the last modification is used, and a warning log is recorded
+- **Interruption mechanism**: After any handler calls `event.done()` (default) or `event.done(claim=False)`, subsequent lower-priority groups are skipped. The difference between claiming and blocking is explained in the following section [Link Control: Claiming and Blocking](#link-control-claiming-and-blocking)
 
 ```python
-# Example: Parallel execution of handlers with the same priority
+# Example: Parallel execution of handlers with same priority
 @message.on_message(priority=0)
 async def handler_a(event):
     # Process task A
@@ -1210,87 +1279,97 @@ async def handler_a(event):
 
 @message.on_message(priority=0)
 async def handler_b(event):
-    # Executes in parallel with handler_a
+    # Executed in parallel with handler_a
     event['result_b'] = process_b()
 
-# Serial execution of handlers with different priorities
+# Sequential execution across priorities
 @message.on_message(priority=10)
 async def handler_c(event):
     # Highest priority, executes first
     pass
 ```
 
-> **Concurrency limit**: All matching handlers' Tasks are **immediately created**, but a semaphore limits the **number of concurrent executions** by default to **64** (`ErisPulse.framework.handler_max_concurrency`, supports hot update). Tasks exceeding the limit queue on the semaphore and enter only after previous ones complete. This acts as your "pressure relief valve" during event surges.
+> **Concurrency limit**: All matching handlers' Tasks are **immediately created**, but a semaphore limits the **maximum number of concurrent executions**, defaulting to **64** (`ErisPulse.framework.handler_max_concurrency`, supports hot update). Tasks exceeding the limit are queued on the semaphore and proceed only after earlier ones complete. This acts as your "pressure relief valve" during event surges.
 >
-> **Slow logs**: If a single handler takes more than **1 second**, the framework logs a WARNING (`handler_slow`). The `wait_reply` waiting time is excluded from the timing, so delays caused by "waiting for replies" won't trigger a false slow log.
+> **Slow logs**: If a single handler takes more than **1 second**, the framework logs a WARNING (`handler_slow`). The `wait_reply` waiting time is excluded from the duration, so waiting for a reply won't trigger a slow handler warning.
 
-## Scope Filtering: Why Didn't My Module Receive Messages
+## Control Plane Filtering: Why Didn't My Module Receive the Message?
 
-Event distribution performs scope filtering **before creating the handler Task**—determining `scope.is_allowed` based on the module owner (session level > Bot level > platform level). If it fails, the event is silently skipped without error or response.
+After an event arrives, there are two **silent** filters (neither replies nor errors):
 
-```python
-# Assuming config.toml blocks MyModule in a specific group:
-[ErisPulse.scope]
-block = { yunhu = { group_123 = ["MyModule"] } }
+1. **Identity Dimension** (`ErisPulse.scope.identity`): When an event enters the distribution entry point, it is determined whether to receive the event based on User > Group > Bot > Adapter.
+   Events that are rejected are **entirely discarded**, and no handler (including the command dispatcher) will be triggered.
+2. **Module Dimension** (`ErisPulse.scope`): When an event reaches a module's handler/command, it is determined whether the module is available based on Session > Bot > Platform.
+   If it **fails the check, it is silently skipped**.
+
+```toml
+# Example 1: Do not propagate all messages from a specific group
+[ErisPulse.scope.identity.sessions.onebot11."group_123"]
+deny = true
+
+# Example 2: Block MyModule from a specific Bot
+[ErisPulse.scope.bots.onebot11."123456"]
+blocked = ["MyModule"]
 ```
 
-When messages arrive in this group, neither commands nor event handlers of `MyModule` will be scheduled. This is not a bug, but the scope mechanism—when troubleshooting "module not responding," check scope binding first.
+In this case, when messages arrive from that group, the `MyModule` command and event handlers **will not be scheduled**. This is not a bug, but a filtering mechanism—when troubleshooting "module not responding," prioritize checking the control plane's identity and module binding.
 
-- Three filtering points: adapter bus level (before Task creation), Event module level (within each priority group), command level (before permission check)
-- Filtering logs are only visible at **TRACE** level (`core.scope.denied`); default INFO level shows no trace
-- Framework-level handlers (e.g., command dispatcher with `scope_exempt=True`) are not affected by scope
+- Filter logs are only visible at the **TRACE** level (`core.scope.identity_denied` / `core.scope.denied`), and by default, nothing is visible at the INFO level.
+- Framework-level handlers (such as the command dispatcher with `scope_exempt=True`) are not affected by the **module dimension**, but are affected by the **identity dimension** (the entire event has already been discarded).
+- Before command execution, there is a third filter: command permission ACL (replies "insufficient permissions" on denial, see previous section).
 
-> For details on three-level scope binding, whitelist/blacklist, priority overrides, and the implicit "default_allow" rejection semantics, see [Scope System](../../advanced/scope.md).
+> For five-dimensional configuration, matching syntax, and runtime API, see [Unified Control Plane](../../advanced/scope.md).
 
-## Link Control: Claim and Stop
+## Link Control: Claiming and Blocking
 
 > [!NOTE]
-> The `claim=` / `stop=` parameters of `event.done()` / `event.mark_processed()` require ErisPulse **2.7.1+**.
+> The `claim=` / `stop=` parameters for `event.done()` / `event.mark_processed()` require ErisPulse **2.7.1+**.
 
-ErisPulse decouples the orthogonal semantics of "Claim" and "Stop", unified through `event.done()`, making it easy to overlay log, audit, permission, and other observation layers around command processing.
+ErisPulse decouples the two orthogonal semantics of "claiming" and "blocking," controlling them uniformly via `event.done()`, which facilitates adding observation layers (such as logging, auditing, and permissions) around command handling.
 
 **Precise definitions of the two concepts:**
 
-- **Claim (认领)**: Marks the event as handled by this processor (writes to `_processed`). The command dispatcher will **skip claiming events**—avoiding multiple command processors processing the same message. Typical scenario: Claim after successful command matching, preventing the command dispatcher from intervening again.
-- **Stop (阻断)**: Prevents the event from propagating to **lower priority** processors (writes to `_propagation_stopped`). Lower priority processors (e.g., `on_message`) will no longer see the event. Typical scenario: High priority processors have fully processed the event, and no lower priority execution is desired.
+- **Claiming (claim):** Marks the event as processed by this handler (writes to `_processed`). When the command dispatcher sees an already claimed event, it will **skip deduplication**—preventing the same message from being repeatedly processed by multiple command handlers. Typical scenario: Claim after a command match is successful, preventing the command dispatcher from intervening again.
+- **Blocking (stop):** Prevents the event from propagating to **lower-priority** handlers (writes to `_propagation_stopped`). Lower-priority handlers (e.g., `on_message`) will no longer see the event. Typical scenario: A high-priority handler has fully processed the event and does not want lower-priority handlers to execute.
 
-| `event.done(...)` | Claim | Stop | Scenario |
-|-------------------|-------|------|----------|
-| `event.done()` | ✔ | ✔ | Standard practice for commands / processors |
-| `event.done(stop=False)` | ✔ | ✘ | Only claim, allowing low priority observers (logs / stats) to continue seeing the event |
-| `event.done(claim=False)` | ✘ | ✔ | Only stop (e.g., firewall / rate limiting), but do not deduplicate commands |
+| `event.done(...)` | Claim | Block | Scenario |
+|-------------------|-------|-------|----------|
+| `event.done()` | ✔ | ✔ | Standard practice when a command/handler finishes processing |
+| `event.done(stop=False)` | ✔ | ✘ | Only claim: lower-priority observers (logging / statistics) still see the event |
+| `event.done(claim=False)` | ✘ | ✔ | Only block (e.g., firewall / rate limiting), but do not deduplicate commands |
 
-`event.done(claim=, stop=)` is an alias for `event.mark_processed(claim=, stop=)`, with completely equivalent parameters and behavior.
+`event.done(claim=, stop=)` is an alias for `event.mark_processed(claim=, stop=)`, and both have identical parameters and behavior.
 
 ```python
 @command("help")
 async def help_cmd(event):
-    event.done()            # Claim + Stop (standard practice for command processing)
+    event.done()            # Claim + Block (standard practice when command processing is complete)
 
 @message.on_message(priority=50)
 async def observer(event):
-    event.done(stop=False)  # Only claim: low priority processors still execute (logs / stats)
+    event.done(stop=False)  # Only claim: lower-priority handlers still execute (logging / statistics)
 
 @message.on_message(priority=100)
 async def firewall(event):
     if denied(event):
-        event.done(claim=False)  # Only stop: low priority processors do not execute, but no deduplication
+        event.done(claim=False)  # Only block: lower-priority handlers do not execute, but no deduplication is performed
 ```
 
-### Block Configuration for Commands and Replies
+### `block` Configuration for Commands and Replies
 
-After successful command matching / matching a reply via `wait_reply`, propagation is blocked by default (backwards compatible). You can allow the flow by configuring it so that lower priority processors (logs / audit / permission) can also observe these messages:
+By default, after a command matches successfully or `wait_reply` matches a reply, propagation is blocked (for backward compatibility). You can configure this to allow propagation to lower-priority handlers (logging / auditing / permissions) to observe these messages:
 
 ```toml
 [ErisPulse.event.command]
-block = false   # Command messages continue to flow to low priority processors
+block = false   # Command messages continue to flow to lower-priority handlers
 
 [ErisPulse.event.wait_reply]
-block = false   # Replies consumed by wait_reply continue to flow to low priority processors
+block = false   # Replies consumed by wait_reply continue to flow to lower-priority handlers
+```
 
 ## Notification Event Handling
 
-### Friend Add
+### Friend Added
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -1302,17 +1381,17 @@ async def friend_add_handler(event):
     await event.reply(f"Welcome to add me as a friend, {nickname}!")
 ```
 
-### Group Member Increase
+### Group Member Added
 
 ```python
 @notice.on_group_increase()
 async def member_increase_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    await event.reply(f"Welcome new member {user_id} to join group {group_id}")
+    await event.reply(f"Welcome new member {user_id} to group {group_id}")
 ```
 
-### Group Member Decrease
+### Group Member Removed
 
 ```python
 @notice.on_group_decrease()
@@ -1320,6 +1399,7 @@ async def member_decrease_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
     await event.reply(f"Member {user_id} has left group {group_id}")
+```
 
 ## Request Event Handling
 
@@ -1335,8 +1415,8 @@ async def friend_request_handler(event):
     
     sdk.logger.info(f"Received friend request: {user_id}, comment: {comment}")
     
-    # Requests can be handled via adapter API
-    # Please refer to the documentation of each adapter for specific implementations
+    # You can handle the request through the adapter API
+    # Refer to each adapter's documentation for specific implementation
 ```
 
 ### Group Invitation Request
@@ -1347,9 +1427,10 @@ async def group_request_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
     
-    await event.reply(f"Received group {group_id} invitation from {user_id}")
+    await event.reply(f"Received group invitation {group_id}, from {user_id}")
+```
 
-## Meta Events Handling
+## Meta Event Handling
 
 ### Connection Events
 
@@ -1373,12 +1454,12 @@ async def disconnect_handler(event):
 @meta.on_heartbeat()
 async def heartbeat_handler(event):
     platform = event.get_platform()
-    sdk.logger.debug(f"{platform} heartbeat check")
+    sdk.logger.debug(f"{platform} heartbeat detected")
 ```
 
-### Bot Status Query
+### Bot Status Queries
 
-After the adapter sends a meta event, the framework automatically tracks the Bot's status. You can query it at any time:
+After an adapter sends a meta event, the framework automatically tracks the Bot status, and you can query it at any time:
 
 ```python
 from ErisPulse import sdk
@@ -1394,24 +1475,25 @@ for platform, bot_list in bots.items():
     for bot_id, info in bot_list.items():
         print(f"{platform}/{bot_id}: {info['status']}")
 
-# Get a full status summary
+# Get a complete status summary
 summary = sdk.adapter.get_status_summary()
+```
 
-## Interactive Processing
+## Interactive Handling
 
-### Sending Replies Using the `reply` Method
+### Using the `reply` Method to Send Responses
 
-The `event.reply()` method supports various modifiers to facilitate sending messages with @, reply, and other features:
+The `event.reply()` method supports various modifiers, making it convenient to send messages with features like @ mentions and replies:
 
 ```python
 # Simple reply
 await event.reply("Hello")
 
-# Sending different types of messages
+# Send different types of messages
 await event.reply("http://example.com/image.jpg", method="Image")  # Image
 await event.reply("http://example.com/voice.mp3", method="Voice")  # Voice
 
-# @ single user
+# @ a single user
 await event.reply("Hello", at_users=["user123"])
 
 # @ multiple users
@@ -1421,13 +1503,13 @@ await event.reply("Hello everyone", at_users=["user1", "user2", "user3"])
 await event.reply("Reply content", reply_to="msg_id")
 
 # @ all members
-await event.reply("Notice", at_all=True)
+await event.reply("Announcement", at_all=True)
 
-# Combination: @ user + reply to message
+# Combine: @ user + reply to a message
 await event.reply("Content", at_users=["user1"], reply_to="msg_id")
 ```
 
-### Waiting for User Reply
+### Waiting for User Replies
 
 ```python
 @command("ask", help="Ask user")
@@ -1479,12 +1561,12 @@ async def confirm_handler(event):
     async def handle_confirmation(reply_event):
         text = reply_event.get_text().lower()
         
-        if text in ["是", "yes", "y"]:
+        if text in ["yes", "是", "y"]:
             await event.reply("Operation confirmed!")
         else:
-            await event.reply("Operation cancelled.")
+            await event.reply("Operation canceled.")
     
-    await event.reply("Confirm to execute this operation? (Yes/No)")
+    await event.reply("Confirm this operation? (Yes/No)")
     
     await event.wait_reply(
         timeout=30,
@@ -1492,9 +1574,9 @@ async def confirm_handler(event):
     )
 ```
 
-### Confirming Dialogue (confirm)
+### Confirmation Dialogue (`confirm`)
 
-Waits for user confirmation or negation, automatically recognizing built-in Chinese and English confirmation words:
+Wait for user confirmation or negation, automatically recognizing built-in Chinese and English confirmation words:
 
 ```python
 @command("confirm", help="Confirm operation")
@@ -1502,16 +1584,16 @@ async def confirm_handler(event):
     if await event.confirm("Are you sure you want to execute this operation?"):
         await event.reply("Confirmed, executing...")
     else:
-        await event.reply("Cancelled")
+        await event.reply("Operation canceled")
 
 # Custom confirmation words
-if await event.confirm("Continue?", yes_words={"go", "继续"}, no_words={"stop", "停止"}):
+if await event.confirm("Continue?", yes_words={"go", "continue"}, no_words={"stop", "stop"}):
     pass
 ```
 
-### Choice Menu (choose)
+### Selection Menu (`choose`)
 
-Users can reply with the option number or option text:
+Users can reply with option numbers or text:
 
 ```python
 @command("choose", help="Choose")
@@ -1525,10 +1607,10 @@ async def choose_handler(event):
         colors = ["Red", "Green", "Blue"]
         await event.reply(f"You selected: {colors[choice]}")
     else:
-        await event.reply("Timeout: No choice made")
+        await event.reply("No selection made within the timeout")
 ```
 
-**Merged Mode**: When `merge_prompt=True`, options are merged into the prompt message and sent in a single message using the user-specified `method`:
+**Merge Mode**: When `merge_prompt=True`, options are merged into the prompt message and sent as a single message using the specified `method`:
 
 ```python
 # Send merged prompt + options using Markdown
@@ -1540,14 +1622,14 @@ choice = await event.choose(
 )
 ```
 
-> The `{options}` placeholder controls the insertion position of options; if omitted, they are appended to the end of the prompt.
-> The `placeholder` parameter can be used to customize the placeholder (e.g., `placeholder="[choices]"`).
-> `options_format="auto"` (default) selects the style automatically based on method: Markdown → unordered list, Html → ordered list, others → plain text list.
-> For text-based methods (Text/Markdown/Html, etc.), options are merged by default; for non-text methods (Image, etc.), they are split into two messages by default.
+> The `{options}` placeholder controls where options are inserted; if not specified, they are appended to the end of the prompt.
+> You can customize the placeholder using the `placeholder` parameter (e.g., `placeholder="[choices]"`).
+> `options_format="auto"` (default) automatically selects the style based on the method: unordered list for Markdown, ordered list for HTML, plain text list for others.
+> For text-based methods (Text/Markdown/Html, etc.), options are merged by default at the end; for non-text methods (Image, etc.), options are sent as separate messages by default.
 
-### Collecting Forms (collect)
+### Collecting Forms (`collect`)
 
-Collects user input in multiple steps:
+Collect user input in multiple steps:
 
 ```python
 @command("register", help="Register")
@@ -1562,17 +1644,17 @@ async def register_handler(event):
     if data:
         await event.reply(f"Registration successful!\nName: {data['name']}\nAge: {data['age']}\nEmail: {data['email']}")
     else:
-        await event.reply("Registration timeout or invalid input")
+        await event.reply("Registration timed out or invalid input")
 ```
 
-### Waiting for Any Event (wait_for)
+### Waiting for Any Event (`wait_for`)
 
-Waits for any event meeting the conditions, not limited to the same user:
+Wait for any event that meets the condition, not limited to the same user:
 
 ```python
 @command("wait_member", help="Wait for new member")
 async def wait_member_handler(event):
-    await event.reply("Waiting for group member to join...")
+    await event.reply("Waiting for new member to join...")
     
     evt = await event.wait_for(
         event_type="notice",
@@ -1586,54 +1668,54 @@ async def wait_member_handler(event):
         await event.reply("Timeout waiting")
 ```
 
-### Multi-turn Dialogue (conversation)
+### Multi-turn Dialogue (`conversation`)
 
-Creates an interactive multi-turn dialogue context:
+Create an interactive multi-turn dialogue context:
 
 ```python
-@command("survey", help="Survey")
+@command("survey", help="Questionnaire survey")
 async def survey_handler(event):
     conv = event.conversation(timeout=60)
     
-    await conv.say("Welcome to the survey!")
+    await conv.say("Welcome to the questionnaire survey!")
     
     while conv.is_active:
         reply = await conv.wait()
         
         if reply is None:
-            await conv.say("Conversation timeout, goodbye!")
+            await conv.say("Dialogue timed out, goodbye!")
             break
         
         text = reply.get_text()
         
-        if text == "退出":
+        if text == "Exit":
             await conv.say("Goodbye!")
             break
         
-        await conv.say(f"You said: {text}, continue typing or reply '退出' to end")
+        await conv.say(f"You said: {text}, continue typing or reply 'Exit' to end")
 ```
 
 ### Built-in Confirmation Words
 
 ErisPulse includes built-in sets of Chinese and English confirmation words:
 
-- **Confirmation Words** (`CONFIRM_YES_WORDS`): 是, yes, y, 确认, 确定, 好, 好的, ok, true, 对, 嗯, 行, 同意, 没问题...
-- **Negation Words** (`CONFIRM_NO_WORDS`): 否, no, n, 取消, 不, 不要, 不行, cancel, false, 错, 拒绝, 不可以...
+- **Confirmation words** (`CONFIRM_YES_WORDS`): yes, 是, y, confirm, confirm, ok, true, 对, 嗯, 行, agree, no problem, ...
+- **Negation words** (`CONFIRM_NO_WORDS`): no, 否, n, cancel, 不, 不要, 不行, cancel, false, 错, refuse,不可以...
 
 ## Event Data Access
 
-### Common Methods of the Event Object
+### Common Event Object Methods
 
 ```python
 @command("info")
 async def info_handler(event):
-    # Basic info
+    # Basic information
     event_id = event.get_id()
     event_time = event.get_time()
     event_type = event.get_type()
     detail_type = event.get_detail_type()
     
-    # Sender info
+    # Sender information
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     
@@ -1642,10 +1724,10 @@ async def info_handler(event):
     alt_message = event.get_alt_message()
     text = event.get_text()
     
-    # Group info
+    # Group information
     group_id = event.get_group_id()
     
-    # Bot info
+    # Bot information
     self_id = event.get_self_user_id()
     self_platform = event.get_self_platform()
     
@@ -1653,24 +1735,24 @@ async def info_handler(event):
     raw_data = event.get_raw()
     raw_type = event.get_raw_type()
     
-    # Platform info
+    # Platform information
     platform = event.get_platform()
     
-    # Message type judgment
+    # Message type checking
     is_private = event.is_private_message()
     is_group = event.is_group_message()
     is_at = event.is_at_message()
     
-    # Command info
+    # Command information
     if event.is_command():
         cmd_name = event.get_command_name()
         cmd_args = event.get_command_args()
         cmd_raw = event.get_command_raw()
 ```
 
-### Platform Extension Methods
+### Platform-Specific Methods
 
-In addition to built-in methods, platform adapters also register platform-specific methods to facilitate access to platform-specific data.
+In addition to the built-in methods, each platform adapter registers platform-specific methods to allow access to platform-specific data.
 
 ```python
 from ErisPulse.Core.Event import message
@@ -1679,14 +1761,14 @@ from ErisPulse.Core.Event import message
 async def handle_message(event):
     platform = event.get_platform()
 
-    # Call specific methods according to the platform
+    # Call platform-specific methods based on the platform
     if platform == "telegram":
-        chat_type = event.get_chat_type()      # Telegram specific method
+        chat_type = event.get_chat_type()      # Telegram-specific method
     elif platform == "email":
-        subject = event.get_subject()           # Email specific method
+        subject = event.get_subject()           # Email-specific method
 ```
 
-If you are unsure whether a platform has registered a specific method, you can query which methods a platform has registered:
+If you are unsure whether a platform has registered a specific method, you can query which methods have been registered for a particular platform:
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
@@ -1695,9 +1777,9 @@ methods = get_platform_event_methods("telegram")
 # ["get_chat_type", "is_bot_message", ...]
 ```
 
-> For the platform-specific methods registered on each platform, please refer to the corresponding [Platform Documentation](../platform-guide/).
+> For platform-specific methods, please refer to the corresponding [Platform Guide](../platform-guide/).
 
-## Best Practices for Event Handling
+## Event Handling Best Practices
 
 ### 1. Exception Handling
 
@@ -1730,7 +1812,7 @@ async def message_handler(event):
     # Use the module's own logger
     from ErisPulse import sdk
     logger = sdk.logger.get_child("MyHandler")
-    logger.debug(f"Detailed debug info")
+    logger.debug(f"Detailed debug information")
 ```
 
 ### 3. Conditional Handling
@@ -1738,7 +1820,7 @@ async def message_handler(event):
 ```python
 @message.on_message(priority=0)
 async def conditional_handler(event):
-    """Conditional handling - Logic inside the handler"""
+    """Conditional handling - conditions checked inside the handler"""
     # Only process messages from specific users
     if event.get_user_id() in ["bot1", "bot2"]:
         return
@@ -1747,7 +1829,8 @@ async def conditional_handler(event):
     if "keyword" not in event.get_text():
         return
     
-    await event.reply("Conditions met, processing message")
+    await event.reply("Condition met, processing message")
+```
 
 
 
@@ -1859,6 +1942,7 @@ MyModule/
 └── MyModule/
     ├── __init__.py
     └── Core.py
+```
 
 ## pyproject.toml Configuration
 
@@ -1866,7 +1950,7 @@ MyModule/
 [project]
 name = "ErisPulse-MyModule"
 version = "1.0.0"
-description = "Module description"
+description = "Module function description"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
@@ -1878,11 +1962,13 @@ dependencies = []
 
 [project.entry-points."erispulse.module"]
 "MyModule" = "MyModule:Main"
+```
 
 ## __init__.py
 
 ```python
 from .Core import Main
+```
 
 ## Core.py - Core Module
 
@@ -1899,38 +1985,38 @@ class Main(BaseModule):
     
     @staticmethod
     def get_load_strategy():
-        """Returns the module loading strategy"""
+        """Returns the module load strategy."""
         from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,
             priority=0,
             depends=[],  # Optional: list of other modules this module depends on
-            # Optional: event-driven lazy activation - declare triggers, module will auto-load when first matching event/command arrives
-            # activate_on=[{"command": {"name": "hello", "help": "Send greeting"}}],
+            # Optional: Event-driven lazy activation - declare triggers, the module will be loaded automatically when the first matching event/command arrives
+            # activate_on=[{"command": {"name": "hello", "help": "Send a greeting"}}],
         )
     
     async def on_load(self, event):
-        """Called when the module is loaded"""
-        @command("hello", help="Send greeting")
+        """Called when the module is loaded."""
+        @command("hello", help="Send a greeting")
         async def hello_command(event):
             name = event.get_user_nickname() or "friend"
             await event.reply(f"Hello, {name}!")
         
         self.logger.info("Module loaded")
-    
+
     async def on_unload(self, event):
-        """Called when the module is unloaded"""
+        """Called when the module is unloaded."""
         self.logger.info("Module unloaded")
 ```
 
-> **Configuration Reading**: The basic example above does not use configuration. When configuration is needed, it is recommended to declare a nested `ConfigClass` and read it in real time through `self.cfg` (see [Module Core Concepts](core-concepts.md#declarative-configuration-recommended)). The old method of manually calling `_load_config()` is deprecated.
+> **Configuration Reading**: The basic example above does not use configuration. To read configuration, it is recommended to declare a nested `ConfigClass` and access it via `self.cfg` for real-time reading (see [Module Core Concepts](core-concepts.md#recommended-declarative-configuration)). The old method of manually calling `_load_config()` has been deprecated.
 
-## Test Module
+## Testing Module
 
 ### Local Testing
 
 ```bash
-# Install module in the project directory
+# Install the module in the project directory
 epsdk install ./MyModule
 
 # Run the project
@@ -1939,10 +2025,11 @@ epsdk run main.py --reload
 
 ### Test Commands
 
-Send a command test:
+Send a command to test:
 
 ```
 /hello
+```
 
 ## Core Concepts
 
@@ -1951,22 +2038,22 @@ Send a command test:
 All modules must inherit from `BaseModule`, providing the following methods:
 
 | Method | Description | Required |
-|------|------|------|
-| `__init__(self, sdk)` | Constructor (framework passes in `sdk` instance) | No |
-| `get_load_strategy()` | Return the load strategy | No |
-| `get_meta()` | Return module metadata (optional) | No |
+|--------|-------------|----------|
+| `__init__(self, sdk)` | Constructor (receives `sdk` instance from framework) | No |
+| `get_load_strategy()` | Returns the module loading strategy | No |
+| `get_meta()` | Returns module metadata (optional) | No |
 | `on_load(self, event)` | Called when the module is loaded | Yes |
 | `on_unload(self, event)` | Called when the module is unloaded | Yes |
 
-### Module Meta Information
+### Module Metadata
 
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-Declare module metadata (what the module does, its category, etc.) via `get_meta()`.  
-Metadata is **generic module introduction data** for consumption by help modules, dashboard module lists, module stores, and other interfaces/ecosystem modules.
+Declare module metadata (what the module does, its category, etc.) using `get_meta()`.  
+Module metadata is **generic introduction data** for help modules, dashboard module lists, module stores, and other interfaces/ecosystem modules.
 
-Consistent with `get_load_strategy()` returning `ModuleLoadStrategy`, **it is recommended to return an instance of the `ModuleMeta` configuration class** (with typed attributes and IDE completion), but direct return of a dict is also compatible:
+Similar to `get_load_strategy()` returning `ModuleLoadStrategy`, it is **recommended to return an instance of the `ModuleMeta` configuration class** (with type hints, IDE completion), but direct `dict` return is also supported:
 
 ```python
 class MyModule(BaseModule):
@@ -1974,15 +2061,15 @@ class MyModule(BaseModule):
     def get_meta() -> ModuleMeta:
         return ModuleMeta(
             name="Weather",               # Display name (default registration name)
-            description="Weather lookup",  # Module description
+            description="Query city weather",  # Module description
             version="1.0.0",
             author="ErisDev",
             group="Tools",               # Functional group
-            tags=["Weather", "Lookup"],
+            tags=["Weather", "Query"],
         )
 ```
 
-Compatible syntax (dict):
+Alternative (dict) syntax:
 
 ```python
 class MyModule(BaseModule):
@@ -1990,21 +2077,21 @@ class MyModule(BaseModule):
     def get_meta() -> dict:
         return {
             "name": "Weather",
-            "description": "Weather lookup",
+            "description": "Query city weather",
             "version": "1.0.0",
             "author": "ErisDev",
             "group": "Tools",
-            "tags": ["Weather", "Lookup"],
+            "tags": ["Weather", "Query"],
         }
 ```
 
-- `module.get_meta("MyModule")` reads the parsed metadata (class declaration > registration info, automatically completes the module's command name).
-- `module.get_commands_overview()` aggregates "module meta + its registered commands (aliases/groups/help)", organized by module as a command overview.
-- The module owning a command can be obtained via `cmd_info["owner"]` (automatically injected by the context system during registration).
+- `module.get_meta("MyModule")` retrieves the parsed metadata (class declaration > registered info, automatically completes the module's command name).
+- `module.get_commands_overview()` aggregates "module metadata + its registered commands (aliases/groups/help)" into a command overview organized by module.
+- The module owning a command can be retrieved via `cmd_info["owner"]` (automatically injected by the context system during registration).
 
 #### i18n Support for Meta Fields
 
-Metadata field values can be plain strings, or an i18n dictionary `{"i18n": "key.path", "default": "fallback text"}` (consistent with the `description` configuration convention).  
+Metadata field values can be plain strings or i18n dictionaries `{"i18n": "key.path", "default": "fallback text"}` (consistent with the `description` configuration convention).  
 Translation keys are declared and registered via `I18nClass`, and `module.get_meta()` automatically resolves them to the current language text:
 
 ```python
@@ -2039,15 +2126,13 @@ sdk.router     # Routing system
 sdk.lifecycle  # Lifecycle system
 ```
 
-Please directly return the translated complete Markdown content, without including any other text.
-
 
 
 ### 模块核心概念
 
 # Core Concepts of Modules
 
-Understanding the core concepts of the ErisPulse module is the foundation for developing high-quality modules.
+Understanding the core concepts of ErisPulse modules is the foundation for developing high-quality modules.
 
 ## Module Lifecycle
 
@@ -2062,16 +2147,16 @@ class MyModule(BaseModule):
     def get_load_strategy():
         """Return the module loading strategy"""
         return ModuleLoadStrategy(
-            lazy_load=True,   # Whether to load lazily or immediately
-            priority=0,       # Loading priority (higher number loads earlier)
+            lazy_load=True,   # Lazy load or immediate load
+            priority=0,       # Loading priority (higher value loads first)
             depends=["OtherModule"]  # Optional: declare dependencies on other modules
         )
 ```
 
-> If the modules declared in `depends` are not registered, the current module will be skipped and a warning will be logged. The loading order is determined by topological sorting, with modules at the same level sorted by `priority` in descending order.
+> If modules declared in `depends` are not registered, the current module will be skipped and a warning will be logged. The loading order is determined by topological sorting, and modules at the same level are sorted by `priority` in descending order.
 
 > [!NOTE]
-> **Cascading Unload / Cascading Reload** (ErisPulse **2.8.0+**): When unloading a module that is depended on by other modules, the dependent modules will be **cascadingly unloaded first** (with a log indicating the cascade chain); when hot-reloading local plugins, dependent plugins will also be **cascadingly reloaded**, preventing dependent modules from continuing to run with invalid instance references. Circular dependencies will be rejected at load time with a `RuntimeError`.
+> **Cascading Unload / Cascading Reload** (ErisPulse **2.8.0+**): When unloading a module that is depended on by other modules, the dependent modules will be **cascading unloaded first** (with a log explaining the chain). During hot reload of local plugins, dependent plugins are also **cascading reloaded**, to prevent dependent modules from holding invalid instance references and continuing to run. Circular dependencies will be rejected at load time with a `RuntimeError`.
 
 ### on_load Method
 
@@ -2083,9 +2168,9 @@ async def on_load(self, event):
     @command("hello", help="Greeting command")
     async def hello_handler(event):
         await event.reply("Hello!")
-
-    # Use SDK's built-in HTTP client (automatically manages connection pool, no need to manually create session)
-    # Send requests via sdk.client
+    
+    # Use the built-in HTTP client from SDK (automatically manages connection pool, no need to manually create session)
+    # Requests can be sent directly via sdk.client
 ```
 
 ### on_unload Method
@@ -2095,49 +2180,49 @@ Called when the module is unloaded, used for cleaning up resources:
 ```python
 async def on_unload(self, event):
     # Clean up custom resources
-    # sdk.client is managed by the framework, no need to manually close
+    # sdk.client is managed by the framework, no need to manually close it
     
     # Cancel event handlers (handled automatically by the framework)
     self.logger.info("Module has been unloaded")
 ```
 
-> Creation and cleanup of background tasks (`self.spawn()` / framework's fallback cancellation) are detailed in [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation).
+> For background task creation and cleanup (`self.spawn()` / framework default cancellation), see [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation).
 
-### Unload vs. Purge (彻底卸载)
+### Unload and Purge (彻底卸载)
 
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-`unload()` by default only **cancels loading** (unloads instances and resources), but retains registration stubs (module class and metadata) — the module can still be rediscovered by `discover` and re-instantiated by `load()` without needing to re-register.
+`unload()` by default only **cancels loading** (unloads instances and resources), but retains registration stubs (module class and metadata) — the module can still be discovered and reloaded via `load()` without needing to re-register.
 
-When you need to **completely unload** (release module class references, clean `sys.modules` so that plugins and their exclusive dependencies can be garbage collected), pass `purge=True`:
+When you need to **completely unload** (release module class references, clean `sys.modules`, allowing the plugin and its exclusive dependencies to be garbage collected), pass `purge=True`:
 
 ```python
 # Only cancel loading: retain registration stubs, can be reloaded anytime
 await sdk.module.unload("MyModule")
 
-# Completely unload: delete registration stubs + clean sys.modules (plugin source)
+# Completely unload: delete registration stubs + clean sys.modules (only for plugin folder sources)
 await sdk.module.unload("MyModule", purge=True)
 ```
 
-| Semantics | `unload()` default | `unload(purge=True)` |
-|-----------|---------------------|----------------------|
+| Meaning | `unload()` default | `unload(purge=True)` |
+|------|-----------------|----------------------|
 | Unload instances and resources (events/task/routing/lifecycle/i18n) | ✅ | ✅ |
 | Retain registration stubs (module class and metadata) | ✅ | ❌ Deleted |
 | Clean `sys.modules` (only for plugin folder sources) | ❌ | ✅ |
 | Module class can be garbage collected | ❌ | ✅ |
-| Reload | `load()` directly available | Must first `register()` + `load()` |
+| Reload | `load()` directly usable | Requires `register()` + `load()` first |
 
-> When `purge=True`, cascading unloaded dependents are also purged; after unloading, the framework will `gc.collect()` and check if module class/instance can be collected, residual references will be warned in logs (including the referencing party, DEBUG level).
+> When `purge=True`, dependent modules involved in cascading unload are also purged; after unload, the framework will `gc.collect()` and check if module classes/instances are collectible, and any residual references will be warned in logs (including the referencing party, at DEBUG level).
 
 ### Lifecycle Overview
 
-Putting the above methods together, the framework does **all the behind-the-scenes work** when loading and unloading a module:
+Putting the above methods together, here is everything the framework does behind the scenes when loading and unloading a module:
 
 ```mermaid
 flowchart TD
     subgraph Load["Loading (register → load)"]
-        L1["register: register module class and metadata"] --> L2["Dependency validation<br/>Skip if missing"]
+        L1["register: Register module class and metadata"] --> L2["Dependency validation<br/>Skipped if missing"]
         L2 --> L3["Topological sorting (Kahn + priority)"]
         L3 --> L4["owner injection current_owner"]
         L4 --> L5["Generate configuration template + register i18n translation keys"]
@@ -2147,30 +2232,30 @@ flowchart TD
     end
 
     subgraph Unload["Unloading (unload)"]
-        U1["Call on_unload()"] --> U2["Fallback cancellation of background tasks (self.spawn ownership)"]
-        U2 --> U3["Clean i18n translation keys"]
+        U1["Call on_unload()"] --> U2["Default cancellation of background tasks (self.spawn ownership)"]
+        U2 --> U3["Clean up i18n translation keys"]
         U3 --> U4["Remove routes / commands / event handlers (by owner)"]
-        U4 --> U5["Clean lifecycle hooks (by owner)"]
-        U5 --> U6["Remove SDK attribute + lazy loading proxy"]
+        U4 --> U5["Clean up lifecycle hooks (by owner)"]
+        U5 --> U6["Remove SDK attribute + lazy load proxy"]
         U6 --> U7["emit module.unload"]
     end
 
     Load --> Unload
 ```
 
-**What the framework does for you during loading** (you only need to write `on_load`, the rest is automatic):
+**What the framework does for you during loading** (you only need to write `on_load`, everything else is handled automatically):
 
-| Stage | Framework automatically does |
-|-------|------------------------------|
-| owner injection | Wrap module name with `owner_scope` during instantiation — commands/events/hooks/background tasks registered in `on_load` are **automatically assigned to this module** and cleaned up in one click when unloaded |
-| configuration template | For modules declaring `ConfigClass`, the framework automatically generates/fills the `ErisPulse.<ModuleName>` configuration section |
-| i18n translation keys | For modules declaring `I18nClass`, translation keys are automatically registered (automatically unregistered on unload) |
-| dependency topology | Sort by `depends` declaration to ensure dependent modules load first; circular dependencies are rejected with `RuntimeError` |
-| SDK mounting | After instantiation, mount to `sdk.<ModuleName>`, allowing access via `sdk.MyModule.xxx` |
+| Step | What the framework does automatically |
+|------|-------------|
+| owner injection | Wrap the module name with `owner_scope` during instantiation — all commands/events/hooks/background tasks registered in `on_load` are **automatically assigned to this module**, and cleaned up in one click during unload |
+| Configuration template | For modules declaring `ConfigClass`, the framework automatically generates/fills the `ErisPulse.<ModuleName>` configuration section |
+| i18n translation keys | For modules declaring `I18nClass`, translation keys are automatically registered (and unregistered during unload) |
+| Dependency topology | Sort by `depends` declaration to ensure dependent modules are loaded first; circular dependencies are rejected with a `RuntimeError` |
+| SDK mounting | After instantiation, mount to `sdk.<ModuleName>`, allowing you to access via `sdk.MyModule.xxx` |
 
-**What the framework cleans up for you during unloading** (corresponding to U1→U7 above): After `on_unload` completes, it performs fallback cleanup — background tasks are forcibly cancelled (created via `self.spawn`, graceful shutdown should be handled manually in `on_unload`), i18n keys, routes, commands/event handlers, lifecycle hooks, and finally removes the SDK attribute. `purge=True` additionally deletes registration stubs and cleans `sys.modules`.
+**What the framework cleans up for you during unloading** (corresponding to U1→U7 above): After `on_unload` completes, it performs a final cleanup — background tasks are forcibly cancelled (created via `self.spawn`, graceful cleanup should be done manually in `on_unload`), i18n keys, routes, commands/event handlers, lifecycle hooks, and finally removes the SDK attribute. With `purge=True`, it additionally deletes registration stubs and cleans `sys.modules`.
 
-> This automatic cleanup is the foundation for "you only need to write `on_load`/`on_unload`, no need to manually unregister" — the framework uses owner assignment to make "who registers, who cleans" a one-click process.
+> This automatic cleanup is the foundation for the principle that "you only need to write `on_load`/`on_unload`, no need to manually unregister" — the framework uses owner assignment to make "who registers, who cleans up" into a one-click process.
 
 ## SDK Objects
 
@@ -2185,16 +2270,17 @@ sdk.storage.set("key", "value")
 config = sdk.config.getConfig("MyModule")
 ```
 
-### Inter-module Communication
+### Inter-Module Communication
 
 ```python
 # Access other modules
 other_module = sdk.OtherModule
 result = await other_module.some_method()
+```
 
 ## Adapter Send Method Query
 
-Due to the new standard specifications requiring the use of the `__getattr__` method rewrite to implement the fallback send mechanism, it is no longer possible to use the `hasattr` method to check for the existence of methods. Starting from `2.3.5`, a function to query send methods has been added.
+Due to the new standard specification requiring the use of the rewritten `__getattr__` method to implement the fallback sending mechanism, it is no longer possible to use the `hasattr` method to check whether a method exists. Starting from version `2.3.5`, a new feature has been added to query send methods.
 
 ### List Supported Send Methods
 
@@ -2204,7 +2290,7 @@ methods = sdk.adapter.list_sends("onebot11")
 # Returns: ["Text", "Image", "Voice", "Markdown", ...]
 ```
 
-### Get Method Details
+### Get Method Detailed Information
 
 ```python
 # Get detailed information about a specific method
@@ -2216,14 +2302,15 @@ info = sdk.adapter.send_info("onebot11", "Text")
 #         {"name": "text", "type": "str", "default": null, "annotation": "str"}
 #     ],
 #     "return_type": "Awaitable[Any]",
-#     "docstring": "Send text message..."
+#     "docstring": "Send a text message..."
 # }
+```
 
 ## Configuration Management
 
 ### Declarative Configuration (Recommended)
 
-Starting from v2.5.2, modules can declare configuration classes using `ConfigClass`, which integrates with the adapter's configuration Schema system. Configuration is read in real-time via `self.cfg`, and changes take effect immediately:
+Starting from v2.5.2, modules can declare configuration classes using `ConfigClass`, sharing the same configuration Schema system as adapters. Configuration is read in real-time via `self.cfg`, and changes take effect immediately:
 
 ```python
 from dataclasses import dataclass, field
@@ -2268,11 +2355,11 @@ class MyModule(BaseModule):
         timeout = cfg.timeout
 ```
 
-`BaseConfig` is a generic configuration base class suitable for adapters, modules, external projects, and any scenario. Configuration fields support i18n multilingual descriptions (see [i18n documentation](../../advanced/i18n.md#multilingual-configuration-field-descriptions)).
+`BaseConfig` is a generic configuration base class suitable for adapters, modules, external projects, and any other scenarios. Configuration fields support i18n multilingual descriptions (see [i18n documentation](../../advanced/i18n.md#multilingual-configuration-fields)).
 
 ### Declarative Translation Keys (v2.7.0+)
 
-Starting from v2.7.0, modules can also declare translation keys through a nested class `I18nClass`, similar to declaring `ConfigClass`. The framework automatically registers all declared translation keys during loading, eliminating the need for manual `i18n.register()`. Registration occurs before configuration template generation, ensuring that referenced i18n keys are available in configuration descriptions.
+Starting from v2.7.0, modules can also declare translation keys centrally using a nested class `I18nClass`, similar to declaring `ConfigClass`. The framework automatically registers all declared translation keys during loading, eliminating the need to manually call `i18n.register()`. Registration occurs before configuration template generation, ensuring that referenced i18n keys in configuration descriptions are available.
 
 ```python
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
@@ -2290,7 +2377,7 @@ class MyModule(BaseModule):
 
     # Translation key collection class (optional)
     class I18nClass(BaseI18n):
-        # Property names are automatically concatenated into full key paths: <module name>.<property name>
+        # Property names are automatically concatenated into full key paths: <module_name>.<property_name>
         welcome_msg: I18nKey = I18nKey(
             default="Welcome Message",   # Fallback for language-agnostic use
             zh_CN="欢迎消息",
@@ -2309,7 +2396,7 @@ class MyModule(BaseModule):
         )
 ```
 
-See more details in [Recommended i18n Usage](../../advanced/i18n.md#recommended-usage-declaring-translation-keys-via-i18nclass-v270).
+For more details, see [Recommended i18n Writing Style](../../advanced/i18n.md#recommended-approach-declaring-translation-keys-via-i18nclass-v270).
 
 ### Manual Configuration Reading (Deprecated)
 
@@ -2327,7 +2414,6 @@ class MyModule(BaseModule):
             return {"api_key": "", "timeout": 30}
         return config
 ```
-
 
 ## Storage System
 
@@ -2347,11 +2433,12 @@ sdk.storage.delete("user:123")
 ### Transaction Usage
 
 ```python
-# Use transaction to ensure data consistency
+# Use a transaction to ensure data consistency
 with sdk.storage.transaction():
     sdk.storage.set("key1", "value1")
     sdk.storage.set("key2", "value2")
     # If any operation fails, all changes will be rolled back
+```
 
 ## Event Handling
 
@@ -2373,29 +2460,30 @@ async def group_handler(event):
 
 ### Event Handler Lifecycle
 
-The framework automatically manages the registration and unregistration of event handlers; you only need to register them in `on_load`.
+The framework automatically manages the registration and unregistration of event handlers. You only need to register them in `on_load`.
 
 ## Lazy Loading Mechanism
 
 ### How It Works
 
 ```python
-# Module is initialized only when first accessed
+# The module is initialized only when first accessed
 result = await sdk.my_module.some_method()
 # ↑ This triggers module initialization
 ```
 
-### Immediate Load
+### Immediate Loading
 
-For modules that need to be initialized immediately (e.g., listeners, timers):
+For modules that require immediate initialization (such as listeners or timers):
 
 ```python
 @staticmethod
 def get_load_strategy():
     return ModuleLoadStrategy(
-        lazy_load=False,  # Load immediately
+        lazy_load=False,  # Immediate loading
         priority=100
     )
+```
 
 ## Error Handling
 
@@ -2417,12 +2505,13 @@ async def handle_event(self, event):
 ### Logging
 
 ```python
-# Use different log levels
-self.logger.debug("Debug info")    # Detailed debug information
-self.logger.info("Running status")      # Normal running information
-self.logger.warning("Warning info")  # Warning information
-self.logger.error("Error info")    # Error information
-self.logger.critical("Fatal error") # Fatal error
+# Using different log levels
+self.logger.debug("Debug information")    # Detailed debug information
+self.logger.info("Runtime status")        # Normal runtime information
+self.logger.warning("Warning information")  # Warning information
+self.logger.error("Error information")    # Error information
+self.logger.critical("Critical error")    # Critical error
+```
 
 
 
@@ -2432,7 +2521,9 @@ self.logger.critical("Fatal error") # Fatal error
 
 The Event module provides a powerful Event wrapper class that simplifies event handling.
 
+Please directly return the complete translated Markdown content without including any other text.
 
+Once again, please note: If the document contains a language switch line (a line with language names separated by `` | ``), strictly adhere to the format requirements in point 8 above and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Type Annotations for the event Parameter
 
@@ -2451,6 +2542,11 @@ Without annotations, the IDE cannot recognize methods on Event (`get_text()` / `
 
 > **Note**: The `event` in event handler callbacks is an **Event wrapper class** (annotated as `Event`); the `event` in module lifecycle methods `on_load` / `on_unload` is a regular **dict** (annotated as `dict`), and these should not be confused.
 
+7. **Important: Path Replacement Rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md`), keep them unchanged
+   - This ensures that links point to the correct language version of the document
 
 ## Core Features
 
@@ -2459,6 +2555,7 @@ Without annotations, the IDE cannot recognize methods on Event (`get_text()` / `
 - **Dot-style Access**: Supports accessing event fields using dot notation
 - **Backward Compatibility**: All methods are optional
 
+Please directly return the complete translated Markdown content without any additional text.
 
 ## Core Field Methods
 
@@ -2473,7 +2570,11 @@ async def info_command(event: Event):
     print(f"ID: {event_id}, Platform: {platform}, Time: {time}")
 ```
 
+7. **Important: Path Replacement Rules**
    - Replace `docs/en/` with `docs/en/` in document links
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
 ## Message Event Methods
 
@@ -2488,7 +2589,11 @@ async def private_handler(event: Event):
     await event.reply(f"Hello, {nickname}!")
 ```
 
+7. **Important: Path Replacement Rules**
    - Replace `docs/en/` with `docs/en/` in document links
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (such as `README.xx.md` format links), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
 ## Message Type Detection
 
@@ -2503,6 +2608,11 @@ async def group_handler(event: Event):
     await event.reply(f"Type: {'Private Chat' if is_private else 'Group Chat'}")
 ```
 
+7. **Important: Path Replacement Rules**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (such as `README.xx.md`), keep them unchanged
+   - This ensures that links point to the correct language version of the document
 
 ## Reply Functionality
 
@@ -2516,8 +2626,15 @@ async def ask_command(event: Event):
     if reply:
         name = reply.get_text()
         await event.reply(f"Hello, {name}!")
-```
 
+@command("price")
+async def price_command(event: Event):
+    await event.reply("Please enter the amount (e.g., 5 yuan):")
+    # The reply must match the regex; otherwise, continue waiting until timeout
+    reply = await event.wait_reply(timeout=30, regex=r"\d+\s*元")
+    if reply:
+        await event.reply(f"Received amount: {reply.get_text()}")
+```
 
 ## Command Information Retrieval
 
@@ -2531,6 +2648,11 @@ async def cmdinfo_command(event: Event):
     await event.reply(f"Command: {cmd_name}, Arguments: {cmd_args}")
 ```
 
+7. **Important: Path Replacement Rule**
+   - Replace `docs/en/` in document links with `docs/en/`
+   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
+   - For links pointing to non-current language version files (e.g., `README.xx.md` format links), keep them unchanged
+   - This ensures links point to the correct language version of the document
 
 ## Notification Event Methods
 
@@ -2542,7 +2664,9 @@ async def friend_add_handler(event: Event):
     await event.reply("Welcome to add me as a friend!")
 ```
 
+Please directly return the complete translated Markdown content without any additional text.
 
+Once again, if the document contains language switch lines (where language names are separated by `` | ``), strictly follow the format requirements in item 8 above and do not write incorrect formats like ``[**Label**](file)``.
 
 ## Method Quick Reference
 
@@ -2559,17 +2683,17 @@ async def friend_add_handler(event: Event):
 - `get_self_platform()` - Get bot platform name
 - `get_self_user_id()` - Get bot user ID
 - `get_self_account_id()` - Get bot account ID (multi-Bot mode)
-- `get_self_info()` - Get complete bot information dictionary
+- `get_self_info()` - Get complete bot information as dictionary
 
 #### Session Identifiers
 - `get_target_id()` - Get unified target ID (returns `group_id` for group chats, `channel_id` for channels, `user_id` for private chats, returns first non-empty value in order: group → channel → guild → thread → user)
-- `get_session_id()` - Get unique session identifier, format: `{platform}:{detail_type}:{target_id}`
+- `get_session_id()` - Get unique session identifier, format is `{platform}:{detail_type}:{target_id}`
 
 ### Message Event Methods
 
 #### Message Content
-- `get_message()` - Get message segment array (OneBot12 format)
-- `get_alt_message()` - Get alternate message text
+- `get_message()` - Get message segments array (OneBot12 format)
+- `get_alt_message()` - Get alternative message text
 - `get_text()` - Get plain text content (`get_alt_message()` alias)
 - `get_message_text()` - Get plain text content (`get_alt_message()` alias)
 
@@ -2585,25 +2709,25 @@ async def friend_add_handler(event: Event):
 - `get_thread_id()` - Get topic/subchannel ID (topic messages)
 
 #### @Message Related
-- `has_mention()` - Whether contains @bot
+- `has_mention()` - Whether message contains @bot
 - `get_mentions()` - Get list of all mentioned user IDs
 
 ### Message Type Checks
 
 #### Basic Checks
-- `is_message()` - Whether it is a message event
-- `is_private_message()` - Whether it is a private message
-- `is_group_message()` - Whether it is a group message
-- `is_at_message()` - Whether it is an @message (`has_mention()` alias)
+- `is_message()` - Whether event is a message event
+- `is_private_message()` - Whether event is a private message
+- `is_group_message()` - Whether event is a group message
+- `is_at_message()` - Whether event is an @message (`has_mention()` alias)
 
 ### Notice Event Methods
 
-#### Notice Operator
+#### Operator Information
 - `get_operator_id()` - Get operator ID
 - `get_operator_nickname()` - Get operator nickname
 
 #### Notice Type Checks
-- `is_notice()` - Whether it is a notice event
+- `is_notice()` - Whether event is a notice event
 - `is_group_member_increase()` - Group member increase event
 - `is_group_member_decrease()` - Group member decrease event
 - `is_friend_add()` - Friend add event (matches `detail_type == "friend_increase"`)
@@ -2615,33 +2739,33 @@ async def friend_add_handler(event: Event):
 - `get_comment()` - Get request comment
 
 #### Request Type Checks
-- `is_request()` - Whether it is a request event
-- `is_friend_request()` - Whether it is a friend request
-- `is_group_request()` - Whether it is a group request
+- `is_request()` - Whether event is a request event
+- `is_friend_request()` - Whether event is a friend request
+- `is_group_request()` - Whether event is a group request
 
 ### Reply Functionality
 
 #### Basic Reply
 - `reply(content, method="Text", at_sender=False, quote=False, at_users=None, reply_to=None, at_all=False, via=None, **kwargs)` - General reply method
-  - `content`: Content to send (text, URL, etc.)
-  - `method`: Sending method, default "Text", optional "Image"/"Voice"/"Video"/"File", etc.
-  - `at_sender`: Whether to @ sender (auto extracts user_id)
-  - `quote`: Whether to quote reply current message (auto extracts message_id)
-  - `at_users`: List of @ users, e.g., `["user1", "user2"]`
-  - `reply_to`: Manually specify reply message ID
-  - `at_all`: Whether to @ all members
-  - `**kwargs`: Additional parameters (e.g., user_id for Mention method)
+  - `content`: content to send (text, URL, etc.)
+  - `method`: send method, default "Text", optional "Image"/"Voice"/"Video"/"File" etc.
+  - `at_sender`: whether to @ sender (automatically extracts user_id)
+  - `quote`: whether to quote reply to current message (automatically extracts message_id)
+  - `at_users`: list of users to @, e.g. `["user1", "user2"]`
+  - `reply_to`: manually specify message ID to reply to
+  - `at_all`: whether to @ all members
+  - `**kwargs`: additional parameters (e.g. user_id for Mention method)
 
 - `reply_ob12(message)` - Reply using OneBot12 message segments
-  - `message`: OneBot12 message segment list or dictionary, can be built with MessageBuilder
+  - `message`: OneBot12 message segments list or dictionary, can be built with MessageBuilder
 
 #### Platform Capability Query
-- `supports(method)` - Check if current platform supports a sending method (e.g., `"Image"`, `"Voice"`), returns `bool`
-- `available_methods()` - List all available sending methods for current platform, returns list of method names
+- `supports(method)` - Check if current platform supports a send method (e.g. `"Image"`, `"Voice"`), returns `bool`
+- `available_methods()` - List all available send methods on current platform, returns list of method names
 
-#### Forward Functionality
+#### Forwarding Functionality
 
-> **Note**: Forwarding functionality needs to be implemented through the adapter's Send DSL; the Event wrapper class itself does not provide a direct forwarding method.
+> **Note**: Forwarding functionality needs to be implemented via adapter's Send DSL; Event wrapper class itself does not provide direct forwarding methods.
 
 ```python
 # Forward message to group
@@ -2652,54 +2776,56 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 ### Wait Reply Functionality
 
-- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text")` - Wait for user reply
-  - `prompt`: Prompt message, if provided will be sent to user
-  - `timeout`: Timeout time (seconds), default 60 seconds
-  - `callback`: Callback function, executed when reply received
-  - `validator`: Validation function, used to validate if reply is valid
-  - `method`: Sending method for prompt, default "Text"
-  - Returns Event object of user reply, returns None on timeout
+- `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text", pattern=None, regex=None)` - Wait for user reply
+  - `prompt`: prompt message, if provided will be sent to user
+  - `timeout`: timeout in seconds, default 60 seconds
+  - `callback`: callback function, executed when reply is received
+  - `validator`: validation function, used to validate if reply is valid
+  - `method`: send prompt message method, default "Text"
+  - `pattern`: glob wildcard (`*` / `?` / `[seq]`), reply text must match, otherwise continue waiting
+  - `regex`: regular expression, reply text must match (choose either `pattern` or `regex`), otherwise continue waiting
+  - Returns user reply Event object, returns None on timeout
 
-#### Interactive Methods
+#### Interaction Methods
 
 - `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text", hint=False)` - Confirmation dialog
-  - Returns `True` (confirmation) / `False` (rejection) / `None` (timeout)
-  - Built-in Chinese/English confirmation words auto-recognized, can customize word sets
-  - `method`: Sending method, default "Text"; supports "Image"/"Markdown" and other non-text methods for sending prompts
-  - `hint`: Whether to automatically append confirmation word prompt at the end of the prompt (e.g., "（是/否）"), default False
+  - Returns `True` (confirm) / `False` (deny) / `None` (timeout)
+  - Built-in Chinese/English confirmation words automatically recognized, custom word sets can be provided
+  - `method`: send method, default "Text"; supports "Image"/"Markdown" etc. for non-text prompts
+  - `hint`: whether to automatically append confirmation word hint at end of prompt (e.g. "（是/否）"), default False
 
-- `choose(prompt, options, timeout=60.0, method="Text", options_format="auto", merge_prompt=False, placeholder="{options}")` - Selection menu
-  - `options`: List of option texts
+- `choose(prompt, options, timeout=60.0, method="Text", options_format="auto", merge_prompt=False, placeholder="{options}")` - Choice menu
+  - `options`: list of option texts
   - Returns option index (0-based), returns `None` on timeout
-  - `method`: Sending method, default "Text"; text-based methods (Text/Markdown/md/Html/h5) automatically merge options to the end
-  - `options_format`: Option format (default: "auto", automatically select built-in style based on method)
-    - `"auto"`: Markdown→unordered list (`- 1. Option`), Html→ordered list (`<ol>`), others→plain text list
-    - `"list"`: Each line one, e.g., ``1. Option A\n2. Option B``
-    - `"inline"`: Display in single line, e.g., ``1. A | 2. B``
+  - `method`: send method, default "Text"; text methods (Text/Markdown/md/Html/h5) automatically merge options to end
+  - `options_format`: option format (default: "auto", automatically select built-in style based on method)
+    - `"auto"`: Markdown→unordered list (`- 1.option`), Html→ordered list (`<ol>`), others→plain text list
+    - `"list"`: one per line, e.g. ``1. optionA\n2. optionB``
+    - `"inline"`: single line display, e.g. ``1.A | 2.B``
     - `"md"`: Markdown unordered list
     - `"html"`: Html ordered list
-    - `callable`: Custom function, receives ``list[str]`` returns ``str``
-  - `merge_prompt`: Whether to forcibly merge into a single message, default False
-    - `False` (default): Text-based methods automatically merge; non-text methods send prompt first then send Text options
-    - `True`: Regardless of method, merge into a single message, send with user-specified method
-  - `placeholder`: Option insertion placeholder, default `{options}`; replace the marked position in prompt with option text, set to empty string to always append to the end
+    - `callable`: custom function, receives ``list[str]`` and returns ``str``
+  - `merge_prompt`: whether to forcibly merge into a single message, default False
+    - `False` (default): text methods automatically merge; non-text methods send prompt first then Text options
+    - `True`: regardless of method, always merge into a single message, sent with specified method
+  - `placeholder`: option insertion placeholder, default `{options}`; if prompt contains this marker, replace it with option text, set to empty string to always append to end
 
 - `collect(fields, timeout_per_field=60.0)` - Form collection
-  - `fields`: Field list, each item contains `key`, `prompt`, optional `validator`, optional `method`
+  - `fields`: list of fields, each containing `key`, `prompt`, optional `validator`, optional `method`
   - Returns `{key: value}` dictionary, returns `None` if any field times out
-  - Each field supports `method` key to specify sending method, e.g., collecting image with `{"key": "avatar", "prompt": "Please send avatar", "method": "Image"}`
-  - Each field can have optional `options` key (list), when provided, the field becomes a multiple-choice question (automatically calls choose logic)
-  - Each field can have optional `options_format`, `merge_prompt`, `placeholder` keys to control option format, message merging behavior, and placeholder
+  - Each field supports `method` key to specify send method, e.g. collecting images with `{"key": "avatar", "prompt": "Please send avatar", "method": "Image"}`
+  - Each field can have optional `options` key (list), when provided this field becomes a multiple-choice question (automatically calls choose logic)
+  - Each field can have optional `options_format`, `merge_prompt`, `placeholder` keys to control option format, message merge behavior, and placeholder
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - Wait for any event
-  - `condition`: Filter function, returns `True` when matched
+  - `condition`: filter function, returns `True` when matched
   - Returns matched Event object, returns `None` on timeout
 
 - `conversation(timeout=60.0)` - Create multi-turn conversation context
   - Returns `Conversation` object, supports `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
   - `is_active` property indicates whether conversation is active
 
-#### Interactive Method Examples
+#### Interaction Method Examples
 
 **confirm() - Confirmation dialog:**
 
@@ -2716,18 +2842,18 @@ async def delete_handler(event: Event):
 **confirm() - With prompt words:**
 
 ```python
-# hint=True appends "（是/否）" at the end of the prompt
+# hint=True appends "（是/否）" at end of prompt
 if await event.confirm("Continue?", hint=True):
     await event.reply("Continued")
 # User sees: Continue?（是/否）
 ```
 
-**choose() - Selection menu:**
+**choose() - Choice menu:**
 
 ```python
 @command("color", help="Choose color")
 async def color_handler(event: Event):
-    choice = await event.choose("Please choose color:", ["Red", "Green", "Blue"])
+    choice = await event.choose("Choose color:", ["Red", "Green", "Blue"])
     if choice is not None:
         colors = ["Red", "Green", "Blue"]
         await event.reply(f"You chose: {colors[choice]}")
@@ -2736,38 +2862,38 @@ async def color_handler(event: Event):
 **choose() - Option formatting and message merging:**
 
 ```python
-# inline format: options displayed in same line
-choice = await event.choose("Please choose:", ["A", "B", "C"], options_format="inline")
+# inline format: options displayed on same line
+choice = await event.choose("Choose:", ["A", "B", "C"], options_format="inline")
 # Output: 1.A | 2.B | 3.C
 
 # Custom format
-choice = await event.choose("Please choose:", ["Cat", "Dog"],
+choice = await event.choose("Choose:", ["Cat", "Dog"],
     options_format=lambda opts: " / ".join(opts))
 # Output: Cat / Dog
 
-# options_format="auto" (default): auto-select built-in style based on method
+# options_format="auto" (default): automatically select built-in style based on method
 # Markdown → unordered list
 choice = await event.choose(
-    "## Please choose", ["Cat", "Dog"],
+    "## Choose", ["Cat", "Dog"],
     method="Markdown",  # auto recognizes as md list
 )
 # Output:
-# ## Please choose
+# ## Choose
 # - 1. Cat
 # - 2. Dog
 
 # Html → ordered list
 choice = await event.choose(
-    "<h2>Please choose</h2>", ["Cat", "Dog"],
+    "<h2>Choose</h2>", ["Cat", "Dog"],
     method="Html", merge_prompt=True,  # auto recognizes as html list
 )
 # Output:
-# <h2>Please choose</h2>
+# <h2>Choose</h2>
 # <ol><li>1. Cat</li><li>2. Dog</li></ol>
 
 # Merge mode + placeholder
 choice = await event.choose(
-    "## Please choose\n{options}\nPlease reply number",
+    "## Choose\n{options}\nReply with number",
     ["Cat", "Dog"],
     method="Markdown", merge_prompt=True,
 )
@@ -2805,7 +2931,7 @@ segments = MessageBuilder.text("Look at this image:").image("http://example.com/
 await event.reply_ob12(segments)
 ```
 
-> Complete Conversation multi-turn dialog usage please refer to [Conversation Multi-turn Dialog](../../advanced/conversation.md).
+> For complete usage of Conversation multi-turn dialog, please refer to [Conversation Multi-turn Dialog](../../advanced/conversation.md).
 
 ### Command Information
 
@@ -2813,27 +2939,27 @@ await event.reply_ob12(segments)
 - `get_command_name()` - Get command name
 - `get_command_args()` - Get command argument list
 - `get_command_raw()` - Get raw command text
-- `get_command_info()` - Get complete command information dictionary
-- `is_command()` - Whether it is a command
+- `get_command_info()` - Get complete command information as dictionary
+- `is_command()` - Whether event is a command
 
 ### Raw Data
 
-- `get_raw()` - Get platform raw event data
-- `get_raw_type()` - Get platform raw event type
+- `get_raw()` - Get raw platform event data
+- `get_raw_type()` - Get raw platform event type
 
 ### Platform Extension Methods
 
-Adapters can register platform-specific methods for Event wrapper classes. Methods are only available on Event instances of corresponding platforms; accessing them on other platforms raises `AttributeError`.
+Adapters can register platform-specific methods for Event wrapper class. Methods are only available on Event instances of corresponding platforms, and raise `AttributeError` when accessed on other platforms.
 
-Platform methods take precedence over built-in methods via `Event.__getattribute__`, allowing overwriting built-in interactive methods like `confirm`, `choose`, `collect`, `wait_reply` to provide platform-specific implementations (e.g., buttons, cards). Built-in implementations are exported as `_builtin_*` functions for overwriting.
+Platform methods take precedence over built-in methods via `Event.__getattribute__`, allowing overriding of built-in interactive methods like `confirm`, `choose`, `collect`, `wait_reply` to provide platform-specific features (e.g. buttons, cards). Built-in implementations are exported as `_builtin_*` functions for overriding.
 
 ```python
-# Email event - only email methods
+# Email event - only email methods available
 event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
 event.get_subject()      # ✅ Returns "Hello"
 event.get_chat_type()    # ❌ AttributeError
 
-# Telegram event - only Telegram methods
+# Telegram event - only Telegram methods available
 event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
 event.get_chat_type()    # ✅ Returns "private"
 event.get_subject()      # ❌ AttributeError
@@ -2861,7 +2987,7 @@ hasattr(event, "get_subject")   # Returns True only when platform="email"
 
 ### Cross-platform Extension (Wildcard)
 
-`register_event_method` and `register_event_mixin` support passing `"*"` as platform name, registering methods available on **all** platform Event instances. Suitable for features needing cross-platform reuse, such as AI chat, context management.
+`register_event_method` and `register_event_mixin` support passing `"*"` as platform name, registering methods available on **all platforms**' Event instances. Suitable for cross-platform reusable features such as AI chat, context management.
 
 ```python
 from ErisPulse.Core.Event.wrapper import register_event_method
@@ -2872,11 +2998,11 @@ async def ai_chat(self, prompt: str):
     await self.reply(f"AI: {prompt}")
 ```
 
-After registration, any platform event handler can call `event.ai_chat(...)`.
+After registration, any platform's event handler can call `event.ai_chat(...)`.
 
-Method resolution priority (from high to low): platform-specific methods → wildcard methods → built-in methods → dictionary key access.
+Method resolution priority (highest to lowest): platform-specific methods → wildcard methods → built-in methods → dictionary key access.
 
-> Adapter developers register extension methods via [Event System API - Cross-platform Extension (Wildcard)](../../api-reference/event-system.md#跨平台扩展通配符).
+> For adapter developer registration of extension methods, please refer to [Event System API - Cross-platform Extension (Wildcard)](../../api-reference/event-system.md#跨平台扩展通配符).
 
 
 
@@ -2893,7 +3019,7 @@ This document provides best practice recommendations for ErisPulse module develo
 Each module should only be responsible for one core function:
 
 ```python
-# Good design: Each module is responsible for only one feature
+# Good design: Each module is responsible for one function
 class WeatherModule(BaseModule):
     """Weather query module"""
     pass
@@ -2902,9 +3028,9 @@ class NewsModule(BaseModule):
     """News query module"""
     pass
 
-# Bad design: One module responsible for multiple unrelated functions
+# Bad design: One module handles multiple unrelated functions
 class UtilityModule(BaseModule):
-    """Contains multiple features like weather, news, jokes, etc."""
+    """Contains multiple functions such as weather, news, and jokes"""
     pass
 ```
 
@@ -2917,7 +3043,7 @@ name = "ErisPulse-ModuleName"  # Use ErisPulse- prefix
 
 ### 3. Clear Configuration Management
 
-Declarative configuration (`ConfigClass` + `BaseConfig`) is recommended to obtain capabilities such as type safety, automatic template generation, WebUI form support, etc.:
+It is recommended to use declarative configuration (`ConfigClass` + `BaseConfig`) to gain type safety, automatic template generation, and WebUI form support:
 
 ```python
 from dataclasses import dataclass, field
@@ -2926,7 +3052,7 @@ from ErisPulse.Core.Bases import BaseConfig
 @dataclass
 class MyModuleConfig(BaseConfig):
     api_url: str = field(default="https://api.example.com", metadata={
-        "description": {"i18n": "my_module.api_url", "default": "API Address"},
+        "description": {"i18n": "my_module.api_url", "default": "API URL"},
     })
     timeout: int = field(default=30, metadata={
         "description": {"i18n": "my_module.timeout", "default": "Timeout (seconds)"},
@@ -2939,15 +3065,15 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def do_something(self):
-        cfg = self.cfg  # Type-safe, reads in real-time
+        cfg = self.cfg  # Type-safe, real-time reading
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-You can also continue to use manual ways to read and write configuration storage (see [Module Core Concepts](core-concepts.md#Configuration Management)).
+You can also continue using manual configuration storage reading and writing (see [Module Core Concepts](core-concepts.md#configuration-management)).
 
 ### Declarative Translation Keys (v2.7.0+)
 
-Modules can declare translation keys centrally through `I18nClass`, and the framework automatically registers them to the i18n system without manually calling `i18n.register()`.
+Modules can declare translation keys via `I18nClass`, and the framework will automatically register them into the i18n system without manually calling `i18n.register()`.
 
 ```python
 from ErisPulse.Core.Bases import BaseI18n, I18nKey
@@ -2963,7 +3089,7 @@ class MyModule(BaseModule):
             ja="ようこそ、{name}！",
             ru="Добро пожаловать, {name}!",
         )
-        # Translation for configuration field descriptions
+        # Configuration field description translations
         api_url: I18nKey = I18nKey(
             default="API URL",
             zh_CN="API 地址",
@@ -2974,14 +3100,14 @@ class MyModule(BaseModule):
         )
 ```
 
-For detailed usage, please see [i18n documentation](../../advanced/i18n.md#Recommended Approach Declare Translation Keys via I18nClass v270).
+For detailed usage, see the [i18n documentation](../../advanced/i18n.md#recommended-usage-declaring-translation-keys-via-i18nclass-v270).
 
 ## Asynchronous Programming
 
 ### 1. Using Asynchronous Libraries
 
 ```python
-# Recommended: Use the SDK's built-in HTTP client (asynchronous, with automatic logging and statistics)
+# It is recommended to use the built-in HTTP client in the SDK (asynchronous, with automatic logging and statistics)
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -2989,7 +3115,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# Alternatively, use sdk.client (same effect)
+# You can also use sdk.client (same effect)
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -2997,7 +3123,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# Do not use aiohttp directly (not convenient for framework-level management)
+# Do not use aiohttp directly (not convenient for framework-wide management)
 import aiohttp
 
 class MyModule(BaseModule):
@@ -3006,46 +3132,47 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Do not use requests (synchronous, will block the event loop)
+# Do not use requests (synchronous, blocks the event loop)
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # Will block the event loop
+        return requests.get(url).json()  # This will block the event loop
 ```
 
 ### 2. Correct Asynchronous Operations
 
 ```python
-from ErisPulse.Core.Event import Event  # Event: Event annotation provides IDE auto-completion
+from ErisPulse.Core.Event import Event  # Using event: Event annotation provides IDE completion
 
 async def handle_command(self, event: Event):
     # Time-consuming operations that require waiting for results: directly await (clear lifecycle)
     result = await self._long_operation()
 
 async def on_load(self, event: dict):
-    # Background tasks (polling/periodic/fire-and-forget): use self.spawn(),
-    # when the module is unloaded, the framework cancels them after on_unload to prevent self reference leaks
+    # Background tasks (polling/timer/fire-and-forget): use self.spawn(),
+    # when the module is unloaded, the framework cancels it after on_unload, avoiding holding self and causing leaks
     self.spawn(self._poll())
 ```
 
 > [!NOTE]
-> Background tasks are recommended to use `self.spawn()` (ErisPulse **2.8.0+**), rather than `asyncio.create_task`—the raw tasks created by the latter do not belong to the module, and will not be automatically cleaned up during unloading, potentially holding a reference to `self` and causing module instances to be unrecoverable (hot reload leak). See [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation).
+> Background tasks are recommended to use `self.spawn()` (ErisPulse **2.8.0+**), rather than `asyncio.create_task`—the latter creates raw tasks not owned by the module, which are not automatically cleaned up during unloading, leading to holding a `self` reference and preventing the module instance from being recycled (hot reload leak). See [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation) for more details.
 
 ### 3. Resource Management
 
 ```python
 async def on_load(self, event):
-    # The SDK client automatically manages the connection pool, no need to manually create a session
+    # The SDK client manages the connection pool automatically; no need to manually create a session
     pass
     
 async def on_unload(self, event):
     # If a custom client is needed, remember to clean up resources
     pass
+```
 
 ## Event Handling
 
-### 1. Using Event Wrapper Class
+### 1. Use Event Wrapper Class
 
 ```python
 # Convenient method using Event wrapper class
@@ -3055,16 +3182,16 @@ async def info_command(event: Event):
     nickname = event.get_user_nickname()
     await event.reply(f"Hello, {nickname}!")
 
-# Rather than directly accessing the dictionary
+# Rather than directly accessing dictionary
 @command("info")
 async def info_command(event: Event):
     user_id = event["user_id"]  # Less clear, prone to errors
 ```
 
-### 2. Reasonable Use of Lazy Loading
+### 2. Use Lazy Loading Reasonably
 
 ```python
-# Low-frequency command module: declare activate_on trigger, automatically activate on first matching command arrival (maintain lazy loading)
+# Low-frequency command module: declare activate_on triggers, automatically activates upon first matching command (maintains lazy loading)
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -3072,7 +3199,7 @@ class CommandModule(BaseModule):
             {"command": {"name": "dice", "help": "Roll a dice", "aliases": ["d"]}},
         ])
 
-# Low-frequency listener module: declare event trigger, automatically activate when event arrives
+# Low-frequency listener module: declare event triggers, automatically activates when event arrives
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -3093,7 +3220,7 @@ class UtilityModule(BaseModule):
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-> The full syntax of `activate_on` (three forms of events / command shorthand and dict declaration / help fallback chain) can be found in the [Lazy Loading Module System](../../advanced/lazy-loading.md#event-driven-lazy-activation-activate_on).
+> For the complete syntax of `activate_on` (event three forms / command shorthand and dict declaration / help fallback chain), see [Lazy Loading Module System](../../advanced/lazy-loading.md#event-driven-lazy-activation-activate_on).
 
 ### 3. Event Handler Registration
 
@@ -3108,7 +3235,8 @@ async def on_load(self, event):
     async def group_handler(event: Event):
         self.logger.info("Received group message")
     
-    # No need to manually deregister, the framework will handle it automatically
+    # No need to manually unregister, the framework will handle it automatically
+```
 
 ## Error Handling
 
@@ -3119,25 +3247,25 @@ async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
     except ValueError as e:
-        # Expected business error
+        # Expected business errors
         self.logger.warning(f"Business warning: {e}")
         await event.reply(f"Parameter error: {e}")
     except aiohttp.ClientError as e:
-        # Network error (recommended to use sdk.client + ClientError instead)
-        # Code directly using aiohttp still works, but new code recommends using ErisPulse exception system
+        # Network errors (recommended to use sdk.client + ClientError instead)
+        # Old code using aiohttp directly still works, but new code is recommended to use ErisPulse exception system
         self.logger.error(f"Network error: {e}")
         await event.reply("Network request failed, please try again later")
     except Exception as e:
-        # Unexpected error
+        # Unexpected errors
         self.logger.error(f"Unknown error: {e}", exc_info=True)
-        await event.reply("Processing failed, please contact administrator")
+        await event.reply("Processing failed, please contact the administrator")
         raise
 ```
 
 ### 2. Timeout Handling
 
 ```python
-# Recommended to use SDK built-in client (includes timeout and retry)
+# Recommended to use SDK built-in client (built-in timeout and retry)
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -3150,8 +3278,6 @@ async def fetch_with_timeout(self, url, timeout=30):
         raise
 ```
 
-[**Quick Start**](docs/en/quick-start.md) | [**API Reference**](docs/en/api-reference.md) | [**Configuration**](docs/en/configuration.md) | [**Development**](docs/en/development.md)
-
 ## Storage System
 
 ### 1. Using Transactions
@@ -3163,17 +3289,17 @@ async def update_user(self, user_id, data):
         self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
         self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 
-# ❌ Not using transactions may lead to data inconsistency
+# ❌ Without transactions, data inconsistency may occur
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
-    # If an error occurs here, the previous setting cannot be rolled back
+    # If an error occurs here, the previous set cannot be rolled back
     self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 ```
 
-### 2. Batch Operations
+### 2. Bulk Operations
 
 ```python
-# Use batch operations to improve performance
+# Use bulk operations to improve performance
 def cache_multiple_items(self, items):
     self.sdk.storage.set_multi({
         f"item:{k}": v for k, v in items.items()
@@ -3183,29 +3309,30 @@ def cache_multiple_items(self, items):
 def cache_multiple_items(self, items):
     for k, v in items.items():
         self.sdk.storage.set(f"item:{k}", v)
+```
 
 ## Logging
 
 ### 1. Use Log Levels Appropriately
 
 ```python
-# DEBUG: Detailed debug information (only for development)
+# DEBUG: Detailed debug information (only during development)
 self.logger.debug(f"Input parameters: {params}")
 
-# INFO: Normal operation information
+# INFO: Normal operational information
 self.logger.info("Module loaded")
 self.logger.info(f"Processing request: {request_id}")
 
-# WARNING: Warning messages, do not affect main functionality
+# WARNING: Warning messages that do not affect main functionality
 self.logger.warning(f"Configuration item {key} not set, using default value")
-self.logger.warning("API response slow, may need optimization")
+self.logger.warning("API response is slow, optimization may be needed")
 
 # ERROR: Error messages
 self.logger.error(f"API request failed: {e}")
-self.logger.error(f"Event processing failed: {e}", exc_info=True)
+self.logger.error(f"Failed to process event: {e}", exc_info=True)
 
-# CRITICAL: Fatal error, requires immediate handling
-self.logger.critical("Database connection failed, bot cannot run normally")
+# CRITICAL: Critical errors requiring immediate attention
+self.logger.critical("Database connection failed, bot cannot operate normally")
 ```
 
 ### 2. Structured Logging
@@ -3214,8 +3341,9 @@ self.logger.critical("Database connection failed, bot cannot run normally")
 # Use structured logging for easier parsing
 self.logger.info(f"Processing request: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
-# ❌ Using non-structured logging
-self.logger.info(f"Processed request, from user {user_id}, took {duration} ms")
+# ❌ Avoid non-structured logging
+self.logger.info(f"Processing request, from user {user_id}, took {duration} milliseconds")
+```
 
 ## Performance Optimization
 
@@ -3254,7 +3382,6 @@ async def process_message(self, event: Event):
     result = self._sync_process(event)
 ```
 
-
 ## Security
 
 ### 1. Sensitive Data Protection
@@ -3292,7 +3419,7 @@ async def process_command(self, event: Event):
     
     # Validate input length
     if len(user_input) > 1000:
-        await event.reply("Input is too long, please re-enter")
+        await event.reply("Input too long, please re-enter")
         return
     
     # Validate input format
@@ -3300,7 +3427,6 @@ async def process_command(self, event: Event):
         await event.reply("Invalid input format")
         return
 ```
-
 
 ## Testing
 
@@ -3326,9 +3452,10 @@ async def test_command_handling():
     module = MyModule()
     await module.on_load({})
     
-    # Simulate command event
+    # Simulate a command event
     event = create_test_command_event("hello")
     await module.handle_command(event)
+```
 
 ## Deployment
 
@@ -3348,9 +3475,9 @@ Follow semantic versioning:
 
 ### 2. README Header
 
-The README generated by `epsdk create` already includes the ErisPulse header (Logo + badge row). Two recommended modes:
+The README generated by `epsdk create` already includes the ErisPulse header (Logo + badge line). Two recommended patterns:
 
-**Mode A — ErisPulse Logo Only (Default):**
+**Pattern A — ErisPulse Logo Only (Default):**
 
 ```markdown
 <div align="center">
@@ -3359,7 +3486,7 @@ The README generated by `epsdk create` already includes the ErisPulse header (Lo
 
 # MyModule
 
-**One-sentence description**
+**A one-sentence description**
 
 <p>
   <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/pypi/v/ErisPulse-MyModule?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -3371,7 +3498,7 @@ The README generated by `epsdk create` already includes the ErisPulse header (Lo
 </div>
 ```
 
-**Mode B — Module Icon × ErisPulse Logo (When Custom Icon is Available):**
+**Pattern B — Module Icon × ErisPulse Logo (When a custom icon is available):**
 
 ```markdown
 <div align="center">
@@ -3381,11 +3508,11 @@ The README generated by `epsdk create` already includes the ErisPulse header (Lo
 <img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
 
 # MyModule
-(Badge row same as above)
+(The badge line is the same as above)
 </div>
 ```
 
-Badges such as GitHub Stars, Downloads, etc. can be added as needed. The logo can also be downloaded to the project locally (`.github/assets/ErisPulseLogo.png`) and referenced using a relative path.
+You may optionally add GitHub Stars, Downloads, or other badges. The logo can also be downloaded locally to the project (`.github/assets/ErisPulseLogo.png`) and referenced using a relative path.
 
 
 
@@ -3789,17 +3916,16 @@ These two methods are not contradictory—you can simultaneously publish modules
 
 # CLI Command Reference
 
-The ErisPulse command-line tool (`epsdk`) provides project management and package management features.
+The ErisPulse command-line tool (`epsdk`) provides project and package management functionality.
 
 > **Tip**: You can view detailed parameter descriptions for any command using `epsdk <command> --help`.
 
 ---
 
-
 ## Package Management Commands
 
-| Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+| Command | Aliases | Parameters | Description |
+|---------|---------|------------|-------------|
 | `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | Install modules/adapters |
 | `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | Uninstall modules/adapters |
 | `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | Upgrade specified modules or all |
@@ -3813,7 +3939,7 @@ The ErisPulse command-line tool (`epsdk`) provides project management and packag
 
 ### install
 
-Install ErisPulse modules or adapter packages. If no package name is specified, enter the interactive installation interface.
+Installs ErisPulse modules or adapter packages. If no package name is specified, enters interactive installation interface.
 
 **Aliases:** `i`, `add`
 
@@ -3822,14 +3948,14 @@ Install ErisPulse modules or adapter packages. If no package name is specified, 
 | Parameter | Short | Description |
 |-----------|-------|-------------|
 | `[package]...` | | Package names to install, multiple can be specified |
-| `--upgrade` | `-U` | Upgrade to the latest version during installation |
+| `--upgrade` | `-U` | Upgrade to latest version during installation |
 | `--pre` | | Allow installation of pre-release versions |
 | `--editable` | `-e` | Install in editable mode (requires path specification) |
 | `--user` | | Install to user site-packages directory |
 | `--no-deps` | | Do not install dependencies |
-| `--target` | `-t` | Install to a specified directory |
-| `--index-url` | | Specify PyPI mirror source address |
-| `--extra-index-url` | | Additional PyPI mirror source address (can be specified multiple times) |
+| `--target` | `-t` | Install to specified directory |
+| `--index-url` | | Specify PyPI mirror source URL |
+| `--extra-index-url` | | Additional PyPI mirror source URL (can be specified multiple times) |
 | `--no-cache-dir` | | Disable cache |
 | `--requirement` | `-r` | Install from requirements file |
 | `--constraint` | `-c` | Install from constraint file |
@@ -3837,22 +3963,22 @@ Install ErisPulse modules or adapter packages. If no package name is specified, 
 | `--ignore-installed` | | Ignore already installed packages |
 | `--compile` | | Compile .pyc files after installation |
 | `--no-compile` | | Do not compile .pyc files after installation |
-| `--prefix` | | Install to a specified prefix directory |
+| `--prefix` | | Install to specified prefix directory |
 | `--src` | | Source code directory used for editable installation |
-| `--config-settings` | | Pass configuration to the build backend (can be specified multiple times) |
+| `--config-settings` | | Pass configuration to build backend (can be specified multiple times) |
 | `--no-binary` | | Restrict not to use binary packages (format like `:all:`) |
-| `--only-binary` | | Restrict to use only binary packages (format like `:all:`) |
+| `--only-binary` | | Restrict only to use binary packages (format like `:all:`) |
 | `--prefer-binary` | | Prefer binary packages |
 | `--build-isolation` | | Enable build isolation |
 | `--no-build-isolation` | | Disable build isolation |
 | `--upgrade-strategy` | | Upgrade strategy: `eager`, `only-if-needed`, `to-satisfy-only` |
-| `--break-system-packages` | | Allow modification of Python packages managed by the system package manager |
+| `--break-system-packages` | | Allow modification of Python packages managed by system package manager |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
 
 ```bash
-# Install a single module
+# Install single module
 epsdk install Weather
 
 # Install multiple modules
@@ -3861,13 +3987,13 @@ epsdk install Yunhu Weather
 # Install from mirror source and upgrade
 epsdk install Weather -U --index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
-# Install in editable mode (development mode)
+# Editable mode installation (development mode)
 epsdk install -e ./my-adapter
 ```
 
 ### uninstall
 
-Uninstall installed ErisPulse modules or adapter packages. If no package name is specified, enter the interactive uninstallation interface.
+Uninstalls installed ErisPulse modules or adapter packages. If no package name is specified, enters interactive uninstallation interface.
 
 **Aliases:** `rm`, `remove`
 
@@ -3881,7 +4007,7 @@ Uninstall installed ErisPulse modules or adapter packages. If no package name is
 **Examples:**
 
 ```bash
-# Uninstall a single module
+# Uninstall single module
 epsdk uninstall Weather
 
 # Uninstall multiple modules
@@ -3890,9 +4016,9 @@ epsdk uninstall Yunhu Weather
 
 ### upgrade
 
-Upgrade installed ErisPulse components. If no package name is specified, upgrade all interactively.
+Upgrades installed ErisPulse components. If no package name is specified, upgrades all interactively.
 
-**Alias:** `up`
+**Aliases:** `up`
 
 **Parameters:**
 
@@ -3918,7 +4044,7 @@ epsdk upgrade -f
 
 ### self-update
 
-Update ErisPulse SDK itself to the latest version.
+Updates ErisPulse SDK itself to the latest version.
 
 **Aliases:** `su`, `update`
 
@@ -3926,18 +4052,18 @@ Update ErisPulse SDK itself to the latest version.
 
 | Parameter | Short | Description |
 |-----------|-------|-------------|
-| `[version]` | | Specify the target version number to update to |
-| `--pre` | | Allow update to pre-release versions |
+| `[version]` | | Specify target version number to update to |
+| `--pre` | | Allow update to pre-release version |
 | `--force` | `-f` | Force update, skip confirmation |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
 
 ```bash
-# Update to the latest stable version
+# Update to latest stable version
 epsdk self-update
 
-# Update to a specified version
+# Update to specified version
 epsdk self-update 1.2.3
 
 # Allow pre-release version
@@ -3945,6 +4071,7 @@ epsdk self-update --pre
 
 # Force update
 epsdk self-update -f
+```
 
 ## Information Query Commands
 
@@ -3957,14 +4084,14 @@ epsdk self-update -f
 
 List installed ErisPulse modules and adapters.
 
-**Alias:** `l`, `ls`
+**Aliases:** `l`, `ls`
 
 **Parameters:**
 
 | Parameter | Short Parameter | Description |
 |-----------|-----------------|-------------|
 | `--type` | `-t` | Specify type: `modules`, `adapters`, `all` (default) |
-| `--outdated` | `-o` | Only display packages that can be upgraded |
+| `--outdated` | `-o` | Only show upgradable packages |
 
 **Examples:**
 
@@ -3978,7 +4105,7 @@ epsdk list -t modules
 # Only list adapters
 epsdk list -t adapters
 
-# Only display packages that can be upgraded
+# Only show upgradable packages
 epsdk list -o
 ```
 
@@ -3986,14 +4113,14 @@ epsdk list -o
 
 List ErisPulse modules and adapters available in the remote repository.
 
-**Alias:** `lsr`
+**Aliases:** `lsr`
 
 **Parameters:**
 
 | Parameter | Short Parameter | Description |
 |-----------|-----------------|-------------|
 | `--type` | `-t` | Specify type: `modules`, `adapters`, `all` (default) |
-| `--refresh` | `-r` | Force refresh the remote package list cache |
+| `--refresh` | `-r` | Force refresh remote package list cache |
 
 **Examples:**
 
@@ -4006,27 +4133,28 @@ epsdk list-remote -t modules
 
 # List after forcing cache refresh
 epsdk list-remote -r
+```
 
 ## Configuration Commands
 
-| Command | Aliases | Parameters | Description |
-|---------|---------|------------|-------------|
-| `config` | `cfg`, `conf` | `[name] [--list/-l]` | Interactively configure declarative configuration items for adapters/modules |
+| Command | Alias | Parameters | Description |
+|---------|-------|------------|-------------|
+| `config` | `cfg`, `conf` | `[name] [--list/-l]` | Interactively configure declarative configuration items of adapters/modules |
 
 ### config
 
-Interactively fill in the declarative configuration items for adapters/modules. The wizard is driven by the configuration class (ConfigClass / AccountConfigClass) declared by the adapter/module, automatically generating forms and validating them without manually writing config.toml.
+Interactively fills out declarative configuration items of adapters/modules. The wizard is driven by the configuration class (`ConfigClass` / `AccountConfigClass`) declared by the adapter/module, automatically generating forms and validating them, eliminating the need to manually write `config.toml`.
 
-Adapters additionally support multi-account (bot account) management: adding/editing/deleting accounts, and enabling/disabling switches.
+Adapters additionally support multi-account (bot account) management: adding/editing/deleting accounts, as well as enabling/disabling switches.
 
 **Aliases:** `cfg`, `conf`
 
 **Parameters:**
 
-| Parameter | Short | Description |
-|-----------|-------|-------------|
+| Parameter | Short Parameter | Description |
+|-----------|-----------------|-------------|
 | `[name]` | | Target name (adapter platform name or module name), leave empty to enter interactive selection |
-| `--list` | `-l` | Only list the configuration status of all targets, do not enter the wizard |
+| `--list` | `-l` | List configuration status of all targets only, do not enter the wizard |
 
 **Examples:**
 
@@ -4034,27 +4162,27 @@ Adapters additionally support multi-account (bot account) management: adding/edi
 # View configuration status of all adapters/modules
 epsdk config --list
 
-# Interactively select target for configuration
+# Enter interactive selection to configure
 epsdk config
 
-# Directly configure specified adapter
+# Directly configure a specified adapter
 epsdk config yunhu
 
-# Directly configure specified module
+# Directly configure a specified module
 epsdk config MyModule
 ```
 
 **Notes:**
 
 - Configuration status is divided into four levels: `Ready` (validation passed), `Incomplete` (missing or validation failed required fields), `Not Configured` (never generated), `No Configuration` (target did not declare a configuration class)
-- Field values are annotated with source: existing configurations display ` (current:value)`, unconfigured fields show schema default values ` (default:value)`; pressing Enter retains the value
-- Secret-type fields (declared as `secret`) do not echo input, pressing Enter retains the set value
-- In interactive selection mode, after completing a single wizard, it returns to the selection menu (status refreshed), allowing continuous configuration of multiple targets; pressing Enter exits
-- If global form validation fails and re-entry is abandoned, the current wizard is terminated and no configuration is written (to avoid creating a "enabled but incomplete configuration" semi-finished state)
-- After saving, it immediately writes to `config/config.toml`, visible to both Dashboard and running SDK; running adapters can apply new account configurations by restarting the process
-- After successful interactive installation via `epsdk install` or `epsdk init`, if configuration declaration is detected, it automatically guides into this wizard; when installing directly via command line with package name, only configuration prompts are printed
+- Field values are annotated with source information: existing configurations show ` (current:value)`, unconfigured fields show schema default values ` (default:value)`; pressing Enter retains the current value
+- Secret-type fields (declared with `secret`) do not echo input, and pressing Enter retains the previously set value
+- In interactive selection mode, after completing a single wizard, the selection menu is returned (status refreshed), allowing continuous configuration of multiple targets; press Enter to exit
+- If global form validation fails and you choose not to re-enter, the current wizard is aborted and no configuration is written (to avoid creating a "enabled but incomplete configuration" state)
+- After saving, configuration is immediately written to `config/config.toml`, and is visible in both the Dashboard and running SDK; for running adapters, restarting the process applies new account configurations
+- After successful interactive installation via `epsdk install` or `epsdk init`, if configuration declaration is detected, it automatically guides you into this wizard; when installing a package directly from the command line, only a configuration prompt is printed
 
-## Runtime Control Commands
+## Control Commands
 
 | Command | Alias | Parameters | Description |
 |---------|-------|------------|-------------|
@@ -4062,7 +4190,7 @@ epsdk config MyModule
 
 ### run
 
-Run ErisPulse project scripts or directly start the SDK. Hot reload mode is supported.
+Run an ErisPulse project script or directly start the SDK. Hot reload mode is supported.
 
 **Alias:** `r`
 
@@ -4070,8 +4198,8 @@ Run ErisPulse project scripts or directly start the SDK. Hot reload mode is supp
 
 | Parameter | Description |
 |-----------|-------------|
-| `[script]` | The script file to run. If not specified, the SDK is run. |
-| `--reload` | Enable hot reload mode, which monitors file changes and automatically restarts. |
+| `[script]` | The script file to run; if not specified, the SDK is run |
+| `--reload` | Enable hot reload mode, monitoring file changes and automatically restarting |
 
 **Examples:**
 
@@ -4082,22 +4210,19 @@ epsdk run
 # Run a specified script file
 epsdk run main.py
 
-# Run in hot reload mode (automatically restarts on file changes)
+# Run in hot reload mode (automatically restart on file changes)
 epsdk run main.py --reload
 
 # SDK in hot reload mode
 epsdk run --reload
 ```
 
----
-
-
 ## Project Management Commands
 
 | Command | Alias | Parameters | Description |
 |---------|-------|------------|-------------|
 | `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | Initialize an ErisPulse project |
-| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | Create a scaffold for a module/adapter |
+| `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | Create a module/adapter scaffold |
 
 ### init
 
@@ -4108,9 +4233,9 @@ Initialize a new ErisPulse project. Supports both interactive and quick mode.
 | Parameter | Short Parameter | Description |
 |-----------|-----------------|-------------|
 | `--project-name` | `-n` | Project name |
-| `--quick` | `-q` | Quick mode, skips the interactive wizard |
-| `--force` | `-f` | Force overwrite existing configuration files |
-| `--here` | | Initialize in the current directory, without creating a subdirectory |
+| `--quick` | `-q` | Quick mode, skip interactive wizard |
+| `--force` | `-f` | Force overwrite existing configuration file |
+| `--here` | | Initialize in the current directory, do not create a subdirectory |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
@@ -4125,7 +4250,7 @@ epsdk init -q -n my_bot
 # Force overwrite existing configuration
 epsdk init -f
 
-# Initialize in the current directory
+# Initialize in current directory
 epsdk init --here -n my_bot
 ```
 
@@ -4143,9 +4268,9 @@ Create a scaffold project for an ErisPulse module or adapter.
 | `--author` | `-a` | Author name |
 | `--email` | `-e` | Author email |
 | `--homepage` | | Project homepage URL |
-| `--output` | `-o` | Output directory (defaults to current directory) |
+| `--output` | `-o` | Output directory (default: current directory) |
 | `--force` | `-f` | Force overwrite existing directory |
-| `--local` | | Create a local plugin (only available for `module`): generates `plugins/<name>/` package structure, allows installation without packaging |
+| `--local` | | Create a local plugin (only available for `module`): generates `plugins/<name>/` package structure, eliminates the need for packaging and installation |
 
 **Examples:**
 
@@ -4156,7 +4281,7 @@ epsdk create
 # Directly create a Module project
 epsdk create module -n MyModule
 
-# Create a local plugin (placed in the project's `plugins/` directory, automatically discovered at startup, supports hot reload)
+# Create a local plugin (placed in the project's plugins/ directory, automatically discovered at startup, supports hot reload)
 epsdk create module -n MyModule --local
 
 # Directly create an Adapter project
@@ -4170,16 +4295,19 @@ epsdk create module -n MyModule -o ./projects
 
 # Force overwrite existing directory
 epsdk create module -n MyModule -f
+```
+
+---
 
 ## Language Commands
 
-| Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+| Command | Aliases | Parameters | Description |
+|---------|---------|------------|-------------|
 | `i18n` | `language`, `lang` | `[lang] [--list/-l]` | View or switch the CLI display language |
 
 ### i18n
 
-View the current CLI language, list supported languages, or switch the display language. If no parameter is specified, enter the interactive selection interface.
+View the current CLI language, list supported languages, or switch the display language. If no parameter is specified, it enters an interactive selection interface.
 
 **Aliases:** `language`, `lang`
 
@@ -4206,13 +4334,10 @@ epsdk i18n ja
 epsdk i18n --list
 ```
 
----
-
-
 ## Type Stub Commands
 
-| Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+| Command | Aliases | Parameters | Description |
+|---------|---------|------------|-------------|
 | `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | Generate type stub files to enable IDE completion |
 
 ### types
@@ -4223,14 +4348,14 @@ Scans installed ErisPulse modules and adapters, generating `.pyi` type stub file
 
 **Parameters:**
 
-| Parameter | Short Parameter | Description |
-|-----------|-----------------|-------------|
+| Parameter | Short | Description |
+|-----------|-------|-------------|
 | `--output` | `-o` | Output path (default: `ep-stubs/` in current directory) |
 | `--force` | | Force overwrite existing stub files |
 | `--adapters-only` | | Generate type stubs only for adapters |
 | `--modules-only` | | Generate type stubs only for modules |
 
-> **Note:** `--adapters-only` and `--modules-only` are mutually exclusive; if both are specified, `--modules-only` takes precedence.
+> **Note:** `--adapters-only` and `--modules-only` are mutually exclusive; when both are specified, `--modules-only` takes precedence.
 
 **Examples:**
 
@@ -4246,21 +4371,23 @@ epsdk types -o ./typings
 
 # Force overwrite existing files
 epsdk types --force
-
-## Global Parameters
-
-The following parameters are applicable to all commands:
-
-| Parameter | Short Parameter | Description |
-|-----------|-----------------|-------------|
-| `--help` | `-h` | Show help information |
-| `--version` | `-V` | Show version information |
-| `--verbose` | `-v` | Show verbose output (can be stacked with `-vv`/`-vvv`) |
-| `--no-color` | | Disable colored output (suitable for CI / log collection) |
-| `--yes` | `-y` | Automatically confirm all interactive prompts (non-interactive execution) |
+```
 
 ---
 
+## Global Parameters
+
+The following parameters are available for all commands:
+
+| Parameter | Short Parameter | Description |
+|-----------|-----------------|-------------|
+| `--help` | `-h` | Displays help information |
+| `--version` | `-V` | Displays version information |
+| `--verbose` | `-v` | Displays verbose output (can be stacked with `-vv`/`-vvv`) |
+| `--no-color` | | Disables colored output (useful for CI / log collection) |
+| `--yes` | `-y` | Automatically confirms all interactive prompts (non-interactive execution) |
+
+---
 
 ## Environment Diagnosis
 
@@ -4273,14 +4400,14 @@ Diagnose the current CLI runtime environment and output a health report. Used to
 
 | Parameter | Description |
 |-----------|-------------|
-| `--verbose` | Show detailed diagnostic information |
+| `--verbose` | Display detailed diagnostic information |
 
-**Checks**:
+**Check Items**:
 - **Python**: Interpreter version and path
 - **Installation Backend**: Whether `uv` or `pip` is used
 - **Target Interpreter**: The actual target Python environment where packages are installed
 - **Configuration File**: Whether `config/config.toml` exists
-- **PyPI Connectivity**: Whether PyPI can be accessed (and display the number of discovered components)
+- **PyPI Connectivity**: Whether PyPI can be accessed (and displays the number of discovered components)
 - **System Proxy**: Whether a proxy is detected
 
 ```bash
@@ -4289,10 +4416,13 @@ epsdk doctor
 
 # Use alias
 epsdk diag
+```
+
+---
 
 ## Interactive Installation
 
-Running `epsdk install` without specifying a package name enters interactive installation:
+Running `epsdk install` without specifying a package name enters interactive installation mode:
 
 ```bash
 epsdk install
@@ -4302,7 +4432,6 @@ The interactive interface provides:
 1. Adapter selection
 2. Module selection
 3. Custom installation
-
 
 ## Common Usage
 
@@ -4420,17 +4549,18 @@ epsdk init -q -n my_bot
 # Interactive creation (guided selection of type and filling in information)
 epsdk create
 
-# Directly create a Module project
+# Directly create Module project
 epsdk create module -n MyModule
 
-# Directly create an Adapter project
+# Directly create Adapter project
 epsdk create adapter -n MyAdapter
 
 # Full parameters
-epsdk create module -n MyModule -d "module description" -a "author" -e "mail@example.com"
+epsdk create module -n MyModule -d "Module description" -a "Author" -e "mail@example.com"
 
 # Force overwrite existing directory
 epsdk create module -n MyModule -f
+```
 
 
 
@@ -4441,127 +4571,13 @@ API 参考
 
 ### 核心模块 API
 
-# Core Modules API
+# Core Module API
 
-This document provides a quick reference for the ErisPulse core modules' APIs, including method signatures and brief descriptions. For detailed usage and examples, please click the "Full Documentation" link for each module.
-
-### Overview
-**MurmurHash**: <a href="docs/en/murmurhash.md">Full Documentation</a>
-**Pkg**: <a href="docs/en/pkg.md">Full Documentation</a>
-**Pz**: <a href="docs/en/pz.md">Full Documentation</a>
-
-### MurmurHash
-The **MurmurHash** module provides a custom implementation of MurmurHash3. It supports 32-bit and 128-bit hashing. This implementation is optimized for hashing large amounts of data.
-
-#### Public API
-
-```go
-package murmurhash
-
-// Hash32 computes the 32-bit hash of the input data.
-func Hash32(data []byte) uint32
-```
-
-#### Examples
-
-```go
-package main
-
-import (
-	"fmt"
-	"erispulse/docs/en/murmurhash"
-)
-
-func main() {
-	data := []byte("ErisPulse")
-	hash := murmurhash.Hash32(data)
-	fmt.Printf("Hash: %d\n", hash)
-}
-```
-
----
-
-### Pkg
-**Pkg** is a utility module designed to manage and retrieve package information. It helps developers handle dependencies and versioning logic.
-
-#### Public API
-
-```go
-package pkg
-
-// GetVersion returns the current version of the application.
-func GetVersion() string
-```
-
-#### Examples
-
-```go
-package main
-
-import (
-	"fmt"
-	"erispulse/docs/en/pkg"
-)
-
-func main() {
-	version := pkg.GetVersion()
-	fmt.Printf("Application Version: %s\n", version)
-}
-```
-
----
-
-### Pz
-**Pz** is a specialized module for defining and executing standard project templates. It provides a flexible framework to scaffold projects based on pre-configured structures.
-
-#### Public API
-
-```go
-package pz
-
-// Init initializes the project scaffolding process.
-// projectPath: The root directory path for the project.
-// templateName: The name of the template to use.
-func Init(projectPath string, templateName string) error
-```
-
-#### Examples
-
-```go
-package main
-
-import (
-	"fmt"
-	"erispulse/docs/en/pz"
-)
-
-func main() {
-	path := "/my/new/project"
-	template := "web-app"
-	err := pz.Init(path, template)
-	if err != nil {
-		fmt.Printf("Failed to initialize project: %v\n", err)
-	} else {
-		fmt.Println("Project initialized successfully.")
-	}
-}
-```
-
----
-
-### API Summary
-
-| Module | Status | Description |
-| :--- | :--- | :--- |
-| **MurmurHash** | ✅ Stable | Fast hashing algorithm implementation. |
-| **Pkg** | ✅ Stable | Dependency and version management utilities. |
-| **Pz** | ✅ Stable | Project scaffolding and template engine. |
-
----
+This document provides a quick reference for the API of ErisPulse core modules, including method signatures and brief descriptions. Click the "Full Documentation" link for each module for detailed usage and examples.
 
 ## Storage Module
 
-A key-value storage system based on SQLite, supporting general SQL chained queries.
+A key-value storage system based on SQLite, supporting general SQL chainable queries.
 
 ### Basic Operations
 
@@ -4582,7 +4598,7 @@ values = sdk.storage.get_multi(["key1", "key2"])
 sdk.storage.delete_multi(["key1", "key2"])
 ```
 
-### Transaction Operations
+### Transactional Operations
 
 ```python
 with sdk.storage.transaction():
@@ -4593,13 +4609,13 @@ with sdk.storage.transaction():
 ### Attribute Access
 
 ```python
-sdk.storage.my_key          # equivalent to sdk.storage.get("my_key")
-sdk.storage.my_key = "val"  # equivalent to sdk.storage.set("my_key", "val")
+sdk.storage.my_key          # Equivalent to sdk.storage.get("my_key")
+sdk.storage.my_key = "val"  # Equivalent to sdk.storage.set("my_key", "val")
 ```
 
-### SQL Chained Queries
+### SQL Chainable Queries
 
-The Storage module provides a generic SQL query builder in chained call style, supporting CRUD operations on custom tables.
+The Storage module provides a chainable-style generic SQL query builder, supporting CRUD operations for custom tables.
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -4611,50 +4627,51 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> For the complete chained query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), please refer to [SQL Query Builder](../advanced/sql-builder.md).
+> For the complete chainable query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), please refer to [SQL Query Builder](../advanced/sql-builder.md).
 
 ### Storage Backend Abstraction
 
-`StorageManager` inherits from the `BaseStorage` abstract base class, supporting extension to other storage mediums (Redis, MySQL, etc.).
+`StorageManager` inherits from the `BaseStorage` abstract base class and supports extending other storage media (Redis, MySQL, etc.).
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
-### Async Interfaces
+### Asynchronous Interfaces
 
-Both the Storage and Config modules provide async methods (prefix `a`), which can be safely called in async handlers. Sync methods continue to be retained, requiring no modification to existing code.
+Both the Storage and Config modules provide asynchronous methods (prefixed with `a`), which can be safely called in asynchronous handlers. Synchronous methods are retained and do not require modification of existing code.
 
 ```python
-# Async Storage
+# Asynchronous Storage
 value = await sdk.storage.aget("key")
 await sdk.storage.aset("key", "value")
 await sdk.storage.adelete("key")
 keys = await sdk.storage.aget_all_keys()
 await sdk.storage.aclear()
 
-# Async Batch Operations
+# Asynchronous Batch Operations
 values = await sdk.storage.aget_multi(["k1", "k2"])
 await sdk.storage.aset_multi({"k1": "v1", "k2": "v2"})
 await sdk.storage.adelete_multi(["k1", "k2"])
 
-# Async Config
+# Asynchronous Configuration
 value = await sdk.config.agetConfig("MyModule.key")
 await sdk.config.asetConfig("MyModule.key", "value")
 await sdk.config.aforce_save()
 await sdk.config.areload()
+```
 
 ## Config Module
 
-TOML format configuration file management, supporting dot-separated key paths.
+Configuration file management in TOML format, supporting key paths separated by dots.
 
 ### API Overview
 
 | Method | Description |
-|------|------|
-| `getConfig(key, default)` | Read configuration, supports dot path like `"MyModule.subkey"` |
-| `setConfig(key, value, immediate=False)` | Write configuration. `immediate=True` saves to file immediately |
-| `force_save()` | Force write configuration in memory to file |
+|--------|-------------|
+| `getConfig(key, default)` | Read configuration, supports dot-separated paths such as `"MyModule.subkey"` |
+| `setConfig(key, value, immediate=False)` | Write configuration. If `immediate=True`, save immediately to file |
+| `force_save()` | Force writing configuration from memory to file |
 | `reload()` | Reload configuration from file |
 | `agetConfig(key, default)` | Asynchronously read configuration |
 | `asetConfig(key, value, immediate)` | Asynchronously write configuration |
@@ -4671,7 +4688,7 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` uses lazy write (saves in batch every 5 seconds) by default. Setting `immediate=True` can persist to the config file immediately. Configuration changes trigger the `config.set` lifecycle event.
+> `setConfig` uses delayed writing by default (batched save every 5 seconds). Setting `immediate=True` persists changes immediately to the configuration file. Configuration changes trigger the `config.set` lifecycle event.
 
 ## Logger Module
 
@@ -4680,20 +4697,20 @@ A modular logging system based on Rich output, supporting child loggers and modu
 ### Basic Usage
 
 ```python
-sdk.logger.debug("debug message")
-sdk.logger.info("runtime information")
-sdk.logger.warning("warning message")
-sdk.logger.error("error message")
-sdk.logger.critical("fatal error")
+sdk.logger.debug("Debug information")
+sdk.logger.info("Runtime information")
+sdk.logger.warning("Warning information")
+sdk.logger.error("Error information")
+sdk.logger.critical("Critical error")
 ```
 
 ### Child Loggers
 
 ```python
 child_logger = sdk.logger.get_child("MyModule")
-child_logger.info("child module log")
+child_logger.info("Submodule log")
 
-child_logger.get_child("utils")  # Nested child loggers are supported
+child_logger.get_child("utils")  # Supports nesting
 ```
 
 ### Log Level Control
@@ -4702,26 +4719,26 @@ child_logger.get_child("utils")  # Nested child loggers are supported
 sdk.logger.set_level("DEBUG")                          # Global level
 sdk.logger.set_module_level("MyModule", "DEBUG")       # Module level
 
-# Supported levels (from lowest to highest):
+# Supported levels (from low to high):
 # TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
-# TRACE is the lowest level; it outputs framework-internal detailed debugging information (event dispatching, routing registration, etc.)
+# TRACE is the lowest level, outputting detailed internal framework debug information (event dispatching, routing registration, etc.)
 sdk.logger.set_level("TRACE")                          # Enable all logs
 ```
 
 ### Log Subscription (Push Mode)
 
-Provides a way for modules such as Dashboard to receive structured logs in real-time, supporting level filtering and historical log replay.
+Allows real-time receipt of structured logs by modules such as Dashboard, supporting level filtering and historical log replay.
 
-> **Explicit Subscription for Low-Level Logs**: The `min_level` of the subscriber can be lower than the global log level. In this case, low-level logs are **pushed only to matching subscribers**, and will not be output to the console or written to memory, thereby avoiding pollution of the main log stream.
+> **Explicitly subscribe to lower-level logs**: The `min_level` of a subscriber can be lower than the global log level. In this case, lower-level logs are **only pushed to matching subscribers**, not output to the console, nor written to memory, thus avoiding pollution of the main log stream.
 >
 > ```python
-> # Global level is INFO, but DEBUG logs can still be subscribed separately
+> # Global level is INFO, but DEBUG logs can still be individually subscribed
 > @sdk.logger.handler("debug-tracer", min_level="DEBUG")
 > def on_debug(log_data: dict): ...
 > ```
 
 ```python
-# Decorator style
+# Decorator approach
 @sdk.logger.handler("my-handler", min_level="INFO")
 def on_log(log_data: dict):
     # log_data = {
@@ -4732,15 +4749,15 @@ def on_log(log_data: dict):
     # }
     pass
 
-# Direct call style
+# Direct call approach
 sdk.logger.handler("my-handler", min_level="INFO")(on_log)
 sdk.logger.remove_handler("my-handler")
 ```
 
 | Method | Description |
 |--------|-------------|
-| `handler(id, *, min_level)(func)` | Decorator or direct call. `id` is empty, uses function name. `min_level` can be lower than global level (low-level logs are only pushed to subscribers, not console/memory). Registers and replays historical logs automatically. |
-| `remove_handler(id)` | Removes a subscriber. |
+| `handler(id, *, min_level)(func)` | Decorator or direct call. If `id` is empty, it uses the function name. `min_level` can be lower than the global level (lower-level logs are only pushed to matching subscribers, not to console/memory). Registers and automatically replays historical logs |
+| `remove_handler(id)` | Removes a subscriber |
 
 ### Output Control
 
@@ -4749,23 +4766,24 @@ sdk.logger.set_output_file("app.log")
 sdk.logger.save_logs("log.txt")
 sdk.logger.get_logs("MyModule")
 sdk.logger.set_memory_limit(1000)
+```
 
 ## Adapter Module
 
-The adapter manager manages the registration, startup, and shutdown of multi-platform adapters.
+The adapter manager, responsible for registering, starting, and shutting down adapters for multiple platforms.
 
 ### API Overview
 
 | Method | Description |
-|------|------|
-| `get(platform)` | Get adapter instance |
-| `exists(platform)` | Check if adapter is registered |
-| `enable(platform)` / `disable(platform)` | Enable/disable adapter |
-| `is_enabled(platform)` | Check if enabled |
-| `startup(platforms)` / `shutdown(platforms)` | Start/stop adapter |
-| `is_running(platform)` | Check if adapter is running |
+|--------|-------------|
+| `get(platform)` | Get the adapter instance |
+| `exists(platform)` | Check if the adapter is registered |
+| `enable(platform)` / `disable(platform)` | Enable/Disable the adapter |
+| `is_enabled(platform)` | Check if the adapter is enabled |
+| `startup(platforms)` / `shutdown(platforms)` | Start/Shutdown the adapter |
+| `is_running(platform)` | Check if the adapter is running |
 | `list_running()` | List all running adapters |
-| `platforms` | Get list of all platform names |
+| `platforms` | Get a list of all platform names |
 
 ### Adapter Events
 
@@ -4788,48 +4806,49 @@ sdk.adapter.is_bot_online("telegram", "123456")
 sdk.adapter.get_status_summary()
 ```
 
-> For the complete adapter management API, please refer to [Adapter System API](adapter-system.md).
+> For the complete adapter management API, see [Adapter System API](adapter-system.md).
 
-## Module
+## Module Module
 
-The module manager manages the registration, loading, and unloading of plugins.
+The module manager, responsible for managing plugin registration, loading, and unloading.
 
 ### API Overview
 
 | Method | Description |
 |--------|-------------|
-| `get(name)` | Get module instance or lazy load proxy (returns proxy if registered but not yet loaded) |
-| `exists(name)` | Check if already registered |
-| `is_loaded(name)` | Check if already loaded |
-| `is_enabled(name)` | Check if enabled |
-| `enable(name)` / `disable(name)` | Enable/disable module |
-| `load(name)` / `unload(name)` | Load/unload module |
+| `get(name)` | Get the module instance or a lazy-loaded proxy (returns a proxy when registered but not loaded) |
+| `exists(name)` | Check if it is registered |
+| `is_loaded(name)` | Check if it is loaded |
+| `is_enabled(name)` | Check if it is enabled |
+| `enable(name)` / `disable(name)` | Enable/disable the module |
+| `load(name)` / `unload(name)` | Load/unload the module |
 | `list_registered()` | List registered modules |
 | `list_loaded()` | List loaded modules |
-| `get_info(name)` | Get module info |
-| `get_status_summary()` | Get module status summary |
+| `get_info(name)` | Get module information |
+| `get_status_summary()` | Get a module status summary |
 
-### Property Access
+### Attribute Access
 
 ```python
 module = sdk.module.get("ModuleName")
 module = sdk.module.ModuleName
 module = sdk.ModuleName  # Equivalent shortcut
+```
 
 ## Lifecycle Module
 
-An event-driven lifecycle manager that provides event emission and listening capabilities.
+An event-driven lifecycle manager that provides event submission and listening functionality.
 
 ### API Overview
 
 | Method | Description |
-|------|------|
-| `on(event, priority=0)` | Decorator to register event handlers, supporting dot notation matching and wildcards `*` |
-| `register(event, handler, priority=0)` | Functional registration of handlers |
+|--------|-------------|
+| `on(event, priority=0)` | Decorator to register event handlers, supports dot notation matching and wildcard `*` |
+| `register(event, handler, priority=0)` | Function-style registration of handlers |
 | `unregister(event, handler=None)` | Remove handlers |
 | `emit(event, data)` | Asynchronously trigger an event |
 | `emit_sync(event, data)` | Synchronously trigger an event |
-| `submit_event(event_type, msg, data, source)` | Submit a standard format event (legacy compatible) |
+| `submit_event(event_type, msg, data, source)` | Submit events in standard format (compatible with older versions) |
 | `start_timer(id)` / `stop_timer(id)` | Performance timers |
 
 ### Example
@@ -4837,55 +4856,56 @@ An event-driven lifecycle manager that provides event emission and listening cap
 ```python
 @sdk.lifecycle.on("module.init")
 async def handle_module_init(event_data):
-    print(f"模块初始化: {event_data}")
+    print(f"Module initialized: {event_data}")
 
 @sdk.lifecycle.on("module")
 async def handle_any_module_event(event_data):
-    print(f"模块事件: {event_data}")
+    print(f"Module event: {event_data}")
 
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
 ```
 
-> For a complete list of standard events and detailed usage, please refer to [Lifecycle Management](../advanced/lifecycle.md).
+> For the complete list of standard events and detailed usage, please refer to [Lifecycle Management](../advanced/lifecycle.md).
 
 ## Router Module
 
-HTTP/WebSocket router manager, based on FastAPI + Uvicorn, supports decorator routing, middleware, grouping, rate limiting, and CORS.
+HTTP/WebSocket routing manager, based on FastAPI + Uvicorn, supporting decorator-based routing, middleware, grouping, rate limiting, and CORS.
 
-> For the complete router API documentation (decorator routing, WebSocket, middleware, rate limiting, CORS, security headers, etc.), please refer to [Router Manager](../advanced/router.md).
+> For a complete routing API documentation (decorator-based routing, WebSocket, middleware, rate limiting, CORS, security headers, etc.), please refer to [Routing Manager](../advanced/router.md).
 
 ### Quick Reference
 
 ```python
-# HTTP route
+# HTTP routing
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
     return {"status": "ok"}
 
-# WebSocket route
+# WebSocket routing
 @sdk.router.ws("MyModule", "/ws")
 async def ws_handler(ws: WebSocketConnection):
     async for text in ws.iter_text():
         await ws.send_text(f"Echo: {text}")
 
-# Route grouping
+# Routing grouping
 group = sdk.router.group("MyModule", prefix="/v1")
 @group.get("/users")
 async def list_users(request: HttpRequest):
     return {"users": []}
+```
 
 ## HTTP Client Module
 
-A unified network client that aggregates HTTP requests, WebSocket connections, connection pool management, automatic retry, request statistics, and lifecycle event integration.
+A unified network client that aggregates HTTP requests, WebSocket connections, connection pool management, automatic retries, request statistics, and lifecycle event integration.
 
-> For complete network client documentation (request methods, response objects, WebSocket client, exception hierarchy, etc.), please refer to [Network Client](../advanced/http-client.md).
+> For the complete network client documentation (request methods, response objects, WebSocket client, exception hierarchy, etc.), please refer to [Network Client](../advanced/http-client.md).
 
 ### Quick Reference
 
 ```python
 from ErisPulse.Core import client
 
-# HTTP request
+# HTTP Request
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
@@ -4893,12 +4913,13 @@ data = await resp.json()
 ws = await client.ws_connect("wss://example.com/ws")
 async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
+```
 
 ## SDK Debugging
 
 ### dump_state()
 
-Exports a snapshot of the framework's current runtime state, used for debugging and diagnostics.
+Exports a snapshot of the current runtime state of the framework, for debugging and diagnostics.
 
 ```python
 import json
@@ -4906,14 +4927,14 @@ state = sdk.dump_state()
 print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 ```
 
-The returned structure contains the status of the following subsystems:
+The returned structure includes the status of the following subsystems:
 
 | Field | Description |
-|------|------|
+|-------|-------------|
 | `sdk` | SDK initialization status, Python version, runtime platform, timestamp |
-| `adapters` | List of registered/started adapters, online status of bots on each platform |
+| `adapters` | List of registered/started adapters, online status of Bots on each platform |
 | `modules` | List of registered/enabled/disabled/lazy-loaded modules |
-| `events` | Count of various event handlers (message/notice/request/meta/commands) |
+| `events` | Number of event handlers for each event type (message/notice/request/meta/commands) |
 | `router` | Server runtime status, number of HTTP/WebSocket routes |
 
 > Added in 2.5.2
@@ -4924,22 +4945,20 @@ The returned structure contains the status of the following subsystems:
 
 # Event System API
 
-This document details the API of the ErisPulse event system.
+This document provides a detailed overview of the ErisPulse event system's API.
 
-The event system dispatches platform events into five types of handlers:
+The event system categorizes platform events by type and distributes them to five classes of processors:
 
 ```mermaid
 flowchart LR
-    A["Platform Event<br/>(OneBot12 Standard)"] --> B{"Event Type"}
-    B --> C["command<br/>Command Handler"]
-    B --> D["message<br/>Message Handler"]
-    B --> E["notice<br/>Notice Handler"]
-    B --> F["request<br/>Request Handler"]
-    B --> G["meta<br/>Meta Event Handler"]
-    C & D & E & F & G --> H["Event Wrapper Class<br/>reply / get_text / done etc."]
+    A["Platform Event<br/>（OneBot12 Standard）"] --> B{"Event Type"}
+    B --> C["command<br/>Command Processor"]
+    B --> D["message<br/>Message Processor"]
+    B --> E["notice<br/>Notice Processor"]
+    B --> F["request<br/>Request Processor"]
+    B --> G["meta<br/>Meta Event Processor"]
+    C & D & E & F & G --> H["Event Wrapper Class<br/>reply / get_text / done, etc."]
 ```
-
-
 
 ## Command Module
 
@@ -4949,16 +4968,16 @@ flowchart LR
 from ErisPulse.Core.Event import command
 
 # Basic command
-@command("hello", help="Send greeting")
+@command("hello", help="Send a greeting")
 async def hello_handler(event):
     await event.reply("Hello!")
 
 # Command with aliases
-@command(["help", "h"], aliases=["Help"], help="Display help")
+@command(["help", "h"], aliases=["help", "帮助"], help="Show help")
 async def help_handler(event):
     pass
 
-# Command with permissions
+# Command with permission
 def is_admin(event):
     return event.get("user_id") in admin_ids
 
@@ -4972,7 +4991,7 @@ async def secret_handler(event):
     pass
 
 # Command group
-@command("admin.reload", group="admin", help="Reload modules")
+@command("admin.reload", group="admin", help="Reload module")
 async def reload_handler(event):
     pass
 ```
@@ -4986,22 +5005,22 @@ help_text = command.help()
 # Get specific command
 cmd_info = command.get_command("admin")
 
-# Get all commands in a command group
+# Get all commands in a group
 admin_commands = command.get_group_commands("admin")
 
 # Get all visible commands
 visible_commands = command.get_visible_commands()
 ```
 
-### Waiting for Replies
+### Waiting for Reply
 
 ```python
 # Wait for user reply
-@command("ask", help="Ask for user info")
+@command("ask", help="Ask user information")
 async def ask_command(event):
     reply = await command.wait_reply(
         event,
-        prompt="Please enter your name:",  # Sent above
+        prompt="Please enter your name:",  # Already sent above
         timeout=30.0
     )
     
@@ -5009,7 +5028,7 @@ async def ask_command(event):
         name = reply.get_text()
         await event.reply(f"Hello, {name}!")
 
-# Waiting for reply with validation
+# Wait for reply with validation
 def validate_age(event_data):
     try:
         age = int(event_data.get_text())
@@ -5017,7 +5036,7 @@ def validate_age(event_data):
     except ValueError:
         return False
 
-@command("age", help="Ask for user age")
+@command("age", help="Ask user age")
 async def age_command(event):
     await event.reply("Please enter your age:")
     
@@ -5031,23 +5050,24 @@ async def age_command(event):
         age = int(reply.get_text())
         await event.reply(f"Your age is {age} years old")
 
-# Waiting for reply with callback
+# Wait for reply with callback
 async def handle_confirmation(reply_event):
     text = reply_event.get_text().lower()
-    if text in ["Yes", "yes", "y"]:
+    if text in ["是", "yes", "y"]:
         await event.reply("Operation confirmed!")
     else:
-        await event.reply("Operation canceled.")
+        await event.reply("Operation cancelled.")
 
 @command("confirm", help="Confirm operation")
 async def confirm_command(event):
     await command.wait_reply(
         event,
-        prompt="Please enter 'Yes' or 'No':",
+        prompt="Please enter '是' or '否':",
         callback=handle_confirmation
     )
+```
 
-## Message Module
+## Message Message Module
 
 ### Message Events
 
@@ -5063,92 +5083,95 @@ async def message_handler(event):
 @message.on_private_message()
 async def private_handler(event):
     user_id = event.get_user_id()
-    sdk.logger.info(f"Private chat from: {user_id}")
+    sdk.logger.info(f"Private message from: {user_id}")
 
 # Listen to group messages
 @message.on_group_message()
 async def group_handler(event):
     group_id = event.get_group_id()
-    sdk.logger.info(f"Group chat from: {group_id}")
+    sdk.logger.info(f"Group message from: {group_id}")
 
 # Listen to @ messages
 @message.on_at_message()
 async def at_handler(event):
     mentions = event.get_mentions()
-    sdk.logger.info(f"Mentioned users: {mentions}")
+    sdk.logger.info(f"Users mentioned: {mentions}")
 ```
 
 ### Conditional Listening
 
 ```python
 # Use priority to control execution order
-@message.on_message(priority=10)  # Higher numeric value means higher priority
+@message.on_message(priority=10)  # Higher value means higher priority
 async def high_priority_handler(event):
     pass
 
-# Implement conditional filtering inside the handler
+# Implement conditional filtering within the handler
 @message.on_message()
 async def filtered_handler(event):
-    if "Keyword" not in event.get_text():
+    if "keyword" not in event.get_text():
         return
     # Process messages containing the keyword
     pass
+```
 
-## Notice Module
+## Notice Notification Module
 
-### Notice Events
+### Notification Events
 
 ```python
 from ErisPulse.Core.Event import notice
 
-# Friend added
+# Friend Added
 @notice.on_friend_add()
 async def friend_add_handler(event):
     user_id = event.get_user_id()
     await event.reply("Welcome to add me as a friend!")
 
-# Friend removed
+# Friend Removed
 @notice.on_friend_remove()
 async def friend_remove_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"Friend removed: {user_id}")
 
-# Group member increased
+# Group Member Added
 @notice.on_group_increase()
 async def member_increase_handler(event):
     user_id = event.get_user_id()
     await event.reply(f"Welcome new member!")
 
-# Group member decreased
+# Group Member Removed
 @notice.on_group_decrease()
 async def member_decrease_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"Group member left: {user_id}")
+```
 
-## Request Module
+## Request Request Module
 
 ### Request Events
 
 ```python
 from ErisPulse.Core.Event import request
 
-# Friend request
+# Friend Request
 @request.on_friend_request()
 async def friend_request_handler(event):
     user_id = event.get_user_id()
     comment = event.get_comment()
-    sdk.logger.info(f"Friend request: {user_id}, comment: {comment}")
+    sdk.logger.info(f"Friend Request: {user_id}, Comment: {comment}")
 
-# Group invite request
+# Group Invitation Request
 @request.on_group_request()
 async def group_request_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"Group invite: {group_id}, from: {user_id}")
+    sdk.logger.info(f"Group Invitation: {group_id}, From: {user_id}")
+```
 
-## Meta Meta-Event Module
+## Meta Meta-event Module
 
-### Meta Event
+### Meta Events
 
 ```python
 from ErisPulse.Core.Event import meta
@@ -5157,28 +5180,27 @@ from ErisPulse.Core.Event import meta
 @meta.on_connect()
 async def connect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"Platform {platform} connected successfully")
+    sdk.logger.info(f"Connected to platform {platform}")
 
 # Disconnection event
 @meta.on_disconnect()
 async def disconnect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"Platform {platform} disconnected")
+    sdk.logger.info(f"Disconnected from platform {platform}")
 
 # Heartbeat event
 @meta.on_heartbeat()
 async def heartbeat_handler(event):
-    sdk.logger.debug("Heartbeat received")
+    sdk.logger.debug("Received heartbeat")
 ```
 
 ### Bot Status Query
 
-After the adapter sends a meta event, the framework automatically tracks the Bot status. For the query API and lifecycle event listeners, please refer to [Adapter System API - Bot Status Management](adapter-system.md#bot-status-management).
-
+After the adapter sends a meta event, the framework will automatically track the Bot's status. For query APIs and lifecycle event listeners, please refer to [Adapter System API - Bot Status Management](adapter-system.md#bot-status-management).
 
 ## Event Wrapper Class
 
-The Event module's event handlers receive an Event wrapper instance, which inherits from dict and provides convenient methods.
+Event module's event handlers receive an instance of the Event wrapper class, which inherits from `dict` and provides convenient methods.
 
 ### Core Methods
 
@@ -5196,18 +5218,18 @@ self_user_id = event.get_self_user_id()
 self_info = event.get_self_info()
 ```
 
-### Session Identifier
+### Session Identifiers
 
 ```python
-# Unified target ID: Returns group_id for group chats, user_id for private chats, etc.
+# Unified target ID: returns group_id for group chats, user_id for private chats, and so on
 target_id = event.get_target_id()
 
 # Unique session identifier, format: {platform}:{detail_type}:{target_id}
 session_id = event.get_session_id()
-# Examples: "telegram:private:12345", "qq:group:67890"
+# Example: "telegram:private:12345", "qq:group:67890"
 ```
 
-`get_target_id()` returns the first non-empty value in the following order: `group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`. Suitable for scenarios like context management, state storage, etc., that require a unified identifier for the session.
+`get_target_id()` returns the first non-empty value in the following order: `group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`. This is suitable for scenarios requiring a unified session identifier, such as context management and state storage.
 
 ### Message Methods
 
@@ -5225,7 +5247,7 @@ sender = event.get_sender()
 # Get group information
 group_id = event.get_group_id()
 
-# Check message type
+# Determine message type
 is_msg = event.is_message()
 is_private = event.is_private_message()
 is_group = event.is_group_message()
@@ -5244,7 +5266,7 @@ cmd_name = event.get_command_name()
 cmd_args = event.get_command_args()
 cmd_raw = event.get_command_raw()
 
-# Check if it is a command
+# Determine if it is a command
 is_cmd = event.is_command()
 ```
 
@@ -5254,24 +5276,24 @@ is_cmd = event.is_command()
 # Basic reply
 await event.reply("This is a message")
 
-# Specify sending method
+# Specify send method
 await event.reply("http://example.com/image.jpg", method="Image")
 
-# Reply with @ users and message
+# Reply with @user and reply to message
 await event.reply("Hello", at_users=["user1"], reply_to="msg_id")
 
-# @ all members
+# @all members
 await event.reply("Announcement", at_all=True)
 
 # Use platform-specific modifier methods (via parameter)
 await event.reply("Board content", method="Board",
                   via=[("Expire", 3600), ("ForMember", "114514")])
 
-# Get send chain, freely append modifier methods and sending methods (suitable for multiple consecutive modifiers / action-oriented methods)
+# Get send chain, freely append modifier methods and send methods (suitable for multiple modifiers/action methods)
 await event.send_chain().Expire(3600).Board("Board content")
 await event.send_chain().DismissBoard()
 
-# Use OneBot12 message segment reply
+# Reply using OneBot12 message segments
 from ErisPulse.Core.Event import MessageBuilder
 msg = MessageBuilder().text("Hello").image("url").build()
 await event.reply_ob12(msg)
@@ -5283,30 +5305,30 @@ reply = await event.wait_reply(timeout=30)
 ### Platform Capability Query
 
 ```python
-# Check if the current platform supports a certain sending method
+# Check if current platform supports a certain send method
 if event.supports("Image"):
     await event.reply(url, method="Image")
 
-# List all available sending methods for the current platform
+# List all available send methods for current platform
 methods = event.available_methods()
 # ["Text", "Image", "Voice", ...]
 ```
 
 ### Reply Methods
 
-The `reply()` method supports specifying the sending type via the `method` parameter, as well as two convenient boolean parameters:
+The `reply()` method supports specifying the send type via the `method` parameter, as well as two convenient boolean parameters:
 
 ```python
 # Simple text reply
 await event.reply("Hello")
 
-# Reply and @ sender
+# Reply and @ sender (automatically extracts user_id)
 await event.reply("Hello", at_sender=True)
 
-# Reply and quote the current message
+# Reply and quote current message (automatically extracts message_id)
 await event.reply("Received", quote=True)
 
-# Combined usage
+# Combine usage
 await event.reply("Received", at_sender=True, quote=True)
 
 # Send image (using method parameter)
@@ -5321,58 +5343,58 @@ else:
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `content` | str | Content to send |
-| `method` | str | Sending method, default "Text", optional "Image"/"Voice"/"Video"/"File" etc. |
-| `at_sender` | bool | Whether to @ the sender (automatically extracts user_id) |
-| `quote` | bool | Whether to quote the reply to the current message (automatically extracts message_id) |
-| `at_users` | list[str] | List of users to @ |
+| `method` | str | Send method, default "Text", optional "Image"/"Voice"/"Video"/"File" etc. |
+| `at_sender` | bool | Whether to @ sender (automatically extract user_id) |
+| `quote` | bool | Whether to quote reply to current message (automatically extract message_id) |
+| `at_users` | list[str] | List of @ users |
 | `reply_to` | str | Manually specify the message ID to reply to |
 | `at_all` | bool | Whether to @ all members |
 
-### Interactive Methods
+### Interaction Methods
 
 ```python
-# confirm — Confirm the conversation (returns True/False/None)
-if await event.confirm("Are you sure you want to execute this action?"):
+# confirm — confirmation dialog (returns True/False/None)
+if await event.confirm("Are you sure to execute this operation?"):
     await event.reply("Confirmed")
 
-# Send confirmation prompt using non-Text method
+# Use non-Text method to send confirmation prompt
 if await event.confirm("http://example.com/image.jpg", method="Image"):
     await event.reply("Confirmed image prompt")
 
-# choose — Select from menu (returns option index or None)
-choice = await event.choose("Please select a color:", ["Red", "Green", "Blue"])
+# choose — selection menu (returns option index or None)
+choice = await event.choose("Please select color:", ["Red", "Green", "Blue"])
 
 # options_format="auto" (default) automatically selects style based on method:
-# Markdown → Unordered list (- 1.Option), Html → Ordered list (<ol>), others → plain text list
-# Text-based methods (Markdown/Html, etc.) merge options to the end by default
-# merge_prompt=True can force any method to merge; placeholder can customize placeholder
+# Markdown→unordered list (- 1. option), Html→ordered list (<ol>), others→plain text list
+# Text methods (Markdown/Html etc.) default merge options to the end
+# merge_prompt=True forcibly merges for any method; placeholder can customize placeholder
 choice = await event.choose(
     "## Please select\n{options}", ["A", "B"],
     method="Markdown", merge_prompt=True,
 )
 
-# collect — Form collection (returns {key: value} dict or None)
+# collect — form collection (returns {key: value} dict or None)
 data = await event.collect([
-    {"key": "name", "prompt": "Please enter your name:"},
-    {"key": "age", "prompt": "Please enter your age:",
+    {"key": "name", "prompt": "Please enter name:"},
+    {"key": "age", "prompt": "Please enter age:",
      "validator": lambda e: e.get_text().isdigit()},
     {"key": "avatar", "prompt": "Please send avatar:", "method": "Image"},
 ])
 
-# wait_for — Wait for any event satisfying conditions
+# wait_for — wait for any event satisfying conditions
 evt = await event.wait_for(event_type="notice", condition=lambda e: ..., timeout=120)
 
-# conversation — Multi-turn dialogue context
+# conversation — multi-turn conversation context
 conv = event.conversation(timeout=60)
 await conv.say("Welcome!")
 ```
 
-> For complete parameter descriptions and more examples of interactive methods, please refer to [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md) and [Conversation Multi-turn Dialogue](../advanced/conversation.md).
+> For complete parameter descriptions and more examples of interaction methods, please refer to [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md) and [Conversation Multi-turn Dialogue](../advanced/conversation.md).
 
 ### Utility Methods
 
 ```python
-# Convert to dict (filters out internal keys starting with _)
+# Convert to dictionary (filter keys starting with _)
 event_dict = event.to_dict()
 
 # Get raw data
@@ -5380,39 +5402,39 @@ raw = event.get_raw()
 raw_type = event.get_raw_type()
 ```
 
-### Control Flow
+### Link Control
 
-`event.done(claim=, stop=)` unifies the control of two orthogonal semantics: "Claim" and "Stop":
+`event.done(claim=, stop=)` uniformly controls the two orthogonal semantics of "claim" and "block":
 
-- **Claim (claim)**: Marks the event as processed (`_processed`), so the command dispatcher skips re-processing it
-- **Stop (stop)**: Prevents propagation to lower priority handlers (`_propagation_stopped`)
+- **Claim (claim)**: Mark the event as processed (`_processed`), and the command dispatcher skips it for deduplication based on this.
+- **Block (stop)**: Prevent propagation to lower priority handlers (`_propagation_stopped`)
 
 ```python
-# Claim + Stop (default)
+# Claim + Block (default)
 event.done()
 
-# Claim only, no stop (low priority observers can still see it)
+# Only claim, do not block (lower priority observers can still see)
 event.done(stop=False)
 
-# Stop only, no claim (e.g., firewall / rate limiting)
+# Only block, do not claim (e.g., firewall / rate limiting)
 event.done(claim=False)
 
-# mark_processed is the main method, done is an alias
-event.mark_processed()             # equivalent to event.done()
-event.mark_processed(stop=False)   # equivalent to event.done(stop=False)
+# mark_processed is the main method, done is its alias
+event.mark_processed()             # Equivalent to event.done()
+event.mark_processed(stop=False)   # Equivalent to event.done(stop=False)
 
 # Query status
-event.is_processed()  # Whether already claimed
-event.is_stopped()    # Whether propagation is already stopped
+event.is_processed()  # Whether it has been claimed
+event.is_stopped()    # Whether propagation has been blocked
 ```
 
 ### Platform Extension Methods
 
-Adapters can register platform-specific methods for the Event, which are only available on instances of the corresponding platform.
+Adapters can register platform-specific methods for Event, which are only available on instances of the corresponding platform.
 
-#### Users: Using Platform Extension Methods
+#### User: Using Platform Extension Methods
 
-After an adapter registers platform-specific methods, you can call them directly in event handlers. Methods vary by platform, please refer to the corresponding [Platform Documentation](../platform-guide/).
+When adapters register platform-specific methods, you can directly call them in event handlers. The methods vary by platform; please refer to the corresponding [platform documentation](../platform-guide/).
 
 ```python
 from ErisPulse.Core.Event import message
@@ -5421,22 +5443,22 @@ from ErisPulse.Core.Event import message
 async def handle_message(event):
     platform = event.get_platform()
 
-    # Call platform-specific methods based on platform
+    # Call specific methods based on platform
     if platform == "email":
-        subject = event.get_subject()           # Email specific
-        attachments = event.get_attachments()   # Email specific
+        subject = event.get_subject()           # Email-specific
+        attachments = event.get_attachments()   # Email-specific
 ```
 
-#### Query Platform Registered Methods
+#### Query Registered Platform Methods
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
 
-# View which methods are registered for a platform
+# View which methods have been registered for a platform
 methods = get_platform_event_methods("email")
 # ["get_subject", "get_from", "get_attachments", ...]
 
-# Dynamically judge and call
+# Dynamically check and call
 for method_name in get_platform_event_methods(event.get_platform()):
     method = getattr(event, method_name)
     print(f"{method_name}: {method()}")
@@ -5444,15 +5466,15 @@ for method_name in get_platform_event_methods(event.get_platform()):
 
 #### Platform Method Isolation
 
-Methods registered by different platforms do not interfere with each other:
+Methods registered for different platforms do not interfere with each other:
 
 ```python
-# Email event - Only email methods
+# Email event - only email methods
 event = Event({"platform": "email", "email_raw": {"subject": "Hello"}})
 event.get_subject()      # ✅ "Hello"
 event.get_chat_type()    # ❌ AttributeError
 
-# Telegram event - Only Telegram methods
+# Telegram event - only Telegram methods
 event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "private"}}})
 event.get_chat_type()    # ✅ "private"
 event.get_subject()      # ❌ AttributeError
@@ -5465,11 +5487,11 @@ hasattr(event, "get_subject")   # Returns True only when platform="email"
 "get_subject" in dir(event)     # Same as above
 ```
 
-### Adapters: Registering Platform Extension Methods
+### Adapter: Registering Platform Extension Methods
 
-Adapters can register platform-specific methods for the Event using decorators. The first argument of the method is `self` (Event instance), allowing free access to event data.
+Adapters can register platform-specific methods for Event using decorators. The first parameter of the method is `self` (Event instance), allowing free access to event data.
 
-#### Registering a Single Method
+#### Single Method Registration
 
 ```python
 from ErisPulse.Core.Event import register_event_method
@@ -5485,7 +5507,7 @@ def get_from(self):
     return self.get("email_raw", {}).get("from", {})
 ```
 
-#### Batch Registration (Mixin Classes)
+#### Batch Registration (Mixin Class)
 
 When there are many methods, it is recommended to use a Mixin class for batch registration:
 
@@ -5497,7 +5519,7 @@ class EmailEventMixin:
         return self.get("email_raw", {}).get("subject", "")
 
     def get_from(self):
-        return self.get("email_raw", {}).get("from", "")
+        return self.get("email_raw", {}).get("from", {})
 
     def get_attachments(self):
         return self.get("email_raw", {}).get("attachments", [])
@@ -5509,11 +5531,11 @@ register_event_mixin("email", EmailEventMixin)
 #### Return Value Specification
 
 | Scenario | Return Value | User Usage |
-|----------|-------------|------------|
-| Returning data (text, dict, etc.) | Direct return value | `subject = event.get_subject()` |
-| Executing operations (sending messages, etc.) | Returns `asyncio.Task` | `task = event.do_something()` Optional `await` |
+|----------|--------------|------------|
+| Return data (text, dict, etc.) | Return the value directly | `subject = event.get_subject()` |
+| Execute operation (send message, etc.) | Return `asyncio.Task` | `task = event.do_something()` (optional `await`) |
 
-> **Suggestion**: Methods that do not return data should return `asyncio.Task`, allowing users to decide for themselves whether to `await`, ensuring the operation completes even if not `await`ed.
+> **Recommendation**: Methods that do not return data should return `asyncio.Task`, allowing users to decide whether to `await`, even if not `awaited`, the operation will still complete.
 
 ```python
 @register_event_method("email")
@@ -5531,12 +5553,12 @@ await event.forward_email("user@example.com")
 event.forward_email("user@example.com")
 ```
 
-#### Unregistering Methods
+#### Unregister Methods
 
 ```python
 from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
 
-# Unregister single method
+# Unregister a single method
 unregister_event_method("email", "get_subject")
 
 # Unregister all methods for a platform (called during adapter shutdown)
@@ -5545,9 +5567,9 @@ unregister_platform_event_methods("email")
 
 #### Overriding Built-in Methods
 
-`register_event_mixin` / `register_event_method` support overriding built-in Event methods (such as `confirm`, `choose`, `collect`, `wait_reply`, `reply`, etc.). Registered platform methods take precedence over built-in methods via `Event.__getattribute__`, so adapters can provide platform-specific interactive implementations.
+`register_event_mixin` / `register_event_method` supports overriding Event built-in methods (such as `confirm`, `choose`, `collect`, `wait_reply`, `reply`, etc.). Registered platform methods take precedence over built-in methods via `Event.__getattribute__`, allowing adapters to provide platform-specific interaction implementations.
 
-Built-in implementations are exported as `_builtin_*` functions, and overrideers can call them as a fallback:
+Built-in implementations are exported as `_builtin_*` functions, and the overriding method can call them as fallback:
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin, _builtin_choose
@@ -5558,14 +5580,15 @@ class YunhuEventMixin:
         buttons = [[{"text": opt} for opt in options]]
         await self.reply(prompt)
         # ...wait for button callback or text reply...
-        # Fallback to built-in logic
+        # Fall back to built-in logic
         return await _builtin_choose(self, None, options, timeout, "Text")
 
 register_event_mixin("yunhu", YunhuEventMixin)
+```
 
-## Cross-Platform Extensions (Wildcards)
+## Cross-Platform Extensions (Wildcard)
 
-`register_event_method` and `register_event_mixin` support passing `"*"` as the platform name, making the registered methods available on **all** platform Event instances. This is suitable for functional modules requiring cross-platform reuse, such as AI conversations and context management.
+`register_event_method` and `register_event_mixin` support passing `"*"` as the platform name, registering methods that are available on Event instances across **all platforms**. This is suitable for reusable feature modules requiring cross-platform functionality, such as AI chat and context management.
 
 ### Registering Cross-Platform Methods
 
@@ -5574,11 +5597,11 @@ from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    """self is the Event instance, allowing free access to event data and built-in methods"""
+    """self is an Event instance, allowing free access to event data and built-in methods"""
     await self.reply(f"AI: {prompt}")
 ```
 
-After registration, event handlers on all platforms can invoke it:
+After registration, all platform event handlers can call the method:
 
 ```python
 from ErisPulse.Core.Event import message
@@ -5588,31 +5611,32 @@ async def handler(event):
     await event.ai_chat(event.get_text())
 ```
 
-### Method Resolution Order
+### Method Resolution Priority
 
-When accessing Event methods via attributes, the resolution order is:
+When accessing Event methods via attributes, the resolution order is as follows:
 
-1. **Platform-Specific Methods** (overrides for the current platform)
-2. **Wildcard Methods** (cross-platform methods registered with `"*"`)
-3. **Built-in Methods** (e.g., `reply`, `confirm`)
-4. **Dictionary Key Access**
+1. **Platform-specific methods** (overrides for the current platform)
+2. **Wildcard methods** (`"*"` registered cross-platform methods)
+3. **Built-in methods** (`reply`, `confirm`, etc.)
+4. **Dictionary key access**
 
-> Therefore, wildcard methods can override built-in methods (such as `reply`), but they will be further overridden by platform-specific methods with the same name.
+> Therefore, wildcard methods can override built-in methods (such as `reply`), but they can be further overridden by platform-specific methods with the same name.
 
 ## Priority System
 
-Event handlers support priorities, where higher numerical values indicate higher priority:
+Event handlers support priorities, where a higher value indicates higher priority:
 
 ```python
-# High priority handler executes first
+# High-priority handler executes first
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     pass
 
-# Low priority handler executes later
+# Low-priority handler executes later
 @message.on_message(priority=0)
 async def low_priority_handler(event):
     pass
+```
 
 
 
@@ -5627,9 +5651,7 @@ async def low_priority_handler(event):
 
 The `Conversation` class provides convenient methods for multi-turn interactions within the same session, suitable for scenarios such as guided operations, information collection, and conversational question-answering.
 
-
-
-## Creating Conversations
+## Creating a Conversation
 
 Create a conversation using the `conversation()` method of the `Event` object:
 
@@ -5642,7 +5664,7 @@ async def quiz_handler(event):
 
     await conv.say("🎮 Welcome to the quiz!")
 
-    answer = await conv.choose("Question 1: Who created Python?", [
+    answer = await conv.choose("Question 1: Who is the creator of Python?", [
         "Guido van Rossum",
         "James Gosling",
         "Dennis Ritchie",
@@ -5655,23 +5677,22 @@ async def quiz_handler(event):
     if answer == 0:
         await conv.say("Correct!")
     else:
-        await conv.say("Wrong, the correct answer is Guido van Rossum")
+        await conv.say("Incorrect, the correct answer is Guido van Rossum")
 
     conv.stop()
 ```
-
 
 ## Core API
 
 ### say(content, **kwargs)
 
-Send a message, returns `self` for method chaining:
+Send a message and return `self` to support method chaining:
 
 ```python
 await conv.say("First line").say("Second line").say("Third line")
 ```
 
-You can also specify the send method:
+You can also specify the sending method:
 
 ```python
 await conv.say("https://example.com/image.jpg", method="Image")
@@ -5679,7 +5700,7 @@ await conv.say("https://example.com/image.jpg", method="Image")
 
 ### wait(prompt=None, timeout=None)
 
-Wait for a user reply, returns an `Event` object or `None` (if timeout):
+Wait for user reply and return an `Event` object or `None` (if timeout occurs):
 
 ```python
 # Simple wait
@@ -5690,13 +5711,13 @@ if resp:
 # Wait after sending a prompt
 resp = await conv.wait(prompt="Please enter your name:")
 
-# Use custom timeout (overrides the conversation default timeout)
+# Use custom timeout (overrides the default conversation timeout)
 resp = await conv.wait(prompt="Please reply within 10 seconds:", timeout=10)
 ```
 
 ### confirm(prompt=None, **kwargs)
 
-Wait for user confirmation (yes/no), returns `True` / `False` / `None` (if timeout):
+Wait for user confirmation (yes/no), return `True` / `False` / `None` (timeout):
 
 ```python
 result = await conv.confirm("Are you sure you want to delete all data?")
@@ -5705,30 +5726,30 @@ if result is True:
 elif result is False:
     await conv.say("Cancelled")
 else:
-    await conv.say("Timed out without reply")
+    await conv.say("Timed out")
 ```
 
 Built-in recognized confirmation words: `是/yes/y/确认/确定/好/ok/true/对/嗯/行/同意/没问题/可以/当然...`
 
-Built-in recognized denial words: `否/no/n/取消/不/不要/不行/cancel/false/错/不对/别/拒绝...`
+Built-in recognized negation words: `否/no/n/取消/不/不要/不行/cancel/false/错/不对/别/拒绝...`
 
 ### choose(prompt, options, **kwargs)
 
-Wait for user selection from options, returns the option index (0-based) or `None`:
+Wait for user selection from options and return the option index (0-based) or `None`:
 
 ```python
-choice = await conv.choose("Please select a color:", ["red", "green", "blue"])
+choice = await conv.choose("Please select a color:", ["Red", "Green", "Blue"])
 if choice is not None:
-    colors = ["red", "green", "blue"]
+    colors = ["Red", "Green", "Blue"]
     await conv.say(f"You selected {colors[choice]}")
 ```
 
-Users can select by entering a number (`1`/`2`/`3`) or option text (`red`).
+Users can select by entering a number (`1`/`2`/`3`) or the option text (`Red`).
 
-`options_format="auto"` (default) automatically chooses the built-in style based on method: Markdown→unordered list, Html→ordered list, others→plain text list.  
+`options_format="auto"` (default) automatically selects the built-in style based on the method: Markdown→unordered list, Html→ordered list, others→plain text list.  
 Also supports `"list"`, `"inline"`, `"md"`, `"html"`, or a custom function.
 
-Supports `merge_prompt=True` to merge into a single message, and placeholder to control option insertion position (default `{options}`, can be customized via `placeholder`):
+Supports `merge_prompt=True` to merge into a single message, and placeholders to control the option insertion position (default `{options}`, customizable via `placeholder`):
 
 ```python
 choice = await conv.choose(
@@ -5740,7 +5761,7 @@ choice = await conv.choose(
 
 # Custom placeholder
 choice = await conv.choose(
-    "Select: [choices]",
+    "Please select: [choices]",
     ["Option A", "Option B"],
     placeholder="[choices]",
 )
@@ -5748,7 +5769,7 @@ choice = await conv.choose(
 
 ### collect(fields, **kwargs)
 
-Collect information in multiple steps, returns a data dictionary or `None`:
+Collect information in multiple steps and return a data dictionary or `None`:
 
 ```python
 data = await conv.collect([
@@ -5776,19 +5797,19 @@ Field configuration:
 | `max_retries` | Maximum retry attempts | 3 |
 | `condition` | Condition function, receives collected data dict, returns bool | None |
 
-**Conditional fields**: Use `condition` to implement dynamic forms, where the field is only collected if the condition is met:
+**Conditional fields**: Using `condition` allows dynamic forms, where fields are collected only if the condition is met:
 
 ```python
 data = await conv.collect([
-    {"key": "has_car", "prompt": "Do you have a car? (yes/no)"},
-    {"key": "car_brand", "prompt": "Please enter the car brand",
+    {"key": "has_car", "prompt": "Do you have a car? (Yes/No)"},
+    {"key": "car_brand", "prompt": "Please enter your car brand",
      "condition": lambda d: d.get("has_car", "").lower() in ("yes", "y", "是")},
 ])
 ```
 
 ### stop()
 
-Manually end the conversation, sets `is_active` to `False`:
+Manually end the conversation and set `is_active` to `False`:
 
 ```python
 conv.stop()
@@ -5796,11 +5817,12 @@ conv.stop()
 
 ### is_active
 
-Whether the conversation is active:
+Check if the conversation is active:
 
 ```python
 if conv.is_active:
-    await conv.say("The conversation is still ongoing")
+    await conv.say("The conversation is still active")
+```
 
 ## Active State Management
 
@@ -5811,24 +5833,24 @@ stateDiagram-v2
     [*] --> active: event.conversation()
     active --> active: say / wait / confirm / choose / collect
     active --> inactive: stop()
-    active --> inactive: wait() timeout
-    active --> inactive: collect() timeout or retries exhausted
+    active --> inactive: wait() timed out
+    active --> inactive: collect() timed out or retries exhausted
     inactive --> [*]
 ```
 
-The conversation will automatically become inactive in the following cases:
+A conversation automatically transitions to the inactive state under the following conditions:
 
-1. When the `stop()` method is called
-2. When `wait()` times out and returns `None`
-3. When `collect()` times out at any step or exhausts retries and returns `None`
+1. The `stop()` method is called
+2. `wait()` times out and returns `None`
+3. `collect()` returns `None` due to any step timing out or exhausting retries
 
-After becoming inactive, all interaction methods (`wait`/`confirm`/`choose`/`collect`) will immediately return `None` without further waiting for user input.
+After becoming inactive, all interaction methods (`wait`/`confirm`/`choose`/`collect`) will immediately return `None` and will not continue waiting for user input.
 
-## Branches and Jumps
+## Branches and Transitions
 
 ### @conv.branch(name) Decorator
 
-Use `branch()` to register conversation branches, and use `goto()` to jump between branches:
+Use `branch()` to register a conversation branch, and use `goto()` to jump between branches:
 
 ```python
 @command("menu")
@@ -5837,7 +5859,7 @@ async def menu_handler(event):
 
     @conv.branch("main")
     async def main_menu():
-        await conv.say("=== Main Menu ===\n1. Personal Information\n2. Settings\n3. Exit")
+        await conv.say("=== Main Menu ===\n1. Personal Info\n2. Settings\n3. Exit")
         resp = await conv.wait()
         if resp is None:
             return
@@ -5852,14 +5874,14 @@ async def menu_handler(event):
 
     @conv.branch("profile")
     async def profile():
-        await conv.say("=== Personal Information ===\nName: Alice\n0. Return")
+        await conv.say("=== Personal Info ===\nName: Alice\n0. Back")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
 
     @conv.branch("settings")
     async def settings():
-        await conv.say("=== Settings ===\n1. Notification Switch\n0. Return")
+        await conv.say("=== Settings ===\n1. Notification Toggle\n0. Back")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
@@ -5876,12 +5898,11 @@ await conv.start()          # Start from the first branch
 await conv.start("settings") # Start from the specified branch
 ```
 
-
 ## Context and Persistence
 
 ### conv.context
 
-Each conversation instance has a built-in `context` dictionary to share state between branches:
+Each conversation instance has a built-in `context` dictionary to share state across branches:
 
 ```python
 @conv.branch("step1")
@@ -5904,7 +5925,7 @@ Conversations support persistence, allowing them to be resumed after timeout or 
 conv_id = conv.save()
 # conv_id = "user_123_group_456"  # Automatically generated based on user and group
 
-# ... later in the same session ...
+# ... Later, resume in the same session ...
 conv2 = event.conversation()
 if conv2.resume():
     await conv2.say("Welcome back! Continuing the previous conversation")
@@ -5915,7 +5936,6 @@ else:
 conv.clear_saved()
 ```
 
-
 ## Typical Flow Patterns
 
 ### Guided Registration
@@ -5925,7 +5945,7 @@ conv.clear_saved()
 async def register_handler(event):
     conv = event.conversation(timeout=60)
 
-    await conv.say("Welcome! Let's register.")
+    await conv.say("Welcome to registration!")
 
     data = await conv.collect([
         {"key": "username", "prompt": "Please enter a username (3-20 characters)",
@@ -5936,17 +5956,17 @@ async def register_handler(event):
     ])
 
     if not data:
-        await event.reply("Registration cancelled.")
+        await event.reply("Registration cancelled")
         return
 
     confirmed = await conv.confirm(
-        f"Confirm registration information?\nUsername: {data['username']}\nEmail: {data['email']}"
+        f"Confirm registration details?\nUsername: {data['username']}\nEmail: {data['email']}"
     )
 
     if confirmed:
         await conv.say("✅ Registration successful!")
     else:
-        await conv.say("❌ Registration cancelled.")
+        await conv.say("❌ Registration cancelled")
 ```
 
 ### Looping Conversation
@@ -5955,12 +5975,12 @@ async def register_handler(event):
 @command("chat")
 async def chat_handler(event):
     conv = event.conversation(timeout=120)
-    await conv.say("Entering conversation mode. Type 'exit' to end.")
+    await conv.say("Entering chat mode, type 'exit' to end")
 
     while conv.is_active:
         resp = await conv.wait()
         if resp is None:
-            await conv.say("Timeout, conversation ended.")
+            await conv.say("Timeout, conversation ended")
             break
 
         text = resp.get_text().strip()
@@ -5971,9 +5991,10 @@ async def chat_handler(event):
         elif text == "help":
             await conv.say("Available commands: exit, help, status")
         elif text == "status":
-            await conv.say("Conversation is active.")
+            await conv.say("Conversation is active")
         else:
             await conv.say(f"You said: {text}")
+```
 
 
 
@@ -6169,24 +6190,20 @@ complex_msg = (
 
 # Network Client
 
-ErisPulse provides a unified network client that aggregates HTTP requests, WebSocket connections, and connection pool management. Modules and adapters **must prioritize** using this client over importing third-party libraries such as `aiohttp`, `httpx`, or `requests` directly.
-
-
-
+ErisPulse provides a unified network client that aggregates HTTP requests, WebSocket connections, and connection pool management. Modules and adapters **must** use this client by default, rather than importing third-party libraries such as `aiohttp`, `httpx`, or `requests`.
 
 ## Overview
 
-The main features of the network client are:
+The main features of the network client:
 
 - **Unified Interface**: Provides `get` / `post` / `put` / `delete` / `patch` / `request` methods
 - **WebSocket Client**: Establishes a client WebSocket connection via `ws_connect`
 - **Automatic Logging**: All requests are automatically logged and statistics are recorded
-- **Lifecycle Integration**: Each request triggers the `client.request` lifecycle event, and WS connections trigger the `client.ws.connect` event
+- **Lifecycle Integration**: Each request triggers the `client.request` lifecycle event, and WS connection triggers the `client.ws.connect` event
 - **Retry Support**: Configurable automatic retry count and interval
 - **Timeout Control**: Independent connection timeout and request timeout
 - **Connection Pool Reuse**: Connection pool management based on aiohttp.ClientSession
 - **Exception System**: aiohttp exceptions are automatically converted to ErisPulse exceptions (ClientError system)
-
 
 ## Quick Start
 
@@ -6219,8 +6236,6 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-
-
 ## HttpResponse
 
 All request methods return an `HttpResponse` object:
@@ -6230,12 +6245,12 @@ from ErisPulse.Core import client
 
 resp = await client.get("https://httpbin.org/get")
 
-resp.status       # int - HTTP status code (such as 200, 404)
-resp.reason       # str | None - status description (such as "OK")
+resp.status       # int - HTTP status code (e.g., 200, 404)
+resp.reason       # str | None - status description (e.g., "OK")
 resp.headers      # response headers (case-insensitive)
 resp.content_type # str | None - Content-Type
 resp.url          # final URL (may change due to redirects)
-resp.raw          # underlying native response object (currently aiohttp.ClientResponse)
+resp.raw          # underlying raw response object (currently aiohttp.ClientResponse)
 
 # Read response body
 body = await resp.read()       # bytes
@@ -6243,7 +6258,6 @@ text = await resp.text()       # str
 data = await resp.json()       # parse JSON
 text = await resp.text("gbk")  # specify encoding
 ```
-
 
 ## Request Methods
 
@@ -6284,22 +6298,22 @@ resp = await client.post(
 )
 
 # File upload (using files parameter, no need to import aiohttp)
-# Format: {field name: file object/bytes/(filename, file)/(filename, file, content_type)}
+# Format: {field_name: file_object/bytes/(filename, file)/(filename, file, content_type)}
 resp = await client.post(
     "https://api.example.com/upload",
-    data={"description": "avatar"},            # Optional: also carry regular form fields
+    data={"description": "Avatar"},            # Optional: include regular form fields
     files={
         "file": ("photo.png", open("photo.png", "rb"), "image/png"),
     },
 )
 
-# Simplified syntax: pass file object directly
+# Simplified syntax: directly pass file object
 resp = await client.post(
     "https://api.example.com/upload",
     files={"file": open("photo.png", "rb")},
 )
 
-# Upload data directly from memory (no need to write to disk)
+# Upload in-memory data directly (no need to write to disk)
 import io
 
 resp = await client.post(
@@ -6328,8 +6342,9 @@ resp = await client.request(
     "https://api.example.com/resource",
     headers={"Origin": "https://example.com"},
 )
+```
 
-## Parameter Description
+## Parameters
 
 ### HTTP Request Parameters
 
@@ -6340,9 +6355,9 @@ resp = await client.request(
 | `headers` | `dict[str, str]` | Additional request headers (optional) |
 | `data` | `Any` | Request body (form or raw data) (optional) |
 | `json` | `Any` | JSON request body (optional) |
-| `files` | `dict[str, Any]` | File upload fields (optional, automatically builds multipart/form-data) |
-| `timeout` | `float` | Timeout for this request (in seconds) (optional, overrides default value) |
-| `max_retries` | `int` | Maximum number of retries for this request (optional, overrides default value) |
+| `files` | `dict[str, Any]` | File upload fields (optional, automatically constructs multipart/form-data) |
+| `timeout` | `float` | Request timeout (in seconds) (optional, overrides the default value) |
+| `max_retries` | `int` | Maximum number of retries for this request (optional, overrides the default value) |
 
 ### ws_connect Parameters
 
@@ -6352,19 +6367,17 @@ resp = await client.request(
 | `headers` | `dict[str, str]` | Additional request headers (optional) |
 | `heartbeat` | `float` | Heartbeat interval in seconds (optional) |
 
-[**English**](docs/en/quick-start.md)
-
 ## Timeouts and Retries
 
 ```python
 from ErisPulse.Core import Client
 
-# Create a client with custom timeouts
+# Create a client with custom timeout settings
 client = Client(
-    timeout=60,           # Total request timeout 60s
-    connect_timeout=5,    # Connection timeout 5s
-    max_retries=3,        # Automatic retry on failure 3 times
-    retry_delay=2,        # Retry interval 2s
+    timeout=60,           # Total request timeout of 60 seconds
+    connect_timeout=5,    # Connection timeout of 5 seconds
+    max_retries=3,        # Automatically retry failed requests 3 times
+    retry_delay=2,        # Retry interval of 2 seconds
 )
 
 # Override timeout for a single request
@@ -6372,9 +6385,7 @@ resp = await client.get("https://slow-api.example.com/data", timeout=120)
 ```
 
 > [!NOTE]
-> The client class was renamed to `Client` starting from version 2.8.0 (the `sdk.client` property name remains unchanged); the old name `HttpClient` is retained as a compatibility alias, so old code does not need modification.
-
-docs/en/timeouts-and-retries.md
+> The client class was renamed to `Client` starting from version 2.8.0 (`sdk.client` property name remains unchanged); the old name `HttpClient` is retained as a compatibility alias, so old code does not need modification.
 
 ## Custom Default Headers
 
@@ -6387,7 +6398,6 @@ client = Client(
     user_agent="MyBot/1.0",
 )
 ```
-
 
 ## Request Statistics
 
@@ -6402,12 +6412,11 @@ stats = client.stats
 client.reset_stats()
 ```
 
-
 ## Lifecycle Events
 
 ### HTTP Request Events
 
-The `client.request` event is triggered after each request completes, which can be used for monitoring:
+The `client.request` event is triggered after each request completes and can be used for monitoring:
 
 ```python
 from ErisPulse.Core import lifecycle
@@ -6429,18 +6438,18 @@ async def on_ws_connect(event_data):
     print(f"WS Connection: {event_data['url']}")
 ```
 
-
 ## Context Management
 
 ```python
-# As a context manager, it automatically closes the session
+# As a context manager, automatically closes the session
 async with Client(timeout=30) as client:
     resp = await client.get("https://httpbin.org/get")
     data = await resp.json()
+```
 
 ## WebSocket Client
 
-Use `client.ws_connect()` to establish a WebSocket client connection, returning a `ClientWebSocket` object. The client and server WebSocket share the same `WebSocketConnectionBase` base class, with identical send/receive/iter interfaces.
+Establish a WebSocket client connection using `client.ws_connect()`, which returns a `ClientWebSocket` object. The client and server WebSocket share the same base class `WebSocketConnectionBase`, and their send/receive/iter interfaces are completely consistent.
 
 ### Basic Usage
 
@@ -6458,7 +6467,7 @@ await ws.send_json({"type": "ping"})
 
 #### High-Level Methods (Recommended)
 
-Automatically filter message types and raise `WebSocketDisconnect` on disconnection:
+Automatically filter message types, and raise `WebSocketDisconnect` on disconnection:
 
 ```python
 from ErisPulse.Core import client
@@ -6497,7 +6506,7 @@ msg = await ws.receive()
 # msg.type  -> WSMessage.TEXT / WSMessage.BINARY / WSMessage.CLOSE / WSMessage.ERROR
 # msg.data  -> str | bytes | None
 
-# Iterative raw messages (automatically stops on CLOSE/ERROR)
+# Iterative raw message receive (automatically stops on CLOSE/ERROR)
 async for msg in ws.iter_messages():
     if msg.type == WSMessage.TEXT:
         print(f"Text: {msg.data}")
@@ -6509,15 +6518,15 @@ async for msg in ws.iter_messages():
 
 `WSMessage` is a unified WebSocket message type independent of the underlying library:
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
+| Property | Type | Description |
+|----------|------|-------------|
 | `type` | `str` | Message type: `WSMessage.TEXT` / `WSMessage.BINARY` / `WSMessage.CLOSE` / `WSMessage.ERROR` |
 | `data` | `Any` | Message data |
 
-### ClientWebSocket Attributes
+### ClientWebSocket Properties
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
+| Property | Type | Description |
+|----------|------|-------------|
 | `url` | `URL` | Connection URL |
 | `headers` | `Headers` | Response headers |
 | `closed` | `bool` | Whether the connection is closed |
@@ -6545,26 +6554,27 @@ async def handle_error(ws, error=""):
 
 ```python
 await ws.close(code=1000, reason="Normal closure")
+```
 
-## Exception System
+## Error System
 
-ErisPulse defines a unified exception hierarchy. Requests initiated through `sdk.client` automatically convert underlying aiohttp exceptions into ErisPulse exceptions.
+ErisPulse defines a unified error hierarchy. Requests initiated through `sdk.client` automatically convert underlying aiohttp errors into ErisPulse errors.
 
-> **Backward Compatibility**: Old modules/adapters that directly use `aiohttp.ClientSession` are completely unaffected. Exception conversion only takes effect when requests are initiated through `sdk.client`. Code that directly uses aiohttp still catches native exceptions such as `aiohttp.ClientError`. Both approaches can coexist.
+> **Backward Compatibility**: Modules/adapters that directly use `aiohttp.ClientSession` are completely unaffected. Error conversion only takes effect when requests are initiated through `sdk.client`. Code that directly uses aiohttp still catches native exceptions such as `aiohttp.ClientError`. Both approaches can coexist.
 
-### Exception Hierarchy
+### Error Hierarchy
 
 ```
 ErisPulseError
-├── ClientError                  # Base class for all HTTP/WS client request exceptions
-│   ├── ClientConnectionError    # Connection failed (DNS resolution failed, connection refused, network unreachable)
-│   ├── ClientTimeoutError       # Connection timeout or request timeout
+├── ClientError                  # Base class for all HTTP/WS client request errors
+│   ├── ClientConnectionError    # Connection failure (DNS resolution failed, connection refused, network unreachable)
+│   ├── ClientTimeoutError       # Connection or request timeout
 │   └── HTTPStatusError          # HTTP 4xx/5xx status code errors
-└── WebSocketError               # Base class for WebSocket exceptions
+└── WebSocketError               # Base class for WebSocket errors
     └── WebSocketDisconnect      # WebSocket connection disconnected (applicable to both client and server)
 ```
 
-### Exception Handling
+### Error Handling
 
 ```python
 from ErisPulse.Core import client
@@ -6577,18 +6587,18 @@ from ErisPulse.Core.Bases.errors import (
     WebSocketError,
 )
 
-# Handling HTTP request exceptions
+# Handling HTTP request errors
 try:
     resp = await client.get("https://api.example.com/data")
     data = await resp.json()
 except ClientConnectionError:
-    print("Unable to connect to the server")
+    print("Cannot connect to the server")
 except ClientTimeoutError:
-    print("Request timeout")
+    print("Request timed out")
 except ClientError as e:
     print(f"Request failed: {e}")
 
-# Handling WebSocket exceptions
+# Handling WebSocket errors
 try:
     ws = await client.ws_connect("wss://example.com/ws")
     async for text in ws.iter_text():
@@ -6599,9 +6609,9 @@ except WebSocketError as e:
     print(f"WebSocket error: {e}")
 ```
 
-### Unified Handling
+### Unified Error Handling
 
-Use `ClientError` to handle all HTTP/WS client request exceptions uniformly:
+Use `ClientError` to catch all HTTP/WS client request errors in a unified manner:
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError
@@ -6614,7 +6624,7 @@ except ClientError as e:
 
 ### HTTPStatusError
 
-When you need to check the status code after a request and raise an exception, you can manually use:
+When you need to check the status code after a request and raise an exception, you can use it manually:
 
 ```python
 from ErisPulse.Core.Bases.errors import HTTPStatusError
@@ -6622,10 +6632,11 @@ from ErisPulse.Core.Bases.errors import HTTPStatusError
 resp = await client.get("https://api.example.com/data")
 if resp.status >= 400:
     raise HTTPStatusError(resp.status, await resp.text())
+```
 
 ## Using in Adapters
 
-Adapters can use the global client or create their own client instances to send platform API requests:
+Adapters can use the global client or create their own client instance to send requests to platform APIs:
 
 ```python
 from ErisPulse.Core import client
@@ -6648,16 +6659,15 @@ class MyAdapter(BaseAdapter):
 
 > You can also use `sdk.client` via `from ErisPulse import sdk`, which has the same effect.
 
-
 ## Best Practices
 
-1. **Prefer using the global client**: Use `from ErisPulse.Core import client` to get the global singleton, which facilitates unified management and monitoring by the framework.
-2. **Avoid directly importing aiohttp**: Use `client` instead of `aiohttp.ClientSession`. This avoids code changes when switching the underlying implementation in the future. Old code using aiohttp directly will still work normally, and both methods can coexist.
-3. **Use the ErisPulse exception system**: When making requests through `sdk.client`, catch `ClientError` instead of `aiohttp.ClientError` to ensure the code does not depend on a specific HTTP library. Old code using aiohttp directly is unaffected.
-4. **Set timeouts reasonably**: Set reasonable timeout values based on the API response speed to avoid long blocking.
+1. **Prefer using the global client**: Use `from ErisPulse.Core import client` to obtain the global singleton, which facilitates unified management and monitoring by the framework.
+2. **Avoid directly importing aiohttp**: Use `client` instead of `aiohttp.ClientSession`, so that the underlying implementation can be changed in the future without modifying the code. Old code that directly uses aiohttp will continue to work normally, and both approaches can coexist.
+3. **Use ErisPulse's exception system**: When making requests via `sdk.client`, catch `ClientError` rather than `aiohttp.ClientError` to ensure that the code does not depend on a specific HTTP library. Code that directly uses aiohttp remains unaffected.
+4. **Set timeouts appropriately**: Set reasonable timeout values based on the API response speed to avoid long blocking periods.
 5. **Use retry mechanisms**: Enable retries for unstable APIs to improve reliability.
-6. **Monitor request statistics**: Monitor request situations through `sdk.client.stats` or lifecycle events of `client.request`.
-7. **Use advanced methods for WebSocket**: Prefer advanced methods such as `iter_text` / `iter_json`. Only use `iter_messages` when distinguishing message types is necessary.
+6. **Monitor request statistics**: Monitor request status through `sdk.client.stats` or lifecycle events of `client.request`.
+7. **Use advanced methods for WebSocket**: Prefer high-level methods such as `iter_text` / `iter_json`, and only use `iter_messages` when distinguishing between message types is necessary.
 
 
 
@@ -7461,14 +7471,12 @@ async def on_server_stop(event):
 
 # Lifecycle Management
 
-ErisPulse provides a unified hook/lifecycle system for monitoring the operational status of system components and implementing extension features such as auditing, statistics, and custom logic.
+ErisPulse provides a unified hook/lifecycle system for monitoring the operational status of system components, as well as enabling extended functionalities such as auditing, statistics, and custom logic.
 
-The system supports three triggering methods:
-- `await lifecycle.emit("event", data)` — A concise version that passes arbitrary data
-- `lifecycle.emit_sync("event", data)` — The synchronous version (used in non-async contexts)
-- `await lifecycle.submit_event("event", ...)` — Compatible with the old version, automatically constructs standard event formats
-
-
+The system supports three trigger methods:
+- `await lifecycle.emit("event", data)` — A concise version, which passes arbitrary data.
+- `lifecycle.emit_sync("event", data)` — The synchronous version (for non-async contexts).
+- `await lifecycle.submit_event("event", ...)` — Compatible with the legacy version, automatically constructs the standard event format.
 
 ## Event Handling Mechanism
 
@@ -7488,7 +7496,7 @@ sdk.lifecycle.register("module.load", on_module_load, priority=10)
 # Unregister
 sdk.lifecycle.unregister("module.load", on_module_load)
 
-# Batch unregister by owner (automatically called by framework during module/adapter unload)
+# Batch unregister by owner (automatically called by framework when module/adapter is unloaded)
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
 print(f"Cleaned up {removed} lifecycle hooks")
 ```
@@ -7498,16 +7506,16 @@ print(f"Cleaned up {removed} lifecycle hooks")
 Handlers support the `priority` parameter, where a higher value means earlier execution (consistent with the module loader):
 
 ```python
-@sdk.lifecycle.on("adapter.event.receive", priority=10)  # First to execute
+@sdk.lifecycle.on("adapter.event.receive", priority=10)  # Executes first
 async def first_handler(data):
     pass
 
-@sdk.lifecycle.on("adapter.event.receive", priority=0)  # Later execution
+@sdk.lifecycle.on("adapter.event.receive", priority=0)  # Executes later
 async def second_handler(data):
     pass
 ```
 
-### Dot-Structure Events
+### Dot-Notation Events
 
 When a specific event is triggered, its parent events are also triggered:
 - Triggering `module.load` also triggers `module`
@@ -7525,7 +7533,7 @@ async def on_anything(data):
 
 ### One-Time Registration (`once`)
 
-Since version 2.7.0, handlers registered with `lifecycle.once()` are automatically unregistered after being triggered once, suitable for one-time hooks such as "first ready":
+Since version 2.7.0, handlers registered with `lifecycle.once()` are automatically unregistered after triggering **once**, suitable for one-time hooks like "first ready":
 
 ```python
 @sdk.lifecycle.once("core.init.complete")
@@ -7533,25 +7541,25 @@ async def on_first_ready(data):
     print("First ready, will not trigger again")
 ```
 
-- Same priority semantics as `on()` (higher `priority` value means earlier execution)
-- Automatic unregistration, no need for manual `unregister`
+- Same priority semantics as `on()` (higher `priority` values execute first)
+- Automatically unregisters, no need for manual `unregister`
 - Supports both synchronous and asynchronous handlers
 
 ### Listener Query (`has_handlers`)
 
-In hot-path short-circuit scenarios, use `has_handlers()` to check if any listeners exist before proceeding, avoiding unnecessary event iteration and task scheduling:
+In hot-path short-circuit scenarios, use `has_handlers()` to check if any listeners exist, avoiding unnecessary event traversal and task scheduling:
 
 ```python
 if sdk.lifecycle.has_handlers("message.sending"):
     await sdk.lifecycle.emit("message.sending", send_ctx)
 ```
 
-- Covers three types of matching: exact event names, wildcards `*`, and parent events
+- Covers **exact event names, wildcards `*`, and parent events** for matching
 - Returns `False` if there are no listeners, allowing safe skipping of `emit`
 
-## Hook Breakpoints Overview
+## Hook Breakpoint Overview
 
-A typical lifecycle event sequence for a message from platform entry into framework processing:
+A typical sequence of lifecycle events for a message from the platform entering the framework to completion:
 
 ```mermaid
 sequenceDiagram
@@ -7560,10 +7568,10 @@ sequenceDiagram
     participant F as Framework Core
     participant M as Module Processor
 
-    P->>A: Native event arrived
+    P->>A: Native event arrives
     A->>F: adapter.event.receive (earliest)
     F->>F: event.pre_process (before handler execution)
-    F->>M: Dispatch to processor (commands/messages/notifications, etc.)
+    F->>M: Distribute to processor (commands/messages/notifications, etc.)
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending (before sending)
@@ -7573,22 +7581,22 @@ sequenceDiagram
     F->>F: adapter.event.dispatched (after dispatch complete)
 ```
 
-The framework includes the following built-in hook breakpoints, which users can listen to at any breakpoint using `@sdk.lifecycle.on()` to implement custom logic.
+The framework provides the following built-in hook breakpoints, allowing users to listen to any breakpoint using `@sdk.lifecycle.on()` to implement custom logic.
 
 ### Core Initialization
 
 | Hook Name | Trigger Timing | Data |
-|-----------|----------------|------|
+|---------|---------|------|
 | `core.init.start` | SDK initialization starts | `{}` |
 | `core.init.complete` | SDK initialization completes | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str (only on failure)}` |
-| `core.uninit.complete` | SDK deinitialization completes | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str (only on failure)}` |
+| `core.uninit.complete` | SDK de-initialization completes | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str (only on failure)}` |
 
 ### Configuration Changes
 
 | Hook Name | Trigger Timing | Data |
-|-----------|----------------|------|
+|---------|---------|------|
 | `config.set` | A configuration item is modified | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | Entire config tree change detected after external edit of config.toml | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.updated` | The entire config tree is detected as changed after editing config.toml externally | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
 **Example: Configuration Audit**
 
@@ -7601,16 +7609,16 @@ def audit_config(data):
 ### Module Lifecycle
 
 | Hook Name | Trigger Timing | Data |
-|-----------|----------------|------|
+|---------|---------|------|
 | `module.register` | Module class registered to manager | `{"module_name": str, "success": bool}` |
-| `module.load` | Module loading completes (successful instantiation) | `{"module_name": str, "success": bool}` |
+| `module.load` | Module loading completes (instance created successfully) | `{"module_name": str, "success": bool}` |
 | `module.init` | Module initialization completes (including lazy loading) | `{"module_name": str, "success": bool}` |
-| `module.unload` | Module unloading | `{"module_name": str, "success": bool}` |
+| `module.unload` | Module unloaded | `{"module_name": str, "success": bool}` |
 
 ### Adapter Lifecycle
 
 | Hook Name | Trigger Timing | Data |
-|-----------|----------------|------|
+|---------|---------|------|
 | `adapter.load` | Adapter registration completes | `{"platform": str, "success": bool}` |
 | `adapter.start` | Adapter starts | `{"platforms": [str]}` |
 | `adapter.status.change` | Adapter status changes | `{"platform": str, "status": str, "retry_count": int, "error": str (only on failure)}` |
@@ -7622,10 +7630,10 @@ def audit_config(data):
 ### Event Reception and Processing
 
 | Hook Name | Trigger Timing | Data |
-|-----------|----------------|------|
+|---------|---------|------|
 | `adapter.event.receive` | External platform event received (earliest) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
 | `adapter.event.dispatched` | Event dispatch completes | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
-| `event.pre_process` | Before event handler execution begins | `{"event_type": str, "platform": str, "detail_type": str}` |
+| `event.pre_process` | Before event handler execution starts | `{"event_type": str, "platform": str, "detail_type": str}` |
 
 **Example: Event Counting**
 
@@ -7640,14 +7648,14 @@ def count_events(data):
 @sdk.lifecycle.on("adapter.event.dispatched")
 def log_unhandled(data):
     if data["onebot_handlers_count"] == 0:
-        print(f"[Unprocessed] {data['platform']}/{data['event_type']}")
+        print(f"[Unhandled] {data['platform']}/{data['event_type']}")
 ```
 
 ### Message Sending
 
 | Hook Name | Trigger Timing | Data |
-|-----------|----------------|------|
-| `message.sending` | Message about to be sent | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+|---------|---------|------|
+| `message.sending` | Message about to send | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 | `message.sent` | Message sending completes | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
 **Example: Message Sending Audit**
@@ -7661,7 +7669,7 @@ def log_sending(data):
 ### Command System
 
 | Hook Name | Trigger Timing | Data |
-|-----------|----------------|------|
+|---------|---------|------|
 | `command.matched` | Command matched and about to execute | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
 | `command.executed` | Command execution completes | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str (only on failure)}` |
 
@@ -7676,11 +7684,11 @@ def count_commands(data):
 ### HTTP Routing
 
 | Hook Name | Trigger Timing | Data |
-|-----------|----------------|------|
+|---------|---------|------|
 | `server.request` | HTTP request received | `{"method": str, "path": str, "client_ip": str}` |
 | `server.response` | HTTP response sent | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
-**Example: Request Logging**
+**Example: HTTP Request Logging**
 
 ```python
 @sdk.lifecycle.on("server.response")
@@ -7691,7 +7699,7 @@ def log_http(data):
 ### WebSocket
 
 | Hook Name | Trigger Timing | Data |
-|-----------|----------------|------|
+|---------|---------|------|
 | `server.start` | Router server starts | `{"base_url": str, "host": str, "port": int}` |
 | `server.stop` | Router server stops | `{}` |
 | `server.websocket.connect` | WebSocket connection established | `{"path": str, "module_name": str, "client_ip": str}` |
@@ -7707,6 +7715,7 @@ def on_ws_connect(data):
 @sdk.lifecycle.on("server.websocket.disconnect")
 def on_ws_disconnect(data):
     print(f"[WS] Disconnection: {data['path']} ({data['reason']})")
+```
 
 ## Standard Event Definitions
 
@@ -7729,36 +7738,37 @@ STANDARD_EVENTS = {
     "command": ["matched", "executed"],
     "config": ["set"],
 }
+```
 
 ## Complete API Reference
 
 ### Registration and Unregistration
 
 | Method | Description |
-|------|------|
+|--------|-------------|
 | `@lifecycle.on(event, *, priority=0)` | Decorator to register a handler |
-| `lifecycle.register(event, handler, *, priority=0)` | Register programmatically |
+| `lifecycle.register(event, handler, *, priority=0)` | Programmatically register |
 | `lifecycle.unregister(event, handler=None)` | Unregister (removes all handlers for the event if handler=None) |
 
 ### Triggering
 
 | Method | Description |
-|------|------|
-| `await lifecycle.emit(event, data=None)` | Asynchronously trigger, handlers returning non-None can modify data |
+|--------|-------------|
+| `await lifecycle.emit(event, data=None)` | Asynchronously trigger, handlers that return non-None can modify data |
 | `lifecycle.emit_sync(event, data=None)` | Synchronously trigger, asynchronous handlers are scheduled using create_task |
-| `await lifecycle.submit_event(event_type, *, source, msg, data)` | Backward compatibility, automatically constructs standard event format |
+| `await lifecycle.submit_event(event_type, *, source, msg, data)` | Backward compatible, automatically constructs standard event format |
 
 ### Utilities
 
 | Method | Description |
-|------|------|
+|--------|-------------|
 | `lifecycle.start_timer(timer_id)` | Start timing |
 | `lifecycle.get_duration(timer_id)` | Get elapsed time (in seconds) |
 | `lifecycle.stop_timer(timer_id)` | Stop timing and return elapsed time |
-| `lifecycle.list_hooks()` | List all registered hooks and the number of handlers |
+| `lifecycle.list_hooks()` | List all registered hooks and their handler counts |
 | `lifecycle.clear()` | Clear all handlers and timers |
 
-## Module Usage Example
+## Example of Use in Module
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -7779,25 +7789,26 @@ class Main(BaseModule):
         async def log_cmd(data):
             sdk.logger.info(f"Command executed: /{data['command']} by {data['user_id']}")
         
-        # Configuration change audit
+        # Audit configuration changes
         @sdk.lifecycle.on("config.set")
         def audit(data):
             sdk.logger.info(f"Configuration change: {data['key']} = {data['new_value']}")
+```
 
 ## Background Task Ownership and Automatic Cancellation
 
-> [!NOTE]
+> [!NOTE]  
 > This feature requires ErisPulse **2.8.0+**.
 
-If asyncio background tasks created by a module are not canceled in `on_unload`, they will hold a reference to `self`, preventing the module instance from being recycled (old instances remain after hot reload). The framework provides the following fallback mechanisms:
+If asyncio background tasks created by a module are not cancelled in `on_unload`, they will hold a reference to `self`, preventing the module instance from being garbage collected (leading to old instances lingering after hot reload). The framework provides the following safety mechanisms:
 
-- **`self.spawn(coro)`** (recommended within modules): Tasks are automatically assigned to the module name, and when the module is unloaded, the framework cancels unfinished tasks after `on_unload` and logs a warning.
-- **`spawn_background(coro)`** (`ErisPulse.runtime`): Automatically captures the current `owner_scope` context; `cancel_owner_tasks(owner)` cancels tasks by ownership, and `cancel_all_background_tasks()` is provided as a fallback for `sdk.uninit()`.
-- **Adapters**: When closing, background tasks under the platform name are also canceled as a fallback.
+- **`self.spawn(coro)`** (recommended within modules): Tasks are automatically assigned to the module name, and when the module is unloaded, the framework **after** `on_unload` will automatically cancel unfinished tasks and log a warning.
+- **`spawn_background(coro)`** (`ErisPulse.runtime`): Automatically captures the current `owner_scope` context; `cancel_owner_tasks(owner)` cancels tasks by owner, and `cancel_all_background_tasks()` is provided as a safety net for `sdk.uninit()`.
+- **Adapters**: When closed, they also automatically cancel background tasks under the platform name.
 
 ```python
 async def on_load(self, event):
-    # Recommended: Use self.spawn() for background tasks, the framework automatically cancels them after unloading
+    # Recommended: Use self.spawn() for background tasks, which are automatically cancelled by the framework when unloaded
     self.spawn(self._poll())
 
 async def on_unload(self, event):
@@ -7812,18 +7823,18 @@ async def _poll(self):
         ...
 ```
 
-> [!IMPORTANT]
-> The framework's fallback is a **forced cancel** (`cancel_owner_tasks`), which occurs after `on_unload` returns. Therefore, tasks that require graceful cleanup (flushing buffers, persisting state, closing connections) **must** be manually `cancel()` + `await`ed in `on_unload`—don't expect the fallback to preserve cleanup logic. The framework only guarantees that tasks holding a reference to `self` are not left behind, not that the cleanup is graceful. For tasks that need to `await` results, directly `await` them instead of assigning them to background tasks.
+> [!IMPORTANT]  
+> The framework's safety mechanism is a **forced cancellation** (`cancel_owner_tasks`), which occurs after `on_unload` returns. Therefore, tasks requiring graceful cleanup (flushing buffers, persisting state, closing connections) **must** be manually `cancel()` and `await`ed in `on_unload`—do not rely on the safety mechanism to preserve cleanup logic. The framework only guarantees that tasks holding a reference to `self` are not left hanging, not that the cleanup is graceful. For tasks that require awaiting results, directly `await` them instead of dropping them into background tasks.
 
 ## Notes
 
-1. **Processors can be synchronous or asynchronous**: The system automatically identifies and correctly invokes them.
+1. **Processors can be synchronous or asynchronous**: The system automatically detects and correctly invokes them.
 2. **Data passing**: In `emit()` mode, if a processor returns a non-None value, it modifies the data passed to subsequent processors.
-3. **Event naming convention**: It is recommended to use dot-notation for event names, which facilitates listening to parent events.
+3. **Event naming convention**: It is recommended to use dot-notation for event names to facilitate listening on parent events.
 4. **Error isolation**: An exception in a single processor does not affect the execution of other processors.
-5. **Synchronous trigger limitation**: In `emit_sync()`, asynchronous processors are scheduled in fire-and-forget mode, and their return values cannot be returned.
+5. **Synchronous trigger limitation**: In `emit_sync()`, asynchronous processors are scheduled in a fire-and-forget manner, and their return values cannot be returned.
 6. **Lifecycle cleanup**: When `sdk.uninit()` is called, all registered processors and timers are cleaned up.
-7. **Loading priority**: If you need to listen to events during the framework initialization phase, it is recommended to set a high priority and disable lazy loading.
+7. **Loading priority**: If you need to listen for events during the framework initialization phase, it is recommended to set a high priority and disable lazy loading.
 
 
 
@@ -7831,44 +7842,39 @@ async def _poll(self):
 
 # Lazy-Loaded Module System
 
-The ErisPulse SDK provides a powerful lazy-loaded module system that allows modules to be initialized only when needed, significantly improving application startup speed and memory efficiency.
-
-
+The ErisPulse SDK provides a powerful lazy-loaded module system, allowing modules to be initialized only when they are actually needed, significantly improving application startup speed and memory efficiency.
 
 ## Overview
 
-The lazy loading module system is one of the core features of ErisPulse. It works in the following ways:
+The lazy-loaded module system is one of the core features of ErisPulse. It works in the following ways:
 
-- **Lazy Initialization**: Modules are only actually loaded and initialized when first accessed.
-- **Transparent Usage**: For developers, lazy-loaded modules are almost indistinguishable from regular modules in terms of usage.
-- **Automatic Dependency Management**: Module dependencies are automatically initialized when used.
-- **Lifecycle Support**: For modules that inherit from `BaseModule`, lifecycle methods are automatically invoked.
-
+- **Delayed Initialization**: Modules are only loaded and initialized when they are first accessed.
+- **Transparent Usage**: For developers, lazy-loaded modules are almost indistinguishable from regular modules in usage.
+- **Automatic Dependency Management**: Module dependencies are automatically initialized when they are used.
+- **Lifecycle Support**: For modules that inherit from `BaseModule`, lifecycle methods are automatically called.
 
 ## How It Works
 
-### LazyModule Class
+### The `LazyModule` Class
 
-The core of the lazy loading system is the `LazyModule` class, which is a wrapper that actually initializes the module only when it is first accessed.
+The core of the lazy-loading system is the `LazyModule` class, which is a wrapper that actually initializes the module only on the first access.
 
 ### Initialization Process
 
-When the module is first accessed, `LazyModule` performs the following operations:
+When a module is first accessed, `LazyModule` performs the following steps:
 
-1. Retrieves the `__init__` parameter information of the module class
-2. Determines whether to pass a `sdk` reference based on the parameters
-3. Sets the `moduleInfo` property of the module
-4. For modules that inherit from `BaseModule`, calls the `on_load` method
-5. Triggers the `module.init` lifecycle event
-
-The following is the translated content without any additional text or formatting:
+1. Retrieves the `__init__` parameter information of the module class.
+2. Determines whether to pass a `sdk` reference based on the parameters.
+3. Sets the `moduleInfo` property of the module.
+4. For modules that inherit from `BaseModule`, calls the `on_load` method.
+5. Triggers the `module.init` lifecycle event.
 
 ## Event-Driven Lazy Activation (`activate_on`)
 
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-Modules with `lazy_load=True` are loaded by default only on the **first attribute access**. If a module registers command/event handlers, the traditional approach would require `lazy_load=False` to load immediately. `activate_on` provides a third option: **declare triggers, and automatically activate the module when the first matching event/command arrives**—it neither stays in memory nor loses the trigger entry point.
+Modules with `lazy_load=True` are loaded only on the **first attribute access** by default. If a module registers command/event handlers, the traditional approach is to set `lazy_load=False` to load immediately. `activate_on` provides a third option: **declare triggers so that the module is automatically activated when the first matching event/command arrives**—the module is neither kept in memory nor loses its trigger entry.
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -7879,17 +7885,17 @@ class MyModule(BaseModule):
         return ModuleLoadStrategy(
             lazy_load=True,
             activate_on=[
-                # ---- Event triggers (passive arrival, no user awareness required) ----
+                # ---- Event Triggers (passive arrival, no user awareness required)----
                 "message",                                    # Type-level: any message event
                 {"notice": "group_member_increase"},          # Type + single detail_type
                 {"message": ["private", "group"]},            # Type + multiple detail_types
 
-                # ---- Command triggers (active input, placeholder commands visible to Help) ----
+                # ---- Command Triggers (active input, placeholder commands visible in Help)----
                 {"command": "roll"},                          # Shorthand: command name
                 {"command": ["roll", "dice"]},                # List of command names
                 {"command": {                                 # Dict declaration (name is required)
                     "name": "dice",
-                    "help": "Roll a die",
+                    "help": "Roll a dice",
                     "usage": "/dice",
                     "group": "Entertainment",
                     "aliases": ["d"],
@@ -7901,45 +7907,45 @@ class MyModule(BaseModule):
 
 ### Command Dict Declaration Parameters
 
-The dict format mirrors the user-level parameters of the `@command()` decorator, used to register placeholder commands before the module loads:
+The dict form mirrors the user-level parameters of the `@command()` decorator, used to register placeholder commands before the module is loaded:
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `name` | `str` | **Required** | Command name; must match `@command(name)` in `on_load`, otherwise the placeholder is unregistered after activation, and the command does not exist |
-| `help` | `str` | Fallback chain | Description displayed in Help; if not declared, it falls back to the chain (see below) |
+| `name` | `str` | **Required** | Command name; must match the `@command(name)` in `on_load`, otherwise the placeholder is unregistered after activation, and the command will not exist |
+| `help` | `str` | Fallback chain | Description shown in Help; if not declared, the value is taken from the fallback chain (see below) |
 | `usage` | `str` | Auto-generated | Usage line, defaulting to `{prefix}{name}` |
 | `group` | `str` | `None` | Command group |
-| `aliases` | `list[str]` | `[]` | Aliases are registered simultaneously; **activating the module is triggered by inputting aliases** |
-| `hidden` | `bool` | `False` | If `True`, the placeholder command is also hidden (aligned with the hidden semantics of the real command after activation); users who know the command name can still trigger activation by inputting it |
+| `aliases` | `list[str]` | `[]` | Aliases are also registered; **inputting an alias will also trigger activation** |
+| `hidden` | `bool` | `False` | If `True`, the placeholder command is hidden (aligned with the hidden semantics of the real command after activation); users who know the command name can still trigger it by input |
 
-**Not supported**: `priority` / `permission` / `master`: The placeholder command's mission is only to trigger activation; permission checks are performed by the real command after activation (blocking permissions during the placeholder stage would make "activating by inputting a command" ineffective).
+**Not supported** `priority` / `permission` / `master`: The placeholder command's role is only to trigger activation; permission checks are performed by the real command after activation (blocking permissions at the placeholder stage would make "input command to activate" ineffective).
 
 ### Placeholder Command Help Fallback Chain
 
-When the module is not loaded, the command description displayed in Help is taken in the following order (the first match is used):
+When the module is not loaded, the Help displays the command description according to the following priority (the first found is used):
 
 1. The command-level `help` declared in the dict (most precise)
 2. The `description` from the module's `get_meta()`
-3. The module's `__description__` attribute
-4. The `Summary` from package metadata (PyPI package summary)
-5. A generic prompt: "This command comes from a lazy-loaded module X; the module will be automatically loaded on first use"
+3. The `__description__` attribute of the module
+4. The `Summary` from the package metadata (PyPI package summary)
+5. A generic message: "This command comes from the lazy-loaded module X. The module will be automatically loaded on first use."
 
 ### Trigger Semantics
 
-- **Event stub**: Registered to the corresponding event manager with very low priority (`ACTIVATION_STUB_PRIORITY`), acting as a fallback trigger after all ordinary handlers; after activation, the current event is forwarded to the module's real handler
+- **Event stub**: Registered to the corresponding event manager with very low priority (`ACTIVATION_STUB_PRIORITY`), acting as a fallback after all regular handlers; after activation, the current event is forwarded to the module's real handler
 - **Command stub**: Registers a placeholder command; after activation, the placeholder is unregistered, and the real command takes over the current trigger
-- **Reentrancy protection**: An `asyncio.Lock` ensures activation occurs only once, even under concurrent triggers
-- **Scope filtering**: The stub carries the module owner's identity, so it does not trigger if the module is not enabled for the Bot / session / platform
-- **Failure semantics**: If activation fails, it is not retried, and the stub is also unregistered
-- **Deduplication**: When the same command name is declared using a mix of shorthand and dict forms, deduplication occurs (dict takes precedence); if the dict lacks `name` or the event `detail_type` is incorrectly written as a dict, a warning is issued and it is ignored
+- **Reentrancy Prevention**: An `asyncio.Lock` ensures only one activation occurs in concurrent triggers
+- **Scope Filtering**: The stub includes the module owner identity, and does not trigger if the module is not enabled for the Bot / session / platform
+- **Failure Semantics**: If activation fails, it is not retried, and the stub is also unregistered
+- **Deduplication**: When the same command is declared using both shorthand and dict forms, deduplication occurs (dict takes precedence); if the dict lacks `name` or the event `detail_type` is incorrectly written as a dict, a warning is issued and the entry is ignored
 
-> For the architecture diagram and complete semantics, see [Architecture Overview](../architecture.md#event-driven-lazy-activation-activate_on-trigger-architecture).
+> For architecture diagrams and complete semantics, see [Architecture Overview](../architecture.md#event-driven-lazy-activationactivate_on-trigger-architecture).
 
-## Configure Lazy Loading
+## Configuring Lazy Loading
 
 ### Global Configuration
 
-Enable/disable lazy loading in the configuration file:
+Enable or disable global lazy loading in the configuration file:
 
 ```toml
 [ErisPulse.framework]
@@ -7957,13 +7963,12 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """Return the module loading strategy"""
+        """Returns the module loading strategy"""
         return ModuleLoadStrategy(
-            lazy_load=False,  # Return False to indicate immediate loading
-            priority=100      # Loading priority, higher value means higher priority
+            lazy_load=False,  # Returning False means immediate loading
+            priority=100      # Loading priority, higher values mean higher priority
         )
 ```
-
 
 ## Using Lazy-Loaded Modules
 
@@ -7975,27 +7980,27 @@ For developers, lazy-loaded modules are almost indistinguishable from regular mo
 # Accessing a lazy-loaded module through the SDK
 from ErisPulse import sdk
 
-# The following access will trigger the lazy loading of the module
+# The following access will trigger module lazy loading
 result = await sdk.my_module.my_method()
 ```
 
 ### Unified Module Access Entry
 
-Whether accessed through the SDK attribute, the module manager attribute, or queried via `module.get()`, for "registered but not yet loaded" lazy-loaded modules, the same lazy-loading proxy is returned. The module is only truly initialized when its attributes are accessed:
+Whether accessed via SDK attributes, module manager attributes, or through `module.get()`, for "registered but not yet loaded" lazy-loaded modules, the same lazy-loaded proxy is returned. Accessing its attributes will actually trigger initialization:
 
 ```python
-# All three methods return the same lazy-loading proxy (when the module is not loaded), with consistent behavior and transparent to the user
+# All three methods return the same lazy-loaded proxy (when the module is not loaded), with consistent behavior and transparency to the user
 sdk.my_module          # Entry point that triggers loading
-sdk.module.my_module   # Also returns the lazy-loading proxy
-sdk.module.get("my_module")  # Also returns the lazy-loading proxy; itself does not trigger loading
+sdk.module.my_module   # Also returns the lazy-loaded proxy
+sdk.module.get("my_module")  # Also returns the lazy-loaded proxy, itself does not trigger loading
 
-# Accessing any attribute of the proxy will truly initialize the module
+# Accessing any attribute of the proxy will actually initialize the module
 result = await sdk.my_module.my_method()
 ```
 
-`module.get()` is a **query** interface and does not trigger loading by itself:
-- If the module is already loaded → returns the real instance
-- If the module is registered but not loaded → returns the lazy-loading proxy (module is initialized only when attributes are accessed)
+`module.get()` is a **query** interface and does not trigger loading:
+- If the module is loaded → returns the real instance
+- If the module is registered but not loaded → returns the lazy-loaded proxy (initialization occurs on attribute access)
 - If the module is not registered → returns `None`
 
 To explicitly trigger loading, use `await sdk.load_module("my_module")`.
@@ -8005,7 +8010,7 @@ To explicitly trigger loading, use `await sdk.load_module("my_module")`.
 For modules requiring asynchronous initialization, it is recommended to load them explicitly first:
 
 ```python
-# First, explicitly load the module
+# Load the module explicitly first
 await sdk.load_module("my_module")
 
 # Then use the module
@@ -8014,11 +8019,12 @@ result = await sdk.my_module.my_method()
 
 ### Synchronous Initialization
 
-For modules that do not require asynchronous initialization, you can directly access them:
+For modules that do not require asynchronous initialization, they can be accessed directly:
 
 ```python
-# Direct access will automatically trigger synchronous initialization
+# Direct access will automatically initialize synchronously
 result = sdk.my_module.some_sync_method()
+```
 
 ## Best Practices
 
@@ -8026,38 +8032,36 @@ When choosing a loading strategy, refer to the following decision flow:
 
 ```mermaid
 flowchart TD
-    A["Module Declaration<br/>get_load_strategy()"] --> B{"Required to be ready at startup<br/>or frequently triggered?"}
-    B -->|"Yes"| C["lazy_load=False<br/>Load immediately"]
-    B -->|"No"| D{"Registered command/event handlers?"}
-    D -->|"Yes"| E["lazy_load=True + activate_on<br/>Activate when event/command arrives"]
+    A["Module declaration<br/>get_load_strategy()"] --> B{"Needs to be ready at startup<br/>or frequently triggered?"}
+    B -->|"Yes"| C["lazy_load=False<br/>Immediate loading"]
+    B -->|"No"| D{"Registered command / event handlers?"}
+    D -->|"Yes"| E["lazy_load=True + activate_on<br/>Activate on event/command arrival"]
     D -->|"No"| F["lazy_load=True<br/>Load on first attribute access"]
-    C --> G["Call on_load() at startup"]
-    E --> H["Register stub → Instantiate on trigger"]
+    C --> G["on_load() called at startup"]
+    E --> H["Register stub → instantiate on trigger"]
     F --> I["LazyModule proxy"]
 ```
 
-### Recommended Scenarios for Lazy Loading (lazy_load=True)
+### Recommended Scenarios for Lazy Loading (`lazy_load=True`)
 
-- Passive utility classes (e.g., data query modules, format converters, etc., which are only needed when called by other modules)
-- Modules that register command/event handlers but are not used frequently — use `activate_on` to declare triggers, and automatically activate when the first matching event/command arrives, without abandoning lazy loading
+- Passive utility modules (such as data query modules, format converters, etc., which are only needed when called by other modules)
+- Modules that register command/event handlers but are not frequently used—combine with `activate_on` to declare triggers, so the module is automatically activated when the first matching event/command arrives, without sacrificing lazy loading
 
-### Recommended Scenarios for Disabling Lazy Loading (lazy_load=False)
+### Recommended Scenarios for Disabling Lazy Loading (`lazy_load=False`)
 
-- Modules that need to be ready at startup (e.g., core modules providing basic services to other modules)
-- High-frequency listeners (each message needs to be processed) — `activate_on` forwarding has an activation overhead, so immediate loading is more direct in high-frequency scenarios
+- Modules that need to be ready immediately at startup (such as core modules providing basic services to other modules)
+- High-frequency listeners (each message needs to be processed)—`activate_on` forwarding has an activation overhead; immediate loading is more direct in high-frequency scenarios
 - Scheduled task modules
 - Modules that need to be initialized at application startup
 
-> The `priority` parameter controls the initialization order among immediately loaded modules; higher values initialize earlier. Modules with the same priority are loaded in registration order.
-
-docs/en/best-practices.md
+> The `priority` parameter controls the initialization order of immediately loaded modules, with higher values meaning earlier initialization. Modules with the same priority are loaded in registration order.
 
 ## Notes
 
-1. If your module uses lazy loading, and other modules have never been called within ErisPulse, your module will never be initialized.
-2. If your module contains modules that listen to Events, or other actively listening modules, there are two options: declare an `activate_on` trigger (maintain lazy loading, activate automatically when the event arrives), or declare that it needs to be loaded immediately (`lazy_load=False`), otherwise it will affect the normal operation of your module.
-3. We do not recommend disabling lazy loading unless there are special requirements, otherwise it may bring you problems such as dependency management and lifecycle events.
-4. In the command dict declaration of `activate_on`, `name` must be consistent with the real command name registered by `@command()` in the module's `on_load` — otherwise, after the module is activated, the placeholder command will be unregistered, and the declared command inconsistent with the implementation will not exist.
+1. If your module uses lazy loading and other modules never call it within ErisPulse, your module will never be initialized.
+2. If your module contains listeners for Events or similar active listeners, there are two options: declare `activate_on` triggers (keep lazy loading, activate automatically when events arrive), or declare that it needs to be loaded immediately (`lazy_load=False`), otherwise it may affect your module's normal operations.
+3. We do not recommend disabling lazy loading unless there is a special need, as it may cause issues such as dependency management and lifecycle events.
+4. In the command dict declaration of `activate_on`, `name` must match the real command name registered in `@command()` in the module's `on_load`—otherwise, after module activation, the placeholder command is unregistered, and the command with inconsistent declaration and implementation will not exist.
 
 
 
@@ -8065,21 +8069,21 @@ docs/en/best-practices.md
 
 # Internationalization (i18n) System
 
-ErisPulse v2.5.0 integrates a complete internationalization support system. The framework core and the CLI interface can automatically switch display text based on your system language, and it also supports external modules registering their own translations.
+ErisPulse v2.5.0 introduces full internationalization support. The framework core and CLI interface can automatically switch display text based on your system language, and external modules can also register their own translations.
 
 ## Supported Languages
 
 | Language | Code | Description |
 |------|------|------|
-| Simplified Chinese | `zh-CN` | Default language (Framework's native language) |
+| Simplified Chinese | `zh-CN` | Default language (framework's native language) |
 | Traditional Chinese | `zh-TW` | Traditional Chinese (Hong Kong/Macau/Taiwan) |
-| English | `en` | English (General fallback language) |
+| English | `en` | English (general fallback language) |
 | 日本語 | `ja` | Japanese |
 | Русский | `ru` | Russian |
 
-## Quick Start
+## Quick Experience
 
-### Switch via Environment Variables
+### Switch via Environment Variable
 
 ```bash
 # Windows PowerShell
@@ -8092,7 +8096,7 @@ ERISPULSE_LANG=ja epsdk run
 
 ### Switch via Configuration File
 
-Add the following to `config/config.toml`:
+In `config/config.toml`, add:
 
 ```toml
 [ErisPulse.i18n]
@@ -8101,7 +8105,7 @@ language = "zh-TW"
 
 Set to `"auto"` (default) to automatically detect the system language.
 
-### Manually Switch in Code
+### Switch Manually in Code
 
 ```python
 from ErisPulse import i18n
@@ -8110,7 +8114,7 @@ from ErisPulse import i18n
 i18n.set_language("en")
 print(i18n.get_language())  # "en"
 
-# Reset to auto-detection
+# Reset to automatic detection
 i18n.reset_language()
 ```
 
@@ -8118,32 +8122,34 @@ i18n.reset_language()
 
 ## Language Detection Mechanism
 
-The framework detects the user's language in the following order of priority:
+The framework detects the user's language in the following priority order:
 
-1. **Environment Variable `ERISPULSE_LANG`** — Highest priority, used for testing and temporary switching.
-2. **Windows API** — `GetUserDefaultLocaleName` (Windows only, not affected by the `LANG` variable overridden by tools like Git Bash).
-3. **Environment Variables** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG` (Unix/macOS standards).
-4. **System Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`.
-5. **Fallback** — en (English).
+1. **Environment variable `ERISPULSE_LANG`** — Highest priority, for testing and temporary switching
+2. **Windows API** — `GetUserDefaultLocaleName` (only on Windows, unaffected by tools like Git Bash that override `LANG`)
+3. **Environment variables** — `LANGUAGE` > `LC_ALL` > `LC_MESSAGES` > `LANG` (Unix/macOS standard)
+4. **System Locale** — `locale.getlocale()` / `locale.getdefaultlocale()`
+5. **Fallback** — en (English)
 
-### Proximity Mapping Principle
+### Nearest Mapping Principle
 
-When the detected language is not an exact match, map it to a supported language based on proximity:
+When the detected language does not match exactly, it is mapped to the nearest supported language:
 
 - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` → **Traditional Chinese**
 - All other `zh-*` (e.g., `zh-CN`, `zh-SG`) → **Simplified Chinese**
-- `en-US`, `en-GB`, `en-AU`, etc. → **English**
+- `en-US`, `en-GB`, `en-AU` etc. → **English**
 - `ja-JP` → **Japanese**
 - `ru-RU` → **Russian**
-- Other unrecognized languages → **Simplified Chinese (Fallback)**
+- Other unrecognized languages → **Simplified Chinese (fallback)**
+
+---
 
 ## Using i18n in Modules
 
-You can register translation texts for your own module to enable multi-language support for your module.
+You can register translation text for your own modules to make them support multiple languages.
 
 ### Recommended Approach: Declare Translation Keys via I18nClass (v2.7.0+)
 
-Starting from v2.7.0, modules/adapters can declare translation keys via the nested class `I18nClass`, similar to declaring `ConfigClass`. The framework will **automatically register** all declared translation keys upon loading, without the need to manually call `i18n.register()`.
+Starting from v2.7.0, modules/adapters can declare translation keys in a nested class `I18nClass`, similar to declaring `ConfigClass`. The framework will automatically register all declared translation keys during loading, without needing to manually call `i18n.register()`.
 
 ```python
 from dataclasses import dataclass, field
@@ -8156,66 +8162,66 @@ class MyModule(BaseModule):
     @dataclass
     class ConfigClass(BaseConfig):
         welcome_msg: str = field(
-            default="欢迎",
+            default="Welcome",
             metadata={
-                # This references the i18n key mymodule.welcome_msg
-                "description": {"i18n": "mymodule.welcome_msg", "default": "Welcome Message"},
+                # Here we reference the i18n key mymodule.welcome_msg
+                "description": {"i18n": "mymodule.welcome_msg", "default": "Welcome message"},
             },
         )
 
     # Translation key collection class (optional)
-    # Declared keys will be automatically registered by the framework, with priority over ConfigClass default configuration generation
+    # Declared keys are automatically registered by the framework, with higher priority than default config generated by ConfigClass
     class I18nClass(BaseI18n):
-        # Property names are automatically concatenated into the full key path: <ModuleName>.<PropertyName>
+        # Property names are automatically concatenated to form the full key path: <module_name>.<property_name>
         welcome_msg: I18nKey = I18nKey(
             default="Welcome Message",   # Language-agnostic fallback, not registered to any language
-            zh_CN="欢迎消息",
+            zh_CN="Welcome message",
             en="Welcome Message",
             ja="ウェルカムメッセージ",
             ru="Приветственное сообщение",
-            zh_TW="歡迎訊息",
+            zh_TW="Welcome message",
         )
-        # Other translation keys used by the business logic
+        # Other translation keys used in business logic
         hello: I18nKey = I18nKey(
             default="Hello, {name}!",
-            zh_CN="你好，{name}！",
-            zh_TW="你好，{name}！",
+            zh_CN="Hello, {name}!",
+            zh_TW="Hello, {name}!",
             en="Hello, {name}!",
             ja="こんにちは、{name}！",
             ru="Привет, {name}!",
         )
 
-        # Can also explicitly specify the full key path (not using property name concatenation)
+        # You can also explicitly specify the full key path (not using property name concatenation)
         custom: I18nKey = I18nKey(
             key="mymodule.deep.nested.key",
             default="Default text",
-            zh_CN="默认文本",
-            zh_TW="預設文本",
+            zh_CN="Default text",
+            zh_TW="Default text",
             en="Default text",
-            ja="デフォルトテキスト",
-            ru="Текст по умолчанию",
+            ja="Default text",
+            ru="Default text",
         )
 ```
 
-#### Why recommend I18nClass?
+#### Why Recommend I18nClass?
 
 | Scenario | Manual i18n.register() | I18nClass Declarative |
-|----------|------------------------|------------------------|
-| i18n keys referenced in config descriptions | Manual registration required, must be done before config generation | Framework automatically registers before config generation |
-| Multi-language translation declarations | Scattered across various on_load() calls | Centralized in a class, easy to read at a glance |
-| Naming consistency of keys | Prone to typos | Property names used as key suffixes, IDE completion available |
+|------|-----------------------|------------------|
+| i18n key referenced in configuration description | Manual registration required, must be done before configuration generation | Framework automatically registers before configuration generation |
+| Multi-language translation declaration | Scattered across various on_load() methods | Centralized in class, clear at a glance |
+| Key naming consistency | Prone to spelling errors | Property name as key suffix, IDE can auto-complete |
 | Cleanup on unload | Manual unregister_domain() required | Framework uses unified domain registration |
 
 #### I18nClass Key Path Rules
 
-- **Default**: Uses ``<ModuleRegistrationName>.<PropertyName>`` as the full key path
-  - Example: Module name is ``MyModule``, property ``welcome`` → key path ``MyModule.welcome``
-- **Explicit**: Specify arbitrary dotted path via ``I18nKey(key="...")`` parameter
+- **Default**: Use ``<module registration name>.<property name>`` as the full key path
+  - Example: Module name is ``MyModule``, property is ``welcome`` → key path ``MyModule.welcome``
+- **Explicit**: Specify any dot-separated path via the ``I18nKey(key="...")`` parameter
   - Suitable for deeply nested key names (e.g., ``mymodule.config.basic.token``)
 
-#### Usage in Adapters
+#### Using in Adapters
 
-Adapters also support `I18nClass`, and the usage is exactly the same:
+Adapters also support `I18nClass`, with the same usage:
 
 ```python
 from ErisPulse.Core import BaseAdapter
@@ -8228,37 +8234,37 @@ class MyAdapter(BaseAdapter):
         endpoint: str = field(
             default="",
             metadata={
-                # The config description references the adapter.MyAdapter.endpoint key
-                "description": {"i18n": "MyAdapter.endpoint", "default": "API Endpoint"},
+                # Configuration description references the adapter.MyAdapter.endpoint key
+                "description": {"i18n": "MyAdapter.endpoint", "default": "API address"},
             },
         )
 
     class I18nClass(BaseI18n):
-        # Centralized declaration of i18n keys referenced by config descriptions and other business keys
+        # Central declaration of i18n keys referenced in configuration description and other business keys
         endpoint: I18nKey = I18nKey(
             default="API Endpoint",
-            zh_CN="API 地址",
-            zh_TW="API 位址",
+            zh_CN="API address",
+            zh_TW="API address",
             en="API Endpoint",
-            ja="APIアドレス",
-            ru="API адрес",
+            ja="API address",
+            ru="API address",
         )
 ```
 
-The adapter's `I18nClass` will be automatically registered during the `__init__` stage (i.e., before configuration template generation), ensuring i18n keys referenced by config descriptions are available.
+The `I18nClass` of the adapter is automatically registered during the `__init__` phase (before configuration template generation), ensuring that i18n keys referenced in configuration descriptions are available.
 
-### Manually Registering Custom Translations (Legacy Approach)
+### Manually Register Custom Translations (Old Approach)
 
-If you do not use `I18nClass`, you can also directly call `i18n.register()` to register translation texts.
+If you do not use `I18nClass`, you can directly call `i18n.register()` to register translation text.
 
 ```python
 from ErisPulse import i18n
 
 # Register Chinese translations
 i18n.register("zh-CN", {
-    "my_module.welcome": "欢迎使用我的模块！",
-    "my_module.goodbye": "再见！",
-    "my_module.hello": "你好，{name}！",
+    "my_module.welcome": "Welcome to my module!",
+    "my_module.goodbye": "Goodbye!",
+    "my_module.hello": "Hello, {name}!",
 }, domain="my_module")
 
 # Register English translations
@@ -8275,16 +8281,16 @@ i18n.register("en", {
 from ErisPulse import i18n
 
 # Simple translation
-i18n.t("my_module.welcome")  # Automatically uses the current language
+i18n.t("my_module.welcome")  # Automatically uses current language
 
-# With formatting parameters
+# With formatted parameters
 i18n.t("my_module.hello", name="Alice")
 
-# Specify a default value (returned when the translation key does not exist)
+# Specify default value (returns when translation key does not exist)
 i18n.t("my_module.unknown_key", default="Default text")
 ```
 
-### Using in Module Class
+### Using in Module Classes
 
 ```python
 from dataclasses import dataclass, field
@@ -8294,9 +8300,9 @@ from ErisPulse.Core.Bases import BaseConfig, BaseModule
 @dataclass
 class MyModuleConfig(BaseConfig):
     welcome_msg: str = field(
-        default="欢迎",
+        default="Welcome",
         metadata={
-            "description": {"i18n": "my_module.welcome_msg", "default": "Welcome Message"},
+            "description": {"i18n": "my_module.welcome_msg", "default": "Welcome message"},
             "ui": {"widget": "text", "group": "basic", "order": 1},
         },
     )
@@ -8305,7 +8311,7 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def on_load(self, event):
-        # Real-time reading of configuration (reflects latest value on every access)
+        # Real-time access to configuration (reflects latest value on each access)
         self.logger.info(self.cfg.welcome_msg)
         self.logger.info(i18n.t("my_module.welcome"))
 
@@ -8318,26 +8324,29 @@ class MyModule(BaseModule):
         pass
 ```
 
-### Unloading Translations
+### Unregistering Translations
 
 ```python
-# Unload the entire domain translations
+# Unregister all translations in a domain
 i18n.unregister_domain("my_module")
+```
+
+---
 
 ## Multi-language Configuration Fields
 
-Since v2.5.2, the configuration Schema fully supports i18n. All user-visible text fields can reference i18n keys, and the WebUI and other consumers will automatically resolve them to the corresponding text based on the current language.
+Starting from v2.5.2, the configuration Schema fully supports i18n. All user-visible text fields can reference i18n keys, and WebUI and other consumers will automatically resolve them to corresponding text based on the current language.
 
 ### Supported i18n Fields
 
 | Field | Location | Description |
 |------|------|------|
 | `description` | field metadata | Field description |
-| `options[].label` | `ui.options` | select control option label |
-| `placeholder` | `ui.placeholder` | Input placeholder |
-| `group_labels` | `_schema_meta` | Group display name (Dashboard partition title) |
+| `options[].label` | `ui.options` | Label for select control options |
+| `placeholder` | `ui.placeholder` | Placeholder for input fields |
+| `group_labels` | `_schema_meta` | Group display names (Dashboard section titles) |
 
-Adopts the unified `{"i18n": "key", "default": "text"}` format; pure strings are passed through as-is (backward compatible).
+All use the format `{"i18n": "key", "default": "text"}`. Pure strings are passed through as-is (for backward compatibility).
 
 ### Declaring i18n Fields
 
@@ -8349,7 +8358,7 @@ from ErisPulse.Core.Bases import BaseConfig
 
 @dataclass
 class MyAdapterConfig(BaseConfig):
-    # description i18n
+    # i18n for description
     token: str = field(
         default="",
         metadata={
@@ -8360,16 +8369,16 @@ class MyAdapterConfig(BaseConfig):
                 "widget": "password",
                 "group": "basic",
                 "order": 1,
-                # placeholder i18n
+                # i18n for placeholder
                 "placeholder": {"i18n": "my_adapter.token.ph", "default": "Please enter Token"},
             },
         },
     )
-    # options label i18n
+    # i18n for options label
     mode: str = field(
         default="a",
         metadata={
-            "description": {"i18n": "my_adapter.mode", "default": "Runtime Mode"},
+            "description": {"i18n": "my_adapter.mode", "default": "Operating mode"},
             "ui": {
                 "widget": "select",
                 "group": "basic",
@@ -8382,22 +8391,22 @@ class MyAdapterConfig(BaseConfig):
         },
     )
 
-    # group_labels i18n (Group display name)
+    # i18n for group_labels (group display names)
     _schema_meta = {
         "group_labels": {
-            "basic": {"i18n": "my_adapter.group.basic", "default": "Basic Settings"},
+            "basic": {"i18n": "my_adapter.group.basic", "default": "Basic settings"},
         }
     }
 ```
 
-`default` is the fallback text — displayed when the translation is not registered or lookup fails.
+`default` is the fallback text — it is shown when the translation is not registered or lookup fails.
 
-### secret Masking and Configuration Validation
+### Secret Masking and Configuration Validation
 
-Fields marked with `"secret": True` automatically gain **masking protection** (since 2.7.0):
+Fields marked as `"secret": True` will automatically receive **masking protection** (from v2.7.0 onwards):
 
-- **Template Generation Masking**: When `dataclass_to_toml_with_comments()` generates the configuration template, the real values of secret fields are not written to the file (displayed as empty placeholders), preventing sensitive information from being written to disk
-- **Universal Masking Utility**: `redact_secret(value)` replaces non-empty values with `***`; empty values are returned as-is. Can be used in scenarios like log output
+- **Template generation masking**: When `dataclass_to_toml_with_comments()` generates the configuration template, the real value of secret fields is not written to the file (showing an empty placeholder), preventing sensitive information from being written to disk
+- **General masking utility**: `redact_secret(value)` replaces non-empty values with `***`, and returns empty values as-is, suitable for use in log output, etc.
 
 ```python
 from ErisPulse.Core.Bases.config_schema import redact_secret
@@ -8406,13 +8415,13 @@ redact_secret("sk-xxxxxx")  # '***'
 redact_secret("")           # ''
 ```
 
-**Configuration Validation** (`validate_config()`) supports (in addition to `required` non-empty checks since 2.7.0):
+**Configuration validation** (`validate_config()`) supports the following checks in addition to `required` non-empty checks (from v2.7.0 onwards):
 
-| Validation Item | Metadata | Example |
+| Validation | Metadata | Example |
 |--------|--------|------|
-| Type Matching | Field declared type | Passing a string to an `int` field raises an error |
-| Enum Constraint | `ui.options` or top-level `options` | Value must belong to allowed options |
-| Numeric Range | Top-level `min` / `max` | `metadata={"min": 1, "max": 65535}` |
+| Type match | Field declared type | `int` field with a string input raises an error |
+| Enum constraint | `ui.options` or top-level `options` | Value must be in allowed options |
+| Numeric range | Top-level `min` / `max` | `metadata={"min": 1, "max": 65535}` |
 
 ```python
 from ErisPulse.Core.Bases.config_schema import validate_config
@@ -8427,14 +8436,14 @@ errors = validate_config(C(mode="x", port=70000))  # Two errors: enum + range
 
 ### Registering Configuration Translations
 
-The i18n keys for configuration fields work like normal translation keys; register them using `i18n.register()`:
+The i18n keys for configuration fields are registered the same way as regular translation keys using `i18n.register()`:
 
 ```python
 from ErisPulse import i18n
 
-# Register Chinese (consistent with default, or different)
+# Register Chinese (same as default, but can be different)
 i18n.register("zh-CN", {
-    "my_adapter.token": "平台 Token",
+    "my_adapter.token": "Platform Token",
 }, domain="my_adapter")
 
 # Register English
@@ -8442,15 +8451,15 @@ i18n.register("en", {
     "my_adapter.token": "Platform Token",
 }, domain="my_adapter")
 ```
-> **Recommended Approach**: Use `I18nClass` to declare translation keys; the framework will register them automatically (see the "Recommended Approach" section above),
-> eliminating the need to manually call `i18n.register()` or `register_config_i18n()`.
+> **Recommended approach**: Use `I18nClass` to declare translation keys; the framework automatically registers them (see the "Recommended Approach" section above),
+> no need to manually call `i18n.register()` or `register_config_i18n()`.
 
-A convenience function `register_config_i18n()` is also provided, which can automatically extract keys from the configuration class and register them:
+A convenient function `register_config_i18n()` is also provided, which automatically extracts keys from the configuration class and registers them:
 
 ```python
 from ErisPulse.Core.Bases.config_schema import register_config_i18n
 
-# Automatically extracts description.default as zh-CN translation
+# Automatically extract description.default as zh-CN translation
 register_config_i18n(MyAdapterConfig, "zh-CN")
 
 # Manually provide English translation
@@ -8459,26 +8468,27 @@ register_config_i18n(MyAdapterConfig, "en", {
 })
 ```
 
-### How WebUI Consumes It
+### How WebUI Consumes
 
-In the schema returned by `get_config_schema()`, i18n dictionaries are passed through as-is. The WebUI frontend can call `i18n.t()` to resolve based on the current language.
+`get_config_schema()` returns a schema where the i18n dictionary is passed through as-is. The WebUI frontend can call `i18n.t()` to resolve it based on the current language.
 
-If you need the server to resolve it to a string directly (e.g., for a frontend that does not support i18n), use `resolve_config_schema()`, which resolves `description`, `options[].label`, `placeholder`, and `group_labels` all to the current language's text:
+If you need the server to directly resolve it into a string (e.g., for a frontend that doesn't support i18n), use `resolve_config_schema()`, which resolves all i18n fields (`description`, `options[].label`, `placeholder`, `group_labels`) into the current language's text:
 
 ```python
 from ErisPulse.Core.Bases.config_schema import resolve_config_schema
 
-# All i18n fields are resolved to current language strings
+# All i18n fields are resolved into the current language's text
 schema = resolve_config_schema(MyAdapterConfig)
-print(schema["fields"]["token"]["description"])    # "平台 Token" or "Platform Token"
-print(schema["fields"]["token"]["placeholder"])   # "请输入 Token" or "Enter Token"
-print(schema["fields"]["mode"]["options"][0]["label"])  # "模式A" or "Mode A"
-print(schema["group_labels"]["basic"])             # "基本设置" or "Basic"
+print(schema["fields"]["token"]["description"])    # "Platform Token" or "Platform Token"
+print(schema["fields"]["token"]["placeholder"])   # "Please enter Token" or "Enter Token"
+print(schema["fields"]["mode"]["options"][0]["label"])  # "Mode A" or "Mode A"
+print(schema["group_labels"]["basic"])             # "Basic settings" or "Basic"
 ```
 
-> The actual definitions of types and utility functions like `BaseConfig`, `BotAccountConfig`, `register_config_i18n()`, `resolve_config_schema()` etc. are located in `ErisPulse.Core.Bases.config_schema`.
-> `ErisPulse.runtime.config_schema` is kept as a compatibility shim,
-> **it is recommended to import uniformly from `ErisPulse.Core.Bases`** (with the exception of i18n translation key related types,
+> `BaseConfig`, `BotAccountConfig`, `register_config_i18n()`, `resolve_config_schema()`
+> and other types and utility functions are actually defined in `ErisPulse.Core.Bases.config_schema`.
+> `ErisPulse.runtime.config_schema` is retained as a compatibility shim,
+> **recommended to import uniformly from `ErisPulse.Core.Bases`** (except i18n translation key related types,
 > which are located in `ErisPulse.Core.Bases.i18n_schema`).
 
 ## API Reference
@@ -8488,12 +8498,12 @@ print(schema["group_labels"]["basic"])             # "基本设置" or "Basic"
 #### Core Methods
 
 | Method | Description |
-|--------|-------------|
-| `t(key, default=None, **kwargs)` | Get the translation text (`gettext()` is an alias) |
+|------|------|
+| `t(key, default=None, **kwargs)` | Get the translated text (`gettext()` is an alias) |
 | `set_language(lang)` | Manually set the language |
 | `get_language()` | Get the current language |
-| `reset_language()` | Reset to auto-detect (and re-detect environment) |
-| `get_supported_languages()` | Get a list of all supported languages |
+| `reset_language()` | Reset to automatic detection (and re-detect environment) |
+| `get_supported_languages()` | Get the list of all supported languages |
 | `has_translation(key, lang=None)` | Check if a translation key exists |
 | `register(lang, translations, domain)` | Register custom translations |
 | `unregister_domain(domain)` | Unload all translations for a specified domain |
@@ -8505,58 +8515,58 @@ print(schema["group_labels"]["basic"])             # "基本设置" or "Basic"
 def t(self, key, /, default=None, **kwargs):
 ```
 
-- `key` — Translation key (positional argument only, does not conflict with `key=` in `**kwargs`)
-- `default` — Default value to return if translation does not exist, defaults to `None` (returns the key name itself)
-- `**kwargs` — Formatting parameters, used to fill `{placeholder}` in the translation value
+- `key` — Translation key (positional argument only, does not conflict with `**kwargs`'s `key=`)
+- `default` — Default value returned if translation does not exist, default is `None` (returns the key name itself)
+- `**kwargs` — Format parameters, used to fill placeholders in the translation value
 
 Example:
 
 ```python
-# Translation definition: "greeting": "你好，{name}！欢迎来到{place}。"
+# Translation definition: "greeting": "Hello, {name}! Welcome to {place}."
 i18n.t("greeting", name="Alice", place="ErisPulse")
-# Returns: "你好，Alice！欢迎来到ErisPulse。"
+# Returns: "Hello, Alice! Welcome to ErisPulse."
 ```
 
 ### BaseI18n / I18nKey (Declarative Translation Keys)
 
-Starting from v2.7.0, `ErisPulse.Core.Bases` provides translation key declaration tools based on class attributes (recommended to import uniformly from `ErisPulse.Core.Bases`):
+Starting from v2.7.0, `ErisPulse.Core.Bases` provides a class property-based translation key declaration tool (recommended to import uniformly from `ErisPulse.Core.Bases`):
 
-> ``I18nKey.default`` is the **language-agnostic fallback text** and is not registered to any language.
-> For translations to take effect, you must explicitly pass at least one language argument (``zh_CN=`` / ``en=`` / ``ja=`` etc.).
-> This allows developers from different countries to freely use their native language to fill ``default``, without the framework making any assumptions.
+> ``I18nKey.default`` is a **language-agnostic fallback text** and is not registered to any language.
+> To make the translation effective, at least one language parameter must be explicitly passed (e.g., ``zh_CN=`` / ``en=`` / ``ja=`` etc.).
+> This allows developers from different countries to freely use their native language to fill in the ``default``, and the framework does not make any assumptions.
 
 | Name | Description |
-|------|-------------|
-| `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | Single translation key declaration, `default` is language-agnostic fallback |
-| `BaseI18n` | Translation key collection base class (naming aligned with `BaseConfig`), subclasses declare multiple `I18nKey` as class attributes |
-| `BaseI18n.register(prefix="", domain="app")` | Class method: registers all declared keys to the i18n system |
-| `key` | Alias for `I18nKey` (more concise to write) |
+|------|------|
+| `I18nKey(default, *, key=None, zh_CN, zh_TW, en, ja, ru)` | Declaration of a single translation key, `default` is language-agnostic fallback |
+| `BaseI18n` | Translation key collection base class (naming aligns with `BaseConfig`), child classes declare multiple `I18nKey` via class properties |
+| `BaseI18n.register(prefix="", domain="app")` | Class method: register all declared keys into the i18n system |
+| `key` | Alias for `I18nKey` (more concise writing) |
 
-Usage Example:
+Example usage:
 
 ```python
 from ErisPulse.Core.Bases import BaseI18n, key
 
 class MyKeys(BaseI18n):
-    # Concise alias syntax
+    # Concise alias writing
     hello = key(
         default="Hello",
-        zh_CN="你好",
-        zh_TW="你好",
+        zh_CN="Hello",
+        zh_TW="Hello",
         en="Hello",
         ja="こんにちは",
         ru="Привет",
     )
     bye = key(
         default="Bye",
-        zh_CN="再见",
-        zh_TW="再見",
+        zh_CN="Bye",
+        zh_TW="Bye",
         en="Bye",
         ja="さようなら",
         ru="До свидания",
     )
 
-# Usage independent of class (manual registration)
+# Independent usage (manual registration)
 MyKeys.register(prefix="myapp.", domain="myapp")
 ```
 
@@ -8565,7 +8575,7 @@ MyKeys.register(prefix="myapp.", domain="myapp")
 ```python
 from ErisPulse import sdk
 
-# sdk.i18n is the same object as the directly imported i18n
+# sdk.i18n and directly imported i18n are the same object
 sdk.i18n.set_language("en")
 print(sdk.i18n.t("core.sdk.init.starting"))
 ```
@@ -8583,18 +8593,18 @@ from ErisPulse.runtime import get_i18n_config
 config = get_i18n_config()
 print(config["language"])  # "auto" or specific language code
 
-# I18nConfig is a dataclass, can be used to generate config template
+# I18nConfig is a dataclass, can be used to generate configuration templates
 schema = I18nConfig.__dataclass_fields__
 ```
 
-### Configuration Item Explanation
+### Configuration Item Description
 
 In the `[ErisPulse.i18n]` section of `config/config.toml`:
 
 ```toml
 [ErisPulse.i18n]
-# Display language, optional values:
-# - "auto"      — Automatically detect system language (default)
+# Display language, possible values:
+# - "auto"      — Auto-detect system language (default)
 # - "zh-CN"     — Simplified Chinese
 # - "zh-TW"     — Traditional Chinese
 # - "en"        — English
@@ -8607,23 +8617,23 @@ language = "auto"
 
 ## Best Practices
 
-### Translating Key Naming
+### Translation Key Naming
 
-It is recommended to use dot-separated namespace format:
+It is recommended to use dot-separated namespace formatting:
 
 ```
-<Module Name>.<Category>.<Description>
+<module_name>.<category>.<description>
 ```
 
 For example: `my_module.command.hello_desc`, `core.adapter.start_failed`
 
-### Multilingual Coverage
+### Multi-language Coverage
 
-It is not necessary to provide translations for all languages at once. Missing languages will automatically fall back to English, and if English is also unavailable, the key name itself will be displayed.
+You don't need to provide translations for all languages at once; missing languages will automatically fall back to English, and if English is also missing, the key name itself will be displayed.
 
 ### Dynamic Content
 
-For dynamically generated content (such as usernames, counts, etc.), use `{placeholder}` formatting:
+For dynamically generated content (such as usernames, quantities, etc.), use `{placeholder}` formatting:
 
 ```python
 # Translation definition
@@ -8639,305 +8649,392 @@ If your module uses the framework's Logger, these messages will also automatical
 
 ```python
 self.logger.info(i18n.t("my_module.startup"))
+```
+
+---
 
 ## Relationship with CLI i18n
 
-The CLI has a **standalone** internationalization module (`ErisPulse.CLI.i18n`), which is completely decoupled from the internationalization module of the framework core.
+The CLI has its own **independent** internationalization module (`ErisPulse.CLI.i18n`), completely decoupled from the framework core's internationalization module.
 
 - **Core i18n** — Used by the framework core module, external modules can register translations
-- **CLI i18n** — Used internally by the command line interface, does not share translation data with Core
+- **CLI i18n** — Used internally by the command-line interface, does not share translation data with Core
 
-This design ensures that translation changes in the CLI will not affect the stability of the framework core.
+This design ensures that changes to CLI translations do not affect the stability of the framework core.
 
 
 
-### 模块作用域系统
+### 统一控制面（scope）
 
-# Module Scope System
+# Unified Control Plane (scope)
 
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-The module scope system is used to control which modules a "certain Bot" can use, achieving module isolation in multi-Bot scenarios. By default, all modules are available to all Bots; filtering only begins after configuration binding, and **no changes are required for modules or adapters** to adapt.
+The unified control plane answers five questions: **which modules are available, whether events from whom should be received, who can execute a specific command, what text a module processes, and which implementation parameters are overridden**. The control authority is entirely given to the user: all configurations are declared at the **top level** of module / adapter / command / processor registration (`ErisPulse.scope` or `sdk.scope` at runtime), and the event pipeline automatically reads and executes these configurations at each level.
+
+The control plane consolidates the original multiple permission systems and serves as the **only** entry point for permission/access control in version 2.8.0:
+
+| Dimension | What is controlled | Rejection behavior | Configuration path |
+|------|---------|---------|---------|
+| **① Module** | Which modules are available (platform / Bot / session three levels) | Silent ignore (no reply, no claim) | `scope.platforms / bots / sessions` |
+| **② Identity** | Whether to receive events (adapter / Bot / session / user four levels) | Complete discard at entry (silent) | `scope.identity.*` |
+| **③ Command** | Who can execute a specific command (command names support glob) | Reply "insufficient permissions" (explicit) | `scope.commands` |
+| **④ Handler** | Which text a module's event handler processes | No trigger (silent) | `scope.handlers` |
+| **⑤ Override** | Override module/command implementation parameters (master/hidden/aliases/prefix) | —— (only change parameters) | `scope.overrides` |
 
 {!--< tips >!--}
-1. The scope is bound to modules based on the dimension of 「adapter platform + Bot identifier + session identifier」
-2. Supports both whitelist (`modules`) and blacklist (`blocked`) methods
-3. Modules disabled by scope silently ignore messages and do not reply with prompts
-4. Supports dynamic addition and removal at runtime via `sdk.scope.bind()` / `unbind()`, which can be persisted
+1. Import the singleton via `from ErisPulse.Core import scope` (`sdk.scope` refers to the same object)
+2. `scope.is_allowed(platform, bot_id, module, session_id)` checks if a module is available
+3. `scope.is_identity_allowed(platform, bot_id, session_id, user_id)` checks if an event is allowed
+4. `scope.allow_user("roll*", platform, uid)` / `deny_user(...)` for command ACL (supports glob)
+5. `scope.override("MyModule", "restart", master=True)` overrides implementation parameters
+6. `scope.get_stats()` checks filtering statistics; `scope.get_topology()` checks the five-dimensional topology
 {!--< /tips >!--}
 
+## Matching Entry Syntax (Unified Across the Entire System)
 
+All "name lists" in the control plane (module names, identity keys, command names) use the same matching syntax (`ErisPulse.Core.text_match`):
 
-## How It Works
+| Syntax | Example | Description |
+|------|------|------|
+| Exact name | `"Chat"` | Full value comparison, **case-insensitive** |
+| Glob | `"Tool*"`、`"spam_*"` | `*` matches any string / `?` matches a single character / `[seq]` matches a character set, case-insensitive |
+| Regex | `"re:^Danger.*"` | Declared with `re:` prefix, matches via `search`, default case-insensitive |
 
-```mermaid
-flowchart TD
-    A["Bot receives message"] --> B["Extract (platform, bot_id, session_id)"]
-    B --> C{"Find scope binding<br/>(session-level > bot-level > platform-level)"}
-    C -->|"session-level"| D["sessions<br/>highest priority"]
-    C -->|"bot-level"| E["bots<br/>overrides platform-level"]
-    C -->|"platform-level"| F["platforms"]
-    D & E & F --> G{"Binding matched?"}
-    G -->|"matched"| H["Filter modules by whitelist / blacklist"]
-    G -->|"not matched"| I["Fallback to next lower level<br/>allow all if none configured"]
-    H --> J["Disabled modules: neither command nor event handlers are triggered<br/>(silently ignored)"]
-```
+- Invalid regex **silently falls back** to "no match" (no error thrown, no crash)
+- Decorator parameters (`pattern=` / `regex=`) have fixed semantics: `pattern` is glob, `regex` is the raw regex code (without `re:` prefix); regex entries in control plane configurations **must** have the `re:` prefix
 
-- **Resolution priority: session-level > bot-level > platform-level**, if a higher priority has no binding rules, fall back to the next lower level; if none is configured, allow all modules.
-- When event data lacks `self` (Bot cannot be identified), skip bot-level and determine based on session-level / platform-level.
-- Framework-level resources (handlers with empty owner, command dispatcher, event bus) are always allowed, unaffected by scope.
+## Global Default: `default_allow`
 
+`default_allow` is the **single global** default switch (default `true`), uniformly affecting three decision dimensions:
+
+- **Module dimension**: If no binding is matched → `default_allow` determines allow / deny
+- **Identity dimension**: If no policy is matched → `default_allow` determines allow / deny
+- **Command dimension**: If no ACL is configured → `default_allow=true` passes to the developer's default permission chain; `false` (strict mode) denies commands with no ACL configured
+
+Setting it to `false` enables "implicit deny" strict mode: white-list management, **all unexplicitly allowed are denied**.
 
 ## Configuration File
 
 ```toml
 [ErisPulse.scope]
-default_allow = true        # Allow all by default (false = implicit strict mode)
-cache_size = 1024           # LRU cache size for is_allowed
+default_allow = true        # Global default (false = implicit deny strict mode)
+cache_size = 1024           # LRU cache size
 
-# Platform-level bindings (applies to all Bots / Sessions on this platform)
+# ── ① Module dimension (priority: session > Bot > platform) ──
 [ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Translate"]   # Whitelist: only these modules can be used on this platform
-blocked = ["Danger"]              # Blacklist: these modules are disabled on this platform
-
-# Bot-level bindings (applies to all sessions for this Bot, overrides platform-level)
+modules = ["Chat", "Tool*"]   # Whitelist: exact name / glob / re: regex
+blocked = ["re:^Danger"]
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Chat"]
-blocked = []
-
-# Session-level bindings (applies to a specific group / channel / private chat, most specific)
 [ErisPulse.scope.sessions.onebot11."789012345"]
-modules = ["Chat"]                # Only Chat is allowed for this group
-blocked = []
+modules = ["Chat"]
+
+# ── ② Identity dimension (priority: user > session > Bot > adapter) ──
+[ErisPulse.scope.identity.adapters.onebot11]
+deny = true                   # Discard all events from this adapter
+[ErisPulse.scope.identity.bots.onebot11."123456"]
+deny = true
+[ErisPulse.scope.identity.sessions.onebot11."g_blocked"]
+deny = true
+[ErisPulse.scope.identity.users.onebot11]
+allow = ["u_admin"]           # User keys support glob / re: regex
+deny = ["u_bad", "spam_*"]
+
+# ── ③ Command dimension (command names support glob) ──
+[ErisPulse.scope.commands."roll*"]
+allow = ["onebot11:u_vip"]    # User identifier "platform:user_id"
+deny = ["onebot11:u_bad"]
+
+# ── ④ Handler/text dimension ──
+[ErisPulse.scope.handlers.MyModule]
+pattern = "签到*"             # AND with code-level pattern/regex conditions
+regex = "re:\\d+\\s*元"
+
+# ── ⑤ Implementation parameter override ──
+[ErisPulse.scope.overrides.MyModule.restart]
+master = true                 # Only framework owner can use
+hidden = true                 # Hidden in help
+aliases = ["rs"]              # Append alias
+prefix = "!"                  # Append trigger prefix
 ```
 
-Semantics (module names match **case-insensitively**):
+## ① Module Dimension
 
-| Config | Effect |
-|--------|--------|
-| Only `modules` (whitelist) | Only listed modules are allowed |
-| Only `blocked` (blacklist) | Listed modules are blocked, everything else is allowed |
-| Both configured | Whitelist restricts the scope, then Blacklist removes items from the whitelist |
-| Both empty / not configured | Follows `default_allow`: `true` (default) allows all; `false` implicitly denies |
+Answers "which modules are available in a given context." By default, all are open; filtering starts only after configuration binding. **No changes are needed for modules or adapters.**
 
-> `modules` and `blocked` both support strings or string lists. Module names are case-insensitive (`"Chat"` is equivalent to `"chat"`).
-> Session identifiers are the event's Group ID (`group_id`), Channel ID (`channel_id`), or Private chat User ID (`user_id`).
-> **Session identifiers are isolated across platforms**: The `(platform, session_id)` combination uniquely identifies a session. `789` for `onebot11` does not affect `789` for `telegram`.
+```mermaid
+flowchart TD
+    A["Event arrives at a module's handler/command"] --> B{"scope.is_allowed<br/>(platform, bot, module, session)"}
+    B --> C{"Find effective binding<br/>Session level > Bot level > Platform level"}
+    C -->|"Matched"| D["blocked matched → deny<br/>modules non-empty → only whitelist allowed<br/>both empty → default_allow"]
+    C -->|"Unmatched"| E["default_allow (default true = allow)"]
+    D -->|"Deny"| Z["Silent ignore<br/> (no reply, no claim, only TRACE log visible)"]
+```
+
+- **Resolution priority**: Session level > Bot level > Platform level, higher priority bindings **fully override** lower ones
+- **Silent semantics**: Filtered modules' commands and handlers do not trigger, reply, or claim (prevents cross-command mis-matching), only TRACE-level logs are visible (`core.scope.denied`)
+- **Framework-level handlers** (`scope_exempt=True` or owner is empty) are unaffected; module names empty (framework-level resources) are always allowed
+
+## ② Identity Dimension (Event Admission)
+
+Answers "whose events are received." Events denied at this dimension are **completely discarded at the distribution entry**—they do not enter middleware or any handler (including framework-level), only TRACE-level logs are visible (`core.scope.identity_denied`).
+
+- **Resolution priority**: User > Session > Bot > Adapter, take the most specific configured policy; deny takes precedence over allow
+- Each level's binding is a binary policy: `{ allow = true }` or `{ deny = true }`
+- User keys support glob / regex (e.g., `"spam_*"` blocks a batch of spam users)
+- Typical use case—上级 deny, individual allow for "exceptional allow":
+
+```toml
+[ErisPulse.scope.identity.adapters.onebot11]
+deny = true
+[ErisPulse.scope.identity.users.onebot11]
+allow = ["u_admin"]   # Even if adapter-level denied, u_admin's events are allowed
+```
+
+## ③ Command Dimension (Command ACL)
+
+Answers "who can execute a specific command." Decision order: **deny matched → deny; allow whitelist non-empty and not matched → deny; neither configured → follow `default_allow`** (`true` passes to the developer's default permission chain). Denied commands reply with "insufficient permissions" explicitly.
+
+- Command names support glob: `"roll*"` covers `roll`, `roll_dice`, etc., in one rule
+- Exact keys take precedence over glob keys (`commands.roll` matched, then `commands."roll*"` is not checked)
+- User identifier format `"platform:user_id"` (consistent with the framework owner system)
+- This dimension is **only an additional gate on the user side**, and is chained with the command's `master` / `permission` parameters: ACL passes, then the developer's declared default permission chain is followed
+
+## ④ Handler/Text Dimension
+
+Filters "what text a module processes": After configuring `pattern` / `regex` for a module, all its event handlers only trigger when the text matches (AND with code-level conditions, both must be satisfied). Suitable for narrowing its trigger scope without changing module code.
+
+```toml
+[ErisPulse.scope.handlers.ChatModule]
+pattern = "闲聊*"     # ChatModule's handlers only respond to messages starting with "闲聊"
+```
+
+## ⑤ Implementation Parameter Override
+
+Overrides implementation parameters at the **top level** of module/command registration, without modifying module code:
+
+```toml
+[ErisPulse.scope.overrides.MyModule.restart]
+master = true      # Override to only framework owner
+hidden = true      # Hidden in help list
+aliases = ["rs"]   #生效别名
+```
+
+> Overriding only changes **implementation parameters** (master / hidden / aliases / prefix / help / usage, etc.). **Disabling a command is not done here**—use command dimension deny (`scope.commands` or `scope.deny_user()`), to avoid conflicting "disable" semantics.
 
 ## Runtime API
 
-### Checking if a module is allowed
+### Module Dimension
 
 ```python
 from ErisPulse import sdk
 
-# Check if a certain Bot is allowed to use a certain module
-allowed = sdk.scope.is_allowed("onebot11", "123456", "Chat")
+# Check
+sdk.scope.is_allowed("onebot11", "123456", "Chat")
+sdk.scope.is_allowed("onebot11", "123456", "Chat", "789012345")
+sdk.scope.is_allowed("onebot11", "123456", None)      # Framework-level resource -> True
 
-# Check for a specific session (Group / Channel / Direct Message)
-allowed = sdk.scope.is_allowed("onebot11", "123456", "Chat", "789012345")
+# Bind / Unbind
+sdk.scope.bind_module("onebot11", "123456", modules=["Chat", "Tool*"])
+sdk.scope.bind_module("onebot11", blocked=["Danger"])             # Platform level
+sdk.scope.bind_module("onebot11", "123456", "789012345", modules=["Chat"])  # Session level
+sdk.scope.bind_module("onebot11", "123456", modules=["Music"], merge=True)  # Merge
+sdk.scope.bind_module("onebot11", "123456", modules=["Chat"], persist=False)  # Runtime only
+sdk.scope.unbind_module("onebot11", "123456")
+
+# Query
+sdk.scope.get("onebot11", "123456")   # {"modules": ["Chat"], "blocked": []}
 ```
 
-### Dynamic Binding / Unbinding
+### Identity Dimension
 
 ```python
-# Bind Bot-level whitelist (persisted to config)
-sdk.scope.bind("onebot11", "123456", modules=["Chat", "Translate"])
+# Check if event is allowed
+sdk.scope.is_identity_allowed("onebot11", "123456", "group_9", "u1")
 
-# Bind session-level whitelist (3rd parameter is session_id)
-sdk.scope.bind("onebot11", "123456", "789012345", modules=["Chat"])
+# Bind policy (hierarchy determined by parameters: user > session > bot > adapter)
+sdk.scope.bind_identity("onebot11", user_id="u_bad", deny=True)
+sdk.scope.bind_identity("onebot11", user_id="spam_*", deny=True)   # glob
+sdk.scope.bind_identity("onebot11", "123456", "group_9", allow=True)
+sdk.scope.unbind_identity("onebot11", user_id="u_bad")
 
-# Bind platform-level blacklist
-sdk.scope.bind("onebot11", blocked=["Danger"])
-
-# Only effective at runtime (invalidated after restart)
-sdk.scope.bind("onebot11", "123456", modules=["Chat"], persist=False)
-
-# Merge instead of replace: add Music to existing whitelist (default bind is replace)
-sdk.scope.bind("onebot11", "123456", modules=["Music"], merge=True)
-
-# Remove bindings (restore allow all); you can specify session_id to remove session-level bindings
-sdk.scope.unbind("onebot11", "123456")
-sdk.scope.unbind("onebot11", "123456", "789012345")
+# User blacklist convenience API
+sdk.scope.block_user("onebot11", "u_bad")
+sdk.scope.is_user_blocked("onebot11", "u_bad")
+sdk.scope.get_blocked_users()        # {"onebot11": ["u_bad"]}
+sdk.scope.unblock_user("onebot11", "u_bad")
 ```
 
-> `bind()` **replaces** the entire binding for the target by default; when `merge=True`, it merges new modules/disables into existing bindings.
-
-### Query Bindings
+### Command Dimension
 
 ```python
-# Get active bindings (can specify session)
-sdk.scope.get("onebot11", "123456")              # {"modules": ["Chat"], "blocked": []}
-sdk.scope.get("onebot11", "123456", "789012345") # Session-level active bindings
-sdk.scope.get("onebot11")                        # Platform-level bindings, None if not exists
+sdk.scope.is_command_allowed("roll", "onebot11", "u1")
+sdk.scope.allow_user("roll*", "onebot11", "u_vip")   # Command names support glob
+sdk.scope.deny_user("roll*", "onebot11", "u_bad")
+sdk.scope.get_acl("roll*")
+sdk.scope.remove_acl("roll*")
 
-# List all bindings (platforms / bots / sessions buckets)
-sdk.scope.list_bindings()
+# Can also use command system facade (equivalent delegation)
+from ErisPulse.Core.Event import command
+command.allow_user("restart", "onebot11", "123456")
 ```
 
-### Filtering Statistics (Debug)
+### Handler and Override Dimensions
 
 ```python
-# View the count of bindings silently filtered by the scope and cache hit status
+sdk.scope.bind_handler("MyModule", pattern="签到*", regex=r"\d+号")
+sdk.scope.unbind_handler("MyModule")
+
+sdk.scope.override("MyModule", "restart", master=True, hidden=True)
+sdk.scope.get_override("MyModule", "restart")
+sdk.scope.remove_override("MyModule", "restart")
+```
+
+### General
+
+```python
+sdk.scope.list_bindings()   # All five-dimensional bindings
+sdk.scope.get_topology()    # Five-dimensional topology (for Dashboard)
 sdk.scope.get_stats()
-# {"is_allowed_calls": 10, "filtered_count": 3, "cache_hits": 5, "cache_misses": 5}
-
+# {"module_calls": .., "module_filtered": .., "identity_checks": .., "identity_denied": ..,
+#  "command_checks": .., "command_denied": .., "cache_hits": .., "cache_misses": ..}
 sdk.scope.reset_stats()
+sdk.scope.clear()           # Clear all bindings (in-memory only)
 ```
 
-### Topology Tree Data
+## Cache and Hot Update
+
+- `is_allowed` / `is_identity_allowed` results are cached with **LRU** (configurable via `scope.cache_size`), and `bind_*` / `unbind_*` / configuration hot updates (`config.updated` / `config.set`) automatically invalidate the cache
+- All dimension configurations take effect **immediately**, no restart required
+- The control plane makes decisions **per event**, with no cross-event memory: if the configuration changes, the next event follows the new rule
+
+## Common Issues and Notes
+
+### 1. Configuration Hierarchy and Overriding
+
+- Module dimension: Session level > Bot level > Platform level, **full override**. To "allow Chat at platform level, add Music at Bot level," both must be listed at the Bot level
+- Identity dimension: User > Session > Bot > Adapter, take the **most specific** configured policy (can be used for exceptional allow)
+- Command dimension: Exact command names take precedence over glob keys
+
+### 2. Prefer Control Plane Over Module Code Changes
+
+Modules declare "developer defaults" (`master=True`, `permission=...`, `pattern=...`); the control plane declares "user final decisions." When conflicts arise, the **more restrictive control plane** takes precedence (e.g., if the developer does not set master, the user can override `master = true` to tighten; the user cannot loosen the developer's explicit restrictions via override—disable/allow control goes through command deny / identity allow).
+
+### 3. Module/Command Not Responding
+
+First suspect the control plane rather than the module itself:
 
 ```python
-# Scope part (for Dashboard display)
-sdk.scope.get_topology()
-
-## FAQ and Considerations
-
-### 1. Configuration Hierarchy
-
-Parsing Priority: **Session > Bot > Platform**. Higher priority bindings **completely override** lower priority ones.
-
-```toml
-# Platform level only allows Chat
-[ErisPulse.scope.platforms.onebot11]
-modules = ["Chat"]
-
-# But Bot level only allows Music → This bot can ultimately only use Music, cannot use Chat!
-[ErisPulse.scope.bots.onebot11."123456"]
-modules = ["Music"]
-```
-
-- To "allow Chat at platform level and add Music at Bot level", you must **list both at Bot level simultaneously**: `modules = ["Chat", "Music"]`.
-- Similarly, the lower-level blacklist is overridden by the upper-level whitelist: Platform level `blocked=["Danger"]` + Bot level `modules=["Danger"]` → Bot level completely overrides, Danger is usable. The higher the hierarchy and the more specific it is, the more it takes precedence.
-
-### 2. It is "Event-by-Event" Judgment, not "Sticky"
-
-Scope judgment applies **only to the current event**, without cross-event memory:
-- Session g1 has module A disabled → For this **message** on g1, A does not trigger; the **next** message is judged independently, if the binding hasn't changed it still won't trigger, if the binding changes it takes effect immediately (LRU cache will automatically invalidate).
-- Session g2 has no binding configured → Falls back to Bot level / Platform level judgment; if neither exists, follows `default_allow`.
-
-### 3. Module Not Responding
-
-When you send a message and the module doesn't react, suspect the scope first rather than the module / adapter:
-
-```python
-# Add a line in the module code or a temporary script to locate
 from ErisPulse import sdk
-print(sdk.scope.is_allowed(event.get_platform(), <bot_id>, "MyModule", <session_id>))
-print(sdk.scope.get_stats())          # filtered_count > 0 indicates it was indeed filtered
+
+print(sdk.scope.is_allowed(event.get_platform(), bot_id, "MyModule", session_id))
+print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, user_id))
+print(sdk.scope.get_stats())   # module_filtered / identity_denied > 0 indicates silent filtering
 ```
 
-Being filtered is **silent** (no reply, to avoid exposing scope rules to users), but `filtered_count` will accumulate.
+Filtering is **silent** (module dimension and identity dimension do not reply, to avoid exposing rules), but statistics accumulate; command dimension ACL denial replies explicitly with "insufficient permissions."
 
-### 4. Session Identifier Cross-Platform Isolation
+### 4. Session Identifier Isolation Across Platforms
 
-The `(platform, session_id)` combination is the unique identifier. `[ErisPulse.scope.sessions.onebot11."789"]` only applies to the onebot11 platform and does not affect a telegram session with the same `789`.
-
-### 5. Performance
-
-`is_allowed()` results are cached with **LRU Cache** (default 1024 entries, `scope.cache_size` is adjustable),
-config changes / `bind()` / `unbind()` automatically invalidate the cache, making the overhead for high-frequency event paths extremely small.
+`(platform, session_id)` is the unique identifier. `scope.sessions.onebot11."789"` only applies to onebot11, not affecting the session with `789` on telegram. The same applies to identity dimension user keys.
 
 ## Topology Tree API
 
-`ModuleManager.get_topology()` and `AdapterManager.get_topology()` provide data on module/adapter ownership, while `sdk.get_topology()` aggregates all three:
+`ModuleManager.get_topology()` and `AdapterManager.get_topology()` provide module/adapter ownership relationship data; `sdk.get_topology()` aggregates all (including control plane `scope` five dimensions):
 
 ```python
 from ErisPulse import sdk
 
 topology = sdk.get_topology()
 # {
-#   "modules": {                                   # Module -> Owned Resources
+#   "modules": {                                   # Module → owned resources
 #     "Chat": {
 #       "loaded": True, "enabled": True,
-#       "load_strategy": {"lazy": False, "priority": 50},
-#       "info": {...},
 #       "commands": ["chat", "translate"],
 #       "handlers": {"message": 2, "notice": 1},
 #       "routes": {"http": ["/Chat/api"], "ws": [], "sse": []},
 #       "lifecycle_hooks": 3,
-#       "scope_applies": True,
 #     }
 #   },
-#   "adapters": {                                  # Adapter -> Bot -> Scope
+#   "adapters": {                                  # Adapter → Bot → scope
 #     "onebot11": {
 #       "status": "started", "enabled": True,
-#       "bots": {"123456": {"status": "online", "last_active": ..., "info": {...}, "scope": {...}}},
+#       "bots": {"123456": {"status": "online", "scope": {...}}},
 #       "scope": {"modules": [...], "blocked": [...]},
 #     }
 #   },
-#   "scope": {"platforms": {...}, "bots": {...}, "sessions": {...}}   # All scopes bound
+#   "scope": {                                     # Unified control plane (five dimensions)
+#     "platforms": {...}, "bots": {...}, "sessions": {...},
+#     "identity": {"adapters": {...}, "bots": {...}, "sessions": {...}, "users": {...}},
+#     "commands": {...}, "handlers": {...}, "overrides": {...},
+#   },
 # }
 ```
 
 - Module topology aggregates commands, event handlers, HTTP/WS/SSE routes, and lifecycle hooks registered by the module, facilitating the drawing of the module resource tree.
-- Adapter topology aggregates adapter status, subordinate Bot status, and platform-level/Bot-level scope bindings.
+- Adapter topology aggregates the status of each adapter, the status of subordinate Bots, and platform-level/Bot-level scope bindings.
 
 
 
 ### 启动流程与手动控制
 
-# Startup Flow and Manual Control
+# Startup Process and Manual Control
 
-ErisPulse's `await sdk.run()` / `await sdk.init()` encapsulates the entire startup chain into a single line of code. However, when you need to fully customize the startup process (for example, partial loading, dynamic registration, hot plugging, or injecting custom loading strategies), you need to understand what happens inside this chain and how to manually drive each step.
+The `await sdk.run()` / `await sdk.init()` methods of ErisPulse encapsulate the entire startup chain into a single line of code. However, when you need complete customization of the startup process (e.g., partial loading, dynamic registration, hot plugging, injecting custom loading strategies), you need to understand what happens inside this chain and how to manually drive each step.
 
-This article breaks down the startup chain into independent components, explains their respective responsibilities, call order, and provides an example of manually initiating the full startup process.
+This document breaks down the startup chain into independent components, explains their respective responsibilities and call order, and provides an example of manually performing the complete startup process.
 
-> This article assumes you have already run through [the first bot](../getting-started/first-bot.md) and understand the two modes of `sdk.run(keep_running=True/False)`. This article focuses on the internal breakdown of the chain within `init()`, as well as lower-level entry points such as `init()` / `init_task()` / `init_sync()`.
+> This document assumes you have already run through [the first bot](../getting-started/first-bot.md) and understand the two `keep_running` modes of `sdk.run()`. This document focuses on the internal breakdown of the `init()` chain, as well as lower-level entry points such as `init()`/`init_task()`/`init_sync()`.
 
+## Overview of SDK Top-Level Entry Points
 
-## SDK Top-Level Entry Overview
+In addition to the two `keep_running` modes of `run()`, the SDK provides several lower-level initialization entry points, which differ in **asynchronicity, return values, and whether exceptions are wrapped**:
 
-In addition to the two `keep_running` modes of `run()`, the SDK provides several lower-level initialization entries, which differ in **asynchronicity, return value, and whether exceptions are wrapped**:
+| Entry Point | Asynchronicity | Return Value | Exception Handling | Use Case |
+|-------------|----------------|--------------|--------------------|----------|
+| `await sdk.run(True)` | async, blocks to maintain | `None` (uninit automatically on shutdown) | Module/adapter errors are intercepted, not crashing the process | Pure bot application |
+| `await sdk.run(False)` | async, does not block | `None` (no automatic unloading) | Same as above | Initialize and then execute custom logic |
+| `await sdk.init()` | async, requires await | `bool` | Internal capture of component exceptions, returns `False` on failure | Manual control of lifecycle (paired with `uninit()`) |
+| `sdk.init_task()` | async, returns Task without blocking | `asyncio.Task` | Same as `init()` | Concurrently execute other initializations, or when event loop is not running |
+| `sdk.init_sync()` | **Synchronous**, blocks current thread | `bool` | Same as `init()` | Command-line scripts, synchronous entry without event loop |
 
-| Entry | Asynchronicity | Return Value | Exception Handling | Use Case |
-|------|--------|--------|----------|----------|
-| `await sdk.run(True)` | async, blocking | `None` (automatically `uninit` on shutdown) | Module/adapter errors are intercepted, not crashing the process | Pure bot applications |
-| `await sdk.run(False)` | async, non-blocking | `None` (not automatically unloaded) | Same as above | Execute custom logic after initialization |
-| `await sdk.init()` | async, requires await | `bool` | Internal component exceptions are caught, returns `False` on failure | Manual lifecycle control (paired with `uninit()`) |
-| `sdk.init_task()` | async, returns Task without blocking | `asyncio.Task` | Same as `init()` | Concurrently execute other initialization tasks, or when event loop is not yet running |
-| `sdk.init_sync()` | **Synchronous**, blocks current thread | `bool` | Same as `init()` | Command-line scripts, synchronous entry points without event loop |
+> **Common Misconception**: `await sdk.init()` **is not equivalent to** `await sdk.run(keep_running=False)`. Two differences: ① `init()` returns `bool` (returns `False` on failure), `run()` returns `None`; ② `init()` only performs initialization, **does not automatically unload**, while `run()` automatically calls `uninit()` when the event loop ends. Therefore, when you need to manually pair unloading or customize the lifecycle, use `init()` + `uninit()`.
 
-> **Common Misunderstanding**: `await sdk.init()` is **not equivalent** to `await sdk.run(keep_running=False)`. Two differences: ① `init()` returns `bool` (returns `False` on failure), `run()` returns `None`; ② `init()` only performs initialization, **does not automatically unload**, while `run()` automatically calls `uninit()` when the event loop ends. Therefore, when manual pairing of unloading or custom lifecycle control is needed, use `init()` + `uninit()`.
+## Overview of the Startup Chain
 
-docs/en/sdk-overview.md
-
-## Overview of the Startup Process
-
-`sdk.init()` (specifically its internal `Initializer.init()`) initiates the entire framework in the following sequence:
+`sdk.init()` (specifically its internal `Initializer.init()`) initiates the entire framework in the following order:
 
 ```mermaid
 flowchart TD
-    A[0. Prepare Environment<br/>Configuration Loading / Exception Handling] --> B
+    A[0. Prepare Environment<br/>Configuration loading / Exception handling] --> B
     B[1. Parallel Discovery and Loading<br/>AdapterLoader.load / ModuleLoader.load<br/>Internally calls Finder.find_all] --> C
     C[2. Register Adapters<br/>AdapterLoader.register_to_manager] --> D
     D[3. Start Adapters<br/>adapter.startup] --> E
     E[4. Register Modules<br/>ModuleLoader.register_to_manager] --> F
-    F[5. Initialize Modules<br/>ModuleLoader.initialize_modules<br/>Instantiate and mount to sdk] --> G
-    G[6. Start the Router Server<br/>router.start]
+    F[5. Initialize Modules<br/>ModuleLoader.initialize_modules<br/>Instantiation and mounting to sdk] --> G
+    G[6. Start Router Server<br/>router.start]
 ```
 
 Corresponding core components:
 
 | Layer | Component | Responsibility |
-|----|------|------|
+|-------|-----------|----------------|
 | Discovery | `AdapterFinder` / `ModuleFinder` | **Discover** adapters/modules from entry-points of installed packages |
-| Loading | `AdapterLoader` / `ModuleLoader` | Discovery + Import + Read metadata + Determine enable/disable, return object list |
+| Loading | `AdapterLoader` / `ModuleLoader` | Discovery + Import + Reading metadata + Determining enabled/disabled, returning object lists |
 | Registration | `*Loader.register_to_manager` | Register objects to corresponding managers |
 | Management | `sdk.adapter` / `sdk.module` | Maintain adapter/module instances, provide start/stop interfaces |
-| Initialization | `ModuleLoader.initialize_modules` | Create module instances and mount to `sdk` (handle dependency topological sorting) |
+| Initialization | `ModuleLoader.initialize_modules` | Create module instances and mount to `sdk` (handling dependency topological sorting) |
 | Routing | `sdk.router` | HTTP / WebSocket server |
 
-> **Important**: `Finder` and `Loader` are two layers. The `Loader` internally **already holds** a `Finder` (e.g., `AdapterLoader` comes with its own `AdapterFinder`, `ModuleLoader` comes with its own `ModuleFinder`). In most scenarios, you only need to use the `Loader`; only when you need "list without importing" would you use `Finder` alone.
+> **Important**: `Finder` and `Loader` are two layers. The `Loader` internally **already holds** a `Finder` (e.g., `AdapterLoader` has its own `AdapterFinder`, `ModuleLoader` has its own `ModuleFinder`). In most scenarios, you only need to use `Loader`; `Finder` is only used when you need "list without importing."
 
-[**English**](docs/en/quick-start.md)
-
-## Detailed Explanation of Each Step
+## Detailed Explanation of Each Component
 
 ### 1. Discovery Layer: Finder
 
-The Finder is only responsible for "finding which packages provide adapters/modules", without importing or instantiating them.
+The `Finder` is responsible only for "finding which packages provide adapters/modules," without importing or instantiating.
 
 ```python
 from ErisPulse.finders import AdapterFinder, ModuleFinder
@@ -8949,15 +9046,15 @@ module_finder = ModuleFinder()
 adapter_entries = adapter_finder.find_all()    # list[EntryPoint]
 module_entries = module_finder.find_all()      # list[EntryPoint]
 
-# Find a single one by name
+# Find a single by name
 entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 ```
 
-Each `EntryPoint` can be loaded via `.load()` to get the corresponding class, but usually you don't need to do this manually — the Loader handles it.
+Each `EntryPoint` can be loaded via `.load()` to get the corresponding class, but usually you don't need to manually call it—`Loader` handles it.
 
 ### 2. Loading Layer: Loader
 
-The Loader, built on top of the Finder, handles "importing + reading metadata + determining enable/disable".
+The `Loader` performs "importing + reading metadata + determining enabled/disabled" on top of the `Finder`.
 
 ```python
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
@@ -8966,12 +9063,12 @@ from ErisPulse import sdk
 adapter_loader = AdapterLoader()
 module_loader = ModuleLoader()
 
-# Internally, load() calls finder.find_all() → processes each entry-point → returns a triple
+# load() internally: calls finder.find_all() → processes each entry-point → returns a triple
 adapter_objs, enabled_adapters, disabled_adapters = await adapter_loader.load(sdk.adapter)
 module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.module)
 ```
 
-The triple returned by `load()`:
+The three values returned by `load()`:
 
 | Return Value | Meaning |
 |--------------|---------|
@@ -8979,19 +9076,19 @@ The triple returned by `load()`:
 | `enabled` (`list[str]`) | Names that are enabled (not disabled in configuration) |
 | `disabled` (`list[str]`) | Names that are disabled |
 
-#### Diagnostic Information on Loading Failure
+#### Diagnostic Information on Loading Failures
 
-When a module/adapter raises an exception during loading or initialization, the framework skips that component and continues loading others, while outputting a **summary of user code frames**. This allows you to locate the error at the default INFO level, without manually switching to DEBUG:
+When an exception is thrown during the loading or initialization phase of a module/adapter, the framework skips that component and continues loading others, while outputting a **summary of user code frames**, allowing you to locate the error position at the default INFO level without manually re-enabling DEBUG:
 
 ```
 [ERROR] [ModuleLoader] Failed to load module MyModule from entry-point, skipped: 'NoneType' object has no attribute 'platform'
   → MyModule/Core.py:42 in on_load
       adapter = sdk.platform
   → AttributeError: 'NoneType' object has no attribute 'platform'
-  → Tip: Increase log level to DEBUG to view full stack trace; check implementation code of module MyModule
+  → Note: Increase log level to DEBUG to view full stack trace; check implementation code of module MyModule
 ```
 
-The diagnostic information is generated by the `ErisPulse.runtime.diagnostics` module, which automatically filters out internal framework frames and retains only your code frames. If you need to reuse this in custom loading logic:
+The diagnostic information is generated by the `ErisPulse.runtime.diagnostics` module, automatically filtering out internal framework frames and retaining only your code frames. If you need to reuse it in custom loading logic:
 
 ```python
 from ErisPulse.runtime import log_diagnostic
@@ -8999,14 +9096,14 @@ from ErisPulse.runtime import log_diagnostic
 try:
     risky_init()
 except Exception as e:
-    log_diagnostic(e)  # Automatically extracts user code frames and writes to ERROR log
+    log_diagnostic(e)  # Automatically extract user code frames and write to ERROR log
 ```
 
 This module also provides two low-level functions: `extract_user_frame()` (returns structured frame information) and `format_diagnostic_block()` (returns multi-line text).
 
 ### 3. Registration Layer: register_to_manager
 
-Registers the objects produced by the Loader into the manager, so that `sdk.adapter` / `sdk.module` can recognize them.
+Register the objects produced by the `Loader` to the manager, so that `sdk.adapter` / `sdk.module` can recognize them.
 
 ```python
 # Register adapters (returns bool, indicating whether all succeeded)
@@ -9016,23 +9113,23 @@ await adapter_loader.register_to_manager(enabled_adapters, adapter_objs, sdk.ada
 await module_loader.register_to_manager(enabled_modules, module_objs, sdk.module)
 ```
 
-After registration, adapters are registered in the adapter manager and modules in the module manager, but **they are not yet started/initialized**.
+After registration, adapters are registered to the adapter manager, and modules are registered to the module manager, but **they are not started/instantiated yet**.
 
-### 4. Starting Adapters
+### 4. Start Adapters
 
 ```python
 # Start all registered adapters
 await sdk.adapter.startup()
-# Or specify platform
+# Or specify a platform
 await sdk.adapter.startup("yunhu")
 await sdk.adapter.startup(["yunhu", "telegram"])
 ```
 
-> Registration ≠ Startup. `register_to_manager` only registers; `startup` calls the adapter's `start()` method to establish a connection with the platform.
+> Registration ≠ Startup. `register_to_manager` only registers; `startup` calls the adapter's `start()`, establishing a connection with the platform.
 
-### 5. Initializing Modules
+### 5. Initialize Modules
 
-Modules have an additional step — they need to be **instantiated** and mounted onto `sdk` (so you can call `sdk.MyModule.xxx`). This step also handles module dependencies and topological sorting.
+Modules have one additional step—they need to be **instantiated** and mounted to `sdk` (so you can call `sdk.MyModule.xxx`). This step also handles module dependencies and topological sorting.
 
 ```python
 success = await module_loader.initialize_modules(
@@ -9042,7 +9139,7 @@ success = await module_loader.initialize_modules(
 
 After successful instantiation, the module appears on `sdk.<ModuleName>`.
 
-### 6. Starting the Router Server
+### 6. Start Router Server
 
 ```python
 await sdk.router.start(
@@ -9053,13 +9150,11 @@ await sdk.router.start(
 )
 ```
 
-The router server is responsible for receiving webhook/WebSocket callbacks from adapters. Without starting it, server-mode adapters cannot receive messages.
-
-[**English**](docs/en/quick-start.md)
+The router server is responsible for receiving webhook / WebSocket callbacks from adapters. Without starting it, server-mode adapters cannot receive messages.
 
 ## Complete Manual Startup Example
 
-The following code is **equivalent** to the core flow of `await sdk.init()`, but each step is exposed to you, allowing you to insert custom logic at any point:
+The following code **equivalent to** the core process of `await sdk.init()`, but exposes each step, allowing you to insert custom logic at any step:
 
 ```python
 import asyncio
@@ -9067,45 +9162,45 @@ from ErisPulse import sdk
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
 
 async def manual_startup():
-    # 0. Prepare environment (load configuration, register global exception handling)
-    #    _prepare_environment is a pre-step within init(); in manual flow, it must be called first,
-    #    otherwise Loader will not read the configuration and will misjudge all adapters/modules as disabled.
+    # 0. Prepare Environment (load configuration, register global exception handling)
+    #    _prepare_environment is a pre-step inside init(); manual flow must call it first,
+    #    otherwise Loader won't read configuration and will misjudge all adapters/modules as disabled.
     if not await sdk._prepare_environment():
         print("Environment preparation failed")
         return False
 
-    # 1. Create loaders (each internally holds a Finder)
+    # 1. Create Loaders (each internally holds a Finder)
     adapter_loader = AdapterLoader()
     module_loader = ModuleLoader()
 
-    # 2. Parallel discovery and loading (consistent with internal gather in init())
+    # 2. Parallel Discovery and Loading (consistent with init() internal gather)
     (adapter_objs, enabled_adapters, disabled_adapters), \
     (module_objs, enabled_modules, disabled_modules) = await asyncio.gather(
         adapter_loader.load(sdk.adapter),
         module_loader.load(sdk.module),
     )
 
-    # 3. Register adapters
+    # 3. Register Adapters
     await adapter_loader.register_to_manager(
         enabled_adapters, adapter_objs, sdk.adapter
     )
 
-    # 4. Start adapters
+    # 4. Start Adapters
     if enabled_adapters:
         await sdk.adapter.startup()
 
-    # 5. Register modules
+    # 5. Register Modules
     await module_loader.register_to_manager(
         enabled_modules, module_objs, sdk.module
     )
 
-    # 6. Initialize modules (instantiation + mount to sdk)
+    # 6. Initialize Modules (instantiation + mounting to sdk)
     if enabled_modules:
         await module_loader.initialize_modules(
             enabled_modules, module_objs, sdk.module, sdk
         )
 
-    # 7. Start route server
+    # 7. Start Router Server
     await sdk.router.start(host="0.0.0.0", port=8000)
 
     print("Manual startup completed")
@@ -9123,59 +9218,57 @@ if __name__ == "__main__":
 
 ### When to Use Manual Startup?
 
-In most cases, manual startup is **not required**, as `await sdk.run()` already handles all the above steps. Manual startup is valuable only in these scenarios:
+In most cases, **manual startup is not needed**—`await sdk.run()` already handles all the above steps. Manual startup is only valuable in these scenarios:
 
 - **Partial loading**: Load only specified adapters/modules, skipping others
 - **Dynamic registration**: Register new adapters/modules at runtime based on conditions
-- **Custom order**: Need to disrupt the default loading order (e.g., start a specific module before starting adapters)
-- **Injection strategies**: Inject custom strict mode managers, loading strategies, etc., into the Loader
-- **Debugging/diagnosis**: When failure occurs at a certain step, manually drive the process to locate the issue
+- **Custom order**: Need to disrupt the default loading order (e.g., start a module before an adapter)
+- **Inject strategies**: Inject custom strict mode managers, loading strategies, etc., into Loader
+- **Debugging/diagnosis**: Manually drive at a certain step to locate issues when failure occurs
 
-## Runtime Fine-grained Control
+## Runtime Fine-Grained Control
 
-Even after using `sdk.run()` to complete the startup, you can still control individual subsystems at runtime without restarting the entire SDK:
+Even after using `sdk.run()` to complete startup, you can still individually control subsystems at runtime without restarting the entire SDK:
 
-### Hot Restart of Adapters
+### Hot Restart/Stop of Adapters
 
 ```python
-# Hot restart a specific adapter (to fix connection, without affecting other platforms)
+# Hot restart a specific adapter (repair connection, does not affect other platforms)
 await sdk.adapter.shutdown("yunhu")
 await sdk.adapter.startup("yunhu")
 
-# Bring up a new platform during runtime
+# Bring up a new platform at runtime
 await sdk.adapter.startup("telegram")
 
-# Temporarily take a platform offline
+# Temporarily take down a platform
 await sdk.adapter.shutdown("telegram")
 ```
 
-> `adapter.startup()` requires the adapter to be **registered** with the manager. Registration occurs internally within `init()`/`run()`, so this allows fine-grained control after startup.
+> `adapter.startup()` requires the adapter to be **registered** to the manager. Registration occurs inside `init()`/`run()`, so this is fine-grained control after startup.
 
 ### Router Server
 
 ```python
-# Temporarily take the webhook server offline
+# Temporarily take down webhook server
 await sdk.router.stop()
 
-# Restart it (for example, after changing the port)
+# Restart (e.g., after changing port)
 await sdk.router.start(host="0.0.0.0", port=9000)
 ```
 
-### On-demand Module Loading
+### Modules on Demand
 
 ```python
-# Manually load a (possibly lazily loaded) module
+# Manually load a (possibly lazy-loaded) module
 await sdk.load_module("MyModule")
 ```
 
-[**English**](docs/en/quick-start.md)
-
 ## Graceful Shutdown
 
-Starting from version 2.7.0, `sdk.shutdown()` provides **programmatic graceful shutdown**: it sets a shutdown event, allowing the main loop that is suspended by `await sdk.run(keep_running=True)` to return, which in turn triggers `uninit()` to complete resource cleanup.
+As of version 2.7.0, `sdk.shutdown()` provides **programmatic graceful shutdown**: set a shutdown event to allow the main loop hanging on `await sdk.run(keep_running=True)` to return, triggering `uninit()` to complete resource cleanup.
 
 ```python
-# Call from any coroutine to trigger graceful exit (run() suspends and returns, and uninit() is automatically called)
+# Call from any coroutine to trigger graceful exit (run() hangs and returns, then automatically uninit)
 sdk.shutdown()
 ```
 
@@ -9184,90 +9277,89 @@ Typical use cases:
 ```python
 async def shutdown_after_idle():
     await asyncio.sleep(3600)
-    sdk.shutdown()  # Gracefully exit after being idle for 1 hour
+    sdk.shutdown()  # Gracefully exit after 1 hour of idle
 ```
 
-**Signal Handling**: `run()` internally registers `SIGTERM` / `SIGHUP` handlers, converting system signals into graceful shutdown—when stopping services via container orchestration (Docker `docker stop`) or `systemd`, the process will complete `uninit()` cleanup instead of being forcefully killed.
+**Signal Handling**: `run()` internally registers `SIGTERM` / `SIGHUP` handlers, converting system signals into graceful shutdown—when container orchestration (Docker `docker stop`) or `systemd` stops the service, the process completes `uninit()` cleanup instead of being forcibly killed.
 
-- Windows does not support `loop.add_signal_handler`, so the signal handler is automatically skipped (graceful shutdown can still be triggered using `sdk.shutdown()` or Ctrl+C)
-- Repeatedly calling `sdk.shutdown()` is safe (subsequent calls after the event is set are no-ops)
+- Windows does not support `loop.add_signal_handler`, so the signal handler is automatically skipped (still use `sdk.shutdown()` or Ctrl+C to trigger shutdown)
+- Repeatedly calling `sdk.shutdown()` is safe (no operation after the event is set)
 
-docs/en/quick-start.md
+## Unload Process
 
-## Uninstall Process
+The reverse operation of startup is `await sdk.uninit()`, which cleans up in reverse order:
 
-The reverse operation of startup is `await sdk.uninit()`, which cleans up in the reverse order:
-
-1. Shut down all adapters (`adapter.shutdown()`)
+1. Close all adapters (`adapter.shutdown()`)
 2. Unload all modules
 3. Clean up all event handlers
-4. Clean up module properties on managers and the SDK
+4. Clean up managers and module attributes on SDK
 
-In manual startup scenarios, remember to call `uninit()` before exiting to ensure a graceful shutdown:
+In manual startup scenarios, remember to call `uninit()` before exiting to ensure graceful shutdown:
 
 ```python
 try:
-    await asyncio.Event().wait()   # Keep running
+    await asyncio.Event().wait()   # Maintain running
 finally:
     await sdk.uninit()
+```
 
 ## Restart
 
-The SDK provides two restart methods, both of which do not require you to manually uninstall first—the framework handles it automatically:
+The SDK provides two restart methods, both do not require you to manually unload first—the framework handles it itself:
 
 | Method | Call | Behavior | Use Case |
-|------|------|------|----------|
-| Hot Restart | `await sdk.restart()` | Re-initialize within the same process after `uninit()`, reloading adapters/modules | Reload configuration, hot update modules |
-| Hard Restart | `await sdk.hard_restart()` | Exit the process with **exit code 42** after `uninit()`, then let an external supervisor start a new process | Suspected memory/resource leaks, or when a fully clean restart is needed |
+|--------|------|----------|----------|
+| Hot Restart | `await sdk.restart()` | Same process `uninit()` then `init()` again, reload adapters/modules | Reload configuration, hot update modules |
+| Hard Restart | `await sdk.hard_restart()` | `uninit()` then exit process with **exit code 42**, restarted by external supervisor | Suspected memory/resource leaks, need thorough clean restart |
 
 ```python
-# Hot Restart: Reload within the same process (most common)
+# Hot Restart: Reload within the same process (most commonly used)
 await sdk.restart()
 
-# Hard Restart: Exit the process, let an external supervisor restart (see "Supervisor Guide" below)
+# Hard Restart: Exit process, handed over to external supervisor for restarting (see below "Supervisor Guide")
 await sdk.hard_restart()
 ```
 
-> **Two points to note**:
-> 1. Both methods execute the restart in the background, immediately returning `True` to indicate that the "restart task has been scheduled," not that the restart is complete. The actual restart happens in the background, avoiding interruption of the current event chain.
-> 2. The principle of `hard_restart()` is: after unloading and flushing the configuration, exit the process with **exit code 42** (`HARD_RESTART_EXIT_CODE`)—**it does not start a new process itself**. It must be restarted by an external supervisor detecting exit code 42. If you run directly with `python main.py` and there is no supervisor, the process ends after exiting with code 42, **without automatic restart** (the framework will issue a warning).
+> **Two Notes**:
+> 1. Both methods execute the restart in a background task, **immediately returning `True` to indicate "restart task scheduled"**, not "restart completed." Actual restart happens in the background to avoid interrupting the current event chain.
+> 2. The principle of `hard_restart()` is: uninit and flush configuration, then exit the process with **exit code 42** (`HARD_RESTART_EXIT_CODE`)—**it does not start a new process itself**. It must be restarted by an external supervisor detecting exit code 42. If you directly run `python main.py` without any supervisor, the process exits with code 42 and **does not automatically restart** (the framework will warn).
 
 ### When to Use Hard Restart?
 
-Hard restart is not just a "more thorough restart"—it is more suitable and even more efficient than hot restart in the following scenarios:
+Hard restart is not just "a more thorough restart," it is more suitable and even more efficient than hot restart in the following scenarios:
 
-- **Side effects from binary libraries (C extensions)**: Hot restart occurs within the same process and cannot release C extensions, open file descriptors, threads, and other process-level resources; hard restart starts a brand new process, thoroughly clearing these side effects.
-- **Resource leak investigation**: When suspected memory or handle leaks exist, hard restart provides a clean environment.
-- **Frequent restarts sensitive to performance**: Hard restart avoids the overhead of unloading and reloading within the same process, making it more efficient than hot restart.
+- **Binary library (C extension) side effects**: Hot restart occurs within the same process and cannot release C extensions, open file descriptors, threads, and other process-level resources; hard restart switches to a new process, thoroughly clearing these side effects.
+- **Resource leak diagnosis**: Suspected memory or handle leaks, hard restart provides a clean environment.
+- **Frequent restarts sensitive to performance**: Hard restart avoids the overhead of unloading and reloading within the same process, actually being more efficient than hot restart.
 
 > The "Framework Restart" feature in the Dashboard management panel internally calls `hard_restart()`.
 
 ### Exit Code 42 Contract
 
-Hard restart is a cross-process collaboration: **SDK is responsible for exiting (code 42), and the supervisor is responsible for restarting**.
+Hard restart is cross-process collaboration: **SDK is responsible for exiting (code 42), supervisor is responsible for restarting**.
 
 | Role | Behavior |
-|------|------|
-| SDK (when hard-restarted) | `uninit()` → flush configuration → `os._exit(42)` |
-| Supervisor | Detect child process exit code 42 → restart with the same command |
+|------|----------|
+| SDK (when hard restarted) | `uninit()` → flush configuration → `os._exit(42)` |
+| Supervisor | Detect child process exit code 42 → restart the same command |
 
-> `sdk.is_supervised()` can query whether the current process was started by a supervisor (detects environment variable `ERISPULSE_SUPERVISED`). The CLI `run` command automatically injects this marker when starting a child process; external supervisors like systemd / Docker do not inject it, so `is_supervised()` returns `False`, and the framework will issue a "supervisor not detected" warning after hard restart.
+> `sdk.is_supervised()` can query whether the current process is started by a supervisor (detecting environment variable `ERISPULSE_SUPERVISED`). The CLI `run` command injects this marker automatically when starting a subprocess; external supervisors like systemd / Docker do not inject it, so `is_supervised()` returns `False`, and the framework will warn "supervisor not detected" after hard restart.
 
 ### Supervisor Guide
 
-Choose a supervisor that suits you to make hard restart truly effective:
+Choose a supervisor suitable for you to make hard restart truly effective:
 
 #### 1. CLI run command (development/simple deployment, recommended)
 
-`epsdk run main.py` includes a built-in supervision loop: it detects the child process exit code and immediately restarts if it is 42; for other abnormal exit codes, it automatically retries with exponential backoff; `Ctrl+C` will first gracefully terminate the child process (code 0 is considered normal exit, so it will not be restarted).
+`epsdk run main.py` includes an internal supervision loop: detects child process exit code, restarts immediately if 42; other abnormal exit codes retry with exponential backoff; `Ctrl+C` first gracefully terminates the child process (code 0 is considered normal exit, no restart).
 
 ```bash
 epsdk run main.py
 ```
 
-#### 2. systemd (Linux servers)
+#### 2. systemd (Linux server)
 
-`RestartForceExitStatus=42` makes exit code 42 trigger a restart (by default `on-failure` only applies to non-zero codes):
+`RestartForceExitStatus=42` makes exit code 42 trigger a restart (default `on-failure` only applies to non-zero codes):
 
 ```ini
 [Service]
@@ -9280,20 +9372,20 @@ User=mybot
 
 #### 3. Docker / docker-compose
 
-The application process is PID 1 inside the container. After exit code 42, the container exits—use the `restart` policy to make it automatically restart:
+Inside the container, PID 1 is the application process, and exit code 42 causes the container to exit—use the `restart` policy to automatically restart it:
 
 ```yaml
 services:
   bot:
     build: .
-    restart: unless-stopped   # Restart for any exit (including 42)
+    restart: unless-stopped   # Restart on any exit (including 42)
 ```
 
 #### 4. PM2 (Node ecosystem operations)
 
 ```bash
 pm2 start main.py --name mybot --interpreter python3
-# 42 is treated as an exit code, PM2 restarts by default; set restart_delay to debounce
+# 42 is treated as an exit code, PM2 defaults to restart; set restart_delay for debouncing
 pm2 set mybot.restart_delay 2000
 ```
 
@@ -9303,10 +9395,10 @@ pm2 set mybot.restart_delay 2000
 [program:mybot]
 command=python3 /opt/mybot/main.py
 autorestart=true
-exitcodes=0,2,42    # 42 is also considered "normal exit requiring restart"
+exitcodes=0,2,42    # 42 also considered "normal exit requiring restart"
 ```
 
-#### 6. Pure Python custom supervisor
+#### 6. Pure Python Custom Supervisor
 
 ```python
 import subprocess, sys, time
@@ -9322,7 +9414,7 @@ while True:
     time.sleep(3)           # Abnormal exit, backoff retry
 ```
 
-> **Behavior without a supervisor**: Running directly with `python main.py`, calling `hard_restart()` causes the process to exit with code 42 and not restart. In this case, you should integrate any of the supervisors mentioned above.
+> **Behavior without a supervisor**: Running directly with `python main.py`, calling `hard_restart()` exits the process with code 42 and does not restart. In this case, you should integrate any of the supervisors above.
 
 
 
@@ -9335,18 +9427,16 @@ while True:
 
 # ErisPulse Session Type Standard
 
-This document defines the session type standard supported by ErisPulse, including received event types and sent target types.
-
-
+This document defines the session type standards supported by ErisPulse, including receive event types and send target types.
 
 ## 1. Core Concepts
 
 ### 1.1 Receive Type && Send Type
 
-ErisPulse distinguishes two session types:
+ErisPulse distinguishes two types of sessions:
 
-- **Receive Type**: The `detail_type` field of events used for receiving
-- **Send Type**: The target type used when sending messages via the `Send.To()` method
+- **Receive Type (Receive Type)**: The `detail_type` field for receiving events
+- **Send Type (Send Type)**: The target type for the `Send.To()` method when sending messages
 
 ### 1.2 Type Mapping Relationship
 
@@ -9362,63 +9452,9 @@ user                    →        user
 ```
 
 **Key Points**:
-- `private` is the type used for receiving; `user` must be used for sending
+- `private` is the receive type; `user` must be used for sending
 - `group`, `channel`, `guild`, and `thread` have the same type for both receiving and sending
-- The system automatically performs type conversion, so manual handling is not required (meaning you can directly use the received type for sending). In practice, you do not need to consider these details, as the Event wrapper class exists, allowing you to directly use the `event.reply()` method without considering type conversion
-
-## 2. Quick Start
-
-This section provides a quick guide for getting started with ErisPulse. For more detailed information, please refer to the [Quick Start Guide](docs/en/quick-start.md).
-
-### 2.1 Installation
-
-To install ErisPulse, you can use the following command:
-
-```bash
-pip install erispulse
-```
-
-### 2.2 Basic Usage
-
-Here is a simple example of how to use ErisPulse:
-
-```python
-import erispulse
-
-# Initialize the session
-session = erispulse.Session()
-
-# Define a handler for receiving messages
-@session.on('message')
-def on_message(event):
-    # Reply to the received message
-    event.reply("Hello, this is a reply!")
-
-# Start the session
-session.run()
-```
-
-For more detailed examples and advanced usage, please refer to the [Quick Start Guide](docs/en/quick-start.md).
-
-## 3. API Reference
-
-This section provides an overview of the ErisPulse API. For detailed documentation, please refer to the [API Reference](docs/en/api-reference.md).
-
-### 3.1 Session Class
-
-The `Session` class is the main entry point for interacting with ErisPulse. It provides methods for initializing the session, defining event handlers, and starting the session.
-
-### 3.2 Event Class
-
-The `Event` class represents an event received from the session. It provides methods for accessing event data and sending replies.
-
-## 4. Contributing
-
-If you would like to contribute to ErisPulse, please refer to the [Contributing Guide](docs/en/contributing.md).
-
-## 5. License
-
-ErisPulse is licensed under the MIT License. For more information, please refer to the [License](docs/en/license.md).
+- The system automatically performs type conversion, so no manual handling is required (this means you can directly use the received type for sending), but in practice, you don't need to consider these conversions. The existence of the Event wrapper class allows you to directly use the `event.reply()` method without considering type conversion.
 
 ## 2. Standard Session Types
 
@@ -9427,21 +9463,21 @@ ErisPulse is licensed under the MIT License. For more information, please refer 
 #### private
 - **Receive Type**: `private`
 - **Send Type**: `user`
-- **Description**: One-on-one private chat messages
+- **Description**: One-to-one private chat messages
 - **ID Field**: `user_id`
 - **Applicable Platforms**: All platforms supporting private chats
 
 #### group
 - **Receive Type**: `group`
 - **Send Type**: `group`
-- **Description**: Group chat messages, including various forms of groups (such as Telegram supergroups)
+- **Description**: Group chat messages, including various forms of groups (e.g., Telegram supergroup)
 - **ID Field**: `group_id`
 - **Applicable Platforms**: All platforms supporting group chats
 
 #### user
 - **Receive Type**: `user`
 - **Send Type**: `user`
-- **Description**: User type, some platforms (such as Telegram) represent private chats as user rather than private
+- **Description**: User type; some platforms (e.g., Telegram) represent private chats as `user` rather than `private`
 - **ID Field**: `user_id`
 - **Applicable Platforms**: Telegram and other platforms
 
@@ -9459,12 +9495,12 @@ ErisPulse is licensed under the MIT License. For more information, please refer 
 - **Send Type**: `guild`
 - **Description**: Server/community messages, typically used for Discord Guild-level events
 - **ID Field**: `guild_id`
-- **Applicable Platforms**: Discord and other platforms
+- **Applicable Platforms**: Discord and others
 
 #### thread
 - **Receive Type**: `thread`
 - **Send Type**: `thread`
-- **Description**: Topic/sub-channel messages, used for sub-discussion areas within communities
+- **Description**: Thread/sub-channel messages, used for sub-discussion areas within communities
 - **ID Field**: `thread_id`
 - **Applicable Platforms**: Discord Threads, Telegram Topics, etc.
 
@@ -9472,17 +9508,17 @@ ErisPulse is licensed under the MIT License. For more information, please refer 
 
 ### 3.1 Mapping Principles
 
-Adapters are responsible for mapping the native types of platforms to ErisPulse standard types:
+Adapters are responsible for mapping native platform types to ErisPulse standard types:
 
 ```
-Platform native type → ErisPulse standard type → Sending type
+Platform Native Type → ErisPulse Standard Type → Send Type
 ```
 
 ### 3.2 Common Platform Mapping Examples
 
 #### Telegram
 ```
-Telegram Type          ErisPulse Receive Type    Sending Type
+Telegram Type          ErisPulse Receive Type    Send Type
 ─────────────────      ────────────────       ───────────
 private                private                 user
 group                  group                   group
@@ -9492,7 +9528,7 @@ channel                channel                 channel
 
 #### Discord
 ```
-Discord Type          ErisPulse Receive Type    Sending Type
+Discord Type          ErisPulse Receive Type    Send Type
 ─────────────────      ────────────────       ───────────
 Direct Message         private                user
 Text Channel           channel                channel
@@ -9502,18 +9538,16 @@ Thread                 thread                 thread
 
 #### OneBot11
 ```
-OneBot11 Type        ErisPulse Receive Type    Sending Type
+OneBot11 Type        ErisPulse Receive Type    Send Type
 ─────────────────      ────────────────       ───────────
 private                private                user
 group                  group                  group
 discuss                group                  group  # Mapped to group
 ```
 
-
-
 ## 4. Custom Type Extension
 
-### 4.1 Register Custom Type
+### 4.1 Registering Custom Types
 
 Adapters can register custom session types:
 
@@ -9529,9 +9563,9 @@ register_custom_type(
 )
 ```
 
-### 4.2 Use Custom Type
+### 4.2 Using Custom Types
 
-After registration, the system will automatically handle the conversion and inference of this type:
+After registration, the system automatically handles type conversion and inference:
 
 ```python
 # Automatic inference
@@ -9547,19 +9581,20 @@ target_id = get_target_id(event, platform="MyPlatform")
 # Returns: event["custom_id"]
 ```
 
-### 4.3 Unregister Custom Type
+### 4.3 Unregistering Custom Types
 
 ```python
 from ErisPulse.Core.Event import unregister_custom_type
 
 unregister_custom_type("my_custom_type", platform="MyPlatform")
+```
 
 ## 5. Automatic Type Inference
 
-When an event does not have a clear `detail_type` field, the system will automatically infer the type based on the existing ID fields:
+When an event does not have an explicit `detail_type` field, the system automatically infers the type based on the available ID fields:
 
 > [!NOTE]
-> **Behavior change in 2.7.0+**: `detail_type` is directly used only if it is a **known session type** (standard or custom). For `notice`/`request` events, `detail_type` (e.g., `group_member_increase`, `friend_increase`) is a **semantic subtype** rather than a session type, and the correct session type will be inferred based on the ID fields instead.
+> **Behavior change in 2.7.0+**: `detail_type` is only directly adopted if it is a **known session type** (standard or custom). For `notice`/`request` events, the `detail_type` (e.g., `group_member_increase`, `friend_increase`) is a **semantic subtype**, not a session type, and the correct session type will be inferred from the ID fields instead.
 
 ### 5.1 Inference Priority
 
@@ -9575,23 +9610,21 @@ Priority (from high to low):
 ### 5.2 Usage Examples
 
 ```python
-# Event has only group_id
+# Event only has group_id
 event = {"group_id": "123", "user_id": "456"}
 receive_type = infer_receive_type(event)
 # Returns: "group" (group_id is prioritized)
 
-# Event has only user_id
+# Event only has user_id
 event = {"user_id": "123"}
 receive_type = infer_receive_type(event)
 # Returns: "private"
 
-# For notice events, detail_type is a semantic subtype; in 2.7.0+, it is inferred from ID fields
+# For notice events, detail_type is a semantic subtype; 2.7.0+ will infer from ID fields
 event = {"type": "notice", "detail_type": "group_member_increase", "group_id": "123"}
 receive_type = infer_receive_type(event)
 # Returns: "group" (not "group_member_increase")
 ```
-
-
 
 ## 6. API Usage Examples
 
@@ -9608,7 +9641,7 @@ await adapter.myplatform.Send.To("group", "456").Text("Hello")
 
 # Automatically convert private → user (not recommended, may have compatibility issues)
 await adapter.myplatform.Send.To("private", "789").Text("Hello")
-# Internally automatically converted to: Send.To("user", "789") # Using user directly as session type is a better choice
+# Internally automatically converts to: Send.To("user", "789") # Using user as the session type directly is a better choice
 ```
 
 ### 6.2 Event Reply
@@ -9618,7 +9651,7 @@ from ErisPulse.Core.Event import Event
 
 # Event.reply() automatically handles type conversion
 await event.reply("Reply content")
-# Internally automatically uses the correct sending type
+# Internally automatically uses the correct send type
 ```
 
 ### 6.3 Command Handling
@@ -9628,9 +9661,10 @@ from ErisPulse.Core.Event import command
 
 @command(name="test")
 async def handle_test(event):
-    # System automatically handles session type
-    # No need to manually check group_id or user_id
+    # System automatically handles session types
+    # No need to manually determine group_id or user_id
     await event.reply("Command executed successfully")
+```
 
 ## 7. Core API Reference
 
@@ -9660,7 +9694,7 @@ get_receive_type("group_id")  # → "group"
 get_receive_type("user_id")   # → "private"
 ```
 
-### 7.3 One-step Retrieval of Send Information
+### 7.3 Get Send Info in One Step
 
 ```python
 from ErisPulse.Core.Event import get_send_type_and_target_id
@@ -9673,13 +9707,14 @@ send_type, target_id = get_send_type_and_target_id(event)
 await adapter.Send.To(send_type, target_id).Text("Hello")
 ```
 
-### 7.4 Retrieve Target ID
+### 7.4 Get Target ID
 
 ```python
 from ErisPulse.Core.Event import get_target_id
 
 event = {"detail_type": "group", "group_id": "456"}
 get_target_id(event)  # → "456"
+```
 
 ## 8. Utility Methods
 
@@ -9702,64 +9737,58 @@ get_standard_types()  # {"private", "group", "channel", "guild", "thread", "user
 get_send_types()      # {"user", "group", "channel", "guild", "thread"}
 
 clear_custom_types()                # Clear all
-clear_custom_types(platform="discord")  # Clear only for specified platform
+clear_custom_types(platform="discord")  # Only clear types for the specified platform
 ```
-
-
 
 ## 9. Best Practices
 
 ### 7.1 Adapter Developers
 
-1. **Use Standard Mappings**: Map to standard types as much as possible, rather than creating new types
-2. **Correct Transformations**: Ensure the mapping relationship between received and sent types is correct
-3. **Retain Raw Data**: Keep original event types in `{platform}_raw`
-4. **Document Mappings**: Explain type mapping relationships in the adapter documentation
+1. **Use Standard Mapping**: Map to standard types as much as possible, rather than creating new types
+2. **Correct Conversion**: Ensure correct mapping between receive and send types
+3. **Retain Raw Data**: Keep raw event types in `{platform}_raw`
+4. **Document Mapping**: Explain type mapping relationships in adapter documentation
 
 ### 7.2 Module Developers
 
-1. **Use Utility Methods**: Use utility methods like `get_send_type_and_target_id()`
+1. **Use Utility Methods**: Use methods like `get_send_type_and_target_id()`
 2. **Avoid Hardcoding**: Do not write code like `if group_id else "private"`
-3. **Support All Types**: Code should support all standard types, not just private/group
-4. **Flexible Design**: Use event wrapper methods, not direct field access
+3. **Consider All Types**: Code should support all standard types, not just private/group
+4. **Flexible Design**: Use event wrapper methods instead of directly accessing fields
 
 ### 7.3 Type Inference
 
-- **Prefer detail_type**: If there is a clear field, do not perform inference
-- **Use Inference Reasonably**: Only use inference when there is no clear type
-- **Pay Attention to Priority**: Understand inference priority to avoid unexpected results
+- **Prefer detail_type**: Use it if available, do not infer
+- **Use Inference Judiciously**: Only infer when no explicit type is available
+- **Understand Priority**: Be aware of inference priority to avoid unexpected results
 
-## 10. FAQ
+## 10. Common Questions
 
-### Q1: Why does private need to be converted to user when sending?
+### Q1: Why must private be converted to user when sending?
 
-A: This is a requirement of the OneBot12 standard. `private` is a concept for receiving, and using `user` when sending is more semantically correct.
+A: This is a requirement of the OneBot12 standard. `private` is a receive concept; `user` is more semantically appropriate for sending.
 
 ### Q2: How to support new session types?
 
-A: Register custom types using `register_custom_type()`, or directly use standard types such as `channel`, `guild`, etc.
+A: Register custom types using `register_custom_type()` or directly use standard types such as `channel`, `guild`, etc.
 
-### Q3: What to do if an event does not have detail_type?
+### Q3: What if an event has no detail_type?
 
-A: The system will automatically infer based on the available ID fields. The priority order is: group > channel > guild > thread > user.
+A: The system automatically infers based on available ID fields. The priority is: group > channel > guild > thread > user.
 
-### Q4: How does the adapter map Telegram supergroup?
+### Q4: How should adapters map Telegram supergroup?
 
 A: In the adapter's conversion logic, map `supergroup` to the standard `group` type.
 
-### Q5: How to handle special platforms like email?
+### Q5: How to handle special or platform-specific types like email?
 
-A: For non-generic or platform-specific types, use `{platform}_raw` and `{platform}_raw_type` to retain raw data, and let the adapter handle it accordingly.
+A: For non-generic or platform-specific types, use `{platform}_raw` and `{platform}_raw_type` to retain raw data, and let the adapter handle it.
 
-[**English**](docs/en/quick-start.md)
-
-## 11. Related Documents
+## 11. Related Documentation
 
 - [Event Conversion Standard](event-conversion.md) - Complete event conversion specification
-- [Send Method Specification](send-method-spec.md) - Naming and parameter specification for methods in the Send class
-- [Adapter Development Guide](../developer-guide/adapters/) - Complete guide for adapter development
-
-Please directly return the translated complete Markdown content, without including any other text.
+- [Send Method Specification](send-method-spec.md) - Naming and parameter specification for Send methods
+- [Adapter Development Guide](../developer-guide/adapters/) - Complete adapter development guide
 
 
 

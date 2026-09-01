@@ -14,7 +14,7 @@
           "icon": "fa-flag"
         },
         {
-          "title": "快速開始",
+          "title": "快速入門",
           "path": "quick-start.md",
           "level": 1,
           "icon": "fa-bolt"
@@ -170,7 +170,7 @@
           "icon": "fa-network-wired",
           "documents": [
             {
-              "title": "介面卡開發入門",
+              "title": "適配器開發入門",
               "path": "developer-guide/adapters/getting-started.md",
               "level": 1,
               "icon": "fa-network-wired"
@@ -182,7 +182,7 @@
               "icon": "fa-microchip"
             },
             {
-              "title": "SendDSL 詳解",
+              "title": "SendDSL 详解",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1,
               "icon": "fa-code-branch"
@@ -227,7 +227,7 @@
           "icon": "fa-comments"
         },
         {
-          "title": "舊版格式（仍可使用，但建議遷移）",
+          "title": "文件資訊",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
@@ -257,7 +257,7 @@
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Kook平台特性文件",
+          "title": "Kook 平台特性文件",
           "path": "platform-guide/kook.md",
           "level": 1,
           "icon": "fa-headset"
@@ -345,7 +345,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "生命週期管理",
+          "title": "生命周期管理",
           "path": "advanced/lifecycle.md",
           "level": 1,
           "icon": "fa-clock-rotate-left"
@@ -375,7 +375,7 @@
           "icon": "fa-comments"
         },
         {
-          "title": "網路客戶端",
+          "title": "網路用戶端",
           "path": "advanced/http-client.md",
           "level": 1,
           "icon": "fa-globe"
@@ -393,10 +393,10 @@
           "icon": "fa-language"
         },
         {
-          "title": "模組作用域系統",
+          "title": "統一控制面（scope）",
           "path": "advanced/scope.md",
           "level": 1,
-          "icon": "fa-fire"
+          "icon": "fa-shield-halved"
         },
         {
           "title": "啟動流程與手動控制",

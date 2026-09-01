@@ -9,9 +9,13 @@ ErisPulse 命令处理模块
 
 提供基于装饰器的命令注册和处理功能
 
+命令的**用户权限 ACL**（谁/谁不能执行）统一收敛到控制面 ``ErisPulse.scope.commands``
+（运行时 ``scope.allow_user`` / ``scope.deny_user``，命令名支持 glob），
+本模块不再单独维护权限配置。
+
 > **提示**
 > 1. 支持命令别名和命令组
-> 2. 支持命令权限控制
+> 2. 支持命令权限控制（master / permission 函数 / 控制面 ACL）
 > 3. 支持命令帮助系统
 > 4. 支持等待用户回复交互
 
@@ -43,6 +47,88 @@ ErisPulse 命令处理模块
 ##### `_on_config_updated(_data: dict)`
 
 配置变更回调：刷新命令解析参数，实现热更新
+
+---
+
+
+##### `_scope()`
+
+> **内部方法**
+延迟获取控制面单例（避免模块初始化阶段的循环依赖）
+
+**返回值** (`scope`): 单例（ScopeManager）
+
+---
+
+
+##### `allow_user(command_name: str, platform: str, user_id: str, persist: bool = True)`
+
+将用户加入命令的 allow 名单（白名单非空时仅名单内用户可执行）
+
+委托给控制面 ``scope.allow_user``；命令名支持 glob。
+
+- **command_name** (`命令名称（支持`): glob / ``re:`` 正则）
+- **platform** (`用户所属平台`): - **user_id**: 用户 ID
+- **persist** (`是否持久化到配置`): (默认: True)
+
+**示例**:
+```python
+>>> command.allow_user("restart", "onebot11", "123456")
+```
+
+---
+
+
+##### `deny_user(command_name: str, platform: str, user_id: str, persist: bool = True)`
+
+将用户加入命令的 deny 名单（deny 优先于 allow 与默认权限）
+
+委托给控制面 ``scope.deny_user``；命令名支持 glob。
+
+- **command_name** (`命令名称（支持`): glob / ``re:`` 正则）
+- **platform** (`用户所属平台`): - **user_id**: 用户 ID
+- **persist** (`是否持久化到配置`): (默认: True)
+
+**示例**:
+```python
+>>> command.deny_user("restart", "onebot11", "666")
+```
+
+---
+
+
+##### `remove_acl(command_name: str, persist: bool = True)`
+
+清除命令的用户黑白名单（恢复开发者默认权限逻辑）
+
+委托给控制面 ``scope.remove_acl``；命令名支持 glob。
+
+- **command_name** (`命令名称（支持`): glob / ``re:`` 正则）
+- **persist** (`是否持久化到配置`): (默认: True)
+**返回值** (`是否存在并被清除`): 
+**示例**:
+```python
+>>> command.remove_acl("restart")
+True
+```
+
+---
+
+
+##### `get_acl(command_name: str)`
+
+查询命令当前的用户黑白名单
+
+委托给控制面 ``scope.get_acl``；命令名支持 glob。
+
+- **command_name** (`命令名称（支持`): glob / ``re:`` 正则）
+**返回值** (`{"allow":`): [...], "deny": [...]}（用户标识 "platform:user_id"）
+
+**示例**:
+```python
+>>> command.get_acl("restart")
+{'allow': ['onebot11:123456'], 'deny': []}
+```
 
 ---
 
@@ -80,13 +166,15 @@ ErisPulse 命令处理模块
 ---
 
 
-##### `async wait_reply(event: dict[str, Any], prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD)`
+##### `async wait_reply(event: dict[str, Any], prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD, pattern: str | None = None, regex: str | None = None)`
 
 等待用户回复
 
 - **event** (`原始事件数据`): - **prompt**: 提示消息，如果提供会发送给用户
 - **timeout** (`等待超时时间(秒)`): - **callback**: 回调函数，当收到回复时执行
 - **validator** (`验证函数，用于验证回复是否有效`): - **method**: 发送方法，默认为 "Text"
+- **pattern** (`glob`): 通配符（``*`` / ``?`` / ``[seq]``），回复文本不匹配时继续等待
+- **regex** (`正则表达式，回复文本不匹配时继续等待（与`): pattern 同时给定时须都匹配）
 **返回值**: 用户回复的事件数据，如果超时则返回None
 
 ---

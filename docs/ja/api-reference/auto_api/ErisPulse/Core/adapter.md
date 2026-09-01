@@ -444,6 +444,12 @@ OneBot12协议事件监听装饰器
 - **event_type** (`OneBot12事件类型`): - **raw**: 是否监听原生事件
 - **platform** (`指定平台，None表示监听所有平台`): - **scope_exempt**: 是否豁免模块作用域过滤（框架级总线处理器专用）。
                      为 True 时不参与作用域判断，始终分发。
+- **detail_type** (`指定事件细分类型（如`): ``"group"`` / ``"private"``），
+                    None 表示不限制；支持 glob / ``re:`` 模式
+- **pattern** (`消息文本`): glob 通配符（仅对消息类事件生效），
+                不匹配的消息不触发；None 表示不限制
+- **regex** (`消息文本正则源码（仅对消息类事件生效，与`): pattern 同时给定时
+              须都命中）；None 表示不限制
 **返回值** (`装饰器函数`): 
 **示例**:
 ```python
@@ -462,10 +468,15 @@ OneBot12协议事件监听装饰器
 >>> async def handle_raw_message(data):
 >>>     print(f"收到OneBot11原生事件: {data}")
 >>>
->>> # 监听所有平台的原生事件
->>> @sdk.adapter.on("message", raw=True)
->>> async def handle_all_raw_message(data):
->>>     print(f"收到原生事件: {data}")
+>>> # 只监听群消息
+>>> @sdk.adapter.on("message", detail_type="group")
+>>> async def handle_group_message(data):
+>>>     print(f"收到群消息: {data}")
+>>>
+>>> # 只监听以 "签到" 开头的消息（文本匹配）
+>>> @sdk.adapter.on("message", pattern="签到*")
+>>> async def handle_signin(data):
+>>>     print(f"收到签到消息: {data}")
 ```
 
 ---
@@ -522,6 +533,21 @@ OneBot12协议事件监听装饰器
 
 - **handler_wrapper** (`处理器包装器（含`): func/platform/owner/scope_exempt）
 - **data** (`原始事件数据`): **返回值**: 是否允许分发
+
+---
+
+
+##### `_is_handler_match(handler_wrapper: dict, data: dict, detail_type: str, raw: bool = False)`
+
+> **内部方法**
+判断处理器是否匹配事件的 detail_type / 文本条件
+
+未设置条件（None）即视为命中；``pattern`` 与 ``regex`` 只对消息类事件
+生效（原生事件无 ``message`` 段，文本条件自动跳过）。
+
+- **handler_wrapper** (`处理器包装器（含`): detail_type/pattern/regex）
+- **data** (`原始事件数据`): - **detail_type**: 事件细分类型
+- **raw** (`是否原生事件`): **返回值**: 是否命中
 
 ---
 
