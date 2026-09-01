@@ -14,7 +14,7 @@
           "icon": "fa-flag"
         },
         {
-          "title": "クイックスタート",
+          "title": "ファーストステップ",
           "path": "quick-start.md",
           "level": 1,
           "icon": "fa-bolt"
@@ -64,7 +64,7 @@
           "icon": "fa-list-check"
         },
         {
-          "title": "イベント処理の基礎",
+          "title": "イベント処理入門",
           "path": "getting-started/event-handling.md",
           "level": 1,
           "icon": "fa-bolt-lightning"
@@ -90,7 +90,7 @@
           "icon": "fa-book-open"
         },
         {
-          "title": "インストールリファレンス",
+          "title": "インストールのリファレンス",
           "path": "user-guide/installation.md",
           "level": 1,
           "icon": "fa-download"
@@ -102,13 +102,13 @@
           "icon": "fa-sliders"
         },
         {
-          "title": "CLIコマンドリファレンス",
+          "title": "CLI コマンドリファレンス",
           "path": "user-guide/cli-reference.md",
           "level": 1,
           "icon": "fa-terminal"
         },
         {
-          "title": "配置ガイド",
+          "title": "部署ガイド",
           "path": "user-guide/deployment.md",
           "level": 1,
           "icon": "fa-cloud-arrow-up"
@@ -146,7 +146,7 @@
               "icon": "fa-puzzle-piece"
             },
             {
-              "title": "モジュールの基本概念",
+              "title": "モジュールのコアコンセプト",
               "path": "developer-guide/modules/core-concepts.md",
               "level": 1,
               "icon": "fa-cubes-stacked"
@@ -158,7 +158,7 @@
               "icon": "fa-bolt-lightning"
             },
             {
-              "title": "モジュール開発におけるベストプラクティス",
+              "title": "モジュール開発のベストプラクティス",
               "path": "developer-guide/modules/best-practices.md",
               "level": 1,
               "icon": "fa-award"
@@ -182,13 +182,13 @@
               "icon": "fa-microchip"
             },
             {
-              "title": "SendDSL 詳解",
+              "title": "SendDSL 详解",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1,
               "icon": "fa-code-branch"
             },
             {
-              "title": "アダプタ開発のベストプラクティス",
+              "title": "アダプター開発のベストプラクティス",
               "path": "developer-guide/adapters/best-practices.md",
               "level": 1,
               "icon": "fa-medal"
@@ -215,7 +215,7 @@
           "icon": "fa-server"
         },
         {
-          "title": "OneBot11プラットフォームの機能ドキュメント",
+          "title": "OneBot11プラットフォーム特徴ドキュメント",
           "path": "platform-guide/onebot11.md",
           "level": 1,
           "icon": "fa-comments"
@@ -227,7 +227,7 @@
           "icon": "fa-comments"
         },
         {
-          "title": "Telegramプラットフォームの特徴ドキュメント",
+          "title": "ドキュメント情報",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
@@ -251,25 +251,25 @@
           "icon": "fa-user"
         },
         {
-          "title": "QQBotプラットフォーム特性",
+          "title": "QQBotプラットフォームの特徴ドキュメント",
           "path": "platform-guide/qqbot.md",
           "level": 1,
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Kookプラットフォーム特性ドキュメント",
+          "title": "Kookプラットフォームの機能ドキュメント",
           "path": "platform-guide/kook.md",
           "level": 1,
           "icon": "fa-headset"
         },
         {
-          "title": "Matrixプラットフォームの特徴ドキュメント",
+          "title": "Matrixプラットフォームの機能ドキュメント",
           "path": "platform-guide/matrix.md",
           "level": 1,
           "icon": "fa-th-large"
         },
         {
-          "title": "Discord プラットフォームの機能ドキュメント",
+          "title": "Discord プラットフォームの特徴ドキュメント",
           "path": "platform-guide/discord.md",
           "level": 1,
           "icon": "fa-gamepad"
@@ -287,7 +287,7 @@
           "icon": "fa-link"
         },
         {
-          "title": "花楓コーヒーショップ（RockyChat）プラットフォームの機能ドキュメント",
+          "title": "花楓コーヒーショップ（RockyChat）プラットフォーム特性ドキュメント",
           "path": "platform-guide/ideaura.md",
           "level": 1,
           "icon": "fa-wand-magic-sparkles"
@@ -339,7 +339,7 @@
       "count": 11,
       "documents": [
         {
-          "title": "詳細トピック",
+          "title": "高級トピック",
           "path": "advanced/README.md",
           "level": 1,
           "icon": "fa-fire"
@@ -351,7 +351,7 @@
           "icon": "fa-clock-rotate-left"
         },
         {
-          "title": "ラグ遅延ロードモジュールシステム",
+          "title": "ラグジュアリー・ロード・モジュール・システム",
           "path": "advanced/lazy-loading.md",
           "level": 1,
           "icon": "fa-hourglass-half"
@@ -393,10 +393,10 @@
           "icon": "fa-language"
         },
         {
-          "title": "モジュールスコープシステム",
+          "title": "統一制御面（scope）",
           "path": "advanced/scope.md",
           "level": 1,
-          "icon": "fa-fire"
+          "icon": "fa-shield-halved"
         },
         {
           "title": "起動プロセスと手動制御",
@@ -445,7 +445,7 @@
       "count": 1,
       "documents": [
         {
-          "title": "AI補助開発",
+          "title": "AI支援開発",
           "path": "ai-support/README.md",
           "level": 1,
           "icon": "fa-robot"
@@ -465,7 +465,7 @@
           "icon": "fa-gavel"
         },
         {
-          "title": "ErisPulse セッションタイプ標準",
+          "title": "ErisPulse セッション型標準",
           "path": "standards/session-types.md",
           "level": 1,
           "icon": "fa-layer-group"

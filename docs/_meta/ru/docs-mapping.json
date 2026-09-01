@@ -90,7 +90,7 @@
           "icon": "fa-book-open"
         },
         {
-          "title": "Справочное руководство по установке",
+          "title": "Справочник по установке",
           "path": "user-guide/installation.md",
           "level": 1,
           "icon": "fa-download"
@@ -170,19 +170,19 @@
           "icon": "fa-network-wired",
           "documents": [
             {
-              "title": "Начало разработки адаптера",
+              "title": "Начало работы с разработкой адаптеров",
               "path": "developer-guide/adapters/getting-started.md",
               "level": 1,
               "icon": "fa-network-wired"
             },
             {
-              "title": "Основные концепции адаптера",
+              "title": "Основные понятия адаптера",
               "path": "developer-guide/adapters/core-concepts.md",
               "level": 1,
               "icon": "fa-microchip"
             },
             {
-              "title": "Подробное руководство SendDSL",
+              "title": "SendDSL подробно",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1,
               "icon": "fa-code-branch"
@@ -227,13 +227,13 @@
           "icon": "fa-comments"
         },
         {
-          "title": "Документация по функциям платформы Telegram",
+          "title": "Информация о документации",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
         },
         {
-          "title": "Документация по функциональным возможностям платформы электронной почты",
+          "title": "Документация по функциям платформы электронной почты",
           "path": "platform-guide/email.md",
           "level": 1,
           "icon": "fa-envelope"
@@ -251,7 +251,7 @@
           "icon": "fa-user"
         },
         {
-          "title": "Документация по функциям платформы QQBot",
+          "title": "Документация по функциональным возможностям платформы QQBot",
           "path": "platform-guide/qqbot.md",
           "level": 1,
           "icon": "fa-comment-dots"
@@ -287,7 +287,7 @@
           "icon": "fa-link"
         },
         {
-          "title": "Документация по функциям платформы RockyChat (HuaFeng Coffee Shop)",
+          "title": "Документация по функциям платформы RockyChat (IdeauraAdapter)",
           "path": "platform-guide/ideaura.md",
           "level": 1,
           "icon": "fa-wand-magic-sparkles"
@@ -319,7 +319,7 @@
           "icon": "fa-network-wired"
         },
         {
-          "title": "API Ядерного модуля",
+          "title": "API основных модулей",
           "path": "api-reference/core-modules.md",
           "level": 1,
           "icon": "fa-cubes-stacked"
@@ -369,7 +369,7 @@
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Conversation многократный диалог",
+          "title": "Conversation 多轮对话",
           "path": "advanced/conversation.md",
           "level": 1,
           "icon": "fa-comments"
@@ -387,19 +387,19 @@
           "icon": "fa-database"
         },
         {
-          "title": "Система интернационализации (i18n)",
+          "title": "Система международной локализации (i18n)",
           "path": "advanced/i18n.md",
           "level": 1,
           "icon": "fa-language"
         },
         {
-          "title": "Система модульных областей",
+          "title": "Unified Control Plane (scope)",
           "path": "advanced/scope.md",
           "level": 1,
-          "icon": "fa-fire"
+          "icon": "fa-shield-halved"
         },
         {
-          "title": "Запуск и ручное управление",
+          "title": "Процесс запуска и ручное управление",
           "path": "advanced/startup.md",
           "level": 1,
           "icon": "fa-fire"
@@ -445,7 +445,7 @@
       "count": 1,
       "documents": [
         {
-          "title": "AI-помощь в разработке",
+          "title": "Разработка с помощью ИИ",
           "path": "ai-support/README.md",
           "level": 1,
           "icon": "fa-robot"

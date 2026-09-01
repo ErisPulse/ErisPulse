@@ -96,7 +96,7 @@
           "icon": "fa-download"
         },
         {
-          "title": "Configuration File Documentation",
+          "title": "Configuration File Guide",
           "path": "user-guide/configuration.md",
           "level": 1,
           "icon": "fa-sliders"
@@ -182,7 +182,7 @@
               "icon": "fa-microchip"
             },
             {
-              "title": "SendDSL Detailed Explanation",
+              "title": "SendDSL Explained",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1,
               "icon": "fa-code-branch"
@@ -227,13 +227,13 @@
           "icon": "fa-comments"
         },
         {
-          "title": "Telegram Platform Features Documentation",
+          "title": "Document Information",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
         },
         {
-          "title": "Email Platform Feature Document",
+          "title": "Email Platform Feature Documentation",
           "path": "platform-guide/email.md",
           "level": 1,
           "icon": "fa-envelope"
@@ -257,7 +257,7 @@
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Kook Platform Features Documentation",
+          "title": "Kook Platform Feature Documentation",
           "path": "platform-guide/kook.md",
           "level": 1,
           "icon": "fa-headset"
@@ -287,7 +287,7 @@
           "icon": "fa-link"
         },
         {
-          "title": "Platform Features Documentation for RockyChat",
+          "title": "RockyChat (IdeauraAdapter) Platform Features Document",
           "path": "platform-guide/ideaura.md",
           "level": 1,
           "icon": "fa-wand-magic-sparkles"
@@ -319,7 +319,7 @@
           "icon": "fa-network-wired"
         },
         {
-          "title": "Core Modules API",
+          "title": "Core Module API",
           "path": "api-reference/core-modules.md",
           "level": 1,
           "icon": "fa-cubes-stacked"
@@ -393,13 +393,13 @@
           "icon": "fa-language"
         },
         {
-          "title": "Module Scope System",
+          "title": "Unified Control Plane (scope)",
           "path": "advanced/scope.md",
           "level": 1,
-          "icon": "fa-fire"
+          "icon": "fa-shield-halved"
         },
         {
-          "title": "Startup Flow and Manual Control",
+          "title": "Startup Process and Manual Control",
           "path": "advanced/startup.md",
           "level": 1,
           "icon": "fa-fire"

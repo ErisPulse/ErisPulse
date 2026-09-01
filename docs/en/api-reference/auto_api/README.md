@@ -19,10 +19,10 @@
 
 ## 统计信息
 
-- **模块总数**: 104
+- **模块总数**: 105
 - **类总数**: 117（包括 6 个嵌套类）
-- **函数总数**: 198
-- **方法总数**: 1125
+- **函数总数**: 208
+- **方法总数**: 1155
 
 ---
 
@@ -281,17 +281,17 @@
 
 ### [ErisPulse.Core.Event.base](ErisPulse/Core/Event/base.md)
 
-1 个类 | 8 个方法 | 1 个函数
+1 个类 | 9 个方法 | 1 个函数
 
 
 ### [ErisPulse.Core.Event.command](ErisPulse/Core/Event/command.md)
 
-1 个类 | 19 个方法
+1 个类 | 24 个方法
 
 
 ### [ErisPulse.Core.Event.message](ErisPulse/Core/Event/message.md)
 
-1 个类 | 10 个方法
+1 个类 | 10 个方法 | 1 个函数
 
 
 ### [ErisPulse.Core.Event.message_builder](ErisPulse/Core/Event/message_builder.md)
@@ -331,7 +331,7 @@
 
 ### [ErisPulse.Core.adapter](ErisPulse/Core/adapter.md)
 
-1 个类 | 59 个方法 | 1 个函数
+1 个类 | 60 个方法 | 1 个函数
 
 
 ### [ErisPulse.Core.assets.__init__](ErisPulse/Core/assets/__init__.md)
@@ -421,12 +421,17 @@
 
 ### [ErisPulse.Core.scope](ErisPulse/Core/scope.md)
 
-1 个类 | 22 个方法
+1 个类 | 45 个方法 | 1 个函数
 
 
 ### [ErisPulse.Core.storage](ErisPulse/Core/storage.md)
 
 5 个类 | 37 个方法 | 3 个函数
+
+
+### [ErisPulse.Core.text_match](ErisPulse/Core/text_match.md)
+
+7 个函数
 
 
 ### [ErisPulse.__init__](ErisPulse/__init__.md)
@@ -521,7 +526,7 @@
 
 ### [ErisPulse.runtime.frame_config](ErisPulse/runtime/frame_config.md)
 
-15 个函数
+16 个函数
 
 
 ### [ErisPulse.runtime.hints](ErisPulse/runtime/hints.md)

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1444,
+  "total_keywords": 1452,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -201,7 +201,7 @@
     "1. 异常处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 671,
+        "line": 740,
         "level": 3,
         "title": "1. 异常处理"
       }
@@ -326,12 +326,12 @@
         "title": "1. 配置 pyproject.toml"
       }
     ],
-    "1. 配置层级": [
+    "1. 配置层级与覆盖": [
       {
         "document": "advanced/scope.md",
-        "line": 141,
+        "line": 266,
         "level": 3,
-        "title": "1. 配置层级"
+        "title": "1. 配置层级与覆盖"
       }
     ],
     "1.1 接收类型 && 发送类型": [
@@ -540,6 +540,14 @@
         "title": "2. 仅指定ID"
       }
     ],
+    "2. 优先用控制面而不是改模块代码": [
+      {
+        "document": "advanced/scope.md",
+        "line": 273,
+        "level": 3,
+        "title": "2. 优先用控制面而不是改模块代码"
+      }
+    ],
     "2. 使用装饰器注册单个方法": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -620,14 +628,6 @@
         "title": "2. 基础返回结构"
       }
     ],
-    "2. 它是\"逐事件\"判断，不会\"粘住\"": [
-      {
-        "document": "advanced/scope.md",
-        "line": 158,
-        "level": 3,
-        "title": "2. 它是\"逐事件\"判断，不会\"粘住\""
-      }
-    ],
     "2. 批量操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -661,7 +661,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 689,
+        "line": 758,
         "level": 3,
         "title": "2. 日志记录"
       }
@@ -1083,7 +1083,7 @@
     "3. 条件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 705,
+        "line": 774,
         "level": 3,
         "title": "3. 条件处理"
       }
@@ -1096,12 +1096,12 @@
         "title": "3. 标准动作列表"
       }
     ],
-    "3. 模块没反应": [
+    "3. 模块/命令没反应": [
       {
         "document": "advanced/scope.md",
-        "line": 164,
+        "line": 280,
         "level": 3,
-        "title": "3. 模块没反应"
+        "title": "3. 模块/命令没反应"
       }
     ],
     "3. 注册层：register_to_manager": [
@@ -1331,7 +1331,7 @@
     "4. 会话标识跨平台隔离": [
       {
         "document": "advanced/scope.md",
-        "line": 177,
+        "line": 295,
         "level": 3,
         "title": "4. 会话标识跨平台隔离"
       }
@@ -1558,14 +1558,6 @@
         "line": 363,
         "level": 3,
         "title": "5. 往返一致性"
-      }
-    ],
-    "5. 性能": [
-      {
-        "document": "advanced/scope.md",
-        "line": 181,
-        "level": 3,
-        "title": "5. 性能"
       }
     ],
     "5. 扩展规范": [
@@ -2211,7 +2203,7 @@
     "@消息相关": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 144,
+        "line": 152,
         "level": 4,
         "title": "@消息相关"
       }
@@ -2463,7 +2455,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 347,
+        "line": 416,
         "level": 3,
         "title": "Bot 状态查询"
       }
@@ -2769,7 +2761,7 @@
     "Event 对象常用方法": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 594,
+        "line": 663,
         "level": 3,
         "title": "Event 对象常用方法"
       }
@@ -3801,7 +3793,7 @@
     "`hasattr` 和 `dir` 支持": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 412,
+        "line": 422,
         "level": 3,
         "title": "`hasattr` 和 `dir` 支持"
       }
@@ -4286,6 +4278,46 @@
         "title": "ws_connect 参数"
       }
     ],
+    "① 模块维度": [
+      {
+        "document": "advanced/scope.md",
+        "line": 103,
+        "level": 2,
+        "title": "① 模块维度"
+      }
+    ],
+    "② 身份维度（事件准入）": [
+      {
+        "document": "advanced/scope.md",
+        "line": 122,
+        "level": 2,
+        "title": "② 身份维度（事件准入）"
+      }
+    ],
+    "③ 命令维度（命令 ACL）": [
+      {
+        "document": "advanced/scope.md",
+        "line": 139,
+        "level": 2,
+        "title": "③ 命令维度（命令 ACL）"
+      }
+    ],
+    "④ 处理器/文本维度": [
+      {
+        "document": "advanced/scope.md",
+        "line": 151,
+        "level": 2,
+        "title": "④ 处理器/文本维度"
+      }
+    ],
+    "⑤ 实现参数覆盖": [
+      {
+        "document": "advanced/scope.md",
+        "line": 162,
+        "level": 2,
+        "title": "⑤ 实现参数覆盖"
+      }
+    ],
     "一、我要使用机器人": [
       {
         "document": "README.md",
@@ -4375,7 +4407,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 722,
+        "line": 791,
         "level": 2,
         "title": "下一步"
       },
@@ -4393,7 +4425,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 451,
+        "line": 486,
         "level": 2,
         "title": "下一步"
       },
@@ -4611,7 +4643,7 @@
     "事件基础信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 108,
+        "line": 116,
         "level": 4,
         "title": "事件基础信息"
       }
@@ -4671,7 +4703,7 @@
     "事件处理最佳实践": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 669,
+        "line": 738,
         "level": 2,
         "title": "事件处理最佳实践"
       }
@@ -4753,7 +4785,7 @@
     "事件数据访问": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 592,
+        "line": 661,
         "level": 2,
         "title": "事件数据访问"
       }
@@ -4895,7 +4927,7 @@
     "事件驱动懒激活（`activate_on`）触发架构": [
       {
         "document": "architecture.md",
-        "line": 214,
+        "line": 215,
         "level": 3,
         "title": "事件驱动懒激活（`activate_on`）触发架构"
       }
@@ -4983,7 +5015,7 @@
     "交互式处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 369,
+        "line": 438,
         "level": 2,
         "title": "交互式处理"
       }
@@ -5011,7 +5043,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 220,
+        "line": 230,
         "level": 4,
         "title": "交互方法"
       }
@@ -5019,7 +5051,7 @@
     "交互方法示例": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 259,
+        "line": 269,
         "level": 4,
         "title": "交互方法示例"
       }
@@ -5121,7 +5153,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 121,
+        "line": 129,
         "level": 4,
         "title": "会话标识"
       }
@@ -5156,22 +5188,6 @@
         "line": 73,
         "level": 2,
         "title": "何时重新生成"
-      }
-    ],
-    "作用域过滤：为什么我的模块没收到消息": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 192,
-        "level": 2,
-        "title": "作用域过滤：为什么我的模块没收到消息"
-      }
-    ],
-    "作用域配置": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 425,
-        "level": 2,
-        "title": "作用域配置"
       }
     ],
     "使用 Discord 特有方法": [
@@ -5209,7 +5225,7 @@
     "使用 reply 方法发送回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 371,
+        "line": 440,
         "level": 3,
         "title": "使用 reply 方法发送回复"
       }
@@ -5413,7 +5429,7 @@
     "元事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 320,
+        "line": 389,
         "level": 2,
         "title": "元事件处理"
       }
@@ -5432,6 +5448,14 @@
         "line": 1,
         "level": 1,
         "title": "入门指南"
+      }
+    ],
+    "全局兜底：`default_allow`": [
+      {
+        "document": "advanced/scope.md",
+        "line": 45,
+        "level": 2,
+        "title": "全局兜底：`default_allow`"
       }
     ],
     "全局参数": [
@@ -5561,7 +5585,7 @@
     "内置确认词": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 585,
+        "line": 654,
         "level": 3,
         "title": "内置确认词"
       }
@@ -5730,14 +5754,6 @@
         "title": "删除表"
       }
     ],
-    "判断模块是否允许": [
-      {
-        "document": "advanced/scope.md",
-        "line": 73,
-        "level": 3,
-        "title": "判断模块是否允许"
-      }
-    ],
     "前置知识": [
       {
         "document": "advanced/README.md",
@@ -5800,14 +5816,6 @@
         "title": "动态内容"
       }
     ],
-    "动态绑定 / 解绑": [
-      {
-        "document": "advanced/scope.md",
-        "line": 85,
-        "level": 3,
-        "title": "动态绑定 / 解绑"
-      }
-    ],
     "动画示例": [
       {
         "document": "ecosystem/takumi.md",
@@ -5830,6 +5838,14 @@
         "line": 9,
         "level": 2,
         "title": "包管理命令"
+      }
+    ],
+    "匹配条目语法（全系统统一）": [
+      {
+        "document": "advanced/scope.md",
+        "line": 30,
+        "level": 2,
+        "title": "匹配条目语法（全系统统一）"
       }
     ],
     "升级组件": [
@@ -5907,7 +5923,7 @@
     "原始数据": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 376,
+        "line": 386,
         "level": 3,
         "title": "原始数据"
       }
@@ -6255,7 +6271,7 @@
     "发送者信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 133,
+        "line": 141,
         "level": 4,
         "title": "发送者信息"
       }
@@ -6407,7 +6423,7 @@
     "命令与回复的 block 配置": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 245,
+        "line": 314,
         "level": 3,
         "title": "命令与回复的 block 配置"
       }
@@ -6415,7 +6431,7 @@
     "命令事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 66,
+        "line": 91,
         "level": 2,
         "title": "命令事件处理"
       }
@@ -6423,7 +6439,7 @@
     "命令优先级": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 136,
+        "line": 196,
         "level": 3,
         "title": "命令优先级"
       }
@@ -6443,7 +6459,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 367,
+        "line": 377,
         "level": 3,
         "title": "命令信息"
       }
@@ -6451,7 +6467,7 @@
     "命令信息获取": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 82,
+        "line": 90,
         "level": 2,
         "title": "命令信息获取"
       }
@@ -6459,7 +6475,7 @@
     "命令别名": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 84,
+        "line": 109,
         "level": 3,
         "title": "命令别名"
       }
@@ -6467,7 +6483,7 @@
     "命令参数": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 97,
+        "line": 122,
         "level": 3,
         "title": "命令参数"
       }
@@ -6475,17 +6491,17 @@
     "命令基础": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 369,
+        "line": 379,
         "level": 4,
         "title": "命令基础"
       }
     ],
-    "命令权限": [
+    "命令权限与访问控制": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 123,
+        "line": 148,
         "level": 3,
-        "title": "命令权限"
+        "title": "命令权限与访问控制"
       }
     ],
     "命令没有响应？": [
@@ -6507,9 +6523,17 @@
     "命令组": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 111,
+        "line": 136,
         "level": 3,
         "title": "命令组"
+      }
+    ],
+    "命令维度": [
+      {
+        "document": "advanced/scope.md",
+        "line": 220,
+        "level": 3,
+        "title": "命令维度"
       }
     ],
     "命令装饰器": [
@@ -6575,7 +6599,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 179,
+        "line": 187,
         "level": 3,
         "title": "回复功能"
       }
@@ -6849,7 +6873,7 @@
     "基本命令": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 68,
+        "line": 93,
         "level": 3,
         "title": "基本命令"
       }
@@ -6917,7 +6941,7 @@
     "基础判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 150,
+        "line": 158,
         "level": 4,
         "title": "基础判断"
       }
@@ -6947,7 +6971,7 @@
     "基础回复": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 181,
+        "line": 189,
         "level": 4,
         "title": "基础回复"
       }
@@ -7046,6 +7070,14 @@
         "line": 321,
         "level": 3,
         "title": "处理交互事件"
+      }
+    ],
+    "处理器与覆盖维度": [
+      {
+        "document": "advanced/scope.md",
+        "line": 234,
+        "level": 3,
+        "title": "处理器与覆盖维度"
       }
     ],
     "处理消息编辑": [
@@ -7247,7 +7279,7 @@
     "多轮对话 (conversation)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 558,
+        "line": 627,
         "level": 3,
         "title": "多轮对话 (conversation)"
       }
@@ -7319,7 +7351,7 @@
     "好友添加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 259,
+        "line": 328,
         "level": 3,
         "title": "好友添加"
       }
@@ -7335,7 +7367,7 @@
     "好友请求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 293,
+        "line": 362,
         "level": 3,
         "title": "好友请求"
       }
@@ -7732,12 +7764,6 @@
         "title": "工作原理"
       },
       {
-        "document": "advanced/scope.md",
-        "line": 16,
-        "level": 2,
-        "title": "工作原理"
-      },
-      {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 335,
         "level": 3,
@@ -7803,7 +7829,7 @@
     "带回调的等待回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 443,
+        "line": 512,
         "level": 3,
         "title": "带回调的等待回复"
       }
@@ -7819,7 +7845,7 @@
     "带验证的等待回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 416,
+        "line": 485,
         "level": 3,
         "title": "带验证的等待回复"
       }
@@ -7893,7 +7919,7 @@
     "常见问题与注意事项": [
       {
         "document": "advanced/scope.md",
-        "line": 139,
+        "line": 264,
         "level": 2,
         "title": "常见问题与注意事项"
       }
@@ -7961,13 +7987,13 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 381,
+        "line": 391,
         "level": 3,
         "title": "平台扩展方法"
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 640,
+        "line": 709,
         "level": 3,
         "title": "平台扩展方法"
       }
@@ -8051,7 +8077,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 195,
+        "line": 203,
         "level": 4,
         "title": "平台能力查询"
       }
@@ -8067,7 +8093,7 @@
     "并行事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 149,
+        "line": 209,
         "level": 3,
         "title": "并行事件处理"
       }
@@ -8263,7 +8289,7 @@
     "心跳事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 338,
+        "line": 407,
         "level": 3,
         "title": "心跳事件"
       }
@@ -8659,17 +8685,9 @@
     "拓扑树 API": [
       {
         "document": "advanced/scope.md",
-        "line": 186,
+        "line": 300,
         "level": 2,
         "title": "拓扑树 API"
-      }
-    ],
-    "拓扑树数据": [
-      {
-        "document": "advanced/scope.md",
-        "line": 132,
-        "level": 3,
-        "title": "拓扑树数据"
       }
     ],
     "指定发送账号": [
@@ -8724,6 +8742,22 @@
         "line": 276,
         "level": 3,
         "title": "接收消息"
+      }
+    ],
+    "控制面过滤：为什么我的模块没收到消息": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 252,
+        "level": 2,
+        "title": "控制面过滤：为什么我的模块没收到消息"
+      }
+    ],
+    "控制面配置（scope）": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 425,
+        "level": 2,
+        "title": "控制面配置（scope）"
       }
     ],
     "推荐使用懒加载的场景（lazy_load=True）": [
@@ -8907,7 +8941,7 @@
     "收集表单 (collect)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 517,
+        "line": 586,
         "level": 3,
         "title": "收集表单 (collect)"
       }
@@ -9201,7 +9235,7 @@
     "方法速查表": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 104,
+        "line": 112,
         "level": 2,
         "title": "方法速查表"
       }
@@ -9387,7 +9421,7 @@
     "本地插件文件夹架构": [
       {
         "document": "architecture.md",
-        "line": 250,
+        "line": 251,
         "level": 2,
         "title": "本地插件文件夹架构"
       }
@@ -9395,7 +9429,7 @@
     "本地插件热重载架构": [
       {
         "document": "architecture.md",
-        "line": 278,
+        "line": 279,
         "level": 2,
         "title": "本地插件热重载架构"
       }
@@ -9411,7 +9445,7 @@
     "机器人信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 115,
+        "line": 123,
         "level": 4,
         "title": "机器人信息"
       }
@@ -9497,7 +9531,7 @@
     "查询已注册方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 403,
+        "line": 413,
         "level": 3,
         "title": "查询已注册方法"
       }
@@ -9532,14 +9566,6 @@
         "line": 65,
         "level": 3,
         "title": "查询方法"
-      }
-    ],
-    "查询绑定": [
-      {
-        "document": "advanced/scope.md",
-        "line": 110,
-        "level": 3,
-        "title": "查询绑定"
       }
     ],
     "标准 API 动作（ApiDSL）": [
@@ -9757,7 +9783,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 106,
+        "line": 114,
         "level": 3,
         "title": "核心方法"
       }
@@ -9916,18 +9942,10 @@
         "title": "模块介绍 meta"
       }
     ],
-    "模块作用域系统": [
-      {
-        "document": "advanced/scope.md",
-        "line": 1,
-        "level": 1,
-        "title": "模块作用域系统"
-      }
-    ],
     "模块加载策略": [
       {
         "document": "architecture.md",
-        "line": 192,
+        "line": 193,
         "level": 2,
         "title": "模块加载策略"
       }
@@ -10030,6 +10048,14 @@
         "line": 118,
         "level": 3,
         "title": "模块级别控制"
+      }
+    ],
+    "模块维度": [
+      {
+        "document": "advanced/scope.md",
+        "line": 179,
+        "level": 3,
+        "title": "模块维度"
       }
     ],
     "模块设计": [
@@ -10279,7 +10305,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 125,
+        "line": 133,
         "level": 3,
         "title": "消息事件方法"
       }
@@ -10303,7 +10329,7 @@
     "消息内容": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 127,
+        "line": 135,
         "level": 4,
         "title": "消息内容"
       }
@@ -10479,7 +10505,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 148,
+        "line": 156,
         "level": 3,
         "title": "消息类型判断"
       }
@@ -10793,7 +10819,7 @@
       },
       {
         "document": "architecture.md",
-        "line": 157,
+        "line": 158,
         "level": 2,
         "title": "生命周期事件"
       }
@@ -10921,7 +10947,7 @@
     "监听生命周期事件": [
       {
         "document": "architecture.md",
-        "line": 188,
+        "line": 189,
         "level": 3,
         "title": "监听生命周期事件"
       }
@@ -11083,7 +11109,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 438,
+        "line": 448,
         "level": 2,
         "title": "相关文档"
       },
@@ -11129,7 +11155,7 @@
     "确认对话 (confirm)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 464,
+        "line": 533,
         "level": 3,
         "title": "确认对话 (confirm)"
       }
@@ -11191,7 +11217,7 @@
     "等待任意事件 (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 537,
+        "line": 606,
         "level": 3,
         "title": "等待任意事件 (wait_for)"
       }
@@ -11207,7 +11233,7 @@
     "等待回复功能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 210,
+        "line": 218,
         "level": 3,
         "title": "等待回复功能"
       }
@@ -11215,7 +11241,7 @@
     "等待用户回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 399,
+        "line": 468,
         "level": 3,
         "title": "等待用户回复"
       }
@@ -11358,6 +11384,14 @@
         "title": "统一捕获"
       }
     ],
+    "统一控制面（scope）": [
+      {
+        "document": "advanced/scope.md",
+        "line": 1,
+        "level": 1,
+        "title": "统一控制面（scope）"
+      }
+    ],
     "统一的模块获取入口": [
       {
         "document": "advanced/lazy-loading.md",
@@ -11382,6 +11416,14 @@
         "title": "继承关系"
       }
     ],
+    "缓存与热更新": [
+      {
+        "document": "advanced/scope.md",
+        "line": 257,
+        "level": 2,
+        "title": "缓存与热更新"
+      }
+    ],
     "网络客户端": [
       {
         "document": "advanced/http-client.md",
@@ -11393,7 +11435,7 @@
     "群成员减少": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 281,
+        "line": 350,
         "level": 3,
         "title": "群成员减少"
       }
@@ -11401,7 +11443,7 @@
     "群成员增加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 271,
+        "line": 340,
         "level": 3,
         "title": "群成员增加"
       }
@@ -11417,7 +11459,7 @@
     "群组/频道信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 138,
+        "line": 146,
         "level": 4,
         "title": "群组/频道信息"
       }
@@ -11457,7 +11499,7 @@
     "群邀请请求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 309,
+        "line": 378,
         "level": 3,
         "title": "群邀请请求"
       }
@@ -11759,7 +11801,7 @@
     "请求事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 291,
+        "line": 360,
         "level": 2,
         "title": "请求事件处理"
       }
@@ -11767,7 +11809,7 @@
     "请求事件方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 169,
+        "line": 177,
         "level": 3,
         "title": "请求事件方法"
       }
@@ -11783,7 +11825,7 @@
     "请求信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 171,
+        "line": 179,
         "level": 4,
         "title": "请求信息"
       }
@@ -11837,7 +11879,7 @@
     "请求类型判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 174,
+        "line": 182,
         "level": 4,
         "title": "请求类型判断"
       }
@@ -11987,7 +12029,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 419,
+        "line": 429,
         "level": 3,
         "title": "跨平台扩展（通配符）"
       }
@@ -12040,10 +12082,18 @@
         "title": "路由管理器"
       }
     ],
+    "身份维度": [
+      {
+        "document": "advanced/scope.md",
+        "line": 201,
+        "level": 3,
+        "title": "身份维度"
+      }
+    ],
     "转发功能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 199,
+        "line": 207,
         "level": 4,
         "title": "转发功能"
       }
@@ -12088,14 +12138,6 @@
         "title": "输出格式"
       }
     ],
-    "过滤统计（调试）": [
-      {
-        "document": "advanced/scope.md",
-        "line": 122,
-        "level": 3,
-        "title": "过滤统计（调试）"
-      }
-    ],
     "运行控制命令": [
       {
         "document": "user-guide/cli-reference.md",
@@ -12107,7 +12149,7 @@
     "运行时 API": [
       {
         "document": "advanced/scope.md",
-        "line": 71,
+        "line": 177,
         "level": 2,
         "title": "运行时 API"
       }
@@ -12225,7 +12267,7 @@
     "连接事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 322,
+        "line": 391,
         "level": 3,
         "title": "连接事件"
       }
@@ -12465,9 +12507,17 @@
     "选择菜单 (choose)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 481,
+        "line": 550,
         "level": 3,
         "title": "选择菜单 (choose)"
+      }
+    ],
+    "通用": [
+      {
+        "document": "advanced/scope.md",
+        "line": 245,
+        "level": 3,
+        "title": "通用"
       }
     ],
     "通用 request": [
@@ -12529,7 +12579,7 @@
     "通知事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 257,
+        "line": 326,
         "level": 2,
         "title": "通知事件处理"
       }
@@ -12537,13 +12587,13 @@
     "通知事件方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 94,
+        "line": 102,
         "level": 2,
         "title": "通知事件方法"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 156,
+        "line": 164,
         "level": 3,
         "title": "通知事件方法"
       }
@@ -12559,7 +12609,7 @@
     "通知操作者": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 158,
+        "line": 166,
         "level": 4,
         "title": "通知操作者"
       }
@@ -12567,7 +12617,7 @@
     "通知类型判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 162,
+        "line": 170,
         "level": 4,
         "title": "通知类型判断"
       }
@@ -12626,6 +12676,14 @@
         "line": 53,
         "level": 3,
         "title": "通配符"
+      }
+    ],
+    "通配符与正则监听": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 66,
+        "level": 3,
+        "title": "通配符与正则监听"
       }
     ],
     "速率限制": [
@@ -12749,7 +12807,7 @@
     "配置文件": [
       {
         "document": "advanced/scope.md",
-        "line": 35,
+        "line": 58,
         "level": 2,
         "title": "配置文件"
       },
@@ -13147,7 +13205,7 @@
     "链路控制：认领与阻断": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 210,
+        "line": 279,
         "level": 2,
         "title": "链路控制：认领与阻断"
       }
