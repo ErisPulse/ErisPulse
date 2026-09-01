@@ -63,6 +63,31 @@ async def at_handler(event: Event):
     await event.reply(f"你@了这些用户: {mentions}")
 ```
 
+### 通配符与正则监听
+
+四个消息装饰器（`on_message` / `on_private_message` / `on_group_message` /
+`on_at_message`）均支持 `pattern`（glob 通配符）与 `regex`（正则），不匹配的消息
+**不会触发**处理器：
+
+```python
+# glob 通配符：* 任意串、? 单字符、[seq] 字符集
+@message.on_message(pattern="签到*")
+async def signin_handler(event: Event):
+    await event.reply("签到成功")
+
+# 正则：匹配金额
+@message.on_message(regex=r"\d+\s*元")
+async def price_handler(event: Event):
+    await event.reply(f"收到金额：{event.get_text()}")
+
+# pattern 与 regex 同时给出 → 两者都须匹配
+@message.on_message(pattern="*元", regex=r"\d+\s*元")
+async def combined_handler(event: Event):
+    pass
+```
+
+`wait_reply` 同样支持这两个参数（见[等待回复](../developer-guide/modules/event-wrapper.md#等待回复功能)）。
+
 ## 命令事件处理
 
 ### 基本命令
@@ -120,18 +145,53 @@ async def stop_handler(event):
     await event.reply("机器人已停止")
 ```
 
-### 命令权限
+### 命令权限与访问控制
+
+命令权限分三层，从上到下逐层判定（**上层拒绝则不再看下层**）：
 
 ```python
-def is_master(event):
-    """检查用户是否为框架主人"""
-    master_list = ["user123", "user456"]
-    return event.get_user_id() in master_list
+# ① 命令权限 ACL（用户侧配置）：按命令的用户黑白名单，拒绝时回复"权限不足"
+# ② master=True —— 仅框架主人可执行（框架自动检查，拒绝时回复"权限不足"）
+@command("restart", master=True, help="重启模块")
+async def restart_handler(event):
+    await event.reply("模块已重启")
 
-@command("master", permission=is_master, help="框架主人命令")
-async def master_handler(event):
-    await event.reply("这是框架主人命令")
+# ③ permission=调用函数 —— 命令自身的控制逻辑（返回 True 才执行）
+def is_admin(event):
+    return event.get_user_id() in {"user123", "user456"}
+
+@command("panel", permission=is_admin, help="管理面板")
+async def panel_handler(event):
+    await event.reply("欢迎来到管理面板")
 ```
+
+**命令权限 ACL**（控制面 `ErisPulse.scope.commands`）：用户可为任意命令配置用户黑白名单，
+命令名支持精确与 glob 模式（如 `"roll*"`），拒绝时回复"权限不足"：
+
+```toml
+# config.toml —— 仅允许 123456 执行 restart；666 一律拒绝
+[ErisPulse.scope.commands.restart]
+allow = ["onebot11:123456"]
+deny = ["onebot11:666"]
+```
+
+判定顺序：`deny` 命中 → 拒绝；`allow` 非空且未命中 → 拒绝；否则交给开发者默认
+（`master=True` / `permission`）。运行时 API（命令名支持 glob）：
+
+```python
+from ErisPulse import sdk
+sdk.scope.allow_user("restart", "onebot11", "123456")   # 允许名单
+sdk.scope.deny_user("restart", "onebot11", "666")       # 拒绝名单
+sdk.scope.remove_acl("restart")                          # 清除黑白名单
+sdk.scope.get_acl("restart")                             # 查询当前名单
+```
+
+跨命令 / 跨用户的**事件级**访问控制（某人 / 某群 / 某 Bot 的消息收不收）
+走控制面**身份维度**（`scope.identity`）；**模块级**可用性（哪些模块能用）
+走控制面**模块维度**（`scope.platforms / bots / sessions`）。详见[统一控制面](../advanced/scope.md)。
+
+> 建议：命令内部需要联动业务逻辑的用 `master=True` / `permission`；纯按用户 / 群做
+> 访问控制的用控制面身份维度；控制模块可用性的用控制面模块维度。
 
 ### 命令优先级
 
@@ -189,23 +249,32 @@ async def handler_c(event):
 >
 > **慢日志**：单个处理器耗时超过 **1 秒**时，框架会在日志打 WARNING（`handler_slow`）。`wait_reply` 的等待时间会从耗时里剔除，不会因为「等人回复」误报慢。
 
-## 作用域过滤：为什么我的模块没收到消息
+## 控制面过滤：为什么我的模块没收到消息
 
-事件分发在**创建处理器 Task 之前**会做作用域过滤——按模块 owner 判定 `scope.is_allowed`（会话级 > Bot 级 > 平台级），**不通过就静默跳过**，不报错不响应。
+事件到达后有两道**静默**过滤（都不回复、不报错）：
 
-```python
-# 假设 config.toml 里把 MyModule 屏蔽在了某个群：
-[ErisPulse.scope]
-block = { yunhu = { group_123 = ["MyModule"] } }
+1. **身份维度**（`ErisPulse.scope.identity`）：事件进入分发入口时，按 用户 > 群 > Bot > 适配器 判定收不收。
+   被拒绝的**整个事件**直接丢弃，任何处理器（含命令分发器）都不会触发。
+2. **模块维度**（`ErisPulse.scope`）：事件到达某模块的处理器/命令时，按 会话 > Bot > 平台 判定
+   该模块是否可用，**不通过就静默跳过**。
+
+```toml
+# 例1：某群所有消息不传播
+[ErisPulse.scope.identity.sessions.onebot11."group_123"]
+deny = true
+
+# 例2：把 MyModule 屏蔽在某个 Bot
+[ErisPulse.scope.bots.onebot11."123456"]
+blocked = ["MyModule"]
 ```
 
-此时该群的消息到达时，`MyModule` 的命令与事件处理器**都不会被调度**。这不是 bug，是作用域机制——排查「模块没反应」时优先检查作用域绑定。
+此时该群的消息到达时，`MyModule` 的命令与事件处理器**都不会被调度**。这不是 bug，是过滤机制——排查「模块没反应」时优先检查控制面的身份与模块绑定。
 
-- 三层过滤点：适配器总线级（Task 创建前）、Event 模块级（每个优先级组内）、命令级（权限检查前）
-- 过滤日志只在 **TRACE** 级可见（`core.scope.denied`），默认 INFO 看不到任何痕迹
-- 框架级处理器（如命令分发器 `scope_exempt=True`）不受作用域影响
+- 过滤日志只在 **TRACE** 级可见（`core.scope.identity_denied` / `core.scope.denied`），默认 INFO 看不到任何痕迹
+- 框架级处理器（如命令分发器 `scope_exempt=True`）不受**模块维度**影响，但受**身份维度**影响（整个事件已丢弃）
+- 命令执行前还有第三道：命令权限 ACL（拒绝时回复"权限不足"，见上节）
 
-> 作用域三级绑定、白名单/黑名单、优先级覆盖与「default_allow」隐式拒绝语义见 [作用域系统](../../advanced/scope.md)。
+> 五维配置、匹配语法、运行时 API 见 [统一控制面](../../advanced/scope.md)。
 
 ## 链路控制：认领与阻断
 

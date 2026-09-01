@@ -797,7 +797,8 @@ class TestHttpClientFiles:
         """files 与 bytes 类型的 data 同时使用时报错"""
         c, mock_session = client
 
-        with pytest.raises(ValueError, match="非 dict 类型"):
+        # 断言稳定参数（字段名 files），不依赖运行语言的本地化文案
+        with pytest.raises(ValueError, match="files"):
             await c.post("http://example.com/upload", data=b"raw", files={
                 "file": ("test.txt", b"hello"),
             })

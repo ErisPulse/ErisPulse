@@ -1742,11 +1742,13 @@ class ModuleActivator(LazyModule):
                 continue
 
             event_handler = manager.handler
-            condition = (
-                (lambda e, dt=detail_type: e.get("detail_type") == dt)
-                if detail_type
-                else None
-            )
+            if detail_type:
+                from ..Core.text_match import compile_entry_matcher
+
+                _detail_matcher = compile_entry_matcher(str(detail_type))
+                condition = lambda e, m=_detail_matcher: m(e.get("detail_type") or "")
+            else:
+                condition = None
 
             async def _stub_event(event: Any, _handler=event_handler) -> None:
                 await self._activate_and_forward(_handler, event)

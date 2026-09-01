@@ -3,9 +3,13 @@ ErisPulse 命令处理模块
 
 提供基于装饰器的命令注册和处理功能
 
+命令的**用户权限 ACL**（谁/谁不能执行）统一收敛到控制面 ``ErisPulse.scope.commands``
+（运行时 ``scope.allow_user`` / ``scope.deny_user``，命令名支持 glob），
+本模块不再单独维护权限配置。
+
 {!--< tips >!--}
 1. 支持命令别名和命令组
-2. 支持命令权限控制
+2. 支持命令权限控制（master / permission 函数 / 控制面 ACL）
 3. 支持命令帮助系统
 4. 支持等待用户回复交互
 {!--< /tips >!--}
@@ -35,6 +39,7 @@ from ..constants import (
     UNKNOWN_PLATFORM,
 )
 from ..i18n import i18n
+from ..text_match import compile_text_matcher, extract_text
 from .base import BaseEventHandler
 from .session_type import get_send_type_and_target_id, infer_receive_type
 
@@ -98,6 +103,87 @@ class CommandHandler:
     def _on_config_updated(self, _data: dict) -> None:
         """配置变更回调：刷新命令解析参数，实现热更新"""
         self._refresh_command_config()
+
+    # ==================== 命令权限 ACL（控制面 scope.commands） ====================
+
+    @staticmethod
+    def _scope() -> Any:
+        """
+        {!--< internal-use >!--}
+        延迟获取控制面单例（避免模块初始化阶段的循环依赖）
+
+        :return: scope 单例（ScopeManager）
+        """
+        from ..scope import scope
+
+        return scope
+
+    def allow_user(
+        self, command_name: str, platform: str, user_id: str, persist: bool = True
+    ) -> None:
+        """
+        将用户加入命令的 allow 名单（白名单非空时仅名单内用户可执行）
+
+        委托给控制面 ``scope.allow_user``；命令名支持 glob。
+
+        :param command_name: 命令名称（支持 glob / ``re:`` 正则）
+        :param platform: 用户所属平台
+        :param user_id: 用户 ID
+        :param persist: 是否持久化到配置 (默认: True)
+
+        :example:
+        >>> command.allow_user("restart", "onebot11", "123456")
+        """
+        self._scope().allow_user(command_name, platform, user_id, persist=persist)
+
+    def deny_user(
+        self, command_name: str, platform: str, user_id: str, persist: bool = True
+    ) -> None:
+        """
+        将用户加入命令的 deny 名单（deny 优先于 allow 与默认权限）
+
+        委托给控制面 ``scope.deny_user``；命令名支持 glob。
+
+        :param command_name: 命令名称（支持 glob / ``re:`` 正则）
+        :param platform: 用户所属平台
+        :param user_id: 用户 ID
+        :param persist: 是否持久化到配置 (默认: True)
+
+        :example:
+        >>> command.deny_user("restart", "onebot11", "666")
+        """
+        self._scope().deny_user(command_name, platform, user_id, persist=persist)
+
+    def remove_acl(self, command_name: str, persist: bool = True) -> bool:
+        """
+        清除命令的用户黑白名单（恢复开发者默认权限逻辑）
+
+        委托给控制面 ``scope.remove_acl``；命令名支持 glob。
+
+        :param command_name: 命令名称（支持 glob / ``re:`` 正则）
+        :param persist: 是否持久化到配置 (默认: True)
+        :return: 是否存在并被清除
+
+        :example:
+        >>> command.remove_acl("restart")
+        True
+        """
+        return self._scope().remove_acl(command_name, persist=persist)
+
+    def get_acl(self, command_name: str) -> dict[str, list[str]]:
+        """
+        查询命令当前的用户黑白名单
+
+        委托给控制面 ``scope.get_acl``；命令名支持 glob。
+
+        :param command_name: 命令名称（支持 glob / ``re:`` 正则）
+        :return: {"allow": [...], "deny": [...]}（用户标识 "platform:user_id"）
+
+        :example:
+        >>> command.get_acl("restart")
+        {'allow': ['onebot11:123456'], 'deny': []}
+        """
+        return self._scope().get_acl(command_name)
 
     def __call__(
         self,
@@ -274,6 +360,8 @@ class CommandHandler:
         callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None,
         validator: Callable[[dict[str, Any]], bool] | None = None,
         method: str = DEFAULT_SEND_METHOD,
+        pattern: str | None = None,
+        regex: str | None = None,
     ) -> dict[str, Any] | None:
         """
         等待用户回复
@@ -284,6 +372,8 @@ class CommandHandler:
         :param callback: 回调函数，当收到回复时执行
         :param validator: 验证函数，用于验证回复是否有效
         :param method: 发送方法，默认为 "Text"
+        :param pattern: glob 通配符（``*`` / ``?`` / ``[seq]``），回复文本不匹配时继续等待
+        :param regex: 正则表达式，回复文本不匹配时继续等待（与 pattern 同时给定时须都匹配）
         :return: 用户回复的事件数据，如果超时则返回None
         """
         platform = event.get("platform")
@@ -327,6 +417,8 @@ class CommandHandler:
             "future": future,
             "callback": callback,
             "validator": validator,
+            "pattern": pattern,
+            "regex": regex,
             "timestamp": loop.time(),
         }
 
@@ -579,8 +671,41 @@ class CommandHandler:
                     )
                     return False
 
+            # 命令权限 ACL（控制面 scope.commands）：命令名支持 glob
+            # deny 命中 / allow 白名单未命中 / 严格模式无 ACL → 拒绝；
+            # 否则（无 ACL 且默认放行）继续走开发者默认权限链
+            _allowed = self._scope().is_command_allowed(
+                actual_cmd_name,
+                event.get("platform", UNKNOWN_PLATFORM),
+                event.get("user_id", ""),
+            )
+            if _allowed is False:
+                logger.trace(
+                    i18n.t(
+                        "core.command.acl_denied",
+                        cmd_name=actual_cmd_name,
+                        user_id=(
+                            f"{event.get('platform', UNKNOWN_PLATFORM)}:"
+                            f"{event.get('user_id', '')}"
+                        ),
+                    )
+                )
+                await self._send_permission_denied(event)
+                return False
+
+            # 控制面实现参数覆盖（scope.overrides）：覆盖 master / hidden / aliases / prefix 等
+            # 注意：禁用不通过 overrides，统一走命令 deny（scope.commands）
+            from ..scope import scope as _scope
+
+            _effective = cmd_info
+            if cmd_owner:
+                _override = _scope.get_override(cmd_owner, actual_cmd_name)
+                if _override:
+                    _effective = dict(cmd_info)
+                    _effective.update(_override)
+
             # 检查框架主人权限（must_master）
-            if cmd_info.get("must_master"):
+            if _effective.get("must_master"):
                 from ..master import master
 
                 if not master.is_master(event):
@@ -596,7 +721,7 @@ class CommandHandler:
                     return False
 
             # 检查权限
-            permission_func = cmd_info.get("permission") or self.permissions.get(
+            permission_func = _effective.get("permission") or self.permissions.get(
                 actual_cmd_name
             )
             if permission_func:
@@ -622,15 +747,16 @@ class CommandHandler:
                     await self._send_permission_denied(event)
                     return False
 
-            # 添加命令相关信息到事件
+            # 添加命令相关信息到事件（合并控制面覆盖后的有效参数）
             command_info = {
                 "name": actual_cmd_name,
                 "main_name": cmd_info["main_name"],
                 "args": args,
                 "raw": command_text,
-                "help": cmd_info["help"],
-                "usage": cmd_info["usage"],
-                "group": cmd_info["group"],
+                "help": _effective.get("help", cmd_info.get("help")),
+                "usage": _effective.get("usage", cmd_info.get("usage")),
+                "group": _effective.get("group", cmd_info.get("group")),
+                "hidden": _effective.get("hidden", cmd_info.get("hidden", False)),
             }
 
             event["command"] = command_info
@@ -747,6 +873,23 @@ class CommandHandler:
             )
             wait_info = self._waiting_replies[wait_key]
             validator = wait_info.get("validator")
+
+            # pattern（glob）/ regex（正则）过滤：不匹配则继续等待（不消费 future）
+            _pattern = wait_info.get("pattern")
+            _regex = wait_info.get("regex")
+            if _pattern or _regex:
+                _text_cond = compile_text_matcher(_pattern, _regex)
+                _matched = _text_cond is None or _text_cond(event)
+                if not _matched:
+                    logger.trace(
+                        i18n.t(
+                            "core.command.reply_pattern_not_matched",
+                            wait_key=wait_key,
+                            user_id=user_id,
+                            platform=platform,
+                        )
+                    )
+                    return
 
             # 如果有验证器，验证回复是否有效
             if validator:

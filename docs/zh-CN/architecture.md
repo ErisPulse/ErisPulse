@@ -120,7 +120,7 @@ sequenceDiagram
     A->>A: 处理 self 字段（meta 分支 / Bot 自动注册）
     A->>A: 中间件链（串行，可改写事件数据）
     A->>A: 收集 handler（具体类型 + 通配符 *）
-    A->>A: 作用域过滤（创建 Task 前，静默跳过）
+    A->>A: 身份准入 + 作用域过滤（创建 Task 前，静默丢弃/跳过）
     A->>T: asyncio.create_task（fire-and-forget）
     A->>A: lifecycle.adapter.event.dispatched（最末钩子）
     T->>T: 获取并发信号量（默认上限 64）
@@ -141,7 +141,8 @@ sequenceDiagram
 | self 字段 | meta 事件走 connect/disconnect/heartbeat 分支；普通事件自动注册 Bot 并触发 `adapter.bot.online` | 监听 `adapter.bot.online` / `bot.offline` |
 | 中间件 | **串行**执行，返回值非 None 则替换事件数据 | 注册中间件改写/拦截事件 |
 | 分发收集 | 先取具体类型 handler，再取 `*` 通配符 handler | — |
-| 作用域过滤 | 按 owner 判定 `scope.is_allowed`（会话级>Bot级>平台级），**不通过则静默跳过** | 配置作用域白名单/黑名单 |
+| 身份维度 | 分发入口按 用户>会话>Bot>适配器 判定事件收不收（`scope.is_identity_allowed`），**拒绝则整个事件丢弃** | `ErisPulse.scope.identity` 绑定 |
+| 作用域过滤 | 按模块 owner 判定 `scope.is_allowed`（会话级>Bot级>平台级），**不通过则静默跳过** | 配置作用域白名单/黑名单 |
 | 调度 | 每个匹配 handler 独立 `asyncio.Task`，`emit()` **不等待** handler 完成即返回 | — |
 | 优先级 | 高优先级组先执行；**组间串行、组内并发**（组内各自持有事件副本，改字段合并回原事件，冲突打 WARNING） | `@command(..., priority=N)` / 注册时指定 priority |
 | 阻断 | 每处理完一组检查 `event.is_stopped()`，命中则**不再执行更低优先级** | `event.mark_processed(stop=True)` / `event.done()` |

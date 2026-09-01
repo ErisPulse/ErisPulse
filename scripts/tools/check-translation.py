@@ -268,20 +268,22 @@ class TranslationChecker:
                 }
             )
 
-        src_fences = len(re.findall(r"^```", src_content, re.MULTILINE))
-        tgt_fences = len(re.findall(r"^```", tgt_content, re.MULTILINE))
-        if src_fences % 2 != 0:
-            pass
-        elif tgt_fences % 2 != 0:
-            diff = tgt_fences - src_fences
-            if abs(diff) > 2:
-                issues.append(
-                    {
-                        "severity": "error",
-                        "type": "unclosed_code",
-                        "message": f"代码块未关闭 (目标{tgt_fences}个，源{src_fences}个```)",
-                    }
-                )
+        # 围栏完整性：译文围栏行数必须与源文件一致。
+        # 翻译不应增删代码块；数量不一致说明存在丢围栏/多围栏的损坏
+        # （如闭合围栏被误删导致后续内容被吞进代码块——此类损坏恰好
+        # 保持偶数，仅查奇偶会漏报，必须精确比对）
+        src_fences = len(re.findall(r"^`{3,}", src_content, re.MULTILINE))
+        tgt_fences = len(re.findall(r"^`{3,}", tgt_content, re.MULTILINE))
+        if src_fences != tgt_fences:
+            issues.append(
+                {
+                    "severity": "error",
+                    "type": "unclosed_code",
+                    "message": (
+                        f"围栏数不匹配 (源{src_fences}个，目标{tgt_fences}个```)"
+                    ),
+                }
+            )
 
         for gi in detect_garbled(tgt_content, lang):
             issues.append({"severity": "error", "type": "garbled", "message": gi})

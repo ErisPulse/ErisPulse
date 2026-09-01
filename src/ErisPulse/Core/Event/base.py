@@ -275,12 +275,23 @@ class BaseEventHandler:
         scope_bot = event.get_self_account_id()
         scope_session = _scope.session_id_from_event(event)
 
+        # 事件准入兜底（scope 身份维度）：适配器分发入口已丢弃未授权事件，
+        # 此处防御性双保险（覆盖直接调用 _process_event 的场景）
+        _access_user = event.get("user_id")
+        if not _scope.is_identity_allowed(
+            scope_platform,
+            scope_bot or None,
+            scope_session or None,
+            str(_access_user) if _access_user else None,
+        ):
+            return
+
         for _priority, group_iter in groupby(
             self.handlers, key=lambda h: h["priority"]
         ):
             group = list(group_iter)
 
-            # 过滤出满足条件的处理器（条件函数 + 模块作用域）
+            # 过滤出满足条件的处理器（条件函数 + 模块作用域 + 控制面文本过滤）
             active = [
                 h
                 for h in group
@@ -288,6 +299,7 @@ class BaseEventHandler:
                 and self._is_scope_allowed(
                     h, scope_platform, scope_bot, scope_session
                 )
+                and self._is_scope_handler_ok(h, event)
             ]
             if not active:
                 continue
@@ -411,6 +423,32 @@ class BaseEventHandler:
         return scope.is_allowed(
             platform, bot_id or None, owner, session_id or None
         )
+
+    @staticmethod
+    def _is_scope_handler_ok(handler_info: dict, event) -> bool:
+        """
+        {!--< internal-use >!--}
+        判断处理器是否通过控制面文本过滤（scope.handlers.<module>）
+
+        框架级处理器（scope_exempt 或 owner 为空）始终放行；
+        模块级处理器按其 owner 在 ``scope.handlers`` 中配置的 pattern / regex
+        条件过滤（与代码内条件 AND，需同时满足）。
+
+        :param handler_info: 处理器信息字典
+        :param event: 事件对象
+        :return: 是否允许执行
+        """
+        if handler_info.get("scope_exempt"):
+            return True
+        owner = handler_info.get("owner")
+        if not owner:
+            return True
+        from ..scope import scope
+
+        condition = scope.handler_condition(owner)
+        if condition is None:
+            return True
+        return condition(event)
 
     def _clear_handlers(self):
         """
