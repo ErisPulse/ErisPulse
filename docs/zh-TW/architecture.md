@@ -2,8 +2,6 @@
 
 本文檔透過可視化圖表介紹 ErisPulse SDK 的技術架構，幫助你快速理解框架的設計理念和模組關係。
 
-
-
 ## SDK 核心架構
 
 下圖展示了 SDK 的核心模組組成及其關係：
@@ -46,10 +44,10 @@ graph TB
 |------|------|
 | **Event** | 事件系統，提供 command / message / notice / request / meta 五類事件處理，以及 Conversation 多輪對話 |
 | **Adapter** | 適配器管理器，管理多平台適配器的註冊、啟動和關閉 |
-| **Module** | 模組管理器，管理插件的註冊、載入和卸載，支援依賴宣告和拓撲排序 |
+| **Module** | 模組管理器，管理插件的註冊、加載和卸載，支援依賴宣告和拓撲排序 |
 | **Lifecycle** | 生命週期管理器，提供事件驅動的生命週期鉤子 |
-| **Storage** | 基於 SQLite 的鍵值儲存系統，支援通用 SQL 串流查詢 |
-| **Config** | TOML 格式的設定檔管理 |
+| **Storage** | 基於 SQLite 的鍵值儲存系統，支援通用 SQL 鏈式查詢 |
+| **Config** | TOML 格式的配置文件管理 |
 | **Logger** | 模組化日誌系統，支援子日誌器 |
 | **Router** | HTTP/WebSocket 路由管理，透過抽象層封裝底層後端（目前為 FastAPI + Uvicorn），支援裝飾器路由、中間件、分組、限流、CORS |
 | **Client** | 統一 HTTP/WS 客戶端（2.8.0 前為 `HttpClient`，保留相容別名），透過抽象層封裝底層請求庫（目前為 aiohttp），提供請求統計、重試、日誌、WebSocket 客戶端、ErisPulse 異常體系等功能。客戶端和伺服器 WebSocket 共享 `WebSocketConnectionBase` 基類 |
@@ -62,7 +60,7 @@ graph TB
 flowchart TD
     A["sdk.init()"] --> B["準備執行環境"]
     B --> B1["載入配置檔案"]
-    B1 --> B2["設定全域例外處理"]
+    B1 --> B2["設定全域性例外處理"]
     B2 --> C["適配器 & 模組發現"]
     C --> D{"平行載入"}
     D --> D1["從 PyPI 加載適配器"]
@@ -113,48 +111,49 @@ sequenceDiagram
     participant P as 平台
     participant A as 適配器總線層<br/>AdapterManager.emit
     participant T as 處理器 Task 層<br/>_dispatch_handler_task
-    participant E as Event 模組層<br/>_process_event
+    participant E as Event 模塊層<br/>_process_event
 
     P->>A: 原生事件
     A->>A: 提取 platform/type/detail_type + 原始字段
     A->>A: [Recv] 接收日誌
     A->>A: lifecycle.adapter.event.receive（最早期鈎子）
     A->>A: 處理 self 字段（meta 分支 / Bot 自動註冊）
-    A->>A: 中間件鏈（串行，可改寫事件資料）
+    A->>A: 中間件鏈（串行，可改寫事件數據）
     A->>A: 收集 handler（具體類型 + 通配符 *）
-    A->>A: 作用域過濾（建立 Task 前，靜默跳過）
+    A->>A: 身份准入 + 作用域過濾（建立 Task 前，靜默丟棄/跳過）
     A->>T: asyncio.create_task（fire-and-forget）
     A->>A: lifecycle.adapter.event.dispatched（最末鈎子）
-    T->>T: 獲取並發信號量（預設上限 64）
-    T->>E: 調用 Event 模組掛載的處理器
+    T->>T: 獲取併發信號量（預設上限 64）
+    T->>E: 調用 Event 模塊掛載的處理器
     E->>E: lifecycle.event.pre_process
     E->>E: ignore_self（訊息事件預設忽略自身）
-    E->>E: 按優先級分組：高→低、組間串行、組內並發
+    E->>E: 按優先級分組：高→低、組間串行、組內併發
     E->>E: 組內副本執行 + 字段合併（衝突告警）
     E->>E: 組後檢查 stop() 阻斷更低優先級
-    T->>T: 慢日誌（超 1s 告警，wait_reply 時間白名單）
+    T->>T: 慢日誌（超過 1s 告警，wait_reply 時間白名單）
 ```
 
 **每一步框架做了什麼、你能干預什麼：**
 
 | 階段 | 框架做了什麼 | 你能干預的 |
 |------|-------------|-----------|
-| 接收 | 提取標準字段，保留 `{platform}_raw` 原始資料；寫 `[Recv]` 日誌 | 監聽 `adapter.event.receive` 拿到最早期事件 |
+| 接收 | 提取標準字段，保留 `{platform}_raw` 原始數據；寫 `[Recv]` 日誌 | 監聽 `adapter.event.receive` 拿到最早期事件 |
 | self 字段 | meta 事件走 connect/disconnect/heartbeat 分支；普通事件自動註冊 Bot 並觸發 `adapter.bot.online` | 監聽 `adapter.bot.online` / `bot.offline` |
-| 中間件 | **串行**執行，返回值非 None 則取代事件資料 | 註冊中間件改寫/攔截事件 |
+| 中間件 | **串行**執行，返回值非 None 則替換事件數據 | 註冊中間件改寫/攔截事件 |
 | 分發收集 | 先取具體類型 handler，再取 `*` 通配符 handler | — |
-| 作用域過濾 | 按 owner 判定 `scope.is_allowed`（會話級>Bot級>平台級），**不通過則靜默跳過** | 配置作用域白名單/黑名單 |
-| 調度 | 每個匹配 handler 獨立 `asyncio.Task`，`emit()` **不等待** handler 完成即回傳 | — |
-| 優先級 | 高優先級組先執行；**組間串行、組內並發**（組內各自持有事件副本，改字段合併回原事件，衝突打 WARNING） | `@command(..., priority=N)` / 註冊時指定 priority |
+| 身份維度 | 分發入口按 用戶>會話>Bot>適配器 判定事件收不收（`scope.is_identity_allowed`），**拒絕則整個事件丟棄** | `ErisPulse.scope.identity` 綁定 |
+| 作用域過濾 | 按模組 owner 判定 `scope.is_allowed`（會話級>Bot級>平台級），**不通過則靜默跳過** | 配置作用域白名單/黑名單 |
+| 調度 | 每個匹配 handler 獨立 `asyncio.Task`，`emit()` **不等待** handler 完成即返回 | — |
+| 優先級 | 高優先級組先執行；**組間串行、組內併發**（組內各自持有事件副本，改字段合併回原事件，衝突打 WARNING） | `@command(..., priority=N)` / 註冊時指定 priority |
 | 阻斷 | 每處理完一組檢查 `event.is_stopped()`，命中則**不再執行更低優先級** | `event.mark_processed(stop=True)` / `event.done()` |
 
 > **常見誤區**：
 > 1. **作用域過濾是靜默的**——被屏蔽的 handler 不報錯不回應，只在 TRACE 級日誌可見（`core.scope.denied`）。「我的模組沒收到訊息」優先排查作用域綁定。
-> 2. **handler 天然並發**——框架已為每個 handler 建獨立 Task，你**不需要**再自己 `asyncio.create_task` 包一層。
-> 3. **同優先級組內不阻斷**——`mark_processed(stop=True)` 只阻止更低優先級組，同組內已並發的 handler 不會中途被打斷。
-> 4. **慢日誌閾值固定 1 秒**——處理器耗時超 1s 會在日誌打 WARNING（`wait_reply` 等待時間已從耗時中剔除），但不中斷執行。
+> 2. **handler 天然併發**——框架已為每個 handler 建獨立 Task，你**不需要**再自己 `asyncio.create_task` 包一層。
+> 3. **同優先級組內不阻斷**——`mark_processed(stop=True)` 只阻止更低優先級組，同組內已併發的 handler 不會中途被打斷。
+> 4. **慢日誌閾值固定 1 秒**——處理器耗時超過 1s 會在日誌打 WARNING（`wait_reply` 等待時間已從耗時中剔除），但不中斷執行。
 
-> 作用域三級綁定與優先級細節見 [作用域系統](docs/zh-TW/advanced/scope.md)；claim/阻斷完整語義見 [事件處理入門](docs/zh-TW/getting-started/event-handling.md)；並發上限配置見 [配置指南](docs/zh-TW/user-guide/configuration.md#框架配置)。
+> 作用域三級綁定與優先級細節見 [作用域系統](advanced/scope.md)；claim/阻斷完整語義見 [事件處理入門](getting-started/event-handling.md)；併發上限配置見 [配置指南](user-guide/configuration.md#框架配置)。
 
 ## 生命週期事件
 
@@ -193,12 +192,12 @@ flowchart LR
 
 ## 模組載入策略
 
-ErisPulse 支援三種模組載入策略，由 `get_load_strategy()` 回傳的 `ModuleLoadStrategy` 聲明：
+ErisPulse 支援三種模組載入策略，由 `get_load_strategy()` 回傳的 `ModuleLoadStrategy` 宣告：
 
 ```mermaid
 flowchart TD
     A["模組註冊到 ModuleManager"] --> B{"載入策略"}
-    B -->|"lazy_load = true<br/>+ activate_on 聲明"| C["建立 ModuleActivator 代理"]
+    B -->|"lazy_load = true<br/>+ activate_on 宣告"| C["建立 ModuleActivator 代理"]
     B -->|"lazy_load = true<br/>無 activate_on"| D["建立 LazyModule 代理"]
     B -->|"lazy_load = false"| E["立即建立實例"]
     C --> F["註冊事件/命令 stub 到分發器"]
@@ -211,7 +210,7 @@ flowchart TD
     L --> M["掛載到 sdk 屬性"]
 ```
 
-> 更多詳情請參考 [懶載入系統](docs/zh-TW/advanced/lazy-loading.md)、[生命週期管理](docs/zh-TW/advanced/lifecycle.md) 與模組文件。
+> 更多詳情請參考 [懶載入系統](advanced/lazy-loading.md)、[生命週期管理](advanced/lifecycle.md) 與模組文件。
 
 ### 事件驅動懶激活（`activate_on`）觸發架構
 
@@ -227,12 +226,12 @@ flowchart LR
         S2 --> S2a["'message' → 事件類型級"]
         S2 --> S2b["{'notice': 'group_member_increase'}<br/>→ 類型 + detail_type"]
         S2 --> S2c["{'command': 'roll'}<br/>→ 命令觸發（簡寫/列表）"]
-        S2 --> S2d["{'command': {'name': 'dice', 'help': ...,<br/>'aliases': [...], 'hidden': ...}}<br/>→ 命令觸發（dict 聲明）"]
+        S2 --> S2d["{'command': {'name': 'dice', 'help': ...,<br/>'aliases': [...], 'hidden': ...}}<br/>→ 命令觸發（dict 宣告）"]
     end
 
     subgraph Runtime["執行期"]
         R1["ModuleActivator 註冊 stub"] --> R1a["事件 stub → message/notice/request/meta 管理器<br/>優先級 ACTIVATION_STUB_PRIORITY（極低）"]
-        R1 --> R1b["命令 stub → 命令管理器<br/>占位命令（鏡像 dict 聲明的 help/usage/group/aliases/hidden）"]
+        R1 --> R1b["命令 stub → 命令管理器<br/>佔位命令（鏡像 dict 宣告的 help/usage/group/aliases/hidden）"]
         R1a --> R2{"觸發事件到達"}
         R1b --> R2
         R2 --> R3["按 owner 過作用域過濾"]
@@ -247,35 +246,35 @@ flowchart LR
 
 **觸發語義要點：**
 
-> 完整的 `activate_on` 語法（str / dict / list）、命令 dict 聲明、占位命令 help 回退鏈、作用域過濾與失敗語義見 [懶載入系統](docs/zh-TW/advanced/lazy-loading.md#事件驅動懶激活activate_on)。
+> 完整的 `activate_on` 語法（str / dict / list）、命令 dict 宣告、佔位命令 help 回退鏈、作用域過濾與失敗語義見 [懶載入系統](advanced/lazy-loading.md#事件驅動懶激活activate_on)。
 
 ## 本地插件檔案夾架構
 
-> [!NOTE]  
-> 此功能需要 ErisPulse **2.8.0+**。
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
 
-本地插件（`plugins/` 目錄）無需打包發布，框架啟動時會自動發現並加載：
+本地插件（`plugins/` 目錄）無需打包發布，框架啟動時自動發現並載入：
 
 ```mermaid
 flowchart TD
-    A["項目 plugins/ 目錄<br/>（ErisPulse.framework.plugins_dir，支援多目錄）"] --> B{"PluginFolderLoader.discover()"}
-    B --> C["單文件：dice.py → 插件名 = 檔案名"]
-    B --> D["包形式：weather/（含 __init__.py）→ 插件名 = 目錄名"]
+    A["專案 plugins/ 目錄<br/>（ErisPulse.framework.plugins_dir，支援多目錄）"] --> B{"PluginFolderLoader.discover()"}
+    B --> C["單一檔案：dice.py → 插件名 = 檔案名"]
+    B --> D["套件形式：weather/（含 __init__.py）→ 插件名 = 目錄名"]
     B --> E["忽略：__pycache__ / _ 開頭 / 非 .py / 無 __init__.py 目錄"]
-    C --> F["導入模組（spec_from_file_location）"]
-    D --> G["導入模組（sys.path + import_module）"]
-    F --> H["識別模組類：Main（BaseModule 子類）優先，回退至首個子類"]
+    C --> F["匯入模組（spec_from_file_location）"]
+    D --> G["匯入模組（sys.path + import_module）"]
+    F --> H["識別模組類別：Main（BaseModule 子類別）優先，回退至首個子類別"]
     G --> H
     H --> I["建構與 entry-point 一致的 moduleInfo"]
-    I --> J["ModuleLoader.load() 合併<br/>本地優先覆蓋 PyPI 同名安裝包"]
-    J --> K["與安裝包模組共用：<br/>啟用狀態 / 作用域 / meta / i18n / 上下文"]
+    I --> J["ModuleLoader.load() 合併<br/>本地優先覆蓋 PyPI 同名安裝套件"]
+    J --> K["與安裝套件模組共用：<br/>啟用狀態 / 作用域 / meta / i18n / 上下文"]
 ```
 
 **約定與特性：**
 
-- 插件名來源：單文件取檔案名，包形式取目錄名
-- 本地插件 `moduleInfo.meta.source == "plugin_folder"`，與 PyPI 安裝包模組無縫共存
-- 同名時本地優先（便於本地覆蓋調試），被禁用時同時移除同名 entry-point 條目
+- 插件名來源：單一檔案取檔案名，套件形式取目錄名
+- 本地插件 `moduleInfo.meta.source == "plugin_folder"`，與 PyPI 安裝套件模組無縫共存
+- 同名時本地優先（便於本地覆蓋調試），被停用時同時移除同名 entry-point 條目
 
 ## 本地插件熱重載架構
 
@@ -287,8 +286,8 @@ flowchart TD
     B --> C["PollingObserver（背景守護執行緒）<br/>定期比較 .py 檔案的 mtime"]
     C --> D{"插件檔案變更"}
     D --> E["變更去抖（預設 1 秒）"]
-    E --> F["_handle_change 解析插件名<br/>（單一檔案 / 包形式）"]
-    F --> G["asyncio.run_coroutine_threadsafe<br/>調度回主事件循環"]
+    E --> F["_handle_change 解析插件名<br/>（單檔案 / 包形式）"]
+    F --> G["asyncio.run_coroutine_threadsafe<br/>調度回主事件迴圈"]
     G --> H["sdk.reload_plugin(name)"]
     H --> I["卸載舊實例（觸發 on_unload）"]
     I --> J["清理註冊（unregister + 移除 sdk 屬性）"]
@@ -296,3 +295,4 @@ flowchart TD
     K --> L["重新 discover + register + load"]
     L --> M["掛載新實例到 sdk 屬性"]
     M --> N["檔案刪除 → 自動從載入結果移除"]
+```

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "ced99c31785ac3f12312d2fcb7e67e9f",
-  "file_hash": "ced99c31785ac3f12312d2fcb7e67e9f",
-  "translated_at": "2026-08-21T01:39:59.644680",
+  "hash": "0bba417dbedeacfa84dc826455122a68",
+  "file_hash": "0bba417dbedeacfa84dc826455122a68",
+  "translated_at": "2026-09-01T06:28:31.658052",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# 進階主題\n\n本目錄包含 ErisPulse 框架的高級特性和深入主題。"
     },
     {
-      "hash": "1b4aa804d2bd756b37b4b950bfee862e",
-      "translation": "## 文件列表\n\n- [啟動流程與手動控制](startup.md) - 啟動鏈路拆解（Finder/Loader/Manager/Router）與手動完整啟動\n- [懶加載系統](lazy-loading.md) - 懶加載模組系統的工作原理、設定與事件驅動懶激活（activate_on）\n- [模組作用域系統](scope.md) - 模組與適配器 Bot/平台的綁定與隔離\n- [國際化 (i18n)](i18n.md) - 多語言支援、翻譯註冊與語言檢測\n- [生命週期管理](lifecycle.md) - 生命週期事件系統的使用方法\n- [路由管理器](router.md) - HTTP 和 WebSocket 路由管理\n- [HTTP 客戶端](http-client.md) - 統一 HTTP 請求客戶端\n- [MessageBuilder 詳解](message-builder.md) - OneBot12 消息段建構器的雙模式用法\n- [SQL 查詢建構器](sql-builder.md) - 通用 SQL 串接查詢建構器及儲存後端抽象\n- [會話類型系統](../standards/session-types.md) - 會話類型定義、映射與自訂類型註冊\n- [Conversation 多輪對話](conversation.md) - 多輪對話上下文的互動方法\n\n> [!NOTE]\n> Dashboard 視窗註冊、Takumi 圖片渲染等 **第三方生態模組** 的文件已遷移至 [生態模組](../ecosystem/README.md) 目錄。"
+      "hash": "50d1f44108e04e3d673d0251b52de38f",
+      "translation": "## 文件列表\n\n- [啟動流程與手動控制](startup.md) - 啟動鏈路拆解（Finder/Loader/Manager/Router）與手動完整啟動\n- [懶加載系統](lazy-loading.md) - 懶加載模組系統的工作原理、配置與事件驅動懶激活（activate_on）\n- [統一控制面（scope）](scope.md) - 五維權限控制：模組可用性 / 事件准入 / 命令 ACL / 文本過濾 / 參數覆蓋\n- [國際化 (i18n)](i18n.md) - 多語言支援、翻譯註冊與語言檢測\n- [生命週期管理](lifecycle.md) - 生命週期事件系統的使用方法\n- [路由管理器](router.md) - HTTP 和 WebSocket 路由管理\n- [HTTP 客戶端](http-client.md) - 統一 HTTP 請求客戶端\n- [MessageBuilder 詳解](message-builder.md) - OneBot12 消息段建構器的雙模式用法\n- [SQL 查詢建構器](sql-builder.md) - 通用 SQL 串接查詢建構器及儲存後端抽象\n- [會話類型系統](../standards/session-types.md) - 會話類型定義、映射與自訂類型註冊\n- [Conversation 多輪對話](conversation.md) - 多輪對話上下文的互動方法\n\n> [!NOTE]  \n> Dashboard 視窗註冊、Takumi 圖片渲染等 **第三方生態模組** 的文件已遷移至 [生態模組](../ecosystem/README.md) 目錄。"
     },
     {
       "hash": "81b5854fa95b29d89b547d92b77468de",

@@ -1,31 +1,24 @@
-# Документация по функциям платформы Telegram
+﻿# Характеристики платформы Telegram
 
 TelegramAdapter — это адаптер, построенный на основе Telegram Bot API, поддерживающий различные типы сообщений и обработку событий.
 
 ---
 
-
-
 ## Информация о документации
 
 - Соответствующая версия модуля: 4.1.1
-- Ответственный: ErisPulse
-
-Документация по использованию ErisPulse можно найти здесь: [Документация](docs/ru/quick-start.md)
+- Поддержка: ErisPulse
 
 ## Основная информация
 
-- Краткое описание платформы: Telegram — это мультиплатформенное приложение для обмена мгновенными сообщениями
-- Имя адаптера: TelegramAdapter
-- Поддерживаемые протоколы/API-версии: Telegram Bot API
-- Сопоставление типов сессий: `private` → при отправке используйте `user`, `group`/`supergroup` → `group`, `channel` → `channel`
+- Краткое описание платформы: Telegram — это мультиплатформенное приложение для обмена сообщениями в реальном времени
+- Название адаптера: TelegramAdapter
+- Поддерживаемые протоколы/версии API: Telegram Bot API
+- Сопоставление типов сеансов: `private` → при отправке используйте `user`, `group`/`supergroup` → `group`, `channel` → `channel`
 
-[**English**](docs/ru/quick-start.md) | [**Русский**](docs/ru/quick-start.md) | [**简体中文**](docs/ru/quick-start.md) | [**日本語**](docs/ja/quick-start.md) | [**한국어**](docs/ko/quick-start.md)
+## Поддерживаемые типы отправки сообщений
 
-## Типы поддерживаемых отправляемых сообщений
-
-Все методы отправки реализованы с использованием цепочечного синтаксиса, например:
-
+Все методы отправки реализованы с использованием цепочки вызовов, например:
 ```python
 from ErisPulse.Core import adapter
 telegram = adapter.get("telegram")
@@ -37,14 +30,14 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 
 | Метод | Описание | Параметры |
 |------|------|------|
-| `.Text(text)` | Отправка текстового сообщения | `text: str` |
-| `.Face(emoji)` | Отправка эмодзи-кубика | `emoji: str` (например, 🎲 🎯 🏀) |
-| `.Markdown(text, content_type)` | Отправка сообщения в формате Markdown | `content_type` по умолчанию `"MarkdownV2"` |
-| `.HTML(text)` | Отправка сообщения в формате HTML | `text: str` |
-| `.Sticker(file)` | Отправка стикера | `file: str (file_id/URL) \| bytes` |
-| `.Location(lat, lng)` | Отправка местоположения | `latitude: float, longitude: float` |
-| `.Venue(lat, lng, title, addr)` | Отправка места | с заголовком и адресом |
-| `.Contact(phone, first, last)` | Отправка контакта | с номером телефона и именем |
+| `.Text(text)` | Отправить текстовое сообщение | `text: str` |
+| `.Face(emoji)` | Отправить эмодзи-кубик | `emoji: str` (например 🎲 🎯 🏀) |
+| `.Markdown(text, content_type)` | Отправить сообщение в формате Markdown | `content_type` по умолчанию `"MarkdownV2"` |
+| `.HTML(text)` | Отправить сообщение в формате HTML | `text: str` |
+| `.Sticker(file)` | Отправить стикер | `file: str (file_id/URL) \| bytes` |
+| `.Location(lat, lng)` | Отправить геолокацию | `latitude: float, longitude: float` |
+| `.Venue(lat, lng, title, addr)` | Отправить место | С заголовком и адресом |
+| `.Contact(phone, first, last)` | Отправить контакт | С номером телефона и именем |
 
 ### Методы отправки медиа
 
@@ -52,38 +45,38 @@ await telegram.Send.To("user", user_id).Text("Hello World!")
 
 | Метод | Описание |
 |------|------|
-| `.Image(file, caption, content_type)` | Отправка изображения |
-| `.Video(file, caption, content_type)` | Отправка видео |
-| `.Voice(file, caption)` | Отправка голосового сообщения |
-| `.Audio(file, caption, content_type)` | Отправка аудио |
-| `.File(file, caption)` | Отправка файла |
-| `.Document(file, caption, content_type)` | Алиас для File |
+| `.Image(file, caption, content_type)` | Отправить изображение |
+| `.Video(file, caption, content_type)` | Отправить видео |
+| `.Voice(file, caption)` | Отправить голосовое сообщение |
+| `.Audio(file, caption, content_type)` | Отправить аудио |
+| `.File(file, caption)` | Отправить файл |
+| `.Document(file, caption, content_type)` | Псевдоним для `File` |
 
 ### Методы управления сообщениями
 
 | Метод | Описание |
 |------|------|
-| `.Edit(message_id, text, content_type)` | Редактирование существующего сообщения |
-| `.Recall(message_id)` | Удаление указанного сообщения |
-| `.Forward(from_chat_id, message_id)` | Пересылка сообщения (сохранение источника) |
-| `.CopyMessage(from_chat_id, message_id)` | Копирование сообщения (без источника) |
-| `.AnswerCallback(callback_query_id, text, show_alert)` | Ответ на запрос обратной связи |
+| `.Edit(message_id, text, content_type)` | Изменить существующее сообщение |
+| `.Recall(message_id)` | Удалить указанное сообщение |
+| `.Forward(from_chat_id, message_id)` | Переслать сообщение (с сохранением источника) |
+| `.CopyMessage(from_chat_id, message_id)` | Скопировать сообщение (без источника) |
+| `.AnswerCallback(callback_query_id, text, show_alert)` | Ответить на запрос обратной связи |
 
-### Отправка сообщений в исходном формате
+### Отправка сообщений в необработанном виде
 
-- `.Raw_ob12(message: List[Dict])`: Отправка сообщения в формате OneBot12
-- `.Raw_json(json_str: str)`: Отправка сообщения в исходном JSON-формате
+- `.Raw_ob12(message: List[Dict])`: Отправить сообщение в формате OneBot12
+- `.Raw_json(json_str: str)`: Отправить сообщение в формате JSON
 
-### Методы цепочечного синтаксиса
+### Методы цепочечного форматирования
 
 | Метод | Описание |
 |------|------|
-| `.At(user_id)` | Упоминание пользователя (через entities Telegram, можно вызывать несколько раз) |
-| `.AtAll()` | Упоминание всех участников (отправка текста `@All`) |
-| `.Reply(message_id)` | Ответ на указанное сообщение |
-| `.Keyboard(inline_keyboard)` | Установка встроенной клавиатуры (`list[list[dict]]`) |
-| `.ProtectContent(protect)` | Защита содержимого (предотвращение пересылки и сохранения) |
-| `.Silent(silent)` | Отправка в тихом режиме (без уведомления пользователя) |
+| `.At(user_id)` | Упомянуть пользователя (через сущности Telegram, можно вызывать несколько раз) |
+| `.AtAll()` | Упомянуть всех участников (отправить текст `@All`) |
+| `.Reply(message_id)` | Ответить на указанное сообщение |
+| `.Keyboard(inline_keyboard)` | Установить встроенную клавиатуру (`list[list[dict]]`) |
+| `.ProtectContent(protect)` | Защитить содержимое (предотвратить пересылку и сохранение) |
+| `.Silent(silent)` | Отправить в тихом режиме (не уведомлять пользователя) |
 
 ### Примеры отправки сообщений
 
@@ -96,17 +89,17 @@ from ErisPulse import sdk
 telegram = sdk.adapter.get("telegram")
 keyboard = [
     [{"text": "Кнопка 1", "callback_data": "btn1"}, {"text": "Кнопка 2", "callback_data": "btn2"}],
-    [{"text": "Посетить сайт", "url": "https://example.com"}],
+    [{"text": "Перейти на сайт", "url": "https://example.com"}],
 ]
 await telegram.Send.To("group", group_id).Keyboard(keyboard).Text("Выберите:")
 
-# Отправка медиа (через URL)
+# Отправка медиа (по URL)
 await telegram.Send.To("group", group_id).Image("https://example.com/image.jpg", caption="Изображение")
 
 # Упоминание пользователя
 await telegram.Send.To("group", group_id).At("6117725680").Text("Привет!")
 
-# Ответ + защита содержимого
+# Ответ с защитой содержимого
 await telegram.Send.To("group", group_id).Reply("12345").ProtectContent().Text("Секретное сообщение")
 
 # Отправка в тихом режиме
@@ -115,7 +108,7 @@ await telegram.Send.To("group", group_id).Silent().Text("Тихое уведом
 # Ответ на запрос обратной связи
 await telegram.Send.AnswerCallback(callback_query_id, text="Обработано", show_alert=False)
 
-# Сложное сообщение OneBot12
+# Сложное сообщение в формате OneBot12
 ob12_message = [
     {"type": "text", "data": {"text": "Сложное сообщение: "}},
     {"type": "mention", "data": {"user_id": "6117725680", "user_name": "Имя пользователя"}},
@@ -127,12 +120,13 @@ await telegram.Send.To("group", group_id).Raw_ob12(ob12_message)
 # Отправка стикера
 await telegram.Send.To("user", user_id).Sticker("CAACAgIAAxkBAA...")  # file_id
 
-# Отправка местоположения
+# Отправка геолокации
 await telegram.Send.To("user", user_id).Location(39.9042, 116.4074)
+```
 
 ## Специфические типы событий
 
-Преобразование событий Telegram следует стандарту OneBot12, а также предоставляет расширения платформы с префиксом `telegram_`.
+Преобразование событий Telegram следует стандарту OneBot12, а расширения платформы предоставляются с префиксом `telegram_`.
 
 ### Сопоставление detail_type для событий сообщений
 
@@ -172,15 +166,15 @@ await telegram.Send.To("user", user_id).Location(39.9042, 116.4074)
 | `voice` | Голосовое сообщение | `file_id`, `url`, `duration` |
 | `audio` | Аудио | `file_id`, `url`, `duration`, `title`, `performer` |
 | `file` | Файл | `file_id`, `url`, `file_name`, `file_size`, `mime_type` |
-| `location` | Местоположение | `latitude`, `longitude`, опционально `title`, `address` |
+| `location` | Местоположение | `latitude`, `longitude`, необязательно `title`, `address` |
 
 ### Расширенные сообщения платформы
 
-Расширенные сообщения с префиксом `telegram_`:
+Расширения сообщений с префиксом `telegram_`:
 
 | Тип сообщения | Описание | Поля data |
 |---|---|---|
-| `telegram_sticker` | Стикер | `file_id`, `emoji`, `sticker_type`, `url` |
+| `telegram_sticker` | Наклейка | `file_id`, `emoji`, `sticker_type`, `url` |
 | `telegram_animation` | Анимация GIF | `file_id`, `url`, `duration`, `caption` |
 | `telegram_contact` | Контакт | `phone_number`, `first_name`, `last_name`, `user_id` |
 | `telegram_inline_keyboard` | Встроенная клавиатура | `inline_keyboard` |
@@ -243,7 +237,7 @@ await telegram.Send.To("user", user_id).Location(39.9042, 116.4074)
   "type": "message",
   "detail_type": "group",
   "message": [
-    {"type": "text", "data": {"text": "Выберите:"}},
+    {"type": "text", "data": {"text": "Выберите: "}},
     {
       "type": "telegram_inline_keyboard",
       "data": {
@@ -255,36 +249,37 @@ await telegram.Send.To("user", user_id).Location(39.9042, 116.4074)
     }
   ]
 }
+```
 
-## Event Mixin расширение методов
+## Расширения Event Mixin
 
-Адаптер зарегистрировал следующие методы, специфичные для платформы, доступны только при `platform == "telegram"`:
+Адаптер зарегистрировал следующие методы, специфичные для платформы, доступные только при `platform == "telegram"`:
 
 ### Связанные с сообщениями
 
 | Метод | Тип возвращаемого значения | Описание |
 |------|----------|------|
-| `is_bot_message()` | `bool` | Проверяет, исходит ли сообщение от бота |
-| `is_edited_message()` | `bool` | Проверяет, является ли сообщение отредактированным |
-| `is_topic_message()` | `bool` | Проверяет, является ли сообщение темой/Topic |
-| `get_update_id()` | `int` | Получает ID обновления Telegram |
+| `is_bot_message()` | `bool` | Определяет, пришло ли сообщение от бота |
+| `is_edited_message()` | `bool` | Определяет, является ли сообщение отредактированным |
+| `is_topic_message()` | `bool` | Определяет, является ли сообщение тематическим/Topic |
+| `get_update_id()` | `int` | Получает идентификатор обновления Telegram |
 | `get_chat_title()` | `str` | Получает заголовок чата |
 | `get_chat_username()` | `str` | Получает имя пользователя чата |
 | `get_forward_from()` | `dict` | Получает информацию о источнике пересылки |
-| `get_topic_id()` | `str` | Получает ID темы |
+| `get_topic_id()` | `str` | Получает идентификатор темы |
 
-### Связанные с запросами обратной связи
+### Связанные с обратными запросами
 
 | Метод | Тип возвращаемого значения | Описание |
 |------|----------|------|
-| `get_callback_data()` | `str` | Получает callback_data запроса обратной связи |
-| `get_callback_id()` | `str` | Получает ID запроса обратной связи (для ответа) |
+| `get_callback_data()` | `str` | Получает callback_data обратного запроса |
+| `get_callback_id()` | `str` | Получает идентификатор обратного запроса (для ответа) |
 
 ### Извлечение данных сегментов сообщений
 
 | Метод | Тип возвращаемого значения | Описание |
 |------|----------|------|
-| `get_inline_keyboard()` | `list` | Получает встроенную клавиатуру из сообщения |
+| `get_inline_keyboard()` | `list` | Получает встроенную клавиатуру в сообщении |
 | `get_sticker_info()` | `dict` | Получает информацию о стикере |
 | `get_contact_info()` | `dict` | Получает информацию о контакте |
 | `get_location()` | `dict` | Получает информацию о местоположении |
@@ -301,7 +296,7 @@ async def handle_message(event):
 
     # Свойства сообщения
     if event.is_bot_message():
-        return  # Игнорировать сообщения от бота
+        return  # Пропускаем сообщения от бота
 
     if event.is_edited_message():
         print("Это отредактированное сообщение")
@@ -313,13 +308,13 @@ async def handle_message(event):
     # Источник пересылки
     forward = event.get_forward_from()
 
-    # Данные сегментов сообщений
+    # Данные сегментов сообщения
     sticker = event.get_sticker_info()
     contact = event.get_contact_info()
     location = event.get_location()
     keyboard = event.get_inline_keyboard()
 
-    # Тема
+    # Темы
     if event.is_topic_message():
         topic_id = event.get_topic_id()
 
@@ -332,24 +327,23 @@ async def handle_notice(event):
         callback_data = event.get_callback_data()
         callback_id = event.get_callback_id()
 
-        # Ответ на запрос обратной связи
+        # Ответ на обратный запрос
         telegram = sdk.adapter.get("telegram")
         await telegram.Send.AnswerCallback(callback_id, text="Нажато")
 
         # Ответ на сообщение
         await event.reply(f"Вы нажали: {callback_data}")
+```
 
-## Описание расширенных полей
+## Пояснения к расширенным полям
 
 - Все специфические поля идентифицируются с префиксом `telegram_`
 - Исходные данные сохраняются в поле `telegram_raw`
 - Тип исходного события сохраняется в поле `telegram_raw_type`
-- Сообщения в канале используют `detail_type="channel"`
+- Сообщения в каналах используют `detail_type="channel"`
 - Личные сообщения используют `detail_type="private"` (при отправке необходимо преобразовать в `user`)
 - Сообщения в темах содержат поле `thread_id`
-- Упоминания с помощью `@` используют стандартный тип сообщения упоминания (`type: "mention"`), текст не содержит @имени_пользователя
-
-docs/ru/quick-start.md
+- Упоминания с помощью `@` используют стандартный тип сообщения упоминания (`type: "mention"`), текст не содержит @имя_пользователя
 
 ## Параметры конфигурации
 
@@ -358,36 +352,34 @@ docs/ru/quick-start.md
 ### Пример конфигурации
 ```toml
 [Telegram_Adapter.accounts.default]
-token = "ВАШ_ТОКЕН_БОТА"
+token = "YOUR_BOT_TOKEN"
 enabled = true
 
 [Telegram_Adapter.accounts.bot2]
-token = "ДРУГОЙ_ТОКЕН_БОТА"
+token = "ANOTHER_BOT_TOKEN"
 enabled = true
 ```
 
 ### Режимы работы
 
-Адаптер Telegram поддерживает только режим **Polling (опрос)**, режим Webhook был удалён.
+Адаптер Telegram поддерживает только **режим опроса (Polling)**, режим вебхуков (Webhook) был удалён.
 
 ### Настройка прокси
 
-Если необходимо подключиться к Telegram API через прокси, используйте системный прокси (переменные окружения `ALL_PROXY` / `HTTPS_PROXY`).
+Если необходимо подключиться к Telegram API через прокси, используйте системные настройки прокси (переменные окружения `ALL_PROXY` / `HTTPS_PROXY`).
 
 ### Перенос старой конфигурации
 
-Старая конфигурация с одним токеном будет автоматически совместима:
+Старый формат конфигурации с одним токеном будет автоматически поддерживаться:
 ```toml
-# Старый формат (по-прежнему можно использовать, но рекомендуется перейти на новый)
+# Старый формат (по-прежнему работает, но рекомендуется перейти на новый)
 [Telegram_Adapter]
-token = "ВАШ_ТОКЕН_БОТА"
+token = "YOUR_BOT_TOKEN"
 ```
 
 Рекомендуется перейти на новый формат:
 ```toml
 [Telegram_Adapter.accounts.default]
-token = "ВАШ_ТОКЕН_БОТА"
+token = "YOUR_BOT_TOKEN"
 enabled = true
 ```
-
-[**中文**](docs/ru/quick-start.md) | [**English**](docs/ru/quick-start.md)

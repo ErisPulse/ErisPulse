@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "hash": "6b8bb865b4958d566dc1102cce0c5697",
+  "file_hash": "6b8bb865b4958d566dc1102cce0c5697",
+  "translated_at": "2026-09-01T07:06:25.277424",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "1b3f0ec4bfba51e600c605ef706bd0e7",
+      "translation": "# インストールのリファレンス\n\n> 本文は、インストール方法の**完全なリファレンス**です（pip / uv / Docker / 問題解決）。\n> すぐに実行したい場合は、[5 分鐘で始める](../quick-start.md)が最も簡易な手順をカバーしています。"
+    },
+    {
+      "hash": "0673dda01e551a4430a223406abc48f9",
+      "translation": "## システム要件\n\n- Python 3.10 以上\n- pip または uv（推奨）\n- 十分なディスク容量（少なくとも 100MB）"
+    },
+    {
+      "hash": "d588381833d7a59395c1506d42a2270e",
+      "translation": "## インストール方法\n\n### 方法1：pipを使用したインストール\n\n```bash\n# ErisPulseのインストール\npip install ErisPulse\n\n# 最新バージョンへのアップグレード\npip install ErisPulse --upgrade\n```\n\n### 方法2：uvを使用したインストール（推奨）\n\nuvはより高速なPythonツールチェーンであり、開発環境での使用が推奨されます。\n\n#### uvのインストール\n\n```bash\n# pipを使用してuvをインストール\npip install uv\n\n# インストールの確認\nuv --version\n```\n\n#### 仮想環境の作成\n\n```bash\n# プロジェクトディレクトリの作成\nmkdir my_bot && cd my_bot\n\n# Python 3.12のインストール\nuv python install 3.12\n\n# 仮想環境の作成\nuv venv\n```\n\n#### 仮想環境の有効化\n\n```bash\n# Windows\n.venv\\Scripts\\activate\n\n# Linux/Mac\nsource .venv/bin/activate\n```\n\n#### ErisPulseのインストール\n\n```bash\n# ErisPulseのインストール\nuv pip install ErisPulse --upgrade\n```"
+    },
+    {
+      "hash": "358f974f4ee2f44daa4450252b751cdc",
+      "translation": "## プロジェクトの初期化とモジュールのインストール\n\nインストールが完了した後、プロジェクトの初期化、モジュールのインストール、実行の完全な手順は、[5 分間のクイックスタート](../quick-start.md)を参照してください。\n\n### 方法 3：ErisPulse-App クライアントの使用（ターミナル不要）\n\nPython 環境をインストールしたくないですか？[ErisPulse-App](../ecosystem/app.md) は公式の全プラットフォーム対応クライアント（Android / Windows / Linux / macOS）で、**スマートフォンで直接実行可能**、デスクトップ版ではシステムトレイに最小化してバックグラウンド常駐が可能です。内蔵の Python 実行時環境と ErisPulse SDK を搭載しており、ターミナルや手動設定は不要です：\n\n- [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) から、プラットフォームに応じてダウンロードしてください（Android は `online`/`offline` APK、Windows は `setup.exe`/`zip`、Linux は `tar.gz`、macOS は `zip`）\n- App 内でインスタンスを作成して起動し、ネイティブのインターフェースでアダプタやモジュールを管理し、モジュールストアを閲覧します\n\n> 詳細な説明は、[ErisPulse-App のインストールと使用方法](../ecosystem/app.md)をご覧ください。"
+    },
+    {
+      "hash": "0cba7617f7a40bf89b6ae47d67267c5f",
+      "translation": "## インストールの確認\n\n### インストールの確認\n\n```bash\n# ErisPulse のバージョンを確認\nepsdk --version\n```\n\n### テストの実行\n\n```bash\n# プロジェクトを実行\nepsdk run main.py\n```\n\n以下のような出力が表示されれば、インストールが成功したことを意味します：\n\n```\n[INFO] ErisPulse の初期化を開始しています...\n[INFO] アダプタがロードされました: Yunhu\n[INFO] モジュールがロードされました: MyModule\n[INFO] ErisPulse の初期化が完了しました\n```"
+    },
+    {
+      "hash": "1bb3ef51791ad89cc63f9dbe11dcaf50",
+      "translation": "## よくある質問\n\n### インストールが失敗する\n\n1. Python のバージョンが 3.10 以上であるか確認してください（推奨バージョンは 3.10 - 3.13）\n2. `pip install` の代わりに `uv pip install ErisPulse` を試してください\n3. 権限エラーが発生した場合は、`pip install --user ErisPulse` を試すか、仮想環境を使用してください\n4. 企業のプロキシ環境で SSL 証明書エラーが発生した場合は、`pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse` を試してください\n5. ネットワーク接続が正常であることを確認し、pip のソースがアクセス可能であることを確認してください\n\n### 設定エラー\n\n1. `config.toml` の構文が正しいか確認してください（TOML 形式はインデントや引用符に敏感です）\n2. 必須の設定項目がすべて入力されているか確認してください\n3. 端末のログを確認して詳細なエラー情報を取得してください\n4. `epsdk init` を使用して設定ファイルを再生成してください\n\n### モジュールのインストールが失敗する\n\n1. モジュール名のスペルが正しいか確認してください（大文字小文字が区別されます）\n2. ネットワーク接続を確認してください\n3. `epsdk list-remote` を使用して利用可能なモジュール一覧を確認してください\n4. モジュールが現在使用している SDK バージョンと互換性があるか確認してください\n\n### Windows PowerShell 実行ポリシー\n\nPowerShell で「ファイルをロードできません。このシステムではスクリプトの実行が禁止されています」というメッセージが表示された場合：\n\n```powershell\nSet-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser\n```"
+    },
+    {
+      "hash": "f8f13704538cc520848853879c0ee83f",
+      "translation": "## 次のステップ\n\n- [CLI コマンドリファレンス](cli-reference.md) - すべてのコマンドラインコマンドについて学びます\n- [設定ファイルについて](configuration.md) - 設定オプションの詳細を学びます"
+    }
+  ]
+}

@@ -2,9 +2,7 @@
 
 The `Conversation` class provides convenient methods for multi-turn interactions within the same session, suitable for scenarios such as guided operations, information collection, and conversational question-answering.
 
-
-
-## Creating Conversations
+## Creating a Conversation
 
 Create a conversation using the `conversation()` method of the `Event` object:
 
@@ -17,7 +15,7 @@ async def quiz_handler(event):
 
     await conv.say("🎮 Welcome to the quiz!")
 
-    answer = await conv.choose("Question 1: Who created Python?", [
+    answer = await conv.choose("Question 1: Who is the creator of Python?", [
         "Guido van Rossum",
         "James Gosling",
         "Dennis Ritchie",
@@ -30,23 +28,22 @@ async def quiz_handler(event):
     if answer == 0:
         await conv.say("Correct!")
     else:
-        await conv.say("Wrong, the correct answer is Guido van Rossum")
+        await conv.say("Incorrect, the correct answer is Guido van Rossum")
 
     conv.stop()
 ```
-
 
 ## Core API
 
 ### say(content, **kwargs)
 
-Send a message, returns `self` for method chaining:
+Send a message and return `self` to support method chaining:
 
 ```python
 await conv.say("First line").say("Second line").say("Third line")
 ```
 
-You can also specify the send method:
+You can also specify the sending method:
 
 ```python
 await conv.say("https://example.com/image.jpg", method="Image")
@@ -54,7 +51,7 @@ await conv.say("https://example.com/image.jpg", method="Image")
 
 ### wait(prompt=None, timeout=None)
 
-Wait for a user reply, returns an `Event` object or `None` (if timeout):
+Wait for user reply and return an `Event` object or `None` (if timeout occurs):
 
 ```python
 # Simple wait
@@ -65,13 +62,13 @@ if resp:
 # Wait after sending a prompt
 resp = await conv.wait(prompt="Please enter your name:")
 
-# Use custom timeout (overrides the conversation default timeout)
+# Use custom timeout (overrides the default conversation timeout)
 resp = await conv.wait(prompt="Please reply within 10 seconds:", timeout=10)
 ```
 
 ### confirm(prompt=None, **kwargs)
 
-Wait for user confirmation (yes/no), returns `True` / `False` / `None` (if timeout):
+Wait for user confirmation (yes/no), return `True` / `False` / `None` (timeout):
 
 ```python
 result = await conv.confirm("Are you sure you want to delete all data?")
@@ -80,30 +77,30 @@ if result is True:
 elif result is False:
     await conv.say("Cancelled")
 else:
-    await conv.say("Timed out without reply")
+    await conv.say("Timed out")
 ```
 
 Built-in recognized confirmation words: `是/yes/y/确认/确定/好/ok/true/对/嗯/行/同意/没问题/可以/当然...`
 
-Built-in recognized denial words: `否/no/n/取消/不/不要/不行/cancel/false/错/不对/别/拒绝...`
+Built-in recognized negation words: `否/no/n/取消/不/不要/不行/cancel/false/错/不对/别/拒绝...`
 
 ### choose(prompt, options, **kwargs)
 
-Wait for user selection from options, returns the option index (0-based) or `None`:
+Wait for user selection from options and return the option index (0-based) or `None`:
 
 ```python
-choice = await conv.choose("Please select a color:", ["red", "green", "blue"])
+choice = await conv.choose("Please select a color:", ["Red", "Green", "Blue"])
 if choice is not None:
-    colors = ["red", "green", "blue"]
+    colors = ["Red", "Green", "Blue"]
     await conv.say(f"You selected {colors[choice]}")
 ```
 
-Users can select by entering a number (`1`/`2`/`3`) or option text (`red`).
+Users can select by entering a number (`1`/`2`/`3`) or the option text (`Red`).
 
-`options_format="auto"` (default) automatically chooses the built-in style based on method: Markdown→unordered list, Html→ordered list, others→plain text list.  
+`options_format="auto"` (default) automatically selects the built-in style based on the method: Markdown→unordered list, Html→ordered list, others→plain text list.  
 Also supports `"list"`, `"inline"`, `"md"`, `"html"`, or a custom function.
 
-Supports `merge_prompt=True` to merge into a single message, and placeholder to control option insertion position (default `{options}`, can be customized via `placeholder`):
+Supports `merge_prompt=True` to merge into a single message, and placeholders to control the option insertion position (default `{options}`, customizable via `placeholder`):
 
 ```python
 choice = await conv.choose(
@@ -115,7 +112,7 @@ choice = await conv.choose(
 
 # Custom placeholder
 choice = await conv.choose(
-    "Select: [choices]",
+    "Please select: [choices]",
     ["Option A", "Option B"],
     placeholder="[choices]",
 )
@@ -123,7 +120,7 @@ choice = await conv.choose(
 
 ### collect(fields, **kwargs)
 
-Collect information in multiple steps, returns a data dictionary or `None`:
+Collect information in multiple steps and return a data dictionary or `None`:
 
 ```python
 data = await conv.collect([
@@ -151,19 +148,19 @@ Field configuration:
 | `max_retries` | Maximum retry attempts | 3 |
 | `condition` | Condition function, receives collected data dict, returns bool | None |
 
-**Conditional fields**: Use `condition` to implement dynamic forms, where the field is only collected if the condition is met:
+**Conditional fields**: Using `condition` allows dynamic forms, where fields are collected only if the condition is met:
 
 ```python
 data = await conv.collect([
-    {"key": "has_car", "prompt": "Do you have a car? (yes/no)"},
-    {"key": "car_brand", "prompt": "Please enter the car brand",
+    {"key": "has_car", "prompt": "Do you have a car? (Yes/No)"},
+    {"key": "car_brand", "prompt": "Please enter your car brand",
      "condition": lambda d: d.get("has_car", "").lower() in ("yes", "y", "是")},
 ])
 ```
 
 ### stop()
 
-Manually end the conversation, sets `is_active` to `False`:
+Manually end the conversation and set `is_active` to `False`:
 
 ```python
 conv.stop()
@@ -171,11 +168,12 @@ conv.stop()
 
 ### is_active
 
-Whether the conversation is active:
+Check if the conversation is active:
 
 ```python
 if conv.is_active:
-    await conv.say("The conversation is still ongoing")
+    await conv.say("The conversation is still active")
+```
 
 ## Active State Management
 
@@ -186,24 +184,24 @@ stateDiagram-v2
     [*] --> active: event.conversation()
     active --> active: say / wait / confirm / choose / collect
     active --> inactive: stop()
-    active --> inactive: wait() timeout
-    active --> inactive: collect() timeout or retries exhausted
+    active --> inactive: wait() timed out
+    active --> inactive: collect() timed out or retries exhausted
     inactive --> [*]
 ```
 
-The conversation will automatically become inactive in the following cases:
+A conversation automatically transitions to the inactive state under the following conditions:
 
-1. When the `stop()` method is called
-2. When `wait()` times out and returns `None`
-3. When `collect()` times out at any step or exhausts retries and returns `None`
+1. The `stop()` method is called
+2. `wait()` times out and returns `None`
+3. `collect()` returns `None` due to any step timing out or exhausting retries
 
-After becoming inactive, all interaction methods (`wait`/`confirm`/`choose`/`collect`) will immediately return `None` without further waiting for user input.
+After becoming inactive, all interaction methods (`wait`/`confirm`/`choose`/`collect`) will immediately return `None` and will not continue waiting for user input.
 
-## Branches and Jumps
+## Branches and Transitions
 
 ### @conv.branch(name) Decorator
 
-Use `branch()` to register conversation branches, and use `goto()` to jump between branches:
+Use `branch()` to register a conversation branch, and use `goto()` to jump between branches:
 
 ```python
 @command("menu")
@@ -212,7 +210,7 @@ async def menu_handler(event):
 
     @conv.branch("main")
     async def main_menu():
-        await conv.say("=== Main Menu ===\n1. Personal Information\n2. Settings\n3. Exit")
+        await conv.say("=== Main Menu ===\n1. Personal Info\n2. Settings\n3. Exit")
         resp = await conv.wait()
         if resp is None:
             return
@@ -227,14 +225,14 @@ async def menu_handler(event):
 
     @conv.branch("profile")
     async def profile():
-        await conv.say("=== Personal Information ===\nName: Alice\n0. Return")
+        await conv.say("=== Personal Info ===\nName: Alice\n0. Back")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
 
     @conv.branch("settings")
     async def settings():
-        await conv.say("=== Settings ===\n1. Notification Switch\n0. Return")
+        await conv.say("=== Settings ===\n1. Notification Toggle\n0. Back")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
@@ -251,12 +249,11 @@ await conv.start()          # Start from the first branch
 await conv.start("settings") # Start from the specified branch
 ```
 
-
 ## Context and Persistence
 
 ### conv.context
 
-Each conversation instance has a built-in `context` dictionary to share state between branches:
+Each conversation instance has a built-in `context` dictionary to share state across branches:
 
 ```python
 @conv.branch("step1")
@@ -279,7 +276,7 @@ Conversations support persistence, allowing them to be resumed after timeout or 
 conv_id = conv.save()
 # conv_id = "user_123_group_456"  # Automatically generated based on user and group
 
-# ... later in the same session ...
+# ... Later, resume in the same session ...
 conv2 = event.conversation()
 if conv2.resume():
     await conv2.say("Welcome back! Continuing the previous conversation")
@@ -290,7 +287,6 @@ else:
 conv.clear_saved()
 ```
 
-
 ## Typical Flow Patterns
 
 ### Guided Registration
@@ -300,7 +296,7 @@ conv.clear_saved()
 async def register_handler(event):
     conv = event.conversation(timeout=60)
 
-    await conv.say("Welcome! Let's register.")
+    await conv.say("Welcome to registration!")
 
     data = await conv.collect([
         {"key": "username", "prompt": "Please enter a username (3-20 characters)",
@@ -311,17 +307,17 @@ async def register_handler(event):
     ])
 
     if not data:
-        await event.reply("Registration cancelled.")
+        await event.reply("Registration cancelled")
         return
 
     confirmed = await conv.confirm(
-        f"Confirm registration information?\nUsername: {data['username']}\nEmail: {data['email']}"
+        f"Confirm registration details?\nUsername: {data['username']}\nEmail: {data['email']}"
     )
 
     if confirmed:
         await conv.say("✅ Registration successful!")
     else:
-        await conv.say("❌ Registration cancelled.")
+        await conv.say("❌ Registration cancelled")
 ```
 
 ### Looping Conversation
@@ -330,12 +326,12 @@ async def register_handler(event):
 @command("chat")
 async def chat_handler(event):
     conv = event.conversation(timeout=120)
-    await conv.say("Entering conversation mode. Type 'exit' to end.")
+    await conv.say("Entering chat mode, type 'exit' to end")
 
     while conv.is_active:
         resp = await conv.wait()
         if resp is None:
-            await conv.say("Timeout, conversation ended.")
+            await conv.say("Timeout, conversation ended")
             break
 
         text = resp.get_text().strip()
@@ -346,11 +342,12 @@ async def chat_handler(event):
         elif text == "help":
             await conv.say("Available commands: exit, help, status")
         elif text == "status":
-            await conv.say("Conversation is active.")
+            await conv.say("Conversation is active")
         else:
             await conv.say(f"You said: {text}")
+```
 
 ## Related Documents
 
 - [Event Wrapper Class](../developer-guide/modules/event-wrapper.md) - All methods of the Event object
-- [Getting Started with Event Handling](../getting-started/event-handling.md) - Basics of event handling
+- [Event Handling Getting Started](../getting-started/event-handling.md) - Event handling basics

@@ -8,18 +8,12 @@
 flowchart LR
     A["平台事件<br/>（OneBot12 標準）"] --> B{"事件類型"}
     B --> C["command<br/>命令處理器"]
-    B --> D["message<br/>消息處理器"]
+    B --> D["message<br/>訊息處理器"]
     B --> E["notice<br/>通知處理器"]
     B --> F["request<br/>請求處理器"]
     B --> G["meta<br/>元事件處理器"]
     C & D & E & F & G --> H["Event 包裝類<br/>reply / get_text / done 等"]
 ```
-
-7. **重要：路徑替換規則**
-   - 將文檔連結中的 `docs/zh-TW/` 替換為 `docs/zh-TW/`
-   - 例如：`docs/zh-TW/quick-start.md` 應改為 `docs/zh-TW/quick-start.md`
-   - 對於指向非目前語言版本文件的連結（如 `README.xx.md` 形式的連結），保持原樣不要修改
-   - 這確保了連結指向正確語言的文件版本
 
 ## Command 命令模組
 
@@ -29,12 +23,12 @@ flowchart LR
 from ErisPulse.Core.Event import command
 
 # 基本命令
-@command("hello", help="傳送問候")
+@command("hello", help="發送問候")
 async def hello_handler(event):
     await event.reply("你好！")
 
 # 帶別名的命令
-@command(["help", "h"], aliases=["協助"], help="顯示說明")
+@command(["help", "h"], aliases=["幫助"], help="顯示幫助")
 async def help_handler(event):
     pass
 
@@ -51,7 +45,7 @@ async def admin_handler(event):
 async def secret_handler(event):
     pass
 
-# 命令群組
+# 命令組
 @command("admin.reload", group="admin", help="重新載入模組")
 async def reload_handler(event):
     pass
@@ -60,16 +54,16 @@ async def reload_handler(event):
 ### 命令資訊
 
 ```python
-# 取得命令說明
+# 獲取命令幫助
 help_text = command.help()
 
-# 取得特定命令
+# 獲取特定命令
 cmd_info = command.get_command("admin")
 
-# 取得命令群組中的所有命令
+# 獲取命令組中的所有命令
 admin_commands = command.get_group_commands("admin")
 
-# 取得所有可見命令
+# 獲取所有可見命令
 visible_commands = command.get_visible_commands()
 ```
 
@@ -81,7 +75,7 @@ visible_commands = command.get_visible_commands()
 async def ask_command(event):
     reply = await command.wait_reply(
         event,
-        prompt="請輸入你的名字:",  # 已在上面傳送
+        prompt="請輸入你的名字:",  # 已在上面發送
         timeout=30.0
     )
     
@@ -111,7 +105,7 @@ async def age_command(event):
         age = int(reply.get_text())
         await event.reply(f"你的年齡是 {age} 歲")
 
-# 帶回呼的等待回覆
+# 帶回調的等待回覆
 async def handle_confirmation(reply_event):
     text = reply_event.get_text().lower()
     if text in ["是", "yes", "y"]:
@@ -126,36 +120,37 @@ async def confirm_command(event):
         prompt="請輸入'是'或'否':",
         callback=handle_confirmation
     )
+```
 
-## Message 訊息模組
+## Message 消息模組
 
-### 訊息事件
+### 消息事件
 
 ```python
 from ErisPulse.Core.Event import message
 
-# 監聽所有訊息
+# 監聽所有消息
 @message.on_message()
 async def message_handler(event):
-    sdk.logger.info(f"收到訊息: {event.get_text()}")
+    sdk.logger.info(f"收到消息: {event.get_text()}")
 
-# 監聽私聊訊息
+# 監聽私聊消息
 @message.on_private_message()
 async def private_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"私聊來自: {user_id}")
 
-# 監聽群聊訊息
+# 監聽群聊消息
 @message.on_group_message()
 async def group_handler(event):
     group_id = event.get_group_id()
     sdk.logger.info(f"群聊來自: {group_id}")
 
-# 監聽@訊息
+# 監聽@消息
 @message.on_at_message()
 async def at_handler(event):
     mentions = event.get_mentions()
-    sdk.logger.info(f"被@的使用者: {mentions}")
+    sdk.logger.info(f"被@的用戶: {mentions}")
 ```
 
 ### 條件監聽
@@ -171,10 +166,11 @@ async def high_priority_handler(event):
 async def filtered_handler(event):
     if "關鍵字" not in event.get_text():
         return
-    # 處理包含關鍵字的訊息
+    # 處理包含關鍵字的消息
     pass
+```
 
-## Notice 通知模組
+## 通知模組
 
 ### 通知事件
 
@@ -185,7 +181,7 @@ from ErisPulse.Core.Event import notice
 @notice.on_friend_add()
 async def friend_add_handler(event):
     user_id = event.get_user_id()
-    await event.reply("歡迎添加我為好友！")
+    await event.reply("歡迎加我為好友！")
 
 # 好友刪除
 @notice.on_friend_remove()
@@ -204,8 +200,9 @@ async def member_increase_handler(event):
 async def member_decrease_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"群成員離開: {user_id}")
+```
 
-## Request 请求模組
+## Request 請求模組
 
 ### 請求事件
 
@@ -219,12 +216,13 @@ async def friend_request_handler(event):
     comment = event.get_comment()
     sdk.logger.info(f"好友請求: {user_id}, 備註: {comment}")
 
-# 群組邀請請求
+# 群邀請請求
 @request.on_group_request()
 async def group_request_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"群組邀請: {group_id}, 來自: {user_id}")
+    sdk.logger.info(f"群邀請: {group_id}, 來自: {user_id}")
+```
 
 ## Meta 元事件模組
 
@@ -239,11 +237,11 @@ async def connect_handler(event):
     platform = event.get_platform()
     sdk.logger.info(f"平台 {platform} 連接成功")
 
-# 斷線事件
+# 斷開連接事件
 @meta.on_disconnect()
 async def disconnect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"平台 {platform} 斷線")
+    sdk.logger.info(f"平台 {platform} 斷開連接")
 
 # 心跳事件
 @meta.on_heartbeat()
@@ -257,7 +255,7 @@ async def heartbeat_handler(event):
 
 ## Event 包裝類
 
-Event 模組的事件處理程式接收一個 Event 包裝類實例，它繼承自 dict 並提供了便捷方法。
+Event 模組的事件處理器接收一個 Event 包裝類實例，它繼承自 dict 並提供了便捷方法。
 
 ### 核心方法
 
@@ -283,7 +281,7 @@ target_id = event.get_target_id()
 
 # 會話唯一標識，格式: {platform}:{detail_type}:{target_id}
 session_id = event.get_session_id()
-# 示例: "telegram:private:12345"、"qq:group:67890"
+# 範例: "telegram:private:12345"、"qq:group:67890"
 ```
 
 `get_target_id()` 按以下順序返回首個非空值：`group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`。適用於上下文管理、狀態儲存等需要統一標識會話的場景。
@@ -362,18 +360,18 @@ reply = await event.wait_reply(timeout=30)
 ### 平台能力查詢
 
 ```python
-# 檢查目前平台是否支援某種發送方法
+# 檢查當前平台是否支援某種發送方法
 if event.supports("Image"):
     await event.reply(url, method="Image")
 
-# 列出目前平台所有可用發送方法
+# 列出當前平台所有可用發送方法
 methods = event.available_methods()
 # ["Text", "Image", "Voice", ...]
 ```
 
 ### 回覆方法
 
-`reply()` 方法支援透過 `method` 參數指定發送類型，以及兩個便利的布林參數：
+`reply()` 方法支援透過 `method` 參數指定發送類型，以及兩個便捷的布林參數：
 
 ```python
 # 簡單文字回覆
@@ -382,7 +380,7 @@ await event.reply("你好")
 # 回覆並@發送者
 await event.reply("你好", at_sender=True)
 
-# 回覆並引用目前訊息
+# 回覆並引用當前訊息
 await event.reply("收到", quote=True)
 
 # 組合使用
@@ -402,15 +400,15 @@ else:
 | `content` | str | 發送內容 |
 | `method` | str | 發送方法，預設 "Text"，可選 "Image"/"Voice"/"Video"/"File" 等 |
 | `at_sender` | bool | 是否@發送者（自動提取 user_id） |
-| `quote` | bool | 是否引用回覆目前訊息（自動提取 message_id） |
-| `at_users` | list[str] | @指定使用者清單 |
+| `quote` | bool | 是否引用回覆當前訊息（自動提取 message_id） |
+| `at_users` | list[str] | @指定使用者列表 |
 | `reply_to` | str | 手動指定回覆的訊息 ID |
 | `at_all` | bool | 是否@全體成員 |
 
 ### 互動方法
 
 ```python
-# confirm — 確認對話（回傳 True/False/None）
+# confirm — 確認對話（返回 True/False/None）
 if await event.confirm("確定要執行此操作嗎？"):
     await event.reply("已確認")
 
@@ -418,7 +416,7 @@ if await event.confirm("確定要執行此操作嗎？"):
 if await event.confirm("http://example.com/image.jpg", method="Image"):
     await event.reply("已確認圖片提示")
 
-# choose — 選擇選單（回傳選項索引或 None）
+# choose — 選擇選單（返回選項索引或 None）
 choice = await event.choose("請選擇顏色：", ["紅色", "綠色", "藍色"])
 
 # options_format="auto"（預設）根據 method 自動選擇樣式：
@@ -430,7 +428,7 @@ choice = await event.choose(
     method="Markdown", merge_prompt=True,
 )
 
-# collect — 表單收集（回傳 {key: value} 字典或 None）
+# collect — 表單收集（返回 {key: value} 字典或 None）
 data = await event.collect([
     {"key": "name", "prompt": "請輸入姓名："},
     {"key": "age", "prompt": "請輸入年齡：",
@@ -461,7 +459,7 @@ raw_type = event.get_raw_type()
 
 ### 鏈路控制
 
-`event.done(claim=, stop=)` 統一控制「認領」與「阻斷」兩個正交語意：
+`event.done(claim=, stop=)` 統一控制「認領」與「阻斷」兩個正交語義：
 
 - **認領（claim）**：標記事件已被處理（`_processed`），命令分發器據此跳過去重
 - **阻斷（stop）**：阻止向低優先級處理器傳播（`_propagation_stopped`）
@@ -491,7 +489,7 @@ event.is_stopped()    # 是否已阻斷傳播
 
 #### 使用者：使用平台擴展方法
 
-當適配器註冊了平台專有方法後，你可以在事件處理程式中直接呼叫。各平台的方法不同，請參閱對應的 [平台文件](../platform-guide/)。
+當適配器註冊了平台專有方法後，你可以在事件處理器中直接呼叫。各平台的方法不同，請參閱對應的 [平台文件](../platform-guide/)。
 
 ```python
 from ErisPulse.Core.Event import message
@@ -540,22 +538,22 @@ event.get_subject()      # ❌ AttributeError
 #### `hasattr` / `dir` 支援
 
 ```python
-hasattr(event, "get_subject")   # 僅當 platform="email" 時回傳 True
+hasattr(event, "get_subject")   # 僅當 platform="email" 時返回 True
 "get_subject" in dir(event)     # 同上
 ```
 
-### 適配器：註冊平台擴展方法
+#### 適配器：註冊平台擴展方法
 
 適配器可以透過裝飾器為 Event 註冊平台專有方法，方法的第一個參數為 `self`（Event 實例），可以自由存取事件資料。
 
-#### 單個方法註冊
+##### 單個方法註冊
 
 ```python
 from ErisPulse.Core.Event import register_event_method
 
 @register_event_method("email")
 def get_subject(self):
-    """獲取郵件主旨"""
+    """獲取郵件主題"""
     return self.get("email_raw", {}).get("subject", "")
 
 @register_event_method("email")
@@ -564,7 +562,7 @@ def get_from(self):
     return self.get("email_raw", {}).get("from", {})
 ```
 
-#### 批量註冊（Mixin 類）
+##### 批量註冊（Mixin 類）
 
 當方法較多時，推薦使用 Mixin 類批量註冊：
 
@@ -585,10 +583,10 @@ class EmailEventMixin:
 register_event_mixin("email", EmailEventMixin)
 ```
 
-#### 回傳值規範
+##### 回傳值規範
 
-| 場景 | 回傳值 | 使用方式 |
-|------|--------|----------|
+| 場景 | 回傳值 | 使用者使用方式 |
+|------|--------|------------|
 | 回傳資料（文字、字典等） | 直接回傳值 | `subject = event.get_subject()` |
 | 執行操作（發送訊息等） | 回傳 `asyncio.Task` | `task = event.do_something()` 可選 `await` |
 
@@ -610,7 +608,7 @@ await event.forward_email("user@example.com")
 event.forward_email("user@example.com")
 ```
 
-#### 注銷方法
+##### 注銷方法
 
 ```python
 from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
@@ -622,11 +620,11 @@ unregister_event_method("email", "get_subject")
 unregister_platform_event_methods("email")
 ```
 
-#### 覆寫內建方法
+##### 覆寫內建方法
 
-`register_event_mixin` / `register_event_method` 支援覆寫 Event 內建方法（如 `confirm`、`choose`、`collect`、`wait_reply`、`reply` 等）。註冊的平台方法透過 `Event.__getattribute__` 會優先於內建方法生效，因此適配器可以提供平台特色的互動實作。
+`register_event_mixin` / `register_event_method` 支援覆寫 Event 內建方法（如 `confirm`、`choose`、`collect`、`wait_reply`、`reply` 等）。註冊的平台方法透過 `Event.__getattribute__` 優先於內建方法生效，因此適配器可以提供平台特色的互動實作。
 
-內建實作為 `_builtin_*` 函式導出，覆寫方可以呼叫它們作為回退：
+內建實作作為 `_builtin_*` 函數導出，覆寫方可以呼叫它們作為回退：
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin, _builtin_choose
@@ -641,10 +639,11 @@ class YunhuEventMixin:
         return await _builtin_choose(self, None, options, timeout, "Text")
 
 register_event_mixin("yunhu", YunhuEventMixin)
+```
 
-## 跨平台擴充（萬用字元）
+## 跨平台擴展（通配符）
 
-`register_event_method` 和 `register_event_mixin` 支援傳遞 `"*"` 作為平台名，註冊的方法在**所有平台**的 Event 實例上都可用。適合 AI 對話、上下文管理管理等需要跨平台重複使用的功能模組。
+`register_event_method` 和 `register_event_mixin` 支援傳入 `"*"` 作為平台名，註冊的方法在**所有平台**的 Event 實例上都可用。適合 AI 對話、上下文管理等需要跨平台複用的功能模組。
 
 ### 註冊跨平台方法
 
@@ -657,7 +656,7 @@ async def ai_chat(self, prompt: str):
     await self.reply(f"AI: {prompt}")
 ```
 
-註冊後，所有平台的事件處理器都能呼叫：
+註冊後，所有平台的事件處理器都能調用：
 
 ```python
 from ErisPulse.Core.Event import message
@@ -667,20 +666,20 @@ async def handler(event):
     await event.ai_chat(event.get_text())
 ```
 
-### 方法解析優先順序
+### 方法解析優先級
 
 透過屬性存取 Event 方法時，解析順序為：
 
 1. **平台特定方法**（當前平台的覆寫）
-2. **萬用字元方法**（`"*"` 註冊的跨平台方法）
+2. **通配符方法**（`"*"` 註冊的跨平台方法）
 3. **內建方法**（`reply`、`confirm` 等）
 4. **字典鍵存取**
 
-> 因此萬用字元方法可以覆寫內建方法（如 `reply`），但會被同名的平台特定方法進一步覆寫。
+> 因此通配符方法可以覆寫內建方法（如 `reply`），但會被同名的平台特定方法進一步覆寫。
 
 ## 優先級系統
 
-事件處理器支援優先級，數值越大優先級越高：
+事件處理程式支援優先級，數值越大優先級越高：
 
 ```python
 # 高優先級處理器先執行
@@ -692,9 +691,10 @@ async def high_priority_handler(event):
 @message.on_message(priority=0)
 async def low_priority_handler(event):
     pass
+```
 
 ## 相關文件
 
-- [核心模組 API](../zh-TW/core-modules.md) - 核心模組 API
-- [適配器系統 API](../zh-TW/adapter-system.md) - Adapter 管理 API
+- [核心模組 API](core-modules.md) - 核心模組 API
+- [適配器系統 API](adapter-system.md) - Adapter 管理 API
 - [模組開發指南](../developer-guide/modules/) - 開發自訂模組

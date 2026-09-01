@@ -1,225 +1,309 @@
-# モジュールスコープシステム
+# 統一制御面（scope）
 
 > [!NOTE]
-> この機能には ErisPulse **2.8.0+** が必要です。
+> この機能は ErisPulse **2.8.0+** が必要です。
 
-モジュールスコープシステムは、「特定の Bot がどのモジュールを使用できるか」を制御し、複数 Bot 環境におけるモジュールの隔離を実現します。  
-デフォルトでは、すべてのモジュールがすべての Bot に対して開放されています。設定のバインディング後のみフィルタリングが開始され、**モジュールとアダプタは変更なしで対応可能です**。
+統一制御面は5つの問いに答える：**どのモジュールが利用可能か、どのイベントを受け取るか、誰が特定のコマンドを実行できるか、特定のモジュールがどのようなテキストを処理するか、どの実装パラメータをオーバーライドするか**。制御権は完全にユーザーに委ねられ、モジュール / アダプタ / コマンド / プロセッサの登録の**上層**（`ErisPulse.scope` の設定または実行時の `sdk.scope`）で一括して宣言され、イベントパイプラインは各段階で自動的に読み取り実行されます。
+
+制御面は従来の複数の権限システムを統合し、2.8.0の権限/アクセス制御の**唯一**のエントリーポイントです：
+
+| 維度 | 制御対象 | 拒絶動作 | 設定経路 |
+|------|---------|---------|---------|
+| **① モジュール** | 利用可能なモジュール（プラットフォーム / Bot / セッションの3段階） | 静かに無視（返信せず、認識しない） | `scope.platforms / bots / sessions` |
+| **② 身元** | イベントの受信（アダプタ / Bot / セッション / ユーザーの4段階） | イベントの入口で完全に破棄（静かに） | `scope.identity.*` |
+| **③ コマンド** | 特定のコマンドを誰が実行できるか（コマンド名はglob対応） | 「権限不足」を返信（明示的に） | `scope.commands` |
+| **④ プロセッサ** | 特定のモジュールのイベントプロセッサがテキストをフィルタリング | トリガーしない（静かに） | `scope.handlers` |
+| **⑤ オーバーライド** | モジュール/コマンドの実装パラメータ（master/hidden/aliases/prefix）をオーバーライド | ——（パラメータのみ変更） | `scope.overrides` |
 
 {!--< tips >!--}
-1. スコープは「アダプタプラットフォーム + Bot 識別子 + セッション識別子」を次元としてモジュールをバインディングします
-2. ホワイトリスト（`modules`）とブラックリスト（`blocked`）の両方の方式をサポートしています
-3. スコープによって禁止されたモジュールは、メッセージを受け取った際に無言で無視し、返信や通知は行いません
-4. 実行時 `sdk.scope.bind()` / `unbind()` による動的な追加・削除が可能で、永続化もサポートしています
+1. `from ErisPulse.Core import scope` でシングルトンをインポート（`sdk.scope` は同じオブジェクト）
+2. `scope.is_allowed(platform, bot_id, module, session_id)` でモジュールが利用可能かどうか判断
+3. `scope.is_identity_allowed(platform, bot_id, session_id, user_id)` でイベントが許可されるかどうか判断
+4. `scope.allow_user("roll*", platform, uid)` / `deny_user(...)` コマンド ACL（glob対応）
+5. `scope.override("MyModule", "restart", master=True)` 実装パラメータをオーバーライド
+6. `scope.get_stats()` でフィルタ統計を確認；`scope.get_topology()` で5次元トポロジーを確認
 {!--< /tips >!--}
 
-[**English**](docs/en/quick-start.md) | [**中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+## マッチング項目の構文（全システムで統一）
 
-## 動作原理
+制御面のすべての「名前リスト」（モジュール名、身元キー、コマンド名）は共通のマッチング構文（`ErisPulse.Core.text_match`）を使用します：
 
-```mermaid
-flowchart TD
-    A["Bot がメッセージを受信"] --> B["(platform, bot_id, session_id) を抽出"]
-    B --> C{"スコープバインディングの検索<br/>（セッションレベル > Bot レベル > プラットフォームレベル）"}
-    C -->|"セッションレベル"| D["sessions<br/>優先度が最も高い"]
-    C -->|"Bot レベル"| E["bots<br/>プラットフォームレベルを上書き"]
-    C -->|"プラットフォームレベル"| F["platforms"]
-    D & E & F --> G{"バインディングが一致するか？"}
-    G -->|"一致する"| H["ホワイトリスト / ブラックリストに基づいてモジュールをフィルタ"]
-    G -->|"一致しない"| I["次のレベルにフォールバック<br/>未設定の場合はすべてを許可"]
-    H --> J["無効化されたモジュール：コマンドとイベントハンドラはトリガされない<br/>（静かに無視）"]
-```
+| 構文 | 例 | 説明 |
+|------|------|------|
+| 精確名 | `"Chat"` | 全値比較、**大文字小文字無視** |
+| glob | `"Tool*"`、`"spam_*"` | `*` 任意文字列 / `?` 1文字 / `[seq]` 文字集合、大文字小文字無視 |
+| 正規表現 | `"re:^Danger.*"` | `re:` 前置詞で宣言、正規表現 `search` でマッチ、デフォルト大文字小文字無視 |
 
-- **解析優先度：セッションレベル > Bot レベル > プラットフォームレベル**、より高い優先度でルールがバインディングされていない場合は次のレベルにフォールバックします。すべて未設定の場合はすべてのモジュールを許可します。
-- イベントデータに `self` が含まれていない場合（Bot を識別できない）、Bot レベルをスキップし、セッションレベルまたはプラットフォームレベルで判断します。
-- フレームワーク層のリソース（owner が空のハンドラ、コマンドディスパッチャー、イベントバス）は常に通過し、スコープの影響を受けません。
+- 不正な正規表現は**静かに不一致**と判定（エラー発生せず、クラッシュしない）
+- デコレータのパラメータ（`pattern=` / `regex=`）は固定の意味：`pattern` は glob、`regex` は正規表現ソース（`re:` 前置詞なし）；制御面の設定内の正規表現項目は**必ず** `re:` 前置詞が必要
 
-- [**English**](docs/en/quick-start.md) | [**简体中文**](docs/ja/quick-start.md) | [**日本語**](docs/ja/quick-start.md)
+## グローバルデフォルト：`default_allow`
+
+`default_allow` は**唯一**のグローバルデフォルトスイッチ（デフォルト `true`）で、3つの判定次元に統一的に効果があります：
+
+- **モジュール次元**：どのバインディングにも一致しない → `default_allow` で許可 / 拒否を決定
+- **身元次元**：どのポリシーにも一致しない → `default_allow` で許可 / 拒否を決定
+- **コマンド次元**：ACLが設定されていない → `default_allow=true` で開発者のデフォルト権限チェーンに委ねる；`false`（厳密モード）はACLが設定されていないコマンドを拒否
+
+`false` に設定すると「暗黙の拒否」厳密モードが有効になり、**明示的に許可されていないものはすべて拒否**されます。
 
 ## 設定ファイル
 
 ```toml
 [ErisPulse.scope]
-default_allow = true        # デフォルトで全許可（false = 厳格モードでの暗黙拒否）
-cache_size = 1024           # is_allowed の LRU キャッシュサイズ
+default_allow = true        # グローバルデフォルト（false = 暗黙の拒否厳密モード）
+cache_size = 1024           # LRUキャッシュサイズ
 
-# プラットフォームレベルのバインド（そのプラットフォームのすべての Bot / セッションに適用）
+# ── ① モジュール次元（優先度：セッション > Bot > プラットフォーム）──
 [ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Translate"]   # ホワイトリスト：そのプラットフォームの Bot はこれらのモジュールのみ使用可能
-blocked = ["Danger"]              # ブラックリスト：これらのモジュールはそのプラットフォームで無効化
-
-# Bot レベルのバインド（その Bot のすべてのセッションに適用、プラットフォームレベルより優先）
+modules = ["Chat", "Tool*"]   # ホワイトリスト：精確名 / glob / re: 正規表現
+blocked = ["re:^Danger"]
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Chat"]
-blocked = []
-
-# セッションレベルのバインド（特定のグループ / チャンネル / 個人チャットに適用、最も具体的）
 [ErisPulse.scope.sessions.onebot11."789012345"]
-modules = ["Chat"]                # そのグループは Chat のみ使用可能
-blocked = []
+modules = ["Chat"]
+
+# ── ② 身元次元（優先度：ユーザー > セッション > Bot > アダプタ）──
+[ErisPulse.scope.identity.adapters.onebot11]
+deny = true                   # アダプタ全体のイベントを完全に破棄
+[ErisPulse.scope.identity.bots.onebot11."123456"]
+deny = true
+[ErisPulse.scope.identity.sessions.onebot11."g_blocked"]
+deny = true
+[ErisPulse.scope.identity.users.onebot11]
+allow = ["u_admin"]           # ユーザー鍵は glob / re: 正規表現に対応
+deny = ["u_bad", "spam_*"]
+
+# ── ③ コマンド次元（コマンド名は glob に対応）──
+[ErisPulse.scope.commands."roll*"]
+allow = ["onebot11:u_vip"]    # ユーザー識別子 "platform:user_id"
+deny = ["onebot11:u_bad"]
+
+# ── ④ プロセッサ/テキスト次元 ──
+[ErisPulse.scope.handlers.MyModule]
+pattern = "签到*"             # コード内の pattern/regex 条件と AND
+regex = "re:\\d+\\s*元"
+
+# ── ⑤ 実装パラメータのオーバーライド ──
+[ErisPulse.scope.overrides.MyModule.restart]
+master = true                 # フレームワークの所有者のみ利用可能
+hidden = true                 # ヘルプに表示しない
+aliases = ["rs"]              # 別名を追加
+prefix = "!"                  # トリガ前缀を追加
 ```
 
-意味合い（モジュール名は**大文字・小文字を区別しない**）：
+## ① モジュール次元
 
-| 設定 | 効果 |
-|------|------|
-| `modules` のみ（ホワイトリスト） | リストされたモジュールのみ使用可能 |
-| `blocked` のみ（ブラックリスト） | リストされたモジュールは使用禁止、それ以外は全て許可 |
-| 両方を設定 | ホワイトリストで範囲を限定し、ホワイトリスト内のモジュールからブラックリストを除外 |
-| 両方が空 / 未設定 | `default_allow` に従う：`true`（デフォルト）は全て許可、`false` は暗黙的に拒否 |
+「あるコンテキストの中で、どのモジュールが利用可能か」を回答します。デフォルトではすべて開放されています；設定をバインディングした後フィルタリングを開始し、**モジュールとアダプタは変更を必要としません**。
 
-> `modules` と `blocked` はいずれも文字列または文字列のリストをサポートします。モジュール名は大文字・小文字を区別しません（`"Chat"` と `"chat"` は等価）。
-> セッション識別子は、グループ ID（`group_id`）、チャンネル ID（`channel_id`）またはプライベートチャットのユーザー ID（`user_id`）です。
-> **セッション識別子はプラットフォームごとに分離されます**：`(platform, session_id)` の組み合わせでセッションを一意に識別し、`onebot11` の `789` と `telegram` の `789` は互いに影響を与えません。
-
-## ランタイム API
-
-### モジュールの許可状態を確認
-
-```python
-from ErisPulse import sdk
-
-# 特定の Bot が特定のモジュールを使用可能か判定する
-allowed = sdk.scope.is_allowed("onebot11", "123456", "Chat")
-
-# 特定のセッション（グループ / チャンネル / DM）で判定する
-allowed = sdk.scope.is_allowed("onebot11", "123456", "Chat", "789012345")
+```mermaid
+flowchart TD
+    A["イベントがモジュールのプロセッサ/コマンドに到達"] --> B{"scope.is_allowed<br/>(platform, bot, module, session)"}
+    B --> C{"有効なバインディングを探す<br/>セッションレベル > Bot レベル > プラットフォームレベル"}
+    C -->|"一致"| D["blocked に一致 → 拒否<br/>modules が空でない → ホワイトリストのみ許可<br/>どちらも空 → default_allow"]
+    C -->|"一致しない"| E["default_allow（デフォルト true = 許可）"]
+    D -->|"拒否"| Z["静かに無視<br/>（返信せず、認識せず、TRACE ログのみ）"]
 ```
 
-### 動的バインド / アンバインド
+- **解析優先度：セッションレベル > Bot レベル > プラットフォームレベル**、高優先度のバインディングは低優先度を**全体的に上書き**します
+- **静かの意味**：フィルタリングされたモジュールのコマンドとプロセッサはトリガーされず、返信も認識もされず（コマンド間の誤一致を防ぐ）、TRACE レベルのログ（`core.scope.denied`）のみ表示されます
+- **フレームワークレベルのプロセッサ**（`scope_exempt=True` または owner が空）は影響を受けず、モジュール名が空（フレームワーク層のリソース）は常に許可されます
 
-```python
-# Bot レベルのホワイトリストに追加（設定に永続化）
-sdk.scope.bind("onebot11", "123456", modules=["Chat", "Translate"])
+## ② 身元次元（イベントの受容）
 
-# セッションレベルのホワイトリストに追加（第三引数は session_id）
-sdk.scope.bind("onebot11", "123456", "789012345", modules=["Chat"])
+「誰のイベントを受け取るか」を回答します。拒否されたイベントは**配信の入口で完全に破棄**されます—ミドルウェアやすべてのプロセッサ（フレームワークレベルを含む）には届かず、TRACE レベルのログのみ表示されます（`core.scope.identity_denied`）。
 
-# プラットフォームレベルのブラックリストに追加
-sdk.scope.bind("onebot11", blocked=["Danger"])
-
-# 常時有効（リロードのみで永続化しない）
-sdk.scope.bind("onebot11", "123456", modules=["Chat"], persist=False)
-
-# マージモード（Music を既存のホワイトリストに追加する）：
-# デフォルトの bind は置換であることに注意
-sdk.scope.bind("onebot11", "123456", modules=["Music"], merge=True)
-
-# バインドを解除（すべて許可に戻す）；
-# session_id を指定するとセッションレベルのバインドのみ解除できる
-sdk.scope.unbind("onebot11", "123456")
-sdk.scope.unbind("onebot11", "123456", "789012345")
-```
-
-> `bind()` はデフォルトでターゲットのすべてのバインドを**置換**します；`merge=True` の場合は、新規モジュール/無効化設定を既存のバインドにマージします。
-
-### バインド情報の取得
-
-```python
-# 有効なバインドを取得（セッションを指定可能）
-sdk.scope.get("onebot11", "123456")              # {"modules": ["Chat"], "blocked": []}
-sdk.scope.get("onebot11", "123456", "789012345") # セッションレベルで有効なバインド
-sdk.scope.get("onebot11")                        # プラットフォームレベルのバインド、存在しなければ None
-
-# 全てのバインドをリスト表示（platforms / bots / sessions の3つのカテゴリ）
-sdk.scope.list_bindings()
-```
-
-### フィルタリング統計（デバッグ）
-
-```python
-# スコープによって静的にフィルタリングされた回数とキャッシュのヒット状況を表示
-sdk.scope.get_stats()
-# {"is_allowed_calls": 10, "filtered_count": 3, "cache_hits": 5, "cache_misses": 5}
-
-sdk.scope.reset_stats()
-```
-
-### トポロジー木データ
-
-```python
-# スコープ部分（Dashboard 用）
-sdk.scope.get_topology()
-
-## よくある質問と注意点
-
-### 1. 設定の階層
-
-優先度：**セッション級 > Bot 級 > プラットフォーム級**。優先度が高いものが、優先度が低いものを**全体で上書き**します。
+- **解析優先度：ユーザー > セッション > Bot > アダプタ**、最も具体的な設定されたポリシーを取得；deny は allow より優先
+- 各レベルのバインディングは二元ポリシー：`{ allow = true }` または `{ deny = true }`
+- ユーザー鍵は glob / 正規表現に対応（例：`"spam_*"` で一括してスパムユーザーをブロック）
+- 一般的な用途—上位の deny、個人の allow で「例外許可」を行う：
 
 ```toml
-# プラットフォーム級は Chat のみ許可
-[ErisPulse.scope.platforms.onebot11]
-modules = ["Chat"]
-
-# しかし Bot 級は Music のみ許可 → その Bot は最終的に Music のみ使用可能！
-[ErisPulse.scope.bots.onebot11."123456"]
-modules = ["Music"]
+[ErisPulse.scope.identity.adapters.onebot11]
+deny = true
+[ErisPulse.scope.identity.users.onebot11]
+allow = ["u_admin"]   # アダプタレベルで拒否されても、u_admin のイベントは許可される
 ```
 
-- "プラットフォーム級で Chat を許可し、Bot 紧に Music を追加" したい場合、**Bot 紧で両方を同時にリストアップする必要があります**：`modules = ["Chat", "Music"]`。
-- 同様に、下位のブラックリストは上位のホワイトリストによって上書きされます。プラットフォーム級 `blocked=["Danger"]` + Bot 级 `modules=["Danger"]` → Bot 级の設定が全体で優先されるため、Danger は使用可能です。階層が高く、より具体的なものが優先されます。
+## ③ コマンド次元（コマンド ACL）
 
-### 2. これは「イベントごと」の判断であり、**付着しない**
+「誰が特定のコマンドを実行できるか」を回答します。判定順序：**deny に一致 → 拒否；allow ホワイトリストが空でないかつ一致しない → 拒否；いずれも設定されていない → `default_allow` に従う**（`true` で開発者のデフォルト権限チェーンに委ねる）。拒否されたコマンドは「権限不足」という明示的な返信をします。
 
-スコープ判定は**現在の単一のイベントに対してのみ**行われ、イベントをまたいで記憶することはありません。
-- セッション g1 でモジュール A が無効化されている → g1 の**この**メッセージでは A はトリガーされません。**次の**メッセージでは独立して再判定されます。バインドが変更されていない限り引き続きトリガーされず、変更されれば即座に有効になります（LRU キャッシュが自動的に無効になります）。
-- セッション g2 でバインドが未設定 → Bot 级 / プラットフォーム级の判定にフォールバックします。両方ともない場合は `default_allow` に従います。
+- コマンド名は glob に対応：`"roll*"` は `roll`、`roll_dice` などの一連のコマンドを1つのルールでカバー
+- 精確な鍵は glob 鍵よりも優先（`commands.roll` に一致した場合は `commands."roll*"` はチェックされない）
+- ユーザー識別子のフォーマットは `"platform:user_id"`（フレームワークの所有者システムと一致）
+- この次元は**ユーザー側の追加のゲート**であり、コマンドの `master` / `permission` パラメータと連動する：ACL が通過した後も開発者が宣言したデフォルト権限チェーンを実行する
 
-### 3. モジュールに反応がない
+## ④ プロセッサ/テキスト次元
 
-メッセージを送信したのにモジュールが反応しない場合は、まずスコープ（適用範囲）を疑い、モジュールやアダプターではありません。
+モジュールごとに「どのようなテキストを処理するか」をフィルタリング：モジュールに `pattern` / `regex` を設定した後、そのモジュールのすべてのイベントプロセッサはテキストが一致する場合にのみトリガーされます（コード内の条件と AND、両方を満たす必要がある）。モジュールのコードを変更せずにトリガー範囲を狭めるのに適しています。
+
+```toml
+[ErisPulse.scope.handlers.ChatModule]
+pattern = "闲聊*"     # ChatModule のプロセッサは「闲聊」で始まるメッセージにのみ反応
+```
+
+## ⑤ 実装パラメータのオーバーライド
+
+モジュール/コマンドの登録の**上層**で実装パラメータをオーバーライドし、モジュールのコードを変更せずに：
+
+```toml
+[ErisPulse.scope.overrides.MyModule.restart]
+master = true      # 仅框架主人
+hidden = true      # 帮助列表中隐藏
+aliases = ["rs"]   # 生效别名
+```
+
+> オーバーライドは**実装パラメータ**（master / hidden / aliases / prefix / help / usage など）のみを変更します。**コマンドの無効化はここにはありません**—統一してコマンド次元の deny（`scope.commands` または `scope.deny_user()`）で行い、2つの「無効化」の意味が衝突しないようにします。
+
+## 実行時 API
+
+### モジュール次元
 
 ```python
-# モジュールのコードや一時スクリプトに一行追加して位置特定
 from ErisPulse import sdk
-print(sdk.scope.is_allowed(event.get_platform(), <bot_id>, "MyModule", <session_id>))
-print(sdk.scope.get_stats())          # filtered_count > 0 は確実にフィルタされたことを示します
+
+# 判断
+sdk.scope.is_allowed("onebot11", "123456", "Chat")
+sdk.scope.is_allowed("onebot11", "123456", "Chat", "789012345")
+sdk.scope.is_allowed("onebot11", "123456", None)      # 框架层资源 -> True
+
+# 绑定 / 解绑
+sdk.scope.bind_module("onebot11", "123456", modules=["Chat", "Tool*"])
+sdk.scope.bind_module("onebot11", blocked=["Danger"])             # 平台级
+sdk.scope.bind_module("onebot11", "123456", "789012345", modules=["Chat"])  # 会话级
+sdk.scope.bind_module("onebot11", "123456", modules=["Music"], merge=True)  # 合并
+sdk.scope.bind_module("onebot11", "123456", modules=["Chat"], persist=False)  # 仅运行时
+sdk.scope.unbind_module("onebot11", "123456")
+
+# 查询
+sdk.scope.get("onebot11", "123456")   # {"modules": ["Chat"], "blocked": []}
 ```
 
-フィルタリングは**静かに**行われます（ユーザーにスコープのルールを明かさないようにメッセージを返さず、応答しません）、ですが `filtered_count` は累積されます。
+### 身元次元
 
-### 4. セッション識別子はプラットフォームごとに分離
+```python
+# 判断事件是否放行
+sdk.scope.is_identity_allowed("onebot11", "123456", "group_9", "u1")
 
-`(platform, session_id)` の組み合わせが唯一の識別子となります。`[ErisPulse.scope.sessions.onebot11."789"]` は onebot11 プラットフォームにのみ適用され、telegram で同じ `789` のセッションには影響しません。
+# 绑定策略（层级由参数决定：user > session > bot > adapter）
+sdk.scope.bind_identity("onebot11", user_id="u_bad", deny=True)
+sdk.scope.bind_identity("onebot11", user_id="spam_*", deny=True)   # glob
+sdk.scope.bind_identity("onebot11", "123456", "group_9", allow=True)
+sdk.scope.unbind_identity("onebot11", user_id="u_bad")
 
-### 5. パフォーマンス
+# 用户黑名单便捷 API
+sdk.scope.block_user("onebot11", "u_bad")
+sdk.scope.is_user_blocked("onebot11", "u_bad")
+sdk.scope.get_blocked_users()        # {"onebot11": ["u_bad"]}
+sdk.scope.unblock_user("onebot11", "u_bad")
+```
 
-`is_allowed()` の結果には **LRU キャッシュ**が含まれています（デフォルト 1024 件、`scope.cache_size` で調整可能）。
-設定の変更 / `bind()` / `unbind()` で自動的にキャッシュが無効になり、高頻度のイベント処理においてオーバーヘッドは極めて小さくなります。
+### コマンド次元
 
-## 拓扑ツリー API
+```python
+sdk.scope.is_command_allowed("roll", "onebot11", "u1")
+sdk.scope.allow_user("roll*", "onebot11", "u_vip")   # 命令名支持 glob
+sdk.scope.deny_user("roll*", "onebot11", "u_bad")
+sdk.scope.get_acl("roll*")
+sdk.scope.remove_acl("roll*")
 
-`ModuleManager.get_topology()` と `AdapterManager.get_topology()` はモジュール/アダプタの所属関係データを提供します。
-`sdk.get_topology()` はこれら3つをワンクリックで集約します。
+# 也可通过命令系统门面（等价委托）
+from ErisPulse.Core.Event import command
+command.allow_user("restart", "onebot11", "123456")
+```
+
+### プロセッサとオーバーライド次元
+
+```python
+sdk.scope.bind_handler("MyModule", pattern="签到*", regex=r"\d+号")
+sdk.scope.unbind_handler("MyModule")
+
+sdk.scope.override("MyModule", "restart", master=True, hidden=True)
+sdk.scope.get_override("MyModule", "restart")
+sdk.scope.remove_override("MyModule", "restart")
+```
+
+### 一般
+
+```python
+sdk.scope.list_bindings()   # 五维全量绑定
+sdk.scope.get_topology()    # 五维拓扑（供 Dashboard）
+sdk.scope.get_stats()
+# {"module_calls": .., "module_filtered": .., "identity_checks": .., "identity_denied": ..,
+#  "command_checks": .., "command_denied": .., "cache_hits": .., "cache_misses": ..}
+sdk.scope.reset_stats()
+sdk.scope.clear()           # 清空全部绑定（仅内存生效）
+```
+
+## キャッシュとホットアップデート
+
+- `is_allowed` / `is_identity_allowed` の結果は **LRU キャッシュ**（`scope.cache_size` で調整可能）付き、`bind_*` / `unbind_*` / 設定のホットアップデート（`config.updated` / `config.set`）で自動的に無効化されます
+- すべての次元の設定は**即時有効**で、再起動は不要
+- 制御面は「イベントごとの」判断で、イベント間の記憶は持たない：設定が変わると、次のイベントは即座に新しいルールに従う
+
+## 一般的な問題と注意事項
+
+### 1. 設定の階層とオーバーライド
+
+- モジュール次元：セッションレベル > Bot レベル > プラットフォームレベル、**全体的に**オーバーライド。プラットフォームで Chat を許可し、Bot で Music を追加したい場合は、Bot レベルで両方をリストする必要があります
+- 身元次元：ユーザー > セッション > Bot > アダプタ、**最も具体的**な設定されたポリシーを取得（例外許可が可能）
+- コマンド次元：精確なコマンド名が glob 鍵よりも優先
+
+### 2. モジュール/コマンドのコードを変更するよりも制御面を使う
+
+モジュールが宣言するのは「開発者のデフォルト」（`master=True`、`permission=...`、`pattern=...`）；制御面が宣言するのは「ユーザーの最終決定」。両者が衝突した場合**制御面のより厳格な方**が有効（例：開発者が master を設定していない場合、ユーザーは `master = true` で制御して厳しくできる；ユーザーは開発者が明示的に制限したものを制御面で解除することはできない—無効化/許可の制御はコマンド deny / 身元 allow で行う）
+
+### 3. モジュール/コマンドが反応しない
+
+まず制御面ではなくモジュール自体を疑う：
+
+```python
+from ErisPulse import sdk
+
+print(sdk.scope.is_allowed(event.get_platform(), bot_id, "MyModule", session_id))
+print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, user_id))
+print(sdk.scope.get_stats())   # module_filtered / identity_denied > 0 なら静かにフィルタされている
+```
+
+フィルタは**静か**です（モジュール次元と身元次元は返信せず、ルールを暴露しない）、統計は累積されます；コマンド次元で ACL に拒否された場合は「権限不足」という明示的な返信がされます。
+
+### 4. 会話識別子はプラットフォームごとに隔離
+
+`(platform, session_id)` の組み合わせが唯一の識別子です。`scope.sessions.onebot11."789"` は onebot11 でのみ有効で、telegram 上で同じ `789` の会話には影響しません。身元次元のユーザー鍵も同様です。
+
+## 拓撲ツリー API
+
+`ModuleManager.get_topology()` と `AdapterManager.get_topology()` はモジュール/アダプタの所属関係データを提供し、`sdk.get_topology()` は一括して集約（制御面 `scope` の5次元を含む）：
 
 ```python
 from ErisPulse import sdk
 
 topology = sdk.get_topology()
 # {
-#   "modules": {                                   # モジュール → 所持リソース
+#   "modules": {                                   # モジュール → 持有するリソース
 #     "Chat": {
 #       "loaded": True, "enabled": True,
-#       "load_strategy": {"lazy": False, "priority": 50},
-#       "info": {...},
 #       "commands": ["chat", "translate"],
 #       "handlers": {"message": 2, "notice": 1},
 #       "routes": {"http": ["/Chat/api"], "ws": [], "sse": []},
 #       "lifecycle_hooks": 3,
-#       "scope_applies": True,
 #     }
 #   },
 #   "adapters": {                                  # アダプタ → Bot → スコープ
 #     "onebot11": {
 #       "status": "started", "enabled": True,
-#       "bots": {"123456": {"status": "online", "last_active": ..., "info": {...}, "scope": {...}}},
+#       "bots": {"123456": {"status": "online", "scope": {...}}},
 #       "scope": {"modules": [...], "blocked": [...]},
 #     }
 #   },
-#   "scope": {"platforms": {...}, "bots": {...}, "sessions": {...}}   # 全スコープのバインド
+#   "scope": {                                     # 統一制御面（5次元）
+#     "platforms": {...}, "bots": {...}, "sessions": {...},
+#     "identity": {"adapters": {...}, "bots": {...}, "sessions": {...}, "users": {...}},
+#     "commands": {...}, "handlers": {...}, "overrides": {...},
+#   },
 # }
 ```
 
-- モジュールのトポロジは、そのモジュールが登録したコマンド、イベントハンドラー、HTTP/WS/SSE ルート、ライフサイクルフックを集約しており、モジュールリソースツリーを描画するのに便利です。
-- アダプタのトポロジは、各アダプタの状態、配下の Bot の状態、およびプラットフォームレベル / Bot レベルのスコープバインドを集約しています。
+- モジュールのトポロジーは、登録されたコマンド、イベントプロセッサ、HTTP/WS/SSEルート、ライフサイクルフックを統合し、モジュールリソースツリーの描画に便利です。
+- アダプタのトポロジーは、各アダプタのステータス、所属する Bot のステータス、プラットフォームレベル/Bot レベルのスコープバインディングを統合します。

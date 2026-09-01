@@ -1,0 +1,45 @@
+{
+  "version": 2,
+  "hash": "2421db50d9e9f4a9b427ad8f413bb58c",
+  "file_hash": "2421db50d9e9f4a9b427ad8f413bb58c",
+  "translated_at": "2026-09-01T06:25:14.313776",
+  "target_lang": "ru",
+  "chunks": [
+    {
+      "hash": "4afb6aa3427bfc693cb05b020feca75c",
+      "translation": "# Быстрый старт\n\n> **Это ваш первый шаг.** За 5 минут запустите робота ErisPulse с нуля."
+    },
+    {
+      "hash": "89b0ad750e3c1ae469f9c09815104a99",
+      "translation": "## Установка ErisPulse\n\n### Сценарий установки с одним нажатием (рекомендуется)\n\nСценарий установки автоматически определяет вашу среду (Docker, Python, uv) и предлагает вам выбрать наиболее подходящий способ установки.\n\nWindows (PowerShell):\n```powershell\nirm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1\n```\n\nmacOS / Linux:\n```bash\ncurl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh\n```\n\nСценарий поможет вам выполнить следующие действия:\n\n- **Установка с помощью Docker** (рекомендуется, если обнаружен Docker): выбор источника образа (Docker Hub / GHCR), канал версий (стабильный / предварительный), настройка панели управления Dashboard, настройка портов\n- **Традиционная установка**: автоматическое создание виртуальной среды, выбор версии ErisPulse, необязательная установка модуля панели управления Dashboard\n\n### Использование Docker\n\nВ образе Docker уже включена фреймворк ErisPulse и панель управления Dashboard.\n\n```bash\n# Скачать docker-compose.yml\ncurl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml\n\n# Установить токен для Dashboard и запустить\nERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d\n```\n\n<details>\n<summary>Недоступен Docker Hub?</summary>\n\nИспользуйте образ из GitHub Container Registry, изменив параметр `image` в файле `docker-compose.yml`:\n\n```yaml\nimage: ghcr.io/erispulse/erispulse:latest\n```\n\n</details>\n\nПосле запуска перейдите на `http://<host>:8000/Dashboard` и войдите, используя установленный токен.\n\n### Установка с помощью pip\n\nУбедитесь, что ваша версия Python >= 3.10, затем установите с помощью pip:\n\n```bash\npip install ErisPulse\n```\n\nЕсли у вас уже установлен [uv](https://github.com/astral-sh/uv), вы также можете использовать `uv pip install ErisPulse`, что обеспечивает более быструю установку."
+    },
+    {
+      "hash": "7e317def5cef55f71b87c93ecb0233fd",
+      "translation": "## Инициализация проекта\n\n### Интерактивная инициализация (рекомендуется)\n\n```bash\nepsdk init\n```\n\nЭто запустит интерактивное руководство, которое поможет вам выполнить следующие действия:\n- Настройка имени проекта\n- Настройка уровня логирования\n- Настройка сервера (хост и порт)\n- Выбор и настройка адаптера\n- Создание структуры проекта\n\n### Быстрая инициализация\n\n```bash\n# Быстрый режим с указанием имени проекта\nepsdk init -q -n my_bot\n\n# Или просто указание имени проекта\nepsdk init -n my_bot\n```\n\n### Создание проекта вручную\n\nЕсли вы предпочитаете создавать проект вручную:\n\n```bash\nmkdir my_bot && cd my_bot\nepsdk init\n```"
+    },
+    {
+      "hash": "12f6ccda4a8ab17a18437b62cbe756e3",
+      "translation": "## Установка модуля\n\n### Установка через CLI\n\n```bash\nepsdk install Yunhu AIChat\n```\n\n### Просмотр доступных модулей\n\n```bash\nepsdk list-remote\n```\n\n### Интерактивная установка\n\nПри отсутствии имени пакета открывается интерактивное окно установки:\n\n```bash\nepsdk install\n```"
+    },
+    {
+      "hash": "214490c59b97ac6c15713e660c339134",
+      "translation": "## Запуск проекта\n\n```bash\n# Обычный запуск\nepsdk run main.py\n\n# Режим горячей перезагрузки (рекомендуется при разработке)\nepsdk run main.py --reload\n```"
+    },
+    {
+      "hash": "d893daa5f2e853db61247bd4839d6689",
+      "translation": "## Включение автодополнения IDE (необязательно)\n\nДинамически обнаруживаемые модули/адаптеры ErisPulse не позволяют IDE автоматически дополнять методы, специфичные для платформы.\nВыполните следующую команду для генерации типовых заглушек:\n\n```bash\nepsdk types\n```\n\nПосле генерации используйте импортированные типы для аннотации переменных, чтобы получить точное автодополнение (подробнее см. [Руководство по автодополнению IDE](./getting-started/ide-completion.md)):\n\n```python\nfrom _ep_types import Yunhu\nfrom ErisPulse import sdk\n\nadapter: Yunhu = sdk.adapter.get(\"yunhu\")\nawait adapter.Send.To(\"group\", \"123\").Board(...)  # Автодополнение методов, специфичных для платформы\n```"
+    },
+    {
+      "hash": "0940afb4931f21d421c4cbb14d715d8b",
+      "translation": "## Структура проекта\n\nСтруктура проекта после инициализации:\n\n```\nmy_bot/\n├── config/\n│   └── config.toml          # Файл конфигурации\n└── main.py                  # Точка входа\n\n```"
+    },
+    {
+      "hash": "bf299e0439b780fd582fae25060b35b7",
+      "translation": "## Конфигурационный файл\n\nБазовый конфигурационный файл `config.toml`:\n\n```toml\n[ErisPulse.server]\nhost = \"0.0.0.0\"\nport = 8000\n\n[ErisPulse.logger]\nlevel = \"INFO\"\n\n[Yunhu_Adapter]\n# Конфигурация адаптера\n```"
+    },
+    {
+      "hash": "5a9ac1241d385afd519d196a946694da",
+      "translation": "## Далее\n\nПосле запуска бота вы можете продолжить в зависимости от ваших потребностей:\n\n**Хотите узнать, как работает фреймворк?**\n- [Основные понятия](docs/ru/getting-started/basic-concepts.md) — структура адаптеров / модулей / событий\n- [Обзор архитектуры](docs/ru/architecture.md) — визуальная схема архитектуры\n\n**Хотите реализовать больше функций?**\n- [Примеры распространённых задач](docs/ru/getting-started/common-tasks.md) — хранение данных, планирование задач, управление правами доступа\n- [Введение в обработку событий](docs/ru/getting-started/event-handling.md) — обработка сообщений, уведомлений, запросов\n\n**Хотите разработать свой собственный модуль / адаптер?**\n- [Введение в разработку модулей](docs/ru/developer-guide/modules/getting-started.md)\n- [Введение в разработку адаптеров](docs/ru/developer-guide/adapters/getting-started.md)\n\n**Дополнительные материалы:**\n- [Описание конфигурационного файла](docs/ru/user-guide/configuration.md) · [Справочник CLI-команд](docs/ru/user-guide/cli-reference.md) · [Руководство по развертыванию](docs/ru/user-guide/deployment.md)"
+    }
+  ]
+}

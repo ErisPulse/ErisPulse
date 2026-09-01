@@ -1,32 +1,27 @@
 # 花楓咖啡館（RockyChat）平台特性文件
 
-IdeauraAdapter 是基於花楓咖啡館（RockyChat）平台 API 建構的適配器，整合了所有平台功能模組，提供統一的事件處理和訊息操作介面。
+IdeauraAdapter 是基於花楓咖啡館（RockyChat）平台 API 建構的適配器，整合了所有平台功能模組，提供統一的事件處理與訊息操作介面。
 
 ---
-
 docs/zh-TW/quick-start.md
 
 ## 文件資訊
 
-- 對應模組: ErisPulse-Ideaura  
-- 對應模組版本: 4.0.1  
-- 維護者: ErisPulse  
-
-
+- 對應模組: ErisPulse-Ideaura
+- 對應模組版本: 4.0.1
+- 維護者: ErisPulse
 
 ## 基本資訊
 
 - 平台簡介：花楓咖啡館（RockyChat）是一個即時通訊平台
 - 適配器名稱：IdeauraAdapter
-- 多帳戶支援：支援透過 Bot Token 配置多個帳戶
+- 多帳號支援：支援透過 Bot Token 配置多個帳號
 - 鏈式修飾支援：支援 `.At()`、`.AtAll()`、`.Reply()`、`.Command()` 等鏈式修飾方法
 - OneBot12 兼容：支援發送 OneBot12 格式訊息
 
-
-
 ## 支援的消息傳送類型
 
-所有傳送方法均透過鏈式語法實現，例如：
+所有傳送方法均透過串接語法實作，例如：
 ```python
 from ErisPulse.Core import adapter
 ideaura = adapter.get("ideaura")
@@ -36,9 +31,9 @@ await ideaura.Send.To("group", "chatroom").Text("Hello World!")
 
 支援的傳送類型包括：
 - `.Text(text: str)`：傳送純文字訊息。
-- `.Image(file, filename: str = None)`：傳送圖片訊息，支援 bytes/URL/本地路徑。
-- `.Video(file, filename: str = None)`：傳送影片訊息，支援 bytes/URL/本地路徑。
-- `.File(file, filename: str = None)`：傳送檔案訊息，支援 bytes/URL/本地路徑。
+- `.Image(file, filename: str = None)`：傳送圖片訊息，支援 bytes/URL/本機路徑。
+- `.Video(file, filename: str = None)`：傳送影片訊息，支援 bytes/URL/本機路徑。
+- `.File(file, filename: str = None)`：傳送檔案訊息，支援 bytes/URL/本機路徑。
 - `.Voice(file, filename: str = None)`：傳送語音訊息（以檔案形式傳送）。
 - `.Face(face_id: str)`：傳送表情（以純文字形式傳送 emoji）。
 - `.Markdown(text: str)`：傳送 Markdown 格式訊息。
@@ -46,16 +41,16 @@ await ideaura.Send.To("group", "chatroom").Text("Hello World!")
 - `.Edit(message_id: str, text: str, content_type: str = "text")`：編輯已有訊息。
 - `.Recall(message_id: str)`：撤回訊息。
 
-### 鏈式修飾方法（可組合使用）
+### 串接修飾方法（可組合使用）
 
-鏈式修飾方法返回 `self`，支援鏈式呼叫，必須在最終傳送方法前呼叫：
+串接修飾方法會返回 `self`，支援串接呼叫，必須在最終傳送方法前呼叫：
 
 - `.At(user_id: str, name: str = None)`：@指定用戶。
 - `.AtAll()`：@所有人。
 - `.Reply(message_id: str)`：回覆指定訊息。
 - `.Command(command_id: str)`：觸發 Bot 指令，配合傳送方法使用（將訊息作為指定指令傳送）。
 
-### 鏈式呼叫範例
+### 串接呼叫範例
 
 ```python
 # 基礎傳送
@@ -92,7 +87,7 @@ await ideaura.Send.To("user", "user_id").Text("私聊訊息")
 
 ### OneBot12 訊息支援
 
-適配器支援傳送 OneBot12 格式訊息，便於跨平台訊息相容：
+適配器支援傳送 OneBot12 格式的訊息，便於跨平台訊息相容：
 
 - `.Raw_ob12(message: List[Dict], **kwargs)`：傳送 OneBot12 格式訊息。
 
@@ -101,9 +96,10 @@ await ideaura.Send.To("user", "user_id").Text("私聊訊息")
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await ideaura.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
-# 配合鏈式修飾
+# 配合串接修飾
 ob12_msg = [{"type": "text", "data": {"text": "回覆訊息"}}]
 await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
+```
 
 ## 發送方法返回值
 
@@ -115,12 +111,11 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
     "retcode": 0,             // 返回碼
     "data": {...},            // 响應數據
     "self": {...},            // 自身信息（包含 user_id）
-    "message_id": "123456",   // 消息ID
+    "message_id": "123456",  // 消息ID
     "message": "",            // 錯誤信息
     "ideaura_raw": {...}      // 原始響應數據
 }
 ```
-
 
 ## 特有事件類型
 
@@ -346,6 +341,7 @@ async def handle_notice(event):
     elif detail_type == "ideaura_user_status_change":
         status = event.get("ideaura_status")
         print(f"用戶狀態變更: {status}")
+```
 
 ## Event Mixin 擴展方法
 
@@ -377,29 +373,32 @@ async def handle_message(event):
     cmd_id = event.get_command_id()
     if cmd_id:
         print(f"收到指令: {cmd_id}")
+```
+
+---
 
 ## 多帳戶配置
 
 ### 配置說明
 
-IdeauraAdapter 支援同時配置和執行多個帳戶，使用 **Bot Token** 進行驗證。
+IdeauraAdapter 支援同時配置和運行多個帳戶，使用 **Bot Token** 進行認證。
 
 > [!WARNING]
-> 從 4.0.1 版本起**移除電郵密碼登入**，僅支援 Bot Token。Bot Token 需前往 [MSCPO 開放平台](https://open.mscpo.com/rockychat/bots) 取得（以 `bot-token-` 開頭）。
+> 從 4.0.1 開始**移除電郵密碼登入**，僅支援 Bot Token。Bot Token 需前往 [MSCPO 開放平台](https://open.mscpo.com/rockychat/bots) 取得（以 `bot-token-` 開頭）。
 
 ```toml
 # config.toml
 # 帳戶1
 [IdeauraAdapter.accounts.default]
 token = "bot-token-xxxxxx1"      # 機器人 API Token（必填）
-enabled = true                   # 是否啟用（可選，預設為 true）
+enabled = true                   # 是否啟用（可選，預設為true）
 
 # 帳戶2
 [IdeauraAdapter.accounts.bot2]
 token = "bot-token-xxxxxx2"
 enabled = true
 
-# 可選：自訂伺服器位址
+# 可選：自訂伺服器地址
 [IdeauraAdapter]
 base_url = "https://api.mscpo.com/api/rockychat"
 ws_url = "wss://api-cofe.allons-y.uk:3009/mqtt"
@@ -408,16 +407,16 @@ heartbeat_interval = 30
 
 **配置項說明：**
 - `token`：機器人 API Token（必填，以 `bot-token-` 開頭）
-- `enabled`：是否啟用該帳戶（可選，預設為 true）
+- `enabled`：是否啟用該帳戶（可選，預設為true）
 
 **全域配置項：**
-- `base_url`：API 伺服器位址（可選，預設為 `https://api.mscpo.com/api/rockychat`）
-- `ws_url`：WebSocket 伺服器位址（可選，預設為花楓咖啡館官方位址）
-- `heartbeat_interval`：心跳間隔秒數（可選，預設 30 秒）
+- `base_url`：API 伺服器地址（可選，預設為 `https://api.mscpo.com/api/rockychat`）
+- `ws_url`：WebSocket 伺服器地址（可選，預設為花楓咖啡館官方地址）
+- `heartbeat_interval`：心跳間隔秒數（可選，預設30秒）
 
 ### 使用 Send DSL 指定帳戶
 
-可以透過 `Using()` 方法指定使用哪個帳戶傳送訊息：
+可以透過 `Using()` 方法指定使用哪個帳戶發送訊息：
 
 ```python
 from ErisPulse.Core import adapter
@@ -445,12 +444,13 @@ async def handle_message(event):
     if event["platform"] == "ideaura":
         account_id = event["self"]["user_id"]
         print(f"訊息來自帳戶: {account_id}")
+```
 
-## 擴展字段說明
+## 擴展欄位說明
 
-- 所有特有字段均以 `ideaura_` 前綴標識，避免與標準字段衝突
-- 保留原始數據在 `ideaura_raw` 字段，便於訪問平台的完整原始數據
-- `self.user_id` 表示當前登錄帳戶的用戶ID
+- 所有特有欄位均以 `ideaura_` 前綴標識，避免與標準欄位衝突
+- 保留原始數據在 `ideaura_raw` 欄位，便於訪問平台的完整原始數據
+- `self.user_id` 表示當前登入帳戶的用戶ID
 - `ideaura_source_type`：消息來源類型（`chatroom`/`topic`/`private`）
 - `ideaura_sender_name`：發送者暱稱
 - `ideaura_sender_avatar`：發送者頭像URL
@@ -465,28 +465,27 @@ async def handle_message(event):
 - 文件大小限制：10MB（下載和本地讀取均有限制）
 - 自動文件類型檢測：通過文件頭魔術字節檢測實際類型
 - 智能文件名解析：對 `.bin`/`.dat`/`.tmp` 等無意義擴展名自動修正
-- 支援 bytes、URL、本地路徑三種文件輸入方式
+- 支持 bytes、URL、本地路徑三種文件輸入方式
 - URL 文件自動下載並上傳到伺服器
 
 ### 支援的文件類型
 
-通過魔術字節自動檢測：
+透過魔術字節自動檢測：
 
 | 類型 | 擴展名 |
 |------|--------|
 | 圖片 | png, jpg, gif, webp |
 | 視頻 | mp4, avi, flv |
 | 音頻 | mp3, wav, ogg |
-| 文檔 | pdf, docx |
+| 文件 | pdf, docx |
 
 ## 注意事項
 
-1. API 伺服器預設位址為 `https://api.mscpo.com/api/rockychat`（可透過 `base_url` 自訂）；WebSocket 位址 `wss://api-cofe.allons-y.uk:3009/mqtt` 為平台固有位址，不隨適配器名稱變更
-2. 適配器使用 WebSocket 長連線接收事件，支援自動重連（固定 5 秒延遲）
+1. API 伺服器預設位址為 `https://api.mscpo.com/api/rockychat`（可透過 `base_url` 自訂）；WebSocket 位址 `wss://api-cofe.allons-y.uk:3009/mqtt` 為平台固定位址，不隨適配器名稱變更
+2. 適配器使用 WebSocket 長連接接收事件，支援自動重連（固定 5 秒延遲）
 3. 自身發送的消息（`isSelf: true`）會被自動過濾，不會產生事件
 4. @全體（`AtAll()`）需要管理員權限
 5. 檔案上傳大小限制為 10MB
 6. 音訊檔案作為 `file` 子類型發送（平台不區分獨立音訊類型）
 7. 表情（`Face()`）以純文字形式發送 emoji
 8. 程式退出時請呼叫 `shutdown()` 確保資源釋放
-

@@ -2,8 +2,6 @@
 
 本文檔定義了 ErisPulse 支援的會話類型標準，包括接收事件類型和發送目標類型。
 
-
-
 ## 1. 核心概念
 
 ### 1.1 接收類型 && 發送類型
@@ -29,13 +27,7 @@ user                    →        user
 **關鍵點**：
 - `private` 是接收時的類型，發送時必須使用 `user`
 - `group`、`channel`、`guild`、`thread` 在接收和發送時類型相同
-- 系統會自動進行類型轉換，無需手動處理(代表著你可以直接使用獲得的接收類型進行發送)，但實際上，你無需考慮這些，Event的包裝類的存在，你可以直接使用event.reply()方法，而無需考慮類型轉換
-
-7. **重要：路徑替換規則**
-   - 將文件連結中的 `docs/zh-TW/` 替換為 `docs/zh-TW/`
-   - 例如：`docs/zh-TW/quick-start.md` 應改為 `docs/zh-TW/quick-start.md`
-   - 對於指向非當前語言版本文件的連結（如 `README.xx.md` 形式的連結），保持原樣不要修改
-   - 這確保了連結指向正確語言的文件版本
+- 系統會自動進行類型轉換，無需手動處理（代表著你可以直接使用獲得的接收類型進行發送），但實際上，你無需考慮這些，Event 的包裝類的存在，你可以直接使用 event.reply() 方法，而無需考慮類型轉換
 
 ## 2. 標準會話類型
 
@@ -51,14 +43,14 @@ user                    →        user
 #### group
 - **接收類型**：`group`
 - **發送類型**：`group`
-- **說明**：群聊訊息，包括各種形式的群組（例如 Telegram supergroup）
+- **說明**：群聊訊息，包括各種形式的群組（如 Telegram supergroup）
 - **ID 欄位**：`group_id`
 - **適用平台**：所有支援群聊的平台
 
 #### user
 - **接收類型**：`user`
 - **發送類型**：`user`
-- **說明**：使用者類型，某些平台（例如 Telegram）將私聊表示為 user 而非 private
+- **說明**：使用者類型，某些平台（如 Telegram）將私聊表示為 user 而非 private
 - **ID 欄位**：`user_id`
 - **適用平台**：Telegram 等平台
 
@@ -124,17 +116,18 @@ OneBot11 類型        ErisPulse 接收類型    發送類型
 private                private                user
 group                  group                  group
 discuss                group                  group  # 映射到 group
+```
 
 ## 4. 自訂類型擴展
 
 ### 4.1 註冊自訂類型
 
-適配器可以註冊自訂會話類型：
+適配器可以註冊自訂的會話類型：
 
 ```python
 from ErisPulse.Core.Event import register_custom_type
 
-# 注冊自訂類型
+# 註冊自訂類型
 register_custom_type(
     receive_type="my_custom_type",
     send_type="custom",
@@ -156,24 +149,25 @@ receive_type = infer_receive_type(event, platform="MyPlatform")
 send_type = convert_to_send_type(receive_type, platform="MyPlatform")
 # 返回: "custom"
 
-# 獲取對應ID
+# 獲取對應 ID
 target_id = get_target_id(event, platform="MyPlatform")
 # 返回: event["custom_id"]
 ```
 
-### 4.3 取消註冊自訂類型
+### 4.3 解除註冊自訂類型
 
 ```python
 from ErisPulse.Core.Event import unregister_custom_type
 
 unregister_custom_type("my_custom_type", platform="MyPlatform")
+```
 
 ## 5. 自動類型推斷
 
 當事件沒有明確的 `detail_type` 欄位時，系統會根據存在的 ID 欄位自動推斷類型：
 
 > [!NOTE]
-> **2.7.0+ 行為變更**：`detail_type` 只有在是**已知會話類型**（標準或自定義）時才直接採用。notice/request 事件的 `detail_type`（如 `group_member_increase`、`friend_increase`）是**語義子類型**而非會話類型，會轉而根據 ID 欄位推斷正確的會話類型。
+> **2.7.0+ 行為變更**：`detail_type` 只有在是**已知會話類型**（標準或自定義）時才直接採用。notice/request 事件的 `detail_type`（如 `group_member_increase`、`friend_increase`）是**語意子類型**而非會話類型，會轉而根據 ID 欄位推斷正確的會話類型。
 
 ### 5.1 推斷優先級
 
@@ -199,12 +193,13 @@ event = {"user_id": "123"}
 receive_type = infer_receive_type(event)
 # 返回: "private"
 
-# notice 事件的 detail_type 是語義子類型，2.7.0+ 會從 ID 欄位推斷
+# notice 事件的 detail_type 是語意子類型，2.7.0+ 會從 ID 欄位推斷
 event = {"type": "notice", "detail_type": "group_member_increase", "group_id": "123"}
 receive_type = infer_receive_type(event)
 # 返回: "group"（而非 "group_member_increase"）
+```
 
-## 6. API 使用範例
+## 6. API 使用示例
 
 ### 6.1 發送訊息
 
@@ -242,6 +237,7 @@ async def handle_test(event):
     # 系統自動處理會話類型
     # 無需手動判斷 group_id 還是 user_id
     await event.reply("命令執行成功")
+```
 
 ## 7. 核心 API 參考
 
@@ -291,6 +287,7 @@ from ErisPulse.Core.Event import get_target_id
 
 event = {"detail_type": "group", "group_id": "456"}
 get_target_id(event)  # → "456"
+```
 
 ## 8. 工具方法
 
@@ -316,8 +313,6 @@ clear_custom_types()                # 清除所有
 clear_custom_types(platform="discord")  # 只清除指定平台的
 ```
 
-
-
 ## 9. 最佳實踐
 
 ### 7.1 適配器開發者
@@ -325,21 +320,20 @@ clear_custom_types(platform="discord")  # 只清除指定平台的
 1. **使用標準映射**：盡可能映射到標準類型，而非創建新類型
 2. **正確轉換**：確保接收類型和發送類型的映射關係正確
 3. **保留原始數據**：在 `{platform}_raw` 中保留原始事件類型
-4. **文檔說明**：在適配器文檔中說明類型映射關係
+4. **文件說明**：在適配器文件中說明類型映射關係
 
-### 7.2 模組開發者
+### 7.2 模塊開發者
 
 1. **使用工具方法**：使用 `get_send_type_and_target_id()` 等工具方法
-2. **避免硬編碼**：不要寫 `if group_id else "private"` 這樣的程式碼
-3. **考慮所有類型**：程式碼要支援所有標準類型，不僅是 private/group
-4. **靈活設計**：使用事件包裝器的方法，而非直接存取欄位
+2. **避免硬編碼**：不要寫 `if group_id else "private"` 這樣的代碼
+3. **考慮所有類型**：代碼要支持所有標準類型，不僅是 private/group
+4. **靈活設計**：使用事件包裝器的方法，而非直接訪問字段
 
 ### 7.3 類型推斷
 
-- **優先使用 detail_type**：如果有明確欄位，不進行推斷
+- **優先使用 detail_type**：如果有明確字段，不進行推斷
 - **合理使用推斷**：只在沒有明確類型時使用
 - **注意優先級**：了解推斷優先級，避免意外結果
-
 
 ## 10. 常見問題
 
@@ -365,6 +359,6 @@ A: 對於不通用或平台特有的類型，使用 `{platform}_raw` 和 `{platf
 
 ## 11. 相關文件
 
-- [事件轉換標準](event-conversion.md) - 完整的事件轉換規範  
-- [發送方法規範](send-method-spec.md) - Send 類的方法命名和參數規範  
+- [事件轉換標準](event-conversion.md) - 完整的事件轉換規範
+- [發送方法規範](send-method-spec.md) - Send 類的方法命名和參數規範
 - [適配器開發指南](../developer-guide/adapters/) - 適配器開發完整指南
