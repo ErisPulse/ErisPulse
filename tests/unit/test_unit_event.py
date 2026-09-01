@@ -1457,7 +1457,8 @@ class TestConversationBranches:
     def test_goto_nonexistent_branch_raises(self, sample_event):
         """测试跳转到不存在的分支抛出异常"""
         conv = sample_event.conversation()
-        with pytest.raises(ValueError, match="未定义"):
+        # 断言稳定参数（分支名），不依赖运行语言的本地化文案
+        with pytest.raises(ValueError, match="nonexistent"):
             conv.goto("nonexistent")
 
     def test_goto_sets_current_branch(self, sample_event):
@@ -1917,7 +1918,8 @@ class TestEventSendChainAndModifiers:
     async def test_reply_invalid_modifier_raises(self, modifier_adapter):
         """reply() 遇到不存在的修饰方法应抛出 ValueError"""
         event = self._make_event()
-        with pytest.raises(ValueError, match="不支持修饰方法"):
+        # 断言稳定参数（修饰方法名），不依赖运行语言的本地化文案
+        with pytest.raises(ValueError, match="NotExist"):
             await event.reply("hi", method="Board", via=[("NotExist", 1)])
 
     @pytest.mark.asyncio

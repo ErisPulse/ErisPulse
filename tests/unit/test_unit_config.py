@@ -689,7 +689,8 @@ class TestValidateConfig:
         # 直接构造错误类型实例
         c = C(port="not-a-number")  # type: ignore[arg-type]
         errors = validate_config(c)
-        assert any("类型" in e and "port" in e for e in errors)
+        # 断言稳定参数（字段名与期望类型），不依赖运行语言的本地化文案
+        assert any("port" in e and "int" in e for e in errors)
 
     def test_options_enum_violation(self):
         from dataclasses import dataclass, field
@@ -704,7 +705,8 @@ class TestValidateConfig:
             )
 
         errors = validate_config(C(mode="d"))
-        assert any("选项" in e and "mode" in e for e in errors)
+        # 断言稳定参数（字段名与非法值），不依赖运行语言的本地化文案
+        assert any("mode" in e and "d" in e for e in errors)
         # 合法值无错误
         assert validate_config(C(mode="a")) == []
 
@@ -718,8 +720,9 @@ class TestValidateConfig:
             port: int = field(default=80, metadata={"min": 1, "max": 65535})
 
         assert validate_config(C(port=80)) == []
-        assert any("最小值" in e for e in validate_config(C(port=0)))
-        assert any("最大值" in e for e in validate_config(C(port=70000)))
+        # 断言稳定参数（字段名与越界值），不依赖运行语言的本地化文案
+        assert any("port" in e and "0" in e for e in validate_config(C(port=0)))
+        assert any("port" in e and "70000" in e for e in validate_config(C(port=70000)))
 
 
 class TestSecretRedaction:

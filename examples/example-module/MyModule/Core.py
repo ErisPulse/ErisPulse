@@ -151,6 +151,10 @@ class Main(BaseModule):
 
     async def _register_commands(self):
         """注册命令处理器"""
+        # 命令权限（可选）：permission 为调用函数，返回 True 才执行命令；
+        # master=True 限定框架主人；跨命令的用户黑白名单用控制面命令 ACL
+        # （ErisPulse.scope.commands 或 sdk.scope.allow_user()/deny_user()，命令名支持 glob）；
+        # 模块级可用性与事件准入均收敛在控制面 scope（用户可控）
         @command("hello", help="发送问候消息")
         async def hello_command(event: Event):
             await event.reply("Hello World!")
@@ -204,6 +208,15 @@ class Main(BaseModule):
                 mentions = event.get_mentions()
                 self.logger.info(f"收到@消息，被@的用户: {mentions}")
                 await event.reply("我收到了你的@消息！")
+
+        # pattern（glob 通配符）/ regex（正则）二选一：不匹配的消息不会触发
+        @message.on_message(pattern="签到*")
+        async def signin_handler(event: Event):
+            await event.reply("签到成功")
+
+        @message.on_message(regex=r"\d+\s*元")
+        async def price_handler(event: Event):
+            await event.reply(f"收到金额：{event.get_text()}")
 
         @notice.on_friend_add()
         async def friend_add_handler(event: Event):

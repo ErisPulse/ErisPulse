@@ -255,7 +255,7 @@ SECTION_ADVANCED_MODULE = Section(
         DocEntry("生命周期管理", "advanced/lifecycle.md"),
         DocEntry("懶加载系统", "advanced/lazy-loading.md"),
         DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
-        DocEntry("模块作用域系统", "advanced/scope.md"),
+        DocEntry("统一控制面（scope）", "advanced/scope.md"),
         DocEntry("启动流程与手动控制", "advanced/startup.md"),
     ],
 )
@@ -268,7 +268,7 @@ SECTION_ADVANCED_ADAPTER = Section(
         DocEntry("生命周期管理", "advanced/lifecycle.md"),
         DocEntry("懶加载系统", "advanced/lazy-loading.md"),
         DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
-        DocEntry("模块作用域系统", "advanced/scope.md"),
+        DocEntry("统一控制面（scope）", "advanced/scope.md"),
         DocEntry("启动流程与手动控制", "advanced/startup.md"),
     ],
 )
@@ -284,7 +284,7 @@ SECTION_ADVANCED_FULL = Section(
         DocEntry("MessageBuilder 详解", "advanced/message-builder.md"),
         DocEntry("Conversation 多轮对话", "advanced/conversation.md"),
         DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
-        DocEntry("模块作用域系统", "advanced/scope.md"),
+        DocEntry("统一控制面（scope）", "advanced/scope.md"),
         DocEntry("启动流程与手动控制", "advanced/startup.md"),
     ],
 )

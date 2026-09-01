@@ -143,7 +143,8 @@ class TestRouterWebSocketIntegration:
 
         router_mgr.register_websocket("ws_mod", "/ws_dup", h1)
 
-        with pytest.raises(ValueError, match="已注册"):
+        # 断言稳定参数（路径），不依赖运行语言的本地化文案
+        with pytest.raises(ValueError, match="/ws_dup"):
             router_mgr.register_websocket("ws_mod", "/ws_dup", h2)
 
     def test_multiple_messages_in_one_connection(self, router_mgr):
