@@ -963,61 +963,233 @@ class CommandHandler:
             self._dispatcher_registered = False
         return count
 
-    def get_command(self, name: str) -> dict | None:
+    def get_command(
+        self,
+        name: str,
+        *,
+        event: Any = None,
+        platform: str | None = None,
+        bot_id: str | None = None,
+        session_id: str | None = None,
+    ) -> dict | None:
         """
-        获取命令信息
+        获取命令信息（返回合并控制面覆盖后的**生效参数**）
 
-        :param name: 命令名称
-        :return: 命令信息字典，如果不存在则返回None
+        传入作用域上下文（``event`` 或 ``platform`` / ``bot_id`` / ``session_id``
+        任一）时，命令归属模块在当前会话不可用则返回 ``None``（与分发静默语义一致）。
+
+        :param name: 命令名称（支持别名）
+        :param event: 可选，事件上下文（Event 或 dict）
+        :param platform: 可选，平台名（与 event 二选一或叠加，显式参数优先）
+        :param bot_id: 可选，Bot 标识
+        :param session_id: 可选，会话标识
+        :return: 合并覆盖后的命令信息字典；不存在或该会话不可用返回 None
+
+        :example:
+        >>> command.get_command("admin")
+        >>> command.get_command("admin", event=event)   # 会话不可用时返回 None
         """
         actual_name = self.aliases.get(name, name)
-        return self.commands.get(actual_name)
+        info = self.commands.get(actual_name)
+        if info is None:
+            return None
+        ctx = self._resolve_query_context(event, platform, bot_id, session_id)
+        if ctx and self._owner_blocked(info, ctx):
+            return None
+        return self._effective_info(actual_name, info)
 
-    def get_commands(self) -> dict[str, dict]:
+    def get_commands(
+        self,
+        *,
+        event: Any = None,
+        platform: str | None = None,
+        bot_id: str | None = None,
+        session_id: str | None = None,
+    ) -> dict[str, dict]:
         """
         获取所有命令
 
+        传入作用域上下文时，过滤掉当前会话不可用模块的命令（值为原始注册信息，
+        需要覆盖合并后的生效参数请用 :meth:`get_command` / :meth:`get_visible_commands`）；
+        不传上下文时返回完整注册表（与原行为一致）。
+
+        :param event: 可选，事件上下文（Event 或 dict）
+        :param platform: 可选，平台名
+        :param bot_id: 可选，Bot 标识
+        :param session_id: 可选，会话标识
         :return: 命令信息字典
         """
-        return self.commands
+        ctx = self._resolve_query_context(event, platform, bot_id, session_id)
+        if ctx is None:
+            return self.commands
+        filtered: dict[str, dict] = {}
+        for cmd_name, info in self.commands.items():
+            if self._owner_blocked(info, ctx):
+                continue
+            filtered[cmd_name] = info
+        return filtered
 
-    def get_group_commands(self, group: str) -> list[str]:
+    def get_group_commands(
+        self,
+        group: str,
+        *,
+        event: Any = None,
+        platform: str | None = None,
+        bot_id: str | None = None,
+        session_id: str | None = None,
+    ) -> list[str]:
         """
         获取命令组中的命令
 
+        传入作用域上下文时，过滤掉当前会话不可用模块的命令。
+
         :param group: 命令组名称
+        :param event: 可选，事件上下文（Event 或 dict）
+        :param platform: 可选，平台名
+        :param bot_id: 可选，Bot 标识
+        :param session_id: 可选，会话标识
         :return: 命令名称列表
         """
-        return self.groups.get(group, [])
+        names = self.groups.get(group, [])
+        ctx = self._resolve_query_context(event, platform, bot_id, session_id)
+        if ctx is None:
+            return names
+        return [
+            cmd_name
+            for cmd_name in names
+            if (info := self.commands.get(cmd_name)) is not None
+            and not self._owner_blocked(info, ctx)
+        ]
 
-    def get_visible_commands(self) -> dict[str, dict]:
+    def get_visible_commands(
+        self,
+        *,
+        event: Any = None,
+        platform: str | None = None,
+        bot_id: str | None = None,
+        session_id: str | None = None,
+    ) -> dict[str, dict]:
         """
         获取所有可见命令（非隐藏命令）
 
-        :return: 可见命令信息字典
+        可见性判定读取控制面覆盖值（``scope.overrides.<module>.<command>.hidden``）：
+        用户显式覆盖 ``hidden`` 后，帮助列表随之变化（用户优先）。
+        传入作用域上下文（``event`` 或 ``platform`` / ``bot_id`` / ``session_id``
+        任一）时，额外按模块维度过滤该会话不可用模块的命令（与分发静默语义一致）。
+
+        :param event: 可选，事件上下文（Event 或 dict）
+        :param platform: 可选，平台名（与 event 叠加时显式参数优先）
+        :param bot_id: 可选，Bot 标识
+        :param session_id: 可选，会话标识
+        :return: 可见命令信息字典（值为合并覆盖后的生效参数）
         """
+        ctx = self._resolve_query_context(event, platform, bot_id, session_id)
+        visible: dict[str, dict] = {}
+        for name, info in self.commands.items():
+            if name != info["main_name"]:
+                continue
+            if ctx and self._owner_blocked(info, ctx):
+                continue
+            effective = self._effective_info(name, info)
+            if not effective.get("hidden", False):
+                visible[name] = effective
+        return visible
+
+    def _context_from_event(self, event: Any) -> dict[str, str | None]:
+        """
+        {!--< internal-use >!--}
+        从事件提取作用域查询上下文（platform / bot / session）
+        """
+        from ..scope import scope as _scope_mod
+
         return {
-            name: info
-            for name, info in self.commands.items()
-            if not info.get("hidden", False) and name == info["main_name"]
+            "platform": event.get("platform") or "",
+            "bot_id": _scope_mod.bot_id_from_event(event) or None,
+            "session_id": _scope_mod.session_id_from_event(event) or None,
         }
 
-    def help(self, command_name: str | None = None, show_hidden: bool = False) -> str:
+    def _resolve_query_context(
+        self,
+        event: Any = None,
+        platform: str | None = None,
+        bot_id: str | None = None,
+        session_id: str | None = None,
+    ) -> dict[str, str | None] | None:
+        """
+        {!--< internal-use >!--}
+        归一查询上下文：event 与显式关键字参数合并（显式参数优先）
+
+        :return: {"platform": str, "bot_id": str|None, "session_id": str|None}；
+                 完全未提供任何上下文时返回 None（不做会话过滤）
+        """
+        if event is not None:
+            ctx = self._context_from_event(event)
+        elif platform is None and bot_id is None and session_id is None:
+            return None
+        else:
+            ctx = {"platform": "", "bot_id": None, "session_id": None}
+        if platform is not None:
+            ctx["platform"] = platform
+        if bot_id is not None:
+            ctx["bot_id"] = bot_id
+        if session_id is not None:
+            ctx["session_id"] = session_id
+        return {"platform": ctx.get("platform") or "", "bot_id": ctx.get("bot_id"), "session_id": ctx.get("session_id")}
+
+    def _effective_info(self, name: str, info: dict) -> dict:
+        """
+        {!--< internal-use >!--}
+        合并控制面覆盖后的命令生效参数（帮助渲染与可见性判定用）
+
+        :param name: 命令主名
+        :param info: 注册时的命令信息字典
+        :return: 与执行路径同源的覆盖合并结果（无覆盖时原样返回）
+        """
+        owner = info.get("owner")
+        if not owner:
+            return info
+        from ..scope import scope
+
+        return scope.apply_override(owner, name, info)
+
+    def help(
+        self,
+        command_name: str | None = None,
+        show_hidden: bool = False,
+        event: Any = None,
+    ) -> str:
         """
         生成帮助信息
 
+        传入 ``event`` 时按控制面对输出做会话感知调整：① 模块维度——
+        该会话（platform / bot / session）下被作用域禁用的模块，其命令不再列出
+        （与分发静默语义一致）；② 覆盖维度——帮助文本 / usage / 可见性读取
+        ``scope.overrides`` 覆盖值（用户优先）。
+
         :param command_name: 命令名称，如果为None则生成所有命令的帮助
         :param show_hidden: 是否显示隐藏命令
+        :param event: 可选，事件上下文（Event 或 dict）。提供时按作用域过滤
+                      当前会话不可用模块的命令；None 时不过滤（保持原行为）
         :return: 帮助信息字符串
+
+        :example:
+        >>> # 全量帮助（不感知会话）
+        >>> command.help()
+        >>> # 会话感知帮助：只列出当前会话可用的命令
+        >>> command.help(event=event)
         """
         # 用于显示的前缀：单个时保持原始字符串，多个时取第一个
         display_prefix = self.prefix[0] if isinstance(self.prefix, list) else self.prefix
 
+        # 归一作用域查询上下文（event 驱动），用于模块维度过滤
+        ctx = self._resolve_query_context(event=event)
+
         if command_name:
-            cmd_info = self.get_command(command_name)
-            if cmd_info:
-                help_text = cmd_info.get("help", i18n.t("core.event.command.no_help"))
-                usage = cmd_info.get("usage", f"{display_prefix}{command_name}")
+            # 会话不可用（ctx 过滤）或未注册 → 统一按"未注册"处理（静默语义一致）
+            effective = self.get_command(command_name, event=event)
+            if effective:
+                help_text = effective.get("help", i18n.t("core.event.command.no_help"))
+                usage = effective.get("usage", f"{display_prefix}{command_name}")
                 return i18n.t(
                     "core.event.command.help_command",
                     command_name=command_name,
@@ -1027,9 +1199,14 @@ class CommandHandler:
             return i18n.t("core.event.command.not_found", command_name=command_name)
         # 生成所有命令的帮助
         commands_to_show = (
-            self.get_visible_commands()
+            self.get_visible_commands(event=event)
             if not show_hidden
-            else {name: info for name, info in self.commands.items() if name == info["main_name"]}
+            else {
+                name: self._effective_info(name, info)
+                for name, info in self.commands.items()
+                if name == info["main_name"]
+                and not (ctx and self._owner_blocked(info, ctx))
+            }
         )
 
         if not commands_to_show:
@@ -1047,6 +1224,22 @@ class CommandHandler:
                 )
             )
         return "\n".join(help_lines)
+
+    def _owner_blocked(self, info: dict, ctx: dict[str, str | None]) -> bool:
+        """
+        {!--< internal-use >!--}
+        判断命令归属模块在给定作用域上下文下是否被模块维度禁用
+
+        :param info: 命令信息字典
+        :param ctx: {"platform": str, "bot_id": str|None, "session_id": str|None}
+        :return: 是否被禁用（owner 为空视为框架层资源，恒不阻止）
+        """
+        owner = info.get("owner")
+        if not owner:
+            return False
+        from ..scope import scope
+
+        return not scope.is_allowed(ctx.get("platform") or "", ctx.get("bot_id"), owner, ctx.get("session_id"))
 
 
 command: CommandHandler = CommandHandler()

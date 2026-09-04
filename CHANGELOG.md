@@ -115,6 +115,7 @@
   - **ApiDSL 补齐 OneBot12 标准动作接口** `Core/Bases/adapter.py`：新增频道体系 12 个（`get_guild_info/list`、`set_guild_name`、`get_guild_member_info/list`、`leave_guild`、`get_channel_info/list`、`set_channel_name`、`get_channel_member_info/list`、`leave_channel`）、元动作 4 个（`get_latest_events`、`get_supported_actions`、`get_status`、`get_version`）强类型方法；文件资源动作（`upload_file`/`get_file`/分片 6 个方法，OB12 按 `stage` 分阶段）以透传入口保留并**明确降级标注**——ErisPulse 文件收发用 `SendDSL.File`（发送时直传），此套依赖平台特有 `file_id` 文件资源能力、通用性不足，框架内置适配器不实现也不建议实现（调用通常返回 `10002`）；`file_id` 资源模型标准化到框架层是未来方向、当前不提供。类 docstring 与 `standards/api-action-spec.md` 同步更新（新增 3.4 频道 / 3.6 元动作章节，3.5 文件资源操作加降级 WARNING）
   - 文档：`standards/api-response.md` §5.3 框架扩展返回码明确为 **34xxx 平台错误段低三位自定义**（`34600` SDK Failure / `34601` Action Denied），与 OneBot12 `34xxx=Platform Error` 段对齐；`make_error()` 默认返回码改为 `RETCODE_SDK_FAILURE`（原硬编码 34000）
   - 文档同步：`advanced/scope.md` 增补 ⑥ 出站动作维度（配置节 / 判定语义 / 运行时 API / 统计键）
+  - **命令系统会话感知查询与覆盖统一** `Core/Event/command.py` / `Core/module.py`：命令查询 API 全家族——`command.help` / `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands` 与 `module.get_commands_overview`——统一支持**可选** `event`（Event 或 dict）或显式 `platform` / `bot_id` / `session_id` 关键字参数（与 event 叠加时显式参数优先，全部向后兼容）：传入上下文即按控制面**模块维度**过滤当前会话不可用模块的命令（`get_command` 返回 None、单命令帮助按"未注册"处理，与分发静默语义一致），不传上下文保持原行为；`get_command` / `get_visible_commands` / `get_commands_overview` 返回的 help / usage / hidden 等字段统一为合并 `scope.overrides` 覆盖后的**生效值**（用户优先，与执行判定同源）
 
 ### 优化
 - @wsu2059q
@@ -136,6 +137,9 @@
 
 ### 修复
 - @wsu2059q
+  - **配置「写后立读」不一致（延迟刷盘期间读到旧值）** `Core/config.py`：`setConfig` 将点分键以扁平形式存入待写队列（默认延迟约 5 秒刷盘），但 `getConfig` 的树查询只走缓存、不叠加待写值——`set_erispulse_section` / `update_erispulse_config` 写入后立即 `get_erispulse_config()` 读回为旧值（`/t_section` 测试暴露）。修复 `getConfig` 读取语义：精确命中待写键直接返回（原有行为）；待写键是查询键的祖先时在其值子树内解析；待写键是查询键的后代时以待写值深合并叠加缓存子树，保证刷盘前读即所见。回归测试：`tests/unit/test_unit_config.py`（后代叠加 / 兄弟键保留 / 新分支 / 祖先子树解析 / 精确键不变，共 5 用例）
+  - **本地插件热重载完全不可用（`reload_plugin` 恒返回 False）** `sdk.py`：`ModuleLoader` 仅作为 `Initializer` 的内部属性创建、从未注入 SDK，而 `sdk.reload_plugin()` 读取的是 SDK 实例上的 `_module_loader`（恒为 None），导致「热重载不可用：SDK 尚未初始化模块加载器」——手动重载与文件监控自动重载在真实初始化路径上全部失效；同方法还引用了 SDK 上不存在的 `self._sdk`（第二个潜伏断点）。修复：`Initializer.__init__` 创建加载器后注入 `sdk._module_loader`；`uninit()` 重置阶段同步清空；`reload_plugin` 改传 SDK 实例自身。回归测试：`tests/unit/test_unit_plugin_reload.py → TestSDKLoaderWiring`
+  - **`scope.overrides` 的 `hidden` 覆盖不影响帮助列表** `Core/Event/command.py`：`get_visible_commands()` / `help()` 仅读注册时参数，从不应用控制面覆盖——`scope.overrides.<module>.<cmd>.hidden = true` 配置后命令仍然出现在 `/help`（dev.1 变更说明宣称"帮助/权限判定均读取覆盖值"，权限路径有 `apply_override`、帮助路径完全缺失）。修复：帮助可见性判定与单命令帮助文本统一经 `apply_override` 合并覆盖（与命令执行路径同源），`show_hidden=True` 分支同样读覆盖值。回归测试：`tests/unit/test_unit_command_acl.py → TestHelpAppliesOverrides`
   - **meta 事件分发会话类型推断 WARNING 噪音** `Core/scope.py` / `Core/Event/session_type.py`：`connect` / `disconnect` / `heartbeat` 等 meta 事件天然不含 `group_id` / `channel_id` / `user_id` 等会话字段，每次分发（事件准入 + 逐 handler 作用域 + 处理器上下文，共 3 处）都会触发 `infer_receive_type()` 兜底推断并输出 WARNING「无法从事件数据推断会话类型，使用默认值 'private'」，控制台被刷屏。修复：
     - `scope.session_id_from_event()` 改为**直接按 ID 字段存在性提取**（优先级 group > channel > guild > thread > user），不再走会话类型推断——meta / 心跳等无会话上下文事件直接返回空字符串，语义与原实现等价（原实现缺失全部 ID 字段时同样返回空）
     - `infer_receive_type()` 兜底日志由 WARNING 降为 DEBUG：默认回退 `private` 属设计内行为，仅需在 DEBUG / 订阅器排障时可见，不再向控制台输出

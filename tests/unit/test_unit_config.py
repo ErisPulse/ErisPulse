@@ -86,6 +86,56 @@ nested_key = "nested_value"
         # 验证
         assert value == "cached_value"
 
+    # ==================== 读-你-写一致性（待写队列叠加） ====================
+
+    def test_get_config_overlays_dirty_descendant(self, config_manager):
+        """待写键是查询键的后代：读取父节时应叠加待写值（写后立读）"""
+        config_manager.setConfig("ErisPulse.scope.handlers.My", {"pattern": "x*"})
+
+        # 未刷盘前读取中间节：应看到待写子树，且不丢缓存中的兄弟键
+        section = config_manager.getConfig("ErisPulse.scope")
+        assert section["handlers"]["My"] == {"pattern": "x*"}
+
+        root = config_manager.getConfig("ErisPulse")
+        assert root["scope"]["handlers"]["My"] == {"pattern": "x*"}
+
+        # 刷盘后从缓存树读取一致
+        config_manager._flush_config()
+        assert config_manager.getConfig("ErisPulse.scope")["handlers"]["My"] == {"pattern": "x*"}
+
+    def test_get_config_overlay_merges_with_cache_siblings(self, config_manager):
+        """叠加合并不覆盖缓存中的兄弟键"""
+        config_manager.setConfig("app.existing", "keep", immediate=True)
+        config_manager.setConfig("app.new.nested", "added")
+
+        section = config_manager.getConfig("app")
+        assert section["existing"] == "keep"
+        assert section["new"]["nested"] == "added"
+
+    def test_get_config_overlay_new_branch(self, config_manager):
+        """缓存树完全缺失该分支：返回待写叠加子树"""
+        assert config_manager.getConfig("fresh.section") is None
+        config_manager.setConfig("fresh.section.item", {"a": 1})
+
+        assert config_manager.getConfig("fresh.section") == {"item": {"a": 1}}
+        assert config_manager.getConfig("fresh") == {"section": {"item": {"a": 1}}}
+
+    def test_get_config_dirty_ancestor_query(self, config_manager):
+        """待写键是查询键的祖先：在其值子树内解析剩余路径"""
+        config_manager.setConfig("a.b", {"c": {"d": 1}})
+
+        assert config_manager.getConfig("a.b.c.d") == 1
+        assert config_manager.getConfig("a.b.c.missing") is None
+        assert config_manager.getConfig("a.b.c.missing", "fallback") == "fallback"
+
+    def test_get_config_dirty_exact_key_still_wins(self, config_manager):
+        """精确命中待写键的行为保持不变"""
+        config_manager.setConfig("exact.key", {"x": 1})
+        assert config_manager.getConfig("exact.key") == {"x": 1}
+        # 标量值写入父节后以缓存值返回（无叠加时不改变原行为）
+        config_manager.setConfig("scalar", "v")
+        assert config_manager.getConfig("scalar") == "v"
+
     # ==================== 配置设置测试 ====================
 
     def test_set_config_simple(self, config_manager):
