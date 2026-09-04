@@ -69,6 +69,7 @@
 **版本摘要**
 新增 CLI `config` 命令与安装后配置引导：`epsdk config` 按适配器/模块声明的 `ConfigClass`/`AccountConfigClass` 生成 schema 驱动的交互表单（含适配器多账户管理与启用开关），无需手写 config.toml；`epsdk install`（交互式路径）与 `epsdk init` 安装成功后自动检测新装包的配置声明并引导填写。向导已完善交互细节：字段值来源标注（已有配置/默认值）、布尔开关用字段名提问、已就绪目标提示、成功写入合并为一条汇总、账户名空输入视为取消，并统一字段描述语言（Core i18n 跟随 `epsdk i18n` 设置，消除中英混排）。另修复 Docker 部署 site-packages 持久化卷核心包半写损坏（如 click 截断导致 `module 'click' has no attribute 'Choice'` 启动失败）无法自愈的问题，入口点启动时自动探测并从镜像备份还原。
 本版将权限/访问控制收敛为**统一控制面（scope）**并补齐消息过滤能力：控制权完全交给用户——在模块 / 适配器 / 命令 / 处理器注册的**上层**（配置 `ErisPulse.scope` 或运行时 `sdk.scope`）统一声明"谁 / 什么 / 什么条件下，允许或禁止"。五维配置树：**① 模块维度**（原作用域三级绑定，条目升级支持 glob / `re:` 正则）；**② 身份维度**（原事件准入 access 收敛，四级绑定 + 用户键支持 glob/正则）；**③ 命令维度**（命令 ACL 收敛，命令名支持 glob，精确键优先）；**④ 处理器/文本维度**（按模块配置 pattern/regex 过滤，与代码内条件 AND）；**⑤ 实现参数覆盖**（`scope.overrides` 覆盖模块/命令的 `master`/`hidden`/`aliases`/`prefix` 等实现参数，禁用统一走命令 deny）。全局唯一 `default_allow` 兜底三维度（false = 隐式拒绝严格模式：模块/身份无规则即拒、命令无 ACL 即拒）。`ErisPulse.access` 节与 `ErisPulse.event.command.permissions` 节移除，`sdk.access` 与 `sdk.command` 独立 ACL 实现移除（dev 阶段直接切换，不保留门面）；命令 ACL 运行时 API（`allow_user` / `deny_user` / `get_acl` / `remove_acl`）保留并委托 `sdk.scope`。匹配条目语法全系统统一（`Core/text_match.py`：精确名 / glob / `re:` 正则，默认大小写不敏感），`adapter.on()` 新增 `detail_type` / `pattern` / `regex` 条件参数，`activate_on` 事件触发器 detail_type 支持 glob。
+本版后期迭代：修复控制面 `scope.overrides` 的 `master` 覆盖未映射存储键导致完全不生效的缺陷，覆盖语义明确为**用户优先**（用户显式配置即可收紧或放开开发者默认）；主人系统支持**自定义身份源 provider 链**（`master.provider` 装饰器/函数两用 + `fn.unregister()`，可接入适配器管理员接口、数据库角色等外部身份体系，不再被开发者硬定义的检查方式绑定）；控制面新增 **⑥ 出站动作维度**（`scope.actions`：默认全允许、可禁止模块发消息 / 调标准 API / 处理请求，owner 随事件 handler 执行期自动传播），provider 注册支持作用域自动清理（模块卸载自动注销）；同步完成一批现代化工程设施：CI 矩阵测试（Python 3.10–3.13）、uv 化安装、PEP 639/735 元数据、pre-commit 卫生钩子、ruff 检查范围与 CI 对齐、pip-audit 依赖审计与 dependabot。
 
 ### 新增
 - @wsu2059q
@@ -105,18 +106,33 @@
     - `epsdk install` 交互式安装路径（选适配器/模块/搜索/自定义）安装成功后，自动检测新装包的配置声明并逐个引导配置（PyPI 名称规范化匹配，`importlib.invalidate_caches()` 刷新 entry-points）
     - `epsdk init` 安装适配器成功后同样衔接向导（写入新项目 config.toml）
     - 命令行指定包名的批量安装不进入向导，仅打印 `epsdk config` 指引；非 TTY 环境自动跳过引导
+  - **主人系统自定义身份源（provider 链）** `Core/master.py`：短入口 `master.provider(fn)`（装饰器 `@master.provider` / 函数式两用），注册函数挂载 `fn.unregister()` 注销（绑定实例方法自动降级并 DEBUG 提示）；`fn(platform, user_id) -> bool`，内置身份源（配置 + 运行时记录）未命中时按注册顺序依次尝试，任一放行即认定为主人；provider 异常捕获跳过不阻断判定链；`reset()` 同时清空 provider 链（软重启语义）；新增 i18n 键 `core.master.provider_error`（五语言同步）；导出 `MasterProvider` 类型（`Core/__init__` 聚合）
+  - 文档同步：`advanced/scope.md` 覆盖语义更正（用户优先）并新增"主人身份与自定义身份源（provider）"章节（判定链 / 运行时增删 / provider 链 API / 用户优先说明）；`user-guide/configuration.md` 主人系统节收敛为纯配置说明并链接控制面专题；`getting-started/event-handling.md` 补"master 仅为开发者默认"说明
+  - **控制面 ⑥ 出站动作维度** `Core/scope.py`：禁止模块发起出站调用（消息发送 send / 标准 API 动作 api / 请求操作 request）。判定语义**默认全允许**，仅用户显式设 `false` 收紧；owner 为空（框架层内部调用）恒放行；不受 `default_allow` 影响（严格模式不会误掐断模块回复）。`scope.actions.<module>` 配置节 + 运行时 `set_action()` / `unset_action()` / `get_action_rules()` / `is_action_allowed()`；新增统计 `action_checks` / `action_denied`
+    - **拦截点**：`SendDSL._wrap_send_method`（`Event.reply` / `Send DSL` 全经此闸口）、`ApiDSL._api_call`（标准 API 方法 + `call()` 逃生舱统一入口）、`RequestDSL.accept/reject`；被拒动作不发起网络请求，返回标准失败响应（新增 `RETCODE_PERMISSION_DENIED=34601`，落 OneBot12 `34xxx Platform Error` 段低三位自定义，见 api-response §5.3；i18n `core.adapter.action_denied(_short)` 五语言同步）
+    - **owner 传播补全** `Core/Event/base.py`：`_invoke_handler` 在事件 handler 执行期注入 `current_owner`（消息/通知/请求/元 handler 先前为空，仅命令路径注入），出站调用由此可识别调用模块并被 actions 维度约束；spawn 后台任务自动继承
+  - **provider 作用域自动清理** `Core/master.py` / `Core/module.py`：provider 注册时记录 owner（模块加载上下文 `on_load` 内注册即归属）；模块卸载自动 `master.unregister_by_owner(module_name)` 注销其 provider（开发者无需在 `on_unload` 手动注销）；i18n `core.module.unload_providers_cleaned` 五语言同步
+  - **ApiDSL 补齐 OneBot12 标准动作接口** `Core/Bases/adapter.py`：新增频道体系 12 个（`get_guild_info/list`、`set_guild_name`、`get_guild_member_info/list`、`leave_guild`、`get_channel_info/list`、`set_channel_name`、`get_channel_member_info/list`、`leave_channel`）、元动作 4 个（`get_latest_events`、`get_supported_actions`、`get_status`、`get_version`）强类型方法；文件资源动作（`upload_file`/`get_file`/分片 6 个方法，OB12 按 `stage` 分阶段）以透传入口保留并**明确降级标注**——ErisPulse 文件收发用 `SendDSL.File`（发送时直传），此套依赖平台特有 `file_id` 文件资源能力、通用性不足，框架内置适配器不实现也不建议实现（调用通常返回 `10002`）；`file_id` 资源模型标准化到框架层是未来方向、当前不提供。类 docstring 与 `standards/api-action-spec.md` 同步更新（新增 3.4 频道 / 3.6 元动作章节，3.5 文件资源操作加降级 WARNING）
+  - 文档：`standards/api-response.md` §5.3 框架扩展返回码明确为 **34xxx 平台错误段低三位自定义**（`34600` SDK Failure / `34601` Action Denied），与 OneBot12 `34xxx=Platform Error` 段对齐；`make_error()` 默认返回码改为 `RETCODE_SDK_FAILURE`（原硬编码 34000）
+  - 文档同步：`advanced/scope.md` 增补 ⑥ 出站动作维度（配置节 / 判定语义 / 运行时 API / 统计键）
 
 ### 优化
 - @wsu2059q
   - 修正 CI 文档自动更新流程顺序（`.github/workflows/auto-update-docs.yml`）：改为「翻译 → 提交翻译 → 生成 → 提交生成」。原顺序导致生成产物基于上一轮旧翻译、滞后一轮且无法自愈
   - 配置向导交互语义修正：新增账户的未填字段正确标注"（默认:x）"（不再误标为已有配置）；全局表单校验失败且放弃重填时中止整个向导（不写入任何配置，避免产生"已启用但配置不完整"的半成品状态）；`epsdk config` 交互选择在向导结束后回到菜单，支持连续配置多个目标
   - 布尔开关 prompt 文案并入 i18n（`是否启用 {name}？`），消除中英文标点混排；本地插件目录发现失败时输出警告（不再静默吞异常）；提取 `_resolve_accounts_key()`（`.accounts`/`.bots` 兼容键解析）与 `_plugin_module_class()`（插件模块类提取）helper 消除重复
+  - `pyproject.toml` 工程化升级：dev 依赖迁移至 PEP 735 `[dependency-groups]`；license 采用 PEP 639 SPDX 表达式（`license = "MIT"` + `license-files`，build-system 提升至 `hatchling>=1.26`）；`[tool.ruff]` 检查范围扩展至 `tests/`（与 CI 对齐，新增 `PLR0917` / `RUF022` 豁免与 tests 专用忽略集，tests 历史问题批量自动修复）
+  - `.pre-commit-config.yaml`：新增基础文件卫生钩子（trailing-whitespace / end-of-file-fixer / check-toml / check-yaml / check-merge-conflict）；ruff-pre-commit 对齐 v0.16.0
+  - `.github/workflows/code-quality-check.yml`：pytest 矩阵覆盖 Python 3.10–3.13（此前仅最新版，与 `requires-python >=3.10` 声明不符）；安装切换为 uv（`astral-sh/setup-uv` + `uv sync`）；新增 `security-audit` job（`pip-audit` 审计锁定依赖）与 Codecov 覆盖率上传
+  - 新增 `.github/dependabot.yml`（github-actions / pip 生态周更）与 `.editorconfig`
+  - CLI `create` 模板（`_MODULE_PYPROJECT` / `_ADAPTER_PYPROJECT`）与 `examples/` 示例项目 pyproject 补充 `[build-system]`（hatchling），生成项目开箱即可构建安装
 
 ### 移除
 - @wsu2059q
   - **独立事件准入系统** `Core/access.py`（`AccessManager` / `sdk.access`）：整体并入统一控制面身份维度（`scope.identity`），配置节 `ErisPulse.access` 移除；运行时能力经 `sdk.scope.bind_identity()` / `block_user()` 等完整保留
   - **命令 ACL 独立实现**：配置节 `ErisPulse.event.command.permissions` 移除（ACL 统一存储于 `scope.commands`）；`command.allow_user()` / `deny_user()` / `get_acl()` / `remove_acl()` 保留为 `scope` 委托门面
   - **`bind()` / `unbind()` 旧签名**（dev.0 作用域雏形 API）：更名 `bind_module()` / `unbind_module()`，语义随五维控制面重新定义（dev 阶段直接切换，不做兼容）
+  - **安装脚本 root/管理员警告与强制确认** `scripts/install/install.sh` / `install.ps1`：容器、服务器等场景必须以 root/管理员运行，移除检测警告与「是否继续」确认（拒绝即退出），脚本不再因提权身份中断；两脚本五语言 `admin_warn` i18n 键同步删除
 
 ### 修复
 - @wsu2059q
@@ -143,6 +159,8 @@
     - 新增还原过程日志文案，入口点内联 i18n 五语言（zh / zh_TW / en / ja / ru）同步
   - **文档翻译器提示词泄露** `scripts/tools/translate-docs.py`：模型翻译时偶发将翻译规则/提醒（如「路径替换规则」「请直接返回翻译后的完整Markdown内容」「再次提醒：…语言切换行…」）当作正文回译进译文，污染各语言文档（en/ja/ru/zh-TW 与根 README 大量出现）。已定位根因：所有翻译规则与待翻译内容混在同一用户消息、且规则用与内容相同的语言写成，模型无法区分指令与正文而整段回显。改为架构性修复：全部规则前移到 `system` 消息、待翻译内容用 `<<<DOC_START>>>`/`<<<DOC_END>>>` 标记包裹放入 `user` 消息并明确「只翻译标记之间的内容、不得输出任何提示词」；`call_translation_api` 末尾防御性移除可能的标记残留。已对全仓库各语言受影响文档（109 个）做「移除泄露行」一次性清理（仅删除提示词残留行，未改动正文），并用中文/英文/日文/俄文泄露特征 + 与 zh-CN 源零匹配校验确保不误删。另约定：删除/移动/重命名 `docs/zh-CN` 文档时若用中文书写目录注释，须同时手动清理其它语言与缓存（已补充文档说明）。
   - **翻译质量检查器新增提示词泄露检测** `scripts/tools/check-translation.py`：`detect_prompt_leaks()` 检出译文中的翻译提示词残留（多语言特征），计入 `ERROR`，配合 `--fix` 清缓存后由修复版翻译器重译即可自愈。
+  - **scope.overrides 的 master 覆盖完全不生效** `Core/scope.py` / `Core/Event/command.py`：覆盖配置键 `master` 未映射到命令存储键 `must_master`（`command()` 装饰器参数名），合并后无消费方读取，`ErisPulse.scope.overrides.<module>.<cmd>.master = true/false` 收紧与放开均静默无效。修复：键映射收敛到 `apply_override()`（含 `master` 键时同步写 `must_master`），语义定为**用户优先**——用户显式配置直接生效（可收紧可放开开发者默认）；`command.py` 改用 `apply_override()` 统一合并，删除内联 update 逻辑
+  - **安装脚本 Debian/Ubuntu 虚拟环境创建失败** `scripts/install/install.sh`：Debian 系发行版系统 Python 未安装 `python3-venv`（`ensurepip` 被发行版禁用）时 `python -m venv` 必然失败，脚本此前仅报「虚拟环境创建失败」即退出。现于创建虚拟环境前预检 `ensurepip`（uv 路径不依赖，自动跳过），缺失时询问并自动通过 apt 安装 `python3.<次版本>-venv`（回退 `python3-venv`；非 root 自动加 sudo）；非 apt 系发行版或用户拒绝时输出手动安装指引；新增提示键 `venv_ensurepip_missing` / `venv_auto_install_pkg` / `venv_pkg_installed` / `venv_pkg_install_fail` / `venv_manual_hint`（五语言同步）
 
 ### 测试
 - @wsu2059q
@@ -155,6 +173,13 @@
   - 新增 `tests/unit/test_unit_config_api.py`（45 用例）：向导字段渲染（boolean/select/secret/min-max/required 重问、空默认值无括号）、字段值来源标注（当前/默认、按存储键存在性计算）、布尔 prompt 用字段名、账户名空输入取消、目标配置状态四态检查、安装后衔接匹配与跳过、`run_wizard` 落盘与就绪提示/成功汇总/放弃中止零写入、交互选择连续配置、语言同步、`epsdk config` 命令路由、CLI i18n 占位符插值
   - Core i18n `set_language` 的 `persist` 参数行为测试（默认持久化 / `persist=False` 跳过持久化）
   - `tests/unit/test_unit_cli.py` 的 `EXPECTED_COMMANDS` 增加 `config`（别名 `cfg`/`conf`）注册断言
+  - 新增主人身份源 provider 链测试（`test_unit_master.py` → `TestMasterProviders`，10 用例）：provider 放行/参数透传/内置命中短路/异常隔离/注销/去重注册/reset 清空/owner 上下文注册按 owner 自动清理/unregister_by_owner 幂等/reset 清 owner 表
+  - 新增覆盖维度 `master` 键映射测试（`test_unit_scope_control.py`，3 用例）：`master=true` 收紧 / `master=false` 放开（用户优先）/ 未覆盖保持默认，`must_master` 同步生效
+  - 新增 `set_erispulse_section` 测试（`test_unit_frame_config.py` → `TestSetErispulseSection`，6 用例）：路径拼接 / value 透传 / 返回值透传 / 子键删除语义 / 与 `update_erispulse_config` 深合并的分工对比（未提及子键不触碰、无变化零写入）
+  - 新增 `activate_on` 事件触发器 detail_type 匹配测试（`test_unit_module.py`，4 用例）：glob（`private*`）/ `re:` 正则 / 列表混合（精确 + glob）/ 无 detail_type 不挂条件
+  - 新增事件过滤器三重 AND 管线测试（`tests/unit/test_unit_event_filter_chain.py`，9 用例）：条件函数 / 模块维度（blocked / 白名单）/ `scope.handlers` pattern / regex 命中 / 三者叠加 / 无 owner 与 `scope_exempt` 跳过过滤
+  - 修复 `test_unit_memory.py` 快照测试对 psutil 的隐式环境依赖：平台无法采集 RSS 时 delta 合法为 None（此前环境恰好存在 psutil 掩盖了该假设）
+  - 新增出站动作维度测试：`tests/unit/test_unit_scope_control.py` → `TestActionsDimension`（9 用例：默认允许/三动作独立/仅作用目标模块/恢复/全移除/非法动作/规则查询/统计/持久化）；端到端 `tests/integration/test_integration_actions.py`（9 用例）：真实 SendDSL 禁 send / ApiDSL 禁 api（含 `call()` 逃生舱）/ RequestDSL 禁 request 均返回 `RETCODE_PERMISSION_DENIED`，owner 为空放行，模块卸载自动注销其 provider（scope/master/DSL 真实协作，无 mock）
 
 ---
 
