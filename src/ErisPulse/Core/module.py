@@ -1375,13 +1375,28 @@ class ModuleManager(ManagerBase):
         except Exception:
             return []
 
-    def get_commands_overview(self) -> dict[str, dict[str, Any]]:
+    def get_commands_overview(
+        self,
+        *,
+        event: Any = None,
+        platform: str | None = None,
+        bot_id: str | None = None,
+        session_id: str | None = None,
+    ) -> dict[str, dict[str, Any]]:
         """
         获取命令总览（模块 meta + 其注册的命令，按模块聚合）
 
         聚合每个模块的**介绍元信息**与其**注册的命令**（含别名 / 分组 / 帮助文本），
         便于 help 模块、管理界面等按模块展示"这个模块是干什么的 + 有哪些命令"。
+        命令的 help / hidden 字段为合并控制面覆盖后的生效值（用户优先）。
 
+        传入作用域上下文（``event`` 或 ``platform`` / ``bot_id`` / ``session_id``
+        任一）时，当前会话不可用模块不进入总览（会话感知总览）。
+
+        :param event: 可选，事件上下文（Event 或 dict）
+        :param platform: 可选，平台名（与 event 叠加时显式参数优先）
+        :param bot_id: 可选，Bot 标识
+        :param session_id: 可选，会话标识
         :return: {模块名: {"meta": {...}, "commands": [{name, aliases, group, help, hidden}]}}
 
         :example:
@@ -1390,22 +1405,26 @@ class ModuleManager(ManagerBase):
         "查询城市天气"
         >>> overview["Weather"]["commands"][0]["name"]
         "weather"
+        >>> overview = module.get_commands_overview(event=event)   # 会话感知
         """
         from .Event import command
 
+        commands = command.get_commands(event=event, platform=platform, bot_id=bot_id, session_id=session_id)
         commands_by_owner: dict[str, list[dict[str, Any]]] = {}
-        for cmd_name, cmd_info in command.get_commands().items():
+        for cmd_name, cmd_info in commands.items():
             owner = cmd_info.get("owner")
             if not owner or cmd_name != cmd_info.get("main_name"):
                 continue
+            # 生效值：读合并覆盖后的参数（与帮助渲染 / 执行判定同源）
+            effective = command.get_command(cmd_name) or cmd_info
             aliases = sorted(alias for alias, main in command.aliases.items() if main == cmd_name and alias != cmd_name)
             commands_by_owner.setdefault(owner, []).append(
                 {
                     "name": cmd_name,
                     "aliases": aliases,
-                    "group": cmd_info.get("group"),
-                    "help": cmd_info.get("help"),
-                    "hidden": bool(cmd_info.get("hidden", False)),
+                    "group": effective.get("group"),
+                    "help": effective.get("help"),
+                    "hidden": bool(effective.get("hidden", False)),
                 }
             )
 

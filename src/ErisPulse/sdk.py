@@ -204,6 +204,7 @@ class SDK:
         确保软重启后始终指向最新的模块级单例。
         """
         self._initializer: SDK.Initializer | None = None
+        self._module_loader: Any = None  # 模块加载器（Initializer 创建后注入，热重载使用）
         self._initialized: bool = False
         self._gc_task: asyncio.Task | None = None  # 主动 GC 后台任务
         self._gc_config_snapshot: tuple | None = None  # 主动 GC 配置快照（变更检测）
@@ -325,6 +326,9 @@ class SDK:
             self._sdk = sdk_instance
             self._adapter_loader = AdapterLoader()
             self._module_loader = ModuleLoader()
+            # 将加载器引用注入 SDK：热重载（sdk.reload_plugin / 热重载监控）
+            # 经由 SDK 访问，若仅持有在 Initializer 内部则 SDK 侧永远读不到
+            sdk_instance._module_loader = self._module_loader
             # 创建共享的严格模式管理器并注入到两个加载器，
             # 确保跨加载器统一收集违规、在检查点统一报告
             self._strict_manager = StrictModeManager.from_config()
@@ -831,6 +835,7 @@ class SDK:
                 # 9. 重置初始化状态
                 self._sdk._initialized = False
                 self._sdk._initializer = None
+                self._sdk._module_loader = None  # 加载器随 Initializer 生命周期一并失效
                 # 停止主动 GC 后台任务
                 self._sdk._stop_proactive_gc()
                 duration_str = (
@@ -1633,7 +1638,7 @@ class SDK:
             self.logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
             return False
         return await self._module_loader.reload_plugin(
-            plugin_name, self.module, self._sdk
+            plugin_name, self.module, self
         )
 
     async def _reload_plugin(self, plugin_name: str) -> None:
