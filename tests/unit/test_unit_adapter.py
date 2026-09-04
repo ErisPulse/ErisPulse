@@ -5,8 +5,7 @@
 """
 
 import asyncio
-from typing import Any, Dict
-from unittest.mock import AsyncMock, MagicMock, Mock, PropertyMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -70,9 +69,7 @@ class TestAdapterManager:
     def test_register_adapter_success(self, manager, test_adapter_class):
         """测试成功注册适配器"""
         # 执行
-        result = manager.register(
-            "test_platform", test_adapter_class, {"version": "1.0.0"}
-        )
+        result = manager.register("test_platform", test_adapter_class, {"version": "1.0.0"})
 
         # 验证
         assert result is True
@@ -100,20 +97,9 @@ class TestAdapterManager:
         manager.register("test_platform", test_adapter_class)
 
         # 验证仍然只有一个实例（因为同一类会复用实例）
-        assert (
-            len(
-                [
-                    a
-                    for a in manager._adapters.values()
-                    if isinstance(a, test_adapter_class)
-                ]
-            )
-            == 1
-        )
+        assert len([a for a in manager._adapters.values() if isinstance(a, test_adapter_class)]) == 1
 
-    def test_register_adapter_multiple_platforms_same_class(
-        self, manager, test_adapter_class
-    ):
+    def test_register_adapter_multiple_platforms_same_class(self, manager, test_adapter_class):
         """测试同一适配器类注册到多个平台"""
         # 注册到多个平台
         manager.register("platform1", test_adapter_class)
@@ -200,8 +186,7 @@ class TestAdapterManager:
 
     def test_adapter_is_enabled(self, manager):
         """测试检查适配器是否启用"""
-        with patch.object(config, "getConfig") as mock_get, \
-             patch.object(config, "setConfig") as mock_set:
+        with patch.object(config, "getConfig") as mock_get, patch.object(config, "setConfig") as mock_set:
             # 启用状态
             mock_get.return_value = True
             assert manager.is_enabled("test_platform") is True
@@ -226,9 +211,7 @@ class TestAdapterManager:
 
             # 验证
             assert result is True
-            mock_set.assert_called_once_with(
-                "ErisPulse.adapters.status.test_platform", True, immediate=True
-            )
+            mock_set.assert_called_once_with("ErisPulse.adapters.status.test_platform", True, immediate=True)
 
     def test_adapter_disable(self, manager, test_adapter_class):
         """测试禁用适配器"""
@@ -241,9 +224,7 @@ class TestAdapterManager:
 
             # 验证
             assert result is True
-            mock_set.assert_called_once_with(
-                "ErisPulse.adapters.status.test_platform", False, immediate=True
-            )
+            mock_set.assert_called_once_with("ErisPulse.adapters.status.test_platform", False, immediate=True)
 
     def test_unregister_adapter(self, manager, test_adapter_class):
         """测试取消注册适配器"""
@@ -974,9 +955,7 @@ class TestSendDSLRawMethods:
                     return asyncio.create_task(_do())
 
         adapter = CustomAdapter()
-        result = await adapter.Send.To("user", "123").Raw_ob12(
-            [{"type": "text", "data": {"text": "hi"}}]
-        )
+        result = await adapter.Send.To("user", "123").Raw_ob12([{"type": "text", "data": {"text": "hi"}}])
         assert result["status"] == "ok"
         assert result["message_id"] == "id"
 
@@ -1034,7 +1013,6 @@ class TestSendDSLRawMethods:
             class Send(BaseAdapter.Send):
                 def Raw_ob12(self, message, **kwargs):
                     captured_segments.append(message)
-                    import asyncio
 
                     async def _do():
                         return {}
@@ -1071,7 +1049,6 @@ class TestSendDSLRawMethods:
             class Send(BaseAdapter.Send):
                 def Raw_ob12(self, message, **kwargs):
                     calls.append(message)
-                    import asyncio
 
                     async def _do():
                         return {}
@@ -1085,9 +1062,7 @@ class TestSendDSLRawMethods:
         # 通过 Text 方法发送
         await adapter.Send.To("user", "123").Text("Hello")
         # 直接调用 Raw_ob12
-        await adapter.Send.To("user", "123").Raw_ob12(
-            [{"type": "text", "data": {"text": "Hello"}}]
-        )
+        await adapter.Send.To("user", "123").Raw_ob12([{"type": "text", "data": {"text": "Hello"}}])
 
         assert len(calls) == 2
         assert calls[0] == calls[1]
@@ -1179,9 +1154,7 @@ class TestBotStatusTracking:
             "self": {"platform": "telegram", "user_id": "123456"},
         }
 
-        with patch.object(
-            lifecycle, "submit_event", new_callable=AsyncMock
-        ) as mock_submit:
+        with patch.object(lifecycle, "submit_event", new_callable=AsyncMock) as mock_submit:
             await manager.emit(event)
             await asyncio.sleep(0)
             # 验证 adapter.bot.online 事件被提交
@@ -1426,9 +1399,7 @@ class TestBotStatusTracking:
     @pytest.mark.asyncio
     async def test_event_without_self_no_crash(self, manager):
         """测试无 self 字段的事件不崩溃"""
-        await manager.emit(
-            {"id": "1", "time": 1, "type": "message", "platform": "tg", "message": []}
-        )
+        await manager.emit({"id": "1", "time": 1, "type": "message", "platform": "tg", "message": []})
         await asyncio.sleep(0)
         # 不崩溃即可
         assert len(manager._bots) == 0
@@ -1607,9 +1578,7 @@ class TestBotStatusTracking:
 
     def test_clear_clears_bot_state(self, manager):
         """测试 clear 清理 Bot 状态"""
-        manager._bots = {
-            "tg": {"bot1": {"status": "online", "last_active": 1.0, "info": {}}}
-        }
+        manager._bots = {"tg": {"bot1": {"status": "online", "last_active": 1.0, "info": {}}}}
         manager.clear()
         assert len(manager._bots) == 0
 
@@ -1857,6 +1826,7 @@ class TestSendDSLStandardMethods:
                         **self.send_context,
                         **kwargs,
                     )
+
                 return asyncio.ensure_future(_do())
 
         class _Adapter(BaseAdapter):
@@ -1925,7 +1895,9 @@ class TestSendDSLStandardMethods:
     @pytest.mark.asyncio
     async def test_file_with_filename(self, adapter_with_raw_ob12):
         """File 支持可选 filename 参数"""
-        result = await adapter_with_raw_ob12.Send.To("user", "123").File("http://example.com/doc.pdf", filename="doc.pdf")
+        result = await adapter_with_raw_ob12.Send.To("user", "123").File(
+            "http://example.com/doc.pdf", filename="doc.pdf"
+        )
         assert result["status"] == "ok"
         message = result["data"]["params"]["message"]
         file_seg = next(seg for seg in message if seg["type"] == "file")
@@ -1934,11 +1906,7 @@ class TestSendDSLStandardMethods:
     @pytest.mark.asyncio
     async def test_text_with_modifiers(self, adapter_with_raw_ob12):
         """Text + At/Reply 修饰器应正确合并到消息段"""
-        result = await (adapter_with_raw_ob12.Send
-                        .To("group", "456")
-                        .At("789")
-                        .Reply("msg_123")
-                        .Text("带修饰器的文本"))
+        result = await adapter_with_raw_ob12.Send.To("group", "456").At("789").Reply("msg_123").Text("带修饰器的文本")
         assert result["status"] == "ok"
         message = result["data"]["params"]["message"]
         types = [seg["type"] for seg in message]
@@ -2030,8 +1998,19 @@ class TestListSends:
         manager.register("testplat", _Adapter)
         methods = manager.list_sends("testplat")
         # 链式修饰方法不应被列出
-        for chain_method in ("At", "AtAll", "Reply", "To", "Using", "Account",
-                             "Hook", "Retry", "Timeout", "Defer", "Build"):
+        for chain_method in (
+            "At",
+            "AtAll",
+            "Reply",
+            "To",
+            "Using",
+            "Account",
+            "Hook",
+            "Retry",
+            "Timeout",
+            "Defer",
+            "Build",
+        ):
             assert chain_method not in methods, f"链式方法 {chain_method} 不应被列为发送方法"
 
 
@@ -2064,6 +2043,7 @@ class TestSendDSLReturnSelfModifier:
                         **self.send_context,
                         **kwargs,
                     )
+
                 return asyncio.ensure_future(_do())
 
             # 平台修饰方法：仅返回 self，无需任何装饰器
@@ -2113,11 +2093,7 @@ class TestSendDSLReturnSelfModifier:
     @pytest.mark.asyncio
     async def test_send_method_reads_modifier_state(self, adapter_with_self_modifier):
         """发送方法（Board）应能读取返回-self 修饰方法设置的状态"""
-        result = await (adapter_with_self_modifier.Send
-                        .To("group", "g1")
-                        .Expire(3600)
-                        .ForMember("u9")
-                        .Board("看板内容"))
+        result = await adapter_with_self_modifier.Send.To("group", "g1").Expire(3600).ForMember("u9").Board("看板内容")
         assert result["status"] == "ok"
         params = result["data"]["params"]
         assert params["expire"] == 3600
@@ -2127,10 +2103,7 @@ class TestSendDSLReturnSelfModifier:
     @pytest.mark.asyncio
     async def test_multiple_return_self_modifiers_chain(self, adapter_with_self_modifier):
         """多个返回-self 的修饰方法应可连续链式调用"""
-        chain = (adapter_with_self_modifier.Send
-                 .To("group", "g1")
-                 .Expire(100)
-                 .ForMember("abc"))
+        chain = adapter_with_self_modifier.Send.To("group", "g1").Expire(100).ForMember("abc")
         result = await chain.Board("hi")
         assert result["status"] == "ok"
         params = result["data"]["params"]
@@ -2287,9 +2260,157 @@ class TestApiDSL:
         await adapter.Api.Using("bot1").get_user_info("123")
         assert call_log[0][1]["account_id"] == "bot1"
 
+    # ---- 频道（Guild）相关动作 ----
+
+    @pytest.mark.asyncio
+    async def test_get_guild_info(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.get_guild_info("gid1")
+        assert call_log[0][0] == "get_guild_info"
+        assert call_log[0][1]["guild_id"] == "gid1"
+
+    @pytest.mark.asyncio
+    async def test_get_guild_list(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.get_guild_list()
+        assert call_log[0][0] == "get_guild_list"
+
+    @pytest.mark.asyncio
+    async def test_set_guild_name(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.set_guild_name("gid1", "新频道")
+        assert call_log[0][1]["guild_name"] == "新频道"
+
+    @pytest.mark.asyncio
+    async def test_get_guild_member_info(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.get_guild_member_info("gid1", "u1")
+        assert call_log[0][1]["guild_id"] == "gid1"
+        assert call_log[0][1]["user_id"] == "u1"
+
+    @pytest.mark.asyncio
+    async def test_get_guild_member_list(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.get_guild_member_list("gid1")
+        assert call_log[0][1]["guild_id"] == "gid1"
+
+    @pytest.mark.asyncio
+    async def test_leave_guild(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.leave_guild("gid1")
+        assert call_log[0][0] == "leave_guild"
+        assert call_log[0][1]["guild_id"] == "gid1"
+
+    @pytest.mark.asyncio
+    async def test_get_channel_info(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.get_channel_info("gid1", "cid1")
+        assert call_log[0][0] == "get_channel_info"
+        assert call_log[0][1]["channel_id"] == "cid1"
+
+    @pytest.mark.asyncio
+    async def test_get_channel_list_joined_only(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.get_channel_list("gid1", joined_only=True)
+        assert call_log[0][1]["joined_only"] is True
+        await adapter.Api.get_channel_list("gid1")
+        assert call_log[1][1]["joined_only"] is False
+
+    @pytest.mark.asyncio
+    async def test_set_channel_name(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.set_channel_name("gid1", "cid1", "新名")
+        assert call_log[0][1]["channel_name"] == "新名"
+
+    @pytest.mark.asyncio
+    async def test_get_channel_member_info(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.get_channel_member_info("gid1", "cid1", "u1")
+        assert call_log[0][1]["user_id"] == "u1"
+
+    @pytest.mark.asyncio
+    async def test_get_channel_member_list(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.get_channel_member_list("gid1", "cid1")
+        assert call_log[0][0] == "get_channel_member_list"
+
+    @pytest.mark.asyncio
+    async def test_leave_channel(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.leave_channel("gid1", "cid1")
+        assert call_log[0][0] == "leave_channel"
+
+    # ---- 元（Meta）动作 ----
+
+    @pytest.mark.asyncio
+    async def test_get_latest_events(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.get_latest_events(limit=10, timeout=5)
+        assert call_log[0][0] == "get_latest_events"
+        assert call_log[0][1]["limit"] == 10
+        assert call_log[0][1]["timeout"] == 5
+
+    @pytest.mark.asyncio
+    async def test_get_supported_actions(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.get_supported_actions()
+        assert call_log[0][0] == "get_supported_actions"
+
+    @pytest.mark.asyncio
+    async def test_get_status(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.get_status()
+        assert call_log[0][0] == "get_status"
+
+    @pytest.mark.asyncio
+    async def test_get_version(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.get_version()
+        assert call_log[0][0] == "get_version"
+
+    # ---- 文件分片动作 ----
+
+    @pytest.mark.asyncio
+    async def test_upload_file_fragmented_prepare(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.upload_file_fragmented_prepare("foo.jpg", 1024)
+        assert call_log[0][0] == "upload_file_fragmented"
+        assert call_log[0][1]["stage"] == "prepare"
+        assert call_log[0][1]["total_size"] == 1024
+
+    @pytest.mark.asyncio
+    async def test_upload_file_fragmented_transfer(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.upload_file_fragmented_transfer("fid", 512, b"\x00\x01")
+        assert call_log[0][1]["stage"] == "transfer"
+        assert call_log[0][1]["offset"] == 512
+        assert call_log[0][1]["data"] == b"\x00\x01"
+
+    @pytest.mark.asyncio
+    async def test_upload_file_fragmented_finish(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.upload_file_fragmented_finish("fid", "abc123")
+        assert call_log[0][1]["stage"] == "finish"
+        assert call_log[0][1]["sha256"] == "abc123"
+
+    @pytest.mark.asyncio
+    async def test_get_file_fragmented_prepare(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.get_file_fragmented_prepare("fid")
+        assert call_log[0][0] == "get_file_fragmented"
+        assert call_log[0][1]["stage"] == "prepare"
+
+    @pytest.mark.asyncio
+    async def test_get_file_fragmented_transfer(self, api_adapter):
+        adapter, call_log = api_adapter
+        await adapter.Api.get_file_fragmented_transfer("fid", 0, 65536)
+        assert call_log[0][1]["stage"] == "transfer"
+        assert call_log[0][1]["size"] == 65536
+
     @pytest.mark.asyncio
     async def test_override_method(self):
         """适配器覆盖标准方法"""
+
         class _OverrideAdapter(BaseAdapter):
             def __init__(self):
                 super().__init__()
@@ -2319,6 +2440,7 @@ class TestApiDSL:
 
     def test_api_instantiated_in_init(self):
         """BaseAdapter.__init__ 应实例化 Api"""
+
         class _TestAdapter(BaseAdapter):
             async def start(self):
                 pass
@@ -2341,9 +2463,7 @@ class TestBaseConverter:
         from ErisPulse.Core.Bases import BaseConverter
 
         c = BaseConverter("testplatform")
-        e = c.build_base_event(
-            {"event_id": "e1", "timestamp": 100, "bot_id": "bot1"}, "raw_msg"
-        )
+        e = c.build_base_event({"event_id": "e1", "timestamp": 100, "bot_id": "bot1"}, "raw_msg")
         assert e["id"] == "e1"
         assert e["time"] == 100
         assert e["platform"] == "testplatform"
@@ -2484,9 +2604,7 @@ class TestAdapterDependencies:
             lifecycle.unregister("adapter.status.change", _capture)
 
         assert adapter not in manager._started_instances
-        statuses = [
-            (e.get("data") or {}).get("status") or e.get("status") for e in events
-        ]
+        statuses = [(e.get("data") or {}).get("status") or e.get("status") for e in events]
         assert "skipped-dependency" in statuses
 
     async def test_run_adapter_starts_when_deps_ready(self, manager):
@@ -2556,9 +2674,7 @@ class TestAdapterDependencies:
 
     def test_watcher_detection_via_class_declaration(self, manager):
         """_dependency_watchers 同时识别软依赖与硬依赖声明"""
-        cls = self._make_adapter_class(
-            depends={"modules": ["Hard"]}, optional_modules=["Soft"]
-        )
+        cls = self._make_adapter_class(depends={"modules": ["Hard"]}, optional_modules=["Soft"])
         adapter = cls()
         manager._adapters["p"] = adapter
 
@@ -2680,7 +2796,6 @@ class TestAdapterUnload:
             assert manager._shutdown_timeout() == 8.5
         finally:
             config.setConfig("ErisPulse.framework", {"uninit_timeout": 30}, immediate=True)
-
 
 
 # ==================== adapter.on 条件分发测试（detail_type / pattern / regex） ====================

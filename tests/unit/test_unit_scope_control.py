@@ -59,9 +59,7 @@ class TestIdentityCore:
 
     def test_bot_deny_overrides_adapter_allow(self):
         """Bot 级 deny 覆盖适配器级 allow"""
-        mgr = _make_mgr(
-            {"adapters": {"p": {"allow": True}}, "bots": {"p": {"b1": {"deny": True}}}}
-        )
+        mgr = _make_mgr({"adapters": {"p": {"allow": True}}, "bots": {"p": {"b1": {"deny": True}}}})
         assert mgr.is_identity_allowed("p", "b1") is False
         assert mgr.is_identity_allowed("p", "b2") is True
 
@@ -212,16 +210,12 @@ class TestBlockUser:
         """block_user / unblock_user / is_user_blocked / get_blocked_users"""
         mgr = _make_mgr({})
         # patch 两个持久化入口，避免污染真实配置；内存态由 _apply_memory 保证
-        with patch("ErisPulse.Core.scope.set_erispulse_section"), patch(
-            "ErisPulse.Core.scope.update_erispulse_config"
-        ):
+        with patch("ErisPulse.Core.scope.set_erispulse_section"), patch("ErisPulse.Core.scope.update_erispulse_config"):
             mgr.block_user("p", "u1")
         assert mgr.is_user_blocked("p", "u1") is True
         assert mgr.is_user_blocked("p", "u2") is False
         assert mgr.get_blocked_users() == {"p": ["u1"]}
-        with patch("ErisPulse.Core.scope.set_erispulse_section"), patch(
-            "ErisPulse.Core.scope.update_erispulse_config"
-        ):
+        with patch("ErisPulse.Core.scope.set_erispulse_section"), patch("ErisPulse.Core.scope.update_erispulse_config"):
             assert mgr.unblock_user("p", "u1") is True
         assert mgr.is_user_blocked("p", "u1") is False
         assert mgr.unblock_user("p", "u1") is False
@@ -361,13 +355,11 @@ class TestOverrideDimension:
         assert mgr.get_override("MyModule") == {"hidden": True}
 
     def test_apply_override(self):
-        """apply_override 合并覆盖到默认参数"""
+        """apply_override 合并覆盖到默认参数（master 额外映射 must_master）"""
         mgr = _make_mgr({})
         mgr._bindings["overrides"]["MyModule"] = {"restart": {"master": True}}
-        merged = mgr.apply_override(
-            "MyModule", "restart", {"master": False, "hidden": False}
-        )
-        assert merged == {"master": True, "hidden": False}
+        merged = mgr.apply_override("MyModule", "restart", {"master": False, "hidden": False})
+        assert merged == {"master": True, "hidden": False, "must_master": True}
 
     def test_override_mutate(self):
         """override / remove_override"""
@@ -379,6 +371,28 @@ class TestOverrideDimension:
             assert mgr.remove_override("MyModule", "restart") is True
         assert mgr.get_override("MyModule", "restart") == {}
         assert mgr.remove_override("MyModule", "restart") is False
+
+    def test_apply_override_master_true_tightens(self):
+        """覆盖 master = true 收紧：映射到 must_master 生效"""
+        mgr = _make_mgr({})
+        mgr._bindings["overrides"]["MyModule"] = {"restart": {"master": True}}
+        merged = mgr.apply_override("MyModule", "restart", {"must_master": False, "hidden": False})
+        assert merged["must_master"] is True
+
+    def test_apply_override_master_false_loosens(self):
+        """覆盖 master = false 放开：用户优先，可解除开发者限制"""
+        mgr = _make_mgr({})
+        mgr._bindings["overrides"]["MyModule"] = {"restart": {"master": False}}
+        merged = mgr.apply_override("MyModule", "restart", {"must_master": True, "hidden": False})
+        assert merged["must_master"] is False
+
+    def test_apply_override_without_master_keeps_default(self):
+        """未覆盖 master 时保持开发者默认"""
+        mgr = _make_mgr({})
+        mgr._bindings["overrides"]["MyModule"] = {"restart": {"hidden": True}}
+        merged = mgr.apply_override("MyModule", "restart", {"must_master": True, "hidden": False})
+        assert merged["must_master"] is True
+        assert merged["hidden"] is True
 
 
 class TestModuleDimensionPatterns:
@@ -409,11 +423,9 @@ class TestGeneral:
     """通用：统计 / 拓扑 / 清空"""
 
     def test_list_and_clear(self):
-        """list_bindings() 与 clear()（五维结构）"""
+        """list_bindings() 与 clear()（全维度结构）"""
         mgr = _make_mgr({"users": {"p": {"u1": {"deny": True}}}})
-        assert (
-            mgr.list_bindings()["identity"]["users"]["p"]["u1"] == {"deny": True}
-        )
+        assert mgr.list_bindings()["identity"]["users"]["p"]["u1"] == {"deny": True}
         mgr.clear()
         assert mgr.list_bindings() == {
             "platforms": {},
@@ -423,6 +435,7 @@ class TestGeneral:
             "commands": {},
             "handlers": {},
             "overrides": {},
+            "actions": {},
         }
 
     def test_topology_five_dimensions(self):
@@ -553,12 +566,99 @@ class TestScopeDispatch:
 
         from ErisPulse.Core.adapter import adapter
 
-        scope_singleton.bind_identity(
-            "onebot11", session_id="g_bad", deny=True, persist=False
-        )
+        scope_singleton.bind_identity("onebot11", session_id="g_bad", deny=True, persist=False)
         await adapter.emit(self._make_msg("hi", group_id="g_bad"))
         await asyncio.sleep(0.05)
         await adapter.emit(self._make_msg("hi", group_id="g_good"))
         await asyncio.sleep(0.05)
 
         assert received == ["A"]  # 仅 g_good 触发
+
+
+class TestActionsDimension:
+    """⑥ 出站动作维度（scope.actions）"""
+
+    def _make_mgr_with_actions(self, actions: dict | None = None) -> ScopeManager:
+        mgr = _make_mgr({})
+        mgr._bindings["actions"] = dict(actions or {})
+        return mgr
+
+    def test_default_allow_when_unconfigured(self):
+        """未配置任何限制时默认全放行"""
+        mgr = self._make_mgr_with_actions()
+        assert mgr.is_action_allowed("MyModule", "send") is True
+        assert mgr.is_action_allowed("MyModule", "api") is True
+        assert mgr.is_action_allowed("MyModule", "request") is True
+        assert mgr.is_action_allowed("", "send") is True  # 空 owner 恒放行
+
+    def test_deny_after_set_action(self):
+        """set_action(False) 后拒绝该动作"""
+        mgr = self._make_mgr_with_actions()
+        mgr.set_action("MyModule", "send", False, persist=False)
+        assert mgr.is_action_allowed("MyModule", "send") is False
+        assert mgr.is_action_allowed("MyModule", "api") is True  # 其它动作不受影响
+
+    def test_actions_independent(self):
+        """三个动作互不影响"""
+        mgr = self._make_mgr_with_actions()
+        mgr.set_action("MyModule", "api", False, persist=False)
+        assert mgr.is_action_allowed("MyModule", "api") is False
+        assert mgr.is_action_allowed("MyModule", "send") is True
+        assert mgr.is_action_allowed("MyModule", "request") is True
+
+    def test_other_module_unaffected(self):
+        """限制只作用于指定模块"""
+        mgr = self._make_mgr_with_actions()
+        mgr.set_action("ModuleA", "send", False, persist=False)
+        assert mgr.is_action_allowed("ModuleA", "send") is False
+        assert mgr.is_action_allowed("ModuleB", "send") is True
+
+    def test_unset_action_restores_allow(self):
+        """unset_action 移除限制恢复默认允许"""
+        mgr = self._make_mgr_with_actions()
+        mgr.set_action("MyModule", "send", False, persist=False)
+        assert mgr.unset_action("MyModule", "send", persist=False) is True
+        assert mgr.is_action_allowed("MyModule", "send") is True
+        # 再次移除返回 False
+        assert mgr.unset_action("MyModule", "send", persist=False) is False
+
+    def test_unset_action_all_for_owner(self):
+        """unset_action(owner) 移除该模块全部动作限制"""
+        mgr = self._make_mgr_with_actions()
+        mgr.set_action("MyModule", "send", False, persist=False)
+        mgr.set_action("MyModule", "api", False, persist=False)
+        assert mgr.unset_action("MyModule", persist=False) is True
+        assert mgr.is_action_allowed("MyModule", "send") is True
+        assert mgr.is_action_allowed("MyModule", "api") is True
+
+    def test_invalid_action_raises(self):
+        """未知动作抛 ValueError"""
+        mgr = self._make_mgr_with_actions()
+        with pytest.raises(ValueError):
+            mgr.set_action("MyModule", "hack", False)
+
+    def test_get_action_rules(self):
+        """get_action_rules 返回三动作当前状态"""
+        mgr = self._make_mgr_with_actions()
+        mgr.set_action("MyModule", "send", False, persist=False)
+        rules = mgr.get_action_rules("MyModule")
+        assert rules == {"send": False, "api": True, "request": True}
+
+    def test_stats_counted(self):
+        """is_action_allowed 累计 action_checks/action_denied"""
+        mgr = self._make_mgr_with_actions()
+        mgr.set_action("MyModule", "send", False, persist=False)
+        mgr.is_action_allowed("MyModule", "send")  # denied
+        mgr.is_action_allowed("MyModule", "api")  # allowed
+        assert mgr._stats["action_checks"] == 2
+        assert mgr._stats["action_denied"] == 1
+
+    def test_persist_writes_config(self):
+        """set_action 持久化到 scope.actions 配置节"""
+        mgr = self._make_mgr_with_actions()
+        with patch("ErisPulse.Core.scope.set_erispulse_section") as set_section:
+            mgr.set_action("MyModule", "send", False)
+        set_section.assert_called_once()
+        path, value = set_section.call_args[0]
+        assert path == "scope.actions"
+        assert value["MyModule"]["send"] is False

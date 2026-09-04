@@ -180,6 +180,7 @@ class TestScopeManager:
             "commands": {},
             "handlers": {},
             "overrides": {},
+            "actions": {},
         }
 
     def test_bot_id_from_event(self):
