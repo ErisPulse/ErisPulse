@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1499,
+  "total_keywords": 1512,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -262,12 +262,12 @@
         "title": "1. 發送訊息"
       }
     ],
-    "1. 確保跨平台相容": [
+    "1. 確保跨平台兼容": [
       {
         "document": "standards/README.md",
         "line": 27,
         "level": 3,
-        "title": "1. 確保跨平台相容"
+        "title": "1. 確保跨平台兼容"
       }
     ],
     "1. 維護平台特性文件": [
@@ -297,7 +297,7 @@
     "1. 設計背景": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 5,
+        "line": 11,
         "level": 2,
         "title": "1. 設計背景"
       }
@@ -321,7 +321,7 @@
     "1. 配置層級與覆蓋": [
       {
         "document": "advanced/scope.md",
-        "line": 263,
+        "line": 359,
         "level": 3,
         "title": "1. 配置層級與覆蓋"
       }
@@ -398,14 +398,6 @@
         "title": "10. 常見問題"
       }
     ],
-    "10. 消息建構器（MessageBuilder）": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 474,
-        "level": 2,
-        "title": "10. 消息建構器（MessageBuilder）"
-      }
-    ],
     "10. 相關文件": [
       {
         "document": "standards/event-conversion.md",
@@ -414,21 +406,23 @@
         "title": "10. 相關文件"
       }
     ],
-    "10. 適配器實現檢查清單": [
+    "10. 适配器實現檢查清單": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 455,
+        "line": 449,
         "level": 2,
-        "title": "10. 適配器實現檢查清單"
+        "title": "10. 适配器實現檢查清單"
+      }
+    ],
+    "11. 消息建構器（MessageBuilder）": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 466,
+        "level": 2,
+        "title": "11. 消息建構器（MessageBuilder）"
       }
     ],
     "11. 相關文件": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 563,
-        "level": 2,
-        "title": "11. 相關文件"
-      },
       {
         "document": "standards/session-types.md",
         "line": 360,
@@ -439,23 +433,23 @@
     "11.1 導入": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 478,
+        "line": 470,
         "level": 3,
         "title": "11.1 導入"
       }
     ],
-    "11.2 鏈式調用建構": [
+    "11.2 鏈式呼叫建構": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 486,
+        "line": 478,
         "level": 3,
-        "title": "11.2 鏈式調用建構"
+        "title": "11.2 鏈式呼叫建構"
       }
     ],
     "11.3 快速建構單段": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 503,
+        "line": 495,
         "level": 3,
         "title": "11.3 快速建構單段"
       }
@@ -463,7 +457,7 @@
     "11.4 配合 Event.reply_ob12 使用": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 514,
+        "line": 506,
         "level": 3,
         "title": "11.4 配合 Event.reply_ob12 使用"
       }
@@ -471,7 +465,7 @@
     "11.5 支援的消息段方法": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 529,
+        "line": 521,
         "level": 3,
         "title": "11.5 支援的消息段方法"
       }
@@ -479,9 +473,17 @@
     "11.6 工具方法": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 544,
+        "line": 536,
         "level": 3,
         "title": "11.6 工具方法"
+      }
+    ],
+    "12. 相關文件": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 555,
+        "level": 2,
+        "title": "12. 相關文件"
       }
     ],
     "1xxxx 動作請求錯誤（Request Error）": [
@@ -527,7 +529,7 @@
     "2. 三層 DSL 並行結構": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 19,
+        "line": 25,
         "level": 2,
         "title": "2. 三層 DSL 並行結構"
       }
@@ -548,12 +550,12 @@
         "title": "2. 僅指定ID"
       }
     ],
-    "2. 優先使用控制面而不是修改模組程式碼": [
+    "2. 優先使用控制面而不是修改模組代碼": [
       {
         "document": "advanced/scope.md",
-        "line": 270,
+        "line": 366,
         "level": 3,
-        "title": "2. 優先使用控制面而不是修改模組程式碼"
+        "title": "2. 優先使用控制面而不是修改模組代碼"
       }
     ],
     "2. 參數規範詳解": [
@@ -580,12 +582,12 @@
         "title": "2. 回應標準化"
       }
     ],
-    "2. 基礎回傳結構": [
+    "2. 基礎返回結構": [
       {
         "document": "standards/api-response.md",
         "line": 12,
         "level": 2,
-        "title": "2. 基礎回傳結構"
+        "title": "2. 基礎返回結構"
       }
     ],
     "2. 帳號選擇機制": [
@@ -888,12 +890,12 @@
         "title": "2.2 ErisPulse 擴展類型"
       }
     ],
-    "2.2 `request_id` 欄位": [
+    "2.2 `request_id` 字段": [
       {
         "document": "standards/request-action-spec.md",
         "line": 53,
         "level": 3,
-        "title": "2.2 `request_id` 欄位"
+        "title": "2.2 `request_id` 字段"
       }
     ],
     "2.2 訊息事件欄位": [
@@ -1056,12 +1058,12 @@
         "title": "3. 提交到模組商店"
       }
     ],
-    "3. 提高程式碼品質": [
+    "3. 提高代碼品質": [
       {
         "document": "standards/README.md",
         "line": 41,
         "level": 3,
-        "title": "3. 提高程式碼品質"
+        "title": "3. 提高代碼品質"
       }
     ],
     "3. 支援平台特有方法": [
@@ -1083,17 +1085,17 @@
     "3. 標準動作列表": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 36,
+        "line": 42,
         "level": 2,
         "title": "3. 標準動作列表"
       }
     ],
-    "3. 模組/命令沒反應": [
+    "3. 模組/命令沒有反應": [
       {
         "document": "advanced/scope.md",
-        "line": 277,
+        "line": 373,
         "level": 3,
-        "title": "3. 模組/命令沒反應"
+        "title": "3. 模組/命令沒有反應"
       }
     ],
     "3. 欄位映射（入站 JSON → OneBot12 事件）": [
@@ -1168,20 +1170,20 @@
         "title": "3. 適配器關閉時清理"
       }
     ],
+    "3.1 使用者相關": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 44,
+        "level": 3,
+        "title": "3.1 使用者相關"
+      }
+    ],
     "3.1 映射原則": [
       {
         "document": "standards/session-types.md",
         "line": 82,
         "level": 3,
         "title": "3.1 映射原則"
-      }
-    ],
-    "3.1 用戶相關": [
-      {
-        "document": "standards/api-action-spec.md",
-        "line": 38,
-        "level": 3,
-        "title": "3.1 用戶相關"
       }
     ],
     "3.1 訊息事件": [
@@ -1200,12 +1202,12 @@
         "title": "3.1 通用欄位"
       }
     ],
-    "3.1 連式呼叫": [
+    "3.1 鏈式呼叫": [
       {
         "document": "standards/request-action-spec.md",
         "line": 88,
         "level": 3,
-        "title": "3.1 連式呼叫"
+        "title": "3.1 鏈式呼叫"
       }
     ],
     "3.2 回傳碼規範": [
@@ -1235,7 +1237,7 @@
     "3.2 群組相關": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 46,
+        "line": 52,
         "level": 3,
         "title": "3.2 群組相關"
       }
@@ -1251,7 +1253,7 @@
     "3.3 訊息管理": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 57,
+        "line": 63,
         "level": 3,
         "title": "3.3 訊息管理"
       }
@@ -1272,20 +1274,44 @@
         "title": "3.3 返回值格式"
       }
     ],
-    "3.4 檔案操作": [
+    "3.4 頻道（Guild）相關": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 65,
+        "line": 71,
         "level": 3,
-        "title": "3.4 檔案操作"
+        "title": "3.4 頻道（Guild）相關"
       }
     ],
-    "3.5 通用擴展動作": [
+    "3.5 檔案資源操作": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 77,
+        "line": 93,
         "level": 3,
-        "title": "3.5 通用擴展動作"
+        "title": "3.5 檔案資源操作"
+      }
+    ],
+    "3.5.1 分片傳輸（大檔案，屬上述降級範圍）": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 119,
+        "level": 4,
+        "title": "3.5.1 分片傳輸（大檔案，屬上述降級範圍）"
+      }
+    ],
+    "3.6 元（Meta）動作": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 153,
+        "level": 3,
+        "title": "3.6 元（Meta）動作"
+      }
+    ],
+    "3.7 通用擴展動作": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 164,
+        "level": 3,
+        "title": "3.7 通用擴展動作"
       }
     ],
     "3xxxx 動作執行錯誤（Execution Error）": [
@@ -1331,7 +1357,7 @@
     "4. 使用方式": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 83,
+        "line": 170,
         "level": 2,
         "title": "4. 使用方式"
       }
@@ -1352,20 +1378,20 @@
         "title": "4. 啟動適配器"
       }
     ],
-    "4. 實作要求": [
-      {
-        "document": "standards/api-response.md",
-        "line": 100,
-        "level": 2,
-        "title": "4. 實作要求"
-      }
-    ],
     "4. 實現必需方法": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 124,
         "level": 3,
         "title": "4. 實現必需方法"
+      }
+    ],
+    "4. 實現要求": [
+      {
+        "document": "standards/api-response.md",
+        "line": 100,
+        "level": 2,
+        "title": "4. 實現要求"
       }
     ],
     "4. 擴展欄位說明": [
@@ -1379,7 +1405,7 @@
     "4. 會話標識跨平台隔離": [
       {
         "document": "advanced/scope.md",
-        "line": 292,
+        "line": 388,
         "level": 3,
         "title": "4. 會話標識跨平台隔離"
       }
@@ -1451,7 +1477,7 @@
     "4.1 基本呼叫": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 85,
+        "line": 172,
         "level": 3,
         "title": "4.1 基本呼叫"
       }
@@ -1488,18 +1514,18 @@
         "title": "4.2 平台擴展訊息段"
       }
     ],
-    "4.2 指定 Bot 賬號（多賬號模式）": [
+    "4.2 指定 Bot 帳號（多帳戶模式）": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 104,
+        "line": 191,
         "level": 3,
-        "title": "4.2 指定 Bot 賬號（多賬號模式）"
+        "title": "4.2 指定 Bot 帳號（多帳戶模式）"
       }
     ],
     "4.3 平台擴展動作": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 111,
+        "line": 198,
         "level": 3,
         "title": "4.3 平台擴展動作"
       }
@@ -1515,7 +1541,7 @@
     "4.4 在事件處理器中使用": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 121,
+        "line": 208,
         "level": 3,
         "title": "4.4 在事件處理器中使用"
       }
@@ -1568,12 +1594,12 @@
         "title": "5. 往返一致性"
       }
     ],
-    "5. 擴充規範": [
+    "5. 扩展規範": [
       {
         "document": "standards/api-response.md",
         "line": 106,
         "level": 2,
-        "title": "5. 擴充規範"
+        "title": "5. 扩展規範"
       }
     ],
     "5. 未知事件處理": [
@@ -1600,20 +1626,20 @@
         "title": "5. 返回值規範"
       }
     ],
-    "5. 适配器實現": [
-      {
-        "document": "standards/api-action-spec.md",
-        "line": 138,
-        "level": 2,
-        "title": "5. 适配器實現"
-      }
-    ],
-    "5. 配接器實現要求": [
+    "5. 适配器實現要求": [
       {
         "document": "standards/request-action-spec.md",
         "line": 189,
         "level": 2,
-        "title": "5. 配接器實現要求"
+        "title": "5. 适配器實現要求"
+      }
+    ],
+    "5. 適配器實作": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 225,
+        "level": 2,
+        "title": "5. 適配器實作"
       }
     ],
     "5. 配置選項（如適用）": [
@@ -1624,12 +1650,12 @@
         "title": "5. 配置選項（如適用）"
       }
     ],
-    "5.1 `message_id` 必選欄位": [
+    "5.1 `message_id` 必選字段": [
       {
         "document": "standards/api-response.md",
         "line": 110,
         "level": 3,
-        "title": "5.1 `message_id` 必選欄位"
+        "title": "5.1 `message_id` 必選字段"
       }
     ],
     "5.1 推斷優先級": [
@@ -1648,12 +1674,12 @@
         "title": "5.1 轉換器要求"
       }
     ],
-    "5.1 預設行為（零配置）": [
+    "5.1 預設行為（零設定）": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 140,
+        "line": 227,
         "level": 3,
-        "title": "5.1 預設行為（零配置）"
+        "title": "5.1 預設行為（零設定）"
       }
     ],
     "5.2 Request 內部類實現": [
@@ -1664,12 +1690,12 @@
         "title": "5.2 Request 內部類實現"
       }
     ],
-    "5.2 `{platform}_raw` 原始回應欄位": [
+    "5.2 `{platform}_raw` 原始回應字段": [
       {
         "document": "standards/api-response.md",
         "line": 117,
         "level": 3,
-        "title": "5.2 `{platform}_raw` 原始回應欄位"
+        "title": "5.2 `{platform}_raw` 原始回應字段"
       }
     ],
     "5.2 使用示例": [
@@ -1683,7 +1709,7 @@
     "5.2 覆蓋標準方法（映射到平台原生 API）": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 152,
+        "line": 240,
         "level": 3,
         "title": "5.2 覆蓋標準方法（映射到平台原生 API）"
       }
@@ -1699,17 +1725,17 @@
     "5.3 未支援的動作": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 193,
+        "line": 281,
         "level": 3,
         "title": "5.3 未支援的動作"
       }
     ],
-    "5.3 適配器實作檢查清單": [
+    "5.3 框架擴展回應碼（34xxx 平台錯誤段的低三位自訂）": [
       {
         "document": "standards/api-response.md",
         "line": 140,
         "level": 3,
-        "title": "5.3 適配器實作檢查清單"
+        "title": "5.3 框架擴展回應碼（34xxx 平台錯誤段的低三位自訂）"
       }
     ],
     "5.4 總結：Send 與 Request 並行": [
@@ -1720,12 +1746,20 @@
         "title": "5.4 總結：Send 與 Request 並行"
       }
     ],
-    "5.5 配接器 `__init__` 注意事項": [
+    "5.4 適配器實現檢查清單": [
+      {
+        "document": "standards/api-response.md",
+        "line": 176,
+        "level": 3,
+        "title": "5.4 適配器實現檢查清單"
+      }
+    ],
+    "5.5 適配器 `__init__` 注意事項": [
       {
         "document": "standards/request-action-spec.md",
         "line": 332,
         "level": 3,
-        "title": "5.5 配接器 `__init__` 注意事項"
+        "title": "5.5 適配器 `__init__` 注意事項"
       }
     ],
     "6. API 使用示例": [
@@ -1736,12 +1770,12 @@
         "title": "6. API 使用示例"
       }
     ],
-    "6. 反向轉換規範（OneBot12 → 平台）": [
+    "6. 反轉轉換規範（OneBot12 → 平台）": [
       {
         "document": "standards/send-method-spec.md",
         "line": 225,
         "level": 2,
-        "title": "6. 反向轉換規範（OneBot12 → 平台）"
+        "title": "6. 反轉轉換規範（OneBot12 → 平台）"
       }
     ],
     "6. 啟動路由伺服器": [
@@ -1750,6 +1784,14 @@
         "line": 160,
         "level": 3,
         "title": "6. 啟動路由伺服器"
+      }
+    ],
+    "6. 回應格式": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 300,
+        "level": 2,
+        "title": "6. 回應格式"
       }
     ],
     "6. 實現轉換器": [
@@ -1771,7 +1813,7 @@
     "6. 注意事項": [
       {
         "document": "standards/api-response.md",
-        "line": 147,
+        "line": 183,
         "level": 2,
         "title": "6. 注意事項"
       }
@@ -1784,20 +1826,12 @@
         "title": "6. 純 Python 自訂監督者"
       }
     ],
-    "6. 配接器實現檢查清單": [
+    "6. 适配器實現檢查清單": [
       {
         "document": "standards/request-action-spec.md",
         "line": 336,
         "level": 2,
-        "title": "6. 配接器實現檢查清單"
-      }
-    ],
-    "6. 響應格式": [
-      {
-        "document": "standards/api-action-spec.md",
-        "line": 212,
-        "level": 2,
-        "title": "6. 響應格式"
+        "title": "6. 适配器實現檢查清單"
       }
     ],
     "6.1 欄位命名": [
@@ -1888,12 +1922,12 @@
         "title": "6.3.2 平台擴展消息段轉換"
       }
     ],
-    "6.3.3 復合消息段處理": [
+    "6.3.3 複合消息段處理": [
       {
         "document": "standards/send-method-spec.md",
         "line": 316,
         "level": 4,
-        "title": "6.3.3 復合消息段處理"
+        "title": "6.3.3 複合消息段處理"
       }
     ],
     "6.4 `Raw_ob12` 與標準方法的關係": [
@@ -1912,12 +1946,12 @@
         "title": "6.4 平台特有欄位範例"
       }
     ],
-    "6.5 實現示例": [
+    "6.5 實現範例": [
       {
         "document": "standards/send-method-spec.md",
         "line": 356,
         "level": 3,
-        "title": "6.5 實現示例"
+        "title": "6.5 實現範例"
       }
     ],
     "6.5 嵌套擴展欄位": [
@@ -1971,7 +2005,7 @@
     "7. 與 SendDSL / RequestDSL 的關係": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 229,
+        "line": 317,
         "level": 2,
         "title": "7. 與 SendDSL / RequestDSL 的關係"
       }
@@ -2072,20 +2106,20 @@
         "title": "8. 模組開發者指南"
       }
     ],
-    "8. 相關文檔": [
+    "8. 相關文件": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 366,
+        "line": 372,
         "level": 2,
-        "title": "8. 相關文檔"
+        "title": "8. 相關文件"
       }
     ],
-    "8. 适配器實現檢查清單": [
+    "8. 適配器實作檢查清單": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 239,
+        "line": 327,
         "level": 2,
-        "title": "8. 适配器實現檢查清單"
+        "title": "8. 適配器實作檢查清單"
       }
     ],
     "8.1 訪問擴展欄位": [
@@ -2136,12 +2170,12 @@
         "title": "9. 最佳實踐"
       }
     ],
-    "9. 相關文檔": [
+    "9. 相關文件": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 251,
+        "line": 342,
         "level": 2,
-        "title": "9. 相關文檔"
+        "title": "9. 相關文件"
       }
     ],
     "9. 連接資訊與路由發現": [
@@ -2155,7 +2189,7 @@
     "9. 適配器開發注意事項": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 447,
+        "line": 445,
         "level": 2,
         "title": "9. 適配器開發注意事項"
       }
@@ -2588,6 +2622,14 @@
         "title": "Dashboard 自動註冊"
       }
     ],
+    "Debian/Ubuntu 虛擬環境建立失敗": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 141,
+        "level": 3,
+        "title": "Debian/Ubuntu 虛擬環境建立失敗"
+      }
+    ],
     "Discord": [
       {
         "document": "standards/session-types.md",
@@ -2676,12 +2718,12 @@
         "title": "ErisPulse 請求操作規範"
       }
     ],
-    "ErisPulse 適配器標準化回傳規範": [
+    "ErisPulse 适配器標準化回傳規範": [
       {
         "document": "standards/api-response.md",
         "line": 1,
         "level": 1,
-        "title": "ErisPulse 適配器標準化回傳規範"
+        "title": "ErisPulse 适配器標準化回傳規範"
       }
     ],
     "ErisPulse-App": [
@@ -4269,7 +4311,7 @@
     "① 模組維度": [
       {
         "document": "advanced/scope.md",
-        "line": 103,
+        "line": 115,
         "level": 2,
         "title": "① 模組維度"
       }
@@ -4277,7 +4319,7 @@
     "② 身份維度（事件准入）": [
       {
         "document": "advanced/scope.md",
-        "line": 120,
+        "line": 132,
         "level": 2,
         "title": "② 身份維度（事件准入）"
       }
@@ -4285,7 +4327,7 @@
     "③ 命令維度（命令 ACL）": [
       {
         "document": "advanced/scope.md",
-        "line": 137,
+        "line": 149,
         "level": 2,
         "title": "③ 命令維度（命令 ACL）"
       }
@@ -4293,7 +4335,7 @@
     "④ 處理器/文字維度": [
       {
         "document": "advanced/scope.md",
-        "line": 148,
+        "line": 160,
         "level": 2,
         "title": "④ 處理器/文字維度"
       }
@@ -4301,9 +4343,17 @@
     "⑤ 實現參數覆蓋": [
       {
         "document": "advanced/scope.md",
-        "line": 159,
+        "line": 171,
         "level": 2,
         "title": "⑤ 實現參數覆蓋"
+      }
+    ],
+    "⑥ 出站動作維度（禁止模組發起出站呼叫）": [
+      {
+        "document": "advanced/scope.md",
+        "line": 188,
+        "level": 2,
+        "title": "⑥ 出站動作維度（禁止模組發起出站呼叫）"
       }
     ],
     "一、我要使用機器人": [
@@ -4423,13 +4473,13 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 485,
+        "line": 489,
         "level": 2,
         "title": "下一步"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 141,
+        "line": 153,
         "level": 2,
         "title": "下一步"
       }
@@ -4536,10 +4586,18 @@
         "title": "主人系統配置"
       }
     ],
+    "主人身份與自定義身份來源（provider）": [
+      {
+        "document": "advanced/scope.md",
+        "line": 295,
+        "level": 2,
+        "title": "主人身份與自定義身份來源（provider）"
+      }
+    ],
     "主動 GC 配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 300,
+        "line": 304,
         "level": 3,
         "title": "主動 GC 配置"
       }
@@ -4843,7 +4901,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 355,
+        "line": 359,
         "level": 2,
         "title": "事件配置"
       }
@@ -5557,7 +5615,7 @@
     "全局兜底：`default_allow`": [
       {
         "document": "advanced/scope.md",
-        "line": 45,
+        "line": 47,
         "level": 2,
         "title": "全局兜底：`default_allow`"
       }
@@ -5710,6 +5768,14 @@
         "title": "初始化階段詳解"
       }
     ],
+    "判定與運行時增刪": [
+      {
+        "document": "advanced/scope.md",
+        "line": 304,
+        "level": 3,
+        "title": "判定與運行時增刪"
+      }
+    ],
     "刪除數據": [
       {
         "document": "advanced/sql-builder.md",
@@ -5809,7 +5875,7 @@
     "匹配條目語法（全系統統一）": [
       {
         "document": "advanced/scope.md",
-        "line": 30,
+        "line": 32,
         "level": 2,
         "title": "匹配條目語法（全系統統一）"
       }
@@ -5959,7 +6025,7 @@
     "反向轉換": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 464,
+        "line": 458,
         "level": 3,
         "title": "反向轉換"
       }
@@ -6119,7 +6185,7 @@
     "命令維度": [
       {
         "document": "advanced/scope.md",
-        "line": 217,
+        "line": 257,
         "level": 3,
         "title": "命令維度"
       }
@@ -6173,7 +6239,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 357,
+        "line": 361,
         "level": 3,
         "title": "命令配置"
       }
@@ -6245,7 +6311,7 @@
     "嚴格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 315,
+        "line": 319,
         "level": 3,
         "title": "嚴格模式"
       }
@@ -6369,7 +6435,7 @@
     "國際化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 384,
+        "line": 388,
         "level": 2,
         "title": "國際化配置"
       }
@@ -7017,7 +7083,7 @@
     "存儲配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 344,
+        "line": 348,
         "level": 2,
         "title": "存儲配置"
       }
@@ -7519,7 +7585,7 @@
     "常見問題與注意事項": [
       {
         "document": "advanced/scope.md",
-        "line": 261,
+        "line": 357,
         "level": 2,
         "title": "常見問題與注意事項"
       }
@@ -8089,7 +8155,7 @@
     "拓撲樹 API": [
       {
         "document": "advanced/scope.md",
-        "line": 297,
+        "line": 393,
         "level": 2,
         "title": "拓撲樹 API"
       }
@@ -8159,7 +8225,7 @@
     "控制面配置（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 424,
+        "line": 428,
         "level": 2,
         "title": "控制面配置（scope）"
       }
@@ -8215,7 +8281,7 @@
     "擴展動作": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 247,
+        "line": 338,
         "level": 3,
         "title": "擴展動作"
       }
@@ -8452,12 +8518,6 @@
     ],
     "文件列表": [
       {
-        "document": "advanced/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "文件列表"
-      },
-      {
         "document": "api-reference/README.md",
         "line": 5,
         "level": 2,
@@ -8470,6 +8530,14 @@
         "line": 98,
         "level": 3,
         "title": "文件格式規範"
+      }
+    ],
+    "文件清單": [
+      {
+        "document": "advanced/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "文件清單"
       }
     ],
     "文件結構規範": [
@@ -8779,7 +8847,7 @@
     "日誌配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 231,
+        "line": 235,
         "level": 2,
         "title": "日誌配置"
       }
@@ -9183,7 +9251,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 279,
+        "line": 283,
         "level": 2,
         "title": "框架配置"
       }
@@ -9267,7 +9335,7 @@
     "標準動作": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 241,
+        "line": 329,
         "level": 3,
         "title": "標準動作"
       }
@@ -9447,7 +9515,7 @@
     "模組維度": [
       {
         "document": "advanced/scope.md",
-        "line": 176,
+        "line": 216,
         "level": 3,
         "title": "模組維度"
       }
@@ -9471,7 +9539,7 @@
     "模組配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 395,
+        "line": 399,
         "level": 2,
         "title": "模組配置"
       }
@@ -9757,7 +9825,7 @@
     "消息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 373,
+        "line": 377,
         "level": 3,
         "title": "消息配置"
       }
@@ -10164,6 +10232,14 @@
         "title": "產生類型存根"
       }
     ],
+    "用戶優先：主人生效範圍由用戶最終決定": [
+      {
+        "document": "advanced/scope.md",
+        "line": 344,
+        "level": 3,
+        "title": "用戶優先：主人生效範圍由用戶最終決定"
+      }
+    ],
     "用戶狀態變更事件": [
       {
         "document": "platform-guide/ideaura.md",
@@ -10399,7 +10475,7 @@
       },
       {
         "document": "standards/send-method-spec.md",
-        "line": 457,
+        "line": 451,
         "level": 3,
         "title": "發送方法"
       }
@@ -11051,7 +11127,7 @@
     "緩存與熱更新": [
       {
         "document": "advanced/scope.md",
-        "line": 254,
+        "line": 350,
         "level": 2,
         "title": "緩存與熱更新"
       }
@@ -11230,6 +11306,14 @@
         "title": "自定義消息段"
       }
     ],
+    "自定義身份來源（provider）": [
+      {
+        "document": "advanced/scope.md",
+        "line": 316,
+        "level": 3,
+        "title": "自定義身份來源（provider）"
+      }
+    ],
     "自訂儲存後端": [
       {
         "document": "advanced/sql-builder.md",
@@ -11327,7 +11411,7 @@
     "處理器與覆蓋維度": [
       {
         "document": "advanced/scope.md",
-        "line": 231,
+        "line": 271,
         "level": 3,
         "title": "處理器與覆蓋維度"
       }
@@ -11941,7 +12025,7 @@
     "豁免清單": [
       {
         "document": "user-guide/configuration.md",
-        "line": 332,
+        "line": 336,
         "level": 4,
         "title": "豁免清單"
       }
@@ -12091,7 +12175,7 @@
     "身份維度": [
       {
         "document": "advanced/scope.md",
-        "line": 198,
+        "line": 238,
         "level": 3,
         "title": "身份維度"
       }
@@ -12267,7 +12351,7 @@
     "通用": [
       {
         "document": "advanced/scope.md",
-        "line": 242,
+        "line": 282,
         "level": 3,
         "title": "通用"
       }
@@ -12545,7 +12629,7 @@
     "運行時 API": [
       {
         "document": "advanced/scope.md",
-        "line": 174,
+        "line": 214,
         "level": 2,
         "title": "運行時 API"
       }
@@ -12774,6 +12858,14 @@
         "title": "配置懶加載"
       }
     ],
+    "配置文件": [
+      {
+        "document": "advanced/scope.md",
+        "line": 64,
+        "level": 2,
+        "title": "配置文件"
+      }
+    ],
     "配置文件位置": [
       {
         "document": "user-guide/configuration.md",
@@ -12791,12 +12883,6 @@
       }
     ],
     "配置檔案": [
-      {
-        "document": "advanced/scope.md",
-        "line": 58,
-        "level": 2,
-        "title": "配置檔案"
-      },
       {
         "document": "quick-start.md",
         "line": 158,

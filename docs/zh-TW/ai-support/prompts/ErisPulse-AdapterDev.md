@@ -9319,20 +9319,21 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 > [!NOTE]  
 > 本特性需要 ErisPulse **2.8.0+**。
 
-統一控制面回答五個問題：**哪些模組可用、誰的事件收不收、誰能執行某條命令、  
-某模組處理什麼文字、覆蓋哪些實現參數**。控制權完全交給使用者：在模組 / 適配器 /  
-命令 / 處理器註冊的**上層**（配置 `ErisPulse.scope` 或執行時 `sdk.scope`）統一宣告，  
-事件管線在每一級自動讀取並執行。
+統一控制面回答六個問題：**哪些模組可用、誰的事件收不收、誰能執行某條命令、  
+某模組處理什麼文字、覆蓋哪些實現參數、禁止模組發起哪些出站呼叫**。  
+控制權完全交給使用者：在模組 / 適配器 / 命令 / 處理器註冊的**上層**（配置  
+`ErisPulse.scope` 或執行時 `sdk.scope`）統一聲明，事件管線在每一級自動讀取並執行。
 
-控制面收斂了原有的多套權限系統，是 2.8.0 權限/存取控制的**唯一**入口：
+控制面收斂了原有的多套權限系統，是 2.8.0 權限/訪問控制的**唯一**入口：
 
 | 維度 | 控制什麼 | 拒絕行為 | 配置路徑 |
 |------|---------|---------|---------|
 | **① 模組** | 哪些模組可用（平台 / Bot / 會話三級） | 靜默忽略（不回覆、不認領） | `scope.platforms / bots / sessions` |
-| **② 身份** | 事件收不收（適配器 / Bot / 會話 / 用戶四級） | 入口完全丟棄（靜默） | `scope.identity.*` |
+| **② 身份** | 事件收不收（適配器 / Bot / 會話 / 使用者四級） | 入口完全丟棄（靜默） | `scope.identity.*` |
 | **③ 命令** | 誰能執行某條命令（命令名支援 glob） | 回覆「權限不足」（顯式） | `scope.commands` |
 | **④ 處理器** | 某模組的事件處理器按文字過濾 | 不觸發（靜默） | `scope.handlers` |
 | **⑤ 覆蓋** | 覆蓋模組/命令的實現參數（master/hidden/aliases/prefix） | ——（只改參數） | `scope.overrides` |
+| **⑥ 出站動作** | 禁止模組發送訊息 / 調用標準 API / 處理請求 | 失敗回應（`retcode=34601`） | `scope.actions` |
 
 {!--< tips >!--}
 1. 透過 `from ErisPulse.Core import scope` 導入單例（`sdk.scope` 同物件）
@@ -9340,7 +9341,8 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 3. `scope.is_identity_allowed(platform, bot_id, session_id, user_id)` 判斷事件是否放行
 4. `scope.allow_user("roll*", platform, uid)` / `deny_user(...)` 命令 ACL（支援 glob）
 5. `scope.override("MyModule", "restart", master=True)` 覆蓋實現參數
-6. `scope.get_stats()` 查看過濾統計；`scope.get_topology()` 查看五維拓撲
+6. `scope.set_action("MyModule", "send", False)` 禁止模組回覆/發訊息
+7. `scope.get_stats()` 查看過濾統計；`scope.get_topology()` 查看拓撲
 {!--< /tips >!--}
 
 ## 匹配條目語法（全系統統一）
@@ -9360,18 +9362,22 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 
 ## 全局兜底：`default_allow`
 
-`default_allow` 是**全局唯一**的兜底開關（預設為 `true`），  
+`default_allow` 是**全域唯一**的兜底開關（預設為 `true`），  
 對三個判定維度統一生效：
 
-- **模組維度**：未命中任何綁定 → `default_allow` 決定放行 / 拒絕  
-- **身份維度**：未命中任何策略 → `default_allow` 決定放行 / 拒絕  
-- **命令維度**：未配置 ACL → `default_allow=true` 交由開發者預設權限鏈；  
-  `false`（嚴格模式）命令未配置 ACL 即拒絕
+- **模組維度**：未命中任何綁定 → 由 `default_allow` 決定放行 / 拒絕  
+- **身份維度**：未命中任何策略 → 由 `default_allow` 決定放行 / 拒絕  
+- **命令維度**：未配置 ACL → 若 `default_allow=true` 則交由開發者預設權限鏈；  
+  若為 `false`（嚴格模式）則命令未配置 ACL 即拒絕  
 
-設為 `false` 即開啟「隱式拒絕」嚴格模式：白名單式管理，  
-**未明確允許的一律拒絕**。
+設為 `false` 即開啟「隱式拒絕」嚴格模式：採用白名單式管理，  
+**未明確允許者一律拒絕**。
 
-## 配置檔案
+> **例外**：⑥ 出站動作維度**不受** `default_allow` 影響——它是獨立的收緊開關，  
+> 預設全允許，僅明確設為 `false` 才會禁止（框架層 owner 為空的呼叫恆定放行）。  
+> 這樣嚴格的全域模式不會意外中斷所有模組的消息回覆。
+
+## 配置文件
 
 ```toml
 [ErisPulse.scope]
@@ -9387,7 +9393,7 @@ modules = ["Chat"]
 [ErisPulse.scope.sessions.onebot11."789012345"]
 modules = ["Chat"]
 
-# ── ② 身份維度（優先級：使用者 > 會話 > Bot > 適配器）──
+# ── ② 身份維度（優先級：用戶 > 會話 > Bot > 適配器）──
 [ErisPulse.scope.identity.adapters.onebot11]
 deny = true                   # 整個適配器的事件全部丟棄
 [ErisPulse.scope.identity.bots.onebot11."123456"]
@@ -9395,12 +9401,12 @@ deny = true
 [ErisPulse.scope.identity.sessions.onebot11."g_blocked"]
 deny = true
 [ErisPulse.scope.identity.users.onebot11]
-allow = ["u_admin"]           # 使用者鍵支援 glob / re: 正則
+allow = ["u_admin"]           # 用戶鍵支援 glob / re: 正則
 deny = ["u_bad", "spam_*"]
 
 # ── ③ 命令維度（命令名支援 glob）──
 [ErisPulse.scope.commands."roll*"]
-allow = ["onebot11:u_vip"]    # 使用者標識 "platform:user_id"
+allow = ["onebot11:u_vip"]    # 用戶標識 "platform:user_id"
 deny = ["onebot11:u_bad"]
 
 # ── ④ 處理器/文本維度 ──
@@ -9414,6 +9420,12 @@ master = true                 # 僅框架主人可用
 hidden = true                 # 幫助中隱藏
 aliases = ["rs"]              # 追加別名
 prefix = "!"                  # 追加觸發前綴
+
+# ── ⑥ 出站動作維度（預設全允許，顯式禁用才收緊）──
+[ErisPulse.scope.actions.MyModule]
+send = false                  # 禁止 MyModule 回覆/主動發訊息
+api = false                   # 禁止 MyModule 調標準 API（含 call 逃生艙）
+request = false               # 禁止 MyModule 處理請求操作 accept/reject
 ```
 
 ## ① 模組維度
@@ -9459,7 +9471,7 @@ allow = ["u_admin"]   # 即使適配器級拒絕，u_admin 的事件仍然放行
 - 精確鍵優先於 glob 鍵（`commands.roll` 命中時不再查 `commands."roll*"`）
 - 使用者標識格式 `"platform:user_id"`（與框架主人系統一致）
 - 該維度**只是使用者端的額外閘門**，與命令的 `master` / `permission` 參數串聯：  
-  ACL 通過後仍走開發者宣告的預設權限鏈
+  ACL 通過後仍走開發者聲明的預設權限鏈（該預設鏈可用 ⑤ 覆蓋調整）
 
 ## ④ 處理器/文字維度
 
@@ -9478,14 +9490,42 @@ pattern = "閒聊*"     # ChatModule 的處理器僅回應以「閒聊」開頭�
 
 ```toml
 [ErisPulse.scope.overrides.MyModule.restart]
-master = true      # 覆蓋為僅框架主人
+master = true      # 覆蓋為僅框架主人（也可設 false 放開開發者的主人限制）
 hidden = true      # 幫助列表中隱藏
 aliases = ["rs"]   # 生效別名
 ```
 
-> 覆蓋只改**實現參數**（master / hidden / aliases / prefix / help / usage 等）。
-> **禁用一條命令不在這裡**——統一走命令維度 deny（`scope.commands` 或
+> 覆蓋遵循**使用者優先**：開發者宣告的 `master` / `hidden` 等只是預設值，  
+> 使用者在此顯式配置後即以使用者配置為準（可收緊也可放開）。  
+> 覆蓋只改**實現參數**（master / hidden / aliases / prefix / help / usage 等）。  
+> **禁用一條命令不在這裡**——統一走命令維度 deny（`scope.commands` 或  
 > `scope.deny_user()`），避免兩套"禁用"語義打架。
+
+## ⑥ 出站動作維度（禁止模組發起出站呼叫）
+
+限制模組**發起的出站動作**：訊息發送 / 標準 API 動作 / 請求操作。  
+三類動作對應底層 DSL：`Event.reply` 與 `Send`（send）、`Api` / `call_api`（api）、  
+`Request` 的 accept/reject（request）。模組在事件 handler 執行期間發起的出站呼叫  
+攜帶模組 owner，由本維度統一判定。
+
+```toml
+[ErisPulse.scope.actions.MyModule]
+send = false      # 禁止 MyModule 回覆/主動發訊息
+api = false       # 禁止 MyModule 調用標準 API 動作（含 call 逃生艙）
+request = false   # 禁止 MyModule 對請求事件執行 accept/reject
+```
+
+判定語義：**預設全允許**——未配置、或 owner 為空（框架層內部呼叫）均放行；  
+僅當使用者顯式設為 `false` 才拒絕，被拒呼叫不發起任何網路請求，直接返回  
+標準失敗回應（`retcode = 34601`，見 [api-response §5.3](../standards/api-response.md#53-框架擴展返回碼34xxx-平台錯誤段的低三位自定義)）。三個動作互相獨立，可只禁其一。
+
+```python
+# 運行時 API
+sdk.scope.set_action("MyModule", "send", False)   # 禁發訊息
+sdk.scope.is_action_allowed("MyModule", "send")   # False
+sdk.scope.unset_action("MyModule", "send")        # 恢復允許
+sdk.scope.get_action_rules("MyModule")            # {"send": False, "api": True, "request": True}
+```
 
 ## 運行時 API
 
@@ -9539,7 +9579,7 @@ sdk.scope.deny_user("roll*", "onebot11", "u_bad")
 sdk.scope.get_acl("roll*")
 sdk.scope.remove_acl("roll*")
 
-# 也可透過命令系統門面（等價委派）
+# 也可透過命令系統門面（等價委託）
 from ErisPulse.Core.Event import command
 command.allow_user("restart", "onebot11", "123456")
 ```
@@ -9558,14 +9598,70 @@ sdk.scope.remove_override("MyModule", "restart")
 ### 通用
 
 ```python
-sdk.scope.list_bindings()   # 五維全量綁定
-sdk.scope.get_topology()    # 五維拓撲（供 Dashboard）
+sdk.scope.list_bindings()   # 全量綁定
+sdk.scope.get_topology()    # 拓撲（供 Dashboard）
 sdk.scope.get_stats()
 # {"module_calls": .., "module_filtered": .., "identity_checks": .., "identity_denied": ..,
-#  "command_checks": .., "command_denied": .., "cache_hits": .., "cache_misses": ..}
+#  "command_checks": .., "command_denied": .., "action_checks": .., "action_denied": ..,
+#  "cache_hits": .., "cache_misses": ..}
 sdk.scope.reset_stats()
 sdk.scope.clear()           # 清空全部綁定（僅記憶體生效）
 ```
+
+## 主人身份與自定義身份來源（provider）
+
+主人系統回答「誰是框架主人」：命令的 `master=True` 參數與業務層的
+`master.is_master()` 共用同一套身份判定，判定鏈為
+**配置主人 → 運行時記錄 → provider 鏈**。
+
+主人配置（`ErisPulse.master.users`，支援全域 list 與按平台 dict）見
+[配置文件](../user-guide/configuration.md#主人系統配置)；本節聚焦身份判定 API 與擴展點。
+
+### 判定與運行時增刪
+
+```python
+from ErisPulse.Core import master
+
+master.is_master(event)                      # 從事件判定
+master.is_master("yunhu", "123")             # 明確判定
+master.add("yunhu", "123")                   # 運行時新增（預設持久化；persist=False 僅內存）
+master.remove("yunhu", "123")                # 移除（預設持久化）
+master.list()                                # 匯總：{"global": [...], "<platform>": [...]}
+```
+
+### 自定義身份來源（provider）
+
+除了配置外，還可以註冊自定義身份來源：`fn(platform, user_id) -> bool`，
+內建身份來源（配置 + 運行時記錄）未命中時依序嘗試，任一 provider 放行即認定為主人。
+適合對接適配器管理員介面、資料庫角色等外部身份體系。
+
+註冊入口 `master.provider` 支援裝飾器 / 函數式兩種寫法，
+註銷統一透過被註冊函數上的 `fn.unregister()`：
+
+```python
+from ErisPulse.Core import master
+
+# 寫法一：裝飾器（常駐身份來源，推薦）
+@master.provider
+def admin_provider(platform, user_id):
+    return user_id in {"999"}     # 自訂判定邏輯
+
+master.is_master("yunhu", "999")   # True
+admin_provider.unregister()        # 不再需要時註銷
+
+# 寫法二：函數式（模組載入期註冊 / 卸載期註銷）
+fn = master.provider(admin_provider)
+fn.unregister()
+```
+
+> provider 異常會被捕捉並跳過，不阻斷身份判定鏈。
+> 綁定執行個體方法無法掛載 `unregister`，需要註冊/註銷配對的場景請使用**模組級函數**。
+
+### 用戶優先：主人生效範圍由用戶最終決定
+
+命令的 `master=True` 只是**開發者預設**：用戶可在控制面
+`ErisPulse.scope.overrides.<module>.<cmd>.master = true/false`
+覆蓋收緊或放寬（見上文 ⑤ 實現參數覆蓋，用戶顯式設定即生效）。
 
 ## 緩存與熱更新
 
@@ -9578,19 +9674,19 @@ sdk.scope.clear()           # 清空全部綁定（僅記憶體生效）
 
 ### 1. 配置層級與覆蓋
 
-- 模組維度：會話級 > Bot 級 > 平台級，**整體覆蓋**。想「平台允許 Chat，Bot 再加 Music」，
+- 模塊維度：會話級 > Bot 級 > 平台級，**整體覆蓋**。想「平台允許 Chat，Bot 再加 Music」，
   必須在 Bot 級同時列出兩者
 - 身份維度：使用者 > 會話 > Bot > 適配器，取**最具體**的已配置策略（可做例外放行）
 - 命令維度：精確命令名優先於 glob 鍵
 
-### 2. 優先使用控制面而不是修改模組程式碼
+### 2. 優先使用控制面而不是修改模組代碼
 
-模組宣告的是「開發者預設」（`master=True`、`permission=...`、`pattern=...`）；
-控制面宣告的是「使用者最終決定」。兩者衝突時**控制面更嚴格的一方生效**
-（如開發者未設 master，使用者可覆蓋 `master = true` 收緊；使用者不能透過覆蓋放寬
-開發者明確的限制——禁用/放行類控制走命令 deny / 身份 allow）。
+模組聲明的是「開發者預設」（`master=True`、`permission=...`、`pattern=...`）；
+控制面聲明的是「使用者最終決定」。實現參數覆蓋遵循**使用者優先**：
+使用者顯式配置的 `master = true/false` 直接生效（可收緊可放寬）。
+開發者未設的限制使用者可自行收緊；禁用/放行類控制走命令 deny / 身份 allow。
 
-### 3. 模組/命令沒反應
+### 3. 模組/命令沒有反應
 
 先懷疑控制面而不是模組本身：
 
@@ -9599,7 +9695,7 @@ from ErisPulse import sdk
 
 print(sdk.scope.is_allowed(event.get_platform(), bot_id, "MyModule", session_id))
 print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, user_id))
-print(sdk.scope.get_stats())   # module_filtered / identity_denied > 0 說明被靜默過濾
+print(sdk.scope.get_stats())   # module_filtered / identity_denied > 0 代表被靜默過濾
 ```
 
 被過濾是**靜默**的（模組維度與身份維度不回應，避免暴露規則），但統計會累計；
@@ -9608,7 +9704,7 @@ print(sdk.scope.get_stats())   # module_filtered / identity_denied > 0 說明被
 ### 4. 會話標識跨平台隔離
 
 `(platform, session_id)` 組合才是唯一標識。`scope.sessions.onebot11."789"`
-只作用於 onebot11，不受 telegram 上同為 `789` 的會話影響。身份維度的使用者鍵同理。
+只作用於 onebot11，不影響 telegram 上同為 `789` 的會話。身份維度的使用者鍵同理。
 
 ## 拓撲樹 API
 
@@ -10992,33 +11088,33 @@ async def handle_welcome(event):
 
 ### API 响应标准
 
-# ErisPulse 適配器標準化回傳規範
+# ErisPulse 适配器標準化回傳規範
 
-## 1. 說明
-為什麼會有這個規範？
+## 1. 說明  
+為什麼會有這個規範？  
 
-為了確保各平台發送介面回傳統一性與 OneBot12 相容性，ErisPulse 適配器在 API 回應格式上採用了 OneBot12 定義的訊息發送回傳結構標準。
+為了確保各平台發送介面返回的統一性與 OneBot12 兼容性，ErisPulse 適配器在 API 回應格式上採用了 OneBot12 定義的消息發送回傳結構標準。  
 
-但 ErisPulse 的協定有一些特殊定義：
-- 1. 基礎欄位中，message_id 是必須的，但 OneBot12 標準中無此欄位
-- 2. 回傳內容中需要新增 {platform_name}_raw 欄位，用於存放原始回應資料
+不過 ErisPulse 的協定有一些特殊性定義：  
+- 1. 基礎欄位中，`message_id` 是必需的，但 OneBot12 標準中並無此欄位  
+- 2. 回傳內容中需要添加 `{platform_name}_raw` 欄位，用於存放原始回應資料
 
-## 2. 基礎回傳結構
-所有動作回應必須包含以下基礎欄位：
+## 2. 基礎返回結構  
+所有動作響應必須包含以下基礎字段：
 
-| 欄位名 | 資料類型 | 必選 | 說明 |
+| 字段名 | 數據類型 | 必選 | 說明 |
 |-------|---------|------|------|
-| status | string | 是 | 執行狀態，必須是 "ok" 或 "failed" |
-| retcode | int64 | 是 | 回傳碼，遵循 OneBot12 回傳碼規則 |
-| data | any | 是 | 回應資料，成功時包含請求結果，失敗時為 null |
-| message_id | string | 是 | 訊息 ID，用於識別訊息，沒有則為空字串 |
-| message | string | 是 | 錯誤資訊，成功時為空字串 |
-| {platform_name}_raw | any | 否 | 原始回應資料 |
+| status | string | 是 | 執行狀態，必須是"ok"或"failed" |
+| retcode | int64 | 是 | 返回碼，遵循OneBot12返回碼規則 |
+| data | any | 是 | 响应数据，成功时包含请求结果，失败时为null |
+| message_id | string | 是 | 消息ID，用於標識消息，沒有則為空字串 |
+| message | string | 是 | 錯誤信息，成功時為空字串 |
+| {platform_name}_raw | any | 否 | 原始響應數據 |
 
-可選欄位：
-| 欄位名 | 資料類型 | 必選 | 說明 |
+可選字段：
+| 字段名 | 數據類型 | 必選 | 說明 |
 |-------|---------|------|------|
-| echo | string | 否 | 當請求中包含 echo 欄位時，原樣回傳 |
+| echo | string | 否 | 當請求中包含echo字段時，原樣返回 |
 
 ## 3. 完整欄位規範
 
@@ -11075,7 +11171,7 @@ async def handle_welcome(event):
 | 錯誤碼 | 錯誤名 | 說明 |
 |-------|-------|------|
 | 20001 | Bad Handler | 動作處理器實作錯誤 |
-| 20002 | Internal Handler Error | 動作處理器執行時拋出異常 |
+| 20002 | Internal Handler Error | 動作處理器執行時拋出例外 |
 
 #### 3xxxx 動作執行錯誤（Execution Error）
 | 錯誤碼範圍 | 錯誤類型 | 說明 |
@@ -11085,32 +11181,32 @@ async def handle_welcome(event):
 | 33xxx | Network Error | 網路錯誤 |
 | 34xxx | Platform Error | 機器人平台錯誤 |
 | 35xxx | Logic Error | 動作邏輯錯誤 |
-| 36xxx | I Am Tired | 實作決定罷工 |
+| 36xxx | I Am Tired | 實現決定罷工 |
 
 #### 保留錯誤段
 - 4xxxx、5xxxx: 保留段，不應使用
-- 6xxxx～9xxxx: 其他錯誤段，供實作自定義使用
+- 6xxxx～9xxxx: 其他錯誤段，供實現自訂使用
 
-## 4. 實作要求
+## 4. 實現要求
 1. 所有回應必須包含 status、retcode、data 和 message 欄位
 2. 當請求中包含非空 echo 欄位時，回應必須包含相同值的 echo 欄位
 3. 回傳碼必須嚴格遵循 OneBot12 規範
-4. 錯誤資訊應當是人類可讀的描述
+4. 錯誤訊息 (message) 應當是人類可讀的描述
 
-## 5. 擴充規範
+## 5. 扩展規範
 
-ErisPulse 在 OneBot12 標準回傳結構之上做了以下擴充：
+ErisPulse 在 OneBot12 標準返回結構之上做了以下擴展：
 
-### 5.1 `message_id` 必選欄位
+### 5.1 `message_id` 必選字段
 
-OneBot12 標準中 `message_id` 位於 `data` 物件內部且非強制。ErisPulse 將其提升為頂層**必選**欄位：
+OneBot12 標準中 `message_id` 位於 `data` 對象內部且非強制。ErisPulse 將其提升為頂層**必選**字段：
 
-- 無法取得 `message_id` 時應設為空字串 `""`
-- 確保 `message_id` 始終存在，模組無需進行 null 檢查
+- 無法獲取 `message_id` 時應設為空字串 `""`
+- 確保 `message_id` 始終存在，模組無需做 null 檢查
 
-### 5.2 `{platform}_raw` 原始回應欄位
+### 5.2 `{platform}_raw` 原始回應字段
 
-回傳值中應包含 `{platform}_raw` 欄位，存放平台原始回應資料的完整複本：
+回應值中應包含 `{platform}_raw` 字段，存放平台原始回應數據的完整副本：
 
 ```json
 {
@@ -11127,21 +11223,58 @@ OneBot12 標準中 `message_id` 位於 `data` 物件內部且非強制。ErisPul
 ```
 
 **要求**：
-- `{platform}_raw` 必須是原始回應的深層複製，而非引用
-- `platform` 必須與適配器註冊時的平台名稱完全一致（區分大小寫）
+- `{platform}_raw` 必須是原始回應的深拷貝，而非引用
+- `platform` 必須與適配器註冊時的平台名完全一致（大小寫敏感）
 - 原始回應中的錯誤資訊也應保留，便於除錯
 
-### 5.3 適配器實作檢查清單
+### 5.3 框架擴展回應碼（34xxx 平台錯誤段的低三位自訂）
 
-- [ ] 包含 `status`、`retcode`、`data`、`message_id`、`message` 欄位
-- [ ] 回傳碼遵循 OneBot12 規範（詳見 §3.2）
-- [ ] `message_id` 始終存在（無法取得時為空字串）
-- [ ] `{platform}_raw` 包含平台原始回應資料
+OneBot12 規範允許實現自訂 `3xxxx` 的低三位。`34xxx` 語意為 **Platform Error**
+（機器人平台錯誤，如平台限制導致失敗）。`34xxx` 內部按職責分層使用：
+
+| 低三位段 | 歸屬 | 用途 |
+|---------|------|------|
+| `340xx` | 適配器實現 | 請求操作族（Request Not Found / Already Handled / Not Supported / Permission Denied，見 request-action-spec §7） |
+| `341xx`～`345xx` | 適配器實現 | 平台側權限 / 風控 / 帳號限制等錯誤（實現自定低三位，原始錯誤放 `{platform}_raw`） |
+| `346xx` | **ErisPulse 框架（保留）** | 框架自身攔截與通用失敗，適配器/模組請勿占用 |
+| `347xx`～`349xx` | 適配器實現 | 其它平台執行錯誤 |
+
+ErisPulse 框架目前使用的 `346xx` 碼：
+
+| 錯誤碼 | 錯誤名 | 說明 |
+|-------|-------|------|
+| 34600 | SDK Failure | 框架通用失敗（`make_error()` 預設回傳碼） |
+| 34601 | Action Denied | 出站動作被控制面禁用（`scope.actions`），呼叫未發起，直接回傳該回應 |
+
+> 職責區分：`34601` 是**框架在呼叫前攔截**（模組根本沒資格發起動作）；
+> `34004` / `34xxx` 平台碼是**動作已發出但平台拒絕**（如 Bot 無權限、被風控）。
+> 模組判斷權限問題時同時檢查這兩種：先看 `34601`（自己模組被 scope 禁），
+> 再看 `34xxx`（平台側限制）。
+
+回應結構為 §2 標準失敗回應：
+
+```json
+{
+    "status": "failed",
+    "retcode": 34601,
+    "data": null,
+    "message_id": "",
+    "message": "action 'send' denied by scope.actions"
+}
+```
+
+### 5.4 適配器實現檢查清單
+
+- [ ] 包含 `status`, `retcode`, `data`, `message_id`, `message` 字段
+- [ ] 回應碼遵循 OneBot12 規範（詳見 §3.2）
+- [ ] `message_id` 始終存在（無法獲取時為空字串）
+- [ ] `{platform}_raw` 包含平台原始回應數據
 
 ## 6. 注意事項
 - 對於 3xxxx 錯誤碼，低三位可由實作自行定義
-- 避免使用保留錯誤段 (4xxxx、5xxxx)
-- 錯誤資訊應當簡潔明瞭，便於除錯
+- 避免使用保留錯誤區段 (4xxxx、5xxxx)
+- **`34600` / `34601` 為 ErisPulse 框架保留碼**（見 §5.3），適配器/模組應避免使用
+- 錯誤訊息應當簡潔明瞭，便於除錯
 
 
 
@@ -11149,7 +11282,7 @@ OneBot12 標準中 `message_id` 位於 `data` 物件內部且非強制。ErisPul
 
 # ErisPulse 發送方法規範
 
-本文檔定義了 ErisPulse 适配器中 Send 類發送方法的命名規範、參數規範和反向轉換要求。
+本文檔定義了 ErisPulse 適配器中 Send 類發送方法的命名規範、參數規範和反向轉換要求。
 
 ## 1. 標準方法命名
 
@@ -11159,49 +11292,49 @@ OneBot12 標準中 `message_id` 位於 `data` 物件內部且非強制。ErisPul
 
 | 方法名 | 說明 | 參數類型 |
 |-------|------|---------|
-| `Text` | 發送文本消息 | `str` |
+| `Text` | 發送文字訊息 | `str` |
 | `Image` | 發送圖片 | `bytes` \| `str` (URL/路徑) |
 | `Voice` | 發送語音 | `bytes` \| `str` (URL/路徑) |
-| `Video` | 發送視頻 | `bytes` \| `str` (URL/路徑) |
-| `File` | 發送文件 | `bytes` \| `str` (URL/路徑) |
-| `At` | @用戶/群組 | `str` (user_id) |
+| `Video` | 發送影片 | `bytes` \| `str` (URL/路徑) |
+| `File` | 發送檔案 | `bytes` \| `str` (URL/路徑) |
+| `At` | @使用者/群組 | `str` (user_id) |
 | `Face` | 發送表情 | `str` (emoji) |
-| `Reply` | 回覆消息 | `str` (message_id) |
-| `Forward` | 轉發消息 | `str` (message_id) |
-| `Markdown` | 發送 Markdown 消息 | `str` |
-| `HTML` | 發送 HTML 消息 | `str` |
-| `Card` | 發送卡片消息 | `dict` |
+| `Reply` | 回覆訊息 | `str` (message_id) |
+| `Forward` | 轉發訊息 | `str` (message_id) |
+| `Markdown` | 發送 Markdown 訊息 | `str` |
+| `HTML` | 發送 HTML 訊息 | `str` |
+| `Card` | 發送卡片訊息 | `dict` |
 
 ### 1.2 鏈式修飾方法
 
 | 方法名 | 說明 | 參數類型 |
 |-------|------|---------|
-| `At` | @用戶（可多次調用） | `str` (user_id) |
+| `At` | @使用者（可多次呼叫） | `str` (user_id) |
 | `AtAll` | @全體成員 | 無 |
-| `Reply` | 回覆消息 | `str` (message_id) |
+| `Reply` | 回覆訊息 | `str` (message_id) |
 
 ### 1.3 協議方法
 
 | 方法名 | 說明 | 是否必須 |
 |-------|------|---------|
-| `Raw_ob12` | 發送 OneBot12 格式消息段 | 必須 |
+| `Raw_ob12` | 發送 OneBot12 格式訊息段 | 必須 |
 
-**`Raw_ob12` 是必須實現的方法**。這是適配器的核心職責之一：接收 OneBot12 標準消息段並将其轉換為平台原生 API 調用。`Raw_ob12` 是反向轉換（OneBot12 → 平台）的統一入口，確保模組可以不依賴平台特有方法，直接使用標準消息段發送消息。
+**`Raw_ob12` 是必須實作的方法**。這是適配器的核心職責之一：接收 OneBot12 標準訊息段並轉換為平台原生 API 呼叫。`Raw_ob12` 是反向轉換（OneBot12 → 平台）的統一入口，確保模組可以不依賴平台特有的方法，直接使用標準訊息段發送訊息。
 
-**未重寫 `Raw_ob12` 時的行為**：基類預設實現會記錄 **error 級別**日誌並返回標準錯誤響應格式（`status: "failed"`, `retcode: 10002`），提示適配器開發者必須實現此方法。
+**未重寫 `Raw_ob12` 時的行為**：基類預設實作會記錄 **error 級別**日誌並返回標準錯誤回應格式（`status: "failed"`, `retcode: 10002`），提示適配器開發者必須實作此方法。
 
 ### 1.4 推薦的擴展命名約定
 
-適配器如需支援發送非 OneBot12 格式的原始數據（如平台特定 JSON、XML 等），推薦使用以下命名約定：
+適配器如需支援發送非 OneBot12 格式的原始資料（如平台特定 JSON、XML 等），推薦使用以下命名約定：
 
 | 推薦方法名 | 說明 |
 |-----------|------|
-| `Raw_json` | 發送任意 JSON 數據 |
-| `Raw_xml` | 發送任意 XML 數據 |
+| `Raw_json` | 發送任意 JSON 資料 |
+| `Raw_xml` | 發送任意 XML 資料 |
 
-**注意**：這些方法**不是**基類提供的預設方法，也不強制要求實現。它們僅作為命名約定，適配器可依需求自行定義。如果適配器不支援這些格式，則無需定義。
+**注意**：這些方法**不是**基類提供的預設方法，也不強制要求實作。它們僅作為命名約定，適配器可依需要自行定義。如果適配器不支援這些格式，則無需定義。
 
-**消息建構器（MessageBuilder）**：ErisPulse 提供了 `MessageBuilder` 工具類，用於方便地建構 OneBot12 消息段列表，配合 `Raw_ob12` 使用。詳見 [消息建構器](#11-消息建構器-messagebuilder) 章節。
+**訊息建構器（MessageBuilder）**：ErisPulse 提供了 `MessageBuilder` 工具類，用於方便地建構 OneBot12 訊息段列表，配合 `Raw_ob12` 使用。詳見 [訊息建構器](#11-訊息建構器-messagebuilder) 章節。
 
 ## 2. 參數規範詳解
 
@@ -11214,22 +11347,22 @@ OneBot12 標準中 `message_id` 位於 `data` 物件內部且非強制。ErisPul
 **格式：** `str`
 
 **支援類型：**
-- **URL**：網路資源地址（如 `https://example.com/image.jpg`）
-- **文件路徑**：本地文件路徑（如 `/path/to/file.jpg` 或 `C:\\path\\to\\file.jpg`）
+- **URL**：網路資源位址（如 `https://example.com/image.jpg`）
+- **文件路徑**：本機文件路徑（如 `/path/to/file.jpg` 或 `C:\\path\\to\\file.jpg`）
 
 **使用場景：**
 - 文件已在網路上，直接發送 URL
-- 文件在本地磁盤，發送文件路徑
+- 文件在本機磁碟，發送文件路徑
 - 希望適配器自動處理文件上傳
 
-**推薦：** 優先使用 URL，如果 URL 不可用則使用本地文件路徑
+**推薦：** 優先使用 URL，如果 URL 不可用則使用本機文件路徑
 
 **示例：**
 ```python
 # 使用 URL
 send.Image("https://example.com/image.jpg")
 
-# 使用本地文件路徑
+# 使用本機文件路徑
 send.Image("/path/to/local/image.jpg")
 send.Image("C:\\path\\to\\local\\image.jpg")
 ```
@@ -11264,20 +11397,20 @@ send.Image(image_data)
 
 當適配器接收到媒體消息參數時，應按以下順序處理：
 
-1. **URL 參數**：直接使用 URL 發送(部分平台適配器可能存在URL下載後再上傳的操作)
-2. **文件路徑**：檢測是否為本地路徑，若是則上傳文件
+1. **URL 參數**：直接使用 URL 發送（部分平台適配器可能存在 URL 下載後再上傳的操作）
+2. **文件路徑**：檢測是否為本機路徑，若是則上傳文件
 3. **二進制數據**：直接上傳二進制數據
 
 **適配器實現建議：**
 ```python
 def Image(self, image: Union[bytes, str]):
     if isinstance(image, str):
-        # 判斷是 URL 還是本地路徑
+        # 判斷是 URL 還是本機路徑
         if image.startswith(("http://", "https://")):
             # URL 直接發送
             return self._send_image_by_url(image)
         else:
-            # 本地路徑，讀取後上傳
+            # 本機路徑，讀取後上傳
             with open(image, "rb") as f:
                 return self._upload_image(f.read())
     elif isinstance(image, bytes):
@@ -11295,14 +11428,14 @@ def Image(self, image: Union[bytes, str]):
 - `user_id` 應為字串類型的用戶標識符
 - 不同平台的 `user_id` 格式可能不同（數字、UUID、字串等）
 - 適配器負責將 `user_id` 轉換為平台特定的格式
-- 注意需要把真正的發送方法調用放在最後的位置
+- 注意需要把真正的發送方法呼叫放在最後的位置
 
 **示例：**
 ```python
 # 單個 @ 用戶
 Send.To("group", "g123").At("123456").Text("你好")
 
-# 多個 @ 用戶（鏈式調用）
+# 多個 @ 用戶（鏈式呼叫）
 send.To("group", "g123").At("123456").At("789012").Text("大家好")
 ```
 
@@ -11324,18 +11457,18 @@ send.To("group", "g123").Reply("msg_123456").Text("收到")
 
 ## 3. 平台特有方法命名
 
-**不推薦**在 Send 類中直接添加平台前綴方法。建議使用通用方法名或 `Raw_{協議}` 方法。
+**不建議**在 Send 類中直接添加平台前綴方法。建議使用通用方法名或 `Raw_{協議}` 方法。
 
-**不推薦：**
+**不建議：**
 ```python
-def YunhuForm(self, form_id: str):  # ❌ 不推薦
+def YunhuForm(self, form_id: str):  # ❌ 不建議
     pass
 
-def TelegramSticker(self, sticker_id: str):  # ❌ 不推薦
+def TelegramSticker(self, sticker_id: str):  # ❌ 不建議
     pass
 ```
 
-**推薦：**
+**建議：**
 ```python
 def Form(self, form_id: str):  # ✅ 通用方法名
     pass
@@ -11358,20 +11491,20 @@ def Raw_ob12(self, message):  # ✅ 發送 OneBot12 格式
 | 參數名 | 說明 | 類型 |
 |-------|------|------|
 | `text` | 文本內容 | `str` |
-| `url` / `file` | 文件 URL 或二進制數據 | `str` / `bytes` |
-| `user_id` | 用戶 ID | `str` / `int` |
+| `url` / `file` | 檔案 URL 或二進位資料 | `str` / `bytes` |
+| `user_id` | 使用者 ID | `str` / `int` |
 | `group_id` | 群組 ID | `str` / `int` |
 | `message_id` | 消息 ID | `str` |
-| `data` | 數據物件（如卡片數據） | `dict` |
+| `data` | 資料物件（例如卡片資料） | `dict` |
 
 ## 5. 返回值規範
 
-- **發送方法**（如 `Text`, `Image`）：必須返回 `asyncio.Task` 對象
-- **修飾方法**（如 `At`, `Reply`, `AtAll`）：必須返回 `self` 以支援鏈式調用
+- **發送方法**（例如 `Text`, `Image`）：必須返回 `asyncio.Task` 物件
+- **修飾方法**（例如 `At`, `Reply`, `AtAll`）：必須返回 `self` 以支援鏈式呼叫
 
 ---
 
-## 6. 反向轉換規範（OneBot12 → 平台）
+## 6. 反轉轉換規範（OneBot12 → 平台）
 
 適配器不僅需要將平台原生事件轉換為 OneBot12 格式（正向轉換），還**必須**提供將 OneBot12 消息段轉換回平台原生 API 調用的能力（反向轉換）。反向轉換的統一入口是 `Raw_ob12` 方法。
 
@@ -11462,12 +11595,12 @@ def _convert_ob12_segments(self, segments: List[Dict]) -> Any:
             logger.warning(f"不支援的消息段類型: {seg_type}")
 ```
 
-#### 6.3.3 復合消息段處理
+#### 6.3.3 複合消息段處理
 
-一條消息可能包含多個消息段，適配器需要正確處理復合消息：
+一條消息可能包含多個消息段，適配器需要正確處理複合消息：
 
 ```python
-# 模組發送包含文本+圖片+@用戶 的消息
+# 模塊發送包含文本+圖片+@用戶 的消息
 await send.Raw_ob12([
     {"type": "mention", "data": {"user_id": "123"}},
     {"type": "text", "data": {"text": "你好"}},
@@ -11502,7 +11635,7 @@ class Send(SendDSL):
 - 模組無論使用 `Text()` 還是 `Raw_ob12()` 都能得到相同結果
 - 基類提供類型簽名，IDE 能補全標準方法
 
-### 6.5 實現示例
+### 6.5 實現範例
 
 ```python
 class YunhuSend(SendDSL):
@@ -11591,17 +11724,11 @@ info = adapter.send_info("myplatform", "Form")
 
 > **注意**：發送方法不加平台前綴，不同平台的同名方法可以有不同的實現。
 
----
-
 ## 9. 適配器開發注意事項
 
-關於如何正確重寫 `BaseAdapter`、`Send`、`Request` 的 `__init__`，詳見 [適配器開發入門 - `__init__` 注意事項](../../developer-guide/adapters/getting-started.md#init-注意事項)。
+關於如何正確重寫 `BaseAdapter`、`Send`、`Request` 的 `__init__`，詳見 [適配器開發入門 - `__init__` 注意事項](../developer-guide/adapters/getting-started.md#init-注意事項)。
 
----
-
----
-
-## 10. 適配器實現檢查清單
+## 10. 适配器實現檢查清單
 
 ### 發送方法
 - [ ] 標準方法（`Text`, `Image` 等）已實現
@@ -11616,11 +11743,9 @@ info = adapter.send_info("myplatform", "Form")
 - [ ] `Raw_ob12` 能處理平台擴展消息段（`{platform}_xxx` 類型）
 - [ ] 標準發送方法（`Text`, `Image` 等）內部委託給 `Raw_ob12`，而非獨立實現轉換邏輯
 - [ ] 不支援的消息段跳過並記錄警告，不拋出異常
-- [ ] 復合消息段正確處理（合併或按序拆分）
+- [ ] 複合消息段正確處理（合併或按序拆分）
 
----
-
-## 10. 消息建構器（MessageBuilder）
+## 11. 消息建構器（MessageBuilder）
 
 `MessageBuilder` 是 ErisPulse 提供的消息段建構工具，配合 `Raw_ob12` 使用，簡化 OneBot12 消息段的建構過程。
 
@@ -11632,10 +11757,10 @@ from ErisPulse.Core import MessageBuilder
 from ErisPulse.Core.Event import MessageBuilder
 ```
 
-### 11.2 鏈式調用建構
+### 11.2 鏈式呼叫建構
 
 ```python
-# 建構包含文本、圖片、@用戶的消息
+# 建構包含文字、圖片、@使用者的消息
 segments = (
     MessageBuilder()
     .mention("123456")
@@ -11679,13 +11804,13 @@ async def handle(event: Event):
 
 | 方法 | 說明 | data 字段 |
 |------|------|----------|
-| `text(text)` | 文本 | `text` |
+| `text(text)` | 文字 | `text` |
 | `image(file)` | 圖片 | `file` |
 | `audio(file)` | 音頻 | `file` |
 | `video(file)` | 視頻 | `file` |
-| `file(file, filename=None)` | 文件 | `file`, `filename`(可選) |
-| `mention(user_id, user_name=None)` | @用戶 | `user_id`, `user_name`(可選) |
-| `at(user_id, user_name=None)` | @用戶（`mention` 的別名） | 同 `mention` |
+| `file(file, filename=None)` | 檔案 | `file`, `filename`(可選) |
+| `mention(user_id, user_name=None)` | @使用者 | `user_id`, `user_name`(可選) |
+| `at(user_id, user_name=None)` | @使用者（`mention` 的別名） | 同 `mention` |
 | `reply(message_id)` | 回覆 | `message_id` |
 | `at_all()` | @全體成員 | `{}` |
 | `custom(type, data)` | 自定義/平台擴展 | 自定義 |
@@ -11709,12 +11834,12 @@ if builder:
 
 ---
 
-## 11. 相關文件
+## 12. 相關文件
 
-- [事件轉換標準](event-conversion.md) - 完整的事件轉換規範、擴展命名和消息段標準
-- [API 響應標準](api-response.md) - 適配器 API 響應格式標準
+- [事件轉換標準](event-conversion.md) - 完整的事件轉換規範、擴展命名和訊息段標準
+- [API 回應標準](api-response.md) - 適配器 API 回應格式標準
 - [會話類型標準](session-types.md) - 會話類型定義和映射關係
-- [請求操作規範](request-action-spec.md) - 請求事件字段要求、HandleRequest DSL 及適配器實現要求
+- [請求操作規範](request-action-spec.md) - 請求事件欄位要求、HandleRequest DSL 及適配器實作要求
 
 
 
@@ -11722,21 +11847,21 @@ if builder:
 
 # ErisPulse 請求操作規範
 
-本文檔定義了 ErisPulse 配接器中請求事件操作的標準化規範，包括請求事件的字段要求、Request DSL 的使用方式和配接器實現要求。
+本文檔定義了 ErisPulse 適配器中請求事件操作的標準化規範，包括請求事件的欄位要求、Request DSL 的使用方式和適配器實現要求。
 
 ## 1. 概述
 
 請求事件（`type: "request"`）是 OneBot12 標準中定義的特殊事件類型，代表需要 Bot 做出決策的請求（如好友請求、群邀請等）。
 
 與消息事件不同，請求事件需要**雙向互動**：
-1. **接收**：配接器將平台原生請求轉換為標準請求事件
+1. **接收**：適配器將平台原生請求轉換為標準請求事件
 2. **響應**：模組通過 `Request` DSL 或 `Event.approve()`/`Event.reject()` 執行操作
 
 ```
 平台原生請求事件
     │
     ▼
-Converter.convert()        ← 配接器實現（正向轉換）
+Converter.convert()        ← 適配器實現（正向轉換）
     │
     ▼
 標準請求事件 (含 request_id)
@@ -11750,12 +11875,12 @@ Converter.convert()        ← 配接器實現（正向轉換）
     │       adapter.Request(request_id).accept()
     │               │
     │               ▼
-    │       BaseAdapter.Request.accept()  ← 配接器重寫
+    │       BaseAdapter.Request.accept()  ← 適配器重寫
     │               │
     │               ▼
     │       平台 API 調用
     │
-    └─→ 或直接通過配接器操作
+    └─→ 或直接通過適配器操作
             await adapter.Request("req_id").accept()
 ```
 
@@ -11772,14 +11897,14 @@ Converter.convert()        ← 配接器實現（正向轉換）
 | `user_nickname` | string | 否 | 請求發起者暱稱 |
 | `comment` | string | 否 | 請求附言 |
 
-### 2.2 `request_id` 欄位
+### 2.2 `request_id` 字段
 
 `request_id` 是請求操作的核心標識符：
 
 - **用途**：標識一個可操作的請求，供 `Request` DSL 使用
 - **生成規則**：
   - 優先使用平台原生的請求標識（如 OneBot11 的 `flag` 字段、Telegram 的 `chat_invite_link` 等）
-  - 如果平台沒有原生請求ID，配接器應生成一個唯一標識（建議格式：`{platform}_{timestamp}_{user_id}`）
+  - 如果平台沒有原生請求ID，適配器應生成一個唯一標識（建議格式：`{platform}_{timestamp}_{user_id}`）
 - **唯一性**：在同一平台範圍內應保持唯一
 - **缺失行為**：當 `request_id` 缺失時，`event.approve()` / `event.reject()` 將拋出 `ValueError`
 
@@ -11807,19 +11932,19 @@ Converter.convert()        ← 配接器實現（正向轉換）
 
 ## 3. Request DSL
 
-### 3.1 連式呼叫
+### 3.1 鏈式呼叫
 
-`Request` 提供與 `Send` 風格一致的連式呼叫接口：
+`Request` 提供與 `Send` 風格一致的鏈式呼叫介面：
 
 ```python
 # 基本用法
 await adapter.Request("req_id").accept()
 await adapter.Request("req_id").reject()
 
-# 指定 Bot 帳號
+# 指定 Bot 賬號
 await adapter.Request("req_id").Using("bot1").accept()
 
-# 附帶備註（通過 kwargs）
+# 附帶備註（透過 kwargs）
 await adapter.Request("req_id").accept(comment="歡迎")
 await adapter.Request("req_id").reject(comment="暫不添加")
 
@@ -11831,13 +11956,13 @@ await adapter.Request("req_id").Using("bot1").accept(comment="歡迎")
 
 | 方法 | 說明 | 返回值 |
 |------|------|--------|
-| `Using(account_id)` | 指定執行操作的 Bot 帳號 | `RequestDSL`（支援連式呼叫） |
-| `accept(**kwargs)` | 同意請求 | `asyncio.Task`（await 後返回標準響應） |
-| `reject(**kwargs)` | 拒絕請求 | `asyncio.Task`（await 後返回標準響應） |
+| `Using(account_id)` | 指定執行操作的 Bot 賬號 | `RequestDSL`（支援鏈式呼叫） |
+| `accept(**kwargs)` | 同意請求 | `asyncio.Task`（await 後返回標準回應） |
+| `reject(**kwargs)` | 拒絕請求 | `asyncio.Task`（await 後返回標準回應） |
 
 ### 3.3 返回值格式
 
-操作返回標準 API 響應格式：
+操作返回標準 API 回應格式：
 
 **成功**：
 ```json
@@ -11857,11 +11982,11 @@ await adapter.Request("req_id").Using("bot1").accept(comment="歡迎")
     "retcode": 34001,
     "data": null,
     "message_id": "",
-    "message": "請求已過期或不存在的"
+    "message": "請求已過期或不存在"
 }
 ```
 
-**未實現**（配接器未重寫 `accept`/`reject`）：
+**未實現**（適配器未重寫 `accept`/`reject`）：
 ```json
 {
     "status": "failed",
@@ -11902,17 +12027,17 @@ async def handle_friend_request(event):
 
 ### 4.1 Event 方法列表
 
-| 方法 | 說明 | 返回值 |
+| 方法 | 說明 | 回傳值 |
 |------|------|--------|
-| `get_request_id()` | 獲取請求ID | `str` |
-| `approve(comment=None)` | 同意當前請求事件 | 標準響應格式 |
-| `reject(comment=None)` | 拒絕當前請求事件 | 標準響應格式 |
+| `get_request_id()` | 取得請求ID | `str` |
+| `approve(comment=None)` | 同意當前請求事件 | 標準回應格式 |
+| `reject(comment=None)` | 拒絕當前請求事件 | 標準回應格式 |
 
-## 5. 配接器實現要求
+## 5. 适配器實現要求
 
 ### 5.1 轉換器要求
 
-配接器的轉換器在轉換請求事件時，**必須**正確設置 `request_id` 字段：
+適配器的轉換器在轉換請求事件時，**必須**正確設置 `request_id` 欄位：
 
 ```python
 def convert_request_event(self, raw_event: dict) -> dict:
@@ -11930,7 +12055,7 @@ def convert_request_event(self, raw_event: dict) -> dict:
         "user_id": str(raw_event.get("user_id", "")),
         "user_nickname": raw_event.get("nickname", ""),
         "comment": raw_event.get("message", ""),
-        "request_id": self._extract_request_id(raw_event),  # ← 關鍵字段
+        "request_id": self._extract_request_id(raw_event),  # ← 關鍵欄位
         f"{self._platform_name}_raw": raw_event,
         f"{self._platform_name}_raw_type": raw_event.get("type", ""),
     }
@@ -11939,9 +12064,9 @@ def _extract_request_id(self, raw_event: dict) -> str:
     """
     從平台原生事件提取請求ID
     
-    優先使用平台原生ID，若無則生成唯一ID
+    优先使用平台原生的请求标识，若无则生成唯一ID
     """
-    # 優先使用平台原生ID
+    # 优先使用平台原生ID
     if flag := raw_event.get("flag"):
         return str(flag)
     if request_key := raw_event.get("request_key"):
@@ -11955,7 +12080,7 @@ def _extract_request_id(self, raw_event: dict) -> str:
 
 ### 5.2 Request 內部類實現
 
-配接器在 `Request` 內部類中重寫 `accept` 和 `reject` 即可：
+適配器在 `Request` 內部類中重寫 `accept` 和 `reject` 即可：
 
 ```python
 from ErisPulse.Core import BaseAdapter, RequestDSL
@@ -11969,7 +12094,7 @@ class MyAdapter(BaseAdapter):
             """
             同意請求
             
-            :param kwargs: 擴展參數，如 comment="備註"
+            :param kwargs: 扩展参数，如 comment="备注"
             :return: asyncio.Task
             """
             async def _do():
@@ -12029,15 +12154,15 @@ class MyAdapter(BaseAdapter):
 
 ### 5.3 平台不支援請求操作
 
-如果平台本身不支援好友請求/群邀請操作（如某些平台自動處理請求），配接器可以：
+如果平台本身不支援好友請求/群邀請操作（如某些平台自動處理請求），適配器可以：
 
-1. **不重寫 `Request` 內部類**：使用基類預設實現，呼叫 `accept()`/`reject()` 時返回 `retcode=10002`
-2. **在轉換時跳過 `request_id`**：不生成 `request_id`，讓 `event.approve()` 拋出 `ValueError`
+1. **不重寫 `Request` 內部類**：使用基類預設實現，調用 `accept()`/`reject()` 時返回 `retcode=10002`
+2. **在轉換時跳過 `request_id`**：不生成 `request_id`，讓 `event.approve()` 抛出 `ValueError`
 3. **記錄日誌**：在 `accept`/`reject` 中記錄警告並返回適當錯誤碼
 
 ### 5.4 總結：Send 與 Request 並行
 
-配接器有兩個並行的 DSL 內部類，各司其職：
+適配器有兩個並行的 DSL 內部類，各司其職：
 
 ```
 BaseAdapter
@@ -12051,44 +12176,50 @@ BaseAdapter
     └── reject()        ← 按需實現
 ```
 
-### 5.5 配接器 `__init__` 注意事項
+### 5.5 適配器 `__init__` 注意事項
 
-重寫 `Request` 內部類的 `__init__` 時，必須透傳參數並呼叫 `super().__init__()`，詳見 [配接器開發入門 - `__init__` 注意事項](../../developer-guide/adapters/getting-started.md#init-注意事項)（`Request` 同理，參數為 `adapter, request_id, account_id`）。
+重寫 `Request` 內部類的 `__init__` 時，必須透傳參數並調用 `super().__init__()`，詳見 [適配器開發入門 - `__init__` 注意事項](../developer-guide/adapters/getting-started.md#init-注意事项)（`Request` 同理，參數為 `adapter, request_id, account_id`）。
 
-## 6. 配接器實現檢查清單
+## 6. 适配器實現檢查清單
 
 ### 基礎要求
-- [ ] 若重寫了 `__init__`，已呼叫 `super().__init__()`（確保 Send / Request 工廠初始化）
+- [ ] 若重寫了 `__init__`，已調用 `super().__init__()`（確保 Send / Request 工廠初始化）
 
 ### 請求事件轉換
-- [ ] 請求事件包含 `request_id` 欄位（強烈推薦）
+- [ ] 請求事件包含 `request_id` 字段（強烈推薦）
 - [ ] `detail_type` 正確映射為 `"friend"` 或 `"group"`
-- [ ] 保留平台原始資料在 `{platform}_raw` 欄位中
+- [ ] 保留平台原始數據在 `{platform}_raw` 字段中
 - [ ] `request_id` 生成規則有文件說明
 
 ### 請求操作
 - [ ] `Request` 內部類已實現（如平台支援請求操作）
 - [ ] `accept()` 方法已實現
 - [ ] `reject()` 方法已實現
-- [ ] 操作返回標準 API 響應格式
+- [ ] 操作返回標準 API 回應格式
 - [ ] 不支援的操作返回 `retcode=10002`
-- [ ] 網路錯誤返回 `retcode=33xxx`（遵循 API 響應標準）
+- [ ] 網路錯誤返回 `retcode=33xxx`（遵循 API 回應標準）
 
 ## 7. 錯誤碼擴展
 
-請求操作相關的推薦錯誤碼（遵循 [API 響應標準](api-response.md) §3.2）：
+請求操作相關的**適配器實現層**推薦錯誤碼（遵循 [API 响应标准](api-response.md) §3.2，  
+落在 `34xxx` 平台錯誤段的低三位自定義）：
 
 | 錯誤碼 | 錯誤名 | 說明 |
 |-------|-------|------|
 | 34001 | Request Not Found | 請求不存在或已過期 |
 | 34002 | Request Already Handled | 請求已被處理 |
 | 34003 | Request Not Supported | 平台不支援該類型的請求操作 |
-| 34004 | Permission Denied | Bot 無權處理此請求 |
+| 34004 | Permission Denied | Bot 無權處理此請求（平台返回） |
 
-## 8. 相關文檔
+> **與框架碼的邊界**：以上 `340xx` 是**平台/適配器**返回的請求處理失敗；  
+> ErisPulse 框架在 `scope.actions` 禁用某模組的 request 動作時，**在呼叫適配器之前**  
+> 直接返回 `34601`（Action Denied，見 [API 响应标准 §5.3](api-response.md#53-框架擴展返回碼34xxx-平台錯誤段的低三位自定義)），  
+> 兩者互不替代：先過 `34601` 框架閘口，再落到平台層 `340xx` 錯誤。
+
+## 8. 相關文件
 
 - [事件轉換標準](event-conversion.md) - 完整的事件轉換規範
-- [API 響應標準](api-response.md) - 配接器 API 響應格式標準
+- [API 回應標準](api-response.md) - 適配器 API 回應格式標準
 - [發送方法規範](send-method-spec.md) - Send 類的方法命名和參數規範
 - [會話類型標準](session-types.md) - 會話類型定義和映射關係
 
@@ -12098,57 +12229,63 @@ BaseAdapter
 
 # ErisPulse API 動作標準
 
-本文檔定義 ErisPulse 适配器中 **OneBot12 標準 API 動作**的統一介面規範，使模組開發者可以面向標準介面編程，由适配器負責映射到平台原生 API。
+本文檔定義 ErisPulse 適配器中 **OneBot12 標準 API 動作**的統一介面規範，使模組開發者可以面向標準介面編程，由適配器負責映射到平台原生 API。
+
+> **涵蓋範圍**：OneBot12 標準動作中，`ApiDSL` 提供使用者 / 群組 / 頻道（Guild）/
+> 消息管理 / 元（Meta）常規介面的強類型方法（`send_message` 由
+> `SendDSL.Raw_ob12` 承擔）。檔案資源動作（`upload_file` / `get_file` / 分片）僅作
+> 降級透傳保留，見 §3.5 說明。平台擴展動作經 `Api.call("prefix.action", ...)`
+> 逃生艙調用。動作參數與回傳結構以 OneBot12 規範（倉庫內 `onebot/specs/interface/`）為準。
 
 ## 1. 設計背景
 
-在 ErisPulse 中，訊息段（訊息收發）和事件格式已經完全遵循 OneBot12 標準，但 **API 動作呼叫**（如獲取用戶資訊、獲取群列表、撤回訊息等）此前未統一——模組開發者必須為每個平台寫不同的 `call_api` 呼叫。
+在 ErisPulse 中，訊息段（訊息收發）和事件格式已經完全遵循 OneBot12 標準，但 **API 動作呼叫**（如獲取使用者資訊、獲取群組列表、撤回訊息等）此前未統一——模組開發者必須為每個平台寫不同的 `call_api` 呼叫。
 
-`ApiDSL` 通過提供強類型的標準動作方法，解決這個問題：
+`ApiDSL` 透過提供強類型的標準動作方法，解決這一問題：
 
 ```
-模組代碼（跨平台統一）             适配器實現（平台特定）
+模組程式碼（跨平台統一）             適配器實作（平台特定）
 ─────────────────              ──────────────────
-adapter.Api.get_user_info("123")  →  适配器 call_api / 覆蓋
-adapter.Api.get_group_list()      →  适配器 call_api / 覆蓋
-adapter.Api.delete_message("id")  →  适配器 call_api / 覆蓋
+adapter.Api.get_user_info("123")  →  適配器 call_api / 覆蓋
+adapter.Api.get_group_list()      →  適配器 call_api / 覆蓋
+adapter.Api.delete_message("id")  →  適配器 call_api / 覆蓋
 ```
 
 ## 2. 三層 DSL 並行結構
 
-ErisPulse 适配器有三個並行的 DSL 內部類，各司其職：
+ErisPulse 適配器有三個並行的 DSL 內部類，各司其職：
 
 ```
 BaseAdapter
 ├── Send(SendDSL)       ← 訊息發送（Text/Image/Raw_ob12）
 ├── Request(RequestDSL)  ← 請求操作（accept/reject）
-└── Api(ApiDSL)          ← 標準 API 動作（資訊查詢/群管理/訊息管理/檔案操作）★
+└── Api(ApiDSL)          ← 標準 API 動作（使用者/群組/頻道/訊息管理/檔案/元）★
 ```
 
-| DSL | 職責 | 方法風格 | 返回值 |
+| DSL | 職責 | 方法風格 | 回傳值 |
 |-----|------|---------|--------|
-| `Send` | 發送訊息 | 鏈式 + `asyncio.Task` | 標準響應 |
-| `Request` | 處理請求事件 | `asyncio.Task` | 標準響應 |
-| `Api` | 查詢/管理操作 | `async` 方法 | 標準響應 |
+| `Send` | 發送訊息 | 串鏈 + `asyncio.Task` | 標準回應 |
+| `Request` | 處理請求事件 | `asyncio.Task` | 標準回應 |
+| `Api` | 查詢/管理操作 | `async` 方法 | 標準回應 |
 
 ## 3. 標準動作列表
 
-### 3.1 用戶相關
+### 3.1 使用者相關
 
-| 方法 | OB12 動作 | 參數 | data 返回 |
+| 方法 | OB12 動作 | 參數 | data 回傳 |
 |------|----------|------|----------|
 | `get_self_info()` | `get_self_info` | 無 | `user_id`, `user_name`, `user_displayname` |
 | `get_user_info(user_id)` | `get_user_info` | `user_id: str` | `user_id`, `user_name`, `user_displayname`, `user_remark` |
-| `get_friend_list()` | `get_friend_list` | 無 | `list[get_user_info 響應]` |
+| `get_friend_list()` | `get_friend_list` | 無 | `list[get_user_info 回應]` |
 
 ### 3.2 群組相關
 
-| 方法 | OB12 動作 | 參數 | data 返回 |
+| 方法 | OB12 動作 | 參數 | data 回傳 |
 |------|----------|------|----------|
 | `get_group_info(group_id)` | `get_group_info` | `group_id: str` | `group_id`, `group_name` |
-| `get_group_list()` | `get_group_list` | 無 | `list[get_group_info 響應]` |
+| `get_group_list()` | `get_group_list` | 無 | `list[get_group_info 回應]` |
 | `get_group_member_info(group_id, user_id)` | `get_group_member_info` | `group_id: str`, `user_id: str` | `user_id`, `user_name`, `user_displayname` |
-| `get_group_member_list(group_id)` | `get_group_member_list` | `group_id: str` | `list[get_group_member_info 響應]` |
+| `get_group_member_list(group_id)` | `get_group_member_list` | `group_id: str` | `list[get_group_member_info 回應]` |
 | `set_group_name(group_id, group_name)` | `set_group_name` | `group_id: str`, `group_name: str` | 無 |
 | `leave_group(group_id)` | `leave_group` | `group_id: str` | 無 |
 
@@ -12160,9 +12297,45 @@ BaseAdapter
 
 > **發送訊息**（`send_message`）由 `SendDSL` 的 `Raw_ob12` 處理，不在 `ApiDSL` 中重複。
 
-### 3.4 檔案操作
+### 3.4 頻道（Guild）相關
 
-| 方法 | OB12 動作 | 參數 | data 返回 |
+OneBot12 頻道體系分兩級：**頻道（guild）** 與 **子頻道（channel）**。
+
+| 方法 | OB12 動作 | 參數 | data 回傳 |
+|------|----------|------|----------|
+| `get_guild_info(guild_id)` | `get_guild_info` | `guild_id: str` | `guild_id`, `guild_name` |
+| `get_guild_list()` | `get_guild_list` | 無 | `list[get_guild_info 回應]` |
+| `set_guild_name(guild_id, guild_name)` | `set_guild_name` | `guild_id: str`, `guild_name: str` | 無 |
+| `get_guild_member_info(guild_id, user_id)` | `get_guild_member_info` | `guild_id: str`, `user_id: str` | `user_id`, `user_name`, `user_displayname` |
+| `get_guild_member_list(guild_id)` | `get_guild_member_list` | `guild_id: str` | `list[get_guild_member_info 回應]` |
+| `leave_guild(guild_id)` | `leave_guild` | `guild_id: str` | 無 |
+| `get_channel_info(guild_id, channel_id)` | `get_channel_info` | `guild_id: str`, `channel_id: str` | `channel_id`, `channel_name` |
+| `get_channel_list(guild_id, *, joined_only)` | `get_channel_list` | `guild_id: str`, `joined_only: bool=false` | `list[get_channel_info 回應]` |
+| `set_channel_name(guild_id, channel_id, channel_name)` | `set_channel_name` | `guild_id`, `channel_id`, `channel_name` | 無 |
+| `get_channel_member_info(guild_id, channel_id, user_id)` | `get_channel_member_info` | `guild_id`, `channel_id`, `user_id` | `user_id`, `user_name`, `user_displayname` |
+| `get_channel_member_list(guild_id, channel_id)` | `get_channel_member_list` | `guild_id`, `channel_id` | `list[get_channel_member_info 回應]` |
+| `leave_channel(guild_id, channel_id)` | `leave_channel` | `guild_id`, `channel_id` | 無 |
+
+> 頻道體系與群組（group）彼此獨立：Discord / QQ 頻道 / Kook 等平台實作頻道介面，
+> 傳統 QQ / 微信實作群組介面，兩者可同時存在或僅其一。
+
+### 3.5 檔案資源操作
+
+> [!WARNING]
+> **檔案資源模型（file_id 兩段式）在 ErisPulse 屬"降級可用"**：
+> ErisPulse 的檔案收發不走"先上傳拿 file_id 再引用"模型——模組發檔案用
+> `SendDSL.File(file, filename)`（URL / 路徑 / 字節**發送時直傳**，見
+> [發送方法規範](send-method-spec.md)）。
+> 本節 `upload_file` / `get_file` / 分片動作依賴平台特有的 `file_id` 檔案資源
+> 能力，**通用性不足**；僅當適配器後端天然具備該能力時才可透傳，框架內建
+> 適配器**不實作也不建議實作**，呼叫時通常回傳 `retcode=10002`。
+> 模組需要跨平台傳檔案時，請使用 `SendDSL.File`，勿依賴 file_id。
+>
+> **展望**：`file_id` 資源模型標準化到框架層是未來的方向，當前版本不提供。
+
+整包傳輸（小檔案）：
+
+| 方法 | OB12 動作 | 參數 | data 回傳 |
 |------|----------|------|----------|
 | `upload_file(*, type, name, ...)` | `upload_file` | `type`, `name`, `url`/`path`/`data`, `headers?`, `sha256?` | `file_id` |
 | `get_file(file_id, type)` | `get_file` | `file_id: str`, `type: str` | `name`, `url`/`path`/`data` |
@@ -12172,7 +12345,52 @@ BaseAdapter
 - `"path"`：透過本地路徑上傳（需提供 `path`）
 - `"data"`：透過二進位資料上傳（需提供 `data`）
 
-### 3.5 通用擴展動作
+#### 3.5.1 分片傳輸（大檔案，屬上述降級範圍）
+
+OneBot12 分片動作按 `stage` 區分階段。`ApiDSL` 將同一動作的三/兩階段拆分為獨立方法
+（`offset` 為位元組偏移，`data` 在 JSON 中為 Base64）；下表僅為查閱保留，
+適配器無需也不應強制實作：
+
+**分片上傳三步**：`prepare` → `transfer`（循環逐片）→ `finish`
+
+| 方法 | 對應 stage | 參數 | data 回傳 |
+|------|-----------|------|----------|
+| `upload_file_fragmented_prepare(name, total_size)` | `prepare` | `name: str`, `total_size: int` | `file_id`（傳輸期用） |
+| `upload_file_fragmented_transfer(file_id, offset, data)` | `transfer` | `file_id`, `offset: int`, `data: bytes` | 無 |
+| `upload_file_fragmented_finish(file_id, sha256)` | `finish` | `file_id`, `sha256: str`（整檔案校驗） | `file_id` |
+
+```python
+total = os.path.getsize(path)
+r = await adapter.Api.upload_file_fragmented_prepare(os.path.basename(path), total)
+fid = r["data"]["file_id"]
+offset = 0
+with open(path, "rb") as f:
+    while chunk := f.read(65536):
+        await adapter.Api.upload_file_fragmented_transfer(fid, offset, chunk)
+        offset += len(chunk)
+sha256 = hashlib.sha256(open(path, "rb").read()).hexdigest()
+await adapter.Api.upload_file_fragmented_finish(fid, sha256)
+```
+
+**分片下載兩步**：`prepare` → `transfer`（循環取片）
+
+| 方法 | 對應 stage | 參數 | data 回傳 |
+|------|-----------|------|----------|
+| `get_file_fragmented_prepare(file_id)` | `prepare` | `file_id` | `name`, `total_size`, `sha256` |
+| `get_file_fragmented_transfer(file_id, offset, size)` | `transfer` | `file_id`, `offset: int`, `size: int` | `data`（本次分片位元組） |
+
+### 3.6 元（Meta）動作
+
+元動作不針對具體帳號，無需 `Using()` 指定 Bot。
+
+| 方法 | OB12 動作 | 參數 | data 回傳 |
+|------|----------|------|----------|
+| `get_latest_events(limit, timeout)` | `get_latest_events` | `limit: int=0`, `timeout: int=0` | 事件物件陣列（不含元事件） |
+| `get_supported_actions()` | `get_supported_actions` | 無 | `list[str]` 支援的動作名 |
+| `get_status()` | `get_status` | 無 | `good: bool`, `bots: list[{self, online, ...}]` |
+| `get_version()` | `get_version` | 無 | `impl`, `version`, `onebot_version` |
+
+### 3.7 通用擴展動作
 
 | 方法 | 說明 |
 |------|------|
@@ -12185,13 +12403,13 @@ BaseAdapter
 ```python
 from ErisPulse import adapter
 
-# 獲取用戶資訊（跨平台統一）
+# 獲取使用者資訊（跨平台統一）
 result = await adapter.myplatform.Api.get_user_info("123456")
 if result["status"] == "ok":
     user_name = result["data"]["user_name"]
-    print(f"用戶名: {user_name}")
+    print(f"使用者名: {user_name}")
 
-# 獲取群列表
+# 獲取群組列表
 result = await adapter.myplatform.Api.get_group_list()
 groups = result["data"]
 
@@ -12199,10 +12417,10 @@ groups = result["data"]
 await adapter.myplatform.Api.delete_message("msg_123456")
 ```
 
-### 4.2 指定 Bot 賬號（多賬號模式）
+### 4.2 指定 Bot 帳號（多帳戶模式）
 
 ```python
-# 使用指定 Bot 賬號執行操作
+# 使用指定 Bot 帳號執行操作
 info = await adapter.myplatform.Api.Using("bot1").get_self_info()
 ```
 
@@ -12233,35 +12451,36 @@ async def handle(event):
         await event.reply(f"你好，{user_name}！")
 ```
 
-## 5. 适配器實現
+## 5. 適配器實作
 
-### 5.1 預設行為（零配置）
+### 5.1 預設行為（零設定）
 
-`ApiDSL` 的預設實現將標準動作名作為 `endpoint` 直接傳遞給 `adapter.call_api()`：
+`ApiDSL` 的預設實作將標準動作名作為 `endpoint` 直接傳遞給 `adapter.call_api()`：
 
 ```python
-# ApiDSL 預設實現等價於：
+# ApiDSL 預設實作等價於：
 async def get_user_info(self, user_id: str) -> dict:
     return await self._adapter.call_api("get_user_info", user_id=user_id, account_id=self._account_id)
 ```
 
-**適用場景**：适配器後端本來就是 OneBot12 實現（如 NapCat、Lagrange 等），`call_api` 天然支援標準動作名。
+**適用場景**：當適配器的底層後端自身即遵循 OneBot12 標準動作協議時，
+`call_api` 天然支援標準動作名（如直接對接遵循該協議的服務端）。
 
 ### 5.2 覆蓋標準方法（映射到平台原生 API）
 
-适配器可覆蓋單個標準方法，將其映射到平台原生 API：
+適配器可覆蓋單個標準方法，將其映射到平台原生 API：
 
 ```python
 class MyAdapter(BaseAdapter):
 
     class Api(BaseAdapter.Api):
-        """MyPlatform 標準 API 動作實現"""
+        """MyPlatform 標準 API 動作實作"""
 
         async def get_user_info(self, user_id: str) -> dict:
             # 映射到平台原生 API
             raw = await self._adapter._request("GET", f"/users/{user_id}")
             if raw.get("code") != 0:
-                return self._adapter.make_error(retcode=34001, message="用戶不存在")
+                return self._adapter.make_error(retcode=34600, message="使用者不存在")
 
             user = raw["data"]
             return self._adapter.make_response(
@@ -12290,7 +12509,7 @@ class MyAdapter(BaseAdapter):
 
 ### 5.3 未支援的動作
 
-适配器未覆蓋的標準方法走預設實現（委託給 `call_api`）。如果 `call_api` 也不支援該動作，應返回標準錯誤響應：
+適配器未覆蓋的標準方法走預設實作（委派給 `call_api`）。如果 `call_api` 也不支援該動作，應回傳標準錯誤回應：
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -12299,7 +12518,7 @@ async def call_api(self, endpoint: str, **params):
     # ... 平台 API 呼叫
 ```
 
-模組開發者可透過返回值的 `retcode` 判斷是否支援：
+模組開發者可透過回傳值的 `retcode` 判斷是否支援：
 
 ```python
 result = await adapter.myplatform.Api.get_friend_list()
@@ -12307,9 +12526,9 @@ if result["retcode"] == 10002:
     print("該平台不支援獲取好友列表")
 ```
 
-## 6. 響應格式
+## 6. 回應格式
 
-所有 `ApiDSL` 方法返回標準 API 響應格式（詳見 [API 響應標準](docs/zh-TW/api-response.md)）：
+所有 `ApiDSL` 方法回傳標準 API 回應格式（詳見 [API 回應標準](api-response.md)）：
 
 ```json
 {
@@ -12326,32 +12545,35 @@ if result["retcode"] == 10002:
 
 ## 7. 與 SendDSL / RequestDSL 的關係
 
-| 場景 | 使用 DSL | 範例 |
+| 場景 | 使用 DSL | 示例 |
 |------|---------|------|
 | 發送訊息 | `Send` | `adapter.Send.To("group", "123").Text("hi")` |
 | 同意/拒絕請求 | `Request` | `adapter.Request("req_id").accept()` |
-| 獲取用戶/群資訊 | `Api` | `adapter.Api.get_user_info("123")` |
+| 獲取使用者/群資訊 | `Api` | `adapter.Api.get_user_info("123")` |
 | 撤回訊息 | `Api` | `adapter.Api.delete_message("msg_id")` |
 | 退出群 | `Api` | `adapter.Api.leave_group("group_id")` |
 
-## 8. 适配器實現檢查清單
+## 8. 適配器實作檢查清單
 
 ### 標準動作
 - [ ] `call_api` 能處理標準動作名（或覆蓋對應 `ApiDSL` 方法）
-- [ ] 不支援的動作返回 `retcode=10002`
-- [ ] 返回值遵循標準 API 響應格式
-- [ ] `data` 欄位包含 OB12 標準定義的欄位
+- [ ] 不支援的動作回傳 `retcode=10002`
+- [ ] 回傳值遵循標準 API 回應格式
+- [ ] `data` 字段包含 OB12 標準定義的字段
+- [ ] 頻道平台需實作 `get_guild_*` / `get_channel_*` / `leave_guild` / `leave_channel`
+- [ ] 元動作（`get_status` / `get_version` / `get_supported_actions`）建議實作
+- [ ] **檔案收發用 `SendDSL.File`（直傳）**；檔案資源動作（upload_file/get_file/分片）**不強制實作**，僅當後端具備 `file_id` 資源能力時才需透傳
 
 ### 擴展動作
 - [ ] 平台擴展動作使用 `{prefix}.{action}` 命名
-- [ ] 擴展動作的參數和響應仍遵循 OB12 動作請求/響應結構
+- [ ] 擴展動作的參數和回應仍遵循 OB12 動作請求/回應結構
 
-## 9. 相關文檔
+## 9. 相關文件
 
-- [API 響應標準](docs/zh-TW/api-response.md) - 适配器 API 響應格式標準
-- [發送方法規範](docs/zh-TW/send-method-spec.md) - Send 類的方法命名和參數規範
-- [請求操作規範](docs/zh-TW/request-action-spec.md) - Request DSL 的使用方式
-- [事件轉換標準](docs/zh-TW/event-conversion.md) - 事件格式和訊息段標準
+- [API 回應標準](api-response.md) - 適配器 API 回應格式標準
+- [發送方法規範](send-method-spec.md) - Send 類的方法命名和參數規範
+- [請求操作規範](request-action-spec.md) - Request DSL 的使用方式
+- [事件轉換標準](event-conversion.md) - 事件格式和訊息段標準
 
 
 

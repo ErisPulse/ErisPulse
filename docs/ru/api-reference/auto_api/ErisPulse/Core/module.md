@@ -312,7 +312,8 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
 **返回值** (`模块是否已加载`): 
 **示例**:
 ```python
->>> if module.is_loaded("MyModule"): ...
+>>> if module.is_loaded("MyModule"):
+...     ...
 ```
 
 ---
@@ -489,7 +490,7 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
 **示例**:
 ```python
 >>> meta = module.get_meta("Weather")
->>> meta["description"]   # 当前语言下的模块简介
+>>> meta["description"]  # 当前语言下的模块简介
 ```
 
 ---
@@ -617,7 +618,8 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
 
 **示例**:
 ```python
->>> if "MyModule" in module: ...
+>>> if "MyModule" in module:
+...     ...
 ```
 
 ---

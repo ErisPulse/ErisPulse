@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1517,
+  "total_keywords": 1518,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -13,7 +13,7 @@
     "1. Configuration Hierarchy and Overriding": [
       {
         "document": "advanced/scope.md",
-        "line": 247,
+        "line": 325,
         "level": 3,
         "title": "1. Configuration Hierarchy and Overriding"
       }
@@ -134,6 +134,14 @@
         "line": 5,
         "level": 2,
         "title": "1. Обзор"
+      }
+    ],
+    "1. Обоснование разработки": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 7,
+        "level": 2,
+        "title": "1. Обоснование разработки"
       }
     ],
     "1. Обработка исключений": [
@@ -326,14 +334,6 @@
         "title": "1. Уровень обнаружения: Finder"
       }
     ],
-    "1. Фон проектирования": [
-      {
-        "document": "standards/api-action-spec.md",
-        "line": 5,
-        "level": 2,
-        "title": "1. Фон проектирования"
-      }
-    ],
     "1. Я хочу использовать робота": [
       {
         "document": "README.md",
@@ -358,12 +358,12 @@
         "title": "1.1 Типы получения и отправки"
       }
     ],
-    "1.2 Методы цепочки модификаторов": [
+    "1.2 Методы-модификаторы цепочки": [
       {
         "document": "standards/send-method-spec.md",
         "line": 26,
         "level": 3,
-        "title": "1.2 Методы цепочки модификаторов"
+        "title": "1.2 Методы-модификаторы цепочки"
       }
     ],
     "1.2 Соответствие типов": [
@@ -390,20 +390,20 @@
         "title": "1.4 Рекомендуемое соглашение об именовании расширений"
       }
     ],
-    "10. Конструктор сообщений (MessageBuilder)": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 474,
-        "level": 2,
-        "title": "10. Конструктор сообщений (MessageBuilder)"
-      }
-    ],
     "10. Поддержка SSE (Server-Sent Events)": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 510,
         "level": 3,
         "title": "10. Поддержка SSE (Server-Sent Events)"
+      }
+    ],
+    "10. Проверочный список реализации адаптера": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 455,
+        "level": 2,
+        "title": "10. Проверочный список реализации адаптера"
       }
     ],
     "10. Связанные документы": [
@@ -422,21 +422,15 @@
         "title": "10. Часто задаваемые вопросы"
       }
     ],
-    "10. Чек-лист реализации адаптера": [
+    "11. Конструктор сообщений (MessageBuilder)": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 455,
+        "line": 474,
         "level": 2,
-        "title": "10. Чек-лист реализации адаптера"
+        "title": "11. Конструктор сообщений (MessageBuilder)"
       }
     ],
     "11. Связанные документы": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 563,
-        "level": 2,
-        "title": "11. Связанные документы"
-      },
       {
         "document": "standards/session-types.md",
         "line": 360,
@@ -452,12 +446,12 @@
         "title": "11.1 Импорт"
       }
     ],
-    "11.2 Построение с помощью цепочки вызовов": [
+    "11.2 Построение цепочкой": [
       {
         "document": "standards/send-method-spec.md",
         "line": 486,
         "level": 3,
-        "title": "11.2 Построение с помощью цепочки вызовов"
+        "title": "11.2 Построение цепочкой"
       }
     ],
     "11.3 Быстрое построение одного сегмента": [
@@ -484,28 +478,36 @@
         "title": "11.5 Поддерживаемые методы сегментов"
       }
     ],
-    "11.6 Утилитные методы": [
+    "11.6 Вспомогательные методы": [
       {
         "document": "standards/send-method-spec.md",
         "line": 544,
         "level": 3,
-        "title": "11.6 Утилитные методы"
+        "title": "11.6 Вспомогательные методы"
       }
     ],
-    "1xxxx Ошибка запроса действия (Request Error)": [
+    "12. Связанные документы": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 563,
+        "level": 2,
+        "title": "12. Связанные документы"
+      }
+    ],
+    "1xxxx Ошибка запроса (Request Error)": [
       {
         "document": "standards/api-response.md",
         "line": 67,
         "level": 4,
-        "title": "1xxxx Ошибка запроса действия (Request Error)"
+        "title": "1xxxx Ошибка запроса (Request Error)"
       }
     ],
-    "2. Prefer Control Plane Over Module Code Changes": [
+    "2. Prefer Control Plane Over Modifying Module Code": [
       {
         "document": "advanced/scope.md",
-        "line": 253,
+        "line": 331,
         "level": 3,
-        "title": "2. Prefer Control Plane Over Module Code Changes"
+        "title": "2. Prefer Control Plane Over Modifying Module Code"
       }
     ],
     "2. systemd (серверы Linux)": [
@@ -516,12 +518,12 @@
         "title": "2. systemd (серверы Linux)"
       }
     ],
-    "2. Базовая структура возврата": [
+    "2. Базовая структура ответа": [
       {
         "document": "standards/api-response.md",
         "line": 12,
         "level": 2,
-        "title": "2. Базовая структура возврата"
+        "title": "2. Базовая структура ответа"
       }
     ],
     "2. Внутренний класс Send (в большинстве случаев не требуется переопределение)": [
@@ -602,14 +604,6 @@
         "title": "2. Неправильный формат временной метки"
       }
     ],
-    "2. Нормализация интерфейсов API": [
-      {
-        "document": "standards/README.md",
-        "line": 34,
-        "level": 3,
-        "title": "2. Нормализация интерфейсов API"
-      }
-    ],
     "2. Обновление информации о версии": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -650,14 +644,6 @@
         "title": "2. Пакетные операции"
       }
     ],
-    "2. Параллельная трехслойная структура DSL": [
-      {
-        "document": "standards/api-action-spec.md",
-        "line": 19,
-        "level": 2,
-        "title": "2. Параллельная трехслойная структура DSL"
-      }
-    ],
     "2. Поддерживаемые типы отправки сообщений": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -666,12 +652,12 @@
         "title": "2. Поддерживаемые типы отправки сообщений"
       }
     ],
-    "2. Подробное описание спецификации параметров": [
+    "2. Подробное описание правил параметров": [
       {
         "document": "standards/send-method-spec.md",
         "line": 57,
         "level": 2,
-        "title": "2. Подробное описание спецификации параметров"
+        "title": "2. Подробное описание правил параметров"
       }
     ],
     "2. Правильные асинхронные операции": [
@@ -746,6 +732,14 @@
         "title": "2. Стандарт ошибок"
       }
     ],
+    "2. Стандартизация API-интерфейсов": [
+      {
+        "document": "standards/README.md",
+        "line": 34,
+        "level": 3,
+        "title": "2. Стандартизация API-интерфейсов"
+      }
+    ],
     "2. Стандартизация временных меток": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -786,12 +780,12 @@
         "title": "2. Структурированное логирование"
       }
     ],
-    "2. Требования к полям событий запроса": [
+    "2. Требования к полям события запроса": [
       {
         "document": "standards/request-action-spec.md",
         "line": 40,
         "level": 2,
-        "title": "2. Требования к полям событий запроса"
+        "title": "2. Требования к полям события запроса"
       }
     ],
     "2. Требования к стандартным полям": [
@@ -800,6 +794,14 @@
         "line": 10,
         "level": 2,
         "title": "2. Требования к стандартным полям"
+      }
+    ],
+    "2. Трехуровневая параллельная структура DSL": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 21,
+        "level": 2,
+        "title": "2. Трехуровневая параллельная структура DSL"
       }
     ],
     "2. Указание только ID": [
@@ -842,12 +844,12 @@
         "title": "2.1 Обязательные поля"
       }
     ],
-    "2.1 Спецификация параметров медиа-сообщений": [
+    "2.1 Правила параметров для медиа-сообщений": [
       {
         "document": "standards/send-method-spec.md",
         "line": 59,
         "level": 3,
-        "title": "2.1 Спецификация параметров медиа-сообщений"
+        "title": "2.1 Правила параметров для медиа-сообщений"
       }
     ],
     "2.1 Стандартные поля": [
@@ -866,20 +868,20 @@
         "title": "2.1 Стандартные типы OneBot12"
       }
     ],
-    "2.1.1 Параметры в виде строки (URL или путь к файлу)": [
+    "2.1.1 Строковый параметр (URL или путь к файлу)": [
       {
         "document": "standards/send-method-spec.md",
         "line": 63,
         "level": 4,
-        "title": "2.1.1 Параметры в виде строки (URL или путь к файлу)"
+        "title": "2.1.1 Строковый параметр (URL или путь к файлу)"
       }
     ],
-    "2.1.2 Параметры в виде двоичных данных": [
+    "2.1.2 Параметр в виде двоичных данных": [
       {
         "document": "standards/send-method-spec.md",
         "line": 88,
         "level": 4,
-        "title": "2.1.2 Параметры в виде двоичных данных"
+        "title": "2.1.2 Параметр в виде двоичных данных"
       }
     ],
     "2.1.3 Приоритет обработки параметров": [
@@ -906,20 +908,20 @@
         "title": "2.2 Поля сообщений"
       }
     ],
+    "2.2 Правила параметров для @пользователя": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 139,
+        "level": 3,
+        "title": "2.2 Правила параметров для @пользователя"
+      }
+    ],
     "2.2 Расширенные типы ErisPulse": [
       {
         "document": "standards/session-types.md",
         "line": 57,
         "level": 3,
         "title": "2.2 Расширенные типы ErisPulse"
-      }
-    ],
-    "2.2 Спецификация параметров для @пользователя": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 139,
-        "level": 3,
-        "title": "2.2 Спецификация параметров для @пользователя"
       }
     ],
     "2.3 Поля уведомлений": [
@@ -930,20 +932,20 @@
         "title": "2.3 Поля уведомлений"
       }
     ],
+    "2.3 Правила параметров для ответа на сообщение": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 160,
+        "level": 3,
+        "title": "2.3 Правила параметров для ответа на сообщение"
+      }
+    ],
     "2.3 Пример события запроса": [
       {
         "document": "standards/request-action-spec.md",
         "line": 64,
         "level": 3,
         "title": "2.3 Пример события запроса"
-      }
-    ],
-    "2.3 Спецификация параметров для ответа на сообщение": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 160,
-        "level": 3,
-        "title": "2.3 Спецификация параметров для ответа на сообщение"
       }
     ],
     "2.4 Поля запросов": [
@@ -954,12 +956,20 @@
         "title": "2.4 Поля запросов"
       }
     ],
-    "2xxxx Ошибка обработчика действия (Handler Error)": [
+    "2xxxx Ошибка обработчика (Handler Error)": [
       {
         "document": "standards/api-response.md",
         "line": 80,
         "level": 4,
-        "title": "2xxxx Ошибка обработчика действия (Handler Error)"
+        "title": "2xxxx Ошибка обработчика (Handler Error)"
+      }
+    ],
+    "3. DSL запроса": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 86,
+        "level": 2,
+        "title": "3. DSL запроса"
       }
     ],
     "3. Docker / docker-compose": [
@@ -973,17 +983,9 @@
     "3. Module/Command Not Responding": [
       {
         "document": "advanced/scope.md",
-        "line": 257,
+        "line": 335,
         "level": 3,
         "title": "3. Module/Command Not Responding"
-      }
-    ],
-    "3. Request DSL": [
-      {
-        "document": "standards/request-action-spec.md",
-        "line": 86,
-        "level": 2,
-        "title": "3. Request DSL"
       }
     ],
     "3. Адаптер": [
@@ -1018,12 +1020,12 @@
         "title": "3. Запуск сборки"
       }
     ],
-    "3. Именование платформенно-специфичных методов": [
+    "3. Именование платформенных методов": [
       {
         "document": "standards/send-method-spec.md",
         "line": 176,
         "level": 2,
-        "title": "3. Именование платформенно-специфичных методов"
+        "title": "3. Именование платформенных методов"
       }
     ],
     "3. Отправка в магазин модулей": [
@@ -1082,12 +1084,12 @@
         "title": "3. Поддержка специфичных методов платформы"
       }
     ],
-    "3. Полная спецификация полей": [
+    "3. Полный перечень полей": [
       {
         "document": "standards/api-response.md",
         "line": 29,
         "level": 2,
-        "title": "3. Полная спецификация полей"
+        "title": "3. Полный перечень полей"
       }
     ],
     "3. Примеры формата событий": [
@@ -1133,7 +1135,7 @@
     "3. Список стандартных действий": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 36,
+        "line": 38,
         "level": 2,
         "title": "3. Список стандартных действий"
       }
@@ -1194,20 +1196,20 @@
         "title": "3. Я хочу глубже понять принципы работы"
       }
     ],
+    "3.1 Действия, связанные с пользователями": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 40,
+        "level": 3,
+        "title": "3.1 Действия, связанные с пользователями"
+      }
+    ],
     "3.1 Общие поля": [
       {
         "document": "standards/api-response.md",
         "line": 31,
         "level": 3,
         "title": "3.1 Общие поля"
-      }
-    ],
-    "3.1 Пользовательские": [
-      {
-        "document": "standards/api-action-spec.md",
-        "line": 38,
-        "level": 3,
-        "title": "3.1 Пользовательские"
       }
     ],
     "3.1 Принципы отображения": [
@@ -1226,20 +1228,20 @@
         "title": "3.1 Событие сообщения (message)"
       }
     ],
-    "3.1 Цепное вызов (Chain Calling)": [
+    "3.1 Цепочечный вызов": [
       {
         "document": "standards/request-action-spec.md",
         "line": 88,
         "level": 3,
-        "title": "3.1 Цепное вызов (Chain Calling)"
+        "title": "3.1 Цепочечный вызов"
       }
     ],
-    "3.2 Групповые": [
+    "3.2 Действия, связанные с группами": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 46,
+        "line": 48,
         "level": 3,
-        "title": "3.2 Групповые"
+        "title": "3.2 Действия, связанные с группами"
       }
     ],
     "3.2 Примеры отображения распространённых платформ": [
@@ -1285,7 +1287,7 @@
     "3.3 Управление сообщениями": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 57,
+        "line": 59,
         "level": 3,
         "title": "3.3 Управление сообщениями"
       }
@@ -1298,20 +1300,44 @@
         "title": "3.3 Формат возвращаемого значения"
       }
     ],
-    "3.4 Операции с файлами": [
+    "3.4 Действия, связанные с каналами (Guild)": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 65,
+        "line": 67,
         "level": 3,
-        "title": "3.4 Операции с файлами"
+        "title": "3.4 Действия, связанные с каналами (Guild)"
       }
     ],
-    "3.5 Общие расширенные действия": [
+    "3.5 Действия с файлами": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 77,
+        "line": 88,
         "level": 3,
-        "title": "3.5 Общие расширенные действия"
+        "title": "3.5 Действия с файлами"
+      }
+    ],
+    "3.5.1 Фрагментированная передача (большие файлы, входит в пониженный уровень)": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 111,
+        "level": 4,
+        "title": "3.5.1 Фрагментированная передача (большие файлы, входит в пониженный уровень)"
+      }
+    ],
+    "3.6 Мета-действия": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 143,
+        "level": 3,
+        "title": "3.6 Мета-действия"
+      }
+    ],
+    "3.7 Общие расширенные действия": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 154,
+        "level": 3,
+        "title": "3.7 Общие расширенные действия"
       }
     ],
     "3xxxx Ошибка выполнения действия (Execution Error)": [
@@ -1333,7 +1359,7 @@
     "4. Session Identifier Isolation Across Platforms": [
       {
         "document": "advanced/scope.md",
-        "line": 271,
+        "line": 349,
         "level": 3,
         "title": "4. Session Identifier Isolation Across Platforms"
       }
@@ -1402,6 +1428,14 @@
         "title": "4. Описание расширенных полей"
       }
     ],
+    "4. Правила именования параметров": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 207,
+        "level": 2,
+        "title": "4. Правила именования параметров"
+      }
+    ],
     "4. Расширение пользовательских типов": [
       {
         "document": "standards/session-types.md",
@@ -1418,20 +1452,12 @@
         "title": "4. Реализация обязательных методов"
       }
     ],
-    "4. Спецификация именования параметров": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 207,
-        "level": 2,
-        "title": "4. Спецификация именования параметров"
-      }
-    ],
-    "4. Способ использования": [
+    "4. Способы использования": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 83,
+        "line": 160,
         "level": 2,
-        "title": "4. Способ использования"
+        "title": "4. Способы использования"
       }
     ],
     "4. Стандарт сегментов сообщений": [
@@ -1477,7 +1503,7 @@
     "4.1 Базовый вызов": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 85,
+        "line": 162,
         "level": 3,
         "title": "4.1 Базовый вызов"
       }
@@ -1522,12 +1548,12 @@
         "title": "4.2 Расширенные сегменты сообщений платформ"
       }
     ],
-    "4.2 Указание учетной записи бота (режим нескольких учетных записей)": [
+    "4.2 Указание аккаунта бота (режим нескольких аккаунтов)": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 104,
+        "line": 181,
         "level": 3,
-        "title": "4.2 Указание учетной записи бота (режим нескольких учетных записей)"
+        "title": "4.2 Указание аккаунта бота (режим нескольких аккаунтов)"
       }
     ],
     "4.3 Отмена регистрации пользовательского типа": [
@@ -1538,20 +1564,20 @@
         "title": "4.3 Отмена регистрации пользовательского типа"
       }
     ],
-    "4.3 Платформенные расширенные действия": [
+    "4.3 Расширенные действия платформы": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 111,
+        "line": 188,
         "level": 3,
-        "title": "4.3 Платформенные расширенные действия"
+        "title": "4.3 Расширенные действия платформы"
       }
     ],
-    "4.4 Использование в обработчике событий": [
+    "4.4 Использование в обработчиках событий": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 121,
+        "line": 198,
         "level": 3,
-        "title": "4.4 Использование в обработчике событий"
+        "title": "4.4 Использование в обработчиках событий"
       }
     ],
     "5. supervisord": [
@@ -1610,6 +1636,14 @@
         "title": "5. Параметры конфигурации (если применимо)"
       }
     ],
+    "5. Правила возвращаемых значений": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 218,
+        "level": 2,
+        "title": "5. Правила возвращаемых значений"
+      }
+    ],
     "5. Расширенные спецификации": [
       {
         "document": "standards/api-response.md",
@@ -1621,7 +1655,7 @@
     "5. Реализация адаптера": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 138,
+        "line": 215,
         "level": 2,
         "title": "5. Реализация адаптера"
       }
@@ -1640,14 +1674,6 @@
         "line": 363,
         "level": 3,
         "title": "5. Согласованность при обмене сообщениями"
-      }
-    ],
-    "5. Спецификация возвращаемых значений": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 218,
-        "level": 2,
-        "title": "5. Спецификация возвращаемых значений"
       }
     ],
     "5. Требования к реализации адаптера": [
@@ -1674,20 +1700,20 @@
         "title": "5.1 Обязательное поле `message_id`"
       }
     ],
-    "5.1 Поведение по умолчанию (нулевая конфигурация)": [
-      {
-        "document": "standards/api-action-spec.md",
-        "line": 140,
-        "level": 3,
-        "title": "5.1 Поведение по умолчанию (нулевая конфигурация)"
-      }
-    ],
     "5.1 Приоритет определения": [
       {
         "document": "standards/session-types.md",
         "line": 172,
         "level": 3,
         "title": "5.1 Приоритет определения"
+      }
+    ],
+    "5.1 Стандартное поведение (без настройки)": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 217,
+        "level": 3,
+        "title": "5.1 Стандартное поведение (без настройки)"
       }
     ],
     "5.1 Требования к конвертеру": [
@@ -1698,20 +1724,20 @@
         "title": "5.1 Требования к конвертеру"
       }
     ],
-    "5.2 Исходное поле ответа `{platform}_raw`": [
+    "5.2 Переопределение стандартных методов (отображение на оригинальные API платформы)": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 229,
+        "level": 3,
+        "title": "5.2 Переопределение стандартных методов (отображение на оригинальные API платформы)"
+      }
+    ],
+    "5.2 Поле сырых данных `{platform}_raw`": [
       {
         "document": "standards/api-response.md",
         "line": 117,
         "level": 3,
-        "title": "5.2 Исходное поле ответа `{platform}_raw`"
-      }
-    ],
-    "5.2 Перекрытие стандартных методов (отображение на нативное API платформы)": [
-      {
-        "document": "standards/api-action-spec.md",
-        "line": 152,
-        "level": 3,
-        "title": "5.2 Перекрытие стандартных методов (отображение на нативное API платформы)"
+        "title": "5.2 Поле сырых данных `{platform}_raw`"
       }
     ],
     "5.2 Примеры использования": [
@@ -1725,57 +1751,57 @@
     "5.2 Реализация внутреннего класса Request": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 235,
+        "line": 234,
         "level": 3,
         "title": "5.2 Реализация внутреннего класса Request"
       }
     ],
-    "5.3 Неподдерживаемые действия": [
+    "5.3 Не поддерживаемые действия": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 193,
+        "line": 270,
         "level": 3,
-        "title": "5.3 Неподдерживаемые действия"
+        "title": "5.3 Не поддерживаемые действия"
       }
     ],
-    "5.3 Платформа не поддерживает операции запросов": [
+    "5.3 Платформа не поддерживает операции запроса": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 309,
+        "line": 308,
         "level": 3,
-        "title": "5.3 Платформа не поддерживает операции запросов"
+        "title": "5.3 Платформа не поддерживает операции запроса"
       }
     ],
-    "5.3 Чек-лист реализации адаптера": [
+    "5.3 Расширенные коды возврата фреймворка (Низкие три цифры сегмента `34xxx`)": [
       {
         "document": "standards/api-response.md",
         "line": 140,
         "level": 3,
-        "title": "5.3 Чек-лист реализации адаптера"
+        "title": "5.3 Расширенные коды возврата фреймворка (Низкие три цифры сегмента `34xxx`)"
       }
     ],
-    "5.4 Итог: Send и Request параллельно": [
+    "5.4 Итог: Send и Request параллельны": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 317,
+        "line": 316,
         "level": 3,
-        "title": "5.4 Итог: Send и Request параллельно"
+        "title": "5.4 Итог: Send и Request параллельны"
       }
     ],
-    "5.5 Примечания к адаптеру `__init__`": [
-      {
-        "document": "standards/request-action-spec.md",
-        "line": 333,
-        "level": 3,
-        "title": "5.5 Примечания к адаптеру `__init__`"
-      }
-    ],
-    "6. Важные примечания": [
+    "5.4 Проверочный список реализации адаптера": [
       {
         "document": "standards/api-response.md",
-        "line": 147,
-        "level": 2,
-        "title": "6. Важные примечания"
+        "line": 172,
+        "level": 3,
+        "title": "5.4 Проверочный список реализации адаптера"
+      }
+    ],
+    "5.5 Примечания к `__init__` адаптера": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 332,
+        "level": 3,
+        "title": "5.5 Примечания к `__init__` адаптера"
       }
     ],
     "6. Запуск сервера маршрутизации": [
@@ -1786,12 +1812,36 @@
         "title": "6. Запуск сервера маршрутизации"
       }
     ],
+    "6. Правила обратного преобразования (OneBot12 → платформа)": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 225,
+        "level": 2,
+        "title": "6. Правила обратного преобразования (OneBot12 → платформа)"
+      }
+    ],
     "6. Примеры использования API": [
       {
         "document": "standards/session-types.md",
         "line": 202,
         "level": 2,
         "title": "6. Примеры использования API"
+      }
+    ],
+    "6. Примечания": [
+      {
+        "document": "standards/api-response.md",
+        "line": 179,
+        "level": 2,
+        "title": "6. Примечания"
+      }
+    ],
+    "6. Проверочный список реализации адаптера": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 336,
+        "level": 2,
+        "title": "6. Проверочный список реализации адаптера"
       }
     ],
     "6. Реализация конвертера": [
@@ -1810,14 +1860,6 @@
         "title": "6. Спецификации именования расширений"
       }
     ],
-    "6. Спецификация обратного преобразования (OneBot12 → платформа)": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 225,
-        "level": 2,
-        "title": "6. Спецификация обратного преобразования (OneBot12 → платформа)"
-      }
-    ],
     "6. Супервайзер на чистом Python": [
       {
         "document": "advanced/startup.md",
@@ -1829,17 +1871,9 @@
     "6. Формат ответа": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 212,
+        "line": 289,
         "level": 2,
         "title": "6. Формат ответа"
-      }
-    ],
-    "6. Чек-лист реализации адаптера": [
-      {
-        "document": "standards/request-action-spec.md",
-        "line": 337,
-        "level": 2,
-        "title": "6. Чек-лист реализации адаптера"
       }
     ],
     "6.1 Именование полей": [
@@ -1882,12 +1916,12 @@
         "title": "6.2 Ответ на событие"
       }
     ],
-    "6.2 Спецификация реализации `Raw_ob12`": [
+    "6.2 Правила реализации `Raw_ob12`": [
       {
         "document": "standards/send-method-spec.md",
         "line": 246,
         "level": 3,
-        "title": "6.2 Спецификация реализации `Raw_ob12`"
+        "title": "6.2 Правила реализации `Raw_ob12`"
       }
     ],
     "6.3 Именование полей исходных данных": [
@@ -1922,12 +1956,12 @@
         "title": "6.3.1 Преобразование стандартных сегментов"
       }
     ],
-    "6.3.2 Преобразование расширенных сегментов платформы": [
+    "6.3.2 Преобразование платформенных расширенных сегментов": [
       {
         "document": "standards/send-method-spec.md",
         "line": 292,
         "level": 4,
-        "title": "6.3.2 Преобразование расширенных сегментов платформы"
+        "title": "6.3.2 Преобразование платформенных расширенных сегментов"
       }
     ],
     "6.3.3 Обработка составных сегментов": [
@@ -1986,6 +2020,22 @@
         "title": "7. Обнаружение методов"
       }
     ],
+    "7. Отношения с SendDSL / RequestDSL": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 306,
+        "level": 2,
+        "title": "7. Отношения с SendDSL / RequestDSL"
+      }
+    ],
+    "7. Расширение кодов ошибок": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 355,
+        "level": 2,
+        "title": "7. Расширение кодов ошибок"
+      }
+    ],
     "7. Расширения типов сессий": [
       {
         "document": "standards/event-conversion.md",
@@ -1994,28 +2044,12 @@
         "title": "7. Расширения типов сессий"
       }
     ],
-    "7. Расширенные коды ошибок": [
-      {
-        "document": "standards/request-action-spec.md",
-        "line": 356,
-        "level": 2,
-        "title": "7. Расширенные коды ошибок"
-      }
-    ],
     "7. Реализация класса Request (операции запроса)": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 281,
         "level": 3,
         "title": "7. Реализация класса Request (операции запроса)"
-      }
-    ],
-    "7. Связь с SendDSL / RequestDSL": [
-      {
-        "document": "standards/api-action-spec.md",
-        "line": 229,
-        "level": 2,
-        "title": "7. Связь с SendDSL / RequestDSL"
       }
     ],
     "7. Справочник основного API": [
@@ -2082,6 +2116,14 @@
         "title": "8. Вспомогательные методы"
       }
     ],
+    "8. Проверочный список реализации адаптера": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 316,
+        "level": 2,
+        "title": "8. Проверочный список реализации адаптера"
+      }
+    ],
     "8. Расширения методов отправки, зарегистрированные": [
       {
         "document": "standards/send-method-spec.md",
@@ -2101,7 +2143,7 @@
     "8. Связанные документы": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 367,
+        "line": 368,
         "level": 2,
         "title": "8. Связанные документы"
       }
@@ -2112,14 +2154,6 @@
         "line": 346,
         "level": 3,
         "title": "8. Создание точки входа пакета"
-      }
-    ],
-    "8. Чек-лист реализации адаптера": [
-      {
-        "document": "standards/api-action-spec.md",
-        "line": 239,
-        "level": 2,
-        "title": "8. Чек-лист реализации адаптера"
       }
     ],
     "8.1 Доступ к расширенным полям": [
@@ -2186,20 +2220,20 @@
         "title": "9. Лучшие практики"
       }
     ],
-    "9. Примечания для разработчиков адаптеров": [
+    "9. Примечания для разработки адаптера": [
       {
         "document": "standards/send-method-spec.md",
         "line": 447,
         "level": 2,
-        "title": "9. Примечания для разработчиков адаптеров"
+        "title": "9. Примечания для разработки адаптера"
       }
     ],
-    "9. Справочные документы": [
+    "9. Связанные документы": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 251,
+        "line": 331,
         "level": 2,
-        "title": "9. Справочные документы"
+        "title": "9. Связанные документы"
       }
     ],
     "9.1 Контекст проблемы": [
@@ -2333,7 +2367,7 @@
     "Cache and Hot Update": [
       {
         "document": "advanced/scope.md",
-        "line": 239,
+        "line": 317,
         "level": 2,
         "title": "Cache and Hot Update"
       }
@@ -2357,7 +2391,7 @@
     "Command Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 202,
+        "line": 233,
         "level": 3,
         "title": "Command Dimension"
       }
@@ -2365,7 +2399,7 @@
     "Common Issues and Notes": [
       {
         "document": "advanced/scope.md",
-        "line": 245,
+        "line": 323,
         "level": 2,
         "title": "Common Issues and Notes"
       }
@@ -2381,7 +2415,7 @@
     "Configuration File": [
       {
         "document": "advanced/scope.md",
-        "line": 50,
+        "line": 54,
         "level": 2,
         "title": "Configuration File"
       }
@@ -2402,12 +2436,28 @@
         "title": "Core.py - Основной модуль"
       }
     ],
+    "Custom Identity Source (provider)": [
+      {
+        "document": "advanced/scope.md",
+        "line": 289,
+        "level": 3,
+        "title": "Custom Identity Source (provider)"
+      }
+    ],
     "DSL для отправки сообщений Send": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 563,
         "level": 2,
         "title": "DSL для отправки сообщений Send"
+      }
+    ],
+    "Determination and Runtime Add/Delete": [
+      {
+        "document": "advanced/scope.md",
+        "line": 277,
+        "level": 3,
+        "title": "Determination and Runtime Add/Delete"
       }
     ],
     "Discord": [
@@ -2432,22 +2482,6 @@
         "line": 5,
         "level": 2,
         "title": "Docker-развертывание (рекомендуется)"
-      }
-    ],
-    "ErisPulse API Стандарт действий": [
-      {
-        "document": "standards/api-action-spec.md",
-        "line": 1,
-        "level": 1,
-        "title": "ErisPulse API Стандарт действий"
-      }
-    ],
-    "ErisPulse Спецификация операций запросов": [
-      {
-        "document": "standards/request-action-spec.md",
-        "line": 1,
-        "level": 1,
-        "title": "ErisPulse Спецификация операций запросов"
       }
     ],
     "ErisPulse-App": [
@@ -2493,17 +2527,17 @@
     "General": [
       {
         "document": "advanced/scope.md",
-        "line": 227,
+        "line": 258,
         "level": 3,
         "title": "General"
       }
     ],
-    "Global Fallback: `default_allow`": [
+    "Global Default: `default_allow`": [
       {
         "document": "advanced/scope.md",
-        "line": 40,
+        "line": 42,
         "level": 2,
-        "title": "Global Fallback: `default_allow`"
+        "title": "Global Default: `default_allow`"
       }
     ],
     "HTTP-декораторы": [
@@ -2541,7 +2575,7 @@
     "Handler and Override Dimensions": [
       {
         "document": "advanced/scope.md",
-        "line": 216,
+        "line": 247,
         "level": 3,
         "title": "Handler and Override Dimensions"
       }
@@ -2562,10 +2596,18 @@
         "title": "I18nManager"
       }
     ],
+    "ID робота в событиях": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 645,
+        "level": 3,
+        "title": "ID робота в событиях"
+      }
+    ],
     "Identity Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 183,
+        "line": 214,
         "level": 3,
         "title": "Identity Dimension"
       }
@@ -2581,7 +2623,7 @@
     "Matching Entry Syntax (Unified Across the System)": [
       {
         "document": "advanced/scope.md",
-        "line": 27,
+        "line": 29,
         "level": 2,
         "title": "Matching Entry Syntax (Unified Across the System)"
       }
@@ -2589,7 +2631,7 @@
     "Module Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 161,
+        "line": 192,
         "level": 3,
         "title": "Module Dimension"
       }
@@ -2616,6 +2658,14 @@
         "line": 93,
         "level": 2,
         "title": "OneBot12 стандартные события"
+      }
+    ],
+    "Owner Identity and Custom Identity Source (provider)": [
+      {
+        "document": "advanced/scope.md",
+        "line": 271,
+        "level": 2,
+        "title": "Owner Identity and Custom Identity Source (provider)"
       }
     ],
     "POST": [
@@ -2645,7 +2695,7 @@
     "Runtime API": [
       {
         "document": "advanced/scope.md",
-        "line": 159,
+        "line": 190,
         "level": 2,
         "title": "Runtime API"
       }
@@ -2709,7 +2759,7 @@
     "Topology Tree API": [
       {
         "document": "advanced/scope.md",
-        "line": 275,
+        "line": 353,
         "level": 2,
         "title": "Topology Tree API"
       }
@@ -2720,6 +2770,14 @@
         "line": 1,
         "level": 1,
         "title": "Unified Control Plane (scope)"
+      }
+    ],
+    "User Priority: Owner Scope Decided by User": [
+      {
+        "document": "advanced/scope.md",
+        "line": 313,
+        "level": 3,
+        "title": "User Priority: Owner Scope Decided by User"
       }
     ],
     "WSMessage": [
@@ -3084,14 +3142,6 @@
         "line": 232,
         "level": 3,
         "title": "config"
-      }
-    ],
-    "config.toml": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 610,
-        "level": 1,
-        "title": "config.toml"
       }
     ],
     "confirm(prompt=None, **kwargs)": [
@@ -3660,14 +3710,6 @@
         "title": "Базовые команды"
       }
     ],
-    "Базовые требования": [
-      {
-        "document": "standards/request-action-spec.md",
-        "line": 339,
-        "level": 3,
-        "title": "Базовые требования"
-      }
-    ],
     "Базовый класс BaseAdapter": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -3738,14 +3780,6 @@
         "line": 19,
         "level": 2,
         "title": "Быстрая справка"
-      }
-    ],
-    "Быстрое меню": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 499,
-        "level": 1,
-        "title": "Быстрое меню"
       }
     ],
     "Быстрое начало": [
@@ -3902,12 +3936,12 @@
         "title": "Внутреннее разбиение цепочки отправки"
       }
     ],
-    "Внутренняя структура цепочки горячей перезагрузки": [
+    "Внутренняя разбивка цепочки горячего обновления": [
       {
         "document": "user-guide/configuration.md",
         "line": 85,
         "level": 3,
-        "title": "Внутренняя структура цепочки горячей перезагрузки"
+        "title": "Внутренняя разбивка цепочки горячего обновления"
       }
     ],
     "Возвращаемое значение": [
@@ -3968,6 +4002,12 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 289,
+        "level": 2,
+        "title": "Возвращаемые значения методов отправки"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 301,
         "level": 2,
         "title": "Возвращаемые значения методов отправки"
       },
@@ -4214,12 +4254,6 @@
         "line": 526,
         "level": 4,
         "title": "Горячая перезагрузка конфигурации"
-      },
-      {
-        "document": "user-guide/configuration.md",
-        "line": 63,
-        "level": 2,
-        "title": "Горячая перезагрузка конфигурации"
       }
     ],
     "Горячий перезапуск адаптера": [
@@ -4287,13 +4321,13 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 486,
+        "line": 487,
         "level": 2,
         "title": "Далее"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 138,
+        "line": 150,
         "level": 2,
         "title": "Далее"
       }
@@ -4342,14 +4376,6 @@
         "line": 14,
         "level": 2,
         "title": "Двухрежимная система"
-      }
-    ],
-    "Действия запроса": [
-      {
-        "document": "standards/README.md",
-        "line": 96,
-        "level": 3,
-        "title": "Действия запроса"
       }
     ],
     "Декларативная конфигурация (рекомендуется)": [
@@ -4464,14 +4490,6 @@
         "line": 564,
         "level": 3,
         "title": "Динамический контент"
-      }
-    ],
-    "Динамическое включение/отключение аккаунта (требуется перезапуск адаптера)": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 701,
-        "level": 1,
-        "title": "Динамическое включение/отключение аккаунта (требуется перезапуск адаптера)"
       }
     ],
     "Для конечных пользователей": [
@@ -4744,14 +4762,6 @@
         "title": "Единый вход для получения модуля"
       }
     ],
-    "Если не указано, используется первый включённый бот": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 652,
-        "level": 1,
-        "title": "Если не указано, используется первый включённый бот"
-      }
-    ],
     "Жадная загрузка": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -4944,14 +4954,6 @@
         "title": "Зарезервированные сегменты ошибок"
       }
     ],
-    "Зачем нужны стандарты?": [
-      {
-        "document": "standards/README.md",
-        "line": 25,
-        "level": 2,
-        "title": "Зачем нужны стандарты?"
-      }
-    ],
     "Значения состояния бота": [
       {
         "document": "api-reference/adapter-system.md",
@@ -5052,6 +5054,14 @@
         "line": 550,
         "level": 3,
         "title": "Именование ключей перевода"
+      }
+    ],
+    "Именование методов отправки": [
+      {
+        "document": "standards/README.md",
+        "line": 89,
+        "level": 3,
+        "title": "Именование методов отправки"
       }
     ],
     "Импорт": [
@@ -5168,14 +5178,6 @@
         "title": "Интерактивные методы"
       }
     ],
-    "Информационный запрос (через открытый Web API, без аутентификации)": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 244,
-        "level": 1,
-        "title": "Информационный запрос (через открытый Web API, без аутентификации)"
-      }
-    ],
     "Информация о боте": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -5249,7 +5251,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 10,
+        "line": 7,
         "level": 2,
         "title": "Информация о документации"
       },
@@ -5334,6 +5336,14 @@
         "line": 417,
         "level": 3,
         "title": "Использование Send DSL для указания аккаунта"
+      }
+    ],
+    "Использование Send DSL для указания робота": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 623,
+        "level": 3,
+        "title": "Использование Send DSL для указания робота"
       }
     ],
     "Использование Send DSL для указания учетной записи": [
@@ -5592,14 +5602,6 @@
         "title": "Команда не отвечает?"
       }
     ],
-    "Команда формы": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 349,
-        "level": 1,
-        "title": "Команда формы"
-      }
-    ],
     "Командная система": [
       {
         "document": "advanced/lifecycle.md",
@@ -5802,12 +5804,12 @@
         "title": "Конфигурация аккаунтов (EmailAdapter.accounts)"
       }
     ],
-    "Конфигурация активного GC": [
+    "Конфигурация активного сборщика мусора": [
       {
         "document": "user-guide/configuration.md",
-        "line": 301,
+        "line": 302,
         "level": 3,
-        "title": "Конфигурация активного GC"
+        "title": "Конфигурация активного сборщика мусора"
       }
     ],
     "Конфигурация во время выполнения": [
@@ -5818,20 +5820,28 @@
         "title": "Конфигурация во время выполнения"
       }
     ],
+    "Конфигурация горячего обновления": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 63,
+        "level": 2,
+        "title": "Конфигурация горячего обновления"
+      }
+    ],
     "Конфигурация команд": [
       {
         "document": "user-guide/configuration.md",
-        "line": 358,
+        "line": 359,
         "level": 3,
         "title": "Конфигурация команд"
       }
     ],
-    "Конфигурация контрольной панели (scope)": [
+    "Конфигурация контролируемой поверхности (scope)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 425,
+        "line": 426,
         "level": 2,
-        "title": "Конфигурация контрольной панели (scope)"
+        "title": "Конфигурация контролируемой поверхности (scope)"
       }
     ],
     "Конфигурация ленивой загрузки": [
@@ -5842,26 +5852,18 @@
         "title": "Конфигурация ленивой загрузки"
       }
     ],
-    "Конфигурация логирования": [
+    "Конфигурация международной локализации": [
       {
         "document": "user-guide/configuration.md",
-        "line": 232,
+        "line": 386,
         "level": 2,
-        "title": "Конфигурация логирования"
-      }
-    ],
-    "Конфигурация локализации": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 385,
-        "level": 2,
-        "title": "Конфигурация локализации"
+        "title": "Конфигурация международной локализации"
       }
     ],
     "Конфигурация модуля": [
       {
         "document": "user-guide/configuration.md",
-        "line": 396,
+        "line": 397,
         "level": 2,
         "title": "Конфигурация модуля"
       }
@@ -5878,6 +5880,14 @@
         "line": 105,
         "level": 3,
         "title": "Конфигурация нескольких аккаунтов"
+      }
+    ],
+    "Конфигурация нескольких роботов": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 590,
+        "level": 2,
+        "title": "Конфигурация нескольких роботов"
       }
     ],
     "Конфигурация нескольких учетных записей": [
@@ -5910,26 +5920,18 @@
         "title": "Конфигурация по умолчанию"
       }
     ],
-    "Конфигурация сервера": [
+    "Конфигурация системы хозяина": [
       {
         "document": "user-guide/configuration.md",
-        "line": 187,
+        "line": 205,
         "level": 2,
-        "title": "Конфигурация сервера"
-      }
-    ],
-    "Конфигурация системы владельцев": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 206,
-        "level": 2,
-        "title": "Конфигурация системы владельцев"
+        "title": "Конфигурация системы хозяина"
       }
     ],
     "Конфигурация событий": [
       {
         "document": "user-guide/configuration.md",
-        "line": 356,
+        "line": 357,
         "level": 2,
         "title": "Конфигурация событий"
       }
@@ -5937,7 +5939,7 @@
     "Конфигурация сообщений": [
       {
         "document": "user-guide/configuration.md",
-        "line": 374,
+        "line": 375,
         "level": 3,
         "title": "Конфигурация сообщений"
       }
@@ -5945,7 +5947,7 @@
     "Конфигурация фреймворка": [
       {
         "document": "user-guide/configuration.md",
-        "line": 280,
+        "line": 281,
         "level": 2,
         "title": "Конфигурация фреймворка"
       }
@@ -5953,7 +5955,7 @@
     "Конфигурация хранилища": [
       {
         "document": "user-guide/configuration.md",
-        "line": 345,
+        "line": 346,
         "level": 2,
         "title": "Конфигурация хранилища"
       }
@@ -6007,6 +6009,12 @@
         "document": "developer-guide/modules/best-practices.md",
         "line": 304,
         "level": 2,
+        "title": "Логирование"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 667,
+        "level": 3,
         "title": "Логирование"
       }
     ],
@@ -6232,14 +6240,6 @@
         "title": "Методы Send"
       }
     ],
-    "Методы запроса сообщений": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 72,
-        "level": 3,
-        "title": "Методы запроса сообщений"
-      }
-    ],
     "Методы запросов": [
       {
         "document": "advanced/http-client.md",
@@ -6298,6 +6298,14 @@
         "line": 291,
         "level": 3,
         "title": "Методы отправки сообщений"
+      }
+    ],
+    "Методы получения истории сообщений": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 65,
+        "level": 3,
+        "title": "Методы получения истории сообщений"
       }
     ],
     "Методы протокола": [
@@ -6379,7 +6387,7 @@
     "Методы управления группами": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 52,
+        "line": 45,
         "level": 3,
         "title": "Методы управления группами"
       }
@@ -6510,14 +6518,6 @@
         "title": "Механизм таймера"
       }
     ],
-    "Миксин событий: расширенные методы": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 513,
-        "level": 2,
-        "title": "Миксин событий: расширенные методы"
-      }
-    ],
     "Минимально рабочий модуль": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -6548,14 +6548,6 @@
         "line": 267,
         "level": 2,
         "title": "Многоязычные поля конфигурации"
-      }
-    ],
-    "Множественные аккаунты: указание учетной записи бота": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 256,
-        "level": 1,
-        "title": "Множественные аккаунты: указание учетной записи бота"
       }
     ],
     "Модель выполнения промежуточных обработчиков": [
@@ -6766,14 +6758,6 @@
         "title": "Надзор за процессами и принудительный перезапуск"
       }
     ],
-    "Назначение методов отправки": [
-      {
-        "document": "standards/README.md",
-        "line": 89,
-        "level": 3,
-        "title": "Назначение методов отправки"
-      }
-    ],
     "Наследование": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -6814,6 +6798,14 @@
         "title": "Настройка компонентов"
       }
     ],
+    "Настройка логов": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 233,
+        "level": 2,
+        "title": "Настройка логов"
+      }
+    ],
     "Настройка прокси": [
       {
         "document": "platform-guide/telegram.md",
@@ -6822,12 +6814,12 @@
         "title": "Настройка прокси"
       }
     ],
-    "Настройки бота": [
+    "Настройка сервера": [
       {
-        "document": "platform-guide/yunhu.md",
-        "line": 484,
-        "level": 1,
-        "title": "Настройки бота"
+        "document": "user-guide/configuration.md",
+        "line": 186,
+        "level": 2,
+        "title": "Настройка сервера"
       }
     ],
     "Начало обучения": [
@@ -6884,6 +6876,14 @@
         "line": 31,
         "level": 3,
         "title": "Необязательные поля"
+      }
+    ],
+    "Неподдерживаемые стандартные действия": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 267,
+        "level": 3,
+        "title": "Неподдерживаемые стандартные действия"
       }
     ],
     "Нерегистрозависимый вызов": [
@@ -7008,12 +7008,12 @@
         "title": "Обзор модулей"
       }
     ],
-    "Обзор стандартов": [
+    "Обзор стандарта": [
       {
         "document": "standards/README.md",
         "line": 14,
         "level": 2,
-        "title": "Обзор стандартов"
+        "title": "Обзор стандарта"
       }
     ],
     "Обзор статистики": [
@@ -7593,7 +7593,7 @@
     "Операции запроса": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 348,
+        "line": 347,
         "level": 3,
         "title": "Операции запроса"
       }
@@ -7606,20 +7606,20 @@
         "title": "Операции запроса (DSL для запросов)"
       }
     ],
+    "Операции запросов": [
+      {
+        "document": "standards/README.md",
+        "line": 96,
+        "level": 3,
+        "title": "Операции запросов"
+      }
+    ],
     "Операции с сообщениями": [
       {
         "document": "platform-guide/discord.md",
         "line": 143,
         "level": 3,
         "title": "Операции с сообщениями"
-      }
-    ],
-    "Операции с файлами": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 249,
-        "level": 1,
-        "title": "Операции с файлами"
       }
     ],
     "Описание opcodes": [
@@ -7675,6 +7675,12 @@
         "document": "platform-guide/matrix.md",
         "line": 22,
         "level": 2,
+        "title": "Описание конфигурации"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 592,
+        "level": 3,
         "title": "Описание конфигурации"
       },
       {
@@ -7741,7 +7747,7 @@
     "Описание параметров кнопок": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 109,
+        "line": 102,
         "level": 3,
         "title": "Описание параметров кнопок"
       }
@@ -7783,7 +7789,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 552,
+        "line": 536,
         "level": 2,
         "title": "Описание расширенных полей"
       },
@@ -7943,7 +7949,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 17,
+        "line": 12,
         "level": 2,
         "title": "Основная информация"
       },
@@ -8152,6 +8158,12 @@
         "title": "Основные отличия"
       },
       {
+        "document": "platform-guide/yunhu.md",
+        "line": 321,
+        "level": 3,
+        "title": "Основные отличия"
+      },
+      {
         "document": "platform-guide/yunhu_user.md",
         "line": 149,
         "level": 3,
@@ -8234,6 +8246,14 @@
         "title": "Основные типы сообщений"
       }
     ],
+    "Основные требования": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 338,
+        "level": 3,
+        "title": "Основные требования"
+      }
+    ],
     "Основные функции": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -8306,14 +8326,6 @@
         "title": "Отмена регистрации окна"
       }
     ],
-    "Отмена сообщения (требуется дополнительное указание chat_id + chat_type)": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 253,
-        "level": 1,
-        "title": "Отмена сообщения (требуется дополнительное указание chat_id + chat_type)"
-      }
-    ],
     "Отношение self.user_id и Using": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -8362,12 +8374,12 @@
         "title": "Отображение типов событий"
       }
     ],
-    "Отправка A2UI сообщений": [
+    "Отправка A2UI сообщения": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 473,
-        "level": 3,
-        "title": "Отправка A2UI сообщений"
+        "line": 465,
+        "level": 1,
+        "title": "Отправка A2UI сообщения"
       }
     ],
     "Отправка Embed-сообщений": [
@@ -8504,36 +8516,20 @@
         "title": "Отправка сообщений в необработанном виде"
       }
     ],
-    "Отправка сообщений с кнопками в группу": [
+    "Отправка сообщения с кнопками в группу": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 467,
+        "line": 451,
         "level": 1,
-        "title": "Отправка сообщений с кнопками в группу"
+        "title": "Отправка сообщения с кнопками в группу"
       }
     ],
-    "Отправка сообщений с кнопками в личные сообщения пользователя": [
+    "Отправка сообщения с кнопками в личный чат": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 470,
+        "line": 454,
         "level": 1,
-        "title": "Отправка сообщений с кнопками в личные сообщения пользователя"
-      }
-    ],
-    "Отправка сообщения с использованием bot_id (система автоматически найдёт соответствующий аккаунт)": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 649,
-        "level": 1,
-        "title": "Отправка сообщения с использованием bot_id (система автоматически найдёт соответствующий аккаунт)"
-      }
-    ],
-    "Отправка сообщения с использованием имени аккаунта": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 646,
-        "level": 1,
-        "title": "Отправка сообщения с использованием имени аккаунта"
+        "title": "Отправка сообщения с кнопками в личный чат"
       }
     ],
     "Отслеживание всех сообщений": [
@@ -8598,6 +8594,14 @@
         "line": 116,
         "level": 3,
         "title": "Ошибка конфигурации"
+      }
+    ],
+    "Ошибка создания виртуального окружения в Debian/Ubuntu": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 138,
+        "level": 3,
+        "title": "Ошибка создания виртуального окружения в Debian/Ubuntu"
       }
     ],
     "Ошибка установки": [
@@ -8958,6 +8962,14 @@
         "title": "Поддерживаемые платформы"
       }
     ],
+    "Поддерживаемые стандартные действия": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 254,
+        "level": 3,
+        "title": "Поддерживаемые стандартные действия"
+      }
+    ],
     "Поддерживаемые типы отправки сообщений": [
       {
         "document": "platform-guide/email.md",
@@ -9003,7 +9015,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 27,
+        "line": 20,
         "level": 2,
         "title": "Поддерживаемые типы отправки сообщений"
       },
@@ -9059,7 +9071,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 218,
+        "line": 211,
         "level": 3,
         "title": "Поддержка OneBot12 сообщений"
       },
@@ -9238,6 +9250,14 @@
         "title": "Поиск"
       }
     ],
+    "Поле сообщения эмодзи/стикера (yunhu_expression)": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 548,
+        "level": 3,
+        "title": "Поле сообщения эмодзи/стикера (yunhu_expression)"
+      }
+    ],
     "Полная справочная документация API": [
       {
         "document": "advanced/lifecycle.md",
@@ -9283,7 +9303,7 @@
     "Полный пример конфигурации": [
       {
         "document": "user-guide/configuration.md",
-        "line": 134,
+        "line": 133,
         "level": 2,
         "title": "Полный пример конфигурации"
       }
@@ -9318,14 +9338,6 @@
         "line": 108,
         "level": 2,
         "title": "Получение информации о команде"
-      }
-    ],
-    "Получение информации обо всех аккаунтах": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 692,
-        "level": 1,
-        "title": "Получение информации обо всех аккаунтах"
       }
     ],
     "Получение одной записи": [
@@ -9432,6 +9444,14 @@
         "title": "Поток событий"
       }
     ],
+    "Почему необходим стандарт?": [
+      {
+        "document": "standards/README.md",
+        "line": 25,
+        "level": 2,
+        "title": "Почему необходим стандарт?"
+      }
+    ],
     "Почему рекомендуется использовать I18nClass?": [
       {
         "document": "advanced/i18n.md",
@@ -9486,6 +9506,14 @@
         "line": 523,
         "level": 2,
         "title": "Правила именования"
+      }
+    ],
+    "Правила метода отправки Send в ErisPulse": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 1,
+        "level": 1,
+        "title": "Правила метода отправки Send в ErisPulse"
       }
     ],
     "Правила написания контента": [
@@ -9561,7 +9589,7 @@
     "Преобразование событий запроса": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 342,
+        "line": 341,
         "level": 3,
         "title": "Преобразование событий запроса"
       }
@@ -9678,14 +9706,6 @@
         "title": "Пример обработки событий"
       }
     ],
-    "Пример обработки события нажатия кнопки": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 397,
-        "level": 3,
-        "title": "Пример обработки события нажатия кнопки"
-      }
-    ],
     "Пример подключения адаптера": [
       {
         "document": "api-reference/adapter-system.md",
@@ -9764,14 +9784,6 @@
         "title": "Примеры"
       }
     ],
-    "Примеры запроса сообщений": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 199,
-        "level": 3,
-        "title": "Примеры запроса сообщений"
-      }
-    ],
     "Примеры интерактивных методов": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -9828,20 +9840,20 @@
         "title": "Примеры отправки сообщений"
       }
     ],
+    "Примеры получения истории сообщений": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 192,
+        "level": 3,
+        "title": "Примеры получения истории сообщений"
+      }
+    ],
     "Примеры распространённых задач": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 1,
         "level": 1,
         "title": "Примеры распространённых задач"
-      }
-    ],
-    "Примеры расширений платформы": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 299,
-        "level": 1,
-        "title": "Примеры расширений платформы"
       }
     ],
     "Примеры событий": [
@@ -9890,6 +9902,12 @@
         "line": 151,
         "level": 3,
         "title": "Примеры специальных полей"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 338,
+        "level": 3,
+        "title": "Примеры специальных полей"
       }
     ],
     "Примеры стандартных событий": [
@@ -9903,7 +9921,7 @@
     "Примеры управления группами": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 156,
+        "line": 149,
         "level": 3,
         "title": "Примеры управления группами"
       }
@@ -9912,12 +9930,6 @@
       {
         "document": "platform-guide/ideaura.md",
         "line": 53,
-        "level": 3,
-        "title": "Примеры цепного вызова"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 143,
         "level": 3,
         "title": "Примеры цепного вызова"
       }
@@ -9938,6 +9950,12 @@
       {
         "document": "platform-guide/matrix.md",
         "line": 86,
+        "level": 3,
+        "title": "Примеры цепочечного вызова"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 136,
         "level": 3,
         "title": "Примеры цепочечного вызова"
       }
@@ -10152,14 +10170,6 @@
         "title": "Проверка состояния платформ"
       }
     ],
-    "Проверка статуса аккаунта": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 695,
-        "level": 1,
-        "title": "Проверка статуса аккаунта"
-      }
-    ],
     "Проверка существования таблицы": [
       {
         "document": "advanced/sql-builder.md",
@@ -10180,14 +10190,6 @@
         "line": 83,
         "level": 3,
         "title": "Проверка установки"
-      }
-    ],
-    "Проверочный список соблюдения стандартов": [
-      {
-        "document": "standards/README.md",
-        "line": 68,
-        "level": 2,
-        "title": "Проверочный список соблюдения стандартов"
       }
     ],
     "Продолжение при ошибках и повторные попытки": [
@@ -10366,6 +10368,14 @@
         "title": "Публикация вашего модуля"
       }
     ],
+    "Путь к файлу конфигурации": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 6,
+        "level": 2,
+        "title": "Путь к файлу конфигурации"
+      }
+    ],
     "Рабочий процесс": [
       {
         "document": "getting-started/ide-completion.md",
@@ -10428,14 +10438,6 @@
         "line": 513,
         "level": 4,
         "title": "Разрешение аккаунта"
-      }
-    ],
-    "Расположение конфигурационного файла": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 6,
-        "level": 2,
-        "title": "Расположение конфигурационного файла"
       }
     ],
     "Распространение правил": [
@@ -10540,6 +10542,20 @@
         "line": 254,
         "level": 2,
         "title": "Расширения Event Mixin"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 499,
+        "level": 2,
+        "title": "Расширения Event Mixin"
+      }
+    ],
+    "Расширения платформы": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 274,
+        "level": 3,
+        "title": "Расширения платформы"
       }
     ],
     "Расширенная обработка событий": [
@@ -10553,7 +10569,7 @@
     "Расширенные действия": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 247,
+        "line": 327,
         "level": 3,
         "title": "Расширенные действия"
       }
@@ -11230,14 +11246,6 @@
         "title": "Сегмент пересланного сообщения (ideaura_forwarded)"
       }
     ],
-    "Сегмент сообщений с эмодзи/стикерами (yunhu_expression)": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 564,
-        "level": 3,
-        "title": "Сегмент сообщений с эмодзи/стикерами (yunhu_expression)"
-      }
-    ],
     "Сегмент статьи сообщений (yunhu_user_post)": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -11484,22 +11492,6 @@
         "title": "Событие изменения статуса пользователя"
       }
     ],
-    "Событие кнопки A2UI": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 380,
-        "level": 1,
-        "title": "Событие кнопки A2UI"
-      }
-    ],
-    "Событие нажатия кнопки": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 367,
-        "level": 1,
-        "title": "Событие нажатия кнопки"
-      }
-    ],
     "Событие нового письма (email_new)": [
       {
         "document": "platform-guide/email.md",
@@ -11730,6 +11722,14 @@
         "title": "Совместимость"
       }
     ],
+    "Совместимость со старой конфигурацией": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 692,
+        "level": 3,
+        "title": "Совместимость со старой конфигурацией"
+      }
+    ],
     "Соглашение о metadata": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -11930,28 +11930,12 @@
         "title": "Сохранение данных"
       }
     ],
-    "Спецификация метода отправки ErisPulse": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 1,
-        "level": 1,
-        "title": "Спецификация метода отправки ErisPulse"
-      }
-    ],
     "Спецификация стандартизации адаптера": [
       {
         "document": "standards/event-conversion.md",
         "line": 1,
         "level": 1,
         "title": "Спецификация стандартизации адаптера"
-      }
-    ],
-    "Спецификация стандартного возвращаемого значения для адаптера ErisPulse": [
-      {
-        "document": "standards/api-response.md",
-        "line": 1,
-        "level": 1,
-        "title": "Спецификация стандартного возвращаемого значения для адаптера ErisPulse"
       }
     ],
     "Специфические типы событий": [
@@ -11993,7 +11977,7 @@
     "Список исключений": [
       {
         "document": "user-guide/configuration.md",
-        "line": 333,
+        "line": 334,
         "level": 4,
         "title": "Список исключений"
       }
@@ -12034,14 +12018,6 @@
         "line": 123,
         "level": 2,
         "title": "Список проверок перед публикацией"
-      }
-    ],
-    "Список стандартных документов": [
-      {
-        "document": "standards/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "Список стандартных документов"
       }
     ],
     "Способ 1: Локальный процесс (рекомендуется)": [
@@ -12236,12 +12212,28 @@
         "title": "Стандарт OneBot12"
       }
     ],
+    "Стандарт действий API ErisPulse": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 1,
+        "level": 1,
+        "title": "Стандарт действий API ErisPulse"
+      }
+    ],
     "Стандарт кодов ошибок": [
       {
         "document": "platform-guide/onebot12.md",
         "line": 337,
         "level": 3,
         "title": "Стандарт кодов ошибок"
+      }
+    ],
+    "Стандарт операций запроса ErisPulse": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 1,
+        "level": 1,
+        "title": "Стандарт операций запроса ErisPulse"
       }
     ],
     "Стандарт ответа API": [
@@ -12274,6 +12266,14 @@
         "title": "Стандартизированный ответ"
       }
     ],
+    "Стандартизированный формат возврата адаптера ErisPulse": [
+      {
+        "document": "standards/api-response.md",
+        "line": 1,
+        "level": 1,
+        "title": "Стандартизированный формат возврата адаптера ErisPulse"
+      }
+    ],
     "Стандартное сопоставление OB12": [
       {
         "document": "platform-guide/onebot11.md",
@@ -12282,10 +12282,18 @@
         "title": "Стандартное сопоставление OB12"
       }
     ],
+    "Стандартные API действия (ApiDSL)": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 227,
+        "level": 2,
+        "title": "Стандартные API действия (ApiDSL)"
+      }
+    ],
     "Стандартные действия": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 241,
+        "line": 318,
         "level": 3,
         "title": "Стандартные действия"
       }
@@ -12336,6 +12344,22 @@
         "line": 222,
         "level": 2,
         "title": "Стандартные форматы"
+      }
+    ],
+    "Стандартный контрольный список": [
+      {
+        "document": "standards/README.md",
+        "line": 68,
+        "level": 2,
+        "title": "Стандартный контрольный список"
+      }
+    ],
+    "Стандартный список документов": [
+      {
+        "document": "standards/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "Стандартный список документов"
       }
     ],
     "Стандартный формат ответа": [
@@ -12394,12 +12418,12 @@
         "title": "Стратегии загрузки модулей"
       }
     ],
-    "Стратегия выполнения PowerShell в Windows": [
+    "Стратегия выполнения Windows PowerShell": [
       {
         "document": "user-guide/installation.md",
         "line": 130,
         "level": 3,
-        "title": "Стратегия выполнения PowerShell в Windows"
+        "title": "Стратегия выполнения Windows PowerShell"
       }
     ],
     "Стратегия загрузки": [
@@ -12419,7 +12443,7 @@
     "Строгий режим": [
       {
         "document": "user-guide/configuration.md",
-        "line": 316,
+        "line": 317,
         "level": 3,
         "title": "Строгий режим"
       }
@@ -12808,10 +12832,24 @@
         "title": "Уникальные типы событий"
       },
       {
+        "document": "platform-guide/yunhu.md",
+        "line": 317,
+        "level": 2,
+        "title": "Уникальные типы событий"
+      },
+      {
         "document": "platform-guide/yunhu_user.md",
         "line": 145,
         "level": 2,
         "title": "Уникальные типы событий"
+      }
+    ],
+    "Управление": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 676,
+        "level": 3,
+        "title": "Управление"
       }
     ],
     "Управление адаптерами": [
@@ -13240,14 +13278,6 @@
         "title": "Целевая аудитория"
       }
     ],
-    "Цепные методы изменения (можно комбинировать)": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 134,
-        "level": 3,
-        "title": "Цепные методы изменения (можно комбинировать)"
-      }
-    ],
     "Цепные модификаторы (можно комбинировать)": [
       {
         "document": "platform-guide/ideaura.md",
@@ -13308,6 +13338,12 @@
       {
         "document": "platform-guide/kook.md",
         "line": 74,
+        "level": 3,
+        "title": "Цепочечные модификаторы (можно комбинировать)"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 127,
         "level": 3,
         "title": "Цепочечные модификаторы (можно комбинировать)"
       }
@@ -13509,7 +13545,7 @@
     "① Module Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 95,
+        "line": 105,
         "level": 2,
         "title": "① Module Dimension"
       }
@@ -13517,7 +13553,7 @@
     "② Identity Dimension (Event Admission)": [
       {
         "document": "advanced/scope.md",
-        "line": 112,
+        "line": 122,
         "level": 2,
         "title": "② Identity Dimension (Event Admission)"
       }
@@ -13525,7 +13561,7 @@
     "③ Command Dimension (Command ACL)": [
       {
         "document": "advanced/scope.md",
-        "line": 128,
+        "line": 138,
         "level": 2,
         "title": "③ Command Dimension (Command ACL)"
       }
@@ -13533,7 +13569,7 @@
     "④ Handler/Text Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 137,
+        "line": 147,
         "level": 2,
         "title": "④ Handler/Text Dimension"
       }
@@ -13541,9 +13577,17 @@
     "⑤ Implementation Parameter Override": [
       {
         "document": "advanced/scope.md",
-        "line": 146,
+        "line": 156,
         "level": 2,
         "title": "⑤ Implementation Parameter Override"
+      }
+    ],
+    "⑥ Outbound Actions Dimension (Prohibit Module Outbound Calls)": [
+      {
+        "document": "advanced/scope.md",
+        "line": 169,
+        "level": 2,
+        "title": "⑥ Outbound Actions Dimension (Prohibit Module Outbound Calls)"
       }
     ],
     "查询适配器发送方法": [

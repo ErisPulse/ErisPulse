@@ -18,6 +18,28 @@ ErisPulse 适配器基础模块
 ## 函数列表
 
 
+### `_action_denied_response(adapter: 'BaseAdapter', action: str)`
+
+> **内部方法**
+构造"出站动作被控制面禁用"的标准失败响应（已完成的 task）
+
+被禁用的出站调用不发起任何网络请求，直接返回该响应。
+SendDSL / ApiDSL / RequestDSL 在授权闸口处调用。
+
+- **adapter** (`适配器实例（用于`): make_error 构造标准响应）
+- **action** (`被禁用的动作类型（send`): / api / request）
+**返回值**: asyncio.Task（已完成，值为标准错误响应）
+
+---
+
+
+### `async _noop_async(value)`
+
+> **内部方法** 立即返回值的协程（用于构造已完成 task）
+
+---
+
+
 ### `_has_rules(send_dsl: 'SendDSL')`
 
 判断 SendDSL 实例是否附加了发送规则
@@ -182,7 +204,7 @@ ErisPulse 适配器基础模块
 ```python
 >>> ctx = self.send_context
 >>> # {"target_type": "group", "target_id": "123", "account_id": "bot1"}
->>> await self._adapter.call_api(
+>>> await self._api_call(
 >>>     endpoint="/send_message",
 >>>     message=segments,
 >>>     **self.send_context,
@@ -349,9 +371,7 @@ ErisPulse 适配器基础模块
 **返回值** (`SendDSL实例自身，支持链式调用`): 
 **示例**:
 ```python
->>> await adapter.Send.To("user", "123").Hook(
-...     lambda r: print("发送成功！")
-... ).Text("你好")
+>>> await adapter.Send.To("user", "123").Hook(lambda r: print("发送成功！")).Text("你好")
 >>>
 >>> async def on_success(result):
 ...     print(f"消息ID: {result.get('message_id')}")
@@ -431,9 +451,7 @@ ErisPulse 适配器基础模块
 **示例**:
 ```python
 >>> # 低优先级消息，积压时自动丢弃
->>> await (adapter.Send.To("user", "123")
-...       .Priority(-1, drop_if_busy=True)
-...       .Text("可放弃的通知"))
+>>> await adapter.Send.To("user", "123").Priority(-1, drop_if_busy=True).Text("可放弃的通知")
 ```
 
 ---
@@ -466,8 +484,7 @@ ErisPulse 适配器基础模块
 ...     print(f"阶段: {ctx.stage}, 尝试: {ctx.attempt + 1}/{ctx.max_attempts}")
 ...     if ctx.stage == "failed":
 ...         print(f"错误: {ctx.error!r}")
->>> task = (adapter.Send.To("user", "123")
-...        .Retry(3).Timeout(10).OnProgress(on_progress).Text("监控"))
+>>> task = adapter.Send.To("user", "123").Retry(3).Timeout(10).OnProgress(on_progress).Text("监控")
 ```
 
 ---
@@ -491,8 +508,7 @@ OnError 仅在最终失败时触发一次。
 ```python
 >>> async def on_error(ctx):
 ...     await admin_notify(f"发送失败: {ctx.target_id} {ctx.error!r}")
->>> await (adapter.Send.To("user", "123")
-...       .Retry(2).OnError(on_error).Text("带错误处理"))
+>>> await adapter.Send.To("user", "123").Retry(2).OnError(on_error).Text("带错误处理")
 ```
 
 ---
@@ -512,21 +528,21 @@ OnError 仅在最终失败时触发一次。
 **示例**:
 ```python
 >>> # 构建多条消息，统一发送
->>> results = await (adapter.Send.To("user", "123")
-...                  .Build()
-...                  .Text("第一句")
-...                  .Image("pic.jpg")
-...                  .Text("第二句")
-...                  .send_all())
+>>> results = await (
+...     adapter.Send.To("user", "123").Build().Text("第一句").Image("pic.jpg").Text("第二句").send_all()
+... )
 >>> # results = [Text结果, Image结果, Text结果]
 >>>
 >>> # 串行执行 + 重试失败的
->>> await (adapter.Send.To("group", "456")
-...        .Build()
-...        .Sequential()
-...        .Retry(2)
-...        .Text("保证顺序1").Text("保证顺序2")
-...        .send_all())
+>>> await (
+...     adapter.Send.To("group", "456")
+...     .Build()
+...     .Sequential()
+...     .Retry(2)
+...     .Text("保证顺序1")
+...     .Text("保证顺序2")
+...     .send_all()
+... )
 ```
 
 ---
@@ -582,6 +598,16 @@ OnError 仅在最终失败时触发一次。
 ```python
 >>> adapter.Request("req_123").Using("bot1").accept()
 ```
+
+---
+
+
+##### `_guard_request()`
+
+> **内部方法**
+请求操作授权闸口（scope.actions.<owner>.request）
+
+**返回值** (`None`): 表示放行；否则为已完成的标准拒绝响应 task
 
 ---
 
@@ -665,11 +691,13 @@ OnError 仅在最终失败时触发一次。
 
 标准 API 动作 DSL 基类
 
-提供 OneBot12 标准动作（get_user_info / get_group_info 等）的强类型方法，
-模块开发者只需面向标准接口编程，由适配器负责映射到平台原生 API。
+提供 OneBot12 标准动作的强类型方法，模块开发者只需面向标准接口编程，
+由适配器负责映射到平台原生 API。
 
-与 SendDSL（消息发送）、RequestDSL（请求操作）并行，覆盖 OneBot12
-标准动作中的「信息查询 / 状态变更 / 消息管理 / 文件操作」四类操作。
+与 SendDSL（消息发送）、RequestDSL（请求操作）并行。覆盖 OneBot12 标准
+动作中的用户 / 群组 / 频道（Guild）/ 消息管理 / 元（Meta）常规接口，以及
+文件资源动作（upload_file / get_file / 分片，见方法 docstring 降级说明）；
+唯一例外是 ``send_message``——由 ``SendDSL.Raw_ob12`` 承担，不在本类重复。
 
 > **提示**
 > 1. 标准方法默认委托给 ``adapter.call_api(action_name, ...)``，适配器可按需覆盖
@@ -677,6 +705,7 @@ OnError 仅在最终失败时触发一次。
 > 3. 平台扩展动作通过 ``call("prefix.action", **params)`` 调用
 > 4. 所有方法返回标准 API 响应格式（status / retcode / data / message_id / message）
 > 5. 适配器可覆盖单个标准方法以映射到平台 API，无需全部实现
+> 6. 分片动作按阶段拆分为 prepare / transfer / finish 三个方法（见各自文档）
 
 
 #### 方法列表
@@ -719,6 +748,22 @@ OnError 仅在最终失败时触发一次。
 将 api_context 合并到参数字典
 
 - **params** (`业务参数`): **返回值**: 合并后的参数字典
+
+---
+
+
+##### `async _api_call(action: str)`
+
+> **内部方法**
+API 动作统一授权入口
+
+先经控制面出站动作维度检查（scope.actions.<owner>.api）：
+模块被禁用时直接返回标准拒绝响应，不发起网络请求；
+owner 为空（框架层调用）或未配置限制时正常委托 ``call_api``。
+
+- **action** (`OneBot12`): 标准动作名或平台扩展动作名
+- **params** (`动作参数（已合并`): api_context）
+**返回值** (`标准`): API 响应
 
 ---
 
@@ -861,6 +906,190 @@ OnError 仅在最终失败时触发一次。
 ---
 
 
+##### `async get_guild_info(guild_id: str)`
+
+获取频道（服务器）信息
+
+- **guild_id** (`频道`): ID
+**返回值** (`标准响应，data`): 包含 guild_id / guild_name
+
+**示例**:
+```python
+>>> result = await adapter.myplatform.Api.get_guild_info("100001")
+>>> guild_name = result["data"]["guild_name"]
+```
+
+---
+
+
+##### `async get_guild_list()`
+
+获取频道（服务器）列表
+
+**返回值** (`标准响应，data`): 为 list[get_guild_info 响应]
+
+**示例**:
+```python
+>>> result = await adapter.myplatform.Api.get_guild_list()
+>>> guilds = result["data"]
+```
+
+---
+
+
+##### `async set_guild_name(guild_id: str, guild_name: str)`
+
+设置频道（服务器）名称
+
+- **guild_id** (`频道`): ID
+- **guild_name** (`新的频道名称`): **返回值** (`标准响应`): 
+**示例**:
+```python
+>>> await adapter.myplatform.Api.set_guild_name("100001", "新频道名")
+```
+
+---
+
+
+##### `async get_guild_member_info(guild_id: str, user_id: str)`
+
+获取频道（服务器）成员信息
+
+- **guild_id** (`频道`): ID
+- **user_id** (`用户`): ID
+**返回值** (`标准响应，data`): 包含 user_id / user_name / user_displayname
+
+**示例**:
+```python
+>>> result = await adapter.myplatform.Api.get_guild_member_info("100001", "123456")
+>>> display_name = result["data"]["user_displayname"]
+```
+
+---
+
+
+##### `async get_guild_member_list(guild_id: str)`
+
+获取频道（服务器）成员列表
+
+- **guild_id** (`频道`): ID
+**返回值** (`标准响应，data`): 为 list[get_guild_member_info 响应]
+
+**示例**:
+```python
+>>> result = await adapter.myplatform.Api.get_guild_member_list("100001")
+>>> members = result["data"]
+```
+
+---
+
+
+##### `async leave_guild(guild_id: str)`
+
+退出频道（服务器）
+
+- **guild_id** (`频道`): ID
+**返回值** (`标准响应`): 
+**示例**:
+```python
+>>> await adapter.myplatform.Api.leave_guild("100001")
+```
+
+---
+
+
+##### `async get_channel_info(guild_id: str, channel_id: str)`
+
+获取频道下的子频道信息
+
+- **guild_id** (`频道（服务器）ID`): - **channel_id**: 子频道 ID
+**返回值** (`标准响应，data`): 包含 channel_id / channel_name
+
+**示例**:
+```python
+>>> result = await adapter.myplatform.Api.get_channel_info("100001", "200001")
+>>> channel_name = result["data"]["channel_name"]
+```
+
+---
+
+
+##### `async get_channel_list(guild_id: str)`
+
+获取频道下的子频道列表
+
+- **guild_id** (`频道（服务器）ID`): - **joined_only**: 仅返回已加入的子频道（默认 False）
+**返回值** (`标准响应，data`): 为 list[get_channel_info 响应]
+
+**示例**:
+```python
+>>> result = await adapter.myplatform.Api.get_channel_list("100001")
+>>> channels = result["data"]
+```
+
+---
+
+
+##### `async set_channel_name(guild_id: str, channel_id: str, channel_name: str)`
+
+设置子频道名称
+
+- **guild_id** (`频道（服务器）ID`): - **channel_id**: 子频道 ID
+- **channel_name** (`新的子频道名称`): **返回值** (`标准响应`): 
+**示例**:
+```python
+>>> await adapter.myplatform.Api.set_channel_name("100001", "200001", "新子频道名")
+```
+
+---
+
+
+##### `async get_channel_member_info(guild_id: str, channel_id: str, user_id: str)`
+
+获取子频道成员信息
+
+- **guild_id** (`频道（服务器）ID`): - **channel_id**: 子频道 ID
+- **user_id** (`用户`): ID
+**返回值** (`标准响应，data`): 包含 user_id / user_name / user_displayname
+
+**示例**:
+```python
+>>> result = await adapter.myplatform.Api.get_channel_member_info("100001", "200001", "123456")
+```
+
+---
+
+
+##### `async get_channel_member_list(guild_id: str, channel_id: str)`
+
+获取子频道成员列表
+
+- **guild_id** (`频道（服务器）ID`): - **channel_id**: 子频道 ID
+**返回值** (`标准响应，data`): 为 list[get_channel_member_info 响应]
+
+**示例**:
+```python
+>>> result = await adapter.myplatform.Api.get_channel_member_list("100001", "200001")
+>>> members = result["data"]
+```
+
+---
+
+
+##### `async leave_channel(guild_id: str, channel_id: str)`
+
+退出子频道
+
+- **guild_id** (`频道（服务器）ID`): - **channel_id**: 子频道 ID
+**返回值** (`标准响应`): 
+**示例**:
+```python
+>>> await adapter.myplatform.Api.leave_channel("100001", "200001")
+```
+
+---
+
+
 ##### `async delete_message(message_id: str)`
 
 撤回 / 删除消息
@@ -877,7 +1106,13 @@ OnError 仅在最终失败时触发一次。
 
 ##### `async upload_file()`
 
-上传文件
+上传文件到平台资源库（OB12 文件资源模型）
+
+.. note:: 依赖平台特有的 ``file_id`` 文件资源能力，通用性不足，**ErisPulse
+    常规路径不使用**——模块发送文件请用 ``SendDSL.File(file)``（发送时直传）。
+    本方法仅当适配器后端具备 ``file_id`` 资源能力时透传；多数平台适配器
+    不会实现它，调用方需自行处理 ``10002``。
+    ``file_id`` 资源模型标准化到框架层是未来方向，当前版本不提供。
 
 - **type** (`上传方式（``url```): / ``path`` / ``data``）
 - **name** (`文件名（如`): ``foo.jpg``）
@@ -890,9 +1125,7 @@ OnError 仅在最终失败时触发一次。
 
 **示例**:
 ```python
->>> result = await adapter.Api.upload_file(
-...     type="url", name="logo.jpg", url="https://example.com/logo.jpg"
-... )
+>>> result = await adapter.Api.upload_file(type="url", name="logo.jpg", url="https://example.com/logo.jpg")
 >>> file_id = result["data"]["file_id"]
 ```
 
@@ -901,7 +1134,12 @@ OnError 仅在最终失败时触发一次。
 
 ##### `async get_file(file_id: str, type: str = 'url')`
 
-获取文件
+从平台资源库获取文件（OB12 文件资源模型）
+
+.. note:: 依赖平台特有的 ``file_id`` 文件资源能力，通用性不足，**ErisPulse
+    常规路径不使用**；仅当适配器后端具备该能力时透传，多数平台不会实现
+    （返回 ``10002``）。``file_id`` 资源模型标准化到框架层是未来方向，
+    当前版本不提供。
 
 - **file_id** (`文件`): ID
 - **type** (`获取方式（``url```): / ``path`` / ``data``），默认 ``url``
@@ -912,6 +1150,137 @@ OnError 仅在最终失败时触发一次。
 >>> result = await adapter.myplatform.Api.get_file("file_abc", "url")
 >>> download_url = result["data"]["url"]
 ```
+
+---
+
+
+##### `async upload_file_fragmented_prepare(name: str, total_size: int)`
+
+分片上传 · 准备阶段（OB12 文件资源模型，见分组说明——框架内尚无实现方）
+
+分片上传三步：``prepare`` → ``transfer``（循环，逐片调用）→ ``finish``。
+本方法为第一阶段，创建传输会话并返回 ``file_id``（后续阶段使用）。
+
+- **name** (`文件名（如`): ``foo.jpg``）
+- **total_size** (`完整文件大小（字节）`): **返回值** (`标准响应，data`): 包含 file_id（仅供传输阶段使用）
+
+**示例**:
+```python
+>>> r = await adapter.Api.upload_file_fragmented_prepare("foo.jpg", 1048576)
+>>> file_id = r["data"]["file_id"]
+```
+
+---
+
+
+##### `async upload_file_fragmented_transfer(file_id: str, offset: int, data: bytes)`
+
+分片上传 · 传输阶段（OB12 文件资源模型，见分组说明——框架内尚无实现方）
+
+将文件按字节偏移逐片写入：``offset`` 从 0 开始，每片长度为 ``len(data)``。
+
+- **file_id** (`prepare`): 阶段返回的文件 ID
+- **offset** (`本次分片的字节偏移`): - **data**: 本次分片数据
+**返回值** (`标准响应`): 
+**示例**:
+```python
+>>> await adapter.Api.upload_file_fragmented_transfer(file_id, 0, chunk)
+>>> await adapter.Api.upload_file_fragmented_transfer(file_id, len(chunk), next_chunk)
+```
+
+---
+
+
+##### `async upload_file_fragmented_finish(file_id: str, sha256: str)`
+
+分片上传 · 完成阶段（OB12 文件资源模型，见分组说明——框架内尚无实现方）
+
+- **file_id** (`prepare`): 阶段返回的文件 ID
+- **sha256** (`**整个文件**的`): SHA256（全小写十六进制）
+**返回值** (`标准响应，data`): 包含 file_id（供以后使用）
+
+**示例**:
+```python
+>>> await adapter.Api.upload_file_fragmented_finish(file_id, sha256_hex)
+```
+
+---
+
+
+##### `async get_file_fragmented_prepare(file_id: str)`
+
+分片下载 · 准备阶段（OB12 文件资源模型，见分组说明——框架内尚无实现方）
+
+分片下载两步：``prepare``（获取文件元信息）→ ``transfer``（循环取片）。
+
+- **file_id** (`文件`): ID
+**返回值** (`标准响应，data`): 包含 name / total_size / sha256
+
+**示例**:
+```python
+>>> r = await adapter.Api.get_file_fragmented_prepare("file_abc")
+>>> meta = r["data"]
+```
+
+---
+
+
+##### `async get_file_fragmented_transfer(file_id: str, offset: int, size: int)`
+
+分片下载 · 传输阶段（OB12 文件资源模型，见分组说明——框架内尚无实现方）
+
+按 ``offset`` 取一片，``size`` 为本次请求的字节数（最后一片可小于 size）。
+
+- **file_id** (`文件`): ID
+- **offset** (`本次分片的字节偏移`): - **size**: 本次请求大小（字节）
+**返回值** (`标准响应，data`): 包含 data（本次分片字节）
+
+**示例**:
+```python
+>>> while offset < total_size:
+...     r = await adapter.Api.get_file_fragmented_transfer(file_id, offset, 65536)
+...     offset += len(r["data"]["data"])
+```
+
+---
+
+
+##### `async get_latest_events(limit: int = 0, timeout: int = 0)`
+
+获取最新事件（仅 HTTP 通信方式必须支持）
+
+- **limit** (`最多返回事件数量（0`): = 不限制）
+- **timeout** (`长轮询等待秒数（0`): = 短轮询，不等待）
+**返回值** (`标准响应，data`): 为事件对象数组（从旧到新，不含元事件）
+
+---
+
+
+##### `async get_supported_actions()`
+
+获取实现支持的动作列表
+
+**返回值** (`标准响应，data`): 为动作名字符串数组（可能不含 get_latest_events）
+
+---
+
+
+##### `async get_status()`
+
+获取运行状态
+
+**返回值** (`标准响应，data`): 包含 good / bots
+    - good: 各模块是否均正常（bool）
+    - bots: 机器人账号状态列表，每项含 self{platform, user_id} 与 online
+
+---
+
+
+##### `async get_version()`
+
+获取实现版本信息
+
+**返回值** (`标准响应，data`): 包含 impl / version / onebot_version
 
 ---
 
@@ -929,14 +1298,10 @@ OnError 仅在最终失败时触发一次。
 **示例**:
 ```python
 >>> # 调用平台扩展动作
->>> result = await adapter.myplatform.Api.call(
-...     "telegram.send_sticker", sticker_id="CAACAgIAAxkBAA..."
-... )
+>>> result = await adapter.myplatform.Api.call("telegram.send_sticker", sticker_id="CAACAgIAAxkBAA...")
 >>>
 >>> # 也可用于调用标准动作（等价于直接调用对应方法）
->>> result = await adapter.myplatform.Api.call(
-...     "get_user_info", user_id="123"
-... )
+>>> result = await adapter.myplatform.Api.call("get_user_info", user_id="123")
 ```
 
 ---
@@ -973,7 +1338,7 @@ OnError 仅在最终失败时触发一次。
 > **提示**
 > 1. 默认实现返回 ``retcode=10002``（不支持的操作）
 > 2. 适配器应重写 ``accept`` / ``reject`` 方法
-> 3. 通过 ``self._adapter.call_api()`` 调用平台 API
+> 3. 通过 ``self._api_call()`` 调用平台 API
 > 4. 通过 ``self._request_id`` 获取请求标识
 > 5. 通过 ``self._account_id`` 获取 Bot 账号
 
@@ -1048,7 +1413,7 @@ OnError 仅在最终失败时触发一次。
 >>> def Raw_ob12(self, message, **kwargs):
 >>>     async def _do_send():
 >>>         segments = self._apply_modifiers(message)
->>>         return await self._adapter.call_api(
+>>>         return await self._api_call(
 >>>             endpoint="/send_message",
 >>>             message=segments,
 >>>             **self.send_context,
@@ -1295,7 +1660,7 @@ OnError 仅在最终失败时触发一次。
 ---
 
 
-##### `make_error(retcode: int = 34000, message: str = '', raw = None)`
+##### `make_error(retcode: int = RETCODE_SDK_FAILURE, message: str = '', raw = None)`
 
 构造错误响应
 

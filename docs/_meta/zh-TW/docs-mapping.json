@@ -471,7 +471,7 @@
           "icon": "fa-layer-group"
         },
         {
-          "title": "ErisPulse 適配器標準化回傳規範",
+          "title": "ErisPulse 适配器標準化回傳規範",
           "path": "standards/api-response.md",
           "level": 1,
           "icon": "fa-arrow-right-arrow-left"

@@ -495,7 +495,7 @@
           "icon": "fa-hand-paper"
         },
         {
-          "title": "ErisPulse API Action Standards",
+          "title": "ErisPulse API Action Standard",
           "path": "standards/api-action-spec.md",
           "level": 1,
           "icon": "fa-bolt"

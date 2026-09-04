@@ -9236,60 +9236,64 @@ This design ensures that changes to CLI translations do not affect the stability
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-The unified control plane answers five questions: **which modules are available, whether events from whom should be received, who can execute a specific command, what text a module processes, and which implementation parameters are overridden**. The control authority is entirely given to the user: all configurations are declared at the **top level** of module / adapter / command / processor registration (`ErisPulse.scope` or `sdk.scope` at runtime), and the event pipeline automatically reads and executes these configurations at each level.
+The unified control plane answers six questions: **which modules are available, whether to receive events from whom, who can execute a certain command, what text a module processes, which implementation parameters are overridden, and which outbound calls a module is prohibited from initiating**. All control is given to the user: at the **upper level** of module/adapter/command/processor registration (configured via `ErisPulse.scope` or at runtime via `sdk.scope`), the control plane automatically reads and executes event pipelines at each level.
 
-The control plane consolidates the original multiple permission systems and serves as the **only** entry point for permission/access control in version 2.8.0:
+The control plane consolidates the original multiple permission systems and serves as the **only** entry point for permissions/access control in version 2.8.0:
 
-| Dimension | What is controlled | Rejection behavior | Configuration path |
+| Dimension | Controls What | Rejection Behavior | Configuration Path |
 |------|---------|---------|---------|
-| **① Module** | Which modules are available (platform / Bot / session three levels) | Silent ignore (no reply, no claim) | `scope.platforms / bots / sessions` |
-| **② Identity** | Whether to receive events (adapter / Bot / session / user four levels) | Complete discard at entry (silent) | `scope.identity.*` |
-| **③ Command** | Who can execute a specific command (command names support glob) | Reply "insufficient permissions" (explicit) | `scope.commands` |
-| **④ Handler** | Which text a module's event handler processes | No trigger (silent) | `scope.handlers` |
-| **⑤ Override** | Override module/command implementation parameters (master/hidden/aliases/prefix) | —— (only change parameters) | `scope.overrides` |
+| **① Module** | Which modules are available (platform / Bot / session three levels) | Silently ignored (no reply, no claim) | `scope.platforms / bots / sessions` |
+| **② Identity** | Whether to receive events (adapter / Bot / session / user four levels) | Completely discarded at the entry (silent) | `scope.identity.*` |
+| **③ Command** | Who can execute a certain command (command names support glob) | Reply "insufficient permissions" (explicit) | `scope.commands` |
+| **④ Handler** | What text a module's event handler processes | Not triggered (silent) | `scope.handlers` |
+| **⑤ Override** | Override module/command implementation parameters (master/hidden/aliases/prefix) | —— (only changes parameters) | `scope.overrides` |
+| **⑥ Outbound Action** | Prohibit modules from sending messages / calling standard APIs / handling requests | Failure response (`retcode=34601`) | `scope.actions` |
 
 {!--< tips >!--}
-1. Import the singleton via `from ErisPulse.Core import scope` (`sdk.scope` refers to the same object)
+1. Import the singleton via `from ErisPulse.Core import scope` (same object as `sdk.scope`)
 2. `scope.is_allowed(platform, bot_id, module, session_id)` checks if a module is available
 3. `scope.is_identity_allowed(platform, bot_id, session_id, user_id)` checks if an event is allowed
-4. `scope.allow_user("roll*", platform, uid)` / `deny_user(...)` for command ACL (supports glob)
+4. `scope.allow_user("roll*", platform, uid)` / `deny_user(...)` command ACL (supports glob)
 5. `scope.override("MyModule", "restart", master=True)` overrides implementation parameters
-6. `scope.get_stats()` checks filtering statistics; `scope.get_topology()` checks the five-dimensional topology
+6. `scope.set_action("MyModule", "send", False)` prohibits a module from replying/sending messages
+7. `scope.get_stats()` checks filtering statistics; `scope.get_topology()` checks topology
 {!--< /tips >!--}
 
-## Matching Entry Syntax (Unified Across the Entire System)
+## Matching Entry Syntax (Unified Across the System)
 
-All "name lists" in the control plane (module names, identity keys, command names) use the same matching syntax (`ErisPulse.Core.text_match`):
+All "name lists" in the control plane (module names, identity keys, command names) share the same matching syntax (via `ErisPulse.Core.text_match`):
 
 | Syntax | Example | Description |
 |------|------|------|
-| Exact name | `"Chat"` | Full value comparison, **case-insensitive** |
-| Glob | `"Tool*"`、`"spam_*"` | `*` matches any string / `?` matches a single character / `[seq]` matches a character set, case-insensitive |
-| Regex | `"re:^Danger.*"` | Declared with `re:` prefix, matches via `search`, default case-insensitive |
+| Exact Name | `"Chat"` | Full value comparison, **case-insensitive** |
+| Glob | `"Tool*"`、`"spam_*"` | `*` for any string / `?` for single character / `[seq]` for character set, case-insensitive |
+| Regex | `"re:^Danger.*"` | Prefix with `re:` to declare, matches via regex `search`, default case-insensitive |
 
-- Invalid regex **silently falls back** to "no match" (no error thrown, no crash)
-- Decorator parameters (`pattern=` / `regex=`) have fixed semantics: `pattern` is glob, `regex` is the raw regex code (without `re:` prefix); regex entries in control plane configurations **must** have the `re:` prefix
+- Invalid regex silently degrades to "no match" (no error thrown, no crash)
+- Decorator parameters (`pattern=` / `regex=`) have fixed semantics: `pattern` is glob, `regex` is raw regex (no `re:` prefix); regex entries in control plane configurations **must** have the `re:` prefix
 
-## Global Default: `default_allow`
+## Global Fallback: `default_allow`
 
-`default_allow` is the **single global** default switch (default `true`), uniformly affecting three decision dimensions:
+`default_allow` is the **single global** fallback switch (default `true`), affecting three decision dimensions uniformly:
 
-- **Module dimension**: If no binding is matched → `default_allow` determines allow / deny
-- **Identity dimension**: If no policy is matched → `default_allow` determines allow / deny
-- **Command dimension**: If no ACL is configured → `default_allow=true` passes to the developer's default permission chain; `false` (strict mode) denies commands with no ACL configured
+- **Module dimension**: If no binding is matched → `default_allow` determines allow/deny
+- **Identity dimension**: If no strategy is matched → `default_allow` determines allow/deny
+- **Command dimension**: If no ACL is configured → `default_allow=true` delegates to the developer's default permission chain; `false` (strict mode) denies commands without configured ACL
 
-Setting it to `false` enables "implicit deny" strict mode: white-list management, **all unexplicitly allowed are denied**.
+Setting it to `false` enables "implicit deny" strict mode: whitelisting management, **all unexplicitly allowed are denied**.
+
+> **Exception**: The **outbound action** dimension is **not** affected by `default_allow`—it is an independent tightening switch, defaulting to allow all, only explicitly `false` disables (framework-level owner-empty calls are always allowed). This strict global mode will not accidentally cut off all module message replies.
 
 ## Configuration File
 
 ```toml
 [ErisPulse.scope]
-default_allow = true        # Global default (false = implicit deny strict mode)
+default_allow = true        # Global fallback (false = implicit deny strict mode)
 cache_size = 1024           # LRU cache size
 
 # ── ① Module dimension (priority: session > Bot > platform) ──
 [ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Tool*"]   # Whitelist: exact name / glob / re: regex
+modules = ["Chat", "Tool*"]   # Whitelist: exact names / glob / re: regex
 blocked = ["re:^Danger"]
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Chat"]
@@ -9298,7 +9302,7 @@ modules = ["Chat"]
 
 # ── ② Identity dimension (priority: user > session > Bot > adapter) ──
 [ErisPulse.scope.identity.adapters.onebot11]
-deny = true                   # Discard all events from this adapter
+deny = true                   # Discard all events from the entire adapter
 [ErisPulse.scope.identity.bots.onebot11."123456"]
 deny = true
 [ErisPulse.scope.identity.sessions.onebot11."g_blocked"]
@@ -9312,64 +9316,70 @@ deny = ["u_bad", "spam_*"]
 allow = ["onebot11:u_vip"]    # User identifier "platform:user_id"
 deny = ["onebot11:u_bad"]
 
-# ── ④ Handler/text dimension ──
+# ── ④ Handler/Text dimension ──
 [ErisPulse.scope.handlers.MyModule]
-pattern = "签到*"             # AND with code-level pattern/regex conditions
+pattern = "签到*"             # AND with code-side pattern/regex conditions
 regex = "re:\\d+\\s*元"
 
-# ── ⑤ Implementation parameter override ──
+# ── ⑤ Implementation Parameter Override ──
 [ErisPulse.scope.overrides.MyModule.restart]
 master = true                 # Only framework owner can use
-hidden = true                 # Hidden in help
+hidden = true                 # Hide in help
 aliases = ["rs"]              # Append alias
 prefix = "!"                  # Append trigger prefix
+
+# ── ⑥ Outbound Action Dimension (default allow all, only explicitly disable) ──
+[ErisPulse.scope.actions.MyModule]
+send = false                  # Prohibit MyModule from replying/actively sending messages
+api = false                   # Prohibit MyModule from calling standard APIs (including call escape)
+request = false               # Prohibit MyModule from handling request operations accept/reject
 ```
 
 ## ① Module Dimension
 
-Answers "which modules are available in a given context." By default, all are open; filtering starts only after configuration binding. **No changes are needed for modules or adapters.**
+Answers "which modules are available in a certain context." By default, all are open; filtering starts only after binding is configured, and **modules and adapters require no changes**.
 
 ```mermaid
 flowchart TD
     A["Event arrives at a module's handler/command"] --> B{"scope.is_allowed<br/>(platform, bot, module, session)"}
     B --> C{"Find effective binding<br/>Session level > Bot level > Platform level"}
-    C -->|"Matched"| D["blocked matched → deny<br/>modules non-empty → only whitelist allowed<br/>both empty → default_allow"]
-    C -->|"Unmatched"| E["default_allow (default true = allow)"]
-    D -->|"Deny"| Z["Silent ignore<br/> (no reply, no claim, only TRACE log visible)"]
+    C -->|"Matched"| D["blocked matched → Deny<br/>modules non-empty → Only whitelist allowed<br/>Both empty → default_allow"]
+    C -->|"Not matched"| E["default_allow (default true = allow)"]
+    D -->|"Deny"| Z["Silently ignored<br/>(No reply, no claim, only TRACE log visible)"]
 ```
 
-- **Resolution priority**: Session level > Bot level > Platform level, higher priority bindings **fully override** lower ones
-- **Silent semantics**: Filtered modules' commands and handlers do not trigger, reply, or claim (prevents cross-command mis-matching), only TRACE-level logs are visible (`core.scope.denied`)
-- **Framework-level handlers** (`scope_exempt=True` or owner is empty) are unaffected; module names empty (framework-level resources) are always allowed
+- **Resolution priority**: Session level > Bot level > Platform level, with higher priority bindings **completely overriding** lower ones
+- **Silent semantics**: Commands and handlers of filtered modules do not trigger, reply, or claim (to prevent cross-command mis-matches), visible only in TRACE-level logs (`core.scope.denied`)
+- **Framework-level handlers** (`scope_exempt=True` or owner is empty) are unaffected; module names that are empty (framework-level resources) are always allowed
 
 ## ② Identity Dimension (Event Admission)
 
-Answers "whose events are received." Events denied at this dimension are **completely discarded at the distribution entry**—they do not enter middleware or any handler (including framework-level), only TRACE-level logs are visible (`core.scope.identity_denied`).
+Answers "whose events are received." Events denied are **completely discarded at the distribution entry**—they do not enter middleware or any handler (including framework-level), visible only in TRACE-level logs (`core.scope.identity_denied`).
 
-- **Resolution priority**: User > Session > Bot > Adapter, take the most specific configured policy; deny takes precedence over allow
-- Each level's binding is a binary policy: `{ allow = true }` or `{ deny = true }`
-- User keys support glob / regex (e.g., `"spam_*"` blocks a batch of spam users)
-- Typical use case—上级 deny, individual allow for "exceptional allow":
+- **Resolution priority**: User > Session > Bot > Adapter, taking the most specific configured strategy; deny takes precedence over allow
+- Each binding level is a binary strategy: `{ allow = true }` or `{ deny = true }`
+- User keys support glob / regex (e.g., `"spam_*"` to block a batch of spam users)
+- Typical usage—上级 deny, individual allow for "exceptional allowance":
 
 ```toml
 [ErisPulse.scope.identity.adapters.onebot11]
 deny = true
 [ErisPulse.scope.identity.users.onebot11]
-allow = ["u_admin"]   # Even if adapter-level denied, u_admin's events are allowed
+allow = ["u_admin"]   # Even if adapter-level is denied, u_admin's events are still allowed
 ```
 
 ## ③ Command Dimension (Command ACL)
 
-Answers "who can execute a specific command." Decision order: **deny matched → deny; allow whitelist non-empty and not matched → deny; neither configured → follow `default_allow`** (`true` passes to the developer's default permission chain). Denied commands reply with "insufficient permissions" explicitly.
+Answers "who can execute a certain command." The decision order is: **deny matched → deny; allow whitelist non-empty and not matched → deny; neither configured → follow `default_allow`** (true delegates to the developer's default permission chain). Denied commands will explicitly reply "insufficient permissions."
 
-- Command names support glob: `"roll*"` covers `roll`, `roll_dice`, etc., in one rule
-- Exact keys take precedence over glob keys (`commands.roll` matched, then `commands."roll*"` is not checked)
+- Command names support glob: `"roll*"` covers a family of commands like `roll` and `roll_dice` with one rule
+- Exact keys take precedence over glob keys (`commands.roll` matched, `commands."roll*"` not checked)
 - User identifier format `"platform:user_id"` (consistent with the framework owner system)
-- This dimension is **only an additional gate on the user side**, and is chained with the command's `master` / `permission` parameters: ACL passes, then the developer's declared default permission chain is followed
+- This dimension is **only an additional gate for user-side**, connected with the command's `master` / `permission` parameters: After passing ACL, the default permission chain declared by the developer is still followed (this default chain can be adjusted via ⑤ override)
 
 ## ④ Handler/Text Dimension
 
-Filters "what text a module processes": After configuring `pattern` / `regex` for a module, all its event handlers only trigger when the text matches (AND with code-level conditions, both must be satisfied). Suitable for narrowing its trigger scope without changing module code.
+Filters "what text a module processes": After configuring `pattern` / `regex` for a module, all its event handlers only trigger when the text matches (AND with code-side conditions, both must be satisfied). This is suitable for narrowing the trigger range without changing module code.
 
 ```toml
 [ErisPulse.scope.handlers.ChatModule]
@@ -9378,16 +9388,37 @@ pattern = "闲聊*"     # ChatModule's handlers only respond to messages startin
 
 ## ⑤ Implementation Parameter Override
 
-Overrides implementation parameters at the **top level** of module/command registration, without modifying module code:
+Overrides implementation parameters at the **upper level** of module/command registration, without modifying module code:
 
 ```toml
 [ErisPulse.scope.overrides.MyModule.restart]
-master = true      # Override to only framework owner
-hidden = true      # Hidden in help list
+master = true      # Override to allow only framework owner (can also set false to loosen developer's owner restriction)
+hidden = true      # Hide in help list
 aliases = ["rs"]   #生效别名
 ```
 
-> Overriding only changes **implementation parameters** (master / hidden / aliases / prefix / help / usage, etc.). **Disabling a command is not done here**—use command dimension deny (`scope.commands` or `scope.deny_user()`), to avoid conflicting "disable" semantics.
+> Override follows **user priority**: The developer's declared `master` / `hidden` etc. are only default values; after the user explicitly configures here, the user configuration takes precedence (can tighten or loosen). Override only changes **implementation parameters** (master / hidden / aliases / prefix / help / usage etc.). **Disabling a command is not done here**—use the command dimension deny (`scope.commands` or `scope.deny_user()`), to avoid conflicting "disable" semantics.
+
+## ⑥ Outbound Action Dimension (Prohibit Modules from Initiating Outbound Calls)
+
+Constraints on **outbound actions** initiated by modules: message sending / standard API actions / request operations. The three actions correspond to the underlying DSL: `Event.reply` and `Send` (send), `Api` / `call_api` (api), `Request`'s accept/reject (request). Outbound calls initiated by modules during event handler execution carry the module owner, and are uniformly judged by this dimension.
+
+```toml
+[ErisPulse.scope.actions.MyModule]
+send = false      # Prohibit MyModule from replying/actively sending messages
+api = false       # Prohibit MyModule from calling standard API actions (including call escape)
+request = false   # Prohibit MyModule from executing accept/reject on request events
+```
+
+Judgment semantics: **Default allow all**—if not configured, or owner is empty (internal framework calls), all are allowed; only when explicitly set to `false` is it denied, and denied calls do not initiate any network request, directly returning the standard failure response (`retcode = 34601`, see [api-response §5.3](../standards/api-response.md#53-框架扩展返回码34xxx-平台错误段的低三位自定义)). The three actions are independent, and one can be disabled alone.
+
+```python
+# Runtime API
+sdk.scope.set_action("MyModule", "send", False)   # Prohibit sending messages
+sdk.scope.is_action_allowed("MyModule", "send")   # False
+sdk.scope.unset_action("MyModule", "send")        # Restore allow
+sdk.scope.get_action_rules("MyModule")            # {"send": False, "api": True, "request": True}
+```
 
 ## Runtime API
 
@@ -9399,7 +9430,7 @@ from ErisPulse import sdk
 # Check
 sdk.scope.is_allowed("onebot11", "123456", "Chat")
 sdk.scope.is_allowed("onebot11", "123456", "Chat", "789012345")
-sdk.scope.is_allowed("onebot11", "123456", None)      # Framework-level resource -> True
+sdk.scope.is_allowed("onebot11", "123456", None)      # Framework-level resources -> True
 
 # Bind / Unbind
 sdk.scope.bind_module("onebot11", "123456", modules=["Chat", "Tool*"])
@@ -9419,13 +9450,13 @@ sdk.scope.get("onebot11", "123456")   # {"modules": ["Chat"], "blocked": []}
 # Check if event is allowed
 sdk.scope.is_identity_allowed("onebot11", "123456", "group_9", "u1")
 
-# Bind policy (hierarchy determined by parameters: user > session > bot > adapter)
+# Bind strategy (hierarchy determined by parameters: user > session > bot > adapter)
 sdk.scope.bind_identity("onebot11", user_id="u_bad", deny=True)
 sdk.scope.bind_identity("onebot11", user_id="spam_*", deny=True)   # glob
 sdk.scope.bind_identity("onebot11", "123456", "group_9", allow=True)
 sdk.scope.unbind_identity("onebot11", user_id="u_bad")
 
-# User blacklist convenience API
+# Convenient API for user blacklist
 sdk.scope.block_user("onebot11", "u_bad")
 sdk.scope.is_user_blocked("onebot11", "u_bad")
 sdk.scope.get_blocked_users()        # {"onebot11": ["u_bad"]}
@@ -9460,32 +9491,79 @@ sdk.scope.remove_override("MyModule", "restart")
 ### General
 
 ```python
-sdk.scope.list_bindings()   # All five-dimensional bindings
-sdk.scope.get_topology()    # Five-dimensional topology (for Dashboard)
+sdk.scope.list_bindings()   # All bindings
+sdk.scope.get_topology()    # Topology (for Dashboard)
 sdk.scope.get_stats()
 # {"module_calls": .., "module_filtered": .., "identity_checks": .., "identity_denied": ..,
-#  "command_checks": .., "command_denied": .., "cache_hits": .., "cache_misses": ..}
+#  "command_checks": .., "command_denied": .., "action_checks": .., "action_denied": ..,
+#  "cache_hits": .., "cache_misses": ..}
 sdk.scope.reset_stats()
 sdk.scope.clear()           # Clear all bindings (in-memory only)
 ```
 
-## Cache and Hot Update
+## Owner Identity and Custom Identity Source (provider)
 
-- `is_allowed` / `is_identity_allowed` results are cached with **LRU** (configurable via `scope.cache_size`), and `bind_*` / `unbind_*` / configuration hot updates (`config.updated` / `config.set`) automatically invalidate the cache
-- All dimension configurations take effect **immediately**, no restart required
-- The control plane makes decisions **per event**, with no cross-event memory: if the configuration changes, the next event follows the new rule
+The owner system answers "who is the framework owner": The `master=True` parameter of commands and the business layer's `master.is_master()` share the same identity determination, with the determination chain being **configured owner → runtime record → provider chain**.
+
+Owner configuration (`ErisPulse.master.users`, supports global list and platform-specific dict) is detailed in the [configuration documentation](../user-guide/configuration.md#Owner System Configuration). This section focuses on identity determination API and extension points.
+
+### Determination and Runtime Add/Remove
+
+```python
+from ErisPulse.Core import master
+
+master.is_master(event)                      # Determine from event
+master.is_master("yunhu", "123")             # Explicit determination
+master.add("yunhu", "123")                   # Add at runtime (default persistent; persist=False only in-memory)
+master.remove("yunhu", "123")                # Remove (default persistent)
+master.list()                                # Aggregate: {"global": [...], "<platform>": [...]}
+```
+
+### Custom Identity Source (provider)
+
+In addition to configuration, custom identity sources can be registered: `fn(platform, user_id) -> bool`, which are tried in sequence when built-in identity sources (configuration + runtime record) do not match; any provider allowing access is recognized as the owner. This is suitable for integrating with adapter administrator interfaces, database roles, and other external identity systems.
+
+The registration entry `master.provider` supports both decorator and function-based writing styles; unregistration is done via the `unregister()` method on the registered function:
+
+```python
+from ErisPulse.Core import master
+
+# Method 1: Decorator (persistent identity source, recommended)
+@master.provider
+def admin_provider(platform, user_id):
+    return user_id in {"999"}     # Custom determination logic
+
+master.is_master("yunhu", "999")   # True
+admin_provider.unregister()        # Unregister when no longer needed
+
+# Method 2: Function-based (register during module loading / unregister during unload)
+fn = master.provider(admin_provider)
+fn.unregister()
+```
+
+> Provider exceptions are caught and skipped, not blocking the identity determination chain. Binding instance methods cannot attach `unregister`, so for scenarios requiring paired registration/unregistration, use **module-level functions**.
+
+### User Priority: Owner Scope is Finalized by the User
+
+The command's `master=True` is only a **developer default**: The user can override it in the control plane via `ErisPulse.scope.overrides.<module>.<cmd>.master = true/false` (see above ⑤ Implementation Parameter Override, where user explicit configuration takes effect).
+
+## Cache and Hot Updates
+
+- `is_allowed` / `is_identity_allowed` results are cached with **LRU cache** (`scope.cache_size` is adjustable), and `bind_*` / `unbind_*` / configuration hot updates (`config.updated` / `config.set`) automatically invalidate it
+- All dimension configurations take effect **immediately** without restart
+- The control plane is "event-by-event" judgment, with no cross-event memory: If the configuration changes, the next event follows the new rule
 
 ## Common Issues and Notes
 
 ### 1. Configuration Hierarchy and Overriding
 
-- Module dimension: Session level > Bot level > Platform level, **full override**. To "allow Chat at platform level, add Music at Bot level," both must be listed at the Bot level
-- Identity dimension: User > Session > Bot > Adapter, take the **most specific** configured policy (can be used for exceptional allow)
-- Command dimension: Exact command names take precedence over glob keys
+- Module dimension: Session level > Bot level > Platform level, with **complete override**. To "allow Chat at the platform level, and add Music at the Bot level," both must be listed at the Bot level
+- Identity dimension: User > Session > Bot > Adapter, taking the **most specific** configured strategy (can do exceptional allowance)
+- Command dimension: Exact command name takes precedence over glob key
 
 ### 2. Prefer Control Plane Over Module Code Changes
 
-Modules declare "developer defaults" (`master=True`, `permission=...`, `pattern=...`); the control plane declares "user final decisions." When conflicts arise, the **more restrictive control plane** takes precedence (e.g., if the developer does not set master, the user can override `master = true` to tighten; the user cannot loosen the developer's explicit restrictions via override—disable/allow control goes through command deny / identity allow).
+Module declarations are "developer default" (`master=True`, `permission=...`, `pattern=...`); control plane declarations are "user final decision." Implementation parameter overrides follow **user priority**: User explicit configuration of `master = true/false` takes effect directly (can tighten or loosen). Developers can tighten restrictions not set by them; control over disabling/allowing is done via command deny / identity allow.
 
 ### 3. Module/Command Not Responding
 
@@ -9499,15 +9577,15 @@ print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, us
 print(sdk.scope.get_stats())   # module_filtered / identity_denied > 0 indicates silent filtering
 ```
 
-Filtering is **silent** (module dimension and identity dimension do not reply, to avoid exposing rules), but statistics accumulate; command dimension ACL denial replies explicitly with "insufficient permissions."
+Being filtered is **silent** (module and identity dimensions do not reply, preventing rule exposure), but statistics accumulate; command dimension ACL denial replies "insufficient permissions" explicitly.
 
 ### 4. Session Identifier Isolation Across Platforms
 
-`(platform, session_id)` is the unique identifier. `scope.sessions.onebot11."789"` only applies to onebot11, not affecting the session with `789` on telegram. The same applies to identity dimension user keys.
+`(platform, session_id)` combination is the unique identifier. `scope.sessions.onebot11."789"` only applies to onebot11, not affecting the session with the same `789` on telegram. The same applies to identity dimension user keys.
 
 ## Topology Tree API
 
-`ModuleManager.get_topology()` and `AdapterManager.get_topology()` provide module/adapter ownership relationship data; `sdk.get_topology()` aggregates all (including control plane `scope` five dimensions):
+`ModuleManager.get_topology()` and `AdapterManager.get_topology()` provide module/adapter ownership relationship data, and `sdk.get_topology()` aggregates them (including the control plane's five dimensions):
 
 ```python
 from ErisPulse import sdk
@@ -9538,7 +9616,7 @@ topology = sdk.get_topology()
 # }
 ```
 
-- Module topology aggregates commands, event handlers, HTTP/WS/SSE routes, and lifecycle hooks registered by the module, facilitating the drawing of the module resource tree.
+- Module topology aggregates the commands, event handlers, HTTP/WS/SSE routes, and lifecycle hooks registered by the module, useful for drawing the module resource tree.
 - Adapter topology aggregates the status of each adapter, the status of subordinate Bots, and platform-level/Bot-level scope bindings.
 
 
@@ -10883,30 +10961,30 @@ Ensure notice/request events contain the correct ID fields:
 # ErisPulse Adapter Standardized Return Specification
 
 ## 1. Description
-Why is this specification here?
+Why does this specification exist?
 
-To ensure consistency in return interfaces across platforms and OneBot12 compatibility, the ErisPulse adapter adopts the OneBot12-defined message sending return structure standard for API response formats.
+To ensure the uniformity of interface responses across platforms and compatibility with OneBot12, the ErisPulse adapter adopts the message sending return structure standard defined by OneBot12 for API response formats.
 
-However, the ErisPulse protocol has some specific definitions:
-- 1. In basic fields, `message_id` is mandatory, but it does not exist in the OneBot12 standard.
-- 2. The return content needs to add a `{platform_name}_raw` field to store raw response data.
+However, ErisPulse's protocol includes some special definitions:
+- 1. In the basic fields, `message_id` is required, but this field is not defined in the OneBot12 standard.
+- 2. The return content needs to add a `{platform_name}_raw` field to store the raw response data.
 
 ## 2. Basic Return Structure
 All action responses must include the following basic fields:
 
 | Field Name | Data Type | Required | Description |
-|-------|---------|------|------|
+|------------|-----------|----------|-------------|
 | status | string | Yes | Execution status, must be "ok" or "failed" |
 | retcode | int64 | Yes | Return code, follows OneBot12 return code rules |
-| data | any | Yes | Response data, contains request result when successful, null when failed |
-| message_id | string | Yes | Message ID, used to identify the message, empty string if none |
-| message | string | Yes | Error message, empty string when successful |
+| data | any | Yes | Response data, contains the request result on success, null on failure |
+| message_id | string | Yes | Message ID, used to identify the message; empty string if not available |
+| message | string | Yes | Error message, empty string on success |
 | {platform_name}_raw | any | No | Raw response data |
 
-Optional Fields:
+Optional field:
 | Field Name | Data Type | Required | Description |
-|-------|---------|------|------|
-| echo | string | No | When the request contains an echo field, return it unchanged |
+|------------|-----------|----------|-------------|
+| echo | string | No | Returns the value of the echo field from the request, if present |
 
 ## 3. Complete Field Specification
 
@@ -10946,59 +11024,59 @@ Optional Fields:
 #### 0 Success (OK)
 - 0: Success (OK)
 
-#### 1xxxx Action Request Errors (Request Error)
+#### 1xxxx Request Error
 | Error Code | Error Name | Description |
 |-------|-------|------|
 | 10001 | Bad Request | Invalid action request |
 | 10002 | Unsupported Action | Unsupported action request |
-| 10003 | Bad Param | Invalid action request parameters |
-| 10004 | Unsupported Param | Unsupported action request parameters |
+| 10003 | Bad Param | Invalid action request parameter |
+| 10004 | Unsupported Param | Unsupported action request parameter |
 | 10005 | Unsupported Segment | Unsupported message segment type |
-| 10006 | Bad Segment Data | Invalid message segment parameters |
-| 10007 | Unsupported Segment Data | Unsupported message segment parameters |
-| 10101 | Who Am I | Bot account not specified |
-| 10102 | Unknown Self | Unknown bot account |
+| 10006 | Bad Segment Data | Invalid message segment parameter |
+| 10007 | Unsupported Segment Data | Unsupported message segment parameter |
+| 10101 | Who Am I | Robot account not specified |
+| 10102 | Unknown Self | Unknown robot account |
 
-#### 2xxxx Action Handler Errors (Handler Error)
+#### 2xxxx Handler Error
 | Error Code | Error Name | Description |
 |-------|-------|------|
 | 20001 | Bad Handler | Action handler implementation error |
-| 20002 | Internal Handler Error | Exception thrown by action handler runtime |
+| 20002 | Internal Handler Error | Exception thrown during action handler runtime |
 
-#### 3xxxx Action Execution Errors (Execution Error)
+#### 3xxxx Execution Error
 | Error Code Range | Error Type | Description |
 |-----------|---------|------|
 | 31xxx | Database Error | Database error |
-| 32xxx | Filesystem Error | Filesystem error |
+| 32xxx | Filesystem Error | File system error |
 | 33xxx | Network Error | Network error |
-| 34xxx | Platform Error | Bot platform error |
+| 34xxx | Platform Error | Robot platform error |
 | 35xxx | Logic Error | Action logic error |
-| 36xxx | I Am Tired | Implementation decided to go on strike |
+| 36xxx | I Am Tired | Implementation decided to strike |
 
 #### Reserved Error Ranges
-- 4xxxx, 5xxxx: Reserved segments, should not be used
-- 6xxxx~9xxxx: Other error segments, available for implementation custom use
+- 4xxxx, 5xxxx: Reserved ranges, should not be used
+- 6xxxx–9xxxx: Other error ranges, for custom implementation use
 
 ## 4. Implementation Requirements
-1. All responses must include status, retcode, data, and message fields
-2. When the request contains a non-empty echo field, the response must include an echo field with the same value
-3. Return codes must strictly follow OneBot12 specification
-4. Error messages (message) should be human-readable descriptions
+1. All responses must include the status, retcode, data, and message fields.
+2. When the request contains a non-empty echo field, the response must include an echo field with the same value.
+3. Return codes must strictly follow the OneBot12 specification.
+4. Error messages (message) should be human-readable descriptions.
 
-## 5. Extended Specifications
+## 5. Extension Specifications
 
-ErisPulse makes the following extensions on top of the OneBot12 standard return structure:
+ErisPulse extends the OneBot12 standard return structure as follows:
 
-### 5.1 `message_id` Mandatory Field
+### 5.1 `message_id` Required Field
 
-In the OneBot12 standard, `message_id` is inside the `data` object and is not mandatory. ErisPulse elevates it to a top-level **mandatory** field:
+In the OneBot12 standard, `message_id` is located inside the `data` object and is not mandatory. ErisPulse elevates it to a **required** top-level field:
 
-- Should be set to an empty string `""` when `message_id` cannot be obtained
-- Ensure `message_id` always exists, modules do not need to perform null checks
+- If `message_id` cannot be obtained, it should be set to an empty string `""`
+- Ensure `message_id` is always present, so modules do not need to perform null checks
 
 ### 5.2 `{platform}_raw` Raw Response Field
 
-The return value should include a `{platform}_raw` field, containing a complete copy of the platform's raw response data:
+The return value should include the `{platform}_raw` field, which stores a complete deep copy of the raw response data from the platform:
 
 ```json
 {
@@ -11015,21 +11093,54 @@ The return value should include a `{platform}_raw` field, containing a complete 
 ```
 
 **Requirements**:
-- `{platform}_raw` must be a deep copy of the raw response, not a reference
-- `platform` must match the platform name used during adapter registration exactly (case-sensitive)
-- Error messages within the raw response should also be preserved to facilitate debugging
+- `{platform}_raw` must be a deep copy of the original response, not a reference
+- `platform` must exactly match the platform name registered by the adapter (case-sensitive)
+- Error information from the original response should also be retained for debugging purposes
 
-### 5.3 Adapter Implementation Checklist
+### 5.3 Framework Extension Return Codes (Custom Low Three Digits in the 34xxx Platform Error Segment)
+
+The OneBot12 specification allows implementations to define custom low three digits in `3xxxx`. The `34xxx` segment is semantically defined as **Platform Error** (robot platform errors, such as failures caused by platform restrictions). Within `34xxx`, the low three digits are used hierarchically based on responsibility:
+
+| Low Three Digits Segment | Responsibility | Purpose |
+|-------------------------|----------------|---------|
+| `340xx` | Adapter Implementation | Request operation family (Request Not Found / Already Handled / Not Supported / Permission Denied, see request-action-spec §7) |
+| `341xx`～`345xx` | Adapter Implementation | Platform-side permission / risk control / account restrictions (implement custom low three digits, original error in `{platform}_raw`) |
+| `346xx` | **ErisPulse Framework (Reserved)** | Framework-level interception and generic failures; adapters/modules should not use these codes |
+| `347xx`～`349xx` | Adapter Implementation | Other platform execution errors |
+
+ErisPulse framework currently uses the `346xx` codes:
+
+| Error Code | Error Name | Description |
+|------------|------------|-------------|
+| 34600 | SDK Failure | Framework-level generic failure (default return code for `make_error()`) |
+| 34601 | Action Denied | Outbound action is disabled by the control plane (`scope.actions`), call not initiated, directly return this response |
+
+> Responsibility distinction: `34601` is **framework-level interception before the call** (module does not have permission to initiate the action); `34004` / `34xxx` platform codes are **actions already sent but rejected by the platform** (e.g., Bot lacks permissions, blocked by risk control). When modules check for permission issues, they should check both types: first check `34601` (module itself is disabled by scope), then check `34xxx` (platform-side restrictions).
+
+The return structure follows the standard failure response in §2:
+
+```json
+{
+    "status": "failed",
+    "retcode": 34601,
+    "data": null,
+    "message_id": "",
+    "message": "action 'send' denied by scope.actions"
+}
+```
+
+### 5.4 Adapter Implementation Checklist
 
 - [ ] Include `status`, `retcode`, `data`, `message_id`, `message` fields
-- [ ] Return codes follow OneBot12 specification (see §3.2)
-- [ ] `message_id` always exists (empty string if unable to obtain)
-- [ ] `{platform}_raw` contains platform raw response data
+- [ ] Return codes follow the OneBot12 specification (see §3.2)
+- [ ] `message_id` is always present (set to empty string if unavailable)
+- [ ] `{platform}_raw` contains the raw response data from the platform
 
 ## 6. Notes
-- For 3xxxx error codes, the last three digits can be defined by the implementation
-- Avoid using reserved error segments (4xxxx, 5xxxx)
-- Error messages should be concise and clear for debugging
+- For error codes in the 3xxxx range, the last three digits can be defined by the implementation.
+- Avoid using reserved error ranges (4xxxx, 5xxxx).
+- **`34600` / `34601` are reserved error codes for the ErisPulse framework** (see §5.3); adapters/modules should avoid using them.
+- Error messages should be concise and clear for debugging purposes.
 
 
 
@@ -11037,11 +11148,11 @@ The return value should include a `{platform}_raw` field, containing a complete 
 
 # ErisPulse Send Method Specification
 
-This document defines the naming conventions, parameter specifications, and reverse conversion requirements for the Send class send methods in the ErisPulse adapter.
+This document defines the naming conventions, parameter specifications, and reverse conversion requirements for the Send class methods in the ErisPulse adapter.
 
 ## 1. Standard Method Naming
 
-All send methods use **PascalCase** naming, with the first letter capitalized.
+All send methods use **PascalCase (PascalCase)**, with the first letter capitalized.
 
 ### 1.1 Standard Send Methods
 
@@ -11052,7 +11163,7 @@ All send methods use **PascalCase** naming, with the first letter capitalized.
 | `Voice` | Send voice | `bytes` \| `str` (URL/Path) |
 | `Video` | Send video | `bytes` \| `str` (URL/Path) |
 | `File` | Send file | `bytes` \| `str` (URL/Path) |
-| `At` | @ user/group | `str` (user_id) |
+| `At` | Mention user/group | `str` (user_id) |
 | `Face` | Send emoji | `str` (emoji) |
 | `Reply` | Reply to message | `str` (message_id) |
 | `Forward` | Forward message | `str` (message_id) |
@@ -11060,44 +11171,44 @@ All send methods use **PascalCase** naming, with the first letter capitalized.
 | `HTML` | Send HTML message | `str` |
 | `Card` | Send card message | `dict` |
 
-### 1.2 Chainable Modifier Methods
+### 1.2 Chained Modifier Methods
 
 | Method Name | Description | Parameter Type |
 |-------------|-------------|----------------|
-| `At` | @ user (can be called multiple times) | `str` (user_id) |
-| `AtAll` | @ all members | None |
+| `At` | Mention user (can be called multiple times) | `str` (user_id) |
+| `AtAll` | Mention all members | None |
 | `Reply` | Reply to message | `str` (message_id) |
 
 ### 1.3 Protocol Methods
 
-| Method Name | Description | Required? |
-|-------------|-------------|-----------|
-| `Raw_ob12` | Send OneBot12 formatted message segment | Yes |
+| Method Name | Description | Required |
+|-------------|-------------|----------|
+| `Raw_ob12` | Send OneBot12 format message segment | Required |
 
-**`Raw_ob12` is a required method**. This is one of the core responsibilities of the adapter: receiving OneBot12 standard message segments and converting them into native platform API calls. `Raw_ob12` serves as the unified entry point for reverse conversion (OneBot12 → Platform), ensuring that modules can send messages directly using standard message segments without depending on platform-specific methods.
+**`Raw_ob12` is a required method**. One of the core responsibilities of the adapter is to receive OneBot12 standard message segments and convert them into native platform API calls. `Raw_ob12` serves as the unified entry point for reverse conversion (OneBot12 → Platform), ensuring that modules can send messages directly using standard message segments without relying on platform-specific methods.
 
-**Behavior when `Raw_ob12` is not overridden**: The base class default implementation will log a **error-level** message and return a standard error response format (`status: "failed"`, `retcode: 10002`), indicating that the adapter developer must implement this method.
+**Default behavior when `Raw_ob12` is not overridden**: The base class will log an **error-level** message and return a standard error response format (`status: "failed"`, `retcode: 10002`), indicating that the adapter developer must implement this method.
 
 ### 1.4 Recommended Extension Naming Convention
 
-If adapters need to support sending raw data in non-OneBot12 formats (such as platform-specific JSON, XML, etc.), the following naming convention is recommended:
+If an adapter needs to support sending non-OneBot12 format raw data (such as platform-specific JSON, XML, etc.), the following naming convention is recommended:
 
 | Recommended Method Name | Description |
 |-------------------------|-------------|
 | `Raw_json` | Send arbitrary JSON data |
 | `Raw_xml` | Send arbitrary XML data |
 
-**Note**: These methods are **not** provided by the base class and are not mandatory to implement. They are only provided as naming conventions, and adapters can define them as needed. If an adapter does not support these formats, there is no need to define them.
+**Note**: These methods are **not** default methods provided by the base class, nor are they mandatory to implement. They are only naming conventions, and adapters can define them as needed. If an adapter does not support these formats, there is no need to define them.
 
-**Message Builder (`MessageBuilder`)**: ErisPulse provides a `MessageBuilder` utility class to conveniently build OneBot12 message segment lists, which can be used in conjunction with `Raw_ob12`. See the [Message Builder](#11-message-builder-messagebuilder) section.
+**MessageBuilder**: ErisPulse provides the `MessageBuilder` utility class to easily construct OneBot12 message segment lists, which can be used in conjunction with `Raw_ob12`. See the [MessageBuilder](#11-messagebuilder) section.
 
-## 2. Detailed Parameter Specification
+## 2. Parameter Specification Details
 
 ### 2.1 Media Message Parameter Specification
 
-Media messages (`Image`, `Voice`, `Video`, `File`) support two parameter types:
+Media messages (`Image`, `Voice`, `Video`, `File`) support two types of parameters:
 
-#### 2.1.1 String Parameters (URL or File Path)
+#### 2.1.1 String Parameter (URL or File Path)
 
 **Format:** `str`
 
@@ -11106,11 +11217,11 @@ Media messages (`Image`, `Voice`, `Video`, `File`) support two parameter types:
 - **File Path**: Local file path (e.g., `/path/to/file.jpg` or `C:\\path\\to\\file.jpg`)
 
 **Use Cases:**
-- The file is already on the network, send the URL directly
+- The file is already online, send the URL directly
 - The file is on the local disk, send the file path
-- Want the adapter to automatically handle file upload
+- Want the adapter to handle file upload automatically
 
-**Recommendation:** Prefer using URL; if URL is unavailable, use local file path
+**Recommendation:** Prefer using URLs; if URLs are unavailable, use local file paths.
 
 **Examples:**
 ```python
@@ -11122,27 +11233,27 @@ send.Image("/path/to/local/image.jpg")
 send.Image("C:\\path\\to\\local\\image.jpg")
 ```
 
-#### 2.1.2 Binary Data Parameters
+#### 2.1.2 Binary Data Parameter
 
 **Format:** `bytes`
 
 **Use Cases:**
-- The file is already in memory (e.g., downloaded from the network, read from other sources)
-- Need to process before sending (e.g., image compression, format conversion)
+- The file is already in memory (e.g., downloaded from the network, read from another source)
+- Need to process the file before sending (e.g., compress images, convert formats)
 - Avoid repeated file reading
 
-**Considerations:**
+**Notes:**
 - Uploading large files may consume significant memory
 - It is recommended to set reasonable file size limits
 
-**Examples:**
+**Example:**
 ```python
-# Read from network and send
+# Reading from the network and sending
 import requests
 image_data = requests.get("https://example.com/image.jpg").content
 send.Image(image_data)
 
-# Read from file and send
+# Reading from a file and sending
 with open("/path/to/local/image.jpg", "rb") as f:
     image_data = f.read()
 send.Image(image_data)
@@ -11150,17 +11261,17 @@ send.Image(image_data)
 
 #### 2.1.3 Parameter Processing Priority
 
-When the adapter receives media message parameters, it should process them in the following order:
+When an adapter receives media message parameters, it should process them in the following order:
 
-1. **URL Parameter**: Directly use the URL to send (some platform adapters may download the URL before uploading)
-2. **File Path**: Check if it is a local path, if so, upload the file
-3. **Binary Data**: Directly upload binary data
+1. **URL Parameter**: Use the URL directly (some platform adapters may have operations to download URLs and then upload them)
+2. **File Path**: Check if it is a local path; if so, upload the file
+3. **Binary Data**: Upload the binary data directly
 
-**Adapter Implementation Recommendation:**
+**Adapter Implementation Suggestion:**
 ```python
 def Image(self, image: Union[bytes, str]):
     if isinstance(image, str):
-        # Determine if it is a URL or local path
+        # Determine if it is a URL or a local path
         if image.startswith(("http://", "https://")):
             # Directly send URL
             return self._send_image_by_url(image)
@@ -11169,41 +11280,41 @@ def Image(self, image: Union[bytes, str]):
             with open(image, "rb") as f:
                 return self._upload_image(f.read())
     elif isinstance(image, bytes):
-        # Binary data, directly upload
+        # Binary data, upload directly
         return self._upload_image(image)
 ```
 
 ### 2.2 @User Parameter Specification
 
-**Method:** `At` (modifier method)
+**Method:** `At` (Modifier method)
 
 **Parameter:** `user_id` (`str`)
 
 **Requirements:**
-- `user_id` should be a string-type user identifier
+- `user_id` should be a string type user identifier
 - Different platforms may have different `user_id` formats (numbers, UUID, strings, etc.)
 - The adapter is responsible for converting `user_id` into the platform-specific format
-- Note that the actual send method call should be placed at the end
+- Ensure the actual send method call is placed at the end
 
 **Example:**
 ```python
 # Single @ user
 Send.To("group", "g123").At("123456").Text("Hello")
 
-# Multiple @ users (chainable call)
+# Multiple @ users (chained call)
 send.To("group", "g123").At("123456").At("789012").Text("Hello everyone")
 ```
 
 ### 2.3 Reply Message Parameter Specification
 
-**Method:** `Reply` (modifier method)
+**Method:** `Reply` (Modifier method)
 
 **Parameter:** `message_id` (`str`)
 
 **Requirements:**
-- `message_id` should be a string-type message identifier
+- `message_id` should be a string type message identifier
 - Should be the ID of a previously received message
-- Some platforms may not support reply functionality, the adapter should gracefully degrade
+- Some platforms may not support reply functionality; the adapter should gracefully degrade
 
 **Example:**
 ```python
@@ -11212,7 +11323,7 @@ send.To("group", "g123").Reply("msg_123456").Text("Received")
 
 ## 3. Platform-Specific Method Naming
 
-**Not recommended** to directly add platform-prefixed methods in the Send class. It is recommended to use generic method names or `Raw_{protocol}` methods.
+**Do not** directly add platform-prefixed methods in the Send class. It is recommended to use generic method names or `Raw_{protocol}` methods.
 
 **Not Recommended:**
 ```python
@@ -11235,13 +11346,13 @@ def Raw_ob12(self, message):  # ✅ Send OneBot12 format
     pass
 ```
 
-**Extension Method Requirements:**
+**Extension Method Requirements**:
 - Method names use PascalCase, without platform prefix
 - Must return an `asyncio.Task` object
 - Must provide complete type annotations and docstrings
 - Parameter design should be as consistent as possible with standard method styles
 
-## 4. Parameter Naming Convention
+## 4. Parameter Naming Specification
 
 | Parameter Name | Description | Type |
 |----------------|-------------|------|
@@ -11254,19 +11365,19 @@ def Raw_ob12(self, message):  # ✅ Send OneBot12 format
 
 ## 5. Return Value Specification
 
-- **Send Methods** (e.g., `Text`, `Image`): Must return an `asyncio.Task` object
-- **Modifier Methods** (e.g., `At`, `Reply`, `AtAll`): Must return `self` to support chainable calls
+- **Send methods** (e.g., `Text`, `Image`): Must return an `asyncio.Task` object
+- **Modifier methods** (e.g., `At`, `Reply`, `AtAll`): Must return `self` to support chained calls
 
 ---
 
 ## 6. Reverse Conversion Specification (OneBot12 → Platform)
 
-The adapter not only needs to convert platform-native events into OneBot12 format (forward conversion), but must also provide the ability to convert OneBot12 message segments back into platform-native API calls (reverse conversion). The unified entry point for reverse conversion is the `Raw_ob12` method.
+The adapter must not only convert platform-native events into OneBot12 format (forward conversion), but also **must** provide the ability to convert OneBot12 message segments back into platform-native API calls (reverse conversion). The unified entry point for reverse conversion is the `Raw_ob12` method.
 
 ### 6.1 Conversion Model
 
 ```
-Forward Conversion (Receive Direction)                Reverse Conversion (Send Direction)
+Forward Conversion (Receiving Direction)                Reverse Conversion (Sending Direction)
 ─────────────────                ─────────────────
 Platform-native Event                       OneBot12 Message Segment List
     │                                  │
@@ -11275,14 +11386,14 @@ Converter.convert()               Send.Raw_ob12()
     │                                  │
     ▼                                  ▼
 OneBot12 Standard Event                  Platform-native API Call
-(with {platform}_raw)             (Return standard response format)
+(Contains {platform}_raw)             (Returns Standard Response Format)
 ```
 
-**Core Symmetry**: Forward conversion retains original data in `{platform}_raw`, while reverse conversion accepts OneBot12 standard format and restores it into platform calls.
+**Core Symmetry**: Forward conversion retains original data in `{platform}_raw`, and reverse conversion accepts OneBot12 standard format and restores it into platform calls.
 
 ### 6.2 `Raw_ob12` Implementation Specification
 
-`Raw_ob12` receives a OneBot12 standard message segment list and must convert it into platform-native API calls.
+`Raw_ob12` receives OneBot12 standard message segment lists and must convert them into platform-native API calls.
 
 **Method Signature**:
 
@@ -11291,7 +11402,7 @@ def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
     """
     Send OneBot12 standard message segments
 
-    :param message_segments: OneBot12 message segment list
+    :param message_segments: List of OneBot12 message segments
         [
             {"type": "text", "data": {"text": "Hello"}},
             {"type": "image", "data": {"file": "https://..."}},
@@ -11304,31 +11415,31 @@ def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
 **Implementation Requirements**:
 
 1. **Must handle all standard message segment types**: At least support `text`, `image`, `audio`, `video`, `file`, `mention`, `reply`
-2. **Must handle platform extension message segments**: For message segments of type `{platform}_xxx`, convert them into corresponding platform-native calls
-3. **Must return standard response format**: Follow the [API Response Standard](api-response.md)
-4. **Unsupported message segments should be skipped and warnings logged**, not throw exceptions that cause the entire message to fail
+2. **Must handle platform extension message segments**: For message segments of the type `{platform}_xxx`, convert them into corresponding platform-native calls
+3. **Must return standard response format**: Follow [API Response Standard](api-response.md)
+4. **Unsupported message segments should be skipped and warning logged**, should not throw exceptions causing the entire message to fail
 
 ### 6.3 Message Segment Conversion Rules
 
 #### 6.3.1 Standard Message Segment Conversion
 
-The adapter must implement the conversion of the following standard message segments:
+The adapter must implement the following standard message segment conversions:
 
 | OneBot12 Message Segment | Conversion Requirements |
 |--------------------------|-------------------------|
 | `text` | Directly use `data.text` |
-| `image` | Process based on `data.file` type: Use URL directly, upload bytes, read and upload local path |
-| `audio` | Same processing logic as image |
-| `video` | Same processing logic as image |
-| `file` | Same processing logic as image, note `data.filename` |
-| `mention` | Convert to platform @ user mechanism (e.g., Telegram's `entities`, Yunhu's `at_uid`) |
-| `reply` | Convert to platform reply reference mechanism |
-| `face` | Convert to platform emoji sending mechanism, skip if not supported |
-| `location` | Convert to platform location sending mechanism, skip if not supported |
+| `image` | Handle based on `data.file` type: Use URL directly, upload bytes, read and upload local path |
+| `audio` | Same handling logic as image |
+| `video` | Same handling logic as image |
+| `file` | Same handling logic as image, pay attention to `data.filename` |
+| `mention` | Convert to platform's @user mechanism (e.g., Telegram's `entities`, Yunhu's `at_uid`) |
+| `reply` | Convert to platform's reply reference mechanism |
+| `face` | Convert to platform's emoji sending mechanism, skip if not supported |
+| `location` | Convert to platform's location sending mechanism, skip if not supported |
 
 #### 6.3.2 Platform Extension Message Segment Conversion
 
-For message segments with platform prefixes, the adapter should recognize and convert them:
+For message segments with platform prefixes, the adapter should identify and convert them:
 
 ```python
 def _convert_ob12_segments(self, segments: List[Dict]) -> Any:
@@ -11350,12 +11461,12 @@ def _convert_ob12_segments(self, segments: List[Dict]) -> Any:
             logger.warning(f"Unsupported message segment type: {seg_type}")
 ```
 
-#### 6.3.3 Composite Message Segment Handling
+#### 6.3.3 Handling Composite Message Segments
 
-A message may contain multiple message segments, and the adapter needs to correctly handle composite messages:
+A message may contain multiple message segments, and the adapter needs to handle composite messages correctly:
 
 ```python
-# Module sends a message containing text + image + @ user
+# Module sends a message containing text + image + @user
 await send.Raw_ob12([
     {"type": "mention", "data": {"user_id": "123"}},
     {"type": "text", "data": {"text": "Hello"}},
@@ -11364,13 +11475,13 @@ await send.Raw_ob12([
 ```
 
 **Handling Strategy**:
-- **Prefer merging**: If the platform supports sending text, image, @, etc. in a single message, merge and send
-- **Fallback to splitting**: If the platform does not support merging, split into multiple messages and send in order
+- **Prioritize merging**: If the platform supports combining text, image, @, etc. in a single message, merge and send
+- **Fallback to splitting**: If the platform does not support merging, send as multiple messages in sequence
 - **Maintain order**: The sending order of message segments should be consistent with the list order
 
 ### 6.4 Relationship between `Raw_ob12` and Standard Methods
 
-The adapter's standard send methods (`Text`, `Image`, etc.) **are already implemented and default delegated to `Raw_ob12` by the `SendDSL` base class**, and adapter subclasses do not need to reimplement them:
+The adapter's standard send methods (`Text`, `Image`, etc.) **are already implemented by the `SendDSL` base class and default to delegating to `Raw_ob12`**, so the adapter subclass does not need to reimplement them:
 
 ```python
 class Send(SendDSL):
@@ -11378,7 +11489,7 @@ class Send(SendDSL):
         """Core implementation: OneBot12 message segment → Platform API (must implement)"""
         return asyncio.create_task(self._send_ob12(message_segments))
 
-    # Text/Image/Voice/Video/File are inherited from base class, automatically delegated to Raw_ob12
+    # Text/Image/Voice/Video/File are inherited from the base class and automatically delegate to Raw_ob12
     # If platform-specific logic is needed, individual methods can be overridden:
     # def Text(self, text: str) -> asyncio.Task:
     #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
@@ -11386,9 +11497,9 @@ class Send(SendDSL):
 
 **Benefits**:
 - Conversion logic is centralized in `Raw_ob12`, reducing redundant code
-- Standard methods and `Raw_ob12` have identical behavior
+- Standard methods and `Raw_ob12` behavior are completely consistent
 - Modules get the same result whether using `Text()` or `Raw_ob12()`
-- The base class provides type signatures, and IDE can complete standard methods
+- The base class provides type signatures, and IDEs can complete standard methods
 
 ### 6.5 Implementation Example
 
@@ -11402,7 +11513,7 @@ class YunhuSend(SendDSL):
     
     async def _do_send(self, segments: list) -> dict:
         """Actual sending logic"""
-        # 1. Parse modifier state
+        # 1. Parse modifier status
         at_users = self._at_users or []
         reply_to = self._reply_to
         at_all = self._at_all
@@ -11470,20 +11581,20 @@ info = adapter.send_info("myplatform", "Form")
 
 | Platform | Method Name | Description |
 |----------|-------------|-------------|
-| onebot12 | `Mention` | @ user (OneBot12 style) |
+| onebot12 | `Mention` | @User (OneBot12 style) |
 | onebot12 | `Sticker` | Send sticker |
 | onebot12 | `Location` | Send location |
 | onebot12 | `Recall` | Recall message |
 | onebot12 | `Edit` | Edit message |
 | onebot12 | `Batch` | Batch send |
 
-> **Note**: Send methods do not use platform prefixes; methods with the same name on different platforms can have different implementations.
+> **Note**: Send methods are not prefixed with the platform name; methods with the same name on different platforms can have different implementations.
 
 ---
 
 ## 9. Adapter Development Notes
 
-For guidance on correctly overriding `BaseAdapter`, `Send`, and `Request`'s `__init__`, see [Adapter Development Introduction - `__init__` Notes](../../developer-guide/adapters/getting-started.md#init-注意事项).
+For how to correctly override `BaseAdapter`, `Send`, `Request`'s `__init__`, see [Adapter Development Guide - `__init__` Notes](../developer-guide/adapters/getting-started.md#init-注意事项).
 
 ---
 
@@ -11495,20 +11606,20 @@ For guidance on correctly overriding `BaseAdapter`, `Send`, and `Request`'s `__i
 - [ ] Standard methods (`Text`, `Image`, etc.) are implemented
 - [ ] Return values are all `asyncio.Task`
 - [ ] Modifier methods (`At`, `Reply`, `AtAll`) return `self`
-- [ ] Platform extension methods use PascalCase, without platform prefix
+- [ ] Platform extension methods use PascalCase, no platform prefix
 - [ ] All methods have complete type annotations and docstrings
 
 ### Reverse Conversion
-- [ ] `Raw_ob12` **is implemented** (required, cannot be skipped)
+- [ ] `Raw_ob12` **is implemented** (must, cannot skip)
 - [ ] `Raw_ob12` can handle all standard message segments (`text`, `image`, `audio`, `video`, `file`, `mention`, `reply`)
 - [ ] `Raw_ob12` can handle platform extension message segments (`{platform}_xxx` type)
-- [ ] Standard send methods (`Text`, `Image`, etc.) internally delegate to `Raw_ob12`, rather than independently implementing conversion logic
-- [ ] Unsupported message segments are skipped and warnings logged, exceptions are not thrown
-- [ ] Composite message segments are correctly handled (merged or split in order)
+- [ ] Standard send methods (`Text`, `Image`, etc.) internally delegate to `Raw_ob12`, not implement conversion logic independently
+- [ ] Unsupported message segments are skipped and warnings are logged, no exceptions are thrown
+- [ ] Composite message segments are handled correctly (merge or split in sequence)
 
 ---
 
-## 10. Message Builder (`MessageBuilder`)
+## 11. MessageBuilder
 
 `MessageBuilder` is a message segment builder tool provided by ErisPulse, used in conjunction with `Raw_ob12` to simplify the construction of OneBot12 message segments.
 
@@ -11520,14 +11631,14 @@ from ErisPulse.Core import MessageBuilder
 from ErisPulse.Core.Event import MessageBuilder
 ```
 
-### 11.2 Chainable Message Building
+### 11.2 Chainable Building
 
 ```python
-# Build a message containing text, image, and @ user
+# Build a message containing text, image, and @user
 segments = (
     MessageBuilder()
     .mention("123456")
-    .text("Hello, look at this picture")
+    .text("Hello, look at this image")
     .image("https://example.com/img.jpg")
     .reply("msg_789")
     .build()
@@ -11565,18 +11676,18 @@ async def handle(event: Event):
 
 ### 11.5 Supported Message Segment Methods
 
-| Method | Description | Data Fields |
+| Method | Description | data fields |
 |--------|-------------|-------------|
 | `text(text)` | Text | `text` |
 | `image(file)` | Image | `file` |
 | `audio(file)` | Audio | `file` |
 | `video(file)` | Video | `file` |
-| `file(file, filename=None)` | File | `file`, `filename`(optional) |
-| `mention(user_id, user_name=None)` | @ user | `user_id`, `user_name`(optional) |
-| `at(user_id, user_name=None)` | @ user (`mention` alias) | Same as `mention` |
+| `file(file, filename=None)` | File | `file`, `filename` (optional) |
+| `mention(user_id, user_name=None)` | @User | `user_id`, `user_name` (optional) |
+| `at(user_id, user_name=None)` | @User (`mention` alias) | Same as `mention` |
 | `reply(message_id)` | Reply | `message_id` |
-| `at_all()` | @ all members | `{}` |
-| `custom(type, data)` | Custom/platform extension | Custom |
+| `at_all()` | @All members | `{}` |
+| `custom(type, data)` | Custom/Platform extension | Custom |
 
 ### 11.6 Utility Methods
 
@@ -11597,7 +11708,7 @@ if builder:
 
 ---
 
-## 11. Related Documentation
+## 12. Related Documentation
 
 - [Event Conversion Standard](event-conversion.md) - Complete event conversion specification, extension naming, and message segment standards
 - [API Response Standard](api-response.md) - Adapter API response format standard
@@ -11614,11 +11725,11 @@ This document defines the standardized specification for request event operation
 
 ## 1. Overview
 
-Request events (`type: "request"`) are special event types defined in the OneBot12 standard, representing requests that require the Bot to make decisions (such as friend requests, group invitations, etc.).
+The request event (`type: "request"`) is a special event type defined in the OneBot12 standard, representing requests that require the Bot to make a decision (such as friend requests or group invitations).
 
 Unlike message events, request events require **bidirectional interaction**:
-1. **Receiving**: The adapter converts platform-native requests into standard request events
-2. **Responding**: The module performs operations through the `Request` DSL or `Event.approve()`/`Event.reject()`
+1. **Receiving**: The adapter converts the platform-native request into a standard request event
+2. **Responding**: The module executes operations via the `Request` DSL or `Event.approve()`/`Event.reject()`
 
 ```
 Platform-native request event
@@ -11631,8 +11742,8 @@ Standard request event (with request_id)
     │
     ├─→ Module handler @request.on_friend_request()
     │       │
-    │       ├─→ event.approve()     ← Approve request
-    │       └─→ event.reject()      ← Reject request
+    │       ├─→ event.approve()     ← Approve the request
+    │       └─→ event.reject()      ← Reject the request
     │               │
     │               ▼
     │       adapter.Request(request_id).accept()
@@ -11643,7 +11754,7 @@ Standard request event (with request_id)
     │               ▼
     │       Platform API call
     │
-    └─→ Or direct adapter operation
+    └─→ Or directly through adapter operations
             await adapter.Request("req_id").accept()
 ```
 
@@ -11651,25 +11762,25 @@ Standard request event (with request_id)
 
 ### 2.1 Standard Fields
 
-In addition to the required OneBot12 standard fields, request events must include the following fields:
+The request event must include OneBot12 standard fields and the following additional fields:
 
 | Field | Type | Required | Description |
-|------|------|----------|-------------|
-| `request_id` | string | **Strongly Recommended** | Request identifier for approve/reject operations |
-| `user_id` | string | Yes | Request initiator ID |
-| `user_nickname` | string | No | Request initiator nickname |
-| `comment` | string | No | Request message/comment |
+|------|------|------|------|
+| `request_id` | string | **Strongly recommended** | Request identifier, used for approve/reject operations |
+| `user_id` | string | Yes | ID of the request initiator |
+| `user_nickname` | string | No | Nickname of the request initiator |
+| `comment` | string | No | Request comment |
 
 ### 2.2 `request_id` Field
 
-The `request_id` is the core identifier for request operations:
+`request_id` is the core identifier for request operations:
 
-- **Purpose**: Identifies an actionable request for use with the `Request` DSL
+- **Purpose**: Identifies an actionable request, used by the `Request` DSL
 - **Generation Rules**:
-  - Prefer platform-native request identifiers (e.g., OneBot11's `flag` field, Telegram's `chat_invite_link`, etc.)
-  - If the platform has no native request ID, the adapter should generate a unique identifier (recommended format: `{platform}_{timestamp}_{user_id}`)
-- **Uniqueness**: Should remain unique within the same platform scope
-- **Missing Behavior**: When `request_id` is missing, `event.approve()` / `event.reject()` will raise `ValueError`
+  - Prefer using the platform-native request identifier (e.g., OneBot11's `flag` field, Telegram's `chat_invite_link`, etc.)
+  - If the platform lacks a native request ID, the adapter should generate a unique identifier (recommended format: `{platform}_{timestamp}_{user_id}`)
+- **Uniqueness**: Should be unique within the same platform
+- **Missing Behavior**: When `request_id` is missing, `event.approve()` / `event.reject()` will raise a `ValueError`
 
 ### 2.3 Request Event Example
 
@@ -11695,21 +11806,21 @@ The `request_id` is the core identifier for request operations:
 
 ## 3. Request DSL
 
-### 3.1 Chained Calls
+### 3.1 Chainable Calls
 
-`Request` provides a chained call interface consistent with the `Send` style:
+`Request` provides a chainable API similar to `Send`:
 
 ```python
 # Basic usage
 await adapter.Request("req_id").accept()
 await adapter.Request("req_id").reject()
 
-# Specify bot account
+# Specify Bot account
 await adapter.Request("req_id").Using("bot1").accept()
 
 # Include comment (via kwargs)
 await adapter.Request("req_id").accept(comment="Welcome")
-await adapter.Request("req_id").reject(comment="Not adding at this time")
+await adapter.Request("req_id").reject(comment="Not adding for now")
 
 # Combined usage
 await adapter.Request("req_id").Using("bot1").accept(comment="Welcome")
@@ -11718,14 +11829,14 @@ await adapter.Request("req_id").Using("bot1").accept(comment="Welcome")
 ### 3.2 Method List
 
 | Method | Description | Return Value |
-|--------|-------------|--------------|
-| `Using(account_id)` | Specify the bot account for operation | `RequestDSL` (supports chaining) |
-| `accept(**kwargs)` | Approve request | `asyncio.Task` (returns standard response after awaiting) |
-| `reject(**kwargs)` | Reject request | `asyncio.Task` (returns standard response after awaiting) |
+|------|------|--------|
+| `Using(account_id)` | Specify the Bot account for the operation | `RequestDSL` (supports chainable calls) |
+| `accept(**kwargs)` | Approve the request | `asyncio.Task` (await returns standard response) |
+| `reject(**kwargs)` | Reject the request | `asyncio.Task` (await returns standard response) |
 
 ### 3.3 Return Value Format
 
-Operations return standard API response format:
+The operation returns a standard API response format:
 
 **Success**:
 ```json
@@ -11745,24 +11856,24 @@ Operations return standard API response format:
     "retcode": 34001,
     "data": null,
     "message_id": "",
-    "message": "Request expired or not found"
+    "message": "Request expired or does not exist"
 }
 ```
 
-**Not Implemented** (adapter hasn't overridden `accept`/`reject`):
+**Not Implemented** (adapter did not override `accept`/`reject`):
 ```json
 {
     "status": "failed",
     "retcode": 10002,
     "data": null,
     "message_id": "",
-    "message": "Platform MyAdapter has not implemented request operations (accept)"
+    "message": "Platform MyAdapter has not implemented request operation (accept)"
 }
 ```
 
 ## 4. Event Convenience Methods
 
-The `Event` wrapper class provides convenience methods suitable for use in request event handlers:
+The `Event` wrapper class provides convenient methods suitable for use in request event handlers:
 
 ```python
 from ErisPulse.Core.Event import request
@@ -11779,7 +11890,7 @@ async def handle_friend_request(event):
     result = await event.approve()
     
     # Or reject request
-    # result = await event.reject(comment="Not adding friends at this time")
+    # result = await event.reject(comment="Not adding as friend for now")
     
     # Check result
     if result.get("status") == "ok":
@@ -11791,10 +11902,10 @@ async def handle_friend_request(event):
 ### 4.1 Event Method List
 
 | Method | Description | Return Value |
-|--------|-------------|--------------|
+|------|------|--------|
 | `get_request_id()` | Get request ID | `str` |
-| `approve(comment=None)` | Approve the current request event | Standard response format |
-| `reject(comment=None)` | Reject the current request event | Standard response format |
+| `approve(comment=None)` | Approve current request event | Standard response format |
+| `reject(comment=None)` | Reject current request event | Standard response format |
 
 ## 5. Adapter Implementation Requirements
 
@@ -11818,7 +11929,7 @@ def convert_request_event(self, raw_event: dict) -> dict:
         "user_id": str(raw_event.get("user_id", "")),
         "user_nickname": raw_event.get("nickname", ""),
         "comment": raw_event.get("message", ""),
-        "request_id": self._extract_request_id(raw_event),  # ← Critical field
+        "request_id": self._extract_request_id(raw_event),  # ← Key field
         f"{self._platform_name}_raw": raw_event,
         f"{self._platform_name}_raw_type": raw_event.get("type", ""),
     }
@@ -11827,9 +11938,9 @@ def _extract_request_id(self, raw_event: dict) -> str:
     """
     Extract request ID from platform-native event
     
-    Prefer platform-native request identifiers, generate unique ID if none available
+    Prefer using platform-native request identifier, or generate a unique ID if none exists
     """
-    # Prefer platform-native ID
+    # Prefer using platform-native ID
     if flag := raw_event.get("flag"):
         return str(flag)
     if request_key := raw_event.get("request_key"):
@@ -11841,9 +11952,9 @@ def _extract_request_id(self, raw_event: dict) -> str:
     return hashlib.md5(raw.encode()).hexdigest()
 ```
 
-### 5.2 Request Inner Class Implementation
+### 5.2 Request Internal Class Implementation
 
-Adapters can override `accept` and `reject` in the `Request` inner class:
+The adapter implements `accept` and `reject` in the `Request` internal class:
 
 ```python
 from ErisPulse.Core import BaseAdapter, RequestDSL
@@ -11857,7 +11968,7 @@ class MyAdapter(BaseAdapter):
             """
             Approve request
             
-            :param kwargs: Extended parameters, e.g., comment="Note"
+            :param kwargs: Additional parameters, e.g., comment="remark"
             :return: asyncio.Task
             """
             async def _do():
@@ -11915,124 +12026,128 @@ class MyAdapter(BaseAdapter):
             return self._create_task(_do())
 ```
 
-### 5.3 Platforms Without Request Operations
+### 5.3 Platform Does Not Support Request Operations
 
-If the platform itself doesn't support friend requests/group invitation operations (some platforms auto-process requests), the adapter can:
+If the platform does not support friend requests or group invitations (e.g., some platforms automatically handle requests), the adapter can:
 
-1. **Not override the `Request` inner class**: Use the base class default implementation, returning `retcode=10002` when calling `accept()`/`reject()`
-2. **Skip `request_id` during conversion**: Don't generate `request_id`, let `event.approve()` raise `ValueError`
+1. **Do not override `Request` internal class**: Use the base class default implementation, calling `accept()`/`reject()` returns `retcode=10002`
+2. **Skip `request_id` generation during conversion**: Do not generate `request_id`, let `event.approve()` raise `ValueError`
 3. **Log warnings**: Record warnings in `accept`/`reject` and return appropriate error codes
 
 ### 5.4 Summary: Send and Request in Parallel
 
-The adapter has two parallel DSL inner classes, each with its own responsibilities:
+The adapter has two parallel DSL internal classes, each with its own responsibilities:
 
 ```
 BaseAdapter
 ├── Send(SendDSL)     ← Message sending
-│   ├── Raw_ob12()    ← Must implement
+│   ├── Raw_ob12()    ← Must be implemented
 │   ├── Text()        ← Recommended implementation
-│   └── Image()       ← Implement as needed
+│   └── Image()       ← Implemented as needed
 │
 └── Request(RequestDSL) ← Request operations
-    ├── accept()        ← Implement as needed
-    └── reject()        ← Implement as needed
+    ├── accept()        ← Implemented as needed
+    └── reject()        ← Implemented as needed
 ```
 
 ### 5.5 Adapter `__init__` Considerations
 
-When overriding the `__init__` of the `Request` inner class, you must pass through parameters and call `super().__init__()`, see [Getting Started with Adapter Development - `__init__` Considerations](../../developer-guide/adapters/getting-started.md#init-considerations) (same applies to `Request`, parameters are `adapter, request_id, account_id`).
+When overriding the `Request` internal class's `__init__`, you must pass through parameters and call `super().__init__()`, see [Adapter Development Guide - `__init__` Considerations](../developer-guide/adapters/getting-started.md#init-注意事项) (`Request` is similar, parameters are `adapter, request_id, account_id`).
 
 ## 6. Adapter Implementation Checklist
 
 ### Basic Requirements
-- [ ] If `__init__` is overridden, `super().__init__()` has been called (ensuring Send / Request factory initialization)
+- [ ] If `__init__` is overridden, `super().__init__()` has been called (to ensure Send/Request factory initialization)
 
 ### Request Event Conversion
-- [ ] Request event includes `request_id` field (strongly recommended)
+- [ ] Request event includes the `request_id` field (strongly recommended)
 - [ ] `detail_type` correctly maps to `"friend"` or `"group"`
-- [ ] Platform raw data is preserved in `{platform}_raw` field
+- [ ] Platform-native data is preserved in the `{platform}_raw` field
 - [ ] `request_id` generation rules are documented
 
 ### Request Operations
-- [ ] `Request` inner class is implemented (if platform supports request operations)
+- [ ] `Request` internal class is implemented (if the platform supports request operations)
 - [ ] `accept()` method is implemented
 - [ ] `reject()` method is implemented
-- [ ] Operations return standard API response format
-- [ ] Unsupported operations return `retcode=10002`
+- [ ] Operation returns standard API response format
+- [ ] Operations not supported return `retcode=10002`
 - [ ] Network errors return `retcode=33xxx` (following API response standards)
 
-## 7. Error Code Extensions
+## 7. Error Code Extension
 
-Recommended error codes for request operations (following [API Response Standards](api-response.md) §3.2):
+For **adapter implementation layer** related to request operations, the following recommended error codes are suggested (following [API Response Standard](api-response.md) §3.2, falling within the `34xxx` platform error segment's lower three digits for custom use):
 
 | Error Code | Error Name | Description |
-|------------|------------|-------------|
-| 34001 | Request Not Found | Request doesn't exist or has expired |
-| 34002 | Request Already Handled | Request has already been processed |
-| 34003 | Request Not Supported | Platform doesn't support this type of request operation |
-| 34004 | Permission Denied | Bot has no permission to handle this request |
+|-------|-------|------|
+| 34001 | Request Not Found | Request does not exist or has expired |
+| 34002 | Request Already Handled | Request has already been handled |
+| 34003 | Request Not Supported | Platform does not support this type of request operation |
+| 34004 | Permission Denied | Bot does not have permission to handle this request (returned by platform) |
+
+> **Boundary with Framework Codes**: The above `340xx` are **platform/adapter**-returned request handling failures; when the ErisPulse framework disables a module's request action in `scope.actions`, it **directly returns `34601` (Action Denied)** before calling the adapter (see [API Response Standard §5.3](api-response.md#53-framework-extended-return-codes-34xxx-custom-use-in-the-lower-three-digits-of-the-platform-error-segment)), and the two are not substitutes: first pass the `34601` framework gate, then fall back to the platform layer `340xx` errors.
 
 ## 8. Related Documentation
 
-- [Event Conversion Standards](event-conversion.md) - Complete event conversion specification
-- [API Response Standards](api-response.md) - Adapter API response format standards
-- [Send Method Specification](send-method-spec.md) - Send class method naming and parameter specifications
-- [Session Type Standards](session-types.md) - Session type definitions and mapping relationships
+- [Event Conversion Standard](event-conversion.md) - Complete event conversion specification
+- [API Response Standard](api-response.md) - Standard format for adapter API responses
+- [Send Method Specification](send-method-spec.md) - Naming and parameter conventions for Send class methods
+- [Session Type Standard](session-types.md) - Definition and mapping of session types
 
 
 
 ### API 动作标准
 
-# ErisPulse API Action Standards
+# ErisPulse API Action Standard
 
-This document defines the unified interface specification for **OneBot12 Standard API Actions** in the ErisPulse adapter, enabling module developers to program against a standard interface, with the adapter responsible for mapping to the platform's native API.
+This document defines the unified interface specification for **OneBot12 Standard API Actions** in ErisPulse adapters, enabling module developers to program against standard interfaces, with adapters responsible for mapping to platform-native APIs.
+
+> **Scope**: In OneBot12 standard actions, `ApiDSL` provides strongly-typed methods for user/group/channel/message management/meta general interfaces (with `send_message` handled by `SendDSL.Raw_ob12`). File resource actions (`upload_file` / `get_file` / chunked) are retained only as degraded pass-through, see §3.5 for details. Platform extension actions are invoked via `Api.call("prefix.action", ...)` escape hatch. Action parameters and return structures follow the OneBot12 specification (located in `onebot/specs/interface/` in the repository).
 
 ## 1. Design Background
 
-In ErisPulse, message segments (message send/receive) and event formats already fully follow the OneBot12 standard, but **API Action Calls** (such as getting user info, getting group list, recalling messages) were previously not unified—module developers had to write different `call_api` calls for each platform.
+In ErisPulse, message segments (message send/receive) and event formats already fully conform to the OneBot12 standard, but **API action calls** (such as retrieving user information, group list, or deleting messages) were previously inconsistent—module developers had to write different `call_api` calls for each platform.
 
 `ApiDSL` resolves this issue by providing strongly-typed standard action methods:
 
 ```
-Module code (Cross-platform unified)             Adapter implementation (Platform specific)
-─────────────────              ──────────────────
-adapter.Api.get_user_info("123")  →  adapter call_api / Override
-adapter.Api.get_group_list()      →  adapter call_api / Override
-adapter.Api.delete_message("id")  →  adapter call_api / Override
+Module Code (Cross-Platform Consistency)       Adapter Implementation (Platform-Specific)
+───────────────────────────────────────        ────────────────────────────────────────
+adapter.Api.get_user_info("123")  →  Adapter call_api / Override
+adapter.Api.get_group_list()      →  Adapter call_api / Override
+adapter.Api.delete_message("id")  →  Adapter call_api / Override
 ```
 
-## 2. Three-Layer DSL Parallel Structure
+## 2. Three Parallel DSL Structures
 
-The ErisPulse adapter has three parallel internal DSL classes, each with its specific duty:
+ErisPulse adapters have three parallel internal DSL classes, each with distinct responsibilities:
 
 ```
 BaseAdapter
-├── Send(SendDSL)       ← Message sending (Text/Image/Raw_ob12)
-├── Request(RequestDSL)  ← Request operations (accept/reject)
-└── Api(ApiDSL)          ← Standard API Actions (Info query/Group management/Message management/File operations)★
+├── Send(SendDSL)       ← Message Sending (Text/Image/Raw_ob12)
+├── Request(RequestDSL)  ← Request Handling (accept/reject)
+└── Api(ApiDSL)          ← Standard API Actions (Users/Groups/Channels/Message Management/File/Meta) ★
 ```
 
-| DSL | Duty | Method Style | Return Value |
-|-----|------|-------------|--------------|
-| `Send` | Sending messages | Chained + `asyncio.Task` | Standard response |
-| `Request` | Handling request events | `asyncio.Task` | Standard response |
-| `Api` | Query/Management operations | `async` methods | Standard response |
+| DSL | Responsibility | Method Style | Return Value |
+|-----|----------------|--------------|--------------|
+| `Send` | Sending Messages | Chained + `asyncio.Task` | Standard Response |
+| `Request` | Handling Request Events | `asyncio.Task` | Standard Response |
+| `Api` | Query/Management Operations | `async` Methods | Standard Response |
 
 ## 3. Standard Action List
 
-### 3.1 User Related
+### 3.1 User-Related
 
-| Method | OB12 Action | Params | data Return |
-|--------|-------------|--------|-------------|
+| Method | OB12 Action | Parameters | data Return |
+|--------|-------------|------------|-------------|
 | `get_self_info()` | `get_self_info` | None | `user_id`, `user_name`, `user_displayname` |
 | `get_user_info(user_id)` | `get_user_info` | `user_id: str` | `user_id`, `user_name`, `user_displayname`, `user_remark` |
 | `get_friend_list()` | `get_friend_list` | None | `list[get_user_info response]` |
 
-### 3.2 Group Related
+### 3.2 Group-Related
 
-| Method | OB12 Action | Params | data Return |
-|--------|-------------|--------|-------------|
+| Method | OB12 Action | Parameters | data Return |
+|--------|-------------|------------|-------------|
 | `get_group_info(group_id)` | `get_group_info` | `group_id: str` | `group_id`, `group_name` |
 | `get_group_list()` | `get_group_list` | None | `list[get_group_info response]` |
 | `get_group_member_info(group_id, user_id)` | `get_group_member_info` | `group_id: str`, `user_id: str` | `user_id`, `user_name`, `user_displayname` |
@@ -12042,76 +12157,147 @@ BaseAdapter
 
 ### 3.3 Message Management
 
-| Method | OB12 Action | Params | Note |
-|--------|-------------|--------|------|
-| `delete_message(message_id)` | `delete_message` | `message_id: str` | Recall/Delete message |
+| Method | OB12 Action | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `delete_message(message_id)` | `delete_message` | `message_id: str` | Recall/Delete Message |
 
-> **Sending Messages** (`send_message`) is handled by `Raw_ob12` in `SendDSL` and is not repeated in `ApiDSL`.
+> **Sending Messages** (`send_message`) is handled by `SendDSL`'s `Raw_ob12`, and is not repeated in `ApiDSL`.
 
-### 3.4 File Operations
+### 3.4 Channel (Guild) Related
 
-| Method | OB12 Action | Params | data Return |
-|--------|-------------|--------|-------------|
+OneBot12 channel system is hierarchical: **channel (guild)** and **sub-channel (channel)**.
+
+| Method | OB12 Action | Parameters | data Return |
+|--------|-------------|------------|-------------|
+| `get_guild_info(guild_id)` | `get_guild_info` | `guild_id: str` | `guild_id`, `guild_name` |
+| `get_guild_list()` | `get_guild_list` | None | `list[get_guild_info response]` |
+| `set_guild_name(guild_id, guild_name)` | `set_guild_name` | `guild_id: str`, `guild_name: str` | None |
+| `get_guild_member_info(guild_id, user_id)` | `get_guild_member_info` | `guild_id: str`, `user_id: str` | `user_id`, `user_name`, `user_displayname` |
+| `get_guild_member_list(guild_id)` | `get_guild_member_list` | `guild_id: str` | `list[get_guild_member_info response]` |
+| `leave_guild(guild_id)` | `leave_guild` | `guild_id: str` | None |
+| `get_channel_info(guild_id, channel_id)` | `get_channel_info` | `guild_id: str`, `channel_id: str` | `channel_id`, `channel_name` |
+| `get_channel_list(guild_id, *, joined_only)` | `get_channel_list` | `guild_id: str`, `joined_only: bool=false` | `list[get_channel_info response]` |
+| `set_channel_name(guild_id, channel_id, channel_name)` | `set_channel_name` | `guild_id`, `channel_id`, `channel_name` | None |
+| `get_channel_member_info(guild_id, channel_id, user_id)` | `get_channel_member_info` | `guild_id`, `channel_id`, `user_id` | `user_id`, `user_name`, `user_displayname` |
+| `get_channel_member_list(guild_id, channel_id)` | `get_channel_member_list` | `guild_id`, `channel_id` | `list[get_channel_member_info response]` |
+| `leave_channel(guild_id, channel_id)` | `leave_channel` | `guild_id`, `channel_id` | None |
+
+> The channel system is independent from the group system: platforms such as Discord, QQ channels, and Kook implement channel interfaces, while traditional platforms like QQ and WeChat implement group interfaces. Both can coexist or exist independently.
+
+### 3.5 File Resource Operations
+
+> [!WARNING]
+> **File resource model (two-segment file_id) is "degraded and available" in ErisPulse**: ErisPulse does not use the "upload first, then reference by file_id" model for file sending/receiving—modules send files using `SendDSL.File(file, filename)` (URL/path/bytes are directly transmitted at send time, see [Send Method Specification](send-method-spec.md)). This section's `upload_file` / `get_file` / chunked actions depend on platform-specific `file_id` file resource capabilities, which are **not universally applicable**; only when the adapter backend naturally supports this capability should it be passed through. Framework-built adapters **do not implement or recommend implementing** this, and calls typically return `retcode=10002`. When modules need to transfer files cross-platform, please use `SendDSL.File` instead of relying on file_id.
+>
+> **Outlook**: Standardizing the `file_id` resource model to the framework layer is a future direction, but is not provided in the current version.
+
+**Whole-file transfer (small files):**
+
+| Method | OB12 Action | Parameters | data Return |
+|--------|-------------|------------|-------------|
 | `upload_file(*, type, name, ...)` | `upload_file` | `type`, `name`, `url`/`path`/`data`, `headers?`, `sha256?` | `file_id` |
 | `get_file(file_id, type)` | `get_file` | `file_id: str`, `type: str` | `name`, `url`/`path`/`data` |
 
-`upload_file` `type` parameter:
+The `type` parameter of `upload_file`:
 - `"url"`: Upload via URL (must provide `url`)
 - `"path"`: Upload via local path (must provide `path`)
 - `"data"`: Upload via binary data (must provide `data`)
 
-### 3.5 General Extension Actions
+#### 3.5.1 Chunked Transfer (Large Files, Part of the Above Degraded Scope)
 
-| Method | Note |
-|--------|------|
+OneBot12 chunked actions distinguish stages by `stage`. `ApiDSL` splits the three/two stages of the same action into independent methods (`offset` is byte offset, `data` in JSON is Base64); the following table is for reference only—adapters do not need to or should not force implementation:
+
+**Three-step chunked upload**: `prepare` → `transfer` (loop through chunks) → `finish`
+
+| Method | Corresponding stage | Parameters | data Return |
+|--------|---------------------|------------|-------------|
+| `upload_file_fragmented_prepare(name, total_size)` | `prepare` | `name: str`, `total_size: int` | `file_id` (used during transfer) |
+| `upload_file_fragmented_transfer(file_id, offset, data)` | `transfer` | `file_id`, `offset: int`, `data: bytes` | None |
+| `upload_file_fragmented_finish(file_id, sha256)` | `finish` | `file_id`, `sha256: str` (full file checksum) | `file_id` |
+
+```python
+total = os.path.getsize(path)
+r = await adapter.Api.upload_file_fragmented_prepare(os.path.basename(path), total)
+fid = r["data"]["file_id"]
+offset = 0
+with open(path, "rb") as f:
+    while chunk := f.read(65536):
+        await adapter.Api.upload_file_fragmented_transfer(fid, offset, chunk)
+        offset += len(chunk)
+sha256 = hashlib.sha256(open(path, "rb").read()).hexdigest()
+await adapter.Api.upload_file_fragmented_finish(fid, sha256)
+```
+
+**Two-step chunked download**: `prepare` → `transfer` (loop to fetch chunks)
+
+| Method | Corresponding stage | Parameters | data Return |
+|--------|---------------------|------------|-------------|
+| `get_file_fragmented_prepare(file_id)` | `prepare` | `file_id` | `name`, `total_size`, `sha256` |
+| `get_file_fragmented_transfer(file_id, offset, size)` | `transfer` | `file_id`, `offset: int`, `size: int` | `data` (this chunk's bytes) |
+
+### 3.6 Meta Actions
+
+Meta actions are not account-specific and do not require `Using()` to specify a Bot.
+
+| Method | OB12 Action | Parameters | data Return |
+|--------|-------------|------------|-------------|
+| `get_latest_events(limit, timeout)` | `get_latest_events` | `limit: int=0`, `timeout: int=0` | Array of event objects (excluding meta events) |
+| `get_supported_actions()` | `get_supported_actions` | None | `list[str]` supported action names |
+| `get_status()` | `get_status` | None | `good: bool`, `bots: list[{self, online, ...}]` |
+| `get_version()` | `get_version` | None | `impl`, `version`, `onebot_version` |
+
+### 3.7 General Extension Actions
+
+| Method | Description |
+|--------|-------------|
 | `call(action, **params)` | Escape hatch for platform extension actions, following OB12 extension naming rules `{prefix}.{action}` |
 
 ## 4. Usage
 
-### 4.1 Basic Call
+### 4.1 Basic Calls
 
 ```python
 from ErisPulse import adapter
 
-# Get user info (Cross-platform unified)
+# Get user information (cross-platform consistency)
 result = await adapter.myplatform.Api.get_user_info("123456")
 if result["status"] == "ok":
     user_name = result["data"]["user_name"]
-    print(f"User Name: {user_name}")
+    print(f"Username: {user_name}")
 
 # Get group list
 result = await adapter.myplatform.Api.get_group_list()
 groups = result["data"]
 
-# Recall message
+# Delete message
 await adapter.myplatform.Api.delete_message("msg_123456")
 ```
 
-### 4.2 Specify Bot Account (Multi-account mode)
+### 4.2 Specifying Bot Account (Multi-account Mode)
 
 ```python
-# Execute operations using a specific Bot account
+# Execute operation using a specific Bot account
 info = await adapter.myplatform.Api.Using("bot1").get_self_info()
 ```
 
 ### 4.3 Platform Extension Actions
 
 ```python
-# Call platform-specific extension actions (recommended using {prefix}.{action} naming)
+# Call platform-specific extension actions (suggest using {prefix}.{action} naming)
 result = await adapter.telegram.Api.call(
     "telegram.send_sticker",
     sticker_id="CAACAgIAAxkBAA...",
 )
 ```
 
-### 4.4 In Event Handlers
+### 4.4 Use in Event Handlers
 
 ```python
 from ErisPulse.Core.Event import message
 
 @message()
 async def handle(event):
-    # Get sender detailed info
+    # Get sender's detailed information
     user_id = event.get_user_id()
     platform = event.get_platform()
 
@@ -12125,7 +12311,7 @@ async def handle(event):
 
 ### 5.1 Default Behavior (Zero Configuration)
 
-The default implementation of `ApiDSL` passes the standard action name directly to `adapter.call_api()`:
+The default implementation of `ApiDSL` passes the standard action name as `endpoint` directly to `adapter.call_api()`:
 
 ```python
 # ApiDSL default implementation is equivalent to:
@@ -12133,23 +12319,23 @@ async def get_user_info(self, user_id: str) -> dict:
     return await self._adapter.call_api("get_user_info", user_id=user_id, account_id=self._account_id)
 ```
 
-**适用场景**：The adapter backend is itself a OneBot12 implementation (e.g., NapCat, Lagrange), and `call_api` natively supports standard action names.
+**Applicable Scenarios**: When the adapter's underlying backend itself conforms to the OneBot12 standard action protocol, `call_api` naturally supports standard action names (e.g., directly interfacing with a service that follows this protocol).
 
-### 5.2 Override Standard Methods (Map to Platform Native API)
+### 5.2 Overriding Standard Methods (Mapping to Platform Native API)
 
-Adapters can override individual standard methods to map them to platform native APIs:
+Adapters can override individual standard methods to map them to platform-native APIs:
 
 ```python
 class MyAdapter(BaseAdapter):
 
     class Api(BaseAdapter.Api):
-        """MyPlatform Standard API Action Implementation"""
+        """MyPlatform standard API action implementation"""
 
         async def get_user_info(self, user_id: str) -> dict:
-            # Map to platform native API
+            # Map to platform-native API
             raw = await self._adapter._request("GET", f"/users/{user_id}")
             if raw.get("code") != 0:
-                return self._adapter.make_error(retcode=34001, message="User not found")
+                return self._adapter.make_error(retcode=34600, message="User does not exist")
 
             user = raw["data"]
             return self._adapter.make_response(
@@ -12178,26 +12364,26 @@ class MyAdapter(BaseAdapter):
 
 ### 5.3 Unsupported Actions
 
-Standard methods not covered by the adapter go to the default implementation (delegated to `call_api`). If `call_api` also does not support the action, it should return a standard error response:
+Standard methods not overridden by the adapter use the default implementation (delegated to `call_api`). If `call_api` does not support the action, it should return a standard error response:
 
 ```python
 async def call_api(self, endpoint: str, **params):
     if endpoint not in self._supported_endpoints:
         return self.make_error(retcode=10002, message=f"Unsupported action: {endpoint}")
-    # ... Platform API call
+    # ... platform API call
 ```
 
-Module developers can determine support via the `retcode` in the return value:
+Module developers can determine support by checking the `retcode` in the return value:
 
 ```python
 result = await adapter.myplatform.Api.get_friend_list()
 if result["retcode"] == 10002:
-    print("This platform does not support getting friend list")
+    print("This platform does not support retrieving friend list")
 ```
 
 ## 6. Response Format
 
-All `ApiDSL` methods return the standard API response format (see [API Response Standard](docs/en/api-response.md)):
+All `ApiDSL` methods return the standard API response format (see [API Response Standard](api-response.md)):
 
 ```json
 {
@@ -12210,36 +12396,39 @@ All `ApiDSL` methods return the standard API response format (see [API Response 
 }
 ```
 
-> **注意**：For info query actions, `message_id` is an empty string (only message sending actions have `message_id`).
+> **Note**: For information query actions, `message_id` is an empty string (only message sending actions have `message_id`).
 
 ## 7. Relationship with SendDSL / RequestDSL
 
 | Scenario | Use DSL | Example |
 |----------|---------|---------|
-| Sending messages | `Send` | `adapter.Send.To("group", "123").Text("hi")` |
-| Accept/Reject request | `Request` | `adapter.Request("req_id").accept()` |
-| Get User/Group info | `Api` | `adapter.Api.get_user_info("123")` |
-| Recall message | `Api` | `adapter.Api.delete_message("msg_id")` |
-| Leave group | `Api` | `adapter.Api.leave_group("group_id")` |
+| Sending Messages | `Send` | `adapter.Send.To("group", "123").Text("hi")` |
+| Accept/Reject Requests | `Request` | `adapter.Request("req_id").accept()` |
+| Get User/Group Info | `Api` | `adapter.Api.get_user_info("123")` |
+| Delete Message | `Api` | `adapter.Api.delete_message("msg_id")` |
+| Leave Group | `Api` | `adapter.Api.leave_group("group_id")` |
 
 ## 8. Adapter Implementation Checklist
 
 ### Standard Actions
 - [ ] `call_api` can handle standard action names (or override corresponding `ApiDSL` methods)
 - [ ] Unsupported actions return `retcode=10002`
-- [ ] Return values follow standard API response format
-- [ ] `data` field contains OB12 standard defined fields
+- [ ] Return values follow the standard API response format
+- [ ] `data` field contains fields defined in the OB12 standard
+- [ ] Channel platform must implement `get_guild_*` / `get_channel_*` / `leave_guild` / `leave_channel`
+- [ ] Meta actions (`get_status` / `get_version` / `get_supported_actions`) are recommended to be implemented
+- [ ] **File sending uses `SendDSL.File` (direct upload)**; file resource actions (`upload_file`/`get_file`/chunked) **are not mandatory**, only required when the backend has `file_id` resource capability
 
 ### Extension Actions
 - [ ] Platform extension actions use `{prefix}.{action}` naming
-- [ ] Extension action parameters and responses still follow OB12 action request/response structure
+- [ ] Extension action parameters and responses still follow the OB12 action request/response structure
 
-## 9. Related Documentation
+## 9. Related Documents
 
-- [API Response Standard](docs/en/api-response.md) - Adapter API response format standard
-- [Sending Method Specification](docs/en/send-method-spec.md) - Send class method naming and parameter specification
-- [Request Operation Specification](docs/en/request-action-spec.md) - Usage of Request DSL
-- [Event Conversion Standard](docs/en/event-conversion.md) - Event format and message segment standards
+- [API Response Standard](api-response.md) - Standard response format for adapter API
+- [Send Method Specification](send-method-spec.md) - Naming and parameter conventions for Send class methods
+- [Request Action Specification](request-action-spec.md) - Usage of Request DSL
+- [Event Conversion Standard](event-conversion.md) - Event format and message segment standards
 
 
 
@@ -14726,32 +14915,26 @@ enabled = true
 
 # Yunhu Platform Feature Documentation
 
-YunhuAdapter is an adapter built based on the Yunhu protocol, integrating all Yunhu functional modules and providing a unified event handling and message operation interface.
+YunhuAdapter is an adapter built based on the Yunhu protocol, integrating all Yunhu functional modules and providing a unified interface for event handling and message operations.
 
 ---
 
-
-
-## Document Information
+## Documentation Information
 
 - Corresponding Module Version: 4.3.0
 - Maintainer: ErisPulse
 
-
 ## Basic Information
 
-- Platform Introduction: Yunhu is an enterprise-level instant messaging platform
+- Platform Introduction: Yunhu is an enterprise-level instant messaging platform.
 - Adapter Name: YunhuAdapter
-- Multi-account Support: Supports identifying and configuring multiple Yunhu robot accounts through bot_id
-- Chainable Modifier Support: Supports chainable modifier methods such as `.Reply()`
-- OneBot12 Compatibility: Supports sending OneBot12 formatted messages
-
-For documentation links, replace `docs/en/` with `docs/en/`.
+- Multi-account Support: Supports identifying and configuring multiple Yunhu robot accounts through bot_id.
+- Chainable Modifier Support: Supports chainable modifier methods such as `.Reply()`.
+- OneBot12 Compatibility: Supports sending messages in OneBot12 format.
 
 ## Supported Message Sending Types
 
-All sending methods are implemented through a fluent syntax, for example:
-
+All sending methods are implemented through a fluent interface syntax, for example:
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
@@ -14760,23 +14943,23 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 ```
 
 The supported sending types include:
-- `.Text(text: str)`: Send plain text messages.
-- `.Html(html: str)`: Send HTML formatted messages.
-- `.Markdown(markdown: str)`: Send Markdown formatted messages.
-- `.A2UI(text: str)`: Send A2UI formatted messages.
-- `.Image(file: bytes, stream: bool = False, filename: str = None)`: Send image messages, supporting streaming upload and custom file names.
-- `.Video(file: bytes, stream: bool = False, filename: str = None)`: Send video messages, supporting streaming upload and custom file names.
-- `.File(file: bytes, stream: bool = False, filename: str = None)`: Send file messages, supporting streaming upload and custom file names.
-- `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)`: Batch send messages.
-- `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)`: Edit existing messages.
-- `.Recall(msg_id: str)`: Recall messages.
-- `.Board(content: str, content_type: str = "text")`: Publish announcement boards. The scope is inferred by `To()` (specifying a target = local board, not specifying = global board). Fluent modifiers: `.Expire(duration)` for relative expiration (in seconds), `.ExpireAt(timestamp)` for absolute expiration (in second-level timestamps), `.ForMember(member_id)` for group member boards; **automatically converts to recall board when content is empty**. Still compatible with old-style `Board("local", "announcement")` explicit scope syntax.
-- `.DismissBoard()`: Recall announcement boards. The scope is also inferred by `To()`, supports `.ForMember(member_id)`; still compatible with old-style `DismissBoard("local")` syntax.
-- `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`: Send streaming messages.
+- `.Text(text: str)`: Sends a plain text message.
+- `.Html(html: str)`: Sends an HTML formatted message.
+- `.Markdown(markdown: str)`: Sends a Markdown formatted message.
+- `.A2UI(text: str)`: Sends an A2UI formatted message.
+- `.Image(file: bytes, stream: bool = False, filename: str = None)`: Sends an image message, supports streaming upload and custom filename.
+- `.Video(file: bytes, stream: bool = False, filename: str = None)`: Sends a video message, supports streaming upload and custom filename.
+- `.File(file: bytes, stream: bool = False, filename: str = None)`: Sends a file message, supports streaming upload and custom filename.
+- `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)`: Sends a batch message.
+- `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)`: Edits an existing message.
+- `.Recall(msg_id: str)`: Recalls a message.
+- `.Board(content: str, content_type: str = "text")`: Publishes a bulletin board message. The scope is inferred from `To()` (specifying target = local board, not specifying = global board). Chaining modifiers: `.Expire(duration)` for relative expiration (seconds), `.ExpireAt(timestamp)` for absolute expiration (second-level timestamp), `.ForMember(member_id)` for group member board; **automatically撤销 the board when content is empty**. Still compatible with the old-style `Board("local", "公告")` explicit scope syntax.
+- `.DismissBoard()`: Dismisses a bulletin board message. The scope is similarly inferred from `To()`, supports `.ForMember(member_id)`; still compatible with the old-style `DismissBoard("local")` syntax.
+- `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`: Sends a streaming message.
 
 ### Group Management Methods
 
-All group management methods require specifying the group through fluent syntax, for example:
+All group management methods require specifying the group through a fluent interface syntax, for example:
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
@@ -14784,19 +14967,19 @@ yunhu = adapter.get("yunhu")
 await yunhu.Send.To("group", group_id).Kick(user_id)
 ```
 
-- `.Kick(user_id: str)`: Remove a group member. The bot needs the `Allow Remove Group Member` permission.
-- `.Ban(user_id: str, duration: int = 600)`: Mute a user. `duration` is the mute duration (in seconds), 0 means unmute, -1 means permanent mute. The bot needs the `Allow Mute Users` permission.
-- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)`: Create a group tag. `color` format is #RRGGBB, `sort` smaller values appear earlier. The bot needs the `Allow Control Tag Group` permission.
-- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)`: Edit a group tag. Each parameter is optional, not provided means no modification. The bot needs the `Allow Control Tag Group` permission.
-- `.DeleteTag(tag: str)`: Delete a group tag. The bot needs the `Allow Control Tag Group` permission.
-- `.GetTagList()`: Get the group tag list. Returns response data containing a `list` array.
-- `.AddUserTag(user_id: str, tag: str)`: Add a tag to a user. The bot needs the `Allow Control Tag Group` permission.
-- `.RemoveUserTag(user_id: str, tag: str)`: Remove a tag from a user. The bot needs the `Allow Control Tag Group` permission.
-- `.SetMsgTypeLimit(types: str)`: Control message types within the group. `types` is a comma-separated string of message type names (e.g., `"text,image,video"`), an empty string means no restriction. The bot needs the `Allow Modify Group Info` permission.
+- `.Kick(user_id: str)`: Removes a group member. The bot needs the `allow remove group member` permission.
+- `.Ban(user_id: str, duration: int = 600)`: Mutes a user. `duration` specifies the mute duration (seconds), 0 means unmute, -1 means permanent mute. The bot needs the `allow mute user` permission.
+- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)`: Creates a group tag. `color` is in the format #RRGGBB, `sort` determines the order (smaller values appear earlier). The bot needs the `allow control tag group` permission.
+- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)`: Edits a group tag. Each parameter is optional, and if not provided, it will not be modified. The bot needs the `allow control tag group` permission.
+- `.DeleteTag(tag: str)`: Deletes a group tag. The bot needs the `allow control tag group` permission.
+- `.GetTagList()`: Retrieves the group tag list. Returns a response containing a `list` array.
+- `.AddUserTag(user_id: str, tag: str)`: Adds a tag to a user. The bot needs the `allow control tag group` permission.
+- `.RemoveUserTag(user_id: str, tag: str)`: Removes a tag from a user. The bot needs the `allow control tag group` permission.
+- `.SetMsgTypeLimit(types: str)`: Controls message types within the group. `types` is a comma-separated string of message type names (e.g., `"text,image,video"`), an empty string means no restriction. The bot needs the `allow modify group info` permission.
 
 ### Message Query Methods
 
-Retrieve the historical message list of a specified session (user/group), requiring specifying the target through fluent syntax, for example:
+To retrieve the history message list of a specified conversation (user/group), you need to specify the target through a fluent interface syntax, for example:
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
@@ -14804,10 +14987,10 @@ yunhu = adapter.get("yunhu")
 result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
 ```
 
-- `.GetMessages(message_id: str = None, before: int = None, after: int = None)`: Retrieve session history messages. Returns response data containing a `list` array and `total` count.
-  - `message_id`: Message ID (optional). When not provided, combined with `before` returns the most recent N messages.
-  - `before`: Returns N messages before the specified message ID.
-  - `after`: Returns N messages after the specified message ID.
+- `.GetMessages(message_id: str = None, before: int = None, after: int = None)`: Retrieves the conversation history messages. Returns a response containing a `list` array and `total` count.
+  - `message_id`: Message ID (optional). If not provided, combined with `before` returns the most recent N messages.
+  - `before`: Returns the N messages before the specified message ID.
+  - `after`: Returns the N messages after the specified message ID.
   - > **Note:** At least one of `before` and `after` must be specified and greater than 0, otherwise the server will not return any messages.
 
 The board scope is automatically inferred by `To()`:
@@ -14815,19 +14998,19 @@ The board scope is automatically inferred by `To()`:
 - Not specifying `To()` → global board
 
 ```python
-# Local board (expires relatively after 60 seconds)
-await yunhu.Send.To("group", group_id).Expire(60).Board("Announcement", content_type="markdown")
+# Local board (expires after 60 seconds)
+await yunhu.Send.To("group", group_id).Expire(60).Board("公告", content_type="markdown")
 
-# Group member board (visible only to specified member)
-await yunhu.Send.To("group", group_id).ForMember(user_id).Board("Visible only to you")
+# Group member board (visible only to the specified member)
+await yunhu.Send.To("group", group_id).ForMember(user_id).Board("visible only to you")
 
 # Absolute timestamp expiration
-await yunhu.Send.To("group", group_id).ExpireAt(1785208268).Board("Expires at specified time")
+await yunhu.Send.To("group", group_id).ExpireAt(1785208268).Board("expires at specified time")
 
 # Global board
-await yunhu.Send.Board("Global Announcement")
+await yunhu.Send.Board("global announcement")
 
-# Clear local board (empty content → automatically revoked)
+# Clear local board (empty content → automatically撤销)
 await yunhu.Send.To("group", group_id).Board("")
 ```
 
@@ -14835,12 +15018,12 @@ await yunhu.Send.To("group", group_id).Board("")
 
 The `buttons` parameter is a nested list representing the layout and functionality of buttons. Each button object contains the following fields:
 
-| Field        | Type   | Required | Description                                                                 |
-|--------------|--------|----------|-----------------------------------------------------------------------------|
-| `text`       | string | Yes      | Text on the button                                                          |
-| `actionType` | int    | Yes      | Action type:<br>`1`: Navigate URL<br>`2`: Copy<br>`3`: Report on click       |
-| `url`        | string | No       | Used when `actionType=1`, representing the target URL for navigation        |
-| `value`      | string | No       | When `actionType=2`, this value will be copied to the clipboard<br>When `actionType=3`, this value will be sent to the subscriber |
+| Field         | Type   | Required | Description                                                                 |
+|---------------|--------|----------|-----------------------------------------------------------------------------|
+| `text`        | string | Yes      | The text on the button                                                      |
+| `actionType`  | int    | Yes      | Action type:<br>`1`: Navigate to URL<br>`2`: Copy<br>`3`: Report on click    |
+| `url`         | string | No       | Used when `actionType=1`, represents the target URL for navigation          |
+| `value`       | string | No       | When `actionType=2`, this value will be copied to the clipboard<br>When `actionType=3`, this value will be sent to the subscriber |
 
 Example:
 ```python
@@ -14854,18 +15037,18 @@ buttons = [
 await yunhu.Send.To("user", user_id).Buttons(buttons).Text("Message with buttons")
 ```
 > **Note:**
-> - Only when the user clicks the **report event** button will a push be received; **copy** and **navigate URL** actions will not trigger a push.
+> - Only clicking the **report event** button will trigger a push notification; **copy** and **navigate URL** actions will not trigger a push notification.
 
-### Fluent Modifier Methods (Combinable)
+### Chaining Modifier Methods (can be combined)
 
-Fluent modifier methods return `self`, supporting fluent calls, and must be called before the final sending method:
+Chaining modifier methods return `self`, support chaining, and must be called before the final sending method:
 
-- `.Reply(message_id: str)`: Reply to a specified message.
-- `.At(user_id: str)`: Mention a specified user.
-- `.AtAll()`: Mention everyone.
-- `.Buttons(buttons: List)`: Add buttons.
+- `.Reply(message_id: str)`: Replies to a specified message.
+- `.At(user_id: str)`: Mentions a specified user.
+- `.AtAll()`: Mentions everyone.
+- `.Buttons(buttons: List)`: Adds buttons.
 
-### Fluent Call Examples
+### Chaining Call Examples
 
 ```python
 # Basic sending
@@ -14905,7 +15088,7 @@ await yunhu.Send.To("group", group_id).EditTag("VIP User", new_tag="SVIP User", 
 # Delete a group tag
 await yunhu.Send.To("group", group_id).DeleteTag("VIP User")
 
-# Get group tag list
+# Retrieve group tag list
 result = await yunhu.Send.To("group", group_id).GetTagList()
 
 # Add a tag to a user
@@ -14914,10 +15097,10 @@ await yunhu.Send.To("group", group_id).AddUserTag(user_id, "VIP User")
 # Remove a tag from a user
 await yunhu.Send.To("group", group_id).RemoveUserTag(user_id, "VIP User")
 
-# Set message type limit
+# Set message type restriction
 await yunhu.Send.To("group", group_id).SetMsgTypeLimit("text,image,video")
 
-# Remove message type limit
+# Remove message type restriction
 await yunhu.Send.To("group", group_id).SetMsgTypeLimit("")
 ```
 
@@ -14927,47 +15110,48 @@ await yunhu.Send.To("group", group_id).SetMsgTypeLimit("")
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
-# Get the last 10 messages in the group (returns 10 messages total)
+# Retrieve the last 10 messages in the group (returns 10 messages total)
 result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
 
-# Get 10 messages before a specified message ID in the group (returns 11 messages total)
+# Retrieve the 10 messages before the specified message ID in the group (returns 11 messages total)
 result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10)
 
-# Get 10 messages before and after a specified message ID in the group (returns 21 messages total)
+# Retrieve 10 messages before and after the specified message ID in the group (returns 21 messages total)
 result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10, after=10)
 
-# Get historical messages in a user session
+# Retrieve history messages in a user conversation
 result = await yunhu.Send.To("user", user_id).GetMessages(message_id="msg_xxx", before=10)
 ```
 
 ### OneBot12 Message Support
 
-The adapter supports sending OneBot12 formatted messages, facilitating cross-platform message compatibility:
+The adapter supports sending OneBot12 formatted messages for cross-platform message compatibility:
 
-- `.Raw_ob12(message: List[Dict], **kwargs)`: Send OneBot12 formatted messages.
+- `.Raw_ob12(message: List[Dict], **kwargs)`: Sends a OneBot12 formatted message.
 
 ```python
-# Send OneBot12 formatted message
+# Send a OneBot12 formatted message
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await yunhu.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
-# Combined with fluent modifiers
+# Combined with chaining modifiers
 ob12_msg = [{"type": "text", "data": {"text": "Reply message"}}]
 await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
+```
 
 ## Standard API Actions (ApiDSL)
 
 > [!NOTE]
 > This feature requires ErisPulse **2.7.0+** and YunhuAdapter **4.3.0+**.
 
-In addition to the `Send` chainable sending, the adapter also provides the `Api` inner class, exposing OneBot12 standard API actions and Yunhu platform extension actions. All methods return a standard response format.
+In addition to the `Send` fluent interface for sending messages, the adapter also provides the `Api` inner class, exposing standard OneBot12 API actions and platform extensions for Yunhu. All methods return a standard response format.
 
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
 # Information queries (via public Web API, no authentication required)
-result = await yunhu.Api.get_self_info()              # Robot self information
+result = await yunhu.Api.get_self_info()              # Bot self information
 result = await yunhu.Api.get_user_info("7058262")     # Any user information
 result = await yunhu.Api.get_group_info("635409929")  # Group information
 
@@ -14975,63 +15159,63 @@ result = await yunhu.Api.get_group_info("635409929")  # Group information
 result = await yunhu.Api.upload_file(type="path", name="a.png", path="./a.png")
 result = await yunhu.Api.get_file("https://chat-file.jwznb.com/xxx")
 
-# Recall message (requires additional chat_id + chat_type)
+# Message recall (requires additional chat_id + chat_type)
 await yunhu.Api.delete_message("msg_id", chat_id="123", chat_type="group")
 
-# Multiple accounts: specify Bot account
+# Multi-account: specify Bot account
 info = await yunhu.Api.Using("bot1").get_self_info()
 ```
 
 ### Supported Standard Actions
 
 | Method | Description | Data Source |
-|------|------|---------|
-| `get_self_info()` | Robot self information | Public Web API (bot-info) |
-| `get_user_info(user_id)` | User information (any user can query) | Public Web API (user/homepage) |
+|--------|-------------|-------------|
+| `get_self_info()` | Bot self information | Public Web API (bot-info) |
+| `get_user_info(user_id)` | User information (any user can be queried) | Public Web API (user/homepage) |
 | `get_group_info(group_id)` | Group information | Public Web API (group-info) |
-| `upload_file(*, type, name, ...)` | Upload file (automatically determines image/video/file) | Bot open API |
+| `upload_file(*, type, name, ...)` | Upload file (automatically detects image/video/file) | Bot open API |
 | `get_file(file_id)` | Get file (file_id is the URL) | — |
 | `delete_message(message_id, *, chat_id, chat_type)` | Recall message | Bot open API (/bot/recall) |
 
-> **Note**: `get_self_info` / `get_user_info` / `get_group_info` are implemented via **unofficial public Web API** (chat-web-go.jwzhd.com). These interfaces require no authentication but are not officially documented and may change with platform updates; failure returns a standard error response.
+> **Note**: `get_self_info` / `get_user_info` / `get_group_info` are implemented via **non-official public Web APIs** (chat-web-go.jwzhd.com). These interfaces require no authentication but are not officially documented and may change with platform updates; failures return standard error responses.
 
 ### Unsupported Standard Actions
 
-The following standard actions have no corresponding API in Yunhu, and calling them returns `retcode=10002` (unsupported operation):
-- `get_friend_list` (The "robot user list" of Bot open API is still pending launch)
+The following standard actions do not have corresponding APIs on Yunhu, and calling them returns `retcode=10002` (unsupported operation):
+- `get_friend_list` (the "bot user list" of the Bot open API is still pending launch)
 - `get_group_list` / `get_group_member_info` / `get_group_member_list`
 - `set_group_name` / `leave_group`
 
 ### Platform Extension Actions
 
-Call Yunhu-specific actions via `Api.call("yunhu.xxx", **params)` (parameters use OB12-style naming, adapter automatically translates them to Yunhu fields):
+Call Yunhu-specific actions using `Api.call("yunhu.xxx", **params)` (parameters use OB12-style naming, and the adapter automatically translates them to Yunhu fields):
 
 | Extension Action | Description | Equivalent Send Method |
-|---------|------|---------------|
+|------------------|-------------|------------------------|
 | `yunhu.recall` | Recall message (msg_id, chat_id, chat_type) | `Send.To(...).Recall(msg_id)` |
 | `yunhu.kick` | Remove group member (group_id, user_id) | `Send.To("group", g).Kick(uid)` |
 | `yunhu.ban` | Mute (group_id, user_id, duration) | `Send.To("group", g).Ban(uid, duration)` |
 | `yunhu.unban` | Unmute (group_id, user_id) | `Send.To("group", g).Ban(uid, duration=0)` |
 | `yunhu.tag.create/edit/delete/list` | Group tag CRUD (group_id, ...) | `Send.To("group", g).CreateTag(...)` etc. |
-| `yunhu.tag.relate` / `yunhu.tag.relate_cancel` | Add/remove tags to/from users | `Send.To("group", g).AddUserTag(...)` etc. |
+| `yunhu.tag.relate` / `yunhu.tag.relate_cancel` | Add/remove tag to/from user | `Send.To("group", g).AddUserTag(...)` etc. |
 | `yunhu.set_member_title` / `yunhu.unset_member_title` | **Member title semantic alias** (tag ≈ title, internally mapped to tag.relate) | — |
-| `yunhu.msg_type_limit` | Group message type limit (group_id, type) | `Send.To("group", g).SetMsgTypeLimit(...)` |
+| `yunhu.msg_type_limit` | Group message type restriction (group_id, type) | `Send.To("group", g).SetMsgTypeLimit(...)` |
 | `yunhu.get_messages` | Get historical messages (chat_id, chat_type, message_id?, before?, after?) | `Send.To(...).GetMessages(...)` |
 | `yunhu.bot_info` | Public bot-info query (bot_id) | — |
 | `yunhu.user_homepage` | Public user homepage query (user_id) | — |
 
 ```python
-# Platform extension example
+# Example of platform extensions
 await yunhu.Api.call("yunhu.kick", group_id="123", user_id="456")
 await yunhu.Api.call("yunhu.set_member_title", group_id="123", user_id="456", title="VIP")
 result = await yunhu.Api.call("yunhu.get_messages", chat_id="123", chat_type="group", before=10)
 ```
 
-> **Tags and Titles**: Yunhu's "tag" semantics are equivalent to OneBot12 group member `title`. `yunhu.set_member_title` is a native semantic alias of `yunhu.tag.relate`, both internally mapped to the same endpoint. In group message events, the sender's role is mapped from `senderUserLevel` to the standard `role` field (owner/admin/member).
+> **Tags and Titles**: On Yunhu, the semantic meaning of "tags" is equivalent to OneBot12 group member `title`. `yunhu.set_member_title` is a native semantic alias for `yunhu.tag.relate`, and both internally map to the same endpoint. In group message events, the sender's role is mapped from `senderUserLevel` to the standard `role` field (owner/admin/member).
 
 ## Return Values of Send Methods
 
-All send methods return a Task object, which can be awaited directly to obtain the send result. The returned result follows the ErisPulse adapter's standardized return specification:
+All send methods return a Task object, which can be directly awaited to obtain the send result. The returned result follows the ErisPulse adapter's standardized return specification:
 
 ```python
 {
@@ -15045,92 +15229,90 @@ All send methods return a Task object, which can be awaited directly to obtain t
 }
 ```
 
-
-
 ## Unique Event Types
 
-Use platform=="yunhu" to detect and use platform-specific features
+Platform-specific features should be used only after checking `platform=="yunhu"`
 
 ### Core Differences
 
-1. Unique event types:
-    - Form (e.g. form command): yunhu_form
-    - Expression pack/sticker message segment: yunhu_expression
-    - Button click: yunhu_button_click
-    - A2UI button click: yunhu_a2ui_button
-    - Robot settings: yunhu_bot_setting
-    - Quick menu: yunhu_shortcut_menu
-2. Standard field extension (4.3.0+):
-    - Message events add standard `role` field (mapped from Yunhu `senderUserLevel` to `owner`/`admin`/`member`)
-    - New `user_avatar` field (sender's avatar URL)
-3. Extended fields:
-    - All unique fields are prefixed with yunhu_
-    - Original data is retained in yunhu_raw field
-    - In private chat, self.user_id represents the bot ID
+1. Unique Event Types:
+    - Form (e.g., form command): `yunhu_form`
+    - Emoji/Sticker Message Segment: `yunhu_expression`
+    - Button Click: `yunhu_button_click`
+    - A2UI Button Click: `yunhu_a2ui_button`
+    - Bot Setting: `yunhu_bot_setting`
+    - Quick Menu: `yunhu_shortcut_menu`
+2. Standard Field Extension (4.3.0+):
+    - Standard `role` field added to message events (mapped from Yunhu's `senderUserLevel` to `owner`/`admin`/`member`)
+    - New `user_avatar` field added (sender's avatar URL)
+3. Extended Fields:
+    - All extended fields are prefixed with `yunhu_`
+    - Original data is preserved in the `yunhu_raw` field
+    - In private chats, `self.user_id` represents the bot ID
 
-### Example of Special Fields
+### Special Field Examples
 
 ```python
-# Form command
+# Form Command
 {
   "type": "message",
   "detail_type": "private",
   "yunhu_command": {
-    "name": "Form command name",
+    "name": "Form Command Name",
     "id": "Command ID",
     "form": {
-      "fieldID1": {
-        "id": "fieldID1",
+      "Field ID1": {
+        "id": "Field ID1",
         "type": "input/textarea/select/radio/checkbox/switch",
-        "label": "Field label",
-        "value": "Field value"
+        "label": "Field Label",
+        "value": "Field Value"
       }
     }
   }
 }
 
-# Button event
+# Button Click Event
 {
   "type": "notice",
   "detail_type": "yunhu_button_click",
   "user_id": "User ID who clicked the button",
-  "user_nickname": "User nickname",
+  "user_nickname": "User Nickname",
   "message_id": "Message ID",
   "yunhu_button": {
     "id": "Button ID (may be empty)",
-    "value": "Button value"
+    "value": "Button Value"
   }
 }
 
-# A2UI button event
+# A2UI Button Click Event
 {
   "type": "notice",
   "detail_type": "yunhu_a2ui_button",
-  "user_id": "Operator user ID",
-  "user_nickname": "User nickname",
+  "user_id": "Operator User ID",
+  "user_nickname": "User Nickname",
   "message_id": "Message ID",
   "yunhu_a2ui": {
     "recv_id": "Recipient ID",
-    "recv_type": "Recipient type",
-    "action_name": "Action name",
-    "source_component_id": "Source component ID",
+    "recv_type": "Recipient Type",
+    "action_name": "Action Name",
+    "source_component_id": "Source Component ID",
     "form_context": {},
     "interaction_json": "JSON string of interaction data"
   }
 }
 
-### Example of Button Click Event Handling
+### Button Click Event Handling Example
 
 ```python
 from ErisPulse.Core.Event import notice
 
 @notice.on_notice()
 async def handle_yunhu_notice(event):
-    """Handle Yunhu notification events
+    """Handle Yunhu Notice Events
 
     Use the generic on_notice() decorator to handle all notification events,
-    then distinguish different types of notifications by detail_type
-    event.reply() will automatically reply through the Yunhu platform
+    then distinguish different types of notifications via detail_type.
+    event.reply() will automatically reply through the Yunhu platform.
     """
 
 # Check if it is a button click event
@@ -15141,27 +15323,23 @@ async def handle_yunhu_notice(event):
 
         print(f"User {user_nickname}({user_id}) clicked the button: {button_value}")
 
-# Auto reply using event.reply() (will automatically select the correct sending method based on the platform)
+# Using event.reply() for Automatic Replies (会选择正确的发送方式以适应平台)
         if button_value == "confirm":
             await event.reply("You clicked the confirm button!")
         elif button_value == "cancel":
-            await event.reply("The operation has been cancelled")
+            await event.reply("Operation canceled")
         else:
             await event.reply(f"Received your selection: {button_value}")
 
-
-
-# Handling Quick Menu Events
+# Handling Shortcut Menu Events
     elif event.get("detail_type") == "yunhu_shortcut_menu":
         menu_id = event.get("yunhu_menu", {}).get("id", "")
-        await event.reply(f"Triggered quick menu: {menu_id}")
+        await event.reply(f"Triggered shortcut menu: {menu_id}")
 
 # Handling Robot Setting Changes
     elif event.get("detail_type") == "yunhu_bot_setting":
         settings = event.get("yunhu_setting", {})
         await event.reply(f"Settings have been updated: {settings}")
-
-
 
 # Handling A2UI Button Events
     elif event.get("detail_type") == "yunhu_a2ui_button":
@@ -15171,7 +15349,7 @@ async def handle_yunhu_notice(event):
         await event.reply(f"A2UI Action: {action_name}, Form Data: {form_context}")
 ```
 
-### Sending a Message with Buttons Using Chained Calls
+### Sending a Message with Buttons Using a Chained Call
 
 ```python
 from ErisPulse import sdk
@@ -15186,13 +15364,11 @@ buttons = [
     ]
 ]
 
-# Send a Message with Buttons to a Group
-await yunhu.Send.To("group", "123456").Buttons(buttons).Text("Please confirm the following operation")
-
-
+# Send a Message with Buttons to a Group  
+await yunhu.Send.To("group", "123456").Buttons(buttons).Text("Please confirm the following action")
 
 # Send a Message with Buttons to User's Private Chat
-await yunhu.Send.To("user", "789").Buttons(buttons).Text("Please select your preference settings")
+await yunhu.Send.To("user", "789").Buttons(buttons).Text("Please select your preferred settings")
 
 ### Send A2UI Message
 
@@ -15200,12 +15376,13 @@ await yunhu.Send.To("user", "789").Buttons(buttons).Text("Please select your pre
 from ErisPulse import sdk
 
 yunhu = sdk.adapter.get("yunhu")
-
-# Send A2UI Message
-await yunhu.Send.To("user", user_id).A2UI("A2UI interactive card content")
 ```
 
-# Robot Settings
+# Send A2UI Message
+await yunhu.Send.To("user", user_id).A2UI("A2UI interaction card content")
+
+```
+# Bot Settings
 {
   "type": "notice",
   "detail_type": "yunhu_bot_setting",
@@ -15226,17 +15403,18 @@ await yunhu.Send.To("user", user_id).A2UI("A2UI interactive card content")
   "detail_type": "yunhu_shortcut_menu",
   "user_id": "User ID who triggered the menu",
   "user_nickname": "User nickname",
-  "group_id": "Group ID (if in group chat)",
+  "group_id": "Group ID (if it's a group chat)",
   "yunhu_menu": {
     "id": "Menu ID",
     "type": "Menu type (integer)",
     "action": "Menu action (integer)"
   }
 }
+```
 
 ## Event Mixin Extension Methods
 
-The adapter registers the following platform-specific methods, which are only available when `platform == "yunhu"`:
+The adapter registers the following platform-specific methods, available only when `platform == "yunhu"`:
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
@@ -15246,13 +15424,13 @@ The adapter registers the following platform-specific methods, which are only av
 | `get_sender_title()` | `str` | Sender's title (standard `title` field accessor, reserved) |
 | `get_sender_avatar()` | `str` | Sender's avatar URL |
 | `get_command()` | `dict` | Command data (only for command message events, `yunhu_command`) |
-| `get_button_value()` | `str` | The value from a button click event (`yunhu_button.value`) |
-| `get_a2ui_action()` | `str` | The actionName from an A2UI button event |
-| `get_a2ui_form_context()` | `dict` | The form context from an A2UI button event |
-| `get_menu_id()` | `str` | The ID from a shortcut menu event (`yunhu_menu.id`) |
-| `get_setting()` | `dict` | The setting data from a robot setting event (`yunhu_setting`) |
+| `get_button_value()` | `str` | The `value` of a button click event (`yunhu_button.value`) |
+| `get_a2ui_action()` | `str` | The `actionName` of an A2UI button event |
+| `get_a2ui_form_context()` | `dict` | The form context of an A2UI button event |
+| `get_menu_id()` | `str` | Shortcut menu event ID (`yunhu_menu.id`) |
+| `get_setting()` | `dict` | Setting data of a bot setting event (`yunhu_setting`) |
 | `is_command_message()` | `bool` | Whether the event is a command message |
-| `is_button_click()` | `bool` | Whether the event is a button click event |
+| `is_button_click()` | `bool` | Whether the event is a button click |
 | `is_a2ui_button()` | `bool` | Whether the event is an A2UI button event |
 
 ```python
@@ -15269,18 +15447,19 @@ async def handle_yunhu_notice(event):
 
     if event.get("detail_type") == "yunhu_shortcut_menu":
         menu_id = event.get_menu_id()
+```
 
 ## Extension Field Description
 
-- All unique fields are prefixed with `yunhu_` to avoid conflicts with standard fields
-- The original data is retained in the `yunhu_raw` field, which allows access to the complete raw data from the YUNHU platform
-- `self.user_id` represents the bot ID (obtained from the bot_id in the configuration)
-- Form instructions are provided as structured data through the `yunhu_command` field
-- Button click events are provided with button-related information through the `yunhu_button` field
-- A2UI button events are provided with A2UI interaction-related information through the `yunhu_a2ui` field
-- Bot setting changes are provided with setting item data through the `yunhu_setting` field
-- Quick menu operations are provided with menu-related information through the `yunhu_menu` field
-- Emoji/Sticker messages are provided with sticker data (sticker_id, sticker pack ID, image size, etc.) through the `yunhu_expression` message segment
+- All custom fields are prefixed with `yunhu_` to avoid conflicts with standard fields.
+- Raw data is preserved in the `yunhu_raw` field for easy access to the complete original data from the Yunhu platform.
+- `self.user_id` represents the bot ID (obtained from the bot_id in the configuration).
+- Form commands are provided as structured data through the `yunhu_command` field.
+- Button click events are provided with button-related information through the `yunhu_button` field.
+- A2UI button events are provided with A2UI interaction-related information through the `yunhu_a2ui` field.
+- Bot setting changes are provided with setting item data through the `yunhu_setting` field.
+- Quick menu operations are provided with menu-related information through the `yunhu_menu` field.
+- Emoji/Sticker messages are provided as a message segment through `yunhu_expression`, containing sticker data (sticker_id, sticker pack ID, image dimensions, etc.).
 
 ### Emoji/Sticker Message Segment (yunhu_expression)
 
@@ -15302,10 +15481,10 @@ When a user sends an emoji or sticker, the message segment type is `yunhu_expres
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `sticker_id` | string | Unique identifier for the sticker |
+| `sticker_id` | string | Sticker unique identifier |
 | `sticker_pack_id` | string | Sticker pack ID |
 | `expression_id` | string | Expression ID |
-| `image_name` | string | File path to the expression image |
+| `image_name` | string | Path to the expression image file |
 | `width` | int | Image width (optional) |
 | `height` | int | Image height (optional) |
 
@@ -15320,10 +15499,11 @@ async def handle_message(event):
             if segment.get("type") == "yunhu_expression":
                 data = segment["data"]
                 print(f"Received sticker: sticker_id={data['sticker_id']}, pack ID={data['sticker_pack_id']}")
+```
 
 ## Multi-Bot Configuration
 
-### Configuration Description
+### Configuration Explanation
 
 The Yunhu Adapter supports configuring and running multiple Yunhu bot accounts simultaneously.
 
@@ -15331,26 +15511,26 @@ The Yunhu Adapter supports configuring and running multiple Yunhu bot accounts s
 # config.toml
 [Yunhu_Adapter.accounts.bot1]
 token = "your_bot1_token"  # Bot token (required)
-mode = "ws"  # Receive mode (optional, default "ws", options: "ws", "webhook")
-webhook_path = "/webhook/bot1"  # Webhook path (optional, default "/webhook")
-enabled = true  # Whether to enable (optional, default true)
+mode = "ws"  # Receive mode (optional, default: "ws", options: "ws", "webhook")
+webhook_path = "/webhook/bot1"  # Webhook path (optional, default: "/webhook")
+enabled = true  # Whether to enable (optional, default: true)
 
 [Yunhu_Adapter.accounts.bot2]
 token = "your_bot2_token"  # Second bot's token
-webhook_path = "/webhook/bot2"  # Separate webhook path
+webhook_path = "/webhook/bot2"  # Independent webhook path
 enabled = true
 ```
 
-**Configuration Item Description:**
+**Configuration Item Explanation:**
 - `token`: API token provided by the Yunhu platform (required)
-- `mode`: Receive mode (optional, default `"ws"`, options `"ws"`, `"webhook"`)
-- `webhook_path`: HTTP path for receiving Yunhu events (optional, default `"/webhook"`, only used in webhook mode)
-- `enabled`: Whether to enable this account (optional, default true)
+- `mode`: Receive mode (optional, default: `"ws"`, options: `"ws"`, `"webhook"`)
+- `webhook_path`: HTTP path for receiving Yunhu events (optional, default: `"/webhook"`, only used in webhook mode)
+- `enabled`: Whether to enable this account (optional, default: true)
 
 **Important Notes:**
-1. The Yunhu platform's bot ID is automatically detected at **runtime** and does not need to be specified in the configuration.
-2. In webhook mode, each bot should have its own `webhook_path` to receive its respective webhook events.
-3. When configuring webhooks on the Yunhu platform, please set the corresponding URL for each bot, for example:
+1. The Yunhu platform's bot ID is **automatically detected at runtime**, no need to specify it in the configuration
+2. In webhook mode, each bot should have its own `webhook_path` to receive its own webhook events
+3. When configuring webhooks in the Yunhu platform, please set up corresponding URLs for each bot, for example:
    - Bot1: `https://your-domain.com/webhook/bot1`
    - Bot2: `https://your-domain.com/webhook/bot2`
 
@@ -15374,11 +15554,11 @@ await yunhu.Send.Using("30535459").To("group", "group456").Text("Hello from bot!
 await yunhu.Send.To("user", "user123").Text("Hello from default bot!")
 ```
 
-> **Tip:** When using `bot_id`, the system automatically finds the matching account in the configuration. This is especially useful when handling event responses, where you can directly use `event["self"]["user_id"]` to reply to the same account.
+> **Note:** When using `bot_id`, the system automatically finds the matching account in the configuration. This is especially useful when handling event replies, where you can directly use `event["self"]["user_id"]` to reply from the same account.
 
 ### Bot Identification in Events
 
-Received events automatically include the corresponding `bot_id` information:
+Received events will automatically include the corresponding `bot_id` information:
 
 ```python
 from ErisPulse.Core.Event import message
@@ -15388,7 +15568,7 @@ async def handle_message(event):
     if event["platform"] == "yunhu":
         # Get the bot ID that triggered the event
         bot_id = event["self"]["user_id"]
-        print(f"Message received from Bot: {bot_id}")
+        print(f"Message from Bot: {bot_id}")
         
         # Reply using the same bot
         yunhu = adapter.get("yunhu")
@@ -15400,7 +15580,7 @@ async def handle_message(event):
 
 ### Log Information
 
-The adapter automatically includes `bot_id` information in the logs, which is helpful for debugging and tracking:
+The adapter will automatically include `bot_id` information in logs, making debugging and tracking easier:
 
 ```
 [INFO] [yunhu] [bot:30535459] Received private message from user user123
@@ -15419,7 +15599,7 @@ bot_status = {
     for bot_name, bot_config in yunhu.bots.items()
 }
 
-# Dynamically enable/disable accounts (requires adapter restart)
+# Dynamically enable/disable accounts (requires restarting the adapter)
 yunhu.bots["bot1"].enabled = False
 ```
 

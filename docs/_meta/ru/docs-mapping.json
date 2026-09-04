@@ -471,7 +471,7 @@
           "icon": "fa-layer-group"
         },
         {
-          "title": "Спецификация стандартного возвращаемого значения для адаптера ErisPulse",
+          "title": "Стандартизированный формат возврата адаптера ErisPulse",
           "path": "standards/api-response.md",
           "level": 1,
           "icon": "fa-arrow-right-arrow-left"
@@ -483,19 +483,19 @@
           "icon": "fa-shuffle"
         },
         {
-          "title": "Спецификация метода отправки ErisPulse",
+          "title": "Правила метода отправки Send в ErisPulse",
           "path": "standards/send-method-spec.md",
           "level": 1,
           "icon": "fa-paper-plane"
         },
         {
-          "title": "ErisPulse Спецификация операций запросов",
+          "title": "Стандарт операций запроса ErisPulse",
           "path": "standards/request-action-spec.md",
           "level": 1,
           "icon": "fa-hand-paper"
         },
         {
-          "title": "ErisPulse API Стандарт действий",
+          "title": "Стандарт действий API ErisPulse",
           "path": "standards/api-action-spec.md",
           "level": 1,
           "icon": "fa-bolt"

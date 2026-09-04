@@ -8645,10 +8645,10 @@ CLI 拥有**独立**的国际化模块（`ErisPulse.CLI.i18n`），与框架核�
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-统一控制面回答五个问题：**哪些模块可用、谁的事件收不收、谁能执行某条命令、
-某模块处理什么文本、覆盖哪些实现参数**。控制权完全交给用户：在模块 / 适配器 /
-命令 / 处理器注册的**上层**（配置 `ErisPulse.scope` 或运行时 `sdk.scope`）统一声明，
-事件管线在每一级自动读取并执行。
+统一控制面回答六个问题：**哪些模块可用、谁的事件收不收、谁能执行某条命令、
+某模块处理什么文本、覆盖哪些实现参数、禁止模块发起哪些出站调用**。
+控制权完全交给用户：在模块 / 适配器 / 命令 / 处理器注册的**上层**（配置
+`ErisPulse.scope` 或运行时 `sdk.scope`）统一声明，事件管线在每一级自动读取并执行。
 
 控制面收敛了原有的多套权限系统，是 2.8.0 权限/访问控制的**唯一**入口：
 
@@ -8659,6 +8659,7 @@ CLI 拥有**独立**的国际化模块（`ErisPulse.CLI.i18n`），与框架核�
 | **③ 命令** | 谁能执行某条命令（命令名支持 glob） | 回复"权限不足"（显式） | `scope.commands` |
 | **④ 处理器** | 某模块的事件处理器按文本过滤 | 不触发（静默） | `scope.handlers` |
 | **⑤ 覆盖** | 覆盖模块/命令的实现参数（master/hidden/aliases/prefix） | ——（只改参数） | `scope.overrides` |
+| **⑥ 出站动作** | 禁止模块发送消息 / 调标准 API / 处理请求 | 失败响应（`retcode=34601`） | `scope.actions` |
 
 {!--< tips >!--}
 1. 通过 `from ErisPulse.Core import scope` 导入单例（`sdk.scope` 同对象）
@@ -8666,7 +8667,8 @@ CLI 拥有**独立**的国际化模块（`ErisPulse.CLI.i18n`），与框架核�
 3. `scope.is_identity_allowed(platform, bot_id, session_id, user_id)` 判断事件是否放行
 4. `scope.allow_user("roll*", platform, uid)` / `deny_user(...)` 命令 ACL（支持 glob）
 5. `scope.override("MyModule", "restart", master=True)` 覆盖实现参数
-6. `scope.get_stats()` 查看过滤统计；`scope.get_topology()` 查看五维拓扑
+6. `scope.set_action("MyModule", "send", False)` 禁止模块回复/发消息
+7. `scope.get_stats()` 查看过滤统计；`scope.get_topology()` 查看拓扑
 {!--< /tips >!--}
 
 ## 匹配条目语法（全系统统一）
@@ -8696,6 +8698,10 @@ CLI 拥有**独立**的国际化模块（`ErisPulse.CLI.i18n`），与框架核�
 
 设为 `false` 即开启"隐式拒绝"严格模式：白名单式管理，
 **没显式允许的一律拒绝**。
+
+> **例外**：⑥ 出站动作维度**不**受 `default_allow` 影响——它是独立的收紧开关，
+> 默认全允许，仅显式 `false` 才禁（框架层 owner 为空的调用恒放行）。
+> 这样严格的全局模式不会意外掐断所有模块的消息回复。
 
 ## 配置文件
 
@@ -8740,6 +8746,12 @@ master = true                 # 仅框架主人可用
 hidden = true                 # 帮助中隐藏
 aliases = ["rs"]              # 追加别名
 prefix = "!"                  # 追加触发前缀
+
+# ── ⑥ 出站动作维度（默认全允许，显式禁用才收紧）──
+[ErisPulse.scope.actions.MyModule]
+send = false                  # 禁止 MyModule 回复/主动发消息
+api = false                   # 禁止 MyModule 调标准 API（含 call 逃生舱）
+request = false               # 禁止 MyModule 处理请求操作 accept/reject
 ```
 
 ## ① 模块维度
@@ -8788,7 +8800,7 @@ allow = ["u_admin"]   # 即使适配器级拒绝，u_admin 的事件仍然放行
 - 精确键优先于 glob 键（`commands.roll` 命中时不再查 `commands."roll*"`）
 - 用户标识格式 `"platform:user_id"`（与框架主人系统一致）
 - 该维度**只是用户侧的额外闸门**，与命令的 `master` / `permission` 参数串联：
-  ACL 通过后仍走开发者声明的默认权限链
+  ACL 通过后仍走开发者声明的默认权限链（该默认链可用 ⑤ 覆盖调整）
 
 ## ④ 处理器/文本维度
 
@@ -8807,14 +8819,42 @@ pattern = "闲聊*"     # ChatModule 的处理器只响应"闲聊"开头的消�
 
 ```toml
 [ErisPulse.scope.overrides.MyModule.restart]
-master = true      # 覆盖为仅框架主人
+master = true      # 覆盖为仅框架主人（也可设 false 放开开发者的主人限制）
 hidden = true      # 帮助列表中隐藏
 aliases = ["rs"]   # 生效别名
 ```
 
+> 覆盖遵循**用户优先**：开发者声明的 `master` / `hidden` 等只是默认值，
+> 用户在此显式配置后即以用户配置为准（可收紧也可放开）。
 > 覆盖只改**实现参数**（master / hidden / aliases / prefix / help / usage 等）。
 > **禁用一条命令不在这里**——统一走命令维度 deny（`scope.commands` 或
 > `scope.deny_user()`），避免两套"禁用"语义打架。
+
+## ⑥ 出站动作维度（禁止模块发起出站调用）
+
+约束模块**发起的出站动作**：消息发送 / 标准 API 动作 / 请求操作。
+三类动作对应底层 DSL：`Event.reply` 与 `Send`（send）、`Api` / `call_api`（api）、
+`Request` 的 accept/reject（request）。模块在事件 handler 执行期发起的出站调用
+携带模块 owner，由本维度统一判定。
+
+```toml
+[ErisPulse.scope.actions.MyModule]
+send = false      # 禁止 MyModule 回复/主动发消息
+api = false       # 禁止 MyModule 调用标准 API 动作（含 call 逃生舱）
+request = false   # 禁止 MyModule 对请求事件执行 accept/reject
+```
+
+判定语义：**默认全允许**——未配置、或 owner 为空（框架层内部调用）均放行；
+仅当用户显式设为 `false` 才拒绝，被拒调用不发起任何网络请求，直接返回
+标准失败响应（`retcode = 34601`，见 [api-response §5.3](../standards/api-response.md#53-框架扩展返回码34xxx-平台错误段的低三位自定义)）。三个动作互相独立，可只禁其一。
+
+```python
+# 运行时 API
+sdk.scope.set_action("MyModule", "send", False)   # 禁发消息
+sdk.scope.is_action_allowed("MyModule", "send")   # False
+sdk.scope.unset_action("MyModule", "send")        # 恢复允许
+sdk.scope.get_action_rules("MyModule")            # {"send": False, "api": True, "request": True}
+```
 
 ## 运行时 API
 
@@ -8887,14 +8927,70 @@ sdk.scope.remove_override("MyModule", "restart")
 ### 通用
 
 ```python
-sdk.scope.list_bindings()   # 五维全量绑定
-sdk.scope.get_topology()    # 五维拓扑（供 Dashboard）
+sdk.scope.list_bindings()   # 全量绑定
+sdk.scope.get_topology()    # 拓扑（供 Dashboard）
 sdk.scope.get_stats()
 # {"module_calls": .., "module_filtered": .., "identity_checks": .., "identity_denied": ..,
-#  "command_checks": .., "command_denied": .., "cache_hits": .., "cache_misses": ..}
+#  "command_checks": .., "command_denied": .., "action_checks": .., "action_denied": ..,
+#  "cache_hits": .., "cache_misses": ..}
 sdk.scope.reset_stats()
 sdk.scope.clear()           # 清空全部绑定（仅内存生效）
 ```
+
+## 主人身份与自定义身份源（provider）
+
+主人系统回答"谁是框架主人"：命令的 `master=True` 参数与业务层的
+`master.is_master()` 共用同一套身份判定，判定链为
+**配置主人 → 运行时记录 → provider 链**。
+
+主人配置（`ErisPulse.master.users`，支持全局 list 与按平台 dict）见
+[配置文档](../user-guide/configuration.md#主人系统配置)；本节聚焦身份判定 API 与扩展点。
+
+### 判定与运行时增删
+
+```python
+from ErisPulse.Core import master
+
+master.is_master(event)                      # 从事件判定
+master.is_master("yunhu", "123")             # 显式判定
+master.add("yunhu", "123")                   # 运行时添加（默认持久化；persist=False 仅内存）
+master.remove("yunhu", "123")                # 移除（默认持久化）
+master.list()                                # 汇总：{"global": [...], "<platform>": [...]}
+```
+
+### 自定义身份源（provider）
+
+除配置外，还可注册自定义身份源：`fn(platform, user_id) -> bool`，
+内置身份源（配置 + 运行时记录）未命中时依次尝试，任一 provider 放行即认定为主人。
+适合对接适配器管理员接口、数据库角色等外部身份体系。
+
+注册入口 `master.provider` 支持装饰器 / 函数式两种写法，
+注销统一走被注册函数上的 `fn.unregister()`：
+
+```python
+from ErisPulse.Core import master
+
+# 写法一：装饰器（常驻身份源，推荐）
+@master.provider
+def admin_provider(platform, user_id):
+    return user_id in {"999"}     # 自定义判定逻辑
+
+master.is_master("yunhu", "999")   # True
+admin_provider.unregister()        # 不再需要时注销
+
+# 写法二：函数式（模块加载期注册 / 卸载期注销）
+fn = master.provider(admin_provider)
+fn.unregister()
+```
+
+> provider 异常会被捕获并跳过，不阻断身份判定链。
+> 绑定实例方法无法挂载 `unregister`，需要注册/注销配对的场景请用**模块级函数**。
+
+### 用户优先：主人生效范围由用户最终决定
+
+命令的 `master=True` 只是**开发者默认**：用户可在控制面
+`ErisPulse.scope.overrides.<module>.<cmd>.master = true/false`
+覆盖收紧或放开（见上文 ⑤ 实现参数覆盖，用户显式配置即生效）。
 
 ## 缓存与热更新
 
@@ -8915,9 +9011,9 @@ sdk.scope.clear()           # 清空全部绑定（仅内存生效）
 ### 2. 优先用控制面而不是改模块代码
 
 模块声明的是"开发者默认"（`master=True`、`permission=...`、`pattern=...`）；
-控制面声明的是"用户最终决定"。两者冲突时**控制面更严格的一方生效**
-（如开发者未设 master，用户可覆盖 `master = true` 收紧；用户不能通过覆盖放开
-开发者显式的限制——禁用/放行类控制走命令 deny / 身份 allow）。
+控制面声明的是"用户最终决定"。实现参数覆盖遵循**用户优先**：
+用户显式配置的 `master = true/false` 直接生效（可收紧可放开）。
+开发者未设的限制用户可自行收紧；禁用/放行类控制走命令 deny / 身份 allow。
 
 ### 3. 模块/命令没反应
 
