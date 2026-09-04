@@ -47,7 +47,7 @@ jobs:
           echo "bot-user-id=$BOT_USER_ID" >> $GITHUB_OUTPUT
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           # 不让 checkout 缓存初始 token 到 .git/config（http.extraheader）。
