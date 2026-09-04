@@ -137,7 +137,43 @@ OneBot12 标准中 `message_id` 位于 `data` 对象内部且非强制。ErisPul
 - `platform` 必须与适配器注册时的平台名完全一致（大小写敏感）
 - 原始响应中的错误信息也应保留，便于调试
 
-### 5.3 适配器实现检查清单
+### 5.3 框架扩展返回码（34xxx 平台错误段的低三位自定义）
+
+OneBot12 规范允许实现自定义 `3xxxx` 的低三位。`34xxx` 语义为 **Platform Error**
+（机器人平台错误，如平台限制导致失败）。`34xxx` 内部按职责分层使用：
+
+| 低三位段 | 归属 | 用途 |
+|---------|------|------|
+| `340xx` | 适配器实现 | 请求操作族（Request Not Found / Already Handled / Not Supported / Permission Denied，见 request-action-spec §7） |
+| `341xx`～`345xx` | 适配器实现 | 平台侧权限 / 风控 / 账号限制等错误（实现自定低三位，原始错误放 `{platform}_raw`） |
+| `346xx` | **ErisPulse 框架（保留）** | 框架自身拦截与通用失败，适配器/模块请勿占用 |
+| `347xx`～`349xx` | 适配器实现 | 其它平台执行错误 |
+
+ErisPulse 框架当前使用的 `346xx` 码：
+
+| 错误码 | 错误名 | 说明 |
+|-------|-------|------|
+| 34600 | SDK Failure | 框架通用失败（`make_error()` 默认返回码） |
+| 34601 | Action Denied | 出站动作被控制面禁用（`scope.actions`），调用未发起，直接返回该响应 |
+
+> 职责区分：`34601` 是**框架在调用前拦截**（模块根本没资格发起动作）；
+> `34004` / `34xxx` 平台码是**动作已发出但平台拒绝**（如 Bot 无权限、被风控）。
+> 模块判断权限问题时同时检查这两种：先看 `34601`（自己模块被 scope 禁），
+> 再看 `34xxx`（平台侧限制）。
+
+返回结构为 §2 标准失败响应：
+
+```json
+{
+    "status": "failed",
+    "retcode": 34601,
+    "data": null,
+    "message_id": "",
+    "message": "action 'send' denied by scope.actions"
+}
+```
+
+### 5.4 适配器实现检查清单
 
 - [ ] 包含 `status`, `retcode`, `data`, `message_id`, `message` 字段
 - [ ] 返回码遵循 OneBot12 规范（详见 §3.2）
@@ -147,4 +183,5 @@ OneBot12 标准中 `message_id` 位于 `data` 对象内部且非强制。ErisPul
 ## 6. 注意事项
 - 对于3xxxx错误码，低三位可由实现自行定义
 - 避免使用保留错误段(4xxxx、5xxxx)
+- **`34600` / `34601` 为 ErisPulse 框架保留码**（见 §5.3），适配器/模块避免使用
 - 错误信息应当简洁明了，便于调试
