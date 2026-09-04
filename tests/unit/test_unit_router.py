@@ -4,14 +4,14 @@
 测试RouterManager的HTTP/WebSocket路由注册、生命周期管理功能
 """
 
-import pytest
 import asyncio
-from unittest.mock import Mock, patch, MagicMock, AsyncMock
-from fastapi import WebSocket, WebSocketDisconnect
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
+
+import pytest
+from fastapi import WebSocket
 
 from ErisPulse.Core.router import RouterManager, router
 from ErisPulse.runtime.context import current_owner
-
 
 # ==================== RouterManager 基础测试 ====================
 

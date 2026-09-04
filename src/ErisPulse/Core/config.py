@@ -235,11 +235,7 @@ class ConfigManager:
                 return False
             except Exception as e:
                 # 态3：其他未知错误——保留原有通用提示
-                self._log_config_error(
-                    i18n.t(
-                        "core.config.load_failed", path=self.CONFIG_FILE, error=e
-                    )
-                )
+                self._log_config_error(i18n.t("core.config.load_failed", path=self.CONFIG_FILE, error=e))
                 self._log_config_error(
                     i18n.t("core.config.using_defaults_warning"),
                     level="warning",
@@ -315,8 +311,7 @@ class ConfigManager:
         {!--< /internal-use >!--}
         """
         return {
-            k: ConfigManager._sort_config_dict(v) if isinstance(v, dict) else v
-            for k, v in sorted(config_dict.items())
+            k: ConfigManager._sort_config_dict(v) if isinstance(v, dict) else v for k, v in sorted(config_dict.items())
         }
 
     @property
@@ -554,9 +549,7 @@ class ConfigManager:
                 self._config_mtime = current_mtime
                 # 若 mtime 与框架自身最后一次刷盘一致，说明是 _flush_config 的
                 # 写入，不算外部修改（避免 watcher 误触发重载）
-                if current_mtime == self._last_self_write_mtime:
-                    return False
-                return True
+                return current_mtime != self._last_self_write_mtime
         except OSError:
             pass
         return False
@@ -575,11 +568,14 @@ class ConfigManager:
         try:
             from .lifecycle import lifecycle
 
-            lifecycle.emit_sync("config.updated", {
-                "old_config": old_config,
-                "new_config": self._cache,
-                "config_file": self.CONFIG_FILE,
-            })
+            lifecycle.emit_sync(
+                "config.updated",
+                {
+                    "old_config": old_config,
+                    "new_config": self._cache,
+                    "config_file": self.CONFIG_FILE,
+                },
+            )
         except Exception:
             pass
 
@@ -698,6 +694,7 @@ class ConfigManager:
         :return: Any 配置值
         """
         import asyncio
+
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, self.getConfig, key, default)
 
@@ -711,16 +708,16 @@ class ConfigManager:
         :return: bool 操作是否成功
         """
         import asyncio
+
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(
-            None, lambda: self.setConfig(key, value, immediate)
-        )
+        return await loop.run_in_executor(None, lambda: self.setConfig(key, value, immediate))
 
     async def aforce_save(self) -> None:
         """
         异步强制保存所有待写入的配置到磁盘
         """
         import asyncio
+
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(None, self.force_save)
 
@@ -729,6 +726,7 @@ class ConfigManager:
         异步重新从磁盘加载配置
         """
         import asyncio
+
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(None, self.reload)
 

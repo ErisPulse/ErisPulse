@@ -4,8 +4,10 @@
 大量事件快速连续 emit，验证无崩溃、无内存泄漏、全部事件被处理。
 """
 
-import pytest
 import asyncio
+
+import pytest
+
 from ErisPulse.Core.adapter import AdapterManager
 from ErisPulse.Core.Bases import BaseAdapter
 
@@ -116,7 +118,7 @@ class TestEventFloodStress:
     @pytest.mark.asyncio
     async def test_1000_events_multiple_handlers(self, flood_adapter):
         """1000 事件，每个事件 5 个 handler"""
-        counts = {i: 0 for i in range(5)}
+        counts = dict.fromkeys(range(5), 0)
         lock = asyncio.Lock()
 
         for idx in range(5):

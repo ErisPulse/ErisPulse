@@ -10,7 +10,6 @@
 
 import asyncio
 import signal
-import sys
 
 from ErisPulse import sdk
 
@@ -172,6 +171,7 @@ async def auto_trigger():
     print("\n--- 自动触发: server.request + server.response ---")
     try:
         import urllib.request
+
         from ErisPulse.runtime import get_server_config
         sc = get_server_config()
         url = f"http://{sc['host']}:{sc['port']}/health"

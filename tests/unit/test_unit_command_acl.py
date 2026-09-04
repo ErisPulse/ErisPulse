@@ -18,8 +18,8 @@ from ErisPulse.runtime.context import current_owner
 
 @pytest.fixture(autouse=True)
 def clean_state():
-    from ErisPulse.Core.Event import _clear_all_handlers
     from ErisPulse.Core.adapter import adapter
+    from ErisPulse.Core.Event import _clear_all_handlers
 
     _clear_all_handlers()
     command_handler.commands.clear()
@@ -74,8 +74,8 @@ class TestCommandACL:
     @pytest.mark.asyncio
     async def test_deny_user_blocks(self):
         """deny 名单命中 → 拒绝执行并回复权限不足"""
-        from ErisPulse.Core.Event import command
         from ErisPulse.Core.adapter import adapter
+        from ErisPulse.Core.Event import command
 
         received = []
         token = current_owner.set("ModuleA")
@@ -105,8 +105,8 @@ class TestCommandACL:
     @pytest.mark.asyncio
     async def test_allow_list_restricts(self):
         """allow 名单非空 → 仅名单内用户可执行"""
-        from ErisPulse.Core.Event import command
         from ErisPulse.Core.adapter import adapter
+        from ErisPulse.Core.Event import command
 
         received = []
         token = current_owner.set("ModuleA")
@@ -132,8 +132,8 @@ class TestCommandACL:
     @pytest.mark.asyncio
     async def test_deny_wins_over_allow(self):
         """同用户同时在 allow 与 deny 名单 → deny 优先"""
-        from ErisPulse.Core.Event import command
         from ErisPulse.Core.adapter import adapter
+        from ErisPulse.Core.Event import command
 
         received = []
         token = current_owner.set("ModuleA")

@@ -6,8 +6,6 @@
 
 import asyncio
 
-import pytest
-
 from ErisPulse.runtime.context import owner_scope
 from ErisPulse.runtime.tasks import (
     cancel_all_background_tasks,

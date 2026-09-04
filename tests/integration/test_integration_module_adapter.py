@@ -4,16 +4,16 @@
 测试模块通过 Event 装饰器注册 handler 后，适配器 emit 事件时模块 handler 被正确触发。
 """
 
-import pytest
 import asyncio
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
+
+import pytest
 
 from ErisPulse.Core.adapter import adapter
-from ErisPulse.Core.module import ModuleManager
-from ErisPulse.Core.lifecycle import lifecycle
-from ErisPulse.Core.Event import command, message, notice
-from ErisPulse.Core.Event import _clear_all_handlers
 from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.Core.Event import _clear_all_handlers, command, message, notice
+from ErisPulse.Core.lifecycle import lifecycle
+from ErisPulse.Core.module import ModuleManager
 
 
 class _CollabModule(BaseModule):
