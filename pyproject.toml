@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.26"]
 build-backend = "hatchling.build"
 
 [project]
@@ -8,7 +8,8 @@ version = "2.8.0"
 description = "Event-driven modular async bot framework — write once, deploy to any platform | 事件驱动的模块化异步机器人框架，一次编写，多平台部署"
 readme = "README.pypi.md"
 requires-python = ">=3.10"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 
 authors = [
     { name = "ErisDev" }
@@ -87,11 +88,14 @@ test = [
     "pytest-benchmark>=4.0.0",
     "httpx>=0.24.0",
 ]
+
+[dependency-groups]
 dev = [
     "pyclean>=3.6.0",
     "ruff>=0.1.7",
     "basedpyright>=1.20.0",
-    "typing_extensions>=4.7.0; python_version < '3.11'"]
+    "typing_extensions>=4.7.0; python_version < '3.11'",
+]
 
 [project.scripts]
 ep-init = "ErisPulse.__init__:init_sync"
@@ -118,7 +122,7 @@ include = [
 target-version = "py310"
 line-length = 120
 
-include = ["src/**/*.py"]
+include = ["src/**/*.py", "tests/**/*.py"]
 
 extend-exclude = [
     "__pycache__",
@@ -161,6 +165,7 @@ ignore = [
     "PLR0912",  # too-many-branches
     "PLR0913",  # too-many-arguments
     "PLR0915",  # too-many-statements
+    "PLR0917",  # too-many-positional-arguments —— 同 PLR0913，既有公共 API 签名不可破坏
     "PLR2004",  # magic-value-comparison —— 数值阈值判定过于严格
     "PLR1714",  # repeated-equality-comparison
     "PLW0602",  # global-variable-not-assigned
@@ -169,6 +174,7 @@ ignore = [
     "PERF203",  # try-except-in-loop —— 异步轮询/重试场景的常见且必要写法，性能影响极小
     "RUF012",   # mutable-class-default —— 类属性容器（handlers/事件表）是项目既有 API
     "RUF005",   # collection-literal-concatenation —— `list + list` 有时比 unpack 更清晰
+    "RUF022",   # unsorted-dunder-all —— __all__ 常按语义分组并附加注释，强制排序破坏可读性
     "RET504",   # unnecessary-assign —— “先 assign 再 return”有时更易调试
 
     # 风格偏好（不强加于现有代码）
@@ -194,7 +200,15 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401", "PLC0415", "I001"]  # 导出式 __init__ 经常按需导入
-"tests/**/*.py" = ["S101", "PLR2004", "SLF001", "ARG", "ANN", "PTH"]
+"tests/**/*.py" = [
+    # 断言/夹具相关（测试代码天然模式）
+    "S101", "PLR2004", "SLF001", "ARG", "ANN", "PTH",
+    "E712", "B011", "B017", "B018", "RUF043",
+    # 测试内常见的宽松写法
+    "E702", "E402", "F841", "RUF059", "PLW0108",
+    "UP031", "N814", "PERF401", "PLR0917", "RUF015",
+    "B007", "PIE810", "PLR0124", "PLW1510", "SIM118",
+]
 
 [tool.ruff.lint.pep8-naming]
 # 装饰器方法、classmethod 的首参数名允许保留
