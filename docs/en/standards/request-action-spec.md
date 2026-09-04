@@ -4,11 +4,11 @@ This document defines the standardized specification for request event operation
 
 ## 1. Overview
 
-Request events (`type: "request"`) are special event types defined in the OneBot12 standard, representing requests that require the Bot to make decisions (such as friend requests, group invitations, etc.).
+The request event (`type: "request"`) is a special event type defined in the OneBot12 standard, representing requests that require the Bot to make a decision (such as friend requests or group invitations).
 
 Unlike message events, request events require **bidirectional interaction**:
-1. **Receiving**: The adapter converts platform-native requests into standard request events
-2. **Responding**: The module performs operations through the `Request` DSL or `Event.approve()`/`Event.reject()`
+1. **Receiving**: The adapter converts the platform-native request into a standard request event
+2. **Responding**: The module executes operations via the `Request` DSL or `Event.approve()`/`Event.reject()`
 
 ```
 Platform-native request event
@@ -21,8 +21,8 @@ Standard request event (with request_id)
     │
     ├─→ Module handler @request.on_friend_request()
     │       │
-    │       ├─→ event.approve()     ← Approve request
-    │       └─→ event.reject()      ← Reject request
+    │       ├─→ event.approve()     ← Approve the request
+    │       └─→ event.reject()      ← Reject the request
     │               │
     │               ▼
     │       adapter.Request(request_id).accept()
@@ -33,7 +33,7 @@ Standard request event (with request_id)
     │               ▼
     │       Platform API call
     │
-    └─→ Or direct adapter operation
+    └─→ Or directly through adapter operations
             await adapter.Request("req_id").accept()
 ```
 
@@ -41,25 +41,25 @@ Standard request event (with request_id)
 
 ### 2.1 Standard Fields
 
-In addition to the required OneBot12 standard fields, request events must include the following fields:
+The request event must include OneBot12 standard fields and the following additional fields:
 
 | Field | Type | Required | Description |
-|------|------|----------|-------------|
-| `request_id` | string | **Strongly Recommended** | Request identifier for approve/reject operations |
-| `user_id` | string | Yes | Request initiator ID |
-| `user_nickname` | string | No | Request initiator nickname |
-| `comment` | string | No | Request message/comment |
+|------|------|------|------|
+| `request_id` | string | **Strongly recommended** | Request identifier, used for approve/reject operations |
+| `user_id` | string | Yes | ID of the request initiator |
+| `user_nickname` | string | No | Nickname of the request initiator |
+| `comment` | string | No | Request comment |
 
 ### 2.2 `request_id` Field
 
-The `request_id` is the core identifier for request operations:
+`request_id` is the core identifier for request operations:
 
-- **Purpose**: Identifies an actionable request for use with the `Request` DSL
+- **Purpose**: Identifies an actionable request, used by the `Request` DSL
 - **Generation Rules**:
-  - Prefer platform-native request identifiers (e.g., OneBot11's `flag` field, Telegram's `chat_invite_link`, etc.)
-  - If the platform has no native request ID, the adapter should generate a unique identifier (recommended format: `{platform}_{timestamp}_{user_id}`)
-- **Uniqueness**: Should remain unique within the same platform scope
-- **Missing Behavior**: When `request_id` is missing, `event.approve()` / `event.reject()` will raise `ValueError`
+  - Prefer using the platform-native request identifier (e.g., OneBot11's `flag` field, Telegram's `chat_invite_link`, etc.)
+  - If the platform lacks a native request ID, the adapter should generate a unique identifier (recommended format: `{platform}_{timestamp}_{user_id}`)
+- **Uniqueness**: Should be unique within the same platform
+- **Missing Behavior**: When `request_id` is missing, `event.approve()` / `event.reject()` will raise a `ValueError`
 
 ### 2.3 Request Event Example
 
@@ -85,21 +85,21 @@ The `request_id` is the core identifier for request operations:
 
 ## 3. Request DSL
 
-### 3.1 Chained Calls
+### 3.1 Chainable Calls
 
-`Request` provides a chained call interface consistent with the `Send` style:
+`Request` provides a chainable API similar to `Send`:
 
 ```python
 # Basic usage
 await adapter.Request("req_id").accept()
 await adapter.Request("req_id").reject()
 
-# Specify bot account
+# Specify Bot account
 await adapter.Request("req_id").Using("bot1").accept()
 
 # Include comment (via kwargs)
 await adapter.Request("req_id").accept(comment="Welcome")
-await adapter.Request("req_id").reject(comment="Not adding at this time")
+await adapter.Request("req_id").reject(comment="Not adding for now")
 
 # Combined usage
 await adapter.Request("req_id").Using("bot1").accept(comment="Welcome")
@@ -108,14 +108,14 @@ await adapter.Request("req_id").Using("bot1").accept(comment="Welcome")
 ### 3.2 Method List
 
 | Method | Description | Return Value |
-|--------|-------------|--------------|
-| `Using(account_id)` | Specify the bot account for operation | `RequestDSL` (supports chaining) |
-| `accept(**kwargs)` | Approve request | `asyncio.Task` (returns standard response after awaiting) |
-| `reject(**kwargs)` | Reject request | `asyncio.Task` (returns standard response after awaiting) |
+|------|------|--------|
+| `Using(account_id)` | Specify the Bot account for the operation | `RequestDSL` (supports chainable calls) |
+| `accept(**kwargs)` | Approve the request | `asyncio.Task` (await returns standard response) |
+| `reject(**kwargs)` | Reject the request | `asyncio.Task` (await returns standard response) |
 
 ### 3.3 Return Value Format
 
-Operations return standard API response format:
+The operation returns a standard API response format:
 
 **Success**:
 ```json
@@ -135,24 +135,24 @@ Operations return standard API response format:
     "retcode": 34001,
     "data": null,
     "message_id": "",
-    "message": "Request expired or not found"
+    "message": "Request expired or does not exist"
 }
 ```
 
-**Not Implemented** (adapter hasn't overridden `accept`/`reject`):
+**Not Implemented** (adapter did not override `accept`/`reject`):
 ```json
 {
     "status": "failed",
     "retcode": 10002,
     "data": null,
     "message_id": "",
-    "message": "Platform MyAdapter has not implemented request operations (accept)"
+    "message": "Platform MyAdapter has not implemented request operation (accept)"
 }
 ```
 
 ## 4. Event Convenience Methods
 
-The `Event` wrapper class provides convenience methods suitable for use in request event handlers:
+The `Event` wrapper class provides convenient methods suitable for use in request event handlers:
 
 ```python
 from ErisPulse.Core.Event import request
@@ -169,7 +169,7 @@ async def handle_friend_request(event):
     result = await event.approve()
     
     # Or reject request
-    # result = await event.reject(comment="Not adding friends at this time")
+    # result = await event.reject(comment="Not adding as friend for now")
     
     # Check result
     if result.get("status") == "ok":
@@ -181,10 +181,10 @@ async def handle_friend_request(event):
 ### 4.1 Event Method List
 
 | Method | Description | Return Value |
-|--------|-------------|--------------|
+|------|------|--------|
 | `get_request_id()` | Get request ID | `str` |
-| `approve(comment=None)` | Approve the current request event | Standard response format |
-| `reject(comment=None)` | Reject the current request event | Standard response format |
+| `approve(comment=None)` | Approve current request event | Standard response format |
+| `reject(comment=None)` | Reject current request event | Standard response format |
 
 ## 5. Adapter Implementation Requirements
 
@@ -208,7 +208,7 @@ def convert_request_event(self, raw_event: dict) -> dict:
         "user_id": str(raw_event.get("user_id", "")),
         "user_nickname": raw_event.get("nickname", ""),
         "comment": raw_event.get("message", ""),
-        "request_id": self._extract_request_id(raw_event),  # ← Critical field
+        "request_id": self._extract_request_id(raw_event),  # ← Key field
         f"{self._platform_name}_raw": raw_event,
         f"{self._platform_name}_raw_type": raw_event.get("type", ""),
     }
@@ -217,9 +217,9 @@ def _extract_request_id(self, raw_event: dict) -> str:
     """
     Extract request ID from platform-native event
     
-    Prefer platform-native request identifiers, generate unique ID if none available
+    Prefer using platform-native request identifier, or generate a unique ID if none exists
     """
-    # Prefer platform-native ID
+    # Prefer using platform-native ID
     if flag := raw_event.get("flag"):
         return str(flag)
     if request_key := raw_event.get("request_key"):
@@ -231,9 +231,9 @@ def _extract_request_id(self, raw_event: dict) -> str:
     return hashlib.md5(raw.encode()).hexdigest()
 ```
 
-### 5.2 Request Inner Class Implementation
+### 5.2 Request Internal Class Implementation
 
-Adapters can override `accept` and `reject` in the `Request` inner class:
+The adapter implements `accept` and `reject` in the `Request` internal class:
 
 ```python
 from ErisPulse.Core import BaseAdapter, RequestDSL
@@ -247,7 +247,7 @@ class MyAdapter(BaseAdapter):
             """
             Approve request
             
-            :param kwargs: Extended parameters, e.g., comment="Note"
+            :param kwargs: Additional parameters, e.g., comment="remark"
             :return: asyncio.Task
             """
             async def _do():
@@ -305,67 +305,69 @@ class MyAdapter(BaseAdapter):
             return self._create_task(_do())
 ```
 
-### 5.3 Platforms Without Request Operations
+### 5.3 Platform Does Not Support Request Operations
 
-If the platform itself doesn't support friend requests/group invitation operations (some platforms auto-process requests), the adapter can:
+If the platform does not support friend requests or group invitations (e.g., some platforms automatically handle requests), the adapter can:
 
-1. **Not override the `Request` inner class**: Use the base class default implementation, returning `retcode=10002` when calling `accept()`/`reject()`
-2. **Skip `request_id` during conversion**: Don't generate `request_id`, let `event.approve()` raise `ValueError`
+1. **Do not override `Request` internal class**: Use the base class default implementation, calling `accept()`/`reject()` returns `retcode=10002`
+2. **Skip `request_id` generation during conversion**: Do not generate `request_id`, let `event.approve()` raise `ValueError`
 3. **Log warnings**: Record warnings in `accept`/`reject` and return appropriate error codes
 
 ### 5.4 Summary: Send and Request in Parallel
 
-The adapter has two parallel DSL inner classes, each with its own responsibilities:
+The adapter has two parallel DSL internal classes, each with its own responsibilities:
 
 ```
 BaseAdapter
 ├── Send(SendDSL)     ← Message sending
-│   ├── Raw_ob12()    ← Must implement
+│   ├── Raw_ob12()    ← Must be implemented
 │   ├── Text()        ← Recommended implementation
-│   └── Image()       ← Implement as needed
+│   └── Image()       ← Implemented as needed
 │
 └── Request(RequestDSL) ← Request operations
-    ├── accept()        ← Implement as needed
-    └── reject()        ← Implement as needed
+    ├── accept()        ← Implemented as needed
+    └── reject()        ← Implemented as needed
 ```
 
 ### 5.5 Adapter `__init__` Considerations
 
-When overriding the `__init__` of the `Request` inner class, you must pass through parameters and call `super().__init__()`, see [Getting Started with Adapter Development - `__init__` Considerations](../../developer-guide/adapters/getting-started.md#init-considerations) (same applies to `Request`, parameters are `adapter, request_id, account_id`).
+When overriding the `Request` internal class's `__init__`, you must pass through parameters and call `super().__init__()`, see [Adapter Development Guide - `__init__` Considerations](../developer-guide/adapters/getting-started.md#init-注意事项) (`Request` is similar, parameters are `adapter, request_id, account_id`).
 
 ## 6. Adapter Implementation Checklist
 
 ### Basic Requirements
-- [ ] If `__init__` is overridden, `super().__init__()` has been called (ensuring Send / Request factory initialization)
+- [ ] If `__init__` is overridden, `super().__init__()` has been called (to ensure Send/Request factory initialization)
 
 ### Request Event Conversion
-- [ ] Request event includes `request_id` field (strongly recommended)
+- [ ] Request event includes the `request_id` field (strongly recommended)
 - [ ] `detail_type` correctly maps to `"friend"` or `"group"`
-- [ ] Platform raw data is preserved in `{platform}_raw` field
+- [ ] Platform-native data is preserved in the `{platform}_raw` field
 - [ ] `request_id` generation rules are documented
 
 ### Request Operations
-- [ ] `Request` inner class is implemented (if platform supports request operations)
+- [ ] `Request` internal class is implemented (if the platform supports request operations)
 - [ ] `accept()` method is implemented
 - [ ] `reject()` method is implemented
-- [ ] Operations return standard API response format
-- [ ] Unsupported operations return `retcode=10002`
+- [ ] Operation returns standard API response format
+- [ ] Operations not supported return `retcode=10002`
 - [ ] Network errors return `retcode=33xxx` (following API response standards)
 
-## 7. Error Code Extensions
+## 7. Error Code Extension
 
-Recommended error codes for request operations (following [API Response Standards](api-response.md) §3.2):
+For **adapter implementation layer** related to request operations, the following recommended error codes are suggested (following [API Response Standard](api-response.md) §3.2, falling within the `34xxx` platform error segment's lower three digits for custom use):
 
 | Error Code | Error Name | Description |
-|------------|------------|-------------|
-| 34001 | Request Not Found | Request doesn't exist or has expired |
-| 34002 | Request Already Handled | Request has already been processed |
-| 34003 | Request Not Supported | Platform doesn't support this type of request operation |
-| 34004 | Permission Denied | Bot has no permission to handle this request |
+|-------|-------|------|
+| 34001 | Request Not Found | Request does not exist or has expired |
+| 34002 | Request Already Handled | Request has already been handled |
+| 34003 | Request Not Supported | Platform does not support this type of request operation |
+| 34004 | Permission Denied | Bot does not have permission to handle this request (returned by platform) |
+
+> **Boundary with Framework Codes**: The above `340xx` are **platform/adapter**-returned request handling failures; when the ErisPulse framework disables a module's request action in `scope.actions`, it **directly returns `34601` (Action Denied)** before calling the adapter (see [API Response Standard §5.3](api-response.md#53-framework-extended-return-codes-34xxx-custom-use-in-the-lower-three-digits-of-the-platform-error-segment)), and the two are not substitutes: first pass the `34601` framework gate, then fall back to the platform layer `340xx` errors.
 
 ## 8. Related Documentation
 
-- [Event Conversion Standards](event-conversion.md) - Complete event conversion specification
-- [API Response Standards](api-response.md) - Adapter API response format standards
-- [Send Method Specification](send-method-spec.md) - Send class method naming and parameter specifications
-- [Session Type Standards](session-types.md) - Session type definitions and mapping relationships
+- [Event Conversion Standard](event-conversion.md) - Complete event conversion specification
+- [API Response Standard](api-response.md) - Standard format for adapter API responses
+- [Send Method Specification](send-method-spec.md) - Naming and parameter conventions for Send class methods
+- [Session Type Standard](session-types.md) - Definition and mapping of session types

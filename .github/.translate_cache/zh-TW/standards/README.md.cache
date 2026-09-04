@@ -1,5 +1,37 @@
 {
-  "hash": "1901d1b7256cb67946dca68f1dac43b3",
-  "translated_at": "2026-07-29T11:34:23.118336",
-  "target_lang": "zh-TW"
+  "version": 2,
+  "hash": "390bb8a2ebe919229ad26da9b85bdcff",
+  "file_hash": "390bb8a2ebe919229ad26da9b85bdcff",
+  "translated_at": "2026-09-04T14:38:09.833665",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "9e2d790ef2d5dbde9b7e7b3fa82b048f",
+      "translation": "# 技術標準\n\n本文檔包含 ErisPulse 的技術標準規範，確保各組件間的一致性與相容性。"
+    },
+    {
+      "hash": "9caad7b637b53c0b36aa426ed079dc92",
+      "translation": "## 標準文件列表\n\n1. [會話類型標準](session-types.md) - ErisPulse 會話類型定義和映射規範  \n2. [事件轉換標準](event-conversion.md) - 平台事件轉換規範、擴展命名規範、訊息段標準  \n3. [API 回應標準](api-response.md) - 適配器 API 回應格式標準及擴展要求  \n4. [發送方法規範](send-method-spec.md) - Send 類方法命名、參數規範及反向轉換要求  \n5. [請求操作規範](request-action-spec.md) - 請求事件欄位要求、HandleRequest DSL 及適配器實現要求  \n6. [API 動作標準](api-action-spec.md) - OneBot12 標準 API 動作統一介面（使用者/群組/頻道/訊息管理/檔案含分片/元動作）"
+    },
+    {
+      "hash": "1dc425b803f091b542603e5e3c9b8086",
+      "translation": "## 標準概述\n\nErisPulse 採用 OneBot12 作為核心事件標準，並在此基礎上進行了擴展和細化。\n\n### 核心原則\n\n1. **相容性**：所有標準都必須與 OneBot12 標準保持相容\n2. **擴展性**：平台特有的功能透過前綴方式擴展，避免衝突\n3. **一致性**：時間戳、ID 格式等關鍵欄位需要統一處理\n4. **可追溯性**：保留原始資料以便除錯和問題排查"
+    },
+    {
+      "hash": "51e84f7360e835d60dfa3b3710308ab8",
+      "translation": "## 為什麼需要標準？\n\n### 1. 確保跨平台兼容\n\n不同平台的事件格式各不相同，標準化的轉換確保：\n- 模塊代碼只需編寫一次，即可在所有平台運行\n- 事件處理邏輯保持一致\n- 降低開發和維護成本\n\n### 2. 規範 API 接口\n\n統一的 API 响應格式確保：\n- 模塊可以一致地處理 API 錯誤\n- 錯誤信息統一且易於理解\n- 返回數據結構一致\n\n### 3. 提高代碼質量\n\n標準規範幫助：\n- 保持代碼風格一致\n- 減少命名衝突\n- 提高代碼可讀性"
+    },
+    {
+      "hash": "dfb98b9f713cefe82f0c11c81b075b42",
+      "translation": "## 遵循標準的好處\n\n### 對適配器開發者\n\n- 清晰的轉換規則\n- 統一的響應格式\n- 易於調試和測試\n\n### 對模塊開發者\n\n- 一致的事件介面\n- 可預測的 API 行為\n- 簡化的跨平台開發\n\n### 對最終用戶\n\n- 穩定的系統行為\n- 統一的消息格式\n- 良好的兼容性"
+    },
+    {
+      "hash": "9328791be47e9dfa5822d3274aaa1d88",
+      "translation": "## 標準遵循檢查清單\n\n### 事件轉換\n\n- [ ] 所有標準字段已正確映射\n- [ ] 平台特有字段已添加前綴\n- [ ] 時間戳已轉換為10位秒級\n- [ ] 原始數據保存在 {platform}_raw\n- [ ] 原始事件類型保存在 {platform}_raw_type\n- [ ] 消息段的 alt_message 已生成\n- [ ] 請求事件包含 request_id 字段\n\n### API 回應\n\n- [ ] 包含 status 字段\n- [ ] 包含 retcode 字段\n- [ ] 包含 data 字段\n- [ ] 包含 message_id 字段\n- [ ] 包含 message 字段\n- [ ] 回傳碼遵循 OneBot12 規範\n\n### 發送方法命名\n\n- [ ] 使用大駝峰命名法（PascalCase）\n- [ ] 返回 Task 對象\n- [ ] 修飾方法返回 self\n- [ ] 參數命名符合規範\n\n### 請求操作\n\n- [ ] HandleRequest 類已實現 _do_accept / _do_reject\n- [ ] 操作返回標準 API 回應格式\n- [ ] 不支援的操作返回 retcode=10002"
+    },
+    {
+      "hash": "30c833cd8a64927eaecac70e44ce2323",
+      "translation": "## 相關文件\n\n- [平台特性指南](../platform-guide/) - 了解各平台的特性差異\n- [開發者指南](../developer-guide/) - 開發自訂模組和適配器"
+    }
+  ]
 }

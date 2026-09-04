@@ -110,7 +110,7 @@ epsdk run main.py
 
 ### 安裝失敗
 
-1. 檢查 Python 版本是否 >= 3.10（建議 3.10 - 3.13）
+1. 檢查 Python 版本是否 >= 3.10（推薦 3.10 - 3.13）
 2. 嘗試使用 `uv pip install ErisPulse` 取代 `pip install`
 3. 如果提示權限錯誤，嘗試 `pip install --user ErisPulse` 或使用虛擬環境
 4. 如果在企業代理環境下遇到 SSL 證書錯誤，嘗試 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
@@ -128,7 +128,7 @@ epsdk run main.py
 1. 確認模組名稱拼寫正確（大小寫敏感）
 2. 檢查網路連接
 3. 使用 `epsdk list-remote` 查看可用模組列表
-4. 確認模組與你目前 SDK 版本相容
+4. 確認模組與你當前 SDK 版本相容
 
 ### Windows PowerShell 執行策略
 
@@ -137,6 +137,18 @@ epsdk run main.py
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
+
+### Debian/Ubuntu 虛擬環境建立失敗
+
+如果安裝腳本提示「虛擬環境建立失敗」，且錯誤資訊包含 `ensurepip is not available`，是因為 Debian/Ubuntu 預設未安裝 `python3-venv`（系統 Python 的 `ensurepip` 被禁用）：
+
+```bash
+sudo apt install python3.13-venv   # 按實際 Python 版本安裝對應套件
+# 或安裝通用元套件：
+sudo apt install python3-venv
+```
+
+安裝後重新執行安裝腳本即可。新版安裝腳本在偵測到該問題時會主動詢問並嘗試自動安裝對應系統套件；也可以改用 uv（`uv venv` 不依賴 `ensurepip`）。
 
 ## 下一步
 

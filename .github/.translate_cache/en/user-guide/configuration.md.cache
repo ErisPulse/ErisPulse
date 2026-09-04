@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "ebdabea25150c7568a7584972ee9b9dc",
-  "file_hash": "ebdabea25150c7568a7584972ee9b9dc",
-  "translated_at": "2026-09-01T07:04:11.767477",
+  "hash": "d4d19b1a095112c6604058a05e62fd72",
+  "file_hash": "d4d19b1a095112c6604058a05e62fd72",
+  "translated_at": "2026-09-04T14:43:05.954165",
   "target_lang": "en",
   "chunks": [
     {
@@ -34,8 +34,8 @@
       "translation": "## Server Configuration\n\n```toml\n[ErisPulse.server]\nhost = \"0.0.0.0\"\nport = 8000\nauto_start = true\nssl_certfile = \"/path/to/cert.pem\"\nssl_keyfile = \"/path/to/key.pem\"\n```\n\n| Configuration Item | Type | Default Value | Description |\n|---------|------|---------|------|\n| host | string | 0.0.0.0 | Listening address, 0.0.0.0 means all interfaces |\n| port | integer | 8000 | Listening port number |\n| auto_start | boolean | true | Whether to automatically start the routing server when `sdk.init()`. Setting to `false` skips routing server startup (pure event/without WebUI scenario) |\n| ssl_certfile | string | empty | SSL certificate file path |\n| ssl_keyfile | string | empty | SSL private key file path |"
     },
     {
-      "hash": "9a6c469d02b8dd9074aa0433b617644f",
-      "translation": "## Master System Configuration\n\nThe master system is used to identify the \"framework master\" account (such as Bot administrator). `master.users` supports two writing styles:\n\n```toml\n[ErisPulse.master]\n# Style 1: Global master (applies to all platforms)\nusers = [\"123456\", \"789012\"]\n\n# Style 2: Specify masters by platform (dict)\n# users = { yunhu = [\"123456\"], telegram = [\"789012\"] }\n```\n\n| Configuration Item | Type | Default Value | Description |\n|---------|------|---------|------|\n| users | array / object | empty | List of master account IDs. In `list` format, it applies globally (all platforms); in `dict` format, specify masters by platform (key is platform name, value is the list of master account IDs for that platform) |\n\nCode checks via `master.is_master(event)` or `master.is_master(platform, user_id)`. Each call reads the configuration in real time (supports hot updates, no restart required):\n\n```python\nfrom ErisPulse.Core import master\n\nif master.is_master(event):\n    await event.reply(\"Hello, Master\")\n```"
+      "hash": "879859265c4dd6599d52aacc65039825",
+      "translation": "## Master System Configuration\n\nThe master system is used to identify the \"framework master\" account (such as Bot administrator). `master.users` supports two syntaxes:\n\n```toml\n[ErisPulse.master]\n# Syntax 1: Global master (applies to all platforms)\nusers = [\"123456\", \"789012\"]\n\n# Syntax 2: Specify masters per platform (dict)\n# users = { yunhu = [\"123456\"], telegram = [\"789012\"] }\n```\n\n| Configuration Item | Type | Default Value | Description |\n|---------------------|------|---------------|-------------|\n| users | array / object | empty | List of master account IDs. When specified as a `list`, it applies globally to all platforms; when specified as a `dict`, you can specify masters per platform (key is the platform name, value is the list of master account IDs for that platform) |\n\nIn code, use `master.is_master(event)` or `master.is_master(platform, user_id)` to check. Each call reads the configuration in real time (supports hot updates, no restart required):\n\n```python\nfrom ErisPulse.Core import master\n\nif master.is_master(event):\n    await event.reply(\"Hello master\")\n```\n\n> For the complete identity verification API (runtime addition/removal, **custom identity source provider chain**) and the \"user priority\" override semantics (users can enable/disable `master=True` via the control panel), see\n> [Unified Control Panel · Master Identity and Custom Identity Source Provider](../advanced/scope.md#master-identity-and-custom-identity-source-provider)."
     },
     {
       "hash": "9773b7e8ddb72448025cfade7e0c3bb5",

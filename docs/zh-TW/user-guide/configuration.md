@@ -219,7 +219,7 @@ users = ["123456", "789012"]
 |---------|------|---------|------|
 | users | array / object | 空 | 主人帳號列表。`list` 形式為全域主人（所有平台生效）；`dict` 形式按平台指定（鍵為平台名，值為該平台的主人帳號列表） |
 
-程式碼中透過 `master.is_master(event)` 或 `master.is_master(platform, user_id)` 檢查，每次呼叫即時讀取設定（支援熱更新，無需重啟）：
+程式碼中透過 `master.is_master(event)` 或 `master.is_master(platform, user_id)` 檢查，每次呼叫即時讀取配置（支援熱更新，無需重啟）：
 
 ```python
 from ErisPulse.Core import master
@@ -227,6 +227,10 @@ from ErisPulse.Core import master
 if master.is_master(event):
     await event.reply("主人你好")
 ```
+
+> 身份判定的完整 API（執行時增刪、**自訂身份來源 provider 鏈**）與「使用者優先」的
+> 覆蓋語意（使用者可經控制面放寬/收緊 `master=True`），請見
+> [統一控制面 · 主人身份與自訂身份來源](../advanced/scope.md#主人身份與自訂身份來源provider)。
 
 ## 日誌配置
 
