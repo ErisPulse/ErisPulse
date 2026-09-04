@@ -54,6 +54,7 @@ class TestMasterManager:
         class FakeEvent:
             def get_platform(self):
                 return "yunhu"
+
             def get_user_id(self):
                 return "123"
 
@@ -68,6 +69,7 @@ class TestMasterManager:
         class FakeEvent:
             def get_platform(self):
                 return "yunhu"
+
             def get_user_id(self):
                 return "999"
 
@@ -216,3 +218,164 @@ class TestMasterList:
             # 配置变更后（模拟编辑 config.toml），无需重启即感知新主人
             assert mgr.is_master("yunhu", "10001") is False
             assert mgr.is_master("yunhu", "20002") is True
+
+
+class TestMasterProviders:
+    """自定义身份源 provider 链测试（master.provider 两用入口）"""
+
+    def test_provider_grants_master(self):
+        """provider 放行即认定为主人"""
+        mgr = MasterManager()
+        mgr.reset()
+        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+            fn = mgr.provider(lambda platform, user_id: user_id == "999")
+            try:
+                assert mgr.is_master("yunhu", "999") is True
+                assert mgr.is_master("telegram", "999") is True
+                assert mgr.is_master("yunhu", "123") is False
+            finally:
+                fn.unregister()
+
+    def test_decorator_usage(self):
+        """装饰器用法：@master.provider 返回原函数且可直接注销"""
+        mgr = MasterManager()
+        mgr.reset()
+
+        @mgr.provider
+        def vip_provider(platform, user_id):
+            return user_id == "vip"
+
+        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+            assert mgr.is_master("yunhu", "vip") is True
+            assert vip_provider("yunhu", "vip") is True  # 原函数仍可调用
+            assert hasattr(vip_provider, "unregister")
+
+            vip_provider.unregister()
+            assert mgr.is_master("yunhu", "vip") is False
+
+    def test_provider_receives_platform_and_user_id(self):
+        """provider 收到 (platform, user_id) 参数"""
+        mgr = MasterManager()
+        mgr.reset()
+        seen = []
+        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+            fn = mgr.provider(lambda p, u: seen.append((p, u)) or False)
+            try:
+                mgr.is_master("yunhu", "123")
+                assert seen == [("yunhu", "123")]
+            finally:
+                fn.unregister()
+
+    def test_provider_not_called_when_builtin_hits(self):
+        """内置身份源命中时不再调用 provider"""
+        mgr = MasterManager()
+        mgr.reset()
+        calls = []
+        config = {"users": {"yunhu": ["123"]}}
+        with patch("ErisPulse.Core.master.get_master_config", return_value=config):
+            fn = mgr.provider(lambda p, u: calls.append((p, u)) or True)
+            try:
+                assert mgr.is_master("yunhu", "123") is True
+                assert calls == []
+            finally:
+                fn.unregister()
+
+    def test_provider_exception_isolated(self):
+        """provider 异常被隔离跳过，不阻断判定链"""
+        mgr = MasterManager()
+        mgr.reset()
+        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+
+            def bad_provider(platform, user_id):
+                raise RuntimeError("boom")
+
+            bad = mgr.provider(bad_provider)
+            good = mgr.provider(lambda platform, user_id: user_id == "888")
+            try:
+                # bad_provider 抛异常被跳过，good_provider 仍然放行
+                assert mgr.is_master("yunhu", "888") is True
+                assert mgr.is_master("yunhu", "123") is False
+            finally:
+                bad.unregister()
+                good.unregister()
+
+    def test_unregister_idempotent(self):
+        """unregister 重复调用无害"""
+        mgr = MasterManager()
+        mgr.reset()
+
+        def provider(platform, user_id):
+            return True
+
+        fn = mgr.provider(provider)
+        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+            assert mgr.is_master("any", "1") is True
+        fn.unregister()
+        fn.unregister()  # 幂等：再调用不抛异常
+        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+            assert mgr.is_master("any", "1") is False
+
+    def test_register_same_provider_once(self):
+        """重复注册同一 provider 只保留一份"""
+        mgr = MasterManager()
+        mgr.reset()
+        provider = lambda p, u: True
+        mgr.provider(provider)
+        mgr.provider(provider)
+        assert len(mgr._providers) == 1
+
+    def test_reset_clears_providers(self):
+        """reset 同时清空 provider 链"""
+        mgr = MasterManager()
+        mgr.reset()
+        mgr.provider(lambda p, u: True)
+        mgr.reset()
+        assert mgr._providers == []
+
+    def test_owner_scope_auto_unregister(self):
+        """owner 上下文内注册的 provider 按 owner 自动清理"""
+        from ErisPulse.runtime.context import owner_scope
+
+        mgr = MasterManager()
+        mgr.reset()
+
+        def mod_provider(p, u):
+            return u == "mod_vip"
+
+        def global_provider(p, u):
+            return u == "global_vip"
+
+        with owner_scope("MyModule"):
+            mgr.provider(mod_provider)
+        mgr.provider(global_provider)  # 非 owner 上下文：常驻
+
+        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+            assert mgr.is_master("p", "mod_vip") is True
+            assert mgr.is_master("p", "global_vip") is True
+
+        # 卸载 MyModule → 只清 MyModule 注册的 provider
+        removed = mgr.unregister_by_owner("MyModule")
+        assert removed == 1
+        assert mgr.is_master("p", "mod_vip") is False
+        assert mgr.is_master("p", "global_vip") is True
+
+    def test_unregister_by_owner_unknown(self):
+        """无归属 provider 的 owner 返回 0"""
+        mgr = MasterManager()
+        mgr.reset()
+        assert mgr.unregister_by_owner("Ghost") == 0
+        assert mgr.unregister_by_owner("") == 0
+
+    def test_reset_clears_owner_map(self):
+        """reset 同时清空 owner 归属表"""
+        from ErisPulse.runtime.context import owner_scope
+
+        mgr = MasterManager()
+        mgr.reset()
+        with owner_scope("MyModule"):
+            mgr.provider(lambda p, u: True)
+        assert mgr._provider_owners
+        mgr.reset()
+        assert mgr._provider_owners == {}
+        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+            assert mgr.is_master("any", "1") is False
