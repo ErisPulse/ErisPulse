@@ -39,7 +39,7 @@ from ..constants import (
     UNKNOWN_PLATFORM,
 )
 from ..i18n import i18n
-from ..text_match import compile_text_matcher, extract_text
+from ..text_match import compile_text_matcher
 from .base import BaseEventHandler
 from .session_type import get_send_type_and_target_id, infer_receive_type
 
@@ -87,18 +87,10 @@ class CommandHandler:
         # prefix 支持字符串（单个）或列表（多个），保持原始类型以向后兼容
         self.prefix = command_config.get("prefix", DEFAULT_COMMAND_PREFIX)
         # 归一化为列表，用于内部统一处理
-        self._prefixes = (
-            list(self.prefix) if isinstance(self.prefix, list) else [self.prefix]
-        )
-        self.case_sensitive = command_config.get(
-            "case_sensitive", DEFAULT_COMMAND_CASE_SENSITIVE
-        )
-        self.allow_space_prefix = command_config.get(
-            "allow_space_prefix", DEFAULT_COMMAND_ALLOW_SPACE_PREFIX
-        )
-        self.must_at_bot = command_config.get(
-            "must_at_bot", DEFAULT_COMMAND_MUST_AT_BOT
-        )
+        self._prefixes = list(self.prefix) if isinstance(self.prefix, list) else [self.prefix]
+        self.case_sensitive = command_config.get("case_sensitive", DEFAULT_COMMAND_CASE_SENSITIVE)
+        self.allow_space_prefix = command_config.get("allow_space_prefix", DEFAULT_COMMAND_ALLOW_SPACE_PREFIX)
+        self.must_at_bot = command_config.get("must_at_bot", DEFAULT_COMMAND_MUST_AT_BOT)
 
     def _on_config_updated(self, _data: dict) -> None:
         """配置变更回调：刷新命令解析参数，实现热更新"""
@@ -118,9 +110,7 @@ class CommandHandler:
 
         return scope
 
-    def allow_user(
-        self, command_name: str, platform: str, user_id: str, persist: bool = True
-    ) -> None:
+    def allow_user(self, command_name: str, platform: str, user_id: str, persist: bool = True) -> None:
         """
         将用户加入命令的 allow 名单（白名单非空时仅名单内用户可执行）
 
@@ -136,9 +126,7 @@ class CommandHandler:
         """
         self._scope().allow_user(command_name, platform, user_id, persist=persist)
 
-    def deny_user(
-        self, command_name: str, platform: str, user_id: str, persist: bool = True
-    ) -> None:
+    def deny_user(self, command_name: str, platform: str, user_id: str, persist: bool = True) -> None:
         """
         将用户加入命令的 deny 名单（deny 优先于 allow 与默认权限）
 
@@ -293,9 +281,7 @@ class CommandHandler:
         for cmd_name in commands_to_remove:
             # 移除命令别名映射
             main_name = self.commands[cmd_name]["main_name"]
-            aliases_to_remove = [
-                alias for alias, name in self.aliases.items() if name == main_name
-            ]
+            aliases_to_remove = [alias for alias, name in self.aliases.items() if name == main_name]
             for alias in aliases_to_remove:
                 del self.aliases[alias]
 
@@ -321,18 +307,12 @@ class CommandHandler:
         :param owner: 归属者（模块名）
         :return: 移除的命令数量
         """
-        to_remove = [
-            name for name, info in self.commands.items() if info.get("owner") == owner
-        ]
+        to_remove = [name for name, info in self.commands.items() if info.get("owner") == owner]
         for cmd_name in to_remove:
             cmd_info = self.commands[cmd_name]
             main_name = cmd_info.get("main_name", cmd_name)
 
-            self.aliases = {
-                a: n
-                for a, n in self.aliases.items()
-                if not (n == main_name and a != main_name)
-            }
+            self.aliases = {a: n for a, n in self.aliases.items() if not (n == main_name and a != main_name)}
 
             for group_cmds in self.groups.values():
                 if cmd_name in group_cmds:
@@ -347,9 +327,7 @@ class CommandHandler:
         if to_remove:
             from ..logger import logger as _logger
 
-            _logger.trace(
-                i18n.t("core.command.cleaned", owner=owner, count=len(to_remove), commands=to_remove)
-            )
+            _logger.trace(i18n.t("core.command.cleaned", owner=owner, count=len(to_remove), commands=to_remove))
         return len(to_remove)
 
     async def wait_reply(
@@ -386,9 +364,7 @@ class CommandHandler:
         if prompt and platform:
             try:
                 adapter_instance = getattr(adapter, platform)
-                bot_id = event.get("self", {}).get("account_id", "") or event.get(
-                    "self", {}
-                ).get("user_id", "")
+                bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
                 send_dsl = adapter_instance.Send.To(send_type, target_id)
                 if bot_id:
                     send_dsl = send_dsl.Using(bot_id)
@@ -409,9 +385,7 @@ class CommandHandler:
         future = loop.create_future()
 
         # 存储等待信息
-        bot_id = event.get("self", {}).get("account_id", "") or event.get(
-            "self", {}
-        ).get("user_id", "")
+        bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
         wait_key = f"{platform}:{bot_id}:{user_id}:{target_id}"
         self._waiting_replies[wait_key] = {
             "future": future,
@@ -515,19 +489,13 @@ class CommandHandler:
 
             # 处理大小写敏感性
             check_text = text if self.case_sensitive else text.lower()
-            prefixes = (
-                self._prefixes
-                if self.case_sensitive
-                else [p.lower() for p in self._prefixes]
-            )
+            prefixes = self._prefixes if self.case_sensitive else [p.lower() for p in self._prefixes]
 
             # 检查前缀，找出匹配的前缀（支持多个前缀）
             matched_prefix = None
             for prefix in prefixes:
                 has_prefix = check_text.startswith(prefix)
-                has_space_prefix = self.allow_space_prefix and check_text.startswith(
-                    prefix + " "
-                )
+                has_space_prefix = self.allow_space_prefix and check_text.startswith(prefix + " ")
                 if has_prefix or has_space_prefix:
                     matched_prefix = prefix
                     break
@@ -552,10 +520,7 @@ class CommandHandler:
 
                     has_mention = False
                     for segment in message_segments:
-                        if (
-                            segment.get("type") == "mention"
-                            and segment.get("data", {}).get("user_id") == self_id
-                        ):
+                        if segment.get("type") == "mention" and segment.get("data", {}).get("user_id") == self_id:
                             has_mention = True
                             break
 
@@ -570,9 +535,7 @@ class CommandHandler:
                         return False
 
             # 尝试执行命令
-            return await self._try_execute_command(
-                event, text, check_text, matched_prefix
-            )
+            return await self._try_execute_command(event, text, check_text, matched_prefix)
 
         # 从 message 列表和 alt_message 中提取文本内容
         message_segments = event.get("message", [])
@@ -600,9 +563,7 @@ class CommandHandler:
         await self._check_pending_reply(event)
         return
 
-    async def _try_execute_command(
-        self, event: "Event", original_text: str, check_text: str, prefix: str
-    ) -> bool:
+    async def _try_execute_command(self, event: "Event", original_text: str, check_text: str, prefix: str) -> bool:
         """
         尝试执行命令
 
@@ -666,9 +627,7 @@ class CommandHandler:
                     cmd_owner,
                     scope.session_id_from_event(event) or None,
                 ):
-                    logger.trace(
-                        i18n.t("core.scope.denied", module=cmd_owner)
-                    )
+                    logger.trace(i18n.t("core.scope.denied", module=cmd_owner))
                     return False
 
             # 命令权限 ACL（控制面 scope.commands）：命令名支持 glob
@@ -684,25 +643,20 @@ class CommandHandler:
                     i18n.t(
                         "core.command.acl_denied",
                         cmd_name=actual_cmd_name,
-                        user_id=(
-                            f"{event.get('platform', UNKNOWN_PLATFORM)}:"
-                            f"{event.get('user_id', '')}"
-                        ),
+                        user_id=(f"{event.get('platform', UNKNOWN_PLATFORM)}:{event.get('user_id', '')}"),
                     )
                 )
                 await self._send_permission_denied(event)
                 return False
 
             # 控制面实现参数覆盖（scope.overrides）：覆盖 master / hidden / aliases / prefix 等
+            # 覆盖键 master 由 apply_override 统一映射到存储键 must_master（用户优先）
             # 注意：禁用不通过 overrides，统一走命令 deny（scope.commands）
             from ..scope import scope as _scope
 
             _effective = cmd_info
             if cmd_owner:
-                _override = _scope.get_override(cmd_owner, actual_cmd_name)
-                if _override:
-                    _effective = dict(cmd_info)
-                    _effective.update(_override)
+                _effective = _scope.apply_override(cmd_owner, actual_cmd_name, cmd_info)
 
             # 检查框架主人权限（must_master）
             if _effective.get("must_master"):
@@ -721,9 +675,7 @@ class CommandHandler:
                     return False
 
             # 检查权限
-            permission_func = _effective.get("permission") or self.permissions.get(
-                actual_cmd_name
-            )
+            permission_func = _effective.get("permission") or self.permissions.get(actual_cmd_name)
             if permission_func:
                 try:
                     has_permission = (
@@ -856,9 +808,7 @@ class CommandHandler:
         # 使用会话类型管理模块获取发送类型和目标ID
         _send_type, target_id = get_send_type_and_target_id(event, platform)
 
-        bot_id = event.get("self", {}).get("account_id", "") or event.get(
-            "self", {}
-        ).get("user_id", "")
+        bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
         wait_key = f"{platform}:{bot_id}:{user_id}:{target_id}"
 
         # 检查是否有等待的处理器
@@ -932,9 +882,7 @@ class CommandHandler:
 
             if platform and hasattr(adapter, platform):
                 adapter_instance = getattr(adapter, platform)
-                bot_id = event.get("self", {}).get("account_id", "") or event.get(
-                    "self", {}
-                ).get("user_id", "")
+                bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
                 send_dsl = adapter_instance.Send.To(send_type, target_id)
                 if bot_id:
                     send_dsl = send_dsl.Using(bot_id)
@@ -960,9 +908,7 @@ class CommandHandler:
 
             if platform and hasattr(adapter, platform):
                 adapter_instance = getattr(adapter, platform)
-                bot_id = event.get("self", {}).get("account_id", "") or event.get(
-                    "self", {}
-                ).get("user_id", "")
+                bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
                 send_dsl = adapter_instance.Send.To(send_type, target_id)
                 if bot_id:
                     send_dsl = send_dsl.Using(bot_id)
@@ -1065,9 +1011,7 @@ class CommandHandler:
         :return: 帮助信息字符串
         """
         # 用于显示的前缀：单个时保持原始字符串，多个时取第一个
-        display_prefix = (
-            self.prefix[0] if isinstance(self.prefix, list) else self.prefix
-        )
+        display_prefix = self.prefix[0] if isinstance(self.prefix, list) else self.prefix
 
         if command_name:
             cmd_info = self.get_command(command_name)
@@ -1085,11 +1029,7 @@ class CommandHandler:
         commands_to_show = (
             self.get_visible_commands()
             if not show_hidden
-            else {
-                name: info
-                for name, info in self.commands.items()
-                if name == info["main_name"]
-            }
+            else {name: info for name, info in self.commands.items() if name == info["main_name"]}
         )
 
         if not commands_to_show:
