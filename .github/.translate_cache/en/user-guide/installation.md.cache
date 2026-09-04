@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "6b8bb865b4958d566dc1102cce0c5697",
-  "file_hash": "6b8bb865b4958d566dc1102cce0c5697",
-  "translated_at": "2026-09-01T06:58:54.739214",
+  "hash": "a60955b24db5c8925d2dffe7ba297507",
+  "file_hash": "a60955b24db5c8925d2dffe7ba297507",
+  "translated_at": "2026-09-04T14:41:22.552164",
   "target_lang": "en",
   "chunks": [
     {
@@ -26,8 +26,8 @@
       "translation": "## Verification of Installation\n\n### Check Installation\n\n```bash\n# Check ErisPulse version\nepsdk --version\n```\n\n### Run Tests\n\n```bash\n# Run the project\nepsdk run main.py\n```\n\nIf you see similar output, the installation is successful:\n\n```\n[INFO] Initializing ErisPulse...\n[INFO] Adapter loaded: Yunhu\n[INFO] Module loaded: MyModule\n[INFO] ErisPulse initialization complete\n```"
     },
     {
-      "hash": "1bb3ef51791ad89cc63f9dbe11dcaf50",
-      "translation": "## FAQ\n\n### Installation Failure\n\n1. Check if the Python version is >= 3.10 (recommended 3.10 - 3.13)\n2. Try using `uv pip install ErisPulse` instead of `pip install`\n3. If permission errors occur, try `pip install --user ErisPulse` or use a virtual environment\n4. If SSL certificate errors occur in an enterprise proxy environment, try `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`\n5. Ensure network connectivity is normal and the pip source is accessible\n\n### Configuration Errors\n\n1. Check if the `config.toml` syntax is correct (TOML format is sensitive to indentation and quotes)\n2. Confirm all required configuration items are filled\n3. Check terminal logs for detailed error information\n4. Use `epsdk init` to regenerate the configuration file\n\n### Module Installation Failure\n\n1. Confirm the module name is spelled correctly (case-sensitive)\n2. Check network connectivity\n3. Use `epsdk list-remote` to view the list of available modules\n4. Confirm the module is compatible with your current SDK version\n\n### Windows PowerShell Execution Policy\n\nIf PowerShell prompts \"Cannot load the file... because running scripts is disabled on this system\":\n\n```powershell\nSet-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser\n```"
+      "hash": "5534551169739058f16aeba5442783c0",
+      "translation": "## FAQ\n\n### Installation Failed\n\n1. Check if your Python version is >= 3.10 (recommended 3.10 - 3.13)\n2. Try using `uv pip install ErisPulse` instead of `pip install`\n3. If you encounter permission errors, try `pip install --user ErisPulse` or use a virtual environment\n4. If you encounter SSL certificate errors in an enterprise proxy environment, try `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`\n5. Ensure your network connection is normal and the pip source is accessible\n\n### Configuration Errors\n\n1. Check if the `config.toml` syntax is correct (TOML format is sensitive to indentation and quotes)\n2. Ensure all required configuration items are filled in\n3. Check terminal logs for detailed error information\n4. Use `epsdk init` to regenerate the configuration file\n\n### Module Installation Failed\n\n1. Confirm the module name is spelled correctly (case-sensitive)\n2. Check your network connection\n3. Use `epsdk list-remote` to view the list of available modules\n4. Ensure the module is compatible with your current SDK version\n\n### Windows PowerShell Execution Policy\n\nIf PowerShell prompts \"Cannot load the file... because running scripts is disabled on this system\":\n\n```powershell\nSet-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser\n```\n\n### Debian/Ubuntu Virtual Environment Creation Failed\n\nIf the installation script reports \"virtual environment creation failed\" and the error message includes `ensurepip is not available`, it is because `python3-venv` is not installed by default on Debian/Ubuntu (the `ensurepip` of the system Python is disabled):\n\n```bash\nsudo apt install python3.13-venv   # Install the package corresponding to your actual Python version\n# Or install the generic meta package:\nsudo apt install python3-venv\n```\n\nAfter installation, re-run the installation script. The new version of the installation script will detect this issue and actively prompt to automatically install the corresponding system package; alternatively, you can use uv (`uv venv` does not depend on `ensurepip`)."
     },
     {
       "hash": "f8f13704538cc520848853879c0ee83f",

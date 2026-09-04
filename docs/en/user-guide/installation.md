@@ -105,27 +105,27 @@ If you see similar output, the installation is successful:
 
 ## FAQ
 
-### Installation Failure
+### Installation Failed
 
-1. Check if the Python version is >= 3.10 (recommended 3.10 - 3.13)
+1. Check if your Python version is >= 3.10 (recommended 3.10 - 3.13)
 2. Try using `uv pip install ErisPulse` instead of `pip install`
-3. If permission errors occur, try `pip install --user ErisPulse` or use a virtual environment
-4. If SSL certificate errors occur in an enterprise proxy environment, try `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
-5. Ensure network connectivity is normal and the pip source is accessible
+3. If you encounter permission errors, try `pip install --user ErisPulse` or use a virtual environment
+4. If you encounter SSL certificate errors in an enterprise proxy environment, try `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
+5. Ensure your network connection is normal and the pip source is accessible
 
 ### Configuration Errors
 
 1. Check if the `config.toml` syntax is correct (TOML format is sensitive to indentation and quotes)
-2. Confirm all required configuration items are filled
+2. Ensure all required configuration items are filled in
 3. Check terminal logs for detailed error information
 4. Use `epsdk init` to regenerate the configuration file
 
-### Module Installation Failure
+### Module Installation Failed
 
 1. Confirm the module name is spelled correctly (case-sensitive)
-2. Check network connectivity
+2. Check your network connection
 3. Use `epsdk list-remote` to view the list of available modules
-4. Confirm the module is compatible with your current SDK version
+4. Ensure the module is compatible with your current SDK version
 
 ### Windows PowerShell Execution Policy
 
@@ -134,6 +134,18 @@ If PowerShell prompts "Cannot load the file... because running scripts is disabl
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
+
+### Debian/Ubuntu Virtual Environment Creation Failed
+
+If the installation script reports "virtual environment creation failed" and the error message includes `ensurepip is not available`, it is because `python3-venv` is not installed by default on Debian/Ubuntu (the `ensurepip` of the system Python is disabled):
+
+```bash
+sudo apt install python3.13-venv   # Install the package corresponding to your actual Python version
+# Or install the generic meta package:
+sudo apt install python3-venv
+```
+
+After installation, re-run the installation script. The new version of the installation script will detect this issue and actively prompt to automatically install the corresponding system package; alternatively, you can use uv (`uv venv` does not depend on `ensurepip`).
 
 ## Next Steps
 
