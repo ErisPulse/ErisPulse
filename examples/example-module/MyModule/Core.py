@@ -152,7 +152,9 @@ class Main(BaseModule):
     async def _register_commands(self):
         """注册命令处理器"""
         # 命令权限（可选）：permission 为调用函数，返回 True 才执行命令；
-        # master=True 限定框架主人；跨命令的用户黑白名单用控制面命令 ACL
+        # master=True 限定框架主人（仅开发者默认值，用户可在控制面
+        # ErisPulse.scope.overrides.<module>.<cmd>.master = true/false 覆盖收紧或放开）；
+        # 跨命令的用户黑白名单用控制面命令 ACL
         # （ErisPulse.scope.commands 或 sdk.scope.allow_user()/deny_user()，命令名支持 glob）；
         # 模块级可用性与事件准入均收敛在控制面 scope（用户可控）
         @command("hello", help="发送问候消息")
