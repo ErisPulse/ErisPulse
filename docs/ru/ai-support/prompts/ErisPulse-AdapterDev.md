@@ -9255,63 +9255,67 @@ CLI имеет **независимый** модуль международно�
 
 # Unified Control Plane (scope)
 
-> [!NOTE]
+> [!NOTE]  
 > This feature requires ErisPulse **2.8.0+**.
 
-The unified control plane answers five questions: **which modules are available, whether events from whom are received, who can execute a certain command, which text a certain module processes, and which implementation parameters are overridden**. Control is entirely given to the user: at the **upper layer** of module / adapter / command / processor registration (configured via `ErisPulse.scope` or runtime `sdk.scope`), the event pipeline automatically reads and executes at each level.
+The unified control plane answers six questions: **which modules are available, whether events from a specific source are accepted, who can execute a specific command, which text a module processes, which implementation parameters are overridden, and which outbound calls a module is prohibited from initiating**. The control authority is entirely given to the user: all declarations regarding modules / adapters / commands / processors are made at the **upper level** (via configuration `ErisPulse.scope` or runtime `sdk.scope`). The event pipeline automatically reads and executes these declarations at each level.
 
-The control plane consolidates the original multiple permission systems and serves as the **sole** entry point for permission/access control in version 2.8.0:
+The control plane consolidates the original multi-level permission systems and serves as the **only** entry point for permission/access control in version 2.8.0:
 
-| Dimension | What is controlled | Rejection behavior | Configuration path |
+| Dimension | Controls What | Rejection Behavior | Configuration Path |
 |------|---------|---------|---------|
-| **① Module** | Which modules are available (platform / Bot / session three levels) | Silent ignore (no reply, no claim) | `scope.platforms / bots / sessions` |
-| **② Identity** | Whether events from whom are received (adapter / Bot / session / user four levels) | Complete discard at entry (silent) | `scope.identity.*` |
-| **③ Command** | Who can execute a certain command (command name supports glob) | Reply with "insufficient permissions" (explicit) | `scope.commands` |
-| **④ Handler** | Which text a certain module's event handler processes | Not triggered (silent) | `scope.handlers` |
-| **⑤ Override** | Override module/command implementation parameters (master/hidden/aliases/prefix) | —— (only change parameters) | `scope.overrides` |
+| **① Module** | Which modules are available (platform / Bot / session levels) | Silent ignore (no reply, no claim) | `scope.platforms / bots / sessions` |
+| **② Identity** | Whether to accept events (adapter / Bot / session / user levels) | Complete discard at entry (silent) | `scope.identity.*` |
+| **③ Command** | Who can execute a specific command (command names support glob) | Reply "insufficient permissions" (explicit) | `scope.commands` |
+| **④ Handler** | Which text a module's event handler processes | No trigger (silent) | `scope.handlers` |
+| **⑤ Override** | Override implementation parameters of modules/commands (master/hidden/aliases/prefix) | —— (only changes parameters) | `scope.overrides` |
+| **⑥ Outbound Actions** | Prohibit modules from sending messages / calling standard APIs / handling requests | Fail response (`retcode=34601`) | `scope.actions` |
 
 {!--< tips >!--}
-1. Import the singleton via `from ErisPulse.Core import scope` (`sdk.scope` is the same object)
-2. `scope.is_allowed(platform, bot_id, module, session_id)` determines if the module is available
-3. `scope.is_identity_allowed(platform, bot_id, session_id, user_id)` determines if the event is allowed
-4. `scope.allow_user("roll*", platform, uid)` / `deny_user(...)` command ACL (supports glob)
+1. Import the singleton via `from ErisPulse.Core import scope` (same object as `sdk.scope`)
+2. `scope.is_allowed(platform, bot_id, module, session_id)` checks if a module is allowed
+3. `scope.is_identity_allowed(platform, bot_id, session_id, user_id)` checks if an event is allowed
+4. `scope.allow_user("roll*", platform, uid)` / `deny_user(...)` for command ACL (supports glob)
 5. `scope.override("MyModule", "restart", master=True)` overrides implementation parameters
-6. `scope.get_stats()` checks filtering statistics; `scope.get_topology()` checks the five-dimensional topology
+6. `scope.set_action("MyModule", "send", False)` prohibits module replies/sending messages
+7. `scope.get_stats()` checks filtering statistics; `scope.get_topology()` checks topology
 {!--< /tips >!--}
 
 ## Matching Entry Syntax (Unified Across the System)
 
-All "name lists" in the control plane (module names, identity keys, command names) share the same matching syntax (`ErisPulse.Core.text_match`):
+All "name lists" in the control plane (module names, identity keys, command names) use the same matching syntax (`ErisPulse.Core.text_match`):
 
 | Syntax | Example | Description |
 |------|------|------|
 | Exact name | `"Chat"` | Full value comparison, **case-insensitive** |
 | Glob | `"Tool*"`、`"spam_*"` | `*` matches any string / `?` matches a single character / `[seq]` matches a character set, case-insensitive |
-| Regular Expression | `"re:^Danger.*"` | Declared with `re:` prefix, matches via regular expression `search`, default case-insensitive |
+| Regex | `"re:^Danger.*"` | Prefix with `re:` to declare a regex `search` match, default case-insensitive |
 
-- Invalid regular expressions **silently degrade** to "no match" (no error thrown, no crash)
-- Decorator parameters (`pattern=` / `regex=`) have fixed semantics: `pattern` is glob, `regex` is the raw regular expression (no `re:` prefix); regular expression entries in control plane configurations **must** have the `re:` prefix
+- Invalid regex **silently degrades** to "no match" (no error, no crash)
+- Decorator parameters (`pattern=` / `regex=`) have fixed semantics: `pattern` is glob, `regex` is the regex source (without `re:` prefix); regex entries in control plane configurations **must** have the `re:` prefix
 
-## Global Fallback: `default_allow`
+## Global Default: `default_allow`
 
-`default_allow` is the **global** fallback switch (default `true`), which uniformly affects three decision dimensions:
+`default_allow` is the **global** default switch (default `true`), affecting all three decision dimensions:
 
-- **Module dimension**: If no binding is matched → `default_allow` determines allow / deny
-- **Identity dimension**: If no strategy is matched → `default_allow` determines allow / deny
-- **Command dimension**: If no ACL is configured → `default_allow=true` passes to the developer's default permission chain; `false` (strict mode) denies unconfigured commands
+- **Module dimension**: No binding matched → `default_allow` determines allow/deny
+- **Identity dimension**: No policy matched → `default_allow` determines allow/deny
+- **Command dimension**: No ACL configured → `default_allow=true` passes to developer's default permission chain; `false` (strict mode) denies commands without ACL
 
-Setting it to `false` enables "implicit deny" strict mode: white-list management, **all unexplicitly allowed are denied**.
+Setting it to `false` enables "implicit deny" strict mode: whitelist management, **all unexplicitly allowed are denied**.
+
+> **Exception**: The **outbound actions** dimension is **not** affected by `default_allow`—it is an independent tightening switch, defaulting to allow all, only explicitly `false` to deny (calls with framework-layer owner empty are always allowed). This strict global mode won't accidentally cut off all module message replies.
 
 ## Configuration File
 
 ```toml
 [ErisPulse.scope]
-default_allow = true        # Global fallback (false = implicit deny strict mode)
+default_allow = true        # Global default (false = implicit deny strict mode)
 cache_size = 1024           # LRU cache size
 
 # ── ① Module dimension (priority: session > Bot > platform) ──
 [ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Tool*"]   # Whitelist: exact name / glob / re: regex
+modules = ["Chat", "Tool*"]   # Whitelist: exact names / glob / re: regex
 blocked = ["re:^Danger"]
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Chat"]
@@ -9336,20 +9340,26 @@ deny = ["onebot11:u_bad"]
 
 # ── ④ Handler/Text dimension ──
 [ErisPulse.scope.handlers.MyModule]
-pattern = "签到*"             # AND with code-level pattern/regex conditions
+pattern = "签到*"             # AND with code-side pattern/regex conditions
 regex = "re:\\d+\\s*元"
 
 # ── ⑤ Implementation Parameter Override ──
 [ErisPulse.scope.overrides.MyModule.restart]
 master = true                 # Only framework owner can use
-hidden = true                 # Hidden in help
-aliases = ["rs"]              # Additional alias
-prefix = "!"                  # Additional trigger prefix
+hidden = true                 # Hide in help
+aliases = ["rs"]              # Append alias
+prefix = "!"                  # Append trigger prefix
+
+# ── ⑥ Outbound Actions dimension (default allow all, only explicitly deny) ──
+[ErisPulse.scope.actions.MyModule]
+send = false                  # Prohibit MyModule from replying/sending messages
+api = false                   # Prohibit MyModule from calling standard APIs (including call escape hatch)
+request = false               # Prohibit MyModule from handling request operations accept/reject
 ```
 
 ## ① Module Dimension
 
-Answers the question: "In a certain context, which modules are available." By default, all are open; filtering starts only after binding is configured. **No changes are needed for modules and adapters**.
+Answers "which modules are available in a given context." By default, all are open; filtering starts only after binding is configured, and **modules and adapters require no changes**.
 
 ```mermaid
 flowchart TD
@@ -9357,41 +9367,41 @@ flowchart TD
     B --> C{"Find effective binding<br/>Session level > Bot level > Platform level"}
     C -->|"Matched"| D["blocked matched → deny<br/>modules non-empty → only whitelist allowed<br/>both empty → default_allow"]
     C -->|"Not matched"| E["default_allow (default true = allow)"]
-    D -->|"Deny"| Z["Silent ignore<br/>(no reply, no claim, only TRACE log visible)"]
+    D -->|"Denied"| Z["Silent ignore<br/>(No reply, no claim, only TRACE log visible)"]
 ```
 
-- **Resolution priority: session level > Bot level > platform level**, with higher priority bindings **completely overriding** lower ones
-- **Silent semantics**: Commands and handlers of filtered modules do not trigger, reply, or claim (prevents cross-command mis-matches), visible only in TRACE-level logs (`core.scope.denied`)
-- **Framework-level handlers** (`scope_exempt=True` or owner is empty) are unaffected; modules with empty names (framework-level resources) are always allowed
+- **Resolution priority**: Session level > Bot level > Platform level, higher priority bindings **fully override** lower priority
+- **Silent semantics**: Filtered modules' commands and handlers do not trigger, reply, or claim (prevents cross-command mis-matching), only TRACE-level logs visible (`core.scope.denied`)
+- **Framework-level handlers** (`scope_exempt=True` or owner empty) are unaffected; module names empty (framework-level resources) are always allowed
 
 ## ② Identity Dimension (Event Admission)
 
-Answers the question: "Whose events are received." Events denied at the **admission entry** are completely discarded—they do not enter middleware or any handler (including framework-level), visible only in TRACE-level logs (`core.scope.identity_denied`).
+Answers "whose events are accepted." Events rejected are **completely discarded at the distribution entry**—they do not enter middlewares or any handlers (including framework-level), only TRACE-level logs visible (`core.scope.identity_denied`).
 
-- **Resolution priority: user > session > Bot > adapter**, taking the most specific configured strategy; deny takes precedence over allow
-- Each level binding is a binary strategy: `{ allow = true }` or `{ deny = true }`
+- **Resolution priority**: User > Session > Bot > Adapter, take the most specific configured policy; deny takes precedence over allow
+- Each level binding is a binary policy: `{ allow = true }` or `{ deny = true }`
 - User keys support glob / regex (e.g., `"spam_*"` to block a group of spam users)
-- Typical usage—上级 deny, personal allow for "exceptional allowance":
+- Typical usage—上级 deny, 个人 allow for "exception allow":
 
 ```toml
 [ErisPulse.scope.identity.adapters.onebot11]
 deny = true
 [ErisPulse.scope.identity.users.onebot11]
-allow = ["u_admin"]   # Even if adapter-level denied, u_admin's events are still allowed
+allow = ["u_admin"]   # Even if adapter-level denied, u_admin's events are allowed
 ```
 
 ## ③ Command Dimension (Command ACL)
 
-Answers the question: "Who can execute a certain command." The decision order: **deny matched → deny; allow whitelist non-empty and not matched → deny; neither configured → follow `default_allow`** (`true` passes to the developer's default permission chain). Denied commands will explicitly reply with "insufficient permissions."
+Answers "who can execute a specific command." Decision order: **deny matched → deny; allow whitelist non-empty and not matched → deny; neither configured → follow `default_allow`** (true passes to developer's default permission chain). Denied commands explicitly reply "insufficient permissions."
 
-- Command names support glob: `"roll*"` covers a group of commands like `roll`, `roll_dice`, etc.
+- Command names support glob: `"roll*"` one rule covers `roll`, `roll_dice`, etc.
 - Exact keys take precedence over glob keys (`commands.roll` matched does not check `commands."roll*"`)
-- User identifier format `"platform:user_id"` (consistent with the framework owner system)
-- This dimension is **only an additional gate on the user side**, connected with the command's `master` / `permission` parameters: After ACL passes, the default permission chain declared by the developer is still followed
+- User identifier format `"platform:user_id"` (consistent with framework owner system)
+- This dimension is **only an additional gate on the user side**, and is chained with the command's `master` / `permission` parameters: ACL passes then follow the developer's declared default permission chain (this default chain can be adjusted via ⑤ override)
 
 ## ④ Handler/Text Dimension
 
-Filters "which text a module processes": After configuring `pattern` / `regex` for a module, all event handlers of that module only trigger when the text matches (AND with code-level conditions, both must be satisfied). Suitable for narrowing the trigger range without modifying module code.
+Filters "which text a module processes": After configuring `pattern` / `regex` for a module, all its event handlers only trigger when the text matches (AND with code-side conditions, both must be satisfied). Suitable for narrowing its trigger scope without modifying module code.
 
 ```toml
 [ErisPulse.scope.handlers.ChatModule]
@@ -9404,12 +9414,33 @@ Overrides implementation parameters at the **upper level** of module/command reg
 
 ```toml
 [ErisPulse.scope.overrides.MyModule.restart]
-master = true      # Override to only framework owner
-hidden = true      # Hidden in help list
+master = true      # Override to allow only framework owner (can also set false to relax developer's owner restriction)
+hidden = true      # Hide in help list
 aliases = ["rs"]   #生效别名
 ```
 
-> Overriding only changes **implementation parameters** (master / hidden / aliases / prefix / help / usage, etc.). **Disabling a command is not done here**—use the command dimension deny (`scope.commands` or `scope.deny_user()`), to avoid conflicting semantics of "disable."
+> Override follows **user priority**: Developer-declared `master` / `hidden` etc. are only default values; user configuration here takes precedence (can tighten or relax). Override only changes **implementation parameters** (master / hidden / aliases / prefix / help / usage etc.). **Disabling a command is not done here**—use command dimension deny (`scope.commands` or `scope.deny_user()`), to avoid conflicting "disable" semantics.
+
+## ⑥ Outbound Actions Dimension (Prohibit Module Outbound Calls)
+
+Restricts **outbound actions** initiated by modules: message sending / standard API actions / request operations. Three actions correspond to underlying DSL: `Event.reply` and `Send` (send), `Api` / `call_api` (api), `Request`'s accept/reject (request). Outbound calls initiated by modules during event handler execution carry module owner, and are uniformly judged by this dimension.
+
+```toml
+[ErisPulse.scope.actions.MyModule]
+send = false      # Prohibit MyModule from replying/sending messages
+api = false       # Prohibit MyModule from calling standard API actions (including call escape hatch)
+request = false   # Prohibit MyModule from executing accept/reject on request events
+```
+
+Judgment semantics: **Default allow all**—unconfigured, or owner empty (internal framework calls) are allowed; only explicitly set to `false` is denied, denied calls do not initiate any network requests, directly returning standard failure response (`retcode = 34601`, see [api-response §5.3](../standards/api-response.md#53-框架扩展返回码34xxx-平台错误段的低三位自定义)). The three actions are independent, one can be denied while others remain allowed.
+
+```python
+# Runtime API
+sdk.scope.set_action("MyModule", "send", False)   # Prohibit message sending
+sdk.scope.is_action_allowed("MyModule", "send")   # False
+sdk.scope.unset_action("MyModule", "send")        # Restore allow
+sdk.scope.get_action_rules("MyModule")            # {"send": False, "api": True, "request": True}
+```
 
 ## Runtime API
 
@@ -9425,8 +9456,8 @@ sdk.scope.is_allowed("onebot11", "123456", None)      # Framework-level resource
 
 # Bind / Unbind
 sdk.scope.bind_module("onebot11", "123456", modules=["Chat", "Tool*"])
-sdk.scope.bind_module("onebot11", blocked=["Danger"])             # Platform-level
-sdk.scope.bind_module("onebot11", "123456", "789012345", modules=["Chat"])  # Session-level
+sdk.scope.bind_module("onebot11", blocked=["Danger"])             # Platform level
+sdk.scope.bind_module("onebot11", "123456", "789012345", modules=["Chat"])  # Session level
 sdk.scope.bind_module("onebot11", "123456", modules=["Music"], merge=True)  # Merge
 sdk.scope.bind_module("onebot11", "123456", modules=["Chat"], persist=False)  # Runtime only
 sdk.scope.unbind_module("onebot11", "123456")
@@ -9441,13 +9472,13 @@ sdk.scope.get("onebot11", "123456")   # {"modules": ["Chat"], "blocked": []}
 # Check if event is allowed
 sdk.scope.is_identity_allowed("onebot11", "123456", "group_9", "u1")
 
-# Bind strategy (hierarchy determined by parameters: user > session > bot > adapter)
+# Bind policy (hierarchy determined by parameters: user > session > bot > adapter)
 sdk.scope.bind_identity("onebot11", user_id="u_bad", deny=True)
-sdk.scope.bind_identity("onebot11", user_id="spam_*", deny=True)   # glob
+sdk.scope.bind_identity("onebot11", user_id="spam_*", deny=True)   # Glob
 sdk.scope.bind_identity("onebot11", "123456", "group_9", allow=True)
 sdk.scope.unbind_identity("onebot11", user_id="u_bad")
 
-# Blacklist convenience API
+# User blacklist convenience API
 sdk.scope.block_user("onebot11", "u_bad")
 sdk.scope.is_user_blocked("onebot11", "u_bad")
 sdk.scope.get_blocked_users()        # {"onebot11": ["u_bad"]}
@@ -9458,12 +9489,12 @@ sdk.scope.unblock_user("onebot11", "u_bad")
 
 ```python
 sdk.scope.is_command_allowed("roll", "onebot11", "u1")
-sdk.scope.allow_user("roll*", "onebot11", "u_vip")   # Command name supports glob
+sdk.scope.allow_user("roll*", "onebot11", "u_vip")   # Command names support glob
 sdk.scope.deny_user("roll*", "onebot11", "u_bad")
 sdk.scope.get_acl("roll*")
 sdk.scope.remove_acl("roll*")
 
-# Can also use command system facade (equivalent delegation)
+# Can also be delegated through command system facade (equivalent)
 from ErisPulse.Core.Event import command
 command.allow_user("restart", "onebot11", "123456")
 ```
@@ -9482,32 +9513,79 @@ sdk.scope.remove_override("MyModule", "restart")
 ### General
 
 ```python
-sdk.scope.list_bindings()   # Full five-dimensional bindings
-sdk.scope.get_topology()    # Five-dimensional topology (for Dashboard)
+sdk.scope.list_bindings()   # All bindings
+sdk.scope.get_topology()    # Topology (for Dashboard)
 sdk.scope.get_stats()
 # {"module_calls": .., "module_filtered": .., "identity_checks": .., "identity_denied": ..,
-#  "command_checks": .., "command_denied": .., "cache_hits": .., "cache_misses": ..}
+#  "command_checks": .., "command_denied": .., "action_checks": .., "action_denied": ..,
+#  "cache_hits": .., "cache_misses": ..}
 sdk.scope.reset_stats()
 sdk.scope.clear()           # Clear all bindings (in-memory only)
 ```
 
+## Owner Identity and Custom Identity Source (provider)
+
+The owner system answers "who is the framework owner": The `master=True` parameter of commands and the business layer's `master.is_master()` share the same identity determination, with the determination chain being **configured owner → runtime record → provider chain**.
+
+Owner configuration (`ErisPulse.master.users`, supports global list and per-platform dict) is described in the [configuration documentation](../user-guide/configuration.md#owner-system-configuration). This section focuses on identity determination API and extension points.
+
+### Determination and Runtime Add/Delete
+
+```python
+from ErisPulse.Core import master
+
+master.is_master(event)                      # Determine from event
+master.is_master("yunhu", "123")             # Explicit determination
+master.add("yunhu", "123")                   # Add at runtime (default persistent; persist=False only in-memory)
+master.remove("yunhu", "123")                # Remove (default persistent)
+master.list()                                # Aggregate: {"global": [...], "<platform>": [...]}
+```
+
+### Custom Identity Source (provider)
+
+In addition to configuration, custom identity sources can be registered: `fn(platform, user_id) -> bool`, which are tried in sequence if built-in identity sources (configuration + runtime record) do not match, and any provider allowing the user is considered an owner. Suitable for integrating adapter admin interfaces, database roles, and other external identity systems.
+
+Registration entry `master.provider` supports both decorator and function styles, and unregistration is done through the unregistered function:
+
+```python
+from ErisPulse.Core import master
+
+# Style 1: Decorator (persistent identity source, recommended)
+@master.provider
+def admin_provider(platform, user_id):
+    return user_id in {"999"}     # Custom determination logic
+
+master.is_master("yunhu", "999")   # True
+admin_provider.unregister()        # Unregister when no longer needed
+
+# Style 2: Function style (register at module load / unregister at unload)
+fn = master.provider(admin_provider)
+fn.unregister()
+```
+
+> Provider exceptions are caught and skipped, not blocking the identity determination chain. Binding instance methods cannot mount `unregister`, for scenarios requiring paired registration/unregistration, use **module-level functions**.
+
+### User Priority: Owner Scope Decided by User
+
+The `master=True` of commands is only the **developer's default**: The user can override it in the control plane `ErisPulse.scope.overrides.<module>.<cmd>.master = true/false` to tighten or loosen (see above ⑤ Implementation Parameter Override, user's explicit configuration takes effect).
+
 ## Cache and Hot Update
 
-- `is_allowed` / `is_identity_allowed` results are cached with **LRU cache** (`scope.cache_size` is adjustable), invalidated automatically by `bind_*` / `unbind_*` / configuration hot update (`config.updated` / `config.set`)
-- All dimension configurations take effect **immediately**, no restart needed
-- The control plane makes **event-by-event** decisions, without cross-event memory: configuration changes take effect on the next event
+- `is_allowed` / `is_identity_allowed` results include **LRU cache** (`scope.cache_size` is adjustable), `bind_*` / `unbind_*` / configuration hot update (`config.updated` / `config.set`) automatically invalidate
+- All dimension configurations take effect **immediately**, no restart required
+- The control plane makes **per-event** judgments, does not remember across events: Configuration changes take effect on the next event
 
 ## Common Issues and Notes
 
 ### 1. Configuration Hierarchy and Overriding
 
-- Module dimension: session level > Bot level > platform level, **completely overrides**. To "allow Chat at platform level, and add Music at Bot level," both must be listed at the Bot level
-- Identity dimension: user > session > Bot > adapter, taking the **most specific** configured strategy (can be used for exceptional allowance)
-- Command dimension: exact command name takes precedence over glob key
+- Module dimension: Session level > Bot level > Platform level, **full override**. To "allow Chat at platform level, add Music at Bot level," both must be listed at the Bot level
+- Identity dimension: User > Session > Bot > Adapter, take the **most specific** configured policy (can do exception allow)
+- Command dimension: Exact command name takes precedence over glob key
 
-### 2. Prefer Control Plane Over Module Code Changes
+### 2. Prefer Control Plane Over Modifying Module Code
 
-Module declarations are "developer defaults" (`master=True`, `permission=...`, `pattern=...`); control plane declarations are "user final decisions." When conflicts occur, the **more restrictive control plane takes precedence** (e.g., if the developer did not set master, the user can override `master = true` to tighten; the user cannot loosen the developer's explicit restrictions via override—control over enable/disable goes through command deny / identity allow).
+Module declarations are "developer's default" (`master=True`, `permission=...`, `pattern=...`); control plane declarations are "user's final decision." Implementation parameter overrides follow **user priority**: User's explicit configuration of `master = true/false` takes effect directly (can tighten or loosen). Developers' unconfigured restrictions can be tightened by users; disable/allow control goes through command deny / identity allow.
 
 ### 3. Module/Command Not Responding
 
@@ -9521,15 +9599,15 @@ print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, us
 print(sdk.scope.get_stats())   # module_filtered / identity_denied > 0 indicates silent filtering
 ```
 
-Filtered results are **silent** (no reply for module and identity dimensions, to avoid exposing rules), but statistics are accumulated; command dimension denied by ACL will explicitly reply with "insufficient permissions."
+Filtered is **silent** (module dimension and identity dimension do not reply, preventing rule exposure), but statistics accumulate; command dimension denied by ACL replies "insufficient permissions" explicitly.
 
 ### 4. Session Identifier Isolation Across Platforms
 
-The combination of `(platform, session_id)` is the unique identifier. `scope.sessions.onebot11."789"` only applies to onebot11, not affecting the session with the same `789` on telegram. The same applies to identity dimension user keys.
+`(platform, session_id)` combination is the unique identifier. `scope.sessions.onebot11."789"` only applies to onebot11, not affecting the session with the same `789` on telegram. The same applies to identity dimension user keys.
 
 ## Topology Tree API
 
-`ModuleManager.get_topology()` and `AdapterManager.get_topology()` provide module/adapter ownership relationship data, and `sdk.get_topology()` aggregates all (including control plane `scope` five dimensions):
+`ModuleManager.get_topology()` and `AdapterManager.get_topology()` provide module/adapter ownership relationship data, `sdk.get_topology()` aggregates all (including the control plane's five dimensions):
 
 ```python
 from ErisPulse import sdk
@@ -9560,8 +9638,8 @@ topology = sdk.get_topology()
 # }
 ```
 
-- Module topology aggregates commands, event handlers, HTTP/WS/SSE routes, and lifecycle hooks registered by the module, useful for drawing module resource trees.
-- Adapter topology aggregates the status of each adapter, the status of subordinate Bots, and platform-level/Bot-level scope bindings.
+- Module topology aggregates commands registered by the module, event handlers, HTTP/WS/SSE routes, and lifecycle hooks, suitable for drawing module resource trees.
+- Adapter topology aggregates status of each adapter, status of subordinate Bots, and platform-level/Bot-level scope bindings.
 
 
 
@@ -10902,35 +10980,35 @@ async def handle_welcome(event):
 
 ### API 响应标准
 
-# Спецификация стандартного возвращаемого значения для адаптера ErisPulse
+# Стандартизированный формат возврата адаптера ErisPulse
 
 ## 1. Описание
-Существование этого стандарта?
+Зачем нужен этот стандарт?
 
-Чтобы гарантировать единообразие интерфейсов возврата и совместимость с OneBot12, адаптер ErisPulse использует стандартную структуру возврата сообщений, определенную OneBot12.
+Для обеспечения единообразия и совместимости с OneBot12, адаптер ErisPulse использует стандартный формат возврата, определенный в спецификации OneBot12.
 
-Однако протокол ErisPulse имеет некоторые специальные определения:
-- 1. В базовых полях поле `message_id` является обязательным, хотя в стандарте OneBot12 этого поля нет
-- 2. В возвращаемом содержании необходимо добавить поле `{platform_name}_raw`, используемое для хранения исходных данных ответа
+Однако, протокол ErisPulse имеет некоторые специфические определения:
+- 1. В базовых полях поле message_id является обязательным, но в стандарте OneBot12 его нет.
+- 2. В ответе необходимо добавить поле {platform_name}_raw, которое содержит сырые данные ответа.
 
-## 2. Базовая структура возврата
+## 2. Базовая структура ответа
 Все ответы на действия должны содержать следующие базовые поля:
 
-| Имя поля | Тип данных | Обязательное | Описание |
-|-------|---------|------|------|
-| status | string | Да | Статус выполнения, должно быть "ok" или "failed" |
-| retcode | int64 | Да | Код возврата, следует правилам кодов возврата OneBot12 |
-| data | any | Да | Данные ответа, содержат результат запроса при успехе, null при неудаче |
-| message_id | string | Да | ID сообщения, используется для идентификации сообщения, пустая строка если нет |
-| message | string | Да | Информация об ошибке, пустая строка при успехе |
-| {platform_name}_raw | any | Нет | Исходные данные ответа |
+| Название поля | Тип данных | Обязательно | Описание |
+|---------------|------------|-------------|----------|
+| status        | string     | Да          | Статус выполнения, должно быть "ok" или "failed" |
+| retcode       | int64      | Да          | Код возврата, следует правилам возвратных кодов OneBot12 |
+| data          | any        | Да          | Данные ответа, содержит результат запроса при успехе, null при ошибке |
+| message_id    | string     | Да          | Идентификатор сообщения, используется для идентификации сообщения, если нет, то пустая строка |
+| message       | string     | Да          | Сообщение об ошибке, пустая строка при успехе |
+| {platform_name}_raw | any  | Нет         | Сырые данные ответа |
 
 Дополнительные поля:
-| Имя поля | Тип данных | Обязательное | Описание |
-|-------|---------|------|------|
-| echo | string | Нет | Возвращает исходное значение, если оно содержится в запросе |
+| Название поля | Тип данных | Обязательно | Описание |
+|---------------|------------|-------------|----------|
+| echo          | string     | Нет         | Если в запросе присутствует поле echo, то в ответе должно быть возвращено с тем же значением |
 
-## 3. Полная спецификация полей
+## 3. Полный перечень полей
 
 ### 3.1 Общие поля
 
@@ -10957,7 +11035,7 @@ async def handle_welcome(event):
     "retcode": 10003,
     "data": null,
     "message_id": "",
-    "message": "Отсутствует необходимый параметр: user_id",
+    "message": "Отсутствует обязательный параметр: user_id",
     "echo": "1234",
     "telegram_raw": {...}
 }
@@ -10968,59 +11046,59 @@ async def handle_welcome(event):
 #### 0 Успех (OK)
 - 0: Успех (OK)
 
-#### 1xxxx Ошибка запроса действия (Request Error)
+#### 1xxxx Ошибка запроса (Request Error)
 | Код ошибки | Название ошибки | Описание |
-|-------|-------|------|
-| 10001 | Bad Request | Неверный запрос действия |
-| 10002 | Unsupported Action | Неподдерживаемый запрос действия |
-| 10003 | Bad Param | Неверный параметр запроса действия |
-| 10004 | Unsupported Param | Неподдерживаемый параметр запроса действия |
-| 10005 | Unsupported Segment | Неподдерживаемый тип сегмента сообщения |
-| 10006 | Bad Segment Data | Неверный параметр сегмента сообщения |
-| 10007 | Unsupported Segment Data | Неподдерживаемый параметр сегмента сообщения |
-| 10101 | Who Am I | Не указан аккаунт бота |
-| 10102 | Unknown Self | Неизвестный аккаунт бота |
+|------------|-----------------|----------|
+| 10001      | Bad Request     | Неверный запрос действия |
+| 10002      | Unsupported Action | Неподдерживаемый запрос действия |
+| 10003      | Bad Param       | Неверный параметр запроса действия |
+| 10004      | Unsupported Param | Неподдерживаемый параметр запроса действия |
+| 10005      | Unsupported Segment | Неподдерживаемый тип сегмента сообщения |
+| 10006      | Bad Segment Data | Неверные параметры сегмента сообщения |
+| 10007      | Unsupported Segment Data | Неподдерживаемые параметры сегмента сообщения |
+| 10101      | Who Am I        | Не указан идентификатор бота |
+| 10102      | Unknown Self    | Неизвестный идентификатор бота |
 
-#### 2xxxx Ошибка обработчика действия (Handler Error)
+#### 2xxxx Ошибка обработчика (Handler Error)
 | Код ошибки | Название ошибки | Описание |
-|-------|-------|------|
-| 20001 | Bad Handler | Ошибка реализации обработчика действия |
-| 20002 | Internal Handler Error | В обработчике действия происходит исключение во время выполнения |
+|------------|-----------------|----------|
+| 20001      | Bad Handler     | Ошибка реализации обработчика действия |
+| 20002      | Internal Handler Error | Исключение, выброшенное во время выполнения обработчика действия |
 
 #### 3xxxx Ошибка выполнения действия (Execution Error)
-| Диапазон кодов ошибки | Тип ошибки | Описание |
-|-----------|---------|------|
-| 31xxx | Database Error | Ошибка базы данных |
-| 32xxx | Filesystem Error | Ошибка файловой системы |
-| 33xxx | Network Error | Ошибка сети |
-| 34xxx | Platform Error | Ошибка платформы бота |
-| 35xxx | Logic Error | Ошибка логики действия |
-| 36xxx | I Am Tired | Реализация приняла решение забастовать |
+| Диапазон кодов | Тип ошибки | Описание |
+|---------------|------------|----------|
+| 31xxx         | Database Error | Ошибка базы данных |
+| 32xxx         | Filesystem Error | Ошибка файловой системы |
+| 33xxx         | Network Error | Ошибка сети |
+| 34xxx         | Platform Error | Ошибка платформы бота |
+| 35xxx         | Logic Error | Ошибка логики действия |
+| 36xxx         | I Am Tired    | Реализация решила отказаться от выполнения |
 
 #### Зарезервированные сегменты ошибок
-- 4xxxx, 5xxxx: Зарезервированные сегменты, не должны использоваться
-- 6xxxx ~ 9xxxx: Другие сегменты ошибок, доступны для использования для пользовательской реализации
+- 4xxxx, 5xxxx: зарезервированные сегменты, не должны использоваться
+- 6xxxx–9xxxx: другие сегменты ошибок, могут использоваться для пользовательских реализаций
 
 ## 4. Требования к реализации
-1. Все ответы должны содержать поля `status`, `retcode`, `data` и `message`
-2. Когда в запросе содержится непустое поле `echo`, ответ должен содержать поле `echo` с тем же значением
-3. Коды возврата должны строго следовать спецификации OneBot12
-4. Информация об ошибке (`message`) должна быть читаемым описанием для человека
+1. Все ответы должны содержать поля status, retcode, data и message.
+2. Если в запросе присутствует непустое поле echo, ответ должен содержать такое же значение поля echo.
+3. Коды возврата должны строго следовать спецификации OneBot12.
+4. Сообщение об ошибке (message) должно быть понятным человеку.
 
 ## 5. Расширенные спецификации
 
-ErisPulse добавляет следующие расширения поверх стандартной структуры возврата OneBot12:
+ErisPulse расширяет стандартный формат возврата OneBot12 следующими изменениями:
 
 ### 5.1 Обязательное поле `message_id`
 
-В стандарте OneBot12 `message_id` находится внутри объекта `data` и не является обязательным. ErisPulse вынес его на верхний уровень как **обязательное** поле:
+В стандарте OneBot12 поле `message_id` находится внутри объекта `data` и не является обязательным. ErisPulse выносит его на верхний уровень как **обязательное** поле:
 
-- Если не удается получить `message_id`, следует установить значение в пустую строку `""`
-- Гарантировать, что `message_id` всегда существует, поэтому модулям не нужно выполнять проверку на null
+- Если `message_id` не может быть получен, должно быть установлено пустое строковое значение `""`.
+- Убедитесь, что `message_id` всегда присутствует, модулям не нужно проверять на null.
 
-### 5.2 Исходное поле ответа `{platform}_raw`
+### 5.2 Поле сырых данных `{platform}_raw`
 
-В возвращаемом значении должно содержаться поле `{platform}_raw`, содержащее полную копию исходных данных ответа платформы:
+В ответе должно присутствовать поле `{platform}_raw`, содержащее полную копию сырых данных ответа платформы:
 
 ```json
 {
@@ -11036,34 +11114,67 @@ ErisPulse добавляет следующие расширения повер�
 }
 ```
 
-**Требования**:
-- `{platform}_raw` должна быть глубокой копией исходного ответа, а не ссылкой
-- `platform` должно полностью совпадать с именем платформы при регистрации адаптера (с учетом регистра)
-- Информация об ошибках в исходном ответе также должна быть сохранена для облегчения отладки
+**Требования:**
+- `{platform}_raw` должен быть глубокой копией сырых данных, а не ссылкой.
+- `platform` должен полностью соответствовать имени платформы, зарегистрированной при адаптере (регистр букв имеет значение).
+- Ошибки в сырых данных также должны сохраняться для удобства отладки.
 
-### 5.3 Чек-лист реализации адаптера
+### 5.3 Расширенные коды возврата фреймворка (Низкие три цифры сегмента `34xxx`)
 
-- [ ] Содержать поля `status`, `retcode`, `data`, `message_id`, `message`
-- [ ] Коды возврата должны следовать спецификации OneBot12 (подробнее см. §3.2)
-- [ ] `message_id` всегда существует (пустая строка, если не удается получить)
-- [ ] `{platform}_raw` содержит исходные данные ответа платформы
+Спецификация OneBot12 разрешает реализациям определять низкие три цифры в сегменте `3xxxx`. Семантика `34xxx` — **Platform Error** (ошибка платформы бота, например, из-за ограничений платформы). Внутри `34xxx` используются низкие три цифры по функциональным слоям:
 
-## 6. Важные примечания
-- Для кодов ошибок 3xxxx последние три цифры могут определяться реализацией самостоятельно
-- Избегать использования зарезервированных сегментов ошибок (4xxxx, 5xxxx)
-- Информация об ошибках должна быть лаконичной и понятной для отладки
+| Низкие три цифры | Ответственность | Назначение |
+|------------------|-----------------|------------|
+| `340xx`          | Реализация адаптера | Группа запросов (Request Not Found / Already Handled / Not Supported / Permission Denied, см. request-action-spec §7) |
+| `341xx`–`345xx`  | Реализация адаптера | Ошибки прав доступа, рисков, ограничений аккаунта на стороне платформы (реализация определяет низкие три цифры, оригинальная ошибка сохраняется в `{platform}_raw`) |
+| `346xx`          | **Фреймворк ErisPulse (зарезервировано)** | Ошибки, возникающие при блокировке и общих сбоях фреймворка, адаптеры/модули не должны использовать |
+| `347xx`–`349xx`  | Реализация адаптера | Другие ошибки выполнения платформы |
+
+Фреймворк ErisPulse использует следующие коды в сегменте `346xx`:
+
+| Код ошибки | Название ошибки | Описание |
+|------------|-----------------|----------|
+| 34600      | SDK Failure     | Общая ошибка фреймворка (возвращается по умолчанию при вызове `make_error()`) |
+| 34601      | Action Denied   | Выходящее действие запрещено контролем доступа (`scope.actions`), вызов не инициирован, возвращается сразу |
+
+> Разграничение ответственности: `34601` — это **блокировка фреймворком до выполнения действия** (модуль не имеет права инициировать действие); `34004` / `34xxx` — это **ошибка платформы после отправки действия** (например, у бота нет прав, он заблокирован). При проверке прав модуль должен проверять оба этих кода: сначала `34601` (действие запрещено в `scope.actions`), затем `34xxx` (платформа запрещает действие).
+
+Структура ответа соответствует стандартному неудачному ответу из раздела §2:
+
+```json
+{
+    "status": "failed",
+    "retcode": 34601,
+    "data": null,
+    "message_id": "",
+    "message": "действие 'send' запрещено scope.actions"
+}
+```
+
+### 5.4 Проверочный список реализации адаптера
+
+- [ ] В ответе присутствуют поля `status`, `retcode`, `data`, `message_id`, `message`
+- [ ] Коды возврата соответствуют спецификации OneBot12 (см. раздел §3.2)
+- [ ] Поле `message_id` всегда присутствует (если не удалось получить, то пустая строка)
+- [ ] Поле `{platform}_raw` содержит сырые данные ответа платформы
+
+## 6. Примечания
+- Для кодов ошибок `3xxxx` низкие три цифры могут быть определены реализацией
+- Избегайте использования зарезервированных сегментов ошибок (4xxxx, 5xxxx)
+- **Коды `34600` и `34601` зарезервированы фреймворком ErisPulse** (см. раздел §5.3), адаптеры/модули не должны их использовать
+- Сообщение об ошибке должно быть кратким и понятным, удобным для отладки
 
 
 
 ### 发送方法规范
 
-# Спецификация метода отправки ErisPulse
+# Правила метода отправки Send в ErisPulse
 
-Данный документ определяет правила именования методов, параметров и требования к обратному преобразованию в классе отправки Send адаптера ErisPulse.
+Данный документ определяет правила именования, параметров и требования обратного преобразования для метода отправки Send класса адаптера ErisPulse.
 
 ## 1. Стандартное именование методов
 
-Все методы отправки используют **PascalCase (верхний регистр с заглавной буквы)**.
+Все методы отправки используют **PascalCase** (большая первая буква).
 
 ### 1.1 Стандартные методы отправки
 
@@ -11074,67 +11185,67 @@ ErisPulse добавляет следующие расширения повер�
 | `Voice` | Отправка голосового сообщения | `bytes` \| `str` (URL/путь) |
 | `Video` | Отправка видео | `bytes` \| `str` (URL/путь) |
 | `File` | Отправка файла | `bytes` \| `str` (URL/путь) |
-| `At` | @пользователь/группа | `str` (user_id) |
+| `At` | @пользователя/группы | `str` (user_id) |
 | `Face` | Отправка эмодзи | `str` (emoji) |
 | `Reply` | Ответ на сообщение | `str` (message_id) |
 | `Forward` | Пересылка сообщения | `str` (message_id) |
-| `Markdown` | Отправка Markdown-сообщения | `str` |
-| `HTML` | Отправка HTML-сообщения | `str` |
+| `Markdown` | Отправка сообщения в формате Markdown | `str` |
+| `HTML` | Отправка сообщения в формате HTML | `str` |
 | `Card` | Отправка карточки | `dict` |
 
-### 1.2 Методы цепочки модификаторов
+### 1.2 Методы-модификаторы цепочки
 
 | Название метода | Описание | Тип параметра |
 |----------------|----------|---------------|
-| `At` | @пользователь (вызывается несколько раз) | `str` (user_id) |
-| `AtAll` | @всех участников | Нет |
+| `At` | @пользователя (можно вызывать несколько раз) | `str` (user_id) |
+| `AtAll` | @всех участников | Нет параметров |
 | `Reply` | Ответ на сообщение | `str` (message_id) |
 
 ### 1.3 Методы протокола
 
-| Название метода | Описание | Обязательно |
-|----------------|----------|------------|
-| `Raw_ob12` | Отправка сообщений в формате OneBot12 | Обязательно |
+| Название метода | Описание | Обязательный |
+|----------------|----------|--------------|
+| `Raw_ob12` | Отправка сообщений в формате OneBot12 | Обязательный |
 
-**`Raw_ob12` является обязательным методом**. Это одна из основных задач адаптера: получение стандартных сегментов сообщений OneBot12 и преобразование их в вызовы API платформы. `Raw_ob12` является единым входом для обратного преобразования (OneBot12 → платформа), обеспечивая возможность модулям отправлять сообщения, используя стандартные сегменты, без привязки к специфическим методам платформы.
+**Метод `Raw_ob12` должен быть реализован**. Это одна из основных задач адаптера: получение стандартных сегментов сообщений OneBot12 и их преобразование в вызовы API платформы. `Raw_ob12` является единым входом для обратного преобразования (OneBot12 → платформа), что обеспечивает модулю возможность не зависеть от специфических методов платформы, а использовать стандартные сегменты сообщений напрямую.
 
-**Поведение при отсутствии переопределения `Raw_ob12`**: базовый класс по умолчанию регистрирует **ошибку** и возвращает стандартный формат ответа с ошибкой (status: "failed", retcode: 10002), указывая разработчикам адаптера, что этот метод должен быть реализован.
+**Поведение при отсутствии переопределения `Raw_ob12`**: базовый класс по умолчанию записывает **ошибку** и возвращает стандартный формат ответа с ошибкой (`status: "failed"`, `retcode: 10002`), указывая, что адаптер должен реализовать этот метод.
 
 ### 1.4 Рекомендуемое соглашение об именовании расширений
 
-Если адаптеру необходимо поддерживать отправку нестандартных данных OneBot12 (например, платформенно-специфичный JSON, XML и т.д.), рекомендуется использовать следующие соглашения об именовании:
+Если адаптеру необходимо поддерживать отправку нестандартных данных OneBot12 (например, специфичных для платформы JSON, XML и т.д.), рекомендуется использовать следующие соглашения об именовании:
 
 | Рекомендуемое название метода | Описание |
 |-------------------------------|----------|
-| `Raw_json` | Отправка произвольных данных JSON |
-| `Raw_xml` | Отправка произвольных данных XML |
+| `Raw_json` | Отправка произвольных JSON-данных |
+| `Raw_xml` | Отправка произвольных XML-данных |
 
-**Важно**: Эти методы **не** предоставляются базовым классом по умолчанию и не требуют обязательной реализации. Они служат только как соглашение об именовании, и адаптер может определить их по своему усмотрению. Если адаптер не поддерживает эти форматы, их определять не нужно.
+**Примечание**: эти методы **не являются** методами по умолчанию, предоставляемыми базовым классом, и не требуют обязательной реализации. Они служат только как соглашения об именовании, и адаптер может определить их по необходимости. Если адаптер не поддерживает эти форматы, то их определять не нужно.
 
-**Конструктор сообщений (MessageBuilder)**: ErisPulse предоставляет класс-инструмент `MessageBuilder`, который облегчает построение списка сегментов сообщений OneBot12, совместно с `Raw_ob12`. Подробнее см. раздел [Конструктор сообщений](#11-Конструктор-сообщений-messagebuilder).
+**Конструктор сообщений (MessageBuilder)**: ErisPulse предоставляет класс-инструмент `MessageBuilder`, который удобен для построения списков сегментов сообщений OneBot12 в сочетании с `Raw_ob12`. Подробнее см. раздел [Конструктор сообщений (MessageBuilder)](#11-конструктор-сообщений-messagebuilder).
 
-## 2. Подробное описание спецификации параметров
+## 2. Подробное описание правил параметров
 
-### 2.1 Спецификация параметров медиа-сообщений
+### 2.1 Правила параметров для медиа-сообщений
 
 Медиа-сообщения (`Image`, `Voice`, `Video`, `File`) поддерживают два типа параметров:
 
-#### 2.1.1 Параметры в виде строки (URL или путь к файлу)
+#### 2.1.1 Строковый параметр (URL или путь к файлу)
 
 **Формат:** `str`
 
 **Поддерживаемые типы:**
-- **URL**: адрес сетевого ресурса (например, `https://example.com/image.jpg`)
+- **URL**: адрес ресурса в сети (например, `https://example.com/image.jpg`)
 - **Путь к файлу**: локальный путь к файлу (например, `/path/to/file.jpg` или `C:\\path\\to\\file.jpg`)
 
 **Сценарии использования:**
-- Файл уже находится в сети, отправляется URL
+- Файл уже доступен в сети, отправляется URL
 - Файл находится на локальном диске, отправляется путь к файлу
 - Адаптер должен автоматически обрабатывать загрузку файла
 
-**Рекомендация:** предпочтительно использовать URL, если URL недоступен, использовать локальный путь к файлу
+**Рекомендация:** предпочтительно использовать URL, если URL недоступен, то использовать локальный путь к файлу
 
-**Пример:**
+**Примеры:**
 ```python
 # Использование URL
 send.Image("https://example.com/image.jpg")
@@ -11144,7 +11255,7 @@ send.Image("/path/to/local/image.jpg")
 send.Image("C:\\path\\to\\local\\image.jpg")
 ```
 
-#### 2.1.2 Параметры в виде двоичных данных
+#### 2.1.2 Параметр в виде двоичных данных
 
 **Формат:** `bytes`
 
@@ -11154,12 +11265,12 @@ send.Image("C:\\path\\to\\local\\image.jpg")
 - Избежать повторного чтения файла
 
 **Примечание:**
-- Загрузка больших файлов может потреблять много памяти
+- Отправка больших файлов может потреблять много памяти
 - Рекомендуется устанавливать разумные ограничения на размер файла
 
-**Пример:**
+**Примеры:**
 ```python
-# Отправка после чтения из сети
+# Отправка после загрузки из сети
 import requests
 image_data = requests.get("https://example.com/image.jpg").content
 send.Image(image_data)
@@ -11172,11 +11283,11 @@ send.Image(image_data)
 
 #### 2.1.3 Приоритет обработки параметров
 
-При получении параметров медиа-сообщений адаптер должен обрабатывать их в следующем порядке:
+Когда адаптер получает параметр медиа-сообщения, он должен обрабатывать его в следующем порядке:
 
-1. **URL-параметр**: использовать URL напрямую (у некоторых адаптеров платформы может быть необходима загрузка URL, а затем загрузка файла)
-2. **Путь к файлу**: проверить, является ли это локальным путем, если да, загрузить файл
-3. **Двоичные данные**: загрузить двоичные данные напрямую
+1. **URL-параметр**: использовать напрямую URL (у некоторых адаптеров платформы может быть необходимость загрузить URL и затем загрузить файл)
+2. **Путь к файлу**: проверить, является ли это локальным путем, если да, то загрузить файл
+3. **Двоичные данные**: напрямую загрузить двоичные данные
 
 **Рекомендации по реализации адаптера:**
 ```python
@@ -11184,18 +11295,18 @@ def Image(self, image: Union[bytes, str]):
     if isinstance(image, str):
         # Определить, является ли это URL или локальный путь
         if image.startswith(("http://", "https://")):
-            # Отправить URL напрямую
+            # Отправить напрямую URL
             return self._send_image_by_url(image)
         else:
             # Локальный путь, прочитать и загрузить
             with open(image, "rb") as f:
                 return self._upload_image(f.read())
     elif isinstance(image, bytes):
-        # Двоичные данные, загрузить напрямую
+        # Двоичные данные, напрямую загрузить
         return self._upload_image(image)
 ```
 
-### 2.2 Спецификация параметров для @пользователя
+### 2.2 Правила параметров для @пользователя
 
 **Метод:** `At` (модификатор)
 
@@ -11203,9 +11314,9 @@ def Image(self, image: Union[bytes, str]):
 
 **Требования:**
 - `user_id` должен быть строковым идентификатором пользователя
-- Формат `user_id` может отличаться для разных платформ (цифры, UUID, строки и т.д.)
-- Адаптер должен преобразовывать `user_id` в специфичный для платформы формат
-- Обратите внимание, что вызов настоящего метода отправки должен быть в самом конце
+- Формат `user_id` может отличаться для разных платформ (числа, UUID, строки и т.д.)
+- Адаптер должен преобразовывать `user_id` в специфичный формат платформы
+- Обращение к основному методу отправки должно быть в самом конце
 
 **Пример:**
 ```python
@@ -11216,7 +11327,7 @@ Send.To("group", "g123").At("123456").Text("Привет")
 send.To("group", "g123").At("123456").At("789012").Text("Всем привет")
 ```
 
-### 2.3 Спецификация параметров для ответа на сообщение
+### 2.3 Правила параметров для ответа на сообщение
 
 **Метод:** `Reply` (модификатор)
 
@@ -11224,7 +11335,7 @@ send.To("group", "g123").At("123456").At("789012").Text("Всем привет")
 
 **Требования:**
 - `message_id` должен быть строковым идентификатором сообщения
-- Должен быть ID ранее полученного сообщения
+- Должен быть идентификатором ранее полученного сообщения
 - Некоторые платформы могут не поддерживать функцию ответа, адаптер должен корректно обрабатывать такие случаи
 
 **Пример:**
@@ -11232,9 +11343,9 @@ send.To("group", "g123").At("123456").At("789012").Text("Всем привет")
 send.To("group", "g123").Reply("msg_123456").Text("Получено")
 ```
 
-## 3. Именование платформенно-специфичных методов
+## 3. Именование платформенных методов
 
-**Не рекомендуется** добавлять методы с платформенным префиксом в класс Send. Рекомендуется использовать общие имена методов или методы `Raw_{протокол}`.
+**Не рекомендуется** добавлять методы с префиксом платформы в класс Send. Рекомендуется использовать общие имена методов или методы `Raw_{протокол}`.
 
 **Не рекомендуется:**
 ```python
@@ -11258,15 +11369,15 @@ def Raw_ob12(self, message):  # ✅ Отправка в формате OneBot12
 ```
 
 **Требования к расширениям:**
-- Имена методов должны использовать PascalCase, без платформенного префикса
-- Методы должны возвращать объект `asyncio.Task`
-- Методы должны иметь полные аннотации типов и строку документации
+- Имена методов должны использовать PascalCase, без префикса платформы
+- Метод должен возвращать объект `asyncio.Task`
+- Метод должен иметь полную аннотацию типов и строку документации
 - Дизайн параметров должен максимально соответствовать стилю стандартных методов
 
-## 4. Спецификация именования параметров
+## 4. Правила именования параметров
 
-| Название параметра | Описание | Тип |
-|--------------------|----------|-----|
+| Имя параметра | Описание | Тип |
+|---------------|----------|-----|
 | `text` | Текстовое содержимое | `str` |
 | `url` / `file` | URL файла или двоичные данные | `str` / `bytes` |
 | `user_id` | Идентификатор пользователя | `str` / `int` |
@@ -11274,16 +11385,16 @@ def Raw_ob12(self, message):  # ✅ Отправка в формате OneBot12
 | `message_id` | Идентификатор сообщения | `str` |
 | `data` | Объект данных (например, данные карточки) | `dict` |
 
-## 5. Спецификация возвращаемых значений
+## 5. Правила возвращаемых значений
 
 - **Методы отправки** (например, `Text`, `Image`): должны возвращать объект `asyncio.Task`
-- **Модификаторы** (например, `At`, `Reply`, `AtAll`): должны возвращать `self` для поддержки цепочки вызовов
+- **Методы-модификаторы** (например, `At`, `Reply`, `AtAll`): должны возвращать `self` для поддержки цепочки вызовов
 
 ---
 
-## 6. Спецификация обратного преобразования (OneBot12 → платформа)
+## 6. Правила обратного преобразования (OneBot12 → платформа)
 
-Адаптер должен не только преобразовывать события платформы в формат OneBot12 (прямое преобразование), но и **обязательно** обеспечивать возможность обратного преобразования сегментов OneBot12 в вызовы API платформы (обратное преобразование). Единым входом для обратного преобразования является метод `Raw_ob12`.
+Адаптер должен не только преобразовывать события платформы в формат OneBot12 (прямое преобразование), но и **обязан** обеспечить возможность обратного преобразования OneBot12-сегментов сообщений в вызовы API платформы (обратное преобразование). Единым входом для обратного преобразования является метод `Raw_ob12`.
 
 ### 6.1 Модель преобразования
 
@@ -11296,15 +11407,15 @@ def Raw_ob12(self, message):  # ✅ Отправка в формате OneBot12
 Converter.convert()               Send.Raw_ob12()
     │                                  │
     ▼                                  ▼
-События OneBot12 стандарта                  Вызовы API платформы
-(с {platform}_raw)                         (возвращают стандартный формат ответа)
+События OneBot12 (с {platform}_raw)             Вызовы API платформы
+(содержит {platform}_raw)             (возвращает стандартный формат ответа)
 ```
 
-**Основная симметрия**: прямое преобразование сохраняет исходные данные в `{platform}_raw`, обратное преобразование принимает стандартный формат OneBot12 и восстанавливает вызовы платформы.
+**Основная симметричность**: при прямом преобразовании сохраняются исходные данные в `{platform}_raw`, при обратном преобразовании принимаются стандартные сегменты OneBot12 и восстанавливаются вызовы платформы.
 
-### 6.2 Спецификация реализации `Raw_ob12`
+### 6.2 Правила реализации `Raw_ob12`
 
-`Raw_ob12` принимает список сегментов OneBot12 и должен преобразовать их в вызовы API платформы.
+Метод `Raw_ob12` принимает список сегментов OneBot12 и должен преобразовать их в вызовы API платформы.
 
 **Подпись метода**:
 
@@ -11319,16 +11430,16 @@ def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
             {"type": "image", "data": {"file": "https://..."}},
             {"type": "mention", "data": {"user_id": "123"}},
         ]
-    :return: asyncio.Task, await возвращает стандартный формат ответа
+    :return: asyncio.Task, await после возвращает стандартный формат ответа
     """
 ```
 
 **Требования к реализации**:
 
-1. **Должны обрабатываться все стандартные типы сегментов**: поддерживать как минимум `text`, `image`, `audio`, `video`, `file`, `mention`, `reply`
-2. **Должны обрабатываться расширенные сегменты платформы**: для сегментов с платформенным префиксом, преобразовывать в соответствующие вызовы платформы
+1. **Должны быть обработаны все стандартные типы сегментов**: поддерживать как минимум `text`, `image`, `audio`, `video`, `file`, `mention`, `reply`
+2. **Должны быть обработаны платформенные расширения**: для сегментов с префиксом `{platform}_xxx` преобразовывать в соответствующие вызовы платформы
 3. **Должен возвращаться стандартный формат ответа**: следовать [стандарту ответа API](api-response.md)
-4. **Не поддерживаемые сегменты должны пропускаться и регистрироваться в предупреждениях**, не должны вызывать исключения, приводящие к ошибке отправки всей сообщения
+4. **Неподдерживаемые сегменты должны пропускаться и записываться в лог предупреждения**, не должны вызывать исключений, приводящих к сбою отправки всей сообщения
 
 ### 6.3 Правила преобразования сегментов
 
@@ -11336,25 +11447,25 @@ def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
 
 Адаптер должен реализовать преобразование следующих стандартных сегментов:
 
-| Сегмент OneBot12 | Требования преобразования |
-|------------------|---------------------------|
+| OneBot12 сегмент | Требования преобразования |
+|------------------|----------------------------|
 | `text` | Использовать `data.text` напрямую |
-| `image` | В зависимости от типа `data.file`: URL использовать напрямую, bytes загрузить, локальный путь прочитать и загрузить |
-| `audio` | Аналогично обработке изображений |
-| `video` | Аналогично обработке изображений |
-| `file` | Аналогично обработке изображений, обратить внимание на `data.filename` |
+| `image` | В зависимости от типа `data.file`: использовать URL напрямую, загрузить bytes, прочитать локальный путь и загрузить |
+| `audio` | Аналогично `image` |
+| `video` | Аналогично `image` |
+| `file` | Аналогично `image`, обратить внимание на `data.filename` |
 | `mention` | Преобразовать в механизм @пользователя платформы (например, `entities` в Telegram, `at_uid` в Yunhu) |
-| `reply` | Преобразовать в механизм цитирования ответа платформы |
+| `reply` | Преобразовать в механизм ответа/ссылки платформы |
 | `face` | Преобразовать в механизм отправки эмодзи платформы, если не поддерживается, пропустить |
 | `location` | Преобразовать в механизм отправки местоположения платформы, если не поддерживается, пропустить |
 
-#### 6.3.2 Преобразование расширенных сегментов платформы
+#### 6.3.2 Преобразование платформенных расширенных сегментов
 
-Для сегментов с платформенным префиксом адаптер должен распознавать и преобразовывать:
+Для сегментов с префиксом платформы адаптер должен распознавать и преобразовывать:
 
 ```python
 def _convert_ob12_segments(self, segments: List[Dict]) -> Any:
-    """Преобразование сегментов OneBot12 в формат платформы"""
+    """Преобразование OneBot12-сегментов в формат платформы"""
     platform_prefix = f"{self._platform_name}_"
     
     for segment in segments:
@@ -11362,22 +11473,22 @@ def _convert_ob12_segments(self, segments: List[Dict]) -> Any:
         seg_data = segment["data"]
         
         if seg_type.startswith(platform_prefix):
-            # Расширенный сегмент платформы → вызов API платформы
+            # Платформенные расширенные сегменты → вызовы платформы
             self._handle_platform_segment(seg_type, seg_data)
         elif seg_type in self._standard_segment_handlers:
-            # Стандартный сегмент → эквивалентная операция платформы
+            # Стандартные сегменты → эквивалентные действия платформы
             self._standard_segment_handlers[seg_type](seg_data)
         else:
-            # Неизвестный сегмент → записать предупреждение и пропустить
-            logger.warning(f"Не поддерживаемый тип сегмента: {seg_type}")
+            # Неизвестные сегменты → записать предупреждение и пропустить
+            logger.warning(f"Неподдерживаемый тип сегмента: {seg_type}")
 ```
 
 #### 6.3.3 Обработка составных сегментов
 
-Одно сообщение может содержать несколько сегментов, адаптер должен правильно обрабатывать составные сообщения:
+Сообщение может содержать несколько сегментов, адаптер должен правильно обрабатывать составные сообщения:
 
 ```python
-# Модуль отправляет сообщение, содержащее текст+изображение+@пользователя
+# Модуль отправляет сообщение с текстом+изображением+@пользователя
 await send.Raw_ob12([
     {"type": "mention", "data": {"user_id": "123"}},
     {"type": "text", "data": {"text": "Привет"}},
@@ -11386,8 +11497,8 @@ await send.Raw_ob12([
 ```
 
 **Стратегия обработки**:
-- **Предпочтительнее объединение**: если платформа поддерживает отправку в одном сообщении текста, изображения, @ и т.д., следует объединить
-- **В противном случае разбиение**: если платформа не поддерживает объединение, отправлять по очереди
+- **Предпочтительное объединение**: если платформа поддерживает отправку в одном сообщении текста, изображения, @ и т.д., следует объединить
+- **Разделение**: если платформа не поддерживает объединение, отправить несколько сообщений по очереди
 - **Сохранение порядка**: порядок отправки сегментов должен соответствовать порядку в списке
 
 ### 6.4 Связь `Raw_ob12` и стандартных методов
@@ -11397,20 +11508,20 @@ await send.Raw_ob12([
 ```python
 class Send(SendDSL):
     def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
-        """Основная реализация: OneBot12 сегменты → вызовы API платформы (обязательно реализовать)"""
+        """Основная реализация: OneBot12-сегменты → вызовы API платформы (обязательно реализовать)"""
         return asyncio.create_task(self._send_ob12(message_segments))
 
-    # Text/Image/Voice/Video/File наследуются из базового класса и автоматически делегируют Raw_ob12
-    # Если нужно платформенно-специфичная логика, можно перегрузить отдельные методы:
+    # Text/Image/Voice/Video/File уже унаследованы от базового класса и автоматически делегируют Raw_ob12
+    # Если нужна платформенная специфика, можно переопределить отдельные методы:
     # def Text(self, text: str) -> asyncio.Task:
     #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
 **Преимущества**:
-- Логика преобразования сосредоточена в одном месте `Raw_ob12`, уменьшается дублирование кода
-- Поведение стандартных методов и `Raw_ob12` полностью идентичны
+- Логика преобразования сосредоточена в `Raw_ob12`, уменьшается дублирование кода
+- Стандартные методы и `Raw_ob12` ведут себя одинаково
 - Модуль получает одинаковый результат, независимо от использования `Text()` или `Raw_ob12()`
-- Базовый класс предоставляет аннотации типов, IDE может подсказывать стандартные методы
+- Базовый класс предоставляет аннотации типов, IDE дополняет стандартные методы
 
 ### 6.5 Пример реализации
 
@@ -11419,7 +11530,7 @@ class YunhuSend(SendDSL):
     """Реализация Send для платформы Yunhu"""
     
     def Raw_ob12(self, message_segments: list) -> asyncio.Task:
-        """OneBot12 сегменты → вызовы API Yunhu"""
+        """OneBot12-сегменты → вызовы API Yunhu"""
         return asyncio.create_task(self._do_send(message_segments))
     
     async def _do_send(self, segments: list) -> dict:
@@ -11444,7 +11555,7 @@ class YunhuSend(SendDSL):
             elif seg_type == "reply":
                 reply_to = seg_data["message_id"]
             elif seg_type == "yunhu_form":
-                # Расширенный сегмент платформы
+                # Платформенные расширенные сегменты
                 yunhu_elements.append({"type": "form", "form_id": seg_data["form_id"]})
             else:
                 logger.warning(f"Yunhu не поддерживает сегмент: {seg_type}")
@@ -11467,16 +11578,16 @@ class YunhuSend(SendDSL):
 
 ## 7. Обнаружение методов
 
-Разработчики модулей могут использовать API для получения списка поддерживаемых методов отправки адаптером:
+Разработчики модулей могут с помощью API получить список поддерживаемых адаптером методов отправки:
 
 ```python
 from ErisPulse import adapter
 
-# Получение списка всех методов отправки
+# Получить список всех методов отправки
 methods = adapter.list_sends("myplatform")
 # ["Batch", "Form", "Image", "Recall", "Sticker", "Text", ...]
 
-# Получение подробной информации о методе
+# Получить информацию о методе
 info = adapter.send_info("myplatform", "Form")
 # {
 #     "name": "Form",
@@ -11492,47 +11603,47 @@ info = adapter.send_info("myplatform", "Form")
 
 | Платформа | Название метода | Описание |
 |-----------|-----------------|----------|
-| onebot12 | `Mention` | @пользователь (стиль OneBot12) |
+| onebot12 | `Mention` | @пользователь (в стиле OneBot12) |
 | onebot12 | `Sticker` | Отправка стикера |
 | onebot12 | `Location` | Отправка местоположения |
 | onebot12 | `Recall` | Отмена сообщения |
 | onebot12 | `Edit` | Редактирование сообщения |
-| onebot12 | `Batch` | Массовая отправка |
+| onebot12 | `Batch` | Пакетная отправка |
 
-> **Важно**: Методы отправки не имеют платформенного префикса, методы с одинаковым названием на разных платформах могут иметь разную реализацию.
-
----
-
-## 9. Примечания для разработчиков адаптеров
-
-О том, как правильно переопределить `BaseAdapter`, `Send`, `Request` в `__init__`, см. [Введение в разработку адаптеров - Примечания по `__init__`](../../developer-guide/adapters/getting-started.md#init-注意事项).
+> **Примечание**: методы отправки не имеют платформенного префикса, методы с одинаковыми именами на разных платформах могут иметь разную реализацию.
 
 ---
 
+## 9. Примечания для разработки адаптера
+
+О том, как правильно переопределить `BaseAdapter`, `Send`, `Request` в `__init__`, см. [Введение в разработку адаптеров - Примечания по `__init__`](../developer-guide/adapters/getting-started.md#init-注意事项).
+
 ---
 
-## 10. Чек-лист реализации адаптера
+---
+
+## 10. Проверочный список реализации адаптера
 
 ### Методы отправки
 - [ ] Стандартные методы (`Text`, `Image` и т.д.) реализованы
 - [ ] Возвращаемые значения — `asyncio.Task`
-- [ ] Модификаторы (`At`, `Reply`, `AtAll`) возвращают `self`
-- [ ] Расширенные методы используют PascalCase, без платформенного префикса
-- [ ] Все методы имеют полные аннотации типов и строку документации
+- [ ] Методы-модификаторы (`At`, `Reply`, `AtAll`) возвращают `self`
+- [ ] Расширения методов платформы используют PascalCase, без платформенного префикса
+- [ ] Все методы имеют полную аннотацию типов и строку документации
 
 ### Обратное преобразование
 - [ ] `Raw_ob12` **реализован** (обязательно, нельзя пропускать)
 - [ ] `Raw_ob12` может обрабатывать все стандартные сегменты (`text`, `image`, `audio`, `video`, `file`, `mention`, `reply`)
-- [ ] `Raw_ob12` может обрабатывать расширенные сегменты платформы (`{platform}_xxx` типа)
-- [ ] Стандартные методы отправки (`Text`, `Image` и т.д.) внутренне делегируют `Raw_ob12`, а не реализуют логику преобразования отдельно
-- [ ] Не поддерживаемые сегменты пропускаются и регистрируются в предупреждениях, не выбрасываются исключения
-- [ ] Составные сегменты обрабатываются правильно (объединение или последовательное разбиение)
+- [ ] `Raw_ob12` может обрабатывать платформенные расширенные сегменты (`{platform}_xxx` типа)
+- [ ] Стандартные методы отправки (`Text`, `Image` и т.д.) делегируют `Raw_ob12`, а не реализуют логику преобразования самостоятельно
+- [ ] Неподдерживаемые сегменты пропускаются и записываются в лог предупреждения, не вызывают исключений
+- [ ] Композитные сегменты обрабатываются правильно (объединение или последовательная отправка)
 
 ---
 
-## 10. Конструктор сообщений (MessageBuilder)
+## 11. Конструктор сообщений (MessageBuilder)
 
-`MessageBuilder` — это инструмент для построения сегментов сообщений, предоставляемый ErisPulse, который используется совместно с `Raw_ob12` для упрощения построения сегментов OneBot12.
+`MessageBuilder` — это инструмент для построения сегментов сообщений, предоставляемый ErisPulse, который используется в сочетании с `Raw_ob12` для упрощения построения сегментов OneBot12.
 
 ### 11.1 Импорт
 
@@ -11542,14 +11653,14 @@ from ErisPulse.Core import MessageBuilder
 from ErisPulse.Core.Event import MessageBuilder
 ```
 
-### 11.2 Построение с помощью цепочки вызовов
+### 11.2 Построение цепочкой
 
 ```python
-# Построение сообщения, содержащего текст, изображение, @пользователя
+# Построение сообщения с текстом, изображением, @пользователем
 segments = (
     MessageBuilder()
     .mention("123456")
-    .text("Привет, посмотри на эту картинку")
+    .text("Привет, посмотри на это изображение")
     .image("https://example.com/img.jpg")
     .reply("msg_789")
     .build()
@@ -11563,7 +11674,7 @@ await adapter.Send.To("group", "456").Raw_ob12(segments)
 
 ```python
 # Быстрое построение одного сегмента (возвращает list[dict], можно передать в Raw_ob12)
-await adapter.Send.To("user", "123").Raw_ob12(MessageBuilder.text("Привет"))
+await adapter.Send.To("user", "123").Raw_ob12(MessageBuilder.text("Hello"))
 await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.image("https://..."))
 await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.mention("123"))
 await adapter.Send.To("group", "456").Raw_ob12(MessageBuilder.reply("msg_id"))
@@ -11580,7 +11691,7 @@ async def handle(event: Event):
     await event.reply_ob12(
         MessageBuilder()
         .mention(event.get_user_id())
-        .text("Получено твое сообщение")
+        .text("Получено твоё сообщение")
         .build()
     )
 ```
@@ -11595,15 +11706,15 @@ async def handle(event: Event):
 | `video(file)` | Видео | `file` |
 | `file(file, filename=None)` | Файл | `file`, `filename`(опционально) |
 | `mention(user_id, user_name=None)` | @пользователь | `user_id`, `user_name`(опционально) |
-| `at(user_id, user_name=None)` | @пользователь (`mention` псевдоним) | То же, что и `mention` |
+| `at(user_id, user_name=None)` | @пользователь (别名 `mention`) | То же, что и `mention` |
 | `reply(message_id)` | Ответ | `message_id` |
-| `at_all()` | @всех участников | `{}` |
-| `custom(type, data)` | Пользовательский/расширенный сегмент | Пользовательский |
+| `at_all()` | @всех | `{}` |
+| `custom(type, data)` | Пользовательский/расширенный | Пользовательский |
 
-### 11.6 Утилитные методы
+### 11.6 Вспомогательные методы
 
 ```python
-builder = MessageBuilder().text("Основное содержимое")
+builder = MessageBuilder().text("Базовое содержимое")
 
 # Копирование (глубокая копия)
 msg1 = builder.copy().image("img1").build()
@@ -11619,79 +11730,79 @@ if builder:
 
 ---
 
-## 11. Связанные документы
+## 12. Связанные документы
 
-- [Стандарт преобразования событий](event-conversion.md) - Полная спецификация преобразования событий, соглашения об именовании и стандарт сегментов
+- [Стандарт преобразования событий](event-conversion.md) - Полный стандарт преобразования событий, расширения именования и стандарт сегментов
 - [Стандарт ответа API](api-response.md) - Стандарт формата ответа API адаптера
-- [Стандарт типов сессий](session-types.md) - Определение и сопоставление типов сессий
-- [Спецификация действий запроса](request-action-spec.md) - Требования к полям событий запроса, HandleRequest DSL и требования к реализации адаптера
+- [Стандарт типов сессий](session-types.md) - Определения и сопоставления типов сессий
+- [Стандарт действий запроса](request-action-spec.md) - Требования к полям запроса, HandleRequest DSL и требования к реализации адаптера
 
 
 
 ### 请求操作规范
 
-# ErisPulse Спецификация операций запросов
+# Стандарт операций запроса ErisPulse
 
-В этом документе определяется стандартная спецификация операций запросов событий в адаптере ErisPulse, включая требования к полям событий запросов, способ использования DSL запросов и требования к реализации адаптера.
+Документ определяет стандартизированный стандарт для операций событий запроса в адаптере ErisPulse, включая требования к полям событий запроса, использование DSL запроса и требования к реализации адаптера.
 
 ## 1. Обзор
 
-Событие запроса (`type: "request"`) — это специальный тип события, определенный в стандарте OneBot12, представляющий собой запрос, требующий решения от бота (например, запросы в друзья, приглашения в группы и т.д.).
+Событие запроса (`type: "request"`) — это специальный тип событий, определённый в стандарте OneBot12, представляющий запрос, требующий принятия решения ботом (например, запрос на добавление в друзья, приглашение в группу и т.д.).
 
-В отличие от событий сообщений, события запросов требуют **двустороннего взаимодействия**:
-1. **Прием:** Адаптер преобразует нативный платформенный запрос в стандартное событие запроса.
-2. **Ответ:** Модуль выполняет операцию через DSL `Request` или методы `Event.approve()`/`Event.reject()`.
+В отличие от событий сообщений, события запроса требуют **двустороннего взаимодействия**:
+1. **Приём**: адаптер преобразует исходное событие запроса платформы в стандартное событие запроса
+2. **Ответ**: модуль выполняет операцию с помощью DSL запроса или `Event.approve()`/`Event.reject()`
 
 ```
-Необработанное событие запроса платформы
+Событие исходного запроса платформы
     │
     ▼
-Converter.convert()        ← реализация адаптера (прямое преобразование)
+Converter.convert()        ← Реализация адаптера (обратное преобразование)
     │
     ▼
-Стандартное событие запроса (включая request_id)
+Стандартное событие запроса (с request_id)
     │
     ├─→ Обработчик модуля @request.on_friend_request()
     │       │
-    │       ├─→ event.approve()     ← согласовать запрос
-    │       └─→ event.reject()      ← отклонить запрос
+    │       ├─→ event.approve()     ← Согласие с запросом
+    │       └─→ event.reject()      ← Отказ в запросе
     │               │
     │               ▼
     │       adapter.Request(request_id).accept()
     │               │
     │               ▼
-    │       BaseAdapter.Request.accept()  ← переопределение адаптера
+    │       BaseAdapter.Request.accept()  ← Переопределение адаптером
     │               │
     │               ▼
-    │       Вызов платформенного API
+    │       Вызов API платформы
     │
-    └─→ Или прямая операция через адаптер
+    └─→ Или непосредственное использование адаптера
             await adapter.Request("req_id").accept()
 ```
 
-## 2. Требования к полям событий запроса
+## 2. Требования к полям события запроса
 
 ### 2.1 Стандартные поля
 
-Помимо обязательных полей стандарта OneBot12, событие запроса должно содержать следующие поля:
+Событие запроса, помимо обязательных полей стандарта OneBot12, должно содержать следующие поля:
 
 | Поле | Тип | Обязательно | Описание |
 |------|------|------|------|
-| `request_id` | string | **Сильно рекомендуется** | Идентификатор запроса, используемый для операций согласования/отклонения |
-| `user_id` | string | Да | Идентификатор инициатора запроса |
-| `user_nickname` | string | Нет | Никнейм инициатора запроса |
-| `comment` | string | Нет | Примечание к запросу |
+| `request_id` | string | **Рекомендуется** | Идентификатор запроса, используется для согласия/отказа |
+| `user_id` | string | Да | Идентификатор пользователя, отправившего запрос |
+| `user_nickname` | string | Нет | Никнейм отправителя |
+| `comment` | string | Нет | Комментарий к запросу |
 
 ### 2.2 Поле `request_id`
 
-`request_id` является ключевым идентификатором для операций запроса:
+`request_id` — это ключевой идентификатор запроса:
 
-- **Назначение:** Идентификация доступного для обработки запроса для использования в DSL `Request`.
+- **Назначение**: идентифицирует запрос, который можно обработать, используется в DSL запроса
 - **Правила генерации**:
-  - В первую очередь следует использовать нативный идентификатор запроса платформы (например, поле `flag` в OneBot11, `chat_invite_link` в Telegram и т.д.).
-  - Если платформа не предоставляет нативный ID запроса, адаптер должен сгенерировать уникальный идентификатор (рекомендуемый формат: `{platform}_{timestamp}_{user_id}`).
-- **Уникальность:** Должен быть уникальным в рамках одной платформы.
-- **Поведение при отсутствии:** Когда `request_id` отсутствует, `event.approve()` / `event.reject()` выбросят `ValueError`.
+  - Предпочтительно использовать идентификатор запроса, предоставляемый платформой (например, поле `flag` OneBot11, `chat_invite_link` Telegram и т.д.)
+  - Если платформа не предоставляет идентификатор запроса, адаптер должен сгенерировать уникальный идентификатор (рекомендуемый формат: `{platform}_{timestamp}_{user_id}`)
+- **Уникальность**: должен быть уникален в пределах одной платформы
+- **Поведение при отсутствии**: если `request_id` отсутствует, `event.approve()` / `event.reject()` выбросят `ValueError`
 
 ### 2.3 Пример события запроса
 
@@ -11715,23 +11826,23 @@ Converter.convert()        ← реализация адаптера (прямо
 }
 ```
 
-## 3. Request DSL
+## 3. DSL запроса
 
-### 3.1 Цепное вызов (Chain Calling)
+### 3.1 Цепочечный вызов
 
-`Request` предоставляет интерфейс с цепными вызовами (chaining), аналогичный стилю `Send`:
+`Request` предоставляет интерфейс цепочечного вызова, аналогичный `Send`:
 
 ```python
 # Базовое использование
 await adapter.Request("req_id").accept()
 await adapter.Request("req_id").reject()
 
-# Указание учетной записи бота
+# Указание аккаунта бота
 await adapter.Request("req_id").Using("bot1").accept()
 
-# Добавление примечания (через kwargs)
+# С комментарием (через kwargs)
 await adapter.Request("req_id").accept(comment="Добро пожаловать")
-await adapter.Request("req_id").reject(comment="Пока не добавляю")
+await adapter.Request("req_id").reject(comment="Временно не добавляю")
 
 # Комбинированное использование
 await adapter.Request("req_id").Using("bot1").accept(comment="Добро пожаловать")
@@ -11741,13 +11852,13 @@ await adapter.Request("req_id").Using("bot1").accept(comment="Добро пож�
 
 | Метод | Описание | Возвращаемое значение |
 |------|------|--------|
-| `Using(account_id)` | Указание учетной записи бота для выполнения операции | `RequestDSL` (поддержка цепных вызовов) |
-| `accept(**kwargs)` | Согласовать запрос | `asyncio.Task` (возвращает стандартный ответ после await) |
-| `reject(**kwargs)` | Отклонить запрос | `asyncio.Task` (возвращает стандартный ответ после await) |
+| `Using(account_id)` | Указание аккаунта бота для выполнения операции | `RequestDSL` (поддерживает цепочечный вызов) |
+| `accept(**kwargs)` | Согласие с запросом | `asyncio.Task` (ожидание возвращает стандартный ответ) |
+| `reject(**kwargs)` | Отказ в запросе | `asyncio.Task` (ожидание возвращает стандартный ответ) |
 
 ### 3.3 Формат возвращаемого значения
 
-Операции возвращают стандартный формат ответа API:
+Операция возвращает стандартный формат ответа API:
 
 **Успех**:
 ```json
@@ -11767,7 +11878,7 @@ await adapter.Request("req_id").Using("bot1").accept(comment="Добро пож�
     "retcode": 34001,
     "data": null,
     "message_id": "",
-    "message": "Запрос истек или не существует"
+    "message": "Запрос просрочен или не существует"
 }
 ```
 
@@ -11778,34 +11889,34 @@ await adapter.Request("req_id").Using("bot1").accept(comment="Добро пож�
     "retcode": 10002,
     "data": null,
     "message_id": "",
-    "message": "Платформа MyAdapter не реализует операции с запросами (accept)"
+    "message": "Платформа MyAdapter не реализовала операцию запроса (accept)"
 }
 ```
 
 ## 4. Удобные методы Event
 
-Класс-обертка `Event` предоставляет удобные методы, подходящие для использования в обработчиках событий запроса:
+Класс `Event` предоставляет удобные методы, подходящие для использования в обработчиках событий запроса:
 
 ```python
 from ErisPulse.Core.Event import request
 
 @request.on_friend_request()
 async def handle_friend_request(event):
-    # Проверка ID запроса
+    # Получение идентификатора запроса
     request_id = event.get_request_id()
     if not request_id:
-        print("Предупреждение: событие запроса отсутствует request_id")
+        print("Предупреждение: событие запроса не содержит request_id")
         return
     
-    # Согласовать запрос
+    # Согласие с запросом
     result = await event.approve()
     
-    # Или отклонить запрос
-    # result = await event.reject(comment="Пока не добавляю в друзья")
+    # Или отказ в запросе
+    # result = await event.reject(comment="Временно не добавляю")
     
     # Проверка результата
     if result.get("status") == "ok":
-        print("Операция успешна")
+        print("Операция выполнена успешно")
     else:
         print(f"Операция не удалась: {result.get('message')}")
 ```
@@ -11814,19 +11925,19 @@ async def handle_friend_request(event):
 
 | Метод | Описание | Возвращаемое значение |
 |------|------|--------|
-| `get_request_id()` | Получить ID запроса | `str` |
-| `approve(comment=None)` | Согласовать текущее событие запроса | Формат стандартного ответа |
-| `reject(comment=None)` | Отклонить текущее событие запроса | Формат стандартного ответа |
+| `get_request_id()` | Получение идентификатора запроса | `str` |
+| `approve(comment=None)` | Согласие с текущим событием запроса | Стандартный формат ответа |
+| `reject(comment=None)` | Отказ в текущем событии запроса | Стандартный формат ответа |
 
 ## 5. Требования к реализации адаптера
 
 ### 5.1 Требования к конвертеру
 
-Конвертер адаптера должен корректно установить поле `request_id` при преобразовании события запроса:
+Конвертер адаптера при преобразовании событий запроса **должен** правильно устанавливать поле `request_id`:
 
 ```python
 def convert_request_event(self, raw_event: dict) -> dict:
-    """Преобразование нативного платформенного события запроса"""
+    """Конвертация исходного события запроса платформы"""
     return {
         "id": self._generate_event_id(raw_event),
         "time": int(time.time()),
@@ -11847,18 +11958,17 @@ def convert_request_event(self, raw_event: dict) -> dict:
 
 def _extract_request_id(self, raw_event: dict) -> str:
     """
-    Извлечение ID запроса из нативного события платформы
+    Извлечение идентификатора запроса из исходного события платформы
     
-    В первую очередь используется нативный идентификатор платформы, 
-    если нет - генерация уникального ID
+    Предпочтительно использовать идентификатор запроса платформы, если нет — генерировать уникальный ID
     """
-    # Предпочтение использованию нативного ID платформы
+    # Предпочтительно использовать идентификатор платформы
     if flag := raw_event.get("flag"):
         return str(flag)
     if request_key := raw_event.get("request_key"):
         return str(request_key)
     
-    # Резервный вариант: генерация уникального ID
+    # Запасной вариант: генерация уникального ID
     import hashlib
     raw = f"{self._platform_name}_{raw_event.get('user_id')}_{raw_event.get('timestamp')}"
     return hashlib.md5(raw.encode()).hexdigest()
@@ -11866,7 +11976,7 @@ def _extract_request_id(self, raw_event: dict) -> str:
 
 ### 5.2 Реализация внутреннего класса Request
 
-Адаптеру достаточно переопределить `accept` и `reject` во внутреннем классе `Request`:
+Адаптер переопределяет `accept` и `reject` в внутреннем классе `Request`:
 
 ```python
 from ErisPulse.Core import BaseAdapter, RequestDSL
@@ -11874,11 +11984,11 @@ from ErisPulse.Core import BaseAdapter, RequestDSL
 class MyAdapter(BaseAdapter):
     
     class Request(RequestDSL):
-        """Реализация операций запросов для MyPlatform"""
+        """Реализация операций запроса для MyPlatform"""
         
         def accept(self, **kwargs):
             """
-            Согласовать запрос
+            Согласие с запросом
             
             :param kwargs: Расширенные параметры, например comment="заметка"
             :return: asyncio.Task
@@ -11904,13 +12014,13 @@ class MyAdapter(BaseAdapter):
                         "retcode": 34001,
                         "data": None,
                         "message_id": "",
-                        "message": f"Операция с запросом не удалась: {e}",
+                        "message": f"Операция запроса не удалась: {e}",
                     }
             
             return self._create_task(_do())
         
         def reject(self, **kwargs):
-            """Отклонить запрос"""
+            """Отказ в запросе"""
             async def _do():
                 try:
                     result = await self._adapter.call_api(
@@ -11932,171 +12042,250 @@ class MyAdapter(BaseAdapter):
                         "retcode": 34001,
                         "data": None,
                         "message_id": "",
-                        "message": f"Операция с запросом не удалась: {e}",
+                        "message": f"Операция запроса не удалась: {e}",
                     }
             
             return self._create_task(_do())
 ```
 
-### 5.3 Платформа не поддерживает операции запросов
+### 5.3 Платформа не поддерживает операции запроса
 
-Если платформа сама не поддерживает операции запросов в друзья/группы (например, некоторые платформы автоматически обрабатывают запросы), адаптер может:
+Если платформа не поддерживает операции запроса/приглашения (например, некоторые платформы обрабатывают запросы автоматически), адаптер может:
 
-1. **Не переопределять внутренний класс `Request`**: Использовать реализацию по умолчанию базового класса, при вызове `accept()`/`reject()` возвращать `retcode=10002`.
-2. **Пропускать `request_id` при преобразовании**: Не генерировать `request_id`, позволяя `event.approve()` выбросить `ValueError`.
-3. **Логирование**: В `accept`/`reject` записывать предупреждение и возвращать соответствующий код ошибки.
+1. **Не переопределять внутренний класс `Request`**: использовать базовую реализацию, вызов `accept()`/`reject()` возвращает `retcode=10002`
+2. **Не генерировать `request_id` при конвертации**: не создавать `request_id`, заставляя `event.approve()` выбросить `ValueError`
+3. **Запись в лог**: в `accept`/`reject` записывать предупреждение и возвращать соответствующий код ошибки
 
-### 5.4 Итог: Send и Request параллельно
+### 5.4 Итог: Send и Request параллельны
 
-У адаптера есть два параллельных внутренних класса DSL, каждый выполняет свою задачу:
+Адаптер имеет два параллельных внутренних класса DSL, каждый выполняет свою задачу:
 
 ```
 BaseAdapter
 ├── Send(SendDSL)     ← Отправка сообщений
-│   ├── Raw_ob12()    ← Необходимо реализовать
+│   ├── Raw_ob12()    ← Обязательно реализовать
 │   ├── Text()        ← Рекомендуется реализовать
-│   └── Image()       ← Реализация по мере необходимости
+│   └── Image()       ← Реализовать по мере необходимости
 │
 └── Request(RequestDSL) ← Операции запроса
-    ├── accept()        ← Реализация по мере необходимости
-    └── reject()        ← Реализация по мере необходимости
+    ├── accept()        ← Реализовать по мере необходимости
+    └── reject()        ← Реализовать по мере необходимости
 ```
 
-### 5.5 Примечания к адаптеру `__init__`
+### 5.5 Примечания к `__init__` адаптера
 
-При переопределении `__init__` во внутреннем классе `Request`, параметры должны быть транслированы (пропущены), а `super().__init__()` должен быть вызван. Подробнее в разделе [Начало работы с адаптером - Примечания к `__init__`](../../developer-guide/adapters/getting-started.md#init-примечания) (аналогично и для `Request`, параметры: `adapter, request_id, account_id`).
+При переопределении `__init__` внутреннего класса `Request` необходимо передавать параметры и вызывать `super().__init__()` (см. [Введение в разработку адаптеров - Примечания к `__init__`](../developer-guide/adapters/getting-started.md#init-注意事项) (аналогично `Request`, параметры: `adapter, request_id, account_id`)).
 
-## 6. Чек-лист реализации адаптера
+## 6. Проверочный список реализации адаптера
 
-### Базовые требования
-- [ ] Если переопределен `__init__`, уже вызван `super().__init__()` (обеспечение инициализации фабрик Send / Request)
+### Основные требования
+- [ ] При переопределении `__init__` вызван `super().__init__()` (успешная инициализация фабрики Send / Request)
 
 ### Преобразование событий запроса
-- [ ] Событие запроса содержит поле `request_id` (сильно рекомендуется)
-- [ ] `detail_type` правильно сопоставлен со значением `"friend"` или `"group"`
-- [ ] Исходные данные платформы сохранены в поле `{platform}_raw`
-- [ ] Правила генерации `request_id` документированы
+- [ ] Событие запроса содержит поле `request_id` (рекомендуется)
+- [ ] `detail_type` правильно отображается в `"friend"` или `"group"`
+- [ ] Сохранён исходный данные платформы в поле `{platform}_raw`
+- [ ] Правила генерации `request_id` описаны в документации
 
 ### Операции запроса
-- [ ] Внутренний класс `Request` реализован (если платформа поддерживает операции запросов)
+- [ ] Внутренний класс `Request` реализован (если платформа поддерживает операции запроса)
 - [ ] Метод `accept()` реализован
 - [ ] Метод `reject()` реализован
-- [ ] Операции возвращают стандартный формат ответа API
-- [ ] Не поддерживаемые операции возвращают `retcode=10002`
-- [ ] Сетевые ошибки возвращают `retcode=33xxx` (соблюдение стандарта ответа API)
+- [ ] Операция возвращает стандартный формат ответа API
+- [ ] Операции, которые платформа не поддерживает, возвращают `retcode=10002`
+- [ ] Ошибки сети возвращают `retcode=33xxx` (соответствует стандарту ответа API)
 
-## 7. Расширенные коды ошибок
+## 7. Расширение кодов ошибок
 
-Рекомендуемые коды ошибок, связанные с операциями запросов (соблюдение [Стандарта ответа API](api-response.md) §3.2):
+Рекомендуемые коды ошибок (в рамках `34xxx`, нижние три цифры — пользовательские) для **уровня реализации адаптера** (см. [Стандарт ответа API](api-response.md) §3.2):
 
 | Код ошибки | Название ошибки | Описание |
 |-------|-------|------|
-| 34001 | Request Not Found | Запрос не существует или истек |
+| 34001 | Request Not Found | Запрос не существует или просрочен |
 | 34002 | Request Already Handled | Запрос уже обработан |
-| 34003 | Request Not Supported | Платформа не поддерживает операции запросов данного типа |
-| 34004 | Permission Denied | У бота нет прав на обработку этого запроса |
+| 34003 | Request Not Supported | Платформа не поддерживает данную операцию запроса |
+| 34004 | Permission Denied | Бот не имеет прав на обработку запроса (возвращено платформой) |
+
+> **Граница с кодами фреймворка**: вышеуказанные `340xx` — это **ошибки платформы/адаптера** при обработке запроса; если фреймворк ErisPulse отключает действие `request` модуля в `scope.actions`, **до вызова адаптера** он возвращает `34601` (Action Denied, см. [Стандарт ответа API §5.3](api-response.md#53-фреймворк-расширенные-коды-возврата-34xxx-нижние-три-цифры-пользовательские)), оба уровня ошибок не заменяют друг друга: сначала проходит фреймворк `34601`, затем платформа `340xx`.
 
 ## 8. Связанные документы
 
-- [Стандарт преобразования событий](event-conversion.md) - Полная спецификация преобразования событий
-- [Стандарт ответа API](api-response.md) - Стандарт формата ответа API адаптера
-- [Спецификация методов отправки](send-method-spec.md) - Стандарт именования методов и параметров класса Send
-- [Стандарт типов сессий](session-types.md) - Определение типов сессий и отношения сопоставления
+- [Стандарт преобразования событий](event-conversion.md) — полный стандарт преобразования событий
+- [Стандарт ответа API](api-response.md) — стандарт формата ответа API адаптера
+- [Спецификация методов отправки](send-method-spec.md) — стандарт именования и параметров методов класса Send
+- [Стандарт типов сессий](session-types.md) — определение и сопоставление типов сессий
 
 
 
 ### API 动作标准
 
-# ErisPulse API Стандарт действий
+# Стандарт действий API ErisPulse
 
-В этом документе определяется унифицированный интерфейсный стандарт для стандартных API-действий OneBot12 в адаптере ErisPulse, что позволяет разработчикам модулей программировать, ориентируясь на стандартный интерфейс, а адаптеру — обеспечивать отображение на нативные API платформ.
+Данный документ определяет единый интерфейс **действий API OneBot12** в адаптерах ErisPulse, который позволяет разработчикам модулей программировать по стандартному интерфейсу, а адаптер отвечает за отображение на оригинальные API платформы.
 
-## 1. Фон проектирования
+> **Область охвата**: В стандарте OneBot12 методы `ApiDSL` предоставляют строго типизированные методы для управления пользователями / группами / каналами (Guild) / сообщениями / мета-данными. Метод `send_message` реализуется через `SendDSL.Raw_ob12`. Действия с файлами (например, `upload_file` / `get_file` / фрагментированные) представлены в виде пониженного уровня и сохранены для прозрачного прохода, см. §3.5. Расширенные действия платформы вызываются через `Api.call("prefix.action", ...)`. Параметры и структура возврата действий соответствуют спецификации OneBot12 (в репозитории `onebot/specs/interface/`).
 
-В ErisPulse формат сегментов сообщений (передача и прием) и формат событий уже полностью соответствуют стандарту OneBot12, но **вызовы API-действий** (такие как получение информации о пользователе, получение списка групп, отмена сообщения и т. д.) ранее не были унифицированы — разработчикам модулей приходилось писать разные вызовы `call_api` для каждой платформы.
+## 1. Обоснование разработки
 
-`ApiDSL` решает эту проблему, предоставляя типизированные методы стандартных действий:
+В ErisPulse формат сообщений (отправка и получение) и формат событий полностью соответствуют стандарту OneBot12, но **вызовы действий API** (например, получение информации о пользователе, получение списка групп, удаление сообщения и т.д.) ранее не были унифицированы — разработчикам модулей приходилось писать разные вызовы `call_api` для каждой платформы.
+
+`ApiDSL` решает эту проблему, предоставляя строго типизированные методы стандартных действий:
 
 ```
-Код модуля (унифицированный для всех платформ)             Реализация адаптера (платформа-зависимая)
-─────────────────────────────────────────              ──────────────────────────────────────────
-adapter.Api.get_user_info("123")  →  адаптер call_api / перекрытие
-adapter.Api.get_group_list()      →  адаптер call_api / перекрытие
-adapter.Api.delete_message("id")  →  адаптер call_api / перекрытие
+Код модуля (унифицирован для всех платформ)     Реализация адаптера (платформа-специфичная)
+─────────────────────────────────────          ──────────────────────────────────────
+adapter.Api.get_user_info("123")  →  адаптер call_api / переопределение
+adapter.Api.get_group_list()      →  адаптер call_api / переопределение
+adapter.Api.delete_message("id")  →  адаптер call_api / переопределение
 ```
 
-## 2. Параллельная трехслойная структура DSL
+## 2. Трехуровневая параллельная структура DSL
 
-В адаптере ErisPulse есть три параллельных внутренних класса DSL, каждый из которых выполняет свою роль:
+Адаптер ErisPulse имеет три параллельные внутренние классы DSL, каждый отвечает за свою задачу:
 
 ```
 BaseAdapter
 ├── Send(SendDSL)       ← Отправка сообщений (Text/Image/Raw_ob12)
-├── Request(RequestDSL)  ← Операции запроса (accept/reject)
-└── Api(ApiDSL)          ← Стандартные API-действия (запрос информации/управление группами/управление сообщениями/операции с файлами) ★
+├── Request(RequestDSL)  ← Обработка действий запросов (accept/reject)
+└── Api(ApiDSL)          ← Стандартные действия API (пользователи/группы/каналы/управление сообщениями/файлы/мета)★
 ```
 
-| DSL | Обязанности | Стиль методов | Возвращаемое значение |
-|-----|------------|--------------|----------------------|
-| `Send` | Отправка сообщений | Цепной + `asyncio.Task` | Стандартный ответ |
+| DSL | Ответственность | Стиль методов | Возвращаемое значение |
+|-----|-----------------|---------------|-----------------------|
+| `Send` | Отправка сообщений | Цепочка + `asyncio.Task` | Стандартный ответ |
 | `Request` | Обработка событий запросов | `asyncio.Task` | Стандартный ответ |
-| `Api` | Запрос/управление операциями | `async` методы | Стандартный ответ |
+| `Api` | Запросы/управление | `async` методы | Стандартный ответ |
 
 ## 3. Список стандартных действий
 
-### 3.1 Пользовательские
+### 3.1 Действия, связанные с пользователями
 
-| Метод | OB12 Действие | Параметры | Возвращаемые данные |
-|------|--------------|----------|--------------------|
+| Метод | OB12 действие | Параметры | Возвращаемые данные |
+|------|---------------|-----------|---------------------|
 | `get_self_info()` | `get_self_info` | Нет | `user_id`, `user_name`, `user_displayname` |
 | `get_user_info(user_id)` | `get_user_info` | `user_id: str` | `user_id`, `user_name`, `user_displayname`, `user_remark` |
-| `get_friend_list()` | `get_friend_list` | Нет | `list[ответ get_user_info]` |
+| `get_friend_list()` | `get_friend_list` | Нет | `list[get_user_info ответ]` |
 
-### 3.2 Групповые
+### 3.2 Действия, связанные с группами
 
-| Метод | OB12 Действие | Параметры | Возвращаемые данные |
-|------|--------------|----------|--------------------|
+| Метод | OB12 действие | Параметры | Возвращаемые данные |
+|------|---------------|-----------|---------------------|
 | `get_group_info(group_id)` | `get_group_info` | `group_id: str` | `group_id`, `group_name` |
-| `get_group_list()` | `get_group_list` | Нет | `list[ответ get_group_info]` |
+| `get_group_list()` | `get_group_list` | Нет | `list[get_group_info ответ]` |
 | `get_group_member_info(group_id, user_id)` | `get_group_member_info` | `group_id: str`, `user_id: str` | `user_id`, `user_name`, `user_displayname` |
-| `get_group_member_list(group_id)` | `get_group_member_list` | `group_id: str` | `list[ответ get_group_member_info]` |
+| `get_group_member_list(group_id)` | `get_group_member_list` | `group_id: str` | `list[get_group_member_info ответ]` |
 | `set_group_name(group_id, group_name)` | `set_group_name` | `group_id: str`, `group_name: str` | Нет |
 | `leave_group(group_id)` | `leave_group` | `group_id: str` | Нет |
 
 ### 3.3 Управление сообщениями
 
-| Метод | OB12 Действие | Параметры | Примечание |
-|------|--------------|----------|-----------|
-| `delete_message(message_id)` | `delete_message` | `message_id: str` | Отмена/удаление сообщения |
+| Метод | OB12 действие | Параметры | Описание |
+|------|---------------|-----------|----------|
+| `delete_message(message_id)` | `delete_message` | `message_id: str` | Удаление/отмена сообщения |
 
-> **Отправка сообщений** (`send_message`) обрабатывается `Raw_ob12` из `SendDSL` и не дублируется в `ApiDSL`.
+> **Отправка сообщений** (`send_message`) обрабатывается через `SendDSL` в `Raw_ob12`, и не повторяется в `ApiDSL`.
 
-### 3.4 Операции с файлами
+### 3.4 Действия, связанные с каналами (Guild)
 
-| Метод | OB12 Действие | Параметры | Возвращаемые данные |
-|------|--------------|----------|--------------------|
+Система OneBot12 каналов делится на два уровня: **каналы (guild)** и **подканалы (channel)**.
+
+| Метод | OB12 действие | Параметры | Возвращаемые данные |
+|------|---------------|-----------|---------------------|
+| `get_guild_info(guild_id)` | `get_guild_info` | `guild_id: str` | `guild_id`, `guild_name` |
+| `get_guild_list()` | `get_guild_list` | Нет | `list[get_guild_info ответ]` |
+| `set_guild_name(guild_id, guild_name)` | `set_guild_name` | `guild_id: str`, `guild_name: str` | Нет |
+| `get_guild_member_info(guild_id, user_id)` | `get_guild_member_info` | `guild_id: str`, `user_id: str` | `user_id`, `user_name`, `user_displayname` |
+| `get_guild_member_list(guild_id)` | `get_guild_member_list` | `guild_id: str` | `list[get_guild_member_info ответ]` |
+| `leave_guild(guild_id)` | `leave_guild` | `guild_id: str` | Нет |
+| `get_channel_info(guild_id, channel_id)` | `get_channel_info` | `guild_id: str`, `channel_id: str` | `channel_id`, `channel_name` |
+| `get_channel_list(guild_id, *, joined_only)` | `get_channel_list` | `guild_id: str`, `joined_only: bool=false` | `list[get_channel_info ответ]` |
+| `set_channel_name(guild_id, channel_id, channel_name)` | `set_channel_name` | `guild_id`, `channel_id`, `channel_name` | Нет |
+| `get_channel_member_info(guild_id, channel_id, user_id)` | `get_channel_member_info` | `guild_id`, `channel_id`, `user_id` | `user_id`, `user_name`, `user_displayname` |
+| `get_channel_member_list(guild_id, channel_id)` | `get_channel_member_list` | `guild_id`, `channel_id` | `list[get_channel_member_info ответ]` |
+| `leave_channel(guild_id, channel_id)` | `leave_channel` | `guild_id`, `channel_id` | Нет |
+
+> Система каналов и групп (group) независимы: платформы Discord / QQ каналы / Kook реализуют интерфейс каналов, традиционные QQ / WeChat реализуют интерфейс групп, оба могут существовать одновременно или только один.
+
+### 3.5 Действия с файлами
+
+> [!WARNING]
+> **Модель файлов (file_id в двух частях) в ErisPulse является "пониженной доступностью"**:
+> ErisPulse не использует модель "сначала загрузить, получить file_id, затем ссылаться" для отправки файлов — модули отправляют файлы с помощью `SendDSL.File(file, filename)` (URL / путь / байты **отправляются напрямую при отправке**, см.
+> [Спецификация методов отправки](send-method-spec.md)).
+> Действия `upload_file` / `get_file` / фрагментированные зависят от специфичных для платформы возможностей `file_id`, **имеют низкую универсальность**; только если бэкенд адаптера обладает такой возможностью, он может прозрачно передавать, встроенные адаптеры ErisPulse **не реализуют и не рекомендуют реализовывать**, вызов обычно возвращает `retcode=10002`.
+> Если модулю нужно передавать файлы между платформами, используйте `SendDSL.File`, не полагайтесь на file_id.
+>
+> **Перспектива**: Стандартизация модели файлов `file_id` на уровне фреймворка — будущее направление, в текущей версии не предоставляется.
+
+Отправка целого файла (маленький файл):
+
+| Метод | OB12 действие | Параметры | Возвращаемые данные |
+|------|---------------|-----------|---------------------|
 | `upload_file(*, type, name, ...)` | `upload_file` | `type`, `name`, `url`/`path`/`data`, `headers?`, `sha256?` | `file_id` |
 | `get_file(file_id, type)` | `get_file` | `file_id: str`, `type: str` | `name`, `url`/`path`/`data` |
 
-Параметр `type` в `upload_file`:
-- `"url"`: Загрузка по URL (необходимо предоставить `url`)
-- `"path"`: Загрузка по локальному пути (необходимо предоставить `path`)
-- `"data"`: Загрузка двоичными данными (необходимо предоставить `data`)
+Параметр `type` метода `upload_file`:
+- `"url"`: загрузка по URL (требуется `url`)
+- `"path"`: загрузка по локальному пути (требуется `path`)
+- `"data"`: загрузка по двоичным данным (требуется `data`)
 
-### 3.5 Общие расширенные действия
+#### 3.5.1 Фрагментированная передача (большие файлы, входит в пониженный уровень)
 
-| Метод | Примечание |
-|------|-----------|
-| `call(action, **params)` | «Заглушка» для платформенных расширенных действий, соблюдающая правила именования OB12 `{prefix}.{action}` |
+Действия OneBot12 с фрагментами разделены по `stage`. `ApiDSL` разделяет одно и то же действие на три/две отдельные методы (`offset` — смещение в байтах, `data` в JSON — в Base64); таблица предназначена только для справки, адаптер не должен и не должен реализовывать:
 
-## 4. Способ использования
+**Три шага фрагментированной загрузки**: `prepare` → `transfer` (циклическая по частям) → `finish`
+
+| Метод | Этап | Параметры | Возвращаемые данные |
+|------|------|-----------|---------------------|
+| `upload_file_fragmented_prepare(name, total_size)` | `prepare` | `name: str`, `total_size: int` | `file_id` (используется в периоде передачи) |
+| `upload_file_fragmented_transfer(file_id, offset, data)` | `transfer` | `file_id`, `offset: int`, `data: bytes` | Нет |
+| `upload_file_fragmented_finish(file_id, sha256)` | `finish` | `file_id`, `sha256: str` (проверка целостности) | `file_id` |
+
+```python
+total = os.path.getsize(path)
+r = await adapter.Api.upload_file_fragmented_prepare(os.path.basename(path), total)
+fid = r["data"]["file_id"]
+offset = 0
+with open(path, "rb") as f:
+    while chunk := f.read(65536):
+        await adapter.Api.upload_file_fragmented_transfer(fid, offset, chunk)
+        offset += len(chunk)
+sha256 = hashlib.sha256(open(path, "rb").read()).hexdigest()
+await adapter.Api.upload_file_fragmented_finish(fid, sha256)
+```
+
+**Два шага фрагментированной загрузки**: `prepare` → `transfer` (циклическое получение частей)
+
+| Метод | Этап | Параметры | Возвращаемые данные |
+|------|------|-----------|---------------------|
+| `get_file_fragmented_prepare(file_id)` | `prepare` | `file_id` | `name`, `total_size`, `sha256` |
+| `get_file_fragmented_transfer(file_id, offset, size)` | `transfer` | `file_id`, `offset: int`, `size: int` | `data` (байты текущей части) |
+
+### 3.6 Мета-действия
+
+Мета-действия не относятся к конкретным аккаунтам, не требуют `Using()` для указания бота.
+
+| Метод | OB12 действие | Параметры | Возвращаемые данные |
+|------|---------------|-----------|---------------------|
+| `get_latest_events(limit, timeout)` | `get_latest_events` | `limit: int=0`, `timeout: int=0` | Массив объектов событий (без мета-событий) |
+| `get_supported_actions()` | `get_supported_actions` | Нет | `list[str]` поддерживаемые имена действий |
+| `get_status()` | `get_status` | Нет | `good: bool`, `bots: list[{self, online, ...}]` |
+| `get_version()` | `get_version` | Нет | `impl`, `version`, `onebot_version` |
+
+### 3.7 Общие расширенные действия
+
+| Метод | Описание |
+|------|----------|
+| `call(action, **params)` | Эвакуационный метод для расширенных действий платформы, соответствует правилу именования расширений OB12 `{prefix}.{action}` |
+
+## 4. Способы использования
 
 ### 4.1 Базовый вызов
 
 ```python
 from ErisPulse import adapter
 
-# Получение информации о пользователе (унифицированное для всех платформ)
+# Получение информации о пользователе (унифицировано для всех платформ)
 result = await adapter.myplatform.Api.get_user_info("123456")
 if result["status"] == "ok":
     user_name = result["data"]["user_name"]
@@ -12106,28 +12295,28 @@ if result["status"] == "ok":
 result = await adapter.myplatform.Api.get_group_list()
 groups = result["data"]
 
-# Отмена сообщения
+# Удаление сообщения
 await adapter.myplatform.Api.delete_message("msg_123456")
 ```
 
-### 4.2 Указание учетной записи бота (режим нескольких учетных записей)
+### 4.2 Указание аккаунта бота (режим нескольких аккаунтов)
 
 ```python
-# Использование указанной учетной записи бота для выполнения операций
+# Использование указанного аккаунта бота для выполнения операций
 info = await adapter.myplatform.Api.Using("bot1").get_self_info()
 ```
 
-### 4.3 Платформенные расширенные действия
+### 4.3 Расширенные действия платформы
 
 ```python
-# Вызов специфичного для платформы расширенного действия (рекомендуется использовать формат {prefix}.{action})
+# Вызов специфичного для платформы расширенного действия (рекомендуется использовать {prefix}.{action})
 result = await adapter.telegram.Api.call(
     "telegram.send_sticker",
     sticker_id="CAACAgIAAxkBAA...",
 )
 ```
 
-### 4.4 Использование в обработчике событий
+### 4.4 Использование в обработчиках событий
 
 ```python
 from ErisPulse.Core.Event import message
@@ -12146,33 +12335,33 @@ async def handle(event):
 
 ## 5. Реализация адаптера
 
-### 5.1 Поведение по умолчанию (нулевая конфигурация)
+### 5.1 Стандартное поведение (без настройки)
 
-Базовая реализация `ApiDSL` передает имена стандартных действий как `endpoint` прямо в `adapter.call_api()`:
+Стандартная реализация `ApiDSL` передает имя стандартного действия как `endpoint` напрямую в `adapter.call_api()`:
 
 ```python
-# Базовая реализация ApiDSL эквивалентна:
+# Стандартная реализация ApiDSL эквивалентна:
 async def get_user_info(self, user_id: str) -> dict:
     return await self._adapter.call_api("get_user_info", user_id=user_id, account_id=self._account_id)
 ```
 
-**Применимые сценарии**: Внутренняя часть адаптера сама реализует OneBot12 (например, NapCat, Lagrange и т. д.), где `call_api` естественным образом поддерживает имена стандартных действий.
+**Сценарии применения**: Когда бэкенд адаптера сам следует стандартному протоколу OneBot12, `call_api` нативно поддерживает стандартные имена действий (например, напрямую взаимодействует с сервером, соответствующим этому протоколу).
 
-### 5.2 Перекрытие стандартных методов (отображение на нативное API платформы)
+### 5.2 Переопределение стандартных методов (отображение на оригинальные API платформы)
 
-Адаптер может перекрыть одно стандартное действие, отобразив его на нативное API платформы:
+Адаптер может переопределить отдельные стандартные методы, отображая их на оригинальные API платформы:
 
 ```python
 class MyAdapter(BaseAdapter):
 
     class Api(BaseAdapter.Api):
-        """Реализация стандартных API-действий MyPlatform"""
+        """Реализация стандартных действий API для MyPlatform"""
 
         async def get_user_info(self, user_id: str) -> dict:
-            # Отображение на нативное API платформы
+            # Отображение на оригинальный API платформы
             raw = await self._adapter._request("GET", f"/users/{user_id}")
             if raw.get("code") != 0:
-                return self._adapter.make_error(retcode=34001, message="Пользователь не существует")
+                return self._adapter.make_error(retcode=34600, message="Пользователь не существует")
 
             user = raw["data"]
             return self._adapter.make_response(
@@ -12199,18 +12388,18 @@ class MyAdapter(BaseAdapter):
             return self._adapter.make_response(data=friends, raw=raw)
 ```
 
-### 5.3 Неподдерживаемые действия
+### 5.3 Не поддерживаемые действия
 
-Стандартные методы, не перекрытые адаптером, используют базовую реализацию (делегируются в `call_api`). Если `call_api` также не поддерживает это действие, следует вернуть стандартный ответ об ошибке:
+Не перекрытые стандартные методы адаптера используют стандартную реализацию (делегируются в `call_api`). Если `call_api` также не поддерживает это действие, следует вернуть стандартный ответ об ошибке:
 
 ```python
 async def call_api(self, endpoint: str, **params):
     if endpoint not in self._supported_endpoints:
-        return self.make_error(retcode=10002, message=f"Unsupported action: {endpoint}")
-    # ... вызов платформенного API
+        return self.make_error(retcode=10002, message=f"Действие не поддерживается: {endpoint}")
+    # ... вызов API платформы
 ```
 
-Разработчики модулей могут определить поддержку по коду ошибки в возвращаемом значении:
+Разработчики модулей могут определить поддержку по `retcode` в ответе:
 
 ```python
 result = await adapter.myplatform.Api.get_friend_list()
@@ -12220,7 +12409,7 @@ if result["retcode"] == 10002:
 
 ## 6. Формат ответа
 
-Все методы `ApiDSL` возвращают стандартный формат API-ответа (см. [Стандарт API-ответа](docs/ru/api-response.md)):
+Все методы `ApiDSL` возвращают стандартный формат ответа API (см. [Стандарт ответа API](api-response.md)):
 
 ```json
 {
@@ -12233,36 +12422,39 @@ if result["retcode"] == 10002:
 }
 ```
 
-> **Важно**: Для действий по запросу информации поле `message_id` пустая строка (поле `message_id` есть только у действий по отправке сообщений).
+> **Важно**: Для действий получения информации `message_id` — пустая строка (только действия отправки сообщений имеют `message_id`).
 
-## 7. Связь с SendDSL / RequestDSL
+## 7. Отношения с SendDSL / RequestDSL
 
-| Сценарий | Использовать DSL | Пример |
-|---------|-----------------|--------|
-| Отправка сообщения | `Send` | `adapter.Send.To("group", "123").Text("hi")` |
-| Принятие/отклонение запроса | `Request` | `adapter.Request("req_id").accept()` |
+| Сценарий | Используемый DSL | Пример |
+|----------|------------------|--------|
+| Отправка сообщений | `Send` | `adapter.Send.To("group", "123").Text("hi")` |
+| Принятие/отклонение запросов | `Request` | `adapter.Request("req_id").accept()` |
 | Получение информации о пользователе/группе | `Api` | `adapter.Api.get_user_info("123")` |
-| Отмена сообщения | `Api` | `adapter.Api.delete_message("msg_id")` |
+| Удаление сообщения | `Api` | `adapter.Api.delete_message("msg_id")` |
 | Выход из группы | `Api` | `adapter.Api.leave_group("group_id")` |
 
-## 8. Чек-лист реализации адаптера
+## 8. Проверочный список реализации адаптера
 
 ### Стандартные действия
-- [ ] `call_api` может обрабатывать имена стандартных действий (или перекрывать соответствующий метод `ApiDSL`)
-- [ ] Для неподдерживаемых действий возвращается `retcode=10002`
-- [ ] Возвращаемое значение соответствует стандартному формату API-ответа
+- [ ] `call_api` может обрабатывать стандартные имена действий (или переопределить соответствующие методы `ApiDSL`)
+- [ ] Не поддерживаемые действия возвращают `retcode=10002`
+- [ ] Ответы соответствуют стандартному формату API
 - [ ] Поле `data` содержит поля, определенные в стандарте OB12
+- [ ] Платформы с каналами должны реализовать `get_guild_*` / `get_channel_*` / `leave_guild` / `leave_channel`
+- [ ] Рекомендуется реализовать мета-действия (`get_status` / `get_version` / `get_supported_actions`)
+- [ ] **Отправка файлов через `SendDSL.File` (прямая передача)**; действия с файлами (`upload_file`/`get_file`/фрагментированные) **не обязательны**, только при наличии `file_id` ресурсов в бэкенде адаптера
 
 ### Расширенные действия
-- [ ] Платформенные расширенные действия используют формат имен `{prefix}.{action}`
-- [ ] Параметры и ответы расширенных действий по-прежнему следуют структуре запросов/ответов OB12
+- [ ] Расширенные действия платформы используют именование `{prefix}.{action}`
+- [ ] Параметры и ответы расширенных действий по-прежнему соответствуют структуре запроса/ответа OB12
 
-## 9. Справочные документы
+## 9. Связанные документы
 
-- [Стандарт API-ответа](docs/ru/api-response.md) — стандарт формата ответа API адаптера
-- [Спецификация метода отправки](docs/ru/send-method-spec.md) — стандарты именования и параметров методов класса Send
-- [Спецификация действий запроса](docs/ru/request-action-spec.md) — способ использования Request DSL
-- [Стандарт преобразования событий](docs/ru/event-conversion.md) — стандарты формата событий и сегментов сообщений
+- [Стандарт ответа API](api-response.md) - стандартный формат ответа API адаптера
+- [Спецификация методов отправки](send-method-spec.md) - стандарт именования и параметров методов Send
+- [Спецификация действий запросов](request-action-spec.md) - способ использования DSL Request
+- [Стандарт преобразования событий](event-conversion.md) - стандарт формата событий и сегментов сообщений
 
 
 
@@ -14759,58 +14951,51 @@ enabled = true
 
 # Документация по функциям платформы Yunhu
 
-YunhuAdapter — это адаптер, построенный на основе протокола Yunhu, объединяющий все функциональные модули Yunhu и предоставляющий единый интерфейс обработки событий и операций сообщений.
+YunhuAdapter — это адаптер, построенный на протоколе Yunhu, объединяющий все модули функций Yunhu и предоставляющий единый интерфейс обработки событий и операций сообщений.
 
 ---
-
-Пожалуйста, верните непосредственно переведённый полный Markdown-контент, не добавляя никаких других текстов.
-
 
 ## Информация о документации
 
 - Соответствующая версия модуля: 4.3.0
 - Ответственный: ErisPulse
 
-Пожалуйста, верните полностью переведённый Markdown-документ, не добавляя никаких других текстов.
-
 ## Основная информация
 
-- **Описание платформы:** Yunhu (云湖) - корпоративная платформа мгновенных сообщений
-- **Название адаптера:** YunhuAdapter
-- **Поддержка нескольких аккаунтов:** Поддерживает идентификацию и настройку нескольких аккаунтов роботов Yunhu с помощью bot_id
-- **Поддержка цепочки модификаторов:** Поддерживает методы цепочек модификаторов, такие как `.Reply()`
-- **Совместимость с OneBot12:** Поддерживает отправку сообщений в формате OneBot12
-
-docs/ru/quick-start.md
+- Краткое описание платформы: Yunhu — это корпоративная платформа мгновенного обмена сообщениями
+- Название адаптера: YunhuAdapter
+- Поддержка нескольких аккаунтов: поддержка идентификации и настройки нескольких аккаунтов роботов Yunhu через bot_id
+- Поддержка цепочечных модификаторов: поддержка цепочечных методов модификации, таких как `.Reply()`
+- Совместимость с OneBot12: поддержка отправки сообщений в формате OneBot12
 
 ## Поддерживаемые типы отправки сообщений
 
-Все методы отправки реализованы с использованием цепного синтаксиса, например:
+Все методы отправки реализованы через цепочечную синтаксическую конструкцию, например:
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
-await yunhu.Send.To("user", user_id).Text("Привет, мир!")
+await yunhu.Send.To("user", user_id).Text("Hello World!")
 ```
 
-Поддерживаемые типы отправки сообщений включают:
-- `.Text(text: str)` — отправка обычного текстового сообщения.
-- `.Html(html: str)` — отправка сообщения в формате HTML.
-- `.Markdown(markdown: str)` — отправка сообщения в формате Markdown.
+Поддерживаемые типы отправки включают:
+- `.Text(text: str)` — отправка обычного текста.
+- `.Html(html: str)` — отправка HTML-форматированного сообщения.
+- `.Markdown(markdown: str)` — отправка Markdown-форматированного сообщения.
 - `.A2UI(text: str)` — отправка сообщения в формате A2UI.
-- `.Image(file: bytes, stream: bool = False, filename: str = None)` — отправка сообщения с изображением, поддержка потоковой загрузки и пользовательского имени файла.
-- `.Video(file: bytes, stream: bool = False, filename: str = None)` — отправка сообщения с видео, поддержка потоковой загрузки и пользовательского имени файла.
-- `.File(file: bytes, stream: bool = False, filename: str = None)` — отправка сообщения с файлом, поддержка потоковой загрузки и пользовательского имени файла.
+- `.Image(file: bytes, stream: bool = False, filename: str = None)` — отправка изображения, поддержка потоковой загрузки и пользовательского имени файла.
+- `.Video(file: bytes, stream: bool = False, filename: str = None)` — отправка видео, поддержка потоковой загрузки и пользовательского имени файла.
+- `.File(file: bytes, stream: bool = False, filename: str = None)` — отправка файла, поддержка потоковой загрузки и пользовательского имени файла.
 - `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)` — массовая отправка сообщений.
-- `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)` — редактирование уже отправленного сообщения.
+- `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)` — редактирование существующего сообщения.
 - `.Recall(msg_id: str)` — отмена отправки сообщения.
-- `.Board(content: str, content_type: str = "text")` — публикация объявления на доске. Область действия определяется методом `To()` (указание цели = локальная доска, без указания = глобальная доска). Цепное изменение: `.Expire(duration)` — относительное время истечения (секунды), `.ExpireAt(timestamp)` — абсолютное время истечения (секундный таймстамп), `.ForMember(member_id)` — доска для участника группы; **при пустом содержании автоматически отменяется публикация доски**. По-прежнему поддерживается старый способ явного указания области `Board("local", "объявление")`.
-- `.DismissBoard()` — отмена публикации объявления на доске. Область действия также определяется методом `To()`, поддерживается `.ForMember(member_id)`; по-прежнему поддерживается старый способ `DismissBoard("local")`.
+- `.Board(content: str, content_type: str = "text")` — публикация объявления на доске. Область действия определяется `To()` (указанный целевой объект — локальная доска, не указано — глобальная доска). Цепочечные модификаторы: `.Expire(duration)` относительный срок действия (в секундах), `.ExpireAt(timestamp)` абсолютный срок действия (секундный временной штамп), `.ForMember(member_id)` доска для участника группы; **при пустом содержании автоматически превращается в отмену доски**. По-прежнему поддерживается старый стиль `Board("local", "объявление")` с явным указанием области действия.
+- `.DismissBoard()` — отмена объявления на доске. Область действия определяется `To()` и поддерживает `.ForMember(member_id)`; по-прежнему поддерживается старый стиль `DismissBoard("local")`.
 - `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)` — отправка потокового сообщения.
 
 ### Методы управления группами
 
-Все методы управления группами требуют указания группы через цепной синтаксис, например:
+Все методы управления группами необходимо вызывать через цепочечную конструкцию, указывая группу, например:
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
@@ -14818,19 +15003,19 @@ yunhu = adapter.get("yunhu")
 await yunhu.Send.To("group", group_id).Kick(user_id)
 ```
 
-- `.Kick(user_id: str)` — удаление участника из группы. Робот должен иметь права `разрешить удаление участников группы`.
-- `.Ban(user_id: str, duration: int = 600)` — запрет на отправку сообщений пользователю. `duration` — длительность запрета (в секундах), 0 — снятие запрета, -1 — пожизненный запрет. Робот должен иметь права `разрешить запрет пользователей`.
-- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)` — создание тега для группы. `color` имеет формат #RRGGBB, `sort` — чем меньше, тем выше в списке. Робот должен иметь права `разрешить управление тегами`.
-- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)` — изменение тега группы. Параметры не обязательны, если не переданы, изменение не производится. Робот должен иметь права `разрешить управление тегами`.
-- `.DeleteTag(tag: str)` — удаление тега группы. Робот должен иметь права `разрешить управление тегами`.
+- `.Kick(user_id: str)` — удаление участника группы. Робот должен иметь права "Разрешить удаление участников группы".
+- `.Ban(user_id: str, duration: int = 600)` — запрет пользователя. `duration` — длительность запрета (в секундах), 0 — разрешить, -1 — пожизненный запрет. Робот должен иметь права "Разрешить запрет участников".
+- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)` — создание тега группы. `color` в формате #RRGGBB, `sort` — чем меньше, тем выше в списке. Робот должен иметь права "Разрешить управление тегами группы".
+- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)` — изменение тега группы. Все параметры необязательны, не передаются — не изменяются. Робот должен иметь права "Разрешить управление тегами группы".
+- `.DeleteTag(tag: str)` — удаление тега группы. Робот должен иметь права "Разрешить управление тегами группы".
 - `.GetTagList()` — получение списка тегов группы. Возвращает данные с массивом `list`.
-- `.AddUserTag(user_id: str, tag: str)` — добавление тега пользователю. Робот должен иметь права `разрешить управление тегами`.
-- `.RemoveUserTag(user_id: str, tag: str)` — удаление тега у пользователя. Робот должен иметь права `разрешить управление тегами`.
-- `.SetMsgTypeLimit(types: str)` — ограничение типов сообщений в группе. `types` — список типов сообщений, разделённых запятой (например, `"text,image,video"`), пустая строка означает отсутствие ограничений. Робот должен иметь права `разрешить изменение информации о группе`.
+- `.AddUserTag(user_id: str, tag: str)` — добавление тега пользователю. Робот должен иметь права "Разрешить управление тегами группы".
+- `.RemoveUserTag(user_id: str, tag: str)` — удаление тега у пользователя. Робот должен иметь права "Разрешить управление тегами группы".
+- `.SetMsgTypeLimit(types: str)` — ограничение типов сообщений в группе. `types` — имена типов сообщений, разделённые запятыми (например, `"text,image,video"`), пустая строка означает неограниченный доступ. Робот должен иметь права "Разрешить изменение информации группы".
 
-### Методы запроса сообщений
+### Методы получения истории сообщений
 
-Для получения списка исторических сообщений в указанном диалоге (пользователь/группа) необходимо указать цель через цепной синтаксис, например:
+Получение списка истории сообщений для заданного диалога (пользователь/группа), необходимо указывать целевой объект через цепочечную конструкцию, например:
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
@@ -14838,43 +15023,43 @@ yunhu = adapter.get("yunhu")
 result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
 ```
 
-- `.GetMessages(message_id: str = None, before: int = None, after: int = None)` — получение истории сообщений в диалоге. Возвращает данные с массивом `list` и общим числом `total`.
-  - `message_id` — идентификатор сообщения (необязательно). Если не указан, в сочетании с `before` возвращает последние N сообщений.
-  - `before` — возвращает N сообщений до указанного идентификатора.
-  - `after` — возвращает N сообщений после указанного идентификатора.
-  - > **Примечание:** `before` и `after` должны быть заданы хотя бы один и быть больше 0, иначе сервер не вернёт никаких сообщений.
+- `.GetMessages(message_id: str = None, before: int = None, after: int = None)` — получение истории сообщений диалога. Возвращает данные с массивом `list` и общим количеством `total`.
+  - `message_id` — ID сообщения (необязательно). Если не указан, в сочетании с `before` возвращает последние N сообщений.
+  - `before` — возвращает N сообщений до указанного ID.
+  - `after` — возвращает N сообщений после указанного ID.
+  - > **Примечание:** `before` и `after` должны быть указаны хотя бы один и быть больше 0, иначе сервер не вернёт никаких сообщений.
 
-Область действия доски определяется автоматически методом `To()`:
-- Указание `To(target_type, target_id)` → локальная доска (указана цель — пользователь/группа)
-- Без указания `To()` → глобальная доска
+Область действия доски определяется `To()` автоматически:
+- Указанный `To(target_type, target_id)` → локальная доска (указанный пользователь/группа)
+- Не указано `To()` → глобальная доска
 
 ```python
-# Локальная доска (относительное истечение через 60 секунд)
+# Локальная доска (относительный срок действия через 60 секунд)
 await yunhu.Send.To("group", group_id).Expire(60).Board("объявление", content_type="markdown")
 
-# Доска для участника группы (видна только указанному пользователю)
-await yunhu.Send.To("group", group_id).ForMember(user_id).Board("видно только вам")
+# Доска для участника группы (видна только указанному участнику)
+await yunhu.Send.To("group", group_id).ForMember(user_id).Board("видно только тебе")
 
-# Абсолютное время истечения
-await yunhu.Send.To("group", group_id).ExpireAt(1785208268).Board("объявление с указанным временем")
+# Абсолютный срок действия по временному штампу
+await yunhu.Send.To("group", group_id).ExpireAt(1785208268).Board("объявление с указанным сроком")
 
 # Глобальная доска
 await yunhu.Send.Board("глобальное объявление")
 
-# Очистка локальной доски (пустое содержимое → автоматическая отмена публикации)
+# Очистка локальной доски (пустое содержание → автоматически отмена)
 await yunhu.Send.To("group", group_id).Board("")
 ```
 
 ### Описание параметров кнопок
 
-Параметр `buttons` представляет собой вложенный список, определяющий расположение и функциональность кнопок. Каждый объект кнопки содержит следующие поля:
+Параметр `buttons` представляет собой вложенный список, описывающий расположение и функциональность кнопок. Каждый объект кнопки содержит следующие поля:
 
 | Поле         | Тип   | Обязательно | Описание                                                                 |
 |--------------|--------|----------|----------------------------------------------------------------------|
 | `text`       | string | Да       | Текст на кнопке                                                         |
 | `actionType` | int    | Да       | Тип действия:<br>`1`: переход по URL<br>`2`: копирование<br>`3`: отправка события |
-| `url`        | string | Нет       | Используется при `actionType=1`, определяет целевой URL для перехода                         |
-| `value`      | string | Нет       | При `actionType=2` значение копируется в буфер обмена<br>При `actionType=3` значение отправляется подписчику |
+| `url`        | string | Нет       | Используется, когда `actionType=1`, указывает целевой URL для перехода                         |
+| `value`      | string | Нет       | Используется, когда `actionType=2`, значение копируется в буфер обмена<br>Используется, когда `actionType=3`, значение отправляется подписчику |
 
 Пример:
 ```python
@@ -14888,22 +15073,22 @@ buttons = [
 await yunhu.Send.To("user", user_id).Buttons(buttons).Text("сообщение с кнопками")
 ```
 > **Примечание:**
-> - Только при нажатии кнопки типа **Сообщить событие** будет отправлено уведомление, кнопки **Копировать** и **Перейти** не отправляют уведомления.
+> - Только при нажатии кнопки **сообщить событие** будет отправлено уведомление, **копирование** и **переход по URL** не могут получить уведомление.
 
-### Цепные методы изменения (можно комбинировать)
+### Цепочечные модификаторы (можно комбинировать)
 
-Цепные методы изменения возвращают `self`, поддерживают цепное вызов, должны вызываться перед окончательным методом отправки:
+Цепочечные модификаторы возвращают `self`, поддерживают цепочечное вызов, должны быть вызваны перед окончательным методом отправки:
 
-- `.Reply(message_id: str)` — ответ на указанное сообщение.
-- `.At(user_id: str)` — упоминание указанного пользователя.
-- `.AtAll()` — упоминание всех участников.
-- `.Buttons(buttons: List)` — добавление кнопок.
+- `.Reply(message_id: str)` — ответить на указанное сообщение.
+- `.At(user_id: str)` — упомянуть указанного пользователя.
+- `.AtAll()` — упомянуть всех.
+- `.Buttons(buttons: List)` — добавить кнопки.
 
-### Примеры цепного вызова
+### Примеры цепочечного вызова
 
 ```python
 # Базовая отправка
-await yunhu.Send.To("user", user_id).Text("Привет")
+await yunhu.Send.To("user", user_id).Text("Hello")
 
 # Ответ на сообщение
 await yunhu.Send.To("group", group_id).Reply(msg_id).Text("ответ на сообщение")
@@ -14921,53 +15106,53 @@ yunhu = adapter.get("yunhu")
 # Удаление участника группы
 await yunhu.Send.To("group", group_id).Kick(user_id)
 
-# Запрет на отправку сообщений пользователю (10 минут)
+# Запрет пользователя (10 минут)
 await yunhu.Send.To("group", group_id).Ban(user_id, duration=600)
 
-# Снятие запрета
+# Разрешение запрета
 await yunhu.Send.To("group", group_id).Ban(user_id, duration=0)
 
 # Пожизненный запрет
 await yunhu.Send.To("group", group_id).Ban(user_id, duration=-1)
 
 # Создание тега группы
-await yunhu.Send.To("group", group_id).CreateTag("VIP-пользователь", color="#FF5733", desc="VIP-участник")
+await yunhu.Send.To("group", group_id).CreateTag("VIP пользователь", color="#FF5733", desc="VIP-участник")
 
 # Изменение тега группы
-await yunhu.Send.To("group", group_id).EditTag("VIP-пользователь", new_tag="SVIP-пользователь", color="#33C4FF")
+await yunhu.Send.To("group", group_id).EditTag("VIP пользователь", new_tag="SVIP пользователь", color="#33C4FF")
 
 # Удаление тега группы
-await yunhu.Send.To("group", group_id).DeleteTag("VIP-пользователь")
+await yunhu.Send.To("group", group_id).DeleteTag("VIP пользователь")
 
 # Получение списка тегов группы
 result = await yunhu.Send.To("group", group_id).GetTagList()
 
 # Добавление тега пользователю
-await yunhu.Send.To("group", group_id).AddUserTag(user_id, "VIP-пользователь")
+await yunhu.Send.To("group", group_id).AddUserTag(user_id, "VIP пользователь")
 
 # Удаление тега у пользователя
-await yunhu.Send.To("group", group_id).RemoveUserTag(user_id, "VIP-пользователь")
+await yunhu.Send.To("group", group_id).RemoveUserTag(user_id, "VIP пользователь")
 
-# Установка ограничения типов сообщений
+# Ограничение типов сообщений
 await yunhu.Send.To("group", group_id).SetMsgTypeLimit("text,image,video")
 
 # Снятие ограничения типов сообщений
 await yunhu.Send.To("group", group_id).SetMsgTypeLimit("")
 ```
 
-### Примеры запроса сообщений
+### Примеры получения истории сообщений
 
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
-# Получение последних 10 сообщений в группе (всего 10 сообщений)
+# Получение последних 10 сообщений в группе (всего возвращается 10 сообщений)
 result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
 
-# Получение 10 сообщений до указанного идентификатора в группе (всего 11 сообщений)
+# Получение 10 сообщений до указанного ID в группе (всего возвращается 11 сообщений)
 result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10)
 
-# Получение по 10 сообщений до и после указанного идентификатора в группе (всего 21 сообщение)
+# Получение по 10 сообщений до и после указанного ID в группе (всего возвращается 21 сообщение)
 result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10, after=10)
 
 # Получение истории сообщений в диалоге с пользователем
@@ -14976,43 +15161,44 @@ result = await yunhu.Send.To("user", user_id).GetMessages(message_id="msg_xxx", 
 
 ### Поддержка OneBot12 сообщений
 
-Адаптер поддерживает отправку сообщений в формате OneBot12, что обеспечивает совместимость сообщений между платформами:
+Адаптер поддерживает отправку OneBot12 форматированных сообщений, что обеспечивает кроссплатформенную совместимость:
 
 - `.Raw_ob12(message: List[Dict], **kwargs)` — отправка сообщения в формате OneBot12.
 
 ```python
 # Отправка сообщения в формате OneBot12
-ob12_msg = [{"type": "text", "data": {"text": "Привет"}}]
+ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await yunhu.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
-# В сочетании с цепными методами изменения
+# В сочетании с цепочечными модификаторами
 ob12_msg = [{"type": "text", "data": {"text": "ответное сообщение"}}]
 await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
+```
 
-## Стандартные действия API (ApiDSL)
+## Стандартные API действия (ApiDSL)
 
 > [!NOTE]
-> Эта функция требует ErisPulse **2.7.0+** и YunhuAdapter **4.3.0+**.
+> Эта функция доступна только при использовании ErisPulse **2.7.0+** и YunhuAdapter **4.3.0+**.
 
-Помимо цепочки отправки `Send`, адаптер также предоставляет внутренний класс `Api`, который предоставляет стандартные действия API OneBot12 и расширения платформы Yunhu. Все методы возвращают стандартный формат ответа.
+Помимо цепочечной отправки `Send`, адаптер предоставляет внутренний класс `Api`, который раскрывает стандартные API действия OneBot12 и расширения платформы Yunhu. Все методы возвращают стандартный формат ответа.
 
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
 # Информационный запрос (через открытый Web API, без аутентификации)
-result = await yunhu.Api.get_self_info()              # Информация о боте
+result = await yunhu.Api.get_self_info()              # Информация о роботе
 result = await yunhu.Api.get_user_info("7058262")     # Информация о любом пользователе
 result = await yunhu.Api.get_group_info("635409929")  # Информация о группе
 
-# Операции с файлами
+# Файловые операции
 result = await yunhu.Api.upload_file(type="path", name="a.png", path="./a.png")
 result = await yunhu.Api.get_file("https://chat-file.jwznb.com/xxx")
 
-# Отмена сообщения (требуется дополнительное указание chat_id + chat_type)
+# Отмена сообщения (требуется предоставить chat_id + chat_type)
 await yunhu.Api.delete_message("msg_id", chat_id="123", chat_type="group")
 
-# Множественные аккаунты: указание учетной записи бота
+# Многоконтактная работа: указание аккаунта робота
 info = await yunhu.Api.Using("bot1").get_self_info()
 ```
 
@@ -15020,87 +15206,85 @@ info = await yunhu.Api.Using("bot1").get_self_info()
 
 | Метод | Описание | Источник данных |
 |------|------|---------|
-| `get_self_info()` | Информация о боте | Открытый Web API (bot-info) |
+| `get_self_info()` | Информация о роботе | Открытый Web API (bot-info) |
 | `get_user_info(user_id)` | Информация о пользователе (любой пользователь может запросить) | Открытый Web API (user/homepage) |
 | `get_group_info(group_id)` | Информация о группе | Открытый Web API (group-info) |
-| `upload_file(*, type, name, ...)` | Загрузка файла (автоматически определяет image/video/file) | Открытый API бота |
-| `get_file(file_id)` | Получение файла (file_id - это URL) | — |
-| `delete_message(message_id, *, chat_id, chat_type)` | Отмена сообщения | Открытый API бота (/bot/recall) |
+| `upload_file(*, type, name, ...)` | Загрузка файла (автоматически определяет image/video/file) | Open API робота |
+| `get_file(file_id)` | Получение файла (file_id — это URL) | — |
+| `delete_message(message_id, *, chat_id, chat_type)` | Отмена сообщения | Open API робота (/bot/recall) |
 
-> **Внимание**: `get_self_info` / `get_user_info` / `get_group_info` реализуются через **неофициальные открытые Web API** (chat-web-go.jwzhd.com). Эти интерфейсы не требуют аутентификации, но не документированы официально и могут меняться с обновлением платформы; при сбое возвращается стандартный ответ об ошибке.
+> **Примечание:** `get_self_info` / `get_user_info` / `get_group_info` реализованы через **неофициальный открытый Web API** (chat-web-go.jwzhd.com). Эти интерфейсы не требуют аутентификации, но не являются официальной документацией и могут изменяться с обновлением платформы; при сбое возвращается стандартный ответ об ошибке.
 
 ### Неподдерживаемые стандартные действия
 
-Следующие стандартные действия не имеют соответствующих API в Yunhu, при вызове возвращается `retcode=10002` (операция не поддерживается):
-- `get_friend_list` (Список пользователей бота в открытом API бота еще не доступен)
+Следующие стандартные действия не поддерживаются платформой Yunhu, при вызове возвращается `retcode=10002` (не поддерживаемое действие):
+- `get_friend_list` (Open API робота "список пользователей робота" пока находится в стадии разработки)
 - `get_group_list` / `get_group_member_info` / `get_group_member_list`
 - `set_group_name` / `leave_group`
 
 ### Расширения платформы
 
-Расширенные действия Yunhu вызываются через `Api.call("yunhu.xxx", **params)` (параметры именуются в стиле OB12, адаптер автоматически переводит их в поля Yunhu):
+Через `Api.call("yunhu.xxx", **params)` вызываются расширения платформы Yunhu (параметры используют стилистику OB12, адаптер автоматически переводит в поля Yunhu):
 
-| Расширенное действие | Описание | Эквивалентный метод Send |
+| Расширение | Описание | Эквивалент Send метода |
 |---------|------|---------------|
 | `yunhu.recall` | Отмена сообщения (msg_id, chat_id, chat_type) | `Send.To(...).Recall(msg_id)` |
-| `yunhu.kick` | Исключение участника группы (group_id, user_id) | `Send.To("group", g).Kick(uid)` |
-| `yunhu.ban` | Запрет на сообщения (group_id, user_id, duration) | `Send.To("group", g).Ban(uid, duration)` |
-| `yunhu.unban` | Снятие запрета (group_id, user_id) | `Send.To("group", g).Ban(uid, duration=0)` |
-| `yunhu.tag.create/edit/delete/list` | CRUD-операции с тегами группы (group_id, ...) | `Send.To("group", g).CreateTag(...)` и т.д. |
-| `yunhu.tag.relate` / `yunhu.tag.relate_cancel` | Добавление/удаление тега пользователю | `Send.To("group", g).AddUserTag(...)` и т.д. |
+| `yunhu.kick` | Удаление участника группы (group_id, user_id) | `Send.To("group", g).Kick(uid)` |
+| `yunhu.ban` | Запрет (group_id, user_id, duration) | `Send.To("group", g).Ban(uid, duration)` |
+| `yunhu.unban` | Разрешение запрета (group_id, user_id) | `Send.To("group", g).Ban(uid, duration=0)` |
+| `yunhu.tag.create/edit/delete/list` | CRUD-действия с тегами группы (group_id, ...) | `Send.To("group", g).CreateTag(...)` и т.д. |
+| `yunhu.tag.relate` / `yunhu.tag.relate_cancel` | Добавление/удаление тега у пользователя | `Send.To("group", g).AddUserTag(...)` и т.д. |
 | `yunhu.set_member_title` / `yunhu.unset_member_title` | **Синоним семантики титула участника** (тег ≈ титул, внутреннее отображение на tag.relate) | — |
-| `yunhu.msg_type_limit` | Ограничение типа сообщений в группе (group_id, type) | `Send.To("group", g).SetMsgTypeLimit(...)` |
+| `yunhu.msg_type_limit` | Ограничение типов сообщений в группе (group_id, type) | `Send.To("group", g).SetMsgTypeLimit(...)` |
 | `yunhu.get_messages` | Получение истории сообщений (chat_id, chat_type, message_id?, before?, after?) | `Send.To(...).GetMessages(...)` |
-| `yunhu.bot_info` | Открытый запрос bot-info (bot_id) | — |
+| `yunhu.bot_info` | Открытый запрос информации о роботе (bot_id) | — |
 | `yunhu.user_homepage` | Открытый запрос домашней страницы пользователя (user_id) | — |
 
 ```python
-# Примеры расширений платформы
+# Пример расширения платформы
 await yunhu.Api.call("yunhu.kick", group_id="123", user_id="456")
 await yunhu.Api.call("yunhu.set_member_title", group_id="123", user_id="456", title="VIP")
 result = await yunhu.Api.call("yunhu.get_messages", chat_id="123", chat_type="group", before=10)
 ```
 
-> **Теги и титулы**: Семантика "тегов" в Yunhu эквивалентна OneBot12 `title` участника группы. `yunhu.set_member_title` является синонимом семантики `yunhu.tag.relate`, оба внутренне отображаются на один и тот же конечный узел. Роль отправителя в событии сообщения группы отображается в стандартное поле `role` (owner/admin/member) через `senderUserLevel`.
+> **Теги и титулы:** Семантика "тегов" в Yunhu эквивалентна OneBot12 полю `title` участника группы. `yunhu.set_member_title` является синонимом `yunhu.tag.relate`, оба внутренне отображаются на один и тот же эндпоинт. Роль отправителя в событиях сообщений отображается из `senderUserLevel` в стандартное поле `role` (`owner/admin/member`). 
 
-## Возвращаемое значение методов отправки
+## Возвращаемые значения методов отправки
 
-Все методы отправки возвращают объект Task, который можно напрямую ожидать, чтобы получить результат отправки. Возвращаемый результат соответствует стандартизированной спецификации возврата адаптера ErisPulse:
+Все методы отправки возвращают объект Task, который можно ожидать для получения результата отправки. Возвращаемый результат соответствует стандартизированному формату ответа адаптера ErisPulse:
 
 ```python
 {
     "status": "ok",           // Статус выполнения
     "retcode": 0,             // Код возврата
-    "data": {...},            // Ответные данные
-    "self": {...},            // Информация о себе (содержит bot_id)
-    "message_id": "123456",   // Идентификатор сообщения
+    "data": {...},            // Данные ответа
+    "self": {...},            // Информация о себе (включая bot_id)
+    "message_id": "123456",   // ID сообщения
     "message": "",            // Сообщение об ошибке
-    "yunhu_raw": {...}        // Исходные ответные данные
+    "yunhu_raw": {...}        // Исходные данные ответа
 }
 ```
 
-docs/ru/quick-start.md
+## Уникальные типы событий
 
-## Типы специфических событий
-
-Необходимо проверить platform=="yunhu", чтобы использовать особенности данной платформы
+Требуется проверка platform=="yunhu" для использования функций этой платформы
 
 ### Основные отличия
 
-1. Специфические типы событий:
+1. Уникальные типы событий:
     - Формы (например, команды формы): yunhu_form
     - Эмодзи/стикеры: yunhu_expression
     - Нажатие кнопки: yunhu_button_click
-    - Кнопка A2UI: yunhu_a2ui_button
-    - Настройка бота: yunhu_bot_setting
+    - Нажатие кнопки A2UI: yunhu_a2ui_button
+    - Настройки робота: yunhu_bot_setting
     - Быстрое меню: yunhu_shortcut_menu
 2. Расширение стандартных полей (4.3.0+):
-    - В событиях сообщений добавлено стандартное поле `role` (отображается из senderUserLevel в `owner`/`admin`/`member`)
+    - В событиях сообщений добавлено стандартное поле `role` (отображается из Yunhu `senderUserLevel` в `owner`/`admin`/`member`)
     - Добавлено поле `user_avatar` (URL аватара отправителя)
-3. Расширение полей:
-    - Все специфические поля идентифицируются с префиксом yunhu_
-    - Исходные данные сохраняются в поле yunhu_raw
-    - В личных сообщениях self.user_id обозначает ID бота
+3. Расширенные поля:
+    - Все уникальные поля имеют префикс `yunhu_`
+    - Оригинальные данные сохраняются в поле `yunhu_raw`
+    - В личных сообщениях `self.user_id` обозначает ID робота
 
 ### Примеры специальных полей
 
@@ -15110,14 +15294,14 @@ docs/ru/quick-start.md
   "type": "message",
   "detail_type": "private",
   "yunhu_command": {
-    "name": "Название команды формы",
+    "name": "имя команды формы",
     "id": "ID команды",
     "form": {
       "ID_поля1": {
         "id": "ID_поля1",
         "type": "input/textarea/select/radio/checkbox/switch",
-        "label": "Метка поля",
-        "value": "Значение поля"
+        "label": "метка поля",
+        "value": "значение поля"
       }
     }
   }
@@ -15128,28 +15312,28 @@ docs/ru/quick-start.md
   "type": "notice",
   "detail_type": "yunhu_button_click",
   "user_id": "ID пользователя, нажавшего кнопку",
-  "user_nickname": "Никнейм пользователя",
+  "user_nickname": "никнейм пользователя",
   "message_id": "ID сообщения",
   "yunhu_button": {
     "id": "ID кнопки (может быть пустым)",
-    "value": "Значение кнопки"
+    "value": "значение кнопки"
   }
 }
 
-# Событие кнопки A2UI
+# Событие нажатия кнопки A2UI
 {
   "type": "notice",
   "detail_type": "yunhu_a2ui_button",
   "user_id": "ID пользователя, выполнившего действие",
-  "user_nickname": "Никнейм пользователя",
+  "user_nickname": "никнейм пользователя",
   "message_id": "ID сообщения",
   "yunhu_a2ui": {
     "recv_id": "ID получателя",
-    "recv_type": "Тип получателя",
-    "action_name": "Название действия",
+    "recv_type": "тип получателя",
+    "action_name": "имя действия",
     "source_component_id": "ID исходного компонента",
     "form_context": {},
-    "interaction_json": "JSON строка с данными взаимодействия"
+    "interaction_json": "строка JSON с данными взаимодействия"
   }
 }
 
@@ -15160,22 +15344,21 @@ from ErisPulse.Core.Event import notice
 
 @notice.on_notice()
 async def handle_yunhu_notice(event):
-    """Обработка уведомления платформы Yunhu
+    """Обработка уведомления Yunhu
 
-    Использование универсального декоратора on_notice() для обработки всех уведомлений,
-    а затем различение типов уведомлений по detail_type
-    event.reply() автоматически отправляет ответ через платформу Yunhu
+    Используется общий декоратор on_notice() для обработки всех уведомлений,
+    затем через detail_type различаются типы уведомлений
+    event.reply() автоматически отвечает через платформу Yunhu
     """
-
-# Проверка, является ли событие нажатием кнопки
+    # Проверка, является ли событие нажатия кнопки
     if event.get("detail_type") == "yunhu_button_click":
         user_id = event.get_user_id()
         user_nickname = event.get_user_nickname()
         button_value = event.get("yunhu_button", {}).get("value", "")
 
-        print(f"Пользователь {user_nickname}({user_id}) нажал на кнопку: {button_value}")
+        print(f"Пользователь {user_nickname}({user_id}) нажал кнопку: {button_value}")
 
-# Автоматическая отправка ответа с использованием event.reply() (в зависимости от платформы будет выбран правильный способ отправки)
+        # Использование event.reply() для автоматической отправки ответа (в зависимости от платформы)
         if button_value == "confirm":
             await event.reply("Вы нажали кнопку подтверждения!")
         elif button_value == "cancel":
@@ -15183,32 +15366,25 @@ async def handle_yunhu_notice(event):
         else:
             await event.reply(f"Получен ваш выбор: {button_value}")
 
-# Обработка событий контекстного меню
+    # Обработка события быстрого меню
     elif event.get("detail_type") == "yunhu_shortcut_menu":
         menu_id = event.get("yunhu_menu", {}).get("id", "")
-        await event.reply(f"Сработало контекстное меню: {menu_id}")
+        await event.reply(f"Запущено быстрое меню: {menu_id}")
 
-docs/ru/quick-start.md
-
-# Обработка изменений настроек бота
+    # Обработка изменения настроек робота
     elif event.get("detail_type") == "yunhu_bot_setting":
         settings = event.get("yunhu_setting", {})
         await event.reply(f"Настройки обновлены: {settings}")
 
-Пожалуйста, напрямую верните переведенный полный Markdown-контент, не включая никакого другого текста.
-
-
-# Обработка событий кнопок A2UI
-
-```python
-elif event.get("detail_type") == "yunhu_a2ui_button":
-    a2ui = event.get("yunhu_a2ui", {})
-    action_name = a2ui.get("action_name", "")
-    form_context = a2ui.get("form_context", {})
-    await event.reply(f"Действие A2UI: {action_name}, данные формы: {form_context}")
+    # Обработка события кнопки A2UI
+    elif event.get("detail_type") == "yunhu_a2ui_button":
+        a2ui = event.get("yunhu_a2ui", {})
+        action_name = a2ui.get("action_name", "")
+        form_context = a2ui.get("form_context", {})
+        await event.reply(f"A2UI действие: {action_name}, данные формы: {form_context}")
 ```
 
-### Отправка сообщения с кнопками с использованием цепочки вызовов
+### Использование цепочечного вызова для отправки сообщений с кнопками
 
 ```python
 from ErisPulse import sdk
@@ -15219,38 +15395,39 @@ buttons = [
     [
         {"text": "Подтвердить", "actionType": 3, "value": "confirm"},
         {"text": "Отменить", "actionType": 3, "value": "cancel"},
-        {"text": "Просмотреть подробнее", "actionType": 1, "url": "http://example.com/detail"}
+        {"text": "Просмотреть", "actionType": 1, "url": "http://example.com/detail"}
     ]
 ]
 
-# Отправка сообщений с кнопками в группу  
-await yunhu.Send.To("group", "123456").Buttons(buttons).Text("Пожалуйста, подтвердите следующее действие")
+# Отправка сообщения с кнопками в группу
+await yunhu.Send.To("group", "123456").Buttons(buttons).Text("Пожалуйста, подтвердите следующую операцию")
 
-# Отправка сообщений с кнопками в личные сообщения пользователя  
-await yunhu.Send.To("user", "789").Buttons(buttons).Text("Пожалуйста, выберите свои предпочтительные настройки")  
+# Отправка сообщения с кнопками в личный чат
+await yunhu.Send.To("user", "789").Buttons(buttons).Text("Выберите настройки")
+```
 
-### Отправка A2UI сообщений  
+### Отправка A2UI сообщений
 
 ```python
 from ErisPulse import sdk
 
 yunhu = sdk.adapter.get("yunhu")
 
-# Отправка сообщений A2UI
+# Отправка A2UI сообщения
 await yunhu.Send.To("user", user_id).A2UI("Содержимое интерактивной карточки A2UI")
-
 ```
-# Настройки бота
+
+# Настройки робота
 {
   "type": "notice",
   "detail_type": "yunhu_bot_setting",
   "group_id": "ID группы (может быть пустым)",
   "user_nickname": "Никнейм пользователя",
   "yunhu_setting": {
-    "ID настройки": {
-      "id": "ID настройки",
+    "ID_параметра": {
+      "id": "ID параметра",
       "type": "input/radio/checkbox/select/switch",
-      "value": "Значение настройки"
+      "value": "значение параметра"
     }
   }
 }
@@ -15259,36 +15436,37 @@ await yunhu.Send.To("user", user_id).A2UI("Содержимое интеракт
 {
   "type": "notice",
   "detail_type": "yunhu_shortcut_menu",
-  "user_id": "ID пользователя, вызвавшего меню",
+  "user_id": "ID пользователя, запустившего меню",
   "user_nickname": "Никнейм пользователя",
   "group_id": "ID группы (если это групповой чат)",
   "yunhu_menu": {
     "id": "ID меню",
-    "type": "Тип меню (целое число)",
-    "action": "Действие меню (целое число)"
+    "type": "тип меню (целое число)",
+    "action": "действие меню (целое число)"
   }
 }
+```
 
-## Миксин событий: расширенные методы
+## Расширения Event Mixin
 
-Адаптер регистрирует следующие методы, специфичные для платформы, доступные только при `platform == "yunhu"`:
+Адаптер регистрирует следующие специфичные методы платформы, доступные только при `platform == "yunhu"`:
 
 | Метод | Тип возвращаемого значения | Описание |
 |------|----------|------|
-| `get_raw_event()` | `dict` | Получить исходные данные события Yunhu (`yunhu_raw`) |
-| `get_sender_level()` | `str` | Уровень отправителя Yunhu (owner/administrator/member/unknown) |
-| `get_sender_role()` | `str` | Роль отправителя по стандарту OneBot12 (owner/admin/member) |
-| `get_sender_title()` | `str` | Звание отправителя (резервный доступ к стандартному полю `title`) |
+| `get_raw_event()` | `dict` | Получение исходных данных события Yunhu (в `yunhu_raw`) |
+| `get_sender_level()` | `str` | Уровень отправителя в Yunhu (owner/administrator/member/unknown) |
+| `get_sender_role()` | `str` | Роль отправителя в OneBot12 стандарте (owner/admin/member) |
+| `get_sender_title()` | `str` | Титул отправителя (доступ к стандартному полю title, зарезервирован) |
 | `get_sender_avatar()` | `str` | URL аватара отправителя |
-| `get_command()` | `dict` | Данные команды (только для событий сообщений команд, `yunhu_command`) |
-| `get_button_value()` | `str` | Значение `value` события нажатия кнопки (`yunhu_button.value`) |
-| `get_a2ui_action()` | `str` | Название действия `actionName` события кнопки A2UI |
-| `get_a2ui_form_context()` | `dict` | Контекст формы события кнопки A2UI |
-| `get_menu_id()` | `str` | Идентификатор события быстрого меню (`yunhu_menu.id`) |
-| `get_setting()` | `dict` | Данные настроек события настройки бота (`yunhu_setting`) |
-| `is_command_message()` | `bool` | Является ли событие сообщением команды |
-| `is_button_click()` | `bool` | Является ли событие нажатием кнопки |
-| `is_a2ui_button()` | `bool` | Является ли событие кнопкой A2UI |
+| `get_command()` | `dict` | Данные команды (только для событий команд, `yunhu_command`) |
+| `get_button_value()` | `str` | Значение кнопки в событии нажатия кнопки (в `yunhu_button.value`) |
+| `get_a2ui_action()` | `str` | Действие A2UI в событии нажатия кнопки A2UI |
+| `get_a2ui_form_context()` | `dict` | Контекст формы A2UI в событии нажатия кнопки A2UI |
+| `get_menu_id()` | `str` | ID события быстрого меню (в `yunhu_menu.id`) |
+| `get_setting()` | `dict` | Данные настроек в событии изменения настроек робота (в `yunhu_setting`) |
+| `is_command_message()` | `bool` | Является ли сообщение командой |
+| `is_button_click()` | `bool` | Является ли событием нажатия кнопки |
+| `is_a2ui_button()` | `bool` | Является ли событием нажатия кнопки A2UI |
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -15300,29 +15478,27 @@ async def handle_yunhu_notice(event):
 
     if event.is_button_click():
         value = event.get_button_value()
-        await event.reply(f"Вы нажали на кнопку: {value}")
+        await event.reply(f"Вы нажали кнопку: {value}")
 
     if event.get("detail_type") == "yunhu_shortcut_menu":
         menu_id = event.get_menu_id()
 ```
 
-[**English**](docs/ru/quick-start.md)
-
 ## Описание расширенных полей
 
-- Все специфические поля идентифицируются с префиксом `yunhu_`, чтобы избежать конфликта с стандартными полями
-- Сохранение исходных данных в поле `yunhu_raw`, для удобного доступа к полным исходным данным платформы Yunhu
-- `self.user_id` обозначает идентификатор бота (получается из bot_id в конфигурации)
-- Команды формы предоставляются в виде структурированных данных через поле `yunhu_command`
-- Информация о событиях нажатия кнопки предоставляется через поле `yunhu_button`
-- Информация о событиях A2UI предоставляется через поле `yunhu_a2ui`
-- Изменения настроек бота предоставляются через поле `yunhu_setting`
-- Операции с быстрым меню предоставляются через поле `yunhu_menu`
-- Сообщения с эмодзи/стикерами предоставляются через сегмент сообщений `yunhu_expression`, содержащий данные стикера (sticker_id, идентификатор пака стикеров, размер изображения и т.д.)
+- Все уникальные поля имеют префикс `yunhu_`, чтобы избежать конфликтов с стандартными полями
+- Оригинальные данные сохраняются в поле `yunhu_raw`, для доступа к полной исходной информации платформы Yunhu
+- `self.user_id` обозначает ID робота (получается из bot_id в конфигурации)
+- Команды формы предоставляются через поле `yunhu_command` структурированной информации
+- События нажатия кнопки предоставляются через поле `yunhu_button` информацию о кнопке
+- События нажатия кнопки A2UI предоставляются через поле `yunhu_a2ui` информацию об A2UI взаимодействии
+- Изменения настроек робота предоставляются через поле `yunhu_setting` данные настроек
+- Операции быстрого меню предоставляются через поле `yunhu_menu` информацию о меню
+- Эмодзи/стикеры предоставляются через поле сообщения `yunhu_expression` данные стикера (sticker_id, ID пакета стикеров, размеры изображения и т.д.)
 
-### Сегмент сообщений с эмодзи/стикерами (yunhu_expression)
+### Поле сообщения эмодзи/стикера (yunhu_expression)
 
-Когда пользователь отправляет эмодзи или стикер, тип сегмента сообщений равен `yunhu_expression`:
+При отправке пользователем эмодзи или стикера тип сообщения — `yunhu_expression`:
 
 ```json
 {
@@ -15341,11 +15517,11 @@ async def handle_yunhu_notice(event):
 | Поле | Тип | Описание |
 |------|------|------|
 | `sticker_id` | string | Уникальный идентификатор стикера |
-| `sticker_pack_id` | string | Идентификатор пака стикеров |
-| `expression_id` | string | Идентификатор эмодзи |
-| `image_name` | string | Путь к файлу изображения эмодзи |
-| `width` | int | Ширина изображения (необязательно) |
-| `height` | int | Высота изображения (необязательно) |
+| `sticker_pack_id` | string | ID пакета стикеров |
+| `expression_id` | string | ID эмодзи |
+| `image_name` | string | Путь к файлу изображения стикера |
+| `width` | int | Ширина изображения (опционально) |
+| `height` | int | Высота изображения (опционально) |
 
 Пример использования:
 ```python
@@ -15357,64 +15533,67 @@ async def handle_message(event):
         for segment in event.get("message", []):
             if segment.get("type") == "yunhu_expression":
                 data = segment["data"]
-                print(f"Получен стикер: sticker_id={data['sticker_id']}, ID пака={data['sticker_pack_id']}")
+                print(f"Получен стикер: sticker_id={data['sticker_id']}, ID пакета={data['sticker_pack_id']}")
+```
 
-## Многоботная конфигурация
+---
+
+## Конфигурация нескольких роботов
 
 ### Описание конфигурации
 
-Адаптер Yunhu поддерживает одновременную конфигурацию и запуск нескольких аккаунтов ботов Yunhu.
+Адаптер Yunhu поддерживает одновременную конфигурацию и запуск нескольких аккаунтов роботов Yunhu.
 
 ```toml
 # config.toml
 [Yunhu_Adapter.accounts.bot1]
-token = "your_bot1_token"  # Токен бота (обязательно)
-mode = "ws"  # Режим получения (необязательно, по умолчанию "ws", возможные значения: "ws", "webhook")
-webhook_path = "/webhook/bot1"  # Путь вебхука (необязательно, по умолчанию "/webhook")
-enabled = true  # Включено ли (необязательно, по умолчанию true)
+token = "your_bot1_token"  # API token робота (обязательно)
+mode = "ws"  # Режим получения (опционально, по умолчанию "ws", доступные значения: "ws", "webhook")
+webhook_path = "/webhook/bot1"  # Путь для webhook (опционально, по умолчанию "/webhook")
+enabled = true  # Включен ли аккаунт (опционально, по умолчанию true)
 
 [Yunhu_Adapter.accounts.bot2]
-token = "your_bot2_token"  # Токен второго бота
-webhook_path = "/webhook/bot2"  # Отдельный путь вебхука
+token = "your_bot2_token"  # API token второго робота
+webhook_path = "/webhook/bot2"  # Отдельный путь для webhook
 enabled = true
 ```
 
-**Описание параметров:**
-- `token`: API токен, предоставленный платформой Yunhu (обязательно)
-- `mode`: Режим получения (необязательно, по умолчанию `"ws"`, возможные значения `"ws"`, `"webhook"`)
-- `webhook_path`: HTTP путь для получения событий Yunhu (необязательно, по умолчанию "/webhook", используется только в режиме webhook)
-- `enabled`: Включен ли этот аккаунт (необязательно, по умолчанию true)
+**Описание конфигурационных параметров:**
+- `token` — API token, предоставленный платформой Yunhu (обязательно)
+- `mode` — режим получения (опционально, по умолчанию `"ws"`, доступные значения `"ws"`, `"webhook"`)
+- `webhook_path` — HTTP путь для получения событий Yunhu (опционально, по умолчанию "/webhook", используется только в режиме webhook)
+- `enabled` — включен ли аккаунт (опционально, по умолчанию true)
 
-**Важное замечание:**
-1. ID бота на платформе Yunhu автоматически определяется **во время выполнения**, не нужно указывать его в конфигурации
-2. В режиме webhook каждый бот должен иметь отдельный `webhook_path`, чтобы получать свои собственные события вебхука
-3. При настройке вебхука на платформе Yunhu, для каждого бота нужно указать соответствующий URL, например:
+**Важные замечания:**
+1. ID робота платформы Yunhu автоматически определяется во время запуска, не нужно указывать в конфигурации
+2. В режиме webhook каждый робот должен иметь отдельный `webhook_path`, чтобы получать свои собственные события webhook
+3. При настройке webhook на платформе Yunhu необходимо указать соответствующий URL для каждого робота, например:
    - Bot1: `https://your-domain.com/webhook/bot1`
    - Bot2: `https://your-domain.com/webhook/bot2`
 
-### Использование Send DSL для указания бота
+### Использование Send DSL для указания робота
 
-Можно указать, какой бот должен отправить сообщение, используя метод `Using()`. Этот метод поддерживает два параметра:
-- **Имя аккаунта**: Имя бота из конфигурации (например, `bot1`, `bot2`)
-- **bot_id**: Значение `bot_id` из конфигурации
+Можно использовать метод `Using()` для указания робота, через которого отправлять сообщение. Этот метод поддерживает два параметра:
+- **Имя аккаунта** — имя робота в конфигурации (например, `bot1`, `bot2`)
+- **bot_id** — значение `bot_id` в конфигурации
 
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
-# Отправка сообщения с использованием имени аккаунта
+# Использование имени аккаунта для отправки сообщения
 await yunhu.Send.Using("bot1").To("user", "user123").Text("Hello from bot1!")
 
-# Отправка сообщения с использованием bot_id (система автоматически найдёт соответствующий аккаунт)
+# Использование bot_id для отправки сообщения (автоматически сопоставляется с соответствующим аккаунтом)
 await yunhu.Send.Using("30535459").To("group", "group456").Text("Hello from bot!")
 
-# Если не указано, используется первый включённый бот
+# Без указания — используется первый включенный робот
 await yunhu.Send.To("user", "user123").Text("Hello from default bot!")
 ```
 
-> **Примечание:** При использовании `bot_id` система автоматически находит соответствующий аккаунт в конфигурации. Это особенно полезно при обработке ответов на события, где можно напрямую использовать `event["self"]["user_id"]` для ответа с того же аккаунта.
+> **Примечание:** При использовании `bot_id` система автоматически находит соответствующий аккаунт в конфигурации. Это особенно полезно при обработке событий, где можно использовать `event["self"]["user_id"]` для ответа того же робота.
 
-### Идентификация бота в событиях
+### ID робота в событиях
 
 Полученные события автоматически содержат информацию о соответствующем `bot_id`:
 
@@ -15424,46 +15603,46 @@ from ErisPulse.Core.Event import message
 @message.on_message()
 async def handle_message(event):
     if event["platform"] == "yunhu":
-        # Получение ID бота, вызвавшего событие
+        # Получить ID робота, вызвавшего событие
         bot_id = event["self"]["user_id"]
-        print(f"Сообщение от бота: {bot_id}")
+        print(f"Сообщение от робота: {bot_id}")
         
-        # Отправка ответа с использованием того же бота
+        # Отправить сообщение с использованием того же робота
         yunhu = adapter.get("yunhu")
         await yunhu.Send.Using(bot_id).To(
             event["detail_type"],
             event["user_id"] if event["detail_type"] == "private" else event["group_id"]
-        ).Text("Ответ на сообщение")
+        ).Text("Ответное сообщение")
 ```
 
-### Информация в логах
+### Логирование
 
-Адаптер автоматически включает информацию о `bot_id` в логи, что облегчает отладку и отслеживание:
+Адаптер автоматически включает `bot_id` в логи, что упрощает отладку и отслеживание:
 
 ```
-[INFO] [yunhu] [bot:30535459] Получено личное сообщение от пользователя user123
+[INFO] [yunhu] [bot:30535459] Получено сообщение от пользователя user123
 [INFO] [yunhu] [bot:12345678] Сообщение успешно отправлено, message_id: abc123
 ```
 
-### Управление через интерфейс
+### Управление
 
 ```python
-# Получение информации обо всех аккаунтах
+# Получить информацию обо всех аккаунтах
 bots = yunhu.bots
 
-# Проверка статуса аккаунта
+# Проверить статус аккаунта
 bot_status = {
     bot_name: bot_config.enabled
     for bot_name, bot_config in yunhu.bots.items()
 }
 
-# Динамическое включение/отключение аккаунта (требуется перезапуск адаптера)
+# Динамически включить/отключить аккаунт (требуется перезапуск адаптера)
 yunhu.bots["bot1"].enabled = False
 ```
 
 ### Совместимость со старой конфигурацией
 
-Старые конфигурации `[Yunhu_Adapter.bots.*]` (с полем `bot_id`) автоматически мигрируются в формат `accounts` (значение `bot_id` теперь определяется автоматически во время выполнения, и значение в конфигурации игнорируется); рекомендуется как можно скорее перейти на новый формат.
+Старая конфигурация `[Yunhu_Adapter.bots.*]` (с полем `bot_id`) автоматически мигрируется в формат `accounts` (поле `bot_id` теперь определяется во время запуска, значение в конфигурации игнорируется); рекомендуется как можно скорее перейти на новый формат.
 
 
 

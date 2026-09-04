@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1452,
+  "total_keywords": 1463,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -305,7 +305,7 @@
     "1. 设计背景": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 5,
+        "line": 11,
         "level": 2,
         "title": "1. 设计背景"
       }
@@ -329,7 +329,7 @@
     "1. 配置层级与覆盖": [
       {
         "document": "advanced/scope.md",
-        "line": 266,
+        "line": 362,
         "level": 3,
         "title": "1. 配置层级与覆盖"
       }
@@ -398,14 +398,6 @@
         "title": "10. 常见问题"
       }
     ],
-    "10. 消息构建器（MessageBuilder）": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 474,
-        "level": 2,
-        "title": "10. 消息构建器（MessageBuilder）"
-      }
-    ],
     "10. 相关文档": [
       {
         "document": "standards/event-conversion.md",
@@ -422,13 +414,15 @@
         "title": "10. 适配器实现检查清单"
       }
     ],
-    "11. 相关文档": [
+    "11. 消息构建器（MessageBuilder）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 563,
+        "line": 474,
         "level": 2,
-        "title": "11. 相关文档"
-      },
+        "title": "11. 消息构建器（MessageBuilder）"
+      }
+    ],
+    "11. 相关文档": [
       {
         "document": "standards/session-types.md",
         "line": 360,
@@ -484,6 +478,14 @@
         "title": "11.6 工具方法"
       }
     ],
+    "12. 相关文档": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 563,
+        "level": 2,
+        "title": "12. 相关文档"
+      }
+    ],
     "1xxxx 动作请求错误（Request Error）": [
       {
         "document": "standards/api-response.md",
@@ -527,7 +529,7 @@
     "2. 三层 DSL 并行结构": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 19,
+        "line": 25,
         "level": 2,
         "title": "2. 三层 DSL 并行结构"
       }
@@ -543,7 +545,7 @@
     "2. 优先用控制面而不是改模块代码": [
       {
         "document": "advanced/scope.md",
-        "line": 273,
+        "line": 369,
         "level": 3,
         "title": "2. 优先用控制面而不是改模块代码"
       }
@@ -1091,7 +1093,7 @@
     "3. 标准动作列表": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 36,
+        "line": 42,
         "level": 2,
         "title": "3. 标准动作列表"
       }
@@ -1099,7 +1101,7 @@
     "3. 模块/命令没反应": [
       {
         "document": "advanced/scope.md",
-        "line": 280,
+        "line": 376,
         "level": 3,
         "title": "3. 模块/命令没反应"
       }
@@ -1187,7 +1189,7 @@
     "3.1 用户相关": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 38,
+        "line": 44,
         "level": 3,
         "title": "3.1 用户相关"
       }
@@ -1227,7 +1229,7 @@
     "3.2 群组相关": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 46,
+        "line": 52,
         "level": 3,
         "title": "3.2 群组相关"
       }
@@ -1251,7 +1253,7 @@
     "3.3 消息管理": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 57,
+        "line": 63,
         "level": 3,
         "title": "3.3 消息管理"
       }
@@ -1272,20 +1274,44 @@
         "title": "3.3 返回值格式"
       }
     ],
-    "3.4 文件操作": [
+    "3.4 频道（Guild）相关": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 65,
+        "line": 71,
         "level": 3,
-        "title": "3.4 文件操作"
+        "title": "3.4 频道（Guild）相关"
       }
     ],
-    "3.5 通用扩展动作": [
+    "3.5 文件资源操作": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 77,
+        "line": 93,
         "level": 3,
-        "title": "3.5 通用扩展动作"
+        "title": "3.5 文件资源操作"
+      }
+    ],
+    "3.5.1 分片传输（大文件，属上述降级范围）": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 119,
+        "level": 4,
+        "title": "3.5.1 分片传输（大文件，属上述降级范围）"
+      }
+    ],
+    "3.6 元（Meta）动作": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 153,
+        "level": 3,
+        "title": "3.6 元（Meta）动作"
+      }
+    ],
+    "3.7 通用扩展动作": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 164,
+        "level": 3,
+        "title": "3.7 通用扩展动作"
       }
     ],
     "3xxxx 动作执行错误（Execution Error）": [
@@ -1331,7 +1357,7 @@
     "4. 会话标识跨平台隔离": [
       {
         "document": "advanced/scope.md",
-        "line": 295,
+        "line": 391,
         "level": 3,
         "title": "4. 会话标识跨平台隔离"
       }
@@ -1339,7 +1365,7 @@
     "4. 使用方式": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 83,
+        "line": 170,
         "level": 2,
         "title": "4. 使用方式"
       }
@@ -1451,7 +1477,7 @@
     "4.1 基本调用": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 85,
+        "line": 172,
         "level": 3,
         "title": "4.1 基本调用"
       }
@@ -1491,7 +1517,7 @@
     "4.2 指定 Bot 账号（多账户模式）": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 104,
+        "line": 191,
         "level": 3,
         "title": "4.2 指定 Bot 账号（多账户模式）"
       }
@@ -1499,7 +1525,7 @@
     "4.3 平台扩展动作": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 111,
+        "line": 198,
         "level": 3,
         "title": "4.3 平台扩展动作"
       }
@@ -1515,7 +1541,7 @@
     "4.4 在事件处理器中使用": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 121,
+        "line": 208,
         "level": 3,
         "title": "4.4 在事件处理器中使用"
       }
@@ -1603,7 +1629,7 @@
     "5. 适配器实现": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 138,
+        "line": 225,
         "level": 2,
         "title": "5. 适配器实现"
       }
@@ -1651,7 +1677,7 @@
     "5.1 默认行为（零配置）": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 140,
+        "line": 227,
         "level": 3,
         "title": "5.1 默认行为（零配置）"
       }
@@ -1683,7 +1709,7 @@
     "5.2 覆盖标准方法（映射到平台原生 API）": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 152,
+        "line": 240,
         "level": 3,
         "title": "5.2 覆盖标准方法（映射到平台原生 API）"
       }
@@ -1699,17 +1725,17 @@
     "5.3 未支持的动作": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 193,
+        "line": 281,
         "level": 3,
         "title": "5.3 未支持的动作"
       }
     ],
-    "5.3 适配器实现检查清单": [
+    "5.3 框架扩展返回码（34xxx 平台错误段的低三位自定义）": [
       {
         "document": "standards/api-response.md",
         "line": 140,
         "level": 3,
-        "title": "5.3 适配器实现检查清单"
+        "title": "5.3 框架扩展返回码（34xxx 平台错误段的低三位自定义）"
       }
     ],
     "5.4 总结：Send 与 Request 并行": [
@@ -1718,6 +1744,14 @@
         "line": 316,
         "level": 3,
         "title": "5.4 总结：Send 与 Request 并行"
+      }
+    ],
+    "5.4 适配器实现检查清单": [
+      {
+        "document": "standards/api-response.md",
+        "line": 176,
+        "level": 3,
+        "title": "5.4 适配器实现检查清单"
       }
     ],
     "5.5 适配器 `__init__` 注意事项": [
@@ -1755,7 +1789,7 @@
     "6. 响应格式": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 212,
+        "line": 300,
         "level": 2,
         "title": "6. 响应格式"
       }
@@ -1779,7 +1813,7 @@
     "6. 注意事项": [
       {
         "document": "standards/api-response.md",
-        "line": 147,
+        "line": 183,
         "level": 2,
         "title": "6. 注意事项"
       }
@@ -1939,7 +1973,7 @@
     "7. 与 SendDSL / RequestDSL 的关系": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 229,
+        "line": 317,
         "level": 2,
         "title": "7. 与 SendDSL / RequestDSL 的关系"
       }
@@ -2075,7 +2109,7 @@
     "8. 相关文档": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 366,
+        "line": 372,
         "level": 2,
         "title": "8. 相关文档"
       }
@@ -2083,7 +2117,7 @@
     "8. 适配器实现检查清单": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 239,
+        "line": 327,
         "level": 2,
         "title": "8. 适配器实现检查清单"
       }
@@ -2139,7 +2173,7 @@
     "9. 相关文档": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 251,
+        "line": 342,
         "level": 2,
         "title": "9. 相关文档"
       }
@@ -2584,6 +2618,14 @@
         "line": 386,
         "level": 3,
         "title": "Dashboard 自动注册"
+      }
+    ],
+    "Debian/Ubuntu 虚拟环境创建失败": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 141,
+        "level": 3,
+        "title": "Debian/Ubuntu 虚拟环境创建失败"
       }
     ],
     "Discord": [
@@ -4281,7 +4323,7 @@
     "① 模块维度": [
       {
         "document": "advanced/scope.md",
-        "line": 103,
+        "line": 115,
         "level": 2,
         "title": "① 模块维度"
       }
@@ -4289,7 +4331,7 @@
     "② 身份维度（事件准入）": [
       {
         "document": "advanced/scope.md",
-        "line": 122,
+        "line": 134,
         "level": 2,
         "title": "② 身份维度（事件准入）"
       }
@@ -4297,7 +4339,7 @@
     "③ 命令维度（命令 ACL）": [
       {
         "document": "advanced/scope.md",
-        "line": 139,
+        "line": 151,
         "level": 2,
         "title": "③ 命令维度（命令 ACL）"
       }
@@ -4305,7 +4347,7 @@
     "④ 处理器/文本维度": [
       {
         "document": "advanced/scope.md",
-        "line": 151,
+        "line": 163,
         "level": 2,
         "title": "④ 处理器/文本维度"
       }
@@ -4313,9 +4355,17 @@
     "⑤ 实现参数覆盖": [
       {
         "document": "advanced/scope.md",
-        "line": 162,
+        "line": 174,
         "level": 2,
         "title": "⑤ 实现参数覆盖"
+      }
+    ],
+    "⑥ 出站动作维度（禁止模块发起出站调用）": [
+      {
+        "document": "advanced/scope.md",
+        "line": 191,
+        "level": 2,
+        "title": "⑥ 出站动作维度（禁止模块发起出站调用）"
       }
     ],
     "一、我要使用机器人": [
@@ -4425,13 +4475,13 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 486,
+        "line": 490,
         "level": 2,
         "title": "下一步"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 141,
+        "line": 153,
         "level": 2,
         "title": "下一步"
       }
@@ -4503,7 +4553,7 @@
     "严格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 316,
+        "line": 320,
         "level": 3,
         "title": "严格模式"
       }
@@ -4578,10 +4628,18 @@
         "title": "主人系统配置"
       }
     ],
+    "主人身份与自定义身份源（provider）": [
+      {
+        "document": "advanced/scope.md",
+        "line": 298,
+        "level": 2,
+        "title": "主人身份与自定义身份源（provider）"
+      }
+    ],
     "主动 GC 配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 301,
+        "line": 305,
         "level": 3,
         "title": "主动 GC 配置"
       }
@@ -4919,7 +4977,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 356,
+        "line": 360,
         "level": 2,
         "title": "事件配置"
       }
@@ -5453,7 +5511,7 @@
     "全局兜底：`default_allow`": [
       {
         "document": "advanced/scope.md",
-        "line": 45,
+        "line": 47,
         "level": 2,
         "title": "全局兜底：`default_allow`"
       }
@@ -5754,6 +5812,14 @@
         "title": "删除表"
       }
     ],
+    "判定与运行时增删": [
+      {
+        "document": "advanced/scope.md",
+        "line": 307,
+        "level": 3,
+        "title": "判定与运行时增删"
+      }
+    ],
     "前置知识": [
       {
         "document": "advanced/README.md",
@@ -5843,7 +5909,7 @@
     "匹配条目语法（全系统统一）": [
       {
         "document": "advanced/scope.md",
-        "line": 30,
+        "line": 32,
         "level": 2,
         "title": "匹配条目语法（全系统统一）"
       }
@@ -6531,7 +6597,7 @@
     "命令维度": [
       {
         "document": "advanced/scope.md",
-        "line": 220,
+        "line": 260,
         "level": 3,
         "title": "命令维度"
       }
@@ -6555,7 +6621,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 358,
+        "line": 362,
         "level": 3,
         "title": "命令配置"
       }
@@ -6663,7 +6729,7 @@
     "国际化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 385,
+        "line": 389,
         "level": 2,
         "title": "国际化配置"
       }
@@ -7075,7 +7141,7 @@
     "处理器与覆盖维度": [
       {
         "document": "advanced/scope.md",
-        "line": 234,
+        "line": 274,
         "level": 3,
         "title": "处理器与覆盖维度"
       }
@@ -7469,7 +7535,7 @@
     "存储配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 345,
+        "line": 349,
         "level": 2,
         "title": "存储配置"
       }
@@ -7919,7 +7985,7 @@
     "常见问题与注意事项": [
       {
         "document": "advanced/scope.md",
-        "line": 264,
+        "line": 360,
         "level": 2,
         "title": "常见问题与注意事项"
       }
@@ -8551,7 +8617,7 @@
     "扩展动作": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 247,
+        "line": 338,
         "level": 3,
         "title": "扩展动作"
       }
@@ -8685,7 +8751,7 @@
     "拓扑树 API": [
       {
         "document": "advanced/scope.md",
-        "line": 300,
+        "line": 396,
         "level": 2,
         "title": "拓扑树 API"
       }
@@ -8755,7 +8821,7 @@
     "控制面配置（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 425,
+        "line": 429,
         "level": 2,
         "title": "控制面配置（scope）"
       }
@@ -9303,7 +9369,7 @@
     "日志配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 232,
+        "line": 236,
         "level": 2,
         "title": "日志配置"
       }
@@ -9611,7 +9677,7 @@
     "标准动作": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 241,
+        "line": 329,
         "level": 3,
         "title": "标准动作"
       }
@@ -9869,7 +9935,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 280,
+        "line": 284,
         "level": 2,
         "title": "框架配置"
       }
@@ -10053,7 +10119,7 @@
     "模块维度": [
       {
         "document": "advanced/scope.md",
-        "line": 179,
+        "line": 219,
         "level": 3,
         "title": "模块维度"
       }
@@ -10069,7 +10135,7 @@
     "模块配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 396,
+        "line": 400,
         "level": 2,
         "title": "模块配置"
       }
@@ -10569,7 +10635,7 @@
     "消息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 374,
+        "line": 378,
         "level": 3,
         "title": "消息配置"
       }
@@ -10870,6 +10936,14 @@
         "line": 620,
         "level": 3,
         "title": "生成类型存根"
+      }
+    ],
+    "用户优先：主人生效范围由用户最终决定": [
+      {
+        "document": "advanced/scope.md",
+        "line": 347,
+        "level": 3,
+        "title": "用户优先：主人生效范围由用户最终决定"
       }
     ],
     "用户使用指南": [
@@ -11419,7 +11493,7 @@
     "缓存与热更新": [
       {
         "document": "advanced/scope.md",
-        "line": 257,
+        "line": 353,
         "level": 2,
         "title": "缓存与热更新"
       }
@@ -11558,6 +11632,14 @@
         "line": 135,
         "level": 2,
         "title": "自定义消息段"
+      }
+    ],
+    "自定义身份源（provider）": [
+      {
+        "document": "advanced/scope.md",
+        "line": 319,
+        "level": 3,
+        "title": "自定义身份源（provider）"
       }
     ],
     "自定义默认头": [
@@ -11903,7 +11985,7 @@
     "豁免清单": [
       {
         "document": "user-guide/configuration.md",
-        "line": 333,
+        "line": 337,
         "level": 4,
         "title": "豁免清单"
       }
@@ -12085,7 +12167,7 @@
     "身份维度": [
       {
         "document": "advanced/scope.md",
-        "line": 201,
+        "line": 241,
         "level": 3,
         "title": "身份维度"
       }
@@ -12149,7 +12231,7 @@
     "运行时 API": [
       {
         "document": "advanced/scope.md",
-        "line": 177,
+        "line": 217,
         "level": 2,
         "title": "运行时 API"
       }
@@ -12515,7 +12597,7 @@
     "通用": [
       {
         "document": "advanced/scope.md",
-        "line": 245,
+        "line": 285,
         "level": 3,
         "title": "通用"
       }
@@ -12807,7 +12889,7 @@
     "配置文件": [
       {
         "document": "advanced/scope.md",
-        "line": 58,
+        "line": 64,
         "level": 2,
         "title": "配置文件"
       },

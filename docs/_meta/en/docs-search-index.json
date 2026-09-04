@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1492,
+  "total_keywords": 1505,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -51,7 +51,7 @@
     "1. Configuration Hierarchy and Overriding": [
       {
         "document": "advanced/scope.md",
-        "line": 247,
+        "line": 325,
         "level": 3,
         "title": "1. Configuration Hierarchy and Overriding"
       }
@@ -115,7 +115,7 @@
     "1. Design Background": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 5,
+        "line": 7,
         "level": 2,
         "title": "1. Design Background"
       }
@@ -358,12 +358,12 @@
         "title": "1.1 Standard Send Methods"
       }
     ],
-    "1.2 Chainable Modifier Methods": [
+    "1.2 Chained Modifier Methods": [
       {
         "document": "standards/send-method-spec.md",
         "line": 26,
         "level": 3,
-        "title": "1.2 Chainable Modifier Methods"
+        "title": "1.2 Chained Modifier Methods"
       }
     ],
     "1.2 Type Mapping Relationship": [
@@ -406,14 +406,6 @@
         "title": "10. Common Questions"
       }
     ],
-    "10. Message Builder (`MessageBuilder`)": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 474,
-        "level": 2,
-        "title": "10. Message Builder (`MessageBuilder`)"
-      }
-    ],
     "10. Related Documentation": [
       {
         "document": "standards/event-conversion.md",
@@ -430,13 +422,15 @@
         "title": "10. SSE (Server-Sent Events) Support"
       }
     ],
-    "11. Related Documentation": [
+    "11. MessageBuilder": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 563,
+        "line": 474,
         "level": 2,
-        "title": "11. Related Documentation"
-      },
+        "title": "11. MessageBuilder"
+      }
+    ],
+    "11. Related Documentation": [
       {
         "document": "standards/session-types.md",
         "line": 360,
@@ -452,12 +446,12 @@
         "title": "11.1 Import"
       }
     ],
-    "11.2 Chainable Message Building": [
+    "11.2 Chainable Building": [
       {
         "document": "standards/send-method-spec.md",
         "line": 486,
         "level": 3,
-        "title": "11.2 Chainable Message Building"
+        "title": "11.2 Chainable Building"
       }
     ],
     "11.3 Quick Single Segment Building": [
@@ -492,12 +486,20 @@
         "title": "11.6 Utility Methods"
       }
     ],
-    "1xxxx Action Request Errors (Request Error)": [
+    "12. Related Documentation": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 563,
+        "level": 2,
+        "title": "12. Related Documentation"
+      }
+    ],
+    "1xxxx Request Error": [
       {
         "document": "standards/api-response.md",
         "line": 67,
         "level": 4,
-        "title": "1xxxx Action Request Errors (Request Error)"
+        "title": "1xxxx Request Error"
       }
     ],
     "2. Account Selection Mechanism": [
@@ -570,14 +572,6 @@
         "line": 53,
         "level": 3,
         "title": "2. Create pyproject.toml"
-      }
-    ],
-    "2. Detailed Parameter Specification": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 57,
-        "level": 2,
-        "title": "2. Detailed Parameter Specification"
       }
     ],
     "2. Error Code Specification": [
@@ -664,10 +658,18 @@
         "title": "2. Module Naming Convention"
       }
     ],
+    "2. Parameter Specification Details": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 57,
+        "level": 2,
+        "title": "2. Parameter Specification Details"
+      }
+    ],
     "2. Prefer Control Plane Over Module Code Changes": [
       {
         "document": "advanced/scope.md",
-        "line": 253,
+        "line": 331,
         "level": 3,
         "title": "2. Prefer Control Plane Over Module Code Changes"
       }
@@ -784,12 +786,12 @@
         "title": "2. Supported Message Sending Types"
       }
     ],
-    "2. Three-Layer DSL Parallel Structure": [
+    "2. Three Parallel DSL Structures": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 19,
+        "line": 21,
         "level": 2,
-        "title": "2. Three-Layer DSL Parallel Structure"
+        "title": "2. Three Parallel DSL Structures"
       }
     ],
     "2. Timeout Handling": [
@@ -864,20 +866,20 @@
         "title": "2.1 Standard Fields"
       }
     ],
-    "2.1.1 String Parameters (URL or File Path)": [
+    "2.1.1 String Parameter (URL or File Path)": [
       {
         "document": "standards/send-method-spec.md",
         "line": 63,
         "level": 4,
-        "title": "2.1.1 String Parameters (URL or File Path)"
+        "title": "2.1.1 String Parameter (URL or File Path)"
       }
     ],
-    "2.1.2 Binary Data Parameters": [
+    "2.1.2 Binary Data Parameter": [
       {
         "document": "standards/send-method-spec.md",
         "line": 88,
         "level": 4,
-        "title": "2.1.2 Binary Data Parameters"
+        "title": "2.1.2 Binary Data Parameter"
       }
     ],
     "2.1.3 Parameter Processing Priority": [
@@ -952,12 +954,12 @@
         "title": "2.4 Request Event Fields"
       }
     ],
-    "2xxxx Action Handler Errors (Handler Error)": [
+    "2xxxx Handler Error": [
       {
         "document": "standards/api-response.md",
         "line": 80,
         "level": 4,
-        "title": "2xxxx Action Handler Errors (Handler Error)"
+        "title": "2xxxx Handler Error"
       }
     ],
     "3. Adapter": [
@@ -1091,7 +1093,7 @@
     "3. Module/Command Not Responding": [
       {
         "document": "advanced/scope.md",
-        "line": 257,
+        "line": 335,
         "level": 3,
         "title": "3. Module/Command Not Responding"
       }
@@ -1163,7 +1165,7 @@
     "3. Standard Action List": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 36,
+        "line": 38,
         "level": 2,
         "title": "3. Standard Action List"
       }
@@ -1192,12 +1194,12 @@
         "title": "3. Trigger Build"
       }
     ],
-    "3.1 Chained Calls": [
+    "3.1 Chainable Calls": [
       {
         "document": "standards/request-action-spec.md",
         "line": 88,
         "level": 3,
-        "title": "3.1 Chained Calls"
+        "title": "3.1 Chainable Calls"
       }
     ],
     "3.1 Common Fields": [
@@ -1224,12 +1226,12 @@
         "title": "3.1 Message Event (message)"
       }
     ],
-    "3.1 User Related": [
+    "3.1 User-Related": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 38,
+        "line": 40,
         "level": 3,
-        "title": "3.1 User Related"
+        "title": "3.1 User-Related"
       }
     ],
     "3.2 Common Platform Mapping Examples": [
@@ -1240,12 +1242,12 @@
         "title": "3.2 Common Platform Mapping Examples"
       }
     ],
-    "3.2 Group Related": [
+    "3.2 Group-Related": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 46,
+        "line": 48,
         "level": 3,
-        "title": "3.2 Group Related"
+        "title": "3.2 Group-Related"
       }
     ],
     "3.2 Method List": [
@@ -1275,7 +1277,7 @@
     "3.3 Message Management": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 57,
+        "line": 59,
         "level": 3,
         "title": "3.3 Message Management"
       }
@@ -1296,28 +1298,52 @@
         "title": "3.3 Return Value Format"
       }
     ],
-    "3.4 File Operations": [
+    "3.4 Channel (Guild) Related": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 65,
+        "line": 67,
         "level": 3,
-        "title": "3.4 File Operations"
+        "title": "3.4 Channel (Guild) Related"
       }
     ],
-    "3.5 General Extension Actions": [
+    "3.5 File Resource Operations": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 77,
+        "line": 88,
         "level": 3,
-        "title": "3.5 General Extension Actions"
+        "title": "3.5 File Resource Operations"
       }
     ],
-    "3xxxx Action Execution Errors (Execution Error)": [
+    "3.5.1 Chunked Transfer (Large Files, Part of the Above Degraded Scope)": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 107,
+        "level": 4,
+        "title": "3.5.1 Chunked Transfer (Large Files, Part of the Above Degraded Scope)"
+      }
+    ],
+    "3.6 Meta Actions": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 139,
+        "level": 3,
+        "title": "3.6 Meta Actions"
+      }
+    ],
+    "3.7 General Extension Actions": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 150,
+        "level": 3,
+        "title": "3.7 General Extension Actions"
+      }
+    ],
+    "3xxxx Execution Error": [
       {
         "document": "standards/api-response.md",
         "line": 86,
         "level": 4,
-        "title": "3xxxx Action Execution Errors (Execution Error)"
+        "title": "3xxxx Execution Error"
       }
     ],
     "4. Combine Usage": [
@@ -1416,18 +1442,18 @@
         "title": "4. PM2 (Node ecosystem operations)"
       }
     ],
-    "4. Parameter Naming Convention": [
+    "4. Parameter Naming Specification": [
       {
         "document": "standards/send-method-spec.md",
         "line": 207,
         "level": 2,
-        "title": "4. Parameter Naming Convention"
+        "title": "4. Parameter Naming Specification"
       }
     ],
     "4. Session Identifier Isolation Across Platforms": [
       {
         "document": "advanced/scope.md",
-        "line": 271,
+        "line": 349,
         "level": 3,
         "title": "4. Session Identifier Isolation Across Platforms"
       }
@@ -1451,7 +1477,7 @@
     "4. Usage": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 83,
+        "line": 156,
         "level": 2,
         "title": "4. Usage"
       }
@@ -1472,12 +1498,12 @@
         "title": "4. `self` Field Auto-detection"
       }
     ],
-    "4.1 Basic Call": [
+    "4.1 Basic Calls": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 85,
+        "line": 158,
         "level": 3,
-        "title": "4.1 Basic Call"
+        "title": "4.1 Basic Calls"
       }
     ],
     "4.1 Event Method List": [
@@ -1512,12 +1538,12 @@
         "title": "4.2 Platform Extension Message Segment"
       }
     ],
-    "4.2 Specify Bot Account (Multi-account mode)": [
+    "4.2 Specifying Bot Account (Multi-account Mode)": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 104,
+        "line": 177,
         "level": 3,
-        "title": "4.2 Specify Bot Account (Multi-account mode)"
+        "title": "4.2 Specifying Bot Account (Multi-account Mode)"
       }
     ],
     "4.2 Using Custom Types": [
@@ -1531,7 +1557,7 @@
     "4.3 Platform Extension Actions": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 111,
+        "line": 184,
         "level": 3,
         "title": "4.3 Platform Extension Actions"
       }
@@ -1544,18 +1570,18 @@
         "title": "4.3 Unregistering Custom Types"
       }
     ],
-    "4.4 In Event Handlers": [
+    "4.4 Use in Event Handlers": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 121,
+        "line": 194,
         "level": 3,
-        "title": "4.4 In Event Handlers"
+        "title": "4.4 Use in Event Handlers"
       }
     ],
     "5. Adapter Implementation": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 138,
+        "line": 211,
         "level": 2,
         "title": "5. Adapter Implementation"
       }
@@ -1592,12 +1618,12 @@
         "title": "5. Configuration Options (if applicable)"
       }
     ],
-    "5. Extended Specifications": [
+    "5. Extension Specifications": [
       {
         "document": "standards/api-response.md",
         "line": 106,
         "level": 2,
-        "title": "5. Extended Specifications"
+        "title": "5. Extension Specifications"
       }
     ],
     "5. I Want to Contribute to ErisPulse": [
@@ -1675,7 +1701,7 @@
     "5.1 Default Behavior (Zero Configuration)": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 140,
+        "line": 213,
         "level": 3,
         "title": "5.1 Default Behavior (Zero Configuration)"
       }
@@ -1688,28 +1714,28 @@
         "title": "5.1 Inference Priority"
       }
     ],
-    "5.1 `message_id` Mandatory Field": [
+    "5.1 `message_id` Required Field": [
       {
         "document": "standards/api-response.md",
         "line": 110,
         "level": 3,
-        "title": "5.1 `message_id` Mandatory Field"
+        "title": "5.1 `message_id` Required Field"
       }
     ],
-    "5.2 Override Standard Methods (Map to Platform Native API)": [
+    "5.2 Overriding Standard Methods (Mapping to Platform Native API)": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 152,
+        "line": 225,
         "level": 3,
-        "title": "5.2 Override Standard Methods (Map to Platform Native API)"
+        "title": "5.2 Overriding Standard Methods (Mapping to Platform Native API)"
       }
     ],
-    "5.2 Request Inner Class Implementation": [
+    "5.2 Request Internal Class Implementation": [
       {
         "document": "standards/request-action-spec.md",
         "line": 234,
         "level": 3,
-        "title": "5.2 Request Inner Class Implementation"
+        "title": "5.2 Request Internal Class Implementation"
       }
     ],
     "5.2 Usage Examples": [
@@ -1728,28 +1754,36 @@
         "title": "5.2 `{platform}_raw` Raw Response Field"
       }
     ],
-    "5.3 Adapter Implementation Checklist": [
+    "5.3 Framework Extension Return Codes (Custom Low Three Digits in the 34xxx Platform Error Segment)": [
       {
         "document": "standards/api-response.md",
         "line": 140,
         "level": 3,
-        "title": "5.3 Adapter Implementation Checklist"
+        "title": "5.3 Framework Extension Return Codes (Custom Low Three Digits in the 34xxx Platform Error Segment)"
       }
     ],
-    "5.3 Platforms Without Request Operations": [
+    "5.3 Platform Does Not Support Request Operations": [
       {
         "document": "standards/request-action-spec.md",
         "line": 308,
         "level": 3,
-        "title": "5.3 Platforms Without Request Operations"
+        "title": "5.3 Platform Does Not Support Request Operations"
       }
     ],
     "5.3 Unsupported Actions": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 193,
+        "line": 266,
         "level": 3,
         "title": "5.3 Unsupported Actions"
+      }
+    ],
+    "5.4 Adapter Implementation Checklist": [
+      {
+        "document": "standards/api-response.md",
+        "line": 172,
+        "level": 3,
+        "title": "5.4 Adapter Implementation Checklist"
       }
     ],
     "5.4 Summary: Send and Request in Parallel": [
@@ -1803,7 +1837,7 @@
     "6. Notes": [
       {
         "document": "standards/api-response.md",
-        "line": 147,
+        "line": 179,
         "level": 2,
         "title": "6. Notes"
       }
@@ -1819,7 +1853,7 @@
     "6. Response Format": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 212,
+        "line": 285,
         "level": 2,
         "title": "6. Response Format"
       }
@@ -1928,12 +1962,12 @@
         "title": "6.3.2 Platform Extension Message Segment Conversion"
       }
     ],
-    "6.3.3 Composite Message Segment Handling": [
+    "6.3.3 Handling Composite Message Segments": [
       {
         "document": "standards/send-method-spec.md",
         "line": 316,
         "level": 4,
-        "title": "6.3.3 Composite Message Segment Handling"
+        "title": "6.3.3 Handling Composite Message Segments"
       }
     ],
     "6.4 Platform Specific Field Examples": [
@@ -1984,12 +2018,12 @@
         "title": "7. Core API Reference"
       }
     ],
-    "7. Error Code Extensions": [
+    "7. Error Code Extension": [
       {
         "document": "standards/request-action-spec.md",
         "line": 355,
         "level": 2,
-        "title": "7. Error Code Extensions"
+        "title": "7. Error Code Extension"
       }
     ],
     "7. Implement Request Class (Request Operations)": [
@@ -2011,7 +2045,7 @@
     "7. Relationship with SendDSL / RequestDSL": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 229,
+        "line": 302,
         "level": 2,
         "title": "7. Relationship with SendDSL / RequestDSL"
       }
@@ -2083,7 +2117,7 @@
     "8. Adapter Implementation Checklist": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 239,
+        "line": 312,
         "level": 2,
         "title": "8. Adapter Implementation Checklist"
       }
@@ -2115,7 +2149,7 @@
     "8. Related Documentation": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 366,
+        "line": 368,
         "level": 2,
         "title": "8. Related Documentation"
       }
@@ -2184,12 +2218,12 @@
         "title": "9. Connection Information and Route Discovery"
       }
     ],
-    "9. Related Documentation": [
+    "9. Related Documents": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 251,
+        "line": 327,
         "level": 2,
-        "title": "9. Related Documentation"
+        "title": "9. Related Documents"
       }
     ],
     "9. Session Type Inference for notice / request Events": [
@@ -2254,14 +2288,6 @@
         "line": 427,
         "level": 4,
         "title": "A2UI Message Segment (a2ui)"
-      }
-    ],
-    "A2UI button event": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 379,
-        "level": 1,
-        "title": "A2UI button event"
       }
     ],
     "AI-Assisted Development": [
@@ -3095,7 +3121,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 15,
+        "line": 12,
         "level": 2,
         "title": "Basic Information"
       },
@@ -3354,6 +3380,14 @@
         "title": "Bot Command Message Segment (ideaura_command)"
       }
     ],
+    "Bot Identification in Events": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 644,
+        "level": 3,
+        "title": "Bot Identification in Events"
+      }
+    ],
     "Bot Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -3487,7 +3521,7 @@
     "Button Parameter Description": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 108,
+        "line": 102,
         "level": 3,
         "title": "Button Parameter Description"
       },
@@ -3496,14 +3530,6 @@
         "line": 59,
         "level": 3,
         "title": "Button Parameter Description"
-      }
-    ],
-    "Button event": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 366,
-        "level": 1,
-        "title": "Button event"
       }
     ],
     "CLI Command Reference": [
@@ -3522,12 +3548,12 @@
         "title": "CORS Configuration"
       }
     ],
-    "Cache and Hot Update": [
+    "Cache and Hot Updates": [
       {
         "document": "advanced/scope.md",
-        "line": 239,
+        "line": 317,
         "level": 2,
-        "title": "Cache and Hot Update"
+        "title": "Cache and Hot Updates"
       }
     ],
     "Callback Query Event": [
@@ -3656,12 +3682,28 @@
         "title": "Chained Modifiers"
       }
     ],
+    "Chaining Call Examples": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 136,
+        "level": 3,
+        "title": "Chaining Call Examples"
+      }
+    ],
     "Chaining Mode (Instance)": [
       {
         "document": "advanced/message-builder.md",
         "line": 18,
         "level": 3,
         "title": "Chaining Mode (Instance)"
+      }
+    ],
+    "Chaining Modifier Methods (can be combined)": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 127,
+        "level": 3,
+        "title": "Chaining Modifier Methods (can be combined)"
       }
     ],
     "Check Installation": [
@@ -3688,12 +3730,12 @@
         "title": "Check if Table Exists"
       }
     ],
-    "Check if an account is enabled": [
+    "Check if it is a button click event": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 690,
+        "line": 403,
         "level": 1,
-        "title": "Check if an account is enabled"
+        "title": "Check if it is a button click event"
       }
     ],
     "Child Loggers": [
@@ -3803,7 +3845,7 @@
     "Command Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 357,
+        "line": 360,
         "level": 3,
         "title": "Command Configuration"
       }
@@ -3827,7 +3869,7 @@
     "Command Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 202,
+        "line": 233,
         "level": 3,
         "title": "Command Dimension"
       }
@@ -3975,7 +4017,7 @@
     "Common Issues and Notes": [
       {
         "document": "advanced/scope.md",
-        "line": 245,
+        "line": 323,
         "level": 2,
         "title": "Common Issues and Notes"
       }
@@ -4206,6 +4248,14 @@
         "title": "Configuration Example"
       }
     ],
+    "Configuration Explanation": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 591,
+        "level": 3,
+        "title": "Configuration Explanation"
+      }
+    ],
     "Configuration Field Descriptions": [
       {
         "document": "platform-guide/wechatmp.md",
@@ -4217,7 +4267,7 @@
     "Configuration File": [
       {
         "document": "advanced/scope.md",
-        "line": 50,
+        "line": 54,
         "level": 2,
         "title": "Configuration File"
       },
@@ -4264,6 +4314,14 @@
         "line": 520,
         "level": 4,
         "title": "Configuration Hot Reload"
+      }
+    ],
+    "Configuration Hot Update": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 63,
+        "level": 2,
+        "title": "Configuration Hot Update"
       }
     ],
     "Configuration Instructions": [
@@ -4488,12 +4546,12 @@
         "title": "Control Commands"
       }
     ],
-    "Control Plane Configuration (scope)": [
+    "Control Panel Configuration (scope)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 424,
+        "line": 427,
         "level": 2,
-        "title": "Control Plane Configuration (scope)"
+        "title": "Control Panel Configuration (scope)"
       }
     ],
     "Control Plane Filtering: Why Didn't My Module Receive the Message?": [
@@ -4626,6 +4684,12 @@
       {
         "document": "platform-guide/qqbot.md",
         "line": 136,
+        "level": 3,
+        "title": "Core Differences"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 321,
         "level": 3,
         "title": "Core Differences"
       },
@@ -4820,6 +4884,14 @@
         "title": "Custom Fonts"
       }
     ],
+    "Custom Identity Source (provider)": [
+      {
+        "document": "advanced/scope.md",
+        "line": 289,
+        "level": 3,
+        "title": "Custom Identity Source (provider)"
+      }
+    ],
     "Custom Message Segments": [
       {
         "document": "advanced/message-builder.md",
@@ -4864,6 +4936,14 @@
         "line": 65,
         "level": 3,
         "title": "Data Persistence"
+      }
+    ],
+    "Debian/Ubuntu Virtual Environment Creation Failed": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 138,
+        "level": 3,
+        "title": "Debian/Ubuntu Virtual Environment Creation Failed"
       }
     ],
     "Debugging Tips": [
@@ -5008,6 +5088,14 @@
         "line": 84,
         "level": 3,
         "title": "Detailed Explanation of Initialization Stages"
+      }
+    ],
+    "Determination and Runtime Add/Remove": [
+      {
+        "document": "advanced/scope.md",
+        "line": 277,
+        "level": 3,
+        "title": "Determination and Runtime Add/Remove"
       }
     ],
     "Developer Guide": [
@@ -5214,12 +5302,6 @@
         "title": "Document Information"
       },
       {
-        "document": "platform-guide/yunhu.md",
-        "line": 9,
-        "level": 2,
-        "title": "Document Information"
-      },
-      {
         "document": "platform-guide/yunhu_user.md",
         "line": 7,
         "level": 2,
@@ -5259,6 +5341,12 @@
       },
       {
         "document": "platform-guide/onebot11.md",
+        "line": 7,
+        "level": 2,
+        "title": "Documentation Information"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
         "line": 7,
         "level": 2,
         "title": "Documentation Information"
@@ -5328,14 +5416,6 @@
         "title": "Dynamic Content"
       }
     ],
-    "Dynamically enable/disable accounts (requires adapter restart)": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 696,
-        "level": 1,
-        "title": "Dynamically enable/disable accounts (requires adapter restart)"
-      }
-    ],
     "Ecosystem Modules": [
       {
         "document": "ecosystem/README.md",
@@ -5371,7 +5451,7 @@
     "Emoji/Sticker Message Segment (yunhu_expression)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 559,
+        "line": 549,
         "level": 3,
         "title": "Emoji/Sticker Message Segment (yunhu_expression)"
       }
@@ -5424,12 +5504,12 @@
         "title": "Environment Variables"
       }
     ],
-    "ErisPulse API Action Standards": [
+    "ErisPulse API Action Standard": [
       {
         "document": "standards/api-action-spec.md",
         "line": 1,
         "level": 1,
-        "title": "ErisPulse API Action Standards"
+        "title": "ErisPulse API Action Standard"
       }
     ],
     "ErisPulse Adapter Standardized Return Specification": [
@@ -5615,7 +5695,7 @@
     "Event Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 355,
+        "line": 358,
         "level": 2,
         "title": "Event Configuration"
       }
@@ -5625,12 +5705,6 @@
         "document": "developer-guide/adapters/best-practices.md",
         "line": 222,
         "level": 2,
-        "title": "Event Conversion"
-      },
-      {
-        "document": "standards/README.md",
-        "line": 70,
-        "level": 3,
         "title": "Event Conversion"
       }
     ],
@@ -5818,6 +5892,12 @@
         "line": 254,
         "level": 2,
         "title": "Event Mixin Extension Methods"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 500,
+        "level": 2,
+        "title": "Event Mixin Extension Methods"
       }
     ],
     "Event Mixin Methods": [
@@ -5890,6 +5970,14 @@
         "line": 1,
         "level": 1,
         "title": "Event System API"
+      }
+    ],
+    "Event Transformation": [
+      {
+        "document": "standards/README.md",
+        "line": 70,
+        "level": 3,
+        "title": "Event Transformation"
       }
     ],
     "Event Type Mapping": [
@@ -5982,14 +6070,6 @@
         "title": "Example"
       }
     ],
-    "Example of Button Click Event Handling": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 396,
-        "level": 3,
-        "title": "Example of Button Click Event Handling"
-      }
-    ],
     "Example of Use in Module": [
       {
         "document": "advanced/lifecycle.md",
@@ -6006,20 +6086,20 @@
         "title": "Exception Handling"
       }
     ],
+    "Exception List": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 335,
+        "level": 4,
+        "title": "Exception List"
+      }
+    ],
     "Execute Logic After Sending Success (Hook)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 291,
         "level": 3,
         "title": "Execute Logic After Sending Success (Hook)"
-      }
-    ],
-    "Exemption List": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 332,
-        "level": 4,
-        "title": "Exemption List"
       }
     ],
     "Exit Code 42 Contract": [
@@ -6087,7 +6167,7 @@
     "Extension Actions": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 247,
+        "line": 323,
         "level": 3,
         "title": "Extension Actions"
       }
@@ -6095,7 +6175,7 @@
     "Extension Field Description": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 547,
+        "line": 537,
         "level": 2,
         "title": "Extension Field Description"
       }
@@ -6192,14 +6272,6 @@
         "title": "File Handling Features"
       }
     ],
-    "File operations": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 248,
-        "level": 1,
-        "title": "File operations"
-      }
-    ],
     "Fixed Bugs": [
       {
         "document": "bug-tracker.md",
@@ -6224,12 +6296,6 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 88,
-        "level": 3,
-        "title": "Fluent Call Examples"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 142,
         "level": 3,
         "title": "Fluent Call Examples"
       }
@@ -6280,12 +6346,6 @@
       {
         "document": "platform-guide/onebot11.md",
         "line": 80,
-        "level": 3,
-        "title": "Fluent Modifier Methods (Combinable)"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 133,
         "level": 3,
         "title": "Fluent Modifier Methods (Combinable)"
       }
@@ -6346,14 +6406,6 @@
         "title": "Form Message Segment (yunhu_user_form)"
       }
     ],
-    "Form command": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 348,
-        "level": 1,
-        "title": "Form command"
-      }
-    ],
     "Forwarded Message Segment (ideaura_forwarded)": [
       {
         "document": "platform-guide/ideaura.md",
@@ -6373,7 +6425,7 @@
     "Framework Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 279,
+        "line": 282,
         "level": 2,
         "title": "Framework Configuration"
       }
@@ -6483,7 +6535,7 @@
     "General": [
       {
         "document": "advanced/scope.md",
-        "line": 227,
+        "line": 258,
         "level": 3,
         "title": "General"
       }
@@ -6534,14 +6586,6 @@
         "line": 161,
         "level": 3,
         "title": "Get Method Detailed Information"
-      }
-    ],
-    "Get all account information": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 687,
-        "level": 1,
-        "title": "Get all account information"
       }
     ],
     "Get single record": [
@@ -6608,12 +6652,12 @@
         "title": "Global Configuration (EmailAdapter)"
       }
     ],
-    "Global Default: `default_allow`": [
+    "Global Fallback: `default_allow`": [
       {
         "document": "advanced/scope.md",
-        "line": 40,
+        "line": 42,
         "level": 2,
-        "title": "Global Default: `default_allow`"
+        "title": "Global Fallback: `default_allow`"
       }
     ],
     "Global Parameters": [
@@ -6643,7 +6687,7 @@
     "Group Management Examples": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 155,
+        "line": 149,
         "level": 3,
         "title": "Group Management Examples"
       }
@@ -6651,7 +6695,7 @@
     "Group Management Methods": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 51,
+        "line": 45,
         "level": 3,
         "title": "Group Management Methods"
       }
@@ -6779,9 +6823,17 @@
     "Handler and Override Dimensions": [
       {
         "document": "advanced/scope.md",
-        "line": 216,
+        "line": 247,
         "level": 3,
         "title": "Handler and Override Dimensions"
+      }
+    ],
+    "Handling A2UI Button Events": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 429,
+        "level": 1,
+        "title": "Handling A2UI Button Events"
       }
     ],
     "Handling Channel Messages": [
@@ -6874,6 +6926,22 @@
         "title": "Handling Reaction Events"
       }
     ],
+    "Handling Robot Setting Changes": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 424,
+        "level": 1,
+        "title": "Handling Robot Setting Changes"
+      }
+    ],
+    "Handling Shortcut Menu Events": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 419,
+        "level": 1,
+        "title": "Handling Shortcut Menu Events"
+      }
+    ],
     "Handling Unsupported Types": [
       {
         "document": "platform-guide/onebot11.md",
@@ -6940,14 +7008,6 @@
         "line": 89,
         "level": 2,
         "title": "Hook Breakpoint Overview"
-      }
-    ],
-    "Hot Configuration Reload": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 63,
-        "level": 2,
-        "title": "Hot Configuration Reload"
       }
     ],
     "Hot Restart/Stop of Adapters": [
@@ -7059,7 +7119,7 @@
     "Identity Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 183,
+        "line": 214,
         "level": 3,
         "title": "Identity Dimension"
       }
@@ -7134,14 +7194,6 @@
         "line": 160,
         "level": 2,
         "title": "Information Query Commands"
-      }
-    ],
-    "Information queries (via public Web API, no authentication required)": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 243,
-        "level": 1,
-        "title": "Information queries (via public Web API, no authentication required)"
       }
     ],
     "Inheritance Relationship": [
@@ -7262,12 +7314,12 @@
         "title": "Installation (Desktop: Windows / Linux / macOS)"
       }
     ],
-    "Installation Failure": [
+    "Installation Failed": [
       {
         "document": "user-guide/installation.md",
         "line": 108,
         "level": 3,
-        "title": "Installation Failure"
+        "title": "Installation Failed"
       }
     ],
     "Installation Methods": [
@@ -7370,12 +7422,12 @@
         "title": "Interactive Installation"
       }
     ],
-    "Internal Breakdown of Hot Reload Chain": [
+    "Internal Breakdown of Hot Update Chain": [
       {
         "document": "user-guide/configuration.md",
         "line": 85,
         "level": 3,
-        "title": "Internal Breakdown of Hot Reload Chain"
+        "title": "Internal Breakdown of Hot Update Chain"
       }
     ],
     "Internal Breakdown of the Sending Chain": [
@@ -7397,7 +7449,7 @@
     "Internationalization Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 384,
+        "line": 387,
         "level": 2,
         "title": "Internationalization Configuration"
       }
@@ -7480,6 +7532,14 @@
         "line": 7,
         "level": 2,
         "title": "Learning Path"
+      }
+    ],
+    "Legacy Configuration Compatibility": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 691,
+        "level": 3,
+        "title": "Legacy Configuration Compatibility"
       }
     ],
     "Lifecycle Events": [
@@ -7696,6 +7756,12 @@
     ],
     "Log Information": [
       {
+        "document": "platform-guide/yunhu.md",
+        "line": 666,
+        "level": 3,
+        "title": "Log Information"
+      },
+      {
         "document": "platform-guide/yunhu_user.md",
         "line": 530,
         "level": 3,
@@ -7759,7 +7825,7 @@
     "Logging Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 231,
+        "line": 234,
         "level": 2,
         "title": "Logging Configuration"
       }
@@ -7815,6 +7881,12 @@
         "document": "platform-guide/onebot12.md",
         "line": 393,
         "level": 2,
+        "title": "Management Interface"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 675,
+        "level": 3,
         "title": "Management Interface"
       },
       {
@@ -7880,12 +7952,12 @@
         "title": "Master System Configuration"
       }
     ],
-    "Matching Entry Syntax (Unified Across the Entire System)": [
+    "Matching Entry Syntax (Unified Across the System)": [
       {
         "document": "advanced/scope.md",
-        "line": 27,
+        "line": 29,
         "level": 2,
-        "title": "Matching Entry Syntax (Unified Across the Entire System)"
+        "title": "Matching Entry Syntax (Unified Across the System)"
       }
     ],
     "Material Documentation": [
@@ -7939,7 +8011,7 @@
     "Message Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 373,
+        "line": 376,
         "level": 3,
         "title": "Message Configuration"
       }
@@ -8097,7 +8169,7 @@
     "Message Query Examples": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 198,
+        "line": 192,
         "level": 3,
         "title": "Message Query Examples"
       }
@@ -8105,7 +8177,7 @@
     "Message Query Methods": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 71,
+        "line": 65,
         "level": 3,
         "title": "Message Query Methods"
       }
@@ -8519,7 +8591,7 @@
     "Module Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 395,
+        "line": 398,
         "level": 2,
         "title": "Module Configuration"
       }
@@ -8551,7 +8623,7 @@
     "Module Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 161,
+        "line": 192,
         "level": 3,
         "title": "Module Dimension"
       }
@@ -8564,12 +8636,12 @@
         "title": "Module Discovery Mechanism"
       }
     ],
-    "Module Installation Failure": [
+    "Module Installation Failed": [
       {
         "document": "user-guide/installation.md",
         "line": 123,
         "level": 3,
-        "title": "Module Installation Failure"
+        "title": "Module Installation Failed"
       }
     ],
     "Module Lifecycle": [
@@ -8698,6 +8770,14 @@
         "title": "Multi-Account Support"
       }
     ],
+    "Multi-Bot Configuration": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 589,
+        "level": 2,
+        "title": "Multi-Bot Configuration"
+      }
+    ],
     "Multi-Instance Deployment": [
       {
         "document": "user-guide/deployment.md",
@@ -8758,14 +8838,6 @@
         "line": 620,
         "level": 3,
         "title": "Multi-turn Dialogue (`conversation`)"
-      }
-    ],
-    "Multiple accounts: specify Bot account": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 255,
-        "level": 1,
-        "title": "Multiple accounts: specify Bot account"
       }
     ],
     "Must package names start with `ErisPulse-`?": [
@@ -8875,13 +8947,13 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 485,
+        "line": 488,
         "level": 2,
         "title": "Next Steps"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 138,
+        "line": 150,
         "level": 2,
         "title": "Next Steps"
       }
@@ -9059,7 +9131,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 217,
+        "line": 211,
         "level": 3,
         "title": "OneBot12 Message Support"
       },
@@ -9230,6 +9302,14 @@
         "title": "Overview of the Startup Chain"
       }
     ],
+    "Owner Identity and Custom Identity Source (provider)": [
+      {
+        "document": "advanced/scope.md",
+        "line": 271,
+        "level": 2,
+        "title": "Owner Identity and Custom Identity Source (provider)"
+      }
+    ],
     "POST": [
       {
         "document": "advanced/http-client.md",
@@ -9356,6 +9436,14 @@
         "title": "Platform Event Method Extension"
       }
     ],
+    "Platform Extension Actions": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 274,
+        "level": 3,
+        "title": "Platform Extension Actions"
+      }
+    ],
     "Platform Extension Fields": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -9414,14 +9502,6 @@
         "line": 522,
         "level": 4,
         "title": "Platform Method Isolation"
-      }
-    ],
-    "Platform extension example": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 298,
-        "level": 1,
-        "title": "Platform extension example"
       }
     ],
     "Platform-Native Events": [
@@ -9557,7 +9637,7 @@
     "Proactive GC Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 300,
+        "line": 303,
         "level": 3,
         "title": "Proactive GC Configuration"
       }
@@ -9914,14 +9994,6 @@
         "title": "Reading i18n Configuration via API"
       }
     ],
-    "Recall message (requires additional chat_id + chat_type)": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 252,
-        "level": 1,
-        "title": "Recall message (requires additional chat_id + chat_type)"
-      }
-    ],
     "Receiving Messages": [
       {
         "document": "advanced/http-client.md",
@@ -10148,6 +10220,12 @@
         "title": "Related Documentation"
       },
       {
+        "document": "standards/README.md",
+        "line": 102,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
         "document": "user-guide/README.md",
         "line": 41,
         "level": 2,
@@ -10182,12 +10260,6 @@
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 488,
-        "level": 2,
-        "title": "Related Documents"
-      },
-      {
-        "document": "standards/README.md",
-        "line": 102,
         "level": 2,
         "title": "Related Documents"
       }
@@ -10580,6 +10652,12 @@
         "line": 107,
         "level": 2,
         "title": "Return Values of Send Methods"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 301,
+        "level": 2,
+        "title": "Return Values of Send Methods"
       }
     ],
     "Return Values of Sending Methods": [
@@ -10777,7 +10855,7 @@
     "Runtime API": [
       {
         "document": "advanced/scope.md",
-        "line": 159,
+        "line": 190,
         "level": 2,
         "title": "Runtime API"
       }
@@ -10913,7 +10991,13 @@
     "Send A2UI Message": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 478,
+        "line": 458,
+        "level": 3,
+        "title": "Send A2UI Message"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 466,
         "level": 1,
         "title": "Send A2UI Message"
       }
@@ -10980,20 +11064,20 @@
         "title": "Send Rule Decorators"
       }
     ],
-    "Send message using account name": [
+    "Send a Message with Buttons to User's Private Chat": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 641,
+        "line": 455,
         "level": 1,
-        "title": "Send message using account name"
+        "title": "Send a Message with Buttons to User's Private Chat"
       }
     ],
-    "Send message using bot_id (automatically matches the corresponding account)": [
+    "Send a Message with Buttons to a Group": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 644,
+        "line": 452,
         "level": 1,
-        "title": "Send message using bot_id (automatically matches the corresponding account)"
+        "title": "Send a Message with Buttons to a Group"
       }
     ],
     "SendDSL Explained": [
@@ -11116,14 +11200,6 @@
         "line": 273,
         "level": 2,
         "title": "Sending Rule System"
-      }
-    ],
-    "Sending a Message with Buttons Using Chained Calls": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 448,
-        "level": 3,
-        "title": "Sending a Message with Buttons Using Chained Calls"
       }
     ],
     "Sending a Reply": [
@@ -11268,6 +11344,12 @@
         "line": 151,
         "level": 3,
         "title": "Special Field Examples"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 338,
+        "level": 3,
+        "title": "Special Field Examples"
       }
     ],
     "Special Message Segment Types": [
@@ -11310,10 +11392,18 @@
         "title": "Standalone Renderer"
       }
     ],
+    "Standard API Actions (ApiDSL)": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 227,
+        "level": 2,
+        "title": "Standard API Actions (ApiDSL)"
+      }
+    ],
     "Standard Actions": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 241,
+        "line": 314,
         "level": 3,
         "title": "Standard Actions"
       }
@@ -11505,7 +11595,7 @@
     "Storage Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 344,
+        "line": 347,
         "level": 2,
         "title": "Storage Configuration"
       }
@@ -11535,7 +11625,7 @@
     "Strict Mode": [
       {
         "document": "user-guide/configuration.md",
-        "line": 315,
+        "line": 318,
         "level": 3,
         "title": "Strict Mode"
       }
@@ -11661,7 +11751,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 25,
+        "line": 20,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
@@ -11694,6 +11784,14 @@
         "line": 25,
         "level": 2,
         "title": "Supported Platforms"
+      }
+    ],
+    "Supported Standard Actions": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 254,
+        "level": 3,
+        "title": "Supported Standard Actions"
       }
     ],
     "Supported Submission Types": [
@@ -11887,7 +11985,7 @@
     "Topology Tree API": [
       {
         "document": "advanced/scope.md",
-        "line": 275,
+        "line": 353,
         "level": 2,
         "title": "Topology Tree API"
       }
@@ -12050,6 +12148,12 @@
         "line": 140,
         "level": 3,
         "title": "Unique Event Types"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 317,
+        "level": 2,
+        "title": "Unique Event Types"
       }
     ],
     "Unload Process": [
@@ -12098,6 +12202,14 @@
         "line": 51,
         "level": 3,
         "title": "Unsupported Method Calls"
+      }
+    ],
+    "Unsupported Standard Actions": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 267,
+        "level": 3,
+        "title": "Unsupported Standard Actions"
       }
     ],
     "Update Data": [
@@ -12194,14 +12306,6 @@
         "title": "Use Adapter Event Listeners"
       }
     ],
-    "Use the first enabled bot if not specified": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 647,
-        "level": 1,
-        "title": "Use the first enabled bot if not specified"
-      }
-    ],
     "User Data Storage": [
       {
         "document": "getting-started/common-tasks.md",
@@ -12216,6 +12320,14 @@
         "line": 1,
         "level": 1,
         "title": "User Guide"
+      }
+    ],
+    "User Priority: Owner Scope is Finalized by the User": [
+      {
+        "document": "advanced/scope.md",
+        "line": 313,
+        "level": 3,
+        "title": "User Priority: Owner Scope is Finalized by the User"
       }
     ],
     "User Status Change Event": [
@@ -12306,12 +12418,28 @@
         "title": "Using Send DSL to Specify Accounts"
       }
     ],
+    "Using Send DSL to Specify Bot": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 622,
+        "level": 3,
+        "title": "Using Send DSL to Specify Bot"
+      }
+    ],
     "Using Translations": [
       {
         "document": "advanced/i18n.md",
         "line": 209,
         "level": 3,
         "title": "Using Translations"
+      }
+    ],
+    "Using event.reply() for Automatic Replies (会选择正确的发送方式以适应平台)": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 411,
+        "level": 1,
+        "title": "Using event.reply() for Automatic Replies (会选择正确的发送方式以适应平台)"
       }
     ],
     "Using i18n in Modules": [
@@ -12648,12 +12776,12 @@
         "title": "Where Parameter Passing Rules"
       }
     ],
-    "Why Are Standards Needed?": [
+    "Why Do We Need Standards?": [
       {
         "document": "standards/README.md",
         "line": 25,
         "level": 2,
-        "title": "Why Are Standards Needed?"
+        "title": "Why Do We Need Standards?"
       }
     ],
     "Why Recommend I18nClass?": [
@@ -13038,14 +13166,6 @@
         "line": 228,
         "level": 3,
         "title": "config"
-      }
-    ],
-    "config.toml": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 605,
-        "level": 1,
-        "title": "config.toml"
       }
     ],
     "confirm(prompt=None, **kwargs)": [
@@ -13443,7 +13563,7 @@
     "① Module Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 95,
+        "line": 105,
         "level": 2,
         "title": "① Module Dimension"
       }
@@ -13451,7 +13571,7 @@
     "② Identity Dimension (Event Admission)": [
       {
         "document": "advanced/scope.md",
-        "line": 112,
+        "line": 122,
         "level": 2,
         "title": "② Identity Dimension (Event Admission)"
       }
@@ -13459,7 +13579,7 @@
     "③ Command Dimension (Command ACL)": [
       {
         "document": "advanced/scope.md",
-        "line": 128,
+        "line": 138,
         "level": 2,
         "title": "③ Command Dimension (Command ACL)"
       }
@@ -13467,7 +13587,7 @@
     "④ Handler/Text Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 137,
+        "line": 147,
         "level": 2,
         "title": "④ Handler/Text Dimension"
       }
@@ -13475,9 +13595,17 @@
     "⑤ Implementation Parameter Override": [
       {
         "document": "advanced/scope.md",
-        "line": 146,
+        "line": 156,
         "level": 2,
         "title": "⑤ Implementation Parameter Override"
+      }
+    ],
+    "⑥ Outbound Action Dimension (Prohibit Modules from Initiating Outbound Calls)": [
+      {
+        "document": "advanced/scope.md",
+        "line": 169,
+        "level": 2,
+        "title": "⑥ Outbound Action Dimension (Prohibit Modules from Initiating Outbound Calls)"
       }
     ]
   }

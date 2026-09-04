@@ -18,8 +18,9 @@ ErisPulse 统一控制面（scope）
 - 命令维度（原命令权限 ACL：按命令的用户黑白名单）
 - 处理器/文本维度（新增：按模块过滤消息文本）
 - 实现参数覆盖（新增：覆盖模块/命令的 master / hidden / aliases / prefix 等）
+- 出站动作维度（新增：禁止模块发起消息发送 / 标准 API 动作 / 请求操作）
 
-五维配置树（``ErisPulse.scope``）：
+配置树（``ErisPulse.scope``）：
 
 .. code-block:: toml
 
@@ -56,9 +57,15 @@ ErisPulse 统一控制面（scope）
     pattern = "签到*"
     regex = "re:\d+\s*元"
 
-    # ⑤ 实现参数覆盖：覆盖模块/命令的默认参数（禁用走命令 deny）
+    # ⑤ 实现参数覆盖：覆盖模块/命令的默认实现参数（禁用走命令 deny）
     [ErisPulse.scope.overrides.MyModule.restart]
     master = true   hidden = true   aliases = ["rs"]   prefix = "!"
+
+    # ⑥ 出站动作维度：禁止模块发起出站动作（默认全允许，显式禁用才收紧）
+    [ErisPulse.scope.actions.MyModule]
+    send = false      # 禁止 MyModule 回复/主动发消息（Event.reply / Send DSL）
+    api = false       # 禁止 MyModule 调用标准 API 动作（Api DSL / call_api）
+    request = false   # 禁止 MyModule 对请求事件执行 accept/reject
 
 匹配条目统一语法（见 :mod:`ErisPulse.Core.text_match`）：
 **精确名** / **glob**（``*`` / ``?`` / ``[seq]``）/ **``re:`` 正则**，默认大小写不敏感。
@@ -69,7 +76,8 @@ ErisPulse 统一控制面（scope）
 > 3. ``scope.is_identity_allowed(...)`` 判断事件是否放行（原 access）
 > 4. ``scope.allow_user("roll*", platform, uid)`` 命令 ACL（命令名支持 glob）
 > 5. ``scope.override("MyModule", "restart", master=True)`` 覆盖实现参数
-> 6. ``scope.get_stats()`` 查看过滤统计
+> 6. ``scope.set_action("MyModule", "send", False)`` 禁止模块回复/发消息
+> 7. ``scope.get_stats()`` 查看过滤统计
 
 ---
 
@@ -94,9 +102,9 @@ ErisPulse 统一控制面（scope）
 
 统一控制面管理器（单例）
 
-管理五维配置：模块（modules）/ 身份（identity）/ 命令（commands）/
-处理器（handlers）/ 覆盖（overrides）。支持配置热更新、运行时增删、
-LRU 缓存与运行统计。
+管理六维配置：模块（modules）/ 身份（identity）/ 命令（commands）/
+处理器（handlers）/ 覆盖（overrides）/ 出站动作（actions）。支持配置热更新、
+运行时增删、LRU 缓存与运行统计。
 
 
 #### 方法列表
@@ -286,6 +294,10 @@ allow 命中 → True；未配置 ACL 时遵循全局 ``default_allow``
 
 > **内部方法**
 把命令默认参数与覆盖合并（覆盖优先）
+
+覆盖键 ``master`` 会同步映射到命令存储键 ``must_master``：
+用户优先——用户在控制面显式配置 ``master = true/false`` 时直接生效
+（既可收紧也可放开开发者默认），未配置时保持开发者默认。
 
 - **owner** (`模块名`): - **command_name**: 命令名
 - **defaults** (`命令默认参数字典`): **返回值**: 合并后的参数字典
@@ -477,6 +489,72 @@ allow 命中 → True；未配置 ACL 时遵循全局 ``default_allow``
 ---
 
 
+##### `_action_cfg(owner: str)`
+
+> **内部方法**
+读取模块的出站动作配置
+
+- **owner** (`模块名（owner），无`): owner 时返回 None
+**返回值** (`动作开关字典（{"send":`): bool, "api": bool, "request": bool}），未配置返回 None
+
+---
+
+
+##### `is_action_allowed(owner: str, action: str)`
+
+判断模块是否允许执行某类出站动作（⑥ 出站动作维度）
+
+判定语义：**默认允许**——未配置、或 owner 为空（框架层调用）均视为允许；
+仅当用户显式禁用（``scope.actions.<owner>.<action> = false``）才拒绝。
+与身份/命令维度的"默认允许兜底"不同，本维度是出站能力的收紧开关，
+空白即放行，声明式禁用。
+
+- **owner** (`模块名（owner）`): - **action**: 动作类型，取值 ``_ACTION_NAMES``（"send" / "api" / "request"）
+**返回值**: 是否允许执行
+
+---
+
+
+##### `set_action(owner: str, action: str, allowed: bool, persist: bool = True)`
+
+设置模块某类出站动作的允许/禁用（⑥ 出站动作维度）
+
+仅影响本模块从事件处理器（handler 执行期 owner 上下文）发起的出站调用。
+不影响框架层内部调用（owner 为空时恒放行）。
+
+- **owner** (`模块名（owner）`): - **action**: 动作类型（"send" / "api" / "request"）
+- **allowed** (`False`): 禁止该动作，True 允许
+- **persist** (`是否持久化`): (默认: True)
+
+**示例**:
+```python
+>>> scope.set_action("MyModule", "send", False)  # 禁止 MyModule 回复消息
+>>> scope.set_action("MyModule", "api", False)  # 禁止 MyModule 调用标准 API
+>>> scope.set_action("MyModule", "request", False)  # 禁止 MyModule 处理请求操作
+```
+
+---
+
+
+##### `unset_action(owner: str, action: str | None = None, persist: bool = True)`
+
+移除模块的出站动作限制（恢复默认允许）
+
+- **owner** (`模块名`): - **action**: 动作类型；None 表示移除该模块全部动作限制
+- **persist** (`是否持久化`): **返回值**: 是否有内容被移除
+
+---
+
+
+##### `get_action_rules(owner: str)`
+
+查询模块当前的出站动作限制
+
+- **owner** (`模块名`): **返回值** (`动作开关字典（含默认允许的未配置项为`): True）
+
+---
+
+
 ##### `bind_handler(owner: str, pattern: str | None = None, regex: str | None = None, persist: bool = True)`
 
 绑定模块的文本过滤条件（④ 处理器维度）
@@ -501,12 +579,13 @@ allow 命中 → True；未配置 ACL 时遵循全局 ``default_allow``
 
 覆盖模块 / 命令的实现参数（⑤ 覆盖维度）
 
+覆盖遵循**用户优先**：显式设置的参数直接生效（可收紧也可放开开发者默认）。
 覆盖值只影响**实现参数**（master / hidden / aliases / prefix 等），
 不用于禁用——禁用统一走命令 deny（``deny_user`` / ``scope.commands``）。
 
 - **owner** (`模块名`): - **command_name**: 命令名；None 表示模块级覆盖
 - **persist** (`是否持久化`): (默认: True)
-- **params** (`要覆盖的参数（如`): ``master=True``、``hidden=True``、``aliases=["rs"]``）
+- **params** (`要覆盖的参数（如`): ``master=True`` 收紧、``master=False`` 放开、``hidden=True``、``aliases=["rs"]``）
 
 **示例**:
 ```python
@@ -527,10 +606,10 @@ allow 命中 → True；未配置 ACL 时遵循全局 ``default_allow``
 
 ##### `list_bindings()`
 
-列出全部控制面绑定（五维）
+列出全部控制面绑定（含出站动作维度）
 
 **返回值** (`{"platforms",`): "bots", "sessions", "identity", "commands",
-        "handlers", "overrides"} 结构（深拷贝）
+        "handlers", "overrides", "actions"} 结构（深拷贝）
 
 ---
 
@@ -549,6 +628,7 @@ allow 命中 → True；未配置 ACL 时遵循全局 ``default_allow``
 统计项：``module_calls`` / ``module_filtered``（模块维度）、
 ``identity_checks`` / ``identity_denied``（身份维度）、
 ``command_checks`` / ``command_denied``（命令维度）、
+``action_checks`` / ``action_denied``（出站动作维度）、
 ``cache_hits`` / ``cache_misses``（模块维度 LRU）。
 
 **返回值**: 统计字典
@@ -567,7 +647,7 @@ allow 命中 → True；未配置 ACL 时遵循全局 ``default_allow``
 
 获取控制面绑定的结构化数据（便于 WebUI 展示拓扑树）
 
-**返回值** (`五维绑定结构（模块`): / 身份 / 命令 / 处理器 / 覆盖）
+**返回值** (`全维度绑定结构（模块`): / 身份 / 命令 / 处理器 / 覆盖 / 出站动作）
 
 ---
 
