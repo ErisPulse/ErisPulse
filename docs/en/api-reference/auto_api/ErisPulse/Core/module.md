@@ -520,8 +520,15 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
 
 聚合每个模块的**介绍元信息**与其**注册的命令**（含别名 / 分组 / 帮助文本），
 便于 help 模块、管理界面等按模块展示"这个模块是干什么的 + 有哪些命令"。
+命令的 help / hidden 字段为合并控制面覆盖后的生效值（用户优先）。
 
-**返回值** (`{模块名:`): {"meta": {...}, "commands": [{name, aliases, group, help, hidden}]}}
+传入作用域上下文（``event`` 或 ``platform`` / ``bot_id`` / ``session_id``
+任一）时，当前会话不可用模块不进入总览（会话感知总览）。
+
+- **event** (`可选，事件上下文（Event`): 或 dict）
+- **platform** (`可选，平台名（与`): event 叠加时显式参数优先）
+- **bot_id** (`可选，Bot`): 标识
+- **session_id** (`可选，会话标识`): **返回值** (`{模块名:`): {"meta": {...}, "commands": [{name, aliases, group, help, hidden}]}}
 
 **示例**:
 ```python
@@ -530,6 +537,7 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
 "查询城市天气"
 >>> overview["Weather"]["commands"][0]["name"]
 "weather"
+>>> overview = module.get_commands_overview(event=event)   # 会话感知
 ```
 
 ---
