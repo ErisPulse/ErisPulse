@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "6b8bb865b4958d566dc1102cce0c5697",
-  "file_hash": "6b8bb865b4958d566dc1102cce0c5697",
-  "translated_at": "2026-09-01T07:00:05.672056",
+  "hash": "a60955b24db5c8925d2dffe7ba297507",
+  "file_hash": "a60955b24db5c8925d2dffe7ba297507",
+  "translated_at": "2026-09-04T14:38:29.093662",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -26,8 +26,8 @@
       "translation": "## 驗證安裝\n\n### 檢查安裝\n\n```bash\n# 檢查 ErisPulse 版本\nepsdk --version\n```\n\n### 執行測試\n\n```bash\n# 執行項目\nepsdk run main.py\n```\n\n如果看到類似的輸出，則表示安裝成功：\n\n```\n[INFO] 正在初始化 ErisPulse...\n[INFO] 適配器已載入: Yunhu\n[INFO] 模組已載入: MyModule\n[INFO] ErisPulse 初始化完成\n```"
     },
     {
-      "hash": "1bb3ef51791ad89cc63f9dbe11dcaf50",
-      "translation": "## 常見問題\n\n### 安裝失敗\n\n1. 檢查 Python 版本是否 >= 3.10（建議 3.10 - 3.13）\n2. 嘗試使用 `uv pip install ErisPulse` 取代 `pip install`\n3. 如果提示權限錯誤，嘗試 `pip install --user ErisPulse` 或使用虛擬環境\n4. 如果在企業代理環境下遇到 SSL 證書錯誤，嘗試 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`\n5. 確保網路連接正常，pip 源可訪問\n\n### 配置錯誤\n\n1. 檢查 `config.toml` 語法是否正確（TOML 格式對縮進和引號敏感）\n2. 確認所有必需的配置項都已填寫\n3. 查看終端日誌獲取詳細錯誤資訊\n4. 使用 `epsdk init` 重新生成配置文件\n\n### 模組安裝失敗\n\n1. 確認模組名稱拼寫正確（大小寫敏感）\n2. 檢查網路連接\n3. 使用 `epsdk list-remote` 查看可用模組列表\n4. 確認模組與你目前 SDK 版本相容\n\n### Windows PowerShell 執行策略\n\n如果 PowerShell 提示「無法載入檔案...因為在此系統上禁止執行腳本」：\n\n```powershell\nSet-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser\n```"
+      "hash": "5534551169739058f16aeba5442783c0",
+      "translation": "## 常見問題\n\n### 安裝失敗\n\n1. 檢查 Python 版本是否 >= 3.10（推薦 3.10 - 3.13）\n2. 嘗試使用 `uv pip install ErisPulse` 取代 `pip install`\n3. 如果提示權限錯誤，嘗試 `pip install --user ErisPulse` 或使用虛擬環境\n4. 如果在企業代理環境下遇到 SSL 證書錯誤，嘗試 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`\n5. 確保網路連接正常，pip 源可訪問\n\n### 配置錯誤\n\n1. 檢查 `config.toml` 語法是否正確（TOML 格式對縮進和引號敏感）\n2. 確認所有必需的配置項都已填寫\n3. 查看終端日誌獲取詳細錯誤資訊\n4. 使用 `epsdk init` 重新生成配置文件\n\n### 模組安裝失敗\n\n1. 確認模組名稱拼寫正確（大小寫敏感）\n2. 檢查網路連接\n3. 使用 `epsdk list-remote` 查看可用模組列表\n4. 確認模組與你當前 SDK 版本相容\n\n### Windows PowerShell 執行策略\n\n如果 PowerShell 提示「無法載入檔案...因為在此系統上禁止執行腳本」：\n\n```powershell\nSet-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser\n```\n\n### Debian/Ubuntu 虛擬環境建立失敗\n\n如果安裝腳本提示「虛擬環境建立失敗」，且錯誤資訊包含 `ensurepip is not available`，是因為 Debian/Ubuntu 預設未安裝 `python3-venv`（系統 Python 的 `ensurepip` 被禁用）：\n\n```bash\nsudo apt install python3.13-venv   # 按實際 Python 版本安裝對應套件\n# 或安裝通用元套件：\nsudo apt install python3-venv\n```\n\n安裝後重新執行安裝腳本即可。新版安裝腳本在偵測到該問題時會主動詢問並嘗試自動安裝對應系統套件；也可以改用 uv（`uv venv` 不依賴 `ensurepip`）。"
     },
     {
       "hash": "f8f13704538cc520848853879c0ee83f",

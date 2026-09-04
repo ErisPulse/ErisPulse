@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "ebdabea25150c7568a7584972ee9b9dc",
-  "file_hash": "ebdabea25150c7568a7584972ee9b9dc",
-  "translated_at": "2026-09-01T07:10:05.125131",
+  "hash": "d4d19b1a095112c6604058a05e62fd72",
+  "file_hash": "d4d19b1a095112c6604058a05e62fd72",
+  "translated_at": "2026-09-04T14:43:01.318703",
   "target_lang": "ja",
   "chunks": [
     {
@@ -34,8 +34,8 @@
       "translation": "## サーバー設定\n\n```toml\n[ErisPulse.server]\nhost = \"0.0.0.0\"\nport = 8000\nauto_start = true\nssl_certfile = \"/path/to/cert.pem\"\nssl_keyfile = \"/path/to/key.pem\"\n```\n\n| 設定項目 | 型 | デフォルト値 | 説明 |\n|---------|------|---------|------|\n| host | string | 0.0.0.0 | 監視するアドレス。0.0.0.0 はすべてのインターフェースを意味します |\n| port | integer | 8000 | 監視するポート番号 |\n| auto_start | boolean | true | `sdk.init()` 時にルーティングサーバーを自動的に起動するかどうか。`false` に設定するとルーティングサーバーの起動をスキップできます（純粋なイベント/WebUI なしの場面） |\n| ssl_certfile | string | 空 | SSL 証明書ファイルのパス |\n| ssl_keyfile | string | 空 | SSL 秘密鍵ファイルのパス |"
     },
     {
-      "hash": "9a6c469d02b8dd9074aa0433b617644f",
-      "translation": "## 主人システム設定\n\n主人システムは「フレームワークの主人」アカウント（例: Bot管理者）を識別するために使用されます。`master.users` には、以下の2種類の記述方法がサポートされています。\n\n```toml\n[ErisPulse.master]\n# 方法1: グローバルな主人（すべてのプラットフォームに適用）\nusers = [\"123456\", \"789012\"]\n\n# 方法2: プラットフォームごとに主人を指定（dict形式）\n# users = { yunhu = [\"123456\"], telegram = [\"789012\"] }\n```\n\n| 設定項目 | 型 | デフォルト値 | 説明 |\n|---------|------|---------|------|\n| users | array / object | 空 | 主人アカウントのリスト。`list`形式はグローバルな主人（すべてのプラットフォームに適用）；`dict`形式ではプラットフォームごとに指定（キーはプラットフォーム名、値はそのプラットフォームの主人アカウントのリスト） |\n\nコード中では、`master.is_master(event)` または `master.is_master(platform, user_id)` を使用してチェックします。この各呼び出しは設定をリアルタイムに読み取ります（ホットアップデートがサポートされており、再起動は不要です）：\n\n```python\nfrom ErisPulse.Core import master\n\nif master.is_master(event):\n    await event.reply(\"主人こんにちは\")\n```"
+      "hash": "879859265c4dd6599d52aacc65039825",
+      "translation": "## 主人システムの設定\n\n主人システムは、「フレームワークの主人」アカウント（例：Bot管理者）を識別するために使用されます。`master.users` には2種類の書き方が可能です。\n\n```toml\n[ErisPulse.master]\n# 方法1：グローバルな主人（全プラットフォームに適用）\nusers = [\"123456\", \"789012\"]\n\n# 方法2：プラットフォームごとに主人を指定（dict）\n# users = { yunhu = [\"123456\"], telegram = [\"789012\"] }\n```\n\n| 設定項目 | 型 | デフォルト値 | 説明 |\n|---------|------|---------|------|\n| users | array / object | 空 | 主人アカウントのリスト。`list` 形式はグローバルな主人（全プラットフォームに適用）；`dict` 形式はプラットフォームごとに指定（キーはプラットフォーム名、値はそのプラットフォームの主人アカウントのリスト） |\n\nコード中では `master.is_master(event)` もしくは `master.is_master(platform, user_id)` を使ってチェックを行い、各呼び出し時に設定をリアルタイムで読み込みます（ホットアップデートが可能で、再起動は不要です）：\n\n```python\nfrom ErisPulse.Core import master\n\nif master.is_master(event):\n    await event.reply(\"主人你好\")\n```\n\n> 身分判定の完全な API（実行時における追加・削除、**カスタム身分ソース provider チェーンのカスタマイズ**）と「ユーザー優先」の\n> 上書き意味論（ユーザーはコントロール面を介して `master=True` を開放/制限できる）、詳細は\n> [統一コントロール面 · 主人身分とカスタム身分ソース](../advanced/scope.md#主人身分とカスタム身分ソースprovider) を参照してください。"
     },
     {
       "hash": "9773b7e8ddb72448025cfade7e0c3bb5",

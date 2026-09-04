@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "ebdabea25150c7568a7584972ee9b9dc",
-  "file_hash": "ebdabea25150c7568a7584972ee9b9dc",
-  "translated_at": "2026-09-01T07:04:36.303870",
+  "hash": "d4d19b1a095112c6604058a05e62fd72",
+  "file_hash": "d4d19b1a095112c6604058a05e62fd72",
+  "translated_at": "2026-09-04T14:38:44.829289",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -34,8 +34,8 @@
       "translation": "## 伺服器配置\n\n```toml\n[ErisPulse.server]\nhost = \"0.0.0.0\"\nport = 8000\nauto_start = true\nssl_certfile = \"/path/to/cert.pem\"\nssl_keyfile = \"/path/to/key.pem\"\n```\n\n| 配置項 | 類型 | 默認值 | 說明 |\n|---------|------|---------|------|\n| host | string | 0.0.0.0 | 監聽位址，0.0.0.0 表示所有介面 |\n| port | integer | 8000 | 監聽埠號 |\n| auto_start | boolean | true | 是否在 `sdk.init()` 時自動啟動路由伺服器。設為 `false` 可跳過路由伺服器啟動（純事件/無 WebUI 場景） |\n| ssl_certfile | string | 空 | SSL 證書檔案路徑 |\n| ssl_keyfile | string | 空 | SSL 私鑰檔案路徑 |"
     },
     {
-      "hash": "9a6c469d02b8dd9074aa0433b617644f",
-      "translation": "## 主人系統配置\n\n主人系統用於識別「框架主人」帳號（如 Bot 管理員）。`master.users` 支援兩種寫法：\n\n```toml\n[ErisPulse.master]\n# 寫法一：全域主人（所有平台生效）\nusers = [\"123456\", \"789012\"]\n\n# 寫法二：按平台指定主人（dict）\n# users = { yunhu = [\"123456\"], telegram = [\"789012\"] }\n```\n\n| 配置項 | 類型 | 預設值 | 說明 |\n|---------|------|---------|------|\n| users | array / object | 空 | 主人帳號列表。`list` 形式為全域主人（所有平台生效）；`dict` 形式按平台指定（鍵為平台名，值為該平台的主人帳號列表） |\n\n程式碼中透過 `master.is_master(event)` 或 `master.is_master(platform, user_id)` 檢查，每次呼叫即時讀取設定（支援熱更新，無需重啟）：\n\n```python\nfrom ErisPulse.Core import master\n\nif master.is_master(event):\n    await event.reply(\"主人你好\")\n```"
+      "hash": "879859265c4dd6599d52aacc65039825",
+      "translation": "## 主人系統配置\n\n主人系統用於識別「框架主人」帳號（如 Bot 管理員）。`master.users` 支援兩種寫法：\n\n```toml\n[ErisPulse.master]\n# 寫法一：全域主人（所有平台生效）\nusers = [\"123456\", \"789012\"]\n\n# 寫法二：按平台指定主人（dict）\n# users = { yunhu = [\"123456\"], telegram = [\"789012\"] }\n```\n\n| 配置項 | 類型 | 預設值 | 說明 |\n|---------|------|---------|------|\n| users | array / object | 空 | 主人帳號列表。`list` 形式為全域主人（所有平台生效）；`dict` 形式按平台指定（鍵為平台名，值為該平台的主人帳號列表） |\n\n程式碼中透過 `master.is_master(event)` 或 `master.is_master(platform, user_id)` 檢查，每次呼叫即時讀取配置（支援熱更新，無需重啟）：\n\n```python\nfrom ErisPulse.Core import master\n\nif master.is_master(event):\n    await event.reply(\"主人你好\")\n```\n\n> 身份判定的完整 API（執行時增刪、**自訂身份來源 provider 鏈**）與「使用者優先」的\n> 覆蓋語意（使用者可經控制面放寬/收緊 `master=True`），請見\n> [統一控制面 · 主人身份與自訂身份來源](../advanced/scope.md#主人身份與自訂身份來源provider)。"
     },
     {
       "hash": "9773b7e8ddb72448025cfade7e0c3bb5",

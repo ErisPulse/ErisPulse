@@ -1,5 +1,37 @@
 {
-  "hash": "2f833a7a01a2274b69b11ca615b27313",
-  "translated_at": "2026-03-27T13:38:21.304243",
-  "target_lang": "zh-TW"
+  "version": 2,
+  "hash": "874a4baab77360706b85c86c4d11d5da",
+  "file_hash": "874a4baab77360706b85c86c4d11d5da",
+  "translated_at": "2026-09-04T14:36:42.568938",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "8ac818619ccf19f24d0ff2ed3dd6f00a",
+      "translation": "# ErisPulse 适配器標準化回傳規範"
+    },
+    {
+      "hash": "0a41e60f1c139a77a183b326303327a9",
+      "translation": "## 1. 說明  \n為什麼會有這個規範？  \n\n為了確保各平台發送介面返回的統一性與 OneBot12 兼容性，ErisPulse 適配器在 API 回應格式上採用了 OneBot12 定義的消息發送回傳結構標準。  \n\n不過 ErisPulse 的協定有一些特殊性定義：  \n- 1. 基礎欄位中，`message_id` 是必需的，但 OneBot12 標準中並無此欄位  \n- 2. 回傳內容中需要添加 `{platform_name}_raw` 欄位，用於存放原始回應資料"
+    },
+    {
+      "hash": "1a26a8fa3a4f0d95d07f6e85a1ac9d6c",
+      "translation": "## 2. 基礎返回結構  \n所有動作響應必須包含以下基礎字段：\n\n| 字段名 | 數據類型 | 必選 | 說明 |\n|-------|---------|------|------|\n| status | string | 是 | 執行狀態，必須是\"ok\"或\"failed\" |\n| retcode | int64 | 是 | 返回碼，遵循OneBot12返回碼規則 |\n| data | any | 是 | 响应数据，成功时包含请求结果，失败时为null |\n| message_id | string | 是 | 消息ID，用於標識消息，沒有則為空字串 |\n| message | string | 是 | 錯誤信息，成功時為空字串 |\n| {platform_name}_raw | any | 否 | 原始響應數據 |\n\n可選字段：\n| 字段名 | 數據類型 | 必選 | 說明 |\n|-------|---------|------|------|\n| echo | string | 否 | 當請求中包含echo字段時，原樣返回 |"
+    },
+    {
+      "hash": "b6a18e91164ca5847baf7777904f2749",
+      "translation": "## 3. 完整欄位規範\n\n### 3.1 通用欄位\n\n#### 成功回應範例\n```json\n{\n    \"status\": \"ok\",\n    \"retcode\": 0,\n    \"data\": {\n        \"message_id\": \"1234\",\n        \"time\": 1632847927.599013\n    },\n    \"message_id\": \"1234\",\n    \"message\": \"\",\n    \"echo\": \"1234\",\n    \"telegram_raw\": {...}\n}\n```\n\n#### 失敗回應範例\n```json\n{\n    \"status\": \"failed\",\n    \"retcode\": 10003,\n    \"data\": null,\n    \"message_id\": \"\",\n    \"message\": \"缺少必要參數: user_id\",\n    \"echo\": \"1234\",\n    \"telegram_raw\": {...}\n}\n```\n\n### 3.2 回傳碼規範\n\n#### 0 成功（OK）\n- 0: 成功（OK）\n\n#### 1xxxx 動作請求錯誤（Request Error）\n| 錯誤碼 | 錯誤名 | 說明 |\n|-------|-------|------|\n| 10001 | Bad Request | 無效的動作請求 |\n| 10002 | Unsupported Action | 不支援的動作請求 |\n| 10003 | Bad Param | 無效的動作請求參數 |\n| 10004 | Unsupported Param | 不支援的動作請求參數 |\n| 10005 | Unsupported Segment | 不支援的訊息段類型 |\n| 10006 | Bad Segment Data | 無效的訊息段參數 |\n| 10007 | Unsupported Segment Data | 不支援的訊息段參數 |\n| 10101 | Who Am I | 未指定機器人帳號 |\n| 10102 | Unknown Self | 未知的機器人帳號 |\n\n#### 2xxxx 動作處理器錯誤（Handler Error）\n| 錯誤碼 | 錯誤名 | 說明 |\n|-------|-------|------|\n| 20001 | Bad Handler | 動作處理器實作錯誤 |\n| 20002 | Internal Handler Error | 動作處理器執行時拋出例外 |\n\n#### 3xxxx 動作執行錯誤（Execution Error）\n| 錯誤碼範圍 | 錯誤類型 | 說明 |\n|-----------|---------|------|\n| 31xxx | Database Error | 資料庫錯誤 |\n| 32xxx | Filesystem Error | 檔案系統錯誤 |\n| 33xxx | Network Error | 網路錯誤 |\n| 34xxx | Platform Error | 機器人平台錯誤 |\n| 35xxx | Logic Error | 動作邏輯錯誤 |\n| 36xxx | I Am Tired | 實現決定罷工 |\n\n#### 保留錯誤段\n- 4xxxx、5xxxx: 保留段，不應使用\n- 6xxxx～9xxxx: 其他錯誤段，供實現自訂使用"
+    },
+    {
+      "hash": "31669faf6d364039f8c4a74abdb1fae9",
+      "translation": "## 4. 實現要求\n1. 所有回應必須包含 status、retcode、data 和 message 欄位\n2. 當請求中包含非空 echo 欄位時，回應必須包含相同值的 echo 欄位\n3. 回傳碼必須嚴格遵循 OneBot12 規範\n4. 錯誤訊息 (message) 應當是人類可讀的描述"
+    },
+    {
+      "hash": "5c4cf0d21ffa1c60d9f13c1f8818acb7",
+      "translation": "## 5. 扩展規範\n\nErisPulse 在 OneBot12 標準返回結構之上做了以下擴展：\n\n### 5.1 `message_id` 必選字段\n\nOneBot12 標準中 `message_id` 位於 `data` 對象內部且非強制。ErisPulse 將其提升為頂層**必選**字段：\n\n- 無法獲取 `message_id` 時應設為空字串 `\"\"`\n- 確保 `message_id` 始終存在，模組無需做 null 檢查\n\n### 5.2 `{platform}_raw` 原始回應字段\n\n回應值中應包含 `{platform}_raw` 字段，存放平台原始回應數據的完整副本：\n\n```json\n{\n    \"status\": \"ok\",\n    \"retcode\": 0,\n    \"data\": {\"message_id\": \"1234\", \"time\": 1632847927},\n    \"message_id\": \"1234\",\n    \"message\": \"\",\n    \"telegram_raw\": {\n        \"ok\": true,\n        \"result\": {\"message_id\": 1234, \"date\": 1632847927, ...}\n    }\n}\n```\n\n**要求**：\n- `{platform}_raw` 必須是原始回應的深拷貝，而非引用\n- `platform` 必須與適配器註冊時的平台名完全一致（大小寫敏感）\n- 原始回應中的錯誤資訊也應保留，便於除錯\n\n### 5.3 框架擴展回應碼（34xxx 平台錯誤段的低三位自訂）\n\nOneBot12 規範允許實現自訂 `3xxxx` 的低三位。`34xxx` 語意為 **Platform Error**\n（機器人平台錯誤，如平台限制導致失敗）。`34xxx` 內部按職責分層使用：\n\n| 低三位段 | 歸屬 | 用途 |\n|---------|------|------|\n| `340xx` | 適配器實現 | 請求操作族（Request Not Found / Already Handled / Not Supported / Permission Denied，見 request-action-spec §7） |\n| `341xx`～`345xx` | 適配器實現 | 平台側權限 / 風控 / 帳號限制等錯誤（實現自定低三位，原始錯誤放 `{platform}_raw`） |\n| `346xx` | **ErisPulse 框架（保留）** | 框架自身攔截與通用失敗，適配器/模組請勿占用 |\n| `347xx`～`349xx` | 適配器實現 | 其它平台執行錯誤 |\n\nErisPulse 框架目前使用的 `346xx` 碼：\n\n| 錯誤碼 | 錯誤名 | 說明 |\n|-------|-------|------|\n| 34600 | SDK Failure | 框架通用失敗（`make_error()` 預設回傳碼） |\n| 34601 | Action Denied | 出站動作被控制面禁用（`scope.actions`），呼叫未發起，直接回傳該回應 |\n\n> 職責區分：`34601` 是**框架在呼叫前攔截**（模組根本沒資格發起動作）；\n> `34004` / `34xxx` 平台碼是**動作已發出但平台拒絕**（如 Bot 無權限、被風控）。\n> 模組判斷權限問題時同時檢查這兩種：先看 `34601`（自己模組被 scope 禁），\n> 再看 `34xxx`（平台側限制）。\n\n回應結構為 §2 標準失敗回應：\n\n```json\n{\n    \"status\": \"failed\",\n    \"retcode\": 34601,\n    \"data\": null,\n    \"message_id\": \"\",\n    \"message\": \"action 'send' denied by scope.actions\"\n}\n```\n\n### 5.4 適配器實現檢查清單\n\n- [ ] 包含 `status`, `retcode`, `data`, `message_id`, `message` 字段\n- [ ] 回應碼遵循 OneBot12 規範（詳見 §3.2）\n- [ ] `message_id` 始終存在（無法獲取時為空字串）\n- [ ] `{platform}_raw` 包含平台原始回應數據"
+    },
+    {
+      "hash": "2f1c197acf90bdaed8c349abc2fa667a",
+      "translation": "## 6. 注意事項\n- 對於 3xxxx 錯誤碼，低三位可由實作自行定義\n- 避免使用保留錯誤區段 (4xxxx、5xxxx)\n- **`34600` / `34601` 為 ErisPulse 框架保留碼**（見 §5.3），適配器/模組應避免使用\n- 錯誤訊息應當簡潔明瞭，便於除錯"
+    }
+  ]
 }
