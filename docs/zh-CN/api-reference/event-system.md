@@ -53,18 +53,40 @@ async def reload_handler(event):
 
 ### 命令信息
 
+所有命令查询 API 均支持可选的**会话上下文**：传 `event=`（Event 或 dict）或
+显式 `platform=` / `bot_id=` / `session_id=`（与 event 叠加时显式参数优先），
+即按控制面模块维度过滤当前会话不可用模块的命令（详见 advanced/scope.md）；
+全部为可选关键字参数，不传时保持原有全量行为。
+
 ```python
 # 获取命令帮助
 help_text = command.help()
 
-# 获取特定命令
-cmd_info = command.get_command("admin")
+# 会话感知帮助：只列出当前会话可用的命令
+help_text = command.help(event=event)
 
-# 获取命令组中的所有命令
+# 获取特定命令（返回合并覆盖后的生效参数；会话不可用时返回 None）
+cmd_info = command.get_command("admin")
+cmd_info = command.get_command("admin", event=event)
+
+# 获取所有命令（会话感知时过滤不可用模块的命令）
+all_commands = command.get_commands()
+all_commands = command.get_commands(event=event)
+
+# 获取命令组中的所有命令（支持会话感知过滤）
 admin_commands = command.get_group_commands("admin")
+admin_commands = command.get_group_commands("admin", event=event)
 
 # 获取所有可见命令
 visible_commands = command.get_visible_commands()
+
+# 会话感知的可见命令（event 或显式关键字任一即可）
+visible_commands = command.get_visible_commands(event=event)
+visible_commands = command.get_visible_commands(
+    platform=event.get("platform"),
+    bot_id=event.get_self_account_id(),
+    session_id=event.get_session_id(),
+)
 ```
 
 ### 等待回复

@@ -585,6 +585,14 @@ class ConfigManager:
         """
         获取配置项
 
+        支持点分隔符路径（如 ``"module.sub.key"``）。当存在待写入队列
+        （延迟刷盘未落盘的 ``setConfig``）时，读取结果会**叠加待写值**，
+        保证"写后立读"一致性：
+
+        - 查询键精确命中待写队列 → 直接返回待写值
+        - 待写键是查询键的祖先 → 在待写值子树内继续解析
+        - 待写键是查询键的后代 → 以待写值深合并覆盖缓存子树
+
         :param key: str 配置键, 支持点分隔符如 "module.sub.key"
         :param default: Any 默认值 (默认: None)
         :return: Any 配置值
@@ -595,20 +603,95 @@ class ConfigManager:
         with self._lock:
             self._check_cache_validity()
 
-            # 优先检查待写入队列
-            if key in self._dirty_keys:
-                value = self._dirty_keys[key]
-            # 检查缓存
-            else:
-                keys = key.split(".")
-                value = self._cache
-                for k in keys:
-                    if k not in value:
-                        value = default
-                        break
-                    value = value[k]
+            if not self._dirty_keys:
+                return self._walk_cache(key, default)
 
+            # ① 精确命中待写队列
+            if key in self._dirty_keys:
+                return self._dirty_keys[key]
+
+            keys = key.split(".")
+
+            # ② 待写键是查询键的祖先：取最长（最具体）的待写祖先，
+            #    在其值子树内解析剩余路径
+            dirty_ancestor: tuple[str, Any] | None = None
+            for dirty_key, dirty_value in self._dirty_keys.items():
+                if key.startswith(dirty_key + ".") and (
+                    dirty_ancestor is None or len(dirty_key) > len(dirty_ancestor[0])
+                ):
+                    dirty_ancestor = (dirty_key, dirty_value)
+            if dirty_ancestor is not None:
+                node = dirty_ancestor[1]
+                for rk in keys[len(dirty_ancestor[0].split(".")) :]:
+                    if not isinstance(node, dict) or rk not in node:
+                        return default
+                    node = node[rk]
+                value = node
+            else:
+                # ③ 常规缓存树查询
+                value = self._walk_cache(key, default)
+
+            # ④ 待写键是查询键的后代：以待写值深合并叠加（读-你-写一致性）
+            overlay = self._dirty_overlay(keys)
+            if overlay:
+                if isinstance(value, dict):
+                    return self._deep_merge(value, overlay)
+                if value is default:
+                    return overlay
+            return value
+
+    def _walk_cache(self, key: str, default: Any) -> Any:
+        """
+        {!--< internal-use >!--}
+        在缓存树中按点分路径取值；路径缺失或中间节点非字典时返回 default
+
+        :param key: 点分配置键
+        :param default: 路径缺失时的默认值
+        :return: 缓存中的值或 default
+        """
+        value: Any = self._cache
+        for k in key.split("."):
+            if not isinstance(value, dict) or k not in value:
+                return default
+            value = value[k]
         return value
+
+    def _dirty_overlay(self, keys: list[str]) -> dict[str, Any]:
+        """
+        {!--< internal-use >!--}
+        收集以待查键为前缀的待写键，构建叠加子树
+
+        :param keys: 查询键的路径段列表
+        :return: 叠加子树（无匹配时为空字典）
+        """
+        prefix = ".".join(keys) + "."
+        overlay: dict[str, Any] = {}
+        for dirty_key, dirty_value in self._dirty_keys.items():
+            if not dirty_key.startswith(prefix):
+                continue
+            node = overlay
+            for p in dirty_key[len(prefix) :].split(".")[:-1]:
+                node = node.setdefault(p, {})
+            node[dirty_key.rsplit(".", 1)[-1]] = dirty_value
+        return overlay
+
+    @staticmethod
+    def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
+        """
+        {!--< internal-use >!--}
+        深合并字典（override 优先，仅 dict 值递归合并）
+
+        :param base: 基础字典（不修改原对象）
+        :param override: 覆盖字典
+        :return: 合并后的新字典
+        """
+        merged = dict(base)
+        for k, v in override.items():
+            if isinstance(v, dict) and isinstance(merged.get(k), dict):
+                merged[k] = ConfigManager._deep_merge(merged[k], v)
+            else:
+                merged[k] = v
+        return merged
 
     def setConfig(self, key: str, value: Any, immediate: bool = False) -> bool:
         """
