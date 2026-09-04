@@ -138,6 +138,18 @@ epsdk run main.py
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
+### Debian/Ubuntu 虚拟环境创建失败
+
+如果安装脚本提示「虚拟环境创建失败」，且错误信息包含 `ensurepip is not available`，是因为 Debian/Ubuntu 默认未安装 `python3-venv`（系统 Python 的 `ensurepip` 被禁用）：
+
+```bash
+sudo apt install python3.13-venv   # 按实际 Python 版本安装对应包
+# 或安装通用元包：
+sudo apt install python3-venv
+```
+
+安装后重新运行安装脚本即可。新版安装脚本在检测到该问题时会主动询问并尝试自动安装对应系统包；也可以改用 uv（`uv venv` 不依赖 `ensurepip`）。
+
 ## 下一步
 
 - [CLI 命令参考](cli-reference.md) - 了解所有命令行命令
