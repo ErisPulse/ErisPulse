@@ -9,13 +9,12 @@ import asyncio
 
 import pytest
 
-from ErisPulse.Core.Bases import BaseAdapter, SendDSL, SendContext
+from ErisPulse.Core.Bases import BaseAdapter, SendContext, SendDSL
 from ErisPulse.Core.Bases.send_rules import (
-    _PriorityQueue,
     _is_success,
+    _PriorityQueue,
     apply_send_rules,
 )
-
 
 # ==================== 辅助：构建测试用适配器 ====================
 

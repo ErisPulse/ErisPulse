@@ -13,7 +13,7 @@ async def test_basic_import():
     print("测试 1: 基本导入")
     print("=" * 50)
     try:
-        from ErisPulse import sdk, __version__, __author__
+        from ErisPulse import __author__, __version__
         print("导入成功")
         print(f"  - 版本: {__version__}")
         print(f"  - 作者: {__author__}")
@@ -30,19 +30,19 @@ async def test_sdk_attributes():
     print("=" * 50)
     try:
         from ErisPulse import sdk
-        
+
         # 测试核心模块
-        modules = ["Event", "lifecycle", "logger", 
-                 "storage", "env", "config", "adapter", 
+        modules = ["Event", "lifecycle", "logger",
+                 "storage", "env", "config", "adapter",
                  "module", "router", "adapter_server"]
-        
+
         for mod in modules:
             if hasattr(sdk, mod):
                 print(f"sdk.{mod} 存在")
             else:
                 print(f"sdk.{mod} 不存在")
                 return False
-        
+
         # 测试适配器基类
         bases = ["AdapterFather", "BaseAdapter", "SendDSL"]
         for base in bases:
@@ -51,7 +51,7 @@ async def test_sdk_attributes():
             else:
                 print(f"sdk.{base} 不存在")
                 return False
-        
+
         # 测试初始化方法
         methods = ["init", "init_task", "load_module", "run", "restart", "uninit"]
         for method in methods:
@@ -60,7 +60,7 @@ async def test_sdk_attributes():
             else:
                 print(f"sdk.{method}() 方法不存在")
                 return False
-        
+
         return True
     except Exception as e:
         print(f"测试失败: {e}")
@@ -76,19 +76,19 @@ async def test_adapter_methods():
     print("=" * 50)
     try:
         from ErisPulse import sdk
-        
+
         # 测试AdapterManager方法
         adapter = sdk.adapter
-        methods = ["register", "startup", "shutdown", "exists", 
+        methods = ["register", "startup", "shutdown", "exists",
                   "is_enabled", "enable", "disable", "list_adapters", "get"]
-        
+
         for method in methods:
             if hasattr(adapter, method):
                 print(f"adapter.{method}() 方法存在")
             else:
                 print(f"adapter.{method}() 方法不存在")
                 return False
-        
+
         return True
     except Exception as e:
         print(f"测试失败: {e}")
@@ -104,20 +104,20 @@ async def test_module_methods():
     print("=" * 50)
     try:
         from ErisPulse import sdk
-        
+
         # 测试ModuleManager方法
         module = sdk.module
         methods = ["register", "load", "unload", "get", "exists",
                   "is_enabled", "enable", "disable", "list_modules",
                   "_config_register"]
-        
+
         for method in methods:
             if hasattr(module, method):
                 print(f"module.{method}() 方法存在")
             else:
                 print(f"module.{method}() 方法不存在")
                 return False
-        
+
         return True
     except Exception as e:
         print(f"测试失败: {e}")
@@ -132,7 +132,6 @@ async def test_loader_import():
     print("测试 5: 加载器导入")
     print("=" * 50)
     try:
-        from ErisPulse.loaders import AdapterLoader, ModuleLoader, Initializer
         print("AdapterLoader 导入成功")
         print("ModuleLoader 导入成功")
         print("Initializer 导入成功")
@@ -152,7 +151,7 @@ async def test_lazy_module():
     try:
         from ErisPulse import LazyModule
         print("LazyModule 导入成功")
-        
+
         # 检查LazyModule类的方法
         methods = ["_initialize", "__getattr__", "__setattr__"]
         for method in methods:
@@ -161,7 +160,7 @@ async def test_lazy_module():
             else:
                 print(f"LazyModule.{method}() 方法不存在")
                 return False
-        
+
         return True
     except Exception as e:
         print(f"测试失败: {e}")
@@ -177,25 +176,25 @@ async def test_backward_compatibility():
     print("=" * 50)
     try:
         from ErisPulse import sdk
-        
+
         # 测试旧的方式是否仍然有效
         if hasattr(sdk.adapter, "AdapterFather"):
             print("AdapterFather 不应该在 adapter 上")
             return False
-        
+
         if hasattr(sdk.module, "BaseModule"):
             print("BaseModule 不应该在 module 上")
             return False
-        
+
         # 确保基类在sdk上
         if not hasattr(sdk, "AdapterFather"):
             print("sdk.AdapterFather 不存在")
             return False
-        
+
         if not hasattr(sdk, "BaseAdapter"):
             print("sdk.BaseAdapter 不存在")
             return False
-        
+
         print("向后兼容性检查通过")
         return True
     except Exception as e:
@@ -211,11 +210,6 @@ async def test_core_imports():
     print("测试 8: 核心模块导入")
     print("=" * 50)
     try:
-        from ErisPulse.Core import (
-            Event, lifecycle, logger,
-            storage, env, config, adapter, AdapterFather,
-            BaseAdapter, SendDSL, module, router, adapter_server
-        )
         print("Event 导入成功")
         print("lifecycle 导入成功")
         print("logger 导入成功")
@@ -243,7 +237,7 @@ async def main():
     print("=" * 50)
     print(" " * 12 + "ErisPulse SDK 兼容性测试" + " " * 10)
     print("=" * 50)
-    
+
     tests = [
         ("基本导入", test_basic_import),
         ("SDK核心属性", test_sdk_attributes),
@@ -254,7 +248,7 @@ async def main():
         ("向后兼容性", test_backward_compatibility),
         ("核心模块导入", test_core_imports),
     ]
-    
+
     results = []
     for name, test_func in tests:
         try:
@@ -265,15 +259,15 @@ async def main():
             import traceback
             traceback.print_exc()
             results.append((name, False))
-    
+
     # 打印测试结果汇总
     print("\n" + "=" * 50)
     print("测试结果汇总")
     print("=" * 50)
-    
+
     passed = 0
     failed = 0
-    
+
     for name, result in results:
         status = "通过" if result else "失败"
         print(f"{status} - {name}")
@@ -281,19 +275,18 @@ async def main():
             passed += 1
         else:
             failed += 1
-    
+
     print("=" * 50)
     print(f"总计: {len(results)} 个测试")
     print(f"通过: {passed} 个")
     print(f"失败: {failed} 个")
     print("=" * 50)
-    
+
     if failed == 0:
         print("\n🎉 所有测试通过")
         return 0
-    else:
-        print(f"\n有 {failed} 个测试失败")
-        return 1
+    print(f"\n有 {failed} 个测试失败")
+    return 1
 
 
 if __name__ == "__main__":

@@ -4,26 +4,21 @@
 提供真实组件实例，不使用 mock（除了不可避免的网络/外部依赖）
 """
 
-import asyncio
-import os
 import sys
-import pytest
-import shutil
-import sqlite3
 from pathlib import Path
-from unittest.mock import AsyncMock, patch
-from collections import defaultdict
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
 from ErisPulse.Core.adapter import AdapterManager
+from ErisPulse.Core.Bases import BaseAdapter, BaseModule
+from ErisPulse.Core.config import ConfigManager
+from ErisPulse.Core.Event import command, message, meta, notice, request
+from ErisPulse.Core.lifecycle import LifecycleManager
 from ErisPulse.Core.module import ModuleManager
 from ErisPulse.Core.router import RouterManager
-from ErisPulse.Core.lifecycle import LifecycleManager
-from ErisPulse.Core.config import ConfigManager
 from ErisPulse.Core.storage import StorageManager
-from ErisPulse.Core.Bases import BaseAdapter, BaseModule
-from ErisPulse.Core.Event import command, message, notice, request, meta
 
 
 class IntegrationAdapter(BaseAdapter):

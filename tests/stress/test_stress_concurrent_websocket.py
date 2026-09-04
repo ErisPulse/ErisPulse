@@ -6,6 +6,7 @@
 
 import pytest
 from fastapi.testclient import TestClient
+
 from ErisPulse.Core.router import RouterManager
 
 
@@ -78,7 +79,7 @@ class TestConcurrentWebSocketStress:
         with client.websocket_connect("/stress/ws_long") as ws:
             ws.send_text(long_text)
             resp = ws.receive_text()
-            assert resp == f"len:10000"
+            assert resp == "len:10000"
 
     def test_rapid_connect_disconnect_cycles(self, ws_router):
         """快速连接断开循环"""

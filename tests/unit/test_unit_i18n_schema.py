@@ -85,12 +85,20 @@ class TestImportPaths:
         """``Core.Bases`` 与 ``runtime`` 应导出同一个类对象"""
         from ErisPulse.Core.Bases import (
             BaseConfig as BasesBaseConfig,
-            BotAccountConfig as BasesBotAccountConfig,
+        )
+        from ErisPulse.Core.Bases import (
             BaseI18n as BasesBaseI18n,
+        )
+        from ErisPulse.Core.Bases import (
+            BotAccountConfig as BasesBotAccountConfig,
+        )
+        from ErisPulse.Core.Bases import (
             I18nKey as BasesI18nKey,
         )
         from ErisPulse.runtime import (
             BaseConfig as RtBaseConfig,
+        )
+        from ErisPulse.runtime import (
             BotAccountConfig as RtBotAccountConfig,
         )
         from ErisPulse.runtime.config_schema import BaseConfig as RtCsBaseConfig

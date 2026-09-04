@@ -9,8 +9,9 @@
 
 import asyncio
 import time
+
 from ErisPulse import sdk
-from ErisPulse.Core.Event import command, message, notice, meta
+from ErisPulse.Core.Event import command, message, meta, notice
 
 # ==================== 第一部分：事件处理系统测试 ====================
 
@@ -20,9 +21,9 @@ async def test_command(event):
     """测试命令处理功能"""
     platform = event["platform"]
     user_id = event["user_id"]
-    
+
     reply = "收到测试命令，无参数"
-    
+
     adapter = getattr(sdk.adapter, platform)
     await adapter.Send.To("user", user_id).Text(reply)
     sdk.logger.info(f"处理测试命令: {event}")
@@ -48,7 +49,7 @@ async def handle_group_messages(event):
 async def handle_friend_add(event):
     """处理好友添加通知"""
     sdk.logger.info(f"新好友添加: {event['user_id']}")
-    
+
     platform = event["platform"]
     user_id = event["user_id"]
     adapter = getattr(sdk.adapter, platform)
@@ -74,13 +75,13 @@ async def test_event_system():
     """运行事件处理系统测试"""
     try:
         isInit = await sdk.init_task()
-        
+
         if not isInit:
             sdk.logger.error("ErisPulse 初始化失败，请检查日志")
             return
-        
+
         await sdk.adapter.startup()
-        
+
         # 模拟发送测试事件
         test_event = {
             "id": "test_event_123",
@@ -95,7 +96,7 @@ async def test_event_system():
             "user_id": "user_789"
         }
         await sdk.adapter.emit(test_event)
-        
+
         # 保持程序运行
         await asyncio.Event().wait()
     except Exception as e:
@@ -110,9 +111,10 @@ async def test_event_system():
 
 from ErisPulse.Core.Event.wrapper import Event
 
+
 def test_event_wrapper_basic():
     """测试Event包装类的基本功能"""
-    
+
     # 创建测试事件数据
     event_data = {
         "id": "1234567890",
@@ -146,12 +148,12 @@ def test_event_wrapper_basic():
         "test_platform_raw": {"original": "data"},
         "test_platform_raw_type": "original_event"
     }
-    
+
     # 创建Event对象
     event = Event(event_data)
-    
+
     print("=== 测试Event包装类基础功能 ===\n")
-    
+
     # 测试核心字段方法
     print("1. 核心字段测试:")
     print(f"   get_id(): {event.get_id()}")
@@ -159,13 +161,13 @@ def test_event_wrapper_basic():
     print(f"   get_type(): {event.get_type()}")
     print(f"   get_detail_type(): {event.get_detail_type()}")
     print(f"   get_platform(): {event.get_platform()}")
-    
+
     # 测试机器人信息
     print("\n2. 机器人信息测试:")
     print(f"   get_self_platform(): {event.get_self_platform()}")
     print(f"   get_self_user_id(): {event.get_self_user_id()}")
     print(f"   get_self_info(): {event.get_self_info()}")
-    
+
     # 测试消息事件方法
     print("\n3. 消息事件方法测试:")
     print(f"   get_message(): {len(event.get_message())} 个消息段")
@@ -177,14 +179,14 @@ def test_event_wrapper_basic():
     print(f"   get_user_nickname(): {event.get_user_nickname()}")
     print(f"   get_group_id(): {event.get_group_id()}")
     print(f"   get_sender(): {event.get_sender()}")
-    
+
     # 测试消息类型判断
     print("\n4. 消息类型判断测试:")
     print(f"   is_message(): {event.is_message()}")
     print(f"   is_private_message(): {event.is_private_message()}")
     print(f"   is_group_message(): {event.is_group_message()}")
     print(f"   is_at_message(): {event.is_at_message()}")
-    
+
     # 测试命令信息
     print("\n5. 命令信息测试:")
     print(f"   get_command_name(): {event.get_command_name()}")
@@ -192,41 +194,41 @@ def test_event_wrapper_basic():
     print(f"   get_command_raw(): {event.get_command_raw()}")
     print(f"   get_command_info(): {event.get_command_info()}")
     print(f"   is_command(): {event.is_command()}")
-    
+
     # 测试原始数据
     print("\n6. 原始数据测试:")
     print(f"   get_raw(): {event.get_raw()}")
     print(f"   get_raw_type(): {event.get_raw_type()}")
-    
+
     # 测试工具方法
     print("\n7. 工具方法测试:")
     print(f"   to_dict() 类型: {type(event.to_dict())}")
     print(f"   is_processed(): {event.is_processed()}")
     event.mark_processed()
     print(f"   mark_processed() 后 is_processed(): {event.is_processed()}")
-    
+
     # 测试点式访问
     print("\n8. 点式访问测试:")
     print(f"   event.platform: {event.platform}")
     print(f"   event.user_id: {event.user_id}")
     print(f"   event.type: {event.type}")
-    
+
     # 测试字典兼容性
     print("\n9. 字典兼容性测试:")
     print(f"   event['platform']: {event['platform']}")
     print(f"   event['user_id']: {event['user_id']}")
     print(f"   len(event): {len(event)}")
-    
+
     # 测试字符串表示
     print("\n10. 字符串表示测试:")
-    print(f"   repr(event): {repr(event)}")
-    
+    print(f"   repr(event): {event!r}")
+
     print("\n=== Event包装类基础功能测试通过 ===")
 
 def test_notification_event():
     """测试通知事件"""
     print("\n\n=== 测试通知事件 ===\n")
-    
+
     notice_data = {
         "id": "1234567891",
         "time": 1752241224,
@@ -240,21 +242,21 @@ def test_notification_event():
         "user_id": "user_456",
         "user_nickname": "NewFriend"
     }
-    
+
     event = Event(notice_data)
-    
+
     print("通知事件测试:")
     print(f"   is_notice(): {event.is_notice()}")
     print(f"   is_friend_add(): {event.is_friend_add()}")
     print(f"   get_user_id(): {event.get_user_id()}")
     print(f"   get_user_nickname(): {event.get_user_nickname()}")
-    
+
     print("\n=== 通知事件测试通过 ===")
 
 def test_request_event():
     """测试请求事件"""
     print("\n\n=== 测试请求事件 ===\n")
-    
+
     request_data = {
         "id": "1234567892",
         "time": 1752241225,
@@ -269,16 +271,16 @@ def test_request_event():
         "user_nickname": "RequestUser",
         "comment": "请加好友"
     }
-    
+
     event = Event(request_data)
-    
+
     print("请求事件测试:")
     print(f"   is_request(): {event.is_request()}")
     print(f"   is_friend_request(): {event.is_friend_request()}")
     print(f"   get_user_id(): {event.get_user_id()}")
     print(f"   get_user_nickname(): {event.get_user_nickname()}")
     print(f"   get_comment(): {event.get_comment()}")
-    
+
     print("\n=== 请求事件测试通过 ===")
 
 
@@ -287,7 +289,7 @@ def test_request_event():
 def test_get_adapter_and_target():
     """测试 _get_adapter_and_target 方法的各种情况"""
     print("\n\n=== 测试 _get_adapter_and_target 方法 ===\n")
-    
+
     test_cases = [
         {
             "name": "标准私聊消息",
@@ -393,14 +395,14 @@ def test_get_adapter_and_target():
             "expected_target_id": "group_789"
         }
     ]
-    
+
     # 模拟适配器
     class MockAdapter:
         pass
-    
+
     import ErisPulse.Core.adapter as adapter_module
     adapter_module.test = MockAdapter()
-    
+
     for i, test_case in enumerate(test_cases, 1):
         print(f"{i}. {test_case['name']}:")
         event = Event(test_case['data'])
@@ -408,26 +410,26 @@ def test_get_adapter_and_target():
             adapter_instance, detail_type, target_id = event._get_adapter_and_target()
             print(f"   detail_type: {detail_type}")
             print(f"   target_id: {target_id}")
-            
+
             if detail_type == test_case['expected_detail_type'] and target_id == test_case['expected_target_id']:
-                print(f"   通过")
+                print("   通过")
             else:
-                print(f"   失败")
+                print("   失败")
                 print(f"     期望 detail_type: {test_case['expected_detail_type']}, 实际: {detail_type}")
                 print(f"     期望 target_id: {test_case['expected_target_id']}, 实际: {target_id}")
         except Exception as e:
             print(f"   失败: {e}")
         print()
-    
+
     # 清理
     delattr(adapter_module, 'test')
-    
+
     print("=== _get_adapter_and_target 方法测试完成 ===\n")
 
 def test_new_getter_methods():
     """测试新增的 getter 方法"""
     print("\n\n=== 测试新增的 getter 方法 ===\n")
-    
+
     # 测试频道事件
     channel_event = Event({
         "id": "1",
@@ -439,12 +441,12 @@ def test_new_getter_methods():
         "user_id": "user_456",
         "channel_id": "channel_123"
     })
-    
+
     print("频道事件测试:")
     print(f"   get_channel_id(): {channel_event.get_channel_id()}")
     print(f"   get_guild_id(): {channel_event.get_guild_id()}")
     print(f"   get_thread_id(): {channel_event.get_thread_id()}")
-    
+
     # 测试服务器事件
     guild_event = Event({
         "id": "2",
@@ -456,12 +458,12 @@ def test_new_getter_methods():
         "user_id": "user_456",
         "guild_id": "guild_456"
     })
-    
+
     print("\n服务器事件测试:")
     print(f"   get_channel_id(): {guild_event.get_channel_id()}")
     print(f"   get_guild_id(): {guild_event.get_guild_id()}")
     print(f"   get_thread_id(): {guild_event.get_thread_id()}")
-    
+
     # 测试话题事件
     thread_event = Event({
         "id": "3",
@@ -473,25 +475,25 @@ def test_new_getter_methods():
         "user_id": "user_456",
         "thread_id": "thread_789"
     })
-    
+
     print("\n话题事件测试:")
     print(f"   get_channel_id(): {thread_event.get_channel_id()}")
     print(f"   get_guild_id(): {thread_event.get_guild_id()}")
     print(f"   get_thread_id(): {thread_event.get_thread_id()}")
-    
+
     print("\n=== 新增 getter 方法测试完成 ===\n")
 
 def test_compatibility_handling():
     """测试兼容性处理"""
     print("\n\n=== 测试兼容性处理 ===\n")
-    
+
     # 模拟适配器
     class MockAdapter:
         pass
-    
+
     import ErisPulse.Core.adapter as adapter_module
     adapter_module.test = MockAdapter()
-    
+
     # 测试当 channel_id 为空时，尝试使用 group_id
     print("1. 频道类型，但 channel_id 为空，有 group_id:")
     event1 = Event({
@@ -504,17 +506,17 @@ def test_compatibility_handling():
         "user_id": "user_456",
         "group_id": "group_789"
     })
-    
+
     try:
         adapter_instance, detail_type, target_id = event1._get_adapter_and_target()
         print(f"   detail_type: {detail_type}")
         print(f"   target_id: {target_id}")
-        print(f"   成功获取目标 ID")
+        print("   成功获取目标 ID")
     except Exception as e:
         print(f"   失败: {e}")
-    
+
     print()
-    
+
     # 测试当所有可能的 ID 都为空时
     print("2. 频道类型，但所有可能的 ID 都为空:")
     event2 = Event({
@@ -526,18 +528,18 @@ def test_compatibility_handling():
         "self": {"platform": "test", "user_id": "bot_123"},
         "user_id": "user_456"
     })
-    
+
     try:
         adapter_instance, detail_type, target_id = event2._get_adapter_and_target()
         print(f"   detail_type: {detail_type}")
         print(f"   target_id: {target_id}")
-        print(f"   应该抛出异常但没有")
+        print("   应该抛出异常但没有")
     except ValueError as e:
         print(f"   正确抛出异常: {e}")
-    
+
     # 清理
     delattr(adapter_module, 'test')
-    
+
     print("\n=== 兼容性处理测试完成 ===\n")
 
 
@@ -545,11 +547,11 @@ def test_compatibility_handling():
 
 if __name__ == "__main__":
     import sys
-    
+
     # 根据参数选择运行哪个测试
     if len(sys.argv) > 1:
         test_type = sys.argv[1]
-        
+
         if test_type == "system":
             print("运行事件处理系统测试\n")
             asyncio.run(test_event_system())

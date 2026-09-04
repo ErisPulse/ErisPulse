@@ -6,12 +6,11 @@ HTTP 客户端单元测试
 使用 aiohttp.test_utils.AioHTTPTestCase / aiohttp.ClientSession mock 避免真实网络。
 """
 
-import asyncio
-from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from ErisPulse.Core.Bases.errors import ClientConnectionError, ClientError
+from ErisPulse.Core.Bases.errors import ClientError
 from ErisPulse.Core.client import HttpClient, HttpResponse
 
 # ==================== HttpResponse 测试 ====================

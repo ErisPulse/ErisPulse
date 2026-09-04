@@ -4,11 +4,10 @@
 测试StorageManager的键值存储和事务功能
 """
 
-import json
 import os
 import sqlite3
 import tempfile
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
 import pytest
 

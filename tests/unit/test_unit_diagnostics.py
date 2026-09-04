@@ -21,7 +21,7 @@ class TestExtractUserFrame:
     def test_extract_basic_exception(self):
         """测试从普通异常提取帧信息"""
         try:
-            x = 1 / 0  # noqa: F841
+            x = 1 / 0
         except Exception as e:
             info = extract_user_frame(e)
 
