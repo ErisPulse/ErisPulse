@@ -459,7 +459,7 @@
       "count": 7,
       "documents": [
         {
-          "title": "技術標準",
+          "title": "技術基準",
           "path": "standards/README.md",
           "level": 1,
           "icon": "fa-gavel"
@@ -471,7 +471,7 @@
           "icon": "fa-layer-group"
         },
         {
-          "title": "ErisPulse アダプター標準化戻り値仕様書",
+          "title": "ErisPulse アダプタ標準化返却仕様",
           "path": "standards/api-response.md",
           "level": 1,
           "icon": "fa-arrow-right-arrow-left"
@@ -489,13 +489,13 @@
           "icon": "fa-paper-plane"
         },
         {
-          "title": "ErisPulse リクエスト操作仕様書",
+          "title": "ErisPulse 要求操作規格",
           "path": "standards/request-action-spec.md",
           "level": 1,
           "icon": "fa-hand-paper"
         },
         {
-          "title": "ErisPulse API アクション仕様",
+          "title": "ErisPulse API 動作標準",
           "path": "standards/api-action-spec.md",
           "level": 1,
           "icon": "fa-bolt"

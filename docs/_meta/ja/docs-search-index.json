@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1517,
+  "total_keywords": 1528,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -106,6 +106,14 @@
         "title": "1. キャッシュの使用"
       }
     ],
+    "1. クロスプラットフォーム互換性の確保": [
+      {
+        "document": "standards/README.md",
+        "line": 27,
+        "level": 3,
+        "title": "1. クロスプラットフォーム互換性の確保"
+      }
+    ],
     "1. コア原則": [
       {
         "document": "standards/event-conversion.md",
@@ -136,14 +144,6 @@
         "line": 618,
         "level": 3,
         "title": "1. プラットフォームの機能ドキュメントの維持"
-      }
-    ],
-    "1. プラットフォーム間の互換性を確保": [
-      {
-        "document": "standards/README.md",
-        "line": 27,
-        "level": 3,
-        "title": "1. プラットフォーム間の互換性を確保"
       }
     ],
     "1. プロジェクトの作成": [
@@ -312,18 +312,18 @@
         "title": "1. 発見層: Finder"
       }
     ],
-    "1. 設定の階層とオーバーライド": [
+    "1. 設定の階層と上書き": [
       {
         "document": "advanced/scope.md",
-        "line": 247,
+        "line": 362,
         "level": 3,
-        "title": "1. 設定の階層とオーバーライド"
+        "title": "1. 設定の階層と上書き"
       }
     ],
     "1. 設計背景": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 5,
+        "line": 12,
         "level": 2,
         "title": "1. 設計背景"
       }
@@ -368,12 +368,12 @@
         "title": "1.2 タイプのマッピング"
       }
     ],
-    "1.2 鏈式修飾メソッド": [
+    "1.2 チェーン修飾メソッド": [
       {
         "document": "standards/send-method-spec.md",
         "line": 26,
         "level": 3,
-        "title": "1.2 鏈式修飾メソッド"
+        "title": "1.2 チェーン修飾メソッド"
       }
     ],
     "1.3 プロトコルメソッド": [
@@ -400,20 +400,12 @@
         "title": "10. SSE (Server-Sent Events) のサポート"
       }
     ],
-    "10. アダプタ実装チェックリスト": [
+    "10. アダプター実装チェックリスト": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 455,
+        "line": 447,
         "level": 2,
-        "title": "10. アダプタ実装チェックリスト"
-      }
-    ],
-    "10. メッセージビルダー（MessageBuilder）": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 474,
-        "level": 2,
-        "title": "10. メッセージビルダー（MessageBuilder）"
+        "title": "10. アダプター実装チェックリスト"
       }
     ],
     "10. 関連ドキュメント": [
@@ -432,13 +424,15 @@
         "title": "10.よくある質問"
       }
     ],
-    "11. 関連ドキュメント": [
+    "11. メッセージビルダー（MessageBuilder）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 563,
+        "line": 464,
         "level": 2,
-        "title": "11. 関連ドキュメント"
-      },
+        "title": "11. メッセージビルダー（MessageBuilder）"
+      }
+    ],
+    "11. 関連ドキュメント": [
       {
         "document": "standards/session-types.md",
         "line": 360,
@@ -446,60 +440,68 @@
         "title": "11. 関連ドキュメント"
       }
     ],
-    "11.1 導入": [
+    "11.1 インポート": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 478,
+        "line": 468,
         "level": 3,
-        "title": "11.1 導入"
+        "title": "11.1 インポート"
       }
     ],
     "11.2 チェーン呼び出しによる構築": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 486,
+        "line": 476,
         "level": 3,
         "title": "11.2 チェーン呼び出しによる構築"
       }
     ],
-    "11.3 単一セグメントの高速構築": [
+    "11.3 単一メッセージセグメントの高速構築": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 503,
+        "line": 493,
         "level": 3,
-        "title": "11.3 単一セグメントの高速構築"
+        "title": "11.3 単一メッセージセグメントの高速構築"
       }
     ],
-    "11.4 Event.reply_ob12と併用": [
+    "11.4 Event.reply_ob12 との併用": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 514,
+        "line": 504,
         "level": 3,
-        "title": "11.4 Event.reply_ob12と併用"
+        "title": "11.4 Event.reply_ob12 との併用"
       }
     ],
-    "11.5 支持するメッセージセグメントメソッド": [
+    "11.5 対応するメッセージセグメントメソッド": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 529,
+        "line": 519,
         "level": 3,
-        "title": "11.5 支持するメッセージセグメントメソッド"
+        "title": "11.5 対応するメッセージセグメントメソッド"
       }
     ],
-    "11.6 ユーティルメソッド": [
+    "11.6 ユーティリティメソッド": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 544,
+        "line": 534,
         "level": 3,
-        "title": "11.6 ユーティルメソッド"
+        "title": "11.6 ユーティリティメソッド"
       }
     ],
-    "1xxxx アクションリクエストエラー（Request Error）": [
+    "12. 関連ドキュメント": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 553,
+        "level": 2,
+        "title": "12. 関連ドキュメント"
+      }
+    ],
+    "1xxxx アクションリクエストエラー（リクエストエラー）": [
       {
         "document": "standards/api-response.md",
         "line": 67,
         "level": 4,
-        "title": "1xxxx アクションリクエストエラー（Request Error）"
+        "title": "1xxxx アクションリクエストエラー（リクエストエラー）"
       }
     ],
     "1つのパッケージに複数のモジュールを登録できますか？": [
@@ -508,6 +510,14 @@
         "line": 177,
         "level": 3,
         "title": "1つのパッケージに複数のモジュールを登録できますか？"
+      }
+    ],
+    "2. 3層のDSL並列構造": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 26,
+        "level": 2,
+        "title": "2. 3層のDSL並列構造"
       }
     ],
     "2. API インターフェースの規範化": [
@@ -654,12 +664,12 @@
         "title": "2. バージョン情報の更新"
       }
     ],
-    "2. パラメータ規則の詳細": [
+    "2. パラメータ規格の詳細解説": [
       {
         "document": "standards/send-method-spec.md",
         "line": 57,
         "level": 2,
-        "title": "2. パラメータ規則の詳細"
+        "title": "2. パラメータ規格の詳細解説"
       }
     ],
     "2. ブロッキング操作の回避": [
@@ -678,12 +688,12 @@
         "title": "2. メタイベントの送信"
       }
     ],
-    "2. モジュール/コマンドのコードを変更するよりも制御面を使う": [
+    "2. モジュールコードの変更ではなく、制御面の使用を優先": [
       {
         "document": "advanced/scope.md",
-        "line": 253,
+        "line": 368,
         "level": 3,
-        "title": "2. モジュール/コマンドのコードを変更するよりも制御面を使う"
+        "title": "2. モジュールコードの変更ではなく、制御面の使用を優先"
       }
     ],
     "2. モジュール命名規則": [
@@ -692,14 +702,6 @@
         "line": 27,
         "level": 3,
         "title": "2. モジュール命名規則"
-      }
-    ],
-    "2. リクエストイベントフィールド要件": [
-      {
-        "document": "standards/request-action-spec.md",
-        "line": 40,
-        "level": 2,
-        "title": "2. リクエストイベントフィールド要件"
       }
     ],
     "2. レスポンスの標準化": [
@@ -732,14 +734,6 @@
         "title": "2. ロード層: Loader"
       }
     ],
-    "2. 三層の並列構造 DSL": [
-      {
-        "document": "standards/api-action-spec.md",
-        "line": 19,
-        "level": 2,
-        "title": "2. 三層の並列構造 DSL"
-      }
-    ],
     "2. 入力検証": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -748,12 +742,12 @@
         "title": "2. 入力検証"
       }
     ],
-    "2. 基本戻り構造": [
+    "2. 基礎の返却構造": [
       {
         "document": "standards/api-response.md",
         "line": 12,
         "level": 2,
-        "title": "2. 基本戻り構造"
+        "title": "2. 基礎の返却構造"
       }
     ],
     "2. 懒加载の適切な使用": [
@@ -828,6 +822,14 @@
         "title": "2. 統合テスト"
       }
     ],
+    "2. 要求イベントのフィールド要件": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 40,
+        "level": 2,
+        "title": "2. 要求イベントのフィールド要件"
+      }
+    ],
     "2. 集成テスト": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -844,12 +846,12 @@
         "title": "2.1 OneBot12 標準タイプ"
       }
     ],
-    "2.1 メディアメッセージパラメータ規則": [
+    "2.1 メディアメッセージのパラメータ規格": [
       {
         "document": "standards/send-method-spec.md",
         "line": 59,
         "level": 3,
-        "title": "2.1 メディアメッセージパラメータ規則"
+        "title": "2.1 メディアメッセージのパラメータ規格"
       }
     ],
     "2.1 必須フィールド": [
@@ -868,12 +870,12 @@
         "title": "2.1 標準フィールド"
       }
     ],
-    "2.1.1 文字列パラメータ（URLまたはファイルパス）": [
+    "2.1.1 文字列パラメータ（URL またはファイルパス）": [
       {
         "document": "standards/send-method-spec.md",
         "line": 63,
         "level": 4,
-        "title": "2.1.1 文字列パラメータ（URLまたはファイルパス）"
+        "title": "2.1.1 文字列パラメータ（URL またはファイルパス）"
       }
     ],
     "2.1.2 2進数データパラメータ": [
@@ -892,12 +894,12 @@
         "title": "2.1.3 パラメータ処理の優先順位"
       }
     ],
-    "2.2 @ユーザーのパラメータ規則": [
+    "2.2 @ユーザーのパラメータ規格": [
       {
         "document": "standards/send-method-spec.md",
         "line": 139,
         "level": 3,
-        "title": "2.2 @ユーザーのパラメータ規則"
+        "title": "2.2 @ユーザーのパラメータ規格"
       }
     ],
     "2.2 ErisPulse 拡張タイプ": [
@@ -924,20 +926,20 @@
         "title": "2.2 メッセージイベントフィールド"
       }
     ],
-    "2.3 リクエストイベントの例": [
+    "2.3 要求イベントの例": [
       {
         "document": "standards/request-action-spec.md",
         "line": 64,
         "level": 3,
-        "title": "2.3 リクエストイベントの例"
+        "title": "2.3 要求イベントの例"
       }
     ],
-    "2.3 返信メッセージのパラメータ規則": [
+    "2.3 返信メッセージのパラメータ規格": [
       {
         "document": "standards/send-method-spec.md",
         "line": 160,
         "level": 3,
-        "title": "2.3 返信メッセージのパラメータ規則"
+        "title": "2.3 返信メッセージのパラメータ規格"
       }
     ],
     "2.3 通知イベントフィールド": [
@@ -956,12 +958,12 @@
         "title": "2.4 リクエストイベントフィールド"
       }
     ],
-    "2xxxx アクションハンドラー エラー（Handler Error）": [
+    "2xxxx アクションハンドラーエラー（ハンドラーエラー）": [
       {
         "document": "standards/api-response.md",
         "line": 80,
         "level": 4,
-        "title": "2xxxx アクションハンドラー エラー（Handler Error）"
+        "title": "2xxxx アクションハンドラーエラー（ハンドラーエラー）"
       }
     ],
     "2つのインジェクションモード": [
@@ -1127,7 +1129,7 @@
     "3. モジュール/コマンドが反応しない": [
       {
         "document": "advanced/scope.md",
-        "line": 257,
+        "line": 375,
         "level": 3,
         "title": "3. モジュール/コマンドが反応しない"
       }
@@ -1148,12 +1150,12 @@
         "title": "3. リソース管理"
       }
     ],
-    "3. 完全フィールド仕様": [
+    "3. 完全なフィールド仕様": [
       {
         "document": "standards/api-response.md",
         "line": 29,
         "level": 2,
-        "title": "3. 完全フィールド仕様"
+        "title": "3. 完全なフィールド仕様"
       }
     ],
     "3. 明確な設定管理": [
@@ -1175,7 +1177,7 @@
     "3. 標準アクション一覧": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 36,
+        "line": 43,
         "level": 2,
         "title": "3. 標準アクション一覧"
       }
@@ -1196,12 +1198,12 @@
         "title": "3. 送信アカウントを指定"
       }
     ],
-    "3.1 チェーンメソッド (Chain calls)": [
+    "3.1 チェーン呼び出し": [
       {
         "document": "standards/request-action-spec.md",
         "line": 88,
         "level": 3,
-        "title": "3.1 チェーンメソッド (Chain calls)"
+        "title": "3.1 チェーン呼び出し"
       }
     ],
     "3.1 マッピングの原則": [
@@ -1223,23 +1225,23 @@
     "3.1 ユーザー関連": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 38,
+        "line": 45,
         "level": 3,
         "title": "3.1 ユーザー関連"
       }
     ],
-    "3.1 通用フィールド": [
+    "3.1 一般的なフィールド": [
       {
         "document": "standards/api-response.md",
         "line": 31,
         "level": 3,
-        "title": "3.1 通用フィールド"
+        "title": "3.1 一般的なフィールド"
       }
     ],
     "3.2 グループ関連": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 46,
+        "line": 53,
         "level": 3,
         "title": "3.2 グループ関連"
       }
@@ -1279,7 +1281,7 @@
     "3.3 メッセージ管理": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 57,
+        "line": 64,
         "level": 3,
         "title": "3.3 メッセージ管理"
       }
@@ -1292,36 +1294,60 @@
         "title": "3.3 リクエストイベント (request)"
       }
     ],
-    "3.3 戻り値の形式": [
+    "3.3 戻り値形式": [
       {
         "document": "standards/request-action-spec.md",
         "line": 116,
         "level": 3,
-        "title": "3.3 戻り値の形式"
+        "title": "3.3 戻り値形式"
       }
     ],
-    "3.4 ファイル操作": [
+    "3.4 チャンネル（Guild）関連": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 65,
+        "line": 72,
         "level": 3,
-        "title": "3.4 ファイル操作"
+        "title": "3.4 チャンネル（Guild）関連"
       }
     ],
-    "3.5 一般的な拡張アクション": [
+    "3.5 ファイルリソース操作": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 77,
+        "line": 93,
         "level": 3,
-        "title": "3.5 一般的な拡張アクション"
+        "title": "3.5 ファイルリソース操作"
       }
     ],
-    "3xxxx アクション実行エラー（Execution Error）": [
+    "3.5.1 分片転送（大ファイル、上記の降格範囲に属する）": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 115,
+        "level": 4,
+        "title": "3.5.1 分片転送（大ファイル、上記の降格範囲に属する）"
+      }
+    ],
+    "3.6 メタ（Meta）アクション": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 147,
+        "level": 3,
+        "title": "3.6 メタ（Meta）アクション"
+      }
+    ],
+    "3.7 一般的拡張アクション": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 158,
+        "level": 3,
+        "title": "3.7 一般的拡張アクション"
+      }
+    ],
+    "3xxxx アクション実行エラー（実行エラー）": [
       {
         "document": "standards/api-response.md",
         "line": 86,
         "level": 4,
-        "title": "3xxxx アクション実行エラー（Execution Error）"
+        "title": "3xxxx アクション実行エラー（実行エラー）"
       }
     ],
     "4. Event 便利メソッド": [
@@ -1372,12 +1398,20 @@
         "title": "4. イメージをパブリックに設定する"
       }
     ],
-    "4. パラメータ名の規則": [
+    "4. セッション識別子はプラットフォームごとに隔離": [
+      {
+        "document": "advanced/scope.md",
+        "line": 390,
+        "level": 3,
+        "title": "4. セッション識別子はプラットフォームごとに隔離"
+      }
+    ],
+    "4. パラメータ命名規則": [
       {
         "document": "standards/send-method-spec.md",
         "line": 207,
         "level": 2,
-        "title": "4. パラメータ名の規則"
+        "title": "4. パラメータ命名規則"
       }
     ],
     "4. メッセージセグメントの標準": [
@@ -1396,18 +1430,10 @@
         "title": "4. モジュール"
       }
     ],
-    "4. 会話識別子はプラットフォームごとに隔離": [
-      {
-        "document": "advanced/scope.md",
-        "line": 271,
-        "level": 3,
-        "title": "4. 会話識別子はプラットフォームごとに隔離"
-      }
-    ],
     "4. 使用方法": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 83,
+        "line": 164,
         "level": 2,
         "title": "4. 使用方法"
       }
@@ -1468,20 +1494,20 @@
         "title": "4. 自定义型の拡張"
       }
     ],
-    "4.1 Eventメソッド一覧": [
+    "4.1 Event メソッド一覧": [
       {
         "document": "standards/request-action-spec.md",
         "line": 181,
         "level": 3,
-        "title": "4.1 Eventメソッド一覧"
+        "title": "4.1 Event メソッド一覧"
       }
     ],
-    "4.1 基本的な呼び出し": [
+    "4.1 基本调用": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 85,
+        "line": 166,
         "level": 3,
-        "title": "4.1 基本的な呼び出し"
+        "title": "4.1 基本调用"
       }
     ],
     "4.1 標準メッセージセグメント": [
@@ -1500,20 +1526,20 @@
         "title": "4.1 自定义型の登録"
       }
     ],
-    "4.2 Bot アカウントの指定（マルチアカウントモード）": [
-      {
-        "document": "standards/api-action-spec.md",
-        "line": 104,
-        "level": 3,
-        "title": "4.2 Bot アカウントの指定（マルチアカウントモード）"
-      }
-    ],
     "4.2 プラットフォーム拡張メッセージセグメント": [
       {
         "document": "standards/event-conversion.md",
         "line": 162,
         "level": 3,
         "title": "4.2 プラットフォーム拡張メッセージセグメント"
+      }
+    ],
+    "4.2 指定 Bot アカウント（複数アカウントモード）": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 185,
+        "level": 3,
+        "title": "4.2 指定 Bot アカウント（複数アカウントモード）"
       }
     ],
     "4.2 自定义型の使用": [
@@ -1527,7 +1553,7 @@
     "4.3 プラットフォーム拡張アクション": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 111,
+        "line": 192,
         "level": 3,
         "title": "4.3 プラットフォーム拡張アクション"
       }
@@ -1540,12 +1566,12 @@
         "title": "4.3 自定义型の解除登録"
       }
     ],
-    "4.4 イベントハンドラーでの使用": [
+    "4.4 イベントハンドラ内で使用": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 121,
+        "line": 202,
         "level": 3,
-        "title": "4.4 イベントハンドラーでの使用"
+        "title": "4.4 イベントハンドラ内で使用"
       }
     ],
     "5. Bot 状態の照会": [
@@ -1572,20 +1598,20 @@
         "title": "5. supervisord"
       }
     ],
-    "5. アダプター実装": [
-      {
-        "document": "standards/api-action-spec.md",
-        "line": 138,
-        "level": 2,
-        "title": "5. アダプター実装"
-      }
-    ],
     "5. アダプター実装要件": [
       {
         "document": "standards/request-action-spec.md",
         "line": 189,
         "level": 2,
         "title": "5. アダプター実装要件"
+      }
+    ],
+    "5. アダプタ実装": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 219,
+        "level": 2,
+        "title": "5. アダプタ実装"
       }
     ],
     "5. モジュールの初期化": [
@@ -1620,12 +1646,12 @@
         "title": "5. 往復の一貫性"
       }
     ],
-    "5. 戻り値の規則": [
+    "5. 戻り値の規格": [
       {
         "document": "standards/send-method-spec.md",
         "line": 218,
         "level": 2,
-        "title": "5. 戻り値の規則"
+        "title": "5. 戻り値の規格"
       }
     ],
     "5. 拡張仕様": [
@@ -1660,20 +1686,12 @@
         "title": "5.1 `message_id` 必須フィールド"
       }
     ],
-    "5.1 コンバーター要件": [
-      {
-        "document": "standards/request-action-spec.md",
-        "line": 191,
-        "level": 3,
-        "title": "5.1 コンバーター要件"
-      }
-    ],
-    "5.1 デフォルト動作（設定不要）": [
+    "5.1 デフォルト動作（ゼロ設定）": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 140,
+        "line": 221,
         "level": 3,
-        "title": "5.1 デフォルト動作（設定不要）"
+        "title": "5.1 デフォルト動作（ゼロ設定）"
       }
     ],
     "5.1 推論優先度": [
@@ -1684,20 +1702,28 @@
         "title": "5.1 推論優先度"
       }
     ],
-    "5.2 Request内部クラスの実装": [
+    "5.1 転換器要件": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 191,
+        "level": 3,
+        "title": "5.1 転換器要件"
+      }
+    ],
+    "5.2 Request 内部クラス実装": [
       {
         "document": "standards/request-action-spec.md",
         "line": 234,
         "level": 3,
-        "title": "5.2 Request内部クラスの実装"
+        "title": "5.2 Request 内部クラス実装"
       }
     ],
-    "5.2 `{platform}_raw` 元の応答フィールド": [
+    "5.2 `{platform}_raw` 原始レスポンスフィールド": [
       {
         "document": "standards/api-response.md",
         "line": 117,
         "level": 3,
-        "title": "5.2 `{platform}_raw` 元の応答フィールド"
+        "title": "5.2 `{platform}_raw` 原始レスポンスフィールド"
       }
     ],
     "5.2 使用例": [
@@ -1708,44 +1734,52 @@
         "title": "5.2 使用例"
       }
     ],
-    "5.2 標準メソッドのオーバーライド（プラットフォームネイティブ API へのマッピング）": [
+    "5.2 標準メソッドのオーバーライド（プラットフォームネイティブAPIへのマッピング）": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 152,
+        "line": 233,
         "level": 3,
-        "title": "5.2 標準メソッドのオーバーライド（プラットフォームネイティブ API へのマッピング）"
+        "title": "5.2 標準メソッドのオーバーライド（プラットフォームネイティブAPIへのマッピング）"
       }
     ],
-    "5.3 アダプター実装チェックリスト": [
+    "5.3 フレームワーク拡張返り値コード（34xxx プラットフォームエラーセグメントの下3桁のカスタム）": [
       {
         "document": "standards/api-response.md",
         "line": 140,
         "level": 3,
-        "title": "5.3 アダプター実装チェックリスト"
+        "title": "5.3 フレームワーク拡張返り値コード（34xxx プラットフォームエラーセグメントの下3桁のカスタム）"
       }
     ],
-    "5.3 サポートしていないアクション": [
-      {
-        "document": "standards/api-action-spec.md",
-        "line": 193,
-        "level": 3,
-        "title": "5.3 サポートしていないアクション"
-      }
-    ],
-    "5.3 プラットフォームがリクエスト操作をサポートしていない場合": [
+    "5.3 プラットフォームが要求操作をサポートしない場合": [
       {
         "document": "standards/request-action-spec.md",
         "line": 308,
         "level": 3,
-        "title": "5.3 プラットフォームがリクエスト操作をサポートしていない場合"
+        "title": "5.3 プラットフォームが要求操作をサポートしない場合"
       }
     ],
-    "5.4 まとめ：Send と Request の並行処理": [
+    "5.3 未サポートのアクション": [
+      {
+        "document": "standards/api-action-spec.md",
+        "line": 274,
+        "level": 3,
+        "title": "5.3 未サポートのアクション"
+      }
+    ],
+    "5.4 アダプタ実装チェックリスト": [
+      {
+        "document": "standards/api-response.md",
+        "line": 174,
+        "level": 3,
+        "title": "5.4 アダプタ実装チェックリスト"
+      }
+    ],
+    "5.4 総括：Send と Request は並列": [
       {
         "document": "standards/request-action-spec.md",
         "line": 316,
         "level": 3,
-        "title": "5.4 まとめ：Send と Request の並行処理"
+        "title": "5.4 総括：Send と Request は並列"
       }
     ],
     "5.5 アダプター `__init__` の注意事項": [
@@ -1783,9 +1817,17 @@
     "6. レスポンス形式": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 212,
+        "line": 293,
         "level": 2,
         "title": "6. レスポンス形式"
+      }
+    ],
+    "6. 反転変換規格（OneBot12 → プラットフォーム）": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 225,
+        "level": 2,
+        "title": "6. 反転変換規格（OneBot12 → プラットフォーム）"
       }
     ],
     "6. 変換器の実装": [
@@ -1807,7 +1849,7 @@
     "6. 注意事項": [
       {
         "document": "standards/api-response.md",
-        "line": 147,
+        "line": 181,
         "level": 2,
         "title": "6. 注意事項"
       }
@@ -1818,14 +1860,6 @@
         "line": 419,
         "level": 4,
         "title": "6. 純粋な Python 自作監督者"
-      }
-    ],
-    "6. 逆変換規則（OneBot12 → プラットフォーム）": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 225,
-        "level": 2,
-        "title": "6. 逆変換規則（OneBot12 → プラットフォーム）"
       }
     ],
     "6.1 フィールド命名": [
@@ -1852,12 +1886,12 @@
         "title": "6.1 変換モデル"
       }
     ],
-    "6.2 `Raw_ob12`実装規則": [
+    "6.2 `Raw_ob12` 実装規格": [
       {
         "document": "standards/send-method-spec.md",
         "line": 246,
         "level": 3,
-        "title": "6.2 `Raw_ob12`実装規則"
+        "title": "6.2 `Raw_ob12` 実装規格"
       }
     ],
     "6.2 イベントの返信": [
@@ -1924,12 +1958,12 @@
         "title": "6.3.3 複合メッセージセグメント処理"
       }
     ],
-    "6.4 `Raw_ob12`と標準メソッドの関係": [
+    "6.4 `Raw_ob12` と標準メソッドの関係": [
       {
         "document": "standards/send-method-spec.md",
         "line": 334,
         "level": 3,
-        "title": "6.4 `Raw_ob12`と標準メソッドの関係"
+        "title": "6.4 `Raw_ob12` と標準メソッドの関係"
       }
     ],
     "6.4 プラットフォーム固有のフィールド例": [
@@ -1975,7 +2009,7 @@
     "7. SendDSL / RequestDSL との関係": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 229,
+        "line": 310,
         "level": 2,
         "title": "7. SendDSL / RequestDSL との関係"
       }
@@ -2007,7 +2041,7 @@
     "7. メソッド発見": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 409,
+        "line": 407,
         "level": 2,
         "title": "7. メソッド発見"
       }
@@ -2068,12 +2102,12 @@
         "title": "7.4 目標 ID の取得"
       }
     ],
-    "8. アダプター実装チェックリスト": [
+    "8. アダプタ実装チェックリスト": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 239,
+        "line": 320,
         "level": 2,
-        "title": "8. アダプター実装チェックリスト"
+        "title": "8. アダプタ実装チェックリスト"
       }
     ],
     "8. パッケージエントリの作成": [
@@ -2100,18 +2134,18 @@
         "title": "8. ユーティリティメソッド"
       }
     ],
-    "8. 登録済みの送信メソッド拡張": [
+    "8. 登録された送信メソッド拡張": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 432,
+        "line": 430,
         "level": 2,
-        "title": "8. 登録済みの送信メソッド拡張"
+        "title": "8. 登録された送信メソッド拡張"
       }
     ],
     "8. 関連ドキュメント": [
       {
         "document": "standards/request-action-spec.md",
-        "line": 366,
+        "line": 370,
         "level": 2,
         "title": "8. 関連ドキュメント"
       }
@@ -2156,12 +2190,12 @@
         "title": "9. notice / request イベントのセッションタイプ推論"
       }
     ],
-    "9. アダプタ開発の注意事項": [
+    "9. アダプター開発の注意点": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 447,
+        "line": 443,
         "level": 2,
-        "title": "9. アダプタ開発の注意事項"
+        "title": "9. アダプター開発の注意点"
       }
     ],
     "9. 接続情報とルート発見": [
@@ -2183,7 +2217,7 @@
     "9. 関連ドキュメント": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 251,
+        "line": 335,
         "level": 2,
         "title": "9. 関連ドキュメント"
       }
@@ -2298,14 +2332,6 @@
         "title": "API リファレンス"
       }
     ],
-    "API レスポンス": [
-      {
-        "document": "standards/README.md",
-        "line": 80,
-        "level": 3,
-        "title": "API レスポンス"
-      }
-    ],
     "API レスポンス標準": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -2326,6 +2352,14 @@
         "line": 558,
         "level": 2,
         "title": "API 呼び出し"
+      }
+    ],
+    "API 応答": [
+      {
+        "document": "standards/README.md",
+        "line": 80,
+        "level": 3,
+        "title": "API 応答"
       }
     ],
     "API 概要": [
@@ -2650,6 +2684,14 @@
         "title": "Dashboard 管理面板"
       }
     ],
+    "Debian/Ubuntu 仮想環境の作成失敗": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 138,
+        "level": 3,
+        "title": "Debian/Ubuntu 仮想環境の作成失敗"
+      }
+    ],
     "Discord": [
       {
         "document": "standards/session-types.md",
@@ -2730,12 +2772,12 @@
         "title": "Embedメッセージの送信"
       }
     ],
-    "ErisPulse API アクション仕様": [
+    "ErisPulse API 動作標準": [
       {
         "document": "standards/api-action-spec.md",
         "line": 1,
         "level": 1,
-        "title": "ErisPulse API アクション仕様"
+        "title": "ErisPulse API 動作標準"
       }
     ],
     "ErisPulse PlatformFeatures ドキュメント": [
@@ -2754,12 +2796,12 @@
         "title": "ErisPulse のインストール"
       }
     ],
-    "ErisPulse アダプター標準化戻り値仕様書": [
+    "ErisPulse アダプタ標準化返却仕様": [
       {
         "document": "standards/api-response.md",
         "line": 1,
         "level": 1,
-        "title": "ErisPulse アダプター標準化戻り値仕様書"
+        "title": "ErisPulse アダプタ標準化返却仕様"
       }
     ],
     "ErisPulse セッション型標準": [
@@ -2778,12 +2820,12 @@
         "title": "ErisPulse ドキュメント"
       }
     ],
-    "ErisPulse リクエスト操作仕様書": [
+    "ErisPulse 要求操作規格": [
       {
         "document": "standards/request-action-spec.md",
         "line": 1,
         "level": 1,
-        "title": "ErisPulse リクエスト操作仕様書"
+        "title": "ErisPulse 要求操作規格"
       }
     ],
     "ErisPulse 送信メソッド規格": [
@@ -4557,41 +4599,49 @@
     "① モジュール次元": [
       {
         "document": "advanced/scope.md",
-        "line": 95,
+        "line": 116,
         "level": 2,
         "title": "① モジュール次元"
       }
     ],
-    "② 身元次元（イベントの受容）": [
+    "② 身元次元（イベントの入力）": [
       {
         "document": "advanced/scope.md",
-        "line": 112,
+        "line": 135,
         "level": 2,
-        "title": "② 身元次元（イベントの受容）"
+        "title": "② 身元次元（イベントの入力）"
       }
     ],
     "③ コマンド次元（コマンド ACL）": [
       {
         "document": "advanced/scope.md",
-        "line": 128,
+        "line": 152,
         "level": 2,
         "title": "③ コマンド次元（コマンド ACL）"
       }
     ],
-    "④ プロセッサ/テキスト次元": [
+    "④ ハンドラ/テキスト次元": [
       {
         "document": "advanced/scope.md",
-        "line": 137,
+        "line": 163,
         "level": 2,
-        "title": "④ プロセッサ/テキスト次元"
+        "title": "④ ハンドラ/テキスト次元"
       }
     ],
-    "⑤ 実装パラメータのオーバーライド": [
+    "⑤ 実装パラメータの上書き": [
       {
         "document": "advanced/scope.md",
-        "line": 146,
+        "line": 174,
         "level": 2,
-        "title": "⑤ 実装パラメータのオーバーライド"
+        "title": "⑤ 実装パラメータの上書き"
+      }
+    ],
+    "⑥ 出力アクション次元（モジュールの出力呼び出し禁止）": [
+      {
+        "document": "advanced/scope.md",
+        "line": 191,
+        "level": 2,
+        "title": "⑥ 出力アクション次元（モジュールの出力呼び出し禁止）"
       }
     ],
     "あなたのモジュールをリリースする": [
@@ -4670,12 +4720,6 @@
       {
         "document": "developer-guide/publishing.md",
         "line": 171,
-        "level": 2,
-        "title": "よくある質問"
-      },
-      {
-        "document": "user-guide/installation.md",
-        "line": 106,
         "level": 2,
         "title": "よくある質問"
       }
@@ -4958,6 +5002,14 @@
         "title": "アダプター開発のベストプラクティス"
       }
     ],
+    "アダプター開発者にとって": [
+      {
+        "document": "standards/README.md",
+        "line": 50,
+        "level": 3,
+        "title": "アダプター開発者にとって"
+      }
+    ],
     "アダプタ概要": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -4980,14 +5032,6 @@
         "line": 1,
         "level": 1,
         "title": "アダプタ開発入門"
-      }
-    ],
-    "アダプタ開発者にとって": [
-      {
-        "document": "standards/README.md",
-        "line": 50,
-        "level": 3,
-        "title": "アダプタ開発者にとって"
       }
     ],
     "アダプタ：プラットフォーム拡張メソッドの登録": [
@@ -5082,14 +5126,6 @@
         "line": 5,
         "level": 2,
         "title": "イベントの種類概要"
-      }
-    ],
-    "イベントの設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 355,
-        "level": 2,
-        "title": "イベントの設定"
       }
     ],
     "イベントコンバーター": [
@@ -5356,6 +5392,14 @@
         "title": "イベント拡張メソッド（WebhookEventMixin）"
       }
     ],
+    "イベント設定": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 359,
+        "level": 2,
+        "title": "イベント設定"
+      }
+    ],
     "イベント配信メカニズム": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -5388,14 +5432,6 @@
         "title": "イベント駆動型アーキテクチャ"
       }
     ],
-    "インストールが失敗する": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 108,
-        "level": 3,
-        "title": "インストールが失敗する"
-      }
-    ],
     "インストールと有効化": [
       {
         "document": "ecosystem/takumi.md",
@@ -5424,6 +5460,14 @@
         "line": 83,
         "level": 3,
         "title": "インストールの確認"
+      }
+    ],
+    "インストール失敗": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 108,
+        "level": 3,
+        "title": "インストール失敗"
       }
     ],
     "インストール方法": [
@@ -5552,6 +5596,14 @@
         "line": 1,
         "level": 1,
         "title": "エコモジュール"
+      }
+    ],
+    "エスカレーションモード": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 319,
+        "level": 3,
+        "title": "エスカレーションモード"
       }
     ],
     "エモジコン/ステッカーのメッセージセグメント (yunhu_expression)": [
@@ -5690,6 +5742,14 @@
         "title": "カスタムメッセージセグメント"
       }
     ],
+    "カスタム身元ソース（provider）": [
+      {
+        "document": "advanced/scope.md",
+        "line": 319,
+        "level": 3,
+        "title": "カスタム身元ソース（provider）"
+      }
+    ],
     "ガイド付き登録": [
       {
         "document": "advanced/conversation.md",
@@ -5701,7 +5761,7 @@
     "キャッシュとホットアップデート": [
       {
         "document": "advanced/scope.md",
-        "line": 239,
+        "line": 353,
         "level": 2,
         "title": "キャッシュとホットアップデート"
       }
@@ -5829,7 +5889,7 @@
     "グローバルデフォルト：`default_allow`": [
       {
         "document": "advanced/scope.md",
-        "line": 40,
+        "line": 49,
         "level": 2,
         "title": "グローバルデフォルト：`default_allow`"
       }
@@ -6032,14 +6092,6 @@
         "title": "コマンドの登録"
       }
     ],
-    "コマンドの設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 357,
-        "level": 3,
-        "title": "コマンドの設定"
-      }
-    ],
     "コマンドイベントの処理": [
       {
         "document": "getting-started/event-handling.md",
@@ -6127,9 +6179,17 @@
     "コマンド次元": [
       {
         "document": "advanced/scope.md",
-        "line": 202,
+        "line": 260,
         "level": 3,
         "title": "コマンド次元"
+      }
+    ],
+    "コマンド設定": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 361,
+        "level": 3,
+        "title": "コマンド設定"
       }
     ],
     "コンテキストと永続化": [
@@ -6164,20 +6224,20 @@
         "title": "コントリビューションフロー"
       }
     ],
-    "コントロール面の設定 (scope)": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 424,
-        "level": 2,
-        "title": "コントロール面の設定 (scope)"
-      }
-    ],
     "コントロール面フィルタリング：なぜ私のモジュールはメッセージを受け取らないのか": [
       {
         "document": "getting-started/event-handling.md",
         "line": 245,
         "level": 2,
         "title": "コントロール面フィルタリング：なぜ私のモジュールはメッセージを受け取らないのか"
+      }
+    ],
+    "コントロール面設定（scope）": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 428,
+        "level": 2,
+        "title": "コントロール面設定（scope）"
       }
     ],
     "コンバーターの例": [
@@ -6477,7 +6537,7 @@
     "ストレージ設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 344,
+        "line": 348,
         "level": 2,
         "title": "ストレージ設定"
       }
@@ -6982,6 +7042,14 @@
         "title": "データの永続化"
       }
     ],
+    "トポロジツリーAPI": [
+      {
+        "document": "advanced/scope.md",
+        "line": 395,
+        "level": 2,
+        "title": "トポロジツリーAPI"
+      }
+    ],
     "トランザクションでの使用": [
       {
         "document": "advanced/sql-builder.md",
@@ -7168,6 +7236,14 @@
         "line": 73,
         "level": 3,
         "title": "ノードツリーをレンダリング"
+      }
+    ],
+    "ハンドラとオーバーライド次元": [
+      {
+        "document": "advanced/scope.md",
+        "line": 274,
+        "level": 3,
+        "title": "ハンドラとオーバーライド次元"
       }
     ],
     "ハンドラの登録": [
@@ -7425,7 +7501,7 @@
     "フレームワーク設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 279,
+        "line": 283,
         "level": 2,
         "title": "フレームワーク設定"
       }
@@ -7652,12 +7728,12 @@
         "title": "プラットフォーム能力の照会"
       }
     ],
-    "プロアクティブGC設定": [
+    "プロアクティブ GC 設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 300,
+        "line": 304,
         "level": 3,
-        "title": "プロアクティブGC設定"
+        "title": "プロアクティブ GC 設定"
       }
     ],
     "プロキシ設定": [
@@ -7742,14 +7818,6 @@
         "title": "プロセス監督とハードリスタート"
       }
     ],
-    "プロセッサとオーバーライド次元": [
-      {
-        "document": "advanced/scope.md",
-        "line": 216,
-        "level": 3,
-        "title": "プロセッサとオーバーライド次元"
-      }
-    ],
     "プロトコルメソッド": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -7788,12 +7856,12 @@
         "title": "ベストプラクティス"
       }
     ],
-    "ホットアップデートの内部処理の分解": [
+    "ホットアップデートの内部フロー": [
       {
         "document": "user-guide/configuration.md",
         "line": 85,
         "level": 3,
-        "title": "ホットアップデートの内部処理の分解"
+        "title": "ホットアップデートの内部フロー"
       }
     ],
     "ホームエントリ": [
@@ -7820,12 +7888,20 @@
         "title": "ボタン引数の説明"
       }
     ],
-    "マッチング項目の構文（全システムで統一）": [
+    "マスターシステム設定": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 205,
+        "level": 2,
+        "title": "マスターシステム設定"
+      }
+    ],
+    "マッチング条目構文（全システム共通）": [
       {
         "document": "advanced/scope.md",
-        "line": 27,
+        "line": 34,
         "level": 2,
-        "title": "マッチング項目の構文（全システムで統一）"
+        "title": "マッチング条目構文（全システム共通）"
       }
     ],
     "マテリアルドキュメント": [
@@ -8064,14 +8140,6 @@
         "line": 459,
         "level": 3,
         "title": "メッセージの編集と取り消し"
-      }
-    ],
-    "メッセージの設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 373,
-        "level": 3,
-        "title": "メッセージの設定"
       }
     ],
     "メッセージイベント": [
@@ -8316,6 +8384,14 @@
         "title": "メッセージ編集イベント"
       }
     ],
+    "メッセージ設定": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 377,
+        "level": 3,
+        "title": "メッセージ設定"
+      }
+    ],
     "メッセージ転送イベント": [
       {
         "document": "platform-guide/ideaura.md",
@@ -8484,12 +8560,12 @@
         "title": "モジュールのインストール"
       }
     ],
-    "モジュールのインストールが失敗する": [
+    "モジュールのインストール失敗": [
       {
         "document": "user-guide/installation.md",
         "line": 123,
         "level": 3,
-        "title": "モジュールのインストールが失敗する"
+        "title": "モジュールのインストール失敗"
       }
     ],
     "モジュールのオンデマンドロード": [
@@ -8589,7 +8665,7 @@
     "モジュール次元": [
       {
         "document": "advanced/scope.md",
-        "line": 161,
+        "line": 219,
         "level": 3,
         "title": "モジュール次元"
       }
@@ -8605,7 +8681,7 @@
     "モジュール設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 395,
+        "line": 399,
         "level": 2,
         "title": "モジュール設定"
       }
@@ -8704,6 +8780,14 @@
         "line": 1,
         "level": 1,
         "title": "ユーザー使用ガイド"
+      }
+    ],
+    "ユーザー優先：所有者の適用範囲はユーザーが最終的に決定": [
+      {
+        "document": "advanced/scope.md",
+        "line": 347,
+        "level": 3,
+        "title": "ユーザー優先：所有者の適用範囲はユーザーが最終的に決定"
       }
     ],
     "ユーザー状態変更イベント": [
@@ -8876,14 +8960,6 @@
         "title": "リクエストイベント (Request Events)"
       }
     ],
-    "リクエストイベントの変換": [
-      {
-        "document": "standards/request-action-spec.md",
-        "line": 341,
-        "level": 3,
-        "title": "リクエストイベントの変換"
-      }
-    ],
     "リクエストパラメータの使用": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -8912,20 +8988,6 @@
         "line": 72,
         "level": 2,
         "title": "リクエストメソッド"
-      }
-    ],
-    "リクエスト操作": [
-      {
-        "document": "standards/README.md",
-        "line": 96,
-        "level": 3,
-        "title": "リクエスト操作"
-      },
-      {
-        "document": "standards/request-action-spec.md",
-        "line": 347,
-        "level": 3,
-        "title": "リクエスト操作"
       }
     ],
     "リクエスト操作の戻り値": [
@@ -8982,6 +9044,14 @@
         "line": 274,
         "level": 2,
         "title": "リッチメディアメッセージ変換の例"
+      }
+    ],
+    "リバースコンバージョン": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 456,
+        "level": 3,
+        "title": "リバースコンバージョン"
       }
     ],
     "リバースプロキシ": [
@@ -9239,7 +9309,7 @@
     "ログ設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 231,
+        "line": 235,
         "level": 2,
         "title": "ログ設定"
       }
@@ -9327,7 +9397,7 @@
     "一般": [
       {
         "document": "advanced/scope.md",
-        "line": 227,
+        "line": 285,
         "level": 3,
         "title": "一般"
       }
@@ -9375,7 +9445,7 @@
     "一般的な問題と注意事項": [
       {
         "document": "advanced/scope.md",
-        "line": 245,
+        "line": 360,
         "level": 2,
         "title": "一般的な問題と注意事項"
       }
@@ -9468,20 +9538,12 @@
         "title": "並列イベント処理"
       }
     ],
-    "主人システム設定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 205,
-        "level": 2,
-        "title": "主人システム設定"
-      }
-    ],
-    "予約済みエラーセグメント": [
+    "予約エラーセグメント": [
       {
         "document": "standards/api-response.md",
         "line": 96,
         "level": 4,
-        "title": "予約済みエラーセグメント"
+        "title": "予約エラーセグメント"
       }
     ],
     "事件変換": [
@@ -9646,6 +9708,14 @@
         "line": 358,
         "level": 3,
         "title": "例外キャッチ"
+      }
+    ],
+    "例外リスト": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 336,
+        "level": 4,
+        "title": "例外リスト"
       }
     ],
     "依存関係の宣言（オプション、2.8.0以降）": [
@@ -9844,6 +9914,14 @@
         "title": "初期化段階の詳細"
       }
     ],
+    "判定と実行時の追加・削除": [
+      {
+        "document": "advanced/scope.md",
+        "line": 307,
+        "level": 3,
+        "title": "判定と実行時の追加・削除"
+      }
+    ],
     "利用可能なモジュールの表示": [
       {
         "document": "quick-start.md",
@@ -9970,14 +10048,6 @@
         "line": 77,
         "level": 3,
         "title": "原生メッセージ送信"
-      }
-    ],
-    "厳格モード": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 315,
-        "level": 3,
-        "title": "厳格モード"
       }
     ],
     "参考ドキュメント": [
@@ -10143,7 +10213,7 @@
     "国際化設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 384,
+        "line": 388,
         "level": 2,
         "title": "国際化設定"
       }
@@ -10366,12 +10436,12 @@
         "title": "基本的な送信"
       }
     ],
-    "基本的要件": [
+    "基本要件": [
       {
         "document": "standards/request-action-spec.md",
         "line": 338,
         "level": 3,
-        "title": "基本的要件"
+        "title": "基本要件"
       }
     ],
     "基本返信": [
@@ -10464,12 +10534,12 @@
         "title": "失敗再試行 + タイムアウトキャンセル"
       }
     ],
-    "失敗応答例": [
+    "失敗時のレスポンス例": [
       {
         "document": "standards/api-response.md",
         "line": 49,
         "level": 4,
-        "title": "失敗応答例"
+        "title": "失敗時のレスポンス例"
       }
     ],
     "失敗継続とリトライ": [
@@ -10588,12 +10658,12 @@
         "title": "実行モード"
       }
     ],
-    "実行時 API": [
+    "実行時API": [
       {
         "document": "advanced/scope.md",
-        "line": 159,
+        "line": 217,
         "level": 2,
-        "title": "実行時 API"
+        "title": "実行時API"
       }
     ],
     "実行時の細粒度制御": [
@@ -10748,6 +10818,12 @@
         "line": 126,
         "level": 2,
         "title": "常見問題"
+      },
+      {
+        "document": "user-guide/installation.md",
+        "line": 106,
+        "level": 2,
+        "title": "常見問題"
       }
     ],
     "幅 (`width`) と高さ (`height`) について": [
@@ -10844,12 +10920,12 @@
         "title": "成功レスポンス"
       }
     ],
-    "成功応答例": [
+    "成功時のレスポンス例": [
       {
         "document": "standards/api-response.md",
         "line": 33,
         "level": 4,
-        "title": "成功応答例"
+        "title": "成功時のレスポンス例"
       }
     ],
     "戻りコードの説明": [
@@ -10910,6 +10986,14 @@
         "line": 82,
         "level": 3,
         "title": "戻り値構造"
+      }
+    ],
+    "所有者とカスタム身元ソース（provider）": [
+      {
+        "document": "advanced/scope.md",
+        "line": 298,
+        "level": 2,
+        "title": "所有者とカスタム身元ソース（provider）"
       }
     ],
     "手動で Request DSL を呼び出す": [
@@ -10976,12 +11060,12 @@
         "title": "承認にどのくらい時間がかかりますか？"
       }
     ],
-    "技術標準": [
+    "技術基準": [
       {
         "document": "standards/README.md",
         "line": 1,
         "level": 1,
-        "title": "技術標準"
+        "title": "技術基準"
       }
     ],
     "抽象型": [
@@ -10992,18 +11076,10 @@
         "title": "抽象型"
       }
     ],
-    "拓撲ツリー API": [
-      {
-        "document": "advanced/scope.md",
-        "line": 275,
-        "level": 2,
-        "title": "拓撲ツリー API"
-      }
-    ],
     "拡張アクション": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 247,
+        "line": 331,
         "level": 3,
         "title": "拡張アクション"
       }
@@ -11626,10 +11702,26 @@
         "title": "標準APIアクション（ApiDSL）"
       }
     ],
+    "標準に従う利点": [
+      {
+        "document": "standards/README.md",
+        "line": 48,
+        "level": 2,
+        "title": "標準に従う利点"
+      }
+    ],
+    "標準の概要": [
+      {
+        "document": "standards/README.md",
+        "line": 14,
+        "level": 2,
+        "title": "標準の概要"
+      }
+    ],
     "標準アクション": [
       {
         "document": "standards/api-action-spec.md",
-        "line": 241,
+        "line": 322,
         "level": 3,
         "title": "標準アクション"
       }
@@ -11698,28 +11790,12 @@
         "title": "標準化されたレスポンス"
       }
     ],
-    "標準概要": [
-      {
-        "document": "standards/README.md",
-        "line": 14,
-        "level": 2,
-        "title": "標準概要"
-      }
-    ],
     "標準装備のフォント": [
       {
         "document": "ecosystem/takumi.md",
         "line": 247,
         "level": 3,
         "title": "標準装備のフォント"
-      }
-    ],
-    "標準遵守のメリット": [
-      {
-        "document": "standards/README.md",
-        "line": 48,
-        "level": 2,
-        "title": "標準遵守のメリット"
       }
     ],
     "標準遵守チェックリスト": [
@@ -11764,6 +11840,12 @@
         "line": 174,
         "level": 2,
         "title": "次に進む"
+      },
+      {
+        "document": "user-guide/configuration.md",
+        "line": 489,
+        "level": 2,
+        "title": "次に進む"
       }
     ],
     "次のステップ": [
@@ -11798,14 +11880,8 @@
         "title": "次のステップ"
       },
       {
-        "document": "user-guide/configuration.md",
-        "line": 485,
-        "level": 2,
-        "title": "次のステップ"
-      },
-      {
         "document": "user-guide/installation.md",
-        "line": 138,
+        "line": 150,
         "level": 2,
         "title": "次のステップ"
       }
@@ -12366,6 +12442,14 @@
         "title": "要求イベントの処理"
       }
     ],
+    "要求イベントの転換": [
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 341,
+        "level": 3,
+        "title": "要求イベントの転換"
+      }
+    ],
     "要求イベントメソッド": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -12388,6 +12472,20 @@
         "line": 197,
         "level": 4,
         "title": "要求情報"
+      }
+    ],
+    "要求操作": [
+      {
+        "document": "standards/README.md",
+        "line": 96,
+        "level": 3,
+        "title": "要求操作"
+      },
+      {
+        "document": "standards/request-action-spec.md",
+        "line": 347,
+        "level": 3,
+        "title": "要求操作"
       }
     ],
     "言語の切り替え": [
@@ -12464,14 +12562,6 @@
         "title": "設定の説明"
       }
     ],
-    "設定の読み込みエラー処理": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 17,
-        "level": 2,
-        "title": "設定の読み込みエラー処理"
-      }
-    ],
     "設定エラー": [
       {
         "document": "user-guide/installation.md",
@@ -12517,7 +12607,7 @@
     "設定ファイル": [
       {
         "document": "advanced/scope.md",
-        "line": 50,
+        "line": 65,
         "level": 2,
         "title": "設定ファイル"
       },
@@ -12550,6 +12640,14 @@
         "line": 1,
         "level": 1,
         "title": "設定ファイルの説明"
+      }
+    ],
+    "設定ファイルの読み込みエラー処理": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 17,
+        "level": 2,
+        "title": "設定ファイルの読み込みエラー処理"
       }
     ],
     "設定フィールドの説明": [
@@ -12664,14 +12762,6 @@
         "title": "認証済みサービスアカウントと受動応答（verified）"
       }
     ],
-    "豁免リスト": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 332,
-        "level": 4,
-        "title": "豁免リスト"
-      }
-    ],
     "貢献について": [
       {
         "document": "platform-guide/README.md",
@@ -12745,7 +12835,7 @@
     "身元次元": [
       {
         "document": "advanced/scope.md",
-        "line": 183,
+        "line": 241,
         "level": 3,
         "title": "身元次元"
       }
@@ -12823,7 +12913,7 @@
       },
       {
         "document": "standards/send-method-spec.md",
-        "line": 457,
+        "line": 449,
         "level": 3,
         "title": "送信メソッド"
       }
@@ -12834,6 +12924,14 @@
         "line": 153,
         "level": 3,
         "title": "送信メソッドの一覧表示"
+      }
+    ],
+    "送信メソッドの命名": [
+      {
+        "document": "standards/README.md",
+        "line": 89,
+        "level": 3,
+        "title": "送信メソッドの命名"
       }
     ],
     "送信メソッドの戻り値": [
@@ -12898,14 +12996,6 @@
         "line": 301,
         "level": 2,
         "title": "送信メソッドの返り値"
-      }
-    ],
-    "送信メソッド命名": [
-      {
-        "document": "standards/README.md",
-        "line": 89,
-        "level": 3,
-        "title": "送信メソッド命名"
       }
     ],
     "送信ルールエンジン（リトライ/タイムアウト/遅延）": [
@@ -12990,14 +13080,6 @@
         "line": 159,
         "level": 4,
         "title": "送信者情報"
-      }
-    ],
-    "逆変換": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 464,
-        "level": 3,
-        "title": "逆変換"
       }
     ],
     "逆変換とメッセージ構築": [
