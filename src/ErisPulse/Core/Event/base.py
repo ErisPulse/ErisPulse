@@ -41,9 +41,7 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
     :param event: 事件对象
     """
     handler = handler_info["func"]
-    _hname = getattr(
-        handler, "__qualname__", getattr(handler, "__name__", str(handler))
-    )
+    _hname = getattr(handler, "__qualname__", getattr(handler, "__name__", str(handler)))
     _owner = handler_info.get("owner") or current_owner.get()
 
     # 切换到本 handler 的局部 wait 记录器。
@@ -53,6 +51,9 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
     _wait_token = handler_waits.set(_local_waits)
 
     _t = _time.monotonic()
+    # 注入 owner 上下文：handler 执行期间 current_owner = 模块 owner，
+    # 使其内部发起的出站调用（Send / Api / Request）能被作用域权限识别与按 owner 清理
+    _owner_token = current_owner.set(_owner) if _owner else None
     try:
         if inspect.iscoroutinefunction(handler):
             await handler(event)
@@ -70,6 +71,8 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
         )
         return
     finally:
+        if _owner_token is not None:
+            current_owner.reset(_owner_token)
         _elapsed = _time.monotonic() - _t
         handler_waits.reset(_wait_token)
         if isinstance(_outer_waits, list):
@@ -89,24 +92,27 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
             logger.warning(
                 i18n.t(
                     "core.event.slow_handler_wait",
-                    handler=_hname, elapsed=f"{_elapsed:.4f}",
-                    wait=f"{_wait_total:.4f}", pure=f"{_pure:.4f}",
-                    waits=_wait_keys, owner=_owner_tag,
+                    handler=_hname,
+                    elapsed=f"{_elapsed:.4f}",
+                    wait=f"{_wait_total:.4f}",
+                    pure=f"{_pure:.4f}",
+                    waits=_wait_keys,
+                    owner=_owner_tag,
                 )
             )
         else:
             logger.trace(
                 i18n.t(
                     "core.event.trace_handler_wait",
-                    handler=_hname, elapsed=f"{_elapsed:.4f}",
-                    wait=f"{_wait_total:.4f}", pure=f"{_pure:.4f}",
+                    handler=_hname,
+                    elapsed=f"{_elapsed:.4f}",
+                    wait=f"{_wait_total:.4f}",
+                    pure=f"{_pure:.4f}",
                     owner=_owner_tag,
                 )
             )
     elif _elapsed > HANDLER_SLOW_THRESHOLD_SECS:
-        logger.warning(
-            i18n.t("core.event.slow_handler", handler=_hname, elapsed=f"{_elapsed:.4f}", owner=_owner_tag)
-        )
+        logger.warning(i18n.t("core.event.slow_handler", handler=_hname, elapsed=f"{_elapsed:.4f}", owner=_owner_tag))
 
 
 class BaseEventHandler:
@@ -216,9 +222,7 @@ class BaseEventHandler:
             )
         return removed
 
-    def __call__(
-        self, priority: int = DEFAULT_HANDLER_PRIORITY, condition: Callable | None = None
-    ):
+    def __call__(self, priority: int = DEFAULT_HANDLER_PRIORITY, condition: Callable | None = None):
         """
         装饰器方式注册事件处理器
 
@@ -286,9 +290,7 @@ class BaseEventHandler:
         ):
             return
 
-        for _priority, group_iter in groupby(
-            self.handlers, key=lambda h: h["priority"]
-        ):
+        for _priority, group_iter in groupby(self.handlers, key=lambda h: h["priority"]):
             group = list(group_iter)
 
             # 过滤出满足条件的处理器（条件函数 + 模块作用域 + 控制面文本过滤）
@@ -296,9 +298,7 @@ class BaseEventHandler:
                 h
                 for h in group
                 if (not h.get("condition") or h["condition"](event))
-                and self._is_scope_allowed(
-                    h, scope_platform, scope_bot, scope_session
-                )
+                and self._is_scope_allowed(h, scope_platform, scope_bot, scope_session)
                 and self._is_scope_handler_ok(h, event)
             ]
             if not active:
@@ -311,12 +311,14 @@ class BaseEventHandler:
                 _t0 = _time.monotonic()
                 await _invoke_handler(_h0, event)
                 _elapsed_0 = _time.monotonic() - _t0
-                _trace_chain.append({
-                    "handler": _h_name,
-                    "priority": _priority,
-                    "elapsed_ms": round(_elapsed_0 * 1000, 2),
-                    "processed": event.is_processed(),
-                })
+                _trace_chain.append(
+                    {
+                        "handler": _h_name,
+                        "priority": _priority,
+                        "elapsed_ms": round(_elapsed_0 * 1000, 2),
+                        "processed": event.is_processed(),
+                    }
+                )
                 if event.is_stopped():
                     break
                 continue
@@ -324,36 +326,39 @@ class BaseEventHandler:
             # 多个同优先级处理器：各自独立副本并行执行
             copies = [Event(dict(event)) for _ in active]
             _multi_t = _time.monotonic()
-            await asyncio.gather(
-                *(_invoke_handler(h, c) for h, c in zip(active, copies, strict=False))
-            )
+            await asyncio.gather(*(_invoke_handler(h, c) for h, c in zip(active, copies, strict=False)))
             _multi_elapsed = _time.monotonic() - _multi_t
 
             # 记录多处理器链路（并行执行，统一计时）
             for h in active:
                 _h_name = getattr(h["func"], "__qualname__", getattr(h["func"], "__name__", str(h["func"])))
-                _trace_chain.append({
-                    "handler": _h_name,
-                    "priority": _priority,
-                    "elapsed_ms": round(_multi_elapsed * 1000, 2),
-                    "processed": False,
-                })
+                _trace_chain.append(
+                    {
+                        "handler": _h_name,
+                        "priority": _priority,
+                        "elapsed_ms": round(_multi_elapsed * 1000, 2),
+                        "processed": False,
+                    }
+                )
 
             # 合并修改（后者覆盖前者），并检测同优先级冲突
             _modified_tracker: dict[str, list[dict]] = {}  # field -> [{handler_info}]
             for h_info, copy in zip(active, copies, strict=False):
                 _h_name = getattr(
-                    h_info["func"], "__qualname__",
+                    h_info["func"],
+                    "__qualname__",
                     getattr(h_info["func"], "__name__", str(h_info["func"])),
                 )
                 _h_owner = h_info.get("owner", "<unknown>")
                 for key, value in copy.items():
                     if value != event.get(key, _sentinel):
                         event[key] = value
-                        _modified_tracker.setdefault(key, []).append({
-                            "handler": _h_name,
-                            "owner": _h_owner,
-                        })
+                        _modified_tracker.setdefault(key, []).append(
+                            {
+                                "handler": _h_name,
+                                "owner": _h_owner,
+                            }
+                        )
                 # _processed / _propagation_stopped 已由上方字段合并循环传播，
                 # 此处不再调用 mark_processed()（其默认会触发 _propagation_stopped 副作用）
 
@@ -381,8 +386,7 @@ class BaseEventHandler:
         if _trace_chain:
             _total = _time.monotonic() - _trace_start
             _chain_str = " → ".join(
-                f"{c['handler']}({c['elapsed_ms']}ms)"
-                + ("[short-circuit]" if c["processed"] else "")
+                f"{c['handler']}({c['elapsed_ms']}ms)" + ("[short-circuit]" if c["processed"] else "")
                 for c in _trace_chain
             )
             logger.trace(
@@ -397,9 +401,7 @@ class BaseEventHandler:
             )
 
     @staticmethod
-    def _is_scope_allowed(
-        handler_info: dict, platform: str, bot_id: str, session_id: str
-    ) -> bool:
+    def _is_scope_allowed(handler_info: dict, platform: str, bot_id: str, session_id: str) -> bool:
         """
         {!--< internal-use >!--}
         判断处理器是否通过模块作用域检查
@@ -420,9 +422,7 @@ class BaseEventHandler:
             return True
         from ..scope import scope
 
-        return scope.is_allowed(
-            platform, bot_id or None, owner, session_id or None
-        )
+        return scope.is_allowed(platform, bot_id or None, owner, session_id or None)
 
     @staticmethod
     def _is_scope_handler_ok(handler_info: dict, event) -> bool:

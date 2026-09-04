@@ -53,7 +53,6 @@ def _warn_deprecated_kwarg(owner: str, old: str, new: str) -> None:
     )
 
 
-
 class ModuleManager(ManagerBase):
     """
     模块管理器
@@ -77,10 +76,7 @@ class ModuleManager(ManagerBase):
         if base_cls.__name__ == klass.__name__:
             return False
         for parent in klass.__mro__:
-            if (
-                parent.__name__ == base_cls.__name__
-                and parent.__module__ == base_cls.__module__
-            ):
+            if parent.__name__ == base_cls.__name__ and parent.__module__ == base_cls.__module__:
                 return True
         return False
 
@@ -112,9 +108,7 @@ class ModuleManager(ManagerBase):
         self._module_classes: dict[str, type] = {}  # 模块类映射
         self._loaded_modules: set = set()  # 已加载的模块名称
         self._module_info: dict[str, dict] = {}  # 模块信息
-        self._lazy_modules: dict[
-            str, Any
-        ] = {}  # 懒加载代理（未触发初始化时 get() 返回它）
+        self._lazy_modules: dict[str, Any] = {}  # 懒加载代理（未触发初始化时 get() 返回它）
         self._sdk = None
         # 注册配置变更路由：将 config.set / config.updated 事件转发到各模块的 on_config_update
         self._register_config_change_routing()
@@ -266,9 +260,7 @@ class ModuleManager(ManagerBase):
             _warn_deprecated_kwarg("ModuleManager.register", "module_name", "name")
             name = module_name
         if module_class is not None:
-            _warn_deprecated_kwarg(
-                "ModuleManager.register", "module_class", "class_type"
-            )
+            _warn_deprecated_kwarg("ModuleManager.register", "module_class", "class_type")
             class_type = module_class
         if module_info is not None:
             _warn_deprecated_kwarg("ModuleManager.register", "module_info", "info")
@@ -365,9 +357,7 @@ class ModuleManager(ManagerBase):
         """
         self._lazy_modules.pop(name, None)
 
-    async def load(
-        self, name: str | None = None, *, module_name: str | None = None
-    ) -> bool:
+    async def load(self, name: str | None = None, *, module_name: str | None = None) -> bool:
         """
         加载指定模块（标准化加载逻辑）
 
@@ -404,9 +394,7 @@ class ModuleManager(ManagerBase):
             params = [
                 p
                 for p in init_signature.parameters.values()
-                if p.name != "self"
-                and p.kind
-                not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+                if p.name != "self" and p.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
             ]
 
             if (sdk_to_use := self._sdk) is None:
@@ -445,11 +433,7 @@ class ModuleManager(ManagerBase):
                         else:
                             instance.on_load({"module_name": module_name})
                     except Exception as e:
-                        logger.error(
-                            i18n.t(
-                                "core.module.on_load_failed", name=module_name, error=e
-                            )
-                        )
+                        logger.error(i18n.t("core.module.on_load_failed", name=module_name, error=e))
                         return False
             finally:
                 current_owner.reset(token)
@@ -491,9 +475,7 @@ class ModuleManager(ManagerBase):
                 },
                 msg=i18n.t("core.module.systemexit", name=module_name, code=e.code),
             )
-            logger.error(
-                i18n.t("core.module.systemexit", name=module_name, code=e.code)
-            )
+            logger.error(i18n.t("core.module.systemexit", name=module_name, code=e.code))
             return False
         except Exception as e:
             await lifecycle.submit_event(
@@ -672,11 +654,7 @@ class ModuleManager(ManagerBase):
                         )
                     )
                 except Exception as e:
-                    logger.error(
-                        i18n.t(
-                            "core.module.on_unload_failed", name=module_name, error=e
-                        )
-                    )
+                    logger.error(i18n.t("core.module.on_unload_failed", name=module_name, error=e))
 
             # on_unload 之后兜底取消该模块名下的后台任务：
             # 模块未自行取消的任务可能持有实例引用，导致卸载后无法被 GC
@@ -725,6 +703,22 @@ class ModuleManager(ManagerBase):
                         count=total_cleaned,
                     )
                 )
+
+            # 自动注销模块在加载上下文内注册的主人身源 provider（作用域清理）
+            try:
+                from .master import master
+
+                provider_removed = master.unregister_by_owner(module_name)
+                if provider_removed > 0:
+                    logger.debug(
+                        i18n.t(
+                            "core.module.unload_providers_cleaned",
+                            name=module_name,
+                            count=provider_removed,
+                        )
+                    )
+            except Exception:
+                pass
 
             # 清理该模块注册的生命周期钩子，避免闭包引用导致内存泄漏
             lifecycle_removed = lifecycle.unregister_by_owner(module_name)
@@ -803,15 +797,10 @@ class ModuleManager(ManagerBase):
         purge_names = {module_name}
         purge_names.update(top_level or [])
         for mod_name in list(sys.modules):
-            if any(
-                mod_name == n or mod_name.startswith(f"{n}.")
-                for n in purge_names
-            ):
+            if any(mod_name == n or mod_name.startswith(f"{n}.") for n in purge_names):
                 sys.modules.pop(mod_name, None)
 
-    def _report_purge_recyclability(
-        self, refs: list[tuple[str, Any, Any]]
-    ) -> None:
+    def _report_purge_recyclability(self, refs: list[tuple[str, Any, Any]]) -> None:
         """
         {!--< internal-use >!--}
         purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出引用方
@@ -840,13 +829,9 @@ class ModuleManager(ManagerBase):
                 )
             )
             # 引用方定位（截断，避免刷屏）：仅 DEBUG 级输出
-            for leaked_obj in (
-                x() for x in (class_ref, instance_ref) if x is not None and x() is not None
-            ):
+            for leaked_obj in (x() for x in (class_ref, instance_ref) if x is not None and x() is not None):
                 try:
-                    referrers = [
-                        type(r).__name__ for r in gc.get_referrers(leaked_obj)[:8]
-                    ]
+                    referrers = [type(r).__name__ for r in gc.get_referrers(leaked_obj)[:8]]
                     logger.debug(
                         i18n.t(
                             "core.module.purge_leaked_referrers",
@@ -893,9 +878,7 @@ class ModuleManager(ManagerBase):
             return instance
         return self._lazy_modules.get(name)
 
-    def exists(
-        self, name: str | None = None, *, module_name: str | None = None
-    ) -> bool:
+    def exists(self, name: str | None = None, *, module_name: str | None = None) -> bool:
         """
         检查模块是否已注册
 
@@ -915,9 +898,7 @@ class ModuleManager(ManagerBase):
             return False
         return name in self._module_classes
 
-    def is_loaded(
-        self, name: str | None = None, *, module_name: str | None = None
-    ) -> bool:
+    def is_loaded(self, name: str | None = None, *, module_name: str | None = None) -> bool:
         """
         检查模块是否已加载
 
@@ -926,7 +907,8 @@ class ModuleManager(ManagerBase):
         :return: 模块是否已加载
 
         :example:
-        >>> if module.is_loaded("MyModule"): ...
+        >>> if module.is_loaded("MyModule"):
+        ...     ...
         """
         if module_name is not None:
             _warn_deprecated_kwarg("ModuleManager.is_loaded", "module_name", "name")
@@ -935,9 +917,7 @@ class ModuleManager(ManagerBase):
             return False
         return name in self._loaded_modules
 
-    def is_running(
-        self, name: str | None = None, *, module_name: str | None = None
-    ) -> bool:
+    def is_running(self, name: str | None = None, *, module_name: str | None = None) -> bool:
         """
         检查模块是否正在运行（已加载）
 
@@ -1009,19 +989,11 @@ class ModuleManager(ManagerBase):
 
         # 模块不存在，进行注册
         config.setConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name), enabled)
-        status = (
-            i18n.t("core.adapter.status_enabled")
-            if enabled
-            else i18n.t("core.adapter.status_disabled")
-        )
-        logger.info(
-            i18n.t("core.module.registered_status", name=module_name, status=status)
-        )
+        status = i18n.t("core.adapter.status_enabled") if enabled else i18n.t("core.adapter.status_disabled")
+        logger.info(i18n.t("core.module.registered_status", name=module_name, status=status))
         return True
 
-    def is_enabled(
-        self, name: str | None = None, *, module_name: str | None = None
-    ) -> bool:
+    def is_enabled(self, name: str | None = None, *, module_name: str | None = None) -> bool:
         """
         检查模块是否启用
 
@@ -1055,9 +1027,7 @@ class ModuleManager(ManagerBase):
         # 解析配置值
         return parse_bool_config(status)
 
-    def enable(
-        self, name: str | None = None, *, module_name: str | None = None
-    ) -> bool:
+    def enable(self, name: str | None = None, *, module_name: str | None = None) -> bool:
         """
         启用模块
 
@@ -1075,15 +1045,11 @@ class ModuleManager(ManagerBase):
             logger.error(i18n.t("core.module.module_not_exist", name=module_name))
             return False
 
-        config.setConfig(
-            CONFIG_KEY_MODULE_STATUS_OF.format(module_name), True, immediate=True
-        )
+        config.setConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name), True, immediate=True)
         logger.info(i18n.t("core.module.module_enabled", name=module_name))
         return True
 
-    def disable(
-        self, name: str | None = None, *, module_name: str | None = None
-    ) -> bool:
+    def disable(self, name: str | None = None, *, module_name: str | None = None) -> bool:
         """
         禁用模块
 
@@ -1097,9 +1063,7 @@ class ModuleManager(ManagerBase):
         if name is None:
             return False
         module_name = name
-        config.setConfig(
-            CONFIG_KEY_MODULE_STATUS_OF.format(module_name), False, immediate=True
-        )
+        config.setConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name), False, immediate=True)
         logger.info(i18n.t("core.module.module_disabled", name=module_name))
 
         # 级联禁用依赖者（最深层依赖者先处理），与 unload 的级联语义一致
@@ -1173,9 +1137,7 @@ class ModuleManager(ManagerBase):
                 try:
                     instance.on_unload({"module_name": module_name})
                 except Exception as e:
-                    logger.error(
-                        i18n.t("core.module.on_unload_failed", name=module_name, error=e)
-                    )
+                    logger.error(i18n.t("core.module.on_unload_failed", name=module_name, error=e))
                 spawn_background(_report_cancelled())
 
         from .router import router
@@ -1212,9 +1174,7 @@ class ModuleManager(ManagerBase):
         self.unregister_lazy(module_name)
         return True
 
-    def unregister(
-        self, name: str | None = None, *, module_name: str | None = None
-    ) -> bool:
+    def unregister(self, name: str | None = None, *, module_name: str | None = None) -> bool:
         """
         取消注册模块
 
@@ -1304,9 +1264,7 @@ class ModuleManager(ManagerBase):
                 items[name] = self.is_enabled(name)
         return items
 
-    def get_info(
-        self, name: str | None = None, *, module_name: str | None = None
-    ) -> dict | None:
+    def get_info(self, name: str | None = None, *, module_name: str | None = None) -> dict | None:
         """
         获取模块信息
 
@@ -1351,7 +1309,7 @@ class ModuleManager(ManagerBase):
 
         :example:
         >>> meta = module.get_meta("Weather")
-        >>> meta["description"]   # 当前语言下的模块简介
+        >>> meta["description"]  # 当前语言下的模块简介
         """
         if module_name is not None:
             _warn_deprecated_kwarg("ModuleManager.get_meta", "module_name", "name")
@@ -1412,8 +1370,7 @@ class ModuleManager(ManagerBase):
             return sorted(
                 cmd_name
                 for cmd_name, cmd_info in command.get_commands().items()
-                if cmd_info.get("owner") == module_name
-                and cmd_name == cmd_info.get("main_name")
+                if cmd_info.get("owner") == module_name and cmd_name == cmd_info.get("main_name")
             )
         except Exception:
             return []
@@ -1441,11 +1398,7 @@ class ModuleManager(ManagerBase):
             owner = cmd_info.get("owner")
             if not owner or cmd_name != cmd_info.get("main_name"):
                 continue
-            aliases = sorted(
-                alias
-                for alias, main in command.aliases.items()
-                if main == cmd_name and alias != cmd_name
-            )
+            aliases = sorted(alias for alias, main in command.aliases.items() if main == cmd_name and alias != cmd_name)
             commands_by_owner.setdefault(owner, []).append(
                 {
                     "name": cmd_name,
@@ -1587,9 +1540,7 @@ class ModuleManager(ManagerBase):
             ns_routes = routes_by_namespace.get(name, {})
             modules_summary[name] = {
                 "loaded": name in self._loaded_modules,
-                "enabled": parse_bool_config(
-                    config.getConfig(CONFIG_KEY_MODULE_STATUS_OF.format(name), True)
-                ),
+                "enabled": parse_bool_config(config.getConfig(CONFIG_KEY_MODULE_STATUS_OF.format(name), True)),
                 "load_strategy": strategy,
                 "info": self._module_info.get(name),
                 "commands": sorted(commands_by_owner.get(name, [])),
@@ -1628,9 +1579,7 @@ class ModuleManager(ManagerBase):
         >>> my_module = module.MyModule
         """
         if (module_instance := self.get(module_name)) is None:
-            raise AttributeError(
-                i18n.t("core.module.module_not_enabled", name=module_name)
-            )
+            raise AttributeError(i18n.t("core.module.module_not_enabled", name=module_name))
         return module_instance
 
     def __contains__(self, module_name: str) -> bool:
@@ -1641,7 +1590,8 @@ class ModuleManager(ManagerBase):
         :return: [bool] 模块是否存在且启用
 
         :example:
-        >>> if "MyModule" in module: ...
+        >>> if "MyModule" in module:
+        ...     ...
         """
         return self.exists(module_name) and self.is_enabled(module_name)
 
