@@ -1,39 +1,7 @@
 {
   "version": "1.0",
-  "total_keywords": 1527,
+  "total_keywords": 1517,
   "keywords": {
-    "\"docstring\": \"Отправка текстового сообщения...\"": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 172,
-        "level": 1,
-        "title": "\"docstring\": \"Отправка текстового сообщения...\""
-      }
-    ],
-    "\"name\": \"Text\",": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 167,
-        "level": 1,
-        "title": "\"name\": \"Text\","
-      }
-    ],
-    "\"parameters\": [": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 168,
-        "level": 1,
-        "title": "\"parameters\": ["
-      }
-    ],
-    "\"return_type\": \"Awaitable[Any]\",": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 171,
-        "level": 1,
-        "title": "\"return_type\": \"Awaitable[Any]\","
-      }
-    ],
     "0 Успех (OK)": [
       {
         "document": "standards/api-response.md",
@@ -3062,14 +3030,6 @@
         "title": "[BUG-030] Гонка данных в watcher конфигурации приводит к молчаливой потере данных при setConfig"
       }
     ],
-    "],": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 170,
-        "level": 1,
-        "title": "],"
-      }
-    ],
     "__init__.py": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -3396,30 +3356,6 @@
         "line": 52,
         "level": 3,
         "title": "wait(prompt=None, timeout=None)"
-      }
-    ],
-    "{": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 166,
-        "level": 1,
-        "title": "{"
-      }
-    ],
-    "{\"name\": \"text\", \"type\": \"str\", \"default\": null, \"annotation\": \"str\"}": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 169,
-        "level": 1,
-        "title": "{\"name\": \"text\", \"type\": \"str\", \"default\": null, \"annotation\": \"str\"}"
-      }
-    ],
-    "}": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 173,
-        "level": 1,
-        "title": "}"
       }
     ],
     "Абстрактные типы": [
@@ -3942,14 +3878,6 @@
         "title": "Ветвление и переходы"
       }
     ],
-    "Взаимодействие между модулями": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 141,
-        "level": 3,
-        "title": "Взаимодействие между модулями"
-      }
-    ],
     "Включение автодополнения IDE (необязательно)": [
       {
         "document": "quick-start.md",
@@ -4056,22 +3984,6 @@
         "line": 201,
         "level": 3,
         "title": "Возвращаемые значения операций запроса"
-      }
-    ],
-    "Возвращает:": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 165,
-        "level": 1,
-        "title": "Возвращает:"
-      }
-    ],
-    "Возвращает: [\"Text\", \"Image\", \"Voice\", \"Markdown\", ...]": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 157,
-        "level": 1,
-        "title": "Возвращает: [\"Text\", \"Image\", \"Voice\", \"Markdown\", ...]"
       }
     ],
     "Вспомогательные методы": [
@@ -4449,7 +4361,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 177,
+        "line": 179,
         "level": 3,
         "title": "Декларативная конфигурация (рекомендуется)"
       }
@@ -4469,7 +4381,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 226,
+        "line": 228,
         "level": 3,
         "title": "Декларативные ключи перевода (v2.7.0+)"
       }
@@ -4611,12 +4523,6 @@
       }
     ],
     "Документация": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 378,
-        "level": 2,
-        "title": "Документация"
-      },
       {
         "document": "developer-guide/publishing.md",
         "line": 148,
@@ -4846,6 +4752,14 @@
         "title": "Если не указано, используется первый включённый бот"
       }
     ],
+    "Жадная загрузка": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 333,
+        "level": 2,
+        "title": "Жадная загрузка"
+      }
+    ],
     "Жизненные циклы событий": [
       {
         "document": "advanced/http-client.md",
@@ -4898,12 +4812,12 @@
         "title": "Жизненный цикл модуля"
       }
     ],
-    "Жизненный цикл обработчика событий": [
+    "Жизненный цикл обработчиков событий": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 325,
+        "line": 329,
         "level": 3,
-        "title": "Жизненный цикл обработчика событий"
+        "title": "Жизненный цикл обработчиков событий"
       }
     ],
     "Зависимости (опционально, 2.8.0+)": [
@@ -4920,6 +4834,14 @@
         "line": 363,
         "level": 3,
         "title": "Закрытие соединения"
+      }
+    ],
+    "Запись в лог": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 373,
+        "level": 3,
+        "title": "Запись в лог"
       }
     ],
     "Запланированные задачи": [
@@ -5542,14 +5464,6 @@
         "title": "Использование платформенных методов"
       }
     ],
-    "Использование различных уровней логирования": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 371,
-        "level": 1,
-        "title": "Использование различных уровней логирования"
-      }
-    ],
     "Использование слушателя событий адаптера": [
       {
         "document": "api-reference/adapter-system.md",
@@ -5574,12 +5488,12 @@
         "title": "Использование специфических методов Discord"
       }
     ],
-    "Использование транзакции для обеспечения целостности данных": [
+    "Использование транзакций": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 301,
-        "level": 1,
-        "title": "Использование транзакции для обеспечения целостности данных"
+        "level": 3,
+        "title": "Использование транзакций"
       }
     ],
     "Исправленные ошибки": [
@@ -5780,6 +5694,14 @@
         "line": 119,
         "level": 3,
         "title": "Комбинированные модифицирующие методы"
+      }
+    ],
+    "Коммуникация между модулями": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 141,
+        "level": 3,
+        "title": "Коммуникация между модулями"
       }
     ],
     "Контекст и сохранение": [
@@ -6156,14 +6078,6 @@
         "line": 196,
         "level": 2,
         "title": "Матрица особенностей"
-      }
-    ],
-    "Мгновенная загрузка": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 339,
-        "level": 3,
-        "title": "Мгновенная загрузка"
       }
     ],
     "Менеджер адаптеров": [
@@ -6546,14 +6460,6 @@
         "line": 351,
         "level": 3,
         "title": "Механизм heartbeat"
-      }
-    ],
-    "Механизм ленивой загрузки": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 329,
-        "level": 2,
-        "title": "Механизм ленивой загрузки"
       }
     ],
     "Механизм нумерации сообщений": [
@@ -6964,6 +6870,14 @@
         "title": "Независимый рендерер"
       }
     ],
+    "Немедленная загрузка": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 343,
+        "level": 3,
+        "title": "Немедленная загрузка"
+      }
+    ],
     "Необязательные поля": [
       {
         "document": "bug-tracker.md",
@@ -7212,6 +7126,12 @@
         "line": 387,
         "level": 3,
         "title": "Обработка исключений"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 358,
+        "level": 3,
+        "title": "Обработка исключений"
       }
     ],
     "Обработка личных сообщений": [
@@ -7268,6 +7188,12 @@
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 231,
+        "level": 2,
+        "title": "Обработка ошибок"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 356,
         "level": 2,
         "title": "Обработка ошибок"
       },
@@ -7333,7 +7259,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 307,
+        "line": 311,
         "level": 2,
         "title": "Обработка событий"
       },
@@ -8059,6 +7985,12 @@
         "document": "developer-guide/adapters/getting-started.md",
         "line": 514,
         "level": 4,
+        "title": "Основное использование"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 288,
+        "level": 3,
         "title": "Основное использование"
       },
       {
@@ -8892,6 +8824,14 @@
         "title": "Пересылка сообщений"
       }
     ],
+    "Перечисление поддерживаемых методов отправки": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 153,
+        "level": 3,
+        "title": "Перечисление поддерживаемых методов отправки"
+      }
+    ],
     "Письмо с вложенным файлом": [
       {
         "document": "platform-guide/email.md",
@@ -9372,14 +9312,6 @@
         "title": "Получение адаптера"
       }
     ],
-    "Получение данных": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 291,
-        "level": 1,
-        "title": "Получение данных"
-      }
-    ],
     "Получение информации о команде": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -9412,12 +9344,12 @@
         "title": "Получение поддерживаемых методов отправки"
       }
     ],
-    "Получение подробной информации о конкретном методе": [
+    "Получение подробной информации о методе": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 163,
-        "level": 1,
-        "title": "Получение подробной информации о конкретном методе"
+        "line": 161,
+        "level": 3,
+        "title": "Получение подробной информации о методе"
       }
     ],
     "Получение сообщений": [
@@ -10083,7 +10015,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 331,
+        "line": 335,
         "level": 3,
         "title": "Принцип работы"
       },
@@ -10727,7 +10659,7 @@
     "Регистрация обработчиков событий": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 309,
+        "line": 313,
         "level": 3,
         "title": "Регистрация обработчиков событий"
       }
@@ -11032,12 +10964,12 @@
         "title": "Ручное создание проекта"
       }
     ],
-    "Ручное чтение конфигурации (не рекомендуется)": [
+    "Ручное чтение конфигурации (устарело)": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 267,
+        "line": 269,
         "level": 3,
-        "title": "Ручное чтение конфигурации (не рекомендуется)"
+        "title": "Ручное чтение конфигурации (устарело)"
       }
     ],
     "Ручной вызов DSL запроса": [
@@ -11454,6 +11386,12 @@
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 271,
+        "level": 2,
+        "title": "Система хранения"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 286,
         "level": 2,
         "title": "Система хранения"
       }
@@ -11980,12 +11918,6 @@
     ],
     "Сохранение данных": [
       {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 288,
-        "level": 1,
-        "title": "Сохранение данных"
-      },
-      {
         "document": "getting-started/common-tasks.md",
         "line": 17,
         "level": 2,
@@ -12040,14 +11972,6 @@
         "line": 140,
         "level": 3,
         "title": "Специфические типы событий"
-      }
-    ],
-    "Список всех методов отправки, поддерживаемых платформой": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 155,
-        "level": 1,
-        "title": "Список всех методов отправки, поддерживаемых платформой"
       }
     ],
     "Список документации": [
@@ -12812,12 +12736,6 @@
         "line": 196,
         "level": 3,
         "title": "Удаление данных"
-      },
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 294,
-        "level": 1,
-        "title": "Удаление данных"
       }
     ],
     "Удаление компонентов": [
@@ -12965,7 +12883,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 175,
+        "line": 177,
         "level": 2,
         "title": "Управление конфигурацией"
       }
@@ -13626,6 +13544,14 @@
         "line": 146,
         "level": 2,
         "title": "⑤ Implementation Parameter Override"
+      }
+    ],
+    "查询适配器发送方法": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 149,
+        "level": 2,
+        "title": "查询适配器发送方法"
       }
     ]
   }
