@@ -307,6 +307,12 @@ allow 命中 → True；未配置 ACL 时遵循全局 ``default_allow``
 
 从事件数据提取会话标识（群 / 频道 / 私聊的目标 ID）
 
+直接按 ID 字段存在性提取（优先级 group > channel > guild > thread > user），
+不做会话类型推断：meta（connect / disconnect / heartbeat）等不含任何
+会话 ID 字段的事件会返回空字符串，不会触发 ``infer_receive_type`` 的
+兜底推断与日志。语义与原实现（经推断后取值）等价——原实现中缺少
+全部 ID 字段的事件同样返回空。
+
 - **event** (`事件数据（dict`): 或 Event 包装对象）
 **返回值** (`会话`): ID（如 group_id / channel_id / user_id），无法识别时返回空字符串
 
