@@ -26,6 +26,8 @@ from ..constants import (
     LOG_MESSAGE_TRUNCATE_CHARS,
     RETCODE_NOT_IMPLEMENTED,
     RETCODE_OK,
+    RETCODE_PERMISSION_DENIED,
+    RETCODE_SDK_FAILURE,
     STATUS_FAILED,
     STATUS_OK,
 )
@@ -33,22 +35,77 @@ from ..i18n import i18n
 from ..lifecycle import lifecycle
 from ..logger import logger
 
-_CHAIN_MODIFIER_NAMES = frozenset({
-    "At", "AtAll", "Reply", "To", "Using", "Account",
-    # 发送规则装饰器（返回 self，不触发包装）
-    "Hook", "Retry", "Timeout", "Defer", "Priority", "PriorityThreshold",
-    "OnProgress", "OnError",
-    # 批量构建模式入口（返回 SendBuilder，不触发包装）
-    "Build",
-})
+_CHAIN_MODIFIER_NAMES = frozenset(
+    {
+        "At",
+        "AtAll",
+        "Reply",
+        "To",
+        "Using",
+        "Account",
+        # 发送规则装饰器（返回 self，不触发包装）
+        "Hook",
+        "Retry",
+        "Timeout",
+        "Defer",
+        "Priority",
+        "PriorityThreshold",
+        "OnProgress",
+        "OnError",
+        # 批量构建模式入口（返回 SendBuilder，不触发包装）
+        "Build",
+    }
+)
+
+
+def _action_denied_response(adapter: "BaseAdapter", action: str):
+    """
+    {!--< internal-use >!--}
+    构造"出站动作被控制面禁用"的标准失败响应（已完成的 task）
+
+    被禁用的出站调用不发起任何网络请求，直接返回该响应。
+    SendDSL / ApiDSL / RequestDSL 在授权闸口处调用。
+
+    :param adapter: 适配器实例（用于 make_error 构造标准响应）
+    :param action: 被禁用的动作类型（send / api / request）
+    :return: asyncio.Task（已完成，值为标准错误响应）
+    """
+    logger.warning(i18n.t("core.adapter.action_denied", action=action))
+    try:
+        response = adapter.make_error(
+            retcode=RETCODE_PERMISSION_DENIED,
+            message=i18n.t("core.adapter.action_denied_short", action=action),
+        )
+    except Exception:
+        response = {
+            "status": STATUS_FAILED,
+            "retcode": RETCODE_PERMISSION_DENIED,
+            "data": None,
+            "message_id": "",
+            "message": f"action '{action}' denied",
+        }
+    return asyncio.ensure_future(_noop_async(response))
+
+
+async def _noop_async(value):
+    """{!--< internal-use >!--} 立即返回值的协程（用于构造已完成 task）"""
+    return value
 
 
 # SendDSL._rules 中的键名集合，用于判断是否启用了发送规则
-_RULE_KEYS = frozenset({
-    "hooks", "retry", "timeout", "defer",
-    "priority", "drop_if_busy", "priority_threshold",
-    "on_progress", "on_error",
-})
+_RULE_KEYS = frozenset(
+    {
+        "hooks",
+        "retry",
+        "timeout",
+        "defer",
+        "priority",
+        "drop_if_busy",
+        "priority_threshold",
+        "on_progress",
+        "on_error",
+    }
+)
 
 
 def _has_rules(send_dsl: "SendDSL") -> bool:
@@ -98,8 +155,10 @@ def _wrap_to_task(result: Any):
     """
     if asyncio.iscoroutine(result):
         return asyncio.ensure_future(result)
+
     async def _const():
         return result
+
     return asyncio.ensure_future(_const())
 
 
@@ -118,6 +177,15 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
 
         if already_wrapping:
             return original_method(*args, **kwargs)
+
+        # 出站动作权限（scope.actions.<owner>.send）：owner 为空（框架层调用）
+        # 恒放行；仅用户显式禁用时返回标准拒绝响应，不发起网络调用
+        from ...runtime.context import get_current_owner
+        from ..scope import scope as _scope
+
+        _owner = get_current_owner()
+        if not _scope.is_action_allowed(_owner or "", "send"):
+            return _action_denied_response(send_dsl._adapter, "send")
 
         # 标记进入规则包装执行，防止内部委托方法（Text → Raw_ob12）重复包装
         send_dsl._in_rule_wrap = True
@@ -146,18 +214,12 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
 
         target_type = send_dsl._target_type or ""
         target_id = send_dsl._target_id or ""
-        log_target = (
-            f"{target_type}/{target_id}"
-            if target_type and target_id
-            else target_id or "?"
-        )
+        log_target = f"{target_type}/{target_id}" if target_type and target_id else target_id or "?"
         if method_name in ("Text", "Markdown", "Html") and args:
             content = str(args[0])
             if len(content) > LOG_MESSAGE_TRUNCATE_CHARS:
                 content = content[:LOG_MESSAGE_TRUNCATE_CHARS] + "..."
-            _msg_logger.event(
-                f"[Send] {platform}/{method_name} -> {log_target}: {content}"
-            )
+            _msg_logger.event(f"[Send] {platform}/{method_name} -> {log_target}: {content}")
         else:
             _msg_logger.event(f"[Send] {platform}/{method_name} -> {log_target}")
 
@@ -211,9 +273,7 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
             # message.sent 绑定到包装任务完成（覆盖整体重试流程），
             # 不绑定到首次内部 result（避免失败重试时提前触发）
             if _has_sent_hooks:
-                wrapped.add_done_callback(
-                    lambda t: asyncio.ensure_future(_emit_hooks_done(t))
-                )
+                wrapped.add_done_callback(lambda t: asyncio.ensure_future(_emit_hooks_done(t)))
             return wrapped
 
         # 无规则：保持原有行为，message.sent 在单次发送完成后触发
@@ -313,7 +373,6 @@ class SendDSL:
                     return resolved
                 return attr
 
-
         logger.warning(
             i18n.t(
                 "core.adapter.send_method_not_implemented",
@@ -322,9 +381,7 @@ class SendDSL:
             )
         )
 
-        raise AttributeError(
-            f"'{self.__class__.__name__}' object has no attribute '{name}'"
-        )
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 
     def At(self, user_id: str) -> "Self":
         """
@@ -392,15 +449,10 @@ class SendDSL:
         if self._at_all:
             modifier_segments.append({"type": "mention_all", "data": {}})
 
-        modifier_segments.extend(
-            {"type": "mention", "data": {"user_id": uid}}
-            for uid in self._at_user_ids
-        )
+        modifier_segments.extend({"type": "mention", "data": {"user_id": uid}} for uid in self._at_user_ids)
 
         if self._reply_message_id:
-            modifier_segments.append(
-                {"type": "reply", "data": {"message_id": self._reply_message_id}}
-            )
+            modifier_segments.append({"type": "reply", "data": {"message_id": self._reply_message_id}})
 
         return modifier_segments + segments
 
@@ -414,7 +466,7 @@ class SendDSL:
         :example:
         >>> ctx = self.send_context
         >>> # {"target_type": "group", "target_id": "123", "account_id": "bot1"}
-        >>> await self._adapter.call_api(
+        >>> await self._api_call(
         >>>     endpoint="/send_message",
         >>>     message=segments,
         >>>     **self.send_context,
@@ -642,9 +694,7 @@ class SendDSL:
         :return: SendDSL实例自身，支持链式调用
 
         :example:
-        >>> await adapter.Send.To("user", "123").Hook(
-        ...     lambda r: print("发送成功！")
-        ... ).Text("你好")
+        >>> await adapter.Send.To("user", "123").Hook(lambda r: print("发送成功！")).Text("你好")
         >>>
         >>> async def on_success(result):
         ...     print(f"消息ID: {result.get('message_id')}")
@@ -721,9 +771,7 @@ class SendDSL:
 
         :example:
         >>> # 低优先级消息，积压时自动丢弃
-        >>> await (adapter.Send.To("user", "123")
-        ...       .Priority(-1, drop_if_busy=True)
-        ...       .Text("可放弃的通知"))
+        >>> await adapter.Send.To("user", "123").Priority(-1, drop_if_busy=True).Text("可放弃的通知")
         """
         self._rules["priority"] = int(level)
         if drop_if_busy:
@@ -760,8 +808,7 @@ class SendDSL:
         ...     print(f"阶段: {ctx.stage}, 尝试: {ctx.attempt + 1}/{ctx.max_attempts}")
         ...     if ctx.stage == "failed":
         ...         print(f"错误: {ctx.error!r}")
-        >>> task = (adapter.Send.To("user", "123")
-        ...        .Retry(3).Timeout(10).OnProgress(on_progress).Text("监控"))
+        >>> task = adapter.Send.To("user", "123").Retry(3).Timeout(10).OnProgress(on_progress).Text("监控")
         """
         self._rules["on_progress"] = callback
         return self
@@ -784,8 +831,7 @@ class SendDSL:
         :example:
         >>> async def on_error(ctx):
         ...     await admin_notify(f"发送失败: {ctx.target_id} {ctx.error!r}")
-        >>> await (adapter.Send.To("user", "123")
-        ...       .Retry(2).OnError(on_error).Text("带错误处理"))
+        >>> await adapter.Send.To("user", "123").Retry(2).OnError(on_error).Text("带错误处理")
         """
         self._rules["on_error"] = callback
         return self
@@ -805,21 +851,21 @@ class SendDSL:
 
         :example:
         >>> # 构建多条消息，统一发送
-        >>> results = await (adapter.Send.To("user", "123")
-        ...                  .Build()
-        ...                  .Text("第一句")
-        ...                  .Image("pic.jpg")
-        ...                  .Text("第二句")
-        ...                  .send_all())
+        >>> results = await (
+        ...     adapter.Send.To("user", "123").Build().Text("第一句").Image("pic.jpg").Text("第二句").send_all()
+        ... )
         >>> # results = [Text结果, Image结果, Text结果]
         >>>
         >>> # 串行执行 + 重试失败的
-        >>> await (adapter.Send.To("group", "456")
-        ...        .Build()
-        ...        .Sequential()
-        ...        .Retry(2)
-        ...        .Text("保证顺序1").Text("保证顺序2")
-        ...        .send_all())
+        >>> await (
+        ...     adapter.Send.To("group", "456")
+        ...     .Build()
+        ...     .Sequential()
+        ...     .Retry(2)
+        ...     .Text("保证顺序1")
+        ...     .Text("保证顺序2")
+        ...     .send_all()
+        ... )
         """
         from .send_builder import SendBuilder
 
@@ -883,6 +929,20 @@ class RequestDSL:
         """
         return self.__class__(self._adapter, self._request_id, str(account_id))
 
+    def _guard_request(self):
+        """
+        {!--< internal-use >!--}
+        请求操作授权闸口（scope.actions.<owner>.request）
+
+        :return: None 表示放行；否则为已完成的标准拒绝响应 task
+        """
+        from ...runtime.context import get_current_owner
+        from ..scope import scope as _scope
+
+        if not _scope.is_action_allowed(get_current_owner() or "", "request"):
+            return _action_denied_response(self._adapter, "request")
+        return None
+
     def accept(self, **kwargs) -> Awaitable[Any]:
         """
         同意请求
@@ -894,6 +954,9 @@ class RequestDSL:
         >>> result = await adapter.Request("req_123").accept()
         >>> result = await adapter.Request("req_123").accept(comment="欢迎")
         """
+        denied = self._guard_request()
+        if denied is not None:
+            return denied
         return self._create_task(self._do_accept(**kwargs))
 
     def reject(self, **kwargs) -> Awaitable[Any]:
@@ -907,6 +970,9 @@ class RequestDSL:
         >>> result = await adapter.Request("req_123").reject()
         >>> result = await adapter.Request("req_123").reject(comment="暂不添加")
         """
+        denied = self._guard_request()
+        if denied is not None:
+            return denied
         return self._create_task(self._do_reject(**kwargs))
 
     async def _do_accept(self, **kwargs) -> dict[str, Any]:
@@ -980,11 +1046,13 @@ class ApiDSL:
     """
     标准 API 动作 DSL 基类
 
-    提供 OneBot12 标准动作（get_user_info / get_group_info 等）的强类型方法，
-    模块开发者只需面向标准接口编程，由适配器负责映射到平台原生 API。
+    提供 OneBot12 标准动作的强类型方法，模块开发者只需面向标准接口编程，
+    由适配器负责映射到平台原生 API。
 
-    与 SendDSL（消息发送）、RequestDSL（请求操作）并行，覆盖 OneBot12
-    标准动作中的「信息查询 / 状态变更 / 消息管理 / 文件操作」四类操作。
+    与 SendDSL（消息发送）、RequestDSL（请求操作）并行。覆盖 OneBot12 标准
+    动作中的用户 / 群组 / 频道（Guild）/ 消息管理 / 元（Meta）常规接口，以及
+    文件资源动作（upload_file / get_file / 分片，见方法 docstring 降级说明）；
+    唯一例外是 ``send_message``——由 ``SendDSL.Raw_ob12`` 承担，不在本类重复。
 
     {!--< tips >!--}
     1. 标准方法默认委托给 ``adapter.call_api(action_name, ...)``，适配器可按需覆盖
@@ -992,6 +1060,7 @@ class ApiDSL:
     3. 平台扩展动作通过 ``call("prefix.action", **params)`` 调用
     4. 所有方法返回标准 API 响应格式（status / retcode / data / message_id / message）
     5. 适配器可覆盖单个标准方法以映射到平台 API，无需全部实现
+    6. 分片动作按阶段拆分为 prepare / transfer / finish 三个方法（见各自文档）
     {!--< /tips >!--}
     """
 
@@ -1043,6 +1112,26 @@ class ApiDSL:
         merged.update(self.api_context)
         return merged
 
+    async def _api_call(self, action: str, **params: Any) -> dict[str, Any]:
+        """
+        {!--< internal-use >!--}
+        API 动作统一授权入口
+
+        先经控制面出站动作维度检查（scope.actions.<owner>.api）：
+        模块被禁用时直接返回标准拒绝响应，不发起网络请求；
+        owner 为空（框架层调用）或未配置限制时正常委托 ``call_api``。
+
+        :param action: OneBot12 标准动作名或平台扩展动作名
+        :param params: 动作参数（已合并 api_context）
+        :return: 标准 API 响应
+        """
+        from ...runtime.context import get_current_owner
+        from ..scope import scope as _scope
+
+        if not _scope.is_action_allowed(get_current_owner() or "", "api"):
+            return await _action_denied_response(self._adapter, "api")
+        return await self._adapter.call_api(action, **params)
+
     # ==================== 用户相关动作 ====================
 
     async def get_self_info(self) -> dict[str, Any]:
@@ -1055,9 +1144,7 @@ class ApiDSL:
         >>> result = await adapter.myplatform.Api.get_self_info()
         >>> my_name = result["data"]["user_name"]
         """
-        return await self._adapter.call_api(
-            "get_self_info", **self._merge_context({})
-        )
+        return await self._api_call("get_self_info", **self._merge_context({}))
 
     async def get_user_info(self, user_id: str) -> dict[str, Any]:
         """
@@ -1070,9 +1157,7 @@ class ApiDSL:
         >>> result = await adapter.myplatform.Api.get_user_info("123456")
         >>> user_name = result["data"]["user_name"]
         """
-        return await self._adapter.call_api(
-            "get_user_info", **self._merge_context({"user_id": str(user_id)})
-        )
+        return await self._api_call("get_user_info", **self._merge_context({"user_id": str(user_id)}))
 
     async def get_friend_list(self) -> dict[str, Any]:
         """
@@ -1084,9 +1169,7 @@ class ApiDSL:
         >>> result = await adapter.myplatform.Api.get_friend_list()
         >>> friends = result["data"]
         """
-        return await self._adapter.call_api(
-            "get_friend_list", **self._merge_context({})
-        )
+        return await self._api_call("get_friend_list", **self._merge_context({}))
 
     # ==================== 群组相关动作 ====================
 
@@ -1101,9 +1184,7 @@ class ApiDSL:
         >>> result = await adapter.myplatform.Api.get_group_info("123456")
         >>> group_name = result["data"]["group_name"]
         """
-        return await self._adapter.call_api(
-            "get_group_info", **self._merge_context({"group_id": str(group_id)})
-        )
+        return await self._api_call("get_group_info", **self._merge_context({"group_id": str(group_id)}))
 
     async def get_group_list(self) -> dict[str, Any]:
         """
@@ -1115,13 +1196,9 @@ class ApiDSL:
         >>> result = await adapter.myplatform.Api.get_group_list()
         >>> groups = result["data"]
         """
-        return await self._adapter.call_api(
-            "get_group_list", **self._merge_context({})
-        )
+        return await self._api_call("get_group_list", **self._merge_context({}))
 
-    async def get_group_member_info(
-        self, group_id: str, user_id: str
-    ) -> dict[str, Any]:
+    async def get_group_member_info(self, group_id: str, user_id: str) -> dict[str, Any]:
         """
         获取群成员信息
 
@@ -1133,9 +1210,8 @@ class ApiDSL:
         >>> result = await adapter.myplatform.Api.get_group_member_info("123", "456")
         >>> member = result["data"]
         """
-        return await self._adapter.call_api(
-            "get_group_member_info",
-            **self._merge_context({"group_id": str(group_id), "user_id": str(user_id)})
+        return await self._api_call(
+            "get_group_member_info", **self._merge_context({"group_id": str(group_id), "user_id": str(user_id)})
         )
 
     async def get_group_member_list(self, group_id: str) -> dict[str, Any]:
@@ -1149,10 +1225,7 @@ class ApiDSL:
         >>> result = await adapter.myplatform.Api.get_group_member_list("123456")
         >>> members = result["data"]
         """
-        return await self._adapter.call_api(
-            "get_group_member_list",
-            **self._merge_context({"group_id": str(group_id)})
-        )
+        return await self._api_call("get_group_member_list", **self._merge_context({"group_id": str(group_id)}))
 
     async def set_group_name(self, group_id: str, group_name: str) -> dict[str, Any]:
         """
@@ -1165,9 +1238,8 @@ class ApiDSL:
         :example:
         >>> await adapter.myplatform.Api.set_group_name("123456", "新群名")
         """
-        return await self._adapter.call_api(
-            "set_group_name",
-            **self._merge_context({"group_id": str(group_id), "group_name": group_name})
+        return await self._api_call(
+            "set_group_name", **self._merge_context({"group_id": str(group_id), "group_name": group_name})
         )
 
     async def leave_group(self, group_id: str) -> dict[str, Any]:
@@ -1180,8 +1252,194 @@ class ApiDSL:
         :example:
         >>> await adapter.myplatform.Api.leave_group("123456")
         """
-        return await self._adapter.call_api(
-            "leave_group", **self._merge_context({"group_id": str(group_id)})
+        return await self._api_call("leave_group", **self._merge_context({"group_id": str(group_id)}))
+
+    # ==================== 频道（Guild）相关动作 ====================
+
+    async def get_guild_info(self, guild_id: str) -> dict[str, Any]:
+        """
+        获取频道（服务器）信息
+
+        :param guild_id: 频道 ID
+        :return: 标准响应，data 包含 guild_id / guild_name
+
+        :example:
+        >>> result = await adapter.myplatform.Api.get_guild_info("100001")
+        >>> guild_name = result["data"]["guild_name"]
+        """
+        return await self._api_call("get_guild_info", **self._merge_context({"guild_id": str(guild_id)}))
+
+    async def get_guild_list(self) -> dict[str, Any]:
+        """
+        获取频道（服务器）列表
+
+        :return: 标准响应，data 为 list[get_guild_info 响应]
+
+        :example:
+        >>> result = await adapter.myplatform.Api.get_guild_list()
+        >>> guilds = result["data"]
+        """
+        return await self._api_call("get_guild_list", **self._merge_context({}))
+
+    async def set_guild_name(self, guild_id: str, guild_name: str) -> dict[str, Any]:
+        """
+        设置频道（服务器）名称
+
+        :param guild_id: 频道 ID
+        :param guild_name: 新的频道名称
+        :return: 标准响应
+
+        :example:
+        >>> await adapter.myplatform.Api.set_guild_name("100001", "新频道名")
+        """
+        return await self._api_call(
+            "set_guild_name",
+            **self._merge_context({"guild_id": str(guild_id), "guild_name": guild_name}),
+        )
+
+    async def get_guild_member_info(self, guild_id: str, user_id: str) -> dict[str, Any]:
+        """
+        获取频道（服务器）成员信息
+
+        :param guild_id: 频道 ID
+        :param user_id: 用户 ID
+        :return: 标准响应，data 包含 user_id / user_name / user_displayname
+
+        :example:
+        >>> result = await adapter.myplatform.Api.get_guild_member_info("100001", "123456")
+        >>> display_name = result["data"]["user_displayname"]
+        """
+        return await self._api_call(
+            "get_guild_member_info",
+            **self._merge_context({"guild_id": str(guild_id), "user_id": str(user_id)}),
+        )
+
+    async def get_guild_member_list(self, guild_id: str) -> dict[str, Any]:
+        """
+        获取频道（服务器）成员列表
+
+        :param guild_id: 频道 ID
+        :return: 标准响应，data 为 list[get_guild_member_info 响应]
+
+        :example:
+        >>> result = await adapter.myplatform.Api.get_guild_member_list("100001")
+        >>> members = result["data"]
+        """
+        return await self._api_call("get_guild_member_list", **self._merge_context({"guild_id": str(guild_id)}))
+
+    async def leave_guild(self, guild_id: str) -> dict[str, Any]:
+        """
+        退出频道（服务器）
+
+        :param guild_id: 频道 ID
+        :return: 标准响应
+
+        :example:
+        >>> await adapter.myplatform.Api.leave_guild("100001")
+        """
+        return await self._api_call("leave_guild", **self._merge_context({"guild_id": str(guild_id)}))
+
+    async def get_channel_info(self, guild_id: str, channel_id: str) -> dict[str, Any]:
+        """
+        获取频道下的子频道信息
+
+        :param guild_id: 频道（服务器）ID
+        :param channel_id: 子频道 ID
+        :return: 标准响应，data 包含 channel_id / channel_name
+
+        :example:
+        >>> result = await adapter.myplatform.Api.get_channel_info("100001", "200001")
+        >>> channel_name = result["data"]["channel_name"]
+        """
+        return await self._api_call(
+            "get_channel_info",
+            **self._merge_context({"guild_id": str(guild_id), "channel_id": str(channel_id)}),
+        )
+
+    async def get_channel_list(self, guild_id: str, *, joined_only: bool = False) -> dict[str, Any]:
+        """
+        获取频道下的子频道列表
+
+        :param guild_id: 频道（服务器）ID
+        :param joined_only: 仅返回已加入的子频道（默认 False）
+        :return: 标准响应，data 为 list[get_channel_info 响应]
+
+        :example:
+        >>> result = await adapter.myplatform.Api.get_channel_list("100001")
+        >>> channels = result["data"]
+        """
+        return await self._api_call(
+            "get_channel_list",
+            **self._merge_context({"guild_id": str(guild_id), "joined_only": bool(joined_only)}),
+        )
+
+    async def set_channel_name(self, guild_id: str, channel_id: str, channel_name: str) -> dict[str, Any]:
+        """
+        设置子频道名称
+
+        :param guild_id: 频道（服务器）ID
+        :param channel_id: 子频道 ID
+        :param channel_name: 新的子频道名称
+        :return: 标准响应
+
+        :example:
+        >>> await adapter.myplatform.Api.set_channel_name("100001", "200001", "新子频道名")
+        """
+        return await self._api_call(
+            "set_channel_name",
+            **self._merge_context(
+                {"guild_id": str(guild_id), "channel_id": str(channel_id), "channel_name": channel_name}
+            ),
+        )
+
+    async def get_channel_member_info(self, guild_id: str, channel_id: str, user_id: str) -> dict[str, Any]:
+        """
+        获取子频道成员信息
+
+        :param guild_id: 频道（服务器）ID
+        :param channel_id: 子频道 ID
+        :param user_id: 用户 ID
+        :return: 标准响应，data 包含 user_id / user_name / user_displayname
+
+        :example:
+        >>> result = await adapter.myplatform.Api.get_channel_member_info("100001", "200001", "123456")
+        """
+        return await self._api_call(
+            "get_channel_member_info",
+            **self._merge_context({"guild_id": str(guild_id), "channel_id": str(channel_id), "user_id": str(user_id)}),
+        )
+
+    async def get_channel_member_list(self, guild_id: str, channel_id: str) -> dict[str, Any]:
+        """
+        获取子频道成员列表
+
+        :param guild_id: 频道（服务器）ID
+        :param channel_id: 子频道 ID
+        :return: 标准响应，data 为 list[get_channel_member_info 响应]
+
+        :example:
+        >>> result = await adapter.myplatform.Api.get_channel_member_list("100001", "200001")
+        >>> members = result["data"]
+        """
+        return await self._api_call(
+            "get_channel_member_list",
+            **self._merge_context({"guild_id": str(guild_id), "channel_id": str(channel_id)}),
+        )
+
+    async def leave_channel(self, guild_id: str, channel_id: str) -> dict[str, Any]:
+        """
+        退出子频道
+
+        :param guild_id: 频道（服务器）ID
+        :param channel_id: 子频道 ID
+        :return: 标准响应
+
+        :example:
+        >>> await adapter.myplatform.Api.leave_channel("100001", "200001")
+        """
+        return await self._api_call(
+            "leave_channel",
+            **self._merge_context({"guild_id": str(guild_id), "channel_id": str(channel_id)}),
         )
 
     # ==================== 消息管理动作 ====================
@@ -1196,10 +1454,7 @@ class ApiDSL:
         :example:
         >>> await adapter.myplatform.Api.delete_message("msg_123456")
         """
-        return await self._adapter.call_api(
-            "delete_message",
-            **self._merge_context({"message_id": str(message_id)})
-        )
+        return await self._api_call("delete_message", **self._merge_context({"message_id": str(message_id)}))
 
     # ==================== 文件相关动作 ====================
 
@@ -1215,7 +1470,13 @@ class ApiDSL:
         sha256: str | None = None,
     ) -> dict[str, Any]:
         """
-        上传文件
+        上传文件到平台资源库（OB12 文件资源模型）
+
+        .. note:: 依赖平台特有的 ``file_id`` 文件资源能力，通用性不足，**ErisPulse
+            常规路径不使用**——模块发送文件请用 ``SendDSL.File(file)``（发送时直传）。
+            本方法仅当适配器后端具备 ``file_id`` 资源能力时透传；多数平台适配器
+            不会实现它，调用方需自行处理 ``10002``。
+            ``file_id`` 资源模型标准化到框架层是未来方向，当前版本不提供。
 
         :param type: 上传方式（``url`` / ``path`` / ``data``）
         :param name: 文件名（如 ``foo.jpg``）
@@ -1227,9 +1488,7 @@ class ApiDSL:
         :return: 标准响应，data 包含 file_id
 
         :example:
-        >>> result = await adapter.Api.upload_file(
-        ...     type="url", name="logo.jpg", url="https://example.com/logo.jpg"
-        ... )
+        >>> result = await adapter.Api.upload_file(type="url", name="logo.jpg", url="https://example.com/logo.jpg")
         >>> file_id = result["data"]["file_id"]
         """
         params: dict[str, Any] = {"type": type, "name": name}
@@ -1243,15 +1502,16 @@ class ApiDSL:
             params["headers"] = headers
         if sha256 is not None:
             params["sha256"] = sha256
-        return await self._adapter.call_api(
-            "upload_file", **self._merge_context(params)
-        )
+        return await self._api_call("upload_file", **self._merge_context(params))
 
-    async def get_file(
-        self, file_id: str, type: str = "url"
-    ) -> dict[str, Any]:
+    async def get_file(self, file_id: str, type: str = "url") -> dict[str, Any]:
         """
-        获取文件
+        从平台资源库获取文件（OB12 文件资源模型）
+
+        .. note:: 依赖平台特有的 ``file_id`` 文件资源能力，通用性不足，**ErisPulse
+            常规路径不使用**；仅当适配器后端具备该能力时透传，多数平台不会实现
+            （返回 ``10002``）。``file_id`` 资源模型标准化到框架层是未来方向，
+            当前版本不提供。
 
         :param file_id: 文件 ID
         :param type: 获取方式（``url`` / ``path`` / ``data``），默认 ``url``
@@ -1261,10 +1521,148 @@ class ApiDSL:
         >>> result = await adapter.myplatform.Api.get_file("file_abc", "url")
         >>> download_url = result["data"]["url"]
         """
-        return await self._adapter.call_api(
-            "get_file",
-            **self._merge_context({"file_id": str(file_id), "type": type})
+        return await self._api_call("get_file", **self._merge_context({"file_id": str(file_id), "type": type}))
+
+    # ==================== 文件分片动作（大文件） ====================
+    # OB12 文件资源模型（file_id 两段式），依赖平台特有文件资源能力、通用性不足。
+    # ErisPulse 常规路径不采用——模块发送大文件请用 SendDSL.File(file) 发送时直传；
+    # 分片动作仅供后端具备该能力的适配器透传，框架内尚无实现方。
+    # file_id 资源模型标准化到框架层是未来方向，当前版本不提供。
+
+    async def upload_file_fragmented_prepare(self, name: str, total_size: int) -> dict[str, Any]:
+        """
+        分片上传 · 准备阶段（OB12 文件资源模型，见分组说明——框架内尚无实现方）
+
+        分片上传三步：``prepare`` → ``transfer``（循环，逐片调用）→ ``finish``。
+        本方法为第一阶段，创建传输会话并返回 ``file_id``（后续阶段使用）。
+
+        :param name: 文件名（如 ``foo.jpg``）
+        :param total_size: 完整文件大小（字节）
+        :return: 标准响应，data 包含 file_id（仅供传输阶段使用）
+
+        :example:
+        >>> r = await adapter.Api.upload_file_fragmented_prepare("foo.jpg", 1048576)
+        >>> file_id = r["data"]["file_id"]
+        """
+        return await self._api_call(
+            "upload_file_fragmented",
+            **self._merge_context({"stage": "prepare", "name": name, "total_size": int(total_size)}),
         )
+
+    async def upload_file_fragmented_transfer(self, file_id: str, offset: int, data: bytes) -> dict[str, Any]:
+        """
+        分片上传 · 传输阶段（OB12 文件资源模型，见分组说明——框架内尚无实现方）
+
+        将文件按字节偏移逐片写入：``offset`` 从 0 开始，每片长度为 ``len(data)``。
+
+        :param file_id: prepare 阶段返回的文件 ID
+        :param offset: 本次分片的字节偏移
+        :param data: 本次分片数据
+        :return: 标准响应
+
+        :example:
+        >>> await adapter.Api.upload_file_fragmented_transfer(file_id, 0, chunk)
+        >>> await adapter.Api.upload_file_fragmented_transfer(file_id, len(chunk), next_chunk)
+        """
+        return await self._api_call(
+            "upload_file_fragmented",
+            **self._merge_context({"stage": "transfer", "file_id": file_id, "offset": int(offset), "data": data}),
+        )
+
+    async def upload_file_fragmented_finish(self, file_id: str, sha256: str) -> dict[str, Any]:
+        """
+        分片上传 · 完成阶段（OB12 文件资源模型，见分组说明——框架内尚无实现方）
+
+        :param file_id: prepare 阶段返回的文件 ID
+        :param sha256: **整个文件**的 SHA256（全小写十六进制）
+        :return: 标准响应，data 包含 file_id（供以后使用）
+
+        :example:
+        >>> await adapter.Api.upload_file_fragmented_finish(file_id, sha256_hex)
+        """
+        return await self._api_call(
+            "upload_file_fragmented",
+            **self._merge_context({"stage": "finish", "file_id": file_id, "sha256": sha256}),
+        )
+
+    async def get_file_fragmented_prepare(self, file_id: str) -> dict[str, Any]:
+        """
+        分片下载 · 准备阶段（OB12 文件资源模型，见分组说明——框架内尚无实现方）
+
+        分片下载两步：``prepare``（获取文件元信息）→ ``transfer``（循环取片）。
+
+        :param file_id: 文件 ID
+        :return: 标准响应，data 包含 name / total_size / sha256
+
+        :example:
+        >>> r = await adapter.Api.get_file_fragmented_prepare("file_abc")
+        >>> meta = r["data"]
+        """
+        return await self._api_call(
+            "get_file_fragmented", **self._merge_context({"stage": "prepare", "file_id": file_id})
+        )
+
+    async def get_file_fragmented_transfer(self, file_id: str, offset: int, size: int) -> dict[str, Any]:
+        """
+        分片下载 · 传输阶段（OB12 文件资源模型，见分组说明——框架内尚无实现方）
+
+        按 ``offset`` 取一片，``size`` 为本次请求的字节数（最后一片可小于 size）。
+
+        :param file_id: 文件 ID
+        :param offset: 本次分片的字节偏移
+        :param size: 本次请求大小（字节）
+        :return: 标准响应，data 包含 data（本次分片字节）
+
+        :example:
+        >>> while offset < total_size:
+        ...     r = await adapter.Api.get_file_fragmented_transfer(file_id, offset, 65536)
+        ...     offset += len(r["data"]["data"])
+        """
+        return await self._api_call(
+            "get_file_fragmented",
+            **self._merge_context({"stage": "transfer", "file_id": file_id, "offset": int(offset), "size": int(size)}),
+        )
+
+    # ==================== 元（Meta）动作 ====================
+
+    async def get_latest_events(self, limit: int = 0, timeout: int = 0) -> dict[str, Any]:
+        """
+        获取最新事件（仅 HTTP 通信方式必须支持）
+
+        :param limit: 最多返回事件数量（0 = 不限制）
+        :param timeout: 长轮询等待秒数（0 = 短轮询，不等待）
+        :return: 标准响应，data 为事件对象数组（从旧到新，不含元事件）
+        """
+        return await self._api_call(
+            "get_latest_events",
+            **self._merge_context({"limit": int(limit), "timeout": int(timeout)}),
+        )
+
+    async def get_supported_actions(self) -> dict[str, Any]:
+        """
+        获取实现支持的动作列表
+
+        :return: 标准响应，data 为动作名字符串数组（可能不含 get_latest_events）
+        """
+        return await self._api_call("get_supported_actions", **self._merge_context({}))
+
+    async def get_status(self) -> dict[str, Any]:
+        """
+        获取运行状态
+
+        :return: 标准响应，data 包含 good / bots
+            - good: 各模块是否均正常（bool）
+            - bots: 机器人账号状态列表，每项含 self{platform, user_id} 与 online
+        """
+        return await self._api_call("get_status", **self._merge_context({}))
+
+    async def get_version(self) -> dict[str, Any]:
+        """
+        获取实现版本信息
+
+        :return: 标准响应，data 包含 impl / version / onebot_version
+        """
+        return await self._api_call("get_version", **self._merge_context({}))
 
     # ==================== 通用扩展动作 ====================
 
@@ -1282,18 +1680,12 @@ class ApiDSL:
 
         :example:
         >>> # 调用平台扩展动作
-        >>> result = await adapter.myplatform.Api.call(
-        ...     "telegram.send_sticker", sticker_id="CAACAgIAAxkBAA..."
-        ... )
+        >>> result = await adapter.myplatform.Api.call("telegram.send_sticker", sticker_id="CAACAgIAAxkBAA...")
         >>>
         >>> # 也可用于调用标准动作（等价于直接调用对应方法）
-        >>> result = await adapter.myplatform.Api.call(
-        ...     "get_user_info", user_id="123"
-        ... )
+        >>> result = await adapter.myplatform.Api.call("get_user_info", user_id="123")
         """
-        return await self._adapter.call_api(
-            action, **self._merge_context(params)
-        )
+        return await self._api_call(action, **self._merge_context(params))
 
 
 class BaseAdapter(ABC):
@@ -1342,12 +1734,11 @@ class BaseAdapter(ABC):
         {!--< tips >!--}
         1. 默认实现返回 ``retcode=10002``（不支持的操作）
         2. 适配器应重写 ``accept`` / ``reject`` 方法
-        3. 通过 ``self._adapter.call_api()`` 调用平台 API
+        3. 通过 ``self._api_call()`` 调用平台 API
         4. 通过 ``self._request_id`` 获取请求标识
         5. 通过 ``self._account_id`` 获取 Bot 账号
         {!--< /tips >!--}
         """
-
 
     class Api(ApiDSL):
         """
@@ -1362,7 +1753,6 @@ class BaseAdapter(ABC):
         4. 使用 ``adapter.Api.Using("bot1")`` 指定 Bot 账号
         {!--< /tips >!--}
         """
-
 
     class Send(SendDSL):
         """
@@ -1434,7 +1824,7 @@ class BaseAdapter(ABC):
             >>> def Raw_ob12(self, message, **kwargs):
             >>>     async def _do_send():
             >>>         segments = self._apply_modifiers(message)
-            >>>         return await self._adapter.call_api(
+            >>>         return await self._api_call(
             >>>             endpoint="/send_message",
             >>>             message=segments,
             >>>             **self.send_context,
@@ -1577,7 +1967,6 @@ class BaseAdapter(ABC):
         {!--< /tips >!--}
         """
         if self.ConfigClass is None:
-
             raise AttributeError(i18n.t("core.adapter.config_class_not_declared"))
 
         from .config_schema import dict_to_dataclass
@@ -1598,7 +1987,6 @@ class BaseAdapter(ABC):
         self._config_instance = value
         if value is not None:
             from dataclasses import asdict
-
 
             try:
                 config_mgr.setConfig(self._get_config_key(), asdict(value))
@@ -1629,7 +2017,6 @@ class BaseAdapter(ABC):
         :raises AttributeError: 未声明 AccountConfigClass 时抛出
         """
         if self.AccountConfigClass is None:
-
             raise AttributeError(i18n.t("core.adapter.account_config_not_declared"))
 
         from .config_schema import dict_to_dataclass, validate_config
@@ -1663,12 +2050,9 @@ class BaseAdapter(ABC):
         if value is not None:
             from dataclasses import asdict
 
-
             key = f"{self._get_config_key()}.accounts"
             try:
-                config_mgr.setConfig(
-                    key, {name: asdict(cfg) for name, cfg in value.items()}
-                )
+                config_mgr.setConfig(key, {name: asdict(cfg) for name, cfg in value.items()})
             except Exception:
                 pass
 
@@ -1860,10 +2244,7 @@ class BaseAdapter(ABC):
             if cfg.enabled:
                 return name, cfg
 
-
-        raise ValueError(
-            i18n.t("core.adapter.account_not_found", account_id=account_id)
-        )
+        raise ValueError(i18n.t("core.adapter.account_not_found", account_id=account_id))
 
     async def emit_meta(self, detail_type: str, bot_id: str, **extra_info):
         """
@@ -1926,7 +2307,7 @@ class BaseAdapter(ABC):
 
     def make_error(
         self,
-        retcode: int = 34000,
+        retcode: int = RETCODE_SDK_FAILURE,
         message: str = "",
         raw=None,
     ) -> dict:
@@ -1984,9 +2365,7 @@ class BaseAdapter(ABC):
     async def emit(self, *args, **kwargs):
         raise NotImplementedError(i18n.t("core.adapter.emit_deprecated"))
 
-    def send(
-        self, target_type: str, target_id: str, message: Any, **kwargs: Any
-    ) -> asyncio.Task:
+    def send(self, target_type: str, target_id: str, message: Any, **kwargs: Any) -> asyncio.Task:
         """
         发送消息的便捷方法，返回一个 asyncio Task
 
@@ -2010,9 +2389,7 @@ class BaseAdapter(ABC):
             method_name = kwargs.pop("method", DEFAULT_SEND_METHOD)
             method = getattr(self.Send.To(target_type, target_id), method_name, None)  # pyright: ignore[reportArgumentType]
             if not method:
-                raise AttributeError(
-                    i18n.t("core.adapter.send_method_missing", name=method_name)
-                )
+                raise AttributeError(i18n.t("core.adapter.send_method_missing", name=method_name))
             return await method(message, **kwargs)
 
         try:
