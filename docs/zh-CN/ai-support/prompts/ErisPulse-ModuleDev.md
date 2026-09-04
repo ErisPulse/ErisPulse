@@ -4966,18 +4966,40 @@ async def reload_handler(event):
 
 ### 命令信息
 
+所有命令查询 API 均支持可选的**会话上下文**：传 `event=`（Event 或 dict）或
+显式 `platform=` / `bot_id=` / `session_id=`（与 event 叠加时显式参数优先），
+即按控制面模块维度过滤当前会话不可用模块的命令（详见 advanced/scope.md）；
+全部为可选关键字参数，不传时保持原有全量行为。
+
 ```python
 # 获取命令帮助
 help_text = command.help()
 
-# 获取特定命令
-cmd_info = command.get_command("admin")
+# 会话感知帮助：只列出当前会话可用的命令
+help_text = command.help(event=event)
 
-# 获取命令组中的所有命令
+# 获取特定命令（返回合并覆盖后的生效参数；会话不可用时返回 None）
+cmd_info = command.get_command("admin")
+cmd_info = command.get_command("admin", event=event)
+
+# 获取所有命令（会话感知时过滤不可用模块的命令）
+all_commands = command.get_commands()
+all_commands = command.get_commands(event=event)
+
+# 获取命令组中的所有命令（支持会话感知过滤）
 admin_commands = command.get_group_commands("admin")
+admin_commands = command.get_group_commands("admin", event=event)
 
 # 获取所有可见命令
 visible_commands = command.get_visible_commands()
+
+# 会话感知的可见命令（event 或显式关键字任一即可）
+visible_commands = command.get_visible_commands(event=event)
+visible_commands = command.get_visible_commands(
+    platform=event.get("platform"),
+    bot_id=event.get_self_account_id(),
+    session_id=event.get_session_id(),
+)
 ```
 
 ### 等待回复
@@ -8772,6 +8794,13 @@ flowchart TD
 - **静默语义**：被过滤模块的命令与处理器不触发、不回复、不认领（防止跨命令误匹配），
   仅 TRACE 级日志可见（`core.scope.denied`）
 - **框架级处理器**（`scope_exempt=True` 或 owner 为空）不受影响；模块名为空（框架层资源）始终放行
+- **会话感知帮助与命令查询**：命令查询 API（`command.help` /
+  `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`，
+  以及 `module.get_commands_overview`）均支持可选 `event=` 或显式
+  `platform=` / `bot_id=` / `session_id=` 关键字——当前会话不可用模块的命令
+  不再出现在结果中（`get_command` 返回 None、单命令帮助按"未注册"处理，
+  与静默语义一致）；不传上下文则保持全量行为。命令查询返回的
+  help / hidden 等字段为合并覆盖后的生效值（用户优先）
 
 ## ② 身份维度（事件准入）
 
@@ -8826,7 +8855,9 @@ aliases = ["rs"]   # 生效别名
 
 > 覆盖遵循**用户优先**：开发者声明的 `master` / `hidden` 等只是默认值，
 > 用户在此显式配置后即以用户配置为准（可收紧也可放开）。
-> 覆盖只改**实现参数**（master / hidden / aliases / prefix / help / usage 等）。
+> 覆盖只改**实现参数**（master / hidden / aliases / prefix / help / usage 等），
+> 命令执行判定与帮助渲染共用同一合并结果：`hidden` 覆盖即时改变帮助列表可见性，
+> `help` / `usage` 覆盖即时改变 `/help` 展示。
 > **禁用一条命令不在这里**——统一走命令维度 deny（`scope.commands` 或
 > `scope.deny_user()`），避免两套"禁用"语义打架。
 

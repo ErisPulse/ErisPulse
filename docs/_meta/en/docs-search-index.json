@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1505,
+  "total_keywords": 1509,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -51,7 +51,7 @@
     "1. Configuration Hierarchy and Overriding": [
       {
         "document": "advanced/scope.md",
-        "line": 325,
+        "line": 326,
         "level": 3,
         "title": "1. Configuration Hierarchy and Overriding"
       }
@@ -666,12 +666,12 @@
         "title": "2. Parameter Specification Details"
       }
     ],
-    "2. Prefer Control Plane Over Module Code Changes": [
+    "2. Prefer the Control Plane over Modifying Module Code": [
       {
         "document": "advanced/scope.md",
-        "line": 331,
+        "line": 332,
         "level": 3,
-        "title": "2. Prefer Control Plane Over Module Code Changes"
+        "title": "2. Prefer the Control Plane over Modifying Module Code"
       }
     ],
     "2. Publish to PyPI": [
@@ -1093,7 +1093,7 @@
     "3. Module/Command Not Responding": [
       {
         "document": "advanced/scope.md",
-        "line": 335,
+        "line": 336,
         "level": 3,
         "title": "3. Module/Command Not Responding"
       }
@@ -1453,7 +1453,7 @@
     "4. Session Identifier Isolation Across Platforms": [
       {
         "document": "advanced/scope.md",
-        "line": 349,
+        "line": 350,
         "level": 3,
         "title": "4. Session Identifier Isolation Across Platforms"
       }
@@ -2685,8 +2685,8 @@
     "Adapter: Registering Platform Extension Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 545,
-        "level": 3,
+        "line": 564,
+        "level": 4,
         "title": "Adapter: Registering Platform Extension Methods"
       }
     ],
@@ -3297,8 +3297,8 @@
     "Batch Registration (Mixin Class)": [
       {
         "document": "api-reference/event-system.md",
-        "line": 565,
-        "level": 4,
+        "line": 584,
+        "level": 5,
         "title": "Batch Registration (Mixin Class)"
       }
     ],
@@ -3435,7 +3435,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 252,
+        "line": 271,
         "level": 3,
         "title": "Bot Status Query"
       },
@@ -3548,12 +3548,12 @@
         "title": "CORS Configuration"
       }
     ],
-    "Cache and Hot Updates": [
+    "Cache and Hot Update": [
       {
         "document": "advanced/scope.md",
-        "line": 317,
+        "line": 318,
         "level": 2,
-        "title": "Cache and Hot Updates"
+        "title": "Cache and Hot Update"
       }
     ],
     "Callback Query Event": [
@@ -3869,7 +3869,7 @@
     "Command Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 233,
+        "line": 234,
         "level": 3,
         "title": "Command Dimension"
       }
@@ -3899,7 +3899,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 316,
+        "line": 335,
         "level": 3,
         "title": "Command Information"
       },
@@ -4017,7 +4017,7 @@
     "Common Issues and Notes": [
       {
         "document": "advanced/scope.md",
-        "line": 323,
+        "line": 324,
         "level": 2,
         "title": "Common Issues and Notes"
       }
@@ -4149,7 +4149,7 @@
     "Conditional Listening": [
       {
         "document": "api-reference/event-system.md",
-        "line": 156,
+        "line": 175,
         "level": 3,
         "title": "Conditional Listening"
       }
@@ -4739,7 +4739,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 260,
+        "line": 279,
         "level": 3,
         "title": "Core Methods"
       },
@@ -4855,7 +4855,7 @@
     "Cross-Platform Extensions (Wildcard)": [
       {
         "document": "api-reference/event-system.md",
-        "line": 644,
+        "line": 663,
         "level": 2,
         "title": "Cross-Platform Extensions (Wildcard)"
       }
@@ -4887,7 +4887,7 @@
     "Custom Identity Source (provider)": [
       {
         "document": "advanced/scope.md",
-        "line": 289,
+        "line": 290,
         "level": 3,
         "title": "Custom Identity Source (provider)"
       }
@@ -5090,12 +5090,12 @@
         "title": "Detailed Explanation of Initialization Stages"
       }
     ],
-    "Determination and Runtime Add/Remove": [
+    "Determination and Runtime Addition/Removal": [
       {
         "document": "advanced/scope.md",
-        "line": 277,
+        "line": 278,
         "level": 3,
-        "title": "Determination and Runtime Add/Remove"
+        "title": "Determination and Runtime Addition/Removal"
       }
     ],
     "Developer Guide": [
@@ -5478,6 +5478,14 @@
         "line": 402,
         "level": 3,
         "title": "Entering Build Mode"
+      }
+    ],
+    "Entry Template": [
+      {
+        "document": "bug-tracker.md",
+        "line": 65,
+        "level": 2,
+        "title": "Entry Template"
       }
     ],
     "Environment Diagnosis": [
@@ -6019,7 +6027,7 @@
     "Event Wrapper Class": [
       {
         "document": "api-reference/event-system.md",
-        "line": 256,
+        "line": 275,
         "level": 2,
         "title": "Event Wrapper Class"
       }
@@ -6259,7 +6267,7 @@
     "Field Descriptions": [
       {
         "document": "bug-tracker.md",
-        "line": 16,
+        "line": 14,
         "level": 2,
         "title": "Field Descriptions"
       }
@@ -6275,7 +6283,7 @@
     "Fixed Bugs": [
       {
         "document": "bug-tracker.md",
-        "line": 121,
+        "line": 115,
         "level": 2,
         "title": "Fixed Bugs"
       }
@@ -6535,7 +6543,7 @@
     "General": [
       {
         "document": "advanced/scope.md",
-        "line": 258,
+        "line": 259,
         "level": 3,
         "title": "General"
       }
@@ -6823,7 +6831,7 @@
     "Handler and Override Dimensions": [
       {
         "document": "advanced/scope.md",
-        "line": 247,
+        "line": 248,
         "level": 3,
         "title": "Handler and Override Dimensions"
       }
@@ -7119,7 +7127,7 @@
     "Identity Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 214,
+        "line": 215,
         "level": 3,
         "title": "Identity Dimension"
       }
@@ -7381,7 +7389,7 @@
     "Interaction Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 408,
+        "line": 427,
         "level": 3,
         "title": "Interaction Methods"
       },
@@ -7452,14 +7460,6 @@
         "line": 387,
         "level": 2,
         "title": "Internationalization Configuration"
-      }
-    ],
-    "Item Template": [
-      {
-        "document": "bug-tracker.md",
-        "line": 67,
-        "level": 2,
-        "title": "Item Template"
       }
     ],
     "Jinja Template Example": [
@@ -7605,7 +7605,7 @@
     "Link Control": [
       {
         "document": "api-reference/event-system.md",
-        "line": 460,
+        "line": 479,
         "level": 3,
         "title": "Link Control"
       }
@@ -7896,6 +7896,14 @@
         "title": "Management Interface"
       }
     ],
+    "Mandatory Fields": [
+      {
+        "document": "bug-tracker.md",
+        "line": 16,
+        "level": 3,
+        "title": "Mandatory Fields"
+      }
+    ],
     "Manual Configuration Reading (Deprecated)": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -8097,7 +8105,7 @@
     "Message Events": [
       {
         "document": "api-reference/event-system.md",
-        "line": 127,
+        "line": 146,
         "level": 3,
         "title": "Message Events"
       }
@@ -8142,20 +8150,20 @@
         "title": "Message Management Methods"
       }
     ],
-    "Message Message Module": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 125,
-        "level": 2,
-        "title": "Message Message Module"
-      }
-    ],
     "Message Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 289,
+        "line": 308,
         "level": 3,
         "title": "Message Methods"
+      }
+    ],
+    "Message Module": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 144,
+        "level": 2,
+        "title": "Message Module"
       }
     ],
     "Message Operations": [
@@ -8363,7 +8371,7 @@
     "Meta Events": [
       {
         "document": "api-reference/event-system.md",
-        "line": 229,
+        "line": 248,
         "level": 3,
         "title": "Meta Events"
       }
@@ -8376,12 +8384,12 @@
         "title": "Meta Events (Meta Events)"
       }
     ],
-    "Meta Meta-event Module": [
+    "Meta Module": [
       {
         "document": "api-reference/event-system.md",
-        "line": 227,
+        "line": 246,
         "level": 2,
-        "title": "Meta Meta-event Module"
+        "title": "Meta Module"
       }
     ],
     "Method 1: Install using pip": [
@@ -8481,7 +8489,7 @@
     "Method Resolution Priority": [
       {
         "document": "api-reference/event-system.md",
-        "line": 669,
+        "line": 688,
         "level": 3,
         "title": "Method Resolution Priority"
       }
@@ -8623,7 +8631,7 @@
     "Module Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 192,
+        "line": 193,
         "level": 3,
         "title": "Module Dimension"
       }
@@ -9000,6 +9008,14 @@
         "title": "Notice Event Methods"
       }
     ],
+    "Notice Events": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 194,
+        "level": 3,
+        "title": "Notice Events"
+      }
+    ],
     "Notice Events (Notice Events)": [
       {
         "document": "platform-guide/onebot12.md",
@@ -9008,12 +9024,12 @@
         "title": "Notice Events (Notice Events)"
       }
     ],
-    "Notice Notification Module": [
+    "Notice Module": [
       {
         "document": "api-reference/event-system.md",
-        "line": 173,
+        "line": 192,
         "level": 2,
-        "title": "Notice Notification Module"
+        "title": "Notice Module"
       }
     ],
     "Notice Type Checks": [
@@ -9046,14 +9062,6 @@
         "line": 138,
         "level": 2,
         "title": "Notification Event Methods"
-      }
-    ],
-    "Notification Events": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 175,
-        "level": 3,
-        "title": "Notification Events"
       }
     ],
     "Notification Events (notice)": [
@@ -9207,7 +9215,7 @@
     "Optional Fields": [
       {
         "document": "bug-tracker.md",
-        "line": 31,
+        "line": 29,
         "level": 3,
         "title": "Optional Fields"
       }
@@ -9255,8 +9263,8 @@
     "Overriding Built-in Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 623,
-        "level": 4,
+        "line": 642,
+        "level": 5,
         "title": "Overriding Built-in Methods"
       }
     ],
@@ -9305,7 +9313,7 @@
     "Owner Identity and Custom Identity Source (provider)": [
       {
         "document": "advanced/scope.md",
-        "line": 271,
+        "line": 272,
         "level": 2,
         "title": "Owner Identity and Custom Identity Source (provider)"
       }
@@ -9417,7 +9425,7 @@
     "Platform Capability Query": [
       {
         "document": "api-reference/event-system.md",
-        "line": 360,
+        "line": 379,
         "level": 3,
         "title": "Platform Capability Query"
       },
@@ -9469,7 +9477,7 @@
     "Platform Extension Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 486,
+        "line": 505,
         "level": 3,
         "title": "Platform Extension Methods"
       },
@@ -9499,7 +9507,7 @@
     "Platform Method Isolation": [
       {
         "document": "api-reference/event-system.md",
-        "line": 522,
+        "line": 541,
         "level": 4,
         "title": "Platform Method Isolation"
       }
@@ -9613,7 +9621,7 @@
     "Priority System": [
       {
         "document": "api-reference/event-system.md",
-        "line": 680,
+        "line": 699,
         "level": 2,
         "title": "Priority System"
       }
@@ -9848,20 +9856,20 @@
         "title": "Query Registered Methods"
       }
     ],
-    "Query Registered Platform Methods": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 507,
-        "level": 4,
-        "title": "Query Registered Platform Methods"
-      }
-    ],
     "Query Supported Sending Methods": [
       {
         "document": "api-reference/adapter-system.md",
         "line": 128,
         "level": 3,
         "title": "Query Supported Sending Methods"
+      }
+    ],
+    "Querying Registered Platform Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 526,
+        "level": 4,
+        "title": "Querying Registered Platform Methods"
       }
     ],
     "Quick Build Mode (Static)": [
@@ -10101,7 +10109,7 @@
     "Registering Cross-Platform Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 648,
+        "line": 667,
         "level": 3,
         "title": "Registering Cross-Platform Methods"
       }
@@ -10179,7 +10187,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 696,
+        "line": 715,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -10359,7 +10367,7 @@
     "Reply Functionality": [
       {
         "document": "api-reference/event-system.md",
-        "line": 328,
+        "line": 347,
         "level": 3,
         "title": "Reply Functionality"
       },
@@ -10387,7 +10395,7 @@
     "Reply Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 372,
+        "line": 391,
         "level": 3,
         "title": "Reply Methods"
       }
@@ -10449,7 +10457,7 @@
     "Request Events": [
       {
         "document": "api-reference/event-system.md",
-        "line": 207,
+        "line": 226,
         "level": 3,
         "title": "Request Events"
       }
@@ -10476,6 +10484,14 @@
         "line": 72,
         "level": 2,
         "title": "Request Methods"
+      }
+    ],
+    "Request Module": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 224,
+        "level": 2,
+        "title": "Request Module"
       }
     ],
     "Request Operation Return Values": [
@@ -10508,14 +10524,6 @@
         "title": "Request Operations (Request DSL)"
       }
     ],
-    "Request Request Module": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 205,
-        "level": 2,
-        "title": "Request Request Module"
-      }
-    ],
     "Request Statistics": [
       {
         "document": "advanced/http-client.md",
@@ -10541,12 +10549,6 @@
       }
     ],
     "Required Fields": [
-      {
-        "document": "bug-tracker.md",
-        "line": 18,
-        "level": 3,
-        "title": "Required Fields"
-      },
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 642,
@@ -10613,8 +10615,8 @@
     "Return Value Specification": [
       {
         "document": "api-reference/event-system.md",
-        "line": 586,
-        "level": 4,
+        "line": 605,
+        "level": 5,
         "title": "Return Value Specification"
       }
     ],
@@ -10855,7 +10857,7 @@
     "Runtime API": [
       {
         "document": "advanced/scope.md",
-        "line": 190,
+        "line": 191,
         "level": 2,
         "title": "Runtime API"
       }
@@ -11226,13 +11228,15 @@
         "title": "Server Configuration"
       }
     ],
-    "Session Identifiers": [
+    "Session Identifier": [
       {
         "document": "api-reference/event-system.md",
-        "line": 276,
+        "line": 295,
         "level": 3,
-        "title": "Session Identifiers"
-      },
+        "title": "Session Identifier"
+      }
+    ],
+    "Session Identifiers": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 169,
@@ -11240,12 +11244,12 @@
         "title": "Session Identifiers"
       }
     ],
-    "Severity Levels": [
+    "Severity Classification": [
       {
         "document": "bug-tracker.md",
-        "line": 42,
+        "line": 39,
         "level": 2,
-        "title": "Severity Levels"
+        "title": "Severity Classification"
       }
     ],
     "Shutdown Adapters": [
@@ -11299,8 +11303,8 @@
     "Single Method Registration": [
       {
         "document": "api-reference/event-system.md",
-        "line": 549,
-        "level": 4,
+        "line": 568,
+        "level": 5,
         "title": "Single Method Registration"
       }
     ],
@@ -11539,7 +11543,7 @@
     "Statistics Overview": [
       {
         "document": "bug-tracker.md",
-        "line": 94,
+        "line": 90,
         "level": 2,
         "title": "Statistics Overview"
       }
@@ -11985,7 +11989,7 @@
     "Topology Tree API": [
       {
         "document": "advanced/scope.md",
-        "line": 353,
+        "line": 354,
         "level": 2,
         "title": "Topology Tree API"
       }
@@ -12057,7 +12061,7 @@
     "Type Classification": [
       {
         "document": "bug-tracker.md",
-        "line": 50,
+        "line": 49,
         "level": 2,
         "title": "Type Classification"
       }
@@ -12172,20 +12176,20 @@
         "title": "Unload and Purge (彻底卸载)"
       }
     ],
-    "Unregister Methods": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 611,
-        "level": 4,
-        "title": "Unregister Methods"
-      }
-    ],
     "Unregister View": [
       {
         "document": "ecosystem/dashboard.md",
         "line": 312,
         "level": 2,
         "title": "Unregister View"
+      }
+    ],
+    "Unregistering Methods": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 630,
+        "level": 5,
+        "title": "Unregistering Methods"
       }
     ],
     "Unregistering Translations": [
@@ -12322,12 +12326,12 @@
         "title": "User Guide"
       }
     ],
-    "User Priority: Owner Scope is Finalized by the User": [
+    "User Priority: Owner Scope is Finally Decided by the User": [
       {
         "document": "advanced/scope.md",
-        "line": 313,
+        "line": 314,
         "level": 3,
-        "title": "User Priority: Owner Scope is Finalized by the User"
+        "title": "User Priority: Owner Scope is Finally Decided by the User"
       }
     ],
     "User Status Change Event": [
@@ -12341,7 +12345,7 @@
     "User: Using Platform Extension Methods": [
       {
         "document": "api-reference/event-system.md",
-        "line": 490,
+        "line": 509,
         "level": 4,
         "title": "User: Using Platform Extension Methods"
       }
@@ -12537,7 +12541,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 449,
+        "line": 468,
         "level": 3,
         "title": "Utility Methods"
       }
@@ -12614,12 +12618,12 @@
         "title": "Waiting for Any Event (`wait_for`)"
       }
     ],
-    "Waiting for Reply": [
+    "Waiting for Replies": [
       {
         "document": "api-reference/event-system.md",
-        "line": 70,
+        "line": 89,
         "level": 3,
-        "title": "Waiting for Reply"
+        "title": "Waiting for Replies"
       }
     ],
     "Waiting for Reply with Callback": [
@@ -12832,18 +12836,18 @@
         "title": "Yunhu User Platform Features Documentation"
       }
     ],
-    "[BUG-001] Event handler registered multiple times causing event to be processed multiple times": [
+    "[BUG-001] Event handler duplicate registration causes events to be processed multiple times": [
       {
         "document": "bug-tracker.md",
-        "line": 123,
+        "line": 117,
         "level": 3,
-        "title": "[BUG-001] Event handler registered multiple times causing event to be processed multiple times"
+        "title": "[BUG-001] Event handler duplicate registration causes events to be processed multiple times"
       }
     ],
     "[BUG-002] Init command adapter configuration path type error": [
       {
         "document": "bug-tracker.md",
-        "line": 143,
+        "line": 137,
         "level": 3,
         "title": "[BUG-002] Init command adapter configuration path type error"
       }
@@ -12851,103 +12855,103 @@
     "[BUG-003] Commands fail after restart": [
       {
         "document": "bug-tracker.md",
-        "line": 167,
+        "line": 161,
         "level": 3,
         "title": "[BUG-003] Commands fail after restart"
       }
     ],
-    "[BUG-004] Lifecycle event handlers not cleaned up": [
+    "[BUG-004] Lifecycle event handlers not cleared": [
       {
         "document": "bug-tracker.md",
-        "line": 187,
+        "line": 181,
         "level": 3,
-        "title": "[BUG-004] Lifecycle event handlers not cleaned up"
+        "title": "[BUG-004] Lifecycle event handlers not cleared"
       }
     ],
     "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard": [
       {
         "document": "bug-tracker.md",
-        "line": 207,
+        "line": 201,
         "level": 3,
         "title": "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard"
       }
     ],
-    "[BUG-006] adapter.clear() not clearing _started_instances causing incorrect state after restart": [
+    "[BUG-006] adapter.clear() does not clear _started_instances causing incorrect status after restart": [
       {
         "document": "bug-tracker.md",
-        "line": 227,
+        "line": 221,
         "level": 3,
-        "title": "[BUG-006] adapter.clear() not clearing _started_instances causing incorrect state after restart"
+        "title": "[BUG-006] adapter.clear() does not clear _started_instances causing incorrect status after restart"
       }
     ],
     "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()": [
       {
         "document": "bug-tracker.md",
-        "line": 247,
+        "line": 241,
         "level": 3,
         "title": "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()"
       }
     ],
-    "[BUG-008] Bot offline event repeatedly submitted during shutdown": [
+    "[BUG-008] Bot offline events are repeatedly submitted during shutdown": [
       {
         "document": "bug-tracker.md",
-        "line": 267,
+        "line": 261,
         "level": 3,
-        "title": "[BUG-008] Bot offline event repeatedly submitted during shutdown"
+        "title": "[BUG-008] Bot offline events are repeatedly submitted during shutdown"
       }
     ],
-    "[BUG-009] LazyModule synchronous access to BaseModule causing incomplete initialization": [
+    "[BUG-009] LazyModule synchronous access to BaseModule causes incomplete initialization": [
       {
         "document": "bug-tracker.md",
-        "line": 287,
+        "line": 281,
         "level": 3,
-        "title": "[BUG-009] LazyModule synchronous access to BaseModule causing incomplete initialization"
+        "title": "[BUG-009] LazyModule synchronous access to BaseModule causes incomplete initialization"
       }
     ],
-    "[BUG-010] Multi-threaded configuration system writing causing data loss": [
+    "[BUG-010] Multi-threaded configuration system writing leads to data loss": [
       {
         "document": "bug-tracker.md",
-        "line": 307,
+        "line": 301,
         "level": 3,
-        "title": "[BUG-010] Multi-threaded configuration system writing causing data loss"
+        "title": "[BUG-010] Multi-threaded configuration system writing leads to data loss"
       }
     ],
-    "[BUG-011] Windows Ctrl+C unable to stop program": [
+    "[BUG-011] Windows Ctrl+C cannot stop the program": [
       {
         "document": "bug-tracker.md",
-        "line": 330,
+        "line": 324,
         "level": 3,
-        "title": "[BUG-011] Windows Ctrl+C unable to stop program"
+        "title": "[BUG-011] Windows Ctrl+C cannot stop the program"
       }
     ],
-    "[BUG-012] Hot restart after module update does not take effect": [
+    "[BUG-012] Updated module Python code does not take effect after hot restart": [
       {
         "document": "bug-tracker.md",
-        "line": 354,
+        "line": 348,
         "level": 3,
-        "title": "[BUG-012] Hot restart after module update does not take effect"
+        "title": "[BUG-012] Updated module Python code does not take effect after hot restart"
       }
     ],
-    "[BUG-013] Module loading strategy sorting logic error": [
+    "[BUG-013] Module loading strategy sort logic error": [
       {
         "document": "bug-tracker.md",
-        "line": 374,
+        "line": 368,
         "level": 3,
-        "title": "[BUG-013] Module loading strategy sorting logic error"
+        "title": "[BUG-013] Module loading strategy sort logic error"
       }
     ],
-    "[BUG-014] Adapter middleware returning None causing event data loss": [
+    "[BUG-014] Adapter middleware returning None causes event data loss": [
       {
         "document": "bug-tracker.md",
-        "line": 394,
+        "line": 388,
         "level": 3,
-        "title": "[BUG-014] Adapter middleware returning None causing event data loss"
+        "title": "[BUG-014] Adapter middleware returning None causes event data loss"
       }
     ],
     "[BUG-015] Configuration file path depends on working directory": [
       {
         "document": "bug-tracker.md",
-        "line": 414,
+        "line": 408,
         "level": 3,
         "title": "[BUG-015] Configuration file path depends on working directory"
       }
@@ -12955,7 +12959,7 @@
     "[BUG-016] BaseStorage confuses storing value None with key not existing": [
       {
         "document": "bug-tracker.md",
-        "line": 434,
+        "line": 428,
         "level": 3,
         "title": "[BUG-016] BaseStorage confuses storing value None with key not existing"
       }
@@ -12963,39 +12967,39 @@
     "[BUG-017] WebSocket route auto_accept flag lost after service restart": [
       {
         "document": "bug-tracker.md",
-        "line": 454,
+        "line": 448,
         "level": 3,
         "title": "[BUG-017] WebSocket route auto_accept flag lost after service restart"
       }
     ],
-    "[BUG-018] HTTP/WS client concurrent calls causing crash and connection leak": [
+    "[BUG-018] HTTP/WS client concurrent calls lead to crashes and connection leaks": [
       {
         "document": "bug-tracker.md",
-        "line": 474,
+        "line": 468,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS client concurrent calls causing crash and connection leak"
+        "title": "[BUG-018] HTTP/WS client concurrent calls lead to crashes and connection leaks"
       }
     ],
-    "[BUG-019] Adapter hot reload causes route conflict and reload failure": [
+    "[BUG-019] Adapter hot reload causes route conflicts leading to reload failure": [
       {
         "document": "bug-tracker.md",
-        "line": 502,
+        "line": 496,
         "level": 3,
-        "title": "[BUG-019] Adapter hot reload causes route conflict and reload failure"
+        "title": "[BUG-019] Adapter hot reload causes route conflicts leading to reload failure"
       }
     ],
-    "[BUG-020] Subprocess mode `ep run <script>` cannot find sub-packages in the script's directory": [
+    "[BUG-020] Subprocess mode `ep run <script>` cannot find sub-packages in script's directory": [
       {
         "document": "bug-tracker.md",
-        "line": 526,
+        "line": 519,
         "level": 3,
-        "title": "[BUG-020] Subprocess mode `ep run <script>` cannot find sub-packages in the script's directory"
+        "title": "[BUG-020] Subprocess mode `ep run <script>` cannot find sub-packages in script's directory"
       }
     ],
     "[BUG-021] SQL query builder rejects valid wildcard and list expressions": [
       {
         "document": "bug-tracker.md",
-        "line": 546,
+        "line": 539,
         "level": 3,
         "title": "[BUG-021] SQL query builder rejects valid wildcard and list expressions"
       }
@@ -13003,65 +13007,81 @@
     "[BUG-022] _resolve_account() account resolution regression (_accounts_data not filled)": [
       {
         "document": "bug-tracker.md",
-        "line": 575,
+        "line": 569,
         "level": 3,
         "title": "[BUG-022] _resolve_account() account resolution regression (_accounts_data not filled)"
       }
     ],
-    "[BUG-023] Adapter cache not refreshed after account configuration change causing account resolution failure": [
+    "[BUG-023] Cache not refreshed after account configuration modification leads to account resolution failure": [
       {
         "document": "bug-tracker.md",
-        "line": 614,
+        "line": 608,
         "level": 3,
-        "title": "[BUG-023] Adapter cache not refreshed after account configuration change causing account resolution failure"
+        "title": "[BUG-023] Cache not refreshed after account configuration modification leads to account resolution failure"
       }
     ],
-    "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill": [
+    "[BUG-024] storage.set() writing large numeric key triggers OOM Kill": [
       {
         "document": "bug-tracker.md",
-        "line": 634,
+        "line": 628,
         "level": 3,
-        "title": "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill"
+        "title": "[BUG-024] storage.set() writing large numeric key triggers OOM Kill"
       }
     ],
-    "[BUG-025] on_config_update callback not core-routed": [
+    "[BUG-025] on_config_update callback not called by core routes": [
       {
         "document": "bug-tracker.md",
-        "line": 680,
+        "line": 674,
         "level": 3,
-        "title": "[BUG-025] on_config_update callback not core-routed"
+        "title": "[BUG-025] on_config_update callback not called by core routes"
       }
     ],
-    "[BUG-026] notice/request event reply target inferred incorrectly": [
+    "[BUG-026] notice/request event reply target inference error": [
       {
         "document": "bug-tracker.md",
-        "line": 710,
+        "line": 704,
         "level": 3,
-        "title": "[BUG-026] notice/request event reply target inferred incorrectly"
+        "title": "[BUG-026] notice/request event reply target inference error"
       }
     ],
-    "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limit rules to fail": [
+    "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limiting rules to fail": [
       {
         "document": "bug-tracker.md",
-        "line": 741,
+        "line": 735,
         "level": 3,
-        "title": "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limit rules to fail"
+        "title": "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limiting rules to fail"
       }
     ],
     "[BUG-029] Configuration listener task broadcasts incomplete TOML and silently swallows exceptions": [
       {
         "document": "bug-tracker.md",
-        "line": 773,
+        "line": 767,
         "level": 3,
         "title": "[BUG-029] Configuration listener task broadcasts incomplete TOML and silently swallows exceptions"
       }
     ],
-    "[BUG-030] Configuration watcher race condition causing setConfig delayed write silently drops data": [
+    "[BUG-030] Configuration watcher race condition causes setConfig delayed write silently drops data": [
       {
         "document": "bug-tracker.md",
-        "line": 809,
+        "line": 803,
         "level": 3,
-        "title": "[BUG-030] Configuration watcher race condition causing setConfig delayed write silently drops data"
+        "title": "[BUG-030] Configuration watcher race condition causes setConfig delayed write silently drops data"
+      }
+    ],
+    "[BUG-031] Local plugin hot reload completely unusable (reload_plugin always returns False)": [
+      {
+        "document": "bug-tracker.md",
+        "line": 839,
+        "level": 3,
+        "title": "[BUG-031] Local plugin hot reload completely unusable (reload_plugin always returns False)"
+      }
+    ],
+    "[BUG-033] \"Write-then-read\" reads old values during delayed configuration write": [
+      {
+        "document": "bug-tracker.md",
+        "line": 864,
+        "level": 3,
+        "title": "[BUG-033] \"Write-then-read\" reads old values during delayed configuration write"
       }
     ],
     "__init__.py": [
@@ -13091,7 +13111,7 @@
     "`hasattr` / `dir` Support": [
       {
         "document": "api-reference/event-system.md",
-        "line": 538,
+        "line": 557,
         "level": 4,
         "title": "`hasattr` / `dir` Support"
       }
@@ -13571,7 +13591,7 @@
     "② Identity Dimension (Event Admission)": [
       {
         "document": "advanced/scope.md",
-        "line": 122,
+        "line": 123,
         "level": 2,
         "title": "② Identity Dimension (Event Admission)"
       }
@@ -13579,7 +13599,7 @@
     "③ Command Dimension (Command ACL)": [
       {
         "document": "advanced/scope.md",
-        "line": 138,
+        "line": 139,
         "level": 2,
         "title": "③ Command Dimension (Command ACL)"
       }
@@ -13587,7 +13607,7 @@
     "④ Handler/Text Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 147,
+        "line": 148,
         "level": 2,
         "title": "④ Handler/Text Dimension"
       }
@@ -13595,7 +13615,7 @@
     "⑤ Implementation Parameter Override": [
       {
         "document": "advanced/scope.md",
-        "line": 156,
+        "line": 157,
         "level": 2,
         "title": "⑤ Implementation Parameter Override"
       }
@@ -13603,7 +13623,7 @@
     "⑥ Outbound Action Dimension (Prohibit Modules from Initiating Outbound Calls)": [
       {
         "document": "advanced/scope.md",
-        "line": 169,
+        "line": 170,
         "level": 2,
         "title": "⑥ Outbound Action Dimension (Prohibit Modules from Initiating Outbound Calls)"
       }

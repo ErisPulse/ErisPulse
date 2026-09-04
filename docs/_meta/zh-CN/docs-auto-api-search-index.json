@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1511,
+  "total_keywords": 1517,
   "keywords": {
     "ErisPulse API 文档": [
       {
@@ -2197,7 +2197,7 @@
     "`__contains__(module_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/module.md",
-        "line": 612,
+        "line": 620,
         "level": 5,
         "title": "`__contains__(module_name: str)`"
       }
@@ -2257,7 +2257,7 @@
     "`__getattr__(module_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/module.md",
-        "line": 596,
+        "line": 604,
         "level": 5,
         "title": "`__getattr__(module_name: str)`"
       }
@@ -3224,6 +3224,14 @@
         "title": "`_configure_adapters(project_path: Path)`"
       }
     ],
+    "`_context_from_event(event: Any)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
+        "line": 339,
+        "level": 5,
+        "title": "`_context_from_event(event: Any)`"
+      }
+    ],
     "`_convert_ws_msg(msg)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/client.md",
@@ -3297,6 +3305,12 @@
       }
     ],
     "`_deep_merge(base: dict[str, Any], override: dict[str, Any])`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/config.md",
+        "line": 282,
+        "level": 5,
+        "title": "`_deep_merge(base: dict[str, Any], override: dict[str, Any])`"
+      },
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/frame_config.md",
         "line": 17,
@@ -3372,6 +3386,14 @@
         "title": "`_detect_windows_locale()`"
       }
     ],
+    "`_dirty_overlay(keys: list[str])`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/config.md",
+        "line": 272,
+        "level": 5,
+        "title": "`_dirty_overlay(keys: list[str])`"
+      }
+    ],
     "`_dispatch_handler_task(func: Callable, data: Any)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
@@ -3394,6 +3416,14 @@
         "line": 107,
         "level": 5,
         "title": "`_drop_redundant_dirty_keys()`"
+      }
+    ],
+    "`_effective_info(name: str, info: dict)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
+        "line": 358,
+        "level": 5,
+        "title": "`_effective_info(name: str, info: dict)`"
       }
     ],
     "`_emit_config_updated(old_config: dict[str, Any])`": [
@@ -4756,6 +4786,14 @@
         "title": "`_option_label(option)`"
       }
     ],
+    "`_owner_blocked(info: dict, ctx: dict[str, str | None])`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
+        "line": 393,
+        "level": 5,
+        "title": "`_owner_blocked(info: dict, ctx: dict[str, str | None])`"
+      }
+    ],
     "`_page_size()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/display.md",
@@ -5276,6 +5314,14 @@
         "line": 90,
         "level": 5,
         "title": "`_resolve_path(path: str)`"
+      }
+    ],
+    "`_resolve_query_context(event: Any = None, platform: str | None = None, bot_id: str | None = None, session_id: str | None = None)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
+        "line": 347,
+        "level": 5,
+        "title": "`_resolve_query_context(event: Any = None, platform: str | None = None, bot_id: str | None = None, session_id: str | None = None)`"
       }
     ],
     "`_resolve_strategy(module_class: type)`": [
@@ -5824,6 +5870,14 @@
         "line": 342,
         "level": 5,
         "title": "`_version_key(version: str)`"
+      }
+    ],
+    "`_walk_cache(key: str, default: Any)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/config.md",
+        "line": 261,
+        "level": 5,
+        "title": "`_walk_cache(key: str, default: Any)`"
       }
     ],
     "`_walk_py(path: str, recursive: bool)`": [
@@ -6441,7 +6495,7 @@
     "`async aforce_save()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/config.md",
-        "line": 314,
+        "line": 354,
         "level": 5,
         "title": "`async aforce_save()`"
       }
@@ -6457,7 +6511,7 @@
     "`async agetConfig(key: str, default: Any = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/config.md",
-        "line": 291,
+        "line": 331,
         "level": 5,
         "title": "`async agetConfig(key: str, default: Any = None)`"
       }
@@ -6489,7 +6543,7 @@
     "`async areload()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/config.md",
-        "line": 321,
+        "line": 361,
         "level": 5,
         "title": "`async areload()`"
       }
@@ -6505,7 +6559,7 @@
     "`async asetConfig(key: str, value: Any, immediate: bool = False)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/config.md",
-        "line": 302,
+        "line": 342,
         "level": 5,
         "title": "`async asetConfig(key: str, value: Any, immediate: bool = False)`"
       }
@@ -9393,7 +9447,7 @@
     "`force_save()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/config.md",
-        "line": 271,
+        "line": 311,
         "level": 5,
         "title": "`force_save()`"
       }
@@ -9721,7 +9775,7 @@
     "`get_commands()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 282,
+        "line": 294,
         "level": 5,
         "title": "`get_commands()`"
       }
@@ -9833,7 +9887,7 @@
     "`get_group_commands(group: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 291,
+        "line": 309,
         "level": 5,
         "title": "`get_group_commands(group: str)`"
       }
@@ -10299,7 +10353,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/module.md",
-        "line": 538,
+        "line": 546,
         "level": 5,
         "title": "`get_status_summary()`"
       }
@@ -10385,7 +10439,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/module.md",
-        "line": 568,
+        "line": 576,
         "level": 5,
         "title": "`get_topology()`"
       },
@@ -10445,7 +10499,7 @@
     "`get_visible_commands()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 300,
+        "line": 322,
         "level": 5,
         "title": "`get_visible_commands()`"
       }
@@ -10580,12 +10634,12 @@
         "title": "`help()`"
       }
     ],
-    "`help(command_name: str | None = None, show_hidden: bool = False)`": [
+    "`help(command_name: str | None = None, show_hidden: bool = False, event: Any = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
-        "line": 309,
+        "line": 369,
         "level": 5,
-        "title": "`help(command_name: str | None = None, show_hidden: bool = False)`"
+        "title": "`help(command_name: str | None = None, show_hidden: bool = False, event: Any = None)`"
       }
     ],
     "`http(module_name: str, path: str, methods: list[str] | None = None)`": [
@@ -11971,7 +12025,7 @@
     "`reload()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/config.md",
-        "line": 281,
+        "line": 321,
         "level": 5,
         "title": "`reload()`"
       },
@@ -12387,7 +12441,7 @@
     "`setConfig(key: str, value: Any, immediate: bool = False)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/config.md",
-        "line": 253,
+        "line": 293,
         "level": 5,
         "title": "`setConfig(key: str, value: Any, immediate: bool = False)`"
       }

@@ -9380,6 +9380,13 @@ flowchart TD
 - **静默语义**：被过滤模块的命令与处理器不触发、不回复、不认领（防止跨命令误匹配），
   仅 TRACE 级日志可见（`core.scope.denied`）
 - **框架级处理器**（`scope_exempt=True` 或 owner 为空）不受影响；模块名为空（框架层资源）始终放行
+- **会话感知帮助与命令查询**：命令查询 API（`command.help` /
+  `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`，
+  以及 `module.get_commands_overview`）均支持可选 `event=` 或显式
+  `platform=` / `bot_id=` / `session_id=` 关键字——当前会话不可用模块的命令
+  不再出现在结果中（`get_command` 返回 None、单命令帮助按"未注册"处理，
+  与静默语义一致）；不传上下文则保持全量行为。命令查询返回的
+  help / hidden 等字段为合并覆盖后的生效值（用户优先）
 
 ## ② 身份维度（事件准入）
 
@@ -9434,7 +9441,9 @@ aliases = ["rs"]   # 生效别名
 
 > 覆盖遵循**用户优先**：开发者声明的 `master` / `hidden` 等只是默认值，
 > 用户在此显式配置后即以用户配置为准（可收紧也可放开）。
-> 覆盖只改**实现参数**（master / hidden / aliases / prefix / help / usage 等）。
+> 覆盖只改**实现参数**（master / hidden / aliases / prefix / help / usage 等），
+> 命令执行判定与帮助渲染共用同一合并结果：`hidden` 覆盖即时改变帮助列表可见性，
+> `help` / `usage` 覆盖即时改变 `/help` 展示。
 > **禁用一条命令不在这里**——统一走命令维度 deny（`scope.commands` 或
 > `scope.deny_user()`），避免两套"禁用"语义打架。
 
