@@ -4,7 +4,10 @@
 测试会话类型的注册、转换、推断等功能
 """
 
+from unittest.mock import patch
+
 import pytest
+
 from ErisPulse.Core.Event.session_type import (
     # 标准类型常量
     RECEIVE_TYPES,
@@ -135,6 +138,17 @@ class TestTypeInference:
         event = {}
         # 空事件返回默认值 'private'
         assert infer_receive_type(event) == "private"
+
+    def test_infer_empty_event_logs_debug_not_warning(self):
+        """空事件回退默认类型时降级为 DEBUG（meta 事件常态，不做 WARNING 噪音）"""
+        with patch(
+            "ErisPulse.Core.Event.session_type.logger.debug"
+        ) as mock_debug, patch(
+            "ErisPulse.Core.Event.session_type.logger.warning"
+        ) as mock_warning:
+            assert infer_receive_type({}) == "private"
+        assert mock_debug.called
+        assert not mock_warning.called
 
 
 class TestNoticeRequestTypeInference:

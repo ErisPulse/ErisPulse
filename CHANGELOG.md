@@ -120,6 +120,9 @@
 
 ### 修复
 - @wsu2059q
+  - **meta 事件分发会话类型推断 WARNING 噪音** `Core/scope.py` / `Core/Event/session_type.py`：`connect` / `disconnect` / `heartbeat` 等 meta 事件天然不含 `group_id` / `channel_id` / `user_id` 等会话字段，每次分发（事件准入 + 逐 handler 作用域 + 处理器上下文，共 3 处）都会触发 `infer_receive_type()` 兜底推断并输出 WARNING「无法从事件数据推断会话类型，使用默认值 'private'」，控制台被刷屏。修复：
+    - `scope.session_id_from_event()` 改为**直接按 ID 字段存在性提取**（优先级 group > channel > guild > thread > user），不再走会话类型推断——meta / 心跳等无会话上下文事件直接返回空字符串，语义与原实现等价（原实现缺失全部 ID 字段时同样返回空）
+    - `infer_receive_type()` 兜底日志由 WARNING 降为 DEBUG：默认回退 `private` 属设计内行为，仅需在 DEBUG / 订阅器排障时可见，不再向控制台输出
   - **翻译管线丢代码块闭合围栏（约 150 个译文损坏）** `scripts/tools/translate-docs.py`：各语言大量译文（如 `quick-start.md` 丢 6 个闭合围栏）出现"标题/正文被吞进代码块"的渲染损坏。根因有二，均为架构性修复：
     - `call_translation_api` / `call_correction_api` 的响应后处理无条件剥离"首行围栏 + 末行裸 ```` ``` ````"（本意是剥掉模型整体包装），但当译文未包装、且分块本身以代码块结尾时，末行是**文档自身合法的闭合围栏**，被误删——每个以代码块结尾的分块固定损坏，且损坏恰好保持围栏偶数，旧的奇偶校验永远漏报。改为 `_strip_response_wrapper()` 按**围栏配平**判定：仅在剥离后仍配平（或明显失衡需修复）时才剥包装，**永不无条件删除末行**
     - 全链路无围栏完整性校验，坏块落盘后经分块缓存永久复用。新增两级**确定性校验**：分块级（译文围栏数 ≠ 源块 → 视为失败自动重试）与整文档级（装配后源/译文围栏行数不一致 → 拒绝落盘），并同步强化 `check-translation.py` 的围栏检查（奇偶 → 精确数量比对）
