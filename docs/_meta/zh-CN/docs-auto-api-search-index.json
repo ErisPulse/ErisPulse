@@ -2755,7 +2755,7 @@
     "`_acl_mutate(command_name: str, list_name: str, platform: str, user_id: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 413,
+        "line": 419,
         "level": 5,
         "title": "`_acl_mutate(command_name: str, list_name: str, platform: str, user_id: str)`"
       }
@@ -4399,7 +4399,7 @@
     "`_logger_trace(message: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 596,
+        "line": 602,
         "level": 5,
         "title": "`_logger_trace(message: str)`"
       }
@@ -4935,7 +4935,7 @@
     "`_put_cache(cache: OrderedDict, key: tuple, value: bool)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 316,
+        "line": 322,
         "level": 5,
         "title": "`_put_cache(cache: OrderedDict, key: tuple, value: bool)`"
       }
@@ -4951,7 +4951,7 @@
     "`_raw_bindings()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 603,
+        "line": 609,
         "level": 5,
         "title": "`_raw_bindings()`"
       }
@@ -4959,7 +4959,7 @@
     "`_raw_get(bucket: str, platform: str, key: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 569,
+        "line": 575,
         "level": 5,
         "title": "`_raw_get(bucket: str, platform: str, key: str)`"
       }
@@ -5179,7 +5179,7 @@
     "`_resolve_identity_target(platform: str, bot_id: str | None, session_id: str | None, user_id: str | None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 586,
+        "line": 592,
         "level": 5,
         "title": "`_resolve_identity_target(platform: str, bot_id: str | None, session_id: str | None, user_id: str | None)`"
       }
@@ -5211,7 +5211,7 @@
     "`_resolve_module_target(platform: str, bot_id: str | None, session_id: str | None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 576,
+        "line": 582,
         "level": 5,
         "title": "`_resolve_module_target(platform: str, bot_id: str | None, session_id: str | None)`"
       }
@@ -5929,7 +5929,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 427,
+        "line": 433,
         "level": 5,
         "title": "`allow_user(command_name: str, platform: str, user_id: str, persist: bool = True)`"
       }
@@ -7487,7 +7487,7 @@
     "`bind_handler(owner: str, pattern: str | None = None, regex: str | None = None, persist: bool = True)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 474,
+        "line": 480,
         "level": 5,
         "title": "`bind_handler(owner: str, pattern: str | None = None, regex: str | None = None, persist: bool = True)`"
       }
@@ -7495,7 +7495,7 @@
     "`bind_identity(platform: str, bot_id: str | None = None, session_id: str | None = None, user_id: str | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 365,
+        "line": 371,
         "level": 5,
         "title": "`bind_identity(platform: str, bot_id: str | None = None, session_id: str | None = None, user_id: str | None = None)`"
       }
@@ -7511,7 +7511,7 @@
     "`bind_module(platform: str, bot_id: str | None = None, session_id: str | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 342,
+        "line": 348,
         "level": 5,
         "title": "`bind_module(platform: str, bot_id: str | None = None, session_id: str | None = None)`"
       }
@@ -7519,7 +7519,7 @@
     "`block_user(platform: str, user_id: str, persist: bool = True)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 392,
+        "line": 398,
         "level": 5,
         "title": "`block_user(platform: str, user_id: str, persist: bool = True)`"
       }
@@ -8615,7 +8615,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 532,
+        "line": 538,
         "level": 5,
         "title": "`clear()`"
       },
@@ -8903,7 +8903,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 441,
+        "line": 447,
         "level": 5,
         "title": "`deny_user(command_name: str, platform: str, user_id: str, persist: bool = True)`"
       }
@@ -9291,7 +9291,7 @@
     "`get(platform: str, bot_id: str | None = None, session_id: str | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 323,
+        "line": 329,
         "level": 5,
         "title": "`get(platform: str, bot_id: str | None = None, session_id: str | None = None)`"
       }
@@ -9319,7 +9319,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 455,
+        "line": 461,
         "level": 5,
         "title": "`get_acl(command_name: str)`"
       }
@@ -10053,7 +10053,7 @@
     "`get_stats()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 539,
+        "line": 545,
         "level": 5,
         "title": "`get_stats()`"
       }
@@ -10159,7 +10159,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 560,
+        "line": 566,
         "level": 5,
         "title": "`get_topology()`"
       },
@@ -10847,7 +10847,7 @@
     "`list_bindings()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 522,
+        "line": 528,
         "level": 5,
         "title": "`list_bindings()`"
       }
@@ -11295,7 +11295,7 @@
     "`override(owner: str, command_name: str | None = None, persist: bool = True)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 494,
+        "line": 500,
         "level": 5,
         "title": "`override(owner: str, command_name: str | None = None, persist: bool = True)`"
       }
@@ -11751,7 +11751,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 464,
+        "line": 470,
         "level": 5,
         "title": "`remove_acl(command_name: str, persist: bool = True)`"
       }
@@ -11879,7 +11879,7 @@
     "`remove_override(owner: str, command_name: str | None = None, persist: bool = True)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 513,
+        "line": 519,
         "level": 5,
         "title": "`remove_override(owner: str, command_name: str | None = None, persist: bool = True)`"
       }
@@ -11975,7 +11975,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 553,
+        "line": 559,
         "level": 5,
         "title": "`reset_stats()`"
       }
@@ -12725,7 +12725,7 @@
     "`unbind_handler(owner: str, persist: bool = True)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 485,
+        "line": 491,
         "level": 5,
         "title": "`unbind_handler(owner: str, persist: bool = True)`"
       }
@@ -12733,7 +12733,7 @@
     "`unbind_identity(platform: str, bot_id: str | None = None, session_id: str | None = None, user_id: str | None = None, persist: bool = True)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 383,
+        "line": 389,
         "level": 5,
         "title": "`unbind_identity(platform: str, bot_id: str | None = None, session_id: str | None = None, user_id: str | None = None, persist: bool = True)`"
       }
@@ -12741,7 +12741,7 @@
     "`unbind_module(platform: str, bot_id: str | None = None, session_id: str | None = None, persist: bool = True)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 356,
+        "line": 362,
         "level": 5,
         "title": "`unbind_module(platform: str, bot_id: str | None = None, session_id: str | None = None, persist: bool = True)`"
       }
@@ -12749,7 +12749,7 @@
     "`unblock_user(platform: str, user_id: str, persist: bool = True)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
-        "line": 404,
+        "line": 410,
         "level": 5,
         "title": "`unblock_user(platform: str, user_id: str, persist: bool = True)`"
       }
