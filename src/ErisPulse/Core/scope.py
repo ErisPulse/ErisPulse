@@ -613,16 +613,29 @@ class ScopeManager:
         """
         从事件数据提取会话标识（群 / 频道 / 私聊的目标 ID）
 
+        直接按 ID 字段存在性提取（优先级 group > channel > guild > thread > user），
+        不做会话类型推断：meta（connect / disconnect / heartbeat）等不含任何
+        会话 ID 字段的事件会返回空字符串，不会触发 ``infer_receive_type`` 的
+        兜底推断与日志。语义与原实现（经推断后取值）等价——原实现中缺少
+        全部 ID 字段的事件同样返回空。
+
         :param event: 事件数据（dict 或 Event 包装对象）
         :return: 会话 ID（如 group_id / channel_id / user_id），无法识别时返回空字符串
         """
         try:
-            from .Event.session_type import get_send_type_and_target_id
-
-            _send_type, target_id = get_send_type_and_target_id(event)
-            return str(target_id or "")
+            for key in (
+                "group_id",
+                "channel_id",
+                "guild_id",
+                "thread_id",
+                "user_id",
+            ):
+                value = event.get(key)
+                if value:
+                    return str(value)
         except Exception:
-            return ""
+            pass
+        return ""
 
     def _put_cache(self, cache: OrderedDict, key: tuple, value: bool) -> None:
         """{!--< internal-use >!--} 写入 LRU 缓存（超过容量时淘汰最旧）"""

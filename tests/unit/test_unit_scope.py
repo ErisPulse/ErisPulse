@@ -457,12 +457,53 @@ class TestScopeSessionLevel:
         }
 
     def test_session_id_from_event(self):
-        """从事件提取会话标识（group / private）"""
+        """从事件提取会话标识（group / private / channel）"""
         mgr = self._make_mgr({"platforms": {}, "bots": {}, "sessions": {}})
         assert mgr.session_id_from_event({"detail_type": "group", "group_id": "g9"}) == "g9"
         assert mgr.session_id_from_event({"detail_type": "private", "user_id": "u1"}) == "u1"
         assert mgr.session_id_from_event({"detail_type": "channel", "channel_id": "c1"}) == "c1"
         assert mgr.session_id_from_event({}) == ""
+
+    def test_session_id_from_event_meta_no_inference(self):
+        """meta 等无会话上下文事件：直接返回空，不触发会话类型推断
+
+        回归：connect / disconnect / heartbeat 等事件天然不含 group_id /
+        channel_id / user_id 等会话字段，旧实现会经 infer_receive_type
+        兜底推断并输出 WARNING 噪音（每次分发 3 次）。
+        """
+        import ErisPulse.Core.Event.session_type as _st
+
+        mgr = self._make_mgr({"platforms": {}, "bots": {}, "sessions": {}})
+        meta_events = [
+            {"type": "meta", "detail_type": "connect", "self": {"user_id": "b1"}},
+            {"type": "meta", "detail_type": "disconnect", "self": {"user_id": "b1"}},
+            {"type": "meta", "detail_type": "heartbeat", "self": {"user_id": "b1"}},
+            {"type": "meta", "detail_type": "connect"},
+        ]
+
+        # 打桩推断函数：若被调用则抛错，确保无会话字段事件不触发推断
+        original = _st.infer_receive_type
+
+        def _raise_if_called(*_a, **_k):
+            raise AssertionError("infer_receive_type 不应被调用")
+
+        _st.infer_receive_type = _raise_if_called
+        try:
+            for event in meta_events:
+                assert mgr.session_id_from_event(event) == ""
+        finally:
+            _st.infer_receive_type = original
+
+    def test_session_id_from_event_priority(self):
+        """提取优先级 group > channel > guild > thread > user"""
+        mgr = self._make_mgr({"platforms": {}, "bots": {}, "sessions": {}})
+        assert (
+            mgr.session_id_from_event(
+                {"group_id": "g1", "channel_id": "c1", "user_id": "u1"}
+            )
+            == "g1"
+        )
+        assert mgr.session_id_from_event({"user_id": "u1"}) == "u1"
 
     def test_session_topology(self):
         """get_topology() 包含 sessions 桶"""

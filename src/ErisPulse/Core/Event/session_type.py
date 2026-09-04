@@ -322,7 +322,9 @@ def infer_receive_type(event: dict, platform: str | None = None) -> str:
         return "private"
 
     # 都没有，默认返回 private
-    logger.warning(i18n.t("core.session.infer_failed_default"))
+    # meta（connect/disconnect/heartbeat）等事件天然无会话 ID 字段，
+    # 命中默认值是设计内的兜底行为，用 DEBUG 记录而非 WARNING。
+    logger.debug(i18n.t("core.session.infer_failed_default"))
     return "private"
 
 
