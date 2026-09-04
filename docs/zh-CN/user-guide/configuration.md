@@ -229,6 +229,10 @@ if master.is_master(event):
     await event.reply("主人你好")
 ```
 
+> 身份判定的完整 API（运行时增删、**自定义身份源 provider 链**）与"用户优先"的
+> 覆盖语义（用户可经控制面放开/收紧 `master=True`），见
+> [统一控制面 · 主人身份与自定义身份源](../advanced/scope.md#主人身份与自定义身份源provider)。
+
 ## 日志配置
 
 ```toml

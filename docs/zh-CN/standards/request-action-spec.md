@@ -331,7 +331,7 @@ BaseAdapter
 
 ### 5.5 适配器 `__init__` 注意事项
 
-重写 `Request` 内部类的 `__init__` 时，必须透传参数并调用 `super().__init__()`，详见 [适配器开发入门 - `__init__` 注意事项](../../developer-guide/adapters/getting-started.md#init-注意事项)（`Request` 同理，参数为 `adapter, request_id, account_id`）。
+重写 `Request` 内部类的 `__init__` 时，必须透传参数并调用 `super().__init__()`，详见 [适配器开发入门 - `__init__` 注意事项](../developer-guide/adapters/getting-started.md#init-注意事项)（`Request` 同理，参数为 `adapter, request_id, account_id`）。
 
 ## 6. 适配器实现检查清单
 
@@ -354,14 +354,20 @@ BaseAdapter
 
 ## 7. 错误码扩展
 
-请求操作相关的推荐错误码（遵循 [API 响应标准](api-response.md) §3.2）：
+请求操作相关的**适配器实现层**推荐错误码（遵循 [API 响应标准](api-response.md) §3.2，
+落在 `34xxx` 平台错误段的低三位自定义）：
 
 | 错误码 | 错误名 | 说明 |
 |-------|-------|------|
 | 34001 | Request Not Found | 请求不存在或已过期 |
 | 34002 | Request Already Handled | 请求已被处理 |
 | 34003 | Request Not Supported | 平台不支持该类型的请求操作 |
-| 34004 | Permission Denied | Bot 无权处理此请求 |
+| 34004 | Permission Denied | Bot 无权处理此请求（平台返回） |
+
+> **与框架码的边界**：以上 `340xx` 是**平台/适配器**返回的请求处理失败；
+> ErisPulse 框架在 `scope.actions` 禁用某模块的 request 动作时，**在调用适配器之前**
+> 直接返回 `34601`（Action Denied，见 [API 响应标准 §5.3](api-response.md#53-框架扩展返回码34xxx-平台错误段的低三位自定义)），
+> 两者互不替代：先过 `34601` 框架闸口，再落到平台层 `340xx` 错误。
 
 ## 8. 相关文档
 
