@@ -3,8 +3,8 @@ Config 异步接口测试
 """
 
 import asyncio
-import sys
 import os
+import sys
 import tempfile
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
@@ -32,7 +32,7 @@ def test_agetConfig():
     assert value == "hello"; ok(f"agetConfig → {value!r}")
 
     value = asyncio.run(cfg.agetConfig("test.missing", "default"))
-    assert value == "default"; ok(f"agetConfig + default → 'default'")
+    assert value == "default"; ok("agetConfig + default → 'default'")
 
     print()
 

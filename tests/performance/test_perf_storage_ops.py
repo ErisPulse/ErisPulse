@@ -4,8 +4,10 @@
 度量 storage set/get/delete/batch/transaction 的操作性能。
 """
 
-import pytest
 import threading
+
+import pytest
+
 from ErisPulse.Core.storage import StorageManager
 
 
@@ -143,7 +145,7 @@ class TestStorageOpsPerformance:
     def test_rapid_set_delete_cycle(self, perf_storage):
         """快速 set-delete 循环"""
         for i in range(500):
-            perf_storage.set(f"cycle.key", f"value_{i}")
+            perf_storage.set("cycle.key", f"value_{i}")
             assert perf_storage.get("cycle.key") == f"value_{i}"
             perf_storage.delete("cycle.key")
             assert perf_storage.get("cycle.key") is None

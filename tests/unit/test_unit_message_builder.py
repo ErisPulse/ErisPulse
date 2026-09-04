@@ -4,11 +4,8 @@ MessageBuilder 单元测试
 测试 OneBot12 标准消息段构建器的链式调用、快速构建和工具方法
 """
 
-import sys
 import importlib.util
 from pathlib import Path
-
-import pytest
 
 # 使用 importlib.util 直接加载 message_builder 模块，完全跳过包 __init__ 链
 _src = Path(__file__).parent.parent.parent / "src"
@@ -267,13 +264,13 @@ class TestMessageBuilderUtils:
 
     def test_repr_empty(self):
         """测试空构建器 repr"""
-        assert "MessageBuilder(segments=0)" == repr(MessageBuilder())
+        assert repr(MessageBuilder()) == "MessageBuilder(segments=0)"
 
     def test_repr_nonempty(self):
         """测试非空构建器 repr"""
-        assert "MessageBuilder(segments=3)" == repr(
+        assert repr(
             MessageBuilder().text("a").image("b").reply("c")
-        )
+        ) == "MessageBuilder(segments=3)"
 
 
 # ==================== 边界情况测试 ====================

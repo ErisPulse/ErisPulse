@@ -5,7 +5,6 @@
 compile_text_matcher（pattern + regex AND）、extract_text 与大小写不敏感语义。
 """
 
-import pytest
 
 from ErisPulse.Core.text_match import (
     compile_entry_list,

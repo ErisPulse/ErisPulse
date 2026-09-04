@@ -7,7 +7,7 @@
 import logging
 import os
 import tempfile
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -387,7 +387,7 @@ class TestLogger:
             assert os.path.exists(temp_file)
 
             # 验证文件内容
-            with open(temp_file, "r", encoding="utf-8") as f:
+            with open(temp_file, encoding="utf-8") as f:
                 content = f.read()
                 assert "TestModule" in content
                 assert "Test message 1" in content

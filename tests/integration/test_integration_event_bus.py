@@ -4,17 +4,14 @@
 测试 adapter.emit() → middleware → OB12 handlers → module callbacks 的完整流转。
 """
 
-import pytest
 import asyncio
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
+
+import pytest
 
 from ErisPulse.Core.adapter import adapter
+from ErisPulse.Core.Event import _clear_all_handlers, command, message, notice
 from ErisPulse.Core.lifecycle import lifecycle
-from ErisPulse.Core.Event import command, message, notice
-from ErisPulse.Core.Event import _clear_all_handlers
-from collections import defaultdict
-
-
 
 
 def _make_msg(text="/hello", **kwargs):
@@ -362,6 +359,6 @@ class TestEventBusIntegration:
 
         # 验证日志内容
         log_msg = conflict_records[0]["message"]
-        assert "status" in log_msg, f"日志应包含字段名 'status'"
-        assert "handler_a" in log_msg, f"日志应包含第一个 handler 名 'handler_a'"
-        assert "handler_b" in log_msg, f"日志应包含第二个 handler 名 'handler_b'"
+        assert "status" in log_msg, "日志应包含字段名 'status'"
+        assert "handler_a" in log_msg, "日志应包含第一个 handler 名 'handler_a'"
+        assert "handler_b" in log_msg, "日志应包含第二个 handler 名 'handler_b'"

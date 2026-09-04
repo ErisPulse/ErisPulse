@@ -18,7 +18,6 @@ import pytest
 from ErisPulse.Core.module import ModuleManager
 from ErisPulse.loaders.module import LazyModule
 
-
 # ==================== 测试用模块类 ====================
 
 

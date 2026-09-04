@@ -9,8 +9,8 @@ Event 包装类增强测试
 """
 
 import asyncio
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
@@ -109,7 +109,7 @@ def test_supports_and_available():
     assert isinstance(result, bool); ok(f"supports('Text') → {result}")
 
     result = e.supports("NonExistentMethod_XYZ")
-    assert result is False; ok(f"supports('不存在的方法') → False")
+    assert result is False; ok("supports('不存在的方法') → False")
 
     # available_methods 返回列表
     methods = e.available_methods()

@@ -4,14 +4,12 @@
 测试生命周期事件管理器的功能
 """
 
-import pytest
 import asyncio
-from unittest.mock import Mock, AsyncMock, patch
-from typing import Dict, Any
+from unittest.mock import patch
+
+import pytest
 
 from ErisPulse.Core.lifecycle import LifecycleManager, lifecycle
-from ErisPulse.Core.logger import logger
-
 
 # ==================== LifecycleManager 测试 ====================
 
@@ -74,7 +72,6 @@ class TestLifecycleManager:
 
     def test_start_timer(self, manager):
         """测试开始计时"""
-        import time
 
         # 执行
         manager.start_timer("test_timer")
