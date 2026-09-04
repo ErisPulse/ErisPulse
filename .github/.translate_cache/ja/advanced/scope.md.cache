@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "acc64b20c51acd7173aa5eb61d9ec45a",
-  "file_hash": "acc64b20c51acd7173aa5eb61d9ec45a",
-  "translated_at": "2026-09-04T14:40:23.442009",
+  "hash": "c995b96083e4d2d2385cca7900f12a02",
+  "file_hash": "c995b96083e4d2d2385cca7900f12a02",
+  "translated_at": "2026-09-04T15:44:37.294327",
   "target_lang": "ja",
   "chunks": [
     {
@@ -22,8 +22,8 @@
       "translation": "## 設定ファイル\n\n```toml\n[ErisPulse.scope]\ndefault_allow = true        # グローバルなデフォルト（false = 隠蔽拒否の厳密モード）\ncache_size = 1024           # LRU キャッシュサイズ\n\n# ── ① モジュール次元（優先度：セッション > Bot > プラットフォーム）──\n[ErisPulse.scope.platforms.onebot11]\nmodules = [\"Chat\", \"Tool*\"]   # ホワイトリスト：正確な名前 / glob / re: 正規表現\nblocked = [\"re:^Danger\"]\n[ErisPulse.scope.bots.onebot11.\"123456\"]\nmodules = [\"Chat\"]\n[ErisPulse.scope.sessions.onebot11.\"789012345\"]\nmodules = [\"Chat\"]\n\n# ── ② 身元次元（優先度：ユーザー > セッション > Bot > アダプタ）──\n[ErisPulse.scope.identity.adapters.onebot11]\ndeny = true                   # アダプタのイベントをすべて破棄\n[ErisPulse.scope.identity.bots.onebot11.\"123456\"]\ndeny = true\n[ErisPulse.scope.identity.sessions.onebot11.\"g_blocked\"]\ndeny = true\n[ErisPulse.scope.identity.users.onebot11]\nallow = [\"u_admin\"]           # ユーザー識別子は glob / re: 正規表現をサポート\ndeny = [\"u_bad\", \"spam_*\"]\n\n# ── ③ コマンド次元（コマンド名は glob をサポート）──\n[ErisPulse.scope.commands.\"roll*\"]\nallow = [\"onebot11:u_vip\"]    # ユーザー識別子 \"platform:user_id\"\ndeny = [\"onebot11:u_bad\"]\n\n# ── ④ ハンドラ/テキスト次元 ──\n[ErisPulse.scope.handlers.MyModule]\npattern = \"签到*\"             # コード内の pattern/regex 条件と AND\nregex = \"re:\\\\d+\\\\s*元\"\n\n# ── ⑤ 実装パラメータのオーバーライド ──\n[ErisPulse.scope.overrides.MyModule.restart]\nmaster = true                 # フレームワークの所有者に限定\nhidden = true                 # ヘルプに非表示\naliases = [\"rs\"]              # 別名を追加\nprefix = \"!\"                  # トリガ前缀を追加\n\n# ── ⑥ 出力アクション次元（デフォルトは全許可、明示的に禁止する場合のみ制限）──\n[ErisPulse.scope.actions.MyModule]\nsend = false                  # MyModule による返信/自動送信を禁止\napi = false                   # MyModule による標準 API の呼び出しを禁止（call 逃げ穴も含む）\nrequest = false               # MyModule によるリクエスト操作（accept/reject）を禁止\n```"
     },
     {
-      "hash": "2e6f464d847c8bca9678baa97c84557e",
-      "translation": "## ① モジュール次元\n\n「あるコンテキストにおいて、どのモジュールが利用可能か」を回答します。デフォルトではすべて開放されています。設定のバインディングが行われた時点でフィルタリングを開始し、**モジュールとアダプターは一切変更する必要がありません**。\n\n```mermaid\nflowchart TD\n    A[\"イベントがモジュールのハンドラ/コマンドに到達\"] --> B{\"scope.is_allowed<br/>(platform, bot, module, session)\"}\n    B --> C{\"有効なバインディングの検索<br/>セッションレベル > Bot レベル > プラットフォームレベル\"}\n    C -->|\"一致\"| D[\"blocked が一致 → 拒否<br/>modules が空でない → 限定ホワイトリストのみ許可<br/>どちらも空 → default_allow\"]\n    C -->|\"不一致\"| E[\"default_allow（デフォルトは true = 許可）\"]\n    D -->|\"拒否\"| Z[\"静かに無視<br/>（返信、認証なし、TRACE ログのみ表示）\"]\n```\n\n- **優先度の解析：セッションレベル > Bot レベル > プラットフォームレベル**。高優先度のバインディングは低優先度を**全体的に上書き**します。\n- **静かの意味**：フィルタリングされたモジュールのコマンドとハンドラはトリガされず、返信もされず、認証もされません（コマンド間の誤一致を防止）。TRACE レベルのログのみ (`core.scope.denied`) で確認できます。\n- **フレームワークレベルのハンドラ**（`scope_exempt=True` または owner が空）は影響を受けません。モジュール名が空の場合は（フレームワーク層のリソース）常に許可されます。"
+      "hash": "6e55cef536f974408c5aff7f33655a37",
+      "translation": "## ① モジュール次元\n\n「あるコンテキストの中で、どのモジュールが利用可能か」を回答します。デフォルトではすべて開放されています。設定のバインディングが有効になるとフィルタリングが開始されますが、**モジュールとアダプタは一切変更する必要はありません**。\n\n```mermaid\nflowchart TD\n    A[\"イベントが特定のモジュールのハンドラ/コマンドに到達\"] --> B{\"scope.is_allowed<br/>(platform, bot, module, session)\"}\n    B --> C{\"有効なバインディングを検索<br/>セッションレベル > Bot レベル > プラットフォームレベル\"}\n    C -->|\"一致\"| D[\"blocked が一致 → 拒否<br/>modules が空でない → 限定的にホワイトリストのみ許可<br/>両方空 → default_allow\"]\n    C -->|\"一致しない\"| E[\"default_allow（デフォルトは true = 許可）\"]\n    D -->|\"拒否\"| Z[\"静かに無視<br/>（返信しない、認領しない、TRACE ログのみ表示）\"]\n```\n\n- **優先度の解析順序：セッションレベル > Bot レベル > プラットフォームレベル**。高優先度のバインディングは低優先度を**全体的に上書き**します。\n- **静かに無視する意味**：フィルタリングされたモジュールのコマンドとハンドラはトリガーされず、返信もされず、認領もされません（コマンド間の誤一致を防ぐため）、TRACE レベルのログのみ (`core.scope.denied`) で確認できます。\n- **フレームワークレベルのハンドラ**（`scope_exempt=True` または owner が空）は影響を受けません。モジュール名が空の場合は（フレームワーク層のリソース）、常に許可されます。\n- **セッション感知によるヘルプとコマンド照会**：コマンド照会 API（`command.help` / `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`、および `module.get_commands_overview`）は、オプションの `event=` または明示的な `platform=` / `bot_id=` / `session_id=` キーワードをサポートします。現在のセッションで利用できないモジュールのコマンドは結果に含まれなくなります（`get_command` は None を返し、単一コマンドのヘルプは「未登録」として扱います。静かに無視する意味と一致）。コンテキストを渡さない場合は、全量の動作を維持します。コマンド照会によって返される help / hidden などのフィールドは、有効な値をマージ・上書きした結果になります（ユーザーの優先度が最優先）。"
     },
     {
       "hash": "76ab0a703d7192a9f250a79750e98dfc",
@@ -38,8 +38,8 @@
       "translation": "## ④ プロセッサ／テキスト次元\n\nモジュールごとに「どのようなテキストを処理するか」をフィルタリングします。モジュールに `pattern` / `regex` を設定した後、そのモジュールのすべてのイベントハンドラは、テキストが一致する場合にのみトリガされます（コード内の条件と AND で、両方を満たす必要があります）。モジュールのコードを変更せずに、そのトリガ範囲を狭めるのに適しています。\n\n```toml\n[ErisPulse.scope.handlers.ChatModule]\npattern = \"闲聊*\"     # ChatModule のハンドラは「闲聊」で始まるメッセージにのみ反応します\n```"
     },
     {
-      "hash": "1184fbe813c8e0526b18328b0ab3e10f",
-      "translation": "## ⑤ 実装パラメータの上書き\n\nモジュール/コマンドの登録の**上層**で実装パラメータを上書きし、モジュールのコードを変更せずに設定できます。\n\n```toml\n[ErisPulse.scope.overrides.MyModule.restart]\nmaster = true      # 框架の所有者に限定する（false に設定することで開発者の所有者制限を解除することも可能）\nhidden = true      # ヘルプリストから非表示にする\naliases = [\"rs\"]   # 有効な別名\n```\n\n> 上書きは**ユーザー優先**に従います：開発者が宣言した `master` / `hidden` などの値はデフォルト値に過ぎず、ユーザーがここで明示的に設定した場合はユーザーの設定が優先されます（制限を強めることも緩めることも可能です）。\n> 上書きは**実装パラメータ**（master / hidden / aliases / prefix / help / usage など）のみを変更します。\n> **コマンドの無効化はここでは行いません**——一貫性を保つため、コマンド次元での deny（`scope.commands` または `scope.deny_user()`）を使用してください。これにより、2つの「無効化」の意味が衝突するのを防げます。"
+      "hash": "da4016147ae0042c2b6b35ae3d95bd5c",
+      "translation": "## ⑤ パラメータの上書き\n\nモジュール/コマンドの登録の**上層**で実装パラメータを上書きし、モジュールコードを変更せずに設定できます：\n\n```toml\n[ErisPulse.scope.overrides.MyModule.restart]\nmaster = true      # フレームワークの所有者に限定（false に設定することで開発者の所有者制限を解除することも可能）\nhidden = true      # ヘルプリストから非表示\naliases = [\"rs\"]   # 有効な別名\n```\n\n> 上書きは**ユーザー優先**に従います：開発者が宣言した `master` / `hidden` などの値はデフォルト値に過ぎず、\n> ユーザーが明示的に設定した場合はユーザーの設定が優先されます（制限を強めることも緩めることも可能です）。\n> 上書きは**実装パラメータ**（master / hidden / aliases / prefix / help / usage など）のみを変更します。\n> コマンド実行の判定とヘルプのレンダリングは同一のマージ結果を使用します：`hidden` の上書きは即座にヘルプリストの表示可否を変更し、\n> `help` / `usage` の上書きは即座に `/help` の表示内容を変更します。\n> **コマンドの無効化はここでは行いません**——一貫性を保つために、コマンド次元での deny（`scope.commands` または\n> `scope.deny_user()`）を使用してください。これにより、2つの「無効化」の意味が混在するのを回避できます。"
     },
     {
       "hash": "c4b1b745b017aa4447d000100966cc43",

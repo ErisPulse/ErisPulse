@@ -114,7 +114,7 @@ request = false               # 禁止 MyModule 處理請求操作 accept/reject
 
 ## ① 模組維度
 
-回答「在某個上下文中，哪些模組可用」。預設全部開放；配置綁定後才開始過濾，**模組與適配器無需任何更動**。
+回答「在某個上下文裡，哪些模組可用」。預設全部開放；配置綁定後才開始過濾，**模組與適配器無需任何變動**。
 
 ```mermaid
 flowchart TD
@@ -128,6 +128,7 @@ flowchart TD
 - **解析優先級：會話級 > Bot 級 > 平台級**，高優先級綁定**整體覆蓋**低優先級
 - **靜默語義**：被過濾模組的命令與處理器不觸發、不回覆、不認領（防止跨命令誤匹配），僅 TRACE 級日誌可見（`core.scope.denied`）
 - **框架級處理器**（`scope_exempt=True` 或 owner 為空）不受影響；模組名為空（框架層資源）始終放行
+- **會話感知幫助與命令查詢**：命令查詢 API（`command.help` / `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`，以及 `module.get_commands_overview`）均支援可選 `event=` 或顯式 `platform=` / `bot_id=` / `session_id=` 關鍵字——當前會話不可用模組的命令不再出現在結果中（`get_command` 返回 None、單命令幫助按「未註冊」處理，與靜默語義一致）；不傳上下文則保持全量行為。命令查詢返回的 help / hidden 等欄位為合併覆蓋後的生效值（使用者優先）
 
 ## ② 身份維度（事件准入）
 
@@ -179,10 +180,12 @@ hidden = true      # 幫助列表中隱藏
 aliases = ["rs"]   # 生效別名
 ```
 
-> 覆蓋遵循**使用者優先**：開發者宣告的 `master` / `hidden` 等只是預設值，  
-> 使用者在此顯式配置後即以使用者配置為準（可收緊也可放開）。  
-> 覆蓋只改**實現參數**（master / hidden / aliases / prefix / help / usage 等）。  
-> **禁用一條命令不在這裡**——統一走命令維度 deny（`scope.commands` 或  
+> 覆蓋遵循**使用者優先**：開發者宣告的 `master` / `hidden` 等只是預設值，
+> 使用者在此顯式配置後即以使用者配置為準（可收緊也可放開）。
+> 覆蓋只改**實現參數**（master / hidden / aliases / prefix / help / usage 等），
+> 命令執行判定與幫助渲染共用同一合併結果：`hidden` 覆蓋即時改變幫助列表可見性，
+> `help` / `usage` 覆蓋即時改變 `/help` 展示。
+> **禁用一條命令不在這裡**——統一走命令維度 deny（`scope.commands` 或
 > `scope.deny_user()`），避免兩套"禁用"語義打架。
 
 ## ⑥ 出站動作維度（禁止模組發起出站呼叫）
