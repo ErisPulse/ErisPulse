@@ -544,10 +544,14 @@ class TestCrossProcessContracts:
         """入口点组名：CLI 与主库镜像必须一致（loader/finder/create/types 共用）"""
         from ErisPulse.CLI.constants import (
             ADAPTER_ENTRY_POINT_GROUP as CLI_ADAPTER,
+        )
+        from ErisPulse.CLI.constants import (
             MODULE_ENTRY_POINT_GROUP as CLI_MODULE,
         )
         from ErisPulse.Core.constants import (
             ADAPTER_ENTRY_POINT_GROUP as CORE_ADAPTER,
+        )
+        from ErisPulse.Core.constants import (
             MODULE_ENTRY_POINT_GROUP as CORE_MODULE,
         )
 

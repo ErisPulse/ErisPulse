@@ -34,11 +34,15 @@ class TestMemorySnapshot:
         assert snap["label"] == "unit_test"
 
     def test_snapshot_delta_computed_on_same_label(self):
-        """同名标签二次快照应计算 delta"""
+        """同名标签二次快照应计算 delta（RSS 可采集时）"""
         memory.snapshot("delta_label")
         snap = memory.snapshot("delta_label")
-        # delta 可能为 0.0，但不应为 None（已有基线）
-        assert snap["delta_mb"] is not None
+        if snap["rss_mb"] is None:
+            # 平台无法采集 RSS（无 psutil 且非 Linux）时，delta 合法为 None
+            assert snap["delta_mb"] is None
+        else:
+            # delta 可能为 0.0，但不应为 None（已有基线）
+            assert snap["delta_mb"] is not None
 
     def test_snapshot_different_label_has_no_delta(self):
         """新标签首次快照 delta 为 None"""
