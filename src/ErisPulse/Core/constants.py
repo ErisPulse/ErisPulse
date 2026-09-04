@@ -457,6 +457,22 @@ DETAIL_TYPE_HEARTBEAT: Final[str] = "heartbeat"  # 适配器心跳（元事件�
 # 方法未实现时的返回码。
 RETCODE_NOT_IMPLEMENTED: Final[int] = 10002
 
+# ==============================================================================
+# ErisPulse 框架扩展返回码（34xxx 平台错误段低三位自定义）
+#
+# 与 OneBot12 返回码体系对齐：3xxxx 为"动作执行错误"，规范允许实现自定义其
+# 低三位。34xxx = Platform Error（机器人平台错误），框架自身的拦截/通用失败
+# 落在 346xx 子段，不占用已定义的 31xxx～36xxx 大类语义：
+#   34600 = SDK 通用失败（make_error 默认）；34601 = 控制面权限拒绝
+# （文档: docs/zh-CN/standards/api-response.md §5.3）
+# ==============================================================================
+
+# 框架通用失败（make_error 默认返回码）。
+RETCODE_SDK_FAILURE: Final[int] = 34600
+
+# 出站动作被控制面禁用（scope.actions）时的返回码。
+RETCODE_PERMISSION_DENIED: Final[int] = 34601
+
 # 失败状态标识。
 STATUS_FAILED: Final[str] = "failed"
 
@@ -500,33 +516,102 @@ CONVERSATION_KEY_PREFIX: Final[str] = "conversation"
 CONFIRM_YES_WORDS: Final[frozenset] = frozenset(
     {
         # 中文
-        "是", "确认", "确定", "好", "好的", "对", "嗯", "行", "同意",
-        "没问题", "可以", "当然", "嗯嗯", "是的",
+        "是",
+        "确认",
+        "确定",
+        "好",
+        "好的",
+        "对",
+        "嗯",
+        "行",
+        "同意",
+        "没问题",
+        "可以",
+        "当然",
+        "嗯嗯",
+        "是的",
         # 英文
-        "yes", "y", "ok", "okay", "true", "sure", "yeah", "yep",
-        "confirm", "confirmed", "agree", "correct",
+        "yes",
+        "y",
+        "ok",
+        "okay",
+        "true",
+        "sure",
+        "yeah",
+        "yep",
+        "confirm",
+        "confirmed",
+        "agree",
+        "correct",
         # 日文
-        "はい", "いいよ", "了解", "確定", "可能", "可能です",
-        "もちろんです", "そう", "そうです",
+        "はい",
+        "いいよ",
+        "了解",
+        "確定",
+        "可能",
+        "可能です",
+        "もちろんです",
+        "そう",
+        "そうです",
         # 俄文
-        "да", "конечно", "хорошо", "ок", "согласен", "верно",
-        "подтвердить", "подтверждаю",
+        "да",
+        "конечно",
+        "хорошо",
+        "ок",
+        "согласен",
+        "верно",
+        "подтвердить",
+        "подтверждаю",
     }
 )
 CONFIRM_NO_WORDS: Final[frozenset] = frozenset(
     {
         # 中文
-        "否", "取消", "不", "不要", "不行", "错", "不对", "别",
-        "拒绝", "不可以", "算了", "不需要", "不是",
+        "否",
+        "取消",
+        "不",
+        "不要",
+        "不行",
+        "错",
+        "不对",
+        "别",
+        "拒绝",
+        "不可以",
+        "算了",
+        "不需要",
+        "不是",
         # 英文
-        "no", "n", "cancel", "false", "nope", "nah", "decline",
-        "declined", "disagree", "incorrect", "wrong", "deny",
+        "no",
+        "n",
+        "cancel",
+        "false",
+        "nope",
+        "nah",
+        "decline",
+        "declined",
+        "disagree",
+        "incorrect",
+        "wrong",
+        "deny",
         # 日文
-        "いいえ", "いや", "だめ", "無理", "却下", "不可",
-        "キャンセル", "違う", "そうではない",
+        "いいえ",
+        "いや",
+        "だめ",
+        "無理",
+        "却下",
+        "不可",
+        "キャンセル",
+        "違う",
+        "そうではない",
         # 俄文
-        "нет", "отмена", "отказ", "невозможно", "нельзя",
-        "не согласен", "неверно", "отклонить",
+        "нет",
+        "отмена",
+        "отказ",
+        "невозможно",
+        "нельзя",
+        "не согласен",
+        "неверно",
+        "отклонить",
     }
 )
 
@@ -913,6 +998,8 @@ __all__ = [
     "MODULE_SOURCE_PLUGIN_FOLDER",
     "RETCODE_NOT_IMPLEMENTED",
     "RETCODE_OK",
+    "RETCODE_PERMISSION_DENIED",
+    "RETCODE_SDK_FAILURE",
     "SERVER_SHUTDOWN_TIMEOUT_SECS",
     "SQLITE_JOURNAL_MODE",
     "SQLITE_SYNCHRONOUS_MODE",
