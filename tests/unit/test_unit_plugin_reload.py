@@ -82,15 +82,15 @@ class TestSDKLoaderWiring:
         assert sdk._module_loader is not None
         assert sdk._module_loader is initializer._module_loader
 
-    def test_reload_plugin_before_init_returns_false(self):
-        """未初始化（无加载器）时 reload_plugin 优雅返回 False 而非抛错"""
+    def test_reload_module_before_init_returns_false(self):
+        """未初始化（无加载器）时 reload_module 优雅返回 False 而非抛错"""
         from ErisPulse import SDK
 
         sdk = SDK()
-        assert asyncio.run(sdk.reload_plugin("dice")) is False
+        assert asyncio.run(sdk.reload_module("dice")) is False
 
-    def test_reload_plugin_passes_sdk_self(self):
-        """reload_plugin 向加载器传递 SDK 实例自身（而非不存在的 _sdk 属性）"""
+    def test_reload_module_passes_sdk_self(self):
+        """reload_module 向加载器传递 SDK 实例自身（而非不存在的 _sdk 属性）"""
         from ErisPulse import SDK
 
         sdk = SDK()
@@ -98,12 +98,12 @@ class TestSDKLoaderWiring:
 
         captured = {}
 
-        async def fake_reload(plugin_name, manager_instance, sdk_instance):
-            captured["args"] = (plugin_name, manager_instance, sdk_instance)
+        async def fake_reload(module_name, manager_instance, sdk_instance):
+            captured["args"] = (module_name, manager_instance, sdk_instance)
             return True
 
-        sdk._module_loader.reload_plugin = fake_reload
-        assert asyncio.run(sdk.reload_plugin("dice")) is True
+        sdk._module_loader.reload_module = fake_reload
+        assert asyncio.run(sdk.reload_module("dice")) is True
         name, manager, sdk_instance = captured["args"]
         assert name == "dice"
         assert manager is sdk.module

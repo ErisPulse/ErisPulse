@@ -41,13 +41,14 @@ ErisPulse 是一个可扩展的多平台消息处理框架，支持通过适配�
 
 | 文档 | 说明 |
 |------|------|
-| [架构概览](architecture.md) | 可视化图表：核心架构、初始化流程、事件处理、生命周期、模块加载策略（含 `activate_on` 事件驱动懒激活）、本地插件文件夹与热重载架构 |
+| [架构概览](architecture.md) | 可视化图表：核心架构、初始化流程、事件处理、生命周期、模块加载策略（含 `activate_on` 事件驱动懒激活）、本地插件文件夹与模块热重载架构（支持全部模块来源） |
 | [启动流程与手动控制](advanced/startup.md) | 启动链路拆解、手动驱动各环节、加载失败诊断 |
 | [事件系统](api-reference/event-system.md) | 五大类事件的完整 API |
 | [适配器系统](api-reference/adapter-system.md) | 适配器注册、启停、API 调用 |
 | [核心模块](api-reference/core-modules.md) | Storage / Config / Logger / Router 等基础能力 |
 | [生命周期管理](advanced/lifecycle.md) · [懶加载](advanced/lazy-loading.md) · [路由系统](advanced/router.md) | 内部子系统 |
 | [作用域（scope）](advanced/scope.md) | 三维作用域控制：模块可用性 / 事件准入 / 出站动作限制（含方法级细粒度规则、绑定继承 merge） |
+| [归属权（owner）系统](advanced/ownership.md) | 资源归属与自动回收：owner 上下文、归属资源全景、卸载清理序列、设计边界与模块作者指南 |
 | [Conversation 多轮对话](advanced/conversation.md) · [MessageBuilder](advanced/message-builder.md) · [SQL 构建](advanced/sql-builder.md) · [HTTP 客户端](advanced/http-client.md) · [国际化](advanced/i18n.md) | 进阶工具 |
 
 ### 四、生态与官方客户端

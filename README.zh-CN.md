@@ -64,7 +64,7 @@
 
 ### 模块化设计
 
-灵活的插件系统支持运行时热插拔——安装/卸载/启用/禁用模块无需重启进程，像搭积木一样组装机器人能力
+灵活的插件系统支持运行时热插拔——安装/卸载/启用/禁用模块无需重启进程，配合作用域系统按平台 / Bot / 会话精确控制模块可用性，像搭积木一样组装机器人能力
 
 </td>
 </tr>
@@ -76,7 +76,7 @@
 
 ### 热重载
 
-开发循环从重启 10 秒缩短到 0.5 秒——保存文件即生效，开发调试体验接近解释型脚本语言
+本地插件保存文件即生效（0.5 秒级），任意模块（含 PyPI 安装包）`sdk.reload_module()` 一行热重载，开发调试体验接近解释型脚本语言
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -101,6 +101,47 @@
 </td>
 </tr>
 </table>
+
+---
+
+## 作用域（Scope）——三维权限控制面
+
+不改任何模块代码，在配置中统一声明"什么范围内生效"：
+
+```toml
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Tool*"]           # ① 模块维度：该平台只开放这些模块（glob / 正则）
+
+[ErisPulse.scope.identity.users.onebot11]
+deny = ["u_bad", "spam_*"]            # ② 身份维度：黑名单用户的事件直接丢弃
+
+[ErisPulse.scope.actions.MyModule]
+send = { allow = ["Text"] }           # ③ 出站维度：该模块只许发文本
+api = { deny = ["set_*", "leave_*"] } #    并禁止管理类 API
+```
+
+```python
+# 运行时同样可调，立即生效（支持点分路径的字典式读写）
+sdk.scope.set_action("MyModule", "api", deny=["set_*"])
+```
+
+> 详见 [作用域（scope）](docs/zh-CN/advanced/scope.md)
+
+---
+
+## 事件覆写——不改模块代码，覆写任意事件类型的行为
+
+```toml
+# 覆写消息处理器触发条件（与代码内条件 AND；meta/message/notice/request/command 全类型支持）
+[ErisPulse.event.overrides.message.ChatModule]
+pattern = "闲聊*"
+
+# 覆写命令实现参数（master / hidden / aliases / prefix 等，用户优先）
+[ErisPulse.event.overrides.command.MyModule.restart]
+master = true
+```
+
+> 详见 [事件覆写](docs/zh-CN/getting-started/event-handling.md)
 
 ---
 
@@ -235,10 +276,6 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 > 镜像内置 ErisPulse 框架和 Dashboard 管理面板，支持 `linux/amd64` 和 `linux/arm64` 架构。
 >
 > **持久化**：配置文件和已安装的模块/适配器通过卷挂载持久化到宿主机，容器重启后不会丢失。框架自身的更新通过 Dashboard 热更新完成。
-
-</details>
-
-<details>
 
 </details>
 

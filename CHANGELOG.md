@@ -127,6 +127,17 @@
   - **ApiDSL 补齐 OneBot12 标准动作接口** `Core/Bases/adapter.py`：新增频道体系 12 个（`get_guild_info/list`、`set_guild_name`、`get_guild_member_info/list`、`leave_guild`、`get_channel_info/list`、`set_channel_name`、`get_channel_member_info/list`、`leave_channel`）、元动作 4 个（`get_latest_events`、`get_supported_actions`、`get_status`、`get_version`）强类型方法；文件资源动作（`upload_file`/`get_file`/分片 6 个方法，OB12 按 `stage` 分阶段）以透传入口保留并**明确降级标注**——ErisPulse 文件收发用 `SendDSL.File`（发送时直传），此套依赖平台特有 `file_id` 文件资源能力、通用性不足，框架内置适配器不实现也不建议实现（调用通常返回 `10002`）；`file_id` 资源模型标准化到框架层是未来方向、当前不提供。类 docstring 与 `standards/api-action-spec.md` 同步更新（新增 3.4 频道 / 3.6 元动作章节，3.5 文件资源操作加降级 WARNING）
   - 文档：`standards/api-response.md` §5.3 框架扩展返回码明确为 **34xxx 平台错误段低三位自定义**（`34600` SDK Failure / `34601` Action Denied），与 OneBot12 `34xxx=Platform Error` 段对齐；`make_error()` 默认返回码改为 `RETCODE_SDK_FAILURE`
   - **命令系统会话感知查询与覆盖统一** `Core/Event/command.py` / `Core/module.py`：命令查询 API 全家族——`command.help` / `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands` 与 `module.get_commands_overview`——统一支持**可选** `event`（Event 或 dict）或显式 `platform` / `bot_id` / `session_id` 关键字参数（与 event 叠加时显式参数优先）：传入上下文即按作用域**模块维度**过滤当前会话不可用模块的命令（`get_command` 返回 None、单命令帮助按"未注册"处理，与分发静默语义一致），不传上下文保持原行为；`get_command` / `get_visible_commands` / `get_commands_overview` 返回的 help / usage / hidden 等字段统一为合并 `event.overrides.command` 覆写后的**生效值**（用户优先，与执行判定同源）
+  - **模块热重载归一（支持全部来源）** `loaders/module.py` / `Core/module.py`：本地插件与 PyPI 安装包模块本质同源（均为带 `moduleInfo` 的模块类），除发现/加载阶段外生命周期 API 完全一致——热重载相应归一为模块级通用能力，移除"仅插件文件夹来源"限制：
+    - `ModuleLoader.reload_module()`（由 `reload_plugin` 重构）：统一执行 卸载旧实例 → 清理注册与模块缓存 → 重新发现/导入 → 注册加载 流程，按 `meta.source` 选择发现路径（`plugin_folder` 重扫描插件目录 / PyPI 重新查询 entry-point）
+    - PyPI 来源重载路径：按 `meta.top_level` 清理 `sys.modules` 子树 → `importlib.invalidate_caches()` + entry-point 缓存清理（突破 60 秒缓存，pip 升级后手动重载即可生效）→ 重新导入并组装 moduleInfo；entry-point 消失（包已卸载）视为移除成功
+    - 公共 API：`sdk.reload_module(name)` 与 `ModuleManager.reload(name)`（透传）；依赖者级联重载语义保持（插件依赖者完整重载、PyPI 依赖者重新实例化）；重载日志键迁移为 `loader.module.reload_*` 并补齐此前缺失的注册失败键（五语言同步）
+    - 自动文件监控 `sdk.enable_plugin_hot_reload()` 行为不变（监控范围仍为本地插件目录）
+  - **归属权（owner）兜底清理扩面** `Core/module.py` / `Core/router.py` / `Core/adapter.py` / `Core/Event`：模块卸载/禁用与适配器关闭/重启的资源归属清理扩展至此前泄漏的注册型资源——
+    - 路由中间件（`router.middleware()` / `add_middleware()`）与 Dashboard 首页入口（`register_home_entry()`）记录注册归属，模块卸载时随 `unregister_all_by_owner()` 兜底回收（此前仅 `router.stop()` 清理：卸载后中间件闭包持有模块代码继续执行、入口按钮永久残留）
+    - `adapter.on()` 事件处理器与 `adapter.middleware` 中间件新增按 owner 移除（`adapter.unregister_handlers_by_owner()`）——此前仅全量 shutdown 清空，模块卸载后其处理器仍会被分发触发；模块卸载与适配器关闭/重启两侧接入（后者清理适配器自有处理器，避免旧闭包持上一代实例）
+    - 自定义会话类型（`register_custom_type`）记录归属，新增 `unregister_custom_types_by_owner()`；`unregister_platform_event_methods()`（此前无调用点）接入适配器关闭/重启清理；适配器 i18n 翻译域随 shutdown 注销（domain=配置键）
+    - 事件覆写运行时写入（`overrides.*.set(persist=False)`）按调用方归属追踪，新增 `overrides.unregister_by_owner()` 随模块卸载清理；`persist=True` 属用户配置语义不随卸载回收——**持久化与否即"用户资产"与"模块运行时状态"的分界线**
+    - `unload()` / `disable()` 清理链合并为共用 `_cleanup_module_registrations()`（修复 disable 漏注销 master provider 的不一致）；新增 `docs/zh-CN/advanced/ownership.md` 归属权系统细节文档（归属机制 / 资源全景 / 清理序列 / 设计边界 / 模块作者指南）
 
 ### 优化
 - @wsu2059q
@@ -140,6 +151,7 @@
 
 ### 移除
 - @wsu2059q
+  - **`sdk.reload_plugin` / `ModuleLoader.reload_plugin`**：更名为 `sdk.reload_module` / `ModuleLoader.reload_module` 并归一为全模块热重载 API（本地插件与 PyPI 安装包一致，dev 阶段直接切换不保留门面）。使用 2.8.0-dev.0 预发布版并调用过 `sdk.reload_plugin` 的下游（如 Dashboard 旧构建）需迁移至 `sdk.reload_module` / `sdk.module.reload()`；自动文件监控 `sdk.enable_plugin_hot_reload()` 不受影响
   - **独立事件准入系统** `Core/access.py`（`AccessManager` / `sdk.access`）：整体并入作用域身份维度（`scope.identity`），配置节 `ErisPulse.access` 移除；运行时能力经 `sdk.scope.set()` / `delete()` 字典式覆写完整保留
   - **命令 ACL 独立实现**：配置节 `ErisPulse.event.command.permissions` 移除（ACL 统一存储于 `event.command.acl`）；`command.allow_user()` / `deny_user()` / `get_acl()` / `remove_acl()` 由命令系统直接实现
   - **dev.0 作用域雏形绑定 API**（`bind_module` / `unbind_module` / `bind_identity` / `unbind_identity` / `bind_handler` / `unbind_handler` / `set_action` / `unset_action` 等）：统一收敛为字典式 `set(path, value)` / `delete(path)` / `get(path)`（点分路径直达任意维配置，dev 阶段直接切换，不做兼容）
@@ -190,6 +202,8 @@
   - 新增事件过滤器三重 AND 管线测试（`tests/unit/test_unit_event_filter_chain.py`，9 用例）：条件函数 / 作用域模块维度（blocked / 白名单）/ `event.overrides` pattern / regex 命中 / 三者叠加 / 无 owner 与 `scope_exempt` 跳过过滤
   - 修复 `test_unit_memory.py` 快照测试对 psutil 的隐式环境依赖：平台无法采集 RSS 时 delta 合法为 None（此前环境恰好存在 psutil 掩盖了该假设）
   - 新增出站动作维度端到端测试 `tests/integration/test_integration_actions.py`（11 用例）：真实 SendDSL / ApiDSL（含 `call()` 逃生舱）/ RequestDSL 禁用后返回 `RETCODE_PERMISSION_DENIED`，方法级细粒度（`send = {allow=["Text"]}` 时 Text 放行 / Image 拒绝）、动作级细粒度（`api = {allow=["get_*"]}` 时查询放行 / 管理拒绝），owner 为空放行，模块卸载自动注销其 provider（scope/master/DSL 真实协作，无 mock）
+  - 新增 `tests/unit/test_unit_module_reload.py`（8 用例）：PyPI 来源重载全流程（sys.modules 子树清理 / entry-point 缓存清理 / 重新导入重注册加载 / sdk 属性挂载与快照更新）、entry-point 消失视为移除成功、加载失败返回 False、未知模块短路、插件来源仍走目录重扫描、`ModuleManager.reload` 透传（无 sdk 引用 / 正常委托 / 无加载器）；`tests/unit/test_unit_plugin_reload.py` 的 SDK 接线用例迁移至 `reload_module`
+  - 新增 `tests/unit/test_unit_owner_cleanup.py`（13 用例）：首页入口与路由中间件的归属记录及按 owner 清理、适配器事件处理器/中间件按 owner 移除、适配器资源清理接入自有处理器与会话扩展、自定义会话类型归属清理（含 `unregister_custom_type` / `clear_custom_types` 的记录同步）、平台事件方法注销、运行时覆写 persist 语义与 owner 清理（持久化写入不受卸载影响、persist 升级移除运行时记录）
 
 ---
 
@@ -197,7 +211,7 @@
 > 开发版本
 
 **版本摘要**
-本开发版本聚焦六组能力：(1) **模块作用域系统**——按"适配器平台 + Bot + 会话"三级绑定模块（白名单/黑名单，优先级 会话>Bot>平台），默认允许全部模块，模块与适配器零改动即可适配，被禁模块静默忽略；(2) **拓扑树 API**——`ModuleManager/AdapterManager/ScopeManager.get_topology()` 与 `sdk.get_topology()` 聚合命令/事件处理器/路由/生命周期钩子归属，供 Dashboard 绘制模块资源树；(3) **日志等级屏蔽**——`[ErisPulse.logger] exclude_levels` 屏蔽指定等级日志（如 `["EVENT"]` 隐藏消息收发内容，实现后台隐私）；(4) **模块介绍 meta 与命令总览**——`BaseModule.get_meta()` 声明式元信息（推荐返回 `ModuleMeta` 配置类，dict 兼容，支持 i18n 字段），`ModuleManager.get_meta()` / `get_commands_overview()` 按模块聚合命令总览；(5) **本地插件文件夹**——`plugins/` 免打包即插即用（单文件/包两种布局，本地优先覆盖 PyPI 同名安装包），配合 **热重载**（`sdk.enable_plugin_hot_reload()` 自动重载 / `sdk.reload_plugin()` 手动触发）与 **CLI `create module --local`**（生成本地插件结构）;(6) **`activate_on` 事件驱动懒激活**——`ModuleLoadStrategy` 声明事件/命令触发懒加载，事件到达时按需激活模块；
+本开发版本聚焦六组能力：(1) **模块作用域系统**——按"适配器平台 + Bot + 会话"三级绑定模块（白名单/黑名单，优先级 会话>Bot>平台），默认允许全部模块，模块与适配器零改动即可适配，被禁模块静默忽略；(2) **拓扑树 API**——`ModuleManager/AdapterManager/ScopeManager.get_topology()` 与 `sdk.get_topology()` 聚合命令/事件处理器/路由/生命周期钩子归属，供 Dashboard 绘制模块资源树；(3) **日志等级屏蔽**——`[ErisPulse.logger] exclude_levels` 屏蔽指定等级日志（如 `["EVENT"]` 隐藏消息收发内容，实现后台隐私）；(4) **模块介绍 meta 与命令总览**——`BaseModule.get_meta()` 声明式元信息（推荐返回 `ModuleMeta` 配置类，dict 兼容，支持 i18n 字段），`ModuleManager.get_meta()` / `get_commands_overview()` 按模块聚合命令总览；(5) **本地插件文件夹**——`plugins/` 免打包即插即用（单文件/包两种布局，本地优先覆盖 PyPI 同名安装包），配合 **热重载**（`sdk.enable_plugin_hot_reload()` 自动监控本地插件变更 / `sdk.reload_plugin()` 手动重载任意模块）与 **CLI `create module --local`**（生成本地插件结构）;(6) **`activate_on` 事件驱动懒激活**——`ModuleLoadStrategy` 声明事件/命令触发懒加载，事件到达时按需激活模块；
 
 ### 新增
 - @wsu2059q
@@ -229,8 +243,8 @@
     - 插件与安装包模块共用启用状态 / 作用域 / meta / i18n / 上下文；`moduleInfo.meta.source == "plugin_folder"`
   - **本地插件热重载** `runtime/plugin_reload.py`：
     - `sdk.enable_plugin_hot_reload()` 启用监控，复用 `PollingObserver`（纯 Python mtime 轮询守护线程），`.py` 变更时自动重载对应插件
-    - `sdk.reload_plugin(name)` / `ModuleLoader.reload_plugin()` 手动触发：卸载旧实例 → 清理注册 → 强制重新导入 → 重新加载
-    - 变更去抖（默认 1 秒），文件删除自动从加载结果移除；仅插件文件夹来源支持热重载
+    - `sdk.reload_module(name)` / `ModuleManager.reload()` 手动重载（dev.1 起统一 API，支持本地插件与 PyPI 安装包全部模块来源）
+    - 变更去抖（默认 1 秒），文件删除自动从加载结果移除；自动监控仅覆盖本地插件目录，手动重载无来源限制
   - **CLI `create module --local`**：
     - 生成 `plugins/<name>/` 本地插件包结构（`__init__.py` + `Core.py`），免打包安装，配合热重载开箱即用
   - **模块加载策略 `activate_on`（事件驱动懒激活）**：

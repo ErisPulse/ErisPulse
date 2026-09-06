@@ -344,7 +344,7 @@ class SDK:
             self._sdk = sdk_instance
             self._adapter_loader = AdapterLoader()
             self._module_loader = ModuleLoader()
-            # 将加载器引用注入 SDK：热重载（sdk.reload_plugin / 热重载监控）
+            # 将加载器引用注入 SDK：热重载（sdk.reload_module / 热重载监控）
             # 经由 SDK 访问，若仅持有在 Initializer 内部则 SDK 侧永远读不到
             sdk_instance._module_loader = self._module_loader
             # 创建共享的严格模式管理器并注入到两个加载器，
@@ -1614,11 +1614,16 @@ class SDK:
 
     def enable_plugin_hot_reload(self, interval: float = 1.0) -> bool:
         """
-        启用本地插件文件夹热重载
+        启用本地插件文件夹热重载（自动监控）
 
         监控插件文件夹（默认 ``plugins/``，可通过 ``ErisPulse.framework.plugins_dir``
         配置）下 ``.py`` 文件的变更，自动重新加载对应插件。
         需在 ``await sdk.run()`` 之前调用。
+
+        {!--< tips >!--}
+        自动监控仅覆盖本地插件目录；PyPI 安装包模块可通过
+        :meth:`reload_module` 手动热重载（pip 升级后调用即可）。
+        {!--< /tips >!--}
 
         :param interval: 轮询间隔（秒，默认 1.0）
         :return: 是否启动成功（无插件目录或已在运行返回 False）
@@ -1633,41 +1638,45 @@ class SDK:
 
         from .runtime import PluginReloadWatcher
 
-        watcher = PluginReloadWatcher(self._reload_plugin, interval=interval)
+        watcher = PluginReloadWatcher(self._reload_module, interval=interval)
         ok = watcher.start()
         if ok:
             self._plugin_watcher = watcher
             self.logger.info(i18n.t("core.sdk.hot_reload.enabled"))
         return ok
 
-    async def reload_plugin(self, plugin_name: str) -> bool:
+    async def reload_module(self, module_name: str) -> bool:
         """
-        热重载单个本地插件（手动触发）
+        热重载单个模块（手动触发，支持任意来源）
 
-        卸载旧实例、清理注册、强制重新导入并重新加载。
+        完整执行 卸载旧实例 → 清理注册与 ``sys.modules`` 缓存 →
+        重新发现/导入 → 重新注册并加载 流程；依赖该模块的模块会**级联重载**。
+        本地插件（``plugins/`` 目录）来源重扫描插件目录；PyPI 安装包来源
+        重新查询 entry-point 并重导入模块代码（pip 升级后调用即可生效）。
 
-        :param plugin_name: 插件名
+        :param module_name: 模块名（entry-point 名称或插件名）
         :return: 是否重载成功
 
         :example:
-        >>> await sdk.reload_plugin("dice")
+        >>> await sdk.reload_module("dice")      # 本地插件
+        >>> await sdk.reload_module("Weather")   # PyPI 安装包模块
         """
         if getattr(self, "_module_loader", None) is None:
             self.logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
             return False
-        return await self._module_loader.reload_plugin(
-            plugin_name, self.module, self
+        return await self._module_loader.reload_module(
+            module_name, self.module, self
         )
 
-    async def _reload_plugin(self, plugin_name: str) -> None:
+    async def _reload_module(self, module_name: str) -> None:
         """
         {!--< internal-use >!--}
         热重载回调（由 PluginReloadWatcher 调度），失败仅记录不抛异常
         """
         try:
-            await self.reload_plugin(plugin_name)
+            await self.reload_module(module_name)
         except Exception as e:
-            self.logger.error(i18n.t("core.sdk.hot_reload.failed", name=plugin_name, error=e))
+            self.logger.error(i18n.t("core.sdk.hot_reload.failed", name=module_name, error=e))
 
     def stop_plugin_hot_reload(self) -> None:
         """

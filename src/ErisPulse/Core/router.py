@@ -381,6 +381,9 @@ class RouterManager:
         self._local_ips: list[dict[str, str]] = []
         self._route_middlewares: dict[str, list] = defaultdict(list)
         self._global_middlewares: list = []
+        # 中间件归属记录：注册期间若 current_owner 已设置，记录 (owner, 中间件, 路径模式)，
+        # 供按 owner 兜底清理（模块卸载/热重载等场景）
+        self._middleware_records: list[dict] = []
         self._rate_limit_store: dict[str, list[float]] = {}
         self._rate_limit_windows: dict[str, int] = {}
         self._rate_limit_cleanup_task: asyncio.Task | None = None
@@ -1162,11 +1165,16 @@ class RouterManager:
             is_after = len(params) >= 2 and "response" in params
             mw = FuncMiddleware(after=func) if is_after else FuncMiddleware(before=func)
 
+            owner = current_owner.get()
             if paths:
                 for p in paths:
                     self._route_middlewares[p].append(mw)
             else:
                 self._global_middlewares.append(mw)
+            if owner is not None:
+                self._middleware_records.append(
+                    {"owner": owner, "middleware": mw, "paths": tuple(paths) if paths else None}
+                )
             return func
 
         return decorator
@@ -1183,11 +1191,16 @@ class RouterManager:
         """
         self._ensure_middleware_installed()
         mw = FuncMiddleware(before=before, after=after)
+        owner = current_owner.get()
         if paths:
             for p in paths:
                 self._route_middlewares[p].append(mw)
         else:
             self._global_middlewares.append(mw)
+        if owner is not None:
+            self._middleware_records.append(
+                {"owner": owner, "middleware": mw, "paths": tuple(paths) if paths else None}
+            )
 
     def register_home_entry(self, name: str | dict, url: str, icon_svg: str = "") -> None:
         """
@@ -1215,7 +1228,26 @@ class RouterManager:
         ...     icon_svg='<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\"><path d=\"M4 17l6-6-6-6\"/></svg>',
         ... )
         """
-        self._home_entries.append({"name": name, "url": url, "icon_svg": icon_svg})
+        # 记录注册归属：模块加载期间注册的入口按钮在模块卸载时自动移除
+        self._home_entries.append(
+            {
+                "name": name,
+                "url": url,
+                "icon_svg": icon_svg,
+                "owner": current_owner.get(),
+            }
+        )
+
+    def unregister_home_entries_by_owner(self, owner: str) -> int:
+        """
+        移除指定归属者注册的全部首页入口按钮
+
+        :param owner: 归属者（模块名或适配器平台名）
+        :return: int 移除的入口数量
+        """
+        before = len(self._home_entries)
+        self._home_entries = [e for e in self._home_entries if e.get("owner") != owner]
+        return before - len(self._home_entries)
 
     @staticmethod
     def _match_path(pattern: str, path: str) -> bool:
@@ -1929,21 +1961,51 @@ class RouterManager:
 
     def unregister_all_by_owner(self, owner: str) -> dict[str, int]:
         """
-        清理指定归属者注册的所有路由
+        清理指定归属者注册的所有路由 / 中间件 / 首页入口
 
         与 :meth:`unregister_all_by_namespace` 不同，本方法基于注册期间
         通过 ``current_owner`` 自动追踪的归属关系进行清理，适用于"以平台名
         为 owner、却用更细颗粒度命名空间（如 ``onebot11_default``）注册路由"
-        的适配器热重载场景。
+        的适配器热重载场景，也用于模块卸载时的兜底清理（覆盖中间件与
+        首页入口等不携带命名空间的资源）。
 
         :param owner: 归属者（适配器平台名或模块名）
-        :return: dict 清理统计 {"http_count": int, "websocket_count": int, "sse_count": int}
+        :return: dict 清理统计 {"http_count", "websocket_count", "sse_count", "middleware_count", "home_entry_count"}
         """
         result = {"http_count": 0, "websocket_count": 0, "sse_count": 0}
         for namespace in self._owner_namespaces.pop(owner, set()):
             sub = self.unregister_all_by_namespace(namespace)
             for key in result:
                 result[key] += sub[key]
+
+        # 兜底清理该归属者注册的中间件（闭包持有模块代码，卸载后不应继续执行）
+        removed_mw = 0
+        remaining_records: list[dict] = []
+        for record in self._middleware_records:
+            if record["owner"] != owner:
+                remaining_records.append(record)
+                continue
+            removed_mw += 1
+            mw = record["middleware"]
+            paths = record["paths"]
+            if paths is None:
+                try:
+                    self._global_middlewares.remove(mw)
+                except ValueError:
+                    pass
+            else:
+                for p in paths:
+                    try:
+                        self._route_middlewares[p].remove(mw)
+                    except (ValueError, KeyError):
+                        pass
+        self._middleware_records = remaining_records
+        for p in [p for p, mws in self._route_middlewares.items() if not mws]:
+            self._route_middlewares.pop(p, None)
+        result["middleware_count"] = removed_mw
+
+        # 兜底清理该归属者注册的首页入口按钮
+        result["home_entry_count"] = self.unregister_home_entries_by_owner(owner)
         return result
 
     def list_namespaces(self) -> dict[str, dict[str, list[str]]]:
@@ -2795,6 +2857,8 @@ class RouterManager:
         self._rate_limit_windows.clear()
         self._route_middlewares.clear()
         self._global_middlewares.clear()
+        self._middleware_records.clear()
+        self._home_entries.clear()
         self._middleware_installed = False
 
         self.app.router.routes.clear()
