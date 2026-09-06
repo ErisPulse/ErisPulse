@@ -131,6 +131,7 @@ TRANSLATIONS = {
     "cli.config.description": "Interactively configure declarative config entries of adapters/modules",
     "cli.config.name_help": "Target name (adapter platform or module name, empty for interactive selection)",
     "cli.config.list_help": "Only list configuration status without starting the wizard",
+    "cli.config.json_help": "Output configuration status as JSON (for scripts/CI)",
     "cli.config.no_targets": "No adapters/modules found",
     "cli.config.install_hint": "Run epsdk install first to install components",
     "cli.config.not_found": "Target {name} not found",

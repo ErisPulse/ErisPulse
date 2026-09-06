@@ -131,6 +131,7 @@ TRANSLATIONS = {
     "cli.config.description": "アダプター/モジュールの宣言型設定項目を対話的に設定",
     "cli.config.name_help": "対象名（アダプターのプラットフォーム名またはモジュール名、空で対話選択）",
     "cli.config.list_help": "ウィザードを開始せず設定状態のみ一覧表示",
+    "cli.config.json_help": "設定状態を JSON 形式で出力（スクリプト/CI 向け）",
     "cli.config.no_targets": "アダプター/モジュールが見つかりません",
     "cli.config.install_hint": "先に epsdk install でコンポーネントをインストールしてください",
     "cli.config.not_found": "対象 {name} が見つかりません",

@@ -131,6 +131,7 @@ TRANSLATIONS = {
     "cli.config.description": "Интерактивная настройка декларативных конфигураций адаптеров/модулей",
     "cli.config.name_help": "Имя цели (платформа адаптера или имя модуля, пусто — интерактивный выбор)",
     "cli.config.list_help": "Только показать статус настройки, не запуская мастер",
+    "cli.config.json_help": "Вывести статус настройки в формате JSON (для скриптов/CI)",
     "cli.config.no_targets": "Адаптеры/модули не найдены",
     "cli.config.install_hint": "Сначала установите компоненты командой epsdk install",
     "cli.config.not_found": "Цель {name} не найдена",

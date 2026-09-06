@@ -4,6 +4,7 @@ Config 命令实现
 交互式配置适配器/模块（schema 驱动向导，含适配器多账户管理）
 """
 
+import json
 from argparse import ArgumentParser
 
 from rich.box import SIMPLE
@@ -46,6 +47,11 @@ class ConfigCommand(Command):
             action="store_true",
             help=i18n.t("cli.config.list_help"),
         )
+        parser.add_argument(
+            "--json",
+            action="store_true",
+            help=i18n.t("cli.config.json_help"),
+        )
 
     def execute(self, args):
         from ErisPulse import config
@@ -54,6 +60,10 @@ class ConfigCommand(Command):
         if not targets:
             console.print(f"[dim]  {i18n.t('cli.config.no_targets')}[/]")
             console.print(f"[dim]  {i18n.t('cli.config.install_hint')}[/]")
+            return
+
+        if getattr(args, "json", False):
+            self._print_status_json(targets, config)
             return
 
         if args.name:
@@ -70,6 +80,24 @@ class ConfigCommand(Command):
             return
 
         self._interactive_select(targets, config)
+
+    def _print_status_json(self, targets, config):
+        """
+        以 JSON 输出全部目标及其配置状态（供 CI / 脚本消费）
+
+        :param targets: ConfigTarget 列表
+        :param config: ConfigManager 实例
+        """
+        result = {}
+        for target in sorted(targets, key=lambda t: (t.kind != "adapter", t.name.lower())):
+            status, errors = config_wizard.get_target_status(target, config)
+            result[target.name] = {
+                "kind": target.kind,
+                "config_key": target.config_key,
+                "status": status,
+                "errors": errors,
+            }
+        console.print_json(json.dumps(result, ensure_ascii=False, indent=2))
 
     def _run_named(self, targets, name: str, config):
         """
