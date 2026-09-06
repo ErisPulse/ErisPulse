@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1523,
+  "total_keywords": 1522,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2609,7 +2609,7 @@
     "Dashboard 管理面板": [
       {
         "document": "user-guide/deployment.md",
-        "line": 73,
+        "line": 81,
         "level": 2,
         "title": "Dashboard 管理面板"
       }
@@ -2649,7 +2649,7 @@
     "Docker 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 253,
+        "line": 262,
         "level": 3,
         "title": "Docker 方式"
       }
@@ -3413,7 +3413,7 @@
     "Supervisor": [
       {
         "document": "user-guide/deployment.md",
-        "line": 219,
+        "line": 228,
         "level": 3,
         "title": "Supervisor"
       }
@@ -3708,12 +3708,12 @@
         "title": "[BUG-017] WebSocket 路由 auto_accept 標誌在服務重啟後丟失"
       }
     ],
-    "[BUG-018] HTTP/WS 客戶端併發呼叫導致崩潰與連接遺漏": [
+    "[BUG-018] HTTP/WS 客戶端併發呼叫導致崩潰與連接泄漏": [
       {
         "document": "bug-tracker.md",
         "line": 468,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS 客戶端併發呼叫導致崩潰與連接遺漏"
+        "title": "[BUG-018] HTTP/WS 客戶端併發呼叫導致崩潰與連接泄漏"
       }
     ],
     "[BUG-019] 適配器熱重載時路由衝突導致重載失敗": [
@@ -3724,12 +3724,12 @@
         "title": "[BUG-019] 適配器熱重載時路由衝突導致重載失敗"
       }
     ],
-    "[BUG-020] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子包": [
+    "[BUG-020] 子程序模式 `ep run <script>` 找不到腳本所在目錄的子包": [
       {
         "document": "bug-tracker.md",
         "line": 520,
         "level": 3,
-        "title": "[BUG-020] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子包"
+        "title": "[BUG-020] 子程序模式 `ep run <script>` 找不到腳本所在目錄的子包"
       }
     ],
     "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式": [
@@ -3740,20 +3740,20 @@
         "title": "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式"
       }
     ],
-    "[BUG-022] _resolve_account() 帳戶解析回歸（_accounts_data 未填補）": [
+    "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）": [
       {
         "document": "bug-tracker.md",
         "line": 570,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() 帳戶解析回歸（_accounts_data 未填補）"
+        "title": "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）"
       }
     ],
-    "[BUG-023] 修改帳戶配置後適配器快取未刷新導致帳戶解析失敗": [
+    "[BUG-023] 修改賬戶配置後適配器快取未刷新導致賬戶解析失敗": [
       {
         "document": "bug-tracker.md",
         "line": 609,
         "level": 3,
-        "title": "[BUG-023] 修改帳戶配置後適配器快取未刷新導致帳戶解析失敗"
+        "title": "[BUG-023] 修改賬戶配置後適配器快取未刷新導致賬戶解析失敗"
       }
     ],
     "[BUG-024] storage.set() 寫入大數字 ID 鍵時觸發 OOM Kill": [
@@ -3804,20 +3804,12 @@
         "title": "[BUG-030] 配置 watcher 競態導致 setConfig 延遲寫入靜默丟資料"
       }
     ],
-    "[BUG-031] 本地插件熱重載完全不可用（reload_plugin 恆回傳 False）": [
+    "[BUG-032] 配置延遲刷盤期間「寫後立讀」讀到舊值": [
       {
         "document": "bug-tracker.md",
         "line": 840,
         "level": 3,
-        "title": "[BUG-031] 本地插件熱重載完全不可用（reload_plugin 恆回傳 False）"
-      }
-    ],
-    "[BUG-033] 配置延遲刷盤期間「寫後立讀」讀到舊值": [
-      {
-        "document": "bug-tracker.md",
-        "line": 865,
-        "level": 3,
-        "title": "[BUG-033] 配置延遲刷盤期間「寫後立讀」讀到舊值"
+        "title": "[BUG-032] 配置延遲刷盤期間「寫後立讀」讀到舊值"
       }
     ],
     "__init__.py": [
@@ -4207,7 +4199,7 @@
     "pip 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 263,
+        "line": 272,
         "level": 3,
         "title": "pip 方式"
       }
@@ -4287,7 +4279,7 @@
     "systemd (Linux)": [
       {
         "document": "user-guide/deployment.md",
-        "line": 187,
+        "line": 196,
         "level": 3,
         "title": "systemd (Linux)"
       }
@@ -5465,7 +5457,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 112,
+        "line": 120,
         "level": 2,
         "title": "健康檢查"
       }
@@ -5481,7 +5473,7 @@
     "備份": [
       {
         "document": "user-guide/deployment.md",
-        "line": 270,
+        "line": 279,
         "level": 3,
         "title": "備份"
       }
@@ -5889,7 +5881,7 @@
     "功能概覽": [
       {
         "document": "user-guide/deployment.md",
-        "line": 77,
+        "line": 85,
         "level": 3,
         "title": "功能概覽"
       }
@@ -6095,7 +6087,7 @@
     "反向代理": [
       {
         "document": "user-guide/deployment.md",
-        "line": 133,
+        "line": 142,
         "level": 2,
         "title": "反向代理"
       }
@@ -6901,7 +6893,7 @@
     "多實例部署": [
       {
         "document": "user-guide/deployment.md",
-        "line": 243,
+        "line": 252,
         "level": 2,
         "title": "多實例部署"
       }
@@ -7193,7 +7185,7 @@
     "安全建議": [
       {
         "document": "user-guide/deployment.md",
-        "line": 234,
+        "line": 243,
         "level": 2,
         "title": "安全建議"
       }
@@ -8181,7 +8173,7 @@
     "手動部署（pip）": [
       {
         "document": "user-guide/deployment.md",
-        "line": 165,
+        "line": 174,
         "level": 2,
         "title": "手動部署（pip）"
       }
@@ -8597,7 +8589,7 @@
     "數據持久化": [
       {
         "document": "user-guide/deployment.md",
-        "line": 65,
+        "line": 73,
         "level": 3,
         "title": "數據持久化"
       }
@@ -8963,7 +8955,7 @@
     "更新與維護": [
       {
         "document": "user-guide/deployment.md",
-        "line": 251,
+        "line": 260,
         "level": 2,
         "title": "更新與維護"
       }
@@ -10247,7 +10239,7 @@
     "環境變數": [
       {
         "document": "user-guide/deployment.md",
-        "line": 57,
+        "line": 63,
         "level": 3,
         "title": "環境變數"
       }
@@ -10325,7 +10317,7 @@
     "生產環境配置": [
       {
         "document": "user-guide/deployment.md",
-        "line": 169,
+        "line": 178,
         "level": 3,
         "title": "生產環境配置"
       }
@@ -12449,7 +12441,7 @@
     "透過 Dashboard 安裝模組": [
       {
         "document": "user-guide/deployment.md",
-        "line": 92,
+        "line": 100,
         "level": 3,
         "title": "透過 Dashboard 安裝模組"
       }
@@ -12699,7 +12691,7 @@
     "進程監督與硬重啟": [
       {
         "document": "user-guide/deployment.md",
-        "line": 101,
+        "line": 109,
         "level": 2,
         "title": "進程監督與硬重啟"
       }

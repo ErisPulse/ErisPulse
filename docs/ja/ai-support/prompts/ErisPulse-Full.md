@@ -3979,9 +3979,9 @@ ErisPulse ロボットを本番環境にデプロイするためのベストプ�
 
 ## Docker 部署（推奨）
 
-ErisPulse は、ErisPulse フレームワークと Dashboard 管理パネルを内蔵した公式の Docker イメージを提供しており、`linux/amd64` および `linux/arm64` アーキテクチャをサポートしています。
+ErisPulse は公式の Docker イメージを提供しており、ErisPulse フレームワークと Dashboard 管理パネルが内蔵されており、`linux/amd64` および `linux/arm64` アーキテクチャをサポートしています。
 
-### 速攻起動
+### 早速起動
 
 ```bash
 # イメージの取得
@@ -3994,17 +3994,17 @@ curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compos
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
-起動後、`http://localhost:8000/Dashboard` にアクセスし、設定したトークンをパスワードとしてログインしてください。
+起動後、`http://localhost:8000/Dashboard` にアクセスし、設定したトークンをパスワードとしてログインします。
 
-### 国内用のイメージ加速
+### 国内でのイメージ加速
 
-Docker Hub にアクセスできない場合は、GitHub Container Registry を使ってイメージを取得できます：
+Docker Hub にアクセスできない場合は、GitHub Container Registry を使用してイメージを取得できます：
 
 ```bash
 docker pull ghcr.io/erispulse/erispulse:latest
 ```
 
-ghcr.io のイメージを使用する場合は、`docker-compose.yml` の `image` を変更する必要があります：
+ghcr.io のイメージを使用する場合は、`docker-compose.yml` の image を変更する必要があります：
 
 ```yaml
 services:
@@ -4023,27 +4023,35 @@ services:
       - "${ERISPULSE_PORT:-8000}:8000"
     volumes:
       - ./config:/app/config
+      # Python パッケージディレクトリを永続化
+      - ./config/.packages:/usr/local/lib/python3.13/site-packages
     environment:
       - TZ=${TZ:-Asia/Shanghai}
       - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
+    init: true
+    stop_grace_period: 30s
     restart: unless-stopped
 ```
+
+> 上記の設定と健全性チェック、タイムゾーンおよび言語環境変数が含まれている、リポジトリのルートにある [docker-compose.yml](https://github.com/ErisPulse/ErisPulse/blob/main/docker-compose.yml) を直接使用することを推奨します。
 
 ### 環境変数
 
 | 変数 | デフォルト値 | 説明 |
 |------|--------|------|
 | `ERISPULSE_PORT` | `8000` | Dashboard のポートマッピング |
-| `ERISPULSE_DASHBOARD_TOKEN` | 自動生成 | Dashboard のログイントークン（設定を強く推奨） |
+| `ERISPULSE_DASHBOARD_TOKEN` | 自動生成 | Dashboard のログイントークン（強く設定することを推奨） |
 | `TZ` | `Asia/Shanghai` | タイムゾーン |
+| `LANG` | `en_US.UTF-8` | システム言語、起動時のインターフェース言語を自動検出 |
+| `ERISPULSE_LANG` | 空 | 強制的な起動時インターフェース言語：`zh` / `zh_TW` / `en` / `ja` / `ru`（`LANG` を上書き） |
 
 ### データの永続化
 
-`./config` ディレクトリは、設定ファイルとデータベースをマウントしており、以下を含みます：
+`./config` ディレクトリは設定ファイルとデータベースをマウントしており、以下の内容を含んでいます：
 
 - `config/config.toml` — 設定ファイル
 - `config/config.db` — SQLite ストレージデータベース
-- `config/.packages` — Python site-packages の永続化ボリューム。フレームワーク、アダプター、およびインストール済みモジュールを保存します（最初の起動時にエントリポイントがイメージ内に含まれるバックアップから自動的に初期化され、その後のモジュールインストールとフレームワークのホットアップデートはこのディレクトリに書き込まれます）。
+- `config/.packages` — Python site-packages の永続化ボリューム、フレームワーク、アダプター、およびインストール済みモジュールを保存（最初の起動時にエントリポイントがイメージ内に含まれるバックアップから自動的に初期化され、その後のモジュールのインストールとフレームワークのホットアップデートはこのディレクトリに書き込まれます）
 
 ## Dashboard 管理面板
 
@@ -4084,24 +4092,25 @@ ErisPulse のハードリスタート (`sdk.hard_restart()`) は、**外部の�
 
 各監督者の完全な設定例と終了コード 42 の契約に関する説明は、[起動プロセス → 監督者ガイド](../advanced/startup.md#監督者ガイド)をご覧ください。
 
-## ヘルスチェック
+## 健康チェック
 
-SDK には、ヘルスチェック用エンドポイントが内蔵されています。
+SDK には、内部的に健康チェック用エンドポイントが用意されています。
 
 ```bash
-# ヘルスチェック
+# 健康チェック
 curl http://localhost:8000/health
 ```
 
-Docker でのヘルスチェックは、`docker-compose.yml` に追加することで可能です。
+Docker の健康チェックは、`docker-compose.yml` に追加することで実行できます。
 
 ```yaml
 services:
   erispulse:
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ping')"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
+      start_period: 20s
       retries: 3
 ```
 
