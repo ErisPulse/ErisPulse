@@ -5,20 +5,17 @@
 ## 模块概述
 
 
-ErisPulse 统一控制面（scope）
+ErisPulse 作用域（scope）
 
-控制权完全交给用户：在模块 / 适配器 / 命令 / 处理器注册的**上层**（配置 ``ErisPulse.scope``
-或运行时 ``sdk.scope``）统一声明"谁 / 什么 / 什么条件下，允许或禁止"，以及覆盖
-模块 / 命令的默认实现参数。事件管线在每一级自动读取并执行。
+控制权完全交给用户：在模块 / 适配器 / 处理器 / 出站调用注册的**上层**
+（配置 ``ErisPulse.scope`` 或运行时 ``sdk.scope``）统一声明"**什么范围内生效**"。
+事件管线在入口、处理器过滤与出站闸口自动读取并执行。
 
-本系统是 2.8.0 的权限/访问控制**唯一**入口，收敛了原有的：
+作用域按事件处理生命周期回答三个问题：
 
-- 模块维度（原作用域三级绑定）
-- 身份维度（原事件准入 access：适配器 / Bot / 会话 / 用户）
-- 命令维度（原命令权限 ACL：按命令的用户黑白名单）
-- 处理器/文本维度（新增：按模块过滤消息文本）
-- 实现参数覆盖（新增：覆盖模块/命令的 master / hidden / aliases / prefix 等）
-- 出站动作维度（新增：禁止模块发起消息发送 / 标准 API 动作 / 请求操作）
+- 模块维度：某个上下文里哪些模块可用（平台 / Bot / 会话三级绑定）
+- 身份维度：谁的事件收不收（适配器 / Bot / 会话 / 用户四级策略）
+- 出站维度：模块能向外做什么（限制模块发起消息发送 / 标准 API 动作 / 请求操作）
 
 配置树（``ErisPulse.scope``）：
 
@@ -33,6 +30,7 @@ ErisPulse 统一控制面（scope）
     blocked = ["re:^Danger"]
     [ErisPulse.scope.bots.onebot11."123456"]
     modules = ["Chat"]
+    merge = true                  # 在平台级绑定基础上追加（默认整体覆盖）
     [ErisPulse.scope.sessions.onebot11."789012345"]
     modules = ["Chat"]
 
@@ -47,37 +45,25 @@ ErisPulse 统一控制面（scope）
     allow = ["u_admin"]
     deny = ["u_bad", "spam_*"]    # 支持 glob / re:正则
 
-    # ③ 命令维度：谁能执行某命令（命令名支持 glob）
-    [ErisPulse.scope.commands."roll*"]
-    allow = ["onebot11:u_vip"]
-    deny = ["onebot11:u_bad"]
-
-    # ④ 处理器/文本维度：某模块的事件处理器按 pattern / regex 过滤
-    [ErisPulse.scope.handlers.MyModule]
-    pattern = "签到*"
-    regex = "re:\d+\s*元"
-
-    # ⑤ 实现参数覆盖：覆盖模块/命令的默认实现参数（禁用走命令 deny）
-    [ErisPulse.scope.overrides.MyModule.restart]
-    master = true   hidden = true   aliases = ["rs"]   prefix = "!"
-
-    # ⑥ 出站动作维度：禁止模块发起出站动作（默认全允许，显式禁用才收紧）
+    # ③ 出站维度：限制模块发起出站动作（默认全允许，显式收紧才禁）
     [ErisPulse.scope.actions.MyModule]
-    send = false      # 禁止 MyModule 回复/主动发消息（Event.reply / Send DSL）
-    api = false       # 禁止 MyModule 调用标准 API 动作（Api DSL / call_api）
-    request = false   # 禁止 MyModule 对请求事件执行 accept/reject
+    send = { deny = true }                                   # 全禁发送
+    send = { allow = ["Text", "Image*"], deny = ["File"] }   # 方法级细粒度
+    api = { allow = ["get_*"] }                              # 仅允许查询类 API
+    request = { deny = true }                                # 禁止处理请求
 
 匹配条目统一语法（见 :mod:`ErisPulse.Core.text_match`）：
 **精确名** / **glob**（``*`` / ``?`` / ``[seq]``）/ **``re:`` 正则**，默认大小写不敏感。
 
 > **提示**
 > 1. 通过 ``from ErisPulse.Core import scope`` 导入单例（``sdk.scope`` 同对象）
-> 2. ``scope.is_allowed(platform, bot_id, module, session_id)`` 判断模块是否可用
-> 3. ``scope.is_identity_allowed(...)`` 判断事件是否放行（原 access）
-> 4. ``scope.allow_user("roll*", platform, uid)`` 命令 ACL（命令名支持 glob）
-> 5. ``scope.override("MyModule", "restart", master=True)`` 覆盖实现参数
-> 6. ``scope.set_action("MyModule", "send", False)`` 禁止模块回复/发消息
-> 7. ``scope.get_stats()`` 查看过滤统计
+> 2. 判定：``scope.is_allowed(...)`` / ``scope.is_identity_allowed(...)`` /
+> ``scope.is_action_allowed(...)`` —— 对应 ①②④ 三个判定闸口
+> 3. 读写：像字典一样用点分路径操作任意配置节 ——
+> ``scope.get("platforms.onebot11")`` / ``scope.set("actions.My", {...})`` /
+> ``scope.delete("actions.My.send")``，也支持 ``scope[key]`` / ``scope[key] = v`` / ``del scope[key]``
+> 4. 事件处理器文本条件覆写见 :mod:`ErisPulse.Core.Event.overrides`；
+> 命令 ACL / 参数覆写见 :mod:`ErisPulse.Core.Event.command`
 
 ---
 
@@ -95,31 +81,91 @@ ErisPulse 统一控制面（scope）
 ---
 
 
+### `_normalize_action_rule(rule)`
+
+> **内部方法**
+归一化出站动作规则
+
+合法输入形态：
+
+- ``True`` → ``{}``（无限制，等价未配置）
+- ``False`` → ``{"deny": True}``（全禁）
+- dict → 仅保留 ``allow``（字符串列表）与 ``deny``（布尔或字符串列表）键
+
+- **rule** (`配置中的动作规则（bool`): / dict）
+**返回值** (`规范化规则字典；allow`): / deny 类型非法时返回 None
+
+---
+
+
+### `_deep_merge(dst: dict, src: dict)`
+
+> **内部方法** 把 src 深合并进 dst（原地修改）
+
+---
+
+
 ## 类列表
 
 
 ### `class ScopeManager`
 
-统一控制面管理器（单例）
+作用域管理器（单例）
 
-管理六维配置：模块（modules）/ 身份（identity）/ 命令（commands）/
-处理器（handlers）/ 覆盖（overrides）/ 出站动作（actions）。支持配置热更新、
-运行时增删、LRU 缓存与运行统计。
+统一管理三维作用域配置（模块 / 身份 / 出站），配置即一棵
+``ErisPulse.scope`` 字典树。API 面向原生字典风格收敛：
+
+- **判定**：:meth:`is_allowed` / :meth:`is_identity_allowed` /
+  :meth:`is_action_allowed`（三个闸口的问询）
+- **读写**：:meth:`get` / :meth:`set` / :meth:`delete`（点分路径直达任意节，
+  同时支持 ``scope[path]`` / ``scope[path] = value`` / ``del scope[path]``）
+- **全局**：:meth:`clear` / :meth:`stats` / :meth:`reset_stats` / :meth:`topology`
+
+支持配置热更新、LRU 缓存与运行统计。
+命令 ACL / 参数覆写由命令系统自持（``ErisPulse.event.command``）。
 
 
 #### 方法列表
 
 
-##### `_load_bindings()`
+##### `_warn_invalid(path: str, actual: str)`
 
-> **内部方法** 从配置加载绑定缓存
+> **内部方法** 输出配置格式告警（同一路径去重）
+
+---
+
+
+##### `_validated_bucket(config: dict, key: str)`
+
+> **内部方法** 读取并校验一个 dict 型配置节（非法时告警并忽略）
+
+---
+
+
+##### `_load_config()`
+
+> **内部方法** 从配置加载配置树（含格式校验）
+
+---
+
+
+##### `_apply_tree(tree: dict)`
+
+> **内部方法** 校验并应用配置树到内存（含格式校验）
+
+---
+
+
+##### `_validated_actions(scope_config: dict)`
+
+> **内部方法** 加载并校验出站动作规则
 
 ---
 
 
 ##### `_on_config_updated(_data: dict)`
 
-配置变更回调：重建绑定缓存
+配置变更回调：重建配置树
 
 ---
 
@@ -145,12 +191,26 @@ ErisPulse 统一控制面（scope）
 ---
 
 
+##### `_effective_module_cfg(platform: str, bot_id: str | None, session_id: str | None)`
+
+> **内部方法**
+沿"平台 → Bot → 会话"解析链计算生效的模块绑定
+
+默认语义为**整体覆盖**：高优先级绑定完整替换低优先级；
+子级绑定含 ``merge = true`` 时与低优先级**逐条目并集**
+（modules / blocked 各自取并集）。``merge`` 为控制键，不进入条目。
+
+- **platform** (`平台名称`): - **bot_id**: Bot 用户 ID，None 表示不匹配 Bot 级
+- **session_id** (`会话`): ID（群 / 频道 / 私聊），None 表示不匹配会话级
+**返回值** (`生效绑定`): {"modules": [...], "blocked": [...]}，无绑定时返回 None
+
+---
+
+
 ##### `_get_binding(platform: str, bot_id: str | None, session_id: str | None)`
 
 > **内部方法**
-获取平台 / Bot / 会话的生效模块绑定
-
-解析优先级：会话级 > Bot 级 > 平台级；均不存在时返回 None。
+获取平台 / Bot / 会话的生效模块绑定（含 merge 链式合并）
 
 - **platform** (`平台名称`): - **bot_id**: Bot 用户 ID，None 表示不匹配 Bot 级
 - **session_id** (`会话`): ID（群 / 频道 / 私聊），None 表示不匹配会话级
@@ -161,10 +221,10 @@ ErisPulse 统一控制面（scope）
 
 ##### `is_allowed(platform: str, bot_id: str | None, module_name: str | None, session_id: str | None = None)`
 
-判断模块是否允许在指定 Bot / 会话使用
+判断模块是否允许在指定 Bot / 会话使用（① 模块维度）
 
 模块名匹配大小写不敏感，条目支持 glob / ``re:`` 正则。
-结果带 LRU 缓存，配置变更 / bind / unbind 时自动失效。
+结果带 LRU 缓存，配置变更 / set / delete 时自动失效。
 无绑定（默认）时遵循 ``default_allow``；模块名为空（框架层资源）始终放行。
 
 - **platform** (`平台名称`): - **bot_id**: Bot 用户 ID，None 表示不匹配 Bot 级绑定
@@ -204,7 +264,7 @@ True
 
 ##### `is_identity_allowed(platform: str, bot_id: str | None = None, session_id: str | None = None, user_id: str | None = None)`
 
-判断事件是否放行（身份维度，原事件准入）
+判断事件是否放行（② 身份维度：谁的事件收不收）
 
 解析优先级：**用户级 > 会话级 > Bot 级 > 适配器级**，取最具体的
 已配置绑定；均未配置时遵循 ``default_allow``。
@@ -223,84 +283,33 @@ False
 ---
 
 
-##### `is_user_blocked(platform: str, user_id: str | None)`
+##### `is_action_allowed(owner: str, action: str, name: str | None = None)`
 
-检查用户是否被拉黑（身份维度 deny）
+判断模块是否允许执行某类出站动作（④ 出站维度）
 
-- **platform** (`平台名称`): - **user_id**: 用户 ID
-**返回值**: 是否被拉黑
+判定语义：**默认允许**——未配置、或 owner 为空（框架层调用）均视为允许。
+规则判定顺序：``deny = true`` → 拒绝；``deny`` 列表命中 ``name`` → 拒绝；
+``allow`` 列表非空且 ``name`` 未命中（或未提供）→ 拒绝；其余放行。
+结果带 LRU 缓存，配置变更 / set / delete 时自动失效。
 
----
-
-
-##### `get_blocked_users()`
-
-获取所有被拉黑的用户（精确 deny 绑定）
-
-**返回值** (```{platform:`): [user_id, ...]}``（按平台分组、用户 ID 排序）
-
----
-
-
-##### `_command_acl(command_name: str)`
-
-> **内部方法**
-获取命令的生效 ACL（按 glob / ``re:`` 匹配命令名）
-
-- **command_name** (`命令主名`): **返回值** (`{"allow":`): [...], "deny": [...]}，未配置时返回 None
+- **owner** (`模块名（owner）`): - **action**: 动作类型，取值 ``_ACTION_NAMES``（"send" / "api" / "request"）
+- **name** (`具体调用名（send`): 传发送方法名如 "Text" / "Image"，
+             api 传标准动作名如 "get_group_info"；request 无需提供）
+**返回值** (`是否允许执行`): 
+**示例**:
+```python
+>>> scope.is_action_allowed("MyModule", "send")
+True
+>>> scope.is_action_allowed("MyModule", "send", name="Image")
+False
+```
 
 ---
 
 
-##### `is_command_allowed(command_name: str, platform: str, user_id: str)`
+##### `_compute_action_allowed(owner: str, action: str, name: str | None)`
 
-判断用户对命令是否被 ACL 允许
-
-判定顺序：deny 命中 → False；allow 非空且未命中 → False；
-allow 命中 → True；未配置 ACL 时遵循全局 ``default_allow``
-（false = 严格模式，命令未配置 ACL 即拒绝）。
-
-- **command_name** (`命令主名`): - **platform**: 用户所属平台
-- **user_id** (`用户`): ID
-**返回值**: 是否允许执行
-
----
-
-
-##### `handler_condition(owner: str)`
-
-> **内部方法**
-获取模块的文本过滤条件（handlers 桶）
-
-- **owner** (`模块名`): **返回值** (`事件条件函数，未配置时返回`): None
-
----
-
-
-##### `get_override(owner: str, command_name: str | None = None)`
-
-获取模块 / 命令的实现参数覆盖
-
-存储形态：``overrides.<module>`` 下标量值为模块级参数（如 ``hidden = true``），
-子表（dict 值）为命令级覆盖（如 ``overrides.<module>.<command>``）。
-
-- **owner** (`模块名`): - **command_name**: 命令名；None 表示仅模块级参数
-**返回值** (`覆盖字典（模块级参数`): + 命令级覆盖，命令级优先），未配置返回 {}
-
----
-
-
-##### `apply_override(owner: str, command_name: str, defaults: dict)`
-
-> **内部方法**
-把命令默认参数与覆盖合并（覆盖优先）
-
-覆盖键 ``master`` 会同步映射到命令存储键 ``must_master``：
-用户优先——用户在控制面显式配置 ``master = true/false`` 时直接生效
-（既可收紧也可放开开发者默认），未配置时保持开发者默认。
-
-- **owner** (`模块名`): - **command_name**: 命令名
-- **defaults** (`命令默认参数字典`): **返回值**: 合并后的参数字典
+> **内部方法** 计算出站动作是否允许（无缓存）
 
 ---
 
@@ -338,298 +347,283 @@ allow 命中 → True；未配置 ACL 时遵循全局 ``default_allow``
 ---
 
 
-##### `get(platform: str, bot_id: str | None = None, session_id: str | None = None)`
+##### `_logger_trace(message: str)`
 
-获取平台 / Bot / 会话的生效模块绑定（原始配置形态）
-
-解析优先级：会话级 > Bot 级 > 平台级。
-
-- **platform** (`平台名称`): - **bot_id**: Bot 用户 ID，None 表示不匹配 Bot 级
-- **session_id** (`会话`): ID，None 表示不匹配会话级
-**返回值** (`{"modules":`): [...], "blocked": [...]}，无绑定时返回 None
-
-**示例**:
-```python
->>> scope.get("onebot11", "123456")
-{"modules": ["Chat"], "blocked": []}
-```
+> **内部方法** 输出 TRACE 日志（logger 未就绪时静默）
 
 ---
 
 
-##### `bind_module(platform: str, bot_id: str | None = None, session_id: str | None = None)`
+##### `_module_path(platform: str, bot_id: str | None, session_id: str | None)`
+
+> **内部方法** 模块维度路径（会话 > Bot > 平台）
+
+---
+
+
+##### `_identity_path(platform: str, bot_id: str | None, session_id: str | None, user_id: str | None)`
+
+> **内部方法** 身份维度路径（用户 > 会话 > Bot > 适配器）
+
+---
+
+
+##### `set_module(platform: str, bot_id: str | None = None, session_id: str | None = None)`
 
 绑定模块作用域（① 模块维度）
 
-- **platform** (`平台名称`): - **bot_id**: Bot 用户 ID，None 且 session_id 为空时表示平台级绑定
-- **session_id** (`会话`): ID。指定时绑定到该会话；否则有 bot_id 时绑定到该 Bot；
-                   否则绑定到平台级
-- **modules** (`白名单模块条目列表（精确`): / glob / ``re:`` 正则）
-- **blocked** (`黑名单模块条目列表`): - **persist**: 是否持久化到配置文件 (默认: True)
-- **merge** (`是否**合并**而非替换现有绑定（默认`): False）
-
----
-
-
-##### `unbind_module(platform: str, bot_id: str | None = None, session_id: str | None = None, persist: bool = True)`
-
-移除模块作用域绑定（恢复为允许全部模块）
-
-**返回值** (`是否成功移除（不存在则返回`): False）
-
----
-
-
-##### `bind_identity(platform: str, bot_id: str | None = None, session_id: str | None = None, user_id: str | None = None)`
-
-绑定身份准入策略（② 身份维度，指定来源的事件放行 / 拒绝）
-
-绑定层级由参数决定：给定 ``user_id`` 绑定用户级；否则给定
-``session_id`` 绑定会话级；否则给定 ``bot_id`` 绑定 Bot 级；
-否则绑定适配器级。``allow`` 与 ``deny`` 必须二选一（同时给定时以 ``deny`` 为准）。
-绑定键支持 glob / ``re:`` 正则（如 ``user_id="spam_*"``）。
-
-**示例**:
-```python
->>> scope.bind_identity("onebot11", user_id="999", deny=True)
->>> scope.bind_identity("onebot11", user_id="spam_*", deny=True)
-```
-
----
-
-
-##### `unbind_identity(platform: str, bot_id: str | None = None, session_id: str | None = None, user_id: str | None = None, persist: bool = True)`
-
-移除身份准入绑定（该来源恢复遵循 default_allow）
-
-**返回值** (`是否成功移除（绑定不存在时返回`): False）
-
----
-
-
-##### `block_user(platform: str, user_id: str, persist: bool = True)`
-
-拉黑用户：该用户的所有类型事件在分发入口被完全丢弃
-
-等价于 ``bind_identity(platform, user_id=user_id, deny=True)``。
-
-- **platform** (`平台名称`): - **user_id**: 用户 ID
+- **platform** (`平台名称`): - **bot_id**: Bot 用户 ID，None 且 session_id 为空时绑定平台级
+- **session_id** (`会话`): ID（群 / 频道 / 私聊）。指定时绑定该会话；
+                   否则有 bot_id 时绑定该 Bot；否则绑定平台级
+- **modules** (`白名单模块条目（精确`): / glob / ``re:`` 正则）
+- **blocked** (`黑名单模块条目`): - **merge**: True 时与该级现有绑定**逐条目并集**（modules / blocked 各自合并），
+              False 整体替换该节点（默认）
 - **persist** (`是否持久化到配置文件`): (默认: True)
 
----
-
-
-##### `unblock_user(platform: str, user_id: str, persist: bool = True)`
-
-取消拉黑用户（移除该用户的准入绑定）
-
-**返回值** (`是否成功移除（该用户本无绑定或绑定非`): deny 时返回 False）
-
----
-
-
-##### `_acl_mutate(command_name: str, list_name: str, platform: str, user_id: str)`
-
-> **内部方法**
-增删命令 ACL 名单成员
-
-- **command_name** (`命令名（可含`): glob / ``re:`` 模式）
-- **list_name** (`名单名（"allow"`): / "deny"）
-- **platform** (`用户所属平台`): - **user_id**: 用户 ID
-- **remove** (`是否移除（True`): 移除成员，False 追加成员）
-- **persist**: 是否持久化
-
----
-
-
-##### `allow_user(command_name: str, platform: str, user_id: str, persist: bool = True)`
-
-将用户加入命令的 allow 名单（白名单非空时仅名单内用户可执行）
-
-命令名支持 glob / ``re:`` 正则。
-
 **示例**:
 ```python
->>> scope.allow_user("roll*", "onebot11", "123456")
+>>> scope.set_module("onebot11", bot_id="123456", modules=["Chat", "Tool*"])
+>>> scope.set_module("onebot11", bot_id="123456", modules=["Music"], merge=True)
 ```
 
 ---
 
 
-##### `deny_user(command_name: str, platform: str, user_id: str, persist: bool = True)`
+##### `get_module(platform: str, bot_id: str | None = None, session_id: str | None = None, default = None)`
 
-将用户加入命令的 deny 名单（deny 优先于 allow 与默认权限）
+读取该层级原始模块绑定（不含 merge 跨级合并的最终生效结果，
+需判定生效性请用 :meth:`is_allowed`）
 
-命令名支持 glob / ``re:`` 正则。
+- **platform** (`平台名称`): - **bot_id**: Bot 用户 ID
+- **session_id** (`会话`): ID
+- **default** (`无绑定时返回值（默认`): None）
+**返回值** (```{"modules":`): [...], "blocked": [...]}`` 或 default
+
+---
+
+
+##### `delete_module(platform: str, bot_id: str | None = None, session_id: str | None = None, persist: bool = True)`
+
+移除该层级模块绑定（恢复 default_allow 兜底）
+
+- **platform** (`平台名称`): - **bot_id**: Bot 用户 ID
+- **session_id** (`会话`): ID
+- **persist** (`是否持久化到配置文件`): (默认: True)
+**返回值**: 是否存在并被删除
+
+---
+
+
+##### `set_identity(platform: str, bot_id: str | None = None, session_id: str | None = None, user_id: str | None = None)`
+
+绑定身份准入策略（② 身份维度，层级由参数决定：用户 > 会话 > Bot > 适配器）
+
+绑定键支持 glob / ``re:`` 正则（如 ``user_id="spam_*"``）。
+
+- **platform** (`平台名称`): - **bot_id**: Bot 用户 ID
+- **session_id** (`会话`): ID
+- **user_id** (`用户`): ID
+- **allow** (`放行该来源事件`): - **deny**: 拒绝该来源事件（allow 与 deny 同时给定时以 deny 为准）
+- **persist** (`是否持久化到配置文件`): (默认: True)
 
 **示例**:
 ```python
->>> scope.deny_user("roll*", "onebot11", "666")
+>>> scope.set_identity("onebot11", user_id="u_bad", deny=True)   # 拉黑
+>>> scope.set_identity("onebot11", user_id="spam_*", deny=True)  # glob 批量拉黑
+>>> scope.set_identity("onebot11", session_id="g1", allow=True)  # 例外放行
 ```
 
 ---
 
 
-##### `get_acl(command_name: str)`
+##### `get_identity(platform: str, bot_id: str | None = None, session_id: str | None = None, user_id: str | None = None, default = None)`
 
-查询命令当前的用户黑白名单
+读取该来源的身份绑定（原始配置形态，含 glob 键不展开；
+需判定生效性请用 :meth:`is_identity_allowed`）
 
-- **command_name** (`命令名（可含模式）`): **返回值** (`{"allow":`): [...], "deny": [...]}（用户标识 "platform:user_id"）
-
----
-
-
-##### `remove_acl(command_name: str, persist: bool = True)`
-
-清除命令的用户黑白名单（恢复开发者默认权限逻辑）
-
-- **command_name** (`命令名（可含模式）`): - **persist**: 是否持久化
-**返回值**: 是否存在并被清除
+- **platform** (`平台名称`): - **bot_id**: Bot 用户 ID
+- **session_id** (`会话`): ID
+- **user_id** (`用户`): ID
+- **default** (`无绑定时返回值（默认`): None）
+**返回值** (```{"allow":`): True}`` / ``{"deny": True}`` 或 default
 
 ---
 
 
-##### `_action_cfg(owner: str)`
+##### `delete_identity(platform: str, bot_id: str | None = None, session_id: str | None = None, user_id: str | None = None, persist: bool = True)`
 
-> **内部方法**
-读取模块的出站动作配置
+移除该来源的身份绑定（恢复 default_allow 兜底）
 
-- **owner** (`模块名（owner），无`): owner 时返回 None
-**返回值** (`动作开关字典（{"send":`): bool, "api": bool, "request": bool}），未配置返回 None
-
----
-
-
-##### `is_action_allowed(owner: str, action: str)`
-
-判断模块是否允许执行某类出站动作（⑥ 出站动作维度）
-
-判定语义：**默认允许**——未配置、或 owner 为空（框架层调用）均视为允许；
-仅当用户显式禁用（``scope.actions.<owner>.<action> = false``）才拒绝。
-与身份/命令维度的"默认允许兜底"不同，本维度是出站能力的收紧开关，
-空白即放行，声明式禁用。
-
-- **owner** (`模块名（owner）`): - **action**: 动作类型，取值 ``_ACTION_NAMES``（"send" / "api" / "request"）
-**返回值**: 是否允许执行
+- **platform** (`平台名称`): - **bot_id**: Bot 用户 ID
+- **session_id** (`会话`): ID
+- **user_id** (`用户`): ID
+- **persist** (`是否持久化到配置文件`): (默认: True)
+**返回值**: 是否存在并被删除
 
 ---
 
 
-##### `set_action(owner: str, action: str, allowed: bool, persist: bool = True)`
+##### `set_action(module: str, action: str)`
 
-设置模块某类出站动作的允许/禁用（⑥ 出站动作维度）
+设置模块某类出站动作的限制规则（③ 出站维度）
 
-仅影响本模块从事件处理器（handler 执行期 owner 上下文）发起的出站调用。
-不影响框架层内部调用（owner 为空时恒放行）。
+仅影响本模块从事件处理器（handler 执行期 owner 上下文）发起的出站调用；
+框架层内部调用（owner 为空）恒放行。
 
-- **owner** (`模块名（owner）`): - **action**: 动作类型（"send" / "api" / "request"）
-- **allowed** (`False`): 禁止该动作，True 允许
-- **persist** (`是否持久化`): (默认: True)
+- **module** (`模块名`): - **action**: 动作类型（"send" / "api" / "request"）
+- **allow** (`白名单条目（str`): 或 list；send 匹配发送方法名、api 匹配标准动作名）
+- **deny** (`全禁（True）或黑名单条目（str`): / list）
+- **persist** (`是否持久化到配置文件`): (默认: True)
 
 **示例**:
 ```python
->>> scope.set_action("MyModule", "send", False)  # 禁止 MyModule 回复消息
->>> scope.set_action("MyModule", "api", False)  # 禁止 MyModule 调用标准 API
->>> scope.set_action("MyModule", "request", False)  # 禁止 MyModule 处理请求操作
+>>> scope.set_action("MyModule", "send", deny=True)                # 全禁发送
+>>> scope.set_action("MyModule", "send", allow=["Text"])           # 仅允许发文本
+>>> scope.set_action("MyModule", "api", deny=["set_*", "leave_*"]) # 禁管理类 API
 ```
 
 ---
 
 
-##### `unset_action(owner: str, action: str | None = None, persist: bool = True)`
+##### `get_action(module: str, action: str, default = None)`
+
+读取模块某类出站动作的原始规则（bool 原样存储，判定层归一化）
+
+- **module** (`模块名`): - **action**: 动作类型
+- **default** (`未配置时返回值（默认`): None）
+**返回值** (```{"allow":`): [...], "deny": ...}`` / ``False`` 等原始形态或 default
+
+---
+
+
+##### `delete_action(module: str, action: str | None = None, persist: bool = True)`
 
 移除模块的出站动作限制（恢复默认允许）
 
-- **owner** (`模块名`): - **action**: 动作类型；None 表示移除该模块全部动作限制
-- **persist** (`是否持久化`): **返回值**: 是否有内容被移除
+- **module** (`模块名`): - **action**: 动作类型；None 表示移除该模块全部动作限制
+- **persist** (`是否持久化到配置文件`): (默认: True)
+**返回值**: 是否有内容被移除
 
 ---
 
 
-##### `get_action_rules(owner: str)`
+##### `_split_path(path: str)`
 
-查询模块当前的出站动作限制
-
-- **owner** (`模块名`): **返回值** (`动作开关字典（含默认允许的未配置项为`): True）
+> **内部方法** 点分路径切分为段（过滤空段）
 
 ---
 
 
-##### `bind_handler(owner: str, pattern: str | None = None, regex: str | None = None, persist: bool = True)`
+##### `_node_at(path: str)`
 
-绑定模块的文本过滤条件（④ 处理器维度）
-
-- **owner** (`模块名`): - **pattern**: glob 通配符，不匹配的消息不触发该模块处理器
-- **regex** (`正则源码（可带`): ``re:`` 前缀），与 pattern 同时给定时须都命中
-- **persist** (`是否持久化`): (默认: True)
+> **内部方法** 按点分路径取节点（不存在返回 None）
 
 ---
 
 
-##### `unbind_handler(owner: str, persist: bool = True)`
+##### `get(path: str, default = None)`
 
-移除模块的文本过滤条件
+读取作用域配置树中任意节（深拷贝）
 
-**返回值**: 是否成功移除
-
----
-
-
-##### `override(owner: str, command_name: str | None = None, persist: bool = True)`
-
-覆盖模块 / 命令的实现参数（⑤ 覆盖维度）
-
-覆盖遵循**用户优先**：显式设置的参数直接生效（可收紧也可放开开发者默认）。
-覆盖值只影响**实现参数**（master / hidden / aliases / prefix 等），
-不用于禁用——禁用统一走命令 deny（``deny_user`` / ``scope.commands``）。
-
-- **owner** (`模块名`): - **command_name**: 命令名；None 表示模块级覆盖
-- **persist** (`是否持久化`): (默认: True)
-- **params** (`要覆盖的参数（如`): ``master=True`` 收紧、``master=False`` 放开、``hidden=True``、``aliases=["rs"]``）
+- **path** (`点分路径，如`): ``"platforms.onebot11"``、``"identity.users.onebot11"``
+             （身份）、``"actions.MyModule"``（出站）；
+             空路径返回整棵树
+- **default** (`节不存在时的返回值（默认`): None）
+**返回值** (`节的深拷贝；不存在时返回`): ``default``
 
 **示例**:
 ```python
->>> scope.override("MyModule", "restart", master=True, hidden=True)
+>>> scope.get("actions.MyModule.send", {})
+{"deny": True}
 ```
 
 ---
 
 
-##### `remove_override(owner: str, command_name: str | None = None, persist: bool = True)`
+##### `set(path: str, value, persist: bool = True)`
 
-移除模块 / 命令的实现参数覆盖
+写入作用域配置树中任意节（dict 深合并，标量直接覆盖）
 
-**返回值**: 是否成功移除
+写入后判定缓存自动失效，配置即时生效。
+
+- **path** (`点分路径，如`): ``"bots.onebot11.123456"``（模块绑定）、
+             ``"identity.users.onebot11.u_bad"``（拉黑用户）、
+             
+             ``"actions.MyModule.send"``（出站规则）
+- **value** (`写入值（dict`): 时与现有值深合并，其余类型直接覆盖）
+- **persist** (`是否持久化到配置文件`): (默认: True)
+
+**示例**:
+```python
+>>> scope.set("bots.onebot11.123456", {"modules": ["Chat"], "blocked": []})
+>>> scope.set("identity.users.onebot11.u_bad", {"deny": True})   # 拉黑用户
+>>> scope.set("actions.MyModule.send", {"deny": True})           # 全禁发送
+```
 
 ---
 
 
-##### `list_bindings()`
+##### `delete(path: str, persist: bool = True)`
 
-列出全部控制面绑定（含出站动作维度）
+删除作用域配置树中任意键（父节经整节替换持久化，支持级联清空空父节）
 
-**返回值** (`{"platforms",`): "bots", "sessions", "identity", "commands",
-        "handlers", "overrides", "actions"} 结构（深拷贝）
+- **path** (`点分路径，如`): ``"bots.onebot11.123456"``、
+             ``"identity.users.onebot11.u_bad"``、``"actions.MyModule.send"``
+- **persist** (`是否持久化到配置文件`): (默认: True)
+**返回值** (`是否存在并被删除`): 
+**示例**:
+```python
+>>> scope.delete("bots.onebot11.123456")       # 移除 Bot 绑定
+>>> scope.delete("identity.users.onebot11.u_bad")  # 取消拉黑
+>>> scope.delete("actions.MyModule")           # 解除模块全部出站限制
+```
+
+---
+
+
+##### `__getitem__(path: str)`
+
+``scope[path]``：等价 :meth:`get`，节点不存在时抛 KeyError
+
+---
+
+
+##### `__setitem__(path: str, value)`
+
+``scope[path] = value``：等价 :meth:`set`（默认持久化）
+
+---
+
+
+##### `__delitem__(path: str)`
+
+``del scope[path]``：等价 :meth:`delete`，不存在时抛 KeyError
+
+---
+
+
+##### `__contains__(path: str)`
+
+``path in scope``：判断配置树中是否存在该节点
 
 ---
 
 
 ##### `clear()`
 
-清空所有控制面绑定（仅内存生效，不持久化）
+清空所有作用域配置（仅内存生效，不持久化）
 
 ---
 
 
-##### `get_stats()`
+##### `stats()`
 
-获取控制面运行统计
+获取作用域运行统计
 
 统计项：``module_calls`` / ``module_filtered``（模块维度）、
 ``identity_checks`` / ``identity_denied``（身份维度）、
-``command_checks`` / ``command_denied``（命令维度）、
-``action_checks`` / ``action_denied``（出站动作维度）、
-``cache_hits`` / ``cache_misses``（模块维度 LRU）。
+``action_checks`` / ``action_denied``（出站维度）、
+``cache_hits`` / ``cache_misses``（LRU 缓存）。
 
 **返回值**: 统计字典
 
@@ -638,57 +632,18 @@ allow 命中 → True；未配置 ACL 时遵循全局 ``default_allow``
 
 ##### `reset_stats()`
 
-重置控制面运行统计
+重置作用域运行统计
 
 ---
 
 
-##### `get_topology()`
+##### `topology()`
 
-获取控制面绑定的结构化数据（便于 WebUI 展示拓扑树）
+获取作用域配置的结构化数据（便于 WebUI 展示拓扑树）
 
-**返回值** (`全维度绑定结构（模块`): / 身份 / 命令 / 处理器 / 覆盖 / 出站动作）
+等价于整棵配置树的深拷贝。
 
----
-
-
-##### `_raw_get(bucket: str, platform: str, key: str)`
-
-> **内部方法** 读取指定模块绑定（供 merge 使用，浅拷贝）
-
----
-
-
-##### `_resolve_module_target(platform: str, bot_id: str | None, session_id: str | None)`
-
-> **内部方法**
-根据参数解析模块维度目标桶与键
-
-**返回值** (`(bucket,`): key) 元组
-
----
-
-
-##### `_resolve_identity_target(platform: str, bot_id: str | None, session_id: str | None, user_id: str | None)`
-
-> **内部方法**
-根据参数解析身份维度目标桶与键（用户级 > 会话级 > Bot 级 > 适配器级）
-
-**返回值** (`(bucket,`): key) 元组
-
----
-
-
-##### `_logger_trace(message: str)`
-
-> **内部方法** 输出 TRACE 日志（logger 未就绪时静默）
-
----
-
-
-##### `_raw_bindings()`
-
-> **内部方法** 读取当前绑定缓存（深拷贝，避免外部篡改）
+**返回值** (`全维度配置结构（模块`): / 身份 / 文本 / 出站动作）
 
 ---
 

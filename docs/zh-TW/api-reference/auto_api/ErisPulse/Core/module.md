@@ -221,12 +221,48 @@ ErisPulse 模块系统
 ---
 
 
+##### `async reload(name: str)`
+
+热重载单个模块（支持任意来源：本地插件 / PyPI 安装包）
+
+经模块加载器完整执行 卸载旧实例 → 清理注册与 ``sys.modules`` 缓存 →
+重新发现/导入 → 重新注册并加载 流程；依赖该模块的模块会**级联重载**。
+本地插件（``plugins/`` 目录）来源重扫描插件目录；PyPI 安装包来源
+重新查询 entry-point 并重导入模块代码（pip 升级后调用即可生效）。
+
+- **name** (`模块名（entry-point`): 名称或插件名）
+**返回值** (`是否重载成功（SDK`): 未初始化时返回 False）
+
+**示例**:
+```python
+>>> await sdk.module.reload("dice")      # 本地插件
+>>> await sdk.module.reload("Weather")   # PyPI 安装包模块
+```
+
+---
+
+
 ##### `async _unload_single_module(module_name: str)`
 
 > **内部方法**
 卸载单个模块
 
 - **module_name** (`模块名称`): **返回值**: 是否卸载成功
+
+---
+
+
+##### `_cleanup_module_registrations(module_name: str)`
+
+> **内部方法**
+清理模块在加载上下文内注册的全部框架资源（unload / disable 共用）
+
+涵盖：i18n 翻译域、路由（命名空间 + owner 兜底：中间件 / 首页入口 /
+非命名空间路由）、适配器事件处理器与中间件、命令与事件处理器、
+自定义会话类型、主人身份源 provider、生命周期钩子。
+每步失败仅记录日志，不中断后续清理（与卸载流程兜底风格一致）。
+
+- **module_name**: 模块名
 
 ---
 

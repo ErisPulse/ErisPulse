@@ -24,6 +24,16 @@ config 命令
 #### 方法列表
 
 
+##### `_print_status_json(targets, config)`
+
+以 JSON 输出全部目标及其配置状态（供 CI / 脚本消费）
+
+- **targets** (`ConfigTarget`): 列表
+- **config** (`ConfigManager`): 实例
+
+---
+
+
 ##### `_run_named(targets, name: str, config)`
 
 按名称定位目标并直接进入向导
