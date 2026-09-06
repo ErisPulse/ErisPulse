@@ -103,7 +103,7 @@ Optional field:
 3. Return codes must strictly follow the OneBot12 specification.
 4. Error messages (message) should be human-readable descriptions.
 
-## 5. Extension Specifications
+## 5. Extension Specification
 
 ErisPulse extends the OneBot12 standard return structure as follows:
 
@@ -111,12 +111,12 @@ ErisPulse extends the OneBot12 standard return structure as follows:
 
 In the OneBot12 standard, `message_id` is located inside the `data` object and is not mandatory. ErisPulse elevates it to a **required** top-level field:
 
-- If `message_id` cannot be obtained, it should be set to an empty string `""`
-- Ensure `message_id` is always present, so modules do not need to perform null checks
+- When `message_id` cannot be obtained, it should be set to an empty string `""`
+- Ensure `message_id` always exists, so modules do not need to perform null checks
 
 ### 5.2 `{platform}_raw` Raw Response Field
 
-The return value should include the `{platform}_raw` field, which stores a complete deep copy of the raw response data from the platform:
+The response should include the `{platform}_raw` field, which stores a complete copy of the raw platform response data:
 
 ```json
 {
@@ -134,28 +134,28 @@ The return value should include the `{platform}_raw` field, which stores a compl
 
 **Requirements**:
 - `{platform}_raw` must be a deep copy of the original response, not a reference
-- `platform` must exactly match the platform name registered by the adapter (case-sensitive)
+- `platform` must exactly match the platform name registered with the adapter (case-sensitive)
 - Error information from the original response should also be retained for debugging purposes
 
-### 5.3 Framework Extension Return Codes (Custom Low Three Digits in the 34xxx Platform Error Segment)
+### 5.3 Framework Extension Return Code (Custom Low Three Digits in the 34xxx Platform Error Segment)
 
-The OneBot12 specification allows implementations to define custom low three digits in `3xxxx`. The `34xxx` segment is semantically defined as **Platform Error** (robot platform errors, such as failures caused by platform restrictions). Within `34xxx`, the low three digits are used hierarchically based on responsibility:
+The OneBot12 specification allows implementations to define custom low three digits in the `3xxxx` range. The `34xxx` segment is semantically defined as **Platform Error** (robot platform errors, such as failures due to platform restrictions). The `34xxx` segment is used hierarchically based on responsibilities:
 
-| Low Three Digits Segment | Responsibility | Purpose |
-|-------------------------|----------------|---------|
-| `340xx` | Adapter Implementation | Request operation family (Request Not Found / Already Handled / Not Supported / Permission Denied, see request-action-spec §7) |
-| `341xx`～`345xx` | Adapter Implementation | Platform-side permission / risk control / account restrictions (implement custom low three digits, original error in `{platform}_raw`) |
-| `346xx` | **ErisPulse Framework (Reserved)** | Framework-level interception and generic failures; adapters/modules should not use these codes |
+| Low Three Digits Segment | Ownership | Purpose |
+|-------------------------|-----------|---------|
+| `340xx` | Adapter Implementation | Request operation group (Request Not Found / Already Handled / Not Supported / Permission Denied, see request-action-spec §7) |
+| `341xx`～`345xx` | Adapter Implementation | Platform-side permission / risk control / account restrictions (implement custom low three digits, original errors placed in `{platform}_raw`) |
+| `346xx` | **ErisPulse Framework (Reserved)** | Framework-level interception and general failures; adapters/modules should not use these codes |
 | `347xx`～`349xx` | Adapter Implementation | Other platform execution errors |
 
-ErisPulse framework currently uses the `346xx` codes:
+Currently used `346xx` error codes in the ErisPulse framework:
 
 | Error Code | Error Name | Description |
 |------------|------------|-------------|
-| 34600 | SDK Failure | Framework-level generic failure (default return code for `make_error()`) |
-| 34601 | Action Denied | Outbound action is disabled by the control plane (`scope.actions`), call not initiated, directly return this response |
+| 34600 | SDK Failure | General framework failure (default return code for `make_error()`) |
+| 34601 | Action Denied | Outbound action denied by scope (`scope.actions`), call not initiated, directly return this response |
 
-> Responsibility distinction: `34601` is **framework-level interception before the call** (module does not have permission to initiate the action); `34004` / `34xxx` platform codes are **actions already sent but rejected by the platform** (e.g., Bot lacks permissions, blocked by risk control). When modules check for permission issues, they should check both types: first check `34601` (module itself is disabled by scope), then check `34xxx` (platform-side restrictions).
+> Responsibility distinction: `34601` is **framework-level interception before the call** (the module does not have the right to initiate the action); `34004` / `34xxx` platform codes indicate the **action was sent but rejected by the platform** (e.g., Bot lacks permissions, is restricted by risk control). When modules check for permission issues, they should check both types: first check `34601` (the module is denied by scope), then check `34xxx` (platform-side restrictions).
 
 The return structure follows the standard failure response in §2:
 
@@ -173,8 +173,8 @@ The return structure follows the standard failure response in §2:
 
 - [ ] Include `status`, `retcode`, `data`, `message_id`, `message` fields
 - [ ] Return codes follow the OneBot12 specification (see §3.2)
-- [ ] `message_id` is always present (set to empty string if unavailable)
-- [ ] `{platform}_raw` contains the raw response data from the platform
+- [ ] `message_id` always exists (set to empty string `""` if unavailable)
+- [ ] `{platform}_raw` includes raw platform response data
 
 ## 6. Notes
 - For error codes in the 3xxxx range, the last three digits can be defined by the implementation.

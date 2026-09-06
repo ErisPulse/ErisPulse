@@ -111,35 +111,35 @@ sequenceDiagram
     participant P as 平台
     participant A as 適配器總線層<br/>AdapterManager.emit
     participant T as 處理器 Task 層<br/>_dispatch_handler_task
-    participant E as Event 模塊層<br/>_process_event
+    participant E as Event 模組層<br/>_process_event
 
     P->>A: 原生事件
     A->>A: 提取 platform/type/detail_type + 原始字段
     A->>A: [Recv] 接收日誌
     A->>A: lifecycle.adapter.event.receive（最早期鈎子）
     A->>A: 處理 self 字段（meta 分支 / Bot 自動註冊）
-    A->>A: 中間件鏈（串行，可改寫事件數據）
+    A->>A: 中間件鏈（串行，可改寫事件資料）
     A->>A: 收集 handler（具體類型 + 通配符 *）
     A->>A: 身份准入 + 作用域過濾（建立 Task 前，靜默丟棄/跳過）
     A->>T: asyncio.create_task（fire-and-forget）
     A->>A: lifecycle.adapter.event.dispatched（最末鈎子）
     T->>T: 獲取併發信號量（預設上限 64）
-    T->>E: 調用 Event 模塊掛載的處理器
+    T->>E: 調用 Event 模組掛載的處理器
     E->>E: lifecycle.event.pre_process
     E->>E: ignore_self（訊息事件預設忽略自身）
     E->>E: 按優先級分組：高→低、組間串行、組內併發
     E->>E: 組內副本執行 + 字段合併（衝突告警）
     E->>E: 組後檢查 stop() 阻斷更低優先級
-    T->>T: 慢日誌（超過 1s 告警，wait_reply 時間白名單）
+    T->>T: 慢日誌（超 1s 告警，wait_reply 時間白名單）
 ```
 
 **每一步框架做了什麼、你能干預什麼：**
 
 | 階段 | 框架做了什麼 | 你能干預的 |
 |------|-------------|-----------|
-| 接收 | 提取標準字段，保留 `{platform}_raw` 原始數據；寫 `[Recv]` 日誌 | 監聽 `adapter.event.receive` 拿到最早期事件 |
+| 接收 | 提取標準字段，保留 `{platform}_raw` 原始資料；寫 `[Recv]` 日誌 | 監聽 `adapter.event.receive` 拿到最早期事件 |
 | self 字段 | meta 事件走 connect/disconnect/heartbeat 分支；普通事件自動註冊 Bot 並觸發 `adapter.bot.online` | 監聽 `adapter.bot.online` / `bot.offline` |
-| 中間件 | **串行**執行，返回值非 None 則替換事件數據 | 註冊中間件改寫/攔截事件 |
+| 中間件 | **串行**執行，返回值非 None 則取代事件資料 | 註冊中間件改寫/攔截事件 |
 | 分發收集 | 先取具體類型 handler，再取 `*` 通配符 handler | — |
 | 身份維度 | 分發入口按 用戶>會話>Bot>適配器 判定事件收不收（`scope.is_identity_allowed`），**拒絕則整個事件丟棄** | `ErisPulse.scope.identity` 綁定 |
 | 作用域過濾 | 按模組 owner 判定 `scope.is_allowed`（會話級>Bot級>平台級），**不通過則靜默跳過** | 配置作用域白名單/黑名單 |
@@ -151,9 +151,9 @@ sequenceDiagram
 > 1. **作用域過濾是靜默的**——被屏蔽的 handler 不報錯不回應，只在 TRACE 級日誌可見（`core.scope.denied`）。「我的模組沒收到訊息」優先排查作用域綁定。
 > 2. **handler 天然併發**——框架已為每個 handler 建獨立 Task，你**不需要**再自己 `asyncio.create_task` 包一層。
 > 3. **同優先級組內不阻斷**——`mark_processed(stop=True)` 只阻止更低優先級組，同組內已併發的 handler 不會中途被打斷。
-> 4. **慢日誌閾值固定 1 秒**——處理器耗時超過 1s 會在日誌打 WARNING（`wait_reply` 等待時間已從耗時中剔除），但不中斷執行。
+> 4. **慢日誌閾值固定 1 秒**——處理器耗時超 1s 會在日誌打 WARNING（`wait_reply` 等待時間已從耗時中剔除），但不中斷執行。
 
-> 作用域三級綁定與優先級細節見 [作用域系統](advanced/scope.md)；claim/阻斷完整語義見 [事件處理入門](getting-started/event-handling.md)；併發上限配置見 [配置指南](user-guide/configuration.md#框架配置)。
+> 作用域（scope）的模組維度三級綁定、身份維度准入與出站動作限制細節見 [作用域（scope）](docs/zh-TW/advanced/scope.md)；事件作用域文字過濾與命令使用者 ACL 見 [事件處理入門](docs/zh-TW/getting-started/event-handling.md)；併發上限配置見 [配置指南](docs/zh-TW/user-guide/configuration.md#框架配置)。
 
 ## 生命週期事件
 
@@ -276,23 +276,32 @@ flowchart TD
 - 本地插件 `moduleInfo.meta.source == "plugin_folder"`，與 PyPI 安裝套件模組無縫共存
 - 同名時本地優先（便於本地覆蓋調試），被停用時同時移除同名 entry-point 條目
 
-## 本地插件熱重載架構
+## 模組熱重載架構
 
-熱重載會監控插件檔案的變更，並自動重新載入對應的插件：
+熱重載對**所有模組來源**一致：本地插件可監控檔案變更自動觸發，任意模組也可透過 `sdk.reload_module()` / `sdk.module.reload()` 手動重載（PyPI 安裝包模組在 pip 升級後調用即可生效）：
 
 ```mermaid
 flowchart TD
-    A["sdk.enable_plugin_hot_reload()"] --> B["PluginReloadWatcher 啟動"]
-    B --> C["PollingObserver（背景守護執行緒）<br/>定期比較 .py 檔案的 mtime"]
+    A["sdk.enable_plugin_hot_reload()<br/>（自動監控，僅本地插件目錄）"] --> B["PluginReloadWatcher 啟動"]
+    B --> C["PollingObserver（背景守護執行緒）<br/>定期比較 .py 檔案 mtime"]
     C --> D{"插件檔案變更"}
     D --> E["變更去抖（預設 1 秒）"]
     E --> F["_handle_change 解析插件名<br/>（單檔案 / 包形式）"]
     F --> G["asyncio.run_coroutine_threadsafe<br/>調度回主事件迴圈"]
-    G --> H["sdk.reload_plugin(name)"]
-    H --> I["卸載舊實例（觸發 on_unload）"]
-    I --> J["清理註冊（unregister + 移除 sdk 屬性）"]
-    J --> K["清理 sys.modules 強制重新載入"]
-    K --> L["重新 discover + register + load"]
-    L --> M["掛載新實例到 sdk 屬性"]
-    M --> N["檔案刪除 → 自動從載入結果移除"]
+    G --> H["sdk.reload_module(name)<br/>（也可對任意模組手動調用）"]
+    H --> I["卸載舊實例（觸發 on_unload）<br/>收集依賴者準備級聯重載"]
+    I --> J{"模組來源？"}
+    J -->|"plugin_folder"| K["清理註冊與插件 sys.modules<br/>重掃描 plugins/ 目錄"]
+    J -->|"PyPI 安裝包"| L["清理註冊 + 按 top_level<br/>清理包 sys.modules 子樹<br/>刷新匯入快取後重查 entry-point"]
+    K --> M["重新 register + load"]
+    L --> M
+    M --> N["掛載新實例到 sdk 屬性"]
+    N --> O["級聯重載依賴者<br/>（插件完整重載 / PyPI 重新實例化）"]
+    K -.->|"檔案已刪除"| P["從加載結果移除"]
+    L -.->|"entry-point 已消失（已卸載）"| P
 ```
+
+**兩種來源的差異僅在發現階段**，註冊、加載、級聯重載完全一致：
+
+- **本地插件**（`moduleInfo.meta.source == "plugin_folder"`）：清理插件名對應 `sys.modules` 後重掃描 `plugins/` 目錄；檔案已刪除則從加載結果移除
+- **PyPI 安裝包**：按 `meta.top_level` 清理包的 `sys.modules` 子樹，刷新匯入快取（突破 entry-point 60 秒快取）後重查並重新匯入；entry-point 已消失（pip 卸載）則從加載結果移除

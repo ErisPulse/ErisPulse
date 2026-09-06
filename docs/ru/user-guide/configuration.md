@@ -202,33 +202,76 @@ ssl_keyfile = "/path/to/key.pem"
 | ssl_certfile | string | пусто | Путь к файлу SSL-сертификата |
 | ssl_keyfile | string | пусто | Путь к файлу SSL-ключа |
 
-## Конфигурация системы хозяина
+## Настройка системы главы
 
-Система хозяина используется для распознавания аккаунтов "хозяев фреймворка" (например, администраторов бота). `master.users` поддерживает два способа записи:
+Система главы используется для идентификации аккаунтов "владельцев кадра" (например, администраторов бота). `master.users` поддерживает два способа записи:
 
 ```toml
 [ErisPulse.master]
-# Способ 1: Глобальный хозяин (действует на всех платформах)
+# Способ 1: Главы глобально (действует на всех платформах)
 users = ["123456", "789012"]
 
-# Способ 2: Хозяин по платформе (dict)
+# Способ 2: Указание глав по платформам (dict)
 # users = { yunhu = ["123456"], telegram = ["789012"] }
 ```
 
 | Параметр | Тип | Значение по умолчанию | Описание |
 |---------|------|---------|------|
-| users | array / object | пустой | Список аккаунтов хозяев. Формат `list` — глобальный хозяин (действует на всех платформах); формат `dict` — хозяин по платформе (ключ — имя платформы, значение — список аккаунтов хозяев для этой платформы) |
+| users | array / object | пустой | Список аккаунтов глав. В формате `list` — глобальные главы (действуют на всех платформах); в формате `dict` — указание по платформам (ключ — название платформы, значение — список аккаунтов глав на этой платформе) |
 
-В коде используется `master.is_master(event)` или `master.is_master(platform, user_id)` для проверки, при каждом вызове конфигурация читается в реальном времени (поддерживается горячая перезагрузка, без необходимости перезапуска):
+В коде проверка осуществляется через `master.is_master(event)` или `master.is_master(platform, user_id)`. При каждом вызове конфигурация читается в реальном времени (поддерживается горячая перезагрузка, без необходимости перезапуска):
 
 ```python
 from ErisPulse.Core import master
 
 if master.is_master(event):
-    await event.reply("Привет, хозяин")
+    await event.reply("Здравствуй, хозяин")
 ```
 
-> Полный API для определения статуса (динамическое добавление/удаление в ходе выполнения, **цепочка пользовательских источников статуса provider**) и семантика "пользовательский приоритет" (пользователь может через интерфейс управления разрешить/ограничить `master=True`), см. в разделе [Единый интерфейс управления · Хозяин и пользовательские источники статуса provider](../advanced/scope.md#хозяин-и-пользовательские-источники-статуса-provider).
+### Цепочка проверки и изменение во время выполнения
+
+Цепочка проверки главы: **конфигурационные главы → записи во время выполнения → цепочка провайдеров**:
+
+```python
+from ErisPulse.Core import master
+
+master.is_master(event)                      # Проверка по событию
+master.is_master("yunhu", "123")             # Явная проверка
+master.add("yunhu", "123")                   # Добавление во время выполнения (по умолчанию сохраняется; persist=False — только в памяти)
+master.remove("yunhu", "123")                # Удаление (по умолчанию сохраняется)
+master.list()                                # Сводка: {"global": [...], "<platform>": [...]}
+```
+
+### Пользовательские источники идентификации (провайдеры)
+
+Помимо конфигурации, можно зарегистрировать пользовательские источники идентификации: `fn(platform, user_id) -> bool`, которые последовательно проверяются, если встроенные источники (конфигурация + записи во время выполнения) не срабатывают. Если хоть один провайдер разрешает, то пользователь считается главой. Подходит для подключения администраторских интерфейсов адаптеров, ролей из базы данных и других внешних систем идентификации.
+
+Регистрация доступна через `master.provider` в двух форматах: декоратор или функция. Для отмены регистрации используется `fn.unregister()`:
+
+```python
+from ErisPulse.Core import master
+
+# Способ 1: Декоратор (постоянный источник идентификации, рекомендуется)
+@master.provider
+def admin_provider(platform, user_id):
+    return user_id in {"999"}     # Пользовательская логика проверки
+
+master.is_master("yunhu", "999")   # True
+admin_provider.unregister()        # Отмена регистрации, если больше не требуется
+
+# Способ 2: Функциональный стиль (регистрация при загрузке модуля / отмена при выгрузке)
+fn = master.provider(admin_provider)
+fn.unregister()
+```
+
+> Ошибки в провайдерах перехватываются и игнорируются, не прерывая цепочку проверки идентификации.
+> Привязка методов экземпляра не поддерживает `unregister`, для сценариев, требующих парной регистрации и отмены, рекомендуется использовать **функции уровня модуля**.
+
+### Приоритет пользователя: область действия главы определяется пользователем
+
+Параметр `master=True` в команде — это **по умолчанию для разработчика**: пользователь может переопределить его в
+`ErisPulse.event.overrides.command.<module>.<cmd>.master = true/false`
+(см. [Единая конфигурация перезаписи событий](#Единая-конфигурация-перезаписи-событийeventoverrides)), где явная конфигурация пользователя имеет приоритет.
 
 ## Настройка логов
 
@@ -423,66 +466,98 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 
 > `setConfig` по умолчанию использует отложенную запись (примерно каждые 5 секунд пакетное сохранение в файл), установка `immediate=True` позволяет немедленно сохранить данные. Изменения конфигурации запускают событие жизненного цикла `config.set`.
 
-## Конфигурация контролируемой поверхности (scope)
+## Scope Configuration (scope)
 
 > [!NOTE]  
-> Эта функция требует ErisPulse **2.8.0+**.
+> This feature requires ErisPulse **2.8.0+**.
 
-Единая контролируемая поверхность является **единственным** входом для управления правами/доступом, пятимерная конфигурационная структура:
-
-| Измерение | Что контролировать | Путь конфигурации |
-|------|---------|---------|
-| ① Модуль | Какие модули доступны в платформе / Bot / сессии | `scope.platforms / bots / sessions` |
-| ② Идентичность | Получают ли события определенного пользователя / группы / Bot / адаптера | `scope.identity.*` |
-| ③ Команда | Кто может выполнить определенную команду (имя команды поддерживает glob) | `scope.commands` |
-| ④ Обработчик | Фильтрация текста для обработчиков модуля | `scope.handlers` |
-| ⑤ Переопределение | Переопределение реализации параметров модуля/команды | `scope.overrides` |
+The scope declaration defines "**what is effective within which range**"—which modules are available within a platform / Bot / session (① module level), whether events from a user / group / Bot / adapter are accepted (② identity level), and which outbound calls a module can initiate (③ outbound level):
 
 ```toml
 [ErisPulse.scope]
-default_allow = true        # Глобальный резервный параметр (false = строгий режим отклонения по умолчанию)
-cache_size = 1024           # Размер кэша LRU
+default_allow = true        # Global fallback (false = strict implicit deny mode; does not affect outbound level)
+cache_size = 1024           # LRU cache size
 
-# ① Модульный уровень (приоритет: сессия > Bot > платформа; записи поддерживают точное совпадение / glob / re: регулярные выражения)
+# ① Module level (priority: session > Bot > platform; entries support exact / glob / re: regex)
 [ErisPulse.scope.platforms.onebot11]
 modules = ["Chat", "Tool*"]
 blocked = ["re:^Danger"]
 
-# ② Уровень идентичности (приоритет: пользователь > сессия > Bot > адаптер; на каждом уровне пишется только allow или deny)
+# Sub-level binding with merge = true merges each entry with lower priority (default is overall overwrite)
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Music"]
+merge = true
+
+# ② Identity level (priority: user > session > Bot > adapter; only allow or deny per level)
 [ErisPulse.scope.identity.adapters.onebot11]
-deny = true                 # Все события этой платформы отбрасываются на входе
+deny = true                 # Discard all events from this platform at the entry point
 [ErisPulse.scope.identity.users.onebot11]
-allow = ["u_admin"]         # Поддержка glob / re: регулярных выражений для ключей пользователей
+allow = ["u_admin"]         # User keys support glob / re: regex
 deny = ["u_bad", "spam_*"]
 
-# ③ Уровень команд (идентификатор пользователя "platform:user_id")
-[ErisPulse.scope.commands."roll*"]
-allow = ["onebot11:u_vip"]
+# ③ Outbound level (default: all allowed; rules are inline tables, entries support exact / glob / re: regex)
+[ErisPulse.scope.actions.MyModule]
+send = { deny = true }                    # Disable all sending
+api = { allow = ["get_*"] }               # Only allow standard query-type APIs
+request = { deny = true }                 # Disable request handling
+```
+
+| Configuration Item | Type | Description |
+|---------|------|------|
+| `scope.default_allow` | boolean | Global fallback: allow/deny modules/identities not matched by rules (`true`) |
+| `scope.cache_size` | integer | LRU cache size (default 1024) |
+| `scope.platforms / bots / sessions` | table | ① Module three-level binding: `{modules=[...], blocked=[...], merge=bool?}` |
+| `scope.identity.adapters / bots / sessions / users` | table | ② Identity four-level binding: `{allow=true}` / `{deny=true}` |
+| `scope.actions.<module>.<action>` | table | ③ Outbound rules: `{allow=[...], deny=true|[...]}` (actions are send / api / request) |
+
+> For detailed explanations and runtime APIs (dimensional `sdk.scope.set_module()` / `set_identity()` / `set_action()`, determination `is_allowed()` / `is_identity_allowed()` / `is_action_allowed()`, and dictionary-style fallback `get()` / `set()` / `delete()`) see [Scope](../advanced/scope.md).
+
+## Единая конфигурация переопределения событий (event.overrides)
+
+Система единых переопределений: переопределение поведения обработчиков любого модуля по **типу события** без изменения кода модуля.  
+Стандартные типы OneBot12 (meta / message / notice / request) и расширенные типы (command) имеют собственные параметры, доступные для переопределения:
+
+```toml
+[ErisPulse.event.overrides]
+
+# message: условия триггера текста (AND с условиями в коде)
+[ErisPulse.event.overrides.message.ChatModule]
+pattern = "闲聊*"
+
+# notice / request / meta: белый список detail_type (поддержка точного совпадения, glob и re: регулярные выражения)
+[ErisPulse.event.overrides.notice.MyModule]
+detail_types = ["group_increase"]
+
+# command (расширенный тип): реализация переопределения параметров (приоритет у пользователя; отключение через acl deny)
+[ErisPulse.event.overrides.command.MyModule.restart]
+master = true               # переопределение: только для владельца фреймворка (false снимает ограничение владельца для разработчиков)
+hidden = true               # скрыть из списка помощи
+aliases = ["rs"]            #生效别名
+
+# acl (специфично для command): белый и черный списки пользователей (имена команд поддерживают glob / re: регулярные выражения, точные ключи имеют приоритет)
+[ErisPulse.event.overrides.acl."roll*"]
+allow = ["onebot11:u_vip"]  # идентификатор пользователя "platform:user_id"
 deny = ["onebot11:u_bad"]
 
-# ④ Уровень обработчиков/текста (логическое AND с условиями в коде)
-[ErisPulse.scope.handlers.MyModule]
-pattern = "签到*"
-
-# ⑤ Переопределение реализации параметров (отключение через deny команды, не здесь)
-[ErisPulse.scope.overrides.MyModule.restart]
-master = true
-hidden = true
+# ACL по умолчанию: разрешить (true) / строго отклонять (false) команды без настроек acl
+acl_default_allow = true
 ```
 
 | Параметр | Тип | Описание |
 |---------|------|------|
-| `scope.default_allow` | boolean | Глобальный резервный параметр: разрешение/отклонение для несовпадающих правил (true). Модули/идентичность "без правил = отклонение"; команды "без ACL = отклонение" |
-| `scope.cache_size` | integer | Размер кэша LRU (по умолчанию 1024) |
-| `scope.platforms / bots / sessions` | table | ① Трехуровневое привязывание модуля: `{modules=[...], blocked=[...]}` |
-| `scope.identity.adapters / bots / sessions / users` | table | ② Четырехуровневое привязывание идентичности: `{allow=true}` / `{deny=true}` |
-| `scope.commands.<имя команды>` | table | ③ ACL команды: `{allow=[...], deny=[...]}` |
-| `scope.handlers.<модуль>` | table | ④ Фильтрация текста: `{pattern="...", regex="..."}` |
-| `scope.overrides.<модуль>[.<команда>]` | table | ⑤ Переопределение параметров: `master` / `hidden` / `aliases` / `prefix` и др. |
+| `event.overrides.message.<module>` | table | Условия текста: `{pattern="...", regex="..."}` |
+| `event.overrides.notice / request.<module>` | table | `{detail_types=[...], pattern, regex}` |
+| `event.overrides.meta.<module>` | table | `{detail_types=[...]}` |
+| `event.overrides.command.<module>` | table | Переопределение параметров модуля (например, `hidden = true`) |
+| `event.overrides.command.<module>.<command>` | table | Переопределение на уровне команды (приоритет команды) |
+| `event.overrides.acl.<имя команды>` | table | Белый и черный списки пользователей: `{allow=[...], deny=[...]}` |
+| `event.overrides.acl_default_allow` | boolean | ACL по умолчанию: разрешить (true) / строго отклонять (false) команды без настроек acl |
 
-> Общий синтаксис для совпадающих записей: точное имя / glob (`*` `?` `[seq]`) / `re:` регулярное выражение, без учета регистра.
-> Подробное описание пяти измерений и API во время выполнения (`sdk.scope.bind_module()` / `bind_identity()` / `block_user()` /
-> `allow_user()` / `override()` и др.) см. в [Единой контролируемой поверхности](../advanced/scope.md).
+> API во время выполнения (после `from ErisPulse.Core.Event import overrides` вызывайте по подпространствам типов: `overrides.message.set()` / `overrides.command.set()` / `overrides.acl.set()` и т.д., или через `sdk.Event.overrides`)
+> См. [Введение в обработку событий · Переопределение событий](../getting-started/event-handling.md#переопределение-событий-без-изменения-кода-модуля-переопределяйте-поведение-любого-типа-событий).
+>
+
+## Конфигурация парсера команд (event.command)
 
 ## Далее
 
