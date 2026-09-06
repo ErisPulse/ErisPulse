@@ -167,7 +167,8 @@ class SDK:
     - router: 路由管理器
     - client: HTTP 客户端
     - master: 框架主人管理器
-    - scope: 统一控制面管理器（模块 / 身份 / 命令 / 处理器 / 覆盖 五维）
+    - scope: 作用域管理器（模块 / 身份 / 出站 三维，"什么范围内生效"）
+    - Event: 事件模块包（command 命令处理器 / message / notice / request 等事件处理器）
     - context: 模块上下文管理（owner_scope / get_current_owner）
     {!--< /tips >!--}
     """
@@ -194,6 +195,7 @@ class SDK:
     BaseQueryBuilder: type[_BaseQueryBuilder]
     master: MasterManager
     scope: ScopeManager
+    Event: ModuleType
     context: ModuleType
 
     def __init__(self):
@@ -228,6 +230,22 @@ class SDK:
             return importlib.metadata.version("ErisPulse")
         except importlib.metadata.PackageNotFoundError:
             return "UnknownVersion"
+
+    def __dir__(self) -> list[str]:
+        """
+        列出实例属性（含核心模块动态属性）
+
+        让 ``dir(sdk)`` 与交互式补全反映 ``__getattr__`` 提供的核心模块单例
+        （scope / command / master / adapter 等）。用类级 dir() 避免
+        触发 ``__getattr__`` 的递归解析。
+
+        :return: 属性名列表（去重排序）
+        """
+        try:
+            base = list(dir(type(self)))
+        except Exception:
+            base = []
+        return sorted(set(base) | set(_CORE_ATTR_NAMES))
 
     def __getattr__(self, name: str):
         """
@@ -1999,10 +2017,10 @@ class SDK:
         """
         获取完整的拓扑树数据（便于 Dashboard 等管理界面展示）
 
-        聚合模块、适配器与统一控制面的归属关系：
+        聚合模块、适配器与作用域的归属关系：
         - ``modules``：每个模块拥有的命令 / 事件处理器 / 路由 / 生命周期钩子
         - ``adapters``：每个适配器的运行状态、下属 Bot 状态与作用域绑定
-        - ``scope``：统一控制面绑定（模块 / 身份 / 命令 / 处理器 / 覆盖 五维）
+        - ``scope``：作用域（模块 / 身份 / 文本 / 出站动作）
 
         :return: 拓扑树字典
             {"modules": {...}, "adapters": {...}, "scope": {...}}
@@ -2015,7 +2033,7 @@ class SDK:
         return {
             "modules": self.module.get_topology().get("modules", {}),
             "adapters": self.adapter.get_topology().get("adapters", {}),
-            "scope": self.scope.get_topology(),
+            "scope": self.scope.topology(),
         }
 
     async def uninit(self) -> bool:

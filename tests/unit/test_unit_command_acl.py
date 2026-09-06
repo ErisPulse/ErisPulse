@@ -1,8 +1,9 @@
 """
 命令权限 ACL 与消息通配符单元测试
 
-测试命令用户黑白名单（控制面 scope.commands + 运行时 API + 判定链，命令名支持
-glob），以及 message 装饰器 / wait_reply 的 pattern（glob）与 regex 过滤。
+测试命令用户黑白名单（event.overrides.acl + 判定链，命令名支持
+glob）、命令实现参数覆写（event.overrides.command，帮助渲染与可见性用户优先），
+以及 message 装饰器 / wait_reply 的 pattern（glob）与 regex 过滤。
 """
 
 import asyncio
@@ -10,6 +11,7 @@ from unittest.mock import patch
 
 import pytest
 
+from ErisPulse.Core.Event import overrides as overrides_mod
 from ErisPulse.Core.Event.command import command as command_handler
 from ErisPulse.Core.Event.message import message as message_handler
 from ErisPulse.Core.scope import scope as scope_manager
@@ -27,8 +29,10 @@ def clean_state():
     command_handler.groups.clear()
     command_handler.permissions.clear()
     command_handler._waiting_replies.clear()
-    scope_manager._bindings["commands"].clear()
-    scope_manager._bindings["overrides"].clear()
+    overrides_mod._command.clear()
+    overrides_mod.clear()
+    scope_manager._data["platforms"].clear()
+    scope_manager._data["bots"].clear()
     message_handler.handler.handlers.clear()
     message_handler.handler._handler_map.clear()
     adapter._onebot_handlers.clear()
@@ -42,8 +46,10 @@ def clean_state():
     command_handler.groups.clear()
     command_handler.permissions.clear()
     command_handler._waiting_replies.clear()
-    scope_manager._bindings["commands"].clear()
-    scope_manager._bindings["overrides"].clear()
+    overrides_mod._command.clear()
+    overrides_mod.clear()
+    scope_manager._data["platforms"].clear()
+    scope_manager._data["bots"].clear()
     message_handler.handler.handlers.clear()
     message_handler.handler._handler_map.clear()
     adapter._onebot_handlers.clear()
@@ -71,7 +77,7 @@ def _msg(text, platform="onebot11", bot_id="bot_x", user_id="u1", group_id=None)
 
 
 class TestCommandACL:
-    """命令权限 ACL（控制面 scope.commands，命令名支持 glob）"""
+    """命令用户 ACL（event.overrides.acl，命令名支持 glob）"""
 
     @pytest.mark.asyncio
     async def test_deny_user_blocks(self):
@@ -94,8 +100,8 @@ class TestCommandACL:
         async def beta(event):
             received.append("B")
 
-        with patch("ErisPulse.Core.scope.set_erispulse_section"):
-            command_handler.deny_user("beta", "onebot11", "u_bad")
+        with patch("ErisPulse.Core.Event.overrides.set_erispulse_section"):
+            overrides_mod.acl.set("beta", deny=["onebot11:u_bad"])
         with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
             await adapter.emit(_msg("/beta", user_id="u_bad"))
             await asyncio.sleep(0.05)
@@ -121,8 +127,8 @@ class TestCommandACL:
         finally:
             current_owner.reset(token)
 
-        with patch("ErisPulse.Core.scope.set_erispulse_section"):
-            command_handler.allow_user("gamma", "onebot11", "u_vip")
+        with patch("ErisPulse.Core.Event.overrides.set_erispulse_section"):
+            overrides_mod.acl.set("gamma", allow=["onebot11:u_vip"])
         with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
             await adapter.emit(_msg("/gamma", user_id="u_vip"))
             await asyncio.sleep(0.05)
@@ -148,9 +154,8 @@ class TestCommandACL:
         finally:
             current_owner.reset(token)
 
-        with patch("ErisPulse.Core.scope.set_erispulse_section"):
-            command_handler.allow_user("delta", "onebot11", "u1")
-            command_handler.deny_user("delta", "onebot11", "u1")
+        with patch("ErisPulse.Core.Event.overrides.set_erispulse_section"):
+            overrides_mod.acl.set("delta", allow=["onebot11:u1"], deny=["onebot11:u1"])
         with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
             await adapter.emit(_msg("/delta", user_id="u1"))
             await asyncio.sleep(0.05)
@@ -159,57 +164,56 @@ class TestCommandACL:
 
     def test_glob_acl_matches_actual_command(self):
         """glob ACL 键匹配实际命令名"""
-        with patch("ErisPulse.Core.scope.set_erispulse_section"):
-            command_handler.deny_user("roll*", "onebot11", "u_bad")
-        assert command_handler.get_acl("roll_dice") == {
+        with patch("ErisPulse.Core.Event.overrides.set_erispulse_section"):
+            overrides_mod.acl.set("roll*", deny=["onebot11:u_bad"])
+        assert overrides_mod.acl.get("roll_dice") == {
             "allow": [],
             "deny": ["onebot11:u_bad"],
         }
-        assert scope_manager.is_command_allowed("roll_dice", "onebot11", "u_bad") is False
-        assert scope_manager.is_command_allowed("roll_dice", "onebot11", "u_ok") is True
+        assert overrides_mod.acl.is_allowed("roll_dice", "onebot11", "u_bad") is False
+        assert overrides_mod.acl.is_allowed("roll_dice", "onebot11", "u_ok") is True
 
     def test_exact_acl_over_glob(self):
         """精确 ACL 键优先于 glob 键"""
-        scope_manager._bindings["commands"]["roll"] = {"deny": ["p:u2"]}
-        scope_manager._bindings["commands"]["roll*"] = {"allow": ["p:u2"]}
-        assert scope_manager.is_command_allowed("roll", "p", "u2") is False
+        overrides_mod.acl.set("roll", deny=["p:u2"])
+        overrides_mod.acl.set("roll*", allow=["p:u2"])
+        assert overrides_mod.acl.is_allowed("roll", "p", "u2") is False
 
     def test_get_acl_returns_lists(self):
         """get_acl 返回 allow/deny 列表"""
-        scope_manager._bindings["commands"]["alpha"] = {
-            "allow": ["onebot11:u1"],
-            "deny": ["onebot11:u2"],
-        }
-        assert command_handler.get_acl("alpha") == {
+        overrides_mod.acl.set("alpha", allow=["onebot11:u1"], deny=["onebot11:u2"])
+        assert overrides_mod.acl.get("alpha") == {
             "allow": ["onebot11:u1"],
             "deny": ["onebot11:u2"],
         }
 
     def test_remove_acl(self):
         """remove_acl 清除 ACL 并持久化"""
-        scope_manager._bindings["commands"]["alpha"] = {"deny": ["onebot11:u1"]}
-        with patch("ErisPulse.Core.scope.set_erispulse_section") as fake:
-            assert command_handler.remove_acl("alpha") is True
-        assert scope_manager.get_acl("alpha") == {"allow": [], "deny": []}
+        overrides_mod.acl.set("alpha", deny=["onebot11:u1"])
+        with patch("ErisPulse.Core.Event.overrides.set_erispulse_section") as fake:
+            assert overrides_mod.acl.delete("alpha") is True
+        assert overrides_mod.acl.get("alpha") == {"allow": [], "deny": []}
         fake.assert_called_once()
 
-    def test_allow_user_writes_scope_commands(self):
-        """allow_user 写入 scope.commands"""
-        with patch("ErisPulse.Core.scope.set_erispulse_section") as _:
-            command_handler.allow_user("beta", "onebot11", "u1")
-        assert scope_manager._bindings["commands"]["beta"]["allow"] == ["onebot11:u1"]
+    def test_allow_user_writes_control_commands(self):
+        """acl.set 写入 event.overrides.acl"""
+        with patch("ErisPulse.Core.Event.overrides.set_erispulse_section"):
+            overrides_mod.acl.set("beta", allow=["onebot11:u1"])
+        assert overrides_mod.acl.get("beta")["allow"] == ["onebot11:u1"]
 
-    def test_acl_loaded_from_scope_config(self):
-        """配置热更新后 scope.commands 生效"""
+    def test_acl_loaded_from_overrides_config(self):
+        """配置热更新后 event.overrides.acl 与 acl_default_allow 生效"""
         with patch(
-            "ErisPulse.runtime.get_config",
-            return_value={"commands": {"roll": {"deny": ["p:u"]}}},
+            "ErisPulse.runtime.get_event_config",
+            return_value={"overrides": {"acl": {"roll": {"deny": ["p:u"]}}, "acl_default_allow": False}},
         ):
-            scope_manager._on_config_updated({})
+            overrides_mod._reload({})
         try:
-            assert scope_manager.is_command_allowed("roll", "p", "u") is False
+            assert overrides_mod.acl.is_allowed("roll", "p", "u") is False
+            assert overrides_mod.acl.is_allowed("other", "p", "u") is False  # 严格模式
+            assert overrides_mod.acl.default_allow is False
         finally:
-            scope_manager._on_config_updated({})
+            overrides_mod._reload({})
 
 
 class TestMessagePattern:
@@ -370,7 +374,7 @@ class TestWaitReplyPattern:
 
 
 class TestHelpAppliesOverrides:
-    """帮助渲染读取控制面覆盖值（scope.overrides 的 hidden / help / usage）"""
+    """帮助渲染读取覆写系统命令参数（event.overrides.command 的 hidden / help / usage）"""
 
     def _register(self, name, help_text="原始帮助"):
         token = current_owner.set("ModuleA")
@@ -390,24 +394,24 @@ class TestHelpAppliesOverrides:
         assert "alpha" in command_handler.help(show_hidden=False)
         assert "alpha" in command_handler.get_visible_commands()
 
-        with patch("ErisPulse.Core.scope.set_erispulse_section"):
-            scope_manager.override("ModuleA", "alpha", hidden=True)
+        with patch("ErisPulse.Core.Event.overrides.set_erispulse_section"):
+            overrides_mod.command.set("ModuleA", "alpha", hidden=True)
 
         assert "alpha" not in command_handler.help(show_hidden=False)
         assert "alpha" not in command_handler.get_visible_commands()
         # show_hidden=True 仍可列出
         assert "alpha" in command_handler.help(show_hidden=True)
 
-        with patch("ErisPulse.Core.scope.set_erispulse_section"):
-            scope_manager.remove_override("ModuleA", "alpha")
+        with patch("ErisPulse.Core.Event.overrides.set_erispulse_section"):
+            overrides_mod.command.delete("ModuleA", "alpha")
         assert "alpha" in command_handler.help(show_hidden=False)
 
     def test_hidden_override_help_text_visible_with_show_hidden(self):
         """隐藏后经 show_hidden=True 渲染时使用覆盖后的 help/usage"""
         self._register("alpha", help_text="原始帮助")
 
-        with patch("ErisPulse.Core.scope.set_erispulse_section"):
-            scope_manager.override("ModuleA", "alpha", hidden=True, help="覆盖帮助")
+        with patch("ErisPulse.Core.Event.overrides.set_erispulse_section"):
+            overrides_mod.command.set("ModuleA", "alpha", hidden=True, help="覆盖帮助")
 
         text = command_handler.help("alpha")
         assert "覆盖帮助" in text
@@ -427,16 +431,24 @@ class TestHelpAppliesOverrides:
     def test_unrelated_override_does_not_hide(self):
         """其它命令的覆盖不影响本命令可见性"""
         self._register("alpha")
-        with patch("ErisPulse.Core.scope.set_erispulse_section"):
-            scope_manager.override("ModuleA", "other_cmd", hidden=True)
+        with patch("ErisPulse.Core.Event.overrides.set_erispulse_section"):
+            overrides_mod.command.set("ModuleA", "other_cmd", hidden=True)
         assert "alpha" in command_handler.get_visible_commands()
+
+    def test_override_command_level_wins_over_module_level(self):
+        """命令级覆盖优先于模块级同名标量（与键序无关）"""
+        self._register("alpha", help_text="原始帮助")
+        overrides_mod._command["ModuleA"] = {
+            "help": "模块级帮助",
+            "alpha": {"help": "命令级帮助"},
+        }
+        assert command_handler.get_command("alpha")["help"] == "命令级帮助"
 
     def test_help_filters_by_scope_module_dimension(self):
         """传入事件上下文时，被作用域禁用模块的命令不再列出（会话感知帮助）"""
         self._register("alpha")
 
-        with patch("ErisPulse.Core.scope.set_erispulse_section"):
-            scope_manager.bind_module("onebot11", blocked=["ModuleA"], persist=False)
+        scope_manager.set("platforms.onebot11", {"blocked": ["ModuleA"]}, persist=False)
 
         ev = _msg("/help", group_id="g1")
         # 会话感知：该平台上 ModuleA 被禁，命令不出现在帮助中
@@ -445,15 +457,14 @@ class TestHelpAppliesOverrides:
         # 不传上下文：保持原行为（全量可见命令）
         assert "alpha" in command_handler.help()
 
-        scope_manager.unbind_module("onebot11", persist=False)
+        scope_manager.delete("platforms.onebot11", persist=False)
         assert "alpha" in command_handler.help(event=ev)
 
     def test_help_command_name_filtered_by_scope(self):
         """会话感知下查询被禁模块的单条命令按未注册处理（静默语义）"""
         self._register("alpha")
 
-        with patch("ErisPulse.Core.scope.set_erispulse_section"):
-            scope_manager.bind_module("onebot11", blocked=["ModuleA"], persist=False)
+        scope_manager.set("platforms.onebot11", {"blocked": ["ModuleA"]}, persist=False)
 
         ev = _msg("/help", group_id="g1")
         # 模块在该会话不可用 → 按未注册处理（not_found 文案，不含真实帮助内容）
@@ -461,7 +472,7 @@ class TestHelpAppliesOverrides:
         assert "alpha" in hidden_text
         assert "原始帮助" not in hidden_text
         # 上下文解除后正常显示
-        scope_manager.unbind_module("onebot11", persist=False)
+        scope_manager.delete("platforms.onebot11", persist=False)
         assert "原始帮助" in command_handler.help("alpha", event=ev)
 
 
@@ -480,8 +491,7 @@ class TestContextAwareQueries:
             current_owner.reset(token)
 
     def _blocked(self):
-        with patch("ErisPulse.Core.scope.set_erispulse_section"):
-            scope_manager.bind_module("onebot11", blocked=["ModuleA"], persist=False)
+        scope_manager.set("platforms.onebot11", {"blocked": ["ModuleA"]}, persist=False)
 
     def test_get_command_filters_by_event(self):
         """get_command 传入 event 时，该会话不可用模块的命令返回 None"""
@@ -495,7 +505,7 @@ class TestContextAwareQueries:
         assert command_handler.get_command("alpha") is not None
         # 显式关键字参数与 event 等价
         assert command_handler.get_command("alpha", platform="onebot11", session_id="g1") is None
-        scope_manager.unbind_module("onebot11", persist=False)
+        scope_manager.delete("platforms.onebot11", persist=False)
         assert command_handler.get_command("alpha", event=ev) is not None
 
     def test_get_command_returns_effective_info(self):
@@ -505,15 +515,14 @@ class TestContextAwareQueries:
         raw = command_handler.get_command("alpha")
         assert raw["help"] == "原始帮助"
 
-        with patch("ErisPulse.Core.scope.set_erispulse_section"):
-            scope_manager.override("ModuleA", "alpha", help="覆盖帮助", master=True)
+        overrides_mod.command.set("ModuleA", "alpha", help="覆盖帮助", master=True)
 
         effective = command_handler.get_command("alpha")
         assert effective["help"] == "覆盖帮助"
         assert effective["must_master"] is True
 
-        with patch("ErisPulse.Core.scope.set_erispulse_section"):
-            scope_manager.remove_override("ModuleA", "alpha")
+        with patch("ErisPulse.Core.Event.overrides.set_erispulse_section"):
+            overrides_mod.command.delete("ModuleA", "alpha")
         assert command_handler.get_command("alpha")["help"] == "原始帮助"
 
     def test_get_commands_filters_by_event(self):
@@ -525,7 +534,7 @@ class TestContextAwareQueries:
         self._blocked()
         assert "alpha" not in command_handler.get_commands(event=ev)
         assert "alpha" in command_handler.get_commands()
-        scope_manager.unbind_module("onebot11", persist=False)
+        scope_manager.delete("platforms.onebot11", persist=False)
 
     def test_get_group_commands_filters_by_event(self):
         """get_group_commands 传入上下文时过滤不可用模块的命令"""
@@ -546,7 +555,7 @@ class TestContextAwareQueries:
 
         self._blocked()
         assert command_handler.get_group_commands("g28", event=ev) == ["beta"]
-        scope_manager.unbind_module("onebot11", persist=False)
+        scope_manager.delete("platforms.onebot11", persist=False)
         assert set(command_handler.get_group_commands("g28", event=ev)) == {"alpha", "beta"}
 
     def test_get_visible_commands_event_equivalent_to_kwargs(self):
@@ -559,6 +568,6 @@ class TestContextAwareQueries:
         via_kwargs = command_handler.get_visible_commands(platform="onebot11", session_id="g1")
         assert "alpha" not in via_event
         assert via_event.keys() == via_kwargs.keys()
-        scope_manager.unbind_module("onebot11", persist=False)
+        scope_manager.delete("platforms.onebot11", persist=False)
         assert "alpha" in command_handler.get_visible_commands(event=ev)
 

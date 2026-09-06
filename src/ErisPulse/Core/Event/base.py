@@ -293,7 +293,7 @@ class BaseEventHandler:
         for _priority, group_iter in groupby(self.handlers, key=lambda h: h["priority"]):
             group = list(group_iter)
 
-            # 过滤出满足条件的处理器（条件函数 + 模块作用域 + 控制面文本过滤）
+            # 过滤出满足条件的处理器（条件函数 + 作用域模块维度 + 事件作用域文本过滤）
             active = [
                 h
                 for h in group
@@ -424,15 +424,14 @@ class BaseEventHandler:
 
         return scope.is_allowed(platform, bot_id or None, owner, session_id or None)
 
-    @staticmethod
-    def _is_scope_handler_ok(handler_info: dict, event) -> bool:
+    def _is_scope_handler_ok(self, handler_info: dict, event) -> bool:
         """
         {!--< internal-use >!--}
-        判断处理器是否通过控制面文本过滤（scope.handlers.<module>）
+        判断处理器是否通过事件覆写过滤（event.overrides.<本事件类型>.<module>）
 
         框架级处理器（scope_exempt 或 owner 为空）始终放行；
-        模块级处理器按其 owner 在 ``scope.handlers`` 中配置的 pattern / regex
-        条件过滤（与代码内条件 AND，需同时满足）。
+        模块级处理器按其 owner 在**所属事件类型**的覆写节中的
+        detail_types / pattern / regex 条件过滤（与代码内条件 AND，需同时满足）。
 
         :param handler_info: 处理器信息字典
         :param event: 事件对象
@@ -443,9 +442,9 @@ class BaseEventHandler:
         owner = handler_info.get("owner")
         if not owner:
             return True
-        from ..scope import scope
+        from . import overrides
 
-        condition = scope.handler_condition(owner)
+        condition = overrides.condition_for(self.event_type, owner)
         if condition is None:
             return True
         return condition(event)

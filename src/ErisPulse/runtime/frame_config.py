@@ -72,6 +72,24 @@ DEFAULT_ERISPULSE_CONFIG = {
     "modules": {},
     "adapters": {},
     "event": {
+        # 统一事件覆写系统：按事件类型覆写处理器的触发条件与实现参数
+        # （OneBot12 标准类型 meta / message / notice / request + ErisPulse 扩展类型 command）
+        # 各类型可覆写参数：
+        #   message: {pattern, regex}                    文本触发条件
+        #   notice / request: {detail_types, pattern, regex}
+        #   meta: {detail_types}
+        #   command: {master, hidden, aliases, prefix, help, usage}（模块级标量 + 命令级子表）
+        #   acl: {allow, deny}（命令用户黑白名单，command 专属，命令名支持 glob）
+        "overrides": {
+            "message": {},
+            "notice": {},
+            "request": {},
+            "meta": {},
+            "command": {},
+            "acl": {},
+            # ACL 兜底（false = 严格模式：无 ACL 即拒）
+            "acl_default_allow": True,
+        },
         "message": {
             "ignore_self": DEFAULT_MESSAGE_IGNORE_SELF,
         },
@@ -112,20 +130,19 @@ DEFAULT_ERISPULSE_CONFIG = {
     "i18n": {
         "language": DEFAULT_I18N_LANGUAGE,
     },
-    # 统一控制面系统（scope）：权限/访问控制的唯一入口。
-    # 五维配置树：
-    # ① 模块维度（原作用域三级绑定，优先级 会话 > Bot > 平台）
-    #    platforms.<platform> = {modules: [...], blocked: [...]}（条目支持 glob / re: 正则）
+    # 作用域系统（scope）：声明"什么范围内生效"——模块 / 身份 / 出站三维。
+    # ① 模块维度（某个上下文里哪些模块可用，优先级 会话 > Bot > 平台）
+    #    platforms.<platform> = {modules: [...], blocked: [...], merge: bool?}
+    #    （modules/blocked 条目支持 glob / re: 正则；子级 merge = true 时与低优先级绑定并集，默认整体覆盖）
     #    bots.<platform>.<bot_id> / sessions.<platform>.<session_id> 同上
-    # ② 身份维度（原事件准入，优先级 用户 > 会话 > Bot > 适配器）
+    # ② 身份维度（谁的事件收不收，优先级 用户 > 会话 > Bot > 适配器）
     #    identity.adapters.<platform> = {allow/deny: true}
     #    identity.bots.<platform>.<bot_id> / identity.sessions / identity.users 同上
     #    identity.users 的 key 支持 glob / re: 正则
-    # ③ 命令维度（命令 ACL，命令名支持 glob）
-    #    commands.<command_name> = {allow: ["platform:uid", ...], deny: [...]}
-    # ④ 处理器/文本维度：handlers.<module> = {pattern: "...", regex: "..."}
-    # ⑤ 实现参数覆盖：overrides.<module>.<command> = {master/hidden/aliases/prefix: ...}
-    # default_allow = false 时全局"隐式拒绝"（模块/身份未命中即拒；命令无 ACL 即拒）。
+    # ③ 出站维度（限制模块发起出站调用，默认全允许，显式收紧才禁）
+    #    actions.<module>.<action> = {allow: [...], deny: true|[...]}
+    #    （action 取 send / api / request；条目支持精确名 / glob / re: 正则）
+    # default_allow = false 时模块/身份"隐式拒绝"（未命中即拒；不影响出站维度）。
     "scope": {
         "default_allow": True,
         "cache_size": 1024,
@@ -138,9 +155,7 @@ DEFAULT_ERISPULSE_CONFIG = {
             "sessions": {},
             "users": {},
         },
-        "commands": {},
-        "handlers": {},
-        "overrides": {},
+        "actions": {},
     },
 }
 
@@ -358,12 +373,12 @@ def set_erispulse_section(path: str, value: Any) -> bool:
     **整节替换**（支持删除子键，如移除绑定、黑名单移除等场景）。
     写入失败时抛出异常。
 
-    :param path: 相对 ``ErisPulse`` 根的配置路径，如 ``"scope.commands"``、``"scope"``
+    :param path: 相对 ``ErisPulse`` 根的配置路径，如 ``"event.overrides.acl"``、``"scope"``
     :param value: 新的配置节内容（通常为 dict）
     :return: 是否写入成功
 
     :example:
-    >>> set_erispulse_section("scope.commands", {"roll*": {"allow": ["onebot11:123456"]}})
+    >>> set_erispulse_section("event.overrides.acl", {"roll*": {"allow": ["onebot11:123456"]}})
     """
     config_service = _get_config_service()
     return config_service.setConfig(f"{CONFIG_ROOT_KEY}.{path}", value)
