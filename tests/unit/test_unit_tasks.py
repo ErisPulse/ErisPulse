@@ -5,6 +5,9 @@
 """
 
 import asyncio
+import sys
+
+import pytest
 
 from ErisPulse.runtime.context import owner_scope
 from ErisPulse.runtime.tasks import (
@@ -178,6 +181,10 @@ class TestCancelSelfProtection:
         # 伴生任务被取消
         assert await task == 1
 
+    @pytest.mark.skipif(
+        sys.version_info < (3, 12),
+        reason="wait_for 取消语义自 Python 3.12 重构（3.11 及更早无嵌套取消递归环问题，且必然假失败）",
+    )
     async def test_hard_restart_scenario_no_recursion(self):
         """端到端回归：hard_restart 式任务内调用全局取消，自身存活到收尾"""
         from ErisPulse.runtime.tasks import cancel_all_background_tasks, spawn_background

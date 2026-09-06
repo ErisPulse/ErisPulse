@@ -5,6 +5,7 @@
 """
 
 import asyncio
+import importlib
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
@@ -12,6 +13,8 @@ import pytest
 from ErisPulse.Core.Bases import BaseModule
 from ErisPulse.Core.config import config
 from ErisPulse.Core.module import ModuleManager
+
+module_module = importlib.import_module("ErisPulse.Core.module")
 
 # ==================== 模块管理器测试 ====================
 
@@ -139,7 +142,7 @@ class TestModuleManager:
     async def test_load_module_not_registered(self, manager):
         """测试加载未注册的模块"""
         # Mock logger
-        with patch("ErisPulse.Core.module.logger") as mock_logger:
+        with patch.object(module_module, "logger") as mock_logger:
             # 执行
             result = await manager.load("nonexistent")
 
@@ -155,7 +158,7 @@ class TestModuleManager:
         await manager.load("test_module")
 
         # Mock logger
-        with patch("ErisPulse.Core.module.logger") as mock_logger:
+        with patch.object(module_module, "logger") as mock_logger:
             # 再次加载
             result = await manager.load("test_module")
 
@@ -231,7 +234,7 @@ class TestModuleManager:
     async def test_unload_module_not_loaded(self, manager, test_module_class):
         """测试卸载未加载的模块"""
         # Mock logger
-        with patch("ErisPulse.Core.module.logger") as mock_logger:
+        with patch.object(module_module, "logger") as mock_logger:
             # 执行
             result = await manager.unload("test_module")
 
@@ -281,7 +284,7 @@ class TestModuleManager:
 
         with patch.object(config, "setConfig") as mock_set:
             # Mock logger
-            with patch("ErisPulse.Core.module.logger"):
+            with patch.object(module_module, "logger"):
                 # 执行
                 result = manager.enable("test_module")
 
@@ -293,7 +296,7 @@ class TestModuleManager:
 
     def test_module_enable_nonexistent(self, manager):
         """测试启用未注册的模块"""
-        with patch("ErisPulse.Core.module.logger"):
+        with patch.object(module_module, "logger"):
             result = manager.enable("nonexistent_module")
             assert result is False
 
@@ -305,7 +308,7 @@ class TestModuleManager:
         manager._loaded_modules.add("test_module")
 
         with patch.object(config, "setConfig") as mock_set:
-            with patch("ErisPulse.Core.module.logger"):
+            with patch.object(module_module, "logger"):
                 # 执行
                 result = manager.disable("test_module")
 
@@ -324,7 +327,7 @@ class TestModuleManager:
         assert "test_module" in manager._module_classes
 
         # 执行取消注册
-        with patch("ErisPulse.Core.module.logger"):
+        with patch.object(module_module, "logger"):
             result = manager.unregister("test_module")
 
         # 验证
@@ -424,7 +427,7 @@ class TestModuleManager:
     def test_getattr_module_not_found(self, manager):
         """测试通过属性访问不存在的模块"""
         # Mock logger
-        with patch("ErisPulse.Core.module.logger") as mock_logger:
+        with patch.object(module_module, "logger") as mock_logger:
             # 执行和验证
             with pytest.raises(AttributeError, match="不存在或未启用"):
                 _ = manager.nonexistent
@@ -570,7 +573,7 @@ class TestModuleLifecycleIntegration:
     async def test_module_load_submits_lifecycle_event(self):
         """测试模块加载提交生命周期事件"""
         # Mock lifecycle
-        with patch("ErisPulse.Core.module.lifecycle") as mock_lifecycle:
+        with patch.object(module_module, "lifecycle") as mock_lifecycle:
             mock_lifecycle.submit_event = AsyncMock()
 
             from ErisPulse.Core.module import module
@@ -602,7 +605,7 @@ class TestModuleLifecycleIntegration:
     async def test_module_unload_submits_lifecycle_event(self):
         """测试模块卸载提交生命周期事件"""
         # Mock lifecycle
-        with patch("ErisPulse.Core.module.lifecycle") as mock_lifecycle:
+        with patch.object(module_module, "lifecycle") as mock_lifecycle:
             mock_lifecycle.submit_event = AsyncMock()
 
             from ErisPulse.Core.module import module
@@ -815,7 +818,7 @@ class TestModuleStatusHotReload:
         manager.register("lazy_mod", test_module_class)
         manager.register_lazy("lazy_mod", Mock())
         with patch.object(config, "setConfig"):
-            with patch("ErisPulse.Core.module.logger"):
+            with patch.object(module_module, "logger"):
                 result = manager.disable("lazy_mod")
         assert result is True
         assert "lazy_mod" not in manager._lazy_modules
@@ -824,7 +827,7 @@ class TestModuleStatusHotReload:
         """卸载未实例化的懒加载模块，应清理其代理而非早退"""
         manager.register("lazy_mod", test_module_class)
         manager.register_lazy("lazy_mod", Mock())
-        with patch("ErisPulse.Core.module.logger"):
+        with patch.object(module_module, "logger"):
             asyncio.run(manager.unload("lazy_mod"))
         assert "lazy_mod" not in manager._lazy_modules
 
@@ -832,7 +835,7 @@ class TestModuleStatusHotReload:
         """卸载全部模块应一并清理未初始化的懒加载代理"""
         manager.register("lazy_mod", test_module_class)
         manager.register_lazy("lazy_mod", Mock())
-        with patch("ErisPulse.Core.module.logger"):
+        with patch.object(module_module, "logger"):
             asyncio.run(manager.unload())
         assert "lazy_mod" not in manager._lazy_modules
 

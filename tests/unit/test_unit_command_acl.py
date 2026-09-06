@@ -7,6 +7,7 @@ glob）、命令实现参数覆写（event.overrides.command，帮助渲染与�
 """
 
 import asyncio
+import importlib
 from unittest.mock import patch
 
 import pytest
@@ -16,6 +17,9 @@ from ErisPulse.Core.Event.command import command as command_handler
 from ErisPulse.Core.Event.message import message as message_handler
 from ErisPulse.Core.scope import scope as scope_manager
 from ErisPulse.runtime.context import current_owner
+
+# importlib.import_module 返回真实子模块（Core.config 包属性被 ConfigManager 单例遮蔽）
+config_module = importlib.import_module("ErisPulse.Core.config")
 
 
 @pytest.fixture(autouse=True)
@@ -102,7 +106,7 @@ class TestCommandACL:
 
         with patch("ErisPulse.Core.Event.overrides.set_erispulse_section"):
             overrides_mod.acl.set("beta", deny=["onebot11:u_bad"])
-        with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+        with patch.object(config_module.config, "getConfig", return_value="/"):
             await adapter.emit(_msg("/beta", user_id="u_bad"))
             await asyncio.sleep(0.05)
             await adapter.emit(_msg("/beta", user_id="u_good"))
@@ -129,7 +133,7 @@ class TestCommandACL:
 
         with patch("ErisPulse.Core.Event.overrides.set_erispulse_section"):
             overrides_mod.acl.set("gamma", allow=["onebot11:u_vip"])
-        with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+        with patch.object(config_module.config, "getConfig", return_value="/"):
             await adapter.emit(_msg("/gamma", user_id="u_vip"))
             await asyncio.sleep(0.05)
             await adapter.emit(_msg("/gamma", user_id="u_normal"))
@@ -156,7 +160,7 @@ class TestCommandACL:
 
         with patch("ErisPulse.Core.Event.overrides.set_erispulse_section"):
             overrides_mod.acl.set("delta", allow=["onebot11:u1"], deny=["onebot11:u1"])
-        with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+        with patch.object(config_module.config, "getConfig", return_value="/"):
             await adapter.emit(_msg("/delta", user_id="u1"))
             await asyncio.sleep(0.05)
 

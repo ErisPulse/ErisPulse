@@ -4,9 +4,14 @@
 测试 MasterManager 的配置解析、is_master 检查、运行时增删等功能。
 """
 
+import importlib
 from unittest.mock import patch
 
 from ErisPulse.Core.master import MasterManager
+
+# importlib.import_module 返回 sys.modules 中的真实子模块
+# （`import ErisPulse.Core.master as x` 会因 Core.master 单例属性遮蔽而绑定到实例）
+master_module = importlib.import_module("ErisPulse.Core.master")
 
 
 class TestMasterManager:
@@ -15,14 +20,14 @@ class TestMasterManager:
     def test_no_masters_returns_false(self):
         """无主人配置时 is_master 返回 False"""
         mgr = MasterManager()
-        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+        with patch.object(master_module, "get_master_config", return_value={"users": {}}):
             assert mgr.is_master("yunhu", "123") is False
 
     def test_dict_format_platform_specific(self):
         """dict 格式：按平台指定主人"""
         mgr = MasterManager()
         config = {"users": {"yunhu": ["123", "456"], "telegram": ["789"]}}
-        with patch("ErisPulse.Core.master.get_master_config", return_value=config):
+        with patch.object(master_module, "get_master_config", return_value=config):
             assert mgr.is_master("yunhu", "123") is True
             assert mgr.is_master("yunhu", "456") is True
             assert mgr.is_master("telegram", "789") is True
@@ -33,7 +38,7 @@ class TestMasterManager:
         """list 格式：全局主人，所有平台生效"""
         mgr = MasterManager()
         config = {"users": ["123", "456"]}
-        with patch("ErisPulse.Core.master.get_master_config", return_value=config):
+        with patch.object(master_module, "get_master_config", return_value=config):
             assert mgr.is_master("yunhu", "123") is True
             assert mgr.is_master("telegram", "456") is True
             assert mgr.is_master("any_platform", "123") is True
@@ -43,7 +48,7 @@ class TestMasterManager:
         """dict 中某个平台的值不是 list 而是单个字符串"""
         mgr = MasterManager()
         config = {"users": {"yunhu": "123"}}
-        with patch("ErisPulse.Core.master.get_master_config", return_value=config):
+        with patch.object(master_module, "get_master_config", return_value=config):
             assert mgr.is_master("yunhu", "123") is True
 
     def test_is_master_from_event(self):
@@ -58,7 +63,7 @@ class TestMasterManager:
             def get_user_id(self):
                 return "123"
 
-        with patch("ErisPulse.Core.master.get_master_config", return_value=config):
+        with patch.object(master_module, "get_master_config", return_value=config):
             assert mgr.is_master(FakeEvent()) is True
 
     def test_is_master_from_event_not_master(self):
@@ -73,13 +78,13 @@ class TestMasterManager:
             def get_user_id(self):
                 return "999"
 
-        with patch("ErisPulse.Core.master.get_master_config", return_value=config):
+        with patch.object(master_module, "get_master_config", return_value=config):
             assert mgr.is_master(FakeEvent()) is False
 
     def test_empty_user_id_returns_false(self):
         """空 user_id 返回 False"""
         mgr = MasterManager()
-        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+        with patch.object(master_module, "get_master_config", return_value={"users": {}}):
             assert mgr.is_master("yunhu", "") is False
             assert mgr.is_master("yunhu", None) is False
 
@@ -87,7 +92,7 @@ class TestMasterManager:
         """dict 配置下空平台不匹配"""
         mgr = MasterManager()
         config = {"users": {"yunhu": ["123"]}}
-        with patch("ErisPulse.Core.master.get_master_config", return_value=config):
+        with patch.object(master_module, "get_master_config", return_value=config):
             assert mgr.is_master("", "123") is False
 
 
@@ -98,7 +103,7 @@ class TestMasterRuntime:
         """运行时添加指定平台主人"""
         mgr = MasterManager()
         mgr.reset()
-        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+        with patch.object(master_module, "get_master_config", return_value={"users": {}}):
             assert mgr.is_master("yunhu", "999") is False
             mgr.add("yunhu", "999", persist=False)
             assert mgr.is_master("yunhu", "999") is True
@@ -108,7 +113,7 @@ class TestMasterRuntime:
         """运行时添加全局主人"""
         mgr = MasterManager()
         mgr.reset()
-        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+        with patch.object(master_module, "get_master_config", return_value={"users": {}}):
             mgr.add(None, "888", persist=False)
             assert mgr.is_master("yunhu", "888") is True
             assert mgr.is_master("telegram", "888") is True
@@ -118,7 +123,7 @@ class TestMasterRuntime:
         """移除运行时主人"""
         mgr = MasterManager()
         mgr.reset()
-        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+        with patch.object(master_module, "get_master_config", return_value={"users": {}}):
             mgr.add("yunhu", "999", persist=False)
             assert mgr.is_master("yunhu", "999") is True
             assert mgr.remove("yunhu", "999", persist=False) is True
@@ -129,7 +134,7 @@ class TestMasterRuntime:
         """移除全局运行时主人"""
         mgr = MasterManager()
         mgr.reset()
-        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+        with patch.object(master_module, "get_master_config", return_value={"users": {}}):
             mgr.add(None, "888", persist=False)
             assert mgr.remove(None, "888", persist=False) is True
             assert mgr.is_master("yunhu", "888") is False
@@ -140,7 +145,7 @@ class TestMasterRuntime:
         mgr.add("yunhu", "999", persist=False)
         mgr.add(None, "888", persist=False)
         mgr.reset()
-        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+        with patch.object(master_module, "get_master_config", return_value={"users": {}}):
             assert mgr.is_master("yunhu", "999") is False
             assert mgr.is_master("yunhu", "888") is False
 
@@ -149,7 +154,7 @@ class TestMasterRuntime:
         mgr = MasterManager()
         mgr.reset()
         config = {"users": {"yunhu": ["123"]}}
-        with patch("ErisPulse.Core.master.get_master_config", return_value=config):
+        with patch.object(master_module, "get_master_config", return_value=config):
             assert mgr.is_master("yunhu", "123") is True
             mgr.add("telegram", "456", persist=False)
             assert mgr.is_master("telegram", "456") is True
@@ -164,7 +169,7 @@ class TestMasterList:
         """无主人时 list 返回空字典"""
         mgr = MasterManager()
         mgr.reset()
-        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+        with patch.object(master_module, "get_master_config", return_value={"users": {}}):
             assert mgr.list() == {}
 
     def test_list_dict_config(self):
@@ -172,7 +177,7 @@ class TestMasterList:
         mgr = MasterManager()
         mgr.reset()
         config = {"users": {"yunhu": ["123", "456"], "telegram": ["789"]}}
-        with patch("ErisPulse.Core.master.get_master_config", return_value=config):
+        with patch.object(master_module, "get_master_config", return_value=config):
             result = mgr.list()
             assert result["yunhu"] == ["123", "456"]
             assert result["telegram"] == ["789"]
@@ -183,7 +188,7 @@ class TestMasterList:
         mgr = MasterManager()
         mgr.reset()
         config = {"users": ["123", "456"]}
-        with patch("ErisPulse.Core.master.get_master_config", return_value=config):
+        with patch.object(master_module, "get_master_config", return_value=config):
             result = mgr.list()
             assert result["global"] == ["123", "456"]
 
@@ -192,7 +197,7 @@ class TestMasterList:
         mgr = MasterManager()
         mgr.reset()
         config = {"users": {"yunhu": ["123"]}}
-        with patch("ErisPulse.Core.master.get_master_config", return_value=config):
+        with patch.object(master_module, "get_master_config", return_value=config):
             mgr.add("telegram", "789", persist=False)
             mgr.add(None, "999", persist=False)
             result = mgr.list()
@@ -203,8 +208,9 @@ class TestMasterList:
     def test_config_master_live_reload(self):
         """主人配置无需重启即可生效：每次 is_master 检查都实时读取配置"""
         mgr = MasterManager()
-        with patch(
-            "ErisPulse.Core.master.get_master_config",
+        with patch.object(
+            master_module,
+            "get_master_config",
             side_effect=[
                 {"users": ["10001"]},
                 {"users": ["10001"]},
@@ -227,7 +233,7 @@ class TestMasterProviders:
         """provider 放行即认定为主人"""
         mgr = MasterManager()
         mgr.reset()
-        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+        with patch.object(master_module, "get_master_config", return_value={"users": {}}):
             fn = mgr.provider(lambda platform, user_id: user_id == "999")
             try:
                 assert mgr.is_master("yunhu", "999") is True
@@ -245,7 +251,7 @@ class TestMasterProviders:
         def vip_provider(platform, user_id):
             return user_id == "vip"
 
-        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+        with patch.object(master_module, "get_master_config", return_value={"users": {}}):
             assert mgr.is_master("yunhu", "vip") is True
             assert vip_provider("yunhu", "vip") is True  # 原函数仍可调用
             assert hasattr(vip_provider, "unregister")
@@ -258,7 +264,7 @@ class TestMasterProviders:
         mgr = MasterManager()
         mgr.reset()
         seen = []
-        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+        with patch.object(master_module, "get_master_config", return_value={"users": {}}):
             fn = mgr.provider(lambda p, u: seen.append((p, u)) or False)
             try:
                 mgr.is_master("yunhu", "123")
@@ -272,7 +278,7 @@ class TestMasterProviders:
         mgr.reset()
         calls = []
         config = {"users": {"yunhu": ["123"]}}
-        with patch("ErisPulse.Core.master.get_master_config", return_value=config):
+        with patch.object(master_module, "get_master_config", return_value=config):
             fn = mgr.provider(lambda p, u: calls.append((p, u)) or True)
             try:
                 assert mgr.is_master("yunhu", "123") is True
@@ -284,7 +290,7 @@ class TestMasterProviders:
         """provider 异常被隔离跳过，不阻断判定链"""
         mgr = MasterManager()
         mgr.reset()
-        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+        with patch.object(master_module, "get_master_config", return_value={"users": {}}):
 
             def bad_provider(platform, user_id):
                 raise RuntimeError("boom")
@@ -308,11 +314,11 @@ class TestMasterProviders:
             return True
 
         fn = mgr.provider(provider)
-        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+        with patch.object(master_module, "get_master_config", return_value={"users": {}}):
             assert mgr.is_master("any", "1") is True
         fn.unregister()
         fn.unregister()  # 幂等：再调用不抛异常
-        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+        with patch.object(master_module, "get_master_config", return_value={"users": {}}):
             assert mgr.is_master("any", "1") is False
 
     def test_register_same_provider_once(self):
@@ -349,7 +355,7 @@ class TestMasterProviders:
             mgr.provider(mod_provider)
         mgr.provider(global_provider)  # 非 owner 上下文：常驻
 
-        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+        with patch.object(master_module, "get_master_config", return_value={"users": {}}):
             assert mgr.is_master("p", "mod_vip") is True
             assert mgr.is_master("p", "global_vip") is True
 
@@ -377,5 +383,5 @@ class TestMasterProviders:
         assert mgr._provider_owners
         mgr.reset()
         assert mgr._provider_owners == {}
-        with patch("ErisPulse.Core.master.get_master_config", return_value={"users": {}}):
+        with patch.object(master_module, "get_master_config", return_value={"users": {}}):
             assert mgr.is_master("any", "1") is False
