@@ -179,12 +179,13 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
             return original_method(*args, **kwargs)
 
         # 出站动作权限（scope.actions.<owner>.send）：owner 为空（框架层调用）
-        # 恒放行；仅用户显式禁用时返回标准拒绝响应，不发起网络调用
+        # 恒放行；仅用户显式限制时返回标准拒绝响应，不发起网络调用。
+        # name 传发送方法名，支持方法级细粒度规则（如仅放行 Text、禁 File）
         from ...runtime.context import get_current_owner
         from ..scope import scope as _scope
 
         _owner = get_current_owner()
-        if not _scope.is_action_allowed(_owner or "", "send"):
+        if not _scope.is_action_allowed(_owner or "", "send", name=method_name):
             return _action_denied_response(send_dsl._adapter, "send")
 
         # 标记进入规则包装执行，防止内部委托方法（Text → Raw_ob12）重复包装
@@ -1117,9 +1118,10 @@ class ApiDSL:
         {!--< internal-use >!--}
         API 动作统一授权入口
 
-        先经控制面出站动作维度检查（scope.actions.<owner>.api）：
-        模块被禁用时直接返回标准拒绝响应，不发起网络请求；
+        先经作用域出站维度检查（scope.actions.<owner>.api）：
+        模块被限制时直接返回标准拒绝响应，不发起网络请求；
         owner 为空（框架层调用）或未配置限制时正常委托 ``call_api``。
+        name 传标准动作名，支持动作级细粒度规则（如仅放行 get_* 查询类）。
 
         :param action: OneBot12 标准动作名或平台扩展动作名
         :param params: 动作参数（已合并 api_context）
@@ -1128,7 +1130,7 @@ class ApiDSL:
         from ...runtime.context import get_current_owner
         from ..scope import scope as _scope
 
-        if not _scope.is_action_allowed(get_current_owner() or "", "api"):
+        if not _scope.is_action_allowed(get_current_owner() or "", "api", name=action):
             return await _action_denied_response(self._adapter, "api")
         return await self._adapter.call_api(action, **params)
 

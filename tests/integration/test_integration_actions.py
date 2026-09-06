@@ -1,11 +1,11 @@
 """
 出站动作权限（scope.actions）端到端测试
 
-以真实 SendDSL / ApiDSL / RequestDSL + scope 控制面 + owner 上下文协作，
+以真实 SendDSL / ApiDSL / RequestDSL + scope 作用域 + owner 上下文协作，
 验证模块在事件 handler 执行期（owner 已注入）发起出站调用时被 scope.actions 拦截：
 
-- send：Send DSL（Event.reply 底层同路径）
-- api：Api DSL / call 逃生舱
+- send：Send DSL（Event.reply 底层同路径，方法级细粒度规则）
+- api：Api DSL / call 逃生舱（动作级细粒度规则）
 - request：Request DSL accept/reject
 - provider：owner 上下文注册的主人身源在模块卸载时自动清理
 """
@@ -23,10 +23,10 @@ from ErisPulse.runtime.context import owner_scope
 @pytest.fixture
 def isolated_scope():
     """隔离全局 scope 单例配置，测试后恢复"""
-    saved = {key: dict(value) if isinstance(value, dict) else value for key, value in scope._bindings.items()}
+    saved = {k: dict(v) if isinstance(v, dict) else v for k, v in scope._data.items()}
     yield scope
-    scope._bindings.clear()
-    scope._bindings.update(saved)
+    scope._data.clear()
+    scope._data.update(saved)
     scope._invalidate_cache()
 
 
@@ -66,7 +66,7 @@ class TestSendActionGate:
 
     async def test_send_denied_when_action_disabled(self, isolated_scope, reset_master):
         """scope 禁用 send 后，owner 上下文内的发送被拒绝"""
-        isolated_scope.set_action("MyModule", "send", False, persist=False)
+        isolated_scope.set("actions.MyModule.send", False, persist=False)
         adapter_inst = _make_adapter_instance()
         with owner_scope("MyModule"):
             result = await adapter_inst.Send.To("user", "123").Text("hello")
@@ -74,10 +74,30 @@ class TestSendActionGate:
 
     async def test_send_allowed_without_owner(self, isolated_scope, reset_master):
         """owner 为空（框架层调用）时不受模块级限制"""
-        isolated_scope.set_action("MyModule", "send", False, persist=False)
+        isolated_scope.set("actions.MyModule.send", False, persist=False)
         adapter_inst = _make_adapter_instance()
         result = await adapter_inst.Send.To("user", "123").Text("hello")
         assert result.get("retcode") != RETCODE_PERMISSION_DENIED
+
+    async def test_send_method_granular_rule(self, isolated_scope, reset_master):
+        """方法级细粒度规则：白名单外的方法被拒（Text 放行 / Image 拒绝）"""
+        isolated_scope.set("actions.MyModule.send", {"allow": ["Text"]}, persist=False)
+        adapter_inst = _make_adapter_instance()
+        with owner_scope("MyModule"):
+            ok = await adapter_inst.Send.To("user", "123").Text("hello")
+            denied = await adapter_inst.Send.To("user", "123").Image("img.png")
+        assert ok.get("retcode") != RETCODE_PERMISSION_DENIED
+        assert denied.get("retcode") == RETCODE_PERMISSION_DENIED
+
+    async def test_api_method_granular_rule(self, isolated_scope, reset_master):
+        """动作级细粒度规则：get_* 查询放行、set_* 管理被拒"""
+        isolated_scope.set("actions.MyModule.api", {"allow": ["get_*"]}, persist=False)
+        adapter_inst = _make_adapter_instance()
+        with owner_scope("MyModule"):
+            ok = await adapter_inst.Api.get_self_info()
+            denied = await adapter_inst.Api.set_group_name("g1", "new")
+        assert ok.get("retcode") != RETCODE_PERMISSION_DENIED
+        assert denied.get("retcode") == RETCODE_PERMISSION_DENIED
 
 
 @pytest.mark.asyncio
@@ -86,7 +106,7 @@ class TestApiActionGate:
 
     async def test_api_denied_when_action_disabled(self, isolated_scope, reset_master):
         """scope 禁用 api 后，owner 上下文内的标准 API 调用被拒绝"""
-        isolated_scope.set_action("MyModule", "api", False, persist=False)
+        isolated_scope.set("actions.MyModule.api", False, persist=False)
         adapter_inst = _make_adapter_instance()
         with owner_scope("MyModule"):
             result = await adapter_inst.Api.get_user_info("123")
@@ -102,7 +122,7 @@ class TestApiActionGate:
 
     async def test_api_call_escape_hatch_denied(self, isolated_scope, reset_master):
         """call() 逃生舱同样受 api 限制"""
-        isolated_scope.set_action("MyModule", "api", False, persist=False)
+        isolated_scope.set("actions.MyModule.api", False, persist=False)
         adapter_inst = _make_adapter_instance()
         with owner_scope("MyModule"):
             result = await adapter_inst.Api.call("custom.action", foo="bar")
@@ -115,7 +135,7 @@ class TestRequestActionGate:
 
     async def test_request_denied_when_action_disabled(self, isolated_scope, reset_master):
         """scope 禁用 request 后，owner 上下文内的 accept 被拒绝"""
-        isolated_scope.set_action("MyModule", "request", False, persist=False)
+        isolated_scope.set("actions.MyModule.request", False, persist=False)
         adapter_inst = _make_adapter_instance()
         with owner_scope("MyModule"):
             result = await adapter_inst.Request("req_1").accept()

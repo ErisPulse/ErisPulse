@@ -19,7 +19,8 @@ class TestScopeManager:
     @staticmethod
     def _make_mgr(bindings: dict) -> ScopeManager:
         mgr = ScopeManager()
-        mgr._bindings = bindings
+        mgr._data = {**mgr._data, **bindings}
+        mgr._invalidate_cache()
         return mgr
 
     def test_default_allow_all(self):
@@ -91,21 +92,21 @@ class TestScopeManager:
                 "bots": {"onebot11": {"123456": {"modules": ["Chat"], "blocked": []}}},
             }
         )
-        assert mgr.get("onebot11", "123456") == {"modules": ["Chat"], "blocked": []}
-        assert mgr.get("onebot11") == {"modules": ["Chat"], "blocked": []}
-        assert mgr.get("telegram") is None
+        assert mgr.get("bots.onebot11.123456") == {"modules": ["Chat"], "blocked": []}
+        assert mgr.get("platforms.onebot11") == {"modules": ["Chat"], "blocked": []}
+        assert mgr.get("platforms.telegram") is None
 
     def test_bind_runtime(self):
         """bind(persist=False) 仅运行时生效"""
         mgr = self._make_mgr({"platforms": {}, "bots": {}})
-        mgr.bind_module("onebot11", "123456", modules=["Chat"], persist=False)
+        mgr.set("bots.onebot11.123456", {"modules": ["Chat"], "blocked": []}, persist=False)
         assert mgr.is_allowed("onebot11", "123456", "Chat") is True
         assert mgr.is_allowed("onebot11", "123456", "Translate") is False
 
     def test_bind_platform_runtime(self):
         """bind 平台级（bot_id=None）运行时生效"""
         mgr = self._make_mgr({"platforms": {}, "bots": {}})
-        mgr.bind_module("onebot11", blocked=["Danger"], persist=False)
+        mgr.set("platforms.onebot11", {"blocked": ["Danger"]}, persist=False)
         assert mgr.is_allowed("onebot11", "111", "Danger") is False
         assert mgr.is_allowed("onebot11", "111", "Chat") is True
 
@@ -117,11 +118,11 @@ class TestScopeManager:
                 "bots": {"onebot11": {"123456": {"modules": ["Chat"], "blocked": []}}},
             }
         )
-        assert mgr.unbind_module("onebot11", "123456", persist=False) is True
-        assert mgr.get("onebot11", "123456") is None
+        assert mgr.delete("bots.onebot11.123456", persist=False) is True
+        assert mgr.get("bots.onebot11.123456") is None
         assert mgr.is_allowed("onebot11", "123456", "Translate") is True
         # 再次移除返回 False
-        assert mgr.unbind_module("onebot11", "123456", persist=False) is False
+        assert mgr.delete("bots.onebot11.123456", persist=False) is False
 
     def test_bind_persist_writes_config(self):
         """bind(persist=True) 写入配置并同步内存态（不依赖配置回读）"""
@@ -132,13 +133,13 @@ class TestScopeManager:
             written.update(new_config)
 
         with patch("ErisPulse.Core.scope.update_erispulse_config", side_effect=fake_update):
-            mgr.bind_module("onebot11", "123456", modules=["Chat"], blocked=["Danger"])
+            mgr.set("bots.onebot11.123456", {"modules": ["Chat"], "blocked": ["Danger"]})
         assert written["scope"]["bots"]["onebot11"]["123456"] == {
             "modules": ["Chat"],
             "blocked": ["Danger"],
         }
-        # 写入触发的 config.set 重载可能回读旧缓存，内存态必须已直接应用
-        assert mgr.get("onebot11", "123456") == {
+        # 写入触发的 config.set 重载可能回读旧缓存，内存态必须已直接应用（快照重放）
+        assert mgr.get("bots.onebot11.123456") == {
             "modules": ["Chat"],
             "blocked": ["Danger"],
         }
@@ -157,11 +158,11 @@ class TestScopeManager:
             written[path] = value
 
         with patch("ErisPulse.Core.scope.set_erispulse_section", side_effect=fake_set):
-            assert mgr.unbind_module("onebot11", "123456") is True
-        assert written["scope.bots"] == {}
-        assert mgr.get("onebot11", "123456") is None
+            assert mgr.delete("bots.onebot11.123456") is True
+        assert written["scope.bots.onebot11"] == {}
+        assert mgr.get("bots.onebot11.123456") is None
 
-    def test_list_bindings_and_clear(self):
+    def test_topology_and_clear(self):
         """list_bindings() 与 clear()"""
         mgr = self._make_mgr(
             {
@@ -169,17 +170,14 @@ class TestScopeManager:
                 "bots": {"onebot11": {"123456": {"modules": [], "blocked": ["X"]}}},
             }
         )
-        bindings = mgr.list_bindings()
+        bindings = mgr.topology()
         assert bindings["platforms"]["onebot11"]["modules"] == ["Chat"]
         mgr.clear()
-        assert mgr.list_bindings() == {
+        assert mgr.topology() == {
             "platforms": {},
             "bots": {},
             "sessions": {},
             "identity": {"adapters": {}, "bots": {}, "sessions": {}, "users": {}},
-            "commands": {},
-            "handlers": {},
-            "overrides": {},
             "actions": {},
         }
 
@@ -241,7 +239,7 @@ class TestScopeDispatch:
     @staticmethod
     def _scoped_mgr():
         mgr = ScopeManager()
-        mgr._bindings = {
+        mgr._data = {
             "platforms": {},
             "bots": {"onebot11": {"bot_x": {"modules": ["ModuleB"], "blocked": []}}},
         }
@@ -366,7 +364,8 @@ class TestScopeSessionLevel:
     @staticmethod
     def _make_mgr(bindings: dict) -> ScopeManager:
         mgr = ScopeManager()
-        mgr._bindings = bindings
+        mgr._data = {**mgr._data, **bindings}
+        mgr._invalidate_cache()
         return mgr
 
     def test_session_allowlist(self):
@@ -425,7 +424,7 @@ class TestScopeSessionLevel:
     def test_session_bind_runtime(self):
         """bind 会话级（persist=False）运行时生效"""
         mgr = self._make_mgr({"platforms": {}, "bots": {}, "sessions": {}})
-        mgr.bind_module("onebot11", session_id="group_9", modules=["Chat"], persist=False)
+        mgr.set("sessions.onebot11.group_9", {"modules": ["Chat"], "blocked": []}, persist=False)
         assert mgr.is_allowed("onebot11", "b1", "Chat", "group_9") is True
         assert mgr.is_allowed("onebot11", "b1", "X", "group_9") is False
 
@@ -438,9 +437,9 @@ class TestScopeSessionLevel:
                 "sessions": {"onebot11": {"group_9": {"modules": ["Chat"], "blocked": []}}},
             }
         )
-        assert mgr.unbind_module("onebot11", session_id="group_9", persist=False) is True
-        assert mgr.get("onebot11", None, "group_9") is None
-        assert mgr.unbind_module("onebot11", session_id="group_9", persist=False) is False
+        assert mgr.delete("sessions.onebot11.group_9", persist=False) is True
+        assert mgr.get("sessions.onebot11.group_9") is None
+        assert mgr.delete("sessions.onebot11.group_9", persist=False) is False
 
     def test_session_persist_writes_config(self):
         """bind 会话级（persist=True）写入配置"""
@@ -451,7 +450,7 @@ class TestScopeSessionLevel:
             written.update(new_config)
 
         with patch("ErisPulse.Core.scope.update_erispulse_config", side_effect=fake_update):
-            mgr.bind_module("onebot11", session_id="group_9", modules=["Chat"])
+            mgr.set("sessions.onebot11.group_9", {"modules": ["Chat"], "blocked": []})
         assert written["scope"]["sessions"]["onebot11"]["group_9"] == {
             "modules": ["Chat"],
             "blocked": [],
@@ -515,7 +514,7 @@ class TestScopeSessionLevel:
                 "sessions": {"onebot11": {"group_9": {"modules": ["Chat"], "blocked": []}}},
             }
         )
-        topo = mgr.get_topology()
+        topo = mgr.topology()
         assert topo["sessions"]["onebot11"]["group_9"]["modules"] == ["Chat"]
 
 
@@ -542,7 +541,7 @@ class TestScopeSessionDispatch:
     @staticmethod
     def _scoped_mgr():
         mgr = ScopeManager()
-        mgr._bindings = {
+        mgr._data = {
             "platforms": {},
             "bots": {},
             # 仅在群 g1 允许 ModuleB
@@ -617,8 +616,9 @@ class TestScopeEnhancements:
     @staticmethod
     def _make_mgr(bindings: dict, default_allow: bool = True) -> ScopeManager:
         mgr = ScopeManager()
-        mgr._bindings = bindings
+        mgr._data = {**mgr._data, **bindings}
         mgr._default_allow = default_allow
+        mgr._invalidate_cache()
         return mgr
 
     def test_case_insensitive_module_match(self):
@@ -640,21 +640,93 @@ class TestScopeEnhancements:
         assert mgr.is_allowed("p", "b1", "Chat") is False
         assert mgr.is_allowed("p", "b1", "Anything") is False
         # 有白名单则白名单内放行
-        mgr._bindings["platforms"]["p"] = {"modules": ["Chat"], "blocked": []}
+        mgr._data["platforms"]["p"] = {"modules": ["Chat"], "blocked": []}
         mgr._invalidate_cache()
         assert mgr.is_allowed("p", "b1", "Chat") is True
         assert mgr.is_allowed("p", "b1", "Music") is False
 
-    def test_bind_merge(self):
-        """bind_module(merge=True) 合并而非替换"""
+    def test_set_deep_merge(self):
+        """set() 对 dict 深合并（dict 递归合并、list 覆盖）；整体替换先 delete 再 set"""
         mgr = self._make_mgr({"platforms": {}, "bots": {}, "sessions": {}})
-        mgr.bind_module("p", "b1", modules=["Chat"], persist=False)
-        mgr.bind_module("p", "b1", modules=["Music"], persist=False, merge=True)
-        mgr.bind_module("p", "b1", blocked=["Danger"], persist=False, merge=True)
-        assert mgr.get("p", "b1") == {"modules": ["Chat", "Music"], "blocked": ["Danger"]}
-        # 未 merge 则替换
-        mgr.bind_module("p", "b1", modules=["Only"], persist=False)
-        assert mgr.get("p", "b1") == {"modules": ["Only"], "blocked": []}
+        mgr.set("bots.p.b1", {"modules": ["Chat"], "blocked": []}, persist=False)
+        # dict 递归合并：modules 覆盖、blocked 保留
+        mgr.set("bots.p.b1", {"modules": ["Music"]}, persist=False)
+        assert mgr.get("bots.p.b1") == {"modules": ["Music"], "blocked": []}
+        # 整体替换：先 delete 再 set
+        mgr.delete("bots.p.b1", persist=False)
+        mgr.set("bots.p.b1", {"modules": ["Only"], "blocked": []}, persist=False)
+        assert mgr.get("bots.p.b1") == {"modules": ["Only"], "blocked": []}
+
+    def test_config_merge_chain_bot_level(self):
+        """配置级 merge = true：Bot 级在平台级绑定基础上追加"""
+        mgr = self._make_mgr(
+            {
+                "platforms": {"p": {"modules": ["Chat", "Tool"], "blocked": []}},
+                "bots": {"p": {"b1": {"modules": ["Music"], "blocked": [], "merge": True}}},
+                "sessions": {},
+            }
+        )
+        # b1：平台级 ∪ Bot 级
+        assert mgr.is_allowed("p", "b1", "Chat") is True
+        assert mgr.is_allowed("p", "b1", "Tool") is True
+        assert mgr.is_allowed("p", "b1", "Music") is True
+        assert mgr.is_allowed("p", "b1", "Other") is False
+        # 其它 Bot：仍整体覆盖（仅平台级）
+        assert mgr.is_allowed("p", "b2", "Chat") is True
+        assert mgr.is_allowed("p", "b2", "Music") is False
+
+    def test_config_merge_chain_session_level(self):
+        """配置级 merge = true：会话级在 Bot 级基础上追加（链式逐级合并）"""
+        mgr = self._make_mgr(
+            {
+                "platforms": {"p": {"modules": ["A"], "blocked": []}},
+                "bots": {"p": {"b1": {"modules": ["B"], "blocked": [], "merge": True}}},
+                "sessions": {"p": {"g1": {"modules": ["C"], "blocked": [], "merge": True}}},
+            }
+        )
+        # 链式：平台 ∪ Bot ∪ 会话
+        assert mgr.is_allowed("p", "b1", "A", "g1") is True
+        assert mgr.is_allowed("p", "b1", "B", "g1") is True
+        assert mgr.is_allowed("p", "b1", "C", "g1") is True
+        assert mgr.is_allowed("p", "b1", "D", "g1") is False
+
+    def test_config_merge_blocked_union(self):
+        """配置级 merge = true：blocked 取并集"""
+        mgr = self._make_mgr(
+            {
+                "platforms": {"p": {"modules": [], "blocked": ["Bad*"]}},
+                "bots": {"p": {"b1": {"modules": [], "blocked": ["re:^danger"], "merge": True}}},
+                "sessions": {},
+            }
+        )
+        assert mgr.is_allowed("p", "b1", "BadBot") is False
+        assert mgr.is_allowed("p", "b1", "DangerBot") is False
+        assert mgr.is_allowed("p", "b1", "Chat") is True
+
+    def test_config_merge_child_override_without_merge(self):
+        """子级未设 merge 时保持整体覆盖语义（默认不变）"""
+        mgr = self._make_mgr(
+            {
+                "platforms": {"p": {"modules": ["Chat", "Tool"], "blocked": []}},
+                "bots": {"p": {"b1": {"modules": ["Music"], "blocked": []}}},
+                "sessions": {},
+            }
+        )
+        assert mgr.is_allowed("p", "b1", "Music") is True
+        assert mgr.is_allowed("p", "b1", "Chat") is False
+
+    def test_config_merge_blocked_priority_within_entry(self):
+        """merge 并集后 blocked 仍优先于 modules（单绑定内语义不变）"""
+        mgr = self._make_mgr(
+            {
+                "platforms": {"p": {"modules": ["Chat"], "blocked": ["Spam*"]}},
+                "bots": {"p": {"b1": {"modules": ["SpamBot"], "blocked": [], "merge": True}}},
+                "sessions": {},
+            }
+        )
+        # 并集：modules=[Chat, SpamBot]，blocked=[Spam*] → SpamBot 被 blocked 拒绝
+        assert mgr.is_allowed("p", "b1", "SpamBot") is False
+        assert mgr.is_allowed("p", "b1", "Chat") is True
 
     def test_stats_filtered_count(self):
         """get_stats 统计过滤次数"""
@@ -669,7 +741,7 @@ class TestScopeEnhancements:
         assert mgr.is_allowed("p", "b1", "Chat") is True
         assert mgr.is_allowed("p", "b1", "Music") is False
         assert mgr.is_allowed("p", "b1", "Music") is False  # 缓存命中
-        stats = mgr.get_stats()
+        stats = mgr.stats()
         assert stats["module_filtered"] == 1
         assert stats["module_calls"] == 3
         assert stats["cache_hits"] == 1
@@ -678,7 +750,7 @@ class TestScopeEnhancements:
         """bind 后缓存失效，立即生效"""
         mgr = self._make_mgr({"platforms": {}, "bots": {}, "sessions": {}})
         assert mgr.is_allowed("p", "b1", "Chat") is True  # 缓存 True
-        mgr.bind_module("p", "b1", modules=["Music"], persist=False)
+        mgr.set("bots.p.b1", {"modules": ["Music"], "blocked": []}, persist=False)
         assert mgr.is_allowed("p", "b1", "Chat") is False  # 缓存已失效
 
 
@@ -688,7 +760,8 @@ class TestScopePatternEntries:
     @staticmethod
     def _make_mgr(bindings: dict) -> ScopeManager:
         mgr = ScopeManager()
-        mgr._bindings = bindings
+        mgr._data = {**mgr._data, **bindings}
+        mgr._invalidate_cache()
         return mgr
 
     def test_glob_whitelist(self):
@@ -726,7 +799,7 @@ class TestScopePatternEntries:
     def test_bind_with_pattern_entries(self):
         """bind_module 运行时写入模式条目"""
         mgr = self._make_mgr({"platforms": {}, "bots": {}, "sessions": {}})
-        mgr.bind_module("p", "b1", modules=["re:^chat"], blocked=["Danger*"], persist=False)
+        mgr.set("bots.p.b1", {"modules": ["re:^chat"], "blocked": ["Danger*"]}, persist=False)
         assert mgr.is_allowed("p", "b1", "ChatPro") is True
         assert mgr.is_allowed("p", "b1", "DangerZone") is False
 
