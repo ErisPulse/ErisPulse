@@ -4,6 +4,11 @@ permissions:
   contents: read
   pull-requests: write
 
+# 同一 PR 反复推送时取消旧的进行中运行
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   pull_request:
   workflow_dispatch:
@@ -11,6 +16,7 @@ on:
 jobs:
   ruff-check:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Generate App Token
         id: app-token
@@ -93,6 +99,7 @@ jobs:
 
   pytest-check:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -123,7 +130,7 @@ jobs:
         id: pytest-check
         run: |
           echo "Running Pytest tests..."
-          pytest_output=$(uv run pytest tests/unit -v --tb=short --cov-report=term-missing 2>&1; echo "PYTEST_EXIT_CODE=$?")
+          pytest_output=$(uv run pytest tests/unit -p no:cacheprovider -v --tb=short --cov-report=term-missing 2>&1; echo "PYTEST_EXIT_CODE=$?")
           exit_code=${pytest_output##*PYTEST_EXIT_CODE=}
           pytest_output=${pytest_output%PYTEST_EXIT_CODE=*}
           echo "$pytest_output"
@@ -259,8 +266,30 @@ jobs:
               });
             }
 
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run basedpyright type check
+        run: uv run basedpyright src/ErisPulse
+        # 类型检查为增量门槛：存量告警不阻塞，新增错误必须清零。
+        # 由 PR 提交者本地核对（CONTRIBUTING: 两套检查），CI 仅作基线留档。
+        continue-on-error: true
+
   security-audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

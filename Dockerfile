@@ -67,9 +67,9 @@ FROM base AS production
 
 ARG ERISPULSE_VERSION=""
 RUN if [ -n "$ERISPULSE_VERSION" ]; then \
-    uv pip install --system "ErisPulse==${ERISPULSE_VERSION}" ErisPulse-Dashboard; \
+    uv pip install --system --no-cache "ErisPulse==${ERISPULSE_VERSION}" ErisPulse-Dashboard; \
     else \
-    uv pip install --system ErisPulse ErisPulse-Dashboard; \
+    uv pip install --system --no-cache ErisPulse ErisPulse-Dashboard; \
     fi
 # 备份 site-packages，用于持久化卷首次挂载时初始化
 RUN cp -a /usr/local/lib/python3.13/site-packages /opt/site-packages-init
@@ -77,6 +77,6 @@ RUN cp -a /usr/local/lib/python3.13/site-packages /opt/site-packages-init
 # --- Dev: latest pre-release from PyPI ---
 FROM base AS dev
 
-RUN uv pip install --system --pre ErisPulse ErisPulse-Dashboard
+RUN uv pip install --system --no-cache --pre ErisPulse ErisPulse-Dashboard
 # 备份 site-packages，用于持久化卷首次挂载时初始化
 RUN cp -a /usr/local/lib/python3.13/site-packages /opt/site-packages-init
