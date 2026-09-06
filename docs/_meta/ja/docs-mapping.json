@@ -64,7 +64,7 @@
           "icon": "fa-list-check"
         },
         {
-          "title": "イベント処理入門",
+          "title": "イベント処理の入門",
           "path": "getting-started/event-handling.md",
           "level": 1,
           "icon": "fa-bolt-lightning"
@@ -336,7 +336,7 @@
     "高度なトピック": {
       "description": "フレームワークの高度な機能を深く理解する",
       "icon": "fa-fire",
-      "count": 11,
+      "count": 12,
       "documents": [
         {
           "title": "高級トピック",
@@ -393,10 +393,16 @@
           "icon": "fa-language"
         },
         {
-          "title": "統一制御面（scope）",
+          "title": "スコープ（scope）",
           "path": "advanced/scope.md",
           "level": 1,
           "icon": "fa-shield-halved"
+        },
+        {
+          "title": "所有者（owner）システム",
+          "path": "advanced/ownership.md",
+          "level": 1,
+          "icon": "fa-user-tag"
         },
         {
           "title": "起動プロセスと手動制御",

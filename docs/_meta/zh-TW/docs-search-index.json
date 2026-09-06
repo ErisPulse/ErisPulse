@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1514,
+  "total_keywords": 1523,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -246,6 +246,14 @@
         "title": "1. 版本管理"
       }
     ],
+    "1. 異常處理": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 807,
+        "level": 3,
+        "title": "1. 異常處理"
+      }
+    ],
     "1. 發現層：Finder": [
       {
         "document": "advanced/startup.md",
@@ -294,6 +302,14 @@
         "title": "1. 聲明式配置（推薦）"
       }
     ],
+    "1. 設定層級與覆蓋": [
+      {
+        "document": "advanced/scope.md",
+        "line": 324,
+        "level": 3,
+        "title": "1. 設定層級與覆蓋"
+      }
+    ],
     "1. 設計背景": [
       {
         "document": "standards/api-action-spec.md",
@@ -316,22 +332,6 @@
         "line": 38,
         "level": 3,
         "title": "1. 配置 pyproject.toml"
-      }
-    ],
-    "1. 配置層級與覆蓋": [
-      {
-        "document": "advanced/scope.md",
-        "line": 362,
-        "level": 3,
-        "title": "1. 配置層級與覆蓋"
-      }
-    ],
-    "1. 錯誤處理": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 740,
-        "level": 3,
-        "title": "1. 錯誤處理"
       }
     ],
     "1.1 接收類型 && 發送類型": [
@@ -550,14 +550,6 @@
         "title": "2. 僅指定ID"
       }
     ],
-    "2. 優先使用控制面而不是修改模組代碼": [
-      {
-        "document": "advanced/scope.md",
-        "line": 369,
-        "level": 3,
-        "title": "2. 優先使用控制面而不是修改模組代碼"
-      }
-    ],
     "2. 參數規範詳解": [
       {
         "document": "standards/send-method-spec.md",
@@ -647,7 +639,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 758,
+        "line": 825,
         "level": 3,
         "title": "2. 日誌記錄"
       }
@@ -690,6 +682,14 @@
         "line": 10,
         "level": 2,
         "title": "2. 標準欄位要求"
+      }
+    ],
+    "2. 模組/命令沒反應": [
+      {
+        "document": "advanced/scope.md",
+        "line": 331,
+        "level": 3,
+        "title": "2. 模組/命令沒反應"
       }
     ],
     "2. 模組命名規範": [
@@ -994,6 +994,14 @@
         "title": "3. 事件處理器註冊"
       }
     ],
+    "3. 出站動作被拒時排查": [
+      {
+        "document": "advanced/scope.md",
+        "line": 346,
+        "level": 3,
+        "title": "3. 出站動作被拒時排查"
+      }
+    ],
     "3. 完整欄位規範": [
       {
         "document": "standards/api-response.md",
@@ -1077,7 +1085,7 @@
     "3. 條件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 774,
+        "line": 841,
         "level": 3,
         "title": "3. 條件處理"
       }
@@ -1088,14 +1096,6 @@
         "line": 42,
         "level": 2,
         "title": "3. 標準動作列表"
-      }
-    ],
-    "3. 模組/命令沒有反應": [
-      {
-        "document": "advanced/scope.md",
-        "line": 376,
-        "level": 3,
-        "title": "3. 模組/命令沒有反應"
       }
     ],
     "3. 欄位映射（入站 JSON → OneBot12 事件）": [
@@ -1405,7 +1405,7 @@
     "4. 會話標識跨平台隔離": [
       {
         "document": "advanced/scope.md",
-        "line": 391,
+        "line": 357,
         "level": 3,
         "title": "4. 會話標識跨平台隔離"
       }
@@ -1594,12 +1594,12 @@
         "title": "5. 往返一致性"
       }
     ],
-    "5. 扩展規範": [
+    "5. 擴展規範": [
       {
         "document": "standards/api-response.md",
         "line": 106,
         "level": 2,
-        "title": "5. 扩展規範"
+        "title": "5. 擴展規範"
       }
     ],
     "5. 未知事件處理": [
@@ -1730,12 +1730,12 @@
         "title": "5.3 未支援的動作"
       }
     ],
-    "5.3 框架擴展回應碼（34xxx 平台錯誤段的低三位自訂）": [
+    "5.3 框架擴展回應碼（34xxx 平台錯誤段的低三位自定義）": [
       {
         "document": "standards/api-response.md",
         "line": 140,
         "level": 3,
-        "title": "5.3 框架擴展回應碼（34xxx 平台錯誤段的低三位自訂）"
+        "title": "5.3 框架擴展回應碼（34xxx 平台錯誤段的低三位自定義）"
       }
     ],
     "5.4 總結：Send 與 Request 並行": [
@@ -2491,7 +2491,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 416,
+        "line": 483,
         "level": 3,
         "title": "Bot 狀態查詢"
       }
@@ -2815,7 +2815,7 @@
     "Event 物件常用方法": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 663,
+        "line": 730,
         "level": 3,
         "title": "Event 物件常用方法"
       }
@@ -4196,6 +4196,14 @@
         "title": "on_unload 方法"
       }
     ],
+    "owner 上下文機制": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 17,
+        "level": 2,
+        "title": "owner 上下文機制"
+      }
+    ],
     "pip 方式": [
       {
         "document": "user-guide/deployment.md",
@@ -4335,49 +4343,47 @@
     "① 模組維度": [
       {
         "document": "advanced/scope.md",
-        "line": 115,
+        "line": 100,
         "level": 2,
         "title": "① 模組維度"
+      },
+      {
+        "document": "advanced/scope.md",
+        "line": 234,
+        "level": 3,
+        "title": "① 模組維度"
+      }
+    ],
+    "② 身份維度": [
+      {
+        "document": "advanced/scope.md",
+        "line": 252,
+        "level": 3,
+        "title": "② 身份維度"
       }
     ],
     "② 身份維度（事件准入）": [
       {
         "document": "advanced/scope.md",
-        "line": 133,
+        "line": 143,
         "level": 2,
         "title": "② 身份維度（事件准入）"
       }
     ],
-    "③ 命令維度（命令 ACL）": [
+    "③ 出站維度": [
       {
         "document": "advanced/scope.md",
-        "line": 150,
-        "level": 2,
-        "title": "③ 命令維度（命令 ACL）"
+        "line": 265,
+        "level": 3,
+        "title": "③ 出站維度"
       }
     ],
-    "④ 處理器/文字維度": [
+    "③ 出站維度（限制模組發起出站呼叫）": [
       {
         "document": "advanced/scope.md",
-        "line": 161,
+        "line": 160,
         "level": 2,
-        "title": "④ 處理器/文字維度"
-      }
-    ],
-    "⑤ 實現參數覆蓋": [
-      {
-        "document": "advanced/scope.md",
-        "line": 172,
-        "level": 2,
-        "title": "⑤ 實現參數覆蓋"
-      }
-    ],
-    "⑥ 出站動作維度（禁止模組發起出站呼叫）": [
-      {
-        "document": "advanced/scope.md",
-        "line": 191,
-        "level": 2,
-        "title": "⑥ 出站動作維度（禁止模組發起出站呼叫）"
+        "title": "③ 出站維度（限制模組發起出站呼叫）"
       }
     ],
     "一、我要使用機器人": [
@@ -4420,12 +4426,12 @@
         "title": "一鍵安裝腳本（推薦）"
       }
     ],
-    "三、我要深入理解原理": [
+    "三、我要深入了解原理": [
       {
         "document": "README.md",
         "line": 38,
         "level": 3,
-        "title": "三、我要深入理解原理"
+        "title": "三、我要深入了解原理"
       }
     ],
     "上下文管理": [
@@ -4479,7 +4485,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 791,
+        "line": 858,
         "level": 2,
         "title": "下一步"
       },
@@ -4497,7 +4503,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 489,
+        "line": 572,
         "level": 2,
         "title": "下一步"
       },
@@ -4543,7 +4549,7 @@
     "並行事件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 209,
+        "line": 216,
         "level": 3,
         "title": "並行事件處理"
       }
@@ -4605,23 +4611,15 @@
     "主人系統配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 205,
+        "line": 206,
         "level": 2,
         "title": "主人系統配置"
-      }
-    ],
-    "主人身份與自定義身份來源（provider）": [
-      {
-        "document": "advanced/scope.md",
-        "line": 298,
-        "level": 2,
-        "title": "主人身份與自定義身份來源（provider）"
       }
     ],
     "主動 GC 配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 304,
+        "line": 349,
         "level": 3,
         "title": "主動 GC 配置"
       }
@@ -4827,7 +4825,7 @@
     "事件處理最佳實踐": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 738,
+        "line": 805,
         "level": 2,
         "title": "事件處理最佳實踐"
       }
@@ -4876,6 +4874,14 @@
         "title": "事件處理鏈路詳解"
       }
     ],
+    "事件覆寫：不改模組代碼，覆寫任意事件類型的行為": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 287,
+        "level": 2,
+        "title": "事件覆寫：不改模組代碼，覆寫任意事件類型的行為"
+      }
+    ],
     "事件訂閱（Intents）": [
       {
         "document": "platform-guide/qqbot.md",
@@ -4887,7 +4893,7 @@
     "事件資料存取": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 661,
+        "line": 728,
         "level": 2,
         "title": "事件資料存取"
       }
@@ -4925,7 +4931,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 359,
+        "line": 404,
         "level": 2,
         "title": "事件配置"
       }
@@ -5047,7 +5053,7 @@
     "互動式處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 438,
+        "line": 505,
         "level": 2,
         "title": "互動式處理"
       }
@@ -5077,7 +5083,7 @@
     "五、我要為 ErisPulse 貢獻": [
       {
         "document": "README.md",
-        "line": 64,
+        "line": 65,
         "level": 3,
         "title": "五、我要為 ErisPulse 貢獻"
       }
@@ -5149,7 +5155,7 @@
     "伺服器配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 186,
+        "line": 187,
         "level": 2,
         "title": "伺服器配置"
       }
@@ -5184,6 +5190,30 @@
         "line": 73,
         "level": 2,
         "title": "何時重新產生"
+      }
+    ],
+    "作用域過濾：為什麼我的模組沒收到訊息": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 259,
+        "level": 2,
+        "title": "作用域過濾：為什麼我的模組沒收到訊息"
+      }
+    ],
+    "作用域配置（scope）": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 473,
+        "level": 2,
+        "title": "作用域配置（scope）"
+      }
+    ],
+    "作用域（scope）": [
+      {
+        "document": "advanced/scope.md",
+        "line": 1,
+        "level": 1,
+        "title": "作用域（scope）"
       }
     ],
     "使用 Discord 特有方法": [
@@ -5229,7 +5259,7 @@
     "使用 reply 方法發送回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 440,
+        "line": 507,
         "level": 3,
         "title": "使用 reply 方法發送回覆"
       }
@@ -5555,7 +5585,7 @@
     "元事件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 389,
+        "line": 456,
         "level": 2,
         "title": "元事件處理"
       }
@@ -5615,7 +5645,7 @@
     "內建確認詞": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 654,
+        "line": 721,
         "level": 3,
         "title": "內建確認詞"
       }
@@ -5639,7 +5669,7 @@
     "全局兜底：`default_allow`": [
       {
         "document": "advanced/scope.md",
-        "line": 47,
+        "line": 49,
         "level": 2,
         "title": "全局兜底：`default_allow`"
       }
@@ -5679,7 +5709,7 @@
     "其他": [
       {
         "document": "README.md",
-        "line": 82,
+        "line": 83,
         "level": 2,
         "title": "其他"
       }
@@ -5792,12 +5822,28 @@
         "title": "初始化階段詳解"
       }
     ],
-    "判定與運行時增刪": [
+    "判定語義": [
       {
         "document": "advanced/scope.md",
-        "line": 307,
+        "line": 186,
         "level": 3,
-        "title": "判定與運行時增刪"
+        "title": "判定語義"
+      }
+    ],
+    "判定鏈與運行時增刪": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 232,
+        "level": 3,
+        "title": "判定鏈與運行時增刪"
+      }
+    ],
+    "判定（三問）": [
+      {
+        "document": "advanced/scope.md",
+        "line": 221,
+        "level": 3,
+        "title": "判定（三問）"
       }
     ],
     "刪除數據": [
@@ -5819,7 +5865,7 @@
     "前置知識": [
       {
         "document": "advanced/README.md",
-        "line": 30,
+        "line": 31,
         "level": 2,
         "title": "前置知識"
       }
@@ -5899,7 +5945,7 @@
     "匹配條目語法（全系統統一）": [
       {
         "document": "advanced/scope.md",
-        "line": 32,
+        "line": 34,
         "level": 2,
         "title": "匹配條目語法（全系統統一）"
       }
@@ -5918,6 +5964,14 @@
         "line": 70,
         "level": 3,
         "title": "協議方法"
+      }
+    ],
+    "卸載/停用清理序列": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 72,
+        "level": 2,
+        "title": "卸載/停用清理序列"
       }
     ],
     "卸載流程": [
@@ -6145,7 +6199,7 @@
     "命令優先級": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 196,
+        "line": 203,
         "level": 3,
         "title": "命令優先級"
       }
@@ -6206,20 +6260,12 @@
         "title": "命令組"
       }
     ],
-    "命令維度": [
-      {
-        "document": "advanced/scope.md",
-        "line": 260,
-        "level": 3,
-        "title": "命令維度"
-      }
-    ],
-    "命令與回覆的 block 設定": [
+    "命令與回覆的 block 配置": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 314,
+        "line": 381,
         "level": 3,
-        "title": "命令與回覆的 block 設定"
+        "title": "命令與回覆的 block 配置"
       }
     ],
     "命令裝飾器": [
@@ -6228,6 +6274,14 @@
         "line": 78,
         "level": 3,
         "title": "命令裝飾器"
+      }
+    ],
+    "命令解析配置（event.command）": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 570,
+        "level": 2,
+        "title": "命令解析配置（event.command）"
       }
     ],
     "命令資訊": [
@@ -6263,7 +6317,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 361,
+        "line": 406,
         "level": 3,
         "title": "命令配置"
       }
@@ -6320,7 +6374,7 @@
       {
         "document": "api-reference/event-system.md",
         "line": 571,
-        "level": 4,
+        "level": 5,
         "title": "單個方法註冊"
       }
     ],
@@ -6335,7 +6389,7 @@
     "嚴格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 319,
+        "line": 364,
         "level": 3,
         "title": "嚴格模式"
       }
@@ -6351,7 +6405,7 @@
     "四、生態與官方客戶端": [
       {
         "document": "README.md",
-        "line": 53,
+        "line": 54,
         "level": 3,
         "title": "四、生態與官方客戶端"
       }
@@ -6362,6 +6416,14 @@
         "line": 630,
         "level": 2,
         "title": "回傳值"
+      }
+    ],
+    "回傳值規範": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 608,
+        "level": 5,
+        "title": "回傳值規範"
       }
     ],
     "回應": [
@@ -6451,7 +6513,7 @@
     "國際化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 388,
+        "line": 433,
         "level": 2,
         "title": "國際化配置"
       }
@@ -6534,6 +6596,14 @@
         "line": 157,
         "level": 4,
         "title": "在適配器中使用"
+      }
+    ],
+    "執行時 API": [
+      {
+        "document": "advanced/scope.md",
+        "line": 210,
+        "level": 2,
+        "title": "執行時 API"
       }
     ],
     "執行測試": [
@@ -6923,7 +6993,7 @@
     "多輪對話 (conversation)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 627,
+        "line": 694,
         "level": 3,
         "title": "多輪對話 (conversation)"
       }
@@ -7003,7 +7073,7 @@
     "好友添加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 328,
+        "line": 395,
         "level": 3,
         "title": "好友添加"
       }
@@ -7019,7 +7089,7 @@
     "好友請求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 362,
+        "line": 429,
         "level": 3,
         "title": "好友請求"
       }
@@ -7107,7 +7177,7 @@
     "存儲配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 348,
+        "line": 393,
         "level": 2,
         "title": "存儲配置"
       }
@@ -7288,12 +7358,12 @@
         "title": "完整郵件事件"
       }
     ],
-    "完整配置示例": [
+    "完整配置範例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 133,
+        "line": 134,
         "level": 2,
-        "title": "完整配置示例"
+        "title": "完整配置範例"
       }
     ],
     "定時任務": [
@@ -7535,7 +7605,7 @@
     "帶回調的等待回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 512,
+        "line": 579,
         "level": 3,
         "title": "帶回調的等待回覆"
       }
@@ -7551,7 +7621,7 @@
     "帶驗證的等待回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 485,
+        "line": 552,
         "level": 3,
         "title": "帶驗證的等待回覆"
       }
@@ -7609,7 +7679,7 @@
     "常見問題與注意事項": [
       {
         "document": "advanced/scope.md",
-        "line": 360,
+        "line": 322,
         "level": 2,
         "title": "常見問題與注意事項"
       }
@@ -7685,7 +7755,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 709,
+        "line": 776,
         "level": 3,
         "title": "平台擴展方法"
       }
@@ -7863,7 +7933,7 @@
     "心跳事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 407,
+        "line": 474,
         "level": 3,
         "title": "心跳事件"
       }
@@ -8060,6 +8130,14 @@
         "title": "房間邀請"
       }
     ],
+    "所有权（owner）系統": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 1,
+        "level": 1,
+        "title": "所有权（owner）系統"
+      }
+    ],
     "手動呼叫 Request DSL": [
       {
         "document": "platform-guide/onebot11.md",
@@ -8156,7 +8234,7 @@
       {
         "document": "api-reference/event-system.md",
         "line": 587,
-        "level": 4,
+        "level": 5,
         "title": "批量註冊（Mixin 類）"
       }
     ],
@@ -8179,7 +8257,7 @@
     "拓撲樹 API": [
       {
         "document": "advanced/scope.md",
-        "line": 396,
+        "line": 362,
         "level": 2,
         "title": "拓撲樹 API"
       }
@@ -8238,28 +8316,20 @@
         "title": "接收訊息"
       }
     ],
-    "控制面過濾：為什麼我的模組沒收到訊息": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 252,
-        "level": 2,
-        "title": "控制面過濾：為什麼我的模組沒收到訊息"
-      }
-    ],
-    "控制面配置（scope）": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 428,
-        "level": 2,
-        "title": "控制面配置（scope）"
-      }
-    ],
     "推薦使用懶加載的場景（lazy_load=True）": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 209,
         "level": 3,
         "title": "推薦使用懶加載的場景（lazy_load=True）"
+      }
+    ],
+    "推薦寫法": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 113,
+        "level": 3,
+        "title": "推薦寫法"
       }
     ],
     "推薦寫法：透過 I18nClass 宣告翻譯鍵（v2.7.0+）": [
@@ -8511,7 +8581,7 @@
     "收集表單 (collect)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 586,
+        "line": 653,
         "level": 3,
         "title": "收集表單 (collect)"
       }
@@ -8542,6 +8612,12 @@
     ],
     "文件列表": [
       {
+        "document": "advanced/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "文件列表"
+      },
+      {
         "document": "api-reference/README.md",
         "line": 5,
         "level": 2,
@@ -8554,14 +8630,6 @@
         "line": 98,
         "level": 3,
         "title": "文件格式規範"
-      }
-    ],
-    "文件清單": [
-      {
-        "document": "advanced/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "文件清單"
       }
     ],
     "文件結構規範": [
@@ -8871,7 +8939,7 @@
     "日誌配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 235,
+        "line": 280,
         "level": 2,
         "title": "日誌配置"
       }
@@ -8974,14 +9042,6 @@
         "line": 251,
         "level": 2,
         "title": "本地插件檔案夾架構"
-      }
-    ],
-    "本地插件熱重載架構": [
-      {
-        "document": "architecture.md",
-        "line": 279,
-        "level": 2,
-        "title": "本地插件熱重載架構"
       }
     ],
     "本地測試": [
@@ -9275,7 +9335,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 283,
+        "line": 328,
         "level": 2,
         "title": "框架配置"
       }
@@ -9428,6 +9488,14 @@
         "title": "標準遵循檢查清單"
       }
     ],
+    "模塊作者指南": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 111,
+        "level": 2,
+        "title": "模塊作者指南"
+      }
+    ],
     "模式一：HTML/JS 註入（推薦）": [
       {
         "document": "ecosystem/dashboard.md",
@@ -9516,6 +9584,14 @@
         "title": "模組概覽"
       }
     ],
+    "模組熱重載架構": [
+      {
+        "document": "architecture.md",
+        "line": 279,
+        "level": 2,
+        "title": "模組熱重載架構"
+      }
+    ],
     "模組生命週期": [
       {
         "document": "advanced/lifecycle.md",
@@ -9544,14 +9620,6 @@
         "title": "模組發現機制"
       }
     ],
-    "模組維度": [
-      {
-        "document": "advanced/scope.md",
-        "line": 219,
-        "level": 3,
-        "title": "模組維度"
-      }
-    ],
     "模組設計": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -9571,7 +9639,7 @@
     "模組配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 399,
+        "line": 444,
         "level": 2,
         "title": "模組配置"
       }
@@ -9656,6 +9724,14 @@
         "title": "權限控制"
       }
     ],
+    "歸屬資源全景": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 41,
+        "level": 2,
+        "title": "歸屬資源全景"
+      }
+    ],
     "注意事項": [
       {
         "document": "advanced/lazy-loading.md",
@@ -9667,6 +9743,12 @@
         "document": "advanced/lifecycle.md",
         "line": 358,
         "level": 2,
+        "title": "注意事項"
+      },
+      {
+        "document": "advanced/ownership.md",
+        "line": 135,
+        "level": 3,
         "title": "注意事項"
       },
       {
@@ -9692,7 +9774,7 @@
       {
         "document": "api-reference/event-system.md",
         "line": 633,
-        "level": 4,
+        "level": 5,
         "title": "注銷方法"
       }
     ],
@@ -9849,7 +9931,7 @@
     "消息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 377,
+        "line": 422,
         "level": 3,
         "title": "消息配置"
       }
@@ -10133,7 +10215,7 @@
     "獲取幫助": [
       {
         "document": "README.md",
-        "line": 88,
+        "line": 89,
         "level": 2,
         "title": "獲取幫助"
       }
@@ -10258,8 +10340,8 @@
     ],
     "用戶優先：主人生效範圍由用戶最終決定": [
       {
-        "document": "advanced/scope.md",
-        "line": 347,
+        "document": "user-guide/configuration.md",
+        "line": 274,
         "level": 3,
         "title": "用戶優先：主人生效範圍由用戶最終決定"
       }
@@ -10634,12 +10716,12 @@
         "title": "監聽 Bot 生命週期"
       }
     ],
-    "監聽@訊息": [
+    "監聽@消息": [
       {
         "document": "getting-started/event-handling.md",
         "line": 56,
         "level": 3,
-        "title": "監聽@訊息"
+        "title": "監聽@消息"
       }
     ],
     "監聽成員變更": [
@@ -10666,20 +10748,20 @@
         "title": "監聽生命週期事件"
       }
     ],
-    "監聽私聊訊息": [
+    "監聽私聊消息": [
       {
         "document": "getting-started/event-handling.md",
         "line": 37,
         "level": 3,
-        "title": "監聽私聊訊息"
+        "title": "監聽私聊消息"
       }
     ],
-    "監聽群聊訊息": [
+    "監聽群聊消息": [
       {
         "document": "getting-started/event-handling.md",
         "line": 46,
         "level": 3,
-        "title": "監聽群聊訊息"
+        "title": "監聽群聊消息"
       }
     ],
     "監聽者查詢（has_handlers）": [
@@ -10859,7 +10941,7 @@
     "相關連結": [
       {
         "document": "README.md",
-        "line": 94,
+        "line": 95,
         "level": 2,
         "title": "相關連結"
       },
@@ -10879,7 +10961,7 @@
     "確認對話 (confirm)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 533,
+        "line": 600,
         "level": 3,
         "title": "確認對話 (confirm)"
       }
@@ -10943,7 +11025,7 @@
     "等待任意事件 (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 606,
+        "line": 673,
         "level": 3,
         "title": "等待任意事件 (wait_for)"
       }
@@ -10951,7 +11033,7 @@
     "等待使用者回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 468,
+        "line": 535,
         "level": 3,
         "title": "等待使用者回覆"
       }
@@ -11100,20 +11182,20 @@
         "title": "組合修飾"
       }
     ],
+    "統一事件覆寫配置（event.overrides）": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 523,
+        "level": 2,
+        "title": "統一事件覆寫配置（event.overrides）"
+      }
+    ],
     "統一捕獲": [
       {
         "document": "advanced/http-client.md",
         "line": 422,
         "level": 3,
         "title": "統一捕獲"
-      }
-    ],
-    "統一控制面（scope）": [
-      {
-        "document": "advanced/scope.md",
-        "line": 1,
-        "level": 1,
-        "title": "統一控制面（scope）"
       }
     ],
     "統一的模組獲取入口": [
@@ -11130,6 +11212,14 @@
         "line": 90,
         "level": 2,
         "title": "統計概覽"
+      }
+    ],
+    "綁定繼承（merge）": [
+      {
+        "document": "advanced/scope.md",
+        "line": 127,
+        "level": 3,
+        "title": "綁定繼承（merge）"
       }
     ],
     "網路用戶端": [
@@ -11151,7 +11241,7 @@
     "緩存與熱更新": [
       {
         "document": "advanced/scope.md",
-        "line": 353,
+        "line": 308,
         "level": 2,
         "title": "緩存與熱更新"
       }
@@ -11183,7 +11273,7 @@
     "群成員增加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 340,
+        "line": 407,
         "level": 3,
         "title": "群成員增加"
       }
@@ -11191,7 +11281,7 @@
     "群成員減少": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 350,
+        "line": 417,
         "level": 3,
         "title": "群成員減少"
       }
@@ -11247,7 +11337,7 @@
     "群邀請請求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 378,
+        "line": 445,
         "level": 3,
         "title": "群邀請請求"
       }
@@ -11330,14 +11420,6 @@
         "title": "自定義消息段"
       }
     ],
-    "自定義身份來源（provider）": [
-      {
-        "document": "advanced/scope.md",
-        "line": 319,
-        "level": 3,
-        "title": "自定義身份來源（provider）"
-      }
-    ],
     "自訂儲存後端": [
       {
         "document": "advanced/sql-builder.md",
@@ -11352,6 +11434,14 @@
         "line": 269,
         "level": 3,
         "title": "自訂字體"
+      }
+    ],
+    "自訂身份源（provider）": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 246,
+        "level": 3,
+        "title": "自訂身份源（provider）"
       }
     ],
     "自訂預設標頭": [
@@ -11430,14 +11520,6 @@
         "line": 321,
         "level": 3,
         "title": "處理互動事件"
-      }
-    ],
-    "處理器與覆蓋維度": [
-      {
-        "document": "advanced/scope.md",
-        "line": 274,
-        "level": 3,
-        "title": "處理器與覆蓋維度"
       }
     ],
     "處理快捷選單事件": [
@@ -11570,7 +11652,7 @@
       {
         "document": "api-reference/event-system.md",
         "line": 645,
-        "level": 4,
+        "level": 5,
         "title": "覆寫內建方法"
       }
     ],
@@ -11580,6 +11662,14 @@
         "line": 385,
         "level": 3,
         "title": "規則傳播"
+      }
+    ],
+    "規則形態（內聯表）": [
+      {
+        "document": "advanced/scope.md",
+        "line": 167,
+        "level": 3,
+        "title": "規則形態（內聯表）"
       }
     ],
     "規則方法一覽": [
@@ -11802,6 +11892,22 @@
         "title": "設定"
       }
     ],
+    "設定格式校驗": [
+      {
+        "document": "advanced/scope.md",
+        "line": 316,
+        "level": 2,
+        "title": "設定格式校驗"
+      }
+    ],
+    "設定檔": [
+      {
+        "document": "advanced/scope.md",
+        "line": 65,
+        "level": 2,
+        "title": "設定檔"
+      }
+    ],
     "設定說明": [
       {
         "document": "platform-guide/matrix.md",
@@ -11816,6 +11922,14 @@
         "line": 539,
         "level": 3,
         "title": "設定項目說明"
+      }
+    ],
+    "設計邊界：哪些資源不隨卸載清理": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 96,
+        "level": 2,
+        "title": "設計邊界：哪些資源不隨卸載清理"
       }
     ],
     "註冊 API": [
@@ -11963,7 +12077,7 @@
     "請求事件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 360,
+        "line": 427,
         "level": 2,
         "title": "請求事件處理"
       }
@@ -12049,7 +12163,7 @@
     "豁免清單": [
       {
         "document": "user-guide/configuration.md",
-        "line": 336,
+        "line": 381,
         "level": 4,
         "title": "豁免清單"
       }
@@ -12196,14 +12310,6 @@
         "title": "路由管理器"
       }
     ],
-    "身份維度": [
-      {
-        "document": "advanced/scope.md",
-        "line": 241,
-        "level": 3,
-        "title": "身份維度"
-      }
-    ],
     "載入失敗時的診斷資訊": [
       {
         "document": "advanced/startup.md",
@@ -12282,14 +12388,6 @@
         "line": 280,
         "level": 3,
         "title": "返回值處理範例"
-      }
-    ],
-    "返回值規範": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 608,
-        "level": 4,
-        "title": "返回值規範"
       }
     ],
     "返回值說明": [
@@ -12383,7 +12481,7 @@
     "通用": [
       {
         "document": "advanced/scope.md",
-        "line": 285,
+        "line": 279,
         "level": 3,
         "title": "通用"
       }
@@ -12461,7 +12559,7 @@
     "通知事件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 326,
+        "line": 393,
         "level": 2,
         "title": "通知事件處理"
       }
@@ -12533,7 +12631,7 @@
     "連接事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 391,
+        "line": 458,
         "level": 3,
         "title": "連接事件"
       }
@@ -12650,14 +12748,6 @@
         "title": "運行控制命令"
       }
     ],
-    "運行時 API": [
-      {
-        "document": "advanced/scope.md",
-        "line": 217,
-        "level": 2,
-        "title": "運行時 API"
-      }
-    ],
     "運行時細粒度控制": [
       {
         "document": "advanced/startup.md",
@@ -12685,7 +12775,7 @@
     "適用對象": [
       {
         "document": "advanced/README.md",
-        "line": 22,
+        "line": 23,
         "level": 2,
         "title": "適用對象"
       }
@@ -12782,7 +12872,7 @@
       {
         "document": "api-reference/event-system.md",
         "line": 567,
-        "level": 3,
+        "level": 4,
         "title": "適配器：註冊平台擴展方法"
       }
     ],
@@ -12805,7 +12895,7 @@
     "選擇選單 (choose)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 550,
+        "line": 617,
         "level": 3,
         "title": "選擇選單 (choose)"
       }
@@ -12880,14 +12970,6 @@
         "line": 107,
         "level": 2,
         "title": "配置懶加載"
-      }
-    ],
-    "配置文件": [
-      {
-        "document": "advanced/scope.md",
-        "line": 64,
-        "level": 2,
-        "title": "配置文件"
       }
     ],
     "配置文件位置": [
@@ -13355,7 +13437,7 @@
     "鏈路控制：認領與阻斷": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 279,
+        "line": 346,
         "level": 2,
         "title": "鏈路控制：認領與阻斷"
       }
@@ -13379,7 +13461,7 @@
     "開發方式": [
       {
         "document": "README.md",
-        "line": 75,
+        "line": 76,
         "level": 2,
         "title": "開發方式"
       }
@@ -13612,6 +13694,14 @@
         "line": 84,
         "level": 2,
         "title": "驗證安裝"
+      }
+    ],
+    "高級：字典式點分路徑兜底": [
+      {
+        "document": "advanced/scope.md",
+        "line": 291,
+        "level": 3,
+        "title": "高級：字典式點分路徑兜底"
       }
     ],
     "高階方法（推薦）": [

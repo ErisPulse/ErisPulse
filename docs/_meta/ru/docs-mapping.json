@@ -26,7 +26,7 @@
           "icon": "fa-sitemap"
         },
         {
-          "title": "Баг-трекер",
+          "title": "Отслеживание ошибок",
           "path": "bug-tracker.md",
           "level": 1,
           "icon": "fa-bug"
@@ -325,7 +325,7 @@
           "icon": "fa-cubes-stacked"
         },
         {
-          "title": "API системы событий",
+          "title": "Система API событий",
           "path": "api-reference/event-system.md",
           "level": 1,
           "icon": "fa-bolt-lightning"
@@ -336,7 +336,7 @@
     "Продвинутые темы": {
       "description": "Глубокое изучение продвинутых функций фреймворка",
       "icon": "fa-fire",
-      "count": 11,
+      "count": 12,
       "documents": [
         {
           "title": "Расширенные темы",
@@ -393,10 +393,16 @@
           "icon": "fa-language"
         },
         {
-          "title": "Unified Control Plane (scope)",
+          "title": "Scope",
           "path": "advanced/scope.md",
           "level": 1,
           "icon": "fa-shield-halved"
+        },
+        {
+          "title": "Система владельцев (owner)",
+          "path": "advanced/ownership.md",
+          "level": 1,
+          "icon": "fa-user-tag"
         },
         {
           "title": "Процесс запуска и ручное управление",

@@ -125,9 +125,9 @@ flowchart TD
 
 > 完全な初期化フローの分解（Finder / Loader / Manager / Router）、下層エントリポイント（`init()` / `init_task()` / `init_sync()`）および手動での完全起動については [起動プロセスと手動制御](advanced/startup.md) を参照してください。
 
-## イベント処理のフロー
+## イベント処理フロー
 
-下の図は、プラットフォームからハンドラへメッセージが完全に流れる経路を示しています：
+下の図は、プラットフォームからハンドラへのメッセージの完全な転送経路を示しています：
 
 ```mermaid
 flowchart LR
@@ -142,13 +142,13 @@ flowchart LR
     F --> G4["request<br/>リクエストハンドラ"]
     F --> G5["meta<br/>メタイベントハンドラ"]
     G1 & G2 & G3 & G4 & G5 --> H["ハンドラのコールバック実行"]
-    H --> I["event.reply()<br/>SendDSL を通じた返信"]
+    H --> I["event.reply()<br/>SendDSL で返信"]
     I --> J["アダプタがプラットフォームに送信"]
 ```
 
-### イベント処理の詳細な経路
+### イベント処理チェーンの詳細
 
-上記の図は「結果」です。次に `adapter.emit()` を分解すると、フレームワークが**背後で何をしているか**がわかります。これは3層の配信経路です：
+上記の図は「結果」です。下に `adapter.emit()` を分解すると、フレームワークが**背後で何をしているか**がわかります。これは3層に分かれた配信チェーンです：
 
 ```mermaid
 sequenceDiagram
@@ -162,42 +162,42 @@ sequenceDiagram
     A->>A: [Recv] 受信ログ
     A->>A: lifecycle.adapter.event.receive（初期のフック）
     A->>A: self フィールドの処理（meta 分岐 / Bot 自動登録）
-    A->>A: ミドルウェアチェーン（直列、イベントデータの変更可）
+    A->>A: ミドルウェアチェーン（シリアル、イベントデータを変更可能）
     A->>A: handler の収集（具体的なタイプ + ワイルドカード *）
-    A->>A: 身元認証 + スコープフィルタリング（Task の作成前に、静かに破棄/スキップ）
+    A->>A: 身元認証 + スコープフィルタリング（Task の作成前に、無視/スキップ）
     A->>T: asyncio.create_task（fire-and-forget）
     A->>A: lifecycle.adapter.event.dispatched（最終のフック）
     T->>T: 並行信号量の取得（デフォルト上限 64）
-    T->>E: Event モジュールに登録されたハンドラの呼び出し
+    T->>E: Event モジュールに登録されたハンドラを呼び出す
     E->>E: lifecycle.event.pre_process
     E->>E: ignore_self（メッセージイベントではデフォルトで自身を無視）
-    E->>E: 優先度順にグループ化：高→低、グループ間は直列、グループ内は並行
-    E->>E: グループ内のコピーの実行 + フィールドのマージ（衝突時は警告）
-    E->>E: グループ後の stop() 検査、より低い優先度をブロック
-    T->>T: スローログ（1秒以上かかる場合は警告、wait_reply 時間は除外）
+    E->>E: 優先度順にグループ化：高→低、グループ間はシリアル、グループ内は並行
+    E->>E: グループ内のコピーを実行 + フィールドのマージ（衝突時は警告）
+    E->>E: グループ後、stop() でチェックし、より低い優先度をブロック
+    T->>T: 遅いログ（1秒以上かかる場合は警告、wait_reply 時間は除外）
 ```
 
-**フレームワークが何をしているか、そしてあなたが介入できる点は以下の通りです：**
+**フレームワークが何をし、あなたが介入できるか：**
 
-| 階段 | フレームワークが行ったこと | 介入できる点 |
+| 階段 | フレームワークが何をしたか | 介入できるか |
 |------|-------------|-----------|
-| 受信 | 標準フィールドの抽出、`{platform}_raw` の元データを保持；`[Recv]` ログを記録 | `adapter.event.receive` を監視して初期イベントを取得 |
-| self フィールド | meta イベントは connect/disconnect/heartbeat 分岐；通常イベントでは Bot を自動登録し、`adapter.bot.online` をトリガー | `adapter.bot.online` / `bot.offline` を監視 |
-| ミドルウェア | **直列**に実行し、戻り値が None でない場合はイベントデータを置き換え | ミドルウェアを登録してイベントを変更/ブロック |
-| 分発収集 | 先に具体的なタイプの handler を取得し、次に `*` ワイルドカード handler を取得 | — |
-| 身元次元 | 入口でユーザー > 会話 > Bot > アダプタの順でイベントを受け取るかどうか判定（`scope.is_identity_allowed`）、**拒否された場合はイベント全体を破棄** | `ErisPulse.scope.identity` をバインド |
-| スコープフィルタリング | モジュールの所有者に基づいて `scope.is_allowed` を判定（会話レベル > Bot レベル > プラットフォームレベル）、**通過しない場合は静かにスキップ** | スコープのホワイトリスト/ブラックリストを設定 |
-| スケジューリング | 各マッチする handler ごとに独立した `asyncio.Task` を作成、`emit()` は **handler の完了を待たずに即座に返却** | — |
-| 優先度 | 高優先度のグループが先に実行；**グループ間は直列、グループ内は並行**（グループ内では各 handler がイベントのコピーを持ち、フィールドをマージし、衝突時は WARNING を出力） | `@command(..., priority=N)` / 登録時に priority を指定 |
-| ブロック | 各グループの処理後に `event.is_stopped()` をチェックし、一致した場合は**より低い優先度は実行されない** | `event.mark_processed(stop=True)` / `event.done()` |
+| 受信 | 標準フィールドの抽出、`{platform}_raw` の元データの保持；`[Recv]` ログの書き込み | `adapter.event.receive` を監視して初期イベントを取得 |
+| self フィールド | meta イベントは connect/disconnect/heartbeat 分岐；通常のイベントは Bot の自動登録と `adapter.bot.online` のトリガー | `adapter.bot.online` / `bot.offline` を監視 |
+| ミドルウェア | **シリアル**に実行し、戻り値が None でなければイベントデータを置換 | ミドルウェアを登録してイベントを変更/ブロック |
+| 分配収集 | 先に具体的なタイプの handler を取得し、次に `*` ワイルドカード handler を取得 | — |
+| 身元次元 | 分配入口はユーザー>会話>Bot>アダプタの順に判定し、`scope.is_identity_allowed` でイベントを受け取るかを判断し、**拒否された場合はイベント全体を破棄** | `ErisPulse.scope.identity` をバインド |
+| スコープフィルタリング | モジュールの所有者に基づいて `scope.is_allowed` を判定（会話レベル>Botレベル>プラットフォームレベル）、**不通過の場合は静かにスキップ** | スコープのホワイトリスト/ブラックリストを設定 |
+| スケジューリング | 各マッチする handler に独立した `asyncio.Task` を作成し、`emit()` は handler の完了を待たずに即座に返却 | — |
+| 優先度 | 高優先度のグループが先に実行される；**グループ間はシリアル、グループ内は並行**（グループ内の各 handler はイベントのコピーを持ち、フィールドの変更をマージし、衝突時は WARNING を出力） | `@command(..., priority=N)` / 登録時に priority を指定 |
+| ブロッキング | 各グループの処理後、`event.is_stopped()` をチェックし、一致した場合は**より低い優先度を実行しない** | `event.mark_processed(stop=True)` / `event.done()` |
 
-> **よくある誤解**:
-> 1. **スコープフィルタリングは静かである**——遮断された handler はエラーもレスポンスもせず、TRACE ログレベルでのみ表示されます（`core.scope.denied`）。「私のモジュールがメッセージを受け取らない」場合は、まずスコープのバインディングを確認してください。
-> 2. **handler は天然に並行である**——フレームワークは各 handler に独立した Task を作成しており、**自分で `asyncio.create_task` をラップする必要はありません**。
-> 3. **同じ優先度のグループ内ではブロックされない**——`mark_processed(stop=True)` はより低い優先度のグループをブロックするだけで、同じグループ内で既に並行実行中の handler は途中で中断されません。
-> 4. **スローログの閾値は固定の1秒である**——ハンドラの処理時間が1秒を超えるとログに WARNING が出力されます（`wait_reply` の待機時間は処理時間から除外されますが、実行は中断されません）。
+> **よくある誤解**：
+> 1. **スコープフィルタリングは静かに無視される**——遮断された handler はエラーも返信もせず、TRACE レベルのログ（`core.scope.denied`）にのみ表示される。「私のモジュールがメッセージを受け取っていない」場合は、まずスコープのバインディングを確認。
+> 2. **handler は天然に並行実行される**——フレームワークは各 handler に独立した Task を作成しており、**自分で `asyncio.create_task` をラップする必要はない**。
+> 3. **同じ優先度のグループ内はブロックされない**——`mark_processed(stop=True)` はより低い優先度のグループをブロックするだけで、同じグループ内で並行実行中の handler は途中で中断されない。
+> 4. **遅いログの閾値は固定で1秒**——ハンドラの処理時間が1秒を超えるとログに WARNING を出力する（`wait_reply` の待ち時間は処理時間から除外される）が、実行は中断されない。
 
-> 作用域の3段階のバインディングと優先度の詳細は [作用域システム](advanced/scope.md) を参照してください。claim/ブロックの完全な意味は [イベント処理の入門](getting-started/event-handling.md) を参照してください。並行上限の設定は [設定ガイド](user-guide/configuration.md#フレームワーク設定) を参照してください。
+> スコープ（scope）のモジュール次元の3段階バインディング、身元認証と出力アクションの制限の詳細は [スコープ（scope）](advanced/scope.md) を参照。イベントスコープのテキストフィルタリングとコマンドユーザー ACL は [イベント処理入門](getting-started/event-handling.md) を参照。並行上限の設定は [設定ガイド](user-guide/configuration.md#フレームワーク設定) を参照。
 
 ## ライフサイクルイベント
 
@@ -320,28 +320,35 @@ flowchart TD
 - ローカルプラグインの `moduleInfo.meta.source == "plugin_folder"` であり、PyPI でインストールされたパッケージモジュールとシームレスに共存
 - 同名のモジュールがある場合、ローカルのモジュールが優先（ローカルでの上書きデバッグが可能）、無効化された場合、同名の entry-point 条目も同時に削除
 
-## ローカルプラグインのホットリロードアーキテクチャ
+## モジュールのホットリロードアーキテクチャ
 
-ホットリロードはプラグインファイルの変更を監視し、対応するプラグインを自動的に再読み込みします：
+ホットリロードは**すべてのモジュールのソース**に対して一貫しています：ローカルプラグインはファイルの変更を監視して自動的にトリガーされ、任意のモジュールは `sdk.reload_module()` / `sdk.module.reload()` を使って手動でリロードできます（pip でインストールされた PyPI パッケージモジュールは pip によるアップグレード後に呼び出すだけで有効になります）：
 
 ```mermaid
 flowchart TD
-    A["sdk.enable_plugin_hot_reload()"] --> B["PluginReloadWatcher の起動"]
+    A["sdk.enable_plugin_hot_reload()<br/>（自動監視、ローカルプラグインディレクトリのみ）"] --> B["PluginReloadWatcher を起動"]
     B --> C["PollingObserver（バックグラウンドのデーモンスレッド）<br/>定期的に .py ファイルの mtime を比較"]
-    C --> D{"プラグインファイルの変更"}
-    D --> E["変更のデューディレイ（デフォルト 1 秒）"]
+    C --> D{"プラグインファイルが変更されたか？"}
+    D --> E["変更のデューディレイ（デフォルト1秒）"]
     E --> F["_handle_change でプラグイン名を解析<br/>（単一ファイル / パッケージ形式）"]
-    F --> G["asyncio.run_coroutine_threadsafe<br/>メインイベントループへのスケジューリング"]
-    G --> H["sdk.reload_plugin(name)"]
-    H --> I["古いインスタンスのアンロード（on_unload をトリガー）"]
-    I --> J["登録のクリーンアップ（unregister + sdk 属性の削除）"]
-    J --> K["sys.modules のクリーンアップで強制的に再インポート"]
-    K --> L["再発見 + 再登録 + 再読み込み"]
-    L --> M["新しいインスタンスを sdk 属性にマウント"]
-    M --> N["ファイルの削除 → 読み込み結果から自動的に削除"]
+    F --> G["asyncio.run_coroutine_threadsafe<br/>メインイベントループにスケジュール"]
+    G --> H["sdk.reload_module(name)<br/>（任意のモジュールに対しても手動で呼び出せる）"]
+    H --> I["古いインスタンスをアンロード（on_unload をトリガー）<br/>依存モジュールを収集して連鎖リロードの準備"] 
+    I --> J{"モジュールのソースは？"}
+    J -->|"plugin_folder"| K["登録とプラグイン sys.modules をクリーンアップ<br/>plugins/ ディレクトリを再スキャン"]
+    J -->|"PyPI 安装パッケージ"| L["登録をクリーンアップ + top_level に従って<br/>パッケージ sys.modules のサブツリーをクリーンアップ<br/>インポートキャッシュを更新して entry-point を再確認"]
+    K --> M["再登録 + 再読み込み"]
+    L --> M
+    M --> N["sdk 属性に新しいインスタンスをマウント"]
+    N --> O["依存モジュールの連鎖リロード<br/>（プラグインの完全リロード / PyPI の再インスタンス化）"]
+    K -.->|"ファイルが削除された"| P["ロード結果から削除"]
+    L -.->|"entry-point が消滅した（アンインストール済み）"| P
 ```
 
-[**English**](docs/ja/quick-start.md)
+**2 種類のソースの違いは発見段階のみ**で、登録、読み込み、連鎖リロードは完全に一貫しています：
+
+- **ローカルプラグイン**（`moduleInfo.meta.source == "plugin_folder"`）：プラグイン名に対応する `sys.modules` をクリーンアップした後、`plugins/` ディレクトリを再スキャンします。ファイルが削除された場合は、ロード結果から削除します。
+- **PyPI 安装パッケージ**：`meta.top_level` に従ってパッケージの `sys.modules` のサブツリーをクリーンアップし、インポートキャッシュを更新（entry-point の 60 秒キャッシュを突破）した後、entry-point を再確認して再インポートします。entry-point が消滅した（pip でアンインストールされた）場合は、ロード結果から削除します。
 
 
 
@@ -1072,28 +1079,28 @@ class Main(BaseModule):
 
 ### 事件处理入门
 
-# イベント処理入門
+# イベント処理の入門
 
-このガイドでは、ErisPulse におけるさまざまなイベントの処理方法を紹介します。
+このガイドでは、ErisPulse におけるさまざまなイベントの処理方法について説明します。
 
-## イベントの種類概要
+## イベントの種類の概要
 
-ErisPulse は以下のイベントの種類をサポートしています：
+ErisPulse は以下のイベントの種類をサポートしています。
 
 | イベントの種類 | 説明 | 適用場面 |
 |---------|------|---------|
-| メッセージイベント | ユーザーが送信するすべてのメッセージ | チャットボット、コンテンツフィルタリング |
-| コマンドイベント | コマンドプレフィックスで始まるメッセージ | コマンド処理、機能の入口 |
-| 通知イベント | システム通知（友達追加、グループメンバー変更など） | メッセージの歓迎、ステータス通知 |
+| メッセージイベント | ユーザーが送信した任意のメッセージ | チャットボット、コンテンツフィルタリング |
+| コマンドイベント | コマンド接頭辞で始まるメッセージ | コマンド処理、機能のエントリポイント |
+| 通知イベント | システム通知（友達追加、グループメンバーの変更など） | メッセージの歓迎、状態通知 |
 | 要求イベント | ユーザーの要求（友達リクエスト、グループ招待） | 要求の自動処理 |
-| メタイベント | システムレベルのイベント（接続、ハートビート） | 接続監視、ステータスチェック |
+| 元イベント | システムレベルのイベント（接続、ハートビート） | 接続監視、状態チェック |
 
 ## メッセージイベントの処理
 
-> **ヒント**: イベントハンドラで `Event` タイプの注釈を使用することを推奨します。これにより、IDEの自動補完と型チェックがサポートされます。
+> **注意**: IDEの自動補完と型チェックのサポートを得るために、イベントハンドラで `Event` クラスの型注釈を使用することを推奨します。
 
 ```python
-from ErisPulse.Core.Event import Event  # イベントの型を注釈に使用
+from ErisPulse.Core.Event import Event  # Event型の注釈に使用するイベント型をインポート
 ```
 
 ### すべてのメッセージを監視
@@ -1105,7 +1112,7 @@ from ErisPulse.Core.Event import message, Event
 async def message_handler(event: Event):
     text = event.get_text()
     user_id = event.get_user_id()
-    sdk.logger.info(f"{user_id} からのメッセージを受け取りました: {text}")
+    sdk.logger.info(f"{user_id} からのメッセージを受信しました: {text}")
 ```
 
 ### プライベートメッセージを監視
@@ -1114,10 +1121,10 @@ async def message_handler(event: Event):
 @message.on_private_message()
 async def private_handler(event: Event):
     user_id = event.get_user_id()
-    await event.reply(f"こんにちは、{user_id}！これはプライベートメッセージです。")
+    await event.reply(f"こんにちは、{user_id}さん！これはプライベートメッセージです。")
 ```
 
-### グループチャットメッセージを監視
+### グループメッセージを監視
 
 ```python
 @message.on_group_message()
@@ -1134,33 +1141,33 @@ async def group_handler(event: Event):
 async def at_handler(event: Event):
     # @されたユーザーのリストを取得
     mentions = event.get_mentions()
-    await event.reply(f"あなたが@したユーザー: {mentions}")
+    await event.reply(f"以下のユーザーを@しました: {mentions}")
 ```
 
 ### ワイルドカードと正規表現による監視
 
-`on_message` / `on_private_message` / `on_group_message` / `on_at_message` の4つのメッセージデコレータは、`pattern`（globワイルドカード）と `regex`（正規表現）をサポートしています。一致しないメッセージは**ハンドラをトリガーしません**：
+4つのメッセージデコレータ（`on_message` / `on_private_message` / `on_group_message` / `on_at_message`）は、`pattern`（globワイルドカード）と `regex`（正規表現）をサポートしており、パターンに一致しないメッセージは**ハンドラをトリガーしません**。
 
 ```python
 # globワイルドカード：* 任意の文字列、? 1文字、[seq] 文字集合
 @message.on_message(pattern="签到*")
 async def signin_handler(event: Event):
-    await event.reply("签到成功")
+    await event.reply("サインインに成功しました")
 
-# 正規表現：金額を一致させる
+# 正規表現：金額をマッチ
 @message.on_message(regex=r"\d+\s*元")
 async def price_handler(event: Event):
-    await event.reply(f"金額を受け取りました: {event.get_text()}")
+    await event.reply(f"金額を受信しました: {event.get_text()}")
 
-# pattern と regex が同時に与えられた場合 → 両方とも一致する必要がある
+# pattern と regex 両方指定 → 両方ともマッチする必要がある
 @message.on_message(pattern="*元", regex=r"\d+\s*元")
 async def combined_handler(event: Event):
     pass
 ```
 
-`wait_reply` はこの2つのパラメータもサポートしています（[返信の待機機能](../developer-guide/modules/event-wrapper.md#待機返信機能)を参照）。
+`wait_reply` でもこの2つのパラメータをサポートしています（[返信の待ち機能](../developer-guide/modules/event-wrapper.md#返信の待ち機能)を参照してください）。
 
-## コマンドイベントの処理
+## コマンドイベント処理
 
 ### 基本コマンド
 
@@ -1170,8 +1177,8 @@ from ErisPulse.Core.Event import command
 @command("help", help="ヘルプ情報を表示")
 async def help_handler(event):
     help_text = """
-使用可能なコマンド:
-/help - ヘルプ情報を表示
+利用可能なコマンド：
+/help - ヘルプを表示
 /ping - 接続をテスト
 /info - 情報を表示
     """
@@ -1181,7 +1188,7 @@ async def help_handler(event):
 ### コマンドのエイリアス
 
 ```python
-@command(["help", "h"], aliases=["帮助"], help="ヘルプ情報を表示")
+@command(["help", "h"], aliases=["help", "h"], help="ヘルプ情報を表示")
 async def help_handler(event):
     await event.reply("ヘルプ情報...")
 ```
@@ -1189,12 +1196,12 @@ async def help_handler(event):
 ユーザーは以下のいずれかの方法で呼び出すことができます：
 - `/help`
 - `/h`
-- `/帮助`
+- `/help`
 
-### コマンドの引数
+### コマンド引数
 
 ```python
-@command("echo", help="メッセージを返す")
+@command("echo", help="メッセージを返信")
 async def echo_handler(event):
     # コマンド引数を取得
     args = event.get_command_args()
@@ -1219,16 +1226,16 @@ async def stop_handler(event):
 
 ### コマンドの権限とアクセス制御
 
-コマンドの権限は3層に分かれています（**上層が拒否された場合は下層は見られません**）：
+コマンドの権限は3層に分かれ、上から順に判定されます（**上層が拒否された場合、下層は確認されません**）：
 
 ```python
-# ① コマンドのACL（ユーザー側設定）：コマンドのユーザーのホワイトリスト/ブラックリストで、拒否された場合は「権限がありません」と返します
-# ② master=True —— フレームワークのオーナーのみ実行可能（フレームワークが自動的にチェックし、拒否された場合は「権限がありません」と返します）
+# ① コマンド権限 ACL（ユーザー側設定）：コマンドごとのユーザーの白黒リスト、拒否時は「権限不足」を返信
+# ② master=True —— フレームワークの所有者のみ実行可能（フレームワークが自動的にチェック、拒否時は「権限不足」を返信）
 @command("restart", master=True, help="モジュールを再起動")
 async def restart_handler(event):
     await event.reply("モジュールを再起動しました")
 
-# ③ permission=関数呼び出し —— コマンド自身の制御ロジック（Trueを返した場合にのみ実行）
+# ③ permission=関数 —— コマンド自身の制御ロジック（Trueを返す場合に実行）
 def is_admin(event):
     return event.get_user_id() in {"user123", "user456"}
 
@@ -1237,33 +1244,36 @@ async def panel_handler(event):
     await event.reply("管理パネルへようこそ")
 ```
 
-**コマンドのACL**（コントロール面 `ErisPulse.scope.commands`）：ユーザーは任意のコマンドにユーザーのホワイトリスト/ブラックリストを設定でき、コマンド名は正確な一致とglobパターン（例：`"roll*"`）をサポートします。拒否された場合は「権限がありません」と返します：
+**コマンドユーザー ACL**（`ErisPulse.event.command.acl`）：ユーザーは任意のコマンドにユーザーの白黒リストを設定できます。コマンド名は正確な一致と glob モード（例：`"roll*"`）をサポートし、拒否時は「権限不足」を返信します：
 
 ```toml
-# config.toml —— restartを123456のみ実行可能に、666は一律拒否
-[ErisPulse.scope.commands.restart]
+# config.toml —— restart は 123456 だけが実行可能、666 は一律拒否
+[ErisPulse.event.command.acl.restart]
 allow = ["onebot11:123456"]
 deny = ["onebot11:666"]
 ```
 
-判定順序：`deny`が一致した場合 → 拒否；`allow`が空で一致しない場合 → 拒否；それ以外は開発者のデフォルトに任せる（`master=True` / `permission`）。実行時のAPI（コマンド名はglobパターンをサポート）：
+判定順序：`deny` が一致 → 拒否；`allow` が空でないかつ一致しない → 拒否；ACL が設定されていない場合は `event.command.default_allow`（`false` = 厳格モード、ACL がないと拒否；`true` の場合は開発者がデフォルトで `master=True` / `permission` を使用）に従います。実行時の API（コマンド名は glob に対応）：
 
 ```python
-from ErisPulse import sdk
-sdk.scope.allow_user("restart", "onebot11", "123456")   # 許可リスト
-sdk.scope.deny_user("restart", "onebot11", "666")       # 拒否リスト
-sdk.scope.remove_acl("restart")                          # ホワイトリスト/ブラックリストを削除
-sdk.scope.get_acl("restart")                             # 現在のリストを取得
+from ErisPulse.Core.Event import command
+
+command.allow_user("restart", "onebot11", "123456")   # 許可リスト
+command.deny_user("restart", "onebot11", "666")       # 拒否リスト
+command.remove_acl("restart")                          # 白黒リストを削除
+command.get_acl("restart")                             # 現在のリストを取得
 ```
 
-コマンド間 / ユーザー間の**イベントレベル**のアクセス制御（特定のユーザー / グループ / Botのメッセージを受信するかどうか）は、コントロール面の**アイデンティティ次元**（`scope.identity`）で行います。**モジュールレベル**の可用性（どのモジュールが使えるか）は、コントロール面の**モジュール次元**（`scope.platforms / bots / sessions`）で行います。詳細は[統一コントロール面](../advanced/scope.md)を参照してください。
+> コマンドハンドラはイベントパッケージからインポート：`from ErisPulse.Core.Event import command`；SDK イベントパッケージからもアクセス可能：`sdk.Event.command`（どちらも同一のシングルトンです）。モジュール内では通常、コマンドデコレータと共にインポートされています（`from ErisPulse.Core.Event import command`）。
 
-> おすすめ：コマンド内部でビジネスロジックを連動させる場合は `master=True` / `permission` を使用してください。ユーザー / グループごとのアクセス制御が必要な場合はコントロール面のアイデンティティ次元を使用してください。モジュールの可用性を制御する場合はコントロール面のモジュール次元を使用してください。
+コマンド間 / ユーザー間の**イベントレベル**のアクセス制御（特定のユーザー / 群 / Bot のメッセージを受信するかどうか）は**スコープのアイデンティティ次元**（`scope.identity`）を介して行います。**モジュールレベル**の可用性（どのモジュールが使用できるか）は**スコープのモジュール次元**（`scope.platforms / bots / sessions`）を介して行います。詳細は[スコープ（scope）](../advanced/scope.md)をご覧ください。
+
+> 建議：コマンド内部でビジネスロジックを連動させる場合は `master=True` / `permission` を使用してください。純粋にユーザー / 群によるアクセス制御を行う場合はスコープのアイデンティティ次元を使用し、モジュールの可用性を制御する場合はスコープのモジュール次元を使用してください。
 
 ### コマンドの優先度
 
 ```python
-# 優先度の値が大きいほど、実行が早くなります
+# 優先度の数値が大きいほど、実行が早くなります
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     await event.reply("高優先度のハンドラ")
@@ -1275,26 +1285,26 @@ async def low_priority_handler(event):
 
 ### 並列イベント処理
 
-ErisPulseのイベントシステムは**同じ優先度では並列、異なる優先度では直列**のスケジューリングモデルを採用しています：
+ErisPulse のイベントシステムは**同優先度は並列、異なる優先度は直列**のスケジューリングモデルを採用しています：
 
 ```
 イベント到着
     ↓
-priority=10 組: [ハンドラC || ハンドラD] 並列 → 結果を結合
-    ↓ (中断しない場合)
-priority=0 組: [ハンドラA || ハンドラB] 並列 → 結果を結合
+priority=10 組: [ハンドラC || ハンドラD] 並列 → 結果をマージ
+    ↓ (中断されていない場合)
+priority=0 組: [ハンドラA || ハンドラB] 並列 → 結果をマージ
     ↓
 ...
 ```
 
-- **同じ優先度の並列実行**：優先度が同じ複数のハンドラは同時に実行され、スループットが向上します
-- **異なる優先度の直列実行**：異なる優先度のグループは順番に実行され（値が大きいほど先に実行されます）、高優先度のハンドラが先に実行されます
-- **Copy-On-Write**：ハンドラが変更しない限りコピーを作成せず、オーバーヘッドをゼロにします
-- **競合処理**：同じ優先度の複数のハンドラが同じフィールドを変更した場合、最後の変更値を使用し、警告ログを記録します
-- **中断機構**：任意のハンドラが `event.done()`（デフォルト）または `event.done(claim=False)` を呼び出した後は、後続の低優先度のグループをスキップします。認領とブロックの違いは下記の[「チェーン制御：認領とブロック」](#チェーン制御認領とブロック)を参照してください。
+- **同優先度の並列処理**：優先度が同じ複数のハンドラは同時に実行され、スループットが向上します
+- **異なる優先度の直列処理**：異なる優先度のグループは順に実行されます（数値が大きいほど先に実行）、高優先度のハンドラが先に実行されることを保証します
+- **Copy-On-Write**：ハンドラが変更しない場合はコピーを作成せず、ゼロオーバーヘッドを確保します
+- **競合処理**：同優先度の複数のハンドラが同じフィールドを変更した場合、最後に変更された値が使用され、警告ログが記録されます
+- **中断機構**：任意のハンドラが `event.done()`（デフォルト）または `event.done(claim=False)` を呼び出した後、後続の低優先度グループはスキップされます。認領とブロックの違いは以下の[「リンク制御：認領とブロック」](#リンク制御認領とブロック)をご覧ください。
 
 ```python
-# 例：同じ優先度のハンドラが並列実行される
+# 例：同優先度のハンドラが並列に実行される
 @message.on_message(priority=0)
 async def handler_a(event):
     # タスクAを処理
@@ -1302,93 +1312,156 @@ async def handler_a(event):
 
 @message.on_message(priority=0)
 async def handler_b(event):
-    # handler_aと並列に実行
+    # handler_a と並列に実行される
     event['result_b'] = process_b()
 
-# 異なる優先度のハンドラが直列実行される
+# 異なる優先度で直列に実行される
 @message.on_message(priority=10)
 async def handler_c(event):
-    # 優先度が最も高い、最初に実行される
+    # 最も優先度が高く、最初に実行される
     pass
 ```
 
-> **並列上限**：すべてのマッチするハンドラのTaskは**即座に作成**されますが、シグナルマニュアルで**同時に実行される数**を制限します。デフォルトの上限は **64**（`ErisPulse.framework.handler_max_concurrency`、ホットアップデートが可能です）。上限を超えたTaskはシグナルマニュアルで待ち、前の処理が完了した後に実行されます。イベントのピーク時にはこれが「圧力調整弁」になります。
+> **並列上限**：すべてのマッチするハンドラの Task は**即座に作成**されますが、同時に実行される数を制限する信号量によって管理されます。デフォルトの上限は **64**（`ErisPulse.framework.handler_max_concurrency`、ホットアップデート対応）です。上限を超えた Task は信号量上で待ち、前の処理が完了した後に実行されます。イベントのピーク時に、これはあなたの「圧力緩和弁」になります。
 >
-> **遅延ログ**：個々のハンドラが1秒以上かかる場合、フレームワークはログにWARNINGを出力します（`handler_slow`）。`wait_reply`の待機時間は処理時間から差し引かれるため、「相手の返信を待つ」ことで誤って遅延と判定されることはありません。
+> **スローログ**：個々のハンドラの処理時間が **1 秒**を超える場合、フレームワークはログに WARNING（`handler_slow`）を出力します。`wait_reply` の待機時間は処理時間から除外され、「返信を待つ」ことで誤ったスローログが発生することはありません。
 
-## コントロール面フィルタリング：なぜ私のモジュールはメッセージを受け取らないのか
+## スコープフィルタリング：なぜ私のモジュールはメッセージを受け取らないのか
 
-イベントが到着した後、2つの**静的な**フィルタがあります（どちらも返信やエラーを出さない）：
+イベントが到達した後、2 つの**静黙**フィルタリング（返答もエラーも出さない）が存在します：
 
-1. **アイデンティティ次元**（`ErisPulse.scope.identity`）：イベントが分岐エントリに到達した時点で、ユーザー > グループ > Bot > アダプターの順に、イベントを受信するかどうかを判定します。拒否された**イベント全体**は破棄され、どのハンドラ（コマンドディスパッチャーを含む）もトリガーされません。
-2. **モジュール次元**（`ErisPulse.scope`）：イベントが特定のモジュールのハンドラ/コマンドに到達した時点で、セッション > Bot > プラットフォームの順に、そのモジュールが利用可能かどうかを判定し、**通過しない場合は静かにスキップ**されます。
+1. **アイデンティティ次元**（`ErisPulse.scope.identity`）：イベントが配信エントリポイントに到達した時点で、ユーザー > グループ > Bot > アダプタの順に判定し、受信するかどうかを決定します。  
+   拒否された**イベント全体**は直接破棄され、コマンドディスパッチャーを含むすべてのハンドラはトリガされません。
+2. **モジュール次元**（`ErisPulse.scope`）：イベントが特定のモジュールのハンドラ/コマンドに到達した時点で、セッション > Bot > プラットフォームの順に判定し、そのモジュールが有効かどうかを確認します。**判定に失敗した場合、静黙でスキップされます**。
 
 ```toml
-# 例1：特定のグループのすべてのメッセージをブロック
+# 例1：特定のグループのすべてのメッセージを伝播させない
 [ErisPulse.scope.identity.sessions.onebot11."group_123"]
 deny = true
 
-# 例2：特定のBotからMyModuleをブロック
+# 例2：特定の Bot に対して MyModule をブロックする
 [ErisPulse.scope.bots.onebot11."123456"]
 blocked = ["MyModule"]
 ```
 
-この場合、特定のグループのメッセージが到着したとき、`MyModule`のコマンドとイベントハンドラは**すべてがスケジュールされません**。これはバグではなく、フィルタリング機構です。モジュールが反応しない場合のトラブルシューティングでは、まずコントロール面のアイデンティティとモジュールのバインディングを確認してください。
+この場合、そのグループのメッセージが到達したときに、`MyModule` のコマンドとイベントハンドラは**どちらもスケジュールされません**。これはバグではなく、フィルタリング機構です。モジュールが反応しないことを調査する際には、まず作用域のアイデンティティとモジュールのバインディングを確認してください。
 
-- フィルタリングログは**TRACE**レベルでのみ表示されます（`core.scope.identity_denied` / `core.scope.denied`）、デフォルトのINFOレベルでは何も表示されません
-- フレームワークレベルのハンドラ（`scope_exempt=True`）は**モジュール次元**の影響を受けませんが、**アイデンティティ次元**の影響を受けます（イベント全体が破棄されているため）
-- コマンド実行前に3番目のフィルタがあります：コマンドのACL（拒否された場合は「権限がありません」と返します、上記参照）
+- フィルタリングログは **TRACE** レベルでのみ表示されます（`core.scope.identity_denied` / `core.scope.denied`）。デフォルトの INFO レベルでは、ログの痕跡は一切表示されません。
+- フレームワークレベルのハンドラ（コマンドディスパッチャーなど、`scope_exempt=True`）は**モジュール次元**の影響を受けませんが、**アイデンティティ次元**の影響を受けます（イベント全体がすでに破棄されているため）。
+- コマンド実行前に 3 番目のフィルタリングがあります：コマンドユーザー ACL（拒否された場合、「権限不足」と返答します。前節参照）。
+- 4 番目のフィルタリングは**イベントオーバーライド**です（次節参照）。
 
-> 5つの次元の設定、マッチングの構文、実行時のAPIは[統一コントロール面](../../advanced/scope.md)を参照してください。
+> 作用域の設定、マッチングの構文、実行時の API については、[作用域（scope）](../../advanced/scope.md) を参照してください。
 
-## チェーン制御：認領とブロック
+## イベントのオーバーライド：モジュールのコードを変更せずに、任意のイベントタイプの動作を上書き
 
 > [!NOTE]
-> `event.done()` / `event.mark_processed()` の `claim=` / `stop=` パラメータは、ErisPulse **2.7.1+** が必要です。
+> この機能には ErisPulse **2.8.0+** が必要です。
 
-ErisPulseは「認領」と「ブロック」の2つの正交的な意味を分離し、`event.done()`で統一的に制御することで、コマンド処理の周囲にログ、監査、権限などの観測層を重ねることが容易になります。
+イベントハンドラは登録時に宣言するパラメータ（`pattern` / `regex` / `master` / `hidden` など）は、**開発者のデフォルト**にすぎません。
+統一されたオーバーライドシステムにより、ユーザーは**イベントタイプ**ごとに任意のモジュールの動作を上書きできます。OneBot12 標準タイプ
+（meta / message / notice / request）と ErisPulse 拡張タイプ（command）はそれぞれ独自の上書き可能なパラメータを持ちます：
 
-**2つの概念の正確な定義：**
+| イベントタイプ | 上書き可能なパラメータ | 作用 |
+|---------|-----------|------|
+| `message` | `pattern` / `regex` / `detail_types` | テキストのトリガ条件 + メッセージのサブタイプホワイトリスト |
+| `notice` | `detail_types` / `pattern` / `regex` | 通知のサブタイプホワイトリスト + テキスト条件 |
+| `request` | `detail_types` / `pattern` / `regex` | 要求のサブタイプホワイトリスト + テキスト条件 |
+| `meta` | `detail_types` | 元イベントのサブタイプホワイトリスト（connect / heartbeat など） |
+| `command` | `master` / `hidden` / `aliases` / `prefix` / `help` / `usage` | コマンド実装パラメータ（ユーザー優先） |
+| `acl`（command 専用） | `allow` / `deny` | コマンドのユーザーのホワイトリスト/ブラックリスト（コマンド名の glob で） |
 
-- **認領（claim）**：イベントがこのハンドラによって処理されたことをマークします（`_processed`に書き込み）。コマンドディスパッチャーは認領されたイベントを見ると**重複を避ける**ためにスキップします。典型的な場面：コマンドがマッチした後に認領し、コマンドディスパッチャーが再び介入しないようにする。
-- **ブロック（stop）**：イベントが**より低い優先度**のハンドラに伝播しないようにします（`_propagation_stopped`に書き込み）。より低い優先度のハンドラ（`on_message`など）はこのイベントを見られなくなります。典型的な場面：高優先度のハンドラがイベントを完全に処理した後、より低い優先度のハンドラが実行されないようにする。
+```toml
+# message：テキストのトリガ条件を上書き（コード内の条件と AND）
+[ErisPulse.event.overrides.message.ChatModule]
+pattern = "闲聊*"
 
-| `event.done(...)` | 認領 | ブロック | 場面 |
-|-------------------|------|------|------|
-| `event.done()` | ✔ | ✔ | コマンド / ハンドラが処理完了した標準的なやり方 |
-| `event.done(stop=False)` | ✔ | ✘ | 認領のみ、低優先度の観測者（ログ / 統計）が引き続きイベントを見られるようにする |
-| `event.done(claim=False)` | ✘ | ✔ | ブロックのみ（ファイアウォール / リミッターなど）、認領は行わない |
+# notice：特定の通知サブタイプのみ対応
+[ErisPulse.event.overrides.notice.MyModule]
+detail_types = ["group_increase"]
 
-`event.done(claim=, stop=)` は `event.mark_processed(claim=, stop=)` の別名であり、パラメータと動作は完全に等価です。
+# command：実装パラメータを上書き（ユーザー優先——開発者のデフォルトを厳しくしたり緩めたりできる）
+[ErisPulse.event.overrides.command.MyModule.restart]
+master = true
+hidden = true
+
+# acl：コマンドのユーザーのホワイトリスト/ブラックリスト（コマンド間 glob）
+[ErisPulse.event.overrides.acl."roll*"]
+allow = ["onebot11:u_vip"]
+
+# ACL のデフォルト（false = 厳格モード：ACL がない場合は拒否）
+acl_default_allow = true
+```
+
+実行時 API（`from ErisPulse.Core.Event import overrides` または `sdk.Event.overrides`、
+**タイプのサブネームスペース**——各タイプごとに `set` / `get` / `delete` の三つの関数が対称）：
+
+```python
+from ErisPulse.Core.Event import overrides
+
+overrides.message.set("ChatModule", pattern="闲聊*")   # message のテキスト条件
+overrides.notice.set("MyModule", detail_types=["group_increase"])
+overrides.command.set("MyModule", "restart", master=True)  # コマンドのパラメータ
+overrides.acl.set("roll*", deny=["onebot11:u_bad"])    # コマンドのユーザーのブラックリスト
+
+overrides.message.get("ChatModule")     # {"pattern": "闲聊*"}
+overrides.message.delete("ChatModule")  # 開発者のデフォルトに戻す
+```
+
+- 上書き条件とハンドラのコード内の条件は**両方有効**（AND 論理）；`command` パラメータは開発者が宣言した内容と**深くマージ**（上書きが優先）
+- `detail_types`：イベントに `detail_type` がない場合でも許可（未知のイベントを誤って拒否しない）
+- `pattern` / `regex`：テキストがないイベント（connect / heartbeat など）は制約を受けず、直接許可
+- `command` の上書きキー `master` は同期してストレージキー `must_master` にマッピングされる；コマンドの禁止はすべて `acl` deny を通る
+- 設定を変更すると即座に有効（ホットアップデート）、フォーマットの検証は警告（未知のパラメータ / 不正な項目は無視）
+
+## リンク制御：認領とブロッキング
+
+> [!NOTE]  
+> `event.done()` / `event.mark_processed()` の `claim=` / `stop=` パラメータは、この機能には ErisPulse **2.7.1+** が必要です。
+
+ErisPulse では、「認領」と「ブロッキング」の2つの正交的な概念を分離し、`event.done()` で一元的に制御することで、コマンド処理の周囲にログ、監査、権限などの観測層を重ねることが容易になります。
+
+**2つの概念の正確な定義は以下の通りです：**
+
+- **認領（claim）**：イベントがこのプロセッサによって処理されたことをマークします（`_processed` に書き込みます）。コマンドディスパッチャーは、認領済みのイベントを見ると**重複処理をスキップ**します——同じメッセージが複数のコマンドプロセッサに重複して処理されるのを防ぎます。典型的な場面：コマンドがマッチした後に認領し、コマンドディスパッチャーが再び介入しないようにします。
+- **ブロッキング（stop）**：イベントが**より低い優先度**のプロセッサに伝播するのを阻止します（`_propagation_stopped` に書き込みます）。低優先度のプロセッサ（例：`on_message`）は、このイベントを見なくなります。典型的な場面：高優先度のプロセッサがイベントを完全に処理した後、低優先度のプロセッサが再度実行されないようにします。
+
+| `event.done(...)` | 認領 | ブロッキング | 場面 |
+|-------------------|------|--------------|------|
+| `event.done()` | ✔ | ✔ | コマンド / プロセッサが処理完了した際の標準的な方法 |
+| `event.done(stop=False)` | ✔ | ✘ | 認領のみ：低優先度の観測者（ログ / 統計）は引き続きイベントを見ることができます |
+| `event.done(claim=False)` | ✘ | ✔ | ブロッキングのみ（例：ファイアウォール / 限流）：認領は行わず、重複処理は防ぎません |
+
+`event.done(claim=, stop=)` は `event.mark_processed(claim=, stop=)` の別名であり、両者はパラメータと動作が完全に等価です。
 
 ```python
 @command("help")
 async def help_cmd(event):
-    event.done()            # 認領 + ブロック（コマンド処理完了の標準的なやり方）
+    event.done()            # 認領 + ブロッキング（コマンド処理完了の標準的な方法）
 
 @message.on_message(priority=50)
 async def observer(event):
-    event.done(stop=False)  # 認領のみ：低優先度ハンドラは引き続き実行される（ログ / 統計）
+    event.done(stop=False)  # 認領のみ：低優先度の処理が引き続き実行されます（ログ / 統計）
 
 @message.on_message(priority=100)
 async def firewall(event):
     if denied(event):
-        event.done(claim=False)  # ブロックのみ：低優先度ハンドラは実行されないが、認領は行わない
+        event.done(claim=False)  # ブロッキングのみ：低優先度の処理は実行されませんが、重複処理は防ぎません
 ```
 
 ### コマンドと返信の block 設定
 
-コマンドがマッチした後 / `wait_reply` が返信をマッチした後、デフォルトで伝播をブロックします（後方互換性）。これを解除して、低優先度ハンドラ（ログ / 監査 / 権限）がこれらのメッセージを観測できるようにすることができます：
+コマンドがマッチした場合や `wait_reply` が返信をマッチした場合、デフォルトでは伝播をブロックします（後方互換性のため）。この設定を変更することで、低優先度のプロセッサ（ログ / 監査 / 権限）がこれらのメッセージを観測できるようにすることができます：
 
 ```toml
 [ErisPulse.event.command]
-block = false   # コマンドメッセージが低優先度ハンドラに伝播し続ける
+block = false   # コマンドメッセージは低優先度のプロセッサに引き続き伝播します
 
 [ErisPulse.event.wait_reply]
-block = false   # wait_reply で消費された返信が低優先度ハンドラに伝播し続ける
+block = false   # wait_reply によって消費された返信は低優先度のプロセッサに引き続き伝播します
 ```
 
-## 通知イベントの処理
+## 通知イベント処理
 
 ### 友達追加
 
@@ -1399,32 +1472,32 @@ from ErisPulse.Core.Event import notice
 async def friend_add_handler(event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname() or "新朋友"
-    await event.reply(f"友達追加ありがとうございます、{nickname}！")
+    await event.reply(f"欢迎添加我为好友，{nickname}！")
 ```
 
-### グループメンバーの追加
+### グループメンバーの増加
 
 ```python
 @notice.on_group_increase()
 async def member_increase_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    await event.reply(f"新メンバー {user_id} がグループ {group_id} に参加しました")
+    await event.reply(f"欢迎新成员 {user_id} 加入群 {group_id}")
 ```
 
-### グループメンバーの削除
+### グループメンバーの減少
 
 ```python
 @notice.on_group_decrease()
 async def member_decrease_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    await event.reply(f"メンバー {user_id} がグループ {group_id} を離脱しました")
+    await event.reply(f"成员 {user_id} 离开了群 {group_id}")
 ```
 
-## 要求イベントの処理
+## リクエストイベント処理
 
-### 友達リクエスト
+### フレンドリクエスト
 
 ```python
 from ErisPulse.Core.Event import request
@@ -1434,10 +1507,10 @@ async def friend_request_handler(event):
     user_id = event.get_user_id()
     comment = event.get_comment()
     
-    sdk.logger.info(f"友達リクエストを受け取りました: {user_id}, 附言: {comment}")
+    sdk.logger.info(f"フレンドリクエストを受け取りました: {user_id}, 付言: {comment}")
     
-    # アダプターAPIを使ってリクエストを処理することもできます
-    # 具体的な実装は各アダプターのドキュメントを参照してください
+    # アダプタAPIを使ってリクエストを処理できます
+    # 具体的な実装は各アダプタのドキュメントを参照してください
 ```
 
 ### グループ招待リクエスト
@@ -1448,10 +1521,10 @@ async def group_request_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
     
-    await event.reply(f"グループ {group_id} からの招待を受け取りました、{user_id} さん")
+    await event.reply(f"グループ {group_id} からの招待を受け取りました, 送信元: {user_id}")
 ```
 
-## メタイベントの処理
+## 元イベント処理
 
 ### 接続イベント
 
@@ -1475,42 +1548,42 @@ async def disconnect_handler(event):
 @meta.on_heartbeat()
 async def heartbeat_handler(event):
     platform = event.get_platform()
-    sdk.logger.debug(f"{platform} ハートビート検査")
+    sdk.logger.debug(f"{platform} ハートビート検出")
 ```
 
-### Botのステータス照会
+### Bot 状態の照会
 
-アダプターがメタイベントを送信した後、フレームワークは自動的にBotのステータスを追跡し、いつでも照会できます：
+アダプターが meta イベントを送信すると、フレームワークは自動的に Bot 状態を追跡します。いつでも照会することができます。
 
 ```python
 from ErisPulse import sdk
 
-# 特定のBotがオンラインかどうかをチェック
+# 特定の Bot がオンラインかどうかを確認
 if sdk.adapter.is_bot_online("telegram", "123456"):
     telegram = sdk.adapter.get("telegram")
-    await telegram.Send.To("user", "123456").Text("Botはオンラインです")
+    await telegram.Send.To("user", "123456").Text("Bot はオンラインです")
 
-# 現在オンラインのすべてのBotをリストアップ
+# 現在オンラインの Bot を一覧表示
 bots = sdk.adapter.list_bots()
 for platform, bot_list in bots.items():
     for bot_id, info in bot_list.items():
         print(f"{platform}/{bot_id}: {info['status']}")
 
-# 完全なステータスサマリーを取得
+# 完全な状態サマリーを取得
 summary = sdk.adapter.get_status_summary()
 ```
 
-## インタラクティブな処理
+## 交互処理
 
-### replyメソッドを使用して返信を送信
+### reply メソッドを使用した返信の送信
 
-`event.reply()`メソッドは、@、返信などの機能を含むさまざまな修飾パラメータをサポートし、メッセージの送信を容易にします：
+`event.reply()` メソッドは、@メンションや返信などの機能を備えた様々な修飾パラメータをサポートしています：
 
 ```python
 # 簡単な返信
 await event.reply("こんにちは")
 
-# 異なるタイプのメッセージを送信
+# 異なるタイプのメッセージの送信
 await event.reply("http://example.com/image.jpg", method="Image")  # 画像
 await event.reply("http://example.com/voice.mp3", method="Voice")  # 音声
 
@@ -1518,15 +1591,15 @@ await event.reply("http://example.com/voice.mp3", method="Voice")  # 音声
 await event.reply("こんにちは", at_users=["user123"])
 
 # 複数のユーザーを@する
-await event.reply("こんにちは", at_users=["user1", "user2", "user3"])
+await event.reply("皆さんこんにちは", at_users=["user1", "user2", "user3"])
 
-# メッセージに返信
-await event.reply("返信内容", reply_to="msg_id")
+# メッセージを返信する
+await event.reply("返信の内容", reply_to="msg_id")
 
 # 全員を@する
-await event.reply("公告", at_all=True)
+await event.reply("お知らせ", at_all=True)
 
-# @ユーザーと返信メッセージを組み合わせて使用
+# 組み合わせ: @ユーザー + メッセージの返信
 await event.reply("内容", at_users=["user1"], reply_to="msg_id")
 ```
 
@@ -1535,32 +1608,32 @@ await event.reply("内容", at_users=["user1"], reply_to="msg_id")
 ```python
 @command("ask", help="ユーザーに質問")
 async def ask_handler(event):
-    await event.reply("名前を入力してください:")
+    await event.reply("あなたの名前を入力してください:")
     
-    # ユーザーの返信を待つ、タイムアウトは30秒
+    # ユーザーの返信を30秒間待つ
     reply = await event.wait_reply(timeout=30)
     
     if reply:
         name = reply.get_text()
         await event.reply(f"こんにちは、{name}！")
     else:
-        await event.reply("タイムアウトしました、再度入力してください。")
+        await event.reply("タイムアウトしました。再度入力してください。")
 ```
 
-### 適切な入力を待つ
+### 検証付きの返信待ち
 
 ```python
 @command("age", help="年齢を尋ねる")
 async def age_handler(event):
     def validate_age(event_data):
-        """年齢が有効かどうかを検証"""
+        """年齢が有効かどうかを検証する"""
         try:
             age = int(event_data.get_text())
             return 0 <= age <= 150
         except ValueError:
             return False
     
-    await event.reply("年齢を入力してください (0-150):")
+    await event.reply("あなたの年齢を入力してください (0-150):")
     
     reply = await event.wait_reply(
         timeout=60,
@@ -1569,12 +1642,12 @@ async def age_handler(event):
     
     if reply:
         age = int(reply.get_text())
-        await event.reply(f"あなたの年齢は {age} 歳です")
+        await event.reply(f"あなたの年齢は {age} 才です")
     else:
-        await event.reply("入力が無効またはタイムアウトしました")
+        await event.reply("無効な入力またはタイムアウトしました")
 ```
 
-### コールバック付きで返信を待つ
+### コールバック付きの返信待ち
 
 ```python
 @command("confirm", help="操作を確認")
@@ -1597,7 +1670,7 @@ async def confirm_handler(event):
 
 ### 確認対話 (confirm)
 
-ユーザーの確認または否定を待って、組み込みの中英の確認語を自動的に認識します：
+ユーザーの確認または否定を待ち、組み込みの中国語および英語の確認語を自動的に認識します：
 
 ```python
 @command("confirm", help="操作を確認")
@@ -1607,14 +1680,14 @@ async def confirm_handler(event):
     else:
         await event.reply("キャンセルされました")
 
-# 自定義の確認語
+# 確認語のカスタマイズ
 if await event.confirm("続行しますか？", yes_words={"go", "続行"}, no_words={"stop", "停止"}):
     pass
 ```
 
 ### 選択メニュー (choose)
 
-ユーザーは選択肢の番号または選択肢のテキストを返信できます：
+ユーザーは選択番号または選択テキストを返信することができます：
 
 ```python
 @command("choose", help="選択")
@@ -1626,15 +1699,15 @@ async def choose_handler(event):
     
     if choice is not None:
         colors = ["赤", "緑", "青"]
-        await event.reply(f"選択しました：{colors[choice]}")
+        await event.reply(f"選択した色は：{colors[choice]}")
     else:
-        await event.reply("タイムアウトしました")
+        await event.reply("選択がタイムアウトしました")
 ```
 
-**マージモード**：`merge_prompt=True` の場合、選択肢をプロンプトにマージし、`method` で指定された方法で1つのメッセージとして送信します：
+**マージモード**: `merge_prompt=True` の場合、オプションはプロンプトメッセージにマージされ、ユーザーが指定した `method` で1つのメッセージとして送信されます：
 
 ```python
-# Markdownでマージしたプロンプトと選択肢を送信
+# Markdown でプロンプトとオプションをマージして送信
 choice = await event.choose(
     "## 色を選択してください\n{options}\n番号を入力してください",
     ["赤", "緑", "青"],
@@ -1643,12 +1716,12 @@ choice = await event.choose(
 )
 ```
 
-> `{options}` は選択肢の挿入位置を制御します；指定しない場合はプロンプトの末尾に追加されます。
-> `placeholder` パラメータでカスタムプレースホルダを指定できます（例：`placeholder="[choices]"`）。
-> `options_format="auto"`（デフォルト）は、`method` に応じてスタイルを自動的に選択します：Markdown→無序リスト、Html→順序リスト、その他→テキストリスト。
-> テキスト系メソッド（Text/Markdown/Htmlなど）はデフォルトで選択肢を末尾にマージします；非テキスト系メソッド（Imageなど）はデフォルトで選択肢を2つのメッセージに分割します。
+> `{options}` 占位符はオプションの挿入位置を制御します。指定しない場合はプロンプトの末尾に追加されます。  
+> `placeholder` パラメータを使用して占位符をカスタマイズできます（例：`placeholder="[choices]"`）。  
+> `options_format="auto"`（デフォルト）は、method に応じてスタイルを自動的に選択します：Markdown→無序リスト、Html→順序リスト、その他→テキストリスト。  
+> テキスト系メソッド（Text/Markdown/Html 等）はデフォルトでオプションを末尾にマージします。非テキスト系メソッド（Image 等）はデフォルトで2つのメッセージに分割されます。
 
-### フォーム収集 (collect)
+### フォームの収集 (collect)
 
 複数ステップでユーザーの入力を収集します：
 
@@ -1670,12 +1743,12 @@ async def register_handler(event):
 
 ### 任意のイベントを待つ (wait_for)
 
-条件を満たす任意のイベントを待つ、同一ユーザーに限定されない：
+同一ユーザーに限らず、条件を満たす任意のイベントを待ちます：
 
 ```python
 @command("wait_member", help="新メンバーを待つ")
 async def wait_member_handler(event):
-    await event.reply("グループメンバーの追加を待っています...")
+    await event.reply("グループメンバーの加入を待っています...")
     
     evt = await event.wait_for(
         event_type="notice",
@@ -1691,14 +1764,14 @@ async def wait_member_handler(event):
 
 ### 多段対話 (conversation)
 
-インタラクティブな多段対話コンテキストを作成します：
+インタラクティブな複数段対話コンテキストを作成します：
 
 ```python
 @command("survey", help="アンケート調査")
 async def survey_handler(event):
     conv = event.conversation(timeout=60)
     
-    await conv.say("アンケート調査に参加してください！")
+    await conv.say("アンケート調査に参加していただきありがとうございます！")
     
     while conv.is_active:
         reply = await conv.wait()
@@ -1713,19 +1786,19 @@ async def survey_handler(event):
             await conv.say("さようなら！")
             break
         
-        await conv.say(f"入力内容：{text}、続行するか「終了」を入力して終了")
+        await conv.say(f"入力された内容：{text}、継続するか、'終了'と入力して対話を終了してください")
 ```
 
 ### 組み込みの確認語
 
-ErisPulseには中英の確認語の集合が組み込まれています：
+ErisPulse には中国語および英語の確認語が組み込まれています：
 
-- **確認語** (`CONFIRM_YES_WORDS`): はい、yes、y、確認、確定、好、良い、ok、true、対、うん、行、同意、問題ない...
-- **否定語** (`CONFIRM_NO_WORDS`): いいえ、no、n、キャンセル、不、不要、だめ、cancel、false、間違っている、拒否、できない...
+- **確認語** (`CONFIRM_YES_WORDS`): はい、yes、y、確認、確定、ok、true、対、うん、行、同意、問題ない...
+- **否定語** (`CONFIRM_NO_WORDS`): いいえ、no、n、キャンセル、不要、false、錯、拒否、不可...
 
 ## イベントデータのアクセス
 
-### Eventオブジェクトの一般的なメソッド
+### Event オブジェクトの一般的なメソッド
 
 ```python
 @command("info")
@@ -1752,7 +1825,7 @@ async def info_handler(event):
     self_id = event.get_self_user_id()
     self_platform = event.get_self_platform()
     
-    # 原始データ
+    # 元データ
     raw_data = event.get_raw()
     raw_type = event.get_raw_type()
     
@@ -1773,7 +1846,7 @@ async def info_handler(event):
 
 ### プラットフォーム拡張メソッド
 
-内蔵メソッドに加えて、各プラットフォームアダプターはプラットフォーム固有のメソッドを登録し、プラットフォーム固有のデータにアクセスしやすくします。
+内蔵メソッドに加えて、各プラットフォームアダプターは、プラットフォーム固有のデータにアクセスしやすくするためのプラットフォーム固有のメソッドも登録します。
 
 ```python
 from ErisPulse.Core.Event import message
@@ -1784,12 +1857,12 @@ async def handle_message(event):
 
     # プラットフォームに応じて固有メソッドを呼び出す
     if platform == "telegram":
-        chat_type = event.get_chat_type()      # Telegram固有メソッド
+        chat_type = event.get_chat_type()      # Telegram 固有メソッド
     elif platform == "email":
         subject = event.get_subject()           # メール固有メソッド
 ```
 
-プラットフォームが特定のメソッドを登録しているかどうかが不明な場合は、特定のプラットフォームが登録したメソッドを確認できます：
+プラットフォームが特定のメソッドを登録しているかどうか不明な場合は、そのプラットフォームが登録したメソッドを確認できます。
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
@@ -1798,24 +1871,24 @@ methods = get_platform_event_methods("telegram")
 # ["get_chat_type", "is_bot_message", ...]
 ```
 
-> 各プラットフォームが登録した固有メソッドは、対応する[プラットフォームドキュメント](../platform-guide/)を参照してください。
+> 各プラットフォームが登録した固有メソッドについては、対応する [プラットフォームドキュメント](../platform-guide/) を参照してください。
 
 ## イベント処理のベストプラクティス
 
-### 1. エラーハンドリング
+### 1. 例外処理
 
 ```python
 @command("process")
 async def process_handler(event):
     try:
-        # ビジネスロジック
+        # 业务逻辑
         result = await do_some_work()
-        await event.reply(f"結果: {result}")
+        await event.reply(f"结果: {result}")
     except ValueError as e:
-        # 予期されたビジネスエラー
+        # 预期的业务错误
         await event.reply(f"パラメータエラー: {e}")
     except Exception as e:
-        # 予期されないエラー
+        # 未预期的错误
         sdk.logger.error(f"処理失敗: {e}")
         await event.reply("処理失敗、後でもう一度お試しください")
 ```
@@ -1828,9 +1901,9 @@ async def message_handler(event):
     user_id = event.get_user_id()
     text = event.get_text()
     
-    sdk.logger.info(f"メッセージを処理: {user_id} - {text}")
+    sdk.logger.info(f"メッセージを処理中: {user_id} - {text}")
     
-    # モジュール固有のログを使用
+    # モジュール独自のログを使用
     from ErisPulse import sdk
     logger = sdk.logger.get_child("MyHandler")
     logger.debug(f"詳細なデバッグ情報")
@@ -1841,24 +1914,24 @@ async def message_handler(event):
 ```python
 @message.on_message(priority=0)
 async def conditional_handler(event):
-    """条件処理 - ハンドラ内で判断"""
-    # 特定のユーザーのメッセージのみ処理
+    """条件処理 - ハンドラ内部で判断"""
+    # 特定のユーザーのメッセージのみを処理
     if event.get_user_id() in ["bot1", "bot2"]:
         return
     
-    # 特定のキーワードを含むメッセージのみ処理
+    # 特定のキーワードを含むメッセージのみを処理
     if "キーワード" not in event.get_text():
         return
     
-    await event.reply("条件が満たされたため、メッセージを処理します")
+    await event.reply("条件が満たされ、メッセージを処理します")
 ```
 
 ## 次に進む
 
-- [よくあるタスクの例](common-tasks.md) - メッセージ送信の高度な機能（リトライ/タイムアウト/バッチ送信）を含む、よく使われる機能の実装を学ぶ
-- [プラットフォーム特性ガイド](../platform-guide/README.md) - Send DSLの連鎖送信、送信ルール、バッチ構築の完全な説明
-- [Eventラッパークラスの詳細](../developer-guide/modules/event-wrapper.md) - Eventオブジェクトの詳細を理解する
-- [ユーザー使用ガイド](../user-guide/) - 設定とモジュール管理の了解
+- [一般的なタスクの例](common-tasks.md) - 常用機能の実装方法を学びます（メッセージ送信の高度な機能：リトライ/タイムアウト/バッチ処理を含む）
+- [プラットフォームの機能ガイド](../platform-guide/README.md) - Send DSL チェーン送信、送信ルール、バッチ構築の完全な説明
+- [Event パッケージの詳細](../developer-guide/modules/event-wrapper.md) - Event オブジェクトの詳細を理解します
+- [ユーザー使用ガイド](../user-guide/) - 設定とモジュール管理について理解します
 
 
 
@@ -9259,76 +9332,81 @@ CLI には**独立**した国際化モジュール (`ErisPulse.CLI.i18n`) があ
 
 ### 统一控制面（scope）
 
-# 統一制御面（scope）
+# スコープ（scope）
 
-> [!NOTE]
+> [!NOTE]  
 > この機能は ErisPulse **2.8.0+** が必要です。
 
-統一制御面は以下の6つの問いに答える：**どのモジュールが利用可能か、どのイベントを受信するか、誰が特定のコマンドを実行できるか、特定のモジュールがどのようなテキストを処理するか、どの実装パラメータをオーバーライドするか、どのモジュールがどの出力呼び出しを禁止するか**。制御権はすべてユーザーに委ねられる：モジュール／アダプター／コマンド／プロセッサの登録の**上層**（設定 `ErisPulse.scope` または実行時 `sdk.scope`）で宣言し、イベントパイプラインは各レベルで自動的に読み取り実行する。
+スコープは以下の4つの質問に答えます：**どのモジュールが利用可能か、誰のイベントを受け取るか、特定のモジュールがどのようなテキストを処理するか、モジュールが外部に対してどのような操作ができるか**。  
+権限はすべてユーザーに委ねられます。モジュール／アダプタ／プロセッサ／出力呼び出しの登録の**上位**（設定 `ErisPulse.scope` または実行時 `sdk.scope`）で一括して宣言し、イベントパイプラインはエントリ、プロセッサフィルタ、出力ゲートで自動的に読み取り実行します。
 
-制御面は従来の複数の権限システムを統合し、2.8.0の権限／アクセス制御の**唯一**のエントリーポイントとなる：
-
-| 維度 | 制御対象 | 拒否動作 | 設定経路 |
+| 維度 | 控制対象 | 拒否動作 | 設定パス |
 |------|---------|---------|---------|
-| **① モジュール** | どのモジュールが利用可能か（プラットフォーム／Bot／セッションの3段階） | 静かに無視（返信・認証なし） | `scope.platforms / bots / sessions` |
-| **② 身分** | イベントを受信するか（アダプター／Bot／セッション／ユーザーの4段階） | 入口で完全に破棄（静か） | `scope.identity.*` |
-| **③ コマンド** | 誰が特定のコマンドを実行できるか（コマンド名はglob対応） | 「権限不足」を返信（明示的） | `scope.commands` |
-| **④ プロセッサ** | 特定のモジュールのイベントプロセッサがテキストでフィルタリングするか | トリガーしない（静か） | `scope.handlers` |
-| **⑤ オーバーライド** | モジュール／コマンドの実装パラメータをオーバーライド（master/hidden/aliases/prefix） | ——（パラメータのみ変更） | `scope.overrides` |
-| **⑥ 出力アクション** | モジュールがメッセージ送信／標準API呼び出し／リクエスト処理を禁止するか | 失敗レスポンス（`retcode=34601`） | `scope.actions` |
+| **① モジュール** | 利用可能なモジュール（プラットフォーム／Bot／セッションの3段階） | 静かに無視（返信せず、対象外） | `scope.platforms / bots / sessions` |
+| **② 身分** | イベントの受信対象（アダプタ／Bot／セッション／ユーザーの4段階） | エントリで完全に破棄（静かに） | `scope.identity.*` |
+| **③ 出力** | モジュールがどのような出力呼び出し（メッセージ／API／リクエスト、メソッドレベルのホワイト／ブラックリスト）を実行できるか | 失敗応答（`retcode=34601`） | `scope.actions` |
+
+> **関連システム**：コマンドは特別なメッセージイベントプロセッサであり、そのユーザーのホワイト／ブラックリスト（ACL）と実装パラメータの上書きはコマンドシステムが独自に管理します（`ErisPulse.event.command`）。  
+> [イベント処理の入門](../getting-started/event-handling.md) および [設定ガイド](../user-guide/configuration.md) を参照してください。
 
 {!--< tips >!--}
-1. `from ErisPulse.Core import scope` でシングルトンをインポート（`sdk.scope` は同一オブジェクト）
-2. `scope.is_allowed(platform, bot_id, module, session_id)` でモジュールが利用可能かを判断
-3. `scope.is_identity_allowed(platform, bot_id, session_id, user_id)` でイベントが許可されるかを判断
-4. `scope.allow_user("roll*", platform, uid)` / `deny_user(...)` コマンドACL（glob対応）
-5. `scope.override("MyModule", "restart", master=True)` 実装パラメータをオーバーライド
-6. `scope.set_action("MyModule", "send", False)` モジュールが返信／送信を禁止
-7. `scope.get_stats()` でフィルタ統計を確認；`scope.get_topology()` でトポロジを確認
+1. `from ErisPulse.Core import scope` をインポートしてシングルトンを使用（`sdk.scope` は同じオブジェクト）
+2. 判定：`scope.is_allowed(...)` / `scope.is_identity_allowed(...)` / `scope.is_action_allowed(...)` はそれぞれ ①②③ の3つのゲートに対応
+3. 読み書き：次元化されたパラメータメソッド（IDEで補完可能）——  
+   `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`；  
+   また、辞書形式のバックアップメソッドとして `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)` もあります
+4. イベントプロセッサのテキスト条件の上書きは  
+   [イベント処理の入門 · イベント上書き](../getting-started/event-handling.md#イベント覆写不改模块代码覆写任意事件类型的行为) を参照してください；  
+   コマンドのACL / パラメータの上書きは [イベント処理の入門](../getting-started/event-handling.md) を参照してください
 {!--< /tips >!--}
 
-## マッチング条目構文（全システム統一）
+## マッチングエントリの構文（全システムで一貫）
 
-制御面のすべての「名前リスト」（モジュール名、身分キー、コマンド名）は同一のマッチング構文（`ErisPulse.Core.text_match`）を共用する：
+スコープ内のすべての「名前のリスト」（モジュール名、アイデンティティキー、出力エントリ）は、同一のマッチング構文（`ErisPulse.Core.text_match`）を使用します。
 
 | 構文 | 例 | 説明 |
 |------|------|------|
-| 精確名 | `"Chat"` | 全値比較、**大文字小文字区別なし** |
-| glob | `"Tool*"`、`"spam_*"` | `*` 任意文字列 / `?` 1文字 / `[seq]` 文字集合、大文字小文字区別なし |
-| 正規表現 | `"re:^Danger.*"` | `re:` 前置きで宣言、正規表現 `search` でマッチ、デフォルト大文字小文字区別なし |
+| 精確名 | `"Chat"` | 完全一致、**大文字小文字を区別しない** |
+| glob | `"Tool*"`、`"spam_*"` | `*` 任意の文字列 / `?` 1文字 / `[seq]` 文字集合、大文字小文字を区別しない |
+| 正規表現 | `"re:^Danger.*"` | `re:` で始まるプレフィックスを宣言、正規表現 `search` によるマッチ、デフォルトで大文字小文字を区別しない |
 
-- 不正な正規表現は**静かに降格**（エラー発生せず、クラッシュしない）
-- デコレータ引数（`pattern=` / `regex=`）は固定の意味：`pattern` はglob、`regex` は正規表現ソースコード（`re:` 前置きなし）；制御面設定の正規表現条目は**必ず** `re:` 前置きが必要
+- 不正な正規表現は**静かにマッチしないものとして扱われる**（エラーは発生せず、クラッシュもしない）
+- デコレータ引数（`pattern=` / `regex=`）は固定された意味を持つ：`pattern` は glob、`regex` は正規表現のソースコード（`re:` プレフィックスなし）；スコープ設定内の正規表現エントリには**必ず** `re:` プレフィックスを付ける必要がある
 
 ## グローバルデフォルト：`default_allow`
 
-`default_allow` は**グローバル唯一**のデフォルトスイッチ（デフォルト `true`）で、3つの判定次元に統一的に効果がある：
+`default_allow` は**グローバルで唯一**のデフォルトスイッチ（デフォルト値は `true`）で、
+2つの判定の次元に統一的に効果を及ぼします：
 
-- **モジュール次元**：すべてのバインディングにマッチしない → `default_allow` で許可／拒否を決定
-- **身分次元**：すべての戦略にマッチしない → `default_allow` で許可／拒否を決定
-- **コマンド次元**：ACLが設定されていない → `default_allow=true` は開発者のデフォルト権限チェーンに委ねる；`false`（厳密モード）はACLが設定されていないコマンドは拒否
+- **モジュール次元**：どのバインディングにもマッチしない場合 → `default_allow` が許可 / 拒否を決定します。
+- **アイデンティティ次元**：どのポリシーにもマッチしない場合 → `default_allow` が許可 / 拒否を決定します。
 
-`false` に設定すると「暗黙の拒否」厳密モードが有効になり、**明示的に許可されていないものはすべて拒否**される。
+`false` に設定すると「暗黙の拒否」の厳密モードが有効になります。つまり、ホワイトリスト方式での管理となり、
+**明示的に許可されていないものはすべて拒否**されます。
 
-> **例外**：⑥ 出力アクション次元は `default_allow` の影響を受けない——それは独立した絞り込みスイッチで、デフォルトはすべて許可され、明示的に `false` に設定した場合のみ禁止（フレームワーク層の owner が空の呼び出しは常に許可）。このように厳密なグローバルモードでも、すべてのモジュールのメッセージ返信が意図せず遮断されることはない。
+> **例外**：③ 出力次元は `default_allow` の影響を受けません。これは独立した制限スイッチであり、
+> デフォルトではすべて許可され、明示的なルールによってのみ制限されます（フレームワーク層の `owner` が空の呼び出しは常に許可されます）。
+> これにより、厳密なグローバルモードでも、すべてのモジュールのメッセージ返信が意図せず切断されることはありません。
+> コマンド ACL には独立した `ErisPulse.event.command.default_allow` デフォルトスイッチがあり、互いに影響しません。
 
 ## 設定ファイル
 
 ```toml
 [ErisPulse.scope]
-default_allow = true        # グローバルデフォルト（false = 暗黙の拒否厳密モード）
-cache_size = 1024           # LRUキャッシュサイズ
+default_allow = true        # グローバルなデフォルト（false = 厳密モードで暗黙的に拒否）
+cache_size = 1024           # LRU キャッシュのサイズ
 
 # ── ① モジュール次元（優先度：セッション > Bot > プラットフォーム）──
 [ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Tool*"]   # ホワイトリスト：正確名 / glob / re: 正規表現
+modules = ["Chat", "Tool*"]   # ホワイトリスト：正確な名前 / glob / re: 正規表現
 blocked = ["re:^Danger"]
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Chat"]
+merge = true                  # プラットフォームレベルのバインドに追加（デフォルトでは全体を上書き）
 [ErisPulse.scope.sessions.onebot11."789012345"]
 modules = ["Chat"]
 
-# ── ② 身分次元（優先度：ユーザー > セッション > Bot > アダプター）──
+# ── ② 身元次元（優先度：ユーザー > セッション > Bot > アダプター）──
 [ErisPulse.scope.identity.adapters.onebot11]
 deny = true                   # アダプターのイベントをすべて破棄
 [ErisPulse.scope.identity.bots.onebot11."123456"]
@@ -9336,305 +9414,273 @@ deny = true
 [ErisPulse.scope.identity.sessions.onebot11."g_blocked"]
 deny = true
 [ErisPulse.scope.identity.users.onebot11]
-allow = ["u_admin"]           # ユーザー識別子はglob / re: 正規表現対応
+allow = ["u_admin"]           # ユーザーのキーには glob / re: 正規表現が使用可能
 deny = ["u_bad", "spam_*"]
 
-# ── ③ コマンド次元（コマンド名はglob対応）──
-[ErisPulse.scope.commands."roll*"]
-allow = ["onebot11:u_vip"]    # ユーザー識別子 "platform:user_id"
-deny = ["onebot11:u_bad"]
-
-# ── ④ プロセッサ／テキスト次元 ──
-[ErisPulse.scope.handlers.MyModule]
-pattern = "签到*"             # コード内の pattern/regex 条件とAND
-regex = "re:\\d+\\s*元"
-
-# ── ⑤ 実装パラメータオーバーライド ──
-[ErisPulse.scope.overrides.MyModule.restart]
-master = true                 # フレームワークのオーナーのみ使用可能
-hidden = true                 # ヘルプに表示しない
-aliases = ["rs"]              # 別名を追加
-prefix = "!"                  # トリガ前接を追加
-
-# ── ⑥ 出力アクション次元（デフォルトはすべて許可、明示的に禁止する場合のみ絞り込み）──
+# ── ③ 出力次元（デフォルトでは全許可、明示的に制限する場合のみ禁止）──
 [ErisPulse.scope.actions.MyModule]
-send = false                  # MyModuleの返信／送信を禁止
-api = false                   # MyModuleの標準API呼び出し（callエスケープ）を禁止
-request = false               # MyModuleのリクエスト操作（accept/reject）を禁止
+send = { deny = true }                                    # 送信を完全に禁止
+api = { allow = ["get_*"] }                               # クエリ系の標準APIのみ許可
+request = { deny = true }                                 # リクエスト処理を禁止
 ```
 
 ## ① モジュール次元
 
-あるコンテキストでどのモジュールが利用可能かを回答する。デフォルトはすべて開放；バインディングが設定されるとフィルタリングが始まり、**モジュールとアダプターは変更不要**。
+あるコンテキストの中で、どのモジュールが利用可能かを回答します。デフォルトではすべて開放されており、設定がバインドされた後にフィルタリングが始まります。**モジュールとアダプタは一切変更する必要がありません。**
 
 ```mermaid
 flowchart TD
-    A["イベントがモジュールのプロセッサ／コマンドに到達"] --> B{"scope.is_allowed<br/>(platform, bot, module, session)"}
-    B --> C{"生效バインディングの検索<br/>セッション級 > Bot級 > プラットフォーム級"}
-    C -->|"命中"| D["blockedが命中 → 拒否<br/>modulesが空でない → ホワイトリストのみ許可<br/>どちらも空 → default_allow"]
-    C -->|"未命中"| E["default_allow（デフォルト true = 許可）"]
-    D -->|"拒否"| Z["静かに無視<br/>（返信・認証なし、TRACEログのみ）"]
+    A["イベントが特定モジュールのハンドラ/コマンドに到達"] --> B{"scope.is_allowed<br/>(platform, bot, module, session)"}
+    B --> C{"解析の優先順位：セッションレベル > Bot レベル > プラットフォームレベル<br/>（子レベルで merge = true の場合、各レベルで逐次合併）"}
+    C -->|"一致する"| D["blocked が一致 → 拒否<br/>modules が空でない → 仅白名单が許可<br/>両方空 → default_allow"]
+    C -->|"一致しない"| E["default_allow（デフォルトは true = 許可）"]
+    D -->|"拒否"| Z["静かに無視<br/>（返信、認証なし、TRACE ログのみ）"]
 ```
 
-- **解析優先度：セッション級 > Bot級 > プラットフォーム級**、高優先度のバインディングは低優先度を**全体的に上書き**する
-- **静かの意味**：フィルタリングされたモジュールのコマンドとプロセッサはトリガー／返信／認証されない（コマンド間の誤マッチを防ぐ）、TRACEレベルのログのみ表示（`core.scope.denied`）
-- **フレームワークプロセッサ**（`scope_exempt=True` または owner が空）は影響を受けない；モジュール名が空（フレームワークリソース）は常に許可される
-- **セッション感知ヘルプとコマンド照会**：コマンド照会API（`command.help` /
-  `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`、
-  および `module.get_commands_overview`）はオプションの `event=` または明示的な
-  `platform=` / `bot_id=` / `session_id=` キーワードをサポートする——現在のセッションで利用できないモジュールのコマンドは結果に含まれない（`get_command` は None を返し、単一コマンドヘルプは「未登録」として扱われる、静かの意味と一致）、上下文を渡さない場合は全量動作を保つ。コマンド照会が返す
-  help / hidden 等のフィールドはマージされた有効値（ユーザー優先）
+- **解析の優先順位：セッションレベル > Bot レベル > プラットフォームレベル**。高優先順位のバインドは低優先順位を**全体的に上書き**します。  
+  子レベルで `merge = true` を指定した場合、低優先順位との**各項目の合併**（modules / blocked それぞれ独立に合併）になります。`merge` 自体は制御キーであり、項目としてはカウントされません。
+- **静かに無視の意味**：フィルタリングされたモジュールのコマンドやハンドラはトリガーされず、返信や認証も行わず、誤ったコマンド間のマッチングを防ぎます。`core.scope.denied` での TRACE レベルのログのみが表示されます。
+- **フレームワークレベルのハンドラ**（`scope_exempt=True` または owner が空）は影響を受けません。モジュール名が空（フレームワーク層のリソース）の場合は常に許可されます。
+- **セッション感知のヘルプとコマンド照会**：コマンド照会 API（`command.help` / `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`、および `module.get_commands_overview`）は、オプションの `event=` または明示的な `platform=` / `bot_id=` / `session_id=` キーワードをサポートしています。現在のセッションで利用できないモジュールのコマンドは、結果に表示されなくなります（`get_command` は None を返し、単一コマンドのヘルプは「未登録」として扱われ、静かに無視の意味と一致します）。コンテキストを渡さない場合は、全量の動作を維持します。
 
-## ② 身分次元（イベント准入）
+### バインドの継承（merge）
 
-「誰のイベントを受信するか」を回答する。拒否されたイベントは**配信入口で完全に破棄**される——ミドルウェアやプロセッサ（フレームワークプロセッサ含む）には届かない（TRACEレベルのログのみ表示、`core.scope.identity_denied`）。
+デフォルトの上書きは明確で予測可能です。上位レベルの設定に**追加**したい場合は、子レベルで `merge = true` を指定します：
 
-- **解析優先度：ユーザー > セッション > Bot > アダプター**、最も具体的な設定戦略を採用；deny は allow より優先
-- 各級のバインディングは二元戦略：`{ allow = true }` または `{ deny = true }`
-- ユーザー識別子は glob / 正規表現に対応（例：`"spam_*"` で一括的にスパムユーザーをブロック）
-- 一般的な用途——上位 deny、個人 allow で「例外許可」：
+```toml
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Tool"]      # プラットフォームレベル：Chat、Tool のみ許可
+
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Music"]
+merge = true                    # この Bot で実際の有効な設定 = ["Chat", "Tool", "Music"]
+```
+
+- 合併のルール：`modules` と `blocked` は**独立に合併**されます。バインド内では `blocked` が `modules` よりも優先されます。
+- チェーンの合併：プラットフォーム → Bot → セッションの順に各レベルで独立して `merge` または上書きを決定します。
+
+## ② 身元次元（イベントの受入）
+
+「誰のイベントを受け入れるか」を回答します。拒否されたイベントは**配信の入口で完全に破棄され**、ミドルウェアや任意のハンドラ（フレームワークレベルを含む）には一切渡りません。TRACE レベルのログでのみ確認可能（`core.scope.identity_denied`）です。
+
+- **解析優先度：ユーザー > 会話 > Bot > アダプタ**。最も具体的に設定された戦略を優先します。`deny` は `allow` より優先されます。
+- 各階層のバインディングは二元的な戦略です：`{ allow = true }` または `{ deny = true }`
+- ユーザーのキーは glob / 正規表現をサポートしています（例：`"spam_*"` で一括してスパムユーザーをブロック）
+- 一般的な用途として、上位階層で `deny` し、個別に `allow` することで「例外的に許可」を実現します：
 
 ```toml
 [ErisPulse.scope.identity.adapters.onebot11]
 deny = true
 [ErisPulse.scope.identity.users.onebot11]
-allow = ["u_admin"]   # アダプター級が拒否しても、u_adminのイベントは許可される
+allow = ["u_admin"]   # アダプタレベルで拒否されても、u_admin のイベントは許可されます
 ```
 
-## ③ コマンド次元（コマンドACL）
+## ③ 出站次元（制限モジュールが発信する呼び出し）
 
-「誰が特定のコマンドを実行できるか」を回答する。判定順序：**denyが命中 → 拒否；allowホワイトリストが空でないかつ命中しない → 拒否；いずれも設定されていない → `default_allow` に従う**（`true` は開発者のデフォルト権限チェーンに委ねる）。拒否されたコマンドは「権限不足」という明示的な返信を行う。
+モジュールが**発信する出力アクション**を制限：メッセージ送信 / 標準 API 動作 / 要求操作。  
+3つのアクションはそれぞれ下層の DSL に対応：`Event.reply` と `Send`（send）、`Api` / `call_api`（api）、  
+`Request` の accept/reject（request）。イベントハンドラ実行中にモジュールが発信する出力呼び出しは  
+モジュールの所有者（owner）を含み、本次元が一括して判定します。
 
-- コマンド名は glob に対応：`"roll*"` は `roll`、`roll_dice` など一族のコマンドを1つのルールでカバー
-- 精確なキーは glob キーに優先（`commands.roll` が命中した場合、`commands."roll*"` はチェックされない）
-- ユーザー識別子のフォーマットは `"platform:user_id"`（フレームワークオーナーシステムと一致）
-- この次元は**ユーザー側の追加ゲート**であり、コマンドの `master` / `permission` パラメータと連動する：ACLが通過した後も開発者が宣言したデフォルト権限チェーンを実行する（このデフォルトチェーンは ⑤ オーバーライドで調整可能）
+### 規則の形式（インライン表）
 
-## ④ プロセッサ／テキスト次元
-
-モジュールごとに「どのテキストを処理するか」をフィルタリングする：モジュールに `pattern` / `regex` を設定した場合、そのモジュールのすべてのイベントプロセッサはテキストが一致した場合にのみトリガーされる（コード内の条件とAND、両方を満たす必要がある）。モジュールコードを変更せずにトリガー範囲を狭めることができる。
-
-```toml
-[ErisPulse.scope.handlers.ChatModule]
-pattern = "闲聊*"     # ChatModuleのプロセッサは「闲聊」で始まるメッセージにのみ応答
-```
-
-## ⑤ 実装パラメータオーバーライド
-
-モジュール／コマンド登録の**上層**で実装パラメータをオーバーライドし、モジュールコードを変更しない：
-
-```toml
-[ErisPulse.scope.overrides.MyModule.restart]
-master = true      # オーバーライドでフレームワークオーナーのみ（falseに設定して開発者のオーナー制限を解除することも可能）
-hidden = true      # ヘルプリストに表示しない
-aliases = ["rs"]   # 有効な別名
-```
-
-> オーバーライドは**ユーザー優先**に従う：開発者が宣言した `master` / `hidden` などはデフォルト値に過ぎず、ユーザーがここで明示的に設定した後はユーザー設定が優先される（厳しくも開放的にもできる）。オーバーライドは**実装パラメータ**（master / hidden / aliases / prefix / help / usage など）のみを変更し、コマンド実行判定とヘルプレンダリングは同じマージ結果を共用する：`hidden` オーバーライドは即座にヘルプリストの可視性を変更し、`help` / `usage` オーバーライドは即座に `/help` の表示を変更する。**コマンドの無効化はここでは行わない**——統一的にコマンド次元 deny（`scope.commands` または
-`scope.deny_user()`）で行い、2つの「無効化」の意味が衝突しないようにする。
-
-## ⑥ 出力アクション次元（モジュールの出力呼び出し禁止）
-
-モジュールが**出力アクションを発生させる**ことを制約する：メッセージ送信／標準APIアクション／リクエスト操作。3つのアクションはそれぞれのDSLに対応する：`Event.reply` と `Send`（send）、`Api` / `call_api`（api）、`Request` の accept/reject（request）。イベントハンドラ実行中にモジュールが発生させる出力呼び出しはモジュールオーナーを含み、この次元で統一的に判定される。
+各アクションの規則はインライン表で表されます：`{ allow = [...], deny = true|[...] }`。  
+同一アクションには1つの規則しか設定できません（TOML のキーは重複不可、全禁止と細粒度の2択）：
 
 ```toml
 [ErisPulse.scope.actions.MyModule]
-send = false      # MyModuleの返信／送信を禁止
-api = false       # MyModuleの標準APIアクション（callエスケープを含む）を禁止
-request = false   # MyModuleのリクエストイベントに対するaccept/rejectを禁止
+send = { deny = true }                                  # 全ての送信を禁止（Event.reply / Send DSL）
+# またはメソッドレベルの細粒度設定：send = { allow = ["Text", "Image*"], deny = ["File"] }
+api = { allow = ["get_*"] }                             # クエリ系の標準 API 動作のみ許可
+# またはアクションレベルのブラックリスト：api = { deny = ["set_*", "leave_*"] }
+request = { deny = true }                               # 要求の accept/reject を禁止
 ```
 
-判定の意味：**デフォルトはすべて許可**——設定されていない場合、またはオーナーが空（フレームワーク層の内部呼び出し）の場合は許可される；ユーザーが明示的に `false` に設定した場合のみ拒否され、拒否された呼び出しはネットワークリクエストを発生させず、直接
-標準の失敗レスポンス（`retcode = 34601`、[api-response §5.3](../standards/api-response.md#53-框架扩展返回码34xxx-平台错误段的低三位自定义)を参照）を返す。3つのアクションは互いに独立しており、1つだけ禁止することも可能。
+- `send` の項目は**送信メソッド名**（`Text` / `Image` / `File` ...）に一致します。  
+- `api` の項目は**標準アクション名**（`get_group_info` / `set_group_name` ...）に一致します。  
+- 項目は正確な名前 / glob / `re:` 正規表現（全システムと統一された構文で、大文字小文字は区別しません）。  
+- `allow` に1つの文字列を記述することは、1つの項目のリストと等価です：`send = { allow = "Text" }`。
+
+### 判定の意味
+
+**デフォルトはすべて許可**——設定がなければ、または owner が空（フレームワーク層の内部呼び出し）の場合はすべて許可されます。  
+設定規則がある場合は、以下の順序で判定されます：
+
+1. `deny = true` → 拒否  
+2. `deny` リストに呼び出し名が一致 → 拒否  
+3. `allow` リストが空でないかつ呼び出し名が一致しない（または呼び出しに名前がない）→ 拒否  
+4. それ以外は許可
+
+拒否された呼び出しはネットワークリクエストを一切行わず、標準の失敗レスポンスを返します  
+（`retcode = 34601`、[api-response §5.3](../standards/api-response.md#53-フレームワーク拡張返却コード34xxx-プラットフォームエラーセグメントの下3桁のカスタマイズ)）。  
+3つのアクションは互いに独立しており、そのうち1つだけを制限することも可能です。
 
 ```python
-# 実行時API
-sdk.scope.set_action("MyModule", "send", False)   # メッセージ送信を禁止
-sdk.scope.is_action_allowed("MyModule", "send")   # False
-sdk.scope.unset_action("MyModule", "send")        # 許可を復元
-sdk.scope.get_action_rules("MyModule")            # {"send": False, "api": True, "request": True}
+# 実行時 API
+sdk.scope.set_action("MyModule", "send", deny=True)              # 全てのメッセージ送信を禁止
+sdk.scope.set_action("MyModule", "send", allow=["Text"])         # テキスト送信のみ許可
+sdk.scope.is_action_allowed("MyModule", "send", name="Image")    # False
+sdk.scope.is_action_allowed("MyModule", "api", name="get_user_info")  # 規則に従って判定
+sdk.scope.delete_action("MyModule", "send")                      # 許可を復元
+sdk.scope.get_action("MyModule", "send")                         # そのアクションの現在のルール
 ```
 
 ## 実行時API
 
-### モジュール次元
+スコープ実行時APIは3層構成です：**判定**（3つの質問）、**多次元の読み書き**（各次元ごとに `set` / `get` / `delete` パラメータ化メソッド、全タイプの署名が注釈付き、IDEによる補完可能）、**辞書式のデフォルト**（ドット区切りパスで任意のセクションに直接アクセス）。
 
 ```python
 from ErisPulse import sdk
 
-# 判断
-sdk.scope.is_allowed("onebot11", "123456", "Chat")
-sdk.scope.is_allowed("onebot11", "123456", "Chat", "789012345")
-sdk.scope.is_allowed("onebot11", "123456", None)      # フレームワーク層リソース -> True
-
-# バインディング／アンバインディング
-sdk.scope.bind_module("onebot11", "123456", modules=["Chat", "Tool*"])
-sdk.scope.bind_module("onebot11", blocked=["Danger"])             # プラットフォーム級
-sdk.scope.bind_module("onebot11", "123456", "789012345", modules=["Chat"])  # セッション級
-sdk.scope.bind_module("onebot11", "123456", modules=["Music"], merge=True)  # マージ
-sdk.scope.bind_module("onebot11", "123456", modules=["Chat"], persist=False)  # 実行時のみ
-sdk.scope.unbind_module("onebot11", "123456")
-
-# クエリ
-sdk.scope.get("onebot11", "123456")   # {"modules": ["Chat"], "blocked": []}
+scope = sdk.scope
 ```
 
-### 身分次元
+### 判定（3つの質問）
 
 ```python
-# イベントが許可されるかを判断
-sdk.scope.is_identity_allowed("onebot11", "123456", "group_9", "u1")
+scope.is_allowed("onebot11", "123456", "Chat")                 # ① モジュール次元
+scope.is_allowed("onebot11", "123456", "Chat", "789012345")    # 会話レベルを含む
+scope.is_allowed("onebot11", "123456", None)                   # フレームワーク層のリソース -> True
 
-# 戦略のバインディング（階層はパラメータで決まる：user > session > bot > adapter）
-sdk.scope.bind_identity("onebot11", user_id="u_bad", deny=True)
-sdk.scope.bind_identity("onebot11", user_id="spam_*", deny=True)   # glob
-sdk.scope.bind_identity("onebot11", "123456", "group_9", allow=True)
-sdk.scope.unbind_identity("onebot11", user_id="u_bad")
+scope.is_identity_allowed("onebot11", "123456", "group_9", "u1")   # ② 身元次元
 
-# ユーザーブラックリストの便利API
-sdk.scope.block_user("onebot11", "u_bad")
-sdk.scope.is_user_blocked("onebot11", "u_bad")
-sdk.scope.get_blocked_users()        # {"onebot11": ["u_bad"]}
-sdk.scope.unblock_user("onebot11", "u_bad")
+scope.is_action_allowed("MyModule", "send")                    # ④ 出力次元
+scope.is_action_allowed("MyModule", "send", name="Image")      # メソッドレベルの細分化
 ```
 
-### コマンド次元
+### ① モジュール次元
 
 ```python
-sdk.scope.is_command_allowed("roll", "onebot11", "u1")
-sdk.scope.allow_user("roll*", "onebot11", "u_vip")   # コマンド名はglob対応
-sdk.scope.deny_user("roll*", "onebot11", "u_bad")
-sdk.scope.get_acl("roll*")
-sdk.scope.remove_acl("roll*")
+# バインディング（パラメータによって階層が決定される：session_id > bot_id > プラットフォームレベル）
+scope.set_module("onebot11", bot_id="123456", modules=["Chat", "Tool*"])
+scope.set_module("onebot11", blocked=["re:^Danger"])                       # プラットフォームレベル
+scope.set_module("onebot11", bot_id="123456", session_id="g9", modules=["Chat"])  # 会話レベル
+scope.set_module("onebot11", bot_id="123456", modules=["Music"], merge=True)      # 現在のエントリと並列
+scope.set_module("onebot11", bot_id="123456", modules=["Chat"], persist=False)    # 実行時のみ
 
-# コマンドシステムのエントリーポイントを介しても等価に委任可能
-from ErisPulse.Core.Event import command
-command.allow_user("restart", "onebot11", "123456")
+# 読み取り / 削除
+scope.get_module("onebot11", bot_id="123456")   # {"modules": ["Chat"], "blocked": []}
+scope.delete_module("onebot11", bot_id="123456")
 ```
 
-### プロセッサとオーバーライド次元
+> `merge=True` は**書き込み時の並列**（該当レベルの既存バインディングとエントリを併合）です。階層間の解析期における `merge = true` 設定キーは上記の[バインディング継承](#binding-inheritance-merge)を参照してください。これらは独立したメカニズムです。
+
+### ② 身元次元
 
 ```python
-sdk.scope.bind_handler("MyModule", pattern="签到*", regex=r"\d+号")
-sdk.scope.unbind_handler("MyModule")
+# バインディング戦略（パラメータによって階層が決定される：user > session > bot > adapter；allow / deny のどちらかを指定）
+scope.set_identity("onebot11", user_id="u_bad", deny=True)
+scope.set_identity("onebot11", user_id="spam_*", deny=True)    # キーはglob / re: 正規表現をサポート
+scope.set_identity("onebot11", bot_id="123456", session_id="g9", allow=True)
 
-sdk.scope.override("MyModule", "restart", master=True, hidden=True)
-sdk.scope.get_override("MyModule", "restart")
-sdk.scope.remove_override("MyModule", "restart")
+# 読み取り / 削除
+scope.get_identity("onebot11", user_id="u_bad")   # {"deny": True}
+scope.delete_identity("onebot11", user_id="u_bad")
 ```
 
-### 一般
+### ③ 出力次元
 
 ```python
-sdk.scope.list_bindings()   # 全バインディング
-sdk.scope.get_topology()    # トポロジ（ダッシュボード用）
-sdk.scope.get_stats()
+# 制限ルールの設定（allow: str|list; deny: bool|str|list; 全ルールの置換語義）
+scope.set_action("MyModule", "send", deny=True)                    # 送信を完全に禁止
+scope.set_action("MyModule", "send", allow=["Text"])               # 送信可能なのはテキストのみ
+scope.set_action("MyModule", "api", deny=["set_*", "leave_*"])     # 管理系APIを禁止
+
+# 読み取り / 削除
+scope.get_action("MyModule", "send")       # {"allow": ["Text"]} 元のルール
+scope.delete_action("MyModule", "send")    # 単一アクションの削除
+scope.delete_action("MyModule")            # モジュールの全アクション制限の削除
+```
+
+### 一般的な操作
+
+```python
+scope.get("platforms")   # 辞書式のデフォルト：ドット区切りパスで任意のセクションを読み取る
+scope.topology()         # 全量設定ツリー（ダッシュボード用）
+scope.stats()
 # {"module_calls": .., "module_filtered": .., "identity_checks": .., "identity_denied": ..,
-#  "command_checks": .., "command_denied": .., "action_checks": .., "action_denied": ..,
-#  "cache_hits": .., "cache_misses": ..}
-sdk.scope.reset_stats()
-sdk.scope.clear()           # 全バインディングをクリア（メモリ内のみ有効）
+#  "action_checks": .., "action_denied": .., "cache_hits": .., "cache_misses": ..}
+scope.reset_stats()
+scope.clear()           # 全設定をクリア（メモリ内でのみ有効）
 ```
 
-## オーナー身分とカスタム身分ソース（provider）
+### 高度な操作：辞書式ドット区切りパスのデフォルト
 
-オーナーシステムは「誰がフレームワークのオーナーか」を回答する：コマンドの `master=True` パラメータと業務層の
-`master.is_master()` は同一の身分判定を共有し、判定チェーンは
-**設定オーナー → 実行時記録 → providerチェーン**である。
-
-オーナー設定（`ErisPulse.master.users`、グローバルlistとプラットフォームごとのdictがサポート）は
-[設定ドキュメント](../user-guide/configuration.md#オーナーシステム設定)を参照；本節は身分判定APIと拡張ポイントに焦点を当てる。
-
-### 判定と実行時追加／削除
+多次元メソッドは日常的なシナリオをカバーします。任意のノード（または将来追加される次元）に直接アクセスする必要がある場合、辞書式APIを使用します。`get` / `set` / `delete` はドット区切りパスを受け取り、辞書の深さを併合し、書き込み後に即座に読み取りが可能です。また、`scope[path]` / `scope[path] = v` / `del scope[path]` / `path in scope` のプロトコルも提供します：
 
 ```python
-from ErisPulse.Core import master
+scope.set("bots.onebot11.123456", {"modules": ["Chat"], "blocked": []})
+scope.set("identity.users.onebot11.u_bad", {"deny": True})
+scope.get("actions.MyModule.send")
 
-master.is_master(event)                      # イベントから判定
-master.is_master("yunhu", "123")             # 明示的に判定
-master.add("yunhu", "123")                   # 実行時追加（デフォルトは永続化；persist=Falseはメモリ内のみ）
-master.remove("yunhu", "123")                # 削除（デフォルトは永続化）
-master.list()                                # 総合：{"global": [...], "<platform>": [...]}
+scope["platforms.onebot11"]        # 読み取り（存在しない場合KeyErrorを投げる）
+scope["platforms.onebot11"] = {...}  # 書き込み
+del scope["platforms.onebot11"]      # 削除
+"actions.MyModule" in scope          # 存在確認
 ```
-
-### カスタム身分ソース（provider）
-
-設定の他に、カスタム身分ソースを登録できる：`fn(platform, user_id) -> bool`、
-ビルトイン身分ソース（設定 + 実行時記録）がヒットしなかった場合に順次試行され、いずれかのproviderが許可すればオーナーと判定される。アダプター管理者インターフェース、データベースロールなど外部身分体系への接続に適している。
-
-登録エントリ `master.provider` はデコレータ／関数式の2種類の書き方が可能、
-登録解除は登録された関数の `fn.unregister()` を通じて統一される：
-
-```python
-from ErisPulse.Core import master
-
-# 書き方1：デコレータ（常駐身分ソース、推奨）
-@master.provider
-def admin_provider(platform, user_id):
-    return user_id in {"999"}     # 自定義判定ロジック
-
-master.is_master("yunhu", "999")   # True
-admin_provider.unregister()        # 不要になったら登録解除
-
-# 書き方2：関数式（モジュールロード期に登録／アンロード期に登録解除）
-fn = master.provider(admin_provider)
-fn.unregister()
-```
-
-> providerの例外はキャッチされ、判定チェーンをブロックしない。インスタンスメソッドをバインドして `unregister` を登録できないため、登録／登録解除のペアが必要な場合は**モジュールレベルの関数**を使用する。
-
-### ユーザー優先：オーナーの有効範囲はユーザーが最終的に決定
-
-コマンドの `master=True` は**開発者のデフォルト**に過ぎず、ユーザーは制御面
-`ErisPulse.scope.overrides.<module>.<cmd>.master = true/false`
-で絞り込みや開放をオーバーライドできる（上記 ⑤ 実装パラメータオーバーライド、ユーザーが明示的に設定すれば有効）。
 
 ## キャッシュとホットアップデート
 
-- `is_allowed` / `is_identity_allowed` の結果は **LRUキャッシュ**（`scope.cache_size` で調整可能）付き、`bind_*` / `unbind_*` / 設定ホットアップデート（`config.updated` / `config.set`）で自動的に無効化される
-- すべての次元の設定は**即時有効**、再起動は不要
-- 制御面は「イベントごとの判定」であり、イベント間で記憶しない：設定が変わると、次のイベントから新しいルールが適用される
+- `is_allowed` / `is_identity_allowed` / `is_action_allowed` の結果には **LRU キャッシュ**が付与されています
+  （`scope.cache_size` でサイズを調整可能）、`set` / `delete` /
+  設定のホットアップデート（`config.updated` / `config.set`）により自動的に無効になります
+- すべての次元の設定は**即座に有効**になります。再起動は不要です
+- スコープは「イベントごとに」判断され、イベント間で状態を保持しません：設定が変更されると、次のイベントは新しいルールに従います
 
-## 一般的な質問と注意事項
+## 設定形式の検証
 
-### 1. 設定階層とオーバーライド
+ロード時またはホットリロード時に、各セクションの設定形式を検証します。型が間違っているセクション（例：`platforms` が文字列として記述された場合）、不正な出力ルール（例：`allow` が数値として記述された場合）、未知のアクション名、未知の最上位キー（例：`alow` がスペルミスされた場合）は、**WARNING** として出力され、対応するセクションまたは項目は無視されます。ただし、他の合法的な設定は通常通り有効になります。間違った記述が静かに無効になることはなくなります。
 
-- モジュール次元：セッション級 > Bot級 > プラットフォーム級、**全体を上書き**。プラットフォームでChatを許可し、BotでさらにMusicを追加したい場合、Bot級で両方をリストアップする必要がある
-- 身分次元：ユーザー > セッション > Bot > アダプター、**最も具体的な**設定戦略を採用（例外許可が可能）
-- コマンド次元：正確なコマンド名がglobキーに優先
+## よくある質問と注意点
 
-### 2. モジュール／コマンドのコードを変更するのではなく、制御面を使う
+### 1. 設定の階層と上書き
 
-モジュール宣言は「開発者のデフォルト」（`master=True`、`permission=...`、`pattern=...`）を示す；制御面宣言は「ユーザーの最終決定」を示す。実装パラメータオーバーライドは**ユーザー優先**に従う：ユーザーが明示的に設定した `master = true/false` は直接有効（絞り込みも開放も可能）。開発者が設定していない制限はユーザーが独自に絞り込み可能；禁止／開放制御はコマンドdeny／身分allowで行う。
+- モジュールの階層：セッションレベル > Bot レベル > プラットフォームレベル。**全体的な上書き**（子レベルで `merge = true` の場合、各項目が集合としてマージされる）。
+  例えば「プラットフォームで Chat を許可し、Bot で Music を追加したい」場合は、Bot レベルで `merge = true` を設定するか、両方を明示的にリストに追加する。
+- 身元の階層：ユーザー > セッション > Bot > アダプター。**最も具体的な設定されたポリシー**が優先される（例外として許可することも可能）。
+- コマンドのユーザーのホワイトリスト/ブラックリスト：完全一致のコマンド名が glob キーに優先される（`event.command.acl` を参照）。
 
-### 3. モジュール／コマンドが反応しない
+### 2. モジュール/コマンドが反応しない場合
 
-まず制御面が原因か、モジュール自体が原因かを疑う：
+まず、モジュール自体ではなく作用域を疑う：
 
 ```python
 from ErisPulse import sdk
 
 print(sdk.scope.is_allowed(event.get_platform(), bot_id, "MyModule", session_id))
 print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, user_id))
-print(sdk.scope.get_stats())   # module_filtered / identity_denied > 0 なら静かにフィルタリングされている
+print(sdk.scope.stats())   # module_filtered / identity_denied > 0 であれば、静かにフィルタリングされている
 ```
 
-フィルタリングは**静か**（モジュール次元と身分次元は返信しない、ルールを暴露しない）、統計は累積される；コマンド次元でACLに拒否された場合は「権限不足」という明示的な返信がされる。
+フィルタリングは**静かに**行われる（モジュールの階層と身元の階層では返信がなく、ルールを露出しない）。ただし、統計は蓄積される。
+コマンドの階層で ACL に拒否された場合は、「権限がありません」という明示的な返信が返される。
 
-### 4. セッション識別子はプラットフォームごとに隔離
+### 3. 出力アクションが拒否された場合のトラブルシューティング
 
-`(platform, session_id)` 組み合わせが唯一の識別子である。`scope.sessions.onebot11."789"` は onebot11 でのみ有効で、telegram 上で同じ `789` のセッションには影響しない。身分次元のユーザー識別子も同様。
+```python
+from ErisPulse import sdk
 
-## トポロジAPI
+print(sdk.scope.get("actions.MyModule"))
+print(sdk.scope.stats())   # action_denied > 0 であれば、呼び出しがブロックされている
+```
 
-`ModuleManager.get_topology()` と `AdapterManager.get_topology()` はモジュール／アダプターの所属関係データを提供し、`sdk.get_topology()` は一括して集約（制御面の5次元を含む）：
+ブロックは**明示的**に行われる：拒否された呼び出しは `retcode = 34601` の標準的な失敗レスポンスを返す（ネットワークリクエストは発生しない）。
+
+### 4. セッション識別子のプラットフォーム間の隔離
+
+`(platform, session_id)` の組み合わせが一意の識別子となる。`scope.sessions.onebot11."789"` は onebot11 上でのみ有効であり、telegram 上で同じ `789` のセッションには影響しない。身元の階層におけるユーザーのキーも同様である。
+
+## 拓扑ツリー API
+
+`ModuleManager.get_topology()` と `AdapterManager.get_topology()` は、モジュール/アダプターの所属関係データを提供します。  
+`sdk.get_topology()` は、スコープ（scope）を含むデータを一括で取得します。
 
 ```python
 from ErisPulse import sdk
 
 topology = sdk.get_topology()
 # {
-#   "modules": {                                   # モジュール → 持有リソース
+#   "modules": {                                   # モジュール → 所有するリソース
 #     "Chat": {
 #       "loaded": True, "enabled": True,
 #       "commands": ["chat", "translate"],
@@ -9643,23 +9689,162 @@ topology = sdk.get_topology()
 #       "lifecycle_hooks": 3,
 #     }
 #   },
-#   "adapters": {                                  # アダプター → Bot → 作用域
+#   "adapters": {                                  # アダプター → Bot → スコープ
 #     "onebot11": {
 #       "status": "started", "enabled": True,
 #       "bots": {"123456": {"status": "online", "scope": {...}}},
 #       "scope": {"modules": [...], "blocked": [...]},
 #     }
 #   },
-#   "scope": {                                     # 統一制御面（5次元）
+#   "scope": {                                     # スコープ（モジュール / 身分 / 出力アクション）
 #     "platforms": {...}, "bots": {...}, "sessions": {...},
 #     "identity": {"adapters": {...}, "bots": {...}, "sessions": {...}, "users": {...}},
-#     "commands": {...}, "handlers": {...}, "overrides": {...},
+#     "actions": {...},
 #   },
 # }
 ```
 
-- モジュールトポロジは、登録されたコマンド、イベントプロセッサ、HTTP/WS/SSEルート、ライフサイクルフックを統合し、モジュールリソースツリーを描画するのに便利
-- アダプタートポロジは、各アダプターのステータス、所属Botのステータス、プラットフォーム級／Bot級の作用域バインディングを統合
+- モジュールのトポロジーは、登録されたコマンド、イベントハンドラ、HTTP/WS/SSE ルート、ライフサイクルフックを統合し、モジュールリソースツリーの描画に便利です。
+- アダプターのトポロジーは、各アダプターのステータス、所属する Bot のステータス、プラットフォームレベル/Bot レベルのスコープバインディング（モジュール次元）を統合します。
+
+
+
+### 归属权（owner）系统
+
+# 所有者（owner）システム
+
+所有者システムは、モジュールの「プラグイン・アンド・プレイ」機能の基盤です。モジュールがロード時に登録するフレームワークリソースはすべて自動的に所有者に記名され、モジュールのアンロード/無効化時に所有者に基づいて一括して回収されます。モジュールの作者はリソースを宣言するだけで、手動でクリーンアップロジックを書く必要はありません。
+
+> **関連システム**：スコープ（scope）はイベントの配信時に「リソースが有効かどうか」を決定します。  
+> 所有者システムはライフサイクル中に「リソースは誰のものか、誰がアンロード時に回収されるか」を決定します。  
+> スコープの詳細は [統一制御面（scope）](docs/ja/scope.md) を参照してください。バックグラウンドタスクの詳細は、  
+> [ライフサイクル管理](docs/ja/lifecycle.md#バックグラウンドタスクの所有と自動キャンセル) を参照してください。
+
+{!--< tips >!--}
+1. 所有者は**登録の瞬間**に `current_owner` に基づいて自動的に記録されます。モジュールのコードを変更する必要はありません。
+2. アンロード/無効化は同じクリーンアップ処理（`_cleanup_module_registrations`）を使用します。各ステップで失敗しても警告のみ出力され、処理は中断されません。
+3. ユーザー設定のリソース（永続化された上書き / scopeルール / コマンドACL）は、モジュールのアンロード時にクリーンアップされません。
+{!--< /tips >!--}
+
+## owner コンテキスト機構
+
+owner は、コンテキスト変数 `current_owner` を介して `ErisPulse.runtime.context` に渡されます。
+
+```python
+from ErisPulse.runtime import owner_scope, get_current_owner
+
+with owner_scope("MyModule"):
+    # この範囲内で登録されるすべてのリソースは自動的に MyModule に属します
+    assert get_current_owner() == "MyModule"
+```
+
+フレームワークは以下のタイミングで自動的に owner を注入します（モジュールやアダプタのコードでは手動でラップする必要はありません）：
+
+| 時機 | owner 値 | 位置 |
+|------|----------|------|
+| モジュール `load()` | モジュール名 | インスタンス化 + `on_load` 全過程 |
+| アダプタ `start()` / `restart()` | プラットフォーム名 | アダプタ起動全過程 |
+| `activate_on` ラグジュアリスタブ登録 | モジュール名 | 占位コマンド/ハンドラの登録 |
+| イベントハンドラ実行中 | ハンドラ所属モジュール名 | handler / コマンドエントリ再注入 |
+
+実行中の再注入とは、`on_load` 内で宣言したコマンドハンドラが**実行中**に登録型 API（例: `sdk.adapter.on()`、`overrides.*.set(persist=False)`）を呼び出す場合、それらも自動的に本モジュールに属することを意味します。
+
+## 所属リソースの概要
+
+モジュールは、ロードコンテキスト内で以下のリソースを登録し、それぞれの所有者として記録します。モジュールのアンロードや無効化時には、これらのリソースは自動的に回収されます。
+
+| リソース | 登録方法 | クリーンアップ呼び出し |
+|------|----------|----------|
+| コマンド | `@command()` / コマンド dict 宣言 | `command.unregister_by_owner()` |
+| イベントハンドラ | `@message` / `@notice` / `@request` / `@meta` | `handler.unregister_by_owner()` |
+| アダプタイベントリスナー | `sdk.adapter.on()` / `raw=True` | `adapter.unregister_handlers_by_owner()` |
+| アダプタミドルウェア | `@sdk.adapter.middleware` | 同上 |
+| ルーティング（HTTP/WS/SSE） | `router.http()` / `websocket()` / `sse()` | 名前空間 + owner による二重保証 |
+| ルーティングミドルウェア | `@router.middleware()` / `add_middleware()` | `router.unregister_all_by_owner()` |
+| Dashboard ホームエントリ | `router.register_home_entry()` | `unregister_home_entries_by_owner()` |
+| 自定义会話タイプ | `register_custom_type()` | `unregister_custom_types_by_owner()` |
+| バックグラウンドタスク | `self.spawn()` | `cancel_owner_tasks()` |
+| ライフサイクルフック | `lifecycle.register()` | `lifecycle.unregister_by_owner()` |
+| 主人身源 provider | `master.provider` | `master.unregister_by_owner()` |
+| i18n 翻訳キー | `I18nClass` 宣言（domain=モジュール名） | `i18n.unregister_domain()` |
+| イベントオーバーライド（実行時） | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
+| コンテキストデータ | `runtime/context` は owner ごとに記録 | モジュールごとに正確にクリーンアップ |
+
+アダプタ側の対応するリソース（プラットフォーム名を owner として）は、アダプタの `shutdown()` / `restart()` 時に `_cleanup_adapter_resources` によって回収されます。また、以下のリソースも含まれます：
+
+| リソース | クリーンアップ呼び出し |
+|------|----------|
+| アダプタ独自の `on()` ハンドラとミドルウェア | `adapter.unregister_handlers_by_owner(platform)` |
+| プラットフォームイベントメソッド拡張（`EventMixin`） | `unregister_platform_event_methods(platform)` |
+| 自定义会話タイプ | `unregister_custom_types_by_owner(platform)` |
+| i18n 翻訳ドメイン（domain=設定キー） | `i18n.unregister_domain(設定キー)` |
+| 細かい粒度の名前空間ルーティング | `router.unregister_all_by_owner(platform)` |
+
+## アンロード/無効化のクリーンアップシーケンス
+
+`unload()` と `disable()` は、それぞれ独立した try/except で保護された 1 ステップずつ、**失敗しても後続のクリーンアップを中断しない** 1 本のクリーンアップチェーンを共有します。
+
+```mermaid
+flowchart TD
+    A["unload / disable"] --> B["on_unload()（タイムアウト保護）"]
+    B --> C["バックグラウンドタスクの強制キャンセル（cancel_owner_tasks）"]
+    C --> D["_cleanup_module_registrations"]
+    D --> D1["i18n 翻訳ドメイン"]
+    D1 --> D2["ルーティング：名前空間 + owner の強制解除<br/>（ミドルウェア / ホームページエントリを含む）"]
+    D2 --> D3["アダプタイベントハンドラ / ミドルウェア"]
+    D3 --> D4["コマンド + イベントハンドラ"]
+    D4 --> D5["カスタムセッション型"]
+    D5 --> D6["ランタイムイベントの上書き（persist=False）"]
+    D6 --> D7["オーナーの身元プロバイダ"]
+    D7 --> D8["ライフサイクルフック"]
+    D8 --> E["SDK 属性の削除 + ラグジュアリプロキシの破棄"]
+```
+
+`sdk.uninit()` が終了する際には、以下のグローバルな強制クリーンアップが行われます：すべてのアダプタのシャットダウン → すべてのモジュールのアンロード → `router.stop()`（ルーティング / ミドルウェア / ホームページエントリのクリア）→ `cancel_all_background_tasks()` → イベントハンドラとフックのクリア。
+
+## デザインの境界：アンインストール時にクリーンアップされないリソース
+
+所有権は、**モジュールコードが登録したランタイムリソース**のみを回収します。以下のリソースは**ユーザーの設定の意味**（制御権はユーザーにあり、意図的に設定される可能性がある）に属し、モジュールのアンインストール後も設定に従って永続的に保持されます：
+
+| リソース | 意味 | 説明 |
+|------|------|------|
+| `overrides.*.set(persist=True)` | 永続化されたオーバーライド | 設定ファイルに書き込まれ、再起動後も有効；モジュールのアンインストール時に削除されない（ユーザーが明示的に設定） |
+| `scope.set_action()` などのスコープルール | 権限制御面 | ユーザー/Dashboard によって管理され、モジュールのアンインストール時にルールは回収されない |
+| `overrides.acl.set(persist=True)` | コマンド ACL | 同上 |
+| Conversation `save()` による永続化 | 多輪対話のアーカイブ | データ資産はクリーンアップされない |
+
+ランタイムに一時的に書き込まれたもの（`persist=False`）は、owner に従って回収されます。**永続化の有無が「ユーザーの資産」と「モジュールのランタイム状態」の境界線です**。
+
+## モジュール作成者ガイド
+
+### 推奨される書き方
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+from ErisPulse.runtime import owner_scope, spawn_background
+
+class MyModule(BaseModule):
+    async def on_load(self, event):
+        # フレームワークリソース：自動帰属、手動のリソース解放は不要
+        self.task = self.spawn(self.polling())      # バックグラウンドタスク
+        sdk.router.register_home_entry("私のモジュール", "/my")  # ホームページエントリ
+
+        # モジュール独自リソース：owner_scope に包むことで帰属体系に組み込まれる
+        with owner_scope("MyModule"):
+            self.client.on_event(self._handle)      # 假想のカスタム登録
+
+    async def on_unload(self, event):
+        # フレームワークリソースは自動的に回収されるため、owner_scope でカバーされない独自リソースのみをクリーンアップする
+        await self.client.close()
+```
+
+### 注意事項
+
+- **import 時の登録は帰属されない**：モジュールのトップレベル（import 時）に登録されたフック/ハンドラは `owner_scope` 以前に発生するため、フレームワークレベルのリソース（owner=None）として扱われ、**リソース解放が行われない**。すべて `on_load()` 内で登録すること。
+- **カスタム domain の i18n 登録**：`i18n.register(domain=...)` で domain がモジュール名と異なる場合、自動回収されないため、domain=モジュール名を維持すること。
+- **バックグラウンドタスクは必ず self.spawn() を使用**：裸の `asyncio.create_task` はモジュールに帰属せず、アンロード時にキャンセルされない（詳細は[ライフサイクル管理](lifecycle.md#バックグラウンドタスクの帰属と自動キャンセル)を参照）。
+- **リソース解放の失敗は警告のみ**：1ステップのリソース解放で例外が発生しても、他のリソースの回収は中断されず、ログの DEBUG/WARNING レベルで確認可能。トラブルシューティング時は TRACE モードを有効化すること。
 
 
 
@@ -11107,18 +11292,18 @@ notice/request イベントに正しい ID フィールドが含まれている�
 
 ## 5. 拡張仕様
 
-ErisPulse は OneBot12 標準の返り値構造を拡張し、以下の追加を行っています。
+ErisPulse は OneBot12 標準の返却構造を拡張して以下の追加を行いました：
 
-### 5.1 `message_id` 必須フィールド
+### 5.1 必須フィールド `message_id`
 
-OneBot12 標準では `message_id` は `data` オブジェクト内にあり、必須ではありません。ErisPulse ではこれをトップレベルの**必須**フィールドに昇格させています：
+OneBot12 標準では `message_id` は `data` オブジェクト内にあり、必須ではありません。ErisPulse ではこれをトップレベルの**必須**フィールドに昇格しました：
 
 - `message_id` を取得できない場合は空文字列 `""` を設定する
-- `message_id` が常に存在することを保証し、モジュールは null 検査を行う必要がない
+- `message_id` が常に存在することを保証し、モジュールは null チェックを行う必要がない
 
 ### 5.2 `{platform}_raw` 原始レスポンスフィールド
 
-返り値には `{platform}_raw` フィールドを含め、プラットフォームの原始レスポンスデータの完全なコピーを格納する必要があります：
+返却値には、プラットフォームの原始レスポンスデータの完全なコピーを格納する `{platform}_raw` フィールドを含める必要があります：
 
 ```json
 {
@@ -11135,33 +11320,33 @@ OneBot12 標準では `message_id` は `data` オブジェクト内にあり、�
 ```
 
 **要件**：
-- `{platform}_raw` は原始レスポンスの深コピーで、参照ではありません
-- `platform` はアダプタ登録時のプラットフォーム名と完全一致（大文字小文字を区別）する必要があります
-- 原始レスポンスのエラーメッセージも保持し、デバッグに利用できるようにする
+- `{platform}_raw` は原始レスポンスのディープコピーである必要があり、参照ではありません
+- `platform` はアダプタ登録時のプラットフォーム名と完全に一致する必要があります（大文字小文字を区別）
+- エラー情報も保持し、デバッグに使用できるようにする
 
-### 5.3 フレームワーク拡張返り値コード（34xxx プラットフォームエラーセグメントの下3桁のカスタム）
+### 5.3 フレームワーク拡張返却コード（34xxx プラットフォームエラーセグメントの下3桁をカスタム）
 
-OneBot12 規格では実装が `3xxxx` の下3桁をカスタムに使用できます。`34xxx` は **Platform Error**（ロボットプラットフォームエラー、プラットフォーム制限による失敗）を意味します。`34xxx` は内部で役割ごとに分けて使用されます：
+OneBot12 規格では、実装者が `3xxxx` の下3桁をカスタムに使用することが許可されています。`34xxx` の意味は **Platform Error**（ロボットプラットフォームエラー、プラットフォーム制限による失敗）です。`34xxx` 内部では、責任の階層に応じて以下のようになります：
 
 | 下3桁セグメント | 所属 | 用途 |
 |---------|------|------|
-| `340xx` | アダプタ実装 | リクエスト操作族（Request Not Found / Already Handled / Not Supported / Permission Denied、request-action-spec §7 参照） |
-| `341xx`～`345xx` | アダプタ実装 | プラットフォーム側の権限 / リスク管理 / アカウント制限等のエラー（実装が下3桁を独自に定義し、元のエラーは `{platform}_raw` に格納） |
-| `346xx` | **ErisPulse フレームワーク（予約済み）** | フレームワーク自身によるブロックと一般的な失敗、アダプタ/モジュールは使用しない |
+| `340xx` | アダプタ実装 | リクエスト操作族（リクエストが見つからない / 既に処理済み / 対応していない / 権限拒否、request-action-spec §7 参照） |
+| `341xx`～`345xx` | アダプタ実装 | プラットフォーム側の権限 / リスク管理 / アカウント制限等のエラー（実装者が下3桁を独自に定義し、元のエラーは `{platform}_raw` に格納） |
+| `346xx` | **ErisPulse フレームワーク（予約）** | フレームワーク自身のブロックと一般的な失敗、アダプタ/モジュールは使用しない |
 | `347xx`～`349xx` | アダプタ実装 | その他のプラットフォーム実行エラー |
 
-ErisPulse フレームワークが現在使用している `346xx` エラーコード：
+ErisPulse フレームワークが現在使用している `346xx` コード：
 
 | エラーコード | エラー名 | 説明 |
 |-------|-------|------|
-| 34600 | SDK Failure | フレームワークの一般的な失敗（`make_error()` のデフォルト返り値） |
-| 34601 | Action Denied | 出力アクションがコントロール面によって禁止されている（`scope.actions`）、呼び出しは行われず、直接このレスポンスを返す |
+| 34600 | SDK Failure | フレームワークの一般的な失敗（`make_error()` のデフォルト返却コード） |
+| 34601 | Action Denied | 出力アクションがスコープによって禁止（`scope.actions`）、呼び出しは行われず、直接このレスポンスを返す |
 
-> 役割の区別：`34601` は**フレームワークが呼び出し前にブロック**（モジュールはそもそもアクションを実行する資格がない）です。
-> `34004` / `34xxx` プラットフォームコードは**アクションは発行されたがプラットフォームが拒否**（Bot に権限がない、リスク管理対象など）です。
-> モジュールは権限問題を判断する際、これら2つを同時にチェックする必要があります：まず `34601`（モジュールが scope で禁止されているか）を確認し、次に `34xxx`（プラットフォーム側の制限）を確認する。
+> 責任の区分：`34601` は**フレームワークが呼び出し前にブロック**（モジュールはそもそもアクションを開始する資格がない）です；
+> `34004` / `34xxx` プラットフォームコードは**アクションは発行されたがプラットフォームが拒否**（Bot に権限がない、またはリスク管理対象）です。
+> モジュールは権限問題を判断する際に、この2つを両方チェックする必要があります：まず `34601`（モジュールが scope によって禁止されているか）を確認し、次に `34xxx`（プラットフォーム側の制限）を確認します。
 
-返り値の構造は §2 の標準の失敗レスポンスに従います：
+返却構造は §2 の標準失敗レスポンスに準拠します：
 
 ```json
 {
@@ -11176,9 +11361,9 @@ ErisPulse フレームワークが現在使用している `346xx` エラーコ�
 ### 5.4 アダプタ実装チェックリスト
 
 - [ ] `status`, `retcode`, `data`, `message_id`, `message` フィールドを含む
-- [ ] 返り値コードは OneBot12 規格に従う（§3.2 参照）
+- [ ] 返却コードは OneBot12 規格に準拠（§3.2 参照）
 - [ ] `message_id` が常に存在する（取得できない場合は空文字列）
-- [ ] `{platform}_raw` にプラットフォームの原始レスポンスデータが含まれる
+- [ ] `{platform}_raw` にプラットフォームの原始レスポンスデータを含む
 
 ## 6. 注意事項
 - 3xxxxエラーコードについては、下位3桁は実装者が独自に定義可能です。

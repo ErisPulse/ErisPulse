@@ -64,7 +64,7 @@
           "icon": "fa-list-check"
         },
         {
-          "title": "Getting Started with Event Handling",
+          "title": "Event Handling Introduction",
           "path": "getting-started/event-handling.md",
           "level": 1,
           "icon": "fa-bolt-lightning"
@@ -336,7 +336,7 @@
     "Advanced Topics": {
       "description": "Deep dive into advanced framework features",
       "icon": "fa-fire",
-      "count": 11,
+      "count": 12,
       "documents": [
         {
           "title": "Advanced Topics",
@@ -393,10 +393,16 @@
           "icon": "fa-language"
         },
         {
-          "title": "Unified Control Plane (scope)",
+          "title": "Scope",
           "path": "advanced/scope.md",
           "level": 1,
           "icon": "fa-shield-halved"
+        },
+        {
+          "title": "Ownership (owner) System",
+          "path": "advanced/ownership.md",
+          "level": 1,
+          "icon": "fa-user-tag"
         },
         {
           "title": "Startup Process and Manual Control",
