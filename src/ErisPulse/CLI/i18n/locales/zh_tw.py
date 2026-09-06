@@ -131,6 +131,7 @@ TRANSLATIONS = {
     "cli.config.description": "互動式配置適配器/模組的宣告式配置項",
     "cli.config.name_help": "目標名稱（適配器平台名或模組名，留空進入互動選擇）",
     "cli.config.list_help": "僅列出配置狀態，不進入精靈",
+    "cli.config.json_help": "以 JSON 格式輸出配置狀態（供腳本/CI 消費）",
     "cli.config.no_targets": "未發現任何適配器/模組",
     "cli.config.install_hint": "可先執行 epsdk install 安裝元件",
     "cli.config.not_found": "未找到目標 {name}",
