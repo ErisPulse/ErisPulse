@@ -29,6 +29,8 @@ It ships with a flexible plugin system, hot reload, a visual Dashboard, an AI Bu
 - **Cross-platform compatibility** — Write handlers once, deploy to 15+ platforms without rewriting business logic.
 - **Modular design** — Flexible plugin system with hot-plug module management and per-module configuration.
 - **Hot reload** — Iterate on code during development without restarting the bot process.
+- **Unified Event Overrides** — Override message triggers, command params and user permissions for *every* event type with a single config — no module code changes, takes effect instantly.
+- **Scope Control** — Three-dimensional scope (module availability / event admission / outbound limits) with runtime-adjustable fine-grained control.
 - **Chainable SendDSL** — Express `@mention`, reply, retry, timeout, progress hook and bulk send as a single fluent chain.
 - **Complete toolchain** — `epsdk` CLI, visual Dashboard, AI Builder and Module Market included out of the box.
 

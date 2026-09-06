@@ -91,10 +91,10 @@
 
 | 严重性 | 数量 |
 |--------|------|
-| 🔴 严重 | 16 |
+| 🔴 严重 | 15 |
 | 🟡 中等 | 13 |
 | 🟢 轻微 | 2 |
-| **合计** | **31** |
+| **合计** | **30** |
 
 | 类型 | 数量 |
 |------|------|
@@ -103,7 +103,7 @@
 | 事件系统 | 5 |
 | CLI | 3 |
 | 存储 | 3 |
-| 加载系统 | 4 |
+| 加载系统 | 3 |
 | 路由 | 2 |
 | 客户端 | 1 |
 | 运行时 | 1 |
@@ -837,34 +837,9 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 ---
 
-### [BUG-031] 本地插件热重载完全不可用（reload_plugin 恒返回 False）
+### [BUG-032] 配置延迟刷盘期间「写后立读」读到旧值
 
-**问题**: 调用 `sdk.reload_plugin(name)` 或经 `sdk.enable_plugin_hot_reload()` 文件监控触发重载时，日志输出 WARNING「热重载不可用：SDK 尚未初始化模块加载器」并返回 `False`——即使框架已正常初始化、插件已从 `plugins/` 加载，热重载功能在真实运行路径上完全失效。
-
-**原因**: `ModuleLoader` 仅作为 `Initializer` 的内部属性创建（`Initializer.__init__` 中的 `self._module_loader`），从未注入 SDK 实例；而 `sdk.reload_plugin()` 检查并读取的是 SDK 实例上的 `self._module_loader`（恒为 None）。此外同方法还向加载器传递了 SDK 上不存在的 `self._sdk` 属性（第二个潜伏断点，修复第一处后必然触发 `AttributeError`）。
-
-**影响版本**: 2.8.0-dev.0 - 2.8.0-dev.1
-
-**修复版本**: 2.8.0-dev.1
-
-**修复内容**:
-1. `Initializer.__init__` 创建加载器后注入 `sdk_instance._module_loader = self._module_loader`（硬重启重建 Initializer 时自动重新指向新加载器）
-2. `uninit()` 重置阶段同步清空 `sdk._module_loader`，避免卸载后经陈旧加载器重载
-3. `reload_plugin` 改向加载器传递 SDK 实例自身（`self`）
-
-**修复日期**: 2026/09/04
-
-**回归测试**: `tests/unit/test_unit_plugin_reload.py` → `TestSDKLoaderWiring`（注入接线 / 未初始化优雅 False / SDK 自身传递）
-
-**严重性**: 🔴 严重
-
-**类型**: 加载系统
-
----
-
-### [BUG-033] 配置延迟刷盘期间「写后立读」读到旧值
-
-**问题**: `config.setConfig()`（默认 `immediate=False` 延迟约 5 秒刷盘）写入点分键后，立即读取其**父级/祖先节点**（如 `set_erispulse_section("scope.handlers.MyModule", {...})` 后调用 `get_erispulse_config()`）返回的是旧值，写入的子键"消失"，直到刷盘后才可见。控制面作用域配置热更新等"写-读-写"场景受影响（2.8.0 测试插件 `/t_section` 用例暴露）。
+**问题**: `config.setConfig()`（默认 `immediate=False` 延迟约 5 秒刷盘）写入点分键后，立即读取其**父级/祖先节点**（如 `set_erispulse_section("scope.actions.MyModule", {...})` 后调用 `get_erispulse_config()`）返回的是旧值，写入的子键"消失"，直到刷盘后才可见。作用域配置热更新等"写-读-写"场景受影响（2.8.0 测试插件 `/t_section` 用例暴露）。
 
 **原因**: `setConfig` 将点分键以**扁平形式**存入待写队列 `_dirty_keys`，仅 `getConfig` 的**精确键查询**命中待写队列；树形路径查询（`getConfig("ErisPulse.scope")`）只走缓存树，不叠加待写值——延迟刷盘（`_flush_config` 才将脏键合并进缓存并清队列）期间形成读-你-写断层。
 
