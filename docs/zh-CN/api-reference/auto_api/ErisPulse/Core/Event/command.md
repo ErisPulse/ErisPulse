@@ -9,13 +9,16 @@ ErisPulse 命令处理模块
 
 提供基于装饰器的命令注册和处理功能
 
-命令的**用户权限 ACL**（谁/谁不能执行）统一收敛到控制面 ``ErisPulse.scope.commands``
-（运行时 ``scope.allow_user`` / ``scope.deny_user``，命令名支持 glob），
-本模块不再单独维护权限配置。
+命令是特殊的消息事件处理器（ErisPulse 扩展类型），其用户侧配置
+由统一覆写系统持有（``ErisPulse.event.overrides``，见
+:mod:`ErisPulse.Core.Event.overrides`）：**用户黑白名单（ACL）** 在
+``overrides.acl`` 类别（命令名支持 glob，``acl_default_allow`` 兜底严格模式）；
+**实现参数覆写**（master / hidden / aliases 等）在 ``overrides.command`` 类别
+（用户优先语义）。本模块的命令判定链消费覆写系统的生效结果。
 
 > **提示**
 > 1. 支持命令别名和命令组
-> 2. 支持命令权限控制（master / permission 函数 / 控制面 ACL）
+> 2. 支持命令权限控制（master / permission 函数 / 覆写系统 ACL）
 > 3. 支持命令帮助系统
 > 4. 支持等待用户回复交互
 
@@ -46,7 +49,7 @@ ErisPulse 命令处理模块
 
 ##### `_on_config_updated(_data: dict)`
 
-配置变更回调：刷新命令解析参数，实现热更新
+配置变更回调：刷新命令解析参数、实现参数覆盖与用户 ACL
 
 ---
 
@@ -54,81 +57,23 @@ ErisPulse 命令处理模块
 ##### `_scope()`
 
 > **内部方法**
-延迟获取控制面单例（避免模块初始化阶段的循环依赖）
+延迟获取作用域单例（避免模块初始化阶段的循环依赖）
+
+用于模块维度作用域检查与事件上下文提取。
 
 **返回值** (`scope`): 单例（ScopeManager）
 
 ---
 
 
-##### `allow_user(command_name: str, platform: str, user_id: str, persist: bool = True)`
+##### `_scope()`
 
-将用户加入命令的 allow 名单（白名单非空时仅名单内用户可执行）
+> **内部方法**
+延迟获取作用域单例（避免模块初始化阶段的循环依赖）
 
-委托给控制面 ``scope.allow_user``；命令名支持 glob。
+用于模块维度作用域检查与事件上下文提取。
 
-- **command_name** (`命令名称（支持`): glob / ``re:`` 正则）
-- **platform** (`用户所属平台`): - **user_id**: 用户 ID
-- **persist** (`是否持久化到配置`): (默认: True)
-
-**示例**:
-```python
->>> command.allow_user("restart", "onebot11", "123456")
-```
-
----
-
-
-##### `deny_user(command_name: str, platform: str, user_id: str, persist: bool = True)`
-
-将用户加入命令的 deny 名单（deny 优先于 allow 与默认权限）
-
-委托给控制面 ``scope.deny_user``；命令名支持 glob。
-
-- **command_name** (`命令名称（支持`): glob / ``re:`` 正则）
-- **platform** (`用户所属平台`): - **user_id**: 用户 ID
-- **persist** (`是否持久化到配置`): (默认: True)
-
-**示例**:
-```python
->>> command.deny_user("restart", "onebot11", "666")
-```
-
----
-
-
-##### `remove_acl(command_name: str, persist: bool = True)`
-
-清除命令的用户黑白名单（恢复开发者默认权限逻辑）
-
-委托给控制面 ``scope.remove_acl``；命令名支持 glob。
-
-- **command_name** (`命令名称（支持`): glob / ``re:`` 正则）
-- **persist** (`是否持久化到配置`): (默认: True)
-**返回值** (`是否存在并被清除`): 
-**示例**:
-```python
->>> command.remove_acl("restart")
-True
-```
-
----
-
-
-##### `get_acl(command_name: str)`
-
-查询命令当前的用户黑白名单
-
-委托给控制面 ``scope.get_acl``；命令名支持 glob。
-
-- **command_name** (`命令名称（支持`): glob / ``re:`` 正则）
-**返回值** (`{"allow":`): [...], "deny": [...]}（用户标识 "platform:user_id"）
-
-**示例**:
-```python
->>> command.get_acl("restart")
-{'allow': ['onebot11:123456'], 'deny': []}
-```
+**返回值** (`scope`): 单例（ScopeManager）
 
 ---
 
@@ -272,7 +217,7 @@ True
 
 ##### `get_command(name: str)`
 
-获取命令信息（返回合并控制面覆盖后的**生效参数**）
+获取命令信息（返回合并覆写系统命令参数后的**生效参数**）
 
 传入作用域上下文（``event`` 或 ``platform`` / ``bot_id`` / ``session_id``
 任一）时，命令归属模块在当前会话不可用则返回 ``None``（与分发静默语义一致）。
@@ -323,7 +268,7 @@ True
 
 获取所有可见命令（非隐藏命令）
 
-可见性判定读取控制面覆盖值（``scope.overrides.<module>.<command>.hidden``）：
+可见性判定读取覆写系统命令参数（``event.overrides.command.<module>.<command>.hidden``）：
 用户显式覆盖 ``hidden`` 后，帮助列表随之变化（用户优先）。
 传入作用域上下文（``event`` 或 ``platform`` / ``bot_id`` / ``session_id``
 任一）时，额外按模块维度过滤该会话不可用模块的命令（与分发静默语义一致）。
@@ -358,7 +303,7 @@ True
 ##### `_effective_info(name: str, info: dict)`
 
 > **内部方法**
-合并控制面覆盖后的命令生效参数（帮助渲染与可见性判定用）
+合并实现参数覆盖后的命令生效参数（帮助渲染与可见性判定用）
 
 - **name** (`命令主名`): - **info**: 注册时的命令信息字典
 **返回值**: 与执行路径同源的覆盖合并结果（无覆盖时原样返回）
@@ -370,10 +315,10 @@ True
 
 生成帮助信息
 
-传入 ``event`` 时按控制面对输出做会话感知调整：① 模块维度——
+传入 ``event`` 时按作用域对输出做会话感知调整：① 模块维度——
 该会话（platform / bot / session）下被作用域禁用的模块，其命令不再列出
-（与分发静默语义一致）；② 覆盖维度——帮助文本 / usage / 可见性读取
-``scope.overrides`` 覆盖值（用户优先）。
+（与分发静默语义一致）；② 覆盖——帮助文本 / usage / 可见性读取
+``event.overrides.command`` 覆写值（用户优先）。
 
 - **command_name** (`命令名称，如果为None则生成所有命令的帮助`): - **show_hidden**: 是否显示隐藏命令
 - **event** (`可选，事件上下文（Event`): 或 dict）。提供时按作用域过滤

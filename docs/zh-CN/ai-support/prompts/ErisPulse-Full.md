@@ -198,7 +198,7 @@ sequenceDiagram
 > 3. **同优先级组内不阻断**——`mark_processed(stop=True)` 只阻止更低优先级组，同组内已并发的 handler 不会中途被打断。
 > 4. **慢日志阈值固定 1 秒**——处理器耗时超 1s 会在日志打 WARNING（`wait_reply` 等待时间已从耗时中剔除），但不中断执行。
 
-> 作用域三级绑定与优先级细节见 [作用域系统](advanced/scope.md)；claim/阻断完整语义见 [事件处理入门](getting-started/event-handling.md)；并发上限配置见 [配置指南](user-guide/configuration.md#框架配置)。
+> 作用域（scope）的模块维度三级绑定、身份维度准入与出站动作限制细节见 [作用域（scope）](advanced/scope.md)；事件作用域文本过滤与命令用户 ACL 见 [事件处理入门](getting-started/event-handling.md)；并发上限配置见 [配置指南](user-guide/configuration.md#框架配置)。
 
 ## 生命周期事件
 
@@ -321,26 +321,35 @@ flowchart TD
 - 本地插件 `moduleInfo.meta.source == "plugin_folder"`，与 PyPI 安装包模块无缝共存
 - 同名时本地优先（便于本地覆盖调试），被禁用时同时移除同名 entry-point 条目
 
-## 本地插件热重载架构
+## 模块热重载架构
 
-热重载监控插件文件变更，自动重新加载对应插件：
+热重载对**全部模块来源**一致：本地插件可监控文件变更自动触发，任意模块也可通过 `sdk.reload_module()` / `sdk.module.reload()` 手动重载（PyPI 安装包模块在 pip 升级后调用即可生效）：
 
 ```mermaid
 flowchart TD
-    A["sdk.enable_plugin_hot_reload()"] --> B["PluginReloadWatcher 启动"]
+    A["sdk.enable_plugin_hot_reload()<br/>（自动监控，仅本地插件目录）"] --> B["PluginReloadWatcher 启动"]
     B --> C["PollingObserver（后台守护线程）<br/>定期比较 .py 文件 mtime"]
     C --> D{"插件文件变更"}
     D --> E["变更去抖（默认 1 秒）"]
     E --> F["_handle_change 解析插件名<br/>（单文件 / 包形式）"]
     F --> G["asyncio.run_coroutine_threadsafe<br/>调度回主事件循环"]
-    G --> H["sdk.reload_plugin(name)"]
-    H --> I["卸载旧实例（触发 on_unload）"]
-    I --> J["清理注册（unregister + 移除 sdk 属性）"]
-    J --> K["清理 sys.modules 强制重新导入"]
-    K --> L["重新 discover + register + load"]
-    L --> M["挂载新实例到 sdk 属性"]
-    M --> N["文件删除 → 自动从加载结果移除"]
+    G --> H["sdk.reload_module(name)<br/>（也可对任意模块手动调用）"]
+    H --> I["卸载旧实例（触发 on_unload）<br/>收集依赖者准备级联重载"]
+    I --> J{"模块来源？"}
+    J -->|"plugin_folder"| K["清理注册与插件 sys.modules<br/>重扫描 plugins/ 目录"]
+    J -->|"PyPI 安装包"| L["清理注册 + 按 top_level<br/>清理包 sys.modules 子树<br/>刷新导入缓存后重查 entry-point"]
+    K --> M["重新 register + load"]
+    L --> M
+    M --> N["挂载新实例到 sdk 属性"]
+    N --> O["级联重载依赖者<br/>（插件完整重载 / PyPI 重新实例化）"]
+    K -.->|"文件已删除"| P["从加载结果移除"]
+    L -.->|"entry-point 已消失（已卸载）"| P
 ```
+
+**两种来源的差异仅在发现阶段**，注册、加载、级联重载完全一致：
+
+- **本地插件**（`moduleInfo.meta.source == "plugin_folder"`）：清理插件名对应 `sys.modules` 后重扫描 `plugins/` 目录；文件已删除则从加载结果移除
+- **PyPI 安装包**：按 `meta.top_level` 清理包的 `sys.modules` 子树，刷新导入缓存（突破 entry-point 60 秒缓存）后重查并重新导入；entry-point 已消失（pip 卸载）则从加载结果移除
 
 
 
@@ -1260,33 +1269,40 @@ async def panel_handler(event):
     await event.reply("欢迎来到管理面板")
 ```
 
-**命令权限 ACL**（控制面 `ErisPulse.scope.commands`）：用户可为任意命令配置用户黑白名单，
+**命令用户 ACL**（`ErisPulse.event.command.acl`）：用户可为任意命令配置用户黑白名单，
 命令名支持精确与 glob 模式（如 `"roll*"`），拒绝时回复"权限不足"：
 
 ```toml
 # config.toml —— 仅允许 123456 执行 restart；666 一律拒绝
-[ErisPulse.scope.commands.restart]
+[ErisPulse.event.command.acl.restart]
 allow = ["onebot11:123456"]
 deny = ["onebot11:666"]
 ```
 
-判定顺序：`deny` 命中 → 拒绝；`allow` 非空且未命中 → 拒绝；否则交给开发者默认
-（`master=True` / `permission`）。运行时 API（命令名支持 glob）：
+判定顺序：`deny` 命中 → 拒绝；`allow` 非空且未命中 → 拒绝；未配置 ACL 时遵循
+`event.command.default_allow`（`false` = 严格模式，无 ACL 即拒；`true` 时交给开发者默认
+`master=True` / `permission`）。运行时 API（命令名支持 glob）：
 
 ```python
-from ErisPulse import sdk
-sdk.scope.allow_user("restart", "onebot11", "123456")   # 允许名单
-sdk.scope.deny_user("restart", "onebot11", "666")       # 拒绝名单
-sdk.scope.remove_acl("restart")                          # 清除黑白名单
-sdk.scope.get_acl("restart")                             # 查询当前名单
+from ErisPulse.Core.Event import command
+
+command.allow_user("restart", "onebot11", "123456")   # 允许名单
+command.deny_user("restart", "onebot11", "666")       # 拒绝名单
+command.remove_acl("restart")                          # 清除黑白名单
+command.get_acl("restart")                             # 查询当前名单
 ```
 
+> 命令处理器从事件包导入：`from ErisPulse.Core.Event import command`；
+> 也可经 SDK 事件包访问：`sdk.Event.command`（两者为同一单例）。
+> 在模块内通常已随命令装饰器导入（`from ErisPulse.Core.Event import command`）。
+
 跨命令 / 跨用户的**事件级**访问控制（某人 / 某群 / 某 Bot 的消息收不收）
-走控制面**身份维度**（`scope.identity`）；**模块级**可用性（哪些模块能用）
-走控制面**模块维度**（`scope.platforms / bots / sessions`）。详见[统一控制面](../advanced/scope.md)。
+走作用域**身份维度**（`scope.identity`）；**模块级**可用性（哪些模块能用）
+走作用域**模块维度**（`scope.platforms / bots / sessions`）。
+详见[作用域（scope）](../advanced/scope.md)。
 
 > 建议：命令内部需要联动业务逻辑的用 `master=True` / `permission`；纯按用户 / 群做
-> 访问控制的用控制面身份维度；控制模块可用性的用控制面模块维度。
+> 访问控制的用作用域身份维度；控制模块可用性的用作用域模块维度。
 
 ### 命令优先级
 
@@ -1344,7 +1360,7 @@ async def handler_c(event):
 >
 > **慢日志**：单个处理器耗时超过 **1 秒**时，框架会在日志打 WARNING（`handler_slow`）。`wait_reply` 的等待时间会从耗时里剔除，不会因为「等人回复」误报慢。
 
-## 控制面过滤：为什么我的模块没收到消息
+## 作用域过滤：为什么我的模块没收到消息
 
 事件到达后有两道**静默**过滤（都不回复、不报错）：
 
@@ -1363,13 +1379,75 @@ deny = true
 blocked = ["MyModule"]
 ```
 
-此时该群的消息到达时，`MyModule` 的命令与事件处理器**都不会被调度**。这不是 bug，是过滤机制——排查「模块没反应」时优先检查控制面的身份与模块绑定。
+此时该群的消息到达时，`MyModule` 的命令与事件处理器**都不会被调度**。这不是 bug，是过滤机制——排查「模块没反应」时优先检查作用域的身份与模块绑定。
 
 - 过滤日志只在 **TRACE** 级可见（`core.scope.identity_denied` / `core.scope.denied`），默认 INFO 看不到任何痕迹
 - 框架级处理器（如命令分发器 `scope_exempt=True`）不受**模块维度**影响，但受**身份维度**影响（整个事件已丢弃）
-- 命令执行前还有第三道：命令权限 ACL（拒绝时回复"权限不足"，见上节）
+- 命令执行前还有第三道：命令用户 ACL（拒绝时回复"权限不足"，见上节）
+- 第四道是**事件覆写**（见下节）
 
-> 五维配置、匹配语法、运行时 API 见 [统一控制面](../../advanced/scope.md)。
+> 作用域配置、匹配语法、运行时 API 见 [作用域（scope）](../../advanced/scope.md)。
+
+## 事件覆写：不改模块代码，覆写任意事件类型的行为
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
+
+事件处理器在注册时声明的参数（`pattern` / `regex` / `master` / `hidden` 等）只是**开发者默认**。
+统一覆写系统让用户按**事件类型**覆写任意模块的行为——OneBot12 标准类型
+（meta / message / notice / request）与 ErisPulse 扩展类型（command）各自拥有专属的可覆写参数：
+
+| 事件类型 | 可覆写参数 | 作用 |
+|---------|-----------|------|
+| `message` | `pattern` / `regex` / `detail_types` | 文本触发条件 + 消息子类型白名单 |
+| `notice` | `detail_types` / `pattern` / `regex` | 通知子类型白名单 + 文本条件 |
+| `request` | `detail_types` / `pattern` / `regex` | 请求子类型白名单 + 文本条件 |
+| `meta` | `detail_types` | 元事件子类型白名单（connect / heartbeat 等） |
+| `command` | `master` / `hidden` / `aliases` / `prefix` / `help` / `usage` | 命令实现参数（用户优先） |
+| `acl`（command 专属） | `allow` / `deny` | 命令用户黑白名单（按命令名 glob） |
+
+```toml
+# message：覆写文本触发条件（与代码内条件 AND）
+[ErisPulse.event.overrides.message.ChatModule]
+pattern = "闲聊*"
+
+# notice：只响应特定通知子类型
+[ErisPulse.event.overrides.notice.MyModule]
+detail_types = ["group_increase"]
+
+# command：覆写实现参数（用户优先——可收紧或放开开发者默认）
+[ErisPulse.event.overrides.command.MyModule.restart]
+master = true
+hidden = true
+
+# acl：命令用户黑白名单（跨命令 glob）
+[ErisPulse.event.overrides.acl."roll*"]
+allow = ["onebot11:u_vip"]
+
+# ACL 兜底（false = 严格模式：无 ACL 即拒）
+acl_default_allow = true
+```
+
+运行时 API（`from ErisPulse.Core.Event import overrides` 或 `sdk.Event.overrides`，
+**类型子命名空间**——每类型对称的 `set` / `get` / `delete` 三件套）：
+
+```python
+from ErisPulse.Core.Event import overrides
+
+overrides.message.set("ChatModule", pattern="闲聊*")   # message 文本条件
+overrides.notice.set("MyModule", detail_types=["group_increase"])
+overrides.command.set("MyModule", "restart", master=True)  # 命令参数
+overrides.acl.set("roll*", deny=["onebot11:u_bad"])    # 命令用户黑名单
+
+overrides.message.get("ChatModule")     # {"pattern": "闲聊*"}
+overrides.message.delete("ChatModule")  # 恢复开发者默认
+```
+
+- 覆写条件与处理器代码内条件**同时生效**（AND 语义）；`command` 参数与开发者声明**深合并**（覆写优先）
+- `detail_types`：事件缺 `detail_type` 时放行（不误杀未知事件）
+- `pattern` / `regex`：无文本的事件（connect / heartbeat 等）不受约束，直接放行
+- `command` 覆写键 `master` 同步映射存储键 `must_master`；禁用命令统一走 `acl` deny
+- 配置改了立即生效（热更新），格式校验告警（未知参数 / 坏条目忽略）
 
 ## 链路控制：认领与阻断
 
@@ -3535,9 +3613,53 @@ if master.is_master(event):
     await event.reply("主人你好")
 ```
 
-> 身份判定的完整 API（运行时增删、**自定义身份源 provider 链**）与"用户优先"的
-> 覆盖语义（用户可经控制面放开/收紧 `master=True`），见
-> [统一控制面 · 主人身份与自定义身份源](../advanced/scope.md#主人身份与自定义身份源provider)。
+### 判定链与运行时增删
+
+主人判定链为 **配置主人 → 运行时记录 → provider 链**：
+
+```python
+from ErisPulse.Core import master
+
+master.is_master(event)                      # 从事件判定
+master.is_master("yunhu", "123")             # 显式判定
+master.add("yunhu", "123")                   # 运行时添加（默认持久化；persist=False 仅内存）
+master.remove("yunhu", "123")                # 移除（默认持久化）
+master.list()                                # 汇总：{"global": [...], "<platform>": [...]}
+```
+
+### 自定义身份源（provider）
+
+除配置外，还可注册自定义身份源：`fn(platform, user_id) -> bool`，
+内置身份源（配置 + 运行时记录）未命中时依次尝试，任一 provider 放行即认定为主人。
+适合对接适配器管理员接口、数据库角色等外部身份体系。
+
+注册入口 `master.provider` 支持装饰器 / 函数式两种写法，
+注销统一走被注册函数上的 `fn.unregister()`：
+
+```python
+from ErisPulse.Core import master
+
+# 写法一：装饰器（常驻身份源，推荐）
+@master.provider
+def admin_provider(platform, user_id):
+    return user_id in {"999"}     # 自定义判定逻辑
+
+master.is_master("yunhu", "999")   # True
+admin_provider.unregister()        # 不再需要时注销
+
+# 写法二：函数式（模块加载期注册 / 卸载期注销）
+fn = master.provider(admin_provider)
+fn.unregister()
+```
+
+> provider 异常会被捕获并跳过，不阻断身份判定链。
+> 绑定实例方法无法挂载 `unregister`，需要注册/注销配对的场景请用**模块级函数**。
+
+### 用户优先：主人生效范围由用户最终决定
+
+命令的 `master=True` 只是**开发者默认**：用户可在
+`ErisPulse.event.overrides.command.<module>.<cmd>.master = true/false`
+覆写收紧或放开（见[统一事件覆写配置](#统一事件覆写配置eventoverrides)，用户显式配置即生效）。
 
 ## 日志配置
 
@@ -3732,30 +3854,29 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 
 > `setConfig` 默认采用延迟写入（约每 5 秒批量保存到文件），设置 `immediate=True` 可立即持久化。配置变更会触发 `config.set` 生命周期事件。
 
-## 控制面配置（scope）
+## 作用域配置（scope）
 
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-统一控制面是权限/访问控制的**唯一**入口，五维配置树：
-
-| 维度 | 控制什么 | 配置路径 |
-|------|---------|---------|
-| ① 模块 | 某平台 / Bot / 会话里哪些模块可用 | `scope.platforms / bots / sessions` |
-| ② 身份 | 某用户 / 群 / Bot / 适配器的事件收不收 | `scope.identity.*` |
-| ③ 命令 | 谁能执行某条命令（命令名支持 glob） | `scope.commands` |
-| ④ 处理器 | 某模块的处理器按文本过滤 | `scope.handlers` |
-| ⑤ 覆盖 | 覆盖模块/命令的实现参数 | `scope.overrides` |
+作用域声明"**什么范围内生效**"——某平台 / Bot / 会话里哪些模块可用（① 模块维度）、
+某用户 / 群 / Bot / 适配器的事件收不收（② 身份维度）、
+模块能发起哪些出站调用（③ 出站维度）：
 
 ```toml
 [ErisPulse.scope]
-default_allow = true        # 全局兜底（false = 隐式拒绝严格模式）
+default_allow = true        # 全局兜底（false = 隐式拒绝严格模式；不影响出站维度）
 cache_size = 1024           # LRU 缓存大小
 
 # ① 模块维度（优先级：会话 > Bot > 平台；条目支持精确 / glob / re: 正则）
 [ErisPulse.scope.platforms.onebot11]
 modules = ["Chat", "Tool*"]
 blocked = ["re:^Danger"]
+
+# 子级绑定写 merge = true 时与低优先级逐条目并集（默认整体覆盖）
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Music"]
+merge = true
 
 # ② 身份维度（优先级：用户 > 会话 > Bot > 适配器；每级只写 allow 或 deny 之一）
 [ErisPulse.scope.identity.adapters.onebot11]
@@ -3764,34 +3885,73 @@ deny = true                 # 该平台所有事件在入口丢弃
 allow = ["u_admin"]         # 用户键支持 glob / re: 正则
 deny = ["u_bad", "spam_*"]
 
-# ③ 命令维度（用户标识 "platform:user_id"）
-[ErisPulse.scope.commands."roll*"]
-allow = ["onebot11:u_vip"]
-deny = ["onebot11:u_bad"]
-
-# ④ 处理器/文本维度（与代码内条件 AND）
-[ErisPulse.scope.handlers.MyModule]
-pattern = "签到*"
-
-# ⑤ 实现参数覆盖（禁用统一走命令 deny，不在这里）
-[ErisPulse.scope.overrides.MyModule.restart]
-master = true
-hidden = true
+# ③ 出站维度（默认全允许；规则为内联表，条目支持精确 / glob / re: 正则）
+[ErisPulse.scope.actions.MyModule]
+send = { deny = true }                    # 全禁发送
+api = { allow = ["get_*"] }               # 仅允许查询类标准 API
+request = { deny = true }                 # 禁止处理请求
 ```
 
 | 配置项 | 类型 | 说明 |
 |---------|------|------|
-| `scope.default_allow` | boolean | 全局兜底：未命中规则的放行/拒绝（`true`）。模块/身份"无规则即拒"；命令"无 ACL 即拒" |
+| `scope.default_allow` | boolean | 全局兜底：模块/身份未命中规则的放行/拒绝（`true`） |
 | `scope.cache_size` | integer | LRU 缓存大小（默认 1024） |
-| `scope.platforms / bots / sessions` | table | ① 模块三级绑定：`{modules=[...], blocked=[...]}` |
+| `scope.platforms / bots / sessions` | table | ① 模块三级绑定：`{modules=[...], blocked=[...], merge=bool?}` |
 | `scope.identity.adapters / bots / sessions / users` | table | ② 身份四级绑定：`{allow=true}` / `{deny=true}` |
-| `scope.commands.<命令名>` | table | ③ 命令 ACL：`{allow=[...], deny=[...]}` |
-| `scope.handlers.<module>` | table | ④ 文本过滤：`{pattern="...", regex="..."}` |
-| `scope.overrides.<module>[.<command>]` | table | ⑤ 参数覆盖：`master` / `hidden` / `aliases` / `prefix` 等 |
+| `scope.actions.<module>.<动作>` | table | ③ 出站规则：`{allow=[...], deny=true|[...]}`（动作取 send / api / request） |
 
-> 匹配条目统一语法：精确名 / glob（`*` `?` `[seq]`）/ `re:` 正则，大小写不敏感。
-> 五维详解与运行时 API（`sdk.scope.bind_module()` / `bind_identity()` / `block_user()` /
-> `allow_user()` / `override()` 等）详见[统一控制面](../advanced/scope.md)。
+> 详解与运行时 API（维度化 `sdk.scope.set_module()` / `set_identity()` /
+> `set_action()`，判定 `is_allowed()` / `is_identity_allowed()` / `is_action_allowed()`，
+> 以及字典式兜底 `get()` / `set()` / `delete()`）详见[作用域（scope）](../advanced/scope.md)。
+
+## 统一事件覆写配置（event.overrides）
+
+统一覆写系统：按**事件类型**覆写任意模块处理器的行为，不改模块代码。
+OneBot12 标准类型（meta / message / notice / request）与扩展类型（command）
+各自拥有专属的可覆写参数：
+
+```toml
+[ErisPulse.event.overrides]
+
+# message：文本触发条件（与代码内条件 AND）
+[ErisPulse.event.overrides.message.ChatModule]
+pattern = "闲聊*"
+
+# notice / request / meta：detail_type 白名单（条目支持精确 / glob / re: 正则）
+[ErisPulse.event.overrides.notice.MyModule]
+detail_types = ["group_increase"]
+
+# command（扩展类型）：实现参数覆写（用户优先；禁用统一走 acl deny）
+[ErisPulse.event.overrides.command.MyModule.restart]
+master = true               # 覆写为仅框架主人（false 则放开开发者的主人限制）
+hidden = true               # 帮助列表中隐藏
+aliases = ["rs"]            # 生效别名
+
+# acl（command 专属）：命令用户黑白名单（命令名支持 glob / re: 正则，精确键优先）
+[ErisPulse.event.overrides.acl."roll*"]
+allow = ["onebot11:u_vip"]  # 用户标识 "platform:user_id"
+deny = ["onebot11:u_bad"]
+
+# ACL 兜底：未配置 ACL 的命令放行（true）/ 严格拒绝（false）
+acl_default_allow = true
+```
+
+| 配置项 | 类型 | 说明 |
+|---------|------|------|
+| `event.overrides.message.<module>` | table | 文本条件：`{pattern="...", regex="..."}` |
+| `event.overrides.notice / request.<module>` | table | `{detail_types=[...], pattern, regex}` |
+| `event.overrides.meta.<module>` | table | `{detail_types=[...]}` |
+| `event.overrides.command.<module>` | table | 模块级参数覆写（`hidden = true` 等标量） |
+| `event.overrides.command.<module>.<command>` | table | 命令级覆写（命令级优先） |
+| `event.overrides.acl.<命令名>` | table | 用户黑白名单：`{allow=[...], deny=[...]}` |
+| `event.overrides.acl_default_allow` | boolean | ACL 兜底：未配置 ACL 的命令放行（`true`）/ 严格拒绝（`false`） |
+
+> 运行时 API（`from ErisPulse.Core.Event import overrides` 后按类型子命名空间调用
+> `overrides.message.set()` / `overrides.command.set()` / `overrides.acl.set()` 等，
+> 或经 `sdk.Event.overrides` 访问）
+> 见 [事件处理入门 · 事件覆写](../getting-started/event-handling.md#事件覆写不改模块代码覆写任意事件类型的行为)。
+
+## 命令解析配置（event.command）
 
 
 
@@ -4406,7 +4566,7 @@ class MyModule(BaseModule):
 > `depends` 声明的模块如果未注册，当前模块将被跳过并记录警告。加载顺序由拓扑排序决定，同层级按 `priority` 降序。
 
 > [!NOTE]
-> **级联卸载 / 级联重载**（ErisPulse **2.8.0+**）：卸载被其它模块依赖的模块时，依赖它的模块会**先被级联卸载**（日志说明级联链）；热重载本地插件时，依赖它的插件同样**级联重载**，避免依赖者持有失效实例引用继续运行。声明循环依赖会在加载时以 `RuntimeError` 拒绝。
+> **级联卸载 / 级联重载**（ErisPulse **2.8.0+**）：卸载被其它模块依赖的模块时，依赖它的模块会**先被级联卸载**（日志说明级联链）；热重载任意模块（本地插件 / PyPI 安装包）时，依赖它的模块同样**级联重载**，避免依赖者持有失效实例引用继续运行。声明循环依赖会在加载时以 `RuntimeError` 拒绝。
 
 ### on_load 方法
 
@@ -9948,7 +10108,7 @@ async def reload_handler(event):
 
 所有命令查询 API 均支持可选的**会话上下文**：传 `event=`（Event 或 dict）或
 显式 `platform=` / `bot_id=` / `session_id=`（与 event 叠加时显式参数优先），
-即按控制面模块维度过滤当前会话不可用模块的命令（详见 advanced/scope.md）；
+即按作用域模块维度过滤当前会话不可用模块的命令（详见 advanced/scope.md）；
 全部为可选关键字参数，不传时保持原有全量行为。
 
 ```python
@@ -12095,7 +12255,7 @@ ErisPulse 框架当前使用的 `346xx` 码：
 | 错误码 | 错误名 | 说明 |
 |-------|-------|------|
 | 34600 | SDK Failure | 框架通用失败（`make_error()` 默认返回码） |
-| 34601 | Action Denied | 出站动作被控制面禁用（`scope.actions`），调用未发起，直接返回该响应 |
+| 34601 | Action Denied | 出站动作被作用域禁用（`scope.actions`），调用未发起，直接返回该响应 |
 
 > 职责区分：`34601` 是**框架在调用前拦截**（模块根本没资格发起动作）；
 > `34004` / `34xxx` 平台码是**动作已发出但平台拒绝**（如 Bot 无权限、被风控）。
@@ -16468,40 +16628,42 @@ CLI 拥有**独立**的国际化模块（`ErisPulse.CLI.i18n`），与框架核�
 
 ### 统一控制面（scope）
 
-# 统一控制面（scope）
+# 作用域（scope）
 
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-统一控制面回答六个问题：**哪些模块可用、谁的事件收不收、谁能执行某条命令、
-某模块处理什么文本、覆盖哪些实现参数、禁止模块发起哪些出站调用**。
-控制权完全交给用户：在模块 / 适配器 / 命令 / 处理器注册的**上层**（配置
-`ErisPulse.scope` 或运行时 `sdk.scope`）统一声明，事件管线在每一级自动读取并执行。
-
-控制面收敛了原有的多套权限系统，是 2.8.0 权限/访问控制的**唯一**入口：
+作用域回答四个问题：**哪些模块可用、谁的事件收不收、某模块处理什么文本、
+模块能向外做什么**。
+控制权完全交给用户：在模块 / 适配器 / 处理器 / 出站调用注册的**上层**（配置
+`ErisPulse.scope` 或运行时 `sdk.scope`）统一声明，事件管线在入口、处理器过滤
+与出站闸口自动读取并执行。
 
 | 维度 | 控制什么 | 拒绝行为 | 配置路径 |
 |------|---------|---------|---------|
 | **① 模块** | 哪些模块可用（平台 / Bot / 会话三级） | 静默忽略（不回复、不认领） | `scope.platforms / bots / sessions` |
 | **② 身份** | 事件收不收（适配器 / Bot / 会话 / 用户四级） | 入口完全丢弃（静默） | `scope.identity.*` |
-| **③ 命令** | 谁能执行某条命令（命令名支持 glob） | 回复"权限不足"（显式） | `scope.commands` |
-| **④ 处理器** | 某模块的事件处理器按文本过滤 | 不触发（静默） | `scope.handlers` |
-| **⑤ 覆盖** | 覆盖模块/命令的实现参数（master/hidden/aliases/prefix） | ——（只改参数） | `scope.overrides` |
-| **⑥ 出站动作** | 禁止模块发送消息 / 调标准 API / 处理请求 | 失败响应（`retcode=34601`） | `scope.actions` |
+| **③ 出站** | 模块能发起哪些出站调用（消息 / API / 请求，方法级白黑名单） | 失败响应（`retcode=34601`） | `scope.actions` |
+
+> **相关系统**：命令是特殊的消息事件处理器，其用户黑白名单（ACL）与
+> 实现参数覆写由命令系统自持（`ErisPulse.event.command`），
+> 见 [事件处理入门](../getting-started/event-handling.md) 与 [配置指南](../user-guide/configuration.md)。
 
 {!--< tips >!--}
 1. 通过 `from ErisPulse.Core import scope` 导入单例（`sdk.scope` 同对象）
-2. `scope.is_allowed(platform, bot_id, module, session_id)` 判断模块是否可用
-3. `scope.is_identity_allowed(platform, bot_id, session_id, user_id)` 判断事件是否放行
-4. `scope.allow_user("roll*", platform, uid)` / `deny_user(...)` 命令 ACL（支持 glob）
-5. `scope.override("MyModule", "restart", master=True)` 覆盖实现参数
-6. `scope.set_action("MyModule", "send", False)` 禁止模块回复/发消息
-7. `scope.get_stats()` 查看过滤统计；`scope.get_topology()` 查看拓扑
+2. 判定：`scope.is_allowed(...)` / `scope.is_identity_allowed(...)` /
+   `scope.is_action_allowed(...)` 对应 ①②③ 三个闸口
+3. 读写：维度化参数方法（IDE 可补全）——
+   `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`；
+   另有字典式兜底 `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
+4. 事件处理器文本条件覆写见
+   [事件处理入门 · 事件覆写](../getting-started/event-handling.md#事件覆写不改模块代码覆写任意事件类型的行为)；
+   命令 ACL / 参数覆写见[事件处理入门](../getting-started/event-handling.md)
 {!--< /tips >!--}
 
 ## 匹配条目语法（全系统统一）
 
-控制面所有"名字列表"（模块名、身份键、命令名）共用同一套匹配语法
+作用域所有"名字列表"（模块名、身份键、出站条目）共用同一套匹配语法
 （`ErisPulse.Core.text_match`）：
 
 | 语法 | 示例 | 说明 |
@@ -16512,24 +16674,23 @@ CLI 拥有**独立**的国际化模块（`ErisPulse.CLI.i18n`），与框架核�
 
 - 非法正则**静默降级**为"不匹配"（不抛错、不崩溃）
 - 装饰器参数（`pattern=` / `regex=`）为固定语义：`pattern` 是 glob、`regex` 是正则源码
-  （不加 `re:` 前缀）；控制面配置里的正则条目**必须**带 `re:` 前缀
+  （不加 `re:` 前缀）；作用域配置里的正则条目**必须**带 `re:` 前缀
 
 ## 全局兜底：`default_allow`
 
 `default_allow` 是**全局唯一**的兜底开关（默认 `true`），
-对三个判定维度统一生效：
+对两个判定维度统一生效：
 
 - **模块维度**：未命中任何绑定 → `default_allow` 决定放行 / 拒绝
 - **身份维度**：未命中任何策略 → `default_allow` 决定放行 / 拒绝
-- **命令维度**：未配置 ACL → `default_allow=true` 交给开发者默认权限链；
-  `false`（严格模式）命令未配置 ACL 即拒绝
 
 设为 `false` 即开启"隐式拒绝"严格模式：白名单式管理，
 **没显式允许的一律拒绝**。
 
-> **例外**：⑥ 出站动作维度**不**受 `default_allow` 影响——它是独立的收紧开关，
-> 默认全允许，仅显式 `false` 才禁（框架层 owner 为空的调用恒放行）。
+> **例外**：③ 出站维度**不受** `default_allow` 影响——它是独立的收紧开关，
+> 默认全允许，仅显式规则才限制（框架层 owner 为空的调用恒放行）。
 > 这样严格的全局模式不会意外掐断所有模块的消息回复。
+> 命令 ACL 有独立的 `ErisPulse.event.command.default_allow` 兜底，互不影响。
 
 ## 配置文件
 
@@ -16544,6 +16705,7 @@ modules = ["Chat", "Tool*"]   # 白名单：精确名 / glob / re: 正则
 blocked = ["re:^Danger"]
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Chat"]
+merge = true                  # 在平台级绑定基础上追加（默认整体覆盖）
 [ErisPulse.scope.sessions.onebot11."789012345"]
 modules = ["Chat"]
 
@@ -16558,28 +16720,11 @@ deny = true
 allow = ["u_admin"]           # 用户键支持 glob / re: 正则
 deny = ["u_bad", "spam_*"]
 
-# ── ③ 命令维度（命令名支持 glob）──
-[ErisPulse.scope.commands."roll*"]
-allow = ["onebot11:u_vip"]    # 用户标识 "platform:user_id"
-deny = ["onebot11:u_bad"]
-
-# ── ④ 处理器/文本维度 ──
-[ErisPulse.scope.handlers.MyModule]
-pattern = "签到*"             # 与代码内 pattern/regex 条件 AND
-regex = "re:\\d+\\s*元"
-
-# ── ⑤ 实现参数覆盖 ──
-[ErisPulse.scope.overrides.MyModule.restart]
-master = true                 # 仅框架主人可用
-hidden = true                 # 帮助中隐藏
-aliases = ["rs"]              # 追加别名
-prefix = "!"                  # 追加触发前缀
-
-# ── ⑥ 出站动作维度（默认全允许，显式禁用才收紧）──
+# ── ③ 出站维度（默认全允许，显式收紧才禁）──
 [ErisPulse.scope.actions.MyModule]
-send = false                  # 禁止 MyModule 回复/主动发消息
-api = false                   # 禁止 MyModule 调标准 API（含 call 逃生舱）
-request = false               # 禁止 MyModule 处理请求操作 accept/reject
+send = { deny = true }                                    # 全禁发送
+api = { allow = ["get_*"] }                               # 仅允许查询类标准 API
+request = { deny = true }                                 # 禁止处理请求
 ```
 
 ## ① 模块维度
@@ -16590,13 +16735,15 @@ request = false               # 禁止 MyModule 处理请求操作 accept/reject
 ```mermaid
 flowchart TD
     A["事件到达某模块的处理器/命令"] --> B{"scope.is_allowed<br/>(platform, bot, module, session)"}
-    B --> C{"查找生效绑定<br/>会话级 > Bot 级 > 平台级"}
+    B --> C{"解析链：会话级 > Bot 级 > 平台级<br/>（子级 merge = true 时逐级并集）"}
     C -->|"命中"| D["blocked 命中 → 拒绝<br/>modules 非空 → 仅白名单放行<br/>都空 → default_allow"]
     C -->|"未命中"| E["default_allow（默认 true = 放行）"]
     D -->|"拒绝"| Z["静默忽略<br/>（不回复、不认领，仅 TRACE 日志）"]
 ```
 
-- **解析优先级：会话级 > Bot 级 > 平台级**，高优先级绑定**整体覆盖**低优先级
+- **解析优先级：会话级 > Bot 级 > 平台级**，高优先级绑定**整体覆盖**低优先级；
+  子级绑定写 `merge = true` 时改为与低优先级**逐条目并集**（modules / blocked 各自合并，
+  `merge` 本身是控制键，不算条目）
 - **静默语义**：被过滤模块的命令与处理器不触发、不回复、不认领（防止跨命令误匹配），
   仅 TRACE 级日志可见（`core.scope.denied`）
 - **框架级处理器**（`scope_exempt=True` 或 owner 为空）不受影响；模块名为空（框架层资源）始终放行
@@ -16605,8 +16752,23 @@ flowchart TD
   以及 `module.get_commands_overview`）均支持可选 `event=` 或显式
   `platform=` / `bot_id=` / `session_id=` 关键字——当前会话不可用模块的命令
   不再出现在结果中（`get_command` 返回 None、单命令帮助按"未注册"处理，
-  与静默语义一致）；不传上下文则保持全量行为。命令查询返回的
-  help / hidden 等字段为合并覆盖后的生效值（用户优先）
+  与静默语义一致）；不传上下文则保持全量行为
+
+### 绑定继承（merge）
+
+默认整体覆盖的语义清晰可预测；需要在上级基础上**追加**时，在子级写 `merge = true`：
+
+```toml
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Tool"]      # 平台级：允许 Chat、Tool
+
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Music"]
+merge = true                    # 该 Bot 实际生效 = ["Chat", "Tool", "Music"]
+```
+
+- 合并规则：`modules` 与 `blocked` 各自取**并集**；绑定内 `blocked` 仍优先于 `modules`
+- 链式合并：平台 → Bot → 会话逐级叠加，每一级独立决定 `merge` 或覆盖
 
 ## ② 身份维度（事件准入）
 
@@ -16625,247 +16787,202 @@ deny = true
 allow = ["u_admin"]   # 即使适配器级拒绝，u_admin 的事件仍然放行
 ```
 
-## ③ 命令维度（命令 ACL）
-
-回答"谁能执行某条命令"。判定顺序：**deny 命中 → 拒绝；allow 白名单非空且未命中 →
-拒绝；均未配置 → 遵循 `default_allow`**（`true` 交给开发者默认权限链）。
-被拒绝的命令会显式回复"权限不足"。
-
-- 命令名支持 glob：`"roll*"` 一条规则覆盖 `roll`、`roll_dice` 等一族命令
-- 精确键优先于 glob 键（`commands.roll` 命中时不再查 `commands."roll*"`）
-- 用户标识格式 `"platform:user_id"`（与框架主人系统一致）
-- 该维度**只是用户侧的额外闸门**，与命令的 `master` / `permission` 参数串联：
-  ACL 通过后仍走开发者声明的默认权限链（该默认链可用 ⑤ 覆盖调整）
-
-## ④ 处理器/文本维度
-
-按模块过滤"处理什么文本"：给某模块配置 `pattern` / `regex` 后，
-该模块的所有事件处理器只在文本命中时触发（与代码内条件 AND，需同时满足）。
-适合在不改模块代码的前提下缩小其触发范围。
-
-```toml
-[ErisPulse.scope.handlers.ChatModule]
-pattern = "闲聊*"     # ChatModule 的处理器只响应"闲聊"开头的消息
-```
-
-## ⑤ 实现参数覆盖
-
-在模块/命令注册的**上层**覆盖实现参数，不修改模块代码：
-
-```toml
-[ErisPulse.scope.overrides.MyModule.restart]
-master = true      # 覆盖为仅框架主人（也可设 false 放开开发者的主人限制）
-hidden = true      # 帮助列表中隐藏
-aliases = ["rs"]   # 生效别名
-```
-
-> 覆盖遵循**用户优先**：开发者声明的 `master` / `hidden` 等只是默认值，
-> 用户在此显式配置后即以用户配置为准（可收紧也可放开）。
-> 覆盖只改**实现参数**（master / hidden / aliases / prefix / help / usage 等），
-> 命令执行判定与帮助渲染共用同一合并结果：`hidden` 覆盖即时改变帮助列表可见性，
-> `help` / `usage` 覆盖即时改变 `/help` 展示。
-> **禁用一条命令不在这里**——统一走命令维度 deny（`scope.commands` 或
-> `scope.deny_user()`），避免两套"禁用"语义打架。
-
-## ⑥ 出站动作维度（禁止模块发起出站调用）
+## ③ 出站维度（限制模块发起出站调用）
 
 约束模块**发起的出站动作**：消息发送 / 标准 API 动作 / 请求操作。
 三类动作对应底层 DSL：`Event.reply` 与 `Send`（send）、`Api` / `call_api`（api）、
 `Request` 的 accept/reject（request）。模块在事件 handler 执行期发起的出站调用
 携带模块 owner，由本维度统一判定。
 
+### 规则形态（内联表）
+
+每个动作的规则是一张内联表：`{ allow = [...], deny = true|[...] }`。
+同一动作只能有一种规则（TOML 键不可重复，全禁与细粒度二选一）：
+
 ```toml
 [ErisPulse.scope.actions.MyModule]
-send = false      # 禁止 MyModule 回复/主动发消息
-api = false       # 禁止 MyModule 调用标准 API 动作（含 call 逃生舱）
-request = false   # 禁止 MyModule 对请求事件执行 accept/reject
+send = { deny = true }                                  # 全禁发送（Event.reply / Send DSL）
+# 或方法级细粒度：send = { allow = ["Text", "Image*"], deny = ["File"] }
+api = { allow = ["get_*"] }                             # 仅放行查询类标准 API
+# 或动作级黑名单：api = { deny = ["set_*", "leave_*"] }
+request = { deny = true }                               # 禁止处理请求 accept/reject
 ```
 
-判定语义：**默认全允许**——未配置、或 owner 为空（框架层内部调用）均放行；
-仅当用户显式设为 `false` 才拒绝，被拒调用不发起任何网络请求，直接返回
-标准失败响应（`retcode = 34601`，见 [api-response §5.3](../standards/api-response.md#53-框架扩展返回码34xxx-平台错误段的低三位自定义)）。三个动作互相独立，可只禁其一。
+- `send` 的条目匹配**发送方法名**（`Text` / `Image` / `File` ...），
+  `api` 的条目匹配**标准动作名**（`get_group_info` / `set_group_name` ...）
+- 条目支持精确名 / glob / `re:` 正则（与全系统统一语法一致，大小写不敏感）
+- `allow` 写单个字符串等价于单条目列表：`send = { allow = "Text" }`
+
+### 判定语义
+
+**默认全允许**——未配置、或 owner 为空（框架层内部调用）均放行。
+配置规则后按以下顺序判定：
+
+1. `deny = true` → 拒绝
+2. `deny` 列表命中调用名 → 拒绝
+3. `allow` 列表非空且调用名未命中（或调用无名称）→ 拒绝
+4. 其余放行
+
+被拒调用不发起任何网络请求，直接返回标准失败响应
+（`retcode = 34601`，见 [api-response §5.3](../standards/api-response.md#53-框架扩展返回码34xxx-平台错误段的低三位自定义)）。
+三个动作互相独立，可只限其一。
 
 ```python
 # 运行时 API
-sdk.scope.set_action("MyModule", "send", False)   # 禁发消息
-sdk.scope.is_action_allowed("MyModule", "send")   # False
-sdk.scope.unset_action("MyModule", "send")        # 恢复允许
-sdk.scope.get_action_rules("MyModule")            # {"send": False, "api": True, "request": True}
+sdk.scope.set_action("MyModule", "send", deny=True)              # 全禁发消息
+sdk.scope.set_action("MyModule", "send", allow=["Text"])         # 仅允许发文本
+sdk.scope.is_action_allowed("MyModule", "send", name="Image")    # False
+sdk.scope.is_action_allowed("MyModule", "api", name="get_user_info")  # 按规则判定
+sdk.scope.delete_action("MyModule", "send")                      # 恢复允许
+sdk.scope.get_action("MyModule", "send")                         # 该动作当前规则
 ```
 
 ## 运行时 API
 
-### 模块维度
+作用域运行时 API 分三层：**判定**（三问）、**维度化读写**（每维 `set` / `get` / `delete`
+参数化方法，签名全类型标注，IDE 可补全）、**字典式兜底**（点分路径直达任意节）。
 
 ```python
 from ErisPulse import sdk
 
-# 判断
-sdk.scope.is_allowed("onebot11", "123456", "Chat")
-sdk.scope.is_allowed("onebot11", "123456", "Chat", "789012345")
-sdk.scope.is_allowed("onebot11", "123456", None)      # 框架层资源 -> True
-
-# 绑定 / 解绑
-sdk.scope.bind_module("onebot11", "123456", modules=["Chat", "Tool*"])
-sdk.scope.bind_module("onebot11", blocked=["Danger"])             # 平台级
-sdk.scope.bind_module("onebot11", "123456", "789012345", modules=["Chat"])  # 会话级
-sdk.scope.bind_module("onebot11", "123456", modules=["Music"], merge=True)  # 合并
-sdk.scope.bind_module("onebot11", "123456", modules=["Chat"], persist=False)  # 仅运行时
-sdk.scope.unbind_module("onebot11", "123456")
-
-# 查询
-sdk.scope.get("onebot11", "123456")   # {"modules": ["Chat"], "blocked": []}
+scope = sdk.scope
 ```
 
-### 身份维度
+### 判定（三问）
 
 ```python
-# 判断事件是否放行
-sdk.scope.is_identity_allowed("onebot11", "123456", "group_9", "u1")
+scope.is_allowed("onebot11", "123456", "Chat")                 # ① 模块维度
+scope.is_allowed("onebot11", "123456", "Chat", "789012345")    # 含会话级
+scope.is_allowed("onebot11", "123456", None)                   # 框架层资源 -> True
 
-# 绑定策略（层级由参数决定：user > session > bot > adapter）
-sdk.scope.bind_identity("onebot11", user_id="u_bad", deny=True)
-sdk.scope.bind_identity("onebot11", user_id="spam_*", deny=True)   # glob
-sdk.scope.bind_identity("onebot11", "123456", "group_9", allow=True)
-sdk.scope.unbind_identity("onebot11", user_id="u_bad")
+scope.is_identity_allowed("onebot11", "123456", "group_9", "u1")   # ② 身份维度
 
-# 用户黑名单便捷 API
-sdk.scope.block_user("onebot11", "u_bad")
-sdk.scope.is_user_blocked("onebot11", "u_bad")
-sdk.scope.get_blocked_users()        # {"onebot11": ["u_bad"]}
-sdk.scope.unblock_user("onebot11", "u_bad")
+scope.is_action_allowed("MyModule", "send")                    # ④ 出站维度
+scope.is_action_allowed("MyModule", "send", name="Image")      # 方法级细粒度
 ```
 
-### 命令维度
+### ① 模块维度
 
 ```python
-sdk.scope.is_command_allowed("roll", "onebot11", "u1")
-sdk.scope.allow_user("roll*", "onebot11", "u_vip")   # 命令名支持 glob
-sdk.scope.deny_user("roll*", "onebot11", "u_bad")
-sdk.scope.get_acl("roll*")
-sdk.scope.remove_acl("roll*")
+# 绑定（层级由参数决定：session_id > bot_id > 平台级）
+scope.set_module("onebot11", bot_id="123456", modules=["Chat", "Tool*"])
+scope.set_module("onebot11", blocked=["re:^Danger"])                       # 平台级
+scope.set_module("onebot11", bot_id="123456", session_id="g9", modules=["Chat"])  # 会话级
+scope.set_module("onebot11", bot_id="123456", modules=["Music"], merge=True)      # 与现有条目并集
+scope.set_module("onebot11", bot_id="123456", modules=["Chat"], persist=False)    # 仅运行时
 
-# 也可通过命令系统门面（等价委托）
-from ErisPulse.Core.Event import command
-command.allow_user("restart", "onebot11", "123456")
+# 读 / 删
+scope.get_module("onebot11", bot_id="123456")   # {"modules": ["Chat"], "blocked": []}
+scope.delete_module("onebot11", bot_id="123456")
 ```
 
-### 处理器与覆盖维度
+> `merge=True` 是**写时并集**（与该级现有绑定合并条目）；跨级解析期的
+> `merge = true` 配置键见上文[绑定继承](#绑定继承merge)——两者是独立机制。
+
+### ② 身份维度
 
 ```python
-sdk.scope.bind_handler("MyModule", pattern="签到*", regex=r"\d+号")
-sdk.scope.unbind_handler("MyModule")
+# 绑定策略（层级由参数决定：user > session > bot > adapter；allow / deny 二选一）
+scope.set_identity("onebot11", user_id="u_bad", deny=True)
+scope.set_identity("onebot11", user_id="spam_*", deny=True)    # 键支持 glob / re: 正则
+scope.set_identity("onebot11", bot_id="123456", session_id="g9", allow=True)
 
-sdk.scope.override("MyModule", "restart", master=True, hidden=True)
-sdk.scope.get_override("MyModule", "restart")
-sdk.scope.remove_override("MyModule", "restart")
+# 读 / 删
+scope.get_identity("onebot11", user_id="u_bad")   # {"deny": True}
+scope.delete_identity("onebot11", user_id="u_bad")
+```
+
+### ③ 出站维度
+
+```python
+# 设置限制规则（allow: str|list；deny: bool|str|list；整规则替换语义）
+scope.set_action("MyModule", "send", deny=True)                    # 全禁发送
+scope.set_action("MyModule", "send", allow=["Text"])               # 仅允许发文本
+scope.set_action("MyModule", "api", deny=["set_*", "leave_*"])     # 禁管理类 API
+
+# 读 / 删
+scope.get_action("MyModule", "send")       # {"allow": ["Text"]} 原始规则
+scope.delete_action("MyModule", "send")    # 移除单动作
+scope.delete_action("MyModule")            # 移除该模块全部动作限制
 ```
 
 ### 通用
 
 ```python
-sdk.scope.list_bindings()   # 全量绑定
-sdk.scope.get_topology()    # 拓扑（供 Dashboard）
-sdk.scope.get_stats()
+scope.get("platforms")   # 字典式兜底：点分路径读任意节
+scope.topology()         # 全量配置树（供 Dashboard）
+scope.stats()
 # {"module_calls": .., "module_filtered": .., "identity_checks": .., "identity_denied": ..,
-#  "command_checks": .., "command_denied": .., "action_checks": .., "action_denied": ..,
-#  "cache_hits": .., "cache_misses": ..}
-sdk.scope.reset_stats()
-sdk.scope.clear()           # 清空全部绑定（仅内存生效）
+#  "action_checks": .., "action_denied": .., "cache_hits": .., "cache_misses": ..}
+scope.reset_stats()
+scope.clear()           # 清空全部配置（仅内存生效）
 ```
 
-## 主人身份与自定义身份源（provider）
+### 高级：字典式点分路径兜底
 
-主人系统回答"谁是框架主人"：命令的 `master=True` 参数与业务层的
-`master.is_master()` 共用同一套身份判定，判定链为
-**配置主人 → 运行时记录 → provider 链**。
-
-主人配置（`ErisPulse.master.users`，支持全局 list 与按平台 dict）见
-[配置文档](../user-guide/configuration.md#主人系统配置)；本节聚焦身份判定 API 与扩展点。
-
-### 判定与运行时增删
+维度化方法覆盖日常场景；需要直达任意节点（或未来新增的维度）时，
+可用字典式 API——`get` / `set` / `delete` 接受点分路径（dict 深合并、写后立读），
+并提供 `scope[path]` / `scope[path] = v` / `del scope[path]` / `path in scope` 协议：
 
 ```python
-from ErisPulse.Core import master
+scope.set("bots.onebot11.123456", {"modules": ["Chat"], "blocked": []})
+scope.set("identity.users.onebot11.u_bad", {"deny": True})
+scope.get("actions.MyModule.send")
 
-master.is_master(event)                      # 从事件判定
-master.is_master("yunhu", "123")             # 显式判定
-master.add("yunhu", "123")                   # 运行时添加（默认持久化；persist=False 仅内存）
-master.remove("yunhu", "123")                # 移除（默认持久化）
-master.list()                                # 汇总：{"global": [...], "<platform>": [...]}
+scope["platforms.onebot11"]        # 读（不存在抛 KeyError）
+scope["platforms.onebot11"] = {...}  # 写
+del scope["platforms.onebot11"]      # 删
+"actions.MyModule" in scope          # 存在性
 ```
-
-### 自定义身份源（provider）
-
-除配置外，还可注册自定义身份源：`fn(platform, user_id) -> bool`，
-内置身份源（配置 + 运行时记录）未命中时依次尝试，任一 provider 放行即认定为主人。
-适合对接适配器管理员接口、数据库角色等外部身份体系。
-
-注册入口 `master.provider` 支持装饰器 / 函数式两种写法，
-注销统一走被注册函数上的 `fn.unregister()`：
-
-```python
-from ErisPulse.Core import master
-
-# 写法一：装饰器（常驻身份源，推荐）
-@master.provider
-def admin_provider(platform, user_id):
-    return user_id in {"999"}     # 自定义判定逻辑
-
-master.is_master("yunhu", "999")   # True
-admin_provider.unregister()        # 不再需要时注销
-
-# 写法二：函数式（模块加载期注册 / 卸载期注销）
-fn = master.provider(admin_provider)
-fn.unregister()
-```
-
-> provider 异常会被捕获并跳过，不阻断身份判定链。
-> 绑定实例方法无法挂载 `unregister`，需要注册/注销配对的场景请用**模块级函数**。
-
-### 用户优先：主人生效范围由用户最终决定
-
-命令的 `master=True` 只是**开发者默认**：用户可在控制面
-`ErisPulse.scope.overrides.<module>.<cmd>.master = true/false`
-覆盖收紧或放开（见上文 ⑤ 实现参数覆盖，用户显式配置即生效）。
 
 ## 缓存与热更新
 
-- `is_allowed` / `is_identity_allowed` 结果带 **LRU 缓存**（`scope.cache_size` 可调），
-  `bind_*` / `unbind_*` / 配置热更新（`config.updated` / `config.set`）自动失效
+- `is_allowed` / `is_identity_allowed` / `is_action_allowed` 结果带 **LRU 缓存**
+  （`scope.cache_size` 可调），`set` / `delete` /
+  配置热更新（`config.updated` / `config.set`）自动失效
 - 所有维度配置改了**立即生效**，无需重启
-- 控制面是"逐事件"判断，不跨事件记忆：配置变了，下一条事件即按新规则
+- 作用域是"逐事件"判断，不跨事件记忆：配置变了，下一条事件即按新规则
+
+## 配置格式校验
+
+加载 / 热更新时逐节校验配置格式：类型错误的节（如 `platforms` 写成了字符串）、
+非法的出站规则（如 `allow` 写成数字）、未知动作名、未知的顶层键（如 `alow` 拼写错误）
+会输出 **WARNING** 并忽略对应节 / 条目，其余合法配置照常生效——写错不再静默失效。
 
 ## 常见问题与注意事项
 
 ### 1. 配置层级与覆盖
 
-- 模块维度：会话级 > Bot 级 > 平台级，**整体覆盖**。想"平台允许 Chat，Bot 再加 Music"，
-  必须在 Bot 级同时列出两者
+- 模块维度：会话级 > Bot 级 > 平台级，**整体覆盖**（子级 `merge = true` 时逐条目并集）。
+  想"平台允许 Chat，Bot 再加 Music"，可在 Bot 级写 `merge = true`，或同时列出两者
 - 身份维度：用户 > 会话 > Bot > 适配器，取**最具体**的已配置策略（可做例外放行）
-- 命令维度：精确命令名优先于 glob 键
+- 命令用户黑白名单：精确命令名优先于 glob 键（见 `event.command.acl`）
 
-### 2. 优先用控制面而不是改模块代码
+### 2. 模块/命令没反应
 
-模块声明的是"开发者默认"（`master=True`、`permission=...`、`pattern=...`）；
-控制面声明的是"用户最终决定"。实现参数覆盖遵循**用户优先**：
-用户显式配置的 `master = true/false` 直接生效（可收紧可放开）。
-开发者未设的限制用户可自行收紧；禁用/放行类控制走命令 deny / 身份 allow。
-
-### 3. 模块/命令没反应
-
-先怀疑控制面而不是模块本身：
+先怀疑作用域而不是模块本身：
 
 ```python
 from ErisPulse import sdk
 
 print(sdk.scope.is_allowed(event.get_platform(), bot_id, "MyModule", session_id))
 print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, user_id))
-print(sdk.scope.get_stats())   # module_filtered / identity_denied > 0 说明被静默过滤
+print(sdk.scope.stats())   # module_filtered / identity_denied > 0 说明被静默过滤
 ```
 
 被过滤是**静默**的（模块维度与身份维度不回复，避免暴露规则），但统计会累计；
 命令维度被 ACL 拒绝会显式回复"权限不足"。
+
+### 3. 出站动作被拒时排查
+
+```python
+from ErisPulse import sdk
+
+print(sdk.scope.get("actions.MyModule"))
+print(sdk.scope.stats())   # action_denied > 0 说明有调用被拦截
+```
+
+拦截是**显式**的：被拒调用返回 `retcode = 34601` 的标准失败响应（不发起网络请求）。
 
 ### 4. 会话标识跨平台隔离
 
@@ -16875,7 +16992,7 @@ print(sdk.scope.get_stats())   # module_filtered / identity_denied > 0 说明被
 ## 拓扑树 API
 
 `ModuleManager.get_topology()` 与 `AdapterManager.get_topology()` 提供模块/适配器归属关系数据，
-`sdk.get_topology()` 一键聚合（含控制面 `scope` 五维）：
+`sdk.get_topology()` 一键聚合（含作用域 `scope`）：
 
 ```python
 from ErisPulse import sdk
@@ -16898,16 +17015,169 @@ topology = sdk.get_topology()
 #       "scope": {"modules": [...], "blocked": [...]},
 #     }
 #   },
-#   "scope": {                                     # 统一控制面（五维）
+#   "scope": {                                     # 作用域（模块 / 身份 / 出站动作）
 #     "platforms": {...}, "bots": {...}, "sessions": {...},
 #     "identity": {"adapters": {...}, "bots": {...}, "sessions": {...}, "users": {...}},
-#     "commands": {...}, "handlers": {...}, "overrides": {...},
+#     "actions": {...},
 #   },
 # }
 ```
 
 - 模块拓扑聚合了该模块注册的命令、事件处理器、HTTP/WS/SSE 路由与生命周期钩子，便于绘制模块资源树。
-- 适配器拓扑聚合了各适配器状态、下属 Bot 状态及平台级/Bot 级作用域绑定。
+- 适配器拓扑聚合了各适配器状态、下属 Bot 状态及平台级/Bot 级作用域绑定（模块维度）。
+
+
+
+### 归属权（owner）系统
+
+# 归属权（owner）系统
+
+归属权是模块"即插即用"的基石：模块在加载期间注册的一切框架资源自动记名，
+卸载/禁用时按记名一键回收——模块作者只需声明资源，无需手写清理逻辑。
+
+> **相关系统**：作用域（scope）在事件分发时决定"资源是否生效"，
+> 归属权在生命周期中决定"资源归谁、谁卸载时被回收"。
+> 作用域详见[统一控制面（scope）](scope.md)，后台任务详见
+> [生命周期管理](lifecycle.md#后台任务归属与自动取消)。
+
+{!--< tips >!--}
+1. 归属在**注册瞬间**按 `current_owner` 自动记录，模块代码零改动
+2. 卸载/禁用共用同一条清理链（`_cleanup_module_registrations`），每步失败仅告警不中断
+3. 用户配置语义的资源（持久化覆写 / scope 规则 / 命令 ACL）**不**随模块卸载清理
+{!--< /tips >!--}
+
+## owner 上下文机制
+
+owner 通过上下文变量 `current_owner` 传递（`ErisPulse.runtime.context`）：
+
+```python
+from ErisPulse.runtime import owner_scope, get_current_owner
+
+with owner_scope("MyModule"):
+    # 此区间内注册的一切资源自动归属 MyModule
+    assert get_current_owner() == "MyModule"
+```
+
+框架在以下时机自动注入 owner（模块/适配器代码无需手动包裹）：
+
+| 时机 | owner 值 | 位置 |
+|------|----------|------|
+| 模块 `load()` | 模块名 | 实例化 + `on_load` 全程 |
+| 适配器 `start()` / `restart()` | 平台名 | 适配器启动全程 |
+| `activate_on` 懒加载 stub 注册 | 模块名 | 占位命令/处理器注册 |
+| 事件处理器执行期 | 处理器归属模块名 | handler / 命令入口重注入 |
+
+执行期重注入意味着：模块在 `on_load` 里声明的命令处理器**运行中**调用
+注册型 API（如 `sdk.adapter.on()`、`overrides.*.set(persist=False)`），
+同样会自动归属本模块。
+
+## 归属资源全景
+
+模块在加载上下文内注册的以下资源均记录归属，卸载/禁用时自动回收：
+
+| 资源 | 注册方式 | 清理调用 |
+|------|----------|----------|
+| 命令 | `@command()` / 命令 dict 声明 | `command.unregister_by_owner()` |
+| 事件处理器 | `@message` / `@notice` / `@request` / `@meta` | `handler.unregister_by_owner()` |
+| 适配器事件监听 | `sdk.adapter.on()` / `raw=True` | `adapter.unregister_handlers_by_owner()` |
+| 适配器中间件 | `@sdk.adapter.middleware` | 同上 |
+| 路由（HTTP/WS/SSE） | `router.http()` / `websocket()` / `sse()` | 按命名空间 + 按 owner 双重兜底 |
+| 路由中间件 | `@router.middleware()` / `add_middleware()` | `router.unregister_all_by_owner()` |
+| Dashboard 首页入口 | `router.register_home_entry()` | `unregister_home_entries_by_owner()` |
+| 自定义会话类型 | `register_custom_type()` | `unregister_custom_types_by_owner()` |
+| 后台任务 | `self.spawn()` | `cancel_owner_tasks()` |
+| 生命周期钩子 | `lifecycle.register()` | `lifecycle.unregister_by_owner()` |
+| 主人身源 provider | `master.provider` | `master.unregister_by_owner()` |
+| i18n 翻译键 | `I18nClass` 声明（domain=模块名） | `i18n.unregister_domain()` |
+| 事件覆写（运行时） | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
+| 上下文数据 | `runtime/context` 按 owner 记录 | 按模块精确清理 |
+
+适配器侧的对应资源（以平台名为 owner）在适配器 `shutdown()` / `restart()`
+时由 `_cleanup_adapter_resources` 回收，另含：
+
+| 资源 | 清理调用 |
+|------|----------|
+| 适配器自有的 `on()` 处理器与中间件 | `adapter.unregister_handlers_by_owner(platform)` |
+| 平台事件方法扩展（`EventMixin`） | `unregister_platform_event_methods(platform)` |
+| 自定义会话类型 | `unregister_custom_types_by_owner(platform)` |
+| i18n 翻译域（domain=配置键） | `i18n.unregister_domain(配置键)` |
+| 细颗粒命名空间路由 | `router.unregister_all_by_owner(platform)` |
+
+## 卸载/禁用清理序列
+
+`unload()` 与 `disable()` 共用同一条清理链（每步独立 try/except，
+失败仅记日志，**不中断后续清理**）：
+
+```mermaid
+flowchart TD
+    A["unload / disable"] --> B["on_unload()（超时保护）"]
+    B --> C["兜底取消后台任务（cancel_owner_tasks）"]
+    C --> D["_cleanup_module_registrations"]
+    D --> D1["i18n 翻译域"]
+    D1 --> D2["路由：命名空间 + owner 兜底<br/>（含中间件 / 首页入口）"]
+    D2 --> D3["适配器事件处理器 / 中间件"]
+    D3 --> D4["命令 + 事件处理器"]
+    D4 --> D5["自定义会话类型"]
+    D5 --> D6["运行时事件覆写（persist=False）"]
+    D6 --> D7["主人身源 provider"]
+    D7 --> D8["生命周期钩子"]
+    D8 --> E["移除 SDK 属性 + 懒加载代理"]
+```
+
+`sdk.uninit()` 退出时另有全局兜底：全部适配器 shutdown → 全部模块 unload →
+`router.stop()`（清空路由/中间件/首页入口）→ `cancel_all_background_tasks()` →
+清空事件处理器与钩子。
+
+## 设计边界：哪些资源不随卸载清理
+
+归属权只回收**模块代码注册的运行时资源**。以下资源属**用户配置语义**
+（控制权在用户，可能刻意配置），模块卸载后随配置持久保留：
+
+| 资源 | 语义 | 说明 |
+|------|------|------|
+| `overrides.*.set(persist=True)` | 持久化覆写 | 写入配置文件，跨重启生效；模块卸载不删（用户显式配置） |
+| `scope.set_action()` 等作用域规则 | 权限控制面 | 由用户/Dashboard 管理，卸载模块不回收规则 |
+| `overrides.acl.set(persist=True)` | 命令 ACL | 同上 |
+| Conversation `save()` 持久化 | 多轮对话存档 | 数据资产不清理 |
+
+运行时临时写入（`persist=False`）则随 owner 回收——**持久化与否即
+"用户资产"与"模块运行时状态"的分界线**。
+
+## 模块作者指南
+
+### 推荐写法
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+from ErisPulse.runtime import owner_scope, spawn_background
+
+class MyModule(BaseModule):
+    async def on_load(self, event):
+        # 框架资源：自动归属，无需手动清理
+        self.task = self.spawn(self.polling())      # 后台任务
+        sdk.router.register_home_entry("我的模块", "/my")  # 首页入口
+
+        # 模块自有资源：包进 owner_scope 即纳入归属体系
+        with owner_scope("MyModule"):
+            self.client.on_event(self._handle)      # 假想的自定义注册
+
+    async def on_unload(self, event):
+        # 框架资源已被自动回收，只需清理 owner_scope 覆盖不到的自有资源
+        await self.client.close()
+```
+
+### 注意事项
+
+- **import 期注册无归属**：模块顶层（import 时）注册的钩子/处理器发生在
+  `owner_scope` 之前，会被视为框架级资源（owner=None）而**不被清理**。
+  一律放到 `on_load()` 内注册。
+- **自定义 domain 的 i18n 注册**：`i18n.register(domain=...)` 的 domain
+  不等于模块名时不会被自动回收，请保持 domain=模块名。
+- **后台任务务必用 `self.spawn()`**：裸 `asyncio.create_task` 不归属模块，
+  卸载时不会被取消（详见[生命周期管理](lifecycle.md#后台任务归属与自动取消)）。
+- 清理链"失败仅告警"：单步清理异常不会阻断其余资源回收，日志 DEBUG/WARNING
+  级别可见，排障时可开启 TRACE。
 
 
 

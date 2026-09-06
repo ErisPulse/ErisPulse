@@ -336,7 +336,7 @@
     "進階主題": {
       "description": "深入理解框架的進階特性",
       "icon": "fa-fire",
-      "count": 11,
+      "count": 12,
       "documents": [
         {
           "title": "進階主題",
@@ -393,10 +393,16 @@
           "icon": "fa-language"
         },
         {
-          "title": "統一控制面（scope）",
+          "title": "作用域（scope）",
           "path": "advanced/scope.md",
           "level": 1,
           "icon": "fa-shield-halved"
+        },
+        {
+          "title": "所有权（owner）系統",
+          "path": "advanced/ownership.md",
+          "level": 1,
+          "icon": "fa-user-tag"
         },
         {
           "title": "啟動流程與手動控制",

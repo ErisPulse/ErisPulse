@@ -103,12 +103,12 @@ ErisPulse 框架配置管理模块
 **整节替换**（支持删除子键，如移除绑定、黑名单移除等场景）。
 写入失败时抛出异常。
 
-- **path** (`相对`): ``ErisPulse`` 根的配置路径，如 ``"scope.commands"``、``"scope"``
+- **path** (`相对`): ``ErisPulse`` 根的配置路径，如 ``"event.overrides.acl"``、``"scope"``
 - **value** (`新的配置节内容（通常为`): dict）
 **返回值** (`是否写入成功`): 
 **示例**:
 ```python
->>> set_erispulse_section("scope.commands", {"roll*": {"allow": ["onebot11:123456"]}})
+>>> set_erispulse_section("event.overrides.acl", {"roll*": {"allow": ["onebot11:123456"]}})
 ```
 
 ---
