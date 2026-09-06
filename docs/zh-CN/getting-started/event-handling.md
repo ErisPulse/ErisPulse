@@ -165,33 +165,40 @@ async def panel_handler(event):
     await event.reply("欢迎来到管理面板")
 ```
 
-**命令权限 ACL**（控制面 `ErisPulse.scope.commands`）：用户可为任意命令配置用户黑白名单，
+**命令用户 ACL**（`ErisPulse.event.command.acl`）：用户可为任意命令配置用户黑白名单，
 命令名支持精确与 glob 模式（如 `"roll*"`），拒绝时回复"权限不足"：
 
 ```toml
 # config.toml —— 仅允许 123456 执行 restart；666 一律拒绝
-[ErisPulse.scope.commands.restart]
+[ErisPulse.event.command.acl.restart]
 allow = ["onebot11:123456"]
 deny = ["onebot11:666"]
 ```
 
-判定顺序：`deny` 命中 → 拒绝；`allow` 非空且未命中 → 拒绝；否则交给开发者默认
-（`master=True` / `permission`）。运行时 API（命令名支持 glob）：
+判定顺序：`deny` 命中 → 拒绝；`allow` 非空且未命中 → 拒绝；未配置 ACL 时遵循
+`event.command.default_allow`（`false` = 严格模式，无 ACL 即拒；`true` 时交给开发者默认
+`master=True` / `permission`）。运行时 API（命令名支持 glob）：
 
 ```python
-from ErisPulse import sdk
-sdk.scope.allow_user("restart", "onebot11", "123456")   # 允许名单
-sdk.scope.deny_user("restart", "onebot11", "666")       # 拒绝名单
-sdk.scope.remove_acl("restart")                          # 清除黑白名单
-sdk.scope.get_acl("restart")                             # 查询当前名单
+from ErisPulse.Core.Event import command
+
+command.allow_user("restart", "onebot11", "123456")   # 允许名单
+command.deny_user("restart", "onebot11", "666")       # 拒绝名单
+command.remove_acl("restart")                          # 清除黑白名单
+command.get_acl("restart")                             # 查询当前名单
 ```
 
+> 命令处理器从事件包导入：`from ErisPulse.Core.Event import command`；
+> 也可经 SDK 事件包访问：`sdk.Event.command`（两者为同一单例）。
+> 在模块内通常已随命令装饰器导入（`from ErisPulse.Core.Event import command`）。
+
 跨命令 / 跨用户的**事件级**访问控制（某人 / 某群 / 某 Bot 的消息收不收）
-走控制面**身份维度**（`scope.identity`）；**模块级**可用性（哪些模块能用）
-走控制面**模块维度**（`scope.platforms / bots / sessions`）。详见[统一控制面](../advanced/scope.md)。
+走作用域**身份维度**（`scope.identity`）；**模块级**可用性（哪些模块能用）
+走作用域**模块维度**（`scope.platforms / bots / sessions`）。
+详见[作用域（scope）](../advanced/scope.md)。
 
 > 建议：命令内部需要联动业务逻辑的用 `master=True` / `permission`；纯按用户 / 群做
-> 访问控制的用控制面身份维度；控制模块可用性的用控制面模块维度。
+> 访问控制的用作用域身份维度；控制模块可用性的用作用域模块维度。
 
 ### 命令优先级
 
@@ -249,7 +256,7 @@ async def handler_c(event):
 >
 > **慢日志**：单个处理器耗时超过 **1 秒**时，框架会在日志打 WARNING（`handler_slow`）。`wait_reply` 的等待时间会从耗时里剔除，不会因为「等人回复」误报慢。
 
-## 控制面过滤：为什么我的模块没收到消息
+## 作用域过滤：为什么我的模块没收到消息
 
 事件到达后有两道**静默**过滤（都不回复、不报错）：
 
@@ -268,13 +275,75 @@ deny = true
 blocked = ["MyModule"]
 ```
 
-此时该群的消息到达时，`MyModule` 的命令与事件处理器**都不会被调度**。这不是 bug，是过滤机制——排查「模块没反应」时优先检查控制面的身份与模块绑定。
+此时该群的消息到达时，`MyModule` 的命令与事件处理器**都不会被调度**。这不是 bug，是过滤机制——排查「模块没反应」时优先检查作用域的身份与模块绑定。
 
 - 过滤日志只在 **TRACE** 级可见（`core.scope.identity_denied` / `core.scope.denied`），默认 INFO 看不到任何痕迹
 - 框架级处理器（如命令分发器 `scope_exempt=True`）不受**模块维度**影响，但受**身份维度**影响（整个事件已丢弃）
-- 命令执行前还有第三道：命令权限 ACL（拒绝时回复"权限不足"，见上节）
+- 命令执行前还有第三道：命令用户 ACL（拒绝时回复"权限不足"，见上节）
+- 第四道是**事件覆写**（见下节）
 
-> 五维配置、匹配语法、运行时 API 见 [统一控制面](../../advanced/scope.md)。
+> 作用域配置、匹配语法、运行时 API 见 [作用域（scope）](../../advanced/scope.md)。
+
+## 事件覆写：不改模块代码，覆写任意事件类型的行为
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
+
+事件处理器在注册时声明的参数（`pattern` / `regex` / `master` / `hidden` 等）只是**开发者默认**。
+统一覆写系统让用户按**事件类型**覆写任意模块的行为——OneBot12 标准类型
+（meta / message / notice / request）与 ErisPulse 扩展类型（command）各自拥有专属的可覆写参数：
+
+| 事件类型 | 可覆写参数 | 作用 |
+|---------|-----------|------|
+| `message` | `pattern` / `regex` / `detail_types` | 文本触发条件 + 消息子类型白名单 |
+| `notice` | `detail_types` / `pattern` / `regex` | 通知子类型白名单 + 文本条件 |
+| `request` | `detail_types` / `pattern` / `regex` | 请求子类型白名单 + 文本条件 |
+| `meta` | `detail_types` | 元事件子类型白名单（connect / heartbeat 等） |
+| `command` | `master` / `hidden` / `aliases` / `prefix` / `help` / `usage` | 命令实现参数（用户优先） |
+| `acl`（command 专属） | `allow` / `deny` | 命令用户黑白名单（按命令名 glob） |
+
+```toml
+# message：覆写文本触发条件（与代码内条件 AND）
+[ErisPulse.event.overrides.message.ChatModule]
+pattern = "闲聊*"
+
+# notice：只响应特定通知子类型
+[ErisPulse.event.overrides.notice.MyModule]
+detail_types = ["group_increase"]
+
+# command：覆写实现参数（用户优先——可收紧或放开开发者默认）
+[ErisPulse.event.overrides.command.MyModule.restart]
+master = true
+hidden = true
+
+# acl：命令用户黑白名单（跨命令 glob）
+[ErisPulse.event.overrides.acl."roll*"]
+allow = ["onebot11:u_vip"]
+
+# ACL 兜底（false = 严格模式：无 ACL 即拒）
+acl_default_allow = true
+```
+
+运行时 API（`from ErisPulse.Core.Event import overrides` 或 `sdk.Event.overrides`，
+**类型子命名空间**——每类型对称的 `set` / `get` / `delete` 三件套）：
+
+```python
+from ErisPulse.Core.Event import overrides
+
+overrides.message.set("ChatModule", pattern="闲聊*")   # message 文本条件
+overrides.notice.set("MyModule", detail_types=["group_increase"])
+overrides.command.set("MyModule", "restart", master=True)  # 命令参数
+overrides.acl.set("roll*", deny=["onebot11:u_bad"])    # 命令用户黑名单
+
+overrides.message.get("ChatModule")     # {"pattern": "闲聊*"}
+overrides.message.delete("ChatModule")  # 恢复开发者默认
+```
+
+- 覆写条件与处理器代码内条件**同时生效**（AND 语义）；`command` 参数与开发者声明**深合并**（覆写优先）
+- `detail_types`：事件缺 `detail_type` 时放行（不误杀未知事件）
+- `pattern` / `regex`：无文本的事件（connect / heartbeat 等）不受约束，直接放行
+- `command` 覆写键 `master` 同步映射存储键 `must_master`；禁用命令统一走 `acl` deny
+- 配置改了立即生效（热更新），格式校验告警（未知参数 / 坏条目忽略）
 
 ## 链路控制：认领与阻断
 

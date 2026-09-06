@@ -55,7 +55,7 @@ async def reload_handler(event):
 
 所有命令查询 API 均支持可选的**会话上下文**：传 `event=`（Event 或 dict）或
 显式 `platform=` / `bot_id=` / `session_id=`（与 event 叠加时显式参数优先），
-即按控制面模块维度过滤当前会话不可用模块的命令（详见 advanced/scope.md）；
+即按作用域模块维度过滤当前会话不可用模块的命令（详见 advanced/scope.md）；
 全部为可选关键字参数，不传时保持原有全量行为。
 
 ```python
