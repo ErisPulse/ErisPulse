@@ -5,6 +5,7 @@
 """
 
 import asyncio
+import importlib
 import warnings
 from unittest.mock import Mock, patch
 
@@ -28,6 +29,9 @@ from ErisPulse.Core.Event import (
 )
 from ErisPulse.Core.Event.base import BaseEventHandler
 from ErisPulse.Core.Event.wrapper import Event, _normalize_modifier, _platform_event_methods
+
+# importlib.import_module 返回真实子模块（Core.storage 包属性被 StorageManager 单例遮蔽）
+storage_module = importlib.import_module("ErisPulse.Core.storage")
 
 # ==================== BaseEventHandler 测试 ====================
 
@@ -1566,7 +1570,7 @@ class TestConversationPersistence:
         conv.goto("main")
         conv.context["test_key"] = "test_value"
 
-        with patch("ErisPulse.Core.storage.storage") as mock_storage:
+        with patch.object(storage_module, "storage") as mock_storage:
             mock_storage.set = Mock()
             await conv.save()
             mock_storage.set.assert_called_once()
@@ -1588,7 +1592,7 @@ class TestConversationPersistence:
             "timeout": 30,
         }
 
-        with patch("ErisPulse.Core.storage.storage") as mock_storage:
+        with patch.object(storage_module, "storage") as mock_storage:
             mock_storage.get = Mock(return_value=saved_data)
             result = await conv.resume()
 
@@ -1601,7 +1605,7 @@ class TestConversationPersistence:
         """测试恢复对话状态无数据"""
         conv = sample_event.conversation()
 
-        with patch("ErisPulse.Core.storage.storage") as mock_storage:
+        with patch.object(storage_module, "storage") as mock_storage:
             mock_storage.get = Mock(return_value=None)
             result = await conv.resume()
 
@@ -1627,7 +1631,7 @@ class TestConversationPersistence:
             "timeout": 60,
         }
 
-        with patch("ErisPulse.Core.storage.storage") as mock_storage:
+        with patch.object(storage_module, "storage") as mock_storage:
             mock_storage.get = Mock(return_value=saved_data)
             result = await conv.resume(event=new_event)
 
@@ -1639,7 +1643,7 @@ class TestConversationPersistence:
         """测试清除保存的对话状态"""
         conv = sample_event.conversation()
 
-        with patch("ErisPulse.Core.storage.storage") as mock_storage:
+        with patch.object(storage_module, "storage") as mock_storage:
             mock_storage.delete = Mock()
             await conv.clear_saved()
             mock_storage.delete.assert_called_once()
@@ -1651,7 +1655,7 @@ class TestConversationPersistence:
         """测试保存时异常处理"""
         conv = sample_event.conversation()
 
-        with patch("ErisPulse.Core.storage.storage") as mock_storage:
+        with patch.object(storage_module, "storage") as mock_storage:
             mock_storage.set = Mock(side_effect=Exception("storage error"))
             await conv.save()
 

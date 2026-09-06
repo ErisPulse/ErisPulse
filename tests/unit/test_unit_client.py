@@ -6,12 +6,16 @@ HTTP 客户端单元测试
 使用 aiohttp.test_utils.AioHTTPTestCase / aiohttp.ClientSession mock 避免真实网络。
 """
 
+import importlib
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from ErisPulse.Core.Bases.errors import ClientError
 from ErisPulse.Core.client import HttpClient, HttpResponse
+
+# importlib.import_module 返回真实子模块（Core.client 包属性被 Client() 单例遮蔽）
+client_module = importlib.import_module("ErisPulse.Core.client")
 
 # ==================== HttpResponse 测试 ====================
 
@@ -615,7 +619,7 @@ class TestHttpClientRequest:
         mock_session.request = MagicMock(return_value=cm)
         c._session = mock_session
 
-        with patch("ErisPulse.Core.client.lifecycle") as mock_lifecycle:
+        with patch.object(client_module, "lifecycle") as mock_lifecycle:
             mock_lifecycle.emit = mock_emit
             await c.request("GET", "http://example.com/api")
 
@@ -642,7 +646,7 @@ class TestHttpClientRequest:
         mock_session.request = MagicMock(return_value=cm)
         c._session = mock_session
 
-        with patch("ErisPulse.Core.client.logger") as mock_logger:
+        with patch.object(client_module, "logger") as mock_logger:
             result = await c.request("GET", "http://example.com")
 
         assert result.status == 500

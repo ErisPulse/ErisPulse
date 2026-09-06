@@ -5,11 +5,14 @@
 """
 
 import asyncio
+import importlib
 from unittest.mock import patch
 
 import pytest
 
 from ErisPulse.Core.lifecycle import LifecycleManager, lifecycle
+
+logger_module = importlib.import_module("ErisPulse.Core.logger")
 
 # ==================== LifecycleManager 测试 ====================
 
@@ -287,7 +290,7 @@ class TestLifecycleManager:
     async def test_validate_event_missing_required_field(self, manager):
         """测试验证缺少必填字段的事件"""
         # Mock logger
-        with patch("ErisPulse.Core.logger.logger") as mock_logger:
+        with patch.object(logger_module, "logger") as mock_logger:
             # 执行（缺少event字段）
             await manager.submit_event(None, data={})
 
@@ -312,7 +315,7 @@ class TestLifecycleManager:
         manager.on("test_event")(normal_handler)
 
         # Mock logger
-        with patch("ErisPulse.Core.logger.logger") as mock_logger:
+        with patch.object(logger_module, "logger") as mock_logger:
             # 执行
             await manager.submit_event("test_event")
 

@@ -183,6 +183,12 @@
   - **文档翻译器提示词泄露** `scripts/tools/translate-docs.py`：模型翻译时偶发将翻译规则/提醒（如「路径替换规则」「请直接返回翻译后的完整Markdown内容」「再次提醒：…语言切换行…」）当作正文回译进译文，污染各语言文档（en/ja/ru/zh-TW 与根 README 大量出现）。已定位根因：所有翻译规则与待翻译内容混在同一用户消息、且规则用与内容相同的语言写成，模型无法区分指令与正文而整段回显。改为架构性修复：全部规则前移到 `system` 消息、待翻译内容用 `<<<DOC_START>>>`/`<<<DOC_END>>>` 标记包裹放入 `user` 消息并明确「只翻译标记之间的内容、不得输出任何提示词」；`call_translation_api` 末尾防御性移除可能的标记残留。已对全仓库各语言受影响文档（109 个）做「移除泄露行」一次性清理（仅删除提示词残留行，未改动正文），并用中文/英文/日文/俄文泄露特征 + 与 zh-CN 源零匹配校验确保不误删。另约定：删除/移动/重命名 `docs/zh-CN` 文档时若用中文书写目录注释，须同时手动清理其它语言与缓存（已补充文档说明）。
   - **翻译质量检查器新增提示词泄露检测** `scripts/tools/check-translation.py`：`detect_prompt_leaks()` 检出译文中的翻译提示词残留（多语言特征），计入 `ERROR`，配合 `--fix` 清缓存后由修复版翻译器重译即可自愈。
   - **安装脚本 Debian/Ubuntu 虚拟环境创建失败** `scripts/install/install.sh`：Debian 系发行版系统 Python 未安装 `python3-venv`（`ensurepip` 被发行版禁用）时 `python -m venv` 必然失败，脚本此前仅报「虚拟环境创建失败」即退出。现于创建虚拟环境前预检 `ensurepip`（uv 路径不依赖，自动跳过），缺失时询问并自动通过 apt 安装 `python3.<次版本>-venv`（回退 `python3-venv`；非 root 自动加 sudo）；非 apt 系发行版或用户拒绝时输出手动安装指引；新增提示键 `venv_ensurepip_missing` / `venv_auto_install_pkg` / `venv_pkg_installed` / `venv_pkg_install_fail` / `venv_manual_hint`（五语言同步）
+  - **单元测试 Python 3.10 兼容性**：CI 矩阵（3.10–3.13）此前 3.10 全量失败 85 例、3.11 失败 1 例，根因均为测试对 `unittest.mock` 字符串目标解析的版本行为假设，非 SDK 代码缺陷：
+    - **mock 字符串 patch 被包级单例遮蔽**：`ErisPulse.Core` 包导出同名单例（`master` / `module` / `scope` / `storage` / `config` / `router` / `client` / `logger` / `lifecycle` / `adapter` / `i18n`），Python 3.11+ 的 `mock.patch` 对 `"ErisPulse.Core.<名>.<属性>"` 会优先按完整路径 import 解析到真实子模块；3.10 用逐段 import + 父包属性访问，命中**单例实例**（报 `does not have the attribute ...`）。将 12 个测试文件中 90+ 处此类 patch 统一改为经 `importlib.import_module` 取真实子模块后的 `patch.object`（3.10/3.11/3.12/3.13 全量语义一致）
+    - **tomllib**：`test_unit_cli.py` 用 3.11+ 标准库 `tomllib` 解析示例配置（3.10 无此模块），改用项目已依赖的第三方 `toml` 库
+    - **`wait_for` 取消语义版本分界**：`tests/unit/test_unit_tasks.py::test_hard_restart_scenario_no_recursion`（3.13 取消递归回归）在 3.10/3.11 上因 3.12 前 `asyncio.wait_for` 行为差异必然假失败，加 `<3.12` `skipif` 门控
+    - **`sys.path_importer_cache` 陈旧 importer**：`test_unit_plugin_folder.py` fixture 补充清空 import 缓存，避免 3.10 跨测试文件组合时旧临时目录的 importer 导致 `import weather` 失败
+    - 四版本全量验证：3.10 / 3.11 / 3.12 / 3.13 全部通过（3.11 为 1 skipped 的 3.13 回归门控）
 
 ### 测试
 - @wsu2059q

@@ -475,12 +475,12 @@ class TestFullExampleConfig:
 
     @staticmethod
     def _example():
-        import tomllib
+        import toml
 
         from ErisPulse.CLI.commands.init import InitCommand
 
         text = InitCommand._get_full_example_config()
-        return text, tomllib.loads(text)
+        return text, toml.loads(text)
 
     def test_example_is_valid_toml(self):
         """生成的示例必须是可解析的 TOML"""

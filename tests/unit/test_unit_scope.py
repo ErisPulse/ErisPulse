@@ -6,11 +6,16 @@
 """
 
 import asyncio
+import importlib
 from unittest.mock import patch
 
 import pytest
 
 from ErisPulse.Core.scope import ScopeManager
+
+# importlib.import_module 返回真实子模块（Core.scope / Core.config 包属性被单例遮蔽）
+scope_module = importlib.import_module("ErisPulse.Core.scope")
+config_module = importlib.import_module("ErisPulse.Core.config")
 
 
 class TestScopeManager:
@@ -132,7 +137,7 @@ class TestScopeManager:
         def fake_update(new_config):
             written.update(new_config)
 
-        with patch("ErisPulse.Core.scope.update_erispulse_config", side_effect=fake_update):
+        with patch.object(scope_module, "update_erispulse_config", side_effect=fake_update):
             mgr.set("bots.onebot11.123456", {"modules": ["Chat"], "blocked": ["Danger"]})
         assert written["scope"]["bots"]["onebot11"]["123456"] == {
             "modules": ["Chat"],
@@ -157,7 +162,7 @@ class TestScopeManager:
         def fake_set(path, value):
             written[path] = value
 
-        with patch("ErisPulse.Core.scope.set_erispulse_section", side_effect=fake_set):
+        with patch.object(scope_module, "set_erispulse_section", side_effect=fake_set):
             assert mgr.delete("bots.onebot11.123456") is True
         assert written["scope.bots.onebot11"] == {}
         assert mgr.get("bots.onebot11.123456") is None
@@ -254,7 +259,7 @@ class TestScopeDispatch:
         mgr = self._scoped_mgr()
         received = []
 
-        with patch("ErisPulse.Core.scope.scope", mgr):
+        with patch.object(scope_module, "scope", mgr):
             token = current_owner.set("ModuleA")
             try:
 
@@ -291,7 +296,7 @@ class TestScopeDispatch:
         mgr = self._scoped_mgr()
         received = []
 
-        with patch("ErisPulse.Core.scope.scope", mgr):
+        with patch.object(scope_module, "scope", mgr):
             token = current_owner.set("ModuleA")
             try:
 
@@ -314,7 +319,7 @@ class TestScopeDispatch:
 
             from ErisPulse.Core.adapter import adapter
 
-            with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+            with patch.object(config_module.config, "getConfig", return_value="/"):
                 await adapter.emit(_make_msg("/alpha"))
                 await asyncio.sleep(0.05)
                 await adapter.emit(_make_msg("/beta"))
@@ -331,7 +336,7 @@ class TestScopeDispatch:
         mgr = self._scoped_mgr()  # 仅 bot_x 有绑定
         received = []
 
-        with patch("ErisPulse.Core.scope.scope", mgr):
+        with patch.object(scope_module, "scope", mgr):
             token = current_owner.set("ModuleA")
             try:
 
@@ -350,7 +355,7 @@ class TestScopeDispatch:
 
             await adapter.emit(_make_msg("hi", bot_id="bot_y"))  # 未绑定的 Bot
             await asyncio.sleep(0.05)
-            with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+            with patch.object(config_module.config, "getConfig", return_value="/"):
                 await adapter.emit(_make_msg("/alpha", bot_id="bot_y"))
                 await asyncio.sleep(0.05)
 
@@ -449,7 +454,7 @@ class TestScopeSessionLevel:
         def fake_update(new_config):
             written.update(new_config)
 
-        with patch("ErisPulse.Core.scope.update_erispulse_config", side_effect=fake_update):
+        with patch.object(scope_module, "update_erispulse_config", side_effect=fake_update):
             mgr.set("sessions.onebot11.group_9", {"modules": ["Chat"], "blocked": []})
         assert written["scope"]["sessions"]["onebot11"]["group_9"] == {
             "modules": ["Chat"],
@@ -558,7 +563,7 @@ class TestScopeSessionDispatch:
         mgr = self._scoped_mgr()
         received = []
 
-        with patch("ErisPulse.Core.scope.scope", mgr):
+        with patch.object(scope_module, "scope", mgr):
             token = current_owner.set("ModuleA")
             try:
 
@@ -589,7 +594,7 @@ class TestScopeSessionDispatch:
         mgr = self._scoped_mgr()
         received = []
 
-        with patch("ErisPulse.Core.scope.scope", mgr):
+        with patch.object(scope_module, "scope", mgr):
             token = current_owner.set("ModuleA")
             try:
 
@@ -602,7 +607,7 @@ class TestScopeSessionDispatch:
 
             from ErisPulse.Core.adapter import adapter
 
-            with patch("ErisPulse.Core.config.config.getConfig", return_value="/"):
+            with patch.object(config_module.config, "getConfig", return_value="/"):
                 await adapter.emit(_make_msg("/alpha", group_id="g1"))
                 await asyncio.sleep(0.05)
                 await adapter.emit(_make_msg("/alpha", group_id="g2"))
