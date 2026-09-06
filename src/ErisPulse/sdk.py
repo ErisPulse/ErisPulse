@@ -167,7 +167,8 @@ class SDK:
     - router: 路由管理器
     - client: HTTP 客户端
     - master: 框架主人管理器
-    - scope: 模块作用域管理器（模块-Bot/平台/会话绑定）
+    - scope: 作用域管理器（模块 / 身份 / 出站 三维，"什么范围内生效"）
+    - Event: 事件模块包（command 命令处理器 / message / notice / request 等事件处理器）
     - context: 模块上下文管理（owner_scope / get_current_owner）
     {!--< /tips >!--}
     """
@@ -194,6 +195,7 @@ class SDK:
     BaseQueryBuilder: type[_BaseQueryBuilder]
     master: MasterManager
     scope: ScopeManager
+    Event: ModuleType
     context: ModuleType
 
     def __init__(self):
@@ -204,6 +206,7 @@ class SDK:
         确保软重启后始终指向最新的模块级单例。
         """
         self._initializer: SDK.Initializer | None = None
+        self._module_loader: Any = None  # 模块加载器（Initializer 创建后注入，热重载使用）
         self._initialized: bool = False
         self._gc_task: asyncio.Task | None = None  # 主动 GC 后台任务
         self._gc_config_snapshot: tuple | None = None  # 主动 GC 配置快照（变更检测）
@@ -227,6 +230,22 @@ class SDK:
             return importlib.metadata.version("ErisPulse")
         except importlib.metadata.PackageNotFoundError:
             return "UnknownVersion"
+
+    def __dir__(self) -> list[str]:
+        """
+        列出实例属性（含核心模块动态属性）
+
+        让 ``dir(sdk)`` 与交互式补全反映 ``__getattr__`` 提供的核心模块单例
+        （scope / command / master / adapter 等）。用类级 dir() 避免
+        触发 ``__getattr__`` 的递归解析。
+
+        :return: 属性名列表（去重排序）
+        """
+        try:
+            base = list(dir(type(self)))
+        except Exception:
+            base = []
+        return sorted(set(base) | set(_CORE_ATTR_NAMES))
 
     def __getattr__(self, name: str):
         """
@@ -325,6 +344,9 @@ class SDK:
             self._sdk = sdk_instance
             self._adapter_loader = AdapterLoader()
             self._module_loader = ModuleLoader()
+            # 将加载器引用注入 SDK：热重载（sdk.reload_module / 热重载监控）
+            # 经由 SDK 访问，若仅持有在 Initializer 内部则 SDK 侧永远读不到
+            sdk_instance._module_loader = self._module_loader
             # 创建共享的严格模式管理器并注入到两个加载器，
             # 确保跨加载器统一收集违规、在检查点统一报告
             self._strict_manager = StrictModeManager.from_config()
@@ -831,6 +853,7 @@ class SDK:
                 # 9. 重置初始化状态
                 self._sdk._initialized = False
                 self._sdk._initializer = None
+                self._sdk._module_loader = None  # 加载器随 Initializer 生命周期一并失效
                 # 停止主动 GC 后台任务
                 self._sdk._stop_proactive_gc()
                 duration_str = (
@@ -1591,11 +1614,16 @@ class SDK:
 
     def enable_plugin_hot_reload(self, interval: float = 1.0) -> bool:
         """
-        启用本地插件文件夹热重载
+        启用本地插件文件夹热重载（自动监控）
 
         监控插件文件夹（默认 ``plugins/``，可通过 ``ErisPulse.framework.plugins_dir``
         配置）下 ``.py`` 文件的变更，自动重新加载对应插件。
         需在 ``await sdk.run()`` 之前调用。
+
+        {!--< tips >!--}
+        自动监控仅覆盖本地插件目录；PyPI 安装包模块可通过
+        :meth:`reload_module` 手动热重载（pip 升级后调用即可）。
+        {!--< /tips >!--}
 
         :param interval: 轮询间隔（秒，默认 1.0）
         :return: 是否启动成功（无插件目录或已在运行返回 False）
@@ -1610,41 +1638,45 @@ class SDK:
 
         from .runtime import PluginReloadWatcher
 
-        watcher = PluginReloadWatcher(self._reload_plugin, interval=interval)
+        watcher = PluginReloadWatcher(self._reload_module, interval=interval)
         ok = watcher.start()
         if ok:
             self._plugin_watcher = watcher
             self.logger.info(i18n.t("core.sdk.hot_reload.enabled"))
         return ok
 
-    async def reload_plugin(self, plugin_name: str) -> bool:
+    async def reload_module(self, module_name: str) -> bool:
         """
-        热重载单个本地插件（手动触发）
+        热重载单个模块（手动触发，支持任意来源）
 
-        卸载旧实例、清理注册、强制重新导入并重新加载。
+        完整执行 卸载旧实例 → 清理注册与 ``sys.modules`` 缓存 →
+        重新发现/导入 → 重新注册并加载 流程；依赖该模块的模块会**级联重载**。
+        本地插件（``plugins/`` 目录）来源重扫描插件目录；PyPI 安装包来源
+        重新查询 entry-point 并重导入模块代码（pip 升级后调用即可生效）。
 
-        :param plugin_name: 插件名
+        :param module_name: 模块名（entry-point 名称或插件名）
         :return: 是否重载成功
 
         :example:
-        >>> await sdk.reload_plugin("dice")
+        >>> await sdk.reload_module("dice")      # 本地插件
+        >>> await sdk.reload_module("Weather")   # PyPI 安装包模块
         """
         if getattr(self, "_module_loader", None) is None:
             self.logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
             return False
-        return await self._module_loader.reload_plugin(
-            plugin_name, self.module, self._sdk
+        return await self._module_loader.reload_module(
+            module_name, self.module, self
         )
 
-    async def _reload_plugin(self, plugin_name: str) -> None:
+    async def _reload_module(self, module_name: str) -> None:
         """
         {!--< internal-use >!--}
         热重载回调（由 PluginReloadWatcher 调度），失败仅记录不抛异常
         """
         try:
-            await self.reload_plugin(plugin_name)
+            await self.reload_module(module_name)
         except Exception as e:
-            self.logger.error(i18n.t("core.sdk.hot_reload.failed", name=plugin_name, error=e))
+            self.logger.error(i18n.t("core.sdk.hot_reload.failed", name=module_name, error=e))
 
     def stop_plugin_hot_reload(self) -> None:
         """
@@ -1997,7 +2029,7 @@ class SDK:
         聚合模块、适配器与作用域的归属关系：
         - ``modules``：每个模块拥有的命令 / 事件处理器 / 路由 / 生命周期钩子
         - ``adapters``：每个适配器的运行状态、下属 Bot 状态与作用域绑定
-        - ``scope``：全部平台级 / Bot 级作用域绑定
+        - ``scope``：作用域（模块 / 身份 / 文本 / 出站动作）
 
         :return: 拓扑树字典
             {"modules": {...}, "adapters": {...}, "scope": {...}}
@@ -2010,7 +2042,7 @@ class SDK:
         return {
             "modules": self.module.get_topology().get("modules", {}),
             "adapters": self.adapter.get_topology().get("adapters", {}),
-            "scope": self.scope.get_topology(),
+            "scope": self.scope.topology(),
         }
 
     async def uninit(self) -> bool:

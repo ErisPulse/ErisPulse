@@ -4,15 +4,19 @@
 测试StorageManager的键值存储和事务功能
 """
 
-import json
+import importlib
 import os
 import sqlite3
 import tempfile
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
 import pytest
 
 from ErisPulse.Core.storage import StorageManager, storage
+
+# importlib.import_module 返回真实子模块（Core.storage / Core.logger 包属性被单例遮蔽）
+storage_module = importlib.import_module("ErisPulse.Core.storage")
+logger_module = importlib.import_module("ErisPulse.Core.logger")
 
 # ==================== StorageManager 基础测试 ====================
 
@@ -350,7 +354,7 @@ class TestStorageManager:
             conn.commit()
 
         # Mock logger
-        with patch("ErisPulse.Core.logger.logger") as mock_logger:
+        with patch.object(logger_module, "logger") as mock_logger:
             # 执行（应该处理错误）
             value = storage_manager.get("invalid_json")
 
@@ -727,7 +731,7 @@ class TestStorageErrorLogging:
         """set_multi 失败时应记录 logger.error"""
         with (
             self._force_conn_failure(storage_manager),
-            patch("ErisPulse.Core.storage.logger") as mock_logger,
+            patch.object(storage_module, "logger") as mock_logger,
         ):
             result = storage_manager.set_multi({"a": 1})
         assert result is False
@@ -738,7 +742,7 @@ class TestStorageErrorLogging:
         storage_manager.set("temp.key", 1)
         with (
             self._force_conn_failure(storage_manager),
-            patch("ErisPulse.Core.storage.logger") as mock_logger,
+            patch.object(storage_module, "logger") as mock_logger,
         ):
             result = storage_manager.delete("temp.key")
         assert result is False
@@ -749,7 +753,7 @@ class TestStorageErrorLogging:
         storage_manager.set("temp.k1", 1)
         with (
             self._force_conn_failure(storage_manager),
-            patch("ErisPulse.Core.storage.logger") as mock_logger,
+            patch.object(storage_module, "logger") as mock_logger,
         ):
             result = storage_manager.delete_multi(["temp.k1"])
         assert result is False
@@ -760,7 +764,7 @@ class TestStorageErrorLogging:
         storage_manager.set("temp.key", 1)
         with (
             self._force_conn_failure(storage_manager),
-            patch("ErisPulse.Core.storage.logger") as mock_logger,
+            patch.object(storage_module, "logger") as mock_logger,
         ):
             result = storage_manager.clear()
         assert result is False
@@ -770,7 +774,7 @@ class TestStorageErrorLogging:
         """HasTable 失败时应记录 logger.error"""
         with (
             self._force_conn_failure(storage_manager),
-            patch("ErisPulse.Core.storage.logger") as mock_logger,
+            patch.object(storage_module, "logger") as mock_logger,
         ):
             result = storage_manager.HasTable("nope")
         assert result is False

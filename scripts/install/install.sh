@@ -142,7 +142,11 @@ env_generated=.env 已生成
 erispulse_started=ErisPulse 已启动
 dashboard_install_fail=Dashboard 安装失败，但 ErisPulse 已安装成功
 select_1_2=请输入 1 或 2
-admin_warn=不建议使用 root 用户运行此脚本
+venv_ensurepip_missing=系统 Python 缺少 ensurepip，无法创建带 pip 的虚拟环境
+venv_auto_install_pkg=是否自动安装所需系统包？ [Y/n]
+venv_pkg_installed=依赖包安装成功
+venv_pkg_install_fail=系统包安装失败
+venv_manual_hint=请先手动安装 venv 支持（Debian/Ubuntu: sudo apt install python3-venv），然后重新运行本脚本
 date_unknown=未知
 star_message=喜欢我们的话欢迎来点个 star: https://github.com/ErisPulse/ErisPulse
 i18n_note=如果您启动程序发现都是中文，请不要担心，Dashboard 同样支持多语言！"
@@ -264,7 +268,11 @@ env_generated=.env 已產生
 erispulse_started=ErisPulse 已啟動
 dashboard_install_fail=Dashboard 安裝失敗，但 ErisPulse 已安裝成功
 select_1_2=請輸入 1 或 2
-admin_warn=不建議使用 root 使用者執行此指令碼
+venv_ensurepip_missing=系統 Python 缺少 ensurepip，無法建立帶 pip 的虛擬環境
+venv_auto_install_pkg=是否自動安裝所需系統套件？ [Y/n]
+venv_pkg_installed=相依套件安裝成功
+venv_pkg_install_fail=系統套件安裝失敗
+venv_manual_hint=請先手動安裝 venv 支援（Debian/Ubuntu: sudo apt install python3-venv），然後重新執行本指令碼
 date_unknown=未知
 star_message=喜歡我們的話歡迎來點個 star: https://github.com/ErisPulse/ErisPulse
 i18n_note=如果您啟動程式發現都是簡體中文，請不要擔心，Dashboard 同樣支援多語言！"
@@ -388,7 +396,11 @@ env_generated=.env generated
 erispulse_started=ErisPulse started
 dashboard_install_fail=Dashboard install failed, but ErisPulse was installed
 select_1_2=Please enter 1 or 2
-admin_warn=Running as root is not recommended
+venv_ensurepip_missing=System Python is missing ensurepip, cannot create a venv with pip
+venv_auto_install_pkg=Install the required system package automatically? [Y/n]
+venv_pkg_installed=System package installed successfully
+venv_pkg_install_fail=Failed to install system package
+venv_manual_hint=Please install venv support manually first (Debian/Ubuntu: sudo apt install python3-venv), then re-run this script
 date_unknown=unknown
 star_message=If you like this project, please give us a star: https://github.com/ErisPulse/ErisPulse
 i18n_note=If you see Chinese text after launching, don't worry - Dashboard also supports i18n and your language!"
@@ -510,7 +522,11 @@ env_generated=.env が生成されました
 erispulse_started=ErisPulse が起動しました
 dashboard_install_fail=Dashboard のインストールに失敗、ErisPulse はインストール済み
 select_1_2=1 または 2 を入力してください
-admin_warn=管理者としての実行は推奨されません
+venv_ensurepip_missing=システム Python に ensurepip がなく、pip 付きの仮想環境を作成できません
+venv_auto_install_pkg=必要なシステムパッケージを自動インストールしますか？ [Y/n]
+venv_pkg_installed=システムパッケージのインストールに成功しました
+venv_pkg_install_fail=システムパッケージのインストールに失敗しました
+venv_manual_hint=先に venv サポートを手動でインストールし（Debian/Ubuntu: sudo apt install python3-venv）、その後このスクリプトを再実行してください
 date_unknown=不明
 star_message=このプロジェクトが気に入ったら、スターをお願いします: https://github.com/ErisPulse/ErisPulse
 i18n_note=起動後に中国語が表示されても心配しないでください。Dashboard は多言語（i18n）に対応しています！"
@@ -634,7 +650,11 @@ env_generated=.env создан
 erispulse_started=ErisPulse запущен
 dashboard_install_fail=Dashboard не установлен, но ErisPulse установлен
 select_1_2=Введите 1 или 2
-admin_warn=Запуск от имени root не рекомендуется
+venv_ensurepip_missing=В системном Python отсутствует ensurepip, невозможно создать venv с pip
+venv_auto_install_pkg=Установить необходимый системный пакет автоматически? [Y/n]
+venv_pkg_installed=Системный пакет успешно установлен
+venv_pkg_install_fail=Не удалось установить системный пакет
+venv_manual_hint=Сначала установите поддержку venv вручную (Debian/Ubuntu: sudo apt install python3-venv), затем перезапустите этот скрипт
 date_unknown=неизвестно
 star_message=Если вам понравился проект, поставьте звезду: https://github.com/ErisPulse/ErisPulse
 i18n_note=Если после запуска вы видите китайский текст — не волнуйтесь, Dashboard поддерживает i18n и ваш язык！"
@@ -879,6 +899,50 @@ check_python() {
     return 0
 }
 
+ensure_venv_capability() {
+    # uv 创建的虚拟环境不依赖 ensurepip
+    [ "$USE_UV" = true ] && return 0
+    $PYTHON_CMD -m ensurepip --version >/dev/null 2>&1 && return 0
+
+    print_warning "$(t 'venv_ensurepip_missing')"
+
+    if command_exists apt-get; then
+        local py_version=$($PYTHON_CMD -c "import sys; print(str(sys.version_info.major) + '.' + str(sys.version_info.minor))" 2>/dev/null || echo "")
+        local pkg="python3-venv"
+        [ -n "$py_version" ] && pkg="python${py_version}-venv"
+        local sudo_cmd=""
+        if [ "$(id -u)" -ne 0 ]; then
+            if command_exists sudo; then
+                sudo_cmd="sudo"
+            else
+                print_error "$(t 'venv_pkg_install_fail')"
+                print_info "$(t 'venv_manual_hint')"
+                return 1
+            fi
+        fi
+        if [ -t 0 ]; then
+            read -p "$(t 'venv_auto_install_pkg'): " install_choice
+            [[ ! "$install_choice" =~ ^[yY]$ ]] && { print_info "$(t 'venv_manual_hint')"; return 1; }
+        fi
+        print_info "apt-get install $pkg"
+        if ! $sudo_cmd apt-get install -y "$pkg"; then
+            print_warning "$pkg: $(t 'venv_pkg_install_fail')"
+            pkg="python3-venv"
+            print_info "apt-get install $pkg"
+            if ! $sudo_cmd apt-get install -y "$pkg"; then
+                print_error "$(t 'venv_pkg_install_fail')"
+                print_info "$(t 'venv_manual_hint')"
+                return 1
+            fi
+        fi
+        print_success "$(t 'venv_pkg_installed')"
+        return 0
+    fi
+
+    print_info "$(t 'venv_manual_hint')"
+    return 1
+}
+
 create_venv() {
     print_info "$(t 'creating_venv')"
     if [ -d "$VENV_DIR" ]; then
@@ -891,6 +955,7 @@ create_venv() {
             return 0
         fi
     fi
+    ensure_venv_capability || return 1
     local venv_cmd
     [ "$USE_UV" = true ] && venv_cmd="uv venv" || venv_cmd="$PYTHON_CMD -m venv"
     if $venv_cmd "$VENV_DIR"; then
@@ -1164,14 +1229,6 @@ install_uv_bootstrap() {
 main() {
     select_language
     print_header "$(t 'install_title')"
-
-    if [ "$(id -u)" -eq 0 ]; then
-        print_warning "$(t 'admin_warn')"
-        if [ -t 0 ]; then
-            read -p "$(t 'continue_'): " continue_as_root
-            [[ ! "$continue_as_root" =~ ^[yY]$ ]] && exit 1
-        fi
-    fi
 
     check_docker
     local python_ok=true

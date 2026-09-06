@@ -6,13 +6,14 @@
 
 - [啟動流程與手動控制](startup.md) - 啟動鏈路拆解（Finder/Loader/Manager/Router）與手動完整啟動
 - [懶加載系統](lazy-loading.md) - 懶加載模組系統的工作原理、設定與事件驅動懶激活（activate_on）
-- [模組作用域系統](scope.md) - 模組與適配器 Bot/平台的綁定與隔離
+- [作用域（scope）](scope.md) - 三維作用域控制：模組可用性 / 事件准入 / 出站動作限制（含方法級細粒度規則與綁定繼承 merge）
+- [歸屬權（owner）系統](ownership.md) - 資源歸屬與自動回收：owner 上下文機制、歸屬資源全景、卸載清理序列與設計邊界
 - [國際化 (i18n)](i18n.md) - 多語言支援、翻譯註冊與語言檢測
 - [生命週期管理](lifecycle.md) - 生命週期事件系統的使用方法
 - [路由管理器](router.md) - HTTP 和 WebSocket 路由管理
 - [HTTP 客戶端](http-client.md) - 統一 HTTP 請求客戶端
 - [MessageBuilder 詳解](message-builder.md) - OneBot12 消息段建構器的雙模式用法
-- [SQL 查詢建構器](sql-builder.md) - 通用 SQL 串接查詢建構器及儲存後端抽象
+- [SQL 查詢建構器](sql-builder.md) - 通用 SQL 串鏈式查詢建構器及儲存後端抽象
 - [會話類型系統](../standards/session-types.md) - 會話類型定義、映射與自訂類型註冊
 - [Conversation 多輪對話](conversation.md) - 多輪對話上下文的互動方法
 

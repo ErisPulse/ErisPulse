@@ -40,8 +40,9 @@ from .module import module, ModuleManager
 from .router import router, RouterManager, RouteGroup
 from .config import config, ConfigManager
 from .i18n import i18n, I18nManager
-from .master import master, MasterManager
+from .master import master, MasterManager, MasterProvider
 from .scope import scope, ScopeManager
+from .text_match import compile_entry_matcher, compile_text_matcher, extract_text
 
 from . import Event
 from .Event.message_builder import MessageBuilder
@@ -80,6 +81,7 @@ __all__ = [
     "Logger",  # 日志类
     "LoggerChild",  # 日志子类
     "MasterManager",  # 框架主人管理器类
+    "MasterProvider",  # 主人自定义身份源检查函数类型
     "MessageBuilder",  # 消息构建器类
     "ModuleManager",  # 模块管理器类
     "ModuleMeta",  # 模块介绍元信息声明类
@@ -99,7 +101,10 @@ __all__ = [
     "adapter",  # 适配器模块单例
     "client",  # HTTP 客户端别名
     "config",  # 配置模块单例
+    "compile_entry_matcher",  # 统一匹配条目编译
+    "compile_text_matcher",  # 统一文本匹配（pattern/regex）
     "env",  # 配置管理器别名
+    "extract_text",  # 事件纯文本提取
     "i18n",  # 国际化模块单例
     "lifecycle",  # 生命周期模块单例
     "logger",  # 日志模块单例

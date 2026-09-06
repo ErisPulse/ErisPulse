@@ -79,10 +79,13 @@ class TestAdapterTopology:
         from ErisPulse.Core import adapter
         from ErisPulse.Core.scope import scope as scope_singleton
 
-        old_bindings = scope_singleton._bindings
-        scope_singleton._bindings = {
+        old_bindings = scope_singleton._data
+        scope_singleton._data = {
             "platforms": {},
             "bots": {"fake_plat": {"bot_1": {"modules": ["Chat"], "blocked": []}}},
+            "sessions": {},
+            "identity": {"adapters": {}, "bots": {}, "sessions": {}, "users": {}},
+            "actions": {},
         }
         # 手动写入注册的 Bot 状态（模拟在线 Bot）
         adapter._bots["fake_plat"] = {
@@ -95,7 +98,7 @@ class TestAdapterTopology:
                 assert "scope" in adapters["fake_plat"]
                 assert "bots" in adapters["fake_plat"]
         finally:
-            scope_singleton._bindings = old_bindings
+            scope_singleton._data = old_bindings
             adapter._bots.clear()
 
 
@@ -105,11 +108,14 @@ class TestScopeTopology:
     def test_scope_topology(self):
         """get_topology() 返回全部绑定"""
         mgr = ScopeManager()
-        mgr._bindings = {
+        mgr._data = {
             "platforms": {"onebot11": {"modules": ["Chat"], "blocked": []}},
             "bots": {"onebot11": {"123456": {"modules": [], "blocked": ["Danger"]}}},
+            "sessions": {},
+            "identity": {"adapters": {}, "bots": {}, "sessions": {}, "users": {}},
+            "actions": {},
         }
-        topo = mgr.get_topology()
+        topo = mgr.topology()
         assert topo["platforms"]["onebot11"]["modules"] == ["Chat"]
         assert topo["bots"]["onebot11"]["123456"]["blocked"] == ["Danger"]
 
@@ -125,6 +131,7 @@ class TestSdkTopology:
         assert set(topo.keys()) == {"modules", "adapters", "scope"}
         assert isinstance(topo["modules"], dict)
         assert isinstance(topo["adapters"], dict)
+        assert isinstance(topo["scope"], dict)
         assert isinstance(topo["scope"], dict)
 
 

@@ -3,9 +3,16 @@ ErisPulse 命令处理模块
 
 提供基于装饰器的命令注册和处理功能
 
+命令是特殊的消息事件处理器（ErisPulse 扩展类型），其用户侧配置
+由统一覆写系统持有（``ErisPulse.event.overrides``，见
+:mod:`ErisPulse.Core.Event.overrides`）：**用户黑白名单（ACL）** 在
+``overrides.acl`` 类别（命令名支持 glob，``acl_default_allow`` 兜底严格模式）；
+**实现参数覆写**（master / hidden / aliases 等）在 ``overrides.command`` 类别
+（用户优先语义）。本模块的命令判定链消费覆写系统的生效结果。
+
 {!--< tips >!--}
 1. 支持命令别名和命令组
-2. 支持命令权限控制
+2. 支持命令权限控制（master / permission 函数 / 覆写系统 ACL）
 3. 支持命令帮助系统
 4. 支持等待用户回复交互
 {!--< /tips >!--}
@@ -35,6 +42,8 @@ from ..constants import (
     UNKNOWN_PLATFORM,
 )
 from ..i18n import i18n
+from ..text_match import compile_text_matcher
+from . import overrides
 from .base import BaseEventHandler
 from .session_type import get_send_type_and_target_id, infer_receive_type
 
@@ -82,22 +91,48 @@ class CommandHandler:
         # prefix 支持字符串（单个）或列表（多个），保持原始类型以向后兼容
         self.prefix = command_config.get("prefix", DEFAULT_COMMAND_PREFIX)
         # 归一化为列表，用于内部统一处理
-        self._prefixes = (
-            list(self.prefix) if isinstance(self.prefix, list) else [self.prefix]
-        )
-        self.case_sensitive = command_config.get(
-            "case_sensitive", DEFAULT_COMMAND_CASE_SENSITIVE
-        )
-        self.allow_space_prefix = command_config.get(
-            "allow_space_prefix", DEFAULT_COMMAND_ALLOW_SPACE_PREFIX
-        )
-        self.must_at_bot = command_config.get(
-            "must_at_bot", DEFAULT_COMMAND_MUST_AT_BOT
-        )
+        self._prefixes = list(self.prefix) if isinstance(self.prefix, list) else [self.prefix]
+        self.case_sensitive = command_config.get("case_sensitive", DEFAULT_COMMAND_CASE_SENSITIVE)
+        self.allow_space_prefix = command_config.get("allow_space_prefix", DEFAULT_COMMAND_ALLOW_SPACE_PREFIX)
+        self.must_at_bot = command_config.get("must_at_bot", DEFAULT_COMMAND_MUST_AT_BOT)
 
     def _on_config_updated(self, _data: dict) -> None:
-        """配置变更回调：刷新命令解析参数，实现热更新"""
+        """配置变更回调：刷新命令解析参数、实现参数覆盖与用户 ACL"""
         self._refresh_command_config()
+
+    # ==================== 作用域上下文（scope 委托） ====================
+
+        # ==================== 作用域上下文（scope 委托） ====================
+
+    @staticmethod
+    def _scope() -> Any:
+        """
+        {!--< internal-use >!--}
+        延迟获取作用域单例（避免模块初始化阶段的循环依赖）
+
+        用于模块维度作用域检查与事件上下文提取。
+
+        :return: scope 单例（ScopeManager）
+        """
+        from ..scope import scope
+
+        return scope
+
+    # ==================== 作用域上下文（scope 委托） ====================
+
+    @staticmethod
+    def _scope() -> Any:
+        """
+        {!--< internal-use >!--}
+        延迟获取作用域单例（避免模块初始化阶段的循环依赖）
+
+        用于模块维度作用域检查与事件上下文提取。
+
+        :return: scope 单例（ScopeManager）
+        """
+        from ..scope import scope
+
+        return scope
 
     def __call__(
         self,
@@ -207,9 +242,7 @@ class CommandHandler:
         for cmd_name in commands_to_remove:
             # 移除命令别名映射
             main_name = self.commands[cmd_name]["main_name"]
-            aliases_to_remove = [
-                alias for alias, name in self.aliases.items() if name == main_name
-            ]
+            aliases_to_remove = [alias for alias, name in self.aliases.items() if name == main_name]
             for alias in aliases_to_remove:
                 del self.aliases[alias]
 
@@ -235,18 +268,12 @@ class CommandHandler:
         :param owner: 归属者（模块名）
         :return: 移除的命令数量
         """
-        to_remove = [
-            name for name, info in self.commands.items() if info.get("owner") == owner
-        ]
+        to_remove = [name for name, info in self.commands.items() if info.get("owner") == owner]
         for cmd_name in to_remove:
             cmd_info = self.commands[cmd_name]
             main_name = cmd_info.get("main_name", cmd_name)
 
-            self.aliases = {
-                a: n
-                for a, n in self.aliases.items()
-                if not (n == main_name and a != main_name)
-            }
+            self.aliases = {a: n for a, n in self.aliases.items() if not (n == main_name and a != main_name)}
 
             for group_cmds in self.groups.values():
                 if cmd_name in group_cmds:
@@ -261,9 +288,7 @@ class CommandHandler:
         if to_remove:
             from ..logger import logger as _logger
 
-            _logger.trace(
-                i18n.t("core.command.cleaned", owner=owner, count=len(to_remove), commands=to_remove)
-            )
+            _logger.trace(i18n.t("core.command.cleaned", owner=owner, count=len(to_remove), commands=to_remove))
         return len(to_remove)
 
     async def wait_reply(
@@ -274,6 +299,8 @@ class CommandHandler:
         callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None,
         validator: Callable[[dict[str, Any]], bool] | None = None,
         method: str = DEFAULT_SEND_METHOD,
+        pattern: str | None = None,
+        regex: str | None = None,
     ) -> dict[str, Any] | None:
         """
         等待用户回复
@@ -284,6 +311,8 @@ class CommandHandler:
         :param callback: 回调函数，当收到回复时执行
         :param validator: 验证函数，用于验证回复是否有效
         :param method: 发送方法，默认为 "Text"
+        :param pattern: glob 通配符（``*`` / ``?`` / ``[seq]``），回复文本不匹配时继续等待
+        :param regex: 正则表达式，回复文本不匹配时继续等待（与 pattern 同时给定时须都匹配）
         :return: 用户回复的事件数据，如果超时则返回None
         """
         platform = event.get("platform")
@@ -296,9 +325,7 @@ class CommandHandler:
         if prompt and platform:
             try:
                 adapter_instance = getattr(adapter, platform)
-                bot_id = event.get("self", {}).get("account_id", "") or event.get(
-                    "self", {}
-                ).get("user_id", "")
+                bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
                 send_dsl = adapter_instance.Send.To(send_type, target_id)
                 if bot_id:
                     send_dsl = send_dsl.Using(bot_id)
@@ -319,14 +346,14 @@ class CommandHandler:
         future = loop.create_future()
 
         # 存储等待信息
-        bot_id = event.get("self", {}).get("account_id", "") or event.get(
-            "self", {}
-        ).get("user_id", "")
+        bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
         wait_key = f"{platform}:{bot_id}:{user_id}:{target_id}"
         self._waiting_replies[wait_key] = {
             "future": future,
             "callback": callback,
             "validator": validator,
+            "pattern": pattern,
+            "regex": regex,
             "timestamp": loop.time(),
         }
 
@@ -423,19 +450,13 @@ class CommandHandler:
 
             # 处理大小写敏感性
             check_text = text if self.case_sensitive else text.lower()
-            prefixes = (
-                self._prefixes
-                if self.case_sensitive
-                else [p.lower() for p in self._prefixes]
-            )
+            prefixes = self._prefixes if self.case_sensitive else [p.lower() for p in self._prefixes]
 
             # 检查前缀，找出匹配的前缀（支持多个前缀）
             matched_prefix = None
             for prefix in prefixes:
                 has_prefix = check_text.startswith(prefix)
-                has_space_prefix = self.allow_space_prefix and check_text.startswith(
-                    prefix + " "
-                )
+                has_space_prefix = self.allow_space_prefix and check_text.startswith(prefix + " ")
                 if has_prefix or has_space_prefix:
                     matched_prefix = prefix
                     break
@@ -460,10 +481,7 @@ class CommandHandler:
 
                     has_mention = False
                     for segment in message_segments:
-                        if (
-                            segment.get("type") == "mention"
-                            and segment.get("data", {}).get("user_id") == self_id
-                        ):
+                        if segment.get("type") == "mention" and segment.get("data", {}).get("user_id") == self_id:
                             has_mention = True
                             break
 
@@ -478,9 +496,7 @@ class CommandHandler:
                         return False
 
             # 尝试执行命令
-            return await self._try_execute_command(
-                event, text, check_text, matched_prefix
-            )
+            return await self._try_execute_command(event, text, check_text, matched_prefix)
 
         # 从 message 列表和 alt_message 中提取文本内容
         message_segments = event.get("message", [])
@@ -508,9 +524,7 @@ class CommandHandler:
         await self._check_pending_reply(event)
         return
 
-    async def _try_execute_command(
-        self, event: "Event", original_text: str, check_text: str, prefix: str
-    ) -> bool:
+    async def _try_execute_command(self, event: "Event", original_text: str, check_text: str, prefix: str) -> bool:
         """
         尝试执行命令
 
@@ -574,13 +588,37 @@ class CommandHandler:
                     cmd_owner,
                     scope.session_id_from_event(event) or None,
                 ):
-                    logger.trace(
-                        i18n.t("core.scope.denied", module=cmd_owner)
-                    )
+                    logger.trace(i18n.t("core.scope.denied", module=cmd_owner))
                     return False
 
+            # 命令用户 ACL（event.overrides.acl）：命令名支持 glob
+            # deny 命中 / allow 白名单未命中 / 严格模式无 ACL → 拒绝；
+            # 否则（无 ACL 且默认放行）继续走开发者默认权限链
+            _allowed = overrides.acl.is_allowed(
+                actual_cmd_name,
+                event.get("platform", UNKNOWN_PLATFORM),
+                event.get("user_id", ""),
+            )
+            if _allowed is False:
+                logger.trace(
+                    i18n.t(
+                        "core.command.acl_denied",
+                        cmd_name=actual_cmd_name,
+                        user_id=(f"{event.get('platform', UNKNOWN_PLATFORM)}:{event.get('user_id', '')}"),
+                    )
+                )
+                await self._send_permission_denied(event)
+                return False
+
+            # 命令实现参数覆写（event.overrides.command）：覆盖 master / hidden / aliases / prefix 等
+            # 覆写键 master 由 overrides.command.apply 统一映射到存储键 must_master（用户优先）
+            # 注意：禁用不通过参数覆写，统一走 ACL deny（event.overrides.acl）
+            _effective = cmd_info
+            if cmd_owner:
+                _effective = overrides.command.apply(cmd_owner, actual_cmd_name, cmd_info)
+
             # 检查框架主人权限（must_master）
-            if cmd_info.get("must_master"):
+            if _effective.get("must_master"):
                 from ..master import master
 
                 if not master.is_master(event):
@@ -596,9 +634,7 @@ class CommandHandler:
                     return False
 
             # 检查权限
-            permission_func = cmd_info.get("permission") or self.permissions.get(
-                actual_cmd_name
-            )
+            permission_func = _effective.get("permission") or self.permissions.get(actual_cmd_name)
             if permission_func:
                 try:
                     has_permission = (
@@ -622,15 +658,16 @@ class CommandHandler:
                     await self._send_permission_denied(event)
                     return False
 
-            # 添加命令相关信息到事件
+            # 添加命令相关信息到事件（合并覆写后的有效参数）
             command_info = {
                 "name": actual_cmd_name,
                 "main_name": cmd_info["main_name"],
                 "args": args,
                 "raw": command_text,
-                "help": cmd_info["help"],
-                "usage": cmd_info["usage"],
-                "group": cmd_info["group"],
+                "help": _effective.get("help", cmd_info.get("help")),
+                "usage": _effective.get("usage", cmd_info.get("usage")),
+                "group": _effective.get("group", cmd_info.get("group")),
+                "hidden": _effective.get("hidden", cmd_info.get("hidden", False)),
             }
 
             event["command"] = command_info
@@ -730,9 +767,7 @@ class CommandHandler:
         # 使用会话类型管理模块获取发送类型和目标ID
         _send_type, target_id = get_send_type_and_target_id(event, platform)
 
-        bot_id = event.get("self", {}).get("account_id", "") or event.get(
-            "self", {}
-        ).get("user_id", "")
+        bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
         wait_key = f"{platform}:{bot_id}:{user_id}:{target_id}"
 
         # 检查是否有等待的处理器
@@ -747,6 +782,23 @@ class CommandHandler:
             )
             wait_info = self._waiting_replies[wait_key]
             validator = wait_info.get("validator")
+
+            # pattern（glob）/ regex（正则）过滤：不匹配则继续等待（不消费 future）
+            _pattern = wait_info.get("pattern")
+            _regex = wait_info.get("regex")
+            if _pattern or _regex:
+                _text_cond = compile_text_matcher(_pattern, _regex)
+                _matched = _text_cond is None or _text_cond(event)
+                if not _matched:
+                    logger.trace(
+                        i18n.t(
+                            "core.command.reply_pattern_not_matched",
+                            wait_key=wait_key,
+                            user_id=user_id,
+                            platform=platform,
+                        )
+                    )
+                    return
 
             # 如果有验证器，验证回复是否有效
             if validator:
@@ -789,9 +841,7 @@ class CommandHandler:
 
             if platform and hasattr(adapter, platform):
                 adapter_instance = getattr(adapter, platform)
-                bot_id = event.get("self", {}).get("account_id", "") or event.get(
-                    "self", {}
-                ).get("user_id", "")
+                bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
                 send_dsl = adapter_instance.Send.To(send_type, target_id)
                 if bot_id:
                     send_dsl = send_dsl.Using(bot_id)
@@ -817,9 +867,7 @@ class CommandHandler:
 
             if platform and hasattr(adapter, platform):
                 adapter_instance = getattr(adapter, platform)
-                bot_id = event.get("self", {}).get("account_id", "") or event.get(
-                    "self", {}
-                ).get("user_id", "")
+                bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
                 send_dsl = adapter_instance.Send.To(send_type, target_id)
                 if bot_id:
                     send_dsl = send_dsl.Using(bot_id)
@@ -874,63 +922,231 @@ class CommandHandler:
             self._dispatcher_registered = False
         return count
 
-    def get_command(self, name: str) -> dict | None:
+    def get_command(
+        self,
+        name: str,
+        *,
+        event: Any = None,
+        platform: str | None = None,
+        bot_id: str | None = None,
+        session_id: str | None = None,
+    ) -> dict | None:
         """
-        获取命令信息
+        获取命令信息（返回合并覆写系统命令参数后的**生效参数**）
 
-        :param name: 命令名称
-        :return: 命令信息字典，如果不存在则返回None
+        传入作用域上下文（``event`` 或 ``platform`` / ``bot_id`` / ``session_id``
+        任一）时，命令归属模块在当前会话不可用则返回 ``None``（与分发静默语义一致）。
+
+        :param name: 命令名称（支持别名）
+        :param event: 可选，事件上下文（Event 或 dict）
+        :param platform: 可选，平台名（与 event 二选一或叠加，显式参数优先）
+        :param bot_id: 可选，Bot 标识
+        :param session_id: 可选，会话标识
+        :return: 合并覆盖后的命令信息字典；不存在或该会话不可用返回 None
+
+        :example:
+        >>> command.get_command("admin")
+        >>> command.get_command("admin", event=event)   # 会话不可用时返回 None
         """
         actual_name = self.aliases.get(name, name)
-        return self.commands.get(actual_name)
+        info = self.commands.get(actual_name)
+        if info is None:
+            return None
+        ctx = self._resolve_query_context(event, platform, bot_id, session_id)
+        if ctx and self._owner_blocked(info, ctx):
+            return None
+        return self._effective_info(actual_name, info)
 
-    def get_commands(self) -> dict[str, dict]:
+    def get_commands(
+        self,
+        *,
+        event: Any = None,
+        platform: str | None = None,
+        bot_id: str | None = None,
+        session_id: str | None = None,
+    ) -> dict[str, dict]:
         """
         获取所有命令
 
+        传入作用域上下文时，过滤掉当前会话不可用模块的命令（值为原始注册信息，
+        需要覆盖合并后的生效参数请用 :meth:`get_command` / :meth:`get_visible_commands`）；
+        不传上下文时返回完整注册表（与原行为一致）。
+
+        :param event: 可选，事件上下文（Event 或 dict）
+        :param platform: 可选，平台名
+        :param bot_id: 可选，Bot 标识
+        :param session_id: 可选，会话标识
         :return: 命令信息字典
         """
-        return self.commands
+        ctx = self._resolve_query_context(event, platform, bot_id, session_id)
+        if ctx is None:
+            return self.commands
+        filtered: dict[str, dict] = {}
+        for cmd_name, info in self.commands.items():
+            if self._owner_blocked(info, ctx):
+                continue
+            filtered[cmd_name] = info
+        return filtered
 
-    def get_group_commands(self, group: str) -> list[str]:
+    def get_group_commands(
+        self,
+        group: str,
+        *,
+        event: Any = None,
+        platform: str | None = None,
+        bot_id: str | None = None,
+        session_id: str | None = None,
+    ) -> list[str]:
         """
         获取命令组中的命令
 
+        传入作用域上下文时，过滤掉当前会话不可用模块的命令。
+
         :param group: 命令组名称
+        :param event: 可选，事件上下文（Event 或 dict）
+        :param platform: 可选，平台名
+        :param bot_id: 可选，Bot 标识
+        :param session_id: 可选，会话标识
         :return: 命令名称列表
         """
-        return self.groups.get(group, [])
+        names = self.groups.get(group, [])
+        ctx = self._resolve_query_context(event, platform, bot_id, session_id)
+        if ctx is None:
+            return names
+        return [
+            cmd_name
+            for cmd_name in names
+            if (info := self.commands.get(cmd_name)) is not None
+            and not self._owner_blocked(info, ctx)
+        ]
 
-    def get_visible_commands(self) -> dict[str, dict]:
+    def get_visible_commands(
+        self,
+        *,
+        event: Any = None,
+        platform: str | None = None,
+        bot_id: str | None = None,
+        session_id: str | None = None,
+    ) -> dict[str, dict]:
         """
         获取所有可见命令（非隐藏命令）
 
-        :return: 可见命令信息字典
+        可见性判定读取覆写系统命令参数（``event.overrides.command.<module>.<command>.hidden``）：
+        用户显式覆盖 ``hidden`` 后，帮助列表随之变化（用户优先）。
+        传入作用域上下文（``event`` 或 ``platform`` / ``bot_id`` / ``session_id``
+        任一）时，额外按模块维度过滤该会话不可用模块的命令（与分发静默语义一致）。
+
+        :param event: 可选，事件上下文（Event 或 dict）
+        :param platform: 可选，平台名（与 event 叠加时显式参数优先）
+        :param bot_id: 可选，Bot 标识
+        :param session_id: 可选，会话标识
+        :return: 可见命令信息字典（值为合并覆盖后的生效参数）
         """
+        ctx = self._resolve_query_context(event, platform, bot_id, session_id)
+        visible: dict[str, dict] = {}
+        for name, info in self.commands.items():
+            if name != info["main_name"]:
+                continue
+            if ctx and self._owner_blocked(info, ctx):
+                continue
+            effective = self._effective_info(name, info)
+            if not effective.get("hidden", False):
+                visible[name] = effective
+        return visible
+
+    def _context_from_event(self, event: Any) -> dict[str, str | None]:
+        """
+        {!--< internal-use >!--}
+        从事件提取作用域查询上下文（platform / bot / session）
+        """
+        from ..scope import scope as _scope_mod
+
         return {
-            name: info
-            for name, info in self.commands.items()
-            if not info.get("hidden", False) and name == info["main_name"]
+            "platform": event.get("platform") or "",
+            "bot_id": _scope_mod.bot_id_from_event(event) or None,
+            "session_id": _scope_mod.session_id_from_event(event) or None,
         }
 
-    def help(self, command_name: str | None = None, show_hidden: bool = False) -> str:
+    def _resolve_query_context(
+        self,
+        event: Any = None,
+        platform: str | None = None,
+        bot_id: str | None = None,
+        session_id: str | None = None,
+    ) -> dict[str, str | None] | None:
+        """
+        {!--< internal-use >!--}
+        归一查询上下文：event 与显式关键字参数合并（显式参数优先）
+
+        :return: {"platform": str, "bot_id": str|None, "session_id": str|None}；
+                 完全未提供任何上下文时返回 None（不做会话过滤）
+        """
+        if event is not None:
+            ctx = self._context_from_event(event)
+        elif platform is None and bot_id is None and session_id is None:
+            return None
+        else:
+            ctx = {"platform": "", "bot_id": None, "session_id": None}
+        if platform is not None:
+            ctx["platform"] = platform
+        if bot_id is not None:
+            ctx["bot_id"] = bot_id
+        if session_id is not None:
+            ctx["session_id"] = session_id
+        return {"platform": ctx.get("platform") or "", "bot_id": ctx.get("bot_id"), "session_id": ctx.get("session_id")}
+
+    def _effective_info(self, name: str, info: dict) -> dict:
+        """
+        {!--< internal-use >!--}
+        合并实现参数覆盖后的命令生效参数（帮助渲染与可见性判定用）
+
+        :param name: 命令主名
+        :param info: 注册时的命令信息字典
+        :return: 与执行路径同源的覆盖合并结果（无覆盖时原样返回）
+        """
+        owner = info.get("owner")
+        if not owner:
+            return info
+        return overrides.command.apply(owner, name, info)
+
+    def help(
+        self,
+        command_name: str | None = None,
+        show_hidden: bool = False,
+        event: Any = None,
+    ) -> str:
         """
         生成帮助信息
 
+        传入 ``event`` 时按作用域对输出做会话感知调整：① 模块维度——
+        该会话（platform / bot / session）下被作用域禁用的模块，其命令不再列出
+        （与分发静默语义一致）；② 覆盖——帮助文本 / usage / 可见性读取
+        ``event.overrides.command`` 覆写值（用户优先）。
+
         :param command_name: 命令名称，如果为None则生成所有命令的帮助
         :param show_hidden: 是否显示隐藏命令
+        :param event: 可选，事件上下文（Event 或 dict）。提供时按作用域过滤
+                      当前会话不可用模块的命令；None 时不过滤（保持原行为）
         :return: 帮助信息字符串
+
+        :example:
+        >>> # 全量帮助（不感知会话）
+        >>> command.help()
+        >>> # 会话感知帮助：只列出当前会话可用的命令
+        >>> command.help(event=event)
         """
         # 用于显示的前缀：单个时保持原始字符串，多个时取第一个
-        display_prefix = (
-            self.prefix[0] if isinstance(self.prefix, list) else self.prefix
-        )
+        display_prefix = self.prefix[0] if isinstance(self.prefix, list) else self.prefix
+
+        # 归一作用域查询上下文（event 驱动），用于模块维度过滤
+        ctx = self._resolve_query_context(event=event)
 
         if command_name:
-            cmd_info = self.get_command(command_name)
-            if cmd_info:
-                help_text = cmd_info.get("help", i18n.t("core.event.command.no_help"))
-                usage = cmd_info.get("usage", f"{display_prefix}{command_name}")
+            # 会话不可用（ctx 过滤）或未注册 → 统一按"未注册"处理（静默语义一致）
+            effective = self.get_command(command_name, event=event)
+            if effective:
+                help_text = effective.get("help", i18n.t("core.event.command.no_help"))
+                usage = effective.get("usage", f"{display_prefix}{command_name}")
                 return i18n.t(
                     "core.event.command.help_command",
                     command_name=command_name,
@@ -940,12 +1156,13 @@ class CommandHandler:
             return i18n.t("core.event.command.not_found", command_name=command_name)
         # 生成所有命令的帮助
         commands_to_show = (
-            self.get_visible_commands()
+            self.get_visible_commands(event=event)
             if not show_hidden
             else {
-                name: info
+                name: self._effective_info(name, info)
                 for name, info in self.commands.items()
                 if name == info["main_name"]
+                and not (ctx and self._owner_blocked(info, ctx))
             }
         )
 
@@ -964,6 +1181,22 @@ class CommandHandler:
                 )
             )
         return "\n".join(help_lines)
+
+    def _owner_blocked(self, info: dict, ctx: dict[str, str | None]) -> bool:
+        """
+        {!--< internal-use >!--}
+        判断命令归属模块在给定作用域上下文下是否被模块维度禁用
+
+        :param info: 命令信息字典
+        :param ctx: {"platform": str, "bot_id": str|None, "session_id": str|None}
+        :return: 是否被禁用（owner 为空视为框架层资源，恒不阻止）
+        """
+        owner = info.get("owner")
+        if not owner:
+            return False
+        from ..scope import scope
+
+        return not scope.is_allowed(ctx.get("platform") or "", ctx.get("bot_id"), owner, ctx.get("session_id"))
 
 
 command: CommandHandler = CommandHandler()

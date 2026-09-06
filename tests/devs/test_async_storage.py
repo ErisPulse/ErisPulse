@@ -5,12 +5,12 @@
 """
 
 import asyncio
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
-from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+from ErisPulse.Core.Bases.storage import BaseStorage
 
 
 class MockStorage(BaseStorage):

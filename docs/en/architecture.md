@@ -87,7 +87,7 @@ flowchart TD
 
 ## Event Handling Flow
 
-The following diagram illustrates the complete flow path of messages from the platform to the handlers:
+The following diagram illustrates the complete message flow from the platform to the handler:
 
 ```mermaid
 flowchart LR
@@ -106,9 +106,9 @@ flowchart LR
     I --> J["Adapter Sends to Platform"]
 ```
 
-### Detailed Event Handling Chain
+### Detailed Explanation of the Event Handling Chain
 
-The above diagram shows the "result"; below is a breakdown of what the framework does behind the scenes after `adapter.emit()` — this is a three-layer dispatch chain:
+The above diagram shows the "result"; below is the breakdown of what the framework does behind the scenes after `adapter.emit()` — this is a three-layer dispatch chain:
 
 ```mermaid
 sequenceDiagram
@@ -123,40 +123,41 @@ sequenceDiagram
     A->>A: lifecycle.adapter.event.receive (earliest hook)
     A->>A: Process self field (meta branch / Bot auto-registration)
     A->>A: Middleware Chain (serial, can rewrite event data)
-    A->>A: Collect handlers (specific type + wildcard *)
-    A->>A: Scope Filtering (silent skip before creating Task)
+    A->>A: Collect handlers (specific types + wildcard *)
+    A->>A: Identity Access Control + Scope Filtering (silent discard/skip before creating Task)
     A->>T: asyncio.create_task (fire-and-forget)
-    A->>A: lifecycle.adapter.event.dispatched (latest hook)
+    A->>A: lifecycle.adapter.event.dispatched (final hook)
     T->>T: Get concurrency semaphore (default limit 64)
-    T->>E: Call Event module-mounted handlers
+    T->>E: Call Event Module-registered handlers
     E->>E: lifecycle.event.pre_process
-    E->>E: ignore_self (messages default ignore self)
-    E->>E: Group by priority: high → low, serial between groups, concurrent within group
-    E->>E: Concurrent execution within group + field merging (conflict warning)
+    E->>E: ignore_self (default ignore self for message events)
+    E->>E: Group by priority: high→low, serial between groups, concurrent within groups
+    E->>E: Concurrent execution of group copies + field merging (conflict warning)
     E->>E: Post-group check stop() to block lower priority
-    T->>T: Slow Log (warn if > 1s, wait_reply time excluded from timeout)
+    T->>T: Slow Log (warn if over 1s, wait_reply time excluded from timeout)
 ```
 
 **What the framework does at each step and what you can intervene:**
 
-| Stage | What the framework does | What you can intervene |
+| Stage | Framework does | What You Can Intervene |
 |------|-------------|-----------|
-| Receive | Extract standard fields, retain `{platform}_raw` raw data; write `[Recv]` log | Listen `adapter.event.receive` to get earliest event |
-| self field | Meta events go through connect/disconnect/heartbeat branches; ordinary events auto-register Bot and trigger `adapter.bot.online` | Listen `adapter.bot.online` / `bot.offline` |
-| Middleware | **Serial** execution, if return value is not None it replaces event data | Register middleware to rewrite or intercept events |
-| Dispatch Collection | First get specific type handler, then get `*` wildcard handler | — |
-| Scope Filtering | Determine `scope.is_allowed` by owner (session level > Bot level > platform level), **silently skip if not allowed** | Configure scope whitelist/blacklist |
-| Scheduling | Each matching handler gets an independent `asyncio.Task`, `emit()` **returns immediately without waiting** for handler completion | — |
-| Priority | High priority group executes first; **serial between groups, concurrent within group** (each handler holds its own event copy, modifies fields and merges back to original event, conflict issues WARNING) | `@command(..., priority=N)` / specify priority during registration |
-| Blocking | After each group is processed, check `event.is_stopped()`, if triggered, **lower priority groups are not executed** | `event.mark_processed(stop=True)` / `event.done()` |
+| Receiving | Extract standard fields, retain `{platform}_raw` raw data; write `[Recv]` log | Listen to `adapter.event.receive` to get earliest event |
+| self field | Meta events branch into connect/disconnect/heartbeat; normal events auto-register Bot and trigger `adapter.bot.online` | Listen to `adapter.bot.online` / `bot.offline` |
+| Middleware | **Serial** execution, if return value is not None then replace event data | Register middleware to rewrite/intercept events |
+| Dispatch Collection | First get specific type handlers, then get `*` wildcard handlers | — |
+| Identity Dimension | Entry point checks user>session>Bot>adapter to determine whether to receive event (`scope.is_identity_allowed`), **reject means discard entire event** | `ErisPulse.scope.identity` binding |
+| Scope Filtering | Determine `scope.is_allowed` by module owner (session level > Bot level > platform level), **silent skip if not passed** | Configure scope whitelist/blacklist |
+| Scheduling | Each matching handler is an independent `asyncio.Task`, `emit()` **does not wait** for handler completion before returning | — |
+| Priority | High-priority groups execute first; **serial between groups, concurrent within groups** (each group holds its own event copy, modified fields merged back into original event, conflicts warn) | `@command(..., priority=N)` / specify priority during registration |
+| Blocking | After each group is processed, check `event.is_stopped()`, if triggered, **do not execute lower priority** | `event.mark_processed(stop=True)` / `event.done()` |
 
 > **Common Misunderstandings**:
-> 1. **Scope filtering is silent** — filtered handlers do not report errors or respond, only visible in TRACE-level logs (`core.scope.denied`). If "my module did not receive the message," first check scope binding.
+> 1. **Scope filtering is silent** — blocked handlers do not report errors or respond, only visible in TRACE-level logs (`core.scope.denied`). "My module did not receive the message" — first check scope binding.
 > 2. **Handlers are naturally concurrent** — the framework already creates independent Tasks for each handler, you **do not need** to wrap them with `asyncio.create_task` yourself.
-> 3. **No blocking within the same priority group** — `mark_processed(stop=True)` only blocks lower priority groups, handlers already running concurrently within the same group are not interrupted mid-execution.
-> 4. **Slow log threshold is fixed at 1 second** — handlers taking over 1s will issue a WARNING in the log (time spent waiting for `wait_reply` is excluded from the timeout), but execution is not interrupted.
+> 3. **No blocking within same priority group** — `mark_processed(stop=True)` only blocks lower priority groups, concurrent handlers within the same group are not interrupted mid-execution.
+> 4. **Slow log threshold is fixed at 1 second** — handlers taking more than 1s will trigger a WARNING in the log (`wait_reply` waiting time is excluded from the timeout), but execution is not interrupted.
 
-> For details on scope binding and priority, see [Scope System](docs/en/advanced/scope.md); for full semantics of claim/blocking, see [Event Handling Introduction](docs/en/getting-started/event-handling.md); for concurrency limit configuration, see [Configuration Guide](docs/en/user-guide/configuration.md#Framework_Configuration).
+> For details on module-level three-tier scope binding, identity access control, and outbound action restrictions, see [Scope (scope)](advanced/scope.md); for event scope text filtering and command user ACL, see [Event Handling Introduction](getting-started/event-handling.md); for concurrency limit configuration, see [Configuration Guide](user-guide/configuration.md#Framework-Configuration).
 
 ## Lifecycle Events
 
@@ -281,29 +282,32 @@ flowchart TD
 
 Please directly return the complete translated Markdown content, without any additional text.
 
-## Local Plugin Hot Reload Architecture
+## Hot Module Reload Architecture
 
-Hot reload monitors plugin file changes and automatically reloads the corresponding plugin:
+Hot reload operates uniformly across **all module sources**: local plugins can automatically trigger reloads by monitoring file changes, and any module can be manually reloaded via `sdk.reload_module()` or `sdk.module.reload()`. For PyPI-installed packages, reloads take effect after pip upgrades.
 
 ```mermaid
 flowchart TD
-    A["sdk.enable_plugin_hot_reload()"] --> B["PluginReloadWatcher starts"]
-    B --> C["PollingObserver (background daemon thread)<br/>Regularly compares .py file mtime"]
-    C --> D{"Plugin file changed"}
-    D --> E["Change debouncing (default 1 second)"]
-    E --> F["_handle_change parses plugin name<br/>(single file / package format)"]
-    F --> G["asyncio.run_coroutine_threadsafe<br/>schedules back to main event loop"]
-    G --> H["sdk.reload_plugin(name)"]
-    H --> I["Unloads old instance (triggers on_unload)"]
-    I --> J["Cleans up registration (unregister + remove sdk attribute)"]
-    J --> K["Cleans sys.modules to force re-import"]
-    K --> L["Re-discover + register + load"]
-    L --> M["Mounts new instance to sdk attribute"]
-    M --> N["File deletion → automatically removed from load results"]
+    A["sdk.enable_plugin_hot_reload()<br/>（自动监控，仅本地插件目录）"] --> B["PluginReloadWatcher 启动"]
+    B --> C["PollingObserver（后台守护线程）<br/>定期比较 .py 文件 mtime"]
+    C --> D{"插件文件变更"}
+    D --> E["变更去抖（默认 1 秒）"]
+    E --> F["_handle_change 解析插件名<br/>（单文件 / 包形式）"]
+    F --> G["asyncio.run_coroutine_threadsafe<br/>调度回主事件循环"]
+    G --> H["sdk.reload_module(name)<br/>（也可对任意模块手动调用）"]
+    H --> I["卸载旧实例（触发 on_unload）<br/>收集依赖者准备级联重载"]
+    I --> J{"模块来源？"}
+    J -->|"plugin_folder"| K["清理注册与插件 sys.modules<br/>重扫描 plugins/ 目录"]
+    J -->|"PyPI 安装包"| L["清理注册 + 按 top_level<br/>清理包 sys.modules 子树<br/>刷新导入缓存后重查 entry-point"]
+    K --> M["重新 register + load"]
+    L --> M
+    M --> N["挂载新实例到 sdk 属性"]
+    N --> O["级联重载依赖者<br/>（插件完整重载 / PyPI 重新实例化）"]
+    K -.->|"文件已删除"| P["从加载结果移除"]
+    L -.->|"entry-point 已消失（已卸载）"| P
 ```
 
-7. **Important: Path replacement rule**
-   - Replace `docs/en/` in document links with `docs/en/`
-   - For example: `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`
-   - For links pointing to non-current language version files (e.g., `README.xx.md` format), keep them unchanged
-   - This ensures links point to the correct language version of the document
+The difference between the two sources only occurs during discovery; registration, loading, and cascading reloads are completely consistent:
+
+- **Local plugins** (`moduleInfo.meta.source == "plugin_folder"`): After clearing the corresponding `sys.modules` for the plugin name, rescan the `plugins/` directory; if the file is deleted, remove it from the loaded results.
+- **PyPI-installed packages**: Clear the `sys.modules` subtree of the package according to `meta.top_level`, refresh the import cache (to bypass the 60-second entry-point cache), then recheck and re-import; if the entry-point disappears (pip uninstalled), remove it from the loaded results.

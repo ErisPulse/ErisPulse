@@ -42,6 +42,7 @@ from .constants import (
 from .i18n import i18n
 from .lifecycle import lifecycle
 from .logger import logger
+from .text_match import compile_entry_matcher, compile_text_matcher
 
 # 已记录过的弃用警告（owner, old_kwarg），每个组合只警告一次，避免热路径日志刷屏
 _DEPRECATED_KWARG_WARNED: set[tuple[str, str]] = set()
@@ -129,6 +130,8 @@ class AdapterManager(ManagerBase):
         # OneBot12事件处理器
         self._onebot_handlers = defaultdict(list)
         self._onebot_middlewares = []
+        # 中间件归属记录：id(func) → owner（注册期间 current_owner），供按 owner 兜底清理
+        self._onebot_middleware_owners: dict[int, str] = {}
         # 原生事件处理器
         self._raw_handlers = defaultdict(list)
         self._sdk = None
@@ -921,6 +924,7 @@ class AdapterManager(ManagerBase):
                 self._onebot_handlers.clear()
                 self._raw_handlers.clear()
                 self._onebot_middlewares.clear()
+                self._onebot_middleware_owners.clear()
 
             # 提交适配器关闭完成事件
             await lifecycle.submit_event(
@@ -1098,6 +1102,57 @@ class AdapterManager(ManagerBase):
                 i18n.t("core.adapter.lifecycle_cleanup_failed", platform=platform, error=e)
             )
 
+        # 清理该适配器（以平台名为 owner）自有的事件处理器与中间件，
+        # 避免重启后旧闭包持有上一代适配器实例引用继续被分发
+        try:
+            handler_removed = self.unregister_handlers_by_owner(platform)
+            if handler_removed > 0:
+                logger.trace(
+                    i18n.t(
+                        "core.adapter.own_handlers_cleaned",
+                        platform=platform,
+                        count=handler_removed,
+                    )
+                )
+        except Exception as e:
+            logger.trace(
+                i18n.t("core.adapter.handlers_clean_failed", platform=platform, error=e)
+            )
+
+        # 清理该适配器注册的自定义会话类型与平台事件方法扩展
+        try:
+            from .Event import unregister_custom_types_by_owner
+            from .Event.wrapper import unregister_platform_event_methods
+
+            types_removed = unregister_custom_types_by_owner(platform)
+            methods_removed = unregister_platform_event_methods(platform)
+            if types_removed > 0 or methods_removed > 0:
+                logger.trace(
+                    i18n.t(
+                        "core.adapter.session_ext_cleaned",
+                        platform=platform,
+                        types=types_removed,
+                        methods=methods_removed,
+                    )
+                )
+        except Exception as e:
+            logger.trace(
+                i18n.t("core.adapter.session_ext_clean_failed", platform=platform, error=e)
+            )
+
+        # 清理该适配器注册的 i18n 翻译域（domain 为适配器配置键）
+        try:
+            adapter_instance = self._adapters.get(platform)
+            if adapter_instance is not None and hasattr(adapter_instance, "_get_config_key"):
+                i18n.unregister_domain(adapter_instance._get_config_key())
+                logger.trace(
+                    i18n.t("core.adapter.i18n_domain_cleaned", platform=platform)
+                )
+        except Exception as e:
+            logger.trace(
+                i18n.t("core.adapter.session_ext_clean_failed", platform=platform, error=e)
+            )
+
     async def restart(self, platform: str) -> bool:
         """
         重启指定平台适配器（shutdown + 资源兜底清理 + start）
@@ -1220,6 +1275,7 @@ class AdapterManager(ManagerBase):
         self._onebot_handlers.clear()
         self._raw_handlers.clear()
         self._onebot_middlewares.clear()
+        self._onebot_middleware_owners.clear()
 
         # 清除已启动实例追踪
         self._started_instances.clear()
@@ -1448,6 +1504,9 @@ class AdapterManager(ManagerBase):
         raw: bool = False,
         platform: str | None = None,
         scope_exempt: bool = False,
+        detail_type: str | None = None,
+        pattern: str | None = None,
+        regex: str | None = None,
     ) -> Callable[[Callable], Callable]:
         """
         OneBot12协议事件监听装饰器
@@ -1457,6 +1516,12 @@ class AdapterManager(ManagerBase):
         :param platform: 指定平台，None表示监听所有平台
         :param scope_exempt: 是否豁免模块作用域过滤（框架级总线处理器专用）。
                              为 True 时不参与作用域判断，始终分发。
+        :param detail_type: 指定事件细分类型（如 ``"group"`` / ``"private"``），
+                            None 表示不限制；支持 glob / ``re:`` 模式
+        :param pattern: 消息文本 glob 通配符（仅对消息类事件生效），
+                        不匹配的消息不触发；None 表示不限制
+        :param regex: 消息文本正则源码（仅对消息类事件生效，与 pattern 同时给定时
+                      须都命中）；None 表示不限制
         :return: 装饰器函数
 
         :example:
@@ -1475,10 +1540,15 @@ class AdapterManager(ManagerBase):
         >>> async def handle_raw_message(data):
         >>>     print(f"收到OneBot11原生事件: {data}")
         >>>
-        >>> # 监听所有平台的原生事件
-        >>> @sdk.adapter.on("message", raw=True)
-        >>> async def handle_all_raw_message(data):
-        >>>     print(f"收到原生事件: {data}")
+        >>> # 只监听群消息
+        >>> @sdk.adapter.on("message", detail_type="group")
+        >>> async def handle_group_message(data):
+        >>>     print(f"收到群消息: {data}")
+        >>>
+        >>> # 只监听以 "签到" 开头的消息（文本匹配）
+        >>> @sdk.adapter.on("message", pattern="签到*")
+        >>> async def handle_signin(data):
+        >>>     print(f"收到签到消息: {data}")
         """
 
         def decorator(func: Callable) -> Callable:
@@ -1492,6 +1562,9 @@ class AdapterManager(ManagerBase):
                 "platform": platform,
                 "owner": current_owner.get(),
                 "scope_exempt": scope_exempt,
+                "detail_type": detail_type,
+                "pattern": pattern,
+                "regex": regex,
             }
 
             if raw:
@@ -1506,6 +1579,9 @@ class AdapterManager(ManagerBase):
         """
         添加OneBot12中间件处理器
 
+        注册期间若处于模块加载上下文（current_owner 已设置），自动记录归属，
+        模块卸载时随处理器一并移除。
+
         :param func: 中间件函数
         :return: 中间件函数
 
@@ -1516,7 +1592,58 @@ class AdapterManager(ManagerBase):
         >>>     return data
         """
         self._onebot_middlewares.append(func)
+        owner = current_owner.get()
+        if owner is not None:
+            self._onebot_middleware_owners[id(func)] = owner
         return func
+
+    def unregister_handlers_by_owner(self, owner: str) -> int:
+        """
+        移除指定归属者注册的全部事件处理器与中间件
+
+        覆盖三类资源（均在注册期间记录了 owner）：
+        - ``adapter.on()`` 注册的 OneBot12 / 原生事件处理器
+        - ``adapter.middleware`` 注册的中间件
+        - 适配器在 start() 期间以平台名为 owner 注册的处理器
+
+        供模块卸载时移除该模块的处理器（避免卸载后仍被分发触发），
+        以及适配器关闭 / 重启时清理旧实例自有的处理器。
+
+        :param owner: 归属者（模块名或适配器平台名）
+        :return: int 移除的处理器与中间件总数
+        """
+        removed = 0
+
+        for event_type in list(self._onebot_handlers.keys()):
+            handlers = self._onebot_handlers[event_type]
+            kept = [h for h in handlers if h.get("owner") != owner]
+            removed += len(handlers) - len(kept)
+            if kept:
+                self._onebot_handlers[event_type] = kept
+            else:
+                self._onebot_handlers.pop(event_type, None)
+
+        for event_type in list(self._raw_handlers.keys()):
+            handlers = self._raw_handlers[event_type]
+            kept = [h for h in handlers if h.get("owner") != owner]
+            removed += len(handlers) - len(kept)
+            if kept:
+                self._raw_handlers[event_type] = kept
+            else:
+                self._raw_handlers.pop(event_type, None)
+
+        kept_middlewares = [
+            f
+            for f in self._onebot_middlewares
+            if self._onebot_middleware_owners.get(id(f)) != owner
+        ]
+        removed += len(self._onebot_middlewares) - len(kept_middlewares)
+        self._onebot_middlewares = kept_middlewares
+        for func_id, func_owner in list(self._onebot_middleware_owners.items()):
+            if func_owner == owner:
+                self._onebot_middleware_owners.pop(func_id, None)
+
+        return removed
 
     async def emit(self, data: Any) -> None:
         """
@@ -1554,6 +1681,26 @@ class AdapterManager(ManagerBase):
         else:
             _logger = _event_loggers.get(event_type, _meta_logger)
             _logger.event(f"[Recv] {platform}/{detail_type}")
+
+        # 事件准入（scope 身份维度）：被拒绝的事件在分发入口完全丢弃——
+        # 不进入中间件与任何处理器（含框架级），仅 TRACE 级日志可见
+        from .scope import scope as _scope
+
+        _access_uid = data.get("user_id")
+        if not _scope.is_identity_allowed(
+            platform,
+            _scope.bot_id_from_event(data) or None,
+            _scope.session_id_from_event(data) or None,
+            str(_access_uid) if _access_uid else None,
+        ):
+            logger.trace(
+                i18n.t(
+                    "core.scope.identity_denied",
+                    platform=platform,
+                    user_id=_access_uid or "",
+                )
+            )
+            return
 
         # 钩子: 事件接收（最早期，所有事件都经过此处）
         await lifecycle.emit(
@@ -1666,6 +1813,8 @@ class AdapterManager(ManagerBase):
             if handler_platform is None or handler_platform == platform:
                 if not self._is_handler_scope_allowed(handler_wrapper, data):
                     continue
+                if not self._is_handler_match(handler_wrapper, data, detail_type):
+                    continue
                 self._dispatch_handler_task(
                     handler_wrapper["func"],
                     processed_data,
@@ -1689,6 +1838,10 @@ class AdapterManager(ManagerBase):
                 handler_platform = handler_wrapper.get("platform")
                 if handler_platform is None or handler_platform == platform:
                     if not self._is_handler_scope_allowed(handler_wrapper, data):
+                        continue
+                    if not self._is_handler_match(
+                        handler_wrapper, data, detail_type, raw=True
+                    ):
                         continue
                     self._dispatch_handler_task(
                         handler_wrapper["func"],
@@ -1733,6 +1886,39 @@ class AdapterManager(ManagerBase):
             owner,
             scope.session_id_from_event(data) or None,
         )
+
+    @staticmethod
+    def _is_handler_match(
+        handler_wrapper: dict, data: dict, detail_type: str, raw: bool = False
+    ) -> bool:
+        """
+        {!--< internal-use >!--}
+        判断处理器是否匹配事件的 detail_type / 文本条件
+
+        未设置条件（None）即视为命中；``pattern`` 与 ``regex`` 只对消息类事件
+        生效（原生事件无 ``message`` 段，文本条件自动跳过）。
+
+        :param handler_wrapper: 处理器包装器（含 detail_type/pattern/regex）
+        :param data: 原始事件数据
+        :param detail_type: 事件细分类型
+        :param raw: 是否原生事件
+        :return: 是否命中
+        """
+        wanted_type = handler_wrapper.get("detail_type")
+        if wanted_type and detail_type:
+            if not compile_entry_matcher(str(wanted_type))(str(detail_type)):
+                return False
+
+        pattern = handler_wrapper.get("pattern")
+        regex = handler_wrapper.get("regex")
+        if pattern or regex:
+            if raw:
+                # 原生事件不保证有标准 message 段，跳过文本条件
+                return True
+            cond = compile_text_matcher(pattern, regex)
+            if cond is not None and not cond(data):
+                return False
+        return True
 
     def _get_handler_semaphore(self) -> asyncio.Semaphore:
         """

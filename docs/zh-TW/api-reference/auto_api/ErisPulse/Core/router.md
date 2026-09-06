@@ -431,6 +431,15 @@ POST 等非 GET 请求仍然返回 JSON 格式的错误响应。
 ---
 
 
+##### `unregister_home_entries_by_owner(owner: str)`
+
+移除指定归属者注册的全部首页入口按钮
+
+- **owner** (`归属者（模块名或适配器平台名）`): **返回值** (`int`): 移除的入口数量
+
+---
+
+
 ##### `_match_path(pattern: str, path: str)`
 
 通配符路径匹配
@@ -729,14 +738,15 @@ SSE 路由为 HTTP GET 端点，返回 ``text/event-stream`` 流式响应。
 
 ##### `unregister_all_by_owner(owner: str)`
 
-清理指定归属者注册的所有路由
+清理指定归属者注册的所有路由 / 中间件 / 首页入口
 
 与 :meth:`unregister_all_by_namespace` 不同，本方法基于注册期间
 通过 ``current_owner`` 自动追踪的归属关系进行清理，适用于"以平台名
 为 owner、却用更细颗粒度命名空间（如 ``onebot11_default``）注册路由"
-的适配器热重载场景。
+的适配器热重载场景，也用于模块卸载时的兜底清理（覆盖中间件与
+首页入口等不携带命名空间的资源）。
 
-- **owner** (`归属者（适配器平台名或模块名）`): **返回值** (`dict`): 清理统计 {"http_count": int, "websocket_count": int, "sse_count": int}
+- **owner** (`归属者（适配器平台名或模块名）`): **返回值** (`dict`): 清理统计 {"http_count", "websocket_count", "sse_count", "middleware_count", "home_entry_count"}
 
 ---
 

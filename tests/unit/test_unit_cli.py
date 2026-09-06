@@ -26,6 +26,7 @@ EXPECTED_COMMANDS = {
     "create": ["c", "new"],
     "init": [],
     "install": ["i", "add"],
+    "config": ["cfg", "conf"],
     "uninstall": ["rm", "remove"],
     "upgrade": ["up"],
     "self-update": ["su", "update"],
@@ -474,12 +475,12 @@ class TestFullExampleConfig:
 
     @staticmethod
     def _example():
-        import tomllib
+        import toml
 
         from ErisPulse.CLI.commands.init import InitCommand
 
         text = InitCommand._get_full_example_config()
-        return text, tomllib.loads(text)
+        return text, toml.loads(text)
 
     def test_example_is_valid_toml(self):
         """生成的示例必须是可解析的 TOML"""
@@ -543,10 +544,14 @@ class TestCrossProcessContracts:
         """入口点组名：CLI 与主库镜像必须一致（loader/finder/create/types 共用）"""
         from ErisPulse.CLI.constants import (
             ADAPTER_ENTRY_POINT_GROUP as CLI_ADAPTER,
+        )
+        from ErisPulse.CLI.constants import (
             MODULE_ENTRY_POINT_GROUP as CLI_MODULE,
         )
         from ErisPulse.Core.constants import (
             ADAPTER_ENTRY_POINT_GROUP as CORE_ADAPTER,
+        )
+        from ErisPulse.Core.constants import (
             MODULE_ENTRY_POINT_GROUP as CORE_MODULE,
         )
 

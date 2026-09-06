@@ -5,15 +5,14 @@ SDK 完整生命周期集成测试
 验证生命周期事件正确触发、资源正确清理、可重复 init/uninit。
 """
 
-import pytest
 import asyncio
-from unittest.mock import AsyncMock, patch
+
+import pytest
 
 from ErisPulse.Core.adapter import AdapterManager
-from ErisPulse.Core.module import ModuleManager
-from ErisPulse.Core.lifecycle import lifecycle
-from ErisPulse.Core.Event import command, message
 from ErisPulse.Core.Bases import BaseAdapter, BaseModule
+from ErisPulse.Core.lifecycle import lifecycle
+from ErisPulse.Core.module import ModuleManager
 
 
 class _TestAdapter(BaseAdapter):

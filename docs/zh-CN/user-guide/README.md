@@ -20,6 +20,7 @@
 |------|------|
 | `epsdk init` | 初始化项目（`-q` 快速模式，`-n` 指定名称） |
 | `epsdk install <包名>` | 安装模块/适配器（不带参数进入交互模式） |
+| `epsdk config <名称>` | 交互式配置适配器/模块的声明式配置项 |
 | `epsdk run main.py` | 运行项目（`--reload` 热重载模式） |
 | `epsdk list` | 列出已安装的模块/适配器 |
 | `epsdk upgrade <包名>` | 升级模块/适配器 |

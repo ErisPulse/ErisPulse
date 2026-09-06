@@ -34,6 +34,3 @@ Welcome to recommend high-quality, widely reusable ErisPulse ecosystem modules. 
 
 Module authors who meet the above conditions can create a new `<ModuleName>.md` document in this directory via PR and append a row to the "Recommended Modules" table.
 
-Please return the complete translated Markdown content directly without including any other text.
-
-**Important Reminder:** If the document contains language switch lines (lines with language names separated by ` | `), you must strictly adhere to the format requirement in item 8 above and avoid writing incorrect formats like ``[**Label**](file)``.

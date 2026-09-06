@@ -10,9 +10,9 @@ Once again, if the document contains a language switch line (with each language 
 
 **Write once, deploy to QQ / Telegram / Kook / Yunhu / WeChat Official Account / OneBot12 / ... multiple platforms.**
 
-An event-driven multi-platform chatbot development framework.
+An event-driven, multi-platform chatbot development framework.
 
-Based on the OneBot12 standard interface, write once and deploy to multiple platforms; a flexible plugin system, hot reload support, and a complete developer toolchain, suitable for scenarios ranging from simple chatbots to complex automation systems.
+Based on the OneBot12 standard interface, write once and deploy to multiple platforms; flexible plugin system, hot-reload support, and a complete developer toolchain, suitable for various scenarios from simple chatbots to complex automation systems.
 
 <p>
   <a href="https://pypi.org/project/ErisPulse/"><img src="https://img.shields.io/pypi/v/ErisPulse?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -44,21 +44,21 @@ Based on the OneBot12 standard interface, write once and deploy to multiple plat
 <td width="33%" align="center" valign="top">
 <br/>
 
-<img src=".github/assets/icon/icon_event_driven.png.png" width="50" alt="Event-driven Architecture" />
+<img src=".github/assets/icon/icon_event_driven.png.png" width="50" alt="Event-Driven Architecture" />
 
-### Event-driven Architecture
+### Event-Driven Architecture
 
-A unified event model based on the OneBot12 standard—no more writing a set of if/elif statements for each platform to check message types, a single handler automatically adapts to all adapters
+A unified event model based on the OneBot12 standard — no more writing separate if/elif conditions for each platform to check message types. A single handler automatically adapts to all adapters.
 
 </td>
 <td width="33%" align="center" valign="top">
 <br/>
 
-<img src=".github/assets/icon/icon_cross_platform.png.png" width="50" alt="Cross-platform Compatibility" />
+<img src=".github/assets/icon/icon_cross_platform.png.png" width="50" alt="Cross-Platform Compatibility" />
 
-### Cross-platform Compatibility
+### Cross-Platform Compatibility
 
-The same business code runs on all platforms—write once and serve over 15 platforms including QQ / Telegram / Kook / Yunhu / WeChat Official Account, no need for repeated development
+The same business code runs on all platforms — write once to serve over 15 platforms including QQ / Telegram / Kook / Yunhu / WeChat Official Account, without repetitive development.
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -68,7 +68,7 @@ The same business code runs on all platforms—write once and serve over 15 plat
 
 ### Modular Design
 
-A flexible plugin system supports runtime hot-plug—install/uninstall/enable/disable modules without restarting the process, assembling robot capabilities like building blocks
+A flexible plugin system supports runtime hot-plugging — install/uninstall/enable/disable modules without restarting the process. Combined with a scoping system, modules can be precisely controlled per platform / Bot / session, assembling robot capabilities like building blocks.
 
 </td>
 </tr>
@@ -80,7 +80,7 @@ A flexible plugin system supports runtime hot-plug—install/uninstall/enable/di
 
 ### Hot Reload
 
-Development cycles are shortened from 10 seconds to 0.5 seconds—saving a file takes effect immediately, development and debugging experience is close to that of an interpreted scripting language
+Local plugin files take effect immediately upon saving (0.5-second level), and any module (including PyPI-installed packages) can be hot-reloaded with a single `sdk.reload_module()` line. The development and debugging experience is close to that of an interpreted scripting language.
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -90,7 +90,7 @@ Development cycles are shortened from 10 seconds to 0.5 seconds—saving a file 
 
 ### AI Assistance
 
-Natural language descriptions of requirements directly generate usable modules—don't know how to write an adapter? Tell the AI which platform you want to integrate, and it will help you write it
+Natural language descriptions of requirements directly generate usable modules — don’t know how to write an adapter? Tell the AI which platform you want to integrate, and it will help you write the code.
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -98,9 +98,9 @@ Natural language descriptions of requirements directly generate usable modules�
 
 <img src=".github/assets/icon/icon_lightweight.png" width="50" alt="Lightweight" />
 
-### Lightweight
+### Lightweight and Elegant
 
-Intuitive chainable API design—complex logic such as @user, reply, retry, batch sending is completed in a single line of code, code is as light and readable as a feather
+Intuitive, chainable API design — complex logic such as @user, reply, retry, and batch sending can be completed in a single line of code. The code is as light and readable as a feather.
 
 </td>
 </tr>
@@ -108,9 +108,44 @@ Intuitive chainable API design—complex logic such as @user, reply, retry, batc
 
 ---
 
-Please directly return the complete translated Markdown content, without including any other text.
+## Scope —— Three-dimensional Permission Control
 
-Once again, please note: if the document contains a language switch line (with language names separated by `` | ``), strictly follow the format requirements in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
+Without modifying any module code, declare "what scope it applies to" in the configuration:
+
+```toml
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Tool*"]           # ① Module level: Only these modules are enabled on this platform (glob / regex)
+
+[ErisPulse.scope.identity.users.onebot11]
+deny = ["u_bad", "spam_*"]            # ② Identity level: Events from blacklisted users are discarded directly
+
+[ErisPulse.scope.actions.MyModule]
+send = { allow = ["Text"] }           # ③ Outbound level: This module is only allowed to send text
+api = { deny = ["set_*", "leave_*"] } #    and management-related APIs are prohibited
+```
+
+```python
+# Runtime modifications are also supported, taking effect immediately (supports dot-separated path dictionary-style read/write)
+sdk.scope.set_action("MyModule", "api", deny=["set_*"])
+```
+
+> See [Scope](docs/en/advanced/scope.md)
+
+## Event Override – Override the behavior of any event type without modifying module code
+
+```toml
+# Override the trigger condition for message handlers (AND with conditions in code; all types meta/message/notice/request/command are supported)
+[ErisPulse.event.overrides.message.ChatModule]
+pattern = "闲聊*"
+
+# Override command implementation parameters (master / hidden / aliases / prefix, etc.; user priority)
+[ErisPulse.event.overrides.command.MyModule.restart]
+master = true
+```
+
+> See [Event Override](docs/en/event-handling.md)
+
+---
 
 ## How It Works
 
@@ -172,7 +207,7 @@ For detailed design information on the complete module composition, initializati
 
 ### One-Click Installation Script (Recommended)
 
-The installation script will automatically detect your environment (Docker, Python, uv), guide you to choose the most suitable installation method, and support multiple languages (Chinese / English / 日本語 / Русский / 繁體中文).
+The installation script automatically detects your environment (Docker, Python, uv), guides you to choose the most suitable installation method, and supports multiple languages (Chinese/English/Japanese/Russian/Traditional Chinese).
 
 Windows (PowerShell):
 ```powershell
@@ -210,7 +245,7 @@ docker pull erispulse/erispulse:latest
 ```
 
 <details>
-<summary>Unable to access Docker Hub?</summary>
+<summary>Can't access Docker Hub?</summary>
 
 If Docker Hub is inaccessible, you can use GitHub Container Registry:
 
@@ -236,11 +271,11 @@ curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compos
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
-After starting, access `http://<host>:8000/Dashboard` and log in to the Dashboard management panel using the set token.
+After starting, access `http://<host>:8000/Dashboard` and log in using the set token to manage the Dashboard panel.
 
 > The image includes the ErisPulse framework and Dashboard management panel, supporting `linux/amd64` and `linux/arm64` architectures.
 >
-> **Persistence**: Configuration files and installed modules/adapters are persisted to the host machine via volume mounting, so they won't be lost after container restart. Framework updates are completed through hot updates in the Dashboard.
+> **Persistence**: Configuration files and installed modules/adapters are persisted to the host machine via volume mounting, so they won't be lost after container restarts. Framework updates are completed through hot updates in the Dashboard.
 
 </details>
 
@@ -276,7 +311,7 @@ ErisPulse has been listed in the 1Panel third-party app store and can be install
 pip install ErisPulse
 ```
 
-> You can also use the one-click installation script above to automatically detect the environment and guide configuration.
+> You can also use the one-click installation script above, which automatically detects the environment and guides configuration.
 
 ### Initialize Project
 
@@ -337,7 +372,7 @@ Bot replies: `Pong! The bot is running normally.`
 
 ```bash
 epsdk run main.py
-# or in development mode
+# Or in development mode
 epsdk run main.py --reload
 ```
 
@@ -345,7 +380,7 @@ epsdk run main.py --reload
 </tr>
 </table>
 
-For more detailed instructions, please refer to:
+For more detailed instructions, see:
 - [Quick Start Guide](docs/en/quick-start.md)
 - [Getting Started Guide](docs/en/getting-started/)
 

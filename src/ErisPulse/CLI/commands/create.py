@@ -58,6 +58,13 @@ dependencies = [
 
 [project.entry-points]
 "erispulse.module" = {{ "{name}" = "{name}:Main" }}
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["{name}"]
 """
 
 _MODULE_INIT = """from .Core import Main
@@ -192,6 +199,12 @@ class Main(BaseModule):
         self.logger.info(\"{text[module.log.config_updated]}\")
 
     async def _register_commands(self):
+        # 命令权限（可选）：permission 为调用函数，返回 True 才执行命令；
+        # master=True 限定框架主人（仅开发者默认值，用户可在统一覆写系统
+        # ErisPulse.event.overrides.command.<module>.<cmd>.master = true/false 覆写收紧或放开）；
+        # 跨命令的用户黑白名单用覆写系统 ACL
+        # （ErisPulse.event.overrides.acl 或 overrides.acl.set(name, allow/deny)，命令名支持 glob）；
+        # 模块级可用性 / 事件准入 / 出站限制由作用域 scope 管理（用户可控）
         @command(\"hello\", help=i18n.t(\"module.{name}.command.hello.help\"))
         async def hello_command(event: Event):
             await event.reply(i18n.t(\"module.{name}.command.hello.reply\"))
@@ -204,6 +217,11 @@ class Main(BaseModule):
         @message.on_group_message()
         async def group_message_handler(event: Event):
             pass
+
+        # 消息装饰器支持 pattern（glob 通配符）/ regex（正则），不匹配则不触发
+        @message.on_message(pattern=\"签到*\")
+        async def signin_handler(event: Event):
+            await event.reply(\"签到成功\")
 
         @notice.on_friend_add()
         async def friend_add_handler(event: Event):
@@ -227,6 +245,13 @@ dependencies = [
 
 [project.entry-points]
 "erispulse.adapter" = {{ "{entry_key}" = "{name}:{name}" }}
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["{name}"]
 """
 
 _ADAPTER_INIT = """from .Core import {name}

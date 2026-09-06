@@ -1,12 +1,10 @@
 # コアモジュール API
 
-このドキュメントは、ErisPulse コアモジュールの API クイックリファレンスを提供します。メソッドシグネチャと簡単な説明が含まれています。詳細な使用法と例については、各モジュールの「完全なドキュメント」リンクをクリックしてください。
-
-詳細な用法と例については、各モジュールの「完全なドキュメント」リンクをクリックしてください。
+このドキュメントは、ErisPulse コアモジュールの API のクイックリファレンスを提供します。メソッドのシグネチャと簡潔な説明が含まれています。詳細な使い方や例については、各モジュールの「完全なドキュメント」リンクをクリックしてください。
 
 ## Storage モジュール
 
-SQLite をベースとしたキーバリューストアシステムで、汎用的な SQL のチェーンクエリをサポートしています。
+SQLite に基づくキー/値ストレージシステムで、一般的な SQL チェーンクエリをサポートしています。
 
 ### 基本操作
 
@@ -35,7 +33,7 @@ with sdk.storage.transaction():
     sdk.storage.set("key2", "value2")
 ```
 
-### プロパティアクセス
+### 属性アクセス
 
 ```python
 sdk.storage.my_key          # sdk.storage.get("my_key") と同等
@@ -44,7 +42,7 @@ sdk.storage.my_key = "val"  # sdk.storage.set("my_key", "val") と同等
 
 ### SQL チェーンクエリ
 
-Storage モジュールは、チェーンコールスタイルの汎用的な SQL クエリビルダーを提供し、カスタムテーブルの CRUD 操作をサポートしています。
+Storage モジュールは、カスタムテーブルの CRUD 操作をサポートするチェーン呼び出しスタイルの一般的な SQL クエリビルダーを提供します。
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -56,11 +54,11 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> 完全なチェーンクエリ API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、トランザクション等）については、[SQL クエリビルダー](../advanced/sql-builder.md) を参照してください。
+> 完全なチェーンクエリ API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、トランザクションなど）については、[SQL クエリビルダー](../advanced/sql-builder.md) を参照してください。
 
-### ストレージバックエンド抽象化
+### ストレージバックエンド抽象
 
-`StorageManager` は `BaseStorage` 抽象基底クラスを継承しており、他のストレージ媒体（Redis、MySQL など）への拡張をサポートしています。
+`StorageManager` は `BaseStorage` 抽象基底クラスを継承しており、他のストレージメディア（Redis、MySQL など）への拡張をサポートしています。
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -68,7 +66,7 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 ### 非同期インターフェース
 
-Storage および Config モジュールは両方とも非同期メソッド（プレフィックス `a`）を提供しており、非同期ハンドラー内で安全に呼び出すことができます。同期メソッドは維持されたままです。既存のコードを変更する必要はありません。
+Storage および Config モジュールは、非同期メソッド（接頭辞 `a`）を提供しており、非同期プロセッサで安全に呼び出すことができます。同期メソッドも引き続き利用可能で、既存のコードを変更する必要はありません。
 
 ```python
 # 非同期ストレージ
@@ -88,25 +86,26 @@ value = await sdk.config.agetConfig("MyModule.key")
 await sdk.config.asetConfig("MyModule.key", "value")
 await sdk.config.aforce_save()
 await sdk.config.areload()
+```
 
-## Config モジュール
+## Config 模块
 
-TOML 形式の設定ファイル管理。ドット区切りのキーパスをサポートします。
+TOML 形式の設定ファイルを管理し、ドット区切りのキー経路をサポートします。
 
 ### API 概要
 
 | メソッド | 説明 |
 |------|------|
-| `getConfig(key, default)` | 設定を読み込みます。ドット区切りのパス（例: `"MyModule.subkey"`）をサポートします |
-| `setConfig(key, value, immediate=False)` | 設定を書き込みます。`immediate=True` の場合、ファイルに即座に保存されます |
-| `force_save()` | メモリ内の設定を強制的にファイルに書き込みます |
+| `getConfig(key, default)` | 設定を読み込みます。ドット区切りの経路（例: `"MyModule.subkey"`）をサポートします |
+| `setConfig(key, value, immediate=False)` | 設定を書き込みます。`immediate=True` の場合、即座にファイルに保存されます |
+| `force_save()` | メモリ内の設定をファイルに強制的に書き込みます |
 | `reload()` | ファイルから設定を再読み込みします |
 | `agetConfig(key, default)` | 非同期で設定を読み込みます |
 | `asetConfig(key, value, immediate)` | 非同期で設定を書き込みます |
-| `aforce_save()` | 非同期で強制保存します |
+| `aforce_save()` | 非同期で強制的に保存します |
 | `areload()` | 非同期で再読み込みします |
 
-### 例
+### 使用例
 
 ```python
 config = sdk.config.getConfig("MyModule", {})
@@ -116,11 +115,11 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` はデフォルトで遅延書き込み（5 秒ごとにバッチ保存）を採用しています。`immediate=True` を設定すると、設定ファイルに即座に永続化できます。設定の変更は `config.set` ライフサイクルイベントをトリガーします。
+> `setConfig` はデフォルトで遅延書き込み（5秒ごとに一括保存）を採用しています。`immediate=True` を設定すると、即座に設定ファイルに永続化されます。設定の変更は `config.set` ライフサイクルイベントをトリガーします。
 
 ## Logger モジュール
 
-モジュール化されたログシステム。Rich 出力をベースとし、サブロガーおよびモジュール単位での制御をサポートします。
+モジュール化されたログシステムで、Rich による出力に対応し、サブログ出力とモジュールレベルでの制御をサポートしています。
 
 ### 基本的な使い方
 
@@ -132,35 +131,35 @@ sdk.logger.error("エラー情報")
 sdk.logger.critical("致命的なエラー")
 ```
 
-### サブロガー
+### サブログ出力
 
 ```python
 child_logger = sdk.logger.get_child("MyModule")
-child_logger.info("サブモジュールログ")
+child_logger.info("サブモジュールのログ")
 
-child_logger.get_child("utils")  # ネストに対応
+child_logger.get_child("utils")  # ネストもサポート
 ```
 
-### ログレベル制御
+### ログレベルの制御
 
 ```python
-sdk.logger.set_level("DEBUG")                          # グローバルレベル
+sdk.logger.set_level("DEBUG")                          # グローバルなレベル
 sdk.logger.set_module_level("MyModule", "DEBUG")       # モジュールレベル
 
-# サポートされるレベル（低い順）：
+# 対応するレベル（低い順）：
 # TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
-# TRACE は最低レベルで、フレームワーク内部の詳細なデバッグ情報（イベント配信、ルート登録など）を出力します
-sdk.logger.set_level("TRACE")                          # 全ログ有効化
+# TRACE は最低レベルで、フレームワーク内部の詳細なデバッグ情報を出力（イベントの配信、ルーティングの登録など）
+sdk.logger.set_level("TRACE")                          # 全てのログを有効にする
 ```
 
-### ログ購読（プッシュモード）
+### ログのサブスクライブ（プッシュ方式）
 
-Dashboard などのモジュールが構造化ログをリアルタイムで受信するためのものです。レベルによるフィルタリングおよび履歴ログの再送をサポートします。
+Dashboard などのモジュールが構造化されたログをリアルタイムで受信できるようにし、ログレベルのフィルタリングや履歴の補送もサポートしています。
 
-> **低レベルログの明示的な購読**：購読器の `min_level` は、グローバルログレベルよりも低く設定できます。この場合、低レベルログは**マッチする購読器にのみプッシュ**され、コンソールには出力されず、メモリにも書き込まれないため、メインログストリームの汚染を回避できます。
+> **低レベルログの明示的なサブスクライブ**：サブスクライバーの `min_level` はグローバルなログレベルより低く設定できます。この場合、低レベルのログは**該当するサブスクライバーにのみプッシュされ**、コントロールやメモリには出力されず、メインのログストリームを汚染しません。
 >
 > ```python
-> # グローバルレベルが INFO でも、DEBUG ログだけ個別に購読可能
+> # グローバルが INFO でも、個別に DEBUG ログをサブスクライブできる
 > @sdk.logger.handler("debug-tracer", min_level="DEBUG")
 > def on_debug(log_data: dict): ...
 > ```
@@ -173,7 +172,7 @@ def on_log(log_data: dict):
     #     "timestamp": "2026-06-29T22:00:00.123456",
     #     "level": "WARNING", "level_num": 30,
     #     "module": "ErisPulse.Core.adapter",
-    #     "message": "厳格モード：...",
+    #     "message": "厳密モード：...",
     # }
     pass
 
@@ -184,8 +183,8 @@ sdk.logger.remove_handler("my-handler")
 
 | メソッド | 説明 |
 |------|------|
-| `handler(id, *, min_level)(func)` | デコレータ / 直接呼び出しの両用。`id` が空の場合は関数名を取得します。`min_level` はグローバルレベルより低くできます（低レベルログは購読器にのみプッシュされ、コンソール/メモリへは入りません）。登録時に自動で履歴ログを再送します |
-| `remove_handler(id)` | 購読器を削除します |
+| `handler(id, *, min_level)(func)` | デコレータ/直接呼び出しの両方に対応。`id` が空の場合は関数名が使用される。`min_level` はグローバルレベルより低く設定可能（低レベルのログはサブスクライバーにのみプッシュされ、コントロールやメモリには出力されない）。登録時に履歴ログの補送も自動的に行われる |
+| `remove_handler(id)` | サブスクライバーを削除する |
 
 ### 出力制御
 
@@ -194,25 +193,26 @@ sdk.logger.set_output_file("app.log")
 sdk.logger.save_logs("log.txt")
 sdk.logger.get_logs("MyModule")
 sdk.logger.set_memory_limit(1000)
+```
 
-## アダプターモジュール
+## Adapter モジュール
 
-アダプターマネージャーは、マルチプラットフォームアダプターの登録、起動、およびシャットダウンを管理します。
+プラットフォームごとのアダプタを登録、起動、停止を管理するアダプタマネージャーです。
 
 ### API 概要
 
 | メソッド | 説明 |
 |------|------|
-| `get(platform)` | アダプターメソッドの取得 |
-| `exists(platform)` | アダプターが登録されているかチェック |
-| `enable(platform)` / `disable(platform)` | アダプターの有効化/無効化 |
-| `is_enabled(platform)` | 有効になっているかチェック |
-| `startup(platforms)` / `shutdown(platforms)` | アダプターの起動/シャットダウン |
-| `is_running(platform)` | アダプターが実行中かチェック |
-| `list_running()` | 実行中のアダプターを一覧表示 |
-| `platforms` | 全プラットフォーム名リストの取得 |
+| `get(platform)` | アダプタインスタンスを取得します |
+| `exists(platform)` | アダプタが登録されているか確認します |
+| `enable(platform)` / `disable(platform)` | アダプタを有効化/無効化します |
+| `is_enabled(platform)` | 有効化されているか確認します |
+| `startup(platforms)` / `shutdown(platforms)` | アダプタを起動/停止します |
+| `is_running(platform)` | アダプタが実行中か確認します |
+| `list_running()` | 実行中のアダプタをすべてリストアップします |
+| `platforms` | 登録されているすべてのプラットフォーム名のリストを取得します |
 
-### アダプターイベント
+### アダプタイベント
 
 ```python
 @sdk.adapter.on("message")
@@ -224,7 +224,7 @@ async def handle_yunhu_message(event):
     pass
 ```
 
-### Bot ステータス確認
+### Bot 状態の照会
 
 ```python
 sdk.adapter.get_bot_info("telegram", "123456")
@@ -233,51 +233,52 @@ sdk.adapter.is_bot_online("telegram", "123456")
 sdk.adapter.get_status_summary()
 ```
 
-> 完全なアダプターマネジメント API については、[アダプターシステム API](docs/ja/adapter-system.md) を参照してください。
+> アダプタ管理の完全な API については、[アダプタシステム API](adapter-system.md) を参照してください。
 
 ## Module モジュール
 
-モジュールマネージャーは、プラグインの登録、読み込み、アンインストールを管理します。
-
-### API サマリー
-
-| メソッド | 説明 |
-|------|------|
-| `get(name)` | モジュールインスタンスを取得する、または遅延読み込みプロキシを取得する（登録済みだが未読込の場合はプロキシを返す） |
-| `exists(name)` | 登録済みかどうかを確認する |
-| `is_loaded(name)` | 読み込まれたかどうかを確認する |
-| `is_enabled(name)` | 有効かどうかを確認する |
-| `enable(name)` / `disable(name)` | モジュールを有効化/無効化する |
-| `load(name)` / `unload(name)` | モジュールを読み込み/アンインストールする |
-| `list_registered()` | 登録済みモジュールを一覧表示する |
-| `list_loaded()` | 読み込み済みモジュールを一覧表示する |
-| `get_info(name)` | モジュール情報を取得する |
-| `get_status_summary()` | モジュールステータスサマリーを取得する |
-
-### プロパティへのアクセス
-
-```python
-module = sdk.module.get("ModuleName")
-module = sdk.module.ModuleName
-module = sdk.ModuleName  # 同等のショートカット
-
-## Lifecycle モジュール
-
-イベント駆動のライフサイクルマネージャーで、イベントの送信と監視機能を提供します。
+モジュールマネージャーは、プラグインの登録、ロード、アンロードを管理します。
 
 ### API 概要
 
 | メソッド | 説明 |
 |------|------|
-| `on(event, priority=0)` | デコレータでイベントハンドラーを登録。ドット表記のマッチングとワイルドカード `*` をサポート |
-| `register(event, handler, priority=0)` | 関数型でハンドラーを登録 |
-| `unregister(event, handler=None)` | ハンドラーを削除 |
-| `emit(event, data)` | 非同期でイベントを発行 |
-| `emit_sync(event, data)` | 同期的にイベントを発行 |
-| `submit_event(event_type, msg, data, source)` | 標準形式のイベントを送信（旧版との互換性） |
-| `start_timer(id)` / `stop_timer(id)` | パフォーマンス計時用タイマー |
+| `get(name)` | モジュールのインスタンスまたは遅延ロードプロキシを取得します（登録済みだがロードされていない場合はプロキシを返します） |
+| `exists(name)` | 登録済みかどうかを確認します |
+| `is_loaded(name)` | ロード済みかどうかを確認します |
+| `is_enabled(name)` | 有効かどうかを確認します |
+| `enable(name)` / `disable(name)` | モジュールを有効/無効にします |
+| `load(name)` / `unload(name)` | モジュールをロード/アンロードします |
+| `list_registered()` | 登録済みのモジュールを一覧表示します |
+| `list_loaded()` | ロード済みのモジュールを一覧表示します |
+| `get_info(name)` | モジュールの情報を取得します |
+| `get_status_summary()` | モジュールの状態の概要を取得します |
 
-### サンプル
+### 属性アクセス
+
+```python
+module = sdk.module.get("ModuleName")
+module = sdk.module.ModuleName
+module = sdk.ModuleName  # 等価なショートカット
+```
+
+## ライフサイクルモジュール
+
+イベント駆動型のライフサイクルマネージャーで、イベントの送信と監視機能を提供します。
+
+### API 概要
+
+| メソッド | 説明 |
+|------|------|
+| `on(event, priority=0)` | 装飾器でイベントハンドラを登録し、ドット記法のマッチングとワイルドカード `*` をサポートします |
+| `register(event, handler, priority=0)` | 関数形式でハンドラを登録します |
+| `unregister(event, handler=None)` | ハンドラを削除します |
+| `emit(event, data)` | 非同期でイベントを発生させます |
+| `emit_sync(event, data)` | 同期でイベントを発生させます |
+| `submit_event(event_type, msg, data, source)` | 標準形式のイベントを送信します（旧バージョンとの互換性あり） |
+| `start_timer(id)` / `stop_timer(id)` | パフォーマンス計測タイマーを開始・停止します |
+
+### 例
 
 ```python
 @sdk.lifecycle.on("module.init")
@@ -291,46 +292,47 @@ async def handle_any_module_event(event_data):
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
 ```
 
-> 標準イベントの完全なリストと詳細な使い方については、[ライフサイクル管理](../advanced/lifecycle.md) を参照してください。
+> 完全な標準イベントリストと詳細な使い方については、[ライフサイクル管理](../advanced/lifecycle.md) を参照してください。
 
 ## Router モジュール
 
-HTTP/WebSocket ルーター管理機能。FastAPI + Uvicorn をベースに、デコレータールーター、ミドルウェア、グルーピング、レート制限、CORS をサポートします。
+HTTP/WebSocket ルーティングマネージャー。FastAPI + Uvicorn に基づき、デコレーターベースのルーティング、ミドルウェア、グループ化、リクエスト制限、CORS をサポート。
 
-> 詳細なルーター API ドキュメント（デコレータールーター、WebSocket、ミドルウェア、レート制限、CORS、セキュリティヘッダー等）については、[ルーター管理器](../advanced/router.md) を参照してください。
+> ルーティング API の完全なドキュメント（デコレーターベースのルーティング、WebSocket、ミドルウェア、レート制限、CORS、セキュリティヘッダーなど）は、[ルーティングマネージャー](../advanced/router.md) を参照してください。
 
-### クイックリファレンス
+### 速見参考
 
 ```python
-# HTTP ルーター
+# HTTP ルーティング
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
     return {"status": "ok"}
 
-# WebSocket ルーター
+# WebSocket ルーティング
 @sdk.router.ws("MyModule", "/ws")
 async def ws_handler(ws: WebSocketConnection):
     async for text in ws.iter_text():
         await ws.send_text(f"Echo: {text}")
 
-# ルーターグループ
+# ルーティンググループ化
 group = sdk.router.group("MyModule", prefix="/v1")
 @group.get("/users")
 async def list_users(request: HttpRequest):
     return {"users": []}
+```
 
-## HTTP Client モジュール
+## HTTP クライアント モジュール
 
-統合されたネットワーククライアントで、HTTP リクエスト、WebSocket 接続、コネクションプールの管理、自動再試行、リクエスト統計、およびライフサイクルイベントの統合を提供します。
+統一されたネットワーククライアントで、HTTPリクエスト、WebSocket接続、接続プール管理、自動リトライ、リクエスト統計、ライフサイクルイベントの統合を提供します。
 
-> リクエストメソッド、レスポンスオブジェクト、WebSocketクライアント、例外体系などの、完全なネットワーククライアントのドキュメントについては、[ネットワーククライアント](../advanced/http-client.md) を参照してください。
+> HTTPリクエスト、WebSocketクライアント、例外体系など、ネットワーククライアントの完全なドキュメントは、[ネットワーククライアント](../advanced/http-client.md)を参照してください。
 
-### クイックリファレンス
+### 速習
 
 ```python
 from ErisPulse.Core import client
 
-# HTTP リクエスト
+# HTTPリクエスト
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
@@ -338,12 +340,13 @@ data = await resp.json()
 ws = await client.ws_connect("wss://example.com/ws")
 async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
+```
 
-## SDK デバッグ
+## SDKのデバッグ
 
 ### dump_state()
 
-現在実行中のフレームワークの状態スナップショットをエクスポートし、デバッグおよび診断に使用します。
+フレームワークの現在の実行状態のスナップショットをエクスポートし、デバッグおよび診断に使用します。
 
 ```python
 import json
@@ -351,23 +354,23 @@ state = sdk.dump_state()
 print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 ```
 
-返される構造には以下のサブシステムの状態が含まれます：
+返却される構造には、以下のサブシステムの状態が含まれます：
 
 | フィールド | 説明 |
 |------|------|
-| `sdk` | SDK の初期化状態、Python バージョン、実行プラットフォーム、タイムスタンプ |
-| `adapters` | 登録済み/起動済みのアダプタ一覧、各プラットフォームの Bot オンライン状態 |
-| `modules` | 登録済み/有効/無効/遅延読み込みのモジュール一覧 |
+| `sdk` | SDKの初期化状態、Pythonバージョン、実行プラットフォーム、タイムスタンプ |
+| `adapters` | 登録/起動済みのアダプタリスト、各プラットフォームのBotのオンライン状態 |
+| `modules` | 登録/有効化/無効化/遅延ロードされたモジュールリスト |
 | `events` | 各種イベントハンドラの数（message/notice/request/meta/commands） |
-| `router` | サーバーの実行状態、HTTP/WebSocket ルート数 |
+| `router` | サーバーの実行状態、HTTP/WebSocketルート数 |
 
-> 2.5.2 で追加
+> 2.5.2で追加
 
 ## 関連ドキュメント
 
 - [イベントシステム API](event-system.md) - Event モジュール API
-- [アダプタシステム API](adapter-system.md) - Adapter 管理 API
-- [SQL クエリビルダ](../advanced/sql-builder.md) - SQL チェーンクエリ完全ドキュメント
-- [ルーターマネージャー](../advanced/router.md) - ルーターマネージャー完全ドキュメント
-- [ネットワーククライアント](../advanced/http-client.md) - ネットワーククライアント完全ドキュメント
-- [ライフサイクル管理](../advanced/lifecycle.md) - ライフサイクル完全ドキュメント
+- [アダプターシステム API](adapter-system.md) - Adapter 管理 API
+- [SQL クエリビルダー](../advanced/sql-builder.md) - SQL チェーン式クエリの完全ドキュメント
+- [ルーティングマネージャー](../advanced/router.md) - ルーティングマネージャーの完全ドキュメント
+- [ネットワーククライアント](../advanced/http-client.md) - ネットワーククライアントの完全ドキュメント
+- [ライフサイクル管理](../advanced/lifecycle.md) - ライフサイクルの完全ドキュメント

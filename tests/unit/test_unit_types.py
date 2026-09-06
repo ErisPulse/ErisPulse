@@ -12,13 +12,12 @@ from unittest.mock import patch
 import pytest
 
 from ErisPulse.CLI.commands.types import (
-    TypesCommand,
     STUB_FILENAME,
+    TypesCommand,
     _build_send_class_stub,
     _is_module_method,
     _is_send_method,
 )
-
 
 # ==================== 辅助函数测试 ====================
 

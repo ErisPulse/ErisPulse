@@ -59,7 +59,7 @@ class PluginReloadWatcher:
 
     :example:
     >>> async def handle(name):
-    ...     await sdk.reload_plugin(name)
+    ...     await sdk.reload_module(name)
     >>> watcher = PluginReloadWatcher(handle)
     >>> watcher.start()
     >>> # ... 运行中 ...

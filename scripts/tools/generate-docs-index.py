@@ -359,6 +359,7 @@ class DocsIndexGenerator:
         "advanced/sql-builder.md": 10,
         "advanced/i18n.md": 11,
         "advanced/scope.md": 12,
+        "advanced/ownership.md": 13,
         # AI 辅助开发
         "ai-support/README.md": 1,
         # 生态模块
@@ -503,6 +504,8 @@ class DocsIndexGenerator:
         "advanced/http-client.md": "fa-globe",
         "advanced/sql-builder.md": "fa-database",
         "advanced/i18n.md": "fa-language",
+        "advanced/scope.md": "fa-shield-halved",
+        "advanced/ownership.md": "fa-user-tag",
         # AI 辅助开发
         "ai-support/README.md": "fa-robot",
         # 生态模块

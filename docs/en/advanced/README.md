@@ -4,37 +4,34 @@ This directory contains advanced features and in-depth topics of the ErisPulse f
 
 ## Document List
 
-- [Startup Process and Manual Control](startup.md) - Breakdown of the startup chain (Finder/Loader/Manager/Router) and manual full startup
-- [Lazy Loading System](lazy-loading.md) - Working principles, configuration, and event-driven lazy activation (activate_on) of the lazy loading module system
-- [Module Scope System](scope.md) - Binding and isolation of modules and adapters (Bot/Platform)
+- [Startup Process and Manual Control](startup.md) - Breakdown of the startup flow (Finder/Loader/Manager/Router) and manual full startup
+- [Lazy Loading System](lazy-loading.md) - The working principle, configuration, and event-driven lazy activation (activate_on) of the lazy loading module system
+- [Scope (scope)](scope.md) - Three-dimensional scope control: module availability / event access / outbound action restrictions (including method-level fine-grained rules and binding inheritance merge)
+- [Ownership (owner) System](ownership.md) - Resource ownership and automatic recycling: owner context mechanism, ownership resource overview, unload cleanup sequence, and design boundaries
 - [Internationalization (i18n)](i18n.md) - Multi-language support, translation registration, and language detection
 - [Lifecycle Management](lifecycle.md) - Usage methods of the lifecycle event system
 - [Router Manager](router.md) - HTTP and WebSocket routing management
 - [HTTP Client](http-client.md) - Unified HTTP request client
 - [MessageBuilder Detailed Explanation](message-builder.md) - Dual-mode usage of the OneBot12 message segment builder
-- [SQL Query Builder](sql-builder.md) - General SQL chain query builder and storage backend abstraction
+- [SQL Query Builder](sql-builder.md) - General SQL chainable query builder and storage backend abstraction
 - [Session Type System](../standards/session-types.md) - Session type definition, mapping, and custom type registration
 - [Conversation Multi-turn Dialogue](conversation.md) - Interaction methods for multi-turn dialogue context
 
 > [!NOTE]
-> Documentation for third-party ecosystem modules such as Dashboard window registration and Takumi image rendering has been moved to the [Ecosystem Modules](../ecosystem/README.md) directory.
+> Documentation for **third-party ecosystem modules** such as Dashboard view registration and Takumi image rendering has been moved to the [Ecosystem Modules](../ecosystem/README.md) directory.
 
-## Target Audience
+## Intended Audience
 
 These documents are suitable for the following developers:
 
-- Developers already familiar with ErisPulse basic features
-- Developers needing a deep understanding of internal framework mechanisms
-- Developers needing to optimize performance or implement complex features
-
-Please return the complete translated Markdown content directly, without including any other text.
-
-Reminder: If the document contains language switching lines (lines separated by ` | `), strictly follow the formatting requirement in item 8 above; do not write incorrect formats like ``[**Label**](file)``.
+- Developers who are already familiar with ErisPulse's basic features
+- Developers who need to deeply understand the framework's internal mechanisms
+- Developers who need to optimize performance or implement complex features
 
 ## Prerequisites
 
-Before reading the documents in this directory, it is recommended to understand:
+Before reading the documents in this directory, it is recommended to first understand:
 
 - [Basic Concepts](../getting-started/basic-concepts.md)
-- [Introduction to Event Handling](../getting-started/event-handling.md)
+- [Event Handling Introduction](../getting-started/event-handling.md)
 - [Module Development Guide](../developer-guide/modules/)

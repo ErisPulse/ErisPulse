@@ -26,7 +26,7 @@
   <a href="https://www.erisdev.com"><img src="https://img.shields.io/badge/文件-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="文件"></a>
   <a href="https://deepwiki.com/ErisPulse/ErisPulse"><img src="https://img.shields.io/badge/DeepWiki-ErisPulse-8A2BE2?style=for-the-badge&logo=readthedocs&logoColor=white" alt="DeepWiki"></a>
   <a href="https://www.erisdev.com/#market"><img src="https://img.shields.io/badge/模組市場-erisdev.com-C724B1?style=for-the-badge&logo=webpack&logoColor=white" alt="模組市場"></a>
-  <a href="https://github.com/ErisPulse/ErisPulse/discussions"><img src="https://img.shields.io/badge/GitHub-討論-181717?style=for-the-badge&logo=github" alt="討論"></a>
+  <a href="https://github.com/ErisPulse/ErisPulse/discussions"><img src="https://img.shields.io/badge/GitHub-Discussions-181717?style=for-the-badge&logo=github" alt="討論"></a>
 </p>
 
 <br clear="both">
@@ -48,7 +48,7 @@
 
 ### 事件驅動架構
 
-基於 OneBot12 標準的統一事件模型——不再為每個平台寫一套 if/elif 判斷訊息類型，一份 handler 自動適配所有適配器
+基於 OneBot12 標準的統一事件模型——不再為每個平台寫一套 if/elif 判斷消息類型，一份 handler 自動適配所有適配器
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -58,7 +58,7 @@
 
 ### 跨平台相容
 
-同一份業務程式碼在所有平台運行——一次編寫即可服務 QQ / Telegram / Kook / Yunhu / 微信公眾號 等 15+ 平台，無需重複開發
+同一份業務代碼在所有平台運行——一次編寫即可服務 QQ / Telegram / Kook / Yunhu / 微信公眾號 等 15+ 平台，無需重複開發
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -68,7 +68,7 @@
 
 ### 模組化設計
 
-靈活的插件系統支援執行時熱插拔——安裝/卸載/啟用/停用模組無需重新啟動進程，像拼積木一樣組裝機器人能力
+靈活的插件系統支援執行時熱插拔——安裝/卸載/啟用/禁用模組無需重啟進程，配合作用域系統按平台 / Bot / 會話精確控制模組可用性，像搭積木一樣組裝機器人能力
 
 </td>
 </tr>
@@ -80,7 +80,7 @@
 
 ### 熱重載
 
-開發循環從重新啟動 10 秒縮短到 0.5 秒——儲存檔案即生效，開發除錯體驗接近解釋型腳本語言
+本地插件保存文件即生效（0.5 秒級），任意模組（含 PyPI 安裝包）`sdk.reload_module()` 一行熱重載，開發調試體驗接近解釋型腳本語言
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -90,7 +90,7 @@
 
 ### AI 輔助
 
-自然語言描述需求直接產生可用模組——不會寫適配器？告訴 AI 你要接入什麼平台，它幫你寫
+自然語言描述需求直接生成可用模組——不會寫適配器？告訴 AI 你要接入什麼平台，它幫你寫
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -100,11 +100,50 @@
 
 ### 簡潔優雅
 
-直覺化的鏈式 API 設計——@用戶、回覆、重試、批量發送等複雜邏輯一行程式碼完成，程式碼如羽毛般輕盈可讀
+直覺化的鏈式 API 設計——@用戶、回覆、重試、批量發送等複雜邏輯一行代碼完成，代碼如羽毛般輕盈可讀
 
 </td>
 </tr>
 </table>
+
+---
+
+## 作用域（Scope）——三維權限控制面
+
+不修改任何模組程式碼，透過配置統一宣告「在什麼範圍內生效」：
+
+```toml
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Tool*"]           # ① 模組維度：該平台只開放這些模組（glob / 正規表示式）
+
+[ErisPulse.scope.identity.users.onebot11]
+deny = ["u_bad", "spam_*"]            # ② 身份維度：黑名單使用者的事件直接丟棄
+
+[ErisPulse.scope.actions.MyModule]
+send = { allow = ["Text"] }           # ③ 出站維度：該模組只允許發送文字
+api = { deny = ["set_*", "leave_*"] } #    並禁止管理類 API
+```
+
+```python
+# 運行時同樣可呼叫，立即生效（支援點分路徑的字典式讀寫）
+sdk.scope.set_action("MyModule", "api", deny=["set_*"])
+```
+
+> 請參閱 [作用域（scope）](docs/zh-TW/advanced/scope.md)
+
+## 事件覆寫——不改模組代碼，覆寫任意事件類型的行為
+
+```toml
+# 覆寫訊息處理器觸發條件（與程式碼內條件 AND；meta/message/notice/request/command 全類型支援）
+[ErisPulse.event.overrides.message.ChatModule]
+pattern = "閒聊*"
+
+# 覆寫命令實現參數（master / hidden / aliases / prefix 等，使用者優先）
+[ErisPulse.event.overrides.command.MyModule.restart]
+master = true
+```
+
+> 請參閱 [事件覆寫](docs/zh-TW/getting-started/event-handling.md)
 
 ---
 
@@ -164,11 +203,11 @@ graph LR
 
 完整的模組組成、初始化流程、生命週期事件等設計細節，請見[架構概覽](docs/zh-TW/architecture.md)。
 
-## 快速入門
+## 快速開始
 
 ### 一鍵安裝腳本（推薦）
 
-安裝腳本會自動偵測您的環境（Docker、Python、uv），引導選擇最適合的安裝方式，支援多語言（中文/English/日本語/Русский/繁體中文）。
+安裝腳本會自動檢測您的環境（Docker、Python、uv），引導選擇最適合的安裝方式，支援多語言（中文/English/日本語/Русский/繁體中文）。
 
 Windows (PowerShell):
 ```powershell
@@ -184,14 +223,14 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 <tr>
 <td align="center" width="50%">
 
-**Docker 安裝示範**
+**Docker 安裝演示**
 
 <video src="https://github.com/user-attachments/assets/a367a466-4678-46a9-b101-073a86388ede" controls width="100%"></video>
 
 </td>
 <td align="center" width="50%">
 
-**pip 安裝示範**
+**pip 安裝演示**
 
 <video src="https://github.com/user-attachments/assets/a2df4009-dba6-411e-b79d-4454a168d063" controls width="100%"></video>
 
@@ -206,9 +245,9 @@ docker pull erispulse/erispulse:latest
 ```
 
 <details>
-<summary>Docker Hub 不可用？</summary>
+<summary>Docker Hub不可用？</summary>
 
-如果 Docker Hub 無法存取，可以使用 GitHub Container Registry：
+如果 Docker Hub 無法訪問，可以使用 GitHub Container Registry：
 
 ```bash
 docker pull ghcr.io/erispulse/erispulse:latest
@@ -228,34 +267,30 @@ image: ghcr.io/erispulse/erispulse:latest
 # 下載 docker-compose.yml
 curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-# 設定 Dashboard 登入令牌並啟動
+# 設置 Dashboard 登錄令牌並啟動
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
-啟動後存取 `http://<host>:8000/Dashboard`，使用設定的令牌登入 Dashboard 管理介面。
+啟動後訪問 `http://<host>:8000/Dashboard`，使用設置的令牌登錄 Dashboard 管理面板。
 
-> 鏡像內建 ErisPulse 框架和 Dashboard 管理介面，支援 `linux/amd64` 和 `linux/arm64` 架構。
+> 鏡像內建 ErisPulse 框架和 Dashboard 管理面板，支援 `linux/amd64` 和 `linux/arm64` 架構。
 >
-> **持久化**：配置檔和已安裝的模組/適配器透過卷掛載持久化到主機，容器重啟後不會遺失。框架自身的更新透過 Dashboard 熱更新完成。
+> **持久化**：配置文件和已安裝的模組/適配器通過卷掛載持久化到宿主機，容器重啟後不會丟失。框架自身的更新通過 Dashboard 熱更新完成。
 
 </details>
 
 <details>
+<summary>Docker 環境變量</summary>
 
-</details>
-
-<details>
-<summary>Docker 環境變數</summary>
-
-| 變數 | 預設值 | 說明 |
+| 變數 | 默認值 | 說明 |
 |------|--------|------|
-| `ERISPULSE_DASHBOARD_TOKEN` | 空 | Dashboard 登入令牌（設定後自動寫入配置）|
+| `ERISPULSE_DASHBOARD_TOKEN` | 空 | Dashboard 登錄令牌（設置後自動寫入配置）|
 | `ERISPULSE_PORT` | `8000` | Dashboard 端口映射 |
 | `ERISPULSE_TAG` | `latest` | 鏡像 tag，可設為 `dev` 使用預發布鏡像 |
-| `ERISPULSE_BUILD_TARGET` | `production` | 建構目標：`production`（穩定版）或 `dev`（預發布版）|
+| `ERISPULSE_BUILD_TARGET` | `production` | 構建目標：`production`（穩定版）或 `dev`（預發布版）|
 | `CONTAINER_NAME` | `erispulse` | 容器名稱 |
 | `TZ` | `Asia/Shanghai` | 容器時區 |
-| `LANG` | `en_US.UTF-8` | 系統語言，自動偵測啟動介面語言 |
+| `LANG` | `en_US.UTF-8` | 系統語言，自動檢測啟動介面語言 |
 | `ERISPULSE_LANG` | 空 | 強制啟動介面語言：`zh` / `zh_TW` / `en` / `ja` / `ru`（覆蓋 `LANG`）|
 
 </details>
@@ -276,21 +311,21 @@ ErisPulse 已上架 1Panel 第三方應用商店，可使用 [okxlin/appstore](h
 pip install ErisPulse
 ```
 
-> 也可以使用上方的一鍵安裝腳本，自動偵測環境並引導配置。
+> 也可以使用上方的一鍵安裝腳本，自動檢測環境並引導配置。
 
-### 初始化專案
+### 初始化項目
 
 ```bash
-# 互動式初始化
+# 交互式初始化
 epsdk init
 
-# 快速初始化（指定專案名稱）
+# 快速初始化（指定項目名稱）
 epsdk init -q -n my_bot
 ```
 
-### 建立第一個機器人
+### 創建第一個機器人
 
-建立 `main.py` 檔案：
+創建 `main.py` 文件：
 
 <table>
 <tr>
@@ -302,7 +337,7 @@ epsdk init -q -n my_bot
 from ErisPulse import sdk
 from ErisPulse.Core.Event import command
 
-@command("hello", help="發送問候訊息")
+@command("hello", help="發送問候消息")
 async def hello_handler(event):
     user_name = event.get_user_nickname() or "朋友"
     await event.reply(f"你好，{user_name}！")
@@ -321,19 +356,19 @@ if __name__ == "__main__":
 
 **效果說明**
 
-傳送 `/hello`
+發送 `/hello`
 
-機器人回覆：`你好，{使用者名稱}！`
+機器人回覆：`你好，{用戶名}！`
 
 ---
 
-傳送 `/ping`
+發送 `/ping`
 
 機器人回覆：`Pong！機器人運行正常。`
 
 ---
 
-**執行方式**
+**運行方式**
 
 ```bash
 epsdk run main.py
@@ -346,7 +381,7 @@ epsdk run main.py --reload
 </table>
 
 更多詳細說明請參閱：
-- [快速入門指南](docs/zh-TW/quick-start.md)
+- [快速開始指南](docs/zh-TW/quick-start.md)
 - [入門指南](docs/zh-TW/getting-started/)
 
 ## 同一份程式碼。多個平台。

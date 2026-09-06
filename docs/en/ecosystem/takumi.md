@@ -33,9 +33,7 @@ enabled = true
 
 ---
 
-Please return the complete translated Markdown content directly, without including any other text.
 
-Again, if the document contains language switch lines (lines where language names are separated by `` | ``), please strictly adhere to the format requirement in item 8 above, and do not write incorrect formats like ``[**Label**](file)``.
 
 ## Quick Start
 
