@@ -55,7 +55,7 @@ async def reload_handler(event):
 
 所有命令查詢 API 均支援可選的**會話上下文**：傳 `event=`（Event 或 dict）或
 顯式 `platform=` / `bot_id=` / `session_id=`（與 event 叠加時顯式參數優先），
-即按控制面模組維度過濾當前會話不可用模組的命令（詳見 advanced/scope.md）；
+即按作用域模組維度過濾當前會話不可用模組的命令（詳見 advanced/scope.md）；
 全部為可選關鍵字參數，不傳時保持原有全量行為。
 
 ```python
@@ -186,9 +186,9 @@ async def high_priority_handler(event):
 # 在處理器內部實作條件過濾
 @message.on_message()
 async def filtered_handler(event):
-    if "關鍵詞" not in event.get_text():
+    if "關鍵字" not in event.get_text():
         return
-    # 處理包含關鍵詞的消息
+    # 處理包含關鍵字的消息
     pass
 ```
 
@@ -303,7 +303,7 @@ target_id = event.get_target_id()
 
 # 會話唯一標識，格式: {platform}:{detail_type}:{target_id}
 session_id = event.get_session_id()
-# 示例: "telegram:private:12345"、"qq:group:67890"
+# 範例: "telegram:private:12345"、"qq:group:67890"
 ```
 
 `get_target_id()` 按以下順序返回首個非空值：`group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`。適用於上下文管理、狀態儲存等需要統一標識會話的場景。
@@ -396,7 +396,7 @@ methods = event.available_methods()
 `reply()` 方法支援透過 `method` 參數指定發送類型，以及兩個便捷的布林參數：
 
 ```python
-# 簡單文本回覆
+# 簡單文字回覆
 await event.reply("你好")
 
 # 回覆並@發送者
@@ -442,9 +442,9 @@ if await event.confirm("http://example.com/image.jpg", method="Image"):
 choice = await event.choose("請選擇顏色：", ["紅色", "綠色", "藍色"])
 
 # options_format="auto"（預設）根據 method 自動選擇樣式：
-# Markdown→無序列表（- 1.選項），Html→有序列表（<ol>），其他→純文本列表
+# Markdown→無序列表（- 1.選項），Html→有序列表（<ol>），其他→純文字列表
 # 文本類方法（Markdown/Html 等）預設合併選項到末尾
-# merge_prompt=True 可強制任意 method 合併；placeholder 可自訂占位符
+# merge_prompt=True 可強制任意 method 合併；placeholder 可自定義佔位符
 choice = await event.choose(
     "## 請選擇\n{options}", ["A", "B"],
     method="Markdown", merge_prompt=True,
@@ -466,7 +466,7 @@ conv = event.conversation(timeout=60)
 await conv.say("歡迎！")
 ```
 
-> 完整的互動方法參數說明和更多示例請參考 [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md) 和 [Conversation 多輪對話](../advanced/conversation.md)。
+> 完整的互動方法參數說明和更多範例請參考 [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md) 和 [Conversation 多輪對話](../advanced/conversation.md)。
 
 ### 工具方法
 
@@ -500,7 +500,7 @@ event.done(claim=False)
 event.mark_processed()             # 等價 event.done()
 event.mark_processed(stop=False)   # 等價 event.done(stop=False)
 
-# 查询狀態
+# 查詢狀態
 event.is_processed()  # 是否已認領
 event.is_stopped()    # 是否已阻斷傳播
 ```
@@ -564,27 +564,27 @@ hasattr(event, "get_subject")   # 僅當 platform="email" 時返回 True
 "get_subject" in dir(event)     # 同上
 ```
 
-### 適配器：註冊平台擴展方法
+#### 適配器：註冊平台擴展方法
 
-適配器可以透過裝飾器為 Event 註冊平台專有方法，方法的第一個參數為 `self`（Event 實例），可以自由訪問事件資料。
+適配器可以透過裝飾器為 Event 註冊平台專有方法，方法的第一個參數為 `self`（Event 實例），可以自由存取事件資料。
 
-#### 單個方法註冊
+##### 單個方法註冊
 
 ```python
 from ErisPulse.Core.Event import register_event_method
 
 @register_event_method("email")
 def get_subject(self):
-    """獲取郵件主題"""
+    """獲取郵件主旨"""
     return self.get("email_raw", {}).get("subject", "")
 
 @register_event_method("email")
 def get_from(self):
-    """獲取發件人"""
+    """獲取寄件人"""
     return self.get("email_raw", {}).get("from", {})
 ```
 
-#### 批量註冊（Mixin 類）
+##### 批量註冊（Mixin 類）
 
 當方法較多時，推薦使用 Mixin 類批量註冊：
 
@@ -605,19 +605,19 @@ class EmailEventMixin:
 register_event_mixin("email", EmailEventMixin)
 ```
 
-#### 返回值規範
+##### 回傳值規範
 
-| 場景 | 返回值 | 使用者使用方式 |
+| 場景 | 回傳值 | 使用者使用方式 |
 |------|--------|------------|
-| 返回資料（文字、字典等） | 直接返回值 | `subject = event.get_subject()` |
-| 執行操作（發送消息等） | 返回 `asyncio.Task` | `task = event.do_something()` 可選 `await` |
+| 回傳資料（文字、字典等） | 直接回傳值 | `subject = event.get_subject()` |
+| 執行操作（發送訊息等） | 回傳 `asyncio.Task` | `task = event.do_something()` 可選 `await` |
 
-> **建議**：非資料返回的方法返回 `asyncio.Task`，這樣使用者可以自行決定是否 `await`，即使不 `await` 操作也會執行完成。
+> **建議**：非資料回傳的方法回傳 `asyncio.Task`，這樣使用者可以自行決定是否 `await`，即使不 `await` 操作也會執行完成。
 
 ```python
 @register_event_method("email")
 def forward_email(self, to_address: str):
-    """轉發郵件 — 返回 Task，使用者可自行決定是否 await"""
+    """轉發郵件 — 回傳 Task，使用者可自行決定是否 await"""
     import asyncio
     return asyncio.create_task(
         self._do_forward(to_address)
@@ -630,7 +630,7 @@ await event.forward_email("user@example.com")
 event.forward_email("user@example.com")
 ```
 
-#### 注銷方法
+##### 注銷方法
 
 ```python
 from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
@@ -638,15 +638,15 @@ from ErisPulse.Core.Event import unregister_event_method, unregister_platform_ev
 # 注銷單個方法
 unregister_event_method("email", "get_subject")
 
-# 注銷某平台全部方法（適配器 shutdown 時調用）
+# 注銷某平台全部方法（適配器 shutdown 時呼叫）
 unregister_platform_event_methods("email")
 ```
 
-#### 覆寫內建方法
+##### 覆寫內建方法
 
-`register_event_mixin` / `register_event_method` 支援覆寫 Event 內建方法（如 `confirm`、`choose`、`collect`、`wait_reply`、`reply` 等）。註冊的平台方法透過 `Event.__getattribute__` 優先於內建方法生效，因此適配器可以提供平台特色的互動實作。
+`register_event_mixin` / `register_event_method` 支援覆寫 Event 內建方法（如 `confirm`、`choose`、`collect`、`wait_reply`、`reply` 等）。註冊的平台方法透過 `Event.__getattribute__` 优先於內建方法生效，因此適配器可以提供平台特色的互動實作。
 
-內建實作為 `_builtin_*` 函數導出，覆寫方可以調用它們作為回退：
+內建實作為 `_builtin_*` 函式導出，覆寫方可以呼叫它們作為回退：
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin, _builtin_choose
@@ -665,7 +665,7 @@ register_event_mixin("yunhu", YunhuEventMixin)
 
 ## 跨平台擴展（通配符）
 
-`register_event_method` 和 `register_event_mixin` 支援傳 `"*"` 作為平台名，註冊的方法在**所有平台**的 Event 實例上都可用。適合 AI 對話、上下文管理等需要跨平台複用的功能模組。
+`register_event_method` 和 `register_event_mixin` 支援傳 `"*"` 作為平台名，註冊的方法在**所有平台**的 Event 實例上都可用。適合 AI 對話、上下文管理等需要跨平台重用的功能模組。
 
 ### 註冊跨平台方法
 
@@ -674,7 +674,7 @@ from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    """self 為 Event 實例，可自由訪問事件資料和內建方法"""
+    """self 為 Event 實例，可自由存取事件資料和內建方法"""
     await self.reply(f"AI: {prompt}")
 ```
 

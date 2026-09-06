@@ -24,7 +24,7 @@ class MyModule(BaseModule):
 > `depends` 聲明的模組如果未註冊，當前模組將被跳過並記錄警告。加載順序由拓撲排序決定，同層級按 `priority` 降序。
 
 > [!NOTE]
-> **級聯卸載 / 級聯重載**（ErisPulse **2.8.0+**）：卸載被其它模組依賴的模組時，依賴它的模組會**先被級聯卸載**（日誌說明級聯鏈）；熱重載本地插件時，依賴它的插件同樣**級聯重載**，避免依賴者持有失效實例引用繼續運行。聲明循環依賴會在加載時以 `RuntimeError` 拒絕。
+> **級聯卸載 / 級聯重載**（ErisPulse **2.8.0+**）：卸載被其它模組依賴的模組時，依賴它的模組會**先被級聯卸載**（日誌說明級聯鏈）；熱重載任意模組（本地插件 / PyPI 安裝包）時，依賴它的模組同樣**級聯重載**，避免依賴者持有失效實例引用繼續運行。聲明循環依賴會在加載時以 `RuntimeError` 拒絕。
 
 ### on_load 方法
 
@@ -63,7 +63,7 @@ async def on_unload(self, event):
 
 `unload()` 預設只**取消加載**（卸載實例與資源），但保留註冊存根（模組類與元資訊）——模組仍可被 discover 重新發現、`load()` 重新實例化，無需重新 `register()`。
 
-當需要**徹底卸載**（釋放模組類引用、清理 `sys.modules`，讓插件及其獨佔依賴可被 GC 回收）時，傳入 `purge=True`：
+當需要**徹底卸載**（釋放模組類引用、清理 `sys.modules`，讓插件及其獨占依賴可被 GC 回收）時，傳入 `purge=True`：
 
 ```python
 # 只取消加載：保留註冊存根，可隨時重新 load()
@@ -85,7 +85,7 @@ await sdk.module.unload("MyModule", purge=True)
 
 ### 生命週期全景
 
-把上面的方法串起來，框架在加載與卸載一個模組時，**在背後為你做的全部事情**：
+將上面的方法串起來，框架在加載與卸載一個模組時，**在背後為你做的全部事情**：
 
 ```mermaid
 flowchart TD
@@ -93,7 +93,7 @@ flowchart TD
         L1["register：登記模組類與元資訊"] --> L2["依賴校驗<br/>缺失則跳過"]
         L2 --> L3["拓撲排序（Kahn + priority）"]
         L3 --> L4["owner 注入 current_owner"]
-        L4 --> L5["生成配置範本 + 註冊 i18n 翻譯鍵"]
+        L4 --> L5["生成配置模板 + 註冊 i18n 翻譯鍵"]
         L5 --> L6["實例化模組（注入 sdk）"]
         L6 --> L7["呼叫 on_load()"]
         L7 --> L8["掛載到 sdk 屬性 + emit module.load"]
@@ -103,7 +103,7 @@ flowchart TD
         U1["呼叫 on_unload()"] --> U2["兜底取消後台任務（self.spawn 歸屬）"]
         U2 --> U3["清理 i18n 翻譯鍵"]
         U3 --> U4["移除路由 / 命令 / 事件處理器（按 owner）"]
-        U4 --> U5["清理 lifecycle 鉤子（按 owner）"]
+        U4 --> U5["清理 lifecycle 鈎子（按 owner）"]
         U5 --> U6["移除 SDK 屬性 + 慢加載代理"]
         U6 --> U7["emit module.unload"]
     end
@@ -115,13 +115,13 @@ flowchart TD
 
 | 環節 | 框架自動做的 |
 |------|-------------|
-| owner 注入 | 實例化期間用 `owner_scope` 包住模組名——你 `on_load` 裡註冊的命令/事件/鉤子/後台任務**自動歸屬本模組**，卸載時按 owner 一鍵清理 |
-| 配置範本 | 聲明了 `ConfigClass` 的模組，框架自动生成/填補 `ErisPulse.<ModuleName>` 配置段 |
+| owner 注入 | 實例化期間用 `owner_scope` 包住模組名——你 `on_load` 裡註冊的命令/事件/鈎子/後台任務**自動歸屬本模組**，卸載時按 owner 一鍵清理 |
+| 配置模板 | 聲明了 `ConfigClass` 的模組，框架自动生成/填補 `ErisPulse.<ModuleName>` 配置段 |
 | i18n 翻譯鍵 | 聲明了 `I18nClass` 的模組，翻譯鍵自動註冊（卸載時自動註銷） |
 | 依賴拓撲 | 按 `depends` 聲明排序，確保被依賴模組先加載；循環依賴以 `RuntimeError` 拒絕 |
 | SDK 挂載 | 實例化後掛到 `sdk.<ModuleName>`，你才能 `sdk.MyModule.xxx` 訪問 |
 
-**卸載時框架幫你清理的**（對應上面的 U1→U7）：`on_unload` 跑完後再兜底清理——後台任務強制取消（`self.spawn` 建立的，優雅收尾請在 `on_unload` 自行做）、i18n 鍵、路由、命令/事件處理器、lifecycle 鉤子，最後移除 SDK 屬性。`purge=True` 預設額外刪除註冊存根 + 清理 `sys.modules`。
+**卸載時框架幫你清理的**（對應上面的 U1→U7）：`on_unload` 跑完後再兜底清理——後台任務強制取消（`self.spawn` 建立的，優雅收尾請在 `on_unload` 自行做）、i18n 鍵、路由、命令/事件處理器、lifecycle 鈎子，最後移除 SDK 屬性。`purge=True` 預設額外刪除註冊存根 + 清理 `sys.modules`。
 
 > 這些自動清理就是「你只需寫 `on_load`/`on_unload`，不用手動 unregister」的底氣——框架用 owner 歸屬把「誰註冊的誰清理」做成了一鍵式。
 
