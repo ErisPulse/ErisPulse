@@ -131,6 +131,7 @@ TRANSLATIONS = {
     "cli.config.description": "交互式配置适配器/模块的声明式配置项",
     "cli.config.name_help": "目标名称（适配器平台名或模块名，留空进入交互选择）",
     "cli.config.list_help": "仅列出配置状态，不进入向导",
+    "cli.config.json_help": "以 JSON 格式输出配置状态（供脚本/CI 消费）",
     "cli.config.no_targets": "未发现任何适配器/模块",
     "cli.config.install_hint": "可先运行 epsdk install 安装组件",
     "cli.config.not_found": "未找到目标 {name}",
