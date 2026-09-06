@@ -15,6 +15,7 @@ from .message import message
 from .message_builder import MessageBuilder
 from .meta import meta
 from .notice import notice
+from . import overrides
 from .request import request
 from .session_type import (
     # 标准类型常量
@@ -108,6 +109,7 @@ __all__ = [
     "message",
     "meta",
     "notice",
+    "overrides",
     "register_custom_type",
     "register_event_method",
     # 平台事件方法扩展

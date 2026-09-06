@@ -470,7 +470,7 @@ RETCODE_NOT_IMPLEMENTED: Final[int] = 10002
 # 框架通用失败（make_error 默认返回码）。
 RETCODE_SDK_FAILURE: Final[int] = 34600
 
-# 出站动作被控制面禁用（scope.actions）时的返回码。
+# 出站动作被控制面禁用时的返回码。
 RETCODE_PERMISSION_DENIED: Final[int] = 34601
 
 # 失败状态标识。
