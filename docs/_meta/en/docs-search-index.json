@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1516,
+  "total_keywords": 1517,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -2941,7 +2941,7 @@
     "Backup": [
       {
         "document": "user-guide/deployment.md",
-        "line": 270,
+        "line": 279,
         "level": 3,
         "title": "Backup"
       }
@@ -4885,7 +4885,7 @@
     "Dashboard Management Panel": [
       {
         "document": "user-guide/deployment.md",
-        "line": 73,
+        "line": 81,
         "level": 2,
         "title": "Dashboard Management Panel"
       }
@@ -4899,7 +4899,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 65,
+        "line": 73,
         "level": 3,
         "title": "Data Persistence"
       }
@@ -5235,7 +5235,7 @@
     "Docker Method": [
       {
         "document": "user-guide/deployment.md",
-        "line": 253,
+        "line": 262,
         "level": 3,
         "title": "Docker Method"
       }
@@ -5489,7 +5489,7 @@
     "Environment Variables": [
       {
         "document": "user-guide/deployment.md",
-        "line": 57,
+        "line": 63,
         "level": 3,
         "title": "Environment Variables"
       }
@@ -6254,12 +6254,6 @@
         "line": 11,
         "level": 2,
         "title": "Feature Overview"
-      },
-      {
-        "document": "user-guide/deployment.md",
-        "line": 77,
-        "level": 3,
-        "title": "Feature Overview"
       }
     ],
     "Field Descriptions": [
@@ -6528,6 +6522,14 @@
         "line": 36,
         "level": 2,
         "title": "Full Overview of Owned Resources"
+      }
+    ],
+    "Function Overview": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 85,
+        "level": 3,
+        "title": "Function Overview"
       }
     ],
     "GET": [
@@ -7005,7 +7007,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 112,
+        "line": 120,
         "level": 2,
         "title": "Health Check"
       }
@@ -7435,7 +7437,7 @@
     "Installing Modules via Dashboard": [
       {
         "document": "user-guide/deployment.md",
-        "line": 92,
+        "line": 100,
         "level": 3,
         "title": "Installing Modules via Dashboard"
       }
@@ -7977,7 +7979,7 @@
     "Manual Deployment (pip)": [
       {
         "document": "user-guide/deployment.md",
-        "line": 165,
+        "line": 174,
         "level": 2,
         "title": "Manual Deployment (pip)"
       }
@@ -8835,7 +8837,7 @@
     "Multi-Instance Deployment": [
       {
         "document": "user-guide/deployment.md",
-        "line": 243,
+        "line": 252,
         "level": 2,
         "title": "Multi-Instance Deployment"
       }
@@ -9707,17 +9709,17 @@
     "Process Supervision and Hard Restart": [
       {
         "document": "user-guide/deployment.md",
-        "line": 101,
+        "line": 109,
         "level": 2,
         "title": "Process Supervision and Hard Restart"
       }
     ],
-    "Production Configuration": [
+    "Production Environment Configuration": [
       {
         "document": "user-guide/deployment.md",
-        "line": 169,
+        "line": 178,
         "level": 3,
-        "title": "Production Configuration"
+        "title": "Production Environment Configuration"
       }
     ],
     "Progress Monitoring (OnProgress / OnError)": [
@@ -10765,7 +10767,7 @@
     "Reverse Proxy": [
       {
         "document": "user-guide/deployment.md",
-        "line": 133,
+        "line": 142,
         "level": 2,
         "title": "Reverse Proxy"
       }
@@ -11069,7 +11071,7 @@
     "Security Recommendations": [
       {
         "document": "user-guide/deployment.md",
-        "line": 234,
+        "line": 243,
         "level": 2,
         "title": "Security Recommendations"
       }
@@ -11751,7 +11753,7 @@
     "Supervisor": [
       {
         "document": "user-guide/deployment.md",
-        "line": 219,
+        "line": 228,
         "level": 3,
         "title": "Supervisor"
       }
@@ -12333,7 +12335,7 @@
     "Updates and Maintenance": [
       {
         "document": "user-guide/deployment.md",
-        "line": 251,
+        "line": 260,
         "level": 2,
         "title": "Updates and Maintenance"
       }
@@ -13521,7 +13523,7 @@
     "pip Method": [
       {
         "document": "user-guide/deployment.md",
-        "line": 263,
+        "line": 272,
         "level": 3,
         "title": "pip Method"
       }
@@ -13601,7 +13603,7 @@
     "systemd (Linux)": [
       {
         "document": "user-guide/deployment.md",
-        "line": 187,
+        "line": 196,
         "level": 3,
         "title": "systemd (Linux)"
       }

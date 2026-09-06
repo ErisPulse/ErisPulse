@@ -2669,7 +2669,7 @@
     "Dashboard によるモジュールのインストール": [
       {
         "document": "user-guide/deployment.md",
-        "line": 92,
+        "line": 100,
         "level": 3,
         "title": "Dashboard によるモジュールのインストール"
       }
@@ -2677,7 +2677,7 @@
     "Dashboard 管理面板": [
       {
         "document": "user-guide/deployment.md",
-        "line": 73,
+        "line": 81,
         "level": 2,
         "title": "Dashboard 管理面板"
       }
@@ -2749,7 +2749,7 @@
     "Docker 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 253,
+        "line": 262,
         "level": 3,
         "title": "Docker 方式"
       }
@@ -3617,7 +3617,7 @@
     "Supervisor": [
       {
         "document": "user-guide/deployment.md",
-        "line": 219,
+        "line": 228,
         "level": 3,
         "title": "Supervisor"
       }
@@ -3794,90 +3794,90 @@
         "title": "Yunhu ユーザープラットフォーム特性ドキュメント"
       }
     ],
-    "[BUG-001] 重複登録されたイベントハンドラがイベントを複数回処理する": [
+    "[BUG-001] イベントハンドラの重複登録によりイベントが複数回処理される": [
       {
         "document": "bug-tracker.md",
-        "line": 129,
+        "line": 117,
         "level": 3,
-        "title": "[BUG-001] 重複登録されたイベントハンドラがイベントを複数回処理する"
+        "title": "[BUG-001] イベントハンドラの重複登録によりイベントが複数回処理される"
       }
     ],
-    "[BUG-002] Init コマンドのアダプタ設定パスの型エラー": [
+    "[BUG-002] Init コマンドでアダプタの設定パスの型が間違っている": [
       {
         "document": "bug-tracker.md",
-        "line": 149,
+        "line": 137,
         "level": 3,
-        "title": "[BUG-002] Init コマンドのアダプタ設定パスの型エラー"
+        "title": "[BUG-002] Init コマンドでアダプタの設定パスの型が間違っている"
       }
     ],
     "[BUG-003] 再起動後にコマンドイベントが無効になる": [
       {
         "document": "bug-tracker.md",
-        "line": 173,
+        "line": 161,
         "level": 3,
         "title": "[BUG-003] 再起動後にコマンドイベントが無効になる"
       }
     ],
-    "[BUG-004] ライフサイクルイベントハンドラがクリアされない": [
+    "[BUG-004] ライフサイクルイベントハンドラがクリーンアップされない": [
       {
         "document": "bug-tracker.md",
-        "line": 193,
+        "line": 181,
         "level": 3,
-        "title": "[BUG-004] ライフサイクルイベントハンドラがクリアされない"
+        "title": "[BUG-004] ライフサイクルイベントハンドラがクリーンアップされない"
       }
     ],
     "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない": [
       {
         "document": "bug-tracker.md",
-        "line": 213,
+        "line": 201,
         "level": 3,
         "title": "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない"
       }
     ],
-    "[BUG-006] adapter.clear() が _started_instances をクリアしない": [
+    "[BUG-006] adapter.clear() が _started_instances をクリーンアップしない": [
       {
         "document": "bug-tracker.md",
-        "line": 233,
+        "line": 221,
         "level": 3,
-        "title": "[BUG-006] adapter.clear() が _started_instances をクリアしない"
+        "title": "[BUG-006] adapter.clear() が _started_instances をクリーンアップしない"
       }
     ],
-    "[BUG-007] command.wait_reply() で廃止された asyncio.get_event_loop() を使用": [
+    "[BUG-007] command.wait_reply() で非推奨の asyncio.get_event_loop() を使用": [
       {
         "document": "bug-tracker.md",
-        "line": 253,
+        "line": 241,
         "level": 3,
-        "title": "[BUG-007] command.wait_reply() で廃止された asyncio.get_event_loop() を使用"
+        "title": "[BUG-007] command.wait_reply() で非推奨の asyncio.get_event_loop() を使用"
       }
     ],
-    "[BUG-008] Bot オフラインイベントが shutdown プロセス中に複数回送信される": [
+    "[BUG-008] Bot オフラインイベントが shutdown プロセス中に繰り返し送信される": [
       {
         "document": "bug-tracker.md",
-        "line": 273,
+        "line": 261,
         "level": 3,
-        "title": "[BUG-008] Bot オフラインイベントが shutdown プロセス中に複数回送信される"
+        "title": "[BUG-008] Bot オフラインイベントが shutdown プロセス中に繰り返し送信される"
       }
     ],
-    "[BUG-009] LazyModule 同期アクセスで BaseModule が初期化完了していない": [
+    "[BUG-009] LazyModule が同期的に BaseModule をアクセスして初期化が完了していない": [
       {
         "document": "bug-tracker.md",
-        "line": 293,
+        "line": 281,
         "level": 3,
-        "title": "[BUG-009] LazyModule 同期アクセスで BaseModule が初期化完了していない"
+        "title": "[BUG-009] LazyModule が同期的に BaseModule をアクセスして初期化が完了していない"
       }
     ],
-    "[BUG-010] 複数スレッドでの設定システム書き込みがデータを失う": [
+    "[BUG-010] 複数スレッドでの設定書き込みがデータの失われを引き起こす": [
       {
         "document": "bug-tracker.md",
-        "line": 313,
+        "line": 301,
         "level": 3,
-        "title": "[BUG-010] 複数スレッドでの設定システム書き込みがデータを失う"
+        "title": "[BUG-010] 複数スレッドでの設定書き込みがデータの失われを引き起こす"
       }
     ],
     "[BUG-011] Windows で CTRL+C でプログラムを停止できない": [
       {
         "document": "bug-tracker.md",
-        "line": 336,
+        "line": 324,
         "level": 3,
         "title": "[BUG-011] Windows で CTRL+C でプログラムを停止できない"
       }
@@ -3885,161 +3885,153 @@
     "[BUG-012] ホットリスタート後に更新されたモジュールの Python コードが有効にならない": [
       {
         "document": "bug-tracker.md",
-        "line": 360,
+        "line": 348,
         "level": 3,
         "title": "[BUG-012] ホットリスタート後に更新されたモジュールの Python コードが有効にならない"
       }
     ],
-    "[BUG-013] モジュール加ロード戦略のソートロジックが間違っている": [
+    "[BUG-013] モジュールの加載戦略のソートロジックが間違っている": [
       {
         "document": "bug-tracker.md",
-        "line": 380,
+        "line": 368,
         "level": 3,
-        "title": "[BUG-013] モジュール加ロード戦略のソートロジックが間違っている"
+        "title": "[BUG-013] モジュールの加載戦略のソートロジックが間違っている"
       }
     ],
-    "[BUG-014] アダプタミドルウェアが None を返すとイベントデータが失われる": [
+    "[BUG-014] アダプタのミドルウェアが None を返すとイベントデータが失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 400,
+        "line": 388,
         "level": 3,
-        "title": "[BUG-014] アダプタミドルウェアが None を返すとイベントデータが失われる"
+        "title": "[BUG-014] アダプタのミドルウェアが None を返すとイベントデータが失われる"
       }
     ],
-    "[BUG-015] 設定ファイルパスが作業ディレクトリに依存している": [
+    "[BUG-015] 設定ファイルのパスが作業ディレクトリに依存している": [
       {
         "document": "bug-tracker.md",
-        "line": 420,
+        "line": 408,
         "level": 3,
-        "title": "[BUG-015] 設定ファイルパスが作業ディレクトリに依存している"
+        "title": "[BUG-015] 設定ファイルのパスが作業ディレクトリに依存している"
       }
     ],
-    "[BUG-016] BaseStorage がストレージ値 None とキーが存在しないを混同する": [
+    "[BUG-016] BaseStorage がストレージ値の None とキーの存在しないことを混同する": [
       {
         "document": "bug-tracker.md",
-        "line": 440,
+        "line": 428,
         "level": 3,
-        "title": "[BUG-016] BaseStorage がストレージ値 None とキーが存在しないを混同する"
+        "title": "[BUG-016] BaseStorage がストレージ値の None とキーの存在しないことを混同する"
       }
     ],
-    "[BUG-017] WebSocket ルート auto_accept フラグがサービスリスタート後に失われる": [
+    "[BUG-017] WebSocket ルーティング auto_accept フラグがサービスの再起動後に失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 460,
+        "line": 448,
         "level": 3,
-        "title": "[BUG-017] WebSocket ルート auto_accept フラグがサービスリスタート後に失われる"
+        "title": "[BUG-017] WebSocket ルーティング auto_accept フラグがサービスの再起動後に失われる"
       }
     ],
-    "[BUG-018] HTTP/WS クライアントの並列呼び出しでクラッシュと接続リーク": [
+    "[BUG-018] HTTP/WS クライアントの並行呼び出しによるクラッシュと接続リーク": [
       {
         "document": "bug-tracker.md",
-        "line": 480,
+        "line": 468,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS クライアントの並列呼び出しでクラッシュと接続リーク"
+        "title": "[BUG-018] HTTP/WS クライアントの並行呼び出しによるクラッシュと接続リーク"
       }
     ],
-    "[BUG-019] アダプタのホットリロード時にルートの競合が発生しリロードに失敗する": [
+    "[BUG-019] アダプタのホットリロード時にルーティングの競合が発生してリロードに失敗する": [
       {
         "document": "bug-tracker.md",
-        "line": 508,
+        "line": 496,
         "level": 3,
-        "title": "[BUG-019] アダプタのホットリロード時にルートの競合が発生しリロードに失敗する"
+        "title": "[BUG-019] アダプタのホットリロード時にルーティングの競合が発生してリロードに失敗する"
       }
     ],
-    "[BUG-020] 子プロセスモード `ep run <script>` でスクリプト所在ディレクトリのサブパッケージが見つからない": [
+    "[BUG-020] サブプロセスモード `ep run <script>` でスクリプトの子パッケージが見つからない": [
       {
         "document": "bug-tracker.md",
-        "line": 531,
+        "line": 520,
         "level": 3,
-        "title": "[BUG-020] 子プロセスモード `ep run <script>` でスクリプト所在ディレクトリのサブパッケージが見つからない"
+        "title": "[BUG-020] サブプロセスモード `ep run <script>` でスクリプトの子パッケージが見つからない"
       }
     ],
-    "[BUG-021] SQL クエリビルダが合法なワイルドカードとリスト式を拒否する": [
+    "[BUG-021] SQL クエリビルダーが合法なワイルドカードとリスト式を拒否する": [
       {
         "document": "bug-tracker.md",
-        "line": 551,
+        "line": 540,
         "level": 3,
-        "title": "[BUG-021] SQL クエリビルダが合法なワイルドカードとリスト式を拒否する"
+        "title": "[BUG-021] SQL クエリビルダーが合法なワイルドカードとリスト式を拒否する"
       }
     ],
-    "[BUG-022] _resolve_account() アカウント解析のバグ（_accounts_data が埋め込まれていない）": [
+    "[BUG-022] _resolve_account() アカウント解析の回帰（_accounts_data が埋め込まれていない）": [
       {
         "document": "bug-tracker.md",
-        "line": 581,
+        "line": 569,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() アカウント解析のバグ（_accounts_data が埋め込まれていない）"
+        "title": "[BUG-022] _resolve_account() アカウント解析の回帰（_accounts_data が埋め込まれていない）"
       }
     ],
-    "[BUG-023] アカウント設定を変更した後、アダプタのキャッシュが更新されずアカウント解析が失敗する": [
+    "[BUG-023] アカウント設定を変更した後、アダプタのキャッシュが更新されずアカウント解決に失敗する": [
       {
         "document": "bug-tracker.md",
-        "line": 620,
+        "line": 608,
         "level": 3,
-        "title": "[BUG-023] アカウント設定を変更した後、アダプタのキャッシュが更新されずアカウント解析が失敗する"
+        "title": "[BUG-023] アカウント設定を変更した後、アダプタのキャッシュが更新されずアカウント解決に失敗する"
       }
     ],
     "[BUG-024] storage.set() で大数 ID キーを書き込むと OOM Kill が発生する": [
       {
         "document": "bug-tracker.md",
-        "line": 640,
+        "line": 628,
         "level": 3,
         "title": "[BUG-024] storage.set() で大数 ID キーを書き込むと OOM Kill が発生する"
       }
     ],
-    "[BUG-025] on_config_update コールバックがコアルートにルーティングされない": [
+    "[BUG-025] on_config_update コールバックがコアルーティングされない": [
       {
         "document": "bug-tracker.md",
-        "line": 686,
+        "line": 674,
         "level": 3,
-        "title": "[BUG-025] on_config_update コールバックがコアルートにルーティングされない"
+        "title": "[BUG-025] on_config_update コールバックがコアルーティングされない"
       }
     ],
-    "[BUG-026] notice/request イベント reply の送信先推論が間違っている": [
+    "[BUG-026] notice/request イベントの reply 目標の推定が間違っている": [
       {
         "document": "bug-tracker.md",
-        "line": 716,
+        "line": 704,
         "level": 3,
-        "title": "[BUG-026] notice/request イベント reply の送信先推論が間違っている"
+        "title": "[BUG-026] notice/request イベントの reply 目標の推定が間違っている"
       }
     ],
-    "[BUG-027] ルートのリクエスト制限のクリーンアップタスクが固定ウィンドウを使用して長時間のリクエスト制限ルールが無効になる": [
+    "[BUG-027] ルーティングのリクエスト制限のクリーンアップタスクが固定ウィンドウを使用して長時間のリクエスト制限ルールが機能しない": [
       {
         "document": "bug-tracker.md",
-        "line": 747,
+        "line": 735,
         "level": 3,
-        "title": "[BUG-027] ルートのリクエスト制限のクリーンアップタスクが固定ウィンドウを使用して長時間のリクエスト制限ルールが無効になる"
+        "title": "[BUG-027] ルーティングのリクエスト制限のクリーンアップタスクが固定ウィンドウを使用して長時間のリクエスト制限ルールが機能しない"
       }
     ],
-    "[BUG-029] 設定監視タスクが不完全な TOML をブロードキャストし、例外を静かに飲み込む": [
+    "[BUG-029] 設定監視タスクが未完成の TOML をブロードキャストし、例外を静かに飲み込む": [
       {
         "document": "bug-tracker.md",
-        "line": 779,
+        "line": 767,
         "level": 3,
-        "title": "[BUG-029] 設定監視タスクが不完全な TOML をブロードキャストし、例外を静かに飲み込む"
+        "title": "[BUG-029] 設定監視タスクが未完成の TOML をブロードキャストし、例外を静かに飲み込む"
       }
     ],
-    "[BUG-030] 設定 watcher の競合が setConfig の遅延書き込みを静かにデータを失わせる": [
+    "[BUG-030] 設定の watcher 競合により setConfig 延期書き込みが静かにデータを失う": [
       {
         "document": "bug-tracker.md",
-        "line": 815,
+        "line": 803,
         "level": 3,
-        "title": "[BUG-030] 設定 watcher の競合が setConfig の遅延書き込みを静かにデータを失わせる"
+        "title": "[BUG-030] 設定の watcher 競合により setConfig 延期書き込みが静かにデータを失う"
       }
     ],
-    "[BUG-031] 本地插件热重载完全不可用（reload_plugin 恒返回 False）": [
+    "[BUG-032] 設定の遅延書き込み中に「書き込み後直ちに読み取り」で古い値を読み取る": [
       {
         "document": "bug-tracker.md",
-        "line": 851,
+        "line": 839,
         "level": 3,
-        "title": "[BUG-031] 本地插件热重载完全不可用（reload_plugin 恒返回 False）"
-      }
-    ],
-    "[BUG-033] 設定の遅延書き込み中「書き込み直後に読み取り」で旧値を読み取る": [
-      {
-        "document": "bug-tracker.md",
-        "line": 876,
-        "level": 3,
-        "title": "[BUG-033] 設定の遅延書き込み中「書き込み直後に読み取り」で旧値を読み取る"
+        "title": "[BUG-032] 設定の遅延書き込み中に「書き込み後直ちに読み取り」で古い値を読み取る"
       }
     ],
     "__init__.py": [
@@ -4445,7 +4437,7 @@
     "pip 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 263,
+        "line": 272,
         "level": 3,
         "title": "pip 方式"
       }
@@ -4549,7 +4541,7 @@
     "systemd (Linux)": [
       {
         "document": "user-guide/deployment.md",
-        "line": 187,
+        "line": 196,
         "level": 3,
         "title": "systemd (Linux)"
       }
@@ -6573,7 +6565,7 @@
     "セキュリティに関する推奨事項": [
       {
         "document": "user-guide/deployment.md",
-        "line": 234,
+        "line": 243,
         "level": 2,
         "title": "セキュリティに関する推奨事項"
       }
@@ -6618,20 +6610,20 @@
         "title": "タイプのスタブ生成（IDEの補完）"
       }
     ],
+    "タイプの分類": [
+      {
+        "document": "bug-tracker.md",
+        "line": 49,
+        "level": 2,
+        "title": "タイプの分類"
+      }
+    ],
     "タイプストアブコマンド": [
       {
         "document": "user-guide/cli-reference.md",
         "line": 421,
         "level": 2,
         "title": "タイプストアブコマンド"
-      }
-    ],
-    "タイプ分類": [
-      {
-        "document": "bug-tracker.md",
-        "line": 59,
-        "level": 2,
-        "title": "タイプ分類"
       }
     ],
     "タイマージョブ": [
@@ -7057,7 +7049,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 65,
+        "line": 73,
         "level": 3,
         "title": "データの永続化"
       }
@@ -7305,7 +7297,7 @@
     "バックアップ": [
       {
         "document": "user-guide/deployment.md",
-        "line": 270,
+        "line": 279,
         "level": 3,
         "title": "バックアップ"
       }
@@ -7460,12 +7452,12 @@
         "title": "ファーストステップ"
       }
     ],
-    "フィールド説明": [
+    "フィールドの説明": [
       {
         "document": "bug-tracker.md",
-        "line": 16,
+        "line": 14,
         "level": 2,
-        "title": "フィールド説明"
+        "title": "フィールドの説明"
       }
     ],
     "フォント": [
@@ -7815,7 +7807,7 @@
     "プロセス監督とハードリスタート": [
       {
         "document": "user-guide/deployment.md",
-        "line": 101,
+        "line": 109,
         "level": 2,
         "title": "プロセス監督とハードリスタート"
       }
@@ -7833,12 +7825,6 @@
         "document": "advanced/router.md",
         "line": 334,
         "level": 3,
-        "title": "ヘルスチェック"
-      },
-      {
-        "document": "user-guide/deployment.md",
-        "line": 112,
-        "level": 2,
         "title": "ヘルスチェック"
       }
     ],
@@ -7933,7 +7919,7 @@
     "マルチインスタンスデプロイ": [
       {
         "document": "user-guide/deployment.md",
-        "line": 243,
+        "line": 252,
         "level": 2,
         "title": "マルチインスタンスデプロイ"
       }
@@ -9067,7 +9053,7 @@
     "リバースプロキシ": [
       {
         "document": "user-guide/deployment.md",
-        "line": 133,
+        "line": 142,
         "level": 2,
         "title": "リバースプロキシ"
       }
@@ -9524,14 +9510,6 @@
         "title": "严格模式"
       }
     ],
-    "严重性分级": [
-      {
-        "document": "bug-tracker.md",
-        "line": 47,
-        "level": 2,
-        "title": "严重性分级"
-      }
-    ],
     "並列と直列": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -9652,6 +9630,14 @@
         "title": "任意のイベントを待つ (wait_for)"
       }
     ],
+    "任意フィールド": [
+      {
+        "document": "bug-tracker.md",
+        "line": 29,
+        "level": 3,
+        "title": "任意フィールド"
+      }
+    ],
     "优先度システム": [
       {
         "document": "api-reference/event-system.md",
@@ -9760,12 +9746,12 @@
         "title": "依存関係の宣言（オプション、2.8.0以降）"
       }
     ],
-    "修正したバグ": [
+    "修正済みのバグ": [
       {
         "document": "bug-tracker.md",
-        "line": 127,
+        "line": 115,
         "level": 2,
-        "title": "修正したバグ"
+        "title": "修正済みのバグ"
       }
     ],
     "修飾の組み合わせ": [
@@ -9790,6 +9776,14 @@
         "line": 484,
         "level": 3,
         "title": "修飾子とルールの継承"
+      }
+    ],
+    "健康チェック": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 120,
+        "level": 2,
+        "title": "健康チェック"
       }
     ],
     "優先度": [
@@ -10236,12 +10230,12 @@
         "title": "固有のメッセージセグメントタイプ"
       }
     ],
-    "国内用のイメージ加速": [
+    "国内でのイメージ加速": [
       {
         "document": "user-guide/deployment.md",
         "line": 24,
         "level": 3,
-        "title": "国内用のイメージ加速"
+        "title": "国内でのイメージ加速"
       }
     ],
     "国際化 (i18n) システム": [
@@ -10895,7 +10889,7 @@
     "必須フィールド": [
       {
         "document": "bug-tracker.md",
-        "line": 18,
+        "line": 16,
         "level": 3,
         "title": "必須フィールド"
       },
@@ -11113,7 +11107,7 @@
     "手動デプロイ（pip）": [
       {
         "document": "user-guide/deployment.md",
-        "line": 165,
+        "line": 174,
         "level": 2,
         "title": "手動デプロイ（pip）"
       }
@@ -11502,6 +11496,14 @@
         "title": "早速体験"
       }
     ],
+    "早速起動": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 9,
+        "level": 3,
+        "title": "早速起動"
+      }
+    ],
     "普通イベントの自動発見": [
       {
         "document": "api-reference/adapter-system.md",
@@ -11521,7 +11523,7 @@
     "更新とメンテナンス": [
       {
         "document": "user-guide/deployment.md",
-        "line": 251,
+        "line": 260,
         "level": 2,
         "title": "更新とメンテナンス"
       }
@@ -11605,7 +11607,7 @@
     "本番環境の設定": [
       {
         "document": "user-guide/deployment.md",
-        "line": 169,
+        "line": 178,
         "level": 3,
         "title": "本番環境の設定"
       }
@@ -11637,7 +11639,7 @@
     "条目テンプレート": [
       {
         "document": "bug-tracker.md",
-        "line": 77,
+        "line": 65,
         "level": 2,
         "title": "条目テンプレート"
       }
@@ -11907,7 +11909,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 77,
+        "line": 85,
         "level": 3,
         "title": "機能概要"
       }
@@ -12149,7 +12151,7 @@
     "環境変数": [
       {
         "document": "user-guide/deployment.md",
-        "line": 57,
+        "line": 63,
         "level": 3,
         "title": "環境変数"
       }
@@ -12248,14 +12250,6 @@
         "line": 5,
         "level": 2,
         "title": "目次"
-      }
-    ],
-    "省略可能なフィールド": [
-      {
-        "document": "bug-tracker.md",
-        "line": 31,
-        "level": 3,
-        "title": "省略可能なフィールド"
       }
     ],
     "確認対話 (confirm)": [
@@ -12359,7 +12353,7 @@
     "統計概要": [
       {
         "document": "bug-tracker.md",
-        "line": 104,
+        "line": 90,
         "level": 2,
         "title": "統計概要"
       }
@@ -13282,14 +13276,6 @@
         "title": "速やかな初期化"
       }
     ],
-    "速攻起動": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 9,
-        "level": 3,
-        "title": "速攻起動"
-      }
-    ],
     "速習": [
       {
         "document": "advanced/http-client.md",
@@ -13380,6 +13366,14 @@
         "line": 368,
         "level": 3,
         "title": "配置翻訳の登録"
+      }
+    ],
+    "重大度の分類": [
+      {
+        "document": "bug-tracker.md",
+        "line": 39,
+        "level": 2,
+        "title": "重大度の分類"
       }
     ],
     "重要な制限": [
