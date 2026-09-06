@@ -1,6 +1,7 @@
 # dev gnore ignore file for Python projects
 devs/videos
 main.py
+plugins/
 venvs
 config.toml
 uv.lock

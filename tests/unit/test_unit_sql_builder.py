@@ -4,14 +4,13 @@
 测试 SQLiteQueryBuilder、AlterTableBuilder 及 StorageManager 新增的表管理方法
 """
 
-import pytest
 import os
-import sqlite3
 import tempfile
 
-from ErisPulse.Core.storage import StorageManager, SQLiteQueryBuilder, AlterTableBuilder
-from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
+import pytest
 
+from ErisPulse.Core.Bases.storage import BaseQueryBuilder, BaseStorage
+from ErisPulse.Core.storage import SQLiteQueryBuilder, StorageManager
 
 # ==================== Fixtures ====================
 

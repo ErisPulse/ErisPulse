@@ -4,14 +4,18 @@
 测试RouterManager的HTTP/WebSocket路由注册、生命周期管理功能
 """
 
-import pytest
 import asyncio
-from unittest.mock import Mock, patch, MagicMock, AsyncMock
-from fastapi import WebSocket, WebSocketDisconnect
+import importlib
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
+
+import pytest
+from fastapi import WebSocket
 
 from ErisPulse.Core.router import RouterManager, router
 from ErisPulse.runtime.context import current_owner
 
+# importlib.import_module 返回真实子模块（Core.router 包属性被 RouterManager 单例遮蔽）
+router_module = importlib.import_module("ErisPulse.Core.router")
 
 # ==================== RouterManager 基础测试 ====================
 
@@ -282,8 +286,8 @@ class TestRouterManager:
         mock_server = MagicMock()
         mock_server._serve = AsyncMock(return_value=None)
         with (
-            patch("ErisPulse.Core.router.uvicorn.Server", return_value=mock_server),
-            patch("ErisPulse.Core.router.uvicorn.Config", return_value=MagicMock()),
+            patch.object(router_module.uvicorn, "Server", return_value=mock_server),
+            patch.object(router_module.uvicorn, "Config", return_value=MagicMock()),
         ):
             await router_manager.start(host="127.0.0.1", port=8888)
 
@@ -296,8 +300,8 @@ class TestRouterManager:
         mock_server = MagicMock()
         mock_server._serve = AsyncMock(return_value=None)
         with (
-            patch("ErisPulse.Core.router.uvicorn.Server", return_value=mock_server),
-            patch("ErisPulse.Core.router.uvicorn.Config") as mock_config_cls,
+            patch.object(router_module.uvicorn, "Server", return_value=mock_server),
+            patch.object(router_module.uvicorn, "Config") as mock_config_cls,
         ):
             await router_manager.start(
                 host="127.0.0.1",

@@ -1,222 +1,397 @@
-# 模組作用域系統
+# 作用域（scope）
 
-> [!NOTE]
+> [!NOTE]  
 > 本特性需要 ErisPulse **2.8.0+**。
 
-模組作用域系統用於控制「某個 Bot 只能使用哪些模組」，實現多 Bot 場景下的模組隔離。  
-預設情況下所有模組對所有 Bot 開放；僅在配置綁定後才開始過濾，**模組與適配器無需任何變動**即可適配。
+作用域回答四个问题：**哪些模組可用、誰的事件收不收、某模組處理什麼文字、  
+模組能向外做什麼**。  
+控制權完全交給使用者：在模組 / 適配器 / 處理器 / 出站呼叫註冊的**上層**（設定  
+`ErisPulse.scope` 或執行時 `sdk.scope`）統一宣告，事件管線在入口、處理器篩選  
+與出站閘口自動讀取並執行。
+
+| 維度 | 控制什麼 | 拒絕行為 | 設定路徑 |
+|------|---------|---------|---------|
+| **① 模組** | 哪些模組可用（平台 / Bot / 會話三級） | 靜默忽略（不回覆、不認領） | `scope.platforms / bots / sessions` |
+| **② 身份** | 事件收不收（適配器 / Bot / 會話 / 用戶四級） | 入口完全丟棄（靜默） | `scope.identity.*` |
+| **③ 出站** | 模組能發起哪些出站呼叫（訊息 / API / 請求，方法級白名單/黑名單） | 失敗回應（`retcode=34601`） | `scope.actions` |
+
+> **相關系統**：命令是特殊的訊息事件處理器，其用戶黑白名單（ACL）與  
+> 實現參數覆寫由命令系統自持（`ErisPulse.event.command`），  
+> 見 [事件處理入門](../getting-started/event-handling.md) 與 [設定指南](../user-guide/configuration.md)。
 
 {!--< tips >!--}
-1. 作用域以「適配器平台 + Bot 標識 + 會話標識」為維度綁定模組
-2. 支持白名單（`modules`）與黑名單（`blocked`）兩種方式
-3. 被作用域禁用的模組收到訊息時靜默忽略，不回覆提示
-4. 支援執行時 `sdk.scope.bind()` / `unbind()` 動態增刪，可持久化
+1. 透過 `from ErisPulse.Core import scope` 導入單例（`sdk.scope` 同物件）  
+2. 判定：`scope.is_allowed(...)` / `scope.is_identity_allowed(...)` /  
+   `scope.is_action_allowed(...)` 對應 ①②③ 三個閘口  
+3. 讀寫：維度化參數方法（IDE 可補全）——  
+   `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`；  
+   另有字典式兜底 `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`  
+4. 事件處理器文字條件覆寫見  
+   [事件處理入門 · 事件覆寫](../getting-started/event-handling.md#事件覆寫不改模組代碼覆寫任意事件類型的行為)；  
+   命令 ACL / 參數覆寫見[事件處理入門](../getting-started/event-handling.md)  
 {!--< /tips >!--}
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
+## 匹配條目語法（全系統統一）
 
-再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
+作用域所有「名字列表」（模組名、身份鍵、出站條目）共用同一套匹配語法  
+（`ErisPulse.Core.text_match`）：
 
-## 工作原理
+| 語法 | 範例 | 說明 |
+|------|------|------|
+| 精確名 | `"Chat"` | 全值比較，**大小寫不敏感** |
+| glob | `"Tool*"`、`"spam_*"` | `*` 任意串 / `?` 單字符 / `[seq]` 字元集，大小寫不敏感 |
+| 正則 | `"re:^Danger.*"` | 以 `re:` 前綴宣告，正則 `search` 匹配，預設大小寫不敏感 |
 
-```mermaid
-flowchart TD
-    A["Bot 收到消息"] --> B["提取 (platform, bot_id, session_id)"]
-    B --> C{"查找作用域綁定<br/>（會話級 > Bot 級 > 平台級）"}
-    C -->|"會話級"| D["sessions<br/>優先級最高"]
-    C -->|"Bot 級"| E["bots<br/>覆蓋平台級"]
-    C -->|"平台級"| F["platforms"]
-    D & E & F --> G{"命中綁定？"}
-    G -->|"命中"| H["按 白名單 / 黑名單 過濾模組"]
-    G -->|"未命中"| I["回退到下一級<br/>全未配置則允許全部"]
-    H --> J["被禁用的模組：命令與事件處理器均不觸發<br/>（靜默忽略）"]
-```
+- 非法正則**靜默降級**為「不匹配」（不拋錯、不崩潰）  
+- 裝飾器參數（`pattern=` / `regex=`）為固定語義：`pattern` 是 glob、`regex` 是正則源碼  
+  （不加 `re:` 前綴）；作用域設定裡的正則條目**必須**帶 `re:` 前綴
 
-- **解析優先級：會話級 > Bot 級 > 平台級**，更高優先級未綁定規則時回退到下一級；全部未配置則允許全部模組。
-- 事件數據缺少 `self`（無法識別 Bot）時，跳過 Bot 級，按會話級 / 平台級判斷。
-- 框架層資源（owner 為空的處理器、命令分發器、事件總線）始終放行，不受作用域影響。
+## 全局兜底：`default_allow`
 
-## 配置檔案
+`default_allow` 是**全局唯一**的兜底開關（預設 `true`），  
+對兩個判定維度統一生效：
+
+- **模組維度**：未命中任何綁定 → `default_allow` 決定放行 / 拒絕  
+- **身份維度**：未命中任何策略 → `default_allow` 決定放行 / 拒絕  
+
+設為 `false` 即開啟「隱式拒絕」嚴格模式：白名單式管理，  
+**沒顯式允許的一律拒絕**。
+
+> **例外**：③ 出站維度**不受** `default_allow` 影響——它是獨立的收緊開關，  
+> 預設全允許，僅顯式規則才限制（框架層 owner 為空的呼叫恆放行）。  
+> 這樣嚴格的全局模式不會意外掐斷所有模組的訊息回覆。  
+> 命令 ACL 有獨立的 `ErisPulse.event.command.default_allow` 兜底，互不影響。
+
+## 設定檔
 
 ```toml
 [ErisPulse.scope]
-default_allow = true        # 預設允許全部（false = 隱式拒絕嚴格模式）
-cache_size = 1024           # is_allowed 的 LRU 快取大小
+default_allow = true        # 全局兜底（false = 隱式拒絕嚴格模式）
+cache_size = 1024           # LRU 缓存大小
 
-# 平台級別綁定（作用於該平台所有 Bot / 會話）
+# ── ① 模組維度（優先級：會話 > Bot > 平台）──
 [ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Translate"]   # 白名單：該平台 Bot 只能使用這些模組
-blocked = ["Danger"]              # 黑名單：這些模組在該平台被禁用
-
-# Bot 級別綁定（作用於該 Bot 的所有會話，覆蓋平台級別）
+modules = ["Chat", "Tool*"]   # 白名單：精確名 / glob / re: 正則
+blocked = ["re:^Danger"]
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Chat"]
-blocked = []
-
-# 會話級別綁定（作用於某個群組 / 頻道 / 私聊，最具體）
+merge = true                  # 在平台級綁定基礎上追加（預設整體覆蓋）
 [ErisPulse.scope.sessions.onebot11."789012345"]
-modules = ["Chat"]                # 該群組只能使用 Chat
-blocked = []
+modules = ["Chat"]
+
+# ── ② 身份維度（優先級：用戶 > 會話 > Bot > 適配器）──
+[ErisPulse.scope.identity.adapters.onebot11]
+deny = true                   # 整個適配器的事件全部丟棄
+[ErisPulse.scope.identity.bots.onebot11."123456"]
+deny = true
+[ErisPulse.scope.identity.sessions.onebot11."g_blocked"]
+deny = true
+[ErisPulse.scope.identity.users.onebot11]
+allow = ["u_admin"]           # 用戶鍵支援 glob / re: 正則
+deny = ["u_bad", "spam_*"]
+
+# ── ③ 出站維度（預設全允許，顯式收緊才禁）──
+[ErisPulse.scope.actions.MyModule]
+send = { deny = true }                                    # 全禁發送
+api = { allow = ["get_*"] }                               # 僅允許查詢類標準 API
+request = { deny = true }                                 # 禁止處理請求
 ```
 
-語意（模組名稱匹配**大小寫不敏感**）：
+## ① 模組維度
 
-| 配置 | 效果 |
-|------|------|
-| 僅 `modules`（白名單） | 只有列出的模組允許使用 |
-| 僅 `blocked`（黑名單） | 列出的模組被禁用，其餘全部允許 |
-| 兩者都配置 | 白名單限定範圍，白名單內的模組再剔除黑名單 |
-| 兩者都為空 / 未配置 | 遵循 `default_allow`：`true`（預設）允許全部；`false` 則隱式拒絕 |
+回答「某個上下文裡，哪些模組可用」。預設全部開放；設定綁定後才開始過濾，  
+**模組與適配器無需任何更動**。
 
-> `modules` 與 `blocked` 均支援字串或字串清單。模組名稱大小寫不敏感（`"Chat"` 與 `"chat"` 等價）。
-> 會話識別為事件的群組 ID（`group_id`）、頻道 ID（`channel_id`）或私聊使用者 ID（`user_id`）。
-> **會話識別跨平台隔離**：`(platform, session_id)` 組合唯一識別一個會話，`onebot11` 的 `789` 與 `telegram` 的 `789` 互不影響。
+```mermaid
+flowchart TD
+    A["事件到達某模組的處理器/命令"] --> B{"scope.is_allowed<br/>(platform, bot, module, session)"}
+    B --> C{"解析鏈：會話級 > Bot 級 > 平台級<br/>（子級 merge = true 時逐級並集）"}
+    C -->|"命中"| D["blocked 命中 → 拒絕<br/>modules 非空 → 僅白名單放行<br/>都空 → default_allow"]
+    C -->|"未命中"| E["default_allow（預設 true = 放行）"]
+    D -->|"拒絕"| Z["靜默忽略<br/>（不回覆、不認領，僅 TRACE 日誌）"]
+```
 
-## 執行階段 API
+- **解析優先級：會話級 > Bot 級 > 平台級**，高優先級綁定**整體覆蓋**低優先級；  
+  子級綁定寫 `merge = true` 時改為與低優先級**逐條目並集**（modules / blocked 各自合併，  
+  `merge` 本身是控制鍵，不算條目）  
+- **靜默語義**：被過濾模組的命令與處理器不觸發、不回覆、不認領（防止跨命令誤匹配），  
+  僅 TRACE 級日誌可見（`core.scope.denied`）  
+- **框架級處理器**（`scope_exempt=True` 或 owner 為空）不受影響；模組名為空（框架層資源）恆放行  
+- **會話感知幫助與命令查詢**：命令查詢 API（`command.help` /  
+  `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`，  
+  以及 `module.get_commands_overview`）均支援可選 `event=` 或顯式  
+  `platform=` / `bot_id=` / `session_id=` 關鍵字——當前會話不可用模組的命令  
+  不再出現在結果中（`get_command` 回傳 None、單命令幫助按「未註冊」處理，  
+  與靜默語義一致）；不傳上下文則保持全量行為
 
-### 判斷模組是否允許
+### 綁定繼承（merge）
+
+預設整體覆蓋的語義清晰可預測；需要在上級基礎上**追加**時，在子級寫 `merge = true`：
+
+```toml
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Tool"]      # 平台級：允許 Chat、Tool
+
+[ErisPulse.scope.bots.onebot11."123456"]
+modules = ["Music"]
+merge = true                    # 該 Bot 實際生效 = ["Chat", "Tool", "Music"]
+```
+
+- 合併規則：`modules` 與 `blocked` 各自取**並集**；綁定內 `blocked` 仍優先於 `modules`  
+- 鏈式合併：平台 → Bot → 會話逐級疊加，每一級獨立決定 `merge` 或覆蓋
+
+## ② 身份維度（事件准入）
+
+回答「誰的事件收不收」。被拒絕的事件在**分發入口完全丟棄**——  
+不進入中間件與任何處理器（含框架級），僅 TRACE 級日誌可見（`core.scope.identity_denied`）。
+
+- **解析優先級：用戶 > 會話 > Bot > 適配器**，取最具體的已設定策略；deny 優先於 allow  
+- 每級綁定是二元策略：`{ allow = true }` 或 `{ deny = true }`  
+- 用戶鍵支援 glob / 正則（如 `"spam_*"` 拉黑一批垃圾用戶）  
+- 典型用法——上級 deny、個人 allow 做「例外放行」：
+
+```toml
+[ErisPulse.scope.identity.adapters.onebot11]
+deny = true
+[ErisPulse.scope.identity.users.onebot11]
+allow = ["u_admin"]   # 即使適配器級拒絕，u_admin 的事件仍然放行
+```
+
+## ③ 出站維度（限制模組發起出站呼叫）
+
+限制模組**發起的出站動作**：訊息發送 / 標準 API 動作 / 請求操作。  
+三類動作對應底層 DSL：`Event.reply` 與 `Send`（send）、`Api` / `call_api`（api）、  
+`Request` 的 accept/reject（request）。模組在事件 handler 執行期發起的出站呼叫  
+攜帶模組 owner，由本維度統一判定。
+
+### 規則形態（內聯表）
+
+每個動作的規則是一張內聯表：`{ allow = [...], deny = true|[...] }`。  
+同一動作只能有一種規則（TOML 鍵不可重複，全禁與細粒度二選一）：
+
+```toml
+[ErisPulse.scope.actions.MyModule]
+send = { deny = true }                                  # 全禁發送（Event.reply / Send DSL）
+# 或方法級細粒度：send = { allow = ["Text", "Image*"], deny = ["File"] }
+api = { allow = ["get_*"] }                             # 僅放行查詢類標準 API
+# 或動作級黑名單：api = { deny = ["set_*", "leave_*"] }
+request = { deny = true }                               # 禁止處理請求 accept/reject
+```
+
+- `send` 的條目匹配**發送方法名**（`Text` / `Image` / `File` ...），  
+  `api` 的條目匹配**標準動作名**（`get_group_info` / `set_group_name` ...）  
+- 條目支援精確名 / glob / `re:` 正則（與全系統統一語法一致，大小寫不敏感）  
+- `allow` 寫單個字串等價於單條目列表：`send = { allow = "Text" }`
+
+### 判定語義
+
+**預設全允許**——未設定、或 owner 為空（框架層內部呼叫）均放行。  
+設定規則後按以下順序判定：
+
+1. `deny = true` → 拒絕  
+2. `deny` 列表命中呼叫名 → 拒絕  
+3. `allow` 列表非空且呼叫名未命中（或呼叫無名稱）→ 拒絕  
+4. 其餘放行  
+
+被拒呼叫不發起任何網路請求，直接回傳標準失敗回應  
+（`retcode = 34601`，見 [api-response §5.3](../standards/api-response.md#53-框架擴展返回碼34xxx-平台錯誤段的低三位自定義)）。  
+三個動作互相獨立，可只限其一。
+
+```python
+# 執行時 API
+sdk.scope.set_action("MyModule", "send", deny=True)              # 全禁發訊息  
+sdk.scope.set_action("MyModule", "send", allow=["Text"])         # 僅允許發文本  
+sdk.scope.is_action_allowed("MyModule", "send", name="Image")    # False  
+sdk.scope.is_action_allowed("MyModule", "api", name="get_user_info")  # 按規則判定  
+sdk.scope.delete_action("MyModule", "send")                      # 恢復允許  
+sdk.scope.get_action("MyModule", "send")                         # 該動作當前規則  
+```
+
+## 執行時 API
+
+作用域執行時 API 分三層：**判定**（三問）、**維度化讀寫**（每維 `set` / `get` / `delete`  
+參數化方法，簽名全類型標註，IDE 可補全）、**字典式兜底**（點分路徑直達任意節）。
 
 ```python
 from ErisPulse import sdk
 
-# 某個 Bot 是否允許使用某模組
-allowed = sdk.scope.is_allowed("onebot11", "123456", "Chat")
-
-# 指定會話（群組 / 頻道 / 私聊）判斷
-allowed = sdk.scope.is_allowed("onebot11", "123456", "Chat", "789012345")
+scope = sdk.scope
 ```
 
-### 動態綁定 / 解綁
+### 判定（三問）
 
 ```python
-# 綁定 Bot 級白名單（持久化到配置）
-sdk.scope.bind("onebot11", "123456", modules=["Chat", "Translate"])
+scope.is_allowed("onebot11", "123456", "Chat")                 # ① 模組維度  
+scope.is_allowed("onebot11", "123456", "Chat", "789012345")    # 含會話級  
+scope.is_allowed("onebot11", "123456", None)                   # 框架層資源 -> True  
 
-# 綁定會話級白名單（第三參數為 session_id）
-sdk.scope.bind("onebot11", "123456", "789012345", modules=["Chat"])
+scope.is_identity_allowed("onebot11", "123456", "group_9", "u1")   # ② 身份維度  
 
-# 綁定平台級黑名單
-sdk.scope.bind("onebot11", blocked=["Danger"])
-
-# 僅執行階段生效（重啟失效）
-sdk.scope.bind("onebot11", "123456", modules=["Chat"], persist=False)
-
-# 合併而非取代：把 Music 併入現有白名單（預設 bind 是取代）
-sdk.scope.bind("onebot11", "123456", modules=["Music"], merge=True)
-
-# 移除綁定（恢復允許全部）；可指定 session_id 移除會話級綁定
-sdk.scope.unbind("onebot11", "123456")
-sdk.scope.unbind("onebot11", "123456", "789012345")
+scope.is_action_allowed("MyModule", "send")                    # ④ 出站維度  
+scope.is_action_allowed("MyModule", "send", name="Image")      # 方法級細粒度  
 ```
 
-> `bind()` 預設**取代**該目標的整個綁定；`merge=True` 時將新模組/停用併入現有綁定。
-
-### 查詢綁定
+### ① 模組維度
 
 ```python
-# 取得生效綁定（可指定會話）
-sdk.scope.get("onebot11", "123456")              # {"modules": ["Chat"], "blocked": []}
-sdk.scope.get("onebot11", "123456", "789012345") # 會話級生效綁定
-sdk.scope.get("onebot11")                        # 平台級綁定，無則 None
+# 綁定（層級由參數決定：session_id > bot_id > 平台級）  
+scope.set_module("onebot11", bot_id="123456", modules=["Chat", "Tool*"])  
+scope.set_module("onebot11", blocked=["re:^Danger"])                       # 平台級  
+scope.set_module("onebot11", bot_id="123456", session_id="g9", modules=["Chat"])  # 會話級  
+scope.set_module("onebot11", bot_id="123456", modules=["Music"], merge=True)      # 與現有條目並集  
+scope.set_module("onebot11", bot_id="123456", modules=["Chat"], persist=False)    # 僅執行時  
 
-# 列出全部綁定（platforms / bots / sessions 三桶）
-sdk.scope.list_bindings()
+# 讀 / 刪  
+scope.get_module("onebot11", bot_id="123456")   # {"modules": ["Chat"], "blocked": []}  
+scope.delete_module("onebot11", bot_id="123456")  
 ```
 
-### 過濾統計（偵錯）
+> `merge=True` 是**寫時並集**（與該級現有綁定合併條目）；跨級解析期的  
+> `merge = true` 設定鍵見上文[綁定繼承](#綁定繼承merge)——兩者是獨立機制。
+
+### ② 身份維度
 
 ```python
-# 查看被作用域靜默過濾的次數與快取命中情況
-sdk.scope.get_stats()
-# {"is_allowed_calls": 10, "filtered_count": 3, "cache_hits": 5, "cache_misses": 5}
+# 綁定策略（層級由參數決定：user > session > bot > adapter；allow / deny 二選一）  
+scope.set_identity("onebot11", user_id="u_bad", deny=True)  
+scope.set_identity("onebot11", user_id="spam_*", deny=True)    # 鍵支援 glob / re: 正則  
+scope.set_identity("onebot11", bot_id="123456", session_id="g9", allow=True)  
 
-sdk.scope.reset_stats()
+# 讀 / 刪  
+scope.get_identity("onebot11", user_id="u_bad")   # {"deny": True}  
+scope.delete_identity("onebot11", user_id="u_bad")  
 ```
 
-### 拓撲樹資料
+### ③ 出站維度
 
 ```python
-# 作用域部分（供 Dashboard 展示）
-sdk.scope.get_topology()
+# 設定限制規則（allow: str|list；deny: bool|str|list；整規則替換語義）  
+scope.set_action("MyModule", "send", deny=True)                    # 全禁發送  
+scope.set_action("MyModule", "send", allow=["Text"])               # 僅允許發文本  
+scope.set_action("MyModule", "api", deny=["set_*", "leave_*"])     # 禁管理類 API  
+
+# 讀 / 刪  
+scope.get_action("MyModule", "send")       # {"allow": ["Text"]} 原始規則  
+scope.delete_action("MyModule", "send")    # 移除單動作  
+scope.delete_action("MyModule")            # 移除該模組全部動作限制  
+```
+
+### 通用
+
+```python
+scope.get("platforms")   # 字典式兜底：點分路徑讀任意節  
+scope.topology()         # 全量設定樹（供 Dashboard）  
+scope.stats()  
+# {"module_calls": .., "module_filtered": .., "identity_checks": .., "identity_denied": ..,  
+#  "action_checks": .., "action_denied": .., "cache_hits": .., "cache_misses": ..}  
+scope.reset_stats()  
+scope.clear()           # 清空全部設定（僅記憶體生效）  
+```
+
+### 高級：字典式點分路徑兜底
+
+維度化方法覆蓋日常場景；需要直達任意節點（或未來新增的維度）時，  
+可用字典式 API——`get` / `set` / `delete` 接受點分路徑（dict 深合併、寫後立讀），  
+並提供 `scope[path]` / `scope[path] = v` / `del scope[path]` / `path in scope` 協議：
+
+```python
+scope.set("bots.onebot11.123456", {"modules": ["Chat"], "blocked": []})  
+scope.set("identity.users.onebot11.u_bad", {"deny": True})  
+scope.get("actions.MyModule.send")  
+
+scope["platforms.onebot11"]        # 讀（不存在拋 KeyError）  
+scope["platforms.onebot11"] = {...}  # 寫  
+del scope["platforms.onebot11"]      # 刪  
+"actions.MyModule" in scope          # 存在性  
+```
+
+## 緩存與熱更新
+
+- `is_allowed` / `is_identity_allowed` / `is_action_allowed` 結果帶 **LRU 緩存**  
+  （`scope.cache_size` 可調），`set` / `delete` /  
+  設定熱更新（`config.updated` / `config.set`）自動失效  
+- 所有維度設定改了**立即生效**，無需重啟  
+- 作用域是「逐事件」判斷，不跨事件記憶：設定變了，下一個事件即按新規則
+
+## 設定格式校驗
+
+載入 / 熱更新時逐節校驗設定格式：類型錯誤的節（如 `platforms` 寫成了字串）、  
+非法的出站規則（如 `allow` 寫成數字）、未知動作名、未知的頂層鍵（如 `alow` 拼寫錯誤）  
+會輸出 **WARNING** 並忽略對應節 / 條目，其餘合法設定照常生效——寫錯不再靜默失效。
 
 ## 常見問題與注意事項
 
-### 1. 配置層級
+### 1. 設定層級與覆蓋
 
-解析優先級：**會話級 > Bot 級 > 平台級**。高優先級綁定會**整體覆蓋**低優先級。
+- 模組維度：會話級 > Bot 級 > 平台級，**整體覆蓋**（子級 `merge = true` 時逐條目並集）。  
+  想「平台允許 Chat，Bot 再加 Music」，可在 Bot 級寫 `merge = true`，或同時列出兩者  
+- 身份維度：用戶 > 會話 > Bot > 適配器，取**最具體**的已設定策略（可做例外放行）  
+- 命令用戶黑白名單：精確命令名優先於 glob 鍵（見 `event.command.acl`）
 
-```toml
-# 平台級只允許 Chat
-[ErisPulse.scope.platforms.onebot11]
-modules = ["Chat"]
+### 2. 模組/命令沒反應
 
-# 但 Bot 級只允許 Music → 該 Bot 最終只能用 Music，不能用 Chat！
-[ErisPulse.scope.bots.onebot11."123456"]
-modules = ["Music"]
-```
-
-- 想「平台級允許 Chat，Bot 級再加 Music」，必須在 **Bot 級同時列出兩者**：`modules = ["Chat", "Music"]`。
-- 同理，底層黑名單會被上層白名單覆蓋：平台級 `blocked=["Danger"]` + Bot 級 `modules=["Danger"]` → Bot 級整體覆蓋，Danger 可用。層級越高、越具體，越以它為準。
-
-### 2. 它是「逐事件」判斷，不會「粘住」
-
-作用域判斷**只針對當前這一條事件**，不跨事件記憶：
-- 會話 g1 禁用了模組 A → 在 g1 的**這條**訊息 A 不觸發；**下一條**訊息獨立重新判斷，若綁定沒變仍不觸發，綁定改了立即生效（LRU 快取會自動失效）。
-- 會話 g2 沒配綁定 → 回退到 Bot 級 / 平台級判斷；都沒有則按 `default_allow`。
-
-### 3. 模組沒反應
-
-當你發了訊息模組卻沒反應，先懷疑作用域而不是模組/適配器：
+先懷疑作用域而不是模組本身：
 
 ```python
-# 在模組代碼或臨時腳本裡加一行定位
 from ErisPulse import sdk
-print(sdk.scope.is_allowed(event.get_platform(), <bot_id>, "MyModule", <session_id>))
-print(sdk.scope.get_stats())          # filtered_count > 0 說明確實被過濾了
+
+print(sdk.scope.is_allowed(event.get_platform(), bot_id, "MyModule", session_id))  
+print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, user_id))  
+print(sdk.scope.stats())   # module_filtered / identity_denied > 0 說明被靜默過濾  
 ```
 
-被過濾是**靜默**的（不回覆，避免暴露作用域規則給用戶），但 `filtered_count` 會累計。
+被過濾是**靜默**的（模組維度與身份維度不回覆，避免暴露規則），但統計會累計；  
+命令維度被 ACL 拒絕會顯式回覆「權限不足」。
 
-### 4. 會話識別碼跨平台隔離
+### 3. 出站動作被拒時排查
 
-`(platform, session_id)` 組合才是唯一識別碼。`[ErisPulse.scope.sessions.onebot11."789"]` 只作用於 onebot11 平台，不影響 telegram 上同為 `789` 的會話。
+```python
+from ErisPulse import sdk
 
-### 5. 效能
+print(sdk.scope.get("actions.MyModule"))  
+print(sdk.scope.stats())   # action_denied > 0 說明有呼叫被擋截  
+```
 
-`is_allowed()` 結果帶 **LRU 快取**（預設 1024 條，`scope.cache_size` 可調），
-配置變更 / `bind()` / `unbind()` 自動失效，高頻事件路徑開銷極小。
+擋截是**顯式**的：被拒呼叫回傳 `retcode = 34601` 的標準失敗回應（不發起網路請求）。
+
+### 4. 會話標識跨平台隔離
+
+`(platform, session_id)` 組合才是唯一標識。`scope.sessions.onebot11."789"`  
+只作用於 onebot11，不影響 telegram 上同為 `789` 的會話。身份維度的用戶鍵同理。
 
 ## 拓撲樹 API
 
-`ModuleManager.get_topology()` 與 `AdapterManager.get_topology()` 提供模組/適配器歸屬關係資料，
-`sdk.get_topology()` 一鍵聚合三者：
+`ModuleManager.get_topology()` 與 `AdapterManager.get_topology()` 提供模組/適配器歸屬關係資料，  
+`sdk.get_topology()` 一鍵聚合（含作用域 `scope`）：
 
 ```python
 from ErisPulse import sdk
 
-topology = sdk.get_topology()
+topology = sdk.get_topology()  
 # {
-#   "modules": {                                   # 模組 → 擁有的資源
+#   "modules": {                                   # 模組 → 擁有的資源  
 #     "Chat": {
 #       "loaded": True, "enabled": True,
-#       "load_strategy": {"lazy": False, "priority": 50},
-#       "info": {...},
 #       "commands": ["chat", "translate"],
 #       "handlers": {"message": 2, "notice": 1},
 #       "routes": {"http": ["/Chat/api"], "ws": [], "sse": []},
 #       "lifecycle_hooks": 3,
-#       "scope_applies": True,
 #     }
 #   },
-#   "adapters": {                                  # 適配器 → Bot → 作用域
+#   "adapters": {                                  # 適配器 → Bot → 作用域  
 #     "onebot11": {
 #       "status": "started", "enabled": True,
-#       "bots": {"123456": {"status": "online", "last_active": ..., "info": {...}, "scope": {...}}},
+#       "bots": {"123456": {"status": "online", "scope": {...}}},
 #       "scope": {"modules": [...], "blocked": [...]},
 #     }
 #   },
-#   "scope": {"platforms": {...}, "bots": {...}, "sessions": {...}}   # 全部作用域綁定
+#   "scope": {                                     # 作用域（模組 / 身份 / 出站動作）  
+#     "platforms": {...}, "bots": {...}, "sessions": {...},
+#     "identity": {"adapters": {...}, "bots": {...}, "sessions": {...}, "users": {...}},
+#     "actions": {...},
+#   },
 # }
+```
 
-- 模組拓撲聚合了該模組註冊的命令、事件處理器、HTTP/WS/SSE 路由與生命週期鉤子，便於繪製模組資源樹。
-- 適配器拓撲聚合了各適配器狀態、下屬 Bot 狀態及平台級/Bot 級作用域綁定。
+- 模組拓撲聚合了該模組註冊的命令、事件處理器、HTTP/WS/SSE 路由與生命週期鈎子，便於繪製模組資源樹。  
+- 適配器拓撲聚合了各適配器狀態、下屬 Bot 狀態及平台級/Bot 級作用域綁定（模組維度）。

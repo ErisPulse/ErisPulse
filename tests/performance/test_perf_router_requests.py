@@ -6,6 +6,7 @@
 
 import pytest
 from fastapi.testclient import TestClient
+
 from ErisPulse.Core.router import RouterManager
 
 

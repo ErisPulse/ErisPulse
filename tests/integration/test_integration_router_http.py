@@ -110,7 +110,8 @@ class TestRouterHTTPIntegration:
 
         router_mgr.register_http_route("m1", "/same", h1, methods=["GET"])
 
-        with pytest.raises(ValueError, match="已注册"):
+        # 断言稳定参数（路径），不依赖运行语言的本地化文案
+        with pytest.raises(ValueError, match="/same"):
             router_mgr.register_http_route("m1", "/same", h2, methods=["GET"])
 
     def test_nonexistent_route_404(self, client):

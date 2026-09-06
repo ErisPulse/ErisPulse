@@ -1,12 +1,12 @@
-# 快速開始
+# 快速入門
 
-> **這是你的第一步。** 用 5 分鐘從零跑起一個 ErisPulse 機器人。
+> **這是您的第一步。** 用 5 分鐘從零開始運行一個 ErisPulse 機器人。
 
 ## 安裝 ErisPulse
 
 ### 一鍵安裝腳本（推薦）
 
-安裝腳本會自動偵測您的環境（Docker、Python、uv），並引導您選擇最適合的安裝方式。
+安裝腳本會自動檢測您的環境（Docker、Python、uv），並引導您選擇最適合的安裝方式。
 
 Windows (PowerShell):
 ```powershell
@@ -20,12 +20,12 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 
 腳本會引導您完成：
 
-- **Docker 安裝**（偵測到 Docker 時推薦）：選擇映像來源（Docker Hub / GHCR）、版本通道（穩定版 / 預發布版）、Dashboard 管理面板設定、埠號設定
-- **傳統安裝**：自動建立虛擬環境、選擇 ErisPulse 版本、選用安裝 Dashboard 管理面板模組
+- **Docker 安裝**（檢測到 Docker 時推薦）：選擇鏡像源（Docker Hub / GHCR）、版本通道（穩定版 / 預發布版）、Dashboard 管理面板配置、端口設定
+- **傳統安裝**：自動建立虛擬環境、選擇 ErisPulse 版本、可選安裝 Dashboard 管理面板模組
 
 ### 使用 Docker
 
-Docker 映像已內建 ErisPulse 框架和 Dashboard 管理面板。
+Docker 鏡像已內建 ErisPulse 框架和 Dashboard 管理面板。
 
 ```bash
 # 下載 docker-compose.yml
@@ -38,7 +38,7 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 <details>
 <summary>Docker Hub 不可用？</summary>
 
-使用 GitHub Container Registry 映像，修改 `docker-compose.yml` 中的 image：
+使用 GitHub Container Registry 鏡像，修改 `docker-compose.yml` 中的 image：
 
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
@@ -46,7 +46,7 @@ image: ghcr.io/erispulse/erispulse:latest
 
 </details>
 
-啟動後存取 `http://<host>:8000/Dashboard`，使用設定的令牌登入。
+啟動後訪問 `http://<host>:8000/Dashboard`，使用設定的令牌登入。
 
 ### 使用 pip 安裝
 
@@ -66,10 +66,10 @@ pip install ErisPulse
 epsdk init
 ```
 
-這將會啟動一個互動式嚮導，引導您完成：
+這將啟動一個互動式向導，引導您完成：
 - 專案名稱設定
-- 日誌層級配置
-- 伺服器配置（主機和埠口）
+- 日誌等級配置
+- 伺服器配置（主機和端口）
 - 適配器選擇和配置
 - 專案結構建立
 
@@ -85,11 +85,12 @@ epsdk init -n my_bot
 
 ### 手動建立專案
 
-如果比較偏好手動建立專案：
+如果您更喜歡手動建立專案：
 
 ```bash
 mkdir my_bot && cd my_bot
 epsdk init
+```
 
 ## 安裝模組
 
@@ -107,30 +108,32 @@ epsdk list-remote
 
 ### 互動式安裝
 
-不指定套件名稱時會進入互動式安裝介面：
+不指定套件名時進入互動式安裝介面：
 
 ```bash
 epsdk install
+```
 
-## 執行專案
+## 運行專案
 
 ```bash
-# 一般執行
+# 普通運行
 epsdk run main.py
 
 # 熱重載模式（開發時推薦）
 epsdk run main.py --reload
+```
 
-## 啟用 IDE 補全（選用）
+## 啟用 IDE 自動補全（可選）
 
-ErisPulse 動態發現模組/適配器，IDE 預設無法補全平台特有方法。
-執行以下命令產生型別存根：
+ErisPulse 動態發現模組/適配器，IDE 預設無法補全平台特有方法。  
+執行以下命令生成類型存根：
 
 ```bash
 epsdk types
 ```
 
-產生後用導入的型別作為變數標註即可獲得精確補全（詳見 [IDE 補全指南](./getting-started/ide-completion.md)）：
+生成後用導入的類型作為變數標註即可獲得精確補全（詳見 [IDE 自動補全指南](./getting-started/ide-completion.md)）：
 
 ```python
 from _ep_types import Yunhu
@@ -138,6 +141,7 @@ from ErisPulse import sdk
 
 adapter: Yunhu = sdk.adapter.get("yunhu")
 await adapter.Send.To("group", "123").Board(...)  # 補全平台特有方法
+```
 
 ## 專案結構
 
@@ -146,12 +150,14 @@ await adapter.Send.To("group", "123").Board(...)  # 補全平台特有方法
 ```
 my_bot/
 ├── config/
-│   └── config.toml          # 設定檔
+│   └── config.toml          # 配置檔案
 └── main.py                  # 入口檔案
 
-## 設定檔
+```
 
-基本的 `config.toml` 設定：
+## 配置檔案
+
+基本的 `config.toml` 配置：
 
 ```toml
 [ErisPulse.server]
@@ -162,23 +168,24 @@ port = 8000
 level = "INFO"
 
 [Yunhu_Adapter]
-# 适配器設定
+# 適配器配置
+```
 
 ## 下一步
 
-機器人啟動後，您可以視需求繼續：
+機器人跑起來後，您可以按需繼續：
 
-**想了解框架如何運作?**
-- [基礎概念](getting-started/basic-concepts.md) — 适配器 / 模組 / 事件 的設計
+**想知道框架如何運作？**
+- [基本概念](getting-started/basic-concepts.md) — 適配器 / 模組 / 事件 的設計
 - [架構概覽](architecture.md) — 可視化架構圖
 
-**想實現更多功能?**
+**想實現更多功能？**
 - [常見任務範例](getting-started/common-tasks.md) — 儲存、定時任務、權限控制
-- [事件處理入門](getting-started/event-handling.md) — 訊息、通知、請求處理
+- [事件處理入門](getting-started/event-handling.md) — 消息、通知、請求處理
 
-**想開發自己的模組 / 适配器?**
+**想開發自己的模組 / 適配器？**
 - [模組開發入門](developer-guide/modules/getting-started.md)
-- [适配器開發入門](developer-guide/adapters/getting-started.md)
+- [適配器開發入門](developer-guide/adapters/getting-started.md)
 
-**按需查閱:**
-- [配置檔說明](user-guide/configuration.md) · [CLI 指令](user-guide/cli-reference.md) · [部署指南](user-guide/deployment.md)
+**按需查閱：**
+- [配置檔案說明](user-guide/configuration.md) · [CLI 命令](user-guide/cli-reference.md) · [部署指南](user-guide/deployment.md)

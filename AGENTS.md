@@ -36,10 +36,15 @@
     - 删除 `.github/.translate_cache/<lang>/` 下对应的 `.cache` 文件
     - 检查各语言 `README.md` / 索引文件中是否有指向旧路径的死链接并修正
   - 同理，**重命名**文档时也要同步迁移其它语言版本与缓存，避免产生孤立文件
-- 17. 以下文档路径请务必不要读取/修改！
-  - 不要读取或修改任何语言 `ai-support/prompts` 下的文档，这是自动生成的AI提示词
-  - 不要读取或修改任何语言 `api-reference/auto_api` 下的文档，这是自动生成的API文档
-- 18. 每次修改都必须更新 `CHANGELOG.md`；严重 bug 修复需同步更新 `docs/zh-CN/bug-tracker.md`（影响微小时可不写）
+- 17. 以下文档路径请务必不要读取/修改，也**不要在本地运行生成脚本更新它们**！它们完全由 CI/CD 统一生成，本地生成会污染提交：
+  - 不要读取或修改任何语言 `ai-support/prompts` 下的文档，这是自动生成的AI提示词；不要本地运行 `scripts/tools/generate-ai-prompts.py`
+  - 不要读取或修改任何语言 `api-reference/auto_api` 下的文档，这是自动生成的API文档；不要本地运行 `scripts/tools/generate-api-docs.py`
+  - 源码 docstring 与 `docs/zh-CN` 的修改会在 CI 流程中自动反映到上述文档，无需（也不应）手动同步
+- 18. 用户可感知的变更必须更新 `CHANGELOG.md` **当前开发版本**条目，并遵循其头部「写作规范」：
+  - 同一主题的多次修改应**更新既有条目为最终形态**，而非追加新条目（禁止"后期迭代 / 修正 / 不再…"式过程记录）
+  - 本版本内引入又在本版本内修复 / 回退的内容不单独记录（并入特性条目或不记）
+  - 纯测试补充、内部微调等无用户感知的变更可不记
+  - 严重 bug 修复需同步更新 `docs/zh-CN/bug-tracker.md`（影响微小时可不写）
 - 19. 如果你有新增/重构文档，请务必进行以下两项任务：
   - 更新根文档README即相关总结性文档的内容，添加/修改新的文档的相关连接 
   - 更新文档相关生成脚本：`scripts/tools/generate-ai-prompts.py`, `scripts/tools/generate-docs-index.py` 是否需要更新

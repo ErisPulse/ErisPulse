@@ -426,3 +426,5 @@ async def handle_member_change(event):
         user_id = event.get("user_id")
         operator_id = event.get("operator_id")
         print(f"用户 {user_id} 被移除，操作者: {operator_id}")
+
+```

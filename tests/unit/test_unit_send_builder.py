@@ -9,8 +9,7 @@ import asyncio
 
 import pytest
 
-from ErisPulse.Core.Bases import BaseAdapter, SendDSL, SendBuilder, BatchContext
-
+from ErisPulse.Core.Bases import BaseAdapter, BatchContext, SendBuilder, SendDSL
 
 # ==================== 辅助：构建测试适配器 ====================
 

@@ -1,8 +1,6 @@
 # WechatMp Adapter - Platform Features Documentation
 
-Please directly return the complete translated Markdown content, without any additional text.
 
-Once again, please note: if the document contains a language switch line (with language names separated by `` | ``), strictly adhere to the above format requirements in point 8, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Basic Information
 - Module Name: `ErisPulse-WechatMpAdapter`
@@ -11,9 +9,7 @@ Once again, please note: if the document contains a language switch line (with l
 - Maintainer: ErisPulse
 - Dependencies: `cryptography`
 
-Please directly return the complete translated Markdown content, without any additional text.
 
-Once again, if the document contains language switching lines (with language names separated by `` | ``), strictly follow the format requirement in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Supported Message Types
 
@@ -86,7 +82,6 @@ WeChat-specific fields (with `mp_` prefix) in the event object:
 | `mp_from_user` | str | Sender's OpenID |
 | `mp_data` | dict | Parsed XML dictionary data |
 
-Please replace all `docs/en/` paths in document links with `docs/en/`. For example, `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`. For links pointing to non-current language version files (e.g., `README.xx.md`), keep them unchanged to ensure the links point to the correct language version of the document.
 
 ## Event Extension Methods
 
@@ -100,7 +95,6 @@ Registered via `register_event_mixin("mp", ...)`, these methods can be directly 
 | `get_content()` | str | Plain text content of the message |
 | `get_raw_xml()` | str | Raw XML data |
 
-Please replace paths in document links by replacing `docs/en/` with `docs/en/`. For example, `docs/en/quick-start.md` should be changed to `docs/en/quick-start.md`. For links pointing to non-current language version files (e.g., `README.xx.md`), keep them unchanged to ensure links point to the correct language version of the document.
 
 ## Configuration Options
 
@@ -162,7 +156,6 @@ This adapter automatically handles:
 
 Please return the translated content directly, without any additional text.
 
-**Important:** If the document contains language switch lines (with language names separated by `` | ``), strictly follow the format requirements above. Do not write incorrect formats such as ``[**Label**](file)``.
 
 ## Callback Routes
 
@@ -173,9 +166,7 @@ The adapter registers two routes (GET + POST) for each enabled account:
 
 The actual access path automatically adds the module prefix. For example, if the registered path is `/mp/main`, the actual access paths are `/mp_{account}_verify/mp/main` and `/mp_{account}_message/mp/main`.
 
-Please directly return the complete translated Markdown content, without including any other text.
 
-Once again, if the document contains a language switch line (with language names separated by `` | ``), strictly follow the format requirement in item 8 above, and do not write incorrect formats such as ``[**Label**](file)``.
 
 ## API Response
 
@@ -185,6 +176,3 @@ All `call_api` calls return a standardized response:
 - Failure: `status: "failed"`, `retcode: 34000+errcode`
 - Always includes `mp_raw` (raw response), `message_id`
 
-Please directly return the complete translated Markdown content, without any additional text.
-
-Once again, please note: If the document contains a language switch line (with each language name separated by `` | ``), strictly follow the format requirement in item 8 above; do not write incorrect formats such as ``[**Label**](file)``.

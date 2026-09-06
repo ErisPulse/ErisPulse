@@ -506,5 +506,3 @@ async def _identify_image(url):
 - [ユーザーガイド](../user-guide/) - 設定とモジュール管理について
 - [開発者ガイド](../developer-guide/) - モジュールとアダプターの開発について
 - [高度なトピック](../advanced/) - フレームワークの機能について詳しく
-
-Directly return the complete translated Markdown content, without any other text.

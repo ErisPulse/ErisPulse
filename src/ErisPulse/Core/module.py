@@ -53,7 +53,6 @@ def _warn_deprecated_kwarg(owner: str, old: str, new: str) -> None:
     )
 
 
-
 class ModuleManager(ManagerBase):
     """
     模块管理器
@@ -77,10 +76,7 @@ class ModuleManager(ManagerBase):
         if base_cls.__name__ == klass.__name__:
             return False
         for parent in klass.__mro__:
-            if (
-                parent.__name__ == base_cls.__name__
-                and parent.__module__ == base_cls.__module__
-            ):
+            if parent.__name__ == base_cls.__name__ and parent.__module__ == base_cls.__module__:
                 return True
         return False
 
@@ -112,9 +108,7 @@ class ModuleManager(ManagerBase):
         self._module_classes: dict[str, type] = {}  # 模块类映射
         self._loaded_modules: set = set()  # 已加载的模块名称
         self._module_info: dict[str, dict] = {}  # 模块信息
-        self._lazy_modules: dict[
-            str, Any
-        ] = {}  # 懒加载代理（未触发初始化时 get() 返回它）
+        self._lazy_modules: dict[str, Any] = {}  # 懒加载代理（未触发初始化时 get() 返回它）
         self._sdk = None
         # 注册配置变更路由：将 config.set / config.updated 事件转发到各模块的 on_config_update
         self._register_config_change_routing()
@@ -266,9 +260,7 @@ class ModuleManager(ManagerBase):
             _warn_deprecated_kwarg("ModuleManager.register", "module_name", "name")
             name = module_name
         if module_class is not None:
-            _warn_deprecated_kwarg(
-                "ModuleManager.register", "module_class", "class_type"
-            )
+            _warn_deprecated_kwarg("ModuleManager.register", "module_class", "class_type")
             class_type = module_class
         if module_info is not None:
             _warn_deprecated_kwarg("ModuleManager.register", "module_info", "info")
@@ -365,9 +357,7 @@ class ModuleManager(ManagerBase):
         """
         self._lazy_modules.pop(name, None)
 
-    async def load(
-        self, name: str | None = None, *, module_name: str | None = None
-    ) -> bool:
+    async def load(self, name: str | None = None, *, module_name: str | None = None) -> bool:
         """
         加载指定模块（标准化加载逻辑）
 
@@ -404,9 +394,7 @@ class ModuleManager(ManagerBase):
             params = [
                 p
                 for p in init_signature.parameters.values()
-                if p.name != "self"
-                and p.kind
-                not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+                if p.name != "self" and p.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
             ]
 
             if (sdk_to_use := self._sdk) is None:
@@ -445,11 +433,7 @@ class ModuleManager(ManagerBase):
                         else:
                             instance.on_load({"module_name": module_name})
                     except Exception as e:
-                        logger.error(
-                            i18n.t(
-                                "core.module.on_load_failed", name=module_name, error=e
-                            )
-                        )
+                        logger.error(i18n.t("core.module.on_load_failed", name=module_name, error=e))
                         return False
             finally:
                 current_owner.reset(token)
@@ -491,9 +475,7 @@ class ModuleManager(ManagerBase):
                 },
                 msg=i18n.t("core.module.systemexit", name=module_name, code=e.code),
             )
-            logger.error(
-                i18n.t("core.module.systemexit", name=module_name, code=e.code)
-            )
+            logger.error(i18n.t("core.module.systemexit", name=module_name, code=e.code))
             return False
         except Exception as e:
             await lifecycle.submit_event(
@@ -631,6 +613,28 @@ class ModuleManager(ManagerBase):
         )
         return success
 
+    async def reload(self, name: str) -> bool:
+        """
+        热重载单个模块（支持任意来源：本地插件 / PyPI 安装包）
+
+        经模块加载器完整执行 卸载旧实例 → 清理注册与 ``sys.modules`` 缓存 →
+        重新发现/导入 → 重新注册并加载 流程；依赖该模块的模块会**级联重载**。
+        本地插件（``plugins/`` 目录）来源重扫描插件目录；PyPI 安装包来源
+        重新查询 entry-point 并重导入模块代码（pip 升级后调用即可生效）。
+
+        :param name: 模块名（entry-point 名称或插件名）
+        :return: 是否重载成功（SDK 未初始化时返回 False）
+
+        :example:
+        >>> await sdk.module.reload("dice")      # 本地插件
+        >>> await sdk.module.reload("Weather")   # PyPI 安装包模块
+        """
+        loader = getattr(self._sdk, "_module_loader", None) if self._sdk else None
+        if loader is None:
+            logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
+            return False
+        return await loader.reload_module(name, self, self._sdk)
+
     async def _unload_single_module(self, module_name: str) -> bool:
         """
         {!--< internal-use >!--}
@@ -672,11 +676,7 @@ class ModuleManager(ManagerBase):
                         )
                     )
                 except Exception as e:
-                    logger.error(
-                        i18n.t(
-                            "core.module.on_unload_failed", name=module_name, error=e
-                        )
-                    )
+                    logger.error(i18n.t("core.module.on_unload_failed", name=module_name, error=e))
 
             # on_unload 之后兜底取消该模块名下的后台任务：
             # 模块未自行取消的任务可能持有实例引用，导致卸载后无法被 GC
@@ -692,50 +692,8 @@ class ModuleManager(ManagerBase):
                     )
                 )
 
-            # 清理该模块注册的 i18n 翻译键（防止热重载后翻译键泄漏）
-            try:
-                i18n.unregister_domain(module_name)
-            except Exception:
-                pass
-
-            from .router import router
-
-            result = router.unregister_all_by_namespace(module_name)
-            if result["http_count"] > 0 or result["websocket_count"] > 0:
-                logger.debug(
-                    i18n.t(
-                        "core.module.unload_routes_cleaned",
-                        name=module_name,
-                        http=result["http_count"],
-                        ws=result["websocket_count"],
-                    )
-                )
-
-            from .Event import command, message, meta, notice, request
-
-            total_cleaned = 0
-            total_cleaned += command.unregister_by_owner(module_name)
-            for event_handler in [message, notice, request, meta]:
-                total_cleaned += event_handler.handler.unregister_by_owner(module_name)
-            if total_cleaned > 0:
-                logger.debug(
-                    i18n.t(
-                        "core.module.unload_handlers_cleaned",
-                        name=module_name,
-                        count=total_cleaned,
-                    )
-                )
-
-            # 清理该模块注册的生命周期钩子，避免闭包引用导致内存泄漏
-            lifecycle_removed = lifecycle.unregister_by_owner(module_name)
-            if lifecycle_removed > 0:
-                logger.debug(
-                    i18n.t(
-                        "core.module.lifecycle_hooks_cleaned",
-                        name=module_name,
-                        count=lifecycle_removed,
-                    )
-                )
+            # 清理模块在加载上下文内注册的全部框架资源（unload / disable 共用）
+            self._cleanup_module_registrations(module_name)
 
             if self._sdk is not None:
                 sdk_dict = getattr(self._sdk, "__dict__", {})
@@ -756,6 +714,143 @@ class ModuleManager(ManagerBase):
         except Exception as e:
             logger.error(i18n.t("core.module.unload_failed", name=module_name, error=e))
             return False
+
+    def _cleanup_module_registrations(self, module_name: str) -> None:
+        """
+        {!--< internal-use >!--}
+        清理模块在加载上下文内注册的全部框架资源（unload / disable 共用）
+
+        涵盖：i18n 翻译域、路由（命名空间 + owner 兜底：中间件 / 首页入口 /
+        非命名空间路由）、适配器事件处理器与中间件、命令与事件处理器、
+        自定义会话类型、主人身份源 provider、生命周期钩子。
+        每步失败仅记录日志，不中断后续清理（与卸载流程兜底风格一致）。
+
+        :param module_name: 模块名
+        """
+        # 清理该模块注册的 i18n 翻译键（防止热重载后翻译键泄漏）
+        try:
+            i18n.unregister_domain(module_name)
+        except Exception:
+            pass
+
+        from .router import router
+
+        result = router.unregister_all_by_namespace(module_name)
+        if result["http_count"] > 0 or result["websocket_count"] > 0:
+            logger.debug(
+                i18n.t(
+                    "core.module.unload_routes_cleaned",
+                    name=module_name,
+                    http=result["http_count"],
+                    ws=result["websocket_count"],
+                )
+            )
+
+        # 按 owner 兜底清理归属资源：中间件 / 首页入口 / 非命名空间路由
+        owner_result = router.unregister_all_by_owner(module_name)
+        if any(
+            owner_result.get(k, 0) > 0
+            for k in ("http_count", "websocket_count", "middleware_count", "home_entry_count")
+        ):
+            logger.debug(
+                i18n.t(
+                    "core.module.unload_owner_resources_cleaned",
+                    name=module_name,
+                    http=owner_result.get("http_count", 0),
+                    ws=owner_result.get("websocket_count", 0),
+                    middleware=owner_result.get("middleware_count", 0),
+                    home_entries=owner_result.get("home_entry_count", 0),
+                )
+            )
+
+        # 兜底移除模块注册的适配器事件处理器与中间件（避免卸载后仍被分发触发）
+        try:
+            if self._sdk is not None:
+                adapter_removed = self._sdk.adapter.unregister_handlers_by_owner(module_name)
+                if adapter_removed > 0:
+                    logger.debug(
+                        i18n.t(
+                            "core.module.unload_adapter_handlers_cleaned",
+                            name=module_name,
+                            count=adapter_removed,
+                        )
+                    )
+        except Exception:
+            pass
+
+        # 兜底注销模块注册的自定义会话类型
+        try:
+            from .Event import unregister_custom_types_by_owner
+
+            types_removed = unregister_custom_types_by_owner(module_name)
+            if types_removed > 0:
+                logger.debug(
+                    i18n.t(
+                        "core.module.unload_session_types_cleaned",
+                        name=module_name,
+                        count=types_removed,
+                    )
+                )
+        except Exception:
+            pass
+
+        # 兜底清理模块运行时写入（persist=False）的事件覆写
+        try:
+            from .Event import overrides
+
+            override_removed = overrides.unregister_by_owner(module_name)
+            if override_removed > 0:
+                logger.debug(
+                    i18n.t(
+                        "core.module.unload_overrides_cleaned",
+                        name=module_name,
+                        count=override_removed,
+                    )
+                )
+        except Exception:
+            pass
+
+        from .Event import command, message, meta, notice, request
+
+        total_cleaned = 0
+        total_cleaned += command.unregister_by_owner(module_name)
+        for event_handler in [message, notice, request, meta]:
+            total_cleaned += event_handler.handler.unregister_by_owner(module_name)
+        if total_cleaned > 0:
+            logger.debug(
+                i18n.t(
+                    "core.module.unload_handlers_cleaned",
+                    name=module_name,
+                    count=total_cleaned,
+                )
+            )
+
+        # 自动注销模块在加载上下文内注册的主人身源 provider（作用域清理）
+        try:
+            from .master import master
+
+            provider_removed = master.unregister_by_owner(module_name)
+            if provider_removed > 0:
+                logger.debug(
+                    i18n.t(
+                        "core.module.unload_providers_cleaned",
+                        name=module_name,
+                        count=provider_removed,
+                    )
+                )
+        except Exception:
+            pass
+
+        # 清理该模块注册的生命周期钩子，避免闭包引用导致内存泄漏
+        lifecycle_removed = lifecycle.unregister_by_owner(module_name)
+        if lifecycle_removed > 0:
+            logger.debug(
+                i18n.t(
+                    "core.module.lifecycle_hooks_cleaned",
+                    name=module_name,
+                    count=lifecycle_removed,
+                )
+            )
 
     def _purge_module_stub(self, module_name: str) -> tuple[str, Any, Any]:
         """
@@ -803,15 +898,10 @@ class ModuleManager(ManagerBase):
         purge_names = {module_name}
         purge_names.update(top_level or [])
         for mod_name in list(sys.modules):
-            if any(
-                mod_name == n or mod_name.startswith(f"{n}.")
-                for n in purge_names
-            ):
+            if any(mod_name == n or mod_name.startswith(f"{n}.") for n in purge_names):
                 sys.modules.pop(mod_name, None)
 
-    def _report_purge_recyclability(
-        self, refs: list[tuple[str, Any, Any]]
-    ) -> None:
+    def _report_purge_recyclability(self, refs: list[tuple[str, Any, Any]]) -> None:
         """
         {!--< internal-use >!--}
         purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出引用方
@@ -840,13 +930,9 @@ class ModuleManager(ManagerBase):
                 )
             )
             # 引用方定位（截断，避免刷屏）：仅 DEBUG 级输出
-            for leaked_obj in (
-                x() for x in (class_ref, instance_ref) if x is not None and x() is not None
-            ):
+            for leaked_obj in (x() for x in (class_ref, instance_ref) if x is not None and x() is not None):
                 try:
-                    referrers = [
-                        type(r).__name__ for r in gc.get_referrers(leaked_obj)[:8]
-                    ]
+                    referrers = [type(r).__name__ for r in gc.get_referrers(leaked_obj)[:8]]
                     logger.debug(
                         i18n.t(
                             "core.module.purge_leaked_referrers",
@@ -893,9 +979,7 @@ class ModuleManager(ManagerBase):
             return instance
         return self._lazy_modules.get(name)
 
-    def exists(
-        self, name: str | None = None, *, module_name: str | None = None
-    ) -> bool:
+    def exists(self, name: str | None = None, *, module_name: str | None = None) -> bool:
         """
         检查模块是否已注册
 
@@ -915,9 +999,7 @@ class ModuleManager(ManagerBase):
             return False
         return name in self._module_classes
 
-    def is_loaded(
-        self, name: str | None = None, *, module_name: str | None = None
-    ) -> bool:
+    def is_loaded(self, name: str | None = None, *, module_name: str | None = None) -> bool:
         """
         检查模块是否已加载
 
@@ -926,7 +1008,8 @@ class ModuleManager(ManagerBase):
         :return: 模块是否已加载
 
         :example:
-        >>> if module.is_loaded("MyModule"): ...
+        >>> if module.is_loaded("MyModule"):
+        ...     ...
         """
         if module_name is not None:
             _warn_deprecated_kwarg("ModuleManager.is_loaded", "module_name", "name")
@@ -935,9 +1018,7 @@ class ModuleManager(ManagerBase):
             return False
         return name in self._loaded_modules
 
-    def is_running(
-        self, name: str | None = None, *, module_name: str | None = None
-    ) -> bool:
+    def is_running(self, name: str | None = None, *, module_name: str | None = None) -> bool:
         """
         检查模块是否正在运行（已加载）
 
@@ -1009,19 +1090,11 @@ class ModuleManager(ManagerBase):
 
         # 模块不存在，进行注册
         config.setConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name), enabled)
-        status = (
-            i18n.t("core.adapter.status_enabled")
-            if enabled
-            else i18n.t("core.adapter.status_disabled")
-        )
-        logger.info(
-            i18n.t("core.module.registered_status", name=module_name, status=status)
-        )
+        status = i18n.t("core.adapter.status_enabled") if enabled else i18n.t("core.adapter.status_disabled")
+        logger.info(i18n.t("core.module.registered_status", name=module_name, status=status))
         return True
 
-    def is_enabled(
-        self, name: str | None = None, *, module_name: str | None = None
-    ) -> bool:
+    def is_enabled(self, name: str | None = None, *, module_name: str | None = None) -> bool:
         """
         检查模块是否启用
 
@@ -1055,9 +1128,7 @@ class ModuleManager(ManagerBase):
         # 解析配置值
         return parse_bool_config(status)
 
-    def enable(
-        self, name: str | None = None, *, module_name: str | None = None
-    ) -> bool:
+    def enable(self, name: str | None = None, *, module_name: str | None = None) -> bool:
         """
         启用模块
 
@@ -1075,15 +1146,11 @@ class ModuleManager(ManagerBase):
             logger.error(i18n.t("core.module.module_not_exist", name=module_name))
             return False
 
-        config.setConfig(
-            CONFIG_KEY_MODULE_STATUS_OF.format(module_name), True, immediate=True
-        )
+        config.setConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name), True, immediate=True)
         logger.info(i18n.t("core.module.module_enabled", name=module_name))
         return True
 
-    def disable(
-        self, name: str | None = None, *, module_name: str | None = None
-    ) -> bool:
+    def disable(self, name: str | None = None, *, module_name: str | None = None) -> bool:
         """
         禁用模块
 
@@ -1097,9 +1164,7 @@ class ModuleManager(ManagerBase):
         if name is None:
             return False
         module_name = name
-        config.setConfig(
-            CONFIG_KEY_MODULE_STATUS_OF.format(module_name), False, immediate=True
-        )
+        config.setConfig(CONFIG_KEY_MODULE_STATUS_OF.format(module_name), False, immediate=True)
         logger.info(i18n.t("core.module.module_disabled", name=module_name))
 
         # 级联禁用依赖者（最深层依赖者先处理），与 unload 的级联语义一致
@@ -1173,29 +1238,12 @@ class ModuleManager(ManagerBase):
                 try:
                     instance.on_unload({"module_name": module_name})
                 except Exception as e:
-                    logger.error(
-                        i18n.t("core.module.on_unload_failed", name=module_name, error=e)
-                    )
+                    logger.error(i18n.t("core.module.on_unload_failed", name=module_name, error=e))
                 spawn_background(_report_cancelled())
 
-        from .router import router
-
-        router.unregister_all_by_namespace(module_name)
-
-        from .Event import command, message, meta, notice, request
-
-        command.unregister_by_owner(module_name)
-        for event_handler in [message, notice, request, meta]:
-            event_handler.handler.unregister_by_owner(module_name)
-
-        # 清理该模块注册的生命周期钩子（与 _unload_single_module 保持一致）
-        lifecycle.unregister_by_owner(module_name)
-
-        # 清理该模块注册的 i18n 翻译键
-        try:
-            i18n.unregister_domain(module_name)
-        except Exception:
-            pass
+        # 清理模块在加载上下文内注册的全部框架资源（与 unload 共用，
+        # 含 master provider / 适配器处理器 / 自定义会话类型等，保持卸载对等）
+        self._cleanup_module_registrations(module_name)
 
         if self._sdk is not None:
             sdk_dict = getattr(self._sdk, "__dict__", {})
@@ -1212,9 +1260,7 @@ class ModuleManager(ManagerBase):
         self.unregister_lazy(module_name)
         return True
 
-    def unregister(
-        self, name: str | None = None, *, module_name: str | None = None
-    ) -> bool:
+    def unregister(self, name: str | None = None, *, module_name: str | None = None) -> bool:
         """
         取消注册模块
 
@@ -1304,9 +1350,7 @@ class ModuleManager(ManagerBase):
                 items[name] = self.is_enabled(name)
         return items
 
-    def get_info(
-        self, name: str | None = None, *, module_name: str | None = None
-    ) -> dict | None:
+    def get_info(self, name: str | None = None, *, module_name: str | None = None) -> dict | None:
         """
         获取模块信息
 
@@ -1351,7 +1395,7 @@ class ModuleManager(ManagerBase):
 
         :example:
         >>> meta = module.get_meta("Weather")
-        >>> meta["description"]   # 当前语言下的模块简介
+        >>> meta["description"]  # 当前语言下的模块简介
         """
         if module_name is not None:
             _warn_deprecated_kwarg("ModuleManager.get_meta", "module_name", "name")
@@ -1412,19 +1456,33 @@ class ModuleManager(ManagerBase):
             return sorted(
                 cmd_name
                 for cmd_name, cmd_info in command.get_commands().items()
-                if cmd_info.get("owner") == module_name
-                and cmd_name == cmd_info.get("main_name")
+                if cmd_info.get("owner") == module_name and cmd_name == cmd_info.get("main_name")
             )
         except Exception:
             return []
 
-    def get_commands_overview(self) -> dict[str, dict[str, Any]]:
+    def get_commands_overview(
+        self,
+        *,
+        event: Any = None,
+        platform: str | None = None,
+        bot_id: str | None = None,
+        session_id: str | None = None,
+    ) -> dict[str, dict[str, Any]]:
         """
         获取命令总览（模块 meta + 其注册的命令，按模块聚合）
 
         聚合每个模块的**介绍元信息**与其**注册的命令**（含别名 / 分组 / 帮助文本），
         便于 help 模块、管理界面等按模块展示"这个模块是干什么的 + 有哪些命令"。
+        命令的 help / hidden 字段为合并控制面覆盖后的生效值（用户优先）。
 
+        传入作用域上下文（``event`` 或 ``platform`` / ``bot_id`` / ``session_id``
+        任一）时，当前会话不可用模块不进入总览（会话感知总览）。
+
+        :param event: 可选，事件上下文（Event 或 dict）
+        :param platform: 可选，平台名（与 event 叠加时显式参数优先）
+        :param bot_id: 可选，Bot 标识
+        :param session_id: 可选，会话标识
         :return: {模块名: {"meta": {...}, "commands": [{name, aliases, group, help, hidden}]}}
 
         :example:
@@ -1433,26 +1491,26 @@ class ModuleManager(ManagerBase):
         "查询城市天气"
         >>> overview["Weather"]["commands"][0]["name"]
         "weather"
+        >>> overview = module.get_commands_overview(event=event)   # 会话感知
         """
         from .Event import command
 
+        commands = command.get_commands(event=event, platform=platform, bot_id=bot_id, session_id=session_id)
         commands_by_owner: dict[str, list[dict[str, Any]]] = {}
-        for cmd_name, cmd_info in command.get_commands().items():
+        for cmd_name, cmd_info in commands.items():
             owner = cmd_info.get("owner")
             if not owner or cmd_name != cmd_info.get("main_name"):
                 continue
-            aliases = sorted(
-                alias
-                for alias, main in command.aliases.items()
-                if main == cmd_name and alias != cmd_name
-            )
+            # 生效值：读合并覆盖后的参数（与帮助渲染 / 执行判定同源）
+            effective = command.get_command(cmd_name) or cmd_info
+            aliases = sorted(alias for alias, main in command.aliases.items() if main == cmd_name and alias != cmd_name)
             commands_by_owner.setdefault(owner, []).append(
                 {
                     "name": cmd_name,
                     "aliases": aliases,
-                    "group": cmd_info.get("group"),
-                    "help": cmd_info.get("help"),
-                    "hidden": bool(cmd_info.get("hidden", False)),
+                    "group": effective.get("group"),
+                    "help": effective.get("help"),
+                    "hidden": bool(effective.get("hidden", False)),
                 }
             )
 
@@ -1587,9 +1645,7 @@ class ModuleManager(ManagerBase):
             ns_routes = routes_by_namespace.get(name, {})
             modules_summary[name] = {
                 "loaded": name in self._loaded_modules,
-                "enabled": parse_bool_config(
-                    config.getConfig(CONFIG_KEY_MODULE_STATUS_OF.format(name), True)
-                ),
+                "enabled": parse_bool_config(config.getConfig(CONFIG_KEY_MODULE_STATUS_OF.format(name), True)),
                 "load_strategy": strategy,
                 "info": self._module_info.get(name),
                 "commands": sorted(commands_by_owner.get(name, [])),
@@ -1628,9 +1684,7 @@ class ModuleManager(ManagerBase):
         >>> my_module = module.MyModule
         """
         if (module_instance := self.get(module_name)) is None:
-            raise AttributeError(
-                i18n.t("core.module.module_not_enabled", name=module_name)
-            )
+            raise AttributeError(i18n.t("core.module.module_not_enabled", name=module_name))
         return module_instance
 
     def __contains__(self, module_name: str) -> bool:
@@ -1641,7 +1695,8 @@ class ModuleManager(ManagerBase):
         :return: [bool] 模块是否存在且启用
 
         :example:
-        >>> if "MyModule" in module: ...
+        >>> if "MyModule" in module:
+        ...     ...
         """
         return self.exists(module_name) and self.is_enabled(module_name)
 

@@ -34,7 +34,16 @@ services:
       - LANG=${LANG:-en_US.UTF-8}
       - ERISPULSE_LANG=${ERISPULSE_LANG:-}
       - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
+    init: true
+    # 优雅停机：entrypoint 捕获 SIGTERM 后让进程自然退出
+    stop_grace_period: 30s
     restart: on-failure:5
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ping')"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
     # 防止 OOM 导致重启（根据实际情况调整）
     # mem_limit: 512m
     # mem_reservation: 256m

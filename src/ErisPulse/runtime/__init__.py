@@ -38,6 +38,7 @@ from .frame_config import (
     get_logger_config,
     get_server_config,
     get_storage_config,
+    set_erispulse_section,
     update_erispulse_config,
 )
 from .hints import (
@@ -102,6 +103,7 @@ __all__ = [
     "suggest_for_attribute_error",
     # 友好提示
     "suggest_similar",
+    "set_erispulse_section",
     "update_erispulse_config",
     "validate_config",
 ]

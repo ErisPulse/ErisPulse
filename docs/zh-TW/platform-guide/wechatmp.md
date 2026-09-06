@@ -1,8 +1,6 @@
 # 微信公眾號 (WechatMp) 適配器 - 平台特性文件
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
-再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 基本資訊
 - 模組名稱: `ErisPulse-WechatMpAdapter`
@@ -11,7 +9,6 @@
 - 維護者: ErisPulse
 - 依賴: `cryptography`
 
-請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
 
 ## 支援的消息傳送類型
 
@@ -84,7 +81,6 @@
 | `mp_from_user` | str | 發送方 OpenID |
 | `mp_data` | dict | 解析後的 XML 字典數據 |
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
 ## 事件擴展方法
 
@@ -98,9 +94,7 @@
 | `get_content()` | str | 消息純文字內容 |
 | `get_raw_xml()` | str | 原始 XML 數據 |
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
 
-再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 配置選項
 
@@ -160,7 +154,6 @@ enable = true
 - 安全/兼容模式：檢測 `Encrypt` 欄位，驗證 `msg_signature`，使用 AES-256-CBC 解密
 - 解密依賴 `cryptography` 庫（已宣告在 dependencies 中）
 
-請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
 
 ## 回調路由
 

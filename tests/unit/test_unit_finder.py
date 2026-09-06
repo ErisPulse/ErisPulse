@@ -5,9 +5,7 @@ BaseFinder 远程目标环境支持单元测试
 entry-points 的行为。这是修复"安装在 venv 但查询读取 pipx env"这类跨环境错位的关键。
 """
 
-import os
 import sys
-import tempfile
 from unittest.mock import patch
 
 import pytest
@@ -15,7 +13,6 @@ import pytest
 from ErisPulse.finders.bases.finder import (
     BaseFinder,
     _RemoteEntryPoint,
-    _RemoteDist,
 )
 
 

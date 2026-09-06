@@ -1,67 +1,67 @@
-# ErisPulse リクエスト操作仕様書
+# ErisPulse 要求操作規格
 
-このドキュメントでは、ErisPulse アダプターにおけるリクエストイベント操作の標準化仕様を定義しています。これには、リクエストイベントのフィールド要件、Request DSL（ドメイン固有言語）の使用方法、およびアダプターの実装要件が含まれます。
+本ドキュメントは、ErisPulseアダプターにおける要求イベント操作の標準化された規格を定義しており、要求イベントのフィールド要件、Request DSL の使用方法、およびアダプター実装要件について説明します。
 
 ## 1. 概要
 
-リクエストイベント（`type: "request"`）は、OneBot12 標準で定義される特殊なイベントタイプで、Bot が決定を下す必要があるリクエスト（友達申請、グループ招待など）を表します。
+要求イベント（`type: "request"`）は、OneBot12標準で定義された特殊なイベントタイプであり、Botが決定を行う必要がある要求（例：友達申請、グループ招待など）を表します。
 
-メッセージイベントとは異なり、リクエストイベントには**双方向の相互作用**が必要です：
-1. **受信**：アダプターがプラットフォームのネイティブリクエストを標準のリクエストイベントに変換します
-2. **応答**：モジュールが `Request` DSL または `Event.approve()` / `Event.reject()` を使用して操作を実行します
+メッセージイベントとは異なり、要求イベントは**双方向のインタラクション**を必要とします：
+1. **受信**：アダプターがプラットフォームの原生要求を標準要求イベントに変換する
+2. **応答**：モジュールが `Request` DSL または `Event.approve()`/`Event.reject()` を使用して操作を実行する
 
 ```
-プラットフォームのネイティブリクエストイベント
+プラットフォームの原生要求イベント
     │
     ▼
-Converter.convert()        ← アダプターの実装（正の変換）
+Converter.convert()        ← アダプター実装（正方向変換）
     │
     ▼
-標準リクエストイベント (含 request_id)
+標準要求イベント (request_id を含む)
     │
-    ├─→ モジュールハンドラー @request.on_friend_request()
+    ├─→ モジュール処理器 @request.on_friend_request()
     │       │
-    │       ├─→ event.approve()     ← リクエストを承認
-    │       └─→ event.reject()      ← リクエストを拒否
+    │       ├─→ event.approve()     ← 要求を承認
+    │       └─→ event.reject()      ← 要求を拒否
     │               │
     │               ▼
     │       adapter.Request(request_id).accept()
     │               │
     │               ▼
-    │       BaseAdapter.Request.accept()  ← アダプターのオーバーライド
+    │       BaseAdapter.Request.accept()  ← アダプターでオーバーライド
     │               │
     │               ▼
-    │       プラットフォーム API の呼び出し
+    │       プラットフォーム API 呼び出し
     │
-    └─→ またはアダプター経由で直接操作
+    └─→ またはアダプター操作を直接使用
             await adapter.Request("req_id").accept()
 ```
 
-## 2. リクエストイベントフィールド要件
+## 2. 要求イベントのフィールド要件
 
 ### 2.1 標準フィールド
 
-リクエストイベントには、OneBot12 標準のフィールドに加えて、以下のフィールドが含まれている必要があります。
+要求イベントは、OneBot12標準フィールドに加えて、以下のフィールドを含む必要があります：
 
 | フィールド | 型 | 必須 | 説明 |
 |------|------|------|------|
-| `request_id` | string | **強く推奨** | 操作を承認/拒否するためのリクエスト識別子 |
-| `user_id` | string | 是 | リクエスト送信者のID |
-| `user_nickname` | string | 否 | リクエスト送信者のニックネーム |
-| `comment` | string | 否 | リクエストへの付加メッセージ |
+| `request_id` | string | **強く推奨** | 要求操作に使用される要求識別子 |
+| `user_id` | string | はい | 要求を発起したユーザーID |
+| `user_nickname` | string | いいえ | 要求を発起したユーザーのニックネーム |
+| `comment` | string | いいえ | 要求に付随するコメント |
 
 ### 2.2 `request_id` フィールド
 
-`request_id` はリクエスト操作の中心的な識別子です。
+`request_id` は、要求操作の中心的な識別子です：
 
-- **用途**：操作可能なリクエストを識別し、`Request` DSL で使用します
+- **用途**：`Request` DSL で使用される操作可能な要求を識別
 - **生成ルール**：
-  - プラットフォームのネイティブリクエスト識別子（OneBot11 の `flag` フィールド、Telegram の `chat_invite_link` など）を優先して使用します
-  - プラットフォームにネイティブリクエストIDがない場合は、アダプターが一意の識別子を生成する必要があります（推奨フォーマット：`{platform}_{timestamp}_{user_id}`）
-- **一意性**：同じプラットフォーム内で一意である必要があります
-- **欠損時の挙動**：`request_id` が存在しない場合、`event.approve()` / `event.reject()` は `ValueError` をスローします
+  - プラットフォームの原生要求識別子（例：OneBot11 の `flag` フィールド、Telegram の `chat_invite_link` など）を優先的に使用
+  - プラットフォームに原生要求IDがない場合、アダプターは一意の識別子を生成する（推奨形式：`{platform}_{timestamp}_{user_id}`）
+- **一意性**：同一プラットフォーム範囲内で一意である
+- **欠落時の動作**：`request_id` が欠落している場合、`event.approve()` / `event.reject()` は `ValueError` をスローする
 
-### 2.3 リクエストイベントの例
+### 2.3 要求イベントの例
 
 ```json
 {
@@ -76,7 +76,7 @@ Converter.convert()        ← アダプターの実装（正の変換）
   },
   "user_id": "user_456",
   "user_nickname": "YingXinche",
-  "comment": "友達申請をお願いします",
+  "comment": "友達申請してください",
   "request_id": "flag_abc123",
   "onebot11_raw": {...},
   "onebot11_raw_type": "request"
@@ -85,21 +85,21 @@ Converter.convert()        ← アダプターの実装（正の変換）
 
 ## 3. Request DSL
 
-### 3.1 チェーンメソッド (Chain calls)
+### 3.1 チェーン呼び出し
 
-`Request` は、`Send` スタイルと整合したチェーンメソッドインターフェースを提供します：
+`Request` は `Send` と同様のチェーン呼び出しインターフェースを提供します：
 
 ```python
-# 基本の使用法
+# 基本的な使用法
 await adapter.Request("req_id").accept()
 await adapter.Request("req_id").reject()
 
-# Bot アカウントを指定
+# Botアカウントを指定
 await adapter.Request("req_id").Using("bot1").accept()
 
-# 注釈の追加 (kwargs経由)
+# メッセージを付けて（kwargsを使用）
 await adapter.Request("req_id").accept(comment="ようこそ")
-await adapter.Request("req_id").reject(comment="しばらくお待ちください")
+await adapter.Request("req_id").reject(comment="今は追加できません")
 
 # 組み合わせて使用
 await adapter.Request("req_id").Using("bot1").accept(comment="ようこそ")
@@ -109,13 +109,13 @@ await adapter.Request("req_id").Using("bot1").accept(comment="ようこそ")
 
 | メソッド | 説明 | 戻り値 |
 |------|------|--------|
-| `Using(account_id)` | 操作を実行する Bot アカウントを指定 | `RequestDSL`（チェーンメソッド対応） |
-| `accept(**kwargs)` | リクエストを承認 | `asyncio.Task`（await 後に標準レスポンスを返す） |
-| `reject(**kwargs)` | リクエストを拒否 | `asyncio.Task`（await 後に標準レスポンスを返す） |
+| `Using(account_id)` | 操作を実行する Botアカウントを指定 | `RequestDSL`（チェーン呼び出し可能） |
+| `accept(**kwargs)` | 要求を承認 | `asyncio.Task`（await 後に標準レスポンスを返す） |
+| `reject(**kwargs)` | 要求を拒否 | `asyncio.Task`（await 後に標準レスポンスを返す） |
 
-### 3.3 戻り値の形式
+### 3.3 戻り値形式
 
-操作は標準の API レスポンス形式を返します。
+操作は標準 API レスポンス形式を返します：
 
 **成功**：
 ```json
@@ -135,41 +135,41 @@ await adapter.Request("req_id").Using("bot1").accept(comment="ようこそ")
     "retcode": 34001,
     "data": null,
     "message_id": "",
-    "message": "リクエストの有効期限が切れているか存在しません"
+    "message": "要求が期限切れまたは存在しません"
 }
 ```
 
-**未実装**（アダプターが `accept`/`reject` をオーバーライドしていない）：
+**未実装**（アダプターが `accept`/`reject` をオーバーライドしていない場合）：
 ```json
 {
     "status": "failed",
     "retcode": 10002,
     "data": null,
     "message_id": "",
-    "message": "プラットフォーム MyAdapter がリクエスト操作 (accept) を実装していません"
+    "message": "プラットフォーム MyAdapter は要求操作 (accept) を実装していません"
 }
 ```
 
 ## 4. Event 便利メソッド
 
-`Event` ラッパークラスは、リクエストイベントハンドラーで使用するのに適した便利なメソッドを提供します。
+`Event` ラッパークラスには、要求イベントハンドラで使用する便利メソッドが用意されています：
 
 ```python
 from ErisPulse.Core.Event import request
 
 @request.on_friend_request()
 async def handle_friend_request(event):
-    # リクエストIDを取得
+    # 要求IDを取得
     request_id = event.get_request_id()
     if not request_id:
-        print("警告：リクエストイベントに request_id がありません")
+        print("警告：要求イベントに request_id がありません")
         return
     
-    # リクエストを承認
+    # 要求を承認
     result = await event.approve()
     
-    # またはリクエストを拒否
-    # result = await event.reject(comment="しばらくお待ちください")
+    # または要求を拒否
+    # result = await event.reject(comment="今は友達を追加できません")
     
     # 結果を確認
     if result.get("status") == "ok":
@@ -178,23 +178,23 @@ async def handle_friend_request(event):
         print(f"操作失敗: {result.get('message')}")
 ```
 
-### 4.1 Eventメソッド一覧
+### 4.1 Event メソッド一覧
 
 | メソッド | 説明 | 戻り値 |
 |------|------|--------|
-| `get_request_id()` | リクエストIDを取得 | `str` |
-| `approve(comment=None)` | 現在のリクエストイベントを承認 | 標準レスポンス形式 |
-| `reject(comment=None)` | 現在のリクエストイベントを拒否 | 標準レスポンス形式 |
+| `get_request_id()` | 要求IDを取得 | `str` |
+| `approve(comment=None)` | 現在の要求イベントを承認 | 標準レスポンス形式 |
+| `reject(comment=None)` | 現在の要求イベントを拒否 | 標準レスポンス形式 |
 
 ## 5. アダプター実装要件
 
-### 5.1 コンバーター要件
+### 5.1 転換器要件
 
-アダプターのコンバーターはリクエストイベントを変換する際、**必ず** `request_id` フィールドを正しく設定する必要があります。
+アダプターの転換器は、要求イベントを転換する際に、**必ず** `request_id` フィールドを正しく設定する必要があります：
 
 ```python
 def convert_request_event(self, raw_event: dict) -> dict:
-    """プラットフォームのネイティブリクエストイベントを変換"""
+    """プラットフォームの原生要求イベントを転換"""
     return {
         "id": self._generate_event_id(raw_event),
         "time": int(time.time()),
@@ -215,25 +215,25 @@ def convert_request_event(self, raw_event: dict) -> dict:
 
 def _extract_request_id(self, raw_event: dict) -> str:
     """
-    プラットフォームのネイティブイベントからリクエストIDを抽出
+    プラットフォームの原生イベントから要求IDを抽出
     
-    プラットフォームのネイティブリクエスト識別子を優先し、なければ一意IDを生成します
+    プラットフォームの原生IDを優先し、存在しない場合は一意のIDを生成
     """
-    # プラットフォームのネイティブIDを優先して使用
+    # プラットフォームの原生IDを優先
     if flag := raw_event.get("flag"):
         return str(flag)
     if request_key := raw_event.get("request_key"):
         return str(request_key)
     
-    # フォールバック：一意IDを生成
+    # フェールバック：一意のIDを生成
     import hashlib
     raw = f"{self._platform_name}_{raw_event.get('user_id')}_{raw_event.get('timestamp')}"
     return hashlib.md5(raw.encode()).hexdigest()
 ```
 
-### 5.2 Request内部クラスの実装
+### 5.2 Request 内部クラス実装
 
-アダプターは、`Request` 内部クラスで `accept` と `reject` をオーバーライドします。
+アダプターは `Request` 内部クラスで `accept` と `reject` をオーバーライドするだけで実現できます：
 
 ```python
 from ErisPulse.Core import BaseAdapter, RequestDSL
@@ -241,13 +241,13 @@ from ErisPulse.Core import BaseAdapter, RequestDSL
 class MyAdapter(BaseAdapter):
     
     class Request(RequestDSL):
-        """MyPlatform リクエスト操作の実装"""
+        """MyPlatform 要求操作実装"""
         
         def accept(self, **kwargs):
             """
-            リクエストを承認
+            要求を承認
             
-            :param kwargs: 拡張パラメータ、例: comment="注釈"
+            :param kwargs: 拡張パラメータ、例: comment="備考"
             :return: asyncio.Task
             """
             async def _do():
@@ -271,13 +271,13 @@ class MyAdapter(BaseAdapter):
                         "retcode": 34001,
                         "data": None,
                         "message_id": "",
-                        "message": f"リクエスト操作に失敗: {e}",
+                        "message": f"要求操作失敗: {e}",
                     }
             
             return self._create_task(_do())
         
         def reject(self, **kwargs):
-            """リクエストを拒否"""
+            """要求を拒否"""
             async def _do():
                 try:
                     result = await self._adapter.call_api(
@@ -299,73 +299,77 @@ class MyAdapter(BaseAdapter):
                         "retcode": 34001,
                         "data": None,
                         "message_id": "",
-                        "message": f"リクエスト操作に失敗: {e}",
+                        "message": f"要求操作失敗: {e}",
                     }
             
             return self._create_task(_do())
 ```
 
-### 5.3 プラットフォームがリクエスト操作をサポートしていない場合
+### 5.3 プラットフォームが要求操作をサポートしない場合
 
-プラットフォーム自体が友達申請/グループ招待操作をサポートしていない場合（一部のプラットフォームはリクエストを自動処理する場合など）、アダプターは以下のいずれかの手法を取ることができます。
+プラットフォームが友達申請/グループ招待操作をサポートしていない場合（例：一部のプラットフォームでは要求が自動処理される）、アダプターは以下の対応が可能です：
 
-1. **`Request` 内部クラスをオーバーライドしない**：基本クラスのデフォルト実装を使用し、`accept()`/`reject()` を呼び出した際に `retcode=10002` を返します
-2. **変換時に `request_id` をスキップする**：`request_id` を生成せず、`event.approve()` で `ValueError` がスローされるようにします
-3. **ログを出力する**：`accept`/`reject` で警告を記録し、適切なエラーコードを返します
+1. **`Request` 内部クラスをオーバーライドしない**：基底クラスのデフォルト実装を使用し、`accept()`/`reject()` を呼び出すと `retcode=10002` を返す
+2. **`request_id` を生成しない**：`request_id` を生成せず、`event.approve()` が `ValueError` をスローするようにする
+3. **ログを記録**：`accept`/`reject` で警告を記録し、適切なエラーコードを返す
 
-### 5.4 まとめ：Send と Request の並行処理
+### 5.4 総括：Send と Request は並列
 
-アダプターには並行して存在する2つの DSL 内部クラスがあり、それぞれが役割を担っています。
+アダプターには、それぞれの役割を果たす2つの並列の DSL 内部クラスがあります：
 
 ```
 BaseAdapter
 ├── Send(SendDSL)     ← メッセージ送信
-│   ├── Raw_ob12()    ← 実装必須
+│   ├── Raw_ob12()    ← 必須実装
 │   ├── Text()        ← 推奨実装
 │   └── Image()       ← 必要に応じて実装
 │
-└── Request(RequestDSL) ← リクエスト操作
+└── Request(RequestDSL) ← 要求操作
     ├── accept()        ← 必要に応じて実装
     └── reject()        ← 必要に応じて実装
 ```
 
 ### 5.5 アダプター `__init__` の注意事項
 
-`Request` 内部クラスの `__init__` をオーバーライドする場合、引数を透過し `super().__init__()` を呼び出す必要があります。詳細は [アダプター開発入門 - `__init__` の注意事項](../../developer-guide/adapters/getting-started.md#init-注意事项) を参照してください（`Request` も同様で、パラメータは `adapter, request_id, account_id` です）。
+`Request` 内部クラスの `__init__` をオーバーライドする際は、引数を転送し、`super().__init__()` を呼び出す必要があります。詳細は [アダプター開発入門 - `__init__` の注意事項](../developer-guide/adapters/getting-started.md#init-の注意事項)（`Request` も同様、引数は `adapter, request_id, account_id`）を参照してください。
 
 ## 6. アダプター実装チェックリスト
 
-### 基本的要件
-- [ ] `__init__` をオーバーライドした場合、`super().__init__()` を呼び出しているか（Send / Request ファクトリの初期化を確保）
+### 基本要件
+- [ ] `__init__` をオーバーライドした場合、`super().__init__()` を呼び出しているか（Send / Request ファクトリーの初期化を確実にする）
 
-### リクエストイベントの変換
-- [ ] リクエストイベントに `request_id` フィールドが含まれている（強く推奨）
-- [ ] `detail_type` が正しく `"friend"` または `"group"` にマップされている
-- [ ] プラットフォームの元のデータが `{platform}_raw` フィールドに保持されている
-- [ ] `request_id` の生成ルールが文書化されている
+### 要求イベントの転換
+- [ ] 要求イベントに `request_id` フィールドが含まれているか（強く推奨）
+- [ ] `detail_type` が正しく `"friend"` または `"group"` にマッピングされているか
+- [ ] プラットフォームの元データが `{platform}_raw` フィールドに保持されているか
+- [ ] `request_id` の生成ルールがドキュメントに記載されているか
 
-### リクエスト操作
-- [ ] `Request` 内部クラスが実装されている（プラットフォームがリクエスト操作をサポートする場合）
-- [ ] `accept()` メソッドが実装されている
-- [ ] `reject()` メソッドが実装されている
-- [ ] 操作が標準の API レスポンス形式を返す
-- [ ] サポートされていない操作は `retcode=10002` を返す
-- [ ] ネットワークエラーは `retcode=33xxx` を返す（API レスポンス標準に従う）
+### 要求操作
+- [ ] `Request` 内部クラスが実装されているか（プラットフォームが要求操作をサポートしている場合）
+- [ ] `accept()` メソッドが実装されているか
+- [ ] `reject()` メソッドが実装されているか
+- [ ] 操作は標準 API レスポンス形式を返しているか
+- [ ] サポートしていない操作は `retcode=10002` を返しているか
+- [ ] ネットワークエラーは `retcode=33xxx` を返しているか（API レスポンス標準に従う）
 
 ## 7. エラーコードの拡張
 
-リクエスト操作に関連する推奨されるエラーコード（[API レスポンス標準](api-response.md) §3.2 に従います）：
+要求操作に関連する**アダプター実装層**の推奨エラーコード（[API レスポンス標準](api-response.md) §3.2 に従い、`34xxx` プラットフォームエラーセグメントの下3桁を独自に定義）：
 
-| エラーコード | エラー名 | 説明 |
+| エラーコード | エラーネーム | 説明 |
 |-------|-------|------|
-| 34001 | Request Not Found | リクエストが存在しないか有効期限が切れています |
-| 34002 | Request Already Handled | リクエストは既に処理されました |
-| 34003 | Request Not Supported | プラットフォームがこのタイプのリクエスト操作をサポートしていません |
-| 34004 | Permission Denied | Bot にこのリクエストを処理する権限がありません |
+| 34001 | Request Not Found | 要求が存在しない、または期限切れ |
+| 34002 | Request Already Handled | 要求はすでに処理済み |
+| 34003 | Request Not Supported | プラットフォームがこのタイプの要求操作をサポートしていない |
+| 34004 | Permission Denied | Bot がこの要求を処理する権限がない（プラットフォームが返した） |
+
+> **フレームワークコードとの境界**：上記の `340xx` は**プラットフォーム/アダプター**が返す要求処理の失敗です。  
+> ErisPulseフレームワークが `scope.actions` で特定のモジュールの request 動作を禁止した場合、**アダプターを呼び出す前に**直接 `34601`（Action Denied、[API レスポンス標準 §5.3](api-response.md#53-フレームワーク拡張返却コード34xxx-プラットフォームエラーセグメントの下3桁を独自に定義)）を返します。  
+> これらは互いに補完するものではなく、まず `34601` フレームワークのチェックを通過し、次にプラットフォーム層の `340xx` エラーに到達します。
 
 ## 8. 関連ドキュメント
 
-- [イベント変換標準](event-conversion.md) - 完全なイベント変換仕様
-- [API レスポンス標準](api-response.md) - アダプター API レスポンス形式の標準
-- [送信メソッド仕様](send-method-spec.md) - Send クラスのメソッド命名とパラメータ仕様
+- [イベント転換標準](event-conversion.md) - 完全なイベント転換規格
+- [API レスポンス標準](api-response.md) - アダプターの API レスポンス形式標準
+- [送信メソッド規格](send-method-spec.md) - Send クラスのメソッド命名と引数規格
 - [セッションタイプ標準](session-types.md) - セッションタイプの定義とマッピング関係

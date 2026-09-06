@@ -5,13 +5,13 @@
 以及批量事件处理的吞吐量。
 """
 
-import pytest
 import asyncio
-from unittest.mock import AsyncMock, patch
+
+import pytest
 
 from ErisPulse.Core.adapter import AdapterManager
-from ErisPulse.Core.lifecycle import LifecycleManager
 from ErisPulse.Core.Bases import BaseAdapter
+from ErisPulse.Core.lifecycle import LifecycleManager
 
 
 class _PerfAdapter(BaseAdapter):
@@ -147,7 +147,7 @@ class TestEventThroughputPerformance:
     @pytest.mark.asyncio
     async def test_multiple_handlers_per_event(self, perf_adapter):
         """单事件 10 个 handler"""
-        results = {i: 0 for i in range(10)}
+        results = dict.fromkeys(range(10), 0)
         lock = asyncio.Lock()
 
         for idx in range(10):

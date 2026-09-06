@@ -6,11 +6,10 @@ pytest 配置文件
 
 import asyncio
 import os
-import shutil
 import sys
+from collections.abc import AsyncGenerator, Generator
 from pathlib import Path
-from typing import AsyncGenerator, Generator
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -118,7 +117,7 @@ def clean_environment(test_data_dir: Path) -> Generator[None, None, None]:
     for db_file in glob.glob(str(test_data_dir / "*.db")):
         try:
             os.remove(db_file)
-        except:
+        except OSError:
             pass
 
 
@@ -345,7 +344,7 @@ def mock_base_adapter():
                 "data": {"mocked": True},
                 "message_id": "test_msg_id",
                 "message": "",
-                f"mock_raw": params,
+                "mock_raw": params,
             }
 
     return MockAdapter
@@ -537,7 +536,6 @@ def mock_websocket():
     """
     创建模拟的 WebSocket 连接
     """
-    from unittest.mock import AsyncMock
 
     websocket = AsyncMock()
     websocket.accept = AsyncMock()
@@ -634,7 +632,6 @@ def pytest_runtest_setup(item):
     测试执行前的钩子
     """
     # 可以在这里添加测试前的准备逻辑
-    pass
 
 
 def pytest_runtest_teardown(item, nextitem):
@@ -642,4 +639,3 @@ def pytest_runtest_teardown(item, nextitem):
     测试执行后的钩子
     """
     # 可以在这里添加测试后的清理逻辑
-    pass

@@ -2,6 +2,12 @@
 
 本文档定义 ErisPulse 适配器中 **OneBot12 标准 API 动作**的统一接口规范，使模块开发者可以面向标准接口编程，由适配器负责映射到平台原生 API。
 
+> **覆盖范围**：OneBot12 标准动作中，`ApiDSL` 提供用户 / 群组 / 频道（Guild）/
+> 消息管理 / 元（Meta）常规接口的强类型方法（`send_message` 由
+> `SendDSL.Raw_ob12` 承担）。文件资源动作（`upload_file` / `get_file` / 分片）仅作
+> 降级透传保留，见 §3.5 说明。平台扩展动作经 `Api.call("prefix.action", ...)`
+> 逃生舱调用。动作参数与返回结构以 OneBot12 规范（仓库内 `onebot/specs/interface/`）为准。
+
 ## 1. 设计背景
 
 在 ErisPulse 中，消息段（消息收发）和事件格式已经完全遵循 OneBot12 标准，但 **API 动作调用**（如获取用户信息、获取群列表、撤回消息等）此前未统一——模块开发者必须为每个平台写不同的 `call_api` 调用。
@@ -24,7 +30,7 @@ ErisPulse 适配器有三个并行的 DSL 内部类，各司其职：
 BaseAdapter
 ├── Send(SendDSL)       ← 消息发送（Text/Image/Raw_ob12）
 ├── Request(RequestDSL)  ← 请求操作（accept/reject）
-└── Api(ApiDSL)          ← 标准 API 动作（信息查询/群管理/消息管理/文件操作）★
+└── Api(ApiDSL)          ← 标准 API 动作（用户/群组/频道/消息管理/文件/元）★
 ```
 
 | DSL | 职责 | 方法风格 | 返回值 |
@@ -62,7 +68,43 @@ BaseAdapter
 
 > **发送消息**（`send_message`）由 `SendDSL` 的 `Raw_ob12` 处理，不在 `ApiDSL` 中重复。
 
-### 3.4 文件操作
+### 3.4 频道（Guild）相关
+
+OneBot12 频道体系分两级：**频道（guild）** 与 **子频道（channel）**。
+
+| 方法 | OB12 动作 | 参数 | data 返回 |
+|------|----------|------|----------|
+| `get_guild_info(guild_id)` | `get_guild_info` | `guild_id: str` | `guild_id`, `guild_name` |
+| `get_guild_list()` | `get_guild_list` | 无 | `list[get_guild_info 响应]` |
+| `set_guild_name(guild_id, guild_name)` | `set_guild_name` | `guild_id: str`, `guild_name: str` | 无 |
+| `get_guild_member_info(guild_id, user_id)` | `get_guild_member_info` | `guild_id: str`, `user_id: str` | `user_id`, `user_name`, `user_displayname` |
+| `get_guild_member_list(guild_id)` | `get_guild_member_list` | `guild_id: str` | `list[get_guild_member_info 响应]` |
+| `leave_guild(guild_id)` | `leave_guild` | `guild_id: str` | 无 |
+| `get_channel_info(guild_id, channel_id)` | `get_channel_info` | `guild_id: str`, `channel_id: str` | `channel_id`, `channel_name` |
+| `get_channel_list(guild_id, *, joined_only)` | `get_channel_list` | `guild_id: str`, `joined_only: bool=false` | `list[get_channel_info 响应]` |
+| `set_channel_name(guild_id, channel_id, channel_name)` | `set_channel_name` | `guild_id`, `channel_id`, `channel_name` | 无 |
+| `get_channel_member_info(guild_id, channel_id, user_id)` | `get_channel_member_info` | `guild_id`, `channel_id`, `user_id` | `user_id`, `user_name`, `user_displayname` |
+| `get_channel_member_list(guild_id, channel_id)` | `get_channel_member_list` | `guild_id`, `channel_id` | `list[get_channel_member_info 响应]` |
+| `leave_channel(guild_id, channel_id)` | `leave_channel` | `guild_id`, `channel_id` | 无 |
+
+> 频道体系与群组（group）彼此独立：Discord / QQ 频道 / Kook 等平台实现频道接口，
+> 传统 QQ / 微信实现群组接口，两者可同时存在或仅其一。
+
+### 3.5 文件资源操作
+
+> [!WARNING]
+> **文件资源模型（file_id 两段式）在 ErisPulse 属"降级可用"**：
+> ErisPulse 的文件收发不走"先上传拿 file_id 再引用"模型——模块发文件用
+> `SendDSL.File(file, filename)`（URL / 路径 / 字节**发送时直传**，见
+> [发送方法规范](send-method-spec.md)）。
+> 本节 `upload_file` / `get_file` / 分片动作依赖平台特有的 `file_id` 文件资源
+> 能力，**通用性不足**；仅当适配器后端天然具备该能力时才可透传，框架内置
+> 适配器**不实现也不建议实现**，调用时通常返回 `retcode=10002`。
+> 模块需要跨平台传文件时，请使用 `SendDSL.File`，勿依赖 file_id。
+>
+> **展望**：`file_id` 资源模型标准化到框架层是未来的方向，当前版本不提供。
+
+整包传输（小文件）：
 
 | 方法 | OB12 动作 | 参数 | data 返回 |
 |------|----------|------|----------|
@@ -74,7 +116,52 @@ BaseAdapter
 - `"path"`：通过本地路径上传（需提供 `path`）
 - `"data"`：通过二进制数据上传（需提供 `data`）
 
-### 3.5 通用扩展动作
+#### 3.5.1 分片传输（大文件，属上述降级范围）
+
+OneBot12 分片动作按 `stage` 区分阶段。`ApiDSL` 将同一动作的三/两阶段拆分为独立方法
+（`offset` 为字节偏移，`data` 在 JSON 中为 Base64）；下表仅为查阅保留，
+适配器无需也不应强制实现：
+
+**分片上传三步**：`prepare` → `transfer`（循环逐片）→ `finish`
+
+| 方法 | 对应 stage | 参数 | data 返回 |
+|------|-----------|------|----------|
+| `upload_file_fragmented_prepare(name, total_size)` | `prepare` | `name: str`, `total_size: int` | `file_id`（传输期用） |
+| `upload_file_fragmented_transfer(file_id, offset, data)` | `transfer` | `file_id`, `offset: int`, `data: bytes` | 无 |
+| `upload_file_fragmented_finish(file_id, sha256)` | `finish` | `file_id`, `sha256: str`（整文件校验） | `file_id` |
+
+```python
+total = os.path.getsize(path)
+r = await adapter.Api.upload_file_fragmented_prepare(os.path.basename(path), total)
+fid = r["data"]["file_id"]
+offset = 0
+with open(path, "rb") as f:
+    while chunk := f.read(65536):
+        await adapter.Api.upload_file_fragmented_transfer(fid, offset, chunk)
+        offset += len(chunk)
+sha256 = hashlib.sha256(open(path, "rb").read()).hexdigest()
+await adapter.Api.upload_file_fragmented_finish(fid, sha256)
+```
+
+**分片下载两步**：`prepare` → `transfer`（循环取片）
+
+| 方法 | 对应 stage | 参数 | data 返回 |
+|------|-----------|------|----------|
+| `get_file_fragmented_prepare(file_id)` | `prepare` | `file_id` | `name`, `total_size`, `sha256` |
+| `get_file_fragmented_transfer(file_id, offset, size)` | `transfer` | `file_id`, `offset: int`, `size: int` | `data`（本次分片字节） |
+
+### 3.6 元（Meta）动作
+
+元动作不针对具体账号，无需 `Using()` 指定 Bot。
+
+| 方法 | OB12 动作 | 参数 | data 返回 |
+|------|----------|------|----------|
+| `get_latest_events(limit, timeout)` | `get_latest_events` | `limit: int=0`, `timeout: int=0` | 事件对象数组（不含元事件） |
+| `get_supported_actions()` | `get_supported_actions` | 无 | `list[str]` 支持的动作名 |
+| `get_status()` | `get_status` | 无 | `good: bool`, `bots: list[{self, online, ...}]` |
+| `get_version()` | `get_version` | 无 | `impl`, `version`, `onebot_version` |
+
+### 3.7 通用扩展动作
 
 | 方法 | 说明 |
 |------|------|
@@ -147,7 +234,8 @@ async def get_user_info(self, user_id: str) -> dict:
     return await self._adapter.call_api("get_user_info", user_id=user_id, account_id=self._account_id)
 ```
 
-**适用场景**：适配器后端本身就是 OneBot12 实现（如 NapCat、Lagrange 等），`call_api` 天然支持标准动作名。
+**适用场景**：当适配器的底层后端自身即遵循 OneBot12 标准动作协议时，
+`call_api` 天然支持标准动作名（如直接对接遵循该协议的服务端）。
 
 ### 5.2 覆盖标准方法（映射到平台原生 API）
 
@@ -163,7 +251,7 @@ class MyAdapter(BaseAdapter):
             # 映射到平台原生 API
             raw = await self._adapter._request("GET", f"/users/{user_id}")
             if raw.get("code") != 0:
-                return self._adapter.make_error(retcode=34001, message="用户不存在")
+                return self._adapter.make_error(retcode=34600, message="用户不存在")
 
             user = raw["data"]
             return self._adapter.make_response(
@@ -243,6 +331,9 @@ if result["retcode"] == 10002:
 - [ ] 不支持的动作返回 `retcode=10002`
 - [ ] 返回值遵循标准 API 响应格式
 - [ ] `data` 字段包含 OB12 标准定义的字段
+- [ ] 频道平台需实现 `get_guild_*` / `get_channel_*` / `leave_guild` / `leave_channel`
+- [ ] 元动作（`get_status` / `get_version` / `get_supported_actions`）建议实现
+- [ ] **文件收发用 `SendDSL.File`（直传）**；文件资源动作（upload_file/get_file/分片）**不强制实现**，仅当后端具备 `file_id` 资源能力时才需透传
 
 ### 扩展动作
 - [ ] 平台扩展动作使用 `{prefix}.{action}` 命名

@@ -66,3 +66,45 @@ def test_watcher_starts_and_stops(tmp_path, monkeypatch):
     assert watcher.is_running is True
     watcher.stop()
     assert watcher.is_running is False
+
+
+class TestSDKLoaderWiring:
+    """SDK 与模块加载器的引用接线（热重载依赖 sdk._module_loader）"""
+
+    def test_initializer_exposes_module_loader_to_sdk(self):
+        """Initializer 创建的 ModuleLoader 必须注入 SDK，否则热重载永远不可用"""
+        from ErisPulse import SDK
+
+        sdk = SDK()
+        assert sdk._module_loader is None
+
+        initializer = sdk.Initializer(sdk)
+        assert sdk._module_loader is not None
+        assert sdk._module_loader is initializer._module_loader
+
+    def test_reload_module_before_init_returns_false(self):
+        """未初始化（无加载器）时 reload_module 优雅返回 False 而非抛错"""
+        from ErisPulse import SDK
+
+        sdk = SDK()
+        assert asyncio.run(sdk.reload_module("dice")) is False
+
+    def test_reload_module_passes_sdk_self(self):
+        """reload_module 向加载器传递 SDK 实例自身（而非不存在的 _sdk 属性）"""
+        from ErisPulse import SDK
+
+        sdk = SDK()
+        sdk.Initializer(sdk)
+
+        captured = {}
+
+        async def fake_reload(module_name, manager_instance, sdk_instance):
+            captured["args"] = (module_name, manager_instance, sdk_instance)
+            return True
+
+        sdk._module_loader.reload_module = fake_reload
+        assert asyncio.run(sdk.reload_module("dice")) is True
+        name, manager, sdk_instance = captured["args"]
+        assert name == "dice"
+        assert manager is sdk.module
+        assert sdk_instance is sdk

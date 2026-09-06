@@ -103,11 +103,14 @@ ErisPulse 事件包装类
 ---
 
 
-### `async _builtin_wait_reply(event: 'Event', prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD)`
+### `async _builtin_wait_reply(event: 'Event', prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD, pattern: str | None = None, regex: str | None = None)`
 
 内置 wait_reply 实现
 
 供覆写函数调用以复用内置等待逻辑。
+
+- **pattern** (`glob`): 通配符，回复文本不匹配时继续等待（超时返回 None）
+- **regex** (`正则表达式，回复文本不匹配时继续等待（与`): pattern 同时给定时须都匹配）
 
 ---
 
@@ -876,14 +879,20 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async wait_reply(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD)`
+##### `async wait_reply(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD, pattern: str | None = None, regex: str | None = None)`
 
 等待用户回复
 
 - **prompt** (`提示消息，如果提供会发送给用户`): - **timeout**: 等待超时时间(秒)
 - **callback** (`回调函数，当收到回复时执行`): - **validator**: 验证函数，用于验证回复是否有效
 - **method** (`发送方法，默认为`): "Text"（可选: "Image", "Markdown", "Html" 等）
-**返回值**: 用户回复的事件数据，如果超时则返回None
+- **pattern** (`glob`): 通配符（``*`` / ``?`` / ``[seq]``），回复文本不匹配时继续等待
+- **regex** (`正则表达式，回复文本不匹配时继续等待（与`): pattern 同时给定时须都匹配）
+**返回值** (`用户回复的事件数据，如果超时则返回None`): 
+**示例**:
+```python
+>>> reply = await event.wait_reply(prompt="请输入金额:", regex=r"\d+\s*元")
+```
 
 ---
 

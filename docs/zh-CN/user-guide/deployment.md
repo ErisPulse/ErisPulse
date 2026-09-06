@@ -48,11 +48,17 @@ services:
       - "${ERISPULSE_PORT:-8000}:8000"
     volumes:
       - ./config:/app/config
+      # 持久化 Python 包目录
+      - ./config/.packages:/usr/local/lib/python3.13/site-packages
     environment:
       - TZ=${TZ:-Asia/Shanghai}
       - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
+    init: true
+    stop_grace_period: 30s
     restart: unless-stopped
 ```
+
+> 推荐直接使用仓库根目录的 [docker-compose.yml](https://github.com/ErisPulse/ErisPulse/blob/main/docker-compose.yml)，它已包含上述配置及健康检查、时区与语言环境变量。
 
 ### 环境变量
 
@@ -61,6 +67,8 @@ services:
 | `ERISPULSE_PORT` | `8000` | Dashboard 端口映射 |
 | `ERISPULSE_DASHBOARD_TOKEN` | 自动生成 | Dashboard 登录令牌（强烈建议设置） |
 | `TZ` | `Asia/Shanghai` | 时区 |
+| `LANG` | `en_US.UTF-8` | 系统语言，自动检测启动界面语言 |
+| `ERISPULSE_LANG` | 空 | 强制启动界面语言：`zh` / `zh_TW` / `en` / `ja` / `ru`（覆盖 `LANG`） |
 
 ### 数据持久化
 
@@ -68,6 +76,7 @@ services:
 
 - `config/config.toml` — 配置文件
 - `config/config.db` — SQLite 存储数据库
+- `config/.packages` — Python site-packages 持久化卷，保存框架、适配器和已安装模块（首次启动时由入口点从镜像内置备份自动初始化，之后的模块安装与框架热更新均写入此目录）
 
 ## Dashboard 管理面板
 
@@ -123,9 +132,10 @@ Docker 健康检查可在 `docker-compose.yml` 中添加：
 services:
   erispulse:
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ping')"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
+      start_period: 20s
       retries: 3
 ```
 

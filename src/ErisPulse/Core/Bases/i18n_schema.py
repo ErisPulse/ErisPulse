@@ -17,6 +17,7 @@ ErisPulse i18n 键声明 Schema 模块
 
 from ..i18n import i18n
 
+
 class I18nKey:
     """
     单个 i18n 翻译键的声明

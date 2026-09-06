@@ -140,7 +140,6 @@ $langData = @{
         dashboard_install_fail = "Dashboard 安装失败，但 ErisPulse 已安装成功"
         select_1_2 = "请输入 1 或 2"
         select_1_n = "请选择 [1-{0}]"
-        admin_warn = "不建议使用管理员身份运行此脚本"
         generating_files = "正在生成配置文件..."
         date_unknown = "未知"
         star_message = "喜欢我们的话欢迎来点个 star: https://github.com/ErisPulse/ErisPulse"
@@ -269,7 +268,6 @@ $langData = @{
         dashboard_install_fail = "Dashboard 安裝失敗，但 ErisPulse 已安裝成功"
         select_1_2 = "請輸入 1 或 2"
         select_1_n = "請選擇 [1-{0}]"
-        admin_warn = "不建議使用管理員身份執行此指令碼"
         generating_files = "正在產生設定檔..."
         date_unknown = "未知"
         star_message = "喜歡我們的話歡迎來點個 star: https://github.com/ErisPulse/ErisPulse"
@@ -398,7 +396,6 @@ $langData = @{
         dashboard_install_fail = "Dashboard install failed, but ErisPulse was installed"
         select_1_2 = "Please enter 1 or 2"
         select_1_n = "Select [1-{0}]"
-        admin_warn = "Running as administrator is not recommended"
         generating_files = "Generating config files..."
         date_unknown = "unknown"
         star_message = "If you like this project, please give us a star: https://github.com/ErisPulse/ErisPulse"
@@ -527,7 +524,6 @@ $langData = @{
         dashboard_install_fail = "Dashboard のインストールに失敗、ErisPulse はインストール済み"
         select_1_2 = "1 または 2 を入力してください"
         select_1_n = "選択 [1-{0}]"
-        admin_warn = "管理者としての実行は推奨されません"
         generating_files = "設定ファイルを生成中..."
         date_unknown = "不明"
         star_message = "このプロジェクトが気に入ったら、スターをお願いします: https://github.com/ErisPulse/ErisPulse"
@@ -656,7 +652,6 @@ $langData = @{
         dashboard_install_fail = "Dashboard не установлен, но ErisPulse установлен"
         select_1_2 = "Введите 1 или 2"
         select_1_n = "Выбор [1-{0}]"
-        admin_warn = "Запуск от имени администратора не рекомендуется"
         generating_files = "Генерация конфигурационных файлов..."
         date_unknown = "неизвестно"
         star_message = "Если вам понравился проект, поставьте звезду: https://github.com/ErisPulse/ErisPulse"
@@ -1354,15 +1349,7 @@ function Install-UvAndPython {
 
 function Main {
     Select-Language
-    
-    $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
-    $principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
-    if ($principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-        Write-Warning (t 'admin_warn')
-        $continueAsAdmin = Read-Host "[$(t 'continue_')]"
-        if ($continueAsAdmin -notmatch '^[yY]$') { exit 1 }
-    }
-    
+
     Write-Header (t 'install_title')
     
     Test-Docker

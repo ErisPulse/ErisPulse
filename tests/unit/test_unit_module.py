@@ -5,6 +5,7 @@
 """
 
 import asyncio
+import importlib
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
@@ -12,6 +13,8 @@ import pytest
 from ErisPulse.Core.Bases import BaseModule
 from ErisPulse.Core.config import config
 from ErisPulse.Core.module import ModuleManager
+
+module_module = importlib.import_module("ErisPulse.Core.module")
 
 # ==================== 模块管理器测试 ====================
 
@@ -139,7 +142,7 @@ class TestModuleManager:
     async def test_load_module_not_registered(self, manager):
         """测试加载未注册的模块"""
         # Mock logger
-        with patch("ErisPulse.Core.module.logger") as mock_logger:
+        with patch.object(module_module, "logger") as mock_logger:
             # 执行
             result = await manager.load("nonexistent")
 
@@ -155,7 +158,7 @@ class TestModuleManager:
         await manager.load("test_module")
 
         # Mock logger
-        with patch("ErisPulse.Core.module.logger") as mock_logger:
+        with patch.object(module_module, "logger") as mock_logger:
             # 再次加载
             result = await manager.load("test_module")
 
@@ -231,7 +234,7 @@ class TestModuleManager:
     async def test_unload_module_not_loaded(self, manager, test_module_class):
         """测试卸载未加载的模块"""
         # Mock logger
-        with patch("ErisPulse.Core.module.logger") as mock_logger:
+        with patch.object(module_module, "logger") as mock_logger:
             # 执行
             result = await manager.unload("test_module")
 
@@ -281,7 +284,7 @@ class TestModuleManager:
 
         with patch.object(config, "setConfig") as mock_set:
             # Mock logger
-            with patch("ErisPulse.Core.module.logger"):
+            with patch.object(module_module, "logger"):
                 # 执行
                 result = manager.enable("test_module")
 
@@ -293,7 +296,7 @@ class TestModuleManager:
 
     def test_module_enable_nonexistent(self, manager):
         """测试启用未注册的模块"""
-        with patch("ErisPulse.Core.module.logger"):
+        with patch.object(module_module, "logger"):
             result = manager.enable("nonexistent_module")
             assert result is False
 
@@ -305,7 +308,7 @@ class TestModuleManager:
         manager._loaded_modules.add("test_module")
 
         with patch.object(config, "setConfig") as mock_set:
-            with patch("ErisPulse.Core.module.logger"):
+            with patch.object(module_module, "logger"):
                 # 执行
                 result = manager.disable("test_module")
 
@@ -324,7 +327,7 @@ class TestModuleManager:
         assert "test_module" in manager._module_classes
 
         # 执行取消注册
-        with patch("ErisPulse.Core.module.logger"):
+        with patch.object(module_module, "logger"):
             result = manager.unregister("test_module")
 
         # 验证
@@ -424,7 +427,7 @@ class TestModuleManager:
     def test_getattr_module_not_found(self, manager):
         """测试通过属性访问不存在的模块"""
         # Mock logger
-        with patch("ErisPulse.Core.module.logger") as mock_logger:
+        with patch.object(module_module, "logger") as mock_logger:
             # 执行和验证
             with pytest.raises(AttributeError, match="不存在或未启用"):
                 _ = manager.nonexistent
@@ -570,7 +573,7 @@ class TestModuleLifecycleIntegration:
     async def test_module_load_submits_lifecycle_event(self):
         """测试模块加载提交生命周期事件"""
         # Mock lifecycle
-        with patch("ErisPulse.Core.module.lifecycle") as mock_lifecycle:
+        with patch.object(module_module, "lifecycle") as mock_lifecycle:
             mock_lifecycle.submit_event = AsyncMock()
 
             from ErisPulse.Core.module import module
@@ -602,7 +605,7 @@ class TestModuleLifecycleIntegration:
     async def test_module_unload_submits_lifecycle_event(self):
         """测试模块卸载提交生命周期事件"""
         # Mock lifecycle
-        with patch("ErisPulse.Core.module.lifecycle") as mock_lifecycle:
+        with patch.object(module_module, "lifecycle") as mock_lifecycle:
             mock_lifecycle.submit_event = AsyncMock()
 
             from ErisPulse.Core.module import module
@@ -815,7 +818,7 @@ class TestModuleStatusHotReload:
         manager.register("lazy_mod", test_module_class)
         manager.register_lazy("lazy_mod", Mock())
         with patch.object(config, "setConfig"):
-            with patch("ErisPulse.Core.module.logger"):
+            with patch.object(module_module, "logger"):
                 result = manager.disable("lazy_mod")
         assert result is True
         assert "lazy_mod" not in manager._lazy_modules
@@ -824,7 +827,7 @@ class TestModuleStatusHotReload:
         """卸载未实例化的懒加载模块，应清理其代理而非早退"""
         manager.register("lazy_mod", test_module_class)
         manager.register_lazy("lazy_mod", Mock())
-        with patch("ErisPulse.Core.module.logger"):
+        with patch.object(module_module, "logger"):
             asyncio.run(manager.unload("lazy_mod"))
         assert "lazy_mod" not in manager._lazy_modules
 
@@ -832,7 +835,7 @@ class TestModuleStatusHotReload:
         """卸载全部模块应一并清理未初始化的懒加载代理"""
         manager.register("lazy_mod", test_module_class)
         manager.register_lazy("lazy_mod", Mock())
-        with patch("ErisPulse.Core.module.logger"):
+        with patch.object(module_module, "logger"):
             asyncio.run(manager.unload())
         assert "lazy_mod" not in manager._lazy_modules
 
@@ -1163,6 +1166,163 @@ class TestModuleActivateOnCommandVisibility:
             ("notice", "group_member_increase"),
         ]
         assert command_triggers == ["roll", "dice"]
+
+    # ------------------------------------------------------------------
+    # 事件触发器 detail_type 匹配（2.8.0：支持 glob / re: 正则）
+    # ------------------------------------------------------------------
+
+    def _get_stub_condition(self, act, manager, cls, activate_on, module_info=None):
+        """注册 stub 并返回 (stub_func, condition) 元组"""
+
+        act = self._make_activator(act, cls, activate_on, module_info)
+        try:
+            assert act._event_stubs, "应至少注册一个事件触发 stub"
+            event_handler, stub_func = act._event_stubs[0]
+            info = next(h for h in event_handler.handlers if h["func"] is stub_func)
+            return act, stub_func, info.get("condition")
+        except Exception:
+            act._deregister_stubs()
+            raise
+
+    def test_activate_on_detail_type_glob(self):
+        """事件触发器 detail_type 支持 glob：private* 命中 private 不命中 group"""
+        from ErisPulse.Core.module import ModuleManager
+
+        class Dice(BaseModule):
+            async def on_load(self, event=None):
+                pass
+
+            async def on_unload(self, event=None):
+                pass
+
+        manager = ModuleManager()
+        manager._modules.clear()
+        manager._loaded_modules.clear()
+        act, _stub, cond = None, None, None
+        from ErisPulse.loaders.module import ModuleActivator
+
+        act = ModuleActivator(
+            "dice",
+            Dice,
+            type("_Sdk", (), {})(),
+            {"meta": {"name": "dice", "is_base_module": True}},
+            manager,
+            activate_on=[{"message": "private*"}],
+        )
+        try:
+            event_handler, stub = act._event_stubs[0]
+            info = next(h for h in event_handler.handlers if h["func"] is stub)
+            cond = info["condition"]
+            assert cond is not None
+            assert cond({"detail_type": "private"}) is True
+            assert cond({"detail_type": "group"}) is False
+        finally:
+            act._deregister_stubs()
+
+    def test_activate_on_detail_type_regex(self):
+        """事件触发器 detail_type 支持 re: 正则"""
+        from ErisPulse.Core.module import ModuleManager
+        from ErisPulse.loaders.module import ModuleActivator
+
+        class Dice(BaseModule):
+            async def on_load(self, event=None):
+                pass
+
+            async def on_unload(self, event=None):
+                pass
+
+        manager = ModuleManager()
+        manager._modules.clear()
+        manager._loaded_modules.clear()
+        act = ModuleActivator(
+            "dice",
+            Dice,
+            type("_Sdk", (), {})(),
+            {"meta": {"name": "dice", "is_base_module": True}},
+            manager,
+            activate_on=[{"notice": "re:^group_"}],
+        )
+        try:
+            event_handler, stub = act._event_stubs[0]
+            info = next(h for h in event_handler.handlers if h["func"] is stub)
+            cond = info["condition"]
+            assert cond({"detail_type": "group_increase"}) is True
+            assert cond({"detail_type": "private"}) is False
+            # 缺 detail_type 字段按空串处理，不抛异常
+            assert cond({}) is False
+        finally:
+            act._deregister_stubs()
+
+    def test_activate_on_detail_type_list_forms(self):
+        """事件触发器 detail_type 支持列表混合（精确 + glob）"""
+        from ErisPulse.Core.module import ModuleManager
+        from ErisPulse.loaders.module import ModuleActivator, parse_activate_on
+
+        event_triggers, _ = parse_activate_on(
+            [{"message": ["private", "group_*"]}]
+        )
+        assert event_triggers == [("message", "private"), ("message", "group_*")]
+
+        class Dice(BaseModule):
+            async def on_load(self, event=None):
+                pass
+
+            async def on_unload(self, event=None):
+                pass
+
+        manager = ModuleManager()
+        manager._modules.clear()
+        manager._loaded_modules.clear()
+        act = ModuleActivator(
+            "dice",
+            Dice,
+            type("_Sdk", (), {})(),
+            {"meta": {"name": "dice", "is_base_module": True}},
+            manager,
+            activate_on=[{"message": ["private", "group_*"]}],
+        )
+        try:
+            conditions = []
+            for event_handler, stub in act._event_stubs:
+                info = next(h for h in event_handler.handlers if h["func"] is stub)
+                conditions.append(info["condition"])
+            assert len(conditions) == 2
+            assert conditions[0]({"detail_type": "private"}) is True
+            assert conditions[0]({"detail_type": "group_increase"}) is False
+            assert conditions[1]({"detail_type": "group_increase"}) is True
+            assert conditions[1]({"detail_type": "private"}) is False
+        finally:
+            act._deregister_stubs()
+
+    def test_activate_on_no_detail_type_has_no_condition(self):
+        """事件类型级触发（无 detail_type）不挂条件函数"""
+        from ErisPulse.Core.module import ModuleManager
+        from ErisPulse.loaders.module import ModuleActivator
+
+        class Dice(BaseModule):
+            async def on_load(self, event=None):
+                pass
+
+            async def on_unload(self, event=None):
+                pass
+
+        manager = ModuleManager()
+        manager._modules.clear()
+        manager._loaded_modules.clear()
+        act = ModuleActivator(
+            "dice",
+            Dice,
+            type("_Sdk", (), {})(),
+            {"meta": {"name": "dice", "is_base_module": True}},
+            manager,
+            activate_on=["message"],
+        )
+        try:
+            event_handler, stub = act._event_stubs[0]
+            info = next(h for h in event_handler.handlers if h["func"] is stub)
+            assert info["condition"] is None
+        finally:
+            act._deregister_stubs()
 
     def test_parse_activate_on_command_name_required(self):
         """dict 命令声明缺 name：告警并忽略，不影响其它触发器"""
@@ -1701,7 +1861,6 @@ class TestPurgeUnload:
 
     def test_purge_module_stub_returns_weakrefs(self, manager):
         """_purge_module_stub 返回类/实例弱引用并移除存根"""
-        import weakref
 
         cls = self._register(manager, "M", source="plugin_folder")
         manager._modules["M"] = cls()

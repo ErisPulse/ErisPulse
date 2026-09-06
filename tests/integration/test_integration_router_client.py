@@ -13,14 +13,11 @@
 - WebSocket 认证 / 生命周期钩子
 """
 
-import asyncio
 import pytest
-from unittest.mock import AsyncMock, MagicMock
 from fastapi.testclient import TestClient
 
+from ErisPulse.Core import HttpRequest, WebSocketConnection
 from ErisPulse.Core.router import RouterManager
-from ErisPulse.Core import HttpRequest, WebSocketConnection, WebSocketDisconnect
-
 
 # ==================== Fixtures ====================
 
@@ -470,7 +467,8 @@ class TestRouteRegistration:
 
         router_mgr.register_http_route("dup", "/same", h1, methods=["GET"])
 
-        with pytest.raises(ValueError, match="已注册"):
+        # 断言稳定参数（路径），不依赖运行语言的本地化文案
+        with pytest.raises(ValueError, match="/same"):
             router_mgr.register_http_route("dup", "/same", h2, methods=["GET"])
 
     def test_path_normalization(self, router_mgr):
@@ -708,7 +706,6 @@ class TestWSLifecycleHooks:
 
     def test_on_disconnect_hook_registered(self, router_mgr):
         """验证 on_disconnect 钩子被正确注册"""
-        import asyncio
 
         async def handler(ws: WebSocketConnection):
             @ws.on_disconnect

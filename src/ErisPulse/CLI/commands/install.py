@@ -14,7 +14,7 @@ from rich.text import Text
 from ..base import Command
 from ..console import console
 from ..i18n import i18n
-from ..utils import PackageManager
+from ..utils import PackageManager, config_wizard
 from ..utils.display import interactive_select_table
 
 
@@ -36,18 +36,14 @@ class InstallCommand(Command):
         self.package_manager = PackageManager()
 
     def add_arguments(self, parser: ArgumentParser):
-        parser.add_argument(
-            "package", nargs="*", help=i18n.t("cli.install.package_help")
-        )
+        parser.add_argument("package", nargs="*", help=i18n.t("cli.install.package_help"))
         parser.add_argument(
             "--upgrade",
             "-U",
             action="store_true",
             help=i18n.t("cli.install.upgrade_help"),
         )
-        parser.add_argument(
-            "--pre", action="store_true", help=i18n.t("cli.install.pre_help")
-        )
+        parser.add_argument("--pre", action="store_true", help=i18n.t("cli.install.pre_help"))
         parser.add_argument(
             "-e",
             "--editable",
@@ -55,18 +51,10 @@ class InstallCommand(Command):
             metavar="PATH",
             help=i18n.t("cli.install.editable_help"),
         )
-        parser.add_argument(
-            "--user", action="store_true", help=i18n.t("cli.install.user_help")
-        )
-        parser.add_argument(
-            "--no-deps", action="store_true", help=i18n.t("cli.install.no_deps_help")
-        )
-        parser.add_argument(
-            "-t", "--target", metavar="DIR", help=i18n.t("cli.install.target_help")
-        )
-        parser.add_argument(
-            "--index-url", metavar="URL", help=i18n.t("cli.install.index_url_help")
-        )
+        parser.add_argument("--user", action="store_true", help=i18n.t("cli.install.user_help"))
+        parser.add_argument("--no-deps", action="store_true", help=i18n.t("cli.install.no_deps_help"))
+        parser.add_argument("-t", "--target", metavar="DIR", help=i18n.t("cli.install.target_help"))
+        parser.add_argument("--index-url", metavar="URL", help=i18n.t("cli.install.index_url_help"))
         parser.add_argument(
             "--extra-index-url",
             action="append",
@@ -100,17 +88,13 @@ class InstallCommand(Command):
             action="store_true",
             help=i18n.t("cli.install.ignore_installed_help"),
         )
-        parser.add_argument(
-            "--compile", action="store_true", help=i18n.t("cli.install.compile_help")
-        )
+        parser.add_argument("--compile", action="store_true", help=i18n.t("cli.install.compile_help"))
         parser.add_argument(
             "--no-compile",
             action="store_true",
             help=i18n.t("cli.install.no_compile_help"),
         )
-        parser.add_argument(
-            "--prefix", metavar="DIR", help=i18n.t("cli.install.prefix_help")
-        )
+        parser.add_argument("--prefix", metavar="DIR", help=i18n.t("cli.install.prefix_help"))
         parser.add_argument("--src", metavar="DIR", help=i18n.t("cli.install.src_help"))
         parser.add_argument(
             "--config-settings",
@@ -155,9 +139,7 @@ class InstallCommand(Command):
             action="store_true",
             help=i18n.t("cli.install.break_system_packages_help"),
         )
-        parser.add_argument(
-            "--no-uv", action="store_true", help=i18n.t("cli.install.no_uv_help")
-        )
+        parser.add_argument("--no-uv", action="store_true", help=i18n.t("cli.install.no_uv_help"))
 
     def _build_extra_pip_args(self, args) -> list:
         """
@@ -257,6 +239,10 @@ class InstallCommand(Command):
                 ):
                     success = False
 
+            if success:
+                # 非交互路径不进入向导，仅提示后续配置入口
+                console.print(f"[dim]  {i18n.t('cli.install.configure_hint')}[/]")
+
             if not success:
                 sys.exit(1)
         else:
@@ -269,26 +255,16 @@ class InstallCommand(Command):
         :param upgrade: [bool] 是否升级已安装的包 (默认: False)
         :param pre: [bool] 是否包含预发布版本 (默认: False)
         """
-        with console.status(
-            f"[bold green]{i18n.t('cli.install.fetching_packages')}[/]", spinner="dots"
-        ):
+        with console.status(f"[bold green]{i18n.t('cli.install.fetching_packages')}[/]", spinner="dots"):
             remote_packages = asyncio.run(self.package_manager.get_remote_packages())
 
         while True:
             console.print()
             console.print(Text(i18n.t("cli.install.select_type"), style="bold"))
-            console.print(
-                Text(f"    1.  {i18n.t('cli.install.type_adapter')}", style="adapter")
-            )
-            console.print(
-                Text(f"    2.  {i18n.t('cli.install.type_module')}", style="module")
-            )
-            console.print(
-                Text(f"    3.  {i18n.t('cli.install.type_search')}", style="info")
-            )
-            console.print(
-                Text(f"    4.  {i18n.t('cli.install.type_custom')}", style="dim")
-            )
+            console.print(Text(f"    1.  {i18n.t('cli.install.type_adapter')}", style="adapter"))
+            console.print(Text(f"    2.  {i18n.t('cli.install.type_module')}", style="module"))
+            console.print(Text(f"    3.  {i18n.t('cli.install.type_search')}", style="info"))
+            console.print(Text(f"    4.  {i18n.t('cli.install.type_custom')}", style="dim"))
             console.print(Text(f"    q.  {i18n.t('cli.install.quit')}", style="dim"))
 
             choice = Prompt.ask(
@@ -309,9 +285,7 @@ class InstallCommand(Command):
             elif choice == "4":
                 self._install_custom(upgrade, pre)
 
-            if not Confirm.ask(
-                f"\n  [cyan]{i18n.t('cli.install.continue_install')}[/]", default=False
-            ):
+            if not Confirm.ask(f"\n  [cyan]{i18n.t('cli.install.continue_install')}[/]", default=False):
                 break
 
     def _install_adapters(self, remote_packages: dict, upgrade: bool, pre: bool):
@@ -347,9 +321,7 @@ class InstallCommand(Command):
             ],
             row_builder=lambda table, idx, item, checked: table.add_row(
                 ("● " if checked else "  ") + str(idx + 1),
-                item[0]
-                if item[1].get("verified", True)
-                else i18n.t("cli.install.unverified", name=item[0]),
+                item[0] if item[1].get("verified", True) else i18n.t("cli.install.unverified", name=item[0]),
                 item[1].get("package", ""),
                 item[1].get("description", ""),
             ),
@@ -359,16 +331,14 @@ class InstallCommand(Command):
             return
 
         selected_names = [name for name, _ in selected]
-        console.print(
-            f"\n  [dim]{i18n.t('cli.install.selected', selected=', '.join(selected_names))}[/]"
-        )
+        console.print(f"\n  [dim]{i18n.t('cli.install.selected', selected=', '.join(selected_names))}[/]")
         if Confirm.ask(
             f"  [cyan]{i18n.t('cli.install.confirm_adapters', count=len(selected_names))}[/]",
             default=True,
         ):
-            self.package_manager.install_package(
-                selected_names, upgrade=upgrade, pre=pre
-            )
+            installed = self.package_manager.install_package(selected_names, upgrade=upgrade, pre=pre)
+            if installed:
+                self._post_install_configure(selected_names, remote_packages)
 
     def _install_modules(self, remote_packages: dict, upgrade: bool, pre: bool):
         """
@@ -400,9 +370,7 @@ class InstallCommand(Command):
             ],
             row_builder=lambda table, idx, item, checked: table.add_row(
                 ("● " if checked else "  ") + str(idx + 1),
-                item[0]
-                if item[1].get("verified", True)
-                else i18n.t("cli.install.unverified", name=item[0]),
+                item[0] if item[1].get("verified", True) else i18n.t("cli.install.unverified", name=item[0]),
                 item[1].get("package", ""),
                 item[1].get("description", ""),
             ),
@@ -412,16 +380,14 @@ class InstallCommand(Command):
             return
 
         selected_names = [name for name, _ in selected]
-        console.print(
-            f"\n  [dim]{i18n.t('cli.install.selected', selected=', '.join(selected_names))}[/]"
-        )
+        console.print(f"\n  [dim]{i18n.t('cli.install.selected', selected=', '.join(selected_names))}[/]")
         if Confirm.ask(
             f"  [cyan]{i18n.t('cli.install.confirm_modules', count=len(selected_names))}[/]",
             default=True,
         ):
-            self.package_manager.install_package(
-                selected_names, upgrade=upgrade, pre=pre
-            )
+            installed = self.package_manager.install_package(selected_names, upgrade=upgrade, pre=pre)
+            if installed:
+                self._post_install_configure(selected_names, remote_packages)
 
     def _install_search(self, remote_packages: dict, upgrade: bool, pre: bool):
         """
@@ -454,13 +420,9 @@ class InstallCommand(Command):
         # 显示已安装结果
         if installed:
             section_header(i18n.t("cli.install.installed_section"))
-            table = Table(
-                box=SIMPLE, show_lines=False, header_style="bold", pad_edge=False
-            )
+            table = Table(box=SIMPLE, show_lines=False, header_style="bold", pad_edge=False)
             table.add_column(i18n.t("cli.install.type_header"), width=8)
-            table.add_column(
-                i18n.t("cli.install.name_header"), style="bold", min_width=12
-            )
+            table.add_column(i18n.t("cli.install.name_header"), style="bold", min_width=12)
             table.add_column(i18n.t("cli.install.pkg_header"), min_width=20)
             table.add_column(i18n.t("cli.install.ver_header"), width=10)
             table.add_column(i18n.t("cli.install.desc_header"))
@@ -474,20 +436,14 @@ class InstallCommand(Command):
                     item.get("summary", ""),
                 )
             console.print(table)
-            console.print(
-                f"[dim]  {i18n.t('cli.install.count_installed', count=len(installed))}[/]"
-            )
+            console.print(f"[dim]  {i18n.t('cli.install.count_installed', count=len(installed))}[/]")
 
         # 显示远程结果
         if remote:
             section_header(i18n.t("cli.install.remote_section"))
-            table = Table(
-                box=SIMPLE, show_lines=False, header_style="bold", pad_edge=False
-            )
+            table = Table(box=SIMPLE, show_lines=False, header_style="bold", pad_edge=False)
             table.add_column(i18n.t("cli.install.type_header"), width=8)
-            table.add_column(
-                i18n.t("cli.install.name_header"), style="bold", min_width=12
-            )
+            table.add_column(i18n.t("cli.install.name_header"), style="bold", min_width=12)
             table.add_column(i18n.t("cli.install.pkg_header"), min_width=20)
             table.add_column(i18n.t("cli.install.ver_header"), width=10)
             table.add_column(i18n.t("cli.install.desc_header"))
@@ -501,13 +457,9 @@ class InstallCommand(Command):
                     item.get("summary", ""),
                 )
             console.print(table)
-            console.print(
-                f"[dim]  {i18n.t('cli.install.count_remote', count=len(remote))}[/]"
-            )
+            console.print(f"[dim]  {i18n.t('cli.install.count_remote', count=len(remote))}[/]")
 
-        console.print(
-            f"\n  [bold]{i18n.t('cli.install.total_results', total=total)}[/]"
-        )
+        console.print(f"\n  [bold]{i18n.t('cli.install.total_results', total=total)}[/]")
 
         # 序号选择安装
         if not remote:
@@ -516,10 +468,7 @@ class InstallCommand(Command):
         console.print()
         for i, item in enumerate(remote, 1):
             type_style = "adapter" if item["type"] == "adapter" else "module"
-            console.print(
-                f"    [dim]{i:>2}.[/] [{type_style}]{item['name']}[/]"
-                f"  [dim]{item['package']}[/]"
-            )
+            console.print(f"    [dim]{i:>2}.[/] [{type_style}]{item['name']}[/]  [dim]{item['package']}[/]")
 
         raw = Prompt.ask(
             f"\n  [cyan]{i18n.t('cli.install.select_install_prompt')}[/]",
@@ -541,7 +490,9 @@ class InstallCommand(Command):
             f"  [cyan]{i18n.t('cli.install.confirm_search_install', count=len(selected))}[/]",
             default=True,
         ):
-            self.package_manager.install_package(selected, upgrade=upgrade, pre=pre)
+            installed = self.package_manager.install_package(selected, upgrade=upgrade, pre=pre)
+            if installed:
+                self._post_install_configure(selected, remote_packages)
 
     def _install_custom(self, upgrade: bool, pre: bool):
         """
@@ -558,6 +509,30 @@ class InstallCommand(Command):
                 f"  [cyan]{i18n.t('cli.install.confirm_custom_install', package_name=package_name)}[/]",
                 default=True,
             ):
-                self.package_manager.install_package(
-                    [package_name], upgrade=upgrade, pre=pre
-                )
+                installed = self.package_manager.install_package([package_name], upgrade=upgrade, pre=pre)
+                if installed:
+                    self._post_install_configure([package_name], {})
+
+    def _post_install_configure(self, names: list[str], remote_packages: dict):
+        """
+        安装成功后衔接交互式配置向导
+
+        将简称解析为完整包名（与 entry-point 所属发行包名匹配），
+        交由共享向导工具检测配置声明并引导。
+
+        :param names: [list] 本次安装的包名/简称列表
+        :param remote_packages: [dict] 远程包索引（含简称到包名的映射）
+        """
+        if not config_wizard.is_interactive():
+            console.print(f"[dim]  {i18n.t('cli.install.configure_hint')}[/]")
+            return
+
+        resolved = []
+        for name in names:
+            info = remote_packages.get("adapters", {}).get(name) or remote_packages.get("modules", {}).get(name)
+            resolved.append(info.get("package", name) if isinstance(info, dict) else name)
+
+        try:
+            config_wizard.post_install_configure(resolved)
+        except Exception as e:
+            console.print(f"[warning]  {i18n.t('cli.config.post_install_failed', error=e)}[/]")

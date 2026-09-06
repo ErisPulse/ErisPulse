@@ -20,9 +20,7 @@ without the need for a terminal, or a separate Python environment.
 - **Background Persistence**: Android foreground service keep-alive; Windows minimized to system tray, closing the window does not interrupt the instance
 - **Dynamic Module Windows**: Registered module pages automatically appear in the sidebar navigation (grouped with Dashboard), click to jump directly
 
-Please return the complete translated Markdown content directly, without including any other text.
 
-Reminder again: If the document contains language switching lines (lines with language names separated by ``|``), please strictly adhere to the format requirements in item 8 above, and do not write incorrect formats like ``[**Label**](file)``.
 
 ## Supported Platforms
 
@@ -96,9 +94,7 @@ The installation steps for both builds are identical:
 
 ---
 
-Please return the complete translated Markdown content directly, without any other text.
 
-Reminder again: If the document contains language switching lines (lines separated by ` | ` with language names), please strictly follow rule 8 above and do not write formats like `[**Label**](file)`.
 
 ## Related Links
 

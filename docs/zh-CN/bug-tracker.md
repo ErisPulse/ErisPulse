@@ -92,14 +92,14 @@
 | 严重性 | 数量 |
 |--------|------|
 | 🔴 严重 | 15 |
-| 🟡 中等 | 12 |
+| 🟡 中等 | 13 |
 | 🟢 轻微 | 2 |
-| **合计** | **29** |
+| **合计** | **30** |
 
 | 类型 | 数量 |
 |------|------|
 | 适配器 | 6 |
-| 配置系统 | 6 |
+| 配置系统 | 7 |
 | 事件系统 | 5 |
 | CLI | 3 |
 | 存储 | 3 |
@@ -832,5 +832,27 @@ _apply_rate_limit 解析 window=3600（100/hour）
 **回归测试**: `tests/unit/test_unit_config.py` → `test_self_write_not_detected_as_external`、`test_external_change_preserves_dirty_keys`、`test_flush_merges_dirty_with_external`
 
 **严重性**: 🔴 严重
+
+**类型**: 配置系统
+
+---
+
+### [BUG-032] 配置延迟刷盘期间「写后立读」读到旧值
+
+**问题**: `config.setConfig()`（默认 `immediate=False` 延迟约 5 秒刷盘）写入点分键后，立即读取其**父级/祖先节点**（如 `set_erispulse_section("scope.actions.MyModule", {...})` 后调用 `get_erispulse_config()`）返回的是旧值，写入的子键"消失"，直到刷盘后才可见。作用域配置热更新等"写-读-写"场景受影响（2.8.0 测试插件 `/t_section` 用例暴露）。
+
+**原因**: `setConfig` 将点分键以**扁平形式**存入待写队列 `_dirty_keys`，仅 `getConfig` 的**精确键查询**命中待写队列；树形路径查询（`getConfig("ErisPulse.scope")`）只走缓存树，不叠加待写值——延迟刷盘（`_flush_config` 才将脏键合并进缓存并清队列）期间形成读-你-写断层。
+
+**影响版本**: 2.6.0 - 2.8.0-dev.1
+
+**修复版本**: 2.8.0-dev.1
+
+**修复内容**: `getConfig` 引入待写叠加语义——① 精确命中待写键直接返回（原有行为不变）；② 待写键是查询键的祖先 → 取最长待写祖先，在其值子树内解析剩余路径；③ 待写键是查询键的后代 → 构建叠加子树（`_dirty_overlay`）与缓存子树深合并（`_deep_merge`，override 优先，不修改原缓存对象）。无待写键时走原快路径，零额外开销。
+
+**修复日期**: 2026/09/04
+
+**回归测试**: `tests/unit/test_unit_config.py` → `test_get_config_overlays_dirty_descendant`、`test_get_config_overlay_merges_with_cache_siblings`、`test_get_config_overlay_new_branch`、`test_get_config_dirty_ancestor_query`、`test_get_config_dirty_exact_key_still_wins`
+
+**严重性**: 🟡 中等
 
 **类型**: 配置系统

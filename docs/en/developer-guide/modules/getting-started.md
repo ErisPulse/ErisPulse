@@ -14,6 +14,7 @@ MyModule/
 └── MyModule/
     ├── __init__.py
     └── Core.py
+```
 
 ## pyproject.toml Configuration
 
@@ -21,7 +22,7 @@ MyModule/
 [project]
 name = "ErisPulse-MyModule"
 version = "1.0.0"
-description = "Module description"
+description = "Module function description"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
@@ -33,11 +34,13 @@ dependencies = []
 
 [project.entry-points."erispulse.module"]
 "MyModule" = "MyModule:Main"
+```
 
 ## __init__.py
 
 ```python
 from .Core import Main
+```
 
 ## Core.py - Core Module
 
@@ -54,38 +57,38 @@ class Main(BaseModule):
     
     @staticmethod
     def get_load_strategy():
-        """Returns the module loading strategy"""
+        """Returns the module load strategy."""
         from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,
             priority=0,
             depends=[],  # Optional: list of other modules this module depends on
-            # Optional: event-driven lazy activation - declare triggers, module will auto-load when first matching event/command arrives
-            # activate_on=[{"command": {"name": "hello", "help": "Send greeting"}}],
+            # Optional: Event-driven lazy activation - declare triggers, the module will be loaded automatically when the first matching event/command arrives
+            # activate_on=[{"command": {"name": "hello", "help": "Send a greeting"}}],
         )
     
     async def on_load(self, event):
-        """Called when the module is loaded"""
-        @command("hello", help="Send greeting")
+        """Called when the module is loaded."""
+        @command("hello", help="Send a greeting")
         async def hello_command(event):
             name = event.get_user_nickname() or "friend"
             await event.reply(f"Hello, {name}!")
         
         self.logger.info("Module loaded")
-    
+
     async def on_unload(self, event):
-        """Called when the module is unloaded"""
+        """Called when the module is unloaded."""
         self.logger.info("Module unloaded")
 ```
 
-> **Configuration Reading**: The basic example above does not use configuration. When configuration is needed, it is recommended to declare a nested `ConfigClass` and read it in real time through `self.cfg` (see [Module Core Concepts](core-concepts.md#declarative-configuration-recommended)). The old method of manually calling `_load_config()` is deprecated.
+> **Configuration Reading**: The basic example above does not use configuration. To read configuration, it is recommended to declare a nested `ConfigClass` and access it via `self.cfg` for real-time reading (see [Module Core Concepts](core-concepts.md#recommended-declarative-configuration)). The old method of manually calling `_load_config()` has been deprecated.
 
-## Test Module
+## Testing Module
 
 ### Local Testing
 
 ```bash
-# Install module in the project directory
+# Install the module in the project directory
 epsdk install ./MyModule
 
 # Run the project
@@ -94,10 +97,11 @@ epsdk run main.py --reload
 
 ### Test Commands
 
-Send a command test:
+Send a command to test:
 
 ```
 /hello
+```
 
 ## Core Concepts
 
@@ -106,22 +110,22 @@ Send a command test:
 All modules must inherit from `BaseModule`, providing the following methods:
 
 | Method | Description | Required |
-|------|------|------|
-| `__init__(self, sdk)` | Constructor (framework passes in `sdk` instance) | No |
-| `get_load_strategy()` | Return the load strategy | No |
-| `get_meta()` | Return module metadata (optional) | No |
+|--------|-------------|----------|
+| `__init__(self, sdk)` | Constructor (receives `sdk` instance from framework) | No |
+| `get_load_strategy()` | Returns the module loading strategy | No |
+| `get_meta()` | Returns module metadata (optional) | No |
 | `on_load(self, event)` | Called when the module is loaded | Yes |
 | `on_unload(self, event)` | Called when the module is unloaded | Yes |
 
-### Module Meta Information
+### Module Metadata
 
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-Declare module metadata (what the module does, its category, etc.) via `get_meta()`.  
-Metadata is **generic module introduction data** for consumption by help modules, dashboard module lists, module stores, and other interfaces/ecosystem modules.
+Declare module metadata (what the module does, its category, etc.) using `get_meta()`.  
+Module metadata is **generic introduction data** for help modules, dashboard module lists, module stores, and other interfaces/ecosystem modules.
 
-Consistent with `get_load_strategy()` returning `ModuleLoadStrategy`, **it is recommended to return an instance of the `ModuleMeta` configuration class** (with typed attributes and IDE completion), but direct return of a dict is also compatible:
+Similar to `get_load_strategy()` returning `ModuleLoadStrategy`, it is **recommended to return an instance of the `ModuleMeta` configuration class** (with type hints, IDE completion), but direct `dict` return is also supported:
 
 ```python
 class MyModule(BaseModule):
@@ -129,15 +133,15 @@ class MyModule(BaseModule):
     def get_meta() -> ModuleMeta:
         return ModuleMeta(
             name="Weather",               # Display name (default registration name)
-            description="Weather lookup",  # Module description
+            description="Query city weather",  # Module description
             version="1.0.0",
             author="ErisDev",
             group="Tools",               # Functional group
-            tags=["Weather", "Lookup"],
+            tags=["Weather", "Query"],
         )
 ```
 
-Compatible syntax (dict):
+Alternative (dict) syntax:
 
 ```python
 class MyModule(BaseModule):
@@ -145,21 +149,21 @@ class MyModule(BaseModule):
     def get_meta() -> dict:
         return {
             "name": "Weather",
-            "description": "Weather lookup",
+            "description": "Query city weather",
             "version": "1.0.0",
             "author": "ErisDev",
             "group": "Tools",
-            "tags": ["Weather", "Lookup"],
+            "tags": ["Weather", "Query"],
         }
 ```
 
-- `module.get_meta("MyModule")` reads the parsed metadata (class declaration > registration info, automatically completes the module's command name).
-- `module.get_commands_overview()` aggregates "module meta + its registered commands (aliases/groups/help)", organized by module as a command overview.
-- The module owning a command can be obtained via `cmd_info["owner"]` (automatically injected by the context system during registration).
+- `module.get_meta("MyModule")` retrieves the parsed metadata (class declaration > registered info, automatically completes the module's command name).
+- `module.get_commands_overview()` aggregates "module metadata + its registered commands (aliases/groups/help)" into a command overview organized by module.
+- The module owning a command can be retrieved via `cmd_info["owner"]` (automatically injected by the context system during registration).
 
 #### i18n Support for Meta Fields
 
-Metadata field values can be plain strings, or an i18n dictionary `{"i18n": "key.path", "default": "fallback text"}` (consistent with the `description` configuration convention).  
+Metadata field values can be plain strings or i18n dictionaries `{"i18n": "key.path", "default": "fallback text"}` (consistent with the `description` configuration convention).  
 Translation keys are declared and registered via `I18nClass`, and `module.get_meta()` automatically resolves them to the current language text:
 
 ```python
@@ -194,10 +198,8 @@ sdk.router     # Routing system
 sdk.lifecycle  # Lifecycle system
 ```
 
-Please directly return the translated complete Markdown content, without including any other text.
-
 ## Next Steps
 
-- [Module Core Concepts](core-concepts.md) - Deep dive into module architecture
-- [Event Wrapper Class Details](event-wrapper.md) - Learn about Event objects
+- [Core Concepts of Modules](core-concepts.md) - Dive deeper into the module architecture
+- [Event Wrapper Class Details](event-wrapper.md) - Learn about the Event object
 - [Module Best Practices](best-practices.md) - Develop high-quality modules

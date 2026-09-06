@@ -176,7 +176,7 @@ uv run basedpyright src/ErisPulse
 3. **Develop**
    - Keep commit messages clear (e.g., `feat: add user login`).
    - Follow [docstring standards](docs/en/styleguide/docstring.md) for all new public APIs.
-   - Add changelog entries in `CHANGELOG.md`.
+   - Add changelog entries in `CHANGELOG.md`, following its writing rules: when a topic is modified multiple times within the same version, update the existing entry to its final form instead of appending intermediate iterations; changes introduced and reverted within the same version are not recorded separately.
    - Regularly pull updates from `Develop/v2` to minimize conflicts.
 4. **Submit a Pull Request** to the official `Develop/v2` branch.
    - Ensure the target repo is the original project and target branch is `Develop/v2`.
@@ -368,7 +368,7 @@ uv run basedpyright src/ErisPulse
    - 在您的功能分支上进行开发。
    - 保持提交信息清晰明确（例如：`feat: 添加用户登录功能`）。
    - 严格遵守[文档注释规范](docs/zh-CN/styleguide/docstring.md)，为所有新增的公开 API 添加文档注释。
-   - 提交前，确保在 `CHANGELOG.md` 中添加了变更描述。
+   - 提交前，确保在 `CHANGELOG.md` 当前开发版本条目中添加了变更描述，并遵循其「写作规范」：同一主题的多次修改应更新既有条目为最终形态而非追加过程记录；本版本内引入又修复 / 回退的内容不单独记录。
    - 为了减少合并冲突，建议定期从**官方仓库的 `Develop/v2` 分支**拉取（`pull`）更新。
 4. **提交 Pull Request (PR)**
    - 开发完成后，在 GitHub 上向**官方仓库的 `Develop/v2` 分支**发起 Pull Request。
@@ -560,7 +560,7 @@ uv run basedpyright src/ErisPulse
    - 在您的功能分支上進行開發。
    - 保持提交訊息清晰明確（例如：`feat: 新增使用者登入功能`）。
    - 嚴格遵守[文件註解規範](docs/zh-TW/styleguide/docstring.md)，為所有新增的公開 API 新增文件註解。
-   - 提交前，確保在 `CHANGELOG.md` 中新增了變更描述。
+   - 提交前，確保在 `CHANGELOG.md` 當前開發版本條目中新增了變更描述，並遵循其「寫作規範」：同一主題的多次修改應更新既有條目為最終形態而非追加過程記錄；本版本內引入又修復 / 回退的內容不單獨記錄。
    - 為了減少合併衝突，建議定期從**官方倉庫的 `Develop/v2` 分支**拉取（`pull`）更新。
 4. **提交 Pull Request (PR)**
    - 開發完成後，在 GitHub 上向**官方倉庫的 `Develop/v2` 分支**發起 Pull Request。
@@ -749,7 +749,7 @@ uv run basedpyright src/ErisPulse
 3. **開発**
    - コミットメッセージを明確に保つ（例：`feat: ユーザーログインを追加`）。
    - 新しい公開 API には[ドキュメント文字列規範](docs/ja/styleguide/docstring.md)に従う。
-   - `CHANGELOG.md` に変更内容を追記。
+    - `CHANGELOG.md` の現在開発中のバージョンに変更内容を追記（「執筆規範」に従う）：同一テーマへの複数回の変更は、過程の記録を追記するのではなく既存エントリを最終形態へ更新する。バージョン内で導入後に修正・取り消された内容は単独で記録しない。
    - コンフリクトを減らすため、定期的に `Develop/v2` から更新をプル。
 4. **Pull Request を提出** — 公式リポジトリの `Develop/v2` ブランチへ。
    - ターゲットリポジトリが原本プロジェクト、ターゲットブランチが `Develop/v2` であることを確認。
@@ -931,7 +931,7 @@ uv run basedpyright src/ErisPulse
 3. **Разработка**
    - Сообщения коммитов должны быть понятными (например, `feat: добавить вход пользователя`).
    - Следуйте [стандартам документирования](docs/ru/styleguide/docstring.md) для всех новых публичных API.
-   - Добавляйте записи в `CHANGELOG.md`.
+   - Добавляйте записи в `CHANGELOG.md` в текущую разрабатываемую версию, следуя «правилам ведения»: при нескольких изменениях одной темы обновляйте существующую запись до итогового вида, а не добавляйте записи о промежуточных итерациях; изменения, введённые и исправленные/отменённые в одной версии, отдельно не записываются.
    - Регулярно подтягивайте обновления из `Develop/v2` для минимизации конфликтов.
 4. **Отправьте Pull Request** в официальную ветку `Develop/v2`.
    - Убедитесь, что целевой репозиторий — исходный проект, целевая ветка — `Develop/v2`.
