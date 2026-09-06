@@ -1,18 +1,15 @@
 """
-ErisPulse 统一控制面（scope）
+ErisPulse 作用域（scope）
 
-控制权完全交给用户：在模块 / 适配器 / 命令 / 处理器注册的**上层**（配置 ``ErisPulse.scope``
-或运行时 ``sdk.scope``）统一声明"谁 / 什么 / 什么条件下，允许或禁止"，以及覆盖
-模块 / 命令的默认实现参数。事件管线在每一级自动读取并执行。
+控制权完全交给用户：在模块 / 适配器 / 处理器 / 出站调用注册的**上层**
+（配置 ``ErisPulse.scope`` 或运行时 ``sdk.scope``）统一声明"**什么范围内生效**"。
+事件管线在入口、处理器过滤与出站闸口自动读取并执行。
 
-本系统是 2.8.0 的权限/访问控制**唯一**入口，收敛了原有的：
+作用域按事件处理生命周期回答三个问题：
 
-- 模块维度（原作用域三级绑定）
-- 身份维度（原事件准入 access：适配器 / Bot / 会话 / 用户）
-- 命令维度（原命令权限 ACL：按命令的用户黑白名单）
-- 处理器/文本维度（新增：按模块过滤消息文本）
-- 实现参数覆盖（新增：覆盖模块/命令的 master / hidden / aliases / prefix 等）
-- 出站动作维度（新增：禁止模块发起消息发送 / 标准 API 动作 / 请求操作）
+- 模块维度：某个上下文里哪些模块可用（平台 / Bot / 会话三级绑定）
+- 身份维度：谁的事件收不收（适配器 / Bot / 会话 / 用户四级策略）
+- 出站维度：模块能向外做什么（限制模块发起消息发送 / 标准 API 动作 / 请求操作）
 
 配置树（``ErisPulse.scope``）：
 
@@ -27,6 +24,7 @@ ErisPulse 统一控制面（scope）
     blocked = ["re:^Danger"]
     [ErisPulse.scope.bots.onebot11."123456"]
     modules = ["Chat"]
+    merge = true                  # 在平台级绑定基础上追加（默认整体覆盖）
     [ErisPulse.scope.sessions.onebot11."789012345"]
     modules = ["Chat"]
 
@@ -41,40 +39,29 @@ ErisPulse 统一控制面（scope）
     allow = ["u_admin"]
     deny = ["u_bad", "spam_*"]    # 支持 glob / re:正则
 
-    # ③ 命令维度：谁能执行某命令（命令名支持 glob）
-    [ErisPulse.scope.commands."roll*"]
-    allow = ["onebot11:u_vip"]
-    deny = ["onebot11:u_bad"]
-
-    # ④ 处理器/文本维度：某模块的事件处理器按 pattern / regex 过滤
-    [ErisPulse.scope.handlers.MyModule]
-    pattern = "签到*"
-    regex = "re:\\d+\\s*元"
-
-    # ⑤ 实现参数覆盖：覆盖模块/命令的默认实现参数（禁用走命令 deny）
-    [ErisPulse.scope.overrides.MyModule.restart]
-    master = true   hidden = true   aliases = ["rs"]   prefix = "!"
-
-    # ⑥ 出站动作维度：禁止模块发起出站动作（默认全允许，显式禁用才收紧）
+    # ③ 出站维度：限制模块发起出站动作（默认全允许，显式收紧才禁）
     [ErisPulse.scope.actions.MyModule]
-    send = false      # 禁止 MyModule 回复/主动发消息（Event.reply / Send DSL）
-    api = false       # 禁止 MyModule 调用标准 API 动作（Api DSL / call_api）
-    request = false   # 禁止 MyModule 对请求事件执行 accept/reject
+    send = { deny = true }                                   # 全禁发送
+    send = { allow = ["Text", "Image*"], deny = ["File"] }   # 方法级细粒度
+    api = { allow = ["get_*"] }                              # 仅允许查询类 API
+    request = { deny = true }                                # 禁止处理请求
 
 匹配条目统一语法（见 :mod:`ErisPulse.Core.text_match`）：
 **精确名** / **glob**（``*`` / ``?`` / ``[seq]``）/ **``re:`` 正则**，默认大小写不敏感。
 
 {!--< tips >!--}
 1. 通过 ``from ErisPulse.Core import scope`` 导入单例（``sdk.scope`` 同对象）
-2. ``scope.is_allowed(platform, bot_id, module, session_id)`` 判断模块是否可用
-3. ``scope.is_identity_allowed(...)`` 判断事件是否放行（原 access）
-4. ``scope.allow_user("roll*", platform, uid)`` 命令 ACL（命令名支持 glob）
-5. ``scope.override("MyModule", "restart", master=True)`` 覆盖实现参数
-6. ``scope.set_action("MyModule", "send", False)`` 禁止模块回复/发消息
-7. ``scope.get_stats()`` 查看过滤统计
+2. 判定：``scope.is_allowed(...)`` / ``scope.is_identity_allowed(...)`` /
+   ``scope.is_action_allowed(...)`` —— 对应 ①②④ 三个判定闸口
+3. 读写：像字典一样用点分路径操作任意配置节 ——
+   ``scope.get("platforms.onebot11")`` / ``scope.set("actions.My", {...})`` /
+   ``scope.delete("actions.My.send")``，也支持 ``scope[key]`` / ``scope[key] = v`` / ``del scope[key]``
+4. 事件处理器文本条件覆写见 :mod:`ErisPulse.Core.Event.overrides`；
+   命令 ACL / 参数覆写见 :mod:`ErisPulse.Core.Event.command`
 {!--< /tips >!--}
 """
 
+import copy
 from collections import OrderedDict
 from collections.abc import Callable
 
@@ -95,10 +82,16 @@ _IDENTITY_USERS = "users"
 # 默认 LRU 缓存大小
 DEFAULT_CACHE_SIZE = 1024
 
-# ⑥ 出站动作维度：模块可禁用的动作集合
+# ④ 出站维度：模块可限制的动作集合
 # "send"=消息发送（Event.reply / Send DSL）、"api"=标准 API 动作（Api DSL / call_api）、
 # "request"=请求操作（Request DSL accept/reject）
 _ACTION_NAMES = ("send", "api", "request")
+
+# 出站动作规则的合法键（其余键视为未知配置并告警）
+_ACTION_RULE_KEYS = ("allow", "deny")
+
+# get(path) 的哨兵：区分"节点不存在"与"节点值为 None"
+_MISSING = object()
 
 
 def _is_identity_binding(binding) -> str | None:
@@ -118,19 +111,76 @@ def _is_identity_binding(binding) -> str | None:
     return None
 
 
+def _normalize_action_rule(rule) -> dict | None:
+    """
+    {!--< internal-use >!--}
+    归一化出站动作规则
+
+    合法输入形态：
+
+    - ``True`` → ``{}``（无限制，等价未配置）
+    - ``False`` → ``{"deny": True}``（全禁）
+    - dict → 仅保留 ``allow``（字符串列表）与 ``deny``（布尔或字符串列表）键
+
+    :param rule: 配置中的动作规则（bool / dict）
+    :return: 规范化规则字典；allow / deny 类型非法时返回 None
+    """
+    if isinstance(rule, bool):
+        return {} if rule else {"deny": True}
+    if not isinstance(rule, dict):
+        return None
+    result: dict = {}
+    allow = rule.get("allow")
+    deny = rule.get("deny")
+    if allow is not None:
+        if isinstance(allow, str):
+            allow = [allow]
+        if not isinstance(allow, list) or not all(isinstance(entry, str) for entry in allow):
+            return None
+        result["allow"] = list(allow)
+    if deny is not None:
+        if isinstance(deny, str):
+            deny = [deny]
+        if isinstance(deny, bool):
+            result["deny"] = deny
+        elif isinstance(deny, list) and all(isinstance(entry, str) for entry in deny):
+            result["deny"] = list(deny)
+        else:
+            return None
+    return result
+
+
+def _deep_merge(dst: dict, src: dict) -> None:
+    """{!--< internal-use >!--} 把 src 深合并进 dst（原地修改）"""
+    for key, value in src.items():
+        if isinstance(value, dict) and isinstance(dst.get(key), dict):
+            _deep_merge(dst[key], value)
+        else:
+            dst[key] = value
+
+
 class ScopeManager:
     """
-    统一控制面管理器（单例）
+    作用域管理器（单例）
 
-    管理六维配置：模块（modules）/ 身份（identity）/ 命令（commands）/
-    处理器（handlers）/ 覆盖（overrides）/ 出站动作（actions）。支持配置热更新、
-    运行时增删、LRU 缓存与运行统计。
+    统一管理三维作用域配置（模块 / 身份 / 出站），配置即一棵
+    ``ErisPulse.scope`` 字典树。API 面向原生字典风格收敛：
+
+    - **判定**：:meth:`is_allowed` / :meth:`is_identity_allowed` /
+      :meth:`is_action_allowed`（三个闸口的问询）
+    - **读写**：:meth:`get` / :meth:`set` / :meth:`delete`（点分路径直达任意节，
+      同时支持 ``scope[path]`` / ``scope[path] = value`` / ``del scope[path]``）
+    - **全局**：:meth:`clear` / :meth:`stats` / :meth:`reset_stats` / :meth:`topology`
+
+    支持配置热更新、LRU 缓存与运行统计。
+    命令 ACL / 参数覆写由命令系统自持（``ErisPulse.event.command``）。
     """
 
     def __init__(self, cache_size: int = DEFAULT_CACHE_SIZE):
         self._cache_size = max(1, int(cache_size))
-        # 内存中的绑定缓存（随配置热更新重建）
-        self._bindings: dict[str, dict] = {
+        # 统一配置树（随配置热更新整体重建）：
+        # {platforms, bots, sessions, identity, actions}
+        self._data: dict = {
             _BUCKET_PLATFORMS: {},
             _BUCKET_BOTS: {},
             _BUCKET_SESSIONS: {},
@@ -140,9 +190,6 @@ class ScopeManager:
                 _IDENTITY_SESSIONS: {},
                 _IDENTITY_USERS: {},
             },
-            "commands": {},
-            "handlers": {},
-            "overrides": {},
             "actions": {},
         }
         self._default_allow: bool = True
@@ -151,19 +198,21 @@ class ScopeManager:
             "module_filtered": 0,
             "identity_checks": 0,
             "identity_denied": 0,
-            "command_checks": 0,
-            "command_denied": 0,
             "action_checks": 0,
             "action_denied": 0,
             "cache_hits": 0,
             "cache_misses": 0,
         }
-        # is_allowed 的 LRU 结果缓存：(platform, bot_id, session_id, module) -> bool
+        # 模块判定 LRU：(platform, bot_id, session_id, module) -> bool
         self._cache: OrderedDict[tuple, bool] = OrderedDict()
         # 身份判定 LRU：(platform, bot_id, session_id, user_id) -> bool
         self._identity_cache: OrderedDict[tuple, bool] = OrderedDict()
-        self._load_bindings()
-        # 订阅配置热更新：scope 配置变更时自动重建绑定缓存
+        # 出站判定 LRU：(owner, action, name) -> bool
+        self._action_cache: OrderedDict[tuple, bool] = OrderedDict()
+        # 配置校验告警去重（同一路径同一问题只告警一次）
+        self._warned: set[str] = set()
+        self._load_config()
+        # 订阅配置热更新：scope 配置变更时自动重建配置树
         try:
             from .lifecycle import lifecycle
 
@@ -174,50 +223,118 @@ class ScopeManager:
 
     # ==================== 配置加载与热更新 ====================
 
-    def _load_bindings(self) -> None:
-        """{!--< internal-use >!--} 从配置加载绑定缓存"""
+    def _warn_invalid(self, path: str, actual: str) -> None:
+        """{!--< internal-use >!--} 输出配置格式告警（同一路径去重）"""
+        key = f"scope:{path}:{actual}"
+        if key in self._warned:
+            return
+        self._warned.add(key)
+        try:
+            from .i18n import i18n
+            from .logger import logger
+
+            logger.warning(i18n.t("core.scope.config_invalid", path=path, actual=actual))
+        except Exception:
+            pass
+
+    def _validated_bucket(self, config: dict, key: str) -> dict:
+        """{!--< internal-use >!--} 读取并校验一个 dict 型配置节（非法时告警并忽略）"""
+        value = config.get(key)
+        if value is None:
+            return {}
+        if not isinstance(value, dict):
+            self._warn_invalid(f"scope.{key}", type(value).__name__)
+            return {}
+        return value
+
+    def _load_config(self) -> None:
+        """{!--< internal-use >!--} 从配置加载配置树（含格式校验）"""
         try:
             from ..runtime import get_config
 
             scope_config = get_config("scope") or {}
         except Exception:
             scope_config = {}
+        self._apply_tree(scope_config if isinstance(scope_config, dict) else {})
+
+    def _apply_tree(self, tree: dict) -> None:
+        """{!--< internal-use >!--} 校验并应用配置树到内存（含格式校验）"""
+        scope_config = tree if isinstance(tree, dict) else {}
+        if not isinstance(tree, dict):
+            self._warn_invalid("scope", type(tree).__name__)
         self._default_allow = bool(scope_config.get("default_allow", True))
 
-        platforms = scope_config.get(_BUCKET_PLATFORMS) or {}
-        bots = scope_config.get(_BUCKET_BOTS) or {}
-        sessions = scope_config.get(_BUCKET_SESSIONS) or {}
-        identity = scope_config.get("identity") or {}
-        commands = scope_config.get("commands") or {}
-        handlers = scope_config.get("handlers") or {}
-        overrides = scope_config.get("overrides") or {}
-        actions = scope_config.get("actions") or {}
+        # 未知顶层键告警（常见于拼写错误，如 alow / defalut_allow）
+        known_keys = {
+            "default_allow",
+            "cache_size",
+            _BUCKET_PLATFORMS,
+            _BUCKET_BOTS,
+            _BUCKET_SESSIONS,
+            "identity",
+            "actions",
+        }
+        for key in scope_config:
+            if key not in known_keys:
+                self._warn_invalid(f"scope.{key}", "unknown key")
 
-        self._bindings = {
-            _BUCKET_PLATFORMS: dict(platforms) if isinstance(platforms, dict) else {},
-            _BUCKET_BOTS: dict(bots) if isinstance(bots, dict) else {},
-            _BUCKET_SESSIONS: dict(sessions) if isinstance(sessions, dict) else {},
+        platforms = self._validated_bucket(scope_config, _BUCKET_PLATFORMS)
+        bots = self._validated_bucket(scope_config, _BUCKET_BOTS)
+        sessions = self._validated_bucket(scope_config, _BUCKET_SESSIONS)
+        identity = self._validated_bucket(scope_config, "identity")
+
+        self._data = {
+            _BUCKET_PLATFORMS: platforms,
+            _BUCKET_BOTS: bots,
+            _BUCKET_SESSIONS: sessions,
             "identity": {
-                _IDENTITY_ADAPTERS: dict(identity.get(_IDENTITY_ADAPTERS) or {}) if isinstance(identity, dict) else {},
-                _IDENTITY_BOTS: dict(identity.get(_IDENTITY_BOTS) or {}) if isinstance(identity, dict) else {},
-                _IDENTITY_SESSIONS: dict(identity.get(_IDENTITY_SESSIONS) or {}) if isinstance(identity, dict) else {},
-                _IDENTITY_USERS: dict(identity.get(_IDENTITY_USERS) or {}) if isinstance(identity, dict) else {},
+                _IDENTITY_ADAPTERS: self._validated_bucket(identity, _IDENTITY_ADAPTERS),
+                _IDENTITY_BOTS: self._validated_bucket(identity, _IDENTITY_BOTS),
+                _IDENTITY_SESSIONS: self._validated_bucket(identity, _IDENTITY_SESSIONS),
+                _IDENTITY_USERS: self._validated_bucket(identity, _IDENTITY_USERS),
             },
-            "commands": dict(commands) if isinstance(commands, dict) else {},
-            "handlers": dict(handlers) if isinstance(handlers, dict) else {},
-            "overrides": dict(overrides) if isinstance(overrides, dict) else {},
-            "actions": dict(actions) if isinstance(actions, dict) else {},
+            "actions": self._validated_actions(scope_config),
         }
         self._invalidate_cache()
 
+    def _validated_actions(self, scope_config: dict) -> dict:
+        """{!--< internal-use >!--} 加载并校验出站动作规则"""
+        actions_raw = self._validated_bucket(scope_config, "actions")
+        actions: dict[str, dict] = {}
+        for owner, rules in actions_raw.items():
+            if not isinstance(rules, dict):
+                self._warn_invalid(f"scope.actions.{owner}", type(rules).__name__)
+                continue
+            owner_rules: dict[str, dict] = {}
+            for action, rule in rules.items():
+                if action not in _ACTION_NAMES:
+                    self._warn_invalid(
+                        f"scope.actions.{owner}.{action}",
+                        f"unknown action (expected one of {_ACTION_NAMES})",
+                    )
+                    continue
+                unknown = [k for k in rule if k not in _ACTION_RULE_KEYS] if isinstance(rule, dict) else []
+                for bad_key in unknown:
+                    self._warn_invalid(f"scope.actions.{owner}.{action}.{bad_key}", "unknown key")
+                normalized = _normalize_action_rule(rule)
+                if normalized is None:
+                    self._warn_invalid(f"scope.actions.{owner}.{action}", type(rule).__name__)
+                    continue
+                if normalized:
+                    owner_rules[action] = normalized
+            if owner_rules:
+                actions[owner] = owner_rules
+        return actions
+
     def _on_config_updated(self, _data: dict) -> None:
-        """配置变更回调：重建绑定缓存"""
-        self._load_bindings()
+        """配置变更回调：重建配置树"""
+        self._load_config()
 
     def _invalidate_cache(self) -> None:
         """{!--< internal-use >!--} 清空 LRU 结果缓存"""
         self._cache.clear()
         self._identity_cache.clear()
+        self._action_cache.clear()
 
     # ==================== ① 模块维度 ====================
 
@@ -241,39 +358,71 @@ class ScopeManager:
             blocked = [blocked]
         return text_match.compile_entry_list(modules), text_match.compile_entry_list(blocked)
 
+    def _effective_module_cfg(self, platform: str, bot_id: str | None, session_id: str | None) -> dict | None:
+        """
+        {!--< internal-use >!--}
+        沿"平台 → Bot → 会话"解析链计算生效的模块绑定
+
+        默认语义为**整体覆盖**：高优先级绑定完整替换低优先级；
+        子级绑定含 ``merge = true`` 时与低优先级**逐条目并集**
+        （modules / blocked 各自取并集）。``merge`` 为控制键，不进入条目。
+
+        :param platform: 平台名称
+        :param bot_id: Bot 用户 ID，None 表示不匹配 Bot 级
+        :param session_id: 会话 ID（群 / 频道 / 私聊），None 表示不匹配会话级
+        :return: 生效绑定 {"modules": [...], "blocked": [...]}，无绑定时返回 None
+        """
+        chain: list[tuple[str, str]] = [(_BUCKET_PLATFORMS, platform)]
+        if bot_id:
+            chain.append((_BUCKET_BOTS, bot_id))
+        if session_id:
+            chain.append((_BUCKET_SESSIONS, session_id))
+
+        platforms = self._data.get(_BUCKET_PLATFORMS, {})
+        bots = self._data.get(_BUCKET_BOTS, {})
+        sessions = self._data.get(_BUCKET_SESSIONS, {})
+
+        result: dict | None = None
+        for bucket, key in chain:
+            if bucket == _BUCKET_PLATFORMS:
+                cfg = platforms.get(platform)
+            elif bucket == _BUCKET_BOTS:
+                plat = bots.get(platform)
+                cfg = plat.get(key) if isinstance(plat, dict) else None
+            else:
+                plat = sessions.get(platform)
+                cfg = plat.get(key) if isinstance(plat, dict) else None
+            if not isinstance(cfg, dict):
+                continue
+            modules = [str(m) for m in (cfg.get("modules") or [])]
+            blocked = [str(b) for b in (cfg.get("blocked") or [])]
+            if result is not None and bool(cfg.get("merge")):
+                for m in modules:
+                    if m not in result["modules"]:
+                        result["modules"].append(m)
+                for b in blocked:
+                    if b not in result["blocked"]:
+                        result["blocked"].append(b)
+            else:
+                result = {"modules": modules, "blocked": blocked}
+        return result
+
     def _get_binding(
         self, platform: str, bot_id: str | None, session_id: str | None
     ) -> tuple[Callable[[str], bool] | None, Callable[[str], bool] | None] | None:
         """
         {!--< internal-use >!--}
-        获取平台 / Bot / 会话的生效模块绑定
-
-        解析优先级：会话级 > Bot 级 > 平台级；均不存在时返回 None。
+        获取平台 / Bot / 会话的生效模块绑定（含 merge 链式合并）
 
         :param platform: 平台名称
         :param bot_id: Bot 用户 ID，None 表示不匹配 Bot 级
         :param session_id: 会话 ID（群 / 频道 / 私聊），None 表示不匹配会话级
         :return: (modules 匹配器, blocked 匹配器) 或 None
         """
-        if session_id:
-            sessions = self._bindings.get(_BUCKET_SESSIONS, {})
-            plat_sessions = sessions.get(platform)
-            if isinstance(plat_sessions, dict):
-                session_cfg = plat_sessions.get(session_id)
-                if isinstance(session_cfg, dict):
-                    return self._normalize(session_cfg)
-        if bot_id:
-            bots = self._bindings.get(_BUCKET_BOTS, {})
-            plat_bots = bots.get(platform)
-            if isinstance(plat_bots, dict):
-                bot_cfg = plat_bots.get(bot_id)
-                if isinstance(bot_cfg, dict):
-                    return self._normalize(bot_cfg)
-        platforms = self._bindings.get(_BUCKET_PLATFORMS, {})
-        plat_cfg = platforms.get(platform)
-        if isinstance(plat_cfg, dict):
-            return self._normalize(plat_cfg)
-        return None
+        cfg = self._effective_module_cfg(platform, bot_id, session_id)
+        if cfg is None:
+            return None
+        return self._normalize(cfg)
 
     def is_allowed(
         self,
@@ -283,10 +432,10 @@ class ScopeManager:
         session_id: str | None = None,
     ) -> bool:
         """
-        判断模块是否允许在指定 Bot / 会话使用
+        判断模块是否允许在指定 Bot / 会话使用（① 模块维度）
 
         模块名匹配大小写不敏感，条目支持 glob / ``re:`` 正则。
-        结果带 LRU 缓存，配置变更 / bind / unbind 时自动失效。
+        结果带 LRU 缓存，配置变更 / set / delete 时自动失效。
         无绑定（默认）时遵循 ``default_allow``；模块名为空（框架层资源）始终放行。
 
         :param platform: 平台名称
@@ -357,7 +506,7 @@ class ScopeManager:
 
         :return: "allow" / "deny"；均未配置绑定时返回 None
         """
-        identity = self._bindings.get("identity", {})
+        identity = self._data.get("identity", {})
 
         # 用户级
         if user_id:
@@ -409,7 +558,7 @@ class ScopeManager:
         user_id: str | None = None,
     ) -> bool:
         """
-        判断事件是否放行（身份维度，原事件准入）
+        判断事件是否放行（② 身份维度：谁的事件收不收）
 
         解析优先级：**用户级 > 会话级 > Bot 级 > 适配器级**，取最具体的
         已配置绑定；均未配置时遵循 ``default_allow``。
@@ -446,148 +595,64 @@ class ScopeManager:
             self._stats["identity_denied"] += 1
         return result
 
-    def is_user_blocked(self, platform: str, user_id: str | None) -> bool:
+    # ==================== ③ 出站维度 ====================
+
+    def is_action_allowed(self, owner: str, action: str, name: str | None = None) -> bool:
         """
-        检查用户是否被拉黑（身份维度 deny）
+        判断模块是否允许执行某类出站动作（④ 出站维度）
 
-        :param platform: 平台名称
-        :param user_id: 用户 ID
-        :return: 是否被拉黑
-        """
-        if not user_id:
-            return False
-        return self._resolve_identity_policy(str(platform or ""), None, None, str(user_id)) == "deny"
+        判定语义：**默认允许**——未配置、或 owner 为空（框架层调用）均视为允许。
+        规则判定顺序：``deny = true`` → 拒绝；``deny`` 列表命中 ``name`` → 拒绝；
+        ``allow`` 列表非空且 ``name`` 未命中（或未提供）→ 拒绝；其余放行。
+        结果带 LRU 缓存，配置变更 / set / delete 时自动失效。
 
-    def get_blocked_users(self) -> dict[str, list[str]]:
-        """
-        获取所有被拉黑的用户（精确 deny 绑定）
-
-        :return: ``{platform: [user_id, ...]}``（按平台分组、用户 ID 排序）
-        """
-        result: dict[str, list[str]] = {}
-        identity = self._bindings.get("identity", {})
-        for platform, plat_users in identity.get(_IDENTITY_USERS, {}).items():
-            if not isinstance(plat_users, dict):
-                continue
-            blocked = sorted(uid for uid, cfg in plat_users.items() if _is_identity_binding(cfg) == "deny")
-            if blocked:
-                result[platform] = blocked
-        return result
-
-    # ==================== ③ 命令维度 ====================
-
-    def _command_acl(self, command_name: str) -> dict | None:
-        """
-        {!--< internal-use >!--}
-        获取命令的生效 ACL（按 glob / ``re:`` 匹配命令名）
-
-        :param command_name: 命令主名
-        :return: {"allow": [...], "deny": [...]}，未配置时返回 None
-        """
-        commands = self._bindings.get("commands", {})
-        exact = commands.get(command_name)
-        if isinstance(exact, dict):
-            return exact
-        for key, acl in commands.items():
-            if text_match.compile_entry_matcher(str(key))(command_name):
-                if isinstance(acl, dict):
-                    return acl
-        return None
-
-    def is_command_allowed(self, command_name: str, platform: str, user_id: str) -> bool:
-        """
-        判断用户对命令是否被 ACL 允许
-
-        判定顺序：deny 命中 → False；allow 非空且未命中 → False；
-        allow 命中 → True；未配置 ACL 时遵循全局 ``default_allow``
-        （false = 严格模式，命令未配置 ACL 即拒绝）。
-
-        :param command_name: 命令主名
-        :param platform: 用户所属平台
-        :param user_id: 用户 ID
+        :param owner: 模块名（owner）
+        :param action: 动作类型，取值 ``_ACTION_NAMES``（"send" / "api" / "request"）
+        :param name: 具体调用名（send 传发送方法名如 "Text" / "Image"，
+                     api 传标准动作名如 "get_group_info"；request 无需提供）
         :return: 是否允许执行
+
+        :example:
+        >>> scope.is_action_allowed("MyModule", "send")
+        True
+        >>> scope.is_action_allowed("MyModule", "send", name="Image")
+        False
         """
-        self._stats["command_checks"] += 1
-        acl = self._command_acl(command_name)
-        if acl is None:
-            return self._default_allow
-        user_tag = f"{platform}:{user_id}"
-        if user_tag in (acl.get("deny") or []):
-            self._stats["command_denied"] += 1
+        if not owner:
+            return True
+        if action not in _ACTION_NAMES:
+            raise ValueError(f"unknown action: {action!r}, expected one of {_ACTION_NAMES}")
+        self._stats["action_checks"] += 1
+
+        cache_key = (str(owner), action, str(name) if name else None)
+        cached = self._action_cache.get(cache_key)
+        if cached is not None:
+            self._stats["cache_hits"] += 1
+            return cached
+        self._stats["cache_misses"] += 1
+
+        allowed = self._compute_action_allowed(cache_key[0], action, cache_key[2])
+        self._put_cache(self._action_cache, cache_key, allowed)
+        if not allowed:
+            self._stats["action_denied"] += 1
+        return allowed
+
+    def _compute_action_allowed(self, owner: str, action: str, name: str | None) -> bool:
+        """{!--< internal-use >!--} 计算出站动作是否允许（无缓存）"""
+        raw = self._data.get("actions", {}).get(owner, {}).get(action)
+        rule = _normalize_action_rule(raw) if raw is not None else {}
+        if not rule:
+            return True
+        deny = rule.get("deny")
+        if deny is True:
             return False
-        allow_list = acl.get("allow") or []
-        if allow_list and user_tag not in allow_list:
-            self._stats["command_denied"] += 1
+        if isinstance(deny, list) and deny and name and text_match.compile_entry_list(deny)(name):
             return False
+        allow = rule.get("allow")
+        if isinstance(allow, list) and allow:
+            if not name or not text_match.compile_entry_list(allow)(name):
+                return False
         return True
-
-    # ==================== ④ 处理器/文本维度 ====================
-
-    def handler_condition(self, owner: str) -> Callable | None:
-        """
-        {!--< internal-use >!--}
-        获取模块的文本过滤条件（handlers 桶）
-
-        :param owner: 模块名
-        :return: 事件条件函数，未配置时返回 None
-        """
-        handlers = self._bindings.get("handlers", {})
-        cfg = handlers.get(owner)
-        if not isinstance(cfg, dict):
-            return None
-        pattern = cfg.get("pattern")
-        regex = cfg.get("regex")
-        # regex 配置带 "re:" 前缀时剥离
-        if isinstance(regex, str) and regex.startswith(text_match.REGEX_PREFIX):
-            regex = regex[len(text_match.REGEX_PREFIX) :]
-        return text_match.compile_text_matcher(pattern, regex)
-
-    # ==================== ⑤ 实现参数覆盖 ====================
-
-    def get_override(self, owner: str, command_name: str | None = None) -> dict:
-        """
-        获取模块 / 命令的实现参数覆盖
-
-        存储形态：``overrides.<module>`` 下标量值为模块级参数（如 ``hidden = true``），
-        子表（dict 值）为命令级覆盖（如 ``overrides.<module>.<command>``）。
-
-        :param owner: 模块名
-        :param command_name: 命令名；None 表示仅模块级参数
-        :return: 覆盖字典（模块级参数 + 命令级覆盖，命令级优先），未配置返回 {}
-        """
-        overrides = self._bindings.get("overrides", {})
-        result: dict = {}
-        module_cfg = overrides.get(owner)
-        if isinstance(module_cfg, dict):
-            for key, value in module_cfg.items():
-                if isinstance(value, dict):
-                    # 子表视为命令级覆盖
-                    if command_name and key == command_name:
-                        result.update(value)
-                else:
-                    result[key] = value
-        return result
-
-    def apply_override(self, owner: str, command_name: str, defaults: dict) -> dict:
-        """
-        {!--< internal-use >!--}
-        把命令默认参数与覆盖合并（覆盖优先）
-
-        覆盖键 ``master`` 会同步映射到命令存储键 ``must_master``：
-        用户优先——用户在控制面显式配置 ``master = true/false`` 时直接生效
-        （既可收紧也可放开开发者默认），未配置时保持开发者默认。
-
-        :param owner: 模块名
-        :param command_name: 命令名
-        :param defaults: 命令默认参数字典
-        :return: 合并后的参数字典
-        """
-        merged = dict(defaults)
-        override = self.get_override(owner, command_name)
-        merged.update(override)
-        if "master" in override:
-            merged["must_master"] = bool(override["master"])
-        return merged
 
     # ==================== 通用工具 ====================
 
@@ -643,46 +708,41 @@ class ScopeManager:
         while len(cache) > self._cache_size:
             cache.popitem(last=False)
 
-    # ==================== 运行时增删 ====================
+    @staticmethod
+    def _logger_trace(message: str) -> None:
+        """{!--< internal-use >!--} 输出 TRACE 日志（logger 未就绪时静默）"""
+        try:
+            from .logger import logger
 
-    # ---- 模块维度 ----
+            logger.trace(message)
+        except (ImportError, AttributeError):
+            pass
 
-    def get(
-        self,
-        platform: str,
-        bot_id: str | None = None,
-        session_id: str | None = None,
-    ) -> dict | None:
-        """
-        获取平台 / Bot / 会话的生效模块绑定（原始配置形态）
+    # ==================== 维度化便捷读写（参数签名，IDE 友好） ====================
 
-        解析优先级：会话级 > Bot 级 > 平台级。
-
-        :param platform: 平台名称
-        :param bot_id: Bot 用户 ID，None 表示不匹配 Bot 级
-        :param session_id: 会话 ID，None 表示不匹配会话级
-        :return: {"modules": [...], "blocked": [...]}，无绑定时返回 None
-
-        :example:
-        >>> scope.get("onebot11", "123456")
-        {"modules": ["Chat"], "blocked": []}
-        """
+    @staticmethod
+    def _module_path(platform: str, bot_id: str | None, session_id: str | None) -> str:
+        """{!--< internal-use >!--} 模块维度路径（会话 > Bot > 平台）"""
         if session_id:
-            plat_sessions = self._bindings.get(_BUCKET_SESSIONS, {}).get(platform or "")
-            if isinstance(plat_sessions, dict):
-                cfg = plat_sessions.get(session_id)
-                if isinstance(cfg, dict):
-                    return dict(cfg)
+            return f"{_BUCKET_SESSIONS}.{platform}.{session_id}"
         if bot_id:
-            plat_bots = self._bindings.get(_BUCKET_BOTS, {}).get(platform or "")
-            if isinstance(plat_bots, dict):
-                cfg = plat_bots.get(bot_id)
-                if isinstance(cfg, dict):
-                    return dict(cfg)
-        cfg = self._bindings.get(_BUCKET_PLATFORMS, {}).get(platform or "")
-        return dict(cfg) if isinstance(cfg, dict) else None
+            return f"{_BUCKET_BOTS}.{platform}.{bot_id}"
+        return f"{_BUCKET_PLATFORMS}.{platform}"
 
-    def bind_module(
+    @staticmethod
+    def _identity_path(platform: str, bot_id: str | None, session_id: str | None, user_id: str | None) -> str:
+        """{!--< internal-use >!--} 身份维度路径（用户 > 会话 > Bot > 适配器）"""
+        if user_id:
+            return f"identity.{_IDENTITY_USERS}.{platform}.{user_id}"
+        if session_id:
+            return f"identity.{_IDENTITY_SESSIONS}.{platform}.{session_id}"
+        if bot_id:
+            return f"identity.{_IDENTITY_BOTS}.{platform}.{bot_id}"
+        return f"identity.{_IDENTITY_ADAPTERS}.{platform}"
+
+    # ---- ① 模块维度 ----
+
+    def set_module(
         self,
         platform: str,
         bot_id: str | None = None,
@@ -690,63 +750,60 @@ class ScopeManager:
         *,
         modules: list[str] | None = None,
         blocked: list[str] | None = None,
-        persist: bool = True,
         merge: bool = False,
+        persist: bool = True,
     ) -> None:
         """
         绑定模块作用域（① 模块维度）
 
         :param platform: 平台名称
-        :param bot_id: Bot 用户 ID，None 且 session_id 为空时表示平台级绑定
-        :param session_id: 会话 ID。指定时绑定到该会话；否则有 bot_id 时绑定到该 Bot；
-                           否则绑定到平台级
-        :param modules: 白名单模块条目列表（精确 / glob / ``re:`` 正则）
-        :param blocked: 黑名单模块条目列表
+        :param bot_id: Bot 用户 ID，None 且 session_id 为空时绑定平台级
+        :param session_id: 会话 ID（群 / 频道 / 私聊）。指定时绑定该会话；
+                           否则有 bot_id 时绑定该 Bot；否则绑定平台级
+        :param modules: 白名单模块条目（精确 / glob / ``re:`` 正则）
+        :param blocked: 黑名单模块条目
+        :param merge: True 时与该级现有绑定**逐条目并集**（modules / blocked 各自合并），
+                      False 整体替换该节点（默认）
         :param persist: 是否持久化到配置文件 (默认: True)
-        :param merge: 是否**合并**而非替换现有绑定（默认 False）
+
+        :example:
+        >>> scope.set_module("onebot11", bot_id="123456", modules=["Chat", "Tool*"])
+        >>> scope.set_module("onebot11", bot_id="123456", modules=["Music"], merge=True)
         """
-        binding = {
-            "modules": list(modules or []),
-            "blocked": list(blocked or []),
-        }
-
-        bucket, key = self._resolve_module_target(platform, bot_id, session_id)
-
+        path = self._module_path(platform, bot_id, session_id)
+        new_modules = [str(m) for m in (modules or [])]
+        new_blocked = [str(b) for b in (blocked or [])]
         if merge:
-            existing = self._raw_get(bucket, platform, key)
-            if existing:
-                existing_modules = [str(m) for m in existing.get("modules", [])]
-                existing_blocked = [str(b) for b in existing.get("blocked", [])]
-                for m in binding["modules"]:
-                    if str(m) not in existing_modules:
-                        existing_modules.append(str(m))
-                for b in binding["blocked"]:
-                    if str(b) not in existing_blocked:
-                        existing_blocked.append(str(b))
-                binding = {"modules": existing_modules, "blocked": existing_blocked}
-
-        def _apply_memory() -> None:
-            section = self._bindings.setdefault(bucket, {})
-            if bucket == _BUCKET_PLATFORMS:
-                section[platform] = binding
-            else:
-                section.setdefault(platform, {})[key] = binding
-            self._invalidate_cache()
-
-        if not persist:
-            _apply_memory()
-            return
-
-        current = self._raw_bindings()
-        section = current.setdefault(bucket, {})
-        if bucket == _BUCKET_PLATFORMS:
-            section[platform] = binding
+            existing = self.get(path) or {}
+            merged = list(existing.get("modules") or [])
+            merged_blocked = list(existing.get("blocked") or [])
+            merged += [m for m in new_modules if m not in merged]
+            merged_blocked += [b for b in new_blocked if b not in merged_blocked]
+            binding = {"modules": merged, "blocked": merged_blocked}
         else:
-            section.setdefault(platform, {})[key] = binding
-        update_erispulse_config({"scope": current})
-        _apply_memory()
+            binding = {"modules": new_modules, "blocked": new_blocked}
+        self.set(path, binding, persist=persist)
 
-    def unbind_module(
+    def get_module(
+        self,
+        platform: str,
+        bot_id: str | None = None,
+        session_id: str | None = None,
+        default=None,
+    ):
+        """
+        读取该层级原始模块绑定（不含 merge 跨级合并的最终生效结果，
+        需判定生效性请用 :meth:`is_allowed`）
+
+        :param platform: 平台名称
+        :param bot_id: Bot 用户 ID
+        :param session_id: 会话 ID
+        :param default: 无绑定时返回值（默认 None）
+        :return: ``{"modules": [...], "blocked": [...]}`` 或 default
+        """
+        return self.get(self._module_path(platform, bot_id, session_id), default)
+
+    def delete_module(
         self,
         platform: str,
         bot_id: str | None = None,
@@ -754,50 +811,19 @@ class ScopeManager:
         persist: bool = True,
     ) -> bool:
         """
-        移除模块作用域绑定（恢复为允许全部模块）
+        移除该层级模块绑定（恢复 default_allow 兜底）
 
-        :return: 是否成功移除（不存在则返回 False）
+        :param platform: 平台名称
+        :param bot_id: Bot 用户 ID
+        :param session_id: 会话 ID
+        :param persist: 是否持久化到配置文件 (默认: True)
+        :return: 是否存在并被删除
         """
-        bucket, key = self._resolve_module_target(platform, bot_id, session_id)
-        section = self._bindings.get(bucket, {})
-        if bucket == _BUCKET_PLATFORMS:
-            exists = platform in section
-        else:
-            plat = section.get(platform)
-            exists = isinstance(plat, dict) and key in plat
-        if not exists:
-            return False
+        return self.delete(self._module_path(platform, bot_id, session_id), persist=persist)
 
-        if persist:
-            current = self._raw_bindings()
-            bucket_cfg = current.get(bucket, {})
-            if bucket == _BUCKET_PLATFORMS:
-                bucket_cfg.pop(platform, None)
-            else:
-                plat = bucket_cfg.get(platform)
-                if isinstance(plat, dict):
-                    plat.pop(key, None)
-                    if not plat:
-                        bucket_cfg.pop(platform, None)
-            set_erispulse_section(f"scope.{bucket}", bucket_cfg)
+    # ---- ② 身份维度 ----
 
-        def _apply_memory() -> None:
-            if bucket == _BUCKET_PLATFORMS:
-                self._bindings[bucket].pop(platform, None)
-            else:
-                plat = self._bindings[bucket].get(platform)
-                if isinstance(plat, dict):
-                    plat.pop(key, None)
-                    if not plat:
-                        self._bindings[bucket].pop(platform, None)
-            self._invalidate_cache()
-
-        _apply_memory()
-        return True
-
-    # ---- 身份维度 ----
-
-    def bind_identity(
+    def set_identity(
         self,
         platform: str,
         bot_id: str | None = None,
@@ -809,16 +835,22 @@ class ScopeManager:
         persist: bool = True,
     ) -> None:
         """
-        绑定身份准入策略（② 身份维度，指定来源的事件放行 / 拒绝）
+        绑定身份准入策略（② 身份维度，层级由参数决定：用户 > 会话 > Bot > 适配器）
 
-        绑定层级由参数决定：给定 ``user_id`` 绑定用户级；否则给定
-        ``session_id`` 绑定会话级；否则给定 ``bot_id`` 绑定 Bot 级；
-        否则绑定适配器级。``allow`` 与 ``deny`` 必须二选一（同时给定时以 ``deny`` 为准）。
         绑定键支持 glob / ``re:`` 正则（如 ``user_id="spam_*"``）。
 
+        :param platform: 平台名称
+        :param bot_id: Bot 用户 ID
+        :param session_id: 会话 ID
+        :param user_id: 用户 ID
+        :param allow: 放行该来源事件
+        :param deny: 拒绝该来源事件（allow 与 deny 同时给定时以 deny 为准）
+        :param persist: 是否持久化到配置文件 (默认: True)
+
         :example:
-        >>> scope.bind_identity("onebot11", user_id="999", deny=True)
-        >>> scope.bind_identity("onebot11", user_id="spam_*", deny=True)
+        >>> scope.set_identity("onebot11", user_id="u_bad", deny=True)   # 拉黑
+        >>> scope.set_identity("onebot11", user_id="spam_*", deny=True)  # glob 批量拉黑
+        >>> scope.set_identity("onebot11", session_id="g1", allow=True)  # 例外放行
         """
         if deny:
             binding: dict = {"deny": True}
@@ -828,33 +860,30 @@ class ScopeManager:
             from .i18n import i18n
 
             raise ValueError(i18n.t("core.scope.identity_policy_required"))
-        bucket, key = self._resolve_identity_target(platform, bot_id, session_id, user_id)
+        self.set(self._identity_path(platform, bot_id, session_id, user_id), binding, persist=persist)
 
-        def _apply_memory() -> None:
-            # 动态访问 self._bindings：持久化写入触发的 config.set 重载
-            # 可能已整体重建绑定缓存，闭包捕获旧引用会写入孤儿字典
-            section = self._bindings.setdefault("identity", {}).setdefault(bucket, {})
-            if bucket == _IDENTITY_ADAPTERS:
-                section[platform] = binding
-            else:
-                section.setdefault(platform, {})[key] = binding
-            self._invalidate_cache()
+    def get_identity(
+        self,
+        platform: str,
+        bot_id: str | None = None,
+        session_id: str | None = None,
+        user_id: str | None = None,
+        default=None,
+    ):
+        """
+        读取该来源的身份绑定（原始配置形态，含 glob 键不展开；
+        需判定生效性请用 :meth:`is_identity_allowed`）
 
-        if not persist:
-            _apply_memory()
-            return
+        :param platform: 平台名称
+        :param bot_id: Bot 用户 ID
+        :param session_id: 会话 ID
+        :param user_id: 用户 ID
+        :param default: 无绑定时返回值（默认 None）
+        :return: ``{"allow": True}`` / ``{"deny": True}`` 或 default
+        """
+        return self.get(self._identity_path(platform, bot_id, session_id, user_id), default)
 
-        current = self._raw_bindings()
-        cur_identity = current.setdefault("identity", {})
-        section = cur_identity.setdefault(bucket, {})
-        if bucket == _IDENTITY_ADAPTERS:
-            section[platform] = binding
-        else:
-            section.setdefault(platform, {})[key] = binding
-        update_erispulse_config({"scope": current})
-        _apply_memory()
-
-    def unbind_identity(
+    def delete_identity(
         self,
         platform: str,
         bot_id: str | None = None,
@@ -863,390 +892,223 @@ class ScopeManager:
         persist: bool = True,
     ) -> bool:
         """
-        移除身份准入绑定（该来源恢复遵循 default_allow）
-
-        :return: 是否成功移除（绑定不存在时返回 False）
-        """
-        bucket, key = self._resolve_identity_target(platform, bot_id, session_id, user_id)
-        identity = self._bindings.get("identity", {})
-        section = identity.get(bucket, {})
-        if bucket == _IDENTITY_ADAPTERS:
-            exists = platform in section
-        else:
-            plat = section.get(platform)
-            exists = isinstance(plat, dict) and key in plat
-        if not exists:
-            return False
-
-        if persist:
-            current = self._raw_bindings()
-            cur_identity = current.setdefault("identity", {})
-            bucket_cfg = cur_identity.get(bucket, {})
-            if bucket == _IDENTITY_ADAPTERS:
-                bucket_cfg.pop(platform, None)
-            else:
-                plat = bucket_cfg.get(platform)
-                if isinstance(plat, dict):
-                    plat.pop(key, None)
-                    if not plat:
-                        bucket_cfg.pop(platform, None)
-            set_erispulse_section("scope.identity", cur_identity)
-
-        def _apply_memory() -> None:
-            # 动态访问（同 bind_identity）：避免写入配置重载后的孤儿引用
-            identity = self._bindings.setdefault("identity", {})
-            if bucket == _IDENTITY_ADAPTERS:
-                identity[bucket].pop(platform, None)
-            else:
-                plat = identity[bucket].get(platform)
-                if isinstance(plat, dict):
-                    plat.pop(key, None)
-                    if not plat:
-                        identity[bucket].pop(platform, None)
-            self._invalidate_cache()
-
-        _apply_memory()
-        return True
-
-    def block_user(self, platform: str, user_id: str, persist: bool = True) -> None:
-        """
-        拉黑用户：该用户的所有类型事件在分发入口被完全丢弃
-
-        等价于 ``bind_identity(platform, user_id=user_id, deny=True)``。
+        移除该来源的身份绑定（恢复 default_allow 兜底）
 
         :param platform: 平台名称
+        :param bot_id: Bot 用户 ID
+        :param session_id: 会话 ID
         :param user_id: 用户 ID
         :param persist: 是否持久化到配置文件 (默认: True)
+        :return: 是否存在并被删除
         """
-        self.bind_identity(platform, user_id=user_id, deny=True, persist=persist)
+        return self.delete(self._identity_path(platform, bot_id, session_id, user_id), persist=persist)
 
-    def unblock_user(self, platform: str, user_id: str, persist: bool = True) -> bool:
-        """
-        取消拉黑用户（移除该用户的准入绑定）
+    # ---- ③ 出站维度 ----
 
-        :return: 是否成功移除（该用户本无绑定或绑定非 deny 时返回 False）
-        """
-        plat_users = self._bindings.get("identity", {}).get(_IDENTITY_USERS, {}).get(str(platform or ""))
-        if not isinstance(plat_users, dict):
-            return False
-        if _is_identity_binding(plat_users.get(str(user_id))) != "deny":
-            return False
-        return self.unbind_identity(platform, user_id=str(user_id), persist=persist)
-
-    # ---- 命令维度 ----
-
-    def _acl_mutate(
+    def set_action(
         self,
-        command_name: str,
-        list_name: str,
-        platform: str,
-        user_id: str,
+        module: str,
+        action: str,
         *,
-        remove: bool = False,
+        allow: str | list[str] | None = None,
+        deny: bool | str | list[str] | None = None,
         persist: bool = True,
     ) -> None:
         """
-        {!--< internal-use >!--}
-        增删命令 ACL 名单成员
+        设置模块某类出站动作的限制规则（③ 出站维度）
 
-        :param command_name: 命令名（可含 glob / ``re:`` 模式）
-        :param list_name: 名单名（"allow" / "deny"）
-        :param platform: 用户所属平台
-        :param user_id: 用户 ID
-        :param remove: 是否移除（True 移除成员，False 追加成员）
-        :param persist: 是否持久化
-        """
-        user_tag = f"{platform}:{user_id}"
-        acl = self._bindings.setdefault("commands", {}).setdefault(command_name, {})
+        仅影响本模块从事件处理器（handler 执行期 owner 上下文）发起的出站调用；
+        框架层内部调用（owner 为空）恒放行。
 
-        if remove:
-            members = acl.get(list_name) or []
-            if user_tag in members:
-                members.remove(user_tag)
-            if members:
-                acl[list_name] = members
-            else:
-                acl.pop(list_name, None)
-            if not acl.get("allow") and not acl.get("deny"):
-                self._bindings["commands"].pop(command_name, None)
-        else:
-            members = acl.setdefault(list_name, [])
-            if user_tag not in members:
-                members.append(user_tag)
-
-        if persist:
-            set_erispulse_section("scope.commands", self._bindings["commands"])
-
-    def allow_user(self, command_name: str, platform: str, user_id: str, persist: bool = True) -> None:
-        """
-        将用户加入命令的 allow 名单（白名单非空时仅名单内用户可执行）
-
-        命令名支持 glob / ``re:`` 正则。
-
-        :example:
-        >>> scope.allow_user("roll*", "onebot11", "123456")
-        """
-        self._acl_mutate(command_name, "allow", platform, user_id, persist=persist)
-
-    def deny_user(self, command_name: str, platform: str, user_id: str, persist: bool = True) -> None:
-        """
-        将用户加入命令的 deny 名单（deny 优先于 allow 与默认权限）
-
-        命令名支持 glob / ``re:`` 正则。
-
-        :example:
-        >>> scope.deny_user("roll*", "onebot11", "666")
-        """
-        self._acl_mutate(command_name, "deny", platform, user_id, persist=persist)
-
-    def get_acl(self, command_name: str) -> dict[str, list[str]]:
-        """
-        查询命令当前的用户黑白名单
-
-        :param command_name: 命令名（可含模式）
-        :return: {"allow": [...], "deny": [...]}（用户标识 "platform:user_id"）
-        """
-        acl = self._command_acl(command_name)
-        return {
-            "allow": list((acl or {}).get("allow") or []),
-            "deny": list((acl or {}).get("deny") or []),
-        }
-
-    def remove_acl(self, command_name: str, persist: bool = True) -> bool:
-        """
-        清除命令的用户黑白名单（恢复开发者默认权限逻辑）
-
-        :param command_name: 命令名（可含模式）
-        :param persist: 是否持久化
-        :return: 是否存在并被清除
-        """
-        commands = self._bindings.get("commands", {})
-        removed = False
-        for key in list(commands.keys()):
-            if text_match.compile_entry_matcher(str(key))(command_name):
-                commands.pop(key, None)
-                removed = True
-        if removed and persist:
-            set_erispulse_section("scope.commands", commands)
-        return removed
-
-    # ---- ⑥ 出站动作维度 ----
-
-    def _action_cfg(self, owner: str) -> dict[str, bool] | None:
-        """
-        {!--< internal-use >!--}
-        读取模块的出站动作配置
-
-        :param owner: 模块名（owner），无 owner 时返回 None
-        :return: 动作开关字典（{"send": bool, "api": bool, "request": bool}），未配置返回 None
-        """
-        if not owner:
-            return None
-        cfg = self._bindings.get("actions", {}).get(owner)
-        return cfg if isinstance(cfg, dict) else None
-
-    def is_action_allowed(self, owner: str, action: str) -> bool:
-        """
-        判断模块是否允许执行某类出站动作（⑥ 出站动作维度）
-
-        判定语义：**默认允许**——未配置、或 owner 为空（框架层调用）均视为允许；
-        仅当用户显式禁用（``scope.actions.<owner>.<action> = false``）才拒绝。
-        与身份/命令维度的"默认允许兜底"不同，本维度是出站能力的收紧开关，
-        空白即放行，声明式禁用。
-
-        :param owner: 模块名（owner）
-        :param action: 动作类型，取值 ``_ACTION_NAMES``（"send" / "api" / "request"）
-        :return: 是否允许执行
-        """
-        self._stats["action_checks"] += 1
-        cfg = self._action_cfg(owner)
-        if cfg is None:
-            return True
-        allowed = cfg.get(action)
-        if allowed is False:
-            self._stats["action_denied"] += 1
-            return False
-        return True
-
-    def set_action(self, owner: str, action: str, allowed: bool, persist: bool = True) -> None:
-        """
-        设置模块某类出站动作的允许/禁用（⑥ 出站动作维度）
-
-        仅影响本模块从事件处理器（handler 执行期 owner 上下文）发起的出站调用。
-        不影响框架层内部调用（owner 为空时恒放行）。
-
-        :param owner: 模块名（owner）
+        :param module: 模块名
         :param action: 动作类型（"send" / "api" / "request"）
-        :param allowed: False 禁止该动作，True 允许
-        :param persist: 是否持久化 (默认: True)
+        :param allow: 白名单条目（str 或 list；send 匹配发送方法名、api 匹配标准动作名）
+        :param deny: 全禁（True）或黑名单条目（str / list）
+        :param persist: 是否持久化到配置文件 (默认: True)
 
         :example:
-        >>> scope.set_action("MyModule", "send", False)  # 禁止 MyModule 回复消息
-        >>> scope.set_action("MyModule", "api", False)  # 禁止 MyModule 调用标准 API
-        >>> scope.set_action("MyModule", "request", False)  # 禁止 MyModule 处理请求操作
+        >>> scope.set_action("MyModule", "send", deny=True)                # 全禁发送
+        >>> scope.set_action("MyModule", "send", allow=["Text"])           # 仅允许发文本
+        >>> scope.set_action("MyModule", "api", deny=["set_*", "leave_*"]) # 禁管理类 API
         """
         if action not in _ACTION_NAMES:
             raise ValueError(f"unknown action: {action!r}, expected one of {_ACTION_NAMES}")
-        if not owner:
-            raise ValueError("owner is required to set action permission")
-        actions = self._bindings.setdefault("actions", {})
-        cfg = actions.setdefault(owner, {})
-        cfg[action] = bool(allowed)
-        if persist:
-            set_erispulse_section("scope.actions", actions)
+        if not module:
+            raise ValueError("module is required to set action rule")
+        rule: dict = {}
+        if allow is not None:
+            rule["allow"] = [allow] if isinstance(allow, str) else list(allow)
+        if deny is not None:
+            if isinstance(deny, bool):
+                rule["deny"] = deny
+            elif isinstance(deny, str):
+                rule["deny"] = [deny]
+            else:
+                rule["deny"] = list(deny)
+        path = f"actions.{module}.{action}"
+        # 参数化方法为整体替换语义：本次调用描述该动作完整的限制规则
+        # （先删后写，避免通用 set 的 dict 深合并残留旧的 deny / allow 键）
+        self.delete(path, persist=False)
+        if rule:
+            self.set(path, rule, persist=persist)
+        elif persist:
+            from ..runtime.frame_config import set_erispulse_section as _ses
 
-    def unset_action(self, owner: str, action: str | None = None, persist: bool = True) -> bool:
+            _ses("scope.actions", self._data.get("actions", {}))
+
+    def get_action(self, module: str, action: str, default=None):
+        """
+        读取模块某类出站动作的原始规则（bool 原样存储，判定层归一化）
+
+        :param module: 模块名
+        :param action: 动作类型
+        :param default: 未配置时返回值（默认 None）
+        :return: ``{"allow": [...], "deny": ...}`` / ``False`` 等原始形态或 default
+        """
+        return self.get(f"actions.{module}.{action}", default)
+
+    def delete_action(self, module: str, action: str | None = None, persist: bool = True) -> bool:
         """
         移除模块的出站动作限制（恢复默认允许）
 
-        :param owner: 模块名
+        :param module: 模块名
         :param action: 动作类型；None 表示移除该模块全部动作限制
-        :param persist: 是否持久化
+        :param persist: 是否持久化到配置文件 (默认: True)
         :return: 是否有内容被移除
         """
-        actions = self._bindings.get("actions", {})
-        if owner not in actions:
-            return False
         if action is None:
-            del actions[owner]
-        else:
-            cfg = actions[owner]
-            if action not in cfg:
-                return False
-            del cfg[action]
-            if not cfg:
-                del actions[owner]
-        if persist:
-            set_erispulse_section("scope.actions", actions)
-        return True
+            return self.delete(f"actions.{module}", persist=persist)
+        return self.delete(f"actions.{module}.{action}", persist=persist)
 
-    def get_action_rules(self, owner: str) -> dict[str, bool]:
+    # ==================== 字典式配置读写 ====================
+
+    @staticmethod
+    def _split_path(path: str) -> list[str]:
+        """{!--< internal-use >!--} 点分路径切分为段（过滤空段）"""
+        return [part for part in str(path).split(".") if part]
+
+    def _node_at(self, path: str):
+        """{!--< internal-use >!--} 按点分路径取节点（不存在返回 None）"""
+        node = self._data
+        for part in self._split_path(path):
+            if not isinstance(node, dict):
+                return None
+            node = node.get(part)
+        return node
+
+    def get(self, path: str, default=None):
         """
-        查询模块当前的出站动作限制
+        读取作用域配置树中任意节（深拷贝）
 
-        :param owner: 模块名
-        :return: 动作开关字典（含默认允许的未配置项为 True）
-        """
-        cfg = self._action_cfg(owner)
-        return {name: not (cfg is not None and cfg.get(name) is False) for name in _ACTION_NAMES}
-
-    # ---- 处理器维度 ----
-
-    def bind_handler(
-        self,
-        owner: str,
-        pattern: str | None = None,
-        regex: str | None = None,
-        persist: bool = True,
-    ) -> None:
-        """
-        绑定模块的文本过滤条件（④ 处理器维度）
-
-        :param owner: 模块名
-        :param pattern: glob 通配符，不匹配的消息不触发该模块处理器
-        :param regex: 正则源码（可带 ``re:`` 前缀），与 pattern 同时给定时须都命中
-        :param persist: 是否持久化 (默认: True)
-        """
-        cfg: dict = {}
-        if pattern:
-            cfg["pattern"] = pattern
-        if regex:
-            cfg["regex"] = regex if regex.startswith(text_match.REGEX_PREFIX) else text_match.REGEX_PREFIX + regex
-        handlers = self._bindings.setdefault("handlers", {})
-        if cfg:
-            handlers[owner] = cfg
-        else:
-            handlers.pop(owner, None)
-
-        if persist:
-            set_erispulse_section("scope.handlers", handlers)
-
-    def unbind_handler(self, owner: str, persist: bool = True) -> bool:
-        """
-        移除模块的文本过滤条件
-
-        :return: 是否成功移除
-        """
-        handlers = self._bindings.get("handlers", {})
-        if owner not in handlers:
-            return False
-        handlers.pop(owner, None)
-        if persist:
-            set_erispulse_section("scope.handlers", handlers)
-        return True
-
-    # ---- 覆盖维度 ----
-
-    def override(
-        self,
-        owner: str,
-        command_name: str | None = None,
-        persist: bool = True,
-        **params,
-    ) -> None:
-        """
-        覆盖模块 / 命令的实现参数（⑤ 覆盖维度）
-
-        覆盖遵循**用户优先**：显式设置的参数直接生效（可收紧也可放开开发者默认）。
-        覆盖值只影响**实现参数**（master / hidden / aliases / prefix 等），
-        不用于禁用——禁用统一走命令 deny（``deny_user`` / ``scope.commands``）。
-
-        :param owner: 模块名
-        :param command_name: 命令名；None 表示模块级覆盖
-        :param persist: 是否持久化 (默认: True)
-        :param params: 要覆盖的参数（如 ``master=True`` 收紧、``master=False`` 放开、``hidden=True``、``aliases=["rs"]``）
+        :param path: 点分路径，如 ``"platforms.onebot11"``、``"identity.users.onebot11"``
+                     （身份）、``"actions.MyModule"``（出站）；
+                     空路径返回整棵树
+        :param default: 节不存在时的返回值（默认 None）
+        :return: 节的深拷贝；不存在时返回 ``default``
 
         :example:
-        >>> scope.override("MyModule", "restart", master=True, hidden=True)
+        >>> scope.get("actions.MyModule.send", {})
+        {"deny": True}
         """
-        overrides = self._bindings.setdefault("overrides", {})
-        module_cfg = overrides.setdefault(owner, {})
-        if command_name:
-            cmd_cfg = module_cfg.setdefault(command_name, {})
-            cmd_cfg.update(params)
+        node = self._node_at(path)
+        return copy.deepcopy(node) if node is not None else default
+
+    def set(self, path: str, value, persist: bool = True) -> None:
+        """
+        写入作用域配置树中任意节（dict 深合并，标量直接覆盖）
+
+        写入后判定缓存自动失效，配置即时生效。
+
+        :param path: 点分路径，如 ``"bots.onebot11.123456"``（模块绑定）、
+                     ``"identity.users.onebot11.u_bad"``（拉黑用户）、
+                     
+                     ``"actions.MyModule.send"``（出站规则）
+        :param value: 写入值（dict 时与现有值深合并，其余类型直接覆盖）
+        :param persist: 是否持久化到配置文件 (默认: True)
+
+        :example:
+        >>> scope.set("bots.onebot11.123456", {"modules": ["Chat"], "blocked": []})
+        >>> scope.set("identity.users.onebot11.u_bad", {"deny": True})   # 拉黑用户
+        >>> scope.set("actions.MyModule.send", {"deny": True})           # 全禁发送
+        """
+        parts = self._split_path(path)
+        if not parts:
+            raise ValueError("path must not be empty")
+        node = self._data
+        for part in parts[:-1]:
+            child = node.get(part)
+            if not isinstance(child, dict):
+                child = {}
+                node[part] = child
+            node = child
+        last = parts[-1]
+        if isinstance(value, dict) and isinstance(node.get(last), dict):
+            _deep_merge(node[last], value)
         else:
-            module_cfg.update(params)
-
+            node[last] = value
+        self._invalidate_cache()
         if persist:
-            set_erispulse_section("scope.overrides", overrides)
+            # 先快照内存最终态：持久化内部同步触发的热更新会以（延迟刷盘期的）
+            # 旧配置重建配置树，写后用快照重放保证"写后立读"
+            snapshot = copy.deepcopy(self._data)
+            update_erispulse_config({"scope": snapshot})
+            self._apply_tree(snapshot)
 
-    def remove_override(self, owner: str, command_name: str | None = None, persist: bool = True) -> bool:
+    def delete(self, path: str, persist: bool = True) -> bool:
         """
-        移除模块 / 命令的实现参数覆盖
+        删除作用域配置树中任意键（父节经整节替换持久化，支持级联清空空父节）
 
-        :return: 是否成功移除
+        :param path: 点分路径，如 ``"bots.onebot11.123456"``、
+                     ``"identity.users.onebot11.u_bad"``、``"actions.MyModule.send"``
+        :param persist: 是否持久化到配置文件 (默认: True)
+        :return: 是否存在并被删除
+
+        :example:
+        >>> scope.delete("bots.onebot11.123456")       # 移除 Bot 绑定
+        >>> scope.delete("identity.users.onebot11.u_bad")  # 取消拉黑
+        >>> scope.delete("actions.MyModule")           # 解除模块全部出站限制
         """
-        overrides = self._bindings.get("overrides", {})
-        module_cfg = overrides.get(owner)
-        if not isinstance(module_cfg, dict):
+        parts = self._split_path(path)
+        if not parts:
+            raise ValueError("path must not be empty")
+        parent = self._node_at(".".join(parts[:-1])) if len(parts) > 1 else self._data
+        if not isinstance(parent, dict) or parts[-1] not in parent:
             return False
-        if command_name:
-            if command_name not in module_cfg:
-                return False
-            module_cfg.pop(command_name, None)
-            if not module_cfg:
-                overrides.pop(owner, None)
-        else:
-            overrides.pop(owner, None)
-
+        del parent[parts[-1]]
+        self._invalidate_cache()
         if persist:
-            set_erispulse_section("scope.overrides", overrides)
+            parent_path = ".".join(parts[:-1])
+            snapshot = copy.deepcopy(self._data)
+            set_erispulse_section(f"scope.{parent_path}" if parent_path else "scope", parent)
+            # 同 set：持久化内部热更新回读旧值后，用快照重放内存最终态
+            self._apply_tree(snapshot)
         return True
 
-    # ==================== 查询 / 统计 / 拓扑 ====================
+    def __getitem__(self, path: str):
+        """``scope[path]``：等价 :meth:`get`，节点不存在时抛 KeyError"""
+        node = self._node_at(path)
+        if node is None:
+            raise KeyError(path)
+        return copy.deepcopy(node)
 
-    def list_bindings(self) -> dict:
-        """
-        列出全部控制面绑定（含出站动作维度）
+    def __setitem__(self, path: str, value) -> None:
+        """``scope[path] = value``：等价 :meth:`set`（默认持久化）"""
+        self.set(path, value)
 
-        :return: {"platforms", "bots", "sessions", "identity", "commands",
-                "handlers", "overrides", "actions"} 结构（深拷贝）
-        """
-        return self._raw_bindings()
+    def __delitem__(self, path: str) -> None:
+        """``del scope[path]``：等价 :meth:`delete`，不存在时抛 KeyError"""
+        if not self.delete(path):
+            raise KeyError(path)
+
+    def __contains__(self, path: str) -> bool:
+        """``path in scope``：判断配置树中是否存在该节点"""
+        return self._node_at(path) is not None
+
+    # ==================== 全局操作 ====================
 
     def clear(self) -> None:
-        """清空所有控制面绑定（仅内存生效，不持久化）"""
-        self._bindings = {
+        """清空所有作用域配置（仅内存生效，不持久化）"""
+        self._data = {
             _BUCKET_PLATFORMS: {},
             _BUCKET_BOTS: {},
             _BUCKET_SESSIONS: {},
@@ -1256,110 +1118,46 @@ class ScopeManager:
                 _IDENTITY_SESSIONS: {},
                 _IDENTITY_USERS: {},
             },
-            "commands": {},
-            "handlers": {},
-            "overrides": {},
             "actions": {},
         }
         self._invalidate_cache()
 
-    def get_stats(self) -> dict[str, int]:
+    def stats(self) -> dict[str, int]:
         """
-        获取控制面运行统计
+        获取作用域运行统计
 
         统计项：``module_calls`` / ``module_filtered``（模块维度）、
         ``identity_checks`` / ``identity_denied``（身份维度）、
-        ``command_checks`` / ``command_denied``（命令维度）、
-        ``action_checks`` / ``action_denied``（出站动作维度）、
-        ``cache_hits`` / ``cache_misses``（模块维度 LRU）。
+        ``action_checks`` / ``action_denied``（出站维度）、
+        ``cache_hits`` / ``cache_misses``（LRU 缓存）。
 
         :return: 统计字典
         """
         return dict(self._stats)
 
     def reset_stats(self) -> None:
-        """重置控制面运行统计"""
+        """重置作用域运行统计"""
         for key in self._stats:
             self._stats[key] = 0
 
-    def get_topology(self) -> dict:
+    def topology(self) -> dict:
         """
-        获取控制面绑定的结构化数据（便于 WebUI 展示拓扑树）
+        获取作用域配置的结构化数据（便于 WebUI 展示拓扑树）
 
-        :return: 全维度绑定结构（模块 / 身份 / 命令 / 处理器 / 覆盖 / 出站动作）
+        等价于整棵配置树的深拷贝。
+
+        :return: 全维度配置结构（模块 / 身份 / 文本 / 出站动作）
         """
-        return self._raw_bindings()
-
-    # ==================== 工具方法 ====================
-
-    def _raw_get(self, bucket: str, platform: str, key: str) -> dict | None:
-        """{!--< internal-use >!--} 读取指定模块绑定（供 merge 使用，浅拷贝）"""
-        section = self._bindings.get(bucket, {})
-        if bucket == _BUCKET_PLATFORMS:
-            cfg = section.get(platform)
-        else:
-            plat = section.get(platform)
-            cfg = plat.get(key) if isinstance(plat, dict) else None
-        return dict(cfg) if isinstance(cfg, dict) else None
-
-    def _resolve_module_target(self, platform: str, bot_id: str | None, session_id: str | None) -> tuple[str, str]:
-        """
-        {!--< internal-use >!--}
-        根据参数解析模块维度目标桶与键
-
-        :return: (bucket, key) 元组
-        """
-        if session_id:
-            return _BUCKET_SESSIONS, str(session_id)
-        if bot_id:
-            return _BUCKET_BOTS, str(bot_id)
-        return _BUCKET_PLATFORMS, str(platform)
-
-    def _resolve_identity_target(
-        self,
-        platform: str,
-        bot_id: str | None,
-        session_id: str | None,
-        user_id: str | None,
-    ) -> tuple[str, str]:
-        """
-        {!--< internal-use >!--}
-        根据参数解析身份维度目标桶与键（用户级 > 会话级 > Bot 级 > 适配器级）
-
-        :return: (bucket, key) 元组
-        """
-        if user_id:
-            return _IDENTITY_USERS, str(user_id)
-        if session_id:
-            return _IDENTITY_SESSIONS, str(session_id)
-        if bot_id:
-            return _IDENTITY_BOTS, str(bot_id)
-        return _IDENTITY_ADAPTERS, str(platform)
-
-    @staticmethod
-    def _logger_trace(message: str) -> None:
-        """{!--< internal-use >!--} 输出 TRACE 日志（logger 未就绪时静默）"""
-        try:
-            from .logger import logger
-
-            logger.trace(message)
-        except (ImportError, AttributeError):
-            pass
-
-    def _raw_bindings(self) -> dict:
-        """{!--< internal-use >!--} 读取当前绑定缓存（深拷贝，避免外部篡改）"""
-        import copy
-
-        return copy.deepcopy(self._bindings)
+        return copy.deepcopy(self._data)
 
     def __repr__(self) -> str:
-        platforms = list(self._bindings.get(_BUCKET_PLATFORMS, {}).keys())
-        bots = list(self._bindings.get(_BUCKET_BOTS, {}).keys())
-        sessions = list(self._bindings.get(_BUCKET_SESSIONS, {}).keys())
-        commands = list(self._bindings.get("commands", {}).keys())
+        platforms = list(self._data.get(_BUCKET_PLATFORMS, {}).keys())
+        bots = list(self._data.get(_BUCKET_BOTS, {}).keys())
+        sessions = list(self._data.get(_BUCKET_SESSIONS, {}).keys())
+        actions = list(self._data.get("actions", {}).keys())
         return (
             f"<ScopeManager platforms={platforms} bots={bots} sessions={sessions} "
-            f"commands={commands} default_allow={self._default_allow}>"
+            f"actions={actions} default_allow={self._default_allow}>"
         )
 
 
