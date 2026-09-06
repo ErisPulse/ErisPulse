@@ -200,7 +200,7 @@ class ModuleLoader(BaseLoader):
         except Exception as e:
             logger.error(i18n.t("loader.module.load_failed", group=group_name, error=e))
 
-        # 保留最近一次加载结果快照（插件热重载 / 增量重扫需要）
+        # 保留最近一次加载结果快照（模块热重载 / 增量重扫需要）
         self._last_module_objs = objs
 
         return objs, enabled_list, disabled_list
@@ -257,44 +257,48 @@ class ModuleLoader(BaseLoader):
             if plugin_name in disabled_list:
                 disabled_list.remove(plugin_name)
 
-    async def reload_plugin(self, plugin_name: str, manager_instance: Any, sdk_instance: Any) -> bool:
+    async def reload_module(self, module_name: str, manager_instance: Any, sdk_instance: Any) -> bool:
         """
-        热重载单个本地插件：卸载旧实例 → 清理注册 → 重新导入 → 重新注册并加载
+        热重载单个模块（支持任意来源：本地插件 / PyPI 安装包）
 
-        依赖该插件的模块会**级联重载**：本地插件依赖者走完整重载流程，
+        完整执行 卸载旧实例 → 清理注册与模块缓存 → 重新发现/导入 →
+        重新注册并加载 流程。本地插件（moduleInfo meta 的 source 为
+        ``plugin_folder``）重扫描插件目录；PyPI 安装包模块重新查询
+        entry-point 并按顶层模块名清理 ``sys.modules`` 后重导入
+        （pip 升级后重载即可生效）。
+
+        依赖该模块的模块会**级联重载**：本地插件依赖者走完整重载流程，
         PyPI 模块依赖者卸载后直接重新实例化。
 
-        :param plugin_name: 插件名
+        :param module_name: 模块名（entry-point 名称或插件名）
         :param manager_instance: 模块管理器实例
         :param sdk_instance: SDK 实例
         :return: 是否重载成功
-
-        {!--< tips >!--}
-        仅适用于插件文件夹来源的插件（moduleInfo meta 的 source 为
-        ``plugin_folder``）。PyPI 安装包模块不支持热重载。
-        {!--< /tips >!--}
         """
-        old_obj = self._last_module_objs.get(plugin_name)
+        old_obj = self._last_module_objs.get(module_name)
         if old_obj is None:
             logger.warning(
-                i18n.t("loader.plugin.reload_unknown", name=plugin_name)
+                i18n.t("loader.module.reload_unknown", name=module_name)
             )
             return False
 
         meta = old_obj.moduleInfo.get("meta", {})
-        if meta.get("source") != MODULE_SOURCE_PLUGIN_FOLDER:
-            logger.warning(
-                i18n.t("loader.plugin.reload_not_plugin", name=plugin_name)
-            )
-            return False
+        is_plugin = meta.get("source") == MODULE_SOURCE_PLUGIN_FOLDER
+        # PyPI 来源：预取顶层模块名（重导入前清理 sys.modules 用）
+        top_level = list(meta.get("top_level") or [])
+        if not is_plugin and not top_level and meta.get("package"):
+            try:
+                top_level = self._finder.get_top_level_modules(meta["package"])
+            except Exception:
+                top_level = []
 
         # 收集依赖者（BFS 由近及远）：级联重载顺序 = 自身 → 直接依赖者 → 间接依赖者
-        dependents = manager_instance._collect_dependents(plugin_name)
+        dependents = manager_instance._collect_dependents(module_name)
         if dependents:
             logger.warning(
                 i18n.t(
-                    "loader.plugin.reload_cascade",
-                    name=plugin_name,
+                    "loader.module.reload_cascade",
+                    name=module_name,
                     deps=", ".join(dependents),
                 )
             )
@@ -306,12 +310,17 @@ class ModuleLoader(BaseLoader):
 
         # 1. 卸载旧实例（触发 on_unload；级联卸载依赖者）
         try:
-            await manager_instance.unload(plugin_name)
+            await manager_instance.unload(module_name)
         except Exception as e:
-            logger.error(i18n.t("loader.plugin.reload_unload_failed", name=plugin_name, error=e))
+            logger.error(i18n.t("loader.module.reload_unload_failed", name=module_name, error=e))
 
-        # 2. 重载自身
-        if not await self._reload_single_plugin(plugin_name, manager_instance, sdk_instance):
+        # 2. 重载自身（按来源选择发现路径）
+        if is_plugin:
+            if not await self._reload_single_plugin(module_name, manager_instance, sdk_instance):
+                return False
+        elif not await self._reload_single_module(
+            module_name, manager_instance, sdk_instance, top_level
+        ):
             return False
 
         # 3. 级联重载依赖者（近 → 远，依赖者在其依赖就绪后重载）
@@ -324,7 +333,7 @@ class ModuleLoader(BaseLoader):
                     if await manager_instance.load(dep):
                         setattr(sdk_instance, dep, manager_instance.get(dep))
                 except Exception as e:
-                    logger.error(i18n.t("loader.plugin.dependent_reload_failed", name=dep, error=e))
+                    logger.error(i18n.t("loader.module.reload_dependent_failed", name=dep, error=e))
             # 未加载且非插件来源的依赖者：跳过（懒加载会在下次访问时使用新依赖）
 
         return True
@@ -366,7 +375,7 @@ class ModuleLoader(BaseLoader):
         if new_module is None:
             # 插件被删除：确认从快照与配置中移除
             self._last_module_objs.pop(plugin_name, None)
-            logger.info(i18n.t("loader.plugin.reload_removed", name=plugin_name))
+            logger.info(i18n.t("loader.module.reload_removed", name=plugin_name))
             return True
 
         # 重新注册并加载
@@ -374,18 +383,103 @@ class ModuleLoader(BaseLoader):
         try:
             manager_instance.register(new_meta_name, new_module.moduleInfo["module_class"], new_module.moduleInfo)
         except Exception as e:
-            logger.error(i18n.t("loader.plugin.register_failed", name=plugin_name, error=e))
+            logger.error(i18n.t("loader.module.reload_register_failed", name=plugin_name, error=e))
             return False
 
         loaded = await manager_instance.load(new_meta_name)
         if not loaded:
-            logger.error(i18n.t("loader.plugin.load_failed", name=plugin_name, error="load returned False"))
+            logger.error(i18n.t("loader.module.reload_load_failed", name=plugin_name, error="load returned False"))
             return False
 
         setattr(sdk_instance, new_meta_name, manager_instance.get(new_meta_name))
         self._last_module_objs[plugin_name] = new_module
-        logger.info(i18n.t("loader.plugin.reload_ok", name=plugin_name))
+        logger.info(i18n.t("loader.module.reload_ok", name=plugin_name))
         return True
+
+    async def _reload_single_module(
+        self,
+        module_name: str,
+        manager_instance: Any,
+        sdk_instance: Any,
+        top_level: list[str],
+    ) -> bool:
+        """
+        {!--< internal-use >!--}
+        重载单个 PyPI 安装包模块：清理注册 → 清模块缓存 → 重新发现导入 → 注册并加载
+
+        :param module_name: 模块名（entry-point 名称）
+        :param manager_instance: 模块管理器实例
+        :param sdk_instance: SDK 实例
+        :param top_level: 顶层 Python 模块名列表（重导入前清理 sys.modules）
+        :return: 是否重载成功
+        """
+        # 清理注册（类 / info / 懒加载代理）
+        try:
+            manager_instance.unregister(module_name)
+        except Exception:
+            pass
+
+        # 移除 SDK 上挂载的属性
+        if hasattr(sdk_instance, module_name):
+            try:
+                delattr(sdk_instance, module_name)
+            except Exception:
+                pass
+
+        # 清理已导入的包模块并刷新导入系统，强制重新导入（pip 升级后取新代码）
+        self._purge_installed_modules(top_level)
+        importlib.invalidate_caches()
+        self._finder.clear_cache()
+
+        # 重新查询 entry-point
+        entry_point = self._finder.find_by_name(module_name)
+        if entry_point is None:
+            # 安装包已被卸载：确认从快照中移除
+            self._last_module_objs.pop(module_name, None)
+            logger.info(i18n.t("loader.module.reload_removed", name=module_name))
+            return True
+
+        # 重新导入并组装 moduleInfo
+        try:
+            loaded_obj = entry_point.load()
+            module_info = self._build_module_info(entry_point, loaded_obj, module_name)
+            if module_info is None:
+                return False
+            module_obj = sys.modules[loaded_obj.__module__]
+        except Exception as e:
+            logger.error(i18n.t("loader.module.reload_load_failed", name=module_name, error=e))
+            return False
+
+        # 重新注册并加载
+        try:
+            manager_instance.register(module_name, module_info["module_class"], module_info)
+        except Exception as e:
+            logger.error(i18n.t("loader.module.reload_register_failed", name=module_name, error=e))
+            return False
+
+        if not await manager_instance.load(module_name):
+            logger.error(
+                i18n.t("loader.module.reload_load_failed", name=module_name, error="load returned False")
+            )
+            return False
+
+        setattr(sdk_instance, module_name, manager_instance.get(module_name))
+        self._last_module_objs[module_name] = module_obj
+        logger.info(i18n.t("loader.module.reload_ok", name=module_name))
+        return True
+
+    def _purge_installed_modules(self, top_level: list[str]) -> None:
+        """
+        {!--< internal-use >!--}
+        从 sys.modules 移除安装包模块相关子树，强制下次导入重新执行
+
+        :param top_level: 顶层 Python 模块名列表
+        """
+        for name in top_level:
+            sys.modules.pop(name, None)
+        for mod_name in list(sys.modules):
+            if any(mod_name.startswith(f"{name}.") for name in top_level):
+                sys.modules.pop(mod_name, None)
 
     def _purge_plugin_modules(self, plugin_name: str) -> None:
         """
@@ -402,6 +496,77 @@ class ModuleLoader(BaseLoader):
                 sys.modules.pop(mod_name, None)
         # 刷新加载器路径记录，使 discover() 重新导入
         self._plugin_loader._loaded_paths.pop(plugin_name, None)
+
+    def _build_module_info(
+        self, entry_point: Any, loaded_obj: Any, meta_name: str
+    ) -> dict[str, Any] | None:
+        """
+        构造模块 moduleInfo（首次加载与热重载共用）
+
+        校验模块类为 BaseModule 子类（严格模式下不合规时跳过并返回 None），
+        读取加载策略并组装与 entry-point 一致的元信息，
+        同时挂载到模块对象供管理器读取。
+
+        :param entry_point: entry-point 对象
+        :param loaded_obj: entry-point 加载出的模块类
+        :param meta_name: 模块名
+        :return: moduleInfo 字典；严格模式跳过时返回 None
+
+        {!--< internal-use >!--}
+        内部方法，供 _process_entry_point 与热重载复用
+        {!--< /internal-use >!--}
+        """
+        module_obj = sys.modules[loaded_obj.__module__]
+        dist = (
+            importlib.metadata.distribution(entry_point.dist.name)
+            if entry_point.dist
+            else None
+        )
+
+        # 检查模块是否继承自 BaseModule
+        from ..Core.Bases.module import BaseModule
+
+        is_base_module = inspect.isclass(loaded_obj) and issubclass(
+            loaded_obj, BaseModule
+        )
+
+        if not is_base_module:
+            # 严格模式：按级别决定容忍加载或拒绝（跳过）
+            if self._strict().decide(meta_name, "module", "not_base_class"):
+                return None
+
+        # 获取模块加载策略
+        strategy = self._get_load_strategy(loaded_obj)
+        lazy_load = self._extract_strategy_value(strategy, "lazy_load", True)
+        priority = self._extract_strategy_value(strategy, "priority", 0)
+        depends = self._extract_strategy_value(strategy, "depends", None) or []
+
+        top_level = []
+        if entry_point.dist:
+            top_level = self._finder.get_top_level_modules(entry_point.dist.name)
+
+        module_info = {
+            "meta": {
+                "name": meta_name,
+                "version": getattr(
+                    module_obj, "__version__", dist.version if dist else "1.0.0"
+                ),
+                "description": getattr(module_obj, "__description__", ""),
+                "author": getattr(module_obj, "__author__", ""),
+                "license": getattr(module_obj, "__license__", ""),
+                "package": entry_point.dist.name if entry_point.dist else None,
+                "lazy_load": lazy_load,
+                "priority": priority,
+                "depends": list(depends),
+                "is_base_module": is_base_module,
+                "top_level": top_level,
+            },
+            "module_class": loaded_obj,
+            "strategy": strategy,
+        }
+
+        cast("Any", module_obj).moduleInfo = module_info
+        return module_info
 
     async def _process_entry_point(
         self,
@@ -443,57 +608,11 @@ class ModuleLoader(BaseLoader):
 
         try:
             loaded_obj = entry_point.load()
+            module_info = self._build_module_info(entry_point, loaded_obj, meta_name)
+            if module_info is None:
+                return objs, enabled_list, disabled_list, is_new
+
             module_obj = sys.modules[loaded_obj.__module__]
-            dist = (
-                importlib.metadata.distribution(entry_point.dist.name)
-                if entry_point.dist
-                else None
-            )
-
-            # 检查模块是否继承自 BaseModule
-            from ..Core.Bases.module import BaseModule
-
-            is_base_module = inspect.isclass(loaded_obj) and issubclass(
-                loaded_obj, BaseModule
-            )
-
-            if not is_base_module:
-                # 严格模式：按级别决定容忍加载或拒绝（跳过）
-                if self._strict().decide(meta_name, "module", "not_base_class"):
-                    return objs, enabled_list, disabled_list, is_new
-
-            # 获取模块加载策略
-            strategy = self._get_load_strategy(loaded_obj)
-            lazy_load = self._extract_strategy_value(strategy, "lazy_load", True)
-            priority = self._extract_strategy_value(strategy, "priority", 0)
-            depends = self._extract_strategy_value(strategy, "depends", None) or []
-
-            top_level = []
-            if entry_point.dist:
-                top_level = self._finder.get_top_level_modules(entry_point.dist.name)
-
-            module_info = {
-                "meta": {
-                    "name": meta_name,
-                    "version": getattr(
-                        module_obj, "__version__", dist.version if dist else "1.0.0"
-                    ),
-                    "description": getattr(module_obj, "__description__", ""),
-                    "author": getattr(module_obj, "__author__", ""),
-                    "license": getattr(module_obj, "__license__", ""),
-                    "package": entry_point.dist.name if entry_point.dist else None,
-                    "lazy_load": lazy_load,
-                    "priority": priority,
-                    "depends": list(depends),
-                    "is_base_module": is_base_module,
-                    "top_level": top_level,
-                },
-                "module_class": loaded_obj,
-                "strategy": strategy,
-            }
-
-            cast("Any", module_obj).moduleInfo = module_info
-
             objs[meta_name] = module_obj
             enabled_list.append(meta_name)
 

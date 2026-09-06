@@ -69,6 +69,7 @@ acl    allow / deny      命令用户黑白名单（command 专属，按命令�
 
 import copy
 
+from ...runtime.context import current_owner
 from ...runtime.frame_config import set_erispulse_section
 from .. import text_match
 
@@ -91,6 +92,21 @@ _sections: dict[str, dict[str, dict]] = {t: {} for t in _TYPE_SPECS}
 _command: dict[str, dict] = {}
 _acl: dict[str, dict] = {}
 _acl_default_allow: bool = True
+
+# 运行时写入（persist=False）的调用方归属记录：路径键 → owner。
+# persist=True 的写入属用户配置语义，不追踪也不清理；仅内存态运行时写入
+# 在模块卸载时随 owner 兜底清理（unregister_by_owner）
+_runtime_owner_records: dict[str, str] = {}
+
+
+def _record_runtime_owner(path: str, persist: bool) -> None:
+    """{!--< internal-use >!--} 记录（persist=False）或清除（persist=True）路径的调用方归属"""
+    if persist:
+        _runtime_owner_records.pop(path, None)
+        return
+    owner = current_owner.get()
+    if owner is not None:
+        _runtime_owner_records[path] = owner
 
 # 配置校验告警去重（同一路径同一问题只告警一次）
 _warned: set[str] = set()
@@ -297,6 +313,7 @@ def clear() -> None:
         _sections[t] = {}
     _command = {}
     _acl = {}
+    _runtime_owner_records.clear()
 
 
 def _persist_all() -> None:
@@ -359,6 +376,7 @@ class _TypeNamespace:
         _sections[self.type_name] = section
         if persist:
             _persist_section(self.type_name, section)
+        _record_runtime_owner(f"{self.type_name}:{module}", persist)
 
     def get(self, module: str, default=None):
         """
@@ -386,6 +404,7 @@ class _TypeNamespace:
         _sections[self.type_name] = section
         if persist:
             _persist_section(self.type_name, section)
+        _runtime_owner_records.pop(f"{self.type_name}:{module}", None)
         return True
 
 
@@ -439,6 +458,8 @@ class _CommandNamespace:
             _command.pop(owner, None)
         if persist:
             _persist_section("command", copy.deepcopy(_command))
+        path = f"command:{owner}.{command_name}" if command_name else f"command:{owner}"
+        _record_runtime_owner(path, persist)
 
     def get(self, owner: str, command_name: str | None = None, default=None) -> dict:
         """
@@ -500,6 +521,8 @@ class _CommandNamespace:
             _command.pop(owner, None)
         if persist:
             _persist_section("command", copy.deepcopy(_command))
+        path = f"command:{owner}.{command_name}" if command_name else f"command:{owner}"
+        _runtime_owner_records.pop(path, None)
         return True
 
 
@@ -548,6 +571,7 @@ class _AclNamespace:
         _acl.update(acl)
         if persist:
             _persist_section(_ACL_SECTION, copy.deepcopy(_acl))
+        _record_runtime_owner(f"{_ACL_SECTION}:{command_name}", persist)
 
     def match(self, command_name: str) -> dict | None:
         """
@@ -639,6 +663,44 @@ meta: _TypeNamespace = _TypeNamespace("meta")
 command: _CommandNamespace = _CommandNamespace()
 acl: _AclNamespace = _AclNamespace()
 
+
+def unregister_by_owner(caller: str) -> int:
+    """
+    兜底清理指定调用方在运行时（persist=False）写入的全部覆写
+
+    仅清理内存态覆写；``persist=True`` 的写入属用户配置语义，不在此
+    清理范围（随配置持久保留，需用户显式删除）。供模块卸载时调用，
+    避免卸载后模块运行时写入的覆写残留生效。
+
+    :param caller: 调用方（模块名 / 适配器平台名）
+    :return: int 清理的覆写条目数量
+    """
+    paths = [p for p, o in _runtime_owner_records.items() if o == caller]
+    removed = 0
+    for path in paths:
+        _runtime_owner_records.pop(path, None)
+        kind, _, rest = path.partition(":")
+        if kind in _TYPE_SPECS:
+            if _sections.get(kind, {}).pop(rest, None) is not None:
+                removed += 1
+        elif kind == "command":
+            module, _, cmd = rest.partition(".")
+            module_cfg = _command.get(module)
+            if not isinstance(module_cfg, dict):
+                continue
+            if cmd:
+                if module_cfg.pop(cmd, None) is not None:
+                    removed += 1
+                    if not module_cfg:
+                        _command.pop(module, None)
+            elif _command.pop(module, None) is not None:
+                removed += 1
+        elif kind == _ACL_SECTION:
+            if _acl.pop(rest, None) is not None:
+                removed += 1
+    return removed
+
+
 # 订阅配置热更新：event 配置变更时自动重建覆写缓存
 try:
     from .lifecycle import lifecycle
@@ -661,4 +723,5 @@ __all__ = [
     "notice",
     "request",
     "topology",
+    "unregister_by_owner",
 ]

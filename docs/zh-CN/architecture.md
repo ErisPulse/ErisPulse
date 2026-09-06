@@ -276,23 +276,32 @@ flowchart TD
 - 本地插件 `moduleInfo.meta.source == "plugin_folder"`，与 PyPI 安装包模块无缝共存
 - 同名时本地优先（便于本地覆盖调试），被禁用时同时移除同名 entry-point 条目
 
-## 本地插件热重载架构
+## 模块热重载架构
 
-热重载监控插件文件变更，自动重新加载对应插件：
+热重载对**全部模块来源**一致：本地插件可监控文件变更自动触发，任意模块也可通过 `sdk.reload_module()` / `sdk.module.reload()` 手动重载（PyPI 安装包模块在 pip 升级后调用即可生效）：
 
 ```mermaid
 flowchart TD
-    A["sdk.enable_plugin_hot_reload()"] --> B["PluginReloadWatcher 启动"]
+    A["sdk.enable_plugin_hot_reload()<br/>（自动监控，仅本地插件目录）"] --> B["PluginReloadWatcher 启动"]
     B --> C["PollingObserver（后台守护线程）<br/>定期比较 .py 文件 mtime"]
     C --> D{"插件文件变更"}
     D --> E["变更去抖（默认 1 秒）"]
     E --> F["_handle_change 解析插件名<br/>（单文件 / 包形式）"]
     F --> G["asyncio.run_coroutine_threadsafe<br/>调度回主事件循环"]
-    G --> H["sdk.reload_plugin(name)"]
-    H --> I["卸载旧实例（触发 on_unload）"]
-    I --> J["清理注册（unregister + 移除 sdk 属性）"]
-    J --> K["清理 sys.modules 强制重新导入"]
-    K --> L["重新 discover + register + load"]
-    L --> M["挂载新实例到 sdk 属性"]
-    M --> N["文件删除 → 自动从加载结果移除"]
+    G --> H["sdk.reload_module(name)<br/>（也可对任意模块手动调用）"]
+    H --> I["卸载旧实例（触发 on_unload）<br/>收集依赖者准备级联重载"]
+    I --> J{"模块来源？"}
+    J -->|"plugin_folder"| K["清理注册与插件 sys.modules<br/>重扫描 plugins/ 目录"]
+    J -->|"PyPI 安装包"| L["清理注册 + 按 top_level<br/>清理包 sys.modules 子树<br/>刷新导入缓存后重查 entry-point"]
+    K --> M["重新 register + load"]
+    L --> M
+    M --> N["挂载新实例到 sdk 属性"]
+    N --> O["级联重载依赖者<br/>（插件完整重载 / PyPI 重新实例化）"]
+    K -.->|"文件已删除"| P["从加载结果移除"]
+    L -.->|"entry-point 已消失（已卸载）"| P
 ```
+
+**两种来源的差异仅在发现阶段**，注册、加载、级联重载完全一致：
+
+- **本地插件**（`moduleInfo.meta.source == "plugin_folder"`）：清理插件名对应 `sys.modules` 后重扫描 `plugins/` 目录；文件已删除则从加载结果移除
+- **PyPI 安装包**：按 `meta.top_level` 清理包的 `sys.modules` 子树，刷新导入缓存（突破 entry-point 60 秒缓存）后重查并重新导入；entry-point 已消失（pip 卸载）则从加载结果移除

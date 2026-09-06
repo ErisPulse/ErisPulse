@@ -130,6 +130,8 @@ class AdapterManager(ManagerBase):
         # OneBot12事件处理器
         self._onebot_handlers = defaultdict(list)
         self._onebot_middlewares = []
+        # 中间件归属记录：id(func) → owner（注册期间 current_owner），供按 owner 兜底清理
+        self._onebot_middleware_owners: dict[int, str] = {}
         # 原生事件处理器
         self._raw_handlers = defaultdict(list)
         self._sdk = None
@@ -922,6 +924,7 @@ class AdapterManager(ManagerBase):
                 self._onebot_handlers.clear()
                 self._raw_handlers.clear()
                 self._onebot_middlewares.clear()
+                self._onebot_middleware_owners.clear()
 
             # 提交适配器关闭完成事件
             await lifecycle.submit_event(
@@ -1099,6 +1102,57 @@ class AdapterManager(ManagerBase):
                 i18n.t("core.adapter.lifecycle_cleanup_failed", platform=platform, error=e)
             )
 
+        # 清理该适配器（以平台名为 owner）自有的事件处理器与中间件，
+        # 避免重启后旧闭包持有上一代适配器实例引用继续被分发
+        try:
+            handler_removed = self.unregister_handlers_by_owner(platform)
+            if handler_removed > 0:
+                logger.trace(
+                    i18n.t(
+                        "core.adapter.own_handlers_cleaned",
+                        platform=platform,
+                        count=handler_removed,
+                    )
+                )
+        except Exception as e:
+            logger.trace(
+                i18n.t("core.adapter.handlers_clean_failed", platform=platform, error=e)
+            )
+
+        # 清理该适配器注册的自定义会话类型与平台事件方法扩展
+        try:
+            from .Event import unregister_custom_types_by_owner
+            from .Event.wrapper import unregister_platform_event_methods
+
+            types_removed = unregister_custom_types_by_owner(platform)
+            methods_removed = unregister_platform_event_methods(platform)
+            if types_removed > 0 or methods_removed > 0:
+                logger.trace(
+                    i18n.t(
+                        "core.adapter.session_ext_cleaned",
+                        platform=platform,
+                        types=types_removed,
+                        methods=methods_removed,
+                    )
+                )
+        except Exception as e:
+            logger.trace(
+                i18n.t("core.adapter.session_ext_clean_failed", platform=platform, error=e)
+            )
+
+        # 清理该适配器注册的 i18n 翻译域（domain 为适配器配置键）
+        try:
+            adapter_instance = self._adapters.get(platform)
+            if adapter_instance is not None and hasattr(adapter_instance, "_get_config_key"):
+                i18n.unregister_domain(adapter_instance._get_config_key())
+                logger.trace(
+                    i18n.t("core.adapter.i18n_domain_cleaned", platform=platform)
+                )
+        except Exception as e:
+            logger.trace(
+                i18n.t("core.adapter.session_ext_clean_failed", platform=platform, error=e)
+            )
+
     async def restart(self, platform: str) -> bool:
         """
         重启指定平台适配器（shutdown + 资源兜底清理 + start）
@@ -1221,6 +1275,7 @@ class AdapterManager(ManagerBase):
         self._onebot_handlers.clear()
         self._raw_handlers.clear()
         self._onebot_middlewares.clear()
+        self._onebot_middleware_owners.clear()
 
         # 清除已启动实例追踪
         self._started_instances.clear()
@@ -1524,6 +1579,9 @@ class AdapterManager(ManagerBase):
         """
         添加OneBot12中间件处理器
 
+        注册期间若处于模块加载上下文（current_owner 已设置），自动记录归属，
+        模块卸载时随处理器一并移除。
+
         :param func: 中间件函数
         :return: 中间件函数
 
@@ -1534,7 +1592,58 @@ class AdapterManager(ManagerBase):
         >>>     return data
         """
         self._onebot_middlewares.append(func)
+        owner = current_owner.get()
+        if owner is not None:
+            self._onebot_middleware_owners[id(func)] = owner
         return func
+
+    def unregister_handlers_by_owner(self, owner: str) -> int:
+        """
+        移除指定归属者注册的全部事件处理器与中间件
+
+        覆盖三类资源（均在注册期间记录了 owner）：
+        - ``adapter.on()`` 注册的 OneBot12 / 原生事件处理器
+        - ``adapter.middleware`` 注册的中间件
+        - 适配器在 start() 期间以平台名为 owner 注册的处理器
+
+        供模块卸载时移除该模块的处理器（避免卸载后仍被分发触发），
+        以及适配器关闭 / 重启时清理旧实例自有的处理器。
+
+        :param owner: 归属者（模块名或适配器平台名）
+        :return: int 移除的处理器与中间件总数
+        """
+        removed = 0
+
+        for event_type in list(self._onebot_handlers.keys()):
+            handlers = self._onebot_handlers[event_type]
+            kept = [h for h in handlers if h.get("owner") != owner]
+            removed += len(handlers) - len(kept)
+            if kept:
+                self._onebot_handlers[event_type] = kept
+            else:
+                self._onebot_handlers.pop(event_type, None)
+
+        for event_type in list(self._raw_handlers.keys()):
+            handlers = self._raw_handlers[event_type]
+            kept = [h for h in handlers if h.get("owner") != owner]
+            removed += len(handlers) - len(kept)
+            if kept:
+                self._raw_handlers[event_type] = kept
+            else:
+                self._raw_handlers.pop(event_type, None)
+
+        kept_middlewares = [
+            f
+            for f in self._onebot_middlewares
+            if self._onebot_middleware_owners.get(id(f)) != owner
+        ]
+        removed += len(self._onebot_middlewares) - len(kept_middlewares)
+        self._onebot_middlewares = kept_middlewares
+        for func_id, func_owner in list(self._onebot_middleware_owners.items()):
+            if func_owner == owner:
+                self._onebot_middleware_owners.pop(func_id, None)
+
+        return removed
 
     async def emit(self, data: Any) -> None:
         """
