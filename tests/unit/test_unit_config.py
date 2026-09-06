@@ -90,18 +90,18 @@ nested_key = "nested_value"
 
     def test_get_config_overlays_dirty_descendant(self, config_manager):
         """待写键是查询键的后代：读取父节时应叠加待写值（写后立读）"""
-        config_manager.setConfig("ErisPulse.scope.handlers.My", {"pattern": "x*"})
+        config_manager.setConfig("ErisPulse.scope.actions.My", {"deny": True})
 
-        # 未刷盘前读取中间节：应看到待写子树，且不丢缓存中的兄弟键
+        # 未刷新前读取中间节点，应能看到未写入的值（也不影响缓存中的兄弟键）
         section = config_manager.getConfig("ErisPulse.scope")
-        assert section["handlers"]["My"] == {"pattern": "x*"}
+        assert section["actions"]["My"] == {"deny": True}
 
         root = config_manager.getConfig("ErisPulse")
-        assert root["scope"]["handlers"]["My"] == {"pattern": "x*"}
+        assert root["scope"]["actions"]["My"] == {"deny": True}
 
-        # 刷盘后从缓存树读取一致
+        # 刷新后从缓存重读一致
         config_manager._flush_config()
-        assert config_manager.getConfig("ErisPulse.scope")["handlers"]["My"] == {"pattern": "x*"}
+        assert config_manager.getConfig("ErisPulse.scope")["actions"]["My"] == {"deny": True}
 
     def test_get_config_overlay_merges_with_cache_siblings(self, config_manager):
         """叠加合并不覆盖缓存中的兄弟键"""

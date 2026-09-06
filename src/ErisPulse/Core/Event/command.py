@@ -3,13 +3,16 @@ ErisPulse 命令处理模块
 
 提供基于装饰器的命令注册和处理功能
 
-命令的**用户权限 ACL**（谁/谁不能执行）统一收敛到控制面 ``ErisPulse.scope.commands``
-（运行时 ``scope.allow_user`` / ``scope.deny_user``，命令名支持 glob），
-本模块不再单独维护权限配置。
+命令是特殊的消息事件处理器（ErisPulse 扩展类型），其用户侧配置
+由统一覆写系统持有（``ErisPulse.event.overrides``，见
+:mod:`ErisPulse.Core.Event.overrides`）：**用户黑白名单（ACL）** 在
+``overrides.acl`` 类别（命令名支持 glob，``acl_default_allow`` 兜底严格模式）；
+**实现参数覆写**（master / hidden / aliases 等）在 ``overrides.command`` 类别
+（用户优先语义）。本模块的命令判定链消费覆写系统的生效结果。
 
 {!--< tips >!--}
 1. 支持命令别名和命令组
-2. 支持命令权限控制（master / permission 函数 / 控制面 ACL）
+2. 支持命令权限控制（master / permission 函数 / 覆写系统 ACL）
 3. 支持命令帮助系统
 4. 支持等待用户回复交互
 {!--< /tips >!--}
@@ -40,6 +43,7 @@ from ..constants import (
 )
 from ..i18n import i18n
 from ..text_match import compile_text_matcher
+from . import overrides
 from .base import BaseEventHandler
 from .session_type import get_send_type_and_target_id, infer_receive_type
 
@@ -93,16 +97,20 @@ class CommandHandler:
         self.must_at_bot = command_config.get("must_at_bot", DEFAULT_COMMAND_MUST_AT_BOT)
 
     def _on_config_updated(self, _data: dict) -> None:
-        """配置变更回调：刷新命令解析参数，实现热更新"""
+        """配置变更回调：刷新命令解析参数、实现参数覆盖与用户 ACL"""
         self._refresh_command_config()
 
-    # ==================== 命令权限 ACL（控制面 scope.commands） ====================
+    # ==================== 作用域上下文（scope 委托） ====================
+
+        # ==================== 作用域上下文（scope 委托） ====================
 
     @staticmethod
     def _scope() -> Any:
         """
         {!--< internal-use >!--}
-        延迟获取控制面单例（避免模块初始化阶段的循环依赖）
+        延迟获取作用域单例（避免模块初始化阶段的循环依赖）
+
+        用于模块维度作用域检查与事件上下文提取。
 
         :return: scope 单例（ScopeManager）
         """
@@ -110,68 +118,21 @@ class CommandHandler:
 
         return scope
 
-    def allow_user(self, command_name: str, platform: str, user_id: str, persist: bool = True) -> None:
+    # ==================== 作用域上下文（scope 委托） ====================
+
+    @staticmethod
+    def _scope() -> Any:
         """
-        将用户加入命令的 allow 名单（白名单非空时仅名单内用户可执行）
+        {!--< internal-use >!--}
+        延迟获取作用域单例（避免模块初始化阶段的循环依赖）
 
-        委托给控制面 ``scope.allow_user``；命令名支持 glob。
+        用于模块维度作用域检查与事件上下文提取。
 
-        :param command_name: 命令名称（支持 glob / ``re:`` 正则）
-        :param platform: 用户所属平台
-        :param user_id: 用户 ID
-        :param persist: 是否持久化到配置 (默认: True)
-
-        :example:
-        >>> command.allow_user("restart", "onebot11", "123456")
+        :return: scope 单例（ScopeManager）
         """
-        self._scope().allow_user(command_name, platform, user_id, persist=persist)
+        from ..scope import scope
 
-    def deny_user(self, command_name: str, platform: str, user_id: str, persist: bool = True) -> None:
-        """
-        将用户加入命令的 deny 名单（deny 优先于 allow 与默认权限）
-
-        委托给控制面 ``scope.deny_user``；命令名支持 glob。
-
-        :param command_name: 命令名称（支持 glob / ``re:`` 正则）
-        :param platform: 用户所属平台
-        :param user_id: 用户 ID
-        :param persist: 是否持久化到配置 (默认: True)
-
-        :example:
-        >>> command.deny_user("restart", "onebot11", "666")
-        """
-        self._scope().deny_user(command_name, platform, user_id, persist=persist)
-
-    def remove_acl(self, command_name: str, persist: bool = True) -> bool:
-        """
-        清除命令的用户黑白名单（恢复开发者默认权限逻辑）
-
-        委托给控制面 ``scope.remove_acl``；命令名支持 glob。
-
-        :param command_name: 命令名称（支持 glob / ``re:`` 正则）
-        :param persist: 是否持久化到配置 (默认: True)
-        :return: 是否存在并被清除
-
-        :example:
-        >>> command.remove_acl("restart")
-        True
-        """
-        return self._scope().remove_acl(command_name, persist=persist)
-
-    def get_acl(self, command_name: str) -> dict[str, list[str]]:
-        """
-        查询命令当前的用户黑白名单
-
-        委托给控制面 ``scope.get_acl``；命令名支持 glob。
-
-        :param command_name: 命令名称（支持 glob / ``re:`` 正则）
-        :return: {"allow": [...], "deny": [...]}（用户标识 "platform:user_id"）
-
-        :example:
-        >>> command.get_acl("restart")
-        {'allow': ['onebot11:123456'], 'deny': []}
-        """
-        return self._scope().get_acl(command_name)
+        return scope
 
     def __call__(
         self,
@@ -630,10 +591,10 @@ class CommandHandler:
                     logger.trace(i18n.t("core.scope.denied", module=cmd_owner))
                     return False
 
-            # 命令权限 ACL（控制面 scope.commands）：命令名支持 glob
+            # 命令用户 ACL（event.overrides.acl）：命令名支持 glob
             # deny 命中 / allow 白名单未命中 / 严格模式无 ACL → 拒绝；
             # 否则（无 ACL 且默认放行）继续走开发者默认权限链
-            _allowed = self._scope().is_command_allowed(
+            _allowed = overrides.acl.is_allowed(
                 actual_cmd_name,
                 event.get("platform", UNKNOWN_PLATFORM),
                 event.get("user_id", ""),
@@ -649,14 +610,12 @@ class CommandHandler:
                 await self._send_permission_denied(event)
                 return False
 
-            # 控制面实现参数覆盖（scope.overrides）：覆盖 master / hidden / aliases / prefix 等
-            # 覆盖键 master 由 apply_override 统一映射到存储键 must_master（用户优先）
-            # 注意：禁用不通过 overrides，统一走命令 deny（scope.commands）
-            from ..scope import scope as _scope
-
+            # 命令实现参数覆写（event.overrides.command）：覆盖 master / hidden / aliases / prefix 等
+            # 覆写键 master 由 overrides.command.apply 统一映射到存储键 must_master（用户优先）
+            # 注意：禁用不通过参数覆写，统一走 ACL deny（event.overrides.acl）
             _effective = cmd_info
             if cmd_owner:
-                _effective = _scope.apply_override(cmd_owner, actual_cmd_name, cmd_info)
+                _effective = overrides.command.apply(cmd_owner, actual_cmd_name, cmd_info)
 
             # 检查框架主人权限（must_master）
             if _effective.get("must_master"):
@@ -699,7 +658,7 @@ class CommandHandler:
                     await self._send_permission_denied(event)
                     return False
 
-            # 添加命令相关信息到事件（合并控制面覆盖后的有效参数）
+            # 添加命令相关信息到事件（合并覆写后的有效参数）
             command_info = {
                 "name": actual_cmd_name,
                 "main_name": cmd_info["main_name"],
@@ -973,7 +932,7 @@ class CommandHandler:
         session_id: str | None = None,
     ) -> dict | None:
         """
-        获取命令信息（返回合并控制面覆盖后的**生效参数**）
+        获取命令信息（返回合并覆写系统命令参数后的**生效参数**）
 
         传入作用域上下文（``event`` 或 ``platform`` / ``bot_id`` / ``session_id``
         任一）时，命令归属模块在当前会话不可用则返回 ``None``（与分发静默语义一致）。
@@ -1072,7 +1031,7 @@ class CommandHandler:
         """
         获取所有可见命令（非隐藏命令）
 
-        可见性判定读取控制面覆盖值（``scope.overrides.<module>.<command>.hidden``）：
+        可见性判定读取覆写系统命令参数（``event.overrides.command.<module>.<command>.hidden``）：
         用户显式覆盖 ``hidden`` 后，帮助列表随之变化（用户优先）。
         传入作用域上下文（``event`` 或 ``platform`` / ``bot_id`` / ``session_id``
         任一）时，额外按模块维度过滤该会话不可用模块的命令（与分发静默语义一致）。
@@ -1139,7 +1098,7 @@ class CommandHandler:
     def _effective_info(self, name: str, info: dict) -> dict:
         """
         {!--< internal-use >!--}
-        合并控制面覆盖后的命令生效参数（帮助渲染与可见性判定用）
+        合并实现参数覆盖后的命令生效参数（帮助渲染与可见性判定用）
 
         :param name: 命令主名
         :param info: 注册时的命令信息字典
@@ -1148,9 +1107,7 @@ class CommandHandler:
         owner = info.get("owner")
         if not owner:
             return info
-        from ..scope import scope
-
-        return scope.apply_override(owner, name, info)
+        return overrides.command.apply(owner, name, info)
 
     def help(
         self,
@@ -1161,10 +1118,10 @@ class CommandHandler:
         """
         生成帮助信息
 
-        传入 ``event`` 时按控制面对输出做会话感知调整：① 模块维度——
+        传入 ``event`` 时按作用域对输出做会话感知调整：① 模块维度——
         该会话（platform / bot / session）下被作用域禁用的模块，其命令不再列出
-        （与分发静默语义一致）；② 覆盖维度——帮助文本 / usage / 可见性读取
-        ``scope.overrides`` 覆盖值（用户优先）。
+        （与分发静默语义一致）；② 覆盖——帮助文本 / usage / 可见性读取
+        ``event.overrides.command`` 覆写值（用户优先）。
 
         :param command_name: 命令名称，如果为None则生成所有命令的帮助
         :param show_hidden: 是否显示隐藏命令
