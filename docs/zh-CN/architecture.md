@@ -153,7 +153,7 @@ sequenceDiagram
 > 3. **同优先级组内不阻断**——`mark_processed(stop=True)` 只阻止更低优先级组，同组内已并发的 handler 不会中途被打断。
 > 4. **慢日志阈值固定 1 秒**——处理器耗时超 1s 会在日志打 WARNING（`wait_reply` 等待时间已从耗时中剔除），但不中断执行。
 
-> 作用域三级绑定与优先级细节见 [作用域系统](advanced/scope.md)；claim/阻断完整语义见 [事件处理入门](getting-started/event-handling.md)；并发上限配置见 [配置指南](user-guide/configuration.md#框架配置)。
+> 作用域（scope）的模块维度三级绑定、身份维度准入与出站动作限制细节见 [作用域（scope）](advanced/scope.md)；事件作用域文本过滤与命令用户 ACL 见 [事件处理入门](getting-started/event-handling.md)；并发上限配置见 [配置指南](user-guide/configuration.md#框架配置)。
 
 ## 生命周期事件
 
