@@ -1,25 +1,25 @@
-# イベント処理入門
+# イベント処理の入門
 
-このガイドでは、ErisPulse におけるさまざまなイベントの処理方法を紹介します。
+このガイドでは、ErisPulse におけるさまざまなイベントの処理方法について説明します。
 
-## イベントの種類概要
+## イベントの種類の概要
 
-ErisPulse は以下のイベントの種類をサポートしています：
+ErisPulse は以下のイベントの種類をサポートしています。
 
 | イベントの種類 | 説明 | 適用場面 |
 |---------|------|---------|
-| メッセージイベント | ユーザーが送信するすべてのメッセージ | チャットボット、コンテンツフィルタリング |
-| コマンドイベント | コマンドプレフィックスで始まるメッセージ | コマンド処理、機能の入口 |
-| 通知イベント | システム通知（友達追加、グループメンバー変更など） | メッセージの歓迎、ステータス通知 |
+| メッセージイベント | ユーザーが送信した任意のメッセージ | チャットボット、コンテンツフィルタリング |
+| コマンドイベント | コマンド接頭辞で始まるメッセージ | コマンド処理、機能のエントリポイント |
+| 通知イベント | システム通知（友達追加、グループメンバーの変更など） | メッセージの歓迎、状態通知 |
 | 要求イベント | ユーザーの要求（友達リクエスト、グループ招待） | 要求の自動処理 |
-| メタイベント | システムレベルのイベント（接続、ハートビート） | 接続監視、ステータスチェック |
+| 元イベント | システムレベルのイベント（接続、ハートビート） | 接続監視、状態チェック |
 
 ## メッセージイベントの処理
 
-> **ヒント**: イベントハンドラで `Event` タイプの注釈を使用することを推奨します。これにより、IDEの自動補完と型チェックがサポートされます。
+> **注意**: IDEの自動補完と型チェックのサポートを得るために、イベントハンドラで `Event` クラスの型注釈を使用することを推奨します。
 
 ```python
-from ErisPulse.Core.Event import Event  # イベントの型を注釈に使用
+from ErisPulse.Core.Event import Event  # Event型の注釈に使用するイベント型をインポート
 ```
 
 ### すべてのメッセージを監視
@@ -31,7 +31,7 @@ from ErisPulse.Core.Event import message, Event
 async def message_handler(event: Event):
     text = event.get_text()
     user_id = event.get_user_id()
-    sdk.logger.info(f"{user_id} からのメッセージを受け取りました: {text}")
+    sdk.logger.info(f"{user_id} からのメッセージを受信しました: {text}")
 ```
 
 ### プライベートメッセージを監視
@@ -40,10 +40,10 @@ async def message_handler(event: Event):
 @message.on_private_message()
 async def private_handler(event: Event):
     user_id = event.get_user_id()
-    await event.reply(f"こんにちは、{user_id}！これはプライベートメッセージです。")
+    await event.reply(f"こんにちは、{user_id}さん！これはプライベートメッセージです。")
 ```
 
-### グループチャットメッセージを監視
+### グループメッセージを監視
 
 ```python
 @message.on_group_message()
@@ -60,33 +60,33 @@ async def group_handler(event: Event):
 async def at_handler(event: Event):
     # @されたユーザーのリストを取得
     mentions = event.get_mentions()
-    await event.reply(f"あなたが@したユーザー: {mentions}")
+    await event.reply(f"以下のユーザーを@しました: {mentions}")
 ```
 
 ### ワイルドカードと正規表現による監視
 
-`on_message` / `on_private_message` / `on_group_message` / `on_at_message` の4つのメッセージデコレータは、`pattern`（globワイルドカード）と `regex`（正規表現）をサポートしています。一致しないメッセージは**ハンドラをトリガーしません**：
+4つのメッセージデコレータ（`on_message` / `on_private_message` / `on_group_message` / `on_at_message`）は、`pattern`（globワイルドカード）と `regex`（正規表現）をサポートしており、パターンに一致しないメッセージは**ハンドラをトリガーしません**。
 
 ```python
 # globワイルドカード：* 任意の文字列、? 1文字、[seq] 文字集合
 @message.on_message(pattern="签到*")
 async def signin_handler(event: Event):
-    await event.reply("签到成功")
+    await event.reply("サインインに成功しました")
 
-# 正規表現：金額を一致させる
+# 正規表現：金額をマッチ
 @message.on_message(regex=r"\d+\s*元")
 async def price_handler(event: Event):
-    await event.reply(f"金額を受け取りました: {event.get_text()}")
+    await event.reply(f"金額を受信しました: {event.get_text()}")
 
-# pattern と regex が同時に与えられた場合 → 両方とも一致する必要がある
+# pattern と regex 両方指定 → 両方ともマッチする必要がある
 @message.on_message(pattern="*元", regex=r"\d+\s*元")
 async def combined_handler(event: Event):
     pass
 ```
 
-`wait_reply` はこの2つのパラメータもサポートしています（[返信の待機機能](../developer-guide/modules/event-wrapper.md#待機返信機能)を参照）。
+`wait_reply` でもこの2つのパラメータをサポートしています（[返信の待ち機能](../developer-guide/modules/event-wrapper.md#返信の待ち機能)を参照してください）。
 
-## コマンドイベントの処理
+## コマンドイベント処理
 
 ### 基本コマンド
 
@@ -96,8 +96,8 @@ from ErisPulse.Core.Event import command
 @command("help", help="ヘルプ情報を表示")
 async def help_handler(event):
     help_text = """
-使用可能なコマンド:
-/help - ヘルプ情報を表示
+利用可能なコマンド：
+/help - ヘルプを表示
 /ping - 接続をテスト
 /info - 情報を表示
     """
@@ -107,7 +107,7 @@ async def help_handler(event):
 ### コマンドのエイリアス
 
 ```python
-@command(["help", "h"], aliases=["帮助"], help="ヘルプ情報を表示")
+@command(["help", "h"], aliases=["help", "h"], help="ヘルプ情報を表示")
 async def help_handler(event):
     await event.reply("ヘルプ情報...")
 ```
@@ -115,12 +115,12 @@ async def help_handler(event):
 ユーザーは以下のいずれかの方法で呼び出すことができます：
 - `/help`
 - `/h`
-- `/帮助`
+- `/help`
 
-### コマンドの引数
+### コマンド引数
 
 ```python
-@command("echo", help="メッセージを返す")
+@command("echo", help="メッセージを返信")
 async def echo_handler(event):
     # コマンド引数を取得
     args = event.get_command_args()
@@ -145,16 +145,16 @@ async def stop_handler(event):
 
 ### コマンドの権限とアクセス制御
 
-コマンドの権限は3層に分かれています（**上層が拒否された場合は下層は見られません**）：
+コマンドの権限は3層に分かれ、上から順に判定されます（**上層が拒否された場合、下層は確認されません**）：
 
 ```python
-# ① コマンドのACL（ユーザー側設定）：コマンドのユーザーのホワイトリスト/ブラックリストで、拒否された場合は「権限がありません」と返します
-# ② master=True —— フレームワークのオーナーのみ実行可能（フレームワークが自動的にチェックし、拒否された場合は「権限がありません」と返します）
+# ① コマンド権限 ACL（ユーザー側設定）：コマンドごとのユーザーの白黒リスト、拒否時は「権限不足」を返信
+# ② master=True —— フレームワークの所有者のみ実行可能（フレームワークが自動的にチェック、拒否時は「権限不足」を返信）
 @command("restart", master=True, help="モジュールを再起動")
 async def restart_handler(event):
     await event.reply("モジュールを再起動しました")
 
-# ③ permission=関数呼び出し —— コマンド自身の制御ロジック（Trueを返した場合にのみ実行）
+# ③ permission=関数 —— コマンド自身の制御ロジック（Trueを返す場合に実行）
 def is_admin(event):
     return event.get_user_id() in {"user123", "user456"}
 
@@ -163,33 +163,36 @@ async def panel_handler(event):
     await event.reply("管理パネルへようこそ")
 ```
 
-**コマンドのACL**（コントロール面 `ErisPulse.scope.commands`）：ユーザーは任意のコマンドにユーザーのホワイトリスト/ブラックリストを設定でき、コマンド名は正確な一致とglobパターン（例：`"roll*"`）をサポートします。拒否された場合は「権限がありません」と返します：
+**コマンドユーザー ACL**（`ErisPulse.event.command.acl`）：ユーザーは任意のコマンドにユーザーの白黒リストを設定できます。コマンド名は正確な一致と glob モード（例：`"roll*"`）をサポートし、拒否時は「権限不足」を返信します：
 
 ```toml
-# config.toml —— restartを123456のみ実行可能に、666は一律拒否
-[ErisPulse.scope.commands.restart]
+# config.toml —— restart は 123456 だけが実行可能、666 は一律拒否
+[ErisPulse.event.command.acl.restart]
 allow = ["onebot11:123456"]
 deny = ["onebot11:666"]
 ```
 
-判定順序：`deny`が一致した場合 → 拒否；`allow`が空で一致しない場合 → 拒否；それ以外は開発者のデフォルトに任せる（`master=True` / `permission`）。実行時のAPI（コマンド名はglobパターンをサポート）：
+判定順序：`deny` が一致 → 拒否；`allow` が空でないかつ一致しない → 拒否；ACL が設定されていない場合は `event.command.default_allow`（`false` = 厳格モード、ACL がないと拒否；`true` の場合は開発者がデフォルトで `master=True` / `permission` を使用）に従います。実行時の API（コマンド名は glob に対応）：
 
 ```python
-from ErisPulse import sdk
-sdk.scope.allow_user("restart", "onebot11", "123456")   # 許可リスト
-sdk.scope.deny_user("restart", "onebot11", "666")       # 拒否リスト
-sdk.scope.remove_acl("restart")                          # ホワイトリスト/ブラックリストを削除
-sdk.scope.get_acl("restart")                             # 現在のリストを取得
+from ErisPulse.Core.Event import command
+
+command.allow_user("restart", "onebot11", "123456")   # 許可リスト
+command.deny_user("restart", "onebot11", "666")       # 拒否リスト
+command.remove_acl("restart")                          # 白黒リストを削除
+command.get_acl("restart")                             # 現在のリストを取得
 ```
 
-コマンド間 / ユーザー間の**イベントレベル**のアクセス制御（特定のユーザー / グループ / Botのメッセージを受信するかどうか）は、コントロール面の**アイデンティティ次元**（`scope.identity`）で行います。**モジュールレベル**の可用性（どのモジュールが使えるか）は、コントロール面の**モジュール次元**（`scope.platforms / bots / sessions`）で行います。詳細は[統一コントロール面](../advanced/scope.md)を参照してください。
+> コマンドハンドラはイベントパッケージからインポート：`from ErisPulse.Core.Event import command`；SDK イベントパッケージからもアクセス可能：`sdk.Event.command`（どちらも同一のシングルトンです）。モジュール内では通常、コマンドデコレータと共にインポートされています（`from ErisPulse.Core.Event import command`）。
 
-> おすすめ：コマンド内部でビジネスロジックを連動させる場合は `master=True` / `permission` を使用してください。ユーザー / グループごとのアクセス制御が必要な場合はコントロール面のアイデンティティ次元を使用してください。モジュールの可用性を制御する場合はコントロール面のモジュール次元を使用してください。
+コマンド間 / ユーザー間の**イベントレベル**のアクセス制御（特定のユーザー / 群 / Bot のメッセージを受信するかどうか）は**スコープのアイデンティティ次元**（`scope.identity`）を介して行います。**モジュールレベル**の可用性（どのモジュールが使用できるか）は**スコープのモジュール次元**（`scope.platforms / bots / sessions`）を介して行います。詳細は[スコープ（scope）](../advanced/scope.md)をご覧ください。
+
+> 建議：コマンド内部でビジネスロジックを連動させる場合は `master=True` / `permission` を使用してください。純粋にユーザー / 群によるアクセス制御を行う場合はスコープのアイデンティティ次元を使用し、モジュールの可用性を制御する場合はスコープのモジュール次元を使用してください。
 
 ### コマンドの優先度
 
 ```python
-# 優先度の値が大きいほど、実行が早くなります
+# 優先度の数値が大きいほど、実行が早くなります
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     await event.reply("高優先度のハンドラ")
@@ -201,26 +204,26 @@ async def low_priority_handler(event):
 
 ### 並列イベント処理
 
-ErisPulseのイベントシステムは**同じ優先度では並列、異なる優先度では直列**のスケジューリングモデルを採用しています：
+ErisPulse のイベントシステムは**同優先度は並列、異なる優先度は直列**のスケジューリングモデルを採用しています：
 
 ```
 イベント到着
     ↓
-priority=10 組: [ハンドラC || ハンドラD] 並列 → 結果を結合
-    ↓ (中断しない場合)
-priority=0 組: [ハンドラA || ハンドラB] 並列 → 結果を結合
+priority=10 組: [ハンドラC || ハンドラD] 並列 → 結果をマージ
+    ↓ (中断されていない場合)
+priority=0 組: [ハンドラA || ハンドラB] 並列 → 結果をマージ
     ↓
 ...
 ```
 
-- **同じ優先度の並列実行**：優先度が同じ複数のハンドラは同時に実行され、スループットが向上します
-- **異なる優先度の直列実行**：異なる優先度のグループは順番に実行され（値が大きいほど先に実行されます）、高優先度のハンドラが先に実行されます
-- **Copy-On-Write**：ハンドラが変更しない限りコピーを作成せず、オーバーヘッドをゼロにします
-- **競合処理**：同じ優先度の複数のハンドラが同じフィールドを変更した場合、最後の変更値を使用し、警告ログを記録します
-- **中断機構**：任意のハンドラが `event.done()`（デフォルト）または `event.done(claim=False)` を呼び出した後は、後続の低優先度のグループをスキップします。認領とブロックの違いは下記の[「チェーン制御：認領とブロック」](#チェーン制御認領とブロック)を参照してください。
+- **同優先度の並列処理**：優先度が同じ複数のハンドラは同時に実行され、スループットが向上します
+- **異なる優先度の直列処理**：異なる優先度のグループは順に実行されます（数値が大きいほど先に実行）、高優先度のハンドラが先に実行されることを保証します
+- **Copy-On-Write**：ハンドラが変更しない場合はコピーを作成せず、ゼロオーバーヘッドを確保します
+- **競合処理**：同優先度の複数のハンドラが同じフィールドを変更した場合、最後に変更された値が使用され、警告ログが記録されます
+- **中断機構**：任意のハンドラが `event.done()`（デフォルト）または `event.done(claim=False)` を呼び出した後、後続の低優先度グループはスキップされます。認領とブロックの違いは以下の[「リンク制御：認領とブロック」](#リンク制御認領とブロック)をご覧ください。
 
 ```python
-# 例：同じ優先度のハンドラが並列実行される
+# 例：同優先度のハンドラが並列に実行される
 @message.on_message(priority=0)
 async def handler_a(event):
     # タスクAを処理
@@ -228,93 +231,156 @@ async def handler_a(event):
 
 @message.on_message(priority=0)
 async def handler_b(event):
-    # handler_aと並列に実行
+    # handler_a と並列に実行される
     event['result_b'] = process_b()
 
-# 異なる優先度のハンドラが直列実行される
+# 異なる優先度で直列に実行される
 @message.on_message(priority=10)
 async def handler_c(event):
-    # 優先度が最も高い、最初に実行される
+    # 最も優先度が高く、最初に実行される
     pass
 ```
 
-> **並列上限**：すべてのマッチするハンドラのTaskは**即座に作成**されますが、シグナルマニュアルで**同時に実行される数**を制限します。デフォルトの上限は **64**（`ErisPulse.framework.handler_max_concurrency`、ホットアップデートが可能です）。上限を超えたTaskはシグナルマニュアルで待ち、前の処理が完了した後に実行されます。イベントのピーク時にはこれが「圧力調整弁」になります。
+> **並列上限**：すべてのマッチするハンドラの Task は**即座に作成**されますが、同時に実行される数を制限する信号量によって管理されます。デフォルトの上限は **64**（`ErisPulse.framework.handler_max_concurrency`、ホットアップデート対応）です。上限を超えた Task は信号量上で待ち、前の処理が完了した後に実行されます。イベントのピーク時に、これはあなたの「圧力緩和弁」になります。
 >
-> **遅延ログ**：個々のハンドラが1秒以上かかる場合、フレームワークはログにWARNINGを出力します（`handler_slow`）。`wait_reply`の待機時間は処理時間から差し引かれるため、「相手の返信を待つ」ことで誤って遅延と判定されることはありません。
+> **スローログ**：個々のハンドラの処理時間が **1 秒**を超える場合、フレームワークはログに WARNING（`handler_slow`）を出力します。`wait_reply` の待機時間は処理時間から除外され、「返信を待つ」ことで誤ったスローログが発生することはありません。
 
-## コントロール面フィルタリング：なぜ私のモジュールはメッセージを受け取らないのか
+## スコープフィルタリング：なぜ私のモジュールはメッセージを受け取らないのか
 
-イベントが到着した後、2つの**静的な**フィルタがあります（どちらも返信やエラーを出さない）：
+イベントが到達した後、2 つの**静黙**フィルタリング（返答もエラーも出さない）が存在します：
 
-1. **アイデンティティ次元**（`ErisPulse.scope.identity`）：イベントが分岐エントリに到達した時点で、ユーザー > グループ > Bot > アダプターの順に、イベントを受信するかどうかを判定します。拒否された**イベント全体**は破棄され、どのハンドラ（コマンドディスパッチャーを含む）もトリガーされません。
-2. **モジュール次元**（`ErisPulse.scope`）：イベントが特定のモジュールのハンドラ/コマンドに到達した時点で、セッション > Bot > プラットフォームの順に、そのモジュールが利用可能かどうかを判定し、**通過しない場合は静かにスキップ**されます。
+1. **アイデンティティ次元**（`ErisPulse.scope.identity`）：イベントが配信エントリポイントに到達した時点で、ユーザー > グループ > Bot > アダプタの順に判定し、受信するかどうかを決定します。  
+   拒否された**イベント全体**は直接破棄され、コマンドディスパッチャーを含むすべてのハンドラはトリガされません。
+2. **モジュール次元**（`ErisPulse.scope`）：イベントが特定のモジュールのハンドラ/コマンドに到達した時点で、セッション > Bot > プラットフォームの順に判定し、そのモジュールが有効かどうかを確認します。**判定に失敗した場合、静黙でスキップされます**。
 
 ```toml
-# 例1：特定のグループのすべてのメッセージをブロック
+# 例1：特定のグループのすべてのメッセージを伝播させない
 [ErisPulse.scope.identity.sessions.onebot11."group_123"]
 deny = true
 
-# 例2：特定のBotからMyModuleをブロック
+# 例2：特定の Bot に対して MyModule をブロックする
 [ErisPulse.scope.bots.onebot11."123456"]
 blocked = ["MyModule"]
 ```
 
-この場合、特定のグループのメッセージが到着したとき、`MyModule`のコマンドとイベントハンドラは**すべてがスケジュールされません**。これはバグではなく、フィルタリング機構です。モジュールが反応しない場合のトラブルシューティングでは、まずコントロール面のアイデンティティとモジュールのバインディングを確認してください。
+この場合、そのグループのメッセージが到達したときに、`MyModule` のコマンドとイベントハンドラは**どちらもスケジュールされません**。これはバグではなく、フィルタリング機構です。モジュールが反応しないことを調査する際には、まず作用域のアイデンティティとモジュールのバインディングを確認してください。
 
-- フィルタリングログは**TRACE**レベルでのみ表示されます（`core.scope.identity_denied` / `core.scope.denied`）、デフォルトのINFOレベルでは何も表示されません
-- フレームワークレベルのハンドラ（`scope_exempt=True`）は**モジュール次元**の影響を受けませんが、**アイデンティティ次元**の影響を受けます（イベント全体が破棄されているため）
-- コマンド実行前に3番目のフィルタがあります：コマンドのACL（拒否された場合は「権限がありません」と返します、上記参照）
+- フィルタリングログは **TRACE** レベルでのみ表示されます（`core.scope.identity_denied` / `core.scope.denied`）。デフォルトの INFO レベルでは、ログの痕跡は一切表示されません。
+- フレームワークレベルのハンドラ（コマンドディスパッチャーなど、`scope_exempt=True`）は**モジュール次元**の影響を受けませんが、**アイデンティティ次元**の影響を受けます（イベント全体がすでに破棄されているため）。
+- コマンド実行前に 3 番目のフィルタリングがあります：コマンドユーザー ACL（拒否された場合、「権限不足」と返答します。前節参照）。
+- 4 番目のフィルタリングは**イベントオーバーライド**です（次節参照）。
 
-> 5つの次元の設定、マッチングの構文、実行時のAPIは[統一コントロール面](../../advanced/scope.md)を参照してください。
+> 作用域の設定、マッチングの構文、実行時の API については、[作用域（scope）](../../advanced/scope.md) を参照してください。
 
-## チェーン制御：認領とブロック
+## イベントのオーバーライド：モジュールのコードを変更せずに、任意のイベントタイプの動作を上書き
 
 > [!NOTE]
-> `event.done()` / `event.mark_processed()` の `claim=` / `stop=` パラメータは、ErisPulse **2.7.1+** が必要です。
+> この機能には ErisPulse **2.8.0+** が必要です。
 
-ErisPulseは「認領」と「ブロック」の2つの正交的な意味を分離し、`event.done()`で統一的に制御することで、コマンド処理の周囲にログ、監査、権限などの観測層を重ねることが容易になります。
+イベントハンドラは登録時に宣言するパラメータ（`pattern` / `regex` / `master` / `hidden` など）は、**開発者のデフォルト**にすぎません。
+統一されたオーバーライドシステムにより、ユーザーは**イベントタイプ**ごとに任意のモジュールの動作を上書きできます。OneBot12 標準タイプ
+（meta / message / notice / request）と ErisPulse 拡張タイプ（command）はそれぞれ独自の上書き可能なパラメータを持ちます：
 
-**2つの概念の正確な定義：**
+| イベントタイプ | 上書き可能なパラメータ | 作用 |
+|---------|-----------|------|
+| `message` | `pattern` / `regex` / `detail_types` | テキストのトリガ条件 + メッセージのサブタイプホワイトリスト |
+| `notice` | `detail_types` / `pattern` / `regex` | 通知のサブタイプホワイトリスト + テキスト条件 |
+| `request` | `detail_types` / `pattern` / `regex` | 要求のサブタイプホワイトリスト + テキスト条件 |
+| `meta` | `detail_types` | 元イベントのサブタイプホワイトリスト（connect / heartbeat など） |
+| `command` | `master` / `hidden` / `aliases` / `prefix` / `help` / `usage` | コマンド実装パラメータ（ユーザー優先） |
+| `acl`（command 専用） | `allow` / `deny` | コマンドのユーザーのホワイトリスト/ブラックリスト（コマンド名の glob で） |
 
-- **認領（claim）**：イベントがこのハンドラによって処理されたことをマークします（`_processed`に書き込み）。コマンドディスパッチャーは認領されたイベントを見ると**重複を避ける**ためにスキップします。典型的な場面：コマンドがマッチした後に認領し、コマンドディスパッチャーが再び介入しないようにする。
-- **ブロック（stop）**：イベントが**より低い優先度**のハンドラに伝播しないようにします（`_propagation_stopped`に書き込み）。より低い優先度のハンドラ（`on_message`など）はこのイベントを見られなくなります。典型的な場面：高優先度のハンドラがイベントを完全に処理した後、より低い優先度のハンドラが実行されないようにする。
+```toml
+# message：テキストのトリガ条件を上書き（コード内の条件と AND）
+[ErisPulse.event.overrides.message.ChatModule]
+pattern = "闲聊*"
 
-| `event.done(...)` | 認領 | ブロック | 場面 |
-|-------------------|------|------|------|
-| `event.done()` | ✔ | ✔ | コマンド / ハンドラが処理完了した標準的なやり方 |
-| `event.done(stop=False)` | ✔ | ✘ | 認領のみ、低優先度の観測者（ログ / 統計）が引き続きイベントを見られるようにする |
-| `event.done(claim=False)` | ✘ | ✔ | ブロックのみ（ファイアウォール / リミッターなど）、認領は行わない |
+# notice：特定の通知サブタイプのみ対応
+[ErisPulse.event.overrides.notice.MyModule]
+detail_types = ["group_increase"]
 
-`event.done(claim=, stop=)` は `event.mark_processed(claim=, stop=)` の別名であり、パラメータと動作は完全に等価です。
+# command：実装パラメータを上書き（ユーザー優先——開発者のデフォルトを厳しくしたり緩めたりできる）
+[ErisPulse.event.overrides.command.MyModule.restart]
+master = true
+hidden = true
+
+# acl：コマンドのユーザーのホワイトリスト/ブラックリスト（コマンド間 glob）
+[ErisPulse.event.overrides.acl."roll*"]
+allow = ["onebot11:u_vip"]
+
+# ACL のデフォルト（false = 厳格モード：ACL がない場合は拒否）
+acl_default_allow = true
+```
+
+実行時 API（`from ErisPulse.Core.Event import overrides` または `sdk.Event.overrides`、
+**タイプのサブネームスペース**——各タイプごとに `set` / `get` / `delete` の三つの関数が対称）：
+
+```python
+from ErisPulse.Core.Event import overrides
+
+overrides.message.set("ChatModule", pattern="闲聊*")   # message のテキスト条件
+overrides.notice.set("MyModule", detail_types=["group_increase"])
+overrides.command.set("MyModule", "restart", master=True)  # コマンドのパラメータ
+overrides.acl.set("roll*", deny=["onebot11:u_bad"])    # コマンドのユーザーのブラックリスト
+
+overrides.message.get("ChatModule")     # {"pattern": "闲聊*"}
+overrides.message.delete("ChatModule")  # 開発者のデフォルトに戻す
+```
+
+- 上書き条件とハンドラのコード内の条件は**両方有効**（AND 論理）；`command` パラメータは開発者が宣言した内容と**深くマージ**（上書きが優先）
+- `detail_types`：イベントに `detail_type` がない場合でも許可（未知のイベントを誤って拒否しない）
+- `pattern` / `regex`：テキストがないイベント（connect / heartbeat など）は制約を受けず、直接許可
+- `command` の上書きキー `master` は同期してストレージキー `must_master` にマッピングされる；コマンドの禁止はすべて `acl` deny を通る
+- 設定を変更すると即座に有効（ホットアップデート）、フォーマットの検証は警告（未知のパラメータ / 不正な項目は無視）
+
+## リンク制御：認領とブロッキング
+
+> [!NOTE]  
+> `event.done()` / `event.mark_processed()` の `claim=` / `stop=` パラメータは、この機能には ErisPulse **2.7.1+** が必要です。
+
+ErisPulse では、「認領」と「ブロッキング」の2つの正交的な概念を分離し、`event.done()` で一元的に制御することで、コマンド処理の周囲にログ、監査、権限などの観測層を重ねることが容易になります。
+
+**2つの概念の正確な定義は以下の通りです：**
+
+- **認領（claim）**：イベントがこのプロセッサによって処理されたことをマークします（`_processed` に書き込みます）。コマンドディスパッチャーは、認領済みのイベントを見ると**重複処理をスキップ**します——同じメッセージが複数のコマンドプロセッサに重複して処理されるのを防ぎます。典型的な場面：コマンドがマッチした後に認領し、コマンドディスパッチャーが再び介入しないようにします。
+- **ブロッキング（stop）**：イベントが**より低い優先度**のプロセッサに伝播するのを阻止します（`_propagation_stopped` に書き込みます）。低優先度のプロセッサ（例：`on_message`）は、このイベントを見なくなります。典型的な場面：高優先度のプロセッサがイベントを完全に処理した後、低優先度のプロセッサが再度実行されないようにします。
+
+| `event.done(...)` | 認領 | ブロッキング | 場面 |
+|-------------------|------|--------------|------|
+| `event.done()` | ✔ | ✔ | コマンド / プロセッサが処理完了した際の標準的な方法 |
+| `event.done(stop=False)` | ✔ | ✘ | 認領のみ：低優先度の観測者（ログ / 統計）は引き続きイベントを見ることができます |
+| `event.done(claim=False)` | ✘ | ✔ | ブロッキングのみ（例：ファイアウォール / 限流）：認領は行わず、重複処理は防ぎません |
+
+`event.done(claim=, stop=)` は `event.mark_processed(claim=, stop=)` の別名であり、両者はパラメータと動作が完全に等価です。
 
 ```python
 @command("help")
 async def help_cmd(event):
-    event.done()            # 認領 + ブロック（コマンド処理完了の標準的なやり方）
+    event.done()            # 認領 + ブロッキング（コマンド処理完了の標準的な方法）
 
 @message.on_message(priority=50)
 async def observer(event):
-    event.done(stop=False)  # 認領のみ：低優先度ハンドラは引き続き実行される（ログ / 統計）
+    event.done(stop=False)  # 認領のみ：低優先度の処理が引き続き実行されます（ログ / 統計）
 
 @message.on_message(priority=100)
 async def firewall(event):
     if denied(event):
-        event.done(claim=False)  # ブロックのみ：低優先度ハンドラは実行されないが、認領は行わない
+        event.done(claim=False)  # ブロッキングのみ：低優先度の処理は実行されませんが、重複処理は防ぎません
 ```
 
 ### コマンドと返信の block 設定
 
-コマンドがマッチした後 / `wait_reply` が返信をマッチした後、デフォルトで伝播をブロックします（後方互換性）。これを解除して、低優先度ハンドラ（ログ / 監査 / 権限）がこれらのメッセージを観測できるようにすることができます：
+コマンドがマッチした場合や `wait_reply` が返信をマッチした場合、デフォルトでは伝播をブロックします（後方互換性のため）。この設定を変更することで、低優先度のプロセッサ（ログ / 監査 / 権限）がこれらのメッセージを観測できるようにすることができます：
 
 ```toml
 [ErisPulse.event.command]
-block = false   # コマンドメッセージが低優先度ハンドラに伝播し続ける
+block = false   # コマンドメッセージは低優先度のプロセッサに引き続き伝播します
 
 [ErisPulse.event.wait_reply]
-block = false   # wait_reply で消費された返信が低優先度ハンドラに伝播し続ける
+block = false   # wait_reply によって消費された返信は低優先度のプロセッサに引き続き伝播します
 ```
 
-## 通知イベントの処理
+## 通知イベント処理
 
 ### 友達追加
 
@@ -325,32 +391,32 @@ from ErisPulse.Core.Event import notice
 async def friend_add_handler(event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname() or "新朋友"
-    await event.reply(f"友達追加ありがとうございます、{nickname}！")
+    await event.reply(f"欢迎添加我为好友，{nickname}！")
 ```
 
-### グループメンバーの追加
+### グループメンバーの増加
 
 ```python
 @notice.on_group_increase()
 async def member_increase_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    await event.reply(f"新メンバー {user_id} がグループ {group_id} に参加しました")
+    await event.reply(f"欢迎新成员 {user_id} 加入群 {group_id}")
 ```
 
-### グループメンバーの削除
+### グループメンバーの減少
 
 ```python
 @notice.on_group_decrease()
 async def member_decrease_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    await event.reply(f"メンバー {user_id} がグループ {group_id} を離脱しました")
+    await event.reply(f"成员 {user_id} 离开了群 {group_id}")
 ```
 
-## 要求イベントの処理
+## リクエストイベント処理
 
-### 友達リクエスト
+### フレンドリクエスト
 
 ```python
 from ErisPulse.Core.Event import request
@@ -360,10 +426,10 @@ async def friend_request_handler(event):
     user_id = event.get_user_id()
     comment = event.get_comment()
     
-    sdk.logger.info(f"友達リクエストを受け取りました: {user_id}, 附言: {comment}")
+    sdk.logger.info(f"フレンドリクエストを受け取りました: {user_id}, 付言: {comment}")
     
-    # アダプターAPIを使ってリクエストを処理することもできます
-    # 具体的な実装は各アダプターのドキュメントを参照してください
+    # アダプタAPIを使ってリクエストを処理できます
+    # 具体的な実装は各アダプタのドキュメントを参照してください
 ```
 
 ### グループ招待リクエスト
@@ -374,10 +440,10 @@ async def group_request_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
     
-    await event.reply(f"グループ {group_id} からの招待を受け取りました、{user_id} さん")
+    await event.reply(f"グループ {group_id} からの招待を受け取りました, 送信元: {user_id}")
 ```
 
-## メタイベントの処理
+## 元イベント処理
 
 ### 接続イベント
 
@@ -401,42 +467,42 @@ async def disconnect_handler(event):
 @meta.on_heartbeat()
 async def heartbeat_handler(event):
     platform = event.get_platform()
-    sdk.logger.debug(f"{platform} ハートビート検査")
+    sdk.logger.debug(f"{platform} ハートビート検出")
 ```
 
-### Botのステータス照会
+### Bot 状態の照会
 
-アダプターがメタイベントを送信した後、フレームワークは自動的にBotのステータスを追跡し、いつでも照会できます：
+アダプターが meta イベントを送信すると、フレームワークは自動的に Bot 状態を追跡します。いつでも照会することができます。
 
 ```python
 from ErisPulse import sdk
 
-# 特定のBotがオンラインかどうかをチェック
+# 特定の Bot がオンラインかどうかを確認
 if sdk.adapter.is_bot_online("telegram", "123456"):
     telegram = sdk.adapter.get("telegram")
-    await telegram.Send.To("user", "123456").Text("Botはオンラインです")
+    await telegram.Send.To("user", "123456").Text("Bot はオンラインです")
 
-# 現在オンラインのすべてのBotをリストアップ
+# 現在オンラインの Bot を一覧表示
 bots = sdk.adapter.list_bots()
 for platform, bot_list in bots.items():
     for bot_id, info in bot_list.items():
         print(f"{platform}/{bot_id}: {info['status']}")
 
-# 完全なステータスサマリーを取得
+# 完全な状態サマリーを取得
 summary = sdk.adapter.get_status_summary()
 ```
 
-## インタラクティブな処理
+## 交互処理
 
-### replyメソッドを使用して返信を送信
+### reply メソッドを使用した返信の送信
 
-`event.reply()`メソッドは、@、返信などの機能を含むさまざまな修飾パラメータをサポートし、メッセージの送信を容易にします：
+`event.reply()` メソッドは、@メンションや返信などの機能を備えた様々な修飾パラメータをサポートしています：
 
 ```python
 # 簡単な返信
 await event.reply("こんにちは")
 
-# 異なるタイプのメッセージを送信
+# 異なるタイプのメッセージの送信
 await event.reply("http://example.com/image.jpg", method="Image")  # 画像
 await event.reply("http://example.com/voice.mp3", method="Voice")  # 音声
 
@@ -444,15 +510,15 @@ await event.reply("http://example.com/voice.mp3", method="Voice")  # 音声
 await event.reply("こんにちは", at_users=["user123"])
 
 # 複数のユーザーを@する
-await event.reply("こんにちは", at_users=["user1", "user2", "user3"])
+await event.reply("皆さんこんにちは", at_users=["user1", "user2", "user3"])
 
-# メッセージに返信
-await event.reply("返信内容", reply_to="msg_id")
+# メッセージを返信する
+await event.reply("返信の内容", reply_to="msg_id")
 
 # 全員を@する
-await event.reply("公告", at_all=True)
+await event.reply("お知らせ", at_all=True)
 
-# @ユーザーと返信メッセージを組み合わせて使用
+# 組み合わせ: @ユーザー + メッセージの返信
 await event.reply("内容", at_users=["user1"], reply_to="msg_id")
 ```
 
@@ -461,32 +527,32 @@ await event.reply("内容", at_users=["user1"], reply_to="msg_id")
 ```python
 @command("ask", help="ユーザーに質問")
 async def ask_handler(event):
-    await event.reply("名前を入力してください:")
+    await event.reply("あなたの名前を入力してください:")
     
-    # ユーザーの返信を待つ、タイムアウトは30秒
+    # ユーザーの返信を30秒間待つ
     reply = await event.wait_reply(timeout=30)
     
     if reply:
         name = reply.get_text()
         await event.reply(f"こんにちは、{name}！")
     else:
-        await event.reply("タイムアウトしました、再度入力してください。")
+        await event.reply("タイムアウトしました。再度入力してください。")
 ```
 
-### 適切な入力を待つ
+### 検証付きの返信待ち
 
 ```python
 @command("age", help="年齢を尋ねる")
 async def age_handler(event):
     def validate_age(event_data):
-        """年齢が有効かどうかを検証"""
+        """年齢が有効かどうかを検証する"""
         try:
             age = int(event_data.get_text())
             return 0 <= age <= 150
         except ValueError:
             return False
     
-    await event.reply("年齢を入力してください (0-150):")
+    await event.reply("あなたの年齢を入力してください (0-150):")
     
     reply = await event.wait_reply(
         timeout=60,
@@ -495,12 +561,12 @@ async def age_handler(event):
     
     if reply:
         age = int(reply.get_text())
-        await event.reply(f"あなたの年齢は {age} 歳です")
+        await event.reply(f"あなたの年齢は {age} 才です")
     else:
-        await event.reply("入力が無効またはタイムアウトしました")
+        await event.reply("無効な入力またはタイムアウトしました")
 ```
 
-### コールバック付きで返信を待つ
+### コールバック付きの返信待ち
 
 ```python
 @command("confirm", help="操作を確認")
@@ -523,7 +589,7 @@ async def confirm_handler(event):
 
 ### 確認対話 (confirm)
 
-ユーザーの確認または否定を待って、組み込みの中英の確認語を自動的に認識します：
+ユーザーの確認または否定を待ち、組み込みの中国語および英語の確認語を自動的に認識します：
 
 ```python
 @command("confirm", help="操作を確認")
@@ -533,14 +599,14 @@ async def confirm_handler(event):
     else:
         await event.reply("キャンセルされました")
 
-# 自定義の確認語
+# 確認語のカスタマイズ
 if await event.confirm("続行しますか？", yes_words={"go", "続行"}, no_words={"stop", "停止"}):
     pass
 ```
 
 ### 選択メニュー (choose)
 
-ユーザーは選択肢の番号または選択肢のテキストを返信できます：
+ユーザーは選択番号または選択テキストを返信することができます：
 
 ```python
 @command("choose", help="選択")
@@ -552,15 +618,15 @@ async def choose_handler(event):
     
     if choice is not None:
         colors = ["赤", "緑", "青"]
-        await event.reply(f"選択しました：{colors[choice]}")
+        await event.reply(f"選択した色は：{colors[choice]}")
     else:
-        await event.reply("タイムアウトしました")
+        await event.reply("選択がタイムアウトしました")
 ```
 
-**マージモード**：`merge_prompt=True` の場合、選択肢をプロンプトにマージし、`method` で指定された方法で1つのメッセージとして送信します：
+**マージモード**: `merge_prompt=True` の場合、オプションはプロンプトメッセージにマージされ、ユーザーが指定した `method` で1つのメッセージとして送信されます：
 
 ```python
-# Markdownでマージしたプロンプトと選択肢を送信
+# Markdown でプロンプトとオプションをマージして送信
 choice = await event.choose(
     "## 色を選択してください\n{options}\n番号を入力してください",
     ["赤", "緑", "青"],
@@ -569,12 +635,12 @@ choice = await event.choose(
 )
 ```
 
-> `{options}` は選択肢の挿入位置を制御します；指定しない場合はプロンプトの末尾に追加されます。
-> `placeholder` パラメータでカスタムプレースホルダを指定できます（例：`placeholder="[choices]"`）。
-> `options_format="auto"`（デフォルト）は、`method` に応じてスタイルを自動的に選択します：Markdown→無序リスト、Html→順序リスト、その他→テキストリスト。
-> テキスト系メソッド（Text/Markdown/Htmlなど）はデフォルトで選択肢を末尾にマージします；非テキスト系メソッド（Imageなど）はデフォルトで選択肢を2つのメッセージに分割します。
+> `{options}` 占位符はオプションの挿入位置を制御します。指定しない場合はプロンプトの末尾に追加されます。  
+> `placeholder` パラメータを使用して占位符をカスタマイズできます（例：`placeholder="[choices]"`）。  
+> `options_format="auto"`（デフォルト）は、method に応じてスタイルを自動的に選択します：Markdown→無序リスト、Html→順序リスト、その他→テキストリスト。  
+> テキスト系メソッド（Text/Markdown/Html 等）はデフォルトでオプションを末尾にマージします。非テキスト系メソッド（Image 等）はデフォルトで2つのメッセージに分割されます。
 
-### フォーム収集 (collect)
+### フォームの収集 (collect)
 
 複数ステップでユーザーの入力を収集します：
 
@@ -596,12 +662,12 @@ async def register_handler(event):
 
 ### 任意のイベントを待つ (wait_for)
 
-条件を満たす任意のイベントを待つ、同一ユーザーに限定されない：
+同一ユーザーに限らず、条件を満たす任意のイベントを待ちます：
 
 ```python
 @command("wait_member", help="新メンバーを待つ")
 async def wait_member_handler(event):
-    await event.reply("グループメンバーの追加を待っています...")
+    await event.reply("グループメンバーの加入を待っています...")
     
     evt = await event.wait_for(
         event_type="notice",
@@ -617,14 +683,14 @@ async def wait_member_handler(event):
 
 ### 多段対話 (conversation)
 
-インタラクティブな多段対話コンテキストを作成します：
+インタラクティブな複数段対話コンテキストを作成します：
 
 ```python
 @command("survey", help="アンケート調査")
 async def survey_handler(event):
     conv = event.conversation(timeout=60)
     
-    await conv.say("アンケート調査に参加してください！")
+    await conv.say("アンケート調査に参加していただきありがとうございます！")
     
     while conv.is_active:
         reply = await conv.wait()
@@ -639,19 +705,19 @@ async def survey_handler(event):
             await conv.say("さようなら！")
             break
         
-        await conv.say(f"入力内容：{text}、続行するか「終了」を入力して終了")
+        await conv.say(f"入力された内容：{text}、継続するか、'終了'と入力して対話を終了してください")
 ```
 
 ### 組み込みの確認語
 
-ErisPulseには中英の確認語の集合が組み込まれています：
+ErisPulse には中国語および英語の確認語が組み込まれています：
 
-- **確認語** (`CONFIRM_YES_WORDS`): はい、yes、y、確認、確定、好、良い、ok、true、対、うん、行、同意、問題ない...
-- **否定語** (`CONFIRM_NO_WORDS`): いいえ、no、n、キャンセル、不、不要、だめ、cancel、false、間違っている、拒否、できない...
+- **確認語** (`CONFIRM_YES_WORDS`): はい、yes、y、確認、確定、ok、true、対、うん、行、同意、問題ない...
+- **否定語** (`CONFIRM_NO_WORDS`): いいえ、no、n、キャンセル、不要、false、錯、拒否、不可...
 
 ## イベントデータのアクセス
 
-### Eventオブジェクトの一般的なメソッド
+### Event オブジェクトの一般的なメソッド
 
 ```python
 @command("info")
@@ -678,7 +744,7 @@ async def info_handler(event):
     self_id = event.get_self_user_id()
     self_platform = event.get_self_platform()
     
-    # 原始データ
+    # 元データ
     raw_data = event.get_raw()
     raw_type = event.get_raw_type()
     
@@ -699,7 +765,7 @@ async def info_handler(event):
 
 ### プラットフォーム拡張メソッド
 
-内蔵メソッドに加えて、各プラットフォームアダプターはプラットフォーム固有のメソッドを登録し、プラットフォーム固有のデータにアクセスしやすくします。
+内蔵メソッドに加えて、各プラットフォームアダプターは、プラットフォーム固有のデータにアクセスしやすくするためのプラットフォーム固有のメソッドも登録します。
 
 ```python
 from ErisPulse.Core.Event import message
@@ -710,12 +776,12 @@ async def handle_message(event):
 
     # プラットフォームに応じて固有メソッドを呼び出す
     if platform == "telegram":
-        chat_type = event.get_chat_type()      # Telegram固有メソッド
+        chat_type = event.get_chat_type()      # Telegram 固有メソッド
     elif platform == "email":
         subject = event.get_subject()           # メール固有メソッド
 ```
 
-プラットフォームが特定のメソッドを登録しているかどうかが不明な場合は、特定のプラットフォームが登録したメソッドを確認できます：
+プラットフォームが特定のメソッドを登録しているかどうか不明な場合は、そのプラットフォームが登録したメソッドを確認できます。
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
@@ -724,24 +790,24 @@ methods = get_platform_event_methods("telegram")
 # ["get_chat_type", "is_bot_message", ...]
 ```
 
-> 各プラットフォームが登録した固有メソッドは、対応する[プラットフォームドキュメント](../platform-guide/)を参照してください。
+> 各プラットフォームが登録した固有メソッドについては、対応する [プラットフォームドキュメント](../platform-guide/) を参照してください。
 
 ## イベント処理のベストプラクティス
 
-### 1. エラーハンドリング
+### 1. 例外処理
 
 ```python
 @command("process")
 async def process_handler(event):
     try:
-        # ビジネスロジック
+        # 业务逻辑
         result = await do_some_work()
-        await event.reply(f"結果: {result}")
+        await event.reply(f"结果: {result}")
     except ValueError as e:
-        # 予期されたビジネスエラー
+        # 预期的业务错误
         await event.reply(f"パラメータエラー: {e}")
     except Exception as e:
-        # 予期されないエラー
+        # 未预期的错误
         sdk.logger.error(f"処理失敗: {e}")
         await event.reply("処理失敗、後でもう一度お試しください")
 ```
@@ -754,9 +820,9 @@ async def message_handler(event):
     user_id = event.get_user_id()
     text = event.get_text()
     
-    sdk.logger.info(f"メッセージを処理: {user_id} - {text}")
+    sdk.logger.info(f"メッセージを処理中: {user_id} - {text}")
     
-    # モジュール固有のログを使用
+    # モジュール独自のログを使用
     from ErisPulse import sdk
     logger = sdk.logger.get_child("MyHandler")
     logger.debug(f"詳細なデバッグ情報")
@@ -767,21 +833,21 @@ async def message_handler(event):
 ```python
 @message.on_message(priority=0)
 async def conditional_handler(event):
-    """条件処理 - ハンドラ内で判断"""
-    # 特定のユーザーのメッセージのみ処理
+    """条件処理 - ハンドラ内部で判断"""
+    # 特定のユーザーのメッセージのみを処理
     if event.get_user_id() in ["bot1", "bot2"]:
         return
     
-    # 特定のキーワードを含むメッセージのみ処理
+    # 特定のキーワードを含むメッセージのみを処理
     if "キーワード" not in event.get_text():
         return
     
-    await event.reply("条件が満たされたため、メッセージを処理します")
+    await event.reply("条件が満たされ、メッセージを処理します")
 ```
 
 ## 次に進む
 
-- [よくあるタスクの例](common-tasks.md) - メッセージ送信の高度な機能（リトライ/タイムアウト/バッチ送信）を含む、よく使われる機能の実装を学ぶ
-- [プラットフォーム特性ガイド](../platform-guide/README.md) - Send DSLの連鎖送信、送信ルール、バッチ構築の完全な説明
-- [Eventラッパークラスの詳細](../developer-guide/modules/event-wrapper.md) - Eventオブジェクトの詳細を理解する
-- [ユーザー使用ガイド](../user-guide/) - 設定とモジュール管理の了解
+- [一般的なタスクの例](common-tasks.md) - 常用機能の実装方法を学びます（メッセージ送信の高度な機能：リトライ/タイムアウト/バッチ処理を含む）
+- [プラットフォームの機能ガイド](../platform-guide/README.md) - Send DSL チェーン送信、送信ルール、バッチ構築の完全な説明
+- [Event パッケージの詳細](../developer-guide/modules/event-wrapper.md) - Event オブジェクトの詳細を理解します
+- [ユーザー使用ガイド](../user-guide/) - 設定とモジュール管理について理解します
