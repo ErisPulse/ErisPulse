@@ -42,6 +42,7 @@ from .session_type import (
     # 自定义类型注册
     register_custom_type,
     unregister_custom_type,
+    unregister_custom_types_by_owner,
 )
 from .wrapper import (
     CONFIRM_NO_WORDS,
@@ -116,6 +117,7 @@ __all__ = [
     "register_event_mixin",
     "request",
     "unregister_custom_type",
+    "unregister_custom_types_by_owner",
     "unregister_event_method",
     "unregister_platform_event_methods",
 ]

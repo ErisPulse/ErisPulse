@@ -613,6 +613,28 @@ class ModuleManager(ManagerBase):
         )
         return success
 
+    async def reload(self, name: str) -> bool:
+        """
+        热重载单个模块（支持任意来源：本地插件 / PyPI 安装包）
+
+        经模块加载器完整执行 卸载旧实例 → 清理注册与 ``sys.modules`` 缓存 →
+        重新发现/导入 → 重新注册并加载 流程；依赖该模块的模块会**级联重载**。
+        本地插件（``plugins/`` 目录）来源重扫描插件目录；PyPI 安装包来源
+        重新查询 entry-point 并重导入模块代码（pip 升级后调用即可生效）。
+
+        :param name: 模块名（entry-point 名称或插件名）
+        :return: 是否重载成功（SDK 未初始化时返回 False）
+
+        :example:
+        >>> await sdk.module.reload("dice")      # 本地插件
+        >>> await sdk.module.reload("Weather")   # PyPI 安装包模块
+        """
+        loader = getattr(self._sdk, "_module_loader", None) if self._sdk else None
+        if loader is None:
+            logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
+            return False
+        return await loader.reload_module(name, self, self._sdk)
+
     async def _unload_single_module(self, module_name: str) -> bool:
         """
         {!--< internal-use >!--}
@@ -670,66 +692,8 @@ class ModuleManager(ManagerBase):
                     )
                 )
 
-            # 清理该模块注册的 i18n 翻译键（防止热重载后翻译键泄漏）
-            try:
-                i18n.unregister_domain(module_name)
-            except Exception:
-                pass
-
-            from .router import router
-
-            result = router.unregister_all_by_namespace(module_name)
-            if result["http_count"] > 0 or result["websocket_count"] > 0:
-                logger.debug(
-                    i18n.t(
-                        "core.module.unload_routes_cleaned",
-                        name=module_name,
-                        http=result["http_count"],
-                        ws=result["websocket_count"],
-                    )
-                )
-
-            from .Event import command, message, meta, notice, request
-
-            total_cleaned = 0
-            total_cleaned += command.unregister_by_owner(module_name)
-            for event_handler in [message, notice, request, meta]:
-                total_cleaned += event_handler.handler.unregister_by_owner(module_name)
-            if total_cleaned > 0:
-                logger.debug(
-                    i18n.t(
-                        "core.module.unload_handlers_cleaned",
-                        name=module_name,
-                        count=total_cleaned,
-                    )
-                )
-
-            # 自动注销模块在加载上下文内注册的主人身源 provider（作用域清理）
-            try:
-                from .master import master
-
-                provider_removed = master.unregister_by_owner(module_name)
-                if provider_removed > 0:
-                    logger.debug(
-                        i18n.t(
-                            "core.module.unload_providers_cleaned",
-                            name=module_name,
-                            count=provider_removed,
-                        )
-                    )
-            except Exception:
-                pass
-
-            # 清理该模块注册的生命周期钩子，避免闭包引用导致内存泄漏
-            lifecycle_removed = lifecycle.unregister_by_owner(module_name)
-            if lifecycle_removed > 0:
-                logger.debug(
-                    i18n.t(
-                        "core.module.lifecycle_hooks_cleaned",
-                        name=module_name,
-                        count=lifecycle_removed,
-                    )
-                )
+            # 清理模块在加载上下文内注册的全部框架资源（unload / disable 共用）
+            self._cleanup_module_registrations(module_name)
 
             if self._sdk is not None:
                 sdk_dict = getattr(self._sdk, "__dict__", {})
@@ -750,6 +714,143 @@ class ModuleManager(ManagerBase):
         except Exception as e:
             logger.error(i18n.t("core.module.unload_failed", name=module_name, error=e))
             return False
+
+    def _cleanup_module_registrations(self, module_name: str) -> None:
+        """
+        {!--< internal-use >!--}
+        清理模块在加载上下文内注册的全部框架资源（unload / disable 共用）
+
+        涵盖：i18n 翻译域、路由（命名空间 + owner 兜底：中间件 / 首页入口 /
+        非命名空间路由）、适配器事件处理器与中间件、命令与事件处理器、
+        自定义会话类型、主人身份源 provider、生命周期钩子。
+        每步失败仅记录日志，不中断后续清理（与卸载流程兜底风格一致）。
+
+        :param module_name: 模块名
+        """
+        # 清理该模块注册的 i18n 翻译键（防止热重载后翻译键泄漏）
+        try:
+            i18n.unregister_domain(module_name)
+        except Exception:
+            pass
+
+        from .router import router
+
+        result = router.unregister_all_by_namespace(module_name)
+        if result["http_count"] > 0 or result["websocket_count"] > 0:
+            logger.debug(
+                i18n.t(
+                    "core.module.unload_routes_cleaned",
+                    name=module_name,
+                    http=result["http_count"],
+                    ws=result["websocket_count"],
+                )
+            )
+
+        # 按 owner 兜底清理归属资源：中间件 / 首页入口 / 非命名空间路由
+        owner_result = router.unregister_all_by_owner(module_name)
+        if any(
+            owner_result.get(k, 0) > 0
+            for k in ("http_count", "websocket_count", "middleware_count", "home_entry_count")
+        ):
+            logger.debug(
+                i18n.t(
+                    "core.module.unload_owner_resources_cleaned",
+                    name=module_name,
+                    http=owner_result.get("http_count", 0),
+                    ws=owner_result.get("websocket_count", 0),
+                    middleware=owner_result.get("middleware_count", 0),
+                    home_entries=owner_result.get("home_entry_count", 0),
+                )
+            )
+
+        # 兜底移除模块注册的适配器事件处理器与中间件（避免卸载后仍被分发触发）
+        try:
+            if self._sdk is not None:
+                adapter_removed = self._sdk.adapter.unregister_handlers_by_owner(module_name)
+                if adapter_removed > 0:
+                    logger.debug(
+                        i18n.t(
+                            "core.module.unload_adapter_handlers_cleaned",
+                            name=module_name,
+                            count=adapter_removed,
+                        )
+                    )
+        except Exception:
+            pass
+
+        # 兜底注销模块注册的自定义会话类型
+        try:
+            from .Event import unregister_custom_types_by_owner
+
+            types_removed = unregister_custom_types_by_owner(module_name)
+            if types_removed > 0:
+                logger.debug(
+                    i18n.t(
+                        "core.module.unload_session_types_cleaned",
+                        name=module_name,
+                        count=types_removed,
+                    )
+                )
+        except Exception:
+            pass
+
+        # 兜底清理模块运行时写入（persist=False）的事件覆写
+        try:
+            from .Event import overrides
+
+            override_removed = overrides.unregister_by_owner(module_name)
+            if override_removed > 0:
+                logger.debug(
+                    i18n.t(
+                        "core.module.unload_overrides_cleaned",
+                        name=module_name,
+                        count=override_removed,
+                    )
+                )
+        except Exception:
+            pass
+
+        from .Event import command, message, meta, notice, request
+
+        total_cleaned = 0
+        total_cleaned += command.unregister_by_owner(module_name)
+        for event_handler in [message, notice, request, meta]:
+            total_cleaned += event_handler.handler.unregister_by_owner(module_name)
+        if total_cleaned > 0:
+            logger.debug(
+                i18n.t(
+                    "core.module.unload_handlers_cleaned",
+                    name=module_name,
+                    count=total_cleaned,
+                )
+            )
+
+        # 自动注销模块在加载上下文内注册的主人身源 provider（作用域清理）
+        try:
+            from .master import master
+
+            provider_removed = master.unregister_by_owner(module_name)
+            if provider_removed > 0:
+                logger.debug(
+                    i18n.t(
+                        "core.module.unload_providers_cleaned",
+                        name=module_name,
+                        count=provider_removed,
+                    )
+                )
+        except Exception:
+            pass
+
+        # 清理该模块注册的生命周期钩子，避免闭包引用导致内存泄漏
+        lifecycle_removed = lifecycle.unregister_by_owner(module_name)
+        if lifecycle_removed > 0:
+            logger.debug(
+                i18n.t(
+                    "core.module.lifecycle_hooks_cleaned",
+                    name=module_name,
+                    count=lifecycle_removed,
+                )
+            )
 
     def _purge_module_stub(self, module_name: str) -> tuple[str, Any, Any]:
         """
@@ -1140,24 +1241,9 @@ class ModuleManager(ManagerBase):
                     logger.error(i18n.t("core.module.on_unload_failed", name=module_name, error=e))
                 spawn_background(_report_cancelled())
 
-        from .router import router
-
-        router.unregister_all_by_namespace(module_name)
-
-        from .Event import command, message, meta, notice, request
-
-        command.unregister_by_owner(module_name)
-        for event_handler in [message, notice, request, meta]:
-            event_handler.handler.unregister_by_owner(module_name)
-
-        # 清理该模块注册的生命周期钩子（与 _unload_single_module 保持一致）
-        lifecycle.unregister_by_owner(module_name)
-
-        # 清理该模块注册的 i18n 翻译键
-        try:
-            i18n.unregister_domain(module_name)
-        except Exception:
-            pass
+        # 清理模块在加载上下文内注册的全部框架资源（与 unload 共用，
+        # 含 master provider / 适配器处理器 / 自定义会话类型等，保持卸载对等）
+        self._cleanup_module_registrations(module_name)
 
         if self._sdk is not None:
             sdk_dict = getattr(self._sdk, "__dict__", {})

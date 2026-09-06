@@ -26,8 +26,9 @@
 3. 读写：维度化参数方法（IDE 可补全）——
    `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`；
    另有字典式兜底 `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
-4. 事件处理器文本条件覆写见[事件覆写](event-overrides)；命令 ACL / 参数覆写见
-   [事件处理入门](../getting-started/event-handling.md)
+4. 事件处理器文本条件覆写见
+   [事件处理入门 · 事件覆写](../getting-started/event-handling.md#事件覆写不改模块代码覆写任意事件类型的行为)；
+   命令 ACL / 参数覆写见[事件处理入门](../getting-started/event-handling.md)
 {!--< /tips >!--}
 
 ## 匹配条目语法（全系统统一）

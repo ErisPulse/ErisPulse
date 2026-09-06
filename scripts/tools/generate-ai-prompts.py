@@ -256,6 +256,7 @@ SECTION_ADVANCED_MODULE = Section(
         DocEntry("懶加载系统", "advanced/lazy-loading.md"),
         DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
         DocEntry("统一控制面（scope）", "advanced/scope.md"),
+        DocEntry("归属权（owner）系统", "advanced/ownership.md"),
         DocEntry("启动流程与手动控制", "advanced/startup.md"),
     ],
 )
@@ -269,6 +270,7 @@ SECTION_ADVANCED_ADAPTER = Section(
         DocEntry("懶加载系统", "advanced/lazy-loading.md"),
         DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
         DocEntry("统一控制面（scope）", "advanced/scope.md"),
+        DocEntry("归属权（owner）系统", "advanced/ownership.md"),
         DocEntry("启动流程与手动控制", "advanced/startup.md"),
     ],
 )
@@ -285,6 +287,7 @@ SECTION_ADVANCED_FULL = Section(
         DocEntry("Conversation 多轮对话", "advanced/conversation.md"),
         DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
         DocEntry("统一控制面（scope）", "advanced/scope.md"),
+        DocEntry("归属权（owner）系统", "advanced/ownership.md"),
         DocEntry("启动流程与手动控制", "advanced/startup.md"),
     ],
 )

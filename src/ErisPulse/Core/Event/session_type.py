@@ -106,6 +106,8 @@ _custom_type_to_id_field: dict[str, str] = {}
 _custom_id_field_to_type: dict[str, str] = {}
 _custom_receive_to_send: dict[str, str] = {}
 _custom_send_to_receive: dict[str, str] = {}
+# 注册归属记录：receive_type_key → owner（模块名或适配器平台名），供卸载时兜底清理
+_custom_type_owners: dict[str, str] = {}
 
 
 def register_custom_type(
@@ -114,12 +116,17 @@ def register_custom_type(
     """
     注册自定义会话类型
 
+    注册期间若处于模块加载 / 适配器启动上下文（current_owner 已设置），
+    会自动记录归属，模块卸载或适配器关闭时自动注销对应类型。
+
     :param receive_type: 接收事件类型（detail_type）
     :param send_type: 发送目标类型
     :param id_field: 对应的ID字段名
     :param platform: 平台名称（可选，用于区分同名不同平台的类型）
     :return: 是否注册成功
     """
+    from ...runtime.context import current_owner
+
     try:
         # 如果指定了平台，添加平台前缀
         if platform:
@@ -132,6 +139,11 @@ def register_custom_type(
         _custom_id_field_to_type[id_field] = receive_type_key
         _custom_receive_to_send[receive_type_key] = send_type
         _custom_send_to_receive[send_type] = receive_type_key
+
+        # 记录归属（无 owner 上下文时不记录，与路由归属策略一致）
+        owner = current_owner.get()
+        if owner is not None:
+            _custom_type_owners[receive_type_key] = owner
 
         logger.trace(
             i18n.t("core.session.custom_type_registered", type=receive_type_key, send_type=send_type, id_field=id_field)
@@ -164,6 +176,7 @@ def unregister_custom_type(receive_type: str, platform: str | None = None) -> bo
             del _custom_id_field_to_type[id_field]
             del _custom_receive_to_send[receive_type_key]
             del _custom_send_to_receive[send_type]
+            _custom_type_owners.pop(receive_type_key, None)
 
             logger.trace(i18n.t("core.session.custom_type_unregistered", type=receive_type_key))
             return True
@@ -171,6 +184,32 @@ def unregister_custom_type(receive_type: str, platform: str | None = None) -> bo
     except Exception as e:
         logger.error(i18n.t("core.session.unregister_custom_failed", error=e))
         return False
+
+
+def unregister_custom_types_by_owner(owner: str) -> int:
+    """
+    注销指定归属者注册的全部自定义会话类型
+
+    供模块卸载 / 适配器关闭时兜底清理，避免适配器重载或模块卸载后
+    旧的自定义类型映射残留。
+
+    :param owner: 归属者（模块名或适配器平台名）
+    :return: 注销的类型数量
+    """
+    keys = [k for k, o in _custom_type_owners.items() if o == owner]
+    count = 0
+    for key in keys:
+        count += 1
+        _custom_type_owners.pop(key, None)
+        if key in _custom_type_to_id_field:
+            id_field = _custom_type_to_id_field[key]
+            send_type = _custom_receive_to_send[key]
+            del _custom_type_to_id_field[key]
+            _custom_id_field_to_type.pop(id_field, None)
+            del _custom_receive_to_send[key]
+            _custom_send_to_receive.pop(send_type, None)
+        logger.trace(i18n.t("core.session.custom_type_unregistered", type=key))
+    return count
 
 
 # ==================== 类型获取方法 ====================
@@ -429,6 +468,7 @@ def clear_custom_types(platform: str | None = None) -> int:
             _custom_id_field_to_type.pop(id_field, None)
             del _custom_receive_to_send[key]
             _custom_send_to_receive.pop(send_type, None)
+            _custom_type_owners.pop(key, None)
         return count
     # 清除所有自定义类型
     count = len(_custom_type_to_id_field)
@@ -436,6 +476,7 @@ def clear_custom_types(platform: str | None = None) -> int:
     _custom_id_field_to_type.clear()
     _custom_receive_to_send.clear()
     _custom_send_to_receive.clear()
+    _custom_type_owners.clear()
     return count
 
 
@@ -463,4 +504,5 @@ __all__ = [
     # 自定义类型注册
     "register_custom_type",
     "unregister_custom_type",
+    "unregister_custom_types_by_owner",
 ]
