@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "5418ab277132c47deb1a6002eca60f27",
-  "file_hash": "5418ab277132c47deb1a6002eca60f27",
-  "translated_at": "2026-09-01T07:00:56.693678",
+  "hash": "f98ad9b6db699137b64236da031b5d16",
+  "file_hash": "f98ad9b6db699137b64236da031b5d16",
+  "translated_at": "2026-09-06T12:49:59.570984",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# 部署指南\n\n將 ErisPulse 機器人部署到生產環境的最佳實踐。"
     },
     {
-      "hash": "3fa9bfe84182476aae4f16552c6b9567",
-      "translation": "## Docker 部署（推薦）\n\nErisPulse 提供官方 Docker 鏡像，內建 ErisPulse 框架和 Dashboard 管理面板，支援 `linux/amd64` 和 `linux/arm64` 架構。\n\n### 快速啟動\n\n```bash\n# 拉取鏡像\ndocker pull erispulse/erispulse:latest\n\n# 下載 docker-compose.yml\ncurl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml\n\n# 設定 Dashboard 登入令牌並啟動\nERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d\n```\n\n啟動後，請訪問 `http://localhost:8000/Dashboard`，使用設定的令牌作為密碼登入。\n\n### 國內鏡像加速\n\n如果 Docker Hub 無法存取，可以使用 GitHub Container Registry 拉取鏡像：\n\n```bash\ndocker pull ghcr.io/erispulse/erispulse:latest\n```\n\n使用 ghcr.io 鏡像時，需要修改 `docker-compose.yml` 中的 image：\n\n```yaml\nservices:\n  erispulse:\n    image: ghcr.io/erispulse/erispulse:latest\n```\n\n### docker-compose.yml\n\n```yaml\nservices:\n  erispulse:\n    image: erispulse/erispulse:latest\n    container_name: erispulse\n    ports:\n      - \"${ERISPULSE_PORT:-8000}:8000\"\n    volumes:\n      - ./config:/app/config\n    environment:\n      - TZ=${TZ:-Asia/Shanghai}\n      - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}\n    restart: unless-stopped\n```\n\n### 環境變數\n\n| 變數 | 預設值 | 說明 |\n|------|--------|------|\n| `ERISPULSE_PORT` | `8000` | Dashboard 端口映射 |\n| `ERISPULSE_DASHBOARD_TOKEN` | 自动生成 | Dashboard 登入令牌（強烈建議設定） |\n| `TZ` | `Asia/Shanghai` | 時區 |\n\n### 數據持久化\n\n`./config` 目錄掛載了配置文件和數據庫，包含：\n\n- `config/config.toml` — 配置文件\n- `config/config.db` — SQLite 存儲數據庫\n- `config/.packages` — Python site-packages 持久化卷，保存框架、適配器和已安裝模塊（首次啟動時由入口點從鏡像內建備份自動初始化，之後的模塊安裝與框架熱更新均寫入此目錄）"
+      "hash": "4540caa471c1ae13dc11a4e338f601f1",
+      "translation": "## Docker 部署（推薦）\n\nErisPulse 提供官方 Docker 鏡像，內建 ErisPulse 框架和 Dashboard 管理介面，支援 `linux/amd64` 和 `linux/arm64` 架構。\n\n### 快速啟動\n\n```bash\n# 拉取鏡像\ndocker pull erispulse/erispulse:latest\n\n# 下載 docker-compose.yml\ncurl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml\n\n# 設定 Dashboard 登入令牌並啟動\nERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d\n```\n\n啟動後，請至 `http://localhost:8000/Dashboard`，使用設定的令牌作為密碼登入。\n\n### 國內鏡像加速\n\n如果無法存取 Docker Hub，可使用 GitHub Container Registry 拉取鏡像：\n\n```bash\ndocker pull ghcr.io/erispulse/erispulse:latest\n```\n\n使用 ghcr.io 鏡像時，需要修改 `docker-compose.yml` 中的 image：\n\n```yaml\nservices:\n  erispulse:\n    image: ghcr.io/erispulse/erispulse:latest\n```\n\n### docker-compose.yml\n\n```yaml\nservices:\n  erispulse:\n    image: erispulse/erispulse:latest\n    container_name: erispulse\n    ports:\n      - \"${ERISPULSE_PORT:-8000}:8000\"\n    volumes:\n      - ./config:/app/config\n      # 持久化 Python 套件目錄\n      - ./config/.packages:/usr/local/lib/python3.13/site-packages\n    environment:\n      - TZ=${TZ:-Asia/Shanghai}\n      - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}\n    init: true\n    stop_grace_period: 30s\n    restart: unless-stopped\n```\n\n> 推薦直接使用倉庫根目錄的 [docker-compose.yml](https://github.com/ErisPulse/ErisPulse/blob/main/docker-compose.yml)，它已包含上述設定及健康檢查、時區與語言環境變數。\n\n### 環境變數\n\n| 變數 | 預設值 | 說明 |\n|------|--------|------|\n| `ERISPULSE_PORT` | `8000` | Dashboard 端口映射 |\n| `ERISPULSE_DASHBOARD_TOKEN` | 自动生成 | Dashboard 登入令牌（強烈建議設定） |\n| `TZ` | `Asia/Shanghai` | 時區 |\n| `LANG` | `en_US.UTF-8` | 系統語言，自動偵測啟動介面語言 |\n| `ERISPULSE_LANG` | 空 | 強制啟動介面語言：`zh` / `zh_TW` / `en` / `ja` / `ru`（覆蓋 `LANG`） |\n\n### 數據持久化\n\n`./config` 目錄掛載了配置檔案和資料庫，包含：\n\n- `config/config.toml` — 配置檔案\n- `config/config.db` — SQLite 儲存資料庫\n- `config/.packages` — Python site-packages 持久化卷，保存框架、適配器和已安裝模組（首次啟動時由入口點從鏡像內建備份自動初始化，之後的模組安裝與框架熱更新均寫入此目錄）"
     },
     {
       "hash": "1dd6fb81a95d024d49dcd5a71698e3d3",
@@ -22,8 +22,8 @@
       "translation": "## 進程監督與硬重啟\n\nErisPulse 的硬重啟（`sdk.hard_restart()`）依賴**外部監督者**在進程退出碼為 42 時重新拉起進程——SDK 自己不會拉起新進程。生產環境務必配置監督者，否則硬重啟後進程不會自動恢復：\n\n- Docker：`restart: unless-stopped`（任何退出碼都會重啟，含 42）\n- systemd：`Restart=on-failure` + `RestartForceExitStatus=42`\n- PM2 / supervisord：將 42 加入可重啟退出碼\n- 純 Python 自定義監督者：循環 `Popen` + 檢測 `returncode == 42`\n\n各監督者的完整配置示例與退出碼 42 契約說明見 [啟動流程 → 監督者指南](../advanced/startup.md#監督者指南)。"
     },
     {
-      "hash": "2bfc91f6fdd70a66e393ffd10242a08a",
-      "translation": "## 健康檢查\n\nSDK 內建健康檢查端點：\n\n```bash\n# 健康檢查\ncurl http://localhost:8000/health\n```\n\nDocker 健康檢查可在 `docker-compose.yml` 中新增：\n\n```yaml\nservices:\n  erispulse:\n    healthcheck:\n      test: [\"CMD\", \"curl\", \"-f\", \"http://localhost:8000/health\"]\n      interval: 30s\n      timeout: 10s\n      retries: 3\n```"
+      "hash": "d2cc254aec9e587157ada1fc7bdf69e0",
+      "translation": "## 健康檢查\n\nSDK 內建健康檢查端點：\n\n```bash\n# 健康檢查\ncurl http://localhost:8000/health\n```\n\nDocker 健康檢查可在 `docker-compose.yml` 中新增：\n\n```yaml\nservices:\n  erispulse:\n    healthcheck:\n      test: [\"CMD\", \"python\", \"-c\", \"import urllib.request; urllib.request.urlopen('http://localhost:8000/ping')\"]\n      interval: 30s\n      timeout: 5s\n      start_period: 20s\n      retries: 3\n```"
     },
     {
       "hash": "cf24afa4836cdd22acf5e805e6db0c87",

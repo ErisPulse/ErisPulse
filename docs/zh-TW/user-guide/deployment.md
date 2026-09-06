@@ -4,7 +4,7 @@
 
 ## Docker 部署（推薦）
 
-ErisPulse 提供官方 Docker 鏡像，內建 ErisPulse 框架和 Dashboard 管理面板，支援 `linux/amd64` 和 `linux/arm64` 架構。
+ErisPulse 提供官方 Docker 鏡像，內建 ErisPulse 框架和 Dashboard 管理介面，支援 `linux/amd64` 和 `linux/arm64` 架構。
 
 ### 快速啟動
 
@@ -19,11 +19,11 @@ curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compos
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
-啟動後，請訪問 `http://localhost:8000/Dashboard`，使用設定的令牌作為密碼登入。
+啟動後，請至 `http://localhost:8000/Dashboard`，使用設定的令牌作為密碼登入。
 
 ### 國內鏡像加速
 
-如果 Docker Hub 無法存取，可以使用 GitHub Container Registry 拉取鏡像：
+如果無法存取 Docker Hub，可使用 GitHub Container Registry 拉取鏡像：
 
 ```bash
 docker pull ghcr.io/erispulse/erispulse:latest
@@ -48,11 +48,17 @@ services:
       - "${ERISPULSE_PORT:-8000}:8000"
     volumes:
       - ./config:/app/config
+      # 持久化 Python 套件目錄
+      - ./config/.packages:/usr/local/lib/python3.13/site-packages
     environment:
       - TZ=${TZ:-Asia/Shanghai}
       - ERISPULSE_DASHBOARD_TOKEN=${ERISPULSE_DASHBOARD_TOKEN:-}
+    init: true
+    stop_grace_period: 30s
     restart: unless-stopped
 ```
+
+> 推薦直接使用倉庫根目錄的 [docker-compose.yml](https://github.com/ErisPulse/ErisPulse/blob/main/docker-compose.yml)，它已包含上述設定及健康檢查、時區與語言環境變數。
 
 ### 環境變數
 
@@ -61,14 +67,16 @@ services:
 | `ERISPULSE_PORT` | `8000` | Dashboard 端口映射 |
 | `ERISPULSE_DASHBOARD_TOKEN` | 自动生成 | Dashboard 登入令牌（強烈建議設定） |
 | `TZ` | `Asia/Shanghai` | 時區 |
+| `LANG` | `en_US.UTF-8` | 系統語言，自動偵測啟動介面語言 |
+| `ERISPULSE_LANG` | 空 | 強制啟動介面語言：`zh` / `zh_TW` / `en` / `ja` / `ru`（覆蓋 `LANG`） |
 
 ### 數據持久化
 
-`./config` 目錄掛載了配置文件和數據庫，包含：
+`./config` 目錄掛載了配置檔案和資料庫，包含：
 
-- `config/config.toml` — 配置文件
-- `config/config.db` — SQLite 存儲數據庫
-- `config/.packages` — Python site-packages 持久化卷，保存框架、適配器和已安裝模塊（首次啟動時由入口點從鏡像內建備份自動初始化，之後的模塊安裝與框架熱更新均寫入此目錄）
+- `config/config.toml` — 配置檔案
+- `config/config.db` — SQLite 儲存資料庫
+- `config/.packages` — Python site-packages 持久化卷，保存框架、適配器和已安裝模組（首次啟動時由入口點從鏡像內建備份自動初始化，之後的模組安裝與框架熱更新均寫入此目錄）
 
 ## Dashboard 管理面板
 
@@ -124,9 +132,10 @@ Docker 健康檢查可在 `docker-compose.yml` 中新增：
 services:
   erispulse:
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ping')"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
+      start_period: 20s
       retries: 3
 ```
 
