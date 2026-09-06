@@ -47,6 +47,9 @@ def plugin_dir(tmp_path, monkeypatch):
     monkeypatch.syspath_prepend(str(tmp_path))
     for _name in ("weather", "weather.Core", "dice"):
         sys.modules.pop(_name, None)
+    # 3.10 对已删除临时目录的 import 缓存（sys.path_importer_cache）不自动失效，
+    # 跨测试文件组合时旧 tmp 路径的 importer 会导致 import 命中失败；清空以强制重查
+    sys.path_importer_cache.clear()
     return plugins
 
 

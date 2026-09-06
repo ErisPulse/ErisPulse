@@ -4,6 +4,7 @@
 测试ConfigManager的配置读写、缓存和延迟写入功能
 """
 
+import importlib
 import os
 import tempfile
 import time
@@ -13,6 +14,9 @@ import pytest
 import toml
 
 from ErisPulse.Core.config import ConfigManager
+
+# importlib.import_module 返回真实子模块（Core.logger 包属性被 Logger 单例遮蔽）
+logger_module = importlib.import_module("ErisPulse.Core.logger")
 
 # ==================== ConfigManager 基础测试 ====================
 
@@ -343,7 +347,7 @@ nested_key = "nested_value"
 
         try:
             # 创建配置管理器（应该处理错误）
-            with patch('ErisPulse.Core.logger.logger') as mock_logger:
+            with patch.object(logger_module, "logger") as mock_logger:
                 manager = ConfigManager(config_file=temp_path)
 
                 # 验证错误被记录
@@ -364,7 +368,7 @@ nested_key = "nested_value"
             temp_path = f.name
 
         try:
-            with patch('ErisPulse.Core.logger.logger') as mock_logger:
+            with patch.object(logger_module, "logger") as mock_logger:
                 manager = ConfigManager(config_file=temp_path)
 
                 # error 被调用（语法错误信息）
@@ -406,7 +410,7 @@ nested_key = "nested_value"
 
             # 让 Path.open 抛出 PermissionError（模拟无读权限）
             with patch.object(Path, 'open', side_effect=PermissionError("[Errno 13] Permission denied")):
-                with patch('ErisPulse.Core.logger.logger') as mock_logger:
+                with patch.object(logger_module, "logger") as mock_logger:
                     result = manager._load_config()
 
                 # error 被调用（权限提示）
@@ -428,7 +432,7 @@ nested_key = "nested_value"
             temp_path = f.name
 
         try:
-            with patch('ErisPulse.Core.logger.logger'):
+            with patch.object(logger_module, "logger"):
                 manager = ConfigManager(config_file=temp_path)
                 assert manager._cache == {"a": {"k": "v"}}
 
@@ -436,7 +440,7 @@ nested_key = "nested_value"
             with open(temp_path, 'w', encoding='utf-8') as f:
                 f.write('[broken section\n')
 
-            with patch('ErisPulse.Core.logger.logger'):
+            with patch.object(logger_module, "logger"):
                 result = manager._load_config()
 
             # 加载失败：返回 False，且保留上次有效缓存（不清空为 {}）
@@ -454,7 +458,7 @@ nested_key = "nested_value"
             temp_path = f.name
 
         try:
-            with patch('ErisPulse.Core.logger.logger') as mock_logger:
+            with patch.object(logger_module, "logger") as mock_logger:
                 manager = ConfigManager(config_file=temp_path)
 
                 # debug 被调用（空配置提示）
@@ -491,7 +495,7 @@ nested_key = "nested_value"
                 f.write('[test]\nkey = "unterminated\n')
 
             # 触发 flush，应当捕获 TomlDecodeError 并给出明确诊断
-            with patch('ErisPulse.Core.logger.logger') as mock_logger:
+            with patch.object(logger_module, "logger") as mock_logger:
                 manager._flush_config()
 
             # error 被调用
@@ -533,7 +537,7 @@ nested_key = "nested_value"
                 f.write('[test]\nkey = "bad\n')
 
             # 连续 flush 三次（模拟 delayed-write / shutdown / atexit）
-            with patch('ErisPulse.Core.logger.logger') as mock_logger:
+            with patch.object(logger_module, "logger") as mock_logger:
                 manager._flush_config()
                 first_count = mock_logger.error.call_count
                 manager._flush_config()
@@ -563,7 +567,7 @@ nested_key = "nested_value"
         """测试设置配置时文件写入失败"""
         # Mock _flush_config 方法来模拟写入失败
         with patch.object(config_manager, '_flush_config', side_effect=OSError("Write error")):
-            with patch('ErisPulse.Core.logger.logger') as mock_logger:
+            with patch.object(logger_module, "logger") as mock_logger:
                 # 执行
                 result = config_manager.setConfig("key", "value", immediate=True)
 

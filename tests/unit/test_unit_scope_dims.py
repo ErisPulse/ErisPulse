@@ -8,11 +8,14 @@
 """
 
 import asyncio
+import importlib
 from unittest.mock import patch
 
 import pytest
 
 from ErisPulse.Core.scope import ScopeManager
+
+scope_module = importlib.import_module("ErisPulse.Core.scope")
 
 
 def _make_mgr(bindings: dict, default_allow: bool = True) -> ScopeManager:
@@ -164,7 +167,7 @@ class TestIdentityCore:
         def fake_update(new_config):
             written.update(new_config)
 
-        with patch("ErisPulse.Core.scope.update_erispulse_config", side_effect=fake_update):
+        with patch.object(scope_module, "update_erispulse_config", side_effect=fake_update):
             mgr.set("identity.users.p.u1", {"deny": True})
         assert written["scope"]["identity"]["users"]["p"]["u1"] == {"deny": True}
 
@@ -176,7 +179,7 @@ class TestIdentityCore:
         def fake_set(path, value):
             written[path] = value
 
-        with patch("ErisPulse.Core.scope.set_erispulse_section", side_effect=fake_set):
+        with patch.object(scope_module, "set_erispulse_section", side_effect=fake_set):
             assert mgr.delete("identity.users.p.u1") is True
         # delete 以最近父节整节替换持久化（支持删除子键）
         assert written["scope.identity.users.p"] == {}
@@ -211,12 +214,12 @@ class TestBlockUser:
         """block_user / unblock_user / is_user_blocked / get_blocked_users"""
         mgr = _make_mgr({})
         # patch 两个持久化入口，避免污染真实配置；内存态由 _apply_memory 保证
-        with patch("ErisPulse.Core.scope.set_erispulse_section"), patch("ErisPulse.Core.scope.update_erispulse_config"):
+        with patch.object(scope_module, "set_erispulse_section"), patch.object(scope_module, "update_erispulse_config"):
             mgr.set("identity.users.p.u1", {"deny": True})
         assert mgr.is_identity_allowed("p", user_id="u1") is False
         assert mgr.is_identity_allowed("p", user_id="u2") is True
         assert mgr.get("identity.users.p") == {"u1": {"deny": True}}
-        with patch("ErisPulse.Core.scope.set_erispulse_section"), patch("ErisPulse.Core.scope.update_erispulse_config"):
+        with patch.object(scope_module, "set_erispulse_section"), patch.object(scope_module, "update_erispulse_config"):
             assert mgr.delete("identity.users.p.u1") is True
         assert mgr.is_identity_allowed("p", user_id="u1") is True
         assert mgr.delete("identity.users.p.u1") is False
@@ -345,7 +348,7 @@ class TestActionsDimension:
     def test_persist_writes_config(self):
         """set_action 持久化到 scope.actions 配置节（规范化规则）"""
         mgr = self._make_mgr_with_actions()
-        with patch("ErisPulse.Core.scope.update_erispulse_config") as fake_update:
+        with patch.object(scope_module, "update_erispulse_config") as fake_update:
             mgr.set("actions.MyModule.send", False)
         fake_update.assert_called_once()
         written = fake_update.call_args[0][0]
@@ -655,7 +658,7 @@ class TestTypedDimensionAPI:
         def fake_update(new_config):
             written.update(new_config)
 
-        with patch("ErisPulse.Core.scope.update_erispulse_config", side_effect=fake_update):
+        with patch.object(scope_module, "update_erispulse_config", side_effect=fake_update):
             mgr.set_module("p", modules=["Chat"])
             mgr.set_identity("p", user_id="u1", deny=True)
             mgr.set_action("Mod", "send", deny=True)
