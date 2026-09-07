@@ -34,9 +34,9 @@ with owner_scope("MyModule"):
 
 実行中の再注入とは、モジュールが `on_load` で宣言したコマンドハンドラが**実行中**に登録型 API（例：`sdk.adapter.on()`、`overrides.*.set(persist=False)`）を呼び出す場合、それらも自動的にこのモジュールに属することを意味します。
 
-## リソースの所有関係
+## 所属リソースの概要
 
-モジュールは、ロードコンテキスト内で以下のリソースを登録し、所有関係を記録します。アンロードまたは無効化時に、自動的にリソースを回収します。
+モジュールがロードコンテキスト内で登録した以下のリソースはすべて所有者として記録され、アンロード/無効化時に自動的にリソースを回収します。
 
 | リソース | 登録方法 | クリーンアップ呼び出し |
 |------|----------|----------|
@@ -46,24 +46,26 @@ with owner_scope("MyModule"):
 | アダプタミドルウェア | `@sdk.adapter.middleware` | 同上 |
 | ルーティング（HTTP/WS/SSE） | `router.http()` / `websocket()` / `sse()` | 名前空間 + owner による二重保証 |
 | ルーティングミドルウェア | `@router.middleware()` / `add_middleware()` | `router.unregister_all_by_owner()` |
-| Dashboard トップページエントリ | `router.register_home_entry()` | `unregister_home_entries_by_owner()` |
-| 自定义会话类型 | `register_custom_type()` | `unregister_custom_types_by_owner()` |
+| Dashboard ホームエントリ | `router.register_home_entry()` | `unregister_home_entries_by_owner()` |
+| 自作セッションタイプ | `register_custom_type()` | `unregister_custom_types_by_owner()` |
 | バックグラウンドタスク | `self.spawn()` | `cancel_owner_tasks()` |
 | ライフサイクルフック | `lifecycle.register()` | `lifecycle.unregister_by_owner()` |
-| 主人身源 provider | `master.provider` | `master.unregister_by_owner()` |
+| 主人身源プロバイダ | `master.provider` | `master.unregister_by_owner()` |
 | i18n 翻訳キー | `I18nClass` 宣言（domain=モジュール名） | `i18n.unregister_domain()` |
 | イベントオーバーライド（実行時） | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
-| コンテキストデータ | `runtime/context` は owner ごとに記録 | モジュールごとの正確なクリーンアップ |
+| 交互セッション（wait_reply 等待 / リース） | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()`（待機側は即時キャンセル受信） |
+| コンテキストデータ | `runtime/context` は owner ごとに記録 | モジュール単位で正確にクリーンアップ |
 
-アダプタ側の対応するリソース（プラットフォーム名を owner として）は、アダプタの `shutdown()` / `restart()` 時に `_cleanup_adapter_resources` によって回収されます。以下も含まれます：
+アダプタ側の対応するリソース（プラットフォーム名を owner とする）は、アダプタの `shutdown()` / `restart()` 時に `_cleanup_adapter_resources` によって回収され、以下も含まれます：
 
 | リソース | クリーンアップ呼び出し |
 |------|----------|
 | アダプタ独自の `on()` ハンドラとミドルウェア | `adapter.unregister_handlers_by_owner(platform)` |
 | プラットフォームイベントメソッド拡張（`EventMixin`） | `unregister_platform_event_methods(platform)` |
-| 自定义会话类型 | `unregister_custom_types_by_owner(platform)` |
+| 自作セッションタイプ | `unregister_custom_types_by_owner(platform)` |
+| 交互セッション（該当プラットフォームで保留中の wait_reply / リース） | `interaction.cancel_by_platform(platform)` |
 | i18n 翻訳ドメイン（domain=設定キー） | `i18n.unregister_domain(設定キー)` |
-| 細かい粒度の名前空間ルーティング | `router.unregister_all_by_owner(platform)` |
+| 細粒度の名前空間ルーティング | `router.unregister_all_by_owner(platform)` |
 
 ## 卸載/無効化のクリーンアップシーケンス
 

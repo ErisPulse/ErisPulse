@@ -1,8 +1,8 @@
-# SQL クエリビルダー
+# SQL クエリビルダ
 
-ErisPulse の Storage モジュールは、チェーン呼び出しスタイルの一般的な SQL クエリビルダーを提供し、カスタムテーブルの作成、クエリ、更新、削除操作をサポートします。
+ErisPulse の Storage モジュールは、チェーン呼び出しスタイルの一般的な SQL クエリビルダを提供し、カスタムテーブルの作成、クエリ、更新、削除操作をサポートしています。
 
-## 架構設計
+## アーキテクチャ設計
 
 ```
 Bases/storage.py                    Core/storage.py
@@ -15,21 +15,21 @@ Bases/storage.py                    Core/storage.py
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` は抽象基底クラスであり、統一されたインターフェースを定義し、今後の他のストレージ媒体（Redis、MySQL など）への拡張をサポートします。
-- `StorageManager` は現在の SQLite 実装であり、完全に後方互換性を保証します。
+- `BaseStorage` / `BaseQueryBuilder` は抽象基底クラスであり、他のストレージメディア（Redis、MySQL など）への拡張を可能にする共通インターフェースを定義しています。
+- `StorageManager` は現在の SQLite 実装であり、完全に後方互換性を保っています。
 
-## インポート
+## 導入
 
 ```python
 from ErisPulse import sdk
 # または
 from ErisPulse.Core import storage
 
-# ABC 基底クラス（型の注釈や独自実装用）
+# ABC 基底クラス（型注釈やカスタム実装に使用）
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
-## 表管理
+## テーブル管理
 
 ### テーブルの作成
 
@@ -61,17 +61,17 @@ sdk.storage.DropTable("users")
 # 列の追加
 sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
 
-# テーブル名の変更
+# テーブルの名前変更
 sdk.storage.AlterTable("users").RenameTo("members").Execute()
 
-# 複数操作の連鎖
+# 複数の操作をチェーン
 sdk.storage.AlterTable("users") \
     .AddColumn("phone", "TEXT") \
     .AddColumn("address", "TEXT") \
     .Execute()
 ```
 
-## 連鎖クエリ
+## チェーン呼び出しによるクエリ
 
 ### データの挿入
 
@@ -92,11 +92,11 @@ sdk.storage.Table("users").InsertMulti([
 > **重要**：`Select()` は `list[tuple]`（タプルのリスト）を返します。辞書ではありません。列の順序に従ってインデックスでアクセスする必要があります。
 
 ```python
-# 全ての列を取得
+# 全列を取得
 rows = sdk.storage.Table("users").Select().Execute()
 # rows: [(1, "Alice", 30), (2, "Bob", 25), ...]
 
-# 指定した列を取得
+# 指定の列を取得
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
 # rows: [("Alice", 30), ("Bob", 25), ...]
 
@@ -108,11 +108,33 @@ for row in rows:
 
 #### タプルを辞書に変換
 
+`ToDict()` をチェーンで呼び出すことを推奨します。SELECT の結果は列名 → 値の辞書で返されます。
+
+```python
+# ToDict チェーン：結果は list[dict] で、SELECT * でも列名が自動的に取得されます
+rows = sdk.storage.Table("users").Select("name", "age").ToDict().Execute()
+# rows: [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}, ...]
+
+for row in rows:
+    print(row["name"], row["age"])
+
+# ExecuteOne でも同様に機能します
+row = sdk.storage.Table("users").Select("name", "age") \
+    .Where("id = ?", 1) \
+    .ToDict() \
+    .ExecuteOne()
+# row: {"name": "Alice", "age": 30} または None
+```
+
+> `ToDict()` はチェーン呼び出し用のメソッド（self を返す）です。`ToDict()` を呼び出さないチェーンは、既存の `list[tuple]` の動作を保持し、完全に後方互換性を保っています。`copy()` はこのフラグを保持します。
+
+手動で zip を使用する方法（`ToDict()` と同等、チェーンを変更できない場合に使用）：
+
 ```python
 columns = ["id", "name", "age"]
 rows = sdk.storage.Table("users").Select(*columns).Execute()
 
-# 方法1：ループ内で zip を使用
+# 方法1：ループ内で zip
 for row in rows:
     record = dict(zip(columns, row))
     print(record["name"], record["age"])
@@ -121,7 +143,7 @@ for row in rows:
 records = [dict(zip(columns, row)) for row in rows]
 ```
 
-#### 単一レコードの取得
+#### 単一行の取得
 
 ```python
 row = sdk.storage.Table("users").Select("name", "age") \
@@ -134,9 +156,9 @@ if row is not None:
     age = row[1]   # 30
 ```
 
-### 条件フィルタ
+### 条件のフィルタリング
 
-> `Where(condition, *params)` は複数のパラメータを渡すことができ、それぞれが `?` 占位符に対応します。
+> `Where(condition, *params)` は、複数のパラメータを渡すことができ、それぞれ `?` 占位符に対応します。
 
 ```python
 # 単一条件（1つの占位符、1つのパラメータ）
@@ -205,10 +227,10 @@ sdk.storage.Table("users") \
 sdk.storage.Table("users").Delete().Execute()
 ```
 
-### 件数と存在確認
+### 計数と存在確認
 
 ```python
-# 件数
+# 計数
 count = sdk.storage.Table("users").Count()
 count = sdk.storage.Table("users").Where("age > ?", 18).Count()
 
@@ -218,18 +240,18 @@ exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
 
 ## クエリ条件の再利用
 
-`copy()` を使用して、構築器を深くコピーし、基本的な条件を再利用します。
+`copy()` を使用してビルダーを深くコピーし、同じ条件を再利用します。
 
 ```python
 base = sdk.storage.Table("users").Where("age > ?", 20)
 
-# 同じ条件に基づいてクエリを実行
+# 同じ条件に基づいてクエリ
 rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
 
-# 同じ条件に基づいて件数を取得
+# 同じ条件に基づいて計数
 count = base.copy().Count()
 
-# 同じ条件に基づいて存在性をチェック
+# 同じ条件に基づいて存在確認
 exists = base.copy().Where("name = ?", "Alice").Exists()
 ```
 
@@ -246,10 +268,10 @@ rows = builder.Execute()
 
 ## トランザクションでの使用
 
-チェーン操作は完全にトランザクションをサポートしています：
+チェーン呼び出しはトランザクションに対応しています。
 
 ```python
-# トランザクションのコミット
+# トランザクションをコミット
 with sdk.storage.transaction():
     sdk.storage.Table("users").Insert({"name": "Eve", "age": 22}).Execute()
     sdk.storage.Table("users").Update({"age": 23}).Where("name = ?", "Eve").Execute()
@@ -261,31 +283,31 @@ try:
         raise Exception("force rollback")
 except Exception:
     pass
-# Alice のレコードは依然として存在します
+# Alice のレコードは依然存在します
 ```
 
 ## 戻り値の説明
 
 | 操作 | 戻り値の型 | 説明 |
 |------|---------|------|
-| `Select().Execute()` | `list[tuple]` | 列順に並んだタプルのリスト |
+| `Select().Execute()` | `list[tuple]` | 列の順序に従ったタプルのリスト |
 | `Select().ExecuteOne()` | `tuple \| None` | 単一行のタプルまたは None |
 | `Insert().Execute()` | `int` | 影響を受けた行数 |
 | `InsertMulti().Execute()` | `int` | 挿入された行数 |
 | `Update().Execute()` | `int` | 影響を受けた行数 |
 | `Delete().Execute()` | `int` | 影響を受けた行数 |
 | `Count()` | `int` | マッチした行数 |
-| `Exists()` | `bool` | 存在するかどうか |
+| `Exists()` | `bool` | 存在するか否か |
 
 ### 戻り値の処理例
 
 ```python
-# Select はタプルを返し、インデックスで値を取得する
+# Select はタプルを返し、インデックスでアクセス
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
-first_name = rows[0][0]  # 1行目、1列目の name
-first_age = rows[0][1]   # 1行目、2列目の age
+first_name = rows[0][0]  # 1行目の1列目 name
+first_age = rows[0][1]   # 1行目の2列目 age
 
-# 推奨：列名リストと zip を使って辞書に変換し、コードの可読性を高める
+# 推奨：列名リスト + zip を使って辞書に変換し、コードの可読性を高める
 cols = ["name", "age"]
 rows = sdk.storage.Table("users").Select(*cols).Execute()
 for row in rows:
@@ -298,35 +320,35 @@ name = row[0] if row else None
 
 # Insert/Update/Delete は影響を受けた行数を返す
 affected = sdk.storage.Table("users").Delete().Where("age < ?", 18).Execute()
-print(f"削除したレコード数: {affected}")
+print(f"削除された行数: {affected}")
 ```
 
-## パラメータ化クエリ
+## パラメータ化されたクエリ
 
-すべての WHERE パラメータは `?` 占位符を使用し、パラメータは `Where()` の追加引数として渡します（**タプルやリストではありません**）。
+WHERE のパラメータは `?` 占位符を使用し、`Where()` の引数として個別に渡します（**タプルやリストにはしないでください**）。
 
 ```python
 # 正しい ✓ — 複数のパラメータを個別に渡す
 sdk.storage.Table("users").Where("age > ? AND name = ?", 18, "Alice").Execute()
 
-# 正しい ✓ — 複数の Where 呼び出し
+# 正しい ✓ — Where を複数回呼び出す
 sdk.storage.Table("users").Where("age > ?", 18).Where("name = ?", "Alice").Execute()
 
 # 間違っている ✗ — タプルを渡さないでください
 sdk.storage.Table("users").Where("age > ? AND name = ?", (18, "Alice")).Execute()
 # これはタプル全体を最初の占位符の値として扱います
 
-# 間違っている ✗ — SQLインジェクションのリスクがあります
+# 間違っている ✗ — セキュリティリスクがある SQL インジェクション
 sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 ```
 
-### Where パラメータの渡し方
+### Where のパラメータ渡しルール
 
 ```python
 # Where(condition: str, *params: Any)
-# params は可変長引数で、個別に渡してください
+# params は可変引数で、個別に渡してください
 
-# 1 つのパラメータ
+# 単一のパラメータ
 .Where("name = ?", "Alice")
 
 # 複数のパラメータ
@@ -339,16 +361,16 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 .Where("name IN (?, ?, ?)", "Alice", "Bob", "Charlie")
 ```
 
-## 自定义ストレージバックエンド
+## カスタムストレージバックエンド
 
-`BaseStorage` および `BaseQueryBuilder` を継承して、カスタムストレージバックエンドを実装します。
+`BaseStorage` と `BaseQueryBuilder` を継承してカスタムストレージバックエンドを実装します。
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 class MyQueryBuilder(BaseQueryBuilder):
     def Execute(self):
-        # 具体的な実行ロジックを実装
+        # 実際の実行ロジックを実装
         ...
 
     def ExecuteOne(self):
@@ -359,7 +381,6 @@ class MyQueryBuilder(BaseQueryBuilder):
 
     def Exists(self):
         ...
-
 
 class MyStorage(BaseStorage):
     def get(self, key, default=None):
@@ -377,4 +398,4 @@ class MyStorage(BaseStorage):
 
 - [コアモジュール API](../api-reference/core-modules.md) - Storage モジュールの完全な API
 - [ストレージ基底クラス API](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) - BaseStorage/BaseQueryBuilder 抽象インターフェース
-- [メッセージビルダー](message-builder.md) - MessageBuilder のチェーン呼び出しスタイルの参考
+- [メッセージビルダ](message-builder.md) - MessageBuilder チェーン呼び出しスタイルの参考
