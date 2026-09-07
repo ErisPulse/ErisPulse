@@ -1,27 +1,27 @@
-# Yunhu User Platform Features Documentation
+# Yunhu User Platform Feature Document
 
-YunhuUserAdapter is an adapter based on the Yunhu user account protocol, allowing login through user email accounts, receiving events via WebSocket, and providing unified event processing and message operation interfaces.
+YunhuUserAdapter is an adapter built based on the Yunhu user account protocol. It enables login via user email accounts, receives events through WebSocket, and provides unified event handling and message operation interfaces.
 
 ---
 
 ## Document Information
 
-- Corresponding Module Version: 1.4.0
+- Corresponding module version: 1.4.0
 - Maintainer: wsu2059
 
 ## Basic Information
 
 - Platform Introduction: Yunhu is an enterprise-level instant messaging platform. This adapter interacts with it through **user accounts** (rather than bot accounts).
 - Adapter Name: YunhuUserAdapter
-- Multi-account Support: Supports identifying and configuring multiple user accounts through account names.
-- Chain Decorator Support: Supports chained decorator methods like `.Reply()`.
-- OneBot12 Compatibility: Supports sending OneBot12 format messages.
-- Communication Method: Login via email to get token, use WebSocket to receive events, HTTP + Protobuf protocol to send messages.
-- Session Types: Supports private chat (user), group chat (group), and bot chat (bot).
+- Multi-account Support: Supports identifying and configuring multiple user accounts by account name.
+- Chainable Modifier Support: Supports chainable modifier methods such as `.Reply()`.
+- OneBot12 Compatibility: Supports sending OneBot12 formatted messages.
+- Communication Method: Uses email login to obtain a token, receives events via WebSocket, and sends messages using HTTP + Protobuf protocol.
+- Session Types: Supports private chat (user), group chat (group), and bot session (bot).
 
 ## Supported Message Sending Types
 
-All sending methods are implemented through chained syntax, for example:
+All sending methods are implemented using chainable syntax. For example:
 ```python
 from ErisPulse.Core import adapter
 yunhu_user = adapter.get("yunhu_user")
@@ -29,66 +29,66 @@ yunhu_user = adapter.get("yunhu_user")
 await yunhu_user.Send.To("user", user_id).Text("Hello World!")
 ```
 
-Supported sending types include:
-- `.Text(text: str, buttons: Optional[List] = None)`: Send plain text messages.
-- `.Html(html: str, buttons: Optional[List] = None)`: Send HTML format messages.
-- `.Markdown(markdown: str, buttons: Optional[List] = None)`: Send Markdown format messages.
-- `.Image(file: Union[str, bytes], buttons: Optional[List] = None)`: Send image messages, supporting URLs, local paths, or binary data.
-- `.Video(file: Union[str, bytes], buttons: Optional[List] = None)`: Send video messages, supporting URLs, local paths, or binary data.
-- `.Audio(file: Union[str, bytes], buttons: Optional[List] = None)`: Send voice messages, supporting URLs, local paths, or binary data, with automatic audio duration detection.
+The supported sending types include:
+- `.Text(text: str, buttons: Optional[List] = None)`: Sends plain text messages.
+- `.Html(html: str, buttons: Optional[List] = None)`: Sends HTML formatted messages.
+- `.Markdown(markdown: str, buttons: Optional[List] = None)`: Sends Markdown formatted messages.
+- `.Image(file: Union[str, bytes], buttons: Optional[List] = None)`: Sends image messages, supporting URLs, local paths, or binary data.
+- `.Video(file: Union[str, bytes], buttons: Optional[List] = None)`: Sends video messages, supporting URLs, local paths, or binary data.
+- `.Audio(file: Union[str, bytes], buttons: Optional[List] = None)`: Sends voice messages, supporting URLs, local paths, or binary data, with automatic detection of audio duration.
 - `.Voice(file: Union[str, bytes], buttons: Optional[List] = None)`: Alias for `.Audio()`.
-- `.File(file: Union[str, bytes], file_name: Optional[str] = None, buttons: Optional[List] = None)`: Send file messages, supporting URLs, local paths, or binary data.
-- `.Face(file: Union[str, bytes], buttons: Optional[List] = None)`: Send emoji/sticker messages, supporting sticker IDs, sticker URLs, or binary image data.
-- `.A2ui(a2ui_data: Union[str, Dict, List], buttons: Optional[List] = None)`: Send A2UI messages (message type 14), A2UI JSON data will be filled in the text field to send.
-- `.Edit(msg_id: str, text: str, content_type: str = "text")`: Edit existing messages.
-- `.Recall(msg_id: str)`: Recall messages.
-- `.Raw_ob12(message: Union[List, Dict])`: Send OneBot12 format messages.
+- `.File(file: Union[str, bytes], file_name: Optional[str] = None, buttons: Optional[List] = None)`: Sends file messages, supporting URLs, local paths, or binary data.
+- `.Face(file: Union[str, bytes], buttons: Optional[List] = None)`: Sends emoticon/sticker messages, supporting sticker IDs, sticker URLs, or binary image data.
+- `.A2ui(a2ui_data: Union[str, Dict, List], buttons: Optional[List] = None)`: Sends A2UI messages (message type 14); A2UI JSON data will be filled into the text field for sending.
+- `.Edit(msg_id: str, text: str, content_type: str = "text")`: Edits an existing message.
+- `.Recall(msg_id: str)`: Recalls a message.
+- `.Raw_ob12(message: Union[List, Dict])`: Sends OneBot12 formatted messages.
 
-### Media File Processing
+### Media File Handling
 
 All media types (images, videos, audio, files) support the following input methods:
-- **URL**: `"https://example.com/image.jpg"` — Automatically download and then upload
-- **Local Path**: `"/path/to/file.jpg"` — Automatically read and then upload
-- **Binary Data**: `open("file.jpg", "rb").read()` — Direct upload
+- **URL**: `"https://example.com/image.jpg"` — automatically downloads and uploads
+- **Local Path**: `"/path/to/file.jpg"` — automatically reads and uploads
+- **Binary Data**: `open("file.jpg", "rb").read()` — directly uploads
 
-Media files are automatically uploaded to Qiniu cloud storage, supporting the following features:
-- Automatically detect file type and MIME using the `filetype` library
-- Automatically calculate file size
-- Automatically detect audio duration for audio files (supporting MP3, MP4/M4A formats)
+Media files are automatically uploaded to Qiniu Cloud storage and support the following features:
+- Automatic detection of file type and MIME via `filetype` library
+- Automatic calculation of file size
+- Automatic detection of audio duration for audio files (supports MP3, MP4/M4A formats)
 
 ### Button Parameter Description
 
-The `buttons` parameter is a nested list representing the button layout and functionality. Each button object contains the following fields:
+The `buttons` parameter is a nested list representing the layout and functionality of buttons. Each button object contains the following fields:
 
 | Field         | Type   | Required | Description                                                                 |
-|--------------|--------|----------|----------------------------------------------------------------------------|
-| `text`       | string | Yes      | Text on the button                                                        |
-| `actionType` | int    | Yes      | Action type:<br>`1`: Jump to URL<br>`2`: Copy<br>`3`: Click report           |
-| `url`        | string | No       | Used when `actionType=1`, represents the target URL to jump to            |
-| `value`      | string | No       | When `actionType=2`, this value will be copied to clipboard<br>When `actionType=3`, this value will be sent to the subscription end |
+|---------------|--------|----------|-----------------------------------------------------------------------------|
+| `text`        | string | Yes      | Text on the button                                                          |
+| `actionType`  | int    | Yes      | Action type: <br>`1`: Navigate to URL<br>`2`: Copy<br>`3`: Report on click  |
+| `url`         | string | No       | Used when `actionType=1`, indicating the target URL for navigation          |
+| `value`       | string | No       | When `actionType=2`, this value is copied to the clipboard<br>When `actionType=3`, this value is sent to the subscriber |
 
 Example:
 ```python
 buttons = [
     [
         {"text": "Copy", "actionType": 2, "value": "xxxx"},
-        {"text": "Click to Jump", "actionType": 1, "url": "http://www.baidu.com"},
+        {"text": "Click to Navigate", "actionType": 1, "url": "http://www.baidu.com"},
         {"text": "Report Event", "actionType": 3, "value": "xxxxx"}
     ]
 ]
 await yunhu_user.Send.To("user", user_id).Buttons(buttons).Text("Message with buttons")
 ```
 
-### Chained Decorator Methods (Combinable)
+### Chainable Modifier Methods (can be combined)
 
-Chained decorator methods return `self`, supporting chained calls and must be called before the final sending method:
+Chainable modifier methods return `self`, supporting chained calls, and must be called before the final sending method:
 
-- `.Reply(message_id: str)`: Reply to a specific message.
-- `.At(user_id: str)`: @mention a specific user (in text form @user_id).
-- `.AtAll()`: @mention everyone (pseudo @all, sends @all text).
-- `.Buttons(buttons: List)`: Add buttons.
+- `.Reply(message_id: str)`: Replies to a specified message.
+- `.At(user_id: str)`: Mentions a specified user (text form @user_id).
+- `.AtAll()`: Mentions everyone (pseudo @all, sends @all text).
+- `.Buttons(buttons: List)`: Adds buttons.
 
-> **Note:** Because user accounts are special, even non-admin users can @everyone, but `AtAll()` here only sends a @everyone text, which is a pseudo @everyone.
+> **Note:** Since user accounts are special, even non-administrators can @all, but the `AtAll()` method here only sends a text mentioning everyone, which is a pseudo @all.
 
 ### Chained Call Examples
 
@@ -96,7 +96,7 @@ Chained decorator methods return `self`, supporting chained calls and must be ca
 # Basic sending
 await yunhu_user.Send.To("user", user_id).Text("Hello")
 
-# Reply to message
+# Reply to a message
 await yunhu_user.Send.To("group", group_id).Reply(msg_id).Text("Reply message")
 
 # Reply + buttons
@@ -108,28 +108,28 @@ await yunhu_user.Send.Using("default").To("group", group_id).Reply(msg_id).Butto
 
 ### OneBot12 Message Support
 
-The adapter supports sending OneBot12 format messages for cross-platform message compatibility:
+The adapter supports sending OneBot12 formatted messages, facilitating cross-platform message compatibility:
 
-- `.Raw_ob12(message: List[Dict], **kwargs)`: Send OneBot12 format messages.
+- `.Raw_ob12(message: List[Dict], **kwargs)`: Sends OneBot12 formatted messages.
 
 ```python
-# Send OneBot12 format message
+# Send OneBot12 formatted message
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await yunhu_user.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
-# With chained decorators
+# With chained modifiers
 ob12_msg = [{"type": "text", "data": {"text": "Reply message"}}]
 await yunhu_user.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 ```
 
-Raw_ob12 supports automatically grouping and processing mixed message segments:
-- `text`, `mention` types can be merged into one group for sending
-- `image`, `video`, `audio`, `file`, `face`, `markdown`, `html`, `a2ui` etc. types each form their own group
+Raw_ob12 supports automatic grouping of mixed message segments:
+- `text`, `mention` types can be grouped together
+- `image`, `video`, `audio`, `file`, `face`, `markdown`, `html`, `a2ui` types are grouped individually
 - `reply` type can be attached to any group
 
-## Method Return Values
+## Send Method Return Values
 
-All sending methods return a Task object, which can be directly awaited to get the sending result. The return result follows the ErisPulse adapter standardized return specification:
+All send methods return a Task object, which can be awaited to get the send result. The return result follows the ErisPulse adapter standardized return specification:
 
 ```python
 {
@@ -138,51 +138,51 @@ All sending methods return a Task object, which can be directly awaited to get t
     "data": {...},            // Response data
     "message_id": "123456",   // Message ID
     "message": "",            // Error message
-    "yunhu_user_raw": {...}   // Original response data
+    "yunhu_user_raw": {...}   // Raw response data
 }
 ```
 
-## Special Event Types
+## Unique Event Types
 
-Requires checking `platform == "yunhu_user"` before using platform-specific features
+Use `platform == "yunhu_user"` to check before using platform-specific features
 
 ### Core Differences
 
-1. Special event types:
+1. Unique event types:
     - Super file sharing: `yunhu_user_file_send`
-    - Bot announcement board: `yunhu_user_bot_board`
+    - Bot bulletin board: `yunhu_user_bot_board`
     - Message edit notification: `message_edit`
-    - Message deletion notification: `message_delete` (recall)
-2. Special message segment types:
+    - Message delete notification: `message_delete` (recall)
+2. Unique message segment types:
     - Form message segment: `yunhu_user_form`
     - Article message segment: `yunhu_user_post`
     - Sticker message segment: `yunhu_user_sticker`
     - Button message segment: `yunhu_user_button`
     - A2UI message segment: `a2ui`
 3. Extended fields:
-    - All special fields are prefixed with `yunhu_user_`
-    - Original data is retained in the `yunhu_user_raw` field
+    - All unique fields are prefixed with `yunhu_user_`
+    - Original data is preserved in the `yunhu_user_raw` field
     - Original event type is recorded in the `yunhu_user_raw_type` field
-    - In private chats, `self.user_id` represents the current logged-in user ID
+    - In private chat, `self.user_id` indicates the currently logged-in user ID
 
-### Supported Original Event Types
+### Supported Raw Event Types
 
-| Original Event Type | OneBot12 Type | Description |
-|--------------------|--------------|-------------|
-| `push_message` | `message` | Push message (private chat, group chat, bot chat) |
+| Raw Event Type | OneBot12 Type | Description |
+|----------------|---------------|-------------|
+| `push_message` | `message` | Pushed message (private chat, group chat, bot session) |
 | `edit_message` | `notice` (`message_edit`) | Message edit event |
 | `file_send_message` | `notice` (`yunhu_user_file_send`) | Super file sharing event |
-| `bot_board_message` | `notice` (`yunhu_user_bot_board`) | Bot announcement board event |
+| `bot_board_message` | `notice` (`yunhu_user_bot_board`) | Bot bulletin board event |
 
-> Other event types (such as `heartbeat_ack`, `draft_input`, `stream_message`, etc.) will be ignored.
+> Other event types (such as `heartbeat_ack`, `draft_input`, `stream_message`, etc.) are ignored.
 
 ### OneBot12 Supported detail_type
 
 | OneBot12 detail_type | Yunhu chat_type | Description |
-|---------------------|---------------|-------------|
-| `private` | 1 | Private chat message |
-| `group` | 2 | Group chat message |
-| `bot` | 3 | Bot chat |
+|----------------------|-----------------|-------------|
+| `private`            | 1               | Private chat message |
+| `group`              | 2               | Group chat message |
+| `bot`                | 3               | Bot session |
 
 ### Message Event Example
 
@@ -255,7 +255,7 @@ Requires checking `platform == "yunhu_user"` before using platform-specific feat
 }
 ```
 
-### Bot Announcement Board Event Example
+### Bot Bulletin Board Event Example
 
 ```python
 {
@@ -272,7 +272,7 @@ Requires checking `platform == "yunhu_user"` before using platform-specific feat
         "bot_id": "bot_id",
         "chat_id": "chat_id",
         "chat_type": 1,
-        "content": "Announcement content",
+        "content": "Bulletin content",
         "content_type": 1,
         "last_update_time": 1234567890
     },
@@ -298,7 +298,7 @@ async def handle_yunhu_user_message(event):
     
     print(f"User {user_nickname}({user_id}): {alt_message}")
     
-    # Check for special types in message segments
+    # Check for unique message segment types
     for segment in event.get("message", []):
         seg_type = segment.get("type", "")
         
@@ -346,19 +346,19 @@ async def handle_yunhu_user_notice(event):
     elif detail_type == "yunhu_user_bot_board":
         board_data = event.get("yunhu_user_bot_board", {})
         bot_name = event.get("bot_name", "")
-        print(f"Bot {bot_name} published announcement: {board_data.get('content', '')}")
+        print(f"Bot {bot_name} published bulletin: {board_data.get('content', '')}")
 ```
 
 ## Extended Field Description
 
-- All special fields are prefixed with `yunhu_user_` to avoid conflicts with standard fields
-- Original data is retained in the `yunhu_user_raw` field for accessing complete original data from Yunhu platform
-- Original event type is recorded in the `yunhu_user_raw_type` field (such as `push_message`, `edit_message`, etc.)
-- `self.user_id` represents the current logged-in user ID (obtained from login response)
-- Super file sharing provides file sharing data through the `yunhu_user_file_send` field
-- Bot announcement board provides announcement data through the `yunhu_user_bot_board` field
+- All unique fields are prefixed with `yunhu_user_` to avoid conflicts with standard fields
+- Original data is preserved in the `yunhu_user_raw` field, facilitating access to the complete original data from the Yunhu platform
+- Original event type is recorded in the `yunhu_user_raw_type` field (e.g., `push_message`, `edit_message`, etc.)
+- `self.user_id` indicates the currently logged-in user ID (obtained from the login response)
+- Super file sharing is provided through the `yunhu_user_file_send` field for file sharing data
+- Bot bulletin board is provided through the `yunhu_user_bot_board` field for bulletin data
 
-### Special Message Segment Types
+### Unique Message Segment Types
 
 #### Form Message Segment (yunhu_user_form)
 
@@ -389,7 +389,7 @@ When content_type is 6, the message segment type is `yunhu_user_post`:
 ```
 
 | Field | Type | Description |
-|------|------|-------------|
+|-------|------|-------------|
 | `post_id` | string | Unique identifier for the article |
 | `post_title` | string | Article title |
 | `post_content` | string | Article content |
@@ -408,12 +408,12 @@ When content_type is 7, the message segment type is `yunhu_user_sticker`:
 ```
 
 | Field | Type | Description |
-|------|------|-------------|
+|-------|------|-------------|
 | `file_id` | string | Sticker image URL |
 
 #### Button Message Segment (yunhu_user_button)
 
-When the message contains buttons, a `yunhu_user_button` message segment is attached:
+When a message contains buttons, a `yunhu_user_button` message segment is appended:
 
 ```json
 {
@@ -449,13 +449,13 @@ YunhuUserAdapter supports configuring and running multiple user accounts simulta
 # config.toml
 [YunhuUserAdapter]
 ws_reconnect_interval = 30  # WebSocket reconnect interval (seconds)
-ws_timeout = 70             # WebSocket timeout (seconds)
+ws_timeout = 70             # WebSocket timeout time (seconds)
 
 [YunhuUserAdapter.accounts.default]
 email = "user1@example.com"  # User email (required)
 password = "password1"       # User password (required)
 platform = "windows"         # Login platform (optional, default windows)
-device_id = ""               # Device ID (optional, auto-generated if not specified)
+device_id = ""               # Device ID (optional, auto-generated if not provided)
 enabled = true               # Whether to enable (optional, default true)
 
 [YunhuUserAdapter.accounts.account2]
@@ -467,27 +467,27 @@ enabled = true
 ```
 
 **Configuration Item Description:**
-- `email`: User email (required), used to login to Yunhu platform
+- `email`: User email (required), used to log in to the Yunhu platform
 - `password`: User password (required)
-- `platform`: Login platform identifier (optional, default `windows`), optional values: `windows`, `macos`, `linux`, `ios`, `android`
-- `device_id`: Device ID (optional, auto-generated if not specified), it is recommended to set a fixed value to maintain session consistency
+- `platform`: Login platform identifier (optional, default `windows`), available values: `windows`, `macos`, `linux`, `ios`, `android`
+- `device_id`: Device ID (optional, auto-generated if not provided), it is recommended to fill in a fixed value to maintain session consistency
 - `enabled`: Whether to enable this account (optional, default `true`)
 
-**Adapter Level Configuration:**
-- `ws_reconnect_interval`: WebSocket reconnect interval (seconds, default 30)
-- `ws_timeout`: WebSocket timeout (seconds, default 70)
+**Adapter-Level Configuration:**
+- `ws_reconnect_interval`: WebSocket reconnection interval (seconds, default 30)
+- `ws_timeout`: WebSocket timeout time (seconds, default 70)
 
 **Important Notes:**
-1. The adapter uses email login to get tokens, and receives events through WebSocket after login
-2. WebSocket connection will automatically reconnect after disconnection, with a maximum of 3 retry attempts
+1. The adapter uses email login to obtain a token, and receives events through WebSocket after logging in
+2. After a WebSocket connection is disconnected, it will automatically reconnect, with a maximum of 3 retries
 3. It is recommended to set a fixed `device_id` for each account to maintain session consistency
-4. Template accounts with unchanged default email and password will be automatically skipped
+4. Unmodified template accounts (default email and password) will be automatically skipped
 
-### Using Send DSL to Specify Accounts
+### Using Send DSL to Specify Account
 
-You can specify which account to use for sending messages through the `Using()` method. This method supports two parameters:
-- **Account name**: The account name in the configuration (such as `default`, `account2`)
-- **user_id**: The user ID obtained after login
+You can specify which account to use for sending messages through the `Using()` method. This method supports two types of parameters:
+- **Account Name**: The account name in the configuration (e.g., `default`, `account2`)
+- **user_id**: The user ID obtained after logging in
 
 ```python
 from ErisPulse.Core import adapter
@@ -496,18 +496,18 @@ yunhu_user = adapter.get("yunhu_user")
 # Send message using account name
 await yunhu_user.Send.Using("default").To("user", "user123").Text("Hello from account1!")
 
-# Send message using user_id (automatically matches corresponding account)
+# Send message using user_id (automatically matches the corresponding account)
 await yunhu_user.Send.Using("user_id_here").To("group", "group456").Text("Hello from user!")
 
-# Use the first enabled account when not specified
+# Use the first enabled account if not specified
 await yunhu_user.Send.To("user", "user123").Text("Hello from default account!")
 ```
 
-> **Tip:** When using `user_id`, the system will automatically find the matching account in the configuration. This is especially useful when handling event replies, where you can directly use `event["self"]["user_id"]` to reply to the same account.
+> **Tip:** When using `user_id`, the system will automatically find the matching account in the configuration. This is especially useful when handling event replies, where you can directly use `event["self"]["user_id"]` to reply using the same account.
 
-### Account Identification in Events
+### Account Identifier in Events
 
-Received events will automatically contain the corresponding user ID information:
+Events received will automatically include the corresponding user ID information:
 
 ```python
 from ErisPulse.Core.Event import message
@@ -529,12 +529,12 @@ async def handle_message(event):
 
 ### Log Information
 
-The adapter will automatically include account information in logs for debugging and tracking:
+The adapter will automatically include account information in logs, facilitating debugging and tracking:
 
 ```
-[INFO] Account default (user1@example.com) login successful, user ID: 12345678
+[INFO] Account default (user1@example.com) logged in successfully, user ID: 12345678
 [INFO] Account default WebSocket listening task started
-[INFO] Account account2 (user2@example.com) login successful, user ID: 87654321
+[INFO] Account account2 (user2@example.com) logged in successfully, user ID: 87654321
 ```
 
 ### Management Interface
@@ -557,7 +557,7 @@ account_name = yunhu_user._get_account_by_user_id("12345678")
 
 ## API Calls
 
-The adapter provides a `call_api` method that supports direct platform API calls:
+The adapter provides a `call_api` method to directly call platform APIs:
 
 ```python
 # Send message
@@ -599,7 +599,7 @@ result = await yunhu_user.call_api("/list",
     msg_id=""
 )
 
-# Get message edit records
+# Get message edit record
 result = await yunhu_user.call_api("/list_edit_record",
     msg_id="msg_id",
     size=10,
@@ -627,5 +627,5 @@ result = await yunhu_user.call_api("/button_report",
 | `/list` | Get message list |
 | `/list_by_seq` | Get message by sequence |
 | `/list_by_mid_seq` | Get message by message ID and sequence |
-| `/list_edit_record` | Get message edit records |
+| `/list_edit_record` | Get message edit record |
 | `/button_report` | Button event report |

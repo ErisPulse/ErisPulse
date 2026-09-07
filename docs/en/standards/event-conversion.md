@@ -1,59 +1,60 @@
 # Adapter Standardization Conversion Specification
 
 ## 1. Core Principles
-1.  **Strict Compatibility**: All standard fields must strictly follow the OneBot12 specification.
-2.  **Explicit Extension**: Platform-specific features must add the {platform}_ prefix (e.g., yunhu_form).
-3.  **Data Integrity**: Original event data must be retained in the {platform}_raw field, and the original event type must be retained in the {platform}_raw_type field.
-4.  **Time Consistency**: All timestamps must be converted to 10-digit Unix timestamps (seconds).
-5.  **Platform Consistency**: The `platform` item name must match the name/alias registered in ErisPulse.
+
+1. Strict Compatibility: All standard fields must fully comply with the OneBot12 specification.
+2. Explicit Extensions: Platform-specific features must be prefixed with {platform}_ (e.g., yunhu_form).
+3. Data Integrity: Original event data must be preserved in the {platform}_raw field, and the original event type must be preserved in the {platform}_raw_type field.
+4. Time Standardization: All timestamps must be converted to 10-digit Unix timestamps (in seconds).
+5. Platform Consistency: The platform field name must match the name/alias you registered in ErisPulse.
 
 ## 2. Standard Field Requirements
 
 ### 2.1 Required Fields
 | Field | Type | Description |
-|------|------|------|
-| id | string | Unique event identifier |
-| time | integer | Unix timestamp (seconds) |
+|-------|------|-------------|
+| id | string | Unique identifier for the event |
+| time | integer | Unix timestamp (in seconds) |
 | type | string | Event type |
-| detail_type | string | Event detail type (see [Session Types Standard](session-types.md)) |
+| detail_type | string | Detailed event type (see [Session Type Standard](session-types.md)) |
 | platform | string | Platform name |
-| self | object | Bot's own information |
+| self | object | Bot self information |
 | self.platform | string | Platform name |
 | self.user_id | string | Bot user ID |
 
 **detail_type Specification**:
-- Must use ErisPulse standard session types (see [Session Types Standard](session-types.md))
+- Must use ErisPulse standard session types (see [Session Type Standard](session-types.md))
 - Supported types: `private`, `group`, `user`, `channel`, `guild`, `thread`
-- The adapter is responsible for mapping platform native types to standard types
+- Adapters are responsible for mapping native platform types to standard types
 
 ### 2.2 Message Event Fields
 | Field | Type | Description |
-|------|------|------|
-| message | array | Message segment array |
-| alt_message | string | Alternative text for message segments |
+|-------|------|-------------|
+| message | array | Array of message segments |
+| alt_message | string | Alternate text for message segments |
 | user_id | string | User ID |
 | user_nickname | string | User nickname (optional) |
 
-### 2.3 Notice Event Fields
+### 2.3 Notification Event Fields
 | Field | Type | Description |
-|------|------|------|
+|-------|------|-------------|
 | user_id | string | User ID |
 | user_nickname | string | User nickname (optional) |
 | operator_id | string | Operator ID (optional) |
 
 ### 2.4 Request Event Fields
 | Field | Type | Description |
-|------|------|------|
+|-------|------|-------------|
 | user_id | string | User ID |
 | user_nickname | string | User nickname (optional) |
 | comment | string | Request comment (optional) |
-| request_id | string | Request identifier (**Strongly Recommended**, used for approve/reject operations) |
+| request_id | string | Request identifier (**strongly recommended**, used to approve/reject request operations) |
 
-**`request_id` Field Description**:
-- `request_id` is the unique operation identifier for the request event, used to execute approve/reject operations via the `HandleRequest` DSL
-- When converting request events, the adapter should map the platform native request identifier to this field
-- If the platform itself does not have a request ID, the adapter should generate a unique identifier (e.g., a hash based on timestamp + user_id)
-- When `request_id` is missing, `event.approve()` / `event.reject()` will raise `ValueError`
+**`request_id` Field Explanation**:
+- `request_id` is the unique operation identifier for request events, used to execute approve/reject operations via the `HandleRequest` DSL
+- Adapters should map native platform request identifiers to this field when converting request events
+- If the platform does not have a request ID, the adapter should generate a unique identifier (e.g., a hash based on timestamp + user ID)
+- When `request_id` is missing, `event.approve()` / `event.reject()` will raise a `ValueError`
 
 ## 3. Event Format Examples
 
@@ -132,20 +133,20 @@
 }
 ```
 
-## 4. Message Segment Standard
+## 4. Message Segment Standards
 
-### 4.1 Standard Message Segment
+### 4.1 Standard Message Segments
 
-Standard message segment types do **not** add platform prefixes:
+Standard message segment types **do not** include platform prefixes:
 
-| Type | Description | data Field |
-|------|------|----------|
+| Type | Description | data Fields |
+|------|-------------|-------------|
 | `text` | Plain text | `text: str` |
 | `image` | Image | `file: str/bytes`, `url: str` |
 | `audio` | Audio | `file: str/bytes`, `url: str` |
 | `video` | Video | `file: str/bytes`, `url: str` |
 | `file` | File | `file: str/bytes`, `url: str`, `filename: str` |
-| `mention` | @user | `user_id: str`, `user_name: str` |
+| `mention` | @User | `user_id: str`, `user_name: str` |
 | `reply` | Reply | `message_id: str` |
 | `face` | Emoji | `id: str` |
 | `location` | Location | `latitude: float`, `longitude: float` |
@@ -159,24 +160,24 @@ Standard message segment types do **not** add platform prefixes:
 }
 ```
 
-### 4.2 Platform Extension Message Segment
+### 4.2 Platform Extension Message Segments
 
-Platform-specific message segments need to add platform prefixes:
+Platform-specific message segments must include a platform prefix:
 
 ```json
 // Yunhu - Form
-{"type": "yunhu_form", "data": {"form_id": "123456", "form_name": "报名表"}}
+{"type": "yunhu_form", "data": {"form_id": "123456", "form_name": "Registration Form"}}
 
 // Telegram - Sticker
 {"type": "telegram_sticker", "data": {"file_id": "CAACAgIAAxkBAA...", "emoji": "😂"}}
 ```
 
 **Extension Message Segment Requirements**:
-1.  **No prefix for internal data fields**: `{"type": "yunhu_form", "data": {"form_id": "..."}}` and NOT `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
-2.  **Provide fallback**: Modules might not recognize extended message segments; the adapter should provide a text alternative in `alt_message`
-3.  **Complete documentation**: Every extended message segment must describe the `type`, `data` structure, and use cases in the adapter documentation
+1. **No prefixes in data fields**: `{"type": "yunhu_form", "data": {"form_id": "..."}}` instead of `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
+2. **Provide fallback solutions**: Modules may not recognize extension message segments; adapters should provide text alternatives in `alt_message`
+3. **Complete documentation**: Each extension message segment must be documented in the adapter documentation with `type`, `data` structure, and usage scenarios
 
-## 5. Unknown Event Handling
+## 5. Handling Unknown Events
 
 For unrecognized event types, a warning event should be generated:
 ```json
@@ -192,8 +193,6 @@ For unrecognized event types, a warning event should be generated:
 }
 ```
 
----
-
 ## 6. Extension Naming Convention
 
 ### 6.1 Field Naming
@@ -201,25 +200,25 @@ For unrecognized event types, a warning event should be generated:
 **Rule**: `{platform}_{field_name}`
 
 ```
-Platform Prefix    Field Name            Full Field Name
-────────            ────────              ────────────────
-yunhu              command               yunhu_command
-telegram            sticker_file_id       telegram_sticker_file_id
-onebot11            anonymous             onebot11_anonymous
-email               subject               email_subject
+Platform Prefix  Field Name          Full Field Name
+──────────────── ─────────────────── ───────────────────
+yunhu            command             yunhu_command
+telegram         sticker_file_id     telegram_sticker_file_id
+onebot11         anonymous           onebot11_anonymous
+email            subject             email_subject
 ```
 
 **Requirements**:
-- `platform` must match the platform name exactly when registering the adapter (case sensitive)
-- `field_name` uses `snake_case` naming
-- Do not use double underscores `__` at the beginning (reserved for Python)
-- Do not use the same name as standard fields (e.g., `type`, `time`, `message`, etc.)
+- `platform` must exactly match the platform name registered with the adapter (case-sensitive)
+- `field_name` must use `snake_case` naming
+- Double underscores `__` at the beginning are forbidden (reserved by Python)
+- Field names must not conflict with standard fields (e.g., `type`, `time`, `message`, etc.)
 
 ### 6.2 Message Segment Type Naming
 
 **Rule**: `{platform}_{segment_type}`
 
-Standard message segment types (`text`, `image`, `audio`, `video`, `mention`, `reply`, etc.) must **not** add platform prefixes. Only platform-specific message segment types need the prefix.
+Standard message segment types (`text`, `image`, `audio`, `video`, `mention`, `reply`, etc.) **must not** have a platform prefix. Only platform-specific message segment types require a prefix.
 
 ### 6.3 Raw Data Field Naming
 
@@ -227,15 +226,15 @@ The following field names are **reserved fields** that all adapters must follow:
 
 | Reserved Field | Type | Description |
 |----------------|------|-------------|
-| `{platform}_raw` | `any` | Complete copy of platform raw event data |
-| `{platform}_raw_type` | `string` | Platform raw event type identifier |
+| `{platform}_raw` | `any` | A deep copy of the complete original platform event data |
+| `{platform}_raw_type` | `string` | The platform's original event type identifier |
 
 **Requirements**:
-- `{platform}_raw` must be a deep copy of the raw data, not a reference
-- `{platform}_raw_type` must be a string, even if the platform uses numeric types, convert to string
-- These two fields must exist in all events (as `null` and empty string `""` if unavailable)
+- `{platform}_raw` must be a deep copy of the original data, not a reference
+- `{platform}_raw_type` must be a string; if the platform uses a numeric type, it must be converted to a string
+- These two fields must exist in all events (use `null` if unavailable, and an empty string `""` if the type is unavailable)
 
-### 6.4 Platform Specific Field Examples
+### 6.4 Platform-Specific Field Examples
 
 ```json
 {
@@ -271,63 +270,61 @@ Extension fields can be simple values or nested objects:
 ```
 
 **Nested Field Requirements**:
-- Top-level keys must have platform prefixes
-- Internal nested fields must **not** add platform prefixes
-- Recommended nesting depth should not exceed 3 levels
+- Top-level keys must include the platform prefix
+- Nested internal fields **must not** include the platform prefix
+- Nesting depth should be limited to 3 levels
 
 ### 6.6 `self` Field Extension
 
-Standard required fields for the `self` object (platform, user_id) see §2.1. Below are the optional fields extended by ErisPulse:
+The standard required fields for the `self` object (`platform`, `user_id`) are listed in §2.1. The following are optional fields extended by ErisPulse:
 
 | Field | Type | Description |
-|------|------|------|
+|-------|------|-------------|
 | `self.user_name` | `string` | Bot nickname |
 | `self.avatar` | `string` | Bot avatar URL |
 | `self.account_id` | `string` | Account identifier in multi-account mode |
 
-> **Bot Status Tracking**: Adapters inform the framework of the Bot's connection status by sending `type: "meta"` events. Supported `detail_type`: `connect` (online), `heartbeat` (heartbeat), `disconnect` (offline). The system automatically extracts the Bot metadata from the `self` field for status tracking. Additionally, the `self` field in normal events is automatically discovered. See [Adapter System API - Bot Status Management](../api-reference/adapter-system.md).
+> **Bot Status Tracking**: Adapters inform the framework of the Bot's connection status by sending `type: "meta"` events. Supported `detail_type` values are: `connect` (online), `heartbeat` (heartbeat), `disconnect` (offline). The system automatically extracts Bot metadata from the `self` field in these events for status tracking. Additionally, the `self` field in regular events is also automatically detected as the Bot. See [Adapter System API - Bot Status Management](../api-reference/adapter-system.md) for more details.
 
 ---
 
 ## 7. Session Type Extension
 
-ErisPulse extends the following session types on top of the OneBot12 standard `private`, `group`:
+ErisPulse extends the OneBot12 standard's `private` and `group` session types with the following additional session types:
 
 | Type | OneBot12 Standard | ErisPulse Extension | Description |
 |------|:-----------:|:------------:|------|
 | `private` | ✅ | — | One-to-one private chat |
 | `group` | ✅ | — | Group chat |
-| `user` | — | ✅ | User type (Telegram, etc.) |
-| `channel` | — | ✅ | Channel (broadcast style) |
-| `guild` | — | ✅ | Server / Community |
-| `thread` | — | ✅ | Topic / Sub-channel |
+| `user` | — | ✅ | User type (e.g., Telegram) |
+| `channel` | — | ✅ | Channel (broadcast-style) |
+| `guild` | — | ✅ | Server/community |
+| `thread` | — | ✅ | Topic/subchannel |
 
 **Adapter Custom Type Extension**:
 
 ```python
 from ErisPulse.Core.Event.session_type import register_custom_type
 
-# Register at adapter startup
+# Register during adapter startup
 register_custom_type(
-    receive_type="email",      # detail_type in the receive event
-    send_type="email",         # target type when sending
+    receive_type="email",      # detail_type in receive events
+    send_type="email",         # target type for sending
     id_field="email_id",       # corresponding ID field name
     platform="email"           # platform identifier
 )
 ```
 
 **Custom Type Requirements**:
-- Must be registered at adapter `start()` and unregistered at `shutdown()`
-- `receive_type` should not duplicate standard type names
-- `id_field` should follow the `{target}_id` naming pattern
+- Must be registered during the adapter's `start()` and unregistered during `shutdown()`
+- `receive_type` should not conflict with standard types
+- `id_field` should follow the `{target}_id` naming convention
 
-> For complete session type definitions and mapping relationships, see [Session Types Standard](session-types.md).
-
----
+> For a complete definition and mapping of session types, see [Session Types Standard](session-types.md).
 
 ## 8. Module Developer Guide
 
-### 8.1 Accessing Extension Fields
+### 8.1 Accessing Extended Fields
 
 ```python
 from ErisPulse.Core.Event import message
@@ -338,10 +335,10 @@ async def handle_message(event):
     text = event.get_text()
     user_id = event.get_user_id()
 
-    # Access platform extension fields - Method 1: Direct get
+    # Access platform extended fields - Method 1: Direct get
     yunhu_command = event.get("yunhu_command")
 
-    # Access platform extension fields - Method 2: Dot notation (Event wrapper class)
+    # Access platform extended fields - Method 2: Dot-style access (Event wrapper class)
     # event.yunhu_command
 
     # Access raw data
@@ -356,7 +353,7 @@ async def handle_message(event):
         pass
 ```
 
-### 8.2 Handling Extension Message Segments
+### 8.2 Handling Extended Message Segments
 
 ```python
 @message()
@@ -379,23 +376,23 @@ async def handle_message(event):
 
 ### 8.3 Best Practices
 
-1.  **Prioritize Standard Fields**: Do not assume extension fields always exist
-2.  **Platform Detection**: Determine platform via `event.get_platform()`, not by inferring from the existence of extension fields
-3.  **Graceful Degradation**: If an extension message segment cannot be processed, use `alt_message` as a fallback
-4.  **Do Not Hardcode Prefixes**: Dynamically concatenate using the `platform` variable
+1. **Prefer Standard Fields**: Do not assume extended fields are always present
+2. **Platform Detection**: Use `event.get_platform()` to determine the platform, rather than inferring from the presence of extended fields
+3. **Graceful Degradation**: Use `alt_message` as a fallback when unable to process extended message segments
+4. **Avoid Hardcoding Prefixes**: Dynamically construct using the `platform` variable
 
 ```python
 # ✅ Recommended
 platform = event.get_platform()
 raw_data = event.get(f"{platform}_raw")
 
-# ❌ Not Recommended
+# ❌ Not recommended
 raw_data = event.get("yunhu_raw")
 ```
 
 ### 8.4 Request Event Handling
 
-Module developers can operate on request events via `event.approve()` and `event.reject()`:
+Module developers can use `event.approve()` and `event.reject()` to handle request events:
 
 ```python
 from ErisPulse.Core.Event import request
@@ -406,76 +403,74 @@ async def handle_friend_request(event):
     user_name = event.get_user_nickname() or event.get_user_id()
     comment = event.get_comment()
     
-    # Approve request
+    # Approve the request
     result = await event.approve()
     if result.get("status") == "ok":
-        print(f"已同意 {user_name} 的好友请求")
+        print(f"Approved friend request from {user_name}")
     else:
-        print(f"同意好友请求失败: {result.get('message')}")
+        print(f"Failed to approve friend request: {result.get('message')}")
 
-# Group Invite: Decide based on conditions
+# Group Invitation: Decide based on conditions
 @request.on_group_request()
 async def handle_group_request(event):
     comment = event.get_comment()
     
-    # Reject request
-    result = await event.reject(comment="暂不加入新群")
+    # Reject the request
+    result = await event.reject(comment="Temporarily not joining new group")
 ```
 
-**Direct Operation via Adapter** (Suitable for non-event handler scenarios):
+**Direct Operations via Adapter** (for non-event handler scenarios):
 
 ```python
 from ErisPulse import adapter
 
-# Directly operate via request_id
+# Directly operate using request_id
 await adapter.myplatform.Request("req_abc123").accept()
 await adapter.myplatform.Request("req_abc123").reject()
 
 # Specify Bot account for operation
 await adapter.myplatform.Request("req_abc123").Using("bot1").accept()
 
-# With remark/comment
-await adapter.myplatform.Request("req_abc123").accept(comment="欢迎")
+# Include comment
+await adapter.myplatform.Request("req_abc123").accept(comment="Welcome")
 ```
-
----
 
 ## 9. Session Type Inference for notice / request Events
 
-### 9.1 Background
+### 9.1 Problem Background
 
-The `detail_type` of notice events and request events are **semantic subtypes** (e.g., `group_member_increase`, `friend_increase`), not session types (e.g., `group`, `private`).
+The `detail_type` of `notice` and `request` events are **semantic subtypes** (e.g., `group_member_increase`, `friend_increase`), not session types (e.g., `group`, `private`).
 
 ```
-type        detail_type                  Meaning          Session Type
+type        detail_type                  Meaning            Session Type
 ────        ───────────                  ────            ────────
-message     group                        Group message    group (detail_type is session type)
-message     private                      Private message  private (detail_type is session type)
-notice      group_member_increase        Member increase  group (inferred from group_id)
-notice      friend_increase              Friend increase  private (inferred from user_id)
-request     friend                       Friend request   private (inferred from user_id)
-request     group                        Group request    group (detail_type is session type)
+message     group                        Group message         group (detail_type is session type)
+message     private                      Private message       private (detail_type is session type)
+notice      group_member_increase        Group member increase group (inferred from group_id)
+notice      friend_increase              Friend increase       private (inferred from user_id)
+request     friend                       Friend request        private (inferred from user_id)
+request     group                        Group request         group (detail_type is session type)
 ```
 
 ### 9.2 Inference Rules
 
-The inference order of `infer_receive_type()`:
+The inference order for `infer_receive_type()`:
 
-1. If `detail_type` is a known session type (`private`/`group`/`channel`/`guild`/`thread`/`user`), use directly
-2. If `detail_type` is a custom session type, use directly
+1. If `detail_type` is a known session type (`private`/`group`/`channel`/`guild`/`thread`/`user`), use it directly
+2. If `detail_type` is a custom session type, use it directly
 3. Otherwise (semantic subtypes of notice/request), infer based on ID fields:
-   - Has `group_id` → `"group"`
-   - Has `channel_id` → `"channel"`
-   - Has `guild_id` → `"guild"`
-   - Has `thread_id` → `"thread"`
-   - Has `user_id` → `"private"`
+   - If `group_id` exists → `"group"`
+   - If `channel_id` exists → `"channel"`
+   - If `guild_id` exists → `"guild"`
+   - If `thread_id` exists → `"thread"`
+   - If `user_id` exists → `"private"`
 
 ### 9.3 `event.reply()` Target Inference
 
 The target of `event.reply()` in notice/request events is determined by session type inference:
 
-- Group notice events (containing `group_id`) → Reply to **Group**
-- Friend notice events (containing only `user_id`) → Reply to **User Private Chat**
+- Group notice events (with `group_id`) → reply to the **group**
+- Friend notice events (with only `user_id`) → reply to the **private user**
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -485,32 +480,30 @@ async def handle_welcome(event):
     group_id = event.get("group_id")    # "group_789"
     user_id = event.get("user_id")      # "user_456"
 
-    # event.reply() sends to group (group/group_789)
-    await event.reply("欢迎入群！")
+    # event.reply() sends to the group (group/group_789)
+    await event.reply("Welcome to the group!")
 
-    # To notify admin (private chat), explicitly specify target:
-    await adapter.Send.To("user", "admin_id").Text(f"新成员 {user_id} 加入了 {group_id}")
+    # If you need to notify the admin (private chat), specify the target explicitly:
+    await adapter.Send.To("user", "admin_id").Text(f"New member {user_id} joined {group_id}")
 ```
 
-### 9.4 Adapter Development Advice
+### 9.4 Adapter Development Recommendations
 
-Ensure notice/request events contain the correct ID fields:
+Ensure that notice/request events contain the correct ID fields:
 
-| detail_type | Must contain ID fields | Inferred session type |
-|-------------|------------------------|-----------------------|
-| `group_member_increase` | `group_id` + `user_id` | `group` |
-| `group_member_decrease` | `group_id` + `user_id` | `group` |
-| `friend_increase` | `user_id` | `private` |
-| `friend_decrease` | `user_id` | `private` |
-| `friend` (request) | `user_id` | `private` |
-| `group` (request) | `group_id` | `group` |
+| detail_type             | Required ID Fields        | Inferred Session Type |
+|-------------------------|---------------------------|------------------------|
+| `group_member_increase` | `group_id` + `user_id`    | `group`                |
+| `group_member_decrease` | `group_id` + `user_id`    | `group`                |
+| `friend_increase`       | `user_id`                 | `private`              |
+| `friend_decrease`       | `user_id`                 | `private`              |
+| `friend` (request)      | `user_id`                 | `private`              |
+| `group` (request)       | `group_id`                | `group`                |
 
----
+## 10. Related Documents
 
-## 10. Related Documentation
-
-- [Platform Features Guide](../platform-guide/README.md) - You can access this document to learn about platform features and known extended events and message segments.
-- [Session Types Standard](session-types.md) - Session type definitions and mapping relationships
-- [Send Method Specification](send-method-spec.md) - Naming, parameter specifications of Send class methods, and reverse conversion requirements
-- [API Response Standard](api-response.md) - Adapter API response format standard
-- [API Action Standard](api-action-spec.md) - Unified interface for OneBot12 standard API actions
+- [Platform Features Documentation](../platform-guide/README.md) - You can visit this document to learn about platform-specific features, as well as known extension events and message segments.
+- [Session Type Standard](session-types.md) - Definition and mapping relationships of session types
+- [Send Method Specification](send-method-spec.md) - Naming, parameter specifications, and reverse conversion requirements for methods in the Send class
+- [API Response Standard](api-response.md) - Standard format for adapter API responses
+- [API Action Specification](api-action-spec.md) - Unified interface for OneBot12 standard API actions

@@ -1,12 +1,12 @@
 # 快速入門
 
-> **這是您的第一步。** 用 5 分鐘從零開始運行一個 ErisPulse 機器人。
+> **這是你的第一步。** 用 5 分鐘從零開始運行一個 ErisPulse 機器人。
 
 ## 安裝 ErisPulse
 
 ### 一鍵安裝腳本（推薦）
 
-安裝腳本會自動檢測您的環境（Docker、Python、uv），並引導您選擇最適合的安裝方式。
+安裝腳本會自動偵測您的環境（Docker、Python、uv），並引導您選擇最適合的安裝方式。
 
 Windows (PowerShell):
 ```powershell
@@ -20,8 +20,8 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 
 腳本會引導您完成：
 
-- **Docker 安裝**（檢測到 Docker 時推薦）：選擇鏡像源（Docker Hub / GHCR）、版本通道（穩定版 / 預發布版）、Dashboard 管理面板配置、端口設定
-- **傳統安裝**：自動建立虛擬環境、選擇 ErisPulse 版本、可選安裝 Dashboard 管理面板模組
+- **Docker 安裝**（偵測到 Docker 時推薦）：選擇鏡像來源（Docker Hub / GHCR）、版本通道（穩定版 / 預發布版）、Dashboard 管理面板配置、端口設定
+- **傳統安裝**：自動建立虛擬環境、選擇 ErisPulse 版本、選擇性安裝 Dashboard 管理面板模組
 
 ### 使用 Docker
 
@@ -36,7 +36,7 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
 <details>
-<summary>Docker Hub 不可用？</summary>
+<summary>Docker Hub 無法使用？</summary>
 
 使用 GitHub Container Registry 鏡像，修改 `docker-compose.yml` 中的 image：
 
@@ -46,11 +46,11 @@ image: ghcr.io/erispulse/erispulse:latest
 
 </details>
 
-啟動後訪問 `http://<host>:8000/Dashboard`，使用設定的令牌登入。
+啟動後，請至 `http://<host>:8000/Dashboard`，使用設定的令牌登入。
 
 ### 使用 pip 安裝
 
-確保您的 Python 版本 >= 3.10，然後使用 pip 安裝：
+請確保您的 Python 版本 >= 3.10，然後使用 pip 安裝：
 
 ```bash
 pip install ErisPulse
@@ -66,9 +66,9 @@ pip install ErisPulse
 epsdk init
 ```
 
-這將啟動一個互動式向導，引導您完成：
+這將啟動一個互動式嚮導，引導您完成：
 - 專案名稱設定
-- 日誌等級配置
+- 日誌層級配置
 - 伺服器配置（主機和端口）
 - 適配器選擇和配置
 - 專案結構建立
@@ -108,13 +108,13 @@ epsdk list-remote
 
 ### 互動式安裝
 
-不指定套件名時進入互動式安裝介面：
+不指定套件名稱時會進入互動式安裝介面：
 
 ```bash
 epsdk install
 ```
 
-## 運行專案
+## 運行項目
 
 ```bash
 # 普通運行
@@ -124,7 +124,7 @@ epsdk run main.py
 epsdk run main.py --reload
 ```
 
-## 啟用 IDE 自動補全（可選）
+## 啟用 IDE 自動完成（可選）
 
 ErisPulse 動態發現模組/適配器，IDE 預設無法補全平台特有方法。  
 執行以下命令生成類型存根：
@@ -133,7 +133,7 @@ ErisPulse 動態發現模組/適配器，IDE 預設無法補全平台特有方�
 epsdk types
 ```
 
-生成後用導入的類型作為變數標註即可獲得精確補全（詳見 [IDE 自動補全指南](./getting-started/ide-completion.md)）：
+生成後使用導入的類型作為變數標註即可獲得精確補全（詳見 [IDE 自動完成指南](./getting-started/ide-completion.md)）：
 
 ```python
 from _ep_types import Yunhu
@@ -143,14 +143,14 @@ adapter: Yunhu = sdk.adapter.get("yunhu")
 await adapter.Send.To("group", "123").Board(...)  # 補全平台特有方法
 ```
 
-## 專案結構
+## 項目結構
 
-初始化後的專案結構：
+初始化後的項目結構：
 
 ```
 my_bot/
 ├── config/
-│   └── config.toml          # 配置檔案
+│   └── config.toml          # 配置檔
 └── main.py                  # 入口檔案
 
 ```
@@ -168,19 +168,19 @@ port = 8000
 level = "INFO"
 
 [Yunhu_Adapter]
-# 適配器配置
+# 适配器配置
 ```
 
 ## 下一步
 
-機器人跑起來後，您可以按需繼續：
+機器人啟動後，您可以根據需求繼續：
 
-**想知道框架如何運作？**
-- [基本概念](getting-started/basic-concepts.md) — 適配器 / 模組 / 事件 的設計
+**想了解框架如何運作？**
+- [基礎概念](getting-started/basic-concepts.md) — 適配器 / 模組 / 事件 的設計
 - [架構概覽](architecture.md) — 可視化架構圖
 
 **想實現更多功能？**
-- [常見任務範例](getting-started/common-tasks.md) — 儲存、定時任務、權限控制
+- [常見任務範例](getting-started/common-tasks.md) — 存儲、定時任務、權限控制
 - [事件處理入門](getting-started/event-handling.md) — 消息、通知、請求處理
 
 **想開發自己的模組 / 適配器？**
@@ -188,4 +188,4 @@ level = "INFO"
 - [適配器開發入門](developer-guide/adapters/getting-started.md)
 
 **按需查閱：**
-- [配置檔案說明](user-guide/configuration.md) · [CLI 命令](user-guide/cli-reference.md) · [部署指南](user-guide/deployment.md)
+- [配置文件說明](user-guide/configuration.md) · [CLI 命令](user-guide/cli-reference.md) · [部署指南](user-guide/deployment.md)

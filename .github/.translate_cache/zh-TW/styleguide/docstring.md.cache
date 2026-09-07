@@ -1,5 +1,29 @@
 {
+  "version": 2,
   "hash": "c4f66de529a71e0f8865fb5080169426",
-  "translated_at": "2026-03-26T17:36:43.712760",
-  "target_lang": "zh-TW"
+  "file_hash": "c4f66de529a71e0f8865fb5080169426",
+  "translated_at": "2026-09-07T12:05:40.939724",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "debdf341458987b7595d3321894574ac",
+      "translation": "# ErisPulse 注釋風格規範\n\n在建立 EP 核心方法時必須添加方法註解，註解格式如下："
+    },
+    {
+      "hash": "43651ed156f3943d1220e4e6b6ce3f36",
+      "translation": "## 模組級文件註釋\n\n每個模組文件開頭應包含模組文件：\n```python\n\"\"\"\n[模組名稱]\n[模組功能描述]\n\n{!--< tips >!--}\n重要使用說明或注意事項\n{!--< /tips >!--}\n\"\"\"\n```"
+    },
+    {
+      "hash": "95ccbf398597c646d67e46a19e8170c0",
+      "translation": "## 方法註釋\n\n### 基本格式\n```python\ndef func(param1: type1, param2: type2) -> return_type:\n    \"\"\"\n    [功能描述]\n    \n    :param param1: [類型1] [參數描述1]\n    :param param2: [類型2] [參數描述2]\n    :return: [返回類型] [返回描述]\n    \"\"\"\n    pass\n```\n\n### 完整格式（適用於複雜方法）\n```python\ndef complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:\n    \"\"\"\n    [功能詳細描述]\n    [可包含多行描述]\n    \n    :param param1: [類型1] [參數描述1]\n    :param param2: [類型2] [可選參數描述2] (預設: None)\n    \n    :return: \n        type1: [返回參數1描述]\n        type2: [返回參數2描述]\n    \n    :raises ErrorType: [錯誤描述]\n    \"\"\"\n    pass\n```"
+    },
+    {
+      "hash": "03f8c69795c86254b95aaff09f21b278",
+      "translation": "## 特殊標籤（用於 API 文件生成）\n\n當方法註釋包含以下內容時，將在 API 文件建構時產生對應效果：\n\n| 標籤格式 | 作用 | 示例 |\n|---------|------|------|\n| `{!--< internal-use >!--}` | 標記為內部使用，不產生文件 | `{!--< internal-use >!--}` |\n| `{!--< ignore >!--}` | 忽略此方法，不產生文件 | `{!--< ignore >!--}` |\n| `{!--< deprecated >!--}` | 標記為過時方法 | `{!--< deprecated >!--} 請使用 new_func() 代替` |\n| `{!--< experimental >!--}` | 標記為實驗性功能 | `{!--< experimental >!--} 可能不穩定` |\n| `{!--< tips >!--}...{!--< /tips >!--}` | 多行提示內容 | `{!--< tips >!--}\\n重要提示內容\\n{!--< /tips >!--}` |\n| `{!--< tips >!--}` | 单行提示内容 | `{!--< tips >!--} 注意: 此方法需要先初始化` |"
+    },
+    {
+      "hash": "54b887c1293314d4bc192b09e6dd23be",
+      "translation": "## 最佳建議\n\n1. **類型註解**：使用 Python 類型註解語法\n   ```python\n   def func(param: int) -> str:\n   ```\n\n2. **參數說明**：對可選參數註明預設值\n   ```python\n   :param timeout: [int] 超時時間(秒) (預設: 30)\n   ```\n\n3. **返回值**：多返回值使用 `Tuple` 或明確說明\n   ```python\n   :return: \n       str: 狀態資訊\n       int: 狀態碼\n   ```\n\n4. **異常說明**：使用 `:raises` 標註可能拋出的異常\n   ```python\n   :raises ValueError: 當參數無效時拋出\n   ```\n\n5. **內部方法**：非公開 API 應添加 `{!--< internal-use >!--}` 標籤\n\n6. **過時方法**：標記過時方法並提供替代方案\n   ```python\n   {!--< deprecated >!--} 請使用 new_method() 代替 | 2025-07-09\n   ```"
+    }
+  ]
 }

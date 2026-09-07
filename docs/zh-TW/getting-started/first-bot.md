@@ -1,12 +1,12 @@
 # 創建第一個機器人
 
-本指南在 [5 分鐘快速開始](../quick-start.md) 的基礎上，帶你編寫第一個命令處理器並理解運行機制。
+本指南在 [5 分鐘快速入門](../quick-start.md) 的基礎上，帶你編寫第一個命令處理器並理解運行機制。
 
-> 如果你還沒有安裝好 ErisPulse、初始化項目，請先完成 [快速開始](../quick-start.md) 的「安裝」「初始化項目」「運行項目」三步。
+> 如果你尚未安裝 ErisPulse、初始化項目，請先完成 [快速入門](../quick-start.md) 的「安裝」「初始化項目」「運行項目」三步。
 
-## 第一步：編寫第一個命令
+## 第一步：撰寫第一個命令
 
-打開 `main.py`，編寫一個簡單的命令處理器：
+開啟 `main.py`，撰寫一個簡單的命令處理器：
 
 ```python
 from ErisPulse import sdk
@@ -40,7 +40,7 @@ if __name__ == "__main__":
 `sdk.run(keep_running)` 控制框架是否阻塞維持運行：
 
 - **`keep_running=True`（預設）**：`run()` 會一直阻塞，直到收到關閉訊號（如 Ctrl+C），適合純 bot 應用。
-- **`keep_running=False`**：`run()` 初始化完成後立即返回，**框架並不會卸載**——已啟動的適配器/模塊仍作為背景任務繼續處理訊息事件，你可以接著執行自己的邏輯，直到事件循環結束框架才隨之關閉。例如：
+- **`keep_running=False`**：`run()` 初始化完成後立即返回，**框架並不會卸載**——已啟動的適配器/模組仍作為背景任務繼續處理訊息事件，你可以接著執行自己的邏輯，直到事件迴圈結束框架才隨之關閉。例如：
 
 ```python
 async def main():
@@ -51,12 +51,12 @@ async def main():
         print("每小時檢查一次")
 ```
 
-> 除了 `run()` 的兩種模式，還有 `init()`/`uninit()` 手動控制生命週期、單獨啟停適配器/路由等更精細的方式，見 [啟動流程與手動控制](../advanced/startup.md)。
+> 除了 `run()` 的兩種模式，還有 `init()`/`uninit()` 手動控制生命週期、單獨啟停適配器/路由等更精細的方式，請參閱 [啟動流程與手動控制](../advanced/startup.md)。
 
-## 第二步：運行機器人
+## 第二步：執行機器人
 
 ```bash
-# 普通運行
+# 普通執行
 epsdk run main.py
 
 # 開發模式（支援熱重載）
@@ -73,7 +73,7 @@ epsdk run main.py --reload
 
 你應該會收到機器人的回覆。
 
-## 程式碼說明
+## 代碼說明
 
 ### 命令裝飾器
 
@@ -81,7 +81,7 @@ epsdk run main.py --reload
 @command("hello", help="發送問候訊息")
 ```
 
-- `hello`：命令名稱，使用者透過 `/hello` 調用
+- `hello`：命令名稱，使用者透過 `/hello` 呼叫
 - `help`：命令幫助說明，在 `/help` 命令中顯示
 
 ### 事件參數
@@ -109,15 +109,15 @@ await event.reply("回覆內容")
 
 ## 擴展：添加更多功能
 
-ErisPulse 提供了豐富的事件處理和資料處理能力：
+ErisPulse 提供了豐富的事件處理和數據處理能力：
 
-- **訊息監聽**：使用 `@message.on_message()` 監聽各類訊息 → [事件處理入門](event-handling.md)
+- **消息監聽**：使用 `@message.on_message()` 監聽各類消息 → [事件處理入門](event-handling.md)
 - **通知監聽**：使用 `@notice.on_friend_add()` 等監聽系統通知 → [事件處理入門](event-handling.md)
-- **資料儲存**：使用 `sdk.storage.get/set` 持久化資料 → [常見任務示例](common-tasks.md)
+- **數據存儲**：使用 `sdk.storage.get/set` 持久化數據 → [常見任務示例](common-tasks.md)
 
 ## 常見問題
 
-### 命令沒有回應？
+### 命令沒有響應？
 
 1. 檢查適配器是否正確配置，確認 `config/config.toml` 中適配器的 `status` 為 `true`
 2. 查看終端日誌輸出，確認是否有錯誤資訊（特別是 `ERROR` 級別日誌）
@@ -151,10 +151,10 @@ async def hello_handler(event):
         await event.reply("你好！")
 ```
 
-> 更多多平台適配技巧請參考 [常見任務示例](common-tasks.md#多平台適配)。
+> 更多多平台適配技巧請參考 [常見任務範例](common-tasks.md#多平台適配)。
 
 ## 下一步
 
 - [基礎概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念
 - [事件處理入門](event-handling.md) - 學習處理各類事件
-- [常見任務示例](common-tasks.md) - 掌握更多實用功能
+- [常見任務範例](common-tasks.md) - 掌握更多實用功能

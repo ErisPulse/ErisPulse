@@ -1,15 +1,15 @@
 # Publishing and Module Store Guide
 
-Publish your developed module or adapter to the ErisPulse Module Store, allowing other users to easily discover and install it.
+Publish your developed modules or adapters to the ErisPulse Module Store, allowing other users to easily discover and install them.
 
-## Module Store Overview
+## Overview of the Module Store
 
-The ErisPulse Module Store is a centralized module registry where users can browse, search, and install community-contributed modules and adapters through the CLI tool.
+The ErisPulse Module Store is a centralized module registry, allowing users to browse, search, and install community-contributed modules and adapters through the CLI tool.
 
 ### Browsing and Discovery
 
 ```bash
-# List all available packages remotely
+# List all packages available remotely
 epsdk list-remote
 
 # Show only modules
@@ -18,26 +18,26 @@ epsdk list-remote -t modules
 # Show only adapters
 epsdk list-remote -t adapters
 
-# Force refresh remote package list
+# Force refresh the remote package list
 epsdk list-remote -r
 ```
 
-You can also browse the module store online at [ErisPulse official website](https://www.erisdev.com/#market).
+You can also visit the [ErisPulse official website](https://www.erisdev.com/#market) to browse the module store online.
 
 ### Supported Submission Types
 
 | Type | Description | Entry-point Group |
-|------|-------------|-------------------|
+|------|------|-------------------|
 | Module | Extend bot functionality, implement business logic | `erispulse.module` |
 | Adapter | Connect to new messaging platforms | `erispulse.adapter` |
 
-## Quick Publishing
+## Quick Start
 
-The entire process only requires three steps: configure the project → publish to PyPI → submit to the module store.
+The entire process only requires three steps: configure your project → publish to PyPI → submit to the Module Store.
 
 ### 1. Configure pyproject.toml
 
-Ensure the project directory contains `pyproject.toml` and `README.md`, and configure entry-points according to the type:
+Ensure your project directory includes `pyproject.toml` and `README.md`, and configure entry-points according to the type:
 
 #### Module
 
@@ -45,7 +45,7 @@ Ensure the project directory contains `pyproject.toml` and `README.md`, and conf
 [project]
 name = "ErisPulse-MyModule"
 version = "1.0.0"
-description = "Module functionality description"
+description = "Module feature description"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [ { name = "yourname" } ]
@@ -63,19 +63,19 @@ dependencies = [
 [project]
 name = "ErisPulse-MyAdapter"
 version = "1.0.0"
-description = "Adapter functionality description"
+description = "Adapter feature description"
 requires-python = ">=3.10"
 
 [project.entry-points."erispulse.adapter"]
 "myplatform" = "MyAdapter:MyAdapter"
 ```
 
-> **Note**: It is recommended that package names start with `ErisPulse-` for easy identification by users. The entry-point key (e.g., `"MyModule"`) will serve as the module's access name in the SDK.
+> **Note**: It is recommended that package names start with `ErisPulse-` for easier identification by users. The entry-point key name (e.g., `"MyModule"`) will be the module's access name in the SDK.
 
 ### 2. Publish to PyPI
 
 ```bash
-# Build + Publish (requires PyPI account)
+# Build + Publish (requires a PyPI account)
 pip install build twine
 python -m build
 python -m twine upload dist/*
@@ -95,9 +95,9 @@ Supported login methods: **GitHub**, **Codeberg**, **Yunhu**, choose any one.
 
 Key points to fill in:
 - Module name, description, repository address
-- Minimum SDK version: If unsure, fill in the version number of the latest [ErisPulse release](https://pypi.org/project/ErisPulse/)
+- Minimum SDK version: If unsure, fill in the version number of the latest [ErisPulse release](https://pypi.org/project/ErisPulse/) 
 
-After submission, it takes effect immediately, and users can install via the module source. The module will be marked as "unverified", and after the maintainer's review, it will be changed to "verified".
+After submission, it becomes effective immediately, and users can install via the module source. The module will be marked as "Unverified", and after the maintainer's review, it will be changed to "Verified".
 
 > **About verification status**:
 > - "Unverified" only means it has not yet been officially reviewed, not that the module has problems
@@ -105,63 +105,63 @@ After submission, it takes effect immediately, and users can install via the mod
 
 ### 4. Manage Published Modules
 
-After clicking "Submit Module" and logging in on the module store, switch to the "My Modules" tab to:
+After clicking "Submit Module" and logging in at the Module Store, switch to the "My Modules" tab, where you can:
 
 - **Edit** — Modify module description, repository address, tags, etc. The version number will automatically sync from PyPI
-- **Delete** — Remove the module from the module store (irreversible)
+- **Delete** — Remove the module from the Module Store (irreversible)
 
 > Newly submitted modules may take a few minutes to appear in the "My Modules" list.
 
-## Update Published Modules
+## Updating Published Modules
 
 1. Update the `version` in `pyproject.toml`
 2. Rebuild and upload: `python -m build && python -m twine upload dist/*`
 3. The module store will automatically sync the latest version from PyPI
 
-Users can upgrade via `epsdk upgrade MyModule`.
+Users can upgrade by running `epsdk upgrade MyModule`.
 
 ## Pre-release Checklist
 
-Before pushing to PyPI, please confirm the following items one by one:
+Before pushing to PyPI, please confirm each item below:
 
 ### Code Quality
 
 - [ ] All public APIs have type annotations (function signatures and return values)
 - [ ] All public methods have docstrings (`"""..."""` format, including `:param` / `:return` / `:raises`)
-- [ ] Passed `ruff check` (no warnings)
+- [ ] Passes `ruff check` (no warnings)
 - [ ] Test coverage ≥ 80%
-- [ ] Passed all `pytest` cases
+- [ ] All `pytest` test cases pass
 
 ### Compatibility
 
 - [ ] `pyproject.toml` declares the minimum SDK version: `dependencies = ["ErisPulse>=x.y.z"]`
 - [ ] Tested on Python 3.10 / 3.11 / 3.12 / 3.13
-- [ ] Tested on target operating systems (Windows / Linux / macOS, if applicable)
+- [ ] Tested on target operating systems (Windows / Linux / macOS, as applicable)
 - [ ] No circular import dependencies
 
 ### Configuration
 
-- [ ] If using declarative configuration (`ConfigClass` + `BaseConfig` / `BotAccountConfig`), configuration fields have `description` (recommended i18n format) and `ui` metadata
+- [ ] If using declarative configuration (`ConfigClass` + `BaseConfig` / `BotAccountConfig`), configuration fields have `description` (preferably in i18n format) and `ui` metadata
 - [ ] If i18n translation keys are registered, all 5 languages (zh-CN / zh-TW / en / ja / ru) are covered
 - [ ] Sensitive fields are marked with `secret=True`
 
 ### Documentation
 
-- [ ] `README.md` has installation instructions and basic usage examples
-- [ ] `README.md` explains configuration methods (configuration file examples + environment variables)
+- [ ] `README.md` includes installation instructions and basic usage examples
+- [ ] `README.md` explains configuration methods (example config file + environment variables)
 - [ ] `CHANGELOG.md` records all changes
-- [ ] Adapter updates platform feature documentation (supported Send types, event types, etc.)
+- [ ] Adapter documentation is updated with platform features (supported Send types, event types, etc.)
 
-### Publishing
+### Release
 
-- [ ] `pyproject.toml` version number has been updated
-- [ ] Build passed: `python -m build`
-- [ ] Pushed to PyPI: `python -m twine upload dist/*`
+- [ ] Version number in `pyproject.toml` has been updated
+- [ ] Build succeeded: `python -m build`
+- [ ] Uploaded to PyPI: `python -m twine upload dist/*`
 - [ ] Installation verified: `pip install ErisPulse-xxx && epsdk run`
 
 ## Development Mode Testing
 
-Before formal release, you can test locally using editable mode:
+Before the official release, you can test locally using the editable mode:
 
 ```bash
 epsdk install -e /path/to/MyModule
@@ -169,15 +169,15 @@ epsdk install -e /path/to/MyModule
 pip install -e /path/to/MyModule
 ```
 
-## Frequently Asked Questions
+## FAQ
 
 ### Must package names start with `ErisPulse-`?
 
-Not mandatory, but strongly recommended. This helps users identify ErisPulse ecosystem packages on PyPI.
+No, it's not mandatory, but it is highly recommended. This helps users identify packages in the ErisPulse ecosystem on PyPI.
 
-### Can a package register multiple modules?
+### Can a single package register multiple modules?
 
-Yes. Configure multiple key-value pairs in `entry-points`:
+Yes. You can configure multiple key-value pairs in `entry-points`:
 
 ```toml
 [project.entry-points."erispulse.module"]
@@ -185,23 +185,23 @@ Yes. Configure multiple key-value pairs in `entry-points`:
 "ModuleB" = "MyPackage:ModuleB"
 ```
 
-### How long does the review take?
+### How long does the review process take?
 
-Typically completed within 1-3 working days. You can check the verification status in the "My Modules" section of the module store.
+Typically, it takes 1-3 business days. You can check the verification status in the module store under "My Modules."
 
 ## Distributing Applications via Docker Images
 
-If your application is not suitable for publishing to PyPI (e.g., contains private dependencies or requires pre-configured environments), you can publish Docker images via **GitHub Container Registry (GHCR)**, allowing other users to start with one click using `docker pull`.
+If your application is not suitable for publishing to PyPI (for example, it contains private dependencies or requires a pre-configured environment), you can publish a Docker image via **GitHub Container Registry (GHCR)**, allowing other users to `docker pull` and start it with a single command.
 
-### Applicable Scenarios
+### Use Cases
 
-- You have a **complete robot application** (module + configuration + entry script) and want to distribute it with one click
-- Modules/adapters depend on **private packages** or have special installation processes, making them unsuitable for PyPI
-- You want to provide an **out-of-the-box deployment solution**, lowering the barrier to user adoption
+- You have a **complete robot application** (module + configuration + entry script) and want to distribute it with a single click
+- The module/adapter depends on **private packages** or has a special installation process that is not suitable for PyPI
+- You want to provide an **out-of-the-box** deployment solution to lower the user's entry barrier
 
-### 1. Create Dockerfile
+### 1. Create a Dockerfile
 
-Build based on the ErisPulse official image, just add your module:
+Build based on the ErisPulse official image, simply add your module:
 
 ```dockerfile
 FROM erispulse/erispulse:latest
@@ -217,7 +217,7 @@ COPY MyModule/ ./MyModule/
 RUN uv pip install --system -e .
 ```
 
-If the module requires additional system dependencies (e.g., SSH client, etc.), add them after `RUN uv pip install`:
+If the module requires additional system dependencies (such as SSH client, etc.), add them after `RUN uv pip install`:
 
 ```dockerfile
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -225,11 +225,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 ```
 
-> `erispulse/erispulse:latest` already includes ErisPulse, ErisPulse-Dashboard, Python runtime, and uv, no need to install repeatedly.
+> `erispulse/erispulse:latest` already includes ErisPulse, ErisPulse-Dashboard, Python runtime, and uv, so there's no need to install them again.
 
-### 2. Create GitHub Actions Workflow
+### 2. Create a GitHub Actions Workflow
 
-In `.github/workflows/docker-publish.yml`, create:
+Create in `.github/workflows/docker-publish.yml`:
 
 ```yaml
 name: Publish Docker Image
@@ -296,9 +296,9 @@ jobs:
 
 > `GITHUB_TOKEN` is automatically provided by GitHub Actions, no need to manually create a key.
 
-### 3. Trigger Build
+### 3. Trigger the Build
 
-Push code or tag to trigger automatic build:
+Pushing code or tagging will automatically trigger the build:
 
 ```bash
 # Push to main branch to trigger
@@ -309,18 +309,18 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-You can also manually trigger it on the GitHub repository's **Actions** page.
+You can also manually trigger it in the GitHub repository's **Actions** page.
 
-### 4. Set Image as Public
+### 4. Set the Image as Public
 
-GHCR images are private by default, and need to be set to Public in GitHub settings before other users can pull without logging in:
+GHCR images are private by default, and must be set to Public in GitHub so other users can pull without logging in:
 
-1. Go to repository → **Packages** → Click the corresponding Package
+1. Go to the repository → **Packages** → Click on the corresponding Package
 2. **Package settings** → **Danger Zone** → **Change visibility** → **Public**
 
 ### 5. User Usage
 
-After building, users can start with one line using `docker run`:
+After the build is complete, users can start it with `docker run` in a single line:
 
 ```bash
 docker run -d \
@@ -350,9 +350,9 @@ services:
     restart: unless-stopped
 ```
 
-### Publish to Docker Hub Simultaneously
+### Publish to Docker Hub as well
 
-Extend the workflow, add Docker Hub login before the login step, and add the Docker Hub address in `images`:
+Extend the workflow by adding Docker Hub login before the login step, and in the `images` add the Docker Hub address:
 
 ```yaml
       - name: Login to Docker Hub
@@ -376,11 +376,11 @@ Extend the workflow, add Docker Hub login before the login step, and add the Doc
 ### Docker Image vs PyPI Publishing
 
 | Feature | Docker Image (GHCR) | PyPI Publishing |
-|---------|---------------------|-----------------|
-| Distribution Method | `docker pull` one-click run | `pip install` + manual configuration |
-| Applicability | Complete applications/solutions | Individual modules/adapters |
-| Private Dependencies | Native support | Requires private PyPI source |
-| Module Store | Not applicable | Can be submitted to module store |
+|-------|---------------------|-----------------|
+| Distribution Method | `docker pull` to run with one click | `pip install` + manual configuration |
+| Applicability | Complete applications/solutions | Single modules/adapters |
+| Private Dependencies | Natively supported | Requires a private PyPI source |
+| Module Store | Not applicable | Can be submitted to the module store |
 | Multi-architecture | Supports amd64/arm64 | Architecture-agnostic |
 
-These two methods are not contradictory—you can simultaneously publish modules to the module store via PyPI and provide ready-to-use Docker images via GHCR.
+The two methods are not mutually exclusive—you can publish the module to the module store via PyPI and provide an out-of-the-box Docker image via GHCR.

@@ -1,6 +1,6 @@
 # Discord 平台特性文件
 
-DiscordAdapter 是基於 Discord Gateway (WebSocket) 和 REST API v10 協議所建構的適配器，整合了 Discord Bot 的核心功能，提供統一的事件處理和訊息操作介面。
+DiscordAdapter 是基於 Discord Gateway (WebSocket) 和 REST API v10 協議建構的適配器，整合了 Discord Bot 的核心功能，提供統一的事件處理和訊息操作介面。
 
 ---
 
@@ -13,7 +13,7 @@ DiscordAdapter 是基於 Discord Gateway (WebSocket) 和 REST API v10 協議所�
 ## 基本資訊
 
 - 平台簡介：Discord 是一款廣受歡迎的社群通訊平台，支援伺服器、頻道、私訊等多種對話形式，提供完善的 Bot 開發介面
-- 適配器名稱：DiscordAdapter
+- 适配器名稱：DiscordAdapter
 - 多帳號支援：支援同時設定多個 Discord 機器人
 - 連接方式：Gateway WebSocket（接收事件）+ REST API（傳送訊息/呼叫介面）
 - 認證方式：Bot Token（HTTP 標頭 `Authorization: Bot {token}`，Gateway IDENTIFY payload 攜帶 token）
@@ -30,8 +30,8 @@ DiscordAdapter 支援多帳戶設定，每個帳戶對應一個獨立的 Discord
 # 帳戶1
 [DiscordAdapter.accounts.default]
 token = "YOUR_BOT_TOKEN"       # Discord Bot Token（必填）
-intents = 33281                 # Gateway Intents（可選，默认 33281）
-enabled = true                  # 是否啟用（可選，默认 true）
+intents = 33281                 # Gateway Intents（可選，預設 33281）
+enabled = true                  # 是否啟用（可選，預設 true）
 
 # 帳戶2
 [DiscordAdapter.accounts.bot2]
@@ -40,12 +40,12 @@ intents = 33281
 enabled = true
 ```
 
-**設定項說明（每個帳戶）：**
+**設定項目說明（每個帳戶）：**
 
 - `token`：Discord Bot Token（必填），從 [Discord Developer Portal](https://discord.com/developers/applications) 獲取
-- `intents`：Gateway Intents 位遮罩（可選，默认 `33281`），決定 Bot 訂閱的事件類型
+- `intents`：Gateway Intents 位遮罩（可選，預設 `33281`），決定 Bot 訂閱的事件類型
 - `bot_id`：Bot 的使用者 ID（可選，執行時從 READY 事件自動獲取，無需手動填寫）
-- `enabled`：是否啟用該帳戶（可選，默认 `true`）
+- `enabled`：是否啟用該帳戶（可選，預設 `true`）
 
 ### Gateway Intents
 
@@ -63,12 +63,12 @@ Intents 使用位遮罩，計算方式為各 Intent 值按位或（`|`）：
 > **注意**：Privileged Intents 需在 Discord Developer Portal → Bot → Privileged Gateway Intents 中開啟。如果 Bot 在超過 100 個伺服器中，還需透過 Discord 審核。
 
 **API 環境：**
-- Discord REST API 基本位址：`https://discord.com/api/v10`
+- Discord REST API 基礎位址：`https://discord.com/api/v10`
 - Gateway WebSocket 位址：透過 `GET /gateway/bot` 動態獲取，通常為 `wss://gateway.discord.gg/?v=10&encoding=json`
 
-## 支援的消息傳送類型
+## 支援的消息發送類型
 
-所有傳送方法均透過鏈式語法實現，例如：
+所有發送方法均透過串接語法實作，例如：
 ```python
 from ErisPulse.Core import adapter
 discord = adapter.get("discord")
@@ -76,27 +76,27 @@ discord = adapter.get("discord")
 await discord.Send.To("group", channel_id).Text("Hello World!")
 ```
 
-支援的傳送類型包括：
-- `.Text(text: str)`：傳送純文字訊息。
-- `.Embed(embed: dict | list)`：傳送 Embed 嵌入訊息，支援單個或多個 Embed。
-- `.Image(file: bytes | str, filename: str = "image.png")`：傳送圖片，支援二進位資料或 URL。
-- `.File(file: bytes | str, filename: str = None)`：傳送檔案，支援二進位資料或 URL。
+支援的發送類型包括：
+- `.Text(text: str)`：發送純文字訊息。
+- `.Embed(embed: dict | list)`：發送嵌入訊息（Embed），支援單個或多個嵌入。
+- `.Image(file: bytes | str, filename: str = "image.png")`：發送圖片，支援二進位資料或 URL。
+- `.File(file: bytes | str, filename: str = None)`：發送檔案，支援二進位資料或 URL。
 - `.Reply(content: str, message_id: str)`：回覆指定訊息（便捷終端方法）。
-- `.Raw_ob12(message: List[Dict], **kwargs)`：傳送 OneBot12 格式訊息。
-- `.Raw_json(json_str: str)`：傳送任意 Discord API 請求 JSON。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：發送 OneBot12 格式訊息。
+- `.Raw_json(json_str: str)`：發送任意 Discord API 請求 JSON。
 
-### 鏈式修飾方法（可組合使用）
+### 串接修飾方法（可組合使用）
 
-鏈式修飾方法返回 `self`，支援鏈式呼叫，必須在最終傳送方法前呼叫：
+串接修飾方法回傳 `self`，支援串接呼叫，必須在最終發送方法前呼叫：
 
 - `.Reply(message_id: str)`：回覆（引用）指定訊息，設定 `message_reference`。
 - `.At(user_id: str)`：@指定使用者，轉換為 `<@user_id>`，可多次呼叫。
 - `.AtAll()`：@所有人，轉換為 `@everyone`。
 
-### 鏈式呼叫範例
+### 串接呼叫範例
 
 ```python
-# 基礎傳送
+# 基礎發送
 await discord.Send.To("group", channel_id).Text("Hello")
 
 # 回覆訊息
@@ -117,12 +117,12 @@ await discord.Send.To("group", channel_id).AtAll().Text("公告")
 # 組合使用
 await discord.Send.To("group", channel_id).Reply(msg_id).At("user_id").Text("複合訊息")
 
-# Embed 嵌入訊息
+# 嵌入訊息
 embed = {
     "title": "通知",
     "description": "這是一條嵌入訊息",
     "color": 5814783,
-    "fields": [{"name": "字段", "value": "值", "inline": True}],
+    "fields": [{"name": "欄位", "value": "值", "inline": True}],
 }
 await discord.Send.To("group", channel_id).Embed(embed)
 
@@ -130,9 +130,9 @@ await discord.Send.To("group", channel_id).Embed(embed)
 await discord.Send.To("group", channel_id).Image("https://example.com/image.png")
 ```
 
-### 私訊傳送
+### 私訊發送
 
-私訊傳送時，適配器會自動建立 DM 頻道：
+私訊發送時，適配器會自動建立 DM 頻道：
 
 ```python
 # 發送私訊
@@ -185,7 +185,7 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 
 1. **伺服器/頻道系統**：Discord 使用伺服器（Guild）和頻道（Channel）兩層結構，頻道是訊息的基本發送目標
 2. **Gateway 事件**：所有事件透過 WebSocket Gateway 接收，使用 Opcode + Dispatch 機制
-3. **Intents 訂閱**：透過位掩碼訂閱事件類型，`MESSAGE_CONTENT` 需 Privileged 權限
+3. **Intents 訂閱**：透過位遮罩訂閱事件類型，`MESSAGE_CONTENT` 需 Privileged 權限
 4. **訊息段類型**：支援文字、圖片、檔案、影片、音訊、Embed、Sticker 等訊息段
 5. **Mention 格式**：Discord 使用 `<@user_id>` 格式表示使用者提及
 
@@ -202,7 +202,7 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 | Discord 場景 | detail_type | 說明 |
 |---|---|---|
 | 頻道訊息 | `channel` | ErisPulse 擴展類型 |
-| 私信（DM） | `private` | OneBot12 標準類型 |
+| 私訊（DM） | `private` | OneBot12 標準類型 |
 
 ### 事件類型映射
 
@@ -241,7 +241,7 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
   "alt_message": "Hello"
 }
 
-# 私訊
+# 私訊訊息
 {
   "type": "message",
   "detail_type": "private",
@@ -285,7 +285,7 @@ Discord 訊息內容根據 `content`、`attachments`、`embeds` 欄位自動轉�
 
 | 來源 | 轉換類型 | 說明 |
 |---|---|---|
-| content 文字 | `text` | 純文字內容 |
+| content 文本 | `text` | 純文字內容 |
 | content `<@id>` | `mention` | 使用者提及 |
 | content `<@&id>` | `discord_role_mention` | 角色提及 |
 | content `<#id>` | `discord_channel_mention` | 頻道提及 |
@@ -319,11 +319,11 @@ Discord 訊息內容根據 `content`、`attachments`、`embeds` 欄位自動轉�
 
 ### 連接流程
 
-1. 呼叫 `GET /gateway/bot` 以取得 WebSocket 網關 URL
+1. 呼叫 `GET /gateway/bot` 以獲取 WebSocket 網關 URL
 2. 連接到 `wss://gateway.discord.gg/?v=10&encoding=json`
 3. 收到 opcode 10 HELLO：包含 `heartbeat_interval`
 4. 發送 opcode 2 IDENTIFY：攜帶 token、intents、properties
-5. 開始心跳循環：依照 `heartbeat_interval` 定時發送 opcode 1 Heartbeat
+5. 開始心跳循環：依照 `heartbeat_interval` 定期發送 opcode 1 Heartbeat
 6. 收到 opcode 0 Dispatch：事件分發（`t`=事件名, `s`=序號, `d`=資料）
 7. 收到 opcode 11 Heartbeat ACK：心跳確認
 
@@ -334,7 +334,7 @@ Discord 訊息內容根據 `content`、`attachments`、`embeds` 欄位自動轉�
 | 0 | Dispatch | 接收 | 事件分發（含 `t`、`s`、`d` 欄位） |
 | 1 | Heartbeat | 發送/接收 | 心跳（攜帶最後 seq） |
 | 2 | Identify | 發送 | 身份驗證 |
-| 6 | Resume | 發送 | 恢復會話 |
+| 6 | Resume | 发送 | 恢復會話 |
 | 7 | Reconnect | 接收 | 伺服器要求重連 |
 | 9 | Invalid Session | 接收 | 無效會話 |
 | 10 | Hello | 接收 | 連接握手（含 heartbeat_interval） |
@@ -342,8 +342,8 @@ Discord 訊息內容根據 `content`、`attachments`、`embeds` 欄位自動轉�
 
 ### 斷線重連與 RESUME
 
-- 連接斷開後，適配器自動重試連接
-- 如果之前有 `session_id`，優先嘗試 RESUME（opcode 6）恢復會話
+- 連接斷開後，適配器自動嘗試重連
+- 如果之前有 `session_id`，優先嘗試 RESUME（opcode 6）以恢復會話
 - RESUME 攜帶 `token`、`session_id`、最後 `seq`，恢復後補發遺漏事件
 - 收到 opcode 7（Reconnect）時，保持會話狀態並重連
 - 收到 opcode 9（Invalid Session）且 `d=false` 時，清除會話並重新 IDENTIFY
@@ -355,7 +355,7 @@ Discord 訊息內容根據 `content`、`attachments`、`embeds` 欄位自動轉�
 - 心跳攜帶最後的 `seq` 值（opcode 1，`d: seq`）
 - 若發送心跳後 `heartbeat_interval` 內未收到 ACK（opcode 11），視為連接異常並重連
 
-## 使用示例
+## 使用範例
 
 ### 處理頻道訊息
 

@@ -40,19 +40,19 @@
       "count": 6,
       "documents": [
         {
-          "title": "Creating Your First Bot",
+          "title": "Create Your First Bot",
           "path": "getting-started/first-bot.md",
           "level": 1,
           "icon": "fa-robot"
         },
         {
-          "title": "Getting Started Guide",
+          "title": "Getting Started",
           "path": "getting-started/README.md",
           "level": 1,
           "icon": "fa-door-open"
         },
         {
-          "title": "Basic Concepts",
+          "title": "Core Concepts",
           "path": "getting-started/basic-concepts.md",
           "level": 1,
           "icon": "fa-lightbulb"
@@ -96,7 +96,7 @@
           "icon": "fa-download"
         },
         {
-          "title": "Configuration File Guide",
+          "title": "Configuration File Description",
           "path": "user-guide/configuration.md",
           "level": 1,
           "icon": "fa-sliders"
@@ -209,7 +209,7 @@
       "count": 15,
       "documents": [
         {
-          "title": "ErisPulse Platform Features Documentation",
+          "title": "ErisPulse PlatformFeatures Documentation",
           "path": "platform-guide/README.md",
           "level": 1,
           "icon": "fa-server"
@@ -221,13 +221,13 @@
           "icon": "fa-comments"
         },
         {
-          "title": "OneBot12 Platform Features Documentation",
+          "title": "OneBot12 Platform Feature Documentation",
           "path": "platform-guide/onebot12.md",
           "level": 1,
           "icon": "fa-comments"
         },
         {
-          "title": "Document Information",
+          "title": "Documentation Information",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
@@ -245,25 +245,25 @@
           "icon": "fa-cloud"
         },
         {
-          "title": "Yunhu User Platform Features Documentation",
+          "title": "Yunhu User Platform Feature Document",
           "path": "platform-guide/yunhu_user.md",
           "level": 1,
           "icon": "fa-user"
         },
         {
-          "title": "QQBot Platform Features Documentation",
+          "title": "QQBot Platform Feature Documentation",
           "path": "platform-guide/qqbot.md",
           "level": 1,
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Kook Platform Feature Documentation",
+          "title": "Kook Platform Features Documentation",
           "path": "platform-guide/kook.md",
           "level": 1,
           "icon": "fa-headset"
         },
         {
-          "title": "Matrix Platform Feature Documentation",
+          "title": "Matrix Platform Features Document",
           "path": "platform-guide/matrix.md",
           "level": 1,
           "icon": "fa-th-large"
@@ -275,25 +275,25 @@
           "icon": "fa-gamepad"
         },
         {
-          "title": "WechatMp Adapter - Platform Features Documentation",
+          "title": "WeChat MP Adapter - Platform Features Documentation",
           "path": "platform-guide/wechatmp.md",
           "level": 1,
           "icon": "fa-mobile-screen"
         },
         {
-          "title": "Platform Feature Description — Webhook Generic Bridge Adapter",
+          "title": "Platform Feature Description — Webhook Universal Bridge Adapter",
           "path": "platform-guide/webhook.md",
           "level": 1,
           "icon": "fa-link"
         },
         {
-          "title": "RockyChat (IdeauraAdapter) Platform Features Document",
+          "title": "Platform Features Document for Huafeng Coffeehouse (RockyChat)",
           "path": "platform-guide/ideaura.md",
           "level": 1,
           "icon": "fa-wand-magic-sparkles"
         },
         {
-          "title": "Documentation Maintenance Guidelines",
+          "title": "Documentation Maintenance Instructions",
           "path": "platform-guide/maintain-notes.md",
           "level": 1,
           "icon": "fa-wrench"
@@ -363,7 +363,7 @@
           "icon": "fa-route"
         },
         {
-          "title": "MessageBuilder Detailed Explanation",
+          "title": "MessageBuilder Explained",
           "path": "advanced/message-builder.md",
           "level": 1,
           "icon": "fa-comment-dots"
@@ -399,7 +399,7 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "Ownership (owner) System",
+          "title": "Ownership (Owner) System",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
@@ -471,7 +471,7 @@
           "icon": "fa-gavel"
         },
         {
-          "title": "ErisPulse Session Type Standard",
+          "title": "ErisPulse Session Type Standards",
           "path": "standards/session-types.md",
           "level": 1,
           "icon": "fa-layer-group"

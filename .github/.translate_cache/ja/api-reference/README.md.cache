@@ -1,5 +1,25 @@
 {
+  "version": 2,
   "hash": "ab8282f0b15eb2ad1e72465822b4e151",
-  "translated_at": "2026-06-06T17:40:41.925325",
-  "target_lang": "ja"
+  "file_hash": "ab8282f0b15eb2ad1e72465822b4e151",
+  "translated_at": "2026-09-07T11:05:42.484864",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "b9374c15ad65d412753dd1eaeacda794",
+      "translation": "# API リファレンス\n\nこのディレクトリには、ErisPulse フレームワークの API リファレンスドキュメントが含まれています。"
+    },
+    {
+      "hash": "b584821c750da33e7633216dd780abbb",
+      "translation": "## ドキュメントリスト\n\n| ドキュメント | 説明 |\n|------|------|\n| [コアモジュール API](core-modules.md) | Storage、Config、Logger、Adapter、Module、Lifecycle、Router、HTTP Client の API 速見リファレンス |\n| [イベントシステム API](event-system.md) | Command、Message、Notice、Request、Meta イベントモジュールの API リファレンス |\n| [アダプターシステム API](adapter-system.md) | Adapter マネージャー、SendDSL、ミドルウェア、Bot 状態管理の API リファレンス |\n| [自動生成 API](auto_api/README.md) | ソースコードの docstring から自動生成された完全な API ドキュメント |\n\n> 手動で書かれた API ドキュメントは、使い方の例と速見リファレンスに重点を置いています。一方、自動生成された API ドキュメントは、完全なクラス/メソッドのシグネチャを含んでおり、両者は補完し合います。"
+    },
+    {
+      "hash": "67699607665af80ffadd39e475efa8e7",
+      "translation": "## モジュール概要\n\n### コアモジュール\n\n| モジュール | アクセスパス | 説明 |\n|------|---------|------|\n| `sdk.storage` | `sdk.storage` | SQLite を基にしたキー/値ストア + SQL チェインクエリ |\n| `sdk.config` | `sdk.config` | TOML 形式の設定管理 |\n| `sdk.logger` | `sdk.logger` | モジュール化されたログシステム、サブロガーをサポート |\n| `sdk.adapter` | `sdk.adapter` | 複数プラットフォームのアダプタ管理 |\n| `sdk.module` | `sdk.module` | モジュールの登録、ロード、アンロード管理 |\n| `sdk.lifecycle` | `sdk.lifecycle` | ライフサイクルイベント管理 |\n| `sdk.router` | `sdk.router` | HTTP/WebSocket ルーティング管理 |\n| `sdk.client` | `sdk.client` | 統一された HTTP/WS クライアント |\n\n### イベントシステム\n\n| モジュール | インポートパス | 説明 |\n|------|---------|------|\n| `command` | `ErisPulse.Core.Event.command` | コマンド処理（プレフィックス解析、エイリアス） |\n| `message` | `ErisPulse.Core.Event.message` | メッセージイベント（プライベートチャット、グループチャット、メンション） |\n| `notice` | `ErisPulse.Core.Event.notice` | 通知イベント（友達、グループメンバーの変更） |\n| `request` | `ErisPulse.Core.Event.request` | リクエストイベント（友達リクエスト、グループ招待） |\n| `meta` | `ErisPulse.Core.Event.meta` | メタイベント（接続、切断、ハートビート） |\n\n### 基底クラス\n\n| 基底クラス | インポートパス | 説明 |\n|------|---------|------|\n| `BaseModule` | `ErisPulse.Core.Bases.module.BaseModule` | モジュールの基底クラス（on_load/on_unload） |\n| `BaseAdapter` | `ErisPulse.Core.Bases.adapter.BaseAdapter` | アダプタの基底クラス（start/shutdown/call_api） |"
+    },
+    {
+      "hash": "d85fddc08712ad6c4c130cbfb1736332",
+      "translation": "## 関連ドキュメント\n\n- [基本概念](../getting-started/basic-concepts.md) - フレームワークの基本概念を理解する\n- [モジュール開発ガイド](../developer-guide/modules/) - カスタムモジュールの開発\n- [アダプタ開発ガイド](../developer-guide/adapters/) - プラットフォームアダプタの開発\n- [高度なトピック](../advanced/) - ルーティング、HTTPクライアント、SQLビルダーなどに関する詳細ドキュメント"
+    }
+  ]
 }

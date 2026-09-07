@@ -9,6 +9,9 @@ ErisPulse 文档翻译器
 - 自动加载已有翻译作为参考
 - 翻译后内嵌 AI 评审闭环：评审按判定协议返回特定内容（通过标记 / FAIL+原因），
   不通过时把原因交回翻译重新翻译并再评审（最多 self_check_retries 轮）
+- 提示词泄露防线：缓存块加载校验、译文块校验（命中注入原因重译）、
+  落盘前整文档校验（命中拒写）、AI 评审专项检查，
+  防止模型把翻译规则回显进译文并随缓存复用"复活"
 - 429 限速自动指数退避重试
 - 可配置是否启用推理/思考模式
 - 目标语言级并行翻译（语言内部仍受 concurrent 信号量约束）
@@ -36,6 +39,14 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from openai import AsyncOpenAI
+
+# 流式输出含 emoji 等字符，非 UTF-8 控制台（如 Windows GBK）会触发
+# UnicodeEncodeError 导致翻译被误判失败，统一将 stdout 切换为 UTF-8
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 
 
 class RateLimitError(Exception):
@@ -116,6 +127,31 @@ class DocsTranslator:
     IGNORE_DIRS = ["ai-support/prompts", "api-reference/auto_api", "_meta"]
     REPLACEMENT_CHAR = "\ufffd"
     MIN_LENGTH_RATIO = 0.20
+
+    # 模型偶发把翻译提示词/规则回显进译文（曾污染多语言文档并随缓存复用复活）。
+    # 以下特征均为"绝不可能出现在正常文档正文中的提示词残留"，宁严勿漏。
+    # 覆盖 zh-CN / zh-TW / en / ja / ru 全部已观测变体。
+    LEAK_PATTERNS = re.compile(
+        r"请直接返回翻译后的完整"  # zh-CN：旧提示词"请直接返回翻译后的完整Markdown内容/文件"
+        r"|請直接返回翻譯後的完整"  # zh-TW：同上繁体变体
+        r"|再次提醒：?如果(?:文档|文檔|文件)"  # zh：回显的"再次提醒"段
+        r"|上方第\s*8\s*[条條]"  # zh：引用提示词中的规则编号
+        r"|语言切换行本地化"  # zh：旧提示词小节标题
+        r"|你是一个专业的技术文档翻译专家"  # zh：提示词角色设定句
+        r"|请将以下\s*Markdown"  # zh：旧提示词开头
+        r"|(?:return|send)\s+the\s+(?:complete\s+)?translated\s+Markdown"  # en
+        r"|once\s+again,?\s+if\s+the\s+document\s+contains"  # en
+        r"|format\s+requirement\s+in\s+point\s+\d+\s+above"  # en
+        r"|Path\s+Replacement\s+Rules"  # en：旧提示词小节标题
+        r"|各言語の切り替え行"  # ja
+        r"|言語切り替え行がある場合"  # ja：另一变体
+        r"|上記の第8条"  # ja：引用提示词规则编号
+        r"|翻訳後の完全な"  # ja
+        r"|верните\s+непосредственно"  # ru
+        r"|еще\s+раз\s+напоминаем"  # ru
+        r"|строки\s+переключения\s+языка",  # ru
+        re.IGNORECASE,
+    )
 
     def __init__(self, config_path: str):
         self.config = self.load_config(config_path)
@@ -354,7 +390,8 @@ class DocsTranslator:
 
     _CHUNK_HEADING_RE = re.compile(r"^#{1,2}\s+")
 
-    def _split_into_chunks(self, content: str) -> List[str]:
+    @classmethod
+    def _split_into_chunks(cls, content: str) -> List[str]:
         """
         将 Markdown 按一级/二级标题分块
 
@@ -362,6 +399,7 @@ class DocsTranslator:
         每块从标题行开始，到下一个同级标题或文件末尾结束。
         文件开头到第一个标题之间的内容为独立的起始块。
 
+        :param content: Markdown 文本
         :return: 分块文本列表
         """
         lines = content.split("\n")
@@ -376,7 +414,7 @@ class DocsTranslator:
 
             is_boundary = (
                 not in_code
-                and bool(self._CHUNK_HEADING_RE.match(stripped))
+                and bool(cls._CHUNK_HEADING_RE.match(stripped))
             )
 
             if is_boundary and current:
@@ -407,6 +445,10 @@ class DocsTranslator:
         从缓存加载分块翻译，返回 {chunk_hash: translation}
 
         旧格式缓存（无 chunks 字段）返回空字典，触发全量翻译。
+        含提示词泄露特征的缓存块会被丢弃（视为无缓存，触发该块重译），
+        防止历史污染块随缓存复用"复活"。
+
+        :return: 可安全复用的分块翻译映射
         """
         cache_key = self.get_cache_key(file_path, target_lang)
         if not cache_key.exists():
@@ -416,11 +458,25 @@ class DocsTranslator:
                 data = json.load(f)
             chunks = data.get("chunks")
             if isinstance(chunks, list):
-                return {
-                    c["hash"]: c["translation"]
-                    for c in chunks
-                    if isinstance(c, dict) and "hash" in c and "translation" in c
-                }
+                safe_chunks: Dict[str, str] = {}
+                dropped = 0
+                for c in chunks:
+                    if not (
+                        isinstance(c, dict) and "hash" in c and "translation" in c
+                    ):
+                        continue
+                    if self.detect_prompt_leaks(c["translation"]):
+                        dropped += 1
+                        continue
+                    safe_chunks[c["hash"]] = c["translation"]
+                if dropped:
+                    Logger.progress(
+                        self._get_rel_path(file_path),
+                        target_lang,
+                        "retry",
+                        f"丢弃 {dropped} 个含提示词残留的缓存块（将重译）",
+                    )
+                return safe_chunks
         except Exception:
             pass
         return {}
@@ -547,6 +603,19 @@ class DocsTranslator:
         return sum(
             1 for line in text.split("\n") if cls._FENCE_LINE_RE.match(line)
         )
+
+    @classmethod
+    def detect_prompt_leaks(cls, text: str) -> List[str]:
+        """
+        检测文本中残留的翻译提示词（模型回显的规则文本）
+
+        用于译文块校验、缓存块校验与落盘前整文档校验。
+        命中即视为污染：提示词残留绝不应出现在正常文档正文中，宁严勿漏。
+
+        :param text: 待检测文本（译文块 / 缓存块 / 整文档译文）
+        :return: 命中的泄露特征片段列表（去重后）
+        """
+        return sorted({m.group(0) for m in cls.LEAK_PATTERNS.finditer(text)})
 
     @classmethod
     def _strip_response_wrapper(cls, content: str) -> str:
@@ -746,7 +815,9 @@ class DocsTranslator:
             f"5. 文档明显被截断（翻译长度远小于源文档）\n"
             f"6. 包含乱码字符（替换字符 \\ufffd）或编码错误\n"
             f"7. 代码块中的中文注释未翻译为{lang_name}（如果代码块完整可读）\n"
-            f'8. 非目标语言的注释或字符串残留（如 C/C++/Java/Python 代码中的 print("中文")）\n\n'
+            f'8. 非目标语言的注释或字符串残留（如 C/C++/Java/Python 代码中的 print("中文")）\n'
+            f"9. 译文混入了翻译提示词/规则文本（如\"请直接返回…\"\"再次提醒…\""
+            f"\"language switch line\"等翻译任务指示语）\n\n"
             f"请注意：普通英文技术术语保留原样不算问题，仅报告真正的翻译质量问题。\n\n"
             f"--- 源文档 ---\n{source_content[:8000]}\n\n"
             f"--- {lang_name}翻译文档 ---\n{translated_content[:8000]}"
@@ -965,6 +1036,30 @@ class DocsTranslator:
                                 chunk_notes.append(fence_note)
                             chunk_result = None
 
+                    # 提示词泄露校验（确定性检查）：模型偶发把翻译规则回显进译文，
+                    # 命中视为该块翻译失败，并把具体原因注入下一轮重译
+                    if chunk_result is not None:
+                        leaks = self.detect_prompt_leaks(chunk_result)
+                        if leaks:
+                            Logger.progress(
+                                rel_path,
+                                target_lang,
+                                "retry",
+                                (
+                                    f"块{ci + 1} 检测到提示词残留"
+                                    f"（{leaks[0][:40]}），重译"
+                                ),
+                            )
+                            leak_note = (
+                                "上一版译文混入了翻译提示词/规则文本"
+                                "（如\"请直接返回…\"\"再次提醒…\"等翻译任务指示语）。"
+                                "译文必须只包含文档正文本身，"
+                                "严禁出现任何对翻译任务本身的指示、规则或说明文字"
+                            )
+                            if leak_note not in chunk_notes:
+                                chunk_notes.append(leak_note)
+                            chunk_result = None
+
                     if chunk_result:
                         break
 
@@ -1014,6 +1109,7 @@ class DocsTranslator:
             #   不通过 → {"verdict": "FAIL", "issues": [...]}（具体原因）
             # 不通过时把 issues 作为 review_notes 交回**翻译**重新翻译，再评审；
             # 共 1 次初评 + self_check_retries 轮"重译→重评"。
+            review_retranslated = None
             if self.enable_self_check and not no_check:
                 passed = False
                 verdict_content = ""
@@ -1067,6 +1163,7 @@ class DocsTranslator:
                             return False
                         if retranslated:
                             translated_content = retranslated
+                            review_retranslated = retranslated
                         else:
                             # 重译失败（如截断/接口异常），保留当前译文进入下一轮评审
                             Logger.progress(
@@ -1079,6 +1176,26 @@ class DocsTranslator:
                     )
                     self.stats["validation_failed"].append(
                         f"{rel_path} -> {target_lang}"
+                    )
+
+            # 评审重译结果回填分块缓存：评审触发的整文件重译此前只落盘不入缓存，
+            # 缓存仍是改进前的分块版本，下次源文档变更续译时会丢失评审改进并造成
+            # 文档与缓存不一致。按位置对齐回填（翻译保持标题结构，分块数应一致），
+            # 分块数不一致时保留原缓存（结构变化无法安全对齐）
+            if review_retranslated is not None:
+                retranslated_chunks = self._split_into_chunks(review_retranslated)
+                if len(retranslated_chunks) == total_chunks:
+                    translated_chunks_list = retranslated_chunks
+                else:
+                    Logger.progress(
+                        rel_path,
+                        target_lang,
+                        "retry",
+                        (
+                            "评审重译分块数与源不一致"
+                            f"（{len(retranslated_chunks)}/{total_chunks}），"
+                            "缓存保留原分块"
+                        ),
                     )
 
             # 后处理：确保链接、语言切换行指向正确的语言版本
@@ -1099,6 +1216,22 @@ class DocsTranslator:
                     (
                         f"围栏数不匹配（源 {src_fences_total} / 译 "
                         f"{dst_fences_total}），放弃保存；请清除该文件缓存后重试"
+                    ),
+                )
+                self.stats["failed_files"] += 1
+                return False
+
+            # 整文档提示词泄露校验：含残留的译文宁可判失败也不落盘，
+            # 避免污染文档被提交后随缓存反复复活
+            leaks_total = self.detect_prompt_leaks(translated_content)
+            if leaks_total:
+                Logger.progress(
+                    rel_path,
+                    target_lang,
+                    "fail",
+                    (
+                        f"检测到 {len(leaks_total)} 处翻译提示词残留"
+                        f"（{leaks_total[0][:40]}），放弃保存"
                     ),
                 )
                 self.stats["failed_files"] += 1

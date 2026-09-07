@@ -1,5 +1,45 @@
 {
+  "version": 2,
   "hash": "874e1f65883386ce14ae0c142b98917d",
-  "translated_at": "2026-06-16T14:01:24.904614",
-  "target_lang": "ja"
+  "file_hash": "874e1f65883386ce14ae0c142b98917d",
+  "translated_at": "2026-09-07T12:03:56.324751",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "88eba211c1ace553dab49fa3c3bef169",
+      "translation": "# プラットフォームの機能説明 — Webhook 一般的なブリッジアダプター\n\nこのドキュメントでは、Webhookアダプターの双方向ブリッジプロトコル、フィールドマッピング、実装の特徴について詳しく説明します。"
+    },
+    {
+      "hash": "33de1244b699a8b51189d5c42369b97e",
+      "translation": "## 概要\n\nWebhook アダプタは、**プロトコルレベルのブリッジ**です。特定のプラットフォームに縛られることなく、HTTP経由でメッセージを受け渡します。HTTPリクエストを発行できる任意のシステムを ErisPulse に接続できます。\n\n```\n受信方向                                送信方向\n────────                                ────────\n外部システム                                ErisPulse モジュール\n   │                                       │\n   │ POST JSON                             │ Send.Text(...)\n   ▼                                       ▼\n┌──────────────────────────────────────────────────┐\n│              WebhookAdapter                       │\n│  ┌──────────────────┐   ┌──────────────────┐    │\n│  │ 受信ルート          │   │ 送信転送          │    │\n│  │ GET  (健康チェック)   │   │ client.post()    │    │\n│  │ POST (イベント受信)   │   │ → outgoing_url   │    │\n│  └────────┬─────────┘   └────────▲─────────┘    │\n│           │                      │               │\n│           ▼                      │               │\n│  ┌──────────────────┐   ┌──────────────────┐    │\n│  │ WebhookConverter │   │ Send クラス      │    │\n│  │ JSON → OneBot12  │   │ メッセージセグメント → JSON │    │\n│  └────────┬─────────┘   └────────▲─────────┘    │\n└───────────┼──────────────────────┼───────────────┘\n            ▼                      │\n     adapter.emit(event)    call_api(\"send_message\")\n            │                      │\n            ▼                      │\n       ErisPulse イベントシステム ◄────────┘\n```"
+    },
+    {
+      "hash": "1bb1d36e724d49499e6fe9d59f890d14",
+      "translation": "## 複数アカウントモデル\n\n各アカウントは、互いに干渉しない独立したブリッジ設定です。\n\n| アカウント | bot_id | callback_path | outgoing_url | secret |\n|------|--------|---------------|--------------|--------|\n| `default` | `webhook_bot` | `/webhook/default` | `https://a.com/recv` | `key1` |\n| `discord` | `discord_bot` | `/webhook/discord` | `https://b.com/send` | `key2` |\n\n各アカウントは、起動時に独立してルートを登録し、独立して emit connect を行います。"
+    },
+    {
+      "hash": "3bb37e62260a3e56522251cef368e745",
+      "translation": "## 入站プロトコル\n\n### 1. ヘルスチェック（GET）\n\n- **パス**：`{callback_path}`\n- **メソッド**：`GET`\n- **認証**：なし\n- **レスポンス**：\n\n```json\n{\"status\": \"ok\", \"account\": \"default\"}\n```\n\n### 2. イベントの受信（POST）\n\n- **パス**：`{callback_path}`\n- **メソッド**：`POST`\n- **Content-Type**：`application/json`\n- **認証**（secret設定時）：Header `X-Webhook-Secret` または Query `?secret=`\n\n#### リクエストボディ\n\n```json\n{\n  \"user_id\": \"u123\",\n  \"user_nickname\": \"用户名\",\n  \"group_id\": \"群组ID（仅群组会话）\",\n  \"detail_type\": \"private\",\n  \"message\": [\n    {\"type\": \"text\", \"data\": {\"text\": \"消息内容\"}}\n  ],\n  \"raw\": {}\n}\n```\n\n| フィールド | 必須 | 説明 |\n|----------|------|------|\n| `user_id` | はい | 送信者ID |\n| `user_nickname` | いいえ | 送信者ニックネーム |\n| `group_id` | いいえ | グループ/チャンネルID（グループ会話時提供） |\n| `detail_type` | いいえ | 会話の種類（`private`/`group`）、省略時はアカウントのデフォルト値を使用 |\n| `message` | はい | OneBot12 メッセージセグメントの配列 |\n| `raw` | いいえ | 送信されたデータ、`webhook_raw` にそのまま保存 |\n\n#### レスポンス\n\n```json\n{\"status\": \"ok\"}\n```\n\nエラーの際はHTTPステータスコードを返します：\n\n| ステータスコード | 内容 |\n|------------------|------|\n| 400 | 不正なJSON / bodyがオブジェクトでない |\n| 401 | 認証失敗 |\n| 404 | 未知のアカウント |\n| 500 | イベント配信失敗 |\n\n### 3. フィールドマッピング（入力JSON → OneBot12イベント）\n\n| 入力JSON | OneBot12イベントのフィールド | 説明 |\n|----------|-----------------------------|------|\n| — | `id` | 自動生成 |\n| — | `time` | 現在のUnixタイムスタンプ（秒） |\n| — | `type` | 固定値 `message` |\n| `detail_type` | `detail_type` | 省略時はアカウントのデフォルト値を使用 |\n| — | `platform` | 固定値 `webhook` |\n| — | `self.platform` | 固定値 `webhook` |\n| — | `self.user_id` | アカウントの `bot_id` |\n| `user_id` | `user_id` | そのまま透過 |\n| `user_nickname` | `user_nickname` | そのまま透過（オプション） |\n| `group_id` | `group_id` | そのまま透過（オプション） |\n| `message` | `message` | そのまま透過 |\n| 完全なbody | `webhook_raw` | 元のリクエスト |\n| アカウント名 | `webhook_account` | イベントを生成したアカウント名 |\n| `type` または `message` | `webhook_raw_type` | 元のイベントの種類 |"
+    },
+    {
+      "hash": "6e047ff19680dba66c0fb2c529712e2f",
+      "translation": "## 出力プロトコル\n\n### 1. メッセージ送信\n\nモジュールが `Send.To(...).Text(...)` などのメソッドを呼び出した場合、アダプターは `outgoing_url` に POST リクエストを送信します。\n\n- **メソッド**：`POST`\n- **Content-Type**：`application/json`\n- **認証用ヘッダー**（secret が設定されている場合）：`X-Webhook-Secret: {secret}`\n\n#### リクエストボディ\n\n```json\n{\n  \"target_type\": \"private\",\n  \"target_id\": \"target_user_id\",\n  \"account\": \"default\",\n  \"message\": [\n    {\"type\": \"text\", \"data\": {\"text\": \"メッセージ内容\"}}\n  ],\n  \"timestamp\": 1700000000\n}\n```\n\n| フィールド | 説明 |\n|------|------|\n| `target_type` | 目標の種類（`Send.To(type, id)` から取得、省略時はアカウントのデフォルト値） |\n| `target_id` | 目標の ID（`Send.To` から取得） |\n| `account` | 送信するアカウント名 |\n| `message` | OneBot12 メッセージセグメントの配列 |\n| `timestamp` | 送信時刻のタイムスタンプ（秒） |\n\n### 2. 応答の標準化\n\nアダプターは出力先が返す応答を ErisPulse の標準応答形式に標準化します。\n\n```json\n{\n  \"status\": \"ok\",\n  \"retcode\": 0,\n  \"data\": {\"message_id\": \"...\", ...},\n  \"message_id\": \"...\",\n  \"message\": \"\",\n  \"webhook_raw\": {}\n}\n```\n\n出力先の JSON 応答から `message_id` フィールドを抽出してメッセージ ID を取得します。出力先が `message_id` を返さない場合は、空文字列になります。\n\nリクエストに失敗した場合はエラー応答を返します（`status: \"failed\"`, `retcode: 33001`）。"
+    },
+    {
+      "hash": "3447562c8fca8e44eeb58433c3bc4ffd",
+      "translation": "## Send メソッド\n\n| メソッド | 説明 |\n|------|------|\n| `Text(text)` | テキストを送信し、`[{\"type\":\"text\",\"data\":{\"text\":text}}]` にラップします |\n| `Image(file)` | 画像を送信し、`[{\"type\":\"image\",\"data\":{\"file\":file}}]` にラップします |\n| `Raw_ob12(message)` | OneBot12 の生メッセージセグメントを送信します |\n| `Json(data)` | 生の JSON を透過的に送信し、`[{\"type\":\"json\",\"data\":{\"raw\":data}}]` にラップします |\n\n`At` / `AtAll` / `Reply` 修飾子は、フレームワークの基底クラスによって提供され、`_apply_modifiers` によってメッセージセグメントにマージされます。"
+    },
+    {
+      "hash": "1ed81c613ce4227bcedbc9f4fe3e741f",
+      "translation": "## イベント拡張メソッド (WebhookEventMixin)\n\n| メソッド | 説明 |\n|------|------|\n| `get_raw_data()` | 元のリクエスト body (`webhook_raw`) を取得します |\n| `get_detail_type()` | 会話の種類を取得します |\n| `get_webhook_account()` | このイベントを生成したアカウント名を取得します |"
+    },
+    {
+      "hash": "3c6ba24ebe16734d6d0e119e5c146c73",
+      "translation": "## 特性マトリクス\n\n| 特性 | 支持状況 |\n|------|----------|\n| 多アカウント | ✅ 各アカウントごとに独立したブリッジ |\n| 入站認証 | ✅ Header / Query の両モード |\n| ヘルスチェック | ✅ GET でステータスを返す |\n| 出站認証 | ✅ Header に secret を含む |\n| OneBot12 標準イベント | ✅ 完全な標準フィールド |\n| Meta イベント | ✅ connect / disconnect |\n| ルーティング発見 | ✅ `webhook` 名前空間に登録 |\n| WebSocket | ❌ HTTP 場合のみ |\n| メディアアップロード | ❌ URL を透過するのみ、バイナリを代行転送しない |"
+    },
+    {
+      "hash": "2fd66c9865f668ae7d2308b5658890d7",
+      "translation": "## 注意事項\n\n1. **単方向出力**：`outgoing_url` が空の場合は、このアカウントは入力のみを受け付け、送信操作はエラーを返します。\n2. **秘密鍵の安全性**：`secret` は設定で暗号化された形式（metadata secret）で保存され、通信には HTTPS を使用することを推奨します。\n3. **パスの一意性**：複数のアカウントの `callback_path` は互いに異なる必要があります。ルーティングの競合を避けるためです。\n4. **冪等性**：アダプターは入力イベントの重複排除を保証しません。外部システムがリトライ処理を独自に実行する必要があります。\n5. **タイムアウト**：出力リクエストは ErisPulse の組み込み `client` を使用し、グローバルなタイムアウト設定を継承します。"
+    }
+  ]
 }

@@ -54,6 +54,44 @@ def _has_chinese_chars(text: str) -> bool:
     return any(0x4E00 <= ord(ch) <= 0x9FFF for ch in text)
 
 
+# 语言名称字面量：语言切换行、i18n 语言映射表等场景中，
+# 中文语言标签是文档内容本身（如 `[简体中文](README.zh-CN.md)`、`| 日本語 | ja |`），
+# 不属于未翻译残留
+_LANG_LABEL_RE = re.compile(
+    r"简体中文|繁體中文|繁体中文|日本語|Русский|English"
+)
+
+# 行内代码片段（`` `...` ``）：示例词表、示例配置等常按源文档保留中文原文，
+# 不视为未翻译残留（围栏代码块已在扫描时整块跳过）
+_INLINE_CODE_RE = re.compile(r"`[^`]*`")
+
+# Markdown 链接 URL（``[text](url)``）：锚点常含中文标题片段（如 ``#init-注意事项``），
+# 是否本地化取决于目标文档标题语言，不作为未翻译残留判定依据
+_LINK_URL_RE = re.compile(r"\]\([^)]*\)")
+
+# 连续中文片段（>=2 字）：单字中文常见于示例值（如确认词示例 "是/否"），
+# 两个以上连续中文更可能是未翻译的正文残留
+_ZH_RUN_RE = re.compile(r"[\u4e00-\u9fff]{2,}")
+
+
+def _strip_non_prose(line: str) -> str:
+    """
+    剔除一行中不属于"待翻译正文"的部分，供乱码/残留检测降噪
+
+    依次剔除：shields.io 徽章行（徽章标签含中文为源文档设计）、
+    行内代码片段、Markdown 链接 URL、已知语言名称标签。
+
+    :param line: 原始行文本
+    :return: 剔除后的文本
+    """
+    if "img.shields.io" in line:
+        return ""
+    cleaned = _INLINE_CODE_RE.sub("", line)
+    cleaned = _LINK_URL_RE.sub("]", cleaned)
+    cleaned = _LANG_LABEL_RE.sub("", cleaned)
+    return cleaned
+
+
 def extract_headings(content: str) -> List[Dict]:
     """
     从 Markdown 内容中提取标题结构
@@ -77,26 +115,33 @@ def extract_headings(content: str) -> List[Dict]:
     return headings
 
 
-def detect_garbled(content: str, target_lang: str) -> List[str]:
+def detect_garbled(content: str, target_lang: str) -> List[Dict]:
     """
     检测翻译文件中的乱码与未翻译残留
 
-    针对不同目标语言采用不同策略：
-    - 所有语言：检测 Unicode 替换字符 U+FFFD
-    - 中文：检测形似 "字?字" 的乱码片段
-    - 英文/俄文：检测正文（排除代码块）中残留的中文字符
+    针对不同目标语言采用不同策略与严重级别：
+    - 所有语言：检测 Unicode 替换字符 U+FFFD（编码损坏，``error``）
+    - 中文：检测形似 "字?字" 的乱码片段（``error``）
+    - 英文/俄文：检测正文（排除代码块）中残留的连续中文（``warning``）——
+      文档中存在大量合理保留的中文（锚点、示例值、平台译名、语言名等），
+      启发式无法可靠区分，仅作提示不阻塞；真正编码损坏由 U+FFFD 检查兜底
 
     :param content: 翻译后的文本
     :param target_lang: 目标语言代码
-    :return: 问题描述列表
+    :return: 问题列表，每项包含 ``severity`` 与 ``message``
     """
     issues = []
     if "\ufffd" in content:
-        issues.append(f"含{content.count(chr(0xFFFD))}个替换字符(U+FFFD)")
+        issues.append(
+            {
+                "severity": "error",
+                "message": f"含{content.count(chr(0xFFFD))}个替换字符(U+FFFD)",
+            }
+        )
     if target_lang in {"zh-CN", "zh-TW"}:
         garbled = re.findall(r"[\u4e00-\u9fff]\?{1,3}[\u4e00-\u9fff]", content)
         if garbled:
-            issues.append(f"{len(garbled)}处疑似乱码")
+            issues.append({"severity": "error", "message": f"{len(garbled)}处疑似乱码"})
     if target_lang in {"en", "ru"}:
         lines = content.split("\n")
         code_block = False
@@ -107,33 +152,43 @@ def detect_garbled(content: str, target_lang: str) -> List[str]:
                 continue
             if code_block:
                 continue
-            if _has_chinese_chars(line):
+            if _ZH_RUN_RE.search(_strip_non_prose(line)):
                 zh_lines.append(i)
         if zh_lines:
-            issues.append(f"{len(zh_lines)}行含中文字符 (行: {zh_lines[:5]})")
+            issues.append(
+                {
+                    "severity": "warning",
+                    "message": f"{len(zh_lines)}行含中文字符 (行: {zh_lines[:5]})",
+                }
+            )
     return issues
 
 
 # 译文中的翻译提示词泄露特征（模型偶发将翻译规则回显进译文）。
 # 仅匹配绝不可能出现在正文中的“提示词残留”，避免误伤正常内容。
+# 覆盖 zh-CN / zh-TW / en / ja / ru 全部已观测变体（与 translate-docs.py 对齐）。
 LEAK_PATTERN = re.compile(
     r"(?:return|send)\s+the\s+(?:complete\s+)?translated\s+Markdown|"
-    r"once\s+again,?\s+please\s+(?:note|adhere|follow)|"
+    r"once\s+again,?\s+(?:please\s+)?(?:note|adhere|follow|if\s+the\s+document)|"
     r"reminder:?\s+if\s+the\s+document\s+contains\s+(?:a\s+)?language|"
+    r"format\s+requirement\s+in\s+point\s+\d+\s+above|"
     r"Path\s+Replacement\s+Rules?|"
     r"language\s+switch(?:ing)?\s+line|"
     r"replace\s+`?docs/[a-z-]+/`?\s+in\s+document\s+links|"
     r"for\s+example:\s+`?docs/[a-z-]+/.*should\s+be\s+changed\s+to|"
     r"for\s+links\s+pointing\s+to\s+non-current\s+language\s+version\s+files|"
     r"(?:this\s+)?ensures?\s+(?:that\s+)?links\s+point\s+to\s+the\s+correct\s+language\s+version|"
-    r"请直接返回翻译后的完整Markdown内容|"
+    r"请直接返回翻译后的完整|"
     r"請直接返回翻譯後的完整|"
     r"再次提醒：?如果(?:文档|文檔|文件)|"
+    r"上方第\s*8\s*[条條]|"
     r"语言切换行本地化|"
     r"你是一个专业的技术文档翻译专家|"
     r"请将以下Markdown文档翻译成|"
     r"这段中文提示|"
+    r"各言語の切り替え行|"
     r"言語切り替え行がある場合|"
+    r"上記の第8条|"
     r"翻訳後の完全なMarkdown|"
     r"верните непосредственно переведенный|"
     r"еще раз напоминаем|"
@@ -285,8 +340,10 @@ class TranslationChecker:
                 }
             )
 
-        for gi in detect_garbled(tgt_content, lang):
-            issues.append({"severity": "error", "type": "garbled", "message": gi})
+        for g in detect_garbled(tgt_content, lang):
+            issues.append(
+                {"severity": g["severity"], "type": "garbled", "message": g["message"]}
+            )
 
         for li in detect_prompt_leaks(tgt_content):
             issues.append({"severity": "error", "type": "prompt_leak", "message": li})
@@ -367,10 +424,13 @@ class TranslationChecker:
                                 fixed += 1
                                 Logger.log(f"    -> 已删除缓存")
 
-            # root README
-            root_src = Path("README.md")
+            # root README：与 translate-docs.py 一致，源为 README.zh-CN.md；
+            # 英文版即主 README（README.md），其余语言为 README.{lang}.md
+            root_src = Path("README.zh-CN.md")
+            if not root_src.exists():
+                root_src = Path("README.md")
             if root_src.exists():
-                tgt_rm = Path(f"README.{lang}.md")
+                tgt_rm = Path("README.md") if lang == "en" else Path(f"README.{lang}.md")
                 rm_issues = []
                 if not tgt_rm.exists():
                     rm_issues.append(
@@ -411,11 +471,17 @@ class TranslationChecker:
                                 }
                             )
                             self.summary["errors"] += 1
-                        for gi in detect_garbled(tc, lang):
+                        for g in detect_garbled(tc, lang):
                             rm_issues.append(
-                                {"severity": "error", "type": "garbled", "message": gi}
+                                {
+                                    "severity": g["severity"],
+                                    "type": "garbled",
+                                    "message": g["message"],
+                                }
                             )
-                            self.summary["errors"] += 1
+                            self.summary[
+                                "errors" if g["severity"] == "error" else "warnings"
+                            ] += 1
                         for li in detect_prompt_leaks(tc):
                             rm_issues.append(
                                 {

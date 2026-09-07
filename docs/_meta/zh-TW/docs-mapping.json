@@ -70,7 +70,7 @@
           "icon": "fa-bolt-lightning"
         },
         {
-          "title": "類型存根生成（IDE 自動完成）",
+          "title": "類型存根生成（IDE 補全）",
           "path": "getting-started/ide-completion.md",
           "level": 1,
           "icon": "fa-keyboard"
@@ -84,7 +84,7 @@
       "count": 5,
       "documents": [
         {
-          "title": "使用者指南",
+          "title": "用戶使用指南",
           "path": "user-guide/README.md",
           "level": 1,
           "icon": "fa-book-open"
@@ -182,7 +182,7 @@
               "icon": "fa-microchip"
             },
             {
-              "title": "SendDSL 详解",
+              "title": "SendDSL 詳解",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1,
               "icon": "fa-code-branch"
@@ -209,7 +209,7 @@
       "count": 15,
       "documents": [
         {
-          "title": "ErisPulse PlatformFeatures 文檔",
+          "title": "ErisPulse PlatformFeatures 文件",
           "path": "platform-guide/README.md",
           "level": 1,
           "icon": "fa-server"
@@ -245,7 +245,7 @@
           "icon": "fa-cloud"
         },
         {
-          "title": "雲湖用戶平台特性文件",
+          "title": "雲湖使用者平台特性文件",
           "path": "platform-guide/yunhu_user.md",
           "level": 1,
           "icon": "fa-user"
@@ -275,7 +275,7 @@
           "icon": "fa-gamepad"
         },
         {
-          "title": "微信公眾號 (WechatMp) 適配器 - 平台特性文件",
+          "title": "微信公眾號（WechatMp）適配器 - 平台特性文件",
           "path": "platform-guide/wechatmp.md",
           "level": 1,
           "icon": "fa-mobile-screen"
@@ -293,7 +293,7 @@
           "icon": "fa-wand-magic-sparkles"
         },
         {
-          "title": "文檔維護說明",
+          "title": "文件維護說明",
           "path": "platform-guide/maintain-notes.md",
           "level": 1,
           "icon": "fa-wrench"
@@ -313,7 +313,7 @@
           "icon": "fa-book"
         },
         {
-          "title": "介面卡系統 API",
+          "title": "適配器系統 API",
           "path": "api-reference/adapter-system.md",
           "level": 1,
           "icon": "fa-network-wired"
@@ -339,13 +339,13 @@
       "count": 12,
       "documents": [
         {
-          "title": "進階主題",
+          "title": "高級主題",
           "path": "advanced/README.md",
           "level": 1,
           "icon": "fa-fire"
         },
         {
-          "title": "生命周期管理",
+          "title": "生命週期管理",
           "path": "advanced/lifecycle.md",
           "level": 1,
           "icon": "fa-clock-rotate-left"
@@ -375,7 +375,7 @@
           "icon": "fa-comments"
         },
         {
-          "title": "網路用戶端",
+          "title": "網路客戶端",
           "path": "advanced/http-client.md",
           "level": 1,
           "icon": "fa-globe"
@@ -399,7 +399,7 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "所有权（owner）系統",
+          "title": "所屬權（owner）系統",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
@@ -483,7 +483,7 @@
           "icon": "fa-arrow-right-arrow-left"
         },
         {
-          "title": "适配器標準化轉換規範",
+          "title": "適配器標準化轉換規範",
           "path": "standards/event-conversion.md",
           "level": 1,
           "icon": "fa-shuffle"

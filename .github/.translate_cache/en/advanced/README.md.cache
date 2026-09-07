@@ -2,7 +2,7 @@
   "version": 2,
   "hash": "7f20816df84a5c720196012d0b87b45d",
   "file_hash": "7f20816df84a5c720196012d0b87b45d",
-  "translated_at": "2026-09-06T12:37:42.169151",
+  "translated_at": "2026-09-07T10:47:26.760699",
   "target_lang": "en",
   "chunks": [
     {
@@ -11,15 +11,15 @@
     },
     {
       "hash": "c75473969977483768d08659b1ba47ab",
-      "translation": "## Document List\n\n- [Startup Process and Manual Control](startup.md) - Breakdown of the startup chain (Finder/Loader/Manager/Router) and manual full startup\n- [Lazy Loading System](lazy-loading.md) - Working principle, configuration, and event-driven lazy activation (activate_on) of the lazy loading module system\n- [Scope](scope.md) - Three-dimensional scope control: module availability / event access / outbound action restrictions (including method-level fine-grained rules and binding inheritance merge)\n- [Ownership (owner) System](ownership.md) - Resource ownership and automatic recycling: owner context mechanism, full view of owned resources, unload cleanup sequence, and design boundaries\n- [Internationalization (i18n)](i18n.md) - Multi-language support, translation registration, and language detection\n- [Lifecycle Management](lifecycle.md) - Usage methods of the lifecycle event system\n- [Router Manager](router.md) - HTTP and WebSocket routing management\n- [HTTP Client](http-client.md) - Unified HTTP request client\n- [MessageBuilder Detailed Explanation](message-builder.md) - Dual-mode usage of the OneBot12 message segment builder\n- [SQL Query Builder](sql-builder.md) - General SQL chain query builder and storage backend abstraction\n- [Session Type System](../standards/session-types.md) - Session type definition, mapping, and custom type registration\n- [Conversation Multi-turn Dialogue](conversation.md) - Interaction methods of multi-turn dialogue context\n\n> [!NOTE]\n> Documentation for **third-party ecosystem modules** such as Dashboard view registration and Takumi image rendering has been moved to the [Ecosystem Modules](../ecosystem/README.md) directory."
+      "translation": "## Documentation List\n\n- [Startup Process and Manual Control](startup.md) - Breakdown of the startup chain (Finder/Loader/Manager/Router) and manual full startup\n- [Lazy Loading System](lazy-loading.md) - Working principle, configuration, and event-driven lazy activation (activate_on) of the lazy loading module system\n- [Scope](scope.md) - Three-dimensional scope control: module availability / event access / outbound action restrictions (including method-level fine-grained rules and binding inheritance merge)\n- [Ownership System](ownership.md) - Resource ownership and automatic cleanup: owner context mechanism, ownership resource overview, unload cleanup sequence, and design boundaries\n- [Internationalization (i18n)](i18n.md) - Multi-language support, translation registration, and language detection\n- [Lifecycle Management](lifecycle.md) - Usage methods of the lifecycle event system\n- [Router Manager](router.md) - HTTP and WebSocket routing management\n- [HTTP Client](http-client.md) - Unified HTTP request client\n- [MessageBuilder Detailed Explanation](message-builder.md) - Dual-mode usage of the OneBot12 message segment builder\n- [SQL Query Builder](sql-builder.md) - General SQL chain query builder and storage backend abstraction\n- [Session Type System](../standards/session-types.md) - Session type definition, mapping, and custom type registration\n- [Conversation Multi-turn Dialogue](conversation.md) - Interaction methods for multi-turn dialogue context\n\n> [!NOTE]\n> Documentation for **third-party ecosystem modules** such as Dashboard window registration and Takumi image rendering has been moved to the [Ecosystem Modules](../ecosystem/README.md) directory."
     },
     {
       "hash": "81b5854fa95b29d89b547d92b77468de",
-      "translation": "## Target Audience\n\nThese documents are suitable for the following developers:\n\n- Developers already familiar with ErisPulse basic features\n- Developers needing a deep understanding of internal framework mechanisms\n- Developers needing to optimize performance or implement complex features\n\nPlease return the complete translated Markdown content directly, without including any other text.\n\nReminder: If the document contains language switching lines (lines separated by ` | `), strictly follow the formatting requirement in item 8 above; do not write incorrect formats like ``[**Label**](file)``."
+      "translation": "## Audience\n\nThese documents are suitable for the following developers:\n\n- Developers who are already familiar with the basic features of ErisPulse\n- Developers who need to deeply understand the internal mechanisms of the framework\n- Developers who need to optimize performance or implement complex features"
     },
     {
       "hash": "3ed79ef0b3d522c4c10b2d4fa69192f8",
-      "translation": "## Prerequisites\n\nBefore reading the documents in this directory, it is recommended to understand:\n\n- [Basic Concepts](../getting-started/basic-concepts.md)\n- [Introduction to Event Handling](../getting-started/event-handling.md)\n- [Module Development Guide](../developer-guide/modules/)"
+      "translation": "## Prerequisites\n\nBefore reading this section of the documentation, it is recommended to first understand:\n\n- [Basic Concepts](../getting-started/basic-concepts.md)\n- [Event Handling Introduction](../getting-started/event-handling.md)\n- [Module Development Guide](../developer-guide/modules/)"
     }
   ]
 }

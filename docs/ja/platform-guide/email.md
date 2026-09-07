@@ -3,7 +3,6 @@
 EmailAdapter は SMTP/IMAP プロトコルに基づいたメールアダプタであり、メールの送信、受信、および処理をサポートしています。
 
 ---
-[次へ: SMTP/IMAP 通信プロトコル](docs/ja/communication-protocol.md)
 
 ## ドキュメント情報
 
@@ -15,11 +14,11 @@ EmailAdapter は SMTP/IMAP プロトコルに基づいたメールアダプタ�
 - プラットフォーム概要：標準の SMTP/IMAP プロトコルを使用してメールを送受信する汎用アダプタ
 - アダプタ名：EmailAdapter
 - 複数アカウント対応：複数のメールアカウントを同時に設定可能
-- 接続方法：IMAP 長時間ポーリングによる受信 + SMTP による送信
-- 認証方法：メールアドレス + パスワード/アプリケーションパスワード
-- OneBot12 対応：OneBot12 フォーマットのメッセージ送信に対応
+- 接続方式：IMAP 長時間ポーリングによる受信 + SMTP による送信
+- 認証方式：メールアドレス + パスワード/アプリケーションパスワード
+- OneBot12 対応：OneBot12 フォーマットのメッセージ送信をサポート
 
-## 設定の説明
+## 設定説明
 
 ### グローバル設定（EmailAdapter）
 
@@ -32,17 +31,17 @@ EmailAdapter は SMTP/IMAP プロトコルに基づいたメールアダプタ�
 | `ssl` | bool | `true` | デフォルトで SSL を有効にするかどうか |
 | `timeout` | int | `30` | デフォルトの接続タイムアウト（秒） |
 | `poll_interval` | int | `60` | IMAP ポーリング間隔（秒） |
-| `max_retries` | int | `3` | 接続失敗時の最大リトライ回数 |
+| `max_retries` | int | `3` | 接続失敗時の最大再試行回数 |
 
 ### アカウント設定（EmailAdapter.accounts）
 
-各アカウントは独立したメールアドレスに対応します。アカウントレベルの設定はグローバル設定よりも優先されます。
+各アカウントは個別のメールアドレスに対応します。アカウントレベルの設定はグローバル設定よりも優先されます。
 
 ```toml
 [EmailAdapter.accounts.default]
 email = "user@example.com"
 password = "your-password-or-auth-code"
-imap_server = "imap.example.com"    # オプション、空の場合はグローバルのデフォルトを使用
+imap_server = "imap.example.com"    # オプション、空欄の場合はグローバルのデフォルトを使用
 imap_port = 993                      # オプション
 smtp_server = "smtp.example.com"    # オプション
 smtp_port = 465                      # オプション
@@ -58,7 +57,7 @@ enabled = true
 
 ## 支援されるメッセージ送信タイプ
 
-すべての送信メソッドは、チェーン式構文で実装されています：
+すべての送信メソッドは、チェーン式の構文で実装されています：
 
 ```python
 from ErisPulse.Core import adapter
@@ -67,26 +66,26 @@ mail = adapter.get("email")
 # 簡単なテキストメール
 await mail.Send.To("private", "to@example.com").Subject("テスト").Text("内容")
 
-# 附件付きのHTMLメール
+# 附件付きの HTML メール
 await mail.Send.To("private", "to@example.com") \
     .Subject("HTMLメール") \
     .Cc(["cc1@example.com", "cc2@example.com"]) \
     .Attachment("report.pdf") \
     .Html("<h1>HTML内容</h1>")
 
-# Raw_ob12を使用して標準のOB12メッセージを送信
+# Raw_ob12 を使用して標準の OB12 メッセージを送信
 await mail.Send.To("private", "to@example.com").Raw_ob12([
     {"type": "text", "data": {"text": "メール本文"}},
     {"type": "file", "data": {"file": "/path/to/attachment.pdf"}},
 ])
 
-# 送信アカウントを指定（複数アカウント対応）
+# 送信アカウントを指定（複数アカウントの場合）
 await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
 ```
 
 > 注意：チェーン式構文を使用する場合、パラメータメソッド（Subject / Cc / Attachment など）は送信メソッド（Text / Html / Raw_ob12）の前に呼び出す必要があります。
 
-### 基本送信メソッド
+### 基本的な送信メソッド
 
 | メソッド | 説明 |
 |------|------|
@@ -94,23 +93,23 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
 | `.Html(html: str)` | HTML形式のメールを送信 |
 | `.Raw_ob12(message, **kwargs)` | OneBot12形式のメッセージを送信 |
 
-### チェーン修飾メソッド（selfを返すため、組み合わせて使用可能）
+### チェーン式修飾メソッド（self を返すため、組み合わせて使用可能）
 
 | メソッド | 説明 |
 |------|------|
 | `.Subject(subject: str)` | メールの件名を設定 |
-| `.Cc(emails: Union[str, List[str]])` | 抄送先を設定 |
-| `.Bcc(emails: Union[str, List[str]])` | 暗送先を設定 |
-| `.ReplyTo(email: str)` | 回信先を設定 |
+| `.Cc(emails: Union[str, List[str]])` | 抄送先アドレスを設定 |
+| `.Bcc(emails: Union[str, List[str]])` | 密送先アドレスを設定 |
+| `.ReplyTo(email: str)` | 回信先アドレスを設定 |
 | `.Attachment(file, filename: str = None)` | 附件を追加 |
 
-### OB12メッセージセグメントの逆変換（Raw_ob12）
+### OB12 メッセージセグメントの逆変換（Raw_ob12）
 
-| OB12メッセージセグメント | メール本文に変換 |
+| OB12 メッセージセグメント | メール本文に変換 |
 |------------|--------------|
-| `text` | 純粋なテキスト本文 |
+| `text` | 純粋な本文 |
 | `image` | 画像の添付 |
-| `video` | ビデオの添付 |
+| `video` | 動画の添付 |
 | `file` | ファイルの添付 |
 | `audio` | 音声の添付 |
 | `markdown` | HTML本文に変換 |
@@ -121,9 +120,9 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
 
 1. メールイベントはすべて `message` タイプであり、`detail_type` は固定で `private` です。
 2. `user_id` は送信者の**純粋なメールアドレス**、`user_nickname` は送信者の表示名です。
-3. `message` メッセージセグメントは標準の OB12 形式（text セグメント + file セグメント）です。
+3. `message` のメッセージセグメントは標準の OB12 形式（text セグメント + file セグメント）です。
 4. メールの件名は `email_subject` 拡張フィールドから取得します。
-5. 完全な元データは `email_raw` フィールドに保存されます。
+5. 完全な元のデータは `email_raw` フィールドに保持されます。
 
 ### 新しいメールイベント（email_new）
 
@@ -160,7 +159,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
     {
       "type": "text",
       "data": {
-        "text": "添付ファイルをご確認ください。"
+        "text": "添付ファイルをご確認ください"
       }
     },
     {
@@ -177,7 +176,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
 
 ### メール返信イベント（email_reply）
 
-メールに `References` または `In-Reply-To` ヘッダーが含まれる場合、`email_raw_type` は `email_reply` です：
+メールに `References` または `In-Reply-To` ヘッダーが含まれている場合、`email_raw_type` は `email_reply` になります：
 
 ```json
 {
@@ -194,10 +193,10 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
 | フィールド | 型 | 説明 |
 |------|------|------|
 | `email_raw` | dict | 完全な元のメールデータ（subject/from/to/date/cc/bcc/text_content/html_content/attachments など） |
-| `email_raw_type` | str | 元のイベントの種類: `email_new`（新規メール）または `email_reply`（返信メール） |
-| `email_subject` | str | メールの件名（アクセスしやすいように） |
-| `email_from` | str | 発信者の純粋なメールアドレス（アクセスしやすいように） |
-| `attachments` | list | 附件データのリスト（バイナリ `data` フィールドを含み、後方互換性あり） |
+| `email_raw_type` | str | 元のイベントの種類：`email_new`（新規メール）または `email_reply`（返信メール） |
+| `email_subject` | str | メールの件名（便利なアクセス用） |
+| `email_from` | str | 送信者の純粋なメールアドレス（便利なアクセス用） |
+| `attachments` | list | 附件データのリスト（バイトデータ `data` フィールドを含み、後方互換性を保つ） |
 
 ## 標準イベントの例
 
@@ -268,10 +267,10 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("内容")
   "status": "ok",
   "retcode": 0,
   "data": {
-    "message_id": "<送信されたメッセージID@example.com>",
+    "message_id": "<送信メッセージID@example.com>",
     "time": 1751990446
   },
-  "message_id": "<送信されたメッセージID@example.com>",
+  "message_id": "<送信メッセージID@example.com>",
   "message": "",
   "email_raw": {
     "success": true,
@@ -298,14 +297,14 @@ async def handle_email(event):
     # メールの件名
     subject = event.get("email_subject")   # 会議のお知らせ
     
-    # テキスト形式の本文（最初の text セグメント）
+    # テキスト形式の本文（最初の text ブロック）
     text = event.get_text()
     
     # 完全な元のデータ
     raw = event.get("email_raw", {})
     html = raw.get("html_content", "")
     
-    # 附件の処理
+    # 付属ファイルの処理
     for seg in event.get("message", []):
         if seg["type"] == "file":
             filename = seg["data"]["file_name"]

@@ -48,7 +48,7 @@ class MyModuleConfig(BaseConfig):
         "description": {"i18n": "my_module.timeout", "default": "超時時間（秒）"},
     })
     cache_ttl: int = field(default=3600, metadata={
-        "description": {"i18n": "my_module.cache_ttl", "default": "緩存存活時間（秒）"},
+        "description": {"i18n": "my_module.cache_ttl", "default": "快取存活時間（秒）"},
     })
 
 class MyModule(BaseModule):
@@ -59,11 +59,11 @@ class MyModule(BaseModule):
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-也可以繼續使用手動方式讀寫配置儲存（見[模組核心概念](core-concepts.md#配置管理)）。
+也可以繼續使用手動方式讀取和寫入配置儲存（見[模組核心概念](core-concepts.md#配置管理)）。
 
 ### 宣告式翻譯鍵（v2.7.0+）
 
-模組可以透過 `I18nClass` 集中宣告翻譯鍵，框架會自動註冊到 i18n 系統，無需手動呼叫 `i18n.register()`。
+模組可以透過 `I18nClass` 集中宣告翻譯鍵，框架自動註冊到 i18n 系統，無需手動呼叫 `i18n.register()`。
 
 ```python
 from ErisPulse.Core.Bases import BaseI18n, I18nKey
@@ -90,7 +90,7 @@ class MyModule(BaseModule):
         )
 ```
 
-詳細用法見 [i18n 文檔](../../advanced/i18n.md#推薦寫法通過-i18nclass-宣告翻譯鍵-v270)。
+詳細用法見 [i18n 文檔](../../advanced/i18n.md#推薦寫法透過-i18nclass-宣告翻譯鍵-v270)。
 
 ## 異步編程
 
@@ -113,7 +113,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# 不要使用 aiohttp 直接導入（不利於框架統一管理）
+# 不要使用 aiohttp 直接匯入（不便於框架統一管理）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -140,7 +140,7 @@ async def handle_command(self, event: Event):
     result = await self._long_operation()
 
 async def on_load(self, event: dict):
-    # 後台任務（輪詢/定時/fire-and-forget）：使用 self.spawn()，
+    # 後台任務（輪詢/定時/fire-and-forget）：用 self.spawn()，
     # 模組卸載時框架在 on_unload 之後兜底取消，避免持有 self 導致泄漏
     self.spawn(self._poll())
 ```
@@ -156,7 +156,7 @@ async def on_load(self, event):
     pass
     
 async def on_unload(self, event):
-    # 如需自定義客戶端，記得清理資源
+    # 如需自訂客戶端，記得清理資源
     pass
 ```
 
@@ -181,7 +181,7 @@ async def info_command(event: Event):
 ### 2. 合理使用懶加載
 
 ```python
-# 低頻命令模塊：聲明 activate_on 觸發器，首個匹配命令到達時自動激活（保持懶加載）
+# 低頻命令模組：宣告 activate_on 觸發器，首個匹配命令到達時自動激活（保持懶加載）
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -189,7 +189,7 @@ class CommandModule(BaseModule):
             {"command": {"name": "dice", "help": "擲一個骰子", "aliases": ["d"]}},
         ])
 
-# 低頻監聽器模塊：聲明事件觸發器，事件到達時自動激活
+# 低頻監聽器模組：宣告事件觸發器，事件到達時自動激活
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -197,13 +197,13 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# 高頻觸發（每條消息都要處理）或啟動時就必須就緒的模塊：立即加載
+# 高頻觸發（每條訊息都要處理）或啟動時就必須就緒的模組：立即加載
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# 工具模塊適合懶加載
+# 工具模組適合懶加載
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -211,7 +211,7 @@ class UtilityModule(BaseModule):
 ```
 
 > `activate_on` 的完整語法（事件三形式 / 命令簡寫與 dict 聲明 / help 回退鏈）見
-> [懶加載模塊系統](../../advanced/lazy-loading.md#事件驅動懶激活activate_on)。
+> [懶加載模組系統](../../advanced/lazy-loading.md#事件驅動懶激活activate_on)。
 
 ### 3. 事件處理器註冊
 
@@ -224,7 +224,7 @@ async def on_load(self, event):
     
     @message.on_group_message()
     async def group_handler(event: Event):
-        self.logger.info("收到群消息")
+        self.logger.info("收到群訊息")
     
     # 不需要手動註銷，框架會自動處理
 ```
@@ -242,21 +242,21 @@ async def handle_event(self, event: Event):
         self.logger.warning(f"業務警告: {e}")
         await event.reply(f"參數錯誤: {e}")
     except aiohttp.ClientError as e:
-        # 網絡錯誤（推薦使用 sdk.client + ClientError 替代）
+        # 網路錯誤（推薦使用 sdk.client + ClientError 替代）
         # 舊代碼直接用 aiohttp 仍可正常工作，但新代碼推薦使用 ErisPulse 異常體系
-        self.logger.error(f"網絡錯誤: {e}")
-        await event.reply("網絡請求失敗，請稍後重試")
+        self.logger.error(f"網路錯誤: {e}")
+        await event.reply("網路請求失敗，請稍後重試")
     except Exception as e:
         # 未預期的錯誤
         self.logger.error(f"未知錯誤: {e}", exc_info=True)
-        await event.reply("處理失敗，請聯繫管理員")
+        await event.reply("處理失敗，請聯絡管理員")
         raise
 ```
 
 ### 2. 超時處理
 
 ```python
-# 推薦使用 SDK 內置客戶端（自帶超時和重試）
+# 推薦使用 SDK 內建客戶端（自帶超時和重試）
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -283,14 +283,14 @@ async def update_user(self, user_id, data):
 # ❌ 不使用事務可能導致資料不一致
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
-    # 如果這邊出錯，上面的設定無法回滾
+    # 如果這裡出錯，上面的設定無法回滾
     self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 ```
 
-### 2. 批次操作
+### 2. 批量操作
 
 ```python
-# 使用批次操作提升效能
+# 使用批量操作提高效能
 def cache_multiple_items(self, items):
     self.sdk.storage.set_multi({
         f"item:{k}": v for k, v in items.items()
@@ -304,18 +304,18 @@ def cache_multiple_items(self, items):
 
 ## 日誌記錄
 
-### 1. 合理使用日誌級別
+### 1. 合理使用日誌層級
 
 ```python
-# DEBUG: 詳細的除錯資訊（僅開發時使用）
+# DEBUG: 詳細的除錯資訊（僅開發時）
 self.logger.debug(f"輸入參數: {params}")
 
 # INFO: 正常運行資訊
-self.logger.info("模組已載入")
+self.logger.info("模組已加載")
 self.logger.info(f"處理請求: {request_id}")
 
 # WARNING: 警告資訊，不影響主要功能
-self.logger.warning(f"設定項 {key} 未設定，使用預設值")
+self.logger.warning(f"配置項 {key} 未設定，使用預設值")
 self.logger.warning("API 回應慢，可能需要優化")
 
 # ERROR: 錯誤資訊
@@ -362,9 +362,9 @@ class MyModule(BaseModule):
 ### 2. 避免阻塞操作
 
 ```python
-# 使用非同步操作
+# 使用異步操作
 async def process_message(self, event: Event):
-    # 非同步處理
+    # 異步處理
     await self._async_process(event)
 
 # ❌ 阻塞操作
@@ -375,10 +375,10 @@ async def process_message(self, event: Event):
 
 ## 安全性
 
-### 1. 敏感數據保護
+### 1. 敏感資料保護
 
 ```python
-# 敏感數據儲存在配置中（宣告式 ConfigClass，secret 欄位不會進入日誌/匯出）
+# 敏感資料儲存在配置中（宣告式 ConfigClass，secret 欄位不進入日誌/匯出）
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
@@ -394,9 +394,9 @@ class MyModule(BaseModule):
 
     def check_api_key(self):
         if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("請在 config.toml 中配置有效的 API 密鑰")
+            raise ValueError("請在 config.toml 中設定有效的 API 密鑰")
 
-# ❌ 敏感數據硬編碼
+# ❌ 敏感資料硬編碼
 class MyModule(BaseModule):
     API_KEY = "sk-1234567890"  # 不要這樣做！
 ```
@@ -466,7 +466,7 @@ version = "1.0.0"
 
 ### 2. README 頭部
 
-`epsdk create` 產生的 README 已內建 ErisPulse 頭部標識（Logo + 標章行）。兩種推薦模式：
+`epsdk create` 產生的 README 已內建 ErisPulse 頭部標識（Logo + 徽章行）。兩種推薦模式：
 
 **模式 A — 僅 ErisPulse Logo（預設）：**
 
@@ -489,7 +489,7 @@ version = "1.0.0"
 </div>
 ```
 
-**模式 B — 模塊圖標 × ErisPulse Logo（有自訂圖標時）：**
+**模式 B — 模組圖示 × ErisPulse Logo（有自訂圖示時）：**
 
 ```markdown
 <div align="center">
@@ -503,10 +503,10 @@ version = "1.0.0"
 </div>
 ```
 
-可依需求追加 GitHub Stars、Downloads 等徽章。Logo 也可下載到專案本地（`.github/assets/ErisPulseLogo.png`）改為相對路徑引用。
+可按需追加 GitHub Stars、Downloads 等徽章。Logo 也可下載到專案本地（`.github/assets/ErisPulseLogo.png`）改為相對路徑引用。
 
 ## 相關文件
 
-- [模組開發入門](getting-started.md) - 建立第一個模組  
-- [模組核心概念](core-concepts.md) - 理解模組架構  
-- [Event 包裝類別](event-wrapper.md) - 事件處理詳解
+- [模組開發入門](getting-started.md) - 創建第一個模組
+- [模組核心概念](core-concepts.md) - 理解模組架構
+- [Event 包裝類](event-wrapper.md) - 事件處理詳解

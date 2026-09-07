@@ -80,7 +80,7 @@ admin_commands = command.get_group_commands("admin", event=event)
 # 獲取所有可見命令
 visible_commands = command.get_visible_commands()
 
-# 會話感知的可見命令（event 或顯式關鍵字任一即可）
+# 會話感知的可見命令（event 或顯式參數任一即可）
 visible_commands = command.get_visible_commands(event=event)
 visible_commands = command.get_visible_commands(
     platform=event.get("platform"),
@@ -356,7 +356,7 @@ await event.reply("這是一條消息")
 # 指定發送方法
 await event.reply("http://example.com/image.jpg", method="Image")
 
-# 帶 @使用者 和回覆消息
+# 帶 @用戶 和回覆訊息
 await event.reply("你好", at_users=["user1"], reply_to="msg_id")
 
 # @全體成員
@@ -388,7 +388,7 @@ if event.supports("Image"):
 
 # 列出當前平台所有可用發送方法
 methods = event.available_methods()
-# ["Text", "Image", "Voice", "Video", ...]
+# ["Text", "Image", "Voice", ...]
 ```
 
 ### 回覆方法
@@ -396,13 +396,13 @@ methods = event.available_methods()
 `reply()` 方法支援透過 `method` 參數指定發送類型，以及兩個便捷的布林參數：
 
 ```python
-# 簡單文字回覆
+# 簡單文本回覆
 await event.reply("你好")
 
 # 回覆並@發送者
 await event.reply("你好", at_sender=True)
 
-# 回覆並引用當前消息
+# 回覆並引用當前訊息
 await event.reply("收到", quote=True)
 
 # 組合使用
@@ -422,9 +422,9 @@ else:
 | `content` | str | 發送內容 |
 | `method` | str | 發送方法，預設 "Text"，可選 "Image"/"Voice"/"Video"/"File" 等 |
 | `at_sender` | bool | 是否@發送者（自動提取 user_id） |
-| `quote` | bool | 是否引用回覆當前消息（自動提取 message_id） |
-| `at_users` | list[str] | @指定使用者列表 |
-| `reply_to` | str | 手動指定回覆的消息 ID |
+| `quote` | bool | 是否引用回覆當前訊息（自動提取 message_id） |
+| `at_users` | list[str] | @指定用戶列表 |
+| `reply_to` | str | 手動指定回覆的訊息 ID |
 | `at_all` | bool | 是否@全體成員 |
 
 ### 互動方法
@@ -444,7 +444,7 @@ choice = await event.choose("請選擇顏色：", ["紅色", "綠色", "藍色"]
 # options_format="auto"（預設）根據 method 自動選擇樣式：
 # Markdown→無序列表（- 1.選項），Html→有序列表（<ol>），其他→純文字列表
 # 文本類方法（Markdown/Html 等）預設合併選項到末尾
-# merge_prompt=True 可強制任意 method 合併；placeholder 可自定義佔位符
+# merge_prompt=True 可強制任意 method 合併；placeholder 可自訂占位符
 choice = await event.choose(
     "## 請選擇\n{options}", ["A", "B"],
     method="Markdown", merge_prompt=True,
@@ -484,13 +484,13 @@ raw_type = event.get_raw_type()
 `event.done(claim=, stop=)` 統一控制「認領」與「阻斷」兩個正交語義：
 
 - **認領（claim）**：標記事件已被處理（`_processed`），命令分發器據此跳過去重
-- **阻斷（stop）**：阻止向低優先級處理器傳播（`_propagation_stopped`）
+- **阻斷（stop）**：阻止向低优先级處理器傳播（`_propagation_stopped`）
 
 ```python
 # 認領 + 阻斷（預設）
 event.done()
 
-# 僅認領，不阻斷（低優先級觀察者仍能看到）
+# 僅認領，不阻斷（低优先级觀察者仍能看到）
 event.done(stop=False)
 
 # 僅阻斷，不認領（如防火牆 / 限流）
@@ -509,9 +509,9 @@ event.is_stopped()    # 是否已阻斷傳播
 
 適配器可以為 Event 註冊平台專有方法，僅在對應平台的實例上可用。
 
-#### 使用者：使用平台擴展方法
+#### 用戶：使用平台擴展方法
 
-當適配器註冊了平台專有方法後，你可以在事件處理器中直接調用。各平台的方法不同，請參閱對應的 [平台文件](../platform-guide/)。
+當適配器註冊了平台專有方法後，你可以在事件處理器中直接呼叫。各平台的方法不同，請參閱對應的 [平台文件](../platform-guide/)。
 
 ```python
 from ErisPulse.Core.Event import message
@@ -520,7 +520,7 @@ from ErisPulse.Core.Event import message
 async def handle_message(event):
     platform = event.get_platform()
 
-    # 根據平台調用專有方法
+    # 根據平台呼叫專有方法
     if platform == "email":
         subject = event.get_subject()           # 郵件專有
         attachments = event.get_attachments()   # 郵件專有
@@ -535,7 +535,7 @@ from ErisPulse.Core.Event import get_platform_event_methods
 methods = get_platform_event_methods("email")
 # ["get_subject", "get_from", "get_attachments", ...]
 
-# 動態判斷並調用
+# 動態判斷並呼叫
 for method_name in get_platform_event_methods(event.get_platform()):
     method = getattr(event, method_name)
     print(f"{method_name}: {method()}")
@@ -564,18 +564,18 @@ hasattr(event, "get_subject")   # 僅當 platform="email" 時返回 True
 "get_subject" in dir(event)     # 同上
 ```
 
-#### 適配器：註冊平台擴展方法
+### 適配器：註冊平台擴展方法
 
 適配器可以透過裝飾器為 Event 註冊平台專有方法，方法的第一個參數為 `self`（Event 實例），可以自由存取事件資料。
 
-##### 單個方法註冊
+#### 單個方法註冊
 
 ```python
 from ErisPulse.Core.Event import register_event_method
 
 @register_event_method("email")
 def get_subject(self):
-    """獲取郵件主旨"""
+    """獲取郵件主題"""
     return self.get("email_raw", {}).get("subject", "")
 
 @register_event_method("email")
@@ -584,7 +584,7 @@ def get_from(self):
     return self.get("email_raw", {}).get("from", {})
 ```
 
-##### 批量註冊（Mixin 類）
+#### 批量註冊（Mixin 類）
 
 當方法較多時，推薦使用 Mixin 類批量註冊：
 
@@ -605,32 +605,32 @@ class EmailEventMixin:
 register_event_mixin("email", EmailEventMixin)
 ```
 
-##### 回傳值規範
+#### 回傳值規範
 
-| 場景 | 回傳值 | 使用者使用方式 |
+| 場景 | 回傳值 | 用戶使用方式 |
 |------|--------|------------|
 | 回傳資料（文字、字典等） | 直接回傳值 | `subject = event.get_subject()` |
 | 執行操作（發送訊息等） | 回傳 `asyncio.Task` | `task = event.do_something()` 可選 `await` |
 
-> **建議**：非資料回傳的方法回傳 `asyncio.Task`，這樣使用者可以自行決定是否 `await`，即使不 `await` 操作也會執行完成。
+> **建議**：非資料回傳的方法回傳 `asyncio.Task`，這樣用戶可以自行決定是否 `await`，即使不 `await` 操作也會執行完成。
 
 ```python
 @register_event_method("email")
 def forward_email(self, to_address: str):
-    """轉發郵件 — 回傳 Task，使用者可自行決定是否 await"""
+    """轉發郵件 — 回傳 Task，用戶可自行決定是否 await"""
     import asyncio
     return asyncio.create_task(
         self._do_forward(to_address)
     )
 
-# 使用者可以 await 等待結果
+# 用戶可以 await 等待結果
 await event.forward_email("user@example.com")
 
 # 也可以不 await，操作在背景執行
 event.forward_email("user@example.com")
 ```
 
-##### 注銷方法
+#### 注銷方法
 
 ```python
 from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
@@ -642,9 +642,9 @@ unregister_event_method("email", "get_subject")
 unregister_platform_event_methods("email")
 ```
 
-##### 覆寫內建方法
+#### 覆寫內建方法
 
-`register_event_mixin` / `register_event_method` 支援覆寫 Event 內建方法（如 `confirm`、`choose`、`collect`、`wait_reply`、`reply` 等）。註冊的平台方法透過 `Event.__getattribute__` 优先於內建方法生效，因此適配器可以提供平台特色的互動實作。
+`register_event_mixin` / `register_event_method` 支援覆寫 Event 內建方法（如 `confirm`、`choose`、`collect`、`wait_reply`、`reply` 等）。註冊的平台方法透過 `Event.__getattribute__` 優先於內建方法生效，因此適配器可以提供平台特色的互動實作。
 
 內建實作為 `_builtin_*` 函式導出，覆寫方可以呼叫它們作為回退：
 
@@ -665,7 +665,7 @@ register_event_mixin("yunhu", YunhuEventMixin)
 
 ## 跨平台擴展（通配符）
 
-`register_event_method` 和 `register_event_mixin` 支援傳 `"*"` 作為平台名，註冊的方法在**所有平台**的 Event 實例上都可用。適合 AI 對話、上下文管理等需要跨平台重用的功能模組。
+`register_event_method` 和 `register_event_mixin` 支援傳入 `"*"` 作為平台名，註冊的方法會在**所有平台**的 Event 實例上都可用。適合 AI 對話、上下文管理等需要跨平台重用的功能模組。
 
 ### 註冊跨平台方法
 
@@ -692,7 +692,7 @@ async def handler(event):
 
 透過屬性存取 Event 方法時，解析順序為：
 
-1. **平台特定方法**（當前平台的覆寫）
+1. **平台特定方法**（目前平台的覆寫）
 2. **通配符方法**（`"*"` 註冊的跨平台方法）
 3. **內建方法**（`reply`、`confirm` 等）
 4. **字典鍵存取**

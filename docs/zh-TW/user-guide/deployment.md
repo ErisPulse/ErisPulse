@@ -4,7 +4,7 @@
 
 ## Docker 部署（推薦）
 
-ErisPulse 提供官方 Docker 鏡像，內建 ErisPulse 框架和 Dashboard 管理介面，支援 `linux/amd64` 和 `linux/arm64` 架構。
+ErisPulse 提供官方 Docker 鏡像，內建 ErisPulse 框架和 Dashboard 管理面板，支援 `linux/amd64` 和 `linux/arm64` 架構。
 
 ### 快速啟動
 
@@ -19,11 +19,11 @@ curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compos
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
-啟動後，請至 `http://localhost:8000/Dashboard`，使用設定的令牌作為密碼登入。
+啟動後訪問 `http://localhost:8000/Dashboard`，使用設定的令牌作為密碼登入。
 
 ### 國內鏡像加速
 
-如果無法存取 Docker Hub，可使用 GitHub Container Registry 拉取鏡像：
+如果 Docker Hub 無法存取，可以使用 GitHub Container Registry 拉取鏡像：
 
 ```bash
 docker pull ghcr.io/erispulse/erispulse:latest
@@ -67,15 +67,15 @@ services:
 | `ERISPULSE_PORT` | `8000` | Dashboard 端口映射 |
 | `ERISPULSE_DASHBOARD_TOKEN` | 自动生成 | Dashboard 登入令牌（強烈建議設定） |
 | `TZ` | `Asia/Shanghai` | 時區 |
-| `LANG` | `en_US.UTF-8` | 系統語言，自動偵測啟動介面語言 |
-| `ERISPULSE_LANG` | 空 | 強制啟動介面語言：`zh` / `zh_TW` / `en` / `ja` / `ru`（覆蓋 `LANG`） |
+| `LANG` | `en_US.UTF-8` | 系統語言，自動偵測啟動畫面語言 |
+| `ERISPULSE_LANG` | 空 | 強制啟動畫面語言：`zh` / `zh_TW` / `en` / `ja` / `ru`（覆蓋 `LANG`） |
 
 ### 數據持久化
 
-`./config` 目錄掛載了配置檔案和資料庫，包含：
+`./config` 目錄掛載了設定檔和資料庫，包含：
 
-- `config/config.toml` — 配置檔案
-- `config/config.db` — SQLite 儲存資料庫
+- `config/config.toml` — 設定檔
+- `config/config.db` — SQLite 存儲資料庫
 - `config/.packages` — Python site-packages 持久化卷，保存框架、適配器和已安裝模組（首次啟動時由入口點從鏡像內建備份自動初始化，之後的模組安裝與框架熱更新均寫入此目錄）
 
 ## Dashboard 管理面板
@@ -86,10 +86,10 @@ ErisPulse Docker 鏡像內建 Dashboard 模組，提供 Web 可視化管理介�
 
 | 功能 | 說明 |
 |------|------|
-| 儀表板 | 系統概覽、CPU/記憶體監控、運行時長、事件統計 |
+| 儀表盤 | 系統概覽、CPU/記憶體監控、運行時長、事件統計 |
 | 机器人管理 | 查看各平台机器人在線狀態和資訊 |
-| 事件查看 | 實時事件流，支援按類型和平台過濾 |
-| 日誌查看 | 按模組和級別過濾的日誌查看器 |
+| 事件查看 | 實時事件流，支援按類型和平台篩選 |
+| 日誌查看 | 按模組和層級篩選的日誌查看器 |
 | 模組管理 | 查看、載入、卸載已安裝的模組和適配器 |
 | 模組商店 | 瀏覽遠端可用套件並一鍵安裝 |
 | 配置編輯 | 在線編輯 `config.toml` |
@@ -99,7 +99,7 @@ ErisPulse Docker 鏡像內建 Dashboard 模組，提供 Web 可視化管理介�
 
 ### 透過 Dashboard 安裝模組
 
-Dashboard 集成了模組商店功能，你可以：
+Dashboard 整合了模組商店功能，你可以：
 
 1. **從商店安裝**：瀏覽遠端模組列表，選擇需要的模組一鍵安裝
 2. **上傳本機包**：直接上傳 `.whl` 或 `.zip` 檔案進行安裝，方便測試個人開發的模組
@@ -110,7 +110,7 @@ Dashboard 集成了模組商店功能，你可以：
 
 ErisPulse 的硬重啟（`sdk.hard_restart()`）依賴**外部監督者**在進程退出碼為 42 時重新拉起進程——SDK 自己不會拉起新進程。生產環境務必配置監督者，否則硬重啟後進程不會自動恢復：
 
-- Docker：`restart: unless-stopped`（任何退出碼都會重啟，含 42）
+- Docker：`restart: unless-stopped`（任何退出碼都會重啟，包含 42）
 - systemd：`Restart=on-failure` + `RestartForceExitStatus=42`
 - PM2 / supervisord：將 42 加入可重啟退出碼
 - 純 Python 自定義監督者：循環 `Popen` + 檢測 `returncode == 42`
@@ -126,7 +126,7 @@ SDK 內建健康檢查端點：
 curl http://localhost:8000/health
 ```
 
-Docker 健康檢查可在 `docker-compose.yml` 中新增：
+Docker 健康檢查可在 `docker-compose.yml` 中添加：
 
 ```yaml
 services:
@@ -244,7 +244,7 @@ stdout_logfile=/var/log/erispulse-bot/out.log
 
 1. **設定 Dashboard 令牌**：使用強大的隨機令牌，不要使用預設值
 2. **不要將端口暴露到公網**：除非使用反向代理 + SSL，否則將 Dashboard 端口限制在內網
-3. **保護資料目錄**：`config/` 目錄包含配置和資料庫，設定適當的檔案權限
+3. **保護資料目錄**：`config/` 目錄包含設定和資料庫，設定適當的檔案權限
 4. **定期更新**：使用 `epsdk self-update` 或拉取最新 Docker 鏡像
 5. **不要以 root 運行**：手動部署時建立專用使用者
 6. **使用 Docker 重啟策略**：`restart: unless-stopped` 確保異常退出後自動重啟
@@ -265,7 +265,7 @@ stdout_logfile=/var/log/erispulse-bot/out.log
 # 拉取最新鏡像
 docker compose pull
 
-# 重啟並使用新鏡像
+# 重新啟動並使用新鏡像
 docker compose up -d
 ```
 

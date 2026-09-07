@@ -35,9 +35,9 @@ async def quiz_handler(event):
 
 ## 核心 API
 
-### `say(content, **kwargs)`
+### say(content, **kwargs)
 
-發送訊息，並返回 `self` 以支援鏈式呼叫：
+發送消息，返回 `self` 支持鏈式調用：
 
 ```python
 await conv.say("第一行").say("第二行").say("第三行")
@@ -49,9 +49,9 @@ await conv.say("第一行").say("第二行").say("第三行")
 await conv.say("https://example.com/image.jpg", method="Image")
 ```
 
-### `wait(prompt=None, timeout=None)`
+### wait(prompt=None, timeout=None)
 
-等待使用者回覆，並返回 `Event` 物件或 `None`（超時）：
+等待使用者回覆，返回 `Event` 對象或 `None`（超時）：
 
 ```python
 # 簡單等待
@@ -62,16 +62,16 @@ if resp:
 # 發送提示後等待
 resp = await conv.wait(prompt="請輸入你的名字：")
 
-# 使用自訂超時（覆蓋對話預設超時）
+# 使用自定義超時（覆蓋對話預設超時）
 resp = await conv.wait(prompt="請在10秒內回覆：", timeout=10)
 ```
 
-### `confirm(prompt=None, **kwargs)`
+### confirm(prompt=None, **kwargs)
 
-等待使用者確認（是/否），並返回 `True` / `False` / `None`（超時）：
+等待使用者確認（是/否），返回 `True` / `False` / `None`（超時）：
 
 ```python
-result = await conv.confirm("確定要刪除所有資料嗎？")
+result = await conv.confirm("確定要刪除所有數據嗎？")
 if result is True:
     await conv.say("已刪除")
 elif result is False:
@@ -84,9 +84,9 @@ else:
 
 內建識別的否定詞：`否/no/n/取消/不/不要/不行/cancel/false/錯/不對/別/拒絕...`
 
-### `choose(prompt, options, **kwargs)`
+### choose(prompt, options, **kwargs)
 
-等待使用者從選項中選擇，並返回選項索引（0-based）或 `None`：
+等待使用者從選項中選擇，返回選項索引（0-based）或 `None`：
 
 ```python
 choice = await conv.choose("請選擇顏色：", ["紅色", "綠色", "藍色"])
@@ -97,10 +97,10 @@ if choice is not None:
 
 使用者可以透過輸入編號（`1`/`2`/`3`）或選項文字（`紅色`）來選擇。
 
-`options_format="auto"`（預設）會根據 method 自動選擇內建樣式：Markdown→無序列表，Html→有序列表，其他→純文字列表。
-也支援 `"list"`、`"inline"`、`"md"`、`"html"` 或自訂函數。
+`options_format="auto"`（預設）根據 method 自動選擇內建樣式：Markdown→無序列表，Html→有序列表，其他→純文本列表。
+也支援 `"list"`、`"inline"`、`"md"`、`"html"` 或自定義函數。
 
-支援 `merge_prompt=True` 合併為一條訊息，以及占位符控制選項插入位置（預設 `{options}`，可透過 `placeholder` 自訂）：
+支援 `merge_prompt=True` 合併為一條訊息，以及占位符控制選項插入位置（預設 `{options}`，可透過 `placeholder` 自定義）：
 
 ```python
 choice = await conv.choose(
@@ -110,7 +110,7 @@ choice = await conv.choose(
     merge_prompt=True,
 )
 
-# 自訂占位符
+# 自定義占位符
 choice = await conv.choose(
     "請選擇: [choices]",
     ["選項A", "選項B"],
@@ -118,9 +118,9 @@ choice = await conv.choose(
 )
 ```
 
-### `collect(fields, **kwargs)`
+### collect(fields, **kwargs)
 
-多步驟收集資訊，並返回資料字典或 `None`：
+多步驟收集資訊，返回資料字典或 `None`：
 
 ```python
 data = await conv.collect([
@@ -143,10 +143,10 @@ else:
 |------|------|--------|
 | `key` | 欄位鍵名（必須） | - |
 | `prompt` | 提示訊息 | `"請輸入 {key}"` |
-| `validator` | 驗證函數，接收 Event，並回傳 bool | 無 |
+| `validator` | 驗證函數，接收 Event，返回 bool | 無 |
 | `retry_prompt` | 驗證失敗重試提示 | `"輸入無效，請重新輸入"` |
 | `max_retries` | 最大重試次數 | 3 |
-| `condition` | 條件函數，接收已收集資料 dict，並回傳 bool | 無 |
+| `condition` | 條件函數，接收已收集資料 dict，返回 bool | 無 |
 
 **條件欄位**：使用 `condition` 可以實現動態表單，只有條件滿足時才收集該欄位：
 
@@ -158,15 +158,15 @@ data = await conv.collect([
 ])
 ```
 
-### `stop()`
+### stop()
 
-手動結束對話，並設定 `is_active` 為 `False`：
+手動結束對話，設定 `is_active` 為 `False`：
 
 ```python
 conv.stop()
 ```
 
-### `is_active`
+### is_active
 
 對話是否處於活躍狀態：
 
@@ -195,7 +195,7 @@ stateDiagram-v2
 2. `wait()` 超時返回 `None`
 3. `collect()` 因任何步驟超時或重試耗盡而返回 `None`
 
-非活躍後，所有交互方法（`wait`/`confirm`/`choose`/`collect`）會立即返回 `None`，不會繼續等待使用者輸入。
+非活躍後，所有互動方法（`wait`/`confirm`/`choose`/`collect`）會立即返回 `None`，不會繼續等待使用者輸入。
 
 ## 分支與跳轉
 
@@ -274,7 +274,7 @@ async def step2():
 ```python
 # 保存對話狀態
 conv_id = conv.save()
-# conv_id = "user_123_group_456"  # 基於使用者和群組自動生成
+# conv_id = "user_123_group_456"  # 基於使用者和群組自动生成
 
 # ... 之後在同一會話中恢復 ...
 conv2 = event.conversation()
@@ -299,7 +299,7 @@ async def register_handler(event):
     await conv.say("歡迎註冊！")
 
     data = await conv.collect([
-        {"key": "username", "prompt": "請輸入用戶名（3-20個字符）",
+        {"key": "username", "prompt": "請輸入使用者名稱（3-20個字元）",
          "validator": lambda e: 3 <= len(e.get_text().strip()) <= 20},
         {"key": "email", "prompt": "請輸入電子郵箱地址",
          "validator": lambda e: "@" in e.get_text() and "." in e.get_text(),
@@ -311,7 +311,7 @@ async def register_handler(event):
         return
 
     confirmed = await conv.confirm(
-        f"確認註冊信息？\n用戶名: {data['username']}\n電子郵箱: {data['email']}"
+        f"確認註冊資訊？\n使用者名稱: {data['username']}\n電子郵箱: {data['email']}"
     )
 
     if confirmed:

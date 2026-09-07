@@ -1,5 +1,65 @@
 {
+  "version": 2,
   "hash": "68bc04f8e3a4e141dca51af83a22f843",
-  "translated_at": "2026-06-16T13:34:40.892335",
-  "target_lang": "ja"
+  "file_hash": "68bc04f8e3a4e141dca51af83a22f843",
+  "translated_at": "2026-09-07T11:54:58.594792",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "dfe9992f585cafadc54def56669232c5",
+      "translation": "# OneBot12プラットフォーム仕様ドキュメント\n\nOneBot12Adapter は、OneBot V12 プロトコルに基づいて構築されたアダプターであり、ErisPulse フレームワークの基本プロトコルアダプターです。\n\n---"
+    },
+    {
+      "hash": "daccbccc03116075366543a1bdf2b6dd",
+      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 4.0.0\n- メンテナー: ErisPulse\n- プロトコルバージョン: OneBot V12"
+    },
+    {
+      "hash": "7cb073c9fc9ab7b7662e50a0ec987111",
+      "translation": "## 基本情報\n\n- プラットフォーム概要: OneBot V12 は、ErisPulseフレームワークのベースラインプロトコルである汎用的なチャットボットアプリケーションインターフェース標準です。\n- アダプタ名: OneBot12Adapter\n- 対応するプロトコル/APIバージョン: OneBot V12\n- 多アカウント対応: 完全な多アカウントアーキテクチャを採用しており、複数のOneBot12アカウントを同時に設定・実行することができます。"
+    },
+    {
+      "hash": "ab9378dff908def24864d7859e7c7043",
+      "translation": "## 支持するメッセージ送信タイプ\n\nすべての送信メソッドは、チェーン式の構文で実装されています。例：\n\n```python\nfrom ErisPulse.Core import adapter\nonebot12 = adapter.get(\"onebot12\")\n\n# デフォルトのアカウントを使って送信\nawait onebot12.Send.To(\"group\", group_id).Text(\"Hello World!\")\n\n# 特定のアカウントを使って送信\nawait onebot12.Send.To(\"group\", group_id).Account(\"main\").Text(\"来自主アカウントのメッセージ\")\n```\n\n### 大文字小文字を区別しない呼び出し\n\nすべての送信メソッドとチェーン式修飾メソッドは、大文字小文字を区別しない呼び出しをサポートしており、アダプターは正しい標準メソッド名に自動的にマッピングします：\n\n```python\n# 以下すべての呼び出し方法は等価です\nawait onebot12.Send.To(\"user\", 123).Text(\"hello\")\nawait onebot12.Send.To(\"user\", 123).text(\"hello\")\nawait onebot12.Send.To(\"user\", 123).TEXT(\"hello\")\n\n# チェーン式修飾メソッドも同様にサポート\nawait onebot12.Send.To(\"group\", 123).At(456).Text(\"hello\")\nawait onebot12.Send.To(\"group\", 123).at(456).TEXT(\"hello\")\nawait onebot12.Send.To(\"group\", 123).AT(456).text(\"hello\")\n```\n\n### 支持されていないメソッドの呼び出し\n\n存在しないメソッドを呼び出した場合、アダプターは例外をスローするのではなく、ユーザーにわかりやすいテキストのメッセージを返します：\n\n```python\n# 支持されていないメソッドを呼び出す\nresult = await onebot12.Send.To(\"user\", 123).UnsupportedMethod(\"test\")\n\n# 戻り値は送信されたテキストメッセージです\n# メッセージ内容: [サポートされていない送信タイプ] メソッド名: UnsupportedMethod, パラメータ: [args[0]: 'test']\n```\n\n### 基本的なメッセージタイプ\n\n- `.Text(text: str)`：純粋なテキストメッセージを送信します\n- `.Image(file: Union[str, bytes], filename: str = \"image.png\")`：画像メッセージを送信します（URL、Base64、またはbytesをサポート）\n- `.Audio(file: Union[str, bytes], filename: str = \"audio.ogg\")`：音声メッセージを送信します\n- `.Voice(file: Union[str, bytes], filename: str = \"voice.ogg\")`：音声メッセージを送信します（OneBot11と互換性のあるAudioの別名）\n- `.Video(file: Union[str, bytes], filename: str = \"video.mp4\")`：ビデオメッセージを送信します\n\n### チェーン式修飾メソッド（selfを返してチェーン式呼び出しをサポート）\n\n- `.At(user_id: Union[str, int])`：ユーザーを@します（複数回呼び出すことが可能です）\n- `.AtAll()`：全員を@します\n- `.Reply(message_id: Union[str, int])`：メッセージに返信します\n\n### 原始メッセージ送信\n\n- `.Raw_ob12(message: Union[Dict, List[Dict]], **kwargs)`：OneBot12の原始形式メッセージを送信します（命名規則に準拠）\n\n### その他のメッセージタイプ\n\n- `.Sticker(file_id: str)`：スタンプ/ステッカーを送信します\n- `.Location(latitude: float, longitude: float, title: str = \"\", content: str = \"\")`：位置情報を送信します\n\n### 管理機能\n\n- `.Recall(message_id: Union[str, int])`：メッセージを撤回します\n- `.Edit(message_id: Union[str, int], content: Union[str, List[Dict]])`：メッセージを編集します\n- `.Raw(message_segments: List[Dict])`：OneBot12の原生メッセージセグメントを送信します\n- `.Batch(target_ids: List[str], message: Union[str, List[Dict]], target_type: str = \"user\")`：一括でメッセージを送信します"
+    },
+    {
+      "hash": "ceeb52cf8011f789b0d0e38ca82f00f6",
+      "translation": "## OneBot12標準イベント\n\nOneBot12アダプターはOneBot12標準を完全に遵守しており、イベント形式の変換は不要で、フレームワークに直接送信されます。\n\n### 新機能：元のイベントタイプフィールド\n\n`standards/event-conversion.md` 規格に準拠し、すべてのイベントには元のイベントタイプフィールド `onebot12_raw_type` が保持されます：\n\n```python\n{\n    \"id\": \"event-id\",\n    \"type\": \"message\",              # イベントタイプ\n    \"onebot12_raw_type\": \"message\", # 元のイベントタイプ（typeと同じ）\n    \"detail_type\": \"private\",\n    \"self\": {\"user_id\": \"bot-id\"},\n    \"user_id\": \"user-id\",\n    \"message\": [{\"type\": \"text\", \"data\": {\"text\": \"Hello\"}}],\n    \"alt_message\": \"Hello\",\n    \"time\": 1234567890\n}\n```\n\n### メッセージイベント (Message Events)\n\n```python\n# プライベートチャットメッセージ\n{\n    \"id\": \"event-id\",\n    \"type\": \"message\",\n    \"onebot12_raw_type\": \"message\",\n    \"detail_type\": \"private\",\n    \"self\": {\"user_id\": \"bot-id\"},\n    \"user_id\": \"user-id\",\n    \"message\": [{\"type\": \"text\", \"data\": {\"text\": \"Hello\"}}],\n    \"alt_message\": \"Hello\",\n    \"time\": 1234567890\n}\n\n# グループチャットメッセージ\n{\n    \"id\": \"event-id\",\n    \"type\": \"message\",\n    \"onebot12_raw_type\": \"message\",\n    \"detail_type\": \"group\",\n    \"self\": {\"user_id\": \"bot-id\"},\n    \"user_id\": \"user-id\",\n    \"group_id\": \"group-id\",\n    \"message\": [{\"type\": \"text\", \"data\": {\"text\": \"Hello group\"}}],\n    \"alt_message\": \"Hello group\",\n    \"time\": 1234567890\n}\n```\n\n### 通知イベント (Notice Events)\n\n```python\n# グループメンバーの追加\n{\n    \"id\": \"event-id\",\n    \"type\": \"notice\",\n    \"onebot12_raw_type\": \"notice\",\n    \"detail_type\": \"group_member_increase\",\n    \"self\": {\"user_id\": \"bot-id\"},\n    \"group_id\": \"group-id\",\n    \"user_id\": \"user-id\",\n    \"operator_id\": \"operator-id\",\n    \"sub_type\": \"approve\",\n    \"time\": 1234567890\n}\n\n# グループメンバーの削減\n{\n    \"id\": \"event-id\",\n    \"type\": \"notice\",\n    \"onebot12_raw_type\": \"notice\",\n    \"detail_type\": \"group_member_decrease\",\n    \"self\": {\"user_id\": \"bot-id\"},\n    \"group_id\": \"group-id\",\n    \"user_id\": \"user-id\",\n    \"operator_id\": \"operator-id\",\n    \"sub_type\": \"leave\",\n    \"time\": 1234567890\n}\n```\n\n### 要求イベント (Request Events)\n\n```python\n# フレンドリクエスト\n{\n    \"id\": \"event-id\",\n    \"type\": \"request\",\n    \"onebot12_raw_type\": \"request\",\n    \"detail_type\": \"friend\",\n    \"self\": {\"user_id\": \"bot-id\"},\n    \"user_id\": \"user-id\",\n    \"comment\": \"申請メッセージ\",\n    \"flag\": \"request-flag\",\n    \"time\": 1234567890\n}\n\n# グループ招待リクエスト\n{\n    \"id\": \"event-id\",\n    \"type\": \"request\",\n    \"onebot12_raw_type\": \"request\",\n    \"detail_type\": \"group\",\n    \"self\": {\"user_id\": \"bot-id\"},\n    \"group_id\": \"group-id\",\n    \"user_id\": \"user-id\",\n    \"comment\": \"申請メッセージ\",\n    \"flag\": \"request-flag\",\n    \"sub_type\": \"invite\",\n    \"time\": 1234567890\n}\n```\n\n### 元イベント (Meta Events)\n\n```python\n# ライフサイクルイベント\n{\n    \"id\": \"event-id\",\n    \"type\": \"meta_event\",\n    \"onebot12_raw_type\": \"meta_event\",\n    \"detail_type\": \"lifecycle\",\n    \"self\": {\"user_id\": \"bot-id\"},\n    \"sub_type\": \"enable\",\n    \"time\": 1234567890\n}\n\n# ハートビートイベント\n{\n    \"id\": \"event-id\",\n    \"type\": \"meta_event\",\n    \"onebot12_raw_type\": \"meta_event\",\n    \"detail_type\": \"heartbeat\",\n    \"self\": {\"user_id\": \"bot-id\"},\n    \"interval\": 5000,\n    \"status\": {\"online\": true},\n    \"time\": 1234567890\n}\n```"
+    },
+    {
+      "hash": "9ebcadf6d3ed5ed4e2843bf137c0ab97",
+      "translation": "## 設定オプション\n\n### アカウント設定\n\n各アカウントは以下のオプションを個別に設定できます：\n\n- `mode`: このアカウントの実行モード (\"server\" または \"client\")\n- `server_path`: ServerモードにおけるWebSocketのパス\n- `server_token`: Serverモードにおける認証トークン（オプション）\n- `client_url`: Clientモードで接続するWebSocketのアドレス\n- `client_token`: Clientモードにおける認証トークン（オプション）\n- `enabled`: アカウントを有効にするかどうか\n- `platform`: プラットフォーム識別子、デフォルトは \"onebot12\"\n- `implementation`: 実装識別子、例: \"go-cqhttp\"（オプション）\n\n### 設定例\n\n```toml\n[OneBotv12_Adapter.accounts.main]\nmode = \"server\"\nserver_path = \"/onebot12-main\"\nserver_token = \"main_token\"\nenabled = true\nplatform = \"onebot12\"\nimplementation = \"go-cqhttp\"\n\n[OneBotv12_Adapter.accounts.backup]\nmode = \"client\"\nclient_url = \"ws://127.0.0.1:3002\"\nclient_token = \"backup_token\"\nenabled = true\nplatform = \"onebot12\"\nimplementation = \"shinonome\"\n\n[OneBotv12_Adapter.accounts.test]\nmode = \"client\"\nclient_url = \"ws://127.0.0.1:3003\"\nenabled = false\n```\n\n### デフォルト設定\n\nアカウントの設定が一切ない場合、アダプターは自動的に以下のようにデフォルトアカウントを作成します：\n\n```toml\n[OneBotv12_Adapter.accounts.default]\nmode = \"server\"\nserver_path = \"/onebot12\"\nenabled = true\nplatform = \"onebot12\"\n```"
+    },
+    {
+      "hash": "f25fc81f88aa05438a22815ed9f13cc6",
+      "translation": "## 送信メソッドの戻り値\n\n### メッセージ送信メソッド\nすべてのメッセージ送信メソッド（例：`.Text()`, `.Image()`, `.Raw_ob12()` など）は、`asyncio.Task` オブジェクトを返します。これにより、送信結果を直接 await で取得できます。\n\n```python\ntask = await onebot12.Send.To(\"group\", 123456).Text(\"Hello\")\n```\n\n### チェーン修飾メソッド\nすべてのチェーン修飾メソッド（例：`.At()`, `.AtAll()`, `.Reply()`）は、`self` を返し、チェーン呼び出しをサポートします。\n\n```python\n# 複数の修飾メソッドを組み合わせて使用\nawait onebot12.Send.To(\"group\", 123456).Reply(\"msg123\").At(789).At(790).Text(\"テキスト\")\n```"
+    },
+    {
+      "hash": "14a9a91b885b0ff3a4045ebce366e1a1",
+      "translation": "## APIレスポンス標準\n\nアダプターは ErisPulse の標準化された返却規格（`standards/api-response.md`）に準拠しています：\n\n```python\n# 成功時のレスポンス\n{\n    \"status\": \"ok\",              # 必須：実行ステータス\n    \"retcode\": 0,                # 必須：返却コード（0は成功を示す）\n    \"data\": {                     # 必須：レスポンスデータ\n        \"message_id\": \"123456\",\n        \"time\": 1632847927.599013\n    },\n    \"message_id\": \"123456\",       # 必須：メッセージID（存在しない場合は空文字列）\n    \"message\": \"\",                # 必須：エラーメッセージ（成功時は空）\n    \"echo\": \"1234\",               # オプション：リクエスト中のechoをそのまま返す\n    \"onebot12_raw\": {...}        # オプション：元のレスポンスデータ\n}\n\n# 失敗時のレスポンス\n{\n    \"status\": \"failed\",           # 必須：実行ステータス\n    \"retcode\": 10003,            # 必須：返却コード（0以外は失敗を示す）\n    \"data\": None,                # 必須：失敗時はnull\n    \"message_id\": \"\",            # 必須：失敗時は空文字列\n    \"message\": \"必要なパラメータが不足しています\",    # 必須：エラーメッセージ\n    \"echo\": \"1234\",              # オプション：リクエスト中のechoをそのまま返す\n    \"onebot12_raw\": {...}        # オプション：元のレスポンスデータ\n}\n```\n\n### エラーコード規格\n\nOneBot12 の標準エラーコードに準拠します：\n\n- **0**: 成功\n- **1xxxx**: 動作要求エラー\n- **2xxxx**: 動作処理エラー\n- **3xxxx**: 動作実行エラー（33001はネットワークタイムアウト）\n\n### 複数アカウントによる送信構文\n\n```python\n# アカウント選択方法\nawait onebot12.Send.Using(\"main\").To(\"group\", 123456).Text(\"メインアカウントのメッセージ\")\nawait onebot12.Send.Using(\"backup\").To(\"group\", 123456).Image(\"http://example.com/image.jpg\")\n\n# API呼び出し方法\nawait onebot12.call_api(\"send_message\", account_id=\"main\", \n    detail_type=\"group\", group_id=123456, \n    content=[{\"type\": \"text\", \"data\": {\"text\": \"Hello\"}}])\n```"
+    },
+    {
+      "hash": "ab72ae00c4d2c4acd22f0845c103dd10",
+      "translation": "## 非同期処理メカニズム\n\nOneBot12アダプターは非同期非ブロッキング設計を採用しています：\n\n1. メッセージ送信はイベント処理ループをブロックしません\n2. 複数の並行送信操作を同時に実行できます\n3. APIの応答を即時に処理できます\n4. WebSocket接続はアクティブな状態を維持します\n5. 複数アカウントの並行処理が可能で、各アカウントは独立して動作します"
+    },
+    {
+      "hash": "14f453a6d8433512ee38832a68454b98",
+      "translation": "## エラー処理\n\nアダプタは包括的なエラー処理メカニズムを提供します：\n\n1. ネットワーク接続異常時の自動再接続（各アカウントごとに個別に再接続が可能、間隔は30秒）\n2. API呼び出しのタイムアウト処理（固定30秒のタイムアウト）\n3. メッセージ送信失敗時の自動リトライ（最大3回のリトライ）\n4. 対応していないメソッドの呼び出しは、親しみやすいテキストのメッセージを返します"
+    },
+    {
+      "hash": "32f725df7ae57d967a2837a82f1905ce",
+      "translation": "## イベント処理の強化\n\n複数アカウントモードでは、すべてのイベントにアカウント情報が自動的に追加されます：\n\n```python\n{\n    \"type\": \"message\",\n    \"onebot12_raw_type\": \"message\",  // 元のイベントタイプ\n    \"detail_type\": \"private\",\n    \"self\": {\"user_id\": \"123456\"},  // イベントを送信したアカウントID（標準フィールド）\n    \"platform\": \"onebot12\",\n    // ... その他のイベントフィールド\n}\n```"
+    },
+    {
+      "hash": "86fbd72fe4f9e8954db5d1b78a5462bd",
+      "translation": "## 管理インターフェース\n\n```python\n# すべてのアカウント情報を取得\naccounts = onebot12.accounts\n\n# アカウントの接続状態を確認\nconnection_status = {\n    account_id: connection is not None and not connection.closed\n    for account_id, connection in onebot12.connections.items()\n}\n\n# アカウントの動的有効化/無効化（アダプタの再起動が必要）\nonebot12.accounts[\"test\"].enabled = False\n```"
+    },
+    {
+      "hash": "551df13034fb0864d09f3749235ed15d",
+      "translation": "## OneBot12標準機能\n\n### メッセージセグメント標準\n\nOneBot12は標準化されたメッセージセグメント形式を使用します：\n\n```python\n# テキストメッセージセグメント\n{\"type\": \"text\", \"data\": {\"text\": \"Hello\"}}\n\n# 画像メッセージセグメント\n{\"type\": \"image\", \"data\": {\"file_id\": \"image-id\"}}\n\n# メンションメッセージセグメント\n{\"type\": \"mention\", \"data\": {\"user_id\": \"user-id\", \"user_name\": \"Username\"}}\n\n# 返信メッセージセグメント\n{\"type\": \"reply\", \"data\": {\"message_id\": \"msg-id\"}}\n```\n\n### API標準\n\nOneBot12標準API規格に従います：\n\n- `send_message`: メッセージ送信\n- `delete_message`: メッセージ撤回\n- `edit_message`: メッセージ編集\n- `get_message`: メッセージ取得\n- `get_self_info`: 自身の情報を取得\n- `get_user_info`: ユーザー情報を取得\n- `get_group_info`: グループ情報を取得"
+    },
+    {
+      "hash": "249f0edde1119752d303d8f7f2bcf0b4",
+      "translation": "## 最佳実践\n\n1. **設定管理**: さまざまな用途のロボットを分けて管理するために、複数アカウントの設定を使用することを推奨します。\n2. **エラー処理**: API呼び出しの返り値ステータスを常にチェックしてください。\n3. **メッセージ送信**: 送信可能なメッセージの種類を使用し、サポートされていないメッセージを送信しないようにしてください。\n4. **接続監視**: 接続状態を定期的にチェックし、サービスの可用性を確保してください。\n5. **パフォーマンス最適化**: バッチ送信時は `Batch` メソッドを使用し、ネットワークのオーバーヘッドを減らしてください。\n6. **メソッド呼び出し**: 標準の大文字キャメルケース命名法（例: `.Text()`）を使用することを推奨しますが、異なるプログラミングスタイルとの互換性を考慮して小文字形式もサポートしています（この形式は旧バージョンとの互換性が失われる可能性があります）。"
+    }
+  ]
 }

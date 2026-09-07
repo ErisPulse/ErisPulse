@@ -1,5 +1,33 @@
 {
+  "version": 2,
   "hash": "de8b493022d6c7deb7f51a01c1ea33b7",
-  "translated_at": "2026-03-26T17:36:43.719300",
-  "target_lang": "zh-TW"
+  "file_hash": "de8b493022d6c7deb7f51a01c1ea33b7",
+  "translated_at": "2026-09-07T12:06:00.281012",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "a9c969d423bd4bf23a986c4115f1e17f",
+      "translation": "# 風格指南\n\n本目錄包含 ErisPulse 項目的程式碼和文件風格規範。"
+    },
+    {
+      "hash": "6774ad62931ef9fcedef2253d670031f",
+      "translation": "## 文件清單\n\n- [註釋風格規範](docstring.md) - 方法註釋和文件字串的格式規範"
+    },
+    {
+      "hash": "5e96064bfe736def571882ab2221b786",
+      "translation": "## 適用對象\n\n這些文件適合以下開發者：\n\n- ErisPulse 核心貢獻者\n- 模組和適配器開發者\n- 需要產生 API 文件的開發者"
+    },
+    {
+      "hash": "d22a1241f0f7871b3c00c197b08801df",
+      "translation": "## 目的\n\n風格指南的目的：\n\n- 確保程式碼註釋的一致性\n- 支援自動 API 文件產生\n- 提高程式碼的可讀性與可維護性"
+    },
+    {
+      "hash": "7d20269d5fa16cabaefcddd10e4cc0e5",
+      "translation": "## 遵循規範的好處\n\n- 統一的代碼風格\n- 完善的 API 文件\n- 更好的團隊協作\n- 自動化文件生成支援"
+    },
+    {
+      "hash": "400b11aacd455871332cf4d7d312162c",
+      "translation": "## 相關文件\n\n- [開發者指南](../developer-guide/) - 開發自訂模組和適配器\n- [技術標準](../standards/) - 框架技術規範"
+    }
+  ]
 }

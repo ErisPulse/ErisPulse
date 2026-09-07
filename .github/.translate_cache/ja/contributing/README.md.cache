@@ -1,5 +1,37 @@
 {
+  "version": 2,
   "hash": "33050f4fc663186789be438774de85f9",
-  "translated_at": "2026-07-30T11:18:25.575620",
-  "target_lang": "ja"
+  "file_hash": "33050f4fc663186789be438774de85f9",
+  "translated_at": "2026-09-07T11:06:41.228475",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "768b3404d3bd556def2933dbccb0843c",
+      "translation": "# ErisPulse に貢献する\n\n> **初めて貢献するあなたへ**\n> オープンソースプロジェクトは、決して一、二名のコア開発者の「大規模な変更」だけで支えられているわけではありません。多くの場合、無数の小さな変更が積み重なっているのです。一つのスペルミス、翻訳の一文、小さなバグの修正など、どれも ErisPulse を少しずつ前進させています。だから、自分の貢献が「十分な量」かどうかを測る必要はありません。PR を提出する意思さえあれば、あなたはすでにこのプロジェクトの一部です。"
+    },
+    {
+      "hash": "8d6445009476ae25e95b673cdc17766d",
+      "translation": "## あなたが参加できる方法\n\n貢献は、コアコードの記述だけではありません。以下のようなことが、ErisPulse をより良くする助けになります。\n\n- **ドキュメントの整備** —— 拼写ミスの修正、分かりにくい記述の整理、自分が経験した問題の追加。最も簡単な方法で、いつでも始められます。\n- **翻訳の補完** —— フレームワークは 5 種類の言語（zh-CN / en / zh-TW / ja / ru）をサポートしており、翻訳が漏れている箇所や不正確な部分があれば、ぜひ補ってください。\n- **バグの修正** —— [Issues](https://github.com/ErisPulse/ErisPulse/issues) で、自分が理解している問題を選び、再現して修正します。\n- **サンプルの作成** —— 自分の使用経験を整理してサンプルコードを作成し、後の人たちの参考にしてもらいましょう。\n- **モジュール / アダプターの開発** —— フレームワークに新しいプラットフォームや機能を接続します。難易度は高めですが、達成感も大きいです。\n\n> どこから始めたらいいか分からない場合は、[Discussions](https://github.com/ErisPulse/ErisPulse/discussions) で声をかけてください。メンテナが適切な方向を提案します。"
+    },
+    {
+      "hash": "1864424502e40258b676e9115b1d7094",
+      "translation": "## 初めての PR の提出\n\nPR を提出したことがない場合は、[初めての貢献実践](first-contribution.md) を先に読んでおくことをお勧めします。この記事では、リポジトリの fork から PR のマージまでの一連の流れが詳しく説明されており、問題が発生した場合は Issue や Discussions に質問してください。"
+    },
+    {
+      "hash": "cd7fe0ceaf64bc686ec9b35837288e51",
+      "translation": "## 開発環境\n\n完全な開発規約はルートディレクトリの [CONTRIBUTING.md](../../../CONTRIBUTING.md) を参照してください。クイックスタート:\n\n```bash\ngit clone -b Develop/v2 https://github.com/ErisPulse/ErisPulse.git\ncd ErisPulse\nuv sync                       # 開発環境の同期\nuv run pytest -m unit         # ユニットテストの実行\nuv run ruff check .           # コードチェック\n```"
+    },
+    {
+      "hash": "5dc8edd496da20b89eacd175e609632b",
+      "translation": "## 提交流程\n\n簡単に言うと：リポジトリを fork する → `Develop/v2` をベースにブランチを作成する → 変更を加えてテストを通過させる → `Develop/v2` に PR を作成する。\n\nいくつか注意点があります：\n\n- PR は **`Develop/v2`** ブランチに送ってください。`main` や `Pre-Release/v2` に直接変更を加えないでください。\n- 提出前に `pytest` / `ruff` / `basedpyright` がすべて通過していることを確認してください（型チェックの `reportAny` / `Unknown*` 警告は「型がまだ徐々に整備中」のため、マージを妨げることはありません）。\n- 機能を変更した場合は `CHANGELOG.md` に記録してください。\n- 公共 API にメソッドを追加した場合は、ドキュメントのコメントを追加してください（[規格はこちら](../styleguide/docstring.md)）。"
+    },
+    {
+      "hash": "5e3f9b5d27eee889824982ff73873da4",
+      "translation": "## 貢献モジュールまたはアダプタ\n\n新しいモジュールまたはアダプタを作成する場合は、まず [Issues](https://github.com/ErisPulse/ErisPulse/issues) で「新アダプタまたはモジュール」テンプレートを使用して、あなたのアイデアを簡単に説明してください。完全に記述する必要はありません。意図を説明するだけで十分です。メンテナが開発の方向性を整理し、開発基準に沿ったアドバイスを提供します。これにより、開発をスムーズに行うことができます。\n\n脚手架ツールを使用すると、迅速にプロジェクトを開始できます：\n\n```bash\nepsdk create    # module または adapter を選択し、完全なプロジェクト構造を生成\n```\n\nその後、[モジュール開発の入門](../developer-guide/modules/getting-started.md)または[アダプタ開発の入門](../developer-guide/adapters/getting-started.md)を参照してください。開発が完了したら、[PyPI とモジュールストアへの公開](../developer-guide/publishing.md)も可能です。\n\n> モジュールとアダプタは通常、独立したリポジトリとして管理されます。メインリポジトリに統合する必要はありません。`examples/` にあるサンプルプロジェクトを参考にしてください。"
+    },
+    {
+      "hash": "8da2a6f0a5e9aaa969fefb7d327ce60e",
+      "translation": "## ヘルプの入手\n\n- [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) —— 問題の報告、要望の提出\n- [GitHub Discussions](https://github.com/ErisPulse/ErisPulse/discussions) —— 議論、質問の提出\n- メール：`erisdev@88.com`"
+    }
+  ]
 }

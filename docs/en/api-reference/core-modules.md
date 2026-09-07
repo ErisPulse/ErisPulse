@@ -1,10 +1,10 @@
 # Core Module API
 
-This document provides a quick reference for the API of ErisPulse core modules, including method signatures and brief descriptions. Click the "Full Documentation" link for each module for detailed usage and examples.
+This document provides a quick reference for the ErisPulse core module API, including method signatures and brief descriptions. Click the "Full Documentation" link for each module for detailed usage and examples.
 
 ## Storage Module
 
-A key-value storage system based on SQLite, supporting general SQL chainable queries.
+A key-value storage system based on SQLite, supporting general SQL chained queries.
 
 ### Basic Operations
 
@@ -25,7 +25,7 @@ values = sdk.storage.get_multi(["key1", "key2"])
 sdk.storage.delete_multi(["key1", "key2"])
 ```
 
-### Transactional Operations
+### Transaction Operations
 
 ```python
 with sdk.storage.transaction():
@@ -40,9 +40,9 @@ sdk.storage.my_key          # Equivalent to sdk.storage.get("my_key")
 sdk.storage.my_key = "val"  # Equivalent to sdk.storage.set("my_key", "val")
 ```
 
-### SQL Chainable Queries
+### SQL Chained Query
 
-The Storage module provides a chainable-style generic SQL query builder, supporting CRUD operations for custom tables.
+The Storage module provides a chained-call style generic SQL query builder, supporting CRUD operations for custom tables.
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -54,11 +54,11 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> For the complete chainable query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), please refer to [SQL Query Builder](../advanced/sql-builder.md).
+> For the complete chained query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), please refer to [SQL Query Builder](../advanced/sql-builder.md).
 
 ### Storage Backend Abstraction
 
-`StorageManager` inherits from the `BaseStorage` abstract base class and supports extending other storage media (Redis, MySQL, etc.).
+`StorageManager` inherits from the `BaseStorage` abstract base class, supporting extension to other storage media (Redis, MySQL, etc.).
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -69,19 +69,19 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 Both the Storage and Config modules provide asynchronous methods (prefixed with `a`), which can be safely called in asynchronous handlers. Synchronous methods are retained and do not require modification of existing code.
 
 ```python
-# Asynchronous Storage
+# Asynchronous storage
 value = await sdk.storage.aget("key")
 await sdk.storage.aset("key", "value")
 await sdk.storage.adelete("key")
 keys = await sdk.storage.aget_all_keys()
 await sdk.storage.aclear()
 
-# Asynchronous Batch Operations
+# Asynchronous batch operations
 values = await sdk.storage.aget_multi(["k1", "k2"])
 await sdk.storage.aset_multi({"k1": "v1", "k2": "v2"})
 await sdk.storage.adelete_multi(["k1", "k2"])
 
-# Asynchronous Configuration
+# Asynchronous configuration
 value = await sdk.config.agetConfig("MyModule.key")
 await sdk.config.asetConfig("MyModule.key", "value")
 await sdk.config.aforce_save()
@@ -96,7 +96,7 @@ Configuration file management in TOML format, supporting key paths separated by 
 
 | Method | Description |
 |--------|-------------|
-| `getConfig(key, default)` | Read configuration, supports dot-separated paths such as `"MyModule.subkey"` |
+| `getConfig(key, default)` | Read configuration, supports dot-separated paths like `"MyModule.subkey"` |
 | `setConfig(key, value, immediate=False)` | Write configuration. If `immediate=True`, save immediately to file |
 | `force_save()` | Force writing configuration from memory to file |
 | `reload()` | Reload configuration from file |
@@ -115,7 +115,7 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` uses delayed writing by default (batched save every 5 seconds). Setting `immediate=True` persists changes immediately to the configuration file. Configuration changes trigger the `config.set` lifecycle event.
+> `setConfig` uses delayed writing by default (batch save every 5 seconds). Setting `immediate=True` will immediately persist to the configuration file. Configuration changes trigger the `config.set` lifecycle event.
 
 ## Logger Module
 
@@ -124,10 +124,10 @@ A modular logging system based on Rich output, supporting child loggers and modu
 ### Basic Usage
 
 ```python
-sdk.logger.debug("Debug information")
+sdk.logger.debug("Debug message")
 sdk.logger.info("Runtime information")
-sdk.logger.warning("Warning information")
-sdk.logger.error("Error information")
+sdk.logger.warning("Warning message")
+sdk.logger.error("Error message")
 sdk.logger.critical("Critical error")
 ```
 
@@ -135,7 +135,7 @@ sdk.logger.critical("Critical error")
 
 ```python
 child_logger = sdk.logger.get_child("MyModule")
-child_logger.info("Submodule log")
+child_logger.info("Child module log")
 
 child_logger.get_child("utils")  # Supports nesting
 ```
@@ -148,13 +148,13 @@ sdk.logger.set_module_level("MyModule", "DEBUG")       # Module level
 
 # Supported levels (from low to high):
 # TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
-# TRACE is the lowest level, outputting detailed internal framework debug information (event dispatching, routing registration, etc.)
+# TRACE is the lowest level, outputs detailed framework internal debug information (event dispatching, route registration, etc.)
 sdk.logger.set_level("TRACE")                          # Enable all logs
 ```
 
 ### Log Subscription (Push Mode)
 
-Allows real-time receipt of structured logs by modules such as Dashboard, supporting level filtering and historical log replay.
+Allows modules like Dashboard to receive structured logs in real time, supports level filtering and historical replay.
 
 > **Explicitly subscribe to lower-level logs**: The `min_level` of a subscriber can be lower than the global log level. In this case, lower-level logs are **only pushed to matching subscribers**, not output to the console, nor written to memory, thus avoiding pollution of the main log stream.
 >
@@ -165,25 +165,25 @@ Allows real-time receipt of structured logs by modules such as Dashboard, suppor
 > ```
 
 ```python
-# Decorator approach
+# Decorator method
 @sdk.logger.handler("my-handler", min_level="INFO")
 def on_log(log_data: dict):
     # log_data = {
     #     "timestamp": "2026-06-29T22:00:00.123456",
     #     "level": "WARNING", "level_num": 30,
     #     "module": "ErisPulse.Core.adapter",
-    #     "message": "Strict mode: ...",
+    #     "message": "Strict mode:...",
     # }
     pass
 
-# Direct call approach
+# Direct call method
 sdk.logger.handler("my-handler", min_level="INFO")(on_log)
 sdk.logger.remove_handler("my-handler")
 ```
 
 | Method | Description |
 |--------|-------------|
-| `handler(id, *, min_level)(func)` | Decorator or direct call. If `id` is empty, it uses the function name. `min_level` can be lower than the global level (lower-level logs are only pushed to matching subscribers, not to console/memory). Registers and automatically replays historical logs |
+| `handler(id, *, min_level)(func)` | Decorator/direct call dual-use. If `id` is empty, it takes the function name. `min_level` can be lower than the global level (lower-level logs are only pushed to subscribers, not to console/memory). Registers and automatically replays historical logs |
 | `remove_handler(id)` | Removes a subscriber |
 
 ### Output Control
@@ -197,7 +197,7 @@ sdk.logger.set_memory_limit(1000)
 
 ## Adapter Module
 
-The adapter manager, responsible for registering, starting, and shutting down adapters for multiple platforms.
+The adapter manager, responsible for managing the registration, startup, and shutdown of adapters for multiple platforms.
 
 ### API Overview
 
@@ -205,9 +205,9 @@ The adapter manager, responsible for registering, starting, and shutting down ad
 |--------|-------------|
 | `get(platform)` | Get the adapter instance |
 | `exists(platform)` | Check if the adapter is registered |
-| `enable(platform)` / `disable(platform)` | Enable/Disable the adapter |
+| `enable(platform)` / `disable(platform)` | Enable/disable the adapter |
 | `is_enabled(platform)` | Check if the adapter is enabled |
-| `startup(platforms)` / `shutdown(platforms)` | Start/Shutdown the adapter |
+| `startup(platforms)` / `shutdown(platforms)` | Start/stop the adapter |
 | `is_running(platform)` | Check if the adapter is running |
 | `list_running()` | List all running adapters |
 | `platforms` | Get a list of all platform names |
@@ -233,26 +233,26 @@ sdk.adapter.is_bot_online("telegram", "123456")
 sdk.adapter.get_status_summary()
 ```
 
-> For the complete adapter management API, see [Adapter System API](adapter-system.md).
+> For the complete adapter management API, please refer to [Adapter System API](adapter-system.md).
 
 ## Module Module
 
-The module manager, responsible for managing plugin registration, loading, and unloading.
+The module manager, responsible for managing the registration, loading, and unloading of plugins.
 
 ### API Overview
 
 | Method | Description |
 |--------|-------------|
-| `get(name)` | Get the module instance or a lazy-loaded proxy (returns a proxy when registered but not loaded) |
-| `exists(name)` | Check if it is registered |
-| `is_loaded(name)` | Check if it is loaded |
-| `is_enabled(name)` | Check if it is enabled |
+| `get(name)` | Get the module instance or a lazy-loaded proxy (returns a proxy if registered but not loaded) |
+| `exists(name)` | Check if the module is registered |
+| `is_loaded(name)` | Check if the module is loaded |
+| `is_enabled(name)` | Check if the module is enabled |
 | `enable(name)` / `disable(name)` | Enable/disable the module |
 | `load(name)` / `unload(name)` | Load/unload the module |
-| `list_registered()` | List registered modules |
-| `list_loaded()` | List loaded modules |
+| `list_registered()` | List all registered modules |
+| `list_loaded()` | List all loaded modules |
 | `get_info(name)` | Get module information |
-| `get_status_summary()` | Get a module status summary |
+| `get_status_summary()` | Get a summary of module status |
 
 ### Attribute Access
 
@@ -264,7 +264,7 @@ module = sdk.ModuleName  # Equivalent shortcut
 
 ## Lifecycle Module
 
-An event-driven lifecycle manager that provides event submission and listening functionality.
+An event-driven lifecycle manager that provides event submission and listener functionality.
 
 ### API Overview
 
@@ -272,11 +272,11 @@ An event-driven lifecycle manager that provides event submission and listening f
 |--------|-------------|
 | `on(event, priority=0)` | Decorator to register event handlers, supports dot notation matching and wildcard `*` |
 | `register(event, handler, priority=0)` | Function-style registration of handlers |
-| `unregister(event, handler=None)` | Remove handlers |
+| `unregister(event, handler=None)` | Remove a handler |
 | `emit(event, data)` | Asynchronously trigger an event |
 | `emit_sync(event, data)` | Synchronously trigger an event |
-| `submit_event(event_type, msg, data, source)` | Submit events in standard format (compatible with older versions) |
-| `start_timer(id)` / `stop_timer(id)` | Performance timers |
+| `submit_event(event_type, msg, data, source)` | Submit an event in standard format (compatible with older versions) |
+| `start_timer(id)` / `stop_timer(id)` | Performance timer |
 
 ### Example
 
@@ -292,29 +292,29 @@ async def handle_any_module_event(event_data):
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
 ```
 
-> For the complete list of standard events and detailed usage, please refer to [Lifecycle Management](../advanced/lifecycle.md).
+> For a complete list of standard events and detailed usage, please refer to [Lifecycle Management](../advanced/lifecycle.md).
 
 ## Router Module
 
-HTTP/WebSocket routing manager, based on FastAPI + Uvicorn, supporting decorator-based routing, middleware, grouping, rate limiting, and CORS.
+HTTP/WebSocket router manager, based on FastAPI + Uvicorn, supports decorator-based routing, middleware, grouping, rate limiting, and CORS.
 
-> For a complete routing API documentation (decorator-based routing, WebSocket, middleware, rate limiting, CORS, security headers, etc.), please refer to [Routing Manager](../advanced/router.md).
+> For the complete routing API documentation (decorator-based routing, WebSocket, middleware, rate limiting, CORS, security headers, etc.), please refer to [Router Manager](../advanced/router.md).
 
 ### Quick Reference
 
 ```python
-# HTTP routing
+# HTTP route
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
     return {"status": "ok"}
 
-# WebSocket routing
+# WebSocket route
 @sdk.router.ws("MyModule", "/ws")
 async def ws_handler(ws: WebSocketConnection):
     async for text in ws.iter_text():
         await ws.send_text(f"Echo: {text}")
 
-# Routing grouping
+# Route grouping
 group = sdk.router.group("MyModule", prefix="/v1")
 @group.get("/users")
 async def list_users(request: HttpRequest):
@@ -325,7 +325,7 @@ async def list_users(request: HttpRequest):
 
 A unified network client that aggregates HTTP requests, WebSocket connections, connection pool management, automatic retries, request statistics, and lifecycle event integration.
 
-> For the complete network client documentation (request methods, response objects, WebSocket client, exception hierarchy, etc.), please refer to [Network Client](../advanced/http-client.md).
+> For complete network client documentation (request methods, response objects, WebSocket client, exception hierarchy, etc.), please refer to [Network Client](../advanced/http-client.md).
 
 ### Quick Reference
 
@@ -346,7 +346,7 @@ async for text in ws.iter_text():
 
 ### dump_state()
 
-Exports a snapshot of the current runtime state of the framework, for debugging and diagnostics.
+Exports a snapshot of the current running state of the framework, used for debugging and diagnostics.
 
 ```python
 import json
@@ -354,15 +354,15 @@ state = sdk.dump_state()
 print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 ```
 
-The returned structure includes the status of the following subsystems:
+The returned structure contains the status of the following subsystems:
 
 | Field | Description |
 |-------|-------------|
 | `sdk` | SDK initialization status, Python version, runtime platform, timestamp |
 | `adapters` | List of registered/started adapters, online status of Bots on each platform |
 | `modules` | List of registered/enabled/disabled/lazy-loaded modules |
-| `events` | Number of event handlers for each event type (message/notice/request/meta/commands) |
-| `router` | Server runtime status, number of HTTP/WebSocket routes |
+| `events` | Number of event handlers for various event types (message/notice/request/meta/commands) |
+| `router` | Server running status, number of HTTP/WebSocket routes |
 
 > Added in 2.5.2
 

@@ -1,5 +1,41 @@
 {
+  "version": 2,
   "hash": "da5661895cd51183aee62df02092e326",
-  "translated_at": "2026-07-29T11:35:29.853695",
-  "target_lang": "zh-TW"
+  "file_hash": "da5661895cd51183aee62df02092e326",
+  "translated_at": "2026-09-07T11:30:12.454344",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "80785c13e86bb626713499d36f921521",
+      "translation": "# 創建第一個機器人\n\n本指南在 [5 分鐘快速入門](../quick-start.md) 的基礎上，帶你編寫第一個命令處理器並理解運行機制。\n\n> 如果你尚未安裝 ErisPulse、初始化項目，請先完成 [快速入門](../quick-start.md) 的「安裝」「初始化項目」「運行項目」三步。"
+    },
+    {
+      "hash": "cbeb879600e1efd43f5c92662070ba8b",
+      "translation": "## 第一步：撰寫第一個命令\n\n開啟 `main.py`，撰寫一個簡單的命令處理器：\n\n```python\nfrom ErisPulse import sdk\nfrom ErisPulse.Core.Event import command\n\n@command(\"hello\", help=\"發送問候訊息\")\nasync def hello_handler(event):\n    \"\"\"處理 hello 命令\"\"\"\n    user_name = event.get_user_nickname() or \"朋友\"\n    await event.reply(f\"你好，{user_name}！我是 ErisPulse 機器人。\")\n\n@command(\"ping\", help=\"測試機器人是否在線\")\nasync def ping_handler(event):\n    \"\"\"處理 ping 命令\"\"\"\n    await event.reply(\"Pong！機器人運行正常。\")\n\nasync def main():\n    \"\"\"主入口函數\"\"\"\n    print(\"正在啟動 ErisPulse...\")\n    \n    # keep_running=True（預設）：框架阻塞維持運行，直到收到關閉訊號（如 Ctrl+C）\n    await sdk.run(keep_running=True)\n\nif __name__ == \"__main__\":\n    import asyncio\n    asyncio.run(main())\n```\n\n### `keep_running` 參數\n\n`sdk.run(keep_running)` 控制框架是否阻塞維持運行：\n\n- **`keep_running=True`（預設）**：`run()` 會一直阻塞，直到收到關閉訊號（如 Ctrl+C），適合純 bot 應用。\n- **`keep_running=False`**：`run()` 初始化完成後立即返回，**框架並不會卸載**——已啟動的適配器/模組仍作為背景任務繼續處理訊息事件，你可以接著執行自己的邏輯，直到事件迴圈結束框架才隨之關閉。例如：\n\n```python\nasync def main():\n    await sdk.run(keep_running=False)   # 初始化後立即返回\n    # 框架已在背景運行，這裡可以繼續做別的事\n    while True:\n        await asyncio.sleep(3600)\n        print(\"每小時檢查一次\")\n```\n\n> 除了 `run()` 的兩種模式，還有 `init()`/`uninit()` 手動控制生命週期、單獨啟停適配器/路由等更精細的方式，請參閱 [啟動流程與手動控制](../advanced/startup.md)。"
+    },
+    {
+      "hash": "b5f19b961033b690e27ee96e9b93838e",
+      "translation": "## 第二步：執行機器人\n\n```bash\n# 普通執行\nepsdk run main.py\n\n# 開發模式（支援熱重載）\nepsdk run main.py --reload\n```"
+    },
+    {
+      "hash": "b0c26d839ca90e388607ff58c89f4d3a",
+      "translation": "## 第三步：測試機器人\n\n在你的聊天平台中發送命令：\n\n```\n/hello\n```\n\n你應該會收到機器人的回覆。"
+    },
+    {
+      "hash": "93486b749569653f6b3a738fb2e77b38",
+      "translation": "## 代碼說明\n\n### 命令裝飾器\n\n```python\n@command(\"hello\", help=\"發送問候訊息\")\n```\n\n- `hello`：命令名稱，使用者透過 `/hello` 呼叫\n- `help`：命令幫助說明，在 `/help` 命令中顯示\n\n### 事件參數\n\n```python\nasync def hello_handler(event):\n```\n\n`event` 參數是一個 Event 物件，包含：\n- 消息內容：`event.get_text()`\n- 發送者資訊：`event.get_user_id()`、`event.get_user_nickname()`\n- 平台資訊：`event.get_platform()`\n- 群組資訊：`event.get_group_id()`\n- 原始資料：`event.get_raw()`\n\n> 完整的 Event 物件方法請參考 [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md)。\n\n### 發送回覆\n\n```python\nawait event.reply(\"回覆內容\")\n```\n\n`event.reply()` 是一個便捷方法，用於向發送者發送訊息。"
+    },
+    {
+      "hash": "3186f44325b3813bd3233a543b3f63f1",
+      "translation": "## 擴展：添加更多功能\n\nErisPulse 提供了豐富的事件處理和數據處理能力：\n\n- **消息監聽**：使用 `@message.on_message()` 監聽各類消息 → [事件處理入門](event-handling.md)\n- **通知監聽**：使用 `@notice.on_friend_add()` 等監聽系統通知 → [事件處理入門](event-handling.md)\n- **數據存儲**：使用 `sdk.storage.get/set` 持久化數據 → [常見任務示例](common-tasks.md)"
+    },
+    {
+      "hash": "917ee86597e81a67b6ce2b4c26c393c6",
+      "translation": "## 常見問題\n\n### 命令沒有響應？\n\n1. 檢查適配器是否正確配置，確認 `config/config.toml` 中適配器的 `status` 為 `true`\n2. 查看終端日誌輸出，確認是否有錯誤資訊（特別是 `ERROR` 級別日誌）\n3. 確認命令前綴是否正確（預設是 `/`），可在設定檔中查看 `[ErisPulse.event.command]` 部分\n4. 確認命令名稱拼寫正確，注意大小寫敏感性設定\n\n### 如何修改命令前綴？\n\n在 `config.toml` 中添加：\n\n```toml\n[ErisPulse.event.command]\nprefix = \"!\"\ncase_sensitive = false\n```\n\n### 如何支援多平台？\n\nErisPulse 使用 OneBot12 標準統一了不同平台的事件格式，`@command` 和 `@message` 註冊的處理器會自動接收所有平台的事件。透過 `event.get_platform()` 可以區分來源平台：\n\n```python\n@command(\"hello\")\nasync def hello_handler(event):\n    platform = event.get_platform()\n    \n    if platform == \"yunhu\":\n        await event.reply(\"你好！來自雲湖\")\n    elif platform == \"telegram\":\n        await event.reply(\"Hello! From Telegram\")\n    else:\n        await event.reply(\"你好！\")\n```\n\n> 更多多平台適配技巧請參考 [常見任務範例](common-tasks.md#多平台適配)。"
+    },
+    {
+      "hash": "b0e41b365f41f1da5f78f4b91615b618",
+      "translation": "## 下一步\n\n- [基礎概念](basic-concepts.md) - 深入了解 ErisPulse 的核心概念\n- [事件處理入門](event-handling.md) - 學習處理各類事件\n- [常見任務範例](common-tasks.md) - 掌握更多實用功能"
+    }
+  ]
 }

@@ -6,20 +6,20 @@ This guide introduces how to handle various events in ErisPulse.
 
 ErisPulse supports the following event types:
 
-| Event Type | Description | Applicable Scenarios |
-|---------|------|---------|
-| Message Event | Any message sent by a user | Chatbot, content filtering |
-| Command Event | Messages starting with a command prefix | Command handling, function entry |
-| Notification Event | System notifications (friend added, group member changes, etc.) | Welcome messages, status notifications |
+| Event Type | Description | Use Cases |
+|------------|-------------|-----------|
+| Message Event | Any message sent by a user | Chatbots, content filtering |
+| Command Event | Messages starting with a command prefix | Command handling, feature entry points |
+| Notification Event | System notifications (friend addition, group member changes, etc.) | Welcome messages, status notifications |
 | Request Event | User requests (friend requests, group invitations) | Automatic request handling |
 | Meta Event | System-level events (connection, heartbeat) | Connection monitoring, status checks |
 
-## Handling Message Events
+## Message Event Handling
 
-> **Note**: It is recommended to use the `Event` type annotation in event handlers for IDE auto-completion and type checking support.
+> **Note**: It is recommended to use the `Event` type annotation in event handlers to get IDE auto-completion and type checking support.
 
 ```python
-from ErisPulse.Core.Event import Event  # Import Event type for annotation
+from ErisPulse.Core.Event import Event  # Import the Event type for annotations
 ```
 
 ### Listening to All Messages
@@ -65,15 +65,15 @@ async def at_handler(event: Event):
 
 ### Wildcard and Regex Matching
 
-The four message decorators (`on_message`, `on_private_message`, `on_group_message`, `on_at_message`) support both `pattern` (glob wildcard) and `regex` (regular expression). Messages that do not match these conditions **will not trigger** the handler:
+The four message decorators (`on_message` / `on_private_message` / `on_group_message` / `on_at_message`) all support `pattern` (glob wildcards) and `regex` (regular expressions). Messages that do not match **will not trigger** the handler:
 
 ```python
-# Glob wildcard: * for any string, ? for single character, [seq] for character set
-@message.on_message(pattern="sign in*")
+# Glob wildcards: * for any string, ? for single character, [seq] for character set
+@message.on_message(pattern="签到*")
 async def signin_handler(event: Event):
-    await event.reply("Sign-in successful")
+    await event.reply("Check-in successful")
 
-# Regex: match amount
+# Regular expression: match amount
 @message.on_message(regex=r"\d+\s*元")
 async def price_handler(event: Event):
     await event.reply(f"Received amount: {event.get_text()}")
@@ -84,9 +84,9 @@ async def combined_handler(event: Event):
     pass
 ```
 
-`wait_reply` also supports these two parameters (see [Wait Reply Function](../developer-guide/modules/event-wrapper.md#wait-reply-function)).
+The `wait_reply` function also supports these two parameters (see [Wait for Reply](docs/en/developer-guide/modules/event-wrapper.md#wait-for-reply-function)).
 
-## Handling Command Events
+## Command Event Handling
 
 ### Basic Commands
 
@@ -112,7 +112,7 @@ async def help_handler(event):
     await event.reply("Help information...")
 ```
 
-Users can invoke it in any of the following ways:
+Users can invoke the command using any of the following:
 - `/help`
 - `/h`
 - `/帮助`
@@ -145,34 +145,34 @@ async def stop_handler(event):
 
 ### Command Permissions and Access Control
 
-Command permissions are divided into three layers, checked from top to bottom (if upper layer denies, lower layers are not checked):
+Command permissions are checked in three layers, from top to bottom (if upper layer denies, lower layers are not checked):
 
 ```python
-# ① Command ACL (user-side configuration): user whitelist/blacklist for commands, denies with "Permission denied" reply
-# ② master=True — only framework owner can execute (framework automatically checks, denies with "Permission denied" reply)
+# ① Command ACL (user-side configuration): User whitelist/blacklist per command, denies with "Permission denied"
+# ② master=True —— Only the framework owner can execute (automatically checked by framework, denies with "Permission denied")
 @command("restart", master=True, help="Restart module")
 async def restart_handler(event):
     await event.reply("Module restarted")
 
-# ③ permission=call function — command's own control logic (returns True to execute)
+# ③ permission=custom function —— Command-specific control logic (returns True to execute)
 def is_admin(event):
     return event.get_user_id() in {"user123", "user456"}
 
 @command("panel", permission=is_admin, help="Admin panel")
 async def panel_handler(event):
-    await event.reply("Welcome to the admin panel")
+    await event.reply("Welcome to admin panel")
 ```
 
-**Command User ACL** (`ErisPulse.event.command.acl`): Users can configure user whitelist/blacklist for any command, command names support exact and glob patterns (e.g., `"roll*"`), denies with "Permission denied" reply:
+**Command User ACL** (`ErisPulse.event.command.acl`): Users can configure user whitelist/blacklist for any command. Command names support exact match and glob patterns (e.g., `"roll*"`), denies with "Permission denied":
 
 ```toml
-# config.toml — allow only 123456 to execute restart; 666 is always denied
+# config.toml —— Only allow user 123456 to execute restart; deny user 666 entirely
 [ErisPulse.event.command.acl.restart]
 allow = ["onebot11:123456"]
 deny = ["onebot11:666"]
 ```
 
-Check order: `deny` hits → deny; `allow` non-empty and not hit → deny; if no ACL configured, follow `event.command.default_allow` (`false` = strict mode, no ACL means deny; `true` means delegate to developer's default `master=True` / `permission`). Runtime API (command name supports glob):
+Check order: `deny` match → deny; `allow` non-empty and no match → deny; if no ACL configured, follow `event.command.default_allow` (false = strict mode, no ACL means deny; true = delegate to developer's default `master=True` / `permission`). Runtime API (command names support glob):
 
 ```python
 from ErisPulse.Core.Event import command
@@ -183,16 +183,16 @@ command.remove_acl("restart")                          # Clear whitelist/blackli
 command.get_acl("restart")                             # Query current list
 ```
 
-> Command handlers are imported from the event package: `from ErisPulse.Core.Event import command`; can also be accessed via SDK event package: `sdk.Event.command` (both are the same singleton). Usually already imported with command decorator in module (`from ErisPulse.Core.Event import command`).
+> Command handlers are imported from event package: `from ErisPulse.Core.Event import command`; can also access via SDK event package: `sdk.Event.command` (both are the same singleton). Usually already imported in modules with command decorator (`from ErisPulse.Core.Event import command`).
 
-Cross-command / cross-user **event-level** access control (whether to receive messages from someone / a group / a bot) goes through **identity scope** (`scope.identity`); **module-level** availability (which modules can be used) goes through **module scope** (`scope.platforms / bots / sessions`). See [Scope](../advanced/scope.md).
+For cross-command / cross-user **event-level** access control (whether a message from a certain person / group / bot is received), use **identity scope** (`scope.identity`); for **module-level** availability (which modules can be used), use **module scope** (`scope.platforms / bots / sessions`). See [Scope](../advanced/scope.md).
 
-> Suggestion: Use `master=True` / `permission` for business logic linkage within commands; use identity scope for user / group access control; use module scope for module availability control.
+> Recommendation: Use `master=True` / `permission` for command internal logic; use identity scope for user / group access control; use module scope for module availability control.
 
 ### Command Priority
 
 ```python
-# Higher priority number means earlier execution
+# Higher priority value executes earlier
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     await event.reply("High priority handler")
@@ -204,26 +204,26 @@ async def low_priority_handler(event):
 
 ### Parallel Event Handling
 
-ErisPulse's event system adopts a **parallel within same priority, serial across different priorities** scheduling model:
+ErisPulse's event system uses a **parallel execution within same priority, serial execution across priorities** scheduling model:
 
 ```
 Event arrives
     ↓
-priority=10 group: [handler C || handler D] parallel → merge results
+priority=10 group: [Handler C || Handler D] parallel → merge result
     ↓ (if not interrupted)
-priority=0 group: [handler A || handler B] parallel → merge results
+priority=0 group: [Handler A || Handler B] parallel → merge result
     ↓
 ...
 ```
 
-- **Parallel within same priority**: Multiple handlers with the same priority execute simultaneously, improving throughput
-- **Serial across priorities**: Groups with different priorities execute in order (higher priority number executes first), ensuring high priority handlers run first
-- **Copy-On-Write**: No copy is created if no modifications are made, ensuring zero overhead
-- **Conflict handling**: When multiple handlers modify the same field within the same priority, the last modification is used, and a warning log is recorded
-- **Interruption mechanism**: After any handler calls `event.done()` (default) or `event.done(claim=False)`, subsequent lower priority groups are skipped. The difference between claiming and blocking is discussed in the following section [Link Control: Claiming and Blocking](#link-control-claiming-and-blocking)
+- **Parallel within same priority**: Multiple handlers with the same priority execute simultaneously, increasing throughput
+- **Serial across priorities**: Different priority groups execute in order (higher value executes first), ensuring high-priority handlers run first
+- **Copy-On-Write**: No copy is created if handlers do not modify, ensuring zero overhead
+- **Conflict handling**: When multiple handlers in the same priority modify the same field, the last modification is used and a warning log is recorded
+- **Interruption mechanism**: After any handler calls `event.done()` (default) or `event.done(claim=False)`, subsequent lower-priority groups are skipped. See [Link Control: Claim and Block](#link-control-claim-and-block) for the difference between claim and block.
 
 ```python
-# Example: Parallel execution of handlers with the same priority
+# Example: Parallel execution of handlers with same priority
 @message.on_message(priority=0)
 async def handler_a(event):
     # Process task A
@@ -234,149 +234,151 @@ async def handler_b(event):
     # Executes in parallel with handler_a
     event['result_b'] = process_b()
 
-# Serial execution across different priorities
+# Serial execution across priorities
 @message.on_message(priority=10)
 async def handler_c(event):
     # Highest priority, executes first
     pass
 ```
 
-> **Concurrency limit**: All matching handlers' tasks are **immediately created**, but a semaphore limits the **maximum number of concurrent executions**, defaulting to **64** (`ErisPulse.framework.handler_max_concurrency`, supports hot updates). Tasks exceeding the limit queue on the semaphore, waiting for previous tasks to complete before entering. This acts as your "pressure relief valve" during event spikes.
+> **Concurrency limit**: All matching handlers' tasks are created immediately, but a semaphore limits the **maximum concurrent execution count**, default is **64** (`ErisPulse.framework.handler_max_concurrency`, supports hot update). Tasks exceeding the limit wait in the semaphore queue until previous tasks complete. This serves as your "pressure relief valve" during event peaks.
 >
-> **Slow logs**: If a single handler takes longer than **1 second**, the framework logs a WARNING (`handler_slow`). The waiting time in `wait_reply` is excluded from the duration, preventing misreporting due to "waiting for reply."
+> **Slow logs**: If a single handler takes more than **1 second**, the framework logs a WARNING (`handler_slow`). Time spent waiting for `wait_reply` is excluded from the timing, so waiting for replies won't trigger a slow log.
 
-## Scope Filtering: Why My Module Didn't Receive Messages
+## Scope Filtering: Why Didn't My Module Receive the Message?
 
-After an event arrives, there are two **silent** filters (neither reply nor error):
+After an event arrives, there are two **silent** filters (neither reply nor error is returned):
 
-1. **Identity scope** (`ErisPulse.scope.identity`): When an event enters the distribution entry, it is judged as to whether to receive it based on user > group > bot > adapter. Events rejected are **entirely discarded**, and no handler (including the command dispatcher) will trigger.
-2. **Module scope** (`ErisPulse.scope`): When an event arrives at a module's handler/command, it is judged based on session > bot > platform as to whether the module is available, and **skips silently** if not passed.
+1. **Identity dimension** (`ErisPulse.scope.identity`): When an event enters the distribution entry point, it is determined whether to accept or reject based on User > Group > Bot > Adapter.
+   Events that are rejected are discarded entirely, and no handler (including the command dispatcher) will be triggered.
+2. **Module dimension** (`ErisPulse.scope`): When an event reaches a module's handler/command, it is determined whether the module is available based on Session > Bot > Platform.
+   If it does not pass, it is silently skipped.
 
 ```toml
-# Example 1: All messages from a group are not propagated
+# Example 1: Do not propagate all messages from a specific group
 [ErisPulse.scope.identity.sessions.onebot11."group_123"]
 deny = true
 
-# Example 2: Block MyModule from a specific bot
+# Example 2: Block MyModule for a specific Bot
 [ErisPulse.scope.bots.onebot11."123456"]
 blocked = ["MyModule"]
 ```
 
-In this case, when a message from this group arrives, the `MyModule`'s command and event handlers **will not be scheduled**. This is not a bug, but a filtering mechanism—when troubleshooting "module not responding," prioritize checking the identity and module binding in the scope.
+At this point, when messages from that group arrive, the `MyModule` command and event handlers **will not be scheduled**. This is not a bug but a filtering mechanism—when troubleshooting "module not responding," prioritize checking the identity and module binding of the scope.
 
-- Filter logs are only visible at **TRACE** level (`core.scope.identity_denied` / `core.scope.denied`), and are not visible at default INFO level
-- Framework-level handlers (such as the command dispatcher `scope_exempt=True`) are not affected by the **module scope**, but are affected by the **identity scope** (the entire event has been discarded)
-- Before command execution, there is a third filter: command user ACL (denies with "Permission denied" reply, see previous section)
-- The fourth filter is **event overwriting** (see next section)
+- Filter logs are only visible at the **TRACE** level (`core.scope.identity_denied` / `core.scope.denied`), and no traces are visible by default at the INFO level.
+- Framework-level handlers (such as the command dispatcher `scope_exempt=True`) are not affected by the **module dimension**, but are affected by the **identity dimension** (the entire event has already been discarded).
+- There is a third filter before command execution: command user ACL (replies "insufficient permissions" when denied, see previous section).
+- The fourth filter is **event overwriting** (see next section).
 
 > For scope configuration, matching syntax, and runtime API, see [Scope](../../advanced/scope.md).
 
-## Event Overwriting: Overwrite Any Event Behavior Without Modifying Module Code
+## Event Overriding: Overwrite Any Event Type Behavior Without Modifying Module Code
 
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-Event handlers register parameters (such as `pattern`, `regex`, `master`, `hidden`, etc.) as **default values** for developers. The unified overwriting system allows users to overwrite any module's behavior by **event type**—OneBot12 standard types (meta / message / notice / request) and ErisPulse extended types (command) each have their own set of overwritable parameters:
+Event handlers declare parameters (such as `pattern`, `regex`, `master`, `hidden`, etc.) during registration as **developer defaults** only. The unified overriding system allows users to overwrite the behavior of any module by **event type**—each OneBot12 standard type (meta / message / notice / request) and ErisPulse extension type (command) has its own set of overridable parameters:
 
-| Event Type | Overwritable Parameters | Purpose |
-|---------|-----------|------|
-| `message` | `pattern` / `regex` / `detail_types` | Text trigger conditions + message subtype whitelist |
-| `notice` | `detail_types` / `pattern` / `regex` | Notice subtype whitelist + text conditions |
-| `request` | `detail_types` / `pattern` / `regex` | Request subtype whitelist + text conditions |
-| `meta` | `detail_types` | Meta-event subtype whitelist (connect / heartbeat, etc.) |
-| `command` | `master` / `hidden` / `aliases` / `prefix` / `help` / `usage` | Command implementation parameters (user priority) |
-| `acl` (command-specific) | `allow` / `deny` | Command user whitelist/blacklist (by command name glob) |
+| Event Type | Overridable Parameters | Function |
+|------------|------------------------|----------|
+| `message` | `pattern` / `regex` / `detail_types` | Text trigger condition + message subtype whitelist |
+| `notice` | `detail_types` / `pattern` / `regex` | Notification subtype whitelist + text condition |
+| `request` | `detail_types` / `pattern` / `regex` | Request subtype whitelist + text condition |
+| `meta` | `detail_types` | Meta-event subtype whitelist (e.g., connect / heartbeat) |
+| `command` | `master` / `hidden` / `aliases` / `prefix` / `help` / `usage` | Command implementation parameters (user preference) |
+| `acl` (command-specific) | `allow` / `deny` | Command user white/blacklist (by command name glob) |
 
 ```toml
-# message: Overwrite text trigger conditions (AND with code conditions)
+# message: Overwrite text trigger condition (AND with code condition)
 [ErisPulse.event.overrides.message.ChatModule]
 pattern = "闲聊*"
 
-# notice: Only respond to specific notice subtypes
+# notice: Only respond to specific notification subtypes
 [ErisPulse.event.overrides.notice.MyModule]
 detail_types = ["group_increase"]
 
-# command: Overwrite implementation parameters (user priority—can tighten or loosen developer defaults)
+# command: Overwrite implementation parameters (user preference—can tighten or loosen developer defaults)
 [ErisPulse.event.overrides.command.MyModule.restart]
 master = true
 hidden = true
 
-# acl: Command user whitelist/blacklist (glob across commands)
+# acl: Command user white/blacklist (cross-command glob)
 [ErisPulse.event.overrides.acl."roll*"]
 allow = ["onebot11:u_vip"]
 
-# ACL fallback (false = strict mode: no ACL means deny)
+# ACL fallback (false = strict mode: deny without ACL)
 acl_default_allow = true
 ```
 
-Runtime API (`from ErisPulse.Core.Event import overrides` or `sdk.Event.overrides`, **type sub-namespace**—symmetrical `set` / `get` / `delete` trio for each type):
+Runtime API (`from ErisPulse.Core.Event import overrides` or `sdk.Event.overrides`, **type-specific sub-namespaces**—each type symmetrically provides `set` / `get` / `delete` three functions):
 
 ```python
 from ErisPulse.Core.Event import overrides
 
 overrides.message.set("ChatModule", pattern="闲聊*")   # message text condition
 overrides.notice.set("MyModule", detail_types=["group_increase"])
-overrides.command.set("MyModule", "restart", master=True)  # command parameter
+overrides.command.set("MyModule", "restart", master=True)  # command parameters
 overrides.acl.set("roll*", deny=["onebot11:u_bad"])    # command user blacklist
 
 overrides.message.get("ChatModule")     # {"pattern": "闲聊*"}
-overrides.message.delete("ChatModule")  # Restore developer defaults
+overrides.message.delete("ChatModule")  # Restore developer default
 ```
 
-- Overwrite conditions and handler code conditions **both take effect** (AND semantics); `command` parameters and developer declarations **deep merge** (overwrite takes precedence)
-- `detail_types`: Events without `detail_type` are allowed (do not mistakenly kill unknown events)
-- `pattern` / `regex`: Events without text (connect / heartbeat, etc.) are not constrained and are allowed directly
-- `command` overwrite key `master` synchronously maps to storage key `must_master`; disabling commands uniformly uses `acl` deny
-- Configuration changes take effect immediately (hot update), format validation warnings (unknown parameters / bad entries are ignored)
+- Overriding conditions and handler code conditions **both take effect** (AND semantics); `command` parameters and developer declarations are **deep merged** (overriding takes precedence)
+- `detail_types`: Events without `detail_type` are allowed (prevents accidental blocking of unknown events)
+- `pattern` / `regex`: Events without text (e.g., connect / heartbeat) are not constrained and are directly allowed
+- The `command` override key `master` is synchronized to storage key `must_master`; disabled commands are uniformly denied via `acl`
+- Configuration changes take effect immediately (hot reload), with format validation warnings (unknown parameters / invalid entries are ignored)
 
 ## Link Control: Claiming and Blocking
 
-> [!NOTE]
-> The `event.done()` / `event.mark_processed()` `claim=` / `stop=` parameters require ErisPulse **2.7.1+**.
+> [!NOTE]  
+> The `claim=` / `stop=` parameters for `event.done()` / `event.mark_processed()` require ErisPulse **2.7.1+**.
 
-ErisPulse decouples the two orthogonal semantics of "claiming" and "blocking" through `event.done()`, making it easier to overlay observation layers (logging, auditing, permissions) around command processing.
+ErisPulse decouples the two orthogonal semantics of "claiming" and "blocking", controlling them uniformly through `event.done()`, which facilitates the addition of observation layers such as logging, auditing, and permission around command handling.
 
 **Precise definitions of the two concepts:**
 
-- **Claiming (claim)**: Marks the event as processed by this handler (writes to `_processed`). The command dispatcher skips already claimed events to **avoid duplicate processing** of the same message by multiple command handlers. Typical scenario: Claim after a command matches, preventing the command dispatcher from intervening again.
-- **Blocking (stop)**: Prevents the event from propagating to **lower priority** handlers (writes to `_propagation_stopped`). Lower priority handlers (such as `on_message`) will no longer see the event. Typical scenario: High priority handlers have fully processed the event, and lower priority handlers should not execute again.
+- **Claiming (claim):** Mark the event as processed by this handler (write to `_processed`). When the command dispatcher sees a claimed event, it will **skip de-duplication**—preventing the same message from being repeatedly processed by multiple command handlers. Typical scenario: Claim after a command match is successful, preventing the command dispatcher from intervening again.
+- **Blocking (stop):** Prevent the event from propagating to **lower-priority** handlers (write to `_propagation_stopped`). Lower-priority handlers (e.g., `on_message`) will no longer see the event. Typical scenario: The high-priority handler has fully processed the event, and lower-priority handlers should not execute again.
 
 | `event.done(...)` | Claim | Block | Scenario |
-|-------------------|------|------|------|
-| `event.done()` | ✔ | ✔ | Standard practice for command / handler completion |
-| `event.done(stop=False)` | ✔ | ✘ | Claim only: lower priority observers (logging / statistics) still see it |
-| `event.done(claim=False)` | ✘ | ✔ | Block only (e.g., firewall / rate limiting), but no command deduplication |
+|-------------------|-------|-------|----------|
+| `event.done()` | ✔ | ✔ | Standard practice after command / handler completes processing |
+| `event.done(stop=False)` | ✔ | ✘ | Only claim: lower-priority observers (logging / statistics) still see the event |
+| `event.done(claim=False)` | ✘ | ✔ | Only block (e.g., firewall / rate-limiting), but do not perform command de-duplication |
 
-`event.done(claim=, stop=)` is an alias for `event.mark_processed(claim=, stop=)`, with identical parameters and behavior.
+`event.done(claim=, stop=)` is an alias for `event.mark_processed(claim=, stop=)`, and both have identical parameters and behavior.
 
 ```python
 @command("help")
 async def help_cmd(event):
-    event.done()            # Claim + Block (standard practice for command completion)
+    event.done()            # Claim + Block (standard practice after command processing completes)
 
 @message.on_message(priority=50)
 async def observer(event):
-    event.done(stop=False)  # Claim only: lower priority still executes (logging / statistics)
+    event.done(stop=False)  # Only claim: lower-priority handlers still execute (logging / statistics)
 
 @message.on_message(priority=100)
 async def firewall(event):
     if denied(event):
-        event.done(claim=False)  # Block only: lower priority does not execute, but no deduplication
+        event.done(claim=False)  # Only block: lower-priority handlers do not execute, but no de-duplication is performed
 ```
 
-### Command and Reply Block Configuration
+### block Configuration for Commands and Replies
 
-After a command matches or `wait_reply` matches a reply, blocking propagation is enabled by default (backward compatibility). Configuration can be used to allow lower priority handlers (logging / auditing / permissions) to observe these messages:
+By default, command matching success or `wait_reply` matching a reply will block propagation (for backward compatibility). You can configure this to allow lower-priority handlers (logging / auditing / permission) to observe these messages:
 
 ```toml
 [ErisPulse.event.command]
-block = false   # Command messages continue to flow to lower priority handlers
+block = false   # Command messages continue to flow to lower-priority handlers
 
 [ErisPulse.event.wait_reply]
-block = false   # Replies consumed by wait_reply continue to flow to lower priority handlers
+block = false   # Replies consumed by wait_reply continue to flow to lower-priority handlers
 ```
 
-## Handling Notification Events
+## Notification Event Handling
 
 ### Friend Added
 
@@ -386,33 +388,33 @@ from ErisPulse.Core.Event import notice
 @notice.on_friend_add()
 async def friend_add_handler(event):
     user_id = event.get_user_id()
-    nickname = event.get_user_nickname() or "New friend"
+    nickname = event.get_user_nickname() or "New Friend"
     await event.reply(f"Welcome to add me as a friend, {nickname}!")
 ```
 
-### Group Member Added
+### Group Member Increased
 
 ```python
 @notice.on_group_increase()
 async def member_increase_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    await event.reply(f"Welcome new member {user_id} to group {group_id}")
+    await event.reply(f"Welcome new member {user_id} to join group {group_id}")
 ```
 
-### Group Member Removed
+### Group Member Decreased
 
 ```python
 @notice.on_group_decrease()
 async def member_decrease_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    await event.reply(f"Member {user_id} left group {group_id}")
+    await event.reply(f"Member {user_id} has left group {group_id}")
 ```
 
-## Handling Request Events
+## Request Event Handling
 
-### Friend Request
+### Friend Requests
 
 ```python
 from ErisPulse.Core.Event import request
@@ -424,11 +426,11 @@ async def friend_request_handler(event):
     
     sdk.logger.info(f"Received friend request: {user_id}, comment: {comment}")
     
-    # Handle the request via adapter API
-    # Specific implementation refer to adapter documentation
+    # You can handle the request through the adapter API
+    # Refer to each adapter's documentation for specific implementation
 ```
 
-### Group Invitation Request
+### Group Invitation Requests
 
 ```python
 @request.on_group_request()
@@ -436,10 +438,10 @@ async def group_request_handler(event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
     
-    await event.reply(f"Received invite to group {group_id} from {user_id}")
+    await event.reply(f"Received group invitation: {group_id}, from {user_id}")
 ```
 
-## Handling Meta Events
+## Meta Event Handling
 
 ### Connection Events
 
@@ -468,37 +470,37 @@ async def heartbeat_handler(event):
 
 ### Bot Status Query
 
-After the adapter sends a meta event, the framework automatically tracks the Bot status, and you can query it anytime:
+After the adapter sends a meta event, the framework automatically tracks the Bot status, and you can query it at any time:
 
 ```python
 from ErisPulse import sdk
 
-# Check if a Bot is online
+# Check if a specific Bot is online
 if sdk.adapter.is_bot_online("telegram", "123456"):
     telegram = sdk.adapter.get("telegram")
     await telegram.Send.To("user", "123456").Text("Bot is online")
 
-# List all online Bots
+# List all currently online Bots
 bots = sdk.adapter.list_bots()
 for platform, bot_list in bots.items():
     for bot_id, info in bot_list.items():
         print(f"{platform}/{bot_id}: {info['status']}")
 
-# Get complete status summary
+# Get a complete status summary
 summary = sdk.adapter.get_status_summary()
 ```
 
-## Interactive Handling
+## Interactive Processing
 
-### Using reply method to send replies
+### Using the reply method to send responses
 
-The `event.reply()` method supports various modifier parameters, making it convenient to send messages with @, reply, etc.:
+The `event.reply()` method supports various modifiers, making it convenient to send messages with features like @ mentions and replies:
 
 ```python
 # Simple reply
 await event.reply("Hello")
 
-# Send messages of different types
+# Send different types of messages
 await event.reply("http://example.com/image.jpg", method="Image")  # Image
 await event.reply("http://example.com/voice.mp3", method="Voice")  # Voice
 
@@ -506,7 +508,7 @@ await event.reply("http://example.com/voice.mp3", method="Voice")  # Voice
 await event.reply("Hello", at_users=["user123"])
 
 # @ multiple users
-await event.reply("Hello", at_users=["user1", "user2", "user3"])
+await event.reply("Hello everyone", at_users=["user1", "user2", "user3"])
 
 # Reply to a message
 await event.reply("Reply content", reply_to="msg_id")
@@ -518,14 +520,14 @@ await event.reply("Announcement", at_all=True)
 await event.reply("Content", at_users=["user1"], reply_to="msg_id")
 ```
 
-### Waiting for User Reply
+### Waiting for user replies
 
 ```python
 @command("ask", help="Ask user")
 async def ask_handler(event):
     await event.reply("Please enter your name:")
     
-    # Wait for user reply, timeout 30 seconds
+    # Wait for user reply, timeout after 30 seconds
     reply = await event.wait_reply(timeout=30)
     
     if reply:
@@ -535,10 +537,10 @@ async def ask_handler(event):
         await event.reply("Timeout, please try again.")
 ```
 
-### Wait Reply with Validation
+### Waiting for replies with validation
 
 ```python
-@command("age", help="Ask age")
+@command("age", help="Ask for age")
 async def age_handler(event):
     def validate_age(event_data):
         """Validate if age is valid"""
@@ -562,7 +564,7 @@ async def age_handler(event):
         await event.reply("Invalid input or timeout")
 ```
 
-### Wait Reply with Callback
+### Waiting for replies with callback
 
 ```python
 @command("confirm", help="Confirm operation")
@@ -570,7 +572,7 @@ async def confirm_handler(event):
     async def handle_confirmation(reply_event):
         text = reply_event.get_text().lower()
         
-        if text in ["yes", "是", "y", "确认"]:
+        if text in ["yes", "y", "是"]:
             await event.reply("Operation confirmed!")
         else:
             await event.reply("Operation canceled.")
@@ -583,26 +585,26 @@ async def confirm_handler(event):
     )
 ```
 
-### Confirmation Dialogue (confirm)
+### Confirmation dialog (confirm)
 
-Wait for user confirmation or denial, automatically recognize built-in Chinese and English confirmation words:
+Wait for user confirmation or denial, automatically recognizing built-in Chinese and English confirmation words:
 
 ```python
 @command("confirm", help="Confirm operation")
 async def confirm_handler(event):
-    if await event.confirm("Are you sure to execute this operation?"):
+    if await event.confirm("Are you sure you want to execute this operation?"):
         await event.reply("Confirmed, executing...")
     else:
         await event.reply("Cancelled")
 
 # Custom confirmation words
-if await event.confirm("Continue?", yes_words={"go", "继续"}, no_words={"stop", "停止"}):
+if await event.confirm("Continue?", yes_words={"go", "continue"}, no_words={"stop", "stop"}):
     pass
 ```
 
-### Choice Menu (choose)
+### Selection menu (choose)
 
-User can reply with option number or option text:
+Users can reply with option numbers or option text:
 
 ```python
 @command("choose", help="Choose")
@@ -616,10 +618,10 @@ async def choose_handler(event):
         colors = ["Red", "Green", "Blue"]
         await event.reply(f"You selected: {colors[choice]}")
     else:
-        await event.reply("Timed out, no choice made")
+        await event.reply("Timeout, no selection made")
 ```
 
-**Merge mode**: `merge_prompt=True` will merge options into the prompt message, sending them in a single message using the specified `method`:
+**Merge mode**: When `merge_prompt=True`, options are merged into the prompt message and sent as a single message using the specified `method`:
 
 ```python
 # Send merged prompt + options using Markdown
@@ -631,9 +633,12 @@ choice = await event.choose(
 )
 ```
 
-> The `{options}` placeholder controls where options are inserted; if not written, they are appended to the end of the prompt. You can customize the placeholder using the `placeholder` parameter (e.g., `placeholder="[choices]"`). `options_format="auto"` (default) automatically selects the style based on the method: unordered list for Markdown, ordered list for Html, plain text list for others. Text-based methods (Text/Markdown/Html, etc.) default to merging options at the end; non-text methods (Image, etc.) default to splitting into two messages.
+> The `{options}` placeholder controls where options are inserted; if not specified, they are appended to the end of the prompt.
+> You can customize the placeholder using the `placeholder` parameter (e.g., `placeholder="[choices]"`).
+> `options_format="auto"` (default) automatically chooses the style based on the method: unordered list for Markdown, ordered list for Html, plain text list otherwise.
+> Text-based methods (Text/Markdown/Html, etc.) default to merging options at the end; non-text methods (Image, etc.) default to splitting into two messages.
 
-### Form Collection (collect)
+### Collect form (collect)
 
 Collect user input in multiple steps:
 
@@ -650,17 +655,17 @@ async def register_handler(event):
     if data:
         await event.reply(f"Registration successful!\nName: {data['name']}\nAge: {data['age']}\nEmail: {data['email']}")
     else:
-        await event.reply("Registration timed out or invalid input")
+        await event.reply("Registration timeout or invalid input")
 ```
 
-### Wait for Any Event (wait_for)
+### Wait for any event (wait_for)
 
-Wait for any event that meets the condition, not limited to the same user:
+Wait for any event that meets a condition, not limited to the same user:
 
 ```python
 @command("wait_member", help="Wait for new member")
 async def wait_member_handler(event):
-    await event.reply("Waiting for new group member...")
+    await event.reply("Waiting for new member to join...")
     
     evt = await event.wait_for(
         event_type="notice",
@@ -671,12 +676,12 @@ async def wait_member_handler(event):
     if evt:
         await event.reply(f"Welcome new member: {evt.get_user_id()}")
     else:
-        await event.reply("Timeout waiting")
+        await event.reply("Timeout")
 ```
 
-### Multi-turn Dialogue (conversation)
+### Multi-turn conversation (conversation)
 
-Create an interactive multi-turn dialogue context:
+Create an interactive multi-turn conversation context:
 
 ```python
 @command("survey", help="Survey")
@@ -689,7 +694,7 @@ async def survey_handler(event):
         reply = await conv.wait()
         
         if reply is None:
-            await conv.say("Conversation timed out, goodbye!")
+            await conv.say("Conversation timeout, goodbye!")
             break
         
         text = reply.get_text()
@@ -698,15 +703,15 @@ async def survey_handler(event):
             await conv.say("Goodbye!")
             break
         
-        await conv.say(f"You said: {text}, continue entering or reply 'Exit' to end")
+        await conv.say(f"You said: {text}, continue typing or reply 'Exit' to end")
 ```
 
-### Built-in Confirmation Words
+### Built-in confirmation words
 
-ErisPulse includes built-in sets of Chinese and English confirmation words:
+ErisPulse includes built-in Chinese and English confirmation word sets:
 
-- **Confirmation words** (`CONFIRM_YES_WORDS`): 是, yes, y, confirm, sure, ok, right, agree, fine,没问题, ...
-- **Denial words** (`CONFIRM_NO_WORDS`): 否, no, n, cancel, don't, not, no way, false, wrong, refuse, 不可以, ...
+- **Confirmation words** (`CONFIRM_YES_WORDS`): Yes, yes, y, confirm, sure, ok, good, good, ok, true, right, hmm, okay, agree, no problem...
+- **Denial words** (`CONFIRM_NO_WORDS`): No, no, n, cancel, no, don't, no, cancel, false, wrong, refuse, not allowed...
 
 ## Event Data Access
 
@@ -756,9 +761,9 @@ async def info_handler(event):
         cmd_raw = event.get_command_raw()
 ```
 
-### Platform-specific Methods
+### Platform-Specific Extension Methods
 
-In addition to built-in methods, each platform adapter registers platform-specific methods, making it convenient to access platform-specific data.
+In addition to built-in methods, each platform adapter also registers platform-specific methods, allowing you to access platform-specific data.
 
 ```python
 from ErisPulse.Core.Event import message
@@ -767,14 +772,14 @@ from ErisPulse.Core.Event import message
 async def handle_message(event):
     platform = event.get_platform()
 
-    # Call platform-specific methods based on the platform
+    # Call platform-specific methods based on platform
     if platform == "telegram":
         chat_type = event.get_chat_type()      # Telegram-specific method
     elif platform == "email":
         subject = event.get_subject()           # Email-specific method
 ```
 
-If unsure whether a platform has registered a particular method, you can query which methods a platform has registered:
+If you are unsure whether a platform has registered a specific method, you can query which methods are registered for a particular platform:
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
@@ -783,7 +788,7 @@ methods = get_platform_event_methods("telegram")
 # ["get_chat_type", "is_bot_message", ...]
 ```
 
-> Platform-specific registered methods can be found in the respective [platform documentation](../platform-guide/).
+> For platform-specific registered methods, please refer to the corresponding [platform documentation](../platform-guide/).
 
 ## Event Handling Best Practices
 
@@ -815,10 +820,10 @@ async def message_handler(event):
     
     sdk.logger.info(f"Processing message: {user_id} - {text}")
     
-    # Use module-specific logger
+    # Use a logger specific to the module
     from ErisPulse import sdk
     logger = sdk.logger.get_child("MyHandler")
-    logger.debug(f"Debug information")
+    logger.debug(f"Verbose debug information")
 ```
 
 ### 3. Conditional Handling
@@ -826,12 +831,12 @@ async def message_handler(event):
 ```python
 @message.on_message(priority=0)
 async def conditional_handler(event):
-    """Conditional handling - check conditions within the handler"""
-    # Only handle messages from specific users
+    """Conditional handling - perform checks inside the handler"""
+    # Only process messages from specific users
     if event.get_user_id() in ["bot1", "bot2"]:
         return
     
-    # Only handle messages containing specific keywords
+    # Only process messages containing specific keywords
     if "keyword" not in event.get_text():
         return
     
@@ -840,7 +845,7 @@ async def conditional_handler(event):
 
 ## Next Steps
 
-- [Common Tasks Examples](common-tasks.md) - Learn the implementation of common features (including advanced message sending: retry/timeout/batch)
-- [Platform Features Guide](../platform-guide/README.md) - Complete explanation of Send DSL chaining, sending rules, and batch construction
-- [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md) - Deep dive into Event objects
+- [Common Task Examples](common-tasks.md) - Learn how to implement common features (including advanced message sending: retries/timeout/batching)
+- [Platform Features Guide](../platform-guide/README.md) - Complete documentation on Send DSL chaining, sending rules, and batch building
+- [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md) - Deep dive into the Event object
 - [User Guide](../user-guide/) - Learn about configuration and module management

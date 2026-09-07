@@ -1,5 +1,29 @@
 {
+  "version": 2,
   "hash": "c4f66de529a71e0f8865fb5080169426",
-  "translated_at": "2026-06-04T05:53:29.855406",
-  "target_lang": "ja"
+  "file_hash": "c4f66de529a71e0f8865fb5080169426",
+  "translated_at": "2026-09-07T12:20:08.508601",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "debdf341458987b7595d3321894574ac",
+      "translation": "# ErisPulse コメントスタイル規格\n\nEPコアメソッドを作成する際には、メソッドのコメントを必ず追加する必要があります。コメントの形式は以下の通りです："
+    },
+    {
+      "hash": "43651ed156f3943d1220e4e6b6ce3f36",
+      "translation": "## モジュールレベルのドキュメントコメント\n\n各モジュールファイルの先頭には、モジュールのドキュメントを含める必要があります。\n```python\n\"\"\"\n[モジュール名]\n[モジュールの機能説明]\n\n{!--< tips >!--}\n重要な使用方法や注意事項\n{!--< /tips >!--}\n\"\"\"\n```"
+    },
+    {
+      "hash": "95ccbf398597c646d67e46a19e8170c0",
+      "translation": "## メソッドのコメント\n\n### 基本的な形式\n```python\ndef func(param1: type1, param2: type2) -> return_type:\n    \"\"\"\n    [機能の説明]\n    \n    :param param1: [型1] [パラメータの説明1]\n    :param param2: [型2] [パラメータの説明2]\n    :return: [戻り値の型] [戻り値の説明]\n    \"\"\"\n    pass\n```\n\n### 完全な形式（複雑なメソッドに適用）\n```python\ndef complex_func(param1: type1, param2: type2 = None) -> Tuple[type1, type2]:\n    \"\"\"\n    [機能の詳細な説明]\n    [複数行の説明を含むことも可能]\n    \n    :param param1: [型1] [パラメータの説明1]\n    :param param2: [型2] [オプションパラメータの説明2] (デフォルト: None)\n    \n    :return: \n        type1: [戻り値1の説明]\n        type2: [戻り値2の説明]\n    \n    :raises ErrorType: [エラーの説明]\n    \"\"\"\n    pass\n```"
+    },
+    {
+      "hash": "03f8c69795c86254b95aaff09f21b278",
+      "translation": "## 特殊タグ（APIドキュメント生成用）\n\nメソッドのコメントに以下の内容が含まれている場合、APIドキュメントのビルド時に対応する効果が発生します：\n\n| タグ形式 | 効果 | 例 |\n|---------|------|------|\n| `{!--< internal-use >!--}` | 内部使用用としてマークし、ドキュメントを生成しない | `{!--< internal-use >!--}` |\n| `{!--< ignore >!--}` | このメソッドを無視し、ドキュメントを生成しない | `{!--< ignore >!--}` |\n| `{!--< deprecated >!--}` | 非推奨メソッドとしてマークする | `{!--< deprecated >!--} 代わりにnew_func()を使用してください` |\n| `{!--< experimental >!--}` | 実験的機能としてマークする | `{!--< experimental >!--} 不安定な可能性があります` |\n| `{!--< tips >!--}...{!--< /tips >!--}` | 複数行のヒント内容 | `{!--< tips >!--}\\n重要な注意事項\\n{!--< /tips >!--}` |\n| `{!--< tips >!--}` | 単一行のヒント内容 | `{!--< tips >!--} 注意: このメソッドは初期化が必要です` |"
+    },
+    {
+      "hash": "54b887c1293314d4bc192b09e6dd23be",
+      "translation": "## 最適なアドバイス\n\n1. **型の注釈**: Pythonの型注釈構文を使用します。\n   ```python\n   def func(param: int) -> str:\n   ```\n\n2. **パラメータの説明**: オプションパラメータにはデフォルト値を明記します。\n   ```python\n   :param timeout: [int] タイムアウト時間（秒）（デフォルト: 30）\n   ```\n\n3. **戻り値**: 複数の戻り値は`Tuple`を使用するか、明確に説明します。\n   ```python\n   :return: \n       str: 状態情報\n       int: 状態コード\n   ```\n\n4. **例外の説明**: `:raises`を使用して、発生する可能性のある例外を記述します。\n   ```python\n   :raises ValueError: パラメータが無効な場合に発生します。\n   ```\n\n5. **内部メソッド**: 非公開APIには`{!--< internal-use >!--}`タグを追加します。\n\n6. **非推奨メソッド**: 非推奨メソッドには非推奨のラベルを付与し、代替手段を提供します。\n   ```python\n   {!--< deprecated >!--} new_method()を使用してください | 2025-07-09\n   ```"
+    }
+  ]
 }

@@ -57,31 +57,31 @@ class Main(BaseModule):
     
     @staticmethod
     def get_load_strategy():
-        """Returns the module load strategy."""
+        """Returns the module loading strategy"""
         from ErisPulse.loaders import ModuleLoadStrategy
         return ModuleLoadStrategy(
             lazy_load=True,
             priority=0,
-            depends=[],  # Optional: list of other modules this module depends on
-            # Optional: Event-driven lazy activation - declare triggers, the module will be loaded automatically when the first matching event/command arrives
+            depends=[],  # Optional: List of other modules this module depends on
+            # Optional: Event-driven lazy activation — declare triggers, module loads automatically when the first matching event/command arrives
             # activate_on=[{"command": {"name": "hello", "help": "Send a greeting"}}],
         )
     
     async def on_load(self, event):
-        """Called when the module is loaded."""
+        """Called when the module is loaded"""
         @command("hello", help="Send a greeting")
         async def hello_command(event):
             name = event.get_user_nickname() or "friend"
             await event.reply(f"Hello, {name}!")
         
         self.logger.info("Module loaded")
-
+    
     async def on_unload(self, event):
-        """Called when the module is unloaded."""
+        """Called when the module is unloaded"""
         self.logger.info("Module unloaded")
 ```
 
-> **Configuration Reading**: The basic example above does not use configuration. To read configuration, it is recommended to declare a nested `ConfigClass` and access it via `self.cfg` for real-time reading (see [Module Core Concepts](core-concepts.md#recommended-declarative-configuration)). The old method of manually calling `_load_config()` has been deprecated.
+> **Configuration Reading**: The basic example above does not use configuration. When configuration reading is needed, it is recommended to declare a nested `ConfigClass` and read it in real time via `self.cfg` (see [Core Module Concepts](core-concepts.md#declarative-configuration-recommended)). The old method of manually calling `_load_config()` has been deprecated.
 
 ## Testing Module
 
@@ -111,21 +111,21 @@ All modules must inherit from `BaseModule`, providing the following methods:
 
 | Method | Description | Required |
 |--------|-------------|----------|
-| `__init__(self, sdk)` | Constructor (receives `sdk` instance from framework) | No |
-| `get_load_strategy()` | Returns the module loading strategy | No |
+| `__init__(self, sdk)` | Constructor (framework passes `sdk` instance) | No |
+| `get_load_strategy()` | Returns the load strategy | No |
 | `get_meta()` | Returns module metadata (optional) | No |
 | `on_load(self, event)` | Called when the module is loaded | Yes |
 | `on_unload(self, event)` | Called when the module is unloaded | Yes |
 
-### Module Metadata
+### Module Meta Information
 
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-Declare module metadata (what the module does, its category, etc.) using `get_meta()`.  
-Module metadata is **generic introduction data** for help modules, dashboard module lists, module stores, and other interfaces/ecosystem modules.
+Declare module metadata (what the module does, its category, etc.) via `get_meta()`.  
+Metadata is the **general introduction data** of a module, consumed by help modules, dashboard module lists, module stores, and other interfaces/ecosystem modules.
 
-Similar to `get_load_strategy()` returning `ModuleLoadStrategy`, it is **recommended to return an instance of the `ModuleMeta` configuration class** (with type hints, IDE completion), but direct `dict` return is also supported:
+Similar to `get_load_strategy()` returning `ModuleLoadStrategy`, **it is recommended to return an instance of the `ModuleMeta` configuration class** (with type hints and IDE completion), but direct return of a dict is also supported:
 
 ```python
 class MyModule(BaseModule):
@@ -136,12 +136,12 @@ class MyModule(BaseModule):
             description="Query city weather",  # Module description
             version="1.0.0",
             author="ErisDev",
-            group="Tools",               # Functional group
+            group="Tools",               # Function group
             tags=["Weather", "Query"],
         )
 ```
 
-Alternative (dict) syntax:
+Alternative dict-based approach:
 
 ```python
 class MyModule(BaseModule):
@@ -157,14 +157,14 @@ class MyModule(BaseModule):
         }
 ```
 
-- `module.get_meta("MyModule")` retrieves the parsed metadata (class declaration > registered info, automatically completes the module's command name).
-- `module.get_commands_overview()` aggregates "module metadata + its registered commands (aliases/groups/help)" into a command overview organized by module.
-- The module owning a command can be retrieved via `cmd_info["owner"]` (automatically injected by the context system during registration).
+- `module.get_meta("MyModule")` retrieves the parsed metadata (class declaration > registered info, automatically completing the module's command name).
+- `module.get_commands_overview()` aggregates "module meta + its registered commands (aliases/groups/help)" into a module-organized command overview.
+- The module owner of a command can be obtained via `cmd_info["owner"]` (automatically injected by the context system during registration).
 
 #### i18n Support for Meta Fields
 
-Metadata field values can be plain strings or i18n dictionaries `{"i18n": "key.path", "default": "fallback text"}` (consistent with the `description` configuration convention).  
-Translation keys are declared and registered via `I18nClass`, and `module.get_meta()` automatically resolves them to the current language text:
+The values of meta information fields can be plain strings or i18n dictionaries `{"i18n": "key.path", "default": "fallback text"}` (consistent with the `description` configuration convention).  
+Translation keys are declared and registered via `I18nClass`. When reading with `module.get_meta()`, the values are automatically resolved into the current language text:
 
 ```python
 class MyModule(BaseModule):
@@ -185,7 +185,7 @@ class MyModule(BaseModule):
 
 ### SDK Object
 
-Access core functionality through the `sdk` object:
+Access core features through the `sdk` object:
 
 ```python
 from ErisPulse import sdk
@@ -202,4 +202,4 @@ sdk.lifecycle  # Lifecycle system
 
 - [Core Concepts of Modules](core-concepts.md) - Dive deeper into the module architecture
 - [Event Wrapper Class Details](event-wrapper.md) - Learn about the Event object
-- [Module Best Practices](best-practices.md) - Develop high-quality modules
+- [Best Practices for Modules](best-practices.md) - Develop high-quality modules

@@ -1,5 +1,37 @@
 {
+  "version": 2,
   "hash": "af3d7fde0143996c1708eb99bdc3badf",
-  "translated_at": "2026-06-30T06:06:44.170547",
-  "target_lang": "zh-TW"
+  "file_hash": "af3d7fde0143996c1708eb99bdc3badf",
+  "translated_at": "2026-09-07T11:03:29.513705",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "50184277316fdd1067cf7466d518c086",
+      "translation": "# 開發者指南\n\n本指南協助您開發自訂模組和適配器，以擴充 ErisPulse 的功能。"
+    },
+    {
+      "hash": "477828ae297d0b08fc3af76894260a7f",
+      "translation": "## 內容列表\n\n### 模塊開發\n\n1. [模塊開發入門](modules/getting-started.md) - 創建第一個模塊\n2. [模塊核心概念](modules/core-concepts.md) - 模塊的核心概念和架構\n3. [Event 包裝類詳解](modules/event-wrapper.md) - Event 對象的完整說明\n4. [模塊最佳實踐](modules/best-practices.md) - 開發高品質模塊的建議\n\n### 適配器開發\n\n1. [適配器開發入門](adapters/getting-started.md) - 創建第一個適配器\n2. [適配器核心概念](adapters/core-concepts.md) - 適配器的核心概念\n3. [SendDSL 詳解](adapters/send-dsl.md) - Send 消息發送 DSL 的完整說明\n4. [事件轉換器](adapters/converter.md) - 實現事件轉換器\n5. [適配器最佳實踐](adapters/best-practices.md) - 開發高品質適配器的建議\n\n### 發布指南\n\n- [發布與模塊商店指南](publishing.md) - 將你的作品發布到 PyPI 和 ErisPulse 模塊商店"
+    },
+    {
+      "hash": "a69f12905cab94d5d7c997a0184db083",
+      "translation": "## 開發準備\n\n在開始開發之前，請確保你：\n\n1. 閱讀了[基礎概念](../getting-started/basic-concepts.md)\n2. 熟悉了[事件處理](../getting-started/event-handling.md)\n3. 安裝了開發環境（Python >= 3.10）\n4. 安裝了 ErisPulse SDK"
+    },
+    {
+      "hash": "20bd8cf355eeee226e64f56b062017ba",
+      "translation": "## 開發類型選擇\n\n根據你的需求選擇合適的開發類型：\n\n| 開發類型 | 適用場景 | 入門指南 |\n|---------|---------|---------|\n| **模組開發** | 擴展機器人功能、實現業務邏輯、提供命令和訊息處理 | [模組開發入門](modules/getting-started.md) |\n| **適配器開發** | 連接新的訊息平台、實現跨平台通信、提供平台特定功能 | [適配器開發入門](adapters/getting-started.md) |\n\n> 如果你想擴展機器人的功能（如新增命令、處理訊息），選擇**模組開發**。如果你需要讓機器人連接到一個新的平台，選擇**適配器開發**。"
+    },
+    {
+      "hash": "df55c8acea3081490090bb2ad7dfa656",
+      "translation": "## 開發工具\n\n### 項目模板\n\nErisPulse 提供了示例項目作為參考：\n\n- [模組示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模組的完整項目結構\n- [適配器示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 適配器的完整項目結構\n\n### 開發模式\n\n使用熱重載模式進行開發，程式碼修改後自動重新載入：\n\n```bash\nepsdk run main.py --reload\n```\n\n### 調試技巧\n\n在 `config/config.toml` 中啟用 DEBUG 或 TRACE 級別日誌：\n\n```toml\n[ErisPulse.logger]\n# DEBUG: 輸出模組載入、路由註冊等開發調試資訊\n# TRACE: 最低級別，輸出事件分發、儲存寫入、懶加載等框架內部詳細流程\nlevel = \"DEBUG\"\n```"
+    },
+    {
+      "hash": "786840a3da60cbc55439693abdaaedee",
+      "translation": "## 發布你的模組\n\n完整的發布流程請參考 [發布與模組商店指南](publishing.md)，包括 PyPI 發布步驟、ErisPulse 模組商店提交流程等。"
+    },
+    {
+      "hash": "2f89acabcdf406828738372366a4a32d",
+      "translation": "## 相關文件\n\n- [標準規範](../standards/) - 確保相容性的技術標準\n- [平台特性指南](../platform-guide/) - 瞭解各平台適配器的特性"
+    }
+  ]
 }

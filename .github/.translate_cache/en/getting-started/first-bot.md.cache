@@ -1,5 +1,41 @@
 {
+  "version": 2,
   "hash": "da5661895cd51183aee62df02092e326",
-  "translated_at": "2026-07-29T11:21:27.836084",
-  "target_lang": "en"
+  "file_hash": "da5661895cd51183aee62df02092e326",
+  "translated_at": "2026-09-07T11:29:44.469340",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "80785c13e86bb626713499d36f921521",
+      "translation": "# Create Your First Bot\n\nThis guide builds on the [5-Minute Quick Start](../quick-start.md) to walk you through writing your first command handler and understanding the underlying mechanics.\n\n> If you haven't installed ErisPulse or initialized your project yet, please complete the \"Install,\" \"Initialize Project,\" and \"Run Project\" steps in the [Quick Start](../quick-start.md) first."
+    },
+    {
+      "hash": "cbeb879600e1efd43f5c92662070ba8b",
+      "translation": "## Step 1: Write Your First Command\n\nOpen `main.py` and write a simple command handler:\n\n```python\nfrom ErisPulse import sdk\nfrom ErisPulse.Core.Event import command\n\n@command(\"hello\", help=\"Send a greeting message\")\nasync def hello_handler(event):\n    \"\"\"Handle the hello command\"\"\"\n    user_name = event.get_user_nickname() or \"friend\"\n    await event.reply(f\"Hello, {user_name}! I am the ErisPulse bot.\")\n\n@command(\"ping\", help=\"Test if the bot is online\")\nasync def ping_handler(event):\n    \"\"\"Handle the ping command\"\"\"\n    await event.reply(\"Pong! The bot is running normally.\")\n\nasync def main():\n    \"\"\"Main entry function\"\"\"\n    print(\"Starting ErisPulse...\")\n    \n    # keep_running=True (default): The framework blocks and stays running until a shutdown signal is received (e.g., Ctrl+C)\n    await sdk.run(keep_running=True)\n\nif __name__ == \"__main__\":\n    import asyncio\n    asyncio.run(main())\n```\n\n### `keep_running` Parameter\n\n`sdk.run(keep_running)` controls whether the framework blocks and remains running:\n\n- **`keep_running=True` (default)**: `run()` will block indefinitely until a shutdown signal (e.g., Ctrl+C) is received, suitable for pure bot applications.\n- **`keep_running=False`**: `run()` returns immediately after initialization. **The framework is not unloaded**—active adapters/modules continue processing message events as background tasks. You can then proceed with your own logic until the event loop ends and the framework shuts down. For example:\n\n```python\nasync def main():\n    await sdk.run(keep_running=False)   # Returns immediately after initialization\n    # The framework is running in the background, here you can continue doing other things\n    while True:\n        await asyncio.sleep(3600)\n        print(\"Check every hour\")\n```\n\n> Besides the two modes of `run()`, there are also more granular ways to manually control the lifecycle, such as `init()`/`uninit()` and individually starting/stopping adapters/routes. See [Startup Process and Manual Control](../advanced/startup.md)."
+    },
+    {
+      "hash": "b5f19b961033b690e27ee96e9b93838e",
+      "translation": "## Step 2: Run the Robot\n\n```bash\n# Run normally\nepsdk run main.py\n\n# Development mode (supports hot reload)\nepsdk run main.py --reload\n```"
+    },
+    {
+      "hash": "b0c26d839ca90e388607ff58c89f4d3a",
+      "translation": "## Step 3: Test the Bot\n\nSend the following command in your chat platform:\n\n```\n/hello\n```\n\nYou should receive a reply from the bot."
+    },
+    {
+      "hash": "93486b749569653f6b3a738fb2e77b38",
+      "translation": "## Code Explanation\n\n### Command Decorator\n\n```python\n@command(\"hello\", help=\"Send a greeting message\")\n```\n\n- `hello`: The command name, which users invoke via `/hello`\n- `help`: The help description, displayed in the `/help` command\n\n### Event Parameters\n\n```python\nasync def hello_handler(event):\n```\n\nThe `event` parameter is an Event object, containing:\n- Message content: `event.get_text()`\n- Sender information: `event.get_user_id()`, `event.get_user_nickname()`\n- Platform information: `event.get_platform()`\n- Group information: `event.get_group_id()`\n- Raw data: `event.get_raw()`\n\n> For a complete list of Event object methods, refer to [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md).\n\n### Sending a Reply\n\n```python\nawait event.reply(\"Reply content\")\n```\n\n`event.reply()` is a convenient method for sending messages back to the sender."
+    },
+    {
+      "hash": "3186f44325b3813bd3233a543b3f63f1",
+      "translation": "## Extensions: Adding More Features\n\nErisPulse provides rich event handling and data processing capabilities:\n\n- **Message Listening**: Use `@message.on_message()` to listen to various types of messages → [Event Handling Introduction](event-handling.md)\n- **Notification Listening**: Use `@notice.on_friend_add()` and others to listen to system notifications → [Event Handling Introduction](event-handling.md)\n- **Data Storage**: Use `sdk.storage.get/set` to persist data → [Common Tasks Examples](common-tasks.md)"
+    },
+    {
+      "hash": "917ee86597e81a67b6ce2b4c26c393c6",
+      "translation": "## FAQ\n\n### No response from command?\n\n1. Check if the adapter is correctly configured, and confirm that the `status` of the adapter in `config/config.toml` is set to `true`.\n2. Check the terminal log output to confirm if there are any error messages (especially those with `ERROR` level).\n3. Confirm that the command prefix is correct (the default is `/`), and check the `[ErisPulse.event.command]` section in the configuration file.\n4. Confirm that the command name is spelled correctly, and pay attention to case sensitivity settings.\n\n### How to change the command prefix?\n\nAdd the following to `config.toml`:\n\n```toml\n[ErisPulse.event.command]\nprefix = \"!\"\ncase_sensitive = false\n```\n\n### How to support multiple platforms?\n\nErisPulse uses the OneBot12 standard to unify the event formats of different platforms. Handlers registered with `@command` and `@message` will automatically receive events from all platforms. You can distinguish the source platform using `event.get_platform()`:\n\n```python\n@command(\"hello\")\nasync def hello_handler(event):\n    platform = event.get_platform()\n    \n    if platform == \"yunhu\":\n        await event.reply(\"你好！来自云湖\")\n    elif platform == \"telegram\":\n        await event.reply(\"Hello! From Telegram\")\n    else:\n        await event.reply(\"你好！\")\n```\n\n> For more multi-platform adaptation techniques, please refer to [Common Tasks Examples](common-tasks.md#multi-platform-adaptation)."
+    },
+    {
+      "hash": "b0e41b365f41f1da5f78f4b91615b618",
+      "translation": "## Next Steps\n\n- [Basic Concepts](basic-concepts.md) - Dive deeper into the core concepts of ErisPulse\n- [Getting Started with Event Handling](event-handling.md) - Learn how to handle various events\n- [Common Tasks Examples](common-tasks.md) - Master more practical features"
+    }
+  ]
 }

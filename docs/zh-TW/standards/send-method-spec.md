@@ -10,7 +10,7 @@
 
 | 方法名 | 說明 | 參數類型 |
 |-------|------|---------|
-| `Text` | 發送文字訊息 | `str` |
+| `Text` | 發送文本消息 | `str` |
 | `Image` | 發送圖片 | `bytes` \| `str` (URL/路徑) |
 | `Voice` | 發送語音 | `bytes` \| `str` (URL/路徑) |
 | `Video` | 發送影片 | `bytes` \| `str` (URL/路徑) |
@@ -19,11 +19,11 @@
 | `Face` | 發送表情 | `str` (emoji) |
 | `Reply` | 回覆訊息 | `str` (message_id) |
 | `Forward` | 轉發訊息 | `str` (message_id) |
-| `Markdown` | 發送 Markdown 訊息 | `str` |
-| `HTML` | 發送 HTML 訊息 | `str` |
-| `Card` | 發送卡片訊息 | `dict` |
+| `Markdown` | 發送 Markdown 消息 | `str` |
+| `HTML` | 發送 HTML 消息 | `str` |
+| `Card` | 發送卡片消息 | `dict` |
 
-### 1.2 鏈式修飾方法
+### 1.2 串接修飾方法
 
 | 方法名 | 說明 | 參數類型 |
 |-------|------|---------|
@@ -50,9 +50,9 @@
 | `Raw_json` | 發送任意 JSON 資料 |
 | `Raw_xml` | 發送任意 XML 資料 |
 
-**注意**：這些方法**不是**基類提供的預設方法，也不強制要求實作。它們僅作為命名約定，適配器可依需要自行定義。如果適配器不支援這些格式，則無需定義。
+**注意**：這些方法**不是**基類提供的預設方法，也不強制要求實作。它們僅作為命名約定，適配器可依需求自行定義。如果適配器不支援這些格式，則無需定義。
 
-**訊息建構器（MessageBuilder）**：ErisPulse 提供了 `MessageBuilder` 工具類，用於方便地建構 OneBot12 訊息段列表，配合 `Raw_ob12` 使用。詳見 [訊息建構器](#11-訊息建構器-messagebuilder) 章節。
+**訊息建構器（MessageBuilder）**：ErisPulse 提供了 `MessageBuilder` 工具類，用於方便地建構 OneBot12 訊息段列表，搭配 `Raw_ob12` 使用。詳見 [訊息建構器](#11-訊息建構器-messagebuilder) 章節。
 
 ## 2. 參數規範詳解
 
@@ -66,21 +66,21 @@
 
 **支援類型：**
 - **URL**：網路資源位址（如 `https://example.com/image.jpg`）
-- **文件路徑**：本機文件路徑（如 `/path/to/file.jpg` 或 `C:\\path\\to\\file.jpg`）
+- **文件路徑**：本地文件路徑（如 `/path/to/file.jpg` 或 `C:\\path\\to\\file.jpg`）
 
 **使用場景：**
 - 文件已在網路上，直接發送 URL
-- 文件在本機磁碟，發送文件路徑
+- 文件在本地磁碟，發送文件路徑
 - 希望適配器自動處理文件上傳
 
-**推薦：** 優先使用 URL，如果 URL 不可用則使用本機文件路徑
+**推薦：** 優先使用 URL，如果 URL 不可用則使用本地文件路徑
 
 **示例：**
 ```python
 # 使用 URL
 send.Image("https://example.com/image.jpg")
 
-# 使用本機文件路徑
+# 使用本地文件路徑
 send.Image("/path/to/local/image.jpg")
 send.Image("C:\\path\\to\\local\\image.jpg")
 ```
@@ -115,20 +115,20 @@ send.Image(image_data)
 
 當適配器接收到媒體消息參數時，應按以下順序處理：
 
-1. **URL 參數**：直接使用 URL 發送（部分平台適配器可能存在 URL 下載後再上傳的操作）
-2. **文件路徑**：檢測是否為本機路徑，若是則上傳文件
+1. **URL 參數**：直接使用 URL 發送(部分平台適配器可能存在URL下載後再上傳的操作)
+2. **文件路徑**：檢測是否為本地路徑，若是則上傳文件
 3. **二進制數據**：直接上傳二進制數據
 
 **適配器實現建議：**
 ```python
 def Image(self, image: Union[bytes, str]):
     if isinstance(image, str):
-        # 判斷是 URL 還是本機路徑
+        # 判斷是 URL 還是本地路徑
         if image.startswith(("http://", "https://")):
             # URL 直接發送
             return self._send_image_by_url(image)
         else:
-            # 本機路徑，讀取後上傳
+            # 本地路徑，讀取後上傳
             with open(image, "rb") as f:
                 return self._upload_image(f.read())
     elif isinstance(image, bytes):
@@ -146,14 +146,14 @@ def Image(self, image: Union[bytes, str]):
 - `user_id` 應為字串類型的用戶標識符
 - 不同平台的 `user_id` 格式可能不同（數字、UUID、字串等）
 - 適配器負責將 `user_id` 轉換為平台特定的格式
-- 注意需要把真正的發送方法呼叫放在最後的位置
+- 注意需要把真正的發送方法調用放在最後的位置
 
 **示例：**
 ```python
 # 單個 @ 用戶
 Send.To("group", "g123").At("123456").Text("你好")
 
-# 多個 @ 用戶（鏈式呼叫）
+# 多個 @ 用戶（鏈式調用）
 send.To("group", "g123").At("123456").At("789012").Text("大家好")
 ```
 
@@ -164,8 +164,8 @@ send.To("group", "g123").At("123456").At("789012").Text("大家好")
 **參數：** `message_id` (`str`)
 
 **要求：**
-- `message_id` 應為字串類型的消息標識符
-- 應為之前收到的消息的 ID
+- `message_id` 應為字串類型的訊息標識符
+- 應為之前收到的訊息的 ID
 - 某些平台可能不支援回覆功能，適配器應優雅降級
 
 **示例：**
@@ -209,11 +209,11 @@ def Raw_ob12(self, message):  # ✅ 發送 OneBot12 格式
 | 參數名 | 說明 | 類型 |
 |-------|------|------|
 | `text` | 文本內容 | `str` |
-| `url` / `file` | 檔案 URL 或二進位資料 | `str` / `bytes` |
+| `url` / `file` | 文件 URL 或二進位數據 | `str` / `bytes` |
 | `user_id` | 使用者 ID | `str` / `int` |
 | `group_id` | 群組 ID | `str` / `int` |
 | `message_id` | 消息 ID | `str` |
-| `data` | 資料物件（例如卡片資料） | `dict` |
+| `data` | 數據物件（例如卡片數據） | `dict` |
 
 ## 5. 返回值規範
 
@@ -222,7 +222,7 @@ def Raw_ob12(self, message):  # ✅ 發送 OneBot12 格式
 
 ---
 
-## 6. 反轉轉換規範（OneBot12 → 平台）
+## 6. 反向轉換規範（OneBot12 → 平台）
 
 適配器不僅需要將平台原生事件轉換為 OneBot12 格式（正向轉換），還**必須**提供將 OneBot12 消息段轉換回平台原生 API 調用的能力（反向轉換）。反向轉換的統一入口是 `Raw_ob12` 方法。
 
@@ -268,7 +268,7 @@ def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
 
 1. **必須處理所有標準消息段類型**：至少支援 `text`、`image`、`audio`、`video`、`file`、`mention`、`reply`
 2. **必須處理平台擴展消息段**：對於 `{platform}_xxx` 類型的消息段，轉換為平台對應的原生調用
-3. **必須返回標準響應格式**：遵循 [API 響應標準](api-response.md)
+3. **必須返回標準響應格式**：遵循 [API 响應标准](api-response.md)
 4. **不支援的消息段應跳過並記錄警告**，不應拋出異常導致整條消息發送失敗
 
 ### 6.3 消息段轉換規則
@@ -318,7 +318,7 @@ def _convert_ob12_segments(self, segments: List[Dict]) -> Any:
 一條消息可能包含多個消息段，適配器需要正確處理複合消息：
 
 ```python
-# 模塊發送包含文本+圖片+@用戶 的消息
+# 模組發送包含文本+圖片+@用戶 的消息
 await send.Raw_ob12([
     {"type": "mention", "data": {"user_id": "123"}},
     {"type": "text", "data": {"text": "你好"}},
@@ -404,8 +404,6 @@ class YunhuSend(SendDSL):
         }
 ```
 
----
-
 ## 7. 方法發現
 
 模組開發者可以透過 API 查詢適配器支援的發送方法：
@@ -436,8 +434,8 @@ info = adapter.send_info("myplatform", "Form")
 | onebot12 | `Mention` | @用戶（OneBot12 風格） |
 | onebot12 | `Sticker` | 發送貼紙 |
 | onebot12 | `Location` | 發送位置 |
-| onebot12 | `Recall` | 撤回消息 |
-| onebot12 | `Edit` | 編輯消息 |
+| onebot12 | `Recall` | 撤回訊息 |
+| onebot12 | `Edit` | 編輯訊息 |
 | onebot12 | `Batch` | 批量發送 |
 
 > **注意**：發送方法不加平台前綴，不同平台的同名方法可以有不同的實現。
@@ -526,7 +524,7 @@ async def handle(event: Event):
 | `image(file)` | 圖片 | `file` |
 | `audio(file)` | 音頻 | `file` |
 | `video(file)` | 視頻 | `file` |
-| `file(file, filename=None)` | 檔案 | `file`, `filename`(可選) |
+| `file(file, filename=None)` | 文件 | `file`, `filename`(可選) |
 | `mention(user_id, user_name=None)` | @使用者 | `user_id`, `user_name`(可選) |
 | `at(user_id, user_name=None)` | @使用者（`mention` 的別名） | 同 `mention` |
 | `reply(message_id)` | 回覆 | `message_id` |
@@ -550,11 +548,9 @@ if builder:
     print(f"包含 {len(builder)} 個消息段")
 ```
 
----
-
 ## 12. 相關文件
 
 - [事件轉換標準](event-conversion.md) - 完整的事件轉換規範、擴展命名和訊息段標準
 - [API 回應標準](api-response.md) - 適配器 API 回應格式標準
 - [會話類型標準](session-types.md) - 會話類型定義和映射關係
-- [請求操作規範](request-action-spec.md) - 請求事件欄位要求、HandleRequest DSL 及適配器實作要求
+- [請求操作規範](request-action-spec.md) - 請求事件欄位要求、HandleRequest DSL 及適配器實現要求

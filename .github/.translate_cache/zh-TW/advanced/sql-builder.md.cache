@@ -2,7 +2,7 @@
   "version": 2,
   "hash": "e040db8b16031374a4cd23e00684e90e",
   "file_hash": "e040db8b16031374a4cd23e00684e90e",
-  "translated_at": "2026-09-01T06:26:31.459057",
+  "translated_at": "2026-09-07T10:53:06.663854",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -19,7 +19,7 @@
     },
     {
       "hash": "8e2dec3f89603dc56f232da3852421e9",
-      "translation": "## 表管理\n\n### 建立表格\n\n```python\nsdk.storage.CreateTable(\"users\", {\n    \"id\": \"INTEGER PRIMARY KEY AUTOINCREMENT\",\n    \"name\": \"TEXT NOT NULL\",\n    \"age\": \"INTEGER DEFAULT 0\",\n    \"email\": \"TEXT\"\n})\n```\n\n### 檢查表格是否存在\n\n```python\nif sdk.storage.HasTable(\"users\"):\n    print(\"users 表已存在\")\n```\n\n### 刪除表格\n\n```python\nsdk.storage.DropTable(\"users\")\n```\n\n### 修改表格結構\n\n```python\n# 新增欄位\nsdk.storage.AlterTable(\"users\").AddColumn(\"email\", \"TEXT\").Execute()\n\n# 重新命名表格\nsdk.storage.AlterTable(\"users\").RenameTo(\"members\").Execute()\n\n# 串接多個操作\nsdk.storage.AlterTable(\"users\") \\\n    .AddColumn(\"phone\", \"TEXT\") \\\n    .AddColumn(\"address\", \"TEXT\") \\\n    .Execute()\n```"
+      "translation": "## 表管理\n\n### 建立表格\n\n```python\nsdk.storage.CreateTable(\"users\", {\n    \"id\": \"INTEGER PRIMARY KEY AUTOINCREMENT\",\n    \"name\": \"TEXT NOT NULL\",\n    \"age\": \"INTEGER DEFAULT 0\",\n    \"email\": \"TEXT\"\n})\n```\n\n### 檢查表格是否存在\n\n```python\nif sdk.storage.HasTable(\"users\"):\n    print(\"users 表已存在\")\n```\n\n### 刪除表格\n\n```python\nsdk.storage.DropTable(\"users\")\n```\n\n### 修改表格結構\n\n```python\n# 添加欄位\nsdk.storage.AlterTable(\"users\").AddColumn(\"email\", \"TEXT\").Execute()\n\n# 重新命名表格\nsdk.storage.AlterTable(\"users\").RenameTo(\"members\").Execute()\n\n# 串連多個操作\nsdk.storage.AlterTable(\"users\") \\\n    .AddColumn(\"phone\", \"TEXT\") \\\n    .AddColumn(\"address\", \"TEXT\") \\\n    .Execute()\n```"
     },
     {
       "hash": "17b4b5c8210166596143fca8655d7942",
@@ -27,7 +27,7 @@
     },
     {
       "hash": "41606e9ebec67e119168df96b04068ff",
-      "translation": "## 重複使用查詢條件\n\n使用 `copy()` 深拷貝建構器，重複使用基礎條件：\n\n```python\nbase = sdk.storage.Table(\"users\").Where(\"age > ?\", 20)\n\n# 使用相同的條件查詢\nrows = base.copy().Select(\"name\").OrderBy(\"name\").Limit(5).Execute()\n\n# 使用相同的條件計數\ncount = base.copy().Count()\n\n# 使用相同的條件檢查是否存在\nexists = base.copy().Where(\"name = ?\", \"Alice\").Exists()\n```"
+      "translation": "## 重複使用查詢條件\n\n使用 `copy()` 深拷貝建構器，重複使用基礎條件：\n\n```python\nbase = sdk.storage.Table(\"users\").Where(\"age > ?\", 20)\n\n# 基於相同條件查詢\nrows = base.copy().Select(\"name\").OrderBy(\"name\").Limit(5).Execute()\n\n# 基於相同條件計數\ncount = base.copy().Count()\n\n# 基於相同條件檢查是否存在\nexists = base.copy().Where(\"name = ?\", \"Alice\").Exists()\n```"
     },
     {
       "hash": "251be3996682b896f9e28252e2074a1c",
@@ -39,7 +39,7 @@
     },
     {
       "hash": "4c2527ff1821232aec59a016cd2a3c8d",
-      "translation": "## 返回值說明\n\n| 操作 | 返回類型 | 說明 |\n|------|---------|------|\n| `Select().Execute()` | `list[tuple]` | 元組列表，按欄位順序排列 |\n| `Select().ExecuteOne()` | `tuple \\| None` | 單條元組或 None |\n| `Insert().Execute()` | `int` | 受影響行數 |\n| `InsertMulti().Execute()` | `int` | 新增行數 |\n| `Update().Execute()` | `int` | 受影響行數 |\n| `Delete().Execute()` | `int` | 受影響行數 |\n| `Count()` | `int` | 符合條件的行數 |\n| `Exists()` | `bool` | 是否存在 |\n\n### 返回值處理範例\n\n```python\n# Select 返回元組，按索引取值\nrows = sdk.storage.Table(\"users\").Select(\"name\", \"age\").Execute()\nfirst_name = rows[0][0]  # 第一行第一欄 name\nfirst_age = rows[0][1]   # 第一行第二欄 age\n\n# 推薦：使用欄位名稱列表 + zip 轉為字典，程式碼更易讀\ncols = [\"name\", \"age\"]\nrows = sdk.storage.Table(\"users\").Select(*cols).Execute()\nfor row in rows:\n    d = dict(zip(cols, row))\n    print(d[\"name\"], d[\"age\"])\n\n# ExecuteOne 返回單條元組或 None\nrow = sdk.storage.Table(\"users\").Select(\"name\").Where(\"id = ?\", 1).ExecuteOne()\nname = row[0] if row else None\n\n# Insert/Update/Delete 返回受影響行數\naffected = sdk.storage.Table(\"users\").Delete().Where(\"age < ?\", 18).Execute()\nprint(f\"刪除 {affected} 條記錄\")\n```"
+      "translation": "## 返回值說明\n\n| 操作 | 返回類型 | 說明 |\n|------|---------|------|\n| `Select().Execute()` | `list[tuple]` | 元組列表，按列順序排列 |\n| `Select().ExecuteOne()` | `tuple \\| None` | 單條元組或 None |\n| `Insert().Execute()` | `int` | 受影響行數 |\n| `InsertMulti().Execute()` | `int` | 插入行數 |\n| `Update().Execute()` | `int` | 受影響行數 |\n| `Delete().Execute()` | `int` | 受影響行數 |\n| `Count()` | `int` | 匹配行數 |\n| `Exists()` | `bool` | 是否存在 |\n\n### 返回值處理範例\n\n```python\n# Select 返回元組，按索引取值\nrows = sdk.storage.Table(\"users\").Select(\"name\", \"age\").Execute()\nfirst_name = rows[0][0]  # 第一行第一列 name\nfirst_age = rows[0][1]   # 第一行第二列 age\n\n# 推薦：用列名列表 + zip 轉為字典，程式碼更易讀\ncols = [\"name\", \"age\"]\nrows = sdk.storage.Table(\"users\").Select(*cols).Execute()\nfor row in rows:\n    d = dict(zip(cols, row))\n    print(d[\"name\"], d[\"age\"])\n\n# ExecuteOne 返回單條元組或 None\nrow = sdk.storage.Table(\"users\").Select(\"name\").Where(\"id = ?\", 1).ExecuteOne()\nname = row[0] if row else None\n\n# Insert/Update/Delete 返回受影響行數\naffected = sdk.storage.Table(\"users\").Delete().Where(\"age < ?\", 18).Execute()\nprint(f\"刪除 {affected} 條記錄\")\n```"
     },
     {
       "hash": "a6eeeb24a47e635832c2d8ed681a6e0b",

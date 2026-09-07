@@ -1,5 +1,37 @@
 {
+  "version": 2,
   "hash": "33050f4fc663186789be438774de85f9",
-  "translated_at": "2026-07-30T11:13:44.498525",
-  "target_lang": "en"
+  "file_hash": "33050f4fc663186789be438774de85f9",
+  "translated_at": "2026-09-07T11:01:59.053852",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "768b3404d3bd556def2933dbccb0843c",
+      "translation": "# Contributing to ErisPulse\n\n> **For those contributing for the first time**\n> Open-source projects are never sustained solely by the \"big moves\" of one or two core developers. More often, it's the accumulation of countless small changes — a typo fix, a translation, a minor bug fix — that pushes ErisPulse forward. So, don't measure whether your contribution is \"significant enough.\" As long as you're willing to submit a PR, you are already part of this journey."
+    },
+    {
+      "hash": "8d6445009476ae25e95b673cdc17766d",
+      "translation": "## Ways You Can Contribute\n\nContributing isn't just about writing core code. Here are several ways you can help make ErisPulse better:\n\n- **Improve Documentation** — Correct typos, clarify confusing descriptions, and add notes about pitfalls you've encountered. This has the lowest barrier to entry and you can start anytime.\n- **Supplement Translations** — The framework supports 5 languages (zh-CN / en / zh-TW / ja / ru). If you find any missing or inaccurate translations, feel free to contribute.\n- **Fix Bugs** — Pick a familiar issue from [Issues](https://github.com/ErisPulse/ErisPulse/issues), reproduce it, and fix it.\n- **Write Examples** — Organize your usage experience into example code for others to reference.\n- **Develop Modules / Adapters** — Add support for new platforms or capabilities to the framework. This is more challenging but also more rewarding.\n\n> If you're unsure where to start, just say so in [Discussions](https://github.com/ErisPulse/ErisPulse/discussions), and maintainers will help you find a suitable direction."
+    },
+    {
+      "hash": "1864424502e40258b676e9115b1d7094",
+      "translation": "## First Pull Request\n\nIf you have not submitted a PR before, it is recommended to read [First Contribution Practice](first-contribution.md). It covers the complete workflow from forking the repository to merging the PR. If you encounter any issues, you can raise them in Issues or Discussions."
+    },
+    {
+      "hash": "cd7fe0ceaf64bc686ec9b35837288e51",
+      "translation": "## Development Environment\n\nFor the complete development guidelines, see the root directory [CONTRIBUTING.md](../../../CONTRIBUTING.md). To get started quickly:\n\n```bash\ngit clone -b Develop/v2 https://github.com/ErisPulse/ErisPulse.git\ncd ErisPulse\nuv sync                       # Set up the development environment\nuv run pytest -m unit         # Run unit tests\nuv run ruff check .           # Code linting\n```"
+    },
+    {
+      "hash": "5dc8edd496da20b89eacd175e609632b",
+      "translation": "## Pull Request Process\n\nIn simple terms, the process is: fork the repository → create a branch based on `Develop/v2` → run tests after making changes → submit a PR to `Develop/v2`.\n\nA few important points to note:\n\n- Submit your PR to the **`Develop/v2`** branch, do not directly modify `main` or `Pre-Release/v2`\n- Before submitting, ensure that `pytest` / `ruff` / `basedpyright` all pass (warnings such as `reportAny` / `Unknown*` in type checking are considered \"types are still being refined\" and will not block merging)\n- If you modify a feature, make a note in `CHANGELOG.md`\n- If you add methods to the public API, remember to add documentation comments (the guidelines are [here](../styleguide/docstring.md))"
+    },
+    {
+      "hash": "5e3f9b5d27eee889824982ff73873da4",
+      "translation": "## Contributing Modules or Adapters\n\nIf you plan to create a new module or adapter, it is recommended to first briefly mention your idea in the [Issues](https://github.com/ErisPulse/ErisPulse/issues) section using the \"New Adapter or Module\" template. You don't need to write in great detail—just state your intention. Maintainers will help you clarify your ideas and align with the development standards, making the process smoother.\n\nYou can use the scaffolding tool to get started quickly:\n\n```bash\nepsdk create    # Choose module or adapter to generate a complete project structure\n```\n\nThen refer to [Getting Started with Module Development](../developer-guide/modules/getting-started.md) or [Getting Started with Adapter Development](../developer-guide/adapters/getting-started.md). After completion, you can also [publish to PyPI and the module store](../developer-guide/publishing.md).\n\n> Modules and adapters are typically separate repositories and do not need to be merged into the main repository. Example projects under `examples/` can serve as references."
+    },
+    {
+      "hash": "8da2a6f0a5e9aaa969fefb7d327ce60e",
+      "translation": "## Get Help\n\n- [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) — Report issues, request features\n- [GitHub Discussions](https://github.com/ErisPulse/ErisPulse/discussions) — Discuss ideas, ask questions\n- Email: `erisdev@88.com`"
+    }
+  ]
 }

@@ -73,7 +73,7 @@ user                    →        user
 #### thread
 - **接收類型**：`thread`
 - **發送類型**：`thread`
-- **說明**：話題/子頻道訊息，用於社群中的子討論區
+- **說明**：主題/子頻道訊息，用於社群中的子討論區
 - **ID 欄位**：`thread_id`
 - **適用平台**：Discord Threads, Telegram Topics 等
 
@@ -122,7 +122,7 @@ discuss                group                  group  # 映射到 group
 
 ### 4.1 註冊自訂類型
 
-適配器可以註冊自訂的會話類型：
+適配器可以註冊自訂會話類型：
 
 ```python
 from ErisPulse.Core.Event import register_custom_type
@@ -149,7 +149,7 @@ receive_type = infer_receive_type(event, platform="MyPlatform")
 send_type = convert_to_send_type(receive_type, platform="MyPlatform")
 # 返回: "custom"
 
-# 獲取對應 ID
+# 獲取對應ID
 target_id = get_target_id(event, platform="MyPlatform")
 # 返回: event["custom_id"]
 ```
@@ -166,8 +166,8 @@ unregister_custom_type("my_custom_type", platform="MyPlatform")
 
 當事件沒有明確的 `detail_type` 欄位時，系統會根據存在的 ID 欄位自動推斷類型：
 
-> [!NOTE]
-> **2.7.0+ 行為變更**：`detail_type` 只有在是**已知會話類型**（標準或自定義）時才直接採用。notice/request 事件的 `detail_type`（如 `group_member_increase`、`friend_increase`）是**語意子類型**而非會話類型，會轉而根據 ID 欄位推斷正確的會話類型。
+> [!NOTE]  
+> **2.7.0+ 行為變更**：`detail_type` 只有在是**已知會話類型**（標準或自定義）時才直接採用。notice/request 事件的 `detail_type`（如 `group_member_increase`、`friend_increase`）是**語義子類型**而非會話類型，會轉而根據 ID 欄位推斷正確的會話類型。
 
 ### 5.1 推斷優先級
 
@@ -180,7 +180,7 @@ unregister_custom_type("my_custom_type", platform="MyPlatform")
 5. user_id      → private
 ```
 
-### 5.2 使用示例
+### 5.2 使用範例
 
 ```python
 # 事件只有 group_id
@@ -193,7 +193,7 @@ event = {"user_id": "123"}
 receive_type = infer_receive_type(event)
 # 返回: "private"
 
-# notice 事件的 detail_type 是語意子類型，2.7.0+ 會從 ID 欄位推斷
+# notice 事件的 detail_type 是語義子類型，2.7.0+ 會從 ID 欄位推斷
 event = {"type": "notice", "detail_type": "group_member_increase", "group_id": "123"}
 receive_type = infer_receive_type(event)
 # 返回: "group"（而非 "group_member_increase"）
@@ -317,22 +317,22 @@ clear_custom_types(platform="discord")  # 只清除指定平台的
 
 ### 7.1 適配器開發者
 
-1. **使用標準映射**：盡可能映射到標準類型，而非創建新類型
+1. **使用標準映射**：盡可能映射到標準類型，而不是創建新類型
 2. **正確轉換**：確保接收類型和發送類型的映射關係正確
 3. **保留原始數據**：在 `{platform}_raw` 中保留原始事件類型
-4. **文件說明**：在適配器文件中說明類型映射關係
+4. **文檔說明**：在適配器文檔中說明類型映射關係
 
 ### 7.2 模塊開發者
 
 1. **使用工具方法**：使用 `get_send_type_and_target_id()` 等工具方法
 2. **避免硬編碼**：不要寫 `if group_id else "private"` 這樣的代碼
-3. **考慮所有類型**：代碼要支持所有標準類型，不僅是 private/group
-4. **靈活設計**：使用事件包裝器的方法，而非直接訪問字段
+3. **考慮所有類型**：代碼要支持所有標準類型，不僅僅是 private/group
+4. **靈活設計**：使用事件包裝器的方法，而不是直接訪問字段
 
 ### 7.3 類型推斷
 
 - **優先使用 detail_type**：如果有明確字段，不進行推斷
-- **合理使用推斷**：只在沒有明確類型時使用
+- **合理使用推斷**：只有在沒有明確類型時才使用
 - **注意優先級**：了解推斷優先級，避免意外結果
 
 ## 10. 常見問題

@@ -11,10 +11,10 @@ OneBot11Adapter is an adapter built based on the OneBot V11 protocol.
 
 ## Basic Information
 
-- Platform Introduction: OneBot is a chatbot application programming interface (API) standard.
+- Platform Introduction: OneBot is a chatbot application interface standard
 - Adapter Name: OneBotAdapter
 - Supported Protocol/API Version: OneBot V11
-- Multi-account Support: Default multi-account architecture, supports configuring and running multiple OneBot accounts simultaneously.
+- Multi-account Support: Default multi-account architecture, supports configuring and running multiple OneBot accounts simultaneously
 - Configuration Key Name: `OneBotAdapter`
 
 ## Supported Message Sending Types
@@ -27,10 +27,10 @@ onebot = adapter.get("onebot11")
 # Send using the default account
 await onebot.Send.To("group", group_id).Text("Hello World!")
 
-# Specify a particular account for sending
+# Send using a specific account
 await onebot.Send.Using("main").To("group", group_id).Text("Message from main account")
 
-# Chaining modifiers: @user + reply
+# Chained modifiers: @user + reply
 await onebot.Send.To("group", group_id).At(123456).Reply(msg_id).Text("Reply message")
 
 # @all members
@@ -39,53 +39,53 @@ await onebot.Send.To("group", group_id).AtAll().Text("Announcement message")
 
 ### Basic Sending Methods
 
-- `.Text(text: str)` : Send plain text message.
-- `.Image(file: Union[str, bytes], filename: str = "image.png")` : Send image (supports URL, Base64, or bytes).
-- `.Voice(file: Union[str, bytes], filename: str = "voice.amr")` : Send voice message.
-- `.Video(file: Union[str, bytes], filename: str = "video.mp4")` : Send video message.
-- `.Face(id: Union[str, int])` : Send QQ emoticon.
-- `.File(file: Union[str, bytes], filename: str = "file.dat")` : Send file (type is automatically determined).
-- `.Raw_ob12(message: List[Dict], **kwargs)` : Send OneBot12 formatted message (automatically converted to OB11).
-- `.Recall(message_id: Union[str, int])` : Recall message.
+- `.Text(text: str)` : Sends plain text messages.
+- `.Image(file: Union[str, bytes], filename: str = "image.png")` : Sends images (supports URL, Base64, or bytes).
+- `.Voice(file: Union[str, bytes], filename: str = "voice.amr")` : Sends voice messages.
+- `.Video(file: Union[str, bytes], filename: str = "video.mp4")` : Sends video messages.
+- `.Face(id: Union[str, int])` : Sends QQ emoticons.
+- `.File(file: Union[str, bytes], filename: str = "file.dat")` : Sends files (automatically detects type).
+- `.Raw_ob12(message: List[Dict], **kwargs)` : Sends OneBot12 format messages (automatically converts to OB11).
+- `.Recall(message_id: Union[str, int])` : Recalls a message.
 
 ### Group Operation Methods
 
-The following methods must be used with `To("group", group_id)` to specify the target group and execute operations within the group context:
+The following methods must be used with `To("group", group_id)` to specify the target group, and are executed within the group context:
 
-- `.Kick(user_id, reject_add_request=False)` : Kick out group member.
-- `.Ban(user_id, duration=1800)` : Mute group member (duration in seconds), 0 means unmute.
-- `.WholeBan(enable=True)` : Enable/disable all-mute for the group.
-- `.SetAdmin(user_id, enable=True)` : Set/unset group admin.
-- `.SetCard(user_id, card="")` : Set group nickname.
-- `.SetGroupName(name)` : Change group name.
-- `.Leave(is_dismiss=False)` : Leave group (group owner can dismiss).
-- `.SetTitle(user_id, title="")` : Set group title.
-- `.SetPortrait(file)` : Set group portrait.
+- `.Kick(user_id, reject_add_request=False)` : Kicks a group member.
+- `.Ban(user_id, duration=1800)` : Mutes a group member (duration in seconds; 0 means unmute).
+- `.WholeBan(enable=True)` : Enables/Disables global mute for the group.
+- `.SetAdmin(user_id, enable=True)` : Sets/unsets a group admin.
+- `.SetCard(user_id, card="")` : Sets a group member's nickname.
+- `.SetGroupName(name)` : Changes the group name.
+- `.Leave(is_dismiss=False)` : Leaves the group (group owner can dismiss).
+- `.SetTitle(user_id, title="")` : Sets a group title for a member.
+- `.SetPortrait(file)` : Sets the group portrait.
 
 ### Query Methods
 
-- `.GetMsg(message_id)` : Get message content.
-- `.GetForwardMsg(id)` : Get merged forward message.
-- `.GetLoginInfo()` : Get current login account information.
-- `.GetFriendList()` : Get friend list.
-- `.GetGroupInfo()` : Get group information (requires `To("group", group_id)`).
-- `.GetGroupList()` : Get group list.
-- `.GetGroupMemberInfo(user_id)` : Get group member information (requires `To("group", group_id)`).
-- `.GetGroupMemberList()` : Get group member list (requires `To("group", group_id)`).
+- `.GetMsg(message_id)` : Retrieves the content of a message.
+- `.GetForwardMsg(id)` : Retrieves a forwarded message.
+- `.GetLoginInfo()` : Retrieves information about the current logged-in account.
+- `.GetFriendList()` : Retrieves the friend list.
+- `.GetGroupInfo()` : Retrieves group information (requires `To("group", group_id)`).
+- `.GetGroupList()` : Retrieves the list of groups.
+- `.GetGroupMemberInfo(user_id)` : Retrieves group member information (requires `To("group", group_id)`).
+- `.GetGroupMemberList()` : Retrieves the list of group members (requires `To("group", group_id)`).
 
 ### Friend Operation Methods
 
-- `.Like(user_id, times=1)` : Send friend like (maximum 10 times).
+- `.Like(user_id, times=1)` : Sends a like to a friend (maximum 10 times).
 
-### Fluent Modifier Methods (Combinable)
+### Chained Modifier Methods (Combinable)
 
-Fluent modifier methods return `self`, allowing for chained calls, and must be called before the final sending method:
+Chained modifier methods return `self`, enabling fluent chaining, and must be called before the final sending method:
 
-- `.At(user_id: Union[str, int], name: str = None)` : Mention a specific user (can be called multiple times).
-- `.AtAll()` : Mention all members.
-- `.Reply(message_id: Union[str, int])` : Reply to a specific message.
+- `.At(user_id: Union[str, int], name: str = None)` : Mentions a specific user (can be called multiple times).
+- `.AtAll()` : Mentions all group members.
+- `.Reply(message_id: Union[str, int])` : Replies to a specific message.
 
-### Fluent Call Examples
+### Chained Call Examples
 
 ```python
 # Basic sending
@@ -97,29 +97,29 @@ await onebot.Send.To("group", 123456).At(789012).Text("你好")
 # Mention multiple users
 await onebot.Send.To("group", 123456).At(111).At(222).At(333).Text("大家好")
 
-# Send OneBot12 formatted message
+# Send a OneBot12 format message
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await onebot.Send.To("group", 123456).Raw_ob12(ob12_msg)
 
-# Send friend like
+# Send a like
 await onebot.Send.Like(123456, times=10)
 
-# Mute group member
+# Mute a group member
 await onebot.Send.To("group", 123456).Ban(789012, duration=3600)
 
 # Unmute
 await onebot.Send.To("group", 123456).Ban(789012, duration=0)
 
-# Kick user
+# Kick a member
 await onebot.Send.To("group", 123456).Kick(789012)
 
-# Set group admin
+# Set a group admin
 await onebot.Send.To("group", 123456).SetAdmin(789012)
 
 # Change group name
 await onebot.Send.To("group", 123456).SetGroupName("New Group Name")
 
-# Get group info
+# Retrieve group information
 result = await onebot.Send.To("group", 123456).GetGroupInfo()
 
 # Specify account for operation
@@ -130,18 +130,18 @@ await onebot.Send.Using("main").To("group", 123456).Ban(789012)
 
 If an undefined sending method is called, the adapter will return a text prompt:
 ```python
-# Call an undefined method
+# Call an unsupported method
 await onebot.Send.To("group", 123456).SomeUnsupportedMethod(arg1, arg2)
 # Actually sends: "[Unsupported sending type] Method name: SomeUnsupportedMethod, Parameters: [...]"
 ```
 
 ## Request Operations (Request DSL)
 
-The adapter provides a Request Operations DSL for handling the approval/rejection of friend requests and group requests (group join/invitations).
+The adapter provides a Request Operations DSL for handling approval/rejection of friend requests and group requests (group join/invite).
 
 ### Event Shortcut Methods
 
-Request events support `event.approve()` and `event.reject()` shortcut methods, which internally automatically invoke the Request DSL:
+Request events support `event.approve()` and `event.reject()` shortcut methods, which internally automatically call the Request DSL:
 
 ```python
 from ErisPulse.Core.Event import request
@@ -161,13 +161,13 @@ async def handle_group_request(event):
     await event.approve()
 ```
 
-### Manually Calling the Request DSL
+### Manual Call to Request DSL
 
 ```python
-# Approve the request
+# Approve request
 await onebot.Request("flag_string").accept()
 
-# Reject the request
+# Reject request
 await onebot.Request("flag_string").reject()
 
 # Specify account for operation
@@ -183,13 +183,13 @@ from ErisPulse.Core.Event import request
 async def handle_friend_request(event):
     comment = event.get("comment", "")
 
-    # Method 1: Use Event shortcut methods
+    # Method 1: Using Event shortcut methods
     if comment == "passphrase":
         await event.approve()
     else:
         await event.reject()
 
-    # Method 2: Use Request DSL
+    # Method 2: Using Request DSL
     flag = event.get("flag")
     if comment == "passphrase":
         await onebot.Request(flag).accept()
@@ -197,7 +197,7 @@ async def handle_friend_request(event):
         await onebot.Request(flag).reject()
 ```
 
-### Request Operation Return Values
+### Request Operation Return Value
 
 ```python
 {
@@ -224,30 +224,30 @@ async def handle_friend_request(event):
 | notice_type: group_admin | `group_admin_change` | Group admin change |
 | notice_type: group_increase | `group_member_increase` | Group member increase |
 | notice_type: group_decrease | `group_member_decrease` | Group member decrease |
-| notice_type: group_ban | `group_ban` | Group mute |
+| notice_type: group_ban | `group_ban` | Group ban |
 | notice_type: friend_add | `friend_increase` | Friend added |
 | notice_type: friend_delete | `friend_decrease` | Friend removed |
 | notice_type: group_recall / friend_recall | `message_recall` | Message recall |
 
-### Platform-specific Events (with `onebot11_` prefix)
+### Platform-Specific Events (onebot11_ prefix)
 
 | OB11 Original Type | Converted detail_type | Description |
 |--------------------|-----------------------|-------------|
 | meta_event_type: lifecycle | `onebot11_lifecycle` | OneBot implementation lifecycle |
 | notify + sub_type: honor | `onebot11_honor` | Group honor change |
 | notify + sub_type: poke | `onebot11_poke` | Poke |
-| notify + sub_type: lucky_king | `onebot11_lucky_king` | Group red envelope lucky king |
-| Unknown CQ code type | Message segment `onebot11_{type}` | Unrecognized CQ code |
+| notify + sub_type: lucky_king | `onebot11_lucky_king` | Group red packet lucky king |
+| Unknown CQ Code Type | Message Segment `onebot11_{type}` | Unrecognized CQ Code |
 
 ### Event Examples
 
 ```python
-// Friend request
+// Friend Request
 {
   "type": "request",
   "detail_type": "friend",
   "user_id": "789012",
-  "comment": "Please add me as a friend",
+  "comment": "Please add as friend",
   "request_id": "flag_abc123",
   "flag": "flag_abc123"
 }
@@ -260,14 +260,14 @@ async def handle_friend_request(event):
   "status": {...}
 }
 
-// Lifecycle (platform-specific)
+// Lifecycle (Platform-specific)
 {
   "type": "meta_event",
   "detail_type": "onebot11_lifecycle",
   "sub_type": "enable"
 }
 
-// Poke (platform-specific)
+// Poke (Platform-specific)
 {
   "type": "notice",
   "detail_type": "onebot11_poke",
@@ -276,7 +276,7 @@ async def handle_friend_request(event):
   "target_id": "345678"
 }
 
-// Group red envelope lucky king (platform-specific)
+// Group Red Packet Lucky King (Platform-specific)
 {
   "type": "notice",
   "detail_type": "onebot11_lucky_king",
@@ -285,7 +285,7 @@ async def handle_friend_request(event):
   "target_id": "345678"
 }
 
-// Honor change (platform-specific)
+// Honor Change (Platform-specific)
 {
   "type": "notice",
   "detail_type": "onebot11_honor",
@@ -294,7 +294,7 @@ async def handle_friend_request(event):
   "honor_type": "talkative"
 }
 
-// Extended CQ code message segment
+// CQ Code Extended Message Segment
 {
   "type": "message",
   "message": [
@@ -303,14 +303,14 @@ async def handle_friend_request(event):
 }
 ```
 
-### Extended Field Description
+### Extension Field Description
 
-- All special fields are prefixed with `onebot11_`
+- All specific fields are prefixed with `onebot11_`
 - Original event data is retained in the `onebot11_raw` field
 - Original event type is retained in the `onebot11_raw_type` field
-- CQ codes in message content are converted to corresponding message segments (standard types without prefix, unknown types with `onebot11_` prefix)
-- Reply messages will add a message segment of type `reply`
-- Mention messages will add a message segment of type `mention`
+- CQ codes within message content are converted into corresponding message segments (standard types without prefix, unknown types with `onebot11_` prefix)
+- Reply messages add a `reply` type message segment
+- @ messages add a `mention` type message segment
 
 ## Event Extension Methods
 
@@ -336,7 +336,7 @@ async def handle_message(event):
 | `get_sender_role()` | `str` | Get the sender's role within the group (owner/admin/member) |
 | `get_sender_level()` | `int` | Get the sender's level |
 | `get_sender_title()` | `str` | Get the sender's group title |
-| `is_system_message()` | `bool` | Determine if it is a system message (sub_type == "system") |
+| `is_system_message()` | `bool` | Check if it is a system message (sub_type == "system") |
 
 ### Usage Examples
 
@@ -347,7 +347,7 @@ from ErisPulse.Core.Event import message, command
 async def handle_group(event):
     role = event.get_sender_role()
     if role == "admin" or role == "owner":
-        await event.reply("Administrator, hello!")
+        await event.reply("Hello, admin!")
 
     title = event.get_sender_title()
     if title:
@@ -363,7 +363,7 @@ async def whoami(event):
 
 ## Configuration Options
 
-The OneBot11 adapter uses a multi-account architecture, where each account is independently configured. The configuration key is `OneBotAdapter`.
+The OneBot11 adapter adopts a multi-account architecture, where each account is independently configured. The configuration key name is `OneBotAdapter`.
 
 ### Account Configuration Fields
 
@@ -372,7 +372,7 @@ The OneBot11 adapter uses a multi-account architecture, where each account is in
 | `bot_id` | `str` | Yes | `""` | The robot's QQ number, used to identify the account |
 | `mode` | `str` | No | `"server"` | Running mode: `"server"` (passive listening) or `"client"` (active connection) |
 | `url` | `str` | No | `"ws://127.0.0.1:3001"` | WebSocket address for Client mode |
-| `token` | `str` | No | `""` | Authentication Token (Client mode connection token / Server mode validation token) |
+| `token` | `str` | No | `""` | Authentication Token (Token for Client mode connection / Token for Server mode verification) |
 | `server_path` | `str` | No | `"/"` | WebSocket path for Server mode |
 | `enabled` | `bool` | No | `true` | Whether to enable this account |
 | `name` | `str` | No | `""` | Account comment name |
@@ -408,7 +408,7 @@ enabled = false
 
 ### Default Configuration
 
-If no accounts are configured, the adapter will automatically create:
+If no account is configured, the adapter will automatically create:
 ```toml
 [OneBotAdapter.accounts.default]
 bot_id = ""
@@ -419,7 +419,7 @@ enabled = true
 
 ## Send Method Return Values
 
-All send methods return a Task object, which can be awaited directly to obtain the send result. The returned result follows the ErisPulse adapter standardization return specification:
+All send methods return a Task object, which can be directly awaited to obtain the sending result. The returned result follows the ErisPulse adapter's standardized return specification:
 
 ```python
 {
@@ -448,29 +448,29 @@ await onebot.call_api("send_msg", account_id="main", group_id=123456, message="H
 
 ### Account Resolution Priority
 
-The resolution priority of the `account_id` parameter in `call_api` and `Using()`:
-1. Exact match of account name
+The resolution priority for the `account_id` parameter in `call_api` and `Using()`:
+1. Exact match with account name
 2. Match `bot_id` field
 3. Match any `str` type field of the account
 4. Fall back to the first enabled account
 
 ## Asynchronous Processing Mechanism
 
-The OneBot11 adapter adopts an asynchronous non-blocking design to ensure that:
+The OneBot11 adapter adopts an asynchronous non-blocking design, ensuring that:
 1. Message sending does not block the event handling loop.
-2. Multiple concurrent sending operations can be performed simultaneously.
+2. Multiple concurrent sending operations can proceed simultaneously.
 3. API responses can be handled promptly.
 4. WebSocket connections remain active.
-5. Multiple accounts are processed concurrently, with each account running independently.
+5. Concurrent processing of multiple accounts, with each account running independently.
 
 ## Error Handling
 
-Adapters provide a comprehensive error handling mechanism:
-1. Automatic reconnection for network connection failures (supports independent reconnection for each account, with a 30-second interval)
-2. API call timeout handling (fixed 30-second timeout)
-3. Automatic retry with intervals when connection fails
+The adapter provides a comprehensive error handling mechanism:
+1. Automatic reconnection for network connection exceptions (supports independent reconnection for each account, with a 30-second interval)
+2. Handling of API call timeouts (fixed 30-second timeout)
+3. Automatic retry at intervals when connection fails
 
-## Event Handling Enhancement
+## Event Handling Enhancements
 
 In multi-account mode, all events automatically include account information:
 ```python
@@ -483,7 +483,7 @@ In multi-account mode, all events automatically include account information:
 }
 ```
 
-The adapter automatically maintains the `self_id → account_name` mapping, so `event.reply()` does not require manually specifying the account and will correctly route back to the originating account.
+The adapter automatically maintains the `self_id → account_name` mapping, allowing `event.reply()` to correctly route back to the originating account without manually specifying the account.
 
 ## Management Interface
 
@@ -497,16 +497,16 @@ connection_status = {
     for account_id, connection in onebot.connections.items()
 }
 
-# Dynamically enable/disable accounts (requires adapter restart)
+# Dynamically enable/disable accounts (adapter needs to be restarted)
 onebot.accounts["test"].enabled = False
 ```
 
 ## self_id Auto Mapping
 
-The adapter will automatically establish a mapping between OneBot `self_id` (QQ number) and `account_name`, which is used for event routing:
+The adapter automatically establishes a mapping between OneBot `self_id` (QQ number) and `account_name`, which is used for event routing:
 
 ```python
-# Automatically completed internally by the adapter
+# Automatically completed by the adapter internally
 # When an event is received, the self.user_id field is filled with bot_id
 # The adapter automatically records: self_id("123456789") → account_name("main")
 

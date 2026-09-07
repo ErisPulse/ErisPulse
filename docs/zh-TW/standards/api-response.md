@@ -1,30 +1,30 @@
 # ErisPulse 适配器標準化回傳規範
 
 ## 1. 說明  
-為什麼會有這個規範？  
+為什麼會有這個規範？
 
-為了確保各平台發送介面返回的統一性與 OneBot12 兼容性，ErisPulse 適配器在 API 回應格式上採用了 OneBot12 定義的消息發送回傳結構標準。  
+為了確保各平台發送介面回傳的統一性與 OneBot12 的相容性，ErisPulse 適配器在 API 回應格式上採用了 OneBot12 定義的消息發送回傳結構標準。
 
-不過 ErisPulse 的協定有一些特殊性定義：  
-- 1. 基礎欄位中，`message_id` 是必需的，但 OneBot12 標準中並無此欄位  
+但 ErisPulse 的協定有一些特殊性定義：  
+- 1. 基礎欄位中，`message_id` 是必須的，但 OneBot12 標準中沒有此欄位  
 - 2. 回傳內容中需要添加 `{platform_name}_raw` 欄位，用於存放原始回應資料
 
 ## 2. 基礎返回結構  
-所有動作響應必須包含以下基礎字段：
+所有動作回應必須包含以下基礎欄位：
 
-| 字段名 | 數據類型 | 必選 | 說明 |
+| 欄位名 | 資料類型 | 必選 | 說明 |
 |-------|---------|------|------|
 | status | string | 是 | 執行狀態，必須是"ok"或"failed" |
 | retcode | int64 | 是 | 返回碼，遵循OneBot12返回碼規則 |
-| data | any | 是 | 响应数据，成功时包含请求结果，失败时为null |
+| data | any | 是 | 回應資料，成功時包含請求結果，失敗時為null |
 | message_id | string | 是 | 消息ID，用於標識消息，沒有則為空字串 |
-| message | string | 是 | 錯誤信息，成功時為空字串 |
-| {platform_name}_raw | any | 否 | 原始響應數據 |
+| message | string | 是 | 錯誤資訊，成功時為空字串 |
+| {platform_name}_raw | any | 否 | 原始回應資料 |
 
-可選字段：
-| 字段名 | 數據類型 | 必選 | 說明 |
+可選欄位：
+| 欄位名 | 資料類型 | 必選 | 說明 |
 |-------|---------|------|------|
-| echo | string | 否 | 當請求中包含echo字段時，原樣返回 |
+| echo | string | 否 | 當請求中包含echo欄位時，原樣返回 |
 
 ## 3. 完整欄位規範
 
@@ -100,23 +100,23 @@
 ## 4. 實現要求
 1. 所有回應必須包含 status、retcode、data 和 message 欄位
 2. 當請求中包含非空 echo 欄位時，回應必須包含相同值的 echo 欄位
-3. 回傳碼必須嚴格遵循 OneBot12 規範
-4. 錯誤訊息 (message) 應當是人類可讀的描述
+3. 返回碼必須嚴格遵循 OneBot12 標準
+4. 錯誤資訊 (message) 應當是人類可讀的描述
 
 ## 5. 擴展規範
 
 ErisPulse 在 OneBot12 標準返回結構之上做了以下擴展：
 
-### 5.1 `message_id` 必選字段
+### 5.1 `message_id` 必選欄位
 
-OneBot12 標準中 `message_id` 位於 `data` 對象內部且非強制。ErisPulse 將其提升為頂層**必選**字段：
+OneBot12 標準中 `message_id` 位於 `data` 對象內部且非強制。ErisPulse 將其提升為頂層**必選**欄位：
 
 - 無法獲取 `message_id` 時應設為空字串 `""`
 - 確保 `message_id` 始終存在，模組無需做 null 檢查
 
-### 5.2 `{platform}_raw` 原始回應字段
+### 5.2 `{platform}_raw` 原始回應欄位
 
-回應值中應包含 `{platform}_raw` 字段，存放平台原始回應數據的完整副本：
+回應值中應包含 `{platform}_raw` 欄位，存放平台原始回應資料的完整副本：
 
 ```json
 {
@@ -135,7 +135,7 @@ OneBot12 標準中 `message_id` 位於 `data` 對象內部且非強制。ErisPul
 **要求**：
 - `{platform}_raw` 必須是原始回應的深拷貝，而非引用
 - `platform` 必須與適配器註冊時的平台名完全一致（大小寫敏感）
-- 原始回應中的錯誤信息也應保留，便於除錯
+- 原始回應中的錯誤資訊也應保留，便於除錯
 
 ### 5.3 框架擴展回應碼（34xxx 平台錯誤段的低三位自定義）
 
@@ -146,7 +146,7 @@ OneBot12 規範允許實現自定義 `3xxxx` 的低三位。`34xxx` 語義為 **
 |---------|------|------|
 | `340xx` | 適配器實現 | 請求操作族（Request Not Found / Already Handled / Not Supported / Permission Denied，見 request-action-spec §7） |
 | `341xx`～`345xx` | 適配器實現 | 平台側權限 / 風控 / 帳號限制等錯誤（實現自定低三位，原始錯誤放 `{platform}_raw`） |
-| `346xx` | **ErisPulse 框架（保留）** | 框架自身攔截與通用失敗，適配器/模組請勿占用 |
+| `346xx` | **ErisPulse 框架（保留）** | 框架自身擋截與通用失敗，適配器/模組請勿占用 |
 | `347xx`～`349xx` | 適配器實現 | 其它平台執行錯誤 |
 
 ErisPulse 框架當前使用的 `346xx` 碼：
@@ -156,7 +156,7 @@ ErisPulse 框架當前使用的 `346xx` 碼：
 | 34600 | SDK Failure | 框架通用失敗（`make_error()` 預設回傳碼） |
 | 34601 | Action Denied | 出站動作被作用域禁用（`scope.actions`），呼叫未發起，直接回傳該回應 |
 
-> 職責區分：`34601` 是**框架在呼叫前攔截**（模組根本沒資格發起動作）；
+> 職責區分：`34601` 是**框架在呼叫前擋截**（模組根本沒資格發起動作）；
 > `34004` / `34xxx` 平台碼是**動作已發出但平台拒絕**（如 Bot 無權限、被風控）。
 > 模組判斷權限問題時同時檢查這兩種：先看 `34601`（自己模組被 scope 禁），
 > 再看 `34xxx`（平台側限制）。
@@ -175,10 +175,10 @@ ErisPulse 框架當前使用的 `346xx` 碼：
 
 ### 5.4 適配器實現檢查清單
 
-- [ ] 包含 `status`, `retcode`, `data`, `message_id`, `message` 字段
+- [ ] 包含 `status`, `retcode`, `data`, `message_id`, `message` 欄位
 - [ ] 回傳碼遵循 OneBot12 規範（詳見 §3.2）
 - [ ] `message_id` 始終存在（無法獲取時為空字串）
-- [ ] `{platform}_raw` 包含平台原始回應數據
+- [ ] `{platform}_raw` 包含平台原始回應資料
 
 ## 6. 注意事項
 - 對於 3xxxx 錯誤碼，低三位可由實作自行定義

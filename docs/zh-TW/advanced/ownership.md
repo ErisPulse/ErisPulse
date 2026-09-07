@@ -1,17 +1,16 @@
-# 所有权（owner）系統
+# 所屬權（owner）系統
 
-所有權是模組「即插即用」的基石：模組在載入期間註冊的一切框架資源自動記名，  
-卸載/禁用時按記名一鍵回收——模組作者只需宣告資源，無需手寫清理邏輯。
+所屬權是模組「即插即用」的基石：模組在載入期間註冊的所有框架資源自動記名，卸載/禁用時按記名一鍵回收——模組作者只需宣告資源，無需手動撰寫清理邏輯。
 
 > **相關系統**：作用域（scope）在事件分發時決定「資源是否生效」，  
-> 所有權在生命週期中決定「資源歸誰、誰卸載時被回收」。  
+> 所屬權在生命週期中決定「資源歸誰、誰卸載時被回收」。  
 > 作用域詳見[統一控制面（scope）](scope.md)，背景任務詳見  
-> [生命週期管理](lifecycle.md#背景任務所有權與自動取消)。
+> [生命週期管理](lifecycle.md#背景任務所屬與自動取消)。
 
 {!--< tips >!--}
-1. 所有權在**註冊瞬間**按 `current_owner` 自動記錄，模組程式碼零修改
-2. 卸載/禁用共用同一條清理鏈（`_cleanup_module_registrations`），每步失敗僅警告不中斷
-3. 用戶配置語義的資源（持久化覆寫 / scope 規則 / 命令 ACL）**不**隨模組卸載清理
+1. 所屬權在**註冊瞬間**按 `current_owner` 自動記錄，模組程式碼無需修改
+2. 卸載/禁用共用同一条清理鏈（`_cleanup_module_registrations`），每步失敗僅告警不中斷
+3. 用戶設定語意的資源（持久化覆寫 / scope 規則 / 命令 ACL）**不**隨模組卸載清理
 {!--< /tips >!--}
 
 ## owner 上下文機制
@@ -32,17 +31,18 @@ with owner_scope("MyModule"):
 |------|----------|------|
 | 模組 `load()` | 模組名 | 實例化 + `on_load` 全程 |
 | 適配器 `start()` / `restart()` | 平台名 | 適配器啟動全程 |
-| `activate_on` 慢載入 stub 註冊 | 模組名 | 佔位命令/處理器註冊 |
+| `activate_on` 懶加載 stub 註冊 | 模組名 | 佔位命令/處理器註冊 |
 | 事件處理器執行期 | 處理器歸屬模組名 | handler / 命令入口重注入 |
 
-執行期重注入意味著：模組在 `on_load` 裡宣告的命令處理器**運行中**呼叫註冊型 API（如 `sdk.adapter.on()`、`overrides.*.set(persist=False)`），
+執行期重注入意味著：模組在 `on_load` 裡宣告的命令處理器**運行中**呼叫
+註冊型 API（如 `sdk.adapter.on()`、`overrides.*.set(persist=False)`），
 同樣會自動歸屬本模組。
 
 ## 歸屬資源全景
 
-模組在載入上下文內註冊的以下資源均記錄歸屬，卸載/停用時自動回收：
+模組在加載上下文內註冊的以下資源均記錄歸屬，卸載/停用時自動回收：
 
-| 資源 | 註冊方式 | 清理調用 |
+| 資源 | 註冊方式 | 清理呼叫 |
 |------|----------|----------|
 | 命令 | `@command()` / 命令 dict 聲明 | `command.unregister_by_owner()` |
 | 事件處理器 | `@message` / `@notice` / `@request` / `@meta` | `handler.unregister_by_owner()` |
@@ -59,9 +59,10 @@ with owner_scope("MyModule"):
 | 事件覆寫（執行時） | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
 | 上下文數據 | `runtime/context` 按 owner 記錄 | 按模組精確清理 |
 
-適配器側的對應資源（以平台名為 owner）在適配器 `shutdown()` / `restart()` 時由 `_cleanup_adapter_resources` 回收，另含：
+適配器端的對應資源（以平台名為 owner）在適配器 `shutdown()` / `restart()`
+時由 `_cleanup_adapter_resources` 回收，另含：
 
-| 資源 | 清理調用 |
+| 資源 | 清理呼叫 |
 |------|----------|
 | 適配器自有的 `on()` 處理器與中間件 | `adapter.unregister_handlers_by_owner(platform)` |
 | 平台事件方法擴展（`EventMixin`） | `unregister_platform_event_methods(platform)` |
@@ -76,7 +77,7 @@ with owner_scope("MyModule"):
 ```mermaid
 flowchart TD
     A["unload / disable"] --> B["on_unload()（超時保護）"]
-    B --> C["兜底取消背景任務（cancel_owner_tasks）"]
+    B --> C["兜底取消後台任務（cancel_owner_tasks）"]
     C --> D["_cleanup_module_registrations"]
     D --> D1["i18n 翻譯域"]
     D1 --> D2["路由：命名空間 + owner 兜底<br/>（含中間件 / 首頁入口）"]
@@ -86,29 +87,28 @@ flowchart TD
     D5 --> D6["運行時事件覆寫（persist=False）"]
     D6 --> D7["主人身源 provider"]
     D7 --> D8["生命週期鉤子"]
-    D8 --> E["移除 SDK 屬性 + 慢加載代理"]
+    D8 --> E["移除 SDK 屬性 + 懶加載代理"]
 ```
 
-`sdk.uninit()` 退出時另有全域兜底：全部適配器 shutdown → 全部模組 unload →
+`sdk.uninit()` 退出時另有全局兜底：全部適配器 shutdown → 全部模塊 unload →
 `router.stop()`（清空路由/中間件/首頁入口）→ `cancel_all_background_tasks()` →
 清空事件處理器與鉤子。
 
 ## 設計邊界：哪些資源不隨卸載清理
 
 歸屬權只回收**模組代碼註冊的執行時資源**。以下資源屬**使用者配置語意**
-（控制權在使用者，可能刻意配置），模組卸載後隨配置持久保留：
+（控制權在使用者，可能刻意配置），模組卸載後隨配置持續保留：
 
 | 資源 | 語意 | 說明 |
 |------|------|------|
-| `overrides.*.set(persist=True)` | 持久化覆寫 | 寫入配置檔案，跨重啟生效；模組卸載不刪除（使用者顯式配置） |
+| `overrides.*.set(persist=True)` | 持久化覆寫 | 寫入配置檔，跨重啟生效；模組卸載不刪除（使用者顯式配置） |
 | `scope.set_action()` 等作用域規則 | 權限控制面 | 由使用者/Dashboard 管理，卸載模組不回收規則 |
 | `overrides.acl.set(persist=True)` | 命令 ACL | 同上 |
-| Conversation `save()` 持久化 | 多輪對話存檔 | 數據資產不清理 |
+| Conversation `save()` 持久化 | 多輪對話存檔 | 資料資產不清理 |
 
-執行時暫時寫入（`persist=False`）則隨 owner 回收——**持久化與否即**
-"使用者資產"與"模組執行時狀態"的分界線。
+執行時暫時寫入（`persist=False`）則隨 owner 回收——**持久化與否即為**<br>**「使用者資產」與「模組執行時狀態」的分界線**。
 
-## 模塊作者指南
+## 模組作者指南
 
 ### 推薦寫法
 
@@ -134,12 +134,12 @@ class MyModule(BaseModule):
 
 ### 注意事項
 
-- **import 時註冊無歸屬**：模組頂層（import 時）註冊的鉤子/處理器發生在
+- **import 時註冊無歸屬**：模組頂層（import 時）註冊的鉤子/處理程序發生在
   `owner_scope` 之前，會被視為框架級資源（owner=None）而**不被清理**。
   一律放到 `on_load()` 內註冊。
 - **自定義 domain 的 i18n 註冊**：`i18n.register(domain=...)` 的 domain
   不等於模組名時不會被自動回收，請保持 domain=模組名。
 - **後台任務務必用 `self.spawn()`**：裸 `asyncio.create_task` 不歸屬模組，
-  卸載時不會被取消（詳見[lifecycle.md#後台任務歸屬與自動取消](lifecycle.md#後台任務歸屬與自動取消)）。
-- 清理鏈"失敗僅告警"：單步清理異常不會阻斷其餘資源回收，日誌 DEBUG/WARNING
+  卸載時不會被取消（詳見[生命週期管理](lifecycle.md#後台任務歸屬與自動取消)）。
+- 清理鏈「失敗僅告警」：單步清理異常不會阻斷其餘資源回收，日誌 DEBUG/WARNING
   級別可見，排障時可開啟 TRACE。

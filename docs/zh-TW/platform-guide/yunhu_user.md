@@ -1,6 +1,6 @@
-# 雲湖用戶平台特性文件
+# 雲湖使用者平台特性文件
 
-YunhuUserAdapter 是基於雲湖用戶帳戶協議構建的適配器，透過用戶郵箱帳戶登入，使用 WebSocket 接收事件，提供統一的事件處理和消息操作介面。
+YunhuUserAdapter 是基於雲湖使用者帳戶協定建構的適配器，透過使用者電子信箱帳戶登入，使用 WebSocket 接收事件，提供統一的事件處理和訊息操作介面。
 
 ---
 
@@ -11,17 +11,17 @@ YunhuUserAdapter 是基於雲湖用戶帳戶協議構建的適配器，透過用
 
 ## 基本資訊
 
-- 平台簡介：雲湖（Yunhu）是一個企業級即時通訊平台，本適配器透過**用戶帳戶**（而非機器人帳戶）與之交互
+- 平台簡介：雲湖（Yunhu）是一個企業級即時通訊平台，本適配器透過**使用者帳戶**（而非機器人帳戶）與之互動
 - 適配器名稱：YunhuUserAdapter
-- 多帳戶支援：支援透過帳戶名識別並配置多個用戶帳戶
-- 連式修飾支援：支援 `.Reply()` 等連式修飾方法
-- OneBot12相容：支援發送 OneBot12 格式消息
-- 通信方式：透過郵箱登入獲取 token，使用 WebSocket 接收事件，HTTP + Protobuf 協議發送消息
+- 多帳戶支援：支援透過帳戶名識別並設定多個使用者帳戶
+- 鏈式修飾支援：支援 `.Reply()` 等鏈式修飾方法
+- OneBot12 兼容：支援發送 OneBot12 格式訊息
+- 通訊方式：透過電子信箱登入獲取 token，使用 WebSocket 接收事件，HTTP + Protobuf 協議發送訊息
 - 會話類型：支援私聊（user）、群聊（group）、機器人會話（bot）
 
 ## 支援的消息發送類型
 
-所有發送方法均透過連式語法實現，例如：
+所有發送方法皆透過鏈式語法實現，例如：
 ```python
 from ErisPulse.Core import adapter
 yunhu_user = adapter.get("yunhu_user")
@@ -30,42 +30,42 @@ await yunhu_user.Send.To("user", user_id).Text("Hello World!")
 ```
 
 支援的發送類型包括：
-- `.Text(text: str, buttons: Optional[List] = None)`：發送純文本消息。
-- `.Html(html: str, buttons: Optional[List] = None)`：發送HTML格式消息。
-- `.Markdown(markdown: str, buttons: Optional[List] = None)`：發送Markdown格式消息。
-- `.Image(file: Union[str, bytes], buttons: Optional[List] = None)`：發送圖片消息，支援URL、本地路徑或二進制數據。
-- `.Video(file: Union[str, bytes], buttons: Optional[List] = None)`：發送視頻消息，支援URL、本地路徑或二進制數據。
-- `.Audio(file: Union[str, bytes], buttons: Optional[List] = None)`：發送語音消息，支援URL、本地路徑或二進制數據，自動檢測音頻時長。
+- `.Text(text: str, buttons: Optional[List] = None)`：發送純文字訊息。
+- `.Html(html: str, buttons: Optional[List] = None)`：發送HTML格式訊息。
+- `.Markdown(markdown: str, buttons: Optional[List] = None)`：發送Markdown格式訊息。
+- `.Image(file: Union[str, bytes], buttons: Optional[List] = None)`：發送圖片訊息，支援URL、本地路徑或二進位數據。
+- `.Video(file: Union[str, bytes], buttons: Optional[List] = None)`：發送影片訊息，支援URL、本地路徑或二進位數據。
+- `.Audio(file: Union[str, bytes], buttons: Optional[List] = None)`：發送語音訊息，支援URL、本地路徑或二進位數據，自動偵測音訊長度。
 - `.Voice(file: Union[str, bytes], buttons: Optional[List] = None)`：`.Audio()` 的別名。
-- `.File(file: Union[str, bytes], file_name: Optional[str] = None, buttons: Optional[List] = None)`：發送文件消息，支援URL、本地路徑或二進制數據。
-- `.Face(file: Union[str, bytes], buttons: Optional[List] = None)`：發送表情/貼紙消息，支援貼紙ID、貼紙URL或二進位圖片數據。
-- `.A2ui(a2ui_data: Union[str, Dict, List], buttons: Optional[List] = None)`：發送A2UI消息（消息類型14），A2UI JSON 數據會填入 text 字段發送。
-- `.Edit(msg_id: str, text: str, content_type: str = "text")`：編輯已有消息。
-- `.Recall(msg_id: str)`：撤回消息。
-- `.Raw_ob12(message: Union[List, Dict])`：發送 OneBot12 格式消息。
+- `.File(file: Union[str, bytes], file_name: Optional[str] = None, buttons: Optional[List] = None)`：發送檔案訊息，支援URL、本地路徑或二進位數據。
+- `.Face(file: Union[str, bytes], buttons: Optional[List] = None)`：發送表情/貼紙訊息，支援貼紙ID、貼紙URL或二進位圖片數據。
+- `.A2ui(a2ui_data: Union[str, Dict, List], buttons: Optional[List] = None)`：發送A2UI訊息（訊息類型14），A2UI JSON 數據會填入 text 字段發送。
+- `.Edit(msg_id: str, text: str, content_type: str = "text")`：編輯已有訊息。
+- `.Recall(msg_id: str)`：撤回訊息。
+- `.Raw_ob12(message: Union[List, Dict])`：發送 OneBot12 格式訊息。
 
-### 媒體文件處理
+### 媒體檔案處理
 
-所有媒體類型（圖片、視頻、音頻、文件）支援以下輸入方式：
+所有媒體類型（圖片、影片、音訊、檔案）支援以下輸入方式：
 - **URL**：`"https://example.com/image.jpg"` — 自動下載後上傳
 - **本地路徑**：`"/path/to/file.jpg"` — 自動讀取後上傳
-- **二進制數據**：`open("file.jpg", "rb").read()` — 直接上傳
+- **二進位數據**：`open("file.jpg", "rb").read()` — 直接上傳
 
-媒體文件會自動上傳到七牛雲存儲，支援以下特性：
-- 自動透過 `filetype` 庫檢測文件類型和 MIME
-- 自動計算文件大小
-- 音頻文件自動檢測時長（支援 MP3、MP4/M4A 格式）
+媒體檔案會自動上傳到七牛雲儲存，支援以下特性：
+- 自動透過 `filetype` 庫偵測檔案類型和 MIME
+- 自動計算檔案大小
+- 音訊檔案自動偵測長度（支援 MP3、MP4/M4A 格式）
 
 ### 按鈕參數說明
 
-`buttons` 參數是一個嵌套列表，表示按鈕的佈局和功能。每個按鈕物件包含以下字段：
+`buttons` 參數是一個嵌套列表，表示按鈕的佈局和功能。每個按鈕物件包含以下欄位：
 
-| 字段         | 類型   | 是否必填 | 說明                                                                 |
+| 欄位         | 類型   | 是否必填 | 說明                                                                 |
 |--------------|--------|----------|----------------------------------------------------------------------|
 | `text`       | string | 是       | 按鈕上的文字                                                         |
-| `actionType` | int    | 是       | 動作類型：<br>`1`: 跳轉 URL<br>`2`: 複製<br>`3`: 點擊匯報            |
+| `actionType` | int    | 是       | 動作類型：<br>`1`: 跳轉 URL<br>`2`: 複製<br>`3`: 點擊回報            |
 | `url`        | string | 否       | 當 `actionType=1` 時使用，表示跳轉的目標 URL                         |
-| `value`      | string | 否       | 當 `actionType=2` 時，該值會複製到剪貼板<br>當 `actionType=3` 時，該值會發送給訂閱端 |
+| `value`      | string | 否       | 當 `actionType=2` 時，該值會複製到剪貼簿<br>當 `actionType=3` 時，該值會發送給訂閱端 |
 
 示例：
 ```python
@@ -73,69 +73,69 @@ buttons = [
     [
         {"text": "複製", "actionType": 2, "value": "xxxx"},
         {"text": "點擊跳轉", "actionType": 1, "url": "http://www.baidu.com"},
-        {"text": "匯報事件", "actionType": 3, "value": "xxxxx"}
+        {"text": "回報事件", "actionType": 3, "value": "xxxxx"}
     ]
 ]
-await yunhu_user.Send.To("user", user_id).Buttons(buttons).Text("帶按鈕的消息")
+await yunhu_user.Send.To("user", user_id).Buttons(buttons).Text("帶按鈕的訊息")
 ```
 
-### 連式修飾方法（可組合使用）
+### 鏈式修飾方法（可組合使用）
 
-連式修飾方法返回 `self`，支援連式調用，必須在最終發送方法前調用：
+鏈式修飾方法返回 `self`，支援鏈式呼叫，必須在最終發送方法前呼叫：
 
-- `.Reply(message_id: str)`：回覆指定消息。
-- `.At(user_id: str)`：@指定用戶（文本形式 @user_id）。
-- `.AtAll()`：@所有人（偽@全體，發送 @all 文本）。
-- `.Buttons(buttons: List)`：添加按鈕。
+- `.Reply(message_id: str)`：回覆指定訊息。
+- `.At(user_id: str)`：@指定用戶（文字形式 @user_id）。
+- `.AtAll()`：@所有人（偽@全體，發送 @all 文字）。
+- `.Buttons(buttons: List)`：新增按鈕。
 
-> **注意：** 因為用戶帳戶較為特殊，即便不是管理員也可以 @全體，但這裡的 `AtAll()` 只會發送一個艾特全體的文本，是一個偽@全體。
+> **注意：** 因為使用者帳戶較為特殊，即便不是管理員也可以 @全體，但這裡的 `AtAll()` 只會發送一個艾特全體的文字，是一個偽@全體。
 
-### 連式調用示例
+### 鏈式呼叫示例
 
 ```python
 # 基礎發送
 await yunhu_user.Send.To("user", user_id).Text("Hello")
 
-# 回覆消息
-await yunhu_user.Send.To("group", group_id).Reply(msg_id).Text("回覆消息")
+# 回覆訊息
+await yunhu_user.Send.To("group", group_id).Reply(msg_id).Text("回覆訊息")
 
 # 回覆 + 按鈕
-await yunhu_user.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("帶回覆和按鈕的消息")
+await yunhu_user.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("帶回覆和按鈕的訊息")
 
 # 指定帳戶 + 回覆 + 按鈕
-await yunhu_user.Send.Using("default").To("group", group_id).Reply(msg_id).Buttons(buttons).Text("完整連式調用")
+await yunhu_user.Send.Using("default").To("group", group_id).Reply(msg_id).Buttons(buttons).Text("完整鏈式呼叫")
 ```
 
-### OneBot12消息支援
+### OneBot12訊息支援
 
-適配器支援發送 OneBot12 格式的消息，便於跨平台消息相容：
+適配器支援發送 OneBot12 格式的訊息，便於跨平台訊息相容：
 
-- `.Raw_ob12(message: List[Dict], **kwargs)`：發送 OneBot12 格式消息。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：發送 OneBot12 格式訊息。
 
 ```python
-# 發送 OneBot12 格式消息
+# 發送 OneBot12 格式訊息
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await yunhu_user.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
-# 配合連式修飾
-ob12_msg = [{"type": "text", "data": {"text": "回覆消息"}}]
+# 配合鏈式修飾
+ob12_msg = [{"type": "text", "data": {"text": "回覆訊息"}}]
 await yunhu_user.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 ```
 
-Raw_ob12 支援自動將混合消息段分組處理：
+Raw_ob12 支援自動將混合訊息段分組處理：
 - `text`、`mention` 類型可合併為一組發送
 - `image`、`video`、`audio`、`file`、`face`、`markdown`、`html`、`a2ui` 等類型各自獨立成組
 - `reply` 類型可附加到任何組
 
 ## 發送方法返回值
 
-所有發送方法均返回一個 Task 物件，可以直接 await 獲取發送結果。返回結果遵循 ErisPulse 適配器標準化返回規範：
+所有發送方法均返回一個 Task 對象，可以直接 await 獲取發送結果。返回結果遵循 ErisPulse 适配器标准化返回规范：
 
 ```python
 {
     "status": "ok",           // 執行狀態
     "retcode": 0,             // 返回碼
-    "data": {...},            // 響應數據
+    "data": {...},            // 响應數據
     "message_id": "123456",   // 消息ID
     "message": "",            // 錯誤信息
     "yunhu_user_raw": {...}   // 原始響應數據
@@ -165,7 +165,7 @@ Raw_ob12 支援自動將混合消息段分組處理：
     - 原始事件類型記錄在 `yunhu_user_raw_type` 字段
     - 私聊中 `self.user_id` 表示當前登錄用戶ID
 
-### 支援的原始事件類型
+### 支持的原始事件類型
 
 | 原始事件類型 | OneBot12 類型 | 說明 |
 |-------------|--------------|------|
@@ -176,7 +176,7 @@ Raw_ob12 支援自動將混合消息段分組處理：
 
 > 其他事件類型（如 `heartbeat_ack`、`draft_input`、`stream_message` 等）會被忽略。
 
-### OneBot12 支援的 detail_type
+### OneBot12 支持的 detail_type
 
 | OneBot12 detail_type | 雲湖 chat_type | 說明 |
 |---------------------|---------------|------|
@@ -346,17 +346,17 @@ async def handle_yunhu_user_notice(event):
     elif detail_type == "yunhu_user_bot_board":
         board_data = event.get("yunhu_user_bot_board", {})
         bot_name = event.get("bot_name", "")
-        print(f"機器人 {bot_name} 發布了公告: {board_data.get('content', '')}")
+        print(f"機器人 {bot_name} 發佈了公告: {board_data.get('content', '')}")
 ```
 
-## 擴展字段說明
+## 扩展字段說明
 
 - 所有特有字段均以 `yunhu_user_` 前綴標識，避免與標準字段衝突
 - 保留原始數據在 `yunhu_user_raw` 字段，便於訪問雲湖平台的完整原始數據
 - 原始事件類型記錄在 `yunhu_user_raw_type` 字段（如 `push_message`、`edit_message` 等）
 - `self.user_id` 表示當前登錄用戶ID（從登錄響應中獲取）
-- 超級文件分享透過 `yunhu_user_file_send` 字段提供文件分享數據
-- 機器人公告看板透過 `yunhu_user_bot_board` 字段提供公告數據
+- 超級文件分享通過 `yunhu_user_file_send` 字段提供文件分享數據
+- 機器人公告看板通過 `yunhu_user_bot_board` 字段提供公告數據
 
 ### 特有消息段類型
 
@@ -437,26 +437,24 @@ async def handle_yunhu_user_notice(event):
 }
 ```
 
----
-
 ## 多帳戶配置
 
 ### 配置說明
 
-YunhuUserAdapter 支援同時配置和運行多個用戶帳戶。
+YunhuUserAdapter 支援同時配置和運行多個使用者帳戶。
 
 ```toml
 # config.toml
 [YunhuUserAdapter]
-ws_reconnect_interval = 30  # WebSocket重連間隔（秒）
-ws_timeout = 70             # WebSocket超時時間（秒）
+ws_reconnect_interval = 30  # WebSocket 重連間隔（秒）
+ws_timeout = 70             # WebSocket 超時時間（秒）
 
 [YunhuUserAdapter.accounts.default]
-email = "user1@example.com"  # 用戶郵箱（必填）
-password = "password1"       # 用戶密碼（必填）
-platform = "windows"         # 登錄平台（可選，默認windows）
-device_id = ""               # 設備ID（可選，不填自動生成）
-enabled = true               # 是否啟用（可選，默認為true）
+email = "user1@example.com"  # 使用者郵箱（必填）
+password = "password1"       # 使用者密碼（必填）
+platform = "windows"         # 登入平台（可選，默认 windows）
+device_id = ""               # 設備 ID（可選，不填自动生成）
+enabled = true               # 是否啟用（可選，默认為 true）
 
 [YunhuUserAdapter.accounts.account2]
 email = "user2@example.com"
@@ -467,36 +465,36 @@ enabled = true
 ```
 
 **配置項說明：**
-- `email`：用戶郵箱（必填），用於登錄雲湖平台
-- `password`：用戶密碼（必填）
-- `platform`：登錄平台標識（可選，默認為 `windows`），可選值：`windows`、`macos`、`linux`、`ios`、`android`
-- `device_id`：設備ID（可選，不填自動生成），建議填寫固定值以保持會話一致性
-- `enabled`：是否啟用該帳戶（可選，默認為 `true`）
+- `email`：使用者郵箱（必填），用於登入雲湖平台
+- `password`：使用者密碼（必填）
+- `platform`：登入平台標識（可選，默认為 `windows`），可選值：`windows`、`macos`、`linux`、`ios`、`android`
+- `device_id`：設備 ID（可選，不填自动生成），建議填寫固定值以保持會話一致性
+- `enabled`：是否啟用該帳戶（可選，默认為 `true`）
 
-**適配器級別配置：**
-- `ws_reconnect_interval`：WebSocket 重連間隔（秒，默認 30）
-- `ws_timeout`：WebSocket 超時時間（秒，默認 70）
+**適配器層級配置：**
+- `ws_reconnect_interval`：WebSocket 重連間隔（秒，默认 30）
+- `ws_timeout`：WebSocket 超時時間（秒，默认 70）
 
 **重要提示：**
-1. 適配器使用郵箱登錄方式獲取 token，登錄後透過 WebSocket 接收事件
+1. 適配器使用郵箱登入方式獲取 token，登入後通過 WebSocket 接收事件
 2. WebSocket 連接斷開後會自動重連，最多重試 3 次
 3. 建議為每個帳戶設置固定的 `device_id`，以保持會話一致性
-4. 未修改的模板帳戶（默認郵箱和密碼）會被自動跳過
+4. 未修改的模板帳戶（預設郵箱和密碼）會被自動跳過
 
-### 使用Send DSL指定帳戶
+### 使用 Send DSL 指定帳戶
 
-可以透過 `Using()` 方法指定使用哪個帳戶發送消息。該方法支援兩種參數：
+可以透過 `Using()` 方法指定使用哪個帳戶發送訊息。該方法支援兩種參數：
 - **帳戶名**：配置中的帳戶名稱（如 `default`、`account2`）
-- **user_id**：登錄後獲取的用戶 ID
+- **user_id**：登入後獲取的使用者 ID
 
 ```python
 from ErisPulse.Core import adapter
 yunhu_user = adapter.get("yunhu_user")
 
-# 使用帳戶名發送消息
+# 使用帳戶名發送訊息
 await yunhu_user.Send.Using("default").To("user", "user123").Text("Hello from account1!")
 
-# 使用 user_id 發送消息（自動匹配對應帳戶）
+# 使用 user_id 發送訊息（自動匹配對應帳戶）
 await yunhu_user.Send.Using("user_id_here").To("group", "group456").Text("Hello from user!")
 
 # 不指定時使用第一個啟用的帳戶
@@ -507,7 +505,7 @@ await yunhu_user.Send.To("user", "user123").Text("Hello from default account!")
 
 ### 事件中的帳戶標識
 
-接收到的事件會自動包含對應的用戶ID資訊：
+接收到的事件會自動包含對應的使用者 ID 信息：
 
 ```python
 from ErisPulse.Core.Event import message
@@ -515,26 +513,26 @@ from ErisPulse.Core.Event import message
 @message.on_message()
 async def handle_message(event):
     if event["platform"] == "yunhu_user":
-        # 獲取當前登錄用戶ID
+        # 獲取當前登入使用者 ID
         my_user_id = event["self"]["user_id"]
-        print(f"消息來自帳戶: {my_user_id}")
+        print(f"訊息來自帳戶: {my_user_id}")
         
-        # 使用相同帳戶回覆消息
+        # 使用相同帳戶回覆訊息
         yunhu_user = adapter.get("yunhu_user")
         await yunhu_user.Send.Using(my_user_id).To(
             event["detail_type"],
             event["user_id"] if event["detail_type"] == "private" else event["group_id"]
-        ).Text("回覆消息")
+        ).Text("回覆訊息")
 ```
 
-### 日誌信息
+### 日誌資訊
 
-適配器會在日誌中自動包含帳戶資訊，便於調試和追蹤：
+適配器會在日誌中自動包含帳戶資訊，便於除錯和追蹤：
 
 ```
-[INFO] 帳戶 default (user1@example.com) 登錄成功，用戶ID: 12345678
+[INFO] 帳戶 default (user1@example.com) 登入成功，使用者 ID: 12345678
 [INFO] 帳戶 default WebSocket 監聽任務已啟動
-[INFO] 帳戶 account2 (user2@example.com) 登錄成功，用戶ID: 87654321
+[INFO] 帳戶 account2 (user2@example.com) 登入成功，使用者 ID: 87654321
 ```
 
 ### 管理介面
@@ -557,7 +555,7 @@ account_name = yunhu_user._get_account_by_user_id("12345678")
 
 ## API 調用
 
-適配器提供 `call_api` 方法，支援直接調用平台 API：
+適配器提供 `call_api` 方法，支持直接調用平台 API：
 
 ```python
 # 發送消息
@@ -626,6 +624,6 @@ result = await yunhu_user.call_api("/button_report",
 | `/recall_batch` | 批量撤回消息 |
 | `/list` | 獲取消息列表 |
 | `/list_by_seq` | 通過序列獲取消息 |
-| `/list_by_mid_seq` | 通過消息ID和序列獲取消息 |
+| `/list_by_mid_seq` | 通過消息 ID 和序列獲取消息 |
 | `/list_edit_record` | 獲取消息編輯記錄 |
 | `/button_report` | 按鈕事件報告 |
