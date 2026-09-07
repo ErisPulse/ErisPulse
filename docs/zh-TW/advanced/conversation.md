@@ -272,19 +272,72 @@ async def step2():
 對話支援持久化，可在超時或中斷後恢復：
 
 ```python
-# 保存對話狀態
-conv_id = conv.save()
-# conv_id = "user_123_group_456"  # 基於使用者和群組自动生成
+# 保存對話狀態（通常無需手動呼叫，見下方"自動檢查點"）
+await conv.save()
 
 # ... 之後在同一會話中恢復 ...
 conv2 = event.conversation()
-if conv2.resume():
+if await conv2.resume():
     await conv2.say("歡迎回來！繼續之前的對話")
 else:
     await conv2.say("沒有找到之前的對話")
 
 # 清除保存的對話
-conv.clear_saved()
+await conv.clear_saved()
+```
+
+儲存鍵包含 target 維度（`conversation:{platform}:{user_id}:{target_id}`），同一用戶在不同會話中的對話互不覆蓋；舊格式（不含 target）的存檔在 `resume()` 時自動遷移。
+
+## 自動檢查點與重啟恢復
+
+### 自動存檔
+
+框架在以下時機自動維護檢查點，通常無需手動調用 `save()`：
+
+| 時機 | 行為 |
+|------|------|
+| `goto()` / `start()` 跳轉分支 | 自動保存（當前分支 + context） |
+| `stop()` / `wait()` 超時 / `collect()` 失敗 | 自動清除（對話終態） |
+
+### 檢查點 TTL
+
+存檔帶時間戳，超過 `ErisPulse.interaction.checkpoint_ttl`（預設 24 小時）的存檔在恢復時自動丟棄：
+
+```toml
+[ErisPulse.interaction]
+checkpoint_ttl = 86400  # 秒
+```
+
+### 重啟自動恢復
+
+框架重啟後，進行中的對話（記憶體中的等待協程）會丟失，但檢查點仍在。透過 `register_resume_handler` 註冊**恢復工廠**，框架即可在重啟後收到該會話首條訊息時自動續接對話：
+
+```python
+from ErisPulse.Core.Event.wrapper import Conversation
+
+@Conversation.register_resume_handler()  # 可傳 platform="onebot11" 限定平台
+def make_conversation(event) -> Conversation:
+    # 工廠職責：重建對話並重新註冊所有分支
+    conv = event.conversation(timeout=60)
+
+    @conv.branch("menu")
+    async def menu(conv, event):
+        ...
+
+    return conv
+```
+
+註冊後，重啟前處於 `menu` 分支的使用者發來首條訊息時，框架自動：恢復 context → 認領該訊息 → 從存檔分支繼續對話。未註冊工廠時此機制零開銷。
+
+### 手動恢復（不用自動機制時）
+
+```python
+@command("continue")
+async def continue_handler(event):
+    conv = event.conversation()
+    # ... 註冊分支 ...
+    if await conv.resume():
+        conv.goto(conv.get_current_branch())
 ```
 
 ## 典型流程模式

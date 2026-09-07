@@ -40,9 +40,9 @@ with owner_scope("MyModule"):
 
 ## 歸屬資源全景
 
-模組在加載上下文內註冊的以下資源均記錄歸屬，卸載/停用時自動回收：
+模組在加載上下文內註冊的以下資源均記錄歸屬，卸載/禁用時自動回收：
 
-| 資源 | 註冊方式 | 清理呼叫 |
+| 資源 | 註冊方式 | 清理調用 |
 |------|----------|----------|
 | 命令 | `@command()` / 命令 dict 聲明 | `command.unregister_by_owner()` |
 | 事件處理器 | `@message` / `@notice` / `@request` / `@meta` | `handler.unregister_by_owner()` |
@@ -57,16 +57,17 @@ with owner_scope("MyModule"):
 | 主人身源 provider | `master.provider` | `master.unregister_by_owner()` |
 | i18n 翻譯鍵 | `I18nClass` 聲明（domain=模組名） | `i18n.unregister_domain()` |
 | 事件覆寫（執行時） | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
+| 互動會話（wait_reply 等待 / 租約） | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()`（等待方立即收到取消） |
 | 上下文數據 | `runtime/context` 按 owner 記錄 | 按模組精確清理 |
 
-適配器端的對應資源（以平台名為 owner）在適配器 `shutdown()` / `restart()`
-時由 `_cleanup_adapter_resources` 回收，另含：
+適配器側的對應資源（以平台名為 owner）在適配器 `shutdown()` / `restart()` 時由 `_cleanup_adapter_resources` 回收，另含：
 
-| 資源 | 清理呼叫 |
+| 資源 | 清理調用 |
 |------|----------|
 | 適配器自有的 `on()` 處理器與中間件 | `adapter.unregister_handlers_by_owner(platform)` |
 | 平台事件方法擴展（`EventMixin`） | `unregister_platform_event_methods(platform)` |
 | 自定義會話類型 | `unregister_custom_types_by_owner(platform)` |
+| 互動會話（該平台掛起的 wait_reply / 租約） | `interaction.cancel_by_platform(platform)` |
 | i18n 翻譯域（domain=配置鍵） | `i18n.unregister_domain(配置鍵)` |
 | 細顆粒命名空間路由 | `router.unregister_all_by_owner(platform)` |
 
