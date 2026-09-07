@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1500,
+  "total_keywords": 1508,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2834,12 +2834,12 @@
         "title": "Gateway Intents"
       }
     ],
-    "HTTP 客戶端模組": [
+    "HTTP Client 模組": [
       {
         "document": "api-reference/core-modules.md",
         "line": 324,
         "level": 2,
-        "title": "HTTP 客戶端模組"
+        "title": "HTTP Client 模組"
       }
     ],
     "HTTP 裝飾器": [
@@ -2914,6 +2914,14 @@
         "title": "I18nManager"
       }
     ],
+    "Interaction 交互會話": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 369,
+        "level": 2,
+        "title": "Interaction 交互會話"
+      }
+    ],
     "Jinja 模板示例": [
       {
         "document": "ecosystem/takumi.md",
@@ -2946,12 +2954,12 @@
         "title": "Lifecycle 模組"
       }
     ],
-    "Logger 模塊": [
+    "Logger 模組": [
       {
         "document": "api-reference/core-modules.md",
         "line": 120,
         "level": 2,
-        "title": "Logger 模塊"
+        "title": "Logger 模組"
       }
     ],
     "Logger（日誌）": [
@@ -3294,20 +3302,20 @@
         "title": "SDK 頂層入口概覽"
       }
     ],
+    "SQL 串流查詢": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 43,
+        "level": 3,
+        "title": "SQL 串流查詢"
+      }
+    ],
     "SQL 查詢建構器": [
       {
         "document": "advanced/sql-builder.md",
         "line": 1,
         "level": 1,
         "title": "SQL 查詢建構器"
-      }
-    ],
-    "SQL 鏈式查詢": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 43,
-        "level": 3,
-        "title": "SQL 鏈式查詢"
       }
     ],
     "SVG 輸出示例": [
@@ -3446,6 +3454,14 @@
         "title": "Token 刷新"
       }
     ],
+    "Transcript 會話收件箱": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 400,
+        "level": 2,
+        "title": "Transcript 會話收件箱"
+      }
+    ],
     "Using 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -3555,7 +3571,7 @@
     "Where 參數傳遞規則": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 323,
+        "line": 345,
         "level": 3,
         "title": "Where 參數傳遞規則"
       }
@@ -3571,7 +3587,7 @@
     "[BUG-001] 事件處理器重複註冊導致事件被多次處理": [
       {
         "document": "bug-tracker.md",
-        "line": 117,
+        "line": 109,
         "level": 3,
         "title": "[BUG-001] 事件處理器重複註冊導致事件被多次處理"
       }
@@ -3579,7 +3595,7 @@
     "[BUG-002] Init 命令適配器配置路徑類型錯誤": [
       {
         "document": "bug-tracker.md",
-        "line": 137,
+        "line": 129,
         "level": 3,
         "title": "[BUG-002] Init 命令適配器配置路徑類型錯誤"
       }
@@ -3587,7 +3603,7 @@
     "[BUG-003] 重啟後命令事件失效": [
       {
         "document": "bug-tracker.md",
-        "line": 161,
+        "line": 153,
         "level": 3,
         "title": "[BUG-003] 重啟後命令事件失效"
       }
@@ -3595,7 +3611,7 @@
     "[BUG-004] 生命週期事件處理器未清理": [
       {
         "document": "bug-tracker.md",
-        "line": 181,
+        "line": 173,
         "level": 3,
         "title": "[BUG-004] 生命週期事件處理器未清理"
       }
@@ -3603,7 +3619,7 @@
     "[BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致": [
       {
         "document": "bug-tracker.md",
-        "line": 201,
+        "line": 193,
         "level": 3,
         "title": "[BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致"
       }
@@ -3611,7 +3627,7 @@
     "[BUG-006] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確": [
       {
         "document": "bug-tracker.md",
-        "line": 221,
+        "line": 213,
         "level": 3,
         "title": "[BUG-006] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確"
       }
@@ -3619,7 +3635,7 @@
     "[BUG-007] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()": [
       {
         "document": "bug-tracker.md",
-        "line": 241,
+        "line": 233,
         "level": 3,
         "title": "[BUG-007] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()"
       }
@@ -3627,7 +3643,7 @@
     "[BUG-008] Bot 離線事件在 shutdown 過程中被重複提交": [
       {
         "document": "bug-tracker.md",
-        "line": 261,
+        "line": 253,
         "level": 3,
         "title": "[BUG-008] Bot 離線事件在 shutdown 過程中被重複提交"
       }
@@ -3635,55 +3651,55 @@
     "[BUG-009] LazyModule 同步訪問 BaseModule 導致未初始化完成": [
       {
         "document": "bug-tracker.md",
-        "line": 281,
+        "line": 273,
         "level": 3,
         "title": "[BUG-009] LazyModule 同步訪問 BaseModule 導致未初始化完成"
       }
     ],
-    "[BUG-010] 配置系統多線程寫入導致資料丟失": [
+    "[BUG-010] 配置系統多線程寫入導致數據丟失": [
       {
         "document": "bug-tracker.md",
-        "line": 301,
+        "line": 293,
         "level": 3,
-        "title": "[BUG-010] 配置系統多線程寫入導致資料丟失"
+        "title": "[BUG-010] 配置系統多線程寫入導致數據丟失"
       }
     ],
     "[BUG-011] Windows 下 CTRL+C 無法停止程序": [
       {
         "document": "bug-tracker.md",
-        "line": 324,
+        "line": 316,
         "level": 3,
         "title": "[BUG-011] Windows 下 CTRL+C 無法停止程序"
       }
     ],
-    "[BUG-012] 熱重啟後已更新模組的 Python 代碼未生效": [
+    "[BUG-012] 熱重啟後已更新模塊的 Python 代碼未生效": [
       {
         "document": "bug-tracker.md",
-        "line": 348,
+        "line": 340,
         "level": 3,
-        "title": "[BUG-012] 熱重啟後已更新模組的 Python 代碼未生效"
+        "title": "[BUG-012] 熱重啟後已更新模塊的 Python 代碼未生效"
       }
     ],
-    "[BUG-013] 模組加載策略排序邏輯錯誤": [
+    "[BUG-013] 模塊加載策略排序邏輯錯誤": [
       {
         "document": "bug-tracker.md",
-        "line": 368,
+        "line": 360,
         "level": 3,
-        "title": "[BUG-013] 模組加載策略排序邏輯錯誤"
+        "title": "[BUG-013] 模塊加載策略排序邏輯錯誤"
       }
     ],
-    "[BUG-014] 適配器中間件返回 None 導致事件資料丟失": [
+    "[BUG-014] 適配器中間件返回 None 導致事件數據丟失": [
       {
         "document": "bug-tracker.md",
-        "line": 388,
+        "line": 380,
         "level": 3,
-        "title": "[BUG-014] 適配器中間件返回 None 導致事件資料丟失"
+        "title": "[BUG-014] 適配器中間件返回 None 導致事件數據丟失"
       }
     ],
     "[BUG-015] 配置文件路徑依賴工作目錄": [
       {
         "document": "bug-tracker.md",
-        "line": 408,
+        "line": 400,
         "level": 3,
         "title": "[BUG-015] 配置文件路徑依賴工作目錄"
       }
@@ -3691,7 +3707,7 @@
     "[BUG-016] BaseStorage 將存儲值 None 與鍵不存在混淆": [
       {
         "document": "bug-tracker.md",
-        "line": 428,
+        "line": 420,
         "level": 3,
         "title": "[BUG-016] BaseStorage 將存儲值 None 與鍵不存在混淆"
       }
@@ -3699,7 +3715,7 @@
     "[BUG-017] WebSocket 路由 auto_accept 標誌在服務重啟後丟失": [
       {
         "document": "bug-tracker.md",
-        "line": 448,
+        "line": 440,
         "level": 3,
         "title": "[BUG-017] WebSocket 路由 auto_accept 標誌在服務重啟後丟失"
       }
@@ -3707,7 +3723,7 @@
     "[BUG-018] HTTP/WS 客戶端併發調用導致崩潰與連接泄漏": [
       {
         "document": "bug-tracker.md",
-        "line": 468,
+        "line": 460,
         "level": 3,
         "title": "[BUG-018] HTTP/WS 客戶端併發調用導致崩潰與連接泄漏"
       }
@@ -3715,7 +3731,7 @@
     "[BUG-019] 適配器熱重載時路由衝突導致重載失敗": [
       {
         "document": "bug-tracker.md",
-        "line": 496,
+        "line": 488,
         "level": 3,
         "title": "[BUG-019] 適配器熱重載時路由衝突導致重載失敗"
       }
@@ -3723,7 +3739,7 @@
     "[BUG-020] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子包": [
       {
         "document": "bug-tracker.md",
-        "line": 520,
+        "line": 512,
         "level": 3,
         "title": "[BUG-020] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子包"
       }
@@ -3731,7 +3747,7 @@
     "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式": [
       {
         "document": "bug-tracker.md",
-        "line": 540,
+        "line": 532,
         "level": 3,
         "title": "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式"
       }
@@ -3739,7 +3755,7 @@
     "[BUG-022] _resolve_account() 賬戶解析迴歸（_accounts_data 未填充）": [
       {
         "document": "bug-tracker.md",
-        "line": 570,
+        "line": 562,
         "level": 3,
         "title": "[BUG-022] _resolve_account() 賬戶解析迴歸（_accounts_data 未填充）"
       }
@@ -3747,7 +3763,7 @@
     "[BUG-023] 修改賬戶配置後適配器緩存未刷新導致賬戶解析失敗": [
       {
         "document": "bug-tracker.md",
-        "line": 609,
+        "line": 601,
         "level": 3,
         "title": "[BUG-023] 修改賬戶配置後適配器緩存未刷新導致賬戶解析失敗"
       }
@@ -3755,7 +3771,7 @@
     "[BUG-024] storage.set() 寫入大數字 ID 鍵時觸發 OOM Kill": [
       {
         "document": "bug-tracker.md",
-        "line": 629,
+        "line": 621,
         "level": 3,
         "title": "[BUG-024] storage.set() 寫入大數字 ID 鍵時觸發 OOM Kill"
       }
@@ -3763,7 +3779,7 @@
     "[BUG-025] on_config_update 回調未被核心路由": [
       {
         "document": "bug-tracker.md",
-        "line": 675,
+        "line": 667,
         "level": 3,
         "title": "[BUG-025] on_config_update 回調未被核心路由"
       }
@@ -3771,7 +3787,7 @@
     "[BUG-026] notice/request 事件 reply 目標推斷錯誤": [
       {
         "document": "bug-tracker.md",
-        "line": 705,
+        "line": 697,
         "level": 3,
         "title": "[BUG-026] notice/request 事件 reply 目標推斷錯誤"
       }
@@ -3779,7 +3795,7 @@
     "[BUG-027] 路由限流清理任務使用固定窗口導致長窗口限流規則失效": [
       {
         "document": "bug-tracker.md",
-        "line": 736,
+        "line": 728,
         "level": 3,
         "title": "[BUG-027] 路由限流清理任務使用固定窗口導致長窗口限流規則失效"
       }
@@ -3787,7 +3803,7 @@
     "[BUG-029] 配置監聽任務廣播半成品 TOML 並靜默吞掉異常": [
       {
         "document": "bug-tracker.md",
-        "line": 768,
+        "line": 760,
         "level": 3,
         "title": "[BUG-029] 配置監聽任務廣播半成品 TOML 並靜默吞掉異常"
       }
@@ -3795,7 +3811,7 @@
     "[BUG-030] 配置 watcher 競態導致 setConfig 延遲寫入靜默丟數據": [
       {
         "document": "bug-tracker.md",
-        "line": 804,
+        "line": 796,
         "level": 3,
         "title": "[BUG-030] 配置 watcher 競態導致 setConfig 延遲寫入靜默丟數據"
       }
@@ -3803,9 +3819,17 @@
     "[BUG-032] 配置延遲刷盤期間「寫後立讀」讀到舊值": [
       {
         "document": "bug-tracker.md",
-        "line": 840,
+        "line": 832,
         "level": 3,
         "title": "[BUG-032] 配置延遲刷盤期間「寫後立讀」讀到舊值"
+      }
+    ],
+    "[BUG-033] wait_reply 挂起的回复被高优先级处理器饿死": [
+      {
+        "document": "bug-tracker.md",
+        "line": 854,
+        "level": 3,
+        "title": "[BUG-033] wait_reply 挂起的回复被高优先级处理器饿死"
       }
     ],
     "__init__.py": [
@@ -4977,7 +5001,7 @@
     "事務中使用": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 247,
+        "line": 269,
         "level": 2,
         "title": "事務中使用"
       }
@@ -5344,12 +5368,12 @@
         "title": "信息查詢命令"
       }
     ],
-    "修改表格結構": [
+    "修改表結構": [
       {
         "document": "advanced/sql-builder.md",
         "line": 58,
         "level": 3,
-        "title": "修改表格結構"
+        "title": "修改表結構"
       }
     ],
     "修飾器與規則的繼承": [
@@ -5621,7 +5645,7 @@
     "典型流程模式": [
       {
         "document": "advanced/conversation.md",
-        "line": 290,
+        "line": 343,
         "level": 2,
         "title": "典型流程模式"
       }
@@ -5752,20 +5776,20 @@
         "title": "判定（三問）"
       }
     ],
-    "刪除數據": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 195,
-        "level": 3,
-        "title": "刪除數據"
-      }
-    ],
-    "刪除表格": [
+    "刪除表": [
       {
         "document": "advanced/sql-builder.md",
         "line": 52,
         "level": 3,
-        "title": "刪除表格"
+        "title": "刪除表"
+      }
+    ],
+    "刪除資料": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 217,
+        "level": 3,
+        "title": "刪除資料"
       }
     ],
     "前置知識": [
@@ -5891,7 +5915,7 @@
     "卸載/停用清理序列": [
       {
         "document": "advanced/ownership.md",
-        "line": 73,
+        "line": 74,
         "level": 2,
         "title": "卸載/停用清理序列"
       }
@@ -5971,7 +5995,7 @@
     "參數化查詢": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 304,
+        "line": 326,
         "level": 2,
         "title": "參數化查詢"
       }
@@ -6036,6 +6060,14 @@
         "line": 552,
         "level": 2,
         "title": "反向轉換與訊息建構"
+      }
+    ],
+    "取得單條記錄": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 146,
+        "level": 4,
+        "title": "取得單條記錄"
       }
     ],
     "可用屬性": [
@@ -6309,7 +6341,7 @@
     "嚴重性分級": [
       {
         "document": "bug-tracker.md",
-        "line": 39,
+        "line": 37,
         "level": 2,
         "title": "嚴重性分級"
       }
@@ -6322,12 +6354,28 @@
         "title": "四、生態與官方客戶端"
       }
     ],
+    "回傳值處理示例": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 302,
+        "level": 3,
+        "title": "回傳值處理示例"
+      }
+    ],
     "回傳值規範": [
       {
         "document": "api-reference/event-system.md",
         "line": 608,
         "level": 4,
         "title": "回傳值規範"
+      }
+    ],
+    "回傳值說明": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 289,
+        "level": 2,
+        "title": "回傳值說明"
       }
     ],
     "回應": [
@@ -7413,7 +7461,7 @@
     "已修復的 Bug": [
       {
         "document": "bug-tracker.md",
-        "line": 115,
+        "line": 107,
         "level": 2,
         "title": "已修復的 Bug"
       }
@@ -7520,6 +7568,20 @@
         "line": 17,
         "level": 3,
         "title": "常用命令"
+      }
+    ],
+    "常用方法": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 373,
+        "level": 3,
+        "title": "常用方法"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 405,
+        "level": 3,
+        "title": "常用方法"
       }
     ],
     "常見任務範例": [
@@ -7762,18 +7824,18 @@
         "title": "建立虛擬環境"
       }
     ],
-    "建立表格": [
+    "建立表": [
       {
         "document": "advanced/sql-builder.md",
         "line": 34,
         "level": 3,
-        "title": "建立表格"
+        "title": "建立表"
       }
     ],
     "引導式註冊": [
       {
         "document": "advanced/conversation.md",
-        "line": 292,
+        "line": 345,
         "level": 3,
         "title": "引導式註冊"
       }
@@ -7805,7 +7867,7 @@
     "循環對話": [
       {
         "document": "advanced/conversation.md",
-        "line": 323,
+        "line": 376,
         "level": 3,
         "title": "循環對話"
       }
@@ -8050,6 +8112,14 @@
         "title": "手動建立專案"
       }
     ],
+    "手動恢復（不用自動機制時）": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 332,
+        "level": 3,
+        "title": "手動恢復（不用自動機制時）"
+      }
+    ],
     "手動註冊自定義翻譯（舊寫法）": [
       {
         "document": "advanced/i18n.md",
@@ -8094,14 +8164,6 @@
         "title": "扩展字段說明"
       }
     ],
-    "批次操作": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 20,
-        "level": 3,
-        "title": "批次操作"
-      }
-    ],
     "批量建構模式（Build）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -8114,6 +8176,14 @@
         "line": 137,
         "level": 4,
         "title": "批量建構模式（Build）"
+      }
+    ],
+    "批量操作": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 20,
+        "level": 3,
+        "title": "批量操作"
       }
     ],
     "批量發送多條消息": [
@@ -8197,7 +8267,7 @@
     "排序、分頁": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 159,
+        "line": 181,
         "level": 3,
         "title": "排序、分頁"
       }
@@ -8221,7 +8291,7 @@
     "推薦寫法": [
       {
         "document": "advanced/ownership.md",
-        "line": 113,
+        "line": 114,
         "level": 3,
         "title": "推薦寫法"
       }
@@ -8250,12 +8320,12 @@
         "title": "推薦禁用懶載入的場景（lazy_load=False）"
       }
     ],
-    "插入數據": [
+    "插入資料": [
       {
         "document": "advanced/sql-builder.md",
         "line": 76,
         "level": 3,
-        "title": "插入數據"
+        "title": "插入資料"
       }
     ],
     "搜尋功能": [
@@ -8764,12 +8834,12 @@
         "title": "方法鏈"
       }
     ],
-    "日誌層級控制": [
+    "日誌等級控制": [
       {
         "document": "api-reference/core-modules.md",
         "line": 143,
         "level": 3,
-        "title": "日誌層級控制"
+        "title": "日誌等級控制"
       }
     ],
     "日誌訂閱（推模式）": [
@@ -8840,14 +8910,6 @@
         "title": "更新已發佈模組"
       }
     ],
-    "更新數據": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 180,
-        "level": 3,
-        "title": "更新數據"
-      }
-    ],
     "更新與維護": [
       {
         "document": "user-guide/deployment.md",
@@ -8862,6 +8924,14 @@
         "line": 6,
         "level": 2,
         "title": "更新要求"
+      }
+    ],
+    "更新資料": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 202,
+        "level": 3,
+        "title": "更新資料"
       }
     ],
     "最佳實踐": [
@@ -9010,20 +9080,20 @@
         "title": "查詢支援的發送方法"
       }
     ],
-    "查詢數據": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 90,
-        "level": 3,
-        "title": "查詢數據"
-      }
-    ],
     "查詢方法": [
       {
         "document": "platform-guide/onebot11.md",
         "line": 66,
         "level": 3,
         "title": "查詢方法"
+      }
+    ],
+    "查詢資料": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 90,
+        "level": 3,
+        "title": "查詢資料"
       }
     ],
     "核心 API": [
@@ -9239,17 +9309,9 @@
     "條件過濾": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 137,
+        "line": 159,
         "level": 3,
         "title": "條件過濾"
-      }
-    ],
-    "條目範例": [
-      {
-        "document": "bug-tracker.md",
-        "line": 65,
-        "level": 2,
-        "title": "條目範例"
       }
     ],
     "概述": [
@@ -9427,7 +9489,7 @@
     "模組作者指南": [
       {
         "document": "advanced/ownership.md",
-        "line": 111,
+        "line": 112,
         "level": 2,
         "title": "模組作者指南"
       }
@@ -9612,12 +9674,20 @@
         "title": "檢查是否是按鈕點擊事件"
       }
     ],
-    "檢查表格是否存在": [
+    "檢查表是否存在": [
       {
         "document": "advanced/sql-builder.md",
         "line": 45,
         "level": 3,
-        "title": "檢查表格是否存在"
+        "title": "檢查表是否存在"
+      }
+    ],
+    "檢查點 TTL": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 302,
+        "level": 3,
+        "title": "檢查點 TTL"
       }
     ],
     "權限控制": [
@@ -9651,7 +9721,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 135,
+        "line": 136,
         "level": 3,
         "title": "注意事項"
       },
@@ -10172,14 +10242,6 @@
         "line": 291,
         "level": 3,
         "title": "獨立 Renderer"
-      }
-    ],
-    "獲取單條記錄": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 124,
-        "level": 4,
-        "title": "獲取單條記錄"
       }
     ],
     "獲取幫助": [
@@ -10807,7 +10869,7 @@
     "相關文件": [
       {
         "document": "advanced/conversation.md",
-        "line": 350,
+        "line": 403,
         "level": 2,
         "title": "相關文件"
       },
@@ -10843,7 +10905,7 @@
       },
       {
         "document": "advanced/sql-builder.md",
-        "line": 376,
+        "line": 398,
         "level": 2,
         "title": "相關文件"
       },
@@ -10867,7 +10929,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 369,
+        "line": 424,
         "level": 2,
         "title": "相關文件"
       },
@@ -11207,7 +11269,7 @@
     "統計概覽": [
       {
         "document": "bug-tracker.md",
-        "line": 90,
+        "line": 84,
         "level": 2,
         "title": "統計概覽"
       }
@@ -11372,12 +11434,28 @@
         "title": "聲明式配置（推薦）"
       }
     ],
+    "自動存檔": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 293,
+        "level": 3,
+        "title": "自動存檔"
+      }
+    ],
     "自動文檔": [
       {
         "document": "advanced/router.md",
         "line": 304,
         "level": 2,
         "title": "自動文檔"
+      }
+    ],
+    "自動檢查點與重啟恢復": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 291,
+        "level": 2,
+        "title": "自動檢查點與重啟恢復"
       }
     ],
     "自動注入": [
@@ -11407,7 +11485,7 @@
     "自訂儲存後端": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 342,
+        "line": 364,
         "level": 2,
         "title": "自訂儲存後端"
       }
@@ -11632,6 +11710,14 @@
         "title": "裝飾器路由（推薦）"
       }
     ],
+    "複用查詢條件": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 241,
+        "level": 2,
+        "title": "複用查詢條件"
+      }
+    ],
     "覆寫內建方法": [
       {
         "document": "api-reference/event-system.md",
@@ -11699,7 +11785,7 @@
     "計數與存在性檢查": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 208,
+        "line": 230,
         "level": 3,
         "title": "計數與存在性檢查"
       }
@@ -11823,7 +11909,7 @@
     "設計邊界：哪些資源不隨卸載清理": [
       {
         "document": "advanced/ownership.md",
-        "line": 97,
+        "line": 98,
         "level": 2,
         "title": "設計邊界：哪些資源不隨卸載清理"
       }
@@ -12260,22 +12346,6 @@
         "line": 82,
         "level": 3,
         "title": "返回值結構"
-      }
-    ],
-    "返回值處理範例": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 280,
-        "level": 3,
-        "title": "返回值處理範例"
-      }
-    ],
-    "返回值說明": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 267,
-        "level": 2,
-        "title": "返回值說明"
       }
     ],
     "退出碼 42 契約": [
@@ -13108,12 +13178,12 @@
         "title": "重啟"
       }
     ],
-    "重複使用查詢條件": [
+    "重啟自動恢復": [
       {
-        "document": "advanced/sql-builder.md",
-        "line": 219,
-        "level": 2,
-        "title": "重複使用查詢條件"
+        "document": "advanced/conversation.md",
+        "line": 311,
+        "level": 3,
+        "title": "重啟自動恢復"
       }
     ],
     "重要限制": [
@@ -13127,7 +13197,7 @@
     "重設建構器": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 236,
+        "line": 258,
         "level": 2,
         "title": "重設建構器"
       }
@@ -13562,6 +13632,12 @@
     ],
     "項目模板": [
       {
+        "document": "bug-tracker.md",
+        "line": 59,
+        "level": 2,
+        "title": "項目模板"
+      },
+      {
         "document": "developer-guide/README.md",
         "line": 48,
         "level": 3,
@@ -13615,7 +13691,7 @@
     "類型分類": [
       {
         "document": "bug-tracker.md",
-        "line": 49,
+        "line": 45,
         "level": 2,
         "title": "類型分類"
       }

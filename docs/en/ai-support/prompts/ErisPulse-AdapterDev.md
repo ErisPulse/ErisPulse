@@ -6863,11 +6863,11 @@ def on_status_change(event):
 
 # Core Module API
 
-This document provides a quick reference for the ErisPulse core module API, including method signatures and brief descriptions. Click the "Full Documentation" link for each module for detailed usage and examples.
+This document provides a quick reference for the ErisPulse core module API, including method signatures and brief descriptions. Click the "Full Documentation" link for each module to view detailed usage and examples.
 
 ## Storage Module
 
-A key-value storage system based on SQLite, supporting general SQL chained queries.
+A key-value storage system based on SQLite, supporting generic SQL chainable queries.
 
 ### Basic Operations
 
@@ -6899,13 +6899,13 @@ with sdk.storage.transaction():
 ### Attribute Access
 
 ```python
-sdk.storage.my_key          # Equivalent to sdk.storage.get("my_key")
-sdk.storage.my_key = "val"  # Equivalent to sdk.storage.set("my_key", "val")
+sdk.storage.my_key          # equivalent to sdk.storage.get("my_key")
+sdk.storage.my_key = "val"  # equivalent to sdk.storage.set("my_key", "val")
 ```
 
-### SQL Chained Query
+### SQL Chainable Queries
 
-The Storage module provides a chained-call style generic SQL query builder, supporting CRUD operations for custom tables.
+The Storage module provides a chainable query builder style for generic SQL queries, supporting CRUD operations on custom tables.
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -6917,11 +6917,11 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> For the complete chained query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), please refer to [SQL Query Builder](../advanced/sql-builder.md).
+> For the complete chainable query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), refer to [SQL Query Builder](../advanced/sql-builder.md).
 
 ### Storage Backend Abstraction
 
-`StorageManager` inherits from the `BaseStorage` abstract base class, supporting extension to other storage media (Redis, MySQL, etc.).
+`StorageManager` inherits from the `BaseStorage` abstract base class, supporting extension to other storage mediums (Redis, MySQL, etc.).
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -6929,22 +6929,22 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 ### Asynchronous Interfaces
 
-Both the Storage and Config modules provide asynchronous methods (prefixed with `a`), which can be safely called in asynchronous handlers. Synchronous methods are retained and do not require modification of existing code.
+The Storage and Config modules both provide asynchronous methods (prefixed with `a`), which can be safely called within asynchronous handlers. Synchronous methods are retained for backward compatibility, requiring no modifications to existing code.
 
 ```python
-# Asynchronous storage
+# Asynchronous Storage
 value = await sdk.storage.aget("key")
 await sdk.storage.aset("key", "value")
 await sdk.storage.adelete("key")
 keys = await sdk.storage.aget_all_keys()
 await sdk.storage.aclear()
 
-# Asynchronous batch operations
+# Asynchronous Batch Operations
 values = await sdk.storage.aget_multi(["k1", "k2"])
 await sdk.storage.aset_multi({"k1": "v1", "k2": "v2"})
 await sdk.storage.adelete_multi(["k1", "k2"])
 
-# Asynchronous configuration
+# Asynchronous Configuration
 value = await sdk.config.agetConfig("MyModule.key")
 await sdk.config.asetConfig("MyModule.key", "value")
 await sdk.config.aforce_save()
@@ -6953,17 +6953,17 @@ await sdk.config.areload()
 
 ## Config Module
 
-Configuration file management in TOML format, supporting key paths separated by dots.
+TOML-based configuration file management, supporting dot-separated key paths.
 
 ### API Overview
 
 | Method | Description |
-|--------|-------------|
-| `getConfig(key, default)` | Read configuration, supports dot-separated paths like `"MyModule.subkey"` |
+|------|------|
+| `getConfig(key, default)` | Retrieve configuration, supports dot paths like `"MyModule.subkey"` |
 | `setConfig(key, value, immediate=False)` | Write configuration. If `immediate=True`, save immediately to file |
-| `force_save()` | Force writing configuration from memory to file |
+| `force_save()` | Force-write in-memory configuration to file |
 | `reload()` | Reload configuration from file |
-| `agetConfig(key, default)` | Asynchronously read configuration |
+| `agetConfig(key, default)` | Asynchronously retrieve configuration |
 | `asetConfig(key, value, immediate)` | Asynchronously write configuration |
 | `aforce_save()` | Asynchronously force save |
 | `areload()` | Asynchronously reload |
@@ -6978,27 +6978,27 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` uses delayed writing by default (batch save every 5 seconds). Setting `immediate=True` will immediately persist to the configuration file. Configuration changes trigger the `config.set` lifecycle event.
+> `setConfig` uses delayed write by default (batch save every 5 seconds). Setting `immediate=True` will immediately persist to the configuration file. Configuration changes trigger the `config.set` lifecycle event.
 
 ## Logger Module
 
-A modular logging system based on Rich output, supporting child loggers and module-level control.
+A modular logging system based on Rich output, supporting sub-loggers and module-level control.
 
 ### Basic Usage
 
 ```python
 sdk.logger.debug("Debug message")
-sdk.logger.info("Runtime information")
+sdk.logger.info("Info message")
 sdk.logger.warning("Warning message")
 sdk.logger.error("Error message")
 sdk.logger.critical("Critical error")
 ```
 
-### Child Loggers
+### Sub-loggers
 
 ```python
 child_logger = sdk.logger.get_child("MyModule")
-child_logger.info("Child module log")
+child_logger.info("Submodule log")
 
 child_logger.get_child("utils")  # Supports nesting
 ```
@@ -7011,24 +7011,24 @@ sdk.logger.set_module_level("MyModule", "DEBUG")       # Module level
 
 # Supported levels (from low to high):
 # TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
-# TRACE is the lowest level, outputs detailed framework internal debug information (event dispatching, route registration, etc.)
+# TRACE is the lowest level, outputting detailed framework internal debug information (event dispatch, route registration, etc.)
 sdk.logger.set_level("TRACE")                          # Enable all logs
 ```
 
 ### Log Subscription (Push Mode)
 
-Allows modules like Dashboard to receive structured logs in real time, supports level filtering and historical replay.
+For modules like Dashboard to receive structured logs in real-time, supporting level filtering and historical replay.
 
-> **Explicitly subscribe to lower-level logs**: The `min_level` of a subscriber can be lower than the global log level. In this case, lower-level logs are **only pushed to matching subscribers**, not output to the console, nor written to memory, thus avoiding pollution of the main log stream.
+> **Explicitly subscribe to lower-level logs**: The `min_level` of a subscriber can be lower than the global log level. In this case, low-level logs are **only pushed to matching subscribers**, not output to the console, nor written to memory, thus avoiding pollution of the main log stream.
 >
 > ```python
-> # Global level is INFO, but DEBUG logs can still be individually subscribed
+> # Global level is INFO, but you can still subscribe to DEBUG logs individually
 > @sdk.logger.handler("debug-tracer", min_level="DEBUG")
 > def on_debug(log_data: dict): ...
 > ```
 
 ```python
-# Decorator method
+# Decorator approach
 @sdk.logger.handler("my-handler", min_level="INFO")
 def on_log(log_data: dict):
     # log_data = {
@@ -7039,15 +7039,15 @@ def on_log(log_data: dict):
     # }
     pass
 
-# Direct call method
+# Direct call approach
 sdk.logger.handler("my-handler", min_level="INFO")(on_log)
 sdk.logger.remove_handler("my-handler")
 ```
 
 | Method | Description |
-|--------|-------------|
-| `handler(id, *, min_level)(func)` | Decorator/direct call dual-use. If `id` is empty, it takes the function name. `min_level` can be lower than the global level (lower-level logs are only pushed to subscribers, not to console/memory). Registers and automatically replays historical logs |
-| `remove_handler(id)` | Removes a subscriber |
+|------|------|
+| `handler(id, *, min_level)(func)` | Decorator/functional approach. If `id` is empty, the function name is used. `min_level` can be lower than the global level (low-level logs are only pushed to matching subscribers, not to console/memory). History logs are automatically replayed upon registration |
+| `remove_handler(id)` | Remove subscriber |
 
 ### Output Control
 
@@ -7060,20 +7060,20 @@ sdk.logger.set_memory_limit(1000)
 
 ## Adapter Module
 
-The adapter manager, responsible for managing the registration, startup, and shutdown of adapters for multiple platforms.
+Adapter manager, managing registration, startup, and shutdown of multi-platform adapters.
 
 ### API Overview
 
 | Method | Description |
-|--------|-------------|
-| `get(platform)` | Get the adapter instance |
-| `exists(platform)` | Check if the adapter is registered |
-| `enable(platform)` / `disable(platform)` | Enable/disable the adapter |
-| `is_enabled(platform)` | Check if the adapter is enabled |
-| `startup(platforms)` / `shutdown(platforms)` | Start/stop the adapter |
-| `is_running(platform)` | Check if the adapter is running |
+|------|------|
+| `get(platform)` | Retrieve adapter instance |
+| `exists(platform)` | Check if adapter is registered |
+| `enable(platform)` / `disable(platform)` | Enable/disable adapter |
+| `is_enabled(platform)` | Check if enabled |
+| `startup(platforms)` / `shutdown(platforms)` | Start/stop adapter |
+| `is_running(platform)` | Check if adapter is running |
 | `list_running()` | List all running adapters |
-| `platforms` | Get a list of all platform names |
+| `platforms` | Retrieve list of all platform names |
 
 ### Adapter Events
 
@@ -7096,26 +7096,26 @@ sdk.adapter.is_bot_online("telegram", "123456")
 sdk.adapter.get_status_summary()
 ```
 
-> For the complete adapter management API, please refer to [Adapter System API](adapter-system.md).
+> For the complete adapter management API, see [Adapter System API](adapter-system.md).
 
 ## Module Module
 
-The module manager, responsible for managing the registration, loading, and unloading of plugins.
+Module manager, managing plugin registration, loading, and unloading.
 
 ### API Overview
 
 | Method | Description |
-|--------|-------------|
-| `get(name)` | Get the module instance or a lazy-loaded proxy (returns a proxy if registered but not loaded) |
-| `exists(name)` | Check if the module is registered |
-| `is_loaded(name)` | Check if the module is loaded |
-| `is_enabled(name)` | Check if the module is enabled |
-| `enable(name)` / `disable(name)` | Enable/disable the module |
-| `load(name)` / `unload(name)` | Load/unload the module |
+|------|------|
+| `get(name)` | Retrieve module instance or lazy-loaded proxy (returns proxy if registered but not loaded) |
+| `exists(name)` | Check if registered |
+| `is_loaded(name)` | Check if loaded |
+| `is_enabled(name)` | Check if enabled |
+| `enable(name)` / `disable(name)` | Enable/disable module |
+| `load(name)` / `unload(name)` | Load/unload module |
 | `list_registered()` | List all registered modules |
 | `list_loaded()` | List all loaded modules |
-| `get_info(name)` | Get module information |
-| `get_status_summary()` | Get a summary of module status |
+| `get_info(name)` | Retrieve module information |
+| `get_status_summary()` | Retrieve module status summary |
 
 ### Attribute Access
 
@@ -7127,18 +7127,18 @@ module = sdk.ModuleName  # Equivalent shortcut
 
 ## Lifecycle Module
 
-An event-driven lifecycle manager that provides event submission and listener functionality.
+Event-driven lifecycle manager, providing event submission and listening functionality.
 
 ### API Overview
 
 | Method | Description |
-|--------|-------------|
-| `on(event, priority=0)` | Decorator to register event handlers, supports dot notation matching and wildcard `*` |
-| `register(event, handler, priority=0)` | Function-style registration of handlers |
-| `unregister(event, handler=None)` | Remove a handler |
-| `emit(event, data)` | Asynchronously trigger an event |
-| `emit_sync(event, data)` | Synchronously trigger an event |
-| `submit_event(event_type, msg, data, source)` | Submit an event in standard format (compatible with older versions) |
+|------|------|
+| `on(event, priority=0)` | Decorator to register event handler, supports dot matching and wildcard `*` |
+| `register(event, handler, priority=0)` | Functional approach to register handler |
+| `unregister(event, handler=None)` | Remove handler |
+| `emit(event, data)` | Asynchronously trigger event |
+| `emit_sync(event, data)` | Synchronously trigger event |
+| `submit_event(event_type, msg, data, source)` | Submit standard format event (compatible with old version) |
 | `start_timer(id)` / `stop_timer(id)` | Performance timer |
 
 ### Example
@@ -7155,13 +7155,13 @@ async def handle_any_module_event(event_data):
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
 ```
 
-> For a complete list of standard events and detailed usage, please refer to [Lifecycle Management](../advanced/lifecycle.md).
+> For the complete list of standard events and detailed usage, see [Lifecycle Management](../advanced/lifecycle.md).
 
 ## Router Module
 
-HTTP/WebSocket router manager, based on FastAPI + Uvicorn, supports decorator-based routing, middleware, grouping, rate limiting, and CORS.
+HTTP/WebSocket router manager, based on FastAPI + Uvicorn, supporting decorator routing, middleware, grouping, rate limiting, CORS.
 
-> For the complete routing API documentation (decorator-based routing, WebSocket, middleware, rate limiting, CORS, security headers, etc.), please refer to [Router Manager](../advanced/router.md).
+> For the complete router API documentation (decorator routing, WebSocket, middleware, rate limiting, CORS, security headers, etc.), see [Router Manager](../advanced/router.md).
 
 ### Quick Reference
 
@@ -7186,16 +7186,16 @@ async def list_users(request: HttpRequest):
 
 ## HTTP Client Module
 
-A unified network client that aggregates HTTP requests, WebSocket connections, connection pool management, automatic retries, request statistics, and lifecycle event integration.
+Unified network client, aggregating HTTP requests, WebSocket connections, connection pooling, automatic retries, request statistics, and lifecycle event integration.
 
-> For complete network client documentation (request methods, response objects, WebSocket client, exception hierarchy, etc.), please refer to [Network Client](../advanced/http-client.md).
+> For the complete network client documentation (request methods, response objects, WebSocket client, exception system, etc.), see [Network Client](../advanced/http-client.md).
 
 ### Quick Reference
 
 ```python
 from ErisPulse.Core import client
 
-# HTTP Request
+# HTTP request
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
@@ -7209,7 +7209,7 @@ async for text in ws.iter_text():
 
 ### dump_state()
 
-Exports a snapshot of the current running state of the framework, used for debugging and diagnostics.
+Exports a snapshot of the current runtime state of the framework, for debugging and diagnostics.
 
 ```python
 import json
@@ -7217,17 +7217,69 @@ state = sdk.dump_state()
 print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 ```
 
-The returned structure contains the status of the following subsystems:
+The returned structure includes the status of the following subsystems:
 
 | Field | Description |
-|-------|-------------|
-| `sdk` | SDK initialization status, Python version, runtime platform, timestamp |
+|------|------|
+| `sdk` | SDK initialization status, Python version, running platform, timestamp |
 | `adapters` | List of registered/started adapters, online status of Bots on each platform |
 | `modules` | List of registered/enabled/disabled/lazy-loaded modules |
-| `events` | Number of event handlers for various event types (message/notice/request/meta/commands) |
+| `events` | Number of handlers for each type of event (message/notice/request/meta/commands) |
 | `router` | Server running status, number of HTTP/WebSocket routes |
 
 > Added in 2.5.2
+
+## Interaction Session
+
+Manages wait_reply suspended waiting and session mutual exclusion leases (`sdk.interaction`).
+
+### Common Methods
+
+```python
+# Query current session owner (who is interacting with this user)
+owner = sdk.interaction.get_owner_of(event)
+
+# Acquire session mutual exclusion lease (returns None if occupied)
+lease = sdk.interaction.acquire(event)
+if lease:
+    try:
+        ...  # Exclusive interaction
+    finally:
+        lease.release()
+
+# Context manager form (raises SessionOccupiedError if occupied)
+with sdk.interaction.hold(event) as lease:
+    ...
+
+# Suspended session count
+sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'owners': {'Chat': 3}}
+```
+
+When a module is unloaded or an adapter is closed, its suspended waits are automatically canceled (the waiting party immediately returns `None`), and replies are automatically checked for scope permissions (if the user is blocked or the module is unbound, the wait is terminated).
+
+> Added in 2.8.0-dev.2
+
+## Transcript Session Inbox
+
+Automatic recording and querying of recent message streams per session (`sdk.transcript`), serving as a common base for context memory modules like AI conversation and anti-spam.
+
+### Common Methods
+
+```python
+# Convenient query (recommended): recent 20 messages in current session (including user and bot, ascending by time)
+messages = await event.history(20)
+for m in messages:
+    print(m["role"], ":", m["text"])
+
+# Manager API
+sdk.transcript.append(event, "user", "text")
+sdk.transcript.get(event, n=20)
+sdk.transcript.clear(event)
+```
+
+Configuration (`ErisPulse.transcript`): `enabled` (default on), `max_per_session` (default 50), `ttl_hours` (default 168 hours). Data is stored in a separate SQLite table, with lazy cleanup for over-limit or expired entries.
+
+> Added in 2.8.0-dev.2
 
 
 
@@ -7725,7 +7777,7 @@ class MyAdapter(BaseAdapter):
 
 # SQL Query Builder
 
-The Storage module of ErisPulse provides a fluent-style, chainable SQL query builder that supports custom table creation, querying, updating, and deletion operations.
+The Storage module of ErisPulse provides a chain-call style generic SQL query builder, supporting the creation, querying, updating, and deletion operations for custom tables.
 
 ## Architecture Design
 
@@ -7740,8 +7792,8 @@ Bases/storage.py                    Core/storage.py
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` are abstract base classes that define a unified interface, supporting future expansion to other storage media (Redis, MySQL, etc.)
-- `StorageManager` is the current SQLite concrete implementation, fully backward compatible
+- `BaseStorage` / `BaseQueryBuilder` are abstract base classes that define unified interfaces, supporting future expansion to other storage media (Redis, MySQL, etc.)
+- `StorageManager` is the current SQLite concrete implementation, fully backward compatible.
 
 ## Import
 
@@ -7796,15 +7848,15 @@ sdk.storage.AlterTable("users") \
     .Execute()
 ```
 
-## Chained Query
+## Chain Query
 
 ### Insert Data
 
 ```python
-# Insert single row (pass a dictionary)
+# Single row insert (pass dictionary)
 sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 
-# Insert multiple rows (pass a list of dictionaries)
+# Batch insert (pass list of dictionaries)
 sdk.storage.Table("users").InsertMulti([
     {"name": "Bob", "age": 25},
     {"name": "Charlie", "age": 35},
@@ -7831,37 +7883,59 @@ for row in rows:
     age = row[1]    # 30
 ```
 
-#### Convert Tuples to Dictionaries
+#### Convert Tuple to Dictionary
+
+It is recommended to directly call `ToDict()` on the chain; the SELECT result will automatically return as a list of dictionaries (column name → value):
+
+```python
+# ToDict chain: result is list[dict], column names are automatically taken from query metadata (SELECT * is also supported)
+rows = sdk.storage.Table("users").Select("name", "age").ToDict().Execute()
+# rows: [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}, ...]
+
+for row in rows:
+    print(row["name"], row["age"])
+
+# ExecuteOne also works
+row = sdk.storage.Table("users").Select("name", "age") \
+    .Where("id = ?", 1) \
+    .ToDict() \
+    .ExecuteOne()
+# row: {"name": "Alice", "age": 30} or None
+```
+
+> `ToDict()` is a chain marker (returns self): chains that do not call it maintain the original `list[tuple]` behavior, fully backward compatible; `copy()` will preserve this marker.
+
+Manual zip method (equivalent to ToDict, suitable for scenarios where chain modification is not possible):
 
 ```python
 columns = ["id", "name", "age"]
 rows = sdk.storage.Table("users").Select(*columns).Execute()
 
-# Method 1: Using zip in a loop
+# Method one: zip in loop
 for row in rows:
     record = dict(zip(columns, row))
     print(record["name"], record["age"])
 
-# Method 2: Convert to a list of dictionaries at once
+# Method two: convert to dictionary list at once
 records = [dict(zip(columns, row)) for row in rows]
 ```
 
-#### Get a Single Record
+#### Get Single Record
 
 ```python
 row = sdk.storage.Table("users").Select("name", "age") \
     .Where("id = ?", 1) \
     .ExecuteOne()
 
-# row is a tuple or None
+# row is tuple or None
 if row is not None:
     name = row[0]  # "Alice"
     age = row[1]   # 30
 ```
 
-### Conditional Filtering
+### Condition Filtering
 
-> `Where(condition, *params)` supports multiple parameters, corresponding to multiple `?` placeholders.
+> `Where(condition, *params)` supports passing multiple parameters, corresponding to multiple `?` placeholders.
 
 ```python
 # Single condition (one placeholder, one parameter)
@@ -7869,19 +7943,19 @@ rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 18) \
     .Execute()
 
-# Multiple placeholders in one Where clause
+# Multiple placeholders in one Where
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ? AND age < ?", 20, 40) \
     .Execute()
 
-# Multiple calls to Where (AND connected)
+# Multiple Where calls (AND connected)
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 20) \
     .Where("age < ?", 40) \
     .Execute()
 ```
 
-### Sorting and Pagination
+### Sorting, Pagination
 
 ```python
 # Ascending order
@@ -7941,20 +8015,20 @@ count = sdk.storage.Table("users").Where("age > ?", 18).Count()
 exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
 ```
 
-## Reusing Query Conditions
+## Reuse Query Conditions
 
-Use `copy()` to deep copy the builder and reuse the base conditions:
+Use `copy()` to deep copy the builder and reuse base conditions:
 
 ```python
 base = sdk.storage.Table("users").Where("age > ?", 20)
 
-# Query based on the same conditions
+# Query based on same condition
 rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
 
-# Count based on the same conditions
+# Count based on same condition
 count = base.copy().Count()
 
-# Check existence based on the same conditions
+# Check existence based on same condition
 exists = base.copy().Where("name = ?", "Alice").Exists()
 ```
 
@@ -7964,14 +8038,14 @@ exists = base.copy().Where("name = ?", "Alice").Exists()
 builder = sdk.storage.Table("users").Select("name").Where("age > ?", 18)
 builder.clear()
 
-# Rebuild the query
+# Rebuild query
 builder.Select("name", "age").Where("name = ?", "Alice")
 rows = builder.Execute()
 ```
 
-## Using in Transactions
+## Use in Transactions
 
-Chained operations are fully supported in transactions:
+Chain operations fully support transactions:
 
 ```python
 # Commit transaction
@@ -8005,12 +8079,12 @@ except Exception:
 ### Return Value Handling Examples
 
 ```python
-# Select returns tuples, access by index
+# Select returns tuple, access by index
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
-first_name = rows[0][0]  # First row, first column (name)
-first_age = rows[0][1]   # First row, second column (age)
+first_name = rows[0][0]  # First row, first column name
+first_age = rows[0][1]   # First row, second column age
 
-# Recommended: Use column list + zip to convert to dictionary, more readable code
+# Recommended: use column name list + zip to convert to dictionary, more readable code
 cols = ["name", "age"]
 rows = sdk.storage.Table("users").Select(*cols).Execute()
 for row in rows:
@@ -8028,10 +8102,10 @@ print(f"Deleted {affected} records")
 
 ## Parameterized Queries
 
-All WHERE parameters use the `?` placeholder, with parameters passed as subsequent arguments to `Where()` (**not** as a tuple or list):
+All WHERE parameters use `?` placeholders, with parameters passed as subsequent arguments to `Where()` (not as a tuple or list):
 
 ```python
-# Correct ✓ — multiple parameters passed individually
+# Correct ✓ — multiple arguments passed individually
 sdk.storage.Table("users").Where("age > ? AND name = ?", 18, "Alice").Execute()
 
 # Correct ✓ — multiple Where calls
@@ -8039,7 +8113,7 @@ sdk.storage.Table("users").Where("age > ?", 18).Where("name = ?", "Alice").Execu
 
 # Incorrect ✗ — do not pass a tuple
 sdk.storage.Table("users").Where("age > ? AND name = ?", (18, "Alice")).Execute()
-# This would treat the entire tuple as the value for the first placeholder
+# This will treat the entire tuple as the value for the first placeholder
 
 # Incorrect ✗ — SQL injection risk
 sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
@@ -8049,7 +8123,7 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ```python
 # Where(condition: str, *params: Any)
-# params is a variable argument list, passed individually
+# params are variable arguments, passed individually
 
 # Single parameter
 .Where("name = ?", "Alice")
@@ -8084,7 +8158,6 @@ class MyQueryBuilder(BaseQueryBuilder):
 
     def Exists(self):
         ...
-
 
 class MyStorage(BaseStorage):
     def get(self, key, default=None):
@@ -9666,110 +9739,112 @@ topology = sdk.get_topology()
 
 ### 归属权（owner）系统
 
-# Ownership (Owner) System
+# Ownership (owner) System
 
-Ownership is the cornerstone of the plug-and-play functionality of modules: all framework resources registered during module loading are automatically named, and are automatically reclaimed when the module is unloaded or disabled—module authors only need to declare resources, without manually writing cleanup logic.
+Ownership is the cornerstone of the "plug-and-play" nature of modules: all framework resources registered during module loading are automatically attributed, and are automatically reclaimed when the module is unloaded/disabled—module authors only need to declare resources, without writing cleanup logic manually.
 
-> **Related Systems**: Scope determines whether a resource is active during event dispatching, while ownership determines "who owns the resource and who will reclaim it upon unload." See [Unified Control Plane (Scope)](scope.md) for more details on scope, and [Lifecycle Management](lifecycle.md#Background_Task_Ownership_and_Automatic_Cancellation) for background task ownership and automatic cancellation.
+> **Related Systems**: Scope determines "whether a resource is active" during event dispatch, while ownership determines "who owns the resource and who will reclaim it upon unload." See [Unified Control Plane (scope)](scope.md) for scope details, and [Lifecycle Management](lifecycle.md#后台任务归属与自动取消) for background tasks.
 
 {!--< tips >!--}
-1. Ownership is automatically recorded at the moment of registration based on `current_owner`, requiring zero changes to module code.
-2. Unloading and disabling share the same cleanup chain (`_cleanup_module_registrations`), where each step failure only triggers a warning without interruption.
-3. Resources defined by user configuration (persistent overrides, scope rules, command ACLs) are **not** cleaned up when the module is unloaded.
+1. Ownership is automatically recorded at the **moment of registration** based on `current_owner`, requiring zero code changes from the module.
+2. Unload and disable share the same cleanup chain (`_cleanup_module_registrations`), where failures at each step only trigger warnings and do not interrupt the process.
+3. Resources with user configuration semantics (persistent overrides / scope rules / command ACLs) are **not** cleaned up when the module is unloaded.
 {!--< /tips >!--}
 
 ## Owner Context Mechanism
 
-The owner is passed through the context variable `current_owner` (`ErisPulse.runtime.context`):
+Ownership is passed through the context variable `current_owner` (`ErisPulse.runtime.context`):
 
 ```python
 from ErisPulse.runtime import owner_scope, get_current_owner
 
 with owner_scope("MyModule"):
-    # All resources registered within this block are automatically assigned to MyModule
+    # All resources registered in this block are automatically attributed to MyModule
     assert get_current_owner() == "MyModule"
 ```
 
-The framework automatically injects the owner at the following points (module/adapter code does not need manual wrapping):
+The framework automatically injects the owner at the following points (module/adapter code does not need to manually wrap these):
 
 | Timing | Owner Value | Location |
 |--------|-------------|----------|
 | Module `load()` | Module name | Throughout instantiation + `on_load` |
 | Adapter `start()` / `restart()` | Platform name | Throughout adapter startup |
-| `activate_on` lazy-load stub registration | Module name | During placeholder command/processor registration |
-| Event handler execution | Module name of handler | Re-injected at handler/command entry |
+| `activate_on` lazy-load stub registration | Module name | Placeholder command/handler registration |
+| Event handler execution | Handler's owning module name | handler / command entry re-injected |
 
-Re-injection during execution means that if a module declares command handlers in `on_load` and calls registration APIs (such as `sdk.adapter.on()` or `overrides.*.set(persist=False)`) during their execution, these will also be automatically assigned to the same module.
+Re-injection during execution means that commands registered in `on_load` and subsequently called within their execution (e.g., `sdk.adapter.on()`, `overrides.*.set(persist=False)`) are still automatically attributed to the module.
 
-## Resource Ownership Overview
+## Full Overview of Owned Resources
 
-All resources registered by a module within its loading context are recorded with ownership and automatically reclaimed upon unloading/disabling:
+All resources registered within the module loading context are recorded with ownership and automatically reclaimed upon unload/disable:
 
 | Resource | Registration Method | Cleanup Call |
 |----------|---------------------|--------------|
-| Command | `@command()` / Command dict declaration | `command.unregister_by_owner()` |
-| Event Handler | `@message` / `@notice` / `@request` / `@meta` | `handler.unregister_by_owner()` |
-| Adapter Event Listener | `sdk.adapter.on()` / `raw=True` | `adapter.unregister_handlers_by_owner()` |
-| Adapter Middleware | `@sdk.adapter.middleware` | Same as above |
-| Route (HTTP/WS/SSE) | `router.http()` / `websocket()` / `sse()` | Double fallback by namespace + owner |
-| Route Middleware | `@router.middleware()` / `add_middleware()` | `router.unregister_all_by_owner()` |
+| Commands | `@command()` / command dict declaration | `command.unregister_by_owner()` |
+| Event Handlers | `@message` / `@notice` / `@request` / `@meta` | `handler.unregister_by_owner()` |
+| Adapter Event Listeners | `sdk.adapter.on()` / `raw=True` | `adapter.unregister_handlers_by_owner()` |
+| Adapter Middlewares | `@sdk.adapter.middleware` | Same as above |
+| Routes (HTTP/WS/SSE) | `router.http()` / `websocket()` / `sse()` | Double fallback by namespace + owner |
+| Route Middlewares | `@router.middleware()` / `add_middleware()` | `router.unregister_all_by_owner()` |
 | Dashboard Home Entry | `router.register_home_entry()` | `unregister_home_entries_by_owner()` |
-| Custom Session Type | `register_custom_type()` | `unregister_custom_types_by_owner()` |
-| Background Task | `self.spawn()` | `cancel_owner_tasks()` |
-| Lifecycle Hook | `lifecycle.register()` | `lifecycle.unregister_by_owner()` |
-| Master Source Provider | `master.provider` | `master.unregister_by_owner()` |
-| i18n Translation Key | `I18nClass` declaration (domain=module name) | `i18n.unregister_domain()` |
-| Event Override (Runtime) | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
+| Custom Session Types | `register_custom_type()` | `unregister_custom_types_by_owner()` |
+| Background Tasks | `self.spawn()` | `cancel_owner_tasks()` |
+| Lifecycle Hooks | `lifecycle.register()` | `lifecycle.unregister_by_owner()` |
+| Master Provider | `master.provider` | `master.unregister_by_owner()` |
+| i18n Translation Keys | `I18nClass` declaration (domain=module name) | `i18n.unregister_domain()` |
+| Runtime Event Overrides | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
+| Interactive Sessions (wait_reply / leases) | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()` (waiter immediately receives cancellation) |
 | Context Data | `runtime/context` recorded by owner | Precise cleanup by module |
 
-On the adapter side, corresponding resources (with platform name as owner) are reclaimed by `_cleanup_adapter_resources` during adapter `shutdown()` / `restart()`, including:
+Corresponding adapter-side resources (with platform name as owner) are reclaimed during adapter `shutdown()` / `restart()` via `_cleanup_adapter_resources`, including:
 
 | Resource | Cleanup Call |
 |----------|--------------|
-| Adapter-specific `on()` handlers and middleware | `adapter.unregister_handlers_by_owner(platform)` |
-| Platform event method extension (`EventMixin`) | `unregister_platform_event_methods(platform)` |
-| Custom session type | `unregister_custom_types_by_owner(platform)` |
-| i18n translation domain (domain=config key) | `i18n.unregister_domain(config key)` |
+| Adapter's own `on()` handlers and middlewares | `adapter.unregister_handlers_by_owner(platform)` |
+| Platform event method extensions (`EventMixin`) | `unregister_platform_event_methods(platform)` |
+| Custom session types | `unregister_custom_types_by_owner(platform)` |
+| Interactive sessions (platform-pending wait_reply / leases) | `interaction.cancel_by_platform(platform)` |
+| i18n translation domains (domain=config key) | `i18n.unregister_domain(config key)` |
 | Fine-grained named route | `router.unregister_all_by_owner(platform)` |
 
 ## Unload/Disable Cleanup Sequence
 
-`unload()` and `disable()` share the same cleanup chain (with independent try/except for each step; failures are only logged and **do not interrupt subsequent cleanup**):
+`unload()` and `disable()` share the same cleanup chain (each step is independently wrapped in try/except, failures only log warnings, **do not interrupt subsequent cleanup**):
 
 ```mermaid
 flowchart TD
-    A["unload / disable"] --> B["on_unload()（with timeout protection）"]
-    B --> C["Cancel background tasks as fallback (cancel_owner_tasks）"]
+    A["unload / disable"] --> B["on_unload() (with timeout protection)"]
+    B --> C["Fallback cancellation of background tasks (cancel_owner_tasks)"]
     C --> D["_cleanup_module_registrations"]
     D --> D1["i18n translation domains"]
-    D1 --> D2["Routes: namespace + owner fallback<br/>（includes middleware / home entry）"]
-    D2 --> D3["Adapter event handlers / middleware"]
+    D1 --> D2["Routes: namespace + owner fallback<br/>(includes middlewares / home entries)"]
+    D2 --> D3["Adapter event handlers / middlewares"]
     D3 --> D4["Commands + event handlers"]
     D4 --> D5["Custom session types"]
-    D5 --> D6["Runtime event overrides (persist=False）"]
-    D6 --> D7["Owner source provider"]
+    D5 --> D6["Runtime event overrides (persist=False)"]
+    D6 --> D7["Master provider"]
     D7 --> D8["Lifecycle hooks"]
-    D8 --> E["Remove SDK attributes + lazy-loaded proxies"]
+    D8 --> E["Remove SDK attributes + lazy-load proxies"]
 ```
 
-`sdk.uninit()` also has a global fallback on exit: all adapters shutdown → all modules unload → `router.stop()` (clear routes/middleware/home entry) → `cancel_all_background_tasks()` → clear event handlers and hooks.
+`sdk.uninit()` also includes global fallback on exit: all adapters shutdown → all modules unload → `router.stop()` (clear routes/middlewares/home entries) → `cancel_all_background_tasks()` → clear event handlers and hooks.
 
-## Design Boundary: Which Resources Are Not Cleared on Uninstallation
+## Design Boundaries: Resources Not Cleared on Unload
 
-Ownership only recovers **runtime resources registered by module code**. The following resources belong to **user configuration semantics** (controlled by the user, possibly intentionally configured), and persist after module uninstallation with their configurations:
+Ownership only recovers **runtime resources registered by module code**. The following resources belong to **user configuration semantics** (controlled by the user, possibly intentionally configured), and are retained persistently after module unload:
 
 | Resource | Semantics | Description |
-|------|------|------|
-| `overrides.*.set(persist=True)` | Persistent Override | Written to configuration files, effective across restarts; not deleted after module uninstallation (explicitly configured by the user) |
-| `scope.set_action()` and other scope rules | Permission Control | Managed by the user/Dashboard; rules are not reclaimed after module uninstallation |
-| `overrides.acl.set(persist=True)` | Command ACL | Same as above |
-| Conversation `save()` persistence | Multi-turn Conversation Archive | Data assets are not cleared |
+|----------|-----------|-------------|
+| `overrides.*.set(persist=True)` | Persistent overrides | Written to configuration file, effective across restarts; not deleted on module unload (explicitly configured by user) |
+| `scope.set_action()` and other scope rules | Permission control plane | Managed by user/Dashboard, rules not reclaimed on module unload |
+| `overrides.acl.set(persist=True)` | Command ACLs | Same as above |
+| Conversation `save()` persistence | Multi-turn conversation archiving | Data assets are not cleared |
 
-Runtime temporary writes (with `persist=False`) are reclaimed along with the owner—**persistence or not is the boundary between "user assets" and "module runtime state."**
+Runtime temporary writes (`persist=False`) are reclaimed by owner—**persistence or not is the boundary between "user assets" and "module runtime state."**
 
 ## Module Author Guide
 
-### Recommended Style
+### Recommended Usage
 
 ```python
 from ErisPulse import sdk
@@ -9778,25 +9853,25 @@ from ErisPulse.runtime import owner_scope, spawn_background
 
 class MyModule(BaseModule):
     async def on_load(self, event):
-        # Framework resources: automatically owned, no manual cleanup needed
+        # Framework resources: automatically attributed, no manual cleanup needed
         self.task = self.spawn(self.polling())      # Background task
-        sdk.router.register_home_entry("My Module", "/my")  # Home page entry
+        sdk.router.register_home_entry("My Module", "/my")  # Home entry
 
         # Module-specific resources: include in owner_scope to integrate into ownership system
         with owner_scope("MyModule"):
             self.client.on_event(self._handle)      # Hypothetical custom registration
 
     async def on_unload(self, event):
-        # Framework resources have been automatically cleaned up; only clean up module-specific resources not covered by owner_scope
+        # Framework resources have been automatically reclaimed, only clean up resources not covered by owner_scope
         await self.client.close()
 ```
 
 ### Notes
 
-- **Registration during import has no ownership**: Hooks/handlers registered at the module level (during import) occur before `owner_scope`, and are treated as framework-level resources (owner=None) and **will not be cleaned up**. Always register them inside `on_load()`.
-- **i18n registration for custom domain**: When `i18n.register(domain=...)` uses a domain different from the module name, it will not be automatically cleaned up. Please ensure `domain=module name`.
-- **Background tasks must use `self.spawn()`**: Raw `asyncio.create_task` is not owned by the module and will not be cancelled during unload (see [Lifecycle Management](lifecycle.md#background-task-ownership-and-automatic-cancellation)).
-- **Cleanup chain "failure only logs warning"**: If a single cleanup step fails, it will not block the cleanup of other resources. Errors will be logged at DEBUG/WARNING level and can be enabled at TRACE level for troubleshooting.
+- **Registration during import has no ownership**: Hooks/handlers registered at the module level (during import) occur before `owner_scope` is active, and are treated as framework-level resources (owner=None) and **not cleaned up**. Always register inside `on_load()`.
+- **Custom domain i18n registration**: If `i18n.register(domain=...)` uses a domain different from the module name, it will not be automatically reclaimed. Keep domain=module name.
+- **Background tasks must use `self.spawn()`**: Bare `asyncio.create_task` is not attributed to the module and will not be cancelled on unload (see [Lifecycle Management](lifecycle.md#后台任务归属与自动取消)).
+- Cleanup chain "failures only warn": Single-step cleanup exceptions do not block other resource cleanup; logs are visible at DEBUG/WARNING level, and TRACE can be enabled for troubleshooting.
 
 
 

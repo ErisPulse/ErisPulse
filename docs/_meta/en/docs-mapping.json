@@ -399,7 +399,7 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "Ownership (Owner) System",
+          "title": "Ownership (owner) System",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
