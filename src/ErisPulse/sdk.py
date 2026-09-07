@@ -58,6 +58,7 @@ if TYPE_CHECKING:
         RouterManager,
         ScopeManager,
         StorageManager,
+        TranscriptManager,
     )
     from .Core import (
         BaseAdapter as _BaseAdapter,
@@ -74,6 +75,7 @@ if TYPE_CHECKING:
     from .Core import (
         SendDSL as _SendDSL,
     )
+    from .Core.Event import InteractionManager
 
 
 def _resolve_core(attr: str):
@@ -102,6 +104,8 @@ def _resolve_core(attr: str):
         "client": ("ErisPulse.Core", "client"),
         "master": ("ErisPulse.Core", "master"),
         "scope": ("ErisPulse.Core", "scope"),
+        "transcript": ("ErisPulse.Core", "transcript"),
+        "interaction": ("ErisPulse.Core.Event", "interaction"),
         "context": ("ErisPulse.runtime", "context"),
         "BaseAdapter": ("ErisPulse.Core", "BaseAdapter"),
         "SendDSL": ("ErisPulse.Core", "SendDSL"),
@@ -132,6 +136,8 @@ _CORE_ATTR_NAMES = {
     "client",
     "master",
     "scope",
+    "transcript",
+    "interaction",
     "context",
     "BaseAdapter",
     "SendDSL",
@@ -168,8 +174,10 @@ class SDK:
     - client: HTTP 客户端
     - master: 框架主人管理器
     - scope: 作用域管理器（模块 / 身份 / 出站 三维，"什么范围内生效"）
+    - transcript: 会话收件箱（每会话近期消息流的记录与查询）
+    - interaction: 交互会话管理器（wait_reply 等待表 / 会话租约 / 按归属取消）
     - Event: 事件模块包（command 命令处理器 / message / notice / request 等事件处理器）
-    - context: 模块上下文管理（owner_scope / get_current_owner）
+    - context: 模块上下文管理（owner_scope / get_current_owner / trace-id / 消息事务账本）
     {!--< /tips >!--}
     """
 
@@ -195,7 +203,8 @@ class SDK:
     BaseQueryBuilder: type[_BaseQueryBuilder]
     master: MasterManager
     scope: ScopeManager
-    Event: ModuleType
+    transcript: TranscriptManager
+    interaction: InteractionManager
     context: ModuleType
 
     def __init__(self):

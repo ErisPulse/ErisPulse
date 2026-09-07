@@ -14,6 +14,7 @@ import pytest
 
 from ErisPulse.Core.Event import overrides as overrides_mod
 from ErisPulse.Core.Event.command import command as command_handler
+from ErisPulse.Core.Event.interaction import interaction
 from ErisPulse.Core.Event.message import message as message_handler
 from ErisPulse.Core.scope import scope as scope_manager
 from ErisPulse.runtime.context import current_owner
@@ -32,7 +33,7 @@ def clean_state():
     command_handler.aliases.clear()
     command_handler.groups.clear()
     command_handler.permissions.clear()
-    command_handler._waiting_replies.clear()
+    interaction.clear()
     overrides_mod._command.clear()
     overrides_mod.clear()
     scope_manager._data["platforms"].clear()
@@ -49,7 +50,7 @@ def clean_state():
     command_handler.aliases.clear()
     command_handler.groups.clear()
     command_handler.permissions.clear()
-    command_handler._waiting_replies.clear()
+    interaction.clear()
     overrides_mod._command.clear()
     overrides_mod.clear()
     scope_manager._data["platforms"].clear()
@@ -328,26 +329,20 @@ class TestWaitReplyPattern:
 
         loop = asyncio.get_running_loop()
         future = loop.create_future()
+        wait_event = _msg("初始消息", user_id="u1")
+        interaction.register(wait_event, future, pattern="*abc*")
         wait_key = "onebot11:bot_x:u1:u1"
-        command_handler._waiting_replies[wait_key] = {
-            "future": future,
-            "callback": None,
-            "validator": None,
-            "pattern": "*abc*",
-            "regex": None,
-            "timestamp": loop.time(),
-        }
 
         # 不匹配的回复：不消费 future，仍保留等待条目
         await command_handler._check_pending_reply(Event(_msg("随便说点什么", user_id="u1")))
-        assert wait_key in command_handler._waiting_replies
+        assert wait_key in interaction._entries
         assert not future.done()
 
         # 匹配的回复：消费 future，清除等待条目
         await command_handler._check_pending_reply(
             Event(_msg("abc 在这里", user_id="u1"))
         )
-        assert wait_key not in command_handler._waiting_replies
+        assert wait_key not in interaction._entries
         assert future.done()
         assert future.result().get("alt_message") == "abc 在这里"
 
@@ -358,22 +353,16 @@ class TestWaitReplyPattern:
 
         loop = asyncio.get_running_loop()
         future = loop.create_future()
+        wait_event = _msg("初始消息", user_id="u1")
+        interaction.register(wait_event, future, regex=r"^\d+号$")
         wait_key = "onebot11:bot_x:u1:u1"
-        command_handler._waiting_replies[wait_key] = {
-            "future": future,
-            "callback": None,
-            "validator": None,
-            "pattern": None,
-            "regex": r"^\d+号$",
-            "timestamp": loop.time(),
-        }
 
         await command_handler._check_pending_reply(Event(_msg("不是数字", user_id="u1")))
-        assert wait_key in command_handler._waiting_replies
+        assert wait_key in interaction._entries
         assert not future.done()
 
         await command_handler._check_pending_reply(Event(_msg("42号", user_id="u1")))
-        assert wait_key not in command_handler._waiting_replies
+        assert wait_key not in interaction._entries
         assert future.done()
 
 

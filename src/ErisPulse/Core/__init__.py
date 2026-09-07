@@ -29,6 +29,7 @@ from .Bases import (
     ClientTimeoutError,
     HTTPStatusError,
     WebSocketError,
+    InteractionError,
 )
 from .Bases import BaseClient, BaseHttpResponse, BaseClientWebSocket
 from .Bases.client import BaseHttpClient  # 向后兼容别名
@@ -43,9 +44,13 @@ from .i18n import i18n, I18nManager
 from .master import master, MasterManager, MasterProvider
 from .scope import scope, ScopeManager
 from .text_match import compile_entry_matcher, compile_text_matcher, extract_text
+from .transcript import transcript, TranscriptManager
 
 from . import Event
 from .Event.message_builder import MessageBuilder
+
+# 收件箱出站自动记录（message.sent 钩子；内部幂等，未启用时跳过注册）
+transcript.attach()
 
 env = storage
 
@@ -76,6 +81,7 @@ __all__ = [
     "HttpRequest",  # HTTP 请求类
     "HttpResponse",  # HTTP 响应类
     "I18nManager",  # 国际化管理器类
+    "InteractionError",  # 交互会话异常基类
     "KVQueryBuilder",  # KV 查询构建器
     "LifecycleManager",  # 生命周期管理器类
     "Logger",  # 日志类
@@ -93,6 +99,7 @@ __all__ = [
     "SendContext",  # 发送任务实时上下文类
     "SendDSL",  # 发送消息 DSL 类
     "StorageManager",  # 存储管理器类
+    "TranscriptManager",  # 会话收件箱管理器类
     "WSMessage",  # WebSocket 消息类
     "WebSocketConnection",  # WebSocket 连接类
     "WebSocketConnectionBase",  # WebSocket 连接基类
@@ -113,4 +120,5 @@ __all__ = [
     "router",  # 路由模块单例
     "scope",  # 作用域模块单例
     "storage",  # 存储模块单例
+    "transcript",  # 会话收件箱模块单例
 ]

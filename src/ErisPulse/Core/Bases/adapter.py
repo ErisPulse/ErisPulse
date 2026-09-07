@@ -162,6 +162,37 @@ def _wrap_to_task(result: Any):
     return asyncio.ensure_future(_const())
 
 
+def _append_send_receipt(ledger: list, response: Any, ctx: dict) -> None:
+    """
+    {!--< internal-use >!--}
+    从发送响应提取回执并记入消息事务账本
+
+    仅当响应为 dict 且含非空 ``message_id`` 时记录（标准 API 响应格式）；
+    消息事务撤回时按账本逆序调用适配器 ``delete_message``。
+
+    :param ledger: 当前事务的账本列表（send_receipts ContextVar 值）
+    :param response: 发送方法返回的响应（标准格式为 dict）
+    :param ctx: 发送上下文（platform / bot_id / trace_id 等）
+    """
+    if not isinstance(response, dict):
+        return
+    message_id = response.get("message_id")
+    if not message_id:
+        data = response.get("data")
+        if isinstance(data, dict):
+            message_id = data.get("message_id")
+    if not message_id:
+        return
+    ledger.append(
+        {
+            "platform": str(ctx.get("platform") or ""),
+            "bot_id": str(ctx.get("bot_id") or ""),
+            "message_id": str(message_id),
+            "trace_id": ctx.get("trace_id"),
+        }
+    )
+
+
 def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "SendDSL"):
     """
     为发送方法注入生命周期钩子
@@ -198,16 +229,50 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
         if isinstance(result, SendDSL):
             return result
 
+        # 非 Task 同步返回值：直接记入消息事务账本后原样返回
         if not isinstance(result, asyncio.Task):
+            from ...runtime.context import send_receipts as _sr
+
+            _sync_ledger = _sr.get()
+            if _sync_ledger is not None:
+                _append_send_receipt(
+                    _sync_ledger,
+                    result,
+                    {
+                        "platform": getattr(send_dsl._adapter, "_platform", "") or "",
+                        "method": method_name,
+                        "detail_type": send_dsl._target_type or "",
+                        "target_id": send_dsl._target_id or "",
+                        "bot_id": send_dsl._account_id or "",
+                    },
+                )
             return result
 
         platform = getattr(send_dsl._adapter, "_platform", "") or ""
+
+        # 链路追踪：出站发送携带当前事件的 trace-id（不在事件上下文内时为 None）
+        from ...runtime.context import current_trace_id, send_receipts
+
+        _trace_id = current_trace_id.get()
+        # 消息事务账本：仅在 message_tx 事务内记账（None = 事务外零开销）
+        _ledger = send_receipts.get()
+
+        # 消息文本预览（截断）：供收件箱（transcript）/ 审计类钩子使用
+        _preview = ""
+        if args:
+            _preview = str(args[0])
+            if len(_preview) > LOG_MESSAGE_TRUNCATE_CHARS:
+                _preview = _preview[:LOG_MESSAGE_TRUNCATE_CHARS] + "..."
+
         send_ctx = {
             "platform": platform,
             "method": method_name,
             "detail_type": send_dsl._target_type or "",
             "target_id": send_dsl._target_id or "",
             "bot_id": send_dsl._account_id or "",
+            "trace_id": _trace_id,
+            # 消息文本预览（截断），供收件箱 / 审计类钩子使用
+            "preview": _preview,
         }
 
         # 循环依赖：Core/adapter.py 顶层导入本模块（BaseAdapter）
@@ -216,13 +281,14 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
         target_type = send_dsl._target_type or ""
         target_id = send_dsl._target_id or ""
         log_target = f"{target_type}/{target_id}" if target_type and target_id else target_id or "?"
+        _trace_tag = f" [trace:{_trace_id}]" if _trace_id else ""
         if method_name in ("Text", "Markdown", "Html") and args:
             content = str(args[0])
             if len(content) > LOG_MESSAGE_TRUNCATE_CHARS:
                 content = content[:LOG_MESSAGE_TRUNCATE_CHARS] + "..."
-            _msg_logger.event(f"[Send] {platform}/{method_name} -> {log_target}: {content}")
+            _msg_logger.event(f"[Send] {platform}/{method_name} -> {log_target}{_trace_tag}: {content}")
         else:
-            _msg_logger.event(f"[Send] {platform}/{method_name} -> {log_target}")
+            _msg_logger.event(f"[Send] {platform}/{method_name} -> {log_target}{_trace_tag}")
 
         # 预判是否有生命周期监听者：无监听时跳过 Task 创建与 emit 调度，
         # 避免每条发送消息都无条件 spawn 两个后台任务
@@ -241,6 +307,15 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
             from ...runtime.tasks import spawn_background
 
             spawn_background(_emit_hooks())
+
+        # 消息事务：发送完成（含重试终态）后从响应提取 message_id 记入账本
+        if _ledger is not None:
+
+            def _record_receipt(t: "asyncio.Task") -> None:
+                try:
+                    _append_send_receipt(_ledger, t.result(), send_ctx)
+                except Exception:
+                    pass
 
         # 若附加了发送规则，用规则执行器统一包装 Task
         if _has_rules(send_dsl):
@@ -275,11 +350,15 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
             # 不绑定到首次内部 result（避免失败重试时提前触发）
             if _has_sent_hooks:
                 wrapped.add_done_callback(lambda t: asyncio.ensure_future(_emit_hooks_done(t)))
+            if _ledger is not None:
+                wrapped.add_done_callback(_record_receipt)
             return wrapped
 
         # 无规则：保持原有行为，message.sent 在单次发送完成后触发
         if _has_sent_hooks:
             result.add_done_callback(lambda t: asyncio.ensure_future(_emit_hooks_done(t)))
+        if _ledger is not None:
+            result.add_done_callback(_record_receipt)
         return result
 
     return hooked

@@ -8,12 +8,13 @@ import asyncio
 import functools
 import inspect
 import time
+import uuid
 import warnings
 from collections import defaultdict
 from collections.abc import Callable
 from typing import Any, TypeVar, cast
 
-from ..runtime.context import current_owner, handler_waits
+from ..runtime.context import current_owner, current_trace_id, handler_waits
 from .Bases.adapter import BaseAdapter
 from .Bases.manager import ManagerBase
 from .config import config
@@ -50,6 +51,26 @@ _DEPRECATED_KWARG_WARNED: set[tuple[str, str]] = set()
 # 适配器类型 TypeVar，用于 get() 的泛型返回，让用户可通过类型注解获得 IDE 补全
 # 用法： adapter: MyAdapter = sdk.adapter.get("MyPlatform")
 _TAdapter = TypeVar("_TAdapter", bound=BaseAdapter)
+
+
+def _extract_message_text(data: Any) -> str:
+    """
+    {!--< internal-use >!--}
+    从事件 message 段提取纯文本（仅 text 段拼接），无文本时返回空串
+
+    :param data: 事件数据
+    :return: 纯文本内容
+    """
+    segments = data.get("message")
+    if not isinstance(segments, list):
+        return ""
+    parts = []
+    for seg in segments:
+        if isinstance(seg, dict) and seg.get("type") == "text":
+            t = (seg.get("data") or {}).get("text", "")
+            if t:
+                parts.append(t)
+    return " ".join(parts)
 
 
 def _warn_deprecated_kwarg(owner: str, old: str, new: str) -> None:
@@ -1086,6 +1107,16 @@ class AdapterManager(ManagerBase):
                 i18n.t("core.adapter.handlers_clean_failed", platform=platform, error=e)
             )
 
+        # 取消该平台挂起的交互会话（等待方立即收到取消而非干等超时）
+        try:
+            from .Event.interaction import interaction
+
+            interaction.cancel_by_platform(platform)
+        except Exception as e:
+            logger.trace(
+                i18n.t("core.adapter.interaction_clean_failed", platform=platform, error=e)
+            )
+
         # 清理该适配器注册的生命周期钩子
         try:
             lifecycle_removed = lifecycle.unregister_by_owner(platform)
@@ -1672,6 +1703,36 @@ class AdapterManager(ManagerBase):
         platform_raw = data.get(f"{platform}_raw", {})
         raw_event_type = data.get(f"{platform}_raw_type")
 
+        # 链路追踪（trace-id）：复用事件自带的 id（converter 已生成），缺失则补生成；
+        # 写入 ContextVar 后随事件分发复制到各 handler Task 的上下文，
+        # 出站发送与 lifecycle 钩子数据据此串联同一条消息的全链路
+        trace_id = str(data.get("id") or uuid.uuid4())
+        data.setdefault("id", trace_id)
+        _trace_token = current_trace_id.set(trace_id)
+        try:
+            await self._emit_dispatch(
+                data,
+                platform,
+                event_type,
+                detail_type,
+                platform_raw,
+                raw_event_type,
+                trace_id,
+            )
+        finally:
+            current_trace_id.reset(_trace_token)
+
+    async def _emit_dispatch(
+        self,
+        data: Any,
+        platform: str,
+        event_type: str,
+        detail_type: str,
+        platform_raw: Any,
+        raw_event_type: Any,
+        trace_id: str,
+    ) -> None:
+        """{!--< internal-use >!--} emit 的事件分发主体（trace-id 上下文内执行）"""
         if event_type == "message":
             user_id = data.get("user_id", "")
             alt_msg = data.get("alt_message", "")
@@ -1709,8 +1770,20 @@ class AdapterManager(ManagerBase):
                 "platform": platform,
                 "event_type": event_type,
                 "raw_event_type": raw_event_type,
+                "_trace_id": trace_id,
             },
         )
+
+        # 会话收件箱：入站消息自动记录（role="user"；未启用时内部直接跳过）
+        if event_type == "message":
+            try:
+                from .transcript import transcript as _transcript
+
+                _alt = data.get("alt_message", "") or _extract_message_text(data)
+                if _alt:
+                    _transcript.append(data, "user", _alt, event_id=trace_id)
+            except Exception:
+                pass
 
         # 处理 meta 事件：适配器通过 meta 事件提交 Bot 上下线信息
         # 同时也处理普通事件中的 self 字段（自动发现Bot）

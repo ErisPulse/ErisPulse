@@ -108,6 +108,28 @@ for row in rows:
 
 #### 将元组转为字典
 
+推荐直接在链上调用 `ToDict()`，SELECT 结果自动以字典返回（列名 → 值）：
+
+```python
+# ToDict 链：结果为 list[dict]，列名自动取自查询元数据（SELECT * 同样支持）
+rows = sdk.storage.Table("users").Select("name", "age").ToDict().Execute()
+# rows: [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}, ...]
+
+for row in rows:
+    print(row["name"], row["age"])
+
+# ExecuteOne 同样生效
+row = sdk.storage.Table("users").Select("name", "age") \
+    .Where("id = ?", 1) \
+    .ToDict() \
+    .ExecuteOne()
+# row: {"name": "Alice", "age": 30} 或 None
+```
+
+> `ToDict()` 是链式标记（返回 self）：未调用它的链保持原有 `list[tuple]` 行为，完全向后兼容；`copy()` 会保留该标志。
+
+手动 zip 方式（与 ToDict 等价，适合无法改链的场景）：
+
 ```python
 columns = ["id", "name", "age"]
 rows = sdk.storage.Table("users").Select(*columns).Execute()

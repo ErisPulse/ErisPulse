@@ -47,6 +47,35 @@ handler_waits: ContextVar[list[dict[str, Any]] | None] = ContextVar(
     "handler_waits", default=None
 )
 
+#: 当前事件的处理链路追踪 ID（trace-id）。
+#:
+#: 生命周期
+#:   由 ``Core/adapter.py:emit`` 在事件入站时从 ``event["id"]`` 取得（缺失则生成），
+#:   随事件分发复制到各 handler Task 的上下文；
+#:   出站发送（``Core/Bases/adapter.py`` Send 钩子）与 lifecycle 钩子数据自动携带。
+#:
+#: 用途
+#:   一条消息被多个模块接力处理时，入站 → 处理 → 出站全链路可用同一 ID 串联
+#:   （日志、send_ctx、lifecycle data 中的 ``trace_id`` 字段）。
+current_trace_id: ContextVar[str | None] = ContextVar("current_trace_id", default=None)
+
+#: 消息回执账本（message transaction）。
+#:
+#: 生命周期
+#:   由 ``Event.message_tx()`` 上下文管理器置为空 list，
+#:   由 ``Core/Bases/adapter.py`` Send 钩子在每次成功发送（响应含非空
+#:   ``message_id``）时追加一条回执，``message_tx`` 退出异常时逆序撤回。
+#:
+#: 记录格式
+#:   ``{"platform": str, "bot_id": str, "message_id": str, "trace_id": str|None}``
+#:
+#: 用途
+#:   消息事务：handler 中途失败时自动撤回本次事务内已发送的消息
+#:   （能力感知：适配器未实现 delete_message 时跳过）。
+send_receipts: ContextVar[list[dict[str, str]] | None] = ContextVar(
+    "send_receipts", default=None
+)
+
 
 @contextmanager
 def owner_scope(owner: str | None):
@@ -95,10 +124,44 @@ def get_handler_waits() -> list[dict[str, Any]] | None:
     return handler_waits.get()
 
 
+def get_current_trace_id() -> str | None:
+    """
+    获取当前事件处理链路的追踪 ID（trace-id）
+
+    在事件分发 / handler 执行 / 出站发送期间可读取，用于跨模块日志关联；
+    不在事件处理上下文内（如后台定时任务）返回 None。
+
+    :return: 当前 trace-id 或 None
+
+    :example:
+    >>> trace_id = get_current_trace_id()
+    """
+    return current_trace_id.get()
+
+
+def get_send_receipts() -> list[dict[str, str]] | None:
+    """
+    获取当前消息事务的回执账本
+
+    仅在 ``Event.message_tx()`` 事务内返回非 None；
+    可用于查看本次事务已发送了哪些消息。
+
+    :return: 回执记录列表或 None（不在事务内）
+
+    :example:
+    >>> receipts = get_send_receipts()
+    """
+    return send_receipts.get()
+
+
 __all__ = [
     "current_owner",
+    "current_trace_id",
     "get_current_owner",
+    "get_current_trace_id",
     "get_handler_waits",
+    "get_send_receipts",
     "handler_waits",
     "owner_scope",
+    "send_receipts",
 ]

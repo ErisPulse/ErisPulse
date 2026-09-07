@@ -18,6 +18,41 @@ scope_module = importlib.import_module("ErisPulse.Core.scope")
 config_module = importlib.import_module("ErisPulse.Core.config")
 
 
+@pytest.fixture(scope="module")
+def _scope_config_snapshot():
+    """整个文件开始前备份一次 config.toml 原始内容（persist=True 用例会写入全局配置文件）"""
+    from pathlib import Path
+
+    path = Path("config/config.toml")
+    return path, path.read_bytes() if path.exists() else None
+
+
+@pytest.fixture(autouse=True)
+def _isolate_scope_config(_scope_config_snapshot):
+    """每个用例结束后直接还原 config.toml 并触发重读，防止 persist 写入在用例间互相污染
+    （不走 set_erispulse_section 恢复——其延迟刷盘与测试写入的脏队列交叠，恢复不可靠）"""
+    from ErisPulse.Core import config as _config_pkg
+    from ErisPulse.Core.config import config as _config
+
+    path, content = _scope_config_snapshot
+    yield
+    # 丢弃未刷盘的脏写入，避免还原后被定时刷盘再次覆盖
+    try:
+        with _config._lock:
+            _config._dirty_keys.clear()
+    except Exception:
+        pass
+    if content is None:
+        path.unlink(missing_ok=True)
+    else:
+        path.write_bytes(content)
+    # 触发配置管理器重读文件，内存态与磁盘同步
+    try:
+        _config_pkg.config.reload()
+    except Exception:
+        pass
+
+
 class TestScopeManager:
     """ScopeManager 核心功能测试"""
 

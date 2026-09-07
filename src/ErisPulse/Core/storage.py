@@ -176,11 +176,11 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
         _validate_identifier(table_name, "table")
         super().__init__(storage, table_name)
 
-    def Execute(self) -> list[tuple] | int:
+    def Execute(self) -> "list[tuple] | list[dict[str, Any]] | int":
         """
         执行构建的查询
 
-        - SELECT 返回 list[tuple]
+        - SELECT 返回 list[tuple]（调用 ToDict() 后为 list[dict]，列名取自 cursor.description）
         - INSERT/INSERT_MULTI 返回受影响行数 int
         - UPDATE/DELETE 返回受影响行数 int
 
@@ -188,6 +188,7 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
 
         :example:
         >>> rows = storage.Table("users").Select("name", "age").Execute()
+        >>> rows = storage.Table("users").Select("name", "age").ToDict().Execute()
         >>> affected = storage.Table("users").Delete().Where("age < ?", 18).Execute()
         """
         storage: StorageManager = self._storage  # type: ignore
@@ -203,11 +204,29 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
 
             if self._operation == "select":
                 result = cursor.fetchall()
+                if self._as_dict and result:
+                    result = self._rows_to_dict(cursor, result)
             else:
                 result = cursor.rowcount
                 storage._auto_commit(conn)
 
         return result
+
+    @staticmethod
+    def _rows_to_dict(cursor, rows: list[tuple]) -> "list[dict[str, Any]]":
+        """
+        {!--< internal-use >!--}
+        将查询结果行转为字典列表（列名取自 cursor.description）
+
+        :param cursor: 已执行查询的游标（description 可用）
+        :param rows: tuple 行列表
+        :return: dict 行列表（description 不可用时原样返回）
+        """
+        description = getattr(cursor, "description", None)
+        if not description:
+            return rows
+        columns = [col[0] for col in description]
+        return [dict(zip(columns, row, strict=True)) for row in rows]
 
     def _execute_insert_multi(self, storage: "StorageManager") -> int:
         if not isinstance(self._data, list) or not self._data:
@@ -230,14 +249,15 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
 
         return result
 
-    def ExecuteOne(self) -> tuple | None:
+    def ExecuteOne(self) -> "tuple | dict[str, Any] | None":
         """
         执行查询并返回单条结果
 
-        :return: 单行元组或 None
+        :return: 单行元组（调用 ToDict() 后为字典）或 None
 
         :example:
         >>> row = storage.Table("users").Select("*").Where("id = ?", 1).ExecuteOne()
+        >>> row = storage.Table("users").Select("*").Where("id = ?", 1).ToDict().ExecuteOne()
         """
         storage: StorageManager = self._storage  # type: ignore
         sql, params = self._build_sql()
@@ -245,7 +265,11 @@ class SQLiteQueryBuilder(BaseQueryBuilder):
         with storage._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(sql, params)
-            return cursor.fetchone()
+            row = cursor.fetchone()
+            if row is not None and self._as_dict:
+                rows = self._rows_to_dict(cursor, [row])
+                return rows[0] if rows else None
+            return row
 
     def Count(self) -> int:
         """

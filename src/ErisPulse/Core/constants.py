@@ -391,6 +391,41 @@ DEFAULT_WAIT_TIMEOUT_SECS: Final[float] = 60.0
 # 修改影响: 验证器拒绝回复后的重试次数。
 DEFAULT_MAX_RETRIES: Final[int] = 3
 
+# 交互会话互斥租约（InteractionLease）的默认存活时间（秒）。
+# 使用位置: Core/Event/interaction.py -> InteractionManager.acquire()
+# 修改影响: acquire() 未显式传 ttl 时租约自动过期的时长。过期后其他模块可再次 acquire。
+DEFAULT_INTERACTION_LEASE_TTL_SECS: Final[float] = 3600.0
+
+# 对话检查点（Conversation 自动存档）的默认过期时间（秒）。
+# 使用位置: Core/Event/wrapper.py -> Conversation.save()/resume()
+# 修改影响: 重启恢复时超过该时长的检查点被视为过期丢弃。可通过
+# ErisPulse.interaction.checkpoint_ttl 配置覆盖。
+DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS: Final[float] = 86400.0
+
+# ==============================================================================
+# 会话收件箱（transcript）
+# ==============================================================================
+
+# 会话收件箱的存储表名。
+# 使用位置: Core/transcript.py
+# 修改影响: 变更后旧表数据不再被读取（需手动迁移）。
+TRANSCRIPT_TABLE: Final[str] = "transcript"
+
+# 会话收件箱是否默认启用。
+# 使用位置: Core/transcript.py
+# 修改影响: 关闭后入站/出站消息不再自动记录。可通过 ErisPulse.transcript.enabled 覆盖。
+DEFAULT_TRANSCRIPT_ENABLED: Final[bool] = True
+
+# 每会话保留的最大消息条数。
+# 使用位置: Core/transcript.py -> retention
+# 修改影响: 单会话收件箱的内存/存储占用上限。可通过 ErisPulse.transcript.max_per_session 覆盖。
+DEFAULT_TRANSCRIPT_MAX_PER_SESSION: Final[int] = 50
+
+# 会话收件箱全局过期时间（小时）。
+# 使用位置: Core/transcript.py -> retention
+# 修改影响: 超过时长的消息记录在惰性清理时删除。可通过 ErisPulse.transcript.ttl_hours 覆盖。
+DEFAULT_TRANSCRIPT_TTL_HOURS: Final[float] = 168.0
+
 # 事件处理器执行耗时警告阈值（秒）。
 # 使用位置: Core/adapter.py -> emit() 中的 handler 执行监控。
 # 修改影响: 当单个处理器执行超过此时间时记录 WARNING 日志。
@@ -964,6 +999,11 @@ __all__ = [
     "DEFAULT_UNINIT_TIMEOUT_SECS",
     "DEFAULT_USE_GLOBAL_DB",
     "DEFAULT_WAIT_TIMEOUT_SECS",
+    "DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS",
+    "DEFAULT_INTERACTION_LEASE_TTL_SECS",
+    "DEFAULT_TRANSCRIPT_ENABLED",
+    "DEFAULT_TRANSCRIPT_MAX_PER_SESSION",
+    "DEFAULT_TRANSCRIPT_TTL_HOURS",
     "DEFAULT_WS_AUTO_ACCEPT",
     "DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS",
     "DEFAULT_WS_CLIENT_HEARTBEAT_SECS",

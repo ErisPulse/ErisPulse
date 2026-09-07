@@ -18,6 +18,7 @@ from ErisPulse.Core.Event import (
     CONFIRM_YES_WORDS,
     command,
     get_platform_event_methods,
+    interaction,
     message,
     meta,
     notice,
@@ -203,7 +204,7 @@ class TestCommandHandler:
         command.aliases.clear()
         command.groups.clear()
         command.permissions.clear()
-        command._waiting_replies.clear()
+        interaction.clear()
         yield
         # 清理
         command._clear_commands()
@@ -378,16 +379,11 @@ class TestCommandHandler:
     @pytest.mark.asyncio
     async def test_wait_reply_success(self):
         """测试等待用户回复成功"""
-        # 创建等待future
+        # 通过交互会话管理器创建等待条目
         future = asyncio.Future()
 
-        wait_key = "test:user:123"
-        command._waiting_replies[wait_key] = {
-            "future": future,
-            "callback": None,
-            "validator": None,
-            "timestamp": asyncio.get_event_loop().time()
-        }
+        wait_event = {"platform": "test", "user_id": "123"}
+        interaction.register(wait_event, future)
 
         # 设置回复
         reply_event = {"alt_message": "test reply"}
@@ -1640,15 +1636,15 @@ class TestConversationPersistence:
 
     @pytest.mark.asyncio
     async def test_clear_saved(self, sample_event):
-        """测试清除保存的对话状态"""
+        """测试清除保存的对话状态（新键 + 旧格式兼容键各清理一次）"""
         conv = sample_event.conversation()
 
         with patch.object(storage_module, "storage") as mock_storage:
             mock_storage.delete = Mock()
             await conv.clear_saved()
-            mock_storage.delete.assert_called_once()
-            call_args = mock_storage.delete.call_args
-            assert call_args[0][0].startswith("conversation:")
+            assert mock_storage.delete.call_count == 2
+            for call in mock_storage.delete.call_args_list:
+                assert call[0][0].startswith("conversation:")
 
     @pytest.mark.asyncio
     async def test_save_handles_error(self, sample_event):

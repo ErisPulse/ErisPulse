@@ -16,6 +16,7 @@ from ..Core.constants import (
     DEFAULT_COMMAND_PREFIX,
     DEFAULT_HANDLER_MAX_CONCURRENCY,
     DEFAULT_I18N_LANGUAGE,
+    DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS,
     DEFAULT_LAZY_LOADING_ENABLED,
     DEFAULT_LOG_BACKUP_COUNT,
     DEFAULT_LOG_LEVEL,
@@ -35,6 +36,9 @@ from ..Core.constants import (
     DEFAULT_SERVER_HOST,
     DEFAULT_SERVER_PORT,
     DEFAULT_STRICT_MODE,
+    DEFAULT_TRANSCRIPT_ENABLED,
+    DEFAULT_TRANSCRIPT_MAX_PER_SESSION,
+    DEFAULT_TRANSCRIPT_TTL_HOURS,
     DEFAULT_UNINIT_TIMEOUT_SECS,
     DEFAULT_USE_GLOBAL_DB,
 )
@@ -156,6 +160,19 @@ DEFAULT_ERISPULSE_CONFIG = {
             "users": {},
         },
         "actions": {},
+    },
+    # 交互会话（interaction）：wait_reply 等待表 / 会话租约 / 对话检查点的统一配置。
+    # checkpoint_ttl: Conversation 自动检查点的过期秒数，重启恢复时超期的存档被丢弃。
+    "interaction": {
+        "checkpoint_ttl": DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS,
+    },
+    # 会话收件箱（transcript）：每会话近期消息流的自动记录与查询。
+    # enabled: 是否启用自动记录；max_per_session: 每会话保留条数上限；
+    # ttl_hours: 全局过期时间（小时），过期记录惰性清理。
+    "transcript": {
+        "enabled": DEFAULT_TRANSCRIPT_ENABLED,
+        "max_per_session": DEFAULT_TRANSCRIPT_MAX_PER_SESSION,
+        "ttl_hours": DEFAULT_TRANSCRIPT_TTL_HOURS,
     },
 }
 
