@@ -44,6 +44,24 @@ class BaseQueryBuilder(ABC):
         self._order_by: list[tuple[str, bool]] = []
         self._limit: int | None = None
         self._offset: int | None = None
+        self._as_dict: bool = False
+
+    def ToDict(self) -> "BaseQueryBuilder":
+        """
+        将 SELECT 结果以字典形式返回（链式修饰，返回 self）
+
+        设置后 ``Execute()`` / ``ExecuteOne()`` 的 SELECT 结果从 tuple
+        转为 dict（列名 → 值）。未调用本方法的链保持原有 tuple 行为，
+        完全向后兼容。
+
+        :return: self
+
+        :example:
+        >>> rows = storage.Table("users").Select("name", "age").ToDict().Execute()
+        >>> # [{'name': 'Alice', 'age': 30}, ...]
+        """
+        self._as_dict = True
+        return self
 
     def Select(self, *columns: str) -> "BaseQueryBuilder":
         """
@@ -196,6 +214,7 @@ class BaseQueryBuilder(ABC):
         new._order_by = list(self._order_by)
         new._limit = self._limit
         new._offset = self._offset
+        new._as_dict = self._as_dict
         return new
 
     def clear(self) -> "BaseQueryBuilder":
@@ -215,11 +234,11 @@ class BaseQueryBuilder(ABC):
         return self
 
     @abstractmethod
-    def Execute(self) -> list[tuple] | int:
+    def Execute(self) -> "list[tuple] | list[dict[str, Any]] | int":
         """
         执行构建的查询
 
-        - SELECT 返回 list[tuple]
+        - SELECT 返回 list[tuple]（调用 ToDict() 后为 list[dict]）
         - INSERT/UPDATE/DELETE 返回受影响行数 int
 
         :return: 查询结果或受影响行数
@@ -227,11 +246,11 @@ class BaseQueryBuilder(ABC):
         ...
 
     @abstractmethod
-    def ExecuteOne(self) -> tuple | None:
+    def ExecuteOne(self) -> "tuple | dict[str, Any] | None":
         """
         执行查询并返回单条结果
 
-        :return: 单行元组或 None
+        :return: 单行元组（调用 ToDict() 后为字典）或 None
         """
         ...
 

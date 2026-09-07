@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 from ErisPulse.Core.adapter import AdapterManager
 from ErisPulse.Core.Bases import BaseAdapter, BaseModule
 from ErisPulse.Core.config import ConfigManager
-from ErisPulse.Core.Event import command, message, meta, notice, request
+from ErisPulse.Core.Event import command, interaction, message, meta, notice, request
 from ErisPulse.Core.lifecycle import LifecycleManager
 from ErisPulse.Core.module import ModuleManager
 from ErisPulse.Core.router import RouterManager
@@ -196,7 +196,7 @@ def clean_event_system():
     command.aliases.clear()
     command.groups.clear()
     command.permissions.clear()
-    command._waiting_replies.clear()
+    interaction.clear()
     message.handler.handlers.clear()
     message.handler._handler_map.clear()
     notice.handler.handlers.clear()
@@ -211,7 +211,7 @@ def clean_event_system():
     command.aliases.clear()
     command.groups.clear()
     command.permissions.clear()
-    command._waiting_replies.clear()
+    interaction.clear()
     message.handler.handlers.clear()
     message.handler._handler_map.clear()
     notice.handler.handlers.clear()

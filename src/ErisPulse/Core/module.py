@@ -810,7 +810,7 @@ class ModuleManager(ManagerBase):
         except Exception:
             pass
 
-        from .Event import command, message, meta, notice, request
+        from .Event import command, interaction, message, meta, notice, request
 
         total_cleaned = 0
         total_cleaned += command.unregister_by_owner(module_name)
@@ -824,6 +824,13 @@ class ModuleManager(ManagerBase):
                     count=total_cleaned,
                 )
             )
+
+        # 取消模块挂起的交互会话（wait_reply / 租约），等待方立即收到取消而非干等超时
+        # （command.unregister_by_owner 内已含此步，此处兜底直连交互管理器的其他归属条目）
+        try:
+            interaction.cancel_by_owner(module_name)
+        except Exception:
+            pass
 
         # 自动注销模块在加载上下文内注册的主人身源 provider（作用域清理）
         try:

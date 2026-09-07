@@ -163,7 +163,6 @@ def _apply(tree: dict) -> None:
             cleaned = {k: v for k, v in params.items() if k in spec}
             if cleaned:
                 new_sections[type_name][owner] = cleaned
-    new_sections = {t: v for t, v in new_sections.items()}
 
     # command（扩展类型）：模块级标量参数 + 命令级子表
     new_command: dict[str, dict] = {}

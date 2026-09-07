@@ -2,7 +2,7 @@ import asyncio
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from ErisPulse import sdk
 
@@ -65,7 +65,7 @@ class TestCase:
     """测试用例类"""
     name: str
     enabled: bool = True
-    async_func: callable | None = None
+    async_func: Callable | None = None
     description: str = ""
 
 

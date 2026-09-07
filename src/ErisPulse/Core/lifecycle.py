@@ -295,6 +295,14 @@ class LifecycleManager:
         :example:
         >>> result = await lifecycle.emit("config.set", {"key": "test", "value": 42})
         """
+        # 事件数据为 dict 时自动携带当前事件的链路追踪 ID（不覆盖已有值）
+        if isinstance(data, dict) and "_trace_id" not in data:
+            from ..runtime.context import current_trace_id
+
+            _tid = current_trace_id.get()
+            if _tid:
+                data["_trace_id"] = _tid
+
         # 统计匹配的处理器总数
         parts = event.split(".")
         total_count = len(self._hooks.get("*", [])) + len(self._hooks.get(event, []))

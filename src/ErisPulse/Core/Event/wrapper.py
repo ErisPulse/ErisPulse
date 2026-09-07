@@ -14,6 +14,7 @@ ErisPulse 事件包装类
 
 import asyncio
 import inspect
+import time
 from collections.abc import Awaitable, Callable
 from typing import Any, Optional, TypedDict
 
@@ -22,6 +23,7 @@ from ..constants import (
     CONFIRM_NO_WORDS,
     CONFIRM_YES_WORDS,
     CONVERSATION_KEY_PREFIX,
+    DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS,
     DEFAULT_MAX_RETRIES,
     DEFAULT_SEND_METHOD,
     DEFAULT_WAIT_TIMEOUT_SECS,
@@ -1717,6 +1719,50 @@ class Event(dict):
 
     # ==================== 工具方法 ====================
 
+    async def history(self, n: int = 20) -> list[dict[str, Any]]:
+        """
+        查询当前会话的近期消息（会话收件箱）
+
+        返回当前会话（platform:detail_type:target_id）最近的消息流，
+        含用户与机器人双方，按时间升序。收件箱未启用或无记录时返回空列表。
+
+        :param n: 返回的最大条数（默认 20）
+        :return: 消息列表，每条含 role / text / ts / event_id
+
+        :example:
+        >>> messages = await event.history(10)
+        >>> for m in messages:
+        ...     print(m["role"], ":", m["text"])
+        """
+        from ..transcript import transcript
+
+        return transcript.get(self, n)
+
+    def message_tx(self) -> "_MessageTx":
+        """
+        开启消息事务
+
+        事务内的所有出站发送（reply / Send DSL）自动记入回执账本；
+        以异常退出事务时，已发送的消息按逆序自动撤回。
+
+        撤回是**能力感知**的：适配器未实现 ``delete_message`` 时跳过撤回
+        （账本仍正常记录），平台不支持撤回的消息不报错。
+
+        :return: 异步上下文管理器
+
+        :example:
+        >>> async with event.message_tx():
+        ...     await event.reply("正在处理，请稍候")
+        ...     result = await do_something()
+        ...     await event.reply(f"完成: {result}")
+        >>> # do_something() 抛出异常时，前面两条消息自动撤回
+
+        {!--< tips >!--}
+        嵌套事务各自独立记账；事务外发送不记账（零开销）。
+        {!--< /tips >!--}
+        """
+        return _MessageTx()
+
     def to_dict(self) -> dict[str, Any]:
         """
         转换为字典（过滤内部键）
@@ -1892,6 +1938,85 @@ class Event(dict):
         )
 
 
+# 对话恢复工厂注册表：[(factory, platform | None)]
+# 由 Conversation.register_resume_handler 装饰器写入，
+# 框架在消息事件入口通过 Conversation.try_auto_resume 消费。
+_conversation_resume_handlers: list[tuple[Callable, str | None]] = []
+
+
+def _consume_task_exception(task: "asyncio.Task") -> None:
+    """{!--< internal-use >!--} 消费后台检查点任务的异常（防未检索告警）"""
+    if task.done() and not task.cancelled():
+        exc = task.exception()
+        if exc is not None:
+            del exc
+
+
+async def _rollback_receipts(receipts: list[dict[str, str]]) -> None:
+    """
+    {!--< internal-use >!--}
+    逆序撤回消息事务账本中的消息（能力感知）
+
+    适配器未实现 ``delete_message``（Api 能力缺失）时跳过该条并记录 TRACE 日志；
+    单条撤回失败不中断后续撤回。
+
+    :param receipts: 消息回执账本
+    """
+    for receipt in reversed(receipts):
+        platform = receipt.get("platform")
+        message_id = receipt.get("message_id")
+        if not platform or not message_id:
+            continue
+        try:
+            adapter_instance = getattr(adapter, platform, None)
+            if adapter_instance is None:
+                continue
+            api = getattr(adapter_instance, "Api", None)
+            if api is None or not hasattr(api, "delete_message"):
+                logger.trace(
+                    i18n.t(
+                        "core.interaction.message_tx_no_capability",
+                        platform=platform,
+                        message_id=message_id,
+                    )
+                )
+                continue
+            await api.delete_message(message_id=message_id)
+        except Exception as _e:
+            logger.trace(
+                i18n.t(
+                    "core.interaction.message_tx_rollback_failed",
+                    message_id=message_id,
+                    error=_e,
+                )
+            )
+
+
+class _MessageTx:
+    """
+    {!--< internal-use >!--}
+    消息事务上下文管理器（由 :meth:`Event.message_tx` 创建）
+
+    事务内所有出站发送自动记入回执账本；异常退出时逆序撤回已发送的消息
+    （适配器需实现 ``delete_message``，未实现时跳过）。正常退出不撤回。
+    """
+
+    async def __aenter__(self) -> "_MessageTx":
+        from ...runtime.context import send_receipts
+
+        self._token = send_receipts.set([])
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> bool:
+        from ...runtime.context import send_receipts
+
+        receipts = send_receipts.get() or []
+        send_receipts.reset(self._token)
+        if exc_type is not None and receipts:
+            await _rollback_receipts(receipts)
+        return False
+
+
 class Conversation:
     """
     多轮对话上下文
@@ -1965,6 +2090,7 @@ class Conversation:
         )
         if result is None:
             self._alive = False
+            self._schedule_checkpoint_clear()
         return result
 
     async def confirm(self, prompt: str | None = None, **kwargs) -> bool | None:
@@ -2029,6 +2155,7 @@ class Conversation:
         )
         if result is None:
             self._alive = False
+            self._schedule_checkpoint_clear()
         else:
             self.context.update(result)
         return result
@@ -2036,10 +2163,13 @@ class Conversation:
     def stop(self):
         """
         结束对话
+
+        终态自动清除已保存的对话检查点。
         """
         self._alive = False
         if self._branch_task and not self._branch_task.done():
             self._branch_task.cancel()
+        self._schedule_checkpoint_clear()
 
     # 分支系统
 
@@ -2093,6 +2223,8 @@ class Conversation:
                 i18n.t("core.event.branch_not_defined", name=branch_name)
             )
         self._current_branch = branch_name
+        # 分支跳转自动保存检查点（重启后可从当前分支恢复）
+        self._schedule_checkpoint()
 
         evt = event or self._event
 
@@ -2152,33 +2284,101 @@ class Conversation:
         """
         return name in self._branches
 
-    # ==================== 持久化 ====================
+    # ==================== 持久化（自动检查点） ====================
+
+    @staticmethod
+    def _checkpoint_key(event: "Event") -> str:
+        """
+        {!--< internal-use >!--}
+        生成对话检查点存储键（含 target 维度，避免同一用户多会话互覆）
+
+        :param event: 事件对象
+        :return: 存储键（conversation:{platform}:{user_id}:{target_id}）
+        """
+        platform = event.get_platform() if hasattr(event, "get_platform") else event.get("platform", "")
+        user_id = event.get_user_id() if hasattr(event, "get_user_id") else event.get("user_id", "")
+        key = f"{CONVERSATION_KEY_PREFIX}:{platform}:{user_id}"
+        target_id = event.get_target_id() if hasattr(event, "get_target_id") else event.get("target_id", "")
+        if target_id:
+            key = f"{key}:{target_id}"
+        return key
+
+    @staticmethod
+    def _checkpoint_ttl() -> float:
+        """
+        {!--< internal-use >!--}
+        读取检查点过期时长（ErisPulse.interaction.checkpoint_ttl，秒）
+
+        :return: 过期秒数
+        """
+        try:
+            from ...runtime.frame_config import get_erispulse_config
+
+            return float(
+                get_erispulse_config()
+                .get("interaction", {})
+                .get("checkpoint_ttl", DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS)
+            )
+        except Exception:
+            return DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS
+
+    def _schedule_checkpoint(self):
+        """{!--< internal-use >!--} 后台保存检查点（分支跳转自动触发，失败静默）"""
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            return
+        task = loop.create_task(self._checkpoint(save=True))
+        task.add_done_callback(_consume_task_exception)
+
+    def _schedule_checkpoint_clear(self):
+        """{!--< internal-use >!--} 后台清除检查点（对话终态自动触发，失败静默）"""
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            return
+        task = loop.create_task(self._checkpoint(save=False))
+        task.add_done_callback(_consume_task_exception)
+
+    async def _checkpoint(self, save: bool):
+        """{!--< internal-use >!--} 检查点写入/清除的统一异常兜底"""
+        try:
+            if save:
+                await self.save()
+            else:
+                await self.clear_saved()
+        except Exception as _e:
+            logger.trace(i18n.t("core.event.conversation_checkpoint_failed", error=_e))
 
     async def save(self):
         """
-        保存对话状态到 storage
+        保存对话状态到 storage（自动检查点）
+
+        分支跳转（goto/start）时框架自动调用；也可手动调用强制存档。
+        存储键含 target 维度（conversation:{platform}:{user_id}:{target_id}），
+        同一用户在不同会话中的对话互不覆盖。
 
         :example:
         >>> await conv.save()
 
         {!--< tips >!--}
-        保存内容包括: 当前分支、上下文数据、活跃状态
-        可用于重启后恢复对话
+        保存内容包括: 当前分支、上下文数据、活跃状态、存档时间。
+        超过 ``ErisPulse.interaction.checkpoint_ttl``（默认 24h）的存档在恢复时被丢弃。
         {!--< /tips >!--}
         """
         try:
             from ..storage import storage
 
-            user_id = self._event.get_user_id()
-            platform = self._event.get_platform()
-            key = f"{CONVERSATION_KEY_PREFIX}:{platform}:{user_id}"
+            key = self._checkpoint_key(self._event)
             storage.set(
                 key,
                 {
+                    "version": 2,
                     "branch": self._current_branch,
                     "context": self.context,
                     "alive": self._alive,
                     "timeout": self._timeout,
+                    "saved_at": time.time(),
                 },
             )
         except Exception:
@@ -2187,6 +2387,9 @@ class Conversation:
     async def resume(self, event: "Event | None" = None) -> bool:
         """
         从 storage 恢复对话状态
+
+        读取含 target 维度的新键；旧格式（不含 target）存档会自动迁移到新键。
+        超过 checkpoint_ttl 的存档视为过期，丢弃并返回 False。
 
         :param event: Event 新的事件对象 (可选, 不传则使用原事件)
         :return: bool 是否恢复成功
@@ -2198,24 +2401,45 @@ class Conversation:
         ...     conv.goto(conv.get_current_branch())
 
         {!--< tips >!--}
-        需要在 resume() 之前先注册好所有分支
+        需要在 resume() 之前先注册好所有分支；注册分支后也可使用
+        :meth:`register_resume_handler` 声明恢复工厂，由框架在重启后
+        首条命中消息自动完成恢复。
         {!--< /tips >!--}
         """
         try:
             from ..storage import storage
 
             evt = event or self._event
-            user_id = evt.get_user_id()
-            platform = evt.get_platform()
-            key = f"{CONVERSATION_KEY_PREFIX}:{platform}:{user_id}"
+            key = self._checkpoint_key(evt)
             data = storage.get(key)
-            if data and isinstance(data, dict):
-                self.context = data.get("context", {})
-                self._current_branch = data.get("branch")
-                self._alive = data.get("alive", False)
-                if event:
-                    self._event = event
-                return True
+            if not isinstance(data, dict):
+                # 旧格式兼容：尝试不含 target 的旧键，命中则迁移至新键
+                platform = evt.get_platform() if hasattr(evt, "get_platform") else evt.get("platform", "")
+                user_id = evt.get_user_id() if hasattr(evt, "get_user_id") else evt.get("user_id", "")
+                old_key = f"{CONVERSATION_KEY_PREFIX}:{platform}:{user_id}"
+                data = storage.get(old_key)
+                if isinstance(data, dict):
+                    storage.delete(old_key)
+                    storage.set(key, data)
+                else:
+                    return False
+
+            # 过期检查点丢弃
+            saved_at = data.get("saved_at")
+            if (
+                isinstance(saved_at, (int, float))
+                and (time.time() - saved_at) > self._checkpoint_ttl()
+            ):
+                storage.delete(key)
+                logger.trace(i18n.t("core.event.conversation_checkpoint_expired"))
+                return False
+
+            self.context = data.get("context", {})
+            self._current_branch = data.get("branch")
+            self._alive = data.get("alive", False)
+            if event:
+                self._event = event
+            return True
         except Exception as _e:
             logger.trace(i18n.t("core.event.conversation_resume_failed", error=_e))
         return False
@@ -2224,18 +2448,118 @@ class Conversation:
         """
         清除保存的对话状态
 
+        同时清理含 target 的新键与旧格式键。
+
         :example:
         >>> await conv.clear_saved()
         """
         try:
             from ..storage import storage
 
-            user_id = self._event.get_user_id()
-            platform = self._event.get_platform()
-            key = f"{CONVERSATION_KEY_PREFIX}:{platform}:{user_id}"
-            storage.delete(key)
+            evt = self._event
+            storage.delete(self._checkpoint_key(evt))
+            platform = evt.get_platform() if hasattr(evt, "get_platform") else evt.get("platform", "")
+            user_id = evt.get_user_id() if hasattr(evt, "get_user_id") else evt.get("user_id", "")
+            storage.delete(f"{CONVERSATION_KEY_PREFIX}:{platform}:{user_id}")
         except Exception as _e:
             logger.trace(i18n.t("core.event.conversation_clear_failed", error=_e))
+
+    # ==================== 重启自动恢复 ====================
+
+    @classmethod
+    def register_resume_handler(cls, platform: str | None = None) -> Callable:
+        """
+        注册对话恢复工厂（类装饰器方法，模块加载时调用）
+
+        框架在重启后收到该会话的首条消息时，若存在有效检查点，
+        会调用已注册的工厂重建 Conversation（模块需在工厂内重新注册所有分支），
+        随后自动 ``goto`` 到存档分支继续对话。
+
+        :param platform: 仅匹配指定平台的事件；None 表示匹配所有平台
+        :return: 装饰器
+
+        :example:
+        >>> @Conversation.register_resume_handler()
+        ... def make_conversation(event) -> Conversation:
+        ...     conv = event.conversation()
+        ...     @conv.branch("menu")
+        ...     async def menu(conv, event): ...
+        ...     return conv
+        """
+        def decorator(func: Callable):
+            _conversation_resume_handlers.append((func, platform))
+            return func
+
+        return decorator
+
+    @classmethod
+    async def try_auto_resume(cls, event: "Event") -> bool:
+        """
+        {!--< internal-use >!--}
+        尝试对当前消息事件自动恢复挂起的对话（框架在消息入口调用）
+
+        无已注册恢复工厂时立即返回（零开销路径）；存在有效检查点且
+        某工厂成功重建对话时，恢复上下文、认领事件并跳转到存档分支。
+
+        :param event: 消息事件（Event 包装类）
+        :return: 是否完成了自动恢复（事件已被消费）
+        """
+        if not _conversation_resume_handlers:
+            return False
+
+        try:
+            from ..storage import storage
+
+            data = storage.get(cls._checkpoint_key(event))
+        except Exception:
+            return False
+        if not isinstance(data, dict) or not data.get("alive", False):
+            return False
+
+        branch = data.get("branch")
+        if not branch:
+            return False
+
+        # 过期检查点直接丢弃
+        saved_at = data.get("saved_at")
+        if (
+            isinstance(saved_at, (int, float))
+            and (time.time() - saved_at) > cls._checkpoint_ttl()
+        ):
+            try:
+                from ..storage import storage as _storage
+
+                _storage.delete(cls._checkpoint_key(event))
+            except Exception:
+                pass
+            return False
+
+        event_platform = event.get("platform")
+        for handler, platform_filter in _conversation_resume_handlers:
+            if platform_filter and event_platform != platform_filter:
+                continue
+            try:
+                if inspect.iscoroutinefunction(handler):
+                    conv = await handler(event)
+                else:
+                    conv = handler(event)
+            except Exception as _e:
+                logger.trace(i18n.t("core.event.conversation_resume_failed", error=_e))
+                continue
+            if conv is None:
+                continue
+            # 恢复上下文并从存档分支继续
+            conv.context = data.get("context", {}) or {}
+            timeout = data.get("timeout")
+            if isinstance(timeout, (int, float)):
+                conv._timeout = timeout
+            mark_processed = getattr(event, "mark_processed", None)
+            if callable(mark_processed):
+                mark_processed()
+            conv.goto(branch, event)
+            logger.trace(i18n.t("core.event.conversation_auto_resumed", branch=branch))
+            return True
+        return False
 
 
 __all__ = [

@@ -42,9 +42,9 @@ from ..constants import (
     UNKNOWN_PLATFORM,
 )
 from ..i18n import i18n
-from ..text_match import compile_text_matcher
 from . import overrides
 from .base import BaseEventHandler
+from .interaction import InteractionCancelled, interaction
 from .session_type import get_send_type_and_target_id, infer_receive_type
 
 
@@ -71,8 +71,9 @@ class CommandHandler:
         except Exception:
             pass
 
-        # 等待回复相关
-        self._waiting_replies = {}  # 存储等待回复的用户信息
+        # 等待回复：委托交互会话管理器（Core/Event/interaction.py），
+        # 由其统一维护会话键索引 / owner 归属 / 平台索引与互斥租约
+        # （历史属性 _waiting_replies 已迁移，不再在本类持有等待表）
 
         # 共享的消息事件处理器引用（由 bind_message_handler() 设置）
         # 命令分发器 _handle_message 以高优先级注册在同一个队列中，
@@ -268,6 +269,9 @@ class CommandHandler:
         :param owner: 归属者（模块名）
         :return: 移除的命令数量
         """
+        # 同步取消该归属者挂起的交互等待（等待方立即收到取消而非干等超时）
+        interaction.cancel_by_owner(owner)
+
         to_remove = [name for name, info in self.commands.items() if info.get("owner") == owner]
         for cmd_name in to_remove:
             cmd_info = self.commands[cmd_name]
@@ -314,9 +318,14 @@ class CommandHandler:
         :param pattern: glob 通配符（``*`` / ``?`` / ``[seq]``），回复文本不匹配时继续等待
         :param regex: 正则表达式，回复文本不匹配时继续等待（与 pattern 同时给定时须都匹配）
         :return: 用户回复的事件数据，如果超时则返回None
+
+        {!--< tips >!--}
+        等待期间归属模块被卸载 / 适配器关闭 / 同会话被新的等待或租约取代 /
+        回复者权限被撤销时，等待立即终止并返回 None（底层为
+        :class:`~ErisPulse.Core.Event.interaction.InteractionCancelled`）。
+        {!--< /tips >!--}
         """
         platform = event.get("platform")
-        user_id = event.get("user_id")
 
         # 使用会话类型管理模块获取发送类型和目标ID
         send_type, target_id = get_send_type_and_target_id(event, platform)
@@ -341,21 +350,19 @@ class CommandHandler:
             except Exception as e:
                 logger.warning(i18n.t("core.event.command.send_prompt_failed", error=e))
 
-        # 创建等待 future
+        # 创建等待 future 并注册到交互会话管理器
+        # （owner 从 current_owner 上下文自动捕获；同会话已有等待时旧等待被取消）
         loop = asyncio.get_running_loop()
         future = loop.create_future()
-
-        # 存储等待信息
-        bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
-        wait_key = f"{platform}:{bot_id}:{user_id}:{target_id}"
-        self._waiting_replies[wait_key] = {
-            "future": future,
-            "callback": callback,
-            "validator": validator,
-            "pattern": pattern,
-            "regex": regex,
-            "timestamp": loop.time(),
-        }
+        entry = interaction.register(
+            event,
+            future,
+            callback=callback,
+            validator=validator,
+            pattern=pattern,
+            regex=regex,
+        )
+        wait_key = entry.key
 
         try:
             # 等待回复或超时
@@ -389,12 +396,16 @@ class CommandHandler:
         except asyncio.TimeoutError:
             logger.trace(i18n.t("core.command.wait_reply_timeout", key=wait_key, timeout=timeout))
             return None
+        except InteractionCancelled as e:
+            logger.trace(i18n.t("core.interaction.wait_cancelled", reason=e.reason, wait_key=wait_key))
+            return None
         except Exception as e:
             logger.error(i18n.t("core.command.wait_reply_error", error=e))
             return None
         finally:
             # 无论成功、超时、异常还是 CancelledError，都确保清理等待条目
-            self._waiting_replies.pop(wait_key, None)
+            # （命中 / 取消路径条目已被移除，此处仅兜底超时路径的残留）
+            interaction.cancel(wait_key)
 
     async def _handle_message(self, event: dict[str, Any]):
         """
@@ -406,10 +417,24 @@ class CommandHandler:
         :param event: 消息事件数据
         """
         # 防御性归一化：确保 event 为 Event 实例，使 mark_processed 等方法可用
-        from .wrapper import Event as _Event
+        from .wrapper import Conversation as _Conversation, Event as _Event  # noqa: I001
 
         if not isinstance(event, _Event):
             event = _Event(event)
+
+        # 回复命中优先判定（在 _processed 检查之前）：
+        # 交互等待是框架级的会话延续机制而非竞争处理器，即使消息已被其他
+        # 高优先级处理器认领，也应先尝试完成对话（修复等待方被饿死的问题）。
+        # 命中后事件被 mark_processed，下方检查自然短路；未命中则继续命令匹配。
+        if event.get("type", "") == "message":
+            # 对话检查点自动恢复优先于一切：重启后首条命中消息续接挂起的对话
+            try:
+                if await _Conversation.try_auto_resume(event):
+                    return
+            except Exception:
+                pass
+            if await interaction.resolve(event):
+                return
 
         # 检查是否已经被其他处理器标记为已处理
         if event.get("_processed"):
@@ -759,70 +784,13 @@ class CommandHandler:
         """
         检查是否是等待回复的消息
 
+        判定链（会话键命中 → pattern/regex 过滤 → validator 校验 →
+        权限复查 → 唤醒等待方并认领事件）委托交互会话管理器
+        :meth:`~ErisPulse.Core.Event.interaction.InteractionManager.resolve`。
+
         :param event: 消息事件数据
         """
-        platform = event.get("platform")
-        user_id = event.get("user_id")
-
-        # 使用会话类型管理模块获取发送类型和目标ID
-        _send_type, target_id = get_send_type_and_target_id(event, platform)
-
-        bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
-        wait_key = f"{platform}:{bot_id}:{user_id}:{target_id}"
-
-        # 检查是否有等待的处理器
-        if wait_key in self._waiting_replies:
-            logger.trace(
-                i18n.t(
-                    "core.command.reply_matched",
-                    wait_key=wait_key,
-                    user_id=user_id,
-                    platform=platform,
-                )
-            )
-            wait_info = self._waiting_replies[wait_key]
-            validator = wait_info.get("validator")
-
-            # pattern（glob）/ regex（正则）过滤：不匹配则继续等待（不消费 future）
-            _pattern = wait_info.get("pattern")
-            _regex = wait_info.get("regex")
-            if _pattern or _regex:
-                _text_cond = compile_text_matcher(_pattern, _regex)
-                _matched = _text_cond is None or _text_cond(event)
-                if not _matched:
-                    logger.trace(
-                        i18n.t(
-                            "core.command.reply_pattern_not_matched",
-                            wait_key=wait_key,
-                            user_id=user_id,
-                            platform=platform,
-                        )
-                    )
-                    return
-
-            # 如果有验证器，验证回复是否有效
-            if validator:
-                if not validator(event):
-                    # 验证失败，不处理此回复，继续等待
-                    logger.trace(
-                        i18n.t(
-                            "core.command.reply_validation_failed",
-                            wait_key=wait_key,
-                            user_id=user_id,
-                            platform=platform,
-                        )
-                    )
-                    return
-
-            # 设置 future 结果
-            if not wait_info["future"].done():
-                wait_info["future"].set_result(event)
-
-            # 清理等待信息
-            del self._waiting_replies[wait_key]
-
-            # 标记事件已被处理（认领 + 阻断，阻止低优先级处理器再介入）
-            event.mark_processed()
+        await interaction.resolve(event)
 
     async def _send_permission_denied(self, event: dict[str, Any]):
         """
@@ -915,7 +883,7 @@ class CommandHandler:
         self.aliases.clear()
         self.groups.clear()
         self.permissions.clear()
-        self._waiting_replies.clear()
+        interaction.clear()
         # 从共享 handler 中注销命令分发器（不清除其他 handler 的消息处理器）
         if self._bound_handler is not None and self._dispatcher_registered:
             self._bound_handler.unregister(self._handle_message)
