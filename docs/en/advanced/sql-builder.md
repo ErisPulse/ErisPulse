@@ -1,6 +1,6 @@
 # SQL Query Builder
 
-The Storage module of ErisPulse provides a fluent-style, chainable SQL query builder that supports custom table creation, querying, updating, and deletion operations.
+The Storage module of ErisPulse provides a chain-call style generic SQL query builder, supporting the creation, querying, updating, and deletion operations for custom tables.
 
 ## Architecture Design
 
@@ -15,8 +15,8 @@ Bases/storage.py                    Core/storage.py
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` are abstract base classes that define a unified interface, supporting future expansion to other storage media (Redis, MySQL, etc.)
-- `StorageManager` is the current SQLite concrete implementation, fully backward compatible
+- `BaseStorage` / `BaseQueryBuilder` are abstract base classes that define unified interfaces, supporting future expansion to other storage media (Redis, MySQL, etc.)
+- `StorageManager` is the current SQLite concrete implementation, fully backward compatible.
 
 ## Import
 
@@ -71,15 +71,15 @@ sdk.storage.AlterTable("users") \
     .Execute()
 ```
 
-## Chained Query
+## Chain Query
 
 ### Insert Data
 
 ```python
-# Insert single row (pass a dictionary)
+# Single row insert (pass dictionary)
 sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 
-# Insert multiple rows (pass a list of dictionaries)
+# Batch insert (pass list of dictionaries)
 sdk.storage.Table("users").InsertMulti([
     {"name": "Bob", "age": 25},
     {"name": "Charlie", "age": 35},
@@ -106,37 +106,59 @@ for row in rows:
     age = row[1]    # 30
 ```
 
-#### Convert Tuples to Dictionaries
+#### Convert Tuple to Dictionary
+
+It is recommended to directly call `ToDict()` on the chain; the SELECT result will automatically return as a list of dictionaries (column name → value):
+
+```python
+# ToDict chain: result is list[dict], column names are automatically taken from query metadata (SELECT * is also supported)
+rows = sdk.storage.Table("users").Select("name", "age").ToDict().Execute()
+# rows: [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}, ...]
+
+for row in rows:
+    print(row["name"], row["age"])
+
+# ExecuteOne also works
+row = sdk.storage.Table("users").Select("name", "age") \
+    .Where("id = ?", 1) \
+    .ToDict() \
+    .ExecuteOne()
+# row: {"name": "Alice", "age": 30} or None
+```
+
+> `ToDict()` is a chain marker (returns self): chains that do not call it maintain the original `list[tuple]` behavior, fully backward compatible; `copy()` will preserve this marker.
+
+Manual zip method (equivalent to ToDict, suitable for scenarios where chain modification is not possible):
 
 ```python
 columns = ["id", "name", "age"]
 rows = sdk.storage.Table("users").Select(*columns).Execute()
 
-# Method 1: Using zip in a loop
+# Method one: zip in loop
 for row in rows:
     record = dict(zip(columns, row))
     print(record["name"], record["age"])
 
-# Method 2: Convert to a list of dictionaries at once
+# Method two: convert to dictionary list at once
 records = [dict(zip(columns, row)) for row in rows]
 ```
 
-#### Get a Single Record
+#### Get Single Record
 
 ```python
 row = sdk.storage.Table("users").Select("name", "age") \
     .Where("id = ?", 1) \
     .ExecuteOne()
 
-# row is a tuple or None
+# row is tuple or None
 if row is not None:
     name = row[0]  # "Alice"
     age = row[1]   # 30
 ```
 
-### Conditional Filtering
+### Condition Filtering
 
-> `Where(condition, *params)` supports multiple parameters, corresponding to multiple `?` placeholders.
+> `Where(condition, *params)` supports passing multiple parameters, corresponding to multiple `?` placeholders.
 
 ```python
 # Single condition (one placeholder, one parameter)
@@ -144,19 +166,19 @@ rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 18) \
     .Execute()
 
-# Multiple placeholders in one Where clause
+# Multiple placeholders in one Where
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ? AND age < ?", 20, 40) \
     .Execute()
 
-# Multiple calls to Where (AND connected)
+# Multiple Where calls (AND connected)
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 20) \
     .Where("age < ?", 40) \
     .Execute()
 ```
 
-### Sorting and Pagination
+### Sorting, Pagination
 
 ```python
 # Ascending order
@@ -216,20 +238,20 @@ count = sdk.storage.Table("users").Where("age > ?", 18).Count()
 exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
 ```
 
-## Reusing Query Conditions
+## Reuse Query Conditions
 
-Use `copy()` to deep copy the builder and reuse the base conditions:
+Use `copy()` to deep copy the builder and reuse base conditions:
 
 ```python
 base = sdk.storage.Table("users").Where("age > ?", 20)
 
-# Query based on the same conditions
+# Query based on same condition
 rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
 
-# Count based on the same conditions
+# Count based on same condition
 count = base.copy().Count()
 
-# Check existence based on the same conditions
+# Check existence based on same condition
 exists = base.copy().Where("name = ?", "Alice").Exists()
 ```
 
@@ -239,14 +261,14 @@ exists = base.copy().Where("name = ?", "Alice").Exists()
 builder = sdk.storage.Table("users").Select("name").Where("age > ?", 18)
 builder.clear()
 
-# Rebuild the query
+# Rebuild query
 builder.Select("name", "age").Where("name = ?", "Alice")
 rows = builder.Execute()
 ```
 
-## Using in Transactions
+## Use in Transactions
 
-Chained operations are fully supported in transactions:
+Chain operations fully support transactions:
 
 ```python
 # Commit transaction
@@ -280,12 +302,12 @@ except Exception:
 ### Return Value Handling Examples
 
 ```python
-# Select returns tuples, access by index
+# Select returns tuple, access by index
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
-first_name = rows[0][0]  # First row, first column (name)
-first_age = rows[0][1]   # First row, second column (age)
+first_name = rows[0][0]  # First row, first column name
+first_age = rows[0][1]   # First row, second column age
 
-# Recommended: Use column list + zip to convert to dictionary, more readable code
+# Recommended: use column name list + zip to convert to dictionary, more readable code
 cols = ["name", "age"]
 rows = sdk.storage.Table("users").Select(*cols).Execute()
 for row in rows:
@@ -303,10 +325,10 @@ print(f"Deleted {affected} records")
 
 ## Parameterized Queries
 
-All WHERE parameters use the `?` placeholder, with parameters passed as subsequent arguments to `Where()` (**not** as a tuple or list):
+All WHERE parameters use `?` placeholders, with parameters passed as subsequent arguments to `Where()` (not as a tuple or list):
 
 ```python
-# Correct ✓ — multiple parameters passed individually
+# Correct ✓ — multiple arguments passed individually
 sdk.storage.Table("users").Where("age > ? AND name = ?", 18, "Alice").Execute()
 
 # Correct ✓ — multiple Where calls
@@ -314,7 +336,7 @@ sdk.storage.Table("users").Where("age > ?", 18).Where("name = ?", "Alice").Execu
 
 # Incorrect ✗ — do not pass a tuple
 sdk.storage.Table("users").Where("age > ? AND name = ?", (18, "Alice")).Execute()
-# This would treat the entire tuple as the value for the first placeholder
+# This will treat the entire tuple as the value for the first placeholder
 
 # Incorrect ✗ — SQL injection risk
 sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
@@ -324,7 +346,7 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ```python
 # Where(condition: str, *params: Any)
-# params is a variable argument list, passed individually
+# params are variable arguments, passed individually
 
 # Single parameter
 .Where("name = ?", "Alice")
@@ -360,7 +382,6 @@ class MyQueryBuilder(BaseQueryBuilder):
     def Exists(self):
         ...
 
-
 class MyStorage(BaseStorage):
     def get(self, key, default=None):
         ...
@@ -375,6 +396,6 @@ class MyStorage(BaseStorage):
 
 ## Related Documentation
 
-- [Core Modules API](../api-reference/core-modules.md) - Complete API for the Storage module
-- [Storage Base Class API](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) - Abstract interfaces for BaseStorage/BaseQueryBuilder
-- [Message Builder](message-builder.md) - Reference for the MessageBuilder's fluent API style
+- [Core Module API](../api-reference/core-modules.md) - Complete API for the Storage module
+- [Storage Base Class API](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) - Abstract interfaces BaseStorage/BaseQueryBuilder
+- [Message Builder](message-builder.md) - Reference for MessageBuilder chain-call style

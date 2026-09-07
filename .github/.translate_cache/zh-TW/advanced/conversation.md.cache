@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "b01604fddbefa2d1c79a56e027ff82c3",
-  "file_hash": "b01604fddbefa2d1c79a56e027ff82c3",
-  "translated_at": "2026-09-07T10:37:34.980902",
+  "hash": "99691c2063d70a93d752c291c929189b",
+  "file_hash": "99691c2063d70a93d752c291c929189b",
+  "translated_at": "2026-09-07T17:04:00.749537",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -26,8 +26,12 @@
       "translation": "## 分支與跳轉\n\n### @conv.branch(name) 裝飾器\n\n使用 `branch()` 註冊對話分支，並透過 `goto()` 在分支間跳轉：\n\n```python\n@command(\"menu\")\nasync def menu_handler(event):\n    conv = event.conversation(timeout=60)\n\n    @conv.branch(\"main\")\n    async def main_menu():\n        await conv.say(\"=== 主菜單 ===\\n1. 個人資訊\\n2. 設定\\n3. 退出\")\n        resp = await conv.wait()\n        if resp is None:\n            return\n        text = resp.get_text().strip()\n        if text == \"1\":\n            await conv.goto(\"profile\")\n        elif text == \"2\":\n            await conv.goto(\"settings\")\n        elif text == \"3\":\n            await conv.say(\"再見！\")\n            conv.stop()\n\n    @conv.branch(\"profile\")\n    async def profile():\n        await conv.say(\"=== 個人資訊 ===\\n姓名: Alice\\n0. 返回\")\n        resp = await conv.wait()\n        if resp and resp.get_text().strip() == \"0\":\n            await conv.goto(\"main\")\n\n    @conv.branch(\"settings\")\n    async def settings():\n        await conv.say(\"=== 設定 ===\\n1. 通知開關\\n0. 返回\")\n        resp = await conv.wait()\n        if resp and resp.get_text().strip() == \"0\":\n            await conv.goto(\"main\")\n\n    await conv.start()  # 從第一個註冊的分支開始\n```\n\n### conv.start(name=None)\n\n啟動對話，預設從第一個註冊的分支開始：\n\n```python\nawait conv.start()          # 從第一個分支開始\nawait conv.start(\"settings\") # 從指定分支開始\n```"
     },
     {
-      "hash": "a6718c439630cb95119fb2a38983d9ed",
-      "translation": "## 上下文與持久化\n\n### conv.context\n\n每個對話實例內建 `context` 字典，用於在分支間共享狀態：\n\n```python\n@conv.branch(\"step1\")\nasync def step1():\n    conv.context[\"username\"] = resp.get_text().strip()\n    await conv.goto(\"step2\")\n\n@conv.branch(\"step2\")\nasync def step2():\n    name = conv.context.get(\"username\", \"未知\")\n    await conv.say(f\"你好，{name}！\")\n```\n\n### save() / resume() / clear_saved()\n\n對話支援持久化，可在超時或中斷後恢復：\n\n```python\n# 保存對話狀態\nconv_id = conv.save()\n# conv_id = \"user_123_group_456\"  # 基於使用者和群組自动生成\n\n# ... 之後在同一會話中恢復 ...\nconv2 = event.conversation()\nif conv2.resume():\n    await conv2.say(\"歡迎回來！繼續之前的對話\")\nelse:\n    await conv2.say(\"沒有找到之前的對話\")\n\n# 清除保存的對話\nconv.clear_saved()\n```"
+      "hash": "2b52436401846d54c2d5839b77e6ff15",
+      "translation": "## 上下文與持久化\n\n### conv.context\n\n每個對話實例內建 `context` 字典，用於在分支間共享狀態：\n\n```python\n@conv.branch(\"step1\")\nasync def step1():\n    conv.context[\"username\"] = resp.get_text().strip()\n    await conv.goto(\"step2\")\n\n@conv.branch(\"step2\")\nasync def step2():\n    name = conv.context.get(\"username\", \"未知\")\n    await conv.say(f\"你好，{name}！\")\n```\n\n### save() / resume() / clear_saved()\n\n對話支援持久化，可在超時或中斷後恢復：\n\n```python\n# 保存對話狀態（通常無需手動呼叫，見下方\"自動檢查點\"）\nawait conv.save()\n\n# ... 之後在同一會話中恢復 ...\nconv2 = event.conversation()\nif await conv2.resume():\n    await conv2.say(\"歡迎回來！繼續之前的對話\")\nelse:\n    await conv2.say(\"沒有找到之前的對話\")\n\n# 清除保存的對話\nawait conv.clear_saved()\n```\n\n儲存鍵包含 target 維度（`conversation:{platform}:{user_id}:{target_id}`），同一用戶在不同會話中的對話互不覆蓋；舊格式（不含 target）的存檔在 `resume()` 時自動遷移。"
+    },
+    {
+      "hash": "e2f3719bf1f2f4558d7ebb84386c4cb2",
+      "translation": "## 自動檢查點與重啟恢復\n\n### 自動存檔\n\n框架在以下時機自動維護檢查點，通常無需手動調用 `save()`：\n\n| 時機 | 行為 |\n|------|------|\n| `goto()` / `start()` 跳轉分支 | 自動保存（當前分支 + context） |\n| `stop()` / `wait()` 超時 / `collect()` 失敗 | 自動清除（對話終態） |\n\n### 檢查點 TTL\n\n存檔帶時間戳，超過 `ErisPulse.interaction.checkpoint_ttl`（預設 24 小時）的存檔在恢復時自動丟棄：\n\n```toml\n[ErisPulse.interaction]\ncheckpoint_ttl = 86400  # 秒\n```\n\n### 重啟自動恢復\n\n框架重啟後，進行中的對話（記憶體中的等待協程）會丟失，但檢查點仍在。透過 `register_resume_handler` 註冊**恢復工廠**，框架即可在重啟後收到該會話首條訊息時自動續接對話：\n\n```python\nfrom ErisPulse.Core.Event.wrapper import Conversation\n\n@Conversation.register_resume_handler()  # 可傳 platform=\"onebot11\" 限定平台\ndef make_conversation(event) -> Conversation:\n    # 工廠職責：重建對話並重新註冊所有分支\n    conv = event.conversation(timeout=60)\n\n    @conv.branch(\"menu\")\n    async def menu(conv, event):\n        ...\n\n    return conv\n```\n\n註冊後，重啟前處於 `menu` 分支的使用者發來首條訊息時，框架自動：恢復 context → 認領該訊息 → 從存檔分支繼續對話。未註冊工廠時此機制零開銷。\n\n### 手動恢復（不用自動機制時）\n\n```python\n@command(\"continue\")\nasync def continue_handler(event):\n    conv = event.conversation()\n    # ... 註冊分支 ...\n    if await conv.resume():\n        conv.goto(conv.get_current_branch())\n```"
     },
     {
       "hash": "411629ac7551f463c95e2d25a8e5ccd3",

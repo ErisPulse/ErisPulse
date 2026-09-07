@@ -2,12 +2,12 @@
 
 本文檔記錄 ErisPulse SDK 的已知 Bug 及其修復情況，按修復版本時間順序排列。
 
-> **致讀者**
-> 沒有任何軟體天生完美，再細心的開發者也會留下小錯誤。本追蹤收錄的都是對運行有實際影響的問題——那些過於細微、連「輕微」等級都達不到的瑕疵並不會出現在這裡。清單中「嚴重」項看起來不少，但公開記錄這些 Bug 的初衷是讓排查與回溯更順暢，而非製造焦慮：能被看見、被記錄、被修復的問題，本身就是項目不斷變好的證明。看到這份清單不必緊張，它是一份排查工具，而不是恐懼的來源。
+> **寫給讀者**
+> 沒有任何軟體天生完美，再細心的開發者也會留下小錯誤。本追蹤收錄的都是對運行有實際影響的問題——那些過於細微、連「輕微」等級都達不到的瑕疵並不會出現在這裡。清單中「嚴重」項看起來不少，但公開記錄這些 Bug 的初衷是讓排查與回溯更順暢，而非製造焦慮：能被看見、被記錄、被修復的問題，本身就是專案不斷變好的證明。看到這份清單不必緊張，它是一份排查工具，而不是恐懼的來源。
 
 > **如何閱讀 & 維護約定**
-> - 每條 Bug 記錄包含問題描述、根因分析、影響版本範圍、修復方案等結構化字段，建議升級前先檢索「影響版本」是否覆蓋當前使用的版本。
-> - 如需新增 Bug 條目，請在對應位置補充內容，遵循下文字段規範與嚴重性/類型分類。
+> - 每條 Bug 記錄包含問題描述、根因分析、影響版本範圍、修復方案等結構化欄位，建議升級前先檢索「影響版本」是否覆蓋當前使用的版本。
+> - 如需新增 Bug 條目，請在對應位置補充內容，遵循下文欄位規範與嚴重性/類型分類。
 
 ---
 
@@ -17,11 +17,11 @@
 
 | 字段 | 說明 |
 |------|------|
-| **問題** | Bug 的外在表現、用戶可觀察到的異常現象。盡量給出報錯資訊或典型場景 |
-| **原因** | 根因分析，指向具體的代碼缺陷（含「根因鏈路」圖示用於複雜場景） |
+| **問題** | Bug 的外在表現、使用者可觀察到的異常現象。盡量提供錯誤訊息或典型場景 |
+| **原因** | 根因分析，指向具體的程式碼缺陷（含「根因鏈路」圖示用於複雜場景） |
 | **影響版本** | 受影響的版本區間，格式 `引入版本 - 修復版本`（含兩端 dev 版本） |
 | **修復版本** | 修復該 Bug 的具體版本號 |
-| **修復內容** | 修復方案的簡要描述，含關鍵代碼變更點 |
+| **修復內容** | 修復方案的簡要描述，含關鍵程式碼變更點 |
 | **修復日期** | 對應修復版本的發布日期，採用 `YYYY/MM/DD` 格式 |
 | **嚴重性** | 按下文「嚴重性分級」標註 |
 | **類型** | 按下文「類型分類」標註，可組合（如 `適配器 / 路由`） |
@@ -30,59 +30,53 @@
 
 | 字段 | 說明 | 適用場景 |
 |------|------|---------|
-| **復現步驟** | 觸發該 Bug 的最小可復現路徑 | 複雜 Bug、偶發性 Bug 建議補充 |
+| **重現步驟** | 觸發該 Bug 的最小可重現路徑 | 複雜 Bug、偶發性 Bug 建議補充 |
 | **關聯** | 相關 Issue / PR / Commit 鏈接 | 有外部討論記錄時補充 |
-| **迴歸測試** | 驗證修復、防止再次迴歸的測試用例位置 | 已編寫對應 pytest 用例時補充 |
-
----
+| **回歸測試** | 驗證修復、防止再次回歸的測試用例位置 | 已編寫對應 pytest 用例時補充 |
 
 ## 嚴重性分級
 
 | 標識 | 級別 | 判定標準 | 典型表現 |
 |------|------|---------|---------|
 | 🔴 | 嚴重 | 導致進程崩潰、資料丟失/損壞、核心功能完全不可用、安全漏洞 | OOM Kill、訊息無法發送、模組無法加載、熱重載失敗 |
-| 🟡 | 中等 | 功能異常但有避開路徑、非核心功能失效、偶發問題 | 狀態判斷錯誤、重複觸發、快取過期、錯誤提示不准 |
-| 🟢 | 輕微 | 不影響核心功能、僅代碼品質或體驗問題、潛在風險未爆發 | 棄用 API、死代碼、缺失 warning 日誌 |
-
----
+| 🟡 | 中等 | 功能異常但有迴避路徑、非核心功能失效、偶發問題 | 狀態判斷錯誤、重複觸發、快取過期、錯誤提示不準 |
+| 🟢 | 輕微 | 不影響核心功能、僅程式碼品質或體驗問題、潛在風險未爆發 | 棄用 API、死程式碼、缺失 warning 日誌 |
 
 ## 類型分類
 
 | 類型 | 覆蓋範圍 |
 |------|---------|
-| 配置系統 | `ConfigManager`、配置讀寫、配置 Schema、熱更新 |
-| 事件系統 | `Event` 模塊（command/message/notice/request/meta）、事件分發、處理器註冊 |
+| 配置系統 | `ConfigManager`、配置讀取與寫入、配置 Schema、熱更新 |
+| 事件系統 | `Event` 模組（command/message/notice/request/meta）、事件分發、處理器註冊 |
 | 適配器 | `AdapterManager`、`BaseAdapter`、帳戶解析、Bot 狀態、中間件 |
 | 路由 | `RouterManager`、HTTP/WebSocket/SSE 路由、限流、CORS |
 | 客戶端 | `HttpClient`、`ClientWebSocket`、aiohttp 封裝 |
 | 存儲 | `StorageManager`、SQLite、SQL 構建器、嵌套鍵 |
 | 加載系統 | `Loader`、`LazyModule`、`ModuleInitializer`、嚴格模式、模組發現 |
-| CLI | `epsdk` 命令、`init`/`run`/`install`、參數解析、訊號處理 |
-| 運行時 | `sdk.run`/`restart`/`uninit`、生命週期、訊號、子進程 |
+| CLI | `epsdk` 命令、`init`/`run`/`install`、參數解析、信號處理 |
+| 運行時 | `sdk.run`/`restart`/`uninit`、生命週期、信號、子進程 |
 
----
+## 項目模板
 
-## 條目範例
-
-新增 Bug 條目請遵循以下格式：
+新增 Bug 項目請遵循以下格式：
 
 ```markdown
 ### [BUG-XXX] 標題
 
-**問題**: 問題描述（報錯資訊或典型現象）
+**問題**: 問題描述（錯誤訊息或典型現象）
 **原因**: 根因分析
 **影響版本**: 引入版本 - 修復版本
 **修復版本**: x.x.x
 **修復內容**: 修復方案
 **修復日期**: YYYY/MM/DD
 
-<!-- 可選字段 -->
-**復現步驟**: （複雜 Bug 建議補充）
+<!-- 可選欄位 -->
+**重現步驟**: （複雜 Bug 建議補充）
 **關聯**: （Issue/PR 鏈接）
-**迴歸測試**: （驗證用例路徑）
+**回歸測試**: （驗證用例路徑）
 
-**嚴重性**: 🔴 嚴重 | 🟡 中等 | 🟢 輕微
-**類型**: 配置系統 / 事件系統 / 適配器 / 路由 / 客戶端 / 存儲 / 加載系統 / CLI / 運行時
+**嚴重性**: 🔴 严重 | 🟡 中等 | 🟢 輕微
+**類型**: 配置系統 / 事件系統 / 适配器 / 路由 / 客戶端 / 存儲 / 加載系統 / CLI / 運行時
 ```
 
 ---
@@ -92,25 +86,23 @@
 | 嚴重性 | 數量 |
 |--------|------|
 | 🔴 嚴重 | 15 |
-| 🟡 中等 | 13 |
+| 🟡 中等 | 14 |
 | 🟢 輕微 | 2 |
-| **合計** | **30** |
+| **合計** | **31** |
 
 | 類型 | 數量 |
 |------|------|
 | 適配器 | 6 |
 | 配置系統 | 7 |
-| 事件系統 | 5 |
+| 事件系統 | 6 |
 | CLI | 3 |
-| 存儲 | 3 |
+| 儲存 | 3 |
 | 加載系統 | 3 |
 | 路由 | 2 |
 | 客戶端 | 1 |
 | 運行時 | 1 |
 
 > 注：單條 Bug 可歸屬多個類型，上表按主類型統計。
-
----
 
 ## 已修復的 Bug
 
@@ -180,7 +172,7 @@
 
 ### [BUG-004] 生命週期事件處理器未清理
 
-**問題**: `sdk.restart()` 後，舊的生命週期事件處理器仍然存在並重複觸發，導致同一個事件被多次處理。
+**問題**: `sdk.restart()` 後，舊的生命周期事件處理器仍然存在並重複觸發，導致同一個事件被多次處理。
 
 **原因**: `lifecycle._handlers` 字典在 `uninit()` 時從未被清理，restart 後舊處理器與新處理器同時存在。
 
@@ -280,7 +272,7 @@
 
 ### [BUG-009] LazyModule 同步訪問 BaseModule 導致未初始化完成
 
-**問題**: 用戶在同步上下文中訪問懶加載的 BaseModule 屬性時，模組使用 `loop.create_task()` 異步初始化但不等待，導致屬性訪問時可能未初始化完成，引發競爭條件。
+**問題**: 用戶在同步上下文中訪問懶加載的 BaseModule 屬性時，模塊使用 `loop.create_task()` 異步初始化但不等待，導致屬性訪問時可能未初始化完成，引發競態條件。
 
 **原因**: `_ensure_initialized()` 對 BaseModule 使用 `loop.create_task(self._initialize())` 後立即返回，未確保初始化完成。
 
@@ -298,19 +290,19 @@
 
 ---
 
-### [BUG-010] 配置系統多線程寫入導致資料丟失
+### [BUG-010] 配置系統多線程寫入導致數據丟失
 
 **問題**: 在多線程環境下，多個線程同時調用 `config.setConfig()` 時，`_flush_config()` 讀取-修改-寫入操作不是原子性的，可能導致部分寫入丟失。
 
-**原因**: `_flush_config()` 雖然使用了 `RLock`，但檔案讀取和寫入之間沒有檔案鎖保護，且 `_schedule_write` 的 Timer 可能被多次觸發導致覆蓋。
+**原因**: `_flush_config()` 雖然使用了 `RLock`，但文件讀取和寫入之間沒有文件鎖保護，且 `_schedule_write` 的 Timer 可能被多次觸發導致覆蓋。
 
 **影響版本**: 2.3.0 - 2.4.2-dev.1
 
 **修復版本**: 2.4.2-dev.2
 
 **修復內容**:
-1. 添加檔案鎖機制（`_file_lock`）確保檔案操作原子性
-2. 使用臨時檔案寫入後原子性重命名（`os.replace`/`os.rename`）
+1. 添加文件鎖機制（`_file_lock`）確保文件操作原子性
+2. 使用臨時文件寫入後原子性重命名（`os.replace`/`os.rename`）
 3. 改進 `_schedule_write` 的 Timer 取消和重新調度邏輯
 
 **修復日期**: 2026/04/21
@@ -323,9 +315,9 @@
 
 ### [BUG-011] Windows 下 CTRL+C 無法停止程序
 
-**問題**: 在 Windows 上直接運行 `python main.py` 時，按下 CTRL+C 無法終止程序。程序正常啟動並輸出路由伺服器資訊後，CTRL+C 完全無反應，只能通過任務管理器強殺進程。而通過 `epsdk run` 啟動時可以正常停止——但 `epsdk run` 是通過子進程模型運行的。
+**問題**: 在 Windows 上直接運行 `python main.py` 時，按下 CTRL+C 無法終止程序。程序正常啟動並輸出路由伺服器信息後，CTRL+C 完全無響應，只能通過任務管理器強殺進程。而通過 `epsdk run` 啟動時可以正常停止——但 `epsdk run` 是通過子進程模型運行的。
 
-**原因**: Hypercorn ASGI 伺服器的 `serve()` 函數內部通過 `signal.signal(SIGINT, handler)` 註冊了自己的 SIGINT 處理器，覆蓋了 Python 預設的 `KeyboardInterrupt` 處理機制。當通過 `asyncio.create_task()` 啟動 Hypercorn 作為後台任務時，Hypercorn 的內部 shutdown 流程無法正常觸發（因為它期望的是 `worker_serve` 模式），導致 CTRL+C 訊號被 Hypercorn 吞掉但不會引發任何清理動作。
+**原因**: Hypercorn ASGI 伺服器的 `serve()` 函數內部通過 `signal.signal(SIGINT, handler)` 註冊了自己的 SIGINT 處理器，覆蓋了 Python 默認的 `KeyboardInterrupt` 處理機制。當通過 `asyncio.create_task()` 啟動 Hypercorn 作為後台任務時，Hypercorn 的內部 shutdown 流程無法正常觸發（因為它期望的是 `worker_serve` 模式），導致 CTRL+C 信號被 Hypercorn 吞掉但不會引發任何清理動作。
 
 **影響版本**: 2.3.6 - 2.4.2
 
@@ -333,9 +325,9 @@
 
 **修復內容**:
 1. 將 ASGI 伺服器從 Hypercorn 切換為 Uvicorn（`pyproject.toml` 依賴變更）
-2. 使用 `uvicorn.Server._serve()` 直接啟動伺服器，**繞過** `capture_signals()` 訊號處理上下文管理器
+2. 使用 `uvicorn.Server._serve()` 直接啟動伺服器，**繞過** `capture_signals()` 信號處理上下文管理器
 3. 通過 `server.should_exit = True` 實現優雅停止，超時則取消後台任務
-4. 同步移除子進程運行模型和 `runtime/cleanup.py` 清理模組（子進程清理機制不再需要）
+4. 同步移除子進程運行模型和 `runtime/cleanup.py` 清理模塊（子進程清理機制不再需要）
 
 **修復日期**: 2026/04/28
 
@@ -345,17 +337,17 @@
 
 ---
 
-### [BUG-012] 熱重啟後已更新模組的 Python 代碼未生效
+### [BUG-012] 熱重啟後已更新模塊的 Python 代碼未生效
 
-**問題**: 執行 `sdk.restart()` 軟重啟後，已通過 `epsdk install` 升級的模組/適配器的新代碼（如新增 API 路由）不生效，仍運行舊版本邏輯。必須完全重啟進程才能加載最新代碼。
+**問題**: 執行 `sdk.restart()` 軟重啟後，已通過 `epsdk install` 升級的模塊/適配器的新代碼（如新增 API 路由）不生效，仍運行舊版本邏輯。必須完全重啟進程才能加載最新代碼。
 
-**原因**: `_do_restart()` 在重新初始化時調用 `entry_point.load()`，但該函數從 `sys.modules` 返回了緩存的舊版本模組對象，而非從磁盤重新加載。
+**原因**: `_do_restart()` 在重新初始化時調用 `entry_point.load()`，但該函數從 `sys.modules` 返回了緩存的舊版本模塊對象，而非從磁盤重新加載。
 
 **影響版本**: 早期版本 - 2.4.3-dev.1
 
 **修復版本**: 2.4.3-dev.1
 
-**修復內容**: 在 `uninit()` 後、`init()` 前清理 `sys.modules` 中已加載模組/適配器包的緩存，使 `entry_point.load()` 從磁盤加載最新代碼。新增 `_collect_top_level_modules()` 與 `_invalidate_module_cache()` 輔助方法，通過 `top_level.txt` 或 entry-point value 推導頂層模組名。
+**修復內容**: 在 `uninit()` 後、`init()` 前清理 `sys.modules` 中已加載模塊/適配器包的緩存，使 `entry_point.load()` 從磁盤加載最新代碼。新增 `_collect_top_level_modules()` 與 `_invalidate_module_cache()` 輔助方法，通過 `top_level.txt` 或 entry-point value 推導頂層模塊名。
 
 **修復日期**: 2026/05/03
 
@@ -365,17 +357,17 @@
 
 ---
 
-### [BUG-013] 模組加載策略排序邏輯錯誤
+### [BUG-013] 模塊加載策略排序邏輯錯誤
 
-**問題**: `ModuleLoadStrategy` 提供了 `priority` 字段用於聲明模組的初始化優先級，但加載策略的實現存在失誤，導致模組未按預期的優先級順序初始化，實際按 `entry_points()` 的預設順序加載。當模組間存在加載依賴時，無法通過 `priority` 確保正確的初始化先後關係。
+**問題**: `ModuleLoadStrategy` 提供了 `priority` 字段用於聲明模塊的初始化優先級，但加載策略的實現存在失誤，導致模塊未按預期的優先級順序初始化，實際按 `entry_points()` 的預設順序加載。當模塊間存在加載依賴時，無法通過 `priority` 確保正確的初始化先後關係。
 
-**原因**: 加載策略的實現中排序邏輯有誤，`initialize_modules()` 未使用 `priority` 對模組列表進行排序。
+**原因**: 加載策略的實現中排序邏輯有誤，`initialize_modules()` 未使用 `priority` 對模塊列表進行排序。
 
 **影響版本**: 2.3.4 - 2.4.5-dev.2
 
 **修復版本**: 2.4.5-dev.3
 
-**修復內容**: 在 `initialize_modules()` 遍歷前，按 `priority` 降序排序模組列表。同 priority 的模組保持原有相對順序（穩定排序）。
+**修復內容**: 在 `initialize_modules()` 遍歷前，按 `priority` 降序排序模塊列表。同 priority 的模塊保持原有相對順序（穩定排序）。
 
 **修復日期**: 2026/05/15
 
@@ -385,7 +377,7 @@
 
 ---
 
-### [BUG-014] 適配器中間件返回 None 導致事件資料丟失
+### [BUG-014] 適配器中間件返回 None 導致事件數據丟失
 
 **問題**: `adapter.emit()` 在執行 OneBot12 中間件鏈時，如果某個中間件返回 `None`（例如忘記 `return data`），後續中間件和所有事件處理器收到的 `processed_data` 變為 `None`，導致事件處理完全失效。
 
@@ -395,7 +387,7 @@
 
 **修復版本**: 2.4.5-dev.4
 
-**修復內容**: 中間件返回 `None` 時忽略該返回值，保留原資料繼續傳遞，並輸出 warning 級別日誌。
+**修復內容**: 中間件返回 `None` 時忽略該返回值，保留原數據繼續傳遞，並輸出 warning 級別日誌。
 
 **修復日期**: 2026/05/15
 
@@ -471,7 +463,7 @@
 - 多協程併發調用 `ClientWebSocket.receive()` 時 aiohttp 抛出 `Concurrent call to receive() is not allowed`
 - `_get_http_session()` / `_get_ws_session()` 併發調用可能創建多個 session 且 `_drain_sessions()` 未關閉舊連接，造成連接泄漏
 - `request()` 的異常捕獲順序錯誤：`except ClientConnectionError`（ErisPulse 異常）永不觸發，aiohttp 的連接錯誤被通用 `except Exception` 接住，導致"連接重試 + session 重建"邏輯（死代碼）從未執行
-- `send_json()` 忽略 `mode="binary"` 參數；`_get_ws_session()` 未傳入預設請求頭
+- `send_json()` 忽略 `mode="binary"` 參數；`_get_ws_session()` 未傳入默認請求頭
 
 **原因**: 客戶端初次實現（2.4.6-dev.5）缺少併發保護與異常分類，對 aiohttp 異常體系與 ErisPulse 自定義異常的繼承關係處理不當。
 
@@ -483,7 +475,7 @@
 1. 新增 `_recv_lock` 序列化所有 `receive()` / `receive_text()` / `receive_bytes()` 調用
 2. 新增 `_session_lock` 保護 session 創建；`_drain_sessions()` 改為異步方法並真正關閉舊 session
 3. 重構 `request()` 異常捕獲順序：`asyncio.TimeoutError` → `aiohttp.ClientConnectionError`（觸發 session 重建）→ `aiohttp.ClientError` → `ClientError`（透傳）→ `Exception`
-4. 修復 `send_json()` 的 mode 處理、`_get_ws_session()` 預設請求頭透傳、`close()` 的併發競爭、`HttpResponse.__aexit__` 重複 `release()`
+4. 修復 `send_json()` 的 mode 處理、`_get_ws_session()` 默認請求頭透傳、`close()` 的併發競態、`HttpResponse.__aexit__` 重複 `release()`
 
 **修復日期**: 2026/06/12
 
@@ -495,7 +487,7 @@
 
 ### [BUG-019] 適配器熱重載時路由衝突導致重載失敗
 
-**問題**: 第三方模組（如 Dashboard）觸發適配器熱重載，或適配器啟動失敗重試時，因上次註冊的舊路由（如 `onebot11_default`）未清理，抛出 `WebSocket路徑 ... 已註冊` 衝突，導致重載失敗。需要完全重啟進程才能恢復。
+**問題**: 第三方模塊（如 Dashboard）觸發適配器熱重載，或適配器啟動失敗重試時，因上次註冊的舊路由（如 `onebot11_default`）未清理，拋出 `WebSocket路徑 ... 已註冊` 衝突，導致重載失敗。需要完全重啟進程才能恢復。
 
 **原因**: `AdapterManager.shutdown()` 僅以 `unregister_all_by_namespace(platform)` 清理路由，但適配器（如 OneBot11）以 `onebot11_{account_name}` 為命名空間註冊 WS 路由，顆粒度不匹配導致清理為空操作；啟動失敗重試路徑也未清理上次殘留路由。
 
@@ -507,7 +499,7 @@
 1. 路由註冊時通過 `current_owner` ContextVar 自動追蹤 `owner → namespace` 歸屬關係
 2. 新增 `unregister_all_by_owner(owner)`，停止/重啟時同時按 owner 清理，覆蓋細顆粒度命名空間
 3. 新增 `_stop_adapter(platform)` 原語（"停止即清理"），將停止適配器與回收其註冊的資源綁定在一次調用裡，`restart()` 和啟動失敗重試均經此入口
-4. 新增框架級 `adapter.restart(platform)` API，第三方模組應調用此方法而非直接操作適配器實例
+4. 新增框架級 `adapter.restart(platform)` API，第三方模塊應調用此方法而非直接操作適配器實例
 
 **修復日期**: 2026/06/12
 
@@ -546,7 +538,7 @@
 - `SELECT users.name` — 限定列名
 - `SELECT col AS alias` — 列別名
 
-其中 `Select("*")` 被 Cron 等模組使用，導致模組 `on_load` 執行失敗，模組無法加載。
+其中 `Select("*")` 被 Cron 等模塊使用，導致模塊 `on_load` 執行失敗，模塊無法加載。
 
 **原因**: 2.4.6 版本增強了 SQL 注入防護，引入了 `_validate_identifier()` 白名單校驗。該校驗應用於所有列名，但未區分讀取端（SELECT/ORDER BY）和寫入端（INSERT/UPDATE）。SELECT 列允許複雜的 SQL 表達式，不應受簡單標識符白名單限制。
 
@@ -555,7 +547,7 @@
 **修復版本**: 2.5.2-dev.2
 
 **修復內容**: 將 SELECT/ORDER BY 的列校驗從白名單模式改為黑名單模式：
-1. 新增 `_validate_select_column()` 函數，僅攔截 SQL 注入危險字元（`;` `'` `"` `--` `/*` `*/` `\x00` 換行符）
+1. 新增 `_validate_select_column()` 函數，僅拦截 SQL 注入危險字符（`;` `'` `"` `--` `/*` `*/` `\x00` 換行符）
 2. 允許任意合法 SQL 列表達式（`*`、`table.*`、`table.column`、`COUNT(*)`、`col AS alias` 等）
 3. INSERT/UPDATE 列名仍保持嚴格白名單校驗（僅允許簡單標識符）
 
@@ -569,7 +561,7 @@
 
 ### [BUG-022] _resolve_account() 賬戶解析迴歸（_accounts_data 未填充）
 
-**問題**: 2.5.2 配置系統重構後，聲明了 `AccountConfigClass` 的多賬戶適配器在調用 `wait_reply`、`reply` 等需要發送訊息的方法時，报錯 `ValueError("未聲明 AccountConfigClass，無法解析賬戶")`。即使適配器正確配置了多賬戶資訊，賬戶解析仍然失敗。
+**問題**: 2.5.2 配置系統重構後，聲明了 `AccountConfigClass` 的多賬戶適配器在調用 `wait_reply`、`reply` 等需要發送消息的方法時，報錯 `ValueError("未聲明 AccountConfigClass，無法解析賬戶")`。即使適配器正確配置了多賬戶信息，賬戶解析仍然失敗。
 
 **原因**: 2.5.2-dev.5 將 `_load_accounts()`（負責讀取配置 + 校驗 + 填充 `_accounts_data`）重構為 `_ensure_accounts_exist()`（僅生成配置模板），但 `_resolve_account()` 仍檢查 `self._accounts_data is None`。由於 `_ensure_accounts_exist()` 不再填充 `_accounts_data`，該屬性始終為 `None`，導致 `_resolve_account()` 提前返回 `(None, None)`，賬戶解析完全失效。
 
@@ -608,7 +600,7 @@ if self.AccountConfigClass is not None:
 
 ### [BUG-023] 修改賬戶配置後適配器緩存未刷新導致賬戶解析失敗
 
-**問題**: 用戶通過 Dashboard 修改多賬戶適配器的賬戶配置（如填寫 token）後，適配器仍使用舊緩存，調用發送訊息相關方法时报 `未找到可用賬戶 (account_id=default)`。必須重啟進程才能讓新配置生效。
+**問題**: 用戶通過 Dashboard 修改多賬戶適配器的賬戶配置（如填寫 token）後，適配器仍使用舊緩存，調用發送消息相關方法時報 `未找到可用賬戶 (account_id=default)`。必須重啟進程才能讓新配置生效。
 
 **原因**: `_accounts_data` 僅在 `BaseAdapter.__init__` 時從配置存儲讀取一次，之後不再刷新。`AdapterManager._run_adapter()` 與 `restart()` 在調用 `adapter.start()` 前未重新讀取賬戶配置，導致緩存與實際配置脫節。
 
@@ -630,14 +622,14 @@ if self.AccountConfigClass is not None:
 
 **問題**: 調用 `storage.set()` 寫入包含大純數字段（如 QQ 群號 `871684833`）的嵌套鍵路徑時，進程被容器 OOM Kill（退出碼 -9），服務直接崩潰無法恢復。
 
-**原因**: `_set_nested_value` 的遞迴實現中，嵌套鍵路徑裡的純數字段被 `isdigit()` 誤判為列表索引，觸發 `current.extend([None] * (index - len(current) + 1))`，試圖分配數億元素的列表，瞬間耗盡記憶體。
+**原因**: `_set_nested_value` 的遞歸實現中，嵌套鍵路徑裡的純數字段被 `isdigit()` 誤判為列表索引，觸發 `current.extend([None] * (index - len(current) + 1))`，試圖分配數億元素的列表，瞬間耗盡內存。
 
 **根因鏈路**:
 ```
 鍵路徑包含純數字段（如群號 871684833）
-  → isdigit() 误判为数组索引
+  → isdigit() 誤判為數組索引
     → extend([None] * (871684833 - len(current) + 1))
-      → 嘗試分配数亿元素
+      → 試圖分配數億元素
         → 內存耗盡 → 容器 OOM Kill（退出碼 -9）
 ```
 
@@ -647,8 +639,8 @@ if self.AccountConfigClass is not None:
 
 **修復內容**:
 1. 預創建中間層時始終使用字典，不再根據下一段是否為數字猜測容器類型
-2. 設定最終值時，僅當容器本身已是列表且索引小於 `STORAGE_MAX_LIST_INDEX`（10000）時才按索引處理，超大索引安全跳過
-3. 將遞迴實現改為迭代實現，消除原代碼中潛在的無限遞迴風險
+2. 設置最終值時，僅當容器本身已是列表且索引小於 `STORAGE_MAX_LIST_INDEX`（10000）時才按索引處理，超大索引安全跳過
+3. 將遞歸實現改為迭代實現，消除原代碼中潛在的無限遞歸風險
 4. 新增 `STORAGE_MAX_LIST_INDEX` 常量到 `Core/constants.py`，集中管理索引安全上限
 
 **修復日期**: 2026/07/10
@@ -657,10 +649,10 @@ if self.AccountConfigClass is not None:
 ```python
 # 寫入包含大數字段（如 QQ 群號）的嵌套鍵路徑即可觸發
 await sdk.storage.aset("groups.871684833.name", "某群")
-# → 進程記憶體瞬間飆升，被 OOM Kill
+# → 進程內存瞬間飆升，被 OOM Kill
 ```
 
-**迴歸測試**: `tests/unit/test_unit_storage.py` 新增 4 個迴歸用例
+**回歸測試**: `tests/unit/test_unit_storage.py` 新增 4 個回歸用例
 - `test_nested_key_numeric_segment_as_dict_key` — 精確復現 OOM 場景
 - `test_nested_key_numeric_segment_multiple` — 多個連續數字段均作為字典鍵
 - `test_nested_key_existing_list_index_set_within_limit` — 已有列表合理索引寫入
@@ -692,7 +684,7 @@ await sdk.storage.aset("groups.871684833.name", "某群")
 
 **修復內容**: `ModuleManager` / `AdapterManager` 註冊 `config.set`（覆蓋代碼 `setConfig()` 路徑）與 `config.updated`（覆蓋手動編輯文件路徑）事件訂閱，按配置鍵前綴匹配後調用對應組件的 `on_config_update`，傳入類型安全的配置對象。同時修復 `_flush_config()` 寫入文件後未同步 `_config_mtime` 的問題，避免框架自身寫入被文件監聽任務誤判為外部修改而重複觸發 `config.updated`。
 
-**相容性說明**: 配置熱更新現由框架核心統一維護。此前由配置管理面板代為觸發的邏輯已移除，升級框架後需同步升級配置管理面板，否則會出現重複觸發（核心 + 面板各調一次）。`on_config_update` 方法簽名與語義保持不變，子類無需修改。
+**兼容性說明**: 配置熱更新現由框架核心統一維護。此前由配置管理面板代為觸發的邏輯已移除，升級框架後需同步升級配置管理面板，否則會出現重複觸發（核心 + 面板各調一次）。`on_config_update` 方法簽名與語義保持不變，子類無需修改。
 
 **修復日期**: 2026/07/23
 
@@ -704,9 +696,9 @@ await sdk.storage.aset("groups.871684833.name", "某群")
 
 ### [BUG-026] notice/request 事件 reply 目標推斷錯誤
 
-**問題**: 在群通知事件（如成員加群 `group_member_increase`）中調用 `event.reply()`，訊息被發送到觸發事件的用戶私聊，而非事件所在的群。好友通知事件同理，回覆目標可能錯亂。
+**問題**: 在群通知事件（如成員加群 `group_member_increase`）中調用 `event.reply()`，消息被發送到觸發事件的用戶私聊，而非事件所在的群。好友通知事件同理，回覆目標可能錯亂。
 
-**原因**: `infer_receive_type()` 將事件的 `detail_type` 直接當作會話類型返回。對於 message 事件這是正確的（`detail_type` 值 `private`/`group` 即會話類型），但 notice/request 事件的 `detail_type` 是語義子類型（如 `group_member_increase`、`friend_increase`），不是會話類型。後續的 `convert_to_send_type()` 和 `get_id_field()` 在映射表中找不到該值，回退到預設的 `"user"` / `"user_id"`，導致回覆目標錯亂。
+**原因**: `infer_receive_type()` 將事件的 `detail_type` 直接當作會話類型返回。對於 message 事件這是正確的（`detail_type` 值 `private`/`group` 即會話類型），但 notice/request 事件的 `detail_type` 是語義子類型（如 `group_member_increase`、`friend_increase`），不是會話類型。後續的 `convert_to_send_type()` 和 `get_id_field()` 在映射表中找不到該值，回退到默認的 `"user"` / `"user_id"`，導致回覆目標錯亂。
 
 **根因鏈路**:
 ```
@@ -723,7 +715,7 @@ notice 事件 detail_type="group_member_increase"
 
 **修復內容**: `infer_receive_type()` 增加判斷——`detail_type` 只有在是已知會話類型（標準類型或自定義類型）時才直接返回；否則根據 ID 字段（`group_id` / `channel_id` / `user_id` 等）推斷正確的會話類型。
 
-**迴歸測試**: `tests/unit/test_unit_session_type.py` → `TestNoticeRequestTypeInference`（10 用例）
+**回歸測試**: `tests/unit/test_unit_session_type.py` → `TestNoticeRequestTypeInference`（10 用例）
 
 **修復日期**: 2026/07/29
 
@@ -753,11 +745,11 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 **修復版本**: 2.7.0-dev.5
 
-**修復內容**: 新增 `_rate_limit_windows: dict[str, int]` 按 store key 記錄每路由實際窗口；`_apply_rate_limit` 首次創建條目時寫入窗口；`_cleanup_expired_rate_limits` 改為按各 key 自身窗口清理（缺失時回退預設值）；清理刪除條目與 `stop()` 時同步維護兩個字典。
+**修復內容**: 新增 `_rate_limit_windows: dict[str, int]` 按 store key 記錄每路由實際窗口；`_apply_rate_limit` 首次創建條目時寫入窗口；`_cleanup_expired_rate_limits` 改為按各 key 自身窗口清理（缺失時回退默認值）；清理刪除條目與 `stop()` 時同步維護兩個字典。
 
 **修復日期**: 2026/07/31
 
-**迴歸測試**: `tests/unit/test_unit_router.py` → `TestRateLimit::test_cleanup_respects_per_route_window`
+**回歸測試**: `tests/unit/test_unit_router.py` → `TestRateLimit::test_cleanup_respects_per_route_window`
 
 **嚴重性**: 🔴 嚴重
 
@@ -767,7 +759,7 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 ### [BUG-029] 配置監聽任務廣播半成品 TOML 並靜默吞掉異常
 
-**問題**: 用戶手動編輯 `config.toml` 保存到一半（產生瞬時的語法錯誤）時，配置監聽後台線程會檢測到 mtime 變化、重載配置，但加載失敗後仍以空配置 `{}` 發射 `config.updated` 事件，導致適配器/模組的 `on_config_update` 收到空配置、誤以為所有配置項被清空而回退預設值。此外監聽迴圈用 `except Exception: pass` 靜默吞掉所有異常，watcher 故障無從排查。
+**問題**: 用戶手動編輯 `config.toml` 保存到一半（產生瞬時的語法錯誤）時，配置監聽後台線程會檢測到 mtime 變化、重載配置，但加載失敗後仍以空配置 `{}` 發射 `config.updated` 事件，導致適配器/模塊的 `on_config_update` 收到空配置、誤以為所有配置項被清空而回退默認值。此外監聽循環用 `except Exception: pass` 靜默吞掉所有異常，watcher 故障無從排查。
 
 **原因**: 兩個缺陷疊加：
 1. `_load_config` 在 TOML 語法錯誤/權限錯誤時把 `self._cache` 擦寫為 `{}`，但後台監聽線程 `_watch_loop` 與緩存超時路徑 `_check_cache_validity` 都在調用 `_load_config()` 後**無條件**執行 `_emit_config_updated()`，把"加載失敗產生的空緩存"當作真實變更廣播。
@@ -778,8 +770,8 @@ _apply_rate_limit 解析 window=3600（100/hour）
 用戶保存到一半 → TOML 語法錯誤
   → _load_config() 擦寫 _cache = {}
     → _watch_loop 無條件 _emit_config_updated(new_config={})
-      → 适配器/模組 on_config_update 收到空配置
-        → 误判配置被清空，回退默认值
+      → 適配器/模塊 on_config_update 收到空配置
+        → 誤判配置被清空，回退默認值
 ```
 
 **影響版本**: 2.6.2-dev.1 - 2.7.0-dev.4
@@ -793,7 +785,7 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 **修復日期**: 2026/07/31
 
-**迴歸測試**: `tests/unit/test_unit_config.py` → `test_malformed_toml_preserves_last_valid_cache`、`test_permission_denied_logs_clear_message`（更新為驗證保留緩存 + 返回 False）
+**回歸測試**: `tests/unit/test_unit_config.py` → `test_malformed_toml_preserves_last_valid_cache`、`test_permission_denied_logs_clear_message`（更新為驗證保留緩存 + 返回 False）
 
 **嚴重性**: 🟡 中等
 
@@ -803,18 +795,18 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 ### [BUG-030] 配置 watcher 競態導致 setConfig 延遲寫入靜默丟數據
 
-**問題**: 多個用戶報告使用 `config.setConfig(key, value)`（預設 `immediate=False`）後，自己的模組配置未寫入 `config.toml`，而其它模組的配置正常。設置 `immediate=True`（強制刷盤）可避開。表現為：運行期寫入的配置在下次重啟後丟失，啟動期模板生成的配置保留。
+**問題**: 多個用戶報告使用 `config.setConfig(key, value)`（預設 `immediate=False`）後，自己的模塊配置未寫入 `config.toml`，而其它模塊的配置正常。設置 `immediate=True`（強制刷盤）可避開。表現為：運行期寫入的配置在下次重啟後丟失，啟動期模板生成的配置保留。
 
 **原因**: 兩個疊加缺陷：
-1. **邏輯缺陷**：`_watch_loop` 在 `_check_file_change()` 返回 `True` 時無條件 `_dirty_keys.clear()` 丟失所有待寫鍵。但 `_check_file_change()` 僅用 `!=` 對比 mtime，框架自身的 `_flush_config` 寫盤也會改變 mtime——雖然 `_flush_config` 在寫盤後更新 `_config_mtime`，但 watcher 線程在文件寫入與 mtime 賦值之間（以及粗粒度檔案系統上）仍可能觀測到 mtime 差值，誤判為"外部修改"並清空全部待寫鍵。
+1. **邏輯缺陷**：`_watch_loop` 在 `_check_file_change()` 返回 `True` 時無條件 `_dirty_keys.clear()` 丟棄所有待寫鍵。但 `_check_file_change()` 僅用 `!=` 對比 mtime，框架自身的 `_flush_config` 寫盤也會改變 mtime——雖然 `_flush_config` 在寫盤後更新 `_config_mtime`，但 watcher 線程在文件寫入與 mtime 賦值之間（以及粗粒度文件系統上）仍可能觀測到 mtime 差值，誤判為"外部修改"並清空全部待寫鍵。
 2. **線程缺陷**：`_watch_loop` 操作 `_write_timer`/`_dirty_keys` 時未持有 `_lock`，與 `setConfig`（持鎖寫 `_dirty_keys`）、`_schedule_write`（持鎖寫 `_write_timer`）存在數據競爭。
 
 **根因鏈路**:
 ```
-模組A setConfig(immediate=True) → flush 寫盤，mtime 變化
-  → 用戶模組 setConfig(immediate=False) → 進入 _dirty_keys，5s 後刷盤
+模塊A setConfig(immediate=True) → flush 寫盤，mtime 變化
+  → 用戶模塊 setConfig(immediate=False) → 進入 _dirty_keys，5s 後刷盤
     → watcher 輪詢，_check_file_change 觀測到先前自身寫入的 mtime 差值
-      → _dirty_keys.clear() → 用戶模組的待寫鍵被靜默丟棄
+      → _dirty_keys.clear() → 用戶模塊的待寫鍵被靜默丟棄
         → 重啟後配置缺失
 ```
 
@@ -829,7 +821,7 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 **修復日期**: 2026/08/06
 
-**迴歸測試**: `tests/unit/test_unit_config.py` → `test_self_write_not_detected_as_external`、`test_external_change_preserves_dirty_keys`、`test_flush_merges_dirty_with_external`
+**回歸測試**: `tests/unit/test_unit_config.py` → `test_self_write_not_detected_as_external`、`test_external_change_preserves_dirty_keys`、`test_flush_merges_dirty_with_external`
 
 **嚴重性**: 🔴 嚴重
 
@@ -847,12 +839,34 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 **修復版本**: 2.8.0-dev.1
 
-**修復內容**: `getConfig` 引入待寫疊加語義——① 精確命中待寫鍵直接返回（原有行為不變）；② 待寫鍵是查詢鍵的祖先 → 取最長待寫祖先，在其值子樹內解析剩餘路徑；③ 待寫鍵是查詢鍵的後代 → 構建疊加子樹（`_dirty_overlay`）與緩存子樹深合併（`_deep_merge`，override 優先，不修改原緩存對象）。無待寫鍵時走原快路徑，零額外開銷。
+**修復內容**: `getConfig` 引入待寫疊加語義——① 精確命中待寫鍵直接返回（原有行為不變）；② 待寫鍵是查詢鍵的祖先 → 取最長待寫祖先，在其值子樹內解析剩餘路徑；③ 待寫鍵是查詢鍵的後代 → 構建疊加子樹（`_dirty_overlay`）與緩存子樹深合併（`_deep_merge`，override 优先，不修改原缓存对象）。无待写键时走原快路径，零额外开销。
 
 **修復日期**: 2026/09/04
 
-**迴歸測試**: `tests/unit/test_unit_config.py` → `test_get_config_overlays_dirty_descendant`、`test_get_config_overlay_merges_with_cache_siblings`、`test_get_config_overlay_new_branch`、`test_get_config_dirty_ancestor_query`、`test_get_config_dirty_exact_key_still_wins`
+**回歸測試**: `tests/unit/test_unit_config.py` → `test_get_config_overlays_dirty_descendant`、`test_get_config_overlay_merges_with_cache_siblings`、`test_get_config_overlay_new_branch`、`test_get_config_dirty_ancestor_query`、`test_get_config_dirty_exact_key_still_wins`
 
 **嚴重性**: 🟡 中等
 
 **類型**: 配置系統
+
+---
+
+### [BUG-033] wait_reply 挂起的回复被高优先级处理器饿死
+
+**問題**: 模块调用 `wait_reply()` 等待用户回复期间，若该回复消息被更高优先级的事件处理器认领（`mark_processed()`），命令分发器在入口看到 `_processed` 标记后直接返回，排在分发器末尾的回复匹配逻辑永远执行不到——等待方收不到回复，只能干等到超时返回 `None`。典型触发场景：使用了高优先级消息处理器（记录/审计/拦截类）的机器人，所有对话式交互随机性失效。
+
+**原因**: 回复匹配 `_check_pending_reply` 挂在 `_handle_message` 末尾（命令未匹配时才执行），而 `_processed` 检查在其之前——认领检查与回复命中判定的顺序颠倒。交互等待是框架级的会话延续机制而非竞争处理器，不应受其他处理器的认领影响。
+
+**影响版本**: 2.2.0-dev.0 - 2.8.0-dev.1
+
+**修復版本**: 2.8.0-dev.2
+
+**修復內容**: 回复命中判定提前至 `_handle_message` 入口（`_processed` 检查之前、仅 message 事件）：先尝试完成挂起的对话，命中后事件被标记已处理、下方检查自然短路；未命中则继续原有命令匹配流程。同时判定链委托新的交互会话管理器（`Core/Event/interaction.py`），顺带获得按归属取消与权限复查能力。
+
+**修復日期**: 2026/09/08
+
+**回歸測試**: `tests/unit/test_unit_interaction.py`（`TestRegisterResolve` 命中/未命中/认领标记）、`tests/unit/test_unit_event.py`（wait_reply 全链路）
+
+**嚴重性**: 🟡 中等
+
+**類型**: 事件系統 / 命令系統

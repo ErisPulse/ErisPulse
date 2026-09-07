@@ -269,22 +269,75 @@ async def step2():
 
 ### save() / resume() / clear_saved()
 
-Conversations support persistence, allowing them to resume after timeout or interruption:
+Conversations support persistence, allowing them to be resumed after timeout or interruption:
 
 ```python
-# Save conversation state
-conv_id = conv.save()
-# conv_id = "user_123_group_456"  # Automatically generated based on user and group
+# Save conversation state (usually not called manually, see "Auto Checkpoints" below)
+await conv.save()
 
 # ... later in the same session ...
 conv2 = event.conversation()
-if conv2.resume():
-    await conv2.say("Welcome back! Continue the previous conversation")
+if await conv2.resume():
+    await conv2.say("Welcome back! Continuing from the previous conversation")
 else:
     await conv2.say("No previous conversation found")
 
 # Clear saved conversation
-conv.clear_saved()
+await conv.clear_saved()
+```
+
+Storage keys include a target dimension (`conversation:{platform}:{user_id}:{target_id}`), ensuring conversations for the same user in different sessions do not overwrite each other; old-format archives (without target) are automatically migrated during `resume()`.
+
+## Automatic Checkpoints and Restart Recovery
+
+### Automatic Archiving
+
+The framework automatically maintains checkpoints at the following times, typically without needing to manually call `save()`:
+
+| Timing | Behavior |
+|--------|----------|
+| `goto()` / `start()` jump to a branch | Automatically saves (current branch + context) |
+| `stop()` / `wait()` timeout / `collect()` failure | Automatically clears (conversation terminal state) |
+
+### Checkpoint TTL
+
+Checkpoints are timestamped, and those exceeding `ErisPulse.interaction.checkpoint_ttl` (default: 24 hours) are automatically discarded during recovery:
+
+```toml
+[ErisPulse.interaction]
+checkpoint_ttl = 86400  # seconds
+```
+
+### Automatic Recovery on Restart
+
+After a framework restart, in-progress conversations (waiting coroutines in memory) are lost, but checkpoints remain. By registering a **resume handler** via `register_resume_handler`, the framework can automatically resume a conversation when the first message of that session arrives after a restart:
+
+```python
+from ErisPulse.Core.Event.wrapper import Conversation
+
+@Conversation.register_resume_handler()  # Optional: platform="onebot11" to limit platform
+def make_conversation(event) -> Conversation:
+    # Factory responsibility: Rebuild conversation and re-register all branches
+    conv = event.conversation(timeout=60)
+
+    @conv.branch("menu")
+    async def menu(conv, event):
+        ...
+
+    return conv
+```
+
+After registration, when a user previously in the `menu` branch sends their first message after a restart, the framework automatically: restores context → claims the message → resumes the conversation from the archived branch. If no factory is registered, this mechanism incurs zero overhead.
+
+### Manual Recovery (When Not Using Automatic Mechanism)
+
+```python
+@command("continue")
+async def continue_handler(event):
+    conv = event.conversation()
+    # ... register branches ...
+    if await conv.resume():
+        conv.goto(conv.get_current_branch())
 ```
 
 ## Typical Flow Patterns
