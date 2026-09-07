@@ -9133,7 +9133,7 @@ print(schema["group_labels"]["basic"])             # "Основные наст�
 
 > Типы и инструменты `BaseConfig`, `BotAccountConfig`, `register_config_i18n()`, `resolve_config_schema()` и другие определены в `ErisPulse.Core.Bases.config_schema`. `ErisPulse.runtime.config_schema` сохранён для обратной совместимости, **рекомендуется импортировать из `ErisPulse.Core.Bases`** (за исключением типов, связанных с ключами i18n, которые находятся в `ErisPulse.Core.Bases.i18n_schema`).
 
-## API �справка
+## API-справочник
 
 ### I18nManager
 

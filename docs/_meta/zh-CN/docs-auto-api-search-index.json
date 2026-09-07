@@ -9032,12 +9032,6 @@
     ],
     "`clear()`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
-        "line": 334,
-        "level": 5,
-        "title": "`clear()`"
-      },
-      {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
         "line": 174,
         "level": 5,
@@ -9059,6 +9053,12 @@
         "document": "api-reference/auto_api/ErisPulse/Core/Event/overrides.md",
         "line": 141,
         "level": 3,
+        "title": "`clear()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
+        "line": 334,
+        "level": 5,
         "title": "`clear()`"
       },
       {
@@ -11400,14 +11400,14 @@
     ],
     "`list_items()`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
-        "line": 418,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/manager.md",
+        "line": 114,
         "level": 5,
         "title": "`list_items()`"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/Bases/manager.md",
-        "line": 114,
+        "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
+        "line": 418,
         "level": 5,
         "title": "`list_items()`"
       },
@@ -11436,14 +11436,14 @@
     ],
     "`list_registered()`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
-        "line": 409,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/manager.md",
+        "line": 105,
         "level": 5,
         "title": "`list_registered()`"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/Bases/manager.md",
-        "line": 105,
+        "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
+        "line": 409,
         "level": 5,
         "title": "`list_registered()`"
       },
@@ -11456,14 +11456,14 @@
     ],
     "`list_running()`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
-        "line": 807,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/manager.md",
+        "line": 135,
         "level": 5,
         "title": "`list_running()`"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/Bases/manager.md",
-        "line": 135,
+        "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
+        "line": 807,
         "level": 5,
         "title": "`list_running()`"
       },
@@ -13648,12 +13648,6 @@
     ],
     "函数列表": [
       {
-        "document": "api-reference/auto_api/ErisPulse/__main__.md",
-        "line": 14,
-        "level": 2,
-        "title": "函数列表"
-      },
-      {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/create.md",
         "line": 14,
         "level": 2,
@@ -13708,18 +13702,6 @@
         "title": "函数列表"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
-        "line": 14,
-        "level": 2,
-        "title": "函数列表"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/assets/__init__.md",
-        "line": 20,
-        "level": 2,
-        "title": "函数列表"
-      },
-      {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/adapter.md",
         "line": 18,
         "level": 2,
@@ -13734,12 +13716,6 @@
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/send_rules.md",
         "line": 27,
-        "level": 2,
-        "title": "函数列表"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/config.md",
-        "line": 20,
         "level": 2,
         "title": "函数列表"
       },
@@ -13776,6 +13752,24 @@
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
         "line": 21,
+        "level": 2,
+        "title": "函数列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
+        "line": 14,
+        "level": 2,
+        "title": "函数列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/assets/__init__.md",
+        "line": 20,
+        "level": 2,
+        "title": "函数列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/config.md",
+        "line": 20,
         "level": 2,
         "title": "函数列表"
       },
@@ -13824,6 +13818,12 @@
       {
         "document": "api-reference/auto_api/ErisPulse/Core/text_match.md",
         "line": 32,
+        "level": 2,
+        "title": "函数列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/__main__.md",
+        "line": 14,
         "level": 2,
         "title": "函数列表"
       },
@@ -14060,12 +14060,6 @@
         "title": "方法列表"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
-        "line": 44,
-        "level": 4,
-        "title": "方法列表"
-      },
-      {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/adapter.md",
         "line": 110,
         "level": 4,
@@ -14222,30 +14216,6 @@
         "title": "方法列表"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/client.md",
-        "line": 45,
-        "level": 4,
-        "title": "方法列表"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/client.md",
-        "line": 147,
-        "level": 4,
-        "title": "方法列表"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/client.md",
-        "line": 279,
-        "level": 4,
-        "title": "方法列表"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/config.md",
-        "line": 46,
-        "level": 4,
-        "title": "方法列表"
-      },
-      {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/base.md",
         "line": 44,
         "level": 4,
@@ -14314,6 +14284,36 @@
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
         "line": 1279,
+        "level": 4,
+        "title": "方法列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
+        "line": 44,
+        "level": 4,
+        "title": "方法列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/client.md",
+        "line": 45,
+        "level": 4,
+        "title": "方法列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/client.md",
+        "line": 147,
+        "level": 4,
+        "title": "方法列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/client.md",
+        "line": 279,
+        "level": 4,
+        "title": "方法列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/config.md",
+        "line": 46,
         "level": 4,
         "title": "方法列表"
       },
@@ -14534,18 +14534,6 @@
     ],
     "模块概述": [
       {
-        "document": "api-reference/auto_api/ErisPulse/__init__.md",
-        "line": 5,
-        "level": 2,
-        "title": "模块概述"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/__main__.md",
-        "line": 5,
-        "level": 2,
-        "title": "模块概述"
-      },
-      {
         "document": "api-reference/auto_api/ErisPulse/CLI/__init__.md",
         "line": 5,
         "level": 2,
@@ -14750,24 +14738,6 @@
         "title": "模块概述"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/__init__.md",
-        "line": 5,
-        "level": 2,
-        "title": "模块概述"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
-        "line": 5,
-        "level": 2,
-        "title": "模块概述"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/assets/__init__.md",
-        "line": 5,
-        "level": 2,
-        "title": "模块概述"
-      },
-      {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/__init__.md",
         "line": 5,
         "level": 2,
@@ -14858,24 +14828,6 @@
         "title": "模块概述"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/client.md",
-        "line": 5,
-        "level": 2,
-        "title": "模块概述"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/config.md",
-        "line": 5,
-        "level": 2,
-        "title": "模块概述"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/constants.md",
-        "line": 5,
-        "level": 2,
-        "title": "模块概述"
-      },
-      {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/__init__.md",
         "line": 5,
         "level": 2,
@@ -14937,6 +14889,42 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
+        "line": 5,
+        "level": 2,
+        "title": "模块概述"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/__init__.md",
+        "line": 5,
+        "level": 2,
+        "title": "模块概述"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
+        "line": 5,
+        "level": 2,
+        "title": "模块概述"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/assets/__init__.md",
+        "line": 5,
+        "level": 2,
+        "title": "模块概述"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/client.md",
+        "line": 5,
+        "level": 2,
+        "title": "模块概述"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/config.md",
+        "line": 5,
+        "level": 2,
+        "title": "模块概述"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/constants.md",
         "line": 5,
         "level": 2,
         "title": "模块概述"
@@ -15033,6 +15021,18 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/text_match.md",
+        "line": 5,
+        "level": 2,
+        "title": "模块概述"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/__init__.md",
+        "line": 5,
+        "level": 2,
+        "title": "模块概述"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/__main__.md",
         "line": 5,
         "level": 2,
         "title": "模块概述"
@@ -15304,18 +15304,6 @@
         "title": "类列表"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
-        "line": 28,
-        "level": 2,
-        "title": "类列表"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/assets/__init__.md",
-        "line": 64,
-        "level": 2,
-        "title": "类列表"
-      },
-      {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/adapter.md",
         "line": 85,
         "level": 2,
@@ -15400,18 +15388,6 @@
         "title": "类列表"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/client.md",
-        "line": 24,
-        "level": 2,
-        "title": "类列表"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/config.md",
-        "line": 38,
-        "level": 2,
-        "title": "类列表"
-      },
-      {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/base.md",
         "line": 31,
         "level": 2,
@@ -15468,6 +15444,30 @@
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
         "line": 207,
+        "level": 2,
+        "title": "类列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
+        "line": 28,
+        "level": 2,
+        "title": "类列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/assets/__init__.md",
+        "line": 64,
+        "level": 2,
+        "title": "类列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/client.md",
+        "line": 24,
+        "level": 2,
+        "title": "类列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/config.md",
+        "line": 38,
         "level": 2,
         "title": "类列表"
       },
