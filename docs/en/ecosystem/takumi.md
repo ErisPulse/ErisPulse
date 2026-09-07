@@ -1,49 +1,43 @@
 # ErisPulse-Takumi
 
-[ErisPulse-Takumi](https://pypi.org/project/ErisPulse-Takumi/) is a **third-party image rendering module** maintained by ccd2s, based on [takumi-py](https://github.com/BalconyJH/takumi-py), enabling bots to render HTML, node trees, Jinja templates, SVG, and animations into images. The module includes **built-in Chinese and English fonts** (Noto Sans SC / Roboto / Source Code Pro), requiring no additional configuration.
+[ErisPulse-Takumi](https://pypi.org/project/ErisPulse-Takumi/) is a **third-party image rendering module** maintained by ccd2s, based on [takumi-py](https://github.com/BalconyJH/takumi-py), allowing the Bot to render HTML, node trees, Jinja templates, SVG, and animations into images. The module **includes built-in Chinese and English fonts** (Noto Sans SC / Roboto / Source Code Pro), requiring no additional configuration.
 
 > [!IMPORTANT]
-> Takumi is **not** a built-in feature of the ErisPulse framework and must be installed separately:
+> Takumi is **not** a built-in feature of the ErisPulse framework and needs to be installed separately:
 >
 > ```bash
 > epsdk install Takumi
 > ```
 
-Use Cases:
+Applicable scenarios:
 
-- Render data/statistics into card images
-- Render Markdown / long text into images with stable layout, avoiding platform style differences
-- Generate SVG / animations to achieve dynamic visual effects
-- Mixed Chinese and English text and images (built-in fonts are ready to use out of the box)
+- Rendering data/statistics into card images
+- Rendering Markdown / long text into well-formatted images, avoiding platform style differences
+- Generating SVG / animations to achieve dynamic visual effects
+- Mixed Chinese and English text and image (built-in fonts ready to use out of the box)
 
----
-
-## Installation and Enablement
+## Installation and Activation
 
 ```bash
 epsdk install Takumi
 ```
 
-After installation, the module is automatically loaded. Confirm its enablement in the configuration:
+After installation, the module is automatically loaded. Confirm activation in the configuration:
 
 ```toml
 [Takumi]
 enabled = true
 ```
 
----
-
-
-
 ## Quick Start
 
-After modules are automatically loaded, retrieve them via the module manager, or use the `sdk` shortcut:
+After the module is automatically loaded, it can be obtained through the module manager or using the `sdk` shortcut:
 
 ```python
 from ErisPulse import sdk
 
 takumi = sdk.module.get("Takumi")
-# Equivalent: takumi = sdk.Takumi
+# Equivalent syntax: takumi = sdk.Takumi
 ```
 
 ### Render HTML
@@ -66,8 +60,8 @@ png = takumi.render_html(
     }
     """],
     width=800,
-    height=None,   # Auto-expand based on content
-    lang="zh-CN",
+    height=None,   # Auto height based on content
+    lang="en",
 )
 ```
 
@@ -77,69 +71,69 @@ png = takumi.render_html(
 png = takumi.render_node(
     {
         "type": "text",
-        "text": "中文和 English 都可直接渲染",
+        "text": "Both Chinese and English can be rendered directly",
         "style": {"fontSize": 48, "color": "#111827"},
     },
     width=800,
     height=None,
-    lang="zh-CN",
+    lang="en",
 )
 ```
 
-`png` is `bytes`, which can be sent via `event.reply(png, method="Image")` (see [Sending Rendered Results](#sending-rendered-results)).
+`png` is a `bytes` object, which can be sent using `event.reply(png, method="Image")` (see [Sending Rendered Results](#sending-rendered-results)).
 
 ---
 
 ## Rendering API
 
-`sdk.Takumi` proxies all capabilities of the underlying `takumi_py.Renderer`: all rendering, measuring, SVG, animation, and templating methods can be called directly on `sdk.Takumi`. For these methods, the module automatically injects the **builtin font fallback stack** (`takumi.families`) when called, without requiring manual passing of `font_families`; if explicitly passed, the caller's settings are respected.
+`sdk.Takumi` proxies all capabilities of the underlying `takumi_py.Renderer`: all rendering, measurement, SVG, animation, and template methods are directly callable on `sdk.Takumi`. For these methods, the module automatically injects the built-in font fallback stack (`takumi.families`) at the time of invocation, eliminating the need to manually pass `font_families`; however, explicit input is respected if provided.
 
 ### Method Overview
 
 | Category | Method | Return | Description |
-|----------|--------|--------|-------------|
+|------|------|------|------|
 | Static Rendering | `render_html(html, ...)` | `bytes` | Render HTML string |
 | | `render_node(node, ...)` | `bytes` | Render node tree (dict) |
 | | `render_template(name, ctx, ...)` | `bytes` | Render Jinja template |
-| | `render_compiled(node, ...)` | `bytes` | Render precompiled node |
+| | `render_compiled(node, ...)` | `bytes` | Render pre-compiled node |
 | SVG Output | `render_svg_html(html, ...)` | `str` | Output SVG (HTML input) |
 | | `render_svg_node(node, ...)` | `str` | Output SVG (node tree input) |
 | | `render_svg_template(name, ctx, ...)` | `str` | Output SVG (template input) |
-| | `render_svg_compiled(node, ...)` | `str` | Output SVG (precompiled input) |
+| | `render_svg_compiled(node, ...)` | `str` | Output SVG (pre-compiled input) |
 | Animation | `render_animation(scenes, ...)` | `bytes` | Encode multi-frame animation |
-| | `render_sequence_at_time(scenes, time_ms, ...)` | `bytes` | Capture frame at a sequence moment |
-| Measuring | `measure_node(node, ...)` | `dict` | Measure node tree layout |
+| | `render_sequence_at_time(scenes, time_ms, ...)` | `bytes` | Extract frame at a specific time from sequence |
+| Measurement | `measure_node(node, ...)` | `dict` | Measure node tree layout |
 | | `measure_html(html, ...)` | `dict` | Measure HTML layout |
-| | `measure_compiled(node, ...)` | `dict` | Measure precompiled node |
-| Compiling | `compile_node(node)` | `CompiledNode` | Compile node tree |
+| | `measure_compiled(node, ...)` | `dict` | Measure pre-compiled node |
+| Compilation | `compile_node(node)` | `CompiledNode` | Compile node tree |
 | | `compile_html(html, ...)` | `CompiledNode` | Compile HTML |
-| Fonts | `register_font(font)` | `list[str]` | Register custom font, returns list of families |
+| Font | `register_font(font)` | `list[str]` | Register custom font, return family list |
 | | `register_fonts(fonts)` | `list[str]` | Batch register fonts |
 
-> `CompiledNode` exposes a `resource_urls()` method, allowing pre-discovery of HTTP(S) image references to be loaded, facilitating preparation of resources in advance.
+> `CompiledNode` exposes a `resource_urls()` method, allowing pre-discovery of HTTP(S) image references, facilitating resource preparation in advance.
 
 ### Common Parameters
 
-The following parameters apply to static rendering and SVG methods (animation methods have additional parameters like `fps`, see corresponding examples):
+The following parameters apply to static rendering and SVG methods (animation methods have additional parameters such as `fps`, see corresponding examples):
 
 | Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `stylesheets` | `list[str]` | `None` | List of document-level CSS strings; inline `style` is still parsed together with HTML |
-| `width` | `int \| None` | `1200` | Viewport width (pixels); `None` infers from layout |
-| `height` | `int \| None` | `630` | Canvas height (pixels); `None` auto-stretches to content (see [Viewport and Output Format](#viewport-and-output-format)) |
-| `lang` | `str \| None` | `None` | BCP-47 language tag (e.g., `zh-CN`), affecting text shaping and line breaking |
-| `font_families` | `list[str]` | Auto-injected | Font fallback stack; convenience methods default to injecting builtin fonts |
+|------|------|--------|------|
+| `stylesheets` | `list[str]` | `None` | List of document-level CSS strings; inline `style` is still parsed with HTML |
+| `width` | `int \| None` | `1200` | Viewport width (in pixels); `None` infers width from layout |
+| `height` | `int \| None` | `630` | Canvas height (in pixels); `None` auto-sizes content (see [Viewport and Output Format](#viewport-and-output-format)) |
+| `lang` | `str \| None` | `None` | BCP-47 language tag (e.g., `zh-CN`), affects text shaping and line breaking |
+| `font_families` | `list[str]` | Auto-injected | Font fallback stack; convenience methods auto-inject built-in fonts |
 | `format` | `str` | `"png"` | Output format (see [Viewport and Output Format](#viewport-and-output-format)) |
-| `device_pixel_ratio` | `float` | `1.0` | Device pixel ratio, controlling output resolution |
-| `time_ms` | `int` | `0` | Animation sampling moment (milliseconds) |
+| `device_pixel_ratio` | `float` | `1.0` | Device pixel ratio, controls output resolution |
+| `time_ms` | `int` | `0` | Animation sampling time (in milliseconds) |
 | `dithering` | `str` | `"none"` | Dithering algorithm: `none` / `ordered-bayer` / `floyd-steinberg` |
 | `quality` | `int \| None` | `None` | Lossy encoding quality |
-| `lossless` | `bool \| None` | `None` | Whether to encode losslessly |
-| `images` | `list` | `None` | Image resources for this render (either `ImageResource` or a `(src, bytes)` tuple) |
+| `lossless` | `bool \| None` | `None` | Whether to use lossless encoding |
+| `images` | `list` | `None` | Image resources for this render (`ImageResource` or `(src, bytes)` tuple) |
 | `keyframes` | `Mapping` | `None` | Structured keyframes, no need to write `@keyframes` |
-| `options` | `RenderOptions` | — | Aggregate parameters via `RenderOptions(...)`, fields consistent with the table above |
+| `options` | `RenderOptions` | — | Aggregate parameters via `RenderOptions(...)`, fields match the above table |
 
-For complete field definitions, see `takumi_py.RenderOptions`.
+Full field definitions are available in `takumi_py.RenderOptions`.
 
 ### Node Tree Example
 
@@ -179,7 +173,7 @@ png = takumi.render_template(
 )
 ```
 
-> You can inject custom Jinja filters via `filters={...}` or pass a full `jinja2.Environment` via `environment=...`. See the [takumi-py template documentation](https://github.com/BalconyJH/takumi-py/blob/main/docs/guides/templates.md) for template directory and environment configuration.
+> Custom Jinja filters can be injected via `filters={...}`, or a full `jinja2.Environment` can be passed via `environment=...`. Template directory and environment configuration are detailed in [takumi-py template documentation](https://github.com/BalconyJH/takumi-py/blob/main/docs/guides/templates.md).
 
 ### SVG Output Example
 
@@ -215,31 +209,31 @@ webp = takumi.render_animation(
 )
 ```
 
-> Each frame is composed by `AnimationScene(node, duration_ms=...)`, where `duration_ms` must be a positive number.
+> Each frame is constructed using `AnimationScene(node, duration_ms=...)`, where `duration_ms` must be a positive number.
 
-## Viewport and Output Formats
+## Viewport and Output Format
 
 ### Output Format
 
-| Scenario | `format` Value |
-|----------|---------------|
-| Static Image | `png` (default) / `jpeg` / `jpg` / `webp` / `ico` / `raw` |
+| Scenario | `format` value |
+|----------|----------------|
+| Static image | `png` (default) / `jpeg` / `jpg` / `webp` / `ico` / `raw` |
 | Animation | `webp` (default) / `apng` / `gif` |
 
-`format="raw"` returns row-major RGBA byte stream for custom pixel-level processing.
+`format="raw"` returns a row-major RGBA byte stream, for custom pixel-level processing.
 
 ### About width and height
 
 The roles of `width` and `height` are asymmetrical:
 
-- `width` is the **viewport width**. Text and layout wrap/reflow based on it. **Should be set** to a specific value (e.g., `800`). Otherwise, the canvas stretches based on the natural width of the content and text will not wrap, making the size uncontrollable.
-- `height` is the **canvas height**, which grows with the content. The default value of `height` is `630`; when `height=None` is passed, Takumi **automatically extends the canvas based on the content** (auto viewport).
+- `width` is the **viewport width**, text and layout wrap and reflow according to it. **Should be fixed** to a specific value (e.g. `800`), otherwise the canvas will stretch to the natural width of the content, text will not wrap, and the size will be out of control.
+- `height` is the **canvas height**, which grows with the content. The default value of `height` is `630`; when `height=None` is passed, Takumi will **automatically expand the canvas height** based on the content (auto viewport).
 
 > [!TIP]
-> **Recommended combination: Fixed `width` + `height=None`.** Pass a specific `height` only when you need a fixed-size canvas or a cropping effect.
+> **Recommended combination: fixed `width` + `height=None`.** Only when a fixed canvas size or clipping effect is needed, should a specific `height` be passed.
 
 > [!NOTE]
-> Either `width` / `height` can technically be passed as `None` to infer from the layout (e.g., when a node declares its own size); when both are provided, the output size is determined.
+> Either `width` or `height` can technically be passed as `None` to let it be inferred by the layout (e.g. when node itself has already declared its size); when both are provided, the output size is determined.
 
 ## Fonts
 
@@ -257,12 +251,12 @@ Module attributes:
 
 | Attribute | Description |
 |-----------|-------------|
-| `takumi.fonts` | List of built-in font filenames |
+| `takumi.fonts` | List of built-in font file names |
 | `takumi.families` | List of registered font families |
 
 ### Automatic Injection
 
-All rendering, measurement, SVG, animation, and template methods on `sdk.Takumi` automatically inject `takumi.families` as a font fallback stack. If calling `takumi.renderer` (native instance) or a standalone instance created via `create_renderer()`, you must manually pass `font_families=takumi.families`.
+All rendering, measurement, SVG, animation, and template methods on `sdk.Takumi` automatically inject `takumi.families` as the font fallback stack. If you directly call `takumi.renderer` (native instance) or create an independent instance via `create_renderer()`, you must manually pass `font_families=takumi.families`.
 
 ### Custom Fonts
 
@@ -282,11 +276,11 @@ families = takumi.renderer.register_font(
 
 `register_font` returns a list of registered family names, which can be passed as `font_families` in subsequent rendering.
 
-## Renderer Instance
+## Renderer Instances
 
 ### Native Renderer
 
-`takumi.renderer` is the original `takumi_py.Renderer` instance. When calling directly, `font_families` must be passed manually:
+`takumi.renderer` is the raw `takumi_py.Renderer` instance. When called directly, `font_families` must be passed manually:
 
 ```python
 png = takumi.renderer.render_html(
@@ -298,7 +292,7 @@ png = takumi.renderer.render_html(
 
 ### Standalone Renderer
 
-Create a standalone `Renderer` when isolation of fonts / images / resources is required (long-lived processes, multi-tenant scenarios). Built-in fonts are automatically registered:
+For scenarios requiring isolated font/image/resource caching (long-lifecycle processes, multi-tenant scenarios), you can create a standalone `Renderer`, which automatically registers built-in fonts:
 
 ```python
 renderer = takumi.create_renderer(cache_max_bytes=64 * 1024 * 1024)
@@ -312,38 +306,38 @@ png = renderer.render_html(
 )
 ```
 
-`create_renderer()` accepts the constructor parameters of `takumi_py.Renderer`:
+`create_renderer()` accepts constructor parameters from `takumi_py.Renderer`:
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `load_default_fonts` | `bool` | `False` | Whether to load takumi-py's built-in fonts (built-in fonts are always loaded) |
+| `load_default_fonts` | `bool` | `False` | Whether to load fonts bundled with takumi-py (built-in fonts are always loaded) |
 | `fonts` | `list[FontResource]` | `None` | Additional custom fonts to register |
-| `cache_max_bytes` | `int \| None` | `None` | Upper limit for resource cache (bytes); `0` to disable |
+| `cache_max_bytes` | `int \| None` | `None` | Maximum resource cache size (in bytes); `0` disables caching |
 | `persistent_images` | `list` | `None` | Persistent image resources |
 
-> Standalone instances do not go through the module proxy. Therefore, to preserve a unified built-in font fallback stack, you must explicitly pass `font_families=takumi.families`. If `font_families` is explicitly passed, the module respects the caller's setting and no longer injects the default fallback stack; `RenderOptions(font_families=...)` is also valid.
+> Standalone instances bypass the module proxy, so if you want to retain a unified built-in font fallback stack, you must explicitly pass `font_families=takumi.families`. If `font_families` is explicitly passed, the module respects the caller's setting and does not inject the default fallback stack; `RenderOptions(font_families=...)` is also valid.
 
 ## Sending Rendered Results
 
-The rendered image is in `bytes`, which can be sent directly via event reply:
+The rendered image is in `bytes` format and can be sent directly via event reply:
 
 ```python
 from ErisPulse import sdk
 
 takumi = sdk.Takumi
-png = takumi.render_html("<div>hello</div>", lang="zh-CN")
+png = takumi.render_html("<div>hello</div>", lang="en")
 
 # Method 1: Reply using Image method
 await event.reply(png, method="Image")
 
-# Method 2: Reply via OneBot12 message segment
+# Method 2: Reply using OneBot12 message segment
 from ErisPulse.Core.Event import MessageBuilder
 await event.reply_ob12(
     MessageBuilder().image(png).build()
 )
 ```
 
-> Image handling across different platforms is unified by the adapter. See [MessageBuilder Details](../advanced/message-builder.md) and [Send Method Specifications](../standards/send-method-spec.md).
+> The adapter handles the image encapsulation for different platforms. See [MessageBuilder Detailed Explanation](../advanced/message-builder.md) and [Send Method Specification](../standards/send-method-spec.md) for more information.
 
 ---
 
@@ -359,6 +353,6 @@ enabled = true
 ## Related Links
 
 - PyPI: <https://pypi.org/project/ErisPulse-Takumi/>
-- Repository: <https://github.com/ccd2s/ErisPulse-Takumi> (Author [@ccd2s](https://github.com/ccd2s))
+- Repository: <https://github.com/ccd2s/ErisPulse-Takumi> (author [@ccd2s](https://github.com/ccd2s))
 - Underlying Engine: <https://github.com/BalconyJH/takumi-py>
-- takumi-py Documentation: <https://github.com/BalconyJH/takumi-py/blob/main/docs/index.md>
+- takumi-py Documentation: <https://github.com/BalconyJH/takumi-py/blob/main/docs/en/index.md>

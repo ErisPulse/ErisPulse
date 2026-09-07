@@ -1,6 +1,6 @@
 # OneBot11 平台特性文件
 
-OneBot11Adapter 是基於 OneBot V11 協議建構的適配器。
+OneBot11Adapter 是基於 OneBot V11 協議所建構的適配器。
 
 ---
 docs/zh-TW/quick-start.md
@@ -14,14 +14,13 @@ docs/zh-TW/quick-start.md
 
 - 平台簡介：OneBot 是一個聊天機器人應用介面標準
 - 適配器名稱：OneBotAdapter
-- 支援的協定/API版本：OneBot V11
-- 多帳號支援：預設多帳號架構，支援同時設定和執行多個 OneBot 帳號
+- 支援的協定/API 版本：OneBot V11
+- 多帳戶支援：預設多帳戶架構，支援同時設定和執行多個 OneBot 帳戶
 - 配置鍵名：`OneBotAdapter`
 
 ## 支援的消息發送類型
 
 所有發送方法均透過鏈式語法實現，例如：
-
 ```python
 from ErisPulse.Core import adapter
 onebot = adapter.get("onebot11")
@@ -68,7 +67,7 @@ await onebot.Send.To("group", group_id).AtAll().Text("公告訊息")
 
 - `.GetMsg(message_id)`：獲取訊息內容。
 - `.GetForwardMsg(id)`：獲取合併轉發訊息。
-- `.GetLoginInfo()`：獲取目前登入號資訊。
+- `.GetLoginInfo()`：獲取目前登入號碼資訊。
 - `.GetFriendList()`：獲取好友列表。
 - `.GetGroupInfo()`：獲取群資訊（需 `To("group", group_id)`）。
 - `.GetGroupList()`：獲取群列表。
@@ -172,7 +171,7 @@ await onebot.Request("flag_string").accept()
 # 拒絕請求
 await onebot.Request("flag_string").reject()
 
-# 指定帳號操作
+# 指定帳戶操作
 await onebot.Request("flag_string").Using("main").accept()
 ```
 
@@ -185,13 +184,13 @@ from ErisPulse.Core.Event import request
 async def handle_friend_request(event):
     comment = event.get("comment", "")
 
-    # 方式一：使用 Event 快捷方法
+    # 方法一：使用 Event 快捷方法
     if comment == "passphrase":
         await event.approve()
     else:
         await event.reject()
 
-    # 方式二：使用 Request DSL
+    # 方法二：使用 Request DSL
     flag = event.get("flag")
     if comment == "passphrase":
         await onebot.Request(flag).accept()
@@ -305,18 +304,18 @@ async def handle_friend_request(event):
 }
 ```
 
-### 擴展字段說明
+### 擴展欄位說明
 
-- 所有特有字段均以 `onebot11_` 前綴標識
-- 保留原始事件數據在 `onebot11_raw` 字段
-- 保留原始事件類型在 `onebot11_raw_type` 字段
+- 所有特有欄位均以 `onebot11_` 前綴標識
+- 保留原始事件數據在 `onebot11_raw` 欄位
+- 保留原始事件類型在 `onebot11_raw_type` 欄位
 - 消息內容中的 CQ 碼會轉換為相應的消息段（標準類型無前綴，未知類型加 `onebot11_` 前綴）
 - 回覆消息會添加 `reply` 類型的消息段
 - @消息會添加 `mention` 類型的消息段
 
 ## 事件擴展方法
 
-OneBot11 适配器為事件物件註冊了以下平台專有方法，可在事件處理器中直接呼叫：
+OneBot11 适配器為事件物件註冊了以下平台專有方法，可在事件處理器中直接調用：
 
 ```python
 from ErisPulse.Core.Event import message
@@ -365,15 +364,15 @@ async def whoami(event):
 
 ## 配置選項
 
-OneBot11 适配器采用多账户架构，每个账户独立配置。配置键名为 `OneBotAdapter`。
+OneBot11 适配器采用多账户架構，每個帳戶獨立配置。配置鍵名為 `OneBotAdapter`。
 
-### 账户配置字段
+### 帳戶配置字段
 
-| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| 字段 | 類型 | 必填 | 默認值 | 說明 |
 |------|------|------|--------|------|
-| `bot_id` | `str` | 是 | `""` | 机器人 QQ 号，用於標識帳戶 |
+| `bot_id` | `str` | 是 | `""` | 機器人 QQ 號，用於標識帳戶 |
 | `mode` | `str` | 否 | `"server"` | 運行模式：`"server"`（被動監聽）或 `"client"`（主動連接） |
-| `url` | `str` | 否 | `"ws://127.0.0.1:3001"` | Client 模式的 WebSocket 地址 |
+| `url` | `str` | 否 | `"ws://127.0.0.1:3001"` | Client 模式的 WebSocket 位址 |
 | `token` | `str` | 否 | `""` | 認證 Token（Client 模式連接 Token / Server 模式驗證 Token） |
 | `server_path` | `str` | 否 | `"/"` | Server 模式的 WebSocket 路徑 |
 | `enabled` | `bool` | 否 | `true` | 是否啟用該帳戶 |
@@ -410,7 +409,7 @@ enabled = false
 
 ### 預設配置
 
-如果未配置任何帳戶，适配器會自動創建：
+如果未配置任何帳戶，適配器會自動創建：
 ```toml
 [OneBotAdapter.accounts.default]
 bot_id = ""
@@ -434,11 +433,11 @@ enabled = true
 }
 ```
 
-### 多账户發送語法
+### 多賬戶發送語法
 
 ```python
 # 賬戶選擇方法
-await onebot.Send.Using("main").To("group", 123456).Text("主账户消息")
+await onebot.Send.Using("main").To("group", 123456).Text("主賬戶消息")
 await onebot.Send.Using("backup").To("group", 123456).Image("http://example.com/image.jpg")
 
 # 通過 bot_id 選擇賬戶
@@ -474,7 +473,7 @@ OneBot11 適配器採用異步非阻塞設計，確保：
 
 ## 事件處理增強
 
-多帳戶模式下，所有事件都會自動添加帳戶資訊：
+多賬戶模式下，所有事件都會自動添加賬戶資訊：
 ```python
 {
     "type": "message",
@@ -485,21 +484,21 @@ OneBot11 適配器採用異步非阻塞設計，確保：
 }
 ```
 
-適配器會自動維護 `self_id → account_name` 映射，`event.reply()` 無需手動指定帳戶即可正確路由到來源帳戶。
+適配器自動維護 `self_id → account_name` 映射，`event.reply()` 無需手動指定賬戶即可正確路由到來源賬戶。
 
 ## 管理介面
 
 ```python
-# 獲取所有帳號資訊
+# 獲取所有帳戶資訊
 accounts = onebot.accounts
 
-# 檢查帳號連線狀態
+# 檢查帳戶連接狀態
 connection_status = {
     account_id: connection is not None and not connection.closed
     for account_id, connection in onebot.connections.items()
 }
 
-# 動態啟用/停用帳號（需要重啟適配器）
+# 動態啟用/停用帳戶（需要重新啟動適配器）
 onebot.accounts["test"].enabled = False
 ```
 
@@ -508,11 +507,11 @@ onebot.accounts["test"].enabled = False
 適配器會自動建立 OneBot `self_id`（QQ號）到 `account_name` 的映射關係，用於事件回傳路由：
 
 ```python
-# 适配器内部自动完成
-# 當收到事件時，self.user_id 字段填充為 bot_id
-# 适配器自动记录: self_id("123456789") → account_name("main")
+# 適配器內部自動完成
+# 當收到事件時，self.user_id 欄位填入為 bot_id
+# 適配器自動記錄: self_id("123456789") → account_name("main")
 
-# 因此 event.reply() 可以自動找到正確的帳戶發送消息
+# 因此 event.reply() 可以自動找到正確的帳戶發送訊息
 @message.on_message()
 async def handler(event):
     await event.reply("自動路由到正確的帳戶")

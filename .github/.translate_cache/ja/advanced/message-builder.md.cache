@@ -1,5 +1,45 @@
 {
+  "version": 2,
   "hash": "ccf145605ccbcde6645ba7b1fd9d02a4",
-  "translated_at": "2026-06-06T16:58:59.676085",
-  "target_lang": "ja"
+  "file_hash": "ccf145605ccbcde6645ba7b1fd9d02a4",
+  "translated_at": "2026-09-07T10:50:11.429227",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "beaaca1a9a89664f37264436e23a6a42",
+      "translation": "# MessageBuilder 详解\n\n`MessageBuilder` は ErisPulse が提供する OneBot12 標準のメッセージセグメント構築ツールであり、構造化されたメッセージ内容を構築し、`Send.Raw_ob12()` と共に使用します。"
+    },
+    {
+      "hash": "2500525151763f3bec08079067fc08cb",
+      "translation": "## 導入方法\n\n`MessageBuilder` は以下の2つの導入方法をサポートしています（効果は同じで、1つ目の方法を推奨します）：\n\n```python\nfrom ErisPulse.Core.Event import MessageBuilder        # 推奨、パッケージからのエクスポート\nfrom ErisPulse.Core.Event.message_builder import MessageBuilder  # モジュールを直接インポート\n```"
+    },
+    {
+      "hash": "31cd41bf9cdd7c1d78a8572d2df12c5d",
+      "translation": "## 雙モードメカニズム\n\nMessageBuilder は、Python の descriptor メカニズム（`__get__`）を用いて、クラスレベルとインスタンスレベルの異なる動作を実現する 2 つの使用モードを提供します。クラスからメソッドを呼び出す場合、`__get__` は静的メソッドの実行結果を返します。インスタンスから呼び出す場合、`self` を返すことで、メソッドチェーン（連鎖呼び出し）をサポートします。\n\n### チェーン呼び出しモード（インスタンス）\n\n`MessageBuilder()` をインスタンス化して使用し、各メソッドは `self` を返すため、連鎖呼び出し（メソッドチェーン）が可能で、最後に `.build()` を用いてメッセージセグメントのリストを取得します。\n\n```python\nfrom ErisPulse.Core.Event.message_builder import MessageBuilder\n\nsegments = (\n    MessageBuilder()\n    .text(\"你好！\")\n    .image(\"https://example.com/photo.jpg\")\n    .build()\n)\n# [\n#     {\"type\": \"text\", \"data\": {\"text\": \"你好！\"}},\n#     {\"type\": \"image\", \"data\": {\"file\": \"https://example.com/photo.jpg\"}}\n# ]\n```\n\n### 快速構築モード（静的）\n\nクラスから直接メソッドを呼び出すことで、各メソッドは直接メッセージセグメントのリストを返し、単一のメッセージセグメント構築に適しています。\n\n```python\n# build() を必要とせず、直接 list[dict] を返します\nsegments = MessageBuilder.text(\"你好！\")\n# [{\"type\": \"text\", \"data\": {\"text\": \"你好！\"}}]\n```"
+    },
+    {
+      "hash": "2587d00db9ffe4a1f84e12e720c98078",
+      "translation": "## メッセージセグメントの種類\n\n| メソッド | タイプ | データパラメータ | 説明 |\n|------|------|---------|------|\n| `text(text)` | text | `text` | テキストメッセージ |\n| `image(file)` | image | `file` | 画像メッセージ |\n| `audio(file)` | audio | `file` | 音声メッセージ |\n| `video(file)` | video | `file` | 動画メッセージ |\n| `file(file, filename?)` | file | `file`, `filename` | ファイルメッセージ |\n| `mention(user_id, user_name?)` | mention | `user_id`, `user_name` | ユーザーを@でメンション |\n| `at(user_id, user_name?)` | mention | `user_id`, `user_name` | `mention` の別名 |\n| `reply(message_id)` | reply | `message_id` | メッセージへの返信 |\n| `at_all()` | mention_all | - | 全員を@でメンション |\n| `custom(type, data)` | 自定義 | 自定義 | 自定義メッセージセグメント |"
+    },
+    {
+      "hash": "d61a223fe19c19812906b7d70d6ff25f",
+      "translation": "## Send との連携\n\n構築されたメッセージセグメントのリストは、`Send.Raw_ob12()` を使用して送信されます：\n\n```python\nfrom ErisPulse import sdk\nfrom ErisPulse.Core.Event.message_builder import MessageBuilder\n\n# チェーンで構築 + 送信\nsegments = (\n    MessageBuilder()\n    .mention(\"user123\", \"張三\")\n    .text(\" こちらの画像をご覧ください\")\n    .image(\"https://example.com/photo.jpg\")\n    .build()\n)\nawait sdk.adapter.myplatform.Send.To(\"group\", \"group456\").Raw_ob12(segments)\n```\n\n### Event との連携（返信）\n\n```python\nfrom ErisPulse.Core.Event import command\n\n@command(\"report\")\nasync def report_handler(event):\n    await event.reply_ob12(\n        MessageBuilder()\n        .text(\"📊 日報集計\\n\")\n        .text(\"本日完了したタスク: 5\\n\")\n        .text(\"進行中のタスク: 3\")\n        .build()\n    )\n```"
+    },
+    {
+      "hash": "e1aab40446966ada7bd21fd97e2c098d",
+      "translation": "## ツールメソッド\n\n### copy()\n\n現在のビルダーをコピーし、同じ基礎内容に基づいて複数のメッセージバリエーションを作成します：\n\n```python\nbase = MessageBuilder().text(\"基礎内容\").mention(\"admin\")\n\n# 同じプレフィックスに基づいて異なるメッセージを構築\nmsg1 = base.copy().text(\" 変体A\").build()\nmsg2 = base.copy().text(\" 変体B\").image(\"img.jpg\").build()\n```\n\n### clear()\n\n追加されたメッセージセグメントをクリアし、同じビルダーを再利用します：\n\n```python\nbuilder = MessageBuilder()\n\nfor user_id in [\"user1\", \"user2\", \"user3\"]:\n    builder.clear()\n    msg = builder.mention(user_id).text(\" 你好！\").build()\n    await adapter.Send.To(\"user\", user_id).Raw_ob12(msg)\n```\n\n### len() / bool()\n\n```python\nbuilder = MessageBuilder()\nprint(bool(builder))   # False\n\nbuilder.text(\"Hello\")\nprint(len(builder))    # 1\nprint(bool(builder))   # True\n```"
+    },
+    {
+      "hash": "fe2d388fe5170a36f9d5d7d4c892de79",
+      "translation": "## 自定义メッセージセグメント\n\n`custom()` メソッドを使用してプラットフォーム拡張メッセージセグメントを追加します：\n\n```python\n# プラットフォーム固有のメッセージセグメントを追加\nsegments = (\n    MessageBuilder()\n    .text(\"フォームに記入してください：\")\n    .custom(\"yunhu_form\", {\"form_id\": \"12345\"})\n    .build()\n)\n```\n\n> 自定义メッセージセグメントは、対応するプラットフォームのアダプターでのみ有効であり、他のアダプターは認識できないメッセージセグメントを無視します。"
+    },
+    {
+      "hash": "25bb3d1be5ff8d7de96329bac26a09ea",
+      "translation": "## 完整例\n\n### 複数要素のメッセージ\n\n```python\nsegments = (\n    MessageBuilder()\n    .reply(event.get_id())                    # 元のメッセージに返信\n    .mention(event.get_user_id())             # 送信者を@する\n    .text(\" これはあなたのクエリ結果です：\\n\")             # テキスト\n    .image(\"https://example.com/chart.png\")   # 画像\n    .text(\"\\n詳細データは添付ファイルをご覧ください：\")\n    .file(\"https://example.com/data.csv\", filename=\"data.csv\")\n    .build()\n)\nawait event.reply_ob12(segments)\n```\n\n### 静的ファクトリ + チェーン混合\n\n```python\n# 単一のメッセージセグメントを迅速に構築\nsimple_msg = MessageBuilder.text(\"シンプルなテキスト\")\n\n# チェーンで複雑なメッセージを構築\ncomplex_msg = (\n    MessageBuilder()\n    .at_all()\n    .text(\" 📢 お知らせ：\")\n    .text(\"今日の午後3時に会議があります\")\n    .build()\n)\n```"
+    },
+    {
+      "hash": "7f9b72897f5dfe225f03ea7dcea834c4",
+      "translation": "## 関連ドキュメント\n\n- [アダプタ SendDSL 詳解](../developer-guide/adapters/send-dsl.md) - Send チェーン式送信インターフェース\n- [イベント変換標準](../standards/event-conversion.md) - メッセージセグメント変換規格\n- [Event パッケージクラス](../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() メソッド"
+    }
+  ]
 }

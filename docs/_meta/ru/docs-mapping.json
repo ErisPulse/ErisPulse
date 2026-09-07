@@ -20,13 +20,13 @@
           "icon": "fa-bolt"
         },
         {
-          "title": "Обзор архитектуры",
+          "title": "Архитектурный обзор",
           "path": "architecture.md",
           "level": 1,
           "icon": "fa-sitemap"
         },
         {
-          "title": "Отслеживание ошибок",
+          "title": "Трекер ошибок",
           "path": "bug-tracker.md",
           "level": 1,
           "icon": "fa-bug"
@@ -52,13 +52,13 @@
           "icon": "fa-door-open"
         },
         {
-          "title": "Основные концепции",
+          "title": "Основные понятия",
           "path": "getting-started/basic-concepts.md",
           "level": 1,
           "icon": "fa-lightbulb"
         },
         {
-          "title": "Примеры распространённых задач",
+          "title": "Примеры распространенных задач",
           "path": "getting-started/common-tasks.md",
           "level": 1,
           "icon": "fa-list-check"
@@ -140,7 +140,7 @@
           "icon": "fa-puzzle-piece",
           "documents": [
             {
-              "title": "Начало работы с разработкой модулей",
+              "title": "Введение в разработку модулей",
               "path": "developer-guide/modules/getting-started.md",
               "level": 1,
               "icon": "fa-puzzle-piece"
@@ -152,7 +152,7 @@
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Подробное объяснение класса-обертки Event",
+              "title": "Подробное описание обёртки событий",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
@@ -170,7 +170,7 @@
           "icon": "fa-network-wired",
           "documents": [
             {
-              "title": "Начало работы с разработкой адаптеров",
+              "title": "Введение в разработку адаптеров",
               "path": "developer-guide/adapters/getting-started.md",
               "level": 1,
               "icon": "fa-network-wired"
@@ -188,7 +188,7 @@
               "icon": "fa-code-branch"
             },
             {
-              "title": "Рекомендации по разработке адаптеров ErisPulse",
+              "title": "Рекомендации по лучшим практикам разработки адаптеров",
               "path": "developer-guide/adapters/best-practices.md",
               "level": 1,
               "icon": "fa-medal"
@@ -221,7 +221,7 @@
           "icon": "fa-comments"
         },
         {
-          "title": "OneBot12 Платформенные особенности документации",
+          "title": "Документация по функциям платформы OneBot12",
           "path": "platform-guide/onebot12.md",
           "level": 1,
           "icon": "fa-comments"
@@ -233,7 +233,7 @@
           "icon": "fa-paper-plane"
         },
         {
-          "title": "Документация по функциям платформы электронной почты",
+          "title": "Документация по функциональности почтовой платформы",
           "path": "platform-guide/email.md",
           "level": 1,
           "icon": "fa-envelope"
@@ -245,13 +245,13 @@
           "icon": "fa-cloud"
         },
         {
-          "title": "Документация по функциям платформы Yunhu User",
+          "title": "Характеристики платформы пользователей Yunhu",
           "path": "platform-guide/yunhu_user.md",
           "level": 1,
           "icon": "fa-user"
         },
         {
-          "title": "Документация по функциональным возможностям платформы QQBot",
+          "title": "Документация по функциям платформы QQBot",
           "path": "platform-guide/qqbot.md",
           "level": 1,
           "icon": "fa-comment-dots"
@@ -275,25 +275,25 @@
           "icon": "fa-gamepad"
         },
         {
-          "title": "Адаптер WeChatMp - Документация по функциональным возможностям платформы",
+          "title": "Адаптер WeChatMp - Документация по функциональности платформы",
           "path": "platform-guide/wechatmp.md",
           "level": 1,
           "icon": "fa-mobile-screen"
         },
         {
-          "title": "Описание функций платформы — универсальный адаптер Webhook",
+          "title": "Описание функций платформы — универсальный мостовой адаптер Webhook",
           "path": "platform-guide/webhook.md",
           "level": 1,
           "icon": "fa-link"
         },
         {
-          "title": "Документация по функциям платформы RockyChat (IdeauraAdapter)",
+          "title": "Документация по функционалу платформы RockyChat",
           "path": "platform-guide/ideaura.md",
           "level": 1,
           "icon": "fa-wand-magic-sparkles"
         },
         {
-          "title": "Инструкции по поддержке документации",
+          "title": "Инструкция по поддержке документации",
           "path": "platform-guide/maintain-notes.md",
           "level": 1,
           "icon": "fa-wrench"
@@ -307,7 +307,7 @@
       "count": 4,
       "documents": [
         {
-          "title": "API Справочник",
+          "title": "Справочник API",
           "path": "api-reference/README.md",
           "level": 1,
           "icon": "fa-book"
@@ -325,7 +325,7 @@
           "icon": "fa-cubes-stacked"
         },
         {
-          "title": "Система API событий",
+          "title": "API системы событий",
           "path": "api-reference/event-system.md",
           "level": 1,
           "icon": "fa-bolt-lightning"
@@ -363,13 +363,13 @@
           "icon": "fa-route"
         },
         {
-          "title": "Подробное руководство по MessageBuilder",
+          "title": "MessageBuilder — подробное руководство",
           "path": "advanced/message-builder.md",
           "level": 1,
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Conversation 多轮对话",
+          "title": "Conversation Многоходовой диалог",
           "path": "advanced/conversation.md",
           "level": 1,
           "icon": "fa-comments"
@@ -381,7 +381,7 @@
           "icon": "fa-globe"
         },
         {
-          "title": "SQL Query Builder",
+          "title": "SQL 查询构建器",
           "path": "advanced/sql-builder.md",
           "level": 1,
           "icon": "fa-database"
@@ -393,13 +393,13 @@
           "icon": "fa-language"
         },
         {
-          "title": "Scope",
+          "title": "Scope (область видимости)",
           "path": "advanced/scope.md",
           "level": 1,
           "icon": "fa-shield-halved"
         },
         {
-          "title": "Система владельцев (owner)",
+          "title": "Система принадлежности (owner)",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
@@ -419,7 +419,7 @@
       "count": 4,
       "documents": [
         {
-          "title": "Экосистема",
+          "title": "Экосистемные модули",
           "path": "ecosystem/README.md",
           "level": 1,
           "icon": "fa-cubes"
@@ -451,7 +451,7 @@
       "count": 1,
       "documents": [
         {
-          "title": "Разработка с помощью ИИ",
+          "title": "AI-помощь в разработке",
           "path": "ai-support/README.md",
           "level": 1,
           "icon": "fa-robot"
@@ -477,25 +477,25 @@
           "icon": "fa-layer-group"
         },
         {
-          "title": "Стандартизированный формат возврата адаптера ErisPulse",
+          "title": "Стандартизированный протокол возврата адаптера ErisPulse",
           "path": "standards/api-response.md",
           "level": 1,
           "icon": "fa-arrow-right-arrow-left"
         },
         {
-          "title": "Спецификация стандартизации адаптера",
+          "title": "Стандартизированный протокол преобразования адаптеров",
           "path": "standards/event-conversion.md",
           "level": 1,
           "icon": "fa-shuffle"
         },
         {
-          "title": "Правила метода отправки Send в ErisPulse",
+          "title": "Спецификация метода отправки ErisPulse",
           "path": "standards/send-method-spec.md",
           "level": 1,
           "icon": "fa-paper-plane"
         },
         {
-          "title": "Стандарт операций запроса ErisPulse",
+          "title": "Стандартизированные операции запросов ErisPulse",
           "path": "standards/request-action-spec.md",
           "level": 1,
           "icon": "fa-hand-paper"

@@ -20,9 +20,9 @@ project/
 
 | 錯誤狀態 | 觸發條件 | 框架行為 |
 |---------|---------|---------|
-| 文件遺失 | `config.toml` 不存在 | 正常首次啟動，靜默使用空配置（不發警告） |
+| 文件遺失 | `config.toml` 不存在 | 正常首次啟動，靜默使用空配置（不發出警告） |
 | TOML 語法錯誤 | 文件存在但格式非法（如少了引號、括號未閉合） | 輸出**出錯行號/列號與原因**，並提示已回退預設配置 |
-| 權限/其他錯誤 | 無讀取權限、IO 錯誤等 | 輸出**明確原因**，並提示已回退預設配置 |
+| 權限/其他錯誤 | 無讀權限、IO 錯誤等 | 輸出**明確原因**，並提示已回退預設配置 |
 
 例如，當你不慎把配置寫成了 `port = 8000`（少了引號的字串）時，日誌會輸出類似：
 
@@ -33,7 +33,7 @@ project/
 
 這樣你可以在**預設 INFO 級別**下立刻定位問題，而不會困惑「為什麼我改的配置沒生效」。
 
-> **運行中改壞配置文件？** 如果你在機器人運行期間手動編輯 `config.toml` 引入了語法錯誤，框架在下次寫入（合併配置）時會輸出「配置文件已損壞（語法錯誤，第 X 行），無法合併寫入——請先修復配置文件後重啟」，而不是令人困惑的「寫入失敗」。待寫入的配置項會被保留，不會丟失。
+> **運行中改壞配置文件？** 如果你在機器人運行期間手動編輯 `config.toml` 引入了語法錯誤，框架在下次寫入（合併配置）時會輸出「配置文件已損壞（語法錯誤，第 X 行），無法合併寫入——請先修復配置文件後重啟」，而不是令人困惑的「寫入失敗」。待寫入的配置項會被保留，不會遺失。
 
 ## 環境變數覆蓋
 
@@ -41,7 +41,7 @@ project/
 
 命名規則：把點分路徑 `ErisPulse.<section>.<key>` 改為全大寫、`.` 替換為 `_`，並加上 `ERISPULSE_` 前綴：
 
-| 配置項 | 環境變數 | 例子值 |
+| 配置項 | 環境變數 | 示例值 |
 |--------|---------|--------|
 | `ErisPulse.server.port` | `ERISPULSE_SERVER_PORT` | `9000` |
 | `ErisPulse.server.host` | `ERISPULSE_SERVER_HOST` | `0.0.0.0` |
@@ -54,7 +54,7 @@ project/
 - **支援熱更新**：運行中修改環境變數後，配合配置監聽的重載即可生效
 
 ```bash
-# Docker 部署例子：不修改 config.toml，直接覆蓋端口
+# Docker 部署示例：不修改 config.toml，直接覆蓋端口
 ERISPULSE_SERVER_PORT=9000 docker compose up -d
 ```
 
@@ -78,9 +78,9 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 | 配置 | 原因 |
 |------|------|
 | `router.cors.*` / `router.security.*` | 中間件在服務啟動時寫入 FastAPI，運行時無法安全熱切換 |
-| `storage.use_global_db` | SQLite 檔案句柄已在運行時打開，切換路徑不安全 |
+| `storage.use_global_db` | SQLite 檔案句柄已在運行時開啟，切換路徑不安全 |
 
-> **中途編輯儲存出錯？** 若編輯 `config.toml` 時出現瞬時語法錯誤，框架會**保留上次有效配置**並輸出診斷日誌，不會把空配置廣播給各元件（避免 `on_config_update` 收到空值誤回退預設）。
+> **中途編輯保存出錯？** 若編輯 `config.toml` 時出現瞬時語法錯誤，框架會**保留上次有效配置**並輸出診斷日誌，不會把空配置廣播給各元件（避免 `on_config_update` 收到空值誤回退預設）。
 
 ### 熱更新鏈路內部拆解
 
@@ -103,7 +103,7 @@ flowchart TD
 | 路徑 | 機制 | 觸發時機 |
 |------|------|---------|
 | 背景 watcher | daemon 線程 `config-watcher` 每 **5 秒** `wait` 輪詢檔案 `mtime` | 外部改檔案後最多 5 秒內 |
-| 慵惰檢測 | 任何 `getConfig()` 讀取時，若快取超過 **60 秒**則先查檔案 | 下次讀配置時 |
+| 慵惰檢測 | 任何 `getConfig()` 讀取時，若快取超過 **60 秒**則先查檔案 | 下次讀取配置時 |
 
 > **框架不會誤傷自己**：`setConfig()` 寫盤時會記錄「自身寫入的 mtime」，watcher 對比時把它排除，只把**外部編輯**視為變更。
 
@@ -263,12 +263,12 @@ def admin_provider(platform, user_id):
 master.is_master("yunhu", "999")   # True
 admin_provider.unregister()        # 不再需要時註銷
 
-# 寫法二：函數式（模組加載期註冊 / 卸載期註銷）
+# 寫法二：函數式（模組載入期註冊 / 卸載期註銷）
 fn = master.provider(admin_provider)
 fn.unregister()
 ```
 
-> provider 異常會被捕捉並跳過，不阻斷身份判定鏈。
+> provider 異常會被捕獲並跳過，不阻斷身份判定鏈。
 > 繫結實例方法無法掛載 `unregister`，需要註冊/註銷配對的場景請用**模組級函數**。
 
 ### 用戶優先：主人生效範圍由用戶最終決定
@@ -282,7 +282,7 @@ fn.unregister()
 ```toml
 [ErisPulse.logger]
 level = "INFO"
-log_files = []                # 顯式日誌檔案列表（與 log_dir 互斥，優先級更高）
+log_files = []                # 明確日誌檔案列表（與 log_dir 互斥，優先級更高）
 log_dir = ""                  # 日誌目錄（設定後自動分段輪轉）
 log_rotation = "size"         # 分段方式: "size" / "date" / "none"
 log_max_size_mb = 10          # size 模式單檔案上限（MB）
@@ -294,16 +294,16 @@ exclude_levels = ["EVENT"]
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| level | string | INFO | 日誌等級：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低等級，輸出框架內部詳細除錯資訊） |
-| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文字無顏色，適合日誌採集/管道重定向）、`json`（JSON 構造化，適合 ELK 等） |
-| log_files | array | 空 | 日誌輸出檔案列表（顯式路徑，不分段） |
+| level | string | INFO | 日誌級別：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低級別，輸出框架內部詳細除錯資訊） |
+| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文字無顏色，適合日誌採集/管道重定向）、`json`（JSON 機構化，適合 ELK 等） |
+| log_files | array | 空 | 日誌輸出檔案列表（明確路徑，不分段） |
 | log_dir | string | 空 | 日誌輸出目錄（自動建立）。設定後寫入目錄內 `erispulse.log` 並按 `log_rotation` 自動分段；與 `log_files` 互斥，`log_files` 優先 |
 | log_rotation | string | size | 分段方式：`size`（按大小）/ `date`（按時間）/ `none`（不分段） |
 | log_max_size_mb | float | 10 | size 模式單檔案大小上限（MB），超過後輪轉為 `.1`/`.2` 備份 |
 | log_backup_count | integer | 5 | 保留的歷史日誌檔案數，超出的最舊備份自動刪除 |
 | log_rotation_when | string | midnight | date 模式輪轉週期：`S`/`M`/`H`/`D`/`midnight`（預設每天零點） |
-| memory_limit | integer | 1000 | 記憶體中保存的日誌條數 |
-| exclude_levels | array | 空 | 屏蔽指定日誌等級。被屏蔽等級的日誌**完全丟棄**（不寫記憶體、不推送到 Dashboard 等訂閱器、不列印、不寫檔案）。支援熱更新 |
+| memory_limit | integer | 1000 | 記憶體中保存的日誌筆數 |
+| exclude_levels | array | 空 | 屏蔽指定日誌級別。被屏蔽級別的日誌**完全丟棄**（不寫記憶體、不推送到 Dashboard 等訂閱器、不列印、不寫檔案）。支援熱更新 |
 
 也可在程式碼中動態切換：
 
@@ -320,7 +320,7 @@ logger.set_output_dir("logs", rotation="date", backup_count=7)
 > [!NOTE]
 > `log_dir` 及分段相關配置需要 ErisPulse **2.8.0+**。
 
-> **隱私保護**：訊息收發內容以 **EVENT 等級**（數值 21）記錄。設定 `exclude_levels = ["EVENT"]` 即可讓後台（如 Dashboard 日誌面板）無法看到各群/私聊的訊息內容，同時不限制其它等級日誌。
+> **隱私保護**：訊息收發內容以 **EVENT 等級**（數值 21）記錄。設定 `exclude_levels = ["EVENT"]` 即可讓後台（如 Dashboard 日誌面板）無法看到各群/私聊的訊息內容，同時不妨礙其它級別日誌。
 
 > [!NOTE]
 > `exclude_levels` 本特性需要 ErisPulse **2.8.0+**。
@@ -342,19 +342,19 @@ adapters = []
 |---------|------|---------|------|
 | enable_lazy_loading | boolean | true | 是否啟用模組懶加載 |
 | uninit_timeout | integer | 30 | 優雅關閉的總超時時間（秒），超過後強制終止。0 表示不設超時 |
-| strict_mode | integer | 0 | 嚴格模式等級，見下方「嚴格模式」說明 |
+| strict_mode | integer | 0 | 嚴格模式級別，見下方「嚴格模式」說明 |
 | handler_max_concurrency | integer | 64 | 事件處理器最大併發 Task 數，設大提高吞吐但增加記憶體佔用 |
 | offline_bot_expiry | integer | 3600 | 離線 Bot 記錄自動過期時間（秒），0 表示不過期 |
 
 ### 主動 GC 配置
 
-SDK 初始化完成後啟動主動 GC 後台任務，週期性執行 Python GC 與內部資源回收（離線 Bot 清理等）。全部參數均支援熱更新，變更時即時重啟任務。
+SDK 初始化完成後啟動主動 GC 後台任務，周期性執行 Python GC 與內部資源回收（離線 Bot 清理等）。全部參數均支援熱更新，變更時即時重啟任務。
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
 | proactive_gc_interval | number | 300 | 回收間隔（秒），支援小數。0 表示禁用主動 GC |
-| proactive_gc_generation | integer | 0 | 常規輪次回收分代（0/1/2，钳制到 0..2）。注意 `gc.collect(2)` 等價於全量回收，預設 0 保持輕量；深度回收由 `proactive_gc_full_every` 週期性觸發 |
-| proactive_gc_full_every | integer | 20 | 每 N 輪做一次全量回收，0 表示禁用週期性全量。全量回收受 `proactive_gc_memory_growth_mb` 門限約束 |
+| proactive_gc_generation | integer | 0 | 常規輪次回收分代（0/1/2，钳制到 0..2）。注意 `gc.collect(2)` 等價於全量回收，預設 0 保持輕量；深度回收由 `proactive_gc_full_every` 周期性觸發 |
+| proactive_gc_full_every | integer | 20 | 每 N 輪做一次全量回收，0 表示禁用周期性全量。全量回收受 `proactive_gc_memory_growth_mb` 門限約束 |
 | proactive_gc_memory_growth_mb | integer | 32 | 全量回收的記憶體增長門限（MB）：對比上次全量後的記憶體基線（優先 tracemalloc，其次 RSS），僅當增長達到此值才執行全量回收。0 表示不設門限 |
 | proactive_gc_idle_only | boolean | false | 開啟後，事件洪峰（存在未完成的 pending handler）時本輪跳過 Python GC，避免停頓與訊息處理競爭；內部資源回收不受影響 |
 | proactive_gc_gen0_min | integer | 500 | 常規輪次觸發回收的 gen0 垃圾量下限：`gc.get_count()[0]` 低於此值直接跳過（空轉輪次近乎零開銷）。0 表示始終回收 |
@@ -363,24 +363,24 @@ SDK 初始化完成後啟動主動 GC 後台任務，週期性執行 Python GC �
 
 ### 嚴格模式
 
-嚴格模式控制模組/適配器在加載階段不合規或失敗時的處理策略。現代模組/適配器都應繼承對應的基類（`BaseModule`/`BaseAdapter`），未繼承基類的元件會影響框架的上下文系統與兜底清理，可能導致資源洩漏。
+嚴格模式控制模組/適配器在加載階段不規範或失敗時的處理策略。現代模組/適配器都應繼承對應的基類（`BaseModule`/`BaseAdapter`），未繼承基類的元件會影響框架的上下文系統與兜底清理，可能導致資源洩漏。
 
-> **2.5.2 變更**：預設等級從 `1`（跳過）調整為 `0`（寬鬆），以減少新使用者初次使用時遇到的加載問題。未繼承基類的元件仍會嘗試加載（兼容舊元件）。如需恢復舊行為，請顯式設定 `strict_mode = 1`。
+> **2.5.2 變更**：預設級別從 `1`（跳過）調整為 `0`（寬鬆），以減少新用戶初次使用時遇到的加載問題。未繼承基類的元件仍會嘗試加載（兼容舊元件）。
 
-| 等級 | 名稱 | 行為 |
+| 級別 | 名稱 | 行為 |
 |------|------|------|
 | 0 | 寬鬆（預設） | 違規僅警告，未繼承基類的元件仍會嘗試加載（兼容舊元件） |
 | 1 | 嚴格-跳過 | 拒絕未繼承基類的元件並跳過，其餘正常啟動 |
 | 2 | 嚴格-致命 | 收集所有違規後統一報告並中止整個啟動 |
 
-各等級下，「加載/註冊/初始化階段報錯」這類元件自身崩潰始終會被跳過；區別在於：
+各級別下，「加載/註冊/初始化階段報錯」這類元件自身崩潰始終會被跳過；區別在於：
 
 - **0 → 1**：唯一行為變化是「未繼承基類」從「仍加載」變為「跳過」。
 - **1 → 2**：所有違規（未繼承基類、加載失敗、註冊失敗、初始化失敗等）升級為致命，會在啟動檢查點收集後一次性輸出違規清單並中止。
 
 #### 豁免清單
 
-如果某些元件確實暫時無法遷移（例如依賴的舊模組），可以將其加入豁免清單，被列名的元件即使不合規也會按寬鬆模式對待，繼續加載：
+如果某些元件確實暫時無法遷移（例如依賴的舊模組），可以將其加入豁免清單，被列名的元件即使不規範也會按寬鬆模式對待，繼續加載：
 
 ```toml
 [ErisPulse.framework.strict_mode_exceptions]
@@ -388,7 +388,7 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> 當某個元件被嚴格模式拒絕時，日誌會明確提示如何恢復加載（加入豁免清單或調低等級）。
+> 當某個元件被嚴格模式拒絕時，日誌會明確提示如何恢復加載（加入豁免清單或調低級別）。
 
 ## 存儲配置
 
@@ -475,13 +475,13 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-作用域聲明"**什麼範圍內生效**"——某平台 / Bot / 會話裡哪些模組可用（① 模組維度）、
+作用域宣告"**什麼範圍內生效**"——某平台 / Bot / 會話裡哪些模組可用（① 模組維度）、
 某用戶 / 群 / Bot / 適配器的事件收不收（② 身份維度）、
-模組能發起哪些出站調用（③ 出站維度）：
+模組能發起哪些出站呼叫（③ 出站維度）：
 
 ```toml
 [ErisPulse.scope]
-default_allow = true        # 全局兜底（false = 隱式拒絕嚴格模式；不受出站維度影響）
+default_allow = true        # 全局兜底（false = 隱式拒絕嚴格模式；不影響出站維度）
 cache_size = 1024           # LRU 快取大小
 
 # ① 模組維度（優先級：會話 > Bot > 平台；條目支援精確 / glob / re: 正則）
@@ -529,7 +529,7 @@ OneBot12 標準類型（meta / message / notice / request）與擴展類型（co
 ```toml
 [ErisPulse.event.overrides]
 
-# message：文本觸發條件（與程式碼內條件 AND）
+# message：文字觸發條件（與程式碼內條件 AND）
 [ErisPulse.event.overrides.message.ChatModule]
 pattern = "閒聊*"
 
@@ -562,7 +562,7 @@ acl_default_allow = true
 | `event.overrides.acl.<命令名>` | table | 用戶黑白名單：`{allow=[...], deny=[...]}` |
 | `event.overrides.acl_default_allow` | boolean | ACL 兜底：未配置 ACL 的命令放行（`true`）/ 嚴格拒絕（`false`） |
 
-> 運行時 API（`from ErisPulse.Core.Event import overrides` 後按類型子命名空間呼叫
+> 運行時 API（`from ErisPulse.Core.Event import overrides` 後按類型子命名空間調用
 > `overrides.message.set()` / `overrides.command.set()` / `overrides.acl.set()` 等，
 > 或經 `sdk.Event.overrides` 訪問）
 > 見 [事件處理入門 · 事件覆寫](../getting-started/event-handling.md#事件覆寫不改模組程式碼覆寫任意事件類型的行為)。

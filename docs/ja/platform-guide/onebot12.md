@@ -1,102 +1,102 @@
-# OneBot12プラットフォームの特徴
+# OneBot12プラットフォーム仕様ドキュメント
 
-OneBot12Adapterは、ErisPulseフレームワークのベースラインプロトコルアダプターとして、OneBot V12プロトコルに基づいて構築されたアダプターです。
+OneBot12Adapter は、OneBot V12 プロトコルに基づいて構築されたアダプターであり、ErisPulse フレームワークの基本プロトコルアダプターです。
 
 ---
 
 ## ドキュメント情報
 
 - 対応モジュールバージョン: 4.0.0
-- メンテナ: ErisPulse
+- メンテナー: ErisPulse
 - プロトコルバージョン: OneBot V12
 
 ## 基本情報
 
-- プラットフォーム概要：OneBot V12は、汎用チャットボットアプリケーションインターフェース標準であり、ErisPulseフレームワークのベースラインプロトコルです。
-- アダプター名：OneBot12Adapter
-- サポートされるプロトコル/APIバージョン：OneBot V12
-- マルチアカウント対応：完全なマルチアカウントアーキテクチャをサポートしており、複数のOneBot12アカウントを同時に設定および実行することができます。
+- プラットフォーム概要: OneBot V12 は、ErisPulseフレームワークのベースラインプロトコルである汎用的なチャットボットアプリケーションインターフェース標準です。
+- アダプタ名: OneBot12Adapter
+- 対応するプロトコル/APIバージョン: OneBot V12
+- 多アカウント対応: 完全な多アカウントアーキテクチャを採用しており、複数のOneBot12アカウントを同時に設定・実行することができます。
 
-## サポートされるメッセージ送信タイプ
+## 支持するメッセージ送信タイプ
 
-すべての送信メソッドはチェーン構文で実装されています。例：
+すべての送信メソッドは、チェーン式の構文で実装されています。例：
 
 ```python
 from ErisPulse.Core import adapter
 onebot12 = adapter.get("onebot12")
 
-# デフォルトのアカウントで送信
+# デフォルトのアカウントを使って送信
 await onebot12.Send.To("group", group_id).Text("Hello World!")
 
-# 特定のアカウントを指定して送信
-await onebot12.Send.To("group", group_id).Account("main").Text("来自主账户的消息")
+# 特定のアカウントを使って送信
+await onebot12.Send.To("group", group_id).Account("main").Text("来自主アカウントのメッセージ")
 ```
 
-### 大小写不敏感調用
+### 大文字小文字を区別しない呼び出し
 
-すべての送信メソッドとチェーン修飾メソッドは、大小文字を区別せずに呼び出すことができます。アダプターは正しい標準メソッド名に自動的にマッピングします：
+すべての送信メソッドとチェーン式修飾メソッドは、大文字小文字を区別しない呼び出しをサポートしており、アダプターは正しい標準メソッド名に自動的にマッピングします：
 
 ```python
-# 以下のすべての呼び出し方法は等価です
+# 以下すべての呼び出し方法は等価です
 await onebot12.Send.To("user", 123).Text("hello")
 await onebot12.Send.To("user", 123).text("hello")
 await onebot12.Send.To("user", 123).TEXT("hello")
 
-# チェーン修飾メソッドも同様にサポートされています
+# チェーン式修飾メソッドも同様にサポート
 await onebot12.Send.To("group", 123).At(456).Text("hello")
 await onebot12.Send.To("group", 123).at(456).TEXT("hello")
 await onebot12.Send.To("group", 123).AT(456).text("hello")
 ```
 
-### 不支持的方法調用
+### 支持されていないメソッドの呼び出し
 
-存在しないメソッドを呼び出す場合、アダプターは例外をスローするのではなく、親切なテキストメッセージを返します：
+存在しないメソッドを呼び出した場合、アダプターは例外をスローするのではなく、ユーザーにわかりやすいテキストのメッセージを返します：
 
 ```python
-# 不支持のメソッドを呼び出す
+# 支持されていないメソッドを呼び出す
 result = await onebot12.Send.To("user", 123).UnsupportedMethod("test")
 
-# 返却される結果は送信されたテキストメッセージです
-# メッセージ内容: [不支持的发送类型] 方法名: UnsupportedMethod, 参数: [args[0]: 'test']
+# 戻り値は送信されたテキストメッセージです
+# メッセージ内容: [サポートされていない送信タイプ] メソッド名: UnsupportedMethod, パラメータ: [args[0]: 'test']
 ```
 
-### 基本メッセージタイプ
+### 基本的なメッセージタイプ
 
-- `.Text(text: str)`：純テキストメッセージを送信
-- `.Image(file: Union[str, bytes], filename: str = "image.png")`：画像メッセージを送信（URL、Base64、またはbytesをサポート）
-- `.Audio(file: Union[str, bytes], filename: str = "audio.ogg")`：音声メッセージを送信
-- `.Voice(file: Union[str, bytes], filename: str = "voice.ogg")`：音声メッセージを送信（Audioの別名、OneBot11と互換性あり）
-- `.Video(file: Union[str, bytes], filename: str = "video.mp4")`：動画メッセージを送信
+- `.Text(text: str)`：純粋なテキストメッセージを送信します
+- `.Image(file: Union[str, bytes], filename: str = "image.png")`：画像メッセージを送信します（URL、Base64、またはbytesをサポート）
+- `.Audio(file: Union[str, bytes], filename: str = "audio.ogg")`：音声メッセージを送信します
+- `.Voice(file: Union[str, bytes], filename: str = "voice.ogg")`：音声メッセージを送信します（OneBot11と互換性のあるAudioの別名）
+- `.Video(file: Union[str, bytes], filename: str = "video.mp4")`：ビデオメッセージを送信します
 
-### チェーン修飾メソッド（selfを返すことでチェーン呼び出しをサポート）
+### チェーン式修飾メソッド（selfを返してチェーン式呼び出しをサポート）
 
-- `.At(user_id: Union[str, int])`：メンション（@ユーザー）を送信（複数回呼び出すことができます）
-- `.AtAll()`：全員にメンション（@全体）を送信
-- `.Reply(message_id: Union[str, int])`：返信メッセージを送信
+- `.At(user_id: Union[str, int])`：ユーザーを@します（複数回呼び出すことが可能です）
+- `.AtAll()`：全員を@します
+- `.Reply(message_id: Union[str, int])`：メッセージに返信します
 
-### 原生メッセージ送信
+### 原始メッセージ送信
 
-- `.Raw_ob12(message: Union[Dict, List[Dict]], **kwargs)`：OneBot12の原生フォーマットメッセージを送信（命名規則に準拠）
+- `.Raw_ob12(message: Union[Dict, List[Dict]], **kwargs)`：OneBot12の原始形式メッセージを送信します（命名規則に準拠）
 
 ### その他のメッセージタイプ
 
-- `.Sticker(file_id: str)`：ステッカー/絵文字を送信
-- `.Location(latitude: float, longitude: float, title: str = "", content: str = "")`：位置情報を送信
+- `.Sticker(file_id: str)`：スタンプ/ステッカーを送信します
+- `.Location(latitude: float, longitude: float, title: str = "", content: str = "")`：位置情報を送信します
 
 ### 管理機能
 
-- `.Recall(message_id: Union[str, int])`：メッセージを撤回
-- `.Edit(message_id: Union[str, int], content: Union[str, List[Dict]])`：メッセージを編集
-- `.Raw(message_segments: List[Dict])`：ネイティブなOneBot12メッセージセグメントを送信
-- `.Batch(target_ids: List[str], message: Union[str, List[Dict]], target_type: str = "user")`：メッセージを一括送信
+- `.Recall(message_id: Union[str, int])`：メッセージを撤回します
+- `.Edit(message_id: Union[str, int], content: Union[str, List[Dict]])`：メッセージを編集します
+- `.Raw(message_segments: List[Dict])`：OneBot12の原生メッセージセグメントを送信します
+- `.Batch(target_ids: List[str], message: Union[str, List[Dict]], target_type: str = "user")`：一括でメッセージを送信します
 
 ## OneBot12標準イベント
 
-OneBot12アダプターはOneBot12標準を完全に準拠しており、イベント形式の変換は不要で、そのままフレームワークに送信されます。
+OneBot12アダプターはOneBot12標準を完全に遵守しており、イベント形式の変換は不要で、フレームワークに直接送信されます。
 
 ### 新機能：元のイベントタイプフィールド
 
-`standards/event-conversion.md`の規格に従い、すべてのイベントに元のイベントタイプフィールド`onebot12_raw_type`が保持されます：
+`standards/event-conversion.md` 規格に準拠し、すべてのイベントには元のイベントタイプフィールド `onebot12_raw_type` が保持されます：
 
 ```python
 {
@@ -115,7 +115,7 @@ OneBot12アダプターはOneBot12標準を完全に準拠しており、イベ�
 ### メッセージイベント (Message Events)
 
 ```python
-# プライベートメッセージ
+# プライベートチャットメッセージ
 {
     "id": "event-id",
     "type": "message",
@@ -128,7 +128,7 @@ OneBot12アダプターはOneBot12標準を完全に準拠しており、イベ�
     "time": 1234567890
 }
 
-# グループメッセージ
+# グループチャットメッセージ
 {
     "id": "event-id",
     "type": "message",
@@ -146,7 +146,7 @@ OneBot12アダプターはOneBot12標準を完全に準拠しており、イベ�
 ### 通知イベント (Notice Events)
 
 ```python
-# グループメンバー増加
+# グループメンバーの追加
 {
     "id": "event-id",
     "type": "notice",
@@ -160,7 +160,7 @@ OneBot12アダプターはOneBot12標準を完全に準拠しており、イベ�
     "time": 1234567890
 }
 
-# グループメンバー減少
+# グループメンバーの削減
 {
     "id": "event-id",
     "type": "notice",
@@ -175,7 +175,7 @@ OneBot12アダプターはOneBot12標準を完全に準拠しており、イベ�
 }
 ```
 
-### リクエストイベント (Request Events)
+### 要求イベント (Request Events)
 
 ```python
 # フレンドリクエスト
@@ -207,7 +207,7 @@ OneBot12アダプターはOneBot12標準を完全に準拠しており、イベ�
 }
 ```
 
-### メタイベント (Meta Events)
+### 元イベント (Meta Events)
 
 ```python
 # ライフサイクルイベント
@@ -238,16 +238,16 @@ OneBot12アダプターはOneBot12標準を完全に準拠しており、イベ�
 
 ### アカウント設定
 
-各アカウントは以下のオプションを独立して設定できます：
+各アカウントは以下のオプションを個別に設定できます：
 
-- `mode`: このアカウントの実行モード（"server" または "client"）
-- `server_path`: Serverモード時のWebSocketパス
-- `server_token`: Serverモード時の認証トークン（オプション）
-- `client_url`: Clientモード時に接続するWebSocketアドレス
-- `client_token`: Clientモード時の認証トークン（オプション）
-- `enabled`: このアカウントを有効にするか
-- `platform`: プラットフォーム識別子（デフォルトは "onebot12"）
-- `implementation`: 実装識別子（例: "go-cqhttp"、オプション）
+- `mode`: このアカウントの実行モード ("server" または "client")
+- `server_path`: ServerモードにおけるWebSocketのパス
+- `server_token`: Serverモードにおける認証トークン（オプション）
+- `client_url`: Clientモードで接続するWebSocketのアドレス
+- `client_token`: Clientモードにおける認証トークン（オプション）
+- `enabled`: アカウントを有効にするかどうか
+- `platform`: プラットフォーム識別子、デフォルトは "onebot12"
+- `implementation`: 実装識別子、例: "go-cqhttp"（オプション）
 
 ### 設定例
 
@@ -276,7 +276,7 @@ enabled = false
 
 ### デフォルト設定
 
-アカウントが何も設定されていない場合、アダプターは自動的に以下を作成します：
+アカウントの設定が一切ない場合、アダプターは自動的に以下のようにデフォルトアカウントを作成します：
 
 ```toml
 [OneBotv12_Adapter.accounts.default]
@@ -289,68 +289,68 @@ platform = "onebot12"
 ## 送信メソッドの戻り値
 
 ### メッセージ送信メソッド
-すべてのメッセージ送信メソッド（`.Text()`、`.Image()`、`.Raw_ob12()`など）は`asyncio.Task`オブジェクトを返し、`await`することで送信結果を取得できます：
+すべてのメッセージ送信メソッド（例：`.Text()`, `.Image()`, `.Raw_ob12()` など）は、`asyncio.Task` オブジェクトを返します。これにより、送信結果を直接 await で取得できます。
 
 ```python
 task = await onebot12.Send.To("group", 123456).Text("Hello")
 ```
 
 ### チェーン修飾メソッド
-すべてのチェーン修飾メソッド（`.At()`、`.AtAll()`、`.Reply()`）は`self`を返し、チェーン呼び出しをサポートします：
+すべてのチェーン修飾メソッド（例：`.At()`, `.AtAll()`, `.Reply()`）は、`self` を返し、チェーン呼び出しをサポートします。
 
 ```python
 # 複数の修飾メソッドを組み合わせて使用
-await onebot12.Send.To("group", 123456).Reply("msg123").At(789).At(790).Text("文本")
+await onebot12.Send.To("group", 123456).Reply("msg123").At(789).At(790).Text("テキスト")
 ```
 
 ## APIレスポンス標準
 
-アダプターはErisPulseの標準化された返却規格（`standards/api-response.md`）に準拠しています：
+アダプターは ErisPulse の標準化された返却規格（`standards/api-response.md`）に準拠しています：
 
 ```python
-# 成功レスポンス
+# 成功時のレスポンス
 {
-    "status": "ok",              // 必須：実行状態
-    "retcode": 0,                // 必須：返却コード（0は成功）
-    "data": {                     // 必須：レスポンスデータ
+    "status": "ok",              # 必須：実行ステータス
+    "retcode": 0,                # 必須：返却コード（0は成功を示す）
+    "data": {                     # 必須：レスポンスデータ
         "message_id": "123456",
         "time": 1632847927.599013
     },
-    "message_id": "123456",       // 必須：メッセージID（無ければ空文字列）
-    "message": "",                // 必須：エラーメッセージ（成功時は空）
-    "echo": "1234",               // 可能：リクエスト中のechoをそのまま返す
-    "onebot12_raw": {...}        // 可能：元のレスポンスデータ
+    "message_id": "123456",       # 必須：メッセージID（存在しない場合は空文字列）
+    "message": "",                # 必須：エラーメッセージ（成功時は空）
+    "echo": "1234",               # オプション：リクエスト中のechoをそのまま返す
+    "onebot12_raw": {...}        # オプション：元のレスポンスデータ
 }
 
-# 失敗レスポンス
+# 失敗時のレスポンス
 {
-    "status": "failed",           // 必須：実行状態
-    "retcode": 10003,            // 必須：返却コード（0以外は失敗）
-    "data": None,                // 必須：失敗時はnull
-    "message_id": "",            // 必須：失敗時は空文字列
-    "message": "缺少必要参数",    // 必須：エラーメッセージ
-    "echo": "1234",              // 可能：リクエスト中のechoをそのまま返す
-    "onebot12_raw": {...}        // 可能：元のレスポンスデータ
+    "status": "failed",           # 必須：実行ステータス
+    "retcode": 10003,            # 必須：返却コード（0以外は失敗を示す）
+    "data": None,                # 必須：失敗時はnull
+    "message_id": "",            # 必須：失敗時は空文字列
+    "message": "必要なパラメータが不足しています",    # 必須：エラーメッセージ
+    "echo": "1234",              # オプション：リクエスト中のechoをそのまま返す
+    "onebot12_raw": {...}        # オプション：元のレスポンスデータ
 }
 ```
 
 ### エラーコード規格
 
-OneBot12標準のエラーコードに準拠しています：
+OneBot12 の標準エラーコードに準拠します：
 
 - **0**: 成功
-- **1xxxx**: 動作リクエストエラー
-- **2xxxx**: 動作プロセッサエラー
+- **1xxxx**: 動作要求エラー
+- **2xxxx**: 動作処理エラー
 - **3xxxx**: 動作実行エラー（33001はネットワークタイムアウト）
 
-### マルチアカウント送信構文
+### 複数アカウントによる送信構文
 
 ```python
-# アカウント選択メソッド
-await onebot12.Send.Using("main").To("group", 123456).Text("主账户消息")
+# アカウント選択方法
+await onebot12.Send.Using("main").To("group", 123456).Text("メインアカウントのメッセージ")
 await onebot12.Send.Using("backup").To("group", 123456).Image("http://example.com/image.jpg")
 
-# API呼び出し方式
+# API呼び出し方法
 await onebot12.call_api("send_message", account_id="main", 
     detail_type="group", group_id=123456, 
     content=[{"type": "text", "data": {"text": "Hello"}}])
@@ -358,59 +358,59 @@ await onebot12.call_api("send_message", account_id="main",
 
 ## 非同期処理メカニズム
 
-OneBot12アダプターは非同期かつ非ブロッキング設計を採用しています：
+OneBot12アダプターは非同期非ブロッキング設計を採用しています：
 
 1. メッセージ送信はイベント処理ループをブロックしません
-2. 複数の並行送信操作を同時に行うことができます
-3. API応答をタイムリーに処理できます
-4. WebSocket接続は常にアクティブな状態を維持します
-5. マルチアカウントの並行処理を行い、各アカウントは独立して動作します
+2. 複数の並行送信操作を同時に実行できます
+3. APIの応答を即時に処理できます
+4. WebSocket接続はアクティブな状態を維持します
+5. 複数アカウントの並行処理が可能で、各アカウントは独立して動作します
 
-## エラーハンドリング
+## エラー処理
 
-アダプターは包括的なエラーハンドリングメカニズムを提供します：
+アダプタは包括的なエラー処理メカニズムを提供します：
 
-1. ネットワーク接続の異常は自動的に再接続します（各アカウントごとに独立して再接続、間隔30秒）
+1. ネットワーク接続異常時の自動再接続（各アカウントごとに個別に再接続が可能、間隔は30秒）
 2. API呼び出しのタイムアウト処理（固定30秒のタイムアウト）
-3. 消息送信の失敗は自動的に再試行します（最大3回）
-4. 不支持的方法調用は親切なテキストメッセージを返します
+3. メッセージ送信失敗時の自動リトライ（最大3回のリトライ）
+4. 対応していないメソッドの呼び出しは、親しみやすいテキストのメッセージを返します
 
 ## イベント処理の強化
 
-マルチアカウントモードでは、すべてのイベントにアカウント情報が自動的に追加されます：
+複数アカウントモードでは、すべてのイベントにアカウント情報が自動的に追加されます：
 
 ```python
 {
     "type": "message",
     "onebot12_raw_type": "message",  // 元のイベントタイプ
     "detail_type": "private",
-    "self": {"user_id": "123456"},  // 発生したアカウントID（標準フィールド）
+    "self": {"user_id": "123456"},  // イベントを送信したアカウントID（標準フィールド）
     "platform": "onebot12",
-    // ... 他のイベントフィールド
+    // ... その他のイベントフィールド
 }
 ```
 
 ## 管理インターフェース
 
 ```python
-# すべてのアカウント情報の取得
+# すべてのアカウント情報を取得
 accounts = onebot12.accounts
 
-# アカウント接続状態の確認
+# アカウントの接続状態を確認
 connection_status = {
     account_id: connection is not None and not connection.closed
     for account_id, connection in onebot12.connections.items()
 }
 
-# アカウントの有効化/無効化（アダプターの再起動が必要）
+# アカウントの動的有効化/無効化（アダプタの再起動が必要）
 onebot12.accounts["test"].enabled = False
 ```
 
-## OneBot12標準の特徴
+## OneBot12標準機能
 
 ### メッセージセグメント標準
 
-OneBot12は標準化されたメッセージセグメントフォーマットを使用します：
+OneBot12は標準化されたメッセージセグメント形式を使用します：
 
 ```python
 # テキストメッセージセグメント
@@ -428,21 +428,21 @@ OneBot12は標準化されたメッセージセグメントフォーマットを
 
 ### API標準
 
-OneBot12標準API仕様に準拠しています：
+OneBot12標準API規格に従います：
 
-- `send_message`: メッセージを送信
-- `delete_message`: メッセージを撤回
-- `edit_message`: メッセージを編集
-- `get_message`: メッセージを取得
+- `send_message`: メッセージ送信
+- `delete_message`: メッセージ撤回
+- `edit_message`: メッセージ編集
+- `get_message`: メッセージ取得
 - `get_self_info`: 自身の情報を取得
 - `get_user_info`: ユーザー情報を取得
 - `get_group_info`: グループ情報を取得
 
-## ベストプラクティス
+## 最佳実践
 
-1. **設定管理**: 複数のアカウント設定を使用することをお勧めします。異なる用途のボットを分けて管理します。
-2. **エラーハンドリング**: API呼び出しのリターンステータスを常に確認します。
-3. **メッセージ送信**: サポートされているメッセージタイプを適切に使用し、非対応のメッセージを送信しないようにします。
-4. **接続監視**: 接続状態を定期的にチェックし、サービスの可用性を確保します。
-5. **パフォーマンスの最適化**: バッチ送信時はBatchメソッドを使用して、ネットワークオーバーヘッドを減らします。
-6. **メソッド呼び出し**: 推奨される大文字始まりの命名規則（例：`.Text()`）を使用することを推奨しますが、小文字形式もサポートされており、異なるプログラミングスタイルに互換性があります（この方法は旧バージョンと互換性がない可能性があります）。
+1. **設定管理**: さまざまな用途のロボットを分けて管理するために、複数アカウントの設定を使用することを推奨します。
+2. **エラー処理**: API呼び出しの返り値ステータスを常にチェックしてください。
+3. **メッセージ送信**: 送信可能なメッセージの種類を使用し、サポートされていないメッセージを送信しないようにしてください。
+4. **接続監視**: 接続状態を定期的にチェックし、サービスの可用性を確保してください。
+5. **パフォーマンス最適化**: バッチ送信時は `Batch` メソッドを使用し、ネットワークのオーバーヘッドを減らしてください。
+6. **メソッド呼び出し**: 標準の大文字キャメルケース命名法（例: `.Text()`）を使用することを推奨しますが、異なるプログラミングスタイルとの互換性を考慮して小文字形式もサポートしています（この形式は旧バージョンとの互換性が失われる可能性があります）。

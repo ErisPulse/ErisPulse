@@ -2,24 +2,24 @@
   "version": 2,
   "hash": "02652abfd9545c64284e2a855dd4bf44",
   "file_hash": "02652abfd9545c64284e2a855dd4bf44",
-  "translated_at": "2026-08-28T01:40:17.734733",
+  "translated_at": "2026-09-07T12:23:47.748613",
   "target_lang": "ja",
   "chunks": [
     {
       "hash": "ba96c76949a16f4365b59641440be885",
-      "translation": "# ユーザー使用ガイド\n\n本ガイドでは、ErisPulse プロジェクトのインストール、設定、および管理について案内します。"
+      "translation": "# ユーザー使用ガイド\n\nこのガイドは、ErisPulse プロジェクトのインストール、設定、および管理方法を説明します。"
     },
     {
       "hash": "8c83143bb3b9498306193aacbe172e21",
-      "translation": "## コンテンツ一覧\n\n| 文書 | 説明 |\n|------|------|\n| [インストールと設定](installation.md) | システム要件、インストール方法 (pip/uv/Docker)、インストールの検証 |\n| [ErisPulse-App スマートフォン/デスクトップクライアント](../ecosystem/app.md) | 公式クライアント：スマートフォン / デスクトップ直接実行、ネイティブインターフェースでの ErisPulse インスタンス管理 |\n| [CLI コマンドリファレンス](cli-reference.md) | `epsdk` コマンドラインツールの完全な使用説明 |\n| [設定ファイルの説明](configuration.md) | `config/config.toml` 各設定項目の詳細説明 |\n| [デプロイガイド](deployment.md) | Docker 部署、systemd サービス、SSL 設定 |"
+      "translation": "## 内容リスト\n\n| ドキュメント | 説明 |\n|------|------|\n| [インストールと設定](installation.md) | システム要件、インストール方法（pip/uv/Docker）、インストールの確認 |\n| [ErisPulse-App モバイル/デスクトップクライアント](../ecosystem/app.md) | 公式クライアント：モバイル/デスクトップで直接実行、ネイティブインターフェースで ErisPulse インスタンスを管理 |\n| [CLI コマンドリファレンス](cli-reference.md) | `epsdk` コマンドラインツールの完全な使用説明 |\n| [設定ファイルの説明](configuration.md) | `config/config.toml` の各設定項目の詳細説明 |\n| [デプロイガイド](deployment.md) | Docker 部署、systemd サービス、SSL 設定 |"
     },
     {
       "hash": "a5f6d78a38dba4d6e00334fe346aec31",
-      "translation": "## 快速参考\n\n### 常用コマンド\n\n| コマンド | 説明 |\n|------|------|\n| `epsdk init` | プロジェクトを初期化（`-q` はクイックモード、`-n` は名前を指定） |\n| `epsdk install <パッケージ名>` | モジュール/アダプターをインストール（パラメータなしで対話モードに入る） |\n| `epsdk config <名前>` | 対話形式でアダプター/モジュールの宣言型設定項目を設定 |\n| `epsdk run main.py` | プロジェクトを実行（`--reload` はホットリロードモード） |\n| `epsdk list` | インストール済みのモジュール/アダプターを一覧表示 |\n| `epsdk upgrade <パッケージ名>` | モジュール/アダプターをアップグレード |\n| `epsdk doctor` | 環境診断（Python/バックエンド/設定/PyPI 接続性） |\n\n> 完全なコマンドリストとパラメータの説明は [CLI コマンドリファレンス](cli-reference.md) を参照してください。\n\n### 一般的な設定位置\n\n| 設定項目 | 説明 | 詳細 |\n|--------|------|------|\n| `[ErisPulse.server]` | サーバー設定（ホスト、ポート） | [設定ファイルの説明](configuration.md#サーバー設定) |\n| `[ErisPulse.logger]` | ログ設定（レベル、出力ファイル） | [設定ファイルの説明](configuration.md#ログ設定) |\n| `[ErisPulse.framework]` | フレームワーク設定（遅延読み込み） | [設定ファイルの説明](configuration.md#フレームワーク設定) |\n| `[ErisPulse.event.command]` | コマンドイベント設定（プレフィックス） | [設定ファイルの説明](configuration.md#イベント設定) |\n| `[アダプター名]` | 各アダプターの固有設定 | [プラットフォーム機能ガイド](../platform-guide/) |"
+      "translation": "## 快速参考\n\n### 常用コマンド\n\n| コマンド | 説明 |\n|------|------|\n| `epsdk init` | プロジェクトを初期化する（`-q` はクイックモード、`-n` で名前を指定） |\n| `epsdk install <パッケージ名>` | モジュール/アダプタをインストールする（パラメータなしで対話モードに入る） |\n| `epsdk config <名称>` | 対話形式でアダプタ/モジュールの宣言的設定項目を設定する |\n| `epsdk run main.py` | プロジェクトを実行する（`--reload` でホットリロードモード） |\n| `epsdk list` | インストール済みのモジュール/アダプタを一覧表示する |\n| `epsdk upgrade <パッケージ名>` | モジュール/アダプタをアップグレードする |\n| `epsdk doctor` | 環境診断（Python/バックエンド/設定/PyPI 接続性） |\n\n> 完全なコマンドリストとパラメータの説明は [CLIコマンドリファレンス](cli-reference.md) を参照してください。\n\n### 一般的な設定位置\n\n| 設定項目 | 説明 | 詳細 |\n|--------|------|------|\n| `[ErisPulse.server]` | サーバー設定（ホスト、ポート） | [設定ファイルの説明](configuration.md#サーバー設定) |\n| `[ErisPulse.logger]` | ログ設定（レベル、出力ファイル） | [設定ファイルの説明](configuration.md#ログ設定) |\n| `[ErisPulse.framework]` | フレームワーク設定（遅延ロード） | [設定ファイルの説明](configuration.md#フレームワーク設定) |\n| `[ErisPulse.event.command]` | コマンドイベント設定（プレフィックス） | [設定ファイルの説明](configuration.md#イベント設定) |\n| `[アダプタ名]` | 各アダプタの固有設定 | [プラットフォームの特徴ガイド](../platform-guide/) |"
     },
     {
       "hash": "0b20cfa96c53ab9bf5b4401abfe7697b",
-      "translation": "## 関連ドキュメント\n\n- [クイックスタート](../quick-start.md) - 入門ガイド\n- [初心者向けガイド](../getting-started/) - 入門チュートリアル\n- [開発者向けガイド](../developer-guide/) - カスタムモジュールやアダプタの開発\n- [API リファレンス](../api-reference/) - API ドキュメント"
+      "translation": "## 関連ドキュメント\n\n- [クイックスタート](../quick-start.md) - 入門ガイド\n- [初心者向け](../getting-started/) - 入門チュートリアル\n- [開発者ガイド](../developer-guide/) - カスタムモジュールとアダプターの開発\n- [API リファレンス](../api-reference/) - API ドキュメント"
     }
   ]
 }

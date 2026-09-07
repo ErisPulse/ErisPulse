@@ -1,5 +1,45 @@
 {
+  "version": 2,
   "hash": "6549a858efa75fc7349ae8fd72f4dba2",
-  "translated_at": "2026-07-19T20:43:05.816759",
-  "target_lang": "zh-TW"
+  "file_hash": "6549a858efa75fc7349ae8fd72f4dba2",
+  "translated_at": "2026-09-07T11:30:19.970097",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "f48742451b078f07d13cc4252be48f34",
+      "translation": "# 類型存根生成（IDE 補全）\n\nErisPulse 透過 entry-points 動態發現模組/適配器，入口點無法在靜態層面獲知使用者類別的具體類型。  \n`epsdk types` 命令透過掃描已安裝的模組/適配器，產生一個類型存根檔案，讓使用者可以將這些類型用作變數標註，進而獲得 IDE 補全。"
+    },
+    {
+      "hash": "8780a8d8f2a48f16c6713153d5a2f32d",
+      "translation": "## 核心設計原則\n\n存根檔案**只導出類型**，不提供任何執行時實例：\n\n- 所有匯入都在 ``TYPE_CHECKING`` 下，**零執行時開銷、零行為改變**\n- 類型名採用 entry-point 名的 PascalCase 形式（如 ``yunhu`` → ``Yunhu``），與傳入 ``sdk.adapter.get()`` / ``sdk.module.get()`` 的名稱對應\n- 使用者在程式碼中照常用 ``sdk.module.get(...)`` / ``sdk.adapter.get(...)`` 取得實例，只是用匯入的類型做**變數標註**"
+    },
+    {
+      "hash": "affc12d46afea5551798551c844bd21f",
+      "translation": "## 基本用法\n\n在專案根目錄執行：\n\n```bash\nepsdk types\n```\n\n會在當前目錄產生 `_ep_types.py`，包含所有已安裝模組/適配器的類型。"
+    },
+    {
+      "hash": "6af7c606238ae2e96d34966a4b2c0d9b",
+      "translation": "## 在程式碼中使用\n\n```python\nfrom _ep_types import MyModule, Yunhu\nfrom ErisPulse import sdk\n\n# 使用導入的類型作為變數標註，即可讓 IDE 自動補全該類的方法\nmy_mod: MyModule = sdk.module.get(\"MyModule\")\nmy_mod.hello()                  # ← IDE 自動補全 hello\n\nmy_adapter: Yunhu = sdk.adapter.get(\"yunhu\")\nawait my_adapter.Send.To(\"group\", \"123\").Board(...)   # ← 自動補全平台特有方法\n```"
+    },
+    {
+      "hash": "59cd0553b570a988efd0d727cab0e06a",
+      "translation": "## 工作原理\n\n1. 掃描 `erispulse.adapter` / `erispulse.module` entry-points  \n2. 透過子進程在目標 Python 環境中內省，收集每個適配器/模組的實際類資訊（包含模組路徑與限定名）  \n3. 產生 `.py` 檔，其中：  \n   - 所有 ``from xxx import Yyy as Zzz`` 都在 ``TYPE_CHECKING`` 下  \n   - ``Zzz`` 是 entry-point 名的 PascalCase 形式  \n4. IDE 讀取 ``TYPE_CHECKING`` 部分提供補全；執行時不執行任何程式碼  \n\n產生的存根範例：\n\n```python\n# _ep_types.py（自動產生）\nfrom typing import TYPE_CHECKING\n\nif TYPE_CHECKING:\n    # 適配器\n    from MyAdapter.Core import MyAdapter as MyAdapter\n    from YunhuAdapter.Core import YunhuAdapter as Yunhu\n\n    # 模組\n    from MyModule.Core import Main as MyModule\n\n    __all__ = ['MyAdapter', 'Yunhu', 'MyModule']\n```"
+    },
+    {
+      "hash": "90a8da13b21cb8ce8f73dba2165cb136",
+      "translation": "## 命令選項\n\n| 選項 | 說明 |\n|------|------|\n| `-o, --output PATH` | 指定輸出檔案路徑（預設 `./_ep_types.py`） |\n| `--force` | 覆蓋已存在的存根檔案 |\n| `--adapters-only` | 僅掃描適配器 |\n| `--modules-only` | 僅掃描模組 |"
+    },
+    {
+      "hash": "203858beec743f04303ab8bc514d6679",
+      "translation": "## 何時重新產生\n\n- 安裝/解除安裝新的模組或適配器後\n- 模組/適配器更新了公開 API 後\n- IDE 自動完成失效或類型過期時"
+    },
+    {
+      "hash": "fea26489405d0d332e8edf6087f8544a",
+      "translation": "## 與 SendDSL 標準方法的關係\n\n`SendDSL` 基類已內建標準發送方法（Text/Image/Voice/Video/File），無論以何種方式取得的 SendDSL 實例都能補全這些方法。  \n`types` 命令主要用於補全**平台特有方法**（如雲湖的 `Board`、沙盒的 `Dice`）以及**模組特有方法**。"
+    },
+    {
+      "hash": "ed9b0793c8cf000eb1938745c25f0758",
+      "translation": "## 相關文件\n\n- [SendDSL 詳解](../developer-guide/adapters/send-dsl.md) - 標準發送方法說明\n- [適配器開發入門](../developer-guide/adapters/getting-started.md) - 建立適配器"
+    }
+  ]
 }

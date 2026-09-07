@@ -1,6 +1,6 @@
 # OneBot11プラットフォーム特徴ドキュメント
 
-OneBot11Adapter は、OneBot V11 プロトコルに基づいて構築されたアダプターです。
+OneBot11Adapter は、OneBot V11 プロトコルに基づいて構築されたアダプタです。
 
 ---
 
@@ -11,15 +11,15 @@ OneBot11Adapter は、OneBot V11 プロトコルに基づいて構築された�
 
 ## 基本情報
 
-- プラットフォーム紹介：OneBot はチャットボットアプリケーションのインターフェース仕様です。
-- アダプタ名：OneBotAdapter
+- プラットフォーム概要：OneBot はチャットボットアプリケーションのインターフェース標準です。
+- アダプター名：OneBotAdapter
 - 対応プロトコル/APIバージョン：OneBot V11
-- 多アカウント対応：デフォルトでマルチアカウントアーキテクチャを採用しており、複数の OneBot アカウントを同時に設定および実行できます。
+- マルチアカウント対応：デフォルトでマルチアカウントアーキテクチャを採用しており、複数の OneBot アカウントを同時に設定および実行できます。
 - 設定キー名：`OneBotAdapter`
 
-## 支援されるメッセージ送信タイプ
+## 支持するメッセージ送信タイプ
 
-すべての送信メソッドは、チェーン式構文で実装されています。例：
+すべての送信メソッドは、チェーン式構文で実現されています。たとえば：
 
 ```python
 from ErisPulse.Core import adapter
@@ -28,10 +28,10 @@ onebot = adapter.get("onebot11")
 # デフォルトアカウントを使用して送信
 await onebot.Send.To("group", group_id).Text("Hello World!")
 
-# 特定のアカウントを指定して送信
+# 特定のアカウントを使用して送信
 await onebot.Send.Using("main").To("group", group_id).Text("メインアカウントからのメッセージ")
 
-# チェーン式修飾: @ユーザー + 回答
+# チェーン式修飾：@ユーザー + 返信
 await onebot.Send.To("group", group_id).At(123456).Reply(msg_id).Text("返信メッセージ")
 
 # @全員
@@ -40,69 +40,69 @@ await onebot.Send.To("group", group_id).AtAll().Text("お知らせメッセー�
 
 ### 基本送信メソッド
 
-- `.Text(text: str)`：純粋なテキストメッセージを送信します。
-- `.Image(file: Union[str, bytes], filename: str = "image.png")`：画像を送信します（URL、Base64、または bytes をサポート）。
+- `.Text(text: str)`：テキストメッセージを送信します。
+- `.Image(file: Union[str, bytes], filename: str = "image.png")`：画像を送信します（URL、Base64、または bytes に対応）。
 - `.Voice(file: Union[str, bytes], filename: str = "voice.amr")`：音声メッセージを送信します。
 - `.Video(file: Union[str, bytes], filename: str = "video.mp4")`：動画メッセージを送信します。
-- `.Face(id: Union[str, int])`：QQ絵文字を送信します。
-- `.File(file: Union[str, bytes], filename: str = "file.dat")`：ファイルを送信します（自動的にタイプを判別）。
-- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12形式のメッセージを送信します（自動的にOB11に変換）。
+- `.Face(id: Union[str, int])`：QQ エモートを送信します。
+- `.File(file: Union[str, bytes], filename: str = "file.dat")`：ファイルを送信します（自動でタイプを判定）。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12 形式のメッセージを送信します（自動で OB11 に変換）。
 - `.Recall(message_id: Union[str, int])`：メッセージを撤回します。
 
 ### グループ操作メソッド
 
-以下のメソッドは、`To("group", group_id)`で対象グループを指定し、グループコンテキストで操作を実行します：
+以下のメソッドは、`To("group", group_id)` を使って対象グループを指定し、グループコンテキストで操作を実行します：
 
-- `.Kick(user_id, reject_add_request=False)`：グループメンバーを蹴ります。
-- `.Ban(user_id, duration=1800)`：グループメンバーを禁止します（秒単位、0は解禁を意味します）。
-- `.WholeBan(enable=True)`：全員禁止をオン/オフします。
+- `.Kick(user_id, reject_add_request=False)`：グループメンバーをキックします。
+- `.Ban(user_id, duration=1800)`：グループメンバーを一時禁止します（秒単位、0 は解除）。
+- `.WholeBan(enable=True)`：全員禁止を有効/無効にします。
 - `.SetAdmin(user_id, enable=True)`：グループ管理者を設定/解除します。
-- `.SetCard(user_id, card="")`：グループ名前を設定します。
+- `.SetCard(user_id, card="")`：グループ内のニックネームを設定します。
 - `.SetGroupName(name)`：グループ名を変更します。
-- `.Leave(is_dismiss=False)`：グループから退会します（グループ主は解散も可能です）。
-- `.SetTitle(user_id, title="")`：グループタイトルを設定します。
-- `.SetPortrait(file)`：グループアイコンを設定します。
+- `.Leave(is_dismiss=False)`：グループから退会します（グループ主は解散も可能）。
+- `.SetTitle(user_id, title="")`：グループ内の役職を設定します。
+- `.SetPortrait(file)`：グループのアイコンを設定します。
 
-### クエリメソッド
+### 検索メソッド
 
-- `.GetMsg(message_id)`：メッセージ内容を取得します。
-- `.GetForwardMsg(id)`：連続転送メッセージを取得します。
+- `.GetMsg(message_id)`：メッセージの内容を取得します。
+- `.GetForwardMsg(id)`：転送メッセージを取得します。
 - `.GetLoginInfo()`：現在のログインアカウント情報を取得します。
 - `.GetFriendList()`：友達リストを取得します。
-- `.GetGroupInfo()`：グループ情報を取得します（`To("group", group_id)`が必要）。
+- `.GetGroupInfo()`：グループ情報を取得します（`To("group", group_id)` が必要）。
 - `.GetGroupList()`：グループリストを取得します。
-- `.GetGroupMemberInfo(user_id)`：グループメンバー情報を取得します（`To("group", group_id)`が必要）。
-- `.GetGroupMemberList()`：グループメンバーリストを取得します（`To("group", group_id)`が必要）。
+- `.GetGroupMemberInfo(user_id)`：グループメンバー情報を取得します（`To("group", group_id)` が必要）。
+- `.GetGroupMemberList()`：グループメンバーのリストを取得します（`To("group", group_id)` が必要）。
 
 ### 友達操作メソッド
 
-- `.Like(user_id, times=1)`：友達に「いいね」を送信します（最大10回まで）。
+- `.Like(user_id, times=1)`：友達にいいねを送信します（最大 10 回）。
 
 ### チェーン式修飾メソッド（組み合わせ可能）
 
-チェーン式修飾メソッドは`self`を返し、チェーン式で呼び出すことができ、最終的な送信メソッドの前に呼び出す必要があります：
+チェーン式修飾メソッドは `self` を返すため、連続して呼び出すことができます。最終的な送信メソッドの前に呼び出す必要があります：
 
-- `.At(user_id: Union[str, int], name: str = None)`：指定ユーザーを@します（複数回呼び出すことができます）。
+- `.At(user_id: Union[str, int], name: str = None)`：指定ユーザーを@します（複数回呼び出せます）。
 - `.AtAll()`：全員を@します。
 - `.Reply(message_id: Union[str, int])`：指定メッセージに返信します。
 
-### チェーン式呼び出し例
+### チェーン式呼び出しの例
 
 ```python
 # 基本送信
 await onebot.Send.To("group", 123456).Text("Hello")
 
-# 単一ユーザーを@する
+# @1人
 await onebot.Send.To("group", 123456).At(789012).Text("你好")
 
-# 複数ユーザーを@する
+# @複数人
 await onebot.Send.To("group", 123456).At(111).At(222).At(333).Text("大家好")
 
-# OneBot12形式のメッセージを送信
+# OneBot12 形式のメッセージを送信
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await onebot.Send.To("group", 123456).Raw_ob12(ob12_msg)
 
-# 「いいね」を送信
+# いいね
 await onebot.Send.Like(123456, times=10)
 
 # グループメンバーを禁止
@@ -111,14 +111,14 @@ await onebot.Send.To("group", 123456).Ban(789012, duration=3600)
 # 解禁
 await onebot.Send.To("group", 123456).Ban(789012, duration=0)
 
-# メンバーを蹴る
+# キック
 await onebot.Send.To("group", 123456).Kick(789012)
 
 # グループ管理者を設定
 await onebot.Send.To("group", 123456).SetAdmin(789012)
 
 # グループ名を変更
-await onebot.Send.To("group", 123456).SetGroupName("新群名")
+await onebot.Send.To("group", 123456).SetGroupName("新グループ名")
 
 # グループ情報を取得
 result = await onebot.Send.To("group", 123456).GetGroupInfo()
@@ -127,23 +127,23 @@ result = await onebot.Send.To("group", 123456).GetGroupInfo()
 await onebot.Send.Using("main").To("group", 123456).Ban(789012)
 ```
 
-### 対応していないタイプの処理
+### 未サポートのタイプの処理
 
 定義されていない送信メソッドを呼び出した場合、アダプタはテキストの提示を返します：
 
 ```python
-# 存在しないメソッドを呼び出す
+# 未定義のメソッドを呼び出す
 await onebot.Send.To("group", 123456).SomeUnsupportedMethod(arg1, arg2)
-# 実際の送信: "[不支援の送信タイプ] メソッド名: SomeUnsupportedMethod, パラメータ: [...]"
+# 実際に送信される: "[未サポートの送信タイプ] メソッド名: SomeUnsupportedMethod, パラメータ: [...]"
 ```
 
 ## リクエスト操作（Request DSL）
 
-アダプターは、フレンドリクエストとグループリクエスト（グループ参加/招待）の承認/拒否操作を処理するためのリクエスト操作 DSL を提供しています。
+アダプターは、フレンドリクエストおよびグループリクエスト（グループ参加/招待）の承認/拒否操作を処理するためのリクエスト操作 DSL を提供します。
 
 ### Event ショートカットメソッド
 
-リクエストイベントは、`event.approve()` と `event.reject()` というショートカットメソッドをサポートしており、内部で自動的に Request DSL を呼び出します。
+リクエストイベントは `event.approve()` および `event.reject()` ショートカットメソッドをサポートし、内部的に Request DSL を自動的に呼び出します：
 
 ```python
 from ErisPulse.Core.Event import request
@@ -199,7 +199,7 @@ async def handle_friend_request(event):
         await onebot.Request(flag).reject()
 ```
 
-### リクエスト操作の戻り値
+### リクエスト操作の返り値
 
 ```python
 {
@@ -211,11 +211,11 @@ async def handle_friend_request(event):
 }
 ```
 
-## イベントタイプマッピング
+## イベントタイプのマッピング
 
 ### 標準 OB12 マッピング
 
-| OB11 原始タイプ | 変換後 detail_type | 説明 |
+| OB11 原始タイプ | 変換後の detail_type | 説明 |
 |--------------|-------------------|------|
 | message_type: private | `private` | プライベートチャットメッセージ |
 | message_type: group | `group` | グループチャットメッセージ |
@@ -231,14 +231,14 @@ async def handle_friend_request(event):
 | notice_type: friend_delete | `friend_decrease` | フレンド削除 |
 | notice_type: group_recall / friend_recall | `message_recall` | メッセージ撤回 |
 
-### プラットフォーム固有イベント（onebot11_ 前缀）
+### プラットフォーム固有イベント（onebot11_ 前綴）
 
-| OB11 原始タイプ | 変換後 detail_type | 説明 |
+| OB11 原始タイプ | 変換後の detail_type | 説明 |
 |--------------|-------------------|------|
-| meta_event_type: lifecycle | `onebot11_lifecycle` | OneBot 実装ライフサイクル |
+| meta_event_type: lifecycle | `onebot11_lifecycle` | OneBot 実装のライフサイクル |
 | notify + sub_type: honor | `onebot11_honor` | グループの栄誉変更 |
-| notify + sub_type: poke | `onebot11_poke` | つっついた |
-| notify + sub_type: lucky_king | `onebot11_lucky_king` | グループの赤包運の王 |
+| notify + sub_type: poke | `onebot11_poke` | ポケポケ |
+| notify + sub_type: lucky_king | `onebot11_lucky_king` | グループの赤包運気王 |
 | CQ コードの未知タイプ | メッセージセグメント `onebot11_{type}` | 未認識の CQ コード |
 
 ### イベント例
@@ -269,7 +269,7 @@ async def handle_friend_request(event):
   "sub_type": "enable"
 }
 
-// つっついた（プラットフォーム固有）
+// ポケポケ（プラットフォーム固有）
 {
   "type": "notice",
   "detail_type": "onebot11_poke",
@@ -278,7 +278,7 @@ async def handle_friend_request(event):
   "target_id": "345678"
 }
 
-// グループの赤包運の王（プラットフォーム固有）
+// グループの赤包運気王（プラットフォーム固有）
 {
   "type": "notice",
   "detail_type": "onebot11_lucky_king",
@@ -307,16 +307,16 @@ async def handle_friend_request(event):
 
 ### 拡張フィールドの説明
 
-- すべての固有フィールドは `onebot11_` 前缀で識別されます
+- すべての固有フィールドは `onebot11_` 前綴で識別されます
 - 元のイベントデータは `onebot11_raw` フィールドに保持されます
 - 元のイベントタイプは `onebot11_raw_type` フィールドに保持されます
-- メッセージ内容の CQ コードは対応するメッセージセグメントに変換されます（標準タイプは前缀なし、未知タイプは `onebot11_` 前缀を追加）
-- レプリーメッセージには `reply` タイプのメッセージセグメントが追加されます
+- メッセージ内容中の CQ コードは対応するメッセージセグメントに変換されます（標準タイプは前綴なし、未知タイプは `onebot11_` 前綴を追加）
+- レプリーフメッセージには `reply` タイプのメッセージセグメントが追加されます
 - @メッセージには `mention` タイプのメッセージセグメントが追加されます
 
-## イベント拡張メソッド
+## 事件拡張メソッド
 
-OneBot11 アダプタは、イベントオブジェクトに以下のプラットフォーム固有のメソッドを登録しており、イベントハンドラ内で直接呼び出すことができます。
+OneBot11 アダプタは、イベントオブジェクトに以下のようなプラットフォーム固有のメソッドを登録しており、イベントハンドラで直接呼び出すことができます。
 
 ```python
 from ErisPulse.Core.Event import message
@@ -334,11 +334,11 @@ async def handle_message(event):
 |------|----------|------|
 | `get_raw_event()` | `dict` | OneBot11 の完全な元のイベントデータを取得します |
 | `get_raw_self_id()` | `str` | 元の self_id（Bot の QQ 番号）を取得します |
-| `get_sender_info()` | `dict` | 完全な送信者情報（nickname、role、level など）を取得します |
-| `get_sender_role()` | `str` | グループ内の送信者の役割（owner/admin/member）を取得します |
-| `get_sender_level()` | `int` | 送信者のグレードを取得します |
-| `get_sender_title()` | `str` | 送信者のグループタイトルを取得します |
-| `is_system_message()` | `bool` | システムメッセージかどうかを判定します（sub_type == "system"） |
+| `get_sender_info()` | `dict` | 送信者の完全な情報（nickname、role、level など）を取得します |
+| `get_sender_role()` | `str` | 送信者がグループ内での役割（owner/admin/member）を取得します |
+| `get_sender_level()` | `int` | 送信者の等級を取得します |
+| `get_sender_title()` | `str` | 送信者のグループヘッダーを取得します |
+| `is_system_message()` | `bool` | システムメッセージかどうかを判断します（sub_type == "system"） |
 
 ### 使用例
 
@@ -353,30 +353,30 @@ async def handle_group(event):
 
     title = event.get_sender_title()
     if title:
-        await event.reply(f"あなたのタイトルは: {title}")
+        await event.reply(f"あなたのヘッダーは: {title}")
 
 @command("whoami")
 async def whoami(event):
     info = event.get_sender_info()
-    nickname = info.get("nickname", "未知")
+    nickname = info.get("nickname", "不明")
     level = event.get_sender_level()
-    await event.reply(f"ニックネーム: {nickname}, グレード: {level}")
+    await event.reply(f"ニックネーム: {nickname}, 等級: {level}")
 ```
 
 ## 設定オプション
 
-OneBot11 アダプターは、各アカウントごとに独立した設定を持つ多アカウントアーキテクチャを採用しています。設定のキー名は `OneBotAdapter` です。
+OneBot11 アダプターは、各アカウントごとに独立した構成を持つ多アカウントアーキテクチャを採用しています。設定キー名は `OneBotAdapter` です。
 
 ### アカウント設定フィールド
 
 | フィールド | 型 | 必須 | デフォルト値 | 説明 |
 |------|------|------|--------|------|
-| `bot_id` | `str` | はい | `""` | ロボットの QQ 番号、アカウントを識別するため |
+| `bot_id` | `str` | はい | `""` | ロボットの QQ 番号。アカウントを識別するための識別子 |
 | `mode` | `str` | いいえ | `"server"` | 実行モード：`"server"`（パッシブリッスン）または `"client"`（アクティブ接続） |
-| `url` | `str` | いいえ | `"ws://127.0.0.1:3001"` | Client モードの WebSocket アドレス |
-| `token` | `str` | いいえ | `""` | 認証トークン（Client モードの接続トークン / Server モードの検証トークン） |
-| `server_path` | `str` | いいえ | `"/"` | Server モードの WebSocket パス |
-| `enabled` | `bool` | いいえ | `true` | このアカウントを有効にするかどうか |
+| `url` | `str` | いいえ | `"ws://127.0.0.1:3001"` | Client モード時の WebSocket アドレス |
+| `token` | `str` | いいえ | `""` | 認証トークン（Client モード接続トークン / Server モード検証トークン） |
+| `server_path` | `str` | いいえ | `"/"` | Server モード時の WebSocket パス |
+| `enabled` | `bool` | いいえ | `true` | そのアカウントを有効にするかどうか |
 | `name` | `str` | いいえ | `""` | アカウントの備考名 |
 
 ### 内部デフォルト値
@@ -410,7 +410,8 @@ enabled = false
 
 ### デフォルト設定
 
-アカウントの設定が一切行われていない場合、アダプターは自動的に以下を生成します。
+アカウントの設定が一切行われていない場合、アダプターは自動的に以下のようなデフォルトアカウントを作成します。
+
 ```toml
 [OneBotAdapter.accounts.default]
 bot_id = ""
@@ -421,7 +422,7 @@ enabled = true
 
 ## 送信メソッドの戻り値
 
-すべての送信メソッドは Task オブジェクトを返します。これに await を直接適用して送信結果を取得できます。返り値は ErisPulse アダプタの標準化された返り値規格に従います：
+すべての送信メソッドは Task オブジェクトを返し、直接 await を使用して送信結果を取得できます。返り値は ErisPulse アダプタの標準化された返り値規格に従います：
 
 ```python
 {
@@ -434,15 +435,15 @@ enabled = true
 }
 ```
 
-### 複数アカウント送信の構文
+### 複数アカウントでの送信構文
 
 ```python
-# アカウント選択メソッド
+# アカウント選択方法
 await onebot.Send.Using("main").To("group", 123456).Text("主アカウントのメッセージ")
 await onebot.Send.Using("backup").To("group", 123456).Image("http://example.com/image.jpg")
 
-# bot_id でアカウントを選択
-await onebot.Send.Using("123456789").To("group", 123456).Text("QQ番号で選択したアカウント")
+# bot_id によるアカウント選択
+await onebot.Send.Using("123456789").To("group", 123456).Text("QQ番号で選択")
 
 # API呼び出し方式
 await onebot.call_api("send_msg", account_id="main", group_id=123456, message="Hello")
@@ -450,29 +451,29 @@ await onebot.call_api("send_msg", account_id="main", group_id=123456, message="H
 
 ### アカウントの解決優先度
 
-`call_api` および `Using()` の `account_id` パラメータの解決優先順位は以下の通りです：
+`call_api` および `Using()` の `account_id` パラメータの解決優先度は以下の通りです：
 1. アカウント名の正確な一致
 2. `bot_id` フィールドの一致
 3. アカウントの任意の `str` 型フィールドの一致
-4. 有効なアカウントの先頭アカウントに回帰
+4. 最初の有効なアカウントに回帰
 
 ## 非同期処理メカニズム
 
-OneBot11 アダプターは、非同期非ブロッキング設計を採用しており、以下の点を保証します：
+OneBot11 アダプターは非同期非ブロッキング設計を採用しており、以下の点を保証します：
 
 1. メッセージ送信がイベント処理ループをブロックしないこと  
 2. 複数の並行送信操作を同時に実行できること  
 3. APIレスポンスをタイムリーに処理できること  
-4. WebSocket接続がアクティブな状態を維持できること  
-5. 複数アカウントの並行処理が可能で、各アカウントが独立して動作すること
+4. WebSocket接続をアクティブな状態に保つこと  
+5. 複数アカウントの並行処理が可能で、各アカウントは独立して実行されること
 
 ## エラー処理
 
 アダプターは包括的なエラー処理メカニズムを提供します：
 
-1. ネットワーク接続異常の自動再接続（各アカウントごとに個別に再接続が可能、間隔は30秒）
-2. API 呼び出しのタイムアウト処理（固定30秒のタイムアウト）
-3. 接続失敗時に指定間隔で自動的に再試行
+1. ネットワーク接続異常時の自動再接続（各アカウントごとに独立して再接続が可能、30秒間隔）
+2. API呼び出しのタイムアウト処理（固定30秒のタイムアウト）
+3. 接続失敗時の自動再試行（間隔をあけて再試行）
 
 ## イベント処理の強化
 
@@ -487,7 +488,7 @@ OneBot11 アダプターは、非同期非ブロッキング設計を採用し�
 }
 ```
 
-アダプターは `self_id → account_name` のマッピングを自動的に維持しており、`event.reply()` では手動でアカウントを指定しなくても、送信元アカウントに正しくルーティングされます。
+アダプターは `self_id → account_name` のマッピングを自動的に管理します。`event.reply()` では、元のアカウントに正しくルーティングするためにアカウントを手動で指定する必要がありません。
 
 ## 管理インターフェース
 
@@ -505,16 +506,16 @@ connection_status = {
 onebot.accounts["test"].enabled = False
 ```
 
-## self_id の自動マッピング
+## self_id 自自動マッピング
 
-アダプターは、OneBot の `self_id`（QQ番号）から `account_name` へのマッピングを自動的に構築し、イベントのルーティングに使用します。
+アダプターは、OneBot `self_id`（QQ番号）から `account_name` への自動マッピングを確立し、イベントのルーティングに使用します：
 
 ```python
 # アダプター内部で自動的に実行されます
-# イベントを受け取った際に、self.user_id フィールドに bot_id が埋め込まれます
+# イベントを受け取った際に、self.user_id フィールドに bot_id が設定されます
 # アダプターは自動的に記録します: self_id("123456789") → account_name("main")
 
-# したがって event.reply() は正しいアカウントに自動的にメッセージを送信できます
+# したがって、event.reply() は正しいアカウントにメッセージを送信するために自動的にルーティングされます
 @message.on_message()
 async def handler(event):
     await event.reply("正しいアカウントに自動ルーティングされます")

@@ -1,6 +1,6 @@
-# 花楓コーヒーショップ（RockyChat）プラットフォーム特性ドキュメント
+# 花楓カフェ（RockyChat）プラットフォームの機能ドキュメント
 
-IdeauraAdapter は、花楓コーヒーショップ（RockyChat）プラットフォームの API を基に構築されたアダプターであり、すべてのプラットフォーム機能モジュールを統合し、一貫したイベント処理とメッセージ操作のインターフェースを提供します。
+IdeauraAdapter は、花楓カフェ（RockyChat）プラットフォームの API を基に構築されたアダプターであり、すべてのプラットフォーム機能モジュールを統合し、一貫したイベント処理とメッセージ操作インターフェースを提供します。
 
 ---
 
@@ -8,19 +8,19 @@ IdeauraAdapter は、花楓コーヒーショップ（RockyChat）プラット�
 
 - 対応モジュール: ErisPulse-Ideaura
 - 対応モジュールバージョン: 4.0.1
-- 維持者: ErisPulse
+- 管理者: ErisPulse
 
 ## 基本情報
 
-- プラットフォーム概要: 花楓コーヒーショップ（RockyChat）は、リアルタイム通信プラットフォームです。
-- アダプター名: IdeauraAdapter
-- 複数アカウント対応: Bot Token を用いた複数アカウントの設定が可能です。
-- チェーン修飾子対応: `.At()`、`.AtAll()`、`.Reply()`、`.Command()` などのチェーン修飾子メソッドがサポートされています。
-- OneBot12互換: OneBot12形式のメッセージ送信がサポートされています。
+- プラットフォーム紹介：花楓コーヒーショップ（RockyChat）は、リアルタイム通信プラットフォームです。
+- アダプタ名：IdeauraAdapter
+- マルチアカウント対応：Bot Token による複数アカウントの設定が可能です。
+- チェーン修飾子対応：`.At()`、`.AtAll()`、`.Reply()`、`.Command()` などのチェーン修飾メソッドに対応しています。
+- OneBot12互換：OneBot12形式のメッセージ送信が可能です。
 
-## 送信可能なメッセージタイプ
+## 支援されるメッセージ送信タイプ
 
-すべての送信メソッドはチェーン構文で実装されています。例えば：
+すべての送信メソッドは、チェーン式構文で実装されています。たとえば：
 
 ```python
 from ErisPulse.Core import adapter
@@ -29,51 +29,51 @@ ideaura = adapter.get("ideaura")
 await ideaura.Send.To("group", "chatroom").Text("Hello World!")
 ```
 
-サポートされる送信タイプは以下の通りです。
+サポートされている送信タイプは以下の通りです：
 
 - `.Text(text: str)`：純粋なテキストメッセージを送信します。
-- `.Image(file, filename: str = None)`：画像メッセージを送信します。bytes/URL/ローカルパスがサポートされます。
-- `.Video(file, filename: str = None)`：ビデオメッセージを送信します。bytes/URL/ローカルパスがサポートされます。
-- `.File(file, filename: str = None)`：ファイルメッセージを送信します。bytes/URL/ローカルパスがサポートされます。
-- `.Voice(file, filename: str = None)`：音声メッセージを送信します（ファイルとして送信）。
-- `.Face(face_id: str)`：絵文字を送信します（emoji としてテキスト形式で送信）。
+- `.Image(file, filename: str = None)`：画像メッセージを送信します。bytes/URL/ローカルパスをサポートします。
+- `.Video(file, filename: str = None)`：動画メッセージを送信します。bytes/URL/ローカルパスをサポートします。
+- `.File(file, filename: str = None)`：ファイルメッセージを送信します。bytes/URL/ローカルパスをサポートします。
+- `.Voice(file, filename: str = None)`：音声メッセージを送信します（ファイルとして送信します）。
+- `.Face(face_id: str)`：絵文字を送信します（emojiとして純粋なテキスト形式で送信します）。
 - `.Markdown(text: str)`：Markdown形式のメッセージを送信します。
 - `.Html(html: str)`：HTML形式のメッセージを送信します。
 - `.Edit(message_id: str, text: str, content_type: str = "text")`：既存のメッセージを編集します。
 - `.Recall(message_id: str)`：メッセージを撤回します。
 
-### チェーン修飾子メソッド（複数組み合わせ可能）
+### チェーン式修飾メソッド（複数使用可能）
 
-チェーン修飾子メソッドは `self` を返すため、チェーンで呼び出すことが可能です。最終的な送信メソッドの前に呼び出す必要があります。
+チェーン式修飾メソッドは `self` を返し、チェーン式で呼び出すことができます。最終的な送信メソッドの前に呼び出す必要があります：
 
-- `.At(user_id: str, name: str = None)`：指定ユーザーを @ します。
-- `.AtAll()`：全員を @ します。
-- `.Reply(message_id: str)`：指定メッセージに返信します。
-- `.Command(command_id: str)`：Bot コマンドをトリガーします。送信メソッドと併用して、指定されたコマンドとしてメッセージを送信します。
+- `.At(user_id: str, name: str = None)`：指定ユーザーを@します。
+- `.AtAll()`：全員を@します。
+- `.Reply(message_id: str)`：指定されたメッセージに返信します。
+- `.Command(command_id: str)`：Botのコマンドをトリガーします。送信メソッドと併用して使用します（メッセージを指定されたコマンドとして送信します）。
 
-### チェーン呼び出しの例
+### チェーン式呼び出しの例
 
 ```python
 # 基本的な送信
 await ideaura.Send.To("user", user_id).Text("Hello")
 
-# Bot コマンドのトリガー
+# Botのコマンドをトリガー
 await ideaura.Send.To("group", "chatroom").Command("550e8400-e29b-41d4-a716-446655440000").Text("/weather 北京")
 
-# @ユーザー
+# ユーザーを@する
 await ideaura.Send.To("group", "chatroom").At("456").Text("@李四 你好")
 
-# @複数ユーザー
+# 複数ユーザーを@する
 await ideaura.Send.To("group", "chatroom").At("456").At("789").Text("@多人")
 
-# メッセージの返信
+# メッセージに返信する
 await ideaura.Send.To("group", "chatroom").Reply(msg_id).Text("返信メッセージ")
 
 # 返信 + @
-await ideaura.Send.To("group", "chatroom").Reply(msg_id).At("456").Text("返信して@")
+await ideaura.Send.To("group", "chatroom").Reply(msg_id).At("456").Text("返信して@する")
 ```
 
-### 様々な送信先への送信
+### 異なる送信先への送信
 
 ```python
 # チャットルームに送信
@@ -82,34 +82,34 @@ await ideaura.Send.To("group", "chatroom").Text("チャットルームメッセ�
 # トピックに送信
 await ideaura.Send.To("group", "topic_id").Text("トピックメッセージ")
 
-# プライベートチャットに送信
+# プライベートチャットメッセージを送信
 await ideaura.Send.To("user", "user_id").Text("プライベートチャットメッセージ")
 ```
 
-### OneBot12メッセージサポート
+### OneBot12メッセージのサポート
 
-アダプターは OneBot12 形式のメッセージを送信することができ、プラットフォーム間のメッセージ互換性を確保します。
+アダプターはOneBot12形式のメッセージを送信する機能をサポートしており、これにより異なるプラットフォーム間でのメッセージ互換性が確保されます：
 
-- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12 形式のメッセージを送信します。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12形式のメッセージを送信します。
 
 ```python
-# OneBot12 形式のメッセージを送信
+# OneBot12形式のメッセージを送信
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await ideaura.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
-# チェーン修飾子と併用
+# チェーン式修飾を併用
 ob12_msg = [{"type": "text", "data": {"text": "返信メッセージ"}}]
 await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
 ```
 
 ## 送信メソッドの戻り値
 
-すべての送信メソッドは Task オブジェクトを返し、`await` で送信結果を取得できます。返り値は ErisPulse アダプターの標準化された返り値規格に従います。
+すべての送信メソッドは Task オブジェクトを返し、これを直接 await することで送信結果を取得できます。返り値は ErisPulse アダプタの標準化された返り値規格に従います。
 
 ```python
 {
     "status": "ok",           // 実行状態
-    "retcode": 0,             // 戻り値コード
+    "retcode": 0,             // 戻りコード
     "data": {...},            // 応答データ
     "self": {...},            // 自身の情報（user_id を含む）
     "message_id": "123456",   // メッセージID
@@ -118,30 +118,30 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
 }
 ```
 
-## 特有のイベントタイプ
+## 特有イベントタイプ
 
-`platform=="ideaura"` を検証してから本プラットフォームの特有機能を使用してください。
+このプラットフォームの機能を使用するには、`platform=="ideaura"` の検出が必要です。
 
 ### 核心的な差異点
 
-1. 特有のイベントタイプ：
+1. 特有のイベントタイプ:
     - メッセージ編集: ideaura_message_edit
     - メッセージ撤回: ideaura_message_recall
     - メッセージ転送: ideaura_message_forward
     - メッセージ既読: ideaura_message_read
-    - 友達拒否: ideaura_friend_rejected
+    - 友達リクエスト拒否: ideaura_friend_rejected
     - 友達オンライン: ideaura_friend_online
     - 友達オフライン: ideaura_friend_offline
     - ユーザー状態変更: ideaura_user_status_change
     - 転送メッセージセグメント: ideaura_forwarded
-    - 編集マークアップセグメント: ideaura_edited
+    - 編集マークセグメント: ideaura_edited
     - Markdownメッセージセグメント: ideaura_markdown
     - HTMLメッセージセグメント: ideaura_html
     - Botコマンドメッセージセグメント: ideaura_command
 2. 拡張フィールド:
-    - すべての特有フィールドは `ideaura_` で始まるプレフィックスで識別されます。
-    - 元のデータは `ideaura_raw` フィールドに保持されます。
-    - `self.user_id` は現在のアカウントのユーザーIDを示します。
+    - すべての特有フィールドは `ideaura_` で始まるプレフィックスを付与
+    - 元のデータは `ideaura_raw` フィールドに保持
+    - `self.user_id` は現在のアカウントのユーザーIDを表す
 
 ### メッセージ編集イベント
 
@@ -198,7 +198,7 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
   "platform": "ideaura",
   "message_id": "メッセージID",
   "ideaura_reader_id": "既読者ID",
-  "ideaura_reader_name": "既読者ニックネーム"
+  "ideaura_reader_name": "既読者のニックネーム"
 }
 ```
 
@@ -210,8 +210,8 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
   "detail_type": "ideaura_friend_online",
   "platform": "ideaura",
   "user_id": "友達ID",
-  "user_nickname": "友達ニックネーム",
-  "ideaura_friend_avatar": "アバターURL",
+  "user_nickname": "友達のニックネーム",
+  "ideaura_friend_avatar": "アイコンURL",
   "ideaura_presence_status": "online"
 }
 ```
@@ -236,8 +236,8 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
   "detail_type": "ideaura_user_status_change",
   "platform": "ideaura",
   "user_id": "ユーザーID",
-  "ideaura_status": "新しい状態",
-  "ideaura_previous_status": "前の状態"
+  "ideaura_status": "新しいステータス",
+  "ideaura_previous_status": "前のステータス"
 }
 ```
 
@@ -249,7 +249,7 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
   "detail_type": "friend",
   "platform": "ideaura",
   "user_id": "リクエスト者ID",
-  "user_nickname": "リクエスト者ニックネーム",
+  "user_nickname": "リクエスト者のニックネーム",
   "ideaura_request_id": "リクエストID",
   "ideaura_message": "認証メッセージ"
 }
@@ -263,16 +263,16 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
   "detail_type": "ideaura_friend_rejected",
   "platform": "ideaura",
   "user_id": "拒否者ID",
-  "user_nickname": "拒否者ニックネーム",
+  "user_nickname": "拒否者のニックネーム",
   "ideaura_request_id": "リクエストID",
   "ideaura_requester_id": "リクエスト発起者ID",
-  "ideaura_requester_name": "リクエスト発起者ニックネーム"
+  "ideaura_requester_name": "リクエスト発起者のニックネーム"
 }
 ```
 
 ### 転送メッセージセグメント (ideaura_forwarded)
 
-転送メッセージを受け取ったとき、メッセージセグメントのタイプは `ideaura_forwarded` になります。
+転送メッセージを受け取った場合、メッセージセグメントのタイプは `ideaura_forwarded` です:
 
 ```json
 {
@@ -284,14 +284,14 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
 }
 ```
 
-| フィールド | タイプ | 説明 |
+| フィールド | 型 | 説明 |
 |------|------|------|
 | `forward_source_id` | string | 転送元メッセージID |
 | `original_message_id` | string | 元のメッセージID |
 
-### Bot コマンドメッセージセグメント (ideaura_command)
+### Botコマンドメッセージセグメント (ideaura_command)
 
-ユーザーが Bot コマンドをトリガーしたとき、メッセージセグメントのタイプは `ideaura_command` になります。
+ユーザーがBotコマンドをトリガーした場合、メッセージセグメントのタイプは `ideaura_command` です:
 
 ```json
 {
@@ -302,9 +302,9 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
 }
 ```
 
-| フィールド | タイプ | 説明 |
+| フィールド | 型 | 説明 |
 |------|------|------|
-| `command_id` | string | コマンド UUID |
+| `command_id` | string | コマンドUUID |
 
 ### イベント処理の例
 
@@ -346,21 +346,21 @@ async def handle_notice(event):
 
 ## Event Mixin 拡張メソッド
 
-アダプターは以下のプラットフォーム固有のメソッドを登録しており、`platform == "ideaura"` の場合にのみ使用可能です。
+アダプターは以下のプラットフォーム固有メソッドを登録しており、`platform == "ideaura"` の場合にのみ利用可能です。
 
 | メソッド | 戻り値型 | 説明 |
 |------|----------|------|
-| `get_source_type()` | `str` | メッセージの送信元タイプ（`chatroom`/`topic`/`private`） |
+| `get_source_type()` | `str` | メッセージの送信元タイプ (`chatroom`/`topic`/`private`) |
 | `get_sender_name()` | `str` | 送信者のニックネーム |
 | `get_sender_avatar()` | `str` | 送信者のアバター URL |
 | `is_sender_bot()` | `bool` | 送信者がロボットかどうか |
 | `is_receiver_bot()` | `bool` | 受信者がロボットかどうか |
-| `get_command_id()` | `str` | トリガーされた Bot コマンドの ID（存在する場合、`ideaura_command_id`） |
+| `get_command_id()` | `str` | Bot 指令 ID (`ideaura_command_id`) が存在する場合、その ID を取得 |
 | `get_command()` | `str` | `get_command_id()` の別名 |
-| `get_topic_name()` | `str` | トピックの名前 |
-| `get_message_type()` | `str` | メッセージのタイプ（normal/edited/forwarded/quoted） |
-| `get_message_subtype()` | `str` | メッセージのサブタイプ（text/image/video/file/markdown/html） |
-| `is_self_message()` | `bool` | 自分自身が送信したメッセージかどうか |
+| `get_topic_name()` | `str` | トピック名 |
+| `get_message_type()` | `str` | メッセージタイプ (normal/edited/forwarded/quoted) |
+| `get_message_subtype()` | `str` | メッセージのサブタイプ (text/image/video/file/markdown/html) |
+| `is_self_message()` | `bool` | 自分が送信したメッセージかどうか |
 
 ```python
 from ErisPulse.Core.Event import message
@@ -370,54 +370,52 @@ async def handle_message(event):
     if event.get_platform() != "ideaura":
         return
 
-    # トリガーされた Bot コマンドの ID を取得（存在する場合）
+    # Bot 指令 ID を取得（存在する場合）
     cmd_id = event.get_command_id()
     if cmd_id:
-        print(f"コマンドを受け取りました: {cmd_id}")
+        print(f"指令を受信しました: {cmd_id}")
 ```
 
----
+## 複数アカウントの設定
 
-## 多アカウント設定
+### 設定の説明
 
-### 設定説明
-
-IdeauraAdapter は複数のアカウントを同時に設定および実行することができ、**Bot Token** を用いた認証が可能です。
+IdeauraAdapter は、**Bot Token** 認証を使用して、複数のアカウントを同時に設定および実行することをサポートしています。
 
 > [!WARNING]
-> 4.0.1 以降、**メールアドレスとパスワードによるログインは削除され、Bot Token でのみ認証が可能です。** Bot Token は [MSCPO オープンプラットフォーム](https://open.mscpo.com/rockychat/bots) から取得する必要があります（`bot-token-` で始まるもの）。
+> 4.0.1 以降、**メールアドレスとパスワードによるログインは削除され、Bot Token でのみ認証が可能です**。Bot Token は [MSCPO 開放プラットフォーム](https://open.mscpo.com/rockychat/bots) から取得する必要があります（`bot-token-` で始まる形式）。
 
 ```toml
 # config.toml
 # アカウント1
 [IdeauraAdapter.accounts.default]
 token = "bot-token-xxxxxx1"      # ロボット API Token（必須）
-enabled = true                   # 有効かどうか（オプション、デフォルトはtrue）
+enabled = true                   # 有効にするかどうか（オプション、デフォルトはtrue）
 
 # アカウント2
 [IdeauraAdapter.accounts.bot2]
 token = "bot-token-xxxxxx2"
 enabled = true
 
-# オプション：カスタムサーバーのアドレス
+# オプション：サーバーのカスタムアドレス
 [IdeauraAdapter]
 base_url = "https://api.mscpo.com/api/rockychat"
 ws_url = "wss://api-cofe.allons-y.uk:3009/mqtt"
 heartbeat_interval = 30
 ```
 
-**設定項目の説明:**
-- `token`：ロボット API Token（必須、`bot-token-` で始まるもの）
+**設定項目の説明：**
+- `token`：ロボット API Token（必須、`bot-token-` で始まる形式）
 - `enabled`：このアカウントを有効にするかどうか（オプション、デフォルトはtrue）
 
-**グローバル設定項目:**
+**グローバル設定項目：**
 - `base_url`：API サーバーのアドレス（オプション、デフォルトは `https://api.mscpo.com/api/rockychat`）
-- `ws_url`：WebSocket サーバーのアドレス（オプション、デフォルトは花楓コーヒーショップの公式アドレス）
+- `ws_url`：WebSocket サーバーのアドレス（オプション、デフォルトは花楓珈琲館の公式アドレス）
 - `heartbeat_interval`：ハートビートの間隔（秒）（オプション、デフォルトは30秒）
 
-### Send DSL を用いたアカウント指定
+### Send DSL でアカウントを指定する
 
-`Using()` メソッドを用いて、どのアカウントを使ってメッセージを送信するかを指定できます。
+`Using()` メソッドを使用して、どのアカウントを使ってメッセージを送信するかを指定できます：
 
 ```python
 from ErisPulse.Core import adapter
@@ -426,16 +424,16 @@ ideaura = adapter.get("ideaura")
 # アカウント名を指定してメッセージを送信
 await ideaura.Send.Using("default").To("user", "user123").Text("Hello from account 1!")
 
-# user_id を用いてメッセージを送信（自動的に該当するアカウントにマッチ）
+# user_id を指定してメッセージを送信（対応するアカウントに自動マッチング）
 await ideaura.Send.Using("456").To("group", "chatroom").Text("Hello from account 2!")
 
-# 指定しない場合は、最初に有効なアカウントが使用されます
+# 指定しない場合は、最初に有効化されたアカウントが使用されます
 await ideaura.Send.To("user", "user123").Text("Hello from default account!")
 ```
 
 ### イベントにおけるアカウント識別
 
-受信したイベントには、対応するアカウント情報が自動的に含まれます。
+受信したイベントには、自動的に対応するアカウント情報が含まれます：
 
 ```python
 from ErisPulse.Core.Event import message
@@ -444,53 +442,49 @@ from ErisPulse.Core.Event import message
 async def handle_message(event):
     if event["platform"] == "ideaura":
         account_id = event["self"]["user_id"]
-        print(f"メッセージはアカウントから来ました: {account_id}")
+        print(f"メッセージはアカウント: {account_id} から送信されました")
 ```
-
----
 
 ## 拡張フィールドの説明
 
-- すべての特有フィールドは `ideaura_` で始まるプレフィックスで識別され、標準フィールドとの衝突を避けています。
-- 元のデータは `ideaura_raw` フィールドに保持され、プラットフォームの完全な元のデータにアクセスできます。
-- `self.user_id` は現在ログインしているアカウントのユーザーIDを示します。
-- `ideaura_source_type`：メッセージの送信元タイプ（`chatroom`/`topic`/`private`）
+- すべての独自フィールドは `ideaura_` という接頭辞で識別され、標準フィールドとの衝突を回避します。
+- 元のデータは `ideaura_raw` フィールドに保持され、プラットフォームの完全な元のデータにアクセスできるようにします。
+- `self.user_id` は、現在ログインしているアカウントのユーザーIDを示します。
+- `ideaura_source_type`：メッセージの送信元の種類（`chatroom`/`topic`/`private`）
 - `ideaura_sender_name`：送信者のニックネーム
 - `ideaura_sender_avatar`：送信者のアバターURL
 - `ideaura_sender_is_bot`：送信者がロボットかどうか
-- `ideaura_is_self`：自分が送信したメッセージかどうか（自メッセージはフィルタリングされます）
-- `ideaura_topic_name`：トピックの名前
-- `ideaura_message_type`：メッセージのタイプ（normal/edited/forwarded/quoted）
+- `ideaura_is_self`：送信したメッセージが自分自身のものかどうか（自分自身のメッセージはフィルタリング済み）
+- `ideaura_topic_name`：トピック名
+- `ideaura_message_type`：メッセージの種類（normal/edited/forwarded/quoted）
 - `ideaura_message_subtype`：メッセージのサブタイプ（text/image/video/file/markdown/html）
 
 ### ファイル処理の特性
 
-- ファイルサイズ制限：10MB（ダウンロードとローカル読み込みの両方に制限があります）
-- 自動ファイルタイプ検出：ファイルヘッダの魔法のバイトを使って実際のタイプを検出します
-- スマートファイル名解析：`.bin`/`.dat`/`.tmp` などの意味のない拡張子は自動的に修正されます
-- bytes、URL、ローカルパスの3種類のファイル入力方式をサポートします
-- URLファイルは自動的にダウンロードされ、サーバーにアップロードされます
+- ファイルサイズ制限：10MB（ダウンロードとローカル読み取りの両方に制限があります）
+- 自動的なファイルタイプ検出：ファイルヘッダの魔法のバイトを使って実際のタイプを検出します。
+- スマートなファイル名解析：`.bin`/`.dat`/`.tmp` などの意味のない拡張子に対して自動的に修正を行います。
+- bytes、URL、ローカルパスの3種類のファイル入力方法をサポートします。
+- URLから取得したファイルは自動的にダウンロードされ、サーバにアップロードされます。
 
 ### 対応するファイルタイプ
 
-魔法のバイトを使って自動検出されます：
+魔法のバイトを使って自動的に検出されます：
 
 | タイプ | 拡張子 |
 |------|--------|
 | 画像 | png, jpg, gif, webp |
-| ビデオ | mp4, avi, flv |
+| 動画 | mp4, avi, flv |
 | 音声 | mp3, wav, ogg |
 | ドキュメント | pdf, docx |
 
----
-
 ## 注意事項
 
-1. API サーバーのデフォルトアドレスは `https://api.mscpo.com/api/rockychat` です（`base_url` でカスタマイズ可能です）。WebSocket アドレス `wss://api-cofe.allons-y.uk:3009/mqtt` はプラットフォーム固有のアドレスであり、アダプター名の変更に影響されません。
-2. アダプターは WebSocket 長接続を使ってイベントを受け取り、自動再接続（固定5秒の遅延）をサポートしています。
-3. 自身が送信したメッセージ（`isSelf: true`）は自動的にフィルタリングされ、イベントとして送信されません。
-4. `@全員`（`AtAll()`）は管理者権限が必要です。
+1. API サーバーのデフォルトアドレスは `https://api.mscpo.com/api/rockychat` です（`base_url` でカスタマイズ可能です）。WebSocket アドレス `wss://api-cofe.allons-y.uk:3009/mqtt` はプラットフォーム固有のアドレスであり、アダプター名の変更にかかわらず変化しません。
+2. アダプターは WebSocket 長接続を使用してイベントを受け取り、自動再接続（固定5秒の遅延）をサポートします。
+3. 自身が送信したメッセージ（`isSelf: true`）は自動的にフィルタリングされ、イベントが発生しません。
+4. @全員（`AtAll()`）は管理者権限が必要です。
 5. ファイルのアップロードサイズ制限は 10MB です。
-6. 音声ファイルは `file` サブタイプとして送信されます（プラットフォームは独立した音声タイプを区別しません）。
-7. 絵文字（`Face()`）は emoji としてテキスト形式で送信されます。
-8. プログラムを終了する際は、リソースの解放を確保するために `shutdown()` を呼び出す必要があります。
+6. 音声ファイルは `file` のサブタイプとして送信されます（プラットフォームは独立した音声形式を区別しません）。
+7. エモジ（`Face()`）は純粋なテキスト形式で emoji を送信します。
+8. プログラムを終了する際は、リソース解放を確実にするために `shutdown()` を呼び出してください。

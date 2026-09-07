@@ -2,10 +2,6 @@
 
 Event 模組提供了功能強大的 Event 包裝類，簡化事件處理。
 
-請直接返回翻譯後的完整 Markdown 內容，不要包含任何其他文字。
-
-再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），請務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
-
 ## 為 event 參數添加類型註解
 
 事件處理器的 `event` 參數是 **Event 包裝類**（dict 子類）。強烈建議為它添加類型註解：
@@ -23,18 +19,12 @@ async def handler(event: Event):
 
 > **注意區分**：事件處理器回調的 `event` 是 **Event 包裝類**（註解為 `Event`）；模組生命週期方法 `on_load` / `on_unload` 的 `event` 是普通 **dict**（註解為 `dict`），二者不要混淆。
 
-[**English**](docs/zh-TW/quick-start.md)
-
 ## 核心特性
 
 - **完全相容字典**：Event 繼承自 dict
 - **便捷方法**：提供大量便捷方法
 - **點式存取**：支援使用點號存取事件欄位
 - **向後相容**：所有方法都是可選的
-
-請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
-
-再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
 
 ## 核心字段方法
 
@@ -49,8 +39,6 @@ async def info_command(event: Event):
     print(f"ID: {event_id}, 平台: {platform}, 時間: {time}")
 ```
 
-[**回到顶部**](#top)
-
 ## 消息事件方法
 
 ```python
@@ -64,8 +52,6 @@ async def private_handler(event: Event):
     await event.reply(f"你好，{nickname}！")
 ```
 
-[**快速入門**](docs/zh-TW/quick-start.md) | [**核心概念**](docs/zh-TW/core-concepts.md) | [**事件處理**](docs/zh-TW/event-handling.md) | [**API 參考**](docs/zh-TW/api-reference.md)
-
 ## 消息類型判斷
 
 ```python
@@ -78,12 +64,6 @@ async def group_handler(event: Event):
     is_at = event.is_at_message()
     await event.reply(f"類型: {'私聊' if is_private else '群聊'}")
 ```
-
-7. **重要：路徑替換規則**
-   - 將文件連結中的 `docs/zh-TW/` 替換為 `docs/zh-TW/`
-   - 例如：`docs/zh-TW/quick-start.md` 應改為 `docs/zh-TW/quick-start.md`
-   - 對於指向非當前語言版本文件的連結（如 `README.xx.md` 形式的連結），保持原樣不要修改
-   - 這確保了連結指向正確語言的文件版本
 
 ## 回覆功能
 
@@ -119,12 +99,6 @@ async def cmdinfo_command(event: Event):
     await event.reply(f"命令: {cmd_name}, 參數: {cmd_args}")
 ```
 
-7. **重要：路徑替換規則**
-   - 將文件鏈接中的 `docs/zh-TW/` 替換為 `docs/zh-TW/`
-   - 例如：`docs/zh-TW/quick-start.md` 應改為 `docs/zh-TW/quick-start.md`
-   - 對於指向非當前語言版本文件的鏈接（如 `README.xx.md` 形式的鏈接），保持原樣不要修改
-   - 這確保了鏈接指向正確語言的文件版本
-
 ## 通知事件方法
 
 ```python
@@ -135,29 +109,25 @@ async def friend_add_handler(event: Event):
     await event.reply("歡迎添加我為好友！")
 ```
 
-請直接返回翻譯後的完整Markdown內容，不要包含任何其他文字。
-
-再次提醒：如果文件包含語言切換行（各語言名稱用 `` | `` 分隔的行），務必嚴格遵守上方第8條的格式要求，不要寫出 ``[**Label**](file)`` 這類錯誤格式。
-
 ## 方法速查表
 
 ### 核心方法
 
-#### 事件基礎信息
+#### 事件基礎資訊
 - `get_id()` - 獲取事件ID
 - `get_time()` - 獲取事件時間戳（Unix秒級）
 - `get_type()` - 獲取事件類型（message/notice/request/meta）
 - `get_detail_type()` - 獲取事件詳細類型（private/group/friend等）
 - `get_platform()` - 獲取平台名稱
 
-#### 机器人信息
+#### 機器人資訊
 - `get_self_platform()` - 獲取機器人平台名稱
 - `get_self_user_id()` - 獲取機器人用戶ID
-- `get_self_account_id()` - 獲取機器人賬戶ID（多Bot模式）
-- `get_self_info()` - 獲取機器人完整信息字典
+- `get_self_account_id()` - 獲取機器人帳號ID（多Bot模式）
+- `get_self_info()` - 獲取機器人完整資訊字典
 
 #### 會話標識
-- `get_target_id()` - 獲取統一目標ID（群聊返回 `group_id`，頻道返回 `channel_id`，私聊返回 `user_id`，按 group → channel → guild → thread → user 顺序取首个非空值）
+- `get_target_id()` - 獲取統一目標 ID（群聊返回 `group_id`，頻道返回 `channel_id`，私聊返回 `user_id`，按 group → channel → guild → thread → user 顺序取首个非空值）
 - `get_session_id()` - 獲取會話唯一標識，格式為 `{platform}:{detail_type}:{target_id}`
 
 ### 消息事件方法
@@ -168,16 +138,16 @@ async def friend_add_handler(event: Event):
 - `get_text()` - 獲取純文本內容（`get_alt_message()` 的別名）
 - `get_message_text()` - 獲取純文本內容（`get_alt_message()` 的別名）
 
-#### 發送者信息
+#### 發送者資訊
 - `get_user_id()` - 獲取發送者用戶ID
 - `get_user_nickname()` - 獲取發送者暱稱
-- `get_sender()` - 獲取發送者完整信息字典
+- `get_sender()` - 獲取發送者完整資訊字典
 
-#### 群組/頻道信息
+#### 群組/頻道資訊
 - `get_group_id()` - 獲取群組ID（群聊消息）
 - `get_channel_id()` - 獲取頻道ID（頻道消息）
 - `get_guild_id()` - 獲取伺服器ID（伺服器消息）
-- `get_thread_id()` - 獵取話題/子頻道ID（話題消息）
+- `get_thread_id()` - 獲取話題/子頻道ID（話題消息）
 
 #### @消息相關
 - `has_mention()` - 是否包含@機器人
@@ -206,7 +176,7 @@ async def friend_add_handler(event: Event):
 
 ### 請求事件方法
 
-#### 請求信息
+#### 請求資訊
 - `get_comment()` - 獲取請求附言
 
 #### 請求類型判斷
@@ -225,7 +195,7 @@ async def friend_add_handler(event: Event):
   - `at_users`: @用戶列表，如 `["user1", "user2"]`
   - `reply_to`: 手動指定回覆的消息 ID
   - `at_all`: 是否@全體成員
-  - `**kwargs`: 預留參數（如 Mention 方法的 user_id）
+  - `**kwargs`: 額外參數（如 Mention 方法的 user_id）
 
 - `reply_ob12(message)` - 使用 OneBot12 消息段回覆
   - `message`: OneBot12 消息段列表或字典，可配合 MessageBuilder 構建
@@ -260,7 +230,7 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 #### 互動方法
 
 - `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text", hint=False)` - 確認對話
-  - 返回 `True`（確認）/ `False`（否認）/ `None`（超時）
+  - 返回 `True`（確認）/ `False`（否定）/ `None`（超時）
   - 內建中英文確認詞自動識別，可自定義詞集
   - `method`: 發送方法，預設 "Text"；支援 "Image"/"Markdown" 等非文本方式發送提示
   - `hint`: 是否在提示末尾自動追加確認詞提示（如 "（是/否）"），預設 False
@@ -285,7 +255,7 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
   - `fields`: 字段列表，每項包含 `key`、`prompt`、可選 `validator`、可選 `method`
   - 返回 `{key: value}` 字典，任一字段超時返回 `None`
   - 每個 field 支援 `method` 鍵指定發送方法，例如收集圖片時用 `{"key": "avatar", "prompt": "請發送頭像", "method": "Image"}`
-  - 每個 field 可選 `options` 鍵（列表），提供時該字段變為選擇題（自動調用 choose 邏輯）
+  - 每個 field 可選 `options` 鍵（列表），提供時該字段變為選擇題（自動調用 choose 逻辑）
   - 每個 field 可選 `options_format`、`merge_prompt`、`placeholder` 鍵，控制選項格式、消息合併行為和占位符
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - 等待任意事件
@@ -404,13 +374,13 @@ await event.reply_ob12(segments)
 
 > 完整的 Conversation 多輪對話用法請參考 [Conversation 多輪對話](../../advanced/conversation.md)。
 
-### 命令信息
+### 命令資訊
 
 #### 命令基礎
 - `get_command_name()` - 獲取命令名稱
 - `get_command_args()` - 獲取命令參數列表
 - `get_command_raw()` - 獲取命令原始文本
-- `get_command_info()` - 獲取完整命令信息字典
+- `get_command_info()` - 獲取完整命令資訊字典
 - `is_command()` - 是否為命令
 
 ### 原始數據

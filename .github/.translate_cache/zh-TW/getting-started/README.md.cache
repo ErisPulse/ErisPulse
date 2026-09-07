@@ -1,5 +1,29 @@
 {
+  "version": 2,
   "hash": "d98766b423e445c28357e4effda48f9f",
-  "translated_at": "2026-07-29T11:35:39.259407",
-  "target_lang": "zh-TW"
+  "file_hash": "d98766b423e445c28357e4effda48f9f",
+  "translated_at": "2026-09-07T11:30:41.742477",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "c67bd4276dfef7e7fdd800581ca814b1",
+      "translation": "# 入門指南\n\n> 本指南是 [5 分鐘快速開始](../quick-start.md) 的**深入補充**。如果你還沒有成功啟動第一個機器人，請先完成快速開始。\n\n機器人啟動後，這裡將帶你系統地理解框架的核心概念和常用功能。"
+    },
+    {
+      "hash": "2a013cccadd1b226cfaf67a3ab240632",
+      "translation": "## 學習路徑\n\n建議按以下順序閱讀：\n\n| 步驟 | 主題 | 說明 |\n|------|------|------|\n| 1 | [建立第一個機器人](first-bot.md) | 編寫命令處理器，理解運行機制 |\n| 2 | [基礎概念](basic-concepts.md) | 理解 ErisPulse 的核心架構和模組設計 |\n| 3 | [事件處理入門](event-handling.md) | 學習如何處理訊息、命令、通知等各類事件 |\n| 4 | [常見任務範例](common-tasks.md) | 掌握資料持久化、定時任務、權限控制等常用功能 |\n| 5 | [IDE 補全指南](ide-completion.md) | 產生類型存根，啟用平台特有方法的 IDE 自動補全 |"
+    },
+    {
+      "hash": "4aa00b789df7bd8851d4ef496bac3e58",
+      "translation": "## 開發方式選擇\n\nErisPulse 支援兩種開發方式：\n\n| 方式 | 適用場景 | 說明 |\n|------|---------|------|\n| **嵌入式開發** | 快速原型、專案內部功能 | 直接在 `main.py` 中編寫處理器，無需建立獨立模組 |\n| **模組開發**（推薦） | 生產環境、功能分發 | 建立獨立的 Python 套件，透過 `epsdk install` 安裝使用 |\n\n> 兩種方式的詳細對比和範例請參考 [建立第一個機器人](first-bot.md) 和 [模組開發入門](../developer-guide/modules/getting-started.md)。"
+    },
+    {
+      "hash": "aa1c8a494a818a7fb3f2dddbd706427d",
+      "translation": "## 架構概覽\n\nErisPulse 採用事件驅動架構，核心由以下系統組成：\n\n- **適配器系統** — 與各平台通信，將平台事件轉換為統一的 OneBot12 標準格式\n- **事件系統** — 處理訊息、命令、通知、請求、元事件五大類事件\n- **模組系統** — 透過獨立模組擴展功能，支援依賴管理和懶加載\n- **核心模組** — 提供 Storage（儲存）、Config（設定）、Logger（日誌）、Router（路由）等基礎能力\n\n> 詳細的架構圖和初始化流程請參考 [架構概覽](../architecture.md)。"
+    },
+    {
+      "hash": "81d2ca0cf2f8dbc6cebf47b9c51f74f4",
+      "translation": "## 開始學習\n\n準備好開始了嗎？\n\n- [建立第一個機器人](first-bot.md) — 5 分鐘上手"
+    }
+  ]
 }

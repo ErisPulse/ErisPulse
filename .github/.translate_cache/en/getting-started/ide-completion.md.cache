@@ -1,5 +1,45 @@
 {
+  "version": 2,
   "hash": "6549a858efa75fc7349ae8fd72f4dba2",
-  "translated_at": "2026-07-19T20:37:44.609437",
-  "target_lang": "en"
+  "file_hash": "6549a858efa75fc7349ae8fd72f4dba2",
+  "translated_at": "2026-09-07T11:30:26.105633",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "f48742451b078f07d13cc4252be48f34",
+      "translation": "# Type Stub Generation (IDE Completion)\n\nErisPulse dynamically discovers modules/adapters via entry-points, and the entry points cannot statically know the specific types of user classes.  \nThe `epsdk types` command scans installed modules/adapters to generate a type stub file, allowing users to use these types as variable annotations to obtain IDE completion."
+    },
+    {
+      "hash": "8780a8d8f2a48f16c6713153d5a2f32d",
+      "translation": "## Core Design Principles\n\nStub files **export only types** and provide no runtime instances:\n\n- All imports are under ``TYPE_CHECKING``, **zero runtime overhead, no behavior changes**\n- Type names use PascalCase form of entry-point names (e.g., ``yunhu`` → ``Yunhu``), matching the names passed to ``sdk.adapter.get()`` / ``sdk.module.get()``\n- Users use ``sdk.module.get(...)`` / ``sdk.adapter.get(...)`` as usual to get instances in their code, only using imported types for **variable annotations**"
+    },
+    {
+      "hash": "affc12d46afea5551798551c844bd21f",
+      "translation": "## Basic Usage\n\nRun the following command in the project root directory:\n\n```bash\nepsdk types\n```\n\nThis will generate `_ep_types.py` in the current directory, containing types for all installed modules/adapters."
+    },
+    {
+      "hash": "6af7c606238ae2e96d34966a4b2c0d9b",
+      "translation": "## Using in Code\n\n```python\nfrom _ep_types import MyModule, Yunhu\nfrom ErisPulse import sdk\n\n# By using the imported types as variable annotations, IDE will provide completion for the class's methods\nmy_mod: MyModule = sdk.module.get(\"MyModule\")\nmy_mod.hello()                  # ← IDE completes hello\n\nmy_adapter: Yunhu = sdk.adapter.get(\"yunhu\")\nawait my_adapter.Send.To(\"group\", \"123\").Board(...)   # ← Completes platform-specific methods\n```"
+    },
+    {
+      "hash": "59cd0553b570a988efd0d727cab0e06a",
+      "translation": "## How It Works\n\n1. Scan `erispulse.adapter` / `erispulse.module` entry-points\n2. Inspect each adapter/module's actual class information (including module path and qualified name) within the target Python environment via a subprocess\n3. Generate a `.py` file, where:\n   - All `from xxx import Yyy as Zzz` statements are included under `TYPE_CHECKING`\n   - `Zzz` is the PascalCase form of the entry-point name\n4. The IDE reads the `TYPE_CHECKING` section to provide code completion; no code is executed at runtime\n\nExample of generated stubs:\n\n```python\n# _ep_types.py (auto-generated)\nfrom typing import TYPE_CHECKING\n\nif TYPE_CHECKING:\n    # Adapters\n    from MyAdapter.Core import MyAdapter as MyAdapter\n    from YunhuAdapter.Core import YunhuAdapter as Yunhu\n\n    # Modules\n    from MyModule.Core import Main as MyModule\n\n    __all__ = ['MyAdapter', 'Yunhu', 'MyModule']\n```"
+    },
+    {
+      "hash": "90a8da13b21cb8ce8f73dba2165cb136",
+      "translation": "## Command Options\n\n| Option | Description |\n|--------|-------------|\n| `-o, --output PATH` | Specify the output file path (default: `./_ep_types.py`) |\n| `--force` | Overwrite existing stub files |\n| `--adapters-only` | Scan only adapters |\n| `--modules-only` | Scan only modules |"
+    },
+    {
+      "hash": "203858beec743f04303ab8bc514d6679",
+      "translation": "## When to Regenerate\n\n- After installing/uninstalling new modules or adapters\n- After modules/adapters update their public APIs\n- When IDE auto-completion fails or types are outdated"
+    },
+    {
+      "hash": "fea26489405d0d332e8edf6087f8544a",
+      "translation": "## Relationship with SendDSL Standard Methods\n\nThe `SendDSL` base class already has built-in standard sending methods (Text/Image/Voice/Video/File), and any instance of `SendDSL` obtained through any method can complete these methods.  \nThe `types` command is mainly used to complete **platform-specific methods** (such as `Board` for Yunhu, `Dice` for Sandbox) and **module-specific methods**."
+    },
+    {
+      "hash": "ed9b0793c8cf000eb1938745c25f0758",
+      "translation": "## Related Documentation\n\n- [SendDSL Detailed Explanation](../developer-guide/adapters/send-dsl.md) - Standard sending method description\n- [Getting Started with Adapter Development](../developer-guide/adapters/getting-started.md) - Creating an adapter"
+    }
+  ]
 }

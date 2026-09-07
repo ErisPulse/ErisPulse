@@ -1,23 +1,22 @@
-# SQL Query Builder
+# SQL 查询构建器
 
-Модуль хранения (Storage) в ErisPulse предоставляет универсальный конструктор SQL-запросов в стиле цепочки вызовов (chain-style), поддерживающий создание пользовательских таблиц, а также операции выборки, обновления и удаления.
+Модуль хранения ErisPulse предоставляет универсальный SQL-конструктор запросов с цепочечным стилем вызовов, поддерживающий создание, выборку, обновление и удаление данных для пользовательских таблиц.
 
-## Архитектура
+## Архитектурное проектирование
 
 ```
 Bases/storage.py                    Core/storage.py
 ┌─────────────────────┐             ┌──────────────────────────┐
 │  BaseStorage (ABC)  │◄────────────│  StorageManager          │
-│  BaseQueryBuilder   │             │  (конкретная реализация  │
-│    (ABC)            │             │   на базе SQLite)        │
-└─────────────────────┘             │                          │
-                                    │  SQLiteQueryBuilder      │
+│  BaseQueryBuilder   │             │  (реализация SQLite)     │
+│    (ABC)            │             │                          │
+└─────────────────────┘             │  SQLiteQueryBuilder      │
                                     │  AlterTableBuilder       │
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` — это абстрактные базовые классы, определяющие единый интерфейс, который поддерживает расширение для других носителей хранения (Redis, MySQL и т. д.)
-- `StorageManager` — текущая конкретная реализация на базе SQLite, полностью сохраняющая обратную совместимость
+- `BaseStorage` и `BaseQueryBuilder` — абстрактные базовые классы, определяющие единый интерфейс и поддерживающие расширение для других типов хранилищ (Redis, MySQL и т.д.)
+- `StorageManager` — конкретная реализация для SQLite, полностью обратно совместима
 
 ## Импорт
 
@@ -26,7 +25,7 @@ from ErisPulse import sdk
 # или
 from ErisPulse.Core import storage
 
-# Базовые классы ABC (для типизации или пользовательской реализации)
+# ABC базовые классы (для аннотации типов или пользовательских реализаций)
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
@@ -47,7 +46,7 @@ sdk.storage.CreateTable("users", {
 
 ```python
 if sdk.storage.HasTable("users"):
-    print("Таблица users существует")
+    print("Таблица users уже существует")
 ```
 
 ### Удаление таблицы
@@ -72,15 +71,15 @@ sdk.storage.AlterTable("users") \
     .Execute()
 ```
 
-## Запросы в стиле цепочки (Chain Queries)
+## Цепочечные запросы
 
 ### Вставка данных
 
 ```python
-# Вставка одной строки (передача словаря)
+# Вставка одной строки (словарь)
 sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 
-# Массовая вставка (передача списка словарей)
+# Вставка нескольких строк (список словарей)
 sdk.storage.Table("users").InsertMulti([
     {"name": "Bob", "age": 25},
     {"name": "Charlie", "age": 35},
@@ -88,20 +87,20 @@ sdk.storage.Table("users").InsertMulti([
 ]).Execute()
 ```
 
-### Запрос данных
+### Выборка данных
 
-> **Важно**: `Select()` возвращает `list[tuple]` (список кортежей), а не словарь. Вам необходимо получать значения, обращаясь по индексу в порядке следования столбцов.
+> **Важно**: `Select()` возвращает `list[tuple]` (список кортежей), а не словарь. Доступ к значениям осуществляется по индексу.
 
 ```python
-# Запрос всех столбцов
+# Выборка всех столбцов
 rows = sdk.storage.Table("users").Select().Execute()
 # rows: [(1, "Alice", 30), (2, "Bob", 25), ...]
 
-# Запрос указанных столбцов
+# Выборка указанных столбцов
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
 # rows: [("Alice", 30), ("Bob", 25), ...]
 
-# Получение значения по индексу
+# Доступ по индексу
 for row in rows:
     name = row[0]   # "Alice"
     age = row[1]    # 30
@@ -113,12 +112,12 @@ for row in rows:
 columns = ["id", "name", "age"]
 rows = sdk.storage.Table("users").Select(*columns).Execute()
 
-# Способ 1: zip внутри цикла
+# Способ 1: zip в цикле
 for row in rows:
     record = dict(zip(columns, row))
     print(record["name"], record["age"])
 
-# Способ 2: преобразование списка кортежей в список словарей за один раз
+# Способ 2: преобразование в список словарей
 records = [dict(zip(columns, row)) for row in rows]
 ```
 
@@ -129,28 +128,28 @@ row = sdk.storage.Table("users").Select("name", "age") \
     .Where("id = ?", 1) \
     .ExecuteOne()
 
-# row — это кортеж или None
+# row — кортеж или None
 if row is not None:
     name = row[0]  # "Alice"
     age = row[1]   # 30
 ```
 
-### Фильтрация по условиям
+### Условия фильтрации
 
-> `Where(condition, *params)` поддерживает передачу нескольких параметров, соответствующих нескольким заполнителям `?`.
+> `Where(condition, *params)` поддерживает несколько параметров, соответствующих нескольким знакам `?`.
 
 ```python
-# Одно условие (один заполнитель, один параметр)
+# Одно условие (один знак `?`, один параметр)
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 18) \
     .Execute()
 
-# Использование нескольких заполнителей в одном Where
+# Один вызов Where с несколькими знаками `?`
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ? AND age < ?", 20, 40) \
     .Execute()
 
-# Многократный вызов Where (связано оператором AND)
+# Несколько вызовов Where (AND соединяются)
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 20) \
     .Where("age < ?", 40) \
@@ -160,12 +159,12 @@ rows = sdk.storage.Table("users").Select("name") \
 ### Сортировка, пагинация
 
 ```python
-# По возрастанию
+# Сортировка по возрастанию
 rows = sdk.storage.Table("users").Select("name", "age") \
     .OrderBy("name") \
     .Execute()
 
-# По убыванию
+# Сортировка по убыванию
 rows = sdk.storage.Table("users").Select("name") \
     .OrderBy("age", desc=True) \
     .Execute()
@@ -181,7 +180,7 @@ rows = sdk.storage.Table("users").Select("name") \
 ### Обновление данных
 
 ```python
-# Обновление по условию
+# Условное обновление
 sdk.storage.Table("users") \
     .Update({"age": 31}) \
     .Where("name = ?", "Alice") \
@@ -196,7 +195,7 @@ sdk.storage.Table("users") \
 ### Удаление данных
 
 ```python
-# Удаление по условию
+# Условное удаление
 sdk.storage.Table("users") \
     .Delete() \
     .Where("name = ?", "Bob") \
@@ -209,7 +208,7 @@ sdk.storage.Table("users").Delete().Execute()
 ### Подсчет и проверка существования
 
 ```python
-# Подсчет
+# Подсчет записей
 count = sdk.storage.Table("users").Count()
 count = sdk.storage.Table("users").Where("age > ?", 18).Count()
 
@@ -219,18 +218,18 @@ exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
 
 ## Повторное использование условий запроса
 
-Используйте `copy()` для глубокого копирования конструктора для повторного использования базовых условий:
+Используйте `copy()` для глубокого копирования конструктора и повторного использования базовых условий:
 
 ```python
 base = sdk.storage.Table("users").Where("age > ?", 20)
 
-# Запрос на основе тех же условий
+# Запрос с теми же условиями
 rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
 
-# Подсчет на основе тех же условий
+# Подсчет с теми же условиями
 count = base.copy().Count()
 
-# Проверка существования на основе тех же условий
+# Проверка существования с теми же условиями
 exists = base.copy().Where("name = ?", "Alice").Exists()
 ```
 
@@ -240,14 +239,14 @@ exists = base.copy().Where("name = ?", "Alice").Exists()
 builder = sdk.storage.Table("users").Select("name").Where("age > ?", 18)
 builder.clear()
 
-# Перестроение запроса
+# Перестройка запроса
 builder.Select("name", "age").Where("name = ?", "Alice")
 rows = builder.Execute()
 ```
 
 ## Использование в транзакциях
 
-Операции в стиле цепочки полностью поддерживают транзакции:
+Цепочечные операции полностью поддерживают транзакции:
 
 ```python
 # Подтверждение транзакции
@@ -268,64 +267,64 @@ except Exception:
 ## Описание возвращаемых значений
 
 | Операция | Тип возвращаемого значения | Описание |
-|------|---------|------|
-| `Select().Execute()` | `list[tuple]` | Список кортежей, упорядоченных по столбцам |
-| `Select().ExecuteOne()` | `tuple \| None` | Один кортеж или None |
+|----------|-----------------------------|----------|
+| `Select().Execute()` | `list[tuple]` | Список кортежей, значения по порядку столбцов |
+| `Select().ExecuteOne()` | `tuple \| None` | Одна строка как кортеж или None |
 | `Insert().Execute()` | `int` | Количество затронутых строк |
 | `InsertMulti().Execute()` | `int` | Количество вставленных строк |
 | `Update().Execute()` | `int` | Количество затронутых строк |
-| `Delete().Execute()` | `int` | Количество затронутых строк |
-| `Count()` | `int` | Количество совпавших строк |
-| `Exists()` | `bool` | Наличие записи |
+| `Delete().Execute()` | `int` | Количество удаленных строк |
+| `Count()` | `int` | Количество соответствующих строк |
+| `Exists()` | `bool` | Существует ли запись |
 
-### Примеры обработки возвращаемых значений
+### Пример обработки возвращаемых значений
 
 ```python
-# Select возвращает кортежи, берем значения по индексу
+# Select возвращает кортежи, значения по индексу
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
-first_name = rows[0][0]  # Имя в первой строке, первом столбце
-first_age = rows[0][1]   # Возраст в первой строке, втором столбце
+first_name = rows[0][0]  # Первый столбец первой строки
+first_age = rows[0][1]   # Второй столбец первой строки
 
-# Рекомендуется: преобразование в словарь с помощью списка имен столбцов + zip, код более читаем
+# Рекомендуется: преобразование в словари с помощью zip для лучшей читаемости
 cols = ["name", "age"]
 rows = sdk.storage.Table("users").Select(*cols).Execute()
 for row in rows:
     d = dict(zip(cols, row))
     print(d["name"], d["age"])
 
-# ExecuteOne возвращает один кортеж или None
+# ExecuteOne возвращает кортеж или None
 row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
 name = row[0] if row else None
 
 # Insert/Update/Delete возвращают количество затронутых строк
 affected = sdk.storage.Table("users").Delete().Where("age < ?", 18).Execute()
-print(f"Удалено записей: {affected}")
+print(f"Удалено {affected} записей")
 ```
 
 ## Параметризованные запросы
 
-Все параметры WHERE используют заполнитель `?`, параметры передаются как последовательные аргументы метода `Where()` (**не** как кортеж или список):
+Все параметры WHERE используют знак `?`, параметры передаются как последующие аргументы в `Where()` (а не в виде кортежа или списка):
 
 ```python
-# Верно ✓ — передача нескольких параметров по отдельности
+# Правильно ✓ — несколько параметров по отдельности
 sdk.storage.Table("users").Where("age > ? AND name = ?", 18, "Alice").Execute()
 
-# Верно ✓ — многократный вызов Where
+# Правильно ✓ — несколько вызовов Where
 sdk.storage.Table("users").Where("age > ?", 18).Where("name = ?", "Alice").Execute()
 
-# Ошибочно ✗ — не передавайте кортеж
+# Неправильно ✗ — не передавайте кортеж
 sdk.storage.Table("users").Where("age > ? AND name = ?", (18, "Alice")).Execute()
-# Это превратит весь кортеж в значение для первого заполнителя
+# Это приведет к передаче всего кортежа как значения первого знака `?`
 
-# Ошибочно ✗ — существует риск SQL-инъекции
+# Неправильно ✗ — риск SQL-инъекции
 sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 ```
 
-### Правила передачи параметров Where
+### Правила передачи параметров в Where
 
 ```python
 # Where(condition: str, *params: Any)
-# params — переменное число аргументов, передаются по одному
+# params — переменное количество аргументов, передаваемых по одному
 
 # Один параметр
 .Where("name = ?", "Alice")
@@ -336,20 +335,20 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 # Запрос LIKE
 .Where("name LIKE ?", "A%")
 
-# Запрос IN (требуется вручную построить заполнители)
+# Запрос IN (необходимо вручную создать знаки `?`)
 .Where("name IN (?, ?, ?)", "Alice", "Bob", "Charlie")
 ```
 
-## Пользовательский бэкенд (хранилище)
+## Создание пользовательского хранилища
 
-Наследуйте `BaseStorage` и `BaseQueryBuilder` для реализации пользовательского бэкенда:
+Для реализации пользовательского хранилища наследуйте `BaseStorage` и `BaseQueryBuilder`:
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 class MyQueryBuilder(BaseQueryBuilder):
     def Execute(self):
-        # Реализация конкретной логики выполнения
+        # Реализация выполнения запроса
         ...
 
     def ExecuteOne(self):
@@ -361,7 +360,6 @@ class MyQueryBuilder(BaseQueryBuilder):
     def Exists(self):
         ...
 
-
 class MyStorage(BaseStorage):
     def get(self, key, default=None):
         ...
@@ -369,13 +367,13 @@ class MyStorage(BaseStorage):
     def set(self, key, value):
         ...
 
-    # Реализация других абстрактных методов...
+    # Реализация других абстрактных методов
     def Table(self, table_name):
         return MyQueryBuilder(self, table_name)
 ```
 
 ## Связанные документы
 
-- [Ядро модулей API](../api-reference/core-modules.md) - Полный API модуля Storage
-- [API базовых классов хранилища](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) - Абстрактные интерфейсы BaseStorage/BaseQueryBuilder
-- [Конструктор сообщений](message-builder.md) - Ссылка на стиль цепочки вызовов MessageBuilder
+- [Справочник API ядра](../api-reference/core-modules.md) — полный API модуля Storage
+- [Справочник API базового хранилища](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) — абстрактные интерфейсы BaseStorage/BaseQueryBuilder
+- [Построитель сообщений](message-builder.md) — пример построителя сообщений в цепочечном стиле

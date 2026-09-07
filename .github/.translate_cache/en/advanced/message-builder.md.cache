@@ -1,5 +1,45 @@
 {
+  "version": 2,
   "hash": "ccf145605ccbcde6645ba7b1fd9d02a4",
-  "translated_at": "2026-06-06T15:49:57.994702",
-  "target_lang": "en"
+  "file_hash": "ccf145605ccbcde6645ba7b1fd9d02a4",
+  "translated_at": "2026-09-07T10:45:11.167464",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "beaaca1a9a89664f37264436e23a6a42",
+      "translation": "# MessageBuilder Explained\n\n`MessageBuilder` is a OneBot12 standard message segment builder provided by ErisPulse, used to construct structured message content, and should be used in conjunction with `Send.Raw_ob12()`."
+    },
+    {
+      "hash": "2500525151763f3bec08079067fc08cb",
+      "translation": "## Import Methods\n\n`MessageBuilder` supports the following two import methods (both have the same effect; the first is recommended):\n\n```python\nfrom ErisPulse.Core.Event import MessageBuilder        # Recommended, import via package export\nfrom ErisPulse.Core.Event.message_builder import MessageBuilder  # Directly import the module\n```"
+    },
+    {
+      "hash": "31cd41bf9cdd7c1d78a8572d2df12c5d",
+      "translation": "## Dual Mode Mechanism\n\nThe `MessageBuilder` provides two usage modes, implemented through Python's descriptor mechanism (`__get__`), achieving different behaviors at the class and instance levels: when methods are called through the class, `__get__` returns the execution result of the static method; when called through an instance, it returns `self` to support method chaining.\n\n### Chaining Mode (Instance)\n\nUse by instantiating `MessageBuilder()`. Each method returns `self`, supporting method chaining, and finally use `.build()` to obtain the message segment list:\n\n```python\nfrom ErisPulse.Core.Event.message_builder import MessageBuilder\n\nsegments = (\n    MessageBuilder()\n    .text(\"Hello!\")\n    .image(\"https://example.com/photo.jpg\")\n    .build()\n)\n# [\n#     {\"type\": \"text\", \"data\": {\"text\": \"Hello!\"}},\n#     {\"type\": \"image\", \"data\": {\"file\": \"https://example.com/photo.jpg\"}}\n# ]\n```\n\n### Quick Build Mode (Static)\n\nCall methods directly through the class. Each method directly returns a list of message segments, suitable for single-segment messages:\n\n```python\n# Directly returns list[dict], no need for .build()\nsegments = MessageBuilder.text(\"Hello!\")\n# [{\"type\": \"text\", \"data\": {\"text\": \"Hello!\"}}]\n```"
+    },
+    {
+      "hash": "2587d00db9ffe4a1f84e12e720c98078",
+      "translation": "## Message Segment Types\n\n| Method | Type | Data Parameters | Description |\n|------|------|---------|------|\n| `text(text)` | text | `text` | Text message |\n| `image(file)` | image | `file` | Image message |\n| `audio(file)` | audio | `file` | Audio message |\n| `video(file)` | video | `file` | Video message |\n| `file(file, filename?)` | file | `file`, `filename` | File message |\n| `mention(user_id, user_name?)` | mention | `user_id`, `user_name` | @Mention a user |\n| `at(user_id, user_name?)` | mention | `user_id`, `user_name` | Alias of `mention` |\n| `reply(message_id)` | reply | `message_id` | Reply to a message |\n| `at_all()` | mention_all | - | @All members |\n| `custom(type, data)` | Custom | Custom | Custom message segment |"
+    },
+    {
+      "hash": "d61a223fe19c19812906b7d70d6ff25f",
+      "translation": "## Using with Send\n\nThe constructed list of message segments is sent using `Send.Raw_ob12()`:\n\n```python\nfrom ErisPulse import sdk\nfrom ErisPulse.Core.Event.message_builder import MessageBuilder\n\n# Build and send using chaining\nsegments = (\n    MessageBuilder()\n    .mention(\"user123\", \"Zhang San\")\n    .text(\" Please check this image\")\n    .image(\"https://example.com/photo.jpg\")\n    .build()\n)\nawait sdk.adapter.myplatform.Send.To(\"group\", \"group456\").Raw_ob12(segments)\n```\n\n### Replying with Event\n\n```python\nfrom ErisPulse.Core.Event import command\n\n@command(\"report\")\nasync def report_handler(event):\n    await event.reply_ob12(\n        MessageBuilder()\n        .text(\"📊 Daily Report Summary\\n\")\n        .text(\"Tasks completed today: 5\\n\")\n        .text(\"Tasks in progress: 3\")\n        .build()\n    )\n```"
+    },
+    {
+      "hash": "e1aab40446966ada7bd21fd97e2c098d",
+      "translation": "## Utility Methods\n\n### copy()\n\nCreates a copy of the current builder, allowing multiple message variants to be created based on the same base content:\n\n```python\nbase = MessageBuilder().text(\"Base content\").mention(\"admin\")\n\n# Build different messages based on the same prefix\nmsg1 = base.copy().text(\" Variant A\").build()\nmsg2 = base.copy().text(\" Variant B\").image(\"img.jpg\").build()\n```\n\n### clear()\n\nClears previously added message segments, allowing reuse of the same builder:\n\n```python\nbuilder = MessageBuilder()\n\nfor user_id in [\"user1\", \"user2\", \"user3\"]:\n    builder.clear()\n    msg = builder.mention(user_id).text(\" Hello!\").build()\n    await adapter.Send.To(\"user\", user_id).Raw_ob12(msg)\n```\n\n### len() / bool()\n\n```python\nbuilder = MessageBuilder()\nprint(bool(builder))   # False\n\nbuilder.text(\"Hello\")\nprint(len(builder))    # 1\nprint(bool(builder))   # True\n```"
+    },
+    {
+      "hash": "fe2d388fe5170a36f9d5d7d4c892de79",
+      "translation": "## Custom Message Segments\n\nUse the `custom()` method to add platform-specific message segments:\n\n```python\n# Add platform-specific message segments\nsegments = (\n    MessageBuilder()\n    .text(\"Please fill out the form:\")\n    .custom(\"yunhu_form\", {\"form_id\": \"12345\"})\n    .build()\n)\n```\n\n> Custom message segments are only effective in the corresponding platform adapter; other adapters will ignore unrecognized message segments."
+    },
+    {
+      "hash": "25bb3d1be5ff8d7de96329bac26a09ea",
+      "translation": "## Complete Examples\n\n### Multi-element Message\n\n```python\nsegments = (\n    MessageBuilder()\n    .reply(event.get_id())                    # Reply to the original message\n    .mention(event.get_user_id())             # @ sender\n    .text(\" This is your query result:\\n\")    # Text\n    .image(\"https://example.com/chart.png\")   # Image\n    .text(\"\\nSee the attachment for detailed data:\")\n    .file(\"https://example.com/data.csv\", filename=\"data.csv\")\n    .build()\n)\nawait event.reply_ob12(segments)\n```\n\n### Static Factory + Chain Mixing\n\n```python\n# Quickly build a single-segment message\nsimple_msg = MessageBuilder.text(\"Simple text\")\n\n# Chain-build a complex message\ncomplex_msg = (\n    MessageBuilder()\n    .at_all()\n    .text(\" 📢 Announcement:\")\n    .text(\"Meeting at 3 PM today\")\n    .build()\n)\n```"
+    },
+    {
+      "hash": "7f9b72897f5dfe225f03ea7dcea834c4",
+      "translation": "## Related Documentation\n\n- [Adapter SendDSL Detailed Explanation](../developer-guide/adapters/send-dsl.md) - Send chainable sending interface\n- [Event Conversion Standard](../standards/event-conversion.md) - Message segment conversion specification\n- [Event Wrapper Class](../developer-guide/modules/event-wrapper.md) - Event.reply_ob12() method"
+    }
+  ]
 }

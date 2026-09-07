@@ -1,5 +1,45 @@
 {
+  "version": 2,
   "hash": "6549a858efa75fc7349ae8fd72f4dba2",
-  "translated_at": "2026-07-19T20:49:18.140946",
-  "target_lang": "ja"
+  "file_hash": "6549a858efa75fc7349ae8fd72f4dba2",
+  "translated_at": "2026-09-07T11:35:53.920443",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "f48742451b078f07d13cc4252be48f34",
+      "translation": "# タイプ スタンプ生成（IDE の補完）\n\nErisPulse はエントリーポイントを介してモジュール/アダプターを動的に発見しますが、エントリーポイントは静的レベルでユーザー定義クラスの具体的な型を把握できません。  \n`epsdk types` コマンドは、インストール済みのモジュール/アダプターをスキャンし、タイプ スタンプファイルを生成することで、ユーザーがこれらの型を変数の型注釈として使用し、IDE の補完を得られるようにします。"
+    },
+    {
+      "hash": "8780a8d8f2a48f16c6713153d5a2f32d",
+      "translation": "## 核心設計原則\n\nスタブファイルは**型のみをエクスポート**し、実行時のインスタンスは一切提供しません。\n\n- すべてのインポートは ``TYPE_CHECKING`` の下で行われ、**実行時のオーバーヘッドはゼロ、動作の変更も一切ありません**\n- クラス名はエントリーポイント名の PascalCase 形式を採用します（例: ``yunhu`` → ``Yunhu``）。これは ``sdk.adapter.get()`` / ``sdk.module.get()`` に渡す名前に対応しています\n- ユーザーはコード内で通常通り ``sdk.module.get(...)`` / ``sdk.adapter.get(...)`` を使用してインスタンスを取得しますが、インポートされた型は**変数の型注釈**にのみ使用します"
+    },
+    {
+      "hash": "affc12d46afea5551798551c844bd21f",
+      "translation": "## 基本的な使い方\n\nプロジェクトのルートディレクトリで実行します：\n\n```bash\nepsdk types\n```\n\n現在のディレクトリに `_ep_types.py` が生成され、インストール済みのすべてのモジュール/アダプタの型が含まれます。"
+    },
+    {
+      "hash": "6af7c606238ae2e96d34966a4b2c0d9b",
+      "translation": "## コード内での使用方法\n\n```python\nfrom _ep_types import MyModule, Yunhu\nfrom ErisPulse import sdk\n\n# 導入された型を変数の型ヒントとして使用することで、IDE がそのクラスのメソッドを補完します\nmy_mod: MyModule = sdk.module.get(\"MyModule\")\nmy_mod.hello()                  # ← IDE が hello を補完\n\nmy_adapter: Yunhu = sdk.adapter.get(\"yunhu\")\nawait my_adapter.Send.To(\"group\", \"123\").Board(...)   # ← プラットフォーム固有のメソッドを補完\n```"
+    },
+    {
+      "hash": "59cd0553b570a988efd0d727cab0e06a",
+      "translation": "## 動作原理\n\n1. `erispulse.adapter` / `erispulse.module` entry-points のスキャン\n2. サブプロセスを介して、対象の Python 環境内でインスペクションを行い、各アダプタ/モジュールの実際のクラス情報を収集（モジュールパスと限定名を含む）\n3. `.py` ファイルを生成し、以下を含む：\n   - `TYPE_CHECKING` の下ではすべての ``from xxx import Yyy as Zzz`` が有効\n   - ``Zzz`` は entry-point 名の PascalCase 形式\n4. IDE は ``TYPE_CHECKING`` 部分を読み取り、補完を提供する。実行時にはコードは一切実行されない\n\n生成されたスタブの例：\n\n```python\n# _ep_types.py（自動生成）\nfrom typing import TYPE_CHECKING\n\nif TYPE_CHECKING:\n    # アダプタ\n    from MyAdapter.Core import MyAdapter as MyAdapter\n    from YunhuAdapter.Core import YunhuAdapter as Yunhu\n\n    # モジュール\n    from MyModule.Core import Main as MyModule\n\n    __all__ = ['MyAdapter', 'Yunhu', 'MyModule']\n```"
+    },
+    {
+      "hash": "90a8da13b21cb8ce8f73dba2165cb136",
+      "translation": "## コマンドオプション\n\n| オプション | 説明 |\n|------|------|\n| `-o, --output PATH` | 出力ファイルのパスを指定します（デフォルト: `./_ep_types.py`） |\n| `--force` | 既存のスタブファイルを上書きします |\n| `--adapters-only` | アダプターのみをスキャンします |\n| `--modules-only` | モジュールのみをスキャンします |"
+    },
+    {
+      "hash": "203858beec743f04303ab8bc514d6679",
+      "translation": "## 再生成のタイミング\n\n- 新しいモジュールやアダプターをインストール/アンインストールした後\n- モジュール/アダプターが公開 API を更新した後\n- IDEの補完が機能しない、または型が期限切れになった場合"
+    },
+    {
+      "hash": "fea26489405d0d332e8edf6087f8544a",
+      "translation": "## SendDSL 標準メソッドとの関係\n\n`SendDSL` 基底クラスには、標準の送信メソッド（Text/Image/Voice/Video/File）が既に組み込まれており、どのような方法で取得した `SendDSL` インスタンスでも、これらのメソッドが補完されます。  \n`types` コマンドは主に、**プラットフォーム固有のメソッド**（例：雲湖の `Board`、沙盒の `Dice`）および**モジュール固有のメソッド**を補完するために使用されます。"
+    },
+    {
+      "hash": "ed9b0793c8cf000eb1938745c25f0758",
+      "translation": "## 関連ドキュメント\n\n- [SendDSL 详解](../developer-guide/adapters/send-dsl.md) - 標準的な送信方法の説明\n- [アダプター開発の入門](../developer-guide/adapters/getting-started.md) - アダプターの作成"
+    }
+  ]
 }

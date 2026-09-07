@@ -4,22 +4,22 @@ YunhuAdapter is an adapter built based on the Yunhu protocol, integrating all Yu
 
 ---
 
-## Documentation Information
+## Document Information
 
 - Corresponding Module Version: 4.3.0
 - Maintainer: ErisPulse
 
 ## Basic Information
 
-- Platform Introduction: Yunhu is an enterprise-level instant messaging platform.
+- Platform Introduction: Yunhu is an enterprise-grade instant messaging platform.
 - Adapter Name: YunhuAdapter
-- Multi-account Support: Supports identifying and configuring multiple Yunhu robot accounts through bot_id.
-- Chainable Modifier Support: Supports chainable modifier methods such as `.Reply()`.
-- OneBot12 Compatibility: Supports sending messages in OneBot12 format.
+- Multi-account Support: Supports identifying and configuring multiple Yunhu bot accounts via `bot_id`.
+- Chained Modifier Support: Supports chained modifier methods such as `.Reply()`.
+- OneBot12 Compatibility: Supports sending messages in the OneBot12 format.
 
 ## Supported Message Sending Types
 
-All sending methods are implemented through a fluent interface syntax, for example:
+All sending methods are implemented through a fluent syntax, for example:
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
@@ -32,19 +32,19 @@ The supported sending types include:
 - `.Html(html: str)`: Sends an HTML formatted message.
 - `.Markdown(markdown: str)`: Sends a Markdown formatted message.
 - `.A2UI(text: str)`: Sends an A2UI formatted message.
-- `.Image(file: bytes, stream: bool = False, filename: str = None)`: Sends an image message, supports streaming upload and custom filename.
-- `.Video(file: bytes, stream: bool = False, filename: str = None)`: Sends a video message, supports streaming upload and custom filename.
-- `.File(file: bytes, stream: bool = False, filename: str = None)`: Sends a file message, supports streaming upload and custom filename.
-- `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)`: Sends a batch message.
+- `.Image(file: bytes, stream: bool = False, filename: str = None)`: Sends an image message, supporting streaming upload and custom file names.
+- `.Video(file: bytes, stream: bool = False, filename: str = None)`: Sends a video message, supporting streaming upload and custom file names.
+- `.File(file: bytes, stream: bool = False, filename: str = None)`: Sends a file message, supporting streaming upload and custom file names.
+- `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)`: Sends messages in batch.
 - `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)`: Edits an existing message.
 - `.Recall(msg_id: str)`: Recalls a message.
-- `.Board(content: str, content_type: str = "text")`: Publishes a bulletin board message. The scope is inferred from `To()` (specifying target = local board, not specifying = global board). Chaining modifiers: `.Expire(duration)` for relative expiration (seconds), `.ExpireAt(timestamp)` for absolute expiration (second-level timestamp), `.ForMember(member_id)` for group member board; **automatically撤销 the board when content is empty**. Still compatible with the old-style `Board("local", "公告")` explicit scope syntax.
-- `.DismissBoard()`: Dismisses a bulletin board message. The scope is similarly inferred from `To()`, supports `.ForMember(member_id)`; still compatible with the old-style `DismissBoard("local")` syntax.
-- `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`: Sends a streaming message.
+- `.Board(content: str, content_type: str = "text")`: Publishes an announcement board. The scope is inferred by `To()` (specifying target = local board, not specifying = global board). Fluent modifiers: `.Expire(duration)` for relative expiration (seconds), `.ExpireAt(timestamp)` for absolute expiration (second-level timestamp), `.ForMember(member_id)` for group member board; **automatically reverts to a revoke board when content is empty**. Still compatible with the old-style `Board("local", "announcement")` explicit scope syntax.
+- `.DismissBoard()`: Revokes an announcement board. The scope is still inferred by `To()`, supports `.ForMember(member_id)`; still compatible with the old-style `DismissBoard("local")` syntax.
+- `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)`: Sends a stream message.
 
 ### Group Management Methods
 
-All group management methods require specifying the group through a fluent interface syntax, for example:
+All group management methods require specifying the group through fluent syntax, for example:
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
@@ -52,19 +52,19 @@ yunhu = adapter.get("yunhu")
 await yunhu.Send.To("group", group_id).Kick(user_id)
 ```
 
-- `.Kick(user_id: str)`: Removes a group member. The bot needs the `allow remove group member` permission.
-- `.Ban(user_id: str, duration: int = 600)`: Mutes a user. `duration` specifies the mute duration (seconds), 0 means unmute, -1 means permanent mute. The bot needs the `allow mute user` permission.
-- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)`: Creates a group tag. `color` is in the format #RRGGBB, `sort` determines the order (smaller values appear earlier). The bot needs the `allow control tag group` permission.
-- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)`: Edits a group tag. Each parameter is optional, and if not provided, it will not be modified. The bot needs the `allow control tag group` permission.
-- `.DeleteTag(tag: str)`: Deletes a group tag. The bot needs the `allow control tag group` permission.
+- `.Kick(user_id: str)`: Removes a group member. The bot needs the `Allow Remove Group Member` permission.
+- `.Ban(user_id: str, duration: int = 600)`: Mutes a user. `duration` is the mute duration (in seconds), 0 means unmute, -1 means permanent mute. The bot needs the `Allow Mute User` permission.
+- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)`: Creates a group tag. `color` format is #RRGGBB, `sort`越小越靠前. The bot needs the `Allow Control Tag Group` permission.
+- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)`: Edits a group tag. Parameters are optional, not passed means no modification. The bot needs the `Allow Control Tag Group` permission.
+- `.DeleteTag(tag: str)`: Deletes a group tag. The bot needs the `Allow Control Tag Group` permission.
 - `.GetTagList()`: Retrieves the group tag list. Returns a response containing a `list` array.
-- `.AddUserTag(user_id: str, tag: str)`: Adds a tag to a user. The bot needs the `allow control tag group` permission.
-- `.RemoveUserTag(user_id: str, tag: str)`: Removes a tag from a user. The bot needs the `allow control tag group` permission.
-- `.SetMsgTypeLimit(types: str)`: Controls message types within the group. `types` is a comma-separated string of message type names (e.g., `"text,image,video"`), an empty string means no restriction. The bot needs the `allow modify group info` permission.
+- `.AddUserTag(user_id: str, tag: str)`: Adds a tag to a user. The bot needs the `Allow Control Tag Group` permission.
+- `.RemoveUserTag(user_id: str, tag: str)`: Removes a tag from a user. The bot needs the `Allow Control Tag Group` permission.
+- `.SetMsgTypeLimit(types: str)`: Controls message types within the group. `types` is a comma-separated string of message type names (e.g., `"text,image,video"`), an empty string means no restriction. The bot needs the `Allow Modify Group Info` permission.
 
 ### Message Query Methods
 
-To retrieve the history message list of a specified conversation (user/group), you need to specify the target through a fluent interface syntax, for example:
+To retrieve the history message list of a specified session (user/group), you need to specify the target through fluent syntax, for example:
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
@@ -72,30 +72,30 @@ yunhu = adapter.get("yunhu")
 result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
 ```
 
-- `.GetMessages(message_id: str = None, before: int = None, after: int = None)`: Retrieves the conversation history messages. Returns a response containing a `list` array and `total` count.
-  - `message_id`: Message ID (optional). If not provided, combined with `before` returns the most recent N messages.
-  - `before`: Returns the N messages before the specified message ID.
-  - `after`: Returns the N messages after the specified message ID.
+- `.GetMessages(message_id: str = None, before: int = None, after: int = None)`: Retrieves the session's history messages. Returns a response containing a `list` array and `total` count.
+  - `message_id`: Message ID (optional). Not filled in with `before` returns the most recent N messages.
+  - `before`: Returns N messages before the specified message ID.
+  - `after`: Returns N messages after the specified message ID.
   - > **Note:** At least one of `before` and `after` must be specified and greater than 0, otherwise the server will not return any messages.
 
-The board scope is automatically inferred by `To()`:
-- Specifying `To(target_type, target_id)` → local board (specific user/group)
-- Not specifying `To()` → global board
+Board scope is automatically inferred by `To()`:
+- Specifying `To(target_type, target_id)` → Local board (specific user/group)
+- Not specifying `To()` → Global board
 
 ```python
 # Local board (expires after 60 seconds)
-await yunhu.Send.To("group", group_id).Expire(60).Board("公告", content_type="markdown")
+await yunhu.Send.To("group", group_id).Expire(60).Board("Announcement", content_type="markdown")
 
-# Group member board (visible only to the specified member)
-await yunhu.Send.To("group", group_id).ForMember(user_id).Board("visible only to you")
+# Group member board (visible only to specified member)
+await yunhu.Send.To("group", group_id).ForMember(user_id).Board("Visible only to you")
 
 # Absolute timestamp expiration
-await yunhu.Send.To("group", group_id).ExpireAt(1785208268).Board("expires at specified time")
+await yunhu.Send.To("group", group_id).ExpireAt(1785208268).Board("Expires at specified time")
 
 # Global board
-await yunhu.Send.Board("global announcement")
+await yunhu.Send.Board("Global Announcement")
 
-# Clear local board (empty content → automatically撤销)
+# Clear local board (empty content → automatically revoked)
 await yunhu.Send.To("group", group_id).Board("")
 ```
 
@@ -104,10 +104,10 @@ await yunhu.Send.To("group", group_id).Board("")
 The `buttons` parameter is a nested list representing the layout and functionality of buttons. Each button object contains the following fields:
 
 | Field         | Type   | Required | Description                                                                 |
-|---------------|--------|----------|-----------------------------------------------------------------------------|
-| `text`        | string | Yes      | The text on the button                                                      |
-| `actionType`  | int    | Yes      | Action type:<br>`1`: Navigate to URL<br>`2`: Copy<br>`3`: Report on click    |
-| `url`         | string | No       | Used when `actionType=1`, represents the target URL for navigation          |
+|---------------|--------|----------|------------------------------------------------------------------------------|
+| `text`        | string | Yes      | Text on the button                                                           |
+| `actionType`  | int    | Yes      | Action type: <br>`1`: Navigate URL<br>`2`: Copy<br>`3`: Report on click      |
+| `url`         | string | No       | Used when `actionType=1`, indicating the target URL for navigation           |
 | `value`       | string | No       | When `actionType=2`, this value will be copied to the clipboard<br>When `actionType=3`, this value will be sent to the subscriber |
 
 Example:
@@ -121,26 +121,25 @@ buttons = [
 ]
 await yunhu.Send.To("user", user_id).Buttons(buttons).Text("Message with buttons")
 ```
-> **Note:**
-> - Only clicking the **report event** button will trigger a push notification; **copy** and **navigate URL** actions will not trigger a push notification.
+> **Note:** Only users who click the **report event** button will receive a push notification; neither **copy** nor **navigate URL** will trigger a push notification.
 
-### Chaining Modifier Methods (can be combined)
+### Fluent Modifier Methods (Combinable)
 
-Chaining modifier methods return `self`, support chaining, and must be called before the final sending method:
+Fluent modifier methods return `self`, supporting chained calls, and must be called before the final sending method:
 
 - `.Reply(message_id: str)`: Replies to a specified message.
 - `.At(user_id: str)`: Mentions a specified user.
 - `.AtAll()`: Mentions everyone.
 - `.Buttons(buttons: List)`: Adds buttons.
 
-### Chaining Call Examples
+### Fluent Call Examples
 
 ```python
 # Basic sending
 await yunhu.Send.To("user", user_id).Text("Hello")
 
 # Reply to a message
-await yunhu.Send.To("group", group_id).Reply(msg_id).Text("Reply message")
+await yunhu.Send.To("group", group_id).Reply(msg_id).Text("Replied message")
 
 # Reply + buttons
 await yunhu.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("Message with reply and buttons")
@@ -152,40 +151,40 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("Mess
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
-# Remove a group member
+# Remove group member
 await yunhu.Send.To("group", group_id).Kick(user_id)
 
-# Mute a user (10 minutes)
+# Mute user (10 minutes)
 await yunhu.Send.To("group", group_id).Ban(user_id, duration=600)
 
-# Unmute
+# Unmute user
 await yunhu.Send.To("group", group_id).Ban(user_id, duration=0)
 
-# Permanent mute
+# Permanent mute user
 await yunhu.Send.To("group", group_id).Ban(user_id, duration=-1)
 
-# Create a group tag
+# Create group tag
 await yunhu.Send.To("group", group_id).CreateTag("VIP User", color="#FF5733", desc="VIP Member")
 
-# Edit a group tag
+# Edit group tag
 await yunhu.Send.To("group", group_id).EditTag("VIP User", new_tag="SVIP User", color="#33C4FF")
 
-# Delete a group tag
+# Delete group tag
 await yunhu.Send.To("group", group_id).DeleteTag("VIP User")
 
-# Retrieve group tag list
+# Get group tag list
 result = await yunhu.Send.To("group", group_id).GetTagList()
 
-# Add a tag to a user
+# Add tag to user
 await yunhu.Send.To("group", group_id).AddUserTag(user_id, "VIP User")
 
-# Remove a tag from a user
+# Remove tag from user
 await yunhu.Send.To("group", group_id).RemoveUserTag(user_id, "VIP User")
 
-# Set message type restriction
+# Set message type limit
 await yunhu.Send.To("group", group_id).SetMsgTypeLimit("text,image,video")
 
-# Remove message type restriction
+# Remove message type limit
 await yunhu.Send.To("group", group_id).SetMsgTypeLimit("")
 ```
 
@@ -195,32 +194,32 @@ await yunhu.Send.To("group", group_id).SetMsgTypeLimit("")
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
-# Retrieve the last 10 messages in the group (returns 10 messages total)
+# Get the last 10 messages in the group (returns 10 messages in total)
 result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
 
-# Retrieve the 10 messages before the specified message ID in the group (returns 11 messages total)
+# Get the 10 messages before the specified message ID in the group (returns 11 messages in total)
 result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10)
 
-# Retrieve 10 messages before and after the specified message ID in the group (returns 21 messages total)
+# Get 10 messages before and after the specified message ID in the group (returns 21 messages in total)
 result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10, after=10)
 
-# Retrieve history messages in a user conversation
+# Get history messages in user session
 result = await yunhu.Send.To("user", user_id).GetMessages(message_id="msg_xxx", before=10)
 ```
 
 ### OneBot12 Message Support
 
-The adapter supports sending OneBot12 formatted messages for cross-platform message compatibility:
+The adapter supports sending OneBot12 formatted messages, facilitating cross-platform message compatibility:
 
 - `.Raw_ob12(message: List[Dict], **kwargs)`: Sends a OneBot12 formatted message.
 
 ```python
-# Send a OneBot12 formatted message
+# Send OneBot12 formatted message
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await yunhu.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
-# Combined with chaining modifiers
-ob12_msg = [{"type": "text", "data": {"text": "Reply message"}}]
+# Combined with fluent modifiers
+ob12_msg = [{"type": "text", "data": {"text": "Replied message"}}]
 await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 ```
 
@@ -229,14 +228,14 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 > [!NOTE]
 > This feature requires ErisPulse **2.7.0+** and YunhuAdapter **4.3.0+**.
 
-In addition to the `Send` fluent interface for sending messages, the adapter also provides the `Api` inner class, exposing standard OneBot12 API actions and platform extensions for Yunhu. All methods return a standard response format.
+In addition to the `Send` chain-based sending, the adapter also provides the `Api` inner class, exposing standard OneBot12 API actions and Yunhu platform extension actions. All methods return a standard response format.
 
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
 # Information queries (via public Web API, no authentication required)
-result = await yunhu.Api.get_self_info()              # Bot self information
+result = await yunhu.Api.get_self_info()              # Robot self information
 result = await yunhu.Api.get_user_info("7058262")     # Any user information
 result = await yunhu.Api.get_group_info("635409929")  # Group information
 
@@ -247,7 +246,7 @@ result = await yunhu.Api.get_file("https://chat-file.jwznb.com/xxx")
 # Message recall (requires additional chat_id + chat_type)
 await yunhu.Api.delete_message("msg_id", chat_id="123", chat_type="group")
 
-# Multi-account: specify Bot account
+# Multi-account: Specify Bot account
 info = await yunhu.Api.Using("bot1").get_self_info()
 ```
 
@@ -255,25 +254,25 @@ info = await yunhu.Api.Using("bot1").get_self_info()
 
 | Method | Description | Data Source |
 |--------|-------------|-------------|
-| `get_self_info()` | Bot self information | Public Web API (bot-info) |
-| `get_user_info(user_id)` | User information (any user can be queried) | Public Web API (user/homepage) |
+| `get_self_info()` | Robot self information | Public Web API (bot-info) |
+| `get_user_info(user_id)` | User information (any user can query) | Public Web API (user/homepage) |
 | `get_group_info(group_id)` | Group information | Public Web API (group-info) |
-| `upload_file(*, type, name, ...)` | Upload file (automatically detects image/video/file) | Bot open API |
-| `get_file(file_id)` | Get file (file_id is the URL) | — |
+| `upload_file(*, type, name, ...)` | Upload file (auto-detect image/video/file) | Bot open API |
+| `get_file(file_id)` | Get file (file_id is URL) | — |
 | `delete_message(message_id, *, chat_id, chat_type)` | Recall message | Bot open API (/bot/recall) |
 
-> **Note**: `get_self_info` / `get_user_info` / `get_group_info` are implemented via **non-official public Web APIs** (chat-web-go.jwzhd.com). These interfaces require no authentication but are not officially documented and may change with platform updates; failures return standard error responses.
+> **Note**: `get_self_info` / `get_user_info` / `get_group_info` are implemented via **non-official public Web API** (chat-web-go.jwzhd.com). These interfaces require no authentication but are not officially documented and may change with platform updates; failure returns a standard error response.
 
 ### Unsupported Standard Actions
 
-The following standard actions do not have corresponding APIs on Yunhu, and calling them returns `retcode=10002` (unsupported operation):
-- `get_friend_list` (the "bot user list" of the Bot open API is still pending launch)
+The following standard actions have no corresponding API in Yunhu, and calling them returns `retcode=10002` (unsupported operation):
+- `get_friend_list` (the "robot user list" in Bot open API is still pending launch)
 - `get_group_list` / `get_group_member_info` / `get_group_member_list`
 - `set_group_name` / `leave_group`
 
 ### Platform Extension Actions
 
-Call Yunhu-specific actions using `Api.call("yunhu.xxx", **params)` (parameters use OB12-style naming, and the adapter automatically translates them to Yunhu fields):
+Call Yunhu-specific actions via `Api.call("yunhu.xxx", **params)` (parameters use OB12-style naming, adapter automatically translates to Yunhu fields):
 
 | Extension Action | Description | Equivalent Send Method |
 |------------------|-------------|------------------------|
@@ -282,7 +281,7 @@ Call Yunhu-specific actions using `Api.call("yunhu.xxx", **params)` (parameters 
 | `yunhu.ban` | Mute (group_id, user_id, duration) | `Send.To("group", g).Ban(uid, duration)` |
 | `yunhu.unban` | Unmute (group_id, user_id) | `Send.To("group", g).Ban(uid, duration=0)` |
 | `yunhu.tag.create/edit/delete/list` | Group tag CRUD (group_id, ...) | `Send.To("group", g).CreateTag(...)` etc. |
-| `yunhu.tag.relate` / `yunhu.tag.relate_cancel` | Add/remove tag to/from user | `Send.To("group", g).AddUserTag(...)` etc. |
+| `yunhu.tag.relate` / `yunhu.tag.relate_cancel` | Add/remove tag for user | `Send.To("group", g).AddUserTag(...)` etc. |
 | `yunhu.set_member_title` / `yunhu.unset_member_title` | **Member title semantic alias** (tag ≈ title, internally mapped to tag.relate) | — |
 | `yunhu.msg_type_limit` | Group message type restriction (group_id, type) | `Send.To("group", g).SetMsgTypeLimit(...)` |
 | `yunhu.get_messages` | Get historical messages (chat_id, chat_type, message_id?, before?, after?) | `Send.To(...).GetMessages(...)` |
@@ -290,17 +289,17 @@ Call Yunhu-specific actions using `Api.call("yunhu.xxx", **params)` (parameters 
 | `yunhu.user_homepage` | Public user homepage query (user_id) | — |
 
 ```python
-# Example of platform extensions
+# Platform extension example
 await yunhu.Api.call("yunhu.kick", group_id="123", user_id="456")
 await yunhu.Api.call("yunhu.set_member_title", group_id="123", user_id="456", title="VIP")
 result = await yunhu.Api.call("yunhu.get_messages", chat_id="123", chat_type="group", before=10)
 ```
 
-> **Tags and Titles**: On Yunhu, the semantic meaning of "tags" is equivalent to OneBot12 group member `title`. `yunhu.set_member_title` is a native semantic alias for `yunhu.tag.relate`, and both internally map to the same endpoint. In group message events, the sender's role is mapped from `senderUserLevel` to the standard `role` field (owner/admin/member).
+> **Tags and Titles**: Yunhu's "tag" semantics are equivalent to OneBot12 group member `title`. `yunhu.set_member_title` is a native semantic alias for `yunhu.tag.relate`, both internally mapped to the same endpoint. In group message events, the sender's role is mapped from `senderUserLevel` to the standard `role` field (owner/admin/member).
 
 ## Return Values of Send Methods
 
-All send methods return a Task object, which can be directly awaited to obtain the send result. The returned result follows the ErisPulse adapter's standardized return specification:
+All send methods return a Task object, which can be awaited directly to obtain the send result. The returned result follows the ErisPulse adapter's standardized return specification:
 
 ```python
 {
@@ -316,71 +315,71 @@ All send methods return a Task object, which can be directly awaited to obtain t
 
 ## Unique Event Types
 
-Platform-specific features should be used only after checking `platform=="yunhu"`
+Platform-specific features require `platform=="yunhu"` check before use.
 
 ### Core Differences
 
-1. Unique Event Types:
+1. Unique event types:
     - Form (e.g., form command): `yunhu_form`
-    - Emoji/Sticker Message Segment: `yunhu_expression`
-    - Button Click: `yunhu_button_click`
-    - A2UI Button Click: `yunhu_a2ui_button`
-    - Bot Setting: `yunhu_bot_setting`
-    - Quick Menu: `yunhu_shortcut_menu`
-2. Standard Field Extension (4.3.0+):
-    - Standard `role` field added to message events (mapped from Yunhu's `senderUserLevel` to `owner`/`admin`/`member`)
-    - New `user_avatar` field added (sender's avatar URL)
-3. Extended Fields:
-    - All extended fields are prefixed with `yunhu_`
+    - Emoji pack/sticker message segment: `yunhu_expression`
+    - Button click: `yunhu_button_click`
+    - A2UI button click: `yunhu_a2ui_button`
+    - Bot setting: `yunhu_bot_setting`
+    - Quick menu: `yunhu_shortcut_menu`
+2. Standard field extension (4.3.0+):
+    - Message events add standard `role` field (mapped from Yunhu's `senderUserLevel` to `owner`/`admin`/`member`)
+    - New `user_avatar` field (sender's avatar URL)
+3. Extended fields:
+    - All unique fields are prefixed with `yunhu_`
     - Original data is preserved in the `yunhu_raw` field
     - In private chats, `self.user_id` represents the bot ID
 
 ### Special Field Examples
 
 ```python
-# Form Command
+# Form command
 {
   "type": "message",
   "detail_type": "private",
   "yunhu_command": {
-    "name": "Form Command Name",
+    "name": "Form command name",
     "id": "Command ID",
     "form": {
       "Field ID1": {
         "id": "Field ID1",
         "type": "input/textarea/select/radio/checkbox/switch",
-        "label": "Field Label",
-        "value": "Field Value"
+        "label": "Field label",
+        "value": "Field value"
       }
     }
   }
 }
 
-# Button Click Event
+# Button event
 {
   "type": "notice",
   "detail_type": "yunhu_button_click",
   "user_id": "User ID who clicked the button",
-  "user_nickname": "User Nickname",
+  "user_nickname": "User nickname",
   "message_id": "Message ID",
   "yunhu_button": {
     "id": "Button ID (may be empty)",
-    "value": "Button Value"
+    "value": "Button value"
   }
 }
 
-# A2UI Button Click Event
+# A2UI button event
 {
   "type": "notice",
   "detail_type": "yunhu_a2ui_button",
-  "user_id": "Operator User ID",
-  "user_nickname": "User Nickname",
+  "user_id": "Operator user ID",
+  "user_nickname": "User nickname",
   "message_id": "Message ID",
   "yunhu_a2ui": {
     "recv_id": "Recipient ID",
-    "recv_type": "Recipient Type",
-    "action_name": "Action Name",
-    "source_component_id": "Source Component ID",
+    "recv_type": "Recipient type",
+    "action_name": "Action name",
+    "source_component_id": "Source component ID",
     "form_context": {},
     "interaction_json": "JSON string of interaction data"
   }
@@ -393,10 +392,10 @@ from ErisPulse.Core.Event import notice
 
 @notice.on_notice()
 async def handle_yunhu_notice(event):
-    """Handle Yunhu Notice Events
+    """Handle Yunhu notification events
 
     Use the generic on_notice() decorator to handle all notification events,
-    then distinguish different types of notifications via detail_type.
+    then distinguish between different types of notifications using detail_type.
     event.reply() will automatically reply through the Yunhu platform.
     """
 
@@ -408,20 +407,20 @@ async def handle_yunhu_notice(event):
 
         print(f"User {user_nickname}({user_id}) clicked the button: {button_value}")
 
-# Using event.reply() for Automatic Replies (会选择正确的发送方式以适应平台)
+# Auto-respond using event.reply() (will automatically select the correct sending method based on the platform)
         if button_value == "confirm":
             await event.reply("You clicked the confirm button!")
         elif button_value == "cancel":
-            await event.reply("Operation canceled")
+            await event.reply("The operation has been cancelled")
         else:
             await event.reply(f"Received your selection: {button_value}")
 
 # Handling Shortcut Menu Events
     elif event.get("detail_type") == "yunhu_shortcut_menu":
         menu_id = event.get("yunhu_menu", {}).get("id", "")
-        await event.reply(f"Triggered shortcut menu: {menu_id}")
+        await event.reply(f"Shortcut menu triggered: {menu_id}")
 
-# Handling Robot Setting Changes
+# Handling Bot Setting Changes
     elif event.get("detail_type") == "yunhu_bot_setting":
         settings = event.get("yunhu_setting", {})
         await event.reply(f"Settings have been updated: {settings}")
@@ -434,7 +433,7 @@ async def handle_yunhu_notice(event):
         await event.reply(f"A2UI Action: {action_name}, Form Data: {form_context}")
 ```
 
-### Sending a Message with Buttons Using a Chained Call
+### Sending Message with Buttons Using Chained Calls
 
 ```python
 from ErisPulse import sdk
@@ -449,13 +448,13 @@ buttons = [
     ]
 ]
 
-# Send a Message with Buttons to a Group  
+# Sending a Message with Buttons to a Group  
 await yunhu.Send.To("group", "123456").Buttons(buttons).Text("Please confirm the following action")
 
-# Send a Message with Buttons to User's Private Chat
+# Sending a Message with Buttons to a User's Private Chat
 await yunhu.Send.To("user", "789").Buttons(buttons).Text("Please select your preferred settings")
 
-### Send A2UI Message
+### Sending A2UI Messages
 
 ```python
 from ErisPulse import sdk
@@ -463,10 +462,10 @@ from ErisPulse import sdk
 yunhu = sdk.adapter.get("yunhu")
 ```
 
-# Send A2UI Message
-await yunhu.Send.To("user", user_id).A2UI("A2UI interaction card content")
-
+# Sending A2UI Messages
+await yunhu.Send.To("user", user_id).A2UI("A2UI interactive card content")
 ```
+
 # Bot Settings
 {
   "type": "notice",
@@ -486,7 +485,7 @@ await yunhu.Send.To("user", user_id).A2UI("A2UI interaction card content")
 {
   "type": "notice",
   "detail_type": "yunhu_shortcut_menu",
-  "user_id": "User ID who triggered the menu",
+  "user_id": "User ID that triggered the menu",
   "user_nickname": "User nickname",
   "group_id": "Group ID (if it's a group chat)",
   "yunhu_menu": {
@@ -499,12 +498,12 @@ await yunhu.Send.To("user", user_id).A2UI("A2UI interaction card content")
 
 ## Event Mixin Extension Methods
 
-The adapter registers the following platform-specific methods, available only when `platform == "yunhu"`:
+The adapter has registered the following platform-specific methods, available only when `platform == "yunhu"`:
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
 | `get_raw_event()` | `dict` | Get raw Yunhu event data (`yunhu_raw`) |
-| `get_sender_level()` | `str` | Sender's native Yunhu level (owner/administrator/member/unknown) |
+| `get_sender_level()` | `str` | Sender's original Yunhu level (owner/administrator/member/unknown) |
 | `get_sender_role()` | `str` | Sender's OneBot12 standard role (owner/admin/member) |
 | `get_sender_title()` | `str` | Sender's title (standard `title` field accessor, reserved) |
 | `get_sender_avatar()` | `str` | Sender's avatar URL |
@@ -513,9 +512,9 @@ The adapter registers the following platform-specific methods, available only wh
 | `get_a2ui_action()` | `str` | The `actionName` of an A2UI button event |
 | `get_a2ui_form_context()` | `dict` | The form context of an A2UI button event |
 | `get_menu_id()` | `str` | Shortcut menu event ID (`yunhu_menu.id`) |
-| `get_setting()` | `dict` | Setting data of a bot setting event (`yunhu_setting`) |
+| `get_setting()` | `dict` | Setting data from a bot setting event (`yunhu_setting`) |
 | `is_command_message()` | `bool` | Whether the event is a command message |
-| `is_button_click()` | `bool` | Whether the event is a button click |
+| `is_button_click()` | `bool` | Whether the event is a button click event |
 | `is_a2ui_button()` | `bool` | Whether the event is an A2UI button event |
 
 ```python
@@ -536,15 +535,15 @@ async def handle_yunhu_notice(event):
 
 ## Extension Field Description
 
-- All custom fields are prefixed with `yunhu_` to avoid conflicts with standard fields.
-- Raw data is preserved in the `yunhu_raw` field for easy access to the complete original data from the Yunhu platform.
-- `self.user_id` represents the bot ID (obtained from the bot_id in the configuration).
-- Form commands are provided as structured data through the `yunhu_command` field.
-- Button click events are provided with button-related information through the `yunhu_button` field.
-- A2UI button events are provided with A2UI interaction-related information through the `yunhu_a2ui` field.
-- Bot setting changes are provided with setting item data through the `yunhu_setting` field.
-- Quick menu operations are provided with menu-related information through the `yunhu_menu` field.
-- Emoji/Sticker messages are provided as a message segment through `yunhu_expression`, containing sticker data (sticker_id, sticker pack ID, image dimensions, etc.).
+- All custom fields are prefixed with `yunhu_` to avoid conflicts with standard fields
+- Original data is retained in the `yunhu_raw` field for accessing the complete raw data from the Yunhu platform
+- `self.user_id` represents the bot ID (obtained from the bot_id in the configuration)
+- Form commands provide structured data through the `yunhu_command` field
+- Button click events provide button-related information through the `yunhu_button` field
+- A2UI button events provide A2UI interaction-related information through the `yunhu_a2ui` field
+- Bot setting changes provide setting item data through the `yunhu_setting` field
+- Quick menu operations provide menu-related information through the `yunhu_menu` field
+- Emoji/Sticker messages provide sticker data (sticker_id, sticker pack ID, image dimensions, etc.) through the `yunhu_expression` message segment
 
 ### Emoji/Sticker Message Segment (yunhu_expression)
 
@@ -566,10 +565,10 @@ When a user sends an emoji or sticker, the message segment type is `yunhu_expres
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `sticker_id` | string | Sticker unique identifier |
+| `sticker_id` | string | Unique identifier for the sticker |
 | `sticker_pack_id` | string | Sticker pack ID |
 | `expression_id` | string | Expression ID |
-| `image_name` | string | Path to the expression image file |
+| `image_name` | string | File path of the expression image |
 | `width` | int | Image width (optional) |
 | `height` | int | Image height (optional) |
 
@@ -586,19 +585,19 @@ async def handle_message(event):
                 print(f"Received sticker: sticker_id={data['sticker_id']}, pack ID={data['sticker_pack_id']}")
 ```
 
-## Multi-Bot Configuration
+## Multiple Bot Configuration
 
 ### Configuration Explanation
 
-The Yunhu Adapter supports configuring and running multiple Yunhu bot accounts simultaneously.
+Yunhu Adapter supports configuring and running multiple Yunhu bot accounts simultaneously.
 
 ```toml
 # config.toml
 [Yunhu_Adapter.accounts.bot1]
 token = "your_bot1_token"  # Bot token (required)
-mode = "ws"  # Receive mode (optional, default: "ws", options: "ws", "webhook")
-webhook_path = "/webhook/bot1"  # Webhook path (optional, default: "/webhook")
-enabled = true  # Whether to enable (optional, default: true)
+mode = "ws"  # Receive mode (optional, default is "ws", options: "ws", "webhook")
+webhook_path = "/webhook/bot1"  # Webhook path (optional, default is "/webhook")
+enabled = true  # Whether to enable (optional, default is true)
 
 [Yunhu_Adapter.accounts.bot2]
 token = "your_bot2_token"  # Second bot's token
@@ -607,15 +606,15 @@ enabled = true
 ```
 
 **Configuration Item Explanation:**
-- `token`: API token provided by the Yunhu platform (required)
-- `mode`: Receive mode (optional, default: `"ws"`, options: `"ws"`, `"webhook"`)
-- `webhook_path`: HTTP path for receiving Yunhu events (optional, default: `"/webhook"`, only used in webhook mode)
-- `enabled`: Whether to enable this account (optional, default: true)
+- `token`: API token provided by Yunhu platform (required)
+- `mode`: Receive mode (optional, default is `"ws"`, options: `"ws"`, `"webhook"`)
+- `webhook_path`: HTTP path for receiving Yunhu events (optional, default is `"/webhook"`, used only in webhook mode)
+- `enabled`: Whether to enable this account (optional, default is true)
 
 **Important Notes:**
-1. The Yunhu platform's bot ID is **automatically detected at runtime**, no need to specify it in the configuration
-2. In webhook mode, each bot should have its own `webhook_path` to receive its own webhook events
-3. When configuring webhooks in the Yunhu platform, please set up corresponding URLs for each bot, for example:
+1. Yunhu platform's bot ID is automatically detected at **runtime**, no need to specify in configuration
+2. In webhook mode, each bot should have an independent `webhook_path` to receive its own webhook events
+3. When configuring webhooks on the Yunhu platform, please set corresponding URLs for each bot, for example:
    - Bot1: `https://your-domain.com/webhook/bot1`
    - Bot2: `https://your-domain.com/webhook/bot2`
 
@@ -632,14 +631,14 @@ yunhu = adapter.get("yunhu")
 # Send message using account name
 await yunhu.Send.Using("bot1").To("user", "user123").Text("Hello from bot1!")
 
-# Send message using bot_id (automatically matches the corresponding account)
+# Send message using bot_id (automatically matches corresponding account)
 await yunhu.Send.Using("30535459").To("group", "group456").Text("Hello from bot!")
 
-# Use the first enabled bot if not specified
+# Use first enabled bot if not specified
 await yunhu.Send.To("user", "user123").Text("Hello from default bot!")
 ```
 
-> **Note:** When using `bot_id`, the system automatically finds the matching account in the configuration. This is especially useful when handling event replies, where you can directly use `event["self"]["user_id"]` to reply from the same account.
+> **Note:** When using `bot_id`, the system will automatically find the matching account in the configuration. This is especially useful when handling event replies, as you can directly use `event["self"]["user_id"]` to reply using the same account.
 
 ### Bot Identification in Events
 
@@ -653,7 +652,7 @@ async def handle_message(event):
     if event["platform"] == "yunhu":
         # Get the bot ID that triggered the event
         bot_id = event["self"]["user_id"]
-        print(f"Message from Bot: {bot_id}")
+        print(f"Message received from Bot: {bot_id}")
         
         # Reply using the same bot
         yunhu = adapter.get("yunhu")
@@ -665,7 +664,7 @@ async def handle_message(event):
 
 ### Log Information
 
-The adapter will automatically include `bot_id` information in logs, making debugging and tracking easier:
+The adapter will automatically include `bot_id` information in logs, which helps with debugging and tracking:
 
 ```
 [INFO] [yunhu] [bot:30535459] Received private message from user user123
@@ -678,16 +677,16 @@ The adapter will automatically include `bot_id` information in logs, making debu
 # Get all account information
 bots = yunhu.bots
 
-# Check if an account is enabled
+# Check if account is enabled
 bot_status = {
     bot_name: bot_config.enabled
     for bot_name, bot_config in yunhu.bots.items()
 }
 
-# Dynamically enable/disable accounts (requires restarting the adapter)
+# Dynamically enable/disable account (requires adapter restart)
 yunhu.bots["bot1"].enabled = False
 ```
 
 ### Legacy Configuration Compatibility
 
-Legacy `[Yunhu_Adapter.bots.*]` configuration (including the `bot_id` field) will be automatically migrated to the `accounts` format (`bot_id` is now automatically detected at runtime, and values in the configuration will be ignored); it is recommended to migrate to the new format as soon as possible.
+Older `[Yunhu_Adapter.bots.*]` configurations (including the `bot_id` field) will be automatically migrated to the `accounts` format (`bot_id` has been changed to automatic detection at runtime, and the value in the configuration will be ignored); it is recommended to migrate to the new format as soon as possible.

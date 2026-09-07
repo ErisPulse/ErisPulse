@@ -1,5 +1,57 @@
 {
+  "version": 2,
   "hash": "565995d6a25a4f2b25d3b031fa9ce045",
-  "translated_at": "2026-07-30T11:16:14.662505",
-  "target_lang": "zh-TW"
+  "file_hash": "565995d6a25a4f2b25d3b031fa9ce045",
+  "translated_at": "2026-09-07T11:04:01.200573",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "0975bf0f258d8a8b68e3282b6546aede",
+      "translation": "# 首次貢獻實戰\n\n> 第一次提交 PR 難免會有些不確定，這很正常。這篇教程把整個過程拆成了幾個小步驟，跟著走就行。中間遇到任何問題都可以在 Issue 或 Discussions 裡問——沒有人會因為你的問題「太基礎」而說什麼，大家更在意的是你在往前走。\n\n本文用「補一個 i18n 翻譯鍵」當例子，因為它修改最小、最容易跑通。不過同樣的流程，對其他類型的貢獻也適用。"
+    },
+    {
+      "hash": "56c84b7550c88246177ca08639b1c2f0",
+      "translation": "## 準備工作\n\n開始前，你需要準備：\n\n- 一個 GitHub 帳戶\n- 本地安裝好 [uv](https://docs.astral.sh/uv/)（ErisPulse 的套件管理器）\n- Python 3.10+"
+    },
+    {
+      "hash": "df02ff2d3a71d8790f66bdc48a426355",
+      "translation": "## 1. Fork 並克隆倉庫\n\n前往 [ErisPulse 倉庫](https://github.com/ErisPulse/ErisPulse)，點擊右上角的 **Fork** 將其複製到你的帳戶，然後克隆到本地（將「你的使用者名稱」替換為實際名稱）：\n\n```bash\ngit clone -b Develop/v2 https://github.com/你的使用者名稱/ErisPulse.git\ncd ErisPulse\n```\n\n添加上游地址，便於日後同步主倉庫的更新：\n\n```bash\ngit remote add upstream https://github.com/ErisPulse/ErisPulse.git\n```"
+    },
+    {
+      "hash": "f11b51f96ec81110c533a072085dc70e",
+      "translation": "## 2. 安裝開發環境\n\n```bash\nuv sync                       # 安裝依賴並建立 .venv\n```\n\n驗證環境是否正常：\n\n```bash\nuv run pytest -m unit -q      # 測試應全部通過\n```"
+    },
+    {
+      "hash": "b356178e70aa24a4a1d09588dc8e5e72",
+      "translation": "## 3. 建立功能分支\n\n請始終從 `Develop/v2` 分支切出：\n\n```bash\ngit checkout Develop/v2\ngit pull upstream Develop/v2   # 先同步最新程式碼\ngit checkout -b docs/add-hello-translation\n```\n\n分支名稱隨意，只要能看得出來你要做什麼即可。"
+    },
+    {
+      "hash": "3122ac06d32342afd30b35c0ada97b0a",
+      "translation": "## 4. 進行修改\n\n以補充一個翻譯鍵為例，假設要新增一句 `mymodule.hello`。\n\n規則只有一條：**新增翻譯鍵，5 種語言（zh-CN / en / zh-TW / ja / ru）要一起補**，不然其他語言的使用者會看到缺失。\n\n打開 `src/ErisPulse/Core/i18n/locales/` 下的 5 個文件，分別添加一行：\n\n```python\n# zh_cn.py\n\"mymodule.hello\": \"你好\",\n# en.py\n\"mymodule.hello\": \"Hello\",\n# zh_tw.py\n\"mymodule.hello\": \"你好\",\n# ja.py\n\"mymodule.hello\": \"こんにちは\",\n# ru.py\n\"mymodule.hello\": \"Привет\",\n```\n\n> 若這次變動涉及新的公共方法，記得為它補上文件註釋，詳見[文件註釋規範](../styleguide/docstring.md)。"
+    },
+    {
+      "hash": "ce2d8c1b3717035e6622b693c0b3b818",
+      "translation": "## 5. 本地驗證\n\n```bash\nuv run ruff check .            # 代碼風格檢查\nuv run basedpyright src/ErisPulse   # 類型檢查（修改了原始碼才需要） - 你可能會遇到幾百個 warning（不用在意忽略就可以...嘻..嘻嘻）\nuv run pytest -m unit -q       # 執行測試\n```\n\n只要這三條都通過即可。類型檢查中那些 `reportAny` / `Unknown*` 警告屬於「類型系統仍在逐步完善中」，不會阻礙合併。\n\n> 如果修改了核心模組（Bases / runtime / config / loaders），建議順手補上對應的測試用例，方便後續維護。"
+    },
+    {
+      "hash": "c69d4e370187ea1cd428a473c242f1c9",
+      "translation": "## 6. 更新 CHANGELOG\n\n開啟 `CHANGELOG.md`，找到最上方仍在開發的版本，在適當的分類下新增一筆記錄：\n\n```markdown\n### 優化\n\n- `Core/i18n/locales` 补充 `mymodule.hello` 翻譯鍵（zh-CN / en / zh-TW / ja / ru）\n```"
+    },
+    {
+      "hash": "9b3d92da39dae56e095d2813478cade8",
+      "translation": "## 7. 提交並推送\n\n```bash\ngit add .\ngit commit -m \"i18n: add mymodule.hello translation\"\ngit push origin docs/add-hello-translation\n```"
+    },
+    {
+      "hash": "3ea07bb860a40e6185185cac590ab87b",
+      "translation": "## 8. 提交 Pull Request\n\n推送之後，GitHub 會提示 **Compare & pull request**，點進去：\n\n1. 確認目標分支是 **`Develop/v2`**（別選成 `main`）\n2. 勾選變更類型，簡單寫寫你改了什麼\n3. 提交，等維護者審查\n\n審查提出意見很正常，不代表你做得不好——按建議改完再 push 一次就行。通過之後，你的變更就正式進 `Develop/v2`，下個版本就能用上。"
+    },
+    {
+      "hash": "cc597ba0fbca1eda81b4de92ee3427b6",
+      "translation": "## 貢獻模組或適配器\n\n模組和適配器是具有完整結構的小型套件，使用腳手架工具起步最為方便：\n\n```bash\nepsdk create    # 選擇 module 或 adapter\n```\n\n生成完之後，照著這些文件往下做即可：\n\n- [模組開發入門](../developer-guide/modules/getting-started.md)\n- [適配器開發入門](../developer-guide/adapters/getting-started.md)\n- [發布到 PyPI 與模組商店](../developer-guide/publishing.md)\n\n> 建議開發前先在 [Issues](https://github.com/ErisPulse/ErisPulse/issues) 裡用「新適配器或模組」模板說明你的計畫，維護者能協助你對接標準、避開一些常見的坑。\n\n模組和適配器通常是獨立倉庫，不必塞進主倉庫。`examples/example-module/` 和 `examples/example-adapter/` 是給你參考的範例。"
+    },
+    {
+      "hash": "dc910191dd5f7638b5598d76b837c62f",
+      "translation": "## 可能會遇到的問題\n\n**PR 提了多久會有人看？**  \n一般幾天內。維護者會留下 review 意見，你按需調整後再 push 一次就好。\n\n**程式碼檢查報錯了？**  \n先試 `uv run ruff check . --fix`，能自動修掉一大半。\n\n**跟主倉庫衝突了？**  \n`git pull upstream Develop/v2`，解決衝突再 push。\n\n**能直接提到 `main` 嗎？**  \n不行，所有更改都走 `Develop/v2`，再由維護者統一發布到 `main`。"
+    }
+  ]
 }

@@ -1,5 +1,57 @@
 {
+  "version": 2,
   "hash": "565995d6a25a4f2b25d3b031fa9ce045",
-  "translated_at": "2026-07-30T11:14:04.373392",
-  "target_lang": "en"
+  "file_hash": "565995d6a25a4f2b25d3b031fa9ce045",
+  "translated_at": "2026-09-07T10:58:43.189133",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "0975bf0f258d8a8b68e3282b6546aede",
+      "translation": "# First Contribution in Practice\n\n> It's normal to feel uncertain when submitting your first PR. This tutorial breaks the entire process into several small steps—just follow along. If you encounter any issues, feel free to ask in Issues or Discussions. No one will say anything about your questions being \"too basic.\" What matters most is that you're moving forward.\n\nThis article uses the example of \"adding an i18n translation key\" because it involves the smallest change and is the easiest to complete successfully. However, the same process applies to other types of contributions as well."
+    },
+    {
+      "hash": "56c84b7550c88246177ca08639b1c2f0",
+      "translation": "## Prerequisites\n\nBefore you begin, you need to prepare:\n\n- A GitHub account\n- [uv](https://docs.astral.sh/uv/) installed locally (ErisPulse's package manager)\n- Python 3.10+"
+    },
+    {
+      "hash": "df02ff2d3a71d8790f66bdc48a426355",
+      "translation": "## 1. Fork and Clone the Repository\n\nGo to the [ErisPulse repository](https://github.com/ErisPulse/ErisPulse), click **Fork** in the top-right corner to copy it to your account, and then clone it locally (replace \"your-username\" with your actual username):\n\n```bash\ngit clone -b Develop/v2 https://github.com/your-username/ErisPulse.git\ncd ErisPulse\n```\n\nAdd the upstream remote to easily sync updates from the main repository in the future:\n\n```bash\ngit remote add upstream https://github.com/ErisPulse/ErisPulse.git\n```"
+    },
+    {
+      "hash": "f11b51f96ec81110c533a072085dc70e",
+      "translation": "## 2. Install Development Environment\n\n```bash\nuv sync                       # Install dependencies and create .venv\n```\n\nVerify that the environment is working correctly:\n\n```bash\nuv run pytest -m unit -q      # All tests should pass\n```"
+    },
+    {
+      "hash": "b356178e70aa24a4a1d09588dc8e5e72",
+      "translation": "## 3. Create a Feature Branch\n\nAlways branch off from `Develop/v2`:\n\n```bash\ngit checkout Develop/v2\ngit pull upstream Develop/v2   # First, sync the latest code\ngit checkout -b docs/add-hello-translation\n```\n\nThe branch name can be arbitrary as long as it reflects what you're working on."
+    },
+    {
+      "hash": "3122ac06d32342afd30b35c0ada97b0a",
+      "translation": "## 4. Make Changes\n\nTo add a new translation key as an example, suppose you need to add the phrase `mymodule.hello`.\n\nThere is only one rule: **When adding a new translation key, you must add it in all five languages (zh-CN / en / zh-TW / ja / ru)**, otherwise users of other languages will see missing content.\n\nOpen the five files under `src/ErisPulse/Core/i18n/locales/` and add one line to each:\n\n```python\n# zh_cn.py\n\"mymodule.hello\": \"你好\",\n# en.py\n\"mymodule.hello\": \"Hello\",\n# zh_tw.py\n\"mymodule.hello\": \"你好\",\n# ja.py\n\"mymodule.hello\": \"こんにちは\",\n# ru.py\n\"mymodule.hello\": \"Привет\",\n```\n\n> If this change involves new public methods, remember to add documentation comments. See [Documentation Comment Guidelines](../styleguide/docstring.md) for details."
+    },
+    {
+      "hash": "ce2d8c1b3717035e6622b693c0b3b818",
+      "translation": "## 5. Local Validation\n\n```bash\nuv run ruff check .            # Code style check\nuv run basedpyright src/ErisPulse   # Type checking (only needed if you modified the source code) - you might encounter hundreds of warnings (just ignore them... hehe.. hehehe)\nuv run pytest -m unit -q       # Run tests\n```\n\nPassing all three checks is sufficient. The `reportAny` / `Unknown*` warnings in type checking are due to \"types still being gradually improved\" and won't block merging.\n\n> If you modify core modules (Bases / runtime / config / loaders), it's recommended to add corresponding test cases for easier future maintenance."
+    },
+    {
+      "hash": "c69d4e370187ea1cd428a473c242f1c9",
+      "translation": "## 6. Update CHANGELOG\n\nOpen `CHANGELOG.md`, find the topmost version that is still under development, and add a new entry under the appropriate category:\n\n```markdown\n### Enhancements\n\n- Added `mymodule.hello` translation key to `Core/i18n/locales` (zh-CN / en / zh-TW / ja / ru)\n```"
+    },
+    {
+      "hash": "9b3d92da39dae56e095d2813478cade8",
+      "translation": "## 7. Commit and Push\n\n```bash\ngit add .\ngit commit -m \"i18n: add mymodule.hello translation\"\ngit push origin docs/add-hello-translation\n```"
+    },
+    {
+      "hash": "3ea07bb860a40e6185185cac590ab87b",
+      "translation": "## 8. Submit a Pull Request\n\nAfter pushing, GitHub will prompt you with **Compare & pull request**. Click on it:\n\n1. Confirm the target branch is **`Develop/v2`** (don't select `main`)\n2. Check the type of changes and briefly describe what you modified\n3. Submit it and wait for the maintainer's review.\n\nIt's normal to receive review comments—they don't mean you did something wrong. Just make the suggested changes and push again. Once approved, your changes will be officially merged into `Develop/v2`, and will be available in the next release."
+    },
+    {
+      "hash": "cc597ba0fbca1eda81b4de92ee3427b6",
+      "translation": "## Contributing Modules or Adapters\n\nModules and adapters are small packages with a complete structure, and it's easiest to start with a scaffolding tool:\n\n```bash\nepsdk create    # Choose module or adapter\n```\n\nAfter generation, just follow these documents:\n\n- [Getting Started with Module Development](../developer-guide/modules/getting-started.md)\n- [Getting Started with Adapter Development](../developer-guide/adapters/getting-started.md)\n- [Publishing to PyPI and the Module Store](../developer-guide/publishing.md)\n\n> It is recommended to announce your plan using the \"New Adapter or Module\" template in [Issues](https://github.com/ErisPulse/ErisPulse/issues) before development. Maintainers can help you align with standards and avoid common pitfalls.\n\nModules and adapters are generally separate repositories and do not need to be included in the main repository. `examples/example-module/` and `examples/example-adapter/` are templates for your reference.\n\n---"
+    },
+    {
+      "hash": "dc910191dd5f7638b5598d76b837c62f",
+      "translation": "## Possible Issues\n\n**How long will it take for someone to review my PR?**  \nIt usually takes a few days. Maintainers will leave review comments, and you can make adjustments as needed and push again.\n\n**The code check failed?**  \nFirst, try `uv run ruff check . --fix`, which can automatically fix most issues.\n\n**There is a conflict with the main repository?**  \nUse `git pull upstream Develop/v2`, resolve the conflicts, and then push again.\n\n**Can I directly submit to `main`?**  \nNo, all changes must go through `Develop/v2`, and then maintainers will release them to `main` collectively."
+    }
+  ]
 }

@@ -1,6 +1,6 @@
 # Discord Platform Feature Documentation
 
-DiscordAdapter is an adapter built on top of the Discord Gateway (WebSocket) and REST API v10 protocol, integrating the core functionalities of Discord Bots and providing a unified interface for event handling and message operations.
+DiscordAdapter is an adapter built on the Discord Gateway (WebSocket) and REST API v10 protocol, integrating the core functionalities of Discord Bots and providing unified event handling and message operation interfaces.
 
 ---
 
@@ -12,17 +12,17 @@ DiscordAdapter is an adapter built on top of the Discord Gateway (WebSocket) and
 
 ## Basic Information
 
-- Platform Introduction: Discord is a widely popular community communication platform that supports various conversation forms such as servers, channels, and private messages, and provides a comprehensive Bot development interface.
-- Adapter Name: DiscordAdapter
-- Multi-account Support: Supports configuring multiple Discord bots simultaneously.
-- Connection Method: Gateway WebSocket (for receiving events) + REST API (for sending messages/calling APIs)
-- Authentication Method: Bot Token (HTTP header `Authorization: Bot {token}`, token carried in the Gateway IDENTIFY payload)
-- Chained Modifier Support: Supports chained modifier methods such as `.Reply()`, `.At()`, and `.AtAll()`
-- OneBot12 Compatibility: Supports sending OneBot12 formatted messages.
+- **Platform Overview**: Discord is a widely popular community communication platform that supports various conversation formats such as servers, channels, and direct messages, and provides a comprehensive Bot development interface.
+- **Adapter Name**: DiscordAdapter
+- **Multi-account Support**: Supports configuring multiple Discord bots simultaneously.
+- **Connection Method**: Gateway WebSocket (for receiving events) + REST API (for sending messages / invoking APIs)
+- **Authentication Method**: Bot Token (HTTP header `Authorization: Bot {token}`, token included in the Gateway IDENTIFY payload)
+- **Chained Modifiers Support**: Supports chained modifier methods such as `.Reply()`, `.At()`, and `.AtAll()`
+- **OneBot12 Compatibility**: Supports sending OneBot12 formatted messages
 
-## Configuration Guide
+## Configuration
 
-The DiscordAdapter supports multi-account configuration, where each account corresponds to a separate Discord Bot.
+DiscordAdapter supports multi-account configuration, with each account corresponding to an independent Discord Bot.
 
 ```toml
 # config.toml
@@ -44,31 +44,31 @@ enabled = true
 
 - `token`: Discord Bot Token (required), obtained from [Discord Developer Portal](https://discord.com/developers/applications)
 - `intents`: Gateway Intents bitmask (optional, default: `33281`), determines the types of events the Bot subscribes to
-- `bot_id`: Bot's user ID (optional, automatically obtained at runtime from the READY event, no need to manually fill)
+- `bot_id`: Bot's user ID (optional, automatically retrieved at runtime from the READY event, no need to manually fill)
 - `enabled`: Whether to enable this account (optional, default: `true`)
 
 ### Gateway Intents
 
-Intents use bitmasks, calculated by bitwise OR (`|`) of each Intent value:
+Intents use a bitmask, calculated as the bitwise OR (`|`) of each Intent value:
 
 | Intent | Bit | Value | Description | Privileged |
 |-------|------|------|------|------|
-| GUILDS | `1 << 0` | 1 | Server creation/deletion/update, channels, role changes | No |
+| GUILDS | `1 << 0` | 1 | Server creation/deletion/update, channel, role changes | No |
 | GUILD_MEMBERS | `1 << 1` | 2 | Member join/leave/update | Yes |
 | GUILD_MESSAGES | `1 << 9` | 512 | Server message sending/receiving | No |
-| MESSAGE_CONTENT | `1 << 15` | 32768 | Message content (content is empty without this Intent) | Yes |
+| MESSAGE_CONTENT | `1 << 15` | 32768 | Message content (empty if this Intent is not present) | Yes |
 
 Default value `33281` = `GUILDS(1) | GUILD_MESSAGES(512) | MESSAGE_CONTENT(32768)`.
 
-> **Note**: Privileged Intents must be enabled in Discord Developer Portal → Bot → Privileged Gateway Intents. If the Bot is in more than 100 servers, Discord review is also required.
+> **Note**: Privileged Intents must be enabled in Discord Developer Portal → Bot → Privileged Gateway Intents. If the Bot is in more than 100 servers, Discord approval is also required.
 
 **API Environment:**
 - Discord REST API base URL: `https://discord.com/api/v10`
-- Gateway WebSocket URL: Dynamically obtained via `GET /gateway/bot`, typically `wss://gateway.discord.gg/?v=10&encoding=json`
+- Gateway WebSocket URL: Dynamically retrieved via `GET /gateway/bot`, typically `wss://gateway.discord.gg/?v=10&encoding=json`
 
 ## Supported Message Sending Types
 
-All sending methods are implemented using a fluent syntax, for example:
+All sending methods are implemented through a fluent interface, for example:
 ```python
 from ErisPulse.Core import adapter
 discord = adapter.get("discord")
@@ -77,44 +77,44 @@ await discord.Send.To("group", channel_id).Text("Hello World!")
 ```
 
 The supported sending types include:
-- `.Text(text: str)`: Sends a plain text message.
-- `.Embed(embed: dict | list)`: Sends an Embed message, supporting single or multiple Embeds.
-- `.Image(file: bytes | str, filename: str = "image.png")`: Sends an image, supporting binary data or URL.
-- `.File(file: bytes | str, filename: str = None)`: Sends a file, supporting binary data or URL.
-- `.Reply(content: str, message_id: str)`: Replies to a specified message (convenient terminal method).
-- `.Raw_ob12(message: List[Dict], **kwargs)`: Sends a OneBot12 formatted message.
-- `.Raw_json(json_str: str)`: Sends arbitrary Discord API request JSON.
+- `.Text(text: str)` - Sends plain text messages.
+- `.Embed(embed: dict | list)` - Sends Embed messages, supporting single or multiple Embeds.
+- `.Image(file: bytes | str, filename: str = "image.png")` - Sends images, supporting binary data or URLs.
+- `.File(file: bytes | str, filename: str = None)` - Sends files, supporting binary data or URLs.
+- `.Reply(content: str, message_id: str)` - Replies to a specified message (convenience terminal method).
+- `.Raw_ob12(message: List[Dict], **kwargs)` - Sends OneBot12 formatted messages.
+- `.Raw_json(json_str: str)` - Sends arbitrary Discord API request JSON.
 
-### Fluent Modifier Methods (Combinable)
+### Fluent Modifier Methods (Can Be Combined)
 
-Fluent modifier methods return `self`, allowing for chained calls, which must be called before the final sending method:
+Fluent modifier methods return `self` and support fluent chaining, must be called before the final sending method:
 
-- `.Reply(message_id: str)`: Replies (references) to a specified message, setting `message_reference`.
-- `.At(user_id: str)`: Mentions a specified user, converting to `<@user_id>`, can be called multiple times.
-- `.AtAll()`: Mentions everyone, converting to `@everyone`.
+- `.Reply(message_id: str)` - Replies (references) to a specified message, sets `message_reference`.
+- `.At(user_id: str)` - Mentions a specified user, converts to `<@user_id>`, can be called multiple times.
+- `.AtAll()` - Mentions everyone, converts to `@everyone`.
 
-### Fluent Call Examples
+### Fluent Chaining Examples
 
 ```python
 # Basic sending
 await discord.Send.To("group", channel_id).Text("Hello")
 
-# Reply to a message
+# Reply to message
 await discord.Send.To("group", channel_id).Reply(msg_id).Text("Reply message")
 
 # Convenient reply (one-step)
 await discord.Send.To("group", channel_id).Reply("Reply content", msg_id)
 
-# Mention a user
+# Mention user
 await discord.Send.To("group", channel_id).At("user_id").Text("Hello")
 
 # Mention multiple users
-await discord.Send.To("group", channel_id).At("user1").At("user2").Text("Multiple users @")
+await discord.Send.To("group", channel_id).At("user1").At("user2").Text("Multiple @")
 
 # Mention everyone
 await discord.Send.To("group", channel_id).AtAll().Text("Announcement")
 
-# Combinable usage
+# Combine methods
 await discord.Send.To("group", channel_id).Reply(msg_id).At("user_id").Text("Composite message")
 
 # Embed message
@@ -126,16 +126,16 @@ embed = {
 }
 await discord.Send.To("group", channel_id).Embed(embed)
 
-# Send an image
+# Send image
 await discord.Send.To("group", channel_id).Image("https://example.com/image.png")
 ```
 
 ### Private Message Sending
 
-When sending private messages, the adapter automatically creates a DM channel:
+When sending private messages, the adapter will automatically create a DM channel:
 
 ```python
-# Send a private message
+# Send private message
 await discord.Send.To("user", user_id).Text("Private message content")
 await discord.Send.To("user", user_id).Embed(embed)
 ```
@@ -143,7 +143,7 @@ await discord.Send.To("user", user_id).Embed(embed)
 ### Message Operations
 
 ```python
-# Recall a message
+# Recall message
 await discord.Send.To("group", channel_id).Recall(msg_id)
 
 # OneBot12 format
@@ -154,14 +154,14 @@ ob12_msg = [
 await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 ```
 
-## Return Values of Send Methods
+## Send Method Return Values
 
 All send methods return a Task object, which can be awaited directly to obtain the send result. The returned result follows the ErisPulse adapter's standardized return specification:
 
 ```python
 {
     "status": "ok",           // Execution status: "ok" or "failed"
-    "retcode": 0,             // Return code (0 means success)
+    "retcode": 0,             // Return code (0 indicates success)
     "data": {...},            // Original Discord API response
     "message_id": "xxx",      // Message ID (when sending a message)
     "message": "",            // Error message
@@ -175,50 +175,50 @@ All send methods return a Task object, which can be awaited directly to obtain t
 |---------|-------------|
 | 0 | Success |
 | 33001 | Network error (connection failed, timeout, etc.) |
-| 34000 | Discord API returned error (insufficient permissions, parameter error, etc.) |
+| 34000 | Discord API returned error (insufficient permissions, invalid parameters, etc.) |
 
 ## Unique Event Types
 
-Use `platform == "discord"` to detect and use platform-specific features.
+The platform-specific features require `platform == "discord"` detection before use.
 
 ### Core Differences
 
-1. **Server/Channel System**: Discord uses a two-layer structure of servers (Guilds) and channels (Channels), where channels are the basic targets for message sending.
-2. **Gateway Events**: All events are received through the WebSocket Gateway using the Opcode + Dispatch mechanism.
-3. **Intents Subscription**: Events are subscribed using bitmasks, and `MESSAGE_CONTENT` requires Privileged permissions.
+1. **Server/Channel System**: Discord uses a two-tier structure of servers (Guild) and channels (Channel), with channels being the basic targets for message sending.
+2. **Gateway Events**: All events are received via the WebSocket Gateway using the Opcode + Dispatch mechanism.
+3. **Intents Subscription**: Event types are subscribed via bitmask, and `MESSAGE_CONTENT` requires Privileged permissions.
 4. **Message Segment Types**: Supports text, images, files, videos, audio, Embed, Sticker, and other message segments.
-5. **Mention Format**: Discord uses the `<@user_id>` format to indicate user mentions.
+5. **Mention Format**: Discord uses the `<@user_id>` format for user mentions.
 
 ### Extended Fields
 
 All unique fields are prefixed with `discord_`:
-- `discord_raw`: Raw Discord event data
-- `discord_raw_type`: Raw event type name (e.g., `MESSAGE_CREATE`)
-- `discord_guild_id`: Server ID
-- `discord_channel_id`: Channel ID
+- `discord_raw`: The raw Discord event data.
+- `discord_raw_type`: The raw event type name (e.g., `MESSAGE_CREATE`).
+- `discord_guild_id`: The server ID.
+- `discord_channel_id`: The channel ID.
 
 ### detail_type Mapping
 
 | Discord Scenario | detail_type | Description |
 |---|---|---|
-| Channel Message | `channel` | ErisPulse extended type |
-| Private Message (DM) | `private` | OneBot12 standard type |
+| Channel Message | `channel` | ErisPulse extension type |
+| Direct Message (DM) | `private` | OneBot12 standard type |
 
 ### Event Type Mapping
 
 | Discord Event | OneBot12 type | detail_type | Description |
 |---|---|---|---|
 | MESSAGE_CREATE | message | channel/private | Message creation |
-| MESSAGE_UPDATE | message | channel/private | Message editing |
+| MESSAGE_UPDATE | message | channel/private | Message edit |
 | MESSAGE_DELETE | notice | group_message_delete / private_message_delete | Message deletion |
-| GUILD_MEMBER_ADD | notice | group_member_increase | Member joining |
-| GUILD_MEMBER_REMOVE | notice | group_member_decrease | Member leaving |
+| GUILD_MEMBER_ADD | notice | group_member_increase | Member join |
+| GUILD_MEMBER_REMOVE | notice | group_member_decrease | Member leave |
 | GUILD_MEMBER_UPDATE | notice | group_member_update | Member information update |
 | GUILD_ROLE_CREATE | notice | group_role_create | Role creation |
 | GUILD_ROLE_DELETE | notice | group_role_delete | Role deletion |
 | CHANNEL_CREATE | notice | channel_create | Channel creation |
 | CHANNEL_DELETE | notice | channel_delete | Channel deletion |
-| INTERACTION_CREATE | request | interaction | Interaction (buttons, commands, etc.) |
+| INTERACTION_CREATE | request | interaction | Interaction (button, command, etc.) |
 
 ### Special Field Examples
 
@@ -241,7 +241,7 @@ All unique fields are prefixed with `discord_`:
   "alt_message": "Hello"
 }
 
-# Private message
+# Direct message
 {
   "type": "message",
   "detail_type": "private",
@@ -264,7 +264,7 @@ All unique fields are prefixed with `discord_`:
   "message": [
     {"type": "discord_embed", "data": {"embed": {...}}}
   ],
-  "alt_message": "[Embedded message]"
+  "alt_message": "[embedded message]"
 }
 
 # Message with attachment
@@ -275,7 +275,7 @@ All unique fields are prefixed with `discord_`:
     {"type": "text", "data": {"text": "Look at this image"}},
     {"type": "image", "data": {"file": "image URL", "url": "image URL", "file_name": "image.png"}}
   ],
-  "alt_message": "Look at this image[Image]"
+  "alt_message": "Look at this image[image]"
 }
 ```
 
@@ -285,7 +285,7 @@ Discord message content is automatically converted into corresponding message se
 
 | Source | Conversion Type | Description |
 |---|---|---|
-| content text | `text` | Pure text content |
+| content text | `text` | Plain text content |
 | content `<@id>` | `mention` | User mention |
 | content `<@&id>` | `discord_role_mention` | Role mention |
 | content `<#id>` | `discord_channel_mention` | Channel mention |
@@ -323,11 +323,11 @@ Discord message content is automatically converted into corresponding message se
 2. Connect to `wss://gateway.discord.gg/?v=10&encoding=json`
 3. Receive opcode 10 HELLO: contains `heartbeat_interval`
 4. Send opcode 2 IDENTIFY: includes token, intents, and properties
-5. Begin heartbeat loop: send opcode 1 Heartbeat at intervals of `heartbeat_interval`
+5. Start heartbeat loop: send opcode 1 Heartbeat at intervals of `heartbeat_interval`
 6. Receive opcode 0 Dispatch: event dispatch (`t`=event name, `s`=sequence number, `d`=data)
 7. Receive opcode 11 Heartbeat ACK: heartbeat acknowledgment
 
-### Opcode Description
+### Opcode Reference
 
 | Opcode | Name | Direction | Description |
 |--------|------|-----------|-------------|
@@ -340,20 +340,20 @@ Discord message content is automatically converted into corresponding message se
 | 10 | Hello | Receive | Connection handshake (includes heartbeat_interval) |
 | 11 | Heartbeat ACK | Receive | Heartbeat acknowledgment |
 
-### Disconnection Reconnection and RESUME
+### Reconnection and RESUME
 
-- After disconnection, the adapter automatically retries the connection
-- If a `session_id` exists, attempt to RESUME (opcode 6) the session first
+- After a connection is disconnected, the adapter automatically retries the connection
+- If a previous `session_id` exists, attempt to RESUME (opcode 6) the session first
 - RESUME includes `token`, `session_id`, and the last `seq`, restoring missed events after resumption
 - When opcode 7 (Reconnect) is received, maintain session state and reconnect
-- When opcode 9 (Invalid Session) is received with `d=false`, clear the session and re-IDENTIFY
+- When opcode 9 (Invalid Session) is received and `d=false`, clear the session and re-authenticate with IDENTIFY
 
 ### Heartbeat Mechanism
 
 - After receiving HELLO, wait `heartbeat_interval * random()` milliseconds before sending the first heartbeat
 - Subsequently, send a heartbeat every `heartbeat_interval` milliseconds
-- Heartbeats include the last `seq` value (opcode 1, `d: seq`)
-- If no ACK (opcode 11) is received within `heartbeat_interval` after sending a heartbeat, treat it as a connection failure and reconnect
+- The heartbeat includes the last `seq` value (opcode 1, `d: seq`)
+- If an ACK (opcode 11) is not received within `heartbeat_interval` milliseconds after sending a heartbeat, consider the connection abnormal and reconnect
 
 ## Usage Examples
 
@@ -377,7 +377,7 @@ async def handle_group_msg(event):
         await discord.Send.To("group", channel_id).Text("Hello!")
 ```
 
-### Handling Direct Messages
+### Handling Private Messages
 
 ```python
 @message.on_message()

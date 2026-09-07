@@ -1,28 +1,28 @@
-# Documentation Maintenance Guidelines
+# Documentation Maintenance Instructions
 
-This document is maintained by adapter developers to explain the differences between this adapter and the OneBot12 standard, as well as its extended functionalities.
-Please update this document synchronously when releasing a new version.
+This document is maintained by each adapter developer to document the differences and extended features of the adapter in relation to the OneBot12 standard.  
+Adapter developers should update this document when releasing new versions.
 
 ## Update Requirements
 
-1. Accurately describe platform-specific sending methods and parameters.
-2. Detail the differences with the OneBot12 standard.
-3. Provide clear code examples and parameter descriptions.
-4. Maintain consistent document formatting for easy user reference.
-5. Timely update version information and maintainer contact details.
+1. Accurately describe the platform-specific send methods and parameters.
+2. Provide detailed explanations of the differences from the OneBot12 standard.
+3. Offer clear code examples and parameter descriptions.
+4. Maintain uniform document formatting for easy user access.
+5. Keep version information and maintainer contact details up to date.
 
-## Document Structure Standards
+## Documentation Structure Guidelines
 
 ### 1. Basic Information Section
-Each platform feature document should contain the following basic information:
+Each platform feature documentation should include the following basic information:
 ```markdown
-# [Platform Name] Adapter Documentation
+# Platform Name Adapter Documentation
 
-Adapter Name: [Adapter Class Name]
-Platform Introduction: [Brief introduction]
+Adapter Name: [Adapter class name]
+Platform Overview: [Brief platform introduction]
 Supported Protocol/API Version: [Specific protocol or API version]
-Maintainer: [Maintainer Name/Team]
-Corresponding Module Version: [Version Number]
+Maintainer: [Maintainer name/team]
+Corresponding Module Version: [Version number]
 ```
 
 ### 2. Supported Message Sending Types
@@ -30,35 +30,35 @@ List all supported sending methods and their parameters in detail:
 ```markdown
 ## Supported Message Sending Types
 
-All sending methods are implemented via chained syntax, for example:
+All sending methods are implemented using a fluent syntax, for example:
 [Code Example]
 
-Supported sending types include:
+The supported sending types include:
 - Method 1: Description
 - Method 2: Description
 - ...
 
 ### Parameter Description
 | Parameter | Type | Description |
-|------|------|------|
+|-----------|------|-------------|
 | Parameter Name | Type | Description |
 ```
 
 ### 3. Platform-Specific Event Types
-Describe platform-specific event types and formats in detail:
+Describe the platform-specific event types and their formats in detail:
 ```markdown
 ## Platform-Specific Event Types
 
-[Platform Name] event conversion to the OneBot12 protocol, where standard fields fully comply with the OneBot12 protocol, but the following differences exist:
+[Platform Name] events are converted to the OneBot12 protocol, where standard fields fully comply with the OneBot12 protocol, but there are the following differences:
 
 ### Core Differences
-1. Platform-specific event types:
+1. Platform-Specific Event Types:
    - Event Type 1: Description
    - Event Type 2: Description
-2. Extended fields:
+2. Extended Fields:
    - Field Description
 
-### Special Field Examples
+### Special Field Example
 [JSON Example]
 ```
 
@@ -66,8 +66,8 @@ Describe platform-specific event types and formats in detail:
 ```markdown
 ## Extended Field Description
 
-- All platform-specific fields are identified with the `[platform]_` prefix.
-- Original data is preserved in the `[platform]_raw` field.
+- All platform-specific fields are prefixed with `[platform]_`
+- Original data is preserved in the `[platform]_raw` field
 - [Other special field descriptions]
 ```
 
@@ -78,32 +78,32 @@ Describe platform-specific event types and formats in detail:
 The [Platform Name] adapter supports the following configuration options:
 
 ### Basic Configuration
-- Config Item 1: Description
-- Config Item 2: Description
+- Configuration Item 1: Description
+- Configuration Item 2: Description
 
 ### Special Configuration
-- Special Config Item 1: Description
+- Special Configuration Item 1: Description
 ```
 
-## Content Writing Standards
+## Content Writing Guidelines
 
-### Code Example Standards
-1. All code examples must be runnable complete examples.
+### Code Example Guidelines
+1. All code examples must be complete and runnable examples.
 2. Use standard import methods:
 ```python
 from ErisPulse.Core import adapter
 [Adapter Instance] = adapter.get("[Adapter Name]")
 ```
-3. Provide examples for multiple usage scenarios.
+3. Provide examples for various usage scenarios.
 
-### Document Format Standards
+### Documentation Format Guidelines
 1. Use standard Markdown syntax.
-2. Clear title hierarchy, maximum 4 levels.
-3. Use standard Markdown table format.
-4. Code blocks should use appropriate language identifiers.
+2. Use clear heading levels, with a maximum of 4 levels.
+3. Use standard Markdown table format for tables.
+4. Use appropriate language identifiers for code blocks.
 
 ### Version Update Notes
-When updating the document, update version information at the top:
+When updating the documentation, update the version information at the top of the document:
 ```markdown
 ## Document Information
 
@@ -114,31 +114,31 @@ When updating the document, update version information at the top:
 
 ## Quality Checklist
 
-Before submitting a document update, please check the following:
+Before submitting documentation updates, please check the following:
 
-- [ ] Document structure complies with requirements
-- [ ] All code examples run correctly
+- [ ] The document structure meets the specification requirements
+- [ ] All code examples can run successfully
 - [ ] Parameter descriptions are complete and accurate
-- [ ] Event format examples match actual output
+- [ ] Event format examples match actual outputs
 - [ ] Links and references are correct
-- [ ] No syntax or spelling errors
+- [ ] No grammar or spelling errors
 - [ ] Version information has been updated
 - [ ] Maintainer information is accurate
 
 ## Reference Documents
 
-Refer to the following documents when writing to ensure consistency:
-- [OneBot12 Standard Documentation](https://12.onebot.dev/)
+When writing, please refer to the following documents to ensure consistency:
+- [OneBot12 Specification](https://12.onebot.dev/)
 - [ErisPulse Core Concepts](../getting-started/basic-concepts.md)
-- [Event Conversion Standards](../standards/event-conversion.md)
-- [API Response Specifications](../standards/api-response.md)
+- [Event Conversion Standard](../standards/event-conversion.md)
+- [API Response Specification](../standards/api-response.md)
 - [Other Platform Adapter Documentation](./)
 
-## Contribution Flow
+## Contributing Process
 
-1. Fork [ErisPulse](https://github.com/ErisPulse/ErisPulse) repository
+1. Fork the [ErisPulse](https://github.com/ErisPulse/ErisPulse) repository
 2. Modify the corresponding platform documentation under the `docs/platform-features/` directory
-3. Ensure the documentation complies with the above requirements
-4. Submit a Pull Request with a detailed description of the changes
+3. Ensure the documentation complies with the above specification requirements
+4. Submit a Pull Request and provide a detailed explanation of the changes
 
 If you have any questions, please contact the relevant adapter maintainer or ask in the project Issues.

@@ -1,54 +1,54 @@
 # ErisPulse API Action Standard
 
-This document defines the unified interface specification for **OneBot12 Standard API Actions** in ErisPulse adapters, enabling module developers to program against standard interfaces, with adapters responsible for mapping to platform-native APIs.
+This document defines the unified interface specification for **OneBot12-standard API actions** in ErisPulse adapters, enabling module developers to program against standard interfaces, with adapters responsible for mapping to native platform APIs.
 
-> **Scope**: In OneBot12 standard actions, `ApiDSL` provides strongly-typed methods for user/group/channel/message management/meta general interfaces (with `send_message` handled by `SendDSL.Raw_ob12`). File resource actions (`upload_file` / `get_file` / chunked) are retained only as degraded pass-through, see §3.5 for details. Platform extension actions are invoked via `Api.call("prefix.action", ...)` escape hatch. Action parameters and return structures follow the OneBot12 specification (located in `onebot/specs/interface/` in the repository).
+> **Scope**: In the OneBot12 standard actions, `ApiDSL` provides strongly-typed methods for user/group/channel (Guild)/message management/meta general interfaces (`send_message` is handled by `SendDSL.Raw_ob12`). File resource actions (`upload_file`/`get_file`/chunking) are only retained for backward compatibility and degraded pass-through, see §3.5 for details. Platform extension actions are called via the escape hatch `Api.call("prefix.action", ...)`. Action parameters and return structures are based on the OneBot12 specification (located in the repository at `onebot/specs/interface/`).
 
 ## 1. Design Background
 
-In ErisPulse, message segments (message send/receive) and event formats already fully conform to the OneBot12 standard, but **API action calls** (such as retrieving user information, group list, or deleting messages) were previously inconsistent—module developers had to write different `call_api` calls for each platform.
+In ErisPulse, message segments (message sending and receiving) and event formats have fully followed the OneBot12 standard, but **API action calls** (such as getting user information, getting group lists, recalling messages, etc.) were not unified previously—module developers had to write different `call_api` calls for each platform.
 
-`ApiDSL` resolves this issue by providing strongly-typed standard action methods:
+`ApiDSL` solves this issue by providing strongly-typed standard action methods:
 
 ```
-Module Code (Cross-Platform Consistency)       Adapter Implementation (Platform-Specific)
-───────────────────────────────────────        ────────────────────────────────────────
+Module Code (Cross-platform Consistency)    Adapter Implementation (Platform-specific)
+─────────────────────────────────         ──────────────────────────────────
 adapter.Api.get_user_info("123")  →  Adapter call_api / Override
 adapter.Api.get_group_list()      →  Adapter call_api / Override
 adapter.Api.delete_message("id")  →  Adapter call_api / Override
 ```
 
-## 2. Three Parallel DSL Structures
+## 2. Three-layer DSL Parallel Structure
 
-ErisPulse adapters have three parallel internal DSL classes, each with distinct responsibilities:
+The ErisPulse adapter has three parallel DSL inner classes, each with its own responsibilities:
 
 ```
 BaseAdapter
-├── Send(SendDSL)       ← Message Sending (Text/Image/Raw_ob12)
-├── Request(RequestDSL)  ← Request Handling (accept/reject)
-└── Api(ApiDSL)          ← Standard API Actions (Users/Groups/Channels/Message Management/File/Meta) ★
+├── Send(SendDSL)       ← Message sending (Text/Image/Raw_ob12)
+├── Request(RequestDSL)  ← Request handling (accept/reject)
+└── Api(ApiDSL)          ← Standard API actions (user/group/channel/message management/files/metadata) ★
 ```
 
 | DSL | Responsibility | Method Style | Return Value |
 |-----|----------------|--------------|--------------|
-| `Send` | Sending Messages | Chained + `asyncio.Task` | Standard Response |
-| `Request` | Handling Request Events | `asyncio.Task` | Standard Response |
-| `Api` | Query/Management Operations | `async` Methods | Standard Response |
+| `Send` | Sending messages | Chainable + `asyncio.Task` | Standard response |
+| `Request` | Handling request events | `asyncio.Task` | Standard response |
+| `Api` | Query/management operations | `async` methods | Standard response |
 
 ## 3. Standard Action List
 
-### 3.1 User-Related
+### 3.1 User-related
 
 | Method | OB12 Action | Parameters | data Return |
-|--------|-------------|------------|-------------|
+|------|----------|------|----------|
 | `get_self_info()` | `get_self_info` | None | `user_id`, `user_name`, `user_displayname` |
 | `get_user_info(user_id)` | `get_user_info` | `user_id: str` | `user_id`, `user_name`, `user_displayname`, `user_remark` |
 | `get_friend_list()` | `get_friend_list` | None | `list[get_user_info response]` |
 
-### 3.2 Group-Related
+### 3.2 Group-related
 
 | Method | OB12 Action | Parameters | data Return |
-|--------|-------------|------------|-------------|
+|------|----------|------|----------|
 | `get_group_info(group_id)` | `get_group_info` | `group_id: str` | `group_id`, `group_name` |
 | `get_group_list()` | `get_group_list` | None | `list[get_group_info response]` |
 | `get_group_member_info(group_id, user_id)` | `get_group_member_info` | `group_id: str`, `user_id: str` | `user_id`, `user_name`, `user_displayname` |
@@ -59,17 +59,17 @@ BaseAdapter
 ### 3.3 Message Management
 
 | Method | OB12 Action | Parameters | Description |
-|--------|-------------|------------|-------------|
-| `delete_message(message_id)` | `delete_message` | `message_id: str` | Recall/Delete Message |
+|------|----------|------|------|
+| `delete_message(message_id)` | `delete_message` | `message_id: str` | Recall/Delete message |
 
-> **Sending Messages** (`send_message`) is handled by `SendDSL`'s `Raw_ob12`, and is not repeated in `ApiDSL`.
+> **Sending Messages** (handled by `SendDSL.Raw_ob12`) is not duplicated in `ApiDSL`.
 
-### 3.4 Channel (Guild) Related
+### 3.4 Guild-related
 
-OneBot12 channel system is hierarchical: **channel (guild)** and **sub-channel (channel)**.
+OneBot12 guild system consists of two levels: **guild** and **channel**.
 
 | Method | OB12 Action | Parameters | data Return |
-|--------|-------------|------------|-------------|
+|------|----------|------|----------|
 | `get_guild_info(guild_id)` | `get_guild_info` | `guild_id: str` | `guild_id`, `guild_name` |
 | `get_guild_list()` | `get_guild_list` | None | `list[get_guild_info response]` |
 | `set_guild_name(guild_id, guild_name)` | `set_guild_name` | `guild_id: str`, `guild_name: str` | None |
@@ -83,38 +83,41 @@ OneBot12 channel system is hierarchical: **channel (guild)** and **sub-channel (
 | `get_channel_member_list(guild_id, channel_id)` | `get_channel_member_list` | `guild_id`, `channel_id` | `list[get_channel_member_info response]` |
 | `leave_channel(guild_id, channel_id)` | `leave_channel` | `guild_id`, `channel_id` | None |
 
-> The channel system is independent from the group system: platforms such as Discord, QQ channels, and Kook implement channel interfaces, while traditional platforms like QQ and WeChat implement group interfaces. Both can coexist or exist independently.
+> The guild system is independent from the group system: platforms such as Discord, QQ Guild, and Kook implement the guild interface, while traditional platforms like QQ and WeChat implement the group interface. Both may coexist or exist independently.
 
 ### 3.5 File Resource Operations
 
-> [!WARNING]
-> **File resource model (two-segment file_id) is "degraded and available" in ErisPulse**: ErisPulse does not use the "upload first, then reference by file_id" model for file sending/receiving—modules send files using `SendDSL.File(file, filename)` (URL/path/bytes are directly transmitted at send time, see [Send Method Specification](send-method-spec.md)). This section's `upload_file` / `get_file` / chunked actions depend on platform-specific `file_id` file resource capabilities, which are **not universally applicable**; only when the adapter backend naturally supports this capability should it be passed through. Framework-built adapters **do not implement or recommend implementing** this, and calls typically return `retcode=10002`. When modules need to transfer files cross-platform, please use `SendDSL.File` instead of relying on file_id.
+> **[!WARNING]**
+> **The file resource model (two-segment file_id) is "downgraded" in ErisPulse**:
+> ErisPulse does not use the "upload first, get file_id, then reference" model for file transfer—modules send files using `SendDSL.File(file, filename)` (direct upload of URL/path/bytes at send time, see [Send Method Specification](send-method-spec.md)).
+> The actions `upload_file`, `get_file`, and segmented actions in this section depend on platform-specific `file_id` file resource capabilities, which are **not universally compatible**; only when the adapter backend naturally supports this capability can it be passed through. The framework's built-in adapters **do not implement or recommend implementing** this, and calls typically return `retcode=10002`.
+> When modules need to transfer files across platforms, please use `SendDSL.File`, and do not rely on file_id.
 >
-> **Outlook**: Standardizing the `file_id` resource model to the framework layer is a future direction, but is not provided in the current version.
+> **Outlook**: Standardizing the `file_id` resource model to the framework layer is a future direction, but it is not provided in the current version.
 
-**Whole-file transfer (small files):**
+Bulk transfer (small files):
 
 | Method | OB12 Action | Parameters | data Return |
-|--------|-------------|------------|-------------|
+|------|----------|------|----------|
 | `upload_file(*, type, name, ...)` | `upload_file` | `type`, `name`, `url`/`path`/`data`, `headers?`, `sha256?` | `file_id` |
 | `get_file(file_id, type)` | `get_file` | `file_id: str`, `type: str` | `name`, `url`/`path`/`data` |
 
-The `type` parameter of `upload_file`:
-- `"url"`: Upload via URL (must provide `url`)
-- `"path"`: Upload via local path (must provide `path`)
-- `"data"`: Upload via binary data (must provide `data`)
+The `type` parameter for `upload_file`:
+- `"url"`: Upload via URL (requires `url`)
+- `"path"`: Upload via local path (requires `path`)
+- `"data"`: Upload via binary data (requires `data`)
 
-#### 3.5.1 Chunked Transfer (Large Files, Part of the Above Degraded Scope)
+#### 3.5.1 Segmented Transfer (Large Files, within the above degraded scope)
 
-OneBot12 chunked actions distinguish stages by `stage`. `ApiDSL` splits the three/two stages of the same action into independent methods (`offset` is byte offset, `data` in JSON is Base64); the following table is for reference only—adapters do not need to or should not force implementation:
+OneBot12 segmented actions are distinguished by `stage`. `ApiDSL` splits the three or two stages of the same action into separate methods (`offset` is byte offset, `data` in JSON is Base64); the following table is retained for reference only, and adapters should neither implement nor enforce it:
 
-**Three-step chunked upload**: `prepare` → `transfer` (loop through chunks) → `finish`
+**Three-step segmented upload**: `prepare` → `transfer` (loop through each segment) → `finish`
 
 | Method | Corresponding stage | Parameters | data Return |
-|--------|---------------------|------------|-------------|
+|------|-----------|------|----------|
 | `upload_file_fragmented_prepare(name, total_size)` | `prepare` | `name: str`, `total_size: int` | `file_id` (used during transfer) |
 | `upload_file_fragmented_transfer(file_id, offset, data)` | `transfer` | `file_id`, `offset: int`, `data: bytes` | None |
-| `upload_file_fragmented_finish(file_id, sha256)` | `finish` | `file_id`, `sha256: str` (full file checksum) | `file_id` |
+| `upload_file_fragmented_finish(file_id, sha256)` | `finish` | `file_id`, `sha256: str` (file-wide checksum) | `file_id` |
 
 ```python
 total = os.path.getsize(path)
@@ -129,19 +132,19 @@ sha256 = hashlib.sha256(open(path, "rb").read()).hexdigest()
 await adapter.Api.upload_file_fragmented_finish(fid, sha256)
 ```
 
-**Two-step chunked download**: `prepare` → `transfer` (loop to fetch chunks)
+**Two-step segmented download**: `prepare` → `transfer` (loop to retrieve segments)
 
 | Method | Corresponding stage | Parameters | data Return |
-|--------|---------------------|------------|-------------|
+|------|-----------|------|----------|
 | `get_file_fragmented_prepare(file_id)` | `prepare` | `file_id` | `name`, `total_size`, `sha256` |
-| `get_file_fragmented_transfer(file_id, offset, size)` | `transfer` | `file_id`, `offset: int`, `size: int` | `data` (this chunk's bytes) |
+| `get_file_fragmented_transfer(file_id, offset, size)` | `transfer` | `file_id`, `offset: int`, `size: int` | `data` (bytes of this segment) |
 
 ### 3.6 Meta Actions
 
-Meta actions are not account-specific and do not require `Using()` to specify a Bot.
+Meta actions are not specific to a particular account and do not require `Using()` to specify a Bot.
 
 | Method | OB12 Action | Parameters | data Return |
-|--------|-------------|------------|-------------|
+|------|----------|------|----------|
 | `get_latest_events(limit, timeout)` | `get_latest_events` | `limit: int=0`, `timeout: int=0` | Array of event objects (excluding meta events) |
 | `get_supported_actions()` | `get_supported_actions` | None | `list[str]` supported action names |
 | `get_status()` | `get_status` | None | `good: bool`, `bots: list[{self, online, ...}]` |
@@ -150,17 +153,17 @@ Meta actions are not account-specific and do not require `Using()` to specify a 
 ### 3.7 General Extension Actions
 
 | Method | Description |
-|--------|-------------|
-| `call(action, **params)` | Escape hatch for platform extension actions, following OB12 extension naming rules `{prefix}.{action}` |
+|------|------|
+| `call(action, **params)` | Escape hatch for platform extension actions, following the OB12 extension naming convention `{prefix}.{action}` |
 
 ## 4. Usage
 
-### 4.1 Basic Calls
+### 4.1 Basic Invocation
 
 ```python
 from ErisPulse import adapter
 
-# Get user information (cross-platform consistency)
+# Get user information (cross-platform unified)
 result = await adapter.myplatform.Api.get_user_info("123456")
 if result["status"] == "ok":
     user_name = result["data"]["user_name"]
@@ -170,28 +173,28 @@ if result["status"] == "ok":
 result = await adapter.myplatform.Api.get_group_list()
 groups = result["data"]
 
-# Delete message
+# Recall message
 await adapter.myplatform.Api.delete_message("msg_123456")
 ```
 
-### 4.2 Specifying Bot Account (Multi-account Mode)
+### 4.2 Specify Bot Account (Multi-account Mode)
 
 ```python
-# Execute operation using a specific Bot account
+# Execute operations using a specified Bot account
 info = await adapter.myplatform.Api.Using("bot1").get_self_info()
 ```
 
 ### 4.3 Platform Extension Actions
 
 ```python
-# Call platform-specific extension actions (suggest using {prefix}.{action} naming)
+# Call platform-specific extension actions (it is recommended to use the {prefix}.{action} naming convention)
 result = await adapter.telegram.Api.call(
     "telegram.send_sticker",
     sticker_id="CAACAgIAAxkBAA...",
 )
 ```
 
-### 4.4 Use in Event Handlers
+### 4.4 Using in Event Handlers
 
 ```python
 from ErisPulse.Core.Event import message
@@ -212,28 +215,28 @@ async def handle(event):
 
 ### 5.1 Default Behavior (Zero Configuration)
 
-The default implementation of `ApiDSL` passes the standard action name as `endpoint` directly to `adapter.call_api()`:
+The default implementation of `ApiDSL` passes the standard action name directly as `endpoint` to `adapter.call_api()`:
 
 ```python
-# ApiDSL default implementation is equivalent to:
+# The default implementation of ApiDSL is equivalent to:
 async def get_user_info(self, user_id: str) -> dict:
     return await self._adapter.call_api("get_user_info", user_id=user_id, account_id=self._account_id)
 ```
 
-**Applicable Scenarios**: When the adapter's underlying backend itself conforms to the OneBot12 standard action protocol, `call_api` naturally supports standard action names (e.g., directly interfacing with a service that follows this protocol).
+**Applicable Scenarios**: When the adapter's underlying backend itself follows the OneBot12 standard action protocol, `call_api` naturally supports standard action names (such as directly connecting to a service that follows this protocol).
 
 ### 5.2 Overriding Standard Methods (Mapping to Platform Native API)
 
-Adapters can override individual standard methods to map them to platform-native APIs:
+The adapter can override individual standard methods, mapping them to the platform's native API:
 
 ```python
 class MyAdapter(BaseAdapter):
 
     class Api(BaseAdapter.Api):
-        """MyPlatform standard API action implementation"""
+        """Standard API action implementation for MyPlatform"""
 
         async def get_user_info(self, user_id: str) -> dict:
-            # Map to platform-native API
+            # Maps to the platform's native API
             raw = await self._adapter._request("GET", f"/users/{user_id}")
             if raw.get("code") != 0:
                 return self._adapter.make_error(retcode=34600, message="User does not exist")
@@ -274,7 +277,7 @@ async def call_api(self, endpoint: str, **params):
     # ... platform API call
 ```
 
-Module developers can determine support by checking the `retcode` in the return value:
+Module developers can determine support by checking the `retcode` in the returned value:
 
 ```python
 result = await adapter.myplatform.Api.get_friend_list()
@@ -284,7 +287,7 @@ if result["retcode"] == 10002:
 
 ## 6. Response Format
 
-All `ApiDSL` methods return the standard API response format (see [API Response Standard](api-response.md)):
+All `ApiDSL` methods return a standard API response format (see [API Response Standard](api-response.md)):
 
 ```json
 {
@@ -297,17 +300,17 @@ All `ApiDSL` methods return the standard API response format (see [API Response 
 }
 ```
 
-> **Note**: For information query actions, `message_id` is an empty string (only message sending actions have `message_id`).
+> **Note**: For information query actions, `message_id` is an empty string (only message sending actions have a `message_id`).
 
 ## 7. Relationship with SendDSL / RequestDSL
 
 | Scenario | Use DSL | Example |
-|----------|---------|---------|
-| Sending Messages | `Send` | `adapter.Send.To("group", "123").Text("hi")` |
-| Accept/Reject Requests | `Request` | `adapter.Request("req_id").accept()` |
-| Get User/Group Info | `Api` | `adapter.Api.get_user_info("123")` |
-| Delete Message | `Api` | `adapter.Api.delete_message("msg_id")` |
-| Leave Group | `Api` | `adapter.Api.leave_group("group_id")` |
+|------|---------|------|
+| Send message | `Send` | `adapter.Send.To("group", "123").Text("hi")` |
+| Accept/deny request | `Request` | `adapter.Request("req_id").accept()` |
+| Get user/group info | `Api` | `adapter.Api.get_user_info("123")` |
+| Recall message | `Api` | `adapter.Api.delete_message("msg_id")` |
+| Leave group | `Api` | `adapter.Api.leave_group("group_id")` |
 
 ## 8. Adapter Implementation Checklist
 
@@ -315,18 +318,18 @@ All `ApiDSL` methods return the standard API response format (see [API Response 
 - [ ] `call_api` can handle standard action names (or override corresponding `ApiDSL` methods)
 - [ ] Unsupported actions return `retcode=10002`
 - [ ] Return values follow the standard API response format
-- [ ] `data` field contains fields defined in the OB12 standard
-- [ ] Channel platform must implement `get_guild_*` / `get_channel_*` / `leave_guild` / `leave_channel`
-- [ ] Meta actions (`get_status` / `get_version` / `get_supported_actions`) are recommended to be implemented
-- [ ] **File sending uses `SendDSL.File` (direct upload)**; file resource actions (`upload_file`/`get_file`/chunked) **are not mandatory**, only required when the backend has `file_id` resource capability
+- [ ] The `data` field contains fields defined by the OB12 standard
+- [ ] Channel platforms must implement `get_guild_*` / `get_channel_*` / `leave_guild` / `leave_channel`
+- [ ] Meta-actions (`get_status` / `get_version` / `get_supported_actions`) are recommended to be implemented
+- [ ] **File transfer uses `SendDSL.File` (direct upload)**; file resource actions (upload_file/get_file/chunked) are **not mandatory**, only required if the backend has `file_id` resource capability and needs to pass through
 
-### Extension Actions
-- [ ] Platform extension actions use `{prefix}.{action}` naming
-- [ ] Extension action parameters and responses still follow the OB12 action request/response structure
+### Extended Actions
+- [ ] Platform-specific extended actions use the `{prefix}.{action}` naming convention
+- [ ] Parameters and responses for extended actions still follow the OB12 action request/response structure
 
 ## 9. Related Documents
 
-- [API Response Standard](api-response.md) - Standard response format for adapter API
-- [Send Method Specification](send-method-spec.md) - Naming and parameter conventions for Send class methods
-- [Request Action Specification](request-action-spec.md) - Usage of Request DSL
+- [API Response Standard](api-response.md) - Standard format for adapter API responses
+- [Send Method Specification](send-method-spec.md) - Naming and parameter conventions for methods in the Send class
+- [Request Action Specification](request-action-spec.md) - Usage of the Request DSL
 - [Event Conversion Standard](event-conversion.md) - Event format and message segment standards

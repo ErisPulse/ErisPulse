@@ -1,6 +1,6 @@
 # Quick Start
 
-> **This is your first step.** Get an ErisPulse robot up and running from scratch in 5 minutes.
+> **This is your first step.** Get an ErisPulse robot up and running in 5 minutes from scratch.
 
 ## Install ErisPulse
 
@@ -20,7 +20,7 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 
 The script will guide you through:
 
-- **Docker Installation** (Recommended if Docker is detected): Select image source (Docker Hub / GHCR), version channel (Stable / Pre-release), Dashboard management panel configuration, port settings
+- **Docker Installation** (Recommended when Docker is detected): Choose image source (Docker Hub / GHCR), version channel (Stable / Pre-release), Dashboard management panel configuration, port settings
 - **Traditional Installation**: Automatically create a virtual environment, select ErisPulse version, optionally install Dashboard management panel module
 
 ### Using Docker
@@ -36,9 +36,9 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
 <details>
-<summary>Can't access Docker Hub?</summary>
+<summary>Unable to access Docker Hub?</summary>
 
-Use GitHub Container Registry image, modify the `image` in `docker-compose.yml`:
+Use GitHub Container Registry image by modifying the `image` in `docker-compose.yml`:
 
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
@@ -46,7 +46,7 @@ image: ghcr.io/erispulse/erispulse:latest
 
 </details>
 
-After starting, access `http://<host>:8000/Dashboard` and log in using the set token.
+After startup, access `http://<host>:8000/Dashboard` and log in using the set token.
 
 ### Using pip
 
@@ -67,7 +67,7 @@ epsdk init
 ```
 
 This will start an interactive wizard that guides you through:
-- Project name setup
+- Project name setting
 - Log level configuration
 - Server configuration (host and port)
 - Adapter selection and configuration
@@ -76,7 +76,7 @@ This will start an interactive wizard that guides you through:
 ### Quick Initialization
 
 ```bash
-# Quick mode with specified project name
+# Quick mode with a specified project name
 epsdk init -q -n my_bot
 
 # Or just specify the project name
@@ -92,15 +92,15 @@ mkdir my_bot && cd my_bot
 epsdk init
 ```
 
-## Install Modules
+## Installing Modules
 
-### Install via CLI
+### Installing via CLI
 
 ```bash
 epsdk install Yunhu AIChat
 ```
 
-### View Available Modules
+### Viewing Available Modules
 
 ```bash
 epsdk list-remote
@@ -108,7 +108,7 @@ epsdk list-remote
 
 ### Interactive Installation
 
-When no package name is specified, the interactive installation interface is entered:
+Without specifying a package name, enter the interactive installation interface:
 
 ```bash
 epsdk install
@@ -126,14 +126,14 @@ epsdk run main.py --reload
 
 ## Enable IDE Completion (Optional)
 
-ErisPulse dynamically discovers modules/adapters, and the IDE cannot complete platform-specific methods by default.  
+ErisPulse dynamically discovers modules/adapters, and IDEs cannot complete platform-specific methods by default.  
 Run the following command to generate type stubs:
 
 ```bash
 epsdk types
 ```
 
-After generation, use the imported types as variable annotations to get precise completion (see [IDE Completion Guide](./getting-started/ide-completion.md)):
+After generation, use the imported types as variable annotations to obtain precise completion (see [IDE Completion Guide](./getting-started/ide-completion.md)):
 
 ```python
 from _ep_types import Yunhu
@@ -145,7 +145,7 @@ await adapter.Send.To("group", "123").Board(...)  # Completion for platform-spec
 
 ## Project Structure
 
-The project structure after initialization:
+After initialization, the project structure is as follows:
 
 ```
 my_bot/
@@ -173,14 +173,14 @@ level = "INFO"
 
 ## Next Steps
 
-After the bot is running, you can continue as needed:
+After the bot is running, you can proceed as needed:
 
 **Want to understand how the framework works?**
-- [Basic Concepts](getting-started/basic-concepts.md) — Adapter / Module / Event design
+- [Basic Concepts](getting-started/basic-concepts.md) — Design of Adapters / Modules / Events
 - [Architecture Overview](architecture.md) — Visual architecture diagram
 
 **Want to implement more features?**
-- [Common Task Examples](getting-started/common-tasks.md) — Storage, scheduled tasks, permission control
+- [Common Tasks Examples](getting-started/common-tasks.md) — Storage, scheduled tasks, permission control
 - [Event Handling Introduction](getting-started/event-handling.md) — Message, notification, request handling
 
 **Want to develop your own module / adapter?**

@@ -58,13 +58,13 @@ sdk.storage.DropTable("users")
 ### 修改表格結構
 
 ```python
-# 新增欄位
+# 添加欄位
 sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
 
 # 重新命名表格
 sdk.storage.AlterTable("users").RenameTo("members").Execute()
 
-# 串接多個操作
+# 串連多個操作
 sdk.storage.AlterTable("users") \
     .AddColumn("phone", "TEXT") \
     .AddColumn("address", "TEXT") \
@@ -223,13 +223,13 @@ exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
 ```python
 base = sdk.storage.Table("users").Where("age > ?", 20)
 
-# 使用相同的條件查詢
+# 基於相同條件查詢
 rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
 
-# 使用相同的條件計數
+# 基於相同條件計數
 count = base.copy().Count()
 
-# 使用相同的條件檢查是否存在
+# 基於相同條件檢查是否存在
 exists = base.copy().Where("name = ?", "Alice").Exists()
 ```
 
@@ -268,13 +268,13 @@ except Exception:
 
 | 操作 | 返回類型 | 說明 |
 |------|---------|------|
-| `Select().Execute()` | `list[tuple]` | 元組列表，按欄位順序排列 |
+| `Select().Execute()` | `list[tuple]` | 元組列表，按列順序排列 |
 | `Select().ExecuteOne()` | `tuple \| None` | 單條元組或 None |
 | `Insert().Execute()` | `int` | 受影響行數 |
-| `InsertMulti().Execute()` | `int` | 新增行數 |
+| `InsertMulti().Execute()` | `int` | 插入行數 |
 | `Update().Execute()` | `int` | 受影響行數 |
 | `Delete().Execute()` | `int` | 受影響行數 |
-| `Count()` | `int` | 符合條件的行數 |
+| `Count()` | `int` | 匹配行數 |
 | `Exists()` | `bool` | 是否存在 |
 
 ### 返回值處理範例
@@ -282,10 +282,10 @@ except Exception:
 ```python
 # Select 返回元組，按索引取值
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
-first_name = rows[0][0]  # 第一行第一欄 name
-first_age = rows[0][1]   # 第一行第二欄 age
+first_name = rows[0][0]  # 第一行第一列 name
+first_age = rows[0][1]   # 第一行第二列 age
 
-# 推薦：使用欄位名稱列表 + zip 轉為字典，程式碼更易讀
+# 推薦：用列名列表 + zip 轉為字典，程式碼更易讀
 cols = ["name", "age"]
 rows = sdk.storage.Table("users").Select(*cols).Execute()
 for row in rows:
