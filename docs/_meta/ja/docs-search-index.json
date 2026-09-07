@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1526,
+  "total_keywords": 1603,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2530,12 +2530,6 @@
     ],
     "Bot 状態の照会": [
       {
-        "document": "api-reference/core-modules.md",
-        "line": 227,
-        "level": 3,
-        "title": "Bot 状態の照会"
-      },
-      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 994,
         "level": 3,
@@ -2557,6 +2551,12 @@
       }
     ],
     "Bot 状態照会": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 227,
+        "level": 3,
+        "title": "Bot 状態照会"
+      },
       {
         "document": "api-reference/event-system.md",
         "line": 272,
@@ -2998,12 +2998,12 @@
         "title": "HTML のレンダリング"
       }
     ],
-    "HTTP クライアントモジュール": [
+    "HTTP Client モジュール": [
       {
         "document": "api-reference/core-modules.md",
         "line": 324,
         "level": 2,
-        "title": "HTTP クライアントモジュール"
+        "title": "HTTP Client モジュール"
       }
     ],
     "HTTP リクエスト": [
@@ -3084,6 +3084,14 @@
         "line": 127,
         "level": 2,
         "title": "IDE補完の有効化（オプション）"
+      }
+    ],
+    "Interaction 交互会話": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 369,
+        "level": 2,
+        "title": "Interaction 交互会話"
       }
     ],
     "Jinjaテンプレートの例": [
@@ -3198,12 +3206,12 @@
         "title": "Meta メタイベントモジュール"
       }
     ],
-    "Module 模块": [
+    "Module モジュール": [
       {
         "document": "api-reference/core-modules.md",
         "line": 238,
         "level": 2,
-        "title": "Module 模块"
+        "title": "Module モジュール"
       }
     ],
     "Notice 通知モジュール": [
@@ -3474,6 +3482,14 @@
         "title": "SDK オブジェクト"
       }
     ],
+    "SDK デバッグ": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 345,
+        "level": 2,
+        "title": "SDK デバッグ"
+      }
+    ],
     "SDK トップレベルのエントリーポイント一覧": [
       {
         "document": "advanced/startup.md",
@@ -3490,20 +3506,12 @@
         "title": "SDKとの関係"
       }
     ],
-    "SDKのデバッグ": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 345,
-        "level": 2,
-        "title": "SDKのデバッグ"
-      }
-    ],
-    "SQL クエリビルダー": [
+    "SQL クエリビルダ": [
       {
         "document": "advanced/sql-builder.md",
         "line": 1,
         "level": 1,
-        "title": "SQL クエリビルダー"
+        "title": "SQL クエリビルダ"
       }
     ],
     "SQL チェーンクエリ": [
@@ -3690,6 +3698,14 @@
         "title": "Tokenの更新"
       }
     ],
+    "Transcript 会話受信箱": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 399,
+        "level": 2,
+        "title": "Transcript 会話受信箱"
+      }
+    ],
     "Using メソッド": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -3798,12 +3814,12 @@
         "title": "WebUI での消費方法"
       }
     ],
-    "Where パラメータの渡し方": [
+    "Where のパラメータ渡しルール": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 323,
+        "line": 345,
         "level": 3,
-        "title": "Where パラメータの渡し方"
+        "title": "Where のパラメータ渡しルール"
       }
     ],
     "Windows PowerShell 実行ポリシー": [
@@ -3814,194 +3830,194 @@
         "title": "Windows PowerShell 実行ポリシー"
       }
     ],
-    "[BUG-001] イベントハンドラの重複登録によるイベントの多重処理": [
+    "[BUG-001] イベントハンドラの重複登録によりイベントが複数回処理される": [
       {
         "document": "bug-tracker.md",
-        "line": 109,
+        "line": 117,
         "level": 3,
-        "title": "[BUG-001] イベントハンドラの重複登録によるイベントの多重処理"
+        "title": "[BUG-001] イベントハンドラの重複登録によりイベントが複数回処理される"
       }
     ],
-    "[BUG-002] Init コマンドのアダプター設定パスの型エラー": [
+    "[BUG-002] Init コマンドのアダプタ設定パスの型エラー": [
       {
         "document": "bug-tracker.md",
-        "line": 129,
+        "line": 137,
         "level": 3,
-        "title": "[BUG-002] Init コマンドのアダプター設定パスの型エラー"
+        "title": "[BUG-002] Init コマンドのアダプタ設定パスの型エラー"
       }
     ],
     "[BUG-003] 再起動後にコマンドイベントが無効になる": [
       {
         "document": "bug-tracker.md",
-        "line": 153,
+        "line": 161,
         "level": 3,
         "title": "[BUG-003] 再起動後にコマンドイベントが無効になる"
       }
     ],
-    "[BUG-004] ライフサイクルイベントハンドラの未クリア": [
+    "[BUG-004] ライフサイクルイベントハンドラがクリアされない": [
       {
         "document": "bug-tracker.md",
-        "line": 173,
+        "line": 181,
         "level": 3,
-        "title": "[BUG-004] ライフサイクルイベントハンドラの未クリア"
+        "title": "[BUG-004] ライフサイクルイベントハンドラがクリアされない"
       }
     ],
-    "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と不一致": [
+    "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない": [
       {
         "document": "bug-tracker.md",
-        "line": 193,
+        "line": 201,
         "level": 3,
-        "title": "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と不一致"
+        "title": "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない"
       }
     ],
-    "[BUG-006] adapter.clear() が _started_instances をクリアしないことで再起動後の状態が不正になる": [
+    "[BUG-006] adapter.clear() が _started_instances をクリアしないため、再起動後に状態が正しくない": [
       {
         "document": "bug-tracker.md",
-        "line": 213,
+        "line": 221,
         "level": 3,
-        "title": "[BUG-006] adapter.clear() が _started_instances をクリアしないことで再起動後の状態が不正になる"
+        "title": "[BUG-006] adapter.clear() が _started_instances をクリアしないため、再起動後に状態が正しくない"
       }
     ],
-    "[BUG-007] command.wait_reply() で廃止された asyncio.get_event_loop() を使用": [
+    "[BUG-007] command.wait_reply() で非推奨の asyncio.get_event_loop() を使用": [
       {
         "document": "bug-tracker.md",
-        "line": 233,
+        "line": 241,
         "level": 3,
-        "title": "[BUG-007] command.wait_reply() で廃止された asyncio.get_event_loop() を使用"
+        "title": "[BUG-007] command.wait_reply() で非推奨の asyncio.get_event_loop() を使用"
       }
     ],
-    "[BUG-008] Bot のオフラインイベントが shutdown 過程で繰り返し送信される": [
+    "[BUG-008] Bot オンラインイベントが shutdown プロセス中に重複送信される": [
       {
         "document": "bug-tracker.md",
-        "line": 253,
+        "line": 261,
         "level": 3,
-        "title": "[BUG-008] Bot のオフラインイベントが shutdown 過程で繰り返し送信される"
+        "title": "[BUG-008] Bot オンラインイベントが shutdown プロセス中に重複送信される"
       }
     ],
-    "[BUG-009] LazyModule の同期アクセスで BaseModule の初期化が完了していない": [
+    "[BUG-009] LazyModule が同期アクセスで BaseModule を初期化していない": [
       {
         "document": "bug-tracker.md",
-        "line": 273,
+        "line": 281,
         "level": 3,
-        "title": "[BUG-009] LazyModule の同期アクセスで BaseModule の初期化が完了していない"
+        "title": "[BUG-009] LazyModule が同期アクセスで BaseModule を初期化していない"
       }
     ],
-    "[BUG-010] 複数スレッドでの設定システムの書き込みでデータが失われる": [
+    "[BUG-010] 複数スレッドでの設定書き込みでデータが失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 293,
+        "line": 301,
         "level": 3,
-        "title": "[BUG-010] 複数スレッドでの設定システムの書き込みでデータが失われる"
+        "title": "[BUG-010] 複数スレッドでの設定書き込みでデータが失われる"
       }
     ],
     "[BUG-011] Windows で CTRL+C でプログラムを停止できない": [
       {
         "document": "bug-tracker.md",
-        "line": 316,
+        "line": 324,
         "level": 3,
         "title": "[BUG-011] Windows で CTRL+C でプログラムを停止できない"
       }
     ],
-    "[BUG-012] ホットリスタート後に更新されたモジュールの Python コードが有効にならない": [
+    "[BUG-012] ホットリスタート後に更新されたモジュールのコードが有効にならない": [
       {
         "document": "bug-tracker.md",
-        "line": 340,
+        "line": 348,
         "level": 3,
-        "title": "[BUG-012] ホットリスタート後に更新されたモジュールの Python コードが有効にならない"
+        "title": "[BUG-012] ホットリスタート後に更新されたモジュールのコードが有効にならない"
       }
     ],
-    "[BUG-013] モジュールロード戦略のソートロジックの誤り": [
+    "[BUG-013] モジュールのロード戦略のソートロジックが誤っている": [
       {
         "document": "bug-tracker.md",
-        "line": 360,
+        "line": 368,
         "level": 3,
-        "title": "[BUG-013] モジュールロード戦略のソートロジックの誤り"
+        "title": "[BUG-013] モジュールのロード戦略のソートロジックが誤っている"
       }
     ],
-    "[BUG-014] アダプターの中間処理が None を返すとイベントデータが失われる": [
+    "[BUG-014] アダプタミドルウェアが None を返すとイベントデータが失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 380,
+        "line": 388,
         "level": 3,
-        "title": "[BUG-014] アダプターの中間処理が None を返すとイベントデータが失われる"
+        "title": "[BUG-014] アダプタミドルウェアが None を返すとイベントデータが失われる"
       }
     ],
     "[BUG-015] 設定ファイルのパスが作業ディレクトリに依存する": [
       {
         "document": "bug-tracker.md",
-        "line": 400,
+        "line": 408,
         "level": 3,
         "title": "[BUG-015] 設定ファイルのパスが作業ディレクトリに依存する"
       }
     ],
-    "[BUG-016] BaseStorage がストレージ値 None とキーが存在しないを混同する": [
+    "[BUG-016] BaseStorage がストア値 None とキーの存在しないことを混同する": [
       {
         "document": "bug-tracker.md",
-        "line": 420,
+        "line": 428,
         "level": 3,
-        "title": "[BUG-016] BaseStorage がストレージ値 None とキーが存在しないを混同する"
+        "title": "[BUG-016] BaseStorage がストア値 None とキーの存在しないことを混同する"
       }
     ],
-    "[BUG-017] WebSocket ルートの auto_accept フラグがサービス再起動後に失われる": [
+    "[BUG-017] WebSocket ルーティング auto_accept フラグがサービス再起動後に失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 440,
+        "line": 448,
         "level": 3,
-        "title": "[BUG-017] WebSocket ルートの auto_accept フラグがサービス再起動後に失われる"
+        "title": "[BUG-017] WebSocket ルーティング auto_accept フラグがサービス再起動後に失われる"
       }
     ],
-    "[BUG-018] HTTP/WS クライアントの並行呼び出しによるクラッシュと接続リーク": [
+    "[BUG-018] HTTP/WS クライアントの並行呼び出しによりクラッシュや接続漏れが発生する": [
       {
         "document": "bug-tracker.md",
-        "line": 460,
+        "line": 468,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS クライアントの並行呼び出しによるクラッシュと接続リーク"
+        "title": "[BUG-018] HTTP/WS クライアントの並行呼び出しによりクラッシュや接続漏れが発生する"
       }
     ],
-    "[BUG-019] アダプターのホットリロード時にルートの競合によりリロードが失敗する": [
+    "[BUG-019] アダプタのホットリロード時にルーティングの競合によりリロードが失敗する": [
       {
         "document": "bug-tracker.md",
-        "line": 488,
+        "line": 496,
         "level": 3,
-        "title": "[BUG-019] アダプターのホットリロード時にルートの競合によりリロードが失敗する"
+        "title": "[BUG-019] アダプタのホットリロード時にルーティングの競合によりリロードが失敗する"
       }
     ],
-    "[BUG-020] 子プロセスモード `ep run <script>` でスクリプトのサブパッケージが見つからない": [
+    "[BUG-020] サブプロセスモード `ep run <script>` でスクリプトの子パッケージが見つからない": [
       {
         "document": "bug-tracker.md",
-        "line": 512,
+        "line": 520,
         "level": 3,
-        "title": "[BUG-020] 子プロセスモード `ep run <script>` でスクリプトのサブパッケージが見つからない"
+        "title": "[BUG-020] サブプロセスモード `ep run <script>` でスクリプトの子パッケージが見つからない"
       }
     ],
     "[BUG-021] SQL クエリビルダが合法なワイルドカードとリスト式を拒否する": [
       {
         "document": "bug-tracker.md",
-        "line": 532,
+        "line": 540,
         "level": 3,
         "title": "[BUG-021] SQL クエリビルダが合法なワイルドカードとリスト式を拒否する"
       }
     ],
-    "[BUG-022] _resolve_account() 賬戶解析のリバート（_accounts_data が埋め込まれていない）": [
+    "[BUG-022] _resolve_account() アカウント解析のリグレッション（_accounts_data が未設定）": [
       {
         "document": "bug-tracker.md",
-        "line": 562,
+        "line": 569,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() 賬戶解析のリバート（_accounts_data が埋め込まれていない）"
+        "title": "[BUG-022] _resolve_account() アカウント解析のリグレッション（_accounts_data が未設定）"
       }
     ],
-    "[BUG-023] 賬戶設定を変更した後にアダプターのキャッシュが更新されず、賬戶解析が失敗する": [
+    "[BUG-023] アカウント設定を変更した後、アダプタのキャッシュが更新されずアカウント解析が失敗する": [
       {
         "document": "bug-tracker.md",
-        "line": 601,
+        "line": 608,
         "level": 3,
-        "title": "[BUG-023] 賬戶設定を変更した後にアダプターのキャッシュが更新されず、賬戶解析が失敗する"
+        "title": "[BUG-023] アカウント設定を変更した後、アダプタのキャッシュが更新されずアカウント解析が失敗する"
       }
     ],
     "[BUG-024] storage.set() で大数 ID キーを書き込むと OOM Kill が発生する": [
       {
         "document": "bug-tracker.md",
-        "line": 621,
+        "line": 628,
         "level": 3,
         "title": "[BUG-024] storage.set() で大数 ID キーを書き込むと OOM Kill が発生する"
       }
@@ -4009,49 +4025,593 @@
     "[BUG-025] on_config_update コールバックがコアルーティングされない": [
       {
         "document": "bug-tracker.md",
-        "line": 667,
+        "line": 674,
         "level": 3,
         "title": "[BUG-025] on_config_update コールバックがコアルーティングされない"
       }
     ],
-    "[BUG-026] notice/request イベント reply のターゲット推論が間違っている": [
+    "[BUG-026] notice/request イベント reply 目標の推定が間違っている": [
       {
         "document": "bug-tracker.md",
-        "line": 697,
+        "line": 704,
         "level": 3,
-        "title": "[BUG-026] notice/request イベント reply のターゲット推論が間違っている"
+        "title": "[BUG-026] notice/request イベント reply 目標の推定が間違っている"
       }
     ],
-    "[BUG-027] ルートのリクエスト制限クリーンアップタスクが固定ウィンドウを使用して長時間の制限ルールが無効になる": [
+    "[BUG-027] ルーティングのリクエスト制限クリーンアップタスクが固定ウィンドウを使用して長時間のルールが無効になる": [
       {
         "document": "bug-tracker.md",
-        "line": 728,
+        "line": 735,
         "level": 3,
-        "title": "[BUG-027] ルートのリクエスト制限クリーンアップタスクが固定ウィンドウを使用して長時間の制限ルールが無効になる"
+        "title": "[BUG-027] ルーティングのリクエスト制限クリーンアップタスクが固定ウィンドウを使用して長時間のルールが無効になる"
       }
     ],
-    "[BUG-029] 設定の監視タスクが半完成の TOML をブロードキャストし、例外を静かに飲み込む": [
+    "[BUG-029] 設定の監視タスクが未完成の TOML をブロードキャストし、例外を静かに飲み込む": [
       {
         "document": "bug-tracker.md",
-        "line": 760,
+        "line": 767,
         "level": 3,
-        "title": "[BUG-029] 設定の監視タスクが半完成の TOML をブロードキャストし、例外を静かに飲み込む"
+        "title": "[BUG-029] 設定の監視タスクが未完成の TOML をブロードキャストし、例外を静かに飲み込む"
       }
     ],
-    "[BUG-030] 設定のウォッチャーの競合により setConfig の遅延書き込みが静かにデータを失う": [
+    "[BUG-030] 設定の watcher 競合により setConfig の遅延書き込みが静かにデータを失う": [
       {
         "document": "bug-tracker.md",
-        "line": 796,
+        "line": 803,
         "level": 3,
-        "title": "[BUG-030] 設定のウォッチャーの競合により setConfig の遅延書き込みが静かにデータを失う"
+        "title": "[BUG-030] 設定の watcher 競合により setConfig の遅延書き込みが静かにデータを失う"
       }
     ],
-    "[BUG-032] 設定の遅延書き込み中に「書き込み後すぐに読み取り」で古い値が読み取られる": [
+    "[BUG-032] 設定の遅延書き込み中に「書き込み直後に読み取り」で古い値を読み込む": [
       {
         "document": "bug-tracker.md",
-        "line": 832,
+        "line": 839,
         "level": 3,
-        "title": "[BUG-032] 設定の遅延書き込み中に「書き込み後すぐに読み取り」で古い値が読み取られる"
+        "title": "[BUG-032] 設定の遅延書き込み中に「書き込み直後に読み取り」で古い値を読み込む"
+      }
+    ],
+    "[BUG-033] wait_reply で待機中の返信が高優先度のハンドラに食い込まれる": [
+      {
+        "document": "bug-tracker.md",
+        "line": 864,
+        "level": 3,
+        "title": "[BUG-033] wait_reply で待機中の返信が高優先度のハンドラに食い込まれる"
+      }
+    ],
+    "[BUG-034] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 886,
+        "level": 3,
+        "title": "[BUG-034] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-035] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 906,
+        "level": 3,
+        "title": "[BUG-035] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-036] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 926,
+        "level": 3,
+        "title": "[BUG-036] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-037] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 946,
+        "level": 3,
+        "title": "[BUG-037] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-038] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 966,
+        "level": 3,
+        "title": "[BUG-038] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-039] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 986,
+        "level": 3,
+        "title": "[BUG-039] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-040] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1006,
+        "level": 3,
+        "title": "[BUG-040] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-041] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1026,
+        "level": 3,
+        "title": "[BUG-041] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-042] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1046,
+        "level": 3,
+        "title": "[BUG-042] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-043] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1066,
+        "level": 3,
+        "title": "[BUG-043] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-044] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1086,
+        "level": 3,
+        "title": "[BUG-044] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-045] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1106,
+        "level": 3,
+        "title": "[BUG-045] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-046] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1126,
+        "level": 3,
+        "title": "[BUG-046] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-047] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1146,
+        "level": 3,
+        "title": "[BUG-047] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-048] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1166,
+        "level": 3,
+        "title": "[BUG-048] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-049] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1186,
+        "level": 3,
+        "title": "[BUG-049] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-050] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1206,
+        "level": 3,
+        "title": "[BUG-050] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-051] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1226,
+        "level": 3,
+        "title": "[BUG-051] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-052] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1246,
+        "level": 3,
+        "title": "[BUG-052] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-053] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1266,
+        "level": 3,
+        "title": "[BUG-053] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-054] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1286,
+        "level": 3,
+        "title": "[BUG-054] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-055] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1306,
+        "level": 3,
+        "title": "[BUG-055] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-056] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1326,
+        "level": 3,
+        "title": "[BUG-056] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-057] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1346,
+        "level": 3,
+        "title": "[BUG-057] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-058] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1366,
+        "level": 3,
+        "title": "[BUG-058] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-059] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1386,
+        "level": 3,
+        "title": "[BUG-059] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-060] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1406,
+        "level": 3,
+        "title": "[BUG-060] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-061] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1426,
+        "level": 3,
+        "title": "[BUG-061] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-062] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1446,
+        "level": 3,
+        "title": "[BUG-062] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-063] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1466,
+        "level": 3,
+        "title": "[BUG-063] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-064] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1486,
+        "level": 3,
+        "title": "[BUG-064] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-065] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1506,
+        "level": 3,
+        "title": "[BUG-065] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-066] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1526,
+        "level": 3,
+        "title": "[BUG-066] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-067] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1546,
+        "level": 3,
+        "title": "[BUG-067] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-068] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1566,
+        "level": 3,
+        "title": "[BUG-068] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-069] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1586,
+        "level": 3,
+        "title": "[BUG-069] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-070] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1606,
+        "level": 3,
+        "title": "[BUG-070] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-071] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1626,
+        "level": 3,
+        "title": "[BUG-071] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-072] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1646,
+        "level": 3,
+        "title": "[BUG-072] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-073] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1666,
+        "level": 3,
+        "title": "[BUG-073] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-074] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1686,
+        "level": 3,
+        "title": "[BUG-074] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-075] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1706,
+        "level": 3,
+        "title": "[BUG-075] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-076] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1726,
+        "level": 3,
+        "title": "[BUG-076] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-077] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1746,
+        "level": 3,
+        "title": "[BUG-077] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-078] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1766,
+        "level": 3,
+        "title": "[BUG-078] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-079] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1786,
+        "level": 3,
+        "title": "[BUG-079] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-080] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1806,
+        "level": 3,
+        "title": "[BUG-080] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-081] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1826,
+        "level": 3,
+        "title": "[BUG-081] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-082] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1846,
+        "level": 3,
+        "title": "[BUG-082] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-083] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1866,
+        "level": 3,
+        "title": "[BUG-083] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-084] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1886,
+        "level": 3,
+        "title": "[BUG-084] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-085] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1906,
+        "level": 3,
+        "title": "[BUG-085] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-086] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1926,
+        "level": 3,
+        "title": "[BUG-086] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-087] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1946,
+        "level": 3,
+        "title": "[BUG-087] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-088] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1966,
+        "level": 3,
+        "title": "[BUG-088] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-089] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1986,
+        "level": 3,
+        "title": "[BUG-089] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-090] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 2006,
+        "level": 3,
+        "title": "[BUG-090] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-091] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 2026,
+        "level": 3,
+        "title": "[BUG-091] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-092] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 2046,
+        "level": 3,
+        "title": "[BUG-092] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-093] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 2066,
+        "level": 3,
+        "title": "[BUG-093] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-094] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 2086,
+        "level": 3,
+        "title": "[BUG-094] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-095] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 2106,
+        "level": 3,
+        "title": "[BUG-095] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-096] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 2126,
+        "level": 3,
+        "title": "[BUG-096] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-097] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 2146,
+        "level": 3,
+        "title": "[BUG-097] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-098] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 2166,
+        "level": 3,
+        "title": "[BUG-098] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-099] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 2186,
+        "level": 3,
+        "title": "[BUG-099] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+      }
+    ],
+    "[BUG-100] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 2206,
+        "level": 3,
+        "title": "[BUG-100] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
       }
     ],
     "__init__.py": [
@@ -5050,6 +5610,14 @@
         "title": "アーキテクチャ概要"
       }
     ],
+    "アーキテクチャ設計": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 5,
+        "level": 2,
+        "title": "アーキテクチャ設計"
+      }
+    ],
     "イベントにおけるアカウント識別": [
       {
         "document": "platform-guide/ideaura.md",
@@ -5478,14 +6046,6 @@
         "title": "インタラクティブ処理"
       }
     ],
-    "インポート": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 21,
-        "level": 2,
-        "title": "インポート"
-      }
-    ],
     "インラインキーボード付きメッセージ": [
       {
         "document": "platform-guide/telegram.md",
@@ -5600,10 +6160,18 @@
         "title": "エントリの登録"
       }
     ],
+    "カスタムストレージバックエンド": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 364,
+        "level": 2,
+        "title": "カスタムストレージバックエンド"
+      }
+    ],
     "ガイド付き登録": [
       {
         "document": "advanced/conversation.md",
-        "line": 292,
+        "line": 345,
         "level": 3,
         "title": "ガイド付き登録"
       }
@@ -5624,10 +6192,24 @@
         "title": "キーワードフィルタリング"
       }
     ],
+    "クイックリファレンス": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 303,
+        "level": 3,
+        "title": "クイックリファレンス"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 330,
+        "level": 3,
+        "title": "クイックリファレンス"
+      }
+    ],
     "クエリ条件の再利用": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 219,
+        "line": 241,
         "level": 2,
         "title": "クエリ条件の再利用"
       }
@@ -5744,12 +6326,12 @@
         "title": "ゲートウェイ接続"
       }
     ],
-    "コアAPI": [
+    "コア API": [
       {
         "document": "advanced/conversation.md",
         "line": 36,
         "level": 2,
-        "title": "コアAPI"
+        "title": "コア API"
       }
     ],
     "コアコンポーネント": [
@@ -6309,7 +6891,7 @@
     "ソート、ページング": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 159,
+        "line": 181,
         "level": 3,
         "title": "ソート、ページング"
       }
@@ -6320,6 +6902,14 @@
         "line": 1,
         "level": 1,
         "title": "タイプ スタンプ生成（IDE の補完）"
+      }
+    ],
+    "タイプの分類": [
+      {
+        "document": "bug-tracker.md",
+        "line": 49,
+        "level": 2,
+        "title": "タイプの分類"
       }
     ],
     "タイプストアブの生成": [
@@ -6336,14 +6926,6 @@
         "line": 431,
         "level": 2,
         "title": "タイプストアブコマンド"
-      }
-    ],
-    "タイプ分類": [
-      {
-        "document": "bug-tracker.md",
-        "line": 45,
-        "level": 2,
-        "title": "タイプ分類"
       }
     ],
     "タイマー": [
@@ -6402,6 +6984,14 @@
         "title": "チェイン呼び出しの例"
       }
     ],
+    "チェックポイントのTTL": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 302,
+        "level": 3,
+        "title": "チェックポイントのTTL"
+      }
+    ],
     "チェーン修飾": [
       {
         "document": "api-reference/adapter-system.md",
@@ -6444,6 +7034,14 @@
         "line": 707,
         "level": 3,
         "title": "チェーン呼び出し"
+      }
+    ],
+    "チェーン呼び出しによるクエリ": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 74,
+        "level": 2,
+        "title": "チェーン呼び出しによるクエリ"
       }
     ],
     "チェーン呼び出しの例": [
@@ -6668,6 +7266,14 @@
         "title": "テーブル構造の変更"
       }
     ],
+    "テーブル管理": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 32,
+        "level": 2,
+        "title": "テーブル管理"
+      }
+    ],
     "ディアグノスティクスコマンド": [
       {
         "document": "user-guide/cli-reference.md",
@@ -6717,7 +7323,7 @@
     "データの削除": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 195,
+        "line": 217,
         "level": 3,
         "title": "データの削除"
       }
@@ -6741,7 +7347,7 @@
     "データの更新": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 180,
+        "line": 202,
         "level": 3,
         "title": "データの更新"
       }
@@ -6765,7 +7371,7 @@
     "トランザクションでの使用": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 247,
+        "line": 269,
         "level": 2,
         "title": "トランザクションでの使用"
       }
@@ -7128,12 +7734,12 @@
         "title": "パラメータの説明"
       }
     ],
-    "パラメータ化クエリ": [
+    "パラメータ化されたクエリ": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 304,
+        "line": 326,
         "level": 2,
-        "title": "パラメータ化クエリ"
+        "title": "パラメータ化されたクエリ"
       }
     ],
     "ビューポートと出力形式": [
@@ -7147,7 +7753,7 @@
     "ビルダーのリセット": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 236,
+        "line": 258,
         "level": 2,
         "title": "ビルダーのリセット"
       }
@@ -7168,12 +7774,12 @@
         "title": "ファスト初期化"
       }
     ],
-    "フィールドの説明": [
+    "フィールド説明": [
       {
         "document": "bug-tracker.md",
         "line": 14,
         "level": 2,
-        "title": "フィールドの説明"
+        "title": "フィールド説明"
       }
     ],
     "フォント": [
@@ -8409,7 +9015,7 @@
     "モジュール開発者ガイド": [
       {
         "document": "advanced/ownership.md",
-        "line": 103,
+        "line": 105,
         "level": 2,
         "title": "モジュール開発者ガイド"
       }
@@ -8712,14 +9318,6 @@
         "title": "リクエスト関連 ID（X-Request-ID）"
       }
     ],
-    "リソースの所有関係": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 37,
-        "level": 2,
-        "title": "リソースの所有関係"
-      }
-    ],
     "リバースコンバージョンとメッセージ構築": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -8835,7 +9433,7 @@
     "ループ対話": [
       {
         "document": "advanced/conversation.md",
-        "line": 323,
+        "line": 376,
         "level": 3,
         "title": "ループ対話"
       }
@@ -8936,12 +9534,12 @@
         "title": "レンダリング結果の送信"
       }
     ],
-    "ログのサブスクリプション（プッシュ型）": [
+    "ログサブスクリプション（プッシュモード）": [
       {
         "document": "api-reference/core-modules.md",
         "line": 155,
         "level": 3,
-        "title": "ログのサブスクリプション（プッシュ型）"
+        "title": "ログサブスクリプション（プッシュモード）"
       }
     ],
     "ログメッセージ": [
@@ -8952,12 +9550,12 @@
         "title": "ログメッセージ"
       }
     ],
-    "ログレベルの制御": [
+    "ログレベル制御": [
       {
         "document": "api-reference/core-modules.md",
         "line": 143,
         "level": 3,
-        "title": "ログレベルの制御"
+        "title": "ログレベル制御"
       }
     ],
     "ログ情報": [
@@ -9108,14 +9706,6 @@
         "title": "一般的なフィールド（すべてのイベントタイプ）"
       }
     ],
-    "一般的なフローのパターン": [
-      {
-        "document": "advanced/conversation.md",
-        "line": 290,
-        "level": 2,
-        "title": "一般的なフローのパターン"
-      }
-    ],
     "一般的な使用方法": [
       {
         "document": "user-guide/cli-reference.md",
@@ -9180,14 +9770,6 @@
         "title": "三、原理を深く理解したい"
       }
     ],
-    "严重性分级": [
-      {
-        "document": "bug-tracker.md",
-        "line": 37,
-        "level": 2,
-        "title": "严重性分级"
-      }
-    ],
     "並列と直列": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -9202,6 +9784,20 @@
         "line": 211,
         "level": 3,
         "title": "並行イベント処理"
+      }
+    ],
+    "主なメソッド": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 373,
+        "level": 3,
+        "title": "主なメソッド"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 403,
+        "level": 3,
+        "title": "主なメソッド"
       }
     ],
     "主人システム設定": [
@@ -9288,6 +9884,14 @@
         "title": "代理設定"
       }
     ],
+    "代表的なフロー・パターン": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 343,
+        "level": 2,
+        "title": "代表的なフロー・パターン"
+      }
+    ],
     "仮想環境の作成": [
       {
         "document": "user-guide/installation.md",
@@ -9302,14 +9906,6 @@
         "line": 51,
         "level": 4,
         "title": "仮想環境の有効化"
-      }
-    ],
-    "件数と存在確認": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 208,
-        "level": 3,
-        "title": "件数と存在確認"
       }
     ],
     "任意イベントの待機 (wait_for)": [
@@ -9353,18 +9949,6 @@
       }
     ],
     "使用例": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 108,
-        "level": 3,
-        "title": "使用例"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 281,
-        "level": 3,
-        "title": "使用例"
-      },
       {
         "document": "platform-guide/discord.md",
         "line": 360,
@@ -9410,6 +9994,20 @@
         "title": "使用方法"
       }
     ],
+    "例": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 108,
+        "level": 3,
+        "title": "例"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 281,
+        "level": 3,
+        "title": "例"
+      }
+    ],
     "例外のキャッチ": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -9434,12 +10032,12 @@
         "title": "保留エラーセグメント"
       }
     ],
-    "修正したバグ": [
+    "修正済みのバグ": [
       {
         "document": "bug-tracker.md",
-        "line": 107,
+        "line": 115,
         "level": 2,
-        "title": "修正したバグ"
+        "title": "修正済みのバグ"
       }
     ],
     "修飾の組み合わせ": [
@@ -9598,12 +10196,12 @@
         "title": "再起動"
       }
     ],
-    "出力の制御": [
+    "再起動時の自動復元": [
       {
-        "document": "api-reference/core-modules.md",
-        "line": 189,
+        "document": "advanced/conversation.md",
+        "line": 311,
         "level": 3,
-        "title": "出力の制御"
+        "title": "再起動時の自動復元"
       }
     ],
     "出力プロトコル": [
@@ -9612,6 +10210,14 @@
         "line": 126,
         "level": 2,
         "title": "出力プロトコル"
+      }
+    ],
+    "出力制御": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 189,
+        "level": 3,
+        "title": "出力制御"
       }
     ],
     "出力形式": [
@@ -9786,18 +10392,18 @@
         "title": "単一メソッドの登録"
       }
     ],
-    "単一レコードの取得": [
+    "単一行の取得": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 124,
+        "line": 146,
         "level": 4,
-        "title": "単一レコードの取得"
+        "title": "単一行の取得"
       }
     ],
     "卸載/無効化のクリーンアップシーケンス": [
       {
         "document": "advanced/ownership.md",
-        "line": 68,
+        "line": 70,
         "level": 2,
         "title": "卸載/無効化のクリーンアップシーケンス"
       }
@@ -10574,6 +11180,14 @@
         "title": "対象読者"
       }
     ],
+    "導入": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 21,
+        "level": 2,
+        "title": "導入"
+      }
+    ],
     "導入方法": [
       {
         "document": "advanced/message-builder.md",
@@ -10781,7 +11395,7 @@
     "戻り値の処理例": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 280,
+        "line": 302,
         "level": 3,
         "title": "戻り値の処理例"
       }
@@ -10797,7 +11411,7 @@
     "戻り値の説明": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 267,
+        "line": 289,
         "level": 2,
         "title": "戻り値の説明"
       }
@@ -10808,6 +11422,14 @@
         "line": 82,
         "level": 3,
         "title": "戻り値構造"
+      }
+    ],
+    "所属リソースの概要": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 37,
+        "level": 2,
+        "title": "所属リソースの概要"
       }
     ],
     "所有者（owner）システム": [
@@ -10864,6 +11486,14 @@
         "line": 174,
         "level": 2,
         "title": "手動デプロイ（pip）"
+      }
+    ],
+    "手動復元（自動メカニズムを使わない場合）": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 332,
+        "level": 3,
+        "title": "手動復元（自動メカニズムを使わない場合）"
       }
     ],
     "手動起動が必要な場面": [
@@ -11047,7 +11677,7 @@
     "推奨される書き方": [
       {
         "document": "advanced/ownership.md",
-        "line": 105,
+        "line": 107,
         "level": 3,
         "title": "推奨される書き方"
       }
@@ -11408,12 +12038,12 @@
         "title": "本番環境の設定"
       }
     ],
-    "条件フィルタ": [
+    "条件のフィルタリング": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 137,
+        "line": 159,
         "level": 3,
-        "title": "条件フィルタ"
+        "title": "条件のフィルタリング"
       }
     ],
     "条件監視": [
@@ -11427,7 +12057,7 @@
     "条目テンプレート": [
       {
         "document": "bug-tracker.md",
-        "line": 59,
+        "line": 65,
         "level": 2,
         "title": "条目テンプレート"
       }
@@ -11438,14 +12068,6 @@
         "line": 1,
         "level": 1,
         "title": "架構概要"
-      }
-    ],
-    "架構設計": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 5,
-        "level": 2,
-        "title": "架構設計"
       }
     ],
     "核心フィールドメソッド": [
@@ -11853,7 +12475,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 127,
+        "line": 129,
         "level": 3,
         "title": "注意事項"
       },
@@ -12284,20 +12906,20 @@
         "title": "統一イベントオーバーライド設定 (event.overrides)"
       }
     ],
-    "統計概要": [
-      {
-        "document": "bug-tracker.md",
-        "line": 84,
-        "level": 2,
-        "title": "統計概要"
-      }
-    ],
     "継承関係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 563,
         "level": 3,
         "title": "継承関係"
+      }
+    ],
+    "総計概要": [
+      {
+        "document": "bug-tracker.md",
+        "line": 90,
+        "level": 2,
+        "title": "総計概要"
       }
     ],
     "群メッセージの処理": [
@@ -12356,12 +12978,28 @@
         "title": "翻訳キーの命名"
       }
     ],
+    "自動チェックポイントと再起動時の復元": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 291,
+        "level": 2,
+        "title": "自動チェックポイントと再起動時の復元"
+      }
+    ],
     "自動ドキュメント": [
       {
         "document": "advanced/router.md",
         "line": 304,
         "level": 2,
         "title": "自動ドキュメント"
+      }
+    ],
+    "自動保存": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 293,
+        "level": 3,
+        "title": "自動保存"
       }
     ],
     "自動検出メカニズム": [
@@ -12386,14 +13024,6 @@
         "line": 245,
         "level": 3,
         "title": "自定义アイデンティティソース（provider）"
-      }
-    ],
-    "自定义ストレージバックエンド": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 342,
-        "level": 2,
-        "title": "自定义ストレージバックエンド"
       }
     ],
     "自定义メッセージセグメント": [
@@ -12426,14 +13056,6 @@
         "line": 554,
         "level": 3,
         "title": "表情パック/ステッカーのメッセージセグメント (yunhu_expression)"
-      }
-    ],
-    "表管理": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 32,
-        "level": 2,
-        "title": "表管理"
       }
     ],
     "装饰器ルーティング（推奨）": [
@@ -12606,6 +13228,14 @@
         "line": 52,
         "level": 2,
         "title": "言語検出メカニズム"
+      }
+    ],
+    "計数と存在確認": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 230,
+        "level": 3,
+        "title": "計数と存在確認"
       }
     ],
     "記事メッセージセグメント (yunhu_user_post)": [
@@ -12883,7 +13513,7 @@
     "設計の境界：アンインストール時にクリーンアップされないリソース": [
       {
         "document": "advanced/ownership.md",
-        "line": 90,
+        "line": 92,
         "level": 2,
         "title": "設計の境界：アンインストール時にクリーンアップされないリソース"
       }
@@ -13274,36 +13904,12 @@
         "title": "通知操作者"
       }
     ],
-    "速攻リファレンス": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 330,
-        "level": 3,
-        "title": "速攻リファレンス"
-      }
-    ],
     "速率制限": [
       {
         "document": "advanced/router.md",
         "line": 254,
         "level": 2,
         "title": "速率制限"
-      }
-    ],
-    "速見参考": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 303,
-        "level": 3,
-        "title": "速見参考"
-      }
-    ],
-    "連鎖クエリ": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 74,
-        "level": 2,
-        "title": "連鎖クエリ"
       }
     ],
     "進捗監視（OnProgress / OnError）": [
@@ -13360,6 +13966,14 @@
         "line": 1,
         "level": 1,
         "title": "部署ガイド"
+      }
+    ],
+    "重大度の分類": [
+      {
+        "document": "bug-tracker.md",
+        "line": 39,
+        "level": 2,
+        "title": "重大度の分類"
       }
     ],
     "重要な制限事項": [
@@ -13445,7 +14059,7 @@
     "関連ドキュメント": [
       {
         "document": "advanced/conversation.md",
-        "line": 350,
+        "line": 403,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -13481,7 +14095,7 @@
       },
       {
         "document": "advanced/sql-builder.md",
-        "line": 376,
+        "line": 397,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -13500,12 +14114,6 @@
       {
         "document": "api-reference/adapter-system.md",
         "line": 429,
-        "level": 2,
-        "title": "関連ドキュメント"
-      },
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 369,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -13600,6 +14208,14 @@
         "line": 351,
         "level": 2,
         "title": "関連リンク"
+      }
+    ],
+    "関連文書": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 421,
+        "level": 2,
+        "title": "関連文書"
       }
     ],
     "附件メッセージセグメント": [

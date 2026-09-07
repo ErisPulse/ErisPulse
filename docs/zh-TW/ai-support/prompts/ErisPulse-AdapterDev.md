@@ -6911,11 +6911,11 @@ def on_status_change(event):
 
 # 核心模組 API
 
-本文檔提供 ErisPulse 核心模組的 API 快速參考，包含方法簽名和簡要說明。詳細用法和範例請點擊各模組的「完整文件」連結。
+本文檔提供 ErisPulse 核心模組的 API 快速參考，包含方法簽名和簡要說明。詳細用法和示例請點擊各模組的「完整文件」連結。
 
 ## Storage 模組
 
-基於 SQLite 的鍵值儲存系統，支援通用 SQL 鏈式查詢。
+基於 SQLite 的鍵值儲存系統，支援通用 SQL 串流查詢。
 
 ### 基本操作
 
@@ -6928,7 +6928,7 @@ keys = sdk.storage.keys()
 sdk.storage.delete("key")
 ```
 
-### 批次操作
+### 批量操作
 
 ```python
 sdk.storage.set_multi({"key1": "val1", "key2": "val2"})
@@ -6947,13 +6947,13 @@ with sdk.storage.transaction():
 ### 屬性存取
 
 ```python
-sdk.storage.my_key          # 等同於 sdk.storage.get("my_key")
-sdk.storage.my_key = "val"  # 等同於 sdk.storage.set("my_key", "val")
+sdk.storage.my_key          # 等價於 sdk.storage.get("my_key")
+sdk.storage.my_key = "val"  # 等價於 sdk.storage.set("my_key", "val")
 ```
 
-### SQL 鏈式查詢
+### SQL 串流查詢
 
-Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的 CRUD 操作。
+Storage 模組提供串流呼叫風格的通用 SQL 查詢建構器，支援自訂表的 CRUD 操作。
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -6965,7 +6965,7 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> 完整的鏈式查詢 API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、事務等）請參考 [SQL 查詢建構器](../advanced/sql-builder.md)。
+> 完整的串流查詢 API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、事務等）請參考 [SQL 查詢建構器](../advanced/sql-builder.md)。
 
 ### 儲存後端抽象
 
@@ -6977,7 +6977,7 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 ### 異步介面
 
-Storage 和 Config 模組均提供異步方法（前綴 `a`），可在異步處理器中安全呼叫。同步方法繼續保留，無需修改現有程式碼。
+Storage 和 Config 模組均提供異步方法（前綴 `a`），可在異步處理器中安全調用。同步方法繼續保留，無需修改現有程式碼。
 
 ```python
 # 異步儲存
@@ -6987,7 +6987,7 @@ await sdk.storage.adelete("key")
 keys = await sdk.storage.aget_all_keys()
 await sdk.storage.aclear()
 
-# 異步批次操作
+# 異步批量操作
 values = await sdk.storage.aget_multi(["k1", "k2"])
 await sdk.storage.aset_multi({"k1": "v1", "k2": "v2"})
 await sdk.storage.adelete_multi(["k1", "k2"])
@@ -7001,18 +7001,18 @@ await sdk.config.areload()
 
 ## Config 模組
 
-以 TOML 格式管理設定檔，支援以點號分隔的鍵路徑。
+TOML 格式的配置文件管理，支援點號分隔的鍵路徑。
 
 ### API 概覽
 
 | 方法 | 說明 |
 |------|------|
-| `getConfig(key, default)` | 讀取設定，支援點號路徑如 `"MyModule.subkey"` |
-| `setConfig(key, value, immediate=False)` | 寫入設定。`immediate=True` 時立即儲存到檔案 |
-| `force_save()` | 強制將記憶體中的設定寫入檔案 |
-| `reload()` | 從檔案重新載入設定 |
-| `agetConfig(key, default)` | 異步讀取設定 |
-| `asetConfig(key, value, immediate)` | 異步寫入設定 |
+| `getConfig(key, default)` | 讀取配置，支援點號路徑如 `"MyModule.subkey"` |
+| `setConfig(key, value, immediate=False)` | 寫入配置。`immediate=True` 時立即儲存到檔案 |
+| `force_save()` | 強制將記憶體中的配置寫入檔案 |
+| `reload()` | 從檔案重新載入配置 |
+| `agetConfig(key, default)` | 異步讀取配置 |
+| `asetConfig(key, value, immediate)` | 異步寫入配置 |
 | `aforce_save()` | 異步強制儲存 |
 | `areload()` | 異步重新載入 |
 
@@ -7026,11 +7026,11 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` 預設採用延遲寫入（每 5 秒批量儲存），設定 `immediate=True` 可立即持久化到設定檔。設定變更會觸發 `config.set` 生命週期事件。
+> `setConfig` 預設採用延遲寫入（每 5 秒批量儲存），設定 `immediate=True` 可立即持久化到配置檔案。配置變更會觸發 `config.set` 生命週期事件。
 
-## Logger 模塊
+## Logger 模組
 
-模組化日誌系統，基於 Rich 輸出，支援子日誌器和模組層級控制。
+模組化日誌系統，基於 Rich 輸出，支援子日誌器和模組級別控制。
 
 ### 基本用法
 
@@ -7051,15 +7051,15 @@ child_logger.info("子模組日誌")
 child_logger.get_child("utils")  # 支援嵌套
 ```
 
-### 日誌層級控制
+### 日誌等級控制
 
 ```python
-sdk.logger.set_level("DEBUG")                          # 全域層級
-sdk.logger.set_module_level("MyModule", "DEBUG")       # 模組層級
+sdk.logger.set_level("DEBUG")                          # 全局等級
+sdk.logger.set_module_level("MyModule", "DEBUG")       # 模組等級
 
-# 支援的層級（由低到高）：
+# 支援的等級（由低到高）：
 # TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
-# TRACE 為最低層級，輸出框架內部詳細調試資訊（事件分發、路由註冊等）
+# TRACE 為最低等級，輸出框架內部詳細調試資訊（事件分發、路由註冊等）
 sdk.logger.set_level("TRACE")                          # 開啟全部日誌
 ```
 
@@ -7067,10 +7067,10 @@ sdk.logger.set_level("TRACE")                          # 開啟全部日誌
 
 供 Dashboard 等模組即時接收結構化日誌，支援等級篩選和歷史補發。
 
-> **顯式訂閱低層級日誌**：訂閱器的 `min_level` 可低於全域日誌層級。此時低層級日誌**僅推送到符合條件的訂閱器**，不會輸出到控制台，也不會寫入記憶體，從而避免污染主日誌流。
+> **顯式訂閱低等級日誌**：訂閱器的 `min_level` 可低於全局日誌等級。此時低等級日誌**僅推送到匹配的訂閱器**，不會輸出到控制台，也不會寫入記憶體，從而避免污染主日誌流。
 >
 > ```python
-> # 全域為 INFO，仍可單獨訂閱 DEBUG 日誌
+> # 全局為 INFO，仍可單獨訂閱 DEBUG 日誌
 > @sdk.logger.handler("debug-tracer", min_level="DEBUG")
 > def on_debug(log_data: dict): ...
 > ```
@@ -7094,7 +7094,7 @@ sdk.logger.remove_handler("my-handler")
 
 | 方法 | 說明 |
 |------|------|
-| `handler(id, *, min_level)(func)` | 裝飾器/直接呼叫兩用。`id` 為空時取函數名。`min_level` 可低於全域層級（低層級日誌僅推送訂閱器，不進控制台/記憶體）。註冊時自動補發歷史日誌 |
+| `handler(id, *, min_level)(func)` | 裝飾器/直接呼叫兩用。`id` 為空時取函數名。`min_level` 可低於全局等級（低等級日誌僅推送到匹配的訂閱器，不進控制台/記憶體）。註冊時自動補發歷史日誌 |
 | `remove_handler(id)` | 移除訂閱器 |
 
 ### 輸出控制
@@ -7108,7 +7108,7 @@ sdk.logger.set_memory_limit(1000)
 
 ## Adapter 模組
 
-適配器管理器，用於管理多平台適配器的註冊、啟動和關閉。
+適配器管理器，管理多平台適配器的註冊、啟動和關閉。
 
 ### API 概覽
 
@@ -7116,7 +7116,7 @@ sdk.logger.set_memory_limit(1000)
 |------|------|
 | `get(platform)` | 獲取適配器實例 |
 | `exists(platform)` | 檢查適配器是否已註冊 |
-| `enable(platform)` / `disable(platform)` | 啟用/停用適配器 |
+| `enable(platform)` / `disable(platform)` | 啟用/禁用適配器 |
 | `is_enabled(platform)` | 檢查是否啟用 |
 | `startup(platforms)` / `shutdown(platforms)` | 啟動/關閉適配器 |
 | `is_running(platform)` | 檢查適配器是否正在運行 |
@@ -7148,34 +7148,34 @@ sdk.adapter.get_status_summary()
 
 ## Module 模組
 
-模組管理器，用於管理插件的註冊、載入和卸載。
+模組管理器，管理插件的註冊、加載和卸載。
 
 ### API 概覽
 
 | 方法 | 說明 |
 |------|------|
-| `get(name)` | 取得模組實例或懶加載代理（已註冊但未載入時回傳代理） |
+| `get(name)` | 獲取模組實例或懶加載代理（已註冊但未加載時返回代理） |
 | `exists(name)` | 檢查是否已註冊 |
-| `is_loaded(name)` | 檢查是否已載入 |
+| `is_loaded(name)` | 檢查是否已加載 |
 | `is_enabled(name)` | 檢查是否啟用 |
-| `enable(name)` / `disable(name)` | 啟用/停用模組 |
-| `load(name)` / `unload(name)` | 載入/卸載模組 |
+| `enable(name)` / `disable(name)` | 啟用/禁用模組 |
+| `load(name)` / `unload(name)` | 加載/卸載模組 |
 | `list_registered()` | 列出已註冊模組 |
-| `list_loaded()` | 列出已載入模組 |
-| `get_info(name)` | 取得模組資訊 |
-| `get_status_summary()` | 取得模組狀態摘要 |
+| `list_loaded()` | 列出已加載模組 |
+| `get_info(name)` | 獲取模組資訊 |
+| `get_status_summary()` | 獲取模組狀態摘要 |
 
 ### 屬性存取
 
 ```python
 module = sdk.module.get("ModuleName")
 module = sdk.module.ModuleName
-module = sdk.ModuleName  # 等同快捷方式
+module = sdk.ModuleName  # 等價快捷方式
 ```
 
 ## Lifecycle 模組
 
-事件驅動的生命周期管理器，提供事件提交和監聽功能。
+事件驅動的生命週期管理器，提供事件提交和監聽功能。
 
 ### API 概覽
 
@@ -7203,13 +7203,13 @@ async def handle_any_module_event(event_data):
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
 ```
 
-> 完整的標準事件列表和詳細用法請參考 [生命周期管理](../advanced/lifecycle.md)。
+> 完整的標準事件列表和詳細用法請參考 [生命週期管理](../advanced/lifecycle.md)。
 
 ## Router 模組
 
 HTTP/WebSocket 路由管理器，基於 FastAPI + Uvicorn，支援裝飾器路由、中間件、分組、限流、CORS。
 
-> 完整的路由 API 文件（裝飾器路由、WebSocket、中間件、速率限制、CORS、安全標頭等）請參考 [路由管理器](../advanced/router.md)。
+> 完整的路由 API 文件（裝飾器路由、WebSocket、中間件、速率限制、CORS、安全頭等）請參考 [路由管理器](../advanced/router.md)。
 
 ### 快速參考
 
@@ -7232,9 +7232,9 @@ async def list_users(request: HttpRequest):
     return {"users": []}
 ```
 
-## HTTP 客戶端模組
+## HTTP Client 模組
 
-統一的網路客戶端，聚合 HTTP 請求、WebSocket 連接、連接池管理、自動重試、請求統計和生命週期事件整合。
+統一網路客戶端，聚合 HTTP 請求、WebSocket 連接、連接池管理、自動重試、請求統計和生命週期事件集成。
 
 > 完整的網路客戶端文件（請求方法、回應物件、WebSocket 客戶端、例外體系等）請參考 [網路客戶端](../advanced/http-client.md)。
 
@@ -7265,9 +7265,9 @@ state = sdk.dump_state()
 print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 ```
 
-返回結構包含以下子系統的狀態：
+回傳結構包含以下子系統的狀態：
 
-| 字段 | 說明 |
+| 欄位 | 說明 |
 |------|------|
 | `sdk` | SDK 初始化狀態、Python 版本、運行平台、時間戳 |
 | `adapters` | 已註冊/已啟動的適配器列表、各平台 Bot 在線狀態 |
@@ -7277,11 +7277,66 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 
 > 新增於 2.5.2
 
+## Interaction 交互會話
+
+管理 wait_reply 掛起等待與會話互斥租約（`sdk.interaction`）。
+
+### 常用方法
+
+```python
+# 查詢會話當前歸屬（誰正在與該使用者互動）
+owner = sdk.interaction.get_owner_of(event)
+
+# 聲明會話互斥租約（被占用返回 None）
+lease = sdk.interaction.acquire(event)
+if lease:
+    try:
+        ...  # 獨占互動
+    finally:
+        lease.release()
+
+# 上下文管理器形式（被占用拋 SessionOccupiedError）
+with sdk.interaction.hold(event) as lease:
+    ...
+
+# 掛起會話統計
+sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'owners': {'Chat': 3}}
+```
+
+模組卸載 / 適配器關閉時其掛起的等待自動取消（等待方立即回傳 `None`），
+回應命中時自動複查 scope 權限（使用者被拉黑 / 模組被解綁則終止等待）。
+
+> 新增於 2.8.0-dev.2
+
+## Transcript 會話收件箱
+
+每會話近期消息流的自動記錄與查詢（`sdk.transcript`），作為 AI 對話、
+防重複等上下文記憶類模組的公共底座。
+
+### 常用方法
+
+```python
+# 樂用查詢（推薦）：當前會話最近 20 條（含使用者與機器人，時間升序）
+messages = await event.history(20)
+for m in messages:
+    print(m["role"], ":", m["text"])
+
+# 管理器 API
+sdk.transcript.append(event, "user", "文本")
+sdk.transcript.get(event, n=20)
+sdk.transcript.clear(event)
+```
+
+配置（`ErisPulse.transcript`）：`enabled`（預設開啟）、`max_per_session`（每會話上限，預設 50）、
+`ttl_hours`（全局過期時間，預設 168 小時）。資料存獨立 SQLite 表，超限/過期惰性清理。
+
+> 新增於 2.8.0-dev.2
+
 ## 相關文件
 
 - [事件系統 API](event-system.md) - Event 模組 API
 - [適配器系統 API](adapter-system.md) - Adapter 管理 API
-- [SQL 查詢建構器](../advanced/sql-builder.md) - SQL 鏈式查詢完整文件
+- [SQL 查詢建構器](../advanced/sql-builder.md) - SQL 串流查詢完整文件
 - [路由管理器](../advanced/router.md) - 路由管理器完整文件
 - [網路客戶端](../advanced/http-client.md) - 網路客戶端完整文件
 - [生命週期管理](../advanced/lifecycle.md) - 生命週期完整文件
@@ -7803,8 +7858,8 @@ Bases/storage.py                    Core/storage.py
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` 是抽象基類，定義統一介面，支援未來拓展其他儲存介質（Redis、MySQL 等）
-- `StorageManager` 是目前 SQLite 的具體實作，完全向後相容
+- `BaseStorage` / `BaseQueryBuilder` 是抽象基類，定義統一介面，支援未來拓展其他儲存媒體（Redis、MySQL 等）
+- `StorageManager` 是目前 SQLite 具體實作，完全向後相容
 
 ## 導入
 
@@ -7813,13 +7868,13 @@ from ErisPulse import sdk
 # 或
 from ErisPulse.Core import storage
 
-# ABC 基類（用於類型註解或自定義實現）
+# ABC 基類（用於類型註解或自訂實作）
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
 ## 表管理
 
-### 建立表格
+### 建立表
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -7830,26 +7885,26 @@ sdk.storage.CreateTable("users", {
 })
 ```
 
-### 檢查表格是否存在
+### 檢查表是否存在
 
 ```python
 if sdk.storage.HasTable("users"):
     print("users 表已存在")
 ```
 
-### 刪除表格
+### 刪除表
 
 ```python
 sdk.storage.DropTable("users")
 ```
 
-### 修改表格結構
+### 修改表結構
 
 ```python
-# 添加欄位
+# 新增欄位
 sdk.storage.AlterTable("users").AddColumn("email", "TEXT").Execute()
 
-# 重新命名表格
+# 重新命名表
 sdk.storage.AlterTable("users").RenameTo("members").Execute()
 
 # 串連多個操作
@@ -7861,7 +7916,7 @@ sdk.storage.AlterTable("users") \
 
 ## 鏈式查詢
 
-### 插入數據
+### 插入資料
 
 ```python
 # 單行插入（傳入字典）
@@ -7875,16 +7930,16 @@ sdk.storage.Table("users").InsertMulti([
 ]).Execute()
 ```
 
-### 查詢數據
+### 查詢資料
 
-> **重要**：`Select()` 返回的是 `list[tuple]`（元組列表），不是字典。你需要按列順序用索引訪問。
+> **重要**：`Select()` 回傳的是 `list[tuple]`（元組列表），不是字典。你需要按欄位順序用索引存取。
 
 ```python
-# 查詢所有列
+# 查詢所有欄位
 rows = sdk.storage.Table("users").Select().Execute()
 # rows: [(1, "Alice", 30), (2, "Bob", 25), ...]
 
-# 查詢指定列
+# 查詢指定欄位
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
 # rows: [("Alice", 30), ("Bob", 25), ...]
 
@@ -7895,6 +7950,28 @@ for row in rows:
 ```
 
 #### 將元組轉為字典
+
+推薦直接在鏈上呼叫 `ToDict()`，SELECT 結果自動以字典回傳（欄位名 → 值）：
+
+```python
+# ToDict 鏈：結果為 list[dict]，欄位名自動取自查詢元數據（SELECT * 同樣支援）
+rows = sdk.storage.Table("users").Select("name", "age").ToDict().Execute()
+# rows: [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}, ...]
+
+for row in rows:
+    print(row["name"], row["age"])
+
+# ExecuteOne 同樣生效
+row = sdk.storage.Table("users").Select("name", "age") \
+    .Where("id = ?", 1) \
+    .ToDict() \
+    .ExecuteOne()
+# row: {"name": "Alice", "age": 30} 或 None
+```
+
+> `ToDict()` 是鏈式標記（回傳 self）：未呼叫它的鏈保持原有 `list[tuple]` 行為，完全向後相容；`copy()` 會保留該標記。
+
+手動 zip 方式（與 ToDict 等價，適合無法改鏈的場景）：
 
 ```python
 columns = ["id", "name", "age"]
@@ -7909,7 +7986,7 @@ for row in rows:
 records = [dict(zip(columns, row)) for row in rows]
 ```
 
-#### 獲取單條記錄
+#### 取得單條記錄
 
 ```python
 row = sdk.storage.Table("users").Select("name", "age") \
@@ -7924,7 +8001,7 @@ if row is not None:
 
 ### 條件過濾
 
-> `Where(condition, *params)` 支持傳入多個參數，對應多個 `?` 佔位符。
+> `Where(condition, *params)` 支援傳入多個參數，對應多個 `?` 佔位符。
 
 ```python
 # 單條件（一個佔位符，一個參數）
@@ -7937,7 +8014,7 @@ rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ? AND age < ?", 20, 40) \
     .Execute()
 
-# 多次調用 Where（AND 連接）
+# 多次呼叫 Where（AND 連接）
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 20) \
     .Where("age < ?", 40) \
@@ -7965,7 +8042,7 @@ rows = sdk.storage.Table("users").Select("name") \
     .Execute()
 ```
 
-### 更新數據
+### 更新資料
 
 ```python
 # 條件更新
@@ -7980,7 +8057,7 @@ sdk.storage.Table("users") \
     .Execute()
 ```
 
-### 刪除數據
+### 刪除資料
 
 ```python
 # 條件刪除
@@ -8004,9 +8081,9 @@ count = sdk.storage.Table("users").Where("age > ?", 18).Count()
 exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
 ```
 
-## 重複使用查詢條件
+## 複用查詢條件
 
-使用 `copy()` 深拷貝建構器，重複使用基礎條件：
+使用 `copy()` 深拷貝建構器，複用基礎條件：
 
 ```python
 base = sdk.storage.Table("users").Where("age > ?", 20)
@@ -8017,7 +8094,7 @@ rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
 # 基於相同條件計數
 count = base.copy().Count()
 
-# 基於相同條件檢查是否存在
+# 基於相同條件檢查存在性
 exists = base.copy().Where("name = ?", "Alice").Exists()
 ```
 
@@ -8052,41 +8129,41 @@ except Exception:
 # Alice 的記錄仍然存在
 ```
 
-## 返回值說明
+## 回傳值說明
 
-| 操作 | 返回類型 | 說明 |
+| 操作 | 回傳類型 | 說明 |
 |------|---------|------|
-| `Select().Execute()` | `list[tuple]` | 元組列表，按列順序排列 |
+| `Select().Execute()` | `list[tuple]` | 元組列表，按欄位順序排列 |
 | `Select().ExecuteOne()` | `tuple \| None` | 單條元組或 None |
 | `Insert().Execute()` | `int` | 受影響行數 |
-| `InsertMulti().Execute()` | `int` | 插入行數 |
+| `InsertMulti().Execute()` | `int` | 新增行數 |
 | `Update().Execute()` | `int` | 受影響行數 |
 | `Delete().Execute()` | `int` | 受影響行數 |
 | `Count()` | `int` | 匹配行數 |
 | `Exists()` | `bool` | 是否存在 |
 
-### 返回值處理範例
+### 回傳值處理示例
 
 ```python
-# Select 返回元組，按索引取值
+# Select 回傳元組，按索引取值
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
 first_name = rows[0][0]  # 第一行第一列 name
 first_age = rows[0][1]   # 第一行第二列 age
 
-# 推薦：用列名列表 + zip 轉為字典，程式碼更易讀
+# 推薦：用欄位名列表 + zip 轉為字典，程式碼更可讀
 cols = ["name", "age"]
 rows = sdk.storage.Table("users").Select(*cols).Execute()
 for row in rows:
     d = dict(zip(cols, row))
     print(d["name"], d["age"])
 
-# ExecuteOne 返回單條元組或 None
+# ExecuteOne 回傳單條元組或 None
 row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
 name = row[0] if row else None
 
-# Insert/Update/Delete 返回受影響行數
+# Insert/Update/Delete 回傳受影響行數
 affected = sdk.storage.Table("users").Delete().Where("age < ?", 18).Execute()
-print(f"刪除 {affected} 條記錄")
+print(f"刪除了 {affected} 條記錄")
 ```
 
 ## 參數化查詢
@@ -8112,7 +8189,7 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ```python
 # Where(condition: str, *params: Any)
-# params 是可變參數，逐個傳入即可
+# params 是可變參數，逐一傳入即可
 
 # 單個參數
 .Where("name = ?", "Alice")
@@ -8123,13 +8200,13 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 # LIKE 查詢
 .Where("name LIKE ?", "A%")
 
-# IN 查詢（需要手動構造佔位符）
+# IN 查詢（需要手動建構佔位符）
 .Where("name IN (?, ?, ?)", "Alice", "Bob", "Charlie")
 ```
 
 ## 自訂儲存後端
 
-繼承 `BaseStorage` 和 `BaseQueryBuilder` 以實現自訂儲存後端：
+繼承 `BaseStorage` 和 `BaseQueryBuilder` 實現自訂儲存後端：
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -9819,9 +9896,9 @@ with owner_scope("MyModule"):
 
 ## 歸屬資源全景
 
-模組在加載上下文內註冊的以下資源均記錄歸屬，卸載/停用時自動回收：
+模組在加載上下文內註冊的以下資源均記錄歸屬，卸載/禁用時自動回收：
 
-| 資源 | 註冊方式 | 清理呼叫 |
+| 資源 | 註冊方式 | 清理調用 |
 |------|----------|----------|
 | 命令 | `@command()` / 命令 dict 聲明 | `command.unregister_by_owner()` |
 | 事件處理器 | `@message` / `@notice` / `@request` / `@meta` | `handler.unregister_by_owner()` |
@@ -9836,16 +9913,17 @@ with owner_scope("MyModule"):
 | 主人身源 provider | `master.provider` | `master.unregister_by_owner()` |
 | i18n 翻譯鍵 | `I18nClass` 聲明（domain=模組名） | `i18n.unregister_domain()` |
 | 事件覆寫（執行時） | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
+| 互動會話（wait_reply 等待 / 租約） | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()`（等待方立即收到取消） |
 | 上下文數據 | `runtime/context` 按 owner 記錄 | 按模組精確清理 |
 
-適配器端的對應資源（以平台名為 owner）在適配器 `shutdown()` / `restart()`
-時由 `_cleanup_adapter_resources` 回收，另含：
+適配器側的對應資源（以平台名為 owner）在適配器 `shutdown()` / `restart()` 時由 `_cleanup_adapter_resources` 回收，另含：
 
-| 資源 | 清理呼叫 |
+| 資源 | 清理調用 |
 |------|----------|
 | 適配器自有的 `on()` 處理器與中間件 | `adapter.unregister_handlers_by_owner(platform)` |
 | 平台事件方法擴展（`EventMixin`） | `unregister_platform_event_methods(platform)` |
 | 自定義會話類型 | `unregister_custom_types_by_owner(platform)` |
+| 互動會話（該平台掛起的 wait_reply / 租約） | `interaction.cancel_by_platform(platform)` |
 | i18n 翻譯域（domain=配置鍵） | `i18n.unregister_domain(配置鍵)` |
 | 細顆粒命名空間路由 | `router.unregister_all_by_owner(platform)` |
 

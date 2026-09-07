@@ -35,6 +35,24 @@ ErisPulse 存储基类
 #### 方法列表
 
 
+##### `ToDict()`
+
+将 SELECT 结果以字典形式返回（链式修饰，返回 self）
+
+设置后 ``Execute()`` / ``ExecuteOne()`` 的 SELECT 结果从 tuple
+转为 dict（列名 → 值）。未调用本方法的链保持原有 tuple 行为，
+完全向后兼容。
+
+**返回值** (`self`): 
+**示例**:
+```python
+>>> rows = storage.Table("users").Select("name", "age").ToDict().Execute()
+>>> # [{'name': 'Alice', 'age': 30}, ...]
+```
+
+---
+
+
 ##### `Select()`
 
 指定查询列
@@ -184,7 +202,7 @@ ErisPulse 存储基类
 
 执行构建的查询
 
-- SELECT 返回 list[tuple]
+- SELECT 返回 list[tuple]（调用 ToDict() 后为 list[dict]）
 - INSERT/UPDATE/DELETE 返回受影响行数 int
 
 **返回值**: 查询结果或受影响行数
@@ -196,7 +214,7 @@ ErisPulse 存储基类
 
 执行查询并返回单条结果
 
-**返回值** (`单行元组或`): None
+**返回值** (`单行元组（调用`): ToDict() 后为字典）或 None
 
 ---
 

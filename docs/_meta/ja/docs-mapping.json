@@ -381,7 +381,7 @@
           "icon": "fa-globe"
         },
         {
-          "title": "SQL クエリビルダー",
+          "title": "SQL クエリビルダ",
           "path": "advanced/sql-builder.md",
           "level": 1,
           "icon": "fa-database"

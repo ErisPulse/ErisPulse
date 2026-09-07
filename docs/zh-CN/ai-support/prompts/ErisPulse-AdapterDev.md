@@ -7250,6 +7250,61 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 
 > 新增于 2.5.2
 
+## Interaction 交互会话
+
+管理 wait_reply 挂起等待与会话互斥租约（`sdk.interaction`）。
+
+### 常用方法
+
+```python
+# 查询会话当前归属（谁正在与该用户交互）
+owner = sdk.interaction.get_owner_of(event)
+
+# 声明会话互斥租约（被占用返回 None）
+lease = sdk.interaction.acquire(event)
+if lease:
+    try:
+        ...  # 独占交互
+    finally:
+        lease.release()
+
+# 上下文管理器形式（被占用抛 SessionOccupiedError）
+with sdk.interaction.hold(event) as lease:
+    ...
+
+# 挂起会话统计
+sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'owners': {'Chat': 3}}
+```
+
+模块卸载 / 适配器关闭时其挂起的等待自动取消（等待方立即返回 `None`），
+回复命中时自动复查 scope 权限（用户被拉黑 / 模块被解绑则终止等待）。
+
+> 新增于 2.8.0-dev.2
+
+## Transcript 会话收件箱
+
+每会话近期消息流的自动记录与查询（`sdk.transcript`），作为 AI 对话、
+防复读等上下文记忆类模块的公共底座。
+
+### 常用方法
+
+```python
+# 便捷查询（推荐）：当前会话最近 20 条（含用户与机器人，时间升序）
+messages = await event.history(20)
+for m in messages:
+    print(m["role"], ":", m["text"])
+
+# 管理器 API
+sdk.transcript.append(event, "user", "文本")
+sdk.transcript.get(event, n=20)
+sdk.transcript.clear(event)
+```
+
+配置（`ErisPulse.transcript`）：`enabled`（默认开启）、`max_per_session`（每会话上限，默认 50）、
+`ttl_hours`（全局过期时间，默认 168 小时）。数据存独立 SQLite 表，超限/过期惰性清理。
+
+> 新增于 2.8.0-dev.2
+
 
 
 ====
@@ -7853,6 +7908,28 @@ for row in rows:
 ```
 
 #### 将元组转为字典
+
+推荐直接在链上调用 `ToDict()`，SELECT 结果自动以字典返回（列名 → 值）：
+
+```python
+# ToDict 链：结果为 list[dict]，列名自动取自查询元数据（SELECT * 同样支持）
+rows = sdk.storage.Table("users").Select("name", "age").ToDict().Execute()
+# rows: [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}, ...]
+
+for row in rows:
+    print(row["name"], row["age"])
+
+# ExecuteOne 同样生效
+row = sdk.storage.Table("users").Select("name", "age") \
+    .Where("id = ?", 1) \
+    .ToDict() \
+    .ExecuteOne()
+# row: {"name": "Alice", "age": 30} 或 None
+```
+
+> `ToDict()` 是链式标记（返回 self）：未调用它的链保持原有 `list[tuple]` 行为，完全向后兼容；`copy()` 会保留该标志。
+
+手动 zip 方式（与 ToDict 等价，适合无法改链的场景）：
 
 ```python
 columns = ["id", "name", "age"]
@@ -9788,6 +9865,7 @@ with owner_scope("MyModule"):
 | 主人身源 provider | `master.provider` | `master.unregister_by_owner()` |
 | i18n 翻译键 | `I18nClass` 声明（domain=模块名） | `i18n.unregister_domain()` |
 | 事件覆写（运行时） | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
+| 交互会话（wait_reply 等待 / 租约） | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()`（等待方立即收到取消） |
 | 上下文数据 | `runtime/context` 按 owner 记录 | 按模块精确清理 |
 
 适配器侧的对应资源（以平台名为 owner）在适配器 `shutdown()` / `restart()`
@@ -9798,6 +9876,7 @@ with owner_scope("MyModule"):
 | 适配器自有的 `on()` 处理器与中间件 | `adapter.unregister_handlers_by_owner(platform)` |
 | 平台事件方法扩展（`EventMixin`） | `unregister_platform_event_methods(platform)` |
 | 自定义会话类型 | `unregister_custom_types_by_owner(platform)` |
+| 交互会话（该平台挂起的 wait_reply / 租约） | `interaction.cancel_by_platform(platform)` |
 | i18n 翻译域（domain=配置键） | `i18n.unregister_domain(配置键)` |
 | 细颗粒命名空间路由 | `router.unregister_all_by_owner(platform)` |
 

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1474,
+  "total_keywords": 1483,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2920,6 +2920,14 @@
         "title": "I18nManager"
       }
     ],
+    "Interaction 交互会话": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 369,
+        "level": 2,
+        "title": "Interaction 交互会话"
+      }
+    ],
     "Jinja 模板示例": [
       {
         "document": "ecosystem/takumi.md",
@@ -3452,6 +3460,14 @@
         "title": "Token刷新"
       }
     ],
+    "Transcript 会话收件箱": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 400,
+        "level": 2,
+        "title": "Transcript 会话收件箱"
+      }
+    ],
     "Using 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -3563,7 +3579,7 @@
     "Where 参数传递规则": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 323,
+        "line": 345,
         "level": 3,
         "title": "Where 参数传递规则"
       }
@@ -3814,6 +3830,14 @@
         "line": 840,
         "level": 3,
         "title": "[BUG-032] 配置延迟刷盘期间「写后立读」读到旧值"
+      }
+    ],
+    "[BUG-033] wait_reply 挂起的回复被高优先级处理器饿死": [
+      {
+        "document": "bug-tracker.md",
+        "line": 862,
+        "level": 3,
+        "title": "[BUG-033] wait_reply 挂起的回复被高优先级处理器饿死"
       }
     ],
     "__init__.py": [
@@ -5023,7 +5047,7 @@
     "事务中使用": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 247,
+        "line": 269,
         "level": 2,
         "title": "事务中使用"
       }
@@ -5629,7 +5653,7 @@
     "典型流程模式": [
       {
         "document": "advanced/conversation.md",
-        "line": 290,
+        "line": 343,
         "level": 2,
         "title": "典型流程模式"
       }
@@ -5837,7 +5861,7 @@
     "删除数据": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 195,
+        "line": 217,
         "level": 3,
         "title": "删除数据"
       }
@@ -6011,7 +6035,7 @@
     "卸载/禁用清理序列": [
       {
         "document": "advanced/ownership.md",
-        "line": 74,
+        "line": 76,
         "level": 2,
         "title": "卸载/禁用清理序列"
       }
@@ -6097,7 +6121,7 @@
     "参数化查询": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 304,
+        "line": 326,
         "level": 2,
         "title": "参数化查询"
       }
@@ -7289,7 +7313,7 @@
     "复用查询条件": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 219,
+        "line": 241,
         "level": 2,
         "title": "复用查询条件"
       }
@@ -7986,6 +8010,20 @@
         "title": "常用命令"
       }
     ],
+    "常用方法": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 373,
+        "level": 3,
+        "title": "常用方法"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 405,
+        "level": 3,
+        "title": "常用方法"
+      }
+    ],
     "常见任务示例": [
       {
         "document": "getting-started/common-tasks.md",
@@ -8385,7 +8423,7 @@
     "引导式注册": [
       {
         "document": "advanced/conversation.md",
-        "line": 292,
+        "line": 345,
         "level": 3,
         "title": "引导式注册"
       }
@@ -8409,7 +8447,7 @@
     "循环对话": [
       {
         "document": "advanced/conversation.md",
-        "line": 323,
+        "line": 376,
         "level": 3,
         "title": "循环对话"
       }
@@ -8644,6 +8682,14 @@
         "title": "手动创建项目"
       }
     ],
+    "手动恢复（不用自动机制时）": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 332,
+        "level": 3,
+        "title": "手动恢复（不用自动机制时）"
+      }
+    ],
     "手动构造响应（旧版方式仍然兼容）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -8867,7 +8913,7 @@
     "排序、分页": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 159,
+        "line": 181,
         "level": 3,
         "title": "排序、分页"
       }
@@ -8891,7 +8937,7 @@
     "推荐写法": [
       {
         "document": "advanced/ownership.md",
-        "line": 116,
+        "line": 118,
         "level": 3,
         "title": "推荐写法"
       }
@@ -9479,7 +9525,7 @@
     "更新数据": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 180,
+        "line": 202,
         "level": 3,
         "title": "更新数据"
       }
@@ -9597,7 +9643,7 @@
     "条件过滤": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 137,
+        "line": 159,
         "level": 3,
         "title": "条件过滤"
       }
@@ -10010,6 +10056,14 @@
         "title": "检查平台状态"
       }
     ],
+    "检查点 TTL": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 302,
+        "level": 3,
+        "title": "检查点 TTL"
+      }
+    ],
     "检查表是否存在": [
       {
         "document": "advanced/sql-builder.md",
@@ -10065,7 +10119,7 @@
     "模块作者指南": [
       {
         "document": "advanced/ownership.md",
-        "line": 114,
+        "line": 116,
         "level": 2,
         "title": "模块作者指南"
       }
@@ -10305,7 +10359,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 138,
+        "line": 140,
         "level": 3,
         "title": "注意事项"
       },
@@ -11137,7 +11191,7 @@
     "相关文档": [
       {
         "document": "advanced/conversation.md",
-        "line": 350,
+        "line": 403,
         "level": 2,
         "title": "相关文档"
       },
@@ -11173,7 +11227,7 @@
       },
       {
         "document": "advanced/sql-builder.md",
-        "line": 376,
+        "line": 398,
         "level": 2,
         "title": "相关文档"
       },
@@ -11197,7 +11251,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 369,
+        "line": 424,
         "level": 2,
         "title": "相关文档"
       },
@@ -11670,12 +11724,28 @@
         "title": "自动发现机制"
       }
     ],
+    "自动存档": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 293,
+        "level": 3,
+        "title": "自动存档"
+      }
+    ],
     "自动文档": [
       {
         "document": "advanced/router.md",
         "line": 304,
         "level": 2,
         "title": "自动文档"
+      }
+    ],
+    "自动检查点与重启恢复": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 291,
+        "level": 2,
+        "title": "自动检查点与重启恢复"
       }
     ],
     "自动注入": [
@@ -11697,7 +11767,7 @@
     "自定义存储后端": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 342,
+        "line": 364,
         "level": 2,
         "title": "自定义存储后端"
       }
@@ -11745,7 +11815,7 @@
     "获取单条记录": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 124,
+        "line": 146,
         "level": 4,
         "title": "获取单条记录"
       }
@@ -11881,7 +11951,7 @@
     "计数与存在性检查": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 208,
+        "line": 230,
         "level": 3,
         "title": "计数与存在性检查"
       }
@@ -11905,7 +11975,7 @@
     "设计边界：哪些资源不随卸载清理": [
       {
         "document": "advanced/ownership.md",
-        "line": 99,
+        "line": 101,
         "level": 2,
         "title": "设计边界：哪些资源不随卸载清理"
       }
@@ -12377,7 +12447,7 @@
     "返回值处理示例": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 280,
+        "line": 302,
         "level": 3,
         "title": "返回值处理示例"
       }
@@ -12401,7 +12471,7 @@
     "返回值说明": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 267,
+        "line": 289,
         "level": 2,
         "title": "返回值说明"
       }
@@ -13170,10 +13240,18 @@
         "title": "重启"
       }
     ],
+    "重启自动恢复": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 311,
+        "level": 3,
+        "title": "重启自动恢复"
+      }
+    ],
     "重置构建器": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 236,
+        "line": 258,
         "level": 2,
         "title": "重置构建器"
       }
