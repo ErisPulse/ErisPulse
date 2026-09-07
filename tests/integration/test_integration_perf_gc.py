@@ -341,8 +341,9 @@ class TestWaitReplyCleanupIntegration:
 
     @pytest.mark.asyncio
     async def test_wait_reply_cleans_on_cancel(self, clean_state):
-        """wait_reply 被 cancel 时 _waiting_replies 不残留"""
+        """wait_reply 被 cancel 时交互会话等待表不残留"""
         from ErisPulse.Core.Event.command import command as cmd_handler
+        from ErisPulse.Core.Event.interaction import interaction
 
         wait_task = None
 
@@ -371,9 +372,8 @@ class TestWaitReplyCleanupIntegration:
         except asyncio.CancelledError:
             pass
 
-        # _waiting_replies 应被 finally 清理
-        matching_keys = [k for k in cmd_handler._waiting_replies if "perf_test" in k]
-        assert len(matching_keys) == 0
+        # 交互会话等待表应被 finally 清理
+        assert interaction.counts()["waits"] == 0
 
 
 # ==================== 离线 Bot 自动过期回收 ====================

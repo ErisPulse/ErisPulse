@@ -17,6 +17,7 @@ from .errors import (
     ClientConnectionError,
     ClientTimeoutError,
     HTTPStatusError,
+    InteractionError,
     WebSocketError,
     WebSocketDisconnect,
 )
@@ -66,6 +67,7 @@ __all__ = [
     "I18nConfig",
     # i18n 单键声明
     "I18nKey",
+    "InteractionError",
     "KVQueryBuilder",
     "ModuleMeta",
     "RequestDSL",

@@ -366,6 +366,61 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 
 > 新增于 2.5.2
 
+## Interaction 交互会话
+
+管理 wait_reply 挂起等待与会话互斥租约（`sdk.interaction`）。
+
+### 常用方法
+
+```python
+# 查询会话当前归属（谁正在与该用户交互）
+owner = sdk.interaction.get_owner_of(event)
+
+# 声明会话互斥租约（被占用返回 None）
+lease = sdk.interaction.acquire(event)
+if lease:
+    try:
+        ...  # 独占交互
+    finally:
+        lease.release()
+
+# 上下文管理器形式（被占用抛 SessionOccupiedError）
+with sdk.interaction.hold(event) as lease:
+    ...
+
+# 挂起会话统计
+sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'owners': {'Chat': 3}}
+```
+
+模块卸载 / 适配器关闭时其挂起的等待自动取消（等待方立即返回 `None`），
+回复命中时自动复查 scope 权限（用户被拉黑 / 模块被解绑则终止等待）。
+
+> 新增于 2.8.0-dev.2
+
+## Transcript 会话收件箱
+
+每会话近期消息流的自动记录与查询（`sdk.transcript`），作为 AI 对话、
+防复读等上下文记忆类模块的公共底座。
+
+### 常用方法
+
+```python
+# 便捷查询（推荐）：当前会话最近 20 条（含用户与机器人，时间升序）
+messages = await event.history(20)
+for m in messages:
+    print(m["role"], ":", m["text"])
+
+# 管理器 API
+sdk.transcript.append(event, "user", "文本")
+sdk.transcript.get(event, n=20)
+sdk.transcript.clear(event)
+```
+
+配置（`ErisPulse.transcript`）：`enabled`（默认开启）、`max_per_session`（每会话上限，默认 50）、
+`ttl_hours`（全局过期时间，默认 168 小时）。数据存独立 SQLite 表，超限/过期惰性清理。
+
+> 新增于 2.8.0-dev.2
+
 ## 相关文档
 
 - [事件系统 API](event-system.md) - Event 模块 API

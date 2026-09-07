@@ -1,5 +1,3 @@
-![ErisPulse](https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/mascot-hero.png)
-
 # ErisPulse
 
 **Write once, deploy on multiple platforms.**

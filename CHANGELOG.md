@@ -73,6 +73,58 @@
 
 ---
 
+## [2.8.0-dev.2] - 2026/09/08
+> 开发版本
+
+**版本摘要**
+新增交互会话基础设施与基础原语：交互会话管理器（wait_reply 等待表抽为一等基础设施，owner / platform 双维度归属清理、回复命中权限复查、会话互斥租约）、Conversation 自动检查点（分支跳转自动存档 + 重启自动恢复）、端到端事件追踪（trace-id 贯穿入站 / 处理 / 出站 / 生命周期钩子）、消息事务（出站回执账本 + 异常自动撤回）、会话收件箱（每会话消息流自动记录与查询）。存储查询构建器新增 `ToDict()` 链。修复 wait_reply 挂起回复被高优先级处理器饿死的问题。
+
+**升级建议**
+- 是否建议升级：建议升级
+- 交互会话归属清理修复了模块卸载 / 平台关闭后等待方干等超时的资源泄漏；自动检查点与 trace-id 对现有代码零侵入
+
+**注意事项**
+- **行为变更**：同一会话键重复注册等待（如两个模块对同一用户 wait_reply）时，旧等待方现在立即收到取消（返回 `None`），不再静默覆盖后干等超时
+- **行为变更**：回复消息已被高优先级处理器认领时，挂起的等待仍会命中消费该消息（对话连续性优先）；不希望此行为的模块需自行调整处理器认领策略
+- 存储查询构建器默认行为不变（tuple 行）；仅显式调用 `ToDict()` 的链返回 dict
+
+### 新增
+
+- @wsu2059q
+  - **交互会话管理器** `Core/Event/interaction.py`（`sdk.interaction` / `from ErisPulse.Core.Event import interaction`）：
+    - wait_reply 底层等待表抽为一等基础设施：等待条目记录注册时归属（owner，自动捕获 `current_owner`）与平台（platform），按 会话键 / owner / platform 三索引管理
+    - 按维度精确取消：模块卸载 / 适配器关闭自动取消其挂起的等待，等待方立即收到取消（`InteractionCancelled`，挂入 `InteractionError` 异常体系）而非干等超时；同会话被新等待 / 租约取代时旧等待方同样立即取消（reason: conflict / owner_unload / platform_stop / revoked）
+    - 回复命中权限复查：pattern / regex / validator 通过后复查 scope 身份维度（用户被拉黑）与模块维度（owner 模块在该会话被解绑），任一失败终止等待，消息继续走常规处理
+    - 会话互斥租约：`acquire(event, ttl=...)`（deny 策略，被占用返回 None）/ `hold(event)` 上下文管理器（占用时抛 `SessionOccupiedError`）/ `get_owner_of(event)` 查询"该用户正被谁占用"；租约支持 `renew()` / `release()` 与 TTL 惰性过期
+    - 诊断：`counts()`（waits / leases / per-owner 计数）
+  - **Conversation 自动检查点** `Core/Event/wrapper.py`：
+    - 分支跳转（`goto()` / `start()`）自动后台保存检查点；对话终态（`stop()` / `wait()` 超时 / `collect()` 失败）自动清除
+    - 存储键补 target 维度：`conversation:{platform}:{user_id}:{target_id}`（同一用户在不同会话中的对话互不覆盖）；旧格式（不含 target）存档读取时自动迁移至新键
+    - 检查点 TTL：`ErisPulse.interaction.checkpoint_ttl`（默认 24h），过期存档在恢复时丢弃并清理
+    - 重启自动恢复：`Conversation.register_resume_handler(platform=None)` 注册恢复工厂（工厂内重新注册分支并返回 Conversation），框架在重启后首条命中消息自动完成 恢复上下文 → 认领事件 → 跳转存档分支；无工厂注册时零开销
+  - **端到端事件追踪（trace-id）** `runtime/context.py` / `Core/adapter.py` / `Core/Bases/adapter.py` / `Core/lifecycle.py`：
+    - 事件入站时从 `event["id"]` 取得（缺失自动生成）写入 `current_trace_id` 上下文，随事件分发复制到各 handler Task；`get_current_trace_id()` 读取
+    - 出站发送自动携带：`[Send]` 日志行附加 `[trace:...]` 标记；`message.sending` / `message.sent` 钩子数据（`send_ctx`）新增 `trace_id` 与 `preview`（发送文本预览，截断）字段
+    - `lifecycle.emit()` 的 dict 数据自动补 `_trace_id`（不覆盖已有值）——一条消息被多个模块接力处理时全链路可用同一 ID 串联
+  - **消息事务（message transaction）** `runtime/context.py` / `Core/Bases/adapter.py` / `Core/Event/wrapper.py`：
+    - `event.message_tx()` 异步上下文管理器：事务内所有出站发送自动记入回执账本（`send_receipts` 上下文，响应含非空 `message_id` 时记录 platform / bot_id / message_id / trace_id）；异常退出事务时逆序自动撤回
+    - 撤回能力感知：适配器未实现 `delete_message` 时跳过该条（TRACE 日志），单条撤回失败不中断；事务外发送不记账（零开销）
+  - **会话收件箱（transcript）** `Core/transcript.py`（`sdk.transcript` / `event.history(n)`）：
+    - 每会话（`platform:detail_type:target_id`）近期消息流自动记录：入站消息在分发管线记录（role=`user`），机器人出站文本经 `message.sent` 钩子记录（role=`bot`，读取 send_ctx 的 `preview`）
+    - 存储：独立 SQLite 表（经 storage `Table`），保留策略 = 每会话条数上限 + 全局 TTL（惰性触发清理）
+    - 配置节 `ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`；手动 API `transcript.append()` / `get()` / `clear()`；`event.history(n)` 便捷查询（时间升序，条目含 role / text / ts / event_id）
+  - **存储查询构建器 `ToDict()` 链** `Core/Bases/storage.py` / `Core/storage.py` / `Core/Bases/kv_builder.py`：
+    - `.Select(...).ToDict().Execute()`：SELECT 结果以 dict（列名 → 值）返回，列名取自 `cursor.description`（`SELECT *` 与表达式列均正确）；`ExecuteOne()` 同样生效；SQL 与 KV 两个构建器均支持，`copy()` 保留标志
+  - i18n 五语言同步：新增 `core.interaction.*`（冲突取消 / 权限复查 / 租约 / 消息事务）/ `core.transcript.*` / `core.event.conversation_auto_resumed` / `core.adapter.interaction_clean_failed` 等键；清理 `core.command.reply_*` 死键
+  - 文档：`advanced/conversation.md` 更新自动检查点与恢复工厂；`advanced/sql-builder.md` 新增 ToDict；`advanced/ownership.md` 补交互会话归属清理
+
+### 修复
+
+- @wsu2059q
+  - `wait_reply` 挂起的回复被高优先级处理器抢先认领后，等待方永远收不到回复（饿死）：回复命中判定提前至消息分发入口（`_processed` 检查之前），对话连续性优先于命令匹配
+
+---
+
 ## [2.8.0-dev.1] - 2026/08/28
 > 开发版本
 

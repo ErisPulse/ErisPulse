@@ -187,7 +187,7 @@ class KVQueryBuilder(BaseQueryBuilder):
 
     # ---- Execute ----
 
-    def Execute(self) -> list[tuple] | int:
+    def Execute(self) -> "list[tuple] | list[dict[str, Any]] | int":
         if self._operation == "insert":
             return self._exec_insert()
         if self._operation == "insert_multi":
@@ -217,7 +217,7 @@ class KVQueryBuilder(BaseQueryBuilder):
             count += 1
         return count
 
-    def _exec_select(self) -> list[tuple]:
+    def _exec_select(self) -> "list[tuple] | list[dict[str, Any]]":
         rows = self._scan_rows()
         # filter
         if self._where_clauses:
@@ -237,7 +237,11 @@ class KVQueryBuilder(BaseQueryBuilder):
             rows = rows[:self._limit]
         # project
         if self._columns:
+            if self._as_dict:
+                return [{c: r.get(c) for c in self._columns} for _, r in rows]
             return [tuple(r.get(c) for c in self._columns) for _, r in rows]
+        if self._as_dict:
+            return [dict(r) for _, r in rows]
         return [tuple(r.values()) for _, r in rows]
 
     def _exec_update(self) -> int:
@@ -261,7 +265,7 @@ class KVQueryBuilder(BaseQueryBuilder):
 
     # ---- ExecuteOne / Count / Exists ----
 
-    def ExecuteOne(self) -> tuple | None:
+    def ExecuteOne(self) -> "tuple | dict[str, Any] | None":
         old_limit = self._limit
         self._limit = 1
         try:

@@ -58,6 +58,7 @@ with owner_scope("MyModule"):
 | 主人身源 provider | `master.provider` | `master.unregister_by_owner()` |
 | i18n 翻译键 | `I18nClass` 声明（domain=模块名） | `i18n.unregister_domain()` |
 | 事件覆写（运行时） | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
+| 交互会话（wait_reply 等待 / 租约） | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()`（等待方立即收到取消） |
 | 上下文数据 | `runtime/context` 按 owner 记录 | 按模块精确清理 |
 
 适配器侧的对应资源（以平台名为 owner）在适配器 `shutdown()` / `restart()`
@@ -68,6 +69,7 @@ with owner_scope("MyModule"):
 | 适配器自有的 `on()` 处理器与中间件 | `adapter.unregister_handlers_by_owner(platform)` |
 | 平台事件方法扩展（`EventMixin`） | `unregister_platform_event_methods(platform)` |
 | 自定义会话类型 | `unregister_custom_types_by_owner(platform)` |
+| 交互会话（该平台挂起的 wait_reply / 租约） | `interaction.cancel_by_platform(platform)` |
 | i18n 翻译域（domain=配置键） | `i18n.unregister_domain(配置键)` |
 | 细颗粒命名空间路由 | `router.unregister_all_by_owner(platform)` |
 
