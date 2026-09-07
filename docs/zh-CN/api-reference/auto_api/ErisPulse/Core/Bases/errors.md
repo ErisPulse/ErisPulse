@@ -99,6 +99,14 @@ WebSocket 异常基类
 WebSocket 连接、通信相关的异常。
 
 
+### `class InteractionError(ErisPulseError)`
+
+交互会话异常基类
+
+交互会话管理（等待回复 / 会话租约）相关的异常基类。
+可用于统一捕获所有交互会话错误。
+
+
 ### `class WebSocketDisconnect(WebSocketError)`
 
 WebSocket 断开连接异常

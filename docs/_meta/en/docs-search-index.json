@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1497,
+  "total_keywords": 1506,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -2888,12 +2888,28 @@
         "title": "Auto-respond using event.reply() (will automatically select the correct sending method based on the platform)"
       }
     ],
+    "Automatic Archiving": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 293,
+        "level": 3,
+        "title": "Automatic Archiving"
+      }
+    ],
     "Automatic Cancellation on Timeout (Timeout)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 317,
         "level": 3,
         "title": "Automatic Cancellation on Timeout (Timeout)"
+      }
+    ],
+    "Automatic Checkpoints and Restart Recovery": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 291,
+        "level": 2,
+        "title": "Automatic Checkpoints and Restart Recovery"
       }
     ],
     "Automatic Dashboard Registration": [
@@ -2934,6 +2950,14 @@
         "line": 257,
         "level": 3,
         "title": "Automatic Injection"
+      }
+    ],
+    "Automatic Recovery on Restart": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 311,
+        "level": 3,
+        "title": "Automatic Recovery on Restart"
       }
     ],
     "Automatic Retry on Failure (Retry)": [
@@ -3600,6 +3624,14 @@
         "title": "Chain Modifiers"
       }
     ],
+    "Chain Query": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 74,
+        "level": 2,
+        "title": "Chain Query"
+      }
+    ],
     "Chain Startup Overview": [
       {
         "document": "advanced/startup.md",
@@ -3684,14 +3716,6 @@
         "title": "Chained Modifiers"
       }
     ],
-    "Chained Query": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 74,
-        "level": 2,
-        "title": "Chained Query"
-      }
-    ],
     "Chaining Mode (Instance)": [
       {
         "document": "advanced/message-builder.md",
@@ -3732,12 +3756,12 @@
         "title": "Check if it is a button click event"
       }
     ],
-    "Child Loggers": [
+    "Checkpoint TTL": [
       {
-        "document": "api-reference/core-modules.md",
-        "line": 134,
+        "document": "advanced/conversation.md",
+        "line": 302,
         "level": 3,
-        "title": "Child Loggers"
+        "title": "Checkpoint TTL"
       }
     ],
     "Choose Your Path": [
@@ -3992,6 +4016,20 @@
         "title": "Common Fields (All Event Types)"
       }
     ],
+    "Common Methods": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 373,
+        "level": 3,
+        "title": "Common Methods"
+      },
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 403,
+        "level": 3,
+        "title": "Common Methods"
+      }
+    ],
     "Common Parameters": [
       {
         "document": "ecosystem/takumi.md",
@@ -4108,12 +4146,12 @@
         "title": "Component Relationships"
       }
     ],
-    "Conditional Filtering": [
+    "Condition Filtering": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 137,
+        "line": 159,
         "level": 3,
-        "title": "Conditional Filtering"
+        "title": "Condition Filtering"
       }
     ],
     "Conditional Listening": [
@@ -4522,12 +4560,12 @@
         "title": "Conversion Flow"
       }
     ],
-    "Convert Tuples to Dictionaries": [
+    "Convert Tuple to Dictionary": [
       {
         "document": "advanced/sql-builder.md",
         "line": 109,
         "level": 4,
-        "title": "Convert Tuples to Dictionaries"
+        "title": "Convert Tuple to Dictionary"
       }
     ],
     "Converter Example": [
@@ -4755,7 +4793,7 @@
     "Count and Existence Check": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 208,
+        "line": 230,
         "level": 3,
         "title": "Count and Existence Check"
       }
@@ -4849,7 +4887,7 @@
     "Custom Storage Backend": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 342,
+        "line": 364,
         "level": 2,
         "title": "Custom Storage Backend"
       }
@@ -4991,7 +5029,7 @@
     "Delete Data": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 195,
+        "line": 217,
         "level": 3,
         "title": "Delete Data"
       }
@@ -5020,12 +5058,12 @@
         "title": "Deployment Guide"
       }
     ],
-    "Design Boundary: Which Resources Are Not Cleared on Uninstallation": [
+    "Design Boundaries: Resources Not Cleared on Unload": [
       {
         "document": "advanced/ownership.md",
-        "line": 89,
+        "line": 91,
         "level": 2,
-        "title": "Design Boundary: Which Resources Are Not Cleared on Uninstallation"
+        "title": "Design Boundaries: Resources Not Cleared on Unload"
       }
     ],
     "Detailed Explanation of Each Step": [
@@ -5440,6 +5478,14 @@
         "line": 402,
         "level": 3,
         "title": "Entering Build Mode"
+      }
+    ],
+    "Entry Template": [
+      {
+        "document": "bug-tracker.md",
+        "line": 65,
+        "level": 2,
+        "title": "Entry Template"
       }
     ],
     "Environment Diagnosis": [
@@ -6249,7 +6295,7 @@
     "Fixed Bugs": [
       {
         "document": "bug-tracker.md",
-        "line": 113,
+        "line": 115,
         "level": 2,
         "title": "Fixed Bugs"
       }
@@ -6482,6 +6528,14 @@
         "title": "Friend Requests"
       }
     ],
+    "Full Overview of Owned Resources": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 36,
+        "level": 2,
+        "title": "Full Overview of Owned Resources"
+      }
+    ],
     "GET": [
       {
         "document": "advanced/http-client.md",
@@ -6570,12 +6624,12 @@
         "title": "Get Method Detailed Information"
       }
     ],
-    "Get a Single Record": [
+    "Get Single Record": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 124,
+        "line": 146,
         "level": 4,
-        "title": "Get a Single Record"
+        "title": "Get Single Record"
       }
     ],
     "Getting Started": [
@@ -6723,7 +6777,7 @@
     "Guided Registration": [
       {
         "document": "advanced/conversation.md",
-        "line": 292,
+        "line": 345,
         "level": 3,
         "title": "Guided Registration"
       }
@@ -7348,6 +7402,14 @@
         "title": "Interaction Methods"
       }
     ],
+    "Interaction Session": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 369,
+        "level": 2,
+        "title": "Interaction Session"
+      }
+    ],
     "Interactive Initialization (Recommended)": [
       {
         "document": "quick-start.md",
@@ -7408,14 +7470,6 @@
         "line": 429,
         "level": 2,
         "title": "Internationalization Configuration"
-      }
-    ],
-    "Item Template": [
-      {
-        "document": "bug-tracker.md",
-        "line": 63,
-        "level": 2,
-        "title": "Item Template"
       }
     ],
     "Jinja Template Example": [
@@ -7805,7 +7859,7 @@
     "Looping Conversation": [
       {
         "document": "advanced/conversation.md",
-        "line": 323,
+        "line": 376,
         "level": 3,
         "title": "Looping Conversation"
       }
@@ -7890,6 +7944,14 @@
         "line": 86,
         "level": 3,
         "title": "Manual Project Creation"
+      }
+    ],
+    "Manual Recovery (When Not Using Automatic Mechanism)": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 332,
+        "level": 3,
+        "title": "Manual Recovery (When Not Using Automatic Mechanism)"
       }
     ],
     "Manual Registration of Custom Translations (Old Approach)": [
@@ -8543,7 +8605,7 @@
     "Module Author Guide": [
       {
         "document": "advanced/ownership.md",
-        "line": 102,
+        "line": 104,
         "level": 2,
         "title": "Module Author Guide"
       }
@@ -8931,7 +8993,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 126,
+        "line": 128,
         "level": 3,
         "title": "Notes"
       },
@@ -9278,12 +9340,12 @@
         "title": "Owner Context Mechanism"
       }
     ],
-    "Ownership (Owner) System": [
+    "Ownership (owner) System": [
       {
         "document": "advanced/ownership.md",
         "line": 1,
         "level": 1,
-        "title": "Ownership (Owner) System"
+        "title": "Ownership (owner) System"
       }
     ],
     "POST": [
@@ -9337,7 +9399,7 @@
     "Parameterized Queries": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 304,
+        "line": 326,
         "level": 2,
         "title": "Parameterized Queries"
       }
@@ -10012,12 +10074,12 @@
         "title": "Recommended Scenarios for Lazy Loading (lazy_load=True)"
       }
     ],
-    "Recommended Style": [
+    "Recommended Usage": [
       {
         "document": "advanced/ownership.md",
-        "line": 104,
+        "line": 106,
         "level": 3,
-        "title": "Recommended Style"
+        "title": "Recommended Usage"
       }
     ],
     "Reconnection": [
@@ -10149,7 +10211,7 @@
       },
       {
         "document": "advanced/sql-builder.md",
-        "line": 376,
+        "line": 397,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -10173,7 +10235,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 369,
+        "line": 421,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -10247,7 +10309,7 @@
     "Related Documents": [
       {
         "document": "advanced/conversation.md",
-        "line": 350,
+        "line": 403,
         "level": 2,
         "title": "Related Documents"
       },
@@ -10575,17 +10637,9 @@
     "Reset Builder": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 236,
+        "line": 258,
         "level": 2,
         "title": "Reset Builder"
-      }
-    ],
-    "Resource Ownership Overview": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 36,
-        "level": 2,
-        "title": "Resource Ownership Overview"
       }
     ],
     "Response": [
@@ -10615,7 +10669,7 @@
     "Return Value Description": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 267,
+        "line": 289,
         "level": 2,
         "title": "Return Value Description"
       }
@@ -10623,7 +10677,7 @@
     "Return Value Handling Examples": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 280,
+        "line": 302,
         "level": 3,
         "title": "Return Value Handling Examples"
       }
@@ -10680,12 +10734,12 @@
         "title": "Return Values of Send Methods"
       }
     ],
-    "Reusing Query Conditions": [
+    "Reuse Query Conditions": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 219,
+        "line": 241,
         "level": 2,
-        "title": "Reusing Query Conditions"
+        "title": "Reuse Query Conditions"
       }
     ],
     "Reverse Conversion": [
@@ -10912,12 +10966,12 @@
         "title": "SDK Objects"
       }
     ],
-    "SQL Chained Query": [
+    "SQL Chainable Queries": [
       {
         "document": "api-reference/core-modules.md",
         "line": 43,
         "level": 3,
-        "title": "SQL Chained Query"
+        "title": "SQL Chainable Queries"
       }
     ],
     "SQL Query Builder": [
@@ -11304,12 +11358,12 @@
         "title": "Session Identifiers"
       }
     ],
-    "Severity Levels": [
+    "Severity Classification": [
       {
         "document": "bug-tracker.md",
-        "line": 37,
+        "line": 39,
         "level": 2,
-        "title": "Severity Levels"
+        "title": "Severity Classification"
       }
     ],
     "Shutdown Adapters": [
@@ -11376,12 +11430,12 @@
         "title": "Single Method Registration"
       }
     ],
-    "Sorting and Pagination": [
+    "Sorting, Pagination": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 159,
+        "line": 181,
         "level": 3,
-        "title": "Sorting and Pagination"
+        "title": "Sorting, Pagination"
       }
     ],
     "Special Field Examples": [
@@ -11587,7 +11641,7 @@
     "Statistics Overview": [
       {
         "document": "bug-tracker.md",
-        "line": 88,
+        "line": 90,
         "level": 2,
         "title": "Statistics Overview"
       }
@@ -11676,6 +11730,14 @@
         "line": 360,
         "level": 3,
         "title": "Strict Mode"
+      }
+    ],
+    "Sub-loggers": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 134,
+        "level": 3,
+        "title": "Sub-loggers"
       }
     ],
     "Success Response": [
@@ -12046,6 +12108,14 @@
         "title": "Transaction Usage"
       }
     ],
+    "Transcript Session Inbox": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 399,
+        "level": 2,
+        "title": "Transcript Session Inbox"
+      }
+    ],
     "Translation Key Naming": [
       {
         "document": "advanced/i18n.md",
@@ -12089,7 +12159,7 @@
     "Type Classification": [
       {
         "document": "bug-tracker.md",
-        "line": 47,
+        "line": 49,
         "level": 2,
         "title": "Type Classification"
       }
@@ -12113,7 +12183,7 @@
     "Typical Flow Patterns": [
       {
         "document": "advanced/conversation.md",
-        "line": 290,
+        "line": 343,
         "level": 2,
         "title": "Typical Flow Patterns"
       }
@@ -12221,7 +12291,7 @@
     "Unload/Disable Cleanup Sequence": [
       {
         "document": "advanced/ownership.md",
-        "line": 67,
+        "line": 69,
         "level": 2,
         "title": "Unload/Disable Cleanup Sequence"
       }
@@ -12269,7 +12339,7 @@
     "Update Data": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 180,
+        "line": 202,
         "level": 3,
         "title": "Update Data"
       }
@@ -12368,6 +12438,14 @@
         "line": 196,
         "level": 3,
         "title": "Use Cases"
+      }
+    ],
+    "Use in Transactions": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 269,
+        "level": 2,
+        "title": "Use in Transactions"
       }
     ],
     "User Data Storage": [
@@ -12540,14 +12618,6 @@
         "line": 557,
         "level": 4,
         "title": "Using in RouteGroup"
-      }
-    ],
-    "Using in Transactions": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 247,
-        "level": 2,
-        "title": "Using in Transactions"
       }
     ],
     "Using pip": [
@@ -12825,7 +12895,7 @@
     "Where Parameter Passing Rules": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 323,
+        "line": 345,
         "level": 3,
         "title": "Where Parameter Passing Rules"
       }
@@ -12894,244 +12964,252 @@
         "title": "Yunhu User Platform Feature Document"
       }
     ],
-    "[BUG-001] Event Handler Repeated Registration Causes Multiple Event Handling": [
+    "[BUG-001] Event handler duplicate registration causing event to be processed multiple times": [
       {
         "document": "bug-tracker.md",
-        "line": 115,
+        "line": 117,
         "level": 3,
-        "title": "[BUG-001] Event Handler Repeated Registration Causes Multiple Event Handling"
+        "title": "[BUG-001] Event handler duplicate registration causing event to be processed multiple times"
       }
     ],
-    "[BUG-002] Init Command Adapter Configuration Path Type Error": [
+    "[BUG-002] Init command adapter configuration path type error": [
       {
         "document": "bug-tracker.md",
-        "line": 135,
+        "line": 137,
         "level": 3,
-        "title": "[BUG-002] Init Command Adapter Configuration Path Type Error"
+        "title": "[BUG-002] Init command adapter configuration path type error"
       }
     ],
-    "[BUG-003] Command Events Fail After Restart": [
+    "[BUG-003] Commands fail after restart": [
       {
         "document": "bug-tracker.md",
-        "line": 159,
+        "line": 161,
         "level": 3,
-        "title": "[BUG-003] Command Events Fail After Restart"
+        "title": "[BUG-003] Commands fail after restart"
       }
     ],
-    "[BUG-004] Lifecycle Event Handlers Not Cleared": [
+    "[BUG-004] Lifecycle event handlers not cleared": [
       {
         "document": "bug-tracker.md",
-        "line": 179,
+        "line": 181,
         "level": 3,
-        "title": "[BUG-004] Lifecycle Event Handlers Not Cleared"
+        "title": "[BUG-004] Lifecycle event handlers not cleared"
       }
     ],
-    "[BUG-005] Event.is_friend_add/is_friend_delete detail_type Inconsistent with OB12 Standard": [
+    "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard": [
       {
         "document": "bug-tracker.md",
-        "line": 199,
+        "line": 201,
         "level": 3,
-        "title": "[BUG-005] Event.is_friend_add/is_friend_delete detail_type Inconsistent with OB12 Standard"
+        "title": "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard"
       }
     ],
-    "[BUG-006] adapter.clear() Not Clearing _started_instances Leading to Incorrect State After Restart": [
+    "[BUG-006] adapter.clear() does not clear _started_instances causing incorrect status after restart": [
       {
         "document": "bug-tracker.md",
-        "line": 219,
+        "line": 221,
         "level": 3,
-        "title": "[BUG-006] adapter.clear() Not Clearing _started_instances Leading to Incorrect State After Restart"
+        "title": "[BUG-006] adapter.clear() does not clear _started_instances causing incorrect status after restart"
       }
     ],
-    "[BUG-007] command.wait_reply() Uses Deprecated asyncio.get_event_loop()": [
+    "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()": [
       {
         "document": "bug-tracker.md",
-        "line": 239,
+        "line": 241,
         "level": 3,
-        "title": "[BUG-007] command.wait_reply() Uses Deprecated asyncio.get_event_loop()"
+        "title": "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()"
       }
     ],
-    "[BUG-008] Bot Offline Event Repeatedly Submitted During Shutdown": [
+    "[BUG-008] Bot offline events are repeatedly submitted during shutdown": [
       {
         "document": "bug-tracker.md",
-        "line": 259,
+        "line": 261,
         "level": 3,
-        "title": "[BUG-008] Bot Offline Event Repeatedly Submitted During Shutdown"
+        "title": "[BUG-008] Bot offline events are repeatedly submitted during shutdown"
       }
     ],
-    "[BUG-009] LazyModule Synchronous Access to BaseModule Causing Incomplete Initialization": [
+    "[BUG-009] LazyModule synchronous access to BaseModule causes incomplete initialization": [
       {
         "document": "bug-tracker.md",
-        "line": 279,
+        "line": 281,
         "level": 3,
-        "title": "[BUG-009] LazyModule Synchronous Access to BaseModule Causing Incomplete Initialization"
+        "title": "[BUG-009] LazyModule synchronous access to BaseModule causes incomplete initialization"
       }
     ],
-    "[BUG-010] Multi-threaded Configuration System Write Leads to Data Loss": [
+    "[BUG-010] Multi-threaded write to configuration system causes data loss": [
       {
         "document": "bug-tracker.md",
-        "line": 299,
+        "line": 301,
         "level": 3,
-        "title": "[BUG-010] Multi-threaded Configuration System Write Leads to Data Loss"
+        "title": "[BUG-010] Multi-threaded write to configuration system causes data loss"
       }
     ],
-    "[BUG-011] Windows Ctrl+C Cannot Stop Program": [
+    "[BUG-011] Windows Ctrl+C cannot stop the program": [
       {
         "document": "bug-tracker.md",
-        "line": 322,
+        "line": 324,
         "level": 3,
-        "title": "[BUG-011] Windows Ctrl+C Cannot Stop Program"
+        "title": "[BUG-011] Windows Ctrl+C cannot stop the program"
       }
     ],
-    "[BUG-012] Hot Restart After Module Update Code Not生效": [
+    "[BUG-012] Hot restart does not load updated module code": [
       {
         "document": "bug-tracker.md",
-        "line": 346,
+        "line": 348,
         "level": 3,
-        "title": "[BUG-012] Hot Restart After Module Update Code Not生效"
+        "title": "[BUG-012] Hot restart does not load updated module code"
       }
     ],
-    "[BUG-013] Module Loading Strategy Sorting Logic Error": [
+    "[BUG-013] Module loading strategy sorting logic error": [
       {
         "document": "bug-tracker.md",
-        "line": 366,
+        "line": 368,
         "level": 3,
-        "title": "[BUG-013] Module Loading Strategy Sorting Logic Error"
+        "title": "[BUG-013] Module loading strategy sorting logic error"
       }
     ],
-    "[BUG-014] Adapter Middleware Returning None Causes Event Data Loss": [
+    "[BUG-014] Adapter middleware returning None causes event data loss": [
       {
         "document": "bug-tracker.md",
-        "line": 386,
+        "line": 388,
         "level": 3,
-        "title": "[BUG-014] Adapter Middleware Returning None Causes Event Data Loss"
+        "title": "[BUG-014] Adapter middleware returning None causes event data loss"
       }
     ],
-    "[BUG-015] Configuration File Path Relies on Working Directory": [
+    "[BUG-015] Configuration file path depends on working directory": [
       {
         "document": "bug-tracker.md",
-        "line": 406,
+        "line": 408,
         "level": 3,
-        "title": "[BUG-015] Configuration File Path Relies on Working Directory"
+        "title": "[BUG-015] Configuration file path depends on working directory"
       }
     ],
-    "[BUG-016] BaseStorage Confuses Storage Value None with Key Not Existing": [
+    "[BUG-016] BaseStorage confuses storing value None with non-existent key": [
       {
         "document": "bug-tracker.md",
-        "line": 426,
+        "line": 428,
         "level": 3,
-        "title": "[BUG-016] BaseStorage Confuses Storage Value None with Key Not Existing"
+        "title": "[BUG-016] BaseStorage confuses storing value None with non-existent key"
       }
     ],
-    "[BUG-017] WebSocket Route auto_accept Flag Lost After Service Restart": [
+    "[BUG-017] WebSocket route auto_accept flag lost after service restart": [
       {
         "document": "bug-tracker.md",
-        "line": 446,
+        "line": 448,
         "level": 3,
-        "title": "[BUG-017] WebSocket Route auto_accept Flag Lost After Service Restart"
+        "title": "[BUG-017] WebSocket route auto_accept flag lost after service restart"
       }
     ],
-    "[BUG-018] HTTP/WS Client Concurrent Calls Lead to Crash and Connection Leak": [
+    "[BUG-018] HTTP/WS client concurrent calls cause crashes and connection leaks": [
       {
         "document": "bug-tracker.md",
-        "line": 466,
+        "line": 468,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS Client Concurrent Calls Lead to Crash and Connection Leak"
+        "title": "[BUG-018] HTTP/WS client concurrent calls cause crashes and connection leaks"
       }
     ],
-    "[BUG-019] Adapter Hot Reload Route Conflict Causes Reload Failure": [
+    "[BUG-019] Adapter hot reload causes route conflicts and reload failure": [
       {
         "document": "bug-tracker.md",
-        "line": 494,
+        "line": 496,
         "level": 3,
-        "title": "[BUG-019] Adapter Hot Reload Route Conflict Causes Reload Failure"
+        "title": "[BUG-019] Adapter hot reload causes route conflicts and reload failure"
       }
     ],
-    "[BUG-020] Subprocess Mode `ep run <script>` Cannot Find Sub-packages in Script's Directory": [
+    "[BUG-020] Subprocess mode `ep run <script>` cannot find sub-packages in script's directory": [
       {
         "document": "bug-tracker.md",
-        "line": 518,
+        "line": 520,
         "level": 3,
-        "title": "[BUG-020] Subprocess Mode `ep run <script>` Cannot Find Sub-packages in Script's Directory"
+        "title": "[BUG-020] Subprocess mode `ep run <script>` cannot find sub-packages in script's directory"
       }
     ],
-    "[BUG-021] SQL Query Builder Rejects Valid Wildcard and List Expressions": [
+    "[BUG-021] SQL query builder rejects valid wildcard and list expressions": [
       {
         "document": "bug-tracker.md",
-        "line": 538,
+        "line": 540,
         "level": 3,
-        "title": "[BUG-021] SQL Query Builder Rejects Valid Wildcard and List Expressions"
+        "title": "[BUG-021] SQL query builder rejects valid wildcard and list expressions"
       }
     ],
-    "[BUG-022] _resolve_account() Account Resolution Regression (_accounts_data Not Populated)": [
+    "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)": [
       {
         "document": "bug-tracker.md",
-        "line": 568,
+        "line": 570,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() Account Resolution Regression (_accounts_data Not Populated)"
+        "title": "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)"
       }
     ],
-    "[BUG-023] Adapter Cache Not Refreshed After Account Configuration Change": [
+    "[BUG-023] Account configuration modification does not refresh adapter cache, causing account resolution failure": [
       {
         "document": "bug-tracker.md",
-        "line": 607,
+        "line": 609,
         "level": 3,
-        "title": "[BUG-023] Adapter Cache Not Refreshed After Account Configuration Change"
+        "title": "[BUG-023] Account configuration modification does not refresh adapter cache, causing account resolution failure"
       }
     ],
-    "[BUG-024] storage.set() Writing Large Number ID Keys Triggers OOM Kill": [
+    "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill": [
       {
         "document": "bug-tracker.md",
-        "line": 627,
+        "line": 629,
         "level": 3,
-        "title": "[BUG-024] storage.set() Writing Large Number ID Keys Triggers OOM Kill"
+        "title": "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill"
       }
     ],
-    "[BUG-025] on_config_update Callback Not Core-Routed": [
+    "[BUG-025] on_config_update callback not called by core router": [
       {
         "document": "bug-tracker.md",
-        "line": 673,
+        "line": 675,
         "level": 3,
-        "title": "[BUG-025] on_config_update Callback Not Core-Routed"
+        "title": "[BUG-025] on_config_update callback not called by core router"
       }
     ],
-    "[BUG-026] notice/request Event reply Target Inference Error": [
+    "[BUG-026] notice/request event reply target inferred incorrectly": [
       {
         "document": "bug-tracker.md",
-        "line": 703,
+        "line": 705,
         "level": 3,
-        "title": "[BUG-026] notice/request Event reply Target Inference Error"
+        "title": "[BUG-026] notice/request event reply target inferred incorrectly"
       }
     ],
-    "[BUG-027] Route Rate Limiting Cleanup Task Uses Fixed Window Causing Long Window Rules to Fail": [
+    "[BUG-027] Route rate limiter cleanup task uses fixed window causing long window rate limit rules to fail": [
       {
         "document": "bug-tracker.md",
-        "line": 734,
+        "line": 736,
         "level": 3,
-        "title": "[BUG-027] Route Rate Limiting Cleanup Task Uses Fixed Window Causing Long Window Rules to Fail"
+        "title": "[BUG-027] Route rate limiter cleanup task uses fixed window causing long window rate limit rules to fail"
       }
     ],
-    "[BUG-029] Configuration Listener Broadcasts Incomplete TOML and Silently Swallows Exceptions": [
+    "[BUG-029] Configuration listener broadcasts incomplete TOML and silently swallows exceptions": [
       {
         "document": "bug-tracker.md",
-        "line": 766,
+        "line": 768,
         "level": 3,
-        "title": "[BUG-029] Configuration Listener Broadcasts Incomplete TOML and Silently Swallows Exceptions"
+        "title": "[BUG-029] Configuration listener broadcasts incomplete TOML and silently swallows exceptions"
       }
     ],
-    "[BUG-030] Configuration watcher Race Condition Causes setConfig Delayed Write Silent Data Loss": [
+    "[BUG-030] Configuration watcher race condition causes setConfig delayed write to silently drop data": [
       {
         "document": "bug-tracker.md",
-        "line": 802,
+        "line": 804,
         "level": 3,
-        "title": "[BUG-030] Configuration watcher Race Condition Causes setConfig Delayed Write Silent Data Loss"
+        "title": "[BUG-030] Configuration watcher race condition causes setConfig delayed write to silently drop data"
       }
     ],
-    "[BUG-032] \"Write-After-Read\" Reads Old Value During Configuration Delayed Write": [
+    "[BUG-032] Configuration delay write causes \"write-then-read\" to read old values": [
       {
         "document": "bug-tracker.md",
-        "line": 838,
+        "line": 840,
         "level": 3,
-        "title": "[BUG-032] \"Write-After-Read\" Reads Old Value During Configuration Delayed Write"
+        "title": "[BUG-032] Configuration delay write causes \"write-then-read\" to read old values"
+      }
+    ],
+    "[BUG-033] wait_reply hangs and is starved by high-priority processors": [
+      {
+        "document": "bug-tracker.md",
+        "line": 862,
+        "level": 3,
+        "title": "[BUG-033] wait_reply hangs and is starved by high-priority processors"
       }
     ],
     "__init__.py": [

@@ -548,7 +548,7 @@ False
 
 - **path** (`点分路径，如`): ``"bots.onebot11.123456"``（模块绑定）、
              ``"identity.users.onebot11.u_bad"``（拉黑用户）、
-             
+
              ``"actions.MyModule.send"``（出站规则）
 - **value** (`写入值（dict`): 时与现有值深合并，其余类型直接覆盖）
 - **persist** (`是否持久化到配置文件`): (默认: True)

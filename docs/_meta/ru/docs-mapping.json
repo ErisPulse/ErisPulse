@@ -26,7 +26,7 @@
           "icon": "fa-sitemap"
         },
         {
-          "title": "Трекер ошибок",
+          "title": "Баг-трекер",
           "path": "bug-tracker.md",
           "level": 1,
           "icon": "fa-bug"
@@ -369,7 +369,7 @@
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Conversation Многоходовой диалог",
+          "title": "Conversation Многошаговые диалоги",
           "path": "advanced/conversation.md",
           "level": 1,
           "icon": "fa-comments"

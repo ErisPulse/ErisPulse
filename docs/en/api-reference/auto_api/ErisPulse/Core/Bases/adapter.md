@@ -72,6 +72,21 @@ SendDSL / ApiDSL / RequestDSL 在授权闸口处调用。
 ---
 
 
+### `_append_send_receipt(ledger: list, response: Any, ctx: dict)`
+
+> **内部方法**
+从发送响应提取回执并记入消息事务账本
+
+仅当响应为 dict 且含非空 ``message_id`` 时记录（标准 API 响应格式）；
+消息事务撤回时按账本逆序调用适配器 ``delete_message``。
+
+- **ledger** (`当前事务的账本列表（send_receipts`): ContextVar 值）
+- **response** (`发送方法返回的响应（标准格式为`): dict）
+- **ctx** (`发送上下文（platform`): / bot_id / trace_id 等）
+
+---
+
+
 ### `_wrap_send_method(method_name: str, original_method: Callable, send_dsl: 'SendDSL')`
 
 为发送方法注入生命周期钩子

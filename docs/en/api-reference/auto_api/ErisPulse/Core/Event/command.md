@@ -120,7 +120,10 @@ ErisPulse 命令处理模块
 - **validator** (`验证函数，用于验证回复是否有效`): - **method**: 发送方法，默认为 "Text"
 - **pattern** (`glob`): 通配符（``*`` / ``?`` / ``[seq]``），回复文本不匹配时继续等待
 - **regex** (`正则表达式，回复文本不匹配时继续等待（与`): pattern 同时给定时须都匹配）
-**返回值**: 用户回复的事件数据，如果超时则返回None
+**返回值** (`用户回复的事件数据，如果超时则返回None`): > **提示**
+> 等待期间归属模块被卸载 / 适配器关闭 / 同会话被新的等待或租约取代 /
+> 回复者权限被撤销时，等待立即终止并返回 None（底层为
+> :class:`~ErisPulse.Core.Event.interaction.InteractionCancelled`）。
 
 ---
 
@@ -154,6 +157,10 @@ ErisPulse 命令处理模块
 ##### `async _check_pending_reply(event: 'Event')`
 
 检查是否是等待回复的消息
+
+判定链（会话键命中 → pattern/regex 过滤 → validator 校验 →
+权限复查 → 唤醒等待方并认领事件）委托交互会话管理器
+:meth:`~ErisPulse.Core.Event.interaction.InteractionManager.resolve`。
 
 - **event**: 消息事件数据
 

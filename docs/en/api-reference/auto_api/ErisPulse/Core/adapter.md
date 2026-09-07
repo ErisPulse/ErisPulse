@@ -14,6 +14,16 @@ ErisPulse 适配器系统
 ## 函数列表
 
 
+### `_extract_message_text(data: Any)`
+
+> **内部方法**
+从事件 message 段提取纯文本（仅 text 段拼接），无文本时返回空串
+
+- **data** (`事件数据`): **返回值**: 纯文本内容
+
+---
+
+
 ### `_warn_deprecated_kwarg(owner: str, old: str, new: str)`
 
 > **内部方法**
@@ -539,6 +549,13 @@ OneBot12协议事件监听装饰器
 >>>     "myplatform_raw_type": "text_message"
 >>> })
 ```
+
+---
+
+
+##### `async _emit_dispatch(data: Any, platform: str, event_type: str, detail_type: str, platform_raw: Any, raw_event_type: Any, trace_id: str)`
+
+> **内部方法** emit 的事件分发主体（trace-id 上下文内执行）
 
 ---
 
