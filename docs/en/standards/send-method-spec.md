@@ -1,21 +1,21 @@
 # ErisPulse Send Method Specification
 
-This document defines the naming conventions, parameter specifications, and reverse conversion requirements for the Send class methods in the ErisPulse adapter.
+This document defines the naming conventions, parameter specifications, and reverse conversion requirements for the Send class send methods in the ErisPulse adapter.
 
 ## 1. Standard Method Naming
 
-All send methods use **PascalCase (PascalCase)**, with the first letter capitalized.
+All send methods use **PascalCase (PascalCase)** naming, with the first letter capitalized.
 
 ### 1.1 Standard Send Methods
 
 | Method Name | Description | Parameter Type |
-|-------------|-------------|----------------|
+|-------|------|---------|
 | `Text` | Send text message | `str` |
-| `Image` | Send image | `bytes` \| `str` (URL/Path) |
-| `Voice` | Send voice | `bytes` \| `str` (URL/Path) |
-| `Video` | Send video | `bytes` \| `str` (URL/Path) |
-| `File` | Send file | `bytes` \| `str` (URL/Path) |
-| `At` | Mention user/group | `str` (user_id) |
+| `Image` | Send image | `bytes` \| `str` (URL/path) |
+| `Voice` | Send voice | `bytes` \| `str` (URL/path) |
+| `Video` | Send video | `bytes` \| `str` (URL/path) |
+| `File` | Send file | `bytes` \| `str` (URL/path) |
+| `At` | @ user/group | `str` (user_id) |
 | `Face` | Send emoji | `str` (emoji) |
 | `Reply` | Reply to message | `str` (message_id) |
 | `Forward` | Forward message | `str` (message_id) |
@@ -26,54 +26,54 @@ All send methods use **PascalCase (PascalCase)**, with the first letter capitali
 ### 1.2 Chained Modifier Methods
 
 | Method Name | Description | Parameter Type |
-|-------------|-------------|----------------|
-| `At` | Mention user (can be called multiple times) | `str` (user_id) |
-| `AtAll` | Mention all members | None |
+|-------|------|---------|
+| `At` | @ user (can be called multiple times) | `str` (user_id) |
+| `AtAll` | @ all members | None |
 | `Reply` | Reply to message | `str` (message_id) |
 
 ### 1.3 Protocol Methods
 
-| Method Name | Description | Required |
-|-------------|-------------|----------|
-| `Raw_ob12` | Send OneBot12 format message segment | Required |
+| Method Name | Description | Required? |
+|-------|------|---------|
+| `Raw_ob12` | Send OneBot12 format message segment | Yes |
 
-**`Raw_ob12` is a required method**. One of the core responsibilities of the adapter is to receive OneBot12 standard message segments and convert them into native platform API calls. `Raw_ob12` serves as the unified entry point for reverse conversion (OneBot12 → Platform), ensuring that modules can send messages directly using standard message segments without relying on platform-specific methods.
+**`Raw_ob12` is a required method.** It is one of the core responsibilities of the adapter: to receive OneBot12 standard message segments and convert them into native platform API calls. `Raw_ob12` is the unified entry point for reverse conversion (OneBot12 → platform), ensuring that modules can send messages directly using standard message segments without relying on platform-specific methods.
 
-**Default behavior when `Raw_ob12` is not overridden**: The base class will log an **error-level** message and return a standard error response format (`status: "failed"`, `retcode: 10002`), indicating that the adapter developer must implement this method.
+**Default behavior when `Raw_ob12` is not overridden:** The base class will log a **error level** message and return a standard error response format (`status: "failed"`, `retcode: 10002`), indicating that the adapter developer must implement this method.
 
 ### 1.4 Recommended Extension Naming Convention
 
 If an adapter needs to support sending non-OneBot12 format raw data (such as platform-specific JSON, XML, etc.), the following naming convention is recommended:
 
 | Recommended Method Name | Description |
-|-------------------------|-------------|
+|-----------|------|
 | `Raw_json` | Send arbitrary JSON data |
 | `Raw_xml` | Send arbitrary XML data |
 
-**Note**: These methods are **not** default methods provided by the base class, nor are they mandatory to implement. They are only naming conventions, and adapters can define them as needed. If an adapter does not support these formats, there is no need to define them.
+**Note:** These methods are **not** provided by the base class, nor are they mandatory to implement. They are only recommended naming conventions, and adapters can define them as needed. If the adapter does not support these formats, there is no need to define them.
 
-**MessageBuilder**: ErisPulse provides the `MessageBuilder` utility class to easily construct OneBot12 message segment lists, which can be used in conjunction with `Raw_ob12`. See the [MessageBuilder](#11-messagebuilder) section.
+**Message Builder (`MessageBuilder`):** ErisPulse provides a `MessageBuilder` utility class for easily building OneBot12 message segment lists, which can be used in conjunction with `Raw_ob12`. See the [Message Builder](#11-message-builder-messagebuilder) section.
 
 ## 2. Parameter Specification Details
 
 ### 2.1 Media Message Parameter Specification
 
-Media messages (`Image`, `Voice`, `Video`, `File`) support two types of parameters:
+Media messages (`Image`, `Voice`, `Video`, `File`) support two parameter types:
 
-#### 2.1.1 String Parameter (URL or File Path)
+#### 2.1.1 String Parameters (URL or File Path)
 
 **Format:** `str`
 
 **Supported Types:**
-- **URL**: Network resource address (e.g., `https://example.com/image.jpg`)
-- **File Path**: Local file path (e.g., `/path/to/file.jpg` or `C:\\path\\to\\file.jpg`)
+- **URL:** Network resource address (e.g., `https://example.com/image.jpg`)
+- **File Path:** Local file path (e.g., `/path/to/file.jpg` or `C:\\path\\to\\file.jpg`)
 
-**Use Cases:**
+**Usage Scenarios:**
 - The file is already online, send the URL directly
 - The file is on the local disk, send the file path
-- Want the adapter to handle file upload automatically
+- Want the adapter to automatically handle file upload
 
-**Recommendation:** Prefer using URLs; if URLs are unavailable, use local file paths.
+**Recommendation:** Prefer using URL, use local file path if URL is unavailable
 
 **Examples:**
 ```python
@@ -85,27 +85,27 @@ send.Image("/path/to/local/image.jpg")
 send.Image("C:\\path\\to\\local\\image.jpg")
 ```
 
-#### 2.1.2 Binary Data Parameter
+#### 2.1.2 Binary Data Parameters
 
 **Format:** `bytes`
 
-**Use Cases:**
+**Usage Scenarios:**
 - The file is already in memory (e.g., downloaded from the network, read from another source)
-- Need to process the file before sending (e.g., compress images, convert formats)
+- Need to process before sending (e.g., image compression, format conversion)
 - Avoid repeated file reading
 
 **Notes:**
-- Uploading large files may consume significant memory
-- It is recommended to set reasonable file size limits
+- Uploading large files may consume a lot of memory
+- Recommend setting reasonable file size limits
 
-**Example:**
+**Examples:**
 ```python
-# Reading from the network and sending
+# Read from network and send
 import requests
 image_data = requests.get("https://example.com/image.jpg").content
 send.Image(image_data)
 
-# Reading from a file and sending
+# Read from file and send
 with open("/path/to/local/image.jpg", "rb") as f:
     image_data = f.read()
 send.Image(image_data)
@@ -113,17 +113,17 @@ send.Image(image_data)
 
 #### 2.1.3 Parameter Processing Priority
 
-When an adapter receives media message parameters, it should process them in the following order:
+When the adapter receives media message parameters, it should process them in the following order:
 
-1. **URL Parameter**: Use the URL directly (some platform adapters may have operations to download URLs and then upload them)
-2. **File Path**: Check if it is a local path; if so, upload the file
-3. **Binary Data**: Upload the binary data directly
+1. **URL Parameter:** Use the URL directly (some platform adapters may have URL download and then upload operations)
+2. **File Path:** Detect if it is a local path, if so, upload the file
+3. **Binary Data:** Upload the binary data directly
 
 **Adapter Implementation Suggestion:**
 ```python
 def Image(self, image: Union[bytes, str]):
     if isinstance(image, str):
-        # Determine if it is a URL or a local path
+        # Determine if it is a URL or local path
         if image.startswith(("http://", "https://")):
             # Directly send URL
             return self._send_image_by_url(image)
@@ -136,17 +136,17 @@ def Image(self, image: Union[bytes, str]):
         return self._upload_image(image)
 ```
 
-### 2.2 @User Parameter Specification
+### 2.2 @ User Parameter Specification
 
-**Method:** `At` (Modifier method)
+**Method:** `At` (modifier method)
 
 **Parameter:** `user_id` (`str`)
 
 **Requirements:**
-- `user_id` should be a string type user identifier
+- `user_id` should be a string-type user identifier
 - Different platforms may have different `user_id` formats (numbers, UUID, strings, etc.)
 - The adapter is responsible for converting `user_id` into the platform-specific format
-- Ensure the actual send method call is placed at the end
+- Note that the actual send method call should be placed at the last position
 
 **Example:**
 ```python
@@ -159,14 +159,14 @@ send.To("group", "g123").At("123456").At("789012").Text("Hello everyone")
 
 ### 2.3 Reply Message Parameter Specification
 
-**Method:** `Reply` (Modifier method)
+**Method:** `Reply` (modifier method)
 
 **Parameter:** `message_id` (`str`)
 
 **Requirements:**
-- `message_id` should be a string type message identifier
+- `message_id` should be a string-type message identifier
 - Should be the ID of a previously received message
-- Some platforms may not support reply functionality; the adapter should gracefully degrade
+- Some platforms may not support the reply feature, the adapter should gracefully degrade
 
 **Example:**
 ```python
@@ -175,7 +175,7 @@ send.To("group", "g123").Reply("msg_123456").Text("Received")
 
 ## 3. Platform-Specific Method Naming
 
-**Do not** directly add platform-prefixed methods in the Send class. It is recommended to use generic method names or `Raw_{protocol}` methods.
+It is **not recommended** to directly add platform-prefixed methods in the Send class. It is recommended to use generic method names or `Raw_{protocol}` methods.
 
 **Not Recommended:**
 ```python
@@ -198,16 +198,16 @@ def Raw_ob12(self, message):  # ✅ Send OneBot12 format
     pass
 ```
 
-**Extension Method Requirements**:
-- Method names use PascalCase, without platform prefix
+**Extension Method Requirements:**
+- Method names use PascalCase, no platform prefix
 - Must return an `asyncio.Task` object
 - Must provide complete type annotations and docstrings
 - Parameter design should be as consistent as possible with standard method styles
 
-## 4. Parameter Naming Specification
+## 4. Parameter Naming Convention
 
 | Parameter Name | Description | Type |
-|----------------|-------------|------|
+|-------|------|------|
 | `text` | Text content | `str` |
 | `url` / `file` | File URL or binary data | `str` / `bytes` |
 | `user_id` | User ID | `str` / `int` |
@@ -224,7 +224,7 @@ def Raw_ob12(self, message):  # ✅ Send OneBot12 format
 
 ## 6. Reverse Conversion Specification (OneBot12 → Platform)
 
-The adapter must not only convert platform-native events into OneBot12 format (forward conversion), but also **must** provide the ability to convert OneBot12 message segments back into platform-native API calls (reverse conversion). The unified entry point for reverse conversion is the `Raw_ob12` method.
+In addition to converting platform-native events into OneBot12 format (forward conversion), adapters must also provide the ability to convert OneBot12 message segments back into platform-native API calls (reverse conversion). The unified entry point for reverse conversion is the `Raw_ob12` method.
 
 ### 6.1 Conversion Model
 
@@ -238,23 +238,23 @@ Converter.convert()               Send.Raw_ob12()
     │                                  │
     ▼                                  ▼
 OneBot12 Standard Event                  Platform-native API Call
-(Contains {platform}_raw)             (Returns Standard Response Format)
+(with {platform}_raw)             (Returns standard response format)
 ```
 
-**Core Symmetry**: Forward conversion retains original data in `{platform}_raw`, and reverse conversion accepts OneBot12 standard format and restores it into platform calls.
+**Core Symmetry:** Forward conversion retains original data in `{platform}_raw`, and reverse conversion accepts OneBot12 standard format and restores it into platform calls.
 
 ### 6.2 `Raw_ob12` Implementation Specification
 
-`Raw_ob12` receives OneBot12 standard message segment lists and must convert them into platform-native API calls.
+`Raw_ob12` receives a OneBot12 standard message segment list and must convert it into platform-native API calls.
 
-**Method Signature**:
+**Method Signature:**
 
 ```python
 def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
     """
     Send OneBot12 standard message segments
 
-    :param message_segments: List of OneBot12 message segments
+    :param message_segments: OneBot12 message segment list
         [
             {"type": "text", "data": {"text": "Hello"}},
             {"type": "image", "data": {"file": "https://..."}},
@@ -264,34 +264,34 @@ def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
     """
 ```
 
-**Implementation Requirements**:
+**Implementation Requirements:**
 
-1. **Must handle all standard message segment types**: At least support `text`, `image`, `audio`, `video`, `file`, `mention`, `reply`
-2. **Must handle platform extension message segments**: For message segments of the type `{platform}_xxx`, convert them into corresponding platform-native calls
-3. **Must return standard response format**: Follow [API Response Standard](api-response.md)
-4. **Unsupported message segments should be skipped and warning logged**, should not throw exceptions causing the entire message to fail
+1. **Must handle all standard message segment types:** At least support `text`, `image`, `audio`, `video`, `file`, `mention`, `reply`
+2. **Must handle platform extension message segments:** For `{platform}_xxx` type message segments, convert them into corresponding platform-native calls
+3. **Must return standard response format:** Follow the [API Response Standard](api-response.md)
+4. **Unsupported message segments should be skipped and a warning logged,** not throw an exception causing the entire message to fail
 
 ### 6.3 Message Segment Conversion Rules
 
 #### 6.3.1 Standard Message Segment Conversion
 
-The adapter must implement the following standard message segment conversions:
+The adapter must implement the conversion of the following standard message segments:
 
 | OneBot12 Message Segment | Conversion Requirements |
-|--------------------------|-------------------------|
+|----------------|---------|
 | `text` | Directly use `data.text` |
-| `image` | Handle based on `data.file` type: Use URL directly, upload bytes, read and upload local path |
-| `audio` | Same handling logic as image |
-| `video` | Same handling logic as image |
-| `file` | Same handling logic as image, pay attention to `data.filename` |
-| `mention` | Convert to platform's @user mechanism (e.g., Telegram's `entities`, Yunhu's `at_uid`) |
+| `image` | Handle `data.file` type: Use URL directly, upload bytes, read local path and upload |
+| `audio` | Same as image handling logic |
+| `video` | Same as image handling logic |
+| `file` | Same as image handling logic, pay attention to `data.filename` |
+| `mention` | Convert to platform's @ user mechanism (e.g., Telegram's `entities`, Yunhu's `at_uid`) |
 | `reply` | Convert to platform's reply reference mechanism |
 | `face` | Convert to platform's emoji sending mechanism, skip if not supported |
 | `location` | Convert to platform's location sending mechanism, skip if not supported |
 
 #### 6.3.2 Platform Extension Message Segment Conversion
 
-For message segments with platform prefixes, the adapter should identify and convert them:
+For message segments with platform prefixes, the adapter should recognize and convert them:
 
 ```python
 def _convert_ob12_segments(self, segments: List[Dict]) -> Any:
@@ -318,7 +318,7 @@ def _convert_ob12_segments(self, segments: List[Dict]) -> Any:
 A message may contain multiple message segments, and the adapter needs to handle composite messages correctly:
 
 ```python
-# Module sends a message containing text + image + @user
+# Module sends a message containing text + image + @ user
 await send.Raw_ob12([
     {"type": "mention", "data": {"user_id": "123"}},
     {"type": "text", "data": {"text": "Hello"}},
@@ -326,14 +326,14 @@ await send.Raw_ob12([
 ])
 ```
 
-**Handling Strategy**:
-- **Prioritize merging**: If the platform supports combining text, image, @, etc. in a single message, merge and send
-- **Fallback to splitting**: If the platform does not support merging, send as multiple messages in sequence
-- **Maintain order**: The sending order of message segments should be consistent with the list order
+**Handling Strategy:**
+- **First, merge:** If the platform supports sending text, image, @, etc. in a single message, merge them
+- **Fallback, split:** If the platform does not support merging, send as multiple messages in sequence
+- **Maintain order:** The order of message segment sending should be consistent with the list order
 
-### 6.4 Relationship between `Raw_ob12` and Standard Methods
+### 6.4 Relationship Between `Raw_ob12` and Standard Methods
 
-The adapter's standard send methods (`Text`, `Image`, etc.) **are already implemented by the `SendDSL` base class and default to delegating to `Raw_ob12`**, so the adapter subclass does not need to reimplement them:
+The adapter's standard send methods (`Text`, `Image`, etc.) are **already implemented and delegated to `Raw_ob12` by the `SendDSL` base class**, and the adapter subclass does not need to reimplement them:
 
 ```python
 class Send(SendDSL):
@@ -347,17 +347,17 @@ class Send(SendDSL):
     #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-**Benefits**:
-- Conversion logic is centralized in `Raw_ob12`, reducing redundant code
-- Standard methods and `Raw_ob12` behavior are completely consistent
+**Benefits:**
+- Conversion logic is centralized in `Raw_ob12`, reducing duplicate code
+- Standard methods and `Raw_ob12` behave identically
 - Modules get the same result whether using `Text()` or `Raw_ob12()`
-- The base class provides type signatures, and IDEs can complete standard methods
+- The base class provides type signatures, allowing IDE to complete standard methods
 
 ### 6.5 Implementation Example
 
 ```python
 class YunhuSend(SendDSL):
-    """Yunhu Platform Send Implementation"""
+    """Yunhu platform Send implementation"""
     
     def Raw_ob12(self, message_segments: list) -> asyncio.Task:
         """OneBot12 message segment → Yunhu API call"""
@@ -365,7 +365,7 @@ class YunhuSend(SendDSL):
     
     async def _do_send(self, segments: list) -> dict:
         """Actual sending logic"""
-        # 1. Parse modifier status
+        # 1. Parse modifier state
         at_users = self._at_users or []
         reply_to = self._reply_to
         at_all = self._at_all
@@ -432,21 +432,21 @@ info = adapter.send_info("myplatform", "Form")
 ## 8. Registered Send Method Extensions
 
 | Platform | Method Name | Description |
-|----------|-------------|-------------|
-| onebot12 | `Mention` | @User (OneBot12 style) |
+|------|--------|------|
+| onebot12 | `Mention` | @ user (OneBot12 style) |
 | onebot12 | `Sticker` | Send sticker |
 | onebot12 | `Location` | Send location |
 | onebot12 | `Recall` | Recall message |
 | onebot12 | `Edit` | Edit message |
 | onebot12 | `Batch` | Batch send |
 
-> **Note**: Send methods are not prefixed with the platform name; methods with the same name on different platforms can have different implementations.
+> **Note:** Send methods do not have platform prefixes; methods with the same name on different platforms can have different implementations.
 
 ---
 
 ## 9. Adapter Development Notes
 
-For how to correctly override `BaseAdapter`, `Send`, `Request`'s `__init__`, see [Adapter Development Guide - `__init__` Notes](../developer-guide/adapters/getting-started.md#init-注意事项).
+For how to correctly override `BaseAdapter`, `Send`, `Request` `__init__`, see [Adapter Development Introduction - `__init__` Notes](../developer-guide/adapters/getting-started.md#init-注意事项).
 
 ---
 
@@ -466,12 +466,12 @@ For how to correctly override `BaseAdapter`, `Send`, `Request`'s `__init__`, see
 - [ ] `Raw_ob12` can handle all standard message segments (`text`, `image`, `audio`, `video`, `file`, `mention`, `reply`)
 - [ ] `Raw_ob12` can handle platform extension message segments (`{platform}_xxx` type)
 - [ ] Standard send methods (`Text`, `Image`, etc.) internally delegate to `Raw_ob12`, not implement conversion logic independently
-- [ ] Unsupported message segments are skipped and warnings are logged, no exceptions are thrown
-- [ ] Composite message segments are handled correctly (merge or split in sequence)
+- [ ] Unsupported message segments are skipped and warnings are logged, exceptions are not thrown
+- [ ] Composite message segments are handled correctly (merged or split in sequence)
 
 ---
 
-## 11. MessageBuilder
+## 11. Message Builder (MessageBuilder)
 
 `MessageBuilder` is a message segment builder tool provided by ErisPulse, used in conjunction with `Raw_ob12` to simplify the construction of OneBot12 message segments.
 
@@ -483,14 +483,14 @@ from ErisPulse.Core import MessageBuilder
 from ErisPulse.Core.Event import MessageBuilder
 ```
 
-### 11.2 Chainable Building
+### 11.2 Chainable Construction
 
 ```python
-# Build a message containing text, image, and @user
+# Build a message containing text, image, and @ user
 segments = (
     MessageBuilder()
     .mention("123456")
-    .text("Hello, look at this image")
+    .text("Hello, look at this picture")
     .image("https://example.com/img.jpg")
     .reply("msg_789")
     .build()
@@ -500,7 +500,7 @@ segments = (
 await adapter.Send.To("group", "456").Raw_ob12(segments)
 ```
 
-### 11.3 Quick Single Segment Building
+### 11.3 Quick Single Segment Construction
 
 ```python
 # Quickly build a single message segment (returns list[dict], can be directly passed to Raw_ob12)
@@ -529,17 +529,17 @@ async def handle(event: Event):
 ### 11.5 Supported Message Segment Methods
 
 | Method | Description | data fields |
-|--------|-------------|-------------|
+|------|------|----------|
 | `text(text)` | Text | `text` |
 | `image(file)` | Image | `file` |
 | `audio(file)` | Audio | `file` |
 | `video(file)` | Video | `file` |
-| `file(file, filename=None)` | File | `file`, `filename` (optional) |
-| `mention(user_id, user_name=None)` | @User | `user_id`, `user_name` (optional) |
-| `at(user_id, user_name=None)` | @User (`mention` alias) | Same as `mention` |
+| `file(file, filename=None)` | File | `file`, `filename`(optional) |
+| `mention(user_id, user_name=None)` | @ user | `user_id`, `user_name`(optional) |
+| `at(user_id, user_name=None)` | @ user (`mention` alias) | Same as `mention` |
 | `reply(message_id)` | Reply | `message_id` |
-| `at_all()` | @All members | `{}` |
-| `custom(type, data)` | Custom/Platform extension | Custom |
+| `at_all()` | @ all members | `{}` |
+| `custom(type, data)` | Custom/platform extension | Custom |
 
 ### 11.6 Utility Methods
 

@@ -1,5 +1,25 @@
 {
+  "version": 2,
   "hash": "ab8282f0b15eb2ad1e72465822b4e151",
-  "translated_at": "2026-06-06T18:40:03.704954",
-  "target_lang": "ru"
+  "file_hash": "ab8282f0b15eb2ad1e72465822b4e151",
+  "translated_at": "2026-09-07T11:08:22.840839",
+  "target_lang": "ru",
+  "chunks": [
+    {
+      "hash": "b9374c15ad65d412753dd1eaeacda794",
+      "translation": "# Справочник API\n\nДанный каталог содержит справочник API для фреймворка ErisPulse."
+    },
+    {
+      "hash": "b584821c750da33e7633216dd780abbb",
+      "translation": "## Список документов\n\n| Документ | Описание |\n|------|------|\n| [API ядра модулей](core-modules.md) | Быстрая справочная информация по API Storage, Config, Logger, Adapter, Module, Lifecycle, Router, HTTP Client |\n| [API системы событий](event-system.md) | Справочная информация по API модулей событий Command, Message, Notice, Request, Meta |\n| [API системы адаптеров](adapter-system.md) | Справочная информация по API менеджера адаптеров, SendDSL, промежуточного ПО, управления состоянием Bot |\n| [Автоматически генерируемый API](auto_api/README.md) | Полная документация API, автоматически сгенерированная из docstring исходного кода |\n\n> Ручная документация API ориентирована на примеры использования и быстрый доступ к информации; автоматически сгенерированная документация API содержит полные сигнатуры классов/методов, обе документации дополняют друг друга."
+    },
+    {
+      "hash": "67699607665af80ffadd39e475efa8e7",
+      "translation": "## Модули\n\n### Основные модули\n\n| Модуль | Путь доступа | Описание |\n|------|---------|------|\n| `sdk.storage` | `sdk.storage` | Хранилище пар «ключ-значение» на базе SQLite + SQL цепочечный запрос |\n| `sdk.config` | `sdk.config` | Управление конфигурацией в формате TOML |\n| `sdk.logger` | `sdk.logger` | Модульная система логирования, поддержка под-логгеров |\n| `sdk.adapter` | `sdk.adapter` | Управление адаптерами для различных платформ |\n| `sdk.module` | `sdk.module` | Управление регистрацией, загрузкой и выгрузкой модулей |\n| `sdk.lifecycle` | `sdk.lifecycle` | Управление событиями жизненного цикла |\n| `sdk.router` | `sdk.router` | Управление маршрутизацией HTTP/WebSocket |\n| `sdk.client` | `sdk.client` | Единый HTTP/WS клиент |\n\n### Система событий\n\n| Модуль | Путь доступа | Описание |\n|------|---------|------|\n| `command` | `ErisPulse.Core.Event.command` | Обработка команд (разбор префиксов, псевдонимы) |\n| `message` | `ErisPulse.Core.Event.message` | События сообщений (личные сообщения, чаты, сообщения с упоминанием) |\n| `notice` | `ErisPulse.Core.Event.notice` | События уведомлений (изменения друзей, участников групп) |\n| `request` | `ErisPulse.Core.Event.request` | События запросов (запросы на добавление в друзья, приглашения в группы) |\n| `meta` | `ErisPulse.Core.Event.meta` | Мета-события (подключение, отключение, сердцебиение) |\n\n### Базовые классы\n\n| Базовый класс | Путь доступа | Описание |\n|------|---------|------|\n| `BaseModule` | `ErisPulse.Core.Bases.module.BaseModule` | Базовый класс модуля (on_load/on_unload) |\n| `BaseAdapter` | `ErisPulse.Core.Bases.adapter.BaseAdapter` | Базовый класс адаптера (start/shutdown/call_api) |"
+    },
+    {
+      "hash": "d85fddc08712ad6c4c130cbfb1736332",
+      "translation": "## Связанные документы\n\n- [Основные понятия](../getting-started/basic-concepts.md) - Понимание основных концепций фреймворка\n- [Руководство по разработке модулей](../developer-guide/modules/) - Разработка пользовательских модулей\n- [Руководство по разработке адаптеров](../developer-guide/adapters/) - Разработка адаптеров для платформ\n- [Расширенные темы](../advanced/) - Документация по маршрутизации, HTTP-клиенту, SQL-генератору и другим углубленным темам"
+    }
+  ]
 }

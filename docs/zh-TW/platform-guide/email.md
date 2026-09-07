@@ -13,9 +13,9 @@ EmailAdapter 是基於 SMTP/IMAP 協議的郵件適配器，支援郵件發送�
 
 - 平台簡介：透過標準 SMTP/IMAP 協議收發郵件的通用適配器
 - 適配器名稱：EmailAdapter
-- 多帳戶支援：支援同時配置多個郵箱帳戶
+- 多帳戶支援：支援同時設定多個電子郵箱帳戶
 - 連接方式：IMAP 長輪詢接收 + SMTP 發送
-- 認證方式：郵箱地址 + 密碼/授權碼
+- 認證方式：電子郵箱地址 + 密碼/授權碼
 - OneBot12 兼容：支援發送 OneBot12 格式訊息
 
 ## 配置說明
@@ -35,7 +35,7 @@ EmailAdapter 是基於 SMTP/IMAP 協議的郵件適配器，支援郵件發送�
 
 ### 帳戶配置（EmailAdapter.accounts）
 
-每個帳戶對應一個獨立郵箱。帳戶級配置優先於全局配置。
+每個帳戶對應一個獨立的郵箱。帳戶級配置優先於全局配置。
 
 ```toml
 [EmailAdapter.accounts.default]
@@ -55,9 +55,9 @@ password = "another-password"
 enabled = true
 ```
 
-## 支援的消息發送類型
+## 支援的消息傳送類型
 
-所有發送方法均透過鏈式語法實現：
+所有傳送方法均透過鏈式語法實現：
 
 ```python
 from ErisPulse.Core import adapter
@@ -119,7 +119,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("內容")
 ### 核心差異點
 
 1. 郵件事件均為 `message` 類型，`detail_type` 固定為 `private`
-2. `user_id` 為發件人**純郵箱地址**，`user_nickname` 為發件人顯示名
+2. `user_id` 為寄件人**純郵箱地址**，`user_nickname` 為寄件人顯示名
 3. `message` 消息段為標準 OB12 格式（text 段 + file 段）
 4. 郵件主題透過 `email_subject` 擴展欄位獲取
 5. 完整原始資料保留在 `email_raw` 欄位中
@@ -176,7 +176,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("內容")
 
 ### 回覆郵件事件（email_reply）
 
-當郵件包含 `References` 或 `In-Reply-To` 頭時，`email_raw_type` 為 `email_reply`：
+當郵件包含 `References` 或 `In-Reply-To` 標頭時，`email_raw_type` 為 `email_reply`：
 
 ```json
 {
@@ -188,15 +188,15 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("內容")
 }
 ```
 
-## 扩展字段說明
+## 擴展欄位說明
 
 | 欄位 | 類型 | 說明 |
 |------|------|------|
-| `email_raw` | dict | 完整原始郵件數據（subject/from/to/date/cc/bcc/text_content/html_content/attachments 等） |
+| `email_raw` | dict | 完整原始郵件資料（subject/from/to/date/cc/bcc/text_content/html_content/attachments 等） |
 | `email_raw_type` | str | 原始事件類型：`email_new`（新郵件）或 `email_reply`（回覆郵件） |
-| `email_subject` | str | 郵件主題（便捷存取） |
-| `email_from` | str | 寄件人純郵箱地址（便捷存取） |
-| `attachments` | list | 附件數據列表（含二進位 `data` 欄位，向後相容） |
+| `email_subject` | str | 郵件主旨（便捷存取） |
+| `email_from` | str | 寄件人純郵件地址（便捷存取） |
+| `attachments` | list | 附件資料清單（含二進位 `data` 欄位，向後相容） |
 
 ## 標準事件範例
 
@@ -288,16 +288,16 @@ from ErisPulse.Core.Event import message
 async def handle_email(event):
     if event.get("platform") != "email":
         return
-    # 發件人純郵箱地址
+    # 寄件人純郵箱地址
     sender = event["user_id"]              # sender@example.com
     
-    # 發件人顯示名
+    # 寄件人顯示名
     nickname = event.get("user_nickname")  # Sender
     
     # 郵件主題
     subject = event.get("email_subject")   # 會議通知
     
-    # 純文字正文（第一個 text 段）
+    # 純文本正文（第一個 text 段）
     text = event.get_text()
     
     # 完整原始數據

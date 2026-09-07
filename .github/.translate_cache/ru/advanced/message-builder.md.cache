@@ -1,5 +1,45 @@
 {
+  "version": 2,
   "hash": "ccf145605ccbcde6645ba7b1fd9d02a4",
-  "translated_at": "2026-07-19T20:57:43.543603",
-  "target_lang": "ru"
+  "file_hash": "ccf145605ccbcde6645ba7b1fd9d02a4",
+  "translated_at": "2026-09-07T12:33:55.277809",
+  "target_lang": "ru",
+  "chunks": [
+    {
+      "hash": "beaaca1a9a89664f37264436e23a6a42",
+      "translation": "# MessageBuilder — подробное руководство\n\n`MessageBuilder` — это инструмент для построения сообщений стандарта OneBot12, предоставляемый ErisPulse. Он предназначен для построения структурированного содержимого сообщений и используется в сочетании с `Send.Raw_ob12()`."
+    },
+    {
+      "hash": "2500525151763f3bec08079067fc08cb",
+      "translation": "## Способы импорта\n\n`MessageBuilder` поддерживает два способа импорта (результат одинаковый, рекомендуется использовать первый):\n\n```python\nfrom ErisPulse.Core.Event import MessageBuilder        # Рекомендуется, через пакет\nfrom ErisPulse.Core.Event.message_builder import MessageBuilder  # Прямой импорт модуля\n```"
+    },
+    {
+      "hash": "31cd41bf9cdd7c1d78a8572d2df12c5d",
+      "translation": "## Двухрежимная система\n\nMessageBuilder предоставляет два режима использования, реализованных с помощью механизма описателей Python (`__get__`), обеспечивающих различное поведение на уровне класса и экземпляра: при вызове метода через класс `__get__` возвращает результат выполнения статического метода; при вызове через экземпляр возвращает `self`, что поддерживает цепочечный вызов.\n\n### Режим цепочечного вызова (экземпляр)\n\nИспользуется путем создания экземпляра `MessageBuilder()`. Каждый метод возвращает `self`, что поддерживает цепочечный вызов, и в конце `.build()` используется для получения списка сообщений:\n\n```python\nfrom ErisPulse.Core.Event.message_builder import MessageBuilder\n\nsegments = (\n    MessageBuilder()\n    .text(\"Привет!\")\n    .image(\"https://example.com/photo.jpg\")\n    .build()\n)\n# [\n#     {\"type\": \"text\", \"data\": {\"text\": \"Привет!\"}},\n#     {\"type\": \"image\", \"data\": {\"file\": \"https://example.com/photo.jpg\"}}\n# ]\n```\n\n### Режим быстрого построения (статический)\n\nМетоды вызываются напрямую через класс, каждый метод возвращает список сообщений напрямую, что подходит для одиночных сообщений:\n\n```python\n# Возвращает list[dict] напрямую, без необходимости использовать .build()\nsegments = MessageBuilder.text(\"Привет!\")\n# [{\"type\": \"text\", \"data\": {\"text\": \"Привет!\"}}]\n```"
+    },
+    {
+      "hash": "2587d00db9ffe4a1f84e12e720c98078",
+      "translation": "## Типы сегментов сообщений\n\n| Метод | Тип | Параметры данных | Описание |\n|------|------|---------|------|\n| `text(text)` | text | `text` | Текстовое сообщение |\n| `image(file)` | image | `file` | Сообщение с изображением |\n| `audio(file)` | audio | `file` | Аудиосообщение |\n| `video(file)` | video | `file` | Видеосообщение |\n| `file(file, filename?)` | file | `file`, `filename` | Сообщение с файлом |\n| `mention(user_id, user_name?)` | mention | `user_id`, `user_name` | Упоминание пользователя |\n| `at(user_id, user_name?)` | mention | `user_id`, `user_name` | Синоним `mention` |\n| `reply(message_id)` | reply | `message_id` | Ответ на сообщение |\n| `at_all()` | mention_all | - | Упоминание всех участников |\n| `custom(type, data)` | пользовательский | пользовательский | Пользовательский сегмент сообщения |"
+    },
+    {
+      "hash": "d61a223fe19c19812906b7d70d6ff25f",
+      "translation": "## Использование с Send\n\nПостроенный список сообщений отправляется с помощью `Send.Raw_ob12()`:\n\n```python\nfrom ErisPulse import sdk\nfrom ErisPulse.Core.Event.message_builder import MessageBuilder\n\n# Построение и отправка сообщения с использованием цепочки вызовов\nsegments = (\n    MessageBuilder()\n    .mention(\"user123\", \"张三\")\n    .text(\" Пожалуйста, посмотрите на это изображение\")\n    .image(\"https://example.com/photo.jpg\")\n    .build()\n)\nawait sdk.adapter.myplatform.Send.To(\"group\", \"group456\").Raw_ob12(segments)\n```\n\n### Использование с Event для ответа\n\n```python\nfrom ErisPulse.Core.Event import command\n\n@command(\"report\")\nasync def report_handler(event):\n    await event.reply_ob12(\n        MessageBuilder()\n        .text(\"📊 Сводка ежедневного отчёта\\n\")\n        .text(\"Задачи, выполненные сегодня: 5\\n\")\n        .text(\"Задачи, находящиеся в процессе: 3\")\n        .build()\n    )\n```"
+    },
+    {
+      "hash": "e1aab40446966ada7bd21fd97e2c098d",
+      "translation": "## Утилитные методы\n\n### copy()\n\nКопирует текущий билдер, используется для создания нескольких вариантов сообщений на основе одного и того же базового содержания:\n\n```python\nbase = MessageBuilder().text(\"Базовое содержание\").mention(\"admin\")\n\n# Создание разных сообщений на основе одного и того же префикса\nmsg1 = base.copy().text(\" Вариант A\").build()\nmsg2 = base.copy().text(\" Вариант B\").image(\"img.jpg\").build()\n```\n\n### clear()\n\nОчищает добавленные части сообщения, позволяет повторно использовать один и тот же билдер:\n\n```python\nbuilder = MessageBuilder()\n\nfor user_id in [\"user1\", \"user2\", \"user3\"]:\n    builder.clear()\n    msg = builder.mention(user_id).text(\" Привет!\").build()\n    await adapter.Send.To(\"user\", user_id).Raw_ob12(msg)\n```\n\n### len() / bool()\n\n```python\nbuilder = MessageBuilder()\nprint(bool(builder))   # False\n\nbuilder.text(\"Hello\")\nprint(len(builder))    # 1\nprint(bool(builder))   # True\n```"
+    },
+    {
+      "hash": "fe2d388fe5170a36f9d5d7d4c892de79",
+      "translation": "## Пользовательские сообщения\n\nИспользуйте метод `custom()`, чтобы добавить расширенный сегмент сообщения для конкретной платформы:\n\n```python\n# Добавление сегмента сообщения, специфичного для платформы\nsegments = (\n    MessageBuilder()\n    .text(\"Пожалуйста, заполните форму:\")\n    .custom(\"yunhu_form\", {\"form_id\": \"12345\"})\n    .build()\n)\n```\n\n> Пользовательские сегменты сообщений действительны только в адаптерах соответствующих платформ, другие адаптеры игнорируют неизвестные сегменты сообщений."
+    },
+    {
+      "hash": "25bb3d1be5ff8d7de96329bac26a09ea",
+      "translation": "## Полный пример\n\n### Многоэлементное сообщение\n\n```python\nsegments = (\n    MessageBuilder()\n    .reply(event.get_id())                    # Ответить на оригинальное сообщение\n    .mention(event.get_user_id())             # Упомянуть отправителя\n    .text(\" Это результат вашего запроса:\\n\") # Текст\n    .image(\"https://example.com/chart.png\")   # Изображение\n    .text(\"\\nПодробные данные см. во вложении:\")\n    .file(\"https://example.com/data.csv\", filename=\"data.csv\")\n    .build()\n)\nawait event.reply_ob12(segments)\n```\n\n### Статический фабричный метод + цепочечная смесь\n\n```python\n# Быстрое создание односегментного сообщения\nsimple_msg = MessageBuilder.text(\"Простой текст\")\n\n# Цепочечное создание сложного сообщения\ncomplex_msg = (\n    MessageBuilder()\n    .at_all()\n    .text(\" 📢 Объявление:\")\n    .text(\"Сегодня в 15:00 собрание\")\n    .build()\n)\n```"
+    },
+    {
+      "hash": "7f9b72897f5dfe225f03ea7dcea834c4",
+      "translation": "## Связанная документация\n\n- [Подробное руководство по SendDSL адаптера](../developer-guide/adapters/send-dsl.md) - Цепочка интерфейсов отправки сообщений Send\n- [Стандарт преобразования событий](../standards/event-conversion.md) - Стандарт преобразования сообщений\n- [Обертка Event](../developer-guide/modules/event-wrapper.md) - Метод Event.reply_ob12()"
+    }
+  ]
 }

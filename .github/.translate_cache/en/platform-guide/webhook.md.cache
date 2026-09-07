@@ -1,5 +1,45 @@
 {
+  "version": 2,
   "hash": "874e1f65883386ce14ae0c142b98917d",
-  "translated_at": "2026-06-16T12:52:57.026632",
-  "target_lang": "en"
+  "file_hash": "874e1f65883386ce14ae0c142b98917d",
+  "translated_at": "2026-09-07T11:49:04.995938",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "88eba211c1ace553dab49fa3c3bef169",
+      "translation": "# Platform Feature Description — Webhook Universal Bridge Adapter\n\nThis document provides a detailed explanation of the bidirectional bridge protocol, field mapping, and implementation features of the Webhook adapter."
+    },
+    {
+      "hash": "33de1244b699a8b51189d5c42369b97e",
+      "translation": "## Overview\n\nThe Webhook Adapter is a **protocol-level bridge**, not tied to any specific platform. It exchanges messages via HTTP, enabling any system capable of initiating HTTP requests to integrate with ErisPulse.\n\n```\nInbound Direction                          Outbound Direction\n────────────────                          ────────────────\nExternal System                            ErisPulse Module\n   │                                         │\n   │ POST JSON                               │ Send.Text(...)\n   ▼                                         ▼\n┌──────────────────────────────────────────────────────┐\n│                WebhookAdapter                          │\n│  ┌──────────────────┐    ┌──────────────────┐     │\n│  │ Inbound Routes    │    │ Outbound Forward │     │\n│  │ GET  (Health Check)│    │ client.post()    │     │\n│  │ POST (Receive Event)│   │ → outgoing_url   │     │\n│  └────────┬─────────┘    └────────▲─────────┘     │\n│           │                      │                 │\n│           ▼                      │                 │\n│  ┌──────────────────┐    ┌──────────────────┐     │\n│  │ WebhookConverter │    │ Send Class       │     │\n│  │ JSON → OneBot12  │    │ Message Segment → JSON │\n│  └────────┬─────────┘    └────────▲─────────┘     │\n└───────────┼──────────────────────┼─────────────────┘\n            ▼                      │\n     adapter.emit(event)    call_api(\"send_message\")\n            │                      │\n            ▼                      │\n       ErisPulse Event System ◄────────┘\n```"
+    },
+    {
+      "hash": "1bb1d36e724d49499e6fe9d59f890d14",
+      "translation": "## Multi-Account Model\n\nEach account is an independent bridge configuration, isolated from each other:\n\n| Account | bot_id | callback_path | outgoing_url | secret |\n|---------|--------|---------------|--------------|--------|\n| `default` | `webhook_bot` | `/webhook/default` | `https://a.com/recv` | `key1` |\n| `discord` | `discord_bot` | `/webhook/discord` | `https://b.com/send` | `key2` |\n\nEach account registers routes independently and emits connect independently upon startup."
+    },
+    {
+      "hash": "3bb37e62260a3e56522251cef368e745",
+      "translation": "## Inbound Protocols\n\n### 1. Health Check (GET)\n\n- **Path**: `{callback_path}`\n- **Method**: `GET`\n- **Authentication**: None\n- **Response**:\n\n```json\n{\"status\": \"ok\", \"account\": \"default\"}\n```\n\n### 2. Receive Event (POST)\n\n- **Path**: `{callback_path}`\n- **Method**: `POST`\n- **Content-Type**: `application/json`\n- **Authentication** (when secret is configured): Header `X-Webhook-Secret` or Query `?secret=`\n\n#### Request Body\n\n```json\n{\n  \"user_id\": \"u123\",\n  \"user_nickname\": \"用户名\",\n  \"group_id\": \"群组ID（仅群组会话）\",\n  \"detail_type\": \"private\",\n  \"message\": [\n    {\"type\": \"text\", \"data\": {\"text\": \"消息内容\"}}\n  ],\n  \"raw\": {}\n}\n```\n\n| Field | Required | Description |\n|------|------|------|\n| `user_id` | Yes | Sender ID |\n| `user_nickname` | No | Sender nickname |\n| `group_id` | No | Group/channel ID (provided for group sessions) |\n| `detail_type` | No | Session type (`private`/`group`), defaults to account default if missing |\n| `message` | Yes | Array of OneBot12 message segments |\n| `raw` | No | Raw data, stored as-is in `webhook_raw` |\n\n#### Response\n\n```json\n{\"status\": \"ok\"}\n```\n\nError responses include HTTP status codes:\n\n| Status Code | Meaning |\n|--------|------|\n| 400 | Invalid JSON / body is not an object |\n| 401 | Authentication failed |\n| 404 | Unknown account |\n| 500 | Event dispatch failed |\n\n### 3. Field Mapping (Inbound JSON → OneBot12 Event)\n\n| Inbound JSON | OneBot12 Event Field | Description |\n|-----------|-------------------|------|\n| — | `id` | Auto-generated |\n| — | `time` | Current Unix timestamp (seconds) |\n| — | `type` | Fixed as `message` |\n| `detail_type` | `detail_type` | Defaults to account default value if missing |\n| — | `platform` | Fixed as `webhook` |\n| — | `self.platform` | Fixed as `webhook` |\n| — | `self.user_id` | Account `bot_id` |\n| `user_id` | `user_id` | Passed through |\n| `user_nickname` | `user_nickname` | Passed through (optional) |\n| `group_id` | `group_id` | Passed through (optional) |\n| `message` | `message` | Passed through |\n| Full body | `webhook_raw` | Original request |\n| Account name | `webhook_account` | Name of the account that generated the event |\n| `type` or `message` | `webhook_raw_type` | Original event type |"
+    },
+    {
+      "hash": "6e047ff19680dba66c0fb2c529712e2f",
+      "translation": "## Outbound Protocols\n\n### 1. Sending Messages\n\nWhen the module calls methods such as `Send.To(...).Text(...)`, the adapter sends a POST request to `outgoing_url`:\n\n- **Method**: `POST`\n- **Content-Type**: `application/json`\n- **Authentication Header** (when secret is configured): `X-Webhook-Secret: {secret}`\n\n#### Request Body\n\n```json\n{\n  \"target_type\": \"private\",\n  \"target_id\": \"target_user_id\",\n  \"account\": \"default\",\n  \"message\": [\n    {\"type\": \"text\", \"data\": {\"text\": \"Message content\"}}\n  ],\n  \"timestamp\": 1700000000\n}\n```\n\n| Field | Description |\n|-------|-------------|\n| `target_type` | Target type (from `Send.To(type, id)`), defaults to the account's default if not provided |\n| `target_id` | Target ID (from `Send.To`) |\n| `account` | Sender account name |\n| `message` | Array of OneBot12 message segments |\n| `timestamp` | Timestamp of sending (in seconds) |\n\n### 2. Response Standardization\n\nThe adapter standardizes the response from the outbound target into the ErisPulse standard response format:\n\n```json\n{\n  \"status\": \"ok\",\n  \"retcode\": 0,\n  \"data\": {\"message_id\": \"...\", ...},\n  \"message_id\": \"...\",\n  \"message\": \"\",\n  \"webhook_raw\": {}\n}\n```\n\nThe message ID is extracted from the `message_id` field of the target's response JSON. If the target does not return a `message_id`, it will be an empty string.\n\nIf the request fails, an error response is returned (with `status: \"failed\"`, `retcode: 33001`)."
+    },
+    {
+      "hash": "3447562c8fca8e44eeb58433c3bc4ffd",
+      "translation": "## Send Method\n\n| Method | Description |\n|--------|-------------|\n| `Text(text)` | Sends text, encapsulated as `[{\"type\":\"text\",\"data\":{\"text\":text}}]` |\n| `Image(file)` | Sends an image, encapsulated as `[{\"type\":\"image\",\"data\":{\"file\":file}}]` |\n| `Raw_ob12(message)` | Sends a raw OneBot12 message segment |\n| `Json(data)` | Passes raw JSON data, encapsulated as `[{\"type\":\"json\",\"data\":{\"raw\":data}}]` |\n\n`At` / `AtAll` / `Reply` decorators are provided by the framework base class and merged into message segments via `_apply_modifiers`."
+    },
+    {
+      "hash": "1ed81c613ce4227bcedbc9f4fe3e741f",
+      "translation": "## Event Extension Methods (WebhookEventMixin)\n\n| Method | Description |\n|--------|-------------|\n| `get_raw_data()` | Get the raw request body (`webhook_raw`) |\n| `get_detail_type()` | Get the session type |\n| `get_webhook_account()` | Get the account name that generated the event |"
+    },
+    {
+      "hash": "3c6ba24ebe16734d6d0e119e5c146c73",
+      "translation": "## Feature Matrix\n\n| Feature | Support Status |\n|---------|----------------|\n| Multi-account | ✅ Each account has an independent bridge |\n| Inbound Authentication | ✅ Header / Query dual mode |\n| Health Check | ✅ GET returns status |\n| Outbound Authentication | ✅ Secret carried in Header |\n| OneBot12 Standard Events | ✅ Complete standard fields |\n| Meta Events | ✅ connect / disconnect |\n| Route Discovery | ✅ Registered to `webhook` namespace |\n| WebSocket | ❌ Only HTTP |\n| Media Upload | ❌ Pass-through via URL, no binary relay |"
+    },
+    {
+      "hash": "2fd66c9865f668ae7d2308b5658890d7",
+      "translation": "## Notes\n\n1. **One-way Outbound**: If `outgoing_url` is left empty, the account will only receive inbound messages, and sending operations will return an error.\n2. **Secret Security**: `secret` is stored as an encrypted value in the configuration (metadata secret), and HTTPS is recommended for transmission.\n3. **Unique Path**: The `callback_path` for multiple accounts must be unique to avoid routing conflicts.\n4. **Idempotency**: The adapter does not guarantee deduplication of inbound events; external systems should handle retries themselves.\n5. **Timeout**: Outbound requests use ErisPulse's built-in `client` and inherit the global timeout configuration."
+    }
+  ]
 }

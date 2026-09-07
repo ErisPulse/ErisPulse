@@ -1,6 +1,6 @@
 # SQL Query Builder
 
-The Storage module of ErisPulse provides a chain-style generic SQL query builder, supporting creation, querying, updating, and deletion operations for custom tables.
+The Storage module of ErisPulse provides a fluent-style, chainable SQL query builder that supports custom table creation, querying, updating, and deletion operations.
 
 ## Architecture Design
 
@@ -15,8 +15,8 @@ Bases/storage.py                    Core/storage.py
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` are abstract base classes that define unified interfaces, supporting future expansion to other storage media (Redis, MySQL, etc.)
-- `StorageManager` is the current concrete implementation for SQLite, fully backward compatible
+- `BaseStorage` / `BaseQueryBuilder` are abstract base classes that define a unified interface, supporting future expansion to other storage media (Redis, MySQL, etc.)
+- `StorageManager` is the current SQLite concrete implementation, fully backward compatible
 
 ## Import
 
@@ -25,7 +25,7 @@ from ErisPulse import sdk
 # or
 from ErisPulse.Core import storage
 
-# ABC base classes (for type hinting or custom implementations)
+# ABC base classes (for type annotation or custom implementation)
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
@@ -55,7 +55,7 @@ if sdk.storage.HasTable("users"):
 sdk.storage.DropTable("users")
 ```
 
-### Alter Table Structure
+### Modify Table Structure
 
 ```python
 # Add column
@@ -71,15 +71,15 @@ sdk.storage.AlterTable("users") \
     .Execute()
 ```
 
-## Chain-style Queries
+## Chained Query
 
 ### Insert Data
 
 ```python
-# Single row insertion (pass dictionary)
+# Insert single row (pass a dictionary)
 sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 
-# Batch insertion (pass list of dictionaries)
+# Insert multiple rows (pass a list of dictionaries)
 sdk.storage.Table("users").InsertMulti([
     {"name": "Bob", "age": 25},
     {"name": "Charlie", "age": 35},
@@ -89,7 +89,7 @@ sdk.storage.Table("users").InsertMulti([
 
 ### Query Data
 
-> **Important**: `Select()` returns `list[tuple]` (list of tuples), not dictionaries. You need to access values by index following column order.
+> **Important**: `Select()` returns a `list[tuple]` (list of tuples), not a dictionary. You need to access values by column index.
 
 ```python
 # Query all columns
@@ -100,35 +100,35 @@ rows = sdk.storage.Table("users").Select().Execute()
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
 # rows: [("Alice", 30), ("Bob", 25), ...]
 
-# Access by index
+# Access values by index
 for row in rows:
     name = row[0]   # "Alice"
     age = row[1]    # 30
 ```
 
-#### Convert tuples to dictionaries
+#### Convert Tuples to Dictionaries
 
 ```python
 columns = ["id", "name", "age"]
 rows = sdk.storage.Table("users").Select(*columns).Execute()
 
-# Method 1: Using zip in loop
+# Method 1: Using zip in a loop
 for row in rows:
     record = dict(zip(columns, row))
     print(record["name"], record["age"])
 
-# Method 2: Convert to list of dictionaries in one go
+# Method 2: Convert to a list of dictionaries at once
 records = [dict(zip(columns, row)) for row in rows]
 ```
 
-#### Get single record
+#### Get a Single Record
 
 ```python
 row = sdk.storage.Table("users").Select("name", "age") \
     .Where("id = ?", 1) \
     .ExecuteOne()
 
-# row is tuple or None
+# row is a tuple or None
 if row is not None:
     name = row[0]  # "Alice"
     age = row[1]   # 30
@@ -136,7 +136,7 @@ if row is not None:
 
 ### Conditional Filtering
 
-> `Where(condition, *params)` supports passing multiple parameters corresponding to multiple `?` placeholders.
+> `Where(condition, *params)` supports multiple parameters, corresponding to multiple `?` placeholders.
 
 ```python
 # Single condition (one placeholder, one parameter)
@@ -144,19 +144,19 @@ rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 18) \
     .Execute()
 
-# Multiple placeholders in one Where
+# Multiple placeholders in one Where clause
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ? AND age < ?", 20, 40) \
     .Execute()
 
-# Multiple Where calls (AND connected)
+# Multiple calls to Where (AND connected)
 rows = sdk.storage.Table("users").Select("name") \
     .Where("age > ?", 20) \
     .Where("age < ?", 40) \
     .Execute()
 ```
 
-### Sorting, Pagination
+### Sorting and Pagination
 
 ```python
 # Ascending order
@@ -195,13 +195,13 @@ sdk.storage.Table("users") \
 ### Delete Data
 
 ```python
-# Conditional deletion
+# Conditional delete
 sdk.storage.Table("users") \
     .Delete() \
     .Where("name = ?", "Bob") \
     .Execute()
 
-# Full deletion
+# Full delete
 sdk.storage.Table("users").Delete().Execute()
 ```
 
@@ -216,20 +216,20 @@ count = sdk.storage.Table("users").Where("age > ?", 18).Count()
 exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
 ```
 
-## Reuse Query Conditions
+## Reusing Query Conditions
 
-Use `copy()` for deep copy of the builder to reuse base conditions:
+Use `copy()` to deep copy the builder and reuse the base conditions:
 
 ```python
 base = sdk.storage.Table("users").Where("age > ?", 20)
 
-# Query based on same conditions
+# Query based on the same conditions
 rows = base.copy().Select("name").OrderBy("name").Limit(5).Execute()
 
-# Count based on same conditions
+# Count based on the same conditions
 count = base.copy().Count()
 
-# Check existence based on same conditions
+# Check existence based on the same conditions
 exists = base.copy().Where("name = ?", "Alice").Exists()
 ```
 
@@ -239,14 +239,14 @@ exists = base.copy().Where("name = ?", "Alice").Exists()
 builder = sdk.storage.Table("users").Select("name").Where("age > ?", 18)
 builder.clear()
 
-# Rebuild query
+# Rebuild the query
 builder.Select("name", "age").Where("name = ?", "Alice")
 rows = builder.Execute()
 ```
 
 ## Using in Transactions
 
-Chain-style operations fully support transactions:
+Chained operations are fully supported in transactions:
 
 ```python
 # Commit transaction
@@ -264,20 +264,20 @@ except Exception:
 # Alice's record still exists
 ```
 
-## Return Value Explanation
+## Return Value Description
 
 | Operation | Return Type | Description |
-|-----------|------------|-------------|
-| `Select().Execute()` | `list[tuple]` | List of tuples, arranged in column order |
+|-----------|-------------|-------------|
+| `Select().Execute()` | `list[tuple]` | List of tuples, ordered by column |
 | `Select().ExecuteOne()` | `tuple \| None` | Single tuple or None |
-| `Insert().Execute()` | `int` | Affected rows count |
-| `InsertMulti().Execute()` | `int` | Inserted rows count |
-| `Update().Execute()` | `int` | Affected rows count |
-| `Delete().Execute()` | `int` | Affected rows count |
-| `Count()` | `int` | Matching rows count |
-| `Exists()` | `bool` | Whether it exists |
+| `Insert().Execute()` | `int` | Number of affected rows |
+| `InsertMulti().Execute()` | `int` | Number of inserted rows |
+| `Update().Execute()` | `int` | Number of affected rows |
+| `Delete().Execute()` | `int` | Number of affected rows |
+| `Count()` | `int` | Number of matching rows |
+| `Exists()` | `bool` | Whether exists |
 
-### Return Value Processing Examples
+### Return Value Handling Examples
 
 ```python
 # Select returns tuples, access by index
@@ -285,7 +285,7 @@ rows = sdk.storage.Table("users").Select("name", "age").Execute()
 first_name = rows[0][0]  # First row, first column (name)
 first_age = rows[0][1]   # First row, second column (age)
 
-# Recommended: Use column names list + zip to convert to dictionary for better readability
+# Recommended: Use column list + zip to convert to dictionary, more readable code
 cols = ["name", "age"]
 rows = sdk.storage.Table("users").Select(*cols).Execute()
 for row in rows:
@@ -296,27 +296,27 @@ for row in rows:
 row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
 name = row[0] if row else None
 
-# Insert/Update/Delete return affected rows count
+# Insert/Update/Delete returns number of affected rows
 affected = sdk.storage.Table("users").Delete().Where("age < ?", 18).Execute()
 print(f"Deleted {affected} records")
 ```
 
 ## Parameterized Queries
 
-All WHERE parameters use `?` placeholders, with parameters passed as subsequent arguments to `Where()` (**not** as tuples or lists):
+All WHERE parameters use the `?` placeholder, with parameters passed as subsequent arguments to `Where()` (**not** as a tuple or list):
 
 ```python
-# Correct ✓ — Multiple parameters passed one by one
+# Correct ✓ — multiple parameters passed individually
 sdk.storage.Table("users").Where("age > ? AND name = ?", 18, "Alice").Execute()
 
-# Correct ✓ — Multiple Where calls
+# Correct ✓ — multiple Where calls
 sdk.storage.Table("users").Where("age > ?", 18).Where("name = ?", "Alice").Execute()
 
-# Incorrect ✗ — Don't pass tuple
+# Incorrect ✗ — do not pass a tuple
 sdk.storage.Table("users").Where("age > ? AND name = ?", (18, "Alice")).Execute()
 # This would treat the entire tuple as the value for the first placeholder
 
-# Incorrect ✗ — Has SQL injection risk
+# Incorrect ✗ — SQL injection risk
 sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 ```
 
@@ -324,7 +324,7 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ```python
 # Where(condition: str, *params: Any)
-# params are variable arguments, pass them one by one
+# params is a variable argument list, passed individually
 
 # Single parameter
 .Where("name = ?", "Alice")
@@ -335,13 +335,13 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 # LIKE query
 .Where("name LIKE ?", "A%")
 
-# IN query (requires manually constructing placeholders)
+# IN query (need to manually construct placeholders)
 .Where("name IN (?, ?, ?)", "Alice", "Bob", "Charlie")
 ```
 
 ## Custom Storage Backend
 
-Inherit from `BaseStorage` and `BaseQueryBuilder` to implement custom storage backends:
+Inherit `BaseStorage` and `BaseQueryBuilder` to implement a custom storage backend:
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -373,8 +373,8 @@ class MyStorage(BaseStorage):
         return MyQueryBuilder(self, table_name)
 ```
 
-## Related Documents
+## Related Documentation
 
-- [Core Module API](../api-reference/core-modules.md) - Complete API for Storage module
-- [Storage Base Class API](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) - BaseStorage/BaseQueryBuilder abstract interfaces
-- [Message Builder](message-builder.md) - MessageBuilder chain-style reference
+- [Core Modules API](../api-reference/core-modules.md) - Complete API for the Storage module
+- [Storage Base Class API](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) - Abstract interfaces for BaseStorage/BaseQueryBuilder
+- [Message Builder](message-builder.md) - Reference for the MessageBuilder's fluent API style

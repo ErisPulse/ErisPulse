@@ -1,6 +1,6 @@
 # Conversation 多輪対話
 
-`Conversation` クラスは、1 つの会話の中で複数回のやり取りを行うための便利なメソッドを提供し、ガイド付き操作、情報収集、対話式の質問応答などの場面に適しています。
+`Conversation` クラスは、同一の会話の中で複数のやり取りを行うための便利なメソッドを提供します。ガイド付き操作、情報収集、対話形式の質問応答などの場面に適しています。
 
 ## 対話の作成
 
@@ -15,29 +15,29 @@ async def quiz_handler(event):
 
     await conv.say("🎮 知識クイズへようこそ！")
 
-    answer = await conv.choose("第1問：Python の作成者は誰ですか？", [
+    answer = await conv.choose("第1問：Pythonの作成者は誰ですか？", [
         "Guido van Rossum",
         "James Gosling",
         "Dennis Ritchie",
     ])
 
     if answer is None:
-        await conv.say("タイムアウトしました、また次回お試しください！")
+        await conv.say("時間切れです。また次回！")
         return
 
     if answer == 0:
         await conv.say("正解です！")
     else:
-        await conv.say("間違いです、正解は Guido van Rossum です")
+        await conv.say("不正解です。正解はGuido van Rossumです")
 
     conv.stop()
 ```
 
-## コア API
+## コアAPI
 
 ### say(content, **kwargs)
 
-メッセージを送信し、`self` を返して連鎖呼び出しを可能にします：
+メッセージを送信し、`self` を返してメソッドチェーンが可能です：
 
 ```python
 await conv.say("1行目").say("2行目").say("3行目")
@@ -51,15 +51,15 @@ await conv.say("https://example.com/image.jpg", method="Image")
 
 ### wait(prompt=None, timeout=None)
 
-ユーザーの返信を待ち、`Event` オブジェクトまたは `None`（タイムアウト）を返します：
+ユーザーからの返信を待ち、`Event` オブジェクトまたは `None`（タイムアウト）を返します：
 
 ```python
-# 簡単な待ち
+# 簡単に待機
 resp = await conv.wait()
 if resp:
     text = resp.get_text()
 
-# プロンプトを送信してから待ち
+# プロンプトを送信して待機
 resp = await conv.wait(prompt="お名前を入力してください：")
 
 # カスタムタイムアウトを使用（対話のデフォルトタイムアウトを上書き）
@@ -80,27 +80,27 @@ else:
     await conv.say("タイムアウトしました")
 ```
 
-確認用語の内部認識リスト：`はい/yes/y/確認/確定/好/ok/true/対/うん/行/同意/問題ない/可能/当然...`
+確認用語の内包リスト：`はい/yes/y/確認/確定/好/ok/true/対/うん/行/同意/問題ない/可能/当然...`
 
-否定用語の内部認識リスト：`否/no/n/キャンセル/不/不要/不行/cancel/false/間違/不対/別/拒否...`
+否定用語の内包リスト：`否/no/n/キャンセル/不/不要/不行/cancel/false/錯/不对/别/拒絶...`
 
 ### choose(prompt, options, **kwargs)
 
-ユーザーがオプションから選択するのを待ち、0 から始まるオプションのインデックスまたは `None` を返します：
+ユーザーが選択肢の中から選択するのを待ち、選択肢のインデックス（0ベース）または `None` を返します：
 
 ```python
-choice = await conv.choose("色を選択してください：", ["赤", "緑", "青"])
+choice = await conv.choose("色を選んでください：", ["赤", "緑", "青"])
 if choice is not None:
     colors = ["赤", "緑", "青"]
-    await conv.say(f"選択した色は {colors[choice]} です")
+    await conv.say(f"選択したのは {colors[choice]} です")
 ```
 
-ユーザーは番号（`1`/`2`/`3`）またはオプションのテキスト（`赤`）を入力して選択できます。
+ユーザーは、番号（`1`/`2`/`3`）または選択肢のテキスト（`赤`）で選択できます。
 
-`options_format="auto"`（デフォルト）は、method に応じて自動的に組み込みのスタイルを選択します：Markdown→無序リスト、Html→順序リスト、その他→純粋なテキストリスト。
-`"list"`、`"inline"`、`"md"`、`"html"`、またはカスタム関数もサポートしています。
+`options_format="auto"`（デフォルト）は、method に応じて自動的に組み込みのスタイルを選択します：Markdown→無序リスト、Html→有序リスト、その他→純粋なテキストリスト。  
+また、`"list"`、`"inline"`、`"md"`、`"html"`、またはカスタム関数もサポートします。
 
-`merge_prompt=True` を使用してプロンプトとオプションを1つのメッセージに統合し、オプションの挿入位置を占位符で制御できます（デフォルトは `{options}`、`placeholder` でカスタマイズ可能です）：
+`merge_prompt=True` でプロンプトを1つのメッセージに統合し、プレースホルダで選択肢の挿入位置を制御できます（デフォルトは `{options}`、`placeholder` でカスタマイズ可能）：
 
 ```python
 choice = await conv.choose(
@@ -110,7 +110,7 @@ choice = await conv.choose(
     merge_prompt=True,
 )
 
-# 占位符をカスタマイズ
+# カスタムプレースホルダ
 choice = await conv.choose(
     "選択してください: [choices]",
     ["オプションA", "オプションB"],
@@ -120,14 +120,14 @@ choice = await conv.choose(
 
 ### collect(fields, **kwargs)
 
-複数ステップで情報を収集し、データ辞書または `None` を返します：
+複数のステップで情報を収集し、データ辞書または `None` を返します：
 
 ```python
 data = await conv.collect([
     {"key": "name", "prompt": "お名前を入力してください"},
     {"key": "age", "prompt": "年齢を入力してください",
      "validator": lambda e: e.get("alt_message", "").strip().isdigit(),
-     "retry_prompt": "年齢は数字でなければなりません、もう一度入力してください"},
+     "retry_prompt": "年齢は数字でなければなりません。再度入力してください"},
     {"key": "city", "prompt": "都市を入力してください"},
 ])
 
@@ -142,13 +142,13 @@ else:
 | パラメータ | 説明 | デフォルト値 |
 |------|------|--------|
 | `key` | フィールドのキー名（必須） | - |
-| `prompt` | プロンプトメッセージ | `"{key} を入力してください"` |
-| `validator` | Event を受け取り、bool を返す検証関数 | なし |
-| `retry_prompt` | 検証失敗時の再入力プロンプト | `"入力が無効です、もう一度入力してください"` |
+| `prompt` | プロンプトメッセージ | `"请输入 {key}"` |
+| `validator` | 関数、Eventを受け取り、boolを返す | なし |
+| `retry_prompt` | 検証失敗時の再入力プロンプト | `"入力が無効です。再度入力してください"` |
 | `max_retries` | 最大再試行回数 | 3 |
-| `condition` | 条件関数、既に収集されたデータの辞書を受け取り、bool を返す | なし |
+| `condition` | 関数、既に収集されたデータの辞書を受け取り、boolを返す | なし |
 
-**条件付きフィールド**：`condition` を使用して動的なフォームを作成し、条件が満たされた場合にのみフィールドを収集できます：
+**条件付きフィールド**：`condition` を使用して、条件が満たされた場合にのみフィールドを収集できます：
 
 ```python
 data = await conv.collect([
@@ -189,19 +189,19 @@ stateDiagram-v2
     inactive --> [*]
 ```
 
-以下の状況で対話は自動的に非アクティブになります：
+以下の状況で、対話は自動的に非アクティブになります：
 
-1. `stop()` メソッドを呼び出す
-2. `wait()` がタイムアウトして `None` を返す
-3. `collect()` がいずれかのステップでタイムアウトまたは再試行回数を超過して `None` を返す
+1. `stop()` メソッドを呼び出した場合
+2. `wait()` がタイムアウトして `None` を返した場合
+3. `collect()` が各ステップでタイムアウトまたは再試行回数を超過した場合
 
-非アクティブになった後、`wait`/`confirm`/`choose`/`collect` などのすべてのインタラクションメソッドは即座に `None` を返し、ユーザーの入力を待つことはありません。
+非アクティブになると、`wait`/`confirm`/`choose`/`collect` などのすべてのインタラクションメソッドは即座に `None` を返し、ユーザーからの入力を待つことはありません。
 
 ## 分岐とジャンプ
 
 ### @conv.branch(name) デコレータ
 
-`branch()` を使用して対話の分岐を登録し、`goto()` を使って分岐間でジャンプできます：
+`branch()` を使って対話の分岐を登録し、`goto()` で分岐間をジャンプできます：
 
 ```python
 @command("menu")
@@ -232,7 +232,7 @@ async def menu_handler(event):
 
     @conv.branch("settings")
     async def settings():
-        await conv.say("=== 設定 ===\n1. 通知スイッチ\n0. 戻る")
+        await conv.say("=== 設定 ===\n1. 通知のオン/オフ\n0. 戻る")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
@@ -242,7 +242,7 @@ async def menu_handler(event):
 
 ### conv.start(name=None)
 
-対話を開始します、デフォルトでは最初に登録された分岐から開始されます：
+対話を開始し、デフォルトでは最初に登録された分岐から開始します：
 
 ```python
 await conv.start()          # 最初の分岐から開始
@@ -264,7 +264,7 @@ async def step1():
 @conv.branch("step2")
 async def step2():
     name = conv.context.get("username", "未知")
-    await conv.say(f"こんにちは、{name} さん！")
+    await conv.say(f"こんにちは、{name}さん！")
 ```
 
 ### save() / resume() / clear_saved()
@@ -279,7 +279,7 @@ conv_id = conv.save()
 # ... その後、同じ会話で復元 ...
 conv2 = event.conversation()
 if conv2.resume():
-    await conv2.say("お戻りいただきありがとうございます！前の対話を再開します")
+    await conv2.say("戻ってきました！以前の対話を続けます")
 else:
     await conv2.say("以前の対話が見つかりませんでした")
 
@@ -287,7 +287,7 @@ else:
 conv.clear_saved()
 ```
 
-## 代表的なフロー・パターン
+## 一般的なフローのパターン
 
 ### ガイド付き登録
 
@@ -303,7 +303,7 @@ async def register_handler(event):
          "validator": lambda e: 3 <= len(e.get_text().strip()) <= 20},
         {"key": "email", "prompt": "メールアドレスを入力してください",
          "validator": lambda e: "@" in e.get_text() and "." in e.get_text(),
-         "retry_prompt": "メールアドレスの形式が正しくありません、もう一度入力してください"},
+         "retry_prompt": "メールアドレスの形式が正しくありません。再度入力してください"},
     ])
 
     if not data:
@@ -326,12 +326,12 @@ async def register_handler(event):
 @command("chat")
 async def chat_handler(event):
     conv = event.conversation(timeout=120)
-    await conv.say("対話モードに入りました、「終了」で終了します")
+    await conv.say("対話モードに入りました。「終了」で終了します")
 
     while conv.is_active:
         resp = await conv.wait()
         if resp is None:
-            await conv.say("タイムアウトしました、対話は終了します")
+            await conv.say("タイムアウトしました。対話が終了します")
             break
 
         text = resp.get_text().strip()
@@ -340,11 +340,11 @@ async def chat_handler(event):
             await conv.say("さようなら！")
             conv.stop()
         elif text == "help":
-            await conv.say("利用可能なコマンド：終了、help、ステータス")
-        elif text == "ステータス":
+            await conv.say("利用可能なコマンド：終了、help、status")
+        elif text == "status":
             await conv.say("対話はアクティブです")
         else:
-            await conv.say(f"入力内容：{text}")
+            await conv.say(f"あなたが言った内容：{text}")
 ```
 
 ## 関連ドキュメント

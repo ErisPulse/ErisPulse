@@ -1,6 +1,6 @@
-# Conversation 多轮对话
+# Conversation Многоходовой диалог
 
-Класс `Conversation` предоставляет удобные методы для многократного взаимодействия в рамках одного диалога, что подходит для реализации навигационных операций, сбора информации, диалоговых опросов и т.д.
+Класс `Conversation` предоставляет удобный способ многократного взаимодействия в рамках одного сеанса, что подходит для реализации пошаговых действий, сбора информации, диалоговых вопросов и ответов и т.д.
 
 ## Создание диалога
 
@@ -13,31 +13,31 @@ from ErisPulse.Core.Event import command
 async def quiz_handler(event):
     conv = event.conversation(timeout=30)
 
-    await conv.say("🎮 Добро пожаловать в викторину! (知识问答!)")
+    await conv.say("🎮 Добро пожаловать в викторину!")
 
-    answer = await conv.choose("Вопрос 1: Кто создатель Python? (Python 的创造者是谁？)", [
+    answer = await conv.choose("Первый вопрос: Кто создатель Python?", [
         "Guido van Rossum",
         "James Gosling",
         "Dennis Ritchie",
     ])
 
     if answer is None:
-        await conv.say("Время вышло, приходите в другой раз! (超时了，下次再来吧！)")
+        await conv.say("Время вышло, попробуйте в другой раз!")
         return
 
     if answer == 0:
-        await conv.say("Правильно! (正确！)")
+        await conv.say("Правильно!")
     else:
-        await conv.say("Неправильно, правильный ответ — Guido van Rossum (错误了，正确答案是 Guido van Rossum)")
+        await conv.say("Неправильно, правильный ответ: Guido van Rossum")
 
     conv.stop()
 ```
 
-## Основные API
+## Основной API
 
 ### say(content, **kwargs)
 
-Отправить сообщение, вернуть `self` для цепочки вызовов:
+Отправка сообщения, возвращает `self` для цепочечного вызова:
 
 ```python
 await conv.say("Первая строка").say("Вторая строка").say("Третья строка")
@@ -51,7 +51,7 @@ await conv.say("https://example.com/image.jpg", method="Image")
 
 ### wait(prompt=None, timeout=None)
 
-Ожидать ответ от пользователя, вернуть объект `Event` или `None` (если таймаут):
+Ожидание ответа пользователя, возвращает объект `Event` или `None` (если истекло время ожидания):
 
 ```python
 # Простое ожидание
@@ -59,34 +59,34 @@ resp = await conv.wait()
 if resp:
     text = resp.get_text()
 
-# Ожидание с отправкой подсказки
-resp = await conv.wait(prompt="Пожалуйста, введите ваше имя")
+# Ожидание после отправки подсказки
+resp = await conv.wait(prompt="Пожалуйста, введите ваше имя:")
 
-# Использование пользовательского таймаута (переопределяет таймаут диалога)
-resp = await conv.wait(prompt="Пожалуйста, введите ваш возраст", timeout=10)
+# Использование пользовательского таймаута (переопределяет таймаут по умолчанию)
+resp = await conv.wait(prompt="Пожалуйста, ответьте в течение 10 секунд:", timeout=10)
 ```
 
 ### confirm(prompt=None, **kwargs)
 
-Ожидать подтверждения пользователя (да/нет), вернуть `True` / `False` / `None` (таймаут):
+Ожидание подтверждения пользователя (да/нет), возвращает `True` / `False` / `None` (если истекло время ожидания):
 
 ```python
-result = await conv.confirm("У вас есть машина? (да/нет)")
+result = await conv.confirm("Вы уверены, что хотите удалить все данные?")
 if result is True:
-    await conv.say("已删除")
+    await conv.say("Данные удалены")
 elif result is False:
-    await conv.say("已取消")
+    await conv.say("Удаление отменено")
 else:
-    await conv.say("超时未回复")
-
-Встроенные слова-подтверждения: `是/yes/y/确认/确定/好/ok/true/对/嗯/行/同意/没问题/可以/当然...`
-
-Встроенные слова-отрицания: `否/no/n/取消/不/不要/不行/cancel/false/错/不对/别/拒绝...`
+    await conv.say("Не получено подтверждение вовремя")
 ```
+
+Встроенные слова для подтверждения: `да/yes/y/подтвердить/подтвердить/хорошо/ok/true/верно/да/хорошо/согласен/ничего страшного/можно/конечно...`
+
+Встроенные слова для отрицания: `нет/no/n/отменить/не/не нужно/нет/отменить/false/ошибка/неправильно/не/отклонить...`
 
 ### choose(prompt, options, **kwargs)
 
-Ожидать выбора из списка, вернуть индекс (начиная с 0) или `None`:
+Ожидание выбора пользователя из списка, возвращает индекс выбранного элемента (начиная с 0) или `None`:
 
 ```python
 choice = await conv.choose("Пожалуйста, выберите цвет:", ["красный", "зелёный", "синий"])
@@ -97,22 +97,22 @@ if choice is not None:
 
 Пользователь может выбрать, введя номер (`1`/`2`/`3`) или текст опции (`красный`).
 
-`options_format="auto"` (по умолчанию) автоматически выбирает стиль в зависимости от метода: Markdown → маркированный список, Html → нумерованный список, другие → текстовый список.
+`options_format="auto"` (по умолчанию) автоматически выбирает стиль в зависимости от метода: Markdown→неупорядоченный список, Html→упорядоченный список, остальные→простой текстовый список.
 Также поддерживаются `"list"`、`"inline"`、`"md"`、`"html"` или пользовательская функция.
 
-Поддержка `merge_prompt=True` для объединения в одно сообщение и использование подстановочных знаков для контроля положения списка (по умолчанию `{options}`, можно изменить с помощью `placeholder`):
+Поддерживается `merge_prompt=True` для объединения в одно сообщение, а также позиционный плейсхолдер для вставки опций (по умолчанию `{options}`, можно изменить через `placeholder`):
 
 ```python
 choice = await conv.choose(
-    "## Выберите\n{options}",
+    "## Пожалуйста, выберите\n{options}",
     ["Опция A", "Опция B"],
     method="Markdown",
     merge_prompt=True,
 )
 
-# Пользовательский подстановочный знак
+# Пользовательский плейсхолдер
 choice = await conv.choose(
-    "Выберите: [choices]",
+    "Пожалуйста, выберите: [choices]",
     ["Опция A", "Опция B"],
     placeholder="[choices]",
 )
@@ -120,15 +120,15 @@ choice = await conv.choose(
 
 ### collect(fields, **kwargs)
 
-Сбор информации в несколько шагов, вернуть словарь данных или `None`:
+Сбор информации в несколько шагов, возвращает словарь данных или `None`:
 
 ```python
 data = await conv.collect([
-    {"key": "name", "prompt": "Пожалуйста, введите ваше имя"},
-    {"key": "age", "prompt": "Пожалуйста, введите ваш возраст",
+    {"key": "name", "prompt": "Пожалуйста, введите имя"},
+    {"key": "age", "prompt": "Пожалуйста, введите возраст",
      "validator": lambda e: e.get("alt_message", "").strip().isdigit(),
-     "retry_prompt": "Возраст должен быть числом, пожалуйста, введите снова"},
-    {"key": "city", "prompt": "Пожалуйста, введите ваш город"},
+     "retry_prompt": "Возраст должен быть числом, пожалуйста, повторите ввод"},
+    {"key": "city", "prompt": "Пожалуйста, введите город"},
 ])
 
 if data:
@@ -140,27 +140,27 @@ else:
 Конфигурация полей:
 
 | Параметр | Описание | Значение по умолчанию |
-|----------|----------|------------------------|
+|----------|----------|-----------------------|
 | `key` | Ключ поля (обязательно) | - |
 | `prompt` | Подсказка | `"Пожалуйста, введите {key}"` |
 | `validator` | Функция проверки, принимает Event, возвращает bool | Нет |
-| `retry_prompt` | Подсказка при неудачной проверке | `"Ввод неверен, пожалуйста, введите снова"` |
+| `retry_prompt` | Подсказка при неудачной проверке | `"Ввод неверен, пожалуйста, повторите ввод"` |
 | `max_retries` | Максимальное количество попыток | 3 |
-| `condition` | Функция условия, принимает словарь собранных данных, возвращает bool | Нет |
+| `condition` | Условная функция, принимает словарь уже собранных данных, возвращает bool | Нет |
 
-**Условные поля**: Использование `condition` позволяет реализовать динамическую форму, поле собирается только при выполнении условия:
+**Условные поля**: с помощью `condition` можно реализовать динамическую форму, где поле собирается только при выполнении условия:
 
 ```python
 data = await conv.collect([
-    {"key": "has_car", "prompt": "У вас есть машина? (да/否)"},
+    {"key": "has_car", "prompt": "У вас есть машина? (да/нет)"},
     {"key": "car_brand", "prompt": "Пожалуйста, введите марку автомобиля",
-     "condition": lambda d: d.get("has_car", "").lower() in ("是", "yes", "y")},
+     "condition": lambda d: d.get("has_car", "").lower() in ("да", "yes", "y")},
 ])
 ```
 
 ### stop()
 
-Вручную завершить диалог, установить `is_active` в `False`:
+Ручное завершение диалога, устанавливает `is_active` в `False`:
 
 ```python
 conv.stop()
@@ -168,40 +168,40 @@ conv.stop()
 
 ### is_active
 
-Активно ли диалог:
+Является ли диалог активным:
 
 ```python
 if conv.is_active:
-    await conv.say("对话还在进行中")
+    await conv.say("Диалог всё ещё активен")
 ```
 
 ## Управление активным состоянием
 
 ```mermaid
 stateDiagram-v2
-    state "Активен" as active
-    state "Не активен" as inactive
+    state "Активный" as active
+    state "Неактивный" as inactive
     [*] --> active: event.conversation()
     active --> active: say / wait / confirm / choose / collect
     active --> inactive: stop()
     active --> inactive: wait() таймаут
-    active --> inactive: collect() таймаут или исчерпаны попытки
+    active --> inactive: collect() таймаут или исчерпание попыток
     inactive --> [*]
 ```
 
-Диалог автоматически становится неактивным в следующих случаях:
+Диалог автоматически переходит в неактивное состояние в следующих случаях:
 
 1. Вызов метода `stop()`
-2. `wait()` возвращает `None` по таймауту
-3. `collect()` возвращает `None` из-за таймаута или исчерпания попыток
+2. `wait()` возвращает `None` по истечении таймаута
+3. `collect()` возвращает `None` из-за таймаута на любом этапе или исчерпания попыток
 
-После перехода в неактивное состояние все методы взаимодействия (`wait`/`confirm`/`choose`/`collect`) немедленно возвращают `None`, не ожидая ввода от пользователя.
+После перехода в неактивное состояние все методы взаимодействия (`wait`/`confirm`/`choose`/`collect`) немедленно возвращают `None` и не продолжают ожидать ввода пользователя.
 
 ## Ветвление и переходы
 
-### @conv.branch(name) декоратор
+### Декоратор `@conv.branch(name)`
 
-Используйте `branch()` для регистрации ветвей диалога, переход между ними с помощью `goto()`:
+Используйте `branch()` для регистрации ветвей диалога и `goto()` для перехода между ними:
 
 ```python
 @command("menu")
@@ -225,35 +225,35 @@ async def menu_handler(event):
 
     @conv.branch("profile")
     async def profile():
-        await conv.say("=== Личная информация ===\nИмя: Alice\n0. Назад")
+        await conv.say("=== Личная информация ===\nИмя: Alice\n0. Вернуться")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
 
     @conv.branch("settings")
     async def settings():
-        await conv.say("=== Настройки ===\n1. Переключатель уведомлений\n0. Назад")
+        await conv.say("=== Настройки ===\n1. Переключатель уведомлений\n0. Вернуться")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
 
-    await conv.start()  # Начинаем с первой зарегистрированной ветви
+    await conv.start()  # Запуск с первой зарегистрированной ветви
 ```
 
 ### conv.start(name=None)
 
-Запустить диалог, по умолчанию с первой зарегистрированной ветви:
+Запуск диалога, по умолчанию с первой зарегистрированной ветви:
 
 ```python
-await conv.start()          # Начинаем с первой ветви
-await conv.start("settings") # Начинаем с указанной ветви
+await conv.start()          # Запуск с первой ветви
+await conv.start("settings") # Запуск с указанной ветви
 ```
 
-## Контекст и сохранение
+## Контекст и сохранение состояния
 
 ### conv.context
 
-Внутренний словарь `context` каждого экземпляра диалога используется для обмена состоянием между ветвями:
+Каждый экземпляр диалога имеет встроенный словарь `context`, который используется для обмена состоянием между ветвями:
 
 ```python
 @conv.branch("step1")
@@ -263,61 +263,61 @@ async def step1():
 
 @conv.branch("step2")
 async def step2():
-    name = conv.context.get("username", "未知")
-    await conv.say(f"你好，{name}！")
+    name = conv.context.get("username", "неизвестно")
+    await conv.say(f"Привет, {name}!")
 ```
 
 ### save() / resume() / clear_saved()
 
-Диалог поддерживает сохранение, можно восстановить после таймаута или прерывания:
+Диалоги поддерживают сохранение состояния, позволяя возобновить диалог после тайм-аута или прерывания:
 
 ```python
-# Сохранить состояние диалога
+# Сохранение состояния диалога
 conv_id = conv.save()
 # conv_id = "user_123_group_456"  # Генерируется автоматически на основе пользователя и группы
 
-# ... позже в том же сеансе восстановить ...
+# ... позже в том же сеансе восстановление ...
 conv2 = event.conversation()
 if conv2.resume():
-    await conv2.say("欢迎回来！继续之前的对话")
+    await conv2.say("Добро пожаловать обратно! Продолжим предыдущий диалог")
 else:
-    await conv2.say("没有找到之前的对话")
+    await conv2.say("Не удалось найти предыдущий диалог")
 
-# Очистить сохраненный диалог
+# Очистка сохраненного диалога
 conv.clear_saved()
 ```
 
-## Типичные сценарии
+## Типичные сценарии работы
 
-### Регистрация с навигацией
+### Регистрация по шагам
 
 ```python
 @command("register")
 async def register_handler(event):
     conv = event.conversation(timeout=60)
 
-    await conv.say("欢迎注册！")
+    await conv.say("Добро пожаловать! Регистрация в процессе.")
 
     data = await conv.collect([
-        {"key": "username", "prompt": "请输入用户名（3-20个字符）",
+        {"key": "username", "prompt": "Пожалуйста, введите имя пользователя (от 3 до 20 символов)",
          "validator": lambda e: 3 <= len(e.get_text().strip()) <= 20},
-        {"key": "email", "prompt": "请输入邮箱地址",
+        {"key": "email", "prompt": "Пожалуйста, введите адрес электронной почты",
          "validator": lambda e: "@" in e.get_text() and "." in e.get_text(),
-         "retry_prompt": "邮箱格式不正确，请重新输入"},
+         "retry_prompt": "Неверный формат электронной почты, пожалуйста, повторите ввод"},
     ])
 
     if not data:
-        await event.reply("注册已取消")
+        await event.reply("Регистрация отменена")
         return
 
     confirmed = await conv.confirm(
-        f"确认注册信息？\n用户名: {data['username']}\n邮箱: {data['email']}"
+        f"Подтвердите информацию для регистрации?\nИмя пользователя: {data['username']}\nЭлектронная почта: {data['email']}"
     )
 
     if confirmed:
-        await conv.say("✅ 注册成功！")
+        await conv.say("✅ Успешная регистрация!")
     else:
-        await conv.say("❌ 已取消注册")
+        await conv.say("❌ Регистрация отменена")
 ```
 
 ### Циклический диалог
@@ -326,28 +326,28 @@ async def register_handler(event):
 @command("chat")
 async def chat_handler(event):
     conv = event.conversation(timeout=120)
-    await conv.say("进入对话模式，输入「退出」结束")
+    await conv.say("Вход в режим диалога, введите «выход» для завершения")
 
     while conv.is_active:
         resp = await conv.wait()
         if resp is None:
-            await conv.say("超时，对话结束")
+            await conv.say("Таймаут, диалог завершён")
             break
 
         text = resp.get_text().strip()
 
-        if text == "退出":
-            await conv.say("再见！")
+        if text == "выход":
+            await conv.say("До свидания!")
             conv.stop()
-        elif text == "帮助":
-            await conv.say("可用命令：退出、帮助、状态")
-        elif text == "状态":
-            await conv.say("对话活跃中")
+        elif text == "помощь":
+            await conv.say("Доступные команды: выход, помощь, статус")
+        elif text == "статус":
+            await conv.say("Диалог активен")
         else:
-            await conv.say(f"你说的是：{text}")
+            await conv.say(f"Вы сказали: {text}")
 ```
 
 ## Связанные документы
 
-- [包装 класса Event](../developer-guide/modules/event-wrapper.md) - Все методы объекта Event
+- [Event 包装类](../developer-guide/modules/event-wrapper.md) - Все методы объекта Event
 - [Введение в обработку событий](../getting-started/event-handling.md) - Основы обработки событий

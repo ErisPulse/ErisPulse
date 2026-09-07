@@ -1,25 +1,25 @@
-# 介面卡系統 API
+# 適配器系統 API
 
-本文檔詳細介紹 ErisPulse 介面卡系統的 API。
+本文檔詳細介紹了 ErisPulse 適配器系統的 API。
 
 ## Adapter 管理器
 
-### 取得介面卡
+### 獲取適配器
 
 ```python
 from ErisPulse import sdk
 
-# 透過名稱取得介面卡
+# 通過名稱獲取適配器
 adapter = sdk.adapter.get("platform_name")
 
-# 或者也可以直接透過屬性存取
+# 或者也可以直接通過屬性訪問
 adapter = sdk.adapter.platform_name
 ```
 
-### 使用介面卡事件監聽
-> 一般情況下，更建議使用`Event`模組進行事件的監聽/處理;
+### 使用適配器事件監聽
+> 一般情況下，更建議使用 `Event` 模塊進行事件的監聽/處理;
 >
-> 同時`Event`模組提供了強大的包裝器，可以為您的模組開發帶來更多便利
+> 同時 `Event` 模塊提供了強大的包裝器，可以為您的模塊開發帶來更多便利
 
 ```python
 # 監聽 OneBot12 標準事件
@@ -27,7 +27,7 @@ adapter = sdk.adapter.platform_name
 async def handle_message(event):
     pass
 
-# 監聽特定平台標準事件
+# 監聽特定平台的標準事件
 @sdk.adapter.on("message", platform="yunhu")
 async def handle_yunhu_message(event):
     pass
@@ -38,34 +38,34 @@ async def handle_raw_event(data):
     pass
 ```
 
-### 介面卡管理
+### 適配器管理
 
 ```python
-# 取得所有平台
+# 獲取所有平台
 platforms = sdk.adapter.platforms
 
-# 檢查介面卡是否存在
+# 檢查適配器是否存在
 exists = sdk.adapter.exists("platform_name")
 
-# 啟用/停用介面卡
+# 啟用/禁用適配器
 sdk.adapter.enable("platform_name")
 sdk.adapter.disable("platform_name")
 
-# 啟動/關閉介面卡
-# 以下方法都只展示了傳入參數的情況，無參數時代表啟動/停止全部已註冊介面卡
+# 啟動/關閉適配器
+# 以下方法都只展示了傳入參數的情況，無參數時代表啟動/停止全部已註冊適配器
 await sdk.adapter.startup(["platform1", "platform2"])
 await sdk.adapter.shutdown(["platform1", "platform2"])
 
-# 檢查介面卡是否正在執行
+# 檢查適配器是否正在運行
 is_running = sdk.adapter.is_running("platform_name")
 
-# 列出所有正在執行的介面卡
+# 列出所有正在運行的適配器
 running = sdk.adapter.list_running()
 ```
 
 ## 中間件
 
-中間件在事件分發到處理器之前執行，可以對事件資料進行修改、過濾或記錄。
+中間件在事件分發到處理程序之前執行，可以對事件資料進行修改、過濾或記錄。
 
 ### 註冊中間件
 
@@ -79,8 +79,8 @@ async def my_middleware(event):
 ### 中間件執行模型
 
 - **執行順序**：中間件按註冊順序執行（先註冊先執行）
-- **資料傳遞**：每個中間件接收上一個中間件傳回的 `event` 資料；如果某個中間件傳回 `None`，則忽略該傳回值並保留原資料繼續傳遞（同時輸出 `warning` 級別日誌）
-- **修改資料**：中間件可以修改事件資料並傳回修改後的字典
+- **資料傳遞**：每個中間件接收上一個中間件返回的 `event` 資料；如果某個中間件返回 `None`，則忽略該返回值並保留原資料繼續傳遞（同時輸出 `warning` 級別日誌）
+- **修改資料**：中間件可以修改事件資料並返回修改後的字典
 
 ```python
 @sdk.adapter.middleware
@@ -93,32 +93,32 @@ async def filter_spam(event):
     if event.get("detail_type") == "private":
         text = event.get("alt_message", "")
         if "垃圾廣告" in text:
-            return None   # 傳回 None 不會阻止事件傳播，僅忽略此傳回值
+            return None   # 返回 None 不會阻止事件傳播，僅忽略此返回值
     return event
 ```
 
-> **注意**：中間件目前不支援阻斷事件傳播。如需過濾特定事件，請在事件處理器中透過條件判斷實作。
-> 但您可以在Event模組中設定高優先級處理器然後在處理器內使用設定 `event.mark_processed()` 來阻斷低優先級事件處理器
+> **注意**：中間件目前不支援阻斷事件傳播。如需過濾特定事件，請在事件處理程序中透過條件判斷實現。  
+> 但您可以在Event模組中設定高優先級處理程序，然後在處理程序內使用設定 `event.mark_processed()` 來阻斷低優先級事件處理程序。
 
-## Send 訊息發送
+## Send 消息發送
 
 ### 基本發送
 
 ```python
-# 取得介面卡
+# 獲取適配器
 adapter = sdk.adapter.get("platform")
 
-# 發送文字訊息
+# 發送文字消息
 await adapter.Send.To("user", "123").Text("Hello")
 
-# 發送圖片訊息
+# 發送圖片消息
 await adapter.Send.To("group", "456").Image("https://example.com/image.jpg")
 ```
 
 ### 指定發送帳號
 
 ```python
-# 使用帳號名稱
+# 使用帳號名
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
 # 使用帳號 ID
@@ -132,7 +132,7 @@ await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
 methods = sdk.adapter.list_sends("onebot11")
 # 返回: ["Text", "Image", "Voice", "Markdown", ...]
 
-# 取得某個方法的詳細資訊
+# 獲取某個方法的詳細資訊
 info = sdk.adapter.send_info("onebot11", "Text")
 # 返回:
 # {
@@ -141,7 +141,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 #         {"name": "text", "type": "str", "default": null, "annotation": "str"}
 #     ],
 #     "return_type": "Awaitable[Any]",
-#     "docstring": "發送文字訊息..."
+#     "docstring": "發送文字消息..."
 # }
 ```
 
@@ -154,21 +154,21 @@ await adapter.Send.To("group", "456").At("789").Text("你好")
 # @全體成員
 await adapter.Send.To("group", "456").AtAll().Text("大家好")
 
-# 回覆訊息
+# 回覆消息
 await adapter.Send.To("group", "456").Reply("msg_id").Text("回覆內容")
 
 # 組合使用
-await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("回覆@的訊息")
+await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("回覆@的消息")
 ```
 
-## API 呼叫
+## API 調用
 
 ### call_api 方法
 
-> **注意**：`call_api` 是直接呼叫平台原生 API 的底層方法，各平台的參數和傳回值可能不同，請參考對應平台介面卡文件。**推薦使用 Send DSL 發送訊息**，僅在 Send DSL 不支援的場景（如取得平台特有的資料、呼叫平台管理介面等）中使用 `call_api`。
+> **注意**：`call_api` 是直接調用平台原生 API 的底層方法，各平台的參數和返回值可能不同，請參考對應平台適配器文件。**推薦使用 Send DSL 發送訊息**，僅在 Send DSL 不支援的場景（如取得平台特有的資料、呼叫平台管理介面等）中使用 `call_api`。
 
 ```python
-# 呼叫平台 API
+# 調用平台 API
 result = await adapter.call_api(
     endpoint="/send",
     content="Hello",
@@ -187,7 +187,7 @@ result = await adapter.call_api(
 }
 ```
 
-## 介面卡基類
+## 適配器基類
 
 ### BaseAdapter 方法
 
@@ -199,19 +199,19 @@ class MyAdapter(BaseAdapter):
     def __init__(self):
         super().__init__()
         self.sdk = sdk
-        # 初始化介面卡
+        # 初始化適配器
         pass
     
     async def start(self):
-        """啟動介面卡（必須實作）"""
+        """啟動適配器（必須實現）"""
         pass
     
     async def shutdown(self):
-        """關閉介面卡（必須實作）"""
+        """關閉適配器（必須實現）"""
         pass
     
     async def call_api(self, endpoint: str, **params):
-        """呼叫平台 API（必須實作）"""
+        """呼叫平台 API（必須實現）"""
         pass
 ```
 
@@ -235,29 +235,29 @@ class MyAdapter(BaseAdapter):
 
 ## Bot 狀態管理
 
-介面卡透過發送 OneBot12 標準的 **`meta` 事件**來告知框架 Bot 的連線狀態。系統自動從中提取 Bot 資訊進行狀態追蹤。
+適配器透過發送 OneBot12 標準的 **`meta` 事件** 來告知框架 Bot 的連線狀態。系統會自動從中提取 Bot 信息進行狀態追蹤。
 
 ### meta 事件類型
 
-介面卡應發送以下三種 `meta` 事件：
+適配器應發送以下三種 `meta` 事件：
 
 | `type` | `detail_type` | 說明 | 觸發時機 |
 |--------|--------------|------|---------|
-| `meta` | `connect` | Bot 連線上線 | 介面卡與平台建立連線成功後 |
+| `meta` | `connect` | Bot 連線上線 | 適配器與平台建立連線成功後 |
 | `meta` | `heartbeat` | Bot 心跳 | 定期發送（建議 30-60 秒） |
 | `meta` | `disconnect` | Bot 斷開連線 | 檢測到連線斷開時 |
 
-### self 欄位擴展
+### self 字段擴展
 
-ErisPulse 在 OneBot12 標準的 `self` 欄位上擴展了以下選用欄位：
+ErisPulse 在 OneBot12 標準的 `self` 字段上擴展了以下可選字段：
 
-| 欄位 | 類型 | 說明 |
+| 字段 | 類型 | 說明 |
 |------|------|------|
 | `self.platform` | string | 平台名稱（OB12 標準） |
 | `self.user_id` | string | Bot 用戶 ID（OB12 標準） |
-| `self.user_name` | string | Bot 暱稱（ErisPulse 擴展） |
+| `self.user_name` | string | Bot 昵稱（ErisPulse 擴展） |
 | `self.avatar` | string | Bot 頭像 URL（ErisPulse 擴展） |
-| `self.account_id` | string | 多帳號識別（ErisPulse 擴展） |
+| `self.account_id` | string | 多帳號標識（ErisPulse 擴展） |
 
 ### meta 事件格式
 
@@ -299,7 +299,7 @@ await adapter.emit({
 })
 ```
 
-系統處理：更新 `last_active` 時間（心跳中也支援更新元資訊）。
+系統處理：更新 `last_active` 時間（心跳中也支援更新元信息）。
 
 #### disconnect — 斷開連線
 
@@ -319,11 +319,11 @@ await adapter.emit({
 
 系統處理：標記 Bot 為 `offline`，觸發 `adapter.bot.offline` 生命週期事件。
 
-### 一般事件的自動發現
+### 普通事件的自動發現
 
-除了 `meta` 事件外，一般事件（`message`/`notice`/`request`）中的 `self` 欄位也會自動發現並註冊 Bot、更新活躍時間。這意味著即使介面卡不發送 `connect` 事件，框架也能從第一條一般事件中發現 Bot。
+除了 `meta` 事件外，普通事件（`message`/`notice`/`request`）中的 `self` 字段也會自動發現並註冊 Bot、更新活躍時間。這意味著即使適配器不發送 `connect` 事件，框架也能從第一條普通事件中發現 Bot。
 
-### 介面卡接入範例
+### 適配器接入示例
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -366,7 +366,7 @@ class MyAdapter(BaseAdapter):
 ### 查詢 Bot 狀態
 
 ```python
-# 取得所有介面卡與 Bot 的完整狀態（WebUI 友好）
+# 獲取所有適配器與 Bot 的完整狀態（WebUI 友好）
 summary = sdk.adapter.get_status_summary()
 # {
 #     "adapters": {
@@ -389,7 +389,7 @@ all_bots = sdk.adapter.list_bots()
 # 列出指定平台的 Bot
 tg_bots = sdk.adapter.list_bots("telegram")
 
-# 取得單個 Bot 詳情
+# 獲取單個 Bot 詳情
 info = sdk.adapter.get_bot_info("telegram", "123456")
 
 # 檢查 Bot 是否在線
@@ -401,16 +401,16 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 
 | 狀態 | 說明 |
 |------|------|
-| `online` | 在線（持續收到事件或介面卡主動標記） |
-| `offline` | 離線（介面卡主動標記或系統關閉時自動設定） |
+| `online` | 在線（持續收到事件或適配器主動標記） |
+| `offline` | 離線（適配器主動標記或系統關閉時自動設置） |
 | `unknown` | 未知（僅註冊但未確認狀態） |
 
 ### 生命週期事件
 
-| 事件名 | 觸發時機 | 資料 |
+| 事件名 | 觸發時機 | 數據 |
 |--------|---------|------|
 | `adapter.bot.online` | 首次自動發現新 Bot | `{platform, bot_id, status}` |
-| `adapter.status.change` | 介面卡狀態變化（starting/started/stopping/stopped/stop_failed） | `{platform, status}` |
+| `adapter.status.change` | 適配器狀態變化（starting/started/stopping/stopped/stop_failed） | `{platform, status}` |
 
 ```python
 # 監聽 Bot 上線事件
@@ -418,16 +418,16 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 def on_bot_online(event):
     print(f"Bot 上線: {event['data']['platform']}/{event['data']['bot_id']}")
 
-# 監聽介面卡狀態變化
+# 監聽適配器狀態變化
 @sdk.lifecycle.on("adapter.status.change")
 def on_status_change(event):
-    print(f"介面卡狀態: {event['data']['platform']} -> {event['data']['status']}")
+    print(f"適配器狀態: {event['data']['platform']} -> {event['data']['status']}")
 ```
 
 > 系統關閉時（`shutdown`），所有 Bot 會自動被標記為 `offline`。
 
 ## 相關文件
 
-- [核心模組 API](docs/zh-TW/core-modules.md) - 核心模組 API
-- [事件系統 API](docs/zh-TW/event-system.md) - Event 模組 API
-- [介面卡開發指南](../developer-guide/adapters/) - 開發平台介面卡
+- [核心模組 API](core-modules.md) - 核心模組 API
+- [事件系統 API](event-system.md) - Event 模組 API
+- [適配器開發指南](../developer-guide/adapters/) - 開發平台適配器

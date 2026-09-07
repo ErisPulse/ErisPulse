@@ -184,6 +184,16 @@ jobs:
             echo "::warning::仍有 ${FINAL_REMAINING} 个翻译任务因时间预算耗尽未完成，下次文档更新触发时将自动续译"
           fi
 
+      # ==================== 翻译质量防线 ====================
+      # 提交前确定性检查（提示词泄露/围栏损坏/截断/乱码）：
+      # --fix 会删除问题文件的翻译缓存，下次文档更新触发时自动重译自愈；
+      # 检出问题不阻塞工作流（正常文件照常提交），但留下错误标记供人工跟进
+      - name: Check translation quality (pre-commit gate)
+        id: check-translation
+        continue-on-error: true
+        run: |
+          python scripts/tools/check-translation.py --fix
+
       - name: Configure Git identity for translation commit
         if: steps.translate-docs.outputs.docs_updated == 'true'
         env:

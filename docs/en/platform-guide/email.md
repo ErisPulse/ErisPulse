@@ -1,22 +1,22 @@
 # Email Platform Feature Documentation
 
-EmailAdapter is a mail adapter based on the SMTP/IMAP protocols, supporting sending, receiving, and processing of emails.
+EmailAdapter is a mail adapter based on the SMTP/IMAP protocols, supporting mail sending, receiving, and processing.
 
 ---
 
-## Document Information
+## Documentation Information
 
 - Corresponding Module Version: 4.1.0
 - Maintainer: ErisPulse
 
 ## Basic Information
 
-- Platform Overview: A general-purpose adapter for sending and receiving emails using standard SMTP/IMAP protocols
+- Platform Overview: A universal adapter for sending and receiving emails via standard SMTP/IMAP protocols
 - Adapter Name: EmailAdapter
 - Multi-account Support: Supports configuring multiple email accounts simultaneously
 - Connection Method: IMAP long-polling for receiving + SMTP for sending
 - Authentication Method: Email address + password/authorization code
-- OneBot12 Compatibility: Supports sending OneBot12 format messages
+- OneBot12 Compatibility: Supports sending OneBot12 formatted messages
 
 ## Configuration Guide
 
@@ -31,7 +31,7 @@ EmailAdapter is a mail adapter based on the SMTP/IMAP protocols, supporting send
 | `ssl` | bool | `true` | Whether to enable SSL by default |
 | `timeout` | int | `30` | Default connection timeout (seconds) |
 | `poll_interval` | int | `60` | IMAP polling interval (seconds) |
-| `max_retries` | int | `3` | Maximum number of retries on connection failure |
+| `max_retries` | int | `3` | Maximum number of retry attempts on connection failure |
 
 ### Account Configuration (EmailAdapter.accounts)
 
@@ -57,7 +57,7 @@ enabled = true
 
 ## Supported Message Sending Types
 
-All sending methods are implemented using a fluent interface:
+All sending methods are implemented through a fluent (chained) syntax:
 
 ```python
 from ErisPulse.Core import adapter
@@ -73,17 +73,17 @@ await mail.Send.To("private", "to@example.com") \
     .Attachment("report.pdf") \
     .Html("<h1>HTML Content</h1>")
 
-# Using Raw_ob12 to send standard OB12 messages
+# Use Raw_ob12 to send standard OB12 messages
 await mail.Send.To("private", "to@example.com").Raw_ob12([
     {"type": "text", "data": {"text": "Email body"}},
     {"type": "file", "data": {"file": "/path/to/attachment.pdf"}},
 ])
 
-# Specify sending account (multi-account)
+# Specify sending account (for multiple accounts)
 await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
 ```
 
-> Note: When using the fluent interface, parameter methods (Subject / Cc / Attachment, etc.) must be called before the sending method (Text / Html / Raw_ob12).
+> Note: When using fluent syntax, parameter methods (Subject / Cc / Attachment, etc.) must be called before the sending method (Text / Html / Raw_ob12).
 
 ### Basic Sending Methods
 
@@ -118,13 +118,13 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
 
 ### Core Differences
 
-1. All email events are of `message` type, with `detail_type` fixed as `private`
-2. `user_id` is the sender's **raw email address**, `user_nickname` is the sender's display name
-3. `message` message segments are standard OB12 format (text segment + file segment)
-4. Email subject is obtained via the `email_subject` extension field
-5. Complete raw data is preserved in the `email_raw` field
+1. All email events are of `message` type, with `detail_type` fixed as `private`.
+2. `user_id` is the sender's **pure email address**, and `user_nickname` is the sender's display name.
+3. The `message` message segment is in standard OB12 format (text segment + file segment).
+4. The email subject is obtained via the `email_subject` extension field.
+5. The complete raw data is preserved in the `email_raw` field.
 
-### New Email Event (email_new)
+### New Email Event (`email_new`)
 
 ```json
 {
@@ -151,7 +151,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
 }
 ```
 
-### Email with Attachments
+### Email with Attachment
 
 ```json
 {
@@ -174,9 +174,9 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
 }
 ```
 
-### Reply Email Event (email_reply)
+### Reply Email Event (`email_reply`)
 
-When the email contains `References` or `In-Reply-To` headers, `email_raw_type` is `email_reply`:
+When an email contains the `References` or `In-Reply-To` header, `email_raw_type` is set to `email_reply`:
 
 ```json
 {
@@ -188,15 +188,15 @@ When the email contains `References` or `In-Reply-To` headers, `email_raw_type` 
 }
 ```
 
-## Extension Field Descriptions
+## Field Descriptions
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `email_raw` | dict | Complete raw email data (subject/from/to/date/cc/bcc/text_content/html_content/attachments, etc.) |
-| `email_raw_type` | str | Raw event type: `email_new` (new email) or `email_reply` (reply email) |
+| `email_raw_type` | str | Raw event type: `email_new` (new email) or `email_reply` (replied email) |
 | `email_subject` | str | Email subject (convenient access) |
 | `email_from` | str | Sender's raw email address (convenient access) |
-| `attachments` | list | List of attachment data (includes binary `data` field, backward compatible) |
+| `attachments` | list | List of attachment data (includes binary `data` field for backward compatibility) |
 
 ## Standard Event Examples
 
@@ -260,7 +260,7 @@ When the email contains `References` or `In-Reply-To` headers, `email_raw_type` 
 }
 ```
 
-## Sending Method Return Values
+## Return Value of Send Method
 
 ```json
 {
@@ -288,7 +288,7 @@ from ErisPulse.Core.Event import message
 async def handle_email(event):
     if event.get("platform") != "email":
         return
-    # Raw sender email address
+    # Sender's pure email address
     sender = event["user_id"]              # sender@example.com
     
     # Sender's display name
@@ -300,7 +300,7 @@ async def handle_email(event):
     # Plain text body (first text segment)
     text = event.get_text()
     
-    # Complete raw data
+    # Full raw data
     raw = event.get("email_raw", {})
     html = raw.get("html_content", "")
     

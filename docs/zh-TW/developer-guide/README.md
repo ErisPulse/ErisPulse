@@ -1,15 +1,15 @@
 # 開發者指南
 
-本指南幫助你開發自訂模組和適配器，以擴展 ErisPulse 的功能。
+本指南協助您開發自訂模組和適配器，以擴充 ErisPulse 的功能。
 
 ## 內容列表
 
-### 模組開發
+### 模塊開發
 
-1. [模組開發入門](modules/getting-started.md) - 創建第一個模組
-2. [模組核心概念](modules/core-concepts.md) - 模組的核心概念和架構
+1. [模塊開發入門](modules/getting-started.md) - 創建第一個模塊
+2. [模塊核心概念](modules/core-concepts.md) - 模塊的核心概念和架構
 3. [Event 包裝類詳解](modules/event-wrapper.md) - Event 對象的完整說明
-4. [模組最佳實踐](modules/best-practices.md) - 開發高品質模組的建議
+4. [模塊最佳實踐](modules/best-practices.md) - 開發高品質模塊的建議
 
 ### 適配器開發
 
@@ -21,7 +21,7 @@
 
 ### 發布指南
 
-- [發布與模組商店指南](publishing.md) - 將你的作品發布到 PyPI 和 ErisPulse 模組商店
+- [發布與模塊商店指南](publishing.md) - 將你的作品發布到 PyPI 和 ErisPulse 模塊商店
 
 ## 開發準備
 
@@ -45,16 +45,16 @@
 
 ## 開發工具
 
-### 項目範本
+### 項目模板
 
-ErisPulse 提供了範例項目作為參考：
+ErisPulse 提供了示例項目作為參考：
 
-- [模組範例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模組的完整項目結構
-- [適配器範例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 適配器的完整項目結構
+- [模組示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - 模組的完整項目結構
+- [適配器示例](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - 適配器的完整項目結構
 
 ### 開發模式
 
-使用熱重載模式進行開發，程式碼修改後自動重載：
+使用熱重載模式進行開發，程式碼修改後自動重新載入：
 
 ```bash
 epsdk run main.py --reload
@@ -78,4 +78,4 @@ level = "DEBUG"
 ## 相關文件
 
 - [標準規範](../standards/) - 確保相容性的技術標準
-- [平台特性指南](../platform-guide/) - 了解各平台適配器的特性
+- [平台特性指南](../platform-guide/) - 瞭解各平台適配器的特性

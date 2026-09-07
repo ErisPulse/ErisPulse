@@ -1,5 +1,45 @@
 {
+  "version": 2,
   "hash": "874e1f65883386ce14ae0c142b98917d",
-  "translated_at": "2026-06-16T13:28:55.620729",
-  "target_lang": "zh-TW"
+  "file_hash": "874e1f65883386ce14ae0c142b98917d",
+  "translated_at": "2026-09-07T11:49:07.393100",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "88eba211c1ace553dab49fa3c3bef169",
+      "translation": "# 平台特性說明 — Webhook 通用橋接適配器\n\n本文檔詳細說明 Webhook 適配器的雙向橋接協定、欄位映射與實作特性。"
+    },
+    {
+      "hash": "33de1244b699a8b51189d5c42369b97e",
+      "translation": "## 總覽\n\nWebhook 适配器是一個**協議級橋接器**，不綁定任何特定平台。它通過 HTTP 收發消息，使任何能發起 HTTP 請求的系統都能接入 ErisPulse。\n\n```\n入站方向                                出站方向\n────────                                ────────\n外部系統                                ErisPulse 模組\n   │                                       │\n   │ POST JSON                             │ Send.Text(...)\n   ▼                                       ▼\n┌──────────────────────────────────────────────────┐\n│              WebhookAdapter                       │\n│  ┌──────────────────┐   ┌──────────────────┐    │\n│  │ 入站路由          │   │ 出站轉發          │    │\n│  │ GET  (健康檢查)   │   │ client.post()    │    │\n│  │ POST (接收事件)   │   │ → outgoing_url   │    │\n│  └────────┬─────────┘   └────────▲─────────┘    │\n│           │                      │               │\n│           ▼                      │               │\n│  ┌──────────────────┐   ┌──────────────────┐    │\n│  │ WebhookConverter │   │ Send 類          │    │\n│  │ JSON → OneBot12  │   │ 消息段 → JSON    │    │\n│  └────────┬─────────┘   └────────▲─────────┘    │\n└───────────┼──────────────────────┼───────────────┘\n            ▼                      │\n     adapter.emit(event)    call_api(\"send_message\")\n            │                      │\n            ▼                      │\n       ErisPulse 事件系統 ◄────────┘\n```"
+    },
+    {
+      "hash": "1bb1d36e724d49499e6fe9d59f890d14",
+      "translation": "## 多帳戶模型\n\n每個帳戶是一個獨立的橋接設定，彼此互不干擾：\n\n| 帳戶 | bot_id | callback_path | outgoing_url | secret |\n|------|--------|---------------|--------------|--------|\n| `default` | `webhook_bot` | `/webhook/default` | `https://a.com/recv` | `key1` |\n| `discord` | `discord_bot` | `/webhook/discord` | `https://b.com/send` | `key2` |\n\n每個帳戶啟動時會獨立註冊路由、獨立 emit connect。"
+    },
+    {
+      "hash": "3bb37e62260a3e56522251cef368e745",
+      "translation": "## 入站協議\n\n### 1. 健康檢查（GET）\n\n- **路徑**：`{callback_path}`\n- **方法**：`GET`\n- **鑑權**：無\n- **回應**：\n\n```json\n{\"status\": \"ok\", \"account\": \"default\"}\n```\n\n### 2. 接收事件（POST）\n\n- **路徑**：`{callback_path}`\n- **方法**：`POST`\n- **Content-Type**：`application/json`\n- **鑑權**（配置 secret 時）：Header `X-Webhook-Secret` 或 Query `?secret=`\n\n#### 請求 Body\n\n```json\n{\n  \"user_id\": \"u123\",\n  \"user_nickname\": \"使用者名稱\",\n  \"group_id\": \"群組ID（僅群組會話）\",\n  \"detail_type\": \"private\",\n  \"message\": [\n    {\"type\": \"text\", \"data\": {\"text\": \"訊息內容\"}}\n  ],\n  \"raw\": {}\n}\n```\n\n| 字段 | 必填 | 說明 |\n|------|------|------|\n| `user_id` | 是 | 發送者 ID |\n| `user_nickname` | 否 | 發送者暱稱 |\n| `group_id` | 否 | 群組/頻道 ID（群組會話時提供） |\n| `detail_type` | 否 | 會話類型（`private`/`group`），預設使用帳戶預設值 |\n| `message` | 是 | OneBot12 訊息段陣列 |\n| `raw` | 否 | 原始資料，原樣存入 `webhook_raw` |\n\n#### 回應\n\n```json\n{\"status\": \"ok\"}\n```\n\n錯誤回應帶有 HTTP 狀態碼：\n\n| 狀態碼 | 含義 |\n|--------|------|\n| 400 | 無效 JSON / body 非物件 |\n| 401 | 鑑權失敗 |\n| 404 | 未知帳戶 |\n| 500 | 事件分發失敗 |\n\n### 3. 字段映射（入站 JSON → OneBot12 事件）\n\n| 入站 JSON | OneBot12 事件字段 | 說明 |\n|-----------|-------------------|------|\n| — | `id` | 自動產生 |\n| — | `time` | 當前 Unix 時間戳（秒） |\n| — | `type` | 固定 `message` |\n| `detail_type` | `detail_type` | 預設使用帳戶預設值 |\n| — | `platform` | 固定 `webhook` |\n| — | `self.platform` | 固定 `webhook` |\n| — | `self.user_id` | 帳戶 `bot_id` |\n| `user_id` | `user_id` | 透傳 |\n| `user_nickname` | `user_nickname` | 透傳（可選） |\n| `group_id` | `group_id` | 透傳（可選） |\n| `message` | `message` | 透傳 |\n| 完整 body | `webhook_raw` | 原始請求 |\n| 帳戶名 | `webhook_account` | 產生事件的帳戶名 |\n| `type` 或 `message` | `webhook_raw_type` | 原始事件類型 |"
+    },
+    {
+      "hash": "6e047ff19680dba66c0fb2c529712e2f",
+      "translation": "## 出站協議\n\n### 1. 發送訊息\n\n當模組呼叫 `Send.To(...).Text(...)` 等方法時，適配器會向 `outgoing_url` 發起 POST：\n\n- **方法**：`POST`\n- **Content-Type**：`application/json`\n- **鑑權 Header**（配置 secret 時）：`X-Webhook-Secret: {secret}`\n\n#### 請求 Body\n\n```json\n{\n  \"target_type\": \"private\",\n  \"target_id\": \"target_user_id\",\n  \"account\": \"default\",\n  \"message\": [\n    {\"type\": \"text\", \"data\": {\"text\": \"訊息內容\"}}\n  ],\n  \"timestamp\": 1700000000\n}\n```\n\n| 字段 | 說明 |\n|------|------|\n| `target_type` | 目標類型（來自 `Send.To(type, id)`），預設使用帳戶預設值 |\n| `target_id` | 目標 ID（來自 `Send.To`） |\n| `account` | 發送帳戶名 |\n| `message` | OneBot12 訊息段陣列 |\n| `timestamp` | 發送時間戳（秒） |\n\n### 2. 回應標準化\n\n適配器將出站目標回應的內容標準化為 ErisPulse 標準回應格式：\n\n```json\n{\n  \"status\": \"ok\",\n  \"retcode\": 0,\n  \"data\": {\"message_id\": \"...\", ...},\n  \"message_id\": \"...\",\n  \"message\": \"\",\n  \"webhook_raw\": {}\n}\n```\n\n從目標回應 JSON 的 `message_id` 欄位提取訊息 ID。若目標未回傳 `message_id`，則為空字串。\n\n請求失敗時回傳錯誤回應（`status: \"failed\"`, `retcode: 33001`）。"
+    },
+    {
+      "hash": "3447562c8fca8e44eeb58433c3bc4ffd",
+      "translation": "## Send 方法\n\n| 方法 | 說明 |\n|------|------|\n| `Text(text)` | 發送文本，封裝為 `[{\"type\":\"text\",\"data\":{\"text\":text}}]` |\n| `Image(file)` | 發送圖片，封裝為 `[{\"type\":\"image\",\"data\":{\"file\":file}}]` |\n| `Raw_ob12(message)` | 發送 OneBot12 原始訊息段 |\n| `Json(data)` | 原始 JSON 透傳，封裝為 `[{\"type\":\"json\",\"data\":{\"raw\":data}}]` |\n\n`At` / `AtAll` / `Reply` 修飾器由框架基類提供，透過 `_apply_modifiers` 合併到訊息段。"
+    },
+    {
+      "hash": "1ed81c613ce4227bcedbc9f4fe3e741f",
+      "translation": "## 事件擴展方法（WebhookEventMixin）\n\n| 方法 | 說明 |\n|------|------|\n| `get_raw_data()` | 取得原始請求 body（`webhook_raw`） |\n| `get_detail_type()` | 取得會話類型 |\n| `get_webhook_account()` | 取得產生該事件的帳號名稱 |"
+    },
+    {
+      "hash": "3c6ba24ebe16734d6d0e119e5c146c73",
+      "translation": "## 特性矩陣\n\n| 特性 | 支持情況 |\n|------|----------|\n| 多帳戶 | ✅ 每個帳戶獨立橋接 |\n| 入站鑑權 | ✅ Header / Query 雙模式 |\n| 健康檢查 | ✅ GET 返回狀態 |\n| 出站鑑權 | ✅ Header 攜帶 secret |\n| OneBot12 標準事件 | ✅ 完整標準欄位 |\n| Meta 事件 | ✅ connect / disconnect |\n| 路由發現 | ✅ 註冊到 `webhook` 命名空間 |\n| WebSocket | ❌ 僅 HTTP |\n| 媒體上傳 | ❌ 透過 URL 透傳，不代傳二進制 |"
+    },
+    {
+      "hash": "2fd66c9865f668ae7d2308b5658890d7",
+      "translation": "## 注意事項\n\n1. **單向出站**：若 `outgoing_url` 留空，該帳戶僅作入站接收，發送操作會返回錯誤\n2. **密鑰安全**：`secret` 在配置中以密文儲存（metadata secret），傳輸建議使用 HTTPS\n3. **路徑唯一**：多個帳戶的 `callback_path` 必須互不相同，避免路由衝突\n4. **冪等性**：適配器不保證入站事件去重，外部系統應自行處理重試\n5. **超時**：出站請求使用 ErisPulse 內建 `client`，繼承全域超時設定"
+    }
+  ]
 }

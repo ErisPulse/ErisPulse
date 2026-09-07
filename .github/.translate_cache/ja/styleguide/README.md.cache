@@ -1,5 +1,33 @@
 {
+  "version": 2,
   "hash": "de8b493022d6c7deb7f51a01c1ea33b7",
-  "translated_at": "2026-06-04T05:54:11.390052",
-  "target_lang": "ja"
+  "file_hash": "de8b493022d6c7deb7f51a01c1ea33b7",
+  "translated_at": "2026-09-07T12:19:58.206778",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "a9c969d423bd4bf23a986c4115f1e17f",
+      "translation": "# スタイルガイド\n\nこのディレクトリには、ErisPulse プロジェクトのコードおよびドキュメントのスタイル規約が含まれています。"
+    },
+    {
+      "hash": "6774ad62931ef9fcedef2253d670031f",
+      "translation": "## ドキュメントリスト\n\n- [注釈スタイル規格](docstring.md) - メソッドの注釈とドキュメント文字列のフォーマット規格"
+    },
+    {
+      "hash": "5e96064bfe736def571882ab2221b786",
+      "translation": "## 対象読者\n\nこのドキュメントは以下の開発者向けです：\n\n- ErisPulse コア貢献者\n- モジュールおよびアダプター開発者\n- API ドキュメントの生成を必要とする開発者"
+    },
+    {
+      "hash": "d22a1241f0f7871b3c00c197b08801df",
+      "translation": "## 目的\n\nスタイルガイドの目的は以下の通りです：\n\n- コードのコメントの一貫性を確保する\n- 自動 API ドキュメント生成をサポートする\n- コードの可読性と保守性を向上させる"
+    },
+    {
+      "hash": "7d20269d5fa16cabaefcddd10e4cc0e5",
+      "translation": "## 規範に従うメリット\n\n- 統一されたコードスタイル\n- 完備した API ドキュメント\n- より良いチーム協力\n- 自動ドキュメント生成のサポート"
+    },
+    {
+      "hash": "400b11aacd455871332cf4d7d312162c",
+      "translation": "## 関連ドキュメント\n\n- [開発者ガイド](../developer-guide/) - カスタムモジュールおよびアダプタの開発\n- [技術標準](../standards/) - フレームワークの技術仕様"
+    }
+  ]
 }

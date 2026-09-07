@@ -1,12 +1,12 @@
-# ファーストステップ
+# すぐに始める
 
-> **これが最初の一歩です。** 5分でErisPulseロボットをゼロから立ち上げましょう。
+> **これはあなたの最初の一歩です。** 5 分でゼロから ErisPulse ロボットを立ち上げましょう。
 
 ## ErisPulse のインストール
 
-### 1 クリックインストールスクリプト（推奨）
+### 1 本レールインストールスクリプト（推奨）
 
-インストールスクリプトは、環境（Docker、Python、uv）を自動的に検出し、最も適したインストール方法を選択するように導きます。
+インストールスクリプトは、Docker、Python、uv などの環境を自動的に検出し、最適なインストール方法を選択するよう誘導します。
 
 Windows (PowerShell):
 ```powershell
@@ -18,10 +18,10 @@ macOS / Linux:
 curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
 ```
 
-スクリプトは、以下の手順をガイドします：
+スクリプトは、以下の手順を誘導します：
 
-- **Docker インストール**（Docker が検出された場合に推奨）：イメージソース（Docker Hub / GHCR）、バージョンチャネル（安定版 / プリリリース版）、Dashboard 管理パネルの構成、ポート設定を選択
-- **従来のインストール**：自動的に仮想環境を作成、ErisPulse のバージョンを選択、オプションで Dashboard 管理パネルモジュールをインストール
+- **Docker インストール**（Docker が検出された場合に推奨）：イメージソース（Docker Hub / GHCR）、バージョンチャネル（安定版 / プレビュー版）、Dashboard 管理パネルの設定、ポートの設定を選択
+- **従来のインストール**：仮想環境の自動作成、ErisPulse のバージョン選択、オプションで Dashboard 管理パネルモジュールのインストール
 
 ### Docker を使用する
 
@@ -38,7 +38,7 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 <details>
 <summary>Docker Hub が利用できない場合</summary>
 
-GitHub Container Registry のイメージを使用する場合は、`docker-compose.yml` 内の image を次のように変更します：
+GitHub Container Registry のイメージを使用するには、`docker-compose.yml` の image を次のように変更します：
 
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
@@ -48,9 +48,9 @@ image: ghcr.io/erispulse/erispulse:latest
 
 起動後、`http://<host>:8000/Dashboard` にアクセスし、設定したトークンでログインします。
 
-### pip を使用してインストール
+### pip を使用したインストール
 
-Python のバージョンが 3.10 以上であることを確認した上で、pip を使用してインストールします：
+Python のバージョンが 3.10 以上であることを確認し、pip を使用してインストールします：
 
 ```bash
 pip install ErisPulse
@@ -66,17 +66,17 @@ pip install ErisPulse
 epsdk init
 ```
 
-これにより、対話形式のガイドが起動し、以下の手順を誘導します：
+これにより、インタラクティブなガイドが起動し、以下の手順をガイドします：
 - プロジェクト名の設定
 - ログレベルの設定
 - サーバー設定（ホストとポート）
 - アダプターの選択と設定
 - プロジェクト構造の作成
 
-### 速やかな初期化
+### ファスト初期化
 
 ```bash
-# プロジェクト名を指定するクイックモード
+# プロジェクト名を指定する高速モード
 epsdk init -q -n my_bot
 
 # または、プロジェクト名のみを指定
@@ -100,7 +100,7 @@ epsdk init
 epsdk install Yunhu AIChat
 ```
 
-### 利用可能なモジュールの表示
+### 利用可能なモジュールの確認
 
 ```bash
 epsdk list-remote
@@ -108,7 +108,7 @@ epsdk list-remote
 
 ### インタラクティブなインストール
 
-パッケージ名を指定しない場合、インタラクティブなインストール画面が表示されます：
+パッケージ名を指定しない場合、インタラクティブなインストール画面に移行します。
 
 ```bash
 epsdk install
@@ -127,20 +127,20 @@ epsdk run main.py --reload
 ## IDE補完の有効化（オプション）
 
 ErisPulse はモジュール/アダプターを動的に発見するため、IDE はデフォルトではプラットフォーム固有のメソッドを補完できません。  
-以下のコマンドを実行して型のスタブを生成してください。
+以下のコマンドを実行して型のスタブを生成してください：
 
 ```bash
 epsdk types
 ```
 
-生成後、インポートした型を変数の型アノテーションとして使用することで、正確な補完が得られます（詳しくは [IDE補完ガイド](./getting-started/ide-completion.md) を参照してください）：
+生成後、インポートした型を変数の型ヒントとして使用することで、正確な補完が得られます（詳細は [IDE補完ガイド](./getting-started/ide-completion.md) を参照してください）：
 
 ```python
 from _ep_types import Yunhu
 from ErisPulse import sdk
 
 adapter: Yunhu = sdk.adapter.get("yunhu")
-await adapter.Send.To("group", "123").Board(...)  # プラットフォーム固有のメソッドが補完されます
+await adapter.Send.To("group", "123").Board(...)  # プラットフォーム固有のメソッドの補完
 ```
 
 ## プロジェクト構造
@@ -151,7 +151,7 @@ await adapter.Send.To("group", "123").Board(...)  # プラットフォーム固�
 my_bot/
 ├── config/
 │   └── config.toml          # 設定ファイル
-└── main.py                  # エントリーポイントファイル
+└── main.py                  # エントリーファイル
 
 ```
 
@@ -168,24 +168,24 @@ port = 8000
 level = "INFO"
 
 [Yunhu_Adapter]
-# アダプタの設定
+# アダプターの設定
 ```
 
-## 次に進む
+## 次のステップ
 
-ロボットが動作した後、必要に応じて以下を進めることができます。
+ロボットが起動した後、必要に応じて以下を進めてください。
 
-**フレームワークの仕組みについて知りたい場合:**
-- [基本概念](getting-started/basic-concepts.md) — アダプタ / モジュール / イベントの設計
+**フレームワークの仕組みを知りたい?**
+- [基本概念](getting-started/basic-concepts.md) — アダプター / モジュール / イベントの設計
 - [アーキテクチャ概要](architecture.md) — 可視化されたアーキテクチャ図
 
-**より多くの機能を実装したい場合:**
+**もっと多くの機能を実装したい?**
 - [一般的なタスクの例](getting-started/common-tasks.md) — ストレージ、スケジューリング、権限制御
 - [イベント処理の入門](getting-started/event-handling.md) — メッセージ、通知、リクエストの処理
 
-**独自のモジュール / アダプタを開発したい場合:**
+**独自のモジュール / アダプターを開発したい?**
 - [モジュール開発の入門](developer-guide/modules/getting-started.md)
-- [アダプタ開発の入門](developer-guide/adapters/getting-started.md)
+- [アダプター開発の入門](developer-guide/adapters/getting-started.md)
 
 **必要に応じて参照:**
 - [設定ファイルの説明](user-guide/configuration.md) · [CLI コマンド](user-guide/cli-reference.md) · [デプロイガイド](user-guide/deployment.md)

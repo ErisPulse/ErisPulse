@@ -4,7 +4,7 @@
 
 ## Storage 模組
 
-基於 SQLite 的鍵值儲存系統，支援通用 SQL 串接查詢。
+基於 SQLite 的鍵值儲存系統，支援通用 SQL 鏈式查詢。
 
 ### 基本操作
 
@@ -40,9 +40,9 @@ sdk.storage.my_key          # 等同於 sdk.storage.get("my_key")
 sdk.storage.my_key = "val"  # 等同於 sdk.storage.set("my_key", "val")
 ```
 
-### SQL 串接查詢
+### SQL 鏈式查詢
 
-Storage 模組提供串接呼叫風格的通用 SQL 查詢建構器，支援自訂表格的 CRUD 操作。
+Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂表的 CRUD 操作。
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -54,7 +54,7 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> 完整的串接查詢 API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、事務等）請參考 [SQL 查詢建構器](../advanced/sql-builder.md)。
+> 完整的鏈式查詢 API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、事務等）請參考 [SQL 查詢建構器](../advanced/sql-builder.md)。
 
 ### 儲存後端抽象
 
@@ -90,18 +90,18 @@ await sdk.config.areload()
 
 ## Config 模組
 
-以 TOML 格式管理配置文件，支援點號分隔的鍵路徑。
+以 TOML 格式管理設定檔，支援以點號分隔的鍵路徑。
 
 ### API 概覽
 
 | 方法 | 說明 |
 |------|------|
-| `getConfig(key, default)` | 讀取配置，支援點號路徑如 `"MyModule.subkey"` |
-| `setConfig(key, value, immediate=False)` | 寫入配置。`immediate=True` 時立即儲存到檔案 |
-| `force_save()` | 強制將記憶體中的配置寫入檔案 |
-| `reload()` | 從檔案重新載入配置 |
-| `agetConfig(key, default)` | 異步讀取配置 |
-| `asetConfig(key, value, immediate)` | 異步寫入配置 |
+| `getConfig(key, default)` | 讀取設定，支援點號路徑如 `"MyModule.subkey"` |
+| `setConfig(key, value, immediate=False)` | 寫入設定。`immediate=True` 時立即儲存到檔案 |
+| `force_save()` | 強制將記憶體中的設定寫入檔案 |
+| `reload()` | 從檔案重新載入設定 |
+| `agetConfig(key, default)` | 異步讀取設定 |
+| `asetConfig(key, value, immediate)` | 異步寫入設定 |
 | `aforce_save()` | 異步強制儲存 |
 | `areload()` | 異步重新載入 |
 
@@ -115,9 +115,9 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` 預設採用延遲寫入（每 5 秒批量儲存），設定 `immediate=True` 可立即持久化到配置檔案。配置變更會觸發 `config.set` 生命週期事件。
+> `setConfig` 預設採用延遲寫入（每 5 秒批量儲存），設定 `immediate=True` 可立即持久化到設定檔。設定變更會觸發 `config.set` 生命週期事件。
 
-## Logger 模組
+## Logger 模塊
 
 模組化日誌系統，基於 Rich 輸出，支援子日誌器和模組層級控制。
 
@@ -125,7 +125,7 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 
 ```python
 sdk.logger.debug("調試資訊")
-sdk.logger.info("執行資訊")
+sdk.logger.info("運行資訊")
 sdk.logger.warning("警告資訊")
 sdk.logger.error("錯誤資訊")
 sdk.logger.critical("致命錯誤")
@@ -146,7 +146,7 @@ child_logger.get_child("utils")  # 支援嵌套
 sdk.logger.set_level("DEBUG")                          # 全域層級
 sdk.logger.set_module_level("MyModule", "DEBUG")       # 模組層級
 
-# 支援的層級（由低至高）：
+# 支援的層級（由低到高）：
 # TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
 # TRACE 為最低層級，輸出框架內部詳細調試資訊（事件分發、路由註冊等）
 sdk.logger.set_level("TRACE")                          # 開啟全部日誌
@@ -154,7 +154,7 @@ sdk.logger.set_level("TRACE")                          # 開啟全部日誌
 
 ### 日誌訂閱（推模式）
 
-供 Dashboard 等模組即時接收結構化日誌，支援層級篩選和歷史補發。
+供 Dashboard 等模組即時接收結構化日誌，支援等級篩選和歷史補發。
 
 > **顯式訂閱低層級日誌**：訂閱器的 `min_level` 可低於全域日誌層級。此時低層級日誌**僅推送到符合條件的訂閱器**，不會輸出到控制台，也不會寫入記憶體，從而避免污染主日誌流。
 >
@@ -197,7 +197,7 @@ sdk.logger.set_memory_limit(1000)
 
 ## Adapter 模組
 
-適配器管理器，管理多平台適配器的註冊、啟動和關閉。
+適配器管理器，用於管理多平台適配器的註冊、啟動和關閉。
 
 ### API 概覽
 
@@ -205,7 +205,7 @@ sdk.logger.set_memory_limit(1000)
 |------|------|
 | `get(platform)` | 獲取適配器實例 |
 | `exists(platform)` | 檢查適配器是否已註冊 |
-| `enable(platform)` / `disable(platform)` | 啟用/禁用適配器 |
+| `enable(platform)` / `disable(platform)` | 啟用/停用適配器 |
 | `is_enabled(platform)` | 檢查是否啟用 |
 | `startup(platforms)` / `shutdown(platforms)` | 啟動/關閉適配器 |
 | `is_running(platform)` | 檢查適配器是否正在運行 |
@@ -235,15 +235,15 @@ sdk.adapter.get_status_summary()
 
 > 完整的適配器管理 API 請參考 [適配器系統 API](adapter-system.md)。
 
-## Module 模塊
+## Module 模組
 
-模組管理器，管理插件的註冊、載入和卸載。
+模組管理器，用於管理插件的註冊、載入和卸載。
 
 ### API 概覽
 
 | 方法 | 說明 |
 |------|------|
-| `get(name)` | 取得模組實例或懶加載代理（已註冊但未載入時返回代理） |
+| `get(name)` | 取得模組實例或懶加載代理（已註冊但未載入時回傳代理） |
 | `exists(name)` | 檢查是否已註冊 |
 | `is_loaded(name)` | 檢查是否已載入 |
 | `is_enabled(name)` | 檢查是否啟用 |
@@ -259,10 +259,10 @@ sdk.adapter.get_status_summary()
 ```python
 module = sdk.module.get("ModuleName")
 module = sdk.module.ModuleName
-module = sdk.ModuleName  # 等價快捷方式
+module = sdk.ModuleName  # 等同快捷方式
 ```
 
-## Lifecycle 模塊
+## Lifecycle 模組
 
 事件驅動的生命周期管理器，提供事件提交和監聽功能。
 
@@ -321,9 +321,9 @@ async def list_users(request: HttpRequest):
     return {"users": []}
 ```
 
-## HTTP Client 模組
+## HTTP 客戶端模組
 
-統一網路客戶端，聚合 HTTP 請求、WebSocket 連接、連接池管理、自動重試、請求統計和生命週期事件整合。
+統一的網路客戶端，聚合 HTTP 請求、WebSocket 連接、連接池管理、自動重試、請求統計和生命週期事件整合。
 
 > 完整的網路客戶端文件（請求方法、回應物件、WebSocket 客戶端、例外體系等）請參考 [網路客戶端](../advanced/http-client.md)。
 
@@ -346,7 +346,7 @@ async for text in ws.iter_text():
 
 ### dump_state()
 
-匯出框架當前運行狀態的快照，用於調試和診斷。
+導出框架當前運行狀態的快照，用於調試和診斷。
 
 ```python
 import json
@@ -360,8 +360,8 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 |------|------|
 | `sdk` | SDK 初始化狀態、Python 版本、運行平台、時間戳 |
 | `adapters` | 已註冊/已啟動的適配器列表、各平台 Bot 在線狀態 |
-| `modules` | 已註冊/已啟用/已禁用/懶加載的模塊列表 |
-| `events` | 各類事件處理程序數量（message/notice/request/meta/commands） |
+| `modules` | 已註冊/已啟用/已禁用/懶加載的模組列表 |
+| `events` | 各類事件處理器數量（message/notice/request/meta/commands） |
 | `router` | 伺服器運行狀態、HTTP/WebSocket 路由數量 |
 
 > 新增於 2.5.2
@@ -372,5 +372,5 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 - [適配器系統 API](adapter-system.md) - Adapter 管理 API
 - [SQL 查詢建構器](../advanced/sql-builder.md) - SQL 鏈式查詢完整文件
 - [路由管理器](../advanced/router.md) - 路由管理器完整文件
-- [網路用戶端](../advanced/http-client.md) - 網路用戶端完整文件
+- [網路客戶端](../advanced/http-client.md) - 網路客戶端完整文件
 - [生命週期管理](../advanced/lifecycle.md) - 生命週期完整文件

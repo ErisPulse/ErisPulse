@@ -6,7 +6,7 @@
 
 請求事件（`type: "request"`）是 OneBot12 標準中定義的特殊事件類型，代表需要 Bot 做出決策的請求（如好友請求、群邀請等）。
 
-與消息事件不同，請求事件需要**雙向互動**：
+與訊息事件不同，請求事件需要**雙向互動**：
 1. **接收**：適配器將平台原生請求轉換為標準請求事件
 2. **響應**：模組通過 `Request` DSL 或 `Event.approve()`/`Event.reject()` 執行操作
 
@@ -33,7 +33,7 @@ Converter.convert()        ← 適配器實現（正向轉換）
     │               ▼
     │       平台 API 調用
     │
-    └─→ 或直接通過適配器操作
+    └─→ 或直接透過適配器操作
             await adapter.Request("req_id").accept()
 ```
 
@@ -113,7 +113,7 @@ await adapter.Request("req_id").Using("bot1").accept(comment="歡迎")
 | `accept(**kwargs)` | 同意請求 | `asyncio.Task`（await 後返回標準回應） |
 | `reject(**kwargs)` | 拒絕請求 | `asyncio.Task`（await 後返回標準回應） |
 
-### 3.3 返回值格式
+### 3.3 回應值格式
 
 操作返回標準 API 回應格式：
 
@@ -182,7 +182,7 @@ async def handle_friend_request(event):
 
 | 方法 | 說明 | 回傳值 |
 |------|------|--------|
-| `get_request_id()` | 取得請求ID | `str` |
+| `get_request_id()` | 獲取請求ID | `str` |
 | `approve(comment=None)` | 同意當前請求事件 | 標準回應格式 |
 | `reject(comment=None)` | 拒絕當前請求事件 | 標準回應格式 |
 
@@ -190,7 +190,7 @@ async def handle_friend_request(event):
 
 ### 5.1 轉換器要求
 
-適配器的轉換器在轉換請求事件時，**必須**正確設置 `request_id` 欄位：
+適配器的轉換器在轉換請求事件時，**必須**正確設置 `request_id` 字段：
 
 ```python
 def convert_request_event(self, raw_event: dict) -> dict:
@@ -208,7 +208,7 @@ def convert_request_event(self, raw_event: dict) -> dict:
         "user_id": str(raw_event.get("user_id", "")),
         "user_nickname": raw_event.get("nickname", ""),
         "comment": raw_event.get("message", ""),
-        "request_id": self._extract_request_id(raw_event),  # ← 關鍵欄位
+        "request_id": self._extract_request_id(raw_event),  # ← 關鍵字段
         f"{self._platform_name}_raw": raw_event,
         f"{self._platform_name}_raw_type": raw_event.get("type", ""),
     }
@@ -217,9 +217,9 @@ def _extract_request_id(self, raw_event: dict) -> str:
     """
     從平台原生事件提取請求ID
     
-    优先使用平台原生的请求标识，若无则生成唯一ID
+    優先使用平台原生的請求標識，若無則生成唯一ID
     """
-    # 优先使用平台原生ID
+    # 優先使用平台原生ID
     if flag := raw_event.get("flag"):
         return str(flag)
     if request_key := raw_event.get("request_key"):
@@ -247,7 +247,7 @@ class MyAdapter(BaseAdapter):
             """
             同意請求
             
-            :param kwargs: 扩展参数，如 comment="备注"
+            :param kwargs: 擴展參數，如 comment="備註"
             :return: asyncio.Task
             """
             async def _do():
@@ -331,7 +331,7 @@ BaseAdapter
 
 ### 5.5 適配器 `__init__` 注意事項
 
-重寫 `Request` 內部類的 `__init__` 時，必須透傳參數並調用 `super().__init__()`，詳見 [適配器開發入門 - `__init__` 注意事項](../developer-guide/adapters/getting-started.md#init-注意事项)（`Request` 同理，參數為 `adapter, request_id, account_id`）。
+重寫 `Request` 內部類的 `__init__` 時，必須透傳參數並調用 `super().__init__()`，詳見 [適配器開發入門 - `__init__` 注意事項](../developer-guide/adapters/getting-started.md#init-注意事項)（`Request` 同理，參數為 `adapter, request_id, account_id`）。
 
 ## 6. 适配器實現檢查清單
 
@@ -354,7 +354,7 @@ BaseAdapter
 
 ## 7. 錯誤碼擴展
 
-請求操作相關的**適配器實現層**推薦錯誤碼（遵循 [API 响应标准](api-response.md) §3.2，  
+請求操作相關的**適配器實現層**推薦錯誤碼（遵循 [API 響應標準](api-response.md) §3.2，  
 落在 `34xxx` 平台錯誤段的低三位自定義）：
 
 | 錯誤碼 | 錯誤名 | 說明 |
@@ -362,11 +362,11 @@ BaseAdapter
 | 34001 | Request Not Found | 請求不存在或已過期 |
 | 34002 | Request Already Handled | 請求已被處理 |
 | 34003 | Request Not Supported | 平台不支援該類型的請求操作 |
-| 34004 | Permission Denied | Bot 無權處理此請求（平台返回） |
+| 34004 | Permission Denied | Bot 無權處理此請求（平台回傳） |
 
-> **與框架碼的邊界**：以上 `340xx` 是**平台/適配器**返回的請求處理失敗；  
+> **與框架碼的邊界**：以上 `340xx` 是**平台/適配器**回傳的請求處理失敗；  
 > ErisPulse 框架在 `scope.actions` 禁用某模組的 request 動作時，**在呼叫適配器之前**  
-> 直接返回 `34601`（Action Denied，見 [API 响应标准 §5.3](api-response.md#53-框架擴展返回碼34xxx-平台錯誤段的低三位自定義)），  
+> 直接回傳 `34601`（Action Denied，見 [API 響應標準 §5.3](api-response.md#53-框架擴展回傳碼34xxx-平台錯誤段的低三位自定義)），  
 > 兩者互不替代：先過 `34601` 框架閘口，再落到平台層 `340xx` 錯誤。
 
 ## 8. 相關文件
