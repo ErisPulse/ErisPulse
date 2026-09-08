@@ -237,22 +237,24 @@ sdk.adapter.get_status_summary()
 
 ## Module Module
 
-Module manager, managing plugin registration, loading, and unloading.
+The module manager, responsible for registering, loading, and unloading plugins.
 
 ### API Overview
 
 | Method | Description |
-|------|------|
-| `get(name)` | Retrieve module instance or lazy-loaded proxy (returns proxy if registered but not loaded) |
-| `exists(name)` | Check if registered |
-| `is_loaded(name)` | Check if loaded |
-| `is_enabled(name)` | Check if enabled |
-| `enable(name)` / `disable(name)` | Enable/disable module |
-| `load(name)` / `unload(name)` | Load/unload module |
+|--------|-------------|
+| `get(name)` | Retrieve a module instance or a lazy-loading proxy (returns a proxy if the module is registered but not loaded) |
+| `exists(name)` | Check if the module is registered |
+| `is_loaded(name)` | Check if the module is loaded |
+| `is_enabled(name)` | Check if the module is enabled |
+| `enable(name)` / `disable(name)` | Enable/disable the module |
+| `load(name)` / `unload(name)` | Load/unload the module |
+| `call(module, method, *args, timeout=None, **kwargs)` | Call a service method in a target module across modules (protocolized RPC) |
+| `emit_to(module, event, data)` | Deliver a lifecycle event to a specific module |
 | `list_registered()` | List all registered modules |
 | `list_loaded()` | List all loaded modules |
 | `get_info(name)` | Retrieve module information |
-| `get_status_summary()` | Retrieve module status summary |
+| `get_status_summary()` | Get a status summary of modules |
 
 ### Attribute Access
 
@@ -261,6 +263,80 @@ module = sdk.module.get("ModuleName")
 module = sdk.module.ModuleName
 module = sdk.ModuleName  # Equivalent shortcut
 ```
+
+### Inter-Module Calls (RPC)
+
+```python
+# Protocolized call: typed errors / lazy module auto-wakeup / owner attribution / timeout semantics
+result = await sdk.module.call("Chat", "get_history", session_id, n=20)
+```
+
+Differences between `module.call()` and direct service access `sdk.module.Chat.get_history(...)`:
+
+| | `module.call()` | Direct attribute access |
+|---|---|---|
+| Target not registered/unavailable | Throws `ModuleNotAvailableError` | Throws `AttributeError` |
+| Lazy-loaded module | Automatically wakes up | Async initialization throws `RuntimeError` |
+| `current_owner` | Attributed to the target module | Retains the caller's context |
+| Timeout | Default 30s, can be overridden | None |
+| Scope audit | `actions.<caller>.call` | None |
+
+### Service Contract (`meta.services`)
+
+Service providers declare a white-list of exposed services in the `services` field of `get_meta()`, symmetric to `commands`. After declaration, the call surface is restricted:
+
+```python
+class ChatModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(services=["get_history", "translate"])
+
+    async def get_history(self, session_id, n=20): ...
+```
+
+- **Default = Developer-agnostic**: If `services` is not declared, any **public** method can be called (backward compatibility), and private methods (prefixed with underscore) are always forbidden; the primary control for restrictions lies in the user-side scope configuration.
+- After declaration: Only methods in the whitelist are callable, and calling outside the whitelist throws `ServiceNotProvidedError`.
+- Caller restrictions: `scope.set_action("CallerModule", "call", deny="Chat.get_history")`
+
+**Service Description (`description`)**: `services` supports a dict format to declare descriptions for each service (supports plain strings or i18n dictionaries), providing data for service directories or AI consumption:
+
+```python
+return ModuleMeta(
+    services=[
+        "get_history",                              # Simple form: description automatically taken from the first line of the method's docstring
+        {"name": "translate", "description": "Translate text into the specified language"},
+        {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "Summarize conversation"}},
+    ],
+)
+```
+
+Description resolution priority: **Explicit description (i18n resolved to current language) > First line of method docstring > Empty string**.
+
+### Service Directory (`services`)
+
+```python
+sdk.module.services()
+# {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
+#            'description': 'Retrieve conversation history'}]}
+
+sdk.module.services("Chat")  # Query only a specific module
+```
+
+Lists only modules that explicitly declare `meta.services`. Each service includes a method signature string and description text, providing the data foundation for MCP (exposing call points to AI).
+
+### Directed Events (`emit_to`)
+
+```python
+# Sender: Validates that the target module is enabled and delivers the event to `module.<name>.<event>`
+await sdk.module.emit_to("Chat", "message_received", {"text": "hi"})
+
+# Subscriber (within the Chat module): Registers a namespace hook
+lifecycle.on("module.Chat.message_received", handler)
+lifecycle.on("module.Chat", handler)  # Or receive all directed events from this module
+```
+
+> [!NOTE]
+> This feature is new in ErisPulse **2.8.0+**
 
 ## Lifecycle Module
 
@@ -346,7 +422,7 @@ async for text in ws.iter_text():
 
 ### dump_state()
 
-Exports a snapshot of the current runtime state of the framework, for debugging and diagnostics.
+Exports a snapshot of the current running state of the framework, for debugging and diagnostics.
 
 ```python
 import json
@@ -354,26 +430,44 @@ state = sdk.dump_state()
 print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 ```
 
-The returned structure includes the status of the following subsystems:
+The returned structure contains the status of the following subsystems:
 
 | Field | Description |
-|------|------|
-| `sdk` | SDK initialization status, Python version, running platform, timestamp |
+|-------|-------------|
+| `sdk` | SDK initialization status, Python version, runtime platform, timestamp |
 | `adapters` | List of registered/started adapters, online status of Bots on each platform |
-| `modules` | List of registered/enabled/disabled/lazy-loaded modules |
-| `events` | Number of handlers for each type of event (message/notice/request/meta/commands) |
+| `modules` | List of registered/active/disabled/lazy-loaded modules |
+| `events` | Number of event handlers for each type (message/notice/request/meta/commands) |
 | `router` | Server running status, number of HTTP/WebSocket routes |
 
-> Added in 2.5.2
+> [!NOTE]
+> Added in ErisPulse **2.5.2+**
 
-## Interaction Session
+## Interaction Interactions
 
-Manages wait_reply suspended waiting and session mutual exclusion leases (`sdk.interaction`).
+Manage wait_reply suspended waiting and session mutual exclusion leases (`sdk.interaction`).
 
 ### Common Methods
 
 ```python
-# Query current session owner (who is interacting with this user)
+# Session timeout reminder: Remind after 5 minutes of no reply, reminder is automatically canceled when user replies
+reminder = event.remind(300, "Are you still there?")
+reminder.cancel()  # Cancel manually
+
+# Timeout escalation: Must escalate at a specific time (not canceled by reply)
+event.escalate(1800, lambda e: notify_master("30 minutes not handled"))
+
+# Multi-path waiting: First come, first served
+which, reply = await event.select(
+    event.expect(pattern="agree*", user="A"),
+    event.expect(pattern="refuse*", user="B"),
+    timeout=60,
+)
+
+# Session-level waiting: Reply from anyone in the same group can trigger the event
+reply = await event.wait_reply(session=True, prompt="Can someone help answer this?")
+
+# Query current session ownership (who is currently interacting with this user)
 owner = sdk.interaction.get_owner_of(event)
 
 # Acquire session mutual exclusion lease (returns None if occupied)
@@ -384,26 +478,27 @@ if lease:
     finally:
         lease.release()
 
-# Context manager form (raises SessionOccupiedError if occupied)
+# Context manager form (throws SessionOccupiedError if occupied)
 with sdk.interaction.hold(event) as lease:
     ...
 
-# Suspended session count
-sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'owners': {'Chat': 3}}
+# Suspended session statistics
+sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'timers': 3, 'owners': {'Chat': 3}}
 ```
 
-When a module is unloaded or an adapter is closed, its suspended waits are automatically canceled (the waiting party immediately returns `None`), and replies are automatically checked for scope permissions (if the user is blocked or the module is unbound, the wait is terminated).
+When the module is unloaded or the adapter is closed, all suspended waits and timers are automatically canceled (waiters immediately return `None`). When a reply matches, scope permissions are automatically rechecked (if the user is blacklisted or the module is unbound, the wait is terminated).
 
-> Added in 2.8.0-dev.2
+> [!NOTE]
+> This feature was added in ErisPulse **2.8.0+**
 
-## Transcript Session Inbox
+## Transcript Conversation Inbox
 
-Automatic recording and querying of recent message streams per session (`sdk.transcript`), serving as a common base for context memory modules like AI conversation and anti-spam.
+An automatic record and query of recent message streams for each conversation (`sdk.transcript`), serving as a common foundation for context-aware modules such as AI conversations and anti-spam features.
 
 ### Common Methods
 
 ```python
-# Convenient query (recommended): recent 20 messages in current session (including user and bot, ascending by time)
+# Convenient query (recommended): The last 20 messages (including users and robots, in ascending time order)
 messages = await event.history(20)
 for m in messages:
     print(m["role"], ":", m["text"])
@@ -414,9 +509,10 @@ sdk.transcript.get(event, n=20)
 sdk.transcript.clear(event)
 ```
 
-Configuration (`ErisPulse.transcript`): `enabled` (default on), `max_per_session` (default 50), `ttl_hours` (default 168 hours). Data is stored in a separate SQLite table, with lazy cleanup for over-limit or expired entries.
+Configuration (`ErisPulse.transcript`): `enabled` (default: enabled), `max_per_session` (maximum per session, default: 50), `ttl_hours` (global expiration time in hours, default: 168). Data is stored in a separate SQLite table, with lazy cleanup when limits are exceeded or data expires.
 
-> Added in 2.8.0-dev.2
+> [!NOTE]
+> This feature was added in ErisPulse **2.8.0+**
 
 ## Related Documentation
 

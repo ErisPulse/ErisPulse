@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "6508445e0aa658c1b7aca054ba45292a",
-  "file_hash": "6508445e0aa658c1b7aca054ba45292a",
-  "translated_at": "2026-09-07T11:37:48.853312",
+  "hash": "b22a11bd59c422ace256e6dc5c7890bf",
+  "file_hash": "b22a11bd59c422ace256e6dc5c7890bf",
+  "translated_at": "2026-09-08T14:33:16.601462",
   "target_lang": "ru",
   "chunks": [
     {
@@ -32,6 +32,10 @@
     {
       "hash": "c724c8795a23119f850e9111b25415a3",
       "translation": "## Функция ответа\n\n```python\nfrom ErisPulse.Core.Event import command\n\n@command(\"ask\")\nasync def ask_command(event: Event):\n    await event.reply(\"Пожалуйста, введите ваше имя:\")\n    reply = await event.wait_reply(timeout=30)\n    if reply:\n        name = reply.get_text()\n        await event.reply(f\"Привет, {name}!\")\n\n@command(\"price\")\nasync def price_command(event: Event):\n    await event.reply(\"Пожалуйста, введите сумму (например: 5元):\")\n    # Ответ должен соответствовать регулярному выражению, иначе продолжаем ожидать до истечения таймаута\n    reply = await event.wait_reply(timeout=30, regex=r\"\\d+\\s*元\")\n    if reply:\n        await event.reply(f\"Получена сумма: {reply.get_text()}\")\n```"
+    },
+    {
+      "hash": "b0d945d918748884ec2c58f68e00d035",
+      "translation": "## Расширенные возможности интерактивных диалогов\n\n> [!NOTE]\n> Для использования этих функций требуется ErisPulse **2.8.0+**.\n\n```python\n# Повторное напоминание: если в течение 5 минут нет ответа, отправить напоминание, при ответе отменить автоматически\nreminder = event.remind(300, \"Ещё здесь? Чтобы прекратить общение, напишите «Выход»\")\nreminder.cancel()  # Также можно отменить вручную\n\n# Продление тайм-аута: обязательное достижение срока (не отменяется ответом), например, для уведомления владельца, если задача не обработана в течение длительного времени\nevent.escalate(1800, lambda e: notify_master(\"Задача просрочена\"))\n\n# Ожидание нескольких путей: одновременно ждём \"одобрить\" и \"отклонить\", срабатывает первый поступивший ответ\nwhich, reply = await event.select(\n    event.expect(pattern=\"одобрить*\", user=\"10001\"),\n    event.expect(pattern=\"отклонить*\", user=\"10002\"),\n    timeout=60,\n)\nif which is None:\n    await event.reply(\"Тайм-аут, ответа на запрос не получено\")\n\n# Ожидание на уровне сессии: ответ любого участника в группе может быть принят (для совместной работы в группе)\nreply = await event.wait_reply(session=True, prompt=\"Кто-нибудь, помогите ответить?\")\n\n# Ящик сообщений сессии: последние 20 сообщений текущей сессии (включая сообщения бота, контекст ИИ / база для предотвращения повторения)\nmessages = await event.history(20)\n\n# Транзакция сообщений: при возникновении ошибки автоматически отменяются отправленные сообщения в рамках транзакции\nasync with event.message_tx():\n    await event.reply(\"Обработка, пожалуйста, подождите...\")\n    result = await do_something()\n    await event.reply(f\"Завершено: {result}\")\n```"
     },
     {
       "hash": "97956084dbc7e85a639a4ee1b0d233c6",

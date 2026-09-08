@@ -4,22 +4,24 @@
 
 ## ドキュメントリスト
 
-- [起動プロセスと手動制御](startup.md) - 起動リンクの分解（Finder/Loader/Manager/Router）と手動での完全起動
-- [遅延読み込みシステム](lazy-loading.md) - 遅延読み込みモジュールシステムの動作原理、設定、イベント駆動による遅延アクティベーション（activate_on）
-- [スコープ（scope）](scope.md) - 3次元スコープ制御：モジュールの可用性 / イベントのアクセス制御 / 出力アクションの制限（メソッドレベルの細かいルールとバインディング継承 merge を含む）
-- [所有権（owner）システム](ownership.md) - リソースの所有権と自動回収：owner コンテキストメカニズム、所有リソースの全体像、アンロード時のクリーンアップシーケンスと設計の境界
-- [国際化 (i18n)](i18n.md) - 多言語サポート、翻訳の登録と言語の検出
+- [起動フローと手動制御](startup.md) - 鍵の起動フローの分解（Finder/Loader/Manager/Router）と手動での完全な起動
+- [遅延ロードシステム](lazy-loading.md) - 遅延ロードモジュールシステムの動作原理、設定およびイベント駆動による遅延アクティベーション（activate_on）
+- [スコープ（scope）](scope.md) - 3次元スコープ制御：モジュールの可用性 / イベントのアクセス制限 / 出力アクションの制限（メソッドレベルの細粒度ルールとバインディング継承 merge を含む）
+- [所有権（owner）システム](ownership.md) - リソースの所有と自動回収：owner コンテキストメカニズム、所有リソースの全体像、アンロード時のクリーンアップシーケンスと設計の境界
+- [インタラクションセッションシステム](interaction.md) - wait_reply / セッションタイマー / マルチパス待ち / セッション排他リース / 受信箱 / メッセージトランザクション / リンク追跡
+- [モジュール間通信](module-communication.md) - RPC 協定化（module.call）、サービス契約とディレクトリ、方向性イベント、コールドスタートの再再生、イベントの冪等性と重複除去
+- [国際化 (i18n)](i18n.md) - 多言語サポート、翻訳の登録と言語検出
 - [ライフサイクル管理](lifecycle.md) - ライフサイクルイベントシステムの使用方法
-- [ルートマネージャー](router.md) - HTTP および WebSocket ルートの管理
+- [ルートマネージャー](router.md) - HTTP および WebSocket のルート管理
 - [HTTP クライアント](http-client.md) - 統一された HTTP リクエストクライアント
-- [MessageBuilder 詳解](message-builder.md) - OneBot12 メッセージセグメントビルダーの二重モードの使用法
-- [SQL クエリビルダー](sql-builder.md) - 一般的な SQL チェーン式クエリビルダーとストレージバックエンドの抽象化
-- [ストレージバックエンド](storage-backends.md) - sqlite / mysql / postgres の非同期ネイティブストレージバックエンドの選択、設定、切り替え
-- [セッションタイプシステム](../standards/session-types.md) - セッションタイプの定義、マッピング、およびカスタムタイプの登録
-- [Conversation 多段対話](conversation.md) - 多段対話コンテキストの対話メソッド
+- [MessageBuilder 詳解](message-builder.md) - OneBot12 メッセージセグメントビルダーの二重モードの使い方
+- [SQL クエリビルダー](sql-builder.md) - 一般的な SQL チェーン式クエリビルダーおよびストレージバックエンドの抽象化
+- [ストレージバックエンド](storage-backends.md) - sqlite / mysql / postgres 異なる非同期ネイティブストレージバックエンドの選択、設定と切り替え
+- [セッションタイプシステム](../standards/session-types.md) - セッションタイプの定義、マッピングとカスタムタイプの登録
+- [Conversation 多回対話](conversation.md) - 多回対話コンテキストのインタラクションメソッド
 
 > [!NOTE]
-> Dashboard 視窗の登録、Takumi 画像のレンダリングなどの **サードパーティエコシステムモジュール** のドキュメントは、[エコシステムモジュール](../ecosystem/README.md) ディレクトリに移動されました。
+> Dashboard 視窗の登録、Takumi 画像レンダリングなどの **サードパーティエコシステムモジュール** のドキュメントは、[エコシステムモジュール](../ecosystem/README.md) ディレクトリに移動されました。
 
 ## 対象読者
 

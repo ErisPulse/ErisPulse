@@ -87,6 +87,41 @@ async def price_command(event: Event):
         await event.reply(f"金額を受け取りました: {reply.get_text()}")
 ```
 
+## インタラクティブな会話の高度な機能
+
+> [!NOTE]
+> 本機能は ErisPulse **2.8.0+** が必要です。
+
+```python
+# 会話の定期的なリマインダー：5 分間返信がない場合にリマインダーを送信し、ユーザーが返信すると自動的にキャンセル
+reminder = event.remind(300, "まだですか？話したくない場合は「退出」を入力してください")
+reminder.cancel()  # 手動でキャンセルすることも可能です
+
+# タイムアウトによる昇格：時間経過後に必ず通知（返信によってキャンセルされない）、例えば長時間未処理の通知を主人に通知
+event.escalate(1800, lambda e: notify_master("工単がタイムアウトしました"))
+
+# 複数ルートの待機：「同意」および「拒否」のいずれかを同時に待機し、先に到着したものを優先
+which, reply = await event.select(
+    event.expect(pattern="同意*", user="10001"),
+    event.expect(pattern="拒绝*", user="10002"),
+    timeout=60,
+)
+if which is None:
+    await event.reply("承認がタイムアウトしました")
+
+# 会話レベルの待機：同じグループ内の誰からの返信でも対象になります（グループ協力）
+reply = await event.wait_reply(session=True, prompt="誰か回答していただけますか？")
+
+# 会話の受信箱：現在の会話における最新の 20 件のメッセージ（ロボット、AI のコンテキスト / リピート防止の基盤を含む）
+messages = await event.history(20)
+
+# メッセージトランザクション：例外が発生した場合、トランザクション内で送信されたメッセージを自動的に撤回
+async with event.message_tx():
+    await event.reply("処理中です、少々お待ちください...")
+    result = await do_something()
+    await event.reply(f"完了：{result}")
+```
+
 ## コマンド情報の取得
 
 ```python

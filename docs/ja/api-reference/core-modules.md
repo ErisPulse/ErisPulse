@@ -237,7 +237,7 @@ sdk.adapter.get_status_summary()
 
 ## Module モジュール
 
-モジュールマネージャーで、プラグインの登録、ロード、アンロードを管理します。
+モジュールマネージャーは、プラグインの登録、ロード、アンロードを管理します。
 
 ### API 概要
 
@@ -249,8 +249,10 @@ sdk.adapter.get_status_summary()
 | `is_enabled(name)` | 有効化されているか確認 |
 | `enable(name)` / `disable(name)` | モジュールを有効化/無効化 |
 | `load(name)` / `unload(name)` | モジュールをロード/アンロード |
-| `list_registered()` | 登録済みモジュールをすべてリスト |
-| `list_loaded()` | ロード済みモジュールをすべてリスト |
+| `call(module, method, *args, timeout=None, **kwargs)` | 指定モジュールのサービスメソッドを呼び出す（プロトコル化された RPC） |
+| `emit_to(module, event, data)` | 指定モジュールにライフサイクルイベントを送信 |
+| `list_registered()` | 登録済みモジュールを一覧表示 |
+| `list_loaded()` | ロード済みモジュールを一覧表示 |
 | `get_info(name)` | モジュール情報を取得 |
 | `get_status_summary()` | モジュールの状態概要を取得 |
 
@@ -261,6 +263,80 @@ module = sdk.module.get("ModuleName")
 module = sdk.module.ModuleName
 module = sdk.ModuleName  # 等価なショートカット
 ```
+
+### モジュール間呼び出し（RPC）
+
+```python
+# プロトコル化された呼び出し：型付きエラー / 遅延モジュールの自動起動 / owner帰属 / タイムアウト設定
+result = await sdk.module.call("Chat", "get_history", session_id, n=20)
+```
+
+サービス側の属性アクセス `sdk.module.Chat.get_history(...)` との違い：
+
+| | `module.call()` | 属性アクセス |
+|---|---|---|
+| 目標が未登録/未有効化 | `ModuleNotAvailableError` をスロー | `AttributeError` をスロー |
+| 遅延ロードモジュール | 自動起動 | 非同期初期化モジュールは `RuntimeError` をスロー |
+| `current_owner` | 目標モジュールに帰属 | 呼び出し元のまま |
+| タイムアウト | 30秒（カスタマイズ可能） | なし |
+| scope 審査 | `actions.<呼び出し元>.call` | なし |
+
+### サービス契約（meta.services）
+
+`get_meta()` の `services` フィールドで外部公開白名单を宣言し、宣言後は呼び出し範囲を絞る：
+
+```python
+class ChatModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(services=["get_history", "translate"])
+
+    async def get_history(self, session_id, n=20): ...
+```
+
+- **デフォルト = 開発者無感覚**：`services` を宣言していない場合、任意の**公開**メソッドが呼び出せる（後方互換性）、アンダースコア付きのプライベートメソッドは常に禁止；制限の主制御権はユーザー側の scope 設定
+- 宣言後：白名单内のメソッドのみ呼び出せる、越境時は `ServiceNotProvidedError` をスロー
+- 呼び出し側制限：`scope.set_action("CallerModule", "call", deny="Chat.get_history")`
+
+**サービス紹介（description）**：`services` は各サービスに説明を宣言するための dict 形態もサポート（純文字列または i18n 辞書）、サービスディレクトリや AI 呼び出し点の消費説明に利用：
+
+```python
+return ModuleMeta(
+    services=[
+        "get_history",                              # 簡単な形態：説明はメソッドの docstring 1行目を自動的に利用
+        {"name": "translate", "description": "テキストを指定言語に翻訳する"},
+        {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "会話の要約"}},
+    ],
+)
+```
+
+説明の解析優先順位：**明示的な description（i18n は現在の言語に解析）> メソッドの docstring 1行目 > 空文字列**。
+
+### サービスディレクトリ（services）
+
+```python
+sdk.module.services()
+# {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
+#            'description': '会話履歴を取得'}]}
+
+sdk.module.services("Chat")  # 特定モジュールのみを照会
+```
+
+`meta.services` を**明示的に宣言**したモジュールのみを一覧表示；各サービスにはメソッドのシグネチャ文字列と説明テキストが付いており、MCP 化（AI に呼び出し点を公開）のためのデータ基盤を提供する。
+
+### 定向イベント（emit_to）
+
+```python
+# 投递側：目標モジュールが有効化された後に module.<名称>.<イベント> に投递
+await sdk.module.emit_to("Chat", "message_received", {"text": "hi"})
+
+# 訂正側（Chat モジュール内）：命名空間のフックを登録
+lifecycle.on("module.Chat.message_received", handler)
+lifecycle.on("module.Chat", handler)  # またはそのモジュールのすべての定向イベントを受信
+```
+
+> [!NOTE]
+> 本節の機能は ErisPulse **2.8.0+** で追加されました。
 
 ## Lifecycle モジュール
 
@@ -346,7 +422,7 @@ async for text in ws.iter_text():
 
 ### dump_state()
 
-フレームワークの現在の実行状態のスナップショットをエクスポートし、デバッグや診断に使用します。
+フレームワークの現在の実行状態のスナップショットをエクスポートし、デバッグと診断に使用します。
 
 ```python
 import json
@@ -354,69 +430,90 @@ state = sdk.dump_state()
 print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 ```
 
-返却される構造には、以下のサブシステムの状態が含まれます：
+返却される構造には以下のサブシステムの状態が含まれます：
 
 | フィールド | 説明 |
 |------|------|
-| `sdk` | SDKの初期化状態、Pythonバージョン、実行プラットフォーム、タイムスタンプ |
-| `adapters` | 登録済み/起動済みアダプタのリスト、各プラットフォームのBotのオンライン状態 |
-| `modules` | 登録済み/有効化済み/無効化済み/遅延ロード済みのモジュールのリスト |
-| `events` | あらゆる種類のイベントハンドラの数（message/notice/request/meta/commands） |
-| `router` | サーバーの実行状態、HTTP/WebSocketルートの数 |
+| `sdk` | SDK の初期化状態、Python バージョン、実行プラットフォーム、タイムスタンプ |
+| `adapters` | 登録/起動済みのアダプタのリスト、各プラットフォームの Bot のオンライン状態 |
+| `modules` | 登録/有効化/無効化/遅延ロードされたモジュールのリスト |
+| `events` | 各種イベントハンドラの数（message/notice/request/meta/commands） |
+| `router` | サーバーの実行状態、HTTP/WebSocket ルート数 |
 
-> 2.5.2 で追加
+> [!NOTE]
+> ErisPulse **2.5.2+** で追加
 
 ## Interaction 交互会話
 
-`sdk.interaction` を使用して、wait_replyの待機とセッションの排他リース（互斥）を管理します。
+`sdk.interaction` を使用して、wait_reply 挂起待ちと会話の排他リース（lease）を管理します。
 
-### 主なメソッド
+### 常用方法
 
 ```python
-# 会話の現在の所有者を照会（誰がユーザーと対話しているか）
+# 会話の定期的なリマインダー：5 分間返信がない場合にリマインダーを送信し、ユーザーが返信すると自動的にキャンセルされます。
+reminder = event.remind(300, "まだいますか？")
+reminder.cancel()  # 手動でキャンセル
+
+# タイムアウトによるアップグレード：指定時間に必ず到達します（返信によってキャンセルされません）。
+event.escalate(1800, lambda e: notify_master("30 分間未処理"))
+
+# 複数の待ち：先着順
+which, reply = await event.select(
+    event.expect(pattern="同意*", user="A"),
+    event.expect(pattern="拒绝*", user="B"),
+    timeout=60,
+)
+
+# 会話レベルの待ち：同じグループ内の誰からの返信でも一致します。
+reply = await event.wait_reply(session=True, prompt="誰か答えてくれますか？")
+
+# 現在の会話の所有者を照会（誰がこのユーザーと対話しているか）
 owner = sdk.interaction.get_owner_of(event)
 
-# 会話の排他リースを宣言（占有されている場合はNoneを返す）
+# 会話の排他リースを宣言（占有されている場合は None を返します）。
 lease = sdk.interaction.acquire(event)
 if lease:
     try:
-        ...  # 排他的な対話
+        ...  # 独占的な対話
     finally:
         lease.release()
 
-# コンテキストマネージャー形式（占有されている場合はSessionOccupiedErrorを送出）
+# コンテキストマネージャー形式（占有されている場合は SessionOccupiedError が送出されます）。
 with sdk.interaction.hold(event) as lease:
     ...
 
-# 会話の待機統計
-sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'owners': {'Chat': 3}}
+# 挂起中の会話の統計
+sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'timers': 3, 'owners': {'Chat': 3}}
 ```
 
-モジュールのアンロードやアダプタの停止時に、その待機中の待ちは自動的にキャンセルされます（待機側は即座に`None`を返す）、返信がヒットした際には、スコープ権限を自動的に再確認します（ユーザーがブロックされている/モジュールが解除されている場合は待機を終了する）。
+モジュールのアンロードやアダプターの停止時に、その間の待機とタイマーは自動的にキャンセルされます（待機側は即座に `None` を返します）。  
+返信が一致した場合、scope 権限を自動的に再確認します（ユーザーがブロックされている場合やモジュールが解除されている場合は、待機が終了します）。
 
-> 2.8.0-dev.2 で追加
+> [!NOTE]
+> 本機能は ErisPulse **2.8.0** 以降で追加されました。
 
 ## Transcript 会話受信箱
 
-各会話の最近のメッセージの自動記録と照会（`sdk.transcript`）で、AI対話や、重複防止などのコンテキスト記憶型モジュールの共通ベースになります。
+AI 対話、重複防止などのコンテキスト記憶モジュールの共通基盤として、各会話の最近のメッセージストリームの自動記録と照会（`sdk.transcript`）。
 
-### 主なメソッド
+### 常用方法
 
 ```python
-# 便利な照会（推奨）：現在の会話の最近20件（ユーザーとロボットの両方、時間昇順）
+# 便利な照会（推奨）：現在の会話の最近20件（ユーザーとロボットを含む、時間昇順）
 messages = await event.history(20)
 for m in messages:
     print(m["role"], ":", m["text"])
 
-# マネージャーAPI
+# マネージャー API
 sdk.transcript.append(event, "user", "テキスト")
 sdk.transcript.get(event, n=20)
 sdk.transcript.clear(event)
 ```
 
-設定（`ErisPulse.transcript`）：`enabled`（デフォルトで有効）、`max_per_session`（1会話あたりの上限、デフォルト50）、`ttl_hours`（グローバルな有効期限、デフォルト168時間）。データは独立したSQLiteテーブルに保存され、上限を超えた場合や期限切れになった場合は惰性でクリーンアップされます。
+設定（`ErisPulse.transcript`）：`enabled`（デフォルトで有効）、`max_per_session`（1会話あたりの上限、デフォルト50）、`ttl_hours`（グローバルな有効期限、デフォルト168時間）。データは独立した SQLite テーブルに保存され、上限を超えた場合や期限切れになった場合は惰性でクリーニングされます。
 
-> 2.8.0-dev.2 で追加
+> [!NOTE]
+> この機能は ErisPulse **2.8.0+** で追加されました。
 
 ## 関連文書
 
