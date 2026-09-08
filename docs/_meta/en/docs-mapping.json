@@ -336,7 +336,7 @@
     "Advanced Topics": {
       "description": "Deep dive into advanced framework features",
       "icon": "fa-fire",
-      "count": 12,
+      "count": 13,
       "documents": [
         {
           "title": "Advanced Topics",
@@ -407,6 +407,12 @@
         {
           "title": "Startup Process and Manual Control",
           "path": "advanced/startup.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "Storage Backends",
+          "path": "advanced/storage-backends.md",
           "level": 1,
           "icon": "fa-fire"
         }

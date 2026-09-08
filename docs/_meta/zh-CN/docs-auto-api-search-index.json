@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1610,
+  "total_keywords": 1686,
   "keywords": {
     "ErisPulse API 文档": [
       {
@@ -386,10 +386,18 @@
         "title": "[ErisPulse.Core.Bases.send_rules](ErisPulse/Core/Bases/send_rules.md)"
       }
     ],
-    "[ErisPulse.Core.Bases.storage](ErisPulse/Core/Bases/storage.md)": [
+    "[ErisPulse.Core.Bases.sql_base](ErisPulse/Core/Bases/sql_base.md)": [
       {
         "document": "api-reference/auto_api/README.md",
         "line": 267,
+        "level": 3,
+        "title": "[ErisPulse.Core.Bases.sql_base](ErisPulse/Core/Bases/sql_base.md)"
+      }
+    ],
+    "[ErisPulse.Core.Bases.storage](ErisPulse/Core/Bases/storage.md)": [
+      {
+        "document": "api-reference/auto_api/README.md",
+        "line": 272,
         "level": 3,
         "title": "[ErisPulse.Core.Bases.storage](ErisPulse/Core/Bases/storage.md)"
       }
@@ -397,7 +405,7 @@
     "[ErisPulse.Core.Bases.websocket](ErisPulse/Core/Bases/websocket.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 272,
+        "line": 277,
         "level": 3,
         "title": "[ErisPulse.Core.Bases.websocket](ErisPulse/Core/Bases/websocket.md)"
       }
@@ -405,7 +413,7 @@
     "[ErisPulse.Core.Event.__init__](ErisPulse/Core/Event/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 277,
+        "line": 282,
         "level": 3,
         "title": "[ErisPulse.Core.Event.__init__](ErisPulse/Core/Event/__init__.md)"
       }
@@ -413,7 +421,7 @@
     "[ErisPulse.Core.Event.base](ErisPulse/Core/Event/base.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 282,
+        "line": 287,
         "level": 3,
         "title": "[ErisPulse.Core.Event.base](ErisPulse/Core/Event/base.md)"
       }
@@ -421,7 +429,7 @@
     "[ErisPulse.Core.Event.command](ErisPulse/Core/Event/command.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 287,
+        "line": 292,
         "level": 3,
         "title": "[ErisPulse.Core.Event.command](ErisPulse/Core/Event/command.md)"
       }
@@ -429,7 +437,7 @@
     "[ErisPulse.Core.Event.interaction](ErisPulse/Core/Event/interaction.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 292,
+        "line": 297,
         "level": 3,
         "title": "[ErisPulse.Core.Event.interaction](ErisPulse/Core/Event/interaction.md)"
       }
@@ -437,7 +445,7 @@
     "[ErisPulse.Core.Event.message](ErisPulse/Core/Event/message.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 297,
+        "line": 302,
         "level": 3,
         "title": "[ErisPulse.Core.Event.message](ErisPulse/Core/Event/message.md)"
       }
@@ -445,7 +453,7 @@
     "[ErisPulse.Core.Event.message_builder](ErisPulse/Core/Event/message_builder.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 302,
+        "line": 307,
         "level": 3,
         "title": "[ErisPulse.Core.Event.message_builder](ErisPulse/Core/Event/message_builder.md)"
       }
@@ -453,7 +461,7 @@
     "[ErisPulse.Core.Event.meta](ErisPulse/Core/Event/meta.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 307,
+        "line": 312,
         "level": 3,
         "title": "[ErisPulse.Core.Event.meta](ErisPulse/Core/Event/meta.md)"
       }
@@ -461,7 +469,7 @@
     "[ErisPulse.Core.Event.notice](ErisPulse/Core/Event/notice.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 312,
+        "line": 317,
         "level": 3,
         "title": "[ErisPulse.Core.Event.notice](ErisPulse/Core/Event/notice.md)"
       }
@@ -469,7 +477,7 @@
     "[ErisPulse.Core.Event.overrides](ErisPulse/Core/Event/overrides.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 317,
+        "line": 322,
         "level": 3,
         "title": "[ErisPulse.Core.Event.overrides](ErisPulse/Core/Event/overrides.md)"
       }
@@ -477,7 +485,7 @@
     "[ErisPulse.Core.Event.request](ErisPulse/Core/Event/request.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 322,
+        "line": 327,
         "level": 3,
         "title": "[ErisPulse.Core.Event.request](ErisPulse/Core/Event/request.md)"
       }
@@ -485,7 +493,7 @@
     "[ErisPulse.Core.Event.session_type](ErisPulse/Core/Event/session_type.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 327,
+        "line": 332,
         "level": 3,
         "title": "[ErisPulse.Core.Event.session_type](ErisPulse/Core/Event/session_type.md)"
       }
@@ -493,7 +501,7 @@
     "[ErisPulse.Core.Event.wrapper](ErisPulse/Core/Event/wrapper.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 332,
+        "line": 337,
         "level": 3,
         "title": "[ErisPulse.Core.Event.wrapper](ErisPulse/Core/Event/wrapper.md)"
       }
@@ -501,7 +509,7 @@
     "[ErisPulse.Core.__init__](ErisPulse/Core/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 337,
+        "line": 342,
         "level": 3,
         "title": "[ErisPulse.Core.__init__](ErisPulse/Core/__init__.md)"
       }
@@ -509,7 +517,7 @@
     "[ErisPulse.Core.adapter](ErisPulse/Core/adapter.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 342,
+        "line": 347,
         "level": 3,
         "title": "[ErisPulse.Core.adapter](ErisPulse/Core/adapter.md)"
       }
@@ -517,7 +525,7 @@
     "[ErisPulse.Core.assets.__init__](ErisPulse/Core/assets/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 347,
+        "line": 352,
         "level": 3,
         "title": "[ErisPulse.Core.assets.__init__](ErisPulse/Core/assets/__init__.md)"
       }
@@ -525,7 +533,7 @@
     "[ErisPulse.Core.client](ErisPulse/Core/client.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 352,
+        "line": 357,
         "level": 3,
         "title": "[ErisPulse.Core.client](ErisPulse/Core/client.md)"
       }
@@ -533,7 +541,7 @@
     "[ErisPulse.Core.config](ErisPulse/Core/config.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 357,
+        "line": 362,
         "level": 3,
         "title": "[ErisPulse.Core.config](ErisPulse/Core/config.md)"
       }
@@ -541,7 +549,7 @@
     "[ErisPulse.Core.constants](ErisPulse/Core/constants.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 362,
+        "line": 367,
         "level": 3,
         "title": "[ErisPulse.Core.constants](ErisPulse/Core/constants.md)"
       }
@@ -549,7 +557,7 @@
     "[ErisPulse.Core.i18n.__init__](ErisPulse/Core/i18n/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 367,
+        "line": 372,
         "level": 3,
         "title": "[ErisPulse.Core.i18n.__init__](ErisPulse/Core/i18n/__init__.md)"
       }
@@ -557,7 +565,7 @@
     "[ErisPulse.Core.i18n.constants](ErisPulse/Core/i18n/constants.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 372,
+        "line": 377,
         "level": 3,
         "title": "[ErisPulse.Core.i18n.constants](ErisPulse/Core/i18n/constants.md)"
       }
@@ -565,7 +573,7 @@
     "[ErisPulse.Core.i18n.locales.__init__](ErisPulse/Core/i18n/locales/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 377,
+        "line": 382,
         "level": 3,
         "title": "[ErisPulse.Core.i18n.locales.__init__](ErisPulse/Core/i18n/locales/__init__.md)"
       }
@@ -573,7 +581,7 @@
     "[ErisPulse.Core.i18n.locales.en](ErisPulse/Core/i18n/locales/en.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 382,
+        "line": 387,
         "level": 3,
         "title": "[ErisPulse.Core.i18n.locales.en](ErisPulse/Core/i18n/locales/en.md)"
       }
@@ -581,7 +589,7 @@
     "[ErisPulse.Core.i18n.locales.ja](ErisPulse/Core/i18n/locales/ja.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 387,
+        "line": 392,
         "level": 3,
         "title": "[ErisPulse.Core.i18n.locales.ja](ErisPulse/Core/i18n/locales/ja.md)"
       }
@@ -589,7 +597,7 @@
     "[ErisPulse.Core.i18n.locales.ru](ErisPulse/Core/i18n/locales/ru.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 392,
+        "line": 397,
         "level": 3,
         "title": "[ErisPulse.Core.i18n.locales.ru](ErisPulse/Core/i18n/locales/ru.md)"
       }
@@ -597,7 +605,7 @@
     "[ErisPulse.Core.i18n.locales.zh_cn](ErisPulse/Core/i18n/locales/zh_cn.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 397,
+        "line": 402,
         "level": 3,
         "title": "[ErisPulse.Core.i18n.locales.zh_cn](ErisPulse/Core/i18n/locales/zh_cn.md)"
       }
@@ -605,7 +613,7 @@
     "[ErisPulse.Core.i18n.locales.zh_tw](ErisPulse/Core/i18n/locales/zh_tw.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 402,
+        "line": 407,
         "level": 3,
         "title": "[ErisPulse.Core.i18n.locales.zh_tw](ErisPulse/Core/i18n/locales/zh_tw.md)"
       }
@@ -613,7 +621,7 @@
     "[ErisPulse.Core.lifecycle](ErisPulse/Core/lifecycle.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 407,
+        "line": 412,
         "level": 3,
         "title": "[ErisPulse.Core.lifecycle](ErisPulse/Core/lifecycle.md)"
       }
@@ -621,7 +629,7 @@
     "[ErisPulse.Core.logger](ErisPulse/Core/logger.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 412,
+        "line": 417,
         "level": 3,
         "title": "[ErisPulse.Core.logger](ErisPulse/Core/logger.md)"
       }
@@ -629,7 +637,7 @@
     "[ErisPulse.Core.master](ErisPulse/Core/master.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 417,
+        "line": 422,
         "level": 3,
         "title": "[ErisPulse.Core.master](ErisPulse/Core/master.md)"
       }
@@ -637,7 +645,7 @@
     "[ErisPulse.Core.module](ErisPulse/Core/module.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 422,
+        "line": 427,
         "level": 3,
         "title": "[ErisPulse.Core.module](ErisPulse/Core/module.md)"
       }
@@ -645,7 +653,7 @@
     "[ErisPulse.Core.router](ErisPulse/Core/router.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 427,
+        "line": 432,
         "level": 3,
         "title": "[ErisPulse.Core.router](ErisPulse/Core/router.md)"
       }
@@ -653,23 +661,47 @@
     "[ErisPulse.Core.scope](ErisPulse/Core/scope.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 432,
+        "line": 437,
         "level": 3,
         "title": "[ErisPulse.Core.scope](ErisPulse/Core/scope.md)"
       }
     ],
-    "[ErisPulse.Core.storage](ErisPulse/Core/storage.md)": [
+    "[ErisPulse.Core.storage.__init__](ErisPulse/Core/storage/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 437,
+        "line": 442,
         "level": 3,
-        "title": "[ErisPulse.Core.storage](ErisPulse/Core/storage.md)"
+        "title": "[ErisPulse.Core.storage.__init__](ErisPulse/Core/storage/__init__.md)"
+      }
+    ],
+    "[ErisPulse.Core.storage.mysql](ErisPulse/Core/storage/mysql.md)": [
+      {
+        "document": "api-reference/auto_api/README.md",
+        "line": 447,
+        "level": 3,
+        "title": "[ErisPulse.Core.storage.mysql](ErisPulse/Core/storage/mysql.md)"
+      }
+    ],
+    "[ErisPulse.Core.storage.postgres](ErisPulse/Core/storage/postgres.md)": [
+      {
+        "document": "api-reference/auto_api/README.md",
+        "line": 452,
+        "level": 3,
+        "title": "[ErisPulse.Core.storage.postgres](ErisPulse/Core/storage/postgres.md)"
+      }
+    ],
+    "[ErisPulse.Core.storage.sqlite](ErisPulse/Core/storage/sqlite.md)": [
+      {
+        "document": "api-reference/auto_api/README.md",
+        "line": 457,
+        "level": 3,
+        "title": "[ErisPulse.Core.storage.sqlite](ErisPulse/Core/storage/sqlite.md)"
       }
     ],
     "[ErisPulse.Core.text_match](ErisPulse/Core/text_match.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 442,
+        "line": 462,
         "level": 3,
         "title": "[ErisPulse.Core.text_match](ErisPulse/Core/text_match.md)"
       }
@@ -677,7 +709,7 @@
     "[ErisPulse.Core.transcript](ErisPulse/Core/transcript.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 447,
+        "line": 467,
         "level": 3,
         "title": "[ErisPulse.Core.transcript](ErisPulse/Core/transcript.md)"
       }
@@ -685,7 +717,7 @@
     "[ErisPulse.__init__](ErisPulse/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 452,
+        "line": 472,
         "level": 3,
         "title": "[ErisPulse.__init__](ErisPulse/__init__.md)"
       }
@@ -693,7 +725,7 @@
     "[ErisPulse.__main__](ErisPulse/__main__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 457,
+        "line": 477,
         "level": 3,
         "title": "[ErisPulse.__main__](ErisPulse/__main__.md)"
       }
@@ -701,7 +733,7 @@
     "[ErisPulse.finders.__init__](ErisPulse/finders/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 462,
+        "line": 482,
         "level": 3,
         "title": "[ErisPulse.finders.__init__](ErisPulse/finders/__init__.md)"
       }
@@ -709,7 +741,7 @@
     "[ErisPulse.finders.adapter](ErisPulse/finders/adapter.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 467,
+        "line": 487,
         "level": 3,
         "title": "[ErisPulse.finders.adapter](ErisPulse/finders/adapter.md)"
       }
@@ -717,7 +749,7 @@
     "[ErisPulse.finders.bases.finder](ErisPulse/finders/bases/finder.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 472,
+        "line": 492,
         "level": 3,
         "title": "[ErisPulse.finders.bases.finder](ErisPulse/finders/bases/finder.md)"
       }
@@ -725,7 +757,7 @@
     "[ErisPulse.finders.module](ErisPulse/finders/module.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 477,
+        "line": 497,
         "level": 3,
         "title": "[ErisPulse.finders.module](ErisPulse/finders/module.md)"
       }
@@ -733,7 +765,7 @@
     "[ErisPulse.loaders.__init__](ErisPulse/loaders/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 482,
+        "line": 502,
         "level": 3,
         "title": "[ErisPulse.loaders.__init__](ErisPulse/loaders/__init__.md)"
       }
@@ -741,7 +773,7 @@
     "[ErisPulse.loaders.adapter](ErisPulse/loaders/adapter.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 487,
+        "line": 507,
         "level": 3,
         "title": "[ErisPulse.loaders.adapter](ErisPulse/loaders/adapter.md)"
       }
@@ -749,7 +781,7 @@
     "[ErisPulse.loaders.bases.loader](ErisPulse/loaders/bases/loader.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 492,
+        "line": 512,
         "level": 3,
         "title": "[ErisPulse.loaders.bases.loader](ErisPulse/loaders/bases/loader.md)"
       }
@@ -757,7 +789,7 @@
     "[ErisPulse.loaders.module](ErisPulse/loaders/module.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 497,
+        "line": 517,
         "level": 3,
         "title": "[ErisPulse.loaders.module](ErisPulse/loaders/module.md)"
       }
@@ -765,7 +797,7 @@
     "[ErisPulse.loaders.plugin_folder](ErisPulse/loaders/plugin_folder.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 502,
+        "line": 522,
         "level": 3,
         "title": "[ErisPulse.loaders.plugin_folder](ErisPulse/loaders/plugin_folder.md)"
       }
@@ -773,7 +805,7 @@
     "[ErisPulse.loaders.strategy](ErisPulse/loaders/strategy.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 507,
+        "line": 527,
         "level": 3,
         "title": "[ErisPulse.loaders.strategy](ErisPulse/loaders/strategy.md)"
       }
@@ -781,7 +813,7 @@
     "[ErisPulse.loaders.strict](ErisPulse/loaders/strict.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 512,
+        "line": 532,
         "level": 3,
         "title": "[ErisPulse.loaders.strict](ErisPulse/loaders/strict.md)"
       }
@@ -789,7 +821,7 @@
     "[ErisPulse.runtime.__init__](ErisPulse/runtime/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 517,
+        "line": 537,
         "level": 3,
         "title": "[ErisPulse.runtime.__init__](ErisPulse/runtime/__init__.md)"
       }
@@ -797,7 +829,7 @@
     "[ErisPulse.runtime.config_schema](ErisPulse/runtime/config_schema.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 522,
+        "line": 542,
         "level": 3,
         "title": "[ErisPulse.runtime.config_schema](ErisPulse/runtime/config_schema.md)"
       }
@@ -805,7 +837,7 @@
     "[ErisPulse.runtime.context](ErisPulse/runtime/context.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 527,
+        "line": 547,
         "level": 3,
         "title": "[ErisPulse.runtime.context](ErisPulse/runtime/context.md)"
       }
@@ -813,7 +845,7 @@
     "[ErisPulse.runtime.diagnostics](ErisPulse/runtime/diagnostics.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 532,
+        "line": 552,
         "level": 3,
         "title": "[ErisPulse.runtime.diagnostics](ErisPulse/runtime/diagnostics.md)"
       }
@@ -821,7 +853,7 @@
     "[ErisPulse.runtime.exceptions](ErisPulse/runtime/exceptions.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 537,
+        "line": 557,
         "level": 3,
         "title": "[ErisPulse.runtime.exceptions](ErisPulse/runtime/exceptions.md)"
       }
@@ -829,7 +861,7 @@
     "[ErisPulse.runtime.frame_config](ErisPulse/runtime/frame_config.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 542,
+        "line": 562,
         "level": 3,
         "title": "[ErisPulse.runtime.frame_config](ErisPulse/runtime/frame_config.md)"
       }
@@ -837,7 +869,7 @@
     "[ErisPulse.runtime.hints](ErisPulse/runtime/hints.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 547,
+        "line": 567,
         "level": 3,
         "title": "[ErisPulse.runtime.hints](ErisPulse/runtime/hints.md)"
       }
@@ -845,7 +877,7 @@
     "[ErisPulse.runtime.memory](ErisPulse/runtime/memory.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 552,
+        "line": 572,
         "level": 3,
         "title": "[ErisPulse.runtime.memory](ErisPulse/runtime/memory.md)"
       }
@@ -853,7 +885,7 @@
     "[ErisPulse.runtime.plugin_reload](ErisPulse/runtime/plugin_reload.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 557,
+        "line": 577,
         "level": 3,
         "title": "[ErisPulse.runtime.plugin_reload](ErisPulse/runtime/plugin_reload.md)"
       }
@@ -861,7 +893,7 @@
     "[ErisPulse.runtime.tasks](ErisPulse/runtime/tasks.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 562,
+        "line": 582,
         "level": 3,
         "title": "[ErisPulse.runtime.tasks](ErisPulse/runtime/tasks.md)"
       }
@@ -869,7 +901,7 @@
     "[ErisPulse.sdk](ErisPulse/sdk.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 567,
+        "line": 587,
         "level": 3,
         "title": "[ErisPulse.sdk](ErisPulse/sdk.md)"
       }
@@ -884,16 +916,16 @@
     ],
     "`AddColumn(column_name: str, column_type: str)`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 179,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 270,
         "level": 5,
         "title": "`AddColumn(column_name: str, column_type: str)`"
       }
     ],
     "`AlterTable(table_name: str)`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 628,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 771,
         "level": 5,
         "title": "`AlterTable(table_name: str)`"
       }
@@ -937,13 +969,7 @@
     "`Count()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 222,
-        "level": 5,
-        "title": "`Count()`"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 137,
+        "line": 384,
         "level": 5,
         "title": "`Count()`"
       }
@@ -951,13 +977,7 @@
     "`CreateTable(table_name: str, columns: dict[str, str])`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 321,
-        "level": 5,
-        "title": "`CreateTable(table_name: str, columns: dict[str, str])`"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 583,
+        "line": 745,
         "level": 5,
         "title": "`CreateTable(table_name: str, columns: dict[str, str])`"
       }
@@ -979,7 +999,7 @@
     "`Delete()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 112,
+        "line": 220,
         "level": 5,
         "title": "`Delete()`"
       }
@@ -987,13 +1007,7 @@
     "`DropTable(table_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 331,
-        "level": 5,
-        "title": "`DropTable(table_name: str)`"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 601,
+        "line": 762,
         "level": 5,
         "title": "`DropTable(table_name: str)`"
       }
@@ -1374,6 +1388,14 @@
         "title": "`ErisPulse.Core.Bases.send_rules` 模块"
       }
     ],
+    "`ErisPulse.Core.Bases.sql_base` 模块": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 1,
+        "level": 1,
+        "title": "`ErisPulse.Core.Bases.sql_base` 模块"
+      }
+    ],
     "`ErisPulse.Core.Bases.storage` 模块": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
@@ -1646,12 +1668,36 @@
         "title": "`ErisPulse.Core.scope` 模块"
       }
     ],
-    "`ErisPulse.Core.storage` 模块": [
+    "`ErisPulse.Core.storage.__init__` 模块": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/__init__.md",
         "line": 1,
         "level": 1,
-        "title": "`ErisPulse.Core.storage` 模块"
+        "title": "`ErisPulse.Core.storage.__init__` 模块"
+      }
+    ],
+    "`ErisPulse.Core.storage.mysql` 模块": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 1,
+        "level": 1,
+        "title": "`ErisPulse.Core.storage.mysql` 模块"
+      }
+    ],
+    "`ErisPulse.Core.storage.postgres` 模块": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 1,
+        "level": 1,
+        "title": "`ErisPulse.Core.storage.postgres` 模块"
+      }
+    ],
+    "`ErisPulse.Core.storage.sqlite` 模块": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 1,
+        "level": 1,
+        "title": "`ErisPulse.Core.storage.sqlite` 模块"
       }
     ],
     "`ErisPulse.Core.text_match` 模块": [
@@ -1864,20 +1910,14 @@
     ],
     "`Execute()`": [
       {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 306,
+        "level": 5,
+        "title": "`Execute()`"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 201,
-        "level": 5,
-        "title": "`Execute()`"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 91,
-        "level": 5,
-        "title": "`Execute()`"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 206,
+        "line": 359,
         "level": 5,
         "title": "`Execute()`"
       }
@@ -1885,13 +1925,7 @@
     "`ExecuteOne()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 213,
-        "level": 5,
-        "title": "`ExecuteOne()`"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 122,
+        "line": 375,
         "level": 5,
         "title": "`ExecuteOne()`"
       }
@@ -1899,13 +1933,7 @@
     "`Exists()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 231,
-        "level": 5,
-        "title": "`Exists()`"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 150,
+        "line": 393,
         "level": 5,
         "title": "`Exists()`"
       }
@@ -1921,13 +1949,7 @@
     "`HasTable(table_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 340,
-        "level": 5,
-        "title": "`HasTable(table_name: str)`"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 614,
+        "line": 775,
         "level": 5,
         "title": "`HasTable(table_name: str)`"
       }
@@ -1957,7 +1979,7 @@
     "`Insert(data: dict[str, Any])`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 70,
+        "line": 178,
         "level": 5,
         "title": "`Insert(data: dict[str, Any])`"
       }
@@ -1965,7 +1987,7 @@
     "`InsertMulti(data: list[dict[str, Any]])`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 83,
+        "line": 191,
         "level": 5,
         "title": "`InsertMulti(data: list[dict[str, Any]])`"
       }
@@ -1973,7 +1995,7 @@
     "`Limit(count: int)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 157,
+        "line": 265,
         "level": 5,
         "title": "`Limit(count: int)`"
       }
@@ -1981,7 +2003,7 @@
     "`Offset(count: int)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 170,
+        "line": 278,
         "level": 5,
         "title": "`Offset(count: int)`"
       }
@@ -2017,7 +2039,7 @@
     "`OrderBy(column: str, desc: bool = False)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 141,
+        "line": 249,
         "level": 5,
         "title": "`OrderBy(column: str, desc: bool = False)`"
       }
@@ -2056,8 +2078,8 @@
     ],
     "`RenameTo(new_name: str)`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 193,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 284,
         "level": 5,
         "title": "`RenameTo(new_name: str)`"
       }
@@ -2093,7 +2115,7 @@
     "`Select()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 56,
+        "line": 164,
         "level": 5,
         "title": "`Select()`"
       }
@@ -2108,14 +2130,14 @@
     ],
     "`Table(table_name: str)`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 312,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 711,
         "level": 5,
         "title": "`Table(table_name: str)`"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 568,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 599,
         "level": 5,
         "title": "`Table(table_name: str)`"
       }
@@ -2153,7 +2175,7 @@
     "`ToDict()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 38,
+        "line": 146,
         "level": 5,
         "title": "`ToDict()`"
       }
@@ -2161,7 +2183,7 @@
     "`Update(data: dict[str, Any])`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 99,
+        "line": 207,
         "level": 5,
         "title": "`Update(data: dict[str, Any])`"
       }
@@ -2205,7 +2227,7 @@
     "`Where(condition: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 125,
+        "line": 233,
         "level": 5,
         "title": "`Where(condition: str)`"
       }
@@ -2322,14 +2344,6 @@
         "line": 208,
         "level": 5,
         "title": "`__dir__()`"
-      }
-    ],
-    "`__getattr__(key: str)`": [
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 643,
-        "level": 5,
-        "title": "`__getattr__(key: str)`"
       }
     ],
     "`__getattr__(module_name: str)`": [
@@ -2816,14 +2830,6 @@
         "title": "`__repr__()`"
       }
     ],
-    "`__setattr__(key: str, value: Any)`": [
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 657,
-        "level": 5,
-        "title": "`__setattr__(key: str, value: Any)`"
-      }
-    ],
     "`__setattr__(name: str, value: Any)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/module.md",
@@ -2926,14 +2932,6 @@
         "title": "`_ask_missing(args, field_name: str, prompt_text: str, default: str = '')`"
       }
     ],
-    "`_auto_commit(conn)`": [
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 284,
-        "level": 5,
-        "title": "`_auto_commit(conn)`"
-      }
-    ],
     "`_auto_discover_commands()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/cli.md",
@@ -2956,6 +2954,14 @@
         "line": 65,
         "level": 5,
         "title": "`_bind_clauses()`"
+      }
+    ],
+    "`_bridge_run(coro: Any, timeout: float | None = None)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 438,
+        "level": 5,
+        "title": "`_bridge_run(coro: Any, timeout: float | None = None)`"
       }
     ],
     "`_build_extra_pip_args(args)`": [
@@ -3062,6 +3068,20 @@
         "title": "`_check_command_typo()`"
       }
     ],
+    "`_check_config_changed()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 88,
+        "level": 5,
+        "title": "`_check_config_changed()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 81,
+        "level": 5,
+        "title": "`_check_config_changed()`"
+      }
+    ],
     "`_check_file_change()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/config.md",
@@ -3108,6 +3128,14 @@
         "line": 368,
         "level": 5,
         "title": "`_check_sdk_compatibility(min_sdk_version: str)`"
+      }
+    ],
+    "`_check_use_global_db_changed()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 64,
+        "level": 5,
+        "title": "`_check_use_global_db_changed()`"
       }
     ],
     "`_checkpoint_key(event: 'Event')`": [
@@ -3500,10 +3528,18 @@
         "title": "`_deep_merge(dst: dict, src: dict)`"
       }
     ],
+    "`_default_project_path(filename: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 362,
+        "level": 5,
+        "title": "`_default_project_path(filename: str)`"
+      }
+    ],
     "`_delete_nested_value(obj: Any, key_path: list[str])`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 432,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 521,
         "level": 5,
         "title": "`_delete_nested_value(obj: Any, key_path: list[str])`"
       }
@@ -3656,8 +3692,8 @@
     ],
     "`_ensure_directories()`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 323,
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 71,
         "level": 5,
         "title": "`_ensure_directories()`"
       }
@@ -3716,12 +3752,28 @@
         "title": "`_ensure_pip_available(target_python: str)`"
       }
     ],
+    "`_ensure_resource_state()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 333,
+        "level": 5,
+        "title": "`_ensure_resource_state()`"
+      }
+    ],
     "`_ensure_table()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/transcript.md",
         "line": 81,
         "level": 5,
         "title": "`_ensure_table()`"
+      }
+    ],
+    "`_ensure_txn_state()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 420,
+        "level": 5,
+        "title": "`_ensure_txn_state()`"
       }
     ],
     "`_eval_clause(row: dict, clause: str)`": [
@@ -3826,6 +3878,14 @@
         "line": 99,
         "level": 5,
         "title": "`_find_module_class(module_obj: Any)`"
+      }
+    ],
+    "`_finish_init()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 347,
+        "level": 5,
+        "title": "`_finish_init()`"
       }
     ],
     "`_flush_config()`": [
@@ -3944,14 +4004,6 @@
         "line": 124,
         "level": 5,
         "title": "`_get_config_status(name: str)`"
-      }
-    ],
-    "`_get_connection()`": [
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 310,
-        "level": 5,
-        "title": "`_get_connection()`"
       }
     ],
     "`_get_effective_language()`": [
@@ -4102,8 +4154,8 @@
     ],
     "`_get_nested_value(obj: Any, key_path: list[str])`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 341,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 507,
         "level": 5,
         "title": "`_get_nested_value(obj: Any, key_path: list[str])`"
       }
@@ -4212,6 +4264,14 @@
         "title": "`_has_rules(send_dsl: 'SendDSL')`"
       }
     ],
+    "`_has_running_loop()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 23,
+        "level": 3,
+        "title": "`_has_running_loop()`"
+      }
+    ],
     "`_http_decorate(full_path: str, module_name: str, methods: list[str] | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
@@ -4270,8 +4330,20 @@
     ],
     "`_init_db()`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 331,
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 95,
+        "level": 5,
+        "title": "`_init_db()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 88,
+        "level": 5,
+        "title": "`_init_db()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 78,
         "level": 5,
         "title": "`_init_db()`"
       }
@@ -4510,8 +4582,14 @@
     ],
     "`_is_ready()`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 274,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 340,
+        "level": 5,
+        "title": "`_is_ready()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 428,
         "level": 5,
         "title": "`_is_ready()`"
       }
@@ -4578,6 +4656,14 @@
         "line": 27,
         "level": 3,
         "title": "`_iter_leaf_diff(old: dict[str, Any], new: dict[str, Any], prefix: str = '')`"
+      }
+    ],
+    "`_kv_table_sql()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 535,
+        "level": 5,
+        "title": "`_kv_table_sql()`"
       }
     ],
     "`_load_accounts()`": [
@@ -4670,6 +4756,14 @@
         "line": 24,
         "level": 3,
         "title": "`_load_web_stack()`"
+      }
+    ],
+    "`_loads(raw: Any)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 528,
+        "level": 5,
+        "title": "`_loads(raw: Any)`"
       }
     ],
     "`_log(level_name: str, level_const: int, msg)`": [
@@ -4780,6 +4874,14 @@
         "line": 145,
         "level": 5,
         "title": "`_malformed_sentinel_path()`"
+      }
+    ],
+    "`_map_first_word(word: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 140,
+        "level": 5,
+        "title": "`_map_first_word(word: str)`"
       }
     ],
     "`_match_path(pattern: str, path: str)`": [
@@ -5022,22 +5124,6 @@
         "title": "`_on_router_config_changed(_data: dict)`"
       }
     ],
-    "`_on_storage_config_changed(_data: dict)`": [
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 267,
-        "level": 5,
-        "title": "`_on_storage_config_changed(_data: dict)`"
-      }
-    ],
-    "`_open_connection()`": [
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 294,
-        "level": 5,
-        "title": "`_open_connection()`"
-      }
-    ],
     "`_option_label(option)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/config_wizard.md",
@@ -5062,12 +5148,12 @@
         "title": "`_page_size()`"
       }
     ],
-    "`_parse_nested_key(key: str, conn = None)`": [
+    "`_parse_nested_key(key: str)`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 351,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 496,
         "level": 5,
-        "title": "`_parse_nested_key(key: str, conn = None)`"
+        "title": "`_parse_nested_key(key: str)`"
       }
     ],
     "`_parse_rate_limit(limit: str | dict)`": [
@@ -5436,6 +5522,14 @@
         "title": "`_register_stubs()`"
       }
     ],
+    "`_register_sync_txn(thread_id: int, txn: _AsyncTransaction)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 459,
+        "level": 5,
+        "title": "`_register_sync_txn(thread_id: int, txn: _AsyncTransaction)`"
+      }
+    ],
     "`_register_ws_endpoint(full_path: str, module_name: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None, auto_accept: bool = DEFAULT_WS_AUTO_ACCEPT)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
@@ -5482,6 +5576,20 @@
         "line": 292,
         "level": 5,
         "title": "`_report_purge_recyclability(refs: list[tuple[str, Any, Any]])`"
+      }
+    ],
+    "`_require_driver()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 102,
+        "level": 5,
+        "title": "`_require_driver()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 95,
+        "level": 5,
+        "title": "`_require_driver()`"
       }
     ],
     "`_resolve_account(account_id: str | None = None)`": [
@@ -5654,12 +5762,28 @@
         "title": "`_retention(session_key: str, max_per_session: int, ttl_hours: float)`"
       }
     ],
-    "`_rows_to_dict(cursor, rows: list[tuple])`": [
+    "`_routed_execute(coro_factory: Any)`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 110,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 348,
         "level": 5,
-        "title": "`_rows_to_dict(cursor, rows: list[tuple])`"
+        "title": "`_routed_execute(coro_factory: Any)`"
+      }
+    ],
+    "`_routing_conn()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 449,
+        "level": 5,
+        "title": "`_routing_conn()`"
+      }
+    ],
+    "`_rows_to_dict(rows: list[tuple], columns: list[str] | None)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 183,
+        "level": 5,
+        "title": "`_rows_to_dict(rows: list[tuple], columns: list[str] | None)`"
       }
     ],
     "`_run()`": [
@@ -5692,6 +5816,14 @@
         "line": 69,
         "level": 5,
         "title": "`_run_internal(reload_mode: bool)`"
+      }
+    ],
+    "`_run_loop()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 54,
+        "level": 5,
+        "title": "`_run_loop()`"
       }
     ],
     "`_run_named(targets, name: str, config)`": [
@@ -5846,8 +5978,8 @@
     ],
     "`_set_nested_value(obj: Any, key_path: list[str], value: Any)`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 418,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 514,
         "level": 5,
         "title": "`_set_nested_value(obj: Any, key_path: list[str], value: Any)`"
       }
@@ -6120,6 +6252,14 @@
         "title": "`_unload_timeout()`"
       }
     ],
+    "`_unregister_sync_txn(thread_id: int)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 466,
+        "level": 5,
+        "title": "`_unregister_sync_txn(thread_id: int)`"
+      }
+    ],
     "`_update_bot_heartbeat(platform: str, self_info: dict)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
@@ -6138,8 +6278,8 @@
     ],
     "`_validate_column_type(col_type: str)`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 52,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 49,
         "level": 3,
         "title": "`_validate_column_type(col_type: str)`"
       }
@@ -6162,8 +6302,8 @@
     ],
     "`_validate_identifier(name: str, context: str = 'identifier')`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 23,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 24,
         "level": 3,
         "title": "`_validate_identifier(name: str, context: str = 'identifier')`"
       }
@@ -6194,8 +6334,8 @@
     ],
     "`_validate_select_column(name: str, context: str = 'column')`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 34,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 35,
         "level": 3,
         "title": "`_validate_select_column(name: str, context: str = 'column')`"
       }
@@ -6282,6 +6422,14 @@
         "line": 70,
         "level": 5,
         "title": "`_watch_config_file()`"
+      }
+    ],
+    "`_watch_storage_config(check: Callable[[], str | None])`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 354,
+        "level": 5,
+        "title": "`_watch_storage_config(check: Callable[[], str | None])`"
       }
     ],
     "`_web_stack_required(fn: Callable[..., Any])`": [
@@ -6448,6 +6596,56 @@
         "title": "`apply_send_rules(base_task_factory: Any)`"
       }
     ],
+    "`async _acquire()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 418,
+        "level": 5,
+        "title": "`async _acquire()`"
+      }
+    ],
+    "`async _acquire_resource_conn(resource: Any)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 383,
+        "level": 5,
+        "title": "`async _acquire_resource_conn(resource: Any)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 123,
+        "level": 5,
+        "title": "`async _acquire_resource_conn(resource: Any)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 116,
+        "level": 5,
+        "title": "`async _acquire_resource_conn(resource: Any)`"
+      }
+    ],
+    "`async _acquire_resource_conn(resource: aiosqlite.Connection)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 109,
+        "level": 5,
+        "title": "`async _acquire_resource_conn(resource: aiosqlite.Connection)`"
+      }
+    ],
+    "`async _acquire_txn_conn()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 454,
+        "level": 5,
+        "title": "`async _acquire_txn_conn()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 482,
+        "level": 5,
+        "title": "`async _acquire_txn_conn()`"
+      }
+    ],
     "`async _activate()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/module.md",
@@ -6472,6 +6670,14 @@
         "title": "`async _activate_and_forward_command(cmd_name: str, event: Any)`"
       }
     ],
+    "`async _aexecute_insert_multi()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 207,
+        "level": 5,
+        "title": "`async _aexecute_insert_multi()`"
+      }
+    ],
     "`async _api_call(action: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/adapter.md",
@@ -6480,12 +6686,52 @@
         "title": "`async _api_call(action: str)`"
       }
     ],
+    "`async _apply_pragmas(conn: aiosqlite.Connection)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 88,
+        "level": 5,
+        "title": "`async _apply_pragmas(conn: aiosqlite.Connection)`"
+      }
+    ],
     "`async _ascan_rows()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/kv_builder.md",
         "line": 96,
         "level": 5,
         "title": "`async _ascan_rows()`"
+      }
+    ],
+    "`async _begin_txn(conn: Any)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 461,
+        "level": 5,
+        "title": "`async _begin_txn(conn: Any)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 492,
+        "level": 5,
+        "title": "`async _begin_txn(conn: Any)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 151,
+        "level": 5,
+        "title": "`async _begin_txn(conn: Any)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 144,
+        "level": 5,
+        "title": "`async _begin_txn(conn: Any)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 137,
+        "level": 5,
+        "title": "`async _begin_txn(conn: Any)`"
       }
     ],
     "`async _builtin_choose(event: 'Event', prompt: str, options: list[str], timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, method: str = DEFAULT_SEND_METHOD, options_format: str | Callable[[list[str]], str] = 'auto', merge_prompt: bool = False, placeholder: str = '{options}')`": [
@@ -6544,12 +6790,126 @@
         "title": "`async _cleanup_adapter_resources(platform: str)`"
       }
     ],
+    "`async _close_txn_conn(conn: Any)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 404,
+        "level": 5,
+        "title": "`async _close_txn_conn(conn: Any)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 144,
+        "level": 5,
+        "title": "`async _close_txn_conn(conn: Any)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 137,
+        "level": 5,
+        "title": "`async _close_txn_conn(conn: Any)`"
+      }
+    ],
+    "`async _close_txn_conn(conn: aiosqlite.Connection)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 130,
+        "level": 5,
+        "title": "`async _close_txn_conn(conn: aiosqlite.Connection)`"
+      }
+    ],
+    "`async _commit_txn(conn: Any, handle: Any = None)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 468,
+        "level": 5,
+        "title": "`async _commit_txn(conn: Any, handle: Any = None)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 501,
+        "level": 5,
+        "title": "`async _commit_txn(conn: Any, handle: Any = None)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 158,
+        "level": 5,
+        "title": "`async _commit_txn(conn: Any, handle: Any = None)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 151,
+        "level": 5,
+        "title": "`async _commit_txn(conn: Any, handle: Any = None)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 144,
+        "level": 5,
+        "title": "`async _commit_txn(conn: Any, handle: Any = None)`"
+      }
+    ],
     "`async _complete_async_init()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/module.md",
         "line": 468,
         "level": 5,
         "title": "`async _complete_async_init()`"
+      }
+    ],
+    "`async _create_loop_resource()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 369,
+        "level": 5,
+        "title": "`async _create_loop_resource()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 109,
+        "level": 5,
+        "title": "`async _create_loop_resource()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 102,
+        "level": 5,
+        "title": "`async _create_loop_resource()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 95,
+        "level": 5,
+        "title": "`async _create_loop_resource()`"
+      }
+    ],
+    "`async _destroy_loop_resource(resource: Any)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 376,
+        "level": 5,
+        "title": "`async _destroy_loop_resource(resource: Any)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 116,
+        "level": 5,
+        "title": "`async _destroy_loop_resource(resource: Any)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 109,
+        "level": 5,
+        "title": "`async _destroy_loop_resource(resource: Any)`"
+      }
+    ],
+    "`async _destroy_loop_resource(resource: aiosqlite.Connection)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 102,
+        "level": 5,
+        "title": "`async _destroy_loop_resource(resource: aiosqlite.Connection)`"
       }
     ],
     "`async _dispatch_dependency_event(module_name: str, hook_name: str)`": [
@@ -6608,12 +6968,46 @@
         "title": "`async _emit_lifecycle(event: str)`"
       }
     ],
+    "`async _exec_query_on(kind: str, sql: str, params: Any, conn: Any)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 434,
+        "level": 5,
+        "title": "`async _exec_query_on(kind: str, sql: str, params: Any, conn: Any)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 172,
+        "level": 5,
+        "title": "`async _exec_query_on(kind: str, sql: str, params: Any, conn: Any)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 165,
+        "level": 5,
+        "title": "`async _exec_query_on(kind: str, sql: str, params: Any, conn: Any)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 158,
+        "level": 5,
+        "title": "`async _exec_query_on(kind: str, sql: str, params: Any, conn: Any)`"
+      }
+    ],
     "`async _execute_handlers(hook_name: str, event: str, data: Any)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
         "line": 273,
         "level": 5,
         "title": "`async _execute_handlers(hook_name: str, event: str, data: Any)`"
+      }
+    ],
+    "`async _execute_query(kind: str, sql: str, params: Any)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 447,
+        "level": 5,
+        "title": "`async _execute_query(kind: str, sql: str, params: Any)`"
       }
     ],
     "`async _fetch_available_adapters()`": [
@@ -6646,6 +7040,14 @@
         "line": 630,
         "level": 5,
         "title": "`async _forward_event(event_handler: Any, event: Any)`"
+      }
+    ],
+    "`async _get_loop_resource()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 411,
+        "level": 5,
+        "title": "`async _get_loop_resource()`"
       }
     ],
     "`async _get_package_info(package_name: str)`": [
@@ -6688,6 +7090,14 @@
         "title": "`async _handle_request_action(action: str, comment: str | None = None)`"
       }
     ],
+    "`async _init_kv_table()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 542,
+        "level": 5,
+        "title": "`async _init_kv_table()`"
+      }
+    ],
     "`async _initialize()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/module.md",
@@ -6710,6 +7120,14 @@
         "line": 21,
         "level": 3,
         "title": "`async _invoke_handler(handler_info: dict, event: Event)`"
+      }
+    ],
+    "`async _new_async_transaction_and_start()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 473,
+        "level": 5,
+        "title": "`async _new_async_transaction_and_start()`"
       }
     ],
     "`async _noop_async(value)`": [
@@ -6742,6 +7160,32 @@
         "line": 125,
         "level": 5,
         "title": "`async _on_module_unload_notify(data: dict)`"
+      }
+    ],
+    "`async _open_txn_conn()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 397,
+        "level": 5,
+        "title": "`async _open_txn_conn()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 137,
+        "level": 5,
+        "title": "`async _open_txn_conn()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 130,
+        "level": 5,
+        "title": "`async _open_txn_conn()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 123,
+        "level": 5,
+        "title": "`async _open_txn_conn()`"
       }
     ],
     "`async _prepare_environment()`": [
@@ -6780,6 +7224,56 @@
         "title": "`async _process_event(event: dict[str, Any])`"
       }
     ],
+    "`async _recover_missing_table()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 549,
+        "level": 5,
+        "title": "`async _recover_missing_table()`"
+      }
+    ],
+    "`async _release_resource_conn(resource: Any, conn: Any)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 390,
+        "level": 5,
+        "title": "`async _release_resource_conn(resource: Any, conn: Any)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 130,
+        "level": 5,
+        "title": "`async _release_resource_conn(resource: Any, conn: Any)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 123,
+        "level": 5,
+        "title": "`async _release_resource_conn(resource: Any, conn: Any)`"
+      }
+    ],
+    "`async _release_resource_conn(resource: aiosqlite.Connection, conn: Any)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 116,
+        "level": 5,
+        "title": "`async _release_resource_conn(resource: aiosqlite.Connection, conn: Any)`"
+      }
+    ],
+    "`async _release_txn_conn(conn: Any)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 482,
+        "level": 5,
+        "title": "`async _release_txn_conn(conn: Any)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 515,
+        "level": 5,
+        "title": "`async _release_txn_conn(conn: Any)`"
+      }
+    ],
     "`async _reload_module(module_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
@@ -6812,12 +7306,60 @@
         "title": "`async _rollback_receipts(receipts: list[dict[str, str]])`"
       }
     ],
+    "`async _rollback_txn(conn: Any, handle: Any = None)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 475,
+        "level": 5,
+        "title": "`async _rollback_txn(conn: Any, handle: Any = None)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 508,
+        "level": 5,
+        "title": "`async _rollback_txn(conn: Any, handle: Any = None)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 165,
+        "level": 5,
+        "title": "`async _rollback_txn(conn: Any, handle: Any = None)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 158,
+        "level": 5,
+        "title": "`async _rollback_txn(conn: Any, handle: Any = None)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 151,
+        "level": 5,
+        "title": "`async _rollback_txn(conn: Any, handle: Any = None)`"
+      }
+    ],
     "`async _run_adapter(adapter: BaseAdapter, platform: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/adapter.md",
         "line": 236,
         "level": 5,
         "title": "`async _run_adapter(adapter: BaseAdapter, platform: str)`"
+      }
+    ],
+    "`async _run_alter(table_name: str, operations: 'list[tuple[str, tuple[Any, ...]]]')`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 489,
+        "level": 5,
+        "title": "`async _run_alter(table_name: str, operations: 'list[tuple[str, tuple[Any, ...]]]')`"
+      }
+    ],
+    "`async _run_with_conn(impl: Callable[..., Any])`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 426,
+        "level": 5,
+        "title": "`async _run_with_conn(impl: Callable[..., Any])`"
       }
     ],
     "`async _run_ws_hooks(ws_conn: WebSocketConnection, hook_type: str)`": [
@@ -6868,12 +7410,114 @@
         "title": "`async _unload_single_module(module_name: str)`"
       }
     ],
+    "`async aCount()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 228,
+        "level": 5,
+        "title": "`async aCount()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 330,
+        "level": 5,
+        "title": "`async aCount()`"
+      }
+    ],
+    "`async aCreateTable(table_name: str, columns: dict[str, str])`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 725,
+        "level": 5,
+        "title": "`async aCreateTable(table_name: str, columns: dict[str, str])`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 612,
+        "level": 5,
+        "title": "`async aCreateTable(table_name: str, columns: dict[str, str])`"
+      }
+    ],
+    "`async aDropTable(table_name: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 745,
+        "level": 5,
+        "title": "`async aDropTable(table_name: str)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 622,
+        "level": 5,
+        "title": "`async aDropTable(table_name: str)`"
+      }
+    ],
     "`async aExecute()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/kv_builder.md",
         "line": 103,
         "level": 5,
         "title": "`async aExecute()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 190,
+        "level": 5,
+        "title": "`async aExecute()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 297,
+        "level": 5,
+        "title": "`async aExecute()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 309,
+        "level": 5,
+        "title": "`async aExecute()`"
+      }
+    ],
+    "`async aExecuteOne()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 214,
+        "level": 5,
+        "title": "`async aExecuteOne()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 321,
+        "level": 5,
+        "title": "`async aExecuteOne()`"
+      }
+    ],
+    "`async aExists()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 241,
+        "level": 5,
+        "title": "`async aExists()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 339,
+        "level": 5,
+        "title": "`async aExists()`"
+      }
+    ],
+    "`async aHasTable(table_name: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 758,
+        "level": 5,
+        "title": "`async aHasTable(table_name: str)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 631,
+        "level": 5,
+        "title": "`async aHasTable(table_name: str)`"
       }
     ],
     "`async accept(subprotocol: str | None = None, headers: Iterable[tuple[bytes, bytes]] | None = None)`": [
@@ -6886,24 +7530,56 @@
     ],
     "`async aclear()`": [
       {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 617,
+        "level": 5,
+        "title": "`async aclear()`"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 426,
+        "line": 586,
         "level": 5,
         "title": "`async aclear()`"
       }
     ],
-    "`async adelete(key: str)`": [
+    "`async aclose()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 785,
+        "level": 5,
+        "title": "`async aclose()`"
+      },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 408,
+        "line": 854,
+        "level": 5,
+        "title": "`async aclose()`"
+      }
+    ],
+    "`async adelete(key: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 588,
+        "level": 5,
+        "title": "`async adelete(key: str)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 557,
         "level": 5,
         "title": "`async adelete(key: str)`"
       }
     ],
     "`async adelete_multi(keys: list[str])`": [
       {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 685,
+        "level": 5,
+        "title": "`async adelete_multi(keys: list[str])`"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 453,
+        "line": 836,
         "level": 5,
         "title": "`async adelete_multi(keys: list[str])`"
       }
@@ -6918,8 +7594,14 @@
     ],
     "`async aget(key: str, default: Any = None)`": [
       {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 556,
+        "level": 5,
+        "title": "`async aget(key: str, default: Any = None)`"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 385,
+        "line": 522,
         "level": 5,
         "title": "`async aget(key: str, default: Any = None)`"
       }
@@ -6934,16 +7616,28 @@
     ],
     "`async aget_all_keys()`": [
       {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 604,
+        "level": 5,
+        "title": "`async aget_all_keys()`"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 417,
+        "line": 573,
         "level": 5,
         "title": "`async aget_all_keys()`"
       }
     ],
     "`async aget_multi(keys: list[str])`": [
       {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 630,
+        "level": 5,
+        "title": "`async aget_multi(keys: list[str])`"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 435,
+        "line": 818,
         "level": 5,
         "title": "`async aget_multi(keys: list[str])`"
       }
@@ -6966,8 +7660,14 @@
     ],
     "`async aset(key: str, value: Any)`": [
       {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 572,
+        "level": 5,
+        "title": "`async aset(key: str, value: Any)`"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 398,
+        "line": 540,
         "level": 5,
         "title": "`async aset(key: str, value: Any)`"
       }
@@ -6982,10 +7682,24 @@
     ],
     "`async aset_multi(items: dict[str, Any])`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 444,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 656,
         "level": 5,
         "title": "`async aset_multi(items: dict[str, Any])`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 827,
+        "level": 5,
+        "title": "`async aset_multi(items: dict[str, Any])`"
+      }
+    ],
+    "`async atransaction()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 640,
+        "level": 5,
+        "title": "`async atransaction()`"
       }
     ],
     "`async body()`": [
@@ -7184,6 +7898,14 @@
         "line": 1655,
         "level": 5,
         "title": "`async emit_meta(detail_type: str, bot_id: str)`"
+      }
+    ],
+    "`async finish(exc: BaseException | None)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 99,
+        "level": 5,
+        "title": "`async finish(exc: BaseException | None)`"
       }
     ],
     "`async form()`": [
@@ -7970,6 +8692,12 @@
         "line": 1483,
         "level": 5,
         "title": "`async start()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 92,
+        "level": 5,
+        "title": "`async start()`"
       }
     ],
     "`async start(host: str = DEFAULT_SERVER_HOST, port: int = DEFAULT_SERVER_PORT, ssl_certfile: str | None = None, ssl_keyfile: str | None = None)`": [
@@ -8168,6 +8896,32 @@
         "title": "`auth()`"
       }
     ],
+    "`autoincrement_column(base_type: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 130,
+        "level": 5,
+        "title": "`autoincrement_column(base_type: str)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 59,
+        "level": 5,
+        "title": "`autoincrement_column(base_type: str)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 52,
+        "level": 5,
+        "title": "`autoincrement_column(base_type: str)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 31,
+        "level": 5,
+        "title": "`autoincrement_column(base_type: str)`"
+      }
+    ],
     "`available_methods()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
@@ -8344,8 +9098,8 @@
     ],
     "`class AlterTableBuilder`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 164,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 254,
         "level": 3,
         "title": "`class AlterTableBuilder`"
       }
@@ -8364,6 +9118,14 @@
         "line": 705,
         "level": 3,
         "title": "`class ApiDSL`"
+      }
+    ],
+    "`class AsyncBridge`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 36,
+        "level": 3,
+        "title": "`class AsyncBridge`"
       }
     ],
     "`class BaseAdapter(ABC)`": [
@@ -8457,7 +9219,7 @@
     "`class BaseQueryBuilder(ABC)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 22,
+        "line": 127,
         "level": 3,
         "title": "`class BaseQueryBuilder(ABC)`"
       }
@@ -8465,7 +9227,7 @@
     "`class BaseStorage(ABC)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 240,
+        "line": 402,
         "level": 3,
         "title": "`class BaseStorage(ABC)`"
       }
@@ -8950,6 +9712,22 @@
         "title": "`class ModuleMeta`"
       }
     ],
+    "`class MySQLDialect(SQLDialect)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 23,
+        "level": 3,
+        "title": "`class MySQLDialect(SQLDialect)`"
+      }
+    ],
+    "`class MySQLStorage(_SingletonMixin, SQLStorageBase)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 73,
+        "level": 3,
+        "title": "`class MySQLStorage(_SingletonMixin, SQLStorageBase)`"
+      }
+    ],
     "`class NoticeHandler`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/notice.md",
@@ -8988,6 +9766,22 @@
         "line": 94,
         "level": 3,
         "title": "`class PollingObserver`"
+      }
+    ],
+    "`class PostgresDialect(SQLDialect)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 23,
+        "level": 3,
+        "title": "`class PostgresDialect(SQLDialect)`"
+      }
+    ],
+    "`class PostgresStorage(_SingletonMixin, SQLStorageBase)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 66,
+        "level": 3,
+        "title": "`class PostgresStorage(_SingletonMixin, SQLStorageBase)`"
       }
     ],
     "`class ReloadHandler(FileSystemEventHandler)`": [
@@ -9054,12 +9848,44 @@
         "title": "`class SDK`"
       }
     ],
-    "`class SQLiteQueryBuilder(BaseQueryBuilder)`": [
+    "`class SQLDialect`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 75,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 67,
         "level": 3,
-        "title": "`class SQLiteQueryBuilder(BaseQueryBuilder)`"
+        "title": "`class SQLDialect`"
+      }
+    ],
+    "`class SQLQueryBuilder(BaseQueryBuilder)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 167,
+        "level": 3,
+        "title": "`class SQLQueryBuilder(BaseQueryBuilder)`"
+      }
+    ],
+    "`class SQLStorageBase(BaseStorage)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 315,
+        "level": 3,
+        "title": "`class SQLStorageBase(BaseStorage)`"
+      }
+    ],
+    "`class SQLiteDialect(SQLDialect)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 23,
+        "level": 3,
+        "title": "`class SQLiteDialect(SQLDialect)`"
+      }
+    ],
+    "`class SQLiteStorage(_SingletonMixin, SQLStorageBase)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 45,
+        "level": 3,
+        "title": "`class SQLiteStorage(_SingletonMixin, SQLStorageBase)`"
       }
     ],
     "`class ScaffoldText`": [
@@ -9132,14 +9958,6 @@
         "line": 478,
         "level": 3,
         "title": "`class SseEmitter`"
-      }
-    ],
-    "`class StorageManager(BaseStorage)`": [
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 215,
-        "level": 3,
-        "title": "`class StorageManager(BaseStorage)`"
       }
     ],
     "`class StrEnum(str, Enum)`": [
@@ -9270,6 +10088,14 @@
         "title": "`class _AclNamespace`"
       }
     ],
+    "`class _AsyncTransaction`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 80,
+        "level": 3,
+        "title": "`class _AsyncTransaction`"
+      }
+    ],
     "`class _CommandNamespace`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/overrides.md",
@@ -9288,8 +10114,8 @@
     ],
     "`class _EmptyTransaction`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 65,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 108,
         "level": 3,
         "title": "`class _EmptyTransaction`"
       }
@@ -9328,8 +10154,8 @@
     ],
     "`class _NestedTransaction`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 70,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 113,
         "level": 3,
         "title": "`class _NestedTransaction`"
       }
@@ -9382,12 +10208,20 @@
         "title": "`class _SingleLineFormatter(logging.Formatter)`"
       }
     ],
-    "`class _Transaction`": [
+    "`class _SingletonMixin`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 234,
-        "level": 5,
-        "title": "`class _Transaction`"
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 62,
+        "level": 3,
+        "title": "`class _SingletonMixin`"
+      }
+    ],
+    "`class _SyncTransaction`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 118,
+        "level": 3,
+        "title": "`class _SyncTransaction`"
       }
     ],
     "`class _TypeNamespace`": [
@@ -9401,13 +10235,13 @@
     "`clear()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 192,
+        "line": 300,
         "level": 5,
         "title": "`clear()`"
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 294,
+        "line": 714,
         "level": 5,
         "title": "`clear()`"
       },
@@ -9452,12 +10286,6 @@
         "line": 612,
         "level": 5,
         "title": "`clear()`"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 555,
-        "level": 5,
-        "title": "`clear()`"
       }
     ],
     "`clear(session: Any)`": [
@@ -9496,6 +10324,20 @@
         "line": 326,
         "level": 5,
         "title": "`client()`"
+      }
+    ],
+    "`close()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 71,
+        "level": 5,
+        "title": "`close()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 868,
+        "level": 5,
+        "title": "`close()`"
       }
     ],
     "`closed()`": [
@@ -9629,7 +10471,7 @@
     "`copy()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 183,
+        "line": 291,
         "level": 5,
         "title": "`copy()`"
       },
@@ -9646,6 +10488,14 @@
         "line": 327,
         "level": 5,
         "title": "`counts()`"
+      }
+    ],
+    "`create_storage()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/__init__.md",
+        "line": 28,
+        "level": 3,
+        "title": "`create_storage()`"
       }
     ],
     "`critical(msg)`": [
@@ -9727,13 +10577,7 @@
     "`delete(key: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 276,
-        "level": 5,
-        "title": "`delete(key: str)`"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 497,
+        "line": 688,
         "level": 5,
         "title": "`delete(key: str)`"
       }
@@ -9804,14 +10648,14 @@
     ],
     "`delete_multi(keys: list[str])`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 367,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 698,
         "level": 5,
         "title": "`delete_multi(keys: list[str])`"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 514,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 809,
         "level": 5,
         "title": "`delete_multi(keys: list[str])`"
       }
@@ -10165,13 +11009,7 @@
     "`get(key: str, default: Any = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 256,
-        "level": 5,
-        "title": "`get(key: str, default: Any = None)`"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 372,
+        "line": 660,
         "level": 5,
         "title": "`get(key: str, default: Any = None)`"
       }
@@ -10254,14 +11092,14 @@
     ],
     "`getConfig(key: str, default: Any = None)`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/config.md",
-        "line": 237,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 880,
         "level": 5,
         "title": "`getConfig(key: str, default: Any = None)`"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 477,
+        "document": "api-reference/auto_api/ErisPulse/Core/config.md",
+        "line": 237,
         "level": 5,
         "title": "`getConfig(key: str, default: Any = None)`"
       }
@@ -10301,13 +11139,7 @@
     "`get_all_keys()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 285,
-        "level": 5,
-        "title": "`get_all_keys()`"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 390,
+        "line": 701,
         "level": 5,
         "title": "`get_all_keys()`"
       }
@@ -10796,14 +11628,14 @@
     ],
     "`get_multi(keys: list[str])`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 349,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 643,
         "level": 5,
         "title": "`get_multi(keys: list[str])`"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 527,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 789,
         "level": 5,
         "title": "`get_multi(keys: list[str])`"
       }
@@ -11258,6 +12090,26 @@
         "title": "`has_mention()`"
       }
     ],
+    "`has_table_sql(table_name: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 121,
+        "level": 5,
+        "title": "`has_table_sql(table_name: str)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 52,
+        "level": 5,
+        "title": "`has_table_sql(table_name: str)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 45,
+        "level": 5,
+        "title": "`has_table_sql(table_name: str)`"
+      }
+    ],
     "`has_translation(key: str, lang: str | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/i18n/__init__.md",
@@ -11624,6 +12476,32 @@
         "title": "`is_message()`"
       }
     ],
+    "`is_missing_table_error(exc: BaseException)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 158,
+        "level": 5,
+        "title": "`is_missing_table_error(exc: BaseException)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 66,
+        "level": 5,
+        "title": "`is_missing_table_error(exc: BaseException)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 59,
+        "level": 5,
+        "title": "`is_missing_table_error(exc: BaseException)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 38,
+        "level": 5,
+        "title": "`is_missing_table_error(exc: BaseException)`"
+      }
+    ],
     "`is_notice()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
@@ -11737,13 +12615,7 @@
     "`keys()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 376,
-        "level": 5,
-        "title": "`keys()`"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 404,
+        "line": 845,
         "level": 5,
         "title": "`keys()`"
       }
@@ -11754,6 +12626,14 @@
         "line": 322,
         "level": 5,
         "title": "`kind_label()`"
+      }
+    ],
+    "`kv_table_ddl(table: str, key_col: str, value_col: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 101,
+        "level": 5,
+        "title": "`kv_table_ddl(table: str, key_col: str, value_col: str)`"
       }
     ],
     "`last_error()`": [
@@ -12472,6 +13352,20 @@
         "title": "`query_params()`"
       }
     ],
+    "`quote(name: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 92,
+        "level": 5,
+        "title": "`quote(name: str)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 38,
+        "level": 5,
+        "title": "`quote(name: str)`"
+      }
+    ],
     "`raise_if_fatal()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/strict.md",
@@ -13006,6 +13900,14 @@
         "title": "`run()`"
       }
     ],
+    "`run(coro: Any, timeout: float | None = None)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 61,
+        "level": 5,
+        "title": "`run(coro: Any, timeout: float | None = None)`"
+      }
+    ],
     "`run_wizard(target: ConfigTarget, config = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/config_wizard.md",
@@ -13135,13 +14037,7 @@
     "`set(key: str, value: Any)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 266,
-        "level": 5,
-        "title": "`set(key: str, value: Any)`"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 442,
+        "line": 674,
         "level": 5,
         "title": "`set(key: str, value: Any)`"
       }
@@ -13172,8 +14068,8 @@
     ],
     "`setConfig(key: str, value: Any)`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 487,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 890,
         "level": 5,
         "title": "`setConfig(key: str, value: Any)`"
       }
@@ -13298,14 +14194,14 @@
     ],
     "`set_multi(items: dict[str, Any])`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 358,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 672,
         "level": 5,
         "title": "`set_multi(items: dict[str, Any])`"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 460,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 800,
         "level": 5,
         "title": "`set_multi(items: dict[str, Any])`"
       }
@@ -13789,15 +14685,37 @@
     "`transaction()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 303,
+        "line": 727,
         "level": 5,
         "title": "`transaction()`"
+      }
+    ],
+    "`translate_column_type(col_type: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 147,
+        "level": 5,
+        "title": "`translate_column_type(col_type: str)`"
+      }
+    ],
+    "`translate_sql(sql: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 82,
+        "level": 5,
+        "title": "`translate_sql(sql: str)`"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 540,
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 31,
         "level": 5,
-        "title": "`transaction()`"
+        "title": "`translate_sql(sql: str)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 31,
+        "level": 5,
+        "title": "`translate_sql(sql: str)`"
       }
     ],
     "`tree_item(text: str, level: int = 0, is_last: bool = False)`": [
@@ -14054,6 +14972,26 @@
         "title": "`upgrade_package(package_names: list[str], pre: bool = False)`"
       }
     ],
+    "`upsert_kv_sql(table: str, key_col: str, value_col: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 111,
+        "level": 5,
+        "title": "`upsert_kv_sql(table: str, key_col: str, value_col: str)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 45,
+        "level": 5,
+        "title": "`upsert_kv_sql(table: str, key_col: str, value_col: str)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 38,
+        "level": 5,
+        "title": "`upsert_kv_sql(table: str, key_col: str, value_col: str)`"
+      }
+    ],
     "`url()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/client.md",
@@ -14230,6 +15168,18 @@
         "title": "函数列表"
       },
       {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 21,
+        "level": 2,
+        "title": "函数列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 20,
+        "level": 2,
+        "title": "函数列表"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/__init__.md",
         "line": 19,
         "level": 2,
@@ -14320,8 +15270,8 @@
         "title": "函数列表"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 20,
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/__init__.md",
+        "line": 25,
         "level": 2,
         "title": "函数列表"
       },
@@ -14408,12 +15358,6 @@
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/adapter.md",
         "line": 1345,
-        "level": 4,
-        "title": "嵌套类"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 231,
         "level": 4,
         "title": "嵌套类"
       },
@@ -14702,14 +15646,50 @@
         "title": "方法列表"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 35,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 79,
+        "level": 4,
+        "title": "方法列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 180,
+        "level": 4,
+        "title": "方法列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 267,
+        "level": 4,
+        "title": "方法列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 330,
         "level": 4,
         "title": "方法列表"
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 253,
+        "line": 51,
+        "level": 4,
+        "title": "方法列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 89,
+        "level": 4,
+        "title": "方法列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 143,
+        "level": 4,
+        "title": "方法列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
+        "line": 417,
         "level": 4,
         "title": "方法列表"
       },
@@ -14900,26 +15880,38 @@
         "title": "方法列表"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 88,
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 28,
         "level": 4,
         "title": "方法列表"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 176,
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 85,
         "level": 4,
         "title": "方法列表"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 242,
-        "level": 6,
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 28,
+        "level": 4,
         "title": "方法列表"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 264,
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 78,
+        "level": 4,
+        "title": "方法列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 28,
+        "level": 4,
+        "title": "方法列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 61,
         "level": 4,
         "title": "方法列表"
       },
@@ -15344,6 +16336,12 @@
         "title": "模块概述"
       },
       {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 5,
+        "level": 2,
+        "title": "模块概述"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
         "line": 5,
         "level": 2,
@@ -15548,7 +16546,25 @@
         "title": "模块概述"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/__init__.md",
+        "line": 5,
+        "level": 2,
+        "title": "模块概述"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 5,
+        "level": 2,
+        "title": "模块概述"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 5,
+        "level": 2,
+        "title": "模块概述"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
         "line": 5,
         "level": 2,
         "title": "模块概述"
@@ -15916,8 +16932,14 @@
         "title": "类列表"
       },
       {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 59,
+        "level": 2,
+        "title": "类列表"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
-        "line": 19,
+        "line": 33,
         "level": 2,
         "title": "类列表"
       },
@@ -16060,8 +17082,20 @@
         "title": "类列表"
       },
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/storage.md",
-        "line": 62,
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+        "line": 20,
+        "level": 2,
+        "title": "类列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+        "line": 20,
+        "level": 2,
+        "title": "类列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
+        "line": 20,
         "level": 2,
         "title": "类列表"
       },
