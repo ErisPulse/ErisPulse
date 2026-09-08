@@ -292,16 +292,16 @@ Storage keys include a target dimension (`conversation:{platform}:{user_id}:{tar
 
 ### Automatic Archiving
 
-The framework automatically maintains checkpoints at the following times, typically without needing to manually call `save()`:
+The framework automatically maintains checkpoints at the following moments, typically without needing to manually call `save()`:
 
-| Timing | Behavior |
+| Moment | Behavior |
 |--------|----------|
-| `goto()` / `start()` jump to a branch | Automatically saves (current branch + context) |
-| `stop()` / `wait()` timeout / `collect()` failure | Automatically clears (conversation terminal state) |
+| `goto()` / `start()` to switch branches | Automatically save (current branch + context) |
+| `stop()` / `wait()` timeout / `collect()` failure | Automatically clear (end of conversation state) |
 
 ### Checkpoint TTL
 
-Checkpoints are timestamped, and those exceeding `ErisPulse.interaction.checkpoint_ttl` (default: 24 hours) are automatically discarded during recovery:
+Checkpoints are timestamped, and those exceeding `ErisPulse.interaction.checkpoint_ttl` (default 24 hours) are automatically discarded during recovery:
 
 ```toml
 [ErisPulse.interaction]
@@ -310,7 +310,7 @@ checkpoint_ttl = 86400  # seconds
 
 ### Automatic Recovery on Restart
 
-After a framework restart, in-progress conversations (waiting coroutines in memory) are lost, but checkpoints remain. By registering a **resume handler** via `register_resume_handler`, the framework can automatically resume a conversation when the first message of that session arrives after a restart:
+After a framework restart, in-progress conversations (waiting coroutines in memory) are lost, but checkpoints remain. By registering a **resume factory** via `register_resume_handler`, the framework can automatically resume conversations when the first message of a session arrives after restart:
 
 ```python
 from ErisPulse.Core.Event.wrapper import Conversation
@@ -327,9 +327,22 @@ def make_conversation(event) -> Conversation:
     return conv
 ```
 
-After registration, when a user previously in the `menu` branch sends their first message after a restart, the framework automatically: restores context → claims the message → resumes the conversation from the archived branch. If no factory is registered, this mechanism incurs zero overhead.
+After registration, when a user previously in the `menu` branch sends their first message after a restart, the framework automatically: restores context → claims the message → continues the conversation from the saved branch. If no factory is registered, this mechanism incurs zero overhead.
 
-### Manual Recovery (When Not Using Automatic Mechanism)
+### Resume Equals Takeover
+
+When `resume()` succeeds, the framework automatically performs two actions:
+
+1. **Session takeover**: Automatically acquires the session's mutual exclusion lease—other modules can detect "this user is currently engaged in a conversation" via `sdk.interaction.get_owner_of(event)`; if the session is already occupied by another module, recovery is abandoned (returns False), preventing conflicts between two conversations.
+2. **History retrieval**: Retrieves the most recent 10 messages from the session's inbox to `conv.recent_history` (ensuring continuous LLM context after AI module recovery); `resume(with_history=0)` can disable this.
+
+```python
+if await conv.resume(with_history=20):
+    for m in conv.recent_history:
+        print(m["role"], ":", m["text"])
+```
+
+### Manual Recovery (when not using automatic mechanism)
 
 ```python
 @command("continue")
