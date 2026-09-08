@@ -1,25 +1,25 @@
 {
   "version": 2,
-  "hash": "7f20816df84a5c720196012d0b87b45d",
-  "file_hash": "7f20816df84a5c720196012d0b87b45d",
-  "translated_at": "2026-09-07T10:53:09.864705",
+  "hash": "c74296126eae77c297ca34b742d3e83b",
+  "file_hash": "c74296126eae77c297ca34b742d3e83b",
+  "translated_at": "2026-09-08T05:36:24.338765",
   "target_lang": "ja",
   "chunks": [
     {
       "hash": "940fb1a5278ec5d38e1b46188eea4472",
-      "translation": "# 高度なトピック\n\nこのディレクトリには、ErisPulse フレームワークの高度な機能と詳細なトピックが含まれています。"
+      "translation": "# 高級トピック\n\nこのディレクトリには、ErisPulse フレームワークの高度な機能と詳細なトピックが含まれています。"
     },
     {
-      "hash": "c75473969977483768d08659b1ba47ab",
-      "translation": "## ドキュメント一覧\n\n- [起動プロセスと手動制御](startup.md) - 起動経路の分解（Finder/Loader/Manager/Router）と手動による完全起動\n- [ラジロードシステム](lazy-loading.md) - ラジロードモジュールシステムの動作原理、設定、イベント駆動による遅延活性化（activate_on）\n- [スコープ（scope）](scope.md) - 3次元スコープ制御：モジュールの可用性 / イベントのアクセス制限 / 出力アクション制限（メソッドレベルの細かいルールとバインディング継承 merge を含む）\n- [所有権（owner）システム](ownership.md) - リソースの所有権と自動回収：ownerコンテキストメカニズム、所有リソースの全体像、アンロードクリーンアップシーケンス、設計境界\n- [国際化 (i18n)](i18n.md) - 多言語サポート、翻訳登録、言語検出\n- [ライフサイクル管理](lifecycle.md) - ライフサイクルイベントシステムの使用方法\n- [ルートマネージャー](router.md) - HTTP および WebSocket ルート管理\n- [HTTP クライアント](http-client.md) - 統一された HTTP リクエストクライアント\n- [MessageBuilder 詳解](message-builder.md) - OneBot12 メッセージセグメントビルダーの二つのモードの使い方\n- [SQL クエリビルダー](sql-builder.md) - 一般的な SQL チェーン式クエリビルダーとストレージバックエンドの抽象化\n- [セッションタイプシステム](../standards/session-types.md) - セッションタイプの定義、マッピング、およびカスタムタイプの登録\n- [Conversation 多段対話](conversation.md) - 多段対話コンテキストのインタラクション方法\n\n> [!NOTE]\n> Dashboard 視窗登録、Takumi 画像レンダリングなどの **サードパーティエコシステムモジュール** のドキュメントは、[エコシステムモジュール](../ecosystem/README.md) 目録に移動しました。"
+      "hash": "f2eb59a387a534858a6b34f0dd13875d",
+      "translation": "## ドキュメントリスト\n\n- [起動プロセスと手動制御](startup.md) - 起動リンクの分解（Finder/Loader/Manager/Router）と手動での完全起動\n- [遅延読み込みシステム](lazy-loading.md) - 遅延読み込みモジュールシステムの動作原理、設定、イベント駆動による遅延アクティベーション（activate_on）\n- [スコープ（scope）](scope.md) - 3次元スコープ制御：モジュールの可用性 / イベントのアクセス制御 / 出力アクションの制限（メソッドレベルの細かいルールとバインディング継承 merge を含む）\n- [所有権（owner）システム](ownership.md) - リソースの所有権と自動回収：owner コンテキストメカニズム、所有リソースの全体像、アンロード時のクリーンアップシーケンスと設計の境界\n- [国際化 (i18n)](i18n.md) - 多言語サポート、翻訳の登録と言語の検出\n- [ライフサイクル管理](lifecycle.md) - ライフサイクルイベントシステムの使用方法\n- [ルートマネージャー](router.md) - HTTP および WebSocket ルートの管理\n- [HTTP クライアント](http-client.md) - 統一された HTTP リクエストクライアント\n- [MessageBuilder 詳解](message-builder.md) - OneBot12 メッセージセグメントビルダーの二重モードの使用法\n- [SQL クエリビルダー](sql-builder.md) - 一般的な SQL チェーン式クエリビルダーとストレージバックエンドの抽象化\n- [ストレージバックエンド](storage-backends.md) - sqlite / mysql / postgres の非同期ネイティブストレージバックエンドの選択、設定、切り替え\n- [セッションタイプシステム](../standards/session-types.md) - セッションタイプの定義、マッピング、およびカスタムタイプの登録\n- [Conversation 多段対話](conversation.md) - 多段対話コンテキストの対話メソッド\n\n> [!NOTE]\n> Dashboard 視窗の登録、Takumi 画像のレンダリングなどの **サードパーティエコシステムモジュール** のドキュメントは、[エコシステムモジュール](../ecosystem/README.md) ディレクトリに移動されました。"
     },
     {
       "hash": "81b5854fa95b29d89b547d92b77468de",
-      "translation": "## 対象読者\n\nこのドキュメントは以下の開発者を対象としています：\n\n- ErisPulse の基本機能に精通している開発者\n- フレームワークの内部メカニズムを深く理解したい開発者\n- 性能を最適化したり、複雑な機能を実装したい開発者"
+      "translation": "## 対象読者\n\nこれらのドキュメントは以下の開発者向けです：\n\n- ErisPulse の基本機能に既に精通している開発者\n- フレームワークの内部メカニズムを深く理解したい開発者\n- パフォーマンスの最適化や複雑な機能の実装を必要とする開発者"
     },
     {
       "hash": "3ed79ef0b3d522c4c10b2d4fa69192f8",
-      "translation": "## 前提知識\n\nこのディレクトリのドキュメントを読む前に、以下の内容を事前に理解しておくことを推奨します：\n\n- [基本概念](../getting-started/basic-concepts.md)\n- [イベント処理の入門](../getting-started/event-handling.md)\n- [モジュール開発ガイド](../developer-guide/modules/)"
+      "translation": "## 前提知識\n\nこのディレクトリのドキュメントを読む前に、以下の内容を理解しておくことをお勧めします：\n\n- [基本概念](../getting-started/basic-concepts.md)\n- [イベント処理の入門](../getting-started/event-handling.md)\n- [モジュール開発ガイド](../developer-guide/modules/)"
     }
   ]
 }
