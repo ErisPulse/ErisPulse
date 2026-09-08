@@ -4,18 +4,19 @@ This directory contains advanced features and in-depth topics of the ErisPulse f
 
 ## Document List
 
-- [Startup Process and Manual Control](startup.md) - Decomposition of the startup chain (Finder/Loader/Manager/Router) and manual full startup
-- [Lazy Loading System](lazy-loading.md) - The working principle, configuration, and event-driven lazy activation (`activate_on`) of the lazy loading module system
-- [Scope](scope.md) - Three-dimensional scope control: module availability / event access / outbound action restrictions (including method-level fine-grained rules and binding inheritance `merge`)
-- [Ownership (owner) System](ownership.md) - Resource ownership and automatic recycling: owner context mechanism, full view of owned resources, unload cleanup sequence, and design boundaries
+- [Startup Process and Manual Control](startup.md) - Breakdown of the startup chain (Finder/Loader/Manager/Router) and manual full startup
+- [Lazy Loading System](lazy-loading.md) - How the lazy loading module system works, configuration, and event-driven lazy activation (activate_on)
+- [Scope](scope.md) - Three-dimensional scope control: module availability / event access / outbound action restriction (including method-level granular rules and binding inheritance merge)
+- [Ownership System](ownership.md) - Resource ownership and automatic cleanup: owner context mechanism, full view of owned resources, unload cleanup sequence, and design boundaries
 - [Internationalization (i18n)](i18n.md) - Multi-language support, translation registration, and language detection
 - [Lifecycle Management](lifecycle.md) - How to use the lifecycle event system
 - [Router Manager](router.md) - HTTP and WebSocket routing management
 - [HTTP Client](http-client.md) - Unified HTTP request client
-- [MessageBuilder Detailed Explanation](message-builder.md) - Dual-mode usage of the OneBot12 message segment builder
+- [MessageBuilder Explained](message-builder.md) - Dual-mode usage of the OneBot12 message segment builder
 - [SQL Query Builder](sql-builder.md) - General SQL chained query builder and storage backend abstraction
-- [Session Type System](../standards/session-types.md) - Session type definition, mapping, and custom type registration
-- [Conversation Multi-turn Dialogue](conversation.md) - Interaction methods for multi-turn dialogue context
+- [Storage Backends](storage-backends.md) - Selecting, configuring, and switching between asynchronous native storage backends: sqlite / mysql / postgres
+- [Session Type System](../standards/session-types.md) - Session type definitions, mappings, and custom type registration
+- [Conversation Multi-turn Dialogue](conversation.md) - Interaction methods for multi-turn dialogue contexts
 
 > [!NOTE]
 > Documentation for **third-party ecosystem modules** such as Dashboard view registration and Takumi image rendering has been moved to the [Ecosystem Modules](../ecosystem/README.md) directory.

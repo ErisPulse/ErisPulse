@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "hash": "62b53a2ddde8741568b3527061ce83ff",
+  "file_hash": "62b53a2ddde8741568b3527061ce83ff",
+  "translated_at": "2026-09-08T05:37:18.971368",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "a73b35a1c124a858e56480103ddc62aa",
+      "translation": "# ストレージバックエンド\n\nErisPulse には、3 種類の非同期ネイティブストレージバックエンドが内蔵されており、設定を変更することで簡単に切り替えることができます。**API は完全に同一であり、コードの変更は一切必要ありません**。\n\n| バックエンド | ドライバー | インストール | 特徴 |\n|------|------|------|------|\n| SQLite（デフォルト） | aiosqlite | インストール不要 | 零設定、単一ファイル、WAL による並行処理 |\n| MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | 既存の MySQL インフラストラクチャがある場合、複数インスタンスで共有するのに適しています |\n| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | トランザクション処理が強力、JSONB エコシステム、高並行性 |\n\n{!--< tips >!--}\n1. 非同期はネイティブの主インターフェース（`aget/aset/atransaction/aExecute`）であり、同期 API は互換性層です。\n2. フレームワーク自体の設定の永続化、会話の受信箱、対話のチェックポイントなどはすべて同じストレージバックエンドを経由します。バックエンドを切り替えることで、全体の移行が可能です。\n{!--< /tips >!--}"
+    },
+    {
+      "hash": "76e0fd25ed7cbc2783013357bbb37f84",
+      "translation": "## バックエンドの選択\n\n`config/config.toml` で設定します：\n\n```toml\n[ErisPulse.storage]\nbackend = \"sqlite\"        # \"sqlite\"（デフォルト）/ \"mysql\" / \"postgres\"\nuse_global_db = false     # SQLite のみ有効：パッケージ内のグローバルデータベース data/config.db を使用\n```\n\nまた、Docker / 12-factor アプリケーション仕様に準拠した環境変数による上書きもサポートしています：\n\n```bash\nERISPULSE_STORAGE_BACKEND=postgres\nERISPULSE_STORAGE_POSTGRES_HOST=db.example.com\nERISPULSE_STORAGE_POSTGRES_PASSWORD=secret\n```\n\n環境変数の命名規則は、設定パスを大文字にし、ドットをアンダースコアに変換します。\n（`ErisPulse.storage.postgres.host` → `ERISPULSE_STORAGE_POSTGRES_HOST`）。"
+    },
+    {
+      "hash": "04941a69ef97cd6fa94ff680d5ce273c",
+      "translation": "## 接続パラメータ\n\n### MySQL（`ErisPulse.storage.mysql`）\n\n```toml\n[ErisPulse.storage.mysql]\nhost = \"127.0.0.1\"\nport = 3306\nuser = \"erispulse\"\npassword = \"\"\ndatabase = \"erispulse\"\ncharset = \"utf8mb4\"\npool_min = 1\npool_max = 10\n```\n\n### PostgreSQL（`ErisPulse.storage.postgres`）\n\n```toml\n[ErisPulse.storage.postgres]\nhost = \"127.0.0.1\"\nport = 5432\nuser = \"erispulse\"\npassword = \"\"\ndatabase = \"erispulse\"\npool_min = 1\npool_max = 10\n```\n\n> [!NOTE]\n> 接続パラメータを変更した後は、フレームワークを再起動する必要があります（設定のホット更新時に再起動のリマインダーログが出力されます）。\n> 接続プールはイベントループに従って惰性作成され、作成時に瞬間的な失敗（ネットワークの揺れ / データベースの再起動期間）が発生した場合、自動的に指数型の退避再試行が行われます。"
+    },
+    {
+      "hash": "5e228c9acaa842fed2641f61482b3281",
+      "translation": "## 異同步ネイティブAPI\n\n```python\n# KV操作\nawait sdk.storage.aset(\"app.name\", \"MyApp\")\nvalue = await sdk.storage.aget(\"app.name\")\nkeys = await sdk.storage.aget_all_keys()\n\n# テーブル操作\nawait sdk.storage.aCreateTable(\"users\", {\n    \"id\": \"INTEGER PRIMARY KEY AUTOINCREMENT\",\n    \"name\": \"TEXT NOT NULL\",\n})\nrows = await sdk.storage.Table(\"users\").Select(\"name\").ToDict().aExecute()\n\n# 異スレッドトランザクション\nasync with sdk.storage.atransaction():\n    await sdk.storage.aset(\"key1\", \"value1\")\n    await sdk.storage.Table(\"users\").Insert({\"name\": \"Alice\"}).aExecute()\n```\n\n同期API（`get/set/transaction/Table(...).Execute()`）は引き続き使用可能で、内部では\n`AsyncBridge` がバックグラウンドイベントループをブリッジして実行します。非同期ハンドラ内で同期APIを呼び出すと、\nイベントループが一時的にブロックされるため、a接頭辞の非同期メソッドを優先して使用することを推奨します。完全なメソッドの対照表は\n[SQLクエリビルダー](sql-builder.md)をご覧ください。"
+    },
+    {
+      "hash": "fb0f5a54e8e15925c34bc9789399f653",
+      "translation": "## 方言の動作の違い\n\n方言の違いはすべてフレームワーク内部で吸収され、呼び出し元のコードはその違いを意識する必要はありません。\n\n| 差異点 | SQLite | MySQL | PostgreSQL |\n|------|------|------|------|\n| プレースホルダ | `?` | `%s`（自動変換） | `$1..$n`（自動変換） |\n| KV UPSERT | `INSERT OR REPLACE` | `ON DUPLICATE KEY UPDATE` | `ON CONFLICT DO UPDATE` |\n| KV 値の列型 | `TEXT` | `LONGTEXT` | `TEXT` |\n| 自動増分主キー | 原生サポート | `AUTO_INCREMENT`（自動変換） | `SERIAL`（自動変換） |\n\n列の定義はすべて SQLite のスタイルを使用します（例: `\"INTEGER PRIMARY KEY AUTOINCREMENT\"`、`\"TEXT NOT NULL\"`、`\"DOUBLE DEFAULT 0.0\"`）。これらの定義は、後端のデータベースに等価な形式に自動的に変換されます。"
+    },
+    {
+      "hash": "4456caf0b2aa114376e6566017473994",
+      "translation": "## 自定义 SQL バックエンド\n\n純粋な SQL バックエンドは、共有基底クラスを継承し、接続管理と方言実行ファネルを提供するだけです。\n\n```python\nfrom ErisPulse.Core.Bases.sql_base import SQLDialect, SQLStorageBase\n\nclass MyDialect(SQLDialect):\n    name = \"mydb\"\n    # オーバーライド: プレースホルダ翻訳 / イデンティファイア引用 / UPSERT / タイプマッピング ...\n\nclass MyStorage(SQLStorageBase):\n    dialect = MyDialect()\n\n    async def _create_loop_resource(self): ...   # 接続プール\n    async def _destroy_loop_resource(self, r): ...\n    async def _acquire_resource_conn(self, r): ...\n    async def _release_resource_conn(self, r, c): ...\n    async def _open_txn_conn(self): ...\n    async def _close_txn_conn(self, c): ...\n    async def _exec_query_on(self, kind, sql, params, conn): ...  # 実行ファネル\n```\n\n非 SQL バックエンド（例: Redis）は `BaseStorage` を継承して KV 非同期インターフェースを実装した後、\n`KVQueryBuilder` を使ってチェーン式の表クエリ機能（メモリ内フィルタ、中小データ量に適している）を直接利用できます。"
+    },
+    {
+      "hash": "3ae6982fe94da206150b970519863c8b",
+      "translation": "## 関連ドキュメント\n\n- [SQL クエリビルダー](sql-builder.md) - チェーン式クエリ構文と非同期 API の対照表\n- [コアモジュール API](../api-reference/core-modules.md) - Storage モジュールの完全な API\n- [ストレージ基底クラス API](../api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md) - SQLStorageBase / SQLDialect 抽象インターフェース"
+    }
+  ]
+}

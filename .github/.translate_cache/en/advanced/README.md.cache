@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "7f20816df84a5c720196012d0b87b45d",
-  "file_hash": "7f20816df84a5c720196012d0b87b45d",
-  "translated_at": "2026-09-07T10:47:26.760699",
+  "hash": "c74296126eae77c297ca34b742d3e83b",
+  "file_hash": "c74296126eae77c297ca34b742d3e83b",
+  "translated_at": "2026-09-08T05:36:12.713643",
   "target_lang": "en",
   "chunks": [
     {
@@ -10,16 +10,16 @@
       "translation": "# Advanced Topics\n\nThis directory contains advanced features and in-depth topics of the ErisPulse framework."
     },
     {
-      "hash": "c75473969977483768d08659b1ba47ab",
-      "translation": "## Documentation List\n\n- [Startup Process and Manual Control](startup.md) - Breakdown of the startup chain (Finder/Loader/Manager/Router) and manual full startup\n- [Lazy Loading System](lazy-loading.md) - Working principle, configuration, and event-driven lazy activation (activate_on) of the lazy loading module system\n- [Scope](scope.md) - Three-dimensional scope control: module availability / event access / outbound action restrictions (including method-level fine-grained rules and binding inheritance merge)\n- [Ownership System](ownership.md) - Resource ownership and automatic cleanup: owner context mechanism, ownership resource overview, unload cleanup sequence, and design boundaries\n- [Internationalization (i18n)](i18n.md) - Multi-language support, translation registration, and language detection\n- [Lifecycle Management](lifecycle.md) - Usage methods of the lifecycle event system\n- [Router Manager](router.md) - HTTP and WebSocket routing management\n- [HTTP Client](http-client.md) - Unified HTTP request client\n- [MessageBuilder Detailed Explanation](message-builder.md) - Dual-mode usage of the OneBot12 message segment builder\n- [SQL Query Builder](sql-builder.md) - General SQL chain query builder and storage backend abstraction\n- [Session Type System](../standards/session-types.md) - Session type definition, mapping, and custom type registration\n- [Conversation Multi-turn Dialogue](conversation.md) - Interaction methods for multi-turn dialogue context\n\n> [!NOTE]\n> Documentation for **third-party ecosystem modules** such as Dashboard window registration and Takumi image rendering has been moved to the [Ecosystem Modules](../ecosystem/README.md) directory."
+      "hash": "f2eb59a387a534858a6b34f0dd13875d",
+      "translation": "## Document List\n\n- [Startup Process and Manual Control](startup.md) - Breakdown of the startup chain (Finder/Loader/Manager/Router) and manual full startup\n- [Lazy Loading System](lazy-loading.md) - How the lazy loading module system works, configuration, and event-driven lazy activation (activate_on)\n- [Scope](scope.md) - Three-dimensional scope control: module availability / event access / outbound action restriction (including method-level granular rules and binding inheritance merge)\n- [Ownership System](ownership.md) - Resource ownership and automatic cleanup: owner context mechanism, full view of owned resources, unload cleanup sequence, and design boundaries\n- [Internationalization (i18n)](i18n.md) - Multi-language support, translation registration, and language detection\n- [Lifecycle Management](lifecycle.md) - How to use the lifecycle event system\n- [Router Manager](router.md) - HTTP and WebSocket routing management\n- [HTTP Client](http-client.md) - Unified HTTP request client\n- [MessageBuilder Explained](message-builder.md) - Dual-mode usage of the OneBot12 message segment builder\n- [SQL Query Builder](sql-builder.md) - General SQL chained query builder and storage backend abstraction\n- [Storage Backends](storage-backends.md) - Selecting, configuring, and switching between asynchronous native storage backends: sqlite / mysql / postgres\n- [Session Type System](../standards/session-types.md) - Session type definitions, mappings, and custom type registration\n- [Conversation Multi-turn Dialogue](conversation.md) - Interaction methods for multi-turn dialogue contexts\n\n> [!NOTE]\n> Documentation for **third-party ecosystem modules** such as Dashboard view registration and Takumi image rendering has been moved to the [Ecosystem Modules](../ecosystem/README.md) directory."
     },
     {
       "hash": "81b5854fa95b29d89b547d92b77468de",
-      "translation": "## Audience\n\nThese documents are suitable for the following developers:\n\n- Developers who are already familiar with the basic features of ErisPulse\n- Developers who need to deeply understand the internal mechanisms of the framework\n- Developers who need to optimize performance or implement complex features"
+      "translation": "## Intended Audience\n\nThese documents are suitable for the following developers:\n\n- Developers who are already familiar with the basic features of ErisPulse\n- Developers who need to deeply understand the internal mechanisms of the framework\n- Developers who need to optimize performance or implement complex features"
     },
     {
       "hash": "3ed79ef0b3d522c4c10b2d4fa69192f8",
-      "translation": "## Prerequisites\n\nBefore reading this section of the documentation, it is recommended to first understand:\n\n- [Basic Concepts](../getting-started/basic-concepts.md)\n- [Event Handling Introduction](../getting-started/event-handling.md)\n- [Module Development Guide](../developer-guide/modules/)"
+      "translation": "## Prerequisites\n\nBefore reading the documents in this directory, it is recommended to first understand:\n\n- [Basic Concepts](../getting-started/basic-concepts.md)\n- [Event Handling Introduction](../getting-started/event-handling.md)\n- [Module Development Guide](../developer-guide/modules/)"
     }
   ]
 }
