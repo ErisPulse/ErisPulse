@@ -109,7 +109,7 @@ class TranscriptManager:
     # ==================== 存储 ====================
 
     def _ensure_table(self) -> bool:
-        """{!--< internal-use >!--} 惰性建表"""
+        """{!--< internal-use >!--} 惰性建表（含旧表 sender 列迁移）"""
         if self._table_ready:
             return True
         try:
@@ -121,15 +121,31 @@ class TranscriptManager:
                         "session_key": "TEXT NOT NULL",
                         "event_id": "TEXT DEFAULT ''",
                         "role": "TEXT NOT NULL",
+                        "sender": "TEXT DEFAULT ''",
                         "text": "TEXT DEFAULT ''",
                         "ts": "REAL NOT NULL",
                     },
                 )
+            else:
+                self._migrate_add_sender()
             self._table_ready = True
             return True
         except Exception as e:
             logger.trace(i18n.t("core.transcript.table_failed", error=e))
             return False
+
+    def _migrate_add_sender(self) -> None:
+        """{!--< internal-use >!--} 旧表缺 sender 列时自动补列（2.8.0 新增）"""
+        try:
+            # 探测：sender 列可查询即无需迁移（避免 duplicate column 告警）
+            storage.Table(TRANSCRIPT_TABLE).Select("sender").Limit(1).Execute()
+            return
+        except Exception:
+            pass
+        try:
+            storage.AlterTable(TRANSCRIPT_TABLE).AddColumn("sender", "TEXT DEFAULT ''").Execute()
+        except Exception:
+            pass  # 后端不支持 ALTER——静默降级（sender 仅回放增强用）
 
     def _retention(self, session_key: str, max_per_session: int, ttl_hours: float) -> None:
         """{!--< internal-use >!--} 保留策略：每会话条数上限 + 全局 TTL（惰性触发）"""
@@ -157,6 +173,7 @@ class TranscriptManager:
         role: str,
         text: str,
         event_id: str = "",
+        sender: str = "",
     ) -> bool:
         """
         记录一条消息到会话收件箱
@@ -165,6 +182,7 @@ class TranscriptManager:
         :param role: 消息角色（"user" / "bot"）
         :param text: 消息文本（超长自动截断）
         :param event_id: 关联的事件 ID（可选）
+        :param sender: 发送者标识（user_id，可选，回放时还原消息来源）
         :return: 是否写入成功（未启用时返回 False）
 
         :example:
@@ -185,6 +203,7 @@ class TranscriptManager:
                     "session_key": key,
                     "event_id": str(event_id or ""),
                     "role": role,
+                    "sender": str(sender or ""),
                     "text": text,
                     "ts": ts,
                 }
@@ -240,6 +259,50 @@ class TranscriptManager:
                     "event_id": r.get("event_id", ""),
                 }
                 for r in reversed(rows)
+                if isinstance(r, dict)
+            ]
+        except Exception as e:
+            logger.trace(i18n.t("core.transcript.get_failed", error=e))
+            return []
+
+    def recent(self, seconds: float, limit: int = 200) -> list[dict[str, Any]]:
+        """
+        查询全部会话中最近一段时间内的消息（跨会话，按时间升序）
+
+        冷启动回放（``get_load_strategy(replay=...)``）的数据源；
+        每条记录额外携带 ``session_key``，用于还原消息来源会话。
+
+        :param seconds: 回溯时长（秒）
+        :param limit: 最大返回条数（防止模块冷启动被打爆）
+        :return: 消息列表（role / text / ts / sender / session_key）
+
+        :example:
+        >>> transcript.recent(300)  # 最近 5 分钟
+        """
+        if not self._ensure_table():
+            return []
+        cutoff = time.time() - max(0.0, float(seconds))
+        try:
+            rows = (
+                storage.Table(TRANSCRIPT_TABLE)
+                .Select("role", "text", "ts", "sender", "session_key")
+                .Where("ts > ?", cutoff)
+                .OrderBy("ts", desc=False)
+                .Limit(max(1, int(limit)))
+                .ToDict()
+                .Execute()
+            )
+            if not isinstance(rows, list):
+                return []
+            return [
+                {
+                    "role": r.get("role", ""),
+                    "text": r.get("text", ""),
+                    "ts": r.get("ts", 0.0),
+                    "sender": r.get("sender", ""),
+                    "session_key": r.get("session_key", ""),
+                }
+                for r in rows
                 if isinstance(r, dict)
             ]
         except Exception as e:
@@ -304,7 +367,7 @@ class TranscriptManager:
         target_id = data.get("target_id") or ""
         if not target_id:
             return
-        self.append(self._ctx_key(data), "bot", str(preview))
+        self.append(self._ctx_key(data), "bot", str(preview), sender=str(data.get("bot_id") or ""))
 
 
 transcript: TranscriptManager = TranscriptManager()

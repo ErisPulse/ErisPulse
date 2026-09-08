@@ -493,6 +493,71 @@ class TestAdapterManager:
         assert handler_data[0]["middleware_added"] is True
 
 
+class TestEventDedupe:
+    """事件幂等去重（ErisPulse.framework.event_dedupe）"""
+
+    @pytest.fixture
+    def dedupe_on(self):
+        from ErisPulse.Core.adapter import adapter
+
+        saved = adapter._event_dedupe_enabled
+        adapter._event_dedupe_enabled = True
+        adapter._seen_event_ids.clear()
+        yield adapter
+        adapter._event_dedupe_enabled = saved
+        adapter._seen_event_ids.clear()
+
+    @pytest.mark.asyncio
+    async def test_duplicate_event_dropped(self, dedupe_on):
+        import asyncio
+
+        received = []
+
+        @dedupe_on.on("message")
+        async def h(e):
+            received.append(e.get("id"))
+
+        evt = {"id": "dup-x", "platform": "onebot11", "type": "message",
+               "detail_type": "private", "user_id": "u1",
+               "self": {"user_id": "b1"}, "message": [], "alt_message": "m"}
+        await dedupe_on.emit(dict(evt))
+        await asyncio.sleep(0.05)
+        await dedupe_on.emit(dict(evt))  # 同 id 重推
+        await asyncio.sleep(0.05)
+        assert received == ["dup-x"]
+
+    def test_lru_capacity_eviction(self, dedupe_on):
+        from ErisPulse.Core.constants import DEFAULT_EVENT_DEDUPE_CAPACITY
+
+        # 填满容量后最早的记录被淘汰（不再判重）
+        for i in range(DEFAULT_EVENT_DEDUPE_CAPACITY + 10):
+            dedupe_on._is_duplicate_event(f"evt-{i}")
+        assert dedupe_on._is_duplicate_event("evt-0") is False  # 已淘汰
+        assert dedupe_on._is_duplicate_event(f"evt-{DEFAULT_EVENT_DEDUPE_CAPACITY + 9}") is True
+
+    @pytest.mark.asyncio
+    async def test_disabled_allows_duplicates(self):
+        import asyncio
+
+        from ErisPulse.Core.adapter import adapter
+
+        received = []
+
+        @adapter.on("message")
+        async def h2(e):
+            received.append(e.get("id"))
+
+        evt = {"id": "dup-y", "platform": "onebot11", "type": "message",
+               "detail_type": "private", "user_id": "u1",
+               "self": {"user_id": "b1"}, "message": [], "alt_message": "m"}
+        # conftest fixture 已禁用：同 id 两次都分发
+        await adapter.emit(dict(evt))
+        await asyncio.sleep(0.05)
+        await adapter.emit(dict(evt))
+        await asyncio.sleep(0.05)
+        assert received == ["dup-y", "dup-y"]
+
+
 # ==================== SendDSL 测试 ====================
 
 

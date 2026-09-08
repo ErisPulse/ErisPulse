@@ -452,6 +452,21 @@ DEFAULT_TRANSCRIPT_MAX_PER_SESSION: Final[int] = 50
 # 修改影响: 超过时长的消息记录在惰性清理时删除。可通过 ErisPulse.transcript.ttl_hours 覆盖。
 DEFAULT_TRANSCRIPT_TTL_HOURS: Final[float] = 168.0
 
+# 模块间调用（module.call）的默认超时（秒）。
+# 使用位置: Core/module.py -> ModuleManager.call()
+# 修改影响: 调用目标方法未在时限内返回时抛出 ModuleCallTimeoutError。
+DEFAULT_MODULE_CALL_TIMEOUT_SECS: Final[float] = 30.0
+
+# 事件幂等去重的 LRU 容量（记录最近 N 个已分发事件的 id）。
+# 使用位置: Core/adapter.py -> AdapterManager._is_duplicate_event()
+# 修改影响: 平台重连重推同 id 事件的去重窗口——容量越大可回溯越久，内存占用略增。
+DEFAULT_EVENT_DEDUPE_CAPACITY: Final[int] = 4096
+
+# 单会话同时挂起的 remind 定时器上限。
+# 使用位置: Core/Event/interaction.py -> InteractionManager.add_reminder()
+# 修改影响: 超出上限的新 remind 被拒绝（返回取消句柄为 None），防止定时器滥用。
+DEFAULT_MAX_SESSION_REMINDERS: Final[int] = 5
+
 # 事件处理器执行耗时警告阈值（秒）。
 # 使用位置: Core/adapter.py -> emit() 中的 handler 执行监控。
 # 修改影响: 当单个处理器执行超过此时间时记录 WARNING 日志。
@@ -1046,6 +1061,9 @@ __all__ = [
     "DEFAULT_TRANSCRIPT_ENABLED",
     "DEFAULT_TRANSCRIPT_MAX_PER_SESSION",
     "DEFAULT_TRANSCRIPT_TTL_HOURS",
+    "DEFAULT_MODULE_CALL_TIMEOUT_SECS",
+    "DEFAULT_EVENT_DEDUPE_CAPACITY",
+    "DEFAULT_MAX_SESSION_REMINDERS",
     "DEFAULT_WS_AUTO_ACCEPT",
     "DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS",
     "DEFAULT_WS_CLIENT_HEARTBEAT_SECS",

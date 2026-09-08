@@ -248,6 +248,8 @@ SECTION_ADVANCED_MODULE = Section(
     title="高级主题",
     entries=[
         DocEntry("Conversation 多轮对话", "advanced/conversation.md"),
+        DocEntry("交互会话系统", "advanced/interaction.md"),
+        DocEntry("模块间通信", "advanced/module-communication.md"),
         DocEntry("MessageBuilder 详解", "advanced/message-builder.md"),
         DocEntry("HTTP 客户端", "advanced/http-client.md"),
         DocEntry("SQL 查询构建器", "advanced/sql-builder.md"),
@@ -271,6 +273,7 @@ SECTION_ADVANCED_ADAPTER = Section(
         DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
         DocEntry("统一控制面（scope）", "advanced/scope.md"),
         DocEntry("归属权（owner）系统", "advanced/ownership.md"),
+        DocEntry("模块间通信", "advanced/module-communication.md"),
         DocEntry("启动流程与手动控制", "advanced/startup.md"),
     ],
 )
@@ -285,6 +288,8 @@ SECTION_ADVANCED_FULL = Section(
         DocEntry("路由系统", "advanced/router.md"),
         DocEntry("MessageBuilder 详解", "advanced/message-builder.md"),
         DocEntry("Conversation 多轮对话", "advanced/conversation.md"),
+        DocEntry("交互会话系统", "advanced/interaction.md"),
+        DocEntry("模块间通信", "advanced/module-communication.md"),
         DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
         DocEntry("统一控制面（scope）", "advanced/scope.md"),
         DocEntry("归属权（owner）系统", "advanced/ownership.md"),

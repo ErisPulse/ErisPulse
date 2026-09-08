@@ -194,7 +194,7 @@ class TestConflictAndCancel:
             interaction.register(_evt(user_id=f"u{i}"), f)
 
         assert interaction.clear() == 3
-        assert interaction.counts() == {"waits": 0, "leases": 0, "owners": {}}
+        assert interaction.counts() == {"waits": 0, "leases": 0, "timers": 0, "owners": {}}
         for f in futures:
             assert f.done() and f.exception().reason == "cleared"
 
@@ -293,6 +293,156 @@ class TestLease:
             with interaction.hold(_evt(), owner="B"):
                 pass
         assert interaction.get_owner_of(_evt()) == "A"
+
+
+# ==================== 会话定时器 ====================
+
+
+class TestReminders:
+    @pytest.mark.asyncio
+    async def test_fires_callback(self):
+        fired = []
+
+        async def action():
+            fired.append("x")
+
+        reminder = interaction.add_reminder(_evt(), 0.05, action)
+        assert reminder is not None
+        await asyncio.sleep(0.15)
+        assert fired == ["x"]
+        assert reminder.expired
+
+    @pytest.mark.asyncio
+    async def test_reply_cancels_remind(self):
+        loop = asyncio.get_running_loop()
+        future = loop.create_future()
+        interaction.register(_evt(), future)
+        fired = []
+        reminder = interaction.add_reminder(_evt(), 5, lambda: fired.append(1), cancellable_by_reply=True)
+
+        assert await interaction.resolve(_evt()) is True
+        assert reminder.cancel() is False  # 已被回复自动取消
+        await asyncio.sleep(0.05)
+        assert fired == []
+        assert interaction.counts()["timers"] == 0
+
+    @pytest.mark.asyncio
+    async def test_escalate_not_cancelled_by_reply(self):
+        loop = asyncio.get_running_loop()
+        future = loop.create_future()
+        interaction.register(_evt(), future)
+        fired = []
+        reminder = interaction.add_reminder(_evt(), 0.05, lambda: fired.append(1), cancellable_by_reply=False)
+
+        await interaction.resolve(_evt())  # 回复命中
+        assert not reminder.expired  # escalate 不受影响
+        await asyncio.sleep(0.15)
+        assert fired == [1]
+
+    @pytest.mark.asyncio
+    async def test_manual_cancel(self):
+        fired = []
+        reminder = interaction.add_reminder(_evt(), 5, lambda: fired.append(1))
+        assert reminder.cancel() is True
+        await asyncio.sleep(0.05)
+        assert fired == []
+
+    @pytest.mark.asyncio
+    async def test_session_limit(self):
+        for _ in range(5):
+            assert interaction.add_reminder(_evt(), 60, lambda: None) is not None
+        # 第 6 个被拒
+        assert interaction.add_reminder(_evt(), 60, lambda: None) is None
+
+    @pytest.mark.asyncio
+    async def test_cancel_by_owner(self):
+        fired = []
+        reminder = interaction.add_reminder(_evt(), 5, lambda: fired.append(1), owner="ModuleA")
+        assert interaction.cancel_by_owner("ModuleA") == 1
+        await asyncio.sleep(0.05)
+        assert fired == []
+        assert reminder.expired is True  # 已终结（被取消，未执行）
+        assert reminder.cancel() is False  # 二次取消返回 False
+
+    @pytest.mark.asyncio
+    async def test_owner_attributed_on_fire(self):
+        from ErisPulse.runtime.context import get_current_owner
+
+        seen = {}
+
+        async def action():
+            seen["owner"] = get_current_owner()
+
+        interaction.add_reminder(_evt(), 0.05, action, owner="ModuleA")
+        await asyncio.sleep(0.15)
+        assert seen["owner"] == "ModuleA"
+
+
+# ==================== 会话级等待与多路 select ====================
+
+
+class TestSessionScope:
+    @pytest.mark.asyncio
+    async def test_any_member_can_reply(self):
+        loop = asyncio.get_running_loop()
+        future = loop.create_future()
+        # 会话级等待（群 g1）：u1 发起，同群任何成员的回复均可命中
+        interaction.register(_evt(group_id="g1"), future, session_scope=True)
+
+        other = _evt(user_id="u2", group_id="g1", alt_message="我来答")
+        assert await interaction.resolve(other) is True
+        assert future.done() and future.result() is other
+
+    @pytest.mark.asyncio
+    async def test_session_and_user_keys_coexist(self):
+        loop = asyncio.get_running_loop()
+        user_fut = loop.create_future()
+        session_fut = loop.create_future()
+        interaction.register(_evt(group_id="g1"), user_fut, owner="A")
+        interaction.register(_evt(group_id="g1"), session_fut, session_scope=True, owner="B")
+        assert interaction.counts()["waits"] == 2
+
+        # 群成员 u2 回复命中会话级等待；u1 的精确等待不受影响
+        assert await interaction.resolve(_evt(user_id="u2", group_id="g1")) is True
+        assert session_fut.done() and not user_fut.done()
+
+
+class TestSelect:
+    @pytest.mark.asyncio
+    async def test_first_hit_wins(self):
+        from ErisPulse.Core.Event.wrapper import Event
+
+        evt = Event(_evt())
+        e1 = evt.expect(pattern="同意*", user="uA")
+        e2 = evt.expect(pattern="拒绝*", user="uB")
+
+        async def delayed_reply():
+            await asyncio.sleep(0.05)
+            await interaction.resolve(_evt(user_id="uB", alt_message="拒绝吧"))
+
+        task = asyncio.create_task(delayed_reply())
+        which, reply = await evt.select(e1, e2, timeout=2)
+        await task
+        assert which == 1
+        assert reply.get("alt_message") == "拒绝吧"
+        assert interaction.counts()["waits"] == 0
+
+    @pytest.mark.asyncio
+    async def test_timeout_returns_none(self):
+        from ErisPulse.Core.Event.wrapper import Event
+
+        evt = Event(_evt())
+        which, reply = await evt.select(evt.expect(pattern="*"), timeout=0.05)
+        assert which is None and reply is None
+        assert interaction.counts()["waits"] == 0
+
+    @pytest.mark.asyncio
+    async def test_empty_expectations_raises(self):
+        from ErisPulse.Core.Event.wrapper import Event
+
+        evt = Event(_evt())
+        with pytest.raises(ValueError):
+            await evt.select()
 
 
 # ==================== 异常体系与 ContextVar ====================

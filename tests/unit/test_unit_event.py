@@ -1541,6 +1541,15 @@ class TestConversationBranches:
 class TestConversationPersistence:
     """Conversation 持久化测试"""
 
+    @pytest.fixture(autouse=True)
+    def _clear_interaction(self):
+        """resume 会话接管会留下租约，逐用例清理"""
+        from ErisPulse.Core.Event.interaction import interaction
+
+        interaction.clear()
+        yield
+        interaction.clear()
+
     @pytest.fixture
     def sample_event(self):
         """创建示例事件"""

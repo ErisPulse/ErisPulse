@@ -44,7 +44,11 @@ from typing import TYPE_CHECKING, Any
 
 from ...runtime.context import current_owner
 from ..Bases.errors import InteractionError
-from ..constants import DEFAULT_INTERACTION_LEASE_TTL_SECS, UNKNOWN_PLATFORM
+from ..constants import (
+    DEFAULT_INTERACTION_LEASE_TTL_SECS,
+    DEFAULT_MAX_SESSION_REMINDERS,
+    UNKNOWN_PLATFORM,
+)
 from ..i18n import i18n
 from ..logger import logger
 from ..text_match import compile_text_matcher
@@ -171,6 +175,74 @@ class InteractionLease:
         return f"<InteractionLease key={self.key!r} owner={self.owner!r} expires_at={self.expires_at:.1f}>"
 
 
+class Reminder:
+    """
+    会话定时器句柄（:meth:`InteractionManager.add_reminder` 创建）
+
+    到期自动执行动作；``cancel()`` 可提前手动取消。
+    两种语义（由 ``cancellable_by_reply`` 决定）：
+
+    - **remind**（可被回复取消）：用户在该会话回复后自动取消——
+      "如果没在时限内回复就提醒"；
+    - **escalate**（不被回复取消）：到期必达——"超时升级动作"
+      （如通知主人 / 转人工），仅手动 cancel / 模块卸载 / 平台关闭才取消。
+
+    模块卸载 / 适配器关闭时其挂起的定时器随归属清理自动取消。
+    """
+
+    __slots__ = (
+        "_done",
+        "_manager",
+        "action",
+        "cancellable_by_reply",
+        "created_at",
+        "delay",
+        "key",
+        "owner",
+        "platform",
+        "task",
+    )
+
+    def __init__(
+        self,
+        manager: "InteractionManager",
+        key: str,
+        owner: str | None,
+        platform: str | None,
+        delay: float,
+        action: Any,
+        cancellable_by_reply: bool,
+    ):
+        self._manager = manager
+        self.key = key
+        self.owner = owner
+        self.platform = platform
+        self.delay = delay
+        self.action = action
+        self.cancellable_by_reply = cancellable_by_reply
+        self.created_at = time.monotonic()
+        self.task: asyncio.Task | None = None
+        self._done = False
+
+    @property
+    def expired(self) -> bool:
+        """定时器是否已终结（到期执行 / 被取消）"""
+        return self._done or (self.task is not None and self.task.done())
+
+    def cancel(self) -> bool:
+        """
+        手动取消定时器
+
+        :return: 是否取消成功（已到期执行过的返回 False）
+        """
+        return self._manager.cancel_reminder(self)
+
+    def __repr__(self) -> str:
+        state = "done" if self.expired else f"fires_in_{self.delay:.0f}s"
+        kind = "escalate" if not self.cancellable_by_reply else "remind"
+        return f"<Reminder {kind} key={self.key!r} {state}>"
+
+
 class InteractionManager:
     """
     交互会话管理器
@@ -183,9 +255,15 @@ class InteractionManager:
     def __init__(self):
         # 主索引：wait_key -> entry（同键唯一，互斥语义的基础）
         self._entries: dict[str, _Entry] = {}
+        # 会话级等待索引：session_key（platform:bot:target）-> entry（任何人可答）
+        self._session_entries: dict[str, _Entry] = {}
         # 反向索引：owner -> {wait_key} / platform -> {wait_key}
         self._by_owner: dict[str, set[str]] = {}
         self._by_platform: dict[str, set[str]] = {}
+        # 会话定时器：wait_key -> [Reminder]（独立于主索引，不参与互斥冲突）
+        self._timers: dict[str, list[Reminder]] = {}
+        self._timers_by_owner: dict[str, list[Reminder]] = {}
+        self._timers_by_platform: dict[str, list[Reminder]] = {}
 
     # ==================== 会话键 ====================
 
@@ -206,6 +284,24 @@ class InteractionManager:
         self_info = event.get("self") or {}
         bot_id = self_info.get("account_id", "") or self_info.get("user_id", "")
         return f"{platform}:{bot_id}:{user_id}:{target_id}"
+
+    @staticmethod
+    def make_session_key(event: Any) -> str:
+        """
+        {!--< internal-use >!--}
+        从事件推导会话域键（platform:bot:target，不含 user 维度）
+
+        会话级等待（``wait_reply(scope="session")``）使用此键：
+        同一会话（群 / 频道）中任何人的回复均可命中。
+
+        :param event: 事件数据（Event 或 dict）
+        :return: 会话域键字符串
+        """
+        platform = event.get("platform")
+        _send_type, target_id = get_send_type_and_target_id(event, platform)
+        self_info = event.get("self") or {}
+        bot_id = self_info.get("account_id", "") or self_info.get("user_id", "")
+        return f"{platform}:{bot_id}:{target_id}"
 
     # ==================== 索引维护 ====================
 
@@ -234,9 +330,15 @@ class InteractionManager:
     def _remove(self, key: str) -> _Entry | None:
         """{!--< internal-use >!--} 移除条目并维护索引，返回被移除的条目"""
         entry = self._entries.pop(key, None)
+        if entry is None:
+            entry = self._session_entries.pop(key, None)
         if entry is not None:
             self._index_remove(entry)
         return entry
+
+    def _find_entry(self, key: str) -> _Entry | None:
+        """{!--< internal-use >!--} 按键查找条目（主索引与会话级索引均查）"""
+        return self._entries.get(key) or self._session_entries.get(key)
 
     # ==================== 等待回复 ====================
 
@@ -249,6 +351,7 @@ class InteractionManager:
         pattern: str | None = None,
         regex: str | None = None,
         owner: str | None = None,
+        session_scope: bool = False,
     ) -> _Entry:
         """
         {!--< internal-use >!--}
@@ -265,15 +368,19 @@ class InteractionManager:
         :param pattern: glob 文本过滤
         :param regex: 正则文本过滤
         :param owner: 归属者（模块名），None 时从 current_owner 上下文捕获
+        :param session_scope: 会话级等待（同会话任何人的回复均可命中，键不含 user 维度）
         :return: 注册的条目（含推导的会话键）
         """
-        key = self.make_key(event)
+        if session_scope:
+            key = self.make_session_key(event)
+        else:
+            key = self.make_key(event)
         platform = event.get("platform")
         if owner is None:
             owner = current_owner.get()
 
         # 同键旧等待/租约：显式取消而非静默覆盖
-        old = self._entries.get(key)
+        old = self._entries.get(key) or self._session_entries.get(key)
         if old is not None:
             self._cancel_entry(key, old, REASON_CONFLICT)
 
@@ -285,7 +392,10 @@ class InteractionManager:
         entry.regex = regex
         entry.timestamp = time.monotonic()
 
-        self._entries[key] = entry
+        if session_scope:
+            self._session_entries[key] = entry
+        else:
+            self._entries[key] = entry
         self._index_add(entry)
         return entry
 
@@ -306,7 +416,13 @@ class InteractionManager:
         key = self.make_key(event)
         entry = self._entries.get(key)
         if entry is None or entry.kind != _KIND_WAIT or entry.future is None:
-            return False
+            # 会话级等待回退：同会话（群 / 频道）中任何人的回复均可命中
+            session_key = self.make_session_key(event)
+            s_entry = self._session_entries.get(session_key)
+            if s_entry is None or s_entry.kind != _KIND_WAIT or s_entry.future is None:
+                return False
+            key = session_key
+            entry = s_entry
 
         # pattern（glob）/ regex（正则）过滤：不匹配则继续等待（不消费 future）
         if entry.pattern or entry.regex:
@@ -355,6 +471,8 @@ class InteractionManager:
 
         # 命中：唤醒等待方并移除条目
         self._remove(key)
+        # 会话定时器联动：用户已回复，该会话挂起的 remind 自动取消（escalate 不受影响）
+        self._cancel_reminders_for_key(key, only_reply_cancellable=True)
         if not entry.future.done():
             entry.future.set_result(event)
 
@@ -406,7 +524,7 @@ class InteractionManager:
         :param reason: 取消原因
         :return: 是否存在并取消了条目
         """
-        entry = self._entries.get(key)
+        entry = self._find_entry(key)
         if entry is None:
             return False
         self._cancel_entry(key, entry, reason)
@@ -422,9 +540,13 @@ class InteractionManager:
         keys = list(self._by_owner.get(owner, ()))
         count = 0
         for key in keys:
-            entry = self._entries.get(key)
+            entry = self._find_entry(key)
             if entry is not None:
                 self._cancel_entry(key, entry, REASON_OWNER_UNLOAD)
+                count += 1
+        # 归属定时器随卸载清理
+        for reminder in list(self._timers_by_owner.get(owner, ())):
+            if self.cancel_reminder(reminder):
                 count += 1
         if count:
             logger.trace(i18n.t("core.interaction.cancelled_owner", owner=owner, count=count))
@@ -440,9 +562,13 @@ class InteractionManager:
         keys = list(self._by_platform.get(platform, ()))
         count = 0
         for key in keys:
-            entry = self._entries.get(key)
+            entry = self._find_entry(key)
             if entry is not None:
                 self._cancel_entry(key, entry, REASON_PLATFORM_STOP)
+                count += 1
+        # 归属定时器随平台关闭清理
+        for reminder in list(self._timers_by_platform.get(platform, ())):
+            if self.cancel_reminder(reminder):
                 count += 1
         if count:
             logger.trace(i18n.t("core.interaction.cancelled_platform", platform=platform, count=count))
@@ -454,18 +580,19 @@ class InteractionManager:
 
         :return: 清除的会话数量
         """
-        count = len(self._entries)
-        for key in list(self._entries.keys()):
-            entry = self._entries.get(key)
+        count = len(self._entries) + len(self._session_entries)
+        for key in list(self._entries.keys()) + list(self._session_entries.keys()):
+            entry = self._find_entry(key)
             if entry is not None:
                 self._cancel_entry(key, entry, REASON_CLEARED)
+        count += self._cancel_all_timers(REASON_CLEARED)
         return count
 
     # ==================== 会话互斥 ====================
 
     def _get_active_entry(self, key: str) -> _Entry | None:
-        """{!--< internal-use >!--} 获取会话键上的活跃条目（租约惰性过期）"""
-        entry = self._entries.get(key)
+        """{!--< internal-use >!--} 获取会话键上的活跃条目（租约惰性过期；含会话级索引）"""
+        entry = self._find_entry(key)
         if entry is None:
             return None
         if entry.kind == _KIND_LEASE and time.monotonic() > entry.expires_at:
@@ -595,24 +722,164 @@ class InteractionManager:
         entry.expires_at = time.monotonic() + entry.ttl
         return True
 
+    # ==================== 会话定时器 ====================
+
+    def add_reminder(
+        self,
+        event: Any,
+        delay: float,
+        action: Any,
+        cancellable_by_reply: bool = True,
+        owner: str | None = None,
+    ) -> Reminder | None:
+        """
+        {!--< internal-use >!--}
+        注册会话定时器（公开 API 为 ``Event.remind`` / ``Event.escalate``）
+
+        :param event: 事件数据（用于推导会话键）
+        :param delay: 延迟秒数
+        :param action: 到期执行的异步回调（无参）
+        :param cancellable_by_reply: 用户在该会话回复时是否自动取消（remind=True / escalate=False）
+        :param owner: 归属者（模块名），None 时从 current_owner 捕获
+        :return: 定时器句柄；超过单会话上限时返回 None
+
+        :example:
+        >>> reminder = sdk.interaction.add_reminder(event, 300, send_nudge)
+        """
+        if owner is None:
+            owner = current_owner.get()
+        key = self.make_key(event)
+        platform = event.get("platform") if not isinstance(event, str) else None
+
+        # 单会话活跃 remind 上限（escalate 不占名额——必达语义，随归属清理兜底）
+        active = [r for r in self._timers.get(key, ()) if r.cancellable_by_reply and not r.expired]
+        if cancellable_by_reply and len(active) >= DEFAULT_MAX_SESSION_REMINDERS:
+            logger.trace(
+                i18n.t(
+                    "core.interaction.reminder_limit_reached",
+                    wait_key=key,
+                    limit=DEFAULT_MAX_SESSION_REMINDERS,
+                )
+            )
+            return None
+
+        reminder = Reminder(self, key, owner, platform, delay, action, cancellable_by_reply)
+        self._timers.setdefault(key, []).append(reminder)
+        if owner is not None:
+            self._timers_by_owner.setdefault(owner, []).append(reminder)
+        if platform:
+            self._timers_by_platform.setdefault(platform, []).append(reminder)
+
+        reminder.task = asyncio.get_running_loop().create_task(self._run_reminder(reminder))
+        return reminder
+
+    async def _run_reminder(self, reminder: Reminder) -> None:
+        """{!--< internal-use >!--} 定时器执行体：到期后移除记录并执行动作（owner 归因到注册者）"""
+        try:
+            await asyncio.sleep(reminder.delay)
+        except asyncio.CancelledError:
+            return
+        # 到期：从索引移除
+        reminder._done = True
+        self._remove_timer_refs(reminder)
+        token = current_owner.set(reminder.owner)
+        try:
+            result = reminder.action()
+            if asyncio.iscoroutine(result):
+                await result
+        except Exception as e:
+            logger.trace(i18n.t("core.interaction.reminder_action_error", error=e))
+        finally:
+            current_owner.reset(token)
+
+    def _remove_timer_refs(self, reminder: Reminder) -> None:
+        """{!--< internal-use >!--} 从三个定时器索引移除"""
+        key_list = self._timers.get(reminder.key)
+        if key_list and reminder in key_list:
+            key_list.remove(reminder)
+            if not key_list:
+                self._timers.pop(reminder.key, None)
+        if reminder.owner is not None:
+            owner_list = self._timers_by_owner.get(reminder.owner)
+            if owner_list and reminder in owner_list:
+                owner_list.remove(reminder)
+                if not owner_list:
+                    self._timers_by_owner.pop(reminder.owner, None)
+        if reminder.platform:
+            plat_list = self._timers_by_platform.get(reminder.platform)
+            if plat_list and reminder in plat_list:
+                plat_list.remove(reminder)
+                if not plat_list:
+                    self._timers_by_platform.pop(reminder.platform, None)
+
+    def cancel_reminder(self, reminder: Reminder) -> bool:
+        """
+        取消定时器（手动 ``Reminder.cancel()`` 的实现）
+
+        :param reminder: 定时器句柄
+        :return: 是否取消成功（已到期执行过的返回 False）
+        """
+        if reminder._done:
+            return False
+        self._remove_timer_refs(reminder)
+        reminder._done = True
+        if reminder.task is not None and not reminder.task.done():
+            reminder.task.cancel()
+        reminder.task = None
+        return True
+
+    def _cancel_reminders_for_key(self, key: str, only_reply_cancellable: bool = True) -> int:
+        """{!--< internal-use >!--} 取消指定会话键上的定时器（回复命中时调用）"""
+        timers = self._timers.get(key)
+        if not timers:
+            return 0
+        count = 0
+        for reminder in list(timers):
+            if only_reply_cancellable and not reminder.cancellable_by_reply:
+                continue
+            if self.cancel_reminder(reminder):
+                count += 1
+        if count:
+            logger.trace(i18n.t("core.interaction.reminders_cancelled_by_reply", wait_key=key, count=count))
+        return count
+
+    def _cancel_all_timers(self, reason_hint: str) -> int:
+        """{!--< internal-use >!--} 取消全部定时器（clear 时调用）"""
+        count = 0
+        for timers in list(self._timers.values()):
+            for reminder in list(timers):
+                if self.cancel_reminder(reminder):
+                    count += 1
+        if count:
+            logger.trace(i18n.t("core.interaction.timers_cleared", count=count, reason=reason_hint))
+        return count
+
     # ==================== 诊断 ====================
 
     def counts(self) -> dict[str, Any]:
         """
         获取挂起会话统计（诊断用）
 
-        :return: 含 waits / leases / owners 计数的字典
+        :return: 含 waits / leases / timers / owners 计数的字典
 
         :example:
         >>> sdk.interaction.counts()
-        {'waits': 2, 'leases': 1, 'owners': {'Chat': 3}}
+        {'waits': 2, 'leases': 1, 'timers': 3, 'owners': {'Chat': 3}}
         """
-        waits = sum(1 for e in self._entries.values() if e.kind == _KIND_WAIT)
+        waits = sum(
+            1
+            for e in list(self._entries.values()) + list(self._session_entries.values())
+            if e.kind == _KIND_WAIT
+        )
+        total = len(self._entries) + len(self._session_entries)
+        timers = sum(len(v) for v in self._timers.values())
         owners: dict[str, int] = {}
-        for entry in self._entries.values():
+        for entry in list(self._entries.values()) + list(self._session_entries.values()):
             if entry.owner is not None:
                 owners[entry.owner] = owners.get(entry.owner, 0) + 1
-        return {"waits": waits, "leases": len(self._entries) - waits, "owners": owners}
+        for reminder in self._timers_by_owner:
+            owners[reminder] = owners.get(reminder, 0) + 1
+        return {"waits": waits, "leases": total - waits, "timers": timers, "owners": owners}
 
     def __repr__(self) -> str:
         return f"<InteractionManager entries={len(self._entries)} owners={len(self._by_owner)}>"
@@ -668,6 +935,7 @@ __all__ = [
     "REASON_OWNER_UNLOAD",
     "REASON_PLATFORM_STOP",
     "REASON_REVOKED",
+    "Reminder",
     "SessionOccupiedError",
     "interaction",
 ]

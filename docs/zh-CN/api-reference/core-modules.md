@@ -249,6 +249,8 @@ sdk.adapter.get_status_summary()
 | `is_enabled(name)` | 检查是否启用 |
 | `enable(name)` / `disable(name)` | 启用/禁用模块 |
 | `load(name)` / `unload(name)` | 加载/卸载模块 |
+| `call(module, method, *args, timeout=None, **kwargs)` | 跨模块调用目标模块的服务方法（协议化 RPC） |
+| `emit_to(module, event, data)` | 向指定模块定向投递生命周期事件 |
 | `list_registered()` | 列出已注册模块 |
 | `list_loaded()` | 列出已加载模块 |
 | `get_info(name)` | 获取模块信息 |
@@ -261,6 +263,82 @@ module = sdk.module.get("ModuleName")
 module = sdk.module.ModuleName
 module = sdk.ModuleName  # 等价快捷方式
 ```
+
+### 模块间调用（RPC）
+
+```python
+# 协议化调用：类型化错误 / 懒模块自动唤醒 / owner 归因 / 超时语义
+result = await sdk.module.call("Chat", "get_history", session_id, n=20)
+```
+
+与服务方裸属性访问 `sdk.module.Chat.get_history(...)` 的差异：
+
+| | `module.call()` | 裸属性访问 |
+|---|---|---|
+| 目标未注册/未启用 | 抛 `ModuleNotAvailableError` | 抛 `AttributeError` |
+| 懒加载模块 | 自动唤醒 | 异步初始化模块抛 RuntimeError |
+| `current_owner` | 归因到目标模块 | 保持调用方 |
+| 超时 | 默认 30s，可覆盖 | 无 |
+| scope 审计 | `actions.<调用方>.call` | 无 |
+
+### 服务契约（meta.services）
+
+服务方在 `get_meta()` 的 `services` 字段声明对外白名单（与 `commands` 对称），声明后调用面收紧：
+
+```python
+class ChatModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(services=["get_history", "translate"])
+
+    async def get_history(self, session_id, n=20): ...
+```
+
+- **缺省 = 开发者无感**：未声明 `services` 时任意**公开**方法可被调用（向后兼容），下划线私有方法始终禁止；限制的主控制权在用户侧 scope 配置
+- 声明后：仅白名单内方法可调，越界抛 `ServiceNotProvidedError`
+- 调用方限制：`scope.set_action("CallerModule", "call", deny="Chat.get_history")`
+
+**服务介绍（description）**：`services` 支持 dict 形态为每个服务声明介绍
+（支持纯字符串或 i18n 字典），供服务目录 / AI 调用点描述消费：
+
+```python
+return ModuleMeta(
+    services=[
+        "get_history",                              # 简单形态：介绍自动取方法 docstring 首行
+        {"name": "translate", "description": "把文本翻译成指定语言"},
+        {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "摘要对话"}},
+    ],
+)
+```
+
+介绍解析优先级：**显式 description（i18n 解析为当前语言）> 方法 docstring 首行 > 空串**。
+
+### 服务目录（services）
+
+```python
+sdk.module.services()
+# {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
+#            'description': '获取会话历史'}]}
+
+sdk.module.services("Chat")  # 仅查询指定模块
+```
+
+仅列出**显式声明** `meta.services` 的模块；每个服务附方法签名字符串
+与介绍文本，为 MCP 化（调用点暴露给 AI）提供数据基础。
+
+### 定向事件（emit_to）
+
+```python
+# 投递方：校验目标模块启用后投递到 module.<名称>.<事件>
+await sdk.module.emit_to("Chat", "message_received", {"text": "hi"})
+
+# 订阅方（Chat 模块内）：注册命名空间钩子
+lifecycle.on("module.Chat.message_received", handler)
+lifecycle.on("module.Chat", handler)  # 或接收该模块的全部定向事件
+```
+
+> [!NOTE]
+> 本节能力新增于 ErisPulse **2.8.0+**
 
 ## Lifecycle 模块
 
@@ -364,7 +442,8 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 | `events` | 各类事件处理器数量（message/notice/request/meta/commands） |
 | `router` | 服务器运行状态、HTTP/WebSocket 路由数量 |
 
-> 新增于 2.5.2
+> [!NOTE]
+> 新增于 ErisPulse **2.5.2+**
 
 ## Interaction 交互会话
 
@@ -373,6 +452,23 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 ### 常用方法
 
 ```python
+# 会话定时提醒：5 分钟无回复则提醒，用户回复自动取消
+reminder = event.remind(300, "还在吗？")
+reminder.cancel()  # 手动取消
+
+# 超时升级：到点必达（不被回复取消）
+event.escalate(1800, lambda e: notify_master("30 分钟未处理"))
+
+# 多路等待：先到先得
+which, reply = await event.select(
+    event.expect(pattern="同意*", user="A"),
+    event.expect(pattern="拒绝*", user="B"),
+    timeout=60,
+)
+
+# 会话级等待：同群任何人的回复均可命中
+reply = await event.wait_reply(session=True, prompt="谁能帮忙答一下？")
+
 # 查询会话当前归属（谁正在与该用户交互）
 owner = sdk.interaction.get_owner_of(event)
 
@@ -389,13 +485,14 @@ with sdk.interaction.hold(event) as lease:
     ...
 
 # 挂起会话统计
-sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'owners': {'Chat': 3}}
+sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'timers': 3, 'owners': {'Chat': 3}}
 ```
 
-模块卸载 / 适配器关闭时其挂起的等待自动取消（等待方立即返回 `None`），
+模块卸载 / 适配器关闭时其挂起的等待与定时器自动取消（等待方立即返回 `None`），
 回复命中时自动复查 scope 权限（用户被拉黑 / 模块被解绑则终止等待）。
 
-> 新增于 2.8.0-dev.2
+> [!NOTE]
+> 本节能力新增于 ErisPulse **2.8.0+**
 
 ## Transcript 会话收件箱
 
@@ -419,7 +516,8 @@ sdk.transcript.clear(event)
 配置（`ErisPulse.transcript`）：`enabled`（默认开启）、`max_per_session`（每会话上限，默认 50）、
 `ttl_hours`（全局过期时间，默认 168 小时）。数据存独立 SQLite 表，超限/过期惰性清理。
 
-> 新增于 2.8.0-dev.2
+> [!NOTE]
+> 本节能力新增于 ErisPulse **2.8.0+**
 
 ## 相关文档
 

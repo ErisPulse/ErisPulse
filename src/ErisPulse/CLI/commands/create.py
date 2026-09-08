@@ -159,6 +159,9 @@ class Main(BaseModule):
             author=\"ErisDev\",
             group=\"default\",
             tags=[\"{name}\"],
+            # 对外服务白名单（可选）：声明后其他模块可经 sdk.module.call() 调用这些方法；
+            # 缺省时公开方法全开放（限制由用户通过 scope.actions 配置）
+            # services=[\"get_welcome_message\"],
         )
 
     @staticmethod
