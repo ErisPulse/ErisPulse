@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "6508445e0aa658c1b7aca054ba45292a",
-  "file_hash": "6508445e0aa658c1b7aca054ba45292a",
-  "translated_at": "2026-09-07T11:25:51.587861",
+  "hash": "b22a11bd59c422ace256e6dc5c7890bf",
+  "file_hash": "b22a11bd59c422ace256e6dc5c7890bf",
+  "translated_at": "2026-09-08T14:32:37.470608",
   "target_lang": "ja",
   "chunks": [
     {
@@ -32,6 +32,10 @@
     {
       "hash": "c724c8795a23119f850e9111b25415a3",
       "translation": "## 回答機能\n\n```python\nfrom ErisPulse.Core.Event import command\n\n@command(\"ask\")\nasync def ask_command(event: Event):\n    await event.reply(\"あなたの名前を入力してください:\")\n    reply = await event.wait_reply(timeout=30)\n    if reply:\n        name = reply.get_text()\n        await event.reply(f\"こんにちは、{name}！\")\n\n@command(\"price\")\nasync def price_command(event: Event):\n    await event.reply(\"金額を入力してください（例：5元）:\")\n    # 回答が正規表現に一致しない場合、タイムアウトするまで待機し続ける\n    reply = await event.wait_reply(timeout=30, regex=r\"\\d+\\s*元\")\n    if reply:\n        await event.reply(f\"金額を受け取りました: {reply.get_text()}\")\n```"
+    },
+    {
+      "hash": "b0d945d918748884ec2c58f68e00d035",
+      "translation": "## インタラクティブな会話の高度な機能\n\n> [!NOTE]\n> 本機能は ErisPulse **2.8.0+** が必要です。\n\n```python\n# 会話の定期的なリマインダー：5 分間返信がない場合にリマインダーを送信し、ユーザーが返信すると自動的にキャンセル\nreminder = event.remind(300, \"まだですか？話したくない場合は「退出」を入力してください\")\nreminder.cancel()  # 手動でキャンセルすることも可能です\n\n# タイムアウトによる昇格：時間経過後に必ず通知（返信によってキャンセルされない）、例えば長時間未処理の通知を主人に通知\nevent.escalate(1800, lambda e: notify_master(\"工単がタイムアウトしました\"))\n\n# 複数ルートの待機：「同意」および「拒否」のいずれかを同時に待機し、先に到着したものを優先\nwhich, reply = await event.select(\n    event.expect(pattern=\"同意*\", user=\"10001\"),\n    event.expect(pattern=\"拒绝*\", user=\"10002\"),\n    timeout=60,\n)\nif which is None:\n    await event.reply(\"承認がタイムアウトしました\")\n\n# 会話レベルの待機：同じグループ内の誰からの返信でも対象になります（グループ協力）\nreply = await event.wait_reply(session=True, prompt=\"誰か回答していただけますか？\")\n\n# 会話の受信箱：現在の会話における最新の 20 件のメッセージ（ロボット、AI のコンテキスト / リピート防止の基盤を含む）\nmessages = await event.history(20)\n\n# メッセージトランザクション：例外が発生した場合、トランザクション内で送信されたメッセージを自動的に撤回\nasync with event.message_tx():\n    await event.reply(\"処理中です、少々お待ちください...\")\n    result = await do_something()\n    await event.reply(f\"完了：{result}\")\n```"
     },
     {
       "hash": "97956084dbc7e85a639a4ee1b0d233c6",

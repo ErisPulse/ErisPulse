@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "6508445e0aa658c1b7aca054ba45292a",
-  "file_hash": "6508445e0aa658c1b7aca054ba45292a",
-  "translated_at": "2026-09-07T11:19:17.258616",
+  "hash": "b22a11bd59c422ace256e6dc5c7890bf",
+  "file_hash": "b22a11bd59c422ace256e6dc5c7890bf",
+  "translated_at": "2026-09-08T14:31:50.545673",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -32,6 +32,10 @@
     {
       "hash": "c724c8795a23119f850e9111b25415a3",
       "translation": "## 回覆功能\n\n```python\nfrom ErisPulse.Core.Event import command\n\n@command(\"ask\")\nasync def ask_command(event: Event):\n    await event.reply(\"請輸入你的名字:\")\n    reply = await event.wait_reply(timeout=30)\n    if reply:\n        name = reply.get_text()\n        await event.reply(f\"你好，{name}！\")\n\n@command(\"price\")\nasync def price_command(event: Event):\n    await event.reply(\"請輸入金額（如：5元）:\")\n    # 回覆必須符合正則，否則繼續等待直到超時\n    reply = await event.wait_reply(timeout=30, regex=r\"\\d+\\s*元\")\n    if reply:\n        await event.reply(f\"收到金額：{reply.get_text()}\")\n```"
+    },
+    {
+      "hash": "b0d945d918748884ec2c58f68e00d035",
+      "translation": "## 互動對話進階\n\n> [!NOTE]\n> 本節功能需要 ErisPulse **2.8.0+**。\n\n```python\n# 會話定時提醒：5 分鐘無回覆則提醒，用戶回覆後自動取消\nreminder = event.remind(300, \"還在嗎？不想聊了回覆「退出」\")\nreminder.cancel()  # 也可手動取消\n\n# 超時升級：到點必達（不被回覆取消），如長時間未處理通知主人\nevent.escalate(1800, lambda e: notify_master(\"工單超時\"))\n\n# 多路等待：同時等\"同意\"與\"拒絕\"，先到先得\nwhich, reply = await event.select(\n    event.expect(pattern=\"同意*\", user=\"10001\"),\n    event.expect(pattern=\"拒絕*\", user=\"10002\"),\n    timeout=60,\n)\nif which is None:\n    await event.reply(\"超時未收到審批\")\n\n# 會話級等待：同群任何人的回覆均可命中（群協作）\nreply = await event.wait_reply(session=True, prompt=\"哪位大神幫忙答一下？\")\n\n# 會話收件箱：當前會話最近 20 條消息（含機器人，AI 上下文 / 防重複回覆底座）\nmessages = await event.history(20)\n\n# 消息事務：異常時自動撤回事務內已發送的消息\nasync with event.message_tx():\n    await event.reply(\"處理中，請稍候...\")\n    result = await do_something()\n    await event.reply(f\"完成：{result}\")\n```"
     },
     {
       "hash": "97956084dbc7e85a639a4ee1b0d233c6",

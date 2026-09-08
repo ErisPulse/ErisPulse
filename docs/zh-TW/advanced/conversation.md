@@ -1,8 +1,8 @@
 # Conversation 多輪對話
 
-`Conversation` 類提供了在同一會話中進行多輪互動的便捷方法，適合實現引導式操作、資訊收集、對話式問答等場景。
+`Conversation` 類提供了在同一會話中進行多輪交互的便捷方法，適合實現引導式操作、資訊收集、對話式問答等場景。
 
-## 創建對話
+## 建立對話
 
 透過 `Event` 物件的 `conversation()` 方法建立：
 
@@ -37,13 +37,13 @@ async def quiz_handler(event):
 
 ### say(content, **kwargs)
 
-發送消息，返回 `self` 支持鏈式調用：
+發送訊息，回傳 `self` 支援鏈式呼叫：
 
 ```python
 await conv.say("第一行").say("第二行").say("第三行")
 ```
 
-也可以指定發送方法：
+也可以指定發送方式：
 
 ```python
 await conv.say("https://example.com/image.jpg", method="Image")
@@ -51,7 +51,7 @@ await conv.say("https://example.com/image.jpg", method="Image")
 
 ### wait(prompt=None, timeout=None)
 
-等待使用者回覆，返回 `Event` 對象或 `None`（超時）：
+等待使用者回覆，回傳 `Event` 物件或 `None`（超時）：
 
 ```python
 # 簡單等待
@@ -62,16 +62,16 @@ if resp:
 # 發送提示後等待
 resp = await conv.wait(prompt="請輸入你的名字：")
 
-# 使用自定義超時（覆蓋對話預設超時）
+# 使用自訂超時（覆蓋對話預設超時）
 resp = await conv.wait(prompt="請在10秒內回覆：", timeout=10)
 ```
 
 ### confirm(prompt=None, **kwargs)
 
-等待使用者確認（是/否），返回 `True` / `False` / `None`（超時）：
+等待使用者確認（是/否），回傳 `True` / `False` / `None`（超時）：
 
 ```python
-result = await conv.confirm("確定要刪除所有數據嗎？")
+result = await conv.confirm("確定要刪除所有資料嗎？")
 if result is True:
     await conv.say("已刪除")
 elif result is False:
@@ -86,7 +86,7 @@ else:
 
 ### choose(prompt, options, **kwargs)
 
-等待使用者從選項中選擇，返回選項索引（0-based）或 `None`：
+等待使用者從選項中選擇，回傳選項索引（0-based）或 `None`：
 
 ```python
 choice = await conv.choose("請選擇顏色：", ["紅色", "綠色", "藍色"])
@@ -97,10 +97,10 @@ if choice is not None:
 
 使用者可以透過輸入編號（`1`/`2`/`3`）或選項文字（`紅色`）來選擇。
 
-`options_format="auto"`（預設）根據 method 自動選擇內建樣式：Markdown→無序列表，Html→有序列表，其他→純文本列表。
-也支援 `"list"`、`"inline"`、`"md"`、`"html"` 或自定義函數。
+`options_format="auto"`（預設）根據 method 自動選擇內建樣式：Markdown→無序列表，Html→有序列表，其他→純文字列表。  
+也支援 `"list"`、`"inline"`、`"md"`、`"html"` 或自訂函數。
 
-支援 `merge_prompt=True` 合併為一條訊息，以及占位符控制選項插入位置（預設 `{options}`，可透過 `placeholder` 自定義）：
+支援 `merge_prompt=True` 合併為一條訊息，以及占位符控制選項插入位置（預設 `{options}`，可透過 `placeholder` 自訂）：
 
 ```python
 choice = await conv.choose(
@@ -110,7 +110,7 @@ choice = await conv.choose(
     merge_prompt=True,
 )
 
-# 自定義占位符
+# 自訂占位符
 choice = await conv.choose(
     "請選擇: [choices]",
     ["選項A", "選項B"],
@@ -120,7 +120,7 @@ choice = await conv.choose(
 
 ### collect(fields, **kwargs)
 
-多步驟收集資訊，返回資料字典或 `None`：
+多步驟收集資訊，回傳資料字典或 `None`：
 
 ```python
 data = await conv.collect([
@@ -143,10 +143,10 @@ else:
 |------|------|--------|
 | `key` | 欄位鍵名（必須） | - |
 | `prompt` | 提示訊息 | `"請輸入 {key}"` |
-| `validator` | 驗證函數，接收 Event，返回 bool | 無 |
+| `validator` | 驗證函數，接收 Event，回傳 bool | 無 |
 | `retry_prompt` | 驗證失敗重試提示 | `"輸入無效，請重新輸入"` |
 | `max_retries` | 最大重試次數 | 3 |
-| `condition` | 條件函數，接收已收集資料 dict，返回 bool | 無 |
+| `condition` | 條件函數，接收已收集資料 dict，回傳 bool | 無 |
 
 **條件欄位**：使用 `condition` 可以實現動態表單，只有條件滿足時才收集該欄位：
 
@@ -192,16 +192,16 @@ stateDiagram-v2
 對話在以下情況會自動變為非活躍狀態：
 
 1. 調用 `stop()` 方法
-2. `wait()` 超時返回 `None`
-3. `collect()` 因任何步驟超時或重試耗盡而返回 `None`
+2. `wait()` 超時回傳 `None`
+3. `collect()` 因任何步驟超時或重試耗盡而回傳 `None`
 
-非活躍後，所有互動方法（`wait`/`confirm`/`choose`/`collect`）會立即返回 `None`，不會繼續等待使用者輸入。
+非活躍後，所有互動方法（`wait`/`confirm`/`choose`/`collect`）會立即回傳 `None`，不會繼續等待使用者輸入。
 
 ## 分支與跳轉
 
 ### @conv.branch(name) 裝飾器
 
-使用 `branch()` 註冊對話分支，並透過 `goto()` 在分支間跳轉：
+使用 `branch()` 註冊對話分支，透過 `goto()` 在分支間跳轉：
 
 ```python
 @command("menu")
@@ -210,7 +210,7 @@ async def menu_handler(event):
 
     @conv.branch("main")
     async def main_menu():
-        await conv.say("=== 主菜單 ===\n1. 個人資訊\n2. 設定\n3. 退出")
+        await conv.say("=== 主選單 ===\n1. 個人資訊\n2. 設定\n3. 退出")
         resp = await conv.wait()
         if resp is None:
             return
@@ -286,17 +286,17 @@ else:
 await conv.clear_saved()
 ```
 
-儲存鍵包含 target 維度（`conversation:{platform}:{user_id}:{target_id}`），同一用戶在不同會話中的對話互不覆蓋；舊格式（不含 target）的存檔在 `resume()` 時自動遷移。
+儲存鍵含 target 維度（`conversation:{platform}:{user_id}:{target_id}`），同一使用者在不同會話中的對話互不覆蓋；舊格式（不含 target）的存檔在 `resume()` 時自動遷移。
 
 ## 自動檢查點與重啟恢復
 
 ### 自動存檔
 
-框架在以下時機自動維護檢查點，通常無需手動調用 `save()`：
+框架在以下時機自動維護檢查點，通常無需手動呼叫 `save()`：
 
 | 時機 | 行為 |
 |------|------|
-| `goto()` / `start()` 跳轉分支 | 自動保存（當前分支 + context） |
+| `goto()` / `start()` 跳轉分支 | 自動保存（目前分支 + context） |
 | `stop()` / `wait()` 超時 / `collect()` 失敗 | 自動清除（對話終態） |
 
 ### 檢查點 TTL
@@ -329,6 +329,19 @@ def make_conversation(event) -> Conversation:
 
 註冊後，重啟前處於 `menu` 分支的使用者發來首條訊息時，框架自動：恢復 context → 認領該訊息 → 從存檔分支繼續對話。未註冊工廠時此機制零開銷。
 
+### 恢復即接管
+
+`resume()` 成功時框架自動完成兩件事：
+
+1. **會話接管**：自動 acquire 該會話的互斥租約——其他模組可透過 `sdk.interaction.get_owner_of(event)` 感知"這個使用者正被對話佔用"；會話已被其他模組佔用時放棄恢復（回傳 False），避免兩個對話打架
+2. **歷史帶回**：從會話收件箱取最近 10 條訊息到 `conv.recent_history`（AI 模組恢復後 LLM 上下文不斷檔）；`resume(with_history=0)` 可關閉
+
+```python
+if await conv.resume(with_history=20):
+    for m in conv.recent_history:
+        print(m["role"], ":", m["text"])
+```
+
 ### 手動恢復（不用自動機制時）
 
 ```python
@@ -354,9 +367,9 @@ async def register_handler(event):
     data = await conv.collect([
         {"key": "username", "prompt": "請輸入使用者名稱（3-20個字元）",
          "validator": lambda e: 3 <= len(e.get_text().strip()) <= 20},
-        {"key": "email", "prompt": "請輸入電子郵箱地址",
+        {"key": "email", "prompt": "請輸入電子信箱",
          "validator": lambda e: "@" in e.get_text() and "." in e.get_text(),
-         "retry_prompt": "電子郵箱格式不正確，請重新輸入"},
+         "retry_prompt": "電子信箱格式不正確，請重新輸入"},
     ])
 
     if not data:
@@ -364,7 +377,7 @@ async def register_handler(event):
         return
 
     confirmed = await conv.confirm(
-        f"確認註冊資訊？\n使用者名稱: {data['username']}\n電子郵箱: {data['email']}"
+        f"確認註冊資訊？\n使用者名稱: {data['username']}\n電子信箱: {data['email']}"
     )
 
     if confirmed:

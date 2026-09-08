@@ -235,24 +235,26 @@ sdk.adapter.get_status_summary()
 
 > 完整的適配器管理 API 請參考 [適配器系統 API](adapter-system.md)。
 
-## Module 模組
+## 模組
 
-模組管理器，管理插件的註冊、加載和卸載。
+模組管理器，管理插件的註冊、載入和卸載。
 
 ### API 概覽
 
 | 方法 | 說明 |
 |------|------|
-| `get(name)` | 獲取模組實例或懶加載代理（已註冊但未加載時返回代理） |
+| `get(name)` | 取得模組實例或懶加載代理（已註冊但未載入時返回代理） |
 | `exists(name)` | 檢查是否已註冊 |
-| `is_loaded(name)` | 檢查是否已加載 |
+| `is_loaded(name)` | 檢查是否已載入 |
 | `is_enabled(name)` | 檢查是否啟用 |
-| `enable(name)` / `disable(name)` | 啟用/禁用模組 |
-| `load(name)` / `unload(name)` | 加載/卸載模組 |
+| `enable(name)` / `disable(name)` | 啟用/停用模組 |
+| `load(name)` / `unload(name)` | 載入/卸載模組 |
+| `call(module, method, *args, timeout=None, **kwargs)` | 跨模組呼叫目標模組的服務方法（協定化 RPC） |
+| `emit_to(module, event, data)` | 向指定模組定向投遞生命週期事件 |
 | `list_registered()` | 列出已註冊模組 |
-| `list_loaded()` | 列出已加載模組 |
-| `get_info(name)` | 獲取模組資訊 |
-| `get_status_summary()` | 獲取模組狀態摘要 |
+| `list_loaded()` | 列出已載入模組 |
+| `get_info(name)` | 取得模組資訊 |
+| `get_status_summary()` | 取得模組狀態摘要 |
 
 ### 屬性存取
 
@@ -261,6 +263,82 @@ module = sdk.module.get("ModuleName")
 module = sdk.module.ModuleName
 module = sdk.ModuleName  # 等價快捷方式
 ```
+
+### 模組間呼叫（RPC）
+
+```python
+# 協定化呼叫：類型化錯誤 / 懶模組自動喚醒 / owner 歸因 / 超時語義
+result = await sdk.module.call("Chat", "get_history", session_id, n=20)
+```
+
+與服務方裸屬性存取 `sdk.module.Chat.get_history(...)` 的差異：
+
+| | `module.call()` | 裸屬性存取 |
+|---|---|---|
+| 目標未註冊/未啟用 | 抛 `ModuleNotAvailableError` | 抛 `AttributeError` |
+| 懶加載模組 | 自動喚醒 | 異步初始化模組拋 RuntimeError |
+| `current_owner` | 歸因到目標模組 | 保持呼叫方 |
+| 超時 | 預設 30s，可覆蓋 | 無 |
+| scope 審計 | `actions.<呼叫方>.call` | 無 |
+
+### 服務契約（meta.services）
+
+服務方在 `get_meta()` 的 `services` 欄位宣告對外白名單（與 `commands` 對稱），宣告後呼叫面收窄：
+
+```python
+class ChatModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(services=["get_history", "translate"])
+
+    async def get_history(self, session_id, n=20): ...
+```
+
+- **預設 = 開發者無感**：未宣告 `services` 時任意**公開**方法可被呼叫（向後相容），底線私有方法始終禁止；限制的主控制權在使用者端 scope 配置
+- 宣告後：僅白名單內方法可呼叫，越界拋 `ServiceNotProvidedError`
+- 呼叫方限制：`scope.set_action("CallerModule", "call", deny="Chat.get_history")`
+
+**服務介紹（description）**：`services` 支援 dict 形態為每個服務宣告介紹  
+（支援純字串或 i18n 字典），供服務目錄 / AI 呼叫點描述消費：
+
+```python
+return ModuleMeta(
+    services=[
+        "get_history",                              # 簡單形態：介紹自動取方法 docstring 首行
+        {"name": "translate", "description": "把文本翻譯成指定語言"},
+        {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "摘要對話"}},
+    ],
+)
+```
+
+介紹解析優先級：**顯式 description（i18n 解析為當前語言）> 方法 docstring 首行 > 空字串**。
+
+### 服務目錄（services）
+
+```python
+sdk.module.services()
+# {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
+#            'description': '取得會話歷史'}]}
+
+sdk.module.services("Chat")  # 僅查詢指定模組
+```
+
+僅列出**顯式宣告** `meta.services` 的模組；每個服務附方法簽名字串  
+與介紹文字，為 MCP 化（呼叫點暴露給 AI）提供資料基礎。
+
+### 定向事件（emit_to）
+
+```python
+# 投遞方：校驗目標模組啟用後投遞到 module.<名稱>.<事件>
+await sdk.module.emit_to("Chat", "message_received", {"text": "hi"})
+
+# 訂閱方（Chat 模組內）：註冊命名空間鈎子
+lifecycle.on("module.Chat.message_received", handler)
+lifecycle.on("module.Chat", handler)  # 或接收該模組的全部定向事件
+```
+
+> [!NOTE]
+> 本節能力新增於 ErisPulse **2.8.0+**
 
 ## Lifecycle 模組
 
@@ -346,7 +424,7 @@ async for text in ws.iter_text():
 
 ### dump_state()
 
-導出框架當前運行狀態的快照，用於調試和診斷。
+匯出框架當前運行狀態的快照，用於調試和診斷。
 
 ```python
 import json
@@ -356,15 +434,16 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 
 回傳結構包含以下子系統的狀態：
 
-| 欄位 | 說明 |
+| 字段 | 說明 |
 |------|------|
 | `sdk` | SDK 初始化狀態、Python 版本、運行平台、時間戳 |
 | `adapters` | 已註冊/已啟動的適配器列表、各平台 Bot 在線狀態 |
-| `modules` | 已註冊/已啟用/已禁用/懶加載的模組列表 |
+| `modules` | 已註冊/已啟用/已禁用/懶加載的模塊列表 |
 | `events` | 各類事件處理器數量（message/notice/request/meta/commands） |
 | `router` | 伺服器運行狀態、HTTP/WebSocket 路由數量 |
 
-> 新增於 2.5.2
+> [!NOTE]
+> 新增於 ErisPulse **2.5.2+**
 
 ## Interaction 交互會話
 
@@ -373,39 +452,57 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 ### 常用方法
 
 ```python
-# 查詢會話當前歸屬（誰正在與該使用者互動）
+# 會話定時提醒：5 分鐘無回覆則提醒，使用者回覆自動取消
+reminder = event.remind(300, "還在嗎？")
+reminder.cancel()  # 手動取消
+
+# 超時升級：到點必達（不被回覆取消）
+event.escalate(1800, lambda e: notify_master("30 分鐘未處理"))
+
+# 多路等待：先到先得
+which, reply = await event.select(
+    event.expect(pattern="同意*", user="A"),
+    event.expect(pattern="拒絕*", user="B"),
+    timeout=60,
+)
+
+# 會話級等待：同群任何人的回覆均可命中
+reply = await event.wait_reply(session=True, prompt="誰能幫忙答一下？")
+
+# 查詢會話當前歸屬（誰正在與該使用者交互）
 owner = sdk.interaction.get_owner_of(event)
 
-# 聲明會話互斥租約（被占用返回 None）
+# 聲明會話互斥租約（被佔用返回 None）
 lease = sdk.interaction.acquire(event)
 if lease:
     try:
-        ...  # 獨占互動
+        ...  # 獨佔交互
     finally:
         lease.release()
 
-# 上下文管理器形式（被占用拋 SessionOccupiedError）
+# 上下文管理器形式（被佔用拋 SessionOccupiedError）
 with sdk.interaction.hold(event) as lease:
     ...
 
 # 掛起會話統計
-sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'owners': {'Chat': 3}}
+sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'timers': 3, 'owners': {'Chat': 3}}
 ```
 
-模組卸載 / 適配器關閉時其掛起的等待自動取消（等待方立即回傳 `None`），
-回應命中時自動複查 scope 權限（使用者被拉黑 / 模組被解綁則終止等待）。
+模組卸載 / 适配器關閉時其掛起的等待與定時器自動取消（等待方立即返回 `None`），
+回覆命中時自動复查 scope 權限（使用者被拉黑 / 模組被解綁則終止等待）。
 
-> 新增於 2.8.0-dev.2
+> [!NOTE]
+> 本節能力新增於 ErisPulse **2.8.0+**
 
 ## Transcript 會話收件箱
 
-每會話近期消息流的自動記錄與查詢（`sdk.transcript`），作為 AI 對話、
-防重複等上下文記憶類模組的公共底座。
+每會話近期訊息流的自動記錄與查詢（`sdk.transcript`），作為 AI 對話、
+防重複發送等上下文記憶類模組的公共底座。
 
 ### 常用方法
 
 ```python
-# 樂用查詢（推薦）：當前會話最近 20 條（含使用者與機器人，時間升序）
+# 便捷查詢（推薦）：當前會話最近 20 條（包含使用者與機器人，時間升序）
 messages = await event.history(20)
 for m in messages:
     print(m["role"], ":", m["text"])
@@ -417,9 +514,12 @@ sdk.transcript.clear(event)
 ```
 
 配置（`ErisPulse.transcript`）：`enabled`（預設開啟）、`max_per_session`（每會話上限，預設 50）、
-`ttl_hours`（全局過期時間，預設 168 小時）。資料存獨立 SQLite 表，超限/過期惰性清理。
+`ttl_hours`（全域過期時間，預設 168 小時）。資料存於獨立 SQLite 表，超出限制或過期時惰性清理。
 
-> 新增於 2.8.0-dev.2
+> [!NOTE]
+> 本節功能新增於 ErisPulse **2.8.0+**
+> [!TIP]
+> 本功能依賴 SQLite，請確保環境已安裝 sqlite3 模組。
 
 ## 相關文件
 
