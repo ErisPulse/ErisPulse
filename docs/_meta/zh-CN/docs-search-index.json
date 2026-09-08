@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1491,
+  "total_keywords": 1519,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2237,7 +2237,7 @@
     "@消息相关": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 152,
+        "line": 187,
         "level": 4,
         "title": "@消息相关"
       }
@@ -2321,7 +2321,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 269,
+        "line": 347,
         "level": 3,
         "title": "API 概览"
       }
@@ -2843,7 +2843,7 @@
     "HTTP Client 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 324,
+        "line": 402,
         "level": 2,
         "title": "HTTP Client 模块"
       }
@@ -2923,7 +2923,7 @@
     "Interaction 交互会话": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 369,
+        "line": 448,
         "level": 2,
         "title": "Interaction 交互会话"
       }
@@ -2955,7 +2955,7 @@
     "Lifecycle 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 265,
+        "line": 343,
         "level": 2,
         "title": "Lifecycle 模块"
       }
@@ -3254,6 +3254,14 @@
         "title": "QQBot平台特性文档"
       }
     ],
+    "RPC：module.call": [
+      {
+        "document": "advanced/module-communication.md",
+        "line": 18,
+        "level": 2,
+        "title": "RPC：module.call"
+      }
+    ],
     "Reply 方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -3273,7 +3281,7 @@
     "Router 模块": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 297,
+        "line": 375,
         "level": 2,
         "title": "Router 模块"
       }
@@ -3311,7 +3319,7 @@
     "SDK 调试": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 345,
+        "line": 423,
         "level": 2,
         "title": "SDK 调试"
       }
@@ -3479,7 +3487,7 @@
     "Transcript 会话收件箱": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 400,
+        "line": 497,
         "level": 2,
         "title": "Transcript 会话收件箱"
       }
@@ -3883,7 +3891,7 @@
     "`hasattr` 和 `dir` 支持": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 422,
+        "line": 457,
         "level": 3,
         "title": "`hasattr` 和 `dir` 支持"
       }
@@ -4059,9 +4067,17 @@
     "dump_state()": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 347,
+        "line": 425,
         "level": 3,
         "title": "dump_state()"
+      }
+    ],
+    "escalate：到点必达的升级": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 107,
+        "level": 3,
+        "title": "escalate：到点必达的升级"
       }
     ],
     "get() 方法": [
@@ -4238,6 +4254,14 @@
         "line": 19,
         "level": 2,
         "title": "pyproject.toml 配置"
+      }
+    ],
+    "remind：没回复就提醒": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 88,
+        "level": 3,
+        "title": "remind：没回复就提醒"
       }
     ],
     "run": [
@@ -4596,6 +4620,14 @@
         "title": "与 SendDSL 标准方法的关系"
       }
     ],
+    "与其他系统的关系": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 228,
+        "level": 2,
+        "title": "与其他系统的关系"
+      }
+    ],
     "两种注入模式": [
       {
         "document": "ecosystem/dashboard.md",
@@ -4747,7 +4779,7 @@
     "事件基础信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 116,
+        "line": 151,
         "level": 4,
         "title": "事件基础信息"
       }
@@ -4854,6 +4886,14 @@
         "line": 105,
         "level": 3,
         "title": "事件处理链路详解"
+      }
+    ],
+    "事件幂等去重": [
+      {
+        "document": "advanced/module-communication.md",
+        "line": 199,
+        "level": 2,
+        "title": "事件幂等去重"
       }
     ],
     "事件扩展方法": [
@@ -5111,9 +5151,25 @@
     "五、我要为 ErisPulse 贡献": [
       {
         "document": "README.md",
-        "line": 65,
+        "line": 67,
         "level": 3,
         "title": "五、我要为 ErisPulse 贡献"
+      }
+    ],
+    "交互会话系统": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 1,
+        "level": 1,
+        "title": "交互会话系统"
+      }
+    ],
+    "交互会话进阶": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 90,
+        "level": 2,
+        "title": "交互会话进阶"
       }
     ],
     "交互式初始化（推荐）": [
@@ -5155,7 +5211,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 230,
+        "line": 265,
         "level": 4,
         "title": "交互方法"
       }
@@ -5163,7 +5219,7 @@
     "交互方法示例": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 269,
+        "line": 304,
         "level": 4,
         "title": "交互方法示例"
       }
@@ -5256,6 +5312,30 @@
         "title": "优雅关闭"
       }
     ],
+    "会话互斥：acquire / hold / get_owner_of": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 154,
+        "level": 2,
+        "title": "会话互斥：acquire / hold / get_owner_of"
+      }
+    ],
+    "会话定时器：remind / escalate": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 83,
+        "level": 2,
+        "title": "会话定时器：remind / escalate"
+      }
+    ],
+    "会话收件箱：event.history": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 187,
+        "level": 2,
+        "title": "会话收件箱：event.history"
+      }
+    ],
     "会话标识": [
       {
         "document": "api-reference/event-system.md",
@@ -5265,7 +5345,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 129,
+        "line": 164,
         "level": 4,
         "title": "会话标识"
       }
@@ -5586,6 +5666,14 @@
         "title": "入门指南"
       }
     ],
+    "全参数一览": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 32,
+        "level": 3,
+        "title": "全参数一览"
+      }
+    ],
     "全局兜底：`default_allow`": [
       {
         "document": "advanced/scope.md",
@@ -5653,7 +5741,7 @@
     "其他": [
       {
         "document": "README.md",
-        "line": 83,
+        "line": 85,
         "level": 2,
         "title": "其他"
       }
@@ -5669,7 +5757,7 @@
     "典型流程模式": [
       {
         "document": "advanced/conversation.md",
-        "line": 343,
+        "line": 356,
         "level": 2,
         "title": "典型流程模式"
       }
@@ -5742,12 +5830,28 @@
         "title": "内联查询事件"
       }
     ],
+    "冷启动回放": [
+      {
+        "document": "advanced/module-communication.md",
+        "line": 166,
+        "level": 2,
+        "title": "冷启动回放"
+      }
+    ],
     "出站协议": [
       {
         "document": "platform-guide/webhook.md",
         "line": 126,
         "level": 2,
         "title": "出站协议"
+      }
+    ],
+    "出站审计：谁能调用谁": [
+      {
+        "document": "advanced/module-communication.md",
+        "line": 118,
+        "level": 2,
+        "title": "出站审计：谁能调用谁"
       }
     ],
     "分支与跳转": [
@@ -5917,7 +6021,7 @@
     "前置知识": [
       {
         "document": "advanced/README.md",
-        "line": 32,
+        "line": 34,
         "level": 2,
         "title": "前置知识"
       }
@@ -6091,7 +6195,7 @@
     "原始数据": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 386,
+        "line": 421,
         "level": 3,
         "title": "原始数据"
       }
@@ -6439,7 +6543,7 @@
     "发送者信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 141,
+        "line": 176,
         "level": 4,
         "title": "发送者信息"
       }
@@ -6635,7 +6739,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 377,
+        "line": 412,
         "level": 3,
         "title": "命令信息"
       }
@@ -6643,7 +6747,7 @@
     "命令信息获取": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 90,
+        "line": 125,
         "level": 2,
         "title": "命令信息获取"
       }
@@ -6667,7 +6771,7 @@
     "命令基础": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 379,
+        "line": 414,
         "level": 4,
         "title": "命令基础"
       }
@@ -6755,7 +6859,7 @@
     "四、生态与官方客户端": [
       {
         "document": "README.md",
-        "line": 54,
+        "line": 56,
         "level": 3,
         "title": "四、生态与官方客户端"
       }
@@ -6775,9 +6879,17 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 187,
+        "line": 222,
         "level": 3,
         "title": "回复功能"
+      }
+    ],
+    "回复命中的完整判定链": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 70,
+        "level": 3,
+        "title": "回复命中的完整判定链"
       }
     ],
     "回复方法": [
@@ -7117,7 +7229,7 @@
     "基础判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 158,
+        "line": 193,
         "level": 4,
         "title": "基础判断"
       }
@@ -7147,7 +7259,7 @@
     "基础回复": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 189,
+        "line": 224,
         "level": 4,
         "title": "基础回复"
       }
@@ -7442,6 +7554,14 @@
         "line": 442,
         "level": 2,
         "title": "多账户配置"
+      }
+    ],
+    "多路等待：expect + select": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 123,
+        "level": 2,
+        "title": "多路等待：expect + select"
       }
     ],
     "多轮对话 (conversation)": [
@@ -7832,6 +7952,22 @@
         "title": "完整配置示例"
       }
     ],
+    "定向事件（emit_to）": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 329,
+        "level": 3,
+        "title": "定向事件（emit_to）"
+      }
+    ],
+    "定向事件：emit_to": [
+      {
+        "document": "advanced/module-communication.md",
+        "line": 134,
+        "level": 2,
+        "title": "定向事件：emit_to"
+      }
+    ],
     "定时任务": [
       {
         "document": "getting-started/common-tasks.md",
@@ -7921,7 +8057,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 257,
+        "line": 259,
         "level": 3,
         "title": "属性访问"
       },
@@ -8045,13 +8181,13 @@
     "常用方法": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 373,
+        "line": 452,
         "level": 3,
         "title": "常用方法"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 405,
+        "line": 502,
         "level": 3,
         "title": "常用方法"
       }
@@ -8177,7 +8313,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 391,
+        "line": 426,
         "level": 3,
         "title": "平台扩展方法"
       },
@@ -8267,7 +8403,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 203,
+        "line": 238,
         "level": 4,
         "title": "平台能力查询"
       }
@@ -8315,7 +8451,7 @@
     "开发方式": [
       {
         "document": "README.md",
-        "line": 76,
+        "line": 78,
         "level": 2,
         "title": "开发方式"
       }
@@ -8373,6 +8509,12 @@
         "document": "advanced/http-client.md",
         "line": 369,
         "level": 2,
+        "title": "异常体系"
+      },
+      {
+        "document": "advanced/module-communication.md",
+        "line": 35,
+        "level": 3,
         "title": "异常体系"
       }
     ],
@@ -8469,7 +8611,7 @@
     "引导式注册": [
       {
         "document": "advanced/conversation.md",
-        "line": 345,
+        "line": 358,
         "level": 3,
         "title": "引导式注册"
       }
@@ -8493,7 +8635,7 @@
     "循环对话": [
       {
         "document": "advanced/conversation.md",
-        "line": 376,
+        "line": 389,
         "level": 3,
         "title": "循环对话"
       }
@@ -8579,13 +8721,13 @@
     "快速参考": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 303,
+        "line": 381,
         "level": 3,
         "title": "快速参考"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 330,
+        "line": 408,
         "level": 3,
         "title": "快速参考"
       },
@@ -8664,6 +8806,22 @@
         "title": "总览"
       }
     ],
+    "恢复即接管": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 332,
+        "level": 3,
+        "title": "恢复即接管"
+      }
+    ],
+    "懒加载与调用": [
+      {
+        "document": "advanced/module-communication.md",
+        "line": 156,
+        "level": 2,
+        "title": "懒加载与调用"
+      }
+    ],
     "懒加载机制": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -8731,7 +8889,7 @@
     "手动恢复（不用自动机制时）": [
       {
         "document": "advanced/conversation.md",
-        "line": 332,
+        "line": 345,
         "level": 3,
         "title": "手动恢复（不用自动机制时）"
       }
@@ -9455,7 +9613,7 @@
     "方法速查表": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 112,
+        "line": 147,
         "level": 2,
         "title": "方法速查表"
       }
@@ -9646,6 +9804,38 @@
         "title": "服务器配置"
       }
     ],
+    "服务契约（meta.services）": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 284,
+        "level": 3,
+        "title": "服务契约（meta.services）"
+      }
+    ],
+    "服务契约：meta.services": [
+      {
+        "document": "advanced/module-communication.md",
+        "line": 47,
+        "level": 2,
+        "title": "服务契约：meta.services"
+      }
+    ],
+    "服务目录（services）": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 316,
+        "level": 3,
+        "title": "服务目录（services）"
+      }
+    ],
+    "服务目录：services()": [
+      {
+        "document": "advanced/module-communication.md",
+        "line": 97,
+        "level": 2,
+        "title": "服务目录：services()"
+      }
+    ],
     "本地插件文件夹架构": [
       {
         "document": "architecture.md",
@@ -9665,7 +9855,7 @@
     "机器人信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 123,
+        "line": 158,
         "level": 4,
         "title": "机器人信息"
       }
@@ -9751,7 +9941,7 @@
     "查询已注册方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 413,
+        "line": 448,
         "level": 3,
         "title": "查询已注册方法"
       }
@@ -10003,7 +10193,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 114,
+        "line": 149,
         "level": 3,
         "title": "核心方法"
       }
@@ -10310,7 +10500,21 @@
         "title": "模块配置"
       }
     ],
+    "模块间调用（RPC）": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 267,
+        "level": 3,
+        "title": "模块间调用（RPC）"
+      }
+    ],
     "模块间通信": [
+      {
+        "document": "advanced/module-communication.md",
+        "line": 1,
+        "level": 1,
+        "title": "模块间通信"
+      },
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 141,
@@ -10547,7 +10751,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 133,
+        "line": 168,
         "level": 3,
         "title": "消息事件方法"
       }
@@ -10568,10 +10772,18 @@
         "title": "消息事件额外字段"
       }
     ],
+    "消息事务：message_tx": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 203,
+        "level": 2,
+        "title": "消息事务：message_tx"
+      }
+    ],
     "消息内容": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 135,
+        "line": 170,
         "level": 4,
         "title": "消息内容"
       }
@@ -10747,7 +10959,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 156,
+        "line": 191,
         "level": 3,
         "title": "消息类型判断"
       }
@@ -11245,13 +11457,19 @@
     "相关文档": [
       {
         "document": "advanced/conversation.md",
-        "line": 403,
+        "line": 416,
         "level": 2,
         "title": "相关文档"
       },
       {
         "document": "advanced/http-client.md",
         "line": 482,
+        "level": 2,
+        "title": "相关文档"
+      },
+      {
+        "document": "advanced/interaction.md",
+        "line": 235,
         "level": 2,
         "title": "相关文档"
       },
@@ -11270,6 +11488,12 @@
       {
         "document": "advanced/message-builder.md",
         "line": 185,
+        "level": 2,
+        "title": "相关文档"
+      },
+      {
+        "document": "advanced/module-communication.md",
+        "line": 211,
         "level": 2,
         "title": "相关文档"
       },
@@ -11311,7 +11535,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 424,
+        "line": 522,
         "level": 2,
         "title": "相关文档"
       },
@@ -11365,7 +11589,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 448,
+        "line": 483,
         "level": 2,
         "title": "相关文档"
       },
@@ -11391,7 +11615,7 @@
     "相关链接": [
       {
         "document": "README.md",
-        "line": 95,
+        "line": 97,
         "level": 2,
         "title": "相关链接"
       },
@@ -11425,7 +11649,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 281,
+        "line": 359,
         "level": 3,
         "title": "示例"
       }
@@ -11478,6 +11702,14 @@
         "title": "等待任意事件 (wait_for)"
       }
     ],
+    "等待会在什么时候被取消": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 53,
+        "level": 3,
+        "title": "等待会在什么时候被取消"
+      }
+    ],
     "等待回复": [
       {
         "document": "api-reference/event-system.md",
@@ -11489,9 +11721,17 @@
     "等待回复功能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 218,
+        "line": 253,
         "level": 3,
         "title": "等待回复功能"
+      }
+    ],
+    "等待回复：wait_reply": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 16,
+        "level": 2,
+        "title": "等待回复：wait_reply"
       }
     ],
     "等待用户回复": [
@@ -11723,7 +11963,7 @@
     "群组/频道信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 146,
+        "line": 181,
         "level": 4,
         "title": "群组/频道信息"
       }
@@ -11891,7 +12131,7 @@
     "获取帮助": [
       {
         "document": "README.md",
-        "line": 89,
+        "line": 91,
         "level": 2,
         "title": "获取帮助"
       }
@@ -12121,7 +12361,7 @@
     "请求事件方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 177,
+        "line": 212,
         "level": 3,
         "title": "请求事件方法"
       }
@@ -12137,7 +12377,7 @@
     "请求信息": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 179,
+        "line": 214,
         "level": 4,
         "title": "请求信息"
       }
@@ -12191,7 +12431,7 @@
     "请求类型判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 182,
+        "line": 217,
         "level": 4,
         "title": "请求类型判断"
       }
@@ -12341,7 +12581,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 429,
+        "line": 464,
         "level": 3,
         "title": "跨平台扩展（通配符）"
       }
@@ -12397,7 +12637,7 @@
     "转发功能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 207,
+        "line": 242,
         "level": 4,
         "title": "转发功能"
       }
@@ -12645,7 +12885,7 @@
     "适用对象": [
       {
         "document": "advanced/README.md",
-        "line": 24,
+        "line": 26,
         "level": 2,
         "title": "适用对象"
       }
@@ -12899,13 +13139,13 @@
     "通知事件方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 102,
+        "line": 137,
         "level": 2,
         "title": "通知事件方法"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 164,
+        "line": 199,
         "level": 3,
         "title": "通知事件方法"
       }
@@ -12921,7 +13161,7 @@
     "通知操作者": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 166,
+        "line": 201,
         "level": 4,
         "title": "通知操作者"
       }
@@ -12929,7 +13169,7 @@
     "通知类型判断": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 170,
+        "line": 205,
         "level": 4,
         "title": "通知类型判断"
       }
@@ -13536,6 +13776,14 @@
         "line": 348,
         "level": 2,
         "title": "链路控制：认领与阻断"
+      }
+    ],
+    "链路追踪：trace-id": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 217,
+        "level": 2,
+        "title": "链路追踪：trace-id"
       }
     ],
     "错误处理": [

@@ -336,7 +336,7 @@
     "高度なトピック": {
       "description": "フレームワークの高度な機能を深く理解する",
       "icon": "fa-fire",
-      "count": 13,
+      "count": 15,
       "documents": [
         {
           "title": "高級トピック",
@@ -403,6 +403,18 @@
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
+        },
+        {
+          "title": "交互会話システム",
+          "path": "advanced/interaction.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "モジュール間通信",
+          "path": "advanced/module-communication.md",
+          "level": 1,
+          "icon": "fa-fire"
         },
         {
           "title": "スタートフローと手動制御",

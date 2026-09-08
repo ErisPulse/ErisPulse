@@ -256,6 +256,20 @@ OneBot12 标准事件数据结构
 :ivar request_id: str 请求标识符
 
 
+### `class Expectation`
+
+等待期望描述（:meth:`Event.expect` 创建，传给 :meth:`Event.select` 做多路等待）
+
+本身不注册任何等待——仅在 ``select()`` 调用时统一注册，
+任一路命中即返回该路结果，其余自动取消。
+
+:attribute pattern: glob 文本过滤（``*`` / ``?`` / ``[seq]``）
+:attribute regex: 正则文本过滤（与 pattern 同时给定时须都匹配）
+:attribute validator: 回复校验函数（接收 Event，返回 bool）
+:attribute user: 限定回复者 user_id（None 不限定）
+:attribute session: 会话级等待（同会话任何人可命中，忽略 user）
+
+
 ### `class Event(dict)`
 
 事件包装类
@@ -1147,6 +1161,50 @@ OneBot12 标准事件数据结构
 ---
 
 
+##### `remind(delay: float, text: str | None = None)`
+
+会话定时提醒：delay 秒后无回复则提醒 / 执行回调
+
+挂在当前会话上的定时器——用户**在该会话回复后自动取消**
+（"如果没在时限内回复就提醒"）；也可 ``reminder.cancel()`` 手动取消；
+归属模块卸载 / 适配器关闭时随归属清理自动取消。
+
+- **delay** (`延迟秒数`): - **text**: 到期发送到当前会话的提醒文本（与 callback 二选一，同时给定时文本优先）
+- **callback** (`到期执行的回调（同步或异步，接收当前`): Event 为参数）
+**返回值** (`:class:`~ErisPulse.Core.Event.interaction.Reminder``): 句柄；超过单会话上限时返回 None
+**异常**: `RuntimeError` - text 与 callback 均未提供时
+
+**示例**:
+```python
+>>> reminder = event.remind(300, "还在吗？不想聊就回复「退出」哦")
+>>> # 用户 5 分钟内回复 → 提醒自动取消；未回复 → 到期发送
+
+> **提示**
+> 单会话同时最多挂 5 个活跃提醒（超出返回 None）。
+```
+
+---
+
+
+##### `escalate(delay: float, callback: Any)`
+
+超时升级：delay 秒后执行升级回调（**不被用户回复取消**）
+
+与 :meth:`remind` 的差异：remind 是"没回复就提醒、回复即取消"，
+escalate 是"到点必达"的升级动作（如长时间无处理通知主人、转人工），
+仅手动 ``cancel()`` / 模块卸载 / 适配器关闭才取消。
+
+- **delay** (`延迟秒数`): - **callback**: 到期执行的回调（同步或异步，接收当前 Event 为参数）
+**返回值** (`:class:`~ErisPulse.Core.Event.interaction.Reminder``): 句柄
+
+**示例**:
+```python
+>>> event.escalate(1800, lambda e: notify_master("工单 30 分钟未处理"))
+```
+
+---
+
+
 ##### `async history(n: int = 20)`
 
 查询当前会话的近期消息（会话收件箱）
@@ -1162,6 +1220,57 @@ OneBot12 标准事件数据结构
 >>> messages = await event.history(10)
 >>> for m in messages:
 ...     print(m["role"], ":", m["text"])
+```
+
+---
+
+
+##### `expect(pattern: str | None = None, regex: str | None = None, validator: Any = None, user: str | None = None, session: bool = False)`
+
+构造一条等待期望（不注册，传给 :meth:`select` 做多路等待）
+
+- **pattern** (`glob`): 文本过滤（``*`` / ``?`` / ``[seq]``）
+- **regex** (`正则文本过滤（与`): pattern 同时给定时须都匹配）
+- **validator** (`回复校验函数（接收`): Event，返回 bool）
+- **user** (`限定回复者`): user_id（None 不限定）
+- **session** (`会话级等待——同会话任何人可命中（忽略`): user）
+**返回值** (`期望描述对象`): 
+**示例**:
+```python
+>>> which, reply = await event.select(
+...     event.expect(pattern="同意*", user="10001"),
+...     event.expect(pattern="拒绝*", user="10002"),
+...     timeout=60,
+... )
+```
+
+---
+
+
+##### `async select()`
+
+多路等待：同时挂起多条期望，任一命中即返回该路结果（先到先得）
+
+典型场景：同时等待"管理员同意"与"用户回复"、多人协作投票等。
+未命中的等待在返回前自动取消；全部超时返回 ``(None, None)``。
+命中的事件已被框架认领（mark_processed），不会被低优先级处理器重复消费。
+
+- **expectations** (`:meth:`expect``): 构造的期望描述（至少一条）
+- **timeout** (`统一超时秒数（None`): 表示不限时）
+**返回值** (```(命中的期望下标,`): 回复事件)``；超时返回 ``(None, None)``
+**异常**: `ValueError` - 未提供任何期望时
+
+**示例**:
+```python
+>>> which, reply = await event.select(
+...     event.expect(pattern="同意*", user="10001"),
+...     event.expect(pattern="拒绝*", user="10002"),
+...     timeout=60,
+... )
+>>> if which is None:
+...     await event.reply("超时未收到审批")
+>>> elif which == 0:
+...     await event.reply("已同意")
 ```
 
 ---
@@ -1436,6 +1545,34 @@ OneBot12 标准事件数据结构
 ---
 
 
+##### `remind(delay: float, text: str | None = None)`
+
+会话定时提醒（转发到当前对话事件的 ``Event.remind``）
+
+delay 秒后无回复则发送提醒文本 / 执行回调；用户在会话回复后自动取消。
+
+- **delay** (`延迟秒数`): - **text**: 到期发送的提醒文本（与 callback 二选一）
+- **callback** (`到期执行的回调（接收当前`): Event 为参数）
+**返回值** (`Reminder`): 句柄；超过单会话上限时返回 None
+
+**示例**:
+```python
+>>> conv.remind(120, "还在考虑吗？需要帮助请输入「帮助」")
+```
+
+---
+
+
+##### `escalate(delay: float, callback: Any)`
+
+超时升级（转发到当前对话事件的 ``Event.escalate``，不被回复取消）
+
+- **delay** (`延迟秒数`): - **callback**: 到期执行的回调（接收当前 Event 为参数）
+**返回值** (`Reminder`): 句柄
+
+---
+
+
 ##### `branch(name: str)`
 
 注册分支处理器
@@ -1581,14 +1718,18 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async resume(event: 'Event | None' = None)`
+##### `async resume(event: 'Event | None' = None, with_history: int = 10)`
 
-从 storage 恢复对话状态
+从 storage 恢复对话状态（含会话接管与历史带回）
 
-读取含 target 维度的新键；旧格式（不含 target）存档会自动迁移到新键。
+恢复流程：读取检查点（含 target 维度新键，旧格式自动迁移）→
+**会话接管**（自动 acquire 会话租约，被其他模块占用时放弃恢复）→
+落地上下文并从收件箱带回最近消息到 :attr:`recent_history`。
+
 超过 checkpoint_ttl 的存档视为过期，丢弃并返回 False。
 
 - **event** (`Event`): 新的事件对象 (可选, 不传则使用原事件)
+- **with_history** (`恢复时从会话收件箱带回的最近消息条数（0`): 关闭）
 **返回值** (`bool`): 是否恢复成功
 
 **示例**:

@@ -7100,22 +7100,24 @@ sdk.adapter.get_status_summary()
 
 ## Module Module
 
-Module manager, managing plugin registration, loading, and unloading.
+The module manager, responsible for registering, loading, and unloading plugins.
 
 ### API Overview
 
 | Method | Description |
-|------|------|
-| `get(name)` | Retrieve module instance or lazy-loaded proxy (returns proxy if registered but not loaded) |
-| `exists(name)` | Check if registered |
-| `is_loaded(name)` | Check if loaded |
-| `is_enabled(name)` | Check if enabled |
-| `enable(name)` / `disable(name)` | Enable/disable module |
-| `load(name)` / `unload(name)` | Load/unload module |
+|--------|-------------|
+| `get(name)` | Retrieve a module instance or a lazy-loading proxy (returns a proxy if the module is registered but not loaded) |
+| `exists(name)` | Check if the module is registered |
+| `is_loaded(name)` | Check if the module is loaded |
+| `is_enabled(name)` | Check if the module is enabled |
+| `enable(name)` / `disable(name)` | Enable/disable the module |
+| `load(name)` / `unload(name)` | Load/unload the module |
+| `call(module, method, *args, timeout=None, **kwargs)` | Call a service method in a target module across modules (protocolized RPC) |
+| `emit_to(module, event, data)` | Deliver a lifecycle event to a specific module |
 | `list_registered()` | List all registered modules |
 | `list_loaded()` | List all loaded modules |
 | `get_info(name)` | Retrieve module information |
-| `get_status_summary()` | Retrieve module status summary |
+| `get_status_summary()` | Get a status summary of modules |
 
 ### Attribute Access
 
@@ -7124,6 +7126,80 @@ module = sdk.module.get("ModuleName")
 module = sdk.module.ModuleName
 module = sdk.ModuleName  # Equivalent shortcut
 ```
+
+### Inter-Module Calls (RPC)
+
+```python
+# Protocolized call: typed errors / lazy module auto-wakeup / owner attribution / timeout semantics
+result = await sdk.module.call("Chat", "get_history", session_id, n=20)
+```
+
+Differences between `module.call()` and direct service access `sdk.module.Chat.get_history(...)`:
+
+| | `module.call()` | Direct attribute access |
+|---|---|---|
+| Target not registered/unavailable | Throws `ModuleNotAvailableError` | Throws `AttributeError` |
+| Lazy-loaded module | Automatically wakes up | Async initialization throws `RuntimeError` |
+| `current_owner` | Attributed to the target module | Retains the caller's context |
+| Timeout | Default 30s, can be overridden | None |
+| Scope audit | `actions.<caller>.call` | None |
+
+### Service Contract (`meta.services`)
+
+Service providers declare a white-list of exposed services in the `services` field of `get_meta()`, symmetric to `commands`. After declaration, the call surface is restricted:
+
+```python
+class ChatModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(services=["get_history", "translate"])
+
+    async def get_history(self, session_id, n=20): ...
+```
+
+- **Default = Developer-agnostic**: If `services` is not declared, any **public** method can be called (backward compatibility), and private methods (prefixed with underscore) are always forbidden; the primary control for restrictions lies in the user-side scope configuration.
+- After declaration: Only methods in the whitelist are callable, and calling outside the whitelist throws `ServiceNotProvidedError`.
+- Caller restrictions: `scope.set_action("CallerModule", "call", deny="Chat.get_history")`
+
+**Service Description (`description`)**: `services` supports a dict format to declare descriptions for each service (supports plain strings or i18n dictionaries), providing data for service directories or AI consumption:
+
+```python
+return ModuleMeta(
+    services=[
+        "get_history",                              # Simple form: description automatically taken from the first line of the method's docstring
+        {"name": "translate", "description": "Translate text into the specified language"},
+        {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "Summarize conversation"}},
+    ],
+)
+```
+
+Description resolution priority: **Explicit description (i18n resolved to current language) > First line of method docstring > Empty string**.
+
+### Service Directory (`services`)
+
+```python
+sdk.module.services()
+# {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
+#            'description': 'Retrieve conversation history'}]}
+
+sdk.module.services("Chat")  # Query only a specific module
+```
+
+Lists only modules that explicitly declare `meta.services`. Each service includes a method signature string and description text, providing the data foundation for MCP (exposing call points to AI).
+
+### Directed Events (`emit_to`)
+
+```python
+# Sender: Validates that the target module is enabled and delivers the event to `module.<name>.<event>`
+await sdk.module.emit_to("Chat", "message_received", {"text": "hi"})
+
+# Subscriber (within the Chat module): Registers a namespace hook
+lifecycle.on("module.Chat.message_received", handler)
+lifecycle.on("module.Chat", handler)  # Or receive all directed events from this module
+```
+
+> [!NOTE]
+> This feature is new in ErisPulse **2.8.0+**
 
 ## Lifecycle Module
 
@@ -7209,7 +7285,7 @@ async for text in ws.iter_text():
 
 ### dump_state()
 
-Exports a snapshot of the current runtime state of the framework, for debugging and diagnostics.
+Exports a snapshot of the current running state of the framework, for debugging and diagnostics.
 
 ```python
 import json
@@ -7217,26 +7293,44 @@ state = sdk.dump_state()
 print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 ```
 
-The returned structure includes the status of the following subsystems:
+The returned structure contains the status of the following subsystems:
 
 | Field | Description |
-|------|------|
-| `sdk` | SDK initialization status, Python version, running platform, timestamp |
+|-------|-------------|
+| `sdk` | SDK initialization status, Python version, runtime platform, timestamp |
 | `adapters` | List of registered/started adapters, online status of Bots on each platform |
-| `modules` | List of registered/enabled/disabled/lazy-loaded modules |
-| `events` | Number of handlers for each type of event (message/notice/request/meta/commands) |
+| `modules` | List of registered/active/disabled/lazy-loaded modules |
+| `events` | Number of event handlers for each type (message/notice/request/meta/commands) |
 | `router` | Server running status, number of HTTP/WebSocket routes |
 
-> Added in 2.5.2
+> [!NOTE]
+> Added in ErisPulse **2.5.2+**
 
-## Interaction Session
+## Interaction Interactions
 
-Manages wait_reply suspended waiting and session mutual exclusion leases (`sdk.interaction`).
+Manage wait_reply suspended waiting and session mutual exclusion leases (`sdk.interaction`).
 
 ### Common Methods
 
 ```python
-# Query current session owner (who is interacting with this user)
+# Session timeout reminder: Remind after 5 minutes of no reply, reminder is automatically canceled when user replies
+reminder = event.remind(300, "Are you still there?")
+reminder.cancel()  # Cancel manually
+
+# Timeout escalation: Must escalate at a specific time (not canceled by reply)
+event.escalate(1800, lambda e: notify_master("30 minutes not handled"))
+
+# Multi-path waiting: First come, first served
+which, reply = await event.select(
+    event.expect(pattern="agree*", user="A"),
+    event.expect(pattern="refuse*", user="B"),
+    timeout=60,
+)
+
+# Session-level waiting: Reply from anyone in the same group can trigger the event
+reply = await event.wait_reply(session=True, prompt="Can someone help answer this?")
+
+# Query current session ownership (who is currently interacting with this user)
 owner = sdk.interaction.get_owner_of(event)
 
 # Acquire session mutual exclusion lease (returns None if occupied)
@@ -7247,26 +7341,27 @@ if lease:
     finally:
         lease.release()
 
-# Context manager form (raises SessionOccupiedError if occupied)
+# Context manager form (throws SessionOccupiedError if occupied)
 with sdk.interaction.hold(event) as lease:
     ...
 
-# Suspended session count
-sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'owners': {'Chat': 3}}
+# Suspended session statistics
+sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'timers': 3, 'owners': {'Chat': 3}}
 ```
 
-When a module is unloaded or an adapter is closed, its suspended waits are automatically canceled (the waiting party immediately returns `None`), and replies are automatically checked for scope permissions (if the user is blocked or the module is unbound, the wait is terminated).
+When the module is unloaded or the adapter is closed, all suspended waits and timers are automatically canceled (waiters immediately return `None`). When a reply matches, scope permissions are automatically rechecked (if the user is blacklisted or the module is unbound, the wait is terminated).
 
-> Added in 2.8.0-dev.2
+> [!NOTE]
+> This feature was added in ErisPulse **2.8.0+**
 
-## Transcript Session Inbox
+## Transcript Conversation Inbox
 
-Automatic recording and querying of recent message streams per session (`sdk.transcript`), serving as a common base for context memory modules like AI conversation and anti-spam.
+An automatic record and query of recent message streams for each conversation (`sdk.transcript`), serving as a common foundation for context-aware modules such as AI conversations and anti-spam features.
 
 ### Common Methods
 
 ```python
-# Convenient query (recommended): recent 20 messages in current session (including user and bot, ascending by time)
+# Convenient query (recommended): The last 20 messages (including users and robots, in ascending time order)
 messages = await event.history(20)
 for m in messages:
     print(m["role"], ":", m["text"])
@@ -7277,9 +7372,10 @@ sdk.transcript.get(event, n=20)
 sdk.transcript.clear(event)
 ```
 
-Configuration (`ErisPulse.transcript`): `enabled` (default on), `max_per_session` (default 50), `ttl_hours` (default 168 hours). Data is stored in a separate SQLite table, with lazy cleanup for over-limit or expired entries.
+Configuration (`ErisPulse.transcript`): `enabled` (default: enabled), `max_per_session` (maximum per session, default: 50), `ttl_hours` (global expiration time in hours, default: 168). Data is stored in a separate SQLite table, with lazy cleanup when limits are exceeded or data expires.
 
-> Added in 2.8.0-dev.2
+> [!NOTE]
+> This feature was added in ErisPulse **2.8.0+**
 
 
 
@@ -9911,6 +10007,215 @@ class MyModule(BaseModule):
 - **Custom domain i18n registration**: If `i18n.register(domain=...)` uses a domain different from the module name, it will not be automatically reclaimed. Keep domain=module name.
 - **Background tasks must use `self.spawn()`**: Bare `asyncio.create_task` is not attributed to the module and will not be cancelled on unload (see [Lifecycle Management](lifecycle.md#后台任务归属与自动取消)).
 - Cleanup chain "failures only warn": Single-step cleanup exceptions do not block other resource cleanup; logs are visible at DEBUG/WARNING level, and TRACE can be enabled for troubleshooting.
+
+
+
+### 模块间通信
+
+# Inter-Module Communication
+
+> [!NOTE]
+> This chapter requires ErisPulse **2.8.0+**.
+
+ErisPulse has a **three-layer communication model** between modules, ordered as "point-to-point → directed → broadcast":
+
+| Layer | API | Semantics | Typical Scenarios |
+|---|---|---|---|
+| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | Point-to-point request-response, with contract / audit / timeout | Invoking another module's capability (e.g., check history, translate, refund) |
+| **Directed Events** | `await sdk.module.emit_to("Chat", "message_received", {...})` | Notification sent to a specific module | Upstream state change notification to downstream (e.g., "new message received") |
+| **Broadcast** | `await lifecycle.emit("config.updated", {...})` | Framework-wide lifecycle events | Hot configuration updates, module up/down events |
+
+{!--< tips >!--}
+Selection mnemonic: **Use `call` when you need a return value, `emit_to` to notify a single module, and `lifecycle` to notify everyone.** 
+{!--< /tips >!--}
+
+## RPC: module.call
+
+```python
+result = await sdk.module.call("Chat", "get_history", session_id, n=20)
+```
+
+Differences between `module.call()` and direct attribute access `sdk.module.Chat.get_history(...)` (which remains unchanged):
+
+| | `module.call()` | Direct attribute access |
+|---|---|---|
+| Target not registered / disabled | Raises `ModuleNotAvailableError` | Raises `AttributeError` |
+| Lazy-loaded module | **Automatically wakes up** (event-driven modules go through activation lock) | Asynchronous module initialization raises RuntimeError |
+| `current_owner` | Attributed to the **target module** (its internal `wait_reply` / send / logging correctly attributed) | Remains the caller |
+| Timeout | Default 30 seconds (`timeout=` overrides, None means no timeout) | None |
+| Scope audit | Caller passes through outbound gate `actions.<caller>.call` | None |
+| Contract validation | `meta.services` whitelist | None |
+
+### Exception Hierarchy
+
+```
+ModuleError                      # Base class for module system exceptions
+└── ModuleCallError              # Base class for cross-module calls (includes module / method attributes)
+    ├── ModuleNotAvailableError  # Target not registered / disabled / activation failed
+    ├── ServiceNotProvidedError  # Method not in services whitelist / private method / does not exist
+    └── ModuleCallTimeoutError   # Coroutine method timeout
+```
+
+All exceptions are part of the `ErisPulseError` hierarchy and can be caught with `from ErisPulse.Core import ModuleCallError`.
+
+## Service Contract: meta.services
+
+The service provider declares the whitelisted services offered externally in `get_meta()` (symmetrical to the `commands` field):
+
+```python
+from ErisPulse.Core.Bases import BaseModule, ModuleMeta
+
+class ChatModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="聊天",
+            services=[
+                "get_history",                                       # Simple form
+                {"name": "translate", "description": "把文本翻译成指定语言"},  # With description
+            ],
+        )
+
+    async def get_history(self, session_id, n=20): ...
+    async def translate(self, text, target_lang): ...
+    def _internal_helper(self): ...   # Underscore-prefixed methods are always forbidden from external calls
+```
+
+**Default behavior is invisible to developers**:
+
+- If `services` is not declared → all **public** methods are naturally callable via `module.call()` (consistent with raw attribute access),  
+  requiring no declaration at all
+- After declaration → restricted to the whitelist, out-of-bounds calls throw `ServiceNotProvidedError`—used to mark  
+  "these methods are the ones externally committed"
+- The main control authority lies with the user side: `scope.actions` configuration determines "who can call whom" (see auditing below),  
+  the module author's `services` is only a service surface declaration; the two layers are independent and not interchangeable
+
+**Service Descriptions**: Provide human-readable / AI-readable descriptions for each service—omit if unnecessary,  
+descriptions automatically use the **first line of the method's docstring** (the framework already requires docstring style):
+
+```python
+async def translate(self, text, target_lang):
+    """把文本翻译成指定语言"""    # ← This line automatically becomes the service description
+    ...
+```
+
+For fine-grained control (overriding docstring / multi-language support), use dict form to declare `description` (supports i18n dictionary):
+
+```python
+services=[
+    {"name": "translate", "description": "把文本翻译成指定语言"},
+    {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "摘要对话"}},
+]
+```
+
+## Service Directory: services()
+
+```python
+sdk.module.services()
+# {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
+#            'description': 'Translate text into the specified language'}]}
+
+sdk.module.services("Chat")   # Query only a specific module
+```
+
+- Only modules that explicitly declare `meta.services` are listed (modules without declaration do not appear in the directory)
+- Each service includes a method signature string (extracted using `inspect.signature`) and a description text
+- When entering the topology: each module entry in `sdk.module.get_topology()` includes a `services` field
+
+{!--< tips >!--}
+**MCP Roadmap**: The service directory (name + signature + description) is essentially the shape of an MCP tool — each service naturally forms a ``{"name", "description", "parameters"}`` structure.
+In the future, the framework can directly expose ``services()`` as an endpoint on the MCP server, allowing AI to discover and invoke module capabilities;
+``scope.actions.call`` auditing naturally becomes a security gate for AI calls.
+{!--< /tips >!--}
+
+## Outbound Auditing: Who Can Call Whom
+
+Every `module.call()` passes through the outbound gate as the **caller module**:
+
+```toml
+[ErisPulse.scope.actions.CallerModule.call]
+deny = ["Chat.get_history"]        # Deny CallerModule from calling Chat.get_history
+# allow = ["Chat.get_*"]           # Or whitelist: only allow calling Chat methods starting with "get_"
+```
+
+- The `name` format is `<target_module>.<method_name>`, supporting exact match, glob, or `re:` regular expressions
+- Calls from the framework layer (without owner context, such as startup scripts) are not subject to auditing constraints
+- Denied calls throw `ModuleCallError` (TRACE log `core.module.call_denied`)
+
+For configuration details, see the outbound dimension in [Scope](scope.md).
+
+## Directed Event: emit_to
+
+```python
+# Emitter side: After validating that the target is enabled, the event enters the module.<name>.<event> namespace
+await sdk.module.emit_to("Chat", "message_received", {"text": "hi", "from": "u1"})
+
+# Subscriber side (within the Chat module): Register hooks by namespace
+from ErisPulse.Core.lifecycle import lifecycle
+
+@lifecycle.on("module.Chat.message_received")
+async def on_message_received(data): ...
+
+@lifecycle.on("module.Chat")          # Or receive all directed events from this module
+async def on_any(data): ...
+```
+
+Semantic details:
+
+- If the target is not registered / not enabled → `ModuleNotAvailableError` (**do not send to non-existent locations**)
+- If the target is a lazy-loaded module → **wake up first, then deliver** (directed events serve as activation sources, aligning with the semantics of `activate_on`)
+- When `data` is a dict, it automatically carries `_trace_id` (without overwriting existing values), integrating with full-chain tracing
+
+## Lazy Loading and Invocation
+
+`module.call()` and `emit_to()` transparently awaken lazy-loaded modules:
+
+- Event-driven lazy modules (`activate_on` declaration) → Use activation lock `_activate()`, and the trigger stub is automatically unregistered after activation.
+- Regular lazy modules → Synchronize initialization or follow the regular loading path (idempotent).
+- Wakeup failure → `ModuleNotAvailableError` (for `call`) / Activation failure (for `emit_to`).
+
+That is: **the caller does not need to care whether the target module is loaded, nor wait for any event to awaken it.**
+
+## Cold Start Replay
+
+When a module is newly installed or restarted, it may miss some chat messages. The `get_load_strategy(replay=...)` method allows the framework to replay the most recent messages from the session inbox to the module itself after it becomes ready:
+
+```python
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class MyAIModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=False,
+            priority=100,
+            replay="5m",        # Replay the most recent 5 minutes ("1h" or "300" seconds are also valid)
+        )
+
+    async def on_load(self, event):
+        @message.on_message()
+        async def handle(e):
+            if e.get("replayed"):
+                # Synthetic event: only restore context, do not trigger side effects such as sending
+                ...
+```
+
+Semantic details:
+
+- The data source is the [session inbox](interaction.md#session-inbox-eventhistory) (`sdk.transcript.recent()`), and the replay is executed in the background after the module finishes loading, without blocking the startup process.
+- Synthetic events are marked with `replayed: True` and include complete fields such as `platform`, `detail_type`, `user_id`, and `alt_message`, and are **only distributed to this module's handlers**—other modules are unaffected by the replay.
+- If the inbox is not enabled, there are no records, or the duration declaration is invalid (`replay_invalid` warning), the replay is silently skipped.
+
+## Event Idempotency Deduplication
+
+After the platform's WebSocket reconnects, it often resends the same event (with the same `event["id"]`) — the distribution entry uses LRU deduplication by ID (capacity 4096), ensuring each event with the same ID is only distributed once.
+
+```toml
+[ErisPulse.framework]
+event_dedupe = true   # Enabled by default; can be disabled in test environments where fixed ID synthetic events are used
+```
+
+The deduplication cache is automatically reset when the adapter registers (the starting point of a new connection lifecycle).
 
 
 

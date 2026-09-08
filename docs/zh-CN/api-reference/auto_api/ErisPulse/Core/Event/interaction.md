@@ -99,6 +99,40 @@ ErisPulse 交互会话管理
 ---
 
 
+### `class Reminder`
+
+会话定时器句柄（:meth:`InteractionManager.add_reminder` 创建）
+
+到期自动执行动作；``cancel()`` 可提前手动取消。
+两种语义（由 ``cancellable_by_reply`` 决定）：
+
+- **remind**（可被回复取消）：用户在该会话回复后自动取消——
+  "如果没在时限内回复就提醒"；
+- **escalate**（不被回复取消）：到期必达——"超时升级动作"
+  （如通知主人 / 转人工），仅手动 cancel / 模块卸载 / 平台关闭才取消。
+
+模块卸载 / 适配器关闭时其挂起的定时器随归属清理自动取消。
+
+
+#### 方法列表
+
+
+##### `expired()`
+
+定时器是否已终结（到期执行 / 被取消）
+
+---
+
+
+##### `cancel()`
+
+手动取消定时器
+
+**返回值** (`是否取消成功（已到期执行过的返回`): False）
+
+---
+
+
 ### `class InteractionManager`
 
 交互会话管理器
@@ -124,6 +158,20 @@ ErisPulse 交互会话管理
 ---
 
 
+##### `make_session_key(event: Any)`
+
+> **内部方法**
+从事件推导会话域键（platform:bot:target，不含 user 维度）
+
+会话级等待（``wait_reply(scope="session")``）使用此键：
+同一会话（群 / 频道）中任何人的回复均可命中。
+
+- **event** (`事件数据（Event`): 或 dict）
+**返回值**: 会话域键字符串
+
+---
+
+
 ##### `_index_add(entry: _Entry)`
 
 > **内部方法** 将条目加入反向索引
@@ -145,7 +193,14 @@ ErisPulse 交互会话管理
 ---
 
 
-##### `register(event: Any, future: asyncio.Future, callback: Any = None, validator: Any = None, pattern: str | None = None, regex: str | None = None, owner: str | None = None)`
+##### `_find_entry(key: str)`
+
+> **内部方法** 按键查找条目（主索引与会话级索引均查）
+
+---
+
+
+##### `register(event: Any, future: asyncio.Future, callback: Any = None, validator: Any = None, pattern: str | None = None, regex: str | None = None, owner: str | None = None, session_scope: bool = False)`
 
 > **内部方法**
 注册等待回复条目
@@ -158,6 +213,7 @@ ErisPulse 交互会话管理
 - **callback** (`回复回调（由调用方在`): wait_reply 中执行）
 - **validator** (`回复验证函数，验证失败则继续等待`): - **pattern**: glob 文本过滤
 - **regex** (`正则文本过滤`): - **owner**: 归属者（模块名），None 时从 current_owner 上下文捕获
+- **session_scope** (`会话级等待（同会话任何人的回复均可命中，键不含`): user 维度）
 **返回值**: 注册的条目（含推导的会话键）
 
 ---
@@ -237,7 +293,7 @@ ErisPulse 交互会话管理
 
 ##### `_get_active_entry(key: str)`
 
-> **内部方法** 获取会话键上的活跃条目（租约惰性过期）
+> **内部方法** 获取会话键上的活跃条目（租约惰性过期；含会话级索引）
 
 ---
 
@@ -324,16 +380,71 @@ ErisPulse 交互会话管理
 ---
 
 
+##### `add_reminder(event: Any, delay: float, action: Any, cancellable_by_reply: bool = True, owner: str | None = None)`
+
+> **内部方法**
+注册会话定时器（公开 API 为 ``Event.remind`` / ``Event.escalate``）
+
+- **event** (`事件数据（用于推导会话键）`): - **delay**: 延迟秒数
+- **action** (`到期执行的异步回调（无参）`): - **cancellable_by_reply**: 用户在该会话回复时是否自动取消（remind=True / escalate=False）
+- **owner** (`归属者（模块名），None`): 时从 current_owner 捕获
+**返回值** (`定时器句柄；超过单会话上限时返回`): None
+
+**示例**:
+```python
+>>> reminder = sdk.interaction.add_reminder(event, 300, send_nudge)
+```
+
+---
+
+
+##### `async _run_reminder(reminder: Reminder)`
+
+> **内部方法** 定时器执行体：到期后移除记录并执行动作（owner 归因到注册者）
+
+---
+
+
+##### `_remove_timer_refs(reminder: Reminder)`
+
+> **内部方法** 从三个定时器索引移除
+
+---
+
+
+##### `cancel_reminder(reminder: Reminder)`
+
+取消定时器（手动 ``Reminder.cancel()`` 的实现）
+
+- **reminder** (`定时器句柄`): **返回值** (`是否取消成功（已到期执行过的返回`): False）
+
+---
+
+
+##### `_cancel_reminders_for_key(key: str, only_reply_cancellable: bool = True)`
+
+> **内部方法** 取消指定会话键上的定时器（回复命中时调用）
+
+---
+
+
+##### `_cancel_all_timers(reason_hint: str)`
+
+> **内部方法** 取消全部定时器（clear 时调用）
+
+---
+
+
 ##### `counts()`
 
 获取挂起会话统计（诊断用）
 
-**返回值** (`含`): waits / leases / owners 计数的字典
+**返回值** (`含`): waits / leases / timers / owners 计数的字典
 
 **示例**:
 ```python
 >>> sdk.interaction.counts()
-{'waits': 2, 'leases': 1, 'owners': {'Chat': 3}}
+{'waits': 2, 'leases': 1, 'timers': 3, 'owners': {'Chat': 3}}
 ```
 
 ---

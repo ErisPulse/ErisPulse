@@ -336,7 +336,7 @@
     "進階主題": {
       "description": "深入理解框架的進階特性",
       "icon": "fa-fire",
-      "count": 13,
+      "count": 15,
       "documents": [
         {
           "title": "高級主題",
@@ -403,6 +403,18 @@
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
+        },
+        {
+          "title": "互動會話系統",
+          "path": "advanced/interaction.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "模組間通信",
+          "path": "advanced/module-communication.md",
+          "level": 1,
+          "icon": "fa-fire"
         },
         {
           "title": "啟動流程與手動控制",

@@ -621,6 +621,7 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
         "load_strategy": {"lazy": bool|None, "priority": int|None},
         "info": dict|None,
         "commands": [str, ...],
+        "services": [str, ...],
         "handlers": {event_type: count},
         "routes": {"http": [...], "ws": [...], "sse": [...]},
         "lifecycle_hooks": int,
@@ -632,6 +633,186 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
 >>> topology = module.get_topology()
 >>> print(topology["modules"]["Chat"]["commands"])
 ["chat"]
+```
+
+---
+
+
+##### `_parse_replay_duration(value: Any)`
+
+> **内部方法**
+解析回放时长声明（``"5m"`` / ``"1h"`` / ``"300"``）
+
+- **value** (`时长值`): **返回值**: 秒数
+
+---
+
+
+##### `_build_replay_event(record: dict[str, Any])`
+
+> **内部方法**
+从收件箱记录构造回放合成事件
+
+合成事件带 ``replayed: True`` 标志（处理器可据此跳过副作用）；
+``user_id`` 优先取记录的 sender，私聊场景回退为 target。
+
+- **record** (`收件箱记录（role`): / text / ts / sender / session_key）
+**返回值** (`合成事件（Event）；无法解析会话键时返回`): None
+
+---
+
+
+##### `async _replay_events(module_name: str, replay: Any)`
+
+> **内部方法**
+执行冷启动事件回放：收件箱最近消息 → 仅分发给该模块的处理器
+
+- **module_name** (`模块名`): - **replay**: 回放时长声明（"5m" / "1h" / 秒数）
+
+---
+
+
+##### `_resolve_services(module_name: str)`
+
+> **内部方法**
+解析模块的服务契约（get_meta().services），规范化为字典列表
+
+- **module_name** (`模块名称`): **返回值** (```[{"name":`): ..., "description": <str|i18n dict|None>}, ...]``；
+    未声明时返回 None（公开方法全开放）
+
+---
+
+
+##### `_service_names(module_name: str)`
+
+> **内部方法**
+获取服务白名单（名字列表）
+
+- **module_name** (`模块名称`): **返回值** (`服务名列表；未声明时返回`): None
+
+---
+
+
+##### `_docstring_first_line(func: Any)`
+
+> **内部方法**
+提取函数 docstring 的摘要行（服务介绍的自动兜底）
+
+兼容规范的多行 docstring（空行开头）：取**第一个非空行**，
+跳过 doctest 装饰行（``>>>`` / ``...``）。无 docstring 时返回空串。
+
+- **func** (`函数`): / 绑定方法
+**返回值**: 摘要文本（可能为空串）
+
+---
+
+
+##### `_service_description(module_name: str, entry: dict[str, Any])`
+
+> **内部方法**
+解析服务介绍：显式声明（i18n 字典解析）> 方法 docstring 首行 > 空串
+
+- **module_name** (`模块名`): - **entry**: 规范化服务条目（{"name", "description"}）
+**返回值**: 介绍文本
+
+---
+
+
+##### `services(module_name: str | None = None)`
+
+服务目录：列出模块通过 ``get_meta().services`` 声明的对外服务
+
+仅包含**显式声明**的模块（未声明的模块不出现在结果中）；
+每个服务附带方法签名字符串与介绍文本：
+
+- **介绍来源**：``services`` 中 ``{"name", "description"}`` 的显式声明
+  （支持 i18n 字典，解析为当前语言）> 方法 docstring 首行 > 空串
+- **签名**：``inspect.signature`` 提取
+
+为后续 MCP 化（调用点暴露给 AI）与生态服务发现提供数据基础。
+
+- **module_name** (`仅查询指定模块；None`): 时列出全部已注册模块中声明了服务的
+**返回值** (```{模块名:`): [{"name", "signature", "description"}]}``
+
+**示例**:
+```python
+>>> sdk.module.services()
+{'Chat': [{'name': 'get_history',
+           'signature': '(session_id, n=20)',
+           'description': '查询会话历史'}]}
+>>> sdk.module.services("Chat")
+{'Chat': [{'name': 'get_history', ...}]}
+```
+
+---
+
+
+##### `async _resolve_call_target(module_name: str)`
+
+> **内部方法**
+解析模块间调用的目标实例（含懒加载模块唤醒）
+
+- **module_name** (`模块名称`): **返回值** (`模块实例`): **异常**: `ModuleNotAvailableError` - 模块未注册 / 未启用 / 唤醒失败时
+
+---
+
+
+##### `async call(module_name: str, method: str)`
+
+跨模块调用目标模块的服务方法（协议化 RPC）
+
+与 ``module.<Name>.<method>()`` 裸属性访问的差异：
+目标模块未注册 / 未启用时抛出类型化异常而非 AttributeError；
+懒加载模块自动唤醒；``get_meta().services`` 契约白名单校验；
+调用方经过 scope 出站维度（``actions.<caller>.call``）审计；
+被调方法执行期间 ``current_owner`` 归因到目标模块，
+其内部的 wait_reply / 出站发送 / 日志等正确归属；
+协程方法带超时语义（超时抛 :class:`ModuleCallTimeoutError`）。
+
+- **module_name** (`目标模块名`): - **method**: 目标方法名
+- **args** (`位置参数（透传给目标方法）`): - **timeout**: 超时秒数（默认 30 秒；None 表示不限时；仅对协程方法生效）
+- **kwargs** (`关键字参数（透传给目标方法）`): **返回值** (`目标方法的返回值`): **异常**: `ModuleNotAvailableError` - 目标模块未注册 / 未启用 / 唤醒失败
+**异常**: `ServiceNotProvidedError` - 方法不在目标模块的 ``services`` 白名单内（或为私有方法 / 不存在）
+**异常**: `ModuleCallError` - 调用方被 scope 出站规则拒绝
+**异常**: `ModuleCallTimeoutError` - 协程方法超时
+
+**示例**:
+```python
+>>> result = await sdk.module.call("Chat", "get_history", session_id, n=20)
+
+> **提示**
+> 服务方在 ``get_meta().services`` 声明契约收紧调用面（缺省时公开方法全开放）::
+> class ChatModule(BaseModule):
+> @staticmethod
+> def get_meta() -> ModuleMeta:
+> return ModuleMeta(services=["get_history", "translate"])
+> async def get_history(self, session_id, n=20): ...
+```
+
+---
+
+
+##### `async emit_to(module_name: str, event: str, data: Any = None)`
+
+向指定模块定向投递生命周期事件（``module.<名称>.<事件>`` 命名约定）
+
+与直接 ``lifecycle.emit()`` 的差异：投递前校验目标模块已注册且启用
+（含懒加载代理），避免事件发向不存在 / 已禁用的模块而无感知；
+事件名自动加 ``module.<名称>.`` 命名空间前缀，与生命周期事件总线的
+前缀匹配规则兼容（订阅 ``module.<名称>`` 可接收该模块的全部定向事件）。
+
+订阅方在自己模块内注册钩子::
+
+    lifecycle.on("module.Chat.message_received", handler)
+
+- **module_name** (`目标模块名`): - **event**: 事件名（不含命名空间前缀）
+- **data** (`事件数据（dict`): 时自动附加 ``_trace_id``）
+**返回值** (`生命周期处理器的返回值（与`): lifecycle.emit 一致）
+**异常**: `ModuleNotAvailableError` - 目标模块未注册或未启用
+
+**示例**:
+```python
+>>> await sdk.module.emit_to("Chat", "message_received", {"text": "hi"})
 ```
 
 ---
