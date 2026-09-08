@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1506,
+  "total_keywords": 1515,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -150,14 +150,6 @@
         "line": 50,
         "level": 3,
         "title": "1. Health Check (GET)"
-      }
-    ],
-    "1. I want to use a bot": [
-      {
-        "document": "README.md",
-        "line": 13,
-        "level": 3,
-        "title": "1. I want to use a bot"
       }
     ],
     "1. Implement Connection Retry": [
@@ -588,14 +580,6 @@
         "line": 65,
         "level": 3,
         "title": "2. Event Object"
-      }
-    ],
-    "2. I want to develop modules / adapters": [
-      {
-        "document": "README.md",
-        "line": 27,
-        "level": 3,
-        "title": "2. I want to develop modules / adapters"
       }
     ],
     "2. Incorrect Timestamp Format": [
@@ -1066,14 +1050,6 @@
         "title": "3. Heartbeat Keepalive and Meta Heartbeat"
       }
     ],
-    "3. I want to deeply understand the principles": [
-      {
-        "document": "README.md",
-        "line": 38,
-        "level": 3,
-        "title": "3. I want to deeply understand the principles"
-      }
-    ],
     "3. Improving Code Quality": [
       {
         "document": "standards/README.md",
@@ -1378,14 +1354,6 @@
         "title": "4. Custom Type Extension"
       }
     ],
-    "4. Ecosystem & Official Clients": [
-      {
-        "document": "README.md",
-        "line": 54,
-        "level": 3,
-        "title": "4. Ecosystem & Official Clients"
-      }
-    ],
     "4. Event Convenience Methods": [
       {
         "document": "standards/request-action-spec.md",
@@ -1632,14 +1600,6 @@
         "line": 180,
         "level": 2,
         "title": "5. Handling Unknown Events"
-      }
-    ],
-    "5. I want to contribute to ErisPulse": [
-      {
-        "document": "README.md",
-        "line": 65,
-        "level": 3,
-        "title": "5. I want to contribute to ErisPulse"
       }
     ],
     "5. Implement Send Class": [
@@ -2790,6 +2750,14 @@
         "title": "Asynchronous Interfaces"
       }
     ],
+    "Asynchronous Native API": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 289,
+        "level": 2,
+        "title": "Asynchronous Native API"
+      }
+    ],
     "Asynchronous Processing": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -2974,6 +2942,14 @@
         "line": 565,
         "level": 3,
         "title": "Available Attributes"
+      }
+    ],
+    "Backend Selection": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 16,
+        "level": 2,
+        "title": "Backend Selection"
       }
     ],
     "Background Execution": [
@@ -3624,14 +3600,6 @@
         "title": "Chain Modifiers"
       }
     ],
-    "Chain Query": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 74,
-        "level": 2,
-        "title": "Chain Query"
-      }
-    ],
     "Chain Startup Overview": [
       {
         "document": "advanced/startup.md",
@@ -3662,6 +3630,14 @@
         "line": 82,
         "level": 3,
         "title": "Chainable Modifier Methods (can be combined)"
+      }
+    ],
+    "Chainable Queries": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 74,
+        "level": 2,
+        "title": "Chainable Queries"
       }
     ],
     "Chained Call Examples": [
@@ -3740,20 +3716,20 @@
         "title": "Check Platform Status"
       }
     ],
-    "Check if Table Exists": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 45,
-        "level": 3,
-        "title": "Check if Table Exists"
-      }
-    ],
     "Check if it is a button click event": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 402,
         "level": 1,
         "title": "Check if it is a button click event"
+      }
+    ],
+    "Checking if a Table Exists": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 45,
+        "level": 3,
+        "title": "Checking if a Table Exists"
       }
     ],
     "Checkpoint TTL": [
@@ -4146,14 +4122,6 @@
         "title": "Component Relationships"
       }
     ],
-    "Condition Filtering": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 159,
-        "level": 3,
-        "title": "Condition Filtering"
-      }
-    ],
     "Conditional Listening": [
       {
         "document": "api-reference/event-system.md",
@@ -4474,6 +4442,14 @@
         "title": "Connection Management"
       }
     ],
+    "Connection Parameters": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 37,
+        "level": 2,
+        "title": "Connection Parameters"
+      }
+    ],
     "Connection Retry": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -4560,14 +4536,6 @@
         "title": "Conversion Flow"
       }
     ],
-    "Convert Tuple to Dictionary": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 109,
-        "level": 4,
-        "title": "Convert Tuple to Dictionary"
-      }
-    ],
     "Converter Example": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -4582,6 +4550,14 @@
         "line": 5,
         "level": 2,
         "title": "Converter Responsibilities"
+      }
+    ],
+    "Converting Tuples to Dictionaries": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 109,
+        "level": 4,
+        "title": "Converting Tuples to Dictionaries"
       }
     ],
     "Core API": [
@@ -4790,12 +4766,12 @@
         "title": "Core.py - Core Module"
       }
     ],
-    "Count and Existence Check": [
+    "Counting and Existence Check": [
       {
         "document": "advanced/sql-builder.md",
         "line": 230,
         "level": 3,
-        "title": "Count and Existence Check"
+        "title": "Counting and Existence Check"
       }
     ],
     "Create Scaffold": [
@@ -4804,14 +4780,6 @@
         "line": 640,
         "level": 3,
         "title": "Create Scaffold"
-      }
-    ],
-    "Create Table": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 34,
-        "level": 3,
-        "title": "Create Table"
       }
     ],
     "Create Your First Bot": [
@@ -4836,6 +4804,14 @@
         "line": 5,
         "level": 2,
         "title": "Creating a Conversation"
+      }
+    ],
+    "Creating a Table": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 34,
+        "level": 3,
+        "title": "Creating a Table"
       }
     ],
     "Cross-Platform Extension (Wildcard)": [
@@ -4884,10 +4860,18 @@
         "title": "Custom Message Segments"
       }
     ],
+    "Custom SQL Backend": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 106,
+        "level": 2,
+        "title": "Custom SQL Backend"
+      }
+    ],
     "Custom Storage Backend": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 364,
+        "line": 395,
         "level": 2,
         "title": "Custom Storage Backend"
       }
@@ -5026,12 +5010,12 @@
         "title": "Delayed Sending (Defer)"
       }
     ],
-    "Delete Data": [
+    "Deleting Data": [
       {
         "document": "advanced/sql-builder.md",
         "line": 217,
         "level": 3,
-        "title": "Delete Data"
+        "title": "Deleting Data"
       }
     ],
     "Dependency Declaration (Optional, 2.8.0+)": [
@@ -5176,6 +5160,14 @@
         "line": 97,
         "level": 4,
         "title": "Diagnostic Information on Loading Failures"
+      }
+    ],
+    "Dialect Behavior Differences": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 93,
+        "level": 2,
+        "title": "Dialect Behavior Differences"
       }
     ],
     "Directory Structure": [
@@ -5392,12 +5384,12 @@
         "title": "Dot-Structure Events"
       }
     ],
-    "Drop Table": [
+    "Dropping a Table": [
       {
         "document": "advanced/sql-builder.md",
         "line": 52,
         "level": 3,
-        "title": "Drop Table"
+        "title": "Dropping a Table"
       }
     ],
     "Dual Mode Mechanism": [
@@ -6076,6 +6068,14 @@
         "title": "Example Usage in Modules"
       }
     ],
+    "Example of Return Value Handling": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 333,
+        "level": 3,
+        "title": "Example of Return Value Handling"
+      }
+    ],
     "Exception Handling": [
       {
         "document": "advanced/http-client.md",
@@ -6290,6 +6290,14 @@
         "line": 460,
         "level": 3,
         "title": "File Handling Features"
+      }
+    ],
+    "Filtering Conditions": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 159,
+        "level": 3,
+        "title": "Filtering Conditions"
       }
     ],
     "Fixed Bugs": [
@@ -6624,14 +6632,6 @@
         "title": "Get Method Detailed Information"
       }
     ],
-    "Get Single Record": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 146,
-        "level": 4,
-        "title": "Get Single Record"
-      }
-    ],
     "Getting Started": [
       {
         "document": "getting-started/README.md",
@@ -6660,6 +6660,14 @@
         "line": 1,
         "level": 1,
         "title": "Getting Started with Module Development"
+      }
+    ],
+    "Getting a Single Record": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 146,
+        "level": 4,
+        "title": "Getting a Single Record"
       }
     ],
     "Global Configuration": [
@@ -7116,6 +7124,14 @@
         "title": "HttpResponse"
       }
     ],
+    "I. I Want to Use the Bot": [
+      {
+        "document": "README.md",
+        "line": 13,
+        "level": 3,
+        "title": "I. I Want to Use the Bot"
+      }
+    ],
     "I18nClass Key Path Rules": [
       {
         "document": "advanced/i18n.md",
@@ -7130,6 +7146,30 @@
         "line": 426,
         "level": 3,
         "title": "I18nManager"
+      }
+    ],
+    "II. I Want to Develop Modules / Adapters": [
+      {
+        "document": "README.md",
+        "line": 27,
+        "level": 3,
+        "title": "II. I Want to Develop Modules / Adapters"
+      }
+    ],
+    "III. I Want to Deeply Understand the Principles": [
+      {
+        "document": "README.md",
+        "line": 38,
+        "level": 3,
+        "title": "III. I Want to Deeply Understand the Principles"
+      }
+    ],
+    "IV. Ecosystem & Official Clients": [
+      {
+        "document": "README.md",
+        "line": 54,
+        "level": 3,
+        "title": "IV. Ecosystem & Official Clients"
       }
     ],
     "Image Download and Storage": [
@@ -7164,14 +7204,6 @@
         "title": "Immediate Loading"
       }
     ],
-    "Import": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 21,
-        "level": 2,
-        "title": "Import"
-      }
-    ],
     "Import Methods": [
       {
         "document": "advanced/message-builder.md",
@@ -7186,6 +7218,14 @@
         "line": 32,
         "level": 3,
         "title": "Important Restrictions"
+      }
+    ],
+    "Importing": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 21,
+        "level": 2,
+        "title": "Importing"
       }
     ],
     "Inbound Protocols": [
@@ -7254,12 +7294,12 @@
         "title": "Inline Query Event"
       }
     ],
-    "Insert Data": [
+    "Inserting Data": [
       {
         "document": "advanced/sql-builder.md",
         "line": 76,
         "level": 3,
-        "title": "Insert Data"
+        "title": "Inserting Data"
       }
     ],
     "Install ErisPulse": [
@@ -7367,7 +7407,7 @@
     "Intended Audience": [
       {
         "document": "advanced/README.md",
-        "line": 23,
+        "line": 24,
         "level": 2,
         "title": "Intended Audience"
       }
@@ -8586,12 +8626,12 @@
         "title": "Modifiers"
       }
     ],
-    "Modify Table Structure": [
+    "Modifying Table Structure": [
       {
         "document": "advanced/sql-builder.md",
         "line": 58,
         "level": 3,
-        "title": "Modify Table Structure"
+        "title": "Modifying Table Structure"
       }
     ],
     "Module": [
@@ -8844,12 +8884,28 @@
         "title": "Must package names start with `ErisPulse-`?"
       }
     ],
+    "MySQL (`ErisPulse.storage.mysql`)": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 39,
+        "level": 3,
+        "title": "MySQL (`ErisPulse.storage.mysql`)"
+      }
+    ],
     "Naming Convention": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 523,
         "level": 2,
         "title": "Naming Convention"
+      }
+    ],
+    "Native Asynchronous API": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 70,
+        "level": 2,
+        "title": "Native Asynchronous API"
       }
     ],
     "Native Renderer": [
@@ -9399,7 +9455,7 @@
     "Parameterized Queries": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 326,
+        "line": 357,
         "level": 2,
         "title": "Parameterized Queries"
       }
@@ -9636,6 +9692,14 @@
         "title": "Platform-specific Methods"
       }
     ],
+    "PostgreSQL (`ErisPulse.storage.postgres`)": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 53,
+        "level": 3,
+        "title": "PostgreSQL (`ErisPulse.storage.postgres`)"
+      }
+    ],
     "Pre-release Checklist": [
       {
         "document": "developer-guide/publishing.md",
@@ -9647,7 +9711,7 @@
     "Prerequisites": [
       {
         "document": "advanced/README.md",
-        "line": 31,
+        "line": 32,
         "level": 2,
         "title": "Prerequisites"
       }
@@ -9866,14 +9930,6 @@
         "title": "Query Bot Status"
       }
     ],
-    "Query Data": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 90,
-        "level": 3,
-        "title": "Query Data"
-      }
-    ],
     "Query Methods": [
       {
         "document": "platform-guide/onebot11.md",
@@ -9904,6 +9960,14 @@
         "line": 128,
         "level": 3,
         "title": "Query Supported Sending Methods"
+      }
+    ],
+    "Querying Data": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 90,
+        "level": 3,
+        "title": "Querying Data"
       }
     ],
     "Quick Build Mode (Static)": [
@@ -10210,14 +10274,14 @@
         "title": "Related Documentation"
       },
       {
-        "document": "advanced/sql-builder.md",
-        "line": 397,
+        "document": "advanced/startup.md",
+        "line": 437,
         "level": 2,
         "title": "Related Documentation"
       },
       {
-        "document": "advanced/startup.md",
-        "line": 437,
+        "document": "advanced/storage-backends.md",
+        "line": 131,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -10310,6 +10374,12 @@
       {
         "document": "advanced/conversation.md",
         "line": 403,
+        "level": 2,
+        "title": "Related Documents"
+      },
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 436,
         "level": 2,
         "title": "Related Documents"
       },
@@ -10634,12 +10704,12 @@
         "title": "Reserved Error Ranges"
       }
     ],
-    "Reset Builder": [
+    "Resetting the Builder": [
       {
         "document": "advanced/sql-builder.md",
         "line": 258,
         "level": 2,
-        "title": "Reset Builder"
+        "title": "Resetting the Builder"
       }
     ],
     "Response": [
@@ -10669,17 +10739,9 @@
     "Return Value Description": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 289,
+        "line": 320,
         "level": 2,
         "title": "Return Value Description"
-      }
-    ],
-    "Return Value Handling Examples": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 302,
-        "level": 3,
-        "title": "Return Value Handling Examples"
       }
     ],
     "Return Value Specification": [
@@ -10734,12 +10796,12 @@
         "title": "Return Values of Send Methods"
       }
     ],
-    "Reuse Query Conditions": [
+    "Reusing Query Conditions": [
       {
         "document": "advanced/sql-builder.md",
         "line": 241,
         "level": 2,
-        "title": "Reuse Query Conditions"
+        "title": "Reusing Query Conditions"
       }
     ],
     "Reverse Conversion": [
@@ -11430,12 +11492,12 @@
         "title": "Single Method Registration"
       }
     ],
-    "Sorting, Pagination": [
+    "Sorting and Pagination": [
       {
         "document": "advanced/sql-builder.md",
         "line": 181,
         "level": 3,
-        "title": "Sorting, Pagination"
+        "title": "Sorting and Pagination"
       }
     ],
     "Special Field Examples": [
@@ -11692,6 +11754,14 @@
         "line": 59,
         "level": 3,
         "title": "Storage Backend Abstraction"
+      }
+    ],
+    "Storage Backends": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 1,
+        "level": 1,
+        "title": "Storage Backends"
       }
     ],
     "Storage Configuration": [
@@ -12336,14 +12406,6 @@
         "title": "Unsupported Standard Actions"
       }
     ],
-    "Update Data": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 202,
-        "level": 3,
-        "title": "Update Data"
-      }
-    ],
     "Update Requirements": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -12358,6 +12420,14 @@
         "line": 260,
         "level": 2,
         "title": "Updates and Maintenance"
+      }
+    ],
+    "Updating Data": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 202,
+        "level": 3,
+        "title": "Updating Data"
       }
     ],
     "Updating Published Modules": [
@@ -12438,14 +12508,6 @@
         "line": 196,
         "level": 3,
         "title": "Use Cases"
-      }
-    ],
-    "Use in Transactions": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 269,
-        "level": 2,
-        "title": "Use in Transactions"
       }
     ],
     "User Data Storage": [
@@ -12620,6 +12682,14 @@
         "title": "Using in RouteGroup"
       }
     ],
+    "Using in Transactions": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 269,
+        "level": 2,
+        "title": "Using in Transactions"
+      }
+    ],
     "Using pip": [
       {
         "document": "quick-start.md",
@@ -12664,6 +12734,14 @@
         "line": 468,
         "level": 3,
         "title": "Utility Methods"
+      }
+    ],
+    "V. I Want to Contribute to ErisPulse": [
+      {
+        "document": "README.md",
+        "line": 65,
+        "level": 3,
+        "title": "V. I Want to Contribute to ErisPulse"
       }
     ],
     "Verification of Installation": [
@@ -12895,7 +12973,7 @@
     "Where Parameter Passing Rules": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 345,
+        "line": 376,
         "level": 3,
         "title": "Where Parameter Passing Rules"
       }

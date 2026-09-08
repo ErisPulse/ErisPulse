@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1603,
+  "total_keywords": 1611,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3214,6 +3214,14 @@
         "title": "Module モジュール"
       }
     ],
+    "MySQL（`ErisPulse.storage.mysql`）": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 39,
+        "level": 3,
+        "title": "MySQL（`ErisPulse.storage.mysql`）"
+      }
+    ],
     "Notice 通知モジュール": [
       {
         "document": "api-reference/event-system.md",
@@ -3364,6 +3372,14 @@
         "title": "PascalCase 命名"
       }
     ],
+    "PostgreSQL（`ErisPulse.storage.postgres`）": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 53,
+        "level": 3,
+        "title": "PostgreSQL（`ErisPulse.storage.postgres`）"
+      }
+    ],
     "Q1: 送信時に private を user に変換する必要があるのはなぜですか？": [
       {
         "document": "standards/session-types.md",
@@ -3506,12 +3522,12 @@
         "title": "SDKとの関係"
       }
     ],
-    "SQL クエリビルダ": [
+    "SQL クエリビルダー": [
       {
         "document": "advanced/sql-builder.md",
         "line": 1,
         "level": 1,
-        "title": "SQL クエリビルダ"
+        "title": "SQL クエリビルダー"
       }
     ],
     "SQL チェーンクエリ": [
@@ -3814,12 +3830,12 @@
         "title": "WebUI での消費方法"
       }
     ],
-    "Where のパラメータ渡しルール": [
+    "Where パラメータの渡し方": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 345,
+        "line": 376,
         "level": 3,
-        "title": "Where のパラメータ渡しルール"
+        "title": "Where パラメータの渡し方"
       }
     ],
     "Windows PowerShell 実行ポリシー": [
@@ -5220,6 +5236,14 @@
         "title": "③ 出站次元（制限モジュールが発信する呼び出しを制限）"
       }
     ],
+    "あなたの目的に合わせた学習パス": [
+      {
+        "document": "README.md",
+        "line": 9,
+        "level": 2,
+        "title": "あなたの目的に合わせた学習パス"
+      }
+    ],
     "すぐに始める": [
       {
         "document": "quick-start.md",
@@ -5239,7 +5263,7 @@
     "その他": [
       {
         "document": "README.md",
-        "line": 81,
+        "line": 83,
         "level": 2,
         "title": "その他"
       }
@@ -5608,14 +5632,6 @@
         "line": 30,
         "level": 2,
         "title": "アーキテクチャ概要"
-      }
-    ],
-    "アーキテクチャ設計": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 5,
-        "level": 2,
-        "title": "アーキテクチャ設計"
       }
     ],
     "イベントにおけるアカウント識別": [
@@ -6160,10 +6176,18 @@
         "title": "エントリの登録"
       }
     ],
+    "カウントと存在確認": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 230,
+        "level": 3,
+        "title": "カウントと存在確認"
+      }
+    ],
     "カスタムストレージバックエンド": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 364,
+        "line": 395,
         "level": 2,
         "title": "カスタムストレージバックエンド"
       }
@@ -6832,6 +6856,14 @@
         "title": "ストレージシステム"
       }
     ],
+    "ストレージバックエンド": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 1,
+        "level": 1,
+        "title": "ストレージバックエンド"
+      }
+    ],
     "ストレージバックエンド抽象": [
       {
         "document": "api-reference/core-modules.md",
@@ -7234,28 +7266,28 @@
         "title": "テストモジュール"
       }
     ],
-    "テーブルの作成": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 34,
-        "level": 3,
-        "title": "テーブルの作成"
-      }
-    ],
-    "テーブルの削除": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 52,
-        "level": 3,
-        "title": "テーブルの削除"
-      }
-    ],
     "テーブルの存在確認": [
       {
         "document": "advanced/sql-builder.md",
         "line": 45,
         "level": 3,
         "title": "テーブルの存在確認"
+      }
+    ],
+    "テーブル作成": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 34,
+        "level": 3,
+        "title": "テーブル作成"
+      }
+    ],
+    "テーブル削除": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 52,
+        "level": 3,
+        "title": "テーブル削除"
       }
     ],
     "テーブル構造の変更": [
@@ -7434,18 +7466,16 @@
     ],
     "ドキュメントリスト": [
       {
+        "document": "advanced/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "ドキュメントリスト"
+      },
+      {
         "document": "api-reference/README.md",
         "line": 5,
         "level": 2,
         "title": "ドキュメントリスト"
-      }
-    ],
-    "ドキュメント一覧": [
-      {
-        "document": "advanced/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "ドキュメント一覧"
       }
     ],
     "ドキュメント形式の規格": [
@@ -7626,6 +7656,14 @@
         "title": "バックアップ"
       }
     ],
+    "バックエンドの選択": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 16,
+        "level": 2,
+        "title": "バックエンドの選択"
+      }
+    ],
     "バックグラウンドタスクの所有権と自動キャンセル": [
       {
         "document": "advanced/lifecycle.md",
@@ -7737,7 +7775,7 @@
     "パラメータ化されたクエリ": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 326,
+        "line": 357,
         "level": 2,
         "title": "パラメータ化されたクエリ"
       }
@@ -8174,12 +8212,12 @@
         "title": "ヘルスチェック"
       }
     ],
-    "ヘルプの取得": [
+    "ヘルプを求める": [
       {
         "document": "README.md",
-        "line": 87,
+        "line": 89,
         "level": 2,
-        "title": "ヘルプの取得"
+        "title": "ヘルプを求める"
       }
     ],
     "ホットアップデートの内部処理の詳細": [
@@ -9762,12 +9800,12 @@
         "title": "一覧表示と発見"
       }
     ],
-    "三、原理を深く理解したい": [
+    "三、内部の仕組みを理解したい": [
       {
         "document": "README.md",
         "line": 38,
         "level": 3,
-        "title": "三、原理を深く理解したい"
+        "title": "三、内部の仕組みを理解したい"
       }
     ],
     "並列と直列": [
@@ -10315,7 +10353,7 @@
     "前提知識": [
       {
         "document": "advanced/README.md",
-        "line": 31,
+        "line": 32,
         "level": 2,
         "title": "前提知識"
       }
@@ -11175,7 +11213,7 @@
     "対象読者": [
       {
         "document": "advanced/README.md",
-        "line": 23,
+        "line": 24,
         "level": 2,
         "title": "対象読者"
       }
@@ -11395,7 +11433,7 @@
     "戻り値の処理例": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 302,
+        "line": 333,
         "level": 3,
         "title": "戻り値の処理例"
       }
@@ -11411,7 +11449,7 @@
     "戻り値の説明": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 289,
+        "line": 320,
         "level": 2,
         "title": "戻り値の説明"
       }
@@ -11630,6 +11668,14 @@
         "line": 453,
         "level": 3,
         "title": "接続イベント"
+      }
+    ],
+    "接続パラメータ": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 37,
+        "level": 2,
+        "title": "接続パラメータ"
       }
     ],
     "接続フロー": [
@@ -11896,6 +11942,14 @@
         "title": "方法速查表"
       }
     ],
+    "方言の動作の違い": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 96,
+        "level": 2,
+        "title": "方言の動作の違い"
+      }
+    ],
     "旧版設定の移行": [
       {
         "document": "platform-guide/telegram.md",
@@ -12038,12 +12092,12 @@
         "title": "本番環境の設定"
       }
     ],
-    "条件のフィルタリング": [
+    "条件フィルタ": [
       {
         "document": "advanced/sql-builder.md",
         "line": 159,
         "level": 3,
-        "title": "条件のフィルタリング"
+        "title": "条件フィルタ"
       }
     ],
     "条件監視": [
@@ -12068,6 +12122,14 @@
         "line": 1,
         "level": 1,
         "title": "架構概要"
+      }
+    ],
+    "架構設計": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 5,
+        "level": 2,
+        "title": "架構設計"
       }
     ],
     "核心フィールドメソッド": [
@@ -12696,6 +12758,14 @@
         "title": "異なる送信先への送信"
       }
     ],
+    "異同步ネイティブAPI": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 70,
+        "level": 2,
+        "title": "異同步ネイティブAPI"
+      }
+    ],
     "異常のキャッチ": [
       {
         "document": "advanced/http-client.md",
@@ -13018,6 +13088,14 @@
         "title": "自動注入"
       }
     ],
+    "自定义 SQL バックエンド": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 109,
+        "level": 2,
+        "title": "自定义 SQL バックエンド"
+      }
+    ],
     "自定义アイデンティティソース（provider）": [
       {
         "document": "user-guide/configuration.md",
@@ -13228,14 +13306,6 @@
         "line": 52,
         "level": 2,
         "title": "言語検出メカニズム"
-      }
-    ],
-    "計数と存在確認": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 230,
-        "level": 3,
-        "title": "計数と存在確認"
       }
     ],
     "記事メッセージセグメント (yunhu_user_post)": [
@@ -13928,14 +13998,6 @@
         "title": "遅延送信（Defer）"
       }
     ],
-    "道路を選択する": [
-      {
-        "document": "README.md",
-        "line": 9,
-        "level": 2,
-        "title": "道路を選択する"
-      }
-    ],
     "適用シーン": [
       {
         "document": "developer-guide/publishing.md",
@@ -14035,7 +14097,7 @@
     "開発方法": [
       {
         "document": "README.md",
-        "line": 74,
+        "line": 76,
         "level": 2,
         "title": "開発方法"
       }
@@ -14095,13 +14157,19 @@
       },
       {
         "document": "advanced/sql-builder.md",
-        "line": 397,
+        "line": 436,
         "level": 2,
         "title": "関連ドキュメント"
       },
       {
         "document": "advanced/startup.md",
         "line": 437,
+        "level": 2,
+        "title": "関連ドキュメント"
+      },
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 135,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -14193,7 +14261,7 @@
     "関連リンク": [
       {
         "document": "README.md",
-        "line": 93,
+        "line": 95,
         "level": 2,
         "title": "関連リンク"
       },
@@ -14266,6 +14334,14 @@
         "title": "静的ファクトリ + チェーン混合"
       }
     ],
+    "非同期のネイティブ API": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 289,
+        "level": 2,
+        "title": "非同期のネイティブ API"
+      }
+    ],
     "非同期インターフェース": [
       {
         "document": "api-reference/core-modules.md",
@@ -14328,20 +14404,20 @@
         "title": "高レベル方法（推奨）"
       }
     ],
-    "高度なトピック": [
-      {
-        "document": "advanced/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "高度なトピック"
-      }
-    ],
     "高度：辞書式のドット区切りパスによるデフォルト": [
       {
         "document": "advanced/scope.md",
         "line": 270,
         "level": 3,
         "title": "高度：辞書式のドット区切りパスによるデフォルト"
+      }
+    ],
+    "高級トピック": [
+      {
+        "document": "advanced/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "高級トピック"
       }
     ]
   }

@@ -336,10 +336,10 @@
     "高度なトピック": {
       "description": "フレームワークの高度な機能を深く理解する",
       "icon": "fa-fire",
-      "count": 12,
+      "count": 13,
       "documents": [
         {
-          "title": "高度なトピック",
+          "title": "高級トピック",
           "path": "advanced/README.md",
           "level": 1,
           "icon": "fa-fire"
@@ -381,7 +381,7 @@
           "icon": "fa-globe"
         },
         {
-          "title": "SQL クエリビルダ",
+          "title": "SQL クエリビルダー",
           "path": "advanced/sql-builder.md",
           "level": 1,
           "icon": "fa-database"
@@ -407,6 +407,12 @@
         {
           "title": "スタートフローと手動制御",
           "path": "advanced/startup.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "ストレージバックエンド",
+          "path": "advanced/storage-backends.md",
           "level": 1,
           "icon": "fa-fire"
         }

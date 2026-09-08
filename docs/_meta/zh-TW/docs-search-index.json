@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1508,
+  "total_keywords": 1516,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3034,6 +3034,14 @@
         "title": "Module 模組"
       }
     ],
+    "MySQL（`ErisPulse.storage.mysql`）": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 39,
+        "level": 3,
+        "title": "MySQL（`ErisPulse.storage.mysql`）"
+      }
+    ],
     "Notice 通知模組": [
       {
         "document": "api-reference/event-system.md",
@@ -3182,6 +3190,14 @@
         "line": 525,
         "level": 3,
         "title": "PascalCase 命名"
+      }
+    ],
+    "PostgreSQL（`ErisPulse.storage.postgres`）": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 53,
+        "level": 3,
+        "title": "PostgreSQL（`ErisPulse.storage.postgres`）"
       }
     ],
     "Q1: 為什麼發送時 private 要轉換為 user？": [
@@ -3571,7 +3587,7 @@
     "Where 參數傳遞規則": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 345,
+        "line": 377,
         "level": 3,
         "title": "Where 參數傳遞規則"
       }
@@ -5082,12 +5098,12 @@
         "title": "互動方法示例"
       }
     ],
-    "五、我要為 ErisPulse 做貢獻": [
+    "五、我要為 ErisPulse 貢獻": [
       {
         "document": "README.md",
         "line": 63,
         "level": 3,
-        "title": "五、我要為 ErisPulse 做貢獻"
+        "title": "五、我要為 ErisPulse 貢獻"
       }
     ],
     "什麼是適配器": [
@@ -5792,14 +5808,6 @@
         "title": "刪除資料"
       }
     ],
-    "前置知識": [
-      {
-        "document": "advanced/README.md",
-        "line": 31,
-        "level": 2,
-        "title": "前置知識"
-      }
-    ],
     "創建對話": [
       {
         "document": "advanced/conversation.md",
@@ -5995,7 +6003,7 @@
     "參數化查詢": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 326,
+        "line": 358,
         "level": 2,
         "title": "參數化查詢"
       }
@@ -6060,14 +6068,6 @@
         "line": 552,
         "level": 2,
         "title": "反向轉換與訊息建構"
-      }
-    ],
-    "取得單條記錄": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 146,
-        "level": 4,
-        "title": "取得單條記錄"
       }
     ],
     "可用屬性": [
@@ -6357,7 +6357,7 @@
     "回傳值處理示例": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 302,
+        "line": 334,
         "level": 3,
         "title": "回傳值處理示例"
       }
@@ -6373,7 +6373,7 @@
     "回傳值說明": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 289,
+        "line": 321,
         "level": 2,
         "title": "回傳值說明"
       }
@@ -7088,6 +7088,14 @@
         "line": 236,
         "level": 2,
         "title": "字體"
+      }
+    ],
+    "存儲後端": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 1,
+        "level": 1,
+        "title": "存儲後端"
       }
     ],
     "存儲配置": [
@@ -7854,6 +7862,14 @@
         "line": 508,
         "level": 3,
         "title": "後台執行"
+      }
+    ],
+    "後端選擇": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 16,
+        "level": 2,
+        "title": "後端選擇"
       }
     ],
     "從 SDK 實例存取": [
@@ -8832,6 +8848,14 @@
         "line": 31,
         "level": 2,
         "title": "方法鏈"
+      }
+    ],
+    "方言行為差異": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 96,
+        "level": 2,
+        "title": "方言行為差異"
       }
     ],
     "日誌等級控制": [
@@ -10244,6 +10268,14 @@
         "title": "獨立 Renderer"
       }
     ],
+    "獲取單筆記錄": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 146,
+        "level": 4,
+        "title": "獲取單筆記錄"
+      }
+    ],
     "獲取幫助": [
       {
         "document": "README.md",
@@ -10460,6 +10492,20 @@
         "line": 171,
         "level": 3,
         "title": "異步初始化"
+      }
+    ],
+    "異步原生 API": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 289,
+        "level": 2,
+        "title": "異步原生 API"
+      },
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 70,
+        "level": 2,
+        "title": "異步原生 API"
       }
     ],
     "異步發送與結果處理": [
@@ -10905,13 +10951,19 @@
       },
       {
         "document": "advanced/sql-builder.md",
-        "line": 398,
+        "line": 438,
         "level": 2,
         "title": "相關文件"
       },
       {
         "document": "advanced/startup.md",
         "line": 437,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 136,
         "level": 2,
         "title": "相關文件"
       },
@@ -11482,10 +11534,18 @@
         "title": "自定義字體"
       }
     ],
+    "自訂 SQL 後端": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 110,
+        "level": 2,
+        "title": "自訂 SQL 後端"
+      }
+    ],
     "自訂儲存後端": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 364,
+        "line": 396,
         "level": 2,
         "title": "自訂儲存後端"
       }
@@ -12554,6 +12614,14 @@
         "title": "連接事件"
       }
     ],
+    "連接參數": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 37,
+        "level": 2,
+        "title": "連接參數"
+      }
+    ],
     "連接流程": [
       {
         "document": "platform-guide/discord.md",
@@ -12693,7 +12761,7 @@
     "適用對象": [
       {
         "document": "advanced/README.md",
-        "line": 23,
+        "line": 24,
         "level": 2,
         "title": "適用對象"
       }
@@ -13664,6 +13732,14 @@
         "line": 146,
         "level": 2,
         "title": "項目結構"
+      }
+    ],
+    "預備知識": [
+      {
+        "document": "advanced/README.md",
+        "line": 32,
+        "level": 2,
+        "title": "預備知識"
       }
     ],
     "預設配置": [
