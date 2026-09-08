@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "hash": "62b53a2ddde8741568b3527061ce83ff",
+  "file_hash": "62b53a2ddde8741568b3527061ce83ff",
+  "translated_at": "2026-09-08T05:37:25.661171",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "a73b35a1c124a858e56480103ddc62aa",
+      "translation": "# Storage Backends\n\nErisPulse comes with three built-in asynchronous native storage backends, switchable with a single configuration change. **The API is completely consistent, requiring zero code changes when switching backends.**\n\n| Backend | Driver | Installation | Features |\n|---------|--------|--------------|----------|\n| SQLite (default) | aiosqlite | Ready to use out-of-the-box | Zero configuration, single-file, WAL concurrency |\n| MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | Suitable for existing MySQL infrastructure, shared across multiple instances |\n| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | Strong transaction support, JSONB ecosystem, high concurrency |\n\n{!--< tips >!--}\n1. Asynchronous operations are the native primary interface (`aget/aset/atransaction/aExecute`), while synchronous APIs serve as a compatibility layer.\n2. The framework's own configuration persistence, session inbox, and conversation checkpoints all use the same storage backend—switching the backend results in a full migration.\n{!--< /tips >!--}"
+    },
+    {
+      "hash": "76e0fd25ed7cbc2783013357bbb37f84",
+      "translation": "## Backend Selection\n\nConfigure in `config/config.toml`:\n\n```toml\n[ErisPulse.storage]\nbackend = \"sqlite\"        # \"sqlite\" (default) / \"mysql\" / \"postgres\"\nuse_global_db = false     # Only for SQLite: use the package's global database data/config.db\n```\n\nEnvironment variables are also supported for overriding (useful for Docker / 12-factor applications):\n\n```bash\nERISPULSE_STORAGE_BACKEND=postgres\nERISPULSE_STORAGE_POSTGRES_HOST=db.example.com\nERISPULSE_STORAGE_POSTGRES_PASSWORD=secret\n```\n\nEnvironment variable naming convention: Configuration paths are uppercase, and dots are replaced with underscores.\n(e.g., `ErisPulse.storage.postgres.host` → `ERISPULSE_STORAGE_POSTGRES_HOST`)."
+    },
+    {
+      "hash": "04941a69ef97cd6fa94ff680d5ce273c",
+      "translation": "## Connection Parameters\n\n### MySQL (`ErisPulse.storage.mysql`)\n\n```toml\n[ErisPulse.storage.mysql]\nhost = \"127.0.0.1\"\nport = 3306\nuser = \"erispulse\"\npassword = \"\"\ndatabase = \"erispulse\"\ncharset = \"utf8mb4\"\npool_min = 1\npool_max = 10\n```\n\n### PostgreSQL (`ErisPulse.storage.postgres`)\n\n```toml\n[ErisPulse.storage.postgres]\nhost = \"127.0.0.1\"\nport = 5432\nuser = \"erispulse\"\npassword = \"\"\ndatabase = \"erispulse\"\npool_min = 1\npool_max = 10\n```\n\n> [!NOTE]\n> Changes to connection parameters require a framework restart to take effect (a restart reminder log is output during hot configuration updates).\n> Connection pools are lazily created per event loop, and transient connection failures (e.g., network fluctuations or database restart windows) are automatically retried with exponential backoff."
+    },
+    {
+      "hash": "5e228c9acaa842fed2641f61482b3281",
+      "translation": "## Native Asynchronous API\n\n```python\n# KV operations\nawait sdk.storage.aset(\"app.name\", \"MyApp\")\nvalue = await sdk.storage.aget(\"app.name\")\nkeys = await sdk.storage.aget_all_keys()\n\n# Table operations\nawait sdk.storage.aCreateTable(\"users\", {\n    \"id\": \"INTEGER PRIMARY KEY AUTOINCREMENT\",\n    \"name\": \"TEXT NOT NULL\",\n})\nrows = await sdk.storage.Table(\"users\").Select(\"name\").ToDict().aExecute()\n\n# Asynchronous transaction\nasync with sdk.storage.atransaction():\n    await sdk.storage.aset(\"key1\", \"value1\")\n    await sdk.storage.Table(\"users\").Insert({\"name\": \"Alice\"}).aExecute()\n```\n\nSynchronous APIs (`get/set/transaction/Table(...).Execute()`) remain available, internally executed in the background event loop via `AsyncBridge`. However, calling them within asynchronous handlers will briefly block the event loop; prefer the `a`-prefixed asynchronous methods. For a complete method comparison, see [SQL Query Builder](sql-builder.md)."
+    },
+    {
+      "hash": "fb0f5a54e8e15925c34bc9789399f653",
+      "translation": "## Dialect Behavior Differences\n\nAll dialect differences are encapsulated within the framework, so calling code does not need to be aware:\n\n| Difference | SQLite | MySQL | PostgreSQL |\n|------------|--------|-------|------------|\n| Placeholder | `?` | `%s` (automatically translated) | `$1..$n` (automatically translated) |\n| KV UPSERT | `INSERT OR REPLACE` | `ON DUPLICATE KEY UPDATE` | `ON CONFLICT DO UPDATE` |\n| KV Value Column Type | `TEXT` | `LONGTEXT` | `TEXT` |\n| Auto-increment Primary Key | Native support | `AUTO_INCREMENT` (automatically translated) | `SERIAL` (automatically translated) |\n\nTable column types are defined uniformly in SQLite style (e.g., `\"INTEGER PRIMARY KEY AUTOINCREMENT\"`, `\"TEXT NOT NULL\"`, `\"DOUBLE DEFAULT 0.0\"`), with dialects automatically translating these into equivalent syntax for the target backend."
+    },
+    {
+      "hash": "4456caf0b2aa114376e6566017473994",
+      "translation": "## Custom SQL Backend\n\nFor pure SQL backends, you can inherit and share the base class, providing only connection management and dialect execution funnel:\n\n```python\nfrom ErisPulse.Core.Bases.sql_base import SQLDialect, SQLStorageBase\n\nclass MyDialect(SQLDialect):\n    name = \"mydb\"\n    # Override: placeholder translation / identifier quoting / UPSERT / type mapping ...\n\nclass MyStorage(SQLStorageBase):\n    dialect = MyDialect()\n\n    async def _create_loop_resource(self): ...   # Connection pool\n    async def _destroy_loop_resource(self, r): ...\n    async def _acquire_resource_conn(self, r): ...\n    async def _release_resource_conn(self, r, c): ...\n    async def _open_txn_conn(self): ...\n    async def _close_txn_conn(self, c): ...\n    async def _exec_query_on(self, kind, sql, params, conn): ...  # Execution funnel\n```\n\nFor non-SQL backends (e.g., Redis), inherit `BaseStorage` to implement asynchronous KV interface, then directly use `KVQueryBuilder` to gain chainable table query capabilities (in-memory filtering, suitable for small to medium datasets)."
+    },
+    {
+      "hash": "3ae6982fe94da206150b970519863c8b",
+      "translation": "## Related Documentation\n\n- [SQL Query Builder](sql-builder.md) - Chainable query syntax and asynchronous API comparison\n- [Core Module API](../api-reference/core-modules.md) - Full API for the Storage module\n- [Storage Base Class API](../api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md) - Abstract interfaces for SQLStorageBase / SQLDialect"
+    }
+  ]
+}

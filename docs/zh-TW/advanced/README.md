@@ -14,6 +14,7 @@
 - [HTTP 客戶端](http-client.md) - 統一 HTTP 請求客戶端
 - [MessageBuilder 詳解](message-builder.md) - OneBot12 消息段建構器的雙模式用法
 - [SQL 查詢建構器](sql-builder.md) - 通用 SQL 鏈式查詢建構器及儲存後端抽象
+- [儲存後端](storage-backends.md) - sqlite / mysql / postgres 異步原生存儲存後端的選擇、配置與切換
 - [會話類型系統](../standards/session-types.md) - 會話類型定義、映射與自定義類型註冊
 - [Conversation 多輪對話](conversation.md) - 多輪對話上下文的互動方法
 
@@ -22,13 +23,13 @@
 
 ## 適用對象
 
-這些文件適用於以下開發者：
+這些文件適合以下開發者：
 
 - 已經熟悉 ErisPulse 基礎功能的開發者
-- 需要深入了解框架內部機制的開發者
-- 需要優化效能或實現複雜功能的開發者
+- 需要深入理解框架內部機制的開發者
+- 需要優化性能或實現複雜功能的開發者
 
-## 前置知識
+## 預備知識
 
 閱讀本目錄文件前，建議先了解：
 

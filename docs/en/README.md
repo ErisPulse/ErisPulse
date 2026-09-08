@@ -10,50 +10,50 @@ ErisPulse is an extensible, multi-platform message processing framework that sup
 
 Based on your goals, select the corresponding learning path. Each path is arranged from basic to advanced.
 
-### 1. I want to use a bot
+### I. I Want to Use the Bot
 
-Get the bot running, install modules, and configure settings.
+Get the bot running, install modules, and configure it.
 
 | Progress | Document | Description |
 |----------|----------|-------------|
-| **① Getting Started** | [5-Minute Quick Start](quick-start.md) | Installation, initialization, and running — the only entry point for beginners |
-| App Direct Install | [ErisPulse-App Client](ecosystem/app.md) | Official cross-platform client: run and manage directly via graphical interface on mobile / computer, no terminal required |
-| ② In-depth | [Create Your First Bot](getting-started/first-bot.md) | Write your first command handler |
+| **① Getting Started** | [5-Minute Quick Start](quick-start.md) | Install, initialize, and run — the only entry point to get started |
+| App Direct Install | [ErisPulse-App Client](ecosystem/app.md) | Official cross-platform client: run and manage directly via mobile or desktop GUI, no terminal required |
+| ② In-Depth | [Create Your First Bot](getting-started/first-bot.md) | Write your first command handler |
 | ③ Concepts | [Basic Concepts](getting-started/basic-concepts.md) | Understand the design of adapters/modules/events |
-| ④ Practical | [Common Task Examples](getting-started/common-tasks.md) | Storage, scheduled tasks, permission control |
-| Reference | [Configuration File Guide](user-guide/configuration.md) · [CLI Commands](user-guide/cli-reference.md) · [Deployment Guide](user-guide/deployment.md) | Consult as needed |
-| Reference | [Platform Features Guide](platform-guide/README.md) | Differences among platforms (Yunhu/QQ/Telegram…) |
+| ④ Practice | [Common Task Examples](getting-started/common-tasks.md) | Storage, scheduled tasks, permission control |
+| Reference | [Configuration File Guide](user-guide/configuration.md) · [CLI Commands](user-guide/cli-reference.md) · [Deployment Guide](user-guide/deployment.md) | Check as needed |
+| Reference | [Platform Features Guide](platform-guide/README.md) | Differences across platforms (Yunhu/QQ/Telegram…) |
 
-### 2. I want to develop modules / adapters
+### II. I Want to Develop Modules / Adapters
 
 Develop distributable extensions for ErisPulse.
 
-| Type | Beginner | Advanced |
-|------|----------|----------|
-| **Module Development** (Recommended) | [Module Development Getting Started](developer-guide/modules/getting-started.md) | [Core Concepts](developer-guide/modules/core-concepts.md) · [Event Wrapper](developer-guide/modules/event-wrapper.md) · [Best Practices](developer-guide/modules/best-practices.md) |
+| Type | Getting Started | Advanced |
+|------|-----------------|----------|
+| **Module Development** (Recommended) | [Module Development Getting Started](developer-guide/modules/getting-started.md) | [Core Concepts](developer-guide/modules/core-concepts.md) · [Event Wrapper Class](developer-guide/modules/event-wrapper.md) · [Best Practices](developer-guide/modules/best-practices.md) |
 | **Adapter Development** | [Adapter Development Getting Started](developer-guide/adapters/getting-started.md) | [Core Concepts](developer-guide/adapters/core-concepts.md) · [SendDSL Explained](developer-guide/adapters/send-dsl.md) · [Event Converter](developer-guide/adapters/converter.md) · [Best Practices](developer-guide/adapters/best-practices.md) |
-| **Technical Standards** | [Standard Overview](standards/README.md) | Adapters must follow the [Session Types](standards/session-types.md) · [Event Conversion](standards/event-conversion.md) · [Send Method](standards/send-method-spec.md) · [API Response](standards/api-response.md) · [Request Action](standards/request-action-spec.md) specifications |
+| **Technical Standards** | [Standards Overview](standards/README.md) | Adapters must follow the [Session Types](standards/session-types.md) · [Event Conversion](standards/event-conversion.md) · [Send Method](standards/send-method-spec.md) · [API Response](standards/api-response.md) · [Request Action](standards/request-action-spec.md) specifications |
 | **Publishing** | [Publishing and Module Store](developer-guide/publishing.md) | Publish your work to PyPI and the module store |
 
-### 3. I want to deeply understand the principles
+### III. I Want to Deeply Understand the Principles
 
-Understand how the framework operates internally.
+Understand how the framework works internally.
 
 | Document | Description |
 |----------|-------------|
-| [Architecture Overview](architecture.md) | Visual diagram: core architecture, initialization flow, event handling, lifecycle, module loading strategy (including `activate_on` event-driven lazy activation), local plugin folder and module hot-reload architecture (supports all module sources) |
-| [Startup Process and Manual Control](advanced/startup.md) | Breakdown of startup chain, manual control of each step, diagnosis of loading failures |
+| [Architecture Overview](architecture.md) | Visual diagrams: core architecture, initialization process, event handling, lifecycle, module loading strategies (including `activate_on` event-driven lazy activation), local plugin folder and module hot-reload architecture (supports all module sources) |
+| [Startup Process and Manual Control](advanced/startup.md) | Breakdown of the startup chain, manual control of each step, diagnosis of loading failures |
 | [Event System](api-reference/event-system.md) | Complete API for five major event types |
-| [Adapter System](api-reference/adapter-system.md) | Adapter registration, startup/shutdown, API calls |
+| [Adapter System](api-reference/adapter-system.md) | Adapter registration, start/stop, API calls |
 | [Core Modules](api-reference/core-modules.md) | Basic capabilities such as Storage / Config / Logger / Router |
 | [Lifecycle Management](advanced/lifecycle.md) · [Lazy Loading](advanced/lazy-loading.md) · [Routing System](advanced/router.md) | Internal subsystems |
-| [Scope](advanced/scope.md) | Three-dimensional scope control: module availability / event admission / outbound action restrictions (including method-level fine-grained rules, binding inheritance merge) |
-| [Ownership (owner) System](advanced/ownership.md) | Resource ownership and automatic cleanup: owner context, resource ownership overview, unload cleanup sequence, design boundaries, and module author guide |
-| [Conversation Multi-turn Dialogue](advanced/conversation.md) · [MessageBuilder](advanced/message-builder.md) · [SQL Builder](advanced/sql-builder.md) · [HTTP Client](advanced/http-client.md) · [Internationalization](advanced/i18n.md) | Advanced tools |
+| [Scope (作用域)](advanced/scope.md) | Three-dimensional scope control: module availability / event access / outbound action restrictions (including method-level fine-grained rules, binding inheritance merge) |
+| [Ownership (归属权) System](advanced/ownership.md) | Resource ownership and automatic cleanup: owner context, resource ownership overview, unload cleanup sequence, design boundaries, and module author guidelines |
+| [Conversation Multi-turn Dialogue](advanced/conversation.md) · [MessageBuilder](advanced/message-builder.md) · [SQL Builder](advanced/sql-builder.md) · [Storage Backends](advanced/storage-backends.md) · [HTTP Client](advanced/http-client.md) · [Internationalization](advanced/i18n.md) | Advanced tools |
 
-### 4. Ecosystem & Official Clients
+### IV. Ecosystem & Official Clients
 
-Official clients + ecosystem modules that can be installed as needed (not built-in features of the framework).
+Official clients + ecosystem modules that can be installed on-demand and used immediately (none of these are built-in features of the framework).
 
 | Document | Description |
 |----------|-------------|
@@ -62,13 +62,13 @@ Official clients + ecosystem modules that can be installed as needed (not built-
 | [ErisPulse-Dashboard](ecosystem/dashboard.md) | Web management panel + window registration API (modules can register custom pages to the sidebar) |
 | [ErisPulse-Takumi](ecosystem/takumi.md) | Image rendering (HTML / node tree / SVG / animation, built-in Chinese and English fonts) |
 
-### 5. I want to contribute to ErisPulse
+### V. I Want to Contribute to ErisPulse
 
 Make the framework better.
 
 | Document | Description |
 |----------|-------------|
-| [Contributing to ErisPulse](contributing/README.md) | Overview of contribution methods: documentation / i18n / bug fixes / modules / adapters |
+| [Contribute to ErisPulse](contributing/README.md) | Overview of contribution methods: documentation / i18n / bug fixes / modules / adapters |
 | [First Contribution](contributing/first-contribution.md) | From fork to submitting a PR |
 
 ## Development Methods
