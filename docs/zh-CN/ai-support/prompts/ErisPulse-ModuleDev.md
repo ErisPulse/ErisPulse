@@ -7137,6 +7137,38 @@ except Exception:
 # Alice 的记录仍然存在
 ```
 
+## 异步原生 API
+
+2.8.0 起存储层以异步为原生主接口，所有终止方法都有对应的 a 前缀异步版本，
+异步 handler 内推荐使用（避免同步兼容层短暂阻塞事件循环）：
+
+```python
+# 异步事务
+async with sdk.storage.atransaction():
+    await sdk.storage.aset("key1", "value1")
+    await sdk.storage.aset("key2", {"nested": True})
+
+# 异步链式查询
+rows = await sdk.storage.Table("users").Select("name", "age").ToDict().aExecute()
+row = await sdk.storage.Table("users").Select("*").Where("id = ?", 1).aExecuteOne()
+total = await sdk.storage.Table("users").Where("age > ?", 18).aCount()
+exists = await sdk.storage.Table("users").Where("name = ?", "Alice").aExists()
+
+# 异步 KV
+await sdk.storage.aset("app.name", "MyApp")
+value = await sdk.storage.aget("app.name")
+keys = await sdk.storage.aget_all_keys()
+```
+
+| 同步（兼容层） | 异步原生 |
+|------|------|
+| `get` / `set` / `delete` | `aget` / `aset` / `adelete` |
+| `get_all_keys` / `clear` | `aget_all_keys` / `aclear` |
+| `get_multi` / `set_multi` / `delete_multi` | `aget_multi` / `aset_multi` / `adelete_multi` |
+| `transaction()` | `atransaction()` |
+| `CreateTable` / `DropTable` / `HasTable` | `aCreateTable` / `aDropTable` / `aHasTable` |
+| `Execute` / `ExecuteOne` / `Count` / `Exists` | `aExecute` / `aExecuteOne` / `aCount` / `aExists` |
+
 ## 返回值说明
 
 | 操作 | 返回类型 | 说明 |
@@ -7214,37 +7246,45 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ## 自定义存储后端
 
-继承 `BaseStorage` 和 `BaseQueryBuilder` 实现自定义存储后端：
+2.8.0 起抽象层以**异步方法为原生契约**：继承 `BaseStorage` 实现异步抽象方法，
+同步 `get/set/Execute` 等由基类自动桥接提供：
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 class MyQueryBuilder(BaseQueryBuilder):
-    def Execute(self):
+    async def aExecute(self):
         # 实现具体执行逻辑
         ...
 
-    def ExecuteOne(self):
+    async def aExecuteOne(self):
         ...
 
-    def Count(self):
+    async def aCount(self):
         ...
 
-    def Exists(self):
+    async def aExists(self):
         ...
 
 
 class MyStorage(BaseStorage):
-    def get(self, key, default=None):
+    async def aget(self, key, default=None):
         ...
 
-    def set(self, key, value):
+    async def aset(self, key, value):
         ...
 
-    # 实现其他抽象方法...
+    # 实现其他异步抽象方法与事务连接 hook ...
     def Table(self, table_name):
         return MyQueryBuilder(self, table_name)
 ```
+
+> [!TIP]
+> 若不想实现事务连接路由（`conn` 关键字参数），保持类属性
+> `_SUPPORTS_CONN_ROUTING = False`（默认）即可，事务功能仍可用（隔离性受限）。
+> 纯 SQL 后端可直接继承 `Core/Bases/sql_base.py` 的 `SQLStorageBase` +
+> `SQLQueryBuilder`，只需提供连接管理与方言执行漏斗，详见
+> [存储后端](storage-backends.md)。
 
 
 

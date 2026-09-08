@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1483,
+  "total_keywords": 1491,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3040,6 +3040,14 @@
         "title": "Module 模块"
       }
     ],
+    "MySQL（`ErisPulse.storage.mysql`）": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 39,
+        "level": 3,
+        "title": "MySQL（`ErisPulse.storage.mysql`）"
+      }
+    ],
     "Notice 通知模块": [
       {
         "document": "api-reference/event-system.md",
@@ -3188,6 +3196,14 @@
         "line": 525,
         "level": 3,
         "title": "PascalCase 命名"
+      }
+    ],
+    "PostgreSQL（`ErisPulse.storage.postgres`）": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 53,
+        "level": 3,
+        "title": "PostgreSQL（`ErisPulse.storage.postgres`）"
       }
     ],
     "Q1: 为什么发送时 private 要转换为 user？": [
@@ -3579,7 +3595,7 @@
     "Where 参数传递规则": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 345,
+        "line": 377,
         "level": 3,
         "title": "Where 参数传递规则"
       }
@@ -5901,7 +5917,7 @@
     "前置知识": [
       {
         "document": "advanced/README.md",
-        "line": 31,
+        "line": 32,
         "level": 2,
         "title": "前置知识"
       }
@@ -6121,7 +6137,7 @@
     "参数化查询": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 326,
+        "line": 358,
         "level": 2,
         "title": "参数化查询"
       }
@@ -6522,6 +6538,14 @@
         "line": 508,
         "level": 3,
         "title": "后台执行"
+      }
+    ],
+    "后端选择": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 16,
+        "level": 2,
+        "title": "后端选择"
       }
     ],
     "启动和关闭": [
@@ -7588,6 +7612,14 @@
         "title": "字段说明"
       }
     ],
+    "存储后端": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 1,
+        "level": 1,
+        "title": "存储后端"
+      }
+    ],
     "存储后端抽象": [
       {
         "document": "api-reference/core-modules.md",
@@ -8372,6 +8404,20 @@
         "line": 172,
         "level": 3,
         "title": "异步初始化"
+      }
+    ],
+    "异步原生 API": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 289,
+        "level": 2,
+        "title": "异步原生 API"
+      },
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 70,
+        "level": 2,
+        "title": "异步原生 API"
       }
     ],
     "异步发送与结果处理": [
@@ -9420,6 +9466,14 @@
         "line": 31,
         "level": 2,
         "title": "方法链"
+      }
+    ],
+    "方言行为差异": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 96,
+        "level": 2,
+        "title": "方言行为差异"
       }
     ],
     "日志信息": [
@@ -11227,13 +11281,19 @@
       },
       {
         "document": "advanced/sql-builder.md",
-        "line": 398,
+        "line": 438,
         "level": 2,
         "title": "相关文档"
       },
       {
         "document": "advanced/startup.md",
         "line": 437,
+        "level": 2,
+        "title": "相关文档"
+      },
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 136,
         "level": 2,
         "title": "相关文档"
       },
@@ -11756,6 +11816,14 @@
         "title": "自动注入"
       }
     ],
+    "自定义 SQL 后端": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 110,
+        "level": 2,
+        "title": "自定义 SQL 后端"
+      }
+    ],
     "自定义字体": [
       {
         "document": "ecosystem/takumi.md",
@@ -11767,7 +11835,7 @@
     "自定义存储后端": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 364,
+        "line": 396,
         "level": 2,
         "title": "自定义存储后端"
       }
@@ -12447,7 +12515,7 @@
     "返回值处理示例": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 302,
+        "line": 334,
         "level": 3,
         "title": "返回值处理示例"
       }
@@ -12471,7 +12539,7 @@
     "返回值说明": [
       {
         "document": "advanced/sql-builder.md",
-        "line": 289,
+        "line": 321,
         "level": 2,
         "title": "返回值说明"
       }
@@ -12506,6 +12574,14 @@
         "line": 460,
         "level": 3,
         "title": "连接事件"
+      }
+    ],
+    "连接参数": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 37,
+        "level": 2,
+        "title": "连接参数"
       }
     ],
     "连接流程": [
@@ -12569,7 +12645,7 @@
     "适用对象": [
       {
         "document": "advanced/README.md",
-        "line": 23,
+        "line": 24,
         "level": 2,
         "title": "适用对象"
       }

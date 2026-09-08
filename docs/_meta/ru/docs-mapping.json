@@ -336,7 +336,7 @@
     "Продвинутые темы": {
       "description": "Глубокое изучение продвинутых функций фреймворка",
       "icon": "fa-fire",
-      "count": 12,
+      "count": 13,
       "documents": [
         {
           "title": "Расширенные темы",
@@ -407,6 +407,12 @@
         {
           "title": "Процесс запуска и ручное управление",
           "path": "advanced/startup.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "Системы хранения данных",
+          "path": "advanced/storage-backends.md",
           "level": 1,
           "icon": "fa-fire"
         }
