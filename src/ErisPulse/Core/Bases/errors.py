@@ -112,6 +112,58 @@ class InteractionError(ErisPulseError):
 
 
 
+class ModuleError(ErisPulseError):
+    """
+    模块系统异常基类
+
+    模块加载、调用与通信相关的异常基类。
+    """
+
+
+
+class ModuleCallError(ModuleError):
+    """
+    模块间调用异常基类
+
+    ``module.call()`` 跨模块调用相关的异常基类，
+    可用于统一捕获所有模块间调用错误。
+
+    :attribute module: 目标模块名
+    :attribute method: 目标方法名
+    """
+
+    def __init__(self, module: str = "", method: str = "", message: str = ""):
+        self.module = module
+        self.method = method
+        super().__init__(message or f"{module}.{method}")
+
+
+class ModuleNotAvailableError(ModuleCallError):
+    """
+    目标模块不可用
+
+    调用的模块未注册 / 未启用 / 懒加载唤醒失败时抛出。
+    """
+
+
+class ServiceNotProvidedError(ModuleCallError):
+    """
+    服务未提供
+
+    目标模块通过 ``provides`` 声明了服务白名单，
+    调用了不在白名单中的方法（或试图调用私有方法）时抛出。
+    """
+
+
+class ModuleCallTimeoutError(ModuleCallError):
+    """
+    模块间调用超时
+
+    目标方法在超时时限内未返回时抛出。
+    """
+
+
+
 class WebSocketDisconnect(WebSocketError):
     """
     WebSocket 断开连接异常
@@ -143,6 +195,11 @@ __all__ = [
     "ErisPulseError",
     "HTTPStatusError",
     "InteractionError",
+    "ModuleCallError",
+    "ModuleCallTimeoutError",
+    "ModuleError",
+    "ModuleNotAvailableError",
+    "ServiceNotProvidedError",
     "WebSocketDisconnect",
     "WebSocketError",
 ]

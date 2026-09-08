@@ -4,12 +4,19 @@ ErisPulse 模块系统
 提供标准化的模块注册、加载和管理功能，与适配器系统保持一致的设计模式
 """
 
+import asyncio
 import inspect
 import warnings
 from typing import Any, TypeVar
 
 from ..runtime.context import current_owner
 from .Bases import BaseModule
+from .Bases.errors import (
+    ModuleCallError,
+    ModuleCallTimeoutError,
+    ModuleNotAvailableError,
+    ServiceNotProvidedError,
+)
 from .Bases.manager import ManagerBase
 from .config import config
 from .constants import (
@@ -109,6 +116,7 @@ class ModuleManager(ManagerBase):
         self._loaded_modules: set = set()  # 已加载的模块名称
         self._module_info: dict[str, dict] = {}  # 模块信息
         self._lazy_modules: dict[str, Any] = {}  # 懒加载代理（未触发初始化时 get() 返回它）
+        self._module_services: dict[str, list[dict[str, Any]] | None] = {}  # meta.services 契约缓存（load 时解析，规范化 dict 列表）
         self._sdk = None
         # 注册配置变更路由：将 config.set / config.updated 事件转发到各模块的 on_config_update
         self._register_config_change_routing()
@@ -441,6 +449,20 @@ class ModuleManager(ManagerBase):
             # 缓存模块实例
             self._modules[module_name] = instance
             self._loaded_modules.add(module_name)
+            # 解析并缓存 meta.services 服务契约（模块间调用白名单）
+            self._module_services[module_name] = self._resolve_services(module_name)
+
+            # 冷启动事件回放（get_load_strategy(replay="5m") 声明时）：
+            # 模块就绪后从会话收件箱回放最近消息，热插拔进进行中的聊天
+            try:
+                strat = module_class.get_load_strategy()
+                replay = getattr(strat, "replay", None)
+                if replay:
+                    from ..runtime.tasks import spawn_background
+
+                    spawn_background(self._replay_events(module_name, replay))
+            except Exception:
+                pass
 
             await lifecycle.submit_event(
                 "module.load",
@@ -1299,6 +1321,9 @@ class ModuleManager(ManagerBase):
         # 移除懒加载代理（若存在）
         self.unregister_lazy(module_name)
 
+        # 移除服务契约缓存
+        self._module_services.pop(module_name, None)
+
         logger.info(i18n.t("core.module.module_unregistered", name=module_name))
         return True
 
@@ -1339,6 +1364,9 @@ class ModuleManager(ManagerBase):
 
         # 清除所有懒加载代理
         self._lazy_modules.clear()
+
+        # 清除服务契约缓存
+        self._module_services.clear()
 
         logger.debug(i18n.t("core.module.cleared"))
 
@@ -1591,6 +1619,7 @@ class ModuleManager(ManagerBase):
                 "load_strategy": {"lazy": bool|None, "priority": int|None},
                 "info": dict|None,
                 "commands": [str, ...],
+                "services": [str, ...],
                 "handlers": {event_type: count},
                 "routes": {"http": [...], "ws": [...], "sse": [...]},
                 "lifecycle_hooks": int,
@@ -1650,12 +1679,14 @@ class ModuleManager(ManagerBase):
                 except Exception:
                     pass
             ns_routes = routes_by_namespace.get(name, {})
+            service_names = self._service_names(name)
             modules_summary[name] = {
                 "loaded": name in self._loaded_modules,
                 "enabled": parse_bool_config(config.getConfig(CONFIG_KEY_MODULE_STATUS_OF.format(name), True)),
                 "load_strategy": strategy,
                 "info": self._module_info.get(name),
                 "commands": sorted(commands_by_owner.get(name, [])),
+                "services": sorted(service_names or []),
                 "handlers": handlers_by_owner.get(name, {}),
                 "routes": {
                     "http": list(ns_routes.get("http", [])),
@@ -1667,6 +1698,467 @@ class ModuleManager(ManagerBase):
             }
 
         return {"modules": modules_summary}
+
+    # ==================== 模块间通信 ====================
+
+    _REPLAY_UNITS = {"s": 1.0, "m": 60.0, "h": 3600.0, "d": 86400.0}
+
+    @classmethod
+    def _parse_replay_duration(cls, value: Any) -> float:
+        """
+        {!--< internal-use >!--}
+        解析回放时长声明（``"5m"`` / ``"1h"`` / ``"300"``）
+
+        :param value: 时长值
+        :return: 秒数
+        """
+        text = str(value).strip().lower()
+        if text and text[-1] in cls._REPLAY_UNITS:
+            return float(text[:-1]) * cls._REPLAY_UNITS[text[-1]]
+        return float(text)
+
+    def _build_replay_event(self, record: dict[str, Any]) -> Any | None:
+        """
+        {!--< internal-use >!--}
+        从收件箱记录构造回放合成事件
+
+        合成事件带 ``replayed: True`` 标志（处理器可据此跳过副作用）；
+        ``user_id`` 优先取记录的 sender，私聊场景回退为 target。
+
+        :param record: 收件箱记录（role / text / ts / sender / session_key）
+        :return: 合成事件（Event）；无法解析会话键时返回 None
+        """
+        from .Event.wrapper import Event
+
+        parts = (record.get("session_key") or "").split(":")
+        if len(parts) != 3 or not parts[0]:
+            return None
+        platform, detail_type, target_id = parts
+        text = record.get("text", "")
+        data: dict[str, Any] = {
+            "id": f"replay-{record.get('ts', 0)}-{abs(hash((record.get('session_key'), text)))}",
+            "time": record.get("ts", 0),
+            "type": "message",
+            "detail_type": detail_type,
+            "platform": platform,
+            "self": {"platform": platform},
+            "user_id": record.get("sender") or target_id or "",
+            "message": [{"type": "text", "data": {"text": text}}],
+            "alt_message": text,
+            "replayed": True,
+        }
+        if detail_type in ("private", "user"):
+            data["user_id"] = target_id or data["user_id"]
+        else:
+            data["group_id"] = target_id
+        return Event(data)
+
+    async def _replay_events(self, module_name: str, replay: Any) -> None:
+        """
+        {!--< internal-use >!--}
+        执行冷启动事件回放：收件箱最近消息 → 仅分发给该模块的处理器
+
+        :param module_name: 模块名
+        :param replay: 回放时长声明（"5m" / "1h" / 秒数）
+        """
+        from .Event import message as _message
+
+        try:
+            seconds = self._parse_replay_duration(replay)
+        except ValueError:
+            logger.warning(i18n.t("loader.module.replay_invalid", name=module_name, value=replay))
+            return
+        if seconds <= 0:
+            return
+
+        try:
+            from .transcript import transcript as _transcript
+
+            records = _transcript.recent(seconds)
+        except Exception as e:
+            logger.trace(i18n.t("loader.module.replay_failed", name=module_name, error=e))
+            return
+        if not records:
+            return
+
+        delivered = 0
+        for record in records:
+            synth = self._build_replay_event(record)
+            if synth is None:
+                continue
+            try:
+                delivered += await _message.handler.dispatch_to_owner(module_name, synth)
+            except Exception as e:
+                logger.trace(i18n.t("loader.module.replay_failed", name=module_name, error=e))
+                break
+        if delivered:
+            logger.info(
+                i18n.t(
+                    "loader.module.replay_done",
+                    name=module_name,
+                    count=delivered,
+                    seconds=int(seconds),
+                )
+            )
+
+    def _resolve_services(self, module_name: str) -> "list[dict[str, Any]] | None":
+        """
+        {!--< internal-use >!--}
+        解析模块的服务契约（get_meta().services），规范化为字典列表
+
+        :param module_name: 模块名称
+        :return: ``[{"name": ..., "description": <str|i18n dict|None>}, ...]``；
+            未声明时返回 None（公开方法全开放）
+        """
+        module_class = self._module_classes.get(module_name)
+        if module_class is None:
+            return None
+        try:
+            get_meta = getattr(module_class, "get_meta", None)
+            if get_meta is None:
+                return None
+            meta = get_meta()
+            services = meta.get("services") if isinstance(meta, dict) else getattr(meta, "services", None)
+            if isinstance(services, (list, tuple, set)):
+                normalized: list[dict[str, Any]] = []
+                seen: set[str] = set()
+                for item in services:
+                    if isinstance(item, dict) and item.get("name"):
+                        entry = {"name": str(item["name"]), "description": item.get("description")}
+                    elif item:
+                        entry = {"name": str(item), "description": None}
+                    else:
+                        continue
+                    # 保序去重（重复声明取首个，含 description 的首个优先）
+                    if entry["name"] in seen:
+                        continue
+                    seen.add(entry["name"])
+                    normalized.append(entry)
+                return normalized
+        except Exception as e:
+            logger.trace(i18n.t("core.module.services_resolve_failed", name=module_name, error=e))
+        return None
+
+    def _service_names(self, module_name: str) -> "list[str] | None":
+        """
+        {!--< internal-use >!--}
+        获取服务白名单（名字列表）
+
+        :param module_name: 模块名称
+        :return: 服务名列表；未声明时返回 None
+        """
+        declared = self._module_services.get(module_name)
+        if declared is None and module_name not in self._module_services:
+            declared = self._resolve_services(module_name)
+        if declared is None:
+            return None
+        return [entry["name"] for entry in declared]
+
+    @staticmethod
+    def _docstring_first_line(func: Any) -> str:
+        """
+        {!--< internal-use >!--}
+        提取函数 docstring 的摘要行（服务介绍的自动兜底）
+
+        兼容规范的多行 docstring（空行开头）：取**第一个非空行**，
+        跳过 doctest 装饰行（``>>>`` / ``...``）。无 docstring 时返回空串。
+
+        :param func: 函数 / 绑定方法
+        :return: 摘要文本（可能为空串）
+        """
+        doc = inspect.getdoc(func) if func is not None else None
+        if not doc:
+            return ""
+        for line in doc.splitlines():
+            stripped = line.strip()
+            if not stripped:
+                continue
+            if stripped.startswith(">>>") or stripped.startswith("..."):
+                continue
+            return stripped
+        return ""
+
+    def _service_description(self, module_name: str, entry: dict[str, Any]) -> str:
+        """
+        {!--< internal-use >!--}
+        解析服务介绍：显式声明（i18n 字典解析）> 方法 docstring 首行 > 空串
+
+        :param module_name: 模块名
+        :param entry: 规范化服务条目（{"name", "description"}）
+        :return: 介绍文本
+        """
+        desc = entry.get("description")
+        if isinstance(desc, dict) and "i18n" in desc:
+            desc = self._resolve_meta_value(desc)
+        if desc:
+            return str(desc)
+        instance = self._modules.get(module_name)
+        owner = instance if instance is not None else self._module_classes.get(module_name)
+        func = getattr(owner, entry.get("name", ""), None)
+        return self._docstring_first_line(func)
+
+    def services(self, module_name: str | None = None) -> dict[str, list[dict[str, str]]]:
+        """
+        服务目录：列出模块通过 ``get_meta().services`` 声明的对外服务
+
+        仅包含**显式声明**的模块（未声明的模块不出现在结果中）；
+        每个服务附带方法签名字符串与介绍文本：
+
+        - **介绍来源**：``services`` 中 ``{"name", "description"}`` 的显式声明
+          （支持 i18n 字典，解析为当前语言）> 方法 docstring 首行 > 空串
+        - **签名**：``inspect.signature`` 提取
+
+        为后续 MCP 化（调用点暴露给 AI）与生态服务发现提供数据基础。
+
+        :param module_name: 仅查询指定模块；None 时列出全部已注册模块中声明了服务的
+        :return: ``{模块名: [{"name", "signature", "description"}]}``
+
+        :example:
+        >>> sdk.module.services()
+        {'Chat': [{'name': 'get_history',
+                   'signature': '(session_id, n=20)',
+                   'description': '查询会话历史'}]}
+        >>> sdk.module.services("Chat")
+        {'Chat': [{'name': 'get_history', ...}]}
+        """
+        result: dict[str, list[dict[str, str]]] = {}
+        targets = [module_name] if module_name else list(self._module_classes.keys())
+        for name in targets:
+            services_list = self._module_services.get(name)
+            if services_list is None and name not in self._module_services:
+                # 未加载（无缓存）时现场解析一次
+                services_list = self._resolve_services(name)
+                if module_name is None:
+                    continue  # 全量目录模式：未声明模块直接跳过
+            if not services_list:
+                continue
+            entries: list[dict[str, str]] = []
+            for svc in services_list:
+                svc_name = svc["name"]
+                sig = ""
+                instance = self._modules.get(name)
+                owner = instance if instance is not None else self._module_classes.get(name)
+                func = getattr(owner, svc_name, None)
+                if func is not None:
+                    try:
+                        sig = str(inspect.signature(func))
+                    except (ValueError, TypeError):
+                        sig = "(...)"
+                entries.append(
+                    {
+                        "name": svc_name,
+                        "signature": sig,
+                        "description": self._service_description(name, svc),
+                    }
+                )
+            result[name] = entries
+        return result
+
+    async def _resolve_call_target(self, module_name: str) -> Any:
+        """
+        {!--< internal-use >!--}
+        解析模块间调用的目标实例（含懒加载模块唤醒）
+
+        :param module_name: 模块名称
+        :return: 模块实例
+        :raises ModuleNotAvailableError: 模块未注册 / 未启用 / 唤醒失败时
+        """
+        if module_name not in self._module_classes:
+            raise ModuleNotAvailableError(
+                module_name, "", i18n.t("core.module.call_not_registered", name=module_name)
+            )
+        if not self.is_enabled(module_name):
+            raise ModuleNotAvailableError(
+                module_name, "", i18n.t("core.module.call_disabled", name=module_name)
+            )
+
+        # 已加载：直接返回实例
+        if module_name in self._loaded_modules:
+            return self._modules[module_name]
+
+        # 懒加载代理唤醒（事件驱动模块走激活锁，普通懒模块走同步初始化）
+        proxy = self._lazy_modules.get(module_name)
+        if proxy is not None:
+            activate = getattr(proxy, "_activate", None)
+            if activate is not None:
+                if not await activate():
+                    raise ModuleNotAvailableError(
+                        module_name,
+                        "",
+                        i18n.t("core.module.call_activate_failed", name=module_name),
+                    )
+            else:
+                ensure = getattr(proxy, "_ensure_initialized", None)
+                if ensure is not None:
+                    ensure()
+            instance = self.get(module_name)
+            if instance is not None:
+                return instance
+
+        # 常规加载路径（幂等：已加载直接返回 True）
+        if await self.load(module_name):
+            instance = self.get(module_name)
+            if instance is not None:
+                return instance
+
+        raise ModuleNotAvailableError(
+            module_name, "", i18n.t("core.module.call_not_registered", name=module_name)
+        )
+
+    async def call(
+        self,
+        module_name: str,
+        method: str,
+        *args: Any,
+        timeout: float | None = None,
+        **kwargs: Any,
+    ) -> Any:
+        """
+        跨模块调用目标模块的服务方法（协议化 RPC）
+
+        与 ``module.<Name>.<method>()`` 裸属性访问的差异：
+        目标模块未注册 / 未启用时抛出类型化异常而非 AttributeError；
+        懒加载模块自动唤醒；``get_meta().services`` 契约白名单校验；
+        调用方经过 scope 出站维度（``actions.<caller>.call``）审计；
+        被调方法执行期间 ``current_owner`` 归因到目标模块，
+        其内部的 wait_reply / 出站发送 / 日志等正确归属；
+        协程方法带超时语义（超时抛 :class:`ModuleCallTimeoutError`）。
+
+        :param module_name: 目标模块名
+        :param method: 目标方法名
+        :param args: 位置参数（透传给目标方法）
+        :param timeout: 超时秒数（默认 30 秒；None 表示不限时；仅对协程方法生效）
+        :param kwargs: 关键字参数（透传给目标方法）
+        :return: 目标方法的返回值
+        :raises ModuleNotAvailableError: 目标模块未注册 / 未启用 / 唤醒失败
+        :raises ServiceNotProvidedError: 方法不在目标模块的 ``services`` 白名单内（或为私有方法 / 不存在）
+        :raises ModuleCallError: 调用方被 scope 出站规则拒绝
+        :raises ModuleCallTimeoutError: 协程方法超时
+
+        :example:
+        >>> result = await sdk.module.call("Chat", "get_history", session_id, n=20)
+
+        {!--< tips >!--}
+        服务方在 ``get_meta().services`` 声明契约收紧调用面（缺省时公开方法全开放）::
+
+            class ChatModule(BaseModule):
+                @staticmethod
+                def get_meta() -> ModuleMeta:
+                    return ModuleMeta(services=["get_history", "translate"])
+
+                async def get_history(self, session_id, n=20): ...
+        {!--< /tips >!--}
+        """
+        if timeout is None:
+            from .constants import DEFAULT_MODULE_CALL_TIMEOUT_SECS
+
+            timeout = DEFAULT_MODULE_CALL_TIMEOUT_SECS
+
+        # scope 出站审计（调用方维度：actions.<caller>.call，name=<module>.<method>）
+        caller = current_owner.get()
+        if caller:
+            from .scope import scope as _scope
+
+            if not _scope.is_action_allowed(caller, "call", name=f"{module_name}.{method}"):
+                logger.trace(
+                    i18n.t(
+                        "core.module.call_denied",
+                        caller=caller,
+                        module=module_name,
+                        method=method,
+                    )
+                )
+                raise ModuleCallError(
+                    module_name,
+                    method,
+                    i18n.t(
+                        "core.module.call_denied",
+                        caller=caller,
+                        module=module_name,
+                        method=method,
+                    ),
+                )
+
+        instance = await self._resolve_call_target(module_name)
+
+        # 契约检查：meta.services 白名单收紧；未声明时允许公开方法、始终禁私有
+        provides = self._service_names(module_name)
+        if method.startswith("_") or (provides is not None and method not in provides):
+            raise ServiceNotProvidedError(
+                module_name, method, i18n.t("core.module.call_not_provided", module=module_name, method=method)
+            )
+
+        func = getattr(instance, method, None)
+        if func is None or not callable(func):
+            raise ServiceNotProvidedError(
+                module_name, method, i18n.t("core.module.call_method_missing", module=module_name, method=method)
+            )
+
+        # 执行：owner 归因到目标模块（与命令执行语义一致——执行谁的代码归因谁）
+        token = current_owner.set(module_name)
+        try:
+            result = func(*args, **kwargs)
+            if inspect.iscoroutine(result):
+                try:
+                    return await asyncio.wait_for(result, timeout=timeout)
+                except asyncio.TimeoutError:
+                    raise ModuleCallTimeoutError(
+                        module_name,
+                        method,
+                        i18n.t("core.module.call_timeout", module=module_name, method=method, timeout=timeout),
+                    ) from None
+            return result
+        finally:
+            current_owner.reset(token)
+
+    async def emit_to(self, module_name: str, event: str, data: Any = None) -> Any:
+        """
+        向指定模块定向投递生命周期事件（``module.<名称>.<事件>`` 命名约定）
+
+        与直接 ``lifecycle.emit()`` 的差异：投递前校验目标模块已注册且启用
+        （含懒加载代理），避免事件发向不存在 / 已禁用的模块而无感知；
+        事件名自动加 ``module.<名称>.`` 命名空间前缀，与生命周期事件总线的
+        前缀匹配规则兼容（订阅 ``module.<名称>`` 可接收该模块的全部定向事件）。
+
+        订阅方在自己模块内注册钩子::
+
+            lifecycle.on("module.Chat.message_received", handler)
+
+        :param module_name: 目标模块名
+        :param event: 事件名（不含命名空间前缀）
+        :param data: 事件数据（dict 时自动附加 ``_trace_id``）
+        :return: 生命周期处理器的返回值（与 lifecycle.emit 一致）
+        :raises ModuleNotAvailableError: 目标模块未注册或未启用
+
+        :example:
+        >>> await sdk.module.emit_to("Chat", "message_received", {"text": "hi"})
+        """
+        if module_name not in self._module_classes:
+            raise ModuleNotAvailableError(
+                module_name, event, i18n.t("core.module.emit_target_disabled", name=module_name)
+            )
+        if not self.is_enabled(module_name):
+            raise ModuleNotAvailableError(
+                module_name, event, i18n.t("core.module.emit_target_disabled", name=module_name)
+            )
+
+        # 懒模块唤醒：定向事件即激活源（与 activate_on 语义对齐）；
+        # 用户主动 disable 的模块在上方 is_enabled 检查即被拒绝，不会唤醒
+        if module_name not in self._loaded_modules:
+            proxy = self._lazy_modules.get(module_name)
+            if proxy is not None:
+                activate = getattr(proxy, "_activate", None)
+                if activate is not None:
+                    if not await activate():
+                        raise ModuleNotAvailableError(
+                            module_name,
+                            event,
+                            i18n.t("core.module.call_activate_failed", name=module_name),
+                        )
+                else:
+                    await self.load(module_name)
+
+        return await lifecycle.emit(f"module.{module_name}.{event}", data)
 
     # 兼容性方法 - 保持向后兼容
     def list_modules(self) -> dict[str, bool]:

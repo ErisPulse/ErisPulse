@@ -10,7 +10,7 @@ import inspect
 import time
 import uuid
 import warnings
-from collections import defaultdict
+from collections import OrderedDict, defaultdict
 from collections.abc import Callable
 from typing import Any, TypeVar, cast
 
@@ -34,6 +34,7 @@ from .constants import (
     CONFIG_KEY_ADAPTER_STATUS,
     CONFIG_KEY_ADAPTER_STATUS_OF,
     DEFAULT_ADAPTER_ENABLED,
+    DEFAULT_EVENT_DEDUPE_CAPACITY,
     DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS,
     DEFAULT_HANDLER_MAX_CONCURRENCY,
     DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
@@ -169,6 +170,10 @@ class AdapterManager(ManagerBase):
 
         # Bot状态存储 - {platform: {bot_id: {"status": str, "last_active": float, "info": dict}}}
         self._bots: dict[str, dict[str, dict]] = {}
+
+        # 事件幂等去重：已分发事件 id 的 LRU 记录（平台重连重推同 id 事件只分发一次）
+        self._seen_event_ids: OrderedDict[str, None] = OrderedDict()
+        self._event_dedupe_enabled: bool | None = None  # None = 惰性读配置
 
         # 标记是否正在关闭，避免重复提交离线事件
         self._is_being_shutdown = False
@@ -556,6 +561,11 @@ class AdapterManager(ManagerBase):
                     i18n.t("core.adapter.create_failed", platform=platform, error=e)
                 )
                 return False
+
+        # 适配器注册视为新的连接生命周期起点：
+        # 重置事件幂等去重缓存（重连重推只存在于单次连接会话内，
+        # 新注册 / 重启的适配器不应被上一代连接的去重记忆拦截）
+        self._seen_event_ids.clear()
 
         return True
 
@@ -1708,6 +1718,14 @@ class AdapterManager(ManagerBase):
         # 出站发送与 lifecycle 钩子数据据此串联同一条消息的全链路
         trace_id = str(data.get("id") or uuid.uuid4())
         data.setdefault("id", trace_id)
+
+        # 事件幂等去重：平台 websocket 重连重推（同 event id）只分发一次
+        if self._is_duplicate_event(trace_id):
+            logger.trace(
+                i18n.t("core.adapter.event_duplicated", event_id=trace_id, platform=platform)
+            )
+            return
+
         _trace_token = current_trace_id.set(trace_id)
         try:
             await self._emit_dispatch(
@@ -1721,6 +1739,49 @@ class AdapterManager(ManagerBase):
             )
         finally:
             current_trace_id.reset(_trace_token)
+
+    def _dedupe_enabled(self) -> bool:
+        """
+        {!--< internal-use >!--}
+        读取事件去重开关（``ErisPulse.framework.event_dedupe``，默认开启）
+
+        测试环境普遍使用固定 id 的合成事件且同一用例内连续多次 emit，
+        可通过配置或直接置 ``adapter._event_dedupe_enabled = False`` 关闭。
+
+        :return: 是否启用幂等去重
+        """
+        if self._event_dedupe_enabled is None:
+            try:
+                from .config import parse_bool_config
+
+                self._event_dedupe_enabled = parse_bool_config(
+                    config.getConfig("ErisPulse.framework.event_dedupe", True)
+                )
+            except Exception:
+                self._event_dedupe_enabled = True
+        return self._event_dedupe_enabled
+
+    def _is_duplicate_event(self, event_id: str) -> bool:
+        """
+        {!--< internal-use >!--}
+        事件幂等去重判定（LRU 记录已分发的事件 id）
+
+        平台 websocket 重连后重推同一事件（相同 ``event["id"]``）时只分发一次；
+        容量上限 ``DEFAULT_EVENT_DEDUPE_CAPACITY``，超出后淘汰最早记录。
+
+        :param event_id: 事件 id
+        :return: 是否为重复事件（True 时调用方应丢弃）
+        """
+        if not self._dedupe_enabled():
+            return False
+        seen = self._seen_event_ids
+        if event_id in seen:
+            seen.move_to_end(event_id)
+            return True
+        seen[event_id] = None
+        if len(seen) > DEFAULT_EVENT_DEDUPE_CAPACITY:
+            seen.popitem(last=False)
+        return False
 
     async def _emit_dispatch(
         self,
@@ -1781,7 +1842,10 @@ class AdapterManager(ManagerBase):
 
                 _alt = data.get("alt_message", "") or _extract_message_text(data)
                 if _alt:
-                    _transcript.append(data, "user", _alt, event_id=trace_id)
+                    _transcript.append(
+                        data, "user", _alt, event_id=trace_id,
+                        sender=str(data.get("user_id") or ""),
+                    )
             except Exception:
                 pass
 

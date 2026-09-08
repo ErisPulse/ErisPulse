@@ -20,6 +20,37 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 # ==================== 测试环境设置 ====================
 
 
+@pytest.fixture(scope="function", autouse=True)
+def _reset_event_dedupe() -> Generator[None, None, None]:
+    """
+    测试期间禁用事件幂等去重，用例后恢复
+
+    问题背景：``AdapterManager.emit`` 按 ``event["id"]`` LRU 去重（防平台
+    重连重推），而测试普遍使用固定 id 的合成事件且同一用例内连续多次
+    emit——第 2 条起会被误判为重复而丢弃。
+
+    此 fixture 在每个用例期间关闭去重（``adapter._event_dedupe_enabled = False``），
+    结束后恢复惰性配置态；去重功能本身由专用用例显式开启覆盖。
+
+    {!--< internal-use >!--}
+    """
+    try:
+        from ErisPulse.Core.adapter import adapter as _adapter
+
+        _adapter._event_dedupe_enabled = False
+        _adapter._seen_event_ids.clear()
+    except Exception:
+        pass
+    yield
+    try:
+        from ErisPulse.Core.adapter import adapter as _adapter
+
+        _adapter._event_dedupe_enabled = None
+        _adapter._seen_event_ids.clear()
+    except Exception:
+        pass
+
+
 @pytest.fixture(scope="session")
 def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     """

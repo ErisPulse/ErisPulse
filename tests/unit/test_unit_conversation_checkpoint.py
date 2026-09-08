@@ -47,11 +47,15 @@ def temp_sm(monkeypatch):
 
 @pytest.fixture(autouse=True)
 def clean_resume_handlers():
+    from ErisPulse.Core.Event.interaction import interaction
+
     saved = list(_conversation_resume_handlers)
     _conversation_resume_handlers.clear()
+    interaction.clear()  # resume 会话接管会留下租约，逐用例清理
     yield
     _conversation_resume_handlers.clear()
     _conversation_resume_handlers.extend(saved)
+    interaction.clear()
 
 
 def _evt(user_id="u1", group_id="g1", **extra):
@@ -127,6 +131,55 @@ class TestAutoCheckpoint:
         assert conv2.get_current_branch() == "menu"
         assert conv2.context == {"q": "答案"}
         assert conv2.is_active is True
+
+    @pytest.mark.asyncio
+    async def test_resume_acquires_session_lease(self, temp_sm):
+        """恢复即接管：resume 成功后对话持有会话租约"""
+        from ErisPulse.Core.Event.interaction import interaction
+        from ErisPulse.runtime.context import current_owner
+
+        evt = _evt()
+        conv = _conv_with_branch(evt)
+        await conv.save()
+
+        conv2 = _conv_with_branch(_evt())
+        token = current_owner.set("MyModule")
+        try:
+            assert await conv2.resume() is True
+        finally:
+            current_owner.reset(token)
+        assert interaction.get_owner_of(_evt()) == "MyModule"  # 会话已被接管
+
+    @pytest.mark.asyncio
+    async def test_resume_abandoned_when_session_occupied(self, temp_sm):
+        """会话被其他模块占用时放弃恢复"""
+        from ErisPulse.Core.Event.interaction import interaction
+
+        evt = _evt()
+        conv = _conv_with_branch(evt)
+        await conv.save()
+
+        # 其他模块先占用会话
+        assert interaction.acquire(_evt(), owner="Other") is not None
+
+        conv2 = _conv_with_branch(_evt())
+        assert await conv2.resume() is False
+
+    @pytest.mark.asyncio
+    async def test_resume_brings_recent_history(self, temp_sm):
+        """恢复时从收件箱带回最近消息"""
+        from ErisPulse.Core import transcript
+
+        evt = _evt()
+        transcript._table_ready = False
+        transcript.append(evt, "user", "之前的消息", event_id="e1")
+
+        conv = _conv_with_branch(evt)
+        await conv.save()
+
+        conv2 = _conv_with_branch(_evt())
+        assert await conv2.resume() is True
+        assert conv2.recent_history and conv2.recent_history[-1]["text"] == "之前的消息"
 
     @pytest.mark.asyncio
     async def test_target_isolation(self, temp_sm):

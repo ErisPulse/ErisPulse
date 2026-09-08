@@ -15,6 +15,7 @@ from .interaction import (
     InteractionCancelled,
     InteractionLease,
     InteractionManager,
+    Reminder,
     SessionOccupiedError,
     interaction,
 )
@@ -105,6 +106,7 @@ __all__ = [
     "InteractionManager",
     "MessageBuilder",
     "ReceiveType",
+    "Reminder",
     "SendType",
     "SessionOccupiedError",
     "clear_custom_types",

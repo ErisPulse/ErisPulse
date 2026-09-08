@@ -84,6 +84,10 @@ class Main(BaseModule):
     def get_meta() -> ModuleMeta:
         """
         返回模块介绍元信息（推荐返回 ModuleMeta 配置类实例，与 get_load_strategy 对齐）
+
+        services 字段（可选）：对外服务白名单（模块间调用契约）。声明后其他模块可通过
+        `await sdk.module.call("MyModule", "get_welcome_message")` 调用白名单内方法；
+        缺省时公开方法全开放（开发者无感，限制由用户通过 scope.actions 配置）。
         """
         return ModuleMeta(
             name="MyModule",
@@ -92,6 +96,7 @@ class Main(BaseModule):
             author="ErisDev",
             group="示例",
             tags=["示例", "demo"],
+            services=["get_welcome_message"],
         )
 
     @staticmethod
@@ -107,6 +112,19 @@ class Main(BaseModule):
             # 被依赖模块卸载/热重载时，本模块将级联卸载/重载
             # depends=["OtherModule"],
         )
+
+    async def get_welcome_message(self, name: str = "") -> str:
+        """
+        对外服务（provides 白名单内）：返回欢迎消息
+
+        其他模块通过 `await sdk.module.call("MyModule", "get_welcome_message", "Alice")`
+        调用本方法；执行期间框架自动将 owner 归因到 MyModule。
+
+        :param name: 可选的用户名
+        :return: 组装后的欢迎消息
+        """
+        msg = self.cfg.welcome_message
+        return f"{msg}（{name}）" if name else msg
 
     async def on_load(self, event: dict) -> bool:
         """
@@ -189,7 +207,10 @@ class Main(BaseModule):
             from ErisPulse import i18n
             await event.reply(i18n.t("MyModule.greeting_prompt"))
 
-            reply = await event.wait_reply(timeout=30)
+            # 会话定时提醒：30 秒无回复则温和催一次（用户回复自动取消）
+            event.remind(30, "（还在吗？直接输入名字就好啦）")
+
+            reply = await event.wait_reply(timeout=60)
 
             if reply:
                 name = reply.get_text()
