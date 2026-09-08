@@ -363,6 +363,16 @@ TRANSLATIONS = {
     "core.storage.ensure_dir_failed": "ストレージディレクトリの作成に失敗しました: {error}",
     "core.storage.get_config_failed": "設定項目 {key} の取得に失敗しました: {error}",
     "core.storage.set_config_failed": "設定項目 {key} の設定に失敗しました: {error}",
+    # ストレージバックエンドと同期ブリッジ
+    "core.storage.backend_init": "ストレージバックエンドを初期化しています: {backend}",
+    "core.storage.backend_unknown": "不明なストレージバックエンド: {backend}（選択肢: sqlite / mysql / postgres）",
+    "core.storage.driver_missing": "ストレージバックエンド {backend} にドライバー依存がありません。実行してください: pip install ErisPulse[{extra}]",
+    "core.storage.pool_init_failed": "{backend} 接続プールの初期化に失敗しました: {error}",
+    "core.storage.pool_retry": "{backend} 接続プールの作成に失敗しました（{attempt} 回目）、バックオフして再試行します: {error}",
+    "core.storage.aclose_failed": "ストレージバックエンドのリソース解放に失敗しました: {error}",
+    "core.storage.bridge_closed": "ストレージ同期ブリッジは閉じられており、非同期操作を実行できません",
+    "core.storage.bridge_reentrant": "ストレージブリッジスレッド内から同期互換インターフェースを呼び出すことはできません。非同期メソッドを使用してください",
+    "core.storage.sync_in_loop_warn": "非同期コンテキスト内でストレージ同期インターフェースが呼び出されました（ブリッジ実行のためイベントループが一時的にブロックされる可能性があります）。a 接頭辞の非同期メソッド（aget/aset など）の使用を推奨します",
     # ==================== 設定管理 ====================
     "core.config.migrate_failed": "設定ファイルの移行に失敗しました: {error}",
     "core.config.load_failed": "設定ファイル {path} の読み込みに失敗しました: {error}",

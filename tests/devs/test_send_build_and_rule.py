@@ -13,8 +13,8 @@
 
 import asyncio
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 from ErisPulse import sdk
 from ErisPulse.Core.Event import command

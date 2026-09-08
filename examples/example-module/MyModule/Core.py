@@ -74,6 +74,7 @@ class Main(BaseModule):
     def __init__(self, sdk: SDK = None):
         self.sdk = sdk
         self.logger = self.sdk.logger.get_child("MyModule")
+        # 存储后端（sqlite/mysql/postgres 由配置决定）；异步 handler 内推荐 await self.storage.aget/aset(...)
         self.storage = self.sdk.storage
         self.adapter = self.sdk.adapter
 

@@ -1,7 +1,8 @@
 """
 存储管理 SQL 链式查询单元测试
 
-测试 SQLiteQueryBuilder、AlterTableBuilder 及 StorageManager 新增的表管理方法
+测试 SQLQueryBuilder、AlterTableBuilder 及存储管理器新增的表管理方法。
+（2.8.0 起查询构建器统一为方言无关的 SQLQueryBuilder，同步终止方法为兼容层）
 """
 
 import os
@@ -9,8 +10,9 @@ import tempfile
 
 import pytest
 
+from ErisPulse.Core.Bases.sql_base import SQLQueryBuilder
 from ErisPulse.Core.Bases.storage import BaseQueryBuilder, BaseStorage
-from ErisPulse.Core.storage import SQLiteQueryBuilder, StorageManager
+from ErisPulse.Core.storage import StorageManager
 
 # ==================== Fixtures ====================
 
@@ -72,7 +74,7 @@ class TestABCContracts:
         assert issubclass(StorageManager, BaseStorage)
 
     def test_sqlite_query_builder_inherits_base(self):
-        assert issubclass(SQLiteQueryBuilder, BaseQueryBuilder)
+        assert issubclass(SQLQueryBuilder, BaseQueryBuilder)
 
 
 # ==================== CreateTable / DropTable / HasTable ====================
