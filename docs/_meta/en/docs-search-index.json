@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1515,
+  "total_keywords": 1544,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -2229,7 +2229,7 @@
     "@Message Related": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 152,
+        "line": 187,
         "level": 4,
         "title": "@Message Related"
       }
@@ -2293,7 +2293,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 269,
+        "line": 345,
         "level": 3,
         "title": "API Overview"
       }
@@ -2656,6 +2656,14 @@
         "title": "Add Middleware"
       }
     ],
+    "Adding Type Annotations to the event Parameter": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 5,
+        "level": 2,
+        "title": "Adding Type Annotations to the event Parameter"
+      }
+    ],
     "Additional Operation Methods": [
       {
         "document": "platform-guide/kook.md",
@@ -2670,6 +2678,14 @@
         "line": 287,
         "level": 3,
         "title": "Administrator Check"
+      }
+    ],
+    "Advanced Conversation Capabilities": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 90,
+        "level": 2,
+        "title": "Advanced Conversation Capabilities"
       }
     ],
     "Advanced Message Sending (Retry/Timeout/Batch)": [
@@ -2829,7 +2845,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 257,
+        "line": 259,
         "level": 3,
         "title": "Attribute Access"
       },
@@ -3032,20 +3048,20 @@
         "title": "Basic Calling Methods"
       }
     ],
-    "Basic Checks": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 158,
-        "level": 4,
-        "title": "Basic Checks"
-      }
-    ],
     "Basic Commands": [
       {
         "document": "getting-started/event-handling.md",
         "line": 91,
         "level": 3,
         "title": "Basic Commands"
+      }
+    ],
+    "Basic Detection": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 193,
+        "level": 4,
+        "title": "Basic Detection"
       }
     ],
     "Basic Information": [
@@ -3157,7 +3173,7 @@
     "Basic Reply": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 189,
+        "line": 224,
         "level": 4,
         "title": "Basic Reply"
       }
@@ -3397,7 +3413,7 @@
     "Bot Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 123,
+        "line": 158,
         "level": 4,
         "title": "Bot Information"
       }
@@ -3796,6 +3812,14 @@
         "title": "Code Quality"
       }
     ],
+    "Cold Start Replay": [
+      {
+        "document": "advanced/module-communication.md",
+        "line": 165,
+        "level": 2,
+        "title": "Cold Start Replay"
+      }
+    ],
     "Collect form (collect)": [
       {
         "document": "getting-started/event-handling.md",
@@ -3831,7 +3855,7 @@
     "Command Basics": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 379,
+        "line": 414,
         "level": 4,
         "title": "Command Basics"
       }
@@ -3899,7 +3923,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 377,
+        "line": 412,
         "level": 3,
         "title": "Command Information"
       }
@@ -3907,7 +3931,7 @@
     "Command Information Retrieval": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 90,
+        "line": 125,
         "level": 2,
         "title": "Command Information Retrieval"
       }
@@ -3995,13 +4019,13 @@
     "Common Methods": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 373,
+        "line": 450,
         "level": 3,
         "title": "Common Methods"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 403,
+        "line": 498,
         "level": 3,
         "title": "Common Methods"
       }
@@ -4112,6 +4136,14 @@
         "line": 192,
         "level": 2,
         "title": "Complete Module Example"
+      }
+    ],
+    "Complete Reply Matching Decision Chain": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 63,
+        "level": 3,
+        "title": "Complete Reply Matching Decision Chain"
       }
     ],
     "Component Relationships": [
@@ -4709,7 +4741,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 114,
+        "line": 149,
         "level": 3,
         "title": "Core Methods"
       }
@@ -4820,12 +4852,14 @@
         "line": 663,
         "level": 2,
         "title": "Cross-Platform Extension (Wildcard)"
-      },
+      }
+    ],
+    "Cross-platform Extension (Wildcard)": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 429,
+        "line": 464,
         "level": 3,
-        "title": "Cross-Platform Extension (Wildcard)"
+        "title": "Cross-platform Extension (Wildcard)"
       }
     ],
     "Custom Default Headers": [
@@ -5101,7 +5135,7 @@
     "Development Methods": [
       {
         "document": "README.md",
-        "line": 74,
+        "line": 76,
         "level": 2,
         "title": "Development Methods"
       }
@@ -5168,6 +5202,22 @@
         "line": 93,
         "level": 2,
         "title": "Dialect Behavior Differences"
+      }
+    ],
+    "Directed Event: emit_to": [
+      {
+        "document": "advanced/module-communication.md",
+        "line": 133,
+        "level": 2,
+        "title": "Directed Event: emit_to"
+      }
+    ],
+    "Directed Events (`emit_to`)": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 327,
+        "level": 3,
+        "title": "Directed Events (`emit_to`)"
       }
     ],
     "Directory Structure": [
@@ -5274,14 +5324,6 @@
         "title": "Document Information"
       }
     ],
-    "Document List": [
-      {
-        "document": "advanced/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "Document List"
-      }
-    ],
     "Documentation": [
       {
         "document": "developer-guide/publishing.md",
@@ -5337,6 +5379,12 @@
       }
     ],
     "Documentation List": [
+      {
+        "document": "advanced/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "Documentation List"
+      },
       {
         "document": "api-reference/README.md",
         "line": 5,
@@ -5661,7 +5709,7 @@
     "Event Basic Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 116,
+        "line": 151,
         "level": 4,
         "title": "Event Basic Information"
       }
@@ -5856,6 +5904,14 @@
         "title": "Event Handling Mechanism"
       }
     ],
+    "Event Idempotency Deduplication": [
+      {
+        "document": "advanced/module-communication.md",
+        "line": 195,
+        "level": 2,
+        "title": "Event Idempotency Deduplication"
+      }
+    ],
     "Event Listening": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -6014,12 +6070,12 @@
         "title": "Event Wrapper Class"
       }
     ],
-    "Event Wrapper Class Details": [
+    "Event Wrapper Class Detailed Explanation": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 1,
         "level": 1,
-        "title": "Event Wrapper Class Details"
+        "title": "Event Wrapper Class Detailed Explanation"
       }
     ],
     "Event-Driven Architecture": [
@@ -6055,7 +6111,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 281,
+        "line": 357,
         "level": 3,
         "title": "Example"
       }
@@ -6094,6 +6150,12 @@
       {
         "document": "advanced/http-client.md",
         "line": 375,
+        "level": 3,
+        "title": "Exception Hierarchy"
+      },
+      {
+        "document": "advanced/module-communication.md",
+        "line": 35,
         "level": 3,
         "title": "Exception Hierarchy"
       }
@@ -6440,20 +6502,20 @@
         "title": "Form Message Segment (yunhu_user_form)"
       }
     ],
+    "Forward Functionality": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 242,
+        "level": 4,
+        "title": "Forward Functionality"
+      }
+    ],
     "Forwarded Message Segment (ideaura_forwarded)": [
       {
         "document": "platform-guide/ideaura.md",
         "line": 271,
         "level": 3,
         "title": "Forwarded Message Segment (ideaura_forwarded)"
-      }
-    ],
-    "Forwarding Functionality": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 207,
-        "level": 4,
-        "title": "Forwarding Functionality"
       }
     ],
     "Framework Configuration": [
@@ -6544,6 +6606,14 @@
         "title": "Full Overview of Owned Resources"
       }
     ],
+    "Full Parameter Overview": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 28,
+        "level": 3,
+        "title": "Full Parameter Overview"
+      }
+    ],
     "GET": [
       {
         "document": "advanced/http-client.md",
@@ -6619,7 +6689,7 @@
     "Get Help": [
       {
         "document": "README.md",
-        "line": 87,
+        "line": 89,
         "level": 2,
         "title": "Get Help"
       }
@@ -6777,7 +6847,7 @@
     "Group/Channel Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 146,
+        "line": 181,
         "level": 4,
         "title": "Group/Channel Information"
       }
@@ -6785,7 +6855,7 @@
     "Guided Registration": [
       {
         "document": "advanced/conversation.md",
-        "line": 345,
+        "line": 358,
         "level": 3,
         "title": "Guided Registration"
       }
@@ -6801,7 +6871,7 @@
     "HTTP Client Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 324,
+        "line": 400,
         "level": 2,
         "title": "HTTP Client Module"
       }
@@ -7124,12 +7194,12 @@
         "title": "HttpResponse"
       }
     ],
-    "I. I Want to Use the Bot": [
+    "I. I Want to Use a Robot": [
       {
         "document": "README.md",
         "line": 13,
         "level": 3,
-        "title": "I. I Want to Use the Bot"
+        "title": "I. I Want to Use a Robot"
       }
     ],
     "I18nClass Key Path Rules": [
@@ -7164,12 +7234,12 @@
         "title": "III. I Want to Deeply Understand the Principles"
       }
     ],
-    "IV. Ecosystem & Official Clients": [
+    "IV. Ecosystem and Official Clients": [
       {
         "document": "README.md",
-        "line": 54,
+        "line": 56,
         "level": 3,
-        "title": "IV. Ecosystem & Official Clients"
+        "title": "IV. Ecosystem and Official Clients"
       }
     ],
     "Image Download and Storage": [
@@ -7407,9 +7477,25 @@
     "Intended Audience": [
       {
         "document": "advanced/README.md",
-        "line": 24,
+        "line": 26,
         "level": 2,
         "title": "Intended Audience"
+      }
+    ],
+    "Inter-Module Calls (RPC)": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 267,
+        "level": 3,
+        "title": "Inter-Module Calls (RPC)"
+      }
+    ],
+    "Inter-Module Communication": [
+      {
+        "document": "advanced/module-communication.md",
+        "line": 1,
+        "level": 1,
+        "title": "Inter-Module Communication"
       }
     ],
     "Inter-module Communication": [
@@ -7420,12 +7506,12 @@
         "title": "Inter-module Communication"
       }
     ],
-    "Interaction Method Examples": [
+    "Interaction Interactions": [
       {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 269,
-        "level": 4,
-        "title": "Interaction Method Examples"
+        "document": "api-reference/core-modules.md",
+        "line": 446,
+        "level": 2,
+        "title": "Interaction Interactions"
       }
     ],
     "Interaction Methods": [
@@ -7434,20 +7520,6 @@
         "line": 427,
         "level": 3,
         "title": "Interaction Methods"
-      },
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 230,
-        "level": 4,
-        "title": "Interaction Methods"
-      }
-    ],
-    "Interaction Session": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 369,
-        "level": 2,
-        "title": "Interaction Session"
       }
     ],
     "Interactive Initialization (Recommended)": [
@@ -7472,12 +7544,36 @@
         "title": "Interactive Installation"
       }
     ],
+    "Interactive Method Examples": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 304,
+        "level": 4,
+        "title": "Interactive Method Examples"
+      }
+    ],
+    "Interactive Methods": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 265,
+        "level": 4,
+        "title": "Interactive Methods"
+      }
+    ],
     "Interactive Processing": [
       {
         "document": "getting-started/event-handling.md",
         "line": 493,
         "level": 2,
         "title": "Interactive Processing"
+      }
+    ],
+    "Interactive Session System": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 1,
+        "level": 1,
+        "title": "Interactive Session System"
       }
     ],
     "Internal Breakdown of Hot Reload Chain": [
@@ -7576,6 +7672,14 @@
         "title": "Lazy Loading System"
       }
     ],
+    "Lazy Loading and Invocation": [
+      {
+        "document": "advanced/module-communication.md",
+        "line": 155,
+        "level": 2,
+        "title": "Lazy Loading and Invocation"
+      }
+    ],
     "Lazy-Loaded Module System": [
       {
         "document": "advanced/lazy-loading.md",
@@ -7655,7 +7759,7 @@
     "Lifecycle Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 265,
+        "line": 341,
         "level": 2,
         "title": "Lifecycle Module"
       }
@@ -7899,7 +8003,7 @@
     "Looping Conversation": [
       {
         "document": "advanced/conversation.md",
-        "line": 376,
+        "line": 389,
         "level": 3,
         "title": "Looping Conversation"
       }
@@ -7986,12 +8090,12 @@
         "title": "Manual Project Creation"
       }
     ],
-    "Manual Recovery (When Not Using Automatic Mechanism)": [
+    "Manual Recovery (when not using automatic mechanism)": [
       {
         "document": "advanced/conversation.md",
-        "line": 332,
+        "line": 345,
         "level": 3,
-        "title": "Manual Recovery (When Not Using Automatic Mechanism)"
+        "title": "Manual Recovery (when not using automatic mechanism)"
       }
     ],
     "Manual Registration of Custom Translations (Old Approach)": [
@@ -8085,7 +8189,7 @@
     "Message Content": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 135,
+        "line": 170,
         "level": 4,
         "title": "Message Content"
       }
@@ -8147,7 +8251,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 133,
+        "line": 168,
         "level": 3,
         "title": "Message Event Methods"
       }
@@ -8360,12 +8464,12 @@
         "title": "Message Statistics"
       }
     ],
-    "Message Type Checks": [
+    "Message Transaction: message_tx": [
       {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 156,
-        "level": 3,
-        "title": "Message Type Checks"
+        "document": "advanced/interaction.md",
+        "line": 185,
+        "level": 2,
+        "title": "Message Transaction: message_tx"
       }
     ],
     "Message Type Detection": [
@@ -8373,6 +8477,12 @@
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 55,
         "level": 2,
+        "title": "Message Type Detection"
+      },
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 191,
+        "level": 3,
         "title": "Message Type Detection"
       }
     ],
@@ -8527,7 +8637,7 @@
     "Method Quick Reference": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 112,
+        "line": 147,
         "level": 2,
         "title": "Method Quick Reference"
       }
@@ -8860,6 +8970,14 @@
         "title": "Multi-language Coverage"
       }
     ],
+    "Multi-path Waiting: expect + select": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 112,
+        "level": 2,
+        "title": "Multi-path Waiting: expect + select"
+      }
+    ],
     "Multi-turn conversation (conversation)": [
       {
         "document": "getting-started/event-handling.md",
@@ -9080,6 +9198,20 @@
         "title": "Notice Event Additional Fields"
       }
     ],
+    "Notice Event Methods": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 137,
+        "level": 2,
+        "title": "Notice Event Methods"
+      },
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 199,
+        "level": 3,
+        "title": "Notice Event Methods"
+      }
+    ],
     "Notice Events": [
       {
         "document": "platform-guide/onebot12.md",
@@ -9096,26 +9228,28 @@
         "title": "Notice Notification Module"
       }
     ],
+    "Notice Operator": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 201,
+        "level": 4,
+        "title": "Notice Operator"
+      }
+    ],
+    "Notice Type Detection": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 205,
+        "level": 4,
+        "title": "Notice Type Detection"
+      }
+    ],
     "Notification Event Handling": [
       {
         "document": "getting-started/event-handling.md",
         "line": 381,
         "level": 2,
         "title": "Notification Event Handling"
-      }
-    ],
-    "Notification Event Methods": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 102,
-        "level": 2,
-        "title": "Notification Event Methods"
-      },
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 164,
-        "level": 3,
-        "title": "Notification Event Methods"
       }
     ],
     "Notification Events": [
@@ -9132,14 +9266,6 @@
         "line": 52,
         "level": 3,
         "title": "Notification Events (notice)"
-      }
-    ],
-    "Notification Type Checks": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 170,
-        "level": 4,
-        "title": "Notification Type Checks"
       }
     ],
     "OB12 Message Segment Reverse Conversion (Raw_ob12)": [
@@ -9282,14 +9408,6 @@
         "title": "Opcode Reference"
       }
     ],
-    "Operator Information": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 166,
-        "level": 4,
-        "title": "Operator Information"
-      }
-    ],
     "Optional Fields": [
       {
         "document": "bug-tracker.md",
@@ -9309,9 +9427,17 @@
     "Others": [
       {
         "document": "README.md",
-        "line": 81,
+        "line": 83,
         "level": 2,
         "title": "Others"
+      }
+    ],
+    "Outbound Auditing: Who Can Call Whom": [
+      {
+        "document": "advanced/module-communication.md",
+        "line": 117,
+        "level": 2,
+        "title": "Outbound Auditing: Who Can Call Whom"
       }
     ],
     "Outbound Protocols": [
@@ -9517,7 +9643,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 203,
+        "line": 238,
         "level": 4,
         "title": "Platform Capability Query"
       }
@@ -9569,7 +9695,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 391,
+        "line": 426,
         "level": 3,
         "title": "Platform Extension Methods"
       }
@@ -9711,7 +9837,7 @@
     "Prerequisites": [
       {
         "document": "advanced/README.md",
-        "line": 32,
+        "line": 34,
         "level": 2,
         "title": "Prerequisites"
       }
@@ -9941,7 +10067,7 @@
     "Query Registered Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 413,
+        "line": 448,
         "level": 3,
         "title": "Query Registered Methods"
       }
@@ -9997,13 +10123,13 @@
     "Quick Reference": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 303,
+        "line": 379,
         "level": 3,
         "title": "Quick Reference"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 330,
+        "line": 406,
         "level": 3,
         "title": "Quick Reference"
       },
@@ -10052,6 +10178,14 @@
         "title": "Quick Start"
       }
     ],
+    "RPC: module.call": [
+      {
+        "document": "advanced/module-communication.md",
+        "line": 18,
+        "level": 2,
+        "title": "RPC: module.call"
+      }
+    ],
     "Rate Limiting": [
       {
         "document": "advanced/router.md",
@@ -10063,7 +10197,7 @@
     "Raw Data": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 386,
+        "line": 421,
         "level": 3,
         "title": "Raw Data"
       }
@@ -10250,6 +10384,12 @@
         "title": "Related Documentation"
       },
       {
+        "document": "advanced/interaction.md",
+        "line": 215,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
         "document": "advanced/lazy-loading.md",
         "line": 224,
         "level": 2,
@@ -10264,6 +10404,12 @@
       {
         "document": "advanced/message-builder.md",
         "line": 185,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "advanced/module-communication.md",
+        "line": 206,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -10299,7 +10445,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 421,
+        "line": 517,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -10347,7 +10493,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 448,
+        "line": 483,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -10373,7 +10519,7 @@
     "Related Documents": [
       {
         "document": "advanced/conversation.md",
-        "line": 403,
+        "line": 416,
         "level": 2,
         "title": "Related Documents"
       },
@@ -10393,7 +10539,7 @@
     "Related Links": [
       {
         "document": "README.md",
-        "line": 93,
+        "line": 95,
         "level": 2,
         "title": "Related Links"
       },
@@ -10424,6 +10570,14 @@
         "line": 586,
         "level": 2,
         "title": "Relationship with CLI i18n"
+      }
+    ],
+    "Relationship with Other Systems": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 209,
+        "level": 2,
+        "title": "Relationship with Other Systems"
       }
     ],
     "Relationship with SDK": [
@@ -10505,7 +10659,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 187,
+        "line": 222,
         "level": 3,
         "title": "Reply Functionality"
       }
@@ -10567,7 +10721,7 @@
     "Request Event Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 177,
+        "line": 212,
         "level": 3,
         "title": "Request Event Methods"
       }
@@ -10605,7 +10759,7 @@
     "Request Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 179,
+        "line": 214,
         "level": 4,
         "title": "Request Information"
       }
@@ -10658,12 +10812,12 @@
         "title": "Request Statistics"
       }
     ],
-    "Request Type Checks": [
+    "Request Type Detection": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 182,
+        "line": 217,
         "level": 4,
-        "title": "Request Type Checks"
+        "title": "Request Type Detection"
       }
     ],
     "Required Field Mapping": [
@@ -10726,6 +10880,14 @@
         "line": 324,
         "level": 2,
         "title": "Restart"
+      }
+    ],
+    "Resume Equals Takeover": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 332,
+        "level": 3,
+        "title": "Resume Equals Takeover"
       }
     ],
     "Retry on Failure + Timeout Cancellation": [
@@ -10895,7 +11057,7 @@
     "Router Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 297,
+        "line": 373,
         "level": 2,
         "title": "Router Module"
       }
@@ -11007,7 +11169,7 @@
     "SDK Debugging": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 345,
+        "line": 421,
         "level": 2,
         "title": "SDK Debugging"
       }
@@ -11279,7 +11441,7 @@
     "Sender Information": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 141,
+        "line": 176,
         "level": 4,
         "title": "Sender Information"
       }
@@ -11406,6 +11568,38 @@
         "title": "Server Configuration"
       }
     ],
+    "Service Contract (`meta.services`)": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 284,
+        "level": 3,
+        "title": "Service Contract (`meta.services`)"
+      }
+    ],
+    "Service Contract: meta.services": [
+      {
+        "document": "advanced/module-communication.md",
+        "line": 47,
+        "level": 2,
+        "title": "Service Contract: meta.services"
+      }
+    ],
+    "Service Directory (`services`)": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 315,
+        "level": 3,
+        "title": "Service Directory (`services`)"
+      }
+    ],
+    "Service Directory: services()": [
+      {
+        "document": "advanced/module-communication.md",
+        "line": 97,
+        "level": 2,
+        "title": "Service Directory: services()"
+      }
+    ],
     "Session Identifiers": [
       {
         "document": "api-reference/event-system.md",
@@ -11415,9 +11609,33 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 129,
+        "line": 164,
         "level": 4,
         "title": "Session Identifiers"
+      }
+    ],
+    "Session Inbox: event.history": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 170,
+        "level": 2,
+        "title": "Session Inbox: event.history"
+      }
+    ],
+    "Session Mutual Exclusion: acquire / hold / get_owner_of": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 139,
+        "level": 2,
+        "title": "Session Mutual Exclusion: acquire / hold / get_owner_of"
+      }
+    ],
+    "Session Timers: remind / escalate": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 75,
+        "level": 2,
+        "title": "Session Timers: remind / escalate"
       }
     ],
     "Severity Classification": [
@@ -12154,6 +12372,14 @@
         "title": "Topology Tree API"
       }
     ],
+    "Trace ID": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 198,
+        "level": 2,
+        "title": "Trace ID"
+      }
+    ],
     "Traditional Registration Methods": [
       {
         "document": "advanced/router.md",
@@ -12178,12 +12404,12 @@
         "title": "Transaction Usage"
       }
     ],
-    "Transcript Session Inbox": [
+    "Transcript Conversation Inbox": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 399,
+        "line": 494,
         "level": 2,
-        "title": "Transcript Session Inbox"
+        "title": "Transcript Conversation Inbox"
       }
     ],
     "Translation Key Naming": [
@@ -12218,14 +12444,6 @@
         "title": "Two Injection Modes"
       }
     ],
-    "Type Annotate the event Parameter": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 5,
-        "level": 2,
-        "title": "Type Annotate the event Parameter"
-      }
-    ],
     "Type Classification": [
       {
         "document": "bug-tracker.md",
@@ -12253,7 +12471,7 @@
     "Typical Flow Patterns": [
       {
         "document": "advanced/conversation.md",
-        "line": 343,
+        "line": 356,
         "level": 2,
         "title": "Typical Flow Patterns"
       }
@@ -12739,7 +12957,7 @@
     "V. I Want to Contribute to ErisPulse": [
       {
         "document": "README.md",
-        "line": 65,
+        "line": 67,
         "level": 3,
         "title": "V. I Want to Contribute to ErisPulse"
       }
@@ -12795,7 +13013,7 @@
     "Wait Reply Functionality": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 218,
+        "line": 253,
         "level": 3,
         "title": "Wait Reply Functionality"
       }
@@ -12814,6 +13032,14 @@
         "line": 89,
         "level": 3,
         "title": "Waiting for Replies"
+      }
+    ],
+    "Waiting for Reply: wait_reply": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 12,
+        "level": 2,
+        "title": "Waiting for Reply: wait_reply"
       }
     ],
     "Waiting for Results": [
@@ -12952,6 +13178,14 @@
         "line": 237,
         "level": 3,
         "title": "When Should You Use Manual Startup?"
+      }
+    ],
+    "When Will Waiting Be Cancelled": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 49,
+        "level": 3,
+        "title": "When Will Waiting Be Cancelled"
       }
     ],
     "When to Regenerate": [
@@ -13333,7 +13567,7 @@
     "`hasattr` and `dir` Support": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 422,
+        "line": 457,
         "level": 3,
         "title": "`hasattr` and `dir` Support"
       }
@@ -13509,9 +13743,17 @@
     "dump_state()": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 347,
+        "line": 423,
         "level": 3,
         "title": "dump_state()"
+      }
+    ],
+    "escalate: Guaranteed Upgrade at a Point in Time": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 97,
+        "level": 3,
+        "title": "escalate: Guaranteed Upgrade at a Point in Time"
       }
     ],
     "get() Method": [
@@ -13664,6 +13906,14 @@
         "line": 19,
         "level": 2,
         "title": "pyproject.toml Configuration"
+      }
+    ],
+    "remind: Remind if No Reply": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 79,
+        "level": 3,
+        "title": "remind: Remind if No Reply"
       }
     ],
     "run": [

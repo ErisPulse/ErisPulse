@@ -80,7 +80,14 @@ target 语义与交互会话等待键一致（复用 session_type 的目标推�
 
 ##### `_ensure_table()`
 
-> **内部方法** 惰性建表
+> **内部方法** 惰性建表（含旧表 sender 列迁移）
+
+---
+
+
+##### `_migrate_add_sender()`
+
+> **内部方法** 旧表缺 sender 列时自动补列（2.8.0 新增）
 
 ---
 
@@ -92,14 +99,14 @@ target 语义与交互会话等待键一致（复用 session_type 的目标推�
 ---
 
 
-##### `append(session: Any, role: str, text: str, event_id: str = '')`
+##### `append(session: Any, role: str, text: str, event_id: str = '', sender: str = '')`
 
 记录一条消息到会话收件箱
 
 - **session** (`事件数据（Event`): / dict，自动推导会话键）或会话键字符串
 - **role** (`消息角色（"user"`): / "bot"）
 - **text** (`消息文本（超长自动截断）`): - **event_id**: 关联的事件 ID（可选）
-**返回值** (`是否写入成功（未启用时返回`): False）
+- **sender** (`发送者标识（user_id，可选，回放时还原消息来源）`): **返回值** (`是否写入成功（未启用时返回`): False）
 
 **示例**:
 ```python
@@ -121,6 +128,24 @@ target 语义与交互会话等待键一致（复用 session_type 的目标推�
 >>> messages = transcript.get(event, 20)
 >>> for m in messages:
 ...     print(m["role"], ":", m["text"])
+```
+
+---
+
+
+##### `recent(seconds: float, limit: int = 200)`
+
+查询全部会话中最近一段时间内的消息（跨会话，按时间升序）
+
+冷启动回放（``get_load_strategy(replay=...)``）的数据源；
+每条记录额外携带 ``session_key``，用于还原消息来源会话。
+
+- **seconds** (`回溯时长（秒）`): - **limit**: 最大返回条数（防止模块冷启动被打爆）
+**返回值** (`消息列表（role`): / text / ts / sender / session_key）
+
+**示例**:
+```python
+>>> transcript.recent(300)  # 最近 5 分钟
 ```
 
 ---

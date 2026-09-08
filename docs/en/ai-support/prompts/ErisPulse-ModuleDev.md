@@ -2578,13 +2578,13 @@ self.logger.critical("Critical error")     # Critical error
 
 ### Event 包装类详解
 
-# Event Wrapper Class Details
+# Event Wrapper Class Detailed Explanation
 
 The Event module provides a powerful Event wrapper class that simplifies event handling.
 
-## Type Annotate the event Parameter
+## Adding Type Annotations to the event Parameter
 
-The `event` parameter of event handlers is an **Event wrapper class** (a subclass of dict). It is highly recommended to add type annotations for it:
+The `event` parameter in event handlers is an **Event wrapper class** (a subclass of dict). It is strongly recommended to add type annotations to it:
 
 ```python
 from ErisPulse.Core.Event import Event
@@ -2592,19 +2592,19 @@ from ErisPulse.Core.Event import Event
 @message.on_private_message()
 async def handler(event: Event):
     text = event.get_text()   # IDE auto-completes all convenient methods
-    await event.reply(text)   # Spelling errors can be detected during static checking
+    await event.reply(text)   # Spelling errors are detected during static checking
 ```
 
-Without type annotations, the IDE cannot recognize methods on Event (`get_text()` / `reply()` / `wait_reply()` / platform extension methods are not suggested), and you have to rely on memory for spelling.
+Without annotations, the IDE cannot recognize methods on Event (`get_text()` / `reply()` / `wait_reply()` / platform extension methods are not suggested), and you must rely on memory for spelling.
 
-> **Note**: The `event` in event handler callbacks is an **Event wrapper class** (annotated as `Event`); the `event` in module lifecycle methods `on_load` / `on_unload` is a regular **dict** (annotated as `dict`), and these two should not be confused.
+> **Note**: The `event` in event handler callbacks is an **Event wrapper class** (annotated as `Event`); in module lifecycle methods `on_load` / `on_unload`, the `event` is a regular **dict** (annotated as `dict`), and these should not be confused.
 
 ## Core Features
 
-- **Full Dictionary Compatibility**: The Event class inherits from dict.
-- **Convenient Methods**: Provides a large number of convenient methods.
-- **Dot Access**: Supports accessing event fields using dot notation.
-- **Backward Compatibility**: All methods are optional.
+- **Fully compatible with dictionaries**: Event inherits from dict
+- **Convenient methods**: Provides a large number of convenient methods
+- **Dot-style access**: Supports accessing event fields using dot notation
+- **Backward compatibility**: All methods are optional
 
 ## Core Field Methods
 
@@ -2642,7 +2642,7 @@ async def group_handler(event: Event):
     is_private = event.is_private_message()
     is_group = event.is_group_message()
     is_at = event.is_at_message()
-    await event.reply(f"Type: {'Private Chat' if is_private else 'Group Chat'}")
+    await event.reply(f"Type: {'Private' if is_private else 'Group'}")
 ```
 
 ## Reply Functionality
@@ -2661,10 +2661,45 @@ async def ask_command(event: Event):
 @command("price")
 async def price_command(event: Event):
     await event.reply("Please enter the amount (e.g., 5 yuan):")
-    # The reply must match the regular expression; otherwise, continue waiting until timeout
+    # Reply must match the regex, otherwise continue waiting until timeout
     reply = await event.wait_reply(timeout=30, regex=r"\d+\s*元")
     if reply:
         await event.reply(f"Received amount: {reply.get_text()}")
+```
+
+## Advanced Conversation Capabilities
+
+> [!NOTE]
+> This section requires ErisPulse **2.8.0+**.
+
+```python
+# Session timeout reminder: Remind after 5 minutes of no reply, user reply cancels automatically
+reminder = event.remind(300, "Are you still there? Reply 'exit' if you don't want to chat")
+reminder.cancel()  # Can also be manually canceled
+
+# Escalation: Guaranteed arrival at the deadline (not canceled by reply), e.g., notify the owner if long-term unhandled
+event.escalate(1800, lambda e: notify_master("Ticket timeout"))
+
+# Multi-path waiting: Wait for "agree" and "reject" simultaneously, first to arrive wins
+which, reply = await event.select(
+    event.expect(pattern="agree*", user="10001"),
+    event.expect(pattern="reject*", user="10002"),
+    timeout=60,
+)
+if which is None:
+    await event.reply("No approval received within timeout")
+
+# Session-level waiting: Any reply from the same group can match (group collaboration)
+reply = await event.wait_reply(session=True, prompt="Any expert, please answer?")
+
+# Session inbox: Recent 20 messages in the current session (including bot, AI context / anti-spam base)
+messages = await event.history(20)
+
+# Message transaction: Automatically recall messages sent within the transaction on exception
+async with event.message_tx():
+    await event.reply("Processing, please wait...")
+    result = await do_something()
+    await event.reply(f"Completed: {result}")
 ```
 
 ## Command Information Retrieval
@@ -2676,10 +2711,10 @@ from ErisPulse.Core.Event import command
 async def cmdinfo_command(event: Event):
     cmd_name = event.get_command_name()
     cmd_args = event.get_command_args()
-    await event.reply(f"Command: {cmd_name}, Arguments: {cmd_args}")
+    await event.reply(f"Command: {cmd_name}, Args: {cmd_args}")
 ```
 
-## Notification Event Methods
+## Notice Event Methods
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -2697,58 +2732,58 @@ async def friend_add_handler(event: Event):
 - `get_id()` - Get event ID
 - `get_time()` - Get event timestamp (Unix seconds)
 - `get_type()` - Get event type (message/notice/request/meta)
-- `get_detail_type()` - Get event detail type (private/group/friend, etc.)
+- `get_detail_type()` - Get detailed event type (private/group/friend etc.)
 - `get_platform()` - Get platform name
 
 #### Bot Information
 - `get_self_platform()` - Get bot platform name
 - `get_self_user_id()` - Get bot user ID
-- `get_self_account_id()` - Get bot account ID (multi-Bot mode)
-- `get_self_info()` - Get complete bot info dictionary
+- `get_self_account_id()` - Get bot account ID (multi-bot mode)
+- `get_self_info()` - Get full bot information as a dictionary
 
 #### Session Identifiers
-- `get_target_id()` - Get unified target ID (returns `group_id` for group chats, `channel_id` for channels, `user_id` for private chats, returns the first non-empty value in order: group → channel → guild → thread → user)
+- `get_target_id()` - Get unified target ID (returns `group_id` for group chats, `channel_id` for channels, `user_id` for private chats, first non-empty value in order group → channel → guild → thread → user)
 - `get_session_id()` - Get unique session identifier, format: `{platform}:{detail_type}:{target_id}`
 
 ### Message Event Methods
 
 #### Message Content
 - `get_message()` - Get message segment array (OneBot12 format)
-- `get_alt_message()` - Get alternative message text
-- `get_text()` - Get plain text content (alias of `get_alt_message()`)
-- `get_message_text()` - Get plain text content (alias of `get_alt_message()`)
+- `get_alt_message()` - Get alternate message text
+- `get_text()` - Get plain text content (`get_alt_message()` alias)
+- `get_message_text()` - Get plain text content (`get_alt_message()` alias)
 
 #### Sender Information
 - `get_user_id()` - Get sender user ID
 - `get_user_nickname()` - Get sender nickname
-- `get_sender()` - Get complete sender info dictionary
+- `get_sender()` - Get sender full information as a dictionary
 
 #### Group/Channel Information
-- `get_group_id()` - Get group ID (group chat message)
-- `get_channel_id()` - Get channel ID (channel message)
-- `get_guild_id()` - Get server ID (server message)
-- `get_thread_id()` - Get topic/subchannel ID (topic message)
+- `get_group_id()` - Get group ID (group chat messages)
+- `get_channel_id()` - Get channel ID (channel messages)
+- `get_guild_id()` - Get server ID (server messages)
+- `get_thread_id()` - Get topic/subchannel ID (topic messages)
 
 #### @Message Related
-- `has_mention()` - Whether the message contains a mention of the bot
+- `has_mention()` - Whether the message contains @bot
 - `get_mentions()` - Get list of all mentioned user IDs
 
-### Message Type Checks
+### Message Type Detection
 
-#### Basic Checks
+#### Basic Detection
 - `is_message()` - Whether it is a message event
 - `is_private_message()` - Whether it is a private message
-- `is_group_message()` - Whether it is a group chat message
-- `is_at_message()` - Whether it is an @message (alias of `has_mention()`)
+- `is_group_message()` - Whether it is a group message
+- `is_at_message()` - Whether it is an @message (`has_mention()` alias)
 
-### Notification Event Methods
+### Notice Event Methods
 
-#### Operator Information
+#### Notice Operator
 - `get_operator_id()` - Get operator ID
 - `get_operator_nickname()` - Get operator nickname
 
-#### Notification Type Checks
-- `is_notice()` - Whether it is a notification event
+#### Notice Type Detection
+- `is_notice()` - Whether it is a notice event
 - `is_group_member_increase()` - Group member increase event
 - `is_group_member_decrease()` - Group member decrease event
 - `is_friend_add()` - Friend add event (matches `detail_type == "friend_increase"`)
@@ -2759,7 +2794,7 @@ async def friend_add_handler(event: Event):
 #### Request Information
 - `get_comment()` - Get request comment
 
-#### Request Type Checks
+#### Request Type Detection
 - `is_request()` - Whether it is a request event
 - `is_friend_request()` - Whether it is a friend request
 - `is_group_request()` - Whether it is a group request
@@ -2769,10 +2804,10 @@ async def friend_add_handler(event: Event):
 #### Basic Reply
 - `reply(content, method="Text", at_sender=False, quote=False, at_users=None, reply_to=None, at_all=False, via=None, **kwargs)` - General reply method
   - `content`: Content to send (text, URL, etc.)
-  - `method`: Sending method, default "Text", optional "Image"/"Voice"/"Video"/"File", etc.
+  - `method`: Sending method, default "Text", optional "Image"/"Voice"/"Video"/"File" etc.
   - `at_sender`: Whether to @ sender (auto-extract user_id)
-  - `quote`: Whether to quote reply current message (auto-extract message_id)
-  - `at_users`: List of users to @, e.g., `["user1", "user2"]`
+  - `quote`: Whether to quote reply to current message (auto-extract message_id)
+  - `at_users`: List of users to @, e.g. `["user1", "user2"]`
   - `reply_to`: Manually specify the message ID to reply to
   - `at_all`: Whether to @ all members
   - `**kwargs`: Additional parameters (e.g., user_id for Mention method)
@@ -2781,61 +2816,61 @@ async def friend_add_handler(event: Event):
   - `message`: OneBot12 message segment list or dictionary, can be built with MessageBuilder
 
 #### Platform Capability Query
-- `supports(method)` - Check if current platform supports a sending method (e.g., `"Image"`, `"Voice"`), returns `bool`
-- `available_methods()` - List all available sending methods for current platform, returns list of method names
+- `supports(method)` - Check if the current platform supports a sending method (e.g., `"Image"`, `"Voice"`), returns `bool`
+- `available_methods()` - List all available sending methods on the current platform, returns a list of method names
 
-#### Forwarding Functionality
+#### Forward Functionality
 
-> **Note**: Forwarding functionality needs to be implemented through the adapter's Send DSL; the Event wrapper class itself does not provide a direct forwarding method.
+> **Note**: Forward functionality must be implemented through the adapter's Send DSL; the Event wrapper class itself does not provide a direct forward method.
 
 ```python
 # Forward message to group
 adapter = sdk.adapter.get(event.get_platform())
-target_id = event.get_group_id()  # or specify other group ID
+target_id = event.get_group_id()  # Or specify another group ID
 await adapter.Send.To("group", target_id).Text(event.get_text())
 ```
 
 ### Wait Reply Functionality
 
 - `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text", pattern=None, regex=None)` - Wait for user reply
-  - `prompt`: Prompt message, if provided, it will be sent to the user
-  - `timeout`: Timeout for waiting (seconds), default 60 seconds
-  - `callback`: Callback function, executed when a reply is received
-  - `validator`: Validation function, used to verify if the reply is valid
+  - `prompt`: Prompt message, if provided will be sent to the user
+  - `timeout`: Wait timeout time (seconds), default 60 seconds
+  - `callback`: Callback function, executed when reply is received
+  - `validator`: Validation function, used to validate if the reply is valid
   - `method`: Sending method for the prompt, default "Text"
   - `pattern`: Glob wildcard (`*` / `?` / `[seq]`), reply text must match, otherwise continue waiting
   - `regex`: Regular expression, reply text must match (either `pattern` or `regex`), otherwise continue waiting
-  - Returns the Event object of the user's reply, returns None on timeout
+  - Returns the user's reply as an Event object, returns None on timeout
 
-#### Interaction Methods
+#### Interactive Methods
 
 - `confirm(prompt=None, timeout=60.0, yes_words=None, no_words=None, method="Text", hint=False)` - Confirmation dialog
-  - Returns `True` (confirmed) / `False` (denied) / `None` (timeout)
-  - Built-in English and Chinese confirmation words are automatically recognized, customizable word sets are supported
-  - `method`: Sending method, default "Text"; supports "Image"/"Markdown", etc., for non-text prompts
-  - `hint`: Whether to automatically append confirmation word hints (e.g., "（是/否）") at the end of the prompt, default False
+  - Returns `True` (confirmed) / `False` (rejected) / `None` (timeout)
+  - Built-in Chinese and English confirmation words are automatically recognized, custom word sets can be provided
+  - `method`: Sending method, default "Text"; supports "Image"/"Markdown" etc. for non-text prompts
+  - `hint`: Whether to automatically append confirmation word prompt at the end of the prompt (e.g., "（Yes/No）"), default False
 
 - `choose(prompt, options, timeout=60.0, method="Text", options_format="auto", merge_prompt=False, placeholder="{options}")` - Selection menu
   - `options`: List of option texts
-  - Returns the index (0-based) of the selected option, returns `None` on timeout
-  - `method`: Sending method, default "Text"; text-based methods (Text/Markdown/md/Html/h5) automatically merge options at the end
-  - `options_format`: Option format (default: "auto", automatically select built-in style based on method)
+  - Returns the option index (0-based), returns `None` on timeout
+  - `method`: Sending method, default "Text"; text-based methods (Text/Markdown/md/Html/h5) automatically merge options to the end
+  - `options_format`: Option format (default: "auto", automatically selects built-in style based on method)
     - `"auto"`: Markdown→unordered list (`- 1. Option`), Html→ordered list (`<ol>`), others→plain text list
-    - `"list"`: One per line, e.g., ``1. Option A\n2. Option B``
-    - `"inline"`: Display in a single line, e.g., ``1.A | 2.B``
+    - `"list"`: One per line, e.g. ``1. Option A\n2. Option B``
+    - `"inline"`: Display in a single line, e.g. ``1.A | 2.B``
     - `"md"`: Markdown unordered list
     - `"html"`: Html ordered list
     - `callable`: Custom function, receives ``list[str]`` and returns ``str``
   - `merge_prompt`: Whether to forcibly merge into a single message, default False
-    - `False` (default): Text-based methods automatically merge; non-text methods send prompt first, then Text options
+    - `False` (default): Text-based methods automatically merge; non-text methods send prompt first, then send Text options
     - `True`: Regardless of method, always merge into a single message, sent using the specified method
-  - `placeholder`: Option insertion placeholder, default `{options}`; the marked location in prompt is replaced with option text, set to empty string to always append at the end
+  - `placeholder`: Option insertion placeholder, default `{options}`; the position of this marker in the prompt is replaced with the option text, set to empty string to always append to the end
 
 - `collect(fields, timeout_per_field=60.0)` - Form collection
   - `fields`: List of fields, each containing `key`, `prompt`, optional `validator`, optional `method`
   - Returns `{key: value}` dictionary, returns `None` if any field times out
   - Each field supports `method` key to specify sending method, e.g., collecting images with `{"key": "avatar", "prompt": "Please send avatar", "method": "Image"}`
-  - Each field can have an optional `options` key (list), when provided, the field becomes a selection question (automatically calls choose logic)
+  - Each field can have an optional `options` key (list), when provided, the field becomes a multiple-choice question (automatically uses choose logic)
   - Each field can have optional `options_format`, `merge_prompt`, `placeholder` keys to control option format, message merging behavior, and placeholder
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - Wait for any event
@@ -2843,12 +2878,12 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
   - Returns the matching Event object, returns `None` on timeout
 
 - `conversation(timeout=60.0)` - Create multi-turn conversation context
-  - Returns `Conversation` object, supports `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
-  - `is_active` property indicates whether the conversation is active
+  - Returns a `Conversation` object, supporting `say()`/`wait()`/`confirm()`/`choose()`/`collect()`/`stop()`
+  - `is_active` attribute indicates whether the conversation is active
 
-#### Interaction Method Examples
+#### Interactive Method Examples
 
-**confirm() - Confirmation dialog:**
+**confirm() - Confirmation Dialog:**
 
 ```python
 @command("delete", help="Delete data")
@@ -2860,61 +2895,61 @@ async def delete_handler(event: Event):
         await event.reply("Cancelled")
 ```
 
-**confirm() - With prompt words:**
+**confirm() - With Prompt Words:**
 
 ```python
-# hint=True will append "（是/否）" at the end of the prompt
+# hint=True appends "（Yes/No）" at the end of the prompt
 if await event.confirm("Continue?", hint=True):
     await event.reply("Continued")
-# User sees: Continue?（是/否）
+# User sees: Continue? (Yes/No)
 ```
 
-**choose() - Selection menu:**
+**choose() - Selection Menu:**
 
 ```python
 @command("color", help="Choose color")
 async def color_handler(event: Event):
-    choice = await event.choose("Choose color:", ["Red", "Green", "Blue"])
+    choice = await event.choose("Please choose a color:", ["Red", "Green", "Blue"])
     if choice is not None:
         colors = ["Red", "Green", "Blue"]
         await event.reply(f"You chose: {colors[choice]}")
 ```
 
-**choose() - Option formatting and message merging:**
+**choose() - Option Formatting and Message Merging:**
 
 ```python
 # inline format: options displayed in a single line
-choice = await event.choose("Choose:", ["A", "B", "C"], options_format="inline")
+choice = await event.choose("Please choose:", ["A", "B", "C"], options_format="inline")
 # Output: 1.A | 2.B | 3.C
 
 # Custom format
-choice = await event.choose("Choose:", ["Cat", "Dog"],
+choice = await event.choose("Please choose:", ["Cat", "Dog"],
     options_format=lambda opts: " / ".join(opts))
 # Output: Cat / Dog
 
-# options_format="auto" (default): automatically select built-in style based on method
+# options_format="auto" (default): Automatically selects built-in style based on method
 # Markdown → unordered list
 choice = await event.choose(
-    "## Choose", ["Cat", "Dog"],
+    "## Please choose", ["Cat", "Dog"],
     method="Markdown",  # auto recognizes as md list
 )
 # Output:
-# ## Choose
+# ## Please choose
 # - 1. Cat
 # - 2. Dog
 
 # Html → ordered list
 choice = await event.choose(
-    "<h2>Choose</h2>", ["Cat", "Dog"],
+    "<h2>Please choose</h2>", ["Cat", "Dog"],
     method="Html", merge_prompt=True,  # auto recognizes as html list
 )
 # Output:
-# <h2>Choose</h2>
+# <h2>Please choose</h2>
 # <ol><li>1. Cat</li><li>2. Dog</li></ol>
 
 # Merge mode + placeholder
 choice = await event.choose(
-    "## Choose\n{options}\nReply with number",
+    "## Please choose\n{options}\nPlease reply with number",
     ["Cat", "Dog"],
     method="Markdown", merge_prompt=True,
 )
@@ -2927,21 +2962,21 @@ choice = await event.choose(
 )
 ```
 
-**collect() - Form collection:**
+**collect() - Form Collection:**
 
 ```python
 @command("register", help="Register")
 async def register_handler(event: Event):
     data = await event.collect([
-        {"key": "name", "prompt": "Enter your name:"},
-        {"key": "age", "prompt": "Enter your age:",
+        {"key": "name", "prompt": "Please enter your name:"},
+        {"key": "age", "prompt": "Please enter your age:",
          "validator": lambda e: e.get_text().isdigit()},
     ])
     if data:
         await event.reply(f"Registration successful! {data['name']}, {data['age']} years old")
 ```
 
-**Non-Text method reply:**
+**Non-Text Methods in reply:**
 
 ```python
 await event.reply("http://example.com/img.jpg", method="Image")
@@ -2952,7 +2987,7 @@ segments = MessageBuilder.text("Look at this image:").image("http://example.com/
 await event.reply_ob12(segments)
 ```
 
-> For complete usage of Conversation multi-turn dialogue, please refer to [Conversation Multi-turn Dialogue](../../advanced/conversation.md).
+> For complete Conversation multi-turn dialog usage, see [Conversation Multi-turn Dialog](../../advanced/conversation.md).
 
 ### Command Information
 
@@ -2960,7 +2995,7 @@ await event.reply_ob12(segments)
 - `get_command_name()` - Get command name
 - `get_command_args()` - Get command argument list
 - `get_command_raw()` - Get raw command text
-- `get_command_info()` - Get complete command info dictionary
+- `get_command_info()` - Get full command information as a dictionary
 - `is_command()` - Whether it is a command
 
 ### Raw Data
@@ -2970,9 +3005,9 @@ await event.reply_ob12(segments)
 
 ### Platform Extension Methods
 
-Adapters can register platform-specific methods for the Event wrapper class. These methods are only available on Event instances of the corresponding platform; accessing them on other platforms raises `AttributeError`.
+Adapters can register platform-specific methods for the Event wrapper class. The methods are only available on Event instances of the corresponding platform; attempting to access them on other platforms raises `AttributeError`.
 
-Platform methods take precedence over built-in methods via `Event.__getattribute__`, allowing overwriting of built-in interactive methods such as `confirm`, `choose`, `collect`, `wait_reply` to provide platform-specific features (e.g., buttons, cards). The built-in implementation is exported as `_builtin_*` functions for overwriting.
+Platform methods take precedence over built-in methods via `Event.__getattribute__`, allowing them to override built-in interactive methods like `confirm`, `choose`, `collect`, `wait_reply`, providing platform-specific implementations (e.g., buttons, cards). Built-in implementations are exported as `_builtin_*` functions for overriding.
 
 ```python
 # Email event - only email methods
@@ -2985,7 +3020,7 @@ event = Event({"platform": "telegram", "telegram_raw": {"chat": {"type": "privat
 event.get_chat_type()    # ✅ Returns "private"
 event.get_subject()      # ❌ AttributeError
 
-# Built-in methods always available
+# Built-in methods are always available
 event.get_text()         # ✅ Any platform
 event.reply("hi")        # ✅ Any platform
 ```
@@ -3002,28 +3037,28 @@ methods = get_platform_event_methods("email")
 ### `hasattr` and `dir` Support
 
 ```python
-hasattr(event, "get_subject")   # Returns True only if platform="email"
+hasattr(event, "get_subject")   # Returns True only when platform="email"
 "get_subject" in dir(event)     # Same as above
 ```
 
-### Cross-Platform Extension (Wildcard)
+### Cross-platform Extension (Wildcard)
 
-`register_event_method` and `register_event_mixin` support passing `"*"` as the platform name, registering methods that are available on Event instances of **all platforms**. Suitable for AI chat, context management, and other features requiring cross-platform reuse.
+`register_event_method` and `register_event_mixin` support passing `"*"` as the platform name, registering methods available on Event instances of **all platforms**. This is suitable for AI chat, context management, and other features requiring cross-platform reuse.
 
 ```python
 from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    # self is the Event instance, can access event data and built-in methods
+    # self is an Event instance, can access event data and built-in methods
     await self.reply(f"AI: {prompt}")
 ```
 
-After registration, any platform's event handler can call `event.ai_chat(...)`.
+After registration, `event.ai_chat(...)` can be called from any platform's event handler.
 
-Method resolution priority (from high to low): platform-specific method → wildcard method → built-in method → dictionary key access.
+Method resolution priority (from highest to lowest): platform-specific methods → wildcard methods → built-in methods → dictionary key access.
 
-> For adapter developers registering extension methods, please refer to [Event System API - Cross-Platform Extension (Wildcard)](../../api-reference/event-system.md#跨平台扩展通配符).
+> For adapter developers registering extension methods, see [Event System API - Cross-platform Extension Wildcard](../../api-reference/event-system.md#跨平台扩展通配符).
 
 
 
@@ -4842,22 +4877,24 @@ sdk.adapter.get_status_summary()
 
 ## Module Module
 
-Module manager, managing plugin registration, loading, and unloading.
+The module manager, responsible for registering, loading, and unloading plugins.
 
 ### API Overview
 
 | Method | Description |
-|------|------|
-| `get(name)` | Retrieve module instance or lazy-loaded proxy (returns proxy if registered but not loaded) |
-| `exists(name)` | Check if registered |
-| `is_loaded(name)` | Check if loaded |
-| `is_enabled(name)` | Check if enabled |
-| `enable(name)` / `disable(name)` | Enable/disable module |
-| `load(name)` / `unload(name)` | Load/unload module |
+|--------|-------------|
+| `get(name)` | Retrieve a module instance or a lazy-loading proxy (returns a proxy if the module is registered but not loaded) |
+| `exists(name)` | Check if the module is registered |
+| `is_loaded(name)` | Check if the module is loaded |
+| `is_enabled(name)` | Check if the module is enabled |
+| `enable(name)` / `disable(name)` | Enable/disable the module |
+| `load(name)` / `unload(name)` | Load/unload the module |
+| `call(module, method, *args, timeout=None, **kwargs)` | Call a service method in a target module across modules (protocolized RPC) |
+| `emit_to(module, event, data)` | Deliver a lifecycle event to a specific module |
 | `list_registered()` | List all registered modules |
 | `list_loaded()` | List all loaded modules |
 | `get_info(name)` | Retrieve module information |
-| `get_status_summary()` | Retrieve module status summary |
+| `get_status_summary()` | Get a status summary of modules |
 
 ### Attribute Access
 
@@ -4866,6 +4903,80 @@ module = sdk.module.get("ModuleName")
 module = sdk.module.ModuleName
 module = sdk.ModuleName  # Equivalent shortcut
 ```
+
+### Inter-Module Calls (RPC)
+
+```python
+# Protocolized call: typed errors / lazy module auto-wakeup / owner attribution / timeout semantics
+result = await sdk.module.call("Chat", "get_history", session_id, n=20)
+```
+
+Differences between `module.call()` and direct service access `sdk.module.Chat.get_history(...)`:
+
+| | `module.call()` | Direct attribute access |
+|---|---|---|
+| Target not registered/unavailable | Throws `ModuleNotAvailableError` | Throws `AttributeError` |
+| Lazy-loaded module | Automatically wakes up | Async initialization throws `RuntimeError` |
+| `current_owner` | Attributed to the target module | Retains the caller's context |
+| Timeout | Default 30s, can be overridden | None |
+| Scope audit | `actions.<caller>.call` | None |
+
+### Service Contract (`meta.services`)
+
+Service providers declare a white-list of exposed services in the `services` field of `get_meta()`, symmetric to `commands`. After declaration, the call surface is restricted:
+
+```python
+class ChatModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(services=["get_history", "translate"])
+
+    async def get_history(self, session_id, n=20): ...
+```
+
+- **Default = Developer-agnostic**: If `services` is not declared, any **public** method can be called (backward compatibility), and private methods (prefixed with underscore) are always forbidden; the primary control for restrictions lies in the user-side scope configuration.
+- After declaration: Only methods in the whitelist are callable, and calling outside the whitelist throws `ServiceNotProvidedError`.
+- Caller restrictions: `scope.set_action("CallerModule", "call", deny="Chat.get_history")`
+
+**Service Description (`description`)**: `services` supports a dict format to declare descriptions for each service (supports plain strings or i18n dictionaries), providing data for service directories or AI consumption:
+
+```python
+return ModuleMeta(
+    services=[
+        "get_history",                              # Simple form: description automatically taken from the first line of the method's docstring
+        {"name": "translate", "description": "Translate text into the specified language"},
+        {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "Summarize conversation"}},
+    ],
+)
+```
+
+Description resolution priority: **Explicit description (i18n resolved to current language) > First line of method docstring > Empty string**.
+
+### Service Directory (`services`)
+
+```python
+sdk.module.services()
+# {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
+#            'description': 'Retrieve conversation history'}]}
+
+sdk.module.services("Chat")  # Query only a specific module
+```
+
+Lists only modules that explicitly declare `meta.services`. Each service includes a method signature string and description text, providing the data foundation for MCP (exposing call points to AI).
+
+### Directed Events (`emit_to`)
+
+```python
+# Sender: Validates that the target module is enabled and delivers the event to `module.<name>.<event>`
+await sdk.module.emit_to("Chat", "message_received", {"text": "hi"})
+
+# Subscriber (within the Chat module): Registers a namespace hook
+lifecycle.on("module.Chat.message_received", handler)
+lifecycle.on("module.Chat", handler)  # Or receive all directed events from this module
+```
+
+> [!NOTE]
+> This feature is new in ErisPulse **2.8.0+**
 
 ## Lifecycle Module
 
@@ -4951,7 +5062,7 @@ async for text in ws.iter_text():
 
 ### dump_state()
 
-Exports a snapshot of the current runtime state of the framework, for debugging and diagnostics.
+Exports a snapshot of the current running state of the framework, for debugging and diagnostics.
 
 ```python
 import json
@@ -4959,26 +5070,44 @@ state = sdk.dump_state()
 print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 ```
 
-The returned structure includes the status of the following subsystems:
+The returned structure contains the status of the following subsystems:
 
 | Field | Description |
-|------|------|
-| `sdk` | SDK initialization status, Python version, running platform, timestamp |
+|-------|-------------|
+| `sdk` | SDK initialization status, Python version, runtime platform, timestamp |
 | `adapters` | List of registered/started adapters, online status of Bots on each platform |
-| `modules` | List of registered/enabled/disabled/lazy-loaded modules |
-| `events` | Number of handlers for each type of event (message/notice/request/meta/commands) |
+| `modules` | List of registered/active/disabled/lazy-loaded modules |
+| `events` | Number of event handlers for each type (message/notice/request/meta/commands) |
 | `router` | Server running status, number of HTTP/WebSocket routes |
 
-> Added in 2.5.2
+> [!NOTE]
+> Added in ErisPulse **2.5.2+**
 
-## Interaction Session
+## Interaction Interactions
 
-Manages wait_reply suspended waiting and session mutual exclusion leases (`sdk.interaction`).
+Manage wait_reply suspended waiting and session mutual exclusion leases (`sdk.interaction`).
 
 ### Common Methods
 
 ```python
-# Query current session owner (who is interacting with this user)
+# Session timeout reminder: Remind after 5 minutes of no reply, reminder is automatically canceled when user replies
+reminder = event.remind(300, "Are you still there?")
+reminder.cancel()  # Cancel manually
+
+# Timeout escalation: Must escalate at a specific time (not canceled by reply)
+event.escalate(1800, lambda e: notify_master("30 minutes not handled"))
+
+# Multi-path waiting: First come, first served
+which, reply = await event.select(
+    event.expect(pattern="agree*", user="A"),
+    event.expect(pattern="refuse*", user="B"),
+    timeout=60,
+)
+
+# Session-level waiting: Reply from anyone in the same group can trigger the event
+reply = await event.wait_reply(session=True, prompt="Can someone help answer this?")
+
+# Query current session ownership (who is currently interacting with this user)
 owner = sdk.interaction.get_owner_of(event)
 
 # Acquire session mutual exclusion lease (returns None if occupied)
@@ -4989,26 +5118,27 @@ if lease:
     finally:
         lease.release()
 
-# Context manager form (raises SessionOccupiedError if occupied)
+# Context manager form (throws SessionOccupiedError if occupied)
 with sdk.interaction.hold(event) as lease:
     ...
 
-# Suspended session count
-sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'owners': {'Chat': 3}}
+# Suspended session statistics
+sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'timers': 3, 'owners': {'Chat': 3}}
 ```
 
-When a module is unloaded or an adapter is closed, its suspended waits are automatically canceled (the waiting party immediately returns `None`), and replies are automatically checked for scope permissions (if the user is blocked or the module is unbound, the wait is terminated).
+When the module is unloaded or the adapter is closed, all suspended waits and timers are automatically canceled (waiters immediately return `None`). When a reply matches, scope permissions are automatically rechecked (if the user is blacklisted or the module is unbound, the wait is terminated).
 
-> Added in 2.8.0-dev.2
+> [!NOTE]
+> This feature was added in ErisPulse **2.8.0+**
 
-## Transcript Session Inbox
+## Transcript Conversation Inbox
 
-Automatic recording and querying of recent message streams per session (`sdk.transcript`), serving as a common base for context memory modules like AI conversation and anti-spam.
+An automatic record and query of recent message streams for each conversation (`sdk.transcript`), serving as a common foundation for context-aware modules such as AI conversations and anti-spam features.
 
 ### Common Methods
 
 ```python
-# Convenient query (recommended): recent 20 messages in current session (including user and bot, ascending by time)
+# Convenient query (recommended): The last 20 messages (including users and robots, in ascending time order)
 messages = await event.history(20)
 for m in messages:
     print(m["role"], ":", m["text"])
@@ -5019,9 +5149,10 @@ sdk.transcript.get(event, n=20)
 sdk.transcript.clear(event)
 ```
 
-Configuration (`ErisPulse.transcript`): `enabled` (default on), `max_per_session` (default 50), `ttl_hours` (default 168 hours). Data is stored in a separate SQLite table, with lazy cleanup for over-limit or expired entries.
+Configuration (`ErisPulse.transcript`): `enabled` (default: enabled), `max_per_session` (maximum per session, default: 50), `ttl_hours` (global expiration time in hours, default: 168). Data is stored in a separate SQLite table, with lazy cleanup when limits are exceeded or data expires.
 
-> Added in 2.8.0-dev.2
+> [!NOTE]
+> This feature was added in ErisPulse **2.8.0+**
 
 
 
@@ -6044,16 +6175,16 @@ Storage keys include a target dimension (`conversation:{platform}:{user_id}:{tar
 
 ### Automatic Archiving
 
-The framework automatically maintains checkpoints at the following times, typically without needing to manually call `save()`:
+The framework automatically maintains checkpoints at the following moments, typically without needing to manually call `save()`:
 
-| Timing | Behavior |
+| Moment | Behavior |
 |--------|----------|
-| `goto()` / `start()` jump to a branch | Automatically saves (current branch + context) |
-| `stop()` / `wait()` timeout / `collect()` failure | Automatically clears (conversation terminal state) |
+| `goto()` / `start()` to switch branches | Automatically save (current branch + context) |
+| `stop()` / `wait()` timeout / `collect()` failure | Automatically clear (end of conversation state) |
 
 ### Checkpoint TTL
 
-Checkpoints are timestamped, and those exceeding `ErisPulse.interaction.checkpoint_ttl` (default: 24 hours) are automatically discarded during recovery:
+Checkpoints are timestamped, and those exceeding `ErisPulse.interaction.checkpoint_ttl` (default 24 hours) are automatically discarded during recovery:
 
 ```toml
 [ErisPulse.interaction]
@@ -6062,7 +6193,7 @@ checkpoint_ttl = 86400  # seconds
 
 ### Automatic Recovery on Restart
 
-After a framework restart, in-progress conversations (waiting coroutines in memory) are lost, but checkpoints remain. By registering a **resume handler** via `register_resume_handler`, the framework can automatically resume a conversation when the first message of that session arrives after a restart:
+After a framework restart, in-progress conversations (waiting coroutines in memory) are lost, but checkpoints remain. By registering a **resume factory** via `register_resume_handler`, the framework can automatically resume conversations when the first message of a session arrives after restart:
 
 ```python
 from ErisPulse.Core.Event.wrapper import Conversation
@@ -6079,9 +6210,22 @@ def make_conversation(event) -> Conversation:
     return conv
 ```
 
-After registration, when a user previously in the `menu` branch sends their first message after a restart, the framework automatically: restores context → claims the message → resumes the conversation from the archived branch. If no factory is registered, this mechanism incurs zero overhead.
+After registration, when a user previously in the `menu` branch sends their first message after a restart, the framework automatically: restores context → claims the message → continues the conversation from the saved branch. If no factory is registered, this mechanism incurs zero overhead.
 
-### Manual Recovery (When Not Using Automatic Mechanism)
+### Resume Equals Takeover
+
+When `resume()` succeeds, the framework automatically performs two actions:
+
+1. **Session takeover**: Automatically acquires the session's mutual exclusion lease—other modules can detect "this user is currently engaged in a conversation" via `sdk.interaction.get_owner_of(event)`; if the session is already occupied by another module, recovery is abandoned (returns False), preventing conflicts between two conversations.
+2. **History retrieval**: Retrieves the most recent 10 messages from the session's inbox to `conv.recent_history` (ensuring continuous LLM context after AI module recovery); `resume(with_history=0)` can disable this.
+
+```python
+if await conv.resume(with_history=20):
+    for m in conv.recent_history:
+        print(m["role"], ":", m["text"])
+```
+
+### Manual Recovery (when not using automatic mechanism)
 
 ```python
 @command("continue")
@@ -6151,6 +6295,433 @@ async def chat_handler(event):
         else:
             await conv.say(f"You said: {text}")
 ```
+
+
+
+### 交互会话系统
+
+# Interactive Session System
+
+> [!NOTE]
+> This chapter requires ErisPulse **2.8.0+**.
+
+ErisPulse has built "continuous interaction with users" into its core infrastructure: from a single `wait_reply`, to scheduled reminders, multi-path waiting, session mutual exclusion, and restart recovery, all are managed by a unified **Interactive Session Manager** (`Core/Event/interaction.py`, `sdk.interaction`).
+
+{!--< tips >!--}
+Each capability covered in this document comes with its own **ownership** (owner): interactive waiting, leases, and timers all record the module name at registration time. When the module is unloaded or the adapter is closed, the framework automatically cleans up and notifies the waiting party immediately, rather than waiting until timeout. This is an extension of the ownership system in the interactive dimension (see [Ownership System](ownership.md)).
+{!--< /tips >!--}
+
+## Waiting for Reply: wait_reply
+
+`wait_reply` is the cornerstone of interactive sessions—suspending the current coroutine and waiting for a reply from the target user in the next message.
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("ask")
+async def ask_command(event):
+    reply = await event.wait_reply(prompt="Please enter your name:", timeout=30)
+    if reply is None:
+        await event.reply("Timed out")
+        return
+    await event.reply(f"Hello, {reply.get_text()}!")
+```
+
+### Full Parameter Overview
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `prompt` | The prompt message sent before suspending | None |
+| `timeout` | Timeout for waiting (seconds) | 60 |
+| `pattern` | Glob filter (`*` / `?` / `[seq]`), continue waiting if not matched | None |
+| `regex` | Regular expression filter (must match both pattern and regex if both are provided), continue waiting if not matched | None |
+| `validator` | Validation function (receives Event, returns bool), continue waiting if failed | None |
+| `callback` | Callback when reply is received (alternative to value-returning approach) | None |
+| `method` | Method for sending prompt | "Text" |
+| `session` | **Session-level waiting**: replies from anyone in the same session (group/channel) can match | False |
+
+```python
+# Accept only numeric amounts, otherwise continue waiting
+reply = await event.wait_reply("Please enter the amount:", regex=r"\d+\s*元", timeout=30)
+
+# Session-level waiting: group collaboration scenario, any group member's reply can match
+reply = await event.wait_reply(session=True, prompt="Which expert can help answer?")
+```
+
+### When Will Waiting Be Cancelled
+
+Waiting is no longer "only waiting until timeout"—the following conditions will cause the waiting to **terminate immediately** (`wait_reply` returns `None`), rather than letting the caller wait until timeout:
+
+| Trigger | Cancellation Reason (`InteractionCancelled.reason`) | Description |
+|---------|------------------------------------------------------|-------------|
+| Owner module is unloaded / disabled | `owner_unload` | Ownership cleanup: whoever registered the waiting, when they disappear, it is reclaimed together |
+| Adapter is stopped / restarted | `platform_stop` | All waiting suspended on this platform is cancelled |
+| Same session is replaced by new waiting / lease | `conflict` | See "Session Arbitration" below |
+| Replier is blacklisted / owner module is unbound | `revoked` | Permission recheck for reply hit: scope identity dimension + module dimension |
+| User reply is matched | —— | Normal path, returns reply event |
+
+The underlying exception is `InteractionCancelled` (attached to the `InteractionError` exception hierarchy), and `wait_reply` has converted it to returning `None`; calling parties who need the reason can directly use the low-level API `sdk.interaction.register()`.
+
+### Complete Reply Matching Decision Chain
+
+When a reply message arrives, the interaction manager follows the following sequence to decide (executed **before** command matching, conversation continuity takes priority— even if the message has been claimed by another high-priority processor, the suspended conversation can still complete):
+
+```
+Session key hit (exact user dimension → session-level fallback)
+  → pattern / regex text filter (continue waiting if not matched)
+  → validator check (continue waiting if failed)
+  → Permission recheck (scope identity dimension + owner module dimension, terminate waiting if failed)
+  → Wake up waiting party + claim event (mark_processed)
+```
+
+## Session Timers: remind / escalate
+
+Transform "timeout" from a return value into a programmable primitive. Timers are attached to interactive sessions and are automatically cancelled when the module is unloaded or the adapter is closed, with a single session active remind limit of 5.
+
+### remind: Remind if No Reply
+
+```python
+@command("ticket")
+async def ticket_command(event):
+    await event.reply("Your ticket has been submitted, and the processing result will be notified here.")
+    # Remind gently after 5 minutes of no reply; any reply from the user will automatically cancel it
+    event.remind(300, "Are you still there? I will notify you as soon as there is a result.")
+    reply = await event.wait_reply(timeout=3600)
+    ...
+```
+
+- `event.remind(delay, text=None, *, callback=None)`: Sends `text` (or executes `callback(event)`, supports synchronous / asynchronous) to the current session when the timer expires.
+- Returns a `Reminder` handle: `reminder.cancel()` to manually cancel, `reminder.expired` to query status.
+- Automatically cancels after the user replies in this session—this is the semantics of "reminder":
+  Reminders only appear when the user is silent.
+- Also available within `Conversation`: `conv.remind(120, "Are you still considering?")`
+
+### escalate: Guaranteed Upgrade at a Point in Time
+
+```python
+event.escalate(1800, lambda e: notify_master(f"Ticket not processed for 30 minutes: {event.get_command_args()}"))
+```
+
+The only difference from `remind`: **Not cancelled by user replies**—the escalation action (notifying the master, transferring to human) is a "guaranteed timeout" promise, cancelled only by manual `cancel()` / module unload / adapter shutdown.
+
+| | `remind` | `escalate` |
+|---|---|---|
+| Behavior on expiration | Send text / execute callback | Execute callback |
+| User reply | **Automatically cancelled** | Unaffected |
+| Ownership cleanup (unload / close platform) | Cancelled | Cancelled |
+| Single session limit | 5 | Unlimited (cleaned up by ownership) |
+
+## Multi-path Waiting: expect + select
+
+Simultaneously suspends multiple expectations, **first-come, first-served**—typical scenarios: waiting for administrator approval while waiting for user withdrawal, or multi-person collaboration voting.
+
+```python
+which, reply = await event.select(
+    event.expect(pattern="Agree*", user="10001"),
+    event.expect(pattern="Reject*", user="10002"),
+    event.expect(validator=lambda e: e.get_text() == "Suspended", session=True),
+    timeout=60,
+)
+if which is None:
+    await event.reply("No approval result received within 60 seconds")
+elif which == 0:
+    await event.reply("Approved")
+elif which == 1:
+    await event.reply("Rejected")
+```
+
+- `event.expect(...)` constructs an **expectation description** (does not register any waiting): supports `pattern` / `regex` / `validator` / `user` (limits the replier) / `session` (anyone can reply)
+- `event.select(*expectations, timeout=60)`: Registers uniformly → returns `(index, reply event)` on the first match → unmet expectations are automatically cancelled; returns `(None, None)` if all time out
+- The matched event has been claimed by the framework (via `mark_processed`), and will not be consumed by other processors again
+
+{!--< tips >!--}
+Compared to manual orchestration with multi-threaded `asyncio.wait`, `select` automatically cleans up unmet expectations, automatically claims matched events, and ensures permission rechecks and ownership cleanup—all without needing to manage any Future yourself.
+{!--< /tips >!--}
+
+## Session Mutual Exclusion: acquire / hold / get_owner_of
+
+Ownership moves from "resources" to "sessions"—"who is currently occupying this user" becomes a first-class query.
+
+```python
+# Query: Is this session currently being interacted with? (Returns None if idle)
+owner = sdk.interaction.get_owner_of(event)
+if owner and owner != "MyModule":
+    return  # Another module is already interacting, avoid interrupting
+
+# Mutual exclusion lease: exclusive session (deny policy, returns None if occupied)
+lease = sdk.interaction.acquire(event)          # Default TTL 1 hour, ttl can be passed
+if lease is None:
+    return  # Already occupied
+try:
+    ...  # Exclusive interaction
+finally:
+    lease.release()
+```
+
+Context manager form (throws `SessionOccupiedError` on failure):
+
+```python
+with sdk.interaction.hold(event) as lease:
+    ...  # Automatically released on exit
+```
+
+Leases support `renew(ttl)` renewal; TTL is lazily expired—the expired lease is automatically cleaned up on next access.
+
+When `Conversation.resume()` resumes a conversation, the framework automatically acquires the lease (see "Resumption Takes Over" in [Conversation Multi-turn Dialogue](conversation.md))—the resumed conversation naturally holds the session, and other modules cannot insert.
+
+## Session Inbox: event.history
+
+A unified record of recent message streams per session (both user and robot), serving as a **shared factual foundation** for AI contexts, anti-repetition, and behavioral analysis modules—modules no longer store history individually.
+
+```python
+messages = await event.history(20)   # Recent 20 messages of current session, in ascending time order
+for m in messages:
+    print(m["role"], ":", m["text"])  # role: "user" / "bot"
+```
+
+- Automatic recording: inbound messages (role=user) + robot outbound text (role=bot)
+- Storage: independent SQLite table, retention policy = per session limit (default 50) + global TTL (default 7 days)
+- Configuration: `ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`
+- Manager API: `sdk.transcript.append() / get() / clear()`
+
+## Message Transaction: message_tx
+
+All outbound sends within a transaction are automatically recorded; **on abnormal exit, previously sent messages are automatically recalled in reverse order** (skipped if adapter does not implement `delete_message`, but the ledger is still recorded properly).
+
+```python
+async with event.message_tx():
+    await event.reply("Processing, please wait")
+    result = await do_something()          # Exception thrown here →
+    await event.reply(f"Completed: {result}")   # The previous "processing" message is automatically recalled
+```
+
+Outbound sends outside a transaction are not recorded (zero overhead); `get_send_receipts()` can view the receipts of messages already sent in the current transaction.
+
+## Trace ID
+
+Each inbound event automatically receives a trace ID (reusing `event["id"], generating one if missing), which is carried through:
+
+- Handler context (`get_current_trace_id()` to read)
+- Outbound sends (`[Send]` log lines append `[trace:...]`, `message.sending/sent` hooks have a `trace_id` field)
+- Lifecycle hook data (dict automatically adds `_trace_id`)
+- Directed events (`emit_to`) and message transaction receipts
+
+When a message is processed by multiple modules, the entire chain can be linked with the same ID (for logging / slow query / audit).
+
+## Relationship with Other Systems
+
+- **Ownership**: Waiting / leases / timers all record owner, and are reclaimed on unload (see [Ownership System](ownership.md))
+- **Scope**: Permission recheck for reply hits at both identity and module dimensions; cross-module audit steps out of the outbound dimension (see [Scope](scope.md))
+- **Conversation**: Multi-turn dialogue is a branching state machine above interactive sessions (see [Conversation](conversation.md)), and its waiting also enjoys all cancellation / recheck / ownership semantics described on this page
+
+
+
+### 模块间通信
+
+# Inter-Module Communication
+
+> [!NOTE]
+> This chapter requires ErisPulse **2.8.0+**.
+
+ErisPulse has a **three-layer communication model** between modules, ordered as "point-to-point → directed → broadcast":
+
+| Layer | API | Semantics | Typical Scenarios |
+|---|---|---|---|
+| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | Point-to-point request-response, with contract / audit / timeout | Invoking another module's capability (e.g., check history, translate, refund) |
+| **Directed Events** | `await sdk.module.emit_to("Chat", "message_received", {...})` | Notification sent to a specific module | Upstream state change notification to downstream (e.g., "new message received") |
+| **Broadcast** | `await lifecycle.emit("config.updated", {...})` | Framework-wide lifecycle events | Hot configuration updates, module up/down events |
+
+{!--< tips >!--}
+Selection mnemonic: **Use `call` when you need a return value, `emit_to` to notify a single module, and `lifecycle` to notify everyone.** 
+{!--< /tips >!--}
+
+## RPC: module.call
+
+```python
+result = await sdk.module.call("Chat", "get_history", session_id, n=20)
+```
+
+Differences between `module.call()` and direct attribute access `sdk.module.Chat.get_history(...)` (which remains unchanged):
+
+| | `module.call()` | Direct attribute access |
+|---|---|---|
+| Target not registered / disabled | Raises `ModuleNotAvailableError` | Raises `AttributeError` |
+| Lazy-loaded module | **Automatically wakes up** (event-driven modules go through activation lock) | Asynchronous module initialization raises RuntimeError |
+| `current_owner` | Attributed to the **target module** (its internal `wait_reply` / send / logging correctly attributed) | Remains the caller |
+| Timeout | Default 30 seconds (`timeout=` overrides, None means no timeout) | None |
+| Scope audit | Caller passes through outbound gate `actions.<caller>.call` | None |
+| Contract validation | `meta.services` whitelist | None |
+
+### Exception Hierarchy
+
+```
+ModuleError                      # Base class for module system exceptions
+└── ModuleCallError              # Base class for cross-module calls (includes module / method attributes)
+    ├── ModuleNotAvailableError  # Target not registered / disabled / activation failed
+    ├── ServiceNotProvidedError  # Method not in services whitelist / private method / does not exist
+    └── ModuleCallTimeoutError   # Coroutine method timeout
+```
+
+All exceptions are part of the `ErisPulseError` hierarchy and can be caught with `from ErisPulse.Core import ModuleCallError`.
+
+## Service Contract: meta.services
+
+The service provider declares the whitelisted services offered externally in `get_meta()` (symmetrical to the `commands` field):
+
+```python
+from ErisPulse.Core.Bases import BaseModule, ModuleMeta
+
+class ChatModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="聊天",
+            services=[
+                "get_history",                                       # Simple form
+                {"name": "translate", "description": "把文本翻译成指定语言"},  # With description
+            ],
+        )
+
+    async def get_history(self, session_id, n=20): ...
+    async def translate(self, text, target_lang): ...
+    def _internal_helper(self): ...   # Underscore-prefixed methods are always forbidden from external calls
+```
+
+**Default behavior is invisible to developers**:
+
+- If `services` is not declared → all **public** methods are naturally callable via `module.call()` (consistent with raw attribute access),  
+  requiring no declaration at all
+- After declaration → restricted to the whitelist, out-of-bounds calls throw `ServiceNotProvidedError`—used to mark  
+  "these methods are the ones externally committed"
+- The main control authority lies with the user side: `scope.actions` configuration determines "who can call whom" (see auditing below),  
+  the module author's `services` is only a service surface declaration; the two layers are independent and not interchangeable
+
+**Service Descriptions**: Provide human-readable / AI-readable descriptions for each service—omit if unnecessary,  
+descriptions automatically use the **first line of the method's docstring** (the framework already requires docstring style):
+
+```python
+async def translate(self, text, target_lang):
+    """把文本翻译成指定语言"""    # ← This line automatically becomes the service description
+    ...
+```
+
+For fine-grained control (overriding docstring / multi-language support), use dict form to declare `description` (supports i18n dictionary):
+
+```python
+services=[
+    {"name": "translate", "description": "把文本翻译成指定语言"},
+    {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "摘要对话"}},
+]
+```
+
+## Service Directory: services()
+
+```python
+sdk.module.services()
+# {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
+#            'description': 'Translate text into the specified language'}]}
+
+sdk.module.services("Chat")   # Query only a specific module
+```
+
+- Only modules that explicitly declare `meta.services` are listed (modules without declaration do not appear in the directory)
+- Each service includes a method signature string (extracted using `inspect.signature`) and a description text
+- When entering the topology: each module entry in `sdk.module.get_topology()` includes a `services` field
+
+{!--< tips >!--}
+**MCP Roadmap**: The service directory (name + signature + description) is essentially the shape of an MCP tool — each service naturally forms a ``{"name", "description", "parameters"}`` structure.
+In the future, the framework can directly expose ``services()`` as an endpoint on the MCP server, allowing AI to discover and invoke module capabilities;
+``scope.actions.call`` auditing naturally becomes a security gate for AI calls.
+{!--< /tips >!--}
+
+## Outbound Auditing: Who Can Call Whom
+
+Every `module.call()` passes through the outbound gate as the **caller module**:
+
+```toml
+[ErisPulse.scope.actions.CallerModule.call]
+deny = ["Chat.get_history"]        # Deny CallerModule from calling Chat.get_history
+# allow = ["Chat.get_*"]           # Or whitelist: only allow calling Chat methods starting with "get_"
+```
+
+- The `name` format is `<target_module>.<method_name>`, supporting exact match, glob, or `re:` regular expressions
+- Calls from the framework layer (without owner context, such as startup scripts) are not subject to auditing constraints
+- Denied calls throw `ModuleCallError` (TRACE log `core.module.call_denied`)
+
+For configuration details, see the outbound dimension in [Scope](scope.md).
+
+## Directed Event: emit_to
+
+```python
+# Emitter side: After validating that the target is enabled, the event enters the module.<name>.<event> namespace
+await sdk.module.emit_to("Chat", "message_received", {"text": "hi", "from": "u1"})
+
+# Subscriber side (within the Chat module): Register hooks by namespace
+from ErisPulse.Core.lifecycle import lifecycle
+
+@lifecycle.on("module.Chat.message_received")
+async def on_message_received(data): ...
+
+@lifecycle.on("module.Chat")          # Or receive all directed events from this module
+async def on_any(data): ...
+```
+
+Semantic details:
+
+- If the target is not registered / not enabled → `ModuleNotAvailableError` (**do not send to non-existent locations**)
+- If the target is a lazy-loaded module → **wake up first, then deliver** (directed events serve as activation sources, aligning with the semantics of `activate_on`)
+- When `data` is a dict, it automatically carries `_trace_id` (without overwriting existing values), integrating with full-chain tracing
+
+## Lazy Loading and Invocation
+
+`module.call()` and `emit_to()` transparently awaken lazy-loaded modules:
+
+- Event-driven lazy modules (`activate_on` declaration) → Use activation lock `_activate()`, and the trigger stub is automatically unregistered after activation.
+- Regular lazy modules → Synchronize initialization or follow the regular loading path (idempotent).
+- Wakeup failure → `ModuleNotAvailableError` (for `call`) / Activation failure (for `emit_to`).
+
+That is: **the caller does not need to care whether the target module is loaded, nor wait for any event to awaken it.**
+
+## Cold Start Replay
+
+When a module is newly installed or restarted, it may miss some chat messages. The `get_load_strategy(replay=...)` method allows the framework to replay the most recent messages from the session inbox to the module itself after it becomes ready:
+
+```python
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class MyAIModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=False,
+            priority=100,
+            replay="5m",        # Replay the most recent 5 minutes ("1h" or "300" seconds are also valid)
+        )
+
+    async def on_load(self, event):
+        @message.on_message()
+        async def handle(e):
+            if e.get("replayed"):
+                # Synthetic event: only restore context, do not trigger side effects such as sending
+                ...
+```
+
+Semantic details:
+
+- The data source is the [session inbox](interaction.md#session-inbox-eventhistory) (`sdk.transcript.recent()`), and the replay is executed in the background after the module finishes loading, without blocking the startup process.
+- Synthetic events are marked with `replayed: True` and include complete fields such as `platform`, `detail_type`, `user_id`, and `alt_message`, and are **only distributed to this module's handlers**—other modules are unaffected by the replay.
+- If the inbox is not enabled, there are no records, or the duration declaration is invalid (`replay_invalid` warning), the replay is silently skipped.
+
+## Event Idempotency Deduplication
+
+After the platform's WebSocket reconnects, it often resends the same event (with the same `event["id"]`) — the distribution entry uses LRU deduplication by ID (capacity 4096), ensuring each event with the same ID is only distributed once.
+
+```toml
+[ErisPulse.framework]
+event_dedupe = true   # Enabled by default; can be disabled in test environments where fixed ID synthetic events are used
+```
+
+The deduplication cache is automatically reset when the adapter registers (the starting point of a new connection lifecycle).
 
 
 

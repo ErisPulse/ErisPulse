@@ -336,7 +336,7 @@
     "Продвинутые темы": {
       "description": "Глубокое изучение продвинутых функций фреймворка",
       "icon": "fa-fire",
-      "count": 13,
+      "count": 14,
       "documents": [
         {
           "title": "Расширенные темы",
@@ -369,7 +369,7 @@
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Conversation Многошаговые диалоги",
+          "title": "Conversation Многошаговый диалог",
           "path": "advanced/conversation.md",
           "level": 1,
           "icon": "fa-comments"
@@ -403,6 +403,12 @@
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
+        },
+        {
+          "title": "Система интерактивных сессий",
+          "path": "advanced/interaction.md",
+          "level": 1,
+          "icon": "fa-fire"
         },
         {
           "title": "Процесс запуска и ручное управление",

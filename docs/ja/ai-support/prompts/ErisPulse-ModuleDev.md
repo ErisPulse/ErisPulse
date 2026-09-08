@@ -2717,6 +2717,41 @@ async def price_command(event: Event):
         await event.reply(f"金額を受け取りました: {reply.get_text()}")
 ```
 
+## インタラクティブな会話の高度な機能
+
+> [!NOTE]
+> 本機能は ErisPulse **2.8.0+** が必要です。
+
+```python
+# 会話の定期的なリマインダー：5 分間返信がない場合にリマインダーを送信し、ユーザーが返信すると自動的にキャンセル
+reminder = event.remind(300, "まだですか？話したくない場合は「退出」を入力してください")
+reminder.cancel()  # 手動でキャンセルすることも可能です
+
+# タイムアウトによる昇格：時間経過後に必ず通知（返信によってキャンセルされない）、例えば長時間未処理の通知を主人に通知
+event.escalate(1800, lambda e: notify_master("工単がタイムアウトしました"))
+
+# 複数ルートの待機：「同意」および「拒否」のいずれかを同時に待機し、先に到着したものを優先
+which, reply = await event.select(
+    event.expect(pattern="同意*", user="10001"),
+    event.expect(pattern="拒绝*", user="10002"),
+    timeout=60,
+)
+if which is None:
+    await event.reply("承認がタイムアウトしました")
+
+# 会話レベルの待機：同じグループ内の誰からの返信でも対象になります（グループ協力）
+reply = await event.wait_reply(session=True, prompt="誰か回答していただけますか？")
+
+# 会話の受信箱：現在の会話における最新の 20 件のメッセージ（ロボット、AI のコンテキスト / リピート防止の基盤を含む）
+messages = await event.history(20)
+
+# メッセージトランザクション：例外が発生した場合、トランザクション内で送信されたメッセージを自動的に撤回
+async with event.message_tx():
+    await event.reply("処理中です、少々お待ちください...")
+    result = await do_something()
+    await event.reply(f"完了：{result}")
+```
+
 ## コマンド情報の取得
 
 ```python
@@ -4892,7 +4927,7 @@ sdk.adapter.get_status_summary()
 
 ## Module モジュール
 
-モジュールマネージャーで、プラグインの登録、ロード、アンロードを管理します。
+モジュールマネージャーは、プラグインの登録、ロード、アンロードを管理します。
 
 ### API 概要
 
@@ -4904,8 +4939,10 @@ sdk.adapter.get_status_summary()
 | `is_enabled(name)` | 有効化されているか確認 |
 | `enable(name)` / `disable(name)` | モジュールを有効化/無効化 |
 | `load(name)` / `unload(name)` | モジュールをロード/アンロード |
-| `list_registered()` | 登録済みモジュールをすべてリスト |
-| `list_loaded()` | ロード済みモジュールをすべてリスト |
+| `call(module, method, *args, timeout=None, **kwargs)` | 指定モジュールのサービスメソッドを呼び出す（プロトコル化された RPC） |
+| `emit_to(module, event, data)` | 指定モジュールにライフサイクルイベントを送信 |
+| `list_registered()` | 登録済みモジュールを一覧表示 |
+| `list_loaded()` | ロード済みモジュールを一覧表示 |
 | `get_info(name)` | モジュール情報を取得 |
 | `get_status_summary()` | モジュールの状態概要を取得 |
 
@@ -4916,6 +4953,80 @@ module = sdk.module.get("ModuleName")
 module = sdk.module.ModuleName
 module = sdk.ModuleName  # 等価なショートカット
 ```
+
+### モジュール間呼び出し（RPC）
+
+```python
+# プロトコル化された呼び出し：型付きエラー / 遅延モジュールの自動起動 / owner帰属 / タイムアウト設定
+result = await sdk.module.call("Chat", "get_history", session_id, n=20)
+```
+
+サービス側の属性アクセス `sdk.module.Chat.get_history(...)` との違い：
+
+| | `module.call()` | 属性アクセス |
+|---|---|---|
+| 目標が未登録/未有効化 | `ModuleNotAvailableError` をスロー | `AttributeError` をスロー |
+| 遅延ロードモジュール | 自動起動 | 非同期初期化モジュールは `RuntimeError` をスロー |
+| `current_owner` | 目標モジュールに帰属 | 呼び出し元のまま |
+| タイムアウト | 30秒（カスタマイズ可能） | なし |
+| scope 審査 | `actions.<呼び出し元>.call` | なし |
+
+### サービス契約（meta.services）
+
+`get_meta()` の `services` フィールドで外部公開白名单を宣言し、宣言後は呼び出し範囲を絞る：
+
+```python
+class ChatModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(services=["get_history", "translate"])
+
+    async def get_history(self, session_id, n=20): ...
+```
+
+- **デフォルト = 開発者無感覚**：`services` を宣言していない場合、任意の**公開**メソッドが呼び出せる（後方互換性）、アンダースコア付きのプライベートメソッドは常に禁止；制限の主制御権はユーザー側の scope 設定
+- 宣言後：白名单内のメソッドのみ呼び出せる、越境時は `ServiceNotProvidedError` をスロー
+- 呼び出し側制限：`scope.set_action("CallerModule", "call", deny="Chat.get_history")`
+
+**サービス紹介（description）**：`services` は各サービスに説明を宣言するための dict 形態もサポート（純文字列または i18n 辞書）、サービスディレクトリや AI 呼び出し点の消費説明に利用：
+
+```python
+return ModuleMeta(
+    services=[
+        "get_history",                              # 簡単な形態：説明はメソッドの docstring 1行目を自動的に利用
+        {"name": "translate", "description": "テキストを指定言語に翻訳する"},
+        {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "会話の要約"}},
+    ],
+)
+```
+
+説明の解析優先順位：**明示的な description（i18n は現在の言語に解析）> メソッドの docstring 1行目 > 空文字列**。
+
+### サービスディレクトリ（services）
+
+```python
+sdk.module.services()
+# {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
+#            'description': '会話履歴を取得'}]}
+
+sdk.module.services("Chat")  # 特定モジュールのみを照会
+```
+
+`meta.services` を**明示的に宣言**したモジュールのみを一覧表示；各サービスにはメソッドのシグネチャ文字列と説明テキストが付いており、MCP 化（AI に呼び出し点を公開）のためのデータ基盤を提供する。
+
+### 定向イベント（emit_to）
+
+```python
+# 投递側：目標モジュールが有効化された後に module.<名称>.<イベント> に投递
+await sdk.module.emit_to("Chat", "message_received", {"text": "hi"})
+
+# 訂正側（Chat モジュール内）：命名空間のフックを登録
+lifecycle.on("module.Chat.message_received", handler)
+lifecycle.on("module.Chat", handler)  # またはそのモジュールのすべての定向イベントを受信
+```
+
+> [!NOTE]
+> 本節の機能は ErisPulse **2.8.0+** で追加されました。
 
 ## Lifecycle モジュール
 
@@ -5001,7 +5112,7 @@ async for text in ws.iter_text():
 
 ### dump_state()
 
-フレームワークの現在の実行状態のスナップショットをエクスポートし、デバッグや診断に使用します。
+フレームワークの現在の実行状態のスナップショットをエクスポートし、デバッグと診断に使用します。
 
 ```python
 import json
@@ -5009,69 +5120,90 @@ state = sdk.dump_state()
 print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 ```
 
-返却される構造には、以下のサブシステムの状態が含まれます：
+返却される構造には以下のサブシステムの状態が含まれます：
 
 | フィールド | 説明 |
 |------|------|
-| `sdk` | SDKの初期化状態、Pythonバージョン、実行プラットフォーム、タイムスタンプ |
-| `adapters` | 登録済み/起動済みアダプタのリスト、各プラットフォームのBotのオンライン状態 |
-| `modules` | 登録済み/有効化済み/無効化済み/遅延ロード済みのモジュールのリスト |
-| `events` | あらゆる種類のイベントハンドラの数（message/notice/request/meta/commands） |
-| `router` | サーバーの実行状態、HTTP/WebSocketルートの数 |
+| `sdk` | SDK の初期化状態、Python バージョン、実行プラットフォーム、タイムスタンプ |
+| `adapters` | 登録/起動済みのアダプタのリスト、各プラットフォームの Bot のオンライン状態 |
+| `modules` | 登録/有効化/無効化/遅延ロードされたモジュールのリスト |
+| `events` | 各種イベントハンドラの数（message/notice/request/meta/commands） |
+| `router` | サーバーの実行状態、HTTP/WebSocket ルート数 |
 
-> 2.5.2 で追加
+> [!NOTE]
+> ErisPulse **2.5.2+** で追加
 
 ## Interaction 交互会話
 
-`sdk.interaction` を使用して、wait_replyの待機とセッションの排他リース（互斥）を管理します。
+`sdk.interaction` を使用して、wait_reply 挂起待ちと会話の排他リース（lease）を管理します。
 
-### 主なメソッド
+### 常用方法
 
 ```python
-# 会話の現在の所有者を照会（誰がユーザーと対話しているか）
+# 会話の定期的なリマインダー：5 分間返信がない場合にリマインダーを送信し、ユーザーが返信すると自動的にキャンセルされます。
+reminder = event.remind(300, "まだいますか？")
+reminder.cancel()  # 手動でキャンセル
+
+# タイムアウトによるアップグレード：指定時間に必ず到達します（返信によってキャンセルされません）。
+event.escalate(1800, lambda e: notify_master("30 分間未処理"))
+
+# 複数の待ち：先着順
+which, reply = await event.select(
+    event.expect(pattern="同意*", user="A"),
+    event.expect(pattern="拒绝*", user="B"),
+    timeout=60,
+)
+
+# 会話レベルの待ち：同じグループ内の誰からの返信でも一致します。
+reply = await event.wait_reply(session=True, prompt="誰か答えてくれますか？")
+
+# 現在の会話の所有者を照会（誰がこのユーザーと対話しているか）
 owner = sdk.interaction.get_owner_of(event)
 
-# 会話の排他リースを宣言（占有されている場合はNoneを返す）
+# 会話の排他リースを宣言（占有されている場合は None を返します）。
 lease = sdk.interaction.acquire(event)
 if lease:
     try:
-        ...  # 排他的な対話
+        ...  # 独占的な対話
     finally:
         lease.release()
 
-# コンテキストマネージャー形式（占有されている場合はSessionOccupiedErrorを送出）
+# コンテキストマネージャー形式（占有されている場合は SessionOccupiedError が送出されます）。
 with sdk.interaction.hold(event) as lease:
     ...
 
-# 会話の待機統計
-sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'owners': {'Chat': 3}}
+# 挂起中の会話の統計
+sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'timers': 3, 'owners': {'Chat': 3}}
 ```
 
-モジュールのアンロードやアダプタの停止時に、その待機中の待ちは自動的にキャンセルされます（待機側は即座に`None`を返す）、返信がヒットした際には、スコープ権限を自動的に再確認します（ユーザーがブロックされている/モジュールが解除されている場合は待機を終了する）。
+モジュールのアンロードやアダプターの停止時に、その間の待機とタイマーは自動的にキャンセルされます（待機側は即座に `None` を返します）。  
+返信が一致した場合、scope 権限を自動的に再確認します（ユーザーがブロックされている場合やモジュールが解除されている場合は、待機が終了します）。
 
-> 2.8.0-dev.2 で追加
+> [!NOTE]
+> 本機能は ErisPulse **2.8.0** 以降で追加されました。
 
 ## Transcript 会話受信箱
 
-各会話の最近のメッセージの自動記録と照会（`sdk.transcript`）で、AI対話や、重複防止などのコンテキスト記憶型モジュールの共通ベースになります。
+AI 対話、重複防止などのコンテキスト記憶モジュールの共通基盤として、各会話の最近のメッセージストリームの自動記録と照会（`sdk.transcript`）。
 
-### 主なメソッド
+### 常用方法
 
 ```python
-# 便利な照会（推奨）：現在の会話の最近20件（ユーザーとロボットの両方、時間昇順）
+# 便利な照会（推奨）：現在の会話の最近20件（ユーザーとロボットを含む、時間昇順）
 messages = await event.history(20)
 for m in messages:
     print(m["role"], ":", m["text"])
 
-# マネージャーAPI
+# マネージャー API
 sdk.transcript.append(event, "user", "テキスト")
 sdk.transcript.get(event, n=20)
 sdk.transcript.clear(event)
 ```
 
-設定（`ErisPulse.transcript`）：`enabled`（デフォルトで有効）、`max_per_session`（1会話あたりの上限、デフォルト50）、`ttl_hours`（グローバルな有効期限、デフォルト168時間）。データは独立したSQLiteテーブルに保存され、上限を超えた場合や期限切れになった場合は惰性でクリーンアップされます。
+設定（`ErisPulse.transcript`）：`enabled`（デフォルトで有効）、`max_per_session`（1会話あたりの上限、デフォルト50）、`ttl_hours`（グローバルな有効期限、デフォルト168時間）。データは独立した SQLite テーブルに保存され、上限を超えた場合や期限切れになった場合は惰性でクリーニングされます。
 
-> 2.8.0-dev.2 で追加
+> [!NOTE]
+> この機能は ErisPulse **2.8.0+** で追加されました。
 
 
 
@@ -5803,7 +5935,7 @@ async def low_priority_handler(event):
 
 # Conversation 多輪対話
 
-`Conversation` クラスは、同一セッション内で複数回の対話を行うための便利なメソッドを提供します。ガイド付き操作、情報収集、対話式の質問応答などに適しています。
+`Conversation` クラスは、同一セッション内で複数回の対話を行うための便利なメソッドを提供し、誘導型操作、情報収集、対話型の質問応答などのシナリオに適しています。
 
 ## 対話の作成
 
@@ -5818,7 +5950,7 @@ async def quiz_handler(event):
 
     await conv.say("🎮 知識クイズへようこそ！")
 
-    answer = await conv.choose("第1問：Pythonの開発者は誰ですか？", [
+    answer = await conv.choose("第一問：Python の生みの親は誰ですか？", [
         "Guido van Rossum",
         "James Gosling",
         "Dennis Ritchie",
@@ -5840,10 +5972,10 @@ async def quiz_handler(event):
 
 ### say(content, **kwargs)
 
-メッセージを送信し、`self` を返してメソッドチェーンが可能になります：
+メッセージを送信し、`self` を返してメソッドチェーンを可能にします：
 
 ```python
-await conv.say("1行目").say("2行目").say("3行目")
+await conv.say("第一行").say("第二行").say("第三行")
 ```
 
 送信方法を指定することもできます：
@@ -5854,18 +5986,18 @@ await conv.say("https://example.com/image.jpg", method="Image")
 
 ### wait(prompt=None, timeout=None)
 
-ユーザーからの応答を待ち、`Event` オブジェクトまたは `None`（タイムアウト）を返します：
+ユーザーからの返信を待ち、`Event` オブジェクトまたは `None`（タイムアウト）を返します：
 
 ```python
-# 簡単な待ち
+# 単純に待機
 resp = await conv.wait()
 if resp:
     text = resp.get_text()
 
 # プロンプトを送信して待機
-resp = await conv.wait(prompt="名前を入力してください：")
+resp = await conv.wait(prompt="あなたの名前を入力してください：")
 
-# カスタムタイムアウト（対話のデフォルトタイムアウトを上書き）
+# カスタムタイムアウトを使用（対話のデフォルトタイムアウトを上書き）
 resp = await conv.wait(prompt="10秒以内に返信してください：", timeout=10)
 ```
 
@@ -5876,16 +6008,16 @@ resp = await conv.wait(prompt="10秒以内に返信してください：", timeo
 ```python
 result = await conv.confirm("すべてのデータを削除してもよろしいですか？")
 if result is True:
-    await conv.say("削除しました")
+    await conv.say("削除しました。")
 elif result is False:
-    await conv.say("キャンセルしました")
+    await conv.say("キャンセルしました。")
 else:
-    await conv.say("タイムアウトしました")
+    await conv.say("タイムアウトしました。")
 ```
 
-確認用語の内包：`はい/yes/y/確認/確定/ok/true/対/うん/行/同意/大丈夫/可能/当然...`
+認識される確認用語：`はい/yes/y/確認/確定/好/ok/true/対/うん/行/同意/問題ない/可能/当然...`
 
-否定用語の内包：`いいえ/no/n/キャンセル/不/不要/ダメ/cancel/false/間違っている/違う/別/拒否...`
+認識される否定用語：`否/no/n/キャンセル/不/不要/行かない/cancel/false/間違った/違った/別/拒否...`
 
 ### choose(prompt, options, **kwargs)
 
@@ -5895,15 +6027,15 @@ else:
 choice = await conv.choose("色を選択してください：", ["赤", "緑", "青"])
 if choice is not None:
     colors = ["赤", "緑", "青"]
-    await conv.say(f"選択した色は {colors[choice]} です")
+    await conv.say(f"選択した色は {colors[choice]} です。")
 ```
 
-ユーザーは、番号（`1`/`2`/`3`）または選択肢のテキスト（`赤`）を入力して選択できます。
+ユーザーは番号（`1`/`2`/`3`）または選択肢のテキスト（`赤`）を入力して選択できます。
 
 `options_format="auto"`（デフォルト）は、method に応じて自動的に組み込みのスタイルを選択します：Markdown→箇条書き、Html→番号付きリスト、その他→プレーンテキストリスト。
-`"list"`、`"inline"`、`"md"`、`"html"`、またはカスタム関数もサポートします。
+`"list"`、`"inline"`、`"md"`、`"html"`、またはカスタム関数もサポートされています。
 
-`merge_prompt=True` を使用して、プロンプトと選択肢を1つのメッセージに統合することもできます。また、占い文字で選択肢の挿入位置を制御できます（デフォルトは `{options}`、`placeholder` でカスタマイズ可能です）：
+`merge_prompt=True` を使用して、プロンプトと選択肢を1つのメッセージに統合し、プレースホルダで選択肢の挿入位置を制御できます（デフォルトは `{options}`、`placeholder` でカスタマイズ可能）：
 
 ```python
 choice = await conv.choose(
@@ -5913,7 +6045,7 @@ choice = await conv.choose(
     merge_prompt=True,
 )
 
-# 占い文字のカスタマイズ
+# カスタムプレースホルダ
 choice = await conv.choose(
     "選択してください: [choices]",
     ["選択肢A", "選択肢B"],
@@ -5930,40 +6062,40 @@ data = await conv.collect([
     {"key": "name", "prompt": "名前を入力してください"},
     {"key": "age", "prompt": "年齢を入力してください",
      "validator": lambda e: e.get("alt_message", "").strip().isdigit(),
-     "retry_prompt": "年齢は数字で入力してください。再度入力してください"},
+     "retry_prompt": "年齢は数字で入力してください。"},
     {"key": "city", "prompt": "都市を入力してください"},
 ])
 
 if data:
     await conv.say(f"登録完了！\n名前: {data['name']}\n年齢: {data['age']}\n都市: {data['city']}")
 else:
-    await conv.say("登録が中断されました")
+    await conv.say("登録が中断されました。")
 ```
 
-フィールド設定：
+フィールドの設定：
 
 | パラメータ | 説明 | デフォルト値 |
 |------|------|--------|
 | `key` | フィールドのキー名（必須） | - |
-| `prompt` | プロンプトメッセージ | `"{key}を入力してください"` |
-| `validator` | 関数、Eventを受け取り、boolを返す | なし |
-| `retry_prompt` | 検証失敗時の再入力プロンプト | `"入力が無効です。再度入力してください"` |
+| `prompt` | プロンプトメッセージ | `"{key} を入力してください"` |
+| `validator` | 関数を受け取り、bool を返す検証関数 | 無し |
+| `retry_prompt` | 検証失敗時の再入力プロンプト | `"入力が無効です。再度入力してください。"` |
 | `max_retries` | 最大再試行回数 | 3 |
-| `condition` | 条件関数、既に収集されたデータの辞書を受け取り、boolを返す | なし |
+| `condition` | 条件関数、既に収集されたデータの辞書を受け取り、bool を返す | 無し |
 
-**条件付きフィールド**：`condition` を使用して、条件が満たされた場合にのみフィールドを収集する動的フォームを実現できます：
+**条件付きフィールド**：`condition` を使用して、条件が満たされた場合にのみフィールドを収集する動的フォームを作成できます：
 
 ```python
 data = await conv.collect([
     {"key": "has_car", "prompt": "車をお持ちですか？（はい/いいえ）"},
-    {"key": "car_brand", "prompt": "車種を入力してください",
+    {"key": "car_brand", "prompt": "車のブランドを入力してください。",
      "condition": lambda d: d.get("has_car", "").lower() in ("はい", "yes", "y")},
 ])
 ```
 
 ### stop()
 
-対話を手動で終了し、`is_active` を `False` に設定します：
+手動で対話を終了し、`is_active` を `False` に設定します：
 
 ```python
 conv.stop()
@@ -5975,7 +6107,7 @@ conv.stop()
 
 ```python
 if conv.is_active:
-    await conv.say("対話はまだ進行中です")
+    await conv.say("対話はまだ進行中です。")
 ```
 
 ## アクティブ状態の管理
@@ -5992,19 +6124,19 @@ stateDiagram-v2
     inactive --> [*]
 ```
 
-以下の状態で対話は自動的に非アクティブになります：
+以下の状況で対話は自動的に非アクティブになります：
 
 1. `stop()` メソッドを呼び出した場合
 2. `wait()` がタイムアウトして `None` を返した場合
-3. `collect()` が各ステップでタイムアウトまたは再試行回数を超過した場合
+3. `collect()` が何らかのステップでタイムアウトまたは再試行回数を超過した場合
 
-非アクティブになると、`wait`/`confirm`/`choose`/`collect` などのすべてのインタラクションメソッドは `None` を即座に返し、ユーザーからの入力を待ち続けません。
+非アクティブになった後、`wait`/`confirm`/`choose`/`collect` のすべてのインタラクションメソッドは即座に `None` を返し、ユーザーからの入力を待続しません。
 
 ## 分岐とジャンプ
 
 ### @conv.branch(name) デコレータ
 
-`branch()` を使用して対話の分岐を登録し、`goto()` を使用して分岐間をジャンプできます：
+`branch()` を使用して対話の分岐を登録し、`goto()` で分岐間をジャンプできます：
 
 ```python
 @command("menu")
@@ -6045,7 +6177,7 @@ async def menu_handler(event):
 
 ### conv.start(name=None)
 
-対話を開始し、デフォルトでは最初に登録された分岐から開始します：
+対話を開始します。デフォルトでは最初に登録された分岐から開始します：
 
 ```python
 await conv.start()          # 最初の分岐から開始
@@ -6056,7 +6188,7 @@ await conv.start("settings") # 指定された分岐から開始
 
 ### conv.context
 
-各対話インスタンスには、分岐間で状態を共有するための `context` 辞書が内蔵されています：
+各対話インスタンスには `context` 辞書が内蔵されており、分岐間で状態を共有するために使用できます：
 
 ```python
 @conv.branch("step1")
@@ -6067,7 +6199,7 @@ async def step1():
 @conv.branch("step2")
 async def step2():
     name = conv.context.get("username", "不明")
-    await conv.say(f"こんにちは、{name}さん！")
+    await conv.say(f"こんにちは、{name} さん！")
 ```
 
 ### save() / resume() / clear_saved()
@@ -6075,52 +6207,52 @@ async def step2():
 対話は永続化が可能で、タイムアウトや中断後に再開できます：
 
 ```python
-# 対話状態を保存（通常は手動で呼び出す必要はありません、下記の「自動チェックポイント」参照）
+# 対話の状態を保存（通常は手動で呼び出す必要はありません。下記の「自動チェックポイント」を参照）
 await conv.save()
 
 # ... その後、同じセッションで再開 ...
 conv2 = event.conversation()
 if await conv2.resume():
-    await conv2.say("ようこそ！以前の対話から再開します")
+    await conv2.say("戻ってきました！以前の対話を再開します。")
 else:
-    await conv2.say("以前の対話が見つかりませんでした")
+    await conv2.say("以前の対話は見つかりませんでした。")
 
 # 保存された対話を削除
 await conv.clear_saved()
 ```
 
-ストアキーには target 次元が含まれており（`conversation:{platform}:{user_id}:{target_id}`）、同一ユーザーの異なるセッション間での対話は互いに上書きされません。`resume()` 時に、`target` を含まない旧形式の保存は自動的に移行されます。
+ストレージのキーにはターゲットの次元が含まれます（`conversation:{platform}:{user_id}:{target_id}`）。同じユーザーが異なるセッションで対話しても、互いに上書きされることはありません。`resume()` 時に、`target` を含まない旧形式のアーカイブは自動的に移行されます。
 
-## 自動チェックポイントと再起動時の復元
+## 自動チェックポイントと再起動後の復元
 
-### 自動保存
+### 自動アーカイブ
 
-以下のようなタイミングでチェックポイントが自動的に維持されます。通常は `save()` を手動で呼び出す必要はありません：
+フレームワークは以下のタイミングでチェックポイントを自動的に維持します。通常、`save()` を手動で呼び出す必要はありません：
 
-| 時機 | 行動 |
+| タイミング | 行動 |
 |------|------|
-| `goto()` / `start()` による分岐のジャンプ | 自動保存（現在の分岐 + context） |
-| `stop()` / `wait()` タイムアウト / `collect()` 失敗 | 自動クリア（対話の終端状態） |
+| `goto()` / `start()` で分岐をジャンプしたとき | 自動的に保存（現在の分岐 + context） |
+| `stop()` / `wait()` タイムアウト / `collect()` 失敗したとき | 自動的にクリア（対話の終端状態） |
 
 ### チェックポイントのTTL
 
-保存はタイムスタンプ付きで、`ErisPulse.interaction.checkpoint_ttl`（デフォルト 24 時間）を超える保存は、復元時に自動的に破棄されます：
+アーカイブにはタイムスタンプが付いており、`ErisPulse.interaction.checkpoint_ttl`（デフォルト 24 時間）を超えるアーカイブは、復元時に自動的に破棄されます：
 
 ```toml
 [ErisPulse.interaction]
 checkpoint_ttl = 86400  # 秒
 ```
 
-### 再起動時の自動復元
+### 再起動後の自動復元
 
-フレームワークの再起動後、進行中の対話（メモリ内の待機コルーチン）は失われますが、チェックポイントは残ります。`register_resume_handler` を使用して**復元工場**を登録することで、再起動後にそのセッションの最初のメッセージが送信されたときに、自動的に対話を再開できます：
+フレームワークが再起動した後、進行中の対話（メモリ中の待機コルーチン）は失われますが、チェックポイントは残っています。`register_resume_handler` を使用して**復元工場**を登録することで、フレームワークは再起動後にそのセッションの最初のメッセージを受け取ったときに自動的に対話を継続します：
 
 ```python
 from ErisPulse.Core.Event.wrapper import Conversation
 
-@Conversation.register_resume_handler()  # platform="onebot11" でプラットフォームを限定することも可能
+@Conversation.register_resume_handler()  # platform="onebot11" を渡してプラットフォームを限定することも可能
 def make_conversation(event) -> Conversation:
-    # 工場の役割：対話の再構築とすべての分岐の再登録
+    # 工場の役割：対話を再構築し、すべての分岐を再登録する
     conv = event.conversation(timeout=60)
 
     @conv.branch("menu")
@@ -6130,40 +6262,53 @@ def make_conversation(event) -> Conversation:
     return conv
 ```
 
-登録後、`menu` 分岐にいたユーザーが再起動前に最初のメッセージを送信すると、フレームワークは自動的に：contextを復元 → そのメッセージを認証 → 保存された分岐から対話を再開します。工場を登録しない場合、このメカニズムは無駄なコストがかかりません。
+登録後、再起動前に `menu` 分岐にいたユーザーが最初のメッセージを送信すると、フレームワークは自動的に：context を復元 → そのメッセージを認証 → 保存された分岐から対話を継続します。工場を登録していない場合、このメカニズムはゼロコストです。
 
-### 手動復元（自動メカニズムを使わない場合）
+### 復元は即座に制御を引き継ぐ
+
+`resume()` が成功した場合、フレームワークは自動的に以下の2つのことを行います：
+
+1. **セッションの制御権の獲得**：自動的にこのセッションの排他リースを取得します。他のモジュールは `sdk.interaction.get_owner_of(event)` を使用して「このユーザーが対話中にいる」ことを感知できます。セッションが他のモジュールによって占有されている場合、復元は失敗し（`False` を返します）、2つの対話が競合することを防ぎます。
+2. **履歴の持ち込み**：会話の受信箱から最近の10件のメッセージを `conv.recent_history` に取得します（AI モジュールが復元された後、LLM のコンテキストが途切れません）。`resume(with_history=0)` を使用してこの機能を無効にできます。
+
+```python
+if await conv.resume(with_history=20):
+    for m in conv.recent_history:
+        print(m["role"], ":", m["text"])
+```
+
+### 手動での復元（自動メカニズムを使わない場合）
 
 ```python
 @command("continue")
 async def continue_handler(event):
     conv = event.conversation()
-    # ... 分岐を登録 ...
+    # ... 分岐の登録 ...
     if await conv.resume():
         conv.goto(conv.get_current_branch())
 ```
 
-## 代表的なフロー・パターン
+## 一般的なフロー・パターン
 
-### ガイド付き登録
+### 誘導型登録
 
 ```python
 @command("register")
 async def register_handler(event):
     conv = event.conversation(timeout=60)
 
-    await conv.say("ようこそ！登録を開始します。")
+    await conv.say("ようこそ登録へ！")
 
     data = await conv.collect([
-        {"key": "username", "prompt": "ユーザー名を入力してください（3-20文字）",
+        {"key": "username", "prompt": "ユーザー名を入力してください（3〜20文字）",
          "validator": lambda e: 3 <= len(e.get_text().strip()) <= 20},
         {"key": "email", "prompt": "メールアドレスを入力してください",
          "validator": lambda e: "@" in e.get_text() and "." in e.get_text(),
-         "retry_prompt": "メールアドレスの形式が正しくありません。再度入力してください"},
+         "retry_prompt": "メールアドレスの形式が正しくありません。再度入力してください。"},
     ])
 
     if not data:
-        await event.reply("登録がキャンセルされました")
+        await event.reply("登録がキャンセルされました。")
         return
 
     confirmed = await conv.confirm(
@@ -6173,7 +6318,7 @@ async def register_handler(event):
     if confirmed:
         await conv.say("✅ 登録完了！")
     else:
-        await conv.say("❌ 登録がキャンセルされました")
+        await conv.say("❌ 登録がキャンセルされました。")
 ```
 
 ### ループ対話
@@ -6182,7 +6327,7 @@ async def register_handler(event):
 @command("chat")
 async def chat_handler(event):
     conv = event.conversation(timeout=120)
-    await conv.say("対話モードに入ります。メッセージを「終了」で終了します。")
+    await conv.say("対話モードに入りました。メッセージ「終了」で終了します。")
 
     while conv.is_active:
         resp = await conv.wait()
@@ -6198,10 +6343,443 @@ async def chat_handler(event):
         elif text == "ヘルプ":
             await conv.say("利用可能なコマンド：終了、ヘルプ、状態")
         elif text == "状態":
-            await conv.say("対話はアクティブです")
+            await conv.say("対話はアクティブです。")
         else:
             await conv.say(f"入力内容：{text}")
 ```
+
+
+
+### 交互会话系统
+
+# 交互会話システム
+
+> [!NOTE]
+> 本章の内容は ErisPulse **2.8.0+** が必要です。
+
+ErisPulse では「ユーザーとの継続的な対話」をフレームワークレベルのインフラとして実現しています。`wait_reply` から始まり、定時アラート、多重待ち、会話の排他制御、再起動時の復元まで、すべてが統一された **インタラクションセッションマネージャー**（`Core/Event/interaction.py`、`sdk.interaction`）によってスケジュールされます。
+
+{!--< tips >!--}
+本文で取り上げる機能はすべて**所有者（owner）**を持ちます。インタラクションの待ち、リース、タイマーはすべて登録時にモジュール名が記録され、モジュールのアンロードやアダプタの停止時にフレームワークが自動的にクリーンアップを行い、待機側は即座に通知を受け取るようになります。これは、タイムアウトを待つことなく、所有権システムがインタラクションの観点から拡張されたものです（[所有権システム](ownership.md)を参照）。  
+{!--< /tips >!--}
+
+## 等待回复：wait_reply
+
+`wait_reply` はインタラクティブな会話の基盤です。現在のコルーチンを一時停止し、次のメッセージで対象ユーザーが「返信」するのを待ちます。
+
+```python
+from ErisPulse.Core.Event import command
+
+@command("ask")
+async def ask_command(event):
+    reply = await event.wait_reply(prompt="あなたの名前を入力してください:", timeout=30)
+    if reply is None:
+        await event.reply("タイムアウトしました")
+        return
+    await event.reply(f"こんにちは、{reply.get_text()}！")
+```
+
+### 全パラメータ一覧
+
+| パラメータ | 説明 | デフォルト |
+|------|------|------|
+| `prompt` | 一時停止前に送信するプロンプトメッセージ | None |
+| `timeout` | 等待のタイムアウト（秒） | 60 |
+| `pattern` | glob フィルタ（`*` / `?` / `[seq]`）、一致しない場合は待機を継続 | None |
+| `regex` | 正規表現フィルタ（pattern と同時に指定された場合、両方一致する必要がある）、一致しない場合は待機を継続 | None |
+| `validator` | 検証関数（Event を受け取り、bool を返す）、失敗した場合は待機を継続 | None |
+| `callback` | 返信を受け取った際のコールバック（戻り値方式の代わりの書き方） | None |
+| `method` | prompt の送信方法 | "Text" |
+| `session` | **セッションレベルの待機**：同じセッション（グループ / チャンネル）内の誰かの返信でも有効 | False |
+
+```python
+# 数字の金額のみを受け入れ、それ以外は待機を継続
+reply = await event.wait_reply("金額を入力してください:", regex=r"\d+\s*元", timeout=30)
+
+# セッションレベルの待機：グループ協力の場面で、グループ内の誰かが返信しても有効
+reply = await event.wait_reply(session=True, prompt="どなたか回答してください。")
+```
+
+### 等待がいつキャンセルされるか
+
+待機は「タイムアウトするまで待つ」だけではありません。以下の状況では**即座に終了**（`wait_reply` は `None` を返す）し、
+呼び出し元がタイムアウトまで待つ必要がありません：
+
+| 触発 | キャンセル理由（`InteractionCancelled.reason`） | 説明 |
+|------|------|------|
+| 所属モジュールがアンロード / 禁用された | `owner_unload` | 所属のクリーンアップ：誰が登録した待機でも、そのモジュールが消えた時点で一括回収 |
+| アダプタが停止 / 再起動された | `platform_stop` | そのプラットフォームで一時停止された待機はすべてキャンセル |
+| 同一セッション内で新しい待機 / リースが発生した | `conflict` | 下記「セッション仲裁」を参照 |
+| 返信者がブロックされた / owner モジュールが解除された | `revoked` | 返信が命じられた**権限の再確認**：scope 身分次元 + モジュール次元 |
+| ユーザーが返信した | —— | 正常な経路、返信イベントを返す |
+
+下層の例外は `InteractionCancelled`（`InteractionError` 例外体系に属する）で、
+`wait_reply` はこれを `None` を返すように変換しています。原因が必要な呼び出し元は、
+`sdk.interaction.register()` の低レベル API を直接使用することができます。
+
+### 返信が命じられた場合の完全な判定チェーン
+
+返信メッセージが到着した際、インタラクティブマネージャーは以下の順序で判定を行います（コマンドマッチの**前**に実行され、
+会話の連続性が優先されるため、メッセージが他の高優先度の処理で既に認識された場合でも、一時停止された会話は完了できます）：
+
+```
+セッションキーの一致（正確な user 次元 → セッションレベルのフォールバック）
+  → pattern / regex テキストフィルタ（一致しない場合は待機を継続）
+  → validator 検証（失敗した場合は待機を継続）
+  → 権限の再確認（scope 身分次元 + owner モジュール次元、失敗した場合は待機を終了）
+  → 待機側の呼び出し + イベントの認領（mark_processed）
+```
+
+## セッションタイマー：remind / escalate
+
+「タイムアウト」を返値から可編成可能な原語に変更しました。タイマーは対話セッションに紐づけられ、モジュールのアンロードやアダプターの閉鎖時に自動的にキャンセルされます。1つのセッションで有効な remind の上限は 5 つです。
+
+### remind：返信がなければリマインド
+
+```python
+@command("ticket")
+async def ticket_command(event):
+    await event.reply("工単が提出されました。処理結果はここに通知されます。")
+    # 5 分間返信がなければ、穏やかに1回リマインドします。ユーザーの返信はすべて自動的にキャンセルされます
+    event.remind(300, "まだお待ちですか？結果が出たらすぐにご連絡します。")
+    reply = await event.wait_reply(timeout=3600)
+    ...
+```
+
+- `event.remind(delay, text=None, *, callback=None)`：期限が来たら現在のセッションに `text` を送信します
+  （または `callback(event)` を実行します。同期 / 非同期の両方に対応しています）
+- 戻り値は `Reminder` ハンドルです：`reminder.cancel()` で手動でキャンセル、`reminder.expired` で状態を確認できます
+- ユーザーがこのセッションで**返信すると自動的にキャンセル**されます——これが「リマインド」の意味です：
+  リマインドはユーザーが沈黙している場合にのみ表示されます
+- `Conversation` 内でも同様に使用可能です：`conv.remind(120, "まだ検討中ですか？")`
+
+### escalate：期限が来たら必ず通知
+
+```python
+event.escalate(1800, lambda e: notify_master(f"工単 30 分未処理：{event.get_command_args()}"))
+```
+
+`remind` との唯一の違いは、**ユーザーの返信によってキャンセルされない**ことです——エスカレーションアクション（主人への通知、人間への転送）は「タイムアウト時に必ず通知」を約束するものであり、手動での `cancel()` またはモジュールのアンロード、アダプターの閉鎖によってのみキャンセルされます。
+
+| | `remind` | `escalate` |
+|---|---|---|
+| 到期時の動作 | テキストを送信 / callback を実行 | callback を実行 |
+| ユーザーの返信 | **自動的にキャンセル** | 影響を受けません |
+| 帰属のクリーンアップ（アンロード / プラットフォーム閉鎖） | キャンセル | キャンセル |
+| セッションごとの上限 | 5 | なし（帰属のクリーンアップでバックアップ） |
+
+## マルチ待機：expect + select
+
+複数の期待を同時に待機し、**先着順**で処理されます。典型的な場面：管理者の承認を待つと同時に、ユーザーによる撤回を待つ、複数人による共同投票など。
+
+```python
+which, reply = await event.select(
+    event.expect(pattern="同意*", user="10001"),
+    event.expect(pattern="拒绝*", user="10002"),
+    event.expect(validator=lambda e: e.get_text() == "搁置", session=True),
+    timeout=60,
+)
+if which is None:
+    await event.reply("60 秒内未收到任何审批结果")
+elif which == 0:
+    await event.reply("已同意")
+elif which == 1:
+    await event.reply("已拒绝")
+```
+
+- `event.expect(...)` は**期待の記述**を作成します（待機は登録されません）：`pattern` / `regex` / `validator` / `user`（返信者を限定）/ `session`（誰でも返信可能）がサポートされます。
+- `event.select(*expectations, timeout=60)`：一括で登録 → いずれかが一致したら `(インデックス, 返信イベント)` を返します → 一致しなかった待機は自動的にキャンセルされます；すべてがタイムアウトしたら `(None, None)` を返します。
+- 一致したイベントはフレームワークによって認証済み（`mark_processed`）となり、他の処理器で重複して消費されることはありません。
+
+{!--< tips >!--}
+`select` とマルチスレッドの `asyncio.wait` による手動の編集と比較すると：期待が一致しなかった場合の自動クリーンアップ、一致したイベントの自動認証、権限の再確認と帰属のクリーンアップがすべて有効になります。→ すべての Future を手動で管理する必要はありません。
+{!--< /tips >!--}
+
+## セッション排他：acquire / hold / get_owner_of
+
+所有権は「リソース」から「セッション」へ移行しました。つまり、「このユーザーは現在誰によって占有されているか」が、最も重要なクエリとなります。
+
+```python
+# クエリ：このセッションは現在誰と対話中ですか？（空きの場合は None を返す）
+owner = sdk.interaction.get_owner_of(event)
+if owner and owner != "MyModule":
+    return  # 他のモジュールが対話中です。干渉しないようにします
+
+# 排他リース：セッションの独占（deny 策略、占有中は None を返す）
+lease = sdk.interaction.acquire(event)          # デフォルトの TTL は 1 時間、ttl= を渡すことで変更可能
+if lease is None:
+    return  # すでに占有されています
+try:
+    ...  # 独占状態での対話処理
+finally:
+    lease.release()
+```
+
+コンテキストマネージャー形式（取得に失敗すると `SessionOccupiedError` を送出します）：
+
+```python
+with sdk.interaction.hold(event) as lease:
+    ...  # ブロックを抜けると自動的にリリースされます
+```
+
+リースは `renew(ttl)` で更新が可能。TTL は惰性で期限切れになります。期限切れのリースは、次回アクセス時に自動的にクリーンアップされます。
+
+`Conversation.resume()` で対話を再開する際、フレームワークは自動的にリースを取得します（詳細は [Conversation 多輪対話](conversation.md) の「再開即座に所有」を参照してください）。再開された対話はセッションを天然に所有しており、他のモジュールが介入することはありません。
+
+## 会話受信箱：event.history
+
+各モジュールが個別に履歴を保持するのではなく、AIコンテキスト、重複防止、行動分析などのモジュールの**共有事実ベース**として、各会話の最近のメッセージフロー（ユーザー + ロボットの両方）を統一的に記録します。
+
+```python
+messages = await event.history(20)   # 最近の20件、時系列昇順
+for m in messages:
+    print(m["role"], ":", m["text"])  # role: "user" / "bot"
+```
+
+- 自動記録：入力メッセージ（role=user）とロボットからの出力テキスト（role=bot）
+- ストレージ：個別の SQLite テーブルに保存。各会話の上限（デフォルト 50）とグローバルなTTL（デフォルト 7 日間）による保持ポリシー
+- 設定：`ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`
+- マネージャ API：`sdk.transcript.append() / get() / clear()`
+
+## メッセージトランザクション：message_tx
+
+トランザクション内のすべての出力メッセージは自動的に記録されます。**例外が発生した場合、逆順に自動的に送信済みメッセージを撤回**します（アダプターが `delete_message` を実装していない場合はスキップされますが、台帳は正常に記録されます）。
+
+```python
+async with event.message_tx():
+    await event.reply("処理中です、少々お待ちください")
+    result = await do_something()          # ここで例外が発生 →
+    await event.reply(f"完了: {result}")   # 以前の「処理中」は自動的に撤回されます
+```
+
+トランザクション外で送信したメッセージは記録されません（ゼロオーバーヘッド）。`get_send_receipts()` を使用して、現在のトランザクションで送信された回執を確認できます。
+
+## 鏈路追跡：trace-id
+
+各インバウンドイベントは、自動的に追跡ID（`event["id"]` を再利用、存在しない場合は生成）を取得し、以下を貫く：
+
+- handlerコンテキスト（`get_current_trace_id()` で読み取り）
+- アウトバウンド送信（`[Send]` ログ行に `[trace:...]` を追加、`message.sending/sent` ホッキングの `trace_id` フィールド）
+- ライフサイクルホッキングデータ（dictに自動的に `_trace_id` を追加）
+- 定向イベント（`emit_to`）とメッセージトランザクションの確認
+
+1つのメッセージが複数のモジュールによって連携処理される場合、同一のIDで全チェーンを連結し、（ログ / 遅いクエリ / 審計）を可能にする。
+
+## 他のシステムとの関係
+
+- **所有権**：待機 / レンタル / タイマーはすべて owner を記録し、アンロード時にリサイクルされます（[所有権システム](ownership.md)）
+- **スコープ**：返信のヒット確認時に身元を再確認 + モジュール単位；モジュール間の呼び出しは監査のために出口の次元を越えます（[スコープ](scope.md)）
+- **Conversation**：複数ラウンドの対話は、インタラクティブなセッションの上に存在する分岐状態機械です（[Conversation](conversation.md)）。
+  その待機も、このページのすべてのキャンセル / 再確認 / 所有権の意味を享受します。
+
+
+
+### 模块间通信
+
+# モジュール間通信
+
+> [!NOTE]
+> 本章の内容は ErisPulse **2.8.0+** が必要です。
+
+ErisPulse のモジュール間には**3層の通信モデル**があり、「点対点 → 定向 → ブロードキャスト」の順序で配置されています：
+
+| 層 | API | 意味 | 代表的な場面 |
+|---|---|---|---|
+| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | 点対点のリクエスト-レスポンス、契約 / 審計 / タイムアウト付き | 他のモジュールの機能を呼び出す（履歴の取得、翻訳、返金など） |
+| **定向イベント** | `await sdk.module.emit_to("Chat", "message_received", {...})` | 指定されたモジュールに送信される通知 | 上流の状態変化を下流に通知する（「新しいメッセージを受け取りました」など） |
+| **ブロードキャスト** | `await lifecycle.emit("config.updated", {...})` | フレームワーク全体で見えるライフサイクルイベント | 設定のホットアップデート、モジュールの起動 / 停止 |
+
+{!--< tips >!--}
+選択の口訣：**戻り値が必要な場合は `call` を使い、1つのモジュールに通知したい場合は `emit_to` を使い、全員に通知したい場合は `lifecycle` を使う**。
+{!--< /tips >!--}
+
+## RPC：module.call
+
+```python
+result = await sdk.module.call("Chat", "get_history", session_id, n=20)
+```
+
+裸属性访问 `sdk.module.Chat.get_history(...)`（保持不变）与 `module.call()` 的差异：
+
+| | `module.call()` | 裸属性アクセス |
+|---|---|---|
+| 目標が登録されていない / 有効化されていない | `ModuleNotAvailableError` をスロー | `AttributeError` をスロー |
+| ラグジュアリーなモジュール | **自動的に起動**（イベント駆動モジュールはアクティベーションロックを経由） | 非同期初期化モジュールが `RuntimeError` をスロー |
+| `current_owner` | **対象モジュール**に帰属（内部の `wait_reply` / 送信 / ログは正しく所有者に属する） | 呼び出し元のまま |
+| タイムアウト | デフォルト 30 秒（`timeout=` で上書き、`None` で無制限） | なし |
+| scope 審査 | 呼び出し元の出力ゲート `actions.<呼び出し元>.call` | なし |
+| 契約検証 | `meta.services` のホワイトリスト | なし |
+
+### 例外体系
+
+```
+ModuleError                      # モジュールシステムの例外基底クラス
+└── ModuleCallError              # モジュール間呼び出しの基底クラス（module / method 属性を含む）
+    ├── ModuleNotAvailableError  # 目標が登録されていない / 有効化されていない / 起動に失敗
+    ├── ServiceNotProvidedError  # メソッドが services ホワイトリストにない / 私有メソッド / 存在しない
+    └── ModuleCallTimeoutError   # コルーチンメソッドのタイムアウト
+```
+
+すべて `ErisPulseError` 体系に属し、`from ErisPulse.Core import ModuleCallError` でキャッチ可能です。
+
+## サービス契約：meta.services
+
+サービス提供者は `get_meta()` で公開する白リストを宣言します（`commands` フィールドと対称）：
+
+```python
+from ErisPulse.Core.Bases import BaseModule, ModuleMeta
+
+class ChatModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="チャット",
+            services=[
+                "get_history",                                       # 簡単な形
+                {"name": "translate", "description": "テキストを指定された言語に翻訳する"},  # 説明付き
+            ],
+        )
+
+    async def get_history(self, session_id, n=20): ...
+    async def translate(self, text, target_lang): ...
+    def _internal_helper(self): ...   # アンダースコア付きメソッドは外部からの呼び出しを常に禁止
+```
+
+**開発者にとっては無視されるのがデフォルト**：
+
+- `services` を宣言していない場合 → すべての**公開**メソッドは `module.call()` で呼び出せる（属性アクセスと同様に、宣言不要）
+- 宣言した場合 → 白リストに絞られ、範囲外の呼び出しは `ServiceNotProvidedError` を送出する——「これらが外部に約束されたメソッド」を明示するため
+- 制限の**主なコントロール権はユーザー側**にある：`scope.actions` 設定が「誰が誰を呼び出せるか」を決定する（下記の監査を参照），
+  モジュール作者の `services` はサービス面の宣言に過ぎず、2つの層は互いに代替できない
+
+**サービスの説明**：各サービスに人間やAIが読める説明をつける——不要なら何も書かなくてもよい。
+説明は自動的に**メソッドの docstring の最初の行**を取る（フレームワークは docstring 形式を要求している）：
+
+```python
+async def translate(self, text, target_lang):
+    """テキストを指定された言語に翻訳する"""    # ← この行が自動的にサービスの説明になる
+    ...
+```
+
+docstring に上書きしたい、または多言語に対応したいなどの細かい制御が必要な場合は、dict 形式で description を宣言する（i18n 辞書に対応）：
+
+```python
+services=[
+    {"name": "translate", "description": "テキストを指定された言語に翻訳する"},
+    {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "会話の要約"}},
+]
+```
+
+## サービスディレクトリ: services()
+
+```python
+sdk.module.services()
+# {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
+#            'description': 'テキストを指定された言語に翻訳する'}]}
+
+sdk.module.services("Chat")   # 指定されたモジュールのみを照会
+```
+
+- `meta.services` が**明示的に宣言**されたモジュールのみをリストアップ（宣言されていないモジュールはディレクトリに表示されない）
+- 各サービスにはメソッドの署名文字列（`inspect.signature` から抽出）と説明文が付属
+- トポロジーにも対応：`sdk.module.get_topology()` の各モジュール項目には `services` フィールドが含まれる
+
+{!--< tips >!--}
+**MCP 化の道筋**：サービスディレクトリ（名前 + 署名 + 説明）は、MCP ツールの構造に自然に適合する——
+各サービスは天然に ``{"name", "description", "parameters"}`` の形をとる。
+将来、フレームワークは ``services()`` を直接 MCP サーバーエンドポイントとして公開し、AI がモジュールの機能を発見して呼び出すことが可能になる。
+また、``scope.actions.call`` の監査は、AI 呼び出しのセキュリティゲートとして自然に機能する。
+{!--< /tips >!--}
+
+## 出向監査：誰が誰を呼び出すか
+
+`module.call()` のたびに、**呼び出し元モジュール**の身分としてスコープの出向ゲートを通過します：
+
+```toml
+[ErisPulse.scope.actions.CallerModule.call]
+deny = ["Chat.get_history"]        # CallerModule が Chat の get_history を呼び出すことを禁止
+# allow = ["Chat.get_*"]           # またはホワイトリスト：get で始まる Chat のサービスのみを許可
+```
+
+- `name` の形式は `<対象モジュール>.<メソッド名>` で、正確な一致、ワイルドカード、`re:` 正規表現がサポートされています
+- フレームワーク層の呼び出し（owner コンテキストがない、起動スクリプトなど）は監査制約の対象外です
+- 拒否された呼び出しは `ModuleCallError` を送出します（TRACE ログ `core.module.call_denied`）
+
+設定方法は [スコープ（scope）](docs/ja/scope.md) の出向の観点を参照してください。
+
+## 定向イベント：emit_to
+
+```python
+# 投递元：対象モジュールが有効化されたことを確認した後、イベントは module.<名前>.<イベント> の名前空間に送信されます
+await sdk.module.emit_to("Chat", "message_received", {"text": "hi", "from": "u1"})
+
+# 訂正元（Chat モジュール内）：名前空間に従ってフックを登録します
+from ErisPulse.Core.lifecycle import lifecycle
+
+@lifecycle.on("module.Chat.message_received")
+async def on_message_received(data): ...
+
+@lifecycle.on("module.Chat")          # または、このモジュールのすべての定向イベントを受け取ります
+async def on_any(data): ...
+```
+
+意味の詳細：
+
+- 対象が登録されていない / 有効化されていない場合 → `ModuleNotAvailableError`（**存在しない場所には送信されません**）
+- 対象が遅延ロードモジュールの場合 → **まず起動してから投递します**（定向イベントはアクティベーションの源であり、`activate_on` の意味と一致します）
+- `data` が dict の場合、自動的に `_trace_id` を付加します（既存の値は上書きされません）、全トラッキング連携が可能です
+
+## 懒惰ロードと呼び出し
+
+`module.call()` および `emit_to()` は、**遅延ロードモジュールに対して透明な起動**を提供します：
+
+- イベント駆動型遅延モジュール（`activate_on` で宣言）→ 活性化ロック `_activate()` を通る。活性化後、トリガースタブは自動的に登録解除される。
+- 通常の遅延モジュール → 同期初期化または通常のロード経路（冪等性）
+- 起動失敗 → `ModuleNotAvailableError`（`call`）/ 活性化失敗（`emit_to`）
+
+つまり、**呼び出し元は、対象モジュールが既にロードされているかどうかを気にする必要がなく、また、特定のイベントを待つ必要もない**。
+
+## クールスタートリプレイ
+
+新規インストール / 再起動のモジュールが一部のチャットを逃した場合、`get_load_strategy(replay=...)` により、フレームワークはモジュールが準備完了した後に、セッション受信箱内の最近のメッセージを**そのモジュール自身にリプレイ**します。
+
+```python
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class MyAIModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=False,
+            priority=100,
+            replay="5m",        # 最近の 5 分間をリプレイ ("1h" / "300" 秒の書き方も可能です)
+        )
+
+    async def on_load(self, event):
+        @message.on_message()
+        async def handle(e):
+            if e.get("replayed"):
+                # 合成イベント: コンテキストのみ補完、送信などの副作用は発生しない
+                ...
+```
+
+意味の詳細:
+
+- データソースは[セッション受信箱](interaction.md#会話受信箱eventhistory) (`sdk.transcript.recent()`) です。
+  モジュールの読み込み完了後にバックグラウンドで実行され、起動をブロックしません。
+- 合成イベントには `replayed: True` のフラグと、`platform / detail_type / user_id / alt_message` が完全に含まれており、**本モジュールのハンドラにのみ配信されます**。他のモジュールはリプレイの影響を受けません。
+- 受信箱が有効でない / 記録がない / 時間長の宣言が不正な場合 (`replay_invalid` 警告) は、静かにスキップされます。
+
+## イベントの冪等性と重複除去
+
+プラットフォームの WebSocket 再接続後に、同じイベント（同じ `event["id"]`）が頻繁に再送されることがあります。イベントの配信エントリポイントでは、ID に基づいて LRU 重複除去（容量 4096）が行われ、同じ ID のイベントは一度だけ配信されます。
+
+```toml
+[ErisPulse.framework]
+event_dedupe = true   # デフォルトで有効。テスト環境では固定 ID で合成イベントを作成する場合は無効にできます。
+```
+
+アダプタが**登録**（新しい接続のライフサイクルの起点）される際に、自動的に重複除去キャッシュがリセットされます。
 
 
 
