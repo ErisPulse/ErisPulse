@@ -73,6 +73,20 @@ ErisPulse 事件处理基础模块
 ---
 
 
+##### `async dispatch_to_owner(owner: str, event: 'Event')`
+
+> **内部方法**
+回放分发：将合成事件只投递给指定归属者（模块）的处理器
+
+用于冷启动事件回放（``get_load_strategy(replay=...)``）——
+新装模块通过回放快速获得会话上下文，其他模块不受回放影响。
+
+- **owner** (`归属者（模块名）`): - **event**: 合成事件（带 ``replayed: True`` 标志）
+**返回值**: 实际投递的处理器数量
+
+---
+
+
 ##### `unregister_by_owner(owner: str)`
 
 > **内部方法**

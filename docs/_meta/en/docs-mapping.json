@@ -152,7 +152,7 @@
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Event Wrapper Class Details",
+              "title": "Event Wrapper Class Detailed Explanation",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
@@ -336,7 +336,7 @@
     "Advanced Topics": {
       "description": "Deep dive into advanced framework features",
       "icon": "fa-fire",
-      "count": 13,
+      "count": 15,
       "documents": [
         {
           "title": "Advanced Topics",
@@ -403,6 +403,18 @@
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
+        },
+        {
+          "title": "Interactive Session System",
+          "path": "advanced/interaction.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "Inter-Module Communication",
+          "path": "advanced/module-communication.md",
+          "level": 1,
+          "icon": "fa-fire"
         },
         {
           "title": "Startup Process and Manual Control",
