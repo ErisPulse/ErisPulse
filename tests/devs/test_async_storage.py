@@ -1,7 +1,8 @@
 """
 存储异步接口测试
 
-验证 BaseStorage 的 aget/aset/adelete 等异步方法，
+验证 BaseStorage 的异步原生契约（2.8.0 起）：后端实现 aget/aset 等
+异步抽象方法，同步 get/set 由基类通过 AsyncBridge 桥接到异步实现。
 """
 
 import asyncio
@@ -14,51 +15,58 @@ from ErisPulse.Core.Bases.storage import BaseStorage
 
 
 class MockStorage(BaseStorage):
-    """内存存储，用于测试异步桥接"""
+    """内存存储：异步原生实现，同步方法由基类桥接"""
 
     def __init__(self):
         self._data = {}
 
-    def get(self, key, default=None):
+    async def aget(self, key, default=None):
         return self._data.get(key, default)
 
-    def set(self, key, value):
+    async def aset(self, key, value):
         self._data[key] = value
         return True
 
-    def delete(self, key):
+    async def adelete(self, key):
         if key in self._data:
             del self._data[key]
             return True
         return False
 
-    def get_all_keys(self):
+    async def aget_all_keys(self):
         return list(self._data.keys())
 
-    def clear(self):
+    async def aclear(self):
         self._data.clear()
         return True
-
-    def transaction(self):
-        import contextlib
-
-        @contextlib.contextmanager
-        def _ctx():
-            yield self
-
-        return _ctx()
 
     def Table(self, table_name):
         raise NotImplementedError
 
-    def CreateTable(self, table_name, columns):
+    async def aCreateTable(self, table_name, columns):
         return True
 
-    def DropTable(self, table_name):
+    async def aDropTable(self, table_name):
         return True
 
-    def HasTable(self, table_name):
+    async def aHasTable(self, table_name):
         return False
+
+    # 事务连接 hook（内存后端空实现）
+    async def _acquire_txn_conn(self):
+        return None
+
+    async def _begin_txn(self, conn):
+        return None
+
+    async def _commit_txn(self, conn, handle=None):
+        return None
+
+    async def _rollback_txn(self, conn, handle=None):
+        return None
+
+    async def _release_txn_conn(self, conn):
+        return None
 
 
 def section(title):

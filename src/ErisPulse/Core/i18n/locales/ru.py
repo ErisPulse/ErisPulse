@@ -363,6 +363,16 @@ TRANSLATIONS = {
     "core.storage.ensure_dir_failed": "Не удалось создать каталог хранилища: {error}",
     "core.storage.get_config_failed": "Не удалось получить элемент конфигурации {key}: {error}",
     "core.storage.set_config_failed": "Не удалось установить элемент конфигурации {key}: {error}",
+    # Серверные части хранилища и синхронный мост
+    "core.storage.backend_init": "Инициализация серверной части хранилища: {backend}",
+    "core.storage.backend_unknown": "Неизвестная серверная часть хранилища: {backend} (доступны: sqlite / mysql / postgres)",
+    "core.storage.driver_missing": "Для серверной части {backend} отсутствует драйвер, выполните: pip install ErisPulse[{extra}]",
+    "core.storage.pool_init_failed": "Не удалось инициализировать пул соединений {backend}: {error}",
+    "core.storage.pool_retry": "Не удалось создать пул соединений {backend} (попытка {attempt}), повтор с задержкой: {error}",
+    "core.storage.aclose_failed": "Не удалось освободить ресурсы хранилища: {error}",
+    "core.storage.bridge_closed": "Синхронный мост хранилища закрыт, невозможно выполнить асинхронную операцию",
+    "core.storage.bridge_reentrant": "Нельзя вызывать синхронные совместимые интерфейсы из потока моста хранилища; используйте асинхронные методы",
+    "core.storage.sync_in_loop_warn": "Синхронный API хранилища вызван в асинхронном контексте (мост может кратковременно блокировать цикл событий); рекомендуется использовать соответствующие асинхронные методы с префиксом a (aget/aset)",
     # ==================== Управление конфигурацией ====================
     "core.config.migrate_failed": "Ошибка миграции файла конфигурации: {error}",
     "core.config.load_failed": "Ошибка загрузки файла конфигурации {path}: {error}",

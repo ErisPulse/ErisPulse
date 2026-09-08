@@ -19,7 +19,6 @@ def perf_storage(tmp_path):
         def __init__(self):
             self._initialized = False
             self.db_path = db_file
-            self._local = self._local.__class__()
             self._init_db()
             self._initialized = True
 

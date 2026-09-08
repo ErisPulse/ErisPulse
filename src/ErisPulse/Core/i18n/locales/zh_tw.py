@@ -363,6 +363,16 @@ TRANSLATIONS = {
     "core.storage.ensure_dir_failed": "建立儲存目錄失敗: {error}",
     "core.storage.get_config_failed": "取得設定項 {key} 失敗: {error}",
     "core.storage.set_config_failed": "設定設定項 {key} 失敗: {error}",
+    # 儲存後端與同步橋接
+    "core.storage.backend_init": "初始化儲存後端: {backend}",
+    "core.storage.backend_unknown": "未知的儲存後端: {backend}（可選: sqlite / mysql / postgres）",
+    "core.storage.driver_missing": "儲存後端 {backend} 缺少驅動依賴，請執行: pip install ErisPulse[{extra}]",
+    "core.storage.pool_init_failed": "初始化 {backend} 連接池失敗: {error}",
+    "core.storage.pool_retry": "{backend} 連接池建立失敗（第 {attempt} 次），將退避重試: {error}",
+    "core.storage.aclose_failed": "關閉儲存後端資源失敗: {error}",
+    "core.storage.bridge_closed": "儲存同步橋接已關閉，無法執行非同步操作",
+    "core.storage.bridge_reentrant": "禁止在儲存橋接執行緒內呼叫同步相容介面，請改用非同步方法",
+    "core.storage.sync_in_loop_warn": "在非同步上下文中呼叫了儲存同步介面（已橋接執行，可能短暫阻塞事件循環），建議改用對應的 a 前綴非同步方法（如 aget/aset）",
     # ==================== 設定管理 ====================
     "core.config.migrate_failed": "設定檔遷移失敗: {error}",
     "core.config.load_failed": "載入設定檔 {path} 失敗: {error}",

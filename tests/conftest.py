@@ -124,7 +124,7 @@ def clean_environment(test_data_dir: Path) -> Generator[None, None, None]:
 @pytest.fixture(scope="session", autouse=True)
 def _close_storage_on_teardown() -> Generator[None, None, None]:
     """
-    测试会话结束时关闭 storage 单例的 sqlite 连接，避免 ResourceWarning
+    测试会话结束时关闭 storage 单例的后端资源，避免 ResourceWarning
 
     {!--< internal-use >!--}
     """
@@ -132,14 +132,8 @@ def _close_storage_on_teardown() -> Generator[None, None, None]:
     try:
         from ErisPulse.Core.storage import storage as _storage
 
-        if hasattr(_storage, "_local"):
-            conn = getattr(_storage._local, "transaction_conn", None)
-            if conn is not None:
-                try:
-                    conn.close()
-                except Exception:
-                    pass
-                _storage._local.transaction_conn = None
+        if hasattr(_storage, "close"):
+            _storage.close()
     except Exception:
         pass
 

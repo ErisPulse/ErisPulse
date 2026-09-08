@@ -843,6 +843,17 @@ class SDK:
                 self.logger._module_levels.clear()
                 self.config.force_save()
 
+                # 7.5 关闭存储后端连接资源（须在 force_save 之后：持久化仍依赖存储；
+                # 主循环 + 同步桥接循环两侧的连接池/共享连接都释放，避免退出期 GC 炸已关闭 loop）
+                try:
+                    storage_backend = self.storage
+                    if hasattr(storage_backend, "aclose"):
+                        await storage_backend.aclose()
+                    if hasattr(storage_backend, "close"):
+                        storage_backend.close()
+                except Exception as e:
+                    self.logger.warning(i18n.t("core.storage.aclose_failed", error=e))
+
                 # 8. 清理 SDK 对象上的模块属性
                 module_properties_cleared = 0
                 for module_name in module_properties_to_clear:

@@ -8,7 +8,7 @@ import importlib
 import os
 import sqlite3
 import tempfile
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -17,6 +17,8 @@ from ErisPulse.Core.storage import StorageManager, storage
 # importlib.import_module 返回真实子模块（Core.storage / Core.logger 包属性被单例遮蔽）
 storage_module = importlib.import_module("ErisPulse.Core.storage")
 logger_module = importlib.import_module("ErisPulse.Core.logger")
+# 错误日志现由 SQL 共享基类产出
+sql_base_module = importlib.import_module("ErisPulse.Core.Bases.sql_base")
 
 # ==================== StorageManager 基础测试 ====================
 
@@ -689,9 +691,11 @@ class TestGlobalStorage:
         StorageManager._instance = original_instance
 
     def test_global_storage_exists(self):
-        """测试全局存储实例存在"""
+        """测试全局存储实例存在（2.8.0 起后端由 ErisPulse.storage.backend 配置决定）"""
+        from ErisPulse.Core.Bases.storage import BaseStorage
+
         assert storage is not None
-        assert isinstance(storage, StorageManager)
+        assert isinstance(storage, BaseStorage)
 
     def test_global_storage_singleton(self):
         """测试全局存储是单例"""
@@ -720,10 +724,11 @@ class TestStorageErrorLogging:
         StorageManager._instance = None
 
     def _force_conn_failure(self, manager):
-        """返回一个总是抛异常的 _get_connection patch 上下文"""
+        """返回一个总是抛异常的方言执行漏斗 patch 上下文"""
         return patch.object(
             type(manager),
-            "_get_connection",
+            "_exec_query_on",
+            new_callable=AsyncMock,
             side_effect=sqlite3.OperationalError("forced failure"),
         )
 
@@ -731,7 +736,7 @@ class TestStorageErrorLogging:
         """set_multi 失败时应记录 logger.error"""
         with (
             self._force_conn_failure(storage_manager),
-            patch.object(storage_module, "logger") as mock_logger,
+            patch.object(sql_base_module, "logger") as mock_logger,
         ):
             result = storage_manager.set_multi({"a": 1})
         assert result is False
@@ -742,7 +747,7 @@ class TestStorageErrorLogging:
         storage_manager.set("temp.key", 1)
         with (
             self._force_conn_failure(storage_manager),
-            patch.object(storage_module, "logger") as mock_logger,
+            patch.object(sql_base_module, "logger") as mock_logger,
         ):
             result = storage_manager.delete("temp.key")
         assert result is False
@@ -753,7 +758,7 @@ class TestStorageErrorLogging:
         storage_manager.set("temp.k1", 1)
         with (
             self._force_conn_failure(storage_manager),
-            patch.object(storage_module, "logger") as mock_logger,
+            patch.object(sql_base_module, "logger") as mock_logger,
         ):
             result = storage_manager.delete_multi(["temp.k1"])
         assert result is False
@@ -764,7 +769,7 @@ class TestStorageErrorLogging:
         storage_manager.set("temp.key", 1)
         with (
             self._force_conn_failure(storage_manager),
-            patch.object(storage_module, "logger") as mock_logger,
+            patch.object(sql_base_module, "logger") as mock_logger,
         ):
             result = storage_manager.clear()
         assert result is False
@@ -774,7 +779,7 @@ class TestStorageErrorLogging:
         """HasTable 失败时应记录 logger.error"""
         with (
             self._force_conn_failure(storage_manager),
-            patch.object(storage_module, "logger") as mock_logger,
+            patch.object(sql_base_module, "logger") as mock_logger,
         ):
             result = storage_manager.HasTable("nope")
         assert result is False

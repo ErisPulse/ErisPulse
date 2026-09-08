@@ -363,6 +363,16 @@ TRANSLATIONS = {
     "core.storage.ensure_dir_failed": "Failed to create storage directory: {error}",
     "core.storage.get_config_failed": "Failed to get config item {key}: {error}",
     "core.storage.set_config_failed": "Failed to set config item {key}: {error}",
+    # Storage backends and sync bridge
+    "core.storage.backend_init": "Initializing storage backend: {backend}",
+    "core.storage.backend_unknown": "Unknown storage backend: {backend} (available: sqlite / mysql / postgres)",
+    "core.storage.driver_missing": "Storage backend {backend} is missing its driver dependency, run: pip install ErisPulse[{extra}]",
+    "core.storage.pool_init_failed": "Failed to initialize the {backend} connection pool: {error}",
+    "core.storage.pool_retry": "{backend} connection pool creation failed (attempt {attempt}), retrying with backoff: {error}",
+    "core.storage.aclose_failed": "Failed to close storage backend resources: {error}",
+    "core.storage.bridge_closed": "The storage sync bridge is closed and cannot execute async operations",
+    "core.storage.bridge_reentrant": "Cannot call sync compatibility APIs from the storage bridge thread; use async methods instead",
+    "core.storage.sync_in_loop_warn": "Storage sync API called inside an async context (bridged execution may briefly block the event loop); prefer the corresponding a-prefixed async methods (aget/aset)",
     # ==================== Configuration Management ====================
     "core.config.migrate_failed": "Configuration file migration failed: {error}",
     "core.config.load_failed": "Failed to load configuration file {path}: {error}",

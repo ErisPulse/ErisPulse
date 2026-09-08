@@ -85,6 +85,35 @@ class MockStorage(BaseStorage):
     def HasTable(self, name):
         return self.get(f"__erispulse_sql__:{name}:schema") is not None
 
+    # ---- 异步原生 ABC 契约（2.8.0 起 BaseStorage 以异步方法为抽象接口）----
+    async def aclear(self):
+        return self.clear()
+
+    async def aCreateTable(self, name, columns):
+        return self.CreateTable(name, columns)
+
+    async def aDropTable(self, name):
+        return self.DropTable(name)
+
+    async def aHasTable(self, name):
+        return self.HasTable(name)
+
+    # 事务连接 hook（内存后端无真实事务，空实现）
+    async def _acquire_txn_conn(self):
+        return None
+
+    async def _begin_txn(self, conn):
+        return None
+
+    async def _commit_txn(self, conn, handle=None):
+        return None
+
+    async def _rollback_txn(self, conn, handle=None):
+        return None
+
+    async def _release_txn_conn(self, conn):
+        return None
+
 
 @pytest.fixture
 def storage():
