@@ -135,10 +135,11 @@ class TranscriptManager:
         """{!--< internal-use >!--} 保留策略：每会话条数上限 + 全局 TTL（惰性触发）"""
         try:
             table = storage.Table(TRANSCRIPT_TABLE)
+            # 派生表包裹 LIMIT 子查询：MySQL/MariaDB 不支持 IN 子查询内直接 LIMIT
             table.Delete().Where("session_key = ?", session_key).Where(
-                "id NOT IN (SELECT id FROM "
+                "id NOT IN (SELECT id FROM (SELECT id FROM "
                 + TRANSCRIPT_TABLE
-                + " WHERE session_key = ? ORDER BY id DESC LIMIT ?)",
+                + " WHERE session_key = ? ORDER BY id DESC LIMIT ?) AS _keep)",
                 session_key,
                 max_per_session,
             ).Execute()
@@ -265,7 +266,8 @@ class TranscriptManager:
                 .Where("session_key = ?", key)
                 .Execute()
             )
-            return int(result) if result else 0
+            # Delete 链返回受影响行数 int；isinstance 守卫类型收窄
+            return int(result) if isinstance(result, int) and result else 0
         except Exception as e:
             logger.trace(i18n.t("core.transcript.clear_failed", error=e))
             return 0

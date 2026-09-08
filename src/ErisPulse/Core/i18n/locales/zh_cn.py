@@ -363,6 +363,16 @@ TRANSLATIONS = {
     "core.storage.ensure_dir_failed": "创建存储目录失败: {error}",
     "core.storage.get_config_failed": "获取配置项 {key} 失败: {error}",
     "core.storage.set_config_failed": "设置配置项 {key} 失败: {error}",
+    # 存储后端与同步桥接
+    "core.storage.backend_init": "初始化存储后端: {backend}",
+    "core.storage.backend_unknown": "未知的存储后端: {backend}（可选: sqlite / mysql / postgres）",
+    "core.storage.driver_missing": "存储后端 {backend} 缺少驱动依赖，请执行: pip install ErisPulse[{extra}]",
+    "core.storage.pool_init_failed": "初始化 {backend} 连接池失败: {error}",
+    "core.storage.pool_retry": "{backend} 连接池创建失败（第 {attempt} 次），将退避重试: {error}",
+    "core.storage.aclose_failed": "关闭存储后端资源失败: {error}",
+    "core.storage.bridge_closed": "存储同步桥接已关闭，无法执行异步操作",
+    "core.storage.bridge_reentrant": "禁止在存储桥接线程内调用同步兼容接口，请改用异步方法",
+    "core.storage.sync_in_loop_warn": "在异步上下文中调用了存储同步接口（已桥接执行，可能短暂阻塞事件循环），建议改用对应的 a 前缀异步方法（如 aget/aset）",
     # ==================== 配置管理 ====================
     "core.config.migrate_failed": "配置文件迁移失败: {error}",
     "core.config.load_failed": "加载配置文件 {path} 失败: {error}",

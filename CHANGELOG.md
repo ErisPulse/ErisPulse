@@ -77,20 +77,30 @@
 > 开发版本
 
 **版本摘要**
-新增交互会话基础设施与基础原语：交互会话管理器（wait_reply 等待表抽为一等基础设施，owner / platform 双维度归属清理、回复命中权限复查、会话互斥租约）、Conversation 自动检查点（分支跳转自动存档 + 重启自动恢复）、端到端事件追踪（trace-id 贯穿入站 / 处理 / 出站 / 生命周期钩子）、消息事务（出站回执账本 + 异常自动撤回）、会话收件箱（每会话消息流自动记录与查询）。存储查询构建器新增 `ToDict()` 链。修复 wait_reply 挂起回复被高优先级处理器饿死的问题。
+新增交互会话基础设施与基础原语：交互会话管理器（wait_reply 等待表抽为一等基础设施，owner / platform 双维度归属清理、回复命中权限复查、会话互斥租约）、Conversation 自动检查点（分支跳转自动存档 + 重启自动恢复）、端到端事件追踪（trace-id 贯穿入站 / 处理 / 出站 / 生命周期钩子）、消息事务（出站回执账本 + 异常自动撤回）、会话收件箱（每会话消息流自动记录与查询）。存储查询构建器新增 `ToDict()` 链。存储层升级为多后端异步原生架构：内置 sqlite / mysql / postgres 三种异步驱动后端（配置切换、API 完全一致），`BaseStorage` 抽象翻转为异步原生契约，同步 API 转为兼容层（现有同步调用代码零改动）。修复 wait_reply 挂起回复被高优先级处理器饿死的问题。
 
 **升级建议**
 - 是否建议升级：建议升级
 - 交互会话归属清理修复了模块卸载 / 平台关闭后等待方干等超时的资源泄漏；自动检查点与 trace-id 对现有代码零侵入
+- 存储后端默认仍为 SQLite，行为兼容；需要 MySQL / PostgreSQL 时配置 `ErisPulse.storage.backend` 并安装对应可选驱动即可
 
 **注意事项**
 - **行为变更**：同一会话键重复注册等待（如两个模块对同一用户 wait_reply）时，旧等待方现在立即收到取消（返回 `None`），不再静默覆盖后干等超时
 - **行为变更**：回复消息已被高优先级处理器认领时，挂起的等待仍会命中消费该消息（对话连续性优先）；不希望此行为的模块需自行调整处理器认领策略
 - 存储查询构建器默认行为不变（tuple 行）；仅显式调用 `ToDict()` 的链返回 dict
+- **异步主接口**：同步存储 API 在异步上下文（事件循环所在线程）中调用时经后台桥接执行（功能正确，但会短暂阻塞该事件循环），异步 handler 内推荐使用 `await storage.aget/aset(...)` 与 `aExecute()` 系列终止方法；`storage.get/set/Table(...).Execute()` 等既有同步用法不受影响
+- **自定义存储后端**：继承 `BaseStorage` 的第三方后端需按异步契约迁移（实现 a 前缀异步方法与事务连接 hook）；仅使用框架存储 API（不自定义后端）的模块 / 适配器无需任何改动
 
 ### 新增
 
 - @wsu2059q
+  - **多后端存储引擎（sqlite / mysql / postgres，异步原生）** `Core/storage/` 包 / `Core/Bases/sql_base.py`：
+    - 内置三种后端：SQLite（aiosqlite，默认，零配置）/ MySQL（aiomysql）/ PostgreSQL（asyncpg），通过 `ErisPulse.storage.backend` 配置或环境变量 `ERISPULSE_STORAGE_BACKEND` 切换，三种后端 API 完全一致、切换零代码改动；驱动为可选依赖 `pip install ErisPulse[mysql]` / `ErisPulse[postgres]`，缺失时报清晰错误并提示安装命令
+    - 后端连接参数：`ErisPulse.storage.mysql` / `ErisPulse.storage.postgres` 配置节（host / port / user / password / database / charset / pool 等，支持 12-factor 环境变量覆盖如 `ERISPULSE_STORAGE_POSTGRES_HOST`）
+    - 方言差异收敛到 `SQLDialect`：占位符翻译（`?` / `%s` / `$n`）、标识符引用（MySQL 保留字 `key` 自动反引号）、UPSERT 语法（`INSERT OR REPLACE` / `ON DUPLICATE KEY UPDATE` / `ON CONFLICT DO UPDATE`）、自增主键翻译（`INTEGER PRIMARY KEY AUTOINCREMENT` → `AUTO_INCREMENT` / `SERIAL`）、列类型映射与表存在性查询；共享 SQL 基类 `SQLStorageBase` 统一实现嵌套键 KV、批量操作、DDL、ALTER TABLE 与事务编排
+    - 连接管理：池 / 共享连接按事件循环惰性创建（同步桥接循环与用户异步循环各自独立），池创建瞬时失败自动指数退避重试；`aclose()` / `close()` 释放当前循环资源，`sdk.uninit()` 关停链统一释放主循环与同步桥接循环两侧的连接资源（消除退出期 aiomysql/asyncpg 连接被 GC 时 `Event loop is closed` 噪音）；MySQL 对 `CREATE/DROP TABLE IF EXISTS` 的服务器 NOTE 警告按 DB-API 规则抑制（幂等 DDL 不再刷 `Table 'config' already exists`）；SQLite 采用 WAL + busy_timeout 多循环并发安全，非事务操作 autocommit、事务使用专用连接
+    - 事务：异步 `async with storage.atransaction():` / 同步 `with storage.transaction():`，事务内操作（含查询构建器链）路由到事务专用连接，嵌套自动复用外层，异常自动回滚并传播；KV 读取路径缺表自动重建
+    - CLI `init` 配置脚手架与 `create` 模板、`examples/` 示例同步更新（含异步推荐写法指引）
   - **交互会话管理器** `Core/Event/interaction.py`（`sdk.interaction` / `from ErisPulse.Core.Event import interaction`）：
     - wait_reply 底层等待表抽为一等基础设施：等待条目记录注册时归属（owner，自动捕获 `current_owner`）与平台（platform），按 会话键 / owner / platform 三索引管理
     - 按维度精确取消：模块卸载 / 适配器关闭自动取消其挂起的等待，等待方立即收到取消（`InteractionCancelled`，挂入 `InteractionError` 异常体系）而非干等超时；同会话被新等待 / 租约取代时旧等待方同样立即取消（reason: conflict / owner_unload / platform_stop / revoked）
@@ -442,9 +452,10 @@
 
 ### 变更
 - @wsu2059q
+  - **存储抽象层翻转为异步原生契约** `Core/Bases/storage.py`：`BaseStorage` 抽象方法改为 `aget/aset/adelete/aget_all_keys/aclear` 与查询构建器 `aExecute/aExecuteOne/aCount/aExists`（异步为原生主接口，内置后端基于异步驱动实现）；同步 `get/set/Execute/...` 成为基类内置兼容层（经 `AsyncBridge` 后台事件循环桥接执行，**现有同步调用代码无需任何修改**）；同步事务经线程级登记路由到事务连接，异步事务经 `ContextVar` 路由。自定义存储后端作者需将实现从同步方法迁移到 a 前缀异步方法与事务连接 hook（声明 `_SUPPORTS_CONN_ROUTING = False` 的后端保持无连接路由的旧行为）
+  - `Core/storage.py` 单文件模块改造为 `Core/storage/` 包：SQLite 实现迁入 `sqlite.py`（aiosqlite 异步原生），新增 `mysql.py` / `postgres.py` 与工厂 `create_storage()`；`SQLiteQueryBuilder` 更名为方言无关的 `SQLQueryBuilder` 并随共享逻辑迁至 `Core/Bases/sql_base.py`；`StorageManager` 保留为 SQLite 后端的向后兼容别名（`isinstance` / 子类覆盖 `db_path` 均不受影响）；框架内 `transcript` 保留策略子查询改为三后端可移植写法（MySQL/MariaDB 不支持 IN 子查询内直接 LIMIT）
   - `Core/Event/base.py` `_validate_identifier` / `_validate_select_column` 的 `context` 参数统一使用固定英文（`"table"` / `"column"` 等），作为语言无关的诊断标签
   - `Core/Bases/{adapter,module,send_builder,send_rules,i18n_schema}.py` 将 28 处函数内导入（logger / i18n / config / lifecycle）提升到模块顶层（经依赖图确认无循环依赖），仅保留 2 处真正的循环依赖（`Bases/adapter.py` ↔ `Core/adapter.py`）为函数内导入并加注释
-  - `Core/storage.py` 消除 21 处函数内重复 `from .logger import logger`，提升到模块顶层
 
 ### 优化
 - @wsu2059q

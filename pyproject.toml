@@ -68,6 +68,9 @@ dependencies = [
     "aiohttp>=3.9.0",
     "fastapi>=0.116.1",
     "uvicorn>=0.30.0",
+
+    # storage 相关（默认 SQLite 后端异步驱动，开箱即用）
+    "aiosqlite>=0.20.0",
 ]
 
 [project.urls]
@@ -79,6 +82,13 @@ Issues = "https://github.com/ErisPulse/ErisPulse/issues"
 Changelog = "https://github.com/ErisPulse/ErisPulse/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
+# 存储后端可选驱动：pip install ErisPulse[mysql] / ErisPulse[postgres]
+mysql = [
+    "aiomysql>=0.2.0",
+]
+postgres = [
+    "asyncpg>=0.29.0",
+]
 test = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",

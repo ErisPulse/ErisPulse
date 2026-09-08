@@ -213,6 +213,32 @@ DEFAULT_KV_TABLE_NAME: Final[str] = "config"
 # 修改影响: 数据存储位置。
 DEFAULT_USE_GLOBAL_DB: Final[bool] = False
 
+# 默认存储后端（sqlite / mysql / postgres）。
+# 配置默认值，对应 ErisPulse.storage.backend。
+# 修改影响: 框架运行时数据的存储介质；切换后端需迁移数据。
+DEFAULT_STORAGE_BACKEND: Final[str] = "sqlite"
+
+# MySQL 后端默认连接参数（ErisPulse.storage.mysql 配置节）。
+# 修改影响: 未显式配置时使用的连接默认值。
+DEFAULT_STORAGE_MYSQL_HOST: Final[str] = "127.0.0.1"
+DEFAULT_STORAGE_MYSQL_PORT: Final[int] = 3306
+DEFAULT_STORAGE_MYSQL_USER: Final[str] = "erispulse"
+DEFAULT_STORAGE_MYSQL_PASSWORD: Final[str] = ""
+DEFAULT_STORAGE_MYSQL_DATABASE: Final[str] = "erispulse"
+DEFAULT_STORAGE_MYSQL_CHARSET: Final[str] = "utf8mb4"
+DEFAULT_STORAGE_MYSQL_POOL_MIN: Final[int] = 1
+DEFAULT_STORAGE_MYSQL_POOL_MAX: Final[int] = 10
+
+# PostgreSQL 后端默认连接参数（ErisPulse.storage.postgres 配置节）。
+# 修改影响: 未显式配置时使用的连接默认值。
+DEFAULT_STORAGE_PG_HOST: Final[str] = "127.0.0.1"
+DEFAULT_STORAGE_PG_PORT: Final[int] = 5432
+DEFAULT_STORAGE_PG_USER: Final[str] = "erispulse"
+DEFAULT_STORAGE_PG_PASSWORD: Final[str] = ""
+DEFAULT_STORAGE_PG_DATABASE: Final[str] = "erispulse"
+DEFAULT_STORAGE_PG_POOL_MIN: Final[int] = 1
+DEFAULT_STORAGE_PG_POOL_MAX: Final[int] = 10
+
 # ==============================================================================
 # 路由限流
 #
@@ -998,6 +1024,22 @@ __all__ = [
     "DEFAULT_STRICT_MODE",
     "DEFAULT_UNINIT_TIMEOUT_SECS",
     "DEFAULT_USE_GLOBAL_DB",
+    "DEFAULT_STORAGE_BACKEND",
+    "DEFAULT_STORAGE_MYSQL_CHARSET",
+    "DEFAULT_STORAGE_MYSQL_DATABASE",
+    "DEFAULT_STORAGE_MYSQL_HOST",
+    "DEFAULT_STORAGE_MYSQL_PASSWORD",
+    "DEFAULT_STORAGE_MYSQL_POOL_MAX",
+    "DEFAULT_STORAGE_MYSQL_POOL_MIN",
+    "DEFAULT_STORAGE_MYSQL_PORT",
+    "DEFAULT_STORAGE_MYSQL_USER",
+    "DEFAULT_STORAGE_PG_DATABASE",
+    "DEFAULT_STORAGE_PG_HOST",
+    "DEFAULT_STORAGE_PG_PASSWORD",
+    "DEFAULT_STORAGE_PG_POOL_MAX",
+    "DEFAULT_STORAGE_PG_POOL_MIN",
+    "DEFAULT_STORAGE_PG_PORT",
+    "DEFAULT_STORAGE_PG_USER",
     "DEFAULT_WAIT_TIMEOUT_SECS",
     "DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS",
     "DEFAULT_INTERACTION_LEASE_TTL_SECS",

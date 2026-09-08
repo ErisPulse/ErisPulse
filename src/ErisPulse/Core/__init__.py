@@ -20,6 +20,7 @@ from .Bases import (
     BaseQueryBuilder,
     KVQueryBuilder,
 )
+from .Bases.sql_base import AlterTableBuilder, SQLDialect, SQLQueryBuilder, SQLStorageBase
 from .Bases import HttpRequest, WebSocketConnection, WebSocketConnectionBase, WSMessage
 from .Bases import (
     WebSocketDisconnect,
@@ -58,6 +59,7 @@ client = Client()
 
 __all__ = [
     "AdapterManager",  # 适配器管理器类
+    "AlterTableBuilder",  # ALTER TABLE 构建器
     "ApiDSL",  # 标准 API 动作 DSL 类
     "BaseAdapter",  # 适配器基类
     "BaseClient",  # HTTP 客户端基类
@@ -98,7 +100,10 @@ __all__ = [
     "SendBuilder",  # 批量发送构建器类
     "SendContext",  # 发送任务实时上下文类
     "SendDSL",  # 发送消息 DSL 类
-    "StorageManager",  # 存储管理器类
+    "SQLDialect",  # SQL 方言基类
+    "SQLQueryBuilder",  # SQL 查询构建器（方言无关）
+    "SQLStorageBase",  # SQL 存储后端共享基类
+    "StorageManager",  # 存储管理器类（SQLite 后端向后兼容别名）
     "TranscriptManager",  # 会话收件箱管理器类
     "WSMessage",  # WebSocket 消息类
     "WebSocketConnection",  # WebSocket 连接类
