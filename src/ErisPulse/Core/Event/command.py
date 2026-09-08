@@ -305,6 +305,7 @@ class CommandHandler:
         method: str = DEFAULT_SEND_METHOD,
         pattern: str | None = None,
         regex: str | None = None,
+        session: bool = False,
     ) -> dict[str, Any] | None:
         """
         等待用户回复
@@ -317,6 +318,8 @@ class CommandHandler:
         :param method: 发送方法，默认为 "Text"
         :param pattern: glob 通配符（``*`` / ``?`` / ``[seq]``），回复文本不匹配时继续等待
         :param regex: 正则表达式，回复文本不匹配时继续等待（与 pattern 同时给定时须都匹配）
+        :param session: 会话级等待——同会话（群 / 频道）中**任何人**的回复均可命中
+            （如群协作场景：" anyone 输入「开始」即开始"）；默认 False 仅等待原回复者
         :return: 用户回复的事件数据，如果超时则返回None
 
         {!--< tips >!--}
@@ -361,6 +364,7 @@ class CommandHandler:
             validator=validator,
             pattern=pattern,
             regex=regex,
+            session_scope=session,
         )
         wait_key = entry.key
 

@@ -360,6 +360,8 @@ class DocsIndexGenerator:
         "advanced/i18n.md": 11,
         "advanced/scope.md": 12,
         "advanced/ownership.md": 13,
+        "advanced/interaction.md": 14,
+        "advanced/module-communication.md": 15,
         # AI 辅助开发
         "ai-support/README.md": 1,
         # 生态模块

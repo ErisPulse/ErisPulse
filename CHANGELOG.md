@@ -77,7 +77,7 @@
 > 开发版本
 
 **版本摘要**
-新增交互会话基础设施与基础原语：交互会话管理器（wait_reply 等待表抽为一等基础设施，owner / platform 双维度归属清理、回复命中权限复查、会话互斥租约）、Conversation 自动检查点（分支跳转自动存档 + 重启自动恢复）、端到端事件追踪（trace-id 贯穿入站 / 处理 / 出站 / 生命周期钩子）、消息事务（出站回执账本 + 异常自动撤回）、会话收件箱（每会话消息流自动记录与查询）。存储查询构建器新增 `ToDict()` 链。存储层升级为多后端异步原生架构：内置 sqlite / mysql / postgres 三种异步驱动后端（配置切换、API 完全一致），`BaseStorage` 抽象翻转为异步原生契约，同步 API 转为兼容层（现有同步调用代码零改动）。修复 wait_reply 挂起回复被高优先级处理器饿死的问题。
+新增交互会话基础设施与基础原语：交互会话管理器（wait_reply 等待表抽为一等基础设施，owner / platform 双维度归属清理、回复命中权限复查、会话互斥租约）、Conversation 自动检查点（分支跳转自动存档 + 重启自动恢复）、端到端事件追踪（trace-id 贯穿入站 / 处理 / 出站 / 生命周期钩子）、消息事务（出站回执账本 + 异常自动撤回）、会话收件箱（每会话消息流自动记录与查询）。存储查询构建器新增 `ToDict()` 链。存储层升级为多后端异步原生架构：内置 sqlite / mysql / postgres 三种异步驱动后端（配置切换、API 完全一致），`BaseStorage` 抽象翻转为异步原生契约，同步 API 转为兼容层（现有同步调用代码零改动）。修复 wait_reply 挂起回复被高优先级处理器饿死的问题；另落地模块间 RPC 协议化（module.call / provides 收敛为 meta.services 契约 + services() 服务目录 + emit_to 定向事件并可唤醒懒模块）、会话定时器（remind 回复即取消 / escalate 到点必达）、多路等待（event.select + wait_reply 会话级 anyone 可答）、事件幂等去重（重连重推只分发一次）、冷启动回放（strategy 声明 replay，新模块自动获得最近会话上下文）、对话恢复即接管（resume 自动持有会话租约并带回收件箱历史）。
 
 **升级建议**
 - 是否建议升级：建议升级
@@ -107,6 +107,23 @@
     - 回复命中权限复查：pattern / regex / validator 通过后复查 scope 身份维度（用户被拉黑）与模块维度（owner 模块在该会话被解绑），任一失败终止等待，消息继续走常规处理
     - 会话互斥租约：`acquire(event, ttl=...)`（deny 策略，被占用返回 None）/ `hold(event)` 上下文管理器（占用时抛 `SessionOccupiedError`）/ `get_owner_of(event)` 查询"该用户正被谁占用"；租约支持 `renew()` / `release()` 与 TTL 惰性过期
     - 诊断：`counts()`（waits / leases / per-owner 计数）
+  - **模块间通信（RPC 协议化 + 定向事件）** `Core/module.py` / `Core/Bases/module.py` / `Core/Bases/errors.py`：
+    - **协议化调用** `await sdk.module.call("Chat", "get_history", session_id, n=20)`：与裸属性访问（`module.Chat.fn()`，保留不变）的差异——目标未注册 / 未启用抛类型化异常而非 AttributeError；懒加载模块自动唤醒（事件驱动模块走激活锁）；被调方法执行期间 `current_owner` 归因到目标模块（其内部 wait_reply / 出站发送 / 日志正确归属）；协程方法默认 30s 超时（`ErisPulse` 常量 `DEFAULT_MODULE_CALL_TIMEOUT_SECS`，可用 `timeout=` 覆盖，None 不限时）
+    - **服务契约**：`get_meta()` 的 `ModuleMeta.services = ["get_history", ...]` 字段声明对外服务白名单（与 `commands` 对称），调用白名单外方法抛 `ServiceNotProvidedError`；未声明时保持向后兼容（任意公开方法可调，下划线私有方法始终禁止）——**开发者无感是默认**，限制主控制权在用户侧 scope 配置；`services` 支持 dict 形态（`{"name", "description"}`）声明服务介绍，介绍解析优先级 = 显式 description（支持 i18n 字典）> 方法 docstring 首行 > 空串
+    - **服务目录** `sdk.module.services(module=None)`：列出各模块显式声明的服务及方法签名字符串（`inspect.signature` 提取）与介绍文本（description），为 MCP 化（调用点暴露给 AI）与生态服务发现提供数据基础
+    - **出站审计**：调用方经过 scope 出站维度 `actions.<caller>.call` 判定（`name=<目标模块>.<方法>`，支持 glob / `re:` 正则），可按模块细粒度限制"谁能调用谁"；框架层调用（无 owner）不受约束
+    - **定向事件** `await sdk.module.emit_to("Chat", "message_received", {...})`：投递前校验目标模块已注册且启用（未加载的懒加载目标先激活再投递——定向事件即激活源，与 activate_on 语义对齐；用户主动 disable 仍拒绝），事件自动挂 `module.<名称>.` 命名空间（订阅 `module.<名称>` 可收全部定向事件），dict 数据自动携带 `_trace_id`
+    - 异常体系：`ModuleError` → `ModuleCallError` → `ModuleNotAvailableError` / `ServiceNotProvidedError` / `ModuleCallTimeoutError`（挂入 `ErisPulseError` 体系，`Core` 聚合导出）
+  - **会话定时器** `Core/Event/wrapper.py` / `Core/Event/interaction.py`：定时器挂交互会话索引（随模块卸载 / 适配器关闭自动取消，单会话活跃上限 5）
+    - `event.remind(300, "还在吗？")`（或 `conv.remind(...)`）：delay 秒后向会话发提醒 / 执行 callback，**用户回复自动取消**——"没回复就提醒"；支持 `reminder.cancel()` 手动取消
+    - `event.escalate(1800, fn)`：超时升级**不被回复取消**（到点必达，如通知主人 / 转人工）
+  - **多路等待与会话级等待** `Core/Event/wrapper.py` / `Core/Event/command.py` / `Core/Event/interaction.py`：
+    - `wait_reply(..., session=True)`：会话级等待（键不含 user 维度），同群 / 频道任何人的回复均可命中（群协作场景）
+    - `which, reply = await event.select(event.expect(pattern="同意*", user="A"), event.expect(...), timeout=60)`：同时挂起多条期望先到先得，未命中的自动取消；超时返回 `(None, None)`；期望支持 pattern / regex / validator / user 限定 / session
+  - **事件幂等去重** `Core/adapter.py`：分发入口按 `event["id"]` LRU 去重（容量 4096），平台 websocket 重连重推同 id 事件只分发一次；配置 `ErisPulse.framework.event_dedupe`（默认开启），适配器注册视为新连接生命周期、自动重置去重缓存
+  - **冷启动回放** `Core/module.py` / `Core/transcript.py` / `Core/Event/base.py`：`get_load_strategy(replay="5m")` 声明后，模块加载完成自动从会话收件箱回放最近消息（仅分发给该模块的处理器，合成事件带 `replayed: True` 标志供处理器跳过副作用）——新装模块热插拔进进行中的聊天；收件箱记录新增 sender 字段（旧表自动补列）
+  - **对话恢复接管** `Core/Event/wrapper.py`：`Conversation.resume()` 成功时自动 acquire 会话租约（被其他模块占用时放弃恢复，避免对话打架）并从收件箱带回最近消息到 `conv.recent_history`（`with_history` 参数可调 / 0 关闭）
+  - **服务目录进拓扑**：`get_topology()` 各模块条目新增 `services` 字段（meta.services 声明），与 `sdk.module.services()` 目录呼应
   - **Conversation 自动检查点** `Core/Event/wrapper.py`：
     - 分支跳转（`goto()` / `start()`）自动后台保存检查点；对话终态（`stop()` / `wait()` 超时 / `collect()` 失败）自动清除
     - 存储键补 target 维度：`conversation:{platform}:{user_id}:{target_id}`（同一用户在不同会话中的对话互不覆盖）；旧格式（不含 target）存档读取时自动迁移至新键

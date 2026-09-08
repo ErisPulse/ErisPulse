@@ -84,8 +84,8 @@ DEFAULT_CACHE_SIZE = 1024
 
 # ④ 出站维度：模块可限制的动作集合
 # "send"=消息发送（Event.reply / Send DSL）、"api"=标准 API 动作（Api DSL / call_api）、
-# "request"=请求操作（Request DSL accept/reject）
-_ACTION_NAMES = ("send", "api", "request")
+# "request"=请求操作（Request DSL accept/reject）、"call"=模块间调用（module.call）
+_ACTION_NAMES = ("send", "api", "request", "call")
 
 # 出站动作规则的合法键（其余键视为未知配置并告警）
 _ACTION_RULE_KEYS = ("allow", "deny")

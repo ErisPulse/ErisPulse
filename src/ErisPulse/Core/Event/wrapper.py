@@ -16,6 +16,7 @@ import asyncio
 import inspect
 import time
 from collections.abc import Awaitable, Callable
+from dataclasses import dataclass
 from typing import Any, Optional, TypedDict
 
 from .. import adapter, logger
@@ -558,6 +559,28 @@ def _normalize_modifier(mod) -> tuple[str, tuple, dict]:
         args = mod[1] if isinstance(mod[1], (list, tuple)) else (mod[1],)
         return name, tuple(args), mod[2]
     return name, tuple(mod[1:]), {}
+
+
+@dataclass
+class Expectation:
+    """
+    等待期望描述（:meth:`Event.expect` 创建，传给 :meth:`Event.select` 做多路等待）
+
+    本身不注册任何等待——仅在 ``select()`` 调用时统一注册，
+    任一路命中即返回该路结果，其余自动取消。
+
+    :attribute pattern: glob 文本过滤（``*`` / ``?`` / ``[seq]``）
+    :attribute regex: 正则文本过滤（与 pattern 同时给定时须都匹配）
+    :attribute validator: 回复校验函数（接收 Event，返回 bool）
+    :attribute user: 限定回复者 user_id（None 不限定）
+    :attribute session: 会话级等待（同会话任何人可命中，忽略 user）
+    """
+
+    pattern: str | None = None
+    regex: str | None = None
+    validator: Any = None
+    user: str | None = None
+    session: bool = False
 
 
 class Event(dict):
@@ -1719,6 +1742,71 @@ class Event(dict):
 
     # ==================== 工具方法 ====================
 
+    def remind(self, delay: float, text: str | None = None, *, callback: Any = None) -> Any:
+        """
+        会话定时提醒：delay 秒后无回复则提醒 / 执行回调
+
+        挂在当前会话上的定时器——用户**在该会话回复后自动取消**
+        （"如果没在时限内回复就提醒"）；也可 ``reminder.cancel()`` 手动取消；
+        归属模块卸载 / 适配器关闭时随归属清理自动取消。
+
+        :param delay: 延迟秒数
+        :param text: 到期发送到当前会话的提醒文本（与 callback 二选一，同时给定时文本优先）
+        :param callback: 到期执行的回调（同步或异步，接收当前 Event 为参数）
+        :return: :class:`~ErisPulse.Core.Event.interaction.Reminder` 句柄；超过单会话上限时返回 None
+        :raises RuntimeError: text 与 callback 均未提供时
+
+        :example:
+        >>> reminder = event.remind(300, "还在吗？不想聊就回复「退出」哦")
+        >>> # 用户 5 分钟内回复 → 提醒自动取消；未回复 → 到期发送
+
+        {!--< tips >!--}
+        单会话同时最多挂 5 个活跃提醒（超出返回 None）。
+        {!--< /tips >!--}
+        """
+        if text is None and callback is None:
+            raise ValueError(i18n.t("core.interaction.remind_requires_action"))
+
+        from .interaction import interaction
+
+        event_ref = self
+
+        async def _fire():
+            if text is not None:
+                await event_ref.reply(text)
+            elif callback is not None:
+                result = callback(event_ref)
+                if asyncio.iscoroutine(result):
+                    await result
+
+        return interaction.add_reminder(self, delay, _fire, cancellable_by_reply=True)
+
+    def escalate(self, delay: float, callback: Any) -> Any:
+        """
+        超时升级：delay 秒后执行升级回调（**不被用户回复取消**）
+
+        与 :meth:`remind` 的差异：remind 是"没回复就提醒、回复即取消"，
+        escalate 是"到点必达"的升级动作（如长时间无处理通知主人、转人工），
+        仅手动 ``cancel()`` / 模块卸载 / 适配器关闭才取消。
+
+        :param delay: 延迟秒数
+        :param callback: 到期执行的回调（同步或异步，接收当前 Event 为参数）
+        :return: :class:`~ErisPulse.Core.Event.interaction.Reminder` 句柄
+
+        :example:
+        >>> event.escalate(1800, lambda e: notify_master("工单 30 分钟未处理"))
+        """
+        from .interaction import interaction
+
+        event_ref = self
+
+        async def _fire():
+            result = callback(event_ref)
+            if asyncio.iscoroutine(result):
+                await result
+
+        return interaction.add_reminder(self, delay, _fire, cancellable_by_reply=False)
+
     async def history(self, n: int = 20) -> list[dict[str, Any]]:
         """
         查询当前会话的近期消息（会话收件箱）
@@ -1737,6 +1825,106 @@ class Event(dict):
         from ..transcript import transcript
 
         return transcript.get(self, n)
+
+    @staticmethod
+    def expect(
+        pattern: str | None = None,
+        regex: str | None = None,
+        validator: Any = None,
+        user: str | None = None,
+        session: bool = False,
+    ) -> Expectation:
+        """
+        构造一条等待期望（不注册，传给 :meth:`select` 做多路等待）
+
+        :param pattern: glob 文本过滤（``*`` / ``?`` / ``[seq]``）
+        :param regex: 正则文本过滤（与 pattern 同时给定时须都匹配）
+        :param validator: 回复校验函数（接收 Event，返回 bool）
+        :param user: 限定回复者 user_id（None 不限定）
+        :param session: 会话级等待——同会话任何人可命中（忽略 user）
+        :return: 期望描述对象
+
+        :example:
+        >>> which, reply = await event.select(
+        ...     event.expect(pattern="同意*", user="10001"),
+        ...     event.expect(pattern="拒绝*", user="10002"),
+        ...     timeout=60,
+        ... )
+        """
+        return Expectation(
+            pattern=pattern,
+            regex=regex,
+            validator=validator,
+            user=user,
+            session=session,
+        )
+
+    async def select(
+        self, *expectations: Expectation, timeout: float | None = None
+    ) -> "tuple[int | None, Event | None]":
+        """
+        多路等待：同时挂起多条期望，任一命中即返回该路结果（先到先得）
+
+        典型场景：同时等待"管理员同意"与"用户回复"、多人协作投票等。
+        未命中的等待在返回前自动取消；全部超时返回 ``(None, None)``。
+        命中的事件已被框架认领（mark_processed），不会被低优先级处理器重复消费。
+
+        :param expectations: :meth:`expect` 构造的期望描述（至少一条）
+        :param timeout: 统一超时秒数（None 表示不限时）
+        :return: ``(命中的期望下标, 回复事件)``；超时返回 ``(None, None)``
+        :raises ValueError: 未提供任何期望时
+
+        :example:
+        >>> which, reply = await event.select(
+        ...     event.expect(pattern="同意*", user="10001"),
+        ...     event.expect(pattern="拒绝*", user="10002"),
+        ...     timeout=60,
+        ... )
+        >>> if which is None:
+        ...     await event.reply("超时未收到审批")
+        >>> elif which == 0:
+        ...     await event.reply("已同意")
+        """
+        if not expectations:
+            raise ValueError(i18n.t("core.interaction.select_requires_expectations"))
+
+        from .interaction import interaction
+
+        loop = asyncio.get_running_loop()
+        entries = []
+        futures = []
+        for exp in expectations:
+            evt = self
+            # 不同 user 的期望构造键区分的变体事件（同 user 多路也因事件副本独立而互不冲突）
+            if exp.user is not None:
+                evt = Event(dict(self))
+                evt["user_id"] = exp.user
+            future = loop.create_future()
+            entry = interaction.register(
+                evt,
+                future,
+                pattern=exp.pattern,
+                regex=exp.regex,
+                validator=exp.validator,
+                session_scope=exp.session,
+            )
+            entries.append(entry)
+            futures.append(future)
+
+        try:
+            done, _pending = await asyncio.wait(
+                futures, timeout=timeout, return_when=asyncio.FIRST_COMPLETED
+            )
+        finally:
+            # 无论命中 / 超时 / 被取消，未消费的等待全部清理（已命中的条目已被移除，取消为幂等空操作）
+            for entry in entries:
+                interaction.cancel(entry.key)
+
+        if not done:
+            return None, None
+
+        done_future = next(iter(done))
+        return futures.index(done_future), done_future.result()
 
     def message_tx(self) -> "_MessageTx":
         """
@@ -1938,6 +2126,7 @@ class Event(dict):
         )
 
 
+
 # 对话恢复工厂注册表：[(factory, platform | None)]
 # 由 Conversation.register_resume_handler 装饰器写入，
 # 框架在消息事件入口通过 Conversation.try_auto_resume 消费。
@@ -2017,6 +2206,7 @@ class _MessageTx:
         return False
 
 
+
 class Conversation:
     """
     多轮对话上下文
@@ -2047,6 +2237,8 @@ class Conversation:
         self._current_branch: str | None = None
         self._branch_task: asyncio.Task | None = None
         self.context: dict[str, Any] = {}
+        # 恢复时由 resume(with_history=N) 从会话收件箱带回的最近消息
+        self.recent_history: list[dict[str, Any]] = []
 
     @property
     def is_active(self) -> bool:
@@ -2170,6 +2362,32 @@ class Conversation:
         if self._branch_task and not self._branch_task.done():
             self._branch_task.cancel()
         self._schedule_checkpoint_clear()
+
+    def remind(self, delay: float, text: str | None = None, *, callback: Any = None) -> Any:
+        """
+        会话定时提醒（转发到当前对话事件的 ``Event.remind``）
+
+        delay 秒后无回复则发送提醒文本 / 执行回调；用户在会话回复后自动取消。
+
+        :param delay: 延迟秒数
+        :param text: 到期发送的提醒文本（与 callback 二选一）
+        :param callback: 到期执行的回调（接收当前 Event 为参数）
+        :return: Reminder 句柄；超过单会话上限时返回 None
+
+        :example:
+        >>> conv.remind(120, "还在考虑吗？需要帮助请输入「帮助」")
+        """
+        return self._event.remind(delay, text, callback=callback)
+
+    def escalate(self, delay: float, callback: Any) -> Any:
+        """
+        超时升级（转发到当前对话事件的 ``Event.escalate``，不被回复取消）
+
+        :param delay: 延迟秒数
+        :param callback: 到期执行的回调（接收当前 Event 为参数）
+        :return: Reminder 句柄
+        """
+        return self._event.escalate(delay, callback)
 
     # 分支系统
 
@@ -2384,14 +2602,18 @@ class Conversation:
         except Exception:
             logger.trace("[Conversation] save failed")
 
-    async def resume(self, event: "Event | None" = None) -> bool:
+    async def resume(self, event: "Event | None" = None, with_history: int = 10) -> bool:
         """
-        从 storage 恢复对话状态
+        从 storage 恢复对话状态（含会话接管与历史带回）
 
-        读取含 target 维度的新键；旧格式（不含 target）存档会自动迁移到新键。
+        恢复流程：读取检查点（含 target 维度新键，旧格式自动迁移）→
+        **会话接管**（自动 acquire 会话租约，被其他模块占用时放弃恢复）→
+        落地上下文并从收件箱带回最近消息到 :attr:`recent_history`。
+
         超过 checkpoint_ttl 的存档视为过期，丢弃并返回 False。
 
         :param event: Event 新的事件对象 (可选, 不传则使用原事件)
+        :param with_history: 恢复时从会话收件箱带回的最近消息条数（0 关闭）
         :return: bool 是否恢复成功
 
         :example:
@@ -2408,6 +2630,7 @@ class Conversation:
         """
         try:
             from ..storage import storage
+            from .interaction import interaction
 
             evt = event or self._event
             key = self._checkpoint_key(evt)
@@ -2434,11 +2657,25 @@ class Conversation:
                 logger.trace(i18n.t("core.event.conversation_checkpoint_expired"))
                 return False
 
+            # 会话接管：恢复的对话持有该会话租约（被其他模块占用时放弃恢复，避免对话打架）
+            if interaction.acquire(evt) is None:
+                logger.trace(i18n.t("core.event.conversation_session_occupied"))
+                return False
+
             self.context = data.get("context", {})
             self._current_branch = data.get("branch")
             self._alive = data.get("alive", False)
             if event:
                 self._event = event
+
+            # 历史带回：从收件箱取最近消息（AI 模块恢复后 LLM 上下文不断档）
+            if with_history:
+                try:
+                    from ..transcript import transcript as _transcript
+
+                    self.recent_history = _transcript.get(evt, with_history)
+                except Exception:
+                    self.recent_history = []
             return True
         except Exception as _e:
             logger.trace(i18n.t("core.event.conversation_resume_failed", error=_e))

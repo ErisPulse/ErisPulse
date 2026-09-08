@@ -199,6 +199,33 @@ class BaseEventHandler:
             return True
         return False
 
+    async def dispatch_to_owner(self, owner: str, event: "Event") -> int:
+        """
+        {!--< internal-use >!--}
+        回放分发：将合成事件只投递给指定归属者（模块）的处理器
+
+        用于冷启动事件回放（``get_load_strategy(replay=...)``）——
+        新装模块通过回放快速获得会话上下文，其他模块不受回放影响。
+
+        :param owner: 归属者（模块名）
+        :param event: 合成事件（带 ``replayed: True`` 标志）
+        :return: 实际投递的处理器数量
+        """
+        delivered = 0
+        for handler_info in list(self.handlers):
+            if handler_info.get("owner") != owner:
+                continue
+            cond = handler_info.get("condition")
+            if cond is not None:
+                try:
+                    if not cond(event):
+                        continue
+                except Exception:
+                    continue
+            await _invoke_handler(handler_info, event)
+            delivered += 1
+        return delivered
+
     def unregister_by_owner(self, owner: str) -> int:
         """
         {!--< internal-use >!--}

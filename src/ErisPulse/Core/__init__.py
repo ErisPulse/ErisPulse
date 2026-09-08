@@ -29,8 +29,13 @@ from .Bases import (
     ClientConnectionError,
     ClientTimeoutError,
     HTTPStatusError,
-    WebSocketError,
     InteractionError,
+    ModuleCallError,
+    ModuleCallTimeoutError,
+    ModuleError,
+    ModuleNotAvailableError,
+    ServiceNotProvidedError,
+    WebSocketError,
 )
 from .Bases import BaseClient, BaseHttpResponse, BaseClientWebSocket
 from .Bases.client import BaseHttpClient  # 向后兼容别名
@@ -85,6 +90,11 @@ __all__ = [
     "I18nManager",  # 国际化管理器类
     "InteractionError",  # 交互会话异常基类
     "KVQueryBuilder",  # KV 查询构建器
+    "ModuleCallError",  # 模块间调用异常基类
+    "ModuleCallTimeoutError",  # 模块间调用超时异常
+    "ModuleError",  # 模块系统异常基类
+    "ModuleNotAvailableError",  # 目标模块不可用异常
+    "ServiceNotProvidedError",  # 服务未提供异常
     "LifecycleManager",  # 生命周期管理器类
     "Logger",  # 日志类
     "LoggerChild",  # 日志子类
