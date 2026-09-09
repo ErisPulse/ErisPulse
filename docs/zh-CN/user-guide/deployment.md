@@ -78,6 +78,11 @@ services:
 - `config/config.db` — SQLite 存储数据库
 - `config/.packages` — Python site-packages 持久化卷，保存框架、适配器和已安装模块（首次启动时由入口点从镜像内置备份自动初始化，之后的模块安装与框架热更新均写入此目录）
 
+> **框架升级（含 pre/rc）与镜像自愈**：入口点会在每次容器启动时做核心包完整性自检，
+> 损坏时按"用户已安装版本优先"原则修复——持久卷内显式安装/升级的版本
+> （如 Dashboard 安装的 pre 版本）会从 PyPI **重装同版本**，绝不静默回退到
+> 镜像内置版本。因此 Dashboard 升级框架后，任意次容器重启都应保持目标版本。
+
 ## Dashboard 管理面板
 
 ErisPulse Docker 镜像内置 Dashboard 模块，提供 Web 可视化管理界面。

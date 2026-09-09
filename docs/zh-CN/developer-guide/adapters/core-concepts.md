@@ -377,6 +377,10 @@ metadata = {
     "description": str | dict,  # 字段描述（支持 i18n）
     "required": bool,         # 是否必填（校验 + WebUI 必填标记）
     "secret": bool,           # 是否敏感（WebUI 显示为 ***，日志中脱敏）
+    "example": bool,          # 不落盘标志：不写入 config.toml（默认值/模板均排除），
+                              # 仅渲染进 config.full.example；schema 带 "example": true 标记，
+                              # CLI 配置向导默认跳过；用户手动设置后正常持久化
+    "min": number, "max": number,  # 数值范围校验
     "ui": {                   # WebUI 控件配置（旧名 "webui" 仍兼容）
         "widget": str,        # 控件类型: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # 分组: "basic" | "advanced" | "connection" 等
@@ -441,6 +445,89 @@ MyConfig._schema_meta = {
 
 框架的 `resolve_config_schema()` 会根据当前语言自动解析上述所有字段的 i18n 键；
 `get_config_schema()` 则原样透传 i18n 字典，由前端自行解析。
+
+#### docstring 自动生成字段描述（v2.8.0+）
+
+未在 metadata 中声明 `description` 的字段，框架会自动从配置类 docstring 中
+提取字段说明作为兜底，支持两种常见风格（可混用）：
+
+```python
+@dataclass
+class MyConfig(BaseConfig):
+    """
+    MyAdapter 配置
+
+    :ivar endpoint: 平台 API 地址        # reST 风格
+    :ivar timeout: 请求超时秒数
+    """
+
+    endpoint: str = "https://api.example.com"   # 无 metadata description → 注释/描述取 docstring
+    timeout: int = 30
+
+    # Google 风格同样支持（Attributes: 段）：
+    # Attributes:
+    #     endpoint: 平台 API 地址
+```
+
+优先级：**metadata description > docstring 字段说明 > 空**。
+i18n 字典形式的 description 不受影响（始终优先）。
+
+#### 嵌套配置（v2.8.0+）
+
+字段类型为嵌套 dataclass 时，框架递归处理：schema 以 `"type": "table"` +
+`"fields"` 子树承载（WebUI 渲染为可折叠嵌套分组），TOML 模板渲染为 `[子表]` 节，
+默认值 / 填充 / 校验 / i18n 解析均递归生效。
+
+```python
+@dataclass
+class RetryConfig(BaseConfig):
+    """重试策略
+
+    :ivar max_retries: 最大重试次数
+    """
+    max_retries: int = 3
+    backoff: float = 0.5
+
+@dataclass
+class MyConfig(BaseConfig):
+    """MyAdapter 配置"""
+    endpoint: str = "https://api.example.com"
+    retry: RetryConfig = field(default_factory=RetryConfig)   # 嵌套配置段
+```
+
+生成的 TOML 模板：
+
+```toml
+endpoint = "https://api.example.com"
+
+[retry]
+# 最大重试次数
+max_retries = 3
+backoff = 0.5
+```
+
+> 嵌套类型建议使用直接类型注解；字符串注解（如延迟求值场景）需保证
+> 类型可从配置类所在模块全局、`__qualname__` 外层类命名空间或类属性中按名解析。
+
+#### 不落盘的 example 字段（v2.8.0+）
+
+```python
+gc_interval: int = field(default=300, metadata={"example": True})
+```
+
+带 `example: True` 的字段：
+
+- 不写入 config.toml（适配器/模块配置模板与默认值均排除，运行时走代码默认值）
+- 仅渲染进项目内 `config.full.example`（供用户参考，按需手动复制到 config.toml）
+- schema 中带 `"example": true` 标记（面板可自行决定展示策略），CLI 配置向导默认跳过
+- 用户手动设置该键后正常持久化、正常热更新（用户显式意图优先）
+
+适合"冗杂又很少触碰"的高级配置项，保持用户的 config.toml 最小化。
+
+> ⚠️ `_schema_meta` 是类级元数据（非配置字段）。若在 dataclass 类体内部声明，
+> 必须加 `ClassVar` 注解（`_schema_meta: ClassVar[dict] = {...}`），否则会被
+> dataclass 视为普通字段。框架对下划线前缀字段已做防御性排除（不进入任何
+> schema / 模板 / 默认值 / 校验输出），但仍建议规范声明。
 
 ### 声明式翻译键（v2.7.0+）
 

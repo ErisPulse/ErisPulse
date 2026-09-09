@@ -2191,18 +2191,15 @@ class BaseAdapter(ABC):
 
         if self.ConfigClass is None:
             return
-        from .config_schema import (
-            dataclass_to_defaults_dict,
-            dataclass_to_toml_with_comments,
-        )
+        from .config_schema import dataclass_to_toml_with_comments
 
         key = self._get_config_key()
         data = config_mgr.getConfig(key)
 
         if data is None:
-            data = dataclass_to_defaults_dict(self.ConfigClass)
+            # 模板以带注释文本直接落盘（注释保留写入），字段描述对用户可见
             toml_str = dataclass_to_toml_with_comments(self.ConfigClass)
-            config_mgr.setConfig(key, data, immediate=True)
+            config_mgr.setConfigTemplate(key, toml_str, immediate=True)
             self._get_logger().info(i18n.t("core.adapter.config_template_generated", key=key, toml=toml_str))
 
     def _ensure_i18n_registered(self):

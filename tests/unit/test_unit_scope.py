@@ -849,3 +849,119 @@ class TestScopePatternEntries:
             {"platforms": {"p": {"modules": ["re:[bad"], "blocked": []}}, "bots": {}, "sessions": {}}
         )
         assert mgr.is_allowed("p", "b1", "anything") is False
+
+
+class TestRuntimeOverrideSurvival:
+    """Issue #432 回归：persist=False 运行时绑定不被任意后续配置写入冲掉"""
+
+    @staticmethod
+    def _make_mgr() -> ScopeManager:
+        return ScopeManager()
+
+    def test_runtime_binding_survives_unrelated_set(self):
+        """无关配置节写入（config.set）后运行时绑定仍有效"""
+        from unittest.mock import patch
+
+        mgr = self._make_mgr()
+        mgr.set("bots.p.b1", {"blocked": ["TestB"]}, persist=False)
+        assert mgr.is_allowed("p", "b1", "TestB") is False
+
+        # 模拟任意模块写自己的配置（非 scope 子树）触发的 config.set
+        with patch.object(mgr, "_load_config") as mock_load:
+            mgr._on_config_updated({"key": "HelpModule", "old_value": None, "new_value": {}})
+        mock_load.assert_not_called()
+        assert mgr.is_allowed("p", "b1", "TestB") is False
+
+    def test_runtime_binding_survives_tree_reload(self):
+        """配置树整体重建后运行时绑定被重放"""
+        mgr = self._make_mgr()
+        mgr.set("bots.p.b1", {"blocked": ["TestB"]}, persist=False)
+
+        # 模拟持久层变更触发的整体重建（scope 节不含该运行时绑定）
+        mgr._apply_tree({"platforms": {}, "bots": {}, "sessions": {}, "identity": {}, "actions": {}})
+        assert mgr.is_allowed("p", "b1", "TestB") is False
+
+        # 重放不破坏配置树中已有的持久规则
+        mgr._apply_tree(
+            {"platforms": {"p": {"modules": ["Chat"]}}, "bots": {}, "sessions": {}, "identity": {}, "actions": {}}
+        )
+        assert mgr.is_allowed("p", "b1", "Chat") is True
+        assert mgr.is_allowed("p", "b1", "TestB") is False
+
+    def test_runtime_delete_survives_reload(self):
+        """persist=False 删除在重建后保持"已删除"语义"""
+        mgr = self._make_mgr()
+        persisted = {
+            "platforms": {"p": {"blocked": ["Chat"]}},
+            "bots": {},
+            "sessions": {},
+            "identity": {},
+            "actions": {},
+        }
+        mgr._apply_tree(persisted)
+        # 持久层：Chat 被平台级拉黑
+        assert mgr.is_allowed("p", "b1", "Chat") is False
+
+        # 运行时删除该绑定（不落盘）→ 恢复默认放行
+        assert mgr.delete("platforms.p", persist=False) is True
+        assert mgr.is_allowed("p", "b1", "Chat") is True
+
+        # 重建后运行时删除仍生效（持久层的 blocked 不会"复活"）
+        mgr._apply_tree(persisted)
+        assert mgr.is_allowed("p", "b1", "Chat") is True
+
+    def test_persist_write_clears_runtime_override(self):
+        """persist=True 写入后该路径的运行时覆盖记录被清除（用户持久化语义优先）"""
+        mgr = self._make_mgr()
+        mgr.set("bots.p.b1", {"blocked": ["A"]}, persist=False)
+        assert "bots.p.b1" in mgr._runtime_overrides
+
+        mgr.set("bots.p.b1", {"blocked": ["B"]}, persist=True)
+        assert "bots.p.b1" not in mgr._runtime_overrides
+
+    def test_persist_write_clears_child_overrides(self):
+        """persist=True 写入父路径时清除其下全部子路径覆盖记录"""
+        mgr = self._make_mgr()
+        mgr.set("actions.My.send", {"deny": True}, persist=False)
+        mgr.set("actions.My.api", {"deny": True}, persist=False)
+        assert len(mgr._runtime_overrides) == 2
+
+        mgr.set("actions.My", {"request": {"deny": True}}, persist=True)
+        assert not [p for p in mgr._runtime_overrides if p.startswith("actions.My")]
+
+    def test_scope_set_event_triggers_reload(self):
+        """scope 子树内的 config.set 仍触发重建"""
+        from unittest.mock import patch
+
+        mgr = self._make_mgr()
+        with patch.object(mgr, "_load_config") as mock_load:
+            mgr._on_config_updated({"key": "ErisPulse.scope.platforms.p", "old_value": None, "new_value": {}})
+        mock_load.assert_called_once()
+
+    def test_updated_event_same_scope_skips_reload(self):
+        """config.updated 新旧 scope 节相同时跳过重建（避免冲刷判定缓存）"""
+        from unittest.mock import patch
+
+        mgr = self._make_mgr()
+        tree = {"ErisPulse": {"scope": {"default_allow": True}}}
+        with patch.object(mgr, "_load_config") as mock_load:
+            mgr._on_config_updated({"old_config": tree, "new_config": tree, "config_file": "x"})
+        mock_load.assert_not_called()
+
+    def test_unregister_by_owner_removes_runtime_bindings(self):
+        """unregister_by_owner 清理调用方的运行时绑定"""
+        from unittest.mock import patch
+
+        mgr = self._make_mgr()
+        with patch("ErisPulse.runtime.context.current_owner") as mock_ctx:
+            mock_ctx.get.return_value = "MyModule"
+            mgr.set("bots.p.b1", {"blocked": ["X"]}, persist=False)
+            mgr.set("actions.My.send", {"deny": True}, persist=False)
+        assert len(mgr._runtime_owners) == 2
+
+        removed = mgr.unregister_by_owner("MyModule")
+        assert removed == 2
+        assert mgr._runtime_overrides == {}
+        assert mgr._runtime_owners == {}
+        # 内存中的绑定同步移除
+        assert mgr.is_allowed("p", "b1", "X") is True

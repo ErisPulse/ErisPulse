@@ -303,36 +303,29 @@ def _ensure_erispulse_config_structure(config_dict: dict[str, Any]) -> dict[str,
 
 def get_erispulse_config() -> dict[str, Any]:
     """
-    获取 ErisPulse 框架配置，自动补全缺失的配置项并保存
+    获取 ErisPulse 框架配置，自动补全缺失的配置项
+
+    默认配置仅在内存中合并返回，不写入配置文件——config.toml 保持最小化，
+    只包含用户显式设置的键；完整可配置项参考项目内的 config.full.example。
+    用户显式设置（手动编辑 / update_erispulse_config / set_erispulse_section）
+    的键不受影响，优先级始终高于内置默认值。
 
     :return: 完整的 ErisPulse 配置字典
     """
     config_service = _get_config_service()
 
-    # 获取现有配置
+    # 获取现有配置（deepcopy 避免合并默认值时污染缓存）
     current_config = config_service.getConfig(CONFIG_ROOT_KEY)
 
-    # 如果完全没有配置，设置默认配置
     if current_config is None:
-        default_copy = copy.deepcopy(DEFAULT_ERISPULSE_CONFIG)
-        config_service.setConfig(CONFIG_ROOT_KEY, default_copy)
-        return default_copy
-
-    # 保存原始配置的快照用于比较
-    original_snapshot = copy.deepcopy(current_config)
-
-    # 检查并补全缺失的配置项
-    complete_config = _ensure_erispulse_config_structure(current_config)
-
-    # 如果配置有变化，按叶子键写入缺失的默认项，
-    # 避免整棵 ErisPulse 覆盖导致用户对其它子键的热更新被陈旧快照冲掉
-    if original_snapshot != complete_config:
-        for path, value in _iter_leaf_diff(original_snapshot, complete_config):
-            config_service.setConfig(f"{CONFIG_ROOT_KEY}.{path}", value)
+        result = copy.deepcopy(DEFAULT_ERISPULSE_CONFIG)
+    elif isinstance(current_config, dict):
+        result = _ensure_erispulse_config_structure(copy.deepcopy(current_config))
+    else:
+        result = copy.deepcopy(DEFAULT_ERISPULSE_CONFIG)
 
     # 环境变量覆盖（Docker / 12-factor）：ERISPULSE_SERVER_PORT 等
     # 仅对返回副本应用，不持久化到缓存；每调用每生效
-    result = copy.deepcopy(complete_config)
     _apply_env_overrides(result, CONFIG_ROOT_KEY)
     return result
 

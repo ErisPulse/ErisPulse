@@ -832,6 +832,22 @@ class ModuleManager(ManagerBase):
         except Exception:
             pass
 
+        # 兜底清理模块运行时写入（persist=False）的作用域绑定
+        try:
+            from .scope import scope as scope_manager
+
+            scope_removed = scope_manager.unregister_by_owner(module_name)
+            if scope_removed > 0:
+                logger.debug(
+                    i18n.t(
+                        "core.module.unload_scope_bindings_cleaned",
+                        name=module_name,
+                        count=scope_removed,
+                    )
+                )
+        except Exception:
+            pass
+
         from .Event import command, interaction, message, meta, notice, request
 
         total_cleaned = 0
@@ -1873,7 +1889,7 @@ class ModuleManager(ManagerBase):
             stripped = line.strip()
             if not stripped:
                 continue
-            if stripped.startswith(">>>") or stripped.startswith("..."):
+            if stripped.startswith((">>>", "...")):
                 continue
             return stripped
         return ""

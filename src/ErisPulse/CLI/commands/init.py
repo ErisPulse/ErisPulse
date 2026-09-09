@@ -311,7 +311,52 @@ class InitCommand(Command):
             ]
         )
 
+        lines.extend(InitCommand._render_component_examples(st))
+
         return "\n".join(lines)
+
+    @staticmethod
+    def _render_component_examples(st) -> list[str]:
+        """
+        渲染已安装适配器/模块的声明式配置段（追加到 full.example 末尾）
+
+        复用配置向导的发现机制（entry-points + 本地插件目录），
+        对声明了 ConfigClass 的组件用 ``dataclass_to_toml_with_comments(include_example=True)``
+        渲染带注释模板——含 ``example`` 字段（这类字段不自动写入 config.toml，
+        仅记录在本示例文件中供用户按需启用）。
+
+        :param st: ScaffoldText 文案工具实例
+        :return: 行列表（无已配置组件时为空）
+        """
+        try:
+            from ErisPulse.Core.Bases.config_schema import dataclass_to_toml_with_comments
+
+            from ..utils.config_wizard import load_config_targets
+
+            configured = [t for t in load_config_targets() if t.config_class is not None]
+        except Exception:
+            return []
+
+        if not configured:
+            return []
+
+        lines = [st.t("cfg.section.components"), "", st.t("cfg.section.components_hint"), ""]
+        for target in configured:
+            cfg_cls = target.config_class
+            if cfg_cls is None:
+                continue
+            try:
+                body = dataclass_to_toml_with_comments(cfg_cls, include_example=True)
+            except Exception:
+                continue
+            if not body.strip():
+                continue
+            lines.append(f"[{target.config_key}]")
+            lines.append(body.rstrip())
+            lines.append("")
+
+        # 无成功渲染的组件时不出现在示例中
+        return lines if len(lines) > 4 else []
 
     async def _fetch_available_adapters(self):
         """
