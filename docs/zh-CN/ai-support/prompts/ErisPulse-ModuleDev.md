@@ -2432,6 +2432,12 @@ class MyModule(BaseModule):
 
 `BaseConfig` 是通用配置基类，适用于适配器、模块、外部项目等任何场景。配置字段支持 i18n 多语言描述（详见 [i18n 文档](../../advanced/i18n.md#配置字段多语言)）。
 
+配置 Schema 系统还支持（v2.8.0+，详见 [适配器 core-concepts](../adapters/core-concepts.md#metadata-约定)）：
+
+- **docstring 自动生成字段描述**：未声明 metadata `description` 时，自动从 docstring 的 `:ivar 字段: 说明` 或 `Attributes:` 段提取兜底
+- **嵌套 dataclass 配置**：字段类型为嵌套 dataclass 时，schema/模板/校验递归处理，WebUI 渲染为嵌套分组
+- **`example` 不落盘字段**：`metadata={"example": True}` 的字段不写入 config.toml，仅记录在 `config.full.example`（适合冗杂又很少触碰的高级配置项），用户手动设置后正常持久化
+
 ### 声明式翻译键（v2.7.0+）
 
 从 v2.7.0 起，模块还可以像声明 `ConfigClass` 一样，通过嵌套类 `I18nClass` 集中声明翻译键。框架会在加载时**自动注册**所有声明的翻译键，无需手动调用 `i18n.register()`，且注册时机早于配置模板生成，确保配置描述中引用的 i18n 键已可用。
@@ -9758,6 +9764,12 @@ scope.delete_module("onebot11", bot_id="123456")
 
 > `merge=True` 是**写时并集**（与该级现有绑定合并条目）；跨级解析期的
 > `merge = true` 配置键见上文[绑定继承](#绑定继承merge)——两者是独立机制。
+
+> **运行时绑定（`persist=False`）语义**：运行时绑定保存在独立的覆盖层中，
+> **任意后续配置写入 / 配置文件热更新都不会冲掉它们**（配置树重建后按写入顺序
+> 自动重放，含运行时删除）。它们不落盘，进程重启后丢失；模块卸载时该模块写入的
+> 运行时绑定会被兜底清理。随后对同一路径执行 `persist=True` 写入（用户持久化语义）
+> 将取代运行时规则。
 
 ### ② 身份维度
 

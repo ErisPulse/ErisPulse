@@ -176,7 +176,7 @@
               "icon": "fa-network-wired"
             },
             {
-              "title": "Основные понятия адаптера",
+              "title": "Основные концепции адаптера",
               "path": "developer-guide/adapters/core-concepts.md",
               "level": 1,
               "icon": "fa-microchip"
@@ -336,7 +336,7 @@
     "Продвинутые темы": {
       "description": "Глубокое изучение продвинутых функций фреймворка",
       "icon": "fa-fire",
-      "count": 14,
+      "count": 15,
       "documents": [
         {
           "title": "Расширенные темы",
@@ -393,7 +393,7 @@
           "icon": "fa-language"
         },
         {
-          "title": "Scope (область видимости)",
+          "title": "Scope",
           "path": "advanced/scope.md",
           "level": 1,
           "icon": "fa-shield-halved"
@@ -407,6 +407,12 @@
         {
           "title": "Система интерактивных сессий",
           "path": "advanced/interaction.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "Коммуникация между модулями",
+          "path": "advanced/module-communication.md",
           "level": 1,
           "icon": "fa-fire"
         },

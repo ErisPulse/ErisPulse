@@ -10,6 +10,7 @@ ErisPulse 配置中心
 集中管理所有配置项，避免循环导入问题
 提供自动补全缺失配置项的功能
 添加内存缓存和延迟写入机制以提高性能
+基于 tomlkit 实现注释保留写入：配置文件中的注释与键顺序在任何框架写入后均不丢失
 
 > **提示**
 > 1. 使用 getConfig(key) / setConfig(key, value) 读写配置
@@ -130,18 +131,6 @@ ConfigManager 类提供相关功能。
 ---
 
 
-##### `_sort_config_dict(config_dict: dict[str, Any])`
-
-递归地对配置字典按键排序
-
-- **config_dict** (`dict`): 待排序的配置字典
-**返回值** (`dict`): 排序后的配置字典
-
-> **内部方法**
-
----
-
-
 ##### `_malformed_sentinel_path()`
 
 跨进程告警冷却哨兵文件路径
@@ -155,11 +144,43 @@ ConfigManager 类提供相关功能。
 ---
 
 
+##### `_set_doc_path(doc: Any, keys: list[str], value: Any)`
+
+在 tomlkit 文档树中按点分路径写入值
+
+中间层节点缺失或非表时以空表替换（与 dict 语义一致）；
+叶子写入保留既有注释与顺序，新键追加至所在节末尾。
+
+- **doc** (`tomlkit`): 文档/表对象
+- **keys** (`点分路径拆分后的键列表`): - **value**: 待写入的值（plain dict 会转换为标准 table）
+
+> **内部方法**
+
+---
+
+
+##### `_doc_to_plain_dict(doc: Any)`
+
+将 tomlkit 文档转为 plain dict 缓存
+
+经 body 低层插入的条目不进入容器索引，直接 ``unwrap()`` 会丢失；
+渲染后重新解析可保证缓存与文件内容严格一致。
+
+- **doc** (`tomlkit`): 文档对象
+**返回值** (`dict`): 纯字典形式的配置内容
+
+> **内部方法**
+
+---
+
+
 ##### `_flush_config()`
 
 将待写入的配置刷新到文件
 
-使用文件锁确保多线程环境下的原子性操作
+使用文件锁确保多线程环境下的原子性操作。
+基于 tomlkit 在解析出的文档树上做增量修改后整体回写，
+文件中已有的注释与键顺序不因框架写入而丢失或重排。
 
 > **内部方法**
 
@@ -347,6 +368,27 @@ atexit 回调：进程退出时强制刷新所有脏配置，并清理哨兵文�
 - **value** (`Any`): 配置值
 - **immediate** (`bool`): 是否立即写入磁盘
 **返回值** (`bool`): 操作是否成功
+
+---
+
+
+##### `setConfigTemplate(key: str, toml_text: str, immediate: bool = True)`
+
+以带注释的 TOML 模板文本写入指定配置节
+
+用于适配器/模块首次生成配置模板：模板中的字段注释原样落盘。
+目标节已存在时不覆盖（由调用方保证仅在配置缺失时调用）；
+文件其余内容与注释不受影响。
+
+- **key** (`str`): 配置节键（支持点分路径，如 ``"MyAdapter"``）
+- **toml_text** (`str`): 模板 TOML 文本（仅键值与注释，不含节头）
+- **immediate** (`bool`): 是否立即写入磁盘 (默认: True)
+**返回值** (`bool`): 是否写入成功
+
+**示例**:
+```python
+>>> sdk.config.setConfigTemplate("MyAdapter", '# API 令牌\ntoken = ""')
+```
 
 ---
 

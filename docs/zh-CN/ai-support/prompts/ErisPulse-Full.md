@@ -3419,6 +3419,24 @@ project/
 
 > **运行中改坏配置文件？** 如果你在机器人运行期间手动编辑 `config.toml` 引入了语法错误，框架在下次写入（合并配置）时会输出「配置文件已损坏（语法错误，第 X 行），无法合并写入——请先修复配置文件后重启」，而不是令人困惑的「写入失败」。待写入的配置项会被保留，不会丢失。
 
+## 注释保留与最小化落盘
+
+config.toml 中的**注释与键顺序在框架写入后完整保留**：无论是代码 `setConfig()`、
+CLI 配置向导保存还是适配器/模块首次生成配置模板，框架都只改动涉及的键，
+你写的注释、整理的顺序不会被抹掉或重排（基于 tomlkit 注释保留往返实现）。
+
+框架对落盘内容保持克制：
+
+- **框架默认配置不自动落盘**：`gc`、`scope`、`transcript` 等内置默认值仅驻内存，
+  config.toml 只包含你显式设置的键，保持最小化。完整可配置项参考项目内的
+  `config/config.full.example`，按需复制到 config.toml 修改即可（未配置项一律走内置默认值，行为不变）
+- **`config.full.example` 自动维护**：无论是否执行过 `epsdk init`，只要启动框架
+  （`epsdk run` / `main.py`），都会在 `config/config.full.example` 缺失时自动生成
+  完整配置参考；文件首行为框架自维护标记，生成器内容更新（如新增配置项、新装
+  组件）时启动会刷新一次，删除/改动首行即转为手动接管、框架不再覆盖
+- **适配器/模块配置模板**：首次初始化时以带注释的模板落盘（字段描述即注释）；
+  声明为 `example` 标志的字段不落盘，仅记录在 config.full.example 供参考
+
 ## 环境变量覆盖
 
 框架支持用环境变量**覆盖** `ErisPulse.*` 配置项（适合 Docker / 容器化 / CI 部署，无需修改 `config.toml`）。
@@ -4036,6 +4054,11 @@ services:
 - `config/config.toml` — 配置文件
 - `config/config.db` — SQLite 存储数据库
 - `config/.packages` — Python site-packages 持久化卷，保存框架、适配器和已安装模块（首次启动时由入口点从镜像内置备份自动初始化，之后的模块安装与框架热更新均写入此目录）
+
+> **框架升级（含 pre/rc）与镜像自愈**：入口点会在每次容器启动时做核心包完整性自检，
+> 损坏时按"用户已安装版本优先"原则修复——持久卷内显式安装/升级的版本
+> （如 Dashboard 安装的 pre 版本）会从 PyPI **重装同版本**，绝不静默回退到
+> 镜像内置版本。因此 Dashboard 升级框架后，任意次容器重启都应保持目标版本。
 
 ## Dashboard 管理面板
 
@@ -4775,6 +4798,12 @@ class MyModule(BaseModule):
 ```
 
 `BaseConfig` 是通用配置基类，适用于适配器、模块、外部项目等任何场景。配置字段支持 i18n 多语言描述（详见 [i18n 文档](../../advanced/i18n.md#配置字段多语言)）。
+
+配置 Schema 系统还支持（v2.8.0+，详见 [适配器 core-concepts](../adapters/core-concepts.md#metadata-约定)）：
+
+- **docstring 自动生成字段描述**：未声明 metadata `description` 时，自动从 docstring 的 `:ivar 字段: 说明` 或 `Attributes:` 段提取兜底
+- **嵌套 dataclass 配置**：字段类型为嵌套 dataclass 时，schema/模板/校验递归处理，WebUI 渲染为嵌套分组
+- **`example` 不落盘字段**：`metadata={"example": True}` 的字段不写入 config.toml，仅记录在 `config.full.example`（适合冗杂又很少触碰的高级配置项），用户手动设置后正常持久化
 
 ### 声明式翻译键（v2.7.0+）
 
@@ -6911,6 +6940,10 @@ metadata = {
     "description": str | dict,  # 字段描述（支持 i18n）
     "required": bool,         # 是否必填（校验 + WebUI 必填标记）
     "secret": bool,           # 是否敏感（WebUI 显示为 ***，日志中脱敏）
+    "example": bool,          # 不落盘标志：不写入 config.toml（默认值/模板均排除），
+                              # 仅渲染进 config.full.example；schema 带 "example": true 标记，
+                              # CLI 配置向导默认跳过；用户手动设置后正常持久化
+    "min": number, "max": number,  # 数值范围校验
     "ui": {                   # WebUI 控件配置（旧名 "webui" 仍兼容）
         "widget": str,        # 控件类型: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # 分组: "basic" | "advanced" | "connection" 等
@@ -6975,6 +7008,89 @@ MyConfig._schema_meta = {
 
 框架的 `resolve_config_schema()` 会根据当前语言自动解析上述所有字段的 i18n 键；
 `get_config_schema()` 则原样透传 i18n 字典，由前端自行解析。
+
+#### docstring 自动生成字段描述（v2.8.0+）
+
+未在 metadata 中声明 `description` 的字段，框架会自动从配置类 docstring 中
+提取字段说明作为兜底，支持两种常见风格（可混用）：
+
+```python
+@dataclass
+class MyConfig(BaseConfig):
+    """
+    MyAdapter 配置
+
+    :ivar endpoint: 平台 API 地址        # reST 风格
+    :ivar timeout: 请求超时秒数
+    """
+
+    endpoint: str = "https://api.example.com"   # 无 metadata description → 注释/描述取 docstring
+    timeout: int = 30
+
+    # Google 风格同样支持（Attributes: 段）：
+    # Attributes:
+    #     endpoint: 平台 API 地址
+```
+
+优先级：**metadata description > docstring 字段说明 > 空**。
+i18n 字典形式的 description 不受影响（始终优先）。
+
+#### 嵌套配置（v2.8.0+）
+
+字段类型为嵌套 dataclass 时，框架递归处理：schema 以 `"type": "table"` +
+`"fields"` 子树承载（WebUI 渲染为可折叠嵌套分组），TOML 模板渲染为 `[子表]` 节，
+默认值 / 填充 / 校验 / i18n 解析均递归生效。
+
+```python
+@dataclass
+class RetryConfig(BaseConfig):
+    """重试策略
+
+    :ivar max_retries: 最大重试次数
+    """
+    max_retries: int = 3
+    backoff: float = 0.5
+
+@dataclass
+class MyConfig(BaseConfig):
+    """MyAdapter 配置"""
+    endpoint: str = "https://api.example.com"
+    retry: RetryConfig = field(default_factory=RetryConfig)   # 嵌套配置段
+```
+
+生成的 TOML 模板：
+
+```toml
+endpoint = "https://api.example.com"
+
+[retry]
+# 最大重试次数
+max_retries = 3
+backoff = 0.5
+```
+
+> 嵌套类型建议使用直接类型注解；字符串注解（如延迟求值场景）需保证
+> 类型可从配置类所在模块全局、`__qualname__` 外层类命名空间或类属性中按名解析。
+
+#### 不落盘的 example 字段（v2.8.0+）
+
+```python
+gc_interval: int = field(default=300, metadata={"example": True})
+```
+
+带 `example: True` 的字段：
+
+- 不写入 config.toml（适配器/模块配置模板与默认值均排除，运行时走代码默认值）
+- 仅渲染进项目内 `config.full.example`（供用户参考，按需手动复制到 config.toml）
+- schema 中带 `"example": true` 标记（面板可自行决定展示策略），CLI 配置向导默认跳过
+- 用户手动设置该键后正常持久化、正常热更新（用户显式意图优先）
+
+适合"冗杂又很少触碰"的高级配置项，保持用户的 config.toml 最小化。
+
+> ⚠️ `_schema_meta` 是类级元数据（非配置字段）。若在 dataclass 类体内部声明，
+> 必须加 `ClassVar` 注解（`_schema_meta: ClassVar[dict] = {...}`），否则会被
+> dataclass 视为普通字段。框架对下划线前缀字段已做防御性排除（不进入任何
+> schema / 模板 / 默认值 / 校验输出），但仍建议规范声明。
 
 ### 声明式翻译键（v2.7.0+）
 
@@ -17655,6 +17771,12 @@ scope.delete_module("onebot11", bot_id="123456")
 
 > `merge=True` 是**写时并集**（与该级现有绑定合并条目）；跨级解析期的
 > `merge = true` 配置键见上文[绑定继承](#绑定继承merge)——两者是独立机制。
+
+> **运行时绑定（`persist=False`）语义**：运行时绑定保存在独立的覆盖层中，
+> **任意后续配置写入 / 配置文件热更新都不会冲掉它们**（配置树重建后按写入顺序
+> 自动重放，含运行时删除）。它们不落盘，进程重启后丢失；模块卸载时该模块写入的
+> 运行时绑定会被兜底清理。随后对同一路径执行 `persist=True` 写入（用户持久化语义）
+> 将取代运行时规则。
 
 ### ② 身份维度
 
