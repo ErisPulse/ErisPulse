@@ -77,7 +77,7 @@
 > 开发版本
 
 **版本摘要**
-新增交互会话基础设施与基础原语：交互会话管理器（wait_reply 等待表抽为一等基础设施，owner / platform 双维度归属清理、回复命中权限复查、会话互斥租约）、Conversation 自动检查点（分支跳转自动存档 + 重启自动恢复）、端到端事件追踪（trace-id 贯穿入站 / 处理 / 出站 / 生命周期钩子）、消息事务（出站回执账本 + 异常自动撤回）、会话收件箱（每会话消息流自动记录与查询）。存储查询构建器新增 `ToDict()` 链。存储层升级为多后端异步原生架构：内置 sqlite / mysql / postgres 三种异步驱动后端（配置切换、API 完全一致），`BaseStorage` 抽象翻转为异步原生契约，同步 API 转为兼容层（现有同步调用代码零改动）。修复 wait_reply 挂起回复被高优先级处理器饿死的问题；另落地模块间 RPC 协议化（module.call / provides 收敛为 meta.services 契约 + services() 服务目录 + emit_to 定向事件并可唤醒懒模块）、会话定时器（remind 回复即取消 / escalate 到点必达）、多路等待（event.select + wait_reply 会话级 anyone 可答）、事件幂等去重（重连重推只分发一次）、冷启动回放（strategy 声明 replay，新模块自动获得最近会话上下文）、对话恢复即接管（resume 自动持有会话租约并带回收件箱历史）。
+新增交互会话基础设施与基础原语：交互会话管理器（wait_reply 等待表抽为一等基础设施，owner / platform 双维度归属清理、回复命中权限复查、会话互斥租约）、Conversation 自动检查点（分支跳转自动存档 + 重启自动恢复）、端到端事件追踪（trace-id 贯穿入站 / 处理 / 出站 / 生命周期钩子）、消息事务（出站回执账本 + 异常自动撤回）、会话收件箱（每会话消息流自动记录与查询）。存储查询构建器新增 `ToDict()` 链。存储层升级为多后端异步原生架构：内置 sqlite / mysql / postgres 三种异步驱动后端（配置切换、API 完全一致），`BaseStorage` 抽象翻转为异步原生契约，同步 API 转为兼容层（现有同步调用代码零改动）。修复 wait_reply 挂起回复被高优先级处理器饿死的问题；另落地模块间 RPC 协议化（module.call / provides 收敛为 meta.services 契约 + services() 服务目录 + emit_to 定向事件并可唤醒懒模块）、会话定时器（remind 回复即取消 / escalate 到点必达）、多路等待（event.select + wait_reply 会话级 anyone 可答）、事件幂等去重（重连重推只分发一次）、冷启动回放（strategy 声明 replay，新模块自动获得最近会话上下文）、对话恢复即接管（resume 自动持有会话租约并带回收件箱历史）。此外落地配置系统体验升级：配置文件注释与键顺序在框架写入后完整保留（tomlkit）、框架默认配置不再自动落盘（config.toml 保持最小化，完整配置参考 `config.full.example`）、声明式配置新增 `example` 字段标志 / docstring 描述兜底 / 嵌套 dataclass 支持；修复作用域 `persist=False` 运行时绑定被任意后续配置写入静默冲掉（#432）、慢日志归属 `owner=<unknown>`、Docker 升级 pre 后被入口点自愈静默还原正式版、配置面板 `[object Object]` 渲染问题。
 
 **升级建议**
 - 是否建议升级：建议升级
@@ -90,6 +90,10 @@
 - 存储查询构建器默认行为不变（tuple 行）；仅显式调用 `ToDict()` 的链返回 dict
 - **异步主接口**：同步存储 API 在异步上下文（事件循环所在线程）中调用时经后台桥接执行（功能正确，但会短暂阻塞该事件循环），异步 handler 内推荐使用 `await storage.aget/aset(...)` 与 `aExecute()` 系列终止方法；`storage.get/set/Table(...).Execute()` 等既有同步用法不受影响
 - **自定义存储后端**：继承 `BaseStorage` 的第三方后端需按异步契约迁移（实现 a 前缀异步方法与事务连接 hook）；仅使用框架存储 API（不自定义后端）的模块 / 适配器无需任何改动
+- **行为变更**：config.toml 不再自动填充框架默认键（gc / scope / transcript 等约 60+ 项）；需要调整时参考项目内 `config.full.example` 手动添加，未配置项一律走内置默认值，行为不变
+- **行为变更**：框架写入不再对配置文件按字典序重排，保持用户原有键顺序
+- 存量用户的 config.toml 已有键不受影响，无需迁移
+- Dashboard 需强刷浏览器缓存（dash.js 有更新）
 
 ### 新增
 
@@ -144,11 +148,44 @@
     - `.Select(...).ToDict().Execute()`：SELECT 结果以 dict（列名 → 值）返回，列名取自 `cursor.description`（`SELECT *` 与表达式列均正确）；`ExecuteOne()` 同样生效；SQL 与 KV 两个构建器均支持，`copy()` 保留标志
   - i18n 五语言同步：新增 `core.interaction.*`（冲突取消 / 权限复查 / 租约 / 消息事务）/ `core.transcript.*` / `core.event.conversation_auto_resumed` / `core.adapter.interaction_clean_failed` 等键；清理 `core.command.reply_*` 死键
   - 文档：`advanced/conversation.md` 更新自动检查点与恢复工厂；`advanced/sql-builder.md` 新增 ToDict；`advanced/ownership.md` 补交互会话归属清理
+- @wsu2059q
+  - **声明式配置增强** `Core/Bases/config_schema` / `Core/config.py` / `CLI/commands/init.py`：
+    - `example` 字段标志：`metadata={"example": True}` 的字段默认不写入 config.toml 模板与默认值（运行时走代码默认值，用户手动设置后正常持久化），仅渲染进 `config.full.example`；schema 带 `"example": true` 标记供面板自行决定展示策略，CLI 配置向导默认跳过
+    - docstring 自动生成字段描述：未声明 metadata `description` 时，自动从配置类 docstring 提取 `:ivar 字段名: 说明`（reST）或 `Attributes:` 段（Google）作为兜底；优先级 metadata > docstring；新增公共 API `get_field_docstrings()`
+    - 嵌套 dataclass 配置：字段类型为嵌套 dataclass 时（支持直接注解与经模块全局 / 类属性链解析的字符串注解），schema 以 `"type": "table"` + `"fields"` 子树承载，TOML 模板渲染为 `[子表]` 节，默认值 / 填充 / 校验 / i18n 解析全部递归；WebUI 渲染为可折叠嵌套分组而非整棵平铺
+    - `ConfigManager` 新增 `setConfigTemplate(key, toml_text)`：以带注释模板文本写入配置节（目标节已存在时不覆盖，其余内容与注释不受影响）；适配器/模块 `_ensure_config_exists` 改走该 API，首次初始化的配置模板现真正以带注释形式落盘（此前注释仅出现在日志中）
+    - `epsdk init` 生成的 `config.full.example` 新增"已安装组件"段：自动发现已安装适配器/模块的 ConfigClass 并渲染带注释配置（含 example 字段）
 
 ### 修复
 
 - @wsu2059q
   - `wait_reply` 挂起的回复被高优先级处理器抢先认领后，等待方永远收不到回复（饿死）：回复命中判定提前至消息分发入口（`_processed` 检查之前），对话连续性优先于命令匹配
+- @wsu2059q
+  - 修复作用域 `persist=False` 运行时绑定被任意后续配置写入静默冲掉的问题（#432）：
+    - 运行时绑定改经独立覆盖层记录（含删除哨兵），配置树重建后按写入顺序重放，任意无关配置写入 / 重载不再丢失运行时规则
+    - `config.set` / `config.updated` 精确失效：仅 scope 配置节实际变化时才重建配置树（附带收益：无关写入不再冲刷判定 LRU 缓存）
+    - 模块卸载时随调用方兜底清理运行时绑定（`scope.unregister_by_owner`）
+    - 事件覆写（`Core.Event.overrides`）的 persist=False 运行时覆写存在同类问题，同步以覆盖层架构修复
+  - 修复事件分发慢日志归属显示 `owner=<unknown>`：
+    - 事件分发期注入平台 owner 兜底上下文，无归属的框架内部处理器至少归因到平台名
+    - 命令分发处理器实际执行了某模块的命令时（含懒加载模块经 `activate_on` 占位命令首令激活），慢日志优先归因到该命令所属模块——激活耗时主体是它，不再显示 `<unknown>`
+    - 归属优先级：注册 owner > 实际执行的命令所属模块 > 分发期平台上下文
+  - 修复 Docker 镜像升级到 pre/rc 后在容器重启被入口点自愈**静默还原为镜像内置正式版**：
+    - `docker-entrypoint.sh` 核心包自愈改为**版本感知**：持久卷内用户显式安装的版本（与镜像内置版不同，含 pre/rc）损坏时从 PyPI 重装同版本（保留升级意图，固定 spec 自动携带预发布标记），绝不静默降级；仅在安装版本与镜像一致或未记录时才从镜像备份还原
+  - 修复配置面板 select 选项与字典字段渲染为 `[object Object]`：
+    - 框架 i18n 解析器支持仅含 `default` 的字典（如动态生成的选项标签）还原为文本
+    - `_schema_meta` 误声明为普通 dataclass 字段时不再进入 schema / 模板 / 默认值 / 校验（下划线前缀字段一律排除）；Dashboard 的 select 选项 label 对象兜底解析、dict/table 字段渲染为 JSON textarea
+
+### 变更
+
+- @wsu2059q
+  - `Core/config.py` 写入路径切换 tomlkit：配置文件已有注释与键顺序在 `setConfig` / flush / 迁移后完整保留，写入不再按键重排；缓存语义不变（plain dict）
+  - 框架默认配置不再自动落盘：`get_erispulse_config()` 默认值仅内存深合并返回，config.toml 保持最小化（仅用户显式设置的键）；`update_erispulse_config` / `set_erispulse_section` 显式写入仍持久化，环境变量覆盖仍不落盘
+
+### 依赖
+
+- @wsu2059q
+  - 新增 `tomlkit`（注释保留 TOML 解析/序列化，纯 Python 零传递依赖）；读写路径全部切换后移除不再使用的 `toml` 运行时依赖
 
 ---
 

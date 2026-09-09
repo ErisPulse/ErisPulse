@@ -64,9 +64,11 @@ ErisPulse 作用域（scope）
 import copy
 from collections import OrderedDict
 from collections.abc import Callable
+from typing import Any
 
 from ..runtime.frame_config import set_erispulse_section, update_erispulse_config
 from . import text_match
+from .constants import CONFIG_ROOT_KEY
 
 # 模块维度桶：platforms / bots / sessions（优先级 会话 > Bot > 平台）
 _BUCKET_PLATFORMS = "platforms"
@@ -159,6 +161,11 @@ def _deep_merge(dst: dict, src: dict) -> None:
             dst[key] = value
 
 
+# 运行时删除哨兵：persist=False 的 delete 在覆盖层中记录为删除标记，
+# 配置树重建后重放时仍能保持"已删除"语义
+_RUNTIME_DELETED = object()
+
+
 class ScopeManager:
     """
     作用域管理器（单例）
@@ -211,6 +218,12 @@ class ScopeManager:
         self._action_cache: OrderedDict[tuple, bool] = OrderedDict()
         # 配置校验告警去重（同一路径同一问题只告警一次）
         self._warned: set[str] = set()
+        # 运行时覆盖层：persist=False 的写入/删除记录于此（路径 → 值 / 删除哨兵）。
+        # 配置树重建（_apply_tree）后按写入顺序重放，
+        # 保证任意无关配置写入不会冲掉运行时绑定（Issue #432）
+        self._runtime_overrides: dict[str, Any] = {}
+        # 运行时写入归属：路径 → 调用方（模块卸载时兜底清理）
+        self._runtime_owners: dict[str, str] = {}
         self._load_config()
         # 订阅配置热更新：scope 配置变更时自动重建配置树
         try:
@@ -295,7 +308,81 @@ class ScopeManager:
             },
             "actions": self._validated_actions(scope_config),
         }
+        # 重放运行时覆盖层：persist=False 的绑定在任意配置写入触发的
+        # 树重建后保持有效（Issue #432）
+        self._replay_runtime_overrides()
         self._invalidate_cache()
+
+    def _replay_runtime_overrides(self) -> None:
+        """{!--< internal-use >!--} 按写入顺序把运行时覆盖层重放到重建后的配置树"""
+        for path, value in self._runtime_overrides.items():
+            parts = self._split_path(path)
+            if not parts:
+                continue
+            if value is _RUNTIME_DELETED:
+                parent = self._node_at(".".join(parts[:-1])) if len(parts) > 1 else self._data
+                if isinstance(parent, dict):
+                    parent.pop(parts[-1], None)
+                continue
+            node = self._data
+            for part in parts[:-1]:
+                child = node.get(part)
+                if not isinstance(child, dict):
+                    child = {}
+                    node[part] = child
+                node = child
+            last = parts[-1]
+            if isinstance(value, dict) and isinstance(node.get(last), dict):
+                _deep_merge(node[last], copy.deepcopy(value))
+            else:
+                node[last] = copy.deepcopy(value)
+
+    def _record_runtime_owner(self, path: str) -> None:
+        """{!--< internal-use >!--} 记录运行时写入的调用方归属（模块卸载时兜底清理）"""
+        try:
+            from ..runtime.context import current_owner
+
+            owner = current_owner.get()
+        except Exception:
+            return
+        if owner is not None:
+            self._runtime_owners[path] = owner
+
+    def _clear_runtime_overrides(self, prefix: str) -> None:
+        """{!--< internal-use >!--} 清除某路径及其全部子路径的运行时覆盖记录"""
+        prefix_dot = f"{prefix}."
+        for known in [p for p in self._runtime_overrides if p == prefix or p.startswith(prefix_dot)]:
+            self._runtime_overrides.pop(known, None)
+            self._runtime_owners.pop(known, None)
+
+    def unregister_by_owner(self, caller: str) -> int:
+        """
+        注销指定调用方的全部运行时（persist=False）作用域绑定
+
+        仅清理内存态运行时写入；``persist=True`` 的写入属用户配置语义，
+        在模块卸载时不受影响。由模块管理器在卸载时兜底调用，
+        避免已卸载模块的运行时绑定残留生效。
+
+        :param caller: 调用方模块名 / 适配器平台名
+        :return: int 清理的绑定条目数
+        """
+        paths = [p for p, o in self._runtime_owners.items() if o == caller]
+        removed = 0
+        for path in paths:
+            self._runtime_overrides.pop(path, None)
+            self._runtime_owners.pop(path, None)
+            parts = self._split_path(path)
+            if not parts:
+                continue
+            if len(parts) > 1:
+                parent = self._node_at(".".join(parts[:-1]))
+            else:
+                parent = self._data
+            if isinstance(parent, dict) and parent.pop(parts[-1], None) is not None:
+                removed += 1
+        if removed:
+            self._invalidate_cache()
+        return removed
 
     def _validated_actions(self, scope_config: dict) -> dict:
         """{!--< internal-use >!--} 加载并校验出站动作规则"""
@@ -326,8 +413,35 @@ class ScopeManager:
                 actions[owner] = owner_rules
         return actions
 
-    def _on_config_updated(self, _data: dict) -> None:
-        """配置变更回调：重建配置树"""
+    def _on_config_updated(self, data: dict) -> None:
+        """
+        配置变更回调：仅在 scope 配置实际变化时重建配置树
+
+        - ``config.set``：按事件 key 过滤，只有整棵写入或
+          ``ErisPulse.scope`` 子树内的写入才触发重建（无关模块写自己的
+          配置不应冲掉运行时绑定/清空判定缓存）
+        - ``config.updated``：对比新旧配置树的 scope 节，相同则跳过
+
+        :param data: 事件载荷（config.set 含 key；config.updated 含 old_config/new_config）
+        """
+        try:
+            if isinstance(data, dict) and data.get("key") is not None:
+                key = str(data["key"])
+                if key and key != CONFIG_ROOT_KEY and not key.startswith(f"{CONFIG_ROOT_KEY}.scope"):
+                    return
+                self._load_config()
+                return
+
+            if isinstance(data, dict) and ("old_config" in data or "new_config" in data):
+                old_tree = data.get("old_config")
+                new_tree = data.get("new_config")
+                old_scope = old_tree.get(CONFIG_ROOT_KEY, {}).get("scope") if isinstance(old_tree, dict) else None
+                new_scope = new_tree.get(CONFIG_ROOT_KEY, {}).get("scope") if isinstance(new_tree, dict) else None
+                if old_scope == new_scope:
+                    return
+        except Exception:
+            # 载荷结构异常时退回保守行为：整体重建
+            pass
         self._load_config()
 
     def _invalidate_cache(self) -> None:
@@ -1024,7 +1138,9 @@ class ScopeManager:
 
                      ``"actions.MyModule.send"``（出站规则）
         :param value: 写入值（dict 时与现有值深合并，其余类型直接覆盖）
-        :param persist: 是否持久化到配置文件 (默认: True)
+        :param persist: 是否持久化到配置文件 (默认: True)。
+            ``persist=False`` 为运行时绑定：写入覆盖层，任意配置写入/重载
+            均不会冲掉（但进程重启后丢失，且模块卸载时随调用方清理）
 
         :example:
         >>> scope.set("bots.onebot11.123456", {"modules": ["Chat"], "blocked": []})
@@ -1048,11 +1164,17 @@ class ScopeManager:
             node[last] = value
         self._invalidate_cache()
         if persist:
+            # 用户持久化语义：清除该路径的运行时覆盖记录（持久化值优先）
+            self._clear_runtime_overrides(path)
             # 先快照内存最终态：持久化内部同步触发的热更新会以（延迟刷盘期的）
             # 旧配置重建配置树，写后用快照重放保证"写后立读"
             snapshot = copy.deepcopy(self._data)
             update_erispulse_config({"scope": snapshot})
             self._apply_tree(snapshot)
+        else:
+            # 运行时绑定：记录覆盖层，配置树重建后按序重放（不落盘）
+            self._runtime_overrides[path] = copy.deepcopy(value)
+            self._record_runtime_owner(path)
 
     def delete(self, path: str, persist: bool = True) -> bool:
         """
@@ -1060,7 +1182,9 @@ class ScopeManager:
 
         :param path: 点分路径，如 ``"bots.onebot11.123456"``、
                      ``"identity.users.onebot11.u_bad"``、``"actions.MyModule.send"``
-        :param persist: 是否持久化到配置文件 (默认: True)
+        :param persist: 是否持久化到配置文件 (默认: True)。
+            ``persist=False`` 为运行时删除：覆盖层记录删除标记，
+            任意配置写入/重载后仍保持"已删除"语义
         :return: 是否存在并被删除
 
         :example:
@@ -1077,11 +1201,16 @@ class ScopeManager:
         del parent[parts[-1]]
         self._invalidate_cache()
         if persist:
+            self._clear_runtime_overrides(path)
             parent_path = ".".join(parts[:-1])
             snapshot = copy.deepcopy(self._data)
             set_erispulse_section(f"scope.{parent_path}" if parent_path else "scope", parent)
             # 同 set：持久化内部热更新回读旧值后，用快照重放内存最终态
             self._apply_tree(snapshot)
+        else:
+            # 运行时删除：记录删除标记，配置树重建后重放删除
+            self._runtime_overrides[path] = _RUNTIME_DELETED
+            self._record_runtime_owner(path)
         return True
 
     def __getitem__(self, path: str):
@@ -1107,7 +1236,7 @@ class ScopeManager:
     # ==================== 全局操作 ====================
 
     def clear(self) -> None:
-        """清空所有作用域配置（仅内存生效，不持久化）"""
+        """清空所有作用域配置（仅内存生效，不持久化；含运行时覆盖层）"""
         self._data = {
             _BUCKET_PLATFORMS: {},
             _BUCKET_BOTS: {},
@@ -1120,6 +1249,8 @@ class ScopeManager:
             },
             "actions": {},
         }
+        self._runtime_overrides.clear()
+        self._runtime_owners.clear()
         self._invalidate_cache()
 
     def stats(self) -> dict[str, int]:

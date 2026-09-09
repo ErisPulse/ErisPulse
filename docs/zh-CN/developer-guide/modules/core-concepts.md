@@ -225,6 +225,12 @@ class MyModule(BaseModule):
 
 `BaseConfig` 是通用配置基类，适用于适配器、模块、外部项目等任何场景。配置字段支持 i18n 多语言描述（详见 [i18n 文档](../../advanced/i18n.md#配置字段多语言)）。
 
+配置 Schema 系统还支持（v2.8.0+，详见 [适配器 core-concepts](../adapters/core-concepts.md#metadata-约定)）：
+
+- **docstring 自动生成字段描述**：未声明 metadata `description` 时，自动从 docstring 的 `:ivar 字段: 说明` 或 `Attributes:` 段提取兜底
+- **嵌套 dataclass 配置**：字段类型为嵌套 dataclass 时，schema/模板/校验递归处理，WebUI 渲染为嵌套分组
+- **`example` 不落盘字段**：`metadata={"example": True}` 的字段不写入 config.toml，仅记录在 `config.full.example`（适合冗杂又很少触碰的高级配置项），用户手动设置后正常持久化
+
 ### 声明式翻译键（v2.7.0+）
 
 从 v2.7.0 起，模块还可以像声明 `ConfigClass` 一样，通过嵌套类 `I18nClass` 集中声明翻译键。框架会在加载时**自动注册**所有声明的翻译键，无需手动调用 `i18n.register()`，且注册时机早于配置模板生成，确保配置描述中引用的 i18n 键已可用。

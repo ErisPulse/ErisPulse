@@ -688,6 +688,8 @@ class CommandHandler:
                     return False
 
             # 添加命令相关信息到事件（合并覆写后的有效参数）
+            # owner：注册该命令的模块（懒激活占位命令即目标模块），
+            # 供事件分发层的慢日志等归因到具体业务模块
             command_info = {
                 "name": actual_cmd_name,
                 "main_name": cmd_info["main_name"],
@@ -697,6 +699,7 @@ class CommandHandler:
                 "usage": _effective.get("usage", cmd_info.get("usage")),
                 "group": _effective.get("group", cmd_info.get("group")),
                 "hidden": _effective.get("hidden", cmd_info.get("hidden", False)),
+                "owner": cmd_info.get("owner"),
             }
 
             event["command"] = command_info

@@ -86,13 +86,22 @@ class Main(BaseModule):
     # {text[module.config_hint]}
     @dataclass
     class ConfigClass(BaseConfig):
-        \"\"\"{text[module.config_doc]}\"\"\"
+        \"\"\"
+        {text[module.config_doc]}
+
+        :ivar advanced_threshold: 高级阈值（docstring :ivar: 声明即为字段描述，无需 metadata）
+        \"\"\"
 
         enabled: bool = field(
             default=True,
             metadata={{
                 \"description\": {{\"i18n\": \"module.{name}.enabled\", \"default\": \"Enable module\"}},
             }},
+        )
+        # example 字段：默认不写入 config.toml（仅记录在 config.full.example，用户按需启用）
+        advanced_threshold: int = field(
+            default=100,
+            metadata={{\"example\": True, \"min\": 0}},
         )
 
     # {text[module.i18n_hint]}
@@ -291,7 +300,11 @@ class {name}(BaseAdapter):
     # {text[adapter.config_hint]}
     @dataclass
     class ConfigClass(BaseConfig):
-        \"\"\"{text[adapter.config_doc]}\"\"\"
+        \"\"\"
+        {text[adapter.config_doc]}
+
+        :ivar request_timeout: 请求超时秒数（docstring :ivar: 声明即为字段描述，无需 metadata）
+        \"\"\"
 
         endpoint: str = field(
             default="https://api.example.com",
@@ -309,6 +322,11 @@ class {name}(BaseAdapter):
                 "secret": True,
                 "ui": {{"widget": "password", "group": "basic", "order": 2}},
             }},
+        )
+        # example 字段：默认不写入 config.toml（仅记录在 config.full.example，用户按需启用）
+        request_timeout: int = field(
+            default=30,
+            metadata={{"example": True, "min": 1, "max": 300}},
         )
 
     # {text[adapter.i18n_hint]}

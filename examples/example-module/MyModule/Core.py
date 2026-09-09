@@ -17,7 +17,13 @@ class Main(BaseModule):
     # 配置类以嵌套类形式声明（需 @dataclass 装饰），框架自动识别 ConfigClass
     @dataclass
     class ConfigClass(BaseConfig):
-        """MyModule 模块配置"""
+        """
+        MyModule 模块配置
+
+        docstring 中用 :ivar 字段名: 描述 声明的字段说明，
+        会在未写 metadata description 时自动作为字段描述（注释/schema 兜底）
+        :ivar max_history: 保留的最大历史记录条数
+        """
 
         welcome_message: str = field(
             default="欢迎添加我为好友！",
@@ -39,6 +45,12 @@ class Main(BaseModule):
                 "description": "调试模式（输出详细日志）",
                 "ui": {"widget": "switch", "group": "advanced", "order": 3},
             },
+        )
+        # example 字段：默认不写入 config.toml（不落盘），仅记录在 config.full.example
+        # 运行时走默认值，用户在示例文件中按需复制到 config.toml 后生效
+        max_history: int = field(
+            default=100,
+            metadata={"example": True, "min": 1, "max": 1000},
         )
 
     # 翻译键集合以嵌套类形式声明，框架自动识别 I18nClass 并注册到 i18n 系统
