@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1544,
+  "total_keywords": 1548,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -51,7 +51,7 @@
     "1. Configuration Hierarchy and Overriding": [
       {
         "document": "advanced/scope.md",
-        "line": 292,
+        "line": 282,
         "level": 3,
         "title": "1. Configuration Hierarchy and Overriding"
       }
@@ -645,7 +645,7 @@
     "2. Module/Command Not Responding": [
       {
         "document": "advanced/scope.md",
-        "line": 299,
+        "line": 288,
         "level": 3,
         "title": "2. Module/Command Not Responding"
       }
@@ -1066,12 +1066,12 @@
         "title": "3. Missing `self` Field"
       }
     ],
-    "3. Outbound Action Rejection Troubleshooting": [
+    "3. Outbound Action Denied When Troubleshooting": [
       {
         "document": "advanced/scope.md",
-        "line": 314,
+        "line": 302,
         "level": 3,
-        "title": "3. Outbound Action Rejection Troubleshooting"
+        "title": "3. Outbound Action Denied When Troubleshooting"
       }
     ],
     "3. Platform Type Mapping": [
@@ -1426,12 +1426,12 @@
         "title": "4. Parameter Naming Convention"
       }
     ],
-    "4. Session Identifier Cross-Platform Isolation": [
+    "4. Session Identifier Isolation Across Platforms": [
       {
         "document": "advanced/scope.md",
-        "line": 325,
+        "line": 313,
         "level": 3,
-        "title": "4. Session Identifier Cross-Platform Isolation"
+        "title": "4. Session Identifier Isolation Across Platforms"
       }
     ],
     "4. Set the Image as Public": [
@@ -2267,7 +2267,7 @@
     "API Error Handling": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 893,
+        "line": 984,
         "level": 3,
         "title": "API Error Handling"
       }
@@ -2335,7 +2335,7 @@
     "API Response Standard": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 760,
+        "line": 851,
         "level": 2,
         "title": "API Response Standard"
       },
@@ -2410,12 +2410,12 @@
         "title": "Account Configuration Fields"
       }
     ],
-    "Account Configuration Files": [
+    "Account Configuration File": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 823,
+        "line": 914,
         "level": 3,
-        "title": "Account Configuration Files"
+        "title": "Account Configuration File"
       }
     ],
     "Account Identification in Events": [
@@ -2453,7 +2453,7 @@
     "Account Resolution": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 504,
+        "line": 595,
         "level": 4,
         "title": "Account Resolution"
       }
@@ -2611,7 +2611,7 @@
     "Adapter Sending Meta Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 951,
+        "line": 1042,
         "level": 3,
         "title": "Adapter Sending Meta Events"
       }
@@ -2643,7 +2643,7 @@
     "AdapterManager Adapter Manager": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 45,
+        "line": 46,
         "level": 2,
         "title": "AdapterManager Adapter Manager"
       }
@@ -2651,7 +2651,7 @@
     "Add Middleware": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 205,
+        "line": 206,
         "level": 4,
         "title": "Add Middleware"
       }
@@ -2707,7 +2707,7 @@
     "Advanced: Dictionary-style Dot-Path Fallback": [
       {
         "document": "advanced/scope.md",
-        "line": 265,
+        "line": 255,
         "level": 3,
         "title": "Advanced: Dictionary-style Dot-Path Fallback"
       }
@@ -2851,7 +2851,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 248,
+        "line": 249,
         "level": 4,
         "title": "Attribute Access"
       }
@@ -2907,7 +2907,7 @@
     "Automatic Discovery Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 925,
+        "line": 1016,
         "level": 3,
         "title": "Automatic Discovery Mechanism"
       }
@@ -2952,12 +2952,12 @@
         "title": "Automatic Retry on Failure (Retry)"
       }
     ],
-    "Available Attributes": [
+    "Available Properties": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 565,
+        "line": 656,
         "level": 3,
-        "title": "Available Attributes"
+        "title": "Available Properties"
       }
     ],
     "Backend Selection": [
@@ -2987,7 +2987,7 @@
     "Backup": [
       {
         "document": "user-guide/deployment.md",
-        "line": 279,
+        "line": 281,
         "level": 3,
         "title": "Backup"
       }
@@ -3003,7 +3003,7 @@
     "BaseAdapter Base Class": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 256,
+        "line": 257,
         "level": 2,
         "title": "BaseAdapter Base Class"
       }
@@ -3149,7 +3149,7 @@
     "Basic Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 589,
+        "line": 680,
         "level": 3,
         "title": "Basic Methods"
       }
@@ -3223,7 +3223,7 @@
     "Basic Structure": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 258,
+        "line": 259,
         "level": 3,
         "title": "Basic Structure"
       }
@@ -3249,7 +3249,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 57,
+        "line": 58,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -3267,7 +3267,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 288,
+        "line": 294,
         "level": 3,
         "title": "Basic Usage"
       },
@@ -3373,7 +3373,7 @@
     "Binding Inheritance (merge)": [
       {
         "document": "advanced/scope.md",
-        "line": 107,
+        "line": 100,
         "level": 3,
         "title": "Binding Inheritance (merge)"
       }
@@ -3427,7 +3427,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 921,
+        "line": 1012,
         "level": 2,
         "title": "Bot Status Management"
       }
@@ -3455,7 +3455,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 987,
+        "line": 1078,
         "level": 3,
         "title": "Bot Status Query"
       },
@@ -3560,12 +3560,12 @@
         "title": "CORS Configuration"
       }
     ],
-    "Caching and Hot Updates": [
+    "Cache and Hot Reload": [
       {
         "document": "advanced/scope.md",
-        "line": 280,
+        "line": 270,
         "level": 2,
-        "title": "Caching and Hot Updates"
+        "title": "Cache and Hot Reload"
       }
     ],
     "Callback Query Event": [
@@ -3680,12 +3680,6 @@
     ],
     "Chained Modifier Methods": [
       {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 613,
-        "level": 3,
-        "title": "Chained Modifier Methods"
-      },
-      {
         "document": "platform-guide/onebot12.md",
         "line": 298,
         "level": 3,
@@ -3716,6 +3710,14 @@
         "title": "Chaining Mode (Instance)"
       }
     ],
+    "Chaining Modifier Methods": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 704,
+        "level": 3,
+        "title": "Chaining Modifier Methods"
+      }
+    ],
     "Check Installation": [
       {
         "document": "user-guide/installation.md",
@@ -3727,7 +3729,7 @@
     "Check Platform Status": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 124,
+        "line": 125,
         "level": 4,
         "title": "Check Platform Status"
       }
@@ -3871,7 +3873,7 @@
     "Command Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 402,
+        "line": 409,
         "level": 3,
         "title": "Command Configuration"
       }
@@ -3947,7 +3949,7 @@
     "Command Parsing Configuration (event.command)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 559,
+        "line": 564,
         "level": 2,
         "title": "Command Parsing Configuration (event.command)"
       }
@@ -3974,6 +3976,14 @@
         "line": 198,
         "level": 3,
         "title": "Command System"
+      }
+    ],
+    "Comment Preservation and Minimal Disk Write": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 38,
+        "level": 2,
+        "title": "Comment Preservation and Minimal Disk Write"
       }
     ],
     "Common CSS Class Names": [
@@ -4014,6 +4024,14 @@
         "line": 111,
         "level": 3,
         "title": "Common Fields (All Event Types)"
+      }
+    ],
+    "Common Issues and Considerations": [
+      {
+        "document": "advanced/scope.md",
+        "line": 280,
+        "level": 2,
+        "title": "Common Issues and Considerations"
       }
     ],
     "Common Methods": [
@@ -4081,7 +4099,7 @@
     "Complete Configuration Example": [
       {
         "document": "user-guide/configuration.md",
-        "line": 133,
+        "line": 143,
         "level": 2,
         "title": "Complete Configuration Example"
       }
@@ -4275,7 +4293,7 @@
     "Configuration File": [
       {
         "document": "advanced/scope.md",
-        "line": 48,
+        "line": 47,
         "level": 2,
         "title": "Configuration File"
       },
@@ -4286,12 +4304,12 @@
         "title": "Configuration File"
       }
     ],
-    "Configuration File Description": [
+    "Configuration File Documentation": [
       {
         "document": "user-guide/configuration.md",
         "line": 1,
         "level": 1,
-        "title": "Configuration File Description"
+        "title": "Configuration File Documentation"
       }
     ],
     "Configuration File Location": [
@@ -4305,7 +4323,7 @@
     "Configuration Format Validation": [
       {
         "document": "advanced/scope.md",
-        "line": 286,
+        "line": 276,
         "level": 2,
         "title": "Configuration Format Validation"
       }
@@ -4321,8 +4339,14 @@
     "Configuration Hot Update": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 517,
+        "line": 608,
         "level": 4,
+        "title": "Configuration Hot Update"
+      },
+      {
+        "document": "user-guide/configuration.md",
+        "line": 73,
+        "level": 2,
         "title": "Configuration Hot Update"
       }
     ],
@@ -4365,13 +4389,13 @@
     "Configuration Management": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 122,
+        "line": 123,
         "level": 3,
         "title": "Configuration Management"
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 300,
+        "line": 301,
         "level": 3,
         "title": "Configuration Management"
       },
@@ -4469,7 +4493,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 700,
+        "line": 791,
         "level": 2,
         "title": "Connection Management"
       }
@@ -4485,7 +4509,7 @@
     "Connection Retry": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 869,
+        "line": 960,
         "level": 3,
         "title": "Connection Retry"
       }
@@ -4563,7 +4587,7 @@
     "Conversion Flow": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 629,
+        "line": 720,
         "level": 3,
         "title": "Conversion Flow"
       }
@@ -4571,7 +4595,7 @@
     "Converter Example": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 659,
+        "line": 750,
         "level": 3,
         "title": "Converter Example"
       }
@@ -4628,14 +4652,6 @@
         "line": 1,
         "level": 1,
         "title": "Core Concepts of Adapters"
-      }
-    ],
-    "Core Concepts of Modules": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 1,
-        "level": 1,
-        "title": "Core Concepts of Modules"
       }
     ],
     "Core Design Principles": [
@@ -4698,12 +4714,6 @@
     ],
     "Core Features": [
       {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 49,
-        "level": 3,
-        "title": "Core Features"
-      },
-      {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 22,
         "level": 2,
@@ -4716,6 +4726,14 @@
         "line": 29,
         "level": 2,
         "title": "Core Field Methods"
+      }
+    ],
+    "Core Functions": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 50,
+        "level": 3,
+        "title": "Core Functions"
       }
     ],
     "Core Initialization": [
@@ -4752,6 +4770,14 @@
         "line": 1,
         "level": 1,
         "title": "Core Module API"
+      }
+    ],
+    "Core Module Concepts": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 1,
+        "level": 1,
+        "title": "Core Module Concepts"
       }
     ],
     "Core Module Descriptions": [
@@ -4878,12 +4904,12 @@
         "title": "Custom Fonts"
       }
     ],
-    "Custom Identity Sources (Provider)": [
+    "Custom Identity Source (Provider)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 245,
+        "line": 255,
         "level": 3,
-        "title": "Custom Identity Sources (Provider)"
+        "title": "Custom Identity Source (Provider)"
       }
     ],
     "Custom Message Segments": [
@@ -4913,7 +4939,7 @@
     "Dashboard Management Panel": [
       {
         "document": "user-guide/deployment.md",
-        "line": 81,
+        "line": 83,
         "level": 2,
         "title": "Dashboard Management Panel"
       }
@@ -4951,15 +4977,23 @@
     "Decision (Three Questions)": [
       {
         "document": "advanced/scope.md",
-        "line": 196,
+        "line": 184,
         "level": 3,
         "title": "Decision (Three Questions)"
+      }
+    ],
+    "Decision Semantics": [
+      {
+        "document": "advanced/scope.md",
+        "line": 153,
+        "level": 3,
+        "title": "Decision Semantics"
       }
     ],
     "Declarative Configuration (Recommended)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 796,
+        "line": 887,
         "level": 3,
         "title": "Declarative Configuration (Recommended)"
       },
@@ -4973,7 +5007,7 @@
     "Declarative Event Extension Methods (v2.7.0+)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 473,
+        "line": 563,
         "level": 3,
         "title": "Declarative Event Extension Methods (v2.7.0+)"
       }
@@ -4981,7 +5015,7 @@
     "Declarative Translation Keys (v2.7.0+)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 442,
+        "line": 531,
         "level": 3,
         "title": "Declarative Translation Keys (v2.7.0+)"
       },
@@ -4993,7 +5027,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 228,
+        "line": 234,
         "level": 3,
         "title": "Declarative Translation Keys (v2.7.0+)"
       }
@@ -5106,14 +5140,6 @@
         "line": 80,
         "level": 3,
         "title": "Detailed Initialization Stages"
-      }
-    ],
-    "Determination Chain and Runtime Add/Remove": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 231,
-        "level": 3,
-        "title": "Determination Chain and Runtime Add/Remove"
       }
     ],
     "Developer Guide": [
@@ -5287,7 +5313,7 @@
     "Docker Method": [
       {
         "document": "user-guide/deployment.md",
-        "line": 262,
+        "line": 264,
         "level": 3,
         "title": "Docker Method"
       }
@@ -5539,7 +5565,7 @@
     "Environment Variable Override": [
       {
         "document": "user-guide/configuration.md",
-        "line": 38,
+        "line": 48,
         "level": 2,
         "title": "Environment Variable Override"
       }
@@ -5677,7 +5703,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 867,
+        "line": 958,
         "level": 2,
         "title": "Error Handling"
       },
@@ -5689,7 +5715,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 356,
+        "line": 362,
         "level": 2,
         "title": "Error Handling"
       },
@@ -5717,7 +5743,7 @@
     "Event Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 400,
+        "line": 407,
         "level": 2,
         "title": "Event Configuration"
       }
@@ -5730,20 +5756,20 @@
         "title": "Event Conversion"
       }
     ],
+    "Event Converter": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 718,
+        "level": 2,
+        "title": "Event Converter"
+      }
+    ],
     "Event Converter Implementation Guide": [
       {
         "document": "developer-guide/adapters/converter.md",
         "line": 1,
         "level": 1,
         "title": "Event Converter Implementation Guide"
-      }
-    ],
-    "Event Converters": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 627,
-        "level": 2,
-        "title": "Event Converters"
       }
     ],
     "Event Data Access": [
@@ -5757,7 +5783,7 @@
     "Event Distribution Mechanism": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 189,
+        "line": 190,
         "level": 4,
         "title": "Event Distribution Mechanism"
       }
@@ -5809,7 +5835,7 @@
     "Event Handler Lifecycle": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 329,
+        "line": 335,
         "level": 3,
         "title": "Event Handler Lifecycle"
       }
@@ -5817,7 +5843,7 @@
     "Event Handler Registration": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 313,
+        "line": 319,
         "level": 3,
         "title": "Event Handler Registration"
       }
@@ -5831,7 +5857,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 311,
+        "line": 317,
         "level": 2,
         "title": "Event Handling"
       }
@@ -5915,7 +5941,7 @@
     "Event Listening": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 152,
+        "line": 153,
         "level": 3,
         "title": "Event Listening"
       },
@@ -6141,7 +6167,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 358,
+        "line": 364,
         "level": 3,
         "title": "Exception Handling"
       }
@@ -6187,7 +6213,7 @@
     "Exemption List": [
       {
         "document": "user-guide/configuration.md",
-        "line": 377,
+        "line": 384,
         "level": 4,
         "title": "Exemption List"
       }
@@ -6240,6 +6266,14 @@
         "line": 144,
         "level": 3,
         "title": "Extended Fields"
+      }
+    ],
+    "Extended Information in `self` Field": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 1067,
+        "level": 3,
+        "title": "Extended Information in `self` Field"
       }
     ],
     "Extension Field Description": [
@@ -6327,7 +6361,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 85,
+        "line": 87,
         "level": 3,
         "title": "Feature Overview"
       }
@@ -6521,7 +6555,7 @@
     "Framework Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 324,
+        "line": 331,
         "level": 2,
         "title": "Framework Configuration"
       }
@@ -6529,17 +6563,9 @@
     "Framework Helper Methods": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 582,
+        "line": 673,
         "level": 3,
         "title": "Framework Helper Methods"
-      }
-    ],
-    "Frequently Asked Questions and Precautions": [
-      {
-        "document": "advanced/scope.md",
-        "line": 290,
-        "level": 2,
-        "title": "Frequently Asked Questions and Precautions"
       }
     ],
     "Friend Added": [
@@ -6641,7 +6667,7 @@
     "General": [
       {
         "document": "advanced/scope.md",
-        "line": 253,
+        "line": 243,
         "level": 3,
         "title": "General"
       }
@@ -6673,7 +6699,7 @@
     "Get Adapter Instance": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 238,
+        "line": 239,
         "level": 3,
         "title": "Get Adapter Instance"
       }
@@ -6759,7 +6785,7 @@
     "Global Fallback: `default_allow`": [
       {
         "document": "advanced/scope.md",
-        "line": 37,
+        "line": 36,
         "level": 2,
         "title": "Global Fallback: `default_allow`"
       }
@@ -7053,7 +7079,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 120,
+        "line": 122,
         "level": 2,
         "title": "Health Check"
       }
@@ -7104,14 +7130,6 @@
         "title": "Hook Breakpoints Overview"
       }
     ],
-    "Hot Configuration Reload": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 63,
-        "level": 2,
-        "title": "Hot Configuration Reload"
-      }
-    ],
     "Hot Module Reload Architecture": [
       {
         "document": "architecture.md",
@@ -7129,12 +7147,6 @@
       }
     ],
     "How It Works": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 335,
-        "level": 3,
-        "title": "How It Works"
-      },
       {
         "document": "ecosystem/app.md",
         "line": 61,
@@ -7269,7 +7281,7 @@
     "Immediate Loading": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 343,
+        "line": 349,
         "level": 3,
         "title": "Immediate Loading"
       }
@@ -7314,12 +7326,12 @@
         "title": "Information Query Commands"
       }
     ],
-    "Inheritance": [
+    "Inheritance Structure": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 556,
+        "line": 647,
         "level": 3,
-        "title": "Inheritance"
+        "title": "Inheritance Structure"
       }
     ],
     "Initialization Process": [
@@ -7337,7 +7349,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 530,
+        "line": 621,
         "level": 3,
         "title": "Initialization Process"
       }
@@ -7461,7 +7473,7 @@
     "Installing Modules via Dashboard": [
       {
         "document": "user-guide/deployment.md",
-        "line": 100,
+        "line": 102,
         "level": 3,
         "title": "Installing Modules via Dashboard"
       }
@@ -7496,14 +7508,12 @@
         "line": 1,
         "level": 1,
         "title": "Inter-Module Communication"
-      }
-    ],
-    "Inter-module Communication": [
+      },
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 141,
         "level": 3,
-        "title": "Inter-module Communication"
+        "title": "Inter-Module Communication"
       }
     ],
     "Interaction Interactions": [
@@ -7576,12 +7586,12 @@
         "title": "Interactive Session System"
       }
     ],
-    "Internal Breakdown of Hot Reload Chain": [
+    "Internal Breakdown of Hot Update Chain": [
       {
         "document": "user-guide/configuration.md",
-        "line": 85,
+        "line": 95,
         "level": 3,
-        "title": "Internal Breakdown of Hot Reload Chain"
+        "title": "Internal Breakdown of Hot Update Chain"
       }
     ],
     "Internal Decomposition of the Send Chain": [
@@ -7603,7 +7613,7 @@
     "Internationalization Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 429,
+        "line": 436,
         "level": 2,
         "title": "Internationalization Configuration"
       }
@@ -7614,14 +7624,6 @@
         "line": 156,
         "level": 3,
         "title": "Jinja Template Example"
-      }
-    ],
-    "Judgment Semantics": [
-      {
-        "document": "advanced/scope.md",
-        "line": 162,
-        "level": 3,
-        "title": "Judgment Semantics"
       }
     ],
     "Keyword Filtering": [
@@ -7659,7 +7661,7 @@
     "Lazy Loading Mechanism": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 333,
+        "line": 339,
         "level": 2,
         "title": "Lazy Loading Mechanism"
       }
@@ -7799,7 +7801,7 @@
     "List Platforms": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 138,
+        "line": 139,
         "level": 4,
         "title": "List Platforms"
       }
@@ -7855,7 +7857,7 @@
     "Listening to Bot Lifecycle": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1010,
+        "line": 1101,
         "level": 3,
         "title": "Listening to Bot Lifecycle"
       }
@@ -7892,15 +7894,13 @@
         "title": "Listening to Private Messages"
       }
     ],
-    "Load Strategy": [
+    "Loading Strategy": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 7,
         "level": 3,
-        "title": "Load Strategy"
-      }
-    ],
-    "Loading Strategy": [
+        "title": "Loading Strategy"
+      },
       {
         "document": "getting-started/basic-concepts.md",
         "line": 141,
@@ -7987,7 +7987,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 373,
+        "line": 379,
         "level": 3,
         "title": "Logging"
       }
@@ -7995,7 +7995,7 @@
     "Logging Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 276,
+        "line": 283,
         "level": 2,
         "title": "Logging Configuration"
       }
@@ -8069,7 +8069,7 @@
     "Manual Configuration Reading (Deprecated)": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 269,
+        "line": 275,
         "level": 3,
         "title": "Manual Configuration Reading (Deprecated)"
       }
@@ -8077,7 +8077,7 @@
     "Manual Deployment (pip)": [
       {
         "document": "user-guide/deployment.md",
-        "line": 174,
+        "line": 176,
         "level": 2,
         "title": "Manual Deployment (pip)"
       }
@@ -8106,18 +8106,26 @@
         "title": "Manual Registration of Custom Translations (Old Approach)"
       }
     ],
-    "Manually Constructing Response (Legacy approach still compatible)": [
+    "Manual Response Construction (Legacy Method Still Compatible)": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 780,
+        "line": 871,
         "level": 3,
-        "title": "Manually Constructing Response (Legacy approach still compatible)"
+        "title": "Manual Response Construction (Legacy Method Still Compatible)"
+      }
+    ],
+    "Master Determination Chain and Runtime Additions/Removals": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 241,
+        "level": 3,
+        "title": "Master Determination Chain and Runtime Additions/Removals"
       }
     ],
     "Master System Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 205,
+        "line": 215,
         "level": 2,
         "title": "Master System Configuration"
       }
@@ -8125,7 +8133,7 @@
     "Matching Entry Syntax (Unified Across the System)": [
       {
         "document": "advanced/scope.md",
-        "line": 24,
+        "line": 23,
         "level": 2,
         "title": "Matching Entry Syntax (Unified Across the System)"
       }
@@ -8181,7 +8189,7 @@
     "Message Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 418,
+        "line": 425,
         "level": 3,
         "title": "Message Configuration"
       }
@@ -8535,7 +8543,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 943,
+        "line": 1034,
         "level": 3,
         "title": "Meta Event Types"
       }
@@ -8672,12 +8680,6 @@
         "line": 66,
         "level": 2,
         "title": "Middleware"
-      },
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 203,
-        "level": 3,
-        "title": "Middleware"
       }
     ],
     "Middleware Execution Model": [
@@ -8691,9 +8693,17 @@
     "Middleware Execution Order": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 223,
+        "line": 224,
         "level": 4,
         "title": "Middleware Execution Order"
+      }
+    ],
+    "Middlewares": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 204,
+        "level": 3,
+        "title": "Middlewares"
       }
     ],
     "Migration from Old Configuration": [
@@ -8763,7 +8773,7 @@
     "Module Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 440,
+        "line": 447,
         "level": 2,
         "title": "Module Configuration"
       }
@@ -8871,7 +8881,7 @@
     "Multi-Account Configuration": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 333,
+        "line": 334,
         "level": 4,
         "title": "Multi-Account Configuration"
       },
@@ -8925,7 +8935,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 794,
+        "line": 885,
         "level": 2,
         "title": "Multi-Account Support"
       }
@@ -8933,7 +8943,7 @@
     "Multi-Instance Deployment": [
       {
         "document": "user-guide/deployment.md",
-        "line": 252,
+        "line": 254,
         "level": 2,
         "title": "Multi-Instance Deployment"
       }
@@ -9026,6 +9036,14 @@
         "title": "Native Asynchronous API"
       }
     ],
+    "Native Platform Events": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 176,
+        "level": 4,
+        "title": "Native Platform Events"
+      }
+    ],
     "Native Renderer": [
       {
         "document": "ecosystem/takumi.md",
@@ -9040,6 +9058,14 @@
         "line": 64,
         "level": 3,
         "title": "Nearest Mapping Principle"
+      }
+    ],
+    "Nested Configuration (v2.8.0+)": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 474,
+        "level": 4,
+        "title": "Nested Configuration (v2.8.0+)"
       }
     ],
     "Network Client": [
@@ -9117,7 +9143,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 561,
+        "line": 566,
         "level": 2,
         "title": "Next Steps"
       },
@@ -9142,6 +9168,14 @@
         "line": 138,
         "level": 3,
         "title": "Node Tree Example"
+      }
+    ],
+    "Non-persistent example Fields (v2.8.0+)": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 511,
+        "level": 4,
+        "title": "Non-persistent example Fields (v2.8.0+)"
       }
     ],
     "Not Waiting for Results": [
@@ -9373,7 +9407,7 @@
     "OneBot12 Standard Events": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 154,
+        "line": 155,
         "level": 4,
         "title": "OneBot12 Standard Events"
       },
@@ -9732,14 +9766,6 @@
         "title": "Platform Method Isolation"
       }
     ],
-    "Platform-Native Events": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 175,
-        "level": 4,
-        "title": "Platform-Native Events"
-      }
-    ],
     "Platform-Specific Event Types": [
       {
         "document": "platform-guide/matrix.md",
@@ -9877,7 +9903,7 @@
     "Proactive GC Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 345,
+        "line": 352,
         "level": 3,
         "title": "Proactive GC Configuration"
       }
@@ -9885,17 +9911,17 @@
     "Process Supervision and Hard Restart": [
       {
         "document": "user-guide/deployment.md",
-        "line": 109,
+        "line": 111,
         "level": 2,
         "title": "Process Supervision and Hard Restart"
       }
     ],
-    "Production Environment Configuration": [
+    "Production Configuration": [
       {
         "document": "user-guide/deployment.md",
-        "line": 178,
+        "line": 180,
         "level": 3,
-        "title": "Production Environment Configuration"
+        "title": "Production Configuration"
       }
     ],
     "Progress Monitoring (OnProgress / OnError)": [
@@ -10469,7 +10495,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1028,
+        "line": 1119,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -10487,7 +10513,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 384,
+        "line": 390,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -10559,7 +10585,7 @@
     "Relationship between self.user_id and Using": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 850,
+        "line": 941,
         "level": 3,
         "title": "Relationship between self.user_id and Using"
       }
@@ -10837,7 +10863,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 639,
+        "line": 730,
         "level": 3,
         "title": "Required Fields"
       }
@@ -10985,7 +11011,7 @@
     "Reverse Proxy": [
       {
         "document": "user-guide/deployment.md",
-        "line": 142,
+        "line": 144,
         "level": 2,
         "title": "Reverse Proxy"
       }
@@ -11078,12 +11104,12 @@
         "title": "Rule Composition and Background Execution"
       }
     ],
-    "Rule Format (Inline Table)": [
+    "Rule Forms (Inline Table)": [
       {
         "document": "advanced/scope.md",
-        "line": 144,
+        "line": 136,
         "level": 3,
-        "title": "Rule Format (Inline Table)"
+        "title": "Rule Forms (Inline Table)"
       }
     ],
     "Rule Propagation": [
@@ -11129,7 +11155,7 @@
     "Runtime API": [
       {
         "document": "advanced/scope.md",
-        "line": 186,
+        "line": 174,
         "level": 2,
         "title": "Runtime API"
       }
@@ -11176,18 +11202,16 @@
     ],
     "SDK Object": [
       {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 128,
+        "level": 2,
+        "title": "SDK Object"
+      },
+      {
         "document": "developer-guide/modules/getting-started.md",
         "line": 186,
         "level": 3,
         "title": "SDK Object"
-      }
-    ],
-    "SDK Objects": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 128,
-        "level": 2,
-        "title": "SDK Objects"
       }
     ],
     "SQL Chainable Queries": [
@@ -11230,12 +11254,12 @@
         "title": "Scope"
       }
     ],
-    "Scope Configuration": [
+    "Scope Configuration (scope)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 469,
+        "line": 476,
         "level": 2,
-        "title": "Scope Configuration"
+        "title": "Scope Configuration (scope)"
       }
     ],
     "Scope Filtering: Why Didn't My Module Receive the Message?": [
@@ -11281,7 +11305,7 @@
     "Security Recommendations": [
       {
         "document": "user-guide/deployment.md",
-        "line": 243,
+        "line": 245,
         "level": 2,
         "title": "Security Recommendations"
       }
@@ -11302,20 +11326,20 @@
         "title": "Self Field Extension"
       }
     ],
-    "Send Message DSL": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 554,
-        "level": 2,
-        "title": "Send Message DSL"
-      }
-    ],
     "Send Message Sending": [
       {
         "document": "api-reference/adapter-system.md",
         "line": 103,
         "level": 2,
         "title": "Send Message Sending"
+      }
+    ],
+    "Send Message Sending DSL": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 645,
+        "level": 2,
+        "title": "Send Message Sending DSL"
       }
     ],
     "Send Method": [
@@ -11563,7 +11587,7 @@
     "Server Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 186,
+        "line": 196,
         "level": 2,
         "title": "Server Configuration"
       }
@@ -11646,12 +11670,12 @@
         "title": "Severity Classification"
       }
     ],
-    "Shutdown Adapters": [
+    "Shutdown Adapter": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 107,
+        "line": 108,
         "level": 4,
-        "title": "Shutdown Adapters"
+        "title": "Shutdown Adapter"
       }
     ],
     "Sidebar Grouping": [
@@ -11697,7 +11721,7 @@
     "Single Account Configuration": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 304,
+        "line": 305,
         "level": 4,
         "title": "Single Account Configuration"
       }
@@ -11761,7 +11785,7 @@
     "Specifying Account for Sending": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 837,
+        "line": 928,
         "level": 3,
         "title": "Specifying Account for Sending"
       }
@@ -11886,12 +11910,12 @@
         "title": "Standardized Response"
       }
     ],
-    "Start Adapters": [
+    "Start Adapter": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 84,
+        "line": 85,
         "level": 4,
-        "title": "Start Adapters"
+        "title": "Start Adapter"
       }
     ],
     "Startup Process and Manual Control": [
@@ -11905,7 +11929,7 @@
     "Startup and Shutdown": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 82,
+        "line": 83,
         "level": 3,
         "title": "Startup and Shutdown"
       }
@@ -11985,7 +12009,7 @@
     "Storage Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 389,
+        "line": 396,
         "level": 2,
         "title": "Storage Configuration"
       }
@@ -12007,7 +12031,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 286,
+        "line": 292,
         "level": 2,
         "title": "Storage System"
       }
@@ -12015,7 +12039,7 @@
     "Strict Mode": [
       {
         "document": "user-guide/configuration.md",
-        "line": 360,
+        "line": 367,
         "level": 3,
         "title": "Strict Mode"
       }
@@ -12031,7 +12055,7 @@
     "Success Response": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 764,
+        "line": 855,
         "level": 3,
         "title": "Success Response"
       }
@@ -12063,7 +12087,7 @@
     "Supervisor": [
       {
         "document": "user-guide/deployment.md",
-        "line": 228,
+        "line": 230,
         "level": 3,
         "title": "Supervisor"
       }
@@ -12367,7 +12391,7 @@
     "Topology Tree API": [
       {
         "document": "advanced/scope.md",
-        "line": 329,
+        "line": 317,
         "level": 2,
         "title": "Topology Tree API"
       }
@@ -12399,7 +12423,7 @@
     "Transaction Usage": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 301,
+        "line": 307,
         "level": 3,
         "title": "Transaction Usage"
       }
@@ -12479,7 +12503,7 @@
     "Unified Event Override Configuration (event.overrides)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 515,
+        "line": 522,
         "level": 2,
         "title": "Unified Event Override Configuration (event.overrides)"
       }
@@ -12568,12 +12592,12 @@
         "title": "Unique Message Segment Types"
       }
     ],
-    "Unload vs. Purge (Complete Unload)": [
+    "Unload vs. Purge": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 59,
         "level": 3,
-        "title": "Unload vs. Purge (Complete Unload)"
+        "title": "Unload vs. Purge"
       }
     ],
     "Unload/Disable Cleanup Sequence": [
@@ -12635,7 +12659,7 @@
     "Updates and Maintenance": [
       {
         "document": "user-guide/deployment.md",
-        "line": 260,
+        "line": 262,
         "level": 2,
         "title": "Updates and Maintenance"
       }
@@ -12744,12 +12768,12 @@
         "title": "User Guide"
       }
     ],
-    "User Priority: Master Scope is Ultimately Decided by the User": [
+    "User Priority: Master Effect Scope Decided by User": [
       {
         "document": "user-guide/configuration.md",
-        "line": 270,
+        "line": 279,
         "level": 3,
-        "title": "User Priority: Master Scope is Ultimately Decided by the User"
+        "title": "User Priority: Master Effect Scope Decided by User"
       }
     ],
     "User Status Change Event": [
@@ -13085,7 +13109,7 @@
     "WebHook Connection": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 736,
+        "line": 827,
         "level": 3,
         "title": "WebHook Connection"
       }
@@ -13115,7 +13139,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 702,
+        "line": 793,
         "level": 3,
         "title": "WebSocket Connection"
       },
@@ -13258,6 +13282,12 @@
         "line": 14,
         "level": 2,
         "title": "Working Principle"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 341,
+        "level": 3,
+        "title": "Working Principle"
       }
     ],
     "Yunhu Platform Feature Documentation": [
@@ -13276,12 +13306,12 @@
         "title": "Yunhu User Platform Feature Document"
       }
     ],
-    "[BUG-001] Event handler duplicate registration causing event to be processed multiple times": [
+    "[BUG-001] Event handler duplicate registration causes event to be processed multiple times": [
       {
         "document": "bug-tracker.md",
         "line": 117,
         "level": 3,
-        "title": "[BUG-001] Event handler duplicate registration causing event to be processed multiple times"
+        "title": "[BUG-001] Event handler duplicate registration causes event to be processed multiple times"
       }
     ],
     "[BUG-002] Init command adapter configuration path type error": [
@@ -13308,20 +13338,20 @@
         "title": "[BUG-004] Lifecycle event handlers not cleared"
       }
     ],
-    "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard": [
+    "[BUG-005] Event.is_friend_add/is_friend_delete's detail_type inconsistent with OB12 standard": [
       {
         "document": "bug-tracker.md",
         "line": 201,
         "level": 3,
-        "title": "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard"
+        "title": "[BUG-005] Event.is_friend_add/is_friend_delete's detail_type inconsistent with OB12 standard"
       }
     ],
-    "[BUG-006] adapter.clear() does not clear _started_instances causing incorrect status after restart": [
+    "[BUG-006] adapter.clear() does not clear _started_instances causing incorrect state after restart": [
       {
         "document": "bug-tracker.md",
         "line": 221,
         "level": 3,
-        "title": "[BUG-006] adapter.clear() does not clear _started_instances causing incorrect status after restart"
+        "title": "[BUG-006] adapter.clear() does not clear _started_instances causing incorrect state after restart"
       }
     ],
     "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()": [
@@ -13332,12 +13362,12 @@
         "title": "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()"
       }
     ],
-    "[BUG-008] Bot offline events are repeatedly submitted during shutdown": [
+    "[BUG-008] Bot offline event is repeatedly submitted during shutdown": [
       {
         "document": "bug-tracker.md",
         "line": 261,
         "level": 3,
-        "title": "[BUG-008] Bot offline events are repeatedly submitted during shutdown"
+        "title": "[BUG-008] Bot offline event is repeatedly submitted during shutdown"
       }
     ],
     "[BUG-009] LazyModule synchronous access to BaseModule causes incomplete initialization": [
@@ -13348,12 +13378,12 @@
         "title": "[BUG-009] LazyModule synchronous access to BaseModule causes incomplete initialization"
       }
     ],
-    "[BUG-010] Multi-threaded write to configuration system causes data loss": [
+    "[BUG-010] Multi-threaded configuration system write causes data loss": [
       {
         "document": "bug-tracker.md",
         "line": 301,
         "level": 3,
-        "title": "[BUG-010] Multi-threaded write to configuration system causes data loss"
+        "title": "[BUG-010] Multi-threaded configuration system write causes data loss"
       }
     ],
     "[BUG-011] Windows Ctrl+C cannot stop the program": [
@@ -13364,20 +13394,20 @@
         "title": "[BUG-011] Windows Ctrl+C cannot stop the program"
       }
     ],
-    "[BUG-012] Hot restart does not load updated module code": [
+    "[BUG-012] Hot restart does not apply updated module code": [
       {
         "document": "bug-tracker.md",
         "line": 348,
         "level": 3,
-        "title": "[BUG-012] Hot restart does not load updated module code"
+        "title": "[BUG-012] Hot restart does not apply updated module code"
       }
     ],
-    "[BUG-013] Module loading strategy sorting logic error": [
+    "[BUG-013] Module loading strategy sort logic error": [
       {
         "document": "bug-tracker.md",
         "line": 368,
         "level": 3,
-        "title": "[BUG-013] Module loading strategy sorting logic error"
+        "title": "[BUG-013] Module loading strategy sort logic error"
       }
     ],
     "[BUG-014] Adapter middleware returning None causes event data loss": [
@@ -13396,12 +13426,12 @@
         "title": "[BUG-015] Configuration file path depends on working directory"
       }
     ],
-    "[BUG-016] BaseStorage confuses storing value None with non-existent key": [
+    "[BUG-016] BaseStorage confuses storing value None with nonexistent key": [
       {
         "document": "bug-tracker.md",
         "line": 428,
         "level": 3,
-        "title": "[BUG-016] BaseStorage confuses storing value None with non-existent key"
+        "title": "[BUG-016] BaseStorage confuses storing value None with nonexistent key"
       }
     ],
     "[BUG-017] WebSocket route auto_accept flag lost after service restart": [
@@ -13412,28 +13442,28 @@
         "title": "[BUG-017] WebSocket route auto_accept flag lost after service restart"
       }
     ],
-    "[BUG-018] HTTP/WS client concurrent calls cause crashes and connection leaks": [
+    "[BUG-018] Concurrent calls to HTTP/WS client cause crashes and connection leaks": [
       {
         "document": "bug-tracker.md",
         "line": 468,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS client concurrent calls cause crashes and connection leaks"
+        "title": "[BUG-018] Concurrent calls to HTTP/WS client cause crashes and connection leaks"
       }
     ],
-    "[BUG-019] Adapter hot reload causes route conflicts and reload failure": [
+    "[BUG-019] Adapter hot reload causes route conflicts leading to reload failure": [
       {
         "document": "bug-tracker.md",
         "line": 496,
         "level": 3,
-        "title": "[BUG-019] Adapter hot reload causes route conflicts and reload failure"
+        "title": "[BUG-019] Adapter hot reload causes route conflicts leading to reload failure"
       }
     ],
-    "[BUG-020] Subprocess mode `ep run <script>` cannot find sub-packages in script's directory": [
+    "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in script's directory": [
       {
         "document": "bug-tracker.md",
         "line": 520,
         "level": 3,
-        "title": "[BUG-020] Subprocess mode `ep run <script>` cannot find sub-packages in script's directory"
+        "title": "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in script's directory"
       }
     ],
     "[BUG-021] SQL query builder rejects valid wildcard and list expressions": [
@@ -13444,28 +13474,28 @@
         "title": "[BUG-021] SQL query builder rejects valid wildcard and list expressions"
       }
     ],
-    "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)": [
+    "[BUG-022] _resolve_account() account resolution regression (_accounts_data not filled)": [
       {
         "document": "bug-tracker.md",
         "line": 570,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)"
+        "title": "[BUG-022] _resolve_account() account resolution regression (_accounts_data not filled)"
       }
     ],
-    "[BUG-023] Account configuration modification does not refresh adapter cache, causing account resolution failure": [
+    "[BUG-023] Adapter cache not refreshed after account configuration modification causes account resolution failure": [
       {
         "document": "bug-tracker.md",
         "line": 609,
         "level": 3,
-        "title": "[BUG-023] Account configuration modification does not refresh adapter cache, causing account resolution failure"
+        "title": "[BUG-023] Adapter cache not refreshed after account configuration modification causes account resolution failure"
       }
     ],
-    "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill": [
+    "[BUG-024] storage.set() writing large numeric key triggers OOM Kill": [
       {
         "document": "bug-tracker.md",
         "line": 629,
         "level": 3,
-        "title": "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill"
+        "title": "[BUG-024] storage.set() writing large numeric key triggers OOM Kill"
       }
     ],
     "[BUG-025] on_config_update callback not called by core router": [
@@ -13476,20 +13506,20 @@
         "title": "[BUG-025] on_config_update callback not called by core router"
       }
     ],
-    "[BUG-026] notice/request event reply target inferred incorrectly": [
+    "[BUG-026] notice/request event reply target inference error": [
       {
         "document": "bug-tracker.md",
         "line": 705,
         "level": 3,
-        "title": "[BUG-026] notice/request event reply target inferred incorrectly"
+        "title": "[BUG-026] notice/request event reply target inference error"
       }
     ],
-    "[BUG-027] Route rate limiter cleanup task uses fixed window causing long window rate limit rules to fail": [
+    "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limit rules to fail": [
       {
         "document": "bug-tracker.md",
         "line": 736,
         "level": 3,
-        "title": "[BUG-027] Route rate limiter cleanup task uses fixed window causing long window rate limit rules to fail"
+        "title": "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limit rules to fail"
       }
     ],
     "[BUG-029] Configuration listener broadcasts incomplete TOML and silently swallows exceptions": [
@@ -13508,20 +13538,36 @@
         "title": "[BUG-030] Configuration watcher race condition causes setConfig delayed write to silently drop data"
       }
     ],
-    "[BUG-032] Configuration delay write causes \"write-then-read\" to read old values": [
+    "[BUG-032] Configuration delay write period \"write then read immediately\" reads old value": [
       {
         "document": "bug-tracker.md",
         "line": 840,
         "level": 3,
-        "title": "[BUG-032] Configuration delay write causes \"write-then-read\" to read old values"
+        "title": "[BUG-032] Configuration delay write period \"write then read immediately\" reads old value"
       }
     ],
-    "[BUG-033] wait_reply hangs and is starved by high-priority processors": [
+    "[BUG-033] wait_reply hanging replies are starved by high-priority processors": [
       {
         "document": "bug-tracker.md",
         "line": 862,
         "level": 3,
-        "title": "[BUG-033] wait_reply hangs and is starved by high-priority processors"
+        "title": "[BUG-033] wait_reply hanging replies are starved by high-priority processors"
+      }
+    ],
+    "[BUG-034] Runtime binding with persist=False in scope is silently overridden by any subsequent configuration write": [
+      {
+        "document": "bug-tracker.md",
+        "line": 884,
+        "level": 3,
+        "title": "[BUG-034] Runtime binding with persist=False in scope is silently overridden by any subsequent configuration write"
+      }
+    ],
+    "[BUG-035] Configuration panel select options and dict fields render as [object Object]": [
+      {
+        "document": "bug-tracker.md",
+        "line": 904,
+        "level": 3,
+        "title": "[BUG-035] Configuration panel select options and dict fields render as [object Object]"
       }
     ],
     "__init__.py": [
@@ -13578,14 +13624,6 @@
         "line": 38,
         "level": 3,
         "title": "`keep_running` Parameter"
-      }
-    ],
-    "`self` Field Extended Information": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 976,
-        "level": 3,
-        "title": "`self` Field Extended Information"
       }
     ],
     "`t()` Method Details": [
@@ -13732,6 +13770,14 @@
         "title": "docker-compose.yml"
       }
     ],
+    "docstring Automatically Generates Field Descriptions (v2.8.0+)": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 449,
+        "level": 4,
+        "title": "docstring Automatically Generates Field Descriptions (v2.8.0+)"
+      }
+    ],
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
@@ -13759,7 +13805,7 @@
     "get() Method": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 240,
+        "line": 241,
         "level": 4,
         "title": "get() Method"
       }
@@ -13863,7 +13909,7 @@
     "metadata Convention": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 370,
+        "line": 371,
         "level": 4,
         "title": "metadata Convention"
       }
@@ -13887,7 +13933,7 @@
     "pip Method": [
       {
         "document": "user-guide/deployment.md",
-        "line": 272,
+        "line": 274,
         "level": 3,
         "title": "pip Method"
       }
@@ -13967,7 +14013,7 @@
     "systemd (Linux)": [
       {
         "document": "user-guide/deployment.md",
-        "line": 196,
+        "line": 198,
         "level": 3,
         "title": "systemd (Linux)"
       }
@@ -14031,23 +14077,21 @@
     "① Module Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 209,
-        "level": 3,
+        "line": 82,
+        "level": 2,
         "title": "① Module Dimension"
-      }
-    ],
-    "① Module-level": [
+      },
       {
         "document": "advanced/scope.md",
-        "line": 83,
-        "level": 2,
-        "title": "① Module-level"
+        "line": 197,
+        "level": 3,
+        "title": "① Module Dimension"
       }
     ],
     "② Identity Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 226,
+        "line": 216,
         "level": 3,
         "title": "② Identity Dimension"
       }
@@ -14055,7 +14099,7 @@
     "② Identity Dimension (Event Admission)": [
       {
         "document": "advanced/scope.md",
-        "line": 123,
+        "line": 116,
         "level": 2,
         "title": "② Identity Dimension (Event Admission)"
       }
@@ -14063,17 +14107,17 @@
     "③ Outbound Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 239,
+        "line": 229,
         "level": 3,
         "title": "③ Outbound Dimension"
       }
     ],
-    "③ Outbound Dimension (Limiting Modules Initiating Outbound Calls)": [
+    "③ Outbound Dimension (Limiting Module Initiated Outbound Calls)": [
       {
         "document": "advanced/scope.md",
-        "line": 139,
+        "line": 132,
         "level": 2,
-        "title": "③ Outbound Dimension (Limiting Modules Initiating Outbound Calls)"
+        "title": "③ Outbound Dimension (Limiting Module Initiated Outbound Calls)"
       }
     ]
   }

@@ -96,7 +96,7 @@
           "icon": "fa-download"
         },
         {
-          "title": "Configuration File Description",
+          "title": "Configuration File Documentation",
           "path": "user-guide/configuration.md",
           "level": 1,
           "icon": "fa-sliders"
@@ -146,7 +146,7 @@
               "icon": "fa-puzzle-piece"
             },
             {
-              "title": "Core Concepts of Modules",
+              "title": "Core Module Concepts",
               "path": "developer-guide/modules/core-concepts.md",
               "level": 1,
               "icon": "fa-cubes-stacked"

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1544,
+  "total_keywords": 1557,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -329,7 +329,7 @@
     "1. 配置層級與覆蓋": [
       {
         "document": "advanced/scope.md",
-        "line": 320,
+        "line": 330,
         "level": 3,
         "title": "1. 配置層級與覆蓋"
       }
@@ -695,7 +695,7 @@
     "2. 模組/命令沒反應": [
       {
         "document": "advanced/scope.md",
-        "line": 327,
+        "line": 337,
         "level": 3,
         "title": "2. 模組/命令沒反應"
       }
@@ -997,7 +997,7 @@
     "3. 出站動作被拒時排查": [
       {
         "document": "advanced/scope.md",
-        "line": 342,
+        "line": 352,
         "level": 3,
         "title": "3. 出站動作被拒時排查"
       }
@@ -1405,7 +1405,7 @@
     "4. 會話標識跨平台隔離": [
       {
         "document": "advanced/scope.md",
-        "line": 353,
+        "line": 363,
         "level": 3,
         "title": "4. 會話標識跨平台隔離"
       }
@@ -2303,7 +2303,7 @@
     "API 回應標準": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 767,
+        "line": 854,
         "level": 2,
         "title": "API 回應標準"
       }
@@ -2359,7 +2359,7 @@
     "API 錯誤處理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 900,
+        "line": 987,
         "level": 3,
         "title": "API 錯誤處理"
       }
@@ -2483,7 +2483,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 994,
+        "line": 1081,
         "level": 3,
         "title": "Bot 狀態查詢"
       },
@@ -2503,7 +2503,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 928,
+        "line": 1015,
         "level": 2,
         "title": "Bot 狀態管理"
       }
@@ -3013,7 +3013,7 @@
     "Meta 事件類型": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 950,
+        "line": 1037,
         "level": 3,
         "title": "Meta 事件類型"
       }
@@ -3369,7 +3369,7 @@
     "Send 消息發送 DSL": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 561,
+        "line": 648,
         "level": 2,
         "title": "Send 消息發送 DSL"
       }
@@ -3497,7 +3497,7 @@
     "WebHook 連接": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 743,
+        "line": 830,
         "level": 3,
         "title": "WebHook 連接"
       }
@@ -3551,7 +3551,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 709,
+        "line": 796,
         "level": 3,
         "title": "WebSocket 連接"
       },
@@ -3603,7 +3603,7 @@
     "[BUG-001] 事件處理器重複註冊導致事件被多次處理": [
       {
         "document": "bug-tracker.md",
-        "line": 109,
+        "line": 117,
         "level": 3,
         "title": "[BUG-001] 事件處理器重複註冊導致事件被多次處理"
       }
@@ -3611,7 +3611,7 @@
     "[BUG-002] Init 命令適配器配置路徑類型錯誤": [
       {
         "document": "bug-tracker.md",
-        "line": 129,
+        "line": 137,
         "level": 3,
         "title": "[BUG-002] Init 命令適配器配置路徑類型錯誤"
       }
@@ -3619,7 +3619,7 @@
     "[BUG-003] 重啟後命令事件失效": [
       {
         "document": "bug-tracker.md",
-        "line": 153,
+        "line": 161,
         "level": 3,
         "title": "[BUG-003] 重啟後命令事件失效"
       }
@@ -3627,7 +3627,7 @@
     "[BUG-004] 生命週期事件處理器未清理": [
       {
         "document": "bug-tracker.md",
-        "line": 173,
+        "line": 181,
         "level": 3,
         "title": "[BUG-004] 生命週期事件處理器未清理"
       }
@@ -3635,7 +3635,7 @@
     "[BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致": [
       {
         "document": "bug-tracker.md",
-        "line": 193,
+        "line": 201,
         "level": 3,
         "title": "[BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致"
       }
@@ -3643,7 +3643,7 @@
     "[BUG-006] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確": [
       {
         "document": "bug-tracker.md",
-        "line": 213,
+        "line": 221,
         "level": 3,
         "title": "[BUG-006] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確"
       }
@@ -3651,7 +3651,7 @@
     "[BUG-007] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()": [
       {
         "document": "bug-tracker.md",
-        "line": 233,
+        "line": 241,
         "level": 3,
         "title": "[BUG-007] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()"
       }
@@ -3659,23 +3659,23 @@
     "[BUG-008] Bot 離線事件在 shutdown 過程中被重複提交": [
       {
         "document": "bug-tracker.md",
-        "line": 253,
+        "line": 261,
         "level": 3,
         "title": "[BUG-008] Bot 離線事件在 shutdown 過程中被重複提交"
       }
     ],
-    "[BUG-009] LazyModule 同步訪問 BaseModule 導致未初始化完成": [
+    "[BUG-009] LazyModule 同步存取 BaseModule 導致未初始化完成": [
       {
         "document": "bug-tracker.md",
-        "line": 273,
+        "line": 281,
         "level": 3,
-        "title": "[BUG-009] LazyModule 同步訪問 BaseModule 導致未初始化完成"
+        "title": "[BUG-009] LazyModule 同步存取 BaseModule 導致未初始化完成"
       }
     ],
     "[BUG-010] 配置系統多線程寫入導致數據丟失": [
       {
         "document": "bug-tracker.md",
-        "line": 293,
+        "line": 301,
         "level": 3,
         "title": "[BUG-010] 配置系統多線程寫入導致數據丟失"
       }
@@ -3683,31 +3683,31 @@
     "[BUG-011] Windows 下 CTRL+C 無法停止程序": [
       {
         "document": "bug-tracker.md",
-        "line": 316,
+        "line": 324,
         "level": 3,
         "title": "[BUG-011] Windows 下 CTRL+C 無法停止程序"
       }
     ],
-    "[BUG-012] 熱重啟後已更新模塊的 Python 代碼未生效": [
+    "[BUG-012] 熱重啟後已更新模組的 Python 代碼未生效": [
       {
         "document": "bug-tracker.md",
-        "line": 340,
+        "line": 348,
         "level": 3,
-        "title": "[BUG-012] 熱重啟後已更新模塊的 Python 代碼未生效"
+        "title": "[BUG-012] 熱重啟後已更新模組的 Python 代碼未生效"
       }
     ],
-    "[BUG-013] 模塊加載策略排序邏輯錯誤": [
+    "[BUG-013] 模組加載策略排序邏輯錯誤": [
       {
         "document": "bug-tracker.md",
-        "line": 360,
+        "line": 368,
         "level": 3,
-        "title": "[BUG-013] 模塊加載策略排序邏輯錯誤"
+        "title": "[BUG-013] 模組加載策略排序邏輯錯誤"
       }
     ],
     "[BUG-014] 適配器中間件返回 None 導致事件數據丟失": [
       {
         "document": "bug-tracker.md",
-        "line": 380,
+        "line": 388,
         "level": 3,
         "title": "[BUG-014] 適配器中間件返回 None 導致事件數據丟失"
       }
@@ -3715,7 +3715,7 @@
     "[BUG-015] 配置文件路徑依賴工作目錄": [
       {
         "document": "bug-tracker.md",
-        "line": 400,
+        "line": 408,
         "level": 3,
         "title": "[BUG-015] 配置文件路徑依賴工作目錄"
       }
@@ -3723,7 +3723,7 @@
     "[BUG-016] BaseStorage 將存儲值 None 與鍵不存在混淆": [
       {
         "document": "bug-tracker.md",
-        "line": 420,
+        "line": 428,
         "level": 3,
         "title": "[BUG-016] BaseStorage 將存儲值 None 與鍵不存在混淆"
       }
@@ -3731,23 +3731,23 @@
     "[BUG-017] WebSocket 路由 auto_accept 標誌在服務重啟後丟失": [
       {
         "document": "bug-tracker.md",
-        "line": 440,
+        "line": 448,
         "level": 3,
         "title": "[BUG-017] WebSocket 路由 auto_accept 標誌在服務重啟後丟失"
       }
     ],
-    "[BUG-018] HTTP/WS 客戶端併發調用導致崩潰與連接泄漏": [
+    "[BUG-018] HTTP/WS 客戶端併發呼叫導致崩潰與連接泄漏": [
       {
         "document": "bug-tracker.md",
-        "line": 460,
+        "line": 468,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS 客戶端併發調用導致崩潰與連接泄漏"
+        "title": "[BUG-018] HTTP/WS 客戶端併發呼叫導致崩潰與連接泄漏"
       }
     ],
     "[BUG-019] 適配器熱重載時路由衝突導致重載失敗": [
       {
         "document": "bug-tracker.md",
-        "line": 488,
+        "line": 496,
         "level": 3,
         "title": "[BUG-019] 適配器熱重載時路由衝突導致重載失敗"
       }
@@ -3755,7 +3755,7 @@
     "[BUG-020] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子包": [
       {
         "document": "bug-tracker.md",
-        "line": 512,
+        "line": 520,
         "level": 3,
         "title": "[BUG-020] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子包"
       }
@@ -3763,31 +3763,31 @@
     "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式": [
       {
         "document": "bug-tracker.md",
-        "line": 532,
+        "line": 540,
         "level": 3,
         "title": "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式"
       }
     ],
-    "[BUG-022] _resolve_account() 賬戶解析迴歸（_accounts_data 未填充）": [
+    "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）": [
       {
         "document": "bug-tracker.md",
-        "line": 562,
+        "line": 570,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() 賬戶解析迴歸（_accounts_data 未填充）"
+        "title": "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）"
       }
     ],
-    "[BUG-023] 修改賬戶配置後適配器緩存未刷新導致賬戶解析失敗": [
+    "[BUG-023] 修改賬戶配置後适配器緩存未刷新導致賬戶解析失敗": [
       {
         "document": "bug-tracker.md",
-        "line": 601,
+        "line": 609,
         "level": 3,
-        "title": "[BUG-023] 修改賬戶配置後適配器緩存未刷新導致賬戶解析失敗"
+        "title": "[BUG-023] 修改賬戶配置後适配器緩存未刷新導致賬戶解析失敗"
       }
     ],
     "[BUG-024] storage.set() 寫入大數字 ID 鍵時觸發 OOM Kill": [
       {
         "document": "bug-tracker.md",
-        "line": 621,
+        "line": 629,
         "level": 3,
         "title": "[BUG-024] storage.set() 寫入大數字 ID 鍵時觸發 OOM Kill"
       }
@@ -3795,7 +3795,7 @@
     "[BUG-025] on_config_update 回調未被核心路由": [
       {
         "document": "bug-tracker.md",
-        "line": 667,
+        "line": 675,
         "level": 3,
         "title": "[BUG-025] on_config_update 回調未被核心路由"
       }
@@ -3803,7 +3803,7 @@
     "[BUG-026] notice/request 事件 reply 目標推斷錯誤": [
       {
         "document": "bug-tracker.md",
-        "line": 697,
+        "line": 705,
         "level": 3,
         "title": "[BUG-026] notice/request 事件 reply 目標推斷錯誤"
       }
@@ -3811,7 +3811,7 @@
     "[BUG-027] 路由限流清理任務使用固定窗口導致長窗口限流規則失效": [
       {
         "document": "bug-tracker.md",
-        "line": 728,
+        "line": 736,
         "level": 3,
         "title": "[BUG-027] 路由限流清理任務使用固定窗口導致長窗口限流規則失效"
       }
@@ -3819,7 +3819,7 @@
     "[BUG-029] 配置監聽任務廣播半成品 TOML 並靜默吞掉異常": [
       {
         "document": "bug-tracker.md",
-        "line": 760,
+        "line": 768,
         "level": 3,
         "title": "[BUG-029] 配置監聽任務廣播半成品 TOML 並靜默吞掉異常"
       }
@@ -3827,7 +3827,7 @@
     "[BUG-030] 配置 watcher 競態導致 setConfig 延遲寫入靜默丟數據": [
       {
         "document": "bug-tracker.md",
-        "line": 796,
+        "line": 804,
         "level": 3,
         "title": "[BUG-030] 配置 watcher 競態導致 setConfig 延遲寫入靜默丟數據"
       }
@@ -3835,7 +3835,7 @@
     "[BUG-032] 配置延遲刷盤期間「寫後立讀」讀到舊值": [
       {
         "document": "bug-tracker.md",
-        "line": 832,
+        "line": 840,
         "level": 3,
         "title": "[BUG-032] 配置延遲刷盤期間「寫後立讀」讀到舊值"
       }
@@ -3843,9 +3843,65 @@
     "[BUG-033] wait_reply 挂起的回复被高优先级处理器饿死": [
       {
         "document": "bug-tracker.md",
-        "line": 854,
+        "line": 862,
         "level": 3,
         "title": "[BUG-033] wait_reply 挂起的回复被高优先级处理器饿死"
+      }
+    ],
+    "[BUG-034] 作用域 persist=False 運行时绑定被任意后续配置写入静默冲掉": [
+      {
+        "document": "bug-tracker.md",
+        "line": 884,
+        "level": 3,
+        "title": "[BUG-034] 作用域 persist=False 運行时绑定被任意后续配置写入静默冲掉"
+      }
+    ],
+    "[BUG-035] 配置面板 select 选项与字典字段渲染为 [object Object]": [
+      {
+        "document": "bug-tracker.md",
+        "line": 904,
+        "level": 3,
+        "title": "[BUG-035] 配置面板 select 选项与字典字段渲染为 [object Object]"
+      }
+    ],
+    "[BUG-036] 事件处理器注册时未正确处理 OneBot12 的 friend_increase/friend_decrease": [
+      {
+        "document": "bug-tracker.md",
+        "line": 922,
+        "level": 3,
+        "title": "[BUG-036] 事件处理器注册时未正确处理 OneBot12 的 friend_increase/friend_decrease"
+      }
+    ],
+    "[BUG-037] 事件处理器在 OneBot12 中未正确处理 friend_increase/friend_decrease 事件": [
+      {
+        "document": "bug-tracker.md",
+        "line": 938,
+        "level": 3,
+        "title": "[BUG-037] 事件处理器在 OneBot12 中未正确处理 friend_increase/friend_decrease 事件"
+      }
+    ],
+    "[BUG-038] 事件处理器在 OneBot12 中未正确处理 friend_increase/friend_decrease 事件": [
+      {
+        "document": "bug-tracker.md",
+        "line": 954,
+        "level": 3,
+        "title": "[BUG-038] 事件处理器在 OneBot12 中未正确处理 friend_increase/friend_decrease 事件"
+      }
+    ],
+    "[BUG-039] 事件处理器在 OneBot12 中未正确处理 friend_increase/friend_decrease 事件": [
+      {
+        "document": "bug-tracker.md",
+        "line": 970,
+        "level": 3,
+        "title": "[BUG-039] 事件处理器在 OneBot12 中未正确处理 friend_increase/friend_decrease 事件"
+      }
+    ],
+    "[BUG-040] 事件处理器在 OneBot12 中未正确处理 friend_increase/friend_decrease 事件": [
+      {
+        "document": "bug-tracker.md",
+        "line": 986,
+        "level": 3,
+        "title": "[BUG-040] 事件处理器在 OneBot12 中未正确处理 friend_increase/friend_decrease 事件"
       }
     ],
     "__init__.py": [
@@ -3888,12 +3944,12 @@
         "title": "`keep_running` 參數"
       }
     ],
-    "`self` 欄位擴展資訊": [
+    "`self` 字段擴展資訊": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 983,
+        "line": 1070,
         "level": 3,
-        "title": "`self` 欄位擴展資訊"
+        "title": "`self` 字段擴展資訊"
       }
     ],
     "`t()` 方法詳解": [
@@ -4038,6 +4094,14 @@
         "line": 40,
         "level": 3,
         "title": "docker-compose.yml"
+      }
+    ],
+    "docstring 自动生成字段描述（v2.8.0+）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 449,
+        "level": 4,
+        "title": "docstring 自动生成字段描述（v2.8.0+）"
       }
     ],
     "doctor": [
@@ -4299,7 +4363,7 @@
     "self.user_id 與 Using 的關係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 857,
+        "line": 944,
         "level": 3,
         "title": "self.user_id 與 Using 的關係"
       }
@@ -4387,13 +4451,13 @@
     "① 模組維度": [
       {
         "document": "advanced/scope.md",
-        "line": 98,
+        "line": 100,
         "level": 2,
         "title": "① 模組維度"
       },
       {
         "document": "advanced/scope.md",
-        "line": 230,
+        "line": 234,
         "level": 3,
         "title": "① 模組維度"
       }
@@ -4401,7 +4465,7 @@
     "② 身份維度": [
       {
         "document": "advanced/scope.md",
-        "line": 248,
+        "line": 258,
         "level": 3,
         "title": "② 身份維度"
       }
@@ -4409,7 +4473,7 @@
     "② 身份維度（事件准入）": [
       {
         "document": "advanced/scope.md",
-        "line": 140,
+        "line": 143,
         "level": 2,
         "title": "② 身份維度（事件准入）"
       }
@@ -4417,7 +4481,7 @@
     "③ 出站維度": [
       {
         "document": "advanced/scope.md",
-        "line": 261,
+        "line": 271,
         "level": 3,
         "title": "③ 出站維度"
       }
@@ -4425,7 +4489,7 @@
     "③ 出站維度（限制模組發起出站呼叫）": [
       {
         "document": "advanced/scope.md",
-        "line": 157,
+        "line": 160,
         "level": 2,
         "title": "③ 出站維度（限制模組發起出站呼叫）"
       }
@@ -4537,7 +4601,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 572,
+        "line": 590,
         "level": 2,
         "title": "下一步"
       },
@@ -4578,6 +4642,22 @@
         "line": 250,
         "level": 3,
         "title": "不等待結果"
+      }
+    ],
+    "不落盤的 example 字段（v2.8.0+）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 512,
+        "level": 4,
+        "title": "不落盤的 example 字段（v2.8.0+）"
+      }
+    ],
+    "严重性分级": [
+      {
+        "document": "bug-tracker.md",
+        "line": 39,
+        "level": 2,
+        "title": "严重性分级"
       }
     ],
     "並行事件處理": [
@@ -4645,7 +4725,7 @@
     "主人系統配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 206,
+        "line": 224,
         "level": 2,
         "title": "主人系統配置"
       }
@@ -4653,7 +4733,7 @@
     "主動 GC 配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 349,
+        "line": 367,
         "level": 3,
         "title": "主動 GC 配置"
       }
@@ -4829,7 +4909,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 311,
+        "line": 317,
         "level": 2,
         "title": "事件處理"
       }
@@ -4845,7 +4925,7 @@
     "事件處理器生命週期": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 329,
+        "line": 335,
         "level": 3,
         "title": "事件處理器生命週期"
       }
@@ -4853,7 +4933,7 @@
     "事件處理器註冊": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 313,
+        "line": 319,
         "level": 3,
         "title": "事件處理器註冊"
       }
@@ -4957,7 +5037,7 @@
     "事件轉換器": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 634,
+        "line": 721,
         "level": 2,
         "title": "事件轉換器"
       }
@@ -4973,7 +5053,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 404,
+        "line": 422,
         "level": 2,
         "title": "事件配置"
       }
@@ -5049,7 +5129,7 @@
     "事務使用": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 301,
+        "line": 307,
         "level": 3,
         "title": "事務使用"
       }
@@ -5197,7 +5277,7 @@
     "伺服器配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 187,
+        "line": 205,
         "level": 2,
         "title": "伺服器配置"
       }
@@ -5237,7 +5317,7 @@
     "作用域配置（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 473,
+        "line": 491,
         "level": 2,
         "title": "作用域配置（scope）"
       }
@@ -5382,6 +5462,14 @@
         "line": 209,
         "level": 3,
         "title": "使用翻譯"
+      }
+    ],
+    "使用者優先：主人生效範圍由使用者最終決定": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 292,
+        "level": 3,
+        "title": "使用者優先：主人生效範圍由使用者最終決定"
       }
     ],
     "使用請求參數": [
@@ -5535,7 +5623,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 286,
+        "line": 292,
         "level": 2,
         "title": "儲存系統"
       }
@@ -5653,7 +5741,7 @@
     "全局兜底：`default_allow`": [
       {
         "document": "advanced/scope.md",
-        "line": 47,
+        "line": 49,
         "level": 2,
         "title": "全局兜底：`default_allow`"
       }
@@ -5811,7 +5899,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 537,
+        "line": 624,
         "level": 3,
         "title": "初始化過程"
       }
@@ -5835,7 +5923,7 @@
     "判定語義": [
       {
         "document": "advanced/scope.md",
-        "line": 183,
+        "line": 186,
         "level": 3,
         "title": "判定語義"
       }
@@ -5843,7 +5931,7 @@
     "判定鏈與運行時增刪": [
       {
         "document": "user-guide/configuration.md",
-        "line": 232,
+        "line": 250,
         "level": 3,
         "title": "判定鏈與運行時增刪"
       }
@@ -5851,7 +5939,7 @@
     "判定（三問）": [
       {
         "document": "advanced/scope.md",
-        "line": 217,
+        "line": 221,
         "level": 3,
         "title": "判定（三問）"
       }
@@ -6129,7 +6217,7 @@
     "可用屬性": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 572,
+        "line": 659,
         "level": 3,
         "title": "可用屬性"
       }
@@ -6273,7 +6361,7 @@
     "命令解析配置（event.command）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 570,
+        "line": 588,
         "level": 2,
         "title": "命令解析配置（event.command）"
       }
@@ -6317,7 +6405,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 406,
+        "line": 424,
         "level": 3,
         "title": "命令配置"
       }
@@ -6378,28 +6466,20 @@
         "title": "單個方法註冊"
       }
     ],
-    "單帳戶配置": [
+    "單帳號配置": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 305,
         "level": 4,
-        "title": "單帳戶配置"
+        "title": "單帳號配置"
       }
     ],
     "嚴格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 364,
+        "line": 382,
         "level": 3,
         "title": "嚴格模式"
-      }
-    ],
-    "嚴重性分級": [
-      {
-        "document": "bug-tracker.md",
-        "line": 37,
-        "level": 2,
-        "title": "嚴重性分級"
       }
     ],
     "四、生態與官方客戶端": [
@@ -6529,7 +6609,7 @@
     "國際化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 433,
+        "line": 451,
         "level": 2,
         "title": "國際化配置"
       }
@@ -6649,7 +6729,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 288,
+        "line": 294,
         "level": 3,
         "title": "基本使用"
       }
@@ -6689,7 +6769,7 @@
     "基本方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 596,
+        "line": 683,
         "level": 3,
         "title": "基本方法"
       }
@@ -6912,12 +6992,6 @@
         "line": 390,
         "level": 2,
         "title": "多帳戶支援"
-      },
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 801,
-        "level": 2,
-        "title": "多帳戶支援"
       }
     ],
     "多帳戶模型": [
@@ -6929,12 +7003,6 @@
       }
     ],
     "多帳戶配置": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 334,
-        "level": 4,
-        "title": "多帳戶配置"
-      },
       {
         "document": "platform-guide/ideaura.md",
         "line": 379,
@@ -6954,12 +7022,28 @@
         "title": "多帳戶配置"
       }
     ],
+    "多帳號支援": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 888,
+        "level": 2,
+        "title": "多帳號支援"
+      }
+    ],
     "多帳號發送語法": [
       {
         "document": "platform-guide/onebot12.md",
         "line": 346,
         "level": 3,
         "title": "多帳號發送語法"
+      }
+    ],
+    "多帳號配置": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 334,
+        "level": 4,
+        "title": "多帳號配置"
       }
     ],
     "多平台適配": [
@@ -7173,7 +7257,7 @@
     "存儲配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 393,
+        "line": 411,
         "level": 2,
         "title": "存儲配置"
       }
@@ -7357,7 +7441,7 @@
     "完整配置範例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 134,
+        "line": 152,
         "level": 2,
         "title": "完整配置範例"
       }
@@ -7389,7 +7473,7 @@
     "宣告式事件擴展方法（v2.7.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 479,
+        "line": 566,
         "level": 3,
         "title": "宣告式事件擴展方法（v2.7.0+）"
       }
@@ -7397,7 +7481,7 @@
     "宣告式翻譯鍵（v2.7.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 445,
+        "line": 532,
         "level": 3,
         "title": "宣告式翻譯鍵（v2.7.0+）"
       },
@@ -7411,7 +7495,7 @@
     "宣告式配置（推薦）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 803,
+        "line": 890,
         "level": 3,
         "title": "宣告式配置（推薦）"
       }
@@ -7500,6 +7584,14 @@
         "title": "屬性存取"
       }
     ],
+    "嵌套配置（v2.8.0+）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 475,
+        "level": 4,
+        "title": "嵌套配置（v2.8.0+）"
+      }
+    ],
     "工作原理": [
       {
         "document": "advanced/lazy-loading.md",
@@ -7509,7 +7601,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 335,
+        "line": 341,
         "level": 3,
         "title": "工作原理"
       },
@@ -7557,7 +7649,7 @@
     "已修復的 Bug": [
       {
         "document": "bug-tracker.md",
-        "line": 107,
+        "line": 115,
         "level": 2,
         "title": "已修復的 Bug"
       }
@@ -7568,14 +7660,6 @@
         "line": 221,
         "level": 2,
         "title": "帳戶管理"
-      }
-    ],
-    "帳戶解析": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 511,
-        "level": 4,
-        "title": "帳戶解析"
       }
     ],
     "帳戶解析回退鏈": [
@@ -7602,20 +7686,28 @@
         "title": "帳戶配置字段"
       }
     ],
-    "帳戶配置檔案": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 830,
-        "level": 3,
-        "title": "帳戶配置檔案"
-      }
-    ],
     "帳戶配置（EmailAdapter.accounts）": [
       {
         "document": "platform-guide/email.md",
         "line": 36,
         "level": 3,
         "title": "帳戶配置（EmailAdapter.accounts）"
+      }
+    ],
+    "帳號解析": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 598,
+        "level": 4,
+        "title": "帳號解析"
+      }
+    ],
+    "帳號配置檔案": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 917,
+        "level": 3,
+        "title": "帳號配置檔案"
       }
     ],
     "帶內聯鍵盤的消息": [
@@ -7717,7 +7809,7 @@
     "常見問題與注意事項": [
       {
         "document": "advanced/scope.md",
-        "line": 318,
+        "line": 328,
         "level": 2,
         "title": "常見問題與注意事項"
       }
@@ -8030,12 +8122,12 @@
         "title": "必填字段映射"
       }
     ],
-    "必需欄位": [
+    "必需字段": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 646,
+        "line": 733,
         "level": 3,
-        "title": "必需欄位"
+        "title": "必需字段"
       }
     ],
     "快速上手": [
@@ -8147,7 +8239,7 @@
     "慢載入機制": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 333,
+        "line": 339,
         "level": 2,
         "title": "慢載入機制"
       }
@@ -8179,7 +8271,7 @@
     "成功回應": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 771,
+        "line": 858,
         "level": 3,
         "title": "成功回應"
       }
@@ -8227,7 +8319,7 @@
     "手動建構回應（舊版方式仍然相容）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 787,
+        "line": 874,
         "level": 3,
         "title": "手動建構回應（舊版方式仍然相容）"
       }
@@ -8259,7 +8351,7 @@
     "手動讀取配置（已廢棄）": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 269,
+        "line": 275,
         "level": 3,
         "title": "手動讀取配置（已廢棄）"
       }
@@ -8349,17 +8441,17 @@
     "拓撲樹 API": [
       {
         "document": "advanced/scope.md",
-        "line": 358,
+        "line": 368,
         "level": 2,
         "title": "拓撲樹 API"
       }
     ],
-    "指定帳戶發送": [
+    "指定帳號發送": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 844,
+        "line": 931,
         "level": 3,
-        "title": "指定帳戶發送"
+        "title": "指定帳號發送"
       }
     ],
     "指定發送帳號": [
@@ -9003,7 +9095,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 373,
+        "line": 379,
         "level": 3,
         "title": "日誌記錄"
       }
@@ -9025,7 +9117,7 @@
     "日誌配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 280,
+        "line": 298,
         "level": 2,
         "title": "日誌配置"
       }
@@ -9208,6 +9300,14 @@
         "line": 88,
         "level": 3,
         "title": "本地測試"
+      }
+    ],
+    "条目模板": [
+      {
+        "document": "bug-tracker.md",
+        "line": 65,
+        "level": 2,
+        "title": "条目模板"
       }
     ],
     "架構概覽": [
@@ -9477,7 +9577,7 @@
     "框架輔助方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 589,
+        "line": 676,
         "level": 3,
         "title": "框架輔助方法"
       }
@@ -9485,7 +9585,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 328,
+        "line": 346,
         "level": 2,
         "title": "框架配置"
       }
@@ -9795,7 +9895,7 @@
     "模組配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 444,
+        "line": 462,
         "level": 2,
         "title": "模組配置"
       }
@@ -10188,14 +10288,6 @@
         "title": "消息過濾"
       }
     ],
-    "消息配置": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 422,
-        "level": 3,
-        "title": "消息配置"
-      }
-    ],
     "消息類型判斷": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -10323,7 +10415,7 @@
     "熱更新鏈路內部拆解": [
       {
         "document": "user-guide/configuration.md",
-        "line": 85,
+        "line": 103,
         "level": 3,
         "title": "熱更新鏈路內部拆解"
       }
@@ -10525,7 +10617,7 @@
     "環境變數覆蓋": [
       {
         "document": "user-guide/configuration.md",
-        "line": 38,
+        "line": 56,
         "level": 2,
         "title": "環境變數覆蓋"
       }
@@ -10614,14 +10706,6 @@
         "title": "用戶使用指南"
       }
     ],
-    "用戶優先：主人生效範圍由用戶最終決定": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 274,
-        "level": 3,
-        "title": "用戶優先：主人生效範圍由用戶最終決定"
-      }
-    ],
     "用戶數據存儲": [
       {
         "document": "getting-started/common-tasks.md",
@@ -10663,7 +10747,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 358,
+        "line": 364,
         "level": 3,
         "title": "異常捕獲"
       }
@@ -11039,7 +11123,7 @@
     "監聽 Bot 生命週期": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1017,
+        "line": 1104,
         "level": 3,
         "title": "監聽 Bot 生命週期"
       }
@@ -11227,7 +11311,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1035,
+        "line": 1122,
         "level": 2,
         "title": "相關文件"
       },
@@ -11245,7 +11329,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 384,
+        "line": 390,
         "level": 2,
         "title": "相關文件"
       },
@@ -11321,7 +11405,7 @@
     "立即載入": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 343,
+        "line": 349,
         "level": 3,
         "title": "立即載入"
       }
@@ -11494,6 +11578,14 @@
         "title": "簡單計數器"
       }
     ],
+    "类型分类": [
+      {
+        "document": "bug-tracker.md",
+        "line": 49,
+        "level": 2,
+        "title": "类型分类"
+      }
+    ],
     "系統要求": [
       {
         "document": "user-guide/installation.md",
@@ -11529,7 +11621,7 @@
     "統一事件覆寫配置（event.overrides）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 523,
+        "line": 541,
         "level": 2,
         "title": "統一事件覆寫配置（event.overrides）"
       }
@@ -11550,18 +11642,10 @@
         "title": "統一的模組獲取入口"
       }
     ],
-    "統計概覽": [
-      {
-        "document": "bug-tracker.md",
-        "line": 84,
-        "level": 2,
-        "title": "統計概覽"
-      }
-    ],
     "綁定繼承（merge）": [
       {
         "document": "advanced/scope.md",
-        "line": 124,
+        "line": 127,
         "level": 3,
         "title": "綁定繼承（merge）"
       }
@@ -11585,7 +11669,7 @@
     "緩存與熱更新": [
       {
         "document": "advanced/scope.md",
-        "line": 304,
+        "line": 314,
         "level": 2,
         "title": "緩存與熱更新"
       }
@@ -11609,9 +11693,17 @@
     "繼承關係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 563,
+        "line": 650,
         "level": 3,
         "title": "繼承關係"
+      }
+    ],
+    "统计概览": [
+      {
+        "document": "bug-tracker.md",
+        "line": 90,
+        "level": 2,
+        "title": "统计概览"
       }
     ],
     "群成員增加": [
@@ -11705,7 +11797,7 @@
     "聲明式翻譯鍵（v2.7.0+）": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 228,
+        "line": 234,
         "level": 3,
         "title": "聲明式翻譯鍵（v2.7.0+）"
       }
@@ -11753,7 +11845,7 @@
     "自動發現機制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 932,
+        "line": 1019,
         "level": 3,
         "title": "自動發現機制"
       }
@@ -11793,7 +11885,7 @@
     "自訂身份源（provider）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 246,
+        "line": 264,
         "level": 3,
         "title": "自訂身份源（provider）"
       }
@@ -12037,7 +12129,7 @@
     "規則形態（內聯表）": [
       {
         "document": "advanced/scope.md",
-        "line": 164,
+        "line": 167,
         "level": 3,
         "title": "規則形態（內聯表）"
       }
@@ -12198,6 +12290,14 @@
         "title": "訊息轉發事件"
       }
     ],
+    "訊息配置": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 440,
+        "level": 3,
+        "title": "訊息配置"
+      }
+    ],
     "訪問核心模組": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -12284,6 +12384,14 @@
         "line": 368,
         "level": 3,
         "title": "註冊配置翻譯"
+      }
+    ],
+    "註釋保留與最小化落盤": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 38,
+        "level": 2,
+        "title": "註釋保留與最小化落盤"
       }
     ],
     "認證服務號與被動回覆（verified）": [
@@ -12453,7 +12561,7 @@
     "豁免清單": [
       {
         "document": "user-guide/configuration.md",
-        "line": 381,
+        "line": 399,
         "level": 4,
         "title": "豁免清單"
       }
@@ -12603,7 +12711,7 @@
     "轉換器範例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 666,
+        "line": 753,
         "level": 3,
         "title": "轉換器範例"
       }
@@ -12611,7 +12719,7 @@
     "轉換流程": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 636,
+        "line": 723,
         "level": 3,
         "title": "轉換流程"
       }
@@ -12715,7 +12823,7 @@
     "通用": [
       {
         "document": "advanced/scope.md",
-        "line": 275,
+        "line": 285,
         "level": 3,
         "title": "通用"
       }
@@ -12891,7 +12999,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 707,
+        "line": 794,
         "level": 2,
         "title": "連接管理"
       }
@@ -12899,7 +13007,7 @@
     "連接重試": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 876,
+        "line": 963,
         "level": 3,
         "title": "連接重試"
       }
@@ -12928,14 +13036,6 @@
         "title": "進程監督與硬重啟"
       }
     ],
-    "進階：字典式點分路徑兜底": [
-      {
-        "document": "advanced/scope.md",
-        "line": 287,
-        "level": 3,
-        "title": "進階：字典式點分路徑兜底"
-      }
-    ],
     "運行控制命令": [
       {
         "document": "user-guide/cli-reference.md",
@@ -12947,7 +13047,7 @@
     "運行時 API": [
       {
         "document": "advanced/scope.md",
-        "line": 207,
+        "line": 210,
         "level": 2,
         "title": "運行時 API"
       }
@@ -13087,7 +13187,7 @@
     "適配器發送 Meta 事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 958,
+        "line": 1045,
         "level": 3,
         "title": "適配器發送 Meta 事件"
       }
@@ -13266,14 +13366,6 @@
         "title": "配置懶加載"
       }
     ],
-    "配置文件": [
-      {
-        "document": "advanced/scope.md",
-        "line": 63,
-        "level": 2,
-        "title": "配置文件"
-      }
-    ],
     "配置文件位置": [
       {
         "document": "user-guide/configuration.md",
@@ -13293,12 +13385,18 @@
     "配置格式校驗": [
       {
         "document": "advanced/scope.md",
-        "line": 312,
+        "line": 322,
         "level": 2,
         "title": "配置格式校驗"
       }
     ],
     "配置檔案": [
+      {
+        "document": "advanced/scope.md",
+        "line": 65,
+        "level": 2,
+        "title": "配置檔案"
+      },
       {
         "document": "quick-start.md",
         "line": 158,
@@ -13309,13 +13407,13 @@
     "配置熱更新": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 524,
+        "line": 611,
         "level": 4,
         "title": "配置熱更新"
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 63,
+        "line": 81,
         "level": 2,
         "title": "配置熱更新"
       }
@@ -13561,7 +13659,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 874,
+        "line": 961,
         "level": 2,
         "title": "錯誤處理"
       },
@@ -13573,7 +13671,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 356,
+        "line": 362,
         "level": 2,
         "title": "錯誤處理"
       },
@@ -13607,7 +13705,7 @@
     "鏈式修飾方法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 620,
+        "line": 707,
         "level": 3,
         "title": "鏈式修飾方法"
       },
@@ -13948,12 +14046,6 @@
     ],
     "項目模板": [
       {
-        "document": "bug-tracker.md",
-        "line": 59,
-        "level": 2,
-        "title": "項目模板"
-      },
-      {
         "document": "developer-guide/README.md",
         "line": 48,
         "level": 3,
@@ -14012,14 +14104,6 @@
         "title": "頻道消息段"
       }
     ],
-    "類型分類": [
-      {
-        "document": "bug-tracker.md",
-        "line": 45,
-        "level": 2,
-        "title": "類型分類"
-      }
-    ],
     "類型存根命令": [
       {
         "document": "user-guide/cli-reference.md",
@@ -14058,6 +14142,14 @@
         "line": 278,
         "level": 4,
         "title": "高級方法 (推薦)"
+      }
+    ],
+    "高級：字典式點分路徑兜底": [
+      {
+        "document": "advanced/scope.md",
+        "line": 297,
+        "level": 3,
+        "title": "高級：字典式點分路徑兜底"
       }
     ],
     "黑名單過濾": [

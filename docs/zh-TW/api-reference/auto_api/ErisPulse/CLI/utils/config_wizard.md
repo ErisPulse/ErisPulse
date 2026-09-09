@@ -195,8 +195,19 @@ ErisPulse CLI 配置向导共享工具
 
 渲染整个配置类的表单并收集用户输入
 
+``example`` 字段不进入向导（默认值不落盘，仅记录在 config.full.example）；
+嵌套 dataclass 字段（schema 含 ``fields`` 子树）递归渲染为子表单。
+
 - **config_class** (`dataclass`): 配置类
 - **current_values** (`当前存储的配置字典（作为各字段初值）`): **返回值**: 收集后的配置字典
+
+---
+
+
+### `_fill_from_schema_fields(fields_dict: dict, values: dict)`
+
+> **内部方法**
+按 schema 字段树渲染表单并就地收集到 values（嵌套子树递归）
 
 ---
 

@@ -3365,10 +3365,10 @@ epsdk create module -n MyModule -f
 
 ### 配置文件说明
 
-# Configuration File Description
-> This document will introduce the framework's configuration file. If third-party modules require configuration, please refer to the module's documentation.
+# Configuration File Documentation
+> This document introduces the framework's configuration file. If a third-party module requires configuration, please refer to the module's documentation.
 
-ErisPulse uses a TOML-formatted configuration file `config/config.toml` to manage project configurations.
+ErisPulse uses a TOML-formatted configuration file `config/config.toml` to manage project settings.
 
 ## Configuration File Location
 
@@ -3383,119 +3383,129 @@ project/
 
 ## Configuration Loading Error Handling
 
-When loading `config.toml`, the framework distinguishes three error states and provides **actionable diagnostic information**, instead of silently falling back to default configurations:
+The framework distinguishes three error states when loading `config.toml` and provides **actionable diagnostic information** instead of silently falling back to default configurations:
 
 | Error State | Trigger Condition | Framework Behavior |
 |-------------|-------------------|--------------------|
-| File Missing | `config.toml` does not exist | On normal first startup, silently use an empty configuration (no warning issued) |
-| TOML Syntax Error | File exists but has invalid format (e.g., missing quotes, unclosed parentheses) | Output **line number/col number and reason**, and indicate that default configuration has been reverted |
-| Permission/Other Errors | No read permission, IO error, etc. | Output **clear reason**, and indicate that default configuration has been reverted |
+| File Missing | `config.toml` does not exist | Normal on first startup, silently uses empty configuration (no warning) |
+| TOML Syntax Error | File exists but format is invalid (e.g., missing quotes, un-closed parentheses) | Outputs **line/column number and reason**, and indicates fallback to default configuration |
+| Permission/Other Error | No read permission, IO errors, etc. | Outputs **clear reason**, and indicates fallback to default configuration |
 
-For example, if you accidentally write the configuration as `port = 8000` (a string without quotes), the log will output something like:
+For example, if you accidentally write the configuration as `port = 8000` (missing quotes for a string), the log will output something like:
 
 ```
-[ERROR] [Config] Configuration file config/config.toml has a syntax error (line 3, column 1): ...
-[WARNING] [Config] Failed to read configuration file. Continuing with last valid configuration. Changes in this file did not take effect—please fix and reload or restart
+[ERROR] [Config] Syntax error in config file config/config.toml (line 3, column 1): ...
+[WARNING] [Config] Failed to read configuration file. Continuing with last valid configuration; changes in this file did not take effect—please fix and reload or restart
 ```
 
-This allows you to immediately locate the issue at the **default INFO level** without confusion about why your configuration changes did not take effect.
+This allows you to immediately locate the issue at the **default INFO level** without confusion over why your configuration changes didn't take effect.
 
-> **Bad configuration file edited during runtime?** If you manually edit `config.toml` during robot operation and introduce a syntax error, the framework will output on the next write (merging configuration): "Configuration file is corrupted (syntax error, line X), unable to merge and write—please fix the configuration file and restart" instead of the confusing "write failed". The configuration items to be written will be retained and will not be lost.
+> **What if you break the config file during runtime?** If you manually edit `config.toml` during bot operation and introduce a syntax error, the framework will output "Configuration file damaged (syntax error, line X), unable to merge and write—please fix the configuration file and restart" when it next attempts to write (merge configuration), rather than a confusing "write failed". The configuration items to be written are retained and not lost.
+
+## Comment Preservation and Minimal Disk Write
+
+Comments and key order in `config.toml` are **fully preserved after framework write**: whether through code `setConfig()`, CLI configuration wizard save, or adapter/module first-generation configuration template, the framework only modifies the relevant keys, and your comments and arranged order are not erased or reordered (based on tomlkit comment-preserving round-trip implementation).
+
+The framework is restrained about what is written to disk:
+
+- **Default framework configuration is not automatically written to disk**: `gc`, `scope`, `transcript`, and other built-in default values only reside in memory; `config.toml` only contains keys you explicitly set, keeping it minimal. Refer to the project's `config/config.full.example` for a complete list of configurable items. Copy and modify as needed (unconfigured items always use built-in defaults, behavior unchanged).
+- **`config.full.example` is automatically maintained**: Regardless of whether `epsdk init` is executed, as long as the framework is started (`epsdk run` / `main.py`), a complete configuration reference will be automatically generated in `config/config.full.example` if the file is missing. The file's first line is a framework-maintained marker; when the generator content updates (e.g., new configuration items, newly installed components), the startup will refresh once. Deleting or modifying the first line switches to manual takeover, and the framework will no longer overwrite.
+- **Adapter/Module Configuration Templates**: First initialization saves templates with comments (field descriptions are comments); fields marked as `example` do not write to disk, only recorded in `config.full.example` for reference.
 
 ## Environment Variable Override
 
-The framework supports **overriding** `ErisPulse.*` configuration items using environment variables (ideal for Docker / containerized / CI deployments, without modifying `config.toml`).
+The framework supports overriding `ErisPulse.*` configuration items using environment variables (suitable for Docker/containerized/CI deployment, no need to modify `config.toml`).
 
-Naming convention: Convert the dot-separated path `ErisPulse.<section>.<key>` into all uppercase, replace `.` with `_`, and add the `ERISPULSE_` prefix:
+Naming rule: Replace the dot-separated path `ErisPulse.<section>.<key>` with all uppercase, replace `.` with `_`, and add the `ERISPULSE_` prefix:
 
 | Configuration Item | Environment Variable | Example Value |
-|--------------------|----------------------|---------------|
+|----------------------|----------------------|---------------|
 | `ErisPulse.server.port` | `ERISPULSE_SERVER_PORT` | `9000` |
 | `ErisPulse.server.host` | `ERISPULSE_SERVER_HOST` | `0.0.0.0` |
 | `ErisPulse.logger.level` | `ERISPULSE_LOGGER_LEVEL` | `DEBUG` |
 | `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |
 
 Behavior description:
-- **Highest priority**: Environment variables override both "configuration file" and "default values", automatically converting to the original value type (`bool` / `int` / `float` / comma-separated `list` / string)
-- **Non-persistent**: The override only takes effect during runtime and does not write back to `config.toml`
-- **Supports hot reload**: After modifying environment variables during runtime, configuration reload via monitoring will take effect
+- **Highest priority**: Environment variables override "configuration file" and "default values", automatically converting to the original value type (`bool` / `int` / `float` / comma-separated `list` / string).
+- **Not persistent**: The override only takes effect during runtime, not written back to `config.toml`.
+- **Supports hot update**: After modifying environment variables during runtime, combined with configuration monitoring reload, the changes take effect.
 
 ```bash
-# Example of Docker deployment: Override port directly without modifying config.toml
+# Example of Docker deployment: No need to modify config.toml, directly override port
 ERISPULSE_SERVER_PORT=9000 docker compose up -d
 ```
 
-> Note: Framework configurations such as `ErisPulse.server.port` are read through APIs like `get_server_config()`, and are all affected by environment variable overrides.
+> Note: `ErisPulse.server.port` and other framework configurations accessed via `get_server_config()` and similar APIs are affected by environment variable overrides.
 
-## Hot Configuration Reload
+## Configuration Hot Update
 
-Starting from version 2.7.0, the framework provides **systematic support** for hot configuration reload. After external modification of `config.toml` (detected by a background watcher every 5 seconds) or after calling `setConfig()` in code, all components automatically respond:
+Starting from version 2.7.0, the framework has implemented **systematic support for configuration hot updates**. After external modification of `config.toml` (detected every 5 seconds by a background watcher) or code calling `setConfig()`, components automatically respond:
 
-| Component | Configurations Supporting Hot Reload | Behavior |
-|-----------|--------------------------------------|----------|
-| **Logger** | `logger.level` / `log_files` / `log_dir` (including segmentation parameters) / `memory_limit` / `format` / `exclude_levels` | Automatically reapply (with change detection) |
-| **Command System CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | Takes effect on the next message |
+| Component | Hot-updated Configuration | Behavior |
+|-----------|---------------------------|----------|
+| **Logger** | `logger.level` / `log_files` / `log_dir` (including segment parameters) / `memory_limit` / `format` / `exclude_levels` | Automatically reapplies (with change detection) |
+| **Command System** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | Takes effect on the next message |
 | **Adapter Concurrency** | `framework.handler_max_concurrency` | Invalidates cached semaphore, rebuilds with new value |
-| **Proactive GC** | `framework.proactive_gc_*` | Configuration changes immediately restart GC tasks, supports runtime adjustment/disable/reenable |
-| **Master System Master** | `master.users` | Each `is_master()` check reads real-time values, no restart required |
-| **Module/Adapter Configurations** | Their respective configuration items | Triggers `on_config_update(old, new)` callback |
+| **Proactive GC** | `framework.proactive_gc_*` | Configuration change immediately restarts GC task, supports runtime adjustment/disable/re-enable |
+| **Master System** | `master.users` | Each `is_master()` check reads in real-time, no restart needed |
+| **Modules/Adapters** | Their respective configuration items | Triggers `on_config_update(old, new)` callback |
 
-**Configurations Requiring Restart** (cannot be safely hot-switched; warning "Process restart required for changes to take effect" is output on modification):
+**Configuration that requires restart** (cannot be safely hot-switched, warning "needs process restart to take effect" is output on change):
 
 | Configuration | Reason |
-|----------------|--------|
+|---------------|--------|
 | `router.cors.*` / `router.security.*` | Middleware is written into FastAPI at service startup, cannot be safely hot-switched at runtime |
 | `storage.use_global_db` | SQLite file handle is already open at runtime, switching paths is unsafe |
 
-> **Error during mid-edit save?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, without broadcasting an empty configuration to components (to avoid `on_config_update` receiving empty values and mistakenly reverting to default).
+> **What if editing and saving goes wrong midway?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, avoiding broadcasting an empty configuration to components (preventing `on_config_update` from receiving empty values and mistakenly reverting to default).
 
-### Internal Breakdown of Hot Reload Chain
+### Internal Breakdown of Hot Update Chain
 
-"How do components know when the configuration changes?" — Behind this is a detection → reload → broadcast chain:
+"How do components know when the configuration changes?" — Behind the scenes is a detection → reload → broadcast chain:
 
 ```mermaid
 flowchart TD
-    A["External edit to config.toml"] --> B{"Who detects first?"}
+    A["External edit of config.toml"] --> B{"Who notices first?"}
     B -->|"Background watcher thread<br/>Polls mtime every 5 seconds"| C["_check_file_change determines change"]
-    B -->|"When reading configuration<br/>Cache exceeds 60 seconds"| C
+    B -->|"Any getConfig() read<br/>If cache is over 60 seconds"| C
     C --> D["_load_config re-parses TOML"]
-    D --> E{"Parsing successful?"}
-    E -->|"No (syntax error)"| F["Retain last valid configuration<br/>Do not broadcast, log diagnostics"]
+    D --> E{"Parse successful?"}
+    E -->|"No (syntax error)"| F["Retains last valid configuration<br/>Does not broadcast, outputs diagnostic log"]
     E -->|"Yes"| G["lifecycle.emit config.updated<br/>Carries old_config / new_config"]
     G --> H["Component listeners respond<br/>(logger / scope / command / GC ... )"]
 ```
 
-**Two detection paths** (either one suffices, both provide backup):
+**Two detection paths** (either one suffices, both provide fallback):
 
 | Path | Mechanism | Trigger Timing |
 |------|-----------|----------------|
-| Background watcher | Daemon thread `config-watcher` polls file `mtime` every **5 seconds** | Up to 5 seconds after external file change |
-| Lazy detection | Any `getConfig()` read checks file if cache exceeds **60 seconds** | Next time configuration is read |
+| Background watcher | Daemon thread `config-watcher` polls file `mtime` every **5 seconds** | External file modification detected within 5 seconds at most |
+| Lazy detection | Any `getConfig()` read checks file if cache is over **60 seconds** | Next time configuration is read |
 
-> **Framework does not self-damage**: When `setConfig()` writes to disk, it records the "mtime written by itself", and the watcher excludes it, treating only **external edits** as changes.
+> **The framework does not hurt itself**: When `setConfig()` writes to disk, it records the "mtime written by itself", and the watcher excludes it, treating only **external edits** as changes.
 
-**Two types of configuration change events:**
+**Two types of configuration change events**:
 
 | Event | Triggerer | Data | Typical Scenario |
 |-------|-----------|------|------------------|
-| `config.set` | Code / Dashboard calls `setConfig()` | `{key, old_value, new_value}` | Single key write (template generation, status recording, runtime config change) |
-| `config.updated` | External edit detected by watcher/lazy detection | `{old_config, new_config, config_file}` | Manual edit of `config.toml` |
+| `config.set` | Code / Dashboard calls `setConfig()` | `{key, old_value, new_value}` | Single key write (template generation, status recording, runtime configuration change) |
+| `config.updated` | External edit detected by watcher/lazy detection | `{old_config, new_config, config_file}` | Hand-editing `config.toml` |
 
-> `setConfig()` defaults to **delayed disk write for 5 seconds** (merges multiple writes), `immediate=True` writes immediately. After watcher detects external modification, only the in-memory cache is updated, and **external changes are not written back to the file**.
+> `setConfig()` defaults to **delayed disk write** (5 seconds, merges multiple writes), `immediate=True` writes immediately. The watcher detects external changes and only updates the in-memory cache, **does not** write external changes back to the file.
 
-**List of automatically responding components** (both events are usually subscribed to, with consistent responses):
+**List of automatic response components** (both event types are typically subscribed to, response content is consistent):
 
-| Component | Listens to | Response |
-|-----------|------------|----------|
-| Logger | `config.set` + `config.updated` | Reapply level/file/directory segmentation/memory limit/format/exclude level (with change detection, no change means no action) |
-| Scope | `config.updated` | Rebuild scope binding cache |
-| Command System | `config.updated` | Refresh prefix/case sensitivity/space prefix/must_at_bot parsing parameters, takes effect on next message |
-| Adapter Concurrency | `config.set` + `config.updated` | Invalidate and rebuild semaphore for `handler_max_concurrency` |
-| Proactive GC | `config.set` + `config.updated` | Immediately restart GC background tasks for `proactive_gc_*` |
+| Component | Listener | Response |
+|-----------|----------|----------|
+| Logger | `config.set` + `config.updated` | Level/file/directory segment/memory limit/format/level exclusion reapplies (with change detection, no change means no action) |
+| Scope | `config.updated` | Scope binding cache rebuilds |
+| Command System | `config.updated` | Prefix/case sensitivity/space prefix/must_at_bot parsing parameters refresh, takes effect on next message |
+| Adapter Concurrency | `config.set` + `config.updated` | `handler_max_concurrency` invalidates and rebuilds semaphore |
+| Proactive GC | `config.set` + `config.updated` | `proactive_gc_*` immediately restarts GC background task |
 | Adapter | Routes to `on_config_update` | Each adapter's `on_config_update(old, new)` callback |
 | Module | Routes to `on_config_update` | Each module's `on_config_update(old, new)` callback |
-| Storage | `config.updated` | `use_global_db` change only warns (restart required) |
-| Router | `config.updated` | `cors.*` / `security.*` change only warns (restart required) |
+| Storage | `config.updated` | `use_global_db` change **only warns** (needs restart) |
+| Router | `config.updated` | `cors.*` / `security.*` change **only warns** (needs restart) |
 
 ## Complete Configuration Example
 
@@ -3509,8 +3519,8 @@ ssl_keyfile = ""
 
 [ErisPulse.master]
 # users supports two writing methods (choose one):
-#   Global owner (effective for all platforms): users = ["123456", "789012"]
-#   Specify owner per platform: users = { yunhu = ["123456"], telegram = ["789012"] }
+#   Global master (effective on all platforms): users = ["123456", "789012"]
+#   Specify master per platform: users = { yunhu = ["123456"], telegram = ["789012"] }
 users = {}
 
 [ErisPulse.logger]
@@ -3562,31 +3572,31 @@ ssl_keyfile = "/path/to/key.pem"
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------|------|---------|------|
+|---------------------|------|---------------|-------------|
 | host | string | 0.0.0.0 | Listening address, 0.0.0.0 means all interfaces |
 | port | integer | 8000 | Listening port number |
-| auto_start | boolean | true | Whether to automatically start the routing server when `sdk.init()`. Setting it to `false` skips the routing server startup (pure event/no WebUI scenario) |
+| auto_start | boolean | true | Whether to automatically start the routing server during `sdk.init()`. Set to `false` to skip starting the routing server (pure event/no WebUI scenario) |
 | ssl_certfile | string | empty | SSL certificate file path |
 | ssl_keyfile | string | empty | SSL private key file path |
 
 ## Master System Configuration
 
-The master system is used to identify "framework master" accounts (e.g., Bot administrators). `master.users` supports two syntaxes:
+The master system is used to identify the "master account" of the framework (e.g., bot administrator). `master.users` supports two writing methods:
 
 ```toml
 [ErisPulse.master]
-# Syntax 1: Global master (effective across all platforms)
+# Method 1: Global master (effective on all platforms)
 users = ["123456", "789012"]
 
-# Syntax 2: Specify masters per platform (dict)
+# Method 2: Specify master per platform (dict)
 # users = { yunhu = ["123456"], telegram = ["789012"] }
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------|------|---------|------|
-| users | array / object | empty | List of master account IDs. If in `list` format, it applies globally (effective across all platforms); if in `dict` format, specify masters per platform (key is the platform name, value is the list of master account IDs for that platform) |
+|---------------------|------|---------------|-------------|
+| users | array / object | empty | Master account list. `list` form is global master (effective on all platforms); `dict` form specifies per platform (key is platform name, value is the master account list for that platform) |
 
-Code checks are performed via `master.is_master(event)` or `master.is_master(platform, user_id)`. Configuration is read in real-time on each call (supports hot reload, no restart required):
+Code checks using `master.is_master(event)` or `master.is_master(platform, user_id)`, each call reads the configuration in real-time (supports hot update, no restart needed):
 
 ```python
 from ErisPulse.Core import master
@@ -3595,30 +3605,30 @@ if master.is_master(event):
     await event.reply("Hello master")
 ```
 
-### Determination Chain and Runtime Add/Remove
+### Master Determination Chain and Runtime Additions/Removals
 
-The master determination chain is **configured masters → runtime records → provider chain**:
+The master determination chain is **configuration master → runtime record → provider chain**:
 
 ```python
 from ErisPulse.Core import master
 
 master.is_master(event)                      # Determine from event
 master.is_master("yunhu", "123")             # Explicit determination
-master.add("yunhu", "123")                   # Add at runtime (default persists; persist=False only in memory)
-master.remove("yunhu", "123")                # Remove (default persists)
-master.list()                                # Aggregate: {"global": [...], "<platform>": [...]}
+master.add("yunhu", "123")                   # Runtime addition (default persistent; persist=False is only in-memory)
+master.remove("yunhu", "123")                # Removal (default persistent)
+master.list()                                # Aggregation: {"global": [...], "<platform>": [...]}
 ```
 
-### Custom Identity Sources (Provider)
+### Custom Identity Source (Provider)
 
-In addition to configuration, custom identity sources can be registered: `fn(platform, user_id) -> bool`. When built-in identity sources (configuration + runtime records) fail to match, they are tried in sequence, and if any provider grants access, the user is considered a master. This is suitable for integrating with adapter administrator interfaces, database roles, or other external identity systems.
+In addition to configuration, custom identity sources can be registered: `fn(platform, user_id) -> bool`, which are tried in sequence when built-in identity sources (configuration + runtime record) do not match; any provider that allows access is recognized as a master. Suitable for integrating adapter administrator interfaces, database roles, and other external identity systems.
 
-The registration entry `master.provider` supports both decorator and function-based syntax. Unregistration is done via `fn.unregister()` on the registered function:
+The registration entry `master.provider` supports both decorator and function-based writing methods, and unregistration is done through the unregistered function:
 
 ```python
 from ErisPulse.Core import master
 
-# Syntax 1: Decorator (persistent identity source, recommended)
+# Method 1: Decorator (persistent identity source, recommended)
 @master.provider
 def admin_provider(platform, user_id):
     return user_id in {"999"}     # Custom determination logic
@@ -3626,19 +3636,16 @@ def admin_provider(platform, user_id):
 master.is_master("yunhu", "999")   # True
 admin_provider.unregister()        # Unregister when no longer needed
 
-# Syntax 2: Function-based (register during module loading / unregister during module unloading)
+# Method 2: Function-based (register during module loading / unregister during unloading)
 fn = master.provider(admin_provider)
 fn.unregister()
 ```
 
-> Exceptions in providers are caught and skipped, without blocking the identity determination chain.
-> Binding instance methods cannot attach `unregister`, so for scenarios requiring paired registration/unregistration, use **module-level functions**.
+> Provider exceptions are caught and skipped, not blocking the identity determination chain. Binding instance methods cannot attach `unregister`, so for paired registration/unregistration scenarios, use a **module-level function**.
 
-### User Priority: Master Scope is Ultimately Decided by the User
+### User Priority: Master Effect Scope Decided by User
 
-The `master=True` in commands is only a **developer default**: users can override it by setting
-`ErisPulse.event.overrides.command.<module>.<cmd>.master = true/false`
-to tighten or loosen access (see [Unified Event Override Configuration](#unified-event-override-configuration-eventoverrides), explicit user configuration takes effect).
+The `master=True` of a command is only a **developer default**: The user can override or loosen it via `ErisPulse.event.overrides.command.<module>.<cmd>.master = true/false` (see [Unified Event Override Configuration](#unified-event-override-configuration-eventoverrides), explicit user configuration takes effect).
 
 ## Logging Configuration
 
@@ -3646,44 +3653,44 @@ to tighten or loosen access (see [Unified Event Override Configuration](#unified
 [ErisPulse.logger]
 level = "INFO"
 log_files = []                # Explicit list of log files (mutually exclusive with log_dir, higher priority)
-log_dir = ""                  # Log directory (automatic segmentation and rotation when set)
-log_rotation = "size"         # Segmentation method: "size" / "date" / "none"
-log_max_size_mb = 10          # Maximum single file size limit (MB) for size mode
-log_backup_count = 5          # Number of historical log files to retain
-log_rotation_when = "midnight"  # Rotation cycle for date mode: S/M/H/D/midnight
+log_dir = ""                  # Log directory (automatically segment-rotates after setting; mutually exclusive with log_files, log_files has higher priority)
+log_rotation = "size"         # Segmenting method: "size" / "date" / "none"
+log_max_size_mb = 10          # Single file size limit in size mode (MB), rotates to .1/.2 backup after exceeding
+log_backup_count = 5          # Number of retained historical log files, oldest backups beyond this are automatically deleted
+log_rotation_when = "midnight"  # Date mode rotation cycle: S/M/H/D/midnight (default is midnight daily)
 memory_limit = 1000
 exclude_levels = ["EVENT"]
 ```
 
-| Configuration | Type | Default | Description |
-|---------------|------|---------|-------------|
-| level | string | INFO | Log level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed internal framework debug information) |
-| format | string | rich | Log output format: `rich` (colored, default), `plain` (plain text without color, suitable for log collection/pipeline redirection), `json` (JSON structured, suitable for ELK, etc.) |
-| log_files | array | empty | List of log output files (explicit paths, no segmentation) |
-| log_dir | string | empty | Log output directory (automatically created). When set, logs are written to `erispulse.log` in the directory and segmented automatically based on `log_rotation`; mutually exclusive with `log_files`, `log_files` has higher priority |
-| log_rotation | string | size | Segmentation method: `size` (by size) / `date` (by date) / `none` (no segmentation) |
-| log_max_size_mb | float | 10 | Maximum single file size limit (MB) for size mode, rotates to `.1`/`.2` backups when exceeded |
-| log_backup_count | integer | 5 | Number of historical log files to retain, oldest backups beyond this limit are automatically deleted |
-| log_rotation_when | string | midnight | Rotation cycle for date mode: `S`/`M`/`H`/`D`/`midnight` (default: daily at midnight) |
-| memory_limit | integer | 1000 | Number of log entries to keep in memory |
-| exclude_levels | array | empty | Levels of logs to exclude. Logs at excluded levels are **completely discarded** (not written to memory, not pushed to Dashboard or other subscribers, not printed, not written to file). Supports hot reload |
+| Configuration Item | Type | Default Value | Description |
+|---------------------|------|---------------|-------------|
+| level | string | INFO | Log level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed debugging information of the framework internal) |
+| format | string | rich | Log output format: `rich` (colorful, default), `plain` (plain text without color, suitable for log collection/pipeline redirection), `json` (structured JSON, suitable for ELK, etc.) |
+| log_files | array | empty | List of log output files (explicit paths, not segmented) |
+| log_dir | string | empty | Log output directory (automatically created). After setting, writes to `erispulse.log` in the directory and automatically segments according to `log_rotation`; mutually exclusive with `log_files`, `log_files` has higher priority |
+| log_rotation | string | size | Segmenting method: `size` (by size) / `date` (by time) / `none` (no segmentation) |
+| log_max_size_mb | float | 10 | Single file size limit in size mode (MB), rotates to .1/.2 backup after exceeding |
+| log_backup_count | integer | 5 | Number of retained historical log files, oldest backups beyond this are automatically deleted |
+| log_rotation_when | string | midnight | Date mode rotation cycle: `S`/`M`/`H`/`D`/`midnight` (default is midnight daily) |
+| memory_limit | integer | 1000 | Number of log entries saved in memory |
+| exclude_levels | array | empty | Levels to exclude. Logs of excluded levels are **completely discarded** (not written to memory, not pushed to Dashboard subscribers, not printed, not written to file). Supports hot update |
 
 You can also dynamically switch in code:
 
 ```python
 from ErisPulse.Core import logger
 
-# Segment by size: single file 10MB, retain 5 files
+# Segment by size: single file 10MB, retain 5 copies
 logger.set_output_dir("logs", rotation="size", max_size_mb=10, backup_count=5)
 
-# Segment by date: rotate daily at midnight, retain 7 files
+# Segment by time: rotate daily at midnight, retain 7 copies
 logger.set_output_dir("logs", rotation="date", backup_count=7)
 ```
 
 > [!NOTE]
-> `log_dir` and segmentation-related configurations require ErisPulse **2.8.0+**.
+> `log_dir` and related segmentation configuration require ErisPulse **2.8.0+**.
 
-> **Privacy Protection**: Message sending and receiving content is logged at the **EVENT level** (value 21). Setting `exclude_levels = ["EVENT"]` prevents the backend (e.g., Dashboard log panel) from seeing message content in groups/private chats, while not affecting other log levels.
+> **Privacy Protection**: Message receiving and sending content is recorded at the **EVENT level** (value 21). Setting `exclude_levels = ["EVENT"]` prevents the backend (such as the Dashboard log panel) from seeing message content in various groups/private chats, while not affecting other log levels.
 
 > [!NOTE]
 > The `exclude_levels` feature requires ErisPulse **2.8.0+**.
@@ -3702,48 +3709,48 @@ adapters = []
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------|------|---------|------|
-| enable_lazy_loading | boolean | true | Whether to enable lazy loading of modules |
-| uninit_timeout | integer | 30 | Total timeout (in seconds) for graceful shutdown; after which the process is forcibly terminated. 0 means no timeout is set |
-| strict_mode | integer | 0 | Strict mode level, see the "Strict Mode" section below |
-| handler_max_concurrency | integer | 64 | Maximum concurrent Task count for event handlers; increasing this raises throughput but increases memory usage |
-| offline_bot_expiry | integer | 3600 | Automatic expiration time (in seconds) for offline Bot records; 0 means no expiration |
+|---------------------|------|---------------|-------------|
+| enable_lazy_loading | boolean | true | Whether to enable module lazy loading |
+| uninit_timeout | integer | 30 | Graceful shutdown timeout (seconds), forcibly terminates after exceeding. 0 means no timeout set |
+| strict_mode | integer | 0 | Strict mode level, see "Strict Mode" section below |
+| handler_max_concurrency | integer | 64 | Maximum concurrent Task count for event handlers, increasing this improves throughput but increases memory usage |
+| offline_bot_expiry | integer | 3600 | Automatic expiration time for offline bot records (seconds), 0 means never expires |
 
 ### Proactive GC Configuration
 
-After SDK initialization, a background task for proactive garbage collection (GC) is started, periodically executing Python GC and internal resource cleanup (such as offline Bot cleanup). All parameters support hot updates, and tasks are restarted immediately upon changes.
+After SDK initialization, a proactive GC background task is started, periodically performing Python GC and internal resource recycling (such as cleaning offline bots). All parameters support hot updates, and the task is immediately restarted when changes occur.
 
 | Configuration Item | Type | Default Value | Description |
-|---------|------|---------|------|
-| proactive_gc_interval | number | 300 | Recycling interval (in seconds), supports decimal values. 0 means disabling proactive GC |
-| proactive_gc_generation | integer | 0 | Regular round generation for recycling (0/1/2, clamped to 0..2). Note that `gc.collect(2)` is equivalent to a full GC; the default of 0 keeps it lightweight. Deep recycling is triggered periodically by `proactive_gc_full_every` |
-| proactive_gc_full_every | integer | 20 | Perform a full GC every N rounds; 0 means disabling periodic full GC. Full GC is constrained by the `proactive_gc_memory_growth_mb` threshold |
-| proactive_gc_memory_growth_mb | integer | 32 | Memory growth threshold (in MB) for full GC: compared against the baseline memory after the last full GC (prioritizing tracemalloc, then RSS), full GC is only performed when the growth reaches this value. 0 means no threshold is set |
-| proactive_gc_idle_only | boolean | false | When enabled, skip Python GC during event surges (when pending handlers exist) to avoid pauses and message processing contention; internal resource cleanup is unaffected |
-| proactive_gc_gen0_min | integer | 500 | Lower bound for triggering regular round GC based on gen0 garbage: if `gc.get_count()[0]` is below this value, the round is skipped (almost zero overhead for idle rounds). 0 means always perform GC |
+|---------------------|------|---------------|-------------|
+| proactive_gc_interval | number | 300 | Recycling interval (seconds), supports decimals. 0 means disable proactive GC |
+| proactive_gc_generation | integer | 0 | Regular round recycling generation (0/1/2, clamped to 0..2). Note that `gc.collect(2)` is equivalent to full recycling, default 0 maintains lightness; deep recycling is triggered periodically by `proactive_gc_full_every` |
+| proactive_gc_full_every | integer | 20 | Full recycling every N rounds, 0 means disable periodic full recycling. Full recycling is constrained by the `proactive_gc_memory_growth_mb` threshold |
+| proactive_gc_memory_growth_mb | integer | 32 | Full recycling memory growth threshold (MB): compared against the memory baseline after the last full recycling (preferring tracemalloc, then RSS), full recycling only occurs when growth reaches this value. 0 means no threshold set |
+| proactive_gc_idle_only | boolean | false | When enabled, Python GC is skipped in this round during event peaks (pending handlers exist), avoiding pauses and message processing competition; internal resource recycling is unaffected |
+| proactive_gc_gen0_min | integer | 500 | Lower bound for triggering regular round recycling of gen0 garbage: `gc.get_count()[0]` below this value directly skips (empty round has almost zero overhead). 0 means always recycle |
 
-> **Change in 2.7.1**: The default `proactive_gc_generation` was adjusted from `2` to `0`, and `proactive_gc_full_every` was adjusted from `0` to `20`. Previously, `generation=2` meant every round performed the heaviest full GC; the new default maintains coverage while significantly reducing idle overhead. Explicitly configured old values still function as intended.
+> **Change in 2.7.1**: The default `proactive_gc_generation` is adjusted from `2` to `0`, and `proactive_gc_full_every` is adjusted from `0` to `20`. Previously `generation=2` meant full recycling every round; the new default maintains recycling coverage while significantly reducing empty round overhead. Explicitly configured old values still behave as intended.
 
 ### Strict Mode
 
-Strict mode controls the framework's handling strategy for non-compliant or failed modules/adapters during the loading phase. Modern modules/adapters should inherit their corresponding base classes (`BaseModule`/`BaseAdapter`); components not inheriting base classes affect the framework's context system and fallback cleanup, potentially causing resource leaks.
+Strict mode controls the handling strategy for modules/adapters when they are non-compliant or fail during the loading phase. Modern modules/adapters should inherit corresponding base classes (`BaseModule`/`BaseAdapter`); components that do not inherit base classes affect the framework's context system and fallback cleanup, potentially causing resource leaks.
 
-> **Change in 2.5.2**: The default level was adjusted from `1` (skip) to `0` (lenient), to reduce loading issues for new users. Components not inheriting base classes will be warned and attempted to load, rather than directly rejected. To restore the previous behavior, explicitly set `strict_mode = 1`.
+> **Change in 2.5.2**: The default level is adjusted from `1` (skip) to `0` (lenient) to reduce loading issues for new users. Components that do not inherit base classes will still be attempted to load with a WARNING, rather than being directly rejected. To restore the previous behavior, explicitly set `strict_mode = 1`.
 
 | Level | Name | Behavior |
-|------|------|------|
-| 0 | Lenient (default) | Non-compliant components only trigger warnings; components not inheriting base classes will still be attempted to load (for compatibility with old components) |
-| 1 | Strict-Skip | Reject and skip components not inheriting base classes; other components start normally |
-| 2 | Strict-Fatal | Collect all non-compliant components (not inheriting base classes, loading failures, registration failures, initialization failures, etc.) and report them together, then terminate the entire startup process |
+|-------|------|----------|
+| 0 | Lenient (default) | Violations only warn, components that do not inherit base classes are still attempted to load (compatible with old components) |
+| 1 | Strict-Skip | Reject components that do not inherit base classes and skip, other components start normally |
+| 2 | Strict-Fatal | Collect all violations and report them together, then terminate the entire startup |
 
-In all levels, component crashes during the "loading/registration/initialization" phase are always skipped. The differences are as follows:
+In all levels, "loading/registration/initialization phase errors" from components themselves are always skipped; the difference is in:
 
-- **0 → 1**: The only behavioral change is that components "not inheriting base classes" change from "still loaded" to "skipped."
-- **1 → 2**: All non-compliant components (not inheriting base classes, loading failures, registration failures, initialization failures, etc.) are upgraded to fatal errors. A list of non-compliant components is collected at the startup checkpoint and the process is terminated.
+- **0 → 1**: The only behavioral change is that "not inheriting base classes" changes from "still loading" to "skipping".
+- **1 → 2**: All violations (not inheriting base classes, loading failure, registration failure, initialization failure, etc.) are upgraded to fatal, collected at the startup checkpoint and reported as a violation list, then terminated.
 
 #### Exemption List
 
-If certain components cannot be migrated temporarily (for example, depending on old modules), they can be added to the exemption list. Components listed here will be treated as lenient mode, continuing to load even if they are non-compliant:
+If some components temporarily cannot migrate (e.g., dependent old modules), they can be added to the exemption list. Components listed here will be treated leniently even if non-compliant, and continue loading:
 
 ```toml
 [ErisPulse.framework.strict_mode_exceptions]
@@ -3751,7 +3758,7 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> When a component is rejected by strict mode, the log will clearly indicate how to restore loading (by adding to the exemption list or lowering the level).
+> When a component is rejected by strict mode, the log will clearly indicate how to resume loading (add to the exemption list or lower the level).
 
 ## Storage Configuration
 
@@ -3761,8 +3768,8 @@ use_global_db = false
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------------------|------|----------------|-------------|
-| use_global_db | boolean | false | Whether to use the global database (within the package) instead of the project database. When set to `true`, all projects share the SQLite database within the ErisPulse package; when set to `false` (default), each project uses an independent database located in the `config/` directory. |
+|---------------------|------|---------------|-------------|
+| use_global_db | boolean | false | Whether to use a global database (within package) instead of the project database. When `true`, all projects share the SQLite database within the ErisPulse package; when `false` (default), each project uses an independent database in the `config/` directory |
 
 ## Event Configuration
 
@@ -3776,11 +3783,11 @@ allow_space_prefix = false
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------|------|---------|------|
+|---------------------|------|---------------|-------------|
 | prefix | string | / | Command prefix |
-| case_sensitive | boolean | true | Whether to distinguish case (`/Help` and `/help` are treated as different commands) |
-| allow_space_prefix | boolean | false | Whether to allow spaces as a prefix |
-| must_at_bot | boolean | false | Whether the command must be triggered by mentioning the bot (not restricted in private chats) |
+| case_sensitive | boolean | true | Whether to distinguish case (`/Help` and `/help` are different commands) |
+| allow_space_prefix | boolean | false | Whether to allow space as a prefix |
+| must_at_bot | boolean | false | Whether to require @bot to trigger the command (private chat is not restricted) |
 
 ### Message Configuration
 
@@ -3790,8 +3797,8 @@ ignore_self = true
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------|------|---------|------|
-| ignore_self | boolean | true | Whether to ignore messages sent by the bot itself |
+|---------------------|------|---------------|-------------|
+| ignore_self | boolean | true | Whether to ignore the bot's own messages |
 
 ## Internationalization Configuration
 
@@ -3801,8 +3808,8 @@ language = "auto"
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------|------|---------|------|
-| language | string | auto | The display language for the framework's built-in text. Set to `auto` to automatically detect the system language, or specify a language code: `zh-CN`, `zh-TW`, `en`, `ja`, `ru`. |
+|---------------------|------|---------------|-------------|
+| language | string | auto | Language for displaying framework built-in text. Set to `auto` to automatically detect system language, or set to a specific code: `zh-CN`, `zh-TW`, `en`, `ja`, `ru` |
 
 ## Module Configuration
 
@@ -3815,7 +3822,7 @@ timeout = 30
 enabled = true
 ```
 
-Read and write configurations within the module:
+In the module, read and write configuration:
 
 ```python
 from ErisPulse import sdk
@@ -3831,97 +3838,95 @@ sdk.config.setConfig("MyModule.timeout", 60)
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> By default, `setConfig` uses delayed writing (batched to file approximately every 5 seconds). Setting `immediate=True` will persist immediately. Configuration changes will trigger the `config.set` lifecycle event.
+> `setConfig` defaults to delayed write (about every 5 seconds batched to file), set `immediate=True` to immediately persist. Configuration changes trigger the `config.set` lifecycle event.
 
-## Scope Configuration
+## Scope Configuration (scope)
 
-> [!NOTE]  
+> [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-The scope declaration defines "**what is effective within a given scope**"—which modules are available on a specific platform / Bot / session (① module level), whether events from a specific user / group / Bot / adapter are received (② identity level), and which outbound calls a module can initiate (③ outbound level):
+Scope declares "what range it is effective in" — which modules are available in a certain platform/Bot/session (① module dimension), whether events are received for a certain user/group/Bot/adapter (② identity dimension), and which outbound calls a module can initiate (③ outbound dimension):
 
 ```toml
 [ErisPulse.scope]
-default_allow = true        # Global fallback (false = strict deny mode; does not affect outbound level)
+default_allow = true        # Global default (false = implicit deny strict mode; does not affect outbound dimension)
 cache_size = 1024           # LRU cache size
 
-# ① Module Level (priority: session > Bot > platform; entries support exact / glob / re: regex)
+# ① Module dimension (priority: session > Bot > platform; entries support exact/glob/re: regex)
 [ErisPulse.scope.platforms.onebot11]
 modules = ["Chat", "Tool*"]
 blocked = ["re:^Danger"]
 
-# Sub-level bindings with merge = true merge each entry with lower-priority entries (default is overall overwrite)
+# Sub-level binding write merge = true merges with lower priority entry by entry (default overall overwrite)
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Music"]
 merge = true
 
-# ② Identity Level (priority: user > session > Bot > adapter; only allow or deny per level)
+# ② Identity dimension (priority: user > session > Bot > adapter; only allow or deny in each level)
 [ErisPulse.scope.identity.adapters.onebot11]
-deny = true                 # Discard all events from this platform at the entry point
+deny = true                 # All events on this platform are discarded at the entry
 [ErisPulse.scope.identity.users.onebot11]
-allow = ["u_admin"]         # User keys support glob / re: regex
+allow = ["u_admin"]         # User key supports glob / re: regex
 deny = ["u_bad", "spam_*"]
 
-# ③ Outbound Level (default is fully allowed; rules are inline tables, entries support exact / glob / re: regex)
+# ③ Outbound dimension (default all allowed; rules are inline tables, entries support exact/glob/re: regex)
 [ErisPulse.scope.actions.MyModule]
-send = { deny = true }                    # Deny all sending
-api = { allow = ["get_*"] }               # Allow only standard query-type APIs
+send = { deny = true }                    # Completely deny sending
+api = { allow = ["get_*"] }               # Only allow standard API query types
 request = { deny = true }                 # Deny handling requests
 ```
 
 | Configuration Item | Type | Description |
 |---------------------|------|-------------|
-| `scope.default_allow` | boolean | Global fallback: allow or deny modules/identities not matched by rules (`true`) |
+| `scope.default_allow` | boolean | Global default: allow/deny for modules/identity not matched by rules (`true`) |
 | `scope.cache_size` | integer | LRU cache size (default 1024) |
 | `scope.platforms / bots / sessions` | table | ① Module three-level binding: `{modules=[...], blocked=[...], merge=bool?}` |
 | `scope.identity.adapters / bots / sessions / users` | table | ② Identity four-level binding: `{allow=true}` / `{deny=true}` |
-| `scope.actions.<module>.<action>` | table | ③ Outbound rules: `{allow=[...], deny=true|[...]}` (actions are send / api / request) |
+| `scope.actions.<module>.<action>` | table | ③ Outbound rules: `{allow=[...], deny=true|[...]}` (action takes send / api / request) |
 
-> For detailed explanations and runtime APIs (dimensional `sdk.scope.set_module()` / `set_identity()` / `set_action()`, determination `is_allowed()` / `is_identity_allowed()` / `is_action_allowed()`, and dictionary-style fallback `get()` / `set()` / `delete()`) see [Scope](../advanced/scope.md).
+> Detailed explanation and runtime API (dimensional `sdk.scope.set_module()` / `set_identity()` / `set_action()`, determination `is_allowed()` / `is_identity_allowed()` / `is_action_allowed()`, and dictionary-style fallback `get()` / `set()` / `delete()`) are available in [Scope (scope)](../advanced/scope.md).
 
 ## Unified Event Override Configuration (event.overrides)
 
-Unified Override System: Override the behavior of any module handler by **event type** without modifying module code.  
-OneBot12 standard types (meta / message / notice / request) and extended types (command) each have their own set of overridable parameters:
+Unified override system: Overwrite behavior of any module handler by **event type** without modifying module code. Standard types (meta / message / notice / request) and extended types (command) each have their own overridable parameters:
 
 ```toml
 [ErisPulse.event.overrides]
 
-# message: Text trigger conditions (AND with conditions in code)
+# message: text trigger conditions (AND with conditions in code)
 [ErisPulse.event.overrides.message.ChatModule]
 pattern = "闲聊*"
 
-# notice / request / meta: detail_type whitelist (entries support exact / glob / re: regular expressions)
+# notice / request / meta: detail_type whitelist (entries support exact/glob/re: regex)
 [ErisPulse.event.overrides.notice.MyModule]
 detail_types = ["group_increase"]
 
-# command (extended type): Implement parameter overrides (user priority; disable via acl deny)
+# command (extended type): implement parameter override (user priority; disable via acl deny)
 [ErisPulse.event.overrides.command.MyModule.restart]
-master = true               # Override to allow only framework owner (false to relax developer owner restrictions)
-hidden = true               # Hide from help list
+master = true               # Override to only framework master (false opens developer's master restriction)
+hidden = true               # Hide in help list
 aliases = ["rs"]            #生效别名
 
-# acl (command exclusive): Command user allow/deny lists (command names support glob / re: regex, exact keys have priority)
+# acl (command exclusive): command user allow/deny lists (command names support glob / re: regex, exact keys take priority)
 [ErisPulse.event.overrides.acl."roll*"]
 allow = ["onebot11:u_vip"]  # User identifier "platform:user_id"
 deny = ["onebot11:u_bad"]
 
-# ACL fallback: Allow (true) / strictly deny (false) commands without configured ACL
+# ACL default: allow unconfigured commands (true) / strictly deny (false)
 acl_default_allow = true
 ```
 
 | Configuration Item | Type | Description |
-|---------|------|------|
+|---------------------|------|-------------|
 | `event.overrides.message.<module>` | table | Text condition: `{pattern="...", regex="..."}` |
 | `event.overrides.notice / request.<module>` | table | `{detail_types=[...], pattern, regex}` |
 | `event.overrides.meta.<module>` | table | `{detail_types=[...]}` |
-| `event.overrides.command.<module>` | table | Module-level parameter override (e.g., scalar values like `hidden = true`) |
-| `event.overrides.command.<module>.<command>` | table | Command-level override (command-level takes precedence) |
+| `event.overrides.command.<module>` | table | Module-level parameter override (e.g., `hidden = true`) |
+| `event.overrides.command.<module>.<command>` | table | Command-level override (command-level priority) |
 | `event.overrides.acl.<command name>` | table | User allow/deny lists: `{allow=[...], deny=[...]}` |
-| `event.overrides.acl_default_allow` | boolean | ACL fallback: Allow (true) / strictly deny (false) commands without configured ACL |
+| `event.overrides.acl_default_allow` | boolean | ACL default: allow unconfigured commands (true) / strictly deny (false) |
 
-> Runtime API (after `from ErisPulse.Core.Event import overrides`, call by type sub-namespace such as `overrides.message.set()` / `overrides.command.set()` / `overrides.acl.set()` etc., or access via `sdk.Event.overrides`)
-> See [Event Handling Introduction · Event Override](../getting-started/event-handling.md#event-override-override-behavior-of-any-event-type-without-modifying-module-code).
+> Runtime API (after `from ErisPulse.Core.Event import overrides`, call `overrides.message.set()` / `overrides.command.set()` / `overrides.acl.set()` via type sub-namespace, or access via `sdk.Event.overrides`) is available in [Event Handling Introduction · Event Override](../getting-started/event-handling.md#event-override-dont-modify-module-code-override-behavior-of-any-event-type).
 
 ## Command Parsing Configuration (event.command)
 
@@ -3935,7 +3940,7 @@ Best practices for deploying the ErisPulse bot to a production environment.
 
 ## Docker Deployment (Recommended)
 
-ErisPulse provides an official Docker image that includes the ErisPulse framework and Dashboard management panel, supporting `linux/amd64` and `linux/arm64` architectures.
+ErisPulse provides an official Docker image, which includes the ErisPulse framework and Dashboard management panel, supporting both `linux/amd64` and `linux/arm64` architectures.
 
 ### Quick Start
 
@@ -3946,7 +3951,7 @@ docker pull erispulse/erispulse:latest
 # Download docker-compose.yml
 curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-# Set the Dashboard login token and start the service
+# Set the Dashboard login token and start the container
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
@@ -3960,7 +3965,7 @@ If Docker Hub is inaccessible, you can pull the image from GitHub Container Regi
 docker pull ghcr.io/erispulse/erispulse:latest
 ```
 
-When using the ghcr.io image, you need to modify the `docker-compose.yml` file by changing the image:
+When using the ghcr.io image, modify the `docker-compose.yml` file to update the image:
 
 ```yaml
 services:
@@ -3989,68 +3994,70 @@ services:
     restart: unless-stopped
 ```
 
-> It is recommended to directly use the [docker-compose.yml](https://github.com/ErisPulse/ErisPulse/blob/main/docker-compose.yml) in the root of the repository, which already includes the above configuration along with health checks, timezone, and language environment variables.
+> It is recommended to directly use the [docker-compose.yml](https://github.com/ErisPulse/ErisPulse/blob/main/docker-compose.yml) from the repository root, which already includes the above configuration along with health checks, timezone, and language environment variables.
 
 ### Environment Variables
 
-| Variable | Default Value | Description |
-|----------|---------------|-------------|
+| Variable | Default | Description |
+|----------|---------|-------------|
 | `ERISPULSE_PORT` | `8000` | Dashboard port mapping |
 | `ERISPULSE_DASHBOARD_TOKEN` | Auto-generated | Dashboard login token (strongly recommended to set) |
 | `TZ` | `Asia/Shanghai` | Timezone |
-| `LANG` | `en_US.UTF-8` | System language; automatically detects the startup interface language |
+| `LANG` | `en_US.UTF-8` | System language, detected automatically for the startup interface language |
 | `ERISPULSE_LANG` | Empty | Force the startup interface language: `zh` / `zh_TW` / `en` / `ja` / `ru` (overrides `LANG`) |
 
 ### Data Persistence
 
-The `./config` directory mounts configuration files and the database, including:
+The `./config` directory is mounted for configuration files and databases, including:
 
 - `config/config.toml` — Configuration file
 - `config/config.db` — SQLite storage database
-- `config/.packages` — Persistent volume for Python site-packages, saving the framework, adapters, and installed modules (automatically initialized from the image's built-in backup on the first startup; subsequent module installations and framework hot updates are written to this directory)
+- `config/.packages` — Persistent volume for Python site-packages, storing the framework, adapters, and installed modules (initially auto-initialized from the image's built-in backup on first startup, subsequent module installations and framework hot updates are written to this directory)
+
+> **Framework upgrade (including pre/rc) and image self-healing**: The entrypoint performs a core package integrity self-check on each container startup. If damage is detected, it repairs according to the "user-installed version priority" principle—explicitly installed/upgraded versions in the persistent volume (e.g., pre versions installed via Dashboard) will be reinstalled from PyPI at the same version, never silently rolled back to the image's built-in version. Therefore, after Dashboard upgrades the framework, any container restart should maintain the target version.
 
 ## Dashboard Management Panel
 
-The ErisPulse Docker image includes a built-in Dashboard module, providing a web-based visualization management interface.
+The ErisPulse Docker image includes the Dashboard module, providing a web-based visual management interface.
 
 ### Feature Overview
 
 | Feature | Description |
 |---------|-------------|
 | Dashboard | System overview, CPU/memory monitoring, uptime, event statistics |
-| Robot Management | View online status and information of robots on various platforms |
-| Event Viewing | Real-time event stream, supports filtering by type and platform |
-| Log Viewing | Log viewer with filtering by module and level |
+| Bot Management | View online status and information of bots across platforms |
+| Event Viewer | Real-time event streams, with filtering by type and platform |
+| Log Viewer | Log viewer with filtering by module and level |
 | Module Management | View, load, and unload installed modules and adapters |
 | Module Store | Browse remote available packages and install them with one click |
-| Configuration Editing | Edit `config.toml` online |
-| Storage Management | Browse and edit Key-Value storage data |
+| Configuration Editor | Edit `config.toml` online |
+| Storage Manager | Browse and edit key-value storage data |
 | Backup | Export/import configuration and storage data |
-| Audit Logs | Record all management operations |
+| Audit Log | Record all management operations |
 
 ### Installing Modules via Dashboard
 
 The Dashboard integrates a module store feature, allowing you to:
 
-1. **Install from the Store**: Browse the list of remote modules and install the desired module with one click
-2. **Upload Local Package**: Directly upload `.whl` or `.zip` files for installation, which is convenient for testing custom-developed modules
+1. **Install from the store**: Browse the list of remote modules and install the desired ones with one click
+2. **Upload local packages**: Directly upload `.whl` or `.zip` files for installation, useful for testing locally developed modules
 
-> **Quick Testing Process for Module Developers**: After deploying with Docker, use the "Upload Local Package" feature in the Dashboard to directly upload your built `.whl` file for testing, without manual container operations.
+> **Quick testing process for module developers**: After deploying with Docker, use the "Upload local package" feature in the Dashboard to directly upload your built `.whl` file for testing, without manual container operations.
 
 ## Process Supervision and Hard Restart
 
-ErisPulse's hard restart (`sdk.hard_restart()`) relies on an **external supervisor** to restart the process when the exit code is 42—the SDK itself does not launch a new process. In production environments, a supervisor must be configured; otherwise, the process will not automatically recover after a hard restart:
+The ErisPulse hard restart (`sdk.hard_restart()`) relies on an **external supervisor** to restart the process when the exit code is 42—the SDK itself does not restart new processes. In production environments, always configure a supervisor; otherwise, the process will not automatically recover after a hard restart:
 
-- Docker: `restart: unless-stopped` (restarts on any exit code, including 42)
+- Docker: `restart: unless-stopped` (restarts for any exit code, including 42)
 - systemd: `Restart=on-failure` + `RestartForceExitStatus=42`
 - PM2 / supervisord: Add 42 to the list of restartable exit codes
 - Pure Python custom supervisor: Use a loop with `Popen` and check `returncode == 42`
 
-For complete configuration examples for each supervisor and details about the exit code 42 contract, see [Startup Flow → Supervisor Guide](../advanced/startup.md#supervisor-guide).
+Complete configuration examples for each supervisor and the 42 exit code contract are available in [Startup Flow → Supervisor Guide](../advanced/startup.md#Supervisor-Guide).
 
 ## Health Check
 
-The SDK includes a built-in health check endpoint:
+The SDK includes a health check endpoint:
 
 ```bash
 # Health check
@@ -4096,7 +4103,7 @@ server {
 }
 ```
 
-SSL can be obtained using Let's Encrypt:
+SSL can be enabled using Let's Encrypt:
 
 ```bash
 sudo certbot --nginx -d bot.example.com
@@ -4106,7 +4113,7 @@ sudo certbot --nginx -d bot.example.com
 
 If you do not use Docker, you can also deploy manually.
 
-### Production Environment Configuration
+### Production Configuration
 
 ```toml
 # config/config.toml
@@ -4147,7 +4154,7 @@ StandardError=journal
 WantedBy=multi-user.target
 ```
 
-Management:
+Management commands:
 
 ```bash
 sudo systemctl daemon-reload
@@ -4173,20 +4180,20 @@ stdout_logfile=/var/log/erispulse-bot/out.log
 
 ## Security Recommendations
 
-1. **Set Dashboard Token**: Use a strong random token; do not use the default value
-2. **Do Not Expose Port to Public Network**: Unless using reverse proxy + SSL, restrict the Dashboard port to the internal network
-3. **Protect Data Directory**: The `config/` directory contains configuration and database; set appropriate file permissions
+1. **Set Dashboard Token**: Use a strong random token, do not use the default value
+2. **Do Not Expose Port to Public**: Unless using a reverse proxy with SSL, restrict the Dashboard port to the internal network
+3. **Protect Data Directory**: The `config/` directory contains configuration and databases; set appropriate file permissions
 4. **Regular Updates**: Use `epsdk self-update` or pull the latest Docker image
-5. **Do Not Run as Root**: When deploying manually, create a dedicated user
+5. **Do Not Run as Root**: Create a dedicated user when deploying manually
 6. **Use Docker Restart Policy**: `restart: unless-stopped` ensures automatic restart after abnormal exit
 
 ## Multi-Instance Deployment
 
-When running multiple robot instances:
+When running multiple bot instances:
 
-1. Each instance uses a separate project directory and `docker-compose.yml`.
-2. Use different port numbers: `ERISPULSE_PORT=8001`.
-3. Use different container names: `container_name: erispulse-bot2`.
+1. Use separate project directories and `docker-compose.yml` files for each instance
+2. Use different port numbers: `ERISPULSE_PORT=8001`
+3. Use different container names: `container_name: erispulse-bot2`
 
 ## Updates and Maintenance
 
@@ -4212,10 +4219,10 @@ epsdk upgrade
 Regularly back up the `config/` directory:
 
 ```bash
-# For Docker deployment
+# Docker deployment
 tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 
-# Or export using the "Backup" function in the Dashboard
+# Or use the "Backup" feature in the Dashboard to export
 ```
 
 
@@ -4521,13 +4528,13 @@ sdk.lifecycle  # Lifecycle system
 
 ### 模块核心概念
 
-# Core Concepts of Modules
+# Core Module Concepts
 
 Understanding the core concepts of ErisPulse modules is the foundation for developing high-quality modules.
 
 ## Module Lifecycle
 
-### Load Strategy
+### Loading Strategy
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -4536,22 +4543,22 @@ from ErisPulse.loaders import ModuleLoadStrategy
 class MyModule(BaseModule):
     @staticmethod
     def get_load_strategy():
-        """Return the module load strategy"""
+        """Return the module loading strategy"""
         return ModuleLoadStrategy(
-            lazy_load=True,   # Whether to load lazily or immediately
-            priority=0,       # Load priority (higher number loads earlier)
+            lazy_load=True,   # Lazy loading or immediate loading
+            priority=0,       # Loading priority (higher value loads first)
             depends=["OtherModule"]  # Optional: declare dependencies on other modules
         )
 ```
 
-> If the modules declared in `depends` are not registered, the current module will be skipped and a warning will be logged. The loading order is determined by topological sorting, with modules at the same level sorted by `priority` in descending order.
+> If modules declared in `depends` are not registered, the current module will be skipped and a warning will be logged. The loading order is determined by topological sorting, with modules at the same level sorted by `priority` in descending order.
 
 > [!NOTE]
-> **Cascading Unload / Cascading Reload** (ErisPulse **2.8.0+**): When a module that is depended on by other modules is unloaded, the modules depending on it will be **cascadingly unloaded first** (with the cascade chain explained in logs); when hot-reloading any module (local plugin / PyPI-installed package), the modules depending on it will also be **cascadingly reloaded**, preventing dependent modules from continuing to run with invalid instance references. Declaring circular dependencies will be rejected at load time with a `RuntimeError`.
+> **Cascading Unload / Cascading Reload** (ErisPulse **2.8.0+**): When unloading a module that is depended on by other modules, the dependent modules will be **cascading unloaded first** (with logs explaining the cascade chain); when hot-reloading any module (local plugin / PyPI installed package), the dependent modules will also be **cascading reloaded**, preventing dependent modules from holding invalid instance references and continuing to run. Attempting to declare cyclic dependencies will be rejected at load time with a `RuntimeError`.
 
 ### on_load Method
 
-Called when the module is loaded, used to initialize resources and register event handlers:
+Called when the module is loaded, used for initializing resources and registering event handlers:
 
 ```python
 async def on_load(self, event):
@@ -4560,108 +4567,108 @@ async def on_load(self, event):
     async def hello_handler(event):
         await event.reply("Hello!")
     
-    # Use the SDK's built-in HTTP client (automatically manages connection pool, no need to manually create session)
+    # Use the built-in HTTP client from the SDK (automatically manages connection pool, no need to manually create session)
     # Requests can be sent via sdk.client
 ```
 
 ### on_unload Method
 
-Called when the module is unloaded, used to clean up resources:
+Called when the module is unloaded, used for cleaning up resources:
 
 ```python
 async def on_unload(self, event):
     # Clean up custom resources
-    # sdk.client is managed by the framework, no need to manually close it
+    # sdk.client is managed by the framework, no need to manually close
     
-    # Cancel event handlers (handled automatically by the framework)
-    self.logger.info("Module has been unloaded")
+    # Cancel event handlers (the framework handles this automatically)
+    self.logger.info("Module unloaded")
 ```
 
-> Creation and cleanup of background tasks (`self.spawn()` / framework's default cancellation) are detailed in [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation).
+> Background task creation and cleanup (`self.spawn()` / framework's fallback cancellation) are detailed in [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation).
 
-### Unload vs. Purge (Complete Unload)
+### Unload vs. Purge
 
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-`unload()` by default only **unloads** (unloads the instance and resources), but retains registration stubs (module class and metadata) — the module can still be rediscovered by `discover` and re-instantiated with `load()`, without needing to re-`register()`.
+`unload()` by default only **cancels loading** (unloads the instance and resources), but retains the registration stub (module class and metadata) — the module can still be rediscovered and `load()` re-instantiated without needing to re-register.
 
-When you need to **completely unload** (release module class references, clean up `sys.modules`, allowing the plugin and its exclusive dependencies to be garbage collected), pass `purge=True`:
+When you need to **completely unload** (release the module class reference, clear `sys.modules`, allowing the plugin and its exclusive dependencies to be garbage collected), pass `purge=True`:
 
 ```python
-# Only unload: retain registration stubs, can be reloaded anytime
+# Only cancel loading: retain registration stub, can be reloaded anytime
 await sdk.module.unload("MyModule")
 
-# Completely unload: delete registration stubs + clean up sys.modules (for plugin folder sources)
+# Completely unload: delete registration stub + clear sys.modules (only for plugin folder sources)
 await sdk.module.unload("MyModule", purge=True)
 ```
 
 | Semantics | `unload()` default | `unload(purge=True)` |
 |-----------|--------------------|----------------------|
-| Unload instance and resources (events/task/routes/lifecycle/i18n) | ✅ | ✅ |
-| Retain registration stubs (module class and metadata) | ✅ | ❌ Deleted |
-| Clean up `sys.modules` (only for plugin folder sources) | ❌ | ✅ |
+| Unload instance and resources (events/task/route/lifecycle/i18n) | ✅ | ✅ |
+| Retain registration stub (module class and metadata) | ✅ | ❌ Deleted |
+| Clear `sys.modules` (only for plugin folder sources) | ❌ | ✅ |
 | Module class can be garbage collected | ❌ | ✅ |
-| Reload | `load()` directly usable | Must re-register + load first |
+| Reload | `load()` directly available | Must re-register + load |
 
-> When `purge=True`, cascading unloaded dependents are also purged; after unloading, the framework will `gc.collect()` and check if the module class/instance is collectible, residual references will be warned in logs (including the referencing party, at DEBUG level).
+> When `purge=True`, cascading unloaded dependents are also purged; after unloading, the framework will `gc.collect()` and check if the module class/instance is collectible, residual references will be warned in logs (with the referencing party, DEBUG level).
 
 ### Lifecycle Overview
 
-Putting all the above methods together, here is what the framework does **behind the scenes** when loading and unloading a module:
+Putting the above methods together, here is **everything the framework does behind the scenes** when loading and unloading a module:
 
 ```mermaid
 flowchart TD
-    subgraph Load["Load (register → load)"]
-        L1["register: Register module class and metadata"] --> L2["Dependency validation<br/>Skips if missing"]
+    subgraph Load["Loading (register → load)"]
+        L1["register: Register module class and metadata"] --> L2["Dependency validation<br/>Skipped if missing"]
         L2 --> L3["Topological sorting (Kahn + priority)"]
-        L3 --> L4["Inject owner: current_owner"]
+        L3 --> L4["Inject owner into current_owner"]
         L4 --> L5["Generate configuration template + register i18n translation keys"]
         L5 --> L6["Instantiate module (inject sdk)"]
         L6 --> L7["Call on_load()"]
         L7 --> L8["Mount to sdk attribute + emit module.load"]
     end
 
-    subgraph Unload["Unload (unload)"]
-        U1["Call on_unload()"] --> U2["Default cancellation of background tasks (self.spawn ownership)"]
-        U2 --> U3["Clean up i18n translation keys"]
+    subgraph Unload["Unloading (unload)"]
+        U1["Call on_unload()"] --> U2["Fallback cancellation of background tasks (self.spawn ownership)"]
+        U2 --> U3["Clear i18n translation keys"]
         U3 --> U4["Remove routes / commands / event handlers (by owner)"]
-        U4 --> U5["Clean up lifecycle hooks (by owner)"]
-        U5 --> U6["Remove SDK attribute + lazy-load proxy"]
-        U6 --> U7["Emit module.unload"]
+        U4 --> U5["Clear lifecycle hooks (by owner)"]
+        U5 --> U6["Remove SDK attribute + lazy load proxy"]
+        U6 --> U7["emit module.unload"]
     end
 
     Load --> Unload
 ```
 
-**What the framework does for you during loading** (you only need to write `on_load`, the rest is automatic):
+**What the framework does for you during loading** (you only need to write `on_load`, everything else is done automatically):
 
-| Step | What the framework does automatically |
-|------|---------------------------------------|
-| Owner injection | Wrap the module name with `owner_scope` during instantiation — commands/events/hooks/background tasks registered in `on_load` are **automatically assigned to this module**, and cleaned up in one click when unloaded by owner |
-| Configuration template | For modules declaring `ConfigClass`, the framework automatically generates/fills the `ErisPulse.<ModuleName>` configuration section |
-| i18n translation keys | For modules declaring `I18nClass`, translation keys are automatically registered (unregistered automatically on unload) |
-| Dependency topology | Sorts by `depends` declaration to ensure dependent modules are loaded first; circular dependencies are rejected with `RuntimeError` |
-| SDK mounting | After instantiation, it is mounted to `sdk.<ModuleName>`, allowing you to access `sdk.MyModule.xxx` |
+| Step | Framework automatically does |
+|------|-----------------------------|
+| Owner injection | During instantiation, wrap the module name with `owner_scope` — all commands/events/hooks/background tasks you register in `on_load` are **automatically assigned to this module**, and cleaned up in one click during unloading |
+| Configuration template | Modules that declare `ConfigClass` automatically generate/fill the `ErisPulse.<ModuleName>` configuration section |
+| i18n translation keys | Modules that declare `I18nClass` automatically register translation keys (unregister automatically during unload) |
+| Dependency topology | Sort according to `depends` declaration, ensuring dependent modules load first; cyclic dependencies are rejected with a `RuntimeError` |
+| SDK mounting | After instantiation, mount to `sdk.<ModuleName>`, allowing you to access via `sdk.MyModule.xxx` |
 
-**What the framework cleans up for you during unloading** (corresponding to U1→U7 above): After `on_unload` completes, it performs a default cleanup — background tasks are forcibly canceled (`self.spawn` created, graceful termination should be handled manually in `on_unload`), i18n keys, routes, commands/event handlers, lifecycle hooks, and finally removes the SDK attribute. `purge=True` additionally deletes registration stubs and cleans up `sys.modules`.
+**What the framework cleans up during unloading** (corresponding to U1→U7): After `on_unload` runs, it performs fallback cleanup — background tasks are forcibly cancelled (created via `self.spawn`, graceful shutdown should be handled in `on_unload`), i18n keys, routes, commands/event handlers, lifecycle hooks, and finally removes the SDK attribute. `purge=True` additionally deletes the registration stub and clears `sys.modules`.
 
-> This automatic cleanup is the foundation for the principle that "you only need to write `on_load`/`on_unload`, not manually unregister" — the framework uses owner assignment to make "who registers, who cleans up" into a one-click process.
+> This automatic cleanup is the foundation for the principle that "you only need to write `on_load`/`on_unload`, no need to manually unregister" — the framework uses owner assignment to make "who registers, who cleans up" into a one-click operation.
 
-## SDK Objects
+## SDK Object
 
 ### Accessing Core Modules
 
 ```python
 from ErisPulse import sdk
 
-# Access all core modules through the sdk object
+# Access all core modules via the sdk object
 sdk.logger.info("Log")
 sdk.storage.set("key", "value")
 config = sdk.config.getConfig("MyModule")
 ```
 
-### Inter-module Communication
+### Inter-Module Communication
 
 ```python
 # Access other modules
@@ -4671,7 +4678,7 @@ result = await other_module.some_method()
 
 ## Adapter Send Method Query
 
-Due to the new standard specification requiring the use of the rewritten `__getattr__` method to implement the fallback sending mechanism, it is no longer possible to use the `hasattr` method to check if a method exists. Starting from `2.3.5`, a new feature has been added to query send methods.
+Due to the new standard specification requiring the use of the re-written `__getattr__` method to implement the fallback sending mechanism, it is no longer possible to use `hasattr` to check for method existence. Starting from `2.3.5`, a feature to query send methods has been added.
 
 ### List Supported Send Methods
 
@@ -4684,7 +4691,7 @@ methods = sdk.adapter.list_sends("onebot11")
 ### Get Method Detailed Information
 
 ```python
-# Get detailed information about a specific method
+# Get detailed information about a method
 info = sdk.adapter.send_info("onebot11", "Text")
 # Returns:
 # {
@@ -4693,7 +4700,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 #         {"name": "text", "type": "str", "default": null, "annotation": "str"}
 #     ],
 #     "return_type": "Awaitable[Any]",
-#     "docstring": "Send a text message..."
+#     "docstring": "Send text message..."
 # }
 ```
 
@@ -4701,7 +4708,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 
 ### Declarative Configuration (Recommended)
 
-Starting from v2.5.2, modules can declare configuration classes using `ConfigClass`, which uses the same configuration Schema system as adapters. Configuration is read in real-time via `self.cfg`, and changes take effect immediately:
+Starting from v2.5.2, modules can declare a configuration class via `ConfigClass`, using the same configuration Schema system as adapters. Configuration is read in real-time via `self.cfg`, and changes take effect immediately:
 
 ```python
 from dataclasses import dataclass, field
@@ -4713,7 +4720,7 @@ class MyModuleConfig(BaseConfig):
     api_key: str = field(
         default="",
         metadata={
-            "description": {"i18n": "my_module.api_key", "default": "API key"},
+            "description": {"i18n": "my_module.api_key", "default": "API Key"},
             "required": True,
             "secret": True,
             "ui": {"widget": "password", "group": "basic", "order": 1},
@@ -4746,11 +4753,17 @@ class MyModule(BaseModule):
         timeout = cfg.timeout
 ```
 
-`BaseConfig` is a generic configuration base class suitable for adapters, modules, external projects, and any scenario. Configuration fields support i18n multilingual descriptions (see [i18n documentation](../../advanced/i18n.md#multilingual-configuration-fields)).
+`BaseConfig` is a generic configuration base class, applicable to adapters, modules, and external projects in any scenario. Configuration fields support i18n multilingual descriptions (see [i18n documentation](../../advanced/i18n.md#multilingual-configuration-field-descriptions)).
+
+The configuration Schema system also supports (v2.8.0+, see [Adapter core-concepts](../adapters/core-concepts.md#metadata-conventions)):
+
+- **Docstring auto-generates field descriptions**: When `metadata` `description` is not declared, the docstring's `:ivar field: description` or `Attributes:` section is automatically extracted as a fallback
+- **Nested dataclass configuration**: When a field type is a nested dataclass, schema/template/validation is recursively processed, and the WebUI renders it as a nested group
+- **`example` non-persistent field**: Fields with `metadata={"example": True}` are not written to `config.toml`, only recorded in `config.full.example` (suitable for complex, rarely touched advanced configuration items), and become persistent after user manual setting
 
 ### Declarative Translation Keys (v2.7.0+)
 
-Starting from v2.7.0, modules can also declare translation keys in a similar way to `ConfigClass`, by defining a nested class `I18nClass`. The framework automatically registers all declared translation keys during loading, eliminating the need to manually call `i18n.register()`. Registration occurs before configuration template generation, ensuring that referenced i18n keys are available in configuration descriptions.
+Starting from v2.7.0, modules can also declare translation keys in a centralized manner, similar to declaring `ConfigClass`, by using the nested class `I18nClass`. The framework will **automatically register** all declared translation keys during loading, without requiring manual `i18n.register()` calls, and registration occurs before the configuration template is generated, ensuring that i18n keys referenced in configuration descriptions are available.
 
 ```python
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
@@ -4770,7 +4783,7 @@ class MyModule(BaseModule):
     class I18nClass(BaseI18n):
         # Property names are automatically concatenated into full key paths: <module_name>.<property_name>
         welcome_msg: I18nKey = I18nKey(
-            default="Welcome Message",   # Fallback for language-agnostic use
+            default="Welcome Message",   # Language-agnostic fallback
             zh_CN="欢迎消息",
             zh_TW="歡迎訊息",
             en="Welcome Message",
@@ -4787,11 +4800,11 @@ class MyModule(BaseModule):
         )
 ```
 
-For more details, see [Recommended i18n Writing Style](../../advanced/i18n.md#recommended-style-using-i18nclass-to-declare-translation-keys-v270).
+See [Recommended i18n Writing Style](../../advanced/i18n.md#recommended-writing-style-using-i18nclass-to-declare-translation-keys-v270) for more details.
 
 ### Manual Configuration Reading (Deprecated)
 
-> **Deprecated**: Please use [Declarative Configuration](#declarative-configuration-recommended) + real-time reading via `self.cfg`.
+> **Deprecated**: Please switch to [Declarative Configuration](#declarative-configuration-recommended) + real-time reading via `self.cfg`.
 
 ```python
 class MyModule(BaseModule):
@@ -4838,12 +4851,12 @@ with sdk.storage.transaction():
 ```python
 from ErisPulse.Core.Event import command, message
 
-# Register command
+# Register commands
 @command("info", help="Get information")
 async def info_handler(event):
     await event.reply("This is information")
 
-# Register message handler
+# Register message handlers
 @message.on_group_message()
 async def group_handler(event):
     sdk.logger.info(f"Received group message: {event.get_text()}")
@@ -4855,23 +4868,23 @@ The framework automatically manages the registration and unregistration of event
 
 ## Lazy Loading Mechanism
 
-### How It Works
+### Working Principle
 
 ```python
-# Modules are only initialized when first accessed
+# The module is initialized only when first accessed
 result = await sdk.my_module.some_method()
 # ↑ This triggers module initialization
 ```
 
 ### Immediate Loading
 
-For modules that need to be initialized immediately (such as listeners or timers):
+For modules that need immediate initialization (such as listeners, timers):
 
 ```python
 @staticmethod
 def get_load_strategy():
     return ModuleLoadStrategy(
-        lazy_load=False,  # Load immediately
+        lazy_load=False,  # Immediate loading
         priority=100
     )
 ```
@@ -4896,12 +4909,12 @@ async def handle_event(self, event):
 ### Logging
 
 ```python
-# Use different log levels
+# Use different logging levels
 self.logger.debug("Debug information")    # Detailed debug information
-self.logger.info("Running status")         # Normal running information
-self.logger.warning("Warning information") # Warning information
-self.logger.error("Error information")     # Error information
-self.logger.critical("Critical error")     # Critical error
+self.logger.info("Running status")        # Normal running information
+self.logger.warning("Warning information")  # Warning information
+self.logger.error("Error information")    # Error information
+self.logger.critical("Critical error")    # Critical error
 ```
 
 
@@ -6506,57 +6519,58 @@ sdk.router.get_module_urls("MyModule")
 
 # Core Concepts of Adapters
 
-Understanding the core concepts of ErisPulse adapters is fundamental to developing adapters.
+Understanding the core concepts of ErisPulse adapters is fundamental to adapter development.
 
 ## Adapter Architecture
 
 ### Component Relationships
 
 ```
-Forward Conversion (Receive Direction)           Reverse Conversion (Send Direction)
-─────────────────────────────────────────────── ───────────────────────────────────────
-                                               
-┌───────────────────────────────┐              ┌───────────────────────────────┐
-│ Platform Native Event         │              │ Module-built Message          │
-└────────────┬────────────────────┘              └────────────┬────────────────────┘
-             │                                                │
-             ↓                                                ↓
-┌───────────────────────────────┐   ┌───────────────────────────────┐
-│                               │   │ Adapter (MyAdapter)           │   │
-│ Converter                     │   │ ┌─────────────────────────────┐ │   │
-│ (Event Converter)             │───▶ │                             │ │   │
-│                               │   │ │                             │ │   │
-└───────────────────────────────┘   │ └─────────────────────────────┘ │   └───────────────────────────────┐
-                                    └───────────────────────────────┘                                   │
-                                                                             │
-                                                                             ↓
-                                                                      ┌───────────────────────────────┐
-                                                                      │ Platform API Call             │
-                                                                      └────────────┬────────────────────┘
-                                                                                   │
-                                                                             ┌───────────────────────────────┐
-                                                                             │ Standard Response Format      │
-                                                                             └───────────────────────────────┘
-                                                                             │
-                                                                             ↓
-                                                                      ┌───────────────────────────────┐
-                                                                      │ Module (Event Handling)       │
-                                                                      └───────────────────────────────┘
+Forward Conversion (Receiving Direction)                           Reverse Conversion (Sending Direction)
+─────────────────                           ─────────────────
+                                             
+┌──────────────────┐                        ┌──────────────────┐
+│ Native Platform Event     │                        │ Module-built Message     │
+└────────┬─────────┘                        └────────┬─────────┘
+         │                                           │
+         ↓                                           ↓
+┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
+│                  │   │  Adapter (MyAdapter) │   │ Send.Raw_ob12()  │
+│  Converter       │   │ ┌──────────────┐ │   │ (Reverse Conversion Entry)   │
+│  (Event Converter)    │──→│ │              │ │   │                  │
+│                  │   │ │              │ │   │                  │
+└──────────────────┘   │ └──────────────┘ │   └────────┬─────────┘
+                       └──────────────────┘            │
+                                │                      ↓
+                                ↓              ┌──────────────────┐
+                       ┌──────────────────┐    │ Platform API Call    │
+                       │ OneBot12 Standard Event │    └────────┬─────────┘
+                       └────────┬─────────┘             │
+                                │                      ↓
+                                ↓              ┌──────────────────┐
+                       ┌──────────────────┐    │ Standard Response Format     │
+                       │ Event System         │    └──────────────────┘
+                       └────────┬─────────┘
+                                │
+                                ↓
+                       ┌──────────────────┐
+                       │ Module (Event Handling)  │
+                       └──────────────────┘
 ```
 
 **Core Symmetry**:
-- **Forward Conversion** (Converter): Platform native event → OneBot12 standard event, original data preserved in `{platform}_raw`
+- **Forward Conversion** (Converter): Native platform event → OneBot12 standard event, original data preserved in `{platform}_raw`
 - **Reverse Conversion** (Raw_ob12): OneBot12 message segment → Platform API call, returns standard response format
 
 ## AdapterManager Adapter Manager
 
-`AdapterManager` is the core component of ErisPulse's adapter system, responsible for managing the registration, startup, shutdown, and event distribution of all platform adapters.
+`AdapterManager` is the core component of the ErisPulse adapter system, responsible for managing all platform adapters' registration, startup, shutdown, and event distribution.
 
-### Core Features
+### Core Functions
 
 - **Adapter Registration**: Register and manage multiple platform adapters
-- **Lifecycle Management**: Control the startup and shutdown of adapters
-- **Event Distribution**: Distribute OneBot12 standard events and platform-native events
+- **Lifecycle Management**: Control adapter startup and shutdown
+- **Event Distribution**: Distribute OneBot12 standard events and native platform events
 - **Configuration Management**: Manage adapter enable/disable status
 - **Middleware Support**: Support OneBot12 event middleware
 
@@ -6571,7 +6585,7 @@ sdk.adapter.register("myplatform", MyPlatformAdapter)
 # Start all adapters
 await sdk.adapter.startup()
 
-# Start specified adapters
+# Start specified adapter
 await sdk.adapter.startup(["myplatform"])
 # Start all adapters
 await sdk.adapter.startup()
@@ -6587,41 +6601,41 @@ await sdk.adapter.shutdown()
 
 ### Startup and Shutdown
 
-#### Start Adapters
+#### Start Adapter
 
 ```python
 # Start all registered adapters
 await sdk.adapter.startup()
 
-# Start specified platforms
+# Start specified platform
 await sdk.adapter.startup(["platform1", "platform2"])
 ```
 
-**Startup Process:**
+**Startup Process**:
 
 1. Submit `adapter.start` lifecycle event
 2. Submit `adapter.status.change` event (starting)
-3. Parallel start each adapter
+3. Parallel start of each adapter
 4. If startup fails, automatically retry (exponential backoff strategy)
 5. After successful startup, submit `adapter.status.change` event (started)
 
-**Retry Mechanism:**
+**Retry Mechanism**:
 
 - First 4 retries: 60 seconds, 10 minutes, 30 minutes, 60 minutes
-- 5th and subsequent retries: Fixed interval of 3 hours
+- 5th and subsequent: Fixed interval of 3 hours
 
-#### Shutdown Adapters
+#### Shutdown Adapter
 
 ```python
 # Shutdown all adapters
 await sdk.adapter.shutdown()
 ```
 
-**Shutdown Process:**
+**Shutdown Process**:
 
 1. Submit `adapter.stop` lifecycle event
-2. Call `shutdown()` method for all adapters
-3. Shutdown router server
+2. Call all adapters' `shutdown()` method
+3. Shutdown routing server
 4. Clear event handlers
 5. Submit `adapter.stopped` lifecycle event
 
@@ -6662,15 +6676,15 @@ enabled_platforms = [p for p, enabled in status_dict.items() if enabled]
 ```python
 from ErisPulse import sdk
 
-# Listen to standard message events from all platforms
+# Listen to all standard message events
 @sdk.adapter.on("message")
 async def handle_message(data):
     print(f"Received OneBot12 message: {data}")
 
-# Listen to standard message events from a specific platform
+# Listen to standard message events for specific platform
 @sdk.adapter.on("message", platform="myplatform")
 async def handle_platform_message(data):
-    print(f"Received myplatform message: {data}")
+    print(f"Received message from myplatform: {data}")
 
 # Listen to all events
 @sdk.adapter.on("*")
@@ -6678,15 +6692,15 @@ async def handle_any_event(data):
     print(f"Received event: {data.get('type')}")
 ```
 
-#### Platform-Native Events
+#### Native Platform Events
 
 ```python
-# Listen to native events from a specific platform
+# Listen to specific native event
 @sdk.adapter.on("raw_event_type", raw=True, platform="myplatform")
 async def handle_raw_event(data):
     print(f"Received native event: {data}")
 
-# Listen to native events from all platforms (wildcard)
+# Listen to all native events (wildcard)
 @sdk.adapter.on("*", raw=True)
 async def handle_all_raw_events(data):
     print(f"Received native event: {data}")
@@ -6700,13 +6714,13 @@ When calling `adapter.emit(event_data)`:
 2. **Standard Event Distribution**: Distribute to matching OneBot12 event handlers
 3. **Native Event Distribution**: If raw data exists, distribute to native event handlers
 
-**Matching Rules:**
+**Matching Rules**:
 
-- Exact Match: `@sdk.adapter.on("message")` only matches `message` events
+- Exact match: `@sdk.adapter.on("message")` only matches `message` events
 - Wildcard: `@sdk.adapter.on("*")` matches all events
-- Platform Filter: `platform="myplatform"` only distributes events from the specified platform
+- Platform filtering: `platform="myplatform"` only distributes events from the specified platform
 
-### Middleware
+### Middlewares
 
 #### Add Middleware
 
@@ -6722,20 +6736,20 @@ async def filter_middleware(data):
     """Event filtering middleware"""
     # Filter out unwanted events
     if data.get("type") == "notice":
-        return None  # Returning None means the middleware chain ignores this return value and continues with the original data
-    return data  # Must return data to continue passing
+        return None  # If None is returned, middleware chain ignores this return value, preserving original data for continuation
+    return data  # Must return data to continue propagation
 ```
 
 #### Middleware Execution Order
 
-Middlewares execute in registration order, with the last registered middleware executed first.
+Middlewares execute in registration order, with later registered middlewares executed first.
 
-> **Note**: If a middleware returns `None` (e.g., forgetting to `return data`), the framework will ignore the return value and continue passing the original data, while outputting a warning-level log. This ensures that a single middleware failure does not interrupt the entire event chain.
+> **Note**: If a middleware returns `None` (e.g., forgetting `return data`), the framework will ignore this return value and preserve the original data for continuation, while outputting a warning-level log. This ensures that a single middleware failure does not interrupt the entire event chain.
 
 ```python
 # Registration order
 sdk.adapter.middleware(middleware1)  # Last to execute
-sdk.adapter.middleware(middleware2)  # Middle to execute
+sdk.adapter.middleware(middleware2)  # Middle execution
 sdk.adapter.middleware(middleware3)  # First to execute
 
 # Execution order: middleware3 -> middleware2 -> middleware1
@@ -6770,7 +6784,7 @@ from ErisPulse.Core.Bases import BaseConfig, BotAccountConfig
 
 @dataclass
 class MyConfig(BaseConfig):
-    """Adapter configuration (automatically managed by the framework after declaration)"""
+    """Adapter Configuration (declared, framework automatically manages)"""
     token: str = field(
         default="",
         metadata={
@@ -6784,28 +6798,28 @@ class MyConfig(BaseConfig):
 class MyAdapter(BaseAdapter):
     ConfigClass = MyConfig  # Declare configuration class
     
-    # No need to override __init__, framework handles automatically:
+    # No need to override __init__, framework automatically handles:
     # - self.sdk, self.logger
-    # - self.cfg (type-safe configuration instance, reads in real-time)
+    # - self.cfg (type-safe configuration instance, real-time read)
     # - self.Send, self.Request
     
     async def start(self):
-        """Start the adapter (must be implemented)"""
+        """Start adapter (must implement)"""
         cfg = self.cfg  # Automatically loaded type-safe configuration
         pass
     
     async def shutdown(self):
-        """Shutdown the adapter (must be implemented)"""
+        """Shutdown adapter (must implement)"""
         pass
     
     async def call_api(self, endpoint: str, **params):
-        """Call platform API (must be implemented)"""
+        """Call platform API (must implement)"""
         pass
 ```
 
 ### Configuration Management
 
-The framework provides declarative configuration management, defining configuration structure through dataclass, with the framework automatically handling loading, validation, and template generation.
+The framework provides declarative configuration management, defining configuration structures via dataclass, with the framework automatically handling loading, validation, and template generation.
 
 #### Single Account Configuration
 
@@ -6822,7 +6836,7 @@ class TelegramConfig(BaseConfig):
         "ui": {"widget": "password", "group": "basic", "order": 1},
     })
     proxy: str = field(default="", metadata={
-        "description": {"i18n": "telegram.proxy", "default": "Proxy Address"},
+        "description": {"i18n": "telegram.proxy", "default": "Proxy address"},
         "ui": {"widget": "text", "group": "advanced", "order": 10},
     })
 
@@ -6830,7 +6844,7 @@ class TelegramAdapter(BaseAdapter):
     ConfigClass = TelegramConfig
     
     async def start(self):
-        cfg = self.cfg  # Type-safe, real-time reading
+        cfg = self.cfg  # Type-safe, real-time read
         if not cfg.token:
             raise ValueError("Token not configured")
         await self._connect(cfg.token, proxy=cfg.proxy)
@@ -6838,13 +6852,13 @@ class TelegramAdapter(BaseAdapter):
 
 #### Multi-Account Configuration
 
-The `BotAccountConfig` base class provides `enabled` and `name` fields. Most adapters can automatically obtain bot_id from the platform protocol or login response and inject it into account configuration during event conversion:
+The `BotAccountConfig` base class provides `enabled` and `name` fields. Most adapters can automatically obtain `bot_id` from the platform protocol or login response, injecting it into the account configuration during event conversion:
 
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BotAccountConfig
 
-# Most adapters: bot_id is automatically obtained at runtime, no need to configure
+# Most adapters: bot_id is automatically obtained at runtime, no configuration needed
 @dataclass
 class MyBotConfig(BotAccountConfig):
     token: str = field(default="", metadata={
@@ -6852,7 +6866,7 @@ class MyBotConfig(BotAccountConfig):
         "required": True,
     })
 
-# If bot_id cannot be obtained during login, allow users to fill in the configuration
+# If bot_id cannot be obtained during login, allow users to fill it in configuration
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
     bot_id: str = field(default="", metadata={
@@ -6880,29 +6894,34 @@ Field metadata serves both TOML comment generation and WebUI form rendering:
 ```python
 metadata = {
     "description": str | dict,  # Field description (supports i18n)
-    "required": bool,         # Whether required (validation + WebUI required indicator)
-    "secret": bool,           # Whether sensitive (WebUI displays as ***; logs are masked)
-    "ui": {                   # WebUI control configuration (old name "webui" is still compatible)
+    "required": bool,         # Whether required (validation + WebUI required marker)
+    "secret": bool,           # Whether sensitive (WebUI displays as ***, logs are masked)
+    "example": bool,          # Non-persistent flag: not written to config.toml (default value/template excluded),
+                              # only rendered into config.full.example; schema with "example": true marked,
+                              # CLI configuration wizard skips by default; user manually sets and persists normally
+    "min": number, "max": number,  # Numerical range validation
+    "ui": {                   # WebUI control configuration (old name "webui" still compatible)
         "widget": str,        # Control type: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # Group: "basic" | "advanced" | "connection" etc.
-        "order": int,         # Sort weight (lower values appear earlier)
+        "order": int,         # Sorting weight (smaller is earlier)
         "options": list,      # Select control options [{label, value}], label supports i18n
-        "placeholder": str | dict,  # Input placeholder (supports i18n)
+        "placeholder": str | dict,  # Input box placeholder (supports i18n)
     },
-    "extra": dict,            # Additional extension fields (passed through to schema)
+    "extra": dict,            # Extra extended field (passed through to schema)
 }
 ```
 
-All user-visible text fields support i18n, uniformly using the `{"i18n": "key", "default": "text"}` format. Pure strings are passed through as-is (for backward compatibility). Supported i18n fields:
+All user-visible text fields support i18n, uniformly using the `{"i18n": "key", "default": "text"}` format,
+pure strings are passed through as-is (backward compatibility). Supported i18n fields:
 
 | Field | Location | Description |
 |------|------|------|
 | `description` | field metadata | Field description |
 | `options[].label` | `ui.options` | Select control option label |
-| `placeholder` | `ui.placeholder` | Input placeholder |
+| `placeholder` | `ui.placeholder` | Input box placeholder |
 | `group_labels` | `_schema_meta` | Group display name (Dashboard partition title) |
 
-When using i18n, you need to register the translation keys into the i18n system beforehand (see [i18n documentation](../../advanced/i18n.md#configuration-field-multilingual)).
+When using i18n, translation keys must be pre-registered in the i18n system (see [i18n documentation](../../advanced/i18n.md#Configuration Field Multilingual)).
 
 **description / placeholder / options label** example:
 
@@ -6913,7 +6932,7 @@ token: str = field(
         "description": {"i18n": "my_adapter.token", "default": "Bot Token"},
         "ui": {
             "widget": "text",
-            "placeholder": {"i18n": "my_adapter.token.ph", "default": "Please enter Token"},
+            "placeholder": {"i18n": "my_adapter.token.ph", "default": "Enter Token"},
         },
     },
 )
@@ -6932,7 +6951,7 @@ mode: str = field(
 )
 ```
 
-**group_labels** example (declared after configuration class definition):
+**group_labels** example (declare after configuration class definition):
 
 ```python
 MyConfig._schema_meta = {
@@ -6943,11 +6962,94 @@ MyConfig._schema_meta = {
 }
 ```
 
-The framework's `resolve_config_schema()` automatically resolves all i18n keys in the above fields based on the current language; `get_config_schema()` passes through the i18n dictionaries as-is, letting the frontend handle the resolution.
+The framework's `resolve_config_schema()` automatically resolves all i18n keys in these fields according to the current language;
+`get_config_schema()` passes through the i18n dictionary as-is, to be parsed by the frontend.
+
+#### docstring Automatically Generates Field Descriptions (v2.8.0+)
+
+Fields without `description` declared in metadata, the framework automatically extracts field descriptions from the configuration class docstring as a fallback, supporting two common styles (can be mixed):
+
+```python
+@dataclass
+class MyConfig(BaseConfig):
+    """
+    MyAdapter Configuration
+
+    :ivar endpoint: Platform API address        # reST style
+    :ivar timeout: Request timeout in seconds
+    """
+
+    endpoint: str = "https://api.example.com"   # No metadata description → comment/description from docstring
+    timeout: int = 30
+
+    # Google style is also supported (Attributes: section):
+    # Attributes:
+    #     endpoint: Platform API address
+```
+
+Priority: **metadata description > docstring field description > empty**.
+i18n dictionary form of description is unaffected (always prioritized).
+
+#### Nested Configuration (v2.8.0+)
+
+When the field type is a nested dataclass, the framework recursively processes: schema uses `"type": "table"` +
+`"fields"` subtree (WebUI renders as a collapsible nested group), TOML template renders as `[sub-table]` section,
+default values / filling / validation / i18n resolution all recursively apply.
+
+```python
+@dataclass
+class RetryConfig(BaseConfig):
+    """Retry Strategy
+
+    :ivar max_retries: Maximum retry count
+    """
+    max_retries: int = 3
+    backoff: float = 0.5
+
+@dataclass
+class MyConfig(BaseConfig):
+    """MyAdapter Configuration"""
+    endpoint: str = "https://api.example.com"
+    retry: RetryConfig = field(default_factory=RetryConfig)   # Nested configuration section
+```
+
+Generated TOML template:
+
+```toml
+endpoint = "https://api.example.com"
+
+[retry]
+# Maximum retry count
+max_retries = 3
+backoff = 0.5
+```
+
+> For nested types, it is recommended to use direct type annotations; string annotations (e.g., for deferred evaluation scenarios) must ensure
+> the type can be globally resolved from the configuration class's module, `__qualname__` outer class namespace, or class attribute by name.
+
+#### Non-persistent example Fields (v2.8.0+)
+
+```python
+gc_interval: int = field(default=300, metadata={"example": True})
+```
+
+Fields with `example: True`:
+
+- Not written to config.toml (adapter/module configuration template and default values excluded, runtime uses code default values)
+- Only rendered into project's `config.full.example` (for user reference, manually copied to config.toml as needed)
+- Schema marked with `"example": true` (panel can decide display strategy), CLI configuration wizard skips by default
+- After user manually sets this key, it persists normally and updates normally (user's explicit intent takes precedence)
+
+Suitable for "complex and rarely touched" advanced configuration items, keeping the user's config.toml minimal.
+
+> ⚠️ `_schema_meta` is class-level metadata (not a configuration field). If declared inside the dataclass body,
+> it must be annotated with `ClassVar` (`_schema_meta: ClassVar[dict] = {...}`), otherwise it will be treated
+> as a regular field by dataclass. The framework defensively excludes fields with leading underscores from any
+> schema/template/default value/validation output, but it is still recommended to declare them properly.
 
 ### Declarative Translation Keys (v2.7.0+)
 
-Adapters can declare translation keys centrally by defining an `I18nClass` nested class, similar to declaring `ConfigClass`. The framework automatically registers all declared translation keys during the `__init__` phase (before configuration template generation), ensuring that i18n keys referenced in configuration descriptions are available when generating templates.
+Adapters can declare translation keys centrally by nesting the `I18nClass` class, similar to declaring `ConfigClass`. The framework automatically registers all declared translation keys during `__init__` phase (before configuration template generation), ensuring that i18n keys referenced in configuration descriptions are available when generating templates.
 
 ```python
 from ErisPulse.Core.Bases import BaseAdapter, BaseI18n, I18nKey
@@ -6972,13 +7074,14 @@ class MyAdapter(BaseAdapter):
         )
 ```
 
-> ``I18nKey.default`` is a **language-agnostic fallback text** that is not registered to any language. To make translations effective, at least one language parameter must be explicitly provided.
+> ``I18nKey.default`` is a language-agnostic fallback text and is not registered in any language.
+> To make translations effective, at least one language parameter must be explicitly provided.
 
-For detailed usage (key path rules, explicit key parameters, etc.), see [i18n documentation](../../advanced/i18n.md#recommended-approach-declaring-translation-keys-via-i18nclass-v270).
+For detailed usage (key path rules, explicit key parameters, etc.), see [i18n documentation](../../advanced/i18n.md#Recommended Writing Method Through I18nClass Declaration of Translation Keys v270).
 
 ### Declarative Event Extension Methods (v2.7.0+)
 
-Adapters can declare platform-specific event extension methods centrally via `EventMixin`, and the framework automatically registers them to the current platform.
+Adapters can declare platform-specific event extension methods in `EventMixin`, which the framework automatically registers to the current platform.
 
 ```python
 from ErisPulse.Core import BaseAdapter
@@ -6995,7 +7098,7 @@ class MyAdapter(BaseAdapter):
             return raw.get("sender", {}).get("is_official", False)
 ```
 
-After registration, these methods can be directly called on event objects:
+After registration, event objects can directly call these methods:
 
 ```python
 @message.on_group_message()
@@ -7005,11 +7108,12 @@ async def handler(event):
         await event.reply(f"[{chat_name}] Official message received")
 ```
 
-> Adapter's event extension methods are registered to its own platform (``self._platform``). For modules needing cross-platform event extensions, use the original ``register_event_mixin()`` API.
+> Adapter's event extension methods are registered to its own platform (``self._platform``).
+> Modules needing cross-platform event extensions should use the original ``register_event_mixin()`` API.
 
 #### Account Resolution
 
-Multi-account adapters can use `_resolve_account()` to automatically resolve the target account:
+Multi-account adapters can use `_resolve_account()` to automatically resolve target accounts:
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -7030,7 +7134,7 @@ class MyAdapter(BaseAdapter):
     
     def on_config_update(self, old_config, new_config):
         if old_config.token != new_config.token:
-            self.logger.info("Token updated, reconnecting")
+            self.logger.info("Token has been updated, reconnecting")
 ```
 
 ### Initialization Process
@@ -7039,11 +7143,11 @@ The framework automatically performs the following tasks in `BaseAdapter.__init_
 
 1. **SDK Reference**: Set `self.sdk`, `self.logger`
 2. **Send/Request Factory**: Create `self.Send` and `self.Request`
-3. **Configuration Template**: If `ConfigClass` is declared, generate the default configuration template (first time only)
-4. **Account Template**: If `AccountConfigClass` is declared, generate the default account template (first time only)
-5. **EventMixin Registration**: If `EventMixin` is declared, automatically register it in `AdapterManager` after injecting the platform name
+3. **Configuration Template**: If `ConfigClass` is declared, automatically generate default configuration template (first time)
+4. **Account Template**: If `AccountConfigClass` is declared, automatically generate default account template (first time)
+5. **EventMixin Registration**: If `EventMixin` is declared, automatically register in `AdapterManager` after platform name injection
 
-Configuration is read in real-time via `self.cfg` / `self.accounts` (each access reads the latest value from the configuration store). `self.config` remains as a compatible alias for `self.cfg`.
+Configuration is read in real-time via `self.cfg` / `self.accounts` (each access reads the latest value from configuration storage). `self.config` as a compatibility alias for `self.cfg` is still usable.
 
 Most adapters do not need to override `__init__`. If custom initialization is required:
 
@@ -7057,9 +7161,9 @@ class MyAdapter(BaseAdapter):
         self.convert = self.converter.convert
 ```
 
-## Send Message DSL
+## Send Message Sending DSL
 
-### Inheritance
+### Inheritance Structure
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -7068,33 +7172,33 @@ class MyAdapter(BaseAdapter):
         pass
 ```
 
-### Available Attributes
+### Available Properties
 
-The `Send` class automatically sets the following attributes when called:
+The `Send` class automatically sets the following properties when called:
 
-| Attribute | Description | Setting Method |
-|-----------|-------------|----------------|
+| Property | Description | Setting Method |
+|-----|------|---------|
 | `_target_id` | Target ID | `To(id)` or `To(type, id)` |
-| `_target_type` | Target type | `To(type, id)` |
-| `_target_to` | Simplified target ID | `To(id)` |
-| `_account_id` | Sender account ID | `Using(account_id)` |
-| `_adapter` | Adapter instance | Automatically set |
-| `_at_user_ids` | List of @ users | `At(user_id)` |
-| `_reply_message_id` | ID of the message being replied to | `Reply(message_id)` |
-| `_at_all` | Whether to @ all users | `AtAll()` |
+| `_target_type` | Target Type | `To(type, id)` |
+| `_target_to` | Simplified Target ID | `To(id)` |
+| `_account_id` | Sending Account ID | `Using(account_id)` |
+| `_adapter` | Adapter Instance | Automatically set |
+| `_at_user_ids` | @ User List | `At(user_id)` |
+| `_reply_message_id` | ID of replied message | `Reply(message_id)` |
+| `_at_all` | Whether to @ all | `AtAll()` |
 
-> **Recommendation**: Use the `self.send_context` property to get `target_type`, `target_id`, and `account_id` in one go, which is clearer than accessing instance variables directly.
+> **Recommendation**: Use `self.send_context` property to get `target_type`, `target_id`, `account_id` at once, which is clearer than directly accessing instance variables.
 
 ### Framework Helper Methods
 
 | Method/Property | Description |
-|-----------------|-------------|
-| `self._apply_modifiers(message)` | Merges At/AtAll/Reply modifier states into the message segment list |
-| `self.send_context` | Returns a dictionary containing `{target_type, target_id, account_id}` |
+|-----------|------|
+| `self._apply_modifiers(message)` | Merge At/AtAll/Reply modifier states into message segment list |
+| `self.send_context` | Return `{target_type, target_id, account_id}` dictionary |
 
 ### Basic Methods
 
-Adapters only need to implement `Raw_ob12`. Standard methods (Text/Image/Voice/Video/File) are inherited from the `SendDSL` base class and default to delegating to it:
+Adapters only need to implement `Raw_ob12`, standard methods (Text/Image/Voice/Video/File) are inherited from the `SendDSL` base class and default to delegating to it:
 
 ```python
 class Send(BaseAdapter.Send):
@@ -7110,13 +7214,13 @@ class Send(BaseAdapter.Send):
             )
         return asyncio.create_task(_do_send())
 
-    # Text/Image/Voice/Video/File are inherited from the base class and automatically delegate to Raw_ob12; no need to reimplement
-    # If platform-specific logic is needed, individual methods can be overridden:
+    # Text/Image/Voice/Video/File are inherited from base class, automatically delegate Raw_ob12, no need to implement repeatedly
+    # If platform-specific logic is needed, override individual methods:
     # def Text(self, text: str):
     #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-### Chained Modifier Methods
+### Chaining Modifier Methods
 
 ```python
 class Send(BaseAdapter.Send):
@@ -7130,12 +7234,12 @@ class Send(BaseAdapter.Send):
         return self
 ```
 
-## Event Converters
+## Event Converter
 
 ### Conversion Flow
 
 ```
-Platform-native Event
+Platform Raw Event
     ↓
 Converter.convert()
     ↓
@@ -7148,17 +7252,17 @@ All converted events must include:
 
 ```python
 {
-    "id": "Unique Event Identifier",
+    "id": "Event Unique Identifier",
     "time": 1234567890,           # 10-digit Unix timestamp
     "type": "message/notice/request/meta",
-    "detail_type": "Event Detail Type",
+    "detail_type": "Event Detailed Type",
     "platform": "Platform Name",
     "self": {
         "platform": "Platform Name",
         "user_id": "Bot ID"     # Must match bot_id
     },
-    "{platform}_raw": {...},       # Raw data (required)
-    "{platform}_raw_type": "..."    # Raw type (required)
+    "{platform}_raw": {...},       # Raw data (must)
+    "{platform}_raw_type": "..."    # Raw type (must)
 }
 ```
 
@@ -7167,7 +7271,7 @@ All converted events must include:
 ```python
 class MyPlatformConverter:
     def convert(self, raw_event):
-        """Converts a platform-native event into OneBot12 standard format."""
+        """Convert platform raw event to OneBot12 standard format"""
         if not isinstance(raw_event, dict):
             return None
         
@@ -7210,7 +7314,7 @@ class MyPlatformConverter:
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
-        """Register WebSocket routes"""
+        """Register WebSocket route"""
         router.register_websocket(
             module_name="myplatform",
             path="/ws",
@@ -7244,7 +7348,7 @@ class MyAdapter(BaseAdapter):
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
-        """Register WebHook routes"""
+        """Register WebHook route"""
         router.register_http_route(
             module_name="myplatform",
             path="/webhook",
@@ -7261,7 +7365,7 @@ class MyAdapter(BaseAdapter):
         return {"status": "ok"}
 ```
 
-> **Route Information Query**: The routes registered by adapters (HTTP, WebSocket, SSE) can be queried through `sdk.adapter.get_connection_info(platform)` and `sdk.router.get_module_urls(module_name)` to retrieve the full connection address (including `base_url` + path). See [Adapter Development Introduction - Connection Information and Route Discovery](docs/en/getting-started.md#9-connection-information-and-route-discovery) and [SSE Support](docs/en/getting-started.md#10-sse-server-sent-events-support).
+> **Route Information Query**: Adapter-registered routes (HTTP, WebSocket, SSE) can be queried for complete connection addresses (including `base_url` + path) via `sdk.adapter.get_connection_info(platform)` and `sdk.router.get_module_urls(module_name)`. See [Getting Started - Adapter Development - Connection Information and Route Discovery](getting-started.md#9-Connection Information and Route Discovery) and [SSE Support](getting-started.md#10-SSE-Server-Sent-Events-Support).
 
 ## API Response Standard
 
@@ -7283,7 +7387,7 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e), raw=None)
 ```
 
-### Manually Constructing Response (Legacy approach still compatible)
+### Manual Response Construction (Legacy Method Still Compatible)
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -7301,7 +7405,7 @@ async def call_api(self, endpoint: str, **params):
 
 ### Declarative Configuration (Recommended)
 
-After using `AccountConfigClass` to declare a configuration class, the framework automatically manages multi-account loading, validation, and template generation:
+After declaring `AccountConfigClass`, the framework automatically manages multi-account loading, validation, and template generation:
 
 ```python
 from dataclasses import dataclass, field
@@ -7323,10 +7427,10 @@ class MyAdapter(BaseAdapter):
     async def call_api(self, endpoint: str, **params):
         account_id = params.pop("account_id", None)
         name, account = self._resolve_account(account_id)
-        # Use fields such as account.token, account.bot_id, etc.
+        # Use account.token, account.bot_id, etc.
 ```
 
-### Account Configuration Files
+### Account Configuration File
 
 ```toml
 [MyAdapter.accounts.account1]
@@ -7343,32 +7447,32 @@ enabled = true
 ### Specifying Account for Sending
 
 ```python
-# Specify account using Using method
+# Use Using method to specify account
 my_adapter = adapter.get("myplatform")
 
-# Using self.user_id from event (recommended, most universal)
+# Through event's self.user_id (recommended, most general)
 await my_adapter.Send.Using(event["self"]["user_id"]).To("user", "123").Text("Hello")
 
-# Using account name
+# Through account name
 await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 ```
 
 ### Relationship between self.user_id and Using
 
-The framework's event reply mechanism automatically extracts `account_id` (preferred) or `user_id` from the event's `self` field and passes it as the `Using` parameter. Adapter developers must ensure that the `self.user_id` value in the Converter correctly matches `_resolve_account()`.
+The framework's event reply mechanism automatically extracts `account_id` (if present) or `user_id` from the event's `self` field, as the `Using` parameter. Adapter developers need to ensure the Converter correctly sets `self.user_id` so that `_resolve_account()` can match the correct account.
 
 **Framework Internal Behavior**:
 
 ```python
-# Framework logic for extracting bot_id
+# Framework extraction logic for bot_id
 bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
 
-# Using is only called if bot_id is non-empty
+# Only call Using if bot_id is non-empty
 if bot_id:
     send_chain = send_chain.Using(bot_id)
 ```
 
-> **Key Point**: Even if the adapter uses only one Bot configuration, as long as the Converter correctly sets `self.user_id`, the framework will pass it as the `Using` parameter. The adapter must ensure that `self.user_id` matches the identifier field (e.g., `bot_id`) in `AccountConfigClass`, so that `_resolve_account()` can match the correct account. If `self.user_id` is empty, the framework will not call `Using`, and `call_api` will receive `account_id` as `None`, with `_resolve_account(None)` returning the first enabled account.
+> **Key Point**: Even if the adapter uses a single Bot configuration, as long as the Converter correctly sets `self.user_id`, the framework will use it as the `Using` parameter. The adapter must ensure `self.user_id` matches the identifier field (e.g., `bot_id`) in `AccountConfigClass` so that `_resolve_account()` can match the correct account. If `self.user_id` is empty, the framework will not call `Using`, in which case `call_api` receives `account_id` as `None`, and `_resolve_account(None)` returns the first enabled account.
 
 ## Error Handling
 
@@ -7401,7 +7505,7 @@ class MyAdapter(BaseAdapter):
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
-        # Recommended to use the SDK's built-in client
+        # Recommended to use SDK built-in client
         from ErisPulse.Core import client
         from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
         resp = await client.post(
@@ -7412,8 +7516,8 @@ async def call_api(self, endpoint: str, **params):
         response = await resp.json()
         return self._standardize_response(response)
     except ClientTimeoutError:
-        self.logger.error(f"Request timed out: {endpoint}")
-        return self._error_response("Request timed out", 32000)
+        self.logger.error(f"Request timeout: {endpoint}")
+        return self._error_response("Request timeout", 32000)
     except ClientError as e:
         self.logger.error(f"Network error: {e}")
         return self._error_response("Network request failed", 33000)
@@ -7422,21 +7526,21 @@ async def call_api(self, endpoint: str, **params):
         return self._error_response(str(e), 34000)
 ```
 
-> **Backward Compatibility**: Old adapter code that directly uses `aiohttp.ClientSession` is unaffected and can still catch `aiohttp.ClientError`. Both methods can coexist. New code is recommended to use `sdk.client` + ErisPulse exception system.
+> **Backward Compatibility**: Adapters using `aiohttp.ClientSession` directly are unaffected and can still catch `aiohttp.ClientError`. Both methods can coexist. New code is recommended to use `sdk.client` with ErisPulse's exception system.
 
 ## Bot Status Management
 
-The AdapterManager includes a built-in Bot status tracking system, which automatically maintains the online status, active time, and metadata of all registered Bots.
+AdapterManager includes a built-in bot status tracking system, automatically maintaining the online status, active time, and metadata of all registered bots.
 
 ### Automatic Discovery Mechanism
 
-When an adapter sends an event through `adapter.emit()`, the framework automatically checks the `self` field in the event:
+When the adapter emits an event via `adapter.emit()`, the framework automatically checks the event's `self` field:
 
-- **Meta events**: Perform corresponding actions based on `detail_type` (register on connect, mark as offline on disconnect, update active time on heartbeat)
-- **Regular events** (message/notice/request): Automatically discover Bots and update active time
+- **Meta Events**: Execute corresponding actions based on `detail_type` (register on connect, mark offline on disconnect, update active time on heartbeat)
+- **Regular Events** (message/notice/request): Automatically discover bots and update active time
 
 ```python
-# All events containing the self field trigger automatic discovery
+# All events containing self field trigger automatic discovery
 await self.adapter.emit({
     "type": "message",
     "platform": "myplatform",
@@ -7450,25 +7554,25 @@ await self.adapter.emit({
 
 | `detail_type` | Description | Framework Behavior |
 |---|---|---|
-| `connect` | Bot connects | Register Bot and trigger `adapter.bot.online` lifecycle event |
-| `disconnect` | Bot disconnects | Mark Bot as offline and trigger `adapter.bot.offline` lifecycle event |
-| `heartbeat` | Bot heartbeat | Update Bot active time and metadata |
+| `connect` | Bot connects | Register bot and trigger `adapter.bot.online` lifecycle event |
+| `disconnect` | Bot disconnects | Mark bot as offline and trigger `adapter.bot.offline` lifecycle event |
+| `heartbeat` | Bot heartbeat | Update bot active time and metadata |
 
 ### Adapter Sending Meta Events
 
-Use `emit_meta()` to send a meta event in one line:
+Use `emit_meta()` to send meta events in one line:
 
 ```python
 class MyAdapter(BaseAdapter):
     async def _on_bot_connect(self, bot_id: str):
         # Send connect event in one line
-        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="MyBot")
+        await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="My Bot")
 
     async def _on_bot_disconnect(self, bot_id: str):
         await self.emit_meta("disconnect", bot_id)
 ```
 
-Manual construction is also supported (old method is still compatible):
+Also supports manual construction (legacy method still compatible):
 
 ```python
 await self.adapter.emit({
@@ -7479,7 +7583,7 @@ await self.adapter.emit({
 })
 ```
 
-### `self` Field Extended Information
+### Extended Information in `self` Field
 
 Besides the required `platform` and `user_id`, the `self` field supports the following optional fields:
 
@@ -7495,20 +7599,20 @@ Besides the required `platform` and `user_id`, the `self` field supports the fol
 ```python
 from ErisPulse import sdk
 
-# Get information of a single Bot
+# Get single bot information
 info = sdk.adapter.get_bot_info("myplatform", "bot123")
 # {"status": "online", "last_active": 1712345678.0, "info": {"nickname": "MyBot"}}
 
-# List all Bots
+# List all bots
 all_bots = sdk.adapter.list_bots()
 
-# List Bots for a specific platform
+# List bots of specified platform
 platform_bots = sdk.adapter.list_bots("myplatform")
 
-# Check if a Bot is online
+# Check if bot is online
 is_online = sdk.adapter.is_bot_online("myplatform", "bot123")
 
-# Get complete status summary (suitable for WebUI display)
+# Get full status summary (suitable for WebUI display)
 summary = sdk.adapter.get_status_summary()
 # {"adapters": {"myplatform": {"status": "started", "bots": {...}}}}
 ```
@@ -17307,113 +17411,106 @@ This design ensures that changes to CLI translations do not affect the stability
 
 # Scope
 
-> [!NOTE]
+> [!NOTE]  
 > This feature requires ErisPulse **2.8.0+**.
 
-Scope answers four questions: **which modules are available, who receives events, what text a module processes, and what a module can do externally**.  
-The control is entirely given to the user: the **upper layer** (configured via `ErisPulse.scope` or runtime `sdk.scope`) that registers modules / adapters / processors / outbound calls declares these uniformly. The event pipeline automatically reads and executes these configurations at entry, processor filtering, and outbound gateways.
+Scope answers four questions: **which modules are available, whether events are received, which text is processed by a module, and what a module can do externally**. The control is entirely in the user's hands: at the **upper level** of module/adapter/processor/outbound call registration (configured via `ErisPulse.scope` or runtime `sdk.scope`), all are declared uniformly. The event pipeline automatically reads and executes these configurations at the entry, processor filtering, and outbound gate.
 
-| Dimension | Controls What | Rejection Behavior | Configuration Path |
-|-----------|---------------|--------------------|--------------------|
+| Dimension | Controls what | Rejection behavior | Configuration path |
+|-----------|---------------|-------------------|-------------------|
 | **① Module** | Which modules are available (platform / Bot / session three levels) | Silent ignore (no reply, no claim) | `scope.platforms / bots / sessions` |
-| **② Identity** | Whether to receive events (adapter / Bot / session / user four levels) | Complete discard at entry (silent) | `scope.identity.*` |
-| **③ Outbound** | Which outbound calls a module can initiate (messages / API / requests, method-level white/blacklists) | Failure response (`retcode=34601`) | `scope.actions` |
+| **② Identity** | Whether to receive events (adapter / Bot / session / user four levels) | Completely discard at entry (silent) | `scope.identity.*` |
+| **③ Outbound** | What outbound calls a module can initiate (message / API / request, method-level white/blacklist) | Fail response (`retcode=34601`) | `scope.actions` |
 
-> **Related Systems**: Commands are special message event processors, and their user allow/deny lists (ACL) and implementation parameter overrides are self-managed by the command system (`ErisPulse.event.command`). See [Event Handling Introduction](../getting-started/event-handling.md) and [Configuration Guide](../user-guide/configuration.md).
+> **Related systems**: Commands are special message event handlers, and their user whitelist/blacklist (ACL) and implementation parameter overrides are managed by the command system itself (`ErisPulse.event.command`). See [Event Handling Introduction](../getting-started/event-handling.md) and [Configuration Guide](../user-guide/configuration.md).
 
 {!--< tips >!--}
 1. Import the singleton via `from ErisPulse.Core import scope` (same object as `sdk.scope`)
-2. Check permissions: `scope.is_allowed(...)` / `scope.is_identity_allowed(...)` / `scope.is_action_allowed(...)` correspond to the three gates ①②③
-3. Read/Write: Dimensional parameter methods (IDE can auto-complete) — `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`; there are also dictionary-style fallback methods `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
-4. Event processor text condition overrides are described in [Event Handling Introduction · Event Overriding](../getting-started/event-handling.md#event-overriding-does-not-change-module-code-to-override-the-behavior-of-any-event-type); command ACL / parameter overrides are described in [Event Handling Introduction](../getting-started/event-handling.md)
+2. Check: `scope.is_allowed(...)` / `scope.is_identity_allowed(...)` / `scope.is_action_allowed(...)` correspond to the three gates ①②③
+3. Read/write: Dimensional parameter methods (IDE can complete) — `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`; also dictionary-style fallback `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
+4. Event handler text condition overrides are covered in [Event Handling Introduction · Event Overriding](../getting-started/event-handling.md#event-overriding-change-behavior-of-any-event-type-without-modifying-module-code); command ACL / parameter overrides are covered in [Event Handling Introduction](../getting-started/event-handling.md)
 {!--< /tips >!--}
 
 ## Matching Entry Syntax (Unified Across the System)
 
-All "name lists" (module names, identity keys, outbound entries) across the scope share the same matching syntax (`ErisPulse.Core.text_match`):
+All "name lists" in scope (module names, identity keys, outbound entries) share the same matching syntax (`ErisPulse.Core.text_match`):
 
 | Syntax | Example | Description |
 |--------|---------|-------------|
-| Exact Name | `"Chat"` | Full value comparison, **case-insensitive** |
-| Glob | `"Tool*"` or `"spam_*"` | `*` matches any string / `?` matches any single character / `[seq]` matches any character in the set, case-insensitive |
-| Regular Expression | `"re:^Danger.*"` | Declared with `re:` prefix, uses regex `search` matching, case-insensitive by default |
+| Exact name | `"Chat"` | Full value comparison, **case-insensitive** |
+| Glob | `"Tool*"`、`"spam_*"` | `*` for any string / `?` for single character / `[seq]` for character set, case-insensitive |
+| Regular expression | `"re:^Danger.*"` | Declared with `re:` prefix, matches using regex `search`, default case-insensitive |
 
-- Invalid regular expressions **silently degrade** to "no match" (no error thrown, no crash)
-- Decorator parameters (`pattern=` / `regex=`) have fixed semantics: `pattern` is glob, `regex` is the raw regex source (without `re:` prefix); regular expression entries in scope configurations **must** include the `re:` prefix
+- Invalid regex **silently degrades** to "no match" (no error thrown, no crash)
+- Decorator parameters (`pattern=` / `regex=`) have fixed semantics: `pattern` is glob, `regex` is raw regex (without `re:` prefix); regex entries in scope configuration **must** have the `re:` prefix
 
 ## Global Fallback: `default_allow`
 
-`default_allow` is the **single global** fallback switch (default `true`), which uniformly affects both decision dimensions:
+`default_allow` is the **single global fallback switch** (default `true`), affecting two decision dimensions:
 
-- **Module dimension**: If no binding is matched → `default_allow` determines whether to allow or deny.
-- **Identity dimension**: If no policy is matched → `default_allow` determines whether to allow or deny.
+- **Module dimension**: If no binding is matched → `default_allow` decides allow/deny
+- **Identity dimension**: If no policy is matched → `default_allow` decides allow/deny
 
-Setting it to `false` enables the "implicit deny" strict mode: whitelist-based management, where **anything not explicitly allowed is denied**.
+Setting it to `false` enables "implicit deny" strict mode: whitelisting management, **any not explicitly allowed is denied**.
 
-> **Exception**: The **outbound dimension** is **not affected** by `default_allow` — it is an independent tightening switch. By default, all outbound traffic is allowed, and only explicit rules impose restrictions (calls owned by the framework layer with an empty owner are always allowed). This ensures that strict global mode does not accidentally block all module message responses. Command ACL has its own `ErisPulse.event.command.default_allow` fallback, which does not interfere with this mechanism.
+> **Exception**: The outbound dimension is **not** affected by `default_allow`—it is an independent tightening switch, defaulting to full allow, restricting only with explicit rules (framework-level owner-empty calls are always allowed). This strict global mode won't accidentally cut off all module message replies. Command ACL has a separate `ErisPulse.event.command.default_allow` fallback, independent of this.
 
 ## Configuration File
 
 ```toml
 [ErisPulse.scope]
-default_allow = true        # Global fallback (false = strict implicit deny mode)
+default_allow = true        # Global fallback (false = implicit deny strict mode)
 cache_size = 1024           # LRU cache size
 
-# ── ① Module Level (Priority: Session > Bot > Platform) ──
+# ── ① Module dimension (priority: session > Bot > platform) ──
 [ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Tool*"]   # Whitelist: exact names / globs / re: regex
+modules = ["Chat", "Tool*"]   # Whitelist: exact name / glob / re: regex
 blocked = ["re:^Danger"]
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Chat"]
-merge = true                  # Append to platform-level bindings (default is full override)
+merge = true                  # Append on top of platform-level binding (default is overall override)
 [ErisPulse.scope.sessions.onebot11."789012345"]
 modules = ["Chat"]
 
-# ── ② Identity Level (Priority: User > Session > Bot > Adapter) ──
+# ── ② Identity dimension (priority: user > session > Bot > adapter) ──
 [ErisPulse.scope.identity.adapters.onebot11]
-deny = true                   # Drop all events from this adapter
+deny = true                   # Discard all events from this adapter
 [ErisPulse.scope.identity.bots.onebot11."123456"]
 deny = true
 [ErisPulse.scope.identity.sessions.onebot11."g_blocked"]
 deny = true
 [ErisPulse.scope.identity.users.onebot11]
-allow = ["u_admin"]           # User keys support globs / re: regex
+allow = ["u_admin"]           # User keys support glob / re: regex
 deny = ["u_bad", "spam_*"]
 
-# ── ③ Outbound Level (Default: allow all, only explicitly deny) ──
+# ── ③ Outbound dimension (default all allowed, only explicitly tighten) ──
 [ErisPulse.scope.actions.MyModule]
-send = { deny = true }                                    # Deny all sending
+send = { deny = true }                                    # Disable all sending
 api = { allow = ["get_*"] }                               # Only allow standard query APIs
-request = { deny = true }                                 # Deny processing requests
+request = { deny = true }                                 # Disable request handling
 ```
 
-## ① Module-level
+## ① Module Dimension
 
-Answer: "In a given context, which modules are available?" By default, all modules are open; filtering starts only after configuration binding.  
-**No changes are required for modules or adapters.**
+Answers "which modules are available in a given context." By default, all are open; filtering begins only after configuration binding, and **modules and adapters require no changes**.
 
 ```mermaid
 flowchart TD
     A["Event arrives at a module's handler/command"] --> B{"scope.is_allowed<br/>(platform, bot, module, session)"}
-    B --> C{"Resolution chain: session-level > bot-level > platform-level<br/>(when sub-level merge = true, merge step-by-step)"}
-    C -->|"Matched"| D["blocked matched → deny<br/>modules non-empty → only allow whitelisted<br/>both empty → default_allow"]
+    B --> C{"Parse chain: session-level > Bot-level > platform-level<br/>(if sub-level merge = true, merge entries step-by-step)"}
+    C -->|"Matched"| D["blocked matched → deny<br/>modules non-empty → allow only whitelist<br/>both empty → default_allow"]
     C -->|"Not matched"| E["default_allow (default true = allow)"]
-    D -->|"Denied"| Z["Silently ignore<br/>(no reply, no claim, only TRACE log visible)"]
+    D -->|"Deny"| Z["Silent ignore<br/> (no reply, no claim, only TRACE log visible)"]
 ```
 
-- **Resolution priority: session-level > bot-level > platform-level**, higher priority bindings **fully override** lower ones;  
-  When a sub-level binding specifies `merge = true`, it instead performs a **step-by-step union** with lower levels (merge `modules` and `blocked` individually, `merge` itself is a control key, not counted as an entry)
-- **Silent semantics**: Commands and handlers from filtered modules are not triggered, replied to, or claimed (to prevent cross-command mis-matching),  
-  visible only in TRACE-level logs (`core.scope.denied`)
+- **Parse priority**: session-level > Bot-level > platform-level, higher priority bindings **fully override** lower ones; if sub-level binding has `merge = true`, it becomes a **step-by-step union** of entries (both `modules` and `blocked` are merged, `merge` itself is a control key, not an entry)
+- **Silent semantics**: Commands and handlers of filtered modules do not trigger, reply, or claim (preventing cross-command mis-matches), visible only in TRACE-level logs (`core.scope.denied`)
 - **Framework-level handlers** (`scope_exempt=True` or owner is empty) are unaffected; modules with empty names (framework-level resources) are always allowed
-- **Session-aware help and command queries**: Command query APIs (`command.help` / `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`,  
-  and `module.get_commands_overview`) all support optional `event=` or explicit `platform=` / `bot_id=` / `session_id=` keywords — commands from modules unavailable in the current session  
-  no longer appear in results (`get_command` returns None, single command help is treated as "not registered",  
-  consistent with silent semantics); if no context is provided, full behavior is retained
+- **Session-aware help and command queries**: Command query APIs (`command.help` / `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`, and `module.get_commands_overview`) all support optional `event=` or explicit `platform=` / `bot_id=` / `session_id=` keywords—commands from modules unavailable in the current session no longer appear in results (`get_command` returns None, single command help is treated as "unregistered", consistent with silent semantics); if no context is provided, full behavior is retained
 
 ### Binding Inheritance (merge)
 
-By default, the semantics of full override are clear and predictable; when you need to **append** to an upper-level binding, specify `merge = true` in the sub-level:
+The default overall override semantics are clear and predictable; when you need to **append** on top of an upper-level binding, set `merge = true` in the sub-level:
 
 ```toml
 [ErisPulse.scope.platforms.onebot11]
@@ -17421,78 +17518,73 @@ modules = ["Chat", "Tool"]      # Platform-level: allow Chat, Tool
 
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Music"]
-merge = true                    # The effective modules for this bot = ["Chat", "Tool", "Music"]
+merge = true                    # The actual effective modules for this Bot = ["Chat", "Tool", "Music"]
 ```
 
 - **Merge rules**: `modules` and `blocked` each take the **union**; within a binding, `blocked` still takes precedence over `modules`
-- **Chained merge**: Platform → Bot → Session, each level independently decides whether to merge or override
+- **Chained merging**: Platform → Bot → session, each level independently decides whether to `merge` or override
 
 ## ② Identity Dimension (Event Admission)
 
-Answer "Whose events are accepted or rejected." Rejected events are **completely discarded at the distribution entry point**—they do not enter middleware or any processor (including framework-level), and are only visible in TRACE-level logs (`core.scope.identity_denied`).
+Answers "whose events are received or not." Events rejected at the **distribution entry are completely discarded**—they do not enter middleware or any processor (including framework-level), visible only in TRACE-level logs (`core.scope.identity_denied`).
 
-- **Resolution Priority: User > Session > Bot > Adapter**, taking the most specific configured policy; deny takes precedence over allow
-- Each level binding is a binary policy: `{ allow = true }` or `{ deny = true }`
+- **Parse priority**: user > session > Bot > adapter, taking the most specific configured policy; deny takes precedence over allow
+- Each level's binding is a binary policy: `{ allow = true }` or `{ deny = true }`
 - User keys support glob / regex (e.g., `"spam_*"` to block a batch of spam users)
-- Typical usage — deny at an upper level, allow for specific individuals to make "exceptional passes":
+- Typical usage—上级 deny, individual allow for "exceptional allowance":
 
 ```toml
 [ErisPulse.scope.identity.adapters.onebot11]
 deny = true
 [ErisPulse.scope.identity.users.onebot11]
-allow = ["u_admin"]   # Even if the adapter-level denies, events from u_admin are still passed
+allow = ["u_admin"]   # Even if adapter-level is denied, events from u_admin are still allowed
 ```
 
-## ③ Outbound Dimension (Limiting Modules Initiating Outbound Calls)
+## ③ Outbound Dimension (Limiting Module Initiated Outbound Calls)
 
-Constraints on **outbound actions initiated by modules**: message sending / standard API actions / request handling.  
-The three types of actions correspond to underlying DSLs: `Event.reply` and `Send` (send), `Api` / `call_api` (api), and `Request`'s accept/reject (request). Outbound calls initiated by modules during event handler execution carry the module owner, which are uniformly judged by this dimension.
+Restricts the **outbound actions** initiated by a module: message sending / standard API actions / request operations. The three action types correspond to the underlying DSL: `Event.reply` and `Send` (send), `Api` / `call_api` (api), `Request`'s accept/reject (request). Outbound calls initiated by a module during event handler execution carry the module owner, and are uniformly judged by this dimension.
 
-### Rule Format (Inline Table)
+### Rule Forms (Inline Table)
 
-Each action's rule is an inline table: `{ allow = [...], deny = true|[...] }`. Only one rule per action is allowed (TOML keys cannot be repeated; either full denial or fine-grained control is chosen):
+Each action's rule is an inline table: `{ allow = [...], deny = true|[...] }`. Only one rule per action is allowed (TOML keys cannot be repeated, choose either full deny or fine-grained):
 
 ```toml
 [ErisPulse.scope.actions.MyModule]
-send = { deny = true }                                  # Deny all sending (Event.reply / Send DSL)
-# Or method-level granularity: send = { allow = ["Text", "Image*"], deny = ["File"] }
-api = { allow = ["get_*"] }                             # Only allow query-type standard APIs
+send = { deny = true }                                  # Disable all sending (Event.reply / Send DSL)
+# Or fine-grained method-level: send = { allow = ["Text", "Image*"], deny = ["File"] }
+api = { allow = ["get_*"] }                             # Only allow standard query APIs
 # Or action-level blacklist: api = { deny = ["set_*", "leave_*"] }
-request = { deny = true }                               # Prohibit handling request accept/reject
+request = { deny = true }                               # Disable request handling accept/reject
 ```
 
-- `send` entries match **method names** (`Text` / `Image` / `File` ...),  
-  `api` entries match **standard action names** (`get_group_info` / `set_group_name` ...)
-- Entries support exact names / glob / `re:` regex (consistent with the global system syntax, case-insensitive)
+- `send` entries match **send method names** (`Text` / `Image` / `File` ...), `api` entries match **standard action names** (`get_group_info` / `set_group_name` ...)
+- Entries support exact names / glob / `re:` regex (consistent with the unified system syntax, case-insensitive)
 - Writing a single string in `allow` is equivalent to a single-entry list: `send = { allow = "Text" }`
 
-### Judgment Semantics
+### Decision Semantics
 
-**Default: Allow All** — Calls without configuration or with an empty owner (internal framework calls) are allowed.  
-After configuration, rules are judged in the following order:
+**Default is full allow**—unconfigured, or owner is empty (internal framework calls) are all allowed. After configuration, the following order is used for judgment:
 
-1. `deny = true` → Reject  
-2. The called name matches an entry in the `deny` list → Reject  
-3. The `allow` list is non-empty and the called name does not match (or the call has no name) → Reject  
-4. All others are allowed
+1. `deny = true` → deny
+2. `deny` list matches the call name → deny
+3. `allow` list is non-empty and the call name is not matched (or the call has no name) → deny
+4. Otherwise allow
 
-Rejected calls do not initiate any network requests and directly return a standard failure response  
-(`retcode = 34601`, see [api-response §5.3](../standards/api-response.md#53-framework-extension-response-codes-34xxx-customization-in-the-lowest-three-digits-of-the-platform-error-segment)).  
-The three actions are independent and can be limited individually.
+Denied calls do not initiate any network requests, directly returning the standard failure response (`retcode = 34601`, see [api-response §5.3](../standards/api-response.md#53-framework-extended-return-code-34xxx-platform-error-segment-low-three-digits-custom)).
 
 ```python
 # Runtime API
-sdk.scope.set_action("MyModule", "send", deny=True)              # Deny all message sending
-sdk.scope.set_action("MyModule", "send", allow=["Text"])         # Allow only text messages
+sdk.scope.set_action("MyModule", "send", deny=True)              # Disable all message sending
+sdk.scope.set_action("MyModule", "send", allow=["Text"])         # Allow only text sending
 sdk.scope.is_action_allowed("MyModule", "send", name="Image")    # False
 sdk.scope.is_action_allowed("MyModule", "api", name="get_user_info")  # Judged by rules
-sdk.scope.delete_action("MyModule", "send")                      # Restore allowed
-sdk.scope.get_action("MyModule", "send")                         # Get current rule for this action
+sdk.scope.delete_action("MyModule", "send")                      # Restore allow
+sdk.scope.get_action("MyModule", "send")                         # Current rule for this action
 ```
 
 ## Runtime API
 
-The scope runtime API consists of three layers: **Decision** (Three Questions), **Dimensional Read/Write** (per-dimension `set` / `get` / `delete` parametric methods with full type annotations, IDE auto-complete), and **Dictionary-style Fallback** (dot-path access to any section).
+The runtime API for scope is layered into three parts: **decision** (three questions), **dimensional read/write** (each dimension has `set`/`get`/`delete` parameterized methods, fully type-annotated, IDE-completable), and **dictionary-style fallback** (dot-path access to any section).
 
 ```python
 from ErisPulse import sdk
@@ -17503,14 +17595,14 @@ scope = sdk.scope
 ### Decision (Three Questions)
 
 ```python
-scope.is_allowed("onebot11", "123456", "Chat")                 # ① Module Dimension
+scope.is_allowed("onebot11", "123456", "Chat")                 # ① Module dimension
 scope.is_allowed("onebot11", "123456", "Chat", "789012345")    # With session-level
 scope.is_allowed("onebot11", "123456", None)                   # Framework-level resource -> True
 
-scope.is_identity_allowed("onebot11", "123456", "group_9", "u1")   # ② Identity Dimension
+scope.is_identity_allowed("onebot11", "123456", "group_9", "u1")   # ② Identity dimension
 
-scope.is_action_allowed("MyModule", "send")                    # ④ Outbound Dimension
-scope.is_action_allowed("MyModule", "send", name="Image")      # Fine-grained method level
+scope.is_action_allowed("MyModule", "send")                    # ④ Outbound dimension
+scope.is_action_allowed("MyModule", "send", name="Image")      # Fine-grained method-level
 ```
 
 ### ① Module Dimension
@@ -17521,21 +17613,23 @@ scope.set_module("onebot11", bot_id="123456", modules=["Chat", "Tool*"])
 scope.set_module("onebot11", blocked=["re:^Danger"])                       # Platform-level
 scope.set_module("onebot11", bot_id="123456", session_id="g9", modules=["Chat"])  # Session-level
 scope.set_module("onebot11", bot_id="123456", modules=["Music"], merge=True)      # Union with existing entries
-scope.set_module("onebot11", bot_id="123456", modules=["Chat"], persist=False)    # Runtime-only
+scope.set_module("onebot11", bot_id="123456", modules=["Chat"], persist=False)    # Runtime only
 
 # Read / Delete
 scope.get_module("onebot11", bot_id="123456")   # {"modules": ["Chat"], "blocked": []}
 scope.delete_module("onebot11", bot_id="123456")
 ```
 
-> `merge=True` is **write-time union** (merges with existing bindings at this level); cross-level merge during resolution is controlled by the `merge = true` configuration key described in [Binding Inheritance](#binding-inheritance-merge)—these are independent mechanisms.
+> `merge=True` is **write-time union** (merges entries with existing bindings at this level); `merge = true` configuration at parse time across levels is described in the previous section on [Binding Inheritance](#绑定继承merge)—these are independent mechanisms.
+
+> **Runtime binding (persist=False) semantics**: Runtime bindings are saved in a separate overlay layer, **not overwritten by any subsequent configuration writes or hot reloads of the configuration file** (the configuration tree is rebuilt and automatically reapplied in the order of writes, including runtime deletions). They are not persisted, lost on process restart; when a module is unloaded, runtime bindings written by that module are cleared by fallback. Subsequent `persist=True` writes (user-persistent semantics) to the same path will replace runtime rules.
 
 ### ② Identity Dimension
 
 ```python
-# Binding strategy (hierarchy determined by parameters: user > session > bot > adapter; allow / deny only)
+# Binding policies (hierarchy determined by parameters: user > session > Bot > adapter; allow / deny is binary)
 scope.set_identity("onebot11", user_id="u_bad", deny=True)
-scope.set_identity("onebot11", user_id="spam_*", deny=True)    # Keys support glob / re: regex
+scope.set_identity("onebot11", user_id="spam_*", deny=True)    # Key supports glob / re: regex
 scope.set_identity("onebot11", bot_id="123456", session_id="g9", allow=True)
 
 # Read / Delete
@@ -17546,9 +17640,9 @@ scope.delete_identity("onebot11", user_id="u_bad")
 ### ③ Outbound Dimension
 
 ```python
-# Set restriction rules (allow: str|list; deny: bool|str|list; complete rule replacement semantics)
+# Set restriction rules (allow: str|list; deny: bool|str|list; whole rule replacement semantics)
 scope.set_action("MyModule", "send", deny=True)                    # Disable all sending
-scope.set_action("MyModule", "send", allow=["Text"])               # Allow only text messages
+scope.set_action("MyModule", "send", allow=["Text"])               # Allow only text sending
 scope.set_action("MyModule", "api", deny=["set_*", "leave_*"])     # Disable management APIs
 
 # Read / Delete
@@ -17566,83 +17660,81 @@ scope.stats()
 # {"module_calls": .., "module_filtered": .., "identity_checks": .., "identity_denied": ..,
 #  "action_checks": .., "action_denied": .., "cache_hits": .., "cache_misses": ..}
 scope.reset_stats()
-scope.clear()           # Clear all configuration (memory-only)
+scope.clear()           # Clear all configurations (memory-only)
 ```
 
 ### Advanced: Dictionary-style Dot-Path Fallback
 
-Dimensional methods cover daily scenarios; when you need direct access to any node (or future added dimensions), use dictionary-style API—`get` / `set` / `delete` accepts dot-paths (deep dict merge, immediate read after write), and provides `scope[path]` / `scope[path] = v` / `del scope[path]` / `path in scope` protocol:
+Dimensional methods cover daily scenarios; when you need direct access to any node (or future added dimensions), use the dictionary-style API—`get` / `set` / `delete` accepts dot-path (deep dict merge, immediate read after write), and provides `scope[path]` / `scope[path] = v` / `del scope[path]` / `path in scope` protocols:
 
 ```python
 scope.set("bots.onebot11.123456", {"modules": ["Chat"], "blocked": []})
 scope.set("identity.users.onebot11.u_bad", {"deny": True})
 scope.get("actions.MyModule.send")
 
-scope["platforms.onebot11"]        # Read (throws KeyError if not exists)
+scope["platforms.onebot11"]        # Read (raises KeyError if not exists)
 scope["platforms.onebot11"] = {...}  # Write
 del scope["platforms.onebot11"]      # Delete
 "actions.MyModule" in scope          # Existence check
 ```
 
-## Caching and Hot Updates
+## Cache and Hot Reload
 
-- `is_allowed` / `is_identity_allowed` / `is_action_allowed` results are cached with **LRU caching** (configurable via `scope.cache_size`), and become invalid automatically on `set` / `delete` or configuration hot updates (`config.updated` / `config.set`)
+- `is_allowed` / `is_identity_allowed` / `is_action_allowed` results include **LRU cache** (`scope.cache_size` is adjustable), and `set` / `delete` / configuration hot reload (`config.updated` / `config.set`) automatically invalidate
 - All dimension configurations take effect **immediately**, no restart required
-- Scopes are evaluated "per event" and do not retain memory across events: if the configuration changes, the next event will be evaluated according to the new rules
+- Scope is "per-event" judgment, does not cross-event state: if configuration changes, the next event follows new rules
 
 ## Configuration Format Validation
 
-During loading or hot reloading, the configuration format is validated section by section: sections with incorrect types (e.g., `platforms` written as a string), invalid outbound rules (e.g., `allow` written as a number), unknown action names, and unknown top-level keys (e.g., `alow` with a typo) will output a **WARNING** and the corresponding section or entry will be ignored, while other valid configurations will still take effect—mistakes will no longer silently fail.
+Configuration format is validated per section during loading / hot reload: sections with type errors (e.g., `platforms` written as a string), invalid outbound rules (e.g., `allow` written as a number), unknown action names, or unknown top-level keys (e.g., `alow` with a typo) will output a **WARNING** and ignore the corresponding section / entry, while other valid configurations remain effective—mistakes no longer silently fail.
 
-## Frequently Asked Questions and Precautions
+## Common Issues and Considerations
 
 ### 1. Configuration Hierarchy and Overriding
 
-- Module level: Session level > Bot level > Platform level, **overall override** (when `merge = true` at sub-level, merge entries as a union).
-  To allow "Chat on platform, then Music on Bot", you can set `merge = true` at Bot level, or list both.
-- Identity level: User > Session > Bot > Adapter, take the **most specific** configured policy (exceptions can be allowed).
-- Command user allow/deny lists: Exact command name takes precedence over glob keys (see `event.command.acl`).
+- Module dimension: session-level > Bot-level > platform-level, **full override** (with `merge = true` at sub-levels, entries are merged step-by-step). To "platform allows Chat, Bot adds Music," set `merge = true` at Bot level, or list both at once
+- Identity dimension: user > session > Bot > adapter, taking the **most specific** configured policy (can be used for exceptional allowance)
+- Command user whitelist/blacklist: exact command name takes precedence over glob keys (see `event.command.acl`)
 
 ### 2. Module/Command Not Responding
 
-First suspect the scope rather than the module itself:
+First suspect scope rather than the module itself:
 
 ```python
 from ErisPulse import sdk
 
 print(sdk.scope.is_allowed(event.get_platform(), bot_id, "MyModule", session_id))
 print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, user_id))
-print(sdk.scope.stats())   # module_filtered / identity_denied > 0 indicates silent filtering
+print(sdk.scope.stats())   # If module_filtered / identity_denied > 0, it means it was silently filtered
 ```
 
-Filtering is **silent** (no reply at module and identity levels to avoid exposing rules), but statistics are accumulated;
-ACL rejection at command level will explicitly reply "insufficient permissions".
+Filtered is **silent** (module and identity dimensions do not reply, preventing rule exposure), but statistics accumulate; ACL-rejected command dimensions reply "permission denied" explicitly.
 
-### 3. Outbound Action Rejection Troubleshooting
+### 3. Outbound Action Denied When Troubleshooting
 
 ```python
 from ErisPulse import sdk
 
 print(sdk.scope.get("actions.MyModule"))
-print(sdk.scope.stats())   # action_denied > 0 indicates intercepted calls
+print(sdk.scope.stats())   # If action_denied > 0, some calls were blocked
 ```
 
-Interruption is **explicit**: rejected calls return a standard failure response with `retcode = 34601` (no network request initiated).
+Block is **explicit**: denied calls return the standard failure response (`retcode = 34601`, no network request initiated).
 
-### 4. Session Identifier Cross-Platform Isolation
+### 4. Session Identifier Isolation Across Platforms
 
-The combination `(platform, session_id)` is the unique identifier. `scope.sessions.onebot11."789"` only applies to onebot11, and does not affect a session with the same `789` on telegram. The same applies to user keys at the identity level.
+The `(platform, session_id)` combination is the unique identifier. `scope.sessions.onebot11."789"` only applies to onebot11, not affecting a session with the same `789` on Telegram. The same applies to identity dimension user keys.
 
 ## Topology Tree API
 
-`ModuleManager.get_topology()` and `AdapterManager.get_topology()` provide data about module/adapter ownership relationships. `sdk.get_topology()` provides a one-click aggregation (including scope `scope`):
+`ModuleManager.get_topology()` and `AdapterManager.get_topology()` provide module/adapter ownership relationship data, and `sdk.get_topology()` aggregates them (including scope):
 
 ```python
 from ErisPulse import sdk
 
 topology = sdk.get_topology()
 # {
-#   "modules": {                                   # Module → Owned resources
+#   "modules": {                                   # Module → owned resources
 #     "Chat": {
 #       "loaded": True, "enabled": True,
 #       "commands": ["chat", "translate"],
@@ -17651,14 +17743,14 @@ topology = sdk.get_topology()
 #       "lifecycle_hooks": 3,
 #     }
 #   },
-#   "adapters": {                                  # Adapter → Bot → Scope
+#   "adapters": {                                  # Adapter → Bot → scope
 #     "onebot11": {
 #       "status": "started", "enabled": True,
 #       "bots": {"123456": {"status": "online", "scope": {...}}},
 #       "scope": {"modules": [...], "blocked": [...]},
 #     }
 #   },
-#   "scope": {                                     # Scope (modules / identity / outbound actions)
+#   "scope": {                                     # Scope (module / identity / outbound actions)
 #     "platforms": {...}, "bots": {...}, "sessions": {...},
 #     "identity": {"adapters": {...}, "bots": {...}, "sessions": {...}, "users": {...}},
 #     "actions": {...},
@@ -17666,8 +17758,8 @@ topology = sdk.get_topology()
 # }
 ```
 
-- The module topology aggregates commands, event handlers, HTTP/WS/SSE routes, and lifecycle hooks registered by the module, which is helpful for drawing a module resource tree.
-- The adapter topology aggregates the status of each adapter, the status of its subordinate Bots, and the platform-level/Bot-level scope binding (at the module level).
+- Module topology aggregates commands, event handlers, HTTP/WS/SSE routes, and lifecycle hooks registered by the module, useful for drawing module resource trees.
+- Adapter topology aggregates status of each adapter, status of subordinate Bots, and platform-level/Bot-level scope bindings (module dimension).
 
 
 

@@ -57,8 +57,8 @@ init 命令
 
 生成完整的配置示例文本
 
-配置注释跟随 CLI 语言（缺失语言回退英文），
-文案键集中于 ``scaffold_text`` 的 ``cfg.*`` 键族维护。
+生成逻辑收归 ``ErisPulse.runtime.example_config``（框架运行与 CLI 共用：
+含自维护首行标记、静态框架段与已安装组件声明式段）。此处仅保留调用入口。
 
 - **adapter_list** (`list`): 适配器名称列表 (默认: None)
 **返回值** (`str`): 完整配置示例字符串

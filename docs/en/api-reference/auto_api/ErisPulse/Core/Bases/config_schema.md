@@ -16,17 +16,48 @@ ErisPulse 通用配置 Schema 模块
 > 2. 使用 BotAccountConfig 作为多账户配置基类
 > 3. 通过 field(metadata=...) 声明字段描述、控件类型等信息
 > 4. description 支持 i18n 多语言：{"i18n": "key.path", "default": "默认文本"}
-> 5. 使用 dataclass_to_toml_with_comments() 生成带注释的配置模板
-> 6. 使用 dict_to_dataclass() 从 TOML 字典填充 dataclass
-> 7. 使用 validate_config() 校验配置实例
-> 8. 使用 get_config_schema() 生成 WebUI JSON Schema（含 i18n 支持）
+> 5. 未声明 description 时自动从类 docstring 提取字段说明兜底（:ivar: 或 Attributes: 风格）
+> 6. 通过 field(metadata={"example": True}) 声明仅进 config.full.example 的示例字段（不自动落盘）
+> 7. 使用 dataclass_to_toml_with_comments() 生成带注释的配置模板
+> 8. 使用 dict_to_dataclass() 从 TOML 字典填充 dataclass
+> 9. 使用 validate_config() 校验配置实例
+> 10. 使用 get_config_schema() 生成 WebUI JSON Schema（含 i18n 支持）
 
 ---
 
 ## 函数列表
 
 
-### `_resolve_description_text(meta: Mapping | None)`
+### `get_field_docstrings(config_class: type)`
+
+从配置类 docstring 提取字段描述（description 兜底来源）
+
+支持两种常见风格（可混用，Google 段优先覆盖）：
+
+- reST::
+
+    '''适配器配置
+
+    :ivar token: API 访问令牌
+    :ivar mode: 运行模式
+    '''
+
+- Google::
+
+    '''适配器配置
+
+    Attributes:
+        token: API 访问令牌
+        mode: 运行模式
+    '''
+
+- **config_class** (`配置`): dataclass 类
+**返回值** (`dict`): {字段名: 描述文本}
+
+---
+
+
+### `_resolve_description_text(meta: Mapping | None, fallback: str = '')`
 
 从 metadata 提取人类可读的描述文本
 
@@ -35,20 +66,26 @@ description 可以是:
   - 普通字符串: "账户备注名称"
   - i18n 字典:   {"i18n": "module.field.desc", "default": "账户备注名称"}
 
+未声明（或为空）时回退到 docstring 提取的字段说明。
+
 - **meta** (`field.metadata`): 字典
+- **fallback** (`description`): 缺失/为空时的兜底文本（docstring 描述）
 **返回值**: 人类可读的描述字符串
 
 ---
 
 
-### `_resolve_description_schema(meta: Mapping | None)`
+### `_resolve_description_schema(meta: Mapping | None, fallback: str = '')`
 
 从 metadata 提取 schema 可用的描述信息
 
 - 普通字符串原样返回（WebUI 直接展示）
 - i18n 字典原样返回（WebUI 根据 language 查找翻译）
 
+未声明（或为空）时回退到 docstring 提取的字段说明。
+
 - **meta** (`field.metadata`): 字典
+- **fallback** (`description`): 缺失/为空时的兜底文本（docstring 描述）
 **返回值** (`字符串或`): i18n 描述字典
 
 ---
@@ -62,6 +99,22 @@ description 可以是:
 
 - **meta** (`field.metadata`): 字典
 **返回值** (`UI`): 元数据字典
+
+---
+
+
+### `_resolve_nested_dataclass(config_class: type, f)`
+
+解析字段类型，若为嵌套 dataclass 则返回该类型，否则返回 None
+
+支持直接类型注解与字符串注解（延迟求值 / ``from __future__ import
+annotations``）；字符串注解从类所在模块全局与类属性（含嵌套类声明）按名解析。
+
+- **config_class** (`外层配置`): dataclass 类（或其实例的类）
+- **f** (`dataclass`): Field 对象
+**返回值** (`嵌套`): dataclass 类型，非嵌套字段返回 None
+
+> **内部方法**
 
 ---
 
@@ -141,21 +194,29 @@ description 可以是:
 
 从 dataclass 类生成默认值字典
 
+``example`` 字段不落盘，故默认值字典同样排除；
+嵌套 dataclass 字段递归展开为普通字典。
+
 - **config_class** (`dataclass`): 类
 **返回值**: 默认值字典
 
 ---
 
 
-### `dataclass_to_toml_with_comments(config_class: type, existing_values: dict | None = None)`
+### `dataclass_to_toml_with_comments(config_class: type, existing_values: dict | None = None, include_example: bool = False, _prefix: str = '')`
 
 将 dataclass class 转为带注释的 TOML 文本
 
 用于首次写入配置文件时生成可读的配置模板。
-description 若为 i18n 字典，则使用其 default/fallback 文本。
+description 若为 i18n 字典，则使用其 default/fallback 文本；
+未声明 description 时自动回退到类 docstring 中的字段说明。
+嵌套 dataclass 字段渲染为 ``[子表]`` 节（递归，注释同样保留）。
 
 - **config_class** (`dataclass`): 类
-- **existing_values** (`已有的配置值（覆盖默认值）`): **返回值** (`TOML`): 文本字符串
+- **existing_values** (`已有的配置值（覆盖默认值）`): - **include_example**: 是否包含 ``example`` 字段（默认排除，
+    example 字段仅进 config.full.example，不写入 config.toml）
+- **_prefix** (`递归用：当前嵌套路径前缀（如`): ``"stalker_mode."``）
+**返回值** (`TOML`): 文本字符串
 
 ---
 
@@ -167,6 +228,7 @@ description 若为 i18n 字典，则使用其 default/fallback 文本。
 - 处理类型转换（str → int 等）
 - 忽略 dataclass 中不存在的字段
 - 使用 default/default_factory 填充缺失字段
+- 嵌套 dataclass 字段递归填充（dict → 嵌套实例）
 
 - **config_class** (`dataclass`): 类
 - **data** (`字典数据（通常来自`): TOML 解析）
@@ -215,12 +277,35 @@ description 若为 i18n 字典，则使用其 default/fallback 文本。
 ---
 
 
+### `_schema_fields(config_class: type)`
+
+递归生成配置类的字段 schema（嵌套 dataclass 字段以 ``fields`` 子树承载）
+
+- **config_class** (`dataclass`): 类
+**返回值** (`{字段名:`): 字段 schema} 字典
+
+> **内部方法**
+
+---
+
+
+### `_apply_ui_meta(field_schema: dict, ui_meta: dict)`
+
+> **内部方法** 将 UI 元数据合并进字段 schema
+
+---
+
+
 ### `get_config_schema(config_class: type)`
 
 从 dataclass 生成 WebUI 可用的 JSON Schema
 
 包含字段名、类型、描述（支持 i18n）、控件类型、分组、排序等。
-description 若为 i18n 字典则原样透传，WebUI 根据语言键查找翻译。
+description 若为 i18n 字典则原样透传，WebUI 根据语言键查找翻译；
+未声明 description 时自动回退到类 docstring 中的字段说明。
+``example`` 字段在 schema 中带 ``"example": true`` 标记（供面板自行决定展示策略）。
+嵌套 dataclass 字段以 ``"type": "table"`` + ``"fields"`` 子树承载，
+面板可渲染为嵌套分组而非整棵平铺。
 
 - **config_class** (`dataclass`): 类
 **返回值** (`schema`): 字典
@@ -267,11 +352,21 @@ description 若为 i18n 字典则原样透传，WebUI 根据语言键查找翻�
 
 解析单个值的 i18n 文本
 
-接受纯字符串（原样返回）或 i18n 字典（解析为当前语言文本）。
+- 纯字符串原样返回
+- i18n 字典 ``{"i18n": "key", "default": "文本"}`` 解析为当前语言文本
+- 仅含 ``default`` 的字典 ``{"default": "文本"}``（语言无关文本，
+  如动态生成的选项标签）解析为 default 文本
 
-- **value** (`原始值（str`): 或 {"i18n": ..., "default": ...}）
+- **value** (`原始值（str`): 或 i18n 字典 / default 兜底字典）
 - **i18n_mgr** (`I18nManager`): 实例
 **返回值**: 解析后的字符串
+
+---
+
+
+### `_resolve_fields_i18n(fields_dict: dict)`
+
+> **内部方法** 递归解析字段树中的 i18n 文本（含嵌套 dataclass 子树）
 
 ---
 
@@ -291,7 +386,7 @@ description 若为 i18n 字典则原样透传，WebUI 根据语言键查找翻�
 - ``placeholder``: 输入框占位符
 - ``group_labels``: 分组显示名（通过 ``_schema_meta["group_labels"]`` 声明）
 
-纯字符串值会被原样透传（向后兼容）。
+嵌套 dataclass 字段子树同步解析。纯字符串值会被原样透传（向后兼容）。
 
 - **config_class** (`dataclass`): 配置类
 - **resolve_i18n** (`是否将`): i18n 文本解析为当前语言
