@@ -68,6 +68,12 @@ class MyAdapter(BaseAdapter):
                 "ui": {"widget": "password", "group": "basic", "order": 3},
             },
         )
+        # example 字段：默认不写入 config.toml（不落盘），仅记录在 config.full.example
+        # 运行时走默认值，用户在示例文件中按需复制到 config.toml 后生效
+        request_timeout: int = field(
+            default=30,
+            metadata={"example": True, "min": 1, "max": 300},
+        )
 
     # 翻译键集合以嵌套类形式声明，框架自动识别 I18nClass 并注册到 i18n 系统
     # 这里集中声明 ConfigClass 中引用的 i18n 键（以及其他业务用到的键）的多语言译文

@@ -91,15 +91,15 @@
 
 | 严重性 | 数量 |
 |--------|------|
-| 🔴 严重 | 15 |
-| 🟡 中等 | 14 |
+| 🔴 严重 | 16 |
+| 🟡 中等 | 16 |
 | 🟢 轻微 | 2 |
-| **合计** | **31** |
+| **合计** | **34** |
 
 | 类型 | 数量 |
 |------|------|
 | 适配器 | 6 |
-| 配置系统 | 7 |
+| 配置系统 | 9 |
 | 事件系统 | 6 |
 | CLI | 3 |
 | 存储 | 3 |
@@ -878,3 +878,42 @@ _apply_rate_limit 解析 window=3600（100/hour）
 **严重性**: 🟡 中等
 
 **类型**: 事件系统 / 命令系统
+
+
+---
+
+### [BUG-034] 作用域 persist=False 运行时绑定被任意后续配置写入静默冲掉
+
+**问题**: `scope.set_module(..., persist=False)` 等运行时写入仅修改内存 `self._data`；但 scope 订阅了 `config.set` / `config.updated` 事件，任意一处代码写配置（如某模块加载时写自己的默认配置）都会触发 scope 从配置文件整体重建配置树，此前所有运行时绑定静默丢失（判定回退为默认放行），且无任何日志提示。依赖运行时绑定的场景（Dashboard"仅运行时"开关、模块运行期动态禁用）在无关模块写配置后行为回退。
+
+**原因**: 根因链路：`scope.set/delete(persist=False)` 仅写内存（`Core/scope.py`）→ 任意 `setConfig` 触发 `config.set` 事件 → `_on_config_updated` 无条件 `_load_config()` → `_apply_tree()` 以 `self._data = {...}` 整体替换 → 不在配置文件中的运行时绑定被丢弃。
+
+**影响版本**: 2.8.0-dev.1 - 2.8.0-dev.2
+**修复版本**: 2.8.0-dev.2
+**修复内容**: 引入运行时覆盖层 `_runtime_overrides`（含删除哨兵）：`persist=False` 写/删记录进覆盖层，`_apply_tree()` 重建持久层后按写入顺序重放，运行时规则在任意配置写入后保持有效；`persist=True` 写/删清除对应覆盖记录（用户持久化语义优先）；`config.set` 按事件 key 精确过滤、`config.updated` 对比新旧 scope 节，仅 scope 实际变化时才重建（附带避免无关写入冲刷判定 LRU 缓存）；新增 `unregister_by_owner()` 供模块卸载时随调用方兜底清理。`Core.Event.overrides` 的 persist=False 运行时覆写存在同类问题，同步以覆盖层架构修复。
+**修复日期**: 2026/09/09
+
+**复现步骤**: ① `scope.set_module("testplat", blocked=["TestB"], persist=False)` → 判定 False；② 任意模块执行 `config.setConfig("HelpModule", {...})` → 触发 scope 重建；③ `scope.is_allowed("testplat", None, "TestB")` 返回 True（预期仍为 False）。
+**关联**: Issue #432
+**回归测试**: `tests/unit/test_unit_scope.py::TestRuntimeOverrideSurvival`（无关写入存活/树重建重放/删除哨兵/持久化清除/精确失效/owner 清理）
+
+**严重性**: 🟡 中等
+**类型**: 配置系统 / 运行时
+
+---
+
+### [BUG-035] 配置面板 select 选项与字典字段渲染为 [object Object]
+
+**问题**: WebUI 配置面板中，select 字段的选项下拉显示 `[object Object]`（如动态生成的配色风格选项）；未声明控件类型的 dict 字段（如 `stalker_mode`、`knowledge_base` 等嵌套配置段）在文本框中显示 `[object Object]`，无法正常查看与编辑。
+
+**原因**: 两处独立缺陷：① 框架 i18n 解析器 `_resolve_i18n_text` 仅还原带 `i18n` 键的字典，选项标签为仅含 `default` 的字典（无 i18n 键的动态文本）时原样透传，前端 `esc(label)` 字符串强转得到 `[object Object]`；② Dashboard 渲染分支只对 array 类型做 JSON textarea，dict 值落入纯文本输入分支被 `String()` 强转。此外模块若将 `_schema_meta` 误声明为普通 dataclass 字段（缺 `ClassVar` 注解），会作为配置字段进入 schema 加剧混乱。
+
+**影响版本**: 2.7.0 - 2.8.0-dev.2
+**修复版本**: 2.8.0-dev.2
+**修复内容**: ① `_resolve_i18n_text` 支持仅含 `default` 的字典还原为文本；② 框架 schema/模板/默认值/填充/校验五处一律排除下划线前缀字段（误声明无害化）；③ Dashboard select 选项 label 对象兜底解析（`default` 优先）、dict/table 字段渲染为 JSON textarea（保存路径按 `tp=object` JSON.parse 回写，完整往返）。
+**修复日期**: 2026/09/09
+
+**回归测试**: `tests/unit/test_unit_config.py::TestResolveI18nDefaultOnlyDict`、`TestSchemaUnderscoreFieldExclusion`
+
+**严重性**: 🟡 中等
+**类型**: 配置系统

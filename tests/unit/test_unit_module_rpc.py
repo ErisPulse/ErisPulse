@@ -569,7 +569,6 @@ class _ReplayModule(BaseModule):
 
     async def on_load(self, event):
         from ErisPulse.Core.Event import message
-        from ErisPulse.runtime.context import current_owner
 
         mod = self
 

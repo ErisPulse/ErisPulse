@@ -11,7 +11,7 @@ import time
 from unittest.mock import patch
 
 import pytest
-import toml
+import tomlkit
 
 from ErisPulse.Core.config import ConfigManager
 
@@ -207,7 +207,7 @@ nested_key = "nested_value"
 
         # 从文件读取验证
         with open(config_manager.CONFIG_FILE, encoding='utf-8') as f:
-            config_data = toml.load(f)
+            config_data = tomlkit.parse(f.read()).unwrap()
         assert config_data["immediate"]["key"] == "immediate_value"
 
     def test_overwrite_existing_config(self, config_manager):
@@ -609,12 +609,12 @@ nested_key = "nested_value"
         # 2. 模拟外部修改：直接写文件并更新 mtime
         config_path = config_manager.CONFIG_FILE
         with open(config_path, encoding="utf-8") as f:
-            existing = toml.load(f)
+            existing = tomlkit.parse(f.read())
         existing.setdefault("external", {})["key"] = "external_value"
         # 确保 mtime 变化（等待文件系统时间粒度）
         time.sleep(0.1)
         with open(config_path, "w", encoding="utf-8") as f:
-            toml.dump(existing, f)
+            f.write(tomlkit.dumps(existing))
 
         # 3. _check_file_change 应检测到外部修改
         assert config_manager._check_file_change() is True
@@ -634,10 +634,10 @@ nested_key = "nested_value"
         config_path = config_manager.CONFIG_FILE
         time.sleep(0.1)
         with open(config_path, encoding="utf-8") as f:
-            existing = toml.load(f)
+            existing = tomlkit.parse(f.read())
         existing["base"]["key"] = "external_override"
         with open(config_path, "w", encoding="utf-8") as f:
-            toml.dump(existing, f)
+            f.write(tomlkit.dumps(existing))
 
         # 4. flush（应读取外部内容 + 应用脏键）
         config_manager.force_save()
@@ -1032,9 +1032,7 @@ level = "INFO"
         manager._load_config()
         manager.setConfig("other.key", "v", immediate=True)
 
-        import toml
-
-        final = toml.loads(cfg_file.read_text(encoding="utf-8"))
+        final = tomlkit.loads(cfg_file.read_text(encoding="utf-8")).unwrap()
         assert final["ErisPulse"]["modules"]["status"]["HotMod"] is False
         # 叶子脏键仍然生效（进程待写）
         assert final["ErisPulse"]["master"]["users"] == ["123"]
@@ -1055,18 +1053,32 @@ level = "INFO"
         manager._load_config()
         assert "ErisPulse.modules.status.HotMod" not in manager._dirty_keys
 
-    def test_get_erispulse_config_writes_only_missing_leaves(self, manager):
-        """get_erispulse_config 补全默认时只写缺失叶子，不写整棵"""
+    def test_get_erispulse_config_never_persists_defaults(self, manager):
+        """get_erispulse_config 默认值仅内存合并，不产生任何落盘脏键"""
         from ErisPulse.runtime.frame_config import get_erispulse_config
 
         with patch("ErisPulse.runtime.frame_config._get_config_service", return_value=manager):
-            get_erispulse_config()
+            merged = get_erispulse_config()
 
-        # 不应出现整棵 ErisPulse 脏键
-        assert "ErisPulse" not in manager._dirty_keys
-        # 应写入缺失的默认叶子（如 server.host），但保留用户 status
-        assert "ErisPulse.server.host" in manager._dirty_keys
-        assert "ErisPulse.modules.status" not in manager._dirty_keys
+        # 不产生任何脏键（默认值不落盘，config.toml 保持最小化）
+        assert manager._dirty_keys == {}
+        # 内存合并结果仍包含完整默认结构
+        assert "server" in merged
+        assert "framework" in merged
+        assert merged["server"]["port"] == 8000
+
+    def test_get_erispulse_config_user_keys_win(self, manager):
+        """用户显式设置的键优先于内置默认值，且不被覆盖回文件"""
+        from ErisPulse.runtime.frame_config import get_erispulse_config
+
+        manager._cache = {"ErisPulse": {"server": {"port": 9999}}}
+        with patch("ErisPulse.runtime.frame_config._get_config_service", return_value=manager):
+            merged = get_erispulse_config()
+
+        assert merged["server"]["port"] == 9999
+        # 缺失的兄弟键由默认值补齐（仅内存）
+        assert merged["server"]["host"] == "0.0.0.0"
+        assert manager._dirty_keys == {}
 
 
 class TestBasesReExport:
@@ -1110,6 +1122,615 @@ class TestBasesReExport:
         from ErisPulse import SDK, sdk
 
         assert SDK is type(sdk)
+
+
+class TestCommentPreservingWrites:
+    """注释保留写入测试（tomlkit 往返）
+
+    配置文件中的注释与键顺序在任何框架写入（setConfig/flush）后
+    均不丢失、不重排；新键追加到所在节末尾。
+    """
+
+    COMMENTED_TOML = '''# API 令牌说明
+# token = ""
+token = "abc"
+
+# 运行模式说明
+mode = "normal"
+
+[server]
+# 端口说明
+port = 8000
+host = "0.0.0.0"
+'''
+
+    @pytest.fixture
+    def manager(self, tmp_path):
+        cfg_file = tmp_path / "config.toml"
+        cfg_file.write_text(self.COMMENTED_TOML, encoding="utf-8")
+        mgr = ConfigManager(config_file=str(cfg_file))
+        yield mgr
+        if mgr._write_timer:
+            mgr._write_timer.cancel()
+        mgr._watcher_stop.set()
+
+    def _read_text(self, manager) -> str:
+        with open(manager.CONFIG_FILE, encoding="utf-8") as f:
+            return f.read()
+
+    def test_flush_preserves_comments(self, manager):
+        """flush 后文件注释原样保留（含被注释掉的键）"""
+        manager.setConfig("mode", "debug", immediate=True)
+
+        text = self._read_text(manager)
+        assert "# API 令牌说明" in text
+        assert '# token = ""' in text
+        assert "# 运行模式说明" in text
+        assert "# 端口说明" in text
+        assert 'mode = "debug"' in text
+        assert 'token = "abc"' in text
+
+    def test_flush_preserves_key_order(self, manager):
+        """flush 不按键重排，保持文件原有顺序"""
+        manager.setConfig("token", "xyz", immediate=True)
+        manager.setConfig("server.port", 9000, immediate=True)
+
+        text = self._read_text(manager)
+        token_pos = text.index('token = "xyz"')
+        mode_pos = text.index('mode = "normal"')
+        port_pos = text.index("port = 9000")
+        host_pos = text.index('host = "0.0.0.0"')
+        # 原文件顺序：token → mode、port → host
+        assert token_pos < mode_pos
+        assert port_pos < host_pos
+
+    def test_new_key_appended_to_section(self, manager):
+        """新键追加到目标节，不产生乱序/错位"""
+        manager.setConfig("server.new_key", "v", immediate=True)
+
+        text = self._read_text(manager)
+        # 仍在其节内（port/host 之后），且重解析语义正确
+        assert text.index("new_key") > text.index("port = 8000")
+        assert manager.getConfig("server.new_key") == "v"
+        assert manager.getConfig("server.port") == 8000
+
+    def test_nested_section_created_with_comments_intact(self, manager):
+        """写入全新嵌套节不影响既有注释"""
+        manager.setConfig("plugin.opt", {"a": 1}, immediate=True)
+
+        text = self._read_text(manager)
+        assert "# API 令牌说明" in text
+        assert "[plugin.opt]" in text
+        assert manager.getConfig("plugin.opt.a") == 1
+
+    def test_cache_matches_file_after_flush(self, manager):
+        """flush 后缓存与文件内容一致（plain dict，无 tomlkit 类型残留）"""
+        manager.setConfig("mode", "slow", immediate=True)
+
+        cached = manager._cache
+        assert type(cached) is dict
+        assert cached["mode"] == "slow"
+        assert cached["server"]["port"] == 8000
+
+    def test_malformed_file_keeps_dirty_keys(self, manager):
+        """文件损坏时 flush 失败不清空脏键，修复后可重写"""
+        manager.setConfig("mode", "changed")
+        with open(manager.CONFIG_FILE, "w", encoding="utf-8") as f:
+            f.write("bad toml [")
+        manager.force_save()
+        # 脏键保留
+        assert "mode" in manager._dirty_keys
+
+        # 用户修复文件后可正常写入
+        with open(manager.CONFIG_FILE, "w", encoding="utf-8") as f:
+            f.write(self.COMMENTED_TOML)
+        manager.force_save()
+        assert manager.getConfig("mode") == "changed"
+        assert "# 运行模式说明" in self._read_text(manager)
+
+    def test_set_config_template_preserves_rest(self, manager):
+        """setConfigTemplate 合并模板节，其余内容与注释不受影响"""
+        template = '''# 新节说明
+alpha = 1
+'''
+        manager.setConfigTemplate("adapter_new", template, immediate=True)
+
+        text = self._read_text(manager)
+        assert "# 新节说明" in text
+        assert "[adapter_new]" in text
+        assert "# API 令牌说明" in text
+        assert 'mode = "normal"' in text
+        assert manager.getConfig("adapter_new.alpha") == 1
+
+
+class TestDocstringDescriptionFallback:
+    """docstring 自动生成 description 兜底测试
+
+    未声明 metadata description 时，从类 docstring 的
+    reST ``:ivar 名: 说明`` 或 Google ``Attributes:`` 段提取字段说明。
+    """
+
+    def test_docstring_rest_style(self):
+        """reST :ivar: 风格提取字段说明"""
+        from dataclasses import dataclass, field
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig, get_field_docstrings
+
+        @dataclass
+        class RestConfig(BaseConfig):
+            """测试配置
+
+            :ivar token: API 访问令牌
+            :ivar mode: 运行模式
+            """
+
+            token: str = field(default="", metadata={"required": True})
+            mode: str = field(default="normal")
+            plain: str = field(default="x")
+
+        docs = get_field_docstrings(RestConfig)
+        assert docs["token"] == "API 访问令牌"
+        assert docs["mode"] == "运行模式"
+        assert "plain" not in docs
+
+    def test_docstring_google_style(self):
+        """Google Attributes: 段风格提取字段说明"""
+        from dataclasses import dataclass, field
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig, get_field_docstrings
+
+        @dataclass
+        class GoogleConfig(BaseConfig):
+            """测试配置
+
+            Attributes:
+                interval: 回收间隔秒数
+                enabled: 是否启用
+            """
+
+            interval: int = field(default=300)
+            enabled: bool = field(default=True)
+
+        docs = get_field_docstrings(GoogleConfig)
+        assert docs["interval"] == "回收间隔秒数"
+        assert docs["enabled"] == "是否启用"
+
+    def test_template_uses_docstring_comment(self):
+        """模板注释回退到 docstring 描述"""
+        from dataclasses import dataclass, field
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig, dataclass_to_toml_with_comments
+
+        @dataclass
+        class TplConfig(BaseConfig):
+            """配置
+
+            :ivar retry: 重试次数
+            """
+
+            retry: int = field(default=3)
+
+        text = dataclass_to_toml_with_comments(TplConfig)
+        assert "# 重试次数" in text
+        assert "retry = 3" in text
+
+    def test_schema_uses_docstring_description(self):
+        """schema description 回退到 docstring 描述"""
+        from dataclasses import dataclass, field
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig, get_config_schema
+
+        @dataclass
+        class SchemaConfig(BaseConfig):
+            """配置
+
+            Attributes:
+                timeout: 超时秒数
+            """
+
+            timeout: int = field(default=30)
+
+        schema = get_config_schema(SchemaConfig)
+        assert schema["fields"]["timeout"]["description"] == "超时秒数"
+
+    def test_metadata_description_overrides_docstring(self):
+        """显式 metadata description 优先于 docstring"""
+        from dataclasses import dataclass, field
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig, get_config_schema
+
+        @dataclass
+        class MixedConfig(BaseConfig):
+            """配置
+
+            :ivar name: docstring 描述
+            """
+
+            name: str = field(default="", metadata={"description": "显式描述"})
+
+        schema = get_config_schema(MixedConfig)
+        assert schema["fields"]["name"]["description"] == "显式描述"
+
+    def test_i18n_dict_description_overrides_docstring(self):
+        """i18n 字典 description 优先于 docstring"""
+        from dataclasses import dataclass, field
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig, get_config_schema
+
+        @dataclass
+        class I18nConfig(BaseConfig):
+            """配置
+
+            :ivar lang: docstring 描述
+            """
+
+            lang: str = field(
+                default="zh-CN",
+                metadata={"description": {"i18n": "test.lang.desc", "default": "语言"}},
+            )
+
+        schema = get_config_schema(I18nConfig)
+        assert schema["fields"]["lang"]["description"] == {
+            "i18n": "test.lang.desc",
+            "default": "语言",
+        }
+
+    def test_docstrings_cache_consistent(self):
+        """lru_cache 缓存下多次调用结果一致，空 docstring 返回空字典"""
+        from dataclasses import dataclass
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig, get_field_docstrings
+
+        @dataclass
+        class NoDocConfig(BaseConfig):
+            field_one: str = "a"
+
+        assert get_field_docstrings(NoDocConfig) == {}
+        assert get_field_docstrings(NoDocConfig) is get_field_docstrings(NoDocConfig)
+
+
+class TestExampleOnlyFields:
+    """``example`` 字段标志测试（不落盘、仅进 config.full.example）"""
+
+    def _make_config(self):
+        from dataclasses import dataclass, field
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig
+
+        @dataclass
+        class ExampleConfig(BaseConfig):
+            """配置
+
+            :ivar gc_interval: GC 间隔秒数
+            """
+
+            token: str = field(default="", metadata={"description": "令牌"})
+            gc_interval: int = field(
+                default=300,
+                metadata={"example": True, "ui": {"widget": "number"}},
+            )
+
+        return ExampleConfig
+
+    def test_template_excludes_example_by_default(self):
+        """模板默认排除 example 字段"""
+        from ErisPulse.Core.Bases.config_schema import dataclass_to_toml_with_comments
+
+        text = dataclass_to_toml_with_comments(self._make_config())
+        assert "gc_interval" not in text
+        assert 'token = ""' in text
+
+    def test_template_includes_example_when_requested(self):
+        """include_example=True 时模板包含 example 字段（full.example 渲染用）"""
+        from ErisPulse.Core.Bases.config_schema import dataclass_to_toml_with_comments
+
+        text = dataclass_to_toml_with_comments(self._make_config(), include_example=True)
+        assert "gc_interval = 300" in text
+        assert "# GC 间隔秒数" in text
+
+    def test_defaults_dict_excludes_example(self):
+        """默认值字典排除 example 字段"""
+        from ErisPulse.Core.Bases.config_schema import dataclass_to_defaults_dict
+
+        defaults = dataclass_to_defaults_dict(self._make_config())
+        assert "gc_interval" not in defaults
+        assert defaults["token"] == ""
+
+    def test_schema_marks_example_field(self):
+        """schema 保留 example 字段并带 example 标记（供面板/向导过滤）"""
+        from ErisPulse.Core.Bases.config_schema import get_config_schema
+
+        schema = get_config_schema(self._make_config())
+        assert schema["fields"]["gc_interval"]["example"] is True
+        assert schema["fields"]["gc_interval"]["description"] == "GC 间隔秒数"
+        assert "example" not in schema["fields"]["token"]
+
+
+class TestSchemaUnderscoreFieldExclusion:
+    """下划线前缀字段（如误声明为普通字段的 _schema_meta）不应进入任何用户可见输出"""
+
+    def _make_config(self):
+        from dataclasses import dataclass, field
+        from typing import ClassVar
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig
+
+        @dataclass
+        class MetaFieldConfig(BaseConfig):
+            """误将 _schema_meta 声明为普通字段（缺 ClassVar 注解）"""
+
+            token: str = field(default="", metadata={"description": "令牌"})
+            _schema_meta: dict = field(
+                default_factory=lambda: {"group_labels": {"basic": "基本"}}
+            )
+
+        @dataclass
+        class MetaClassVarConfig(BaseConfig):
+            """正确声明（ClassVar）"""
+
+            token: str = field(default="", metadata={"description": "令牌"})
+            _schema_meta: ClassVar[dict] = {"group_labels": {"basic": "基本"}}
+
+        return MetaFieldConfig, MetaClassVarConfig
+
+    def test_misdeclared_meta_excluded_from_schema(self):
+        from ErisPulse.Core.Bases.config_schema import get_config_schema
+
+        Misdeclared, _ = self._make_config()
+        schema = get_config_schema(Misdeclared)
+        assert "_schema_meta" not in schema["fields"]
+        assert set(schema["fields"]) == {"token"}
+
+    def test_misdeclared_meta_excluded_from_template_and_defaults(self):
+        from ErisPulse.Core.Bases.config_schema import (
+            dataclass_to_defaults_dict,
+            dataclass_to_toml_with_comments,
+        )
+
+        Misdeclared, _ = self._make_config()
+        assert "_schema_meta" not in dataclass_to_toml_with_comments(Misdeclared)
+        assert "_schema_meta" not in dataclass_to_defaults_dict(Misdeclared)
+
+    def test_misdeclared_meta_dict_to_dataclass_roundtrip(self):
+        """dict_to_dataclass 忽略下划线字段，实例构造不受影响"""
+        from ErisPulse.Core.Bases.config_schema import dict_to_dataclass
+
+        Misdeclared, _ = self._make_config()
+        instance = dict_to_dataclass(Misdeclared, {"token": "abc", "_schema_meta": {"x": 1}})
+        assert instance.token == "abc"
+        # 类级元数据仍可读取（走 dataclass 默认值）
+        assert instance._schema_meta == {"group_labels": {"basic": "基本"}}
+
+    def test_classvar_meta_not_a_field(self):
+        """正确声明（ClassVar）时 fields() 本就不包含 _schema_meta"""
+        from dataclasses import fields
+
+        _, Proper = self._make_config()
+        assert all(f.name != "_schema_meta" for f in fields(Proper))
+        # schema 仍能读取类级 meta
+        from ErisPulse.Core.Bases.config_schema import get_config_schema
+
+        schema = get_config_schema(Proper)
+        assert schema["meta"] == {"group_labels": {"basic": "基本"}}
+
+
+class TestResolveI18nDefaultOnlyDict:
+    """仅含 default 的字典（语言无关文本）应被 resolve_config_schema 还原为文本"""
+
+    def test_default_only_option_label_resolved(self):
+        """theme_options() 形态的 {"default": ...} label 不再透传为字典（[object Object] 根因）"""
+        from dataclasses import dataclass, field
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig, resolve_config_schema
+
+        @dataclass
+        class StyleConfig(BaseConfig):
+            style: str = field(
+                default="default",
+                metadata={
+                    "description": "配色风格",
+                    "ui": {
+                        "widget": "select",
+                        "options": [
+                            {"value": "default", "label": {"default": "默认"}},
+                            {"value": "moe", "label": {"default": "萌系"}},
+                        ],
+                    },
+                },
+            )
+
+        schema = resolve_config_schema(StyleConfig)
+        options = schema["fields"]["style"]["options"]
+        assert options[0]["label"] == "默认"
+        assert options[1]["label"] == "萌系"
+
+    def test_default_only_description_resolved(self):
+        from dataclasses import dataclass, field
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig, resolve_config_schema
+
+        @dataclass
+        class DescConfig(BaseConfig):
+            level: int = field(default=1, metadata={"description": {"default": "等级"}})
+
+        schema = resolve_config_schema(DescConfig)
+        assert schema["fields"]["level"]["description"] == "等级"
+
+    def test_i18n_dict_still_resolved_by_language(self):
+        """带 i18n 键的字典仍走翻译查找"""
+        from dataclasses import dataclass, field
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig, resolve_config_schema
+
+        @dataclass
+        class I18nConfig(BaseConfig):
+            theme: str = field(
+                default="auto",
+                metadata={
+                    "description": "主题",
+                    "ui": {
+                        "widget": "select",
+                        "options": [
+                            {
+                                "value": "auto",
+                                "label": {"i18n": "core.language.zh_cn", "default": "自动"},
+                            },
+                        ],
+                    },
+                },
+            )
+
+        schema = resolve_config_schema(I18nConfig)
+        label = schema["fields"]["theme"]["options"][0]["label"]
+        # i18n 键存在翻译则用翻译，否则回退 default——都应是字符串
+        assert isinstance(label, str)
+
+
+class TestNestedDataclassConfig:
+    """嵌套 dataclass 配置测试（schema 子树 / 模板子表 / 递归填充与校验）"""
+
+    def _make_config(self):
+        from dataclasses import dataclass, field
+        from typing import ClassVar
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig
+
+        @dataclass
+        class NightConfig(BaseConfig):
+            begin: int = 23
+            end: int = 7
+
+        @dataclass
+        class StalkerModeConfig(BaseConfig):
+            """窥屏模式
+
+            :ivar enabled: 是否启用
+            :ivar probability: 触发概率
+            """
+
+            enabled: bool = True
+            probability: float = field(default=0.03, metadata={"min": 0, "max": 1})
+            night: NightConfig = field(default_factory=NightConfig)
+
+        @dataclass
+        class MainConfig(BaseConfig):
+            """主配置"""
+
+            name: str = "demo"
+            stalker: StalkerModeConfig = field(default_factory=StalkerModeConfig)
+            _schema_meta: ClassVar[dict] = {"group_labels": {"g": "分组"}}
+
+        @dataclass
+        class StringAnnConfig(BaseConfig):
+            """字符串注解 + 类属性链解析"""
+
+            sub: "AttachedSub" = field(default_factory=lambda: AttachedSub())
+
+        @dataclass
+        class AttachedSub(BaseConfig):
+            ok: bool = True
+
+        # 模拟"子配置类与 ConfigClass 同级声明在外层类中"：附加为类属性
+        StringAnnConfig.AttachedSub = AttachedSub
+
+        return MainConfig, StalkerModeConfig, NightConfig, StringAnnConfig
+
+    def test_schema_nested_subtree(self):
+        """嵌套字段生成 type=table + fields 子树（含二级嵌套）"""
+        from ErisPulse.Core.Bases.config_schema import get_config_schema
+
+        MainConfig, _, _, _ = self._make_config()
+        schema = get_config_schema(MainConfig)
+
+        stalker = schema["fields"]["stalker"]
+        assert stalker["type"] == "table"
+        assert set(stalker["fields"].keys()) == {"enabled", "probability", "night"}
+        assert stalker["fields"]["night"]["fields"]["begin"]["type"] == "integer"
+        # 嵌套字段 docstring 描述兜底
+        assert stalker["fields"]["enabled"]["description"] == "是否启用"
+        # 顶层 groups 不含嵌套子树的组
+        assert schema["groups"] == []
+
+    def test_string_annotation_via_class_attr_chain(self):
+        """字符串注解从类属性链解析（子配置类附加为类属性/同级声明场景）"""
+        from ErisPulse.Core.Bases.config_schema import get_config_schema
+
+        _, _, _, StringAnnConfig = self._make_config()
+        schema = get_config_schema(StringAnnConfig)
+        sub = schema["fields"]["sub"]
+        assert sub["type"] == "table"
+        assert sub["fields"]["ok"]["type"] == "boolean"
+
+    def test_template_nested_sections(self):
+        """嵌套字段渲染为 [子表] 节，注释保留"""
+        from ErisPulse.Core.Bases.config_schema import dataclass_to_toml_with_comments
+
+        MainConfig, _, _, _ = self._make_config()
+        text = dataclass_to_toml_with_comments(MainConfig)
+        assert "[stalker]" in text
+        assert "[stalker.night]" in text
+        assert "enabled = true" in text
+        assert "begin = 23" in text
+        assert "name = \"demo\"" in text
+        # 子表必须在顶层键之后（TOML 语义正确性）
+        assert text.index("name =") < text.index("[stalker]")
+
+    def test_defaults_dict_nested_expanded(self):
+        """默认值字典递归展开为普通 dict"""
+        from ErisPulse.Core.Bases.config_schema import dataclass_to_defaults_dict
+
+        MainConfig, _, _, _ = self._make_config()
+        defaults = dataclass_to_defaults_dict(MainConfig)
+        assert defaults["stalker"]["enabled"] is True
+        assert defaults["stalker"]["night"]["begin"] == 23
+
+    def test_dict_to_dataclass_nested_roundtrip(self):
+        """dict → 嵌套 dataclass 实例递归填充"""
+        from ErisPulse.Core.Bases.config_schema import dict_to_dataclass
+
+        MainConfig, StalkerModeConfig, NightConfig, _ = self._make_config()
+        instance = dict_to_dataclass(
+            MainConfig,
+            {"name": "x", "stalker": {"enabled": False, "night": {"begin": 1}}},
+        )
+        assert isinstance(instance.stalker, StalkerModeConfig)
+        assert isinstance(instance.stalker.night, NightConfig)
+        assert instance.stalker.enabled is False
+        assert instance.stalker.night.begin == 1
+        # 缺失的嵌套子键走默认值
+        assert instance.stalker.night.end == 7
+
+    def test_validate_config_nested_errors_prefixed(self):
+        """嵌套实例校验：错误信息带字段路径前缀"""
+        from ErisPulse.Core.Bases.config_schema import dict_to_dataclass, validate_config
+
+        MainConfig, _, _, _ = self._make_config()
+        instance = dict_to_dataclass(
+            MainConfig,
+            {"stalker": {"probability": 5}},  # 超出 max=1
+        )
+        errors = validate_config(instance)
+        assert any("stalker" in e for e in errors)
+
+    def test_resolve_config_schema_nested_i18n(self):
+        """嵌套子树内的 description/options 同步解析"""
+        from dataclasses import dataclass, field
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig, resolve_config_schema
+
+        @dataclass
+        class SubConfig(BaseConfig):
+            flag: bool = field(
+                default=True,
+                metadata={"description": {"default": "子开关"}},
+            )
+
+        @dataclass
+        class RootConfig(BaseConfig):
+            sub: SubConfig = field(default_factory=SubConfig)
+
+        schema = resolve_config_schema(RootConfig)
+        assert schema["fields"]["sub"]["fields"]["flag"]["description"] == "子开关"
 
 
 

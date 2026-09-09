@@ -68,6 +68,7 @@ acl    allow / deny      命令用户黑白名单（command 专属，按命令�
 """
 
 import copy
+from typing import Any
 
 from ...runtime.context import current_owner
 from ...runtime.frame_config import set_erispulse_section
@@ -98,6 +99,15 @@ _acl_default_allow: bool = True
 # 在模块卸载时随 owner 兜底清理（unregister_by_owner）
 _runtime_owner_records: dict[str, str] = {}
 
+# 运行时删除哨兵：persist=False 的移除在覆盖层中记录为删除标记，
+# 配置重载（_apply）后重放时仍能保持"已移除"语义
+_RUNTIME_DELETED = object()
+
+# 运行时覆盖层：路径（"type:module" / "command:owner[.cmd]" / "acl:cmd"）→
+# 参数字典 / 删除哨兵。配置重载整体重建内存态后按写入顺序重放，
+# 保证任意无关配置写入不会冲掉运行时覆写（与 Core.scope 同架构）
+_runtime_overrides: dict[str, Any] = {}
+
 
 def _record_runtime_owner(path: str, persist: bool) -> None:
     """{!--< internal-use >!--} 记录（persist=False）或清除（persist=True）路径的调用方归属"""
@@ -107,6 +117,57 @@ def _record_runtime_owner(path: str, persist: bool) -> None:
     owner = current_owner.get()
     if owner is not None:
         _runtime_owner_records[path] = owner
+
+
+def _set_runtime_override(path: str, value) -> None:
+    """{!--< internal-use >!--} 记录运行时覆写（value 为参数字典或删除哨兵）"""
+    _runtime_overrides[path] = copy.deepcopy(value) if value is not _RUNTIME_DELETED else value
+
+
+def _clear_runtime_override(prefix: str) -> None:
+    """{!--< internal-use >!--} 清除某路径及其子路径的运行时覆写记录（持久化语义优先）"""
+    prefix_dot = f"{prefix}."
+    for known in [p for p in _runtime_overrides if p == prefix or p.startswith(prefix_dot)]:
+        _runtime_overrides.pop(known, None)
+
+
+def _replay_runtime() -> None:
+    """{!--< internal-use >!--} 配置重载后按写入顺序重放运行时覆写到内存态"""
+    for path, value in _runtime_overrides.items():
+        kind, _, rest = path.partition(":")
+        if kind in _TYPE_SPECS:
+            section = _sections.setdefault(kind, {})
+            if value is _RUNTIME_DELETED:
+                section.pop(rest, None)
+            else:
+                section[rest] = copy.deepcopy(value)
+        elif kind == "command":
+            owner, _, cmd = rest.partition(".")
+            if value is _RUNTIME_DELETED:
+                if cmd:
+                    entry = _command.get(owner)
+                    if isinstance(entry, dict):
+                        entry.pop(cmd, None)
+                        if not entry:
+                            _command.pop(owner, None)
+                else:
+                    _command.pop(owner, None)
+                continue
+            if cmd:
+                # 命令级：整体替换该命令子表
+                base = dict(_command.get(owner)) if isinstance(_command.get(owner), dict) else {}
+                base[cmd] = copy.deepcopy(value)
+                _command[owner] = base
+            else:
+                # 模块级标量：替换标量参数，保留命令级子表
+                entry = _command.get(owner) if isinstance(_command.get(owner), dict) else {}
+                subs = {k: v for k, v in entry.items() if isinstance(v, dict)}
+                _command[owner] = {**copy.deepcopy(value), **subs}
+        elif kind == _ACL_SECTION:
+            if value is _RUNTIME_DELETED:
+                _acl.pop(rest, None)
+            else:
+                _acl[rest] = copy.deepcopy(value)
 
 # 配置校验告警去重（同一路径同一问题只告警一次）
 _warned: set[str] = set()
@@ -229,6 +290,8 @@ def _apply(tree: dict) -> None:
     _command = new_command
     _acl = new_acl
     _acl_default_allow = new_default
+    # 重放运行时覆写（persist=False 的写入在任意配置重载后保持有效，Issue #432 同源问题）
+    _replay_runtime()
 
 
 def _reload(_data: dict | None = None) -> None:
@@ -373,9 +436,16 @@ class _TypeNamespace:
         else:
             section.pop(module, None)
         _sections[self.type_name] = section
+        path = f"{self.type_name}:{module}"
         if persist:
+            # 先清运行时记录再持久化：_persist_section 内部同步触发的
+            # config.set → _apply → 重放，若记录尚在会把旧值盖回持久值
+            _clear_runtime_override(path)
             _persist_section(self.type_name, section)
-        _record_runtime_owner(f"{self.type_name}:{module}", persist)
+        else:
+            # 空参数 = 移除覆写：记录删除标记，重载后重放
+            _set_runtime_override(path, cleaned or _RUNTIME_DELETED)
+        _record_runtime_owner(path, persist)
 
     def get(self, module: str, default=None):
         """
@@ -401,9 +471,13 @@ class _TypeNamespace:
             return False
         section.pop(module, None)
         _sections[self.type_name] = section
+        path = f"{self.type_name}:{module}"
         if persist:
+            _clear_runtime_override(path)
             _persist_section(self.type_name, section)
-        _runtime_owner_records.pop(f"{self.type_name}:{module}", None)
+        else:
+            _set_runtime_override(path, _RUNTIME_DELETED)
+        _runtime_owner_records.pop(path, None)
         return True
 
 
@@ -455,9 +529,13 @@ class _CommandNamespace:
             _command[owner] = entry
         else:
             _command.pop(owner, None)
-        if persist:
-            _persist_section("command", copy.deepcopy(_command))
         path = f"command:{owner}.{command_name}" if command_name else f"command:{owner}"
+        if persist:
+            # 先清运行时记录再持久化（同步热更新会重放覆盖层，见 _TypeNamespace.set）
+            _clear_runtime_override(path)
+            _persist_section("command", copy.deepcopy(_command))
+        else:
+            _set_runtime_override(path, cleaned or _RUNTIME_DELETED)
         _record_runtime_owner(path, persist)
 
     def get(self, owner: str, command_name: str | None = None, default=None) -> dict:
@@ -518,12 +596,15 @@ class _CommandNamespace:
                 _command.pop(owner, None)
         else:
             _command.pop(owner, None)
-        if persist:
-            _persist_section("command", copy.deepcopy(_command))
         path = f"command:{owner}.{command_name}" if command_name else f"command:{owner}"
+        if persist:
+            # 先清运行时记录再持久化（同步热更新会重放覆盖层）
+            _clear_runtime_override(path)
+            _persist_section("command", copy.deepcopy(_command))
+        else:
+            _set_runtime_override(path, _RUNTIME_DELETED)
         _runtime_owner_records.pop(path, None)
         return True
-
 
 class _AclNamespace:
     """
@@ -568,9 +649,15 @@ class _AclNamespace:
             acl.pop(command_name, None)
         _acl.clear()
         _acl.update(acl)
+        path = f"{_ACL_SECTION}:{command_name}"
         if persist:
+            # 先清运行时记录再持久化（同步热更新会重放覆盖层）
+            _clear_runtime_override(path)
             _persist_section(_ACL_SECTION, copy.deepcopy(_acl))
-        _record_runtime_owner(f"{_ACL_SECTION}:{command_name}", persist)
+        else:
+            # 空名单 = 移除：记录删除标记，重载后重放
+            _set_runtime_override(path, entry or _RUNTIME_DELETED)
+        _record_runtime_owner(path, persist)
 
     def match(self, command_name: str) -> dict | None:
         """
@@ -615,6 +702,10 @@ class _AclNamespace:
             if text_match.compile_entry_matcher(str(key))(command_name):
                 _acl.pop(key, None)
                 removed = True
+                if persist:
+                    _clear_runtime_override(f"{_ACL_SECTION}:{key}")
+                else:
+                    _set_runtime_override(f"{_ACL_SECTION}:{key}", _RUNTIME_DELETED)
         if removed and persist:
             _persist_section(_ACL_SECTION, copy.deepcopy(_acl))
         return removed
@@ -678,6 +769,8 @@ def unregister_by_owner(caller: str) -> int:
     removed = 0
     for path in paths:
         _runtime_owner_records.pop(path, None)
+        # 同步移除运行时覆盖记录，避免配置重载重放时"复活"已清理的覆写
+        _runtime_overrides.pop(path, None)
         kind, _, rest = path.partition(":")
         if kind in _TYPE_SPECS:
             if _sections.get(kind, {}).pop(rest, None) is not None:

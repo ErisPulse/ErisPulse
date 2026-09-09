@@ -293,16 +293,15 @@ class BaseModule(ABC):
 
         if self.ConfigClass is None:
             return
-        from .config_schema import (
-            dataclass_to_defaults_dict,
-        )
+        from .config_schema import dataclass_to_toml_with_comments
 
         key = self._get_config_key()
         data = config_mgr.getConfig(key)
 
         if data is None:
-            data = dataclass_to_defaults_dict(self.ConfigClass)
-            config_mgr.setConfig(key, data, immediate=True)
+            # 模板以带注释文本直接落盘（注释保留写入），字段描述对用户可见
+            toml_str = dataclass_to_toml_with_comments(self.ConfigClass)
+            config_mgr.setConfigTemplate(key, toml_str, immediate=True)
             # 懒加载 logger（模块可能未注入 sdk）
             try:
                 logger.info(i18n.t("core.module.config_template_generated", key=key))

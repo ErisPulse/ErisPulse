@@ -1959,3 +1959,66 @@ class TestEventSendChainAndModifiers:
         types = [seg["type"] for seg in params["message"]]
         assert "mention" in types
         assert "text" in types
+
+
+class TestDispatchOwnerAttribution:
+    """事件分发 owner 归属测试（懒加载 activate_on 触发慢日志 owner=<unknown> 修复）"""
+
+    @pytest.mark.asyncio
+    async def test_dispatch_platform_owner_context(self):
+        """分发期无归属处理器的 current_owner 兜底为平台名，分发结束恢复"""
+        from ErisPulse.runtime.context import current_owner
+
+        seen = {}
+
+        async def probe(event):
+            seen["owner"] = current_owner.get()
+
+        handler = BaseEventHandler("message")
+        handler.register(probe, priority=1)
+        event = Event({"type": "message", "platform": "sandbox", "self": {"user_id": "bot1"}, "user_id": "u1"})
+        await handler._process_event(event)
+
+        assert seen["owner"] == "sandbox"
+        assert current_owner.get() is None
+
+    @pytest.mark.asyncio
+    async def test_slow_log_owner_prefers_command_owner(self):
+        """无注册 owner 的命令分发处理器执行命令后，慢日志归因到命令所属模块
+
+        对应懒加载场景：activate_on 占位命令首令激活，激活耗时主体是目标模块
+        """
+        async def dispatcher(event):
+            event["command"] = {"name": "help", "owner": "HelpNext"}
+            await asyncio.sleep(0.03)
+
+        handler = BaseEventHandler("message")
+        handler.register(dispatcher, priority=1)
+        event = Event({"type": "message", "platform": "sandbox", "self": {"user_id": "bot1"}, "user_id": "u1"})
+        with patch("ErisPulse.Core.Event.base.HANDLER_SLOW_THRESHOLD_SECS", 0.001):
+            with patch("ErisPulse.Core.Event.base.logger") as mock_logger:
+                await handler._process_event(event)
+
+        warnings = [str(c.args[0]) for c in mock_logger.warning.call_args_list]
+        assert any("owner=HelpNext" in w for w in warnings)
+        assert not any("owner=<unknown>" in w for w in warnings)
+
+    @pytest.mark.asyncio
+    async def test_registered_owner_wins_over_command_owner(self):
+        """注册 owner 优先于命令 owner（模块自身处理器慢日志归属自己）"""
+        from ErisPulse.runtime.context import owner_scope
+
+        async def module_handler(event):
+            event["command"] = {"name": "x", "owner": "OtherModule"}
+            await asyncio.sleep(0.03)
+
+        handler = BaseEventHandler("message")
+        with owner_scope("MyModule"):
+            handler.register(module_handler, priority=1)
+        event = Event({"type": "message", "platform": "sandbox", "self": {"user_id": "bot1"}, "user_id": "u1"})
+        with patch("ErisPulse.Core.Event.base.HANDLER_SLOW_THRESHOLD_SECS", 0.001):
+            with patch("ErisPulse.Core.Event.base.logger") as mock_logger:
+                await handler._process_event(event)
+
+        warnings = [str(c.args[0]) for c in mock_logger.warning.call_args_list]
+        assert any("owner=MyModule" in w for w in warnings)
