@@ -2437,9 +2437,15 @@ class MyModule(BaseModule):
 
 `BaseConfig` 是通用配置基類，適用於適配器、模組、外部專案等任何場景。配置欄位支援 i18n 多語言描述（詳見 [i18n 文檔](../../advanced/i18n.md#配置欄位多語言)）。
 
+配置 Schema 系統還支援（v2.8.0+，詳見 [適配器 core-concepts](../adapters/core-concepts.md#metadata-約定)）：
+
+- **docstring 自動生成欄位描述**：未聲明 metadata `description` 時，自動從 docstring 的 `:ivar 欄位: 說明` 或 `Attributes:` 段提取兜底
+- **嵌套 dataclass 配置**：欄位類型為嵌套 dataclass 時，schema/模板/校驗遞迴處理，WebUI 渲染為嵌套分組
+- **`example` 不落盤欄位**：`metadata={"example": True}` 的欄位不寫入 config.toml，僅記錄在 `config.full.example`（適合繁雜又很少觸碰的高級配置項目），使用者手動設定後正常持久化
+
 ### 聲明式翻譯鍵（v2.7.0+）
 
-從 v2.7.0 起，模組也可以像聲明 `ConfigClass` 一樣，透過嵌套類 `I18nClass` 集中聲明翻譯鍵。框架會在載入時**自動註冊**所有聲明的翻譯鍵，無需手動呼叫 `i18n.register()`，且註冊時機早於配置範本生成，確保配置描述中引用的 i18n 鍵已可用。
+從 v2.7.0 起，模組還可以像聲明 `ConfigClass` 一樣，透過嵌套類 `I18nClass` 集中聲明翻譯鍵。框架會在載入時**自動註冊**所有聲明的翻譯鍵，無需手動呼叫 `i18n.register()`，且註冊時機早於配置模板生成，確保配置描述中引用的 i18n 鍵已可用。
 
 ```python
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
@@ -9587,72 +9593,74 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 
 # 作用域（scope）
 
-> [!NOTE]  
+> [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-作用域回答四個問題：**哪些模組可用、誰的事件收不收、某模組處理什麼文字、  
-模組能向外做什麼**。  
-控制權完全交給使用者：在模組 / 適配器 / 處理器 / 出站呼叫註冊的**上層**（配置  
-`ErisPulse.scope` 或執行時 `sdk.scope`）統一宣告，事件管線在入口、處理器過濾  
+作用域回答四個問題：**哪些模組可用、誰的事件收不收、某模組處理什麼文字、
+模組能向外做什麼**。
+控制權完全交給使用者：在模組 / 適配器 / 處理器 / 出站呼叫註冊的**上層**（配置
+`ErisPulse.scope` 或執行時 `sdk.scope`）統一聲明，事件管線在入口、處理器篩選
 與出站閘口自動讀取並執行。
 
 | 維度 | 控制什麼 | 拒絕行為 | 配置路徑 |
 |------|---------|---------|---------|
 | **① 模組** | 哪些模組可用（平台 / Bot / 會話三級） | 靜默忽略（不回覆、不認領） | `scope.platforms / bots / sessions` |
 | **② 身份** | 事件收不收（適配器 / Bot / 會話 / 用戶四級） | 入口完全丟棄（靜默） | `scope.identity.*` |
-| **③ 出站** | 模組能發起哪些出站呼叫（訊息 / API / 請求，方法級白名單與黑名單） | 失敗回應（`retcode=34601`） | `scope.actions` |
+| **③ 出站** | 模組能發起哪些出站呼叫（訊息 / API / 請求，方法級白名單/黑名單） | 失敗回應（`retcode=34601`） | `scope.actions` |
 
-> **相關系統**：命令是特殊的訊息事件處理器，其用戶黑白名單（ACL）與  
-> 實現參數覆寫由命令系統自持（`ErisPulse.event.command`），  
-> 請參見 [事件處理入門](../getting-started/event-handling.md) 與 [配置指南](../user-guide/configuration.md)。
+> **相關系統**：命令是特殊的訊息事件處理器，其用戶黑白名單（ACL）與
+> 實現參數覆寫由命令系統自持（`ErisPulse.event.command`），
+> 見 [事件處理入門](../getting-started/event-handling.md) 與 [配置指南](../user-guide/configuration.md)。
 
 {!--< tips >!--}
 1. 透過 `from ErisPulse.Core import scope` 導入單例（`sdk.scope` 同物件）
-2. 判定：`scope.is_allowed(...)` / `scope.is_identity_allowed(...)` /  
+2. 判定：`scope.is_allowed(...)` / `scope.is_identity_allowed(...)` /
    `scope.is_action_allowed(...)` 對應 ①②③ 三個閘口
-3. 讀寫：維度化參數方法（IDE 可補全）——  
-   `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`；  
+3. 讀寫：維度化參數方法（IDE 可補全）——
+   `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`；
    另有字典式兜底 `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
-4. 事件處理器文字條件覆寫請參見  
-   [事件處理入門 · 事件覆寫](../getting-started/event-handling.md#事件覆寫不改模組代碼覆寫任意事件類型的行為)；  
-   命令 ACL / 參數覆寫請參見 [事件處理入門](../getting-started/event-handling.md)
+4. 事件處理器文字條件覆寫見
+   [事件處理入門 · 事件覆寫](../getting-started/event-handling.md#事件覆寫不改模組代碼覆寫任意事件類型的行為)；
+   命令 ACL / 參數覆寫見[事件處理入門](../getting-started/event-handling.md)
 {!--< /tips >!--}
 
 ## 匹配條目語法（全系統統一）
 
-作用域所有「名稱列表」（模組名、身份鍵、出站條目）共用同一套匹配語法（`ErisPulse.Core.text_match`）：
+作用域所有"名字列表"（模組名、身份鍵、出站條目）共用同一套匹配語法
+（`ErisPulse.Core.text_match`）：
 
-| 語法 | 範例 | 說明 |
+| 語法 | 示例 | 說明 |
 |------|------|------|
-| 精確名 | `"Chat"` | 完全值比較，**大小寫不敏感** |
-| glob | `"Tool*"`、`"spam_*"` | `*` 任意字串 / `?` 單一字符 / `[seq]` 字符集，大小寫不敏感 |
-| 正則 | `"re:^Danger.*"` | 以 `re:` 前綴宣告，正則 `search` 匹配，預設大小寫不敏感 |
+| 精確名 | `"Chat"` | 全值比較，**大小寫不敏感** |
+| glob | `"Tool*"`、`"spam_*"` | `*` 任意串 / `?` 單字符 / `[seq]` 字符集，大小寫不敏感 |
+| 正則 | `"re:^Danger.*"` | 以 `re:` 前綴聲明，正則 `search` 匹配，默认大小寫不敏感 |
 
-- 非法正則**靜默降級**為「不匹配」（不拋錯、不崩潰）
-- 裝飾器參數（`pattern=` / `regex=`）為固定語義：`pattern` 是 glob、`regex` 是正則源碼（不加 `re:` 前綴）；作用域配置裡的正則條目**必須**帶 `re:` 前綴
+- 非法正則**靜默降級**為"不匹配"（不拋錯、不崩潰）
+- 裝飾器參數（`pattern=` / `regex=`）為固定語義：`pattern` 是 glob、`regex` 是正則源碼
+  （不加 `re:` 前綴）；作用域配置裡的正則條目**必須**帶 `re:` 前綴
 
 ## 全局兜底：`default_allow`
 
-`default_allow` 是**全局唯一**的兜底開關（預設為 `true`），  
+`default_allow` 是**全局唯一**的兜底開關（預設 `true`），
 對兩個判定維度統一生效：
 
-- **模組維度**：未命中任何綁定 → `default_allow` 決定放行 / 拒絕  
-- **身份維度**：未命中任何策略 → `default_allow` 決定放行 / 拒絕  
+- **模組維度**：未命中任何綁定 → `default_allow` 決定放行 / 拒絕
+- **身份維度**：未命中任何策略 → `default_allow` 決定放行 / 拒絕
 
-設為 `false` 即開啟「隱式拒絕」嚴格模式：白名單式管理，  
-**未明確允許的一律拒絕**。
+設為 `false` 即開啟"隱式拒絕"嚴格模式：白名單式管理，
+**沒顯式允許的一律拒絕**。
 
-> **例外**：③ 出站維度**不受** `default_allow` 影響——它是獨立的收緊開關，  
-> 預設全允許，僅顯式規則才限制（框架層 owner 為空的呼叫恆放行）。  
-> 這樣嚴格的全局模式不會意外掐斷所有模組的消息回覆。  
+> **例外**：③ 出站維度**不受** `default_allow` 影響——它是獨立的收緊開關，
+> 預設全允許，僅顯式規則才限制（框架層 owner 為空的呼叫恆放行）。
+> 這樣嚴格的全局模式不會意外掐斷所有模組的訊息回覆。
 > 命令 ACL 有獨立的 `ErisPulse.event.command.default_allow` 兜底，互不影響。
 
-## 配置文件
+## 配置檔案
 
 ```toml
 [ErisPulse.scope]
 default_allow = true        # 全局兜底（false = 隱式拒絕嚴格模式）
-cache_size = 1024           # LRU 緩存大小
+cache_size = 1024           # LRU 缓存大小
 
 # ── ① 模組維度（優先級：會話 > Bot > 平台）──
 [ErisPulse.scope.platforms.onebot11]
@@ -9684,7 +9692,8 @@ request = { deny = true }                                 # 禁止處理請求
 
 ## ① 模組維度
 
-回答「在某個上下文裡，哪些模組可用」。預設全部開放；設定綁定後才開始過濾，**模組與適配器無需任何變動**。
+回答"某個上下文裡，哪些模組可用"。預設全部開放；配置綁定後才開始篩選，
+**模組與適配器無需任何改動**。
 
 ```mermaid
 flowchart TD
@@ -9698,14 +9707,14 @@ flowchart TD
 - **解析優先級：會話級 > Bot 級 > 平台級**，高優先級綁定**整體覆蓋**低優先級；
   子級綁定寫 `merge = true` 時改為與低優先級**逐條目並集**（modules / blocked 各自合併，
   `merge` 本身是控制鍵，不算條目）
-- **靜默語義**：被過濾模組的命令與處理器不觸發、不回覆、不認領（防止跨命令誤匹配），
+- **靜默語義**：被篩選模組的命令與處理器不觸發、不回覆、不認領（防止跨命令誤匹配），
   僅 TRACE 級日誌可見（`core.scope.denied`）
-- **框架級處理器**（`scope_exempt=True` 或 owner 為空）不受影響；模組名為空（框架層資源）始終放行
+- **框架級處理器**（`scope_exempt=True` 或 owner 為空）不受影響；模組名為空（框架層資源）恆放行
 - **會話感知幫助與命令查詢**：命令查詢 API（`command.help` /
   `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`，
   以及 `module.get_commands_overview`）均支援可選 `event=` 或顯式
   `platform=` / `bot_id=` / `session_id=` 關鍵字——當前會話不可用模組的命令
-  不再出現在結果中（`get_command` 返回 None、單命令幫助按「未註冊」處理，
+  不再出現在結果中（`get_command` 回傳 None、單命令幫助按"未註冊"處理，
   與靜默語義一致）；不傳上下文則保持全量行為
 
 ### 綁定繼承（merge）
@@ -9726,13 +9735,13 @@ merge = true                    # 該 Bot 實際生效 = ["Chat", "Tool", "Music
 
 ## ② 身份維度（事件准入）
 
-回答「誰的事件收不收」。被拒絕的事件在**分發入口完全丟棄**——  
+回答"誰的事件收不收"。被拒絕的事件在**分發入口完全丟棄**——
 不進入中間件與任何處理器（含框架級），僅 TRACE 級日誌可見（`core.scope.identity_denied`）。
 
-- **解析優先級：用戶 > 會話 > Bot > 適配器**，取最具體的已配置策略；deny 优先於 allow
+- **解析優先級：用戶 > 會話 > Bot > 適配器**，取最具體的已配置策略；deny 優先於 allow
 - 每級綁定是二元策略：`{ allow = true }` 或 `{ deny = true }`
 - 用戶鍵支援 glob / 正則（如 `"spam_*"` 拉黑一批垃圾用戶）
-- 典型用法——上級 deny、個人 allow 做「例外放行」：
+- 典型用法——上級 deny、個人 allow 做"例外放行"：
 
 ```toml
 [ErisPulse.scope.identity.adapters.onebot11]
@@ -9743,14 +9752,14 @@ allow = ["u_admin"]   # 即使適配器級拒絕，u_admin 的事件仍然放行
 
 ## ③ 出站維度（限制模組發起出站呼叫）
 
-限制模組**發起的出站動作**：訊息發送 / 標準 API 動作 / 請求操作。  
-三類動作對應底層 DSL：`Event.reply` 與 `Send`（send）、`Api` / `call_api`（api）、  
-`Request` 的 accept/reject（request）。模組在事件 handler 執行期間發起的出站呼叫  
+限制模組**發起的出站動作**：訊息發送 / 標準 API 動作 / 請求操作。
+三類動作對應底層 DSL：`Event.reply` 與 `Send`（send）、`Api` / `call_api`（api）、
+`Request` 的 accept/reject（request）。模組在事件 handler 執行期發起的出站呼叫
 攜帶模組 owner，由本維度統一判定。
 
 ### 規則形態（內聯表）
 
-每個動作的規則是一張內聯表：`{ allow = [...], deny = true|[...] }`。  
+每個動作的規則是一張內聯表：`{ allow = [...], deny = true|[...] }`。
 同一動作只能有一種規則（TOML 鍵不可重複，全禁與細粒度二選一）：
 
 ```toml
@@ -9762,38 +9771,39 @@ api = { allow = ["get_*"] }                             # 僅放行查詢類標�
 request = { deny = true }                               # 禁止處理請求 accept/reject
 ```
 
-- `send` 的條目匹配**發送方法名**（`Text` / `Image` / `File` ...），  
-  `api` 的條目匹配**標準動作名**（`get_group_info` / `set_group_name` ...）  
-- 條目支援精確名 / glob / `re:` 正則（與全系統統一語法一致，大小寫不敏感）  
+- `send` 的條目匹配**發送方法名**（`Text` / `Image` / `File` ...），
+  `api` 的條目匹配**標準動作名**（`get_group_info` / `set_group_name` ...）
+- 條目支援精確名 / glob / `re:` 正則（與全系統統一語法一致，大小寫不敏感）
 - `allow` 寫單個字串等價於單條目列表：`send = { allow = "Text" }`
 
 ### 判定語義
 
-**預設全允許**——未配置、或 owner 為空（框架層內部呼叫）均放行。  
+**預設全允許**——未配置、或 owner 為空（框架層內部呼叫）均放行。
 配置規則後按以下順序判定：
 
-1. `deny = true` → 拒絕  
-2. `deny` 列表命中呼叫名 → 拒絕  
-3. `allow` 列表非空且呼叫名未命中（或呼叫無名稱）→ 拒絕  
-4. 其餘放行  
+1. `deny = true` → 拒絕
+2. `deny` 列表命中呼叫名 → 拒絕
+3. `allow` 列表非空且呼叫名未命中（或呼叫無名稱）→ 拒絕
+4. 其餘放行
 
-被拒呼叫不發起任何網路請求，直接返回標準失敗回應  
-（`retcode = 34601`，見 [api-response §5.3](../standards/api-response.md#53-框架擴展返回碼34xxx-平台錯誤段的低三位自定義)）。  
+被拒呼叫不發起任何網路請求，直接回傳標準失敗回應
+（`retcode = 34601`，見 [api-response §5.3](../standards/api-response.md#53-框架擴展返回碼34xxx-平台錯誤段的低三位自定義)）。
 三個動作互相獨立，可只限其一。
 
 ```python
 # 運行時 API
-sdk.scope.set_action("MyModule", "send", deny=True)              # 全禁發訊息  
-sdk.scope.set_action("MyModule", "send", allow=["Text"])         # 僅允許發文本  
-sdk.scope.is_action_allowed("MyModule", "send", name="Image")    # False  
-sdk.scope.is_action_allowed("MyModule", "api", name="get_user_info")  # 按規則判定  
-sdk.scope.delete_action("MyModule", "send")                      # 恢復允許  
-sdk.scope.get_action("MyModule", "send")                         # 該動作目前規則  
+sdk.scope.set_action("MyModule", "send", deny=True)              # 全禁發訊息
+sdk.scope.set_action("MyModule", "send", allow=["Text"])         # 僅允許發文本
+sdk.scope.is_action_allowed("MyModule", "send", name="Image")    # False
+sdk.scope.is_action_allowed("MyModule", "api", name="get_user_info")  # 按規則判定
+sdk.scope.delete_action("MyModule", "send")                      # 恢復允許
+sdk.scope.get_action("MyModule", "send")                         # 該動作當前規則
 ```
 
 ## 運行時 API
 
-作用域運行時 API 分為三層：**判定**（三問）、**維度化讀寫**（每維 `set` / `get` / `delete` 參數化方法，簽名全類型標註，IDE 可補全）、**字典式兜底**（點分路徑直達任意節）。
+作用域運行時 API 分三層：**判定**（三問）、**維度化讀寫**（每維 `set` / `get` / `delete`
+參數化方法，簽名全類型標註，IDE 可補全）、**字典式兜底**（點分路徑直達任意節）。
 
 ```python
 from ErisPulse import sdk
@@ -9831,6 +9841,12 @@ scope.delete_module("onebot11", bot_id="123456")
 
 > `merge=True` 是**寫時並集**（與該級現有綁定合併條目）；跨級解析期的
 > `merge = true` 配置鍵見上文[綁定繼承](#綁定繼承merge)——兩者是獨立機制。
+
+> **運行時綁定（`persist=False`）語義**：運行時綁定保存在獨立的覆蓋層中，
+> **任意後續配置寫入 / 配置檔案熱更新都不會沖掉它們**（配置樹重建後按寫入順序
+> 自動重放，含運行時刪除）。它們不落盤，進程重啟後丟失；模組卸載時該模組寫入的
+> 運行時綁定會被兜底清理。隨後對同一路徑執行 `persist=True` 寫入（使用者持久化語義）
+> 將取代運行時規則。
 
 ### ② 身份維度
 
@@ -9871,7 +9887,7 @@ scope.reset_stats()
 scope.clear()           # 清空全部配置（僅記憶體生效）
 ```
 
-### 進階：字典式點分路徑兜底
+### 高級：字典式點分路徑兜底
 
 維度化方法覆蓋日常場景；需要直達任意節點（或未來新增的維度）時，
 可用字典式 API——`get` / `set` / `delete` 接受點分路徑（dict 深合併、寫後立讀），
@@ -9890,15 +9906,15 @@ del scope["platforms.onebot11"]      # 刪
 
 ## 緩存與熱更新
 
-- `is_allowed` / `is_identity_allowed` / `is_action_allowed` 的結果帶有 **LRU 緩存**
-  （`scope.cache_size` 可調整），`set` / `delete` /
-  配置熱更新（`config.updated` / `config.set`）會自動失效
-- 所有維度的配置修改**立即生效**，無需重啟
-- 作用域是「逐事件」判斷，不跨事件記憶：配置變了，下一個事件即按新規則
+- `is_allowed` / `is_identity_allowed` / `is_action_allowed` 結果帶 **LRU 緩存**
+  （`scope.cache_size` 可調），`set` / `delete` /
+  配置熱更新（`config.updated` / `config.set`）自動失效
+- 所有維度配置改了**立即生效**，無需重啟
+- 作用域是"逐事件"判斷，不跨事件記憶：配置變了，下一個事件即按新規則
 
 ## 配置格式校驗
 
-載入 / 熱更新時逐節校驗配置格式：類型錯誤的節（如 `platforms` 寫成了字串）、
+加載 / 熱更新時逐節校驗配置格式：類型錯誤的節（如 `platforms` 寫成了字串）、
 非法的出站規則（如 `allow` 寫成數字）、未知動作名、未知的頂層鍵（如 `alow` 拼寫錯誤）
 會輸出 **WARNING** 並忽略對應節 / 條目，其餘合法配置照常生效——寫錯不再靜默失效。
 
@@ -9907,9 +9923,9 @@ del scope["platforms.onebot11"]      # 刪
 ### 1. 配置層級與覆蓋
 
 - 模組維度：會話級 > Bot 級 > 平台級，**整體覆蓋**（子級 `merge = true` 時逐條目並集）。
-  想「平台允許 Chat，Bot 再加 Music」，可在 Bot 級寫 `merge = true`，或同時列出兩者
-- 身份維度：使用者 > 會話 > Bot > 適配器，取**最具體**的已配置策略（可做例外放行）
-- 命令使用者黑白名單：精確命令名優先於 glob 鍵（見 `event.command.acl`）
+  想"平台允許 Chat，Bot 再加 Music"，可在 Bot 級寫 `merge = true`，或同時列出兩者
+- 身份維度：用戶 > 會話 > Bot > 適配器，取**最具體**的已配置策略（可做例外放行）
+- 命令用戶黑白名單：精確命令名優先於 glob 鍵（見 `event.command.acl`）
 
 ### 2. 模組/命令沒反應
 
@@ -9920,11 +9936,11 @@ from ErisPulse import sdk
 
 print(sdk.scope.is_allowed(event.get_platform(), bot_id, "MyModule", session_id))
 print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, user_id))
-print(sdk.scope.stats())   # module_filtered / identity_denied > 0 說明被靜默過濾
+print(sdk.scope.stats())   # module_filtered / identity_denied > 0 說明被靜默篩選
 ```
 
-被過濾是**靜默**的（模組維度與身份維度不回覆，避免暴露規則），但統計會累計；
-命令維度被 ACL 拒絕會顯式回覆「權限不足」。
+被篩選是**靜默**的（模組維度與身份維度不回覆，避免暴露規則），但統計會累積；
+命令維度被 ACL 拒絕會顯式回覆"權限不足"。
 
 ### 3. 出站動作被拒時排查
 
@@ -9935,16 +9951,16 @@ print(sdk.scope.get("actions.MyModule"))
 print(sdk.scope.stats())   # action_denied > 0 說明有呼叫被擋截
 ```
 
-擋截是**顯式**的：被拒呼叫返回 `retcode = 34601` 的標準失敗回應（不發起網路請求）。
+擋截是**顯式**的：被拒呼叫回傳 `retcode = 34601` 的標準失敗回應（不發起網路請求）。
 
 ### 4. 會話標識跨平台隔離
 
 `(platform, session_id)` 組合才是唯一標識。`scope.sessions.onebot11."789"`
-只作用於 onebot11，不受 telegram 上同為 `789` 的會話影響。身份維度的使用者鍵同理。
+只作用於 onebot11，不影響 telegram 上同為 `789` 的會話。身份維度的用戶鍵同理。
 
 ## 拓撲樹 API
 
-`ModuleManager.get_topology()` 與 `AdapterManager.get_topology()` 提供模組/適配器歸屬關係資料，  
+`ModuleManager.get_topology()` 與 `AdapterManager.get_topology()` 提供模組/適配器歸屬關係資料，
 `sdk.get_topology()` 一鍵聚合（含作用域 `scope`）：
 
 ```python

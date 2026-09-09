@@ -9753,7 +9753,7 @@ sdk.scope.get_action("MyModule", "send")                         # その動作�
 
 ## 実行時 API
 
-スコープの実行時 API は 3 層に分かれています：**判定**（3 つの質問）、**次元化された読み書き**（各次元ごとの `set` / `get` / `delete` パラメータ化メソッド、全タイプ注釈付き、IDE による補完可能）、**辞書式のデフォルト**（ドット区切りのパスで任意のセクションに直接アクセス）。
+スコープ実行時 API は 3 層に分かれています：**判定**（3 つの質問）、**次元化読み書き**（各次元ごとに `set` / `get` / `delete` パラメータ化メソッド、署名は全型注釈付き、IDE で補完可能）、**辞書式のデフォルト**（ドット区切りパスで任意の節に直接アクセス）。
 
 ```python
 from ErisPulse import sdk
@@ -9771,17 +9771,17 @@ scope.is_allowed("onebot11", "123456", None)                   # フレームワ
 scope.is_identity_allowed("onebot11", "123456", "group_9", "u1")   # ② 身份次元
 
 scope.is_action_allowed("MyModule", "send")                    # ④ 出力次元
-scope.is_action_allowed("MyModule", "send", name="Image")      # メソッドレベルの細分化
+scope.is_action_allowed("MyModule", "send", name="Image")      # メソッドレベルの細粒度
 ```
 
 ### ① モジュール次元
 
 ```python
-# バインド（パラメータによって階層が決まる：session_id > bot_id > プラットフォームレベル）
+# バインディング（パラメータによって階層が決定：session_id > bot_id > プラットフォームレベル）
 scope.set_module("onebot11", bot_id="123456", modules=["Chat", "Tool*"])
 scope.set_module("onebot11", blocked=["re:^Danger"])                       # プラットフォームレベル
 scope.set_module("onebot11", bot_id="123456", session_id="g9", modules=["Chat"])  # 会話レベル
-scope.set_module("onebot11", bot_id="123456", modules=["Music"], merge=True)      # 既存のエントリと併合
+scope.set_module("onebot11", bot_id="123456", modules=["Music"], merge=True)      # 既存のエントリと結合
 scope.set_module("onebot11", bot_id="123456", modules=["Chat"], persist=False)    # 実行時のみ
 
 # 読み取り / 削除
@@ -9789,12 +9789,14 @@ scope.get_module("onebot11", bot_id="123456")   # {"modules": ["Chat"], "blocked
 scope.delete_module("onebot11", bot_id="123456")
 ```
 
-> `merge=True` は**書き込み時の併合**（該当レベルの既存のバインドとエントリを併合）です。階層間の解析期の `merge = true` 設定キーは上記の[バインド継承](#binding-inheritance-merge)を参照してください。これらは独立したメカニズムです。
+> `merge=True` は**書き込み時に結合**（該当レベルの既存バインディングと条目を結合）です。階層間の解析期の `merge = true` 設定キーは上記の[バインディング継承](#binding-inheritance-merge)を参照してください。これらは独立したメカニズムです。
+
+> **実行時バインディング（`persist=False`）の意味**：実行時バインディングは独立したオーバーライド層に保存され、**その後の任意の設定書き込み / 設定ファイルのホットアップデートによって上書きされません**（設定ツリーの再構築後に書き込み順序で自動的に再実行され、実行時削除も含みます）。これらは永続化されず、プロセスの再起動後に失われます。モジュールがアンロードされた際には、そのモジュールが書き込んだ実行時バインディングはデフォルトでクリーンアップされます。その後、同じパスに対して `persist=True` で書き込み（ユーザー永続化の意味）を行うと、実行時ルールが上書きされます。
 
 ### ② 身份次元
 
 ```python
-# バインド戦略（パラメータによって階層が決まる：user > session > bot > adapter；allow / deny のどちらかを選択）
+# バインディング戦略（パラメータによって階層が決定：user > session > bot > adapter；allow / deny の 2 つの選択肢）
 scope.set_identity("onebot11", user_id="u_bad", deny=True)
 scope.set_identity("onebot11", user_id="spam_*", deny=True)    # キーは glob / re: 正規表現をサポート
 scope.set_identity("onebot11", bot_id="123456", session_id="g9", allow=True)
@@ -9807,39 +9809,39 @@ scope.delete_identity("onebot11", user_id="u_bad")
 ### ③ 出力次元
 
 ```python
-# 制限ルールの設定（allow: str|list; deny: bool|str|list; 全ルールの置換）
+# 制限ルールの設定（allow: str|list；deny: bool|str|list；ルール全体の置換の意味）
 scope.set_action("MyModule", "send", deny=True)                    # 全ての送信を禁止
-scope.set_action("MyModule", "send", allow=["Text"])               # 送信可能なのはテキストのみ
+scope.set_action("MyModule", "send", allow=["Text"])               # 本文のみ送信を許可
 scope.set_action("MyModule", "api", deny=["set_*", "leave_*"])     # 管理系 API を禁止
 
 # 読み取り / 削除
-scope.get_action("MyModule", "send")       # {"allow": ["Text"]} 原始的なルール
+scope.get_action("MyModule", "send")       # {"allow": ["Text"]} 元のルール
 scope.delete_action("MyModule", "send")    # 単一のアクションを削除
-scope.delete_action("MyModule")            # モジュール全体のアクション制限を削除
+scope.delete_action("MyModule")            # モジュールのすべてのアクション制限を削除
 ```
 
-### 一般
+### 一般的な操作
 
 ```python
-scope.get("platforms")   # 辞書式のデフォルト：ドット区切りのパスで任意のセクションを読み取り
-scope.topology()         # 全量の設定ツリー（ダッシュボード用）
+scope.get("platforms")   # 辞書式のデフォルト：ドット区切りパスで任意の節を読み取り
+scope.topology()         # 全量の設定ツリー（Dashboard 用）
 scope.stats()
 # {"module_calls": .., "module_filtered": .., "identity_checks": .., "identity_denied": ..,
 #  "action_checks": .., "action_denied": .., "cache_hits": .., "cache_misses": ..}
 scope.reset_stats()
-scope.clear()           # 全ての設定をクリア（メモリ内でのみ有効）
+scope.clear()           # 全ての設定をクリア（メモリ上でのみ有効）
 ```
 
-### 高度：辞書式のドット区切りパスによるデフォルト
+### 高度な操作：辞書式のドット区切りパスによるデフォルト
 
-次元化されたメソッドは日常的なシナリオをカバーします。任意のノードに直接アクセスする必要がある場合（または将来追加される次元）には、辞書式の API を使用できます。`get` / `set` / `delete` はドット区切りのパスを受け取り、辞書の深いマージと即時読み取りを提供し、`scope[path]` / `scope[path] = v` / `del scope[path]` / `path in scope` のプロトコルを提供します：
+次元化メソッドは日常的なシナリオをカバーします。任意のノード（または将来追加される次元）に直接アクセスする必要がある場合、辞書式 API を使用してください。`get` / `set` / `delete` はドット区切りパスを受け取り（dict の深い結合、書き込み後すぐに読み取り可能）、`scope[path]` / `scope[path] = v` / `del scope[path]` / `path in scope` のプロトコルを提供します：
 
 ```python
 scope.set("bots.onebot11.123456", {"modules": ["Chat"], "blocked": []})
 scope.set("identity.users.onebot11.u_bad", {"deny": True})
 scope.get("actions.MyModule.send")
 
-scope["platforms.onebot11"]        # 読み取り（存在しない場合は KeyError を送出）
+scope["platforms.onebot11"]        # 読み取り（存在しない場合は KeyError を投げる）
 scope["platforms.onebot11"] = {...}  # 書き込み
 del scope["platforms.onebot11"]      # 削除
 "actions.MyModule" in scope          # 存在確認
