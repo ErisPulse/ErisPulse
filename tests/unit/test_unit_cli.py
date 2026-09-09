@@ -523,6 +523,68 @@ class TestFullExampleConfig:
         assert server["ssl_keyfile"] == "config/ssl/key.pem"
 
 
+class TestRuntimeFullExampleEnsure:
+    """运行时（sdk.run / epsdk run）自动生成 / 刷新 config.full.example"""
+
+    def test_render_starts_with_marker_and_valid_toml(self, tmp_path):
+        """生成文本首行为自维护标记，整体为合法 TOML"""
+        import tomlkit
+
+        from ErisPulse.runtime import example_config
+
+        text = example_config.render_full_example()
+        assert text.splitlines()[0].startswith(example_config._MARKER_PREFIX)
+        data = tomlkit.loads(text).unwrap()
+        assert "ErisPulse" in data
+        assert "framework" in data["ErisPulse"]
+
+    def test_ensure_writes_when_missing(self, tmp_path):
+        """文件不存在时生成（覆盖未 init 直接 run 的用户）"""
+        from ErisPulse.runtime.example_config import ensure_full_example
+
+        path = ensure_full_example(config_dir=tmp_path)
+        assert path is not None and path.exists()
+        text = path.read_text(encoding="utf-8")
+        assert text.splitlines()[0].startswith("# ErisPulse full config reference")
+
+    def test_ensure_skips_same_gen(self, tmp_path):
+        """已是最新（同 gen 标记）时不再重写"""
+        from ErisPulse.runtime.example_config import ensure_full_example
+
+        ensure_full_example(config_dir=tmp_path)
+        path = tmp_path / "config.full.example"
+        stamp = path.stat().st_mtime_ns
+        ensure_full_example(config_dir=tmp_path)
+        assert path.stat().st_mtime_ns == stamp
+
+    def test_ensure_skips_user_managed(self, tmp_path):
+        """首行被用户改动（手动接管）后不再触碰"""
+        from ErisPulse.runtime.example_config import ensure_full_example
+
+        ensure_full_example(config_dir=tmp_path)
+        path = tmp_path / "config.full.example"
+        path.write_text("# my own notes\nsome = 1", encoding="utf-8")
+        ensure_full_example(config_dir=tmp_path)
+        assert path.read_text(encoding="utf-8") == "# my own notes\nsome = 1"
+
+    def test_ensure_refreshes_on_gen_bump(self, tmp_path):
+        """生成器版本升级时刷新带旧标记的文件（补新配置项/组件段）"""
+        from ErisPulse.runtime import example_config
+
+        example_config.ensure_full_example(config_dir=tmp_path)
+        path = tmp_path / "config.full.example"
+
+        # 模拟旧版本生成：改写首行 gen
+        lines = path.read_text(encoding="utf-8").splitlines()
+        lines[0] = lines[0].replace(f"gen={example_config._GEN})", "gen=0)")
+        path.write_text("\n".join(lines), encoding="utf-8")
+
+        example_config.ensure_full_example(config_dir=tmp_path)
+        text = path.read_text(encoding="utf-8")
+        assert f"gen={example_config._GEN})" in text.splitlines()[0]
+        assert text.splitlines()[0].startswith(example_config._MARKER_PREFIX)
+
+
 # ==================== 跨进程契约常量 ====================
 
 

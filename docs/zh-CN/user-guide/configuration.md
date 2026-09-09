@@ -46,6 +46,10 @@ CLI 配置向导保存还是适配器/模块首次生成配置模板，框架都
 - **框架默认配置不自动落盘**：`gc`、`scope`、`transcript` 等内置默认值仅驻内存，
   config.toml 只包含你显式设置的键，保持最小化。完整可配置项参考项目内的
   `config/config.full.example`，按需复制到 config.toml 修改即可（未配置项一律走内置默认值，行为不变）
+- **`config.full.example` 自动维护**：无论是否执行过 `epsdk init`，只要启动框架
+  （`epsdk run` / `main.py`），都会在 `config/config.full.example` 缺失时自动生成
+  完整配置参考；文件首行为框架自维护标记，生成器内容更新（如新增配置项、新装
+  组件）时启动会刷新一次，删除/改动首行即转为手动接管、框架不再覆盖
 - **适配器/模块配置模板**：首次初始化时以带注释的模板落盘（字段描述即注释）；
   声明为 `example` 标志的字段不落盘，仅记录在 config.full.example 供参考
 

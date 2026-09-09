@@ -1384,6 +1384,21 @@ class SDK:
 
             get_erispulse_config()
             _logger.info(i18n.t("core.sdk.prepare.config_loaded"))
+
+            # 确保 config.full.example 存在 / 随生成器版本刷新：未走 epsdk init
+            # 直接运行（sdk.run / main.py）的用户同样获得完整配置参考
+            try:
+                from pathlib import Path as _Path
+
+                from .Core.config import config as _config_manager
+                from .runtime.example_config import ensure_full_example
+
+                config_dir = _Path(getattr(_config_manager, "CONFIG_FILE", "config/config.toml")).parent
+                if str(config_dir) == ".":
+                    config_dir = _Path("config")
+                ensure_full_example(config_dir=config_dir)
+            except Exception:
+                pass
             return True
         except Exception as e:
             load_duration = _lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_INIT)

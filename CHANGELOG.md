@@ -154,7 +154,7 @@
     - docstring 自动生成字段描述：未声明 metadata `description` 时，自动从配置类 docstring 提取 `:ivar 字段名: 说明`（reST）或 `Attributes:` 段（Google）作为兜底；优先级 metadata > docstring；新增公共 API `get_field_docstrings()`
     - 嵌套 dataclass 配置：字段类型为嵌套 dataclass 时（支持直接注解与经模块全局 / 类属性链解析的字符串注解），schema 以 `"type": "table"` + `"fields"` 子树承载，TOML 模板渲染为 `[子表]` 节，默认值 / 填充 / 校验 / i18n 解析全部递归；WebUI 渲染为可折叠嵌套分组而非整棵平铺
     - `ConfigManager` 新增 `setConfigTemplate(key, toml_text)`：以带注释模板文本写入配置节（目标节已存在时不覆盖，其余内容与注释不受影响）；适配器/模块 `_ensure_config_exists` 改走该 API，首次初始化的配置模板现真正以带注释形式落盘（此前注释仅出现在日志中）
-    - `epsdk init` 生成的 `config.full.example` 新增"已安装组件"段：自动发现已安装适配器/模块的 ConfigClass 并渲染带注释配置（含 example 字段）
+    - `config.full.example` 改由 `runtime/example_config` 单一生成源：`epsdk init` 与**框架启动**（`sdk.run` / `epsdk run`，未 init 直接运行同样生效）共用；文件首行带自维护标记（gen 变更时启动自动刷新，补新增配置项与组件段），删除/改动首行即手动接管不再覆盖；示例含已安装适配器/模块 ConfigClass 的带注释配置（含 example 字段）
 
 ### 修复
 
