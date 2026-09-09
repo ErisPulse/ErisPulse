@@ -51,7 +51,12 @@ ErisPulse 框架配置管理模块
 
 ### `get_erispulse_config()`
 
-获取 ErisPulse 框架配置，自动补全缺失的配置项并保存
+获取 ErisPulse 框架配置，自动补全缺失的配置项
+
+默认配置仅在内存中合并返回，不写入配置文件——config.toml 保持最小化，
+只包含用户显式设置的键；完整可配置项参考项目内的 config.full.example。
+用户显式设置（手动编辑 / update_erispulse_config / set_erispulse_section）
+的键不受影响，优先级始终高于内置默认值。
 
 **返回值** (`完整的`): ErisPulse 配置字典
 

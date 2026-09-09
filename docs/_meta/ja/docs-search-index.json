@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1640,
+  "total_keywords": 1576,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -323,7 +323,7 @@
     "1. 設定の階層と上書き": [
       {
         "document": "advanced/scope.md",
-        "line": 299,
+        "line": 301,
         "level": 3,
         "title": "1. 設定の階層と上書き"
       }
@@ -675,7 +675,7 @@
     "2. モジュール/コマンドが反応しない場合": [
       {
         "document": "advanced/scope.md",
-        "line": 306,
+        "line": 308,
         "level": 3,
         "title": "2. モジュール/コマンドが反応しない場合"
       }
@@ -1119,7 +1119,7 @@
     "3. 出力アクションが拒否された場合のトラブルシューティング": [
       {
         "document": "advanced/scope.md",
-        "line": 321,
+        "line": 323,
         "level": 3,
         "title": "3. 出力アクションが拒否された場合のトラブルシューティング"
       }
@@ -1399,7 +1399,7 @@
     "4. セッション識別子のプラットフォーム間の隔離": [
       {
         "document": "advanced/scope.md",
-        "line": 332,
+        "line": 334,
         "level": 3,
         "title": "4. セッション識別子のプラットフォーム間の隔離"
       }
@@ -2693,7 +2693,7 @@
     "Dashboard によるモジュールのインストール": [
       {
         "document": "user-guide/deployment.md",
-        "line": 100,
+        "line": 102,
         "level": 3,
         "title": "Dashboard によるモジュールのインストール"
       }
@@ -2701,7 +2701,7 @@
     "Dashboard 管理面板": [
       {
         "document": "user-guide/deployment.md",
-        "line": 81,
+        "line": 83,
         "level": 2,
         "title": "Dashboard 管理面板"
       }
@@ -2757,7 +2757,7 @@
     "Docker 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 262,
+        "line": 264,
         "level": 3,
         "title": "Docker 方式"
       }
@@ -3685,7 +3685,7 @@
     "Supervisor": [
       {
         "document": "user-guide/deployment.md",
-        "line": 228,
+        "line": 230,
         "level": 3,
         "title": "Supervisor"
       }
@@ -3854,788 +3854,268 @@
         "title": "Windows PowerShell 実行ポリシー"
       }
     ],
-    "[BUG-001] イベントハンドラの重複登録によりイベントが複数回処理される": [
+    "[BUG-001] イベントハンドラの重複登録によるイベントの多重処理": [
       {
         "document": "bug-tracker.md",
-        "line": 117,
+        "line": 115,
         "level": 3,
-        "title": "[BUG-001] イベントハンドラの重複登録によりイベントが複数回処理される"
+        "title": "[BUG-001] イベントハンドラの重複登録によるイベントの多重処理"
       }
     ],
-    "[BUG-002] Init コマンドのアダプタ設定パスの型エラー": [
+    "[BUG-002] Init コマンドのアダプタ設定パス型エラー": [
       {
         "document": "bug-tracker.md",
-        "line": 137,
+        "line": 135,
         "level": 3,
-        "title": "[BUG-002] Init コマンドのアダプタ設定パスの型エラー"
+        "title": "[BUG-002] Init コマンドのアダプタ設定パス型エラー"
       }
     ],
-    "[BUG-003] 再起動後にコマンドイベントが無効になる": [
+    "[BUG-003] 再起動後のコマンドイベントが無効になる": [
       {
         "document": "bug-tracker.md",
-        "line": 161,
+        "line": 159,
         "level": 3,
-        "title": "[BUG-003] 再起動後にコマンドイベントが無効になる"
+        "title": "[BUG-003] 再起動後のコマンドイベントが無効になる"
       }
     ],
-    "[BUG-004] ライフサイクルイベントハンドラがクリアされない": [
+    "[BUG-004] ライフサイクルイベントハンドラがクリーンアップされない": [
       {
         "document": "bug-tracker.md",
-        "line": 181,
+        "line": 179,
         "level": 3,
-        "title": "[BUG-004] ライフサイクルイベントハンドラがクリアされない"
+        "title": "[BUG-004] ライフサイクルイベントハンドラがクリーンアップされない"
       }
     ],
     "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない": [
       {
         "document": "bug-tracker.md",
-        "line": 201,
+        "line": 199,
         "level": 3,
         "title": "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない"
       }
     ],
-    "[BUG-006] adapter.clear() が _started_instances をクリアしないため、再起動後に状態が正しくない": [
+    "[BUG-006] adapter.clear() が _started_instances をクリーンアップしない": [
       {
         "document": "bug-tracker.md",
-        "line": 221,
+        "line": 219,
         "level": 3,
-        "title": "[BUG-006] adapter.clear() が _started_instances をクリアしないため、再起動後に状態が正しくない"
+        "title": "[BUG-006] adapter.clear() が _started_instances をクリーンアップしない"
       }
     ],
     "[BUG-007] command.wait_reply() で非推奨の asyncio.get_event_loop() を使用": [
       {
         "document": "bug-tracker.md",
-        "line": 241,
+        "line": 239,
         "level": 3,
         "title": "[BUG-007] command.wait_reply() で非推奨の asyncio.get_event_loop() を使用"
       }
     ],
-    "[BUG-008] Bot オンラインイベントが shutdown プロセス中に重複送信される": [
+    "[BUG-008] Bot オフラインイベントが shutdown 過程で重複送信される": [
       {
         "document": "bug-tracker.md",
-        "line": 261,
+        "line": 259,
         "level": 3,
-        "title": "[BUG-008] Bot オンラインイベントが shutdown プロセス中に重複送信される"
+        "title": "[BUG-008] Bot オフラインイベントが shutdown 過程で重複送信される"
       }
     ],
     "[BUG-009] LazyModule が同期アクセスで BaseModule を初期化していない": [
       {
         "document": "bug-tracker.md",
-        "line": 281,
+        "line": 279,
         "level": 3,
         "title": "[BUG-009] LazyModule が同期アクセスで BaseModule を初期化していない"
       }
     ],
-    "[BUG-010] 複数スレッドでの設定書き込みでデータが失われる": [
+    "[BUG-010] 設定システムのマルチスレッド書き込みによるデータロス": [
       {
         "document": "bug-tracker.md",
-        "line": 301,
+        "line": 299,
         "level": 3,
-        "title": "[BUG-010] 複数スレッドでの設定書き込みでデータが失われる"
+        "title": "[BUG-010] 設定システムのマルチスレッド書き込みによるデータロス"
       }
     ],
     "[BUG-011] Windows で CTRL+C でプログラムを停止できない": [
       {
         "document": "bug-tracker.md",
-        "line": 324,
+        "line": 322,
         "level": 3,
         "title": "[BUG-011] Windows で CTRL+C でプログラムを停止できない"
       }
     ],
-    "[BUG-012] ホットリスタート後に更新されたモジュールのコードが有効にならない": [
+    "[BUG-012] ホットリスタート後に更新されたモジュールの Python コードが有効にならない": [
       {
         "document": "bug-tracker.md",
-        "line": 348,
+        "line": 346,
         "level": 3,
-        "title": "[BUG-012] ホットリスタート後に更新されたモジュールのコードが有効にならない"
+        "title": "[BUG-012] ホットリスタート後に更新されたモジュールの Python コードが有効にならない"
       }
     ],
-    "[BUG-013] モジュールのロード戦略のソートロジックが誤っている": [
+    "[BUG-013] モジュールロード戦略のソートロジックが誤っている": [
       {
         "document": "bug-tracker.md",
-        "line": 368,
+        "line": 366,
         "level": 3,
-        "title": "[BUG-013] モジュールのロード戦略のソートロジックが誤っている"
+        "title": "[BUG-013] モジュールロード戦略のソートロジックが誤っている"
       }
     ],
     "[BUG-014] アダプタミドルウェアが None を返すとイベントデータが失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 388,
+        "line": 386,
         "level": 3,
         "title": "[BUG-014] アダプタミドルウェアが None を返すとイベントデータが失われる"
       }
     ],
-    "[BUG-015] 設定ファイルのパスが作業ディレクトリに依存する": [
+    "[BUG-015] 設定ファイルパスが作業ディレクトリに依存する": [
       {
         "document": "bug-tracker.md",
-        "line": 408,
+        "line": 406,
         "level": 3,
-        "title": "[BUG-015] 設定ファイルのパスが作業ディレクトリに依存する"
+        "title": "[BUG-015] 設定ファイルパスが作業ディレクトリに依存する"
       }
     ],
-    "[BUG-016] BaseStorage がストア値 None とキーの存在しないことを混同する": [
+    "[BUG-016] BaseStorage がストレージ値 None とキーが存在しないを混同する": [
       {
         "document": "bug-tracker.md",
-        "line": 428,
+        "line": 426,
         "level": 3,
-        "title": "[BUG-016] BaseStorage がストア値 None とキーの存在しないことを混同する"
+        "title": "[BUG-016] BaseStorage がストレージ値 None とキーが存在しないを混同する"
       }
     ],
-    "[BUG-017] WebSocket ルーティング auto_accept フラグがサービス再起動後に失われる": [
+    "[BUG-017] WebSocket ルート auto_accept フラグがサービス再起動後に失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 448,
+        "line": 446,
         "level": 3,
-        "title": "[BUG-017] WebSocket ルーティング auto_accept フラグがサービス再起動後に失われる"
+        "title": "[BUG-017] WebSocket ルート auto_accept フラグがサービス再起動後に失われる"
       }
     ],
-    "[BUG-018] HTTP/WS クライアントの並行呼び出しによりクラッシュや接続漏れが発生する": [
+    "[BUG-018] HTTP/WS クライアントの並行呼び出しによるクラッシュと接続リーク": [
       {
         "document": "bug-tracker.md",
-        "line": 468,
+        "line": 466,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS クライアントの並行呼び出しによりクラッシュや接続漏れが発生する"
+        "title": "[BUG-018] HTTP/WS クライアントの並行呼び出しによるクラッシュと接続リーク"
       }
     ],
-    "[BUG-019] アダプタのホットリロード時にルーティングの競合によりリロードが失敗する": [
+    "[BUG-019] アダプタのホットリロード時にルートの競合によりリロードが失敗する": [
       {
         "document": "bug-tracker.md",
-        "line": 496,
+        "line": 494,
         "level": 3,
-        "title": "[BUG-019] アダプタのホットリロード時にルーティングの競合によりリロードが失敗する"
+        "title": "[BUG-019] アダプタのホットリロード時にルートの競合によりリロードが失敗する"
       }
     ],
-    "[BUG-020] サブプロセスモード `ep run <script>` でスクリプトの子パッケージが見つからない": [
+    "[BUG-020] 子プロセスモデル `ep run <script>` でスクリプトのサブパッケージが見つからない": [
       {
         "document": "bug-tracker.md",
-        "line": 520,
+        "line": 518,
         "level": 3,
-        "title": "[BUG-020] サブプロセスモード `ep run <script>` でスクリプトの子パッケージが見つからない"
+        "title": "[BUG-020] 子プロセスモデル `ep run <script>` でスクリプトのサブパッケージが見つからない"
       }
     ],
-    "[BUG-021] SQL クエリビルダが合法なワイルドカードとリスト式を拒否する": [
+    "[BUG-020] 配置監視の競合により setConfig の遅延書き込みが静かにデータを失う": [
       {
         "document": "bug-tracker.md",
-        "line": 540,
+        "line": 800,
         "level": 3,
-        "title": "[BUG-021] SQL クエリビルダが合法なワイルドカードとリスト式を拒否する"
+        "title": "[BUG-020] 配置監視の競合により setConfig の遅延書き込みが静かにデータを失う"
       }
     ],
-    "[BUG-022] _resolve_account() アカウント解析のリグレッション（_accounts_data が未設定）": [
+    "[BUG-021] SQL クエリビルダーが合法なワイルドカードとリスト式を拒否する": [
       {
         "document": "bug-tracker.md",
-        "line": 569,
+        "line": 538,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() アカウント解析のリグレッション（_accounts_data が未設定）"
+        "title": "[BUG-021] SQL クエリビルダーが合法なワイルドカードとリスト式を拒否する"
       }
     ],
-    "[BUG-023] アカウント設定を変更した後、アダプタのキャッシュが更新されずアカウント解析が失敗する": [
+    "[BUG-022] _resolve_account() のアカウント解決のリバージョン（_accounts_data が未設定）": [
       {
         "document": "bug-tracker.md",
-        "line": 608,
+        "line": 567,
         "level": 3,
-        "title": "[BUG-023] アカウント設定を変更した後、アダプタのキャッシュが更新されずアカウント解析が失敗する"
+        "title": "[BUG-022] _resolve_account() のアカウント解決のリバージョン（_accounts_data が未設定）"
+      }
+    ],
+    "[BUG-023] アカウント設定を変更した後にアダプタのキャッシュが更新されずアカウント解決に失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 606,
+        "level": 3,
+        "title": "[BUG-023] アカウント設定を変更した後にアダプタのキャッシュが更新されずアカウント解決に失敗する"
       }
     ],
     "[BUG-024] storage.set() で大数 ID キーを書き込むと OOM Kill が発生する": [
       {
         "document": "bug-tracker.md",
-        "line": 628,
+        "line": 626,
         "level": 3,
         "title": "[BUG-024] storage.set() で大数 ID キーを書き込むと OOM Kill が発生する"
       }
     ],
-    "[BUG-025] on_config_update コールバックがコアルーティングされない": [
+    "[BUG-025] on_config_update コールバックがコアルートに登録されていない": [
       {
         "document": "bug-tracker.md",
-        "line": 674,
+        "line": 672,
         "level": 3,
-        "title": "[BUG-025] on_config_update コールバックがコアルーティングされない"
+        "title": "[BUG-025] on_config_update コールバックがコアルートに登録されていない"
       }
     ],
-    "[BUG-026] notice/request イベント reply 目標の推定が間違っている": [
+    "[BUG-026] notice/request イベントの reply 目的推定が間違っている": [
       {
         "document": "bug-tracker.md",
-        "line": 704,
+        "line": 702,
         "level": 3,
-        "title": "[BUG-026] notice/request イベント reply 目標の推定が間違っている"
+        "title": "[BUG-026] notice/request イベントの reply 目的推定が間違っている"
       }
     ],
-    "[BUG-027] ルーティングのリクエスト制限クリーンアップタスクが固定ウィンドウを使用して長時間のルールが無効になる": [
+    "[BUG-027] ルートリミットクリーンアップタスクが固定ウィンドウを使用して長ウィンドウルールが無効になる": [
       {
         "document": "bug-tracker.md",
-        "line": 735,
+        "line": 733,
         "level": 3,
-        "title": "[BUG-027] ルーティングのリクエスト制限クリーンアップタスクが固定ウィンドウを使用して長時間のルールが無効になる"
+        "title": "[BUG-027] ルートリミットクリーンアップタスクが固定ウィンドウを使用して長ウィンドウルールが無効になる"
       }
     ],
-    "[BUG-029] 設定の監視タスクが未完成の TOML をブロードキャストし、例外を静かに飲み込む": [
+    "[BUG-029] 設定監視タスクが不完全な TOML をブロードキャストし、例外を静かに飲み込む": [
       {
         "document": "bug-tracker.md",
-        "line": 767,
+        "line": 765,
         "level": 3,
-        "title": "[BUG-029] 設定の監視タスクが未完成の TOML をブロードキャストし、例外を静かに飲み込む"
+        "title": "[BUG-029] 設定監視タスクが不完全な TOML をブロードキャストし、例外を静かに飲み込む"
       }
     ],
-    "[BUG-030] 設定の watcher 競合により setConfig の遅延書き込みが静かにデータを失う": [
+    "[BUG-032] 設定の遅延書き込み中に「書き込んだ後に読む」で古い値を読む": [
       {
         "document": "bug-tracker.md",
-        "line": 803,
+        "line": 836,
         "level": 3,
-        "title": "[BUG-030] 設定の watcher 競合により setConfig の遅延書き込みが静かにデータを失う"
-      }
-    ],
-    "[BUG-032] 設定の遅延書き込み中に「書き込み直後に読み取り」で古い値を読み込む": [
-      {
-        "document": "bug-tracker.md",
-        "line": 839,
-        "level": 3,
-        "title": "[BUG-032] 設定の遅延書き込み中に「書き込み直後に読み取り」で古い値を読み込む"
+        "title": "[BUG-032] 設定の遅延書き込み中に「書き込んだ後に読む」で古い値を読む"
       }
     ],
     "[BUG-033] wait_reply で待機中の返信が高優先度のハンドラに食い込まれる": [
       {
         "document": "bug-tracker.md",
-        "line": 864,
+        "line": 858,
         "level": 3,
         "title": "[BUG-033] wait_reply で待機中の返信が高優先度のハンドラに食い込まれる"
       }
     ],
-    "[BUG-034] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+    "[BUG-034] persist=False のスコープ設定は任意の後続の設定書き込みによって静かに破棄される": [
       {
         "document": "bug-tracker.md",
-        "line": 886,
+        "line": 880,
         "level": 3,
-        "title": "[BUG-034] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+        "title": "[BUG-034] persist=False のスコープ設定は任意の後続の設定書き込みによって静かに破棄される"
       }
     ],
-    "[BUG-035] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
+    "[BUG-035] 設定パネルの select 項目と dict フィールドが [object Object] にレンダリングされる": [
       {
         "document": "bug-tracker.md",
-        "line": 906,
+        "line": 900,
         "level": 3,
-        "title": "[BUG-035] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-036] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 926,
-        "level": 3,
-        "title": "[BUG-036] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-037] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 946,
-        "level": 3,
-        "title": "[BUG-037] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-038] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 966,
-        "level": 3,
-        "title": "[BUG-038] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-039] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 986,
-        "level": 3,
-        "title": "[BUG-039] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-040] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1006,
-        "level": 3,
-        "title": "[BUG-040] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-041] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1026,
-        "level": 3,
-        "title": "[BUG-041] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-042] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1046,
-        "level": 3,
-        "title": "[BUG-042] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-043] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1066,
-        "level": 3,
-        "title": "[BUG-043] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-044] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1086,
-        "level": 3,
-        "title": "[BUG-044] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-045] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1106,
-        "level": 3,
-        "title": "[BUG-045] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-046] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1126,
-        "level": 3,
-        "title": "[BUG-046] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-047] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1146,
-        "level": 3,
-        "title": "[BUG-047] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-048] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1166,
-        "level": 3,
-        "title": "[BUG-048] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-049] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1186,
-        "level": 3,
-        "title": "[BUG-049] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-050] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1206,
-        "level": 3,
-        "title": "[BUG-050] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-051] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1226,
-        "level": 3,
-        "title": "[BUG-051] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-052] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1246,
-        "level": 3,
-        "title": "[BUG-052] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-053] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1266,
-        "level": 3,
-        "title": "[BUG-053] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-054] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1286,
-        "level": 3,
-        "title": "[BUG-054] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-055] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1306,
-        "level": 3,
-        "title": "[BUG-055] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-056] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1326,
-        "level": 3,
-        "title": "[BUG-056] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-057] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1346,
-        "level": 3,
-        "title": "[BUG-057] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-058] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1366,
-        "level": 3,
-        "title": "[BUG-058] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-059] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1386,
-        "level": 3,
-        "title": "[BUG-059] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-060] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1406,
-        "level": 3,
-        "title": "[BUG-060] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-061] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1426,
-        "level": 3,
-        "title": "[BUG-061] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-062] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1446,
-        "level": 3,
-        "title": "[BUG-062] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-063] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1466,
-        "level": 3,
-        "title": "[BUG-063] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-064] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1486,
-        "level": 3,
-        "title": "[BUG-064] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-065] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1506,
-        "level": 3,
-        "title": "[BUG-065] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-066] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1526,
-        "level": 3,
-        "title": "[BUG-066] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-067] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1546,
-        "level": 3,
-        "title": "[BUG-067] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-068] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1566,
-        "level": 3,
-        "title": "[BUG-068] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-069] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1586,
-        "level": 3,
-        "title": "[BUG-069] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-070] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1606,
-        "level": 3,
-        "title": "[BUG-070] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-071] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1626,
-        "level": 3,
-        "title": "[BUG-071] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-072] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1646,
-        "level": 3,
-        "title": "[BUG-072] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-073] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1666,
-        "level": 3,
-        "title": "[BUG-073] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-074] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1686,
-        "level": 3,
-        "title": "[BUG-074] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-075] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1706,
-        "level": 3,
-        "title": "[BUG-075] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-076] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1726,
-        "level": 3,
-        "title": "[BUG-076] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-077] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1746,
-        "level": 3,
-        "title": "[BUG-077] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-078] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1766,
-        "level": 3,
-        "title": "[BUG-078] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-079] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1786,
-        "level": 3,
-        "title": "[BUG-079] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-080] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1806,
-        "level": 3,
-        "title": "[BUG-080] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-081] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1826,
-        "level": 3,
-        "title": "[BUG-081] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-082] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1846,
-        "level": 3,
-        "title": "[BUG-082] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-083] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1866,
-        "level": 3,
-        "title": "[BUG-083] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-084] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1886,
-        "level": 3,
-        "title": "[BUG-084] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-085] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1906,
-        "level": 3,
-        "title": "[BUG-085] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-086] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1926,
-        "level": 3,
-        "title": "[BUG-086] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-087] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1946,
-        "level": 3,
-        "title": "[BUG-087] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-088] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1966,
-        "level": 3,
-        "title": "[BUG-088] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-089] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1986,
-        "level": 3,
-        "title": "[BUG-089] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-090] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 2006,
-        "level": 3,
-        "title": "[BUG-090] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-091] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 2026,
-        "level": 3,
-        "title": "[BUG-091] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-092] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 2046,
-        "level": 3,
-        "title": "[BUG-092] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-093] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 2066,
-        "level": 3,
-        "title": "[BUG-093] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-094] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 2086,
-        "level": 3,
-        "title": "[BUG-094] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-095] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 2106,
-        "level": 3,
-        "title": "[BUG-095] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-096] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 2126,
-        "level": 3,
-        "title": "[BUG-096] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-097] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 2146,
-        "level": 3,
-        "title": "[BUG-097] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-098] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 2166,
-        "level": 3,
-        "title": "[BUG-098] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-099] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 2186,
-        "level": 3,
-        "title": "[BUG-099] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
-      }
-    ],
-    "[BUG-100] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する": [
-      {
-        "document": "bug-tracker.md",
-        "line": 2206,
-        "level": 3,
-        "title": "[BUG-100] 未実装のコマンドハンドラが存在する場合、コマンドの実行が失敗する"
+        "title": "[BUG-035] 設定パネルの select 項目と dict フィールドが [object Object] にレンダリングされる"
       }
     ],
     "__init__.py": [
@@ -5025,7 +4505,7 @@
     "pip 方式": [
       {
         "document": "user-guide/deployment.md",
-        "line": 272,
+        "line": 274,
         "level": 3,
         "title": "pip 方式"
       }
@@ -5137,7 +4617,7 @@
     "systemd (Linux)": [
       {
         "document": "user-guide/deployment.md",
-        "line": 196,
+        "line": 198,
         "level": 3,
         "title": "systemd (Linux)"
       }
@@ -5231,7 +4711,7 @@
     "② 身份次元": [
       {
         "document": "advanced/scope.md",
-        "line": 231,
+        "line": 233,
         "level": 3,
         "title": "② 身份次元"
       }
@@ -5247,7 +4727,7 @@
     "③ 出力次元": [
       {
         "document": "advanced/scope.md",
-        "line": 244,
+        "line": 246,
         "level": 3,
         "title": "③ 出力次元"
       }
@@ -5797,7 +5277,7 @@
     "イベントハンドラのライフサイクル": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 329,
+        "line": 335,
         "level": 3,
         "title": "イベントハンドラのライフサイクル"
       }
@@ -5805,7 +5285,7 @@
     "イベントハンドラの登録": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 313,
+        "line": 319,
         "level": 3,
         "title": "イベントハンドラの登録"
       }
@@ -5851,7 +5331,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 311,
+        "line": 317,
         "level": 2,
         "title": "イベント処理"
       }
@@ -5971,7 +5451,7 @@
     "イベント設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 402,
+        "line": 412,
         "level": 2,
         "title": "イベント設定"
       }
@@ -6183,7 +5663,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 356,
+        "line": 362,
         "level": 2,
         "title": "エラー処理"
       },
@@ -6235,7 +5715,7 @@
     "キャッシュとホットアップデート": [
       {
         "document": "advanced/scope.md",
-        "line": 285,
+        "line": 287,
         "level": 2,
         "title": "キャッシュとホットアップデート"
       }
@@ -6605,7 +6085,7 @@
     "コマンド解析の設定（event.command）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 568,
+        "line": 578,
         "level": 2,
         "title": "コマンド解析の設定（event.command）"
       }
@@ -6613,9 +6093,17 @@
     "コマンド設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 404,
+        "line": 414,
         "level": 3,
         "title": "コマンド設定"
+      }
+    ],
+    "コメントの保持と最小限の書き込み": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 38,
+        "level": 2,
+        "title": "コメントの保持と最小限の書き込み"
       }
     ],
     "コンテキストと永続化": [
@@ -6789,7 +6277,7 @@
     "サーバーの設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 186,
+        "line": 196,
         "level": 2,
         "title": "サーバーの設定"
       }
@@ -6885,7 +6373,7 @@
     "スコープの設定（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 471,
+        "line": 481,
         "level": 2,
         "title": "スコープの設定（scope）"
       }
@@ -6923,7 +6411,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 286,
+        "line": 292,
         "level": 2,
         "title": "ストレージシステム"
       }
@@ -6947,7 +6435,7 @@
     "ストレージ設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 391,
+        "line": 401,
         "level": 2,
         "title": "ストレージ設定"
       }
@@ -6971,7 +6459,7 @@
     "セキュリティに関する推奨事項": [
       {
         "document": "user-guide/deployment.md",
-        "line": 243,
+        "line": 245,
         "level": 2,
         "title": "セキュリティに関する推奨事項"
       }
@@ -7499,7 +6987,7 @@
     "トランザクションの使用": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 301,
+        "line": 307,
         "level": 3,
         "title": "トランザクションの使用"
       }
@@ -7739,7 +7227,7 @@
     "バックアップ": [
       {
         "document": "user-guide/deployment.md",
-        "line": 279,
+        "line": 281,
         "level": 3,
         "title": "バックアップ"
       }
@@ -8199,7 +7687,7 @@
     "プロアクティブGC設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 347,
+        "line": 357,
         "level": 3,
         "title": "プロアクティブGC設定"
       }
@@ -8273,7 +7761,7 @@
     "プロセス監督とハードリスタート": [
       {
         "document": "user-guide/deployment.md",
-        "line": 109,
+        "line": 111,
         "level": 2,
         "title": "プロセス監督とハードリスタート"
       }
@@ -8295,7 +7783,7 @@
       },
       {
         "document": "user-guide/deployment.md",
-        "line": 120,
+        "line": 122,
         "level": 2,
         "title": "ヘルスチェック"
       }
@@ -8311,7 +7799,7 @@
     "ホットアップデートの内部処理の詳細": [
       {
         "document": "user-guide/configuration.md",
-        "line": 85,
+        "line": 95,
         "level": 3,
         "title": "ホットアップデートの内部処理の詳細"
       }
@@ -8805,7 +8293,7 @@
     "メッセージ設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 420,
+        "line": 430,
         "level": 3,
         "title": "メッセージ設定"
       }
@@ -9045,7 +8533,7 @@
     "モジュールの設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 442,
+        "line": 452,
         "level": 2,
         "title": "モジュールの設定"
       }
@@ -9235,7 +8723,7 @@
     "ユーザー優先：主人生効果範囲はユーザーが最終決定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 272,
+        "line": 282,
         "level": 3,
         "title": "ユーザー優先：主人生効果範囲はユーザーが最終決定"
       }
@@ -9359,7 +8847,7 @@
     "ラグロードメカニズム": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 333,
+        "line": 339,
         "level": 2,
         "title": "ラグロードメカニズム"
       }
@@ -9485,7 +8973,7 @@
     "リバースプロキシ": [
       {
         "document": "user-guide/deployment.md",
-        "line": 142,
+        "line": 144,
         "level": 2,
         "title": "リバースプロキシ"
       }
@@ -9737,7 +9225,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 373,
+        "line": 379,
         "level": 3,
         "title": "ログ記録"
       }
@@ -9745,7 +9233,7 @@
     "ログ設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 278,
+        "line": 288,
         "level": 2,
         "title": "ログ設定"
       }
@@ -9830,14 +9318,6 @@
         "title": "一回限りの登録（once）"
       }
     ],
-    "一般": [
-      {
-        "document": "advanced/scope.md",
-        "line": 258,
-        "level": 3,
-        "title": "一般"
-      }
-    ],
     "一般的 CSS クラス名": [
       {
         "document": "ecosystem/dashboard.md",
@@ -9878,6 +9358,14 @@
         "title": "一般的な使用方法"
       }
     ],
+    "一般的な操作": [
+      {
+        "document": "advanced/scope.md",
+        "line": 260,
+        "level": 3,
+        "title": "一般的な操作"
+      }
+    ],
     "一般的な設定位置": [
       {
         "document": "user-guide/README.md",
@@ -9913,7 +9401,7 @@
     "一般的質問と注意事項": [
       {
         "document": "advanced/scope.md",
-        "line": 297,
+        "line": 299,
         "level": 2,
         "title": "一般的質問と注意事項"
       }
@@ -9953,7 +9441,7 @@
     "主人システム設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 205,
+        "line": 215,
         "level": 2,
         "title": "主人システム設定"
       }
@@ -10177,7 +9665,7 @@
     "例外のキャッチ": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 358,
+        "line": 364,
         "level": 3,
         "title": "例外のキャッチ"
       }
@@ -10206,12 +9694,12 @@
         "title": "保留エラーセグメント"
       }
     ],
-    "修正済みのバグ": [
+    "修正済みバグ": [
       {
         "document": "bug-tracker.md",
-        "line": 115,
+        "line": 113,
         "level": 2,
-        "title": "修正済みのバグ"
+        "title": "修正済みバグ"
       }
     ],
     "修飾の組み合わせ": [
@@ -10473,7 +9961,7 @@
     "判定チェーンと実行時追加・削除": [
       {
         "document": "user-guide/configuration.md",
-        "line": 231,
+        "line": 241,
         "level": 3,
         "title": "判定チェーンと実行時追加・削除"
       }
@@ -10535,7 +10023,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 335,
+        "line": 341,
         "level": 3,
         "title": "動作原理"
       },
@@ -10623,7 +10111,7 @@
     "厳格モード": [
       {
         "document": "user-guide/configuration.md",
-        "line": 362,
+        "line": 372,
         "level": 3,
         "title": "厳格モード"
       }
@@ -10748,12 +10236,12 @@
         "title": "回答機能"
       }
     ],
-    "国内でのイメージ加速": [
+    "国内用のイメージ加速": [
       {
         "document": "user-guide/deployment.md",
         "line": 24,
         "level": 3,
-        "title": "国内でのイメージ加速"
+        "title": "国内用のイメージ加速"
       }
     ],
     "国際化 (i18n) システム": [
@@ -10767,7 +10255,7 @@
     "国際化設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 431,
+        "line": 441,
         "level": 2,
         "title": "国際化設定"
       }
@@ -10941,7 +10429,7 @@
     "基本的な使用方法": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 288,
+        "line": 294,
         "level": 3,
         "title": "基本的な使用方法"
       }
@@ -11053,7 +10541,7 @@
     "多インスタンスデプロイ": [
       {
         "document": "user-guide/deployment.md",
-        "line": 252,
+        "line": 254,
         "level": 2,
         "title": "多インスタンスデプロイ"
       }
@@ -11173,7 +10661,7 @@
     "完全な設定例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 133,
+        "line": 143,
         "level": 2,
         "title": "完全な設定例"
       }
@@ -11293,7 +10781,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 228,
+        "line": 234,
         "level": 3,
         "title": "宣言的翻訳キー（v2.7.0+）"
       }
@@ -11716,18 +11204,18 @@
         "title": "手動でレスポンスを構築する（旧バージョンの方法も互換性があります）"
       }
     ],
-    "手動で設定を読み取る（廃止済み）": [
+    "手動で設定を読み取る（非推奨）": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 269,
+        "line": 275,
         "level": 3,
-        "title": "手動で設定を読み取る（廃止済み）"
+        "title": "手動で設定を読み取る（非推奨）"
       }
     ],
     "手動デプロイ（pip）": [
       {
         "document": "user-guide/deployment.md",
-        "line": 174,
+        "line": 176,
         "level": 2,
         "title": "手動デプロイ（pip）"
       }
@@ -11759,7 +11247,7 @@
     "拓扑ツリー API": [
       {
         "document": "advanced/scope.md",
-        "line": 336,
+        "line": 338,
         "level": 2,
         "title": "拓扑ツリー API"
       }
@@ -12172,14 +11660,6 @@
         "title": "早速体験"
       }
     ],
-    "早速起動": [
-      {
-        "document": "user-guide/deployment.md",
-        "line": 9,
-        "level": 3,
-        "title": "早速起動"
-      }
-    ],
     "暗号化モードの説明": [
       {
         "document": "platform-guide/wechatmp.md",
@@ -12191,7 +11671,7 @@
     "更新とメンテナンス": [
       {
         "document": "user-guide/deployment.md",
-        "line": 260,
+        "line": 262,
         "level": 2,
         "title": "更新とメンテナンス"
       }
@@ -12285,7 +11765,7 @@
     "本番環境の設定": [
       {
         "document": "user-guide/deployment.md",
-        "line": 178,
+        "line": 180,
         "level": 3,
         "title": "本番環境の設定"
       }
@@ -12465,7 +11945,7 @@
     "框架設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 326,
+        "line": 336,
         "level": 2,
         "title": "框架設定"
       }
@@ -12651,7 +12131,7 @@
     "機能概要": [
       {
         "document": "user-guide/deployment.md",
-        "line": 85,
+        "line": 87,
         "level": 3,
         "title": "機能概要"
       }
@@ -12665,7 +12145,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 570,
+        "line": 580,
         "level": 2,
         "title": "次に進む"
       }
@@ -12903,7 +12383,7 @@
     "環境変数による上書き": [
       {
         "document": "user-guide/configuration.md",
-        "line": 38,
+        "line": 48,
         "level": 2,
         "title": "環境変数による上書き"
       }
@@ -13055,7 +12535,7 @@
     "立即ロード": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 343,
+        "line": 349,
         "level": 3,
         "title": "立即ロード"
       }
@@ -13185,9 +12665,17 @@
     "統一イベントオーバーライド設定 (event.overrides)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 523,
+        "line": 533,
         "level": 2,
         "title": "統一イベントオーバーライド設定 (event.overrides)"
+      }
+    ],
+    "統計概要": [
+      {
+        "document": "bug-tracker.md",
+        "line": 90,
+        "level": 2,
+        "title": "統計概要"
       }
     ],
     "継承関係": [
@@ -13196,14 +12684,6 @@
         "line": 563,
         "level": 3,
         "title": "継承関係"
-      }
-    ],
-    "総計概要": [
-      {
-        "document": "bug-tracker.md",
-        "line": 90,
-        "level": 2,
-        "title": "総計概要"
       }
     ],
     "群メッセージの処理": [
@@ -13313,7 +12793,7 @@
     "自定义アイデンティティソース（provider）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 245,
+        "line": 255,
         "level": 3,
         "title": "自定义アイデンティティソース（provider）"
       }
@@ -13555,7 +13035,7 @@
     "設定のホットアップデート": [
       {
         "document": "user-guide/configuration.md",
-        "line": 63,
+        "line": 73,
         "level": 2,
         "title": "設定のホットアップデート"
       }
@@ -13741,7 +13221,7 @@
     "設定形式の検証": [
       {
         "document": "advanced/scope.md",
-        "line": 293,
+        "line": 295,
         "level": 2,
         "title": "設定形式の検証"
       }
@@ -13829,7 +13309,7 @@
     "豁免リスト": [
       {
         "document": "user-guide/configuration.md",
-        "line": 379,
+        "line": 389,
         "level": 4,
         "title": "豁免リスト"
       }
@@ -14204,6 +13684,14 @@
         "title": "通知操作者"
       }
     ],
+    "速攻起動": [
+      {
+        "document": "user-guide/deployment.md",
+        "line": 9,
+        "level": 3,
+        "title": "速攻起動"
+      }
+    ],
     "速率制限": [
       {
         "document": "advanced/router.md",
@@ -14473,7 +13961,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 384,
+        "line": 390,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -14654,12 +14142,12 @@
         "title": "高レベル方法（推奨）"
       }
     ],
-    "高度：辞書式のドット区切りパスによるデフォルト": [
+    "高度な操作：辞書式のドット区切りパスによるデフォルト": [
       {
         "document": "advanced/scope.md",
-        "line": 270,
+        "line": 272,
         "level": 3,
-        "title": "高度：辞書式のドット区切りパスによるデフォルト"
+        "title": "高度な操作：辞書式のドット区切りパスによるデフォルト"
       }
     ],
     "高級トピック": [
