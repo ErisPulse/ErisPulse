@@ -4,9 +4,9 @@ ErisPulse ロボットを本番環境にデプロイするためのベストプ�
 
 ## Docker 部署（推奨）
 
-ErisPulse は公式の Docker イメージを提供しており、ErisPulse フレームワークと Dashboard 管理パネルが内蔵されており、`linux/amd64` および `linux/arm64` アーキテクチャに対応しています。
+ErisPulse は公式の Docker イメージを提供しており、ErisPulse フレームワークと Dashboard 管理パネルが内蔵されています。`linux/amd64` および `linux/arm64` アーキテクチャをサポートしています。
 
-### 早速起動
+### 速攻起動
 
 ```bash
 # イメージを取得
@@ -19,9 +19,9 @@ curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compos
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
-起動後、`http://localhost:8000/Dashboard` にアクセスし、設定したトークンをパスワードとしてログインしてください。
+起動後、`http://localhost:8000/Dashboard` にアクセスし、設定したトークンをパスワードとしてログインします。
 
-### 国内でのイメージ加速
+### 国内用のイメージ加速
 
 Docker Hub にアクセスできない場合は、GitHub Container Registry を使用してイメージを取得できます：
 
@@ -58,7 +58,7 @@ services:
     restart: unless-stopped
 ```
 
-> 上記の設定と健全性チェック、タイムゾーンおよび言語環境変数が含まれている、リポジトリのルートにある [docker-compose.yml](https://github.com/ErisPulse/ErisPulse/blob/main/docker-compose.yml) を直接使用することを推奨します。
+> 上記の設定および健全性チェック、タイムゾーンと言語環境変数が含まれている、リポジトリのルートにある [docker-compose.yml](https://github.com/ErisPulse/ErisPulse/blob/main/docker-compose.yml) を直接使用することを推奨します。
 
 ### 環境変数
 
@@ -67,16 +67,18 @@ services:
 | `ERISPULSE_PORT` | `8000` | Dashboard のポートマッピング |
 | `ERISPULSE_DASHBOARD_TOKEN` | 自動生成 | Dashboard のログイントークン（強く設定することを推奨） |
 | `TZ` | `Asia/Shanghai` | タイムゾーン |
-| `LANG` | `en_US.UTF-8` | システム言語、起動時のインターフェース言語を自動検出 |
-| `ERISPULSE_LANG` | 空 | 起動時のインターフェース言語を強制指定：`zh` / `zh_TW` / `en` / `ja` / `ru`（`LANG` を上書き） |
+| `LANG` | `en_US.UTF-8` | システム言語、起動時の言語を自動検出 |
+| `ERISPULSE_LANG` | 空 | 起動時の言語を強制指定：`zh` / `zh_TW` / `en` / `ja` / `ru`（`LANG` を上書き） |
 
 ### データの永続化
 
-`./config` ディレクトリは設定ファイルとデータベースをマウントしており、以下を含んでいます：
+`./config` ディレクトリは設定ファイルとデータベースをマウントしており、以下の内容を含んでいます：
 
 - `config/config.toml` — 設定ファイル
 - `config/config.db` — SQLite ストレージデータベース
-- `config/.packages` — Python site-packages の永続化ボリューム、フレームワーク、アダプタ、およびインストール済みモジュールを保存（初期起動時にエントリポイントからイメージ内に含まれるバックアップから自動的に初期化され、その後のモジュールのインストールおよびフレームワークのホットアップデートはこのディレクトリに書き込まれます）
+- `config/.packages` — Python site-packages の永続化ボリューム、フレームワーク、アダプター、およびインストールされたモジュールを保存（初期起動時にエントリポイントがイメージ内に含まれるバックアップから自動的に初期化し、その後のモジュールインストールやフレームワークのホットアップデートはこのディレクトリに書き込まれます）
+
+> **フレームワークのアップグレード（pre/rc を含む）とイメージの自己修復**：エントリポイントは、各コンテナ起動時に、コアパッケージの整合性を自動的にチェックします。破損した場合、"ユーザーがインストールしたバージョンを優先"する原則に基づき、修復が行われます。永続ボリューム内に明示的にインストール/アップグレードされたバージョン（例：Dashboard でインストールされた pre バージョン）は、PyPI から**同バージョンを再インストール**されます。静かにイメージ内に含まれるバージョンに戻ることはありません。したがって、Dashboard でフレームワークをアップグレードした後、任意回のコンテナ再起動でも、目標バージョンを維持することができます。
 
 ## Dashboard 管理面板
 
