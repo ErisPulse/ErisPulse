@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "62b53a2ddde8741568b3527061ce83ff",
-  "file_hash": "62b53a2ddde8741568b3527061ce83ff",
-  "translated_at": "2026-09-08T05:37:25.661171",
+  "hash": "e81b387bf6241d50fc0a29b589e16431",
+  "file_hash": "e81b387bf6241d50fc0a29b589e16431",
+  "translated_at": "2026-09-10T07:03:03.757084",
   "target_lang": "en",
   "chunks": [
     {
@@ -16,6 +16,10 @@
     {
       "hash": "04941a69ef97cd6fa94ff680d5ce273c",
       "translation": "## Connection Parameters\n\n### MySQL (`ErisPulse.storage.mysql`)\n\n```toml\n[ErisPulse.storage.mysql]\nhost = \"127.0.0.1\"\nport = 3306\nuser = \"erispulse\"\npassword = \"\"\ndatabase = \"erispulse\"\ncharset = \"utf8mb4\"\npool_min = 1\npool_max = 10\n```\n\n### PostgreSQL (`ErisPulse.storage.postgres`)\n\n```toml\n[ErisPulse.storage.postgres]\nhost = \"127.0.0.1\"\nport = 5432\nuser = \"erispulse\"\npassword = \"\"\ndatabase = \"erispulse\"\npool_min = 1\npool_max = 10\n```\n\n> [!NOTE]\n> Changes to connection parameters require a framework restart to take effect (a restart reminder log is output during hot configuration updates).\n> Connection pools are lazily created per event loop, and transient connection failures (e.g., network fluctuations or database restart windows) are automatically retried with exponential backoff."
+    },
+    {
+      "hash": "e2a9f5a1780ab5799315f1c00995abaf",
+      "translation": "## Connection Failure Behavior\n\nThe framework's startup and operation **do not depend on database reachability**—MySQL / PostgreSQL connection failures will not cause the framework to crash or fail to start:\n\n1. Instant pool creation failure triggers automatic exponential backoff retry (default 3 attempts)\n2. After exhausting retries → logs a WARNING (including reason and cooldown duration), the framework starts / continues running as normal, with only storage operations temporarily unavailable\n3. During the cooldown period (default 30 seconds), subsequent storage operations **fail quickly** (without blocking or slowing down other functions)\n4. Automatic reconnection attempt after cooldown ends—once the database recovers, storage becomes available again without requiring a restart\n\nLog example: `mysql connection pool creation failed after 3 retries, automatic reconnection in 30 seconds; storage operations will fail quickly during this period, while other framework functions remain unaffected`"
     },
     {
       "hash": "5e228c9acaa842fed2641f61482b3281",

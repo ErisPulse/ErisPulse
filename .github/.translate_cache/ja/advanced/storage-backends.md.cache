@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "62b53a2ddde8741568b3527061ce83ff",
-  "file_hash": "62b53a2ddde8741568b3527061ce83ff",
-  "translated_at": "2026-09-08T05:37:18.971368",
+  "hash": "e81b387bf6241d50fc0a29b589e16431",
+  "file_hash": "e81b387bf6241d50fc0a29b589e16431",
+  "translated_at": "2026-09-10T07:03:04.577944",
   "target_lang": "ja",
   "chunks": [
     {
@@ -16,6 +16,10 @@
     {
       "hash": "04941a69ef97cd6fa94ff680d5ce273c",
       "translation": "## 接続パラメータ\n\n### MySQL（`ErisPulse.storage.mysql`）\n\n```toml\n[ErisPulse.storage.mysql]\nhost = \"127.0.0.1\"\nport = 3306\nuser = \"erispulse\"\npassword = \"\"\ndatabase = \"erispulse\"\ncharset = \"utf8mb4\"\npool_min = 1\npool_max = 10\n```\n\n### PostgreSQL（`ErisPulse.storage.postgres`）\n\n```toml\n[ErisPulse.storage.postgres]\nhost = \"127.0.0.1\"\nport = 5432\nuser = \"erispulse\"\npassword = \"\"\ndatabase = \"erispulse\"\npool_min = 1\npool_max = 10\n```\n\n> [!NOTE]\n> 接続パラメータを変更した後は、フレームワークを再起動する必要があります（設定のホット更新時に再起動のリマインダーログが出力されます）。\n> 接続プールはイベントループに従って惰性作成され、作成時に瞬間的な失敗（ネットワークの揺れ / データベースの再起動期間）が発生した場合、自動的に指数型の退避再試行が行われます。"
+    },
+    {
+      "hash": "e2a9f5a1780ab5799315f1c00995abaf",
+      "translation": "## 接続失敗時の動作\n\nフレームワークの起動と実行は**データベースの利用可能性に依存しません**。MySQL / PostgreSQL への接続失敗は、フレームワークのクラッシュや起動不能を引き起こしません。\n\n1. プール作成時の瞬時失敗は、指数関数的退避再試行（デフォルト 3 回）で自動的に処理されます。\n2. 再試行回数をすべて使用した場合 → WARNING ログを記録（原因とクールダウン期間を含む）、フレームワークは通常通り起動 / 継続的に動作しますが、ストレージ操作は一時的に利用できません。\n3. クールダウン期間（デフォルト 30 秒）内では、その後のストレージ操作は**即時失敗**します（ブロックされず、他の機能の遅延もありません）。\n4. クールダウン終了後は自動的に再接続を試みます。データベースが復旧するとストレージも復旧し、フレームワークの再起動は不要です。\n\nログ例: `mysql 接続プールの作成が最終的に失敗しました（再試行を 3 回行いました）。30 秒後に自動的に再接続を試みます。この間、ストレージ操作は即時失敗しますが、フレームワークの他の機能には影響しません。`"
     },
     {
       "hash": "5e228c9acaa842fed2641f61482b3281",

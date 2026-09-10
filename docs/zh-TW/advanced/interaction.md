@@ -215,12 +215,12 @@ async with event.message_tx():
 
 ## 鏈路追蹤：trace-id
 
-每個入站事件會自動獲得追蹤 ID（複用 `event["id"]`，若缺失則生成），貫穿：
+每個入站事件自動獲得追蹤 ID（複用 `event["id"]`，若缺失則生成），貫穿：
 
-- handler 上下文（`get_current_trace_id()` 讀取）
+- handler 上下文（使用 `get_current_trace_id()` 讀取）
 - 出站發送（`[Send]` 日誌行附加 `[trace:...]`，`message.sending/sent` 鈎子的 `trace_id` 欄位）
-- 生命週期鈎子數據（dict 自動補 `_trace_id`）
-- 定向事件（`emit_to`）與訊息事務回執
+- 生命週期鈎子資料（dict 自動補 `_trace_id`）
+- 定向事件（`lifecycle.emit(..., to=...)`）與訊息事務回執
 
 當一條訊息被多個模組接力處理時，全鏈路可使用同一 ID 串聯（日誌 / 慢查詢 / 審計）。
 
