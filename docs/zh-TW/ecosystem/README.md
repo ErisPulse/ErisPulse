@@ -21,7 +21,8 @@ ErisPulse 框架本身只提供核心能力（事件系統、模組系統、配�
 | 項目 | 類型 | 用途 | 文件 |
 |------|------|------|------|
 | [ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) | 官方客戶端 | 官方全平台客戶端（Android / Windows / Linux / macOS）：原生介面建立 / 運行 / 管理多個實例，內建模組商店與事件建構器；**手機直接運行**，桌面托盤常駐 | [ErisPulse-App 安裝與使用](app.md) |
-| [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) | 模組 | Web 管理面板：模組啟停、設定編輯、日誌查看、事件監控；支援其他模組向側邊欄註冊自訂視窗 | [Dashboard 使用與視窗註冊](dashboard.md) |
+| [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) | 模組 | Web 管理面板：模組啟停、配置編輯、日誌檢視、事件監控；支援其他模組向側邊欄註冊自訂視窗 | [Dashboard 使用與視窗註冊](dashboard.md) |
+| [ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) | 模組 | 定時任務排程：一次性 / 間隔 / Cron 表達式，回呼傳參，SQLite 持久化（重啟不丟任務），支援 Dashboard 視窗管理 | [Cron 定時任務](cron.md) |
 | [ErisPulse-Takumi](https://github.com/ccd2s/ErispulseTakumi)（作者 [@ccd2s](https://github.com/ccd2s)） | 模組 | 圖片渲染：HTML / 節點樹 / Jinja / SVG / 動畫，基於 [takumi-py](https://github.com/BalconyJH/takumi-py)；內建中英文字型，開箱即用 | [Takumi 圖片渲染](takumi.md) |
 
 ---

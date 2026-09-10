@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "53547945b08c993af256a31a9a8ba4e1",
-  "file_hash": "53547945b08c993af256a31a9a8ba4e1",
-  "translated_at": "2026-09-07T11:20:48.357999",
+  "hash": "8e16928a8afa08970f2d5931ff945eee",
+  "file_hash": "8e16928a8afa08970f2d5931ff945eee",
+  "translated_at": "2026-09-10T11:50:04.993922",
   "target_lang": "en",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Ecosystem Modules\n\nThe ErisPulse framework itself only provides core capabilities (event system, module system, configuration, routing, logging, etc.), and does **not** include \"heavyweight\" features such as GUI, image rendering, or visualization. These capabilities are provided by **third-party modules** maintained by the community, which can be installed as needed.\n\n> [!IMPORTANT]\n> The documentation in this directory is divided into two categories, with different installation methods:\n>\n> - **Modules** (such as Dashboard / Takumi) are installed using `epsdk install`:\n>\n>   ```bash\n>   epsdk install <module-name>\n>   ```\n>\n> - **Standalone applications** (such as the ErisPulse-App client) are downloaded and installed directly from their corresponding GitHub Releases, without the need for `epsdk`.\n>\n\n---"
     },
     {
-      "hash": "25b31147cd93a4a1ac3cc1786a9b5806",
-      "translation": "## Recommended Modules and Official Clients\n\n| Project | Type | Purpose | Documentation |\n|---------|------|---------|---------------|\n| [ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) | Official Client | Official cross-platform client (Android / Windows / Linux / macOS): native interface to create / run / manage multiple instances, built-in module store and event builder; **runs directly on mobile**, desktop tray icon | [ErisPulse-App Installation and Usage](app.md) |\n| [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) | Module | Web management panel: module start/stop, configuration editing, log viewing, event monitoring; supports other modules to register custom windows to the sidebar | [Dashboard Usage and Window Registration](dashboard.md) |\n| [ErisPulse-Takumi](https://github.com/ccd2s/ErispulseTakumi) (Author [@ccd2s](https://github.com/ccd2s)) | Module | Image rendering: HTML / node tree / Jinja / SVG / animation, based on [takumi-py](https://github.com/BalconyJH/takumi-py); includes Chinese and English fonts, ready to use out of the box | [Takumi Image Rendering](takumi.md) |\n\n---"
+      "hash": "67ae0dfbc1e768330eb85db18b7041cb",
+      "translation": "## Recommended Modules & Official Clients\n\n| Project | Type | Purpose | Documentation |\n|---------|-------|---------|---------------|\n| [ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) | Official Client | Official cross-platform client (Android / Windows / Linux / macOS): native interface for creating / running / managing multiple instances, built-in module store and event builder; **runs directly on mobile**, desktop tray icon always present | [ErisPulse-App Installation and Usage](app.md) |\n| [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) | Module | Web management panel: module start/stop, configuration editing, log viewing, event monitoring; supports other modules registering custom side windows | [Dashboard Usage and Window Registration](dashboard.md) |\n| [ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) | Module | Scheduled task execution: one-time / interval / Cron expression, callback with parameters, SQLite persistence (tasks not lost on restart), supports Dashboard window management | [Cron Scheduling](cron.md) |\n| [ErisPulse-Takumi](https://github.com/ccd2s/ErispulseTakumi) (Author: [@ccd2s](https://github.com/ccd2s)) | Module | Image rendering: HTML / node tree / Jinja / SVG / animation, based on [takumi-py](https://github.com/BalconyJH/takumi-py); includes Chinese and English fonts, ready-to-use out of the box | [Takumi Image Rendering](takumi.md) |\n\n---"
     },
     {
       "hash": "313e3e4c95c26587b54e456998ea229e",

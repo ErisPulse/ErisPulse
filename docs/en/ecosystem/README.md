@@ -16,13 +16,14 @@ The ErisPulse framework itself only provides core capabilities (event system, mo
 
 ---
 
-## Recommended Modules and Official Clients
+## Recommended Modules & Official Clients
 
 | Project | Type | Purpose | Documentation |
-|---------|------|---------|---------------|
-| [ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) | Official Client | Official cross-platform client (Android / Windows / Linux / macOS): native interface to create / run / manage multiple instances, built-in module store and event builder; **runs directly on mobile**, desktop tray icon | [ErisPulse-App Installation and Usage](app.md) |
-| [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) | Module | Web management panel: module start/stop, configuration editing, log viewing, event monitoring; supports other modules to register custom windows to the sidebar | [Dashboard Usage and Window Registration](dashboard.md) |
-| [ErisPulse-Takumi](https://github.com/ccd2s/ErispulseTakumi) (Author [@ccd2s](https://github.com/ccd2s)) | Module | Image rendering: HTML / node tree / Jinja / SVG / animation, based on [takumi-py](https://github.com/BalconyJH/takumi-py); includes Chinese and English fonts, ready to use out of the box | [Takumi Image Rendering](takumi.md) |
+|---------|-------|---------|---------------|
+| [ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) | Official Client | Official cross-platform client (Android / Windows / Linux / macOS): native interface for creating / running / managing multiple instances, built-in module store and event builder; **runs directly on mobile**, desktop tray icon always present | [ErisPulse-App Installation and Usage](app.md) |
+| [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) | Module | Web management panel: module start/stop, configuration editing, log viewing, event monitoring; supports other modules registering custom side windows | [Dashboard Usage and Window Registration](dashboard.md) |
+| [ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) | Module | Scheduled task execution: one-time / interval / Cron expression, callback with parameters, SQLite persistence (tasks not lost on restart), supports Dashboard window management | [Cron Scheduling](cron.md) |
+| [ErisPulse-Takumi](https://github.com/ccd2s/ErispulseTakumi) (Author: [@ccd2s](https://github.com/ccd2s)) | Module | Image rendering: HTML / node tree / Jinja / SVG / animation, based on [takumi-py](https://github.com/BalconyJH/takumi-py); includes Chinese and English fonts, ready-to-use out of the box | [Takumi Image Rendering](takumi.md) |
 
 ---
 

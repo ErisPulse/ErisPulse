@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "53547945b08c993af256a31a9a8ba4e1",
-  "file_hash": "53547945b08c993af256a31a9a8ba4e1",
-  "translated_at": "2026-09-07T11:26:30.287463",
+  "hash": "8e16928a8afa08970f2d5931ff945eee",
+  "file_hash": "8e16928a8afa08970f2d5931ff945eee",
+  "translated_at": "2026-09-10T11:50:08.635257",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# エコシステムモジュール\n\nErisPulse フレームワーク自体は、イベントシステム、モジュールシステム、設定、ルーティング、ログなどのコア機能のみを提供し、**GUI、画像レンダリング、可視化などの「重い」機能は内蔵していません**。これらの機能は、コミュニティが維持する**サードパーティモジュール**によって提供され、必要に応じてインストールできます。\n\n> [!IMPORTANT]\n> 本セクションのドキュメントは、インストール方法が異なる2種類に分かれています：\n>\n> - **モジュール**（例：Dashboard / Takumi）は、`epsdk install` を使用してインストールします：\n>\n>   ```bash\n>   epsdk install <モジュール名>\n>   ```\n>\n> - **独立プログラム**（例：ErisPulse-App クライアント）は、対応する GitHub Releases から直接ダウンロードしてインストールします。`epsdk` は不要です。\n>\n\n---"
     },
     {
-      "hash": "25b31147cd93a4a1ac3cc1786a9b5806",
-      "translation": "## 推荐モジュールと公式クライアント\n\n| 項目 | タイプ | 用途 | ドキュメント |\n|------|------|------|------|\n| [ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) | 公式クライアント | 公式の全プラットフォームクライアント（Android / Windows / Linux / macOS）：ネイティブUIで複数のインスタンスを作成 / 実行 / 管理、モジュールストアとイベントビルダーを内蔵；**スマートフォンで直接実行可能**、デスクトップのトレイに常駐 | [ErisPulse-App インストールと使用](app.md) |\n| [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) | モジュール | Web管理パネル：モジュールの起動 / 停止、設定の編集、ログの表示、イベントの監視；他のモジュールがサイドバーにカスタムウィンドウを登録することをサポート | [Dashboard 使用とウィンドウ登録](dashboard.md) |\n| [ErisPulse-Takumi](https://github.com/ccd2s/ErispulseTakumi)（作者 [@ccd2s](https://github.com/ccd2s)） | モジュール | 画像レンダリング：HTML / ノードツリー / Jinja / SVG / アニメーション、[takumi-py](https://github.com/BalconyJH/takumi-py) に基づく；内蔵の中英文字体、すぐに使用可能 | [Takumi 画像レンダリング](takumi.md) |\n\n---"
+      "hash": "67ae0dfbc1e768330eb85db18b7041cb",
+      "translation": "## 推奨モジュールと公式クライアント\n\n| 項目 | タイプ | 用途 | ドキュメント |\n|------|------|------|------|\n| [ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) | 公式クライアント | 公式の全プラットフォームクライアント（Android / Windows / Linux / macOS）：ネイティブインターフェースで複数のインスタンスを作成 / 実行 / 管理、内蔵のモジュールストアとイベントビルダー；**スマートフォンで直接実行可能**、デスクトップのトレイに常駐 | [ErisPulse-App インストールと使用](app.md) |\n| [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) | モジュール | Web 管理パネル：モジュールの起動 / 停止、設定の編集、ログの表示、イベントの監視；他のモジュールがサイドバーにカスタムウィンドウを登録可能 | [Dashboard 使用とウィンドウ登録](dashboard.md) |\n| [ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) | モジュール | タイミングタスクスケジューラ：一回限り / 間隔 / Cron 式、コールバック引数、SQLite 永続化（再起動時にタスクを失わない）、Dashboard ウィンドウ管理対応 | [Cron タイミングタスク](cron.md) |\n| [ErisPulse-Takumi](https://github.com/ccd2s/ErispulseTakumi)（作者 [@ccd2s](https://github.com/ccd2s)） | モジュール | 画像レンダリング：HTML / ノードツリー / Jinja / SVG / アニメーション、[takumi-py](https://github.com/BalconyJH/takumi-py) に基づく；内蔵の中英文字体、すぐに使用可能 | [Takumi 画像レンダリング](takumi.md) |\n\n---"
     },
     {
       "hash": "313e3e4c95c26587b54e456998ea229e",
