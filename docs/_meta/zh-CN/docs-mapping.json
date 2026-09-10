@@ -336,7 +336,7 @@
     "高级主题": {
       "description": "深入理解框架的高级特性",
       "icon": "fa-fire",
-      "count": 15,
+      "count": 16,
       "documents": [
         {
           "title": "高级主题",
@@ -417,14 +417,20 @@
           "icon": "fa-fire"
         },
         {
-          "title": "启动流程与手动控制",
-          "path": "advanced/startup.md",
-          "level": 1,
-          "icon": "fa-fire"
-        },
-        {
           "title": "存储后端",
           "path": "advanced/storage-backends.md",
+          "level": 1,
+          "icon": "fa-server"
+        },
+        {
+          "title": "异常体系与捕获指南",
+          "path": "advanced/errors.md",
+          "level": 1,
+          "icon": "fa-triangle-exclamation"
+        },
+        {
+          "title": "启动流程与手动控制",
+          "path": "advanced/startup.md",
           "level": 1,
           "icon": "fa-fire"
         }
