@@ -73,6 +73,7 @@ from typing import Any
 from ...runtime.context import current_owner
 from ...runtime.frame_config import set_erispulse_section
 from .. import text_match
+from ..i18n import i18n
 
 # 类型规格注册表：每事件类型的可覆写参数白名单（新参数/新类型在此注册）
 _TYPE_SPECS: dict[str, frozenset] = {
@@ -403,8 +404,14 @@ class _TypeNamespace:
         bad = [k for k in params if k not in spec]
         if bad:
             raise ValueError(
-                f"unknown override params for {self.type_name}: {bad}, expected one of {sorted(spec)}"
+                i18n.t(
+                    "core.event.overrides_unknown_params",
+                    type_name=self.type_name,
+                    bad=", ".join(bad),
+                    expected=", ".join(sorted(spec)),
+                )
             )
+            
         cleaned: dict = {}
         for k, v in params.items():
             if v is None:
@@ -494,7 +501,12 @@ class _CommandNamespace:
         bad = [k for k in params if k not in _COMMAND_PARAMS]
         if bad:
             raise ValueError(
-                f"unknown command override params: {bad}, expected one of {sorted(_COMMAND_PARAMS)}"
+                i18n.t(
+                    "core.event.overrides_unknown_params",
+                    type_name="command",
+                    bad=", ".join(bad),
+                    expected=", ".join(sorted(_COMMAND_PARAMS)),
+                )
             )
         return {k: v for k, v in params.items() if v is not None}
 
@@ -634,7 +646,7 @@ class _AclNamespace:
         >>> overrides.acl.set("restart", deny="onebot11:u_bad")
         """
         if not command_name:
-            raise ValueError("command_name is required")
+            raise ValueError(i18n.t("core.event.command_name_required"))
         entry: dict = {}
         for key, value in (("allow", allow), ("deny", deny)):
             if value is None:

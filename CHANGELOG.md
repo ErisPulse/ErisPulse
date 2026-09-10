@@ -77,15 +77,18 @@
 > 开发版本
 
 **版本摘要**
-归属权清理链向外部开放：新增**外部归属清理钩子**（`runtime/owner_cleanup.py`），工具模块（定时任务、注册表、连接池等）托管其它模块的资源时可通过 `on_cleanup(cb)` 挂入框架清理链，对方模块被卸载 / 禁用（或适配器关闭）时自动回调，工具模块据此抛弃内部持有的句柄，使已卸载模块实例可被正常 GC 回收。配套新增**调用来源感知**：`module.call()` 执行期间注入 `current_caller` 调用方上下文（owner 仍归因目标模块），被调方经 `get_current_caller()` 识别调用来源，`on_cleanup` 在 RPC 调用链内自动记名到真实调用方。新增生态模块文档 `ecosystem/cron.md`（ErisPulse-Cron 定时任务调度）。
+归属权清理链向外部开放：新增**外部归属清理钩子**（`runtime/owner_cleanup.py`），工具模块（定时任务、注册表、连接池等）托管其它模块的资源时可通过 `on_cleanup(cb)` 挂入框架清理链，对方模块被卸载 / 禁用（或适配器关闭）时自动回调，工具模块据此抛弃内部持有的句柄，使已卸载模块实例可被正常 GC 回收。配套新增**调用来源感知**：`module.call()` 执行期间注入 `current_caller` 调用方上下文（owner 仍归因目标模块），被调方经 `get_current_caller()` 识别调用来源，`on_cleanup` 在 RPC 调用链内自动记名到真实调用方。**生命周期事件体系充实**：处理器改为并行执行 + 新增 `fire()` 后台零成本发射（热路径事件全部切换）；新增 `storage.ready/unreachable/recovered`（连接状态感知）、`client.request.failed`、`module.reload`、`i18n.language.changed`、`core.init.stage` 事件与各阶段启动时长统计（`core.init.complete.stages`）。**异常体系优化**：ClientError/StorageUnreachableError/ModuleCallTimeoutError 补齐结构化属性；`SessionOccupiedError`/`InteractionCancelled`/`StrictModeError` 迁入统一异常层级并聚合导出；懒加载失败异常统一为 `ModuleNotAvailableError`；异常消息 i18n 全覆盖；事件处理器异常日志附用户代码帧定位。**修复**：从桥接线程等非主循环线程调度的后台任务改为投递回主循环（原可能在按次运行的桥接循环上被孤立而永不执行）。新增生态模块文档 `ecosystem/cron.md`（ErisPulse-Cron 定时任务调度）。
 
 **升级建议**
 - 是否建议升级：建议升级
-- 纯新增能力，现有代码零改动；工具模块类作者建议接入 `on_cleanup` 消除托管句柄泄漏
+- 纯新增能力 + 向后兼容的异常属性/归位（旧位置保留导入别名），现有代码零改动；工具模块类作者建议接入 `on_cleanup` 消除托管句柄泄漏
+- 依赖生命周期处理器**串行执行顺序**或依赖 `emit` 返回前链式传递中间修改的消费方需评估：处理器现在并行收到同一份输入（返回值按优先级顺序回放）；后台发射（`fire`）不保证执行时机
+- 依赖"懒加载失败抛 `RuntimeError`"的代码请改捕获 `ModuleNotAvailableError`
 
 **注意事项**
 - `on_cleanup` 必须在对方模块的加载上下文或 `module.call` 调用链内登记（或显式 `owner=`），无来源时抛 `ValueError`
 - 工具模块应在自身 `on_unload` 中调用 `off_cleanup(cb)` 注销自己登记的钩子，避免钩子表持有自身实例
+- 框架关停序列（uninit）中的事件仍为同步 `emit`；后台 `fire` 的事件在进程退出时可能丢失
 
 ### 新增
 
@@ -98,6 +101,20 @@
     - 生态：新增生态模块文档 `ecosystem/cron.md`（ErisPulse-Cron 定时任务调度，收录进文档索引与 AI 提示词物料）
   - 文档：`advanced/ownership.md` 新增"工具模块指南：托管其它模块的句柄"（归属资源全景表与清理序列同步）；`developer-guide/modules/best-practices.md` 新增"工具模块的框架联动清理"
   - i18n 五语言同步：新增 `core.cleanup.*`（归属清理钩子）/ `core.adapter.cleanup_hooks_failed` 键
+  - **生命周期事件体系充实**：
+    - 处理器并行执行：`emit` 的处理器各自包装协程经 `gather` 并发（慢处理器不再阻塞其余处理器与触发方，emit 返回时全部完成）；新增 `lifecycle.fire()` 后台零成本发射（无监听者零开销，处理器不等待、无返回值）——热路径事件（`server.request/response`、`adapter.event.receive/dispatched`、`event.pre_process`、`command.matched/executed`、`client.request.*`、`storage.*`、`core.init.stage`）全部切换为后台发射
+    - 新增事件：`storage.ready/unreachable/recovered`（连接池就绪 / 重试耗尽进入冷却 / 冷却结束重连成功，载荷含 `backend` 与 `cooldown`；恢复时补 INFO 日志）；`client.request.failed`（重试耗尽最终失败，含 method/url/error/attempts/elapsed）；`module.reload`（热重载完成）；`server.start` 失败分支补 `success/error` 字段；`i18n.language.changed`（语言切换）；`core.init.stage`（初始化七阶段进度，后台发射）
+    - 各阶段启动时长统计：`core.init.complete` 载荷新增 `stages: {stage: 耗时秒}`，init 汇总以 DEBUG 输出各阶段时长（供启动优化分析）
+    - `STANDARD_EVENTS` 登记补全：新增 `storage` / `client` / `i18n` 域，补登记既有 `client.request.success` / `client.ws.connect` / `config.updated` / `module.reload`
+  - **异常体系优化**：
+    - 结构化属性：`ClientError` 系补 `.url/.method/.attempts`（重试循环上下文不再丢失）；`StorageUnreachableError` 补 `.backend/.cooldown`；`ModuleCallTimeoutError` 补 `.timeout`
+    - 归位合规：`SessionOccupiedError` / `InteractionCancelled` 定义迁入 `Core/Bases/errors.py`（interaction.py 保留导入别名），`StrictModeError` 挂入 `ErisPulseError` 层级，三者均从 `ErisPulse.Core` 聚合导出
+    - 异常消息 i18n 全覆盖：`sql_base` 冷却消息（原手写中文）、client WS 三处（原硬编码英文）、scope / overrides / owner_cleanup / plugin_folder / SSE 等裸英文消息（Python 协议兜底 `__getattr__` 惯用法除外）
+    - 懒加载异常统一：初始化失败后的属性访问由 `RuntimeError` 改为 `ModuleNotAvailableError`（与 `module.call` 类型化语义对齐）
+    - 事件处理器异常诊断增强：单行错误日志附用户代码帧定位（`@ 文件:行号 位于 函数()`），不刷屏
+    - 死代码清理：module 注册不可达校验、adapter 注册重复分支、kv_builder 同步/异步重复校验段
+  - **修复**：`spawn_background` 从非主循环线程（同步桥接线程等）调度时优先投递回已注册主循环——原直接在按次运行（`run_until_complete` 用完即停）的桥接循环上 `ensure_future`，后台任务会被孤立而永不执行（首次暴露于 init 期桥接线程上发射的 `storage.ready`）
+  - 文档：`advanced/lifecycle.md` 同步新事件表 / `fire` 与并行语义 / 标准事件定义；`advanced/errors.md` 重构（异常总览树补全、结构化属性表、模块访问路径异常类型表、存储异常定位引导走事件、适配器 retcode 双通道说明）；`developer-guide/modules/best-practices.md` 错误处理示例清理 `aiohttp.ClientError` 残留（统一 `ClientError`）
 
 ---
 

@@ -113,3 +113,84 @@ async def test_mysql_runtime_loss_same_semantics(tmp_path, monkeypatch):
     assert await backend.aset("k", "v") is False
     assert attempts["n"] == first_attempts + 3
     assert backend._resource_failed_until > time.monotonic()
+
+
+@pytest.mark.asyncio
+async def test_storage_lifecycle_events_emitted(tmp_path, monkeypatch):
+    """连接状态机边沿后台发出 storage.unreachable / recovered 事件（fire 不阻塞存储操作）"""
+    import asyncio
+
+    from ErisPulse.Core.lifecycle import lifecycle
+
+    class _FlakySQLite(SQLiteStorage):
+        broken = False
+
+        async def _create_loop_resource(self):
+            if self.broken:
+                raise RuntimeError("db down")
+            return await super()._create_loop_resource()
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(_FlakySQLite, "_RESOURCE_CREATE_BACKOFF_SECS", 0.01)
+    monkeypatch.setattr(_FlakySQLite, "_RESOURCE_FAIL_COOLDOWN_SECS", 0.05)
+
+    seen = {"ready": [], "unreachable": [], "recovered": []}
+
+    def _make(kind):
+        def _h(data):
+            seen[kind].append(data)
+        return _h
+
+    for name, kind in (
+        ("storage.ready", "ready"),
+        ("storage.unreachable", "unreachable"),
+        ("storage.recovered", "recovered"),
+    ):
+        lifecycle.on(name)(_make(kind))
+
+    # 注册主循环：init 在桥接线程建池时，fire 能经 run_coroutine_threadsafe
+    # 投递回本测试循环（否则按次运行的桥接循环会孤立后台任务）
+    import ErisPulse.runtime.tasks as _tasks_mod
+    from ErisPulse.runtime.tasks import register_main_loop
+
+    monkeypatch.setattr(_tasks_mod, "_MAIN_LOOP", None)
+    register_main_loop(asyncio.get_running_loop())
+
+    backend = object.__new__(_FlakySQLite)
+    _FlakySQLite.broken = False
+    _FlakySQLite.__init__(backend)
+
+    async def _wait_until(pred, timeout=3.0):
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if pred():
+                return True
+            await asyncio.sleep(0.02)
+        return False
+
+    # ready：init 期间首池建立即发射（后台投递，轮询等待）
+    assert await _wait_until(lambda: bool(seen["ready"])), f"ready not seen: {seen}"
+    assert seen["ready"][0]["backend"] == "sqlite"
+
+    # 主动发射链路（fire 语义）
+    seen["ready"].clear()
+    await backend._emit_storage_event("storage.ready", backend="sqlite")
+    assert await _wait_until(lambda: bool(seen["ready"]))
+
+    # 断连：重试耗尽进入冷却 → unreachable（含 backend 与 cooldown）
+    _FlakySQLite.broken = True
+    assert await backend.aset("k", "v") is False
+    assert await _wait_until(lambda: bool(seen["unreachable"])), f"unreachable not seen: {seen}"
+    assert seen["unreachable"][0]["backend"] == "sqlite"
+    assert seen["unreachable"][0]["cooldown"] == 0.05
+
+    # 恢复：冷却结束重连成功 → recovered
+    _FlakySQLite.broken = False
+    time.sleep(0.06)
+    assert await backend.aset("k2", "v2") is True
+    assert await _wait_until(lambda: bool(seen["recovered"])), f"recovered not seen: {seen}"
+    assert seen["recovered"][0]["backend"] == "sqlite"
+
+    await backend.aclose()
+    for name in ("storage.ready", "storage.unreachable", "storage.recovered"):
+        lifecycle.unregister(name)

@@ -15,6 +15,7 @@ import weakref
 
 import pytest
 
+from ErisPulse.Core.Bases.errors import ModuleNotAvailableError
 from ErisPulse.Core.module import ModuleManager
 from ErisPulse.loaders.module import LazyModule
 
@@ -203,22 +204,22 @@ class TestLazyModuleFailure:
 
     def test_failed_module_does_not_retry_on_getattr(self):
         lm = LazyModule("demo", _FailingModule, _make_sdk(), _make_info(), None)
-        # 第一次访问触发初始化并失败，应给出明确的 RuntimeError
-        with pytest.raises(RuntimeError):
+        # 第一次访问触发初始化并失败，应给出类型化的 ModuleNotAvailableError
+        with pytest.raises(ModuleNotAvailableError):
             _ = lm.value
 
         assert object.__getattribute__(lm, "_init_failed") is True
         assert object.__getattribute__(lm, "_initialized") is False
 
-        # 再次访问应直接抛出 RuntimeError，而不是重新尝试构造
+        # 再次访问应直接抛出同类型异常，而不是重新尝试构造
         # （_ensure_initialized 在失败后会立即返回）
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ModuleNotAvailableError):
             _ = lm.value
 
     def test_ensure_initialized_short_circuits_after_failure(self):
         lm = LazyModule("demo", _FailingModule, _make_sdk(), _make_info(), None)
         # 触发一次失败
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ModuleNotAvailableError):
             _ = lm.value
 
         # _ensure_initialized 应直接返回，不再重试（不会重抛构造异常）

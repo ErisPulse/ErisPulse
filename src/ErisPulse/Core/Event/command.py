@@ -707,10 +707,10 @@ class CommandHandler:
             # 标记事件已被处理（认领 + 阻断，阻止低优先级处理器再介入）
             event.mark_processed()
 
-            # 钩子: 命令匹配
+            # 钩子: 命令匹配（后台发射，不阻塞命令分发）
             from ..lifecycle import lifecycle
 
-            await lifecycle.emit(
+            lifecycle.fire(
                 "command.matched",
                 {
                     "command": actual_cmd_name,
@@ -743,10 +743,10 @@ class CommandHandler:
                     if _owner_token is not None:
                         current_owner.reset(_owner_token)
 
-                # 钩子: 命令执行完成
+                # 钩子: 命令执行完成（后台发射）
                 from ..lifecycle import lifecycle
 
-                await lifecycle.emit(
+                lifecycle.fire(
                     "command.executed",
                     {
                         "command": actual_cmd_name,
@@ -760,10 +760,10 @@ class CommandHandler:
                 logger.error(i18n.t("core.command.exec_error", error=e))
                 await self._send_command_error(event, str(e))
 
-                # 钩子: 命令执行失败
+                # 钩子: 命令执行失败（后台发射）
                 from ..lifecycle import lifecycle
 
-                await lifecycle.emit(
+                lifecycle.fire(
                     "command.executed",
                     {
                         "command": actual_cmd_name,

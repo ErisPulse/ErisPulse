@@ -430,9 +430,33 @@ class I18nManager:
         """
         resolved = self._resolve_nearest(lang)
         with self._lock:
+            previous = self._current_lang
             self._current_lang = resolved
         if persist:
             self._persist_global_language(resolved)
+        if resolved != previous:
+            self._emit_language_changed(resolved, previous)
+
+    def _emit_language_changed(self, language: str, previous: str | None) -> None:
+        """
+        发出语言切换事件（``i18n.language.changed``）
+
+        :param language: 切换后的语言代码
+        :param previous: 切换前的语言代码（进程首个语言设置时为 None）
+
+        {!--< internal-use >!--}
+        事件失败静默跳过，不影响语言切换本身。
+        {!--< /internal-use >!--}
+        """
+        try:
+            from .lifecycle import lifecycle
+
+            lifecycle.emit_sync(
+                "i18n.language.changed",
+                {"language": language, "previous": previous},
+            )
+        except Exception:
+            pass
 
     def _persist_global_language(self, lang: str) -> None:
         """

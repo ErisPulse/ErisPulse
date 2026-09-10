@@ -22,10 +22,12 @@ ErisPulse KV 查询构建器
 """
 
 import json
-from typing import Any
+from typing import Any, TypeVar
 
 from ..i18n import i18n
 from .storage import BaseQueryBuilder
+
+T = TypeVar("T")
 
 _TABLE_PREFIX = "__erispulse_sql__"
 
@@ -200,18 +202,22 @@ class KVQueryBuilder(BaseQueryBuilder):
             return self._exec_delete()
         raise ValueError(i18n.t("core.kvbuilder.unknown_operation", op=self._operation))
 
+    def _require_data(self, expected: type[T], key: str) -> T:
+        """{!--< internal-use >!--} 校验构建器数据形态并返回（同步/异步执行路径共用，兼作类型收窄）"""
+        if not isinstance(self._data, expected):
+            raise ValueError(i18n.t(key))
+        return self._data
+
     def _exec_insert(self) -> int:
-        if not isinstance(self._data, dict):
-            raise ValueError(i18n.t("core.kvbuilder.insert_needs_dict"))
+        data = self._require_data(dict, "core.kvbuilder.insert_needs_dict")
         row_id = self._get_next_id()
-        self._storage.set(self._row_key(row_id), json.dumps(self._data, ensure_ascii=False))
+        self._storage.set(self._row_key(row_id), json.dumps(data, ensure_ascii=False))
         return 1
 
     def _exec_insert_multi(self) -> int:
-        if not isinstance(self._data, list):
-            raise ValueError(i18n.t("core.kvbuilder.insert_multi_needs_list"))
+        rows = self._require_data(list, "core.kvbuilder.insert_multi_needs_list")
         count = 0
-        for row in self._data:
+        for row in rows:
             row_id = self._get_next_id()
             self._storage.set(self._row_key(row_id), json.dumps(row, ensure_ascii=False))
             count += 1
@@ -245,12 +251,11 @@ class KVQueryBuilder(BaseQueryBuilder):
         return [tuple(r.values()) for _, r in rows]
 
     def _exec_update(self) -> int:
-        if not isinstance(self._data, dict):
-            raise ValueError(i18n.t("core.kvbuilder.update_needs_dict"))
+        data = self._require_data(dict, "core.kvbuilder.update_needs_dict")
         count = 0
         for row_id, row in self._scan_rows():
             if self._match_row(row):
-                row.update(self._data)
+                row.update(data)
                 self._storage.set(self._row_key(row_id), json.dumps(row, ensure_ascii=False))
                 count += 1
         return count
@@ -308,16 +313,14 @@ class KVQueryBuilder(BaseQueryBuilder):
     async def aExecute(self) -> list[tuple] | int:
         """异步执行查询"""
         if self._operation == "insert":
-            if not isinstance(self._data, dict):
-                raise ValueError(i18n.t("core.kvbuilder.insert_needs_dict"))
+            data = self._require_data(dict, "core.kvbuilder.insert_needs_dict")
             row_id = self._get_next_id()
-            await self._storage.aset(self._row_key(row_id), json.dumps(self._data, ensure_ascii=False))
+            await self._storage.aset(self._row_key(row_id), json.dumps(data, ensure_ascii=False))
             return 1
         if self._operation == "insert_multi":
-            if not isinstance(self._data, list):
-                raise ValueError(i18n.t("core.kvbuilder.insert_multi_needs_list"))
+            rows = self._require_data(list, "core.kvbuilder.insert_multi_needs_list")
             count = 0
-            for row in self._data:
+            for row in rows:
                 row_id = self._get_next_id()
                 await self._storage.aset(self._row_key(row_id), json.dumps(row, ensure_ascii=False))
                 count += 1
@@ -325,12 +328,11 @@ class KVQueryBuilder(BaseQueryBuilder):
         if self._operation == "select":
             return await self._aexec_select()
         if self._operation == "update":
-            if not isinstance(self._data, dict):
-                raise ValueError(i18n.t("core.kvbuilder.update_needs_dict"))
+            data = self._require_data(dict, "core.kvbuilder.update_needs_dict")
             count = 0
             for row_id, row in await self._ascan_rows():
                 if self._match_row(row):
-                    row.update(self._data)
+                    row.update(data)
                     await self._storage.aset(self._row_key(row_id), json.dumps(row, ensure_ascii=False))
                     count += 1
             return count

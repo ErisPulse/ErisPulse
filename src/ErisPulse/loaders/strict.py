@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Any
 
+from ..Core.Bases.errors import StrictModeError
 from ..Core.constants import DEFAULT_STRICT_MODE
 from ..Core.i18n import i18n
 from ..Core.logger import logger
@@ -31,23 +32,6 @@ class StrictModeLevel(IntEnum):
     LENIENT = 0
     SKIP = 1
     FATAL = 2
-
-
-class StrictModeError(Exception):
-    """
-    严格模式致命错误
-
-    当严格模式级别为 2（致命）且检测到违规时，在检查点抛出此异常，
-    用于中止整个启动流程。
-
-    {!--< tips >!--}
-    此异常不应被加载器捕获吞掉，应向上传播至初始化协调器
-    {!--< /tips >!--}
-    """
-
-    def __init__(self, message: str, violations: list | None = None):
-        super().__init__(message)
-        self.violations: list = violations if violations is not None else []
 
 
 @dataclass

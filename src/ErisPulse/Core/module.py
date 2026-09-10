@@ -308,15 +308,6 @@ class ModuleManager(ManagerBase):
                 classname=module_class.__name__,
             )
             logger.warning(warn_msg)
-            # error_msg = f"模块 {module_name} 的类 {module_class.__name__} 必须继承自BaseModule"
-            # logger.error(error_msg)
-            # raise TypeError(error_msg)
-
-        # 验证模块名是否合法
-        if not module_name or not isinstance(module_name, str):
-            error_msg = i18n.t("core.module.name_required")
-            logger.error(error_msg)
-            raise TypeError(error_msg)
 
         # 检查模块名是否已存在
         if module_name in self._module_classes:
@@ -655,7 +646,9 @@ class ModuleManager(ManagerBase):
         if loader is None:
             logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
             return False
-        return await loader.reload_module(name, self, self._sdk)
+        success = await loader.reload_module(name, self, self._sdk)
+        await lifecycle.emit("module.reload", {"module_name": name, "success": success})
+        return success
 
     async def _unload_single_module(self, module_name: str) -> bool:
         """
@@ -2150,6 +2143,7 @@ class ModuleManager(ManagerBase):
                         module_name,
                         method,
                         i18n.t("core.module.call_timeout", module=module_name, method=method, timeout=timeout),
+                        timeout=timeout,
                     ) from None
             return result
         finally:

@@ -43,7 +43,7 @@ import time
 from typing import TYPE_CHECKING, Any
 
 from ...runtime.context import current_owner
-from ..Bases.errors import InteractionError
+from ..Bases.errors import InteractionCancelled, SessionOccupiedError
 from ..constants import (
     DEFAULT_INTERACTION_LEASE_TTL_SECS,
     DEFAULT_MAX_SESSION_REMINDERS,
@@ -68,23 +68,6 @@ REASON_PLATFORM_STOP = "platform_stop"  # 适配器/平台关闭
 REASON_REVOKED = "revoked"  # 权限复查失败（身份被拉黑或模块被解绑）
 REASON_CANCELLED = "cancelled"  # 手动取消
 REASON_CLEARED = "cleared"  # 全量清理
-
-
-class InteractionCancelled(InteractionError):
-    """
-    交互会话被取消
-
-    挂起的 ``wait_reply`` / 租约因非超时原因终止时设置到 future 上，
-    等待方可捕获本异常获取原因；上层 ``wait_reply`` 将其转换为返回 None。
-
-    :attribute reason: 取消原因（conflict / owner_unload / platform_stop / revoked / cancelled / cleared）
-    :attribute wait_key: 关联的会话键
-    """
-
-    def __init__(self, reason: str, wait_key: str = ""):
-        self.reason = reason
-        self.wait_key = wait_key
-        super().__init__(f"{reason}: {wait_key}" if wait_key else reason)
 
 
 class _Entry:
@@ -885,15 +868,6 @@ class InteractionManager:
         return f"<InteractionManager entries={len(self._entries)} owners={len(self._by_owner)}>"
 
 
-class SessionOccupiedError(InteractionError):
-    """会话已被其他模块占用（:meth:`InteractionManager.hold` 获取失败时抛出）"""
-
-    def __init__(self, wait_key: str = "", owner: str | None = None):
-        self.wait_key = wait_key
-        self.owner = owner
-        super().__init__(f"session occupied by {owner!r}: {wait_key}")
-
-
 class _LeaseContext:
     """{!--< internal-use >!--} hold() 的上下文管理器实现"""
 
@@ -912,7 +886,16 @@ class _LeaseContext:
                 if isinstance(self._event, str)
                 else self._manager.make_key(self._event)
             )
-            raise SessionOccupiedError(key, self._manager.get_owner_of(key))
+            occupied_by = self._manager.get_owner_of(key)
+            raise SessionOccupiedError(
+                wait_key=key,
+                owner=occupied_by,
+                message=i18n.t(
+                    "core.interaction.session_occupied",
+                    owner=occupied_by,
+                    wait_key=key,
+                ),
+            )
         self._lease = lease
         return lease
 
