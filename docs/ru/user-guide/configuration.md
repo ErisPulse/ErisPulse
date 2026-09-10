@@ -151,9 +151,9 @@ ssl_certfile = ""
 ssl_keyfile = ""
 
 [ErisPulse.master]
-# users поддерживает два способа записи (выберите один):
-#   глобальные владельцы (действуют на всех платформах): users = ["123456", "789012"]
-#   владельцы по платформе: users = { yunhu = ["123456"], telegram = ["789012"] }
+# users поддерживает два способа записи (выберите один из них):
+#   Глобальный владелец (действует для всех платформ): users = ["123456", "789012"]
+#   Владелец по платформе: users = { yunhu = ["123456"], telegram = ["789012"] }
 users = {}
 
 [ErisPulse.logger]
@@ -178,6 +178,7 @@ modules = []
 adapters = []
 
 [ErisPulse.storage]
+backend = "sqlite"
 use_global_db = false
 
 [ErisPulse.event.command]
@@ -395,14 +396,52 @@ adapters = ["OldAdapter"]
 
 ## Конфигурация хранилища
 
+Начиная с версии 2.8.0, движок хранилища поддерживает три асинхронных бэкенда, **API полностью совместимы, переключение конфигурации происходит одним кликом**:
+
+| Бэкенд | Драйвер | Установка | Особенности |
+|------|------|------|------|
+| SQLite (по умолчанию) | aiosqlite | Готов к использованию | Нулевая конфигурация, одиночный файл, WAL-параллелизм |
+| MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | Существующая инфраструктура MySQL, совместное использование нескольких экземпляров |
+| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | Высокая производительность транзакций, высокая параллельность |
+
 ```toml
 [ErisPulse.storage]
-use_global_db = false
+backend = "sqlite"        # "sqlite" (по умолчанию) / "mysql" / "postgres"
+use_global_db = false     # Только для SQLite: использовать глобальную базу данных data/config.db из пакета
+
+[ErisPulse.storage.mysql]      # Действует, если backend = "mysql"
+host = "127.0.0.1"
+port = 3306
+user = "erispulse"
+password = ""
+database = "erispulse"
+# charset = "utf8mb4"
+# pool_min = 1
+# pool_max = 10
+
+[ErisPulse.storage.postgres]   # Действует, если backend = "postgres"
+host = "127.0.0.1"
+port = 5432
+user = "erispulse"
+password = ""
+database = "erispulse"
+# pool_min = 1
+# pool_max = 10
 ```
 
 | Параметр | Тип | Значение по умолчанию | Описание |
 |---------|------|---------|------|
-| use_global_db | boolean | false | Использовать глобальную базу данных (внутри пакета) вместо проектной базы данных. `true` означает, что все проекты используют SQLite-базу данных внутри пакета ErisPulse; `false` (по умолчанию) означает, что каждый проект использует независимую базу данных в папке `config/` |
+| backend | string | sqlite | Бэкенд хранилища: `sqlite` / `mysql` / `postgres`, переключение без изменений кода |
+| use_global_db | boolean | false | Только для SQLite: использовать глобальную базу данных из пакета, а не проектную |
+| storage.mysql.* | table | См. выше | Параметры подключения к MySQL (host / port / user / password / database / charset / pool) |
+| storage.postgres.* | table | См. выше | Параметры подключения к PostgreSQL (host / port / user / password / database / pool) |
+
+Также поддерживаются параметры через переменные окружения (Docker / 12-factor): `ErisPulse.storage.postgres.host` → `ERISPULSE_STORAGE_POSTGRES_HOST`.
+
+> [!TIP]
+> - После изменения параметров подключения необходимо перезапустить фреймворк для применения изменений; при мгновенной ошибке создания пула соединений автоматически применяется экспоненциальная задержка перед повторной попыткой
+> - Перед переключением бэкенда можно использовать скрипт проверки: `python tests/devs/test_storage_backend_verify.py --backend mysql`
+> - Подробное описание транзакций, диалектов, пользовательских бэкендов и т.д. см. в разделе [Хранилище бэкендов](../advanced/storage-backends.md)
 
 ## Конфигурация событий
 

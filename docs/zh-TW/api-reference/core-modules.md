@@ -243,16 +243,15 @@ sdk.adapter.get_status_summary()
 
 | 方法 | 說明 |
 |------|------|
-| `get(name)` | 取得模組實例或懶加載代理（已註冊但未載入時返回代理） |
+| `get(name)` | 取得模組實例或懶加載代理（已註冊但未加載時返回代理） |
 | `exists(name)` | 檢查是否已註冊 |
-| `is_loaded(name)` | 檢查是否已載入 |
+| `is_loaded(name)` | 檢查是否已加載 |
 | `is_enabled(name)` | 檢查是否啟用 |
 | `enable(name)` / `disable(name)` | 啟用/停用模組 |
-| `load(name)` / `unload(name)` | 載入/卸載模組 |
-| `call(module, method, *args, timeout=None, **kwargs)` | 跨模組呼叫目標模組的服務方法（協定化 RPC） |
-| `emit_to(module, event, data)` | 向指定模組定向投遞生命週期事件 |
+| `load(name)` / `unload(name)` | 加載/卸載模組 |
+| `call(module, method, *args, timeout=None, **kwargs)` | 跨模組呼叫目標模組的服務方法（協議化 RPC） |
 | `list_registered()` | 列出已註冊模組 |
-| `list_loaded()` | 列出已載入模組 |
+| `list_loaded()` | 列出已加載模組 |
 | `get_info(name)` | 取得模組資訊 |
 | `get_status_summary()` | 取得模組狀態摘要 |
 
@@ -267,7 +266,7 @@ module = sdk.ModuleName  # 等價快捷方式
 ### 模組間呼叫（RPC）
 
 ```python
-# 協定化呼叫：類型化錯誤 / 懶模組自動喚醒 / owner 歸因 / 超時語義
+# 協議化呼叫：類型化錯誤 / 懶模組自動喚醒 / owner 歸因 / 超時語義
 result = await sdk.module.call("Chat", "get_history", session_id, n=20)
 ```
 
@@ -283,7 +282,7 @@ result = await sdk.module.call("Chat", "get_history", session_id, n=20)
 
 ### 服務契約（meta.services）
 
-服務方在 `get_meta()` 的 `services` 欄位宣告對外白名單（與 `commands` 對稱），宣告後呼叫面收窄：
+服務方在 `get_meta()` 的 `services` 欄位宣告對外白名單（與 `commands` 對稱），宣告後呼叫面收緊：
 
 ```python
 class ChatModule(BaseModule):
@@ -294,11 +293,11 @@ class ChatModule(BaseModule):
     async def get_history(self, session_id, n=20): ...
 ```
 
-- **預設 = 開發者無感**：未宣告 `services` 時任意**公開**方法可被呼叫（向後相容），底線私有方法始終禁止；限制的主控制權在使用者端 scope 配置
+- **預設 = 開發者無感**：未宣告 `services` 時任意**公開**方法可被呼叫（向後相容），底線私有方法始終禁止；限制的主控制權在使用者側 scope 配置
 - 宣告後：僅白名單內方法可呼叫，越界拋 `ServiceNotProvidedError`
 - 呼叫方限制：`scope.set_action("CallerModule", "call", deny="Chat.get_history")`
 
-**服務介紹（description）**：`services` 支援 dict 形態為每個服務宣告介紹  
+**服務介紹（description）**：`services` 支援 dict 形態為每個服務宣告介紹
 （支援純字串或 i18n 字典），供服務目錄 / AI 呼叫點描述消費：
 
 ```python
@@ -323,26 +322,15 @@ sdk.module.services()
 sdk.module.services("Chat")  # 僅查詢指定模組
 ```
 
-僅列出**顯式宣告** `meta.services` 的模組；每個服務附方法簽名字串  
+僅列出**顯式宣告** `meta.services` 的模組；每個服務附方法簽名字串
 與介紹文字，為 MCP 化（呼叫點暴露給 AI）提供資料基礎。
 
-### 定向事件（emit_to）
-
-```python
-# 投遞方：校驗目標模組啟用後投遞到 module.<名稱>.<事件>
-await sdk.module.emit_to("Chat", "message_received", {"text": "hi"})
-
-# 訂閱方（Chat 模組內）：註冊命名空間鈎子
-lifecycle.on("module.Chat.message_received", handler)
-lifecycle.on("module.Chat", handler)  # 或接收該模組的全部定向事件
-```
-
-> [!NOTE]
-> 本節能力新增於 ErisPulse **2.8.0+**
+> 定向事件投遞屬於生命週期層：`lifecycle.emit(event, data, to="ModuleName")`，
+> 詳見 [模組間通訊](../advanced/module-communication.md)。
 
 ## Lifecycle 模組
 
-事件驅動的生命週期管理器，提供事件提交和監聽功能。
+事件驅動的生命周期管理器，提供事件提交和監聽功能。
 
 ### API 概覽
 
@@ -351,9 +339,9 @@ lifecycle.on("module.Chat", handler)  # 或接收該模組的全部定向事件
 | `on(event, priority=0)` | 裝飾器註冊事件處理器，支援點號匹配和通配符 `*` |
 | `register(event, handler, priority=0)` | 函數式註冊處理器 |
 | `unregister(event, handler=None)` | 移除處理器 |
-| `emit(event, data)` | 異步觸發事件 |
-| `emit_sync(event, data)` | 同步觸發事件 |
-| `submit_event(event_type, msg, data, source)` | 提交標準格式事件（相容舊版） |
+| `emit(event, data, to=None)` | 異步觸發事件；`to` 指定 owner 時定向投遞 |
+| `emit_sync(event, data, to=None)` | 同步觸發事件（異步處理器以 create_task 調度） |
+| `submit_event(event_type, msg, data, source, to=None)` | 提交標準格式事件（相容舊版） |
 | `start_timer(id)` / `stop_timer(id)` | 性能計時器 |
 
 ### 範例
@@ -368,9 +356,12 @@ async def handle_any_module_event(event_data):
     print(f"模組事件: {event_data}")
 
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
+
+# 定向投遞：僅分發給 Chat 模組註冊的鈎子
+await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
 ```
 
-> 完整的標準事件列表和詳細用法請參考 [生命週期管理](../advanced/lifecycle.md)。
+> 完整的標準事件列表和詳細用法請參考 [生命周期管理](../advanced/lifecycle.md)。
 
 ## Router 模組
 
