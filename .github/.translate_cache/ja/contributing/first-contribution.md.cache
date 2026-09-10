@@ -1,5 +1,57 @@
 {
+  "version": 2,
   "hash": "565995d6a25a4f2b25d3b031fa9ce045",
-  "translated_at": "2026-07-30T11:19:40.613847",
-  "target_lang": "ja"
+  "file_hash": "565995d6a25a4f2b25d3b031fa9ce045",
+  "translated_at": "2026-09-07T11:07:38.989324",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "0975bf0f258d8a8b68e3282b6546aede",
+      "translation": "# 初めての貢献実践\n\n> 初めて Pull Request を出すのは、少し不安に感じるかもしれませんが、それは当然のことです。このチュートリアルでは、プロセス全体をいくつかの小さなステップに分解しています。順番に進んでください。途中で何か問題が発生した場合は、Issue または Discussions で質問してください。誰もあなたの質問が「初歩的すぎる」からといって何か言うことはありません。皆が気にしているのは、あなたが前に進んでいるかどうかです。\n\n本文では、「i18n 翻訳キーを追加する」ことを例に挙げています。なぜなら、この変更が最も小さく、実行が最も簡単だからです。ただし、同じような手順は、他の種類の貢献にも適用できます。"
+    },
+    {
+      "hash": "56c84b7550c88246177ca08639b1c2f0",
+      "translation": "## 準備作業\n\n開始する前に、以下の準備が必要です：\n\n- GitHub アカウント\n- 本地に [uv](https://docs.astral.sh/uv/) をインストール済み（ErisPulse のパッケージマネージャ）\n- Python 3.10+"
+    },
+    {
+      "hash": "df02ff2d3a71d8790f66bdc48a426355",
+      "translation": "## 1. リポジトリをフォークしてローカルにクローン\n\n[ErisPulse リポジトリ](https://github.com/ErisPulse/ErisPulse) にアクセスし、右上隅の **Fork** をクリックして自分のアカウントにコピーし、次にローカルにクローンします（「あなたのユーザー名」を実際のユーザー名に置き換えてください）：\n\n```bash\ngit clone -b Develop/v2 https://github.com/あなたのユーザー名/ErisPulse.git\ncd ErisPulse\n```\n\n主リポジトリの更新を後で同期できるように、アップストリームのアドレスを追加します：\n\n```bash\ngit remote add upstream https://github.com/ErisPulse/ErisPulse.git\n```"
+    },
+    {
+      "hash": "f11b51f96ec81110c533a072085dc70e",
+      "translation": "## 2. 開発環境のインストール\n\n```bash\nuv sync                       # 依存関係をインストールして .venv を作成\n```\n\n環境が正常に動作しているかを確認します：\n\n```bash\nuv run pytest -m unit -q      # テストがすべて通過する必要があります\n```"
+    },
+    {
+      "hash": "b356178e70aa24a4a1d09588dc8e5e72",
+      "translation": "## 3. 機能用ブランチの作成\n\n常に `Develop/v2` からブランチを作成してください：\n\n```bash\ngit checkout Develop/v2\ngit pull upstream Develop/v2   # 最新のコードを先に同期\ngit checkout -b docs/add-hello-translation\n```\n\nブランチ名は、何をするつもりかがわかるように自由に付けてください。"
+    },
+    {
+      "hash": "3122ac06d32342afd30b35c0ada97b0a",
+      "translation": "## 4. 変更を行う\n\n翻訳キーを追加する例として、`mymodule.hello` という文を追加するとします。\n\nルールはただ1つです：**翻訳キーを追加する際は、5つの言語（zh-CN / en / zh-TW / ja / ru）すべてに同時に追加する必要があります**。そうしないと、他の言語のユーザーは翻訳が欠落した状態で表示されてしまいます。\n\n`src/ErisPulse/Core/i18n/locales/` フォルダ内の5つのファイルを開き、それぞれに1行を追加します：\n\n```python\n# zh_cn.py\n\"mymodule.hello\": \"你好\",\n# en.py\n\"mymodule.hello\": \"Hello\",\n# zh_tw.py\n\"mymodule.hello\": \"你好\",\n# ja.py\n\"mymodule.hello\": \"こんにちは\",\n# ru.py\n\"mymodule.hello\": \"Привет\",\n```\n\n> この変更が新しい公開メソッドに関連している場合、ドキュメント注釈を追加することを忘れないでください。詳しくは[ドキュメント注釈の規則](../styleguide/docstring.md)をご覧ください。"
+    },
+    {
+      "hash": "ce2d8c1b3717035e6622b693c0b3b818",
+      "translation": "## 5. ローカルでの検証\n\n```bash\nuv run ruff check .            # コードスタイルのチェック\nuv run basedpyright src/ErisPulse   # タイプチェック（ソースコードを変更した場合のみ必要） - 何百もの警告が表示される可能性がありますが、無視して構いません... へへへ\nuv run pytest -m unit -q       # テストの実行\n```\n\n上記3つがすべて通過すれば問題ありません。タイプチェックで表示される `reportAny` / `Unknown*` 警告は「タイプ情報がまだ完全に整っていない」状態によるものであり、マージを妨げることはありません。\n\n> コアモジュール（Bases / runtime / config / loaders）を変更した場合は、対応するテストケースを追加しておくと、今後のメンテナンスがしやすくなります。"
+    },
+    {
+      "hash": "c69d4e370187ea1cd428a473c242f1c9",
+      "translation": "## 6. CHANGELOG の更新\n\n`CHANGELOG.md` を開き、最上部にある開発中のバージョンを見つけ、適切なカテゴリに以下の内容を追加します。\n\n```markdown\n### 优化\n\n- `Core/i18n/locales` に `mymodule.hello` の翻訳キーを追加（zh-CN / en / zh-TW / ja / ru）\n```"
+    },
+    {
+      "hash": "9b3d92da39dae56e095d2813478cade8",
+      "translation": "## 7. 提出とプッシュ\n\n```bash\ngit add .\ngit commit -m \"i18n: mymodule.hello の翻訳を追加\"\ngit push origin docs/add-hello-translation\n```"
+    },
+    {
+      "hash": "3ea07bb860a40e6185185cac590ab87b",
+      "translation": "## 8. Pull Request の提出\n\nプッシュ後、GitHub で **Compare & pull request** が表示されます。それをクリックしてください：\n\n1. 目的のブランチが **`Develop/v2`** であることを確認してください（`main` に選ばないように注意）\n2. 変更の種類をチェックし、何を変更したか簡単に記述してください\n3. 提出し、メンテナのレビューを待ちます\n\nレビューでフィードバックをもらうのは普通のことです。それは必ずしもあなたの作業が不十分だという意味ではありません。提案に従って修正し、再度 push するだけです。レビューが通れば、あなたの変更は正式に `Develop/v2` に取り込まれ、次のバージョンで使用できるようになります。"
+    },
+    {
+      "hash": "cc597ba0fbca1eda81b4de92ee3427b6",
+      "translation": "## コントリビューションモジュールまたはアダプター\n\nモジュールとアダプターは、完全な構造を持つ小さなパッケージであり、脚手架ツールを使用して始めると最も簡単です：\n\n```bash\nepsdk create    # module または adapter を選択\n```\n\n生成後は、以下のドキュメントに従って作業を進めることができます：\n\n- [モジュール開発入門](../developer-guide/modules/getting-started.md)\n- [アダプター開発入門](../developer-guide/adapters/getting-started.md)\n- [PyPI およびモジュールストアへの公開](../developer-guide/publishing.md)\n\n> 開発前に [Issues](https://github.com/ErisPulse/ErisPulse/issues) で「新規アダプターまたはモジュール」テンプレートを使用して、あなたの計画を事前に報告することを推奨します。メンテナは、標準との対応や一般的な落とし穴を避けるためにサポートします。\n\nモジュールやアダプターは通常、独立したリポジトリとして扱われ、メインリポジトリに含まれる必要はありません。`examples/example-module/` および `examples/example-adapter/` は、参考用のテンプレートです。"
+    },
+    {
+      "hash": "dc910191dd5f7638b5598d76b837c62f",
+      "translation": "## 可能会遇到的问题\n\n**PR 提交后多久会有人查看？**  \n通常几天内。维护者会留下审查意见，根据需要调整后再次推送即可。\n\n**代码检查报错了？**  \n先尝试 `uv run ruff check . --fix`，可以自动修复大部分问题。\n\n**与主仓库发生冲突了？**  \n执行 `git pull upstream Develop/v2`，解决冲突后再推送。\n\n**可以直接提交到 `main` 吗？**  \n不可以，所有改动都必须通过 `Develop/v2`，再由维护者统一发布到 `main`。"
+    }
+  ]
 }

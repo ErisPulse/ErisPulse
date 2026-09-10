@@ -14,6 +14,16 @@ ErisPulse 适配器系统
 ## 函数列表
 
 
+### `_extract_message_text(data: Any)`
+
+> **内部方法**
+从事件 message 段提取纯文本（仅 text 段拼接），无文本时返回空串
+
+- **data** (`事件数据`): **返回值**: 纯文本内容
+
+---
+
+
 ### `_warn_deprecated_kwarg(owner: str, old: str, new: str)`
 
 > **内部方法**
@@ -539,6 +549,40 @@ OneBot12协议事件监听装饰器
 >>>     "myplatform_raw_type": "text_message"
 >>> })
 ```
+
+---
+
+
+##### `_dedupe_enabled()`
+
+> **内部方法**
+读取事件去重开关（``ErisPulse.framework.event_dedupe``，默认开启）
+
+测试环境普遍使用固定 id 的合成事件且同一用例内连续多次 emit，
+可通过配置或直接置 ``adapter._event_dedupe_enabled = False`` 关闭。
+
+**返回值**: 是否启用幂等去重
+
+---
+
+
+##### `_is_duplicate_event(event_id: str)`
+
+> **内部方法**
+事件幂等去重判定（LRU 记录已分发的事件 id）
+
+平台 websocket 重连后重推同一事件（相同 ``event["id"]``）时只分发一次；
+容量上限 ``DEFAULT_EVENT_DEDUPE_CAPACITY``，超出后淘汰最早记录。
+
+- **event_id** (`事件`): id
+**返回值** (`是否为重复事件（True`): 时调用方应丢弃）
+
+---
+
+
+##### `async _emit_dispatch(data: Any, platform: str, event_type: str, detail_type: str, platform_raw: Any, raw_event_type: Any, trace_id: str)`
+
+> **内部方法** emit 的事件分发主体（trace-id 上下文内执行）
 
 ---
 

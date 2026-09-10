@@ -72,3 +72,37 @@ ErisPulse 运行时上下文
 
 ---
 
+
+### `get_current_trace_id()`
+
+获取当前事件处理链路的追踪 ID（trace-id）
+
+在事件分发 / handler 执行 / 出站发送期间可读取，用于跨模块日志关联；
+不在事件处理上下文内（如后台定时任务）返回 None。
+
+**返回值** (`当前`): trace-id 或 None
+
+**示例**:
+```python
+>>> trace_id = get_current_trace_id()
+```
+
+---
+
+
+### `get_send_receipts()`
+
+获取当前消息事务的回执账本
+
+仅在 ``Event.message_tx()`` 事务内返回非 None；
+可用于查看本次事务已发送了哪些消息。
+
+**返回值** (`回执记录列表或`): None（不在事务内）
+
+**示例**:
+```python
+>>> receipts = get_send_receipts()
+```
+
+---
+

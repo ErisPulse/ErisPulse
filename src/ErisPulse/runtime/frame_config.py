@@ -16,6 +16,7 @@ from ..Core.constants import (
     DEFAULT_COMMAND_PREFIX,
     DEFAULT_HANDLER_MAX_CONCURRENCY,
     DEFAULT_I18N_LANGUAGE,
+    DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS,
     DEFAULT_LAZY_LOADING_ENABLED,
     DEFAULT_LOG_BACKUP_COUNT,
     DEFAULT_LOG_LEVEL,
@@ -34,7 +35,26 @@ from ..Core.constants import (
     DEFAULT_SERVER_AUTO_START,
     DEFAULT_SERVER_HOST,
     DEFAULT_SERVER_PORT,
+    DEFAULT_STORAGE_BACKEND,
+    DEFAULT_STORAGE_MYSQL_CHARSET,
+    DEFAULT_STORAGE_MYSQL_DATABASE,
+    DEFAULT_STORAGE_MYSQL_HOST,
+    DEFAULT_STORAGE_MYSQL_PASSWORD,
+    DEFAULT_STORAGE_MYSQL_POOL_MAX,
+    DEFAULT_STORAGE_MYSQL_POOL_MIN,
+    DEFAULT_STORAGE_MYSQL_PORT,
+    DEFAULT_STORAGE_MYSQL_USER,
+    DEFAULT_STORAGE_PG_DATABASE,
+    DEFAULT_STORAGE_PG_HOST,
+    DEFAULT_STORAGE_PG_PASSWORD,
+    DEFAULT_STORAGE_PG_POOL_MAX,
+    DEFAULT_STORAGE_PG_POOL_MIN,
+    DEFAULT_STORAGE_PG_PORT,
+    DEFAULT_STORAGE_PG_USER,
     DEFAULT_STRICT_MODE,
+    DEFAULT_TRANSCRIPT_ENABLED,
+    DEFAULT_TRANSCRIPT_MAX_PER_SESSION,
+    DEFAULT_TRANSCRIPT_TTL_HOURS,
     DEFAULT_UNINIT_TIMEOUT_SECS,
     DEFAULT_USE_GLOBAL_DB,
 )
@@ -67,7 +87,30 @@ DEFAULT_ERISPULSE_CONFIG = {
         "exclude_levels": [],
     },
     "storage": {
+        # 存储后端："sqlite"（默认，零配置）/ "mysql" / "postgres"（需安装可选驱动）
+        "backend": DEFAULT_STORAGE_BACKEND,
         "use_global_db": DEFAULT_USE_GLOBAL_DB,
+        # MySQL 后端连接参数（backend = "mysql" 时生效），需 pip install ErisPulse[mysql]
+        "mysql": {
+            "host": DEFAULT_STORAGE_MYSQL_HOST,
+            "port": DEFAULT_STORAGE_MYSQL_PORT,
+            "user": DEFAULT_STORAGE_MYSQL_USER,
+            "password": DEFAULT_STORAGE_MYSQL_PASSWORD,
+            "database": DEFAULT_STORAGE_MYSQL_DATABASE,
+            "charset": DEFAULT_STORAGE_MYSQL_CHARSET,
+            "pool_min": DEFAULT_STORAGE_MYSQL_POOL_MIN,
+            "pool_max": DEFAULT_STORAGE_MYSQL_POOL_MAX,
+        },
+        # PostgreSQL 后端连接参数（backend = "postgres" 时生效），需 pip install ErisPulse[postgres]
+        "postgres": {
+            "host": DEFAULT_STORAGE_PG_HOST,
+            "port": DEFAULT_STORAGE_PG_PORT,
+            "user": DEFAULT_STORAGE_PG_USER,
+            "password": DEFAULT_STORAGE_PG_PASSWORD,
+            "database": DEFAULT_STORAGE_PG_DATABASE,
+            "pool_min": DEFAULT_STORAGE_PG_POOL_MIN,
+            "pool_max": DEFAULT_STORAGE_PG_POOL_MAX,
+        },
     },
     "modules": {},
     "adapters": {},
@@ -156,6 +199,19 @@ DEFAULT_ERISPULSE_CONFIG = {
             "users": {},
         },
         "actions": {},
+    },
+    # 交互会话（interaction）：wait_reply 等待表 / 会话租约 / 对话检查点的统一配置。
+    # checkpoint_ttl: Conversation 自动检查点的过期秒数，重启恢复时超期的存档被丢弃。
+    "interaction": {
+        "checkpoint_ttl": DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS,
+    },
+    # 会话收件箱（transcript）：每会话近期消息流的自动记录与查询。
+    # enabled: 是否启用自动记录；max_per_session: 每会话保留条数上限；
+    # ttl_hours: 全局过期时间（小时），过期记录惰性清理。
+    "transcript": {
+        "enabled": DEFAULT_TRANSCRIPT_ENABLED,
+        "max_per_session": DEFAULT_TRANSCRIPT_MAX_PER_SESSION,
+        "ttl_hours": DEFAULT_TRANSCRIPT_TTL_HOURS,
     },
 }
 
@@ -247,36 +303,29 @@ def _ensure_erispulse_config_structure(config_dict: dict[str, Any]) -> dict[str,
 
 def get_erispulse_config() -> dict[str, Any]:
     """
-    获取 ErisPulse 框架配置，自动补全缺失的配置项并保存
+    获取 ErisPulse 框架配置，自动补全缺失的配置项
+
+    默认配置仅在内存中合并返回，不写入配置文件——config.toml 保持最小化，
+    只包含用户显式设置的键；完整可配置项参考项目内的 config.full.example。
+    用户显式设置（手动编辑 / update_erispulse_config / set_erispulse_section）
+    的键不受影响，优先级始终高于内置默认值。
 
     :return: 完整的 ErisPulse 配置字典
     """
     config_service = _get_config_service()
 
-    # 获取现有配置
+    # 获取现有配置（deepcopy 避免合并默认值时污染缓存）
     current_config = config_service.getConfig(CONFIG_ROOT_KEY)
 
-    # 如果完全没有配置，设置默认配置
     if current_config is None:
-        default_copy = copy.deepcopy(DEFAULT_ERISPULSE_CONFIG)
-        config_service.setConfig(CONFIG_ROOT_KEY, default_copy)
-        return default_copy
-
-    # 保存原始配置的快照用于比较
-    original_snapshot = copy.deepcopy(current_config)
-
-    # 检查并补全缺失的配置项
-    complete_config = _ensure_erispulse_config_structure(current_config)
-
-    # 如果配置有变化，按叶子键写入缺失的默认项，
-    # 避免整棵 ErisPulse 覆盖导致用户对其它子键的热更新被陈旧快照冲掉
-    if original_snapshot != complete_config:
-        for path, value in _iter_leaf_diff(original_snapshot, complete_config):
-            config_service.setConfig(f"{CONFIG_ROOT_KEY}.{path}", value)
+        result = copy.deepcopy(DEFAULT_ERISPULSE_CONFIG)
+    elif isinstance(current_config, dict):
+        result = _ensure_erispulse_config_structure(copy.deepcopy(current_config))
+    else:
+        result = copy.deepcopy(DEFAULT_ERISPULSE_CONFIG)
 
     # 环境变量覆盖（Docker / 12-factor）：ERISPULSE_SERVER_PORT 等
     # 仅对返回副本应用，不持久化到缓存；每调用每生效
-    result = copy.deepcopy(complete_config)
     _apply_env_overrides(result, CONFIG_ROOT_KEY)
     return result
 

@@ -72,6 +72,7 @@ on_load / on_unload 事件数据
 > 3. 通过 self.cfg 访问类型安全的配置对象（实时读取）
 > 4. 可覆写 on_config_update() 响应配置热更新
 > 5. 可通过 I18nClass 声明翻译键集合，框架自动注册到 i18n 系统
+> 6. 对外服务在 get_meta() 的 services 字段声明（模块间调用契约，缺省全开放）
 
 
 #### 方法列表
@@ -95,6 +96,10 @@ on_load / on_unload 事件数据
 - ``group``: 分组（按功能分类，如 "工具" / "娱乐"）
 - ``tags``: 标签列表
 - ``commands``: 模块提供的命令名列表（默认从注册命令自动提取）
+- ``services``: 模块对外提供的服务列表（模块间调用契约，缺省时公开方法全开放）
+    - 简单形态：``["get_history", "translate"]``（方法名，介绍自动取 docstring 首行）
+    - 完整形态：``[{"name": "get_history", "description": "查询会话历史"}]``
+      （``description`` 支持纯字符串或 i18n 字典，声明后覆盖 docstring）
 
 **i18n 支持**：字段值可为纯字符串，或 i18n 字典
 ``{"i18n": "key.path", "default": "兜底文本"}``（与配置 description 约定一致）。

@@ -1,9 +1,9 @@
-# ErisPulse PlatformFeatures 文檔
+# ErisPulse PlatformFeatures 文件
 
-> 基線協議：[OneBot12](https://12.onebot.dev/) 
+> 基線協議：[OneBot12](https://12.onebot.dev/)  
 > 
 > 本文檔為**平台特定功能指南**，包含：
-> - 各適配器支援的Send方法鏈式呼叫示例
+> - 各適配器支援的Send方法鏈式呼叫範例
 > - 平台特有的事件/訊息格式說明
 > 
 > 通用使用方法請參考：
@@ -15,12 +15,12 @@
 
 ## 平台特定功能
 
-此部分由各適配器開發者維護，用於說明該適配器與 OneBot12 標準的差異和擴展功能。請參考以下各平台的詳細文件：
+此部分由各适配器開發者維護，用於說明該適配器與 OneBot12 標準的差異和擴展功能。請參考以下各平台的詳細文件：
 
 - [維護說明](maintain-notes.md)
 
 - [雲湖平台特性](yunhu.md)
-- [雲湖用戶平台特性](yunhu_user.md)
+- [雲湖使用者平台特性](yunhu_user.md)
 - [Telegram平台特性](telegram.md)
 - [OneBot11平台特性](onebot11.md)
 - [OneBot12平台特性](onebot12.md)
@@ -30,7 +30,7 @@
 - [QQ官方機器人平台特性](qqbot.md)
 - [花楓咖啡館](ideaura.md)
 - [Discord](discord.md)
-- [Webhook協議橋](webhook.md)
+- [Webhook協定橋](webhook.md)
 - [微信公眾號](wechatmp.md)
 
 > 此外還有 `sandbox` 適配器，但此適配器無需維護平台特性文件
@@ -86,7 +86,7 @@
 
 #### 異步發送與結果處理
 
-Send DSL 的方法返回 `asyncio.Task` 物件，這意味著您可以選擇是否立即等待結果：
+Send DSL 的方法返回 `asyncio.Task` 對象，這意味著您可以選擇是否立即等待結果：
 
 ```python
 # 獲取適配器實例
@@ -132,7 +132,7 @@ task = (yunhu.Send.To("user", "123")
         .Text("重要通知"))
 ```
 
-規則方法返回 `self`，必須放在發送方法（Text/Image 等）之前呼叫。`SendContext` 包含 `stage`（pending/sending/retrying/success/failed/timeout）、`attempt`、`elapsed`、`error`、`result` 等字段，便於監控。
+規則方法返回 `self`，必須放在發送方法（Text/Image 等）之前呼叫。`SendContext` 包含 `stage`（pending/sending/retrying/success/failed/timeout）、`attempt`、`elapsed`、`error`、`result` 等欄位，便於監控。
 
 #### 批量建構模式（Build）
 
@@ -217,15 +217,13 @@ await (yunhu.Send.To("group", "456")
 
 其中，最推薦的是使用 `Event` 模組進行事件處理，因為 `Event` 模組提供了豐富的事件類型，以及豐富的事件處理方法。
 
----
+## 標準格式  
+為方便參考，這裡給出了簡單的事件格式，如果需要詳細資訊，請參考上方的連結。  
 
-## 標準格式
-為方便參考，這裡給出了簡單的事件格式，如果需要詳細資訊，請參考上方的連結。
+> **注意：** 以下格式為基礎 OneBot12 標準格式，各適配器可能在此基礎上有擴展欄位。具體請參考各適配器的特定功能說明。  
 
-> **注意：** 以下格式為基礎 OneBot12 標準格式，各適配器可能在此基礎上有擴展欄位。具體請參考各適配器的特定功能說明。
-
-### 標準事件格式
-所有適配器必須實現的事件轉換格式：
+### 標準事件格式  
+所有適配器必須實現的事件轉換格式：  
 ```json
 {
   "id": "event_123",
@@ -245,8 +243,8 @@ await (yunhu.Send.To("group", "456")
 }
 ```
 
-### 標準回應格式
-#### 訊息發送成功
+### 標準回應格式  
+#### 消息發送成功  
 ```json
 {
   "status": "ok",
@@ -262,7 +260,7 @@ await (yunhu.Send.To("group", "456")
 }
 ```
 
-#### 訊息發送失敗
+#### 消息發送失敗  
 ```json
 {
   "status": "failed",
@@ -273,28 +271,29 @@ await (yunhu.Send.To("group", "456")
   "echo": "1234",
   "{platform}_raw": {...}
 }
-```
+```  
 
 ---
 
 ## 參考連結
 ErisPulse 項目：
-- [主庫](https://github.com/ErisPulse/ErisPulse/)
-- [Yunhu 適配器庫](https://github.com/ErisPulse/ErisPulse-YunhuAdapter)
-- [Telegram 適配器庫](https://github.com/ErisPulse/ErisPulse-TelegramAdapter)
-- [OneBot 適配器庫](https://github.com/ErisPulse/ErisPulse-OneBotAdapter)
+- [主程式庫](https://github.com/ErisPulse/ErisPulse/)
+- [Yunhu 適配器程式庫](https://github.com/ErisPulse/ErisPulse-YunhuAdapter)
+- [Telegram 適配器程式庫](https://github.com/ErisPulse/ErisPulse-TelegramAdapter)
+- [OneBot 適配器程式庫](https://github.com/ErisPulse/ErisPulse-OneBotAdapter)
 
 相關官方文件：
-- [OneBot V11 協議文件](https://github.com/botuniverse/onebot-11)
+- [OneBot V11 協定文件](https://github.com/botuniverse/onebot-11)
 - [Telegram Bot API 官方文件](https://core.telegram.org/bots/api)
 - [雲湖官方文件](https://www.yhchat.com/document/1-3)
 
 ## 參與貢獻
 
 我們歡迎更多開發者參與編寫和維護適配器文件！請按照以下步驟提交貢獻：
+
 1. Fork [ErisPuls](https://github.com/ErisPulse/ErisPulse) 倉庫。
-2. 在 `docs/platform-features/` 目錄下建立一個 Markdown 檔案，並命名格式為 `<平台名稱>.md`。
-3. 在本 `README.md` 檔案中新增對您貢獻的適配器的連結以及相關官方文件。
+2. 在 `docs/platform-features/` 目錄下建立一個 Markdown 檔案，並以 `<平台名稱>.md` 命名。
+3. 在本 `README.md` 檔案中新增您貢獻的適配器連結以及相關官方文件。
 4. 提交 Pull Request。
 
 感謝您的支持！

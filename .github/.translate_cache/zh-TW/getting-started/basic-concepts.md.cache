@@ -1,5 +1,41 @@
 {
+  "version": 2,
   "hash": "f7920b727895b35257538f65f8a1d0f1",
-  "translated_at": "2026-07-03T03:53:28.328092",
-  "target_lang": "zh-TW"
+  "file_hash": "f7920b727895b35257538f65f8a1d0f1",
+  "translated_at": "2026-09-07T11:26:15.078217",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "aa6621885aa7f70d9db9ab7817af113b",
+      "translation": "# 基礎概念\n\n本指南介紹 ErisPulse 的核心概念，幫助你理解框架的設計理念和基本架構。"
+    },
+    {
+      "hash": "ca451be13997e3fb4f97663fac919db6",
+      "translation": "## 事件驅動架構\n\nErisPulse 採用事件驅動架構，所有的互動都透過事件來傳遞和處理。\n\n### 事件流程\n\n```\n使用者發送訊息\n      │\n      ▼\n平台接收\n      │\n      ▼\n適配器接收平台原生事件\n      │\n      ▼\n轉換為 OneBot12 標準事件\n      │\n      ▼\n提交到事件系統\n      │\n      ▼\n分發給已註冊的處理器\n      │\n      ▼\n模組處理事件\n      │\n      ▼\n透過適配器發送回應\n      │\n      ▼\n平台顯示給使用者\n```\n\n### OneBot12 標準\n\nErisPulse 使用 OneBot12 作為核心事件標準。OneBot12 是一個通用的聊天機器人應用介面標準，定義了統一的事件格式。\n\n所有適配器都將平台特定的事件轉換為 OneBot12 格式，確保程式碼的一致性。"
+    },
+    {
+      "hash": "8728cc9cf8d8216708e3656ed1eaed68",
+      "translation": "## 核心元件\n\n### 1. SDK 物件\n\nSDK 是所有功能的統一入口點，提供對核心元件的存取。\n\n```python\nfrom ErisPulse import sdk\n\n# 存取核心模組\nsdk.storage    # 存儲系統\nsdk.config     # 配置系統\nsdk.logger     # 日誌系統\nsdk.adapter    # 適配器系統\nsdk.module     # 模組系統\nsdk.router     # 路由系統\nsdk.client     # HTTP 客戶端\nsdk.lifecycle  # 生命週期系統\n```\n\n### 2. Event 物件\n\nEvent 物件封裝了事件資料，提供了便捷的存取方法。\n\n```python\n@command(\"info\")\nasync def info_handler(event):\n    # 取得事件資訊\n    event_id = event.get_id()\n    user_id = event.get_user_id()\n    platform = event.get_platform()\n    text = event.get_text()\n    \n    # 發送回覆\n    await event.reply(f\"使用者: {user_id}, 平台: {platform}\")\n```\n\n### 3. 適配器\n\n適配器是 ErisPulse 與外部平台之間的橋樑。\n\n**職責：**\n- 接收平台原生事件\n- 轉換為 OneBot12 標準格式\n- 將標準格式事件發送到平台\n\n**示例適配器：**\n- Yunhu 適配器：與雲湖平台通訊\n- Telegram 適配器：與 Telegram Bot API 通訊\n- OneBot11 適配器：與 OneBot11 兼容的應用通訊\n- Email 適配器：處理郵件收發\n\n### 4. 模組\n\n模組是功能擴展的基本單位，可以：\n\n- 註冊事件處理器\n- 實作業務邏輯\n- 調用適配器發送訊息\n- 使用核心模組提供的服務\n\n#### 模組發現機制\n\nErisPulse 透過 Python 的 `importlib.metadata.entry_points` 發現已安裝的模組。模組在 `pyproject.toml` 中宣告入口點：\n\n```toml\n[project.entry-points.\"erispulse.module\"]\nMyModule = \"my_package:Main\"\n```\n\nSDK 初始化時會掃描所有 `erispulse.module` 組的入口點，將模組類別註冊到 `ModuleManager`，然後依賴關係拓撲排序後依序初始化。\n\n#### 最小可用模組\n\n```python\nfrom ErisPulse.Core.Bases import BaseModule\nfrom ErisPulse import sdk\n\nclass Main(BaseModule):\n    def __init__(self):\n        self.sdk = sdk\n        self.logger = sdk.logger.get_child(\"MyModule\")\n\n    async def on_load(self, event):\n        self.logger.info(\"模組已載入\")\n\n    async def on_unload(self, event):\n        self.logger.info(\"模組已卸載\")\n```\n\n#### 模組生命週期\n\n- **註冊**：SDK 發現模組類別並註冊到管理器\n- **載入**：建立模組實例，呼叫 `on_load(event)`（`event = {\"module_name\": \"MyModule\"}`）\n- **卸載**：呼叫 `on_unload(event)`，清理資源\n\n#### 載入策略\n\n透過 `get_load_strategy()` 聲明模組的載入行為：\n\n```python\nfrom ErisPulse.loaders import ModuleLoadStrategy\n\nclass Main(BaseModule):\n    @staticmethod\n    def get_load_strategy():\n        return ModuleLoadStrategy(\n            lazy_load=True,   # 是否懶載入（預設 True）\n            priority=0        # 載入優先級，數值越大越先初始化\n        )\n```\n\n- **`lazy_load=True`（預設）**：模組在首次被 `sdk.MyModule` 存取時才初始化，減少啟動時間\n- **`lazy_load=False`**：SDK 啟動時立即初始化，適合需要監聽生命週期事件或執行定時任務的模組\n- **`priority`**：相同優先級的模組依註冊順序載入；數值越大越先初始化\n\n> 詳細的懶載入機制說明請參考 [懶載入系統](../advanced/lazy-loading.md)。"
+    },
+    {
+      "hash": "1437e1e31b654e4f35a2b1ac14f65d17",
+      "translation": "## 事件類型\n\nErisPulse 支援 5 種事件類型：\n\n| 事件類型 | 裝飾器 | 說明 |\n|---------|--------|------|\n| 消息事件 | `@message.on_message()` | 用戶發送的任何訊息（私聊、群聊） |\n| 命令事件 | `@command(\"name\")` | 以命令前綴開頭的訊息（例如 `/hello`） |\n| 通知事件 | `@notice.on_friend_add()` 等 | 系統通知（好友添加、群組成員變更等） |\n| 請求事件 | `@request.on_friend_request()` 等 | 用戶請求（好友請求、群組邀請） |\n| 元事件 | `@meta.on_connect()` 等 | 系統級事件（連接、斷開、心跳） |\n\n> 各事件類型的詳細用法和程式碼範例請參考 [事件處理入門](event-handling.md)。"
+    },
+    {
+      "hash": "f5b712a728d14007558704594afa0fe0",
+      "translation": "## 核心模組說明\n\n### Storage（儲存）\n\n基於 SQLite 的鍵值儲存系統，用於持久化資料。\n\n```python\n# 設定值\nsdk.storage.set(\"key\", \"value\")\n\n# 取得值\nvalue = sdk.storage.get(\"key\", \"default_value\")\n\n# 批次操作\nsdk.storage.set_multi({\n    \"key1\": \"value1\",\n    \"key2\": \"value2\"\n})\n\n# 事務\nwith sdk.storage.transaction():\n    sdk.storage.set(\"key1\", \"value1\")\n    sdk.storage.set(\"key2\", \"value2\")\n```\n\n### Config（設定）\n\nTOML 格式的設定檔管理。\n\n```python\n# 取得設定\nconfig = sdk.config.getConfig(\"MyModule\", {})\n\n# 設定設定\nsdk.config.setConfig(\"MyModule\", {\"key\": \"value\"})\n\n# 讀取嵌套設定\nvalue = sdk.config.getConfig(\"MyModule.subkey\", \"default\")\n```\n\n### Logger（日誌）\n\n模組化日誌系統。\n\n```python\n# 記錄日誌\nsdk.logger.info(\"這是一條資訊\")\nsdk.logger.warning(\"這是一條警告\")\nsdk.logger.error(\"這是一條錯誤\")\n\n# 取得子日誌記錄器\nchild_logger = sdk.logger.get_child(\"submodule\")\nchild_logger.info(\"子模組日誌\")\n```\n\n**屬性存取語法糖**\n\n除了使用 `get_child()` 方法外，你還可以透過**屬性存取**的方式建立子 logger，這是一種更簡潔的**語法糖**寫法：\n\n```python\n# 透過屬性存取建立子 logger\nsdk.logger.mymodule.info(\"模組訊息\")\n\n# 支援嵌套存取\nsdk.logger.mymodule.database.info(\"資料庫訊息\")\n```\n\n### Router（路由）\n\nHTTP 和 WebSocket 路由管理，基於 FastAPI + Uvicorn。支援裝飾器路由、中間件、分組、限流、CORS。\n\n```python\nfrom ErisPulse.Core import HttpRequest\n\n@sdk.router.get(\"MyModule\", \"/api\")\nasync def handler(request: HttpRequest):\n    data = await request.json()\n    return {\"status\": \"ok\"}\n```\n\n> 完整的路由 API（WebSocket、中間件、速率限制、CORS 等）請參考 [路由管理器](../advanced/router.md)。\n\n### Client（網路用戶端）\n\n統一的網路用戶端，聚合了 HTTP 請求、WebSocket 連線、連線池管理、自動重試、逾時控制、請求統計和生命週期事件整合。\n\n```python\nfrom ErisPulse.Core import client\n\n# HTTP 請求\nresp = await client.get(\"https://api.example.com/users\")\ndata = await resp.json()\n\n# 帶重試和逾時\nresp = await client.get(url, timeout=30, max_retries=3)\n\n# WebSocket 連線\nws = await client.ws_connect(\"wss://example.com/ws\")\nasync for text in ws.iter_text():\n    await ws.send_text(f\"Echo: {text}\")\n```\n\n> 完整的網路用戶端 API 請參考 [網路用戶端](../advanced/http-client.md)。"
+    },
+    {
+      "hash": "ae8edff99f6af26c226b474db90cbd31",
+      "translation": "## SendDSL 消息發送\n\n適配器提供鏈式呼叫的消息發送介面。\n\n### 基礎發送\n\n```python\n# 獲取適配器實例\nyunhu = sdk.adapter.get(\"yunhu\")\n\n# 發送消息\nawait yunhu.Send.To(\"user\", \"U1001\").Text(\"Hello\")\n\n# 指定發送帳號\nawait yunhu.Send.Using(\"bot1\").To(\"group\", \"G1001\").Text(\"群消息\")\n```\n\n### 鏈式修飾\n\n```python\n# @用戶\nawait yunhu.Send.To(\"group\", \"G1001\").At(\"U2001\").Text(\"@消息\")\n\n# 回覆消息\nawait yunhu.Send.To(\"group\", \"G1001\").Reply(\"msg123\").Text(\"回覆\")\n\n# @全體\nawait yunhu.Send.To(\"group\", \"G1001\").AtAll().Text(\"公告\")\n```\n\n### Event 回覆方法\n\nEvent 物件提供了便捷的回覆方法：\n\n```python\n@command(\"test\")\nasync def test_handler(event):\n    # 簡單文本回覆\n    await event.reply(\"回覆內容\")\n    \n    # 發送圖片\n    await event.reply(\"http://example.com/image.jpg\", method=\"Image\")\n    \n    # 發送語音\n    await event.reply(\"http://example.com/voice.mp3\", method=\"Voice\")\n```"
+    },
+    {
+      "hash": "c998f6e9affdd4530bb3a7d73102695b",
+      "translation": "## 慢載系統\n\nErisPulse 預設啟用模組慢載，模組僅在首次被存取時（如 `sdk.MyModule`）才會初始化，顯著提升啟動速度。\n\n```python\nfrom ErisPulse.loaders import ModuleLoadStrategy\n\nclass Main(BaseModule):\n    @staticmethod\n    def get_load_strategy():\n        return ModuleLoadStrategy(\n            lazy_load=True,   # 啟用慢載（預設）\n            priority=0        # 加載優先級，數值越大越先初始化\n        )\n```\n\n**需要停用慢載的場景（`lazy_load=False`）：**\n- 監聽生命週期事件的模組（如 `core.init.complete`）\n- 啟動定時任務或後台服務的模組\n- 需要在其他模組加載前完成初始化的模組\n\n> 詳細的慢載機制和注意事項請參考 [慢載系統](../advanced/lazy-loading.md)。"
+    },
+    {
+      "hash": "fb3b4a0d008f35baac6c5a453d263597",
+      "translation": "## 下一步\n\n- [事件處理入門](event-handling.md) - 學習如何處理各類事件\n- [常見任務範例](common-tasks.md) - 掌握常用功能的實現"
+    }
+  ]
 }

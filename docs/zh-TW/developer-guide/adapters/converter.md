@@ -8,17 +8,17 @@
 平台原生事件 ──→ Converter.convert() ──→ OneBot12 標準事件
 ```
 
-Converter 只負責**正向轉換**（接收方向），即將平台的原生事件資料轉換為 OneBot12 標準格式。反向轉換（發送方向）由 `Send.Raw_ob12()` 方法處理。
+Converter 只負責**正向轉換**（接收方向），即將平台的原生事件數據轉換為 OneBot12 標準格式。反向轉換（發送方向）由 `Send.Raw_ob12()` 方法處理。
 
 ### 核心原則
 
-1. **無損轉換**：原始資料必須完整保留在 `{platform}_raw` 欄位中
-2. **標準相容**：轉換後的事件必須符合 OneBot12 標準格式
-3. **平台擴展**：平台特有的資料使用 `{platform}_` 前綴欄位儲存
+1. **無損轉換**：原始數據必須完整保留在 `{platform}_raw` 字段中
+2. **標準兼容**：轉換後的事件必須符合 OneBot12 標準格式
+3. **平台擴展**：平台特有數據使用 `{platform}_` 前綴字段存儲
 
 ## BaseConverter 基類（推薦）
 
-從 2.7.0 開始，框架提供 `BaseConverter` 基類（`ErisPulse.Core.Bases`），封裝 OneBot12 事件的**公共欄位建構**與**常用訊息段輔助**，讓轉換器只需聚焦類型映射：
+從 2.7.0 起，框架提供 `BaseConverter` 基類（`ErisPulse.Core.Bases`），封裝 OneBot12 事件的**公共字段建構**與**常用消息段輔助**，讓轉換器只需聚焦類型映射：
 
 ```python
 from ErisPulse.Core.Bases import BaseConverter
@@ -43,18 +43,18 @@ class MyConverter(BaseConverter):
         return None
 ```
 
-`build_base_event()` 已填入的公共欄位：
+`build_base_event()` 已填充的公共字段：
 
-| 欄位 | 來源 |
+| 字段 | 來源 |
 |------|------|
-| `id` | `raw_event["event_id"]`，缺省自动生成 UUID |
+| `id` | `raw_event["event_id"]`，缺省自生成 UUID |
 | `time` | `raw_event["timestamp"]`，缺省當前時間 |
 | `platform` | 建構時傳入的 `platform` |
 | `self` | `{"platform": ..., "user_id": raw_event["bot_id"]}` |
 | `{platform}_raw` | 原始事件（滿足"無損轉換"原則） |
 | `{platform}_raw_type` | 原始事件類型 |
 
-常用訊息段輔助方法（均為靜態方法，可直接重用）：
+常用消息段輔助方法（均為靜態方法，直接複用）：
 
 ```python
 converter.text("hi")          # {"type": "text", "data": {"text": "hi"}}
@@ -62,7 +62,7 @@ converter.at("123456")        # {"type": "at", "data": {"user_id": "123456"}}
 converter.image("file.png")   # {"type": "image", "data": {"file": "file.png"}}
 ```
 
-> 手動實現時 `build_base_event` 的公共欄位建構是必須重複撰寫的樣板程式碼，使用 `BaseConverter` 可省去這部分，且天然滿足"無損轉換"（原始事件始終進 `{platform}_raw`）。
+> 手動實現時 `build_base_event` 的公共字段建構是必須重複寫的樣板代碼，使用 `BaseConverter` 可省去這部分，且天然滿足"無損轉換"（原始事件始終進 `{platform}_raw`）。
 
 ## convert() 方法
 
@@ -98,7 +98,7 @@ def convert(self, raw_event: dict) -> dict:
     # 消息事件字段
     "user_id": "sender_id",
     "message": [...],              # OneBot12 消息段列表
-    "alt_message": "純文字內容",
+    "alt_message": "純文本內容",
 
     # 必須保留原始數據
     "myplatform_raw": { ... },     # 平台原生事件完整數據
@@ -117,21 +117,21 @@ def convert(self, raw_event: dict) -> dict:
 | `type` | str | 事件類型：`message` / `notice` / `request` / `meta` |
 | `detail_type` | str | 詳細類型：`private` / `group` / `friend` 等 |
 | `platform` | str | 平台名稱，與適配器註冊名一致 |
-| `self` | dict | 機器人資訊：`{"platform": "...", "user_id": "..."}` |
+| `self` | dict | 机器人信息：`{"platform": "...", "user_id": "..."}` |
 
 ### 消息事件額外字段
 
-| OB12 字段 | 類型 | 說明 |
+| OB12 字段 | 類型 | 说明 |
 |-----------|------|------|
 | `user_id` | str | 發送者 ID |
 | `message` | list[dict] | OneBot12 消息段列表 |
-| `alt_message` | str | 純文字備用內容 |
+| `alt_message` | str | 純文本備用內容 |
 
 ### 通知事件額外字段
 
-| OB12 字段 | 類型 | 說明 |
+| OB12 字段 | 類型 | 说明 |
 |-----------|------|------|
-| `user_id` | str | 相關使用者 ID |
+| `user_id` | str | 相關用戶 ID |
 | `operator_id` | str | 操作者 ID（如群成員變動） |
 
 ## 消息段轉換
@@ -166,32 +166,32 @@ OneBot12 標準定義了以下消息段類型：
 
 如果平台有不支援的消息段類型，可以省略該段或轉換為最接近的標準類型。
 
-## 平台擴展欄位
+## 平台擴展字段
 
-平台特有的資料應使用 `{platform}_` 前綴儲存，以避免與標準欄位衝突：
+平台特有的數據應使用 `{platform}_` 前綴存儲，避免與標準字段衝突：
 
 ```python
 {
-    # 標準欄位
+    # 標準字段
     "type": "message",
     "detail_type": "group",
     # ...
 
-    # 平台擴展欄位
-    "myplatform_raw": { ... },          # 原始事件資料（必須）
+    # 平台擴展字段
+    "myplatform_raw": { ... },          # 原始事件數據（必須）
     "myplatform_raw_type": "chat",      # 原始事件類型（必須）
 
-    # 其他平台特有欄位
-    "myplatform_group_name": "群組名稱",
+    # 其他平台特有字段
+    "myplatform_group_name": "群名稱",
     "myplatform_sender_role": "admin",
 }
 ```
 
-> **重要**：`{platform}_raw` 欄位是必須的，ErisPulse 的事件系統和模組可能依賴它來存取平台原始資料。
+> **重要**：`{platform}_raw` 字段是必須的，ErisPulse 的事件系統和模組可能依賴它來訪問平台原始數據。
 
-## 完整範例
+## 完整示例
 
-以下是一個完整的 Converter 實作範例：
+以下是一個完整的 Converter 實現：
 
 ```python
 class MyConverter:
@@ -324,7 +324,7 @@ def _convert_message_segments(self, raw_content: list) -> list:
 
 ### 1. 缺少 `{platform}_raw` 字段
 
-這是常見的錯誤。缺少原始資料字段會導致模組無法存取平台特有的資訊。
+這是常見的錯誤。缺少原始數據字段會導致模組無法訪問平台特有的資訊。
 
 ```python
 base_event["myplatform_raw"] = raw_event        # 必須！
@@ -333,7 +333,7 @@ base_event["myplatform_raw_type"] = event_type   # 必須！
 
 ### 2. 時間戳格式錯誤
 
-OneBot12 標準要求 `time` 欄位為 Unix 秒級時間戳（整數）。如果你的平台回傳毫秒時間戳或 ISO 格式字串，需要轉換：
+OneBot12 標準要求 `time` 字段為 Unix 秒級時間戳（整數）。如果你的平台返回毫秒時間戳或 ISO 格式字串，需要轉換：
 
 ```python
 import time
@@ -345,9 +345,9 @@ import time
 "time": int(time.mktime(time.strptime(raw_event["created_at"], "%Y-%m-%dT%H:%M:%S")))
 ```
 
-### 3. 缺少 `self` 欄位
+### 3. 缺少 `self` 字段
 
-`self` 欄位包含機器人自身資訊，`user_id` 為機器人的帳號 ID。多 Bot 場景下此欄位至關重要：
+`self` 字段包含機器人自身資訊，`user_id` 為機器人的帳號 ID。多 Bot 場景下此字段至關重要：
 
 ```python
 "self": {
@@ -362,15 +362,15 @@ import time
 
 ### 5. 往返一致性
 
-確保 Converter 產生的消息段類型與 Send 端支援的方法對應。例如，如果 Converter 將平台的圖片訊息轉換為 `{"type": "image", ...}`，那麼 Send 端的 `Image()` 方法必須能處理圖片傳送。
+確保 Converter 生成的消息段類型與 Send 端支援的方法對應。例如，如果 Converter 將平台的圖片消息轉換為 `{"type": "image", ...}`，那麼 Send 端的 `Image()` 方法必須能處理圖片發送。
 
 ## 最佳實踐
 
-1. **始終保留原始資料**：`{platform}_raw` 欄位不能省略
-2. **使用標準訊息段**：盡量將平台訊息轉換為 OneBot12 標準訊息段
-3. **合理設定 detail_type**：使用標準類型（`private`/`group`/`channel` 等），不要自訂
-4. **處理邊界情況**：原始事件可能缺少某些欄位，使用 `.get()` 並提供合理的預設值
-5. **效能考量**：`convert()` 在每個事件上被呼叫，避免在其中執行耗時操作
+1. **總是保留原始數據**：`{platform}_raw` 字段不能省略
+2. **使用標準消息段**：盡量將平台消息轉換為 OneBot12 標準消息段
+3. **合理設定 detail_type**：使用標準類型（`private`/`group`/`channel` 等），不要自定義
+4. **處理邊界情況**：原始事件可能缺少某些字段，使用 `.get()` 並提供合理預設值
+5. **效能考量**：`convert()` 在每個事件上呼叫，避免在其中執行耗時操作
 
 ## 相關文件
 

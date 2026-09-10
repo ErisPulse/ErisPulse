@@ -1,5 +1,37 @@
 {
+  "version": 2,
   "hash": "af3d7fde0143996c1708eb99bdc3badf",
-  "translated_at": "2026-06-30T06:05:34.140769",
-  "target_lang": "en"
+  "file_hash": "af3d7fde0143996c1708eb99bdc3badf",
+  "translated_at": "2026-09-07T11:04:27.791625",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "50184277316fdd1067cf7466d518c086",
+      "translation": "# Developer Guide\n\nThis guide helps you develop custom modules and adapters to extend the functionality of ErisPulse."
+    },
+    {
+      "hash": "477828ae297d0b08fc3af76894260a7f",
+      "translation": "## Content List\n\n### Module Development\n\n1. [Getting Started with Module Development](modules/getting-started.md) - Create your first module\n2. [Core Concepts of Modules](modules/core-concepts.md) - Core concepts and architecture of modules\n3. [Event Wrapper Class Detailed Explanation](modules/event-wrapper.md) - Complete documentation of the Event object\n4. [Best Practices for Module Development](modules/best-practices.md) - Recommendations for developing high-quality modules\n\n### Adapter Development\n\n1. [Getting Started with Adapter Development](adapters/getting-started.md) - Create your first adapter\n2. [Core Concepts of Adapters](adapters/core-concepts.md) - Core concepts of adapters\n3. [SendDSL Detailed Explanation](adapters/send-dsl.md) - Complete documentation of the Send message sending DSL\n4. [Event Converters](adapters/converter.md) - Implementing event converters\n5. [Best Practices for Adapter Development](adapters/best-practices.md) - Recommendations for developing high-quality adapters\n\n### Publishing Guide\n\n- [Publishing and Module Store Guide](publishing.md) - Publish your work to PyPI and the ErisPulse module store"
+    },
+    {
+      "hash": "a69f12905cab94d5d7c997a0184db083",
+      "translation": "## Development Preparation\n\nBefore starting development, please ensure that you:\n\n1. Read [Basic Concepts](../getting-started/basic-concepts.md)\n2. Familiarized yourself with [Event Handling](../getting-started/event-handling.md)\n3. Installed the development environment (Python >= 3.10)\n4. Installed the ErisPulse SDK"
+    },
+    {
+      "hash": "20bd8cf355eeee226e64f56b062017ba",
+      "translation": "## Development Type Selection\n\nChoose the appropriate development type based on your needs:\n\n| Development Type | Use Case | Getting Started |\n|------------------|----------|-----------------|\n| **Module Development** | Extend bot functionality, implement business logic, provide commands and message handling | [Getting Started with Module Development](modules/getting-started.md) |\n| **Adapter Development** | Connect to new messaging platforms, enable cross-platform communication, provide platform-specific features | [Getting Started with Adapter Development](adapters/getting-started.md) |\n\n> If you want to extend the bot's functionality (such as adding commands or handling messages), choose **module development**. If you need to connect the bot to a new platform, choose **adapter development**."
+    },
+    {
+      "hash": "df55c8acea3081490090bb2ad7dfa656",
+      "translation": "## Development Tools\n\n### Project Templates\n\nErisPulse provides example projects as references:\n\n- [Module Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - The complete project structure for a module\n- [Adapter Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - The complete project structure for an adapter\n\n### Development Mode\n\nUse hot-reload mode for development, where code changes automatically trigger reloads:\n\n```bash\nepsdk run main.py --reload\n```\n\n### Debugging Tips\n\nEnable DEBUG or TRACE level logging in `config/config.toml`:\n\n```toml\n[ErisPulse.logger]\n# DEBUG: Outputs development and debugging information such as module loading and route registration\n# TRACE: The lowest level, outputs detailed framework internal processes such as event dispatching, storage writes, and lazy loading\nlevel = \"DEBUG\"\n```"
+    },
+    {
+      "hash": "786840a3da60cbc55439693abdaaedee",
+      "translation": "## Publish Your Module\n\nFor the complete publishing process, please refer to the [Publishing and Module Store Guide](publishing.md), which includes PyPI publishing steps and the ErisPulse module store submission process."
+    },
+    {
+      "hash": "2f89acabcdf406828738372366a4a32d",
+      "translation": "## Related Documentation\n\n- [Standards](../standards/) - Technical standards to ensure compatibility\n- [Platform Features Guide](../platform-guide/) - Learn about the features of each platform adapter"
+    }
+  ]
 }

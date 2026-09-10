@@ -58,6 +58,7 @@ if TYPE_CHECKING:
         RouterManager,
         ScopeManager,
         StorageManager,
+        TranscriptManager,
     )
     from .Core import (
         BaseAdapter as _BaseAdapter,
@@ -74,6 +75,7 @@ if TYPE_CHECKING:
     from .Core import (
         SendDSL as _SendDSL,
     )
+    from .Core.Event import InteractionManager
 
 
 def _resolve_core(attr: str):
@@ -102,6 +104,8 @@ def _resolve_core(attr: str):
         "client": ("ErisPulse.Core", "client"),
         "master": ("ErisPulse.Core", "master"),
         "scope": ("ErisPulse.Core", "scope"),
+        "transcript": ("ErisPulse.Core", "transcript"),
+        "interaction": ("ErisPulse.Core.Event", "interaction"),
         "context": ("ErisPulse.runtime", "context"),
         "BaseAdapter": ("ErisPulse.Core", "BaseAdapter"),
         "SendDSL": ("ErisPulse.Core", "SendDSL"),
@@ -132,6 +136,8 @@ _CORE_ATTR_NAMES = {
     "client",
     "master",
     "scope",
+    "transcript",
+    "interaction",
     "context",
     "BaseAdapter",
     "SendDSL",
@@ -168,8 +174,10 @@ class SDK:
     - client: HTTP 客户端
     - master: 框架主人管理器
     - scope: 作用域管理器（模块 / 身份 / 出站 三维，"什么范围内生效"）
+    - transcript: 会话收件箱（每会话近期消息流的记录与查询）
+    - interaction: 交互会话管理器（wait_reply 等待表 / 会话租约 / 按归属取消）
     - Event: 事件模块包（command 命令处理器 / message / notice / request 等事件处理器）
-    - context: 模块上下文管理（owner_scope / get_current_owner）
+    - context: 模块上下文管理（owner_scope / get_current_owner / trace-id / 消息事务账本）
     {!--< /tips >!--}
     """
 
@@ -195,7 +203,8 @@ class SDK:
     BaseQueryBuilder: type[_BaseQueryBuilder]
     master: MasterManager
     scope: ScopeManager
-    Event: ModuleType
+    transcript: TranscriptManager
+    interaction: InteractionManager
     context: ModuleType
 
     def __init__(self):
@@ -834,6 +843,17 @@ class SDK:
                 self.logger._module_levels.clear()
                 self.config.force_save()
 
+                # 7.5 关闭存储后端连接资源（须在 force_save 之后：持久化仍依赖存储；
+                # 主循环 + 同步桥接循环两侧的连接池/共享连接都释放，避免退出期 GC 炸已关闭 loop）
+                try:
+                    storage_backend = self.storage
+                    if hasattr(storage_backend, "aclose"):
+                        await storage_backend.aclose()
+                    if hasattr(storage_backend, "close"):
+                        storage_backend.close()
+                except Exception as e:
+                    self.logger.warning(i18n.t("core.storage.aclose_failed", error=e))
+
                 # 8. 清理 SDK 对象上的模块属性
                 module_properties_cleared = 0
                 for module_name in module_properties_to_clear:
@@ -1364,6 +1384,21 @@ class SDK:
 
             get_erispulse_config()
             _logger.info(i18n.t("core.sdk.prepare.config_loaded"))
+
+            # 确保 config.full.example 存在 / 随生成器版本刷新：未走 epsdk init
+            # 直接运行（sdk.run / main.py）的用户同样获得完整配置参考
+            try:
+                from pathlib import Path as _Path
+
+                from .Core.config import config as _config_manager
+                from .runtime.example_config import ensure_full_example
+
+                config_dir = _Path(getattr(_config_manager, "CONFIG_FILE", "config/config.toml")).parent
+                if str(config_dir) == ".":
+                    config_dir = _Path("config")
+                ensure_full_example(config_dir=config_dir)
+            except Exception:
+                pass
             return True
         except Exception as e:
             load_duration = _lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_INIT)

@@ -49,7 +49,9 @@ ErisPulse 是一个可扩展的多平台消息处理框架，支持通过适配�
 | [生命周期管理](advanced/lifecycle.md) · [懶加载](advanced/lazy-loading.md) · [路由系统](advanced/router.md) | 内部子系统 |
 | [作用域（scope）](advanced/scope.md) | 三维作用域控制：模块可用性 / 事件准入 / 出站动作限制（含方法级细粒度规则、绑定继承 merge） |
 | [归属权（owner）系统](advanced/ownership.md) | 资源归属与自动回收：owner 上下文、归属资源全景、卸载清理序列、设计边界与模块作者指南 |
-| [Conversation 多轮对话](advanced/conversation.md) · [MessageBuilder](advanced/message-builder.md) · [SQL 构建](advanced/sql-builder.md) · [HTTP 客户端](advanced/http-client.md) · [国际化](advanced/i18n.md) | 进阶工具 |
+| [交互会话系统](advanced/interaction.md) | wait_reply 全解、会话定时器（remind/escalate）、多路等待（select）、会话互斥租约、收件箱、消息事务、链路追踪 |
+| [模块间通信](advanced/module-communication.md) | RPC 协议化（module.call）、meta.services 服务契约与目录、定向事件 emit(to=)、冷启动回放、事件幂等去重 |
+| [Conversation 多轮对话](advanced/conversation.md) · [MessageBuilder](advanced/message-builder.md) · [SQL 构建](advanced/sql-builder.md) · [存储后端](advanced/storage-backends.md) · [HTTP 客户端](advanced/http-client.md) · [国际化](advanced/i18n.md) | 进阶工具 |
 
 ### 四、生态与官方客户端
 

@@ -1,5 +1,85 @@
 {
+  "version": 2,
   "hash": "6aa4a6703d4101f393d69a505de533b6",
-  "translated_at": "2026-08-01T18:36:07.930541",
-  "target_lang": "ru"
+  "file_hash": "6aa4a6703d4101f393d69a505de533b6",
+  "translated_at": "2026-09-07T11:01:32.978372",
+  "target_lang": "ru",
+  "chunks": [
+    {
+      "hash": "17478b448933632235a760eca6803b33",
+      "translation": "# Маршрутизатор\n\nМаршрутизатор ErisPulse обеспечивает единое управление HTTP и WebSocket маршрутизацией, поддерживает регистрацию маршрутов с несколькими адаптерами и управление их жизненным циклом. В основе лежит абстрактный слой (в настоящее время FastAPI + Uvicorn)."
+    },
+    {
+      "hash": "fb144a12cbd40237d4f461fd0a1f0c7b",
+      "translation": "## Обзор\n\nОсновные функции маршрутизатора:\n\n- **Декоратор маршрутов**: поддержка быстрой регистрации маршрутов с помощью декораторов `@http` / `@get` / `@post` / `@put` / `@delete` / `@ws`\n- **Автоматическая инъекция**: обработчики маршрутов не требуют импорта типов FastAPI, фреймворк автоматически инжектирует абстрактные объекты\n- **Группировка маршрутов**: поддержка `RouteGroup` с префиксом и номером версии\n- **Маршрутизатор промежуточного ПО**: поддержка глобального режима сопоставления для перехвата запросов\n- **Ограничение скорости**: встроенный скользящий оконный режим ограничения\n- **Поддержка CORS**: включение кросс-доменного资源共享 одним кликом\n- **Безопасные заголовки**: автоматическое добавление безопасных заголовков ответа\n- **Автоматическая документация**: интерактивная документация на основе OpenAPI\n- **Поддержка WebSocket**: полное управление подключениями WebSocket, пользовательская аутентификация и жизненный цикл\n- **Интеграция жизненного цикла**: глубокая интеграция с системой жизненного цикла ErisPulse\n- **Поддержка SSL/TLS**: поддержка безопасных соединений HTTPS и WSS\n- **Главная точка входа**: поддержка модуля с быстрой регистрацией кнопки входа по корневому маршруту `/`, поддержка локализации"
+    },
+    {
+      "hash": "563001a54a5f55d43c1457f2f6ecb08d",
+      "translation": "## Абстрактные типы\n\nErisPulse предоставляет абстрактные типы сервера, которые позволяют модулям не зависеть напрямую от FastAPI:\n\n| Абстрактный тип | Соответствие FastAPI | Описание |\n|----------------|----------------------|----------|\n| `HttpRequest` | `fastapi.Request` | Обёртка над HTTP-запросом, полная совместимость интерфейса |\n| `WebSocketConnection` | `fastapi.WebSocket` | Обёртка над WebSocket-соединением, дополнительные хуки жизненного цикла |\n| `WebSocketDisconnect` | `fastapi.WebSocketDisconnect` | Исключение при разрыве WebSocket-соединения |\n\n> `WebSocketConnection` наследуется от `WebSocketConnectionBase` и разделяет с клиентским WebSocket (`ClientWebSocket`) одинаковые интерфейсы send/receive/iter/close. Бизнес-логика может быть одинаковой как для клиента, так и для сервера.\n>\n> С помощью свойства `.raw` можно получить доступ к базовому объекту FastAPI. Код, использующий типы FastAPI, также полностью совместим."
+    },
+    {
+      "hash": "9b712f88b0b0034652c3f6f190f9ccb8",
+      "translation": "## Декораторы маршрутов (рекомендуется)\n\n### HTTP декораторы\n\n```python\nfrom ErisPulse.Core import router\n@router.get(\"my_module\", \"/info\")\nasync def get_info(request):\n    return {\"method\": request.method, \"path\": str(request.url)}\n\n# Также можно явно указать абстрактный тип\nfrom ErisPulse.Core import HttpRequest\n\n@router.post(\"my_module\", \"/data\")\nasync def post_data(request: HttpRequest):\n    data = await request.json()\n    return {\"received\": data}\n\n@router.put(\"my_module\", \"/data/{item_id}\")\nasync def update_data(request):\n    return {\"updated\": True}\n\n@router.delete(\"my_module\", \"/data/{item_id}\")\nasync def delete_data(request):\n    return {\"deleted\": True}\n```\n\n> **Правила автоматической инъекции**: если первый параметр обработчика имеет имя `request` или `req` и не имеет аннотации типа FastAPI, фреймворк автоматически инжектирует `HttpRequest`. Обработчики без параметров или с параметрами, не являющимися именем запроса, не затрагиваются.\n\n### WebSocket декораторы\n\n```python\nfrom ErisPulse.Core import WebSocketConnection, WebSocketDisconnect\n\n# Базовый WebSocket\n@router.ws(\"my_module\", \"/ws\")\nasync def websocket_handler(ws):\n    async for msg in ws.iter_text():\n        await ws.send_text(f\"Echo: {msg}\")\n\n# WebSocket с хуками жизненного цикла\n@router.ws(\"my_module\", \"/ws/chat\")\nasync def chat(ws: WebSocketConnection):\n    @ws.on_disconnect\n    async def on_disconnect(ws, reason=\"unknown\"):\n        print(f\"Пользователь отключился: {reason}\")\n\n    @ws.on_error\n    async def on_error(ws, error=\"\"):\n        print(f\"Ошибка соединения: {error}\")\n\n    async for msg in ws.iter_text():\n        await ws.send_text(f\"Echo: {msg}\")\n\n# WebSocket с аутентификацией\nasync def ws_auth(ws: WebSocketConnection) -> bool:\n    token = ws.query_params.get(\"token\")\n    return token == \"secret\"\n\n@router.ws(\"my_module\", \"/secure_ws\", auth_handler=ws_auth)\nasync def secure_ws_handler(ws):\n    while True:\n        data = await ws.receive_text()\n        await ws.send_text(f\"Echo: {data}\")\n```\n\n> **Примечание**: WebSocket обработчики и обработчики аутентификации также поддерживают автоматическую инъекцию. `WebSocketConnection` можно получить без аннотации параметра. Использование аннотации `fastapi.WebSocket` также передаст оригинальный объект, но рекомендуется использовать абстрактный тип."
+    },
+    {
+      "hash": "504cdd35d8618be97f83466daa9d38e7",
+      "translation": "## Традиционный способ регистрации\n\n```python\nasync def hello_handler(request):\n    return {\"message\": \"Hello World\"}\n\n# Базовая регистрация\nrouter.register_http_route(\n    module_name=\"my_module\",\n    path=\"/hello\",\n    handler=hello_handler,\n    methods=[\"GET\"],\n)\n\n# С ограничением частоты и документацией\nrouter.register_http_route(\n    module_name=\"my_module\",\n    path=\"/api/data\",\n    handler=data_handler,\n    methods=[\"POST\"],\n    rate_limit=\"10/minute\",\n    summary=\"Интерфейс данных\",\n    tags=[\"API\"],\n)\n```\n\n### Регистрация WebSocket\n\n```python\nfrom ErisPulse.Core import WebSocketConnection\n\nasync def websocket_handler(ws: WebSocketConnection):\n    async for msg in ws.iter_text():\n        await ws.send_text(f\"Echo: {msg}\")\n\n# Базовая регистрация\nrouter.register_websocket(\n    module_name=\"my_module\",\n    path=\"/ws\",\n    handler=websocket_handler,\n)\n\n# Регистрация с аутентификацией (рекомендуется)\nasync def auth_handler(ws: WebSocketConnection) -> bool:\n    token = ws.query_params.get(\"token\")\n    return token == \"secret\"\n\nrouter.register_websocket(\n    module_name=\"my_module\",\n    path=\"/secure_ws\",\n    handler=websocket_handler,\n    auth_handler=auth_handler,\n)\n```\n\n**Описание параметров:**\n\n| Параметр | Описание | Значение по умолчанию |\n|----------|----------|-----------------------|\n| `module_name` | Имя модуля (обязательно) | - |\n| `path` | Путь WebSocket | - |\n| `handler` | Обработчик | - |\n| `auth_handler` | Функция аутентификации, возвращает `False` для автоматического закрытия соединения | `None` |\n| `auto_accept` | Автоматически вызывать `accept()` | `True` |\n\n> **Рекомендуется** использовать `auth_handler` для подтверждения соединения, а не отключать `auto_accept`. Установите `auto_accept=False` только в том случае, если вам нужно полностью контролировать процесс подключения."
+    },
+    {
+      "hash": "4d80b7f630c2012224bfedc7cb572962",
+      "translation": "## WebSocket 生命周期钩子\n\n`WebSocketConnection` позволяет зарегистрировать обратные вызовы при отключении и ошибках, без необходимости использовать try/catch вручную:\n\n```python\nfrom ErisPulse.Core import WebSocketConnection\n\n@router.ws(\"my_module\", \"/ws\")\nasync def my_ws(ws: WebSocketConnection):\n    # Регистрация через декоратор\n    @ws.on_disconnect\n    async def on_close(ws, reason=\"unknown\"):\n        print(f\"Причина отключения: {reason}\")\n\n    # Также можно вызвать напрямую\n    async def on_err(ws, error=\"\"):\n        print(f\"Ошибка: {error}\")\n    ws.on_error(on_err)\n\n    # Основная бизнес-логика\n    async for msg in ws.iter_text():\n        await ws.send_text(f\"Эхо: {msg}\")\n```"
+    },
+    {
+      "hash": "aa2322a217b9f7d31c24d38637aff6b7",
+      "translation": "## Группировка маршрутов\n\n```python\n# Создание группы маршрутов с префиксом\ngroup = router.group(\"my_module\", prefix=\"/v1\")\n\n@group.get(\"/users\")\nasync def list_users(request):\n    return {\"users\": []}\n\n@group.post(\"/users\")\nasync def create_user(request):\n    return {\"created\": True}\n\n# Фактический путь: /my_module/v1/users\n```"
+    },
+    {
+      "hash": "88da2f33fd5e5f851b73097389157798",
+      "translation": "## Маршрутизация промежуточного программного обеспечения\n\nПромежуточное программное обеспечение поддерживает сопоставление с помощью шаблонов glob:\n\n```python\n@router.middleware(\"/my_module/*\")\nasync def auth_middleware(request, call_next):\n    token = request.headers.get(\"Authorization\")\n    if not token:\n        return {\"error\": \"Unauthorized\"}\n    return await call_next(request)\n\n@router.middleware(\"/my_module/admin/*\")\nasync def admin_middleware(request, call_next):\n    return await call_next(request)\n```"
+    },
+    {
+      "hash": "66cabb7fc9b3e9646c7218e26dcbb27e",
+      "translation": "## Идентификатор запроса (X-Request-ID)\n\nНачиная с версии 2.7.0, каждый HTTP-запрос содержит идентификатор `X-Request-ID`, используемый для логирования и трассировки цепочек:\n\n- **Правила генерации**: приоритетно используется заголовок `X-Request-ID`, переданный клиентом (для распределённой трассировки); в противном случае генерируется UUID\n- **Заголовок ответа**: ответ также содержит `X-Request-ID`, что позволяет клиенту сопоставить запрос с логами\n- **События жизненного цикла**: в данных событий `server.request` и `server.response` добавлено поле `request_id`\n\n```python\n# В модуле отслеживайте события запроса, используя request_id для сопоставления запроса и ответа\n@sdk.lifecycle.on(\"server.request\")\nasync def on_request(data):\n    print(f\"[{data['request_id']}] {data['method']} {data['path']}\")\n\n@sdk.lifecycle.on(\"server.response\")\nasync def on_response(data):\n    print(f\"[{data['request_id']}] -> {data['status_code']}\")\n```\n\nКлиент может задать собственный ID для трассировки между сервисами:\n\n```bash\ncurl -H \"X-Request-ID: my-trace-id\" http://localhost:8080/my_module/health\n```"
+    },
+    {
+      "hash": "283c962be00b239d411e8ecdd7196bd1",
+      "translation": "## Ограничение скорости\n\nОграничение скорости маршрутов осуществляется с использованием алгоритма скользящего окна:\n\n```python\n@router.get(\"my_module\", \"/limited\", rate_limit=\"10/minute\")\nasync def limited_endpoint(request):\n    return {\"ok\": True}\n\n@router.post(\"my_module\", \"/submit\", rate_limit=\"5/minute\")\nasync def submit_data(request):\n    return {\"submitted\": True}\n```\n\nФормат ограничения скорости: `{количество}/{временной интервал}`, например `10/minute`, `100/hour`."
+    },
+    {
+      "hash": "e237cf08ce0e2076b44ae1326060d90d",
+      "translation": "## CORS Configuration\n\n```python\nrouter.setup_cors(\n    allow_origins=[\"https://example.com\"],\n    allow_methods=[\"GET\", \"POST\"],\n    allow_headers=[\"*\"],\n)\n```\n\nCORS can also be configured via `config.toml`:\n\n```toml\n[router.cors]\nallow_origins = [\"https://example.com\"]\nallow_methods = [\"GET\", \"POST\"]\nallow_headers = [\"*\"]\n```"
+    },
+    {
+      "hash": "f11bfc72f955b8e2cdb5b52db63278f6",
+      "translation": "## Заголовки безопасности\n\n```python\nrouter.setup_security_headers()\n```\n\nАвтоматически добавляются заголовки безопасности, такие как `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection` и другие.\n\nТакже можно настроить через `config.toml`:\n\n```toml\n[router.security]\nenabled = true\n```"
+    },
+    {
+      "hash": "7e6759feab2887f107673a5788cbf48e",
+      "translation": "## Автоматическая документация\n\nRouter по умолчанию включает интерактивную документацию OpenAPI:\n\n```python\n# Отключить документацию\nrouter.disable_docs()\n\n# Настроить информацию о документации\nrouter.set_docs_info(\n    title=\"Мой API\",\n    description=\"Документация API\",\n    version=\"1.0.0\"\n)\n```"
+    },
+    {
+      "hash": "73acbc68887187cb20c5b8a3a25a074a",
+      "translation": "## Обработка путей\n\nПути маршрутизации автоматически добавляют имя модуля в качестве префикса, чтобы избежать конфликтов:\n\n```python\n# Регистрация пути \"/api\" для модуля \"my_module\"\n# Фактический доступный путь: \"/my_module/api\"\nrouter.register_http_route(\"my_module\", \"/api\", handler)\n```"
+    },
+    {
+      "hash": "bc3df13a708431aae80900b948e4b75a",
+      "translation": "## Системные маршруты\n\nМенеджер маршрутизации автоматически предоставляет следующие системные маршруты:\n\n### Проверка работоспособности\n\n```\nGET /health\n# Возвращает:\n{\"status\": \"ok\", \"service\": \"ErisPulse Router\"}\n```\n\n### Главная страница\n\n```\nGET /\n# Возвращает страницу бренда ErisPulse\n```\n\nКорневой маршрут `/` отображает страницу бренда ErisPulse, автоматически определяет доступность Dashboard и добавляет кнопку входа."
+    },
+    {
+      "hash": "50e9063f3496cc51c3eb4394ad460111",
+      "translation": "## Главная точка входа\n\nМенеджер маршрутизации позволяет внешним модулям регистрировать кнопки быстрого доступа на корневом маршруте `/`, что упрощает пользователям быстрый переход на страницы управления соответствующих модулей.\n\n### Регистрация входа\n\n```python\n# Простая регистрация\nrouter.register_home_entry(\n    name=\"Моя панель\",\n    url=\"/mymodule/admin\",\n)\n\n# Регистрация с иконкой (SVG)\nrouter.register_home_entry(\n    name=\"Консоль\",\n    url=\"/console\",\n    icon_svg='<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\"><path d=\"M4 17l6-6-6-6\"/><path d=\"M12 19h8\"/></svg>',\n)\n\n# Регистрация с поддержкой международизации (формат словаря i18n проекта)\nrouter.register_home_entry(\n    name={\"i18n\": \"mymodule.home.entry\", \"default\": \"Моя панель\"},\n    url=\"/mymodule/admin\",\n)\n```\n\n**Описание параметров:**\n\n| Параметр | Тип | Описание | Обязателен |\n|----------|------|----------|-----------|\n| `name` | `str` / `dict` | Текст отображения кнопки; при передаче словаря `{\"i18n\": \"key\", \"default\": \"текст\"}` используется международизация | Да |\n| `url` | `str` | Адрес ссылки кнопки | Да |\n| `icon_svg` | `str` | Необязательный SVG-код иконки | Нет |\n\n### Автоматическая регистрация Dashboard\n\nПри обнаружении доступности `sdk.Dashboard`, менеджер маршрутизации автоматически добавляет кнопку Dashboard в начало списка входов, без необходимости ручной регистрации."
+    },
+    {
+      "hash": "5435f1b9f38981e008f461ece4447b34",
+      "translation": "## Интеграция жизненного цикла\n\n```python\nfrom ErisPulse.Core import lifecycle\n\n@lifecycle.on(\"server.start\")\nasync def on_server_start(event):\n    print(f\"Сервер запущен: {event['data']['base_url']}\")\n\n@lifecycle.on(\"server.stop\")\nasync def on_server_stop(event):\n    print(\"Сервер останавливается...\")\n```"
+    },
+    {
+      "hash": "cb12a4c48b9d354f1e4847810d6e2d09",
+      "translation": "## Рекомендуемые практики\n\n1. **Предпочтение абстрактным типам**: Используйте `HttpRequest` / `WebSocketConnection` вместо `fastapi.Request` / `fastapi.WebSocket`, чтобы избежать жесткой привязки\n2. **Использование автоматической инъекции**: Первый параметр обработчика должен называться `request` или `req`, чтобы получить `HttpRequest` без каких-либо аннотаций типов\n3. **Явное передача module_name**: Первый аргумент декоратора должен быть именем модуля, его нельзя опускать\n4. **Использование группировки маршрутов**: Для нескольких маршрутов одного модуля используйте `group()` для организации\n5. **Рассмотрение безопасности**: Реализуйте механизмы аутентификации и безопасные заголовки для чувствительных операций\n6. **Разумное ограничение скорости**: Установите ограничение скорости для интерфейсов с высокой частотой вызовов\n7. **Использование циклов жизненного цикла**: Используйте `@ws.on_disconnect` / `@ws.on_error` для обработки исключений WebSocket, избегая ручного try/catch"
+    },
+    {
+      "hash": "dc4f0228caff64ab42ab9a73d617da34",
+      "translation": "## Связанные документы\n\n- [HTTP-клиент](http-client.md) - Использование встроенного HTTP-клиента для отправки запросов\n- [Руководство по разработке модулей](../developer-guide/modules/getting-started.md) - Ознакомьтесь с регистрацией маршрутов модуля\n- [Рекомендуемые практики](../developer-guide/modules/best-practices.md) - Советы по использованию маршрутов"
+    }
+  ]
 }

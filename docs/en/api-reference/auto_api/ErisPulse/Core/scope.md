@@ -156,6 +156,41 @@ ErisPulse 作用域（scope）
 ---
 
 
+##### `_replay_runtime_overrides()`
+
+> **内部方法** 按写入顺序把运行时覆盖层重放到重建后的配置树
+
+---
+
+
+##### `_record_runtime_owner(path: str)`
+
+> **内部方法** 记录运行时写入的调用方归属（模块卸载时兜底清理）
+
+---
+
+
+##### `_clear_runtime_overrides(prefix: str)`
+
+> **内部方法** 清除某路径及其全部子路径的运行时覆盖记录
+
+---
+
+
+##### `unregister_by_owner(caller: str)`
+
+注销指定调用方的全部运行时（persist=False）作用域绑定
+
+仅清理内存态运行时写入；``persist=True`` 的写入属用户配置语义，
+在模块卸载时不受影响。由模块管理器在卸载时兜底调用，
+避免已卸载模块的运行时绑定残留生效。
+
+- **caller** (`调用方模块名`): / 适配器平台名
+**返回值** (`int`): 清理的绑定条目数
+
+---
+
+
 ##### `_validated_actions(scope_config: dict)`
 
 > **内部方法** 加载并校验出站动作规则
@@ -163,9 +198,16 @@ ErisPulse 作用域（scope）
 ---
 
 
-##### `_on_config_updated(_data: dict)`
+##### `_on_config_updated(data: dict)`
 
-配置变更回调：重建配置树
+配置变更回调：仅在 scope 配置实际变化时重建配置树
+
+- ``config.set``：按事件 key 过滤，只有整棵写入或
+  ``ErisPulse.scope`` 子树内的写入才触发重建（无关模块写自己的
+  配置不应冲掉运行时绑定/清空判定缓存）
+- ``config.updated``：对比新旧配置树的 scope 节，相同则跳过
+
+- **data** (`事件载荷（config.set`): 含 key；config.updated 含 old_config/new_config）
 
 ---
 
@@ -548,10 +590,12 @@ False
 
 - **path** (`点分路径，如`): ``"bots.onebot11.123456"``（模块绑定）、
              ``"identity.users.onebot11.u_bad"``（拉黑用户）、
-             
+
              ``"actions.MyModule.send"``（出站规则）
 - **value** (`写入值（dict`): 时与现有值深合并，其余类型直接覆盖）
-- **persist** (`是否持久化到配置文件`): (默认: True)
+- **persist** (`是否持久化到配置文件`): (默认: True)。
+    ``persist=False`` 为运行时绑定：写入覆盖层，任意配置写入/重载
+    均不会冲掉（但进程重启后丢失，且模块卸载时随调用方清理）
 
 **示例**:
 ```python
@@ -569,7 +613,9 @@ False
 
 - **path** (`点分路径，如`): ``"bots.onebot11.123456"``、
              ``"identity.users.onebot11.u_bad"``、``"actions.MyModule.send"``
-- **persist** (`是否持久化到配置文件`): (默认: True)
+- **persist** (`是否持久化到配置文件`): (默认: True)。
+    ``persist=False`` 为运行时删除：覆盖层记录删除标记，
+    任意配置写入/重载后仍保持"已删除"语义
 **返回值** (`是否存在并被删除`): 
 **示例**:
 ```python
@@ -611,7 +657,7 @@ False
 
 ##### `clear()`
 
-清空所有作用域配置（仅内存生效，不持久化）
+清空所有作用域配置（仅内存生效，不持久化；含运行时覆盖层）
 
 ---
 

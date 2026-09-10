@@ -18,6 +18,7 @@ from ErisPulse.Core.Event import (
     CONFIRM_YES_WORDS,
     command,
     get_platform_event_methods,
+    interaction,
     message,
     meta,
     notice,
@@ -203,7 +204,7 @@ class TestCommandHandler:
         command.aliases.clear()
         command.groups.clear()
         command.permissions.clear()
-        command._waiting_replies.clear()
+        interaction.clear()
         yield
         # 清理
         command._clear_commands()
@@ -378,16 +379,11 @@ class TestCommandHandler:
     @pytest.mark.asyncio
     async def test_wait_reply_success(self):
         """测试等待用户回复成功"""
-        # 创建等待future
+        # 通过交互会话管理器创建等待条目
         future = asyncio.Future()
 
-        wait_key = "test:user:123"
-        command._waiting_replies[wait_key] = {
-            "future": future,
-            "callback": None,
-            "validator": None,
-            "timestamp": asyncio.get_event_loop().time()
-        }
+        wait_event = {"platform": "test", "user_id": "123"}
+        interaction.register(wait_event, future)
 
         # 设置回复
         reply_event = {"alt_message": "test reply"}
@@ -1545,6 +1541,15 @@ class TestConversationBranches:
 class TestConversationPersistence:
     """Conversation 持久化测试"""
 
+    @pytest.fixture(autouse=True)
+    def _clear_interaction(self):
+        """resume 会话接管会留下租约，逐用例清理"""
+        from ErisPulse.Core.Event.interaction import interaction
+
+        interaction.clear()
+        yield
+        interaction.clear()
+
     @pytest.fixture
     def sample_event(self):
         """创建示例事件"""
@@ -1640,15 +1645,15 @@ class TestConversationPersistence:
 
     @pytest.mark.asyncio
     async def test_clear_saved(self, sample_event):
-        """测试清除保存的对话状态"""
+        """测试清除保存的对话状态（新键 + 旧格式兼容键各清理一次）"""
         conv = sample_event.conversation()
 
         with patch.object(storage_module, "storage") as mock_storage:
             mock_storage.delete = Mock()
             await conv.clear_saved()
-            mock_storage.delete.assert_called_once()
-            call_args = mock_storage.delete.call_args
-            assert call_args[0][0].startswith("conversation:")
+            assert mock_storage.delete.call_count == 2
+            for call in mock_storage.delete.call_args_list:
+                assert call[0][0].startswith("conversation:")
 
     @pytest.mark.asyncio
     async def test_save_handles_error(self, sample_event):
@@ -1954,3 +1959,66 @@ class TestEventSendChainAndModifiers:
         types = [seg["type"] for seg in params["message"]]
         assert "mention" in types
         assert "text" in types
+
+
+class TestDispatchOwnerAttribution:
+    """事件分发 owner 归属测试（懒加载 activate_on 触发慢日志 owner=<unknown> 修复）"""
+
+    @pytest.mark.asyncio
+    async def test_dispatch_platform_owner_context(self):
+        """分发期无归属处理器的 current_owner 兜底为平台名，分发结束恢复"""
+        from ErisPulse.runtime.context import current_owner
+
+        seen = {}
+
+        async def probe(event):
+            seen["owner"] = current_owner.get()
+
+        handler = BaseEventHandler("message")
+        handler.register(probe, priority=1)
+        event = Event({"type": "message", "platform": "sandbox", "self": {"user_id": "bot1"}, "user_id": "u1"})
+        await handler._process_event(event)
+
+        assert seen["owner"] == "sandbox"
+        assert current_owner.get() is None
+
+    @pytest.mark.asyncio
+    async def test_slow_log_owner_prefers_command_owner(self):
+        """无注册 owner 的命令分发处理器执行命令后，慢日志归因到命令所属模块
+
+        对应懒加载场景：activate_on 占位命令首令激活，激活耗时主体是目标模块
+        """
+        async def dispatcher(event):
+            event["command"] = {"name": "help", "owner": "HelpNext"}
+            await asyncio.sleep(0.03)
+
+        handler = BaseEventHandler("message")
+        handler.register(dispatcher, priority=1)
+        event = Event({"type": "message", "platform": "sandbox", "self": {"user_id": "bot1"}, "user_id": "u1"})
+        with patch("ErisPulse.Core.Event.base.HANDLER_SLOW_THRESHOLD_SECS", 0.001):
+            with patch("ErisPulse.Core.Event.base.logger") as mock_logger:
+                await handler._process_event(event)
+
+        warnings = [str(c.args[0]) for c in mock_logger.warning.call_args_list]
+        assert any("owner=HelpNext" in w for w in warnings)
+        assert not any("owner=<unknown>" in w for w in warnings)
+
+    @pytest.mark.asyncio
+    async def test_registered_owner_wins_over_command_owner(self):
+        """注册 owner 优先于命令 owner（模块自身处理器慢日志归属自己）"""
+        from ErisPulse.runtime.context import owner_scope
+
+        async def module_handler(event):
+            event["command"] = {"name": "x", "owner": "OtherModule"}
+            await asyncio.sleep(0.03)
+
+        handler = BaseEventHandler("message")
+        with owner_scope("MyModule"):
+            handler.register(module_handler, priority=1)
+        event = Event({"type": "message", "platform": "sandbox", "self": {"user_id": "bot1"}, "user_id": "u1"})
+        with patch("ErisPulse.Core.Event.base.HANDLER_SLOW_THRESHOLD_SECS", 0.001):
+            with patch("ErisPulse.Core.Event.base.logger") as mock_logger:
+                await handler._process_event(event)
+
+        warnings = [str(c.args[0]) for c in mock_logger.warning.call_args_list]
+        assert any("owner=MyModule" in w for w in warnings)

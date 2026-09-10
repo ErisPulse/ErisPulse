@@ -1,23 +1,23 @@
-# Matrix Platform Feature Documentation
+# Matrix Platform Features Document
 
 MatrixAdapter is an adapter built based on the [Matrix protocol](https://spec.matrix.org/), integrating all core functional modules of the Matrix protocol and providing a unified interface for event handling and message operations.
 
 ---
 
-## Document Information
+## Documentation Information
 
 - Corresponding Module Version: 4.1.0
 - Maintainer: ErisPulse
 
 ## Basic Information
 
-- Platform Overview: Matrix is an open, decentralized communication protocol that supports various scenarios such as private chats and group chats.
+- Platform Overview: Matrix is an open, decentralized communication protocol that supports various scenarios, including private chats and group chats.
 - Adapter Name: MatrixAdapter
 - Multi-account Support: Supports configuring multiple Matrix accounts simultaneously.
 - Connection Method: Long Polling (via Matrix Sync API `/sync`)
-- Authentication Method: Login using access_token or user_id + password to obtain a token.
-- Chained Modifier Support: Supports chained modifier methods such as `.Reply()`, `.At()`, and `.AtAll()`.
-- OneBot12 Compatibility: Supports sending messages in OneBot12 format.
+- Authentication Method: Token-based authentication using `access_token` or login with `user_id` and `password` to obtain a token.
+- Chained Modifiers Support: Supports chained modifier methods such as `.Reply()`, `.At()`, and `.AtAll()`.
+- OneBot12 Compatibility: Supports sending OneBot12 formatted messages.
 
 ## Configuration Instructions
 
@@ -28,10 +28,10 @@ MatrixAdapter supports multi-account configuration, with each account having its
 # Account 1
 [Matrix_Adapter.accounts.default]
 homeserver = "https://matrix.org"          # Matrix server address (required)
-access_token = "YOUR_ACCESS_TOKEN"          # Access token (either this or user_id+password is required)
-user_id = ""                                # Matrix user ID (e.g. @bot:matrix.org)
+access_token = "YOUR_ACCESS_TOKEN"          # Access token (choose either this or user_id+password)
+user_id = ""                                # Matrix user ID (e.g., @bot:matrix.org)
 password = ""                               # Matrix user password
-auto_accept_invites = true                  # Whether to automatically accept room invites (optional, default is true)
+auto_accept_invites = true                  # Whether to automatically accept room invitations (optional, default is true)
 enabled = true                              # Whether to enable this account (optional, default is true)
 
 # Account 2
@@ -41,14 +41,14 @@ access_token = "ANOTHER_TOKEN"
 enabled = true
 ```
 
-> **Backward Compatibility:** If an old single-account `[Matrix_Adapter]` configuration (including access_token) is detected, it will be automatically migrated to `accounts.default`.
+> Backward compatibility: If an old single-account `[Matrix_Adapter]` configuration (including access_token) is detected, it will be automatically migrated to `accounts.default`.
 
 **Configuration Item Descriptions (per account):**
 - `homeserver`: Matrix server address (required), default is `https://matrix.org`
-- `access_token`: Access token, can be obtained from a Matrix client. If you already have a token, simply fill it in
+- `access_token`: Access token, which can be obtained from a Matrix client. If you already have a token, simply fill it in
 - `user_id`: Matrix user ID (e.g., `@bot:matrix.org`), used together with `password` for login
 - `password`: Matrix user password, used for automatic login to obtain the access token
-- `auto_accept_invites`: Whether to automatically accept room invites, default is `true`
+- `auto_accept_invites`: Whether to automatically accept room invitations, default is `true`
 - `enabled`: Whether to enable this account (optional, default is true)
 
 **Authentication Methods:**
@@ -66,45 +66,45 @@ await matrix.Send.To("group", room_id).Text("Hello World!")
 ```
 
 The supported sending types include:
-- `.Text(text: str)` : Sends a plain text message.
-- `.Image(file: bytes | str)` : Sends an image message, supporting file paths, URLs, MXC URIs, and binary data.
-- `.Voice(file: bytes | str)` : Sends a voice message, supporting file paths, URLs, MXC URIs, and binary data.
-- `.Video(file: bytes | str)` : Sends a video message, supporting file paths, URLs, MXC URIs, and binary data.
-- `.File(file: bytes | str, filename: str = "")` : Sends a file message, supporting file paths, URLs, MXC URIs, and binary data.
-- `.Notice(text: str)` : Sends a notice message (Matrix's m.notice type).
-- `.Html(html: str, fallback: str = "")` : Sends an HTML-formatted message, supporting rich text content.
-- `.Raw_ob12(message: List[Dict], **kwargs)` : Sends a OneBot12 formatted message.
+- `.Text(text: str)` - Sends plain text messages.
+- `.Image(file: bytes | str)` - Sends image messages, supporting file paths, URLs, MXC URIs, and binary data.
+- `.Voice(file: bytes | str)` - Sends voice messages, supporting file paths, URLs, MXC URIs, and binary data.
+- `.Video(file: bytes | str)` - Sends video messages, supporting file paths, URLs, MXC URIs, and binary data.
+- `.File(file: bytes | str, filename: str = "")` - Sends file messages, supporting file paths, URLs, MXC URIs, and binary data.
+- `.Notice(text: str)` - Sends notification messages (Matrix's m.notice type).
+- `.Html(html: str, fallback: str = "")` - Sends HTML formatted messages, supporting rich text content.
+- `.Raw_ob12(message: List[Dict], **kwargs)` - Sends OneBot12 formatted messages.
 
 ### Fluent Modifier Methods (Combinable)
 
-Modifier methods return `self`, supporting fluent chaining, and must be called before the final sending method:
+Modifier methods return `self`, enabling fluent method chaining. They must be called before the final sending method:
 
-- `.Reply(message_id: str)` : Replies to a specified message (using Matrix `m.in_reply_to` relationship).
-- `.At(user_id: str)` : Mentions a specified user (using Matrix `m.mentions` field).
-- `.AtAll()` : Mentions everyone in the room (using Matrix `@room` mention).
+- `.Reply(message_id: str)` - Replies to a specified message (using Matrix's `m.in_reply_to` relationship).
+- `.At(user_id: str)` - Mentions a specified user (using Matrix's `m.mentions` field).
+- `.AtAll()` - Mentions everyone in the room (using Matrix's `@room` mention).
 
 ### Fluent Chaining Examples
 
 ```python
-# Basic sending
+# Basic send
 await matrix.Send.To("user", dm_room_id).Text("Hello")
 
 # Reply to message
 await matrix.Send.To("group", room_id).Reply("$event_id").Text("Reply message")
 
 # Mention user
-await matrix.Send.To("group", room_id).At("@user:matrix.org").Text("你好")
+await matrix.Send.To("group", room_id).At("@user:matrix.org").Text("Hello")
 
 # Mention everyone
 await matrix.Send.To("group", room_id).AtAll().Text("Announcement")
 
 # Combinable: Reply + Mention
-await matrix.Send.To("group", room_id).Reply("$event_id").At("@user:matrix.org").Text("Combined message")
+await matrix.Send.To("group", room_id).Reply("$event_id").At("@user:matrix.org").Text("Composite message")
 
 # Send HTML message
 await matrix.Send.To("group", room_id).Html("<h1>Title</h1><p>Content</p>", fallback="Title\nContent")
 
-# Send notice message
+# Send notification message
 await matrix.Send.To("group", room_id).Notice("System notification")
 ```
 
@@ -117,7 +117,7 @@ The adapter supports sending OneBot12 formatted messages, facilitating cross-pla
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await matrix.Send.To("user", dm_room_id).Raw_ob12(ob12_msg)
 
-# Combined with fluent modifiers
+# Combinable with modifiers
 ob12_msg = [{"type": "text", "data": {"text": "Reply message"}}]
 await matrix.Send.To("group", room_id).Reply("$event_id").Raw_ob12(ob12_msg)
 
@@ -125,12 +125,12 @@ await matrix.Send.To("group", room_id).Reply("$event_id").Raw_ob12(ob12_msg)
 ob12_msg = [
     {"type": "text", "data": {"text": "Look at this image: "}},
     {"type": "image", "data": {"file": "https://example.com/image.png"}},
-    {"type": "text", "data": {"text": "Isn't it great? "}}
+    {"type": "text", "data": {"text": "Isn't it great?"}}
 ]
 await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
 ```
 
-## Return values of send methods
+## Send Method Return Values
 
 All send methods return a Task object, which can be awaited directly to obtain the send result. The returned result follows the ErisPulse adapter's standardized return specification:
 
@@ -145,7 +145,7 @@ All send methods return a Task object, which can be awaited directly to obtain t
 }
 ```
 
-### Error code description
+### Error Code Description
 
 | retcode | Description |
 |---------|-------------|
@@ -156,29 +156,29 @@ All send methods return a Task object, which can be awaited directly to obtain t
 
 ## Platform-Specific Event Types
 
-Platform-specific features require `platform=="matrix"` detection.
+Platform-specific features require `platform=="matrix"` detection before use.
 
 ### Core Differences
 
-1. **Decentralized Architecture**: Matrix is a decentralized communication protocol, with user IDs formatted as `@user:server.domain` and room IDs as `!room_id:server.domain`.
-2. **Room Concept**: Matrix does not distinguish between group chats and private chats; all conversations are "rooms". The adapter automatically identifies private chat rooms through DM (Direct Message) account data.
-3. **Long Polling Synchronization**: Uses the `/sync` API for long-polling to fetch new events, rather than WebSocket.
+1. **Decentralized Architecture**: Matrix is a decentralized communication protocol. User IDs are formatted as `@user:server.domain`, and room IDs are formatted as `!room_id:server.domain`.
+2. **Room Concept**: Matrix does not distinguish between group chats and private chats; all conversations are "rooms." The adapter automatically identifies private chat rooms through DM (Direct Message) account data.
+3. **Long Polling Sync**: Uses the `/sync` API for long polling to retrieve new events instead of WebSocket.
 4. **MXC URI**: Media files are referenced using the `mxc://server.domain/media_id` format.
 5. **HTML Rich Text**: Supports sending HTML-formatted messages via `formatted_body`.
-6. **Reaction Emojis**: Supports emoji reactions at the message level (Reaction), distinct from traditional reply messages.
+6. **Reaction Emojis**: Supports message-level emoji reactions (Reaction), distinct from traditional reply messages.
 7. **Message Editing**: Supports editing previously sent messages via the `m.replace` relationship.
-8. **Message Deletion**: Supports deleting messages via `m.room.redaction`.
+8. **Message Retraction**: Supports retracting or deleting messages via `m.room.redaction`.
 
 ### Extended Fields
 
 - All platform-specific fields are prefixed with `matrix_`.
 - Original data is retained in the `matrix_raw` field.
-- `matrix_raw_type` identifies the original Matrix event type (e.g., `m.room.message`, `m.room.member`).
+- `matrix_raw_type` indicates the original Matrix event type (e.g., `m.room.message`, `m.room.member`).
 
 ### Special Field Examples
 
 ```python
-# Group Message
+# Group message
 {
   "type": "message",
   "detail_type": "group",
@@ -187,7 +187,7 @@ Platform-specific features require `platform=="matrix"` detection.
   "matrix_room_id": "!room_id:matrix.org"
 }
 
-# Private Message
+# Private chat message
 {
   "type": "message",
   "detail_type": "private",
@@ -195,7 +195,7 @@ Platform-specific features require `platform=="matrix"` detection.
   "matrix_room_id": "!dm_room_id:matrix.org"
 }
 
-# Reaction Emoji
+# Reaction emoji
 {
   "type": "notice",
   "detail_type": "matrix_reaction",
@@ -203,22 +203,22 @@ Platform-specific features require `platform=="matrix"` detection.
   "matrix_reaction_key": "👍"
 }
 
-# Message Deletion
+# Message retraction
 {
   "type": "notice",
   "detail_type": "matrix_redaction",
   "matrix_redacted_event_id": "$deleted_msg_id"
 }
 
-# Message Editing
+# Message editing
 {
   "type": "message",
   "detail_type": "group",
-  "matrix_edit": True,
+  "matrix_edit": true,
   "matrix_original_event_id": "$original_event_id"
 }
 
-# Thread Message
+# Thread message
 {
   "type": "message",
   "detail_type": "group",
@@ -244,7 +244,7 @@ Matrix messages are automatically converted into corresponding message segments 
 Example message segment structure:
 
 ```json
-// Text Message (with HTML)
+// Text message (with HTML)
 {
   "type": "text",
   "data": {
@@ -253,7 +253,7 @@ Example message segment structure:
   }
 }
 
-// Image Message
+// Image message
 {
   "type": "image",
   "data": {
@@ -269,7 +269,7 @@ Example message segment structure:
   }
 }
 
-// Location Message
+// Location message
 {
   "type": "location",
   "data": {
@@ -283,16 +283,16 @@ Example message segment structure:
 
 ### Event Mixin Methods
 
-The MatrixAdapter registers the following event mixin methods, which can be directly called in event handling:
+The `MatrixAdapter` registers the following event mixin methods, which can be directly called in event handling:
 
 | Method | Return Type | Description |
 |------|----------|------|
-| `get_room_id()` | `str` | Get the room ID |
-| `get_matrix_event_type()` | `str` | Get the original Matrix event type |
-| `get_matrix_sender()` | `str` | Get the original sender ID |
-| `get_reaction_key()` | `str` | Get the reaction emoji |
-| `is_edited()` | `bool` | Check if the message is edited |
-| `is_notice()` | `bool` | Check if the message is of type m.notice |
+| `get_room_id()` | `str` | Get room ID |
+| `get_matrix_event_type()` | `str` | Get original Matrix event type |
+| `get_matrix_sender()` | `str` | Get original sender ID |
+| `get_reaction_key()` | `str` | Get reaction emoji |
+| `is_edited()` | `bool` | Determine if the message is edited |
+| `is_notice()` | `bool` | Determine if the message is of type `m.notice` |
 
 ```python
 @message.on_message()
@@ -311,12 +311,12 @@ async def handle_message(event):
 
 ### Synchronization Flow
 
-1. Authenticate using access_token or user_id + password
-2. Call `/_matrix/client/v3/account/whoami` to get bot_user_id
-3. Send a connect metadata event
-4. Perform initial sync (`/_matrix/client/v3/sync?timeout=0`) to obtain the `next_batch` token
+1. Authenticate using `access_token` or `user_id` + `password`
+2. Call `/_matrix/client/v3/account/whoami` to get `bot_user_id`
+3. Send a `connect` metadata event
+4. Perform initial sync (`/_matrix/client/v3/sync?timeout=0`) to get the `next_batch` token
 5. Discover DM rooms (`/_matrix/client/v3/user/{user_id}/account_data/m.direct`)
-6. Begin Long Polling synchronization loop (`/_matrix/client/v3/sync?since={next_batch}&timeout=30000`)
+6. Start Long Polling synchronization loop (`/_matrix/client/v3/sync?since={next_batch}&timeout=30000`)
 7. Process new events returned from each sync and convert them for emission
 
 ### Heartbeat Mechanism
@@ -327,8 +327,8 @@ async def handle_message(event):
 
 ### Room Invitations
 
-- When a room invitation (room with `invite` state) is received, if the `auto_accept_invites` configuration is set to `true` (default), the adapter will automatically join the room
-- To join the room, the adapter calls the `/_matrix/client/v3/join/{room_id}` endpoint
+- When receiving a room invitation (room with `invite` state), if the `auto_accept_invites` configuration is set to `true` (default), the adapter will automatically join the room
+- Joining the room calls the `/_matrix/client/v3/join/{room_id}` API
 
 ## Usage Examples
 
@@ -376,22 +376,22 @@ async def handle_reaction(event):
 ### Sending Media Messages
 
 ```python
-# Send image (URL)
+# Sending an image (URL)
 await matrix.Send.To("group", room_id).Image("https://example.com/image.png")
 
-# Send image (MXC URI)
+# Sending an image (MXC URI)
 await matrix.Send.To("group", room_id).Image("mxc://matrix.org/abc123")
 
-# Send image (binary data)
+# Sending an image (binary data)
 with open("image.png", "rb") as f:
     image_bytes = f.read()
 await matrix.Send.To("group", room_id).Image(image_bytes)
 
-# Send image (local file path)
+# Sending an image (local file path)
 await matrix.Send.To("group", room_id).Image("/path/to/image.png")
 
-# Send file (with filename)
-await matrix.Send.To("group", room_id).File("/path/to/document.pdf", filename="Document.pdf")
+# Sending a file (with filename)
+await matrix.Send.To("group", room_id).File("/path/to/document.pdf", filename="document.pdf")
 ```
 
 ### Handling Message Edits
@@ -407,7 +407,7 @@ async def handle_edited_message(event):
         # Handle edited message...
 ```
 
-### Listening for Member Changes
+### Listening to Member Changes
 
 ```python
 @notice.on_notice()

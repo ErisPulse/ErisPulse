@@ -17,7 +17,13 @@ class Main(BaseModule):
     # 配置类以嵌套类形式声明（需 @dataclass 装饰），框架自动识别 ConfigClass
     @dataclass
     class ConfigClass(BaseConfig):
-        """MyModule 模块配置"""
+        """
+        MyModule 模块配置
+
+        docstring 中用 :ivar 字段名: 描述 声明的字段说明，
+        会在未写 metadata description 时自动作为字段描述（注释/schema 兜底）
+        :ivar max_history: 保留的最大历史记录条数
+        """
 
         welcome_message: str = field(
             default="欢迎添加我为好友！",
@@ -39,6 +45,12 @@ class Main(BaseModule):
                 "description": "调试模式（输出详细日志）",
                 "ui": {"widget": "switch", "group": "advanced", "order": 3},
             },
+        )
+        # example 字段：默认不写入 config.toml（不落盘），仅记录在 config.full.example
+        # 运行时走默认值，用户在示例文件中按需复制到 config.toml 后生效
+        max_history: int = field(
+            default=100,
+            metadata={"example": True, "min": 1, "max": 1000},
         )
 
     # 翻译键集合以嵌套类形式声明，框架自动识别 I18nClass 并注册到 i18n 系统
@@ -74,6 +86,7 @@ class Main(BaseModule):
     def __init__(self, sdk: SDK = None):
         self.sdk = sdk
         self.logger = self.sdk.logger.get_child("MyModule")
+        # 存储后端（sqlite/mysql/postgres 由配置决定）；异步 handler 内推荐 await self.storage.aget/aset(...)
         self.storage = self.sdk.storage
         self.adapter = self.sdk.adapter
 
@@ -83,6 +96,10 @@ class Main(BaseModule):
     def get_meta() -> ModuleMeta:
         """
         返回模块介绍元信息（推荐返回 ModuleMeta 配置类实例，与 get_load_strategy 对齐）
+
+        services 字段（可选）：对外服务白名单（模块间调用契约）。声明后其他模块可通过
+        `await sdk.module.call("MyModule", "get_welcome_message")` 调用白名单内方法；
+        缺省时公开方法全开放（开发者无感，限制由用户通过 scope.actions 配置）。
         """
         return ModuleMeta(
             name="MyModule",
@@ -91,6 +108,7 @@ class Main(BaseModule):
             author="ErisDev",
             group="示例",
             tags=["示例", "demo"],
+            services=["get_welcome_message"],
         )
 
     @staticmethod
@@ -106,6 +124,19 @@ class Main(BaseModule):
             # 被依赖模块卸载/热重载时，本模块将级联卸载/重载
             # depends=["OtherModule"],
         )
+
+    async def get_welcome_message(self, name: str = "") -> str:
+        """
+        对外服务（provides 白名单内）：返回欢迎消息
+
+        其他模块通过 `await sdk.module.call("MyModule", "get_welcome_message", "Alice")`
+        调用本方法；执行期间框架自动将 owner 归因到 MyModule。
+
+        :param name: 可选的用户名
+        :return: 组装后的欢迎消息
+        """
+        msg = self.cfg.welcome_message
+        return f"{msg}（{name}）" if name else msg
 
     async def on_load(self, event: dict) -> bool:
         """
@@ -188,7 +219,10 @@ class Main(BaseModule):
             from ErisPulse import i18n
             await event.reply(i18n.t("MyModule.greeting_prompt"))
 
-            reply = await event.wait_reply(timeout=30)
+            # 会话定时提醒：30 秒无回复则温和催一次（用户回复自动取消）
+            event.remind(30, "（还在吗？直接输入名字就好啦）")
+
+            reply = await event.wait_reply(timeout=60)
 
             if reply:
                 name = reply.get_text()

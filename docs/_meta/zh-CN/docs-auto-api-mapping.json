@@ -1,12 +1,12 @@
 {
   "version": "1.0",
   "total_categories": 1,
-  "total_documents": 107,
+  "total_documents": 114,
   "categories": {
     "自动生成 API": {
       "description": "核心 API 和接口文档",
       "icon": "fa-microchip",
-      "count": 107,
+      "count": 114,
       "documents": [
         {
           "title": "`ErisPulse.__init__` 模块",
@@ -117,6 +117,12 @@
               "icon": "fa-book"
             },
             {
+              "title": "`ErisPulse.Core.Bases.sql_base` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
               "title": "`ErisPulse.Core.Bases.storage` 模块",
               "path": "api-reference/auto_api/ErisPulse/Core/Bases/storage.md",
               "level": 1,
@@ -143,6 +149,12 @@
             {
               "title": "`ErisPulse.Core.Event.command` 模块",
               "path": "api-reference/auto_api/ErisPulse/Core/Event/command.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.Event.interaction` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
               "level": 1,
               "icon": "fa-book"
             },
@@ -315,14 +327,38 @@
               "icon": "fa-book"
             },
             {
-              "title": "`ErisPulse.Core.storage` 模块",
-              "path": "api-reference/auto_api/ErisPulse/Core/storage.md",
+              "title": "`ErisPulse.Core.storage.__init__` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/storage/__init__.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.storage.mysql` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/storage/mysql.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.storage.postgres` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/storage/postgres.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.storage.sqlite` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/storage/sqlite.md",
               "level": 1,
               "icon": "fa-book"
             },
             {
               "title": "`ErisPulse.Core.text_match` 模块",
               "path": "api-reference/auto_api/ErisPulse/Core/text_match.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.transcript` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/transcript.md",
               "level": 1,
               "icon": "fa-book"
             }
@@ -563,6 +599,12 @@
             {
               "title": "`ErisPulse.runtime.diagnostics` 模块",
               "path": "api-reference/auto_api/ErisPulse/runtime/diagnostics.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.runtime.example_config` 模块",
+              "path": "api-reference/auto_api/ErisPulse/runtime/example_config.md",
               "level": 1,
               "icon": "fa-book"
             },

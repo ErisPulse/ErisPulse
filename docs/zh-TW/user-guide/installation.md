@@ -71,7 +71,7 @@ uv pip install ErisPulse --upgrade
 
 ### 方式三：使用 ErisPulse-App 客戶端（免終端）
 
-不想裝 Python 環境？[ErisPulse-App](../ecosystem/app.md) 是官方全平台客戶端
+不想安裝 Python 環境？[ErisPulse-App](../ecosystem/app.md) 是官方全平台客戶端
 （Android / Windows / Linux / macOS），**手機直接運行**，桌面版支援最小化到
 系統托盤後台常駐；內建 Python 運行時與 ErisPulse SDK，無需終端與手動配置：
 
@@ -97,7 +97,7 @@ epsdk --version
 epsdk run main.py
 ```
 
-如果看到類似的輸出，則表示安裝成功：
+如果看到類似的輸出，表示安裝成功：
 
 ```
 [INFO] 正在初始化 ErisPulse...
@@ -111,7 +111,7 @@ epsdk run main.py
 ### 安裝失敗
 
 1. 檢查 Python 版本是否 >= 3.10（推薦 3.10 - 3.13）
-2. 嘗試使用 `uv pip install ErisPulse` 取代 `pip install`
+2. 嘗試使用 `uv pip install ErisPulse` 替代 `pip install`
 3. 如果提示權限錯誤，嘗試 `pip install --user ErisPulse` 或使用虛擬環境
 4. 如果在企業代理環境下遇到 SSL 證書錯誤，嘗試 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
 5. 確保網路連接正常，pip 源可訪問
@@ -153,4 +153,4 @@ sudo apt install python3-venv
 ## 下一步
 
 - [CLI 命令參考](cli-reference.md) - 瞭解所有命令列指令
-- [配置檔案說明](configuration.md) - 詳細了解配置選項
+- [配置檔說明](configuration.md) - 詳細了解配置選項

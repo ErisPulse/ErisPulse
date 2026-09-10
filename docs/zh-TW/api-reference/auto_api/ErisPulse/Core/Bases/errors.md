@@ -99,6 +99,69 @@ WebSocket 异常基类
 WebSocket 连接、通信相关的异常。
 
 
+### `class StorageError(ErisPulseError)`
+
+存储异常基类
+
+所有存储后端相关的异常基类。
+
+
+### `class StorageUnreachableError(StorageError)`
+
+存储后端不可达
+
+后端连接池创建在自动重试耗尽后仍失败（数据库不可达 / 凭据错误 /
+网络隔离等）。框架保持运行，存储操作在冷却期内快速失败并自动重连。
+
+
+### `class InteractionError(ErisPulseError)`
+
+交互会话异常基类
+
+交互会话管理（等待回复 / 会话租约）相关的异常基类。
+可用于统一捕获所有交互会话错误。
+
+
+### `class ModuleError(ErisPulseError)`
+
+模块系统异常基类
+
+模块加载、调用与通信相关的异常基类。
+
+
+### `class ModuleCallError(ModuleError)`
+
+模块间调用异常基类
+
+``module.call()`` 跨模块调用相关的异常基类，
+可用于统一捕获所有模块间调用错误。
+
+:attribute module: 目标模块名
+:attribute method: 目标方法名
+
+
+### `class ModuleNotAvailableError(ModuleCallError)`
+
+目标模块不可用
+
+调用的模块未注册 / 未启用 / 懒加载唤醒失败时抛出。
+
+
+### `class ServiceNotProvidedError(ModuleCallError)`
+
+服务未提供
+
+目标模块通过 ``provides`` 声明了服务白名单，
+调用了不在白名单中的方法（或试图调用私有方法）时抛出。
+
+
+### `class ModuleCallTimeoutError(ModuleCallError)`
+
+模块间调用超时
+
+目标方法在超时时限内未返回时抛出。
+
+
 ### `class WebSocketDisconnect(WebSocketError)`
 
 WebSocket 断开连接异常

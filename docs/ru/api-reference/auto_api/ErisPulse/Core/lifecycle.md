@@ -7,13 +7,14 @@
 
 ErisPulse 生命周期管理模块
 
-提供统一的钩子/事件管理和触发机制，支持点式结构事件监听
+提供统一的钩子/事件管理和触发机制，支持点式结构事件监听与定向传播
 
 > **提示**
 > 1. 使用 @lifecycle.on("event.name") 注册事件处理器
 > 2. 使用 await lifecycle.emit("event.name", data) 触发事件
-> 3. 使用 lifecycle.start_timer() / stop_timer() 进行计时
-> 4. 旧版 submit_event() API 保持兼容
+> 3. 使用 lifecycle.emit("event.name", data, to="Owner") 定向投递给指定 owner 注册的钩子
+> 4. 使用 lifecycle.start_timer() / stop_timer() 进行计时
+> 5. 旧版 submit_event() API 保持兼容
 
 ---
 
@@ -42,6 +43,7 @@ ErisPulse 生命周期管理模块
 统一的钩子/事件系统，支持：
 - 点式结构事件监听（如 module.init 可被 module 监听到）
 - 通配符监听（* 匹配所有事件）
+- 定向传播（emit(..., to="Owner") 仅分发给该 owner 注册的处理器）
 - 优先级排序
 - 同步/异步处理器
 - 计时器
@@ -190,13 +192,21 @@ ErisPulse 生命周期管理模块
 按优先级执行匹配的处理器。处理器返回非 None 值时，
 该值将作为新的 data 传递给后续处理器。
 
+指定 ``to`` 时进入定向传播：事件只分发给以该拥有者（owner）身份注册的
+处理器（模块在 on_load 内注册 / `owner_scope` 上下文注册的钩子），
+其它模块与通配符 `*` 处理器不感知；目标 owner 无已注册钩子时静默丢弃。
+
 - **event** (`str`): 事件名称
-- **data** (`Any`): 事件数据
+- **data** (`Any`): 事件数据（dict 时自动附加 `_trace_id`）
+- **to** (`str`): 定向投递目标拥有者（模块名 / 适配器平台名），None 广播
 **返回值** (`Any`): 经过所有处理器处理后的数据
+**异常**: `ValueError` - ``to`` 为空字符串时
 
 **示例**:
 ```python
 >>> result = await lifecycle.emit("config.set", {"key": "test", "value": 42})
+>>> # 定向投递给 Chat 模块注册的钩子
+>>> await lifecycle.emit("maintenance", {"action": "reload"}, to="Chat")
 ```
 
 ---
@@ -209,9 +219,13 @@ ErisPulse 生命周期管理模块
 同步执行所有处理器。异步处理器会在当前事件循环中以 create_task 调度。
 注意：同步模式下异步处理器的返回值无法回传。
 
+指定 ``to`` 时进入定向传播（语义同 :meth:`emit` 的定向模式）。
+
 - **event** (`str`): 事件名称
 - **data** (`Any`): 事件数据
+- **to** (`str`): 定向投递目标拥有者，None 广播
 **返回值** (`Any`): 处理后的数据
+**异常**: `ValueError` - ``to`` 为空字符串时
 
 **示例**:
 ```python
@@ -232,10 +246,14 @@ ErisPulse 生命周期管理模块
 - **msg** (`str`): 事件描述
 - **data** (`dict`): 事件相关数据
 - **timestamp** (`float`): 时间戳(默认当前时间)
+- **to** (`str`): 定向投递目标拥有者（语义同 :meth:`emit`），None 广播
+
+**异常**: `ValueError` - ``to`` 为空字符串时
 
 **示例**:
 ```python
 >>> await lifecycle.submit_event("module.load", data={"module_name": "Test"})
+>>> await lifecycle.submit_event("maintenance", data={"action": "reload"}, to="Chat")
 ```
 
 ---
@@ -270,25 +288,27 @@ ErisPulse 生命周期管理模块
 ---
 
 
-##### `async _execute_handlers(hook_name: str, event: str, data: Any)`
+##### `async _execute_handlers(hook_name: str, event: str, data: Any, owner_filter: str | None = None)`
 
-执行匹配的事件处理器（异步）
+执行匹配事件的处理（异步）
 
 - **hook_name** (`str`): 注册的钩子名
 - **event** (`str`): 实际事件名
 - **data** (`Any`): 事件数据
-**返回值** (`Any`): 处理后的数据
+- **owner_filter** (`str`): 仅执行该拥有者注册的处理器（定向传播，None 不限）
+**返回值** (`Any`): 处理器链处理结果
 
 ---
 
 
-##### `_execute_handlers_sync(hook_name: str, event: str, data: Any)`
+##### `_execute_handlers_sync(hook_name: str, event: str, data: Any, owner_filter: str | None = None)`
 
 执行匹配的事件处理器（同步）
 
 - **hook_name** (`str`): 注册的钩子名
 - **event** (`str`): 实际事件名
 - **data** (`Any`): 事件数据
+- **owner_filter** (`str`): 仅执行该拥有者注册的处理器（定向传播，None 不限）
 **返回值** (`Any`): 处理后的数据
 
 ---

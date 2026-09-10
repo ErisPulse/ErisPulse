@@ -17,7 +17,7 @@ from itertools import groupby
 from typing import Any
 
 from ...runtime import get_event_config
-from ...runtime.context import current_owner, handler_waits
+from ...runtime.context import current_owner, handler_waits, owner_scope
 from .. import adapter, logger
 from ..constants import (
     DEFAULT_HANDLER_PRIORITY,
@@ -81,8 +81,16 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
     _wait_total = sum(w.get("duration", 0.0) for w in _local_waits)
     _pure = max(0.0, _elapsed - _wait_total)
 
-    # 归属信息（同时附加到日志，便于排查具体业务模块）
-    _owner_tag = f" owner={_owner}" if _owner else " owner=<unknown>"
+    # 归属信息（同时附加到日志，便于排查具体业务模块）。
+    # 优先级：注册 owner > 实际执行的命令所属模块 > 分发期平台上下文。
+    # 命令分发类处理器自身无注册 owner，但其内部实际执行了某模块的命令时
+    # （含懒加载模块经 activate_on 占位命令首令激活），归因到该命令所属
+    # 模块——耗时主体是它，不应显示为 <unknown> 或平台名
+    _warn_owner = handler_info.get("owner")
+    if not _warn_owner and isinstance(event, dict):
+        _warn_owner = (event.get("command") or {}).get("owner")
+    _warn_owner = _warn_owner or _owner
+    _owner_tag = f" owner={_warn_owner}" if _warn_owner else " owner=<unknown>"
 
     if _local_waits:
         # 该 handler 调用过 wait_reply —— 在白名单内：
@@ -199,6 +207,33 @@ class BaseEventHandler:
             return True
         return False
 
+    async def dispatch_to_owner(self, owner: str, event: "Event") -> int:
+        """
+        {!--< internal-use >!--}
+        回放分发：将合成事件只投递给指定归属者（模块）的处理器
+
+        用于冷启动事件回放（``get_load_strategy(replay=...)``）——
+        新装模块通过回放快速获得会话上下文，其他模块不受回放影响。
+
+        :param owner: 归属者（模块名）
+        :param event: 合成事件（带 ``replayed: True`` 标志）
+        :return: 实际投递的处理器数量
+        """
+        delivered = 0
+        for handler_info in list(self.handlers):
+            if handler_info.get("owner") != owner:
+                continue
+            cond = handler_info.get("condition")
+            if cond is not None:
+                try:
+                    if not cond(event):
+                        continue
+                except Exception:
+                    continue
+            await _invoke_handler(handler_info, event)
+            delivered += 1
+        return delivered
+
     def unregister_by_owner(self, owner: str) -> int:
         """
         {!--< internal-use >!--}
@@ -290,115 +325,119 @@ class BaseEventHandler:
         ):
             return
 
-        for _priority, group_iter in groupby(self.handlers, key=lambda h: h["priority"]):
-            group = list(group_iter)
+        # 分发期 owner 兜底：框架内部处理器（无注册 owner）执行期间的
+        # current_owner 至少归因到平台名，慢日志/出站调用不再显示 <unknown>；
+        # 模块处理器在 _invoke_handler 中会以注册 owner 覆盖本值
+        with owner_scope(scope_platform):
+            for _priority, group_iter in groupby(self.handlers, key=lambda h: h["priority"]):
+                group = list(group_iter)
 
-            # 过滤出满足条件的处理器（条件函数 + 作用域模块维度 + 事件作用域文本过滤）
-            active = [
-                h
-                for h in group
-                if (not h.get("condition") or h["condition"](event))
-                and self._is_scope_allowed(h, scope_platform, scope_bot, scope_session)
-                and self._is_scope_handler_ok(h, event)
-            ]
-            if not active:
-                continue
+                # 过滤出满足条件的处理器（条件函数 + 作用域模块维度 + 事件作用域文本过滤）
+                active = [
+                    h
+                    for h in group
+                    if (not h.get("condition") or h["condition"](event))
+                    and self._is_scope_allowed(h, scope_platform, scope_bot, scope_session)
+                    and self._is_scope_handler_ok(h, event)
+                ]
+                if not active:
+                    continue
 
-            # 单个处理器：直接传原事件（零拷贝）
-            if len(active) == 1:
-                _h0 = active[0]
-                _h_name = getattr(_h0["func"], "__qualname__", getattr(_h0["func"], "__name__", str(_h0["func"])))
-                _t0 = _time.monotonic()
-                await _invoke_handler(_h0, event)
-                _elapsed_0 = _time.monotonic() - _t0
-                _trace_chain.append(
-                    {
-                        "handler": _h_name,
-                        "priority": _priority,
-                        "elapsed_ms": round(_elapsed_0 * 1000, 2),
-                        "processed": event.is_processed(),
-                    }
-                )
+                # 单个处理器：直接传原事件（零拷贝）
+                if len(active) == 1:
+                    _h0 = active[0]
+                    _h_name = getattr(_h0["func"], "__qualname__", getattr(_h0["func"], "__name__", str(_h0["func"])))
+                    _t0 = _time.monotonic()
+                    await _invoke_handler(_h0, event)
+                    _elapsed_0 = _time.monotonic() - _t0
+                    _trace_chain.append(
+                        {
+                            "handler": _h_name,
+                            "priority": _priority,
+                            "elapsed_ms": round(_elapsed_0 * 1000, 2),
+                            "processed": event.is_processed(),
+                        }
+                    )
+                    if event.is_stopped():
+                        break
+                    continue
+
+                # 多个同优先级处理器：各自独立副本并行执行
+                copies = [Event(dict(event)) for _ in active]
+                _multi_t = _time.monotonic()
+                await asyncio.gather(*(_invoke_handler(h, c) for h, c in zip(active, copies, strict=False)))
+                _multi_elapsed = _time.monotonic() - _multi_t
+
+                # 记录多处理器链路（并行执行，统一计时）
+                for h in active:
+                    _h_name = getattr(h["func"], "__qualname__", getattr(h["func"], "__name__", str(h["func"])))
+                    _trace_chain.append(
+                        {
+                            "handler": _h_name,
+                            "priority": _priority,
+                            "elapsed_ms": round(_multi_elapsed * 1000, 2),
+                            "processed": False,
+                        }
+                    )
+
+                # 合并修改（后者覆盖前者），并检测同优先级冲突
+                _modified_tracker: dict[str, list[dict]] = {}  # field -> [{handler_info}]
+                for h_info, copy in zip(active, copies, strict=False):
+                    _h_name = getattr(
+                        h_info["func"],
+                        "__qualname__",
+                        getattr(h_info["func"], "__name__", str(h_info["func"])),
+                    )
+                    _h_owner = h_info.get("owner", "<unknown>")
+                    for key, value in copy.items():
+                        if value != event.get(key, _sentinel):
+                            event[key] = value
+                            _modified_tracker.setdefault(key, []).append(
+                                {
+                                    "handler": _h_name,
+                                    "owner": _h_owner,
+                                }
+                            )
+                    # _processed / _propagation_stopped 已由上方字段合并循环传播，
+                    # 此处不再调用 mark_processed()（其默认会触发 _propagation_stopped 副作用）
+
+                # 冲突告警：同一 field 被多个同优先级 handler 修改
+                for field, mods in _modified_tracker.items():
+                    if len(mods) > 1:
+                        for i in range(len(mods) - 1):
+                            _a, _b = mods[i], mods[i + 1]
+                            logger.warning(
+                                i18n.t(
+                                    "core.event.same_priority_conflict",
+                                    field=field,
+                                    handler_a=_a["handler"],
+                                    owner_a=_a["owner"],
+                                    handler_b=_b["handler"],
+                                    owner_b=_b["owner"],
+                                    priority=_priority,
+                                )
+                            )
+
                 if event.is_stopped():
                     break
-                continue
 
-            # 多个同优先级处理器：各自独立副本并行执行
-            copies = [Event(dict(event)) for _ in active]
-            _multi_t = _time.monotonic()
-            await asyncio.gather(*(_invoke_handler(h, c) for h, c in zip(active, copies, strict=False)))
-            _multi_elapsed = _time.monotonic() - _multi_t
-
-            # 记录多处理器链路（并行执行，统一计时）
-            for h in active:
-                _h_name = getattr(h["func"], "__qualname__", getattr(h["func"], "__name__", str(h["func"])))
-                _trace_chain.append(
-                    {
-                        "handler": _h_name,
-                        "priority": _priority,
-                        "elapsed_ms": round(_multi_elapsed * 1000, 2),
-                        "processed": False,
-                    }
+            # 输出事件链路追踪日志
+            if _trace_chain:
+                _total = _time.monotonic() - _trace_start
+                _chain_str = " → ".join(
+                    f"{c['handler']}({c['elapsed_ms']}ms)" + ("[short-circuit]" if c["processed"] else "")
+                    for c in _trace_chain
                 )
-
-            # 合并修改（后者覆盖前者），并检测同优先级冲突
-            _modified_tracker: dict[str, list[dict]] = {}  # field -> [{handler_info}]
-            for h_info, copy in zip(active, copies, strict=False):
-                _h_name = getattr(
-                    h_info["func"],
-                    "__qualname__",
-                    getattr(h_info["func"], "__name__", str(h_info["func"])),
+                logger.trace(
+                    i18n.t(
+                        "core.event.trace_chain",
+                        event_type=self.event_type,
+                        platform=event.get("platform", "?"),
+                        detail_type=event.get("detail_type", "?"),
+                        chain=_chain_str,
+                        total=f"{_total * 1000:.2f}",
+                    )
                 )
-                _h_owner = h_info.get("owner", "<unknown>")
-                for key, value in copy.items():
-                    if value != event.get(key, _sentinel):
-                        event[key] = value
-                        _modified_tracker.setdefault(key, []).append(
-                            {
-                                "handler": _h_name,
-                                "owner": _h_owner,
-                            }
-                        )
-                # _processed / _propagation_stopped 已由上方字段合并循环传播，
-                # 此处不再调用 mark_processed()（其默认会触发 _propagation_stopped 副作用）
-
-            # 冲突告警：同一 field 被多个同优先级 handler 修改
-            for field, mods in _modified_tracker.items():
-                if len(mods) > 1:
-                    for i in range(len(mods) - 1):
-                        _a, _b = mods[i], mods[i + 1]
-                        logger.warning(
-                            i18n.t(
-                                "core.event.same_priority_conflict",
-                                field=field,
-                                handler_a=_a["handler"],
-                                owner_a=_a["owner"],
-                                handler_b=_b["handler"],
-                                owner_b=_b["owner"],
-                                priority=_priority,
-                            )
-                        )
-
-            if event.is_stopped():
-                break
-
-        # 输出事件链路追踪日志
-        if _trace_chain:
-            _total = _time.monotonic() - _trace_start
-            _chain_str = " → ".join(
-                f"{c['handler']}({c['elapsed_ms']}ms)" + ("[short-circuit]" if c["processed"] else "")
-                for c in _trace_chain
-            )
-            logger.trace(
-                i18n.t(
-                    "core.event.trace_chain",
-                    event_type=self.event_type,
-                    platform=event.get("platform", "?"),
-                    detail_type=event.get("detail_type", "?"),
-                    chain=_chain_str,
-                    total=f"{_total * 1000:.2f}",
-                )
-            )
 
     @staticmethod
     def _is_scope_allowed(handler_info: dict, platform: str, bot_id: str, session_id: str) -> bool:
