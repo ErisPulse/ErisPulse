@@ -8500,9 +8500,9 @@ if sdk.lifecycle.has_handlers("message.sending"):
 - Проверка охватывает три типа совпадений: точное имя события, шаблон `*`, родительские события
 - Возвращает `False`, если слушателей нет, что позволяет безопасно пропустить `emit`
 
-## Список точек останова хуков
+## Обзор точек остановки хука
 
-Типичный цикл событий жизненного цикла сообщения от платформы до завершения обработки:
+Типичный порядок событий жизненного цикла сообщения от платформы до завершения обработки в рамках фреймворка:
 
 ```mermaid
 sequenceDiagram
@@ -8511,35 +8511,44 @@ sequenceDiagram
     participant F as Ядро фреймворка
     participant M as Обработчик модуля
 
-    P->>A: Прибытие оригинального события
-    A->>F: adapter.event.receive (самая ранняя точка)
+    P->>A: Прибытие исходного события
+    A->>F: adapter.event.receive (самый ранний)
     F->>F: event.pre_process (перед выполнением обработчика)
-    F->>M: Диспетчеризация к обработчику (команды/сообщения/уведомления и т.д.)
+    F->>M: Распределение к обработчику (команды/сообщения/уведомления и т.д.)
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending (перед отправкой)
     F->>A: SendDSL отправка
     A->>P: Отправка на платформу
     A->>F: message.sent (отправка завершена)
-    F->>F: adapter.event.dispatched (диспетчеризация завершена)
+    F->>F: adapter.event.dispatched (распределение завершено)
 ```
 
-Фреймворк содержит следующие встроенные точки останова хуков, пользователь может прослушивать любую точку останова с помощью `@sdk.lifecycle.on()` для реализации пользовательской логики.
+Фреймворк содержит следующие точки остановки хука, которые пользователи могут прослушивать с помощью `@sdk.lifecycle.on()` для реализации пользовательской логики.
 
-### Основная инициализация
+### Ядро инициализации
 
-| Имя хука | Точка срабатывания | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
 | `core.init.start` | Начало инициализации SDK | `{}` |
-| `core.init.complete` | Завершение инициализации SDK | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str (только при сбое)}` |
-| `core.uninit.complete` | Завершение обратной инициализации SDK | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str (только при сбое)}` |
+| `core.init.stage` | Начало этапа инициализации (выдается в фоновом режиме) | `{"stage": str}`, значения: `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
+| `core.init.complete` | Завершение инициализации SDK | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str (только при неудаче)}` |
+| `core.uninit.complete` | Завершение обратной инициализации SDK | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str (только при неудаче)}` |
 
-### Изменения конфигурации
+**Пример: отображение прогресса запуска**
 
-| Имя хука | Точка срабатывания | Данные |
+```python
+@sdk.lifecycle.on("core.init.stage")
+def show_stage(data):
+    print(f"[Запуск] Вход в этап: {data['stage']}")
+```
+
+### Изменение конфигурации
+
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
-| `config.set` | Изменение конфигурационного параметра | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | Обнаружено изменение всей конфигурации после внешнего редактирования config.toml | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.set` | Изменение параметра конфигурации | `{"key": str, "old_value": Any, "new_value": Any}` |
+| `config.updated` | Обнаружено изменение всей конфигурации после редактирования config.toml | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
 **Пример: аудит конфигурации**
 
@@ -8551,20 +8560,21 @@ def audit_config(data):
 
 ### Жизненный цикл модуля
 
-| Имя хука | Точка срабатывания | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
 | `module.register` | Регистрация класса модуля в менеджере | `{"module_name": str, "success": bool}` |
 | `module.load` | Завершение загрузки модуля (успешное инстанцирование) | `{"module_name": str, "success": bool}` |
 | `module.init` | Завершение инициализации модуля (включая ленивую загрузку) | `{"module_name": str, "success": bool}` |
 | `module.unload` | Выгрузка модуля | `{"module_name": str, "success": bool}` |
+| `module.reload` | Завершение горячей перезагрузки модуля (включая перезагрузку зависимостей) | `{"module_name": str, "success": bool}` |
 
 ### Жизненный цикл адаптера
 
-| Имя хука | Точка срабатывания | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
 | `adapter.load` | Завершение регистрации адаптера | `{"platform": str, "success": bool}` |
 | `adapter.start` | Запуск адаптера | `{"platforms": [str]}` |
-| `adapter.status.change` | Изменение статуса адаптера | `{"platform": str, "status": str, "retry_count": int, "error": str (только при сбое)}` |
+| `adapter.status.change` | Изменение состояния адаптера | `{"platform": str, "status": str, "retry_count": int, "error": str (только при неудаче)}` |
 | `adapter.stop` | Остановка адаптера | `{"platforms": [str]}` |
 | `adapter.stopped` | Завершение остановки адаптера | `{"platforms": [str]}` |
 | `adapter.bot.online` | Онлайн бота | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
@@ -8572,10 +8582,10 @@ def audit_config(data):
 
 ### Прием и обработка событий
 
-| Имя хука | Точка срабатывания | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
-| `adapter.event.receive` | Получение события с внешней платформы (самая ранняя точка) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
-| `adapter.event.dispatched` | Завершение диспетчеризации события | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
+| `adapter.event.receive` | Получение внешнего события платформы (самый ранний) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.dispatched` | Завершение распределения события | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
 | `event.pre_process` | Начало выполнения обработчика события | `{"event_type": str, "platform": str, "detail_type": str}` |
 
 **Пример: статистика событий**
@@ -8596,9 +8606,9 @@ def log_unhandled(data):
 
 ### Отправка сообщений
 
-| Имя хука | Точка срабатывания | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
-| `message.sending` | Сообщение отправляется | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sending` | Сообщение готовится к отправке | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 | `message.sent` | Сообщение отправлено | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
 **Пример: аудит отправки сообщений**
@@ -8611,10 +8621,10 @@ def log_sending(data):
 
 ### Командная система
 
-| Имя хука | Точка срабатывания | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
-| `command.matched` | Команда совпала и готова к исполнению | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
-| `command.executed` | Команда выполнена | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str (только при сбое)}` |
+| `command.matched` | Команда сопоставлена и готова к выполнению | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
+| `command.executed` | Команда выполнена | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str (только при неудаче)}` |
 
 **Пример: статистика команд**
 
@@ -8624,9 +8634,9 @@ def count_commands(data):
     print(f"[Команда] /{data['command']} от {data['user_id']}@{data['platform']}")
 ```
 
-### HTTP маршрутизация
+### HTTP-маршрутизация
 
-| Имя хука | Точка срабатывания | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
 | `server.request` | Получение HTTP-запроса | `{"method": str, "path": str, "client_ip": str}` |
 | `server.response` | Отправка HTTP-ответа | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
@@ -8641,10 +8651,10 @@ def log_http(data):
 
 ### WebSocket
 
-| Имя хука | Точка срабатывания | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
-| `server.start` | Запуск сервера маршрутизации | `{"base_url": str, "host": str, "port": int}` |
-| `server.stop` | Остановка сервера маршрутизации | `{}` |
+| `server.start` | Запуск маршрутизатора сервера | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str (только при неудаче)}` |
+| `server.stop` | Остановка маршрутизатора сервера | `{}` |
 | `server.websocket.connect` | Установление WebSocket-соединения | `{"path": str, "module_name": str, "client_ip": str}` |
 | `server.websocket.disconnect` | Разрыв WebSocket-соединения | `{"path": str, "module_name": str, "reason": str, "error": str (только при аномалии)}` |
 
@@ -8660,12 +8670,50 @@ def on_ws_disconnect(data):
     print(f"[WS] Отключение: {data['path']} ({data['reason']})")
 ```
 
-## Стандартные определения событий
+### Состояние подключения к хранилищу
+
+Создание, сбой и восстановление пула подключений к хранилищу (все события происходят в фоновом режиме, не блокируют операции хранилища):
+
+| Имя хука | Точка остановки | Данные |
+|---------|---------|------|
+| `storage.ready` | Пул подключений к хранилищу готов (первое успешное создание пула в каждом цикле событий) | `{"backend": str}` |
+| `storage.unreachable` | Повторные попытки подключения исчерпаны, вступает период охлаждения (в течение которого операции завершаются мгновенно с ошибкой) | `{"backend": str, "error": str, "cooldown": float}` |
+| `storage.recovered` | Период охлаждения завершен, повторное подключение успешно, хранилище снова доступно | `{"backend": str}` |
+
+**Пример: оповещение о сбое хранилища**
 
 ```python
-STANDARD_EVENTS = {
-    "core": ["init.start", "init.complete", "uninit.complete"],
-    "module": ["load", "init", "unload", "register"],
+@sdk.lifecycle.on("storage.unreachable")
+def alert_storage_down(data):
+    print(f"[Предупреждение] Хранилище {data['backend']} недоступно: {data['error']}, автоматическое переподключение через {data['cooldown']} секунд")
+
+@sdk.lifecycle.on("storage.recovered")
+def notify_storage_back(data):
+    print(f"[Восстановление] Хранилище {data['backend']} снова доступно")
+```
+
+### HTTP-клиент
+
+События запросов и подключений `sdk.client` (все события происходят в фоновом режиме):
+
+| Имя хука | Точка остановки | Данные |
+|---------|---------|------|
+| `client.request.success` | Успешный HTTP-запрос | `{"method": str, "url": str, "status": int, "elapsed": float}` |
+| `client.request.failed` | HTTP-запрос неудачен после исчерпания попыток повтора | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
+| `client.ws.connect` | Установление WebSocket-соединения | `{"url": str}` |
+
+### Межкультурная локализация
+
+| Имя хука | Точка остановки | Данные |
+|---------|---------|------|
+| `i18n.language.changed` | Смена языка фреймворка (через `i18n.set_language`) | `{"language": str, "previous": str}` |
+
+## Определение стандартных событий
+
+```python
+СТАНДАРТНЫЕ_СОБЫТИЯ = {
+    "core": ["init.start", "init.stage", "init.complete", "uninit.complete"],
+    "module": ["load", "init", "unload", "register", "reload"],
     "adapter": [
         "load", "start", "status.change", "stop", "stopped",
         "event.receive", "event.dispatched",
@@ -8679,35 +8727,39 @@ STANDARD_EVENTS = {
     "event": ["pre_process"],
     "message": ["sending", "sent"],
     "command": ["matched", "executed"],
-    "config": ["set"],
+    "config": ["set", "updated"],
+    "storage": ["ready", "unreachable", "recovered"],
+    "client": ["request.success", "request.failed", "ws.connect"],
+    "i18n": ["language.changed"],
 }
 ```
 
-## Полная справочная информация по API
+## Полная справочная документация API
 
 ### Регистрация и отмена
 
 | Метод | Описание |
-|-------|----------|
+|------|------|
 | `@lifecycle.on(event, *, priority=0)` | Декоратор для регистрации обработчика |
 | `lifecycle.register(event, handler, *, priority=0)` | Программная регистрация |
-| `lifecycle.unregister(event, handler=None)` | Отмена регистрации (при handler=None отменяются все обработчики события) |
+| `lifecycle.unregister(event, handler=None)` | Отмена регистрации (если `handler=None`, отменяются все обработчики события) |
 
 ### Вызов
 
 | Метод | Описание |
-|-------|----------|
-| `await lifecycle.emit(event, data=None, *, to=None)` | Асинхронный вызов, возвращаемое значение обработчиком может изменить data; при указании `to` событие направляется владельцу |
-| `lifecycle.emit_sync(event, data=None, *, to=None)` | Синхронный вызов, асинхронные обработчики запускаются через create_task |
-| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None)` | Совместимость со старыми версиями, автоматическое построение стандартного формата события |
+|------|------|
+| `await lifecycle.emit(event, data=None, *, to=None)` | Асинхронный вызов, обработчики выполняются **параллельно** (не блокируются друг другом, возвращаются, когда все завершены), возвращаемые значения не None возвращаются по приоритету в виде цепочки замены `data`; `to` указывает `owner` для направленной доставки |
+| `lifecycle.fire(event, data=None, *, to=None)` | **Фоновый вызов (бросил в ведро и ушел)**: обработчики выполняются в фоновых задачах параллельно, без ожидания, без возвращаемого значения; при отсутствии слушателей нулевые накладные расходы. Подходит для частых горячих путей и чисто наблюдаемых событий; для последовательных и чувствительных к порядку потребителей (например, `config.set`) используйте `emit` |
+| `lifecycle.emit_sync(event, data=None, *, to=None)` | Синхронный вызов, асинхронные обработчики планируются с помощью `create_task` |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | Совместимость со старой версией, автоматически строит стандартный формат события; при `background=True` используется фоновый вызов `fire` |
 
-### Утилиты
+### Инструменты
 
 | Метод | Описание |
-|-------|----------|
+|------|------|
 | `lifecycle.start_timer(timer_id)` | Начать отсчет времени |
 | `lifecycle.get_duration(timer_id)` | Получить прошедшее время (в секундах) |
-| `lifecycle.stop_timer(timer_id)` | Остановить отсчет и вернуть прошедшее время |
+| `lifecycle.stop_timer(timer_id)` | Остановить отсчет времени и вернуть прошедшее время |
 | `lifecycle.list_hooks()` | Вывести список всех зарегистрированных хуков и количество обработчиков |
 | `lifecycle.clear()` | Очистить все обработчики и таймеры |
 

@@ -423,7 +423,7 @@
           "icon": "fa-server"
         },
         {
-          "title": "エラー体系とキャッチガイド",
+          "title": "エラーシステムとキャッチガイド",
           "path": "advanced/errors.md",
           "level": 1,
           "icon": "fa-triangle-exclamation"

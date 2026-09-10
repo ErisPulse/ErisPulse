@@ -158,7 +158,7 @@
               "icon": "fa-bolt-lightning"
             },
             {
-              "title": "Лучшие практики разработки модулей",
+              "title": "Рекомендации по разработке модулей",
               "path": "developer-guide/modules/best-practices.md",
               "level": 1,
               "icon": "fa-award"

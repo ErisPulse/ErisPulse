@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1577,
+  "total_keywords": 1583,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -61,7 +61,7 @@
     "1. 使用事務": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 310,
+        "line": 311,
         "level": 3,
         "title": "1. 使用事務"
       }
@@ -69,7 +69,7 @@
     "1. 使用快取": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 377,
+        "line": 378,
         "level": 3,
         "title": "1. 使用快取"
       }
@@ -107,7 +107,7 @@
     "1. 合理使用日誌等級": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 343,
+        "line": 344,
         "level": 3,
         "title": "1. 合理使用日誌等級"
       }
@@ -129,7 +129,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 460,
+        "line": 461,
         "level": 3,
         "title": "1. 單元測試"
       }
@@ -193,7 +193,7 @@
     "1. 敏感資料保護": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 414,
+        "line": 415,
         "level": 3,
         "title": "1. 敏感資料保護"
       }
@@ -241,7 +241,7 @@
     "1. 版本管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 489,
+        "line": 490,
         "level": 3,
         "title": "1. 版本管理"
       }
@@ -505,7 +505,7 @@
     "2. README 頭部": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 503,
+        "line": 504,
         "level": 3,
         "title": "2. README 頭部"
       }
@@ -617,7 +617,7 @@
     "2. 批量操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 326,
+        "line": 327,
         "level": 3,
         "title": "2. 批量操作"
       }
@@ -676,6 +676,14 @@
         "title": "2. 更新版本資訊"
       }
     ],
+    "2. 構造化日誌": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 366,
+        "level": 3,
+        "title": "2. 構造化日誌"
+      }
+    ],
     "2. 標準字段要求": [
       {
         "document": "standards/event-conversion.md",
@@ -732,14 +740,6 @@
         "title": "2. 發送 Meta 事件"
       }
     ],
-    "2. 結構化日誌": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 365,
-        "level": 3,
-        "title": "2. 結構化日誌"
-      }
-    ],
     "2. 規範 API 接口": [
       {
         "document": "standards/README.md",
@@ -759,7 +759,7 @@
     "2. 超時處理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 292,
+        "line": 293,
         "level": 3,
         "title": "2. 超時處理"
       }
@@ -767,7 +767,7 @@
     "2. 輸入驗證": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 440,
+        "line": 441,
         "level": 3,
         "title": "2. 輸入驗證"
       }
@@ -783,7 +783,7 @@
     "2. 避免阻塞操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 398,
+        "line": 399,
         "level": 3,
         "title": "2. 避免阻塞操作"
       }
@@ -813,7 +813,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 473,
+        "line": 474,
         "level": 3,
         "title": "2. 集成測試"
       }
@@ -2549,7 +2549,7 @@
     "Client 系列 — `Core/client.py` / `Core/Bases/client.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 34,
+        "line": 61,
         "level": 3,
         "title": "Client 系列 — `Core/client.py` / `Core/Bases/client.py`"
       }
@@ -2864,6 +2864,14 @@
         "title": "HTTP Client 模組"
       }
     ],
+    "HTTP 客戶端": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 308,
+        "level": 3,
+        "title": "HTTP 客戶端"
+      }
+    ],
     "HTTP 裝飾器": [
       {
         "document": "advanced/router.md",
@@ -2899,7 +2907,7 @@
     "HTTP 路由": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 240,
+        "line": 250,
         "level": 3,
         "title": "HTTP 路由"
       }
@@ -2939,7 +2947,7 @@
     "Interaction — `Core/Event/interaction.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 74,
+        "line": 102,
         "level": 3,
         "title": "Interaction — `Core/Event/interaction.py`"
       }
@@ -3059,7 +3067,7 @@
     "Module 系列 — `Core/module.py`（`sdk.module.call`）": [
       {
         "document": "advanced/errors.md",
-        "line": 86,
+        "line": 115,
         "level": 3,
         "title": "Module 系列 — `Core/module.py`（`sdk.module.call`）"
       }
@@ -3463,7 +3471,7 @@
     "Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 61,
+        "line": 88,
         "level": 3,
         "title": "Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`"
       }
@@ -3551,7 +3559,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 255,
+        "line": 265,
         "level": 3,
         "title": "WebSocket"
       }
@@ -3575,7 +3583,7 @@
     "WebSocket 系列 — `Core/client.py`（`send` / `receive`）": [
       {
         "document": "advanced/errors.md",
-        "line": 54,
+        "line": 81,
         "level": 3,
         "title": "WebSocket 系列 — `Core/client.py`（`send` / `receive`）"
       }
@@ -4865,7 +4873,7 @@
     "事件接收與處理": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 186,
+        "line": 196,
         "level": 3,
         "title": "事件接收與處理"
       }
@@ -5670,12 +5678,6 @@
     ],
     "儲存系統": [
       {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 308,
-        "level": 2,
-        "title": "儲存系統"
-      },
-      {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 292,
         "level": 2,
@@ -6317,7 +6319,7 @@
     "各異常說明與發生位置": [
       {
         "document": "advanced/errors.md",
-        "line": 32,
+        "line": 59,
         "level": 2,
         "title": "各異常說明與發生位置"
       }
@@ -6413,7 +6415,7 @@
     "命令系統": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 225,
+        "line": 235,
         "level": 3,
         "title": "命令系統"
       }
@@ -6688,6 +6690,14 @@
         "line": 24,
         "level": 3,
         "title": "國內鏡像加速"
+      }
+    ],
+    "國際化": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 318,
+        "level": 3,
+        "title": "國際化"
       }
     ],
     "國際化 (i18n) 系統": [
@@ -7346,6 +7356,22 @@
         "title": "存儲後端"
       }
     ],
+    "存儲系統": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 309,
+        "level": 2,
+        "title": "存儲系統"
+      }
+    ],
+    "存儲連接狀態": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 286,
+        "level": 3,
+        "title": "存儲連接狀態"
+      }
+    ],
     "存儲配置": [
       {
         "document": "user-guide/configuration.md",
@@ -7373,7 +7399,7 @@
     "安全性": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 412,
+        "line": 413,
         "level": 2,
         "title": "安全性"
       }
@@ -7473,7 +7499,7 @@
     "完整 API 參考": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 299,
+        "line": 350,
         "level": 2,
         "title": "完整 API 參考"
       }
@@ -7719,7 +7745,7 @@
     "工具": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 317,
+        "line": 369,
         "level": 3,
         "title": "工具"
       }
@@ -7746,12 +7772,12 @@
         "title": "工具模組指南：托管其他模組的句柄"
       }
     ],
-    "工具模組：托管別人東西時要接住\"卸載通知\"": [
+    "工具模組：托管别人东西时要接住\"卸载通知\"": [
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 232,
         "level": 2,
-        "title": "工具模組：托管別人東西時要接住\"卸載通知\""
+        "title": "工具模組：托管别人东西时要接住\"卸载通知\""
       }
     ],
     "已修復的 Bug": [
@@ -8155,7 +8181,7 @@
     "後台任務歸屬與自動取消": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 354,
+        "line": 406,
         "level": 2,
         "title": "後台任務歸屬與自動取消"
       }
@@ -8345,7 +8371,7 @@
     "性能優化": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 375,
+        "line": 376,
         "level": 2,
         "title": "性能優化"
       }
@@ -8601,7 +8627,7 @@
     "捕獲建議": [
       {
         "document": "advanced/errors.md",
-        "line": 112,
+        "line": 153,
         "level": 2,
         "title": "捕獲建議"
       }
@@ -9205,7 +9231,7 @@
     "日誌記錄": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 341,
+        "line": 342,
         "level": 2,
         "title": "日誌記錄"
       },
@@ -9693,7 +9719,7 @@
     "框架內部參數校驗（ValueError）": [
       {
         "document": "advanced/errors.md",
-        "line": 107,
+        "line": 144,
         "level": 3,
         "title": "框架內部參數校驗（ValueError）"
       }
@@ -9769,7 +9795,7 @@
     "標準事件定義": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 276,
+        "line": 324,
         "level": 2,
         "title": "標準事件定義"
       }
@@ -9854,6 +9880,14 @@
         "title": "標準遵循檢查清單"
       }
     ],
+    "模塊生命週期": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 174,
+        "level": 3,
+        "title": "模塊生命週期"
+      }
+    ],
     "模塊開發": [
       {
         "document": "developer-guide/README.md",
@@ -9895,7 +9929,7 @@
     "模組中使用範例": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 327,
+        "line": 379,
         "level": 2,
         "title": "模組中使用範例"
       }
@@ -9989,12 +10023,6 @@
       }
     ],
     "模組生命週期": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 165,
-        "level": 3,
-        "title": "模組生命週期"
-      },
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 5,
@@ -10161,7 +10189,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 385,
+        "line": 437,
         "level": 2,
         "title": "注意事項"
       },
@@ -10343,7 +10371,7 @@
     "消息發送": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 210,
+        "line": 220,
         "level": 3,
         "title": "消息發送"
       }
@@ -10451,7 +10479,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 458,
+        "line": 459,
         "level": 2,
         "title": "測試"
       }
@@ -10904,14 +10932,6 @@
         "line": 35,
         "level": 3,
         "title": "異常體系"
-      }
-    ],
-    "異常體系與捕獲指南": [
-      {
-        "document": "advanced/errors.md",
-        "line": 1,
-        "level": 1,
-        "title": "異常體系與捕獲指南"
       }
     ],
     "異步介面": [
@@ -11375,7 +11395,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 395,
+        "line": 447,
         "level": 2,
         "title": "相關文件"
       },
@@ -11471,7 +11491,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 544,
+        "line": 545,
         "level": 2,
         "title": "相關文件"
       },
@@ -11778,6 +11798,14 @@
         "line": 119,
         "level": 3,
         "title": "組合修飾"
+      }
+    ],
+    "結構化屬性": [
+      {
+        "document": "advanced/errors.md",
+        "line": 34,
+        "level": 2,
+        "title": "結構化屬性"
       }
     ],
     "統一事件覆寫配置（event.overrides）": [
@@ -12323,7 +12351,7 @@
     "觸發": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 309,
+        "line": 360,
         "level": 3,
         "title": "觸發"
       }
@@ -12519,7 +12547,7 @@
     "註冊與取消": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 301,
+        "line": 352,
         "level": 3,
         "title": "註冊與取消"
       }
@@ -12932,6 +12960,14 @@
         "line": 355,
         "level": 3,
         "title": "退出碼 42 契約"
+      }
+    ],
+    "适配器生命週期": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 184,
+        "level": 3,
+        "title": "适配器生命週期"
       }
     ],
     "透過 CLI 安裝": [
@@ -13354,14 +13390,6 @@
         "title": "適配器熱啟停"
       }
     ],
-    "適配器生命週期": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 174,
-        "level": 3,
-        "title": "適配器生命週期"
-      }
-    ],
     "適配器發送 Meta 事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -13461,7 +13489,7 @@
     "部署": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 487,
+        "line": 488,
         "level": 2,
         "title": "部署"
       }
@@ -13699,7 +13727,7 @@
     "配置變更": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 150,
+        "line": 159,
         "level": 3,
         "title": "配置變更"
       }
@@ -13786,12 +13814,12 @@
         "title": "重設建構器"
       }
     ],
-    "鈎子斷點一覽": [
+    "鈎子斷點概覽": [
       {
         "document": "advanced/lifecycle.md",
         "line": 116,
         "level": 2,
-        "title": "鈎子斷點一覽"
+        "title": "鈎子斷點概覽"
       }
     ],
     "錯誤碼規範": [
@@ -13864,6 +13892,14 @@
         "line": 369,
         "level": 2,
         "title": "錯誤處理"
+      }
+    ],
+    "錯誤體系與捕獲指南": [
+      {
+        "document": "advanced/errors.md",
+        "line": 1,
+        "level": 1,
+        "title": "錯誤體系與捕獲指南"
       }
     ],
     "錯過策略（missed_policy）": [

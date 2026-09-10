@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1750,
+  "total_keywords": 1754,
   "keywords": {
     "ErisPulse API 文档": [
       {
@@ -941,7 +941,7 @@
     "`AlterTable(table_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 771,
+        "line": 783,
         "level": 5,
         "title": "`AlterTable(table_name: str)`"
       }
@@ -2163,7 +2163,7 @@
     "`Table(table_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 711,
+        "line": 723,
         "level": 5,
         "title": "`Table(table_name: str)`"
       },
@@ -2825,7 +2825,7 @@
     "`__post_init__()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/strict.md",
-        "line": 74,
+        "line": 63,
         "level": 5,
         "title": "`__post_init__()`"
       }
@@ -3095,7 +3095,7 @@
     "`_cancel_all_timers(reason_hint: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 431,
+        "line": 420,
         "level": 5,
         "title": "`_cancel_all_timers(reason_hint: str)`"
       }
@@ -3103,7 +3103,7 @@
     "`_cancel_entry(key: str, entry: _Entry, reason: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 250,
+        "line": 239,
         "level": 5,
         "title": "`_cancel_entry(key: str, entry: _Entry, reason: str)`"
       }
@@ -3111,7 +3111,7 @@
     "`_cancel_reminders_for_key(key: str, only_reply_cancellable: bool = True)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 424,
+        "line": 413,
         "level": 5,
         "title": "`_cancel_reminders_for_key(key: str, only_reply_cancellable: bool = True)`"
       }
@@ -3181,7 +3181,7 @@
     "`_check_revoked(entry: _Entry, event: 'Event')`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 239,
+        "line": 228,
         "level": 5,
         "title": "`_check_revoked(entry: _Entry, event: 'Event')`"
       }
@@ -3635,7 +3635,7 @@
     "`_delete_nested_value(obj: Any, key_path: list[str])`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 521,
+        "line": 533,
         "level": 5,
         "title": "`_delete_nested_value(obj: Any, key_path: list[str])`"
       }
@@ -3770,6 +3770,14 @@
         "line": 246,
         "level": 5,
         "title": "`_emit_config_updated(old_config: dict[str, Any])`"
+      }
+    ],
+    "`_emit_language_changed(language: str, previous: str | None)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/i18n/__init__.md",
+        "line": 174,
+        "level": 5,
+        "title": "`_emit_language_changed(language: str, previous: str | None)`"
       }
     ],
     "`_ensure_accounts_exist()`": [
@@ -3915,7 +3923,7 @@
     "`_execute_handlers_sync(hook_name: str, event: str, data: Any, owner_filter: str | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 304,
+        "line": 342,
         "level": 5,
         "title": "`_execute_handlers_sync(hook_name: str, event: str, data: Any, owner_filter: str | None = None)`"
       }
@@ -3987,7 +3995,7 @@
     "`_find_entry(key: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 196,
+        "line": 185,
         "level": 5,
         "title": "`_find_entry(key: str)`"
       }
@@ -4091,7 +4099,7 @@
     "`_get_active_entry(key: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 294,
+        "line": 283,
         "level": 5,
         "title": "`_get_active_entry(key: str)`"
       }
@@ -4283,7 +4291,7 @@
     "`_get_nested_value(obj: Any, key_path: list[str])`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 507,
+        "line": 519,
         "level": 5,
         "title": "`_get_nested_value(obj: Any, key_path: list[str])`"
       }
@@ -4435,7 +4443,7 @@
     "`_index_add(entry: _Entry)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 175,
+        "line": 164,
         "level": 5,
         "title": "`_index_add(entry: _Entry)`"
       }
@@ -4443,7 +4451,7 @@
     "`_index_remove(entry: _Entry)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 182,
+        "line": 171,
         "level": 5,
         "title": "`_index_remove(entry: _Entry)`"
       }
@@ -4797,7 +4805,7 @@
     "`_kv_table_sql()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 535,
+        "line": 547,
         "level": 5,
         "title": "`_kv_table_sql()`"
       }
@@ -4897,7 +4905,7 @@
     "`_loads(raw: Any)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 528,
+        "line": 540,
         "level": 5,
         "title": "`_loads(raw: Any)`"
       }
@@ -4951,7 +4959,7 @@
     "`_lookup(key: str, lang: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/i18n/__init__.md",
-        "line": 239,
+        "line": 251,
         "level": 5,
         "title": "`_lookup(key: str, lang: str)`"
       }
@@ -5303,7 +5311,7 @@
     "`_parse_nested_key(key: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 496,
+        "line": 508,
         "level": 5,
         "title": "`_parse_nested_key(key: str)`"
       }
@@ -5375,7 +5383,7 @@
     "`_persist_global_language(lang: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/i18n/__init__.md",
-        "line": 174,
+        "line": 186,
         "level": 5,
         "title": "`_persist_global_language(lang: str)`"
       }
@@ -5717,7 +5725,7 @@
     "`_remove(key: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 189,
+        "line": 178,
         "level": 5,
         "title": "`_remove(key: str)`"
       }
@@ -5725,7 +5733,7 @@
     "`_remove_timer_refs(reminder: Reminder)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 408,
+        "line": 397,
         "level": 5,
         "title": "`_remove_timer_refs(reminder: Reminder)`"
       }
@@ -5741,7 +5749,7 @@
     "`_renew_lease(entry: _Entry, ttl: float | None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 376,
+        "line": 365,
         "level": 5,
         "title": "`_renew_lease(entry: _Entry, ttl: float | None)`"
       }
@@ -5768,6 +5776,14 @@
         "line": 292,
         "level": 5,
         "title": "`_report_purge_recyclability(refs: list[tuple[str, Any, Any]])`"
+      }
+    ],
+    "`_require_data(expected: type[T], key: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/kv_builder.md",
+        "line": 96,
+        "level": 5,
+        "title": "`_require_data(expected: type[T], key: str)`"
       }
     ],
     "`_require_driver()`": [
@@ -6235,7 +6251,7 @@
     "`_set_nested_value(obj: Any, key_path: list[str], value: Any)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 514,
+        "line": 526,
         "level": 5,
         "title": "`_set_nested_value(obj: Any, key_path: list[str], value: Any)`"
       }
@@ -6755,7 +6771,7 @@
     "`acquire(event: Any, owner: str | None = None, ttl: float = DEFAULT_INTERACTION_LEASE_TTL_SECS)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 320,
+        "line": 309,
         "level": 5,
         "title": "`acquire(event: Any, owner: str | None = None, ttl: float = DEFAULT_INTERACTION_LEASE_TTL_SECS)`"
       }
@@ -6787,7 +6803,7 @@
     "`add_reminder(event: Any, delay: float, action: Any, cancellable_by_reply: bool = True, owner: str | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 383,
+        "line": 372,
         "level": 5,
         "title": "`add_reminder(event: Any, delay: float, action: Any, cancellable_by_reply: bool = True, owner: str | None = None)`"
       }
@@ -6863,7 +6879,7 @@
     "`async _acquire()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 418,
+        "line": 430,
         "level": 5,
         "title": "`async _acquire()`"
       }
@@ -6899,7 +6915,7 @@
     "`async _acquire_txn_conn()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 454,
+        "line": 466,
         "level": 5,
         "title": "`async _acquire_txn_conn()`"
       },
@@ -6961,7 +6977,7 @@
     "`async _ascan_rows()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/kv_builder.md",
-        "line": 96,
+        "line": 103,
         "level": 5,
         "title": "`async _ascan_rows()`"
       }
@@ -6969,7 +6985,7 @@
     "`async _begin_txn(conn: Any)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 461,
+        "line": 473,
         "level": 5,
         "title": "`async _begin_txn(conn: Any)`"
       },
@@ -7085,7 +7101,7 @@
     "`async _commit_txn(conn: Any, handle: Any = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 468,
+        "line": 480,
         "level": 5,
         "title": "`async _commit_txn(conn: Any, handle: Any = None)`"
       },
@@ -7232,10 +7248,18 @@
         "title": "`async _emit_lifecycle(event: str)`"
       }
     ],
+    "`async _emit_storage_event(event: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
+        "line": 418,
+        "level": 5,
+        "title": "`async _emit_storage_event(event: str)`"
+      }
+    ],
     "`async _exec_query_on(kind: str, sql: str, params: Any, conn: Any)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 434,
+        "line": 446,
         "level": 5,
         "title": "`async _exec_query_on(kind: str, sql: str, params: Any, conn: Any)`"
       },
@@ -7261,7 +7285,7 @@
     "`async _execute_handlers(hook_name: str, event: str, data: Any, owner_filter: str | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 291,
+        "line": 324,
         "level": 5,
         "title": "`async _execute_handlers(hook_name: str, event: str, data: Any, owner_filter: str | None = None)`"
       }
@@ -7269,7 +7293,7 @@
     "`async _execute_query(kind: str, sql: str, params: Any)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 447,
+        "line": 459,
         "level": 5,
         "title": "`async _execute_query(kind: str, sql: str, params: Any)`"
       }
@@ -7357,7 +7381,7 @@
     "`async _init_kv_table()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 542,
+        "line": 554,
         "level": 5,
         "title": "`async _init_kv_table()`"
       }
@@ -7491,7 +7515,7 @@
     "`async _recover_missing_table()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 549,
+        "line": 561,
         "level": 5,
         "title": "`async _recover_missing_table()`"
       }
@@ -7527,7 +7551,7 @@
     "`async _release_txn_conn(conn: Any)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 482,
+        "line": 494,
         "level": 5,
         "title": "`async _release_txn_conn(conn: Any)`"
       },
@@ -7589,7 +7613,7 @@
     "`async _rollback_txn(conn: Any, handle: Any = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 475,
+        "line": 487,
         "level": 5,
         "title": "`async _rollback_txn(conn: Any, handle: Any = None)`"
       },
@@ -7629,7 +7653,7 @@
     "`async _run_alter(table_name: str, operations: 'list[tuple[str, tuple[Any, ...]]]')`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 489,
+        "line": 501,
         "level": 5,
         "title": "`async _run_alter(table_name: str, operations: 'list[tuple[str, tuple[Any, ...]]]')`"
       }
@@ -7637,7 +7661,7 @@
     "`async _run_reminder(reminder: Reminder)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 401,
+        "line": 390,
         "level": 5,
         "title": "`async _run_reminder(reminder: Reminder)`"
       }
@@ -7645,7 +7669,7 @@
     "`async _run_with_conn(impl: Callable[..., Any])`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 426,
+        "line": 438,
         "level": 5,
         "title": "`async _run_with_conn(impl: Callable[..., Any])`"
       }
@@ -7715,7 +7739,7 @@
     "`async aCreateTable(table_name: str, columns: dict[str, str])`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 725,
+        "line": 737,
         "level": 5,
         "title": "`async aCreateTable(table_name: str, columns: dict[str, str])`"
       },
@@ -7729,7 +7753,7 @@
     "`async aDropTable(table_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 745,
+        "line": 757,
         "level": 5,
         "title": "`async aDropTable(table_name: str)`"
       },
@@ -7743,7 +7767,7 @@
     "`async aExecute()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/kv_builder.md",
-        "line": 103,
+        "line": 110,
         "level": 5,
         "title": "`async aExecute()`"
       },
@@ -7797,7 +7821,7 @@
     "`async aHasTable(table_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 758,
+        "line": 770,
         "level": 5,
         "title": "`async aHasTable(table_name: str)`"
       },
@@ -7819,7 +7843,7 @@
     "`async aclear()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 617,
+        "line": 629,
         "level": 5,
         "title": "`async aclear()`"
       },
@@ -7833,7 +7857,7 @@
     "`async aclose()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 785,
+        "line": 797,
         "level": 5,
         "title": "`async aclose()`"
       },
@@ -7847,7 +7871,7 @@
     "`async adelete(key: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 588,
+        "line": 600,
         "level": 5,
         "title": "`async adelete(key: str)`"
       },
@@ -7861,7 +7885,7 @@
     "`async adelete_multi(keys: list[str])`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 685,
+        "line": 697,
         "level": 5,
         "title": "`async adelete_multi(keys: list[str])`"
       },
@@ -7883,7 +7907,7 @@
     "`async aget(key: str, default: Any = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 556,
+        "line": 568,
         "level": 5,
         "title": "`async aget(key: str, default: Any = None)`"
       },
@@ -7905,7 +7929,7 @@
     "`async aget_all_keys()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 604,
+        "line": 616,
         "level": 5,
         "title": "`async aget_all_keys()`"
       },
@@ -7919,7 +7943,7 @@
     "`async aget_multi(keys: list[str])`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 630,
+        "line": 642,
         "level": 5,
         "title": "`async aget_multi(keys: list[str])`"
       },
@@ -7949,7 +7973,7 @@
     "`async aset(key: str, value: Any)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 572,
+        "line": 584,
         "level": 5,
         "title": "`async aset(key: str, value: Any)`"
       },
@@ -7971,7 +7995,7 @@
     "`async aset_multi(items: dict[str, Any])`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 656,
+        "line": 668,
         "level": 5,
         "title": "`async aset_multi(items: dict[str, Any])`"
       },
@@ -8821,7 +8845,7 @@
     "`async resolve(event: 'Event')`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 222,
+        "line": 211,
         "level": 5,
         "title": "`async resolve(event: 'Event')`"
       }
@@ -9055,7 +9079,7 @@
     "`async submit_event(event_type: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 238,
+        "line": 268,
         "level": 5,
         "title": "`async submit_event(event_type: str)`"
       }
@@ -9335,7 +9359,7 @@
     "`cancel()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 127,
+        "line": 116,
         "level": 5,
         "title": "`cancel()`"
       }
@@ -9343,7 +9367,7 @@
     "`cancel(key: str, reason: str = REASON_CANCELLED)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 257,
+        "line": 246,
         "level": 5,
         "title": "`cancel(key: str, reason: str = REASON_CANCELLED)`"
       }
@@ -9351,7 +9375,7 @@
     "`cancel_by_owner(owner: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 267,
+        "line": 256,
         "level": 5,
         "title": "`cancel_by_owner(owner: str)`"
       }
@@ -9359,7 +9383,7 @@
     "`cancel_by_platform(platform: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 276,
+        "line": 265,
         "level": 5,
         "title": "`cancel_by_platform(platform: str)`"
       }
@@ -9367,7 +9391,7 @@
     "`cancel_reminder(reminder: Reminder)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 415,
+        "line": 404,
         "level": 5,
         "title": "`cancel_reminder(reminder: Reminder)`"
       }
@@ -9611,7 +9635,7 @@
     "`class ClientConnectionError(ClientError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 47,
+        "line": 51,
         "level": 3,
         "title": "`class ClientConnectionError(ClientError)`"
       }
@@ -9627,7 +9651,7 @@
     "`class ClientTimeoutError(ClientError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 62,
+        "line": 66,
         "level": 3,
         "title": "`class ClientTimeoutError(ClientError)`"
       }
@@ -9787,7 +9811,7 @@
     "`class HTTPStatusError(ClientError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 77,
+        "line": 81,
         "level": 3,
         "title": "`class HTTPStatusError(ClientError)`"
       }
@@ -9866,8 +9890,8 @@
     ],
     "`class InteractionCancelled(InteractionError)`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 45,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
+        "line": 198,
         "level": 3,
         "title": "`class InteractionCancelled(InteractionError)`"
       }
@@ -9875,7 +9899,7 @@
     "`class InteractionError(ErisPulseError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 117,
+        "line": 128,
         "level": 3,
         "title": "`class InteractionError(ErisPulseError)`"
       }
@@ -9883,7 +9907,7 @@
     "`class InteractionLease`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 61,
+        "line": 50,
         "level": 3,
         "title": "`class InteractionLease`"
       }
@@ -9891,7 +9915,7 @@
     "`class InteractionManager`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 136,
+        "line": 125,
         "level": 3,
         "title": "`class InteractionManager`"
       }
@@ -10011,7 +10035,7 @@
     "`class ModuleCallError(ModuleError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 132,
+        "line": 143,
         "level": 3,
         "title": "`class ModuleCallError(ModuleError)`"
       }
@@ -10019,7 +10043,7 @@
     "`class ModuleCallTimeoutError(ModuleCallError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 158,
+        "line": 169,
         "level": 3,
         "title": "`class ModuleCallTimeoutError(ModuleCallError)`"
       }
@@ -10027,7 +10051,7 @@
     "`class ModuleError(ErisPulseError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 125,
+        "line": 136,
         "level": 3,
         "title": "`class ModuleError(ErisPulseError)`"
       }
@@ -10083,7 +10107,7 @@
     "`class ModuleNotAvailableError(ModuleCallError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 143,
+        "line": 154,
         "level": 3,
         "title": "`class ModuleNotAvailableError(ModuleCallError)`"
       }
@@ -10171,7 +10195,7 @@
     "`class Reminder`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 102,
+        "line": 91,
         "level": 3,
         "title": "`class Reminder`"
       }
@@ -10331,15 +10355,15 @@
     "`class ServiceNotProvidedError(ModuleCallError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 150,
+        "line": 161,
         "level": 3,
         "title": "`class ServiceNotProvidedError(ModuleCallError)`"
       }
     ],
     "`class SessionOccupiedError(InteractionError)`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 453,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
+        "line": 209,
         "level": 3,
         "title": "`class SessionOccupiedError(InteractionError)`"
       }
@@ -10355,7 +10379,7 @@
     "`class StorageError(ErisPulseError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 102,
+        "line": 106,
         "level": 3,
         "title": "`class StorageError(ErisPulseError)`"
       }
@@ -10363,7 +10387,7 @@
     "`class StorageUnreachableError(StorageError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 109,
+        "line": 113,
         "level": 3,
         "title": "`class StorageUnreachableError(StorageError)`"
       }
@@ -10376,12 +10400,12 @@
         "title": "`class StrEnum(str, Enum)`"
       }
     ],
-    "`class StrictModeError(Exception)`": [
+    "`class StrictModeError(ErisPulseError)`": [
       {
-        "document": "api-reference/auto_api/ErisPulse/loaders/strict.md",
-        "line": 30,
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
+        "line": 219,
         "level": 3,
-        "title": "`class StrictModeError(Exception)`"
+        "title": "`class StrictModeError(ErisPulseError)`"
       }
     ],
     "`class StrictModeLevel(IntEnum)`": [
@@ -10395,7 +10419,7 @@
     "`class StrictModeManager`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/strict.md",
-        "line": 52,
+        "line": 41,
         "level": 3,
         "title": "`class StrictModeManager`"
       }
@@ -10443,7 +10467,7 @@
     "`class Violation`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/strict.md",
-        "line": 41,
+        "line": 30,
         "level": 3,
         "title": "`class Violation`"
       }
@@ -10475,7 +10499,7 @@
     "`class WebSocketDisconnect(WebSocketError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 165,
+        "line": 178,
         "level": 3,
         "title": "`class WebSocketDisconnect(WebSocketError)`"
       }
@@ -10483,7 +10507,7 @@
     "`class WebSocketError(ErisPulseError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 95,
+        "line": 99,
         "level": 3,
         "title": "`class WebSocketError(ErisPulseError)`"
       }
@@ -10531,7 +10555,7 @@
     "`class _Entry`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 56,
+        "line": 45,
         "level": 3,
         "title": "`class _Entry`"
       }
@@ -10547,7 +10571,7 @@
     "`class _LeaseContext`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 458,
+        "line": 442,
         "level": 3,
         "title": "`class _LeaseContext`"
       }
@@ -10655,7 +10679,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 285,
+        "line": 274,
         "level": 5,
         "title": "`clear()`"
       },
@@ -10679,7 +10703,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 317,
+        "line": 355,
         "level": 5,
         "title": "`clear()`"
       },
@@ -10893,7 +10917,7 @@
     "`counts()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 438,
+        "line": 427,
         "level": 5,
         "title": "`counts()`"
       }
@@ -10961,7 +10985,7 @@
     "`decide(name: str, component_type: str, reason: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/strict.md",
-        "line": 103,
+        "line": 92,
         "level": 5,
         "title": "`decide(name: str, component_type: str, reason: str)`"
       }
@@ -11057,7 +11081,7 @@
     "`delete_multi(keys: list[str])`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 698,
+        "line": 710,
         "level": 5,
         "title": "`delete_multi(keys: list[str])`"
       },
@@ -11147,7 +11171,7 @@
     "`emit_sync(event: str, data: Any = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 215,
+        "line": 218,
         "level": 5,
         "title": "`emit_sync(event: str, data: Any = None)`"
       }
@@ -11319,13 +11343,13 @@
     "`expired()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 76,
+        "line": 65,
         "level": 5,
         "title": "`expired()`"
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 120,
+        "line": 109,
         "level": 5,
         "title": "`expired()`"
       }
@@ -11378,6 +11402,14 @@
         "title": "`find_by_name(name: str)`"
       }
     ],
+    "`fire(event: str, data: Any = None)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
+        "line": 241,
+        "level": 5,
+        "title": "`fire(event: str, data: Any = None)`"
+      }
+    ],
     "`force_save()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/config.md",
@@ -11421,7 +11453,7 @@
     "`from_config()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/strict.md",
-        "line": 81,
+        "line": 70,
         "level": 5,
         "title": "`from_config()`"
       }
@@ -11795,7 +11827,7 @@
     "`get_duration(timer_id: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 271,
+        "line": 304,
         "level": 5,
         "title": "`get_duration(timer_id: str)`"
       }
@@ -11953,7 +11985,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/i18n/__init__.md",
-        "line": 184,
+        "line": 196,
         "level": 5,
         "title": "`get_language()`"
       }
@@ -12089,7 +12121,7 @@
     "`get_multi(keys: list[str])`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 643,
+        "line": 655,
         "level": 5,
         "title": "`get_multi(keys: list[str])`"
       },
@@ -12135,7 +12167,7 @@
     "`get_owner_of(event: Any)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 301,
+        "line": 290,
         "level": 5,
         "title": "`get_owner_of(event: Any)`"
       }
@@ -12341,7 +12373,7 @@
     "`get_supported_languages()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/i18n/__init__.md",
-        "line": 193,
+        "line": 205,
         "level": 5,
         "title": "`get_supported_languages()`"
       }
@@ -12473,7 +12505,7 @@
     "`gettext(default: str | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/i18n/__init__.md",
-        "line": 228,
+        "line": 240,
         "level": 5,
         "title": "`gettext(default: str | None = None)`"
       }
@@ -12529,7 +12561,7 @@
     "`has_fatal_violations()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/strict.md",
-        "line": 136,
+        "line": 125,
         "level": 5,
         "title": "`has_fatal_violations()`"
       }
@@ -12573,7 +12605,7 @@
     "`has_translation(key: str, lang: str | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/i18n/__init__.md",
-        "line": 285,
+        "line": 297,
         "level": 5,
         "title": "`has_translation(key: str, lang: str | None = None)`"
       }
@@ -12623,7 +12655,7 @@
     "`hold(event: Any, owner: str | None = None, ttl: float = DEFAULT_INTERACTION_LEASE_TTL_SECS)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 345,
+        "line": 334,
         "level": 5,
         "title": "`hold(event: Any, owner: str | None = None, ttl: float = DEFAULT_INTERACTION_LEASE_TTL_SECS)`"
       }
@@ -12827,7 +12859,7 @@
     "`is_exempt(name: str, component_type: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/strict.md",
-        "line": 93,
+        "line": 82,
         "level": 5,
         "title": "`is_exempt(name: str, component_type: str)`"
       }
@@ -13179,7 +13211,7 @@
     "`list_hooks()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 329,
+        "line": 367,
         "level": 5,
         "title": "`list_hooks()`"
       }
@@ -13319,7 +13351,7 @@
     "`make_key(event: Any)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 148,
+        "line": 137,
         "level": 5,
         "title": "`make_key(event: Any)`"
       }
@@ -13335,7 +13367,7 @@
     "`make_session_key(event: Any)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 161,
+        "line": 150,
         "level": 5,
         "title": "`make_session_key(event: Any)`"
       }
@@ -13853,7 +13885,7 @@
     "`raise_if_fatal()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/strict.md",
-        "line": 166,
+        "line": 155,
         "level": 5,
         "title": "`raise_if_fatal()`"
       }
@@ -13909,7 +13941,7 @@
     "`record_failure(name: str, component_type: str, reason: str, detail: str = '')`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/strict.md",
-        "line": 119,
+        "line": 108,
         "level": 5,
         "title": "`record_failure(name: str, component_type: str, reason: str, detail: str = '')`"
       }
@@ -13933,7 +13965,7 @@
     "`register(event: Any, future: asyncio.Future, callback: Any = None, validator: Any = None, pattern: str | None = None, regex: str | None = None, owner: str | None = None, session_scope: bool = False)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 203,
+        "line": 192,
         "level": 5,
         "title": "`register(event: Any, future: asyncio.Future, callback: Any = None, validator: Any = None, pattern: str | None = None, regex: str | None = None, owner: str | None = None, session_scope: bool = False)`"
       }
@@ -13957,7 +13989,7 @@
     "`register(lang: str, translations: dict[str, str], domain: str = 'app')`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/i18n/__init__.md",
-        "line": 248,
+        "line": 260,
         "level": 5,
         "title": "`register(lang: str, translations: dict[str, str], domain: str = 'app')`"
       }
@@ -14101,7 +14133,7 @@
     "`rejections()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/strict.md",
-        "line": 152,
+        "line": 141,
         "level": 5,
         "title": "`rejections()`"
       }
@@ -14109,7 +14141,7 @@
     "`release()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 93,
+        "line": 82,
         "level": 5,
         "title": "`release()`"
       }
@@ -14117,7 +14149,7 @@
     "`release(key: str, owner: str | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 364,
+        "line": 353,
         "level": 5,
         "title": "`release(key: str, owner: str | None = None)`"
       }
@@ -14131,7 +14163,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/i18n/__init__.md",
-        "line": 296,
+        "line": 308,
         "level": 5,
         "title": "`reload()`"
       }
@@ -14321,7 +14353,7 @@
     "`renew(ttl: float | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 83,
+        "line": 72,
         "level": 5,
         "title": "`renew(ttl: float | None = None)`"
       }
@@ -14365,7 +14397,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/i18n/__init__.md",
-        "line": 202,
+        "line": 214,
         "level": 5,
         "title": "`reset_language()`"
       }
@@ -14725,7 +14757,7 @@
     "`set_multi(items: dict[str, Any])`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md",
-        "line": 672,
+        "line": 684,
         "level": 5,
         "title": "`set_multi(items: dict[str, Any])`"
       },
@@ -14879,7 +14911,7 @@
     "`start_timer(timer_id: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 262,
+        "line": 295,
         "level": 5,
         "title": "`start_timer(timer_id: str)`"
       }
@@ -14963,7 +14995,7 @@
     "`stop_timer(timer_id: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 281,
+        "line": 314,
         "level": 5,
         "title": "`stop_timer(timer_id: str)`"
       }
@@ -15113,7 +15145,7 @@
     "`t(default: str | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/i18n/__init__.md",
-        "line": 209,
+        "line": 221,
         "level": 5,
         "title": "`t(default: str | None = None)`"
       }
@@ -15179,7 +15211,7 @@
     "`tolerated()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/strict.md",
-        "line": 159,
+        "line": 148,
         "level": 5,
         "title": "`tolerated()`"
       }
@@ -15407,7 +15439,7 @@
     "`unregister_domain(domain: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/i18n/__init__.md",
-        "line": 271,
+        "line": 283,
         "level": 5,
         "title": "`unregister_domain(domain: str)`"
       }
@@ -15595,7 +15627,7 @@
     "`violations()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/strict.md",
-        "line": 145,
+        "line": 134,
         "level": 5,
         "title": "`violations()`"
       }
@@ -16267,19 +16299,19 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 73,
+        "line": 62,
         "level": 4,
         "title": "方法列表"
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 117,
+        "line": 106,
         "level": 4,
         "title": "方法列表"
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 145,
+        "line": 134,
         "level": 4,
         "title": "方法列表"
       },
@@ -16549,7 +16581,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/strict.md",
-        "line": 71,
+        "line": 60,
         "level": 4,
         "title": "方法列表"
       },

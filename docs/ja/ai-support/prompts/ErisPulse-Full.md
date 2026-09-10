@@ -5798,9 +5798,11 @@ class MyToolModule(BaseModule):
 
 ## エラー処理
 
-### 1. エラーの分類処理
+### 1. 例外の分類処理
 
 ```python
+from ErisPulse.Core.Bases.errors import ClientError
+
 async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
@@ -5808,22 +5810,21 @@ async def handle_event(self, event: Event):
         # 予期されたビジネスエラー
         self.logger.warning(f"ビジネス警告: {e}")
         await event.reply(f"パラメータエラー: {e}")
-    except aiohttp.ClientError as e:
-        # ネットワークエラー（推奨：sdk.client + ClientError で置き換え）
-        # 旧コードで直接 aiohttp を使っても正常に動作しますが、新規コードでは ErisPulse の例外体系を使用することを推奨します
-        self.logger.error(f"ネットワークエラー: {e}")
-        await event.reply("ネットワークリクエストに失敗しました、後で再試行してください")
+    except ClientError as e:
+        # ネットワークエラー（sdk.client の下層 aiohttp 例外は自動的に変換済み）
+        self.logger.error(f"ネットワークエラー {e.method} {e.url}: {e}")
+        await event.reply("ネットワークリクエストに失敗しました。後でもう一度お試しください")
     except Exception as e:
         # 予期しないエラー
-        self.logger.error(f"未知のエラー: {e}", exc_info=True)
-        await event.reply("処理に失敗しました、管理者に連絡してください")
+        self.logger.error(f"不明なエラー: {e}", exc_info=True)
+        await event.reply("処理に失敗しました。管理者にお問い合わせください")
         raise
 ```
 
 ### 2. タイムアウト処理
 
 ```python
-# 推奨：SDK 内部のクライアントを使用（タイムアウトとリトライが付属）
+# 推奨される SDK 内部クライアント（タイムアウトとリトライ機能を内蔵）
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -5832,7 +5833,7 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"リクエストがタイムアウトしました: {url}")
+        self.logger.warning(f"リクエストタイムアウト: {url}")
         raise
 ```
 
@@ -15236,46 +15237,55 @@ if sdk.lifecycle.has_handlers("message.sending"):
 - **正確なイベント名、ワイルドカード `*`、親イベント**の3種類のマッチングをカバー
 - 監視者がいない場合、`False` を返し、`emit` を安全にスキップ可能
 
-## フックの断点一覧
+## フックブレークポイント一覧
 
-プラットフォームからフレームワークに入り、処理が完了するまでの典型的なライフサイクルイベントの順序：
+プラットフォームからフレームワークにメッセージが到達し、処理が完了するまでの典型的なライフサイクルイベントの時系列：
 
 ```mermaid
 sequenceDiagram
     participant P as プラットフォーム
     participant A as アダプタ
     participant F as フレームワークコア
-    participant M as モジュールハンドラ
+    participant M as モジュールプロセッサ
 
-    P->>A: ネイティブイベント到着
+    P->>A: ネイティブイベント到達
     A->>F: adapter.event.receive（最も初期）
-    F->>F: event.pre_process（ハンドラ実行前）
-    F->>M: ハンドラに配信（コマンド/メッセージ/通知など）
+    F->>F: event.pre_process（プロセッサ実行前）
+    F->>M: プロセッサに分散（コマンド/メッセージ/通知など）
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending（送信前）
     F->>A: SendDSL 送信
     A->>P: プラットフォームに送信
     A->>F: message.sent（送信完了）
-    F->>F: adapter.event.dispatched（配信完了）
+    F->>F: adapter.event.dispatched（分散完了）
 ```
 
-フレームワークは以下のフック断点を内蔵しており、ユーザーは `@sdk.lifecycle.on()` を使って任意の断点を監視し、カスタムロジックを実装できます。
+フレームワークには以下のフックブレークポイントが内蔵されており、`@sdk.lifecycle.on()` を使って任意のブレークポイントを監視し、カスタムロジックを実装できます。
 
 ### コア初期化
 
-| フック名 | トリガータイミング | データ |
+| フック名 | 発生タイミング | データ |
 |---------|---------|------|
 | `core.init.start` | SDK 初期化開始 | `{}` |
-| `core.init.complete` | SDK 初期化完了 | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(失敗時のみ)}` |
+| `core.init.stage` | 初期化各段階開始（バックグラウンドで発生） | `{"stage": str}`、値は `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
+| `core.init.complete` | SDK 初期化完了 | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(失敗時のみ)}` |
 | `core.uninit.complete` | SDK 反初期化完了 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(失敗時のみ)}` |
+
+**例：起動プロセス表示**
+
+```python
+@sdk.lifecycle.on("core.init.stage")
+def show_stage(data):
+    print(f"[起動] 段階に進入: {data['stage']}")
+```
 
 ### 設定変更
 
-| フック名 | トリガータイミング | データ |
+| フック名 | 発生タイミング | データ |
 |---------|---------|------|
 | `config.set` | 設定項目が変更された | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | 外部から config.toml を編集した後にツリー全体の変更が検出された | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.updated` | 外部で config.toml を編集した後にツリー全体の変更を検出 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
 **例：設定監査**
 
@@ -15285,34 +15295,35 @@ def audit_config(data):
     print(f"[監査] {data['key']}: {data['old_value']} -> {data['new_value']}")
 ```
 
-### モジュールのライフサイクル
+### モジュールライフサイクル
 
-| フック名 | トリガータイミング | データ |
+| フック名 | 発生タイミング | データ |
 |---------|---------|------|
 | `module.register` | モジュールクラスがマネージャーに登録された | `{"module_name": str, "success": bool}` |
 | `module.load` | モジュールのロード完了（インスタンス化成功） | `{"module_name": str, "success": bool}` |
 | `module.init` | モジュールの初期化完了（遅延ロード含む） | `{"module_name": str, "success": bool}` |
 | `module.unload` | モジュールのアンロード | `{"module_name": str, "success": bool}` |
+| `module.reload` | モジュールのホットリロード完了（依存モジュールも再ロード） | `{"module_name": str, "success": bool}` |
 
-### アダプタのライフサイクル
+### アダプタライフサイクル
 
-| フック名 | トリガータイミング | データ |
+| フック名 | 発生タイミング | データ |
 |---------|---------|------|
 | `adapter.load` | アダプタの登録完了 | `{"platform": str, "success": bool}` |
 | `adapter.start` | アダプタの起動 | `{"platforms": [str]}` |
-| `adapter.status.change` | アダプタの状態変化 | `{"platform": str, "status": str, "retry_count": int, "error": str(失敗時のみ)}` |
+| `adapter.status.change` | アダプタのステータス変化 | `{"platform": str, "status": str, "retry_count": int, "error": str(失敗時のみ)}` |
 | `adapter.stop` | アダプタの停止 | `{"platforms": [str]}` |
 | `adapter.stopped` | アダプタの停止完了 | `{"platforms": [str]}` |
 | `adapter.bot.online` | Bot のオンライン | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
 | `adapter.bot.offline` | Bot のオフライン | `{"platform": str, "bot_id": str, "status": str}` |
 
-### イベントの受信と処理
+### イベント受信と処理
 
-| フック名 | トリガータイミング | データ |
+| フック名 | 発生タイミング | データ |
 |---------|---------|------|
-| `adapter.event.receive` | 外部プラットフォームイベントを受信した（最も初期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
-| `adapter.event.dispatched` | イベントの配信完了 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
-| `event.pre_process` | イベントハンドラの実行前に | `{"event_type": str, "platform": str, "detail_type": str}` |
+| `adapter.event.receive` | 外部プラットフォームのイベントを受信（最も初期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.dispatched` | イベントの分散完了 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
+| `event.pre_process` | イベントプロセッサの実行前に | `{"event_type": str, "platform": str, "detail_type": str}` |
 
 **例：イベント統計**
 
@@ -15332,10 +15343,10 @@ def log_unhandled(data):
 
 ### メッセージ送信
 
-| フック名 | トリガータイミング | データ |
+| フック名 | 発生タイミング | データ |
 |---------|---------|------|
-| `message.sending` | メッセージの送信直前 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
-| `message.sent` | メッセージの送信完了 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sending` | メッセージが送信される直前 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | メッセージ送信完了 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
 **例：メッセージ送信監査**
 
@@ -15347,10 +15358,10 @@ def log_sending(data):
 
 ### コマンドシステム
 
-| フック名 | トリガータイミング | データ |
+| フック名 | 発生タイミング | データ |
 |---------|---------|------|
 | `command.matched` | コマンドがマッチし、実行直前 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
-| `command.executed` | コマンドの実行完了 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(失敗時のみ)}` |
+| `command.executed` | コマンド実行完了 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(失敗時のみ)}` |
 
 **例：コマンド統計**
 
@@ -15362,10 +15373,10 @@ def count_commands(data):
 
 ### HTTP ルーティング
 
-| フック名 | トリガータイミング | データ |
+| フック名 | 発生タイミング | データ |
 |---------|---------|------|
-| `server.request` | HTTPリクエスト受信 | `{"method": str, "path": str, "client_ip": str}` |
-| `server.response` | HTTPレスポンス送信 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
+| `server.request` | HTTP リクエスト受信 | `{"method": str, "path": str, "client_ip": str}` |
+| `server.response` | HTTP レスポンス送信 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
 **例：リクエストログ**
 
@@ -15377,14 +15388,14 @@ def log_http(data):
 
 ### WebSocket
 
-| フック名 | トリガータイミング | データ |
+| フック名 | 発生タイミング | データ |
 |---------|---------|------|
-| `server.start` | ルーティングサーバー起動 | `{"base_url": str, "host": str, "port": int}` |
+| `server.start` | ルーティングサーバー起動 | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str(失敗時のみ)}` |
 | `server.stop` | ルーティングサーバー停止 | `{}` |
-| `server.websocket.connect` | WebSocket接続確立 | `{"path": str, "module_name": str, "client_ip": str}` |
-| `server.websocket.disconnect` | WebSocket接続切断 | `{"path": str, "module_name": str, "reason": str, "error": str(異常時のみ)}` |
+| `server.websocket.connect` | WebSocket 接続確立 | `{"path": str, "module_name": str, "client_ip": str}` |
+| `server.websocket.disconnect` | WebSocket 接続切断 | `{"path": str, "module_name": str, "reason": str, "error": str(異常時のみ)}` |
 
-**例：WebSocket接続監視**
+**例：WebSocket 接続監視**
 
 ```python
 @sdk.lifecycle.on("server.websocket.connect")
@@ -15396,12 +15407,50 @@ def on_ws_disconnect(data):
     print(f"[WS] 切断: {data['path']} ({data['reason']})")
 ```
 
+### ストレージ接続状態
+
+ストレージバックエンド接続プールの確立、障害、および回復（すべてバックグラウンドで発生し、ストレージ操作をブロックしない）：
+
+| フック名 | 発生タイミング | データ |
+|---------|---------|------|
+| `storage.ready` | ストレージバックエンド接続プールが準備完了（各イベントループで最初に成功したプール確立時） | `{"backend": str}` |
+| `storage.unreachable` | 接続リトライが尽きてクールダウン期間に入る（この間は操作が即座に失敗する） | `{"backend": str, "error": str, "cooldown": float}` |
+| `storage.recovered` | クールダウン終了後に再接続成功し、ストレージが再利用可能になる | `{"backend": str}` |
+
+**例：ストレージ障害アラート**
+
+```python
+@sdk.lifecycle.on("storage.unreachable")
+def alert_storage_down(data):
+    print(f"[アラート] ストレージバックエンド {data['backend']} は到達不可: {data['error']}、{data['cooldown']}s後に自動再接続")
+
+@sdk.lifecycle.on("storage.recovered")
+def notify_storage_back(data):
+    print(f"[回復] ストレージバックエンド {data['backend']} は再利用可能になりました")
+```
+
+### HTTPクライアント
+
+`sdk.client` のリクエストと接続イベント（すべてバックグラウンドで発生）：
+
+| フック名 | 発生タイミング | データ |
+|---------|---------|------|
+| `client.request.success` | HTTPリクエスト成功 | `{"method": str, "url": str, "status": int, "elapsed": float}` |
+| `client.request.failed` | HTTPリクエストのリトライが尽きて最終的に失敗 | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
+| `client.ws.connect` | WebSocket接続確立 | `{"url": str}` |
+
+### 国際化
+
+| フック名 | 発生タイミング | データ |
+|---------|---------|------|
+| `i18n.language.changed` | フレームワークの言語切り替え（`i18n.set_language`） | `{"language": str, "previous": str}` |
+
 ## 標準イベント定義
 
 ```python
 STANDARD_EVENTS = {
-    "core": ["init.start", "init.complete", "uninit.complete"],
-    "module": ["load", "init", "unload", "register"],
+    "core": ["init.start", "init.stage", "init.complete", "uninit.complete"],
+    "module": ["load", "init", "unload", "register", "reload"],
     "adapter": [
         "load", "start", "status.change", "stop", "stopped",
         "event.receive", "event.dispatched",
@@ -15415,37 +15464,41 @@ STANDARD_EVENTS = {
     "event": ["pre_process"],
     "message": ["sending", "sent"],
     "command": ["matched", "executed"],
-    "config": ["set"],
+    "config": ["set", "updated"],
+    "storage": ["ready", "unreachable", "recovered"],
+    "client": ["request.success", "request.failed", "ws.connect"],
+    "i18n": ["language.changed"],
 }
 ```
 
-## 完全なAPIリファレンス
+## 完全な API リファレンス
 
 ### 登録と解除
 
 | メソッド | 説明 |
 |------|------|
-| `@lifecycle.on(event, *, priority=0)` | デコレータでハンドラを登録 |
+| `@lifecycle.on(event, *, priority=0)` | デコレータによるハンドラの登録 |
 | `lifecycle.register(event, handler, *, priority=0)` | プログラム的な登録 |
-| `lifecycle.unregister(event, handler=None)` | 登録解除（handler=None の場合、該当イベントのすべてのハンドラを解除） |
+| `lifecycle.unregister(event, handler=None)` | 登録の解除（handler=None の場合は該当イベントのすべてのハンドラを解除） |
 
 ### トリガー
 
 | メソッド | 説明 |
 |------|------|
-| `await lifecycle.emit(event, data=None, *, to=None)` | 非同期でトリガー、ハンドラが非 None を返すと data を変更可能；`to` で所有者を指定すると宛先送信 |
-| `lifecycle.emit_sync(event, data=None, *, to=None)` | 同期でトリガー、非同期ハンドラは create_task でスケジューリング |
-| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None)` | 従来版と互換性があり、標準イベント形式を自動的に構築 |
+| `await lifecycle.emit(event, data=None, *, to=None)` | 非同期でトリガーを発生させ、ハンドラは**並列実行**（互いにブロッキングせず、返却時にすべての処理が完了）。非 None 値が返された場合は、優先度順に data をチェーンで置換して返す。`to` に owner を指定した場合は、対象に投递。 |
+| `lifecycle.fire(event, data=None, *, to=None)` | **バックグラウンド発行（投げっぱなし）**：ハンドラはバックグラウンドタスクで並列実行され、待機せず、返り値なし。リスナーがいない場合はオーバーヘッドなし。高頻度のホットパスや観測イベントに適している。シャットダウンシーケンスや順序依存の消費（例：`config.set`）は `emit` を使用すること。 |
+| `lifecycle.emit_sync(event, data=None, *, to=None)` | 同期的にトリガーを発生させ、非同期ハンドラは create_task でスケジューリングされる。 |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 旧版との互換性を持ち、標準的なイベントフォーマットを自動的に構築する。`background=True` の場合、`fire` でバックグラウンド発行される。 |
 
 ### ユーティリティ
 
 | メソッド | 説明 |
 |------|------|
-| `lifecycle.start_timer(timer_id)` | タイマー開始 |
-| `lifecycle.get_duration(timer_id)` | 経過時間（秒）を取得 |
-| `lifecycle.stop_timer(timer_id)` | タイマー停止し、経過時間を返す |
-| `lifecycle.list_hooks()` | すべての登録済みフックとハンドラ数をリストアップ |
-| `lifecycle.clear()` | すべてのハンドラとタイマーをクリア |
+| `lifecycle.start_timer(timer_id)` | タイマーを開始する |
+| `lifecycle.get_duration(timer_id)` | 経過時間を取得（秒） |
+| `lifecycle.stop_timer(timer_id)` | タイマーを停止し、経過時間を返す |
+| `lifecycle.list_hooks()` | すべての登録済みフックとハンドラ数をリストアップする |
+| `lifecycle.clear()` | すべてのハンドラとタイマーをクリアする |
 
 ## モジュールでの使用例
 
