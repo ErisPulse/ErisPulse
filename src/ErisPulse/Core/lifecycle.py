@@ -1,13 +1,14 @@
 """
 ErisPulse 生命周期管理模块
 
-提供统一的钩子/事件管理和触发机制，支持点式结构事件监听
+提供统一的钩子/事件管理和触发机制，支持点式结构事件监听与定向传播
 
 {!--< tips >!--}
 1. 使用 @lifecycle.on("event.name") 注册事件处理器
 2. 使用 await lifecycle.emit("event.name", data) 触发事件
-3. 使用 lifecycle.start_timer() / stop_timer() 进行计时
-4. 旧版 submit_event() API 保持兼容
+3. 使用 lifecycle.emit("event.name", data, to="Owner") 定向投递给指定 owner 注册的钩子
+4. 使用 lifecycle.start_timer() / stop_timer() 进行计时
+5. 旧版 submit_event() API 保持兼容
 {!--< /tips >!--}
 """
 
@@ -60,6 +61,7 @@ class LifecycleManager:
     统一的钩子/事件系统，支持：
     - 点式结构事件监听（如 module.init 可被 module 监听到）
     - 通配符监听（* 匹配所有事件）
+    - 定向传播（emit(..., to="Owner") 仅分发给该 owner 注册的处理器）
     - 优先级排序
     - 同步/异步处理器
     - 计时器
@@ -281,19 +283,27 @@ class LifecycleManager:
 
     # ==================== 触发 API ====================
 
-    async def emit(self, event: str, data: Any = None) -> Any:
+    async def emit(self, event: str, data: Any = None, *, to: str | None = None) -> Any:
         """
         触发事件（异步，精简版）
 
         按优先级执行匹配的处理器。处理器返回非 None 值时，
         该值将作为新的 data 传递给后续处理器。
 
+        指定 ``to`` 时进入定向传播：事件只分发给以该拥有者（owner）身份注册的
+        处理器（模块在 on_load 内注册 / `owner_scope` 上下文注册的钩子），
+        其它模块与通配符 `*` 处理器不感知；目标 owner 无已注册钩子时静默丢弃。
+
         :param event: str 事件名称
-        :param data: Any 事件数据
+        :param data: Any 事件数据（dict 时自动附加 `_trace_id`）
+        :param to: str 定向投递目标拥有者（模块名 / 适配器平台名），None 广播
         :return: Any 经过所有处理器处理后的数据
+        :raises ValueError: ``to`` 为空字符串时
 
         :example:
         >>> result = await lifecycle.emit("config.set", {"key": "test", "value": 42})
+        >>> # 定向投递给 Chat 模块注册的钩子
+        >>> await lifecycle.emit("maintenance", {"action": "reload"}, to="Chat")
         """
         # 事件数据为 dict 时自动携带当前事件的链路追踪 ID（不覆盖已有值）
         if isinstance(data, dict) and "_trace_id" not in data:
@@ -302,6 +312,18 @@ class LifecycleManager:
             _tid = current_trace_id.get()
             if _tid:
                 data["_trace_id"] = _tid
+
+        if to is not None:
+            if not to:
+                raise ValueError(i18n.t("core.lifecycle.to_required"))
+            parts = event.split(".")
+            # 定向分发：精确事件名 + 点式父级前缀（均按 owner 过滤，通配符不参与）
+            keys = [event] + [".".join(parts[:i]) for i in range(len(parts) - 1, 0, -1)]
+            for key in keys:
+                handlers = self._hooks.get(key)
+                if handlers and any(o == to for (_p, _h, o) in handlers):
+                    data = await self._execute_handlers(key, event, data, owner_filter=to)
+            return data
 
         # 统计匹配的处理器总数
         parts = event.split(".")
@@ -331,20 +353,34 @@ class LifecycleManager:
 
         return data
 
-    def emit_sync(self, event: str, data: Any = None) -> Any:
+    def emit_sync(self, event: str, data: Any = None, *, to: str | None = None) -> Any:
         """
         触发事件（同步，精简版）
 
         同步执行所有处理器。异步处理器会在当前事件循环中以 create_task 调度。
         注意：同步模式下异步处理器的返回值无法回传。
 
+        指定 ``to`` 时进入定向传播（语义同 :meth:`emit` 的定向模式）。
+
         :param event: str 事件名称
         :param data: Any 事件数据
+        :param to: str 定向投递目标拥有者，None 广播
         :return: Any 处理后的数据
+        :raises ValueError: ``to`` 为空字符串时
 
         :example:
         >>> result = lifecycle.emit_sync("config.set", {"key": "test"})
         """
+        if to is not None:
+            if not to:
+                raise ValueError(i18n.t("core.lifecycle.to_required"))
+            parts = event.split(".")
+            keys = [event] + [".".join(parts[:i]) for i in range(len(parts) - 1, 0, -1)]
+            for key in keys:
+                handlers = self._hooks.get(key)
+                if handlers and any(o == to for (_p, _h, o) in handlers):
+                    data = self._execute_handlers_sync(key, event, data, owner_filter=to)
+            return data
 
         if "*" in self._hooks:
             data = self._execute_handlers_sync("*", event, data)
@@ -370,6 +406,7 @@ class LifecycleManager:
         msg: str = "",
         data: dict | None = None,
         timestamp: float | None = None,
+        to: str | None = None,
     ) -> None:
         """
         提交生命周期事件（兼容旧版 API）
@@ -381,9 +418,13 @@ class LifecycleManager:
         :param msg: str 事件描述
         :param data: dict 事件相关数据
         :param timestamp: float 时间戳(默认当前时间)
+        :param to: str 定向投递目标拥有者（语义同 :meth:`emit`），None 广播
+
+        :raises ValueError: ``to`` 为空字符串时
 
         :example:
         >>> await lifecycle.submit_event("module.load", data={"module_name": "Test"})
+        >>> await lifecycle.submit_event("maintenance", data={"action": "reload"}, to="Chat")
         """
         if event_type is None:
             _get_logger().error(i18n.t("core.lifecycle.event_type_none"))
@@ -410,7 +451,7 @@ class LifecycleManager:
             "msg": msg,
         }
 
-        await self.emit(event_type, event_data)
+        await self.emit(event_type, event_data, to=to)
 
     # ==================== 计时器 ====================
 
@@ -447,18 +488,23 @@ class LifecycleManager:
 
     # ==================== 内部方法 ====================
 
-    async def _execute_handlers(self, hook_name: str, event: str, data: Any) -> Any:
+    async def _execute_handlers(
+        self, hook_name: str, event: str, data: Any, owner_filter: str | None = None
+    ) -> Any:
         """
-        执行匹配的事件处理器（异步）
+        执行匹配事件的处理（异步）
 
         :param hook_name: str 注册的钩子名
         :param event: str 实际事件名
         :param data: Any 事件数据
-        :return: Any 处理后的数据
+        :param owner_filter: str 仅执行该拥有者注册的处理器（定向传播，None 不限）
+        :return: Any 处理器链处理结果
         """
         import time as _time
 
         for priority, handler, _owner in self._hooks[hook_name]:
+            if owner_filter is not None and _owner != owner_filter:
+                continue
             try:
                 _t = _time.monotonic()
                 _hname = getattr(
@@ -484,16 +530,21 @@ class LifecycleManager:
                 )
         return data
 
-    def _execute_handlers_sync(self, hook_name: str, event: str, data: Any) -> Any:
+    def _execute_handlers_sync(
+        self, hook_name: str, event: str, data: Any, owner_filter: str | None = None
+    ) -> Any:
         """
         执行匹配的事件处理器（同步）
 
         :param hook_name: str 注册的钩子名
         :param event: str 实际事件名
         :param data: Any 事件数据
+        :param owner_filter: str 仅执行该拥有者注册的处理器（定向传播，None 不限）
         :return: Any 处理后的数据
         """
         for _, handler, _owner in self._hooks[hook_name]:
+            if owner_filter is not None and _owner != owner_filter:
+                continue
             try:
                 if inspect.iscoroutinefunction(handler):
                     from ..runtime.tasks import spawn_background
