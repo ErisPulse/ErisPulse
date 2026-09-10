@@ -221,7 +221,7 @@ async with event.message_tx():
 - handler 上下文（`get_current_trace_id()` 读取）
 - 出站发送（`[Send]` 日志行附加 `[trace:...]`，`message.sending/sent` 钩子的 `trace_id` 字段）
 - 生命周期钩子数据（dict 自动补 `_trace_id`）
-- 定向事件（`emit_to`）与消息事务回执
+- 定向事件（`lifecycle.emit(..., to=...)`）与消息事务回执
 
 一条消息被多个模块接力处理时，全链路可用同一 ID 串联（日志 / 慢查询 / 审计）。
 

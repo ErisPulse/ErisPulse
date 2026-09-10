@@ -225,7 +225,6 @@ TRANSLATIONS = {
     "core.module.call_method_missing": "[Module] 模块 '{module}' 不存在可调用的方法 '{method}'",
     "core.module.call_activate_failed": "[Module] 模块间调用失败: 懒加载模块 '{name}' 激活失败",
     "core.module.call_timeout": "[Module] 模块间调用超时: {module}.{method} 超过 {timeout}s",
-    "core.module.emit_target_disabled": "[Module] 模块事件投递失败: 目标模块 '{name}' 未注册或未启用",
     "core.module.on_load_failed": "模块 {name} on_load 方法执行失败: {error}",
     "core.module.load_success_msg": "模块 {name} 加载成功",
     "core.module.init_done_msg": "模块 {name} 初始化完毕",
@@ -335,6 +334,7 @@ TRANSLATIONS = {
     "core.router.link_community": "社区",
     # ==================== 生命周期管理 ====================
     "core.lifecycle.event_name_required": "事件名称必须是非空字符串",
+    "core.lifecycle.to_required": "定向投递目标 to 必须是非空字符串",
     "core.lifecycle.event_type_none": "事件类型不能为None",
     "core.lifecycle.event_type_empty": "事件类型必须是非空字符串，收到: {type}",
     "core.lifecycle.handler_error": "生命周期事件处理器执行错误 {event}: {error}",
@@ -378,6 +378,7 @@ TRANSLATIONS = {
     "core.storage.driver_missing": "存储后端 {backend} 缺少驱动依赖，请执行: pip install ErisPulse[{extra}]",
     "core.storage.pool_init_failed": "初始化 {backend} 连接池失败: {error}",
     "core.storage.pool_retry": "{backend} 连接池创建失败（第 {attempt} 次），将退避重试: {error}",
+    "core.storage.pool_exhausted": "{backend} 连接池创建最终失败（已重试 {retries} 次），{cooldown} 秒后自动重连；期间存储操作将快速失败，框架其余功能不受影响: {error}",
     "core.storage.aclose_failed": "关闭存储后端资源失败: {error}",
     "core.storage.bridge_closed": "存储同步桥接已关闭，无法执行异步操作",
     "core.storage.bridge_reentrant": "禁止在存储桥接线程内调用同步兼容接口，请改用异步方法",

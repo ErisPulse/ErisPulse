@@ -8,11 +8,11 @@ ErisPulse 的模块之间有**三层通信模型**，按"点对点 → 定向 �
 | 层 | API | 语义 | 典型场景 |
 |---|---|---|---|
 | **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | 点对点请求-响应，带契约 / 审计 / 超时 | 调用另一模块的能力（查历史、翻译、退款） |
-| **定向事件** | `await sdk.module.emit_to("Chat", "message_received", {...})` | 投递给指定模块的通知 | 上游状态变化通知下游（"收到新消息了"） |
+| **定向事件** | `await lifecycle.emit("message_received", {...}, to="Chat")` | 仅分发给指定模块注册的生命周期钩子 | 上游状态变化通知下游（"收到新消息了"） |
 | **广播** | `await lifecycle.emit("config.updated", {...})` | 全框架可见的生命周期事件 | 配置热更新、模块上下线 |
 
 {!--< tips >!--}
-选型口诀：**要返回值用 `call`，只通知一个模块用 `emit_to`，通知所有人用 `lifecycle`**。
+选型口诀：**要返回值用 `call`，只通知一个模块的钩子用 `emit(..., to=...)`，通知所有人用 `emit(...)`**。
 {!--< /tips >!--}
 
 ## RPC：module.call
@@ -131,37 +131,51 @@ deny = ["Chat.get_history"]        # 禁止 CallerModule 调 Chat 的 get_histor
 
 配置方式详见 [作用域（scope）](scope.md)的出站维度。
 
-## 定向事件：emit_to
+## 定向事件：lifecycle.emit 的 to 参数
+
+生命周期事件支持定向传播：`to` 指定目标拥有者（owner）后，事件只分发给以该
+owner 身份注册的钩子（模块在 `on_load` 内注册的钩子自动归属本模块），
+其它模块与通配符 `*` 处理器不感知。
 
 ```python
-# 投递方：校验目标启用后，事件进入 module.<名称>.<事件> 命名空间
-await sdk.module.emit_to("Chat", "message_received", {"text": "hi", "from": "u1"})
-
-# 订阅方（Chat 模块内）：按命名空间注册钩子
 from ErisPulse.Core.lifecycle import lifecycle
 
-@lifecycle.on("module.Chat.message_received")
+# 投递方：事件只投给 Chat 模块注册的钩子
+await lifecycle.emit("message_received", {"text": "hi", "from": "u1"}, to="Chat")
+
+# 订阅方（Chat 模块内）：注册同名钩子，owner 在注册时自动记录
+@lifecycle.on("message_received")
 async def on_message_received(data): ...
 
-@lifecycle.on("module.Chat")          # 或接收该模块的全部定向事件
+@lifecycle.on("message")          # 点式父级前缀同样生效（按 owner 过滤）
 async def on_any(data): ...
 ```
 
 语义细节：
 
-- 目标未注册 / 未启用 → `ModuleNotAvailableError`（**不发往不存在的地方**）
-- 目标是懒加载模块 → **先唤醒再投递**（定向事件即激活源，与 `activate_on` 语义对齐）
+- 目标 owner 无已注册钩子 → 事件**静默丢弃**（**不发往不存在的地方**），
+  可用 `lifecycle.has_handlers("message_received")` 提前探测
 - `data` 为 dict 时自动携带 `_trace_id`（不覆盖已有值），与全链路追踪打通
+- 广播与定向共用一套钩子注册：`emit(...)` 不带 `to` 即全框架广播，
+  带 `to` 则同一事件只对目标模块可见
+- `emit_sync` / `submit_event`（兼容 API）同样支持 `to=` 参数
+
+> [!NOTE]
+> 定向事件是轻量通知，**不做目标校验与懒唤醒**；需要目标存在性校验、
+> 契约审计或返回值时，改用 [RPC：module.call](#rpcmodulecall)。
 
 ## 懒加载与调用
 
-`module.call()` 与 `emit_to()` 对懒加载模块都是**透明唤醒**：
+`module.call()` 对懒加载模块是**透明唤醒**：
 
 - 事件驱动懒模块（`activate_on` 声明）→ 走激活锁 `_activate()`，激活后触发器 stub 自动注销
 - 普通懒模块 → 同步初始化或常规加载路径（幂等）
-- 唤醒失败 → `ModuleNotAvailableError`（`call`）/ 激活失败（`emit_to`）
+- 唤醒失败 → `ModuleNotAvailableError`
 
 即：**调用方不需要关心目标模块是否已加载**，也无需为唤醒它而等待某条事件。
+
+定向事件（`lifecycle.emit(..., to=...)`）不做懒唤醒——目标未加载即无钩子，
+事件静默丢弃；需要确保送达时改用 `module.call()`。
 
 ## 冷启动回放
 

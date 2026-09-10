@@ -1,9 +1,8 @@
 """
-模块间通信（module.call / emit_to）单元测试
+模块间通信（module.call）单元测试
 
-覆盖协议化 RPC 的核心语义：目标解析与懒唤醒、provides 契约白名单、
-scope 出站审计（actions.<caller>.call）、owner 归因、超时、
-以及 emit_to 定向事件投递与目标校验。
+覆盖协议化 RPC 的核心语义：目标解析与懒唤醒、services 契约白名单、
+scope 出站审计（actions.<caller>.call）、owner 归因、超时、服务目录。
 """
 
 import asyncio
@@ -370,83 +369,6 @@ class TestScopeAudit:
         scope_module.scope.set_action("Someone", "call", deny="Svc.get_value")
         assert await manager.call("Svc", "get_value") == 2
 
-
-# ==================== emit_to 定向事件 ====================
-
-
-class TestEmitTo:
-    @pytest.mark.asyncio
-    async def test_delivers_to_namespace(self, manager):
-        from ErisPulse.Core.lifecycle import lifecycle
-
-        await _load(manager, "Svc", _SvcModule)
-        got = []
-
-        async def hook(data):
-            got.append(data)
-            return "ok"
-
-        lifecycle.register("module.Svc.custom_event", hook)
-        try:
-            result = await manager.emit_to("Svc", "custom_event", {"k": 1})
-            assert got == [{"k": 1}]
-            assert result == ["ok"] or result == "ok" or result is not None
-        finally:
-            lifecycle.unregister("module.Svc.custom_event", hook)
-
-    @pytest.mark.asyncio
-    async def test_prefix_subscription_receives(self, manager):
-        """父级命名空间订阅（module.Svc）可接收该模块的全部定向事件"""
-        from ErisPulse.Core.lifecycle import lifecycle
-
-        await _load(manager, "Svc", _SvcModule)
-        got = []
-
-        async def hook(data):
-            got.append(data)
-
-        lifecycle.register("module.Svc", hook)
-        try:
-            await manager.emit_to("Svc", "another_event", {"n": 2})
-            assert got == [{"n": 2}]
-        finally:
-            lifecycle.unregister("module.Svc", hook)
-
-    @pytest.mark.asyncio
-    async def test_unregistered_target_rejected(self, manager):
-        with pytest.raises(ModuleNotAvailableError):
-            await manager.emit_to("Ghost", "event")
-
-    @pytest.mark.asyncio
-    async def test_disabled_target_rejected(self, manager):
-        await _load(manager, "Svc", _SvcModule)
-        manager.disable("Svc")
-        with pytest.raises(ModuleNotAvailableError):
-            await manager.emit_to("Svc", "event")
-
-    @pytest.mark.asyncio
-    async def test_lazy_target_wakeup(self, manager):
-        """emit_to 唤醒懒模块后投递（定向事件即激活源）"""
-        from ErisPulse import sdk
-        from ErisPulse.Core.lifecycle import lifecycle
-        from ErisPulse.loaders.module import LazyModule
-
-        manager.register("Svc", _SvcModule)
-        proxy = LazyModule("Svc", _SvcModule, sdk, {"meta": {"is_base_module": True}}, manager)
-        manager.register_lazy("Svc", proxy)
-
-        got = []
-
-        async def hook(data):
-            got.append(data)
-
-        lifecycle.register("module.Svc.wakeup_event", hook)
-        try:
-            await manager.emit_to("Svc", "wakeup_event", {"hello": 1})
-            assert got == [{"hello": 1}]
-            assert "Svc" in manager._loaded_modules
-        finally:
-            lifecycle.unregister("module.Svc.wakeup_event", hook)
 
 
 # ==================== 服务目录 ====================
