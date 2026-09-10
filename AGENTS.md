@@ -53,3 +53,24 @@
 - 20. 修改适配器/模块的基类或配置规范时，必须同步更新 `src/ErisPulse/CLI/commands/create.py` 中的 `_ADAPTER_CORE` 和 `_MODULE_CORE` 模板
 - 21. 修改适配器/模块的公共 API 时，同步更新 `examples/` 下的示例项目
 - 22. `examples/` 示例项目应体现推荐写法（如配置类用嵌套类 `ConfigClass` 声明），作为开发者参考标准
+
+## 配置系统修改同步清单
+
+- 23. 修改配置系统时按改动范围逐项同步：
+  - **框架默认配置项**：唯一真相源是 `runtime/frame_config.py` 的 `DEFAULT_ERISPULSE_CONFIG`（默认值仅内存合并返回、不落盘；`ErisPulse.<path>` → `ERISPULSE_<PATH>` 环境变量覆盖自动生效，无需额外代码）
+  - **`config.full.example`**：生成器唯一源在 `runtime/example_config.py`；静态段 `cfg.*` 文案键在 `CLI/utils/scaffold_text.py`（en 兜底 + zh-CN）；静态段结构变化时递增该文件 `_GEN`，框架启动会自动刷新带标记的用户文件（用户删除首行标记即手动接管）
+  - **声明式配置（ConfigClass）行为**：全部消费逻辑在 `Core/Bases/config_schema.py`，五处消费点语义必须一致（schema / TOML 模板 / 默认值 / dict 填充 / 校验）：下划线前缀字段一律排除、`example` 字段仅进 full.example、嵌套 dataclass 递归；`_schema_meta` 必须声明为 `ClassVar[dict]`
+  - **配置写入**：必须走 tomlkit 注释保留路径（`ConfigManager._flush_config` / `setConfigTemplate`），禁止引入 `toml.dump` 等纯 dict 序列化（会抹掉用户注释与顺序）
+  - **配置事件消费者**（`Core/scope.py`、`Core/Event/overrides.py` 等）：遵循"精确失效"——仅本模块相关配置节实际变化时才重建状态；运行时 `persist=False` 写入走覆盖层记录 + 配置重载后重放（#432 模式）
+  - **文档同步**：`user-guide/configuration.md`（配置节说明）、相关 advanced 文档（如 `storage-backends.md`）
+- 24. 行为参数（重试次数、超时、冷却期、阈值等）**必须定义在 `Core/constants.py`** 并注明使用位置与修改影响，禁止散落在实现文件内部硬编码；实现文件以类属性/局部引用常量导入使用
+- 25. 存储后端行为约定：连接失败**不阻塞、不崩溃框架**——建池重试耗尽后进入冷却期，期间存储操作快速失败（操作层吞异常记日志返回 `False/None`），冷却结束自动重连试探；异常类型 `StorageUnreachableError`（已从 `ErisPulse.Core` 导出）；真机验证脚本 `tests/devs/test_storage_backend_verify.py`（sqlite/mysql/postgres 各 12 项，修改存储引擎后必须三后端跑通）
+- 26. 框架异常：新增异常必须挂在 `Core/Bases/errors.py` 的 `ErisPulseError` 层级下、从 `ErisPulse.Core` 聚合导出，并同步 `docs/zh-CN/advanced/errors.md`（异常总览树与发生位置表）
+
+## 发布流程
+
+- 27. 版本发布（本项目一般不打 rc，dev 浸泡后直接正式版）：
+  - `pyproject.toml` 版本号收口（如 `2.8.0-dev.2` → `2.8.0`）
+  - CHANGELOG 新增 `[x.y.z]` 正式条目 = **全部 dev 条目的净差异总结**（凝练式：版本摘要 + 升级建议 + 注意事项，细节保留在 dev 条目中作为历史）
+  - 合并 `Develop/v2` → `main`（auto-tag 生效）→ 打 tag 触发 `pypi-publish`（stable tag 走正式发布）与 `docker-publish`（production stable 镜像）
+  - 生态组件（ErisPulse-Dashboard、核心适配器）需配套发版并验证兼容

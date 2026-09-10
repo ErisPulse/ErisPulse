@@ -35,6 +35,8 @@ from .Bases import (
     ModuleError,
     ModuleNotAvailableError,
     ServiceNotProvidedError,
+    StorageError,
+    StorageUnreachableError,
     WebSocketError,
 )
 from .Bases import BaseClient, BaseHttpResponse, BaseClientWebSocket
@@ -113,6 +115,8 @@ __all__ = [
     "SQLDialect",  # SQL 方言基类
     "SQLQueryBuilder",  # SQL 查询构建器（方言无关）
     "SQLStorageBase",  # SQL 存储后端共享基类
+    "StorageError",  # 存储异常基类
+    "StorageUnreachableError",  # 存储后端不可达异常
     "StorageManager",  # 存储管理器类（SQLite 后端向后兼容别名）
     "TranscriptManager",  # 会话收件箱管理器类
     "WSMessage",  # WebSocket 消息类

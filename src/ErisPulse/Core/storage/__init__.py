@@ -8,6 +8,7 @@ ErisPulse 存储管理模块
 3. postgres：asyncpg，配置见 ``ErisPulse.storage.postgres``
 
 三种后端 API 完全一致，切换后端无需修改调用代码。
+mysql / postgres 连接失败时快速失败（冷却后自动重连），不影响框架运行。
 
 {!--< tips >!--}
 1. 支持JSON序列化存储复杂数据类型
