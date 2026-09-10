@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "bd2e3072f8106457938c6f395fcb7c59",
-  "file_hash": "bd2e3072f8106457938c6f395fcb7c59",
-  "translated_at": "2026-09-08T14:31:24.454168",
+  "hash": "86852d38e7e2c601fb00cfd5e0600173",
+  "file_hash": "86852d38e7e2c601fb00cfd5e0600173",
+  "translated_at": "2026-09-10T07:01:32.839452",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -34,8 +34,8 @@
       "translation": "## 消息事務：message_tx\n\n事務內的所有出站發送自動記帳；**異常退出時逆序自動撤回**已發送的訊息  \n（適配器未實作 `delete_message` 時跳過，帳本仍正常記錄）。\n\n```python\nasync with event.message_tx():\n    await event.reply(\"正在處理，請稍候\")\n    result = await do_something()          # 這裡拋異常 →\n    await event.reply(f\"完成: {result}\")   # 前面的\"處理中\"自動撤回\n```\n\n事務外發送不記帳（零開銷）；`get_send_receipts()` 可查看目前事務已發送的回執。"
     },
     {
-      "hash": "bc883aff1c3e8ad4134f18bef6a25bde",
-      "translation": "## 鏈路追蹤：trace-id\n\n每個入站事件會自動獲得追蹤 ID（複用 `event[\"id\"]`，若缺失則生成），貫穿：\n\n- handler 上下文（`get_current_trace_id()` 讀取）\n- 出站發送（`[Send]` 日誌行附加 `[trace:...]`，`message.sending/sent` 鈎子的 `trace_id` 欄位）\n- 生命週期鈎子數據（dict 自動補 `_trace_id`）\n- 定向事件（`emit_to`）與訊息事務回執\n\n當一條訊息被多個模組接力處理時，全鏈路可使用同一 ID 串聯（日誌 / 慢查詢 / 審計）。"
+      "hash": "a149314e314cf92524cf4e6b8861163d",
+      "translation": "## 鏈路追蹤：trace-id\n\n每個入站事件自動獲得追蹤 ID（複用 `event[\"id\"]`，若缺失則生成），貫穿：\n\n- handler 上下文（使用 `get_current_trace_id()` 讀取）\n- 出站發送（`[Send]` 日誌行附加 `[trace:...]`，`message.sending/sent` 鈎子的 `trace_id` 欄位）\n- 生命週期鈎子資料（dict 自動補 `_trace_id`）\n- 定向事件（`lifecycle.emit(..., to=...)`）與訊息事務回執\n\n當一條訊息被多個模組接力處理時，全鏈路可使用同一 ID 串聯（日誌 / 慢查詢 / 審計）。"
     },
     {
       "hash": "e1c59e3eda70804926b3fcdbae217169",

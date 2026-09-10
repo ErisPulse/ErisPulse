@@ -1,18 +1,18 @@
 # Inter-Module Communication
 
-> [!NOTE]
+> [!NOTE]  
 > This chapter requires ErisPulse **2.8.0+**.
 
-ErisPulse has a **three-layer communication model** between modules, ordered as "point-to-point → directed → broadcast":
+ErisPulse's modules have a **three-layer communication model**, ordered as "point-to-point → directed → broadcast":
 
-| Layer | API | Semantics | Typical Scenarios |
+| Layer | API | Semantics | Typical Scenario |
 |---|---|---|---|
-| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | Point-to-point request-response, with contract / audit / timeout | Invoking another module's capability (e.g., check history, translate, refund) |
-| **Directed Events** | `await sdk.module.emit_to("Chat", "message_received", {...})` | Notification sent to a specific module | Upstream state change notification to downstream (e.g., "new message received") |
-| **Broadcast** | `await lifecycle.emit("config.updated", {...})` | Framework-wide lifecycle events | Hot configuration updates, module up/down events |
+| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | Point-to-point request-response with contract / audit / timeout | Invoking capabilities of another module (e.g., fetching history, translation, refund) |
+| **Directed Events** | `await lifecycle.emit("message_received", {...}, to="Chat")` | Distributed only to lifecycle hooks registered by the specified module | Notifying downstream modules of upstream state changes ("a new message was received") |
+| **Broadcast** | `await lifecycle.emit("config.updated", {...})` | Framework-wide visible lifecycle events | Hot configuration updates, module up/down events |
 
 {!--< tips >!--}
-Selection mnemonic: **Use `call` when you need a return value, `emit_to` to notify a single module, and `lifecycle` to notify everyone.** 
+Selection rule: **Use `call` when you need a return value, use `emit(..., to=...)` when you only want to notify a specific module's hooks, and use `emit(...)` to notify everyone.**  
 {!--< /tips >!--}
 
 ## RPC: module.call
@@ -21,15 +21,15 @@ Selection mnemonic: **Use `call` when you need a return value, `emit_to` to noti
 result = await sdk.module.call("Chat", "get_history", session_id, n=20)
 ```
 
-Differences between `module.call()` and direct attribute access `sdk.module.Chat.get_history(...)` (which remains unchanged):
+Difference from direct attribute access `sdk.module.Chat.get_history(...)` (unchanged):
 
 | | `module.call()` | Direct attribute access |
 |---|---|---|
-| Target not registered / disabled | Raises `ModuleNotAvailableError` | Raises `AttributeError` |
-| Lazy-loaded module | **Automatically wakes up** (event-driven modules go through activation lock) | Asynchronous module initialization raises RuntimeError |
-| `current_owner` | Attributed to the **target module** (its internal `wait_reply` / send / logging correctly attributed) | Remains the caller |
-| Timeout | Default 30 seconds (`timeout=` overrides, None means no timeout) | None |
-| Scope audit | Caller passes through outbound gate `actions.<caller>.call` | None |
+| Target not registered / disabled | Throws `ModuleNotAvailableError` | Throws `AttributeError` |
+| Lazy-loaded modules | **Automatically wakes up** (event-driven modules go through activation lock) | Asynchronous initialization throws RuntimeError |
+| `current_owner` | Attributed to the **target module** (its internal wait_reply / send / logs are correctly attributed) | Remains the caller |
+| Timeout | Default 30 seconds (`timeout=` overrides, None means unlimited) | None |
+| Scope audit | Caller goes through the outbound gate `actions.<caller>.call` | None |
 | Contract validation | `meta.services` whitelist | None |
 
 ### Exception Hierarchy
@@ -42,11 +42,11 @@ ModuleError                      # Base class for module system exceptions
     └── ModuleCallTimeoutError   # Coroutine method timeout
 ```
 
-All exceptions are part of the `ErisPulseError` hierarchy and can be caught with `from ErisPulse.Core import ModuleCallError`.
+All exceptions are under the `ErisPulseError` hierarchy and can be caught using `from ErisPulse.Core import ModuleCallError`.
 
 ## Service Contract: meta.services
 
-The service provider declares the whitelisted services offered externally in `get_meta()` (symmetrical to the `commands` field):
+Service providers declare a whitelist of publicly available services in `get_meta()` (symmetrical to the `commands` field):
 
 ```python
 from ErisPulse.Core.Bases import BaseModule, ModuleMeta
@@ -55,42 +55,42 @@ class ChatModule(BaseModule):
     @staticmethod
     def get_meta() -> ModuleMeta:
         return ModuleMeta(
-            name="聊天",
+            name="Chat",
             services=[
                 "get_history",                                       # Simple form
-                {"name": "translate", "description": "把文本翻译成指定语言"},  # With description
+                {"name": "translate", "description": "Translate text into a specified language"},  # With description
             ],
         )
 
     async def get_history(self, session_id, n=20): ...
     async def translate(self, text, target_lang): ...
-    def _internal_helper(self): ...   # Underscore-prefixed methods are always forbidden from external calls
+    def _internal_helper(self): ...   # Underscore-prefixed methods are always forbidden for external calls
 ```
 
-**Default behavior is invisible to developers**:
+**Default behavior is unnoticeable**:
 
-- If `services` is not declared → all **public** methods are naturally callable via `module.call()` (consistent with raw attribute access),  
-  requiring no declaration at all
-- After declaration → restricted to the whitelist, out-of-bounds calls throw `ServiceNotProvidedError`—used to mark  
-  "these methods are the ones externally committed"
-- The main control authority lies with the user side: `scope.actions` configuration determines "who can call whom" (see auditing below),  
-  the module author's `services` is only a service surface declaration; the two layers are independent and not interchangeable
+- If `services` is not declared → All **public** methods are naturally callable via `module.call()` (consistent with direct attribute access),  
+  no declaration is required
+- After declaration → Restrict to the whitelist, calls beyond the list throw `ServiceNotProvidedError`—used to mark  
+  "these methods are the ones promised externally"
+- The main control authority lies with the user side: `scope.actions` configuration determines "who can call whom" (see audit below),  
+  the module author's `services` is only a service declaration, and the two layers are not interchangeable
 
-**Service Descriptions**: Provide human-readable / AI-readable descriptions for each service—omit if unnecessary,  
-descriptions automatically use the **first line of the method's docstring** (the framework already requires docstring style):
+**Service Descriptions**: Provide human-readable / AI-readable descriptions for each service—no need to write anything if not required,  
+the description is automatically taken from the **first line of the method's docstring** (the framework already requires docstring style):
 
 ```python
 async def translate(self, text, target_lang):
-    """把文本翻译成指定语言"""    # ← This line automatically becomes the service description
+    """Translate text into a specified language"""    # ← This line automatically becomes the service description
     ...
 ```
 
-For fine-grained control (overriding docstring / multi-language support), use dict form to declare `description` (supports i18n dictionary):
+For fine-grained control (overriding docstring / multilingual), use dict form to declare `description` (supports i18n dictionary):
 
 ```python
 services=[
-    {"name": "translate", "description": "把文本翻译成指定语言"},
-    {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "摘要对话"}},
+    {"name": "translate", "description": "Translate text into a specified language"},
+    {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "Summarize conversation"}},
 ]
 ```
 
@@ -99,72 +99,86 @@ services=[
 ```python
 sdk.module.services()
 # {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
-#            'description': 'Translate text into the specified language'}]}
+#            'description': 'Translate text into a specified language'}]}
 
-sdk.module.services("Chat")   # Query only a specific module
+sdk.module.services("Chat")   # Only query a specific module
 ```
 
-- Only modules that explicitly declare `meta.services` are listed (modules without declaration do not appear in the directory)
-- Each service includes a method signature string (extracted using `inspect.signature`) and a description text
-- When entering the topology: each module entry in `sdk.module.get_topology()` includes a `services` field
+- Only lists modules that explicitly declare `meta.services` (modules not declared do not appear in the directory)
+- Each service includes method signature string (extracted via `inspect.signature`) and description text
+- Also included in topology: `sdk.module.get_topology()` entries for each module include a `services` field
 
 {!--< tips >!--}
-**MCP Roadmap**: The service directory (name + signature + description) is essentially the shape of an MCP tool — each service naturally forms a ``{"name", "description", "parameters"}`` structure.
-In the future, the framework can directly expose ``services()`` as an endpoint on the MCP server, allowing AI to discover and invoke module capabilities;
-``scope.actions.call`` auditing naturally becomes a security gate for AI calls.
+**MCP Roadmap**: The service directory (name + signature + description) is the shape of an MCP tool—  
+each service naturally becomes ``{"name", "description", "parameters"}``.  
+In the future, the framework can expose ``services()`` directly as an MCP server endpoint, allowing AI to discover and invoke module capabilities;  
+``scope.actions.call`` audit naturally becomes the security gate for AI calls.
 {!--< /tips >!--}
 
-## Outbound Auditing: Who Can Call Whom
+## Outbound Audit: Who Can Call Whom
 
-Every `module.call()` passes through the outbound gate as the **caller module**:
+Each `module.call()` passes through the scope outbound gate as the **caller module**'s identity:
 
 ```toml
 [ErisPulse.scope.actions.CallerModule.call]
-deny = ["Chat.get_history"]        # Deny CallerModule from calling Chat.get_history
-# allow = ["Chat.get_*"]           # Or whitelist: only allow calling Chat methods starting with "get_"
+deny = ["Chat.get_history"]        # Prohibit CallerModule from calling Chat's get_history
+# allow = ["Chat.get_*"]           # Or whitelist: only allow calling Chat's get-* services
 ```
 
-- The `name` format is `<target_module>.<method_name>`, supporting exact match, glob, or `re:` regular expressions
-- Calls from the framework layer (without owner context, such as startup scripts) are not subject to auditing constraints
+- `name` format is `<target module>.<method name>`, supports exact / glob / `re:` regex
+- Framework-level calls (without owner context, e.g., startup scripts) are not subject to audit constraints
 - Denied calls throw `ModuleCallError` (TRACE log `core.module.call_denied`)
 
-For configuration details, see the outbound dimension in [Scope](scope.md).
+See [Scope (scope)](scope.md) for configuration details on the outbound dimension.
 
-## Directed Event: emit_to
+## Directed Events: lifecycle.emit's to parameter
+
+Lifecycle events support directed propagation: `to` specifies the target owner (owner), and the event is only distributed to hooks registered by that owner (hooks automatically registered by the module in `on_load` are assigned to the module itself),  
+other modules and wildcard `*` handlers are not notified.
 
 ```python
-# Emitter side: After validating that the target is enabled, the event enters the module.<name>.<event> namespace
-await sdk.module.emit_to("Chat", "message_received", {"text": "hi", "from": "u1"})
-
-# Subscriber side (within the Chat module): Register hooks by namespace
 from ErisPulse.Core.lifecycle import lifecycle
 
-@lifecycle.on("module.Chat.message_received")
+# Emitter: Event is only sent to hooks registered by the Chat module
+await lifecycle.emit("message_received", {"text": "hi", "from": "u1"}, to="Chat")
+
+# Subscriber (inside Chat module): Register same-name hook, owner is automatically recorded at registration
+@lifecycle.on("message_received")
 async def on_message_received(data): ...
 
-@lifecycle.on("module.Chat")          # Or receive all directed events from this module
+@lifecycle.on("message")          # Dot-prefixed parent prefix also works (filtered by owner)
 async def on_any(data): ...
 ```
 
 Semantic details:
 
-- If the target is not registered / not enabled → `ModuleNotAvailableError` (**do not send to non-existent locations**)
-- If the target is a lazy-loaded module → **wake up first, then deliver** (directed events serve as activation sources, aligning with the semantics of `activate_on`)
-- When `data` is a dict, it automatically carries `_trace_id` (without overwriting existing values), integrating with full-chain tracing
+- If the target owner has no registered hooks → The event is **silently discarded** (events are not sent to non-existent places),  
+  use `lifecycle.has_handlers("message_received")` to probe in advance
+- When `data` is a dict, `_trace_id` is automatically added (without overwriting existing values), connecting to full-chain tracing
+- Broadcast and directed events share the same hook registration: `emit(...)` without `to` broadcasts to the entire framework,  
+  with `to` the same event is only visible to the target module
+- `emit_sync` / `submit_event` (compatible API) also support the `to=` parameter
 
-## Lazy Loading and Invocation
+> [!NOTE]  
+> Directed events are lightweight notifications, **do not perform target validation or lazy wake-up**;  
+> if target existence validation, contract audit, or return values are needed, switch to [RPC: module.call](#rpcmodulecall).
 
-`module.call()` and `emit_to()` transparently awaken lazy-loaded modules:
+## Lazy Loading and Calls
 
-- Event-driven lazy modules (`activate_on` declaration) → Use activation lock `_activate()`, and the trigger stub is automatically unregistered after activation.
-- Regular lazy modules → Synchronize initialization or follow the regular loading path (idempotent).
-- Wakeup failure → `ModuleNotAvailableError` (for `call`) / Activation failure (for `emit_to`).
+`module.call()` transparently wakes up lazy-loaded modules:
 
-That is: **the caller does not need to care whether the target module is loaded, nor wait for any event to awaken it.**
+- Event-driven lazy modules (`activate_on` declared) → Go through the activation lock `_activate()`, stubs are automatically unregistered after activation
+- Ordinary lazy modules → Synchronous initialization or regular loading path (idempotent)
+- Activation failure → `ModuleNotAvailableError`
+
+That is: **the caller does not need to care if the target module is loaded**, nor does it need to wait for the target module to be awakened.
+
+Directed events (`lifecycle.emit(..., to=...)`) do not perform lazy wake-up—no hooks are present if the target is not loaded,  
+the event is silently discarded; use `module.call()` if delivery must be ensured.
 
 ## Cold Start Replay
 
-When a module is newly installed or restarted, it may miss some chat messages. The `get_load_strategy(replay=...)` method allows the framework to replay the most recent messages from the session inbox to the module itself after it becomes ready:
+A newly installed / restarted module misses some chat history—`get_load_strategy(replay=...)` allows the framework to replay the module's inbox messages **after the module is ready**:
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -175,38 +189,41 @@ class MyAIModule(BaseModule):
         return ModuleLoadStrategy(
             lazy_load=False,
             priority=100,
-            replay="5m",        # Replay the most recent 5 minutes ("1h" or "300" seconds are also valid)
+            replay="5m",        # Replay the last 5 minutes (can also use "1h" / "300" seconds)
         )
 
     async def on_load(self, event):
         @message.on_message()
         async def handle(e):
             if e.get("replayed"):
-                # Synthetic event: only restore context, do not trigger side effects such as sending
+                # Synthetic event: only supplement context, do not trigger side effects like sending
                 ...
 ```
 
 Semantic details:
 
-- The data source is the [session inbox](interaction.md#session-inbox-eventhistory) (`sdk.transcript.recent()`), and the replay is executed in the background after the module finishes loading, without blocking the startup process.
-- Synthetic events are marked with `replayed: True` and include complete fields such as `platform`, `detail_type`, `user_id`, and `alt_message`, and are **only distributed to this module's handlers**—other modules are unaffected by the replay.
-- If the inbox is not enabled, there are no records, or the duration declaration is invalid (`replay_invalid` warning), the replay is silently skipped.
+- The data source is the [session inbox](interaction.md#session-inbox-eventhistory) (`sdk.transcript.recent()`),  
+  executed in the background after module loading, not blocking startup
+- Synthetic events include the `replayed: True` flag, complete `platform / detail_type / user_id / alt_message`,  
+  **only distributed to the module's own handlers**—other modules are unaffected by replay
+- If the inbox is not enabled / no records exist / the replay duration is invalid (`replay_invalid` warning), it is silently skipped
 
 ## Event Idempotency Deduplication
 
-After the platform's WebSocket reconnects, it often resends the same event (with the same `event["id"]`) — the distribution entry uses LRU deduplication by ID (capacity 4096), ensuring each event with the same ID is only distributed once.
+After platform websocket reconnection, the same event (same `event["id"]`) is often resent—distribution entry performs LRU deduplication (capacity 4096),  
+so the same id event is only distributed once.
 
 ```toml
 [ErisPulse.framework]
-event_dedupe = true   # Enabled by default; can be disabled in test environments where fixed ID synthetic events are used
+event_dedupe = true   # Default is enabled; disable for test environments with fixed id synthetic events
 ```
 
-The deduplication cache is automatically reset when the adapter registers (the starting point of a new connection lifecycle).
+The deduplication cache is automatically reset when adapters register (start of new connection lifecycle).
 
 ## Related Documentation
 
-- [Interactive Session System](interaction.md) - wait_reply / timer / multi-path waiting / session mutual exclusion
-- [Scope (scope)](scope.md) - Complete configuration for outbound dimension auditing
-- [Ownership (owner) System](ownership.md) - How the owner context propagates across module calls
-- [Lazy Loading System](lazy-loading.md) - Lazy loading and event-driven lazy activation (activate_on)
+- [Interaction Session System](interaction.md) - wait_reply / timers / multiplexed waiting / session mutual exclusion
+- [Scope (scope)](scope.md) - Complete configuration for outbound dimension audit
+- [Ownership (owner) System](ownership.md) - How owner context permeates across module calls
+- [Lazy Loading System](lazy-loading.md) - Lazy loading and event-driven lazy activation (`activate_on`)
 - [Lifecycle Management](lifecycle.md) - Mechanism of the broadcast layer event bus
