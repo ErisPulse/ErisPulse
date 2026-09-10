@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from ErisPulse import SDK
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, I18nKey, ModuleMeta
 from ErisPulse.Core.Event import Event, command, message, notice
+from ErisPulse.runtime import off_cleanup, on_cleanup
 
 
 class Main(BaseModule):
@@ -89,6 +90,8 @@ class Main(BaseModule):
         # 存储后端（sqlite/mysql/postgres 由配置决定）；异步 handler 内推荐 await self.storage.aget/aset(...)
         self.storage = self.sdk.storage
         self.adapter = self.sdk.adapter
+        # 工具模块模式示例：托管的外部回调（记名到调用方模块）
+        self._subscribers: dict[str, list] = {}
 
         self.logger.info("MyModule 初始化完成")
 
@@ -108,7 +111,7 @@ class Main(BaseModule):
             author="ErisDev",
             group="示例",
             tags=["示例", "demo"],
-            services=["get_welcome_message"],
+            services=["get_welcome_message", "subscribe"],
         )
 
     @staticmethod
@@ -137,6 +140,28 @@ class Main(BaseModule):
         """
         msg = self.cfg.welcome_message
         return f"{msg}（{name}）" if name else msg
+
+    async def subscribe(self, callback) -> str:
+        """
+        对外服务（工具模块模式示例）：托管外部回调并接入归属权清理
+
+        其他模块在自己的 on_load 中调用 `sdk.MyModule.subscribe(cb)`，或经
+        `await sdk.module.call("MyModule", "subscribe", cb)` 调用均可——
+        on_cleanup 自动识别调用方模块名。
+        调用方模块被卸载 / 禁用时框架自动回调 `_drop_subscriber`，
+        本模块抛弃其句柄，保证对方实例可被正常回收（框架联动清理）。
+
+        :param callback: 外部回调（同步/异步均可）
+        :return: 解析并记名的归属者（调用方模块名）
+        """
+        owner = on_cleanup(self._drop_subscriber)
+        self._subscribers.setdefault(owner, []).append(callback)
+        self.logger.info(f"已托管 {owner} 的回调")
+        return owner
+
+    def _drop_subscriber(self, owner: str):
+        """归属清理钩子：对方模块被卸载/禁用时由框架自动调用，抛弃其句柄"""
+        self._subscribers.pop(owner, None)
 
     async def on_load(self, event: dict) -> bool:
         """
@@ -170,6 +195,8 @@ class Main(BaseModule):
         :param event: 事件内容
         :return: 处理结果
         """
+        # 注销本模块登记的归属清理钩子，避免钩子表持有 self
+        off_cleanup(self._drop_subscriber)
         self.logger.info(f"模块已卸载: {event}")
         return True
 

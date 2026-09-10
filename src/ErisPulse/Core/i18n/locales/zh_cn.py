@@ -197,6 +197,7 @@ TRANSLATIONS = {
     "core.adapter.tasks_cancelled": "适配器 {platform} 关闭时兜底取消了 {count} 个未结束后台任务",
     "core.adapter.unloaded": "适配器 {platform} 已卸载并注销",
     "core.adapter.tasks_cancel_failed": "适配器 {platform} 后台任务取消失败: {error}",
+    "core.adapter.cleanup_hooks_failed": "适配器 {platform} 归属清理钩子触发失败: {error}",
     "core.adapter.dependencies_missing": "适配器 {platform} 硬依赖缺失，跳过启动: {deps}",
     "core.adapter.state_skipped_dependency": "适配器 {platform} 因依赖缺失未启动: {deps}",
     "core.adapter.dependency_hook_register_failed": "注册模块依赖通知钩子失败: {error}",
@@ -332,6 +333,10 @@ TRANSLATIONS = {
     "core.router.root_page_text": "你似乎访问了根路径，这里没有内容哦~",
     "core.router.link_docs": "文档",
     "core.router.link_community": "社区",
+    # ==================== 归属清理钩子 ====================
+    "core.cleanup.executed": "已触发 {owner} 的 {count} 个归属清理钩子",
+    "core.cleanup.failed": "归属清理钩子 {callback}（owner={owner}）执行失败: {error}",
+    "core.cleanup.timeout": "归属清理钩子 {callback}（owner={owner}）执行超时（{timeout}s）",
     # ==================== 生命周期管理 ====================
     "core.lifecycle.event_name_required": "事件名称必须是非空字符串",
     "core.lifecycle.to_required": "定向投递目标 to 必须是非空字符串",

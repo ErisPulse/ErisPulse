@@ -73,6 +73,34 @@
 
 ---
 
+## [2.8.0-dev.3] - 2026/09/10
+> 开发版本
+
+**版本摘要**
+归属权清理链向外部开放：新增**外部归属清理钩子**（`runtime/owner_cleanup.py`），工具模块（定时任务、注册表、连接池等）托管其它模块的资源时可通过 `on_cleanup(cb)` 挂入框架清理链，对方模块被卸载 / 禁用（或适配器关闭）时自动回调，工具模块据此抛弃内部持有的句柄，使已卸载模块实例可被正常 GC 回收。配套新增**调用来源感知**：`module.call()` 执行期间注入 `current_caller` 调用方上下文（owner 仍归因目标模块），被调方经 `get_current_caller()` 识别调用来源，`on_cleanup` 在 RPC 调用链内自动记名到真实调用方。新增生态模块文档 `ecosystem/cron.md`（ErisPulse-Cron 定时任务调度）。
+
+**升级建议**
+- 是否建议升级：建议升级
+- 纯新增能力，现有代码零改动；工具模块类作者建议接入 `on_cleanup` 消除托管句柄泄漏
+
+**注意事项**
+- `on_cleanup` 必须在对方模块的加载上下文或 `module.call` 调用链内登记（或显式 `owner=`），无来源时抛 `ValueError`
+- 工具模块应在自身 `on_unload` 中调用 `off_cleanup(cb)` 注销自己登记的钩子，避免钩子表持有自身实例
+
+### 新增
+
+- @wsu2059q
+  - **外部归属清理钩子** `runtime/owner_cleanup.py`（`from ErisPulse.runtime import on_cleanup, off_cleanup`）：
+    - 允许外部工具模块参与框架归属权清理链：工具模块替其它模块托管资源时（定时任务回调 / 注册表条目 / 连接池等），在对方注册资源的调用路径内 `on_cleanup(cb)` 登记，对方模块被卸载 / 禁用（或适配器关闭）时框架在清理链内回调 `cb(owner)`——工具模块据此抛弃内部持有的句柄，使已卸载模块实例可被正常 GC 回收（`purge` 泄漏诊断不再因残留句柄误报）
+    - owner 解析优先级：显式 `owner=` 参数 > `current_caller`（经 `module.call` 被调用期间）> `current_owner`（对方 `on_load` 等直接调用场景）；回调签名 `cb(owner: str)`，同步 / 异步均可（异步带超时保护，常量 `CLEANUP_CALLBACK_TIMEOUT_SECS` 默认 10s）；单回调异常隔离仅记日志不中断清理链；`off_cleanup(cb)` 供工具模块自身 `on_unload` 注销自己的钩子；同 `(owner, callback)` 幂等去重
+  - **调用来源感知** `runtime/context.py` / `Core/module.py`：
+    - `module.call()` 执行目标方法期间注入 `current_caller` 上下文（值为调用方模块名 / 平台名，scope 出站审计同源），`get_current_caller()` 读取（`sdk.context.get_current_caller()` 等效）——被调方工具模块可识别"谁在调用我"；`current_owner` 语义不变（执行谁的代码归因谁），调用结束自动复位
+    - 生态：新增生态模块文档 `ecosystem/cron.md`（ErisPulse-Cron 定时任务调度，收录进文档索引与 AI 提示词物料）
+  - 文档：`advanced/ownership.md` 新增"工具模块指南：托管其它模块的句柄"（归属资源全景表与清理序列同步）；`developer-guide/modules/best-practices.md` 新增"工具模块的框架联动清理"
+  - i18n 五语言同步：新增 `core.cleanup.*`（归属清理钩子）/ `core.adapter.cleanup_hooks_failed` 键
+
+---
+
 ## [2.8.0-dev.2] - 2026/09/10
 > 开发版本
 

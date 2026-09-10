@@ -12,6 +12,7 @@
 1. 归属在**注册瞬间**按 `current_owner` 自动记录，模块代码零改动
 2. 卸载/禁用共用同一条清理链（`_cleanup_module_registrations`），每步失败仅告警不中断
 3. 用户配置语义的资源（持久化覆写 / scope 规则 / 命令 ACL）**不**随模块卸载清理
+4. 工具模块托管的外部句柄可用 `on_cleanup(cb)` 挂入清理链，对方模块卸载时自动回调（见[工具模块指南](#工具模块指南托管其它模块的句柄)）
 {!--< /tips >!--}
 
 ## owner 上下文机制
@@ -54,6 +55,7 @@ with owner_scope("MyModule"):
 | Dashboard 首页入口 | `router.register_home_entry()` | `unregister_home_entries_by_owner()` |
 | 自定义会话类型 | `register_custom_type()` | `unregister_custom_types_by_owner()` |
 | 后台任务 | `self.spawn()` | `cancel_owner_tasks()` |
+| 外部归属清理钩子（工具模块托管） | `runtime.on_cleanup(cb)` | `run_owner_cleanups()`（卸载/禁用/适配器关闭链内触发） |
 | 生命周期钩子 | `lifecycle.register()` | `lifecycle.unregister_by_owner()` |
 | 主人身源 provider | `master.provider` | `master.unregister_by_owner()` |
 | i18n 翻译键 | `I18nClass` 声明（domain=模块名） | `i18n.unregister_domain()` |
@@ -82,7 +84,8 @@ with owner_scope("MyModule"):
 flowchart TD
     A["unload / disable"] --> B["on_unload()（超时保护）"]
     B --> C["兜底取消后台任务（cancel_owner_tasks）"]
-    C --> D["_cleanup_module_registrations"]
+    C --> C1["外部归属清理钩子<br/>（工具模块 on_cleanup 登记，run_owner_cleanups 触发）"]
+    C1 --> D["_cleanup_module_registrations"]
     D --> D1["i18n 翻译域"]
     D1 --> D2["路由：命名空间 + owner 兜底<br/>（含中间件 / 首页入口）"]
     D2 --> D3["适配器事件处理器 / 中间件"]
@@ -148,3 +151,52 @@ class MyModule(BaseModule):
   卸载时不会被取消（详见[生命周期管理](lifecycle.md#后台任务归属与自动取消)）。
 - 清理链"失败仅告警"：单步清理异常不会阻断其余资源回收，日志 DEBUG/WARNING
   级别可见，排障时可开启 TRACE。
+
+## 工具模块指南：托管其它模块的句柄
+
+**场景**：定时任务、注册表、连接池这类"工具模块"会替其它模块保管东西——
+对方在 `on_load` 里调用 `sdk.Cron.on_trigger(handler)`，你的容器里就存下了
+一个指向对方实例的回调。框架会自动清理对方注册的一切框架资源，但清理不了
+你**私有容器里的引用**：对方卸载后你的容器还拉着它的实例，它就无法被
+GC 回收（内存泄漏，`purge` 泄漏诊断报"不可回收"）。
+
+**解法**：在登记对方东西的同一个函数里调用 `on_cleanup()`，
+框架会在对方卸载 / 禁用时自动回调你的清理函数：
+
+```python
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.runtime import off_cleanup, on_cleanup
+
+class CronModule(BaseModule):
+    def __init__(self):
+        self._entries = {}  # {模块名: 该模块托管的回调列表}
+
+    def on_trigger(self, handler):
+        # 自动识别调用方模块名（on_load 直接调用 / module.call 均正确），
+        # 返回值是解析出的 owner，可直接用作记名键
+        owner = on_cleanup(self._drop)
+        self._entries.setdefault(owner, []).append(handler)
+
+    def _drop(self, owner: str):
+        """对方模块被卸载/禁用时由框架自动调用：抛弃它的句柄即可"""
+        self._entries.pop(owner, None)
+
+    async def on_unload(self, event):
+        off_cleanup(self._drop)  # ③ 自己卸载前注销钩子，避免钩子表持有 self
+```
+
+框架保证的行为：
+
+| 关注点 | 行为 |
+|--------|------|
+| 触发时机 | 对方模块 unload / disable，或适配器关闭——均在框架清理链内触发，早于 purge 泄漏诊断 |
+| 调用方识别 | 直接调用取 `current_owner`；经 `module.call()` 被调用取调用方（`current_caller`）；也可 `on_cleanup(cb, owner="模块名")` 显式指定 |
+| 回调签名 | `cb(owner: str)`，同步 / 异步均可；异步带超时保护（`CLEANUP_CALLBACK_TIMEOUT_SECS`，默认 10 秒） |
+| 容错 | 单个回调异常 / 超时只记日志，不影响其余钩子与清理链 |
+| 重复登记 | 同一 `(owner, callback)` 幂等去重 |
+
+**什么时候不需要**：如果对方注册的是框架资源（命令、事件处理器、路由、
+后台任务……），框架已全自动清理（见上文[归属资源全景](#归属资源全景)）。
+只有你私有容器里持有的对方句柄才需要 `on_cleanup`。
+模块开发视角的速查版见
+[最佳实践 · 工具模块](../developer-guide/modules/best-practices.md#工具模块托管别人东西时要接住卸载通知)。

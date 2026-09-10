@@ -22,6 +22,7 @@ ErisPulse 框架本身只提供核心能力（事件系统、模块系统、配�
 |------|------|------|------|
 | [ErisPulse-App](https://github.com/ErisPulse/ErisPulse-App) | 官方客户端 | 官方全平台客户端（Android / Windows / Linux / macOS）：原生界面创建 / 运行 / 管理多个实例，内置模块商店与事件构建器；**手机直接运行**，桌面托盘常驻 | [ErisPulse-App 安装与使用](app.md) |
 | [ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) | 模块 | Web 管理面板：模块启停、配置编辑、日志查看、事件监控；支持其他模块向侧边栏注册自定义视窗 | [Dashboard 使用与视窗注册](dashboard.md) |
+| [ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) | 模块 | 定时任务调度：一次性 / 间隔 / Cron 表达式，回调传参，SQLite 持久化（重启不丢任务），支持 Dashboard 视窗管理 | [Cron 定时任务](cron.md) |
 | [ErisPulse-Takumi](https://github.com/ccd2s/ErispulseTakumi)（作者 [@ccd2s](https://github.com/ccd2s)） | 模块 | 图片渲染：HTML / 节点树 / Jinja / SVG / 动画，基于 [takumi-py](https://github.com/BalconyJH/takumi-py)；内置中英文字体，开箱即用 | [Takumi 图片渲染](takumi.md) |
 
 ---
