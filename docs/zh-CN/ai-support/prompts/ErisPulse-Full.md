@@ -5721,6 +5721,42 @@ async def on_load(self, event):
     # 不需要手动注销，框架会自动处理
 ```
 
+## 工具模块：托管别人东西时要接住"卸载通知"
+
+**什么时候需要**：你的模块替其他模块保管东西（定时回调、订阅者、连接、缓存条目……）。这些引用在对方模块卸载后如果一直不丢弃，对方实例就永远无法被回收——这是工具模块最常见的内存泄漏来源。
+
+```python
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.runtime import off_cleanup, on_cleanup
+
+class MyToolModule(BaseModule):
+    def __init__(self):
+        self._entries = {}  # {模块名: 托管的东西}
+
+    def register(self, entry):
+        owner = on_cleanup(self._drop)   # ① 登记时挂入清理链，自动识别调用方
+        self._entries.setdefault(owner, []).append(entry)
+
+    def _drop(self, owner: str):
+        self._entries.pop(owner, None)   # ② 对方卸载时框架自动调用：丢弃它的东西
+
+    async def on_unload(self, event):
+        off_cleanup(self._drop)          # ③ 自己卸载前注销钩子
+```
+
+就这么多，框架保证：
+
+- 对方模块被**卸载 / 禁用**（或适配器关闭）时，`_drop("对方模块名")` 一定会被调用
+- **调用方识别全自动**：对方在 `on_load` 里直接调 `sdk.MyToolModule.register(...)`，或经 `sdk.module.call("MyToolModule", "register", ...)` 调用，都能正确识别是谁
+- 不用操心时机——钩子在框架清理链内触发，早于泄漏诊断，不会误报
+
+不接入的后果：对方 `purge` 彻底卸载时实例无法回收（泄漏诊断报"不可回收"）；若对方自己也不在 `on_unload` 里向你注销，泄漏就是永久性的。
+
+**普通模块（不托管别人东西）不需要关心这个**——框架资源（命令 / 处理器 / 路由 / 后台任务……）的卸载清理是全自动的。
+
+> 触发时机、调用方识别规则、超时与容错等细节见
+> [归属权系统 · 工具模块指南](../../advanced/ownership.md#工具模块指南托管其它模块的句柄)。
+
 ## 错误处理
 
 ### 1. 分类异常处理
@@ -18014,6 +18050,7 @@ topology = sdk.get_topology()
 1. 归属在**注册瞬间**按 `current_owner` 自动记录，模块代码零改动
 2. 卸载/禁用共用同一条清理链（`_cleanup_module_registrations`），每步失败仅告警不中断
 3. 用户配置语义的资源（持久化覆写 / scope 规则 / 命令 ACL）**不**随模块卸载清理
+4. 工具模块托管的外部句柄可用 `on_cleanup(cb)` 挂入清理链，对方模块卸载时自动回调（见[工具模块指南](#工具模块指南托管其它模块的句柄)）
 {!--< /tips >!--}
 
 ## owner 上下文机制
@@ -18056,6 +18093,7 @@ with owner_scope("MyModule"):
 | Dashboard 首页入口 | `router.register_home_entry()` | `unregister_home_entries_by_owner()` |
 | 自定义会话类型 | `register_custom_type()` | `unregister_custom_types_by_owner()` |
 | 后台任务 | `self.spawn()` | `cancel_owner_tasks()` |
+| 外部归属清理钩子（工具模块托管） | `runtime.on_cleanup(cb)` | `run_owner_cleanups()`（卸载/禁用/适配器关闭链内触发） |
 | 生命周期钩子 | `lifecycle.register()` | `lifecycle.unregister_by_owner()` |
 | 主人身源 provider | `master.provider` | `master.unregister_by_owner()` |
 | i18n 翻译键 | `I18nClass` 声明（domain=模块名） | `i18n.unregister_domain()` |
@@ -18084,7 +18122,8 @@ with owner_scope("MyModule"):
 flowchart TD
     A["unload / disable"] --> B["on_unload()（超时保护）"]
     B --> C["兜底取消后台任务（cancel_owner_tasks）"]
-    C --> D["_cleanup_module_registrations"]
+    C --> C1["外部归属清理钩子<br/>（工具模块 on_cleanup 登记，run_owner_cleanups 触发）"]
+    C1 --> D["_cleanup_module_registrations"]
     D --> D1["i18n 翻译域"]
     D1 --> D2["路由：命名空间 + owner 兜底<br/>（含中间件 / 首页入口）"]
     D2 --> D3["适配器事件处理器 / 中间件"]
@@ -18150,6 +18189,55 @@ class MyModule(BaseModule):
   卸载时不会被取消（详见[生命周期管理](lifecycle.md#后台任务归属与自动取消)）。
 - 清理链"失败仅告警"：单步清理异常不会阻断其余资源回收，日志 DEBUG/WARNING
   级别可见，排障时可开启 TRACE。
+
+## 工具模块指南：托管其它模块的句柄
+
+**场景**：定时任务、注册表、连接池这类"工具模块"会替其它模块保管东西——
+对方在 `on_load` 里调用 `sdk.Cron.on_trigger(handler)`，你的容器里就存下了
+一个指向对方实例的回调。框架会自动清理对方注册的一切框架资源，但清理不了
+你**私有容器里的引用**：对方卸载后你的容器还拉着它的实例，它就无法被
+GC 回收（内存泄漏，`purge` 泄漏诊断报"不可回收"）。
+
+**解法**：在登记对方东西的同一个函数里调用 `on_cleanup()`，
+框架会在对方卸载 / 禁用时自动回调你的清理函数：
+
+```python
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.runtime import off_cleanup, on_cleanup
+
+class CronModule(BaseModule):
+    def __init__(self):
+        self._entries = {}  # {模块名: 该模块托管的回调列表}
+
+    def on_trigger(self, handler):
+        # 自动识别调用方模块名（on_load 直接调用 / module.call 均正确），
+        # 返回值是解析出的 owner，可直接用作记名键
+        owner = on_cleanup(self._drop)
+        self._entries.setdefault(owner, []).append(handler)
+
+    def _drop(self, owner: str):
+        """对方模块被卸载/禁用时由框架自动调用：抛弃它的句柄即可"""
+        self._entries.pop(owner, None)
+
+    async def on_unload(self, event):
+        off_cleanup(self._drop)  # ③ 自己卸载前注销钩子，避免钩子表持有 self
+```
+
+框架保证的行为：
+
+| 关注点 | 行为 |
+|--------|------|
+| 触发时机 | 对方模块 unload / disable，或适配器关闭——均在框架清理链内触发，早于 purge 泄漏诊断 |
+| 调用方识别 | 直接调用取 `current_owner`；经 `module.call()` 被调用取调用方（`current_caller`）；也可 `on_cleanup(cb, owner="模块名")` 显式指定 |
+| 回调签名 | `cb(owner: str)`，同步 / 异步均可；异步带超时保护（`CLEANUP_CALLBACK_TIMEOUT_SECS`，默认 10 秒） |
+| 容错 | 单个回调异常 / 超时只记日志，不影响其余钩子与清理链 |
+| 重复登记 | 同一 `(owner, callback)` 幂等去重 |
+
+**什么时候不需要**：如果对方注册的是框架资源（命令、事件处理器、路由、
+后台任务……），框架已全自动清理（见上文[归属资源全景](#归属资源全景)）。
+只有你私有容器里持有的对方句柄才需要 `on_cleanup`。
+模块开发视角的速查版见
+[最佳实践 · 工具模块](../developer-guide/modules/best-practices.md#工具模块托管别人东西时要接住卸载通知)。
 
 
 
@@ -19037,6 +19125,122 @@ async def on_unload(self, event):
 5. **SVG 图标** — `icon_svg` 应为完整的 `<svg>` 标签，建议尺寸使用 `viewBox="0 0 24 24"`，使用 `stroke="currentColor"` 继承 Dashboard 主题色
 6. **JS 函数命名** — `js_content` 中的函数名应具有唯一性（如 `loadWeatherView`），避免与其他模块冲突
 7. **动态更新** — 模块注册/注销视窗后，Dashboard 前端会通过 WebSocket 实时更新侧边栏，无需刷新页面
+
+
+
+### Cron 定时任务
+
+# ErisPulse-Cron
+
+[ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) 是 ErisPulse 生态的**定时任务调度模块**，为其他模块提供统一的定时任务 API：支持一次性定时、间隔循环、Cron 表达式三种任务类型，回调传参，SQLite 持久化（重启不丢任务）。
+
+> [!IMPORTANT]
+> Cron **不是** ErisPulse 框架的内置功能，需要单独安装：
+>
+> ```bash
+> epsdk install Cron
+> ```
+
+安装后通过 `sdk.Cron` 访问全部接口。
+
+---
+
+## 功能速览
+
+- **三种定时类型**：一次性（`once`）、间隔循环（`interval`）、Cron 表达式（`cron`）
+- **回调传参**：创建时传入 `callback_data`，触发时原样返回，方便识别任务来源
+- **持久化**：任务存储在 SQLite（经 `sdk.storage`），框架重启后自动恢复
+- **错过策略**：立即触发 / 跳过 / 重新调度，可按任务选择
+- **任务管理**：暂停、恢复、取消、手动触发、清理过期任务
+- **Dashboard 集成**：已安装 [ErisPulse-Dashboard](dashboard.md) 时自动注册管理视窗
+
+---
+
+## 快速开始
+
+```python
+from ErisPulse import sdk
+
+# 1. 注册回调处理器
+@sdk.Cron.on_trigger
+async def handle_trigger(info):
+    data = info["callback_data"]
+    print(f"任务触发: {info['task_id']}, 数据: {data}")
+
+# 2. 创建定时任务
+task_id = sdk.Cron.once(
+    delay=60,
+    callback_data={"type": "reminder", "msg": "该喝水了"},
+)
+```
+
+---
+
+## API 概览
+
+### 创建任务
+
+```python
+# 一次性：延迟 600 秒触发
+sdk.Cron.once(delay=600, callback_data={"order_id": "123"}, label="订单超时提醒")
+
+# 间隔循环：每 300 秒触发，最多 100 次
+sdk.Cron.interval(interval_seconds=300, callback_data={"monitor": "server-1"}, max_runs=100)
+
+# Cron 表达式：工作日每天 9:30
+sdk.Cron.cron(expression="30 9 * * 1-5", callback_data={"type": "daily_report"})
+
+# 通用可选参数：trigger_at（绝对时间戳）、delay（首次延迟）、timezone、
+# max_runs（0=无限）、label、source（创建者模块名）、missed_policy（错过策略）
+```
+
+常用 Cron 表达式：`*/5 * * * *`（每 5 分钟）、`0 8 * * *`（每天早 8 点）、`30 9 * * 1-5`（工作日 9:30）、`0 0 1 * *`（每月 1 号）。
+
+### 回调
+
+```python
+@sdk.Cron.on_trigger
+async def my_handler(info):
+    # info 含 task_id / task_type / callback_data / label / source /
+    # run_count / max_runs / created_at / last_run / trigger_time
+    ...
+```
+
+支持注册多个 handler，全部依次调用，单个 handler 异常不影响其他 handler。
+
+### 管理任务
+
+```python
+sdk.Cron.cancel(task_id)                  # 取消
+sdk.Cron.pause(task_id)                   # 暂停
+sdk.Cron.resume(task_id)                  # 恢复（reschedule=True 重新计算下次触发）
+await sdk.Cron.trigger_now(task_id)       # 手动立即触发（不影响原计划）
+sdk.Cron.get_task(task_id)                # 查看单个任务
+sdk.Cron.list_tasks(source="MyModule")    # 列出任务（支持 source/status/task_type 过滤）
+sdk.Cron.delete_task(task_id)             # 删除任务记录
+sdk.Cron.cleanup()                        # 清理 7 天前的已完成/已取消任务
+```
+
+### 错过策略（missed_policy）
+
+框架重启后，对于错过触发时间的任务：
+
+| 策略 | 行为 |
+|------|------|
+| `fire_immediately` | 立即触发（默认） |
+| `skip` | 跳过本次，等下次 |
+| `reschedule` | 从当前时间重新计算下次触发 |
+
+---
+
+## 模块卸载时的行为
+
+Cron 的任务数据是**持久化资产**：任务创建方模块被卸载或禁用不会删除已创建的任务。但该模块注册的回调句柄会被清理——基于归属权系统的[外部清理钩子](../advanced/ownership.md#工具模块指南托管其它模块的句柄)，Cron 在替其他模块托管回调时会自动记名，对方模块被卸载/禁用时自动抛弃其回调句柄，保证对方模块实例可以被正常回收。
+
+- 任务创建方**重载**后重新 `on_trigger` 即恢复接收触发
+- 不再需要的任务可用 `sdk.Cron.cancel(task_id)` / `delete_task(task_id)` 清理
+
+---
 
 
 

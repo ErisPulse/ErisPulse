@@ -64,6 +64,25 @@ ErisPulse 运行时上下文
 ---
 
 
+### `get_current_caller()`
+
+获取当前跨模块调用的调用方身份（模块名或适配器平台名）
+
+经 ``sdk.module.call()`` 被调用期间，``current_owner`` 已归因到目标
+模块（自己的代码归属自己），而调用方身份保留在本上下文中——被调方
+可据此识别"谁在调用我"。直接属性访问（``sdk.Cron.once(...)``）不经
+此上下文，此时调用方身份即 ``get_current_owner()``。
+
+**返回值** (`调用方身份，非`): ``module.call`` 调用链或框架层调用时返回 None
+
+**示例**:
+```python
+>>> caller = get_current_caller()  # "OrderModule" 或 None
+```
+
+---
+
+
 ### `get_handler_waits()`
 
 获取当前 handler 的 wait_reply 调用记录（slow-log 归因用）

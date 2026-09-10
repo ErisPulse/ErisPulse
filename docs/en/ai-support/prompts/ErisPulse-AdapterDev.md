@@ -9969,110 +9969,113 @@ topology = sdk.get_topology()
 
 # Ownership (owner) System
 
-Ownership is the cornerstone of the "plug-and-play" nature of modules: all framework resources registered during module loading are automatically attributed, and are automatically reclaimed when the module is unloaded/disabled—module authors only need to declare resources, without writing cleanup logic manually.
+Ownership is the cornerstone of the "plug-and-play" nature of modules: all framework resources registered during module loading are automatically attributed, and automatically reclaimed when the module is unloaded or disabled. Module authors only need to declare resources, without writing manual cleanup logic.
 
-> **Related Systems**: Scope determines "whether a resource is active" during event dispatch, while ownership determines "who owns the resource and who will reclaim it upon unload." See [Unified Control Plane (scope)](scope.md) for scope details, and [Lifecycle Management](lifecycle.md#后台任务归属与自动取消) for background tasks.
+> **Related Systems**: Scope determines "whether a resource is active" during event dispatching, while ownership determines "who owns the resource and who is responsible for reclaiming it during lifecycle events." For more details on scope, see [Unified Control Plane (scope)](scope.md). For background tasks, see [Lifecycle Management](lifecycle.md#Background Task Ownership and Automatic Cancellation).
 
 {!--< tips >!--}
 1. Ownership is automatically recorded at the **moment of registration** based on `current_owner`, requiring zero code changes from the module.
-2. Unload and disable share the same cleanup chain (`_cleanup_module_registrations`), where failures at each step only trigger warnings and do not interrupt the process.
-3. Resources with user configuration semantics (persistent overrides / scope rules / command ACLs) are **not** cleaned up when the module is unloaded.
+2. Unload and disable share the same cleanup chain (`_cleanup_module_registrations`), where each step only logs a warning if it fails, without interrupting the process.
+3. Resources with user-configured semantics (persistent overrides / scope rules / command ACLs) are **not** cleaned up when the module is unloaded.
+4. External handles managed by utility modules can be attached to the cleanup chain via `on_cleanup(cb)`, which will be automatically called when the dependent module is unloaded (see [Guide to Utility Modules: Managing Handles of Other Modules](#Guide-to-Utility-Modules-Managing-Handles-of-Other-Modules)).
 {!--< /tips >!--}
 
 ## Owner Context Mechanism
 
-Ownership is passed through the context variable `current_owner` (`ErisPulse.runtime.context`):
+The `owner` is passed through the context variable `current_owner` (`ErisPulse.runtime.context`):
 
 ```python
 from ErisPulse.runtime import owner_scope, get_current_owner
 
 with owner_scope("MyModule"):
-    # All resources registered in this block are automatically attributed to MyModule
+    # All resources registered within this context are automatically attributed to MyModule
     assert get_current_owner() == "MyModule"
 ```
 
-The framework automatically injects the owner at the following points (module/adapter code does not need to manually wrap these):
+The framework automatically injects the `owner` at the following points (module/adapter code does not need to manually wrap these):
 
 | Timing | Owner Value | Location |
 |--------|-------------|----------|
 | Module `load()` | Module name | Throughout instantiation + `on_load` |
 | Adapter `start()` / `restart()` | Platform name | Throughout adapter startup |
-| `activate_on` lazy-load stub registration | Module name | Placeholder command/handler registration |
-| Event handler execution | Handler's owning module name | handler / command entry re-injected |
+| `activate_on` lazy-load stub registration | Module name | During placeholder command/handler registration |
+| Event handler execution | Module name of handler's owner | Re-injected at handler/command entry |
 
-Re-injection during execution means that commands registered in `on_load` and subsequently called within their execution (e.g., `sdk.adapter.on()`, `overrides.*.set(persist=False)`) are still automatically attributed to the module.
+Re-injection during execution means that command handlers declared in `on_load` will still be automatically attributed to the module if they call registration APIs (such as `sdk.adapter.on()` or `overrides.*.set(persist=False)`) during runtime.
 
-## Full Overview of Owned Resources
+## Overview of Owned Resources
 
-All resources registered within the module loading context are recorded with ownership and automatically reclaimed upon unload/disable:
+All resources registered within the module's loading context are recorded with ownership and automatically reclaimed during unload/disable:
 
 | Resource | Registration Method | Cleanup Call |
 |----------|---------------------|--------------|
 | Commands | `@command()` / command dict declaration | `command.unregister_by_owner()` |
 | Event Handlers | `@message` / `@notice` / `@request` / `@meta` | `handler.unregister_by_owner()` |
 | Adapter Event Listeners | `sdk.adapter.on()` / `raw=True` | `adapter.unregister_handlers_by_owner()` |
-| Adapter Middlewares | `@sdk.adapter.middleware` | Same as above |
+| Adapter Middleware | `@sdk.adapter.middleware` | Same as above |
 | Routes (HTTP/WS/SSE) | `router.http()` / `websocket()` / `sse()` | Double fallback by namespace + owner |
-| Route Middlewares | `@router.middleware()` / `add_middleware()` | `router.unregister_all_by_owner()` |
+| Route Middleware | `@router.middleware()` / `add_middleware()` | `router.unregister_all_by_owner()` |
 | Dashboard Home Entry | `router.register_home_entry()` | `unregister_home_entries_by_owner()` |
 | Custom Session Types | `register_custom_type()` | `unregister_custom_types_by_owner()` |
 | Background Tasks | `self.spawn()` | `cancel_owner_tasks()` |
+| External Cleanup Hooks (Utility Module Managed) | `runtime.on_cleanup(cb)` | `run_owner_cleanups()` (triggered in unload/disable/adapter shutdown chain) |
 | Lifecycle Hooks | `lifecycle.register()` | `lifecycle.unregister_by_owner()` |
-| Master Provider | `master.provider` | `master.unregister_by_owner()` |
+| Master Identity Provider | `master.provider` | `master.unregister_by_owner()` |
 | i18n Translation Keys | `I18nClass` declaration (domain=module name) | `i18n.unregister_domain()` |
 | Runtime Event Overrides | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
-| Interactive Sessions (wait_reply / leases) | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()` (waiter immediately receives cancellation) |
+| Interactive Sessions (wait_reply / leases) | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()` (waiters immediately receive cancellation) |
 | Context Data | `runtime/context` recorded by owner | Precise cleanup by module |
 
-Corresponding adapter-side resources (with platform name as owner) are reclaimed during adapter `shutdown()` / `restart()` via `_cleanup_adapter_resources`, including:
+Corresponding adapter-side resources (with platform name as owner) are reclaimed during adapter `shutdown()` / `restart()` by `_cleanup_adapter_resources`, plus:
 
 | Resource | Cleanup Call |
 |----------|--------------|
-| Adapter's own `on()` handlers and middlewares | `adapter.unregister_handlers_by_owner(platform)` |
+| Adapter-specific `on()` handlers and middleware | `adapter.unregister_handlers_by_owner(platform)` |
 | Platform event method extensions (`EventMixin`) | `unregister_platform_event_methods(platform)` |
 | Custom session types | `unregister_custom_types_by_owner(platform)` |
 | Interactive sessions (platform-pending wait_reply / leases) | `interaction.cancel_by_platform(platform)` |
-| i18n translation domains (domain=config key) | `i18n.unregister_domain(config key)` |
+| i18n translation domains (domain=configuration key) | `i18n.unregister_domain(configuration key)` |
 | Fine-grained named route | `router.unregister_all_by_owner(platform)` |
 
 ## Unload/Disable Cleanup Sequence
 
-`unload()` and `disable()` share the same cleanup chain (each step is independently wrapped in try/except, failures only log warnings, **do not interrupt subsequent cleanup**):
+`unload()` and `disable()` share the same cleanup chain (each step is independently wrapped in try/except, failures only log warnings, **not interrupting subsequent cleanup**):
 
 ```mermaid
 flowchart TD
     A["unload / disable"] --> B["on_unload() (with timeout protection)"]
-    B --> C["Fallback cancellation of background tasks (cancel_owner_tasks)"]
-    C --> D["_cleanup_module_registrations"]
+    B --> C["Fallback: Cancel background tasks (cancel_owner_tasks)"]
+    C --> C1["External ownership cleanup hooks<br/>(registered via on_cleanup in utility modules, triggered by run_owner_cleanups)"]
+    C1 --> D["_cleanup_module_registrations"]
     D --> D1["i18n translation domains"]
-    D1 --> D2["Routes: namespace + owner fallback<br/>(includes middlewares / home entries)"]
-    D2 --> D3["Adapter event handlers / middlewares"]
+    D1 --> D2["Routes: Namespace + owner fallback<br/>(includes middleware / home entries)"]
+    D2 --> D3["Adapter event handlers / middleware"]
     D3 --> D4["Commands + event handlers"]
     D4 --> D5["Custom session types"]
     D5 --> D6["Runtime event overrides (persist=False)"]
-    D6 --> D7["Master provider"]
+    D6 --> D7["Master identity provider"]
     D7 --> D8["Lifecycle hooks"]
     D8 --> E["Remove SDK attributes + lazy-load proxies"]
 ```
 
-`sdk.uninit()` also includes global fallback on exit: all adapters shutdown → all modules unload → `router.stop()` (clear routes/middlewares/home entries) → `cancel_all_background_tasks()` → clear event handlers and hooks.
+`sdk.uninit()` also triggers global fallback cleanup: all adapters shutdown → all modules unload → `router.stop()` (clear routes/middleware/home entries) → `cancel_all_background_tasks()` → clear event handlers and hooks.
 
-## Design Boundaries: Resources Not Cleared on Unload
+## Design Boundaries: Resources Not Cleaned on Unload
 
-Ownership only recovers **runtime resources registered by module code**. The following resources belong to **user configuration semantics** (controlled by the user, possibly intentionally configured), and are retained persistently after module unload:
+Ownership only recovers **runtime resources registered by module code**. The following resources are **user-configured semantics** (controlled by the user, possibly intentionally configured), and persist after module unload:
 
 | Resource | Semantics | Description |
 |----------|-----------|-------------|
-| `overrides.*.set(persist=True)` | Persistent overrides | Written to configuration file, effective across restarts; not deleted on module unload (explicitly configured by user) |
-| `scope.set_action()` and other scope rules | Permission control plane | Managed by user/Dashboard, rules not reclaimed on module unload |
+| `overrides.*.set(persist=True)` | Persistent overrides | Written to configuration file, effective across restarts; not deleted on module unload (user explicitly configured) |
+| `scope.set_action()` and other scope rules | Permission control plane | Managed by user/Dashboard; rules are not reclaimed when the module is unloaded |
 | `overrides.acl.set(persist=True)` | Command ACLs | Same as above |
-| Conversation `save()` persistence | Multi-turn conversation archiving | Data assets are not cleared |
+| `Conversation.save()` persistence | Multi-turn conversation archives | Data assets are not cleaned up |
 
-Runtime temporary writes (`persist=False`) are reclaimed by owner—**persistence or not is the boundary between "user assets" and "module runtime state."**
+Runtime temporary writes (`persist=False`) are reclaimed by owner—**persistence is the boundary between "user assets" and "module runtime state."**
 
 ## Module Author Guide
 
-### Recommended Usage
+### Recommended Style
 
 ```python
 from ErisPulse import sdk
@@ -10090,16 +10093,55 @@ class MyModule(BaseModule):
             self.client.on_event(self._handle)      # Hypothetical custom registration
 
     async def on_unload(self, event):
-        # Framework resources have been automatically reclaimed, only clean up resources not covered by owner_scope
+        # Framework resources have been automatically reclaimed; only clean up resources not covered by owner_scope
         await self.client.close()
 ```
 
 ### Notes
 
-- **Registration during import has no ownership**: Hooks/handlers registered at the module level (during import) occur before `owner_scope` is active, and are treated as framework-level resources (owner=None) and **not cleaned up**. Always register inside `on_load()`.
-- **Custom domain i18n registration**: If `i18n.register(domain=...)` uses a domain different from the module name, it will not be automatically reclaimed. Keep domain=module name.
-- **Background tasks must use `self.spawn()`**: Bare `asyncio.create_task` is not attributed to the module and will not be cancelled on unload (see [Lifecycle Management](lifecycle.md#后台任务归属与自动取消)).
-- Cleanup chain "failures only warn": Single-step cleanup exceptions do not block other resource cleanup; logs are visible at DEBUG/WARNING level, and TRACE can be enabled for troubleshooting.
+- **Registration during import has no ownership**: Hooks/handlers registered at the module level (during import) occur before `owner_scope` and are treated as framework-level resources (owner=None) and **not cleaned up**. Always register inside `on_load()`.
+- **Custom i18n domain registration**: If `i18n.register(domain=...)` uses a domain different from the module name, it will not be automatically reclaimed; ensure `domain=module name`.
+- **Background tasks must use `self.spawn()`**: Bare `asyncio.create_task` is not attributed to the module and will not be cancelled on unload (see [Lifecycle Management](lifecycle.md#Background Task Ownership and Automatic Cancellation)).
+- **Cleanup chain "failure only logs warnings"**: Individual cleanup exceptions do not block other resource cleanup; DEBUG/WARNING level logs are visible, and TRACE can be enabled for troubleshooting.
+
+## Guide to Utility Modules: Managing Handles for Other Modules
+
+**Scenario**: Modules such as timers, registries, or connection pools act as "utility modules" that hold things for other modules—e.g., another module calls `sdk.Cron.on_trigger(handler)`, and your container stores a callback pointing to the other module's instance. The framework automatically cleans up all framework resources registered by the other module, but it cannot clean up your **private container's references**: after the other module unloads, your container still holds its instance, preventing it from being garbage collected (memory leak, `purge` leak diagnosis reports "unreachable").
+
+**Solution**: In the same function where you register the other module's things, call `on_cleanup()`, and the framework will automatically invoke your cleanup function when the other module unloads or disables:
+
+```python
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.runtime import off_cleanup, on_cleanup
+
+class CronModule(BaseModule):
+    def __init__(self):
+        self._entries = {}  # {module name: list of callbacks for that module}
+
+    def on_trigger(self, handler):
+        # Automatically identifies the calling module's name (whether called directly in on_load or via module.call), returns the resolved owner, which can be used as a naming key
+        owner = on_cleanup(self._drop)
+        self._entries.setdefault(owner, []).append(handler)
+
+    def _drop(self, owner: str):
+        """Automatically called by the framework when the other module is unloaded/disabled: simply discard its handles"""
+        self._entries.pop(owner, None)
+
+    async def on_unload(self, event):
+        off_cleanup(self._drop)  # ③ Unregister the hook before unloading to prevent the hook table from holding a reference to self
+```
+
+Framework guarantees:
+
+| Concern | Behavior |
+|---------|----------|
+| Trigger Timing | When the other module unloads/disables, or when the adapter shuts down—the framework's cleanup chain triggers before `purge` leak diagnosis |
+| Caller Identification | Direct calls use `current_owner`; calls via `module.call()` use the caller (`current_caller`); `on_cleanup(cb, owner="module name")` can also explicitly specify the owner |
+| Callback Signature | `cb(owner: str)`, synchronous or asynchronous; asynchronous callbacks have timeout protection (`CLEANUP_CALLBACK_TIMEOUT_SECS`, default 10 seconds) |
+| Fault Tolerance | Individual callback exceptions/timeouts only log warnings, not affecting other hooks or the cleanup chain |
+| Duplicate Registration | Same `(owner, callback)` is idempotently de-duplicated |
+
+**When Not Needed**: If the other module registers framework resources (commands, event handlers, routes, background tasks, etc.), the framework already handles automatic cleanup (see [Overview of Owned Resources](#Ownership-Resource-Overview)). Only private container references to other module handles require `on_cleanup`. A quick reference for module developers is available in [Best Practices · Utility Modules](../developer-guide/modules/best-practices.md#Utility-Modules-Handling-Other-Modules-Handles-Need-to-Catch-Unload-Notifications).
 
 
 
@@ -13563,6 +13605,114 @@ After unregistration, the Dashboard frontend will remove the sidebar navigation 
 5. **SVG Icon** — `icon_svg` should be a complete `<svg>` tag. It is recommended to use `viewBox="0 0 24 24"` and `stroke="currentColor"` to inherit the Dashboard's main theme color.
 6. **JS Function Naming** — The function names in `js_content` should be unique (e.g., `loadWeatherView`), to avoid conflicts with other modules.
 7. **Dynamic Updates** — After registering or unregistering windows, the Dashboard frontend will update the sidebar in real time via WebSocket, without requiring a page refresh.
+
+
+
+### Cron 定时任务
+
+# ErisPulse-Cron
+
+[ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) is the **scheduling module** for ErisPulse, providing a unified API for other modules to handle scheduled tasks: supports one-time, interval-based, and Cron expression-based tasks, callback parameters, and SQLite persistence (tasks are not lost after restart).
+
+> [!IMPORTANT]
+> Cron is **not** a built-in feature of the ErisPulse framework and must be installed separately:
+>
+> ```bash
+> epsdk install Cron
+> ```
+
+After installation, access all interfaces via `sdk.Cron`.
+
+## Feature Overview
+
+- **Three Scheduling Types**: One-time (`once`), interval loop (`interval`), and Cron expression (`cron`)
+- **Callback Data**: Pass `callback_data` when creating a task, and it will be returned unchanged during execution, making it easy to identify the task source
+- **Persistence**: Tasks are stored in SQLite (via `sdk.storage`), and are automatically restored after framework restart
+- **Missed Trigger Strategy**: Immediate execution, skip, or rescheduling, selectable per task
+- **Task Management**: Pause, resume, cancel, manually trigger, and clean up expired tasks
+- **Dashboard Integration**: Automatically registers management windows when [ErisPulse-Dashboard](dashboard.md) is installed
+
+## Quick Start
+
+```python
+from ErisPulse import sdk
+
+# 1. Register a callback handler
+@sdk.Cron.on_trigger
+async def handle_trigger(info):
+    data = info["callback_data"]
+    print(f"Task triggered: {info['task_id']}, Data: {data}")
+
+# 2. Create a scheduled task
+task_id = sdk.Cron.once(
+    delay=60,
+    callback_data={"type": "reminder", "msg": "It's time to drink water"},
+)
+```
+
+---
+
+## API Overview
+
+### Create Tasks
+
+```python
+# One-time: trigger after a delay of 600 seconds
+sdk.Cron.once(delay=600, callback_data={"order_id": "123"}, label="Order timeout reminder")
+
+# Interval loop: trigger every 300 seconds, up to 100 times
+sdk.Cron.interval(interval_seconds=300, callback_data={"monitor": "server-1"}, max_runs=100)
+
+# Cron expression: trigger daily at 9:30 AM on weekdays
+sdk.Cron.cron(expression="30 9 * * 1-5", callback_data={"type": "daily_report"})
+
+# General optional parameters: trigger_at (absolute timestamp), delay (first delay), timezone,
+# max_runs (0 = unlimited), label, source (module name of creator), missed_policy (missed trigger policy)
+```
+
+Common Cron expressions: `*/5 * * * *` (every 5 minutes), `0 8 * * *` (every day at 8 AM), `30 9 * * 1-5` (every weekday at 9:30 AM), `0 0 1 * *` (every 1st day of the month).
+
+### Callback
+
+```python
+@sdk.Cron.on_trigger
+async def my_handler(info):
+    # info contains task_id / task_type / callback_data / label / source /
+    # run_count / max_runs / created_at / last_run / trigger_time
+    ...
+```
+
+Multiple handlers can be registered and will be called in sequence. An exception in one handler does not affect others.
+
+### Manage Tasks
+
+```python
+sdk.Cron.cancel(task_id)                  # Cancel
+sdk.Cron.pause(task_id)                   # Pause
+sdk.Cron.resume(task_id)                  # Resume (reschedule=True recalculates next trigger time)
+await sdk.Cron.trigger_now(task_id)       # Manually trigger immediately (does not affect original schedule)
+sdk.Cron.get_task(task_id)                # View a single task
+sdk.Cron.list_tasks(source="MyModule")    # List tasks (supports filtering by source/status/task_type)
+sdk.Cron.delete_task(task_id)             # Delete task record
+sdk.Cron.cleanup()                        # Clean up completed/canceled tasks older than 7 days
+```
+
+### Missed Policy (`missed_policy`)
+
+When the framework restarts, for tasks that missed their trigger time:
+
+| Policy | Behavior |
+|--------|----------|
+| `fire_immediately` | Trigger immediately (default) |
+| `skip` | Skip this trigger, wait for the next one |
+| `reschedule` | Recalculate the next trigger time from the current time |
+
+## Behavior on Module Unload
+
+Cron's task data is a **persistent asset**: unloading or disabling the module that created the task does not delete the created task. However, the callback handles registered by the module will be cleaned up. Based on the ownership system's [external cleanup hooks](../advanced/ownership.md#Tool_Module_Guide_Handling_Handles_of_Other_Modules), Cron automatically names callbacks it manages on behalf of other modules. When the corresponding module is unloaded or disabled, its callback handles are automatically discarded, ensuring that the module instance can be properly reclaimed.
+
+- After the task creator module is **reloaded**, re-registering `on_trigger` resumes receiving triggers.
+- Tasks that are no longer needed can be cleaned up using `sdk.Cron.cancel(task_id)` / `delete_task(task_id)`.
 
 
 

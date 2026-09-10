@@ -399,7 +399,7 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "Система принадлежности (owner)",
+          "title": "Система владельцев (owner)",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
@@ -440,7 +440,7 @@
     "Модули экосистемы": {
       "description": "Сторонние модули, поддерживаемые сообществом",
       "icon": "fa-cubes",
-      "count": 4,
+      "count": 5,
       "documents": [
         {
           "title": "Экосистемные модули",
@@ -459,6 +459,12 @@
           "path": "ecosystem/dashboard.md",
           "level": 1,
           "icon": "fa-table-columns"
+        },
+        {
+          "title": "ErisPulse-Cron",
+          "path": "ecosystem/cron.md",
+          "level": 1,
+          "icon": "fa-clock"
         },
         {
           "title": "ErisPulse-Takumi",

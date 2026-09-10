@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1594,
+  "total_keywords": 1602,
   "keywords": {
     "0 Успешно (OK)": [
       {
@@ -45,7 +45,7 @@
     "1. Защита конфиденциальных данных": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 378,
+        "line": 413,
         "level": 3,
         "title": "1. Защита конфиденциальных данных"
       }
@@ -69,7 +69,7 @@
     "1. Использование кэширования": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 341,
+        "line": 376,
         "level": 3,
         "title": "1. Использование кэширования"
       }
@@ -85,7 +85,7 @@
     "1. Использование транзакций": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 274,
+        "line": 309,
         "level": 3,
         "title": "1. Использование транзакций"
       }
@@ -173,7 +173,7 @@
     "1. Обработка исключений по категориям": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 234,
+        "line": 269,
         "level": 3,
         "title": "1. Обработка исключений по категориям"
       }
@@ -245,7 +245,7 @@
     "1. Разумное использование уровней логирования": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 307,
+        "line": 342,
         "level": 3,
         "title": "1. Разумное использование уровней логирования"
       }
@@ -309,7 +309,7 @@
     "1. Управление версиями": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 453,
+        "line": 488,
         "level": 3,
         "title": "1. Управление версиями"
       }
@@ -333,17 +333,17 @@
     "1. Юнит-тесты": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 424,
+        "line": 459,
         "level": 3,
         "title": "1. Юнит-тесты"
       }
     ],
-    "1. Я хочу использовать робота": [
+    "1. Я хочу использовать бота": [
       {
         "document": "README.md",
         "line": 13,
         "level": 3,
-        "title": "1. Я хочу использовать робота"
+        "title": "1. Я хочу использовать бота"
       }
     ],
     "1.1 Стандартные методы отправки": [
@@ -541,7 +541,7 @@
     "2. Валидация входных данных": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 404,
+        "line": 439,
         "level": 3,
         "title": "2. Валидация входных данных"
       }
@@ -557,7 +557,7 @@
     "2. Заголовок README": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 467,
+        "line": 502,
         "level": 3,
         "title": "2. Заголовок README"
       }
@@ -573,7 +573,7 @@
     "2. Избегание блокирующих операций": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 362,
+        "line": 397,
         "level": 3,
         "title": "2. Избегание блокирующих операций"
       }
@@ -587,7 +587,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 437,
+        "line": 472,
         "level": 3,
         "title": "2. Интеграционные тесты"
       }
@@ -627,7 +627,7 @@
     "2. Обработка тайм-аутов": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 256,
+        "line": 291,
         "level": 3,
         "title": "2. Обработка тайм-аутов"
       }
@@ -651,7 +651,7 @@
     "2. Пакетные операции": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 290,
+        "line": 325,
         "level": 3,
         "title": "2. Пакетные операции"
       }
@@ -779,7 +779,7 @@
     "2. Структурированное логирование": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 329,
+        "line": 364,
         "level": 3,
         "title": "2. Структурированное логирование"
       }
@@ -1192,12 +1192,12 @@
         "title": "3. Четкое управление конфигурацией"
       }
     ],
-    "3. Я хочу глубже понять принципы работы": [
+    "3. Я хочу глубже понять архитектуру": [
       {
         "document": "README.md",
         "line": 38,
         "level": 3,
-        "title": "3. Я хочу глубже понять принципы работы"
+        "title": "3. Я хочу глубже понять архитектуру"
       }
     ],
     "3.1 Действия, связанные с пользователями": [
@@ -1496,12 +1496,12 @@
         "title": "4. Управление опубликованным модулем"
       }
     ],
-    "4. Экосистема и официальные клиенты": [
+    "4. Экосистема и официальный клиент": [
       {
         "document": "README.md",
         "line": 56,
         "level": 3,
-        "title": "4. Экосистема и официальные клиенты"
+        "title": "4. Экосистема и официальный клиент"
       }
     ],
     "4.1 Основные вызовы": [
@@ -1691,7 +1691,7 @@
     "5. Я хочу внести вклад в ErisPulse": [
       {
         "document": "README.md",
-        "line": 67,
+        "line": 68,
         "level": 3,
         "title": "5. Я хочу внести вклад в ErisPulse"
       }
@@ -2558,6 +2558,14 @@
         "line": 1,
         "level": 1,
         "title": "ErisPulse-App"
+      }
+    ],
+    "ErisPulse-Cron": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-Cron"
       }
     ],
     "ErisPulse-Dashboard": [
@@ -3941,7 +3949,7 @@
     "Безопасность": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 376,
+        "line": 411,
         "level": 2,
         "title": "Безопасность"
       }
@@ -3994,6 +4002,12 @@
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 45,
+        "level": 2,
+        "title": "Быстрый старт"
+      },
+      {
+        "document": "ecosystem/cron.md",
+        "line": 27,
         "level": 2,
         "title": "Быстрый старт"
       },
@@ -4059,7 +4073,7 @@
     "Важные замечания": [
       {
         "document": "advanced/ownership.md",
-        "line": 128,
+        "line": 131,
         "level": 3,
         "title": "Важные замечания"
       }
@@ -4336,12 +4350,12 @@
         "title": "Вход в режим построения"
       }
     ],
-    "Выбор вашего пути": [
+    "Выберите свой путь": [
       {
         "document": "README.md",
         "line": 9,
         "level": 2,
-        "title": "Выбор вашего пути"
+        "title": "Выберите свой путь"
       }
     ],
     "Выбор из меню (choose)": [
@@ -4704,6 +4718,14 @@
         "title": "Декораторы правил отправки"
       }
     ],
+    "Децерализация/отключение последовательности очистки": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 71,
+        "level": 2,
+        "title": "Децерализация/отключение последовательности очистки"
+      }
+    ],
     "Диагностика окружения": [
       {
         "document": "user-guide/cli-reference.md",
@@ -4875,7 +4897,7 @@
     "Дополнительно": [
       {
         "document": "README.md",
-        "line": 85,
+        "line": 86,
         "level": 2,
         "title": "Дополнительно"
       }
@@ -6369,7 +6391,7 @@
     "Логирование": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 305,
+        "line": 340,
         "level": 2,
         "title": "Логирование"
       }
@@ -6817,7 +6839,7 @@
     "Механизм контекста owner": [
       {
         "document": "advanced/ownership.md",
-        "line": 13,
+        "line": 14,
         "level": 2,
         "title": "Механизм контекста owner"
       }
@@ -7098,6 +7120,14 @@
         "title": "Модуль запросов"
       }
     ],
+    "Модуль инструментов: при хранении чужих вещей нужно ловить \"уведомления об отключении\"": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 232,
+        "level": 2,
+        "title": "Модуль инструментов: при хранении чужих вещей нужно ловить \"уведомления об отключении\""
+      }
+    ],
     "Модуль метасобытий Meta": [
       {
         "document": "api-reference/event-system.md",
@@ -7324,6 +7354,12 @@
         "line": 332,
         "level": 3,
         "title": "Обзор API"
+      },
+      {
+        "document": "ecosystem/cron.md",
+        "line": 47,
+        "level": 2,
+        "title": "Обзор API"
       }
     ],
     "Обзор архитектуры": [
@@ -7374,12 +7410,12 @@
         "title": "Обзор методов"
       }
     ],
-    "Обзор ресурсов, подлежащих принадлежности": [
+    "Обзор ресурсов, привязанных к модулю": [
       {
         "document": "advanced/ownership.md",
-        "line": 36,
+        "line": 37,
         "level": 2,
-        "title": "Обзор ресурсов, подлежащих принадлежности"
+        "title": "Обзор ресурсов, привязанных к модулю"
       }
     ],
     "Обзор типов событий": [
@@ -7553,7 +7589,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 232,
+        "line": 267,
         "level": 2,
         "title": "Обработка ошибок"
       },
@@ -7742,6 +7778,14 @@
         "line": 151,
         "level": 2,
         "title": "Обратные маршруты"
+      }
+    ],
+    "Обратный вызов": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 67,
+        "level": 3,
+        "title": "Обратный вызов"
       }
     ],
     "Обратный прокси": [
@@ -8203,7 +8247,7 @@
     "Оптимизация производительности": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 339,
+        "line": 374,
         "level": 2,
         "title": "Оптимизация производительности"
       }
@@ -9290,6 +9334,14 @@
         "title": "Платформо-специфичные события (префикс onebot11_)"
       }
     ],
+    "Поведение при отключении модуля": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 104,
+        "level": 2,
+        "title": "Поведение при отключении модуля"
+      }
+    ],
     "Поведение при сбое подключения": [
       {
         "document": "advanced/storage-backends.md",
@@ -9806,12 +9858,12 @@
         "title": "Получение экземпляра адаптера"
       }
     ],
-    "Получите помощь": [
+    "Получить помощь": [
       {
         "document": "README.md",
-        "line": 91,
+        "line": 92,
         "level": 2,
-        "title": "Получите помощь"
+        "title": "Получить помощь"
       }
     ],
     "Пользователь: использование платформенных методов": [
@@ -9884,14 +9936,6 @@
         "line": 224,
         "level": 4,
         "title": "Порядок выполнения промежуточных обработчиков"
-      }
-    ],
-    "Последовательность очистки при выгрузке/отключении": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 69,
-        "level": 2,
-        "title": "Последовательность очистки при выгрузке/отключении"
       }
     ],
     "Почему нужен стандарт?": [
@@ -9985,7 +10029,7 @@
     "Пределы принадлежности: какие ресурсы не удаляются при выгрузке": [
       {
         "document": "advanced/ownership.md",
-        "line": 91,
+        "line": 94,
         "level": 2,
         "title": "Пределы принадлежности: какие ресурсы не удаляются при выгрузке"
       }
@@ -10883,7 +10927,7 @@
     "Развертывание": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 451,
+        "line": 486,
         "level": 2,
         "title": "Развертывание"
       }
@@ -11340,12 +11384,12 @@
         "title": "Рекомендованные сценарии отключения ленивой загрузки (lazy_load=False)"
       }
     ],
-    "Рекомендуемые модули и официальный клиент": [
+    "Рекомендуемые модули и официальные клиенты": [
       {
         "document": "ecosystem/README.md",
         "line": 19,
         "level": 2,
-        "title": "Рекомендуемые модули и официальный клиент"
+        "title": "Рекомендуемые модули и официальные клиенты"
       }
     ],
     "Рекомендуемые практики": [
@@ -11385,7 +11429,7 @@
     "Рекомендуемый стиль": [
       {
         "document": "advanced/ownership.md",
-        "line": 106,
+        "line": 109,
         "level": 3,
         "title": "Рекомендуемый стиль"
       }
@@ -11393,7 +11437,7 @@
     "Руководство для авторов модулей": [
       {
         "document": "advanced/ownership.md",
-        "line": 104,
+        "line": 107,
         "level": 2,
         "title": "Руководство для авторов модулей"
       }
@@ -11404,6 +11448,14 @@
         "line": 1,
         "level": 1,
         "title": "Руководство для разработчиков"
+      }
+    ],
+    "Руководство по модулю-инструменту: хэндлы для других модулей": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 138,
+        "level": 2,
+        "title": "Руководство по модулю-инструменту: хэндлы для других модулей"
       }
     ],
     "Руководство по наблюдателям": [
@@ -11667,7 +11719,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 508,
+        "line": 543,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -11721,13 +11773,19 @@
     "Связанные ссылки": [
       {
         "document": "README.md",
-        "line": 97,
+        "line": 98,
         "level": 2,
         "title": "Связанные ссылки"
       },
       {
         "document": "ecosystem/app.md",
         "line": 93,
+        "level": 2,
+        "title": "Связанные ссылки"
+      },
+      {
+        "document": "ecosystem/cron.md",
+        "line": 113,
         "level": 2,
         "title": "Связанные ссылки"
       },
@@ -11912,6 +11970,14 @@
         "title": "Синхронный процесс"
       }
     ],
+    "Система владельцев (owner)": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 1,
+        "level": 1,
+        "title": "Система владельцев (owner)"
+      }
+    ],
     "Система интерактивных сессий": [
       {
         "document": "advanced/interaction.md",
@@ -11968,14 +12034,6 @@
         "title": "Система правил отправки"
       }
     ],
-    "Система принадлежности (owner)": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 1,
-        "level": 1,
-        "title": "Система принадлежности (owner)"
-      }
-    ],
     "Система приоритетов": [
       {
         "document": "api-reference/event-system.md",
@@ -11995,7 +12053,7 @@
     "Система хранения": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 272,
+        "line": 307,
         "level": 2,
         "title": "Система хранения"
       },
@@ -12386,6 +12444,14 @@
         "title": "Создание диалога"
       }
     ],
+    "Создание задач": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 49,
+        "level": 3,
+        "title": "Создание задач"
+      }
+    ],
     "Создание первого бота": [
       {
         "document": "getting-started/first-bot.md",
@@ -12733,7 +12799,7 @@
     "Способы разработки": [
       {
         "document": "README.md",
-        "line": 78,
+        "line": 79,
         "level": 2,
         "title": "Способы разработки"
       }
@@ -13086,6 +13152,14 @@
         "title": "Стратегия загрузки"
       }
     ],
+    "Стратегия обработки пропущенных задач (`missed_policy`)": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 92,
+        "level": 3,
+        "title": "Стратегия обработки пропущенных задач (`missed_policy`)"
+      }
+    ],
     "Строгий режим": [
       {
         "document": "user-guide/configuration.md",
@@ -13203,7 +13277,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 422,
+        "line": 457,
         "level": 2,
         "title": "Тестирование"
       }
@@ -13584,6 +13658,14 @@
         "title": "Управление жизненным циклом"
       }
     ],
+    "Управление задачами": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 79,
+        "level": 3,
+        "title": "Управление задачами"
+      }
+    ],
     "Управление интерфейсом": [
       {
         "document": "platform-guide/onebot11.md",
@@ -13898,6 +13980,12 @@
         "line": 11,
         "level": 2,
         "title": "Функциональные возможности"
+      },
+      {
+        "document": "ecosystem/cron.md",
+        "line": 16,
+        "level": 2,
+        "title": "Функциональные возможности"
       }
     ],
     "Функция ответа": [
@@ -14191,7 +14279,7 @@
     "Я тоже хочу добавить свой модуль сюда?": [
       {
         "document": "ecosystem/README.md",
-        "line": 29,
+        "line": 30,
         "level": 2,
         "title": "Я тоже хочу добавить свой модуль сюда?"
       }

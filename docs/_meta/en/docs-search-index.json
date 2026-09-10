@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1559,
+  "total_keywords": 1567,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -43,7 +43,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 234,
+        "line": 270,
         "level": 3,
         "title": "1. Categorized Exception Handling"
       }
@@ -152,14 +152,6 @@
         "title": "1. Health Check (GET)"
       }
     ],
-    "1. I Want to Use a Robot": [
-      {
-        "document": "README.md",
-        "line": 13,
-        "level": 3,
-        "title": "1. I Want to Use a Robot"
-      }
-    ],
     "1. Implement Connection Retry": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -203,7 +195,7 @@
     "1. Protection of Sensitive Data": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 378,
+        "line": 414,
         "level": 3,
         "title": "1. Protection of Sensitive Data"
       }
@@ -211,7 +203,7 @@
     "1. Reasonable Use of Log Levels": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 307,
+        "line": 343,
         "level": 3,
         "title": "1. Reasonable Use of Log Levels"
       }
@@ -281,7 +273,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 424,
+        "line": 460,
         "level": 3,
         "title": "1. Unit Tests"
       }
@@ -297,7 +289,7 @@
     "1. Use Caching": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 341,
+        "line": 377,
         "level": 3,
         "title": "1. Use Caching"
       }
@@ -313,7 +305,7 @@
     "1. Use Transactions": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 274,
+        "line": 310,
         "level": 3,
         "title": "1. Use Transactions"
       }
@@ -329,7 +321,7 @@
     "1. Version Management": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 453,
+        "line": 489,
         "level": 3,
         "title": "1. Version Management"
       }
@@ -513,7 +505,7 @@
     "2. Avoid Blocking Operations": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 362,
+        "line": 398,
         "level": 3,
         "title": "2. Avoid Blocking Operations"
       }
@@ -529,7 +521,7 @@
     "2. Batch Operations": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 290,
+        "line": 326,
         "level": 3,
         "title": "2. Batch Operations"
       }
@@ -590,14 +582,6 @@
         "title": "2. Event Object"
       }
     ],
-    "2. I Want to Develop Modules / Adapters": [
-      {
-        "document": "README.md",
-        "line": 27,
-        "level": 3,
-        "title": "2. I Want to Develop Modules / Adapters"
-      }
-    ],
     "2. Incorrect Timestamp Format": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -609,7 +593,7 @@
     "2. Input Validation": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 404,
+        "line": 440,
         "level": 3,
         "title": "2. Input Validation"
       }
@@ -623,7 +607,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 437,
+        "line": 473,
         "level": 3,
         "title": "2. Integration Tests"
       }
@@ -685,7 +669,7 @@
     "2. README Header": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 467,
+        "line": 503,
         "level": 3,
         "title": "2. README Header"
       }
@@ -789,7 +773,7 @@
     "2. Structured Logging": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 329,
+        "line": 365,
         "level": 3,
         "title": "2. Structured Logging"
       }
@@ -813,7 +797,7 @@
     "2. Timeout Handling": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 256,
+        "line": 292,
         "level": 3,
         "title": "2. Timeout Handling"
       }
@@ -1064,14 +1048,6 @@
         "line": 160,
         "level": 3,
         "title": "3. Heartbeat Keepalive and Meta Heartbeat"
-      }
-    ],
-    "3. I Want to Deeply Understand the Principles": [
-      {
-        "document": "README.md",
-        "line": 38,
-        "level": 3,
-        "title": "3. I Want to Deeply Understand the Principles"
       }
     ],
     "3. Improving Code Quality": [
@@ -1378,14 +1354,6 @@
         "title": "4. Custom Type Extension"
       }
     ],
-    "4. Ecosystem and Official Clients": [
-      {
-        "document": "README.md",
-        "line": 56,
-        "level": 3,
-        "title": "4. Ecosystem and Official Clients"
-      }
-    ],
     "4. Event Convenience Methods": [
       {
         "document": "standards/request-action-spec.md",
@@ -1632,14 +1600,6 @@
         "line": 180,
         "level": 2,
         "title": "5. Handling Unknown Events"
-      }
-    ],
-    "5. I Want to Contribute to ErisPulse": [
-      {
-        "document": "README.md",
-        "line": 67,
-        "level": 3,
-        "title": "5. I Want to Contribute to ErisPulse"
       }
     ],
     "5. Implement Send Class": [
@@ -2335,6 +2295,12 @@
         "document": "api-reference/core-modules.md",
         "line": 332,
         "level": 3,
+        "title": "API Overview"
+      },
+      {
+        "document": "ecosystem/cron.md",
+        "line": 43,
+        "level": 2,
         "title": "API Overview"
       }
     ],
@@ -3364,6 +3330,14 @@
         "title": "Batch-wide Rules and Callbacks"
       }
     ],
+    "Behavior on Module Unload": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 98,
+        "level": 2,
+        "title": "Behavior on Module Unload"
+      }
+    ],
     "Benefits of Following Standards": [
       {
         "document": "standards/README.md",
@@ -3408,6 +3382,14 @@
         "line": 441,
         "level": 2,
         "title": "Best Practices"
+      }
+    ],
+    "Best Practices for Module Development": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 1,
+        "level": 1,
+        "title": "Best Practices for Module Development"
       }
     ],
     "Binding Inheritance (merge)": [
@@ -3606,6 +3588,14 @@
         "line": 270,
         "level": 2,
         "title": "Cache and Hot Reload"
+      }
+    ],
+    "Callback": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 63,
+        "level": 3,
+        "title": "Callback"
       }
     ],
     "Callback Query Event": [
@@ -4904,6 +4894,14 @@
         "title": "Create Scaffold"
       }
     ],
+    "Create Tasks": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 45,
+        "level": 3,
+        "title": "Create Tasks"
+      }
+    ],
     "Create Your First Bot": [
       {
         "document": "getting-started/first-bot.md",
@@ -5161,7 +5159,7 @@
     "Deployment": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 451,
+        "line": 487,
         "level": 2,
         "title": "Deployment"
       }
@@ -5174,12 +5172,12 @@
         "title": "Deployment Guide"
       }
     ],
-    "Design Boundaries: Resources Not Cleared on Unload": [
+    "Design Boundaries: Resources Not Cleaned on Unload": [
       {
         "document": "advanced/ownership.md",
-        "line": 91,
+        "line": 94,
         "level": 2,
-        "title": "Design Boundaries: Resources Not Cleared on Unload"
+        "title": "Design Boundaries: Resources Not Cleaned on Unload"
       }
     ],
     "Detailed Explanation of Each Step": [
@@ -5225,7 +5223,7 @@
     "Development Methods": [
       {
         "document": "README.md",
-        "line": 76,
+        "line": 77,
         "level": 2,
         "title": "Development Methods"
       }
@@ -5345,7 +5343,7 @@
     "Do I want to list my module here too?": [
       {
         "document": "ecosystem/README.md",
-        "line": 29,
+        "line": 30,
         "level": 2,
         "title": "Do I want to list my module here too?"
       }
@@ -5700,6 +5698,14 @@
         "title": "ErisPulse-App"
       }
     ],
+    "ErisPulse-Cron": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-Cron"
+      }
+    ],
     "ErisPulse-Dashboard": [
       {
         "document": "ecosystem/dashboard.md",
@@ -5767,7 +5773,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 232,
+        "line": 268,
         "level": 2,
         "title": "Error Handling"
       },
@@ -6450,6 +6456,12 @@
         "title": "Feature Overview"
       },
       {
+        "document": "ecosystem/cron.md",
+        "line": 14,
+        "level": 2,
+        "title": "Feature Overview"
+      },
+      {
         "document": "user-guide/deployment.md",
         "line": 87,
         "level": 3,
@@ -6722,14 +6734,6 @@
         "title": "Friend Requests"
       }
     ],
-    "Full Overview of Owned Resources": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 36,
-        "level": 2,
-        "title": "Full Overview of Owned Resources"
-      }
-    ],
     "Full Parameter Overview": [
       {
         "document": "advanced/interaction.md",
@@ -6813,7 +6817,7 @@
     "Get Help": [
       {
         "document": "README.md",
-        "line": 89,
+        "line": 90,
         "level": 2,
         "title": "Get Help"
       }
@@ -6974,6 +6978,14 @@
         "line": 181,
         "level": 4,
         "title": "Group/Channel Information"
+      }
+    ],
+    "Guide to Utility Modules: Managing Handles for Other Modules": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 138,
+        "level": 2,
+        "title": "Guide to Utility Modules: Managing Handles for Other Modules"
       }
     ],
     "Guided Registration": [
@@ -7304,6 +7316,14 @@
         "title": "HttpResponse"
       }
     ],
+    "I. I Want to Use a Bot": [
+      {
+        "document": "README.md",
+        "line": 13,
+        "level": 3,
+        "title": "I. I Want to Use a Bot"
+      }
+    ],
     "I18nClass Key Path Rules": [
       {
         "document": "advanced/i18n.md",
@@ -7318,6 +7338,30 @@
         "line": 426,
         "level": 3,
         "title": "I18nManager"
+      }
+    ],
+    "II. I Want to Develop Modules / Adapters": [
+      {
+        "document": "README.md",
+        "line": 27,
+        "level": 3,
+        "title": "II. I Want to Develop Modules / Adapters"
+      }
+    ],
+    "III. I Want to Deeply Understand the Principles": [
+      {
+        "document": "README.md",
+        "line": 38,
+        "level": 3,
+        "title": "III. I Want to Deeply Understand the Principles"
+      }
+    ],
+    "IV. Ecosystem and Official Clients": [
+      {
+        "document": "README.md",
+        "line": 56,
+        "level": 3,
+        "title": "IV. Ecosystem and Official Clients"
       }
     ],
     "Image Download and Storage": [
@@ -8055,7 +8099,7 @@
     "Logging": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 305,
+        "line": 341,
         "level": 2,
         "title": "Logging"
       },
@@ -8096,6 +8140,14 @@
         "line": 60,
         "level": 2,
         "title": "MCP Server"
+      }
+    ],
+    "Manage Tasks": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 75,
+        "level": 3,
+        "title": "Manage Tasks"
       }
     ],
     "Management Functions": [
@@ -8796,6 +8848,14 @@
         "title": "Minimal Viable Module"
       }
     ],
+    "Missed Policy (`missed_policy`)": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 88,
+        "level": 3,
+        "title": "Missed Policy (`missed_policy`)"
+      }
+    ],
     "Mode 1: HTML/JS Injection (Recommended)": [
       {
         "document": "ecosystem/dashboard.md",
@@ -8839,7 +8899,7 @@
     "Module Author Guide": [
       {
         "document": "advanced/ownership.md",
-        "line": 104,
+        "line": 107,
         "level": 2,
         "title": "Module Author Guide"
       }
@@ -8866,14 +8926,6 @@
         "line": 7,
         "level": 3,
         "title": "Module Development"
-      }
-    ],
-    "Module Development Best Practices": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 1,
-        "level": 1,
-        "title": "Module Development Best Practices"
       }
     ],
     "Module Discovery Mechanism": [
@@ -9283,7 +9335,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 128,
+        "line": 131,
         "level": 3,
         "title": "Notes"
       },
@@ -9543,7 +9595,7 @@
     "Others": [
       {
         "document": "README.md",
-        "line": 83,
+        "line": 84,
         "level": 2,
         "title": "Others"
       }
@@ -9614,6 +9666,14 @@
         "title": "Overview"
       }
     ],
+    "Overview of Owned Resources": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 37,
+        "level": 2,
+        "title": "Overview of Owned Resources"
+      }
+    ],
     "Overview of SDK Top-Level Entry Points": [
       {
         "document": "advanced/startup.md",
@@ -9633,7 +9693,7 @@
     "Owner Context Mechanism": [
       {
         "document": "advanced/ownership.md",
-        "line": 13,
+        "line": 14,
         "level": 2,
         "title": "Owner Context Mechanism"
       }
@@ -9729,7 +9789,7 @@
     "Performance Optimization": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 339,
+        "line": 375,
         "level": 2,
         "title": "Performance Optimization"
       }
@@ -10268,6 +10328,12 @@
         "title": "Quick Start"
       },
       {
+        "document": "ecosystem/cron.md",
+        "line": 23,
+        "level": 2,
+        "title": "Quick Start"
+      },
+      {
         "document": "ecosystem/takumi.md",
         "line": 32,
         "level": 2,
@@ -10356,12 +10422,12 @@
         "title": "Recommended Approach: Declare Translation Keys via I18nClass (v2.7.0+)"
       }
     ],
-    "Recommended Modules and Official Clients": [
+    "Recommended Modules & Official Clients": [
       {
         "document": "ecosystem/README.md",
         "line": 19,
         "level": 2,
-        "title": "Recommended Modules and Official Clients"
+        "title": "Recommended Modules & Official Clients"
       }
     ],
     "Recommended Scenarios for Disabling Lazy Loading (lazy_load=False)": [
@@ -10380,12 +10446,12 @@
         "title": "Recommended Scenarios for Lazy Loading (lazy_load=True)"
       }
     ],
-    "Recommended Usage": [
+    "Recommended Style": [
       {
         "document": "advanced/ownership.md",
-        "line": 106,
+        "line": 109,
         "level": 3,
-        "title": "Recommended Usage"
+        "title": "Recommended Style"
       }
     ],
     "Reconnection": [
@@ -10583,7 +10649,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 508,
+        "line": 544,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -10647,13 +10713,19 @@
     "Related Links": [
       {
         "document": "README.md",
-        "line": 95,
+        "line": 96,
         "level": 2,
         "title": "Related Links"
       },
       {
         "document": "ecosystem/app.md",
         "line": 87,
+        "level": 2,
+        "title": "Related Links"
+      },
+      {
+        "document": "ecosystem/cron.md",
+        "line": 105,
         "level": 2,
         "title": "Related Links"
       },
@@ -11371,7 +11443,7 @@
     "Security": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 376,
+        "line": 412,
         "level": 2,
         "title": "Security"
       }
@@ -12115,7 +12187,7 @@
     "Storage System": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 272,
+        "line": 308,
         "level": 2,
         "title": "Storage System"
       },
@@ -12441,7 +12513,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 422,
+        "line": 458,
         "level": 2,
         "title": "Testing"
       }
@@ -12685,7 +12757,7 @@
     "Unload/Disable Cleanup Sequence": [
       {
         "document": "advanced/ownership.md",
-        "line": 69,
+        "line": 71,
         "level": 2,
         "title": "Unload/Disable Cleanup Sequence"
       }
@@ -13058,6 +13130,22 @@
         "line": 468,
         "level": 3,
         "title": "Utility Methods"
+      }
+    ],
+    "Utility Modules: When Hosting Others, You Must Catch \"Unload Notifications\"": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 232,
+        "level": 2,
+        "title": "Utility Modules: When Hosting Others, You Must Catch \"Unload Notifications\""
+      }
+    ],
+    "V. I Want to Contribute to ErisPulse": [
+      {
+        "document": "README.md",
+        "line": 68,
+        "level": 3,
+        "title": "V. I Want to Contribute to ErisPulse"
       }
     ],
     "Verification of Installation": [

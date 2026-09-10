@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1743,
+  "total_keywords": 1750,
   "keywords": {
     "ErisPulse API 文档": [
       {
@@ -890,10 +890,18 @@
         "title": "[ErisPulse.runtime.memory](ErisPulse/runtime/memory.md)"
       }
     ],
-    "[ErisPulse.runtime.plugin_reload](ErisPulse/runtime/plugin_reload.md)": [
+    "[ErisPulse.runtime.owner_cleanup](ErisPulse/runtime/owner_cleanup.md)": [
       {
         "document": "api-reference/auto_api/README.md",
         "line": 582,
+        "level": 3,
+        "title": "[ErisPulse.runtime.owner_cleanup](ErisPulse/runtime/owner_cleanup.md)"
+      }
+    ],
+    "[ErisPulse.runtime.plugin_reload](ErisPulse/runtime/plugin_reload.md)": [
+      {
+        "document": "api-reference/auto_api/README.md",
+        "line": 587,
         "level": 3,
         "title": "[ErisPulse.runtime.plugin_reload](ErisPulse/runtime/plugin_reload.md)"
       }
@@ -901,7 +909,7 @@
     "[ErisPulse.runtime.tasks](ErisPulse/runtime/tasks.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 587,
+        "line": 592,
         "level": 3,
         "title": "[ErisPulse.runtime.tasks](ErisPulse/runtime/tasks.md)"
       }
@@ -909,7 +917,7 @@
     "[ErisPulse.sdk](ErisPulse/sdk.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 592,
+        "line": 597,
         "level": 3,
         "title": "[ErisPulse.sdk](ErisPulse/sdk.md)"
       }
@@ -1900,6 +1908,14 @@
         "title": "`ErisPulse.runtime.memory` 模块"
       }
     ],
+    "`ErisPulse.runtime.owner_cleanup` 模块": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/owner_cleanup.md",
+        "line": 1,
+        "level": 1,
+        "title": "`ErisPulse.runtime.owner_cleanup` 模块"
+      }
+    ],
     "`ErisPulse.runtime.plugin_reload` 模块": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/plugin_reload.md",
@@ -2291,7 +2307,7 @@
     "`__contains__(module_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/module.md",
-        "line": 811,
+        "line": 813,
         "level": 5,
         "title": "`__contains__(module_name: str)`"
       }
@@ -2365,7 +2381,7 @@
     "`__getattr__(module_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/module.md",
-        "line": 795,
+        "line": 797,
         "level": 5,
         "title": "`__getattr__(module_name: str)`"
       }
@@ -4914,6 +4930,14 @@
         "line": 121,
         "level": 5,
         "title": "`_log_config_error(message: str, level: str = 'error')`"
+      }
+    ],
+    "`_log_failure(owner: str, callback: Callable[[str], Any])`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/owner_cleanup.md",
+        "line": 91,
+        "level": 3,
+        "title": "`_log_failure(owner: str, callback: Callable[[str], Any])`"
       }
     ],
     "`_logger_trace(message: str)`": [
@@ -8834,6 +8858,14 @@
         "title": "`async run(keep_running: bool = True)`"
       }
     ],
+    "`async run_owner_cleanups(owner: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/owner_cleanup.md",
+        "line": 75,
+        "level": 3,
+        "title": "`async run_owner_cleanups(owner: str)`"
+      }
+    ],
     "`async save()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/wrapper.md",
@@ -11728,6 +11760,14 @@
         "title": "`get_current_branch()`"
       }
     ],
+    "`get_current_caller()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/context.md",
+        "line": 67,
+        "level": 3,
+        "title": "`get_current_caller()`"
+      }
+    ],
     "`get_current_owner()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/context.md",
@@ -11739,7 +11779,7 @@
     "`get_current_trace_id()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/context.md",
-        "line": 76,
+        "line": 95,
         "level": 3,
         "title": "`get_current_trace_id()`"
       }
@@ -11835,7 +11875,7 @@
     "`get_handler_waits()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/context.md",
-        "line": 67,
+        "line": 86,
         "level": 3,
         "title": "`get_handler_waits()`"
       }
@@ -12223,7 +12263,7 @@
     "`get_send_receipts()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/context.md",
-        "line": 93,
+        "line": 112,
         "level": 3,
         "title": "`get_send_receipts()`"
       }
@@ -13356,6 +13396,14 @@
         "title": "`middleware(func: Callable)`"
       }
     ],
+    "`off_cleanup(callback: Callable[[str], Any], owner: str | None = None)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/owner_cleanup.md",
+        "line": 56,
+        "level": 3,
+        "title": "`off_cleanup(callback: Callable[[str], Any], owner: str | None = None)`"
+      }
+    ],
     "`on(event: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
@@ -13378,6 +13426,14 @@
         "line": 113,
         "level": 5,
         "title": "`on_at_message(priority: int = 0, pattern: str | None = None, regex: str | None = None)`"
+      }
+    ],
+    "`on_cleanup(callback: Callable[[str], Any])`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/owner_cleanup.md",
+        "line": 29,
+        "level": 3,
+        "title": "`on_cleanup(callback: Callable[[str], Any])`"
       }
     ],
     "`on_config_update(old_config, new_config)`": [
@@ -15828,6 +15884,12 @@
         "title": "函数列表"
       },
       {
+        "document": "api-reference/auto_api/ErisPulse/runtime/owner_cleanup.md",
+        "line": 26,
+        "level": 2,
+        "title": "函数列表"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/runtime/tasks.md",
         "line": 21,
         "level": 2,
@@ -17201,6 +17263,12 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/memory.md",
+        "line": 5,
+        "level": 2,
+        "title": "模块概述"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/owner_cleanup.md",
         "line": 5,
         "level": 2,
         "title": "模块概述"

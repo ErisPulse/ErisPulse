@@ -10110,19 +10110,20 @@ topology = sdk.get_topology()
 
 ### 归属权（owner）系统
 
-# 所屬權（owner）系統
+# 归屬權（owner）系統
 
-所屬權是模組「即插即用」的基石：模組在載入期間註冊的所有框架資源自動記名，卸載/禁用時按記名一鍵回收——模組作者只需宣告資源，無需手動撰寫清理邏輯。
+歸屬權是模組「即插即用」的基石：模組在載入期間註冊的一切框架資源自動記名，卸載/禁用時按記名一鍵回收——模組作者只需宣告資源，無需手寫清理邏輯。
 
 > **相關系統**：作用域（scope）在事件分發時決定「資源是否生效」，  
-> 所屬權在生命週期中決定「資源歸誰、誰卸載時被回收」。  
+> 歸屬權在生命週期中決定「資源歸誰、誰卸載時被回收」。  
 > 作用域詳見[統一控制面（scope）](scope.md)，背景任務詳見  
-> [生命週期管理](lifecycle.md#背景任務所屬與自動取消)。
+> [生命週期管理](lifecycle.md#背景任務歸屬與自動取消)。
 
 {!--< tips >!--}
-1. 所屬權在**註冊瞬間**按 `current_owner` 自動記錄，模組程式碼無需修改
-2. 卸載/禁用共用同一条清理鏈（`_cleanup_module_registrations`），每步失敗僅告警不中斷
-3. 用戶設定語意的資源（持久化覆寫 / scope 規則 / 命令 ACL）**不**隨模組卸載清理
+1. 歸屬在**註冊瞬間**按 `current_owner` 自動記錄，模組程式碼零修改
+2. 卸載/禁用共用同一條清理鏈（`_cleanup_module_registrations`），每步失敗僅告警不中斷
+3. 使用者設定語意的資源（持久化覆寫 / scope 規則 / 命令 ACL）**不**隨模組卸載清理
+4. 工具模組托管的外部句柄可用 `on_cleanup(cb)` 掛入清理鏈，對方模組卸載時自動回呼（見[工具模組指南](#工具模組指南托管其它模組的句柄)）
 {!--< /tips >!--}
 
 ## owner 上下文機制
@@ -10165,11 +10166,12 @@ with owner_scope("MyModule"):
 | Dashboard 首頁入口 | `router.register_home_entry()` | `unregister_home_entries_by_owner()` |
 | 自定義會話類型 | `register_custom_type()` | `unregister_custom_types_by_owner()` |
 | 後台任務 | `self.spawn()` | `cancel_owner_tasks()` |
+| 外部歸屬清理鉤子（工具模組托管） | `runtime.on_cleanup(cb)` | `run_owner_cleanups()`（卸載/禁用/適配器關閉鏈內觸發） |
 | 生命週期鉤子 | `lifecycle.register()` | `lifecycle.unregister_by_owner()` |
 | 主人身源 provider | `master.provider` | `master.unregister_by_owner()` |
 | i18n 翻譯鍵 | `I18nClass` 聲明（domain=模組名） | `i18n.unregister_domain()` |
-| 事件覆寫（執行時） | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
-| 互動會話（wait_reply 等待 / 租約） | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()`（等待方立即收到取消） |
+| 事件覆寫（運行時） | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
+| 交互會話（wait_reply 等待 / 租約） | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()`（等待方立即收到取消） |
 | 上下文數據 | `runtime/context` 按 owner 記錄 | 按模組精確清理 |
 
 適配器側的對應資源（以平台名為 owner）在適配器 `shutdown()` / `restart()` 時由 `_cleanup_adapter_resources` 回收，另含：
@@ -10179,7 +10181,7 @@ with owner_scope("MyModule"):
 | 適配器自有的 `on()` 處理器與中間件 | `adapter.unregister_handlers_by_owner(platform)` |
 | 平台事件方法擴展（`EventMixin`） | `unregister_platform_event_methods(platform)` |
 | 自定義會話類型 | `unregister_custom_types_by_owner(platform)` |
-| 互動會話（該平台掛起的 wait_reply / 租約） | `interaction.cancel_by_platform(platform)` |
+| 交互會話（該平台掛起的 wait_reply / 租約） | `interaction.cancel_by_platform(platform)` |
 | i18n 翻譯域（domain=配置鍵） | `i18n.unregister_domain(配置鍵)` |
 | 細顆粒命名空間路由 | `router.unregister_all_by_owner(platform)` |
 
@@ -10190,8 +10192,9 @@ with owner_scope("MyModule"):
 ```mermaid
 flowchart TD
     A["unload / disable"] --> B["on_unload()（超時保護）"]
-    B --> C["兜底取消後台任務（cancel_owner_tasks）"]
-    C --> D["_cleanup_module_registrations"]
+    B --> C["兜底取消背景任務（cancel_owner_tasks）"]
+    C --> C1["外部歸屬清理鉤子<br/>（工具模塊 on_cleanup 登記，run_owner_cleanups 觸發）"]
+    C1 --> D["_cleanup_module_registrations"]
     D --> D1["i18n 翻譯域"]
     D1 --> D2["路由：命名空間 + owner 兜底<br/>（含中間件 / 首頁入口）"]
     D2 --> D3["適配器事件處理器 / 中間件"]
@@ -10200,7 +10203,7 @@ flowchart TD
     D5 --> D6["運行時事件覆寫（persist=False）"]
     D6 --> D7["主人身源 provider"]
     D7 --> D8["生命週期鉤子"]
-    D8 --> E["移除 SDK 屬性 + 懶加載代理"]
+    D8 --> E["移除 SDK 屬性 + 慢加載代理"]
 ```
 
 `sdk.uninit()` 退出時另有全局兜底：全部適配器 shutdown → 全部模塊 unload →
@@ -10256,6 +10259,55 @@ class MyModule(BaseModule):
   卸載時不會被取消（詳見[生命週期管理](lifecycle.md#後台任務歸屬與自動取消)）。
 - 清理鏈「失敗僅告警」：單步清理異常不會阻斷其餘資源回收，日誌 DEBUG/WARNING
   級別可見，排障時可開啟 TRACE。
+
+## 工具模組指南：托管其他模組的句柄
+
+**場景**：定時任務、註冊表、連接池等「工具模組」會替其他模組保管物件——
+對方在 `on_load` 中呼叫 `sdk.Cron.on_trigger(handler)`，你的容器就會存下
+一個指向對方實例的回調。框架會自動清理對方註冊的所有框架資源，但清理不了
+你**私有容器中的引用**：對方卸載後你的容器仍持有它的實例，它就無法被
+GC 回收（記憶體洩漏，`purge` 泄漏診斷會報「不可回收」）。
+
+**解法**：在登記對方物件的同一個函數中呼叫 `on_cleanup()`，
+框架會在對方卸載 / 禁用時自動回呼你的清理函數：
+
+```python
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.runtime import off_cleanup, on_cleanup
+
+class CronModule(BaseModule):
+    def __init__(self):
+        self._entries = {}  # {模組名: 該模組托管的回調列表}
+
+    def on_trigger(self, handler):
+        # 自動識別呼叫方模組名（on_load 直接呼叫 / module.call 均正確），
+        # 返回值是解析出的 owner，可直接用作記名鍵
+        owner = on_cleanup(self._drop)
+        self._entries.setdefault(owner, []).append(handler)
+
+    def _drop(self, owner: str):
+        """對方模組被卸載/禁用時由框架自動呼叫：拋棄它的句柄即可"""
+        self._entries.pop(owner, None)
+
+    async def on_unload(self, event):
+        off_cleanup(self._drop)  # ③ 自己卸載前註銷鈎子，避免鈎子表持有 self
+```
+
+框架保證的行為：
+
+| 關注點 | 行為 |
+|--------|------|
+| 觸發時機 | 對方模組 unload / disable，或適配器關閉——均在框架清理鏈內觸發，早於 purge 泄漏診斷 |
+| 呼叫方識別 | 直接呼叫取 `current_owner`；經 `module.call()` 被呼叫取呼叫方（`current_caller`）；也可 `on_cleanup(cb, owner="模組名")` 明確指定 |
+| 回呼簽名 | `cb(owner: str)`，同步 / 異步均可；異步帶超時保護（`CLEANUP_CALLBACK_TIMEOUT_SECS`，預設 10 秒） |
+| 容錯 | 單個回呼異常 / 超時只記錄日誌，不影響其他鈎子與清理鏈 |
+| 重複登記 | 同一 `(owner, callback)` 幂等去重 |
+
+**什麼時候不需要**：如果對方註冊的是框架資源（命令、事件處理器、路由、
+後台任務……），框架已自動清理（見上文[歸屬資源全景](#歸屬資源全景)）。
+只有你私有容器中持有的對方句柄才需要 `on_cleanup`。
+模組開發視角的速查版見
+[最佳實踐 · 工具模組](../developer-guide/modules/best-practices.md#工具模組托管别人东西时要接住卸载通知)。
 
 
 
@@ -13740,6 +13792,114 @@ async def on_unload(self, event):
 5. **SVG 圖標** — `icon_svg` 應為完整的 `<svg>` 標籤，建議尺寸使用 `viewBox="0 0 24 24"`，使用 `stroke="currentColor"` 來繼承 Dashboard 主題色
 6. **JS 函數命名** — `js_content` 中的函數名應具有唯一性（如 `loadWeatherView`），以避免與其他模組衝突
 7. **動態更新** — 模組註冊/取消註冊視窗後，Dashboard 前端會透過 WebSocket 即時更新側邊欄，無需重新整理頁面
+
+
+
+### Cron 定时任务
+
+# ErisPulse-Cron
+
+[ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) 是 ErisPulse 生態的**定時任務調度模組**，為其他模組提供統一的定時任務 API：支援一次性定時、間隔循環、Cron 表達式三種任務類型，回呼傳參，SQLite 持久化（重啟不丟任務）。
+
+> [!IMPORTANT]
+> Cron **不是** ErisPulse 框架的內建功能，需要單獨安裝：
+>
+> ```bash
+> epsdk install Cron
+> ```
+
+安裝後透過 `sdk.Cron` 訪問全部接口。
+
+## 功能速覽
+
+- **三種定時類型**：一次性（`once`）、間隔循環（`interval`）、Cron 表達式（`cron`）
+- **回調傳參**：建立時傳入 `callback_data`，觸發時原樣返回，方便識別任務來源
+- **持久化**：任務儲存在 SQLite（經 `sdk.storage`），框架重啟後自動恢復
+- **錯過策略**：立即觸發 / 跳過 / 重新排程，可按任務選擇
+- **任務管理**：暫停、恢復、取消、手動觸發、清理過期任務
+- **Dashboard 集成**：已安裝 [ErisPulse-Dashboard](dashboard.md) 時自動註冊管理視窗
+
+## 快速開始
+
+```python
+from ErisPulse import sdk
+
+# 1. 註冊回調處理器
+@sdk.Cron.on_trigger
+async def handle_trigger(info):
+    data = info["callback_data"]
+    print(f"任務觸發: {info['task_id']}, 數據: {data}")
+
+# 2. 創建定時任務
+task_id = sdk.Cron.once(
+    delay=60,
+    callback_data={"type": "reminder", "msg": "該喝水了"},
+)
+```
+
+---
+
+## API 概覽
+
+### 創建任務
+
+```python
+# 一次性：延遲 600 秒觸發
+sdk.Cron.once(delay=600, callback_data={"order_id": "123"}, label="訂單超時提醒")
+
+# 間隔循環：每 300 秒觸發，最多 100 次
+sdk.Cron.interval(interval_seconds=300, callback_data={"monitor": "server-1"}, max_runs=100)
+
+# Cron 表達式：工作日每天 9:30
+sdk.Cron.cron(expression="30 9 * * 1-5", callback_data={"type": "daily_report"})
+
+# 通用可選參數：trigger_at（絕對時間戳）、delay（首次延遲）、timezone、
+# max_runs（0=無限）、label、source（創建者模組名）、missed_policy（錯過策略）
+```
+
+常用 Cron 表達式：`*/5 * * * *`（每 5 分鐘）、`0 8 * * *`（每天早 8 點）、`30 9 * * 1-5`（工作日 9:30）、`0 0 1 * *`（每月 1 號）。
+
+### 回調
+
+```python
+@sdk.Cron.on_trigger
+async def my_handler(info):
+    # info 含 task_id / task_type / callback_data / label / source /
+    # run_count / max_runs / created_at / last_run / trigger_time
+    ...
+```
+
+支援註冊多個 handler，全部依次調用，單個 handler 異常不會影響其他 handler。
+
+### 管理任務
+
+```python
+sdk.Cron.cancel(task_id)                  # 取消
+sdk.Cron.pause(task_id)                   # 暫停
+sdk.Cron.resume(task_id)                  # 恢復（reschedule=True 重新計算下次觸發）
+await sdk.Cron.trigger_now(task_id)       # 手動立即觸發（不影響原計劃）
+sdk.Cron.get_task(task_id)                # 查看單個任務
+sdk.Cron.list_tasks(source="MyModule")    # 列出任務（支援 source/status/task_type 過濾）
+sdk.Cron.delete_task(task_id)             # 刪除任務記錄
+sdk.Cron.cleanup()                        # 清理 7 天前的已完成/已取消任務
+```
+
+### 錯過策略（missed_policy）
+
+框架重啟後，對於錯過觸發時間的任務：
+
+| 策略 | 行為 |
+|------|------|
+| `fire_immediately` | 立即觸發（預設） |
+| `skip` | 跳過本次，等下次 |
+| `reschedule` | 從當前時間重新計算下次觸發 |
+
+## 模組卸載時的行為
+
+Cron 的任務資料是**持久化資產**：任務創建方模組被卸載或停用不會刪除已建立的任務。但該模組註冊的回呼句柄會被清除——基於歸屬權系統的[外部清理鉤子](../advanced/ownership.md#工具模組指南托管其它模組的句柄)，Cron 在替其他模組托管回呼時會自動記名，當對方模組被卸載/停用時會自動拋棄其回呼句柄，確保對方模組實例可以被正常回收。
+
+- 任務創建方**重新載入**後重新 `on_trigger` 即恢復接收觸發
+- 不再需要的任務可用 `sdk.Cron.cancel(task_id)` / `delete_task(task_id)` 清理
 
 
 
