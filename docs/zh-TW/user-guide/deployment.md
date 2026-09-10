@@ -65,18 +65,23 @@ services:
 | 變數 | 預設值 | 說明 |
 |------|--------|------|
 | `ERISPULSE_PORT` | `8000` | Dashboard 端口映射 |
-| `ERISPULSE_DASHBOARD_TOKEN` | 自动生成 | Dashboard 登入令牌（強烈建議設定） |
+| `ERISPULSE_DASHBOARD_TOKEN` | 自動產生 | Dashboard 登入令牌（強烈建議設定） |
 | `TZ` | `Asia/Shanghai` | 時區 |
-| `LANG` | `en_US.UTF-8` | 系統語言，自動偵測啟動畫面語言 |
-| `ERISPULSE_LANG` | 空 | 強制啟動畫面語言：`zh` / `zh_TW` / `en` / `ja` / `ru`（覆蓋 `LANG`） |
+| `LANG` | `en_US.UTF-8` | 系統語言，自動偵測啟動介面語言 |
+| `ERISPULSE_LANG` | 空 | 強制啟動介面語言：`zh` / `zh_TW` / `en` / `ja` / `ru`（覆蓋 `LANG`） |
 
-### 數據持久化
+### 資料持久化
 
 `./config` 目錄掛載了設定檔和資料庫，包含：
 
 - `config/config.toml` — 設定檔
-- `config/config.db` — SQLite 存儲資料庫
+- `config/config.db` — SQLite 儲存資料庫
 - `config/.packages` — Python site-packages 持久化卷，保存框架、適配器和已安裝模組（首次啟動時由入口點從鏡像內建備份自動初始化，之後的模組安裝與框架熱更新均寫入此目錄）
+
+> **框架升級（含 pre/rc）與鏡像自愈**：入口點會在每次容器啟動時做核心套件完整性自檢，  
+> 損壞時按「使用者已安裝版本優先」原則修復——持久卷內顯式安裝/升級的版本  
+> （如 Dashboard 安裝的 pre 版本）會從 PyPI **重裝同版本**，絕不靜默回退到  
+> 鏡像內建版本。因此 Dashboard 升級框架後，任意次容器重啟都應保持目標版本。
 
 ## Dashboard 管理面板
 

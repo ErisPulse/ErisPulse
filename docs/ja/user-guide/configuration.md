@@ -151,9 +151,9 @@ ssl_certfile = ""
 ssl_keyfile = ""
 
 [ErisPulse.master]
-# users には2種類の書き方が可能です（どちらか1つを選択してください）：
-#   グローバルなオーナー（すべてのプラットフォームに適用）：users = ["123456", "789012"]
-#   プラットフォームごとにオーナーを指定：users = { yunhu = ["123456"], telegram = ["789012"] }
+# users には2つの書式がサポートされています（どちらか一方を選択してください）：
+#   グローバルな所有者（すべてのプラットフォームに適用）：users = ["123456", "789012"]
+#   プラットフォームごとに所有者を指定：users = { yunhu = ["123456"], telegram = ["789012"] }
 users = {}
 
 [ErisPulse.logger]
@@ -178,6 +178,7 @@ modules = []
 adapters = []
 
 [ErisPulse.storage]
+backend = "sqlite"
 use_global_db = false
 
 [ErisPulse.event.command]
@@ -400,14 +401,52 @@ adapters = ["OldAdapter"]
 
 ## ストレージ設定
 
+2.8.0 から、ストレージエンジンは3種類の非同期バックエンドをサポートしています。**API は完全に同一で、設定の切り替えはワンクリック**です。
+
+| バックエンド | ドライバー | インストール | 特徴 |
+|------|------|------|------|
+| SQLite（デフォルト） | aiosqlite | オープン時に即座に使用可能 | 零設定、単一ファイル、WAL による並行処理 |
+| MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | 既存の MySQL インフラストラクチャ、複数インスタンスの共有 |
+| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | トランザクション能力が高く、高並行処理に対応 |
+
 ```toml
 [ErisPulse.storage]
-use_global_db = false
+backend = "sqlite"        # "sqlite"（デフォルト）/ "mysql" / "postgres"
+use_global_db = false     # 仅 SQLite: パッケージ内グローバルデータベース data/config.db を使用するか
+
+[ErisPulse.storage.mysql]      # backend = "mysql" の場合に有効
+host = "127.0.0.1"
+port = 3306
+user = "erispulse"
+password = ""
+database = "erispulse"
+# charset = "utf8mb4"
+# pool_min = 1
+# pool_max = 10
+
+[ErisPulse.storage.postgres]   # backend = "postgres" の場合に有効
+host = "127.0.0.1"
+port = 5432
+user = "erispulse"
+password = ""
+database = "erispulse"
+# pool_min = 1
+# pool_max = 10
 ```
 
 | 設定項目 | 型 | デフォルト値 | 説明 |
 |---------|------|---------|------|
-| use_global_db | boolean | false | グローバルデータベース（パッケージ内）を使用するかどうか。`true` の場合、すべてのプロジェクトが ErisPulse パッケージ内の SQLite データベースを共有します。`false`（デフォルト）の場合は、各プロジェクトが `config/` ディレクトリ下の独立したデータベースを使用します。 |
+| backend | string | sqlite | ストレージバックエンド: `sqlite` / `mysql` / `postgres`、コード変更なしで切り替え可能 |
+| use_global_db | boolean | false | 仅 SQLite: プロジェクト固有のデータベースではなく、パッケージ内グローバルデータベースを使用するか |
+| storage.mysql.* | table | 上記参照 | MySQL 接続パラメータ (host / port / user / password / database / charset / pool) |
+| storage.postgres.* | table | 上記参照 | PostgreSQL 接続パラメータ (host / port / user / password / database / pool) |
+
+環境変数による上書きもサポートしています（Docker / 12-factor）: `ErisPulse.storage.postgres.host` → `ERISPULSE_STORAGE_POSTGRES_HOST`。
+
+> [!TIP]
+> - 接続パラメータの変更後は、フレームワークの再起動が必要です。接続プールの作成が瞬間的に失敗した場合、指数関数的な退避再試行が自動的に行われます。
+> - バックエンドの切り替え前に、検証スクリプトで自己チェックが可能です: `python tests/devs/test_storage_backend_verify.py --backend mysql`
+> - トランザクション / 方言の違い / 自作バックエンドなど、詳細な説明は[ストレージバックエンド](../advanced/storage-backends.md)をご覧ください。
 
 ## イベント設定
 

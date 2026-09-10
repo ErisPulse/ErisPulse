@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "62b53a2ddde8741568b3527061ce83ff",
-  "file_hash": "62b53a2ddde8741568b3527061ce83ff",
-  "translated_at": "2026-09-08T05:37:10.100982",
+  "hash": "e81b387bf6241d50fc0a29b589e16431",
+  "file_hash": "e81b387bf6241d50fc0a29b589e16431",
+  "translated_at": "2026-09-10T07:02:49.344681",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -16,6 +16,10 @@
     {
       "hash": "04941a69ef97cd6fa94ff680d5ce273c",
       "translation": "## 連接參數\n\n### MySQL（`ErisPulse.storage.mysql`）\n\n```toml\n[ErisPulse.storage.mysql]\nhost = \"127.0.0.1\"\nport = 3306\nuser = \"erispulse\"\npassword = \"\"\ndatabase = \"erispulse\"\ncharset = \"utf8mb4\"\npool_min = 1\npool_max = 10\n```\n\n### PostgreSQL（`ErisPulse.storage.postgres`）\n\n```toml\n[ErisPulse.storage.postgres]\nhost = \"127.0.0.1\"\nport = 5432\nuser = \"erispulse\"\npassword = \"\"\ndatabase = \"erispulse\"\npool_min = 1\npool_max = 10\n```\n\n> [!NOTE]\n> 連接參數變更後需重啟框架生效（配置熱更新時會輸出重啟提醒日誌）。\n> 連接池按事件循環惰性建立，建立瞬時失敗（網路抖動 / 資料庫重啟窗口）會自動指數退避重試。"
+    },
+    {
+      "hash": "e2a9f5a1780ab5799315f1c00995abaf",
+      "translation": "## 連接失敗行為\n\n框架啟動與運行**不依賴資料庫可達**——MySQL / PostgreSQL 連接失敗不會導致框架崩潰或無法啟動：\n\n1. 建池瞬時失敗自動指數退避重試（預設 3 次）\n2. 重試耗盡 → 記錄 WARNING（含原因與冷卻時長），框架照常啟動 / 繼續運行，僅儲存操作暫不可用\n3. 冷卻期（預設 30 秒）內後續儲存操作**快速失敗**（不阻塞、不拖慢其餘功能）\n4. 冷卻結束自動重連嘗試——資料庫恢復後儲存隨之恢復，無需重啟\n\n日誌範例：`mysql 連接池建立最終失敗（已重試 3 次），30 秒後自動重連；期間儲存操作將快速失敗，框架其餘功能不受影響`"
     },
     {
       "hash": "5e228c9acaa842fed2641f61482b3281",

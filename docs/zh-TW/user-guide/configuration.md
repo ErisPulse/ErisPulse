@@ -148,8 +148,7 @@ flowchart TD
 | 存儲 | `config.updated` | `use_global_db` 變更**僅警告**（需重新啟動） |
 | 路由 | `config.updated` | `cors.*` / `security.*` 變更**僅警告**（需重新啟動） |
 
-
-## 完整配置範例
+## 完整配置示例
 
 ```toml
 [ErisPulse.server]
@@ -160,7 +159,7 @@ ssl_certfile = ""
 ssl_keyfile = ""
 
 [ErisPulse.master]
-# users 支援兩種寫法（二選一）：
+# users 支持兩種寫法（二選一）：
 #   全局主人（所有平台生效）：users = ["123456", "789012"]
 #   按平台指定主人：users = { yunhu = ["123456"], telegram = ["789012"] }
 users = {}
@@ -187,6 +186,7 @@ modules = []
 adapters = []
 
 [ErisPulse.storage]
+backend = "sqlite"
 use_global_db = false
 
 [ErisPulse.event.command]
@@ -410,14 +410,52 @@ adapters = ["OldAdapter"]
 
 ## 存儲配置
 
+2.8.0 起儲存引擎支援三種非同步後端，**API 完全一致、配置一鍵切換**：
+
+| 後端 | 驅動 | 安裝 | 特點 |
+|------|------|------|------|
+| SQLite（預設） | aiosqlite | 開箱即用 | 零設定、單檔案、WAL 並發 |
+| MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | 已有 MySQL 基礎設施、多實例共享 |
+| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | 事務能力強、高併發 |
+
 ```toml
 [ErisPulse.storage]
-use_global_db = false
+backend = "sqlite"        # "sqlite"（預設）/ "mysql" / "postgres"
+use_global_db = false     # 僅 SQLite：使用套件內全域資料庫 data/config.db
+
+[ErisPulse.storage.mysql]      # backend = "mysql" 時生效
+host = "127.0.0.1"
+port = 3306
+user = "erispulse"
+password = ""
+database = "erispulse"
+# charset = "utf8mb4"
+# pool_min = 1
+# pool_max = 10
+
+[ErisPulse.storage.postgres]   # backend = "postgres" 時生效
+host = "127.0.0.1"
+port = 5432
+user = "erispulse"
+password = ""
+database = "erispulse"
+# pool_min = 1
+# pool_max = 10
 ```
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| use_global_db | boolean | false | 是否使用全域資料庫（包內）而非專案資料庫。`true` 時所有專案共享 ErisPulse 包內的 SQLite 資料庫；`false`（預設）時每個專案使用 `config/` 目錄下獨立的資料庫 |
+| backend | string | sqlite | 儲存後端：`sqlite` / `mysql` / `postgres`，切換零程式碼變更 |
+| use_global_db | boolean | false | 僅 SQLite：是否使用套件內全域資料庫而非專案獨立資料庫 |
+| storage.mysql.* | table | 見上 | MySQL 連線參數（host / port / user / password / database / charset / pool） |
+| storage.postgres.* | table | 見上 | PostgreSQL 連線參數（host / port / user / password / database / pool） |
+
+也支援環境變數覆蓋（Docker / 12-factor）：`ErisPulse.storage.postgres.host` → `ERISPULSE_STORAGE_POSTGRES_HOST`。
+
+> [!TIP]
+> - 連線參數變更後需重啟框架生效；連線池建立瞬時失敗會自動指數退避重試
+> - 切換後端前可用驗證腳本自檢：`python tests/devs/test_storage_backend_verify.py --backend mysql`
+> - 事務 / 方言差異 / 自訂後端等完整說明見[儲存後端](../advanced/storage-backends.md)
 
 ## 事件配置
 

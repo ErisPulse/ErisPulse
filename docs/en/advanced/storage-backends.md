@@ -67,6 +67,17 @@ pool_max = 10
 > Changes to connection parameters require a framework restart to take effect (a restart reminder log is output during hot configuration updates).
 > Connection pools are lazily created per event loop, and transient connection failures (e.g., network fluctuations or database restart windows) are automatically retried with exponential backoff.
 
+## Connection Failure Behavior
+
+The framework's startup and operation **do not depend on database reachability**—MySQL / PostgreSQL connection failures will not cause the framework to crash or fail to start:
+
+1. Instant pool creation failure triggers automatic exponential backoff retry (default 3 attempts)
+2. After exhausting retries → logs a WARNING (including reason and cooldown duration), the framework starts / continues running as normal, with only storage operations temporarily unavailable
+3. During the cooldown period (default 30 seconds), subsequent storage operations **fail quickly** (without blocking or slowing down other functions)
+4. Automatic reconnection attempt after cooldown ends—once the database recovers, storage becomes available again without requiring a restart
+
+Log example: `mysql connection pool creation failed after 3 retries, automatic reconnection in 30 seconds; storage operations will fail quickly during this period, while other framework functions remain unaffected`
+
 ## Native Asynchronous API
 
 ```python

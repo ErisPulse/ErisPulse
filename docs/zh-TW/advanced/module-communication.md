@@ -5,14 +5,14 @@
 
 ErisPulse 的模組之間有**三層通訊模型**，依「點對點 → 定向 → 廣播」排列：
 
-| 層 | API | 語意 | 典型場景 |
+| 層 | API | 語義 | 典型場景 |
 |---|---|---|---|
-| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | 點對點請求-回應，帶合約 / 審計 / 超時 | 呼叫另一模組的能力（查詢歷史、翻譯、退款） |
-| **定向事件** | `await sdk.module.emit_to("Chat", "message_received", {...})` | 投遞給指定模組的通知 | 上游狀態變更通知下游（「收到新訊息了」） |
-| **廣播** | `await lifecycle.emit("config.updated", {...})` | 全框架可見的生命週期事件 | 配置熱更新、模組上下線 |
+| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | 點對點請求-回應，帶契約 / 審計 / 超時 | 調用另一模組的能力（查詢歷史、翻譯、退款） |
+| **定向事件** | `await lifecycle.emit("message_received", {...}, to="Chat")` | 僅分發給指定模組註冊的生命周期鉤子 | 上游狀態變更通知下游（「收到新訊息了」） |
+| **廣播** | `await lifecycle.emit("config.updated", {...})` | 全框架可見的生命周期事件 | 配置熱更新、模組上下線 |
 
 {!--< tips >!--}
-選型口訣：**要回傳值用 `call`，只通知一個模組用 `emit_to`，通知所有人用 `lifecycle`**。
+選型口訣：**要回傳值用 `call`，只通知一個模組的鉤子用 `emit(..., to=...)`，通知所有人用 `emit(...)`**。
 {!--< /tips >!--}
 
 ## RPC：module.call
@@ -131,37 +131,51 @@ deny = ["Chat.get_history"]        # 禁止 CallerModule 呼叫 Chat 的 get_his
 
 配置方式詳見 [作用域（scope）](docs/zh-TW/scope.md) 的出站維度。
 
-## 定向事件：emit_to
+## 定向事件：lifecycle.emit 的 to 參數
+
+生命週期事件支援定向傳播：`to` 指定目標擁有者（owner）後，事件只分發給以該
+owner 身份註冊的鉤子（模組在 `on_load` 內註冊的鉤子自動歸屬本模組），
+其它模組與通配符 `*` 處理器不感知。
 
 ```python
-# 投遞方：校驗目標啟用後，事件進入 module.<名稱>.<事件> 命名空間
-await sdk.module.emit_to("Chat", "message_received", {"text": "hi", "from": "u1"})
-
-# 訂閱方（Chat 模組內）：按命名空間註冊鈎子
 from ErisPulse.Core.lifecycle import lifecycle
 
-@lifecycle.on("module.Chat.message_received")
+# 投遞方：事件只投給 Chat 模組註冊的鉤子
+await lifecycle.emit("message_received", {"text": "hi", "from": "u1"}, to="Chat")
+
+# 訂閱方（Chat 模組內）：註冊同名鉤子，owner 在註冊時自動記錄
+@lifecycle.on("message_received")
 async def on_message_received(data): ...
 
-@lifecycle.on("module.Chat")          # 或接收該模組的全部定向事件
+@lifecycle.on("message")          # 點式父級前綴同樣生效（按 owner 過濾）
 async def on_any(data): ...
 ```
 
-語意細節：
+語義細節：
 
-- 目標未註冊 / 未啟用 → `ModuleNotAvailableError`（**不發往不存在的地方**）
-- 目標是懶加載模組 → **先喚醒再投遞**（定向事件即激活源，與 `activate_on` 語意對齊）
+- 目標 owner 無已註冊鉤子 → 事件**靜默丟棄**（**不發往不存在的地方**），
+  可用 `lifecycle.has_handlers("message_received")` 提前探測
 - `data` 為 dict 時自動攜帶 `_trace_id`（不覆蓋已有值），與全鏈路追蹤打通
+- 廣播與定向共用一套鉤子註冊：`emit(...)` 不帶 `to` 即全框架廣播，
+  帶 `to` 則同一事件只對目標模組可見
+- `emit_sync` / `submit_event`（相容 API）同樣支援 `to=` 參數
 
-## 懶加載與呼叫
+> [!NOTE]
+> 定向事件是輕量通知，**不做目標校驗與懶喚醒**；需要目標存在性校驗、
+> 契約審計或返回值時，改用 [RPC：module.call](#rpcmodulecall)。
 
-`module.call()` 與 `emit_to()` 對懶加載模組都是**透明喚醒**：
+## 慢載與呼叫
 
-- 事件驅動懶模組（`activate_on` 聲明）→ 走激活鎖 `_activate()`，激活後觸發器 stub 自動註銷
-- 普通懶模組 → 同步初始化或常規加載路徑（冪等）
-- 喚醒失敗 → `ModuleNotAvailableError`（`call`）/ 激活失敗（`emit_to`）
+`module.call()` 對慢載模組是**透明喚醒**：
 
-也就是說：**呼叫方不需要關心目標模組是否已加載**，也無需為喚醒它而等待某條事件。
+- 事件驅動慢載模組（`activate_on` 聲明）→ 走激活鎖 `_activate()`，激活後觸發器 stub 自動註銷
+- 普通慢載模組 → 同步初始化或常規載入路徑（冪等）
+- 喚醒失敗 → `ModuleNotAvailableError`
+
+也就是說：**呼叫方不需要關心目標模組是否已載入**，也不需要為了喚醒它而等待任何事件。
+
+定向事件（`lifecycle.emit(..., to=...)`）不做慢載喚醒——目標未載入即無鉤子，  
+事件靜默丟棄；需要確保傳送到時改用 `module.call()`。
 
 ## 冷啟動回放
 
