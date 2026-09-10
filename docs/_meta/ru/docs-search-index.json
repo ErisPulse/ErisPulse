@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1602,
+  "total_keywords": 1604,
   "keywords": {
     "0 Успешно (OK)": [
       {
@@ -96,6 +96,12 @@
         "line": 454,
         "level": 3,
         "title": "1. Классификация обработки исключений"
+      },
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 268,
+        "level": 3,
+        "title": "1. Классификация обработки исключений"
       }
     ],
     "1. Когда отправлять мета-события": [
@@ -118,6 +124,12 @@
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 508,
+        "level": 3,
+        "title": "1. Модульные тесты"
+      },
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 459,
         "level": 3,
         "title": "1. Модульные тесты"
       }
@@ -168,14 +180,6 @@
         "line": 799,
         "level": 3,
         "title": "1. Обработка исключений"
-      }
-    ],
-    "1. Обработка исключений по категориям": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 269,
-        "level": 3,
-        "title": "1. Обработка исключений по категориям"
       }
     ],
     "1. Объект SDK": [
@@ -328,14 +332,6 @@
         "line": 55,
         "level": 3,
         "title": "1. Уровень обнаружения: Finder"
-      }
-    ],
-    "1. Юнит-тесты": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 459,
-        "level": 3,
-        "title": "1. Юнит-тесты"
       }
     ],
     "1. Я хочу использовать бота": [
@@ -538,14 +534,6 @@
         "title": "2. Базовая структура ответа"
       }
     ],
-    "2. Валидация входных данных": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 439,
-        "level": 3,
-        "title": "2. Валидация входных данных"
-      }
-    ],
     "2. Внутренний класс Send (в большинстве случаев не нужно переопределять)": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -592,12 +580,28 @@
         "title": "2. Интеграционные тесты"
       }
     ],
+    "2. Корректное выполнение асинхронных операций": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 133,
+        "level": 3,
+        "title": "2. Корректное выполнение асинхронных операций"
+      }
+    ],
     "2. Логирование": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 487,
         "level": 3,
         "title": "2. Логирование"
+      }
+    ],
+    "2. Массовые операции": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 325,
+        "level": 3,
+        "title": "2. Массовые операции"
       }
     ],
     "2. Методы-модификаторы возвращают self": [
@@ -616,6 +620,14 @@
         "title": "2. Механизм выбора аккаунта"
       }
     ],
+    "2. Нормы именования модулей": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 27,
+        "level": 3,
+        "title": "2. Нормы именования модулей"
+      }
+    ],
     "2. Обновление версии": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -624,12 +636,12 @@
         "title": "2. Обновление версии"
       }
     ],
-    "2. Обработка тайм-аутов": [
+    "2. Обработка таймаутов": [
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 291,
         "level": 3,
-        "title": "2. Обработка тайм-аутов"
+        "title": "2. Обработка таймаутов"
       }
     ],
     "2. Объект Event": [
@@ -646,14 +658,6 @@
         "line": 17,
         "level": 3,
         "title": "2. Отправка мета-событий"
-      }
-    ],
-    "2. Пакетные операции": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 325,
-        "level": 3,
-        "title": "2. Пакетные операции"
       }
     ],
     "2. Параметры спецификации": [
@@ -680,20 +684,12 @@
         "title": "2. Получение событий (POST)"
       }
     ],
-    "2. Правила именования модулей": [
+    "2. Проверка входных данных": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 27,
+        "line": 439,
         "level": 3,
-        "title": "2. Правила именования модулей"
-      }
-    ],
-    "2. Правильное выполнение асинхронных операций": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 133,
-        "level": 3,
-        "title": "2. Правильное выполнение асинхронных операций"
+        "title": "2. Проверка входных данных"
       }
     ],
     "2. Публикация на PyPI": [
@@ -1096,12 +1092,12 @@
         "title": "3. Примеры форматов событий"
       }
     ],
-    "3. Регистрация обработчика событий": [
+    "3. Регистрация обработчиков событий": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 216,
+        "line": 215,
         "level": 3,
-        "title": "3. Регистрация обработчика событий"
+        "title": "3. Регистрация обработчиков событий"
       }
     ],
     "3. Регистрация: register_to_manager": [
@@ -2640,20 +2636,28 @@
         "title": "HTTP декораторы"
       }
     ],
-    "HTTP маршрутизация": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 237,
-        "level": 3,
-        "title": "HTTP маршрутизация"
-      }
-    ],
     "HTTP-запросы": [
       {
         "document": "advanced/http-client.md",
         "line": 20,
         "level": 3,
         "title": "HTTP-запросы"
+      }
+    ],
+    "HTTP-клиент": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 305,
+        "level": 3,
+        "title": "HTTP-клиент"
+      }
+    ],
+    "HTTP-маршрутизация": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 247,
+        "level": 3,
+        "title": "HTTP-маршрутизация"
       }
     ],
     "HTTPStatusError": [
@@ -2691,7 +2695,7 @@
     "Interaction — `Core/Event/interaction.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 72,
+        "line": 99,
         "level": 3,
         "title": "Interaction — `Core/Event/interaction.py`"
       }
@@ -2742,6 +2746,14 @@
         "line": 66,
         "level": 2,
         "title": "Middleware"
+      }
+    ],
+    "Module-серия — `Core/module.py` (`sdk.module.call`)": [
+      {
+        "document": "advanced/errors.md",
+        "line": 111,
+        "level": 3,
+        "title": "Module-серия — `Core/module.py` (`sdk.module.call`)"
       }
     ],
     "MySQL (`ErisPulse.storage.mysql`)": [
@@ -2872,6 +2884,14 @@
         "title": "Storage (Хранилище)"
       }
     ],
+    "Storage-серия — `Core/storage` / `Core/Bases/sql_base.py`": [
+      {
+        "document": "advanced/errors.md",
+        "line": 88,
+        "level": 3,
+        "title": "Storage-серия — `Core/storage` / `Core/Bases/sql_base.py`"
+      }
+    ],
     "Supervisor": [
       {
         "document": "user-guide/deployment.md",
@@ -2923,7 +2943,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 252,
+        "line": 262,
         "level": 3,
         "title": "WebSocket"
       }
@@ -2974,6 +2994,14 @@
         "line": 316,
         "level": 2,
         "title": "WebSocket-подключение"
+      }
+    ],
+    "WebSocket-серия — `Core/client.py` (методы `send` / `receive`)": [
+      {
+        "document": "advanced/errors.md",
+        "line": 81,
+        "level": 3,
+        "title": "WebSocket-серия — `Core/client.py` (методы `send` / `receive`)"
       }
     ],
     "WebSocket-соединение": [
@@ -4182,14 +4210,6 @@
         "title": "Вложенный класс Send"
       }
     ],
-    "Внутренняя проверка параметров фреймворка (ValueError)": [
-      {
-        "document": "advanced/errors.md",
-        "line": 103,
-        "level": 3,
-        "title": "Внутренняя проверка параметров фреймворка (ValueError)"
-      }
-    ],
     "Внутренняя разбивка цепочки горячей перезагрузки": [
       {
         "document": "user-guide/configuration.md",
@@ -4409,7 +4429,7 @@
     "Вызов": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 306,
+        "line": 357,
         "level": 3,
         "title": "Вызов"
       }
@@ -4732,6 +4752,14 @@
         "line": 486,
         "level": 2,
         "title": "Диагностика окружения"
+      }
+    ],
+    "Дизайн модуля": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 5,
+        "level": 2,
+        "title": "Дизайн модуля"
       }
     ],
     "Динамические данные": [
@@ -5057,7 +5085,7 @@
     "Жизненный цикл адаптера": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 171,
+        "line": 181,
         "level": 3,
         "title": "Жизненный цикл адаптера"
       }
@@ -5073,7 +5101,7 @@
     "Жизненный цикл модуля": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 162,
+        "line": 171,
         "level": 3,
         "title": "Жизненный цикл модуля"
       },
@@ -5342,20 +5370,20 @@
         "title": "Извлечение данных сегментов сообщений"
       }
     ],
+    "Изменение конфигурации": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 156,
+        "level": 3,
+        "title": "Изменение конфигурации"
+      }
+    ],
     "Изменение структуры таблицы": [
       {
         "document": "advanced/sql-builder.md",
         "line": 58,
         "level": 3,
         "title": "Изменение структуры таблицы"
-      }
-    ],
-    "Изменения конфигурации": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 147,
-        "level": 3,
-        "title": "Изменения конфигурации"
       }
     ],
     "Изоляция методов платформ": [
@@ -5440,6 +5468,22 @@
         "line": 1,
         "level": 1,
         "title": "Инструкция по поддержке документации"
+      }
+    ],
+    "Инструментальные модули: при хранении чужих объектов нужно учитывать \"уведомление об отключении\"": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 231,
+        "level": 2,
+        "title": "Инструментальные модули: при хранении чужих объектов нужно учитывать \"уведомление об отключении\""
+      }
+    ],
+    "Инструменты": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 366,
+        "level": 3,
+        "title": "Инструменты"
       }
     ],
     "Инструменты разработки": [
@@ -5959,7 +6003,7 @@
     "Командная система": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 222,
+        "line": 232,
         "level": 3,
         "title": "Командная система"
       }
@@ -6420,14 +6464,6 @@
         "title": "Лучшие практики обработки событий"
       }
     ],
-    "Лучшие практики разработки модулей": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 1,
-        "level": 1,
-        "title": "Лучшие практики разработки модулей"
-      }
-    ],
     "Маршрутизатор": [
       {
         "document": "advanced/router.md",
@@ -6458,6 +6494,14 @@
         "line": 20,
         "level": 3,
         "title": "Массовые операции"
+      }
+    ],
+    "Межкультурная локализация": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 315,
+        "level": 3,
+        "title": "Межкультурная локализация"
       }
     ],
     "Менеджер адаптеров": [
@@ -7120,14 +7164,6 @@
         "title": "Модуль запросов"
       }
     ],
-    "Модуль инструментов: при хранении чужих вещей нужно ловить \"уведомления об отключении\"": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 232,
-        "level": 2,
-        "title": "Модуль инструментов: при хранении чужих вещей нужно ловить \"уведомления об отключении\""
-      }
-    ],
     "Модуль метасобытий Meta": [
       {
         "document": "api-reference/event-system.md",
@@ -7426,6 +7462,14 @@
         "title": "Обзор типов событий"
       }
     ],
+    "Обзор точек остановки хука": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 113,
+        "level": 2,
+        "title": "Обзор точек остановки хука"
+      }
+    ],
     "Обзор функций": [
       {
         "document": "user-guide/deployment.md",
@@ -7589,7 +7633,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 267,
+        "line": 266,
         "level": 2,
         "title": "Обработка ошибок"
       },
@@ -8061,7 +8105,7 @@
     "Описание исключений и места их возникновения": [
       {
         "document": "advanced/errors.md",
-        "line": 32,
+        "line": 59,
         "level": 2,
         "title": "Описание исключений и места их возникновения"
       }
@@ -8244,6 +8288,14 @@
         "title": "Описание функций платформы — универсальный мостовой адаптер Webhook"
       }
     ],
+    "Определение стандартных событий": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 321,
+        "level": 2,
+        "title": "Определение стандартных событий"
+      }
+    ],
     "Оптимизация производительности": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -8266,14 +8318,6 @@
         "line": 5,
         "level": 2,
         "title": "Основная архитектура SDK"
-      }
-    ],
-    "Основная инициализация": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 139,
-        "level": 3,
-        "title": "Основная инициализация"
       }
     ],
     "Основная информация": [
@@ -8901,7 +8945,7 @@
     "Отправка сообщений": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 207,
+        "line": 217,
         "level": 3,
         "title": "Отправка сообщений"
       },
@@ -9720,12 +9764,12 @@
         "title": "Позиция конфигурационного файла"
       }
     ],
-    "Полная справочная информация по API": [
+    "Полная справочная документация API": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 296,
+        "line": 347,
         "level": 2,
-        "title": "Полная справочная информация по API"
+        "title": "Полная справочная документация API"
       }
     ],
     "Полная цепочка проверки ответа": [
@@ -10091,7 +10135,7 @@
     "Прием и обработка событий": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 183,
+        "line": 193,
         "level": 3,
         "title": "Прием и обработка событий"
       }
@@ -10139,7 +10183,7 @@
     "Пример использования в модуле": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 324,
+        "line": 376,
         "level": 2,
         "title": "Пример использования в модуле"
       }
@@ -10477,7 +10521,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 382,
+        "line": 434,
         "level": 2,
         "title": "Примечания"
       },
@@ -10511,7 +10555,7 @@
     "Принадлежность и автоматическое отмена фоновых задач": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 351,
+        "line": 403,
         "level": 2,
         "title": "Принадлежность и автоматическое отмена фоновых задач"
       }
@@ -10646,6 +10690,14 @@
         "title": "Проверка наличия слушателей (has_handlers)"
       }
     ],
+    "Проверка параметров внутри фреймворка (ValueError)": [
+      {
+        "document": "advanced/errors.md",
+        "line": 140,
+        "level": 3,
+        "title": "Проверка параметров внутри фреймворка (ValueError)"
+      }
+    ],
     "Проверка поддержки платформой": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -10714,14 +10766,6 @@
         "line": 438,
         "level": 3,
         "title": "Продолжение при ошибках и повторная отправка"
-      }
-    ],
-    "Проектирование модулей": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 5,
-        "level": 2,
-        "title": "Проектирование модулей"
       }
     ],
     "Промежуточные обработчики": [
@@ -11203,7 +11247,7 @@
     "Регистрация и отмена": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 298,
+        "line": 349,
         "level": 3,
         "title": "Регистрация и отмена"
       }
@@ -11360,12 +11404,20 @@
         "title": "Рекомендации по лучшим практикам разработки адаптеров"
       }
     ],
-    "Рекомендации по перехвату исключений": [
+    "Рекомендации по перехвату": [
       {
         "document": "advanced/errors.md",
-        "line": 107,
+        "line": 146,
         "level": 2,
-        "title": "Рекомендации по перехвату исключений"
+        "title": "Рекомендации по перехвату"
+      }
+    ],
+    "Рекомендации по разработке модулей": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 1,
+        "level": 1,
+        "title": "Рекомендации по разработке модулей"
       }
     ],
     "Рекомендованные сценарии использования ленивой загрузки (lazy_load=True)": [
@@ -11635,7 +11687,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 392,
+        "line": 444,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -11895,33 +11947,9 @@
     "Серия Client — `Core/client.py` / `Core/Bases/client.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 34,
-        "level": 3,
-        "title": "Серия Client — `Core/client.py` / `Core/Bases/client.py`"
-      }
-    ],
-    "Серия Module — `Core/module.py` (`sdk.module.call`)": [
-      {
-        "document": "advanced/errors.md",
-        "line": 82,
-        "level": 3,
-        "title": "Серия Module — `Core/module.py` (`sdk.module.call`)"
-      }
-    ],
-    "Серия Storage — `Core/storage` / `Core/Bases/sql_base.py`": [
-      {
-        "document": "advanced/errors.md",
         "line": 61,
         "level": 3,
-        "title": "Серия Storage — `Core/storage` / `Core/Bases/sql_base.py`"
-      }
-    ],
-    "Серия WebSocket — `Core/client.py` (`send` / `receive`)": [
-      {
-        "document": "advanced/errors.md",
-        "line": 54,
-        "level": 3,
-        "title": "Серия WebSocket — `Core/client.py` (`send` / `receive`)"
+        "title": "Серия Client — `Core/client.py` / `Core/Bases/client.py`"
       }
     ],
     "Сетевой клиент": [
@@ -12580,6 +12608,14 @@
         "title": "Сортировка, пагинация"
       }
     ],
+    "Состояние подключения к хранилищу": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 283,
+        "level": 3,
+        "title": "Состояние подключения к хранилищу"
+      }
+    ],
     "Сохранение данных": [
       {
         "document": "user-guide/deployment.md",
@@ -12698,14 +12734,6 @@
         "line": 153,
         "level": 3,
         "title": "Список поддерживаемых методов отправки"
-      }
-    ],
-    "Список точек останова хуков": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 113,
-        "level": 2,
-        "title": "Список точек останова хуков"
       }
     ],
     "Способ 1: Локальный процесс (рекомендуется)": [
@@ -12988,14 +13016,6 @@
         "title": "Стандартные действия"
       }
     ],
-    "Стандартные определения событий": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 273,
-        "level": 2,
-        "title": "Стандартные определения событий"
-      }
-    ],
     "Стандартные ответы API": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -13204,6 +13224,14 @@
         "line": 146,
         "level": 2,
         "title": "Структура проекта"
+      }
+    ],
+    "Структурированные свойства": [
+      {
+        "document": "advanced/errors.md",
+        "line": 34,
+        "level": 2,
+        "title": "Структурированные свойства"
       }
     ],
     "Сценарии применения": [
@@ -13894,14 +13922,6 @@
         "title": "Утилитные методы"
       }
     ],
-    "Утилиты": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 314,
-        "level": 3,
-        "title": "Утилиты"
-      }
-    ],
     "Участие в разработке": [
       {
         "document": "platform-guide/README.md",
@@ -14282,6 +14302,14 @@
         "line": 30,
         "level": 2,
         "title": "Я тоже хочу добавить свой модуль сюда?"
+      }
+    ],
+    "Ядро инициализации": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 139,
+        "level": 3,
+        "title": "Ядро инициализации"
       }
     ],
     "① Module Dimension": [

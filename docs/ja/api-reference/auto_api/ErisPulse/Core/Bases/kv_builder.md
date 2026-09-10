@@ -93,6 +93,13 @@ clause 中的占位符 `?` 已在 `_bind_clauses` 中替换为实际值。
 ---
 
 
+##### `_require_data(expected: type[T], key: str)`
+
+> **内部方法** 校验构建器数据形态并返回（同步/异步执行路径共用，兼作类型收窄）
+
+---
+
+
 ##### `async _ascan_rows()`
 
 异步扫描所有行
