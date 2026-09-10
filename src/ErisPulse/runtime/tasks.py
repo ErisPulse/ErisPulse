@@ -17,7 +17,7 @@ from __future__ import annotations
 import asyncio
 import threading
 from collections.abc import Awaitable, Coroutine
-from typing import Any, TypeVar
+from typing import Any, TypeVar, cast
 
 from ..Core.constants import DEFAULT_OWNER_CANCEL_TIMEOUT_SECS
 from .context import current_owner
@@ -196,6 +196,24 @@ def spawn_background(coro: Awaitable[_T] | Coroutine[_T, Any, Any], *, owner: st
     >>> spawn_background(some_async_work())
     """
     task_owner = owner if owner is not None else current_owner.get()
+    coro = cast('Coroutine[Any, Any, Any]', coro)
+
+    # 从非主循环线程（如同步桥接线程 / config watcher）调度时，优先投递回
+    # 主事件循环：桥接循环可能按次运行（run_until_complete 用完即停），
+    # 其上排队的后台任务会被孤立而永不执行；业务协程也理应回到主循环。
+    main_loop = _get_main_loop()
+    if main_loop is not None and main_loop.is_running():
+        try:
+            current_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            current_loop = None
+        if current_loop is not None and current_loop is not main_loop:
+            try:
+                future = asyncio.run_coroutine_threadsafe(coro, main_loop)
+                _track_owner_task(task_owner, future)
+                return future
+            except RuntimeError:
+                pass
 
     try:
         task = asyncio.ensure_future(coro)  # type: ignore[arg-type]

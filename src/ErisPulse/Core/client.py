@@ -236,7 +236,7 @@ class ClientWebSocket(BaseClientWebSocket):
         :param data: str 文本内容
         """
         if self._ws.closed:
-            raise WebSocketError("WebSocket is closed")
+            raise WebSocketError(i18n.t("core.client.ws_closed"))
         await self._ws.send_str(data)
 
     async def send_bytes(self, data: bytes) -> None:
@@ -246,7 +246,7 @@ class ClientWebSocket(BaseClientWebSocket):
         :param data: bytes 二进制内容
         """
         if self._ws.closed:
-            raise WebSocketError("WebSocket is closed")
+            raise WebSocketError(i18n.t("core.client.ws_closed"))
         await self._ws.send_bytes(data)
 
     async def send_json(self, data: Any, mode: str = "text") -> None:
@@ -257,7 +257,7 @@ class ClientWebSocket(BaseClientWebSocket):
         :param mode: str 发送模式 ("text" 或 "binary") (默认: "text")
         """
         if self._ws.closed:
-            raise WebSocketError("WebSocket is closed")
+            raise WebSocketError(i18n.t("core.client.ws_closed"))
         if mode == "binary":
             payload = json.dumps(data).encode("utf-8")
             await self._ws.send_bytes(payload)
@@ -322,7 +322,7 @@ class ClientWebSocket(BaseClientWebSocket):
             raise WebSocketDisconnect(code=code)
         if msg.type == aiohttp.WSMsgType.ERROR:
             raise WebSocketError(str(self._ws.exception()))
-        raise WebSocketError(f"Unexpected message type: {msg.type}")
+        raise WebSocketError(i18n.t("core.client.ws_unexpected_type", type=msg.type))
 
     async def receive_bytes(self) -> bytes:
         """
@@ -347,7 +347,7 @@ class ClientWebSocket(BaseClientWebSocket):
             raise WebSocketDisconnect(code=code)
         if msg.type == aiohttp.WSMsgType.ERROR:
             raise WebSocketError(str(self._ws.exception()))
-        raise WebSocketError(f"Unexpected message type: {msg.type}")
+        raise WebSocketError(i18n.t("core.client.ws_unexpected_type", type=msg.type))
 
     async def receive_json(self, mode: str = "text") -> Any:
         """
@@ -596,6 +596,7 @@ class Client(BaseClient):
             data = self._build_form_data(data, files)
 
         last_exc: ClientError | None = None
+        start = time.monotonic()
         for attempt in range(retries + 1):
             start = time.monotonic()
             try:
@@ -624,7 +625,7 @@ class Client(BaseClient):
                     elapsed = time.monotonic() - start
 
                     self._stats["total_requests"] += 1
-                    await lifecycle.emit(
+                    lifecycle.fire(
                         "client.request.success",
                         {
                             "method": method,
@@ -742,6 +743,25 @@ class Client(BaseClient):
 
         # 循环至少进入一次（range(retries+1) 且 retries>=0），所以 last_exc 必然被赋值
         assert last_exc is not None
+        # 结构化上下文附加：让业务方可捕获 e.url / e.method / e.attempts
+        if isinstance(last_exc, ClientError):
+            if last_exc.url is None:
+                last_exc.url = str(url)
+            if last_exc.method is None:
+                last_exc.method = method
+            if last_exc.attempts is None:
+                last_exc.attempts = retries + 1
+
+        lifecycle.fire(
+            "client.request.failed",
+            {
+                "method": method,
+                "url": str(url),
+                "error": str(last_exc),
+                "attempts": retries + 1,
+                "elapsed": time.monotonic() - start,
+            },
+        )
         raise last_exc
 
     # ---- WebSocket 连接 ----
@@ -800,8 +820,10 @@ class Client(BaseClient):
             raise
         except Exception as e:
             if isinstance(e, aiohttp.ClientError):
-                raise _convert_aiohttp_exception(e) from e
-            raise ClientError(str(e)) from e
+                err = _convert_aiohttp_exception(e)
+                err.url = str(url)
+                raise err from e
+            raise ClientError(str(e), url=str(url)) from e
 
     # ---- 快捷方法 ----
 

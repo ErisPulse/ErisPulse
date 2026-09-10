@@ -19,6 +19,7 @@ import threading
 import weakref
 from typing import TYPE_CHECKING, Any, cast
 
+from ..Core.Bases.errors import ModuleNotAvailableError
 from ..Core.constants import ACTIVATION_STUB_PRIORITY, MODULE_ENTRY_POINT_GROUP, MODULE_SOURCE_PLUGIN_FOLDER
 from ..Core.i18n import i18n
 from ..Core.lifecycle import lifecycle
@@ -1537,23 +1538,27 @@ class LazyModule:
 
         if not object.__getattribute__(self, "_initialized"):
             if object.__getattribute__(self, "_init_failed"):
-                raise RuntimeError(
+                raise ModuleNotAvailableError(
+                    object.__getattribute__(self, "_module_name"),
+                    name,
                     i18n.t(
                         "loader.module.init_failed_attr_get",
                         name=object.__getattribute__(self, "_module_name"),
                         attr=name,
-                    )
+                    ),
                 )
             self._ensure_initialized()
             # 初始化可能刚刚失败（同步路径会在 _initialize_sync 中标记），
-            # 此时给出明确的 RuntimeError，避免后续回落到 AttributeError 造成困惑
+            # 此时给出明确的类型化异常，避免后续回落到 AttributeError 造成困惑
             if object.__getattribute__(self, "_init_failed"):
-                raise RuntimeError(
+                raise ModuleNotAvailableError(
+                    object.__getattribute__(self, "_module_name"),
+                    name,
                     i18n.t(
                         "loader.module.init_failed_attr_get",
                         name=object.__getattribute__(self, "_module_name"),
                         attr=name,
-                    )
+                    ),
                 )
 
         instance = object.__getattribute__(self, "_instance")

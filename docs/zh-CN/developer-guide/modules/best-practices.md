@@ -270,6 +270,8 @@ class MyToolModule(BaseModule):
 ### 1. 分类异常处理
 
 ```python
+from ErisPulse.Core.Bases.errors import ClientError
+
 async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
@@ -277,10 +279,9 @@ async def handle_event(self, event: Event):
         # 预期的业务错误
         self.logger.warning(f"业务警告: {e}")
         await event.reply(f"参数错误: {e}")
-    except aiohttp.ClientError as e:
-        # 网络错误（推荐使用 sdk.client + ClientError 替代）
-        # 旧代码直接用 aiohttp 仍可正常工作，但新代码推荐使用 ErisPulse 异常体系
-        self.logger.error(f"网络错误: {e}")
+    except ClientError as e:
+        # 网络错误（sdk.client 的底层 aiohttp 异常已自动转换）
+        self.logger.error(f"网络错误 {e.method} {e.url}: {e}")
         await event.reply("网络请求失败，请稍后重试")
     except Exception as e:
         # 未预期的错误

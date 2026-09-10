@@ -3,6 +3,7 @@ devs/videos
 main.py
 plugins/
 venvs
+config.full.example
 config.toml
 uv.lock
 snapshots/

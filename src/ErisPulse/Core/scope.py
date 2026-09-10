@@ -69,6 +69,7 @@ from typing import Any
 from ..runtime.frame_config import set_erispulse_section, update_erispulse_config
 from . import text_match
 from .constants import CONFIG_ROOT_KEY
+from .i18n import i18n
 
 # 模块维度桶：platforms / bots / sessions（优先级 会话 > Bot > 平台）
 _BUCKET_PLATFORMS = "platforms"
@@ -735,7 +736,9 @@ class ScopeManager:
         if not owner:
             return True
         if action not in _ACTION_NAMES:
-            raise ValueError(f"unknown action: {action!r}, expected one of {_ACTION_NAMES}")
+            raise ValueError(
+                i18n.t("core.scope.unknown_action", action=action, actions=", ".join(_ACTION_NAMES))
+            )
         self._stats["action_checks"] += 1
 
         cache_key = (str(owner), action, str(name) if name else None)
@@ -1046,9 +1049,11 @@ class ScopeManager:
         >>> scope.set_action("MyModule", "api", deny=["set_*", "leave_*"]) # 禁管理类 API
         """
         if action not in _ACTION_NAMES:
-            raise ValueError(f"unknown action: {action!r}, expected one of {_ACTION_NAMES}")
+            raise ValueError(
+                i18n.t("core.scope.unknown_action", action=action, actions=", ".join(_ACTION_NAMES))
+            )
         if not module:
-            raise ValueError("module is required to set action rule")
+            raise ValueError(i18n.t("core.scope.module_required"))
         rule: dict = {}
         if allow is not None:
             rule["allow"] = [allow] if isinstance(allow, str) else list(allow)
@@ -1149,7 +1154,7 @@ class ScopeManager:
         """
         parts = self._split_path(path)
         if not parts:
-            raise ValueError("path must not be empty")
+            raise ValueError(i18n.t("core.scope.path_required"))
         node = self._data
         for part in parts[:-1]:
             child = node.get(part)
@@ -1194,7 +1199,7 @@ class ScopeManager:
         """
         parts = self._split_path(path)
         if not parts:
-            raise ValueError("path must not be empty")
+            raise ValueError(i18n.t("core.scope.path_required"))
         parent = self._node_at(".".join(parts[:-1])) if len(parts) > 1 else self._data
         if not isinstance(parent, dict) or parts[-1] not in parent:
             return False

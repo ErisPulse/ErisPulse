@@ -604,7 +604,7 @@ class TestHttpClientRequest:
         c = HttpClient()
         emitted_events = []
 
-        async def mock_emit(event_name, data):
+        def mock_fire(event_name, data):
             emitted_events.append((event_name, data))
 
         mock_resp = MagicMock()
@@ -620,7 +620,8 @@ class TestHttpClientRequest:
         c._session = mock_session
 
         with patch.object(client_module, "lifecycle") as mock_lifecycle:
-            mock_lifecycle.emit = mock_emit
+            mock_lifecycle.fire = mock_fire
+            mock_lifecycle.has_handlers = lambda event: True
             await c.request("GET", "http://example.com/api")
 
         assert len(emitted_events) == 1

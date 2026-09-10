@@ -14,8 +14,8 @@ import signal
 from ErisPulse import sdk
 
 ALL_STANDARD_EVENTS = {
-    "core": ["init.start", "init.complete", "uninit.complete"],
-    "module": ["register", "load", "init", "unload"],
+    "core": ["init.start", "init.stage", "init.complete", "uninit.complete"],
+    "module": ["register", "load", "init", "unload", "reload"],
     "adapter": [
         "load", "start", "status.change", "stop", "stopped",
         "event.receive", "event.dispatched",
@@ -29,7 +29,10 @@ ALL_STANDARD_EVENTS = {
     "event": ["pre_process"],
     "message": ["sending", "sent"],
     "command": ["matched", "executed"],
-    "config": ["set"],
+    "config": ["set", "updated"],
+    "storage": ["ready", "unreachable", "recovered"],
+    "client": ["request.success", "request.failed", "ws.connect"],
+    "i18n": ["language.changed"],
 }
 
 FULL_NAMES = []
@@ -79,33 +82,43 @@ def print_event_report():
 
     DOC = {
         "core.init.start": "空或无特殊字段",
+        "core.init.stage": "stage（discovery/adapter_register/adapter_start/module_register/module_init/adapter_start_deferred/router_start）",
         "core.init.complete": "duration, success, adapters{enabled,disabled}, modules{enabled,disabled}",
         "core.uninit.complete": "duration, success, adapters_closed, modules_unloaded, module_properties_cleared",
         "module.register": "module_name, success",
         "module.load": "module_name, success",
         "module.init": "module_name, success",
         "module.unload": "module_name, success",
+        "module.reload": "module_name, success",
         "adapter.load": "platform, success",
         "adapter.start": "platforms",
         "adapter.status.change": "platform, status, retry_count?",
         "adapter.stop": "platforms",
         "adapter.stopped": "platforms",
-        "adapter.event.receive": "platform, event_type, raw_event_type",
-        "adapter.event.dispatched": "platform, event_type, raw_event_type, onebot_handlers_count",
+        "adapter.event.receive": "platform, event_type, raw_event_type（fire 后台发射）",
+        "adapter.event.dispatched": "platform, event_type, raw_event_type, onebot_handlers_count（fire 后台发射）",
         "adapter.bot.online": "platform, bot_id, info, status",
         "adapter.bot.offline": "platform, bot_id, status",
-        "server.start": "base_url, host, port",
+        "server.start": "base_url, host, port, success, error?（失败时）",
         "server.stop": "无特殊字段",
-        "server.request": "method, path, client_ip",
-        "server.response": "method, path, status_code, client_ip",
+        "server.request": "method, path, client_ip（fire 后台发射）",
+        "server.response": "method, path, status_code, client_ip（fire 后台发射）",
         "server.websocket.connect": "path, module_name, client_ip",
         "server.websocket.disconnect": "path, module_name, reason, error?",
-        "event.pre_process": "event_type, platform, detail_type",
+        "event.pre_process": "event_type, platform, detail_type（fire 后台发射）",
         "message.sending": "platform, method, detail_type, target_id, bot_id",
         "message.sent": "platform, method, detail_type, target_id, bot_id",
-        "command.matched": "command, args, platform, user_id",
-        "command.executed": "command, args, platform, user_id, success, error?",
+        "command.matched": "command, args, platform, user_id（fire 后台发射）",
+        "command.executed": "command, args, platform, user_id, success, error?（fire 后台发射）",
         "config.set": "key, old_value, new_value",
+        "config.updated": "old_config, new_config, config_file",
+        "storage.ready": "backend（每事件循环首次建池成功）",
+        "storage.unreachable": "backend, error, cooldown",
+        "storage.recovered": "backend（冷却结束重连成功）",
+        "client.request.success": "method, url, status, elapsed",
+        "client.request.failed": "method, url, error, attempts, elapsed",
+        "client.ws.connect": "url",
+        "i18n.language.changed": "language, previous",
     }
 
     total = len(FULL_NAMES)

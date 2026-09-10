@@ -60,6 +60,22 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
         else:
             handler(event)
     except Exception as e:
+        # 单行错误 + 用户代码帧定位（不刷屏：不输出完整堆栈，仅指向出错位置）
+        _loc = ""
+        try:
+            from ...runtime.diagnostics import extract_user_frame
+
+            _frames = (extract_user_frame(e).get("frames") or [])
+            if _frames:
+                _f = _frames[-1]
+                _loc = i18n.t(
+                    "core.event.handler_error_loc",
+                    file=_f["file"],
+                    line=_f["lineno"],
+                    func=_f["func"],
+                )
+        except Exception:
+            pass
         logger.error(
             i18n.t(
                 "core.event.handler_error",
@@ -68,6 +84,7 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
                 owner=_owner or "<unknown>",
                 error=e,
             )
+            + _loc
         )
         return
     finally:
@@ -289,8 +306,8 @@ class BaseEventHandler:
         _trace_chain: list[dict] = []
         _trace_start = _time.monotonic()
 
-        # 钩子: 事件预处理
-        await lifecycle.emit(
+        # 钩子: 事件预处理（后台发射，不阻塞分发）
+        lifecycle.fire(
             "event.pre_process",
             {
                 "event_type": self.event_type,

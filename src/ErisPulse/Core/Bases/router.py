@@ -590,7 +590,9 @@ class SseEmitter:
         import json as _json
 
         if self._closed:
-            raise RuntimeError("SSE connection is closed")
+            from ..i18n import i18n
+
+            raise RuntimeError(i18n.t("core.router.sse_closed"))
 
         payload_parts = []
 

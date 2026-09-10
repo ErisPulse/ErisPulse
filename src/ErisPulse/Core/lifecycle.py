@@ -12,6 +12,7 @@ ErisPulse 生命周期管理模块
 {!--< /tips >!--}
 """
 
+import asyncio
 import inspect
 import time
 from collections.abc import Callable
@@ -82,8 +83,8 @@ class LifecycleManager:
 
     # 预定义的标准事件列表
     STANDARD_EVENTS = {
-        "core": ["init.start", "init.complete", "uninit.complete"],
-        "module": ["load", "init", "unload", "register"],
+        "core": ["init.start", "init.stage", "init.complete", "uninit.complete"],
+        "module": ["load", "init", "unload", "register", "reload"],
         "adapter": [
             "load",
             "start",
@@ -106,7 +107,10 @@ class LifecycleManager:
         "event": ["pre_process"],
         "message": ["sending", "sent"],
         "command": ["matched", "executed"],
-        "config": ["set"],
+        "config": ["set", "updated"],
+        "storage": ["ready", "unreachable", "recovered"],
+        "client": ["request.success", "request.failed", "ws.connect"],
+        "i18n": ["language.changed"],
     }
 
     def __init__(self):
@@ -285,10 +289,13 @@ class LifecycleManager:
 
     async def emit(self, event: str, data: Any = None, *, to: str | None = None) -> Any:
         """
-        触发事件（异步，精简版）
+        触发事件（异步）
 
-        按优先级执行匹配的处理器。处理器返回非 None 值时，
-        该值将作为新的 data 传递给后续处理器。
+        匹配的处理器**并行执行**（各自包装为协程经 ``gather`` 并发，互不阻塞，
+        本调用等待全部完成）：慢处理器不拖累其余处理器与触发方，但 emit 返回时
+        所有处理器已执行完毕（顺序敏感的消费者可安全在 emit 之后读状态）。
+        处理器返回非 None 值时按注册（优先级）顺序回放链式替换 data——
+        所有处理器收到的是同一份输入数据。
 
         指定 ``to`` 时进入定向传播：事件只分发给以该拥有者（owner）身份注册的
         处理器（模块在 on_load 内注册 / `owner_scope` 上下文注册的钩子），
@@ -396,6 +403,34 @@ class LifecycleManager:
 
         return data
 
+    def fire(self, event: str, data: Any = None, *, to: str | None = None) -> None:
+        """
+        触发事件（后台，扔桶即走）——观测类事件的零成本发射
+
+        与 :meth:`emit` 的差异：处理器在后台任务中并行执行，**不等待完成、
+        无返回值**，本调用在无监听者时零开销（``has_handlers`` 短路），
+        有监听者时仅付出一次任务调度成本。适用于高频热路径与纯观测事件
+        （如 ``server.request`` / ``storage.ready``）。
+
+        .. warning::
+            后台事件**不保证执行时机**：emit 返回 ≠ 处理器已执行；
+            框架关停期间后台任务会被取消——关停序列（uninit）中的
+            事件请改用 :meth:`emit`。顺序敏感的消费（如 ``config.set``
+            驱动的作用域重建）同样必须用 :meth:`emit`。
+
+        :param event: str 事件名称
+        :param data: Any 事件数据（dict 时自动附加 `_trace_id`）
+        :param to: str 定向投递目标拥有者，None 广播
+
+        :example:
+        >>> lifecycle.fire("server.request", {"method": "GET", "path": "/"})
+        """
+        if not self.has_handlers(event):
+            return
+        from ..runtime.tasks import spawn_background
+
+        spawn_background(self.emit(event, data, to=to))
+
     # ==================== 兼容 API ====================
 
     async def submit_event(
@@ -407,11 +442,14 @@ class LifecycleManager:
         data: dict | None = None,
         timestamp: float | None = None,
         to: str | None = None,
+        background: bool = False,
     ) -> None:
         """
         提交生命周期事件（兼容旧版 API）
 
-        构建标准事件格式后通过 emit 触发，处理器接收标准事件字典。
+        构建标准事件格式后通过 emit 触发，处理器接收标准事件字典；
+        ``background=True`` 时改走 :meth:`fire` 后台发射（不等待处理器，
+        适用于进度展示类观测事件，如 ``core.init.stage``）。
 
         :param event_type: str 事件名称
         :param source: str 事件来源(默认"ErisPulse")
@@ -419,6 +457,7 @@ class LifecycleManager:
         :param data: dict 事件相关数据
         :param timestamp: float 时间戳(默认当前时间)
         :param to: str 定向投递目标拥有者（语义同 :meth:`emit`），None 广播
+        :param background: bool 后台发射不等待处理器（默认 False）
 
         :raises ValueError: ``to`` 为空字符串时
 
@@ -451,7 +490,10 @@ class LifecycleManager:
             "msg": msg,
         }
 
-        await self.emit(event_type, event_data, to=to)
+        if background:
+            self.fire(event_type, event_data, to=to)
+        else:
+            await self.emit(event_type, event_data, to=to)
 
     # ==================== 计时器 ====================
 
@@ -492,7 +534,12 @@ class LifecycleManager:
         self, hook_name: str, event: str, data: Any, owner_filter: str | None = None
     ) -> Any:
         """
-        执行匹配事件的处理（异步）
+        执行匹配事件的处理（异步，处理器并行）
+
+        每个处理器包装为独立协程经 ``asyncio.gather`` 并行执行——慢处理器
+        不再阻塞其余处理器与触发方，总耗时从"各处理器之和"降为"最慢一个"。
+        处理器返回非 None 值时按注册（优先级）顺序回放链式替换 data：
+        所有处理器收到的是**同一份输入**，回放顺序确定性可预期。
 
         :param hook_name: str 注册的钩子名
         :param event: str 实际事件名
@@ -500,34 +547,45 @@ class LifecycleManager:
         :param owner_filter: str 仅执行该拥有者注册的处理器（定向传播，None 不限）
         :return: Any 处理器链处理结果
         """
-        import time as _time
+        selected = [
+            (priority, handler, h_owner)
+            for priority, handler, h_owner in self._hooks[hook_name]
+            if owner_filter is None or h_owner == owner_filter
+        ]
+        if not selected:
+            return data
 
-        for priority, handler, _owner in self._hooks[hook_name]:
-            if owner_filter is not None and _owner != owner_filter:
-                continue
+        async def _run_one(handler: Callable, priority: int) -> Any:
+            hname = getattr(
+                handler, "__qualname__", getattr(handler, "__name__", str(handler))
+            )
             try:
-                _t = _time.monotonic()
-                _hname = getattr(
-                    handler, "__qualname__", getattr(handler, "__name__", str(handler))
-                )
                 _get_logger().trace(
-                    i18n.t("core.lifecycle.handler_exec", handler=_hname, priority=priority, event=event)
+                    i18n.t("core.lifecycle.handler_exec", handler=hname, priority=priority, event=event)
                 )
+                _t = time.monotonic()
                 if inspect.iscoroutinefunction(handler):
                     result = await handler(data)
                 else:
                     result = handler(data)
-                _elapsed = _time.monotonic() - _t
+                _elapsed = time.monotonic() - _t
                 if _elapsed > HANDLER_SLOW_THRESHOLD_SECS:
                     _get_logger().warning(
-                        f"[Lifecycle] Slow handler {_hname} for event '{event}' took {_elapsed:.4f}s"
+                        f"[Lifecycle] Slow handler {hname} for event '{event}' took {_elapsed:.4f}s"
                     )
-                if result is not None:
-                    data = result
+                return result
             except Exception as e:
                 _get_logger().error(
                     i18n.t("core.lifecycle.handler_error", event=event, error=e)
                 )
+                return None
+
+        results = await asyncio.gather(
+            *(_run_one(handler, priority) for priority, handler, _ in selected)
+        )
+        for result in results:
+            if result is not None:
+                data = result
         return data
 
     def _execute_handlers_sync(

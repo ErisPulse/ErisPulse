@@ -29,14 +29,17 @@ from .Bases import (
     ClientConnectionError,
     ClientTimeoutError,
     HTTPStatusError,
+    InteractionCancelled,
     InteractionError,
     ModuleCallError,
     ModuleCallTimeoutError,
     ModuleError,
     ModuleNotAvailableError,
     ServiceNotProvidedError,
+    SessionOccupiedError,
     StorageError,
     StorageUnreachableError,
+    StrictModeError,
     WebSocketError,
 )
 from .Bases import BaseClient, BaseHttpResponse, BaseClientWebSocket
@@ -90,6 +93,7 @@ __all__ = [
     "HttpRequest",  # HTTP 请求类
     "HttpResponse",  # HTTP 响应类
     "I18nManager",  # 国际化管理器类
+    "InteractionCancelled",  # 交互会话取消异常
     "InteractionError",  # 交互会话异常基类
     "KVQueryBuilder",  # KV 查询构建器
     "ModuleCallError",  # 模块间调用异常基类
@@ -97,6 +101,7 @@ __all__ = [
     "ModuleError",  # 模块系统异常基类
     "ModuleNotAvailableError",  # 目标模块不可用异常
     "ServiceNotProvidedError",  # 服务未提供异常
+    "SessionOccupiedError",  # 会话被占用异常
     "LifecycleManager",  # 生命周期管理器类
     "Logger",  # 日志类
     "LoggerChild",  # 日志子类
@@ -118,6 +123,7 @@ __all__ = [
     "StorageError",  # 存储异常基类
     "StorageUnreachableError",  # 存储后端不可达异常
     "StorageManager",  # 存储管理器类（SQLite 后端向后兼容别名）
+    "StrictModeError",  # 严格模式致命异常
     "TranscriptManager",  # 会话收件箱管理器类
     "WSMessage",  # WebSocket 消息类
     "WebSocketConnection",  # WebSocket 连接类

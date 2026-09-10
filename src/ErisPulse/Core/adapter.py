@@ -487,12 +487,11 @@ class AdapterManager(ManagerBase):
         # 缺少必要参数时按原契约报错
         if not isinstance(name, str) or not name:
             raise TypeError(i18n.t("core.adapter.name_required"))
-        if class_type is None:
-            raise TypeError(i18n.t("core.adapter.must_inherit_base"))
         # 方法体沿用语义化变量名
         platform = name
         adapter_class = class_type
         adapter_info = info
+        # None / 非类 / 非 BaseAdapter 子类统一在子类校验处报错
         if not self._is_subclass(adapter_class, BaseAdapter):
             raise TypeError(i18n.t("core.adapter.must_inherit_base"))
 
@@ -1842,8 +1841,8 @@ class AdapterManager(ManagerBase):
             )
             return
 
-        # 钩子: 事件接收（最早期，所有事件都经过此处）
-        await lifecycle.emit(
+        # 钩子: 事件接收（最早期，所有事件都经过此处；后台发射不阻塞分发）
+        lifecycle.fire(
             "adapter.event.receive",
             {
                 "platform": platform,
@@ -2005,8 +2004,8 @@ class AdapterManager(ManagerBase):
                         platform=platform,
                     )
 
-        # 钩子: 事件分发完成
-        await lifecycle.emit(
+        # 钩子: 事件分发完成（后台发射，不阻塞分发）
+        lifecycle.fire(
             "adapter.event.dispatched",
             {
                 "platform": platform,

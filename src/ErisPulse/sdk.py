@@ -19,6 +19,7 @@ import importlib.metadata
 import inspect
 import os
 import sys
+import time
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
@@ -385,12 +386,41 @@ class SDK:
             self.logger.info(i18n.t("core.sdk.init.starting"))
             self.lifecycle.start_timer(LIFECYCLE_TIMER_CORE_INIT)
 
+            # 各阶段启动时长统计：core.init.stage 事件 + core.init.complete 汇总
+            stage_marks: dict[str, float] = {}
+            stage_durations: dict[str, float] = {}
+            stage_order: list[str] = []
+            current_stage = [""]
+
+            async def _emit_stage(stage: str, msg_key: str) -> None:
+                """记录阶段开始：发出 core.init.stage 事件（后台）并结算上一阶段耗时"""
+                now = time.monotonic()
+                prev = current_stage[0]
+                if prev:
+                    stage_durations[prev] = now - stage_marks[prev]
+                stage_marks[stage] = now
+                stage_order.append(stage)
+                current_stage[0] = stage
+                await self.lifecycle.submit_event(
+                    "core.init.stage",
+                    msg=i18n.t(msg_key),
+                    data={"stage": stage},
+                    background=True,
+                )
+
+            def _settle_last_stage() -> None:
+                """结算最后一个阶段的耗时（init.complete 汇总前调用）"""
+                last = current_stage[0]
+                if last and last not in stage_durations:
+                    stage_durations[last] = time.monotonic() - stage_marks[last]
+
             try:
                 # 1. 并行加载适配器和模块
                 adapter_manager = self.adapter
                 module_manager = self.module
 
                 # 模块发现阶段
+                await _emit_stage("discovery", "core.sdk.init.discovery_phase")
                 self.logger.print_section_header(
                     i18n.t("core.sdk.init.discovery_phase")
                 )
@@ -424,6 +454,7 @@ class SDK:
                 self._strict_manager.raise_if_fatal()
 
                 # 2. 注册适配器
+                await _emit_stage("adapter_register", "core.sdk.init.adapter_register_phase")
                 self.logger.print_section_header(
                     i18n.t("core.sdk.init.adapter_register_phase")
                 )
@@ -446,12 +477,14 @@ class SDK:
                         dep_free_platforms.append(_platform)
 
                 if dep_free_platforms:
+                    await _emit_stage("adapter_start", "core.sdk.init.adapter_start_phase")
                     self.logger.print_section_header(
                         i18n.t("core.sdk.init.adapter_start_phase")
                     )
                     await adapter_manager.startup(dep_free_platforms)
 
                 # 4. 注册模块
+                await _emit_stage("module_register", "core.sdk.init.module_register_phase")
                 self.logger.print_section_header(
                     i18n.t("core.sdk.init.module_register_phase")
                 )
@@ -464,6 +497,7 @@ class SDK:
                 self._strict_manager.raise_if_fatal()
 
                 # 4. 初始化模块（创建实例并挂载到 SDK）
+                await _emit_stage("module_init", "core.sdk.init.module_init_phase")
                 self.logger.print_section_header(
                     i18n.t("core.sdk.init.module_init_phase")
                 )
@@ -478,12 +512,17 @@ class SDK:
 
                 # 5. 启动声明了模块硬依赖的适配器（此时依赖模块已初始化完成）
                 if deferred_platforms:
+                    await _emit_stage(
+                        "adapter_start_deferred",
+                        "core.sdk.init.adapter_start_deferred_phase",
+                    )
                     self.logger.print_section_header(
                         i18n.t("core.sdk.init.adapter_start_deferred_phase")
                     )
                     await adapter_manager.startup(deferred_platforms)
 
                 # 6. 启动路由服务器
+                await _emit_stage("router_start", "core.sdk.init.router_start")
                 self.logger.print_section_header(i18n.t("core.sdk.init.router_start"))
                 from ErisPulse.runtime import get_server_config
 
@@ -636,6 +675,14 @@ class SDK:
 
                 self.logger.print_section_footer()
 
+                # 结算最后阶段耗时并输出各阶段启动时长（DEBUG，供启动优化分析）
+                _settle_last_stage()
+                for _stage in stage_order:
+                    _secs = stage_durations.get(_stage, 0.0)
+                    self.logger.debug(
+                        f"[Init] stage '{_stage}': {_secs:.3f}s"
+                    )
+
                 self.logger.info(i18n.t("core.sdk.init.success", duration=duration_str))
 
                 await self.lifecycle.submit_event(
@@ -646,6 +693,7 @@ class SDK:
                     data={
                         "duration": load_duration,
                         "success": success,
+                        "stages": dict(stage_durations),
                         "adapters": {
                             "enabled": enabled_adapters,
                             "disabled": disabled_adapters,
