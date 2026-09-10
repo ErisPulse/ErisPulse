@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "0f1bfcd06d20bd87f6e051b12e3f047a",
-  "file_hash": "0f1bfcd06d20bd87f6e051b12e3f047a",
-  "translated_at": "2026-09-10T11:52:36.471170",
+  "hash": "885623d1e0b2977ebbfe7cdbec4e0581",
+  "file_hash": "885623d1e0b2977ebbfe7cdbec4e0581",
+  "translated_at": "2026-09-10T15:00:35.583435",
   "target_lang": "ja",
   "chunks": [
     {
@@ -26,8 +26,8 @@
       "translation": "## ユーティリティモジュール：他人のものを管理するときは「アンロード通知」を受け止める\n\n**いつ必要か**：あなたのモジュールが他のモジュールのものを保管している場合（定時コールバック、サブスクライバー、接続、キャッシュエントリーなど…）。これらの参照は、他のモジュールがアンロードされた後も削除されない場合、他のモジュールのインスタンスは永遠に回収されない—これはユーティリティモジュールで最も一般的なメモリリークの原因です。\n\n```python\nfrom ErisPulse.Core.Bases import BaseModule\nfrom ErisPulse.runtime import off_cleanup, on_cleanup\n\nclass MyToolModule(BaseModule):\n    def __init__(self):\n        self._entries = {}  # {モジュール名: 保管しているもの}\n\n    def register(self, entry):\n        owner = on_cleanup(self._drop)   # ① 登録時にクリーンアップチェーンに登録し、呼び出し元を自動的に識別\n        self._entries.setdefault(owner, []).append(entry)\n\n    def _drop(self, owner: str):\n        self._entries.pop(owner, None)   # ② 他のモジュールがアンロードされたときにフレームワークが自動的に呼び出す：そのものの削除\n\n    async def on_unload(self, event):\n        off_cleanup(self._drop)          # ③ 自分がアンロードされる前にフックを解除\n```\n\n以上で、フレームワークは保証します：\n\n- 他のモジュールが**アンロード / 禁用**（またはアダプターが閉じる）されたとき、`_drop(\"他のモジュール名\")` は必ず呼び出されます\n- **呼び出し元の識別は自動的**：他のモジュールが `on_load` で `sdk.MyToolModule.register(...)` を直接呼び出すか、`sdk.module.call(\"MyToolModule\", \"register\", ...)` を経由して呼び出すかに関わらず、正しく識別されます\n- 時機を気にする必要はありません—フックはフレームワークのクリーンアップチェーン内で発動し、リーク診断より早く、誤報することはありません\n\n接続しない場合の結果：他のモジュールが `purge` で完全にアンロードされたときにインスタンスが回収されない（リーク診断で「回収不可」が表示される）；もし他のモジュールが自分自身の `on_unload` で自分に登録解除しない場合、リークは永久的になります。\n\n**他人のものを保管していない普通のモジュールはこのことを気にする必要はありません**—フレームワークがリソース（コマンド / ハンドラ / ルーティング / バックグラウンドタスク…）のアンロードクリーンアップを自動的に行います。\n\n> 発動タイミング、呼び出し元の識別ルール、タイムアウトと耐障害性などの詳細は\n> [所有権システム・ユーティリティモジュールガイド](../../advanced/ownership.md#ユーティリティモジュールガイド他人のハンドルを管理) を参照してください。"
     },
     {
-      "hash": "63bded6101011385ae42722c7bfcb78b",
-      "translation": "## エラー処理\n\n### 1. エラーの分類処理\n\n```python\nasync def handle_event(self, event: Event):\n    try:\n        result = await self._process(event)\n    except ValueError as e:\n        # 予期されたビジネスエラー\n        self.logger.warning(f\"ビジネス警告: {e}\")\n        await event.reply(f\"パラメータエラー: {e}\")\n    except aiohttp.ClientError as e:\n        # ネットワークエラー（推奨：sdk.client + ClientError で置き換え）\n        # 旧コードで直接 aiohttp を使っても正常に動作しますが、新規コードでは ErisPulse の例外体系を使用することを推奨します\n        self.logger.error(f\"ネットワークエラー: {e}\")\n        await event.reply(\"ネットワークリクエストに失敗しました、後で再試行してください\")\n    except Exception as e:\n        # 予期しないエラー\n        self.logger.error(f\"未知のエラー: {e}\", exc_info=True)\n        await event.reply(\"処理に失敗しました、管理者に連絡してください\")\n        raise\n```\n\n### 2. タイムアウト処理\n\n```python\n# 推奨：SDK 内部のクライアントを使用（タイムアウトとリトライが付属）\nfrom ErisPulse.Core import client\nfrom ErisPulse.Core.Bases.errors import ClientTimeoutError\n\nasync def fetch_with_timeout(self, url, timeout=30):\n    try:\n        resp = await client.get(url, timeout=timeout)\n        return await resp.json()\n    except ClientTimeoutError:\n        self.logger.warning(f\"リクエストがタイムアウトしました: {url}\")\n        raise\n```"
+      "hash": "b8d4066b109fff59883f6d14fb03774e",
+      "translation": "## エラー処理\n\n### 1. 例外の分類処理\n\n```python\nfrom ErisPulse.Core.Bases.errors import ClientError\n\nasync def handle_event(self, event: Event):\n    try:\n        result = await self._process(event)\n    except ValueError as e:\n        # 予期されたビジネスエラー\n        self.logger.warning(f\"ビジネス警告: {e}\")\n        await event.reply(f\"パラメータエラー: {e}\")\n    except ClientError as e:\n        # ネットワークエラー（sdk.client の下層 aiohttp 例外は自動的に変換済み）\n        self.logger.error(f\"ネットワークエラー {e.method} {e.url}: {e}\")\n        await event.reply(\"ネットワークリクエストに失敗しました。後でもう一度お試しください\")\n    except Exception as e:\n        # 予期しないエラー\n        self.logger.error(f\"不明なエラー: {e}\", exc_info=True)\n        await event.reply(\"処理に失敗しました。管理者にお問い合わせください\")\n        raise\n```\n\n### 2. タイムアウト処理\n\n```python\n# 推奨される SDK 内部クライアント（タイムアウトとリトライ機能を内蔵）\nfrom ErisPulse.Core import client\nfrom ErisPulse.Core.Bases.errors import ClientTimeoutError\n\nasync def fetch_with_timeout(self, url, timeout=30):\n    try:\n        resp = await client.get(url, timeout=timeout)\n        return await resp.json()\n    except ClientTimeoutError:\n        self.logger.warning(f\"リクエストタイムアウト: {url}\")\n        raise\n```"
     },
     {
       "hash": "d6c2309d06014cce9dcaac3797288660",
