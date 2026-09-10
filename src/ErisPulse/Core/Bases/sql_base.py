@@ -32,6 +32,7 @@ from ..constants import (
     STORAGE_POOL_FAIL_COOLDOWN_SECS,
 )
 from ..i18n import i18n
+from ..lifecycle import lifecycle
 from ..logger import logger
 from .errors import StorageUnreachableError
 from .storage import _SENTINEL, BaseQueryBuilder, BaseStorage, _current_txn
@@ -694,9 +695,14 @@ class SQLStorageBase(BaseStorage):
 
         # 冷却期内快速失败：连接不可达时不阻塞调用方（框架继续运行，仅存储暂不可用）
         failed_until = getattr(self, "_resource_failed_until", 0.0)
+        was_cooling = failed_until > 0
         if failed_until > time.monotonic():
+            logger.trace(
+                i18n.t("core.storage.cooldown_fast_fail", backend=self.dialect.name)
+            )
             raise StorageUnreachableError(
-                f"{self.dialect.name}: 连接不可达（冷却期内，稍后自动重连）"
+                i18n.t("core.storage.cooldown", backend=self.dialect.name),
+                backend=self.dialect.name,
             )
 
         # 指数退避重试，规避远端瞬时拒绝（连接数限流、数据库重启窗口等）
@@ -732,8 +738,16 @@ class SQLStorageBase(BaseStorage):
                     error=last_error,
                 )
             )
+            await self._emit_storage_event(
+                "storage.unreachable",
+                backend=self.dialect.name,
+                error=str(last_error),
+                cooldown=self._RESOURCE_FAIL_COOLDOWN_SECS,
+            )
             raise StorageUnreachableError(
-                f"{self.dialect.name}: {last_error}"
+                f"{self.dialect.name}: {last_error}",
+                backend=self.dialect.name,
+                cooldown=self._RESOURCE_FAIL_COOLDOWN_SECS,
             ) from last_error
 
         with self._resources_lock:
@@ -744,7 +758,26 @@ class SQLStorageBase(BaseStorage):
             self._loop_resources[loop] = resource
         # 建池成功：清除失败冷却（若曾进入冷却，此番重连试探成功即恢复）
         self._resource_failed_until = 0.0
+        logger.debug(i18n.t("core.storage.pool_ready", backend=self.dialect.name))
+        await self._emit_storage_event("storage.ready", backend=self.dialect.name)
+        if was_cooling:
+            logger.info(i18n.t("core.storage.recovered", backend=self.dialect.name))
+            await self._emit_storage_event("storage.recovered", backend=self.dialect.name)
         return resource
+
+    async def _emit_storage_event(self, event: str, **data: Any) -> None:
+        """
+        {!--< internal-use >!--}
+        发出存储生命周期事件（``storage.ready`` / ``storage.unreachable`` /
+        ``storage.recovered``），供外部感知连接状态变化（如 Dashboard 告警）。
+
+        后台发射（fire）：存储操作绝不等待观测者；lifecycle 未就绪或
+        处理异常时静默跳过，不影响存储操作本身。
+        """
+        try:
+            lifecycle.fire(event, data)
+        except Exception:
+            pass
 
     @asynccontextmanager
     async def _acquire(self) -> AsyncIterator[Any]:

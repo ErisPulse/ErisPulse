@@ -59,9 +59,9 @@ def on_cleanup(callback: Callable[[str], Any], *, owner: str | None = None) -> s
     if owner is None:
         owner = current_caller.get() or current_owner.get()
     if not owner:
-        raise ValueError(
-            "on_cleanup() requires an owner context or explicit owner=<name>"
-        )
+        from ..Core.i18n import i18n
+
+        raise ValueError(i18n.t("core.cleanup.owner_required"))
     hooks = _owner_cleanups.setdefault(owner, [])
     if callback not in hooks:
         hooks.append(callback)

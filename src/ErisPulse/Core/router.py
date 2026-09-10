@@ -1046,8 +1046,8 @@ class RouterManager:
                     )
                 )
 
-                # 钩子: HTTP请求接收
-                await lifecycle.emit(
+                # 钩子: HTTP请求接收（后台发射，不阻塞请求路径）
+                lifecycle.fire(
                     "server.request",
                     {
                         "method": request.method,
@@ -1094,8 +1094,8 @@ class RouterManager:
                 )
                 response = await call_next(request)
 
-                # 钩子: HTTP响应发送
-                await lifecycle.emit(
+                # 钩子: HTTP响应发送（后台发射，不阻塞请求路径）
+                lifecycle.fire(
                     "server.response",
                     {
                         "method": request.method,
@@ -2694,6 +2694,7 @@ class RouterManager:
                     "base_url": self.base_url,
                     "host": host,
                     "port": port,
+                    "success": True,
                 },
             )
         except Exception as e:
@@ -2704,6 +2705,8 @@ class RouterManager:
                     "base_url": self.base_url,
                     "host": host,
                     "port": port,
+                    "success": False,
+                    "error": str(e),
                 },
             )
             # 端口被占用：非致命
