@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1742,
+  "total_keywords": 1743,
   "keywords": {
     "ErisPulse API 文档": [
       {
@@ -2291,7 +2291,7 @@
     "`__contains__(module_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/module.md",
-        "line": 837,
+        "line": 811,
         "level": 5,
         "title": "`__contains__(module_name: str)`"
       }
@@ -2365,7 +2365,7 @@
     "`__getattr__(module_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/module.md",
-        "line": 821,
+        "line": 795,
         "level": 5,
         "title": "`__getattr__(module_name: str)`"
       }
@@ -3896,12 +3896,12 @@
         "title": "`_execute_backend(base_cmd: list[str], args: list[str], description: str, backend: str)`"
       }
     ],
-    "`_execute_handlers_sync(hook_name: str, event: str, data: Any)`": [
+    "`_execute_handlers_sync(hook_name: str, event: str, data: Any, owner_filter: str | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 285,
+        "line": 304,
         "level": 5,
-        "title": "`_execute_handlers_sync(hook_name: str, event: str, data: Any)`"
+        "title": "`_execute_handlers_sync(hook_name: str, event: str, data: Any, owner_filter: str | None = None)`"
       }
     ],
     "`_extract_command_meta(activate_on: Any)`": [
@@ -4251,7 +4251,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 23,
+        "line": 24,
         "level": 3,
         "title": "`_get_logger()`"
       }
@@ -7234,12 +7234,12 @@
         "title": "`async _exec_query_on(kind: str, sql: str, params: Any, conn: Any)`"
       }
     ],
-    "`async _execute_handlers(hook_name: str, event: str, data: Any)`": [
+    "`async _execute_handlers(hook_name: str, event: str, data: Any, owner_filter: str | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 273,
+        "line": 291,
         "level": 5,
-        "title": "`async _execute_handlers(hook_name: str, event: str, data: Any)`"
+        "title": "`async _execute_handlers(hook_name: str, event: str, data: Any, owner_filter: str | None = None)`"
       }
     ],
     "`async _execute_query(kind: str, sql: str, params: Any)`": [
@@ -8167,7 +8167,7 @@
     "`async emit(event: str, data: Any = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 186,
+        "line": 188,
         "level": 5,
         "title": "`async emit(event: str, data: Any = None)`"
       }
@@ -8178,14 +8178,6 @@
         "line": 1655,
         "level": 5,
         "title": "`async emit_meta(detail_type: str, bot_id: str)`"
-      }
-    ],
-    "`async emit_to(module_name: str, event: str, data: Any = None)`": [
-      {
-        "document": "api-reference/auto_api/ErisPulse/Core/module.md",
-        "line": 795,
-        "level": 5,
-        "title": "`async emit_to(module_name: str, event: str, data: Any = None)`"
       }
     ],
     "`async finish(exc: BaseException | None)`": [
@@ -9031,7 +9023,7 @@
     "`async submit_event(event_type: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 224,
+        "line": 238,
         "level": 5,
         "title": "`async submit_event(event_type: str)`"
       }
@@ -9851,7 +9843,7 @@
     "`class InteractionError(ErisPulseError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 102,
+        "line": 117,
         "level": 3,
         "title": "`class InteractionError(ErisPulseError)`"
       }
@@ -9899,7 +9891,7 @@
     "`class LifecycleManager`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 38,
+        "line": 39,
         "level": 3,
         "title": "`class LifecycleManager`"
       }
@@ -9987,7 +9979,7 @@
     "`class ModuleCallError(ModuleError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 117,
+        "line": 132,
         "level": 3,
         "title": "`class ModuleCallError(ModuleError)`"
       }
@@ -9995,7 +9987,7 @@
     "`class ModuleCallTimeoutError(ModuleCallError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 143,
+        "line": 158,
         "level": 3,
         "title": "`class ModuleCallTimeoutError(ModuleCallError)`"
       }
@@ -10003,7 +9995,7 @@
     "`class ModuleError(ErisPulseError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 110,
+        "line": 125,
         "level": 3,
         "title": "`class ModuleError(ErisPulseError)`"
       }
@@ -10059,7 +10051,7 @@
     "`class ModuleNotAvailableError(ModuleCallError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 128,
+        "line": 143,
         "level": 3,
         "title": "`class ModuleNotAvailableError(ModuleCallError)`"
       }
@@ -10307,7 +10299,7 @@
     "`class ServiceNotProvidedError(ModuleCallError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 135,
+        "line": 150,
         "level": 3,
         "title": "`class ServiceNotProvidedError(ModuleCallError)`"
       }
@@ -10326,6 +10318,22 @@
         "line": 478,
         "level": 3,
         "title": "`class SseEmitter`"
+      }
+    ],
+    "`class StorageError(ErisPulseError)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
+        "line": 102,
+        "level": 3,
+        "title": "`class StorageError(ErisPulseError)`"
+      }
+    ],
+    "`class StorageUnreachableError(StorageError)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
+        "line": 109,
+        "level": 3,
+        "title": "`class StorageUnreachableError(StorageError)`"
       }
     ],
     "`class StrEnum(str, Enum)`": [
@@ -10435,7 +10443,7 @@
     "`class WebSocketDisconnect(WebSocketError)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/errors.md",
-        "line": 150,
+        "line": 165,
         "level": 3,
         "title": "`class WebSocketDisconnect(WebSocketError)`"
       }
@@ -10531,7 +10539,7 @@
     "`class _NullLogger`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 33,
+        "line": 34,
         "level": 3,
         "title": "`class _NullLogger`"
       }
@@ -10639,7 +10647,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 297,
+        "line": 317,
         "level": 5,
         "title": "`clear()`"
       },
@@ -10861,7 +10869,7 @@
     "`create_storage()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/storage/__init__.md",
-        "line": 28,
+        "line": 29,
         "level": 3,
         "title": "`create_storage()`"
       }
@@ -11107,7 +11115,7 @@
     "`emit_sync(event: str, data: Any = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 205,
+        "line": 215,
         "level": 5,
         "title": "`emit_sync(event: str, data: Any = None)`"
       }
@@ -11747,7 +11755,7 @@
     "`get_duration(timer_id: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 253,
+        "line": 271,
         "level": 5,
         "title": "`get_duration(timer_id: str)`"
       }
@@ -12079,7 +12087,7 @@
     "`get_owner_counts()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 171,
+        "line": 173,
         "level": 5,
         "title": "`get_owner_counts()`"
       }
@@ -12489,7 +12497,7 @@
     "`has_handlers(event: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 121,
+        "line": 123,
         "level": 5,
         "title": "`has_handlers(event: str)`"
       }
@@ -13131,7 +13139,7 @@
     "`list_hooks()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 309,
+        "line": 329,
         "level": 5,
         "title": "`list_hooks()`"
       }
@@ -13351,7 +13359,7 @@
     "`on(event: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 63,
+        "line": 65,
         "level": 5,
         "title": "`on(event: str)`"
       }
@@ -13571,7 +13579,7 @@
     "`once(event: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 103,
+        "line": 105,
         "level": 5,
         "title": "`once(event: str)`"
       }
@@ -13877,7 +13885,7 @@
     "`register(event: str, handler: Callable)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 87,
+        "line": 89,
         "level": 5,
         "title": "`register(event: str, handler: Callable)`"
       }
@@ -14815,7 +14823,7 @@
     "`start_timer(timer_id: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 244,
+        "line": 262,
         "level": 5,
         "title": "`start_timer(timer_id: str)`"
       }
@@ -14899,7 +14907,7 @@
     "`stop_timer(timer_id: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 263,
+        "line": 281,
         "level": 5,
         "title": "`stop_timer(timer_id: str)`"
       }
@@ -15203,7 +15211,7 @@
     "`unregister(event: str, handler: Callable | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 139,
+        "line": 141,
         "level": 5,
         "title": "`unregister(event: str, handler: Callable | None = None)`"
       }
@@ -15313,7 +15321,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 155,
+        "line": 157,
         "level": 5,
         "title": "`unregister_by_owner(owner: str)`"
       },
@@ -15713,7 +15721,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 20,
+        "line": 21,
         "level": 2,
         "title": "函数列表"
       },
@@ -15743,7 +15751,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/storage/__init__.md",
-        "line": 25,
+        "line": 26,
         "level": 2,
         "title": "函数列表"
       },
@@ -16311,7 +16319,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 60,
+        "line": 62,
         "level": 4,
         "title": "方法列表"
       },
@@ -17537,7 +17545,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/lifecycle.md",
-        "line": 30,
+        "line": 31,
         "level": 2,
         "title": "类列表"
       },
