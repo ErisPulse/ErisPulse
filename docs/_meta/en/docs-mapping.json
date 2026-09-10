@@ -336,7 +336,7 @@
     "Advanced Topics": {
       "description": "Deep dive into advanced framework features",
       "icon": "fa-fire",
-      "count": 15,
+      "count": 16,
       "documents": [
         {
           "title": "Advanced Topics",
@@ -417,14 +417,20 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Startup Process and Manual Control",
-          "path": "advanced/startup.md",
-          "level": 1,
-          "icon": "fa-fire"
-        },
-        {
           "title": "Storage Backends",
           "path": "advanced/storage-backends.md",
+          "level": 1,
+          "icon": "fa-server"
+        },
+        {
+          "title": "Exception System and Handling Guide",
+          "path": "advanced/errors.md",
+          "level": 1,
+          "icon": "fa-triangle-exclamation"
+        },
+        {
+          "title": "Startup Process and Manual Control",
+          "path": "advanced/startup.md",
           "level": 1,
           "icon": "fa-fire"
         }

@@ -792,32 +792,6 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
 ---
 
 
-##### `async emit_to(module_name: str, event: str, data: Any = None)`
-
-向指定模块定向投递生命周期事件（``module.<名称>.<事件>`` 命名约定）
-
-与直接 ``lifecycle.emit()`` 的差异：投递前校验目标模块已注册且启用
-（含懒加载代理），避免事件发向不存在 / 已禁用的模块而无感知；
-事件名自动加 ``module.<名称>.`` 命名空间前缀，与生命周期事件总线的
-前缀匹配规则兼容（订阅 ``module.<名称>`` 可接收该模块的全部定向事件）。
-
-订阅方在自己模块内注册钩子::
-
-    lifecycle.on("module.Chat.message_received", handler)
-
-- **module_name** (`目标模块名`): - **event**: 事件名（不含命名空间前缀）
-- **data** (`事件数据（dict`): 时自动附加 ``_trace_id``）
-**返回值** (`生命周期处理器的返回值（与`): lifecycle.emit 一致）
-**异常**: `ModuleNotAvailableError` - 目标模块未注册或未启用
-
-**示例**:
-```python
->>> await sdk.module.emit_to("Chat", "message_received", {"text": "hi"})
-```
-
----
-
-
 ##### `__getattr__(module_name: str)`
 
 通过属性访问获取模块实例

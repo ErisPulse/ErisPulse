@@ -7241,16 +7241,15 @@ sdk.adapter.get_status_summary()
 
 | 方法 | 說明 |
 |------|------|
-| `get(name)` | 取得模組實例或懶加載代理（已註冊但未載入時返回代理） |
+| `get(name)` | 取得模組實例或懶加載代理（已註冊但未加載時返回代理） |
 | `exists(name)` | 檢查是否已註冊 |
-| `is_loaded(name)` | 檢查是否已載入 |
+| `is_loaded(name)` | 檢查是否已加載 |
 | `is_enabled(name)` | 檢查是否啟用 |
 | `enable(name)` / `disable(name)` | 啟用/停用模組 |
-| `load(name)` / `unload(name)` | 載入/卸載模組 |
-| `call(module, method, *args, timeout=None, **kwargs)` | 跨模組呼叫目標模組的服務方法（協定化 RPC） |
-| `emit_to(module, event, data)` | 向指定模組定向投遞生命週期事件 |
+| `load(name)` / `unload(name)` | 加載/卸載模組 |
+| `call(module, method, *args, timeout=None, **kwargs)` | 跨模組呼叫目標模組的服務方法（協議化 RPC） |
 | `list_registered()` | 列出已註冊模組 |
-| `list_loaded()` | 列出已載入模組 |
+| `list_loaded()` | 列出已加載模組 |
 | `get_info(name)` | 取得模組資訊 |
 | `get_status_summary()` | 取得模組狀態摘要 |
 
@@ -7265,7 +7264,7 @@ module = sdk.ModuleName  # 等價快捷方式
 ### 模組間呼叫（RPC）
 
 ```python
-# 協定化呼叫：類型化錯誤 / 懶模組自動喚醒 / owner 歸因 / 超時語義
+# 協議化呼叫：類型化錯誤 / 懶模組自動喚醒 / owner 歸因 / 超時語義
 result = await sdk.module.call("Chat", "get_history", session_id, n=20)
 ```
 
@@ -7281,7 +7280,7 @@ result = await sdk.module.call("Chat", "get_history", session_id, n=20)
 
 ### 服務契約（meta.services）
 
-服務方在 `get_meta()` 的 `services` 欄位宣告對外白名單（與 `commands` 對稱），宣告後呼叫面收窄：
+服務方在 `get_meta()` 的 `services` 欄位宣告對外白名單（與 `commands` 對稱），宣告後呼叫面收緊：
 
 ```python
 class ChatModule(BaseModule):
@@ -7292,11 +7291,11 @@ class ChatModule(BaseModule):
     async def get_history(self, session_id, n=20): ...
 ```
 
-- **預設 = 開發者無感**：未宣告 `services` 時任意**公開**方法可被呼叫（向後相容），底線私有方法始終禁止；限制的主控制權在使用者端 scope 配置
+- **預設 = 開發者無感**：未宣告 `services` 時任意**公開**方法可被呼叫（向後相容），底線私有方法始終禁止；限制的主控制權在使用者側 scope 配置
 - 宣告後：僅白名單內方法可呼叫，越界拋 `ServiceNotProvidedError`
 - 呼叫方限制：`scope.set_action("CallerModule", "call", deny="Chat.get_history")`
 
-**服務介紹（description）**：`services` 支援 dict 形態為每個服務宣告介紹  
+**服務介紹（description）**：`services` 支援 dict 形態為每個服務宣告介紹
 （支援純字串或 i18n 字典），供服務目錄 / AI 呼叫點描述消費：
 
 ```python
@@ -7321,26 +7320,15 @@ sdk.module.services()
 sdk.module.services("Chat")  # 僅查詢指定模組
 ```
 
-僅列出**顯式宣告** `meta.services` 的模組；每個服務附方法簽名字串  
+僅列出**顯式宣告** `meta.services` 的模組；每個服務附方法簽名字串
 與介紹文字，為 MCP 化（呼叫點暴露給 AI）提供資料基礎。
 
-### 定向事件（emit_to）
-
-```python
-# 投遞方：校驗目標模組啟用後投遞到 module.<名稱>.<事件>
-await sdk.module.emit_to("Chat", "message_received", {"text": "hi"})
-
-# 訂閱方（Chat 模組內）：註冊命名空間鈎子
-lifecycle.on("module.Chat.message_received", handler)
-lifecycle.on("module.Chat", handler)  # 或接收該模組的全部定向事件
-```
-
-> [!NOTE]
-> 本節能力新增於 ErisPulse **2.8.0+**
+> 定向事件投遞屬於生命週期層：`lifecycle.emit(event, data, to="ModuleName")`，
+> 詳見 [模組間通訊](../advanced/module-communication.md)。
 
 ## Lifecycle 模組
 
-事件驅動的生命週期管理器，提供事件提交和監聽功能。
+事件驅動的生命周期管理器，提供事件提交和監聽功能。
 
 ### API 概覽
 
@@ -7349,9 +7337,9 @@ lifecycle.on("module.Chat", handler)  # 或接收該模組的全部定向事件
 | `on(event, priority=0)` | 裝飾器註冊事件處理器，支援點號匹配和通配符 `*` |
 | `register(event, handler, priority=0)` | 函數式註冊處理器 |
 | `unregister(event, handler=None)` | 移除處理器 |
-| `emit(event, data)` | 異步觸發事件 |
-| `emit_sync(event, data)` | 同步觸發事件 |
-| `submit_event(event_type, msg, data, source)` | 提交標準格式事件（相容舊版） |
+| `emit(event, data, to=None)` | 異步觸發事件；`to` 指定 owner 時定向投遞 |
+| `emit_sync(event, data, to=None)` | 同步觸發事件（異步處理器以 create_task 調度） |
+| `submit_event(event_type, msg, data, source, to=None)` | 提交標準格式事件（相容舊版） |
 | `start_timer(id)` / `stop_timer(id)` | 性能計時器 |
 
 ### 範例
@@ -7366,9 +7354,12 @@ async def handle_any_module_event(event_data):
     print(f"模組事件: {event_data}")
 
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
+
+# 定向投遞：僅分發給 Chat 模組註冊的鈎子
+await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
 ```
 
-> 完整的標準事件列表和詳細用法請參考 [生命週期管理](../advanced/lifecycle.md)。
+> 完整的標準事件列表和詳細用法請參考 [生命周期管理](../advanced/lifecycle.md)。
 
 ## Router 模組
 
@@ -8481,7 +8472,7 @@ class MyStorage(BaseStorage):
 ErisPulse 提供統一的鈎子/生命週期系統，用於監控系統各組件的運行狀態，以及實現審計、統計、自定義邏輯等擴展功能。
 
 系統支援三種觸發方式：
-- `await lifecycle.emit("event", data)` — 精簡版，傳遞任意數據
+- `await lifecycle.emit("event", data)` — 精簡版，傳遞任意資料（`to="Owner"` 時定向投遞）
 - `lifecycle.emit_sync("event", data)` — 同步版（用於非異步上下文）
 - `await lifecycle.submit_event("event", ...)` — 兼容舊版，自動建構標準事件格式
 
@@ -8505,7 +8496,7 @@ sdk.lifecycle.unregister("module.load", on_module_load)
 
 # 按所有者批量取消註冊（模組/適配器卸載時框架自動調用）
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
-print(f"清理了 {removed} 個生命週期鉤子")
+print(f"清理了 {removed} 個生命週期鈎子")
 ```
 
 ### 優先級
@@ -8538,9 +8529,36 @@ async def on_anything(data):
     print(f"收到事件: {data}")
 ```
 
+### 定向傳播（emit to=）
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
+
+`emit()` 指定 `to` 參數後進入定向傳播：事件只分發給以該擁有者（owner）身份註冊的
+處理器（模組在 `on_load` 內註冊的鈎子自動歸屬本模組），其它模組與通配符 `*`
+處理器不感知。
+
+```python
+# 投遞方：事件只投給 Chat 模組註冊的鈎子
+await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
+
+# 訂閱方（Chat 模組內）：註冊同名鈎子，owner 在註冊時自動記錄
+@sdk.lifecycle.on("message_received")
+async def on_message_received(data): ...
+
+@sdk.lifecycle.on("message")   # 點式父級前綴同樣生效（按 owner 過濾）
+async def on_any(data): ...
+```
+
+- 目標 owner 無已註冊鈎子 → 事件**靜默丟棄**（可用 `has_handlers()` 提前探測）
+- `data` 為 dict 時自動攜帶 `_trace_id`（不覆蓋已有值）
+- `emit_sync` / `submit_event` 同樣支援 `to=` 參數
+- 模組間通信的三層模型（RPC / 定向 / 廣播）見
+  [模組間通信](module-communication.md)
+
 ### 一次性註冊（once）
 
-從 2.7.0 起，`lifecycle.once()` 註冊的處理器在**觸發一次後自動註銷**，適合「首次就緒」這類一次性鉤子：
+從 2.7.0 起，`lifecycle.once()` 註冊的處理器在**觸發一次後自動註銷**，適合"首次就緒"這類一次性鈎子：
 
 ```python
 @sdk.lifecycle.once("core.init.complete")
@@ -8564,16 +8582,16 @@ if sdk.lifecycle.has_handlers("message.sending"):
 - 覆蓋**精確事件名、通配符 `*`、父級事件**三種匹配
 - 無任何監聽者時返回 `False`，可安全跳過 `emit`
 
-## 鈎子斷點概覽
+## 鈎子斷點一覽
 
 一條訊息從平台進入框架到處理完成的典型生命週期事件時序：
 
 ```mermaid
 sequenceDiagram
     participant P as 平台
-    participant A as 适配器
+    participant A as 適配器
     participant F as 框架核心
-    participant M as 模块处理器
+    participant M as 模組處理器
 
     P->>A: 原生事件到達
     A->>F: adapter.event.receive（最早期）
@@ -8588,11 +8606,11 @@ sequenceDiagram
     F->>F: adapter.event.dispatched（分發完成）
 ```
 
-框架內建了以下鈎子斷點，使用者可以透過 `@sdk.lifecycle.on()` 監聽任意斷點以實現自訂邏輯。
+框架內建了以下鈎子斷點，使用者可以透過 `@sdk.lifecycle.on()` 監聽任意斷點實現自定義邏輯。
 
 ### 核心初始化
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `core.init.start` | SDK 初始化開始 | `{}` |
 | `core.init.complete` | SDK 初始化完成 | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(僅失敗時)}` |
@@ -8600,7 +8618,7 @@ sequenceDiagram
 
 ### 配置變更
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `config.set` | 配置項被修改 | `{"key": str, "old_value": Any, "new_value": Any}` |
 | `config.updated` | 外部編輯 config.toml 後檢測到整樹變更 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
@@ -8615,28 +8633,28 @@ def audit_config(data):
 
 ### 模組生命週期
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `module.register` | 模組類註冊到管理器 | `{"module_name": str, "success": bool}` |
-| `module.load` | 模組載入完成（實例化成功） | `{"module_name": str, "success": bool}` |
+| `module.load` | 模組加載完成（實例化成功） | `{"module_name": str, "success": bool}` |
 | `module.init` | 模組初始化完畢（含懶加載） | `{"module_name": str, "success": bool}` |
 | `module.unload` | 模組卸載 | `{"module_name": str, "success": bool}` |
 
-### 适配器生命週期
+### 適配器生命週期
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
-| `adapter.load` | 适配器註冊完成 | `{"platform": str, "success": bool}` |
-| `adapter.start` | 适配器啟動 | `{"platforms": [str]}` |
-| `adapter.status.change` | 适配器狀態變更 | `{"platform": str, "status": str, "retry_count": int, "error": str(僅失敗時)}` |
-| `adapter.stop` | 适配器關閉 | `{"platforms": [str]}` |
-| `adapter.stopped` | 适配器關閉完成 | `{"platforms": [str]}` |
+| `adapter.load` | 適配器註冊完成 | `{"platform": str, "success": bool}` |
+| `adapter.start` | 適配器啟動 | `{"platforms": [str]}` |
+| `adapter.status.change` | 適配器狀態變化 | `{"platform": str, "status": str, "retry_count": int, "error": str(僅失敗時)}` |
+| `adapter.stop` | 適配器關閉 | `{"platforms": [str]}` |
+| `adapter.stopped` | 適配器關閉完成 | `{"platforms": [str]}` |
 | `adapter.bot.online` | Bot 上線 | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
 | `adapter.bot.offline` | Bot 下線 | `{"platform": str, "bot_id": str, "status": str}` |
 
 ### 事件接收與處理
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `adapter.event.receive` | 收到外部平台事件（最早期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
 | `adapter.event.dispatched` | 事件分發完成 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
@@ -8660,7 +8678,7 @@ def log_unhandled(data):
 
 ### 消息發送
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `message.sending` | 消息即將發送 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 | `message.sent` | 消息發送完成 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
@@ -8675,7 +8693,7 @@ def log_sending(data):
 
 ### 命令系統
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `command.matched` | 命令被匹配並即將執行 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
 | `command.executed` | 命令執行完成 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(僅失敗時)}` |
@@ -8690,7 +8708,7 @@ def count_commands(data):
 
 ### HTTP 路由
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `server.request` | HTTP 請求接收 | `{"method": str, "path": str, "client_ip": str}` |
 | `server.response` | HTTP 回應發送 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
@@ -8705,7 +8723,7 @@ def log_http(data):
 
 ### WebSocket
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `server.start` | 路由伺服器啟動 | `{"base_url": str, "host": str, "port": int}` |
 | `server.stop` | 路由伺服器停止 | `{}` |
@@ -8761,9 +8779,9 @@ STANDARD_EVENTS = {
 
 | 方法 | 說明 |
 |------|------|
-| `await lifecycle.emit(event, data=None)` | 異步觸發，處理器返回非 None 可修改 data |
-| `lifecycle.emit_sync(event, data=None)` | 同步觸發，異步處理器以 create_task 調度 |
-| `await lifecycle.submit_event(event_type, *, source, msg, data)` | 兼容舊版，自動建構標準事件格式 |
+| `await lifecycle.emit(event, data=None, *, to=None)` | 異步觸發，處理器返回非 None 可修改 data；`to` 指定 owner 時定向投遞 |
+| `lifecycle.emit_sync(event, data=None, *, to=None)` | 同步觸發，異步處理器以 create_task 調度 |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None)` | 兼容舊版，自動建構標準事件格式 |
 
 ### 工具
 
@@ -8772,7 +8790,7 @@ STANDARD_EVENTS = {
 | `lifecycle.start_timer(timer_id)` | 開始計時 |
 | `lifecycle.get_duration(timer_id)` | 獲取已持續時間（秒） |
 | `lifecycle.stop_timer(timer_id)` | 停止計時並返回持續時間 |
-| `lifecycle.list_hooks()` | 列出所有已註冊鉤子及處理器數量 |
+| `lifecycle.list_hooks()` | 列出所有已註冊鈎子及處理器數量 |
 | `lifecycle.clear()` | 清除所有處理器和計時器 |
 
 ## 模組中使用範例
@@ -8804,14 +8822,14 @@ class Main(BaseModule):
 
 ## 後台任務歸屬與自動取消
 
-> [!NOTE]  
-> 此功能需要 ErisPulse **2.8.0+**。
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
 
-模組建立的 asyncio 後台任務若未在 `on_unload` 中取消，會持有 `self` 引用，導致模組實例無法被回收（熱重載後舊實例殘留）。框架提供以下兜底機制：
+模組建立的 asyncio 後台任務若未在 `on_unload` 中取消，會持有 `self` 引用導致模組實例無法被回收（熱重載後舊實例殘留）。框架提供以下兜底機制：
 
-- **`self.spawn(coro)`**（模組內推薦）：任務自動歸屬模組名，模組卸載時框架在 `on_unload` **之後**兜底取消未結束的任務並記錄警告  
-- **`spawn_background(coro)`**（`ErisPulse.runtime`）：自動捕獲當前 `owner_scope` 上下文；`cancel_owner_tasks(owner)` 按歸屬取消，`cancel_all_background_tasks()` 供 `sdk.uninit()` 兜底  
-- **適配器**：關閉時對平台名下的後台任務同樣兜底取消  
+- **`self.spawn(coro)`**（模組內推薦）：任務自動歸屬模組名，模組卸載時框架在 `on_unload` **之後**兜底取消未結束的任務並記錄警告
+- **`spawn_background(coro)`**（`ErisPulse.runtime`）：自動捕獲當前 `owner_scope` 上下文；`cancel_owner_tasks(owner)` 按歸屬取消，`cancel_all_background_tasks()` 供 `sdk.uninit()` 兜底
+- **適配器**：關閉時對平台名下的後台任務同樣兜底取消
 
 ```python
 async def on_load(self, event):
@@ -8830,18 +8848,18 @@ async def _poll(self):
         ...
 ```
 
-> [!IMPORTANT]  
-> 框架兜底是**強制 cancel**（`cancel_owner_tasks`），它發生在 `on_unload` 返回之後。因此需要優雅收尾的任務（flush 缓衝、持久化狀態、關閉連接）**必須**在 `on_unload` 裡自行 `cancel()` + `await` 完成——別指望兜底能保留收尾邏輯。框架只保證「不殘留持有 `self` 的任務」，不保證「優雅」。需要 `await` 結果的任務請直接 `await`，不要丟給後台任務。
+> [!IMPORTANT]
+> 框架兜底是**強制 cancel**（`cancel_owner_tasks`），它發生在 `on_unload` 返回之後。因此需要優雅收尾的任務（flush 緩衝、持久化狀態、關閉連接）**必須**在 `on_unload` 裡自行 `cancel()` + `await` 完成——別指望兜底能保留收尾邏輯。框架只保證「不殘留持有 `self` 的任務」，不保證「優雅」。需要 `await` 結果的任務請直接 `await`，不要丟給後台任務。
 
 ## 注意事項
 
-1. **處理程序可以是同步或異步**：系統會自動識別並正確調用
-2. **數據傳遞**：在 `emit()` 模式下，處理程序返回非 None 值會修改傳遞給後續處理程序的 data
+1. **處理器可以是同步或異步**：系統自動辨識並正確調用
+2. **資料傳遞**：`emit()` 模式下，處理器返回非 None 值會修改傳遞給後續處理器的 data
 3. **事件命名規範**：建議使用點式結構命名事件，便於使用父級監聽
-4. **錯誤隔離**：單個處理程序異常不會影響其他處理程序執行
-5. **同步觸發限制**：`emit_sync()` 中異步處理程序以 fire-and-forget 方式調度，返回值無法回傳
-6. **生命周期清理**：呼叫 `sdk.uninit()` 時，所有已註冊的處理程序和計時器會被清理
-7. **加載優先性**：如需在框架初始化階段就監聽事件，建議設置高優先級並禁用懶加載
+4. **錯誤隔離**：單個處理器異常不會影響其他處理器執行
+5. **同步觸發限制**：`emit_sync()` 中異步處理器以 fire-and-forget 方式調度，返回值無法回傳
+6. **生命週期清理**：呼叫 `sdk.uninit()` 時，所有已註冊的處理器和計時器會被清理
+7. **加載優先性**：如需在框架初始化階段就監聽事件，建議設定高優先級並禁用懶加載
 
 ## 相關文件
 
@@ -10250,14 +10268,14 @@ class MyModule(BaseModule):
 
 ErisPulse 的模組之間有**三層通訊模型**，依「點對點 → 定向 → 廣播」排列：
 
-| 層 | API | 語意 | 典型場景 |
+| 層 | API | 語義 | 典型場景 |
 |---|---|---|---|
-| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | 點對點請求-回應，帶合約 / 審計 / 超時 | 呼叫另一模組的能力（查詢歷史、翻譯、退款） |
-| **定向事件** | `await sdk.module.emit_to("Chat", "message_received", {...})` | 投遞給指定模組的通知 | 上游狀態變更通知下游（「收到新訊息了」） |
-| **廣播** | `await lifecycle.emit("config.updated", {...})` | 全框架可見的生命週期事件 | 配置熱更新、模組上下線 |
+| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | 點對點請求-回應，帶契約 / 審計 / 超時 | 調用另一模組的能力（查詢歷史、翻譯、退款） |
+| **定向事件** | `await lifecycle.emit("message_received", {...}, to="Chat")` | 僅分發給指定模組註冊的生命周期鉤子 | 上游狀態變更通知下游（「收到新訊息了」） |
+| **廣播** | `await lifecycle.emit("config.updated", {...})` | 全框架可見的生命周期事件 | 配置熱更新、模組上下線 |
 
 {!--< tips >!--}
-選型口訣：**要回傳值用 `call`，只通知一個模組用 `emit_to`，通知所有人用 `lifecycle`**。
+選型口訣：**要回傳值用 `call`，只通知一個模組的鉤子用 `emit(..., to=...)`，通知所有人用 `emit(...)`**。
 {!--< /tips >!--}
 
 ## RPC：module.call
@@ -10376,37 +10394,51 @@ deny = ["Chat.get_history"]        # 禁止 CallerModule 呼叫 Chat 的 get_his
 
 配置方式詳見 [作用域（scope）](docs/zh-TW/scope.md) 的出站維度。
 
-## 定向事件：emit_to
+## 定向事件：lifecycle.emit 的 to 參數
+
+生命週期事件支援定向傳播：`to` 指定目標擁有者（owner）後，事件只分發給以該
+owner 身份註冊的鉤子（模組在 `on_load` 內註冊的鉤子自動歸屬本模組），
+其它模組與通配符 `*` 處理器不感知。
 
 ```python
-# 投遞方：校驗目標啟用後，事件進入 module.<名稱>.<事件> 命名空間
-await sdk.module.emit_to("Chat", "message_received", {"text": "hi", "from": "u1"})
-
-# 訂閱方（Chat 模組內）：按命名空間註冊鈎子
 from ErisPulse.Core.lifecycle import lifecycle
 
-@lifecycle.on("module.Chat.message_received")
+# 投遞方：事件只投給 Chat 模組註冊的鉤子
+await lifecycle.emit("message_received", {"text": "hi", "from": "u1"}, to="Chat")
+
+# 訂閱方（Chat 模組內）：註冊同名鉤子，owner 在註冊時自動記錄
+@lifecycle.on("message_received")
 async def on_message_received(data): ...
 
-@lifecycle.on("module.Chat")          # 或接收該模組的全部定向事件
+@lifecycle.on("message")          # 點式父級前綴同樣生效（按 owner 過濾）
 async def on_any(data): ...
 ```
 
-語意細節：
+語義細節：
 
-- 目標未註冊 / 未啟用 → `ModuleNotAvailableError`（**不發往不存在的地方**）
-- 目標是懶加載模組 → **先喚醒再投遞**（定向事件即激活源，與 `activate_on` 語意對齊）
+- 目標 owner 無已註冊鉤子 → 事件**靜默丟棄**（**不發往不存在的地方**），
+  可用 `lifecycle.has_handlers("message_received")` 提前探測
 - `data` 為 dict 時自動攜帶 `_trace_id`（不覆蓋已有值），與全鏈路追蹤打通
+- 廣播與定向共用一套鉤子註冊：`emit(...)` 不帶 `to` 即全框架廣播，
+  帶 `to` 則同一事件只對目標模組可見
+- `emit_sync` / `submit_event`（相容 API）同樣支援 `to=` 參數
 
-## 懶加載與呼叫
+> [!NOTE]
+> 定向事件是輕量通知，**不做目標校驗與懶喚醒**；需要目標存在性校驗、
+> 契約審計或返回值時，改用 [RPC：module.call](#rpcmodulecall)。
 
-`module.call()` 與 `emit_to()` 對懶加載模組都是**透明喚醒**：
+## 慢載與呼叫
 
-- 事件驅動懶模組（`activate_on` 聲明）→ 走激活鎖 `_activate()`，激活後觸發器 stub 自動註銷
-- 普通懶模組 → 同步初始化或常規加載路徑（冪等）
-- 喚醒失敗 → `ModuleNotAvailableError`（`call`）/ 激活失敗（`emit_to`）
+`module.call()` 對慢載模組是**透明喚醒**：
 
-也就是說：**呼叫方不需要關心目標模組是否已加載**，也無需為喚醒它而等待某條事件。
+- 事件驅動慢載模組（`activate_on` 聲明）→ 走激活鎖 `_activate()`，激活後觸發器 stub 自動註銷
+- 普通慢載模組 → 同步初始化或常規載入路徑（冪等）
+- 喚醒失敗 → `ModuleNotAvailableError`
+
+也就是說：**呼叫方不需要關心目標模組是否已載入**，也不需要為了喚醒它而等待任何事件。
+
+定向事件（`lifecycle.emit(..., to=...)`）不做慢載喚醒——目標未載入即無鉤子，  
+事件靜默丟棄；需要確保傳送到時改用 `module.call()`。
 
 ## 冷啟動回放
 
