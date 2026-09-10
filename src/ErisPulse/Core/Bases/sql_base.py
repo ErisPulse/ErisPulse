@@ -16,6 +16,7 @@ import asyncio
 import json
 import re
 import threading
+import time
 import weakref
 from abc import abstractmethod
 from collections.abc import AsyncIterator, Callable
@@ -23,9 +24,16 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
-from ..constants import DEFAULT_KV_TABLE_NAME, STORAGE_MAX_LIST_INDEX
+from ..constants import (
+    DEFAULT_KV_TABLE_NAME,
+    STORAGE_MAX_LIST_INDEX,
+    STORAGE_POOL_CREATE_BACKOFF_SECS,
+    STORAGE_POOL_CREATE_RETRIES,
+    STORAGE_POOL_FAIL_COOLDOWN_SECS,
+)
 from ..i18n import i18n
 from ..logger import logger
+from .errors import StorageUnreachableError
 from .storage import _SENTINEL, BaseQueryBuilder, BaseStorage, _current_txn
 
 # SQL 标识符（表名/列名）合法模式——用于 INSERT/UPDATE 列名、表名等必须为简单标识符的场景
@@ -587,6 +595,8 @@ class SQLStorageBase(BaseStorage):
         self._loop_resources: weakref.WeakKeyDictionary[Any, Any] = (
             weakref.WeakKeyDictionary()
         )
+        # 建池失败冷却截止时间（monotonic）；0 表示未处于冷却
+        self._resource_failed_until: float = 0.0
 
     def _ensure_resource_state(self) -> None:
         """{!--< internal-use >!--} 确保实例级资源表存在（__new__ 绕过构造时兜底）"""
@@ -594,6 +604,8 @@ class SQLStorageBase(BaseStorage):
             object.__setattr__(
                 self, "_loop_resources", weakref.WeakKeyDictionary()
             )
+        if not hasattr(self, "_resource_failed_until"):
+            object.__setattr__(self, "_resource_failed_until", 0.0)
 
     # 生命周期
 
@@ -665,9 +677,11 @@ class SQLStorageBase(BaseStorage):
         """{!--< internal-use >!--} 释放事务专用连接"""
         ...
 
-    # 连接资源创建的瞬时失败重试参数（网络抖动/对端限流/数据库重启）
-    _RESOURCE_CREATE_RETRIES: int = 3
-    _RESOURCE_CREATE_BACKOFF_SECS: float = 1.5
+    # 连接资源创建的瞬时失败重试参数（网络抖动/对端限流/数据库重启），取值见 Core/constants.py
+    _RESOURCE_CREATE_RETRIES: int = STORAGE_POOL_CREATE_RETRIES
+    _RESOURCE_CREATE_BACKOFF_SECS: float = STORAGE_POOL_CREATE_BACKOFF_SECS
+    # 重试耗尽后的冷却期：期间后续操作快速失败（不再阻塞重试），冷却结束自动重连试探
+    _RESOURCE_FAIL_COOLDOWN_SECS: float = STORAGE_POOL_FAIL_COOLDOWN_SECS
 
     async def _get_loop_resource(self) -> Any:
         """{!--< internal-use >!--} 获取当前事件循环的连接资源（惰性创建，幂等，瞬时失败自动重试）"""
@@ -677,6 +691,13 @@ class SQLStorageBase(BaseStorage):
             resource = self._loop_resources.get(loop)
         if resource is not None:
             return resource
+
+        # 冷却期内快速失败：连接不可达时不阻塞调用方（框架继续运行，仅存储暂不可用）
+        failed_until = getattr(self, "_resource_failed_until", 0.0)
+        if failed_until > time.monotonic():
+            raise StorageUnreachableError(
+                f"{self.dialect.name}: 连接不可达（冷却期内，稍后自动重连）"
+            )
 
         # 指数退避重试，规避远端瞬时拒绝（连接数限流、数据库重启窗口等）
         last_error: BaseException | None = None
@@ -699,7 +720,21 @@ class SQLStorageBase(BaseStorage):
                         self._RESOURCE_CREATE_BACKOFF_SECS * (attempt + 1)
                     )
         else:
-            raise last_error  # type: ignore[misc]
+            # 重试耗尽：记录冷却期，期间后续操作快速失败（不再每次阻塞重试），
+            # 框架继续运行（仅存储暂不可用），冷却结束后自动重连试探
+            self._resource_failed_until = time.monotonic() + self._RESOURCE_FAIL_COOLDOWN_SECS
+            logger.warning(
+                i18n.t(
+                    "core.storage.pool_exhausted",
+                    backend=self.dialect.name,
+                    retries=self._RESOURCE_CREATE_RETRIES,
+                    cooldown=int(self._RESOURCE_FAIL_COOLDOWN_SECS),
+                    error=last_error,
+                )
+            )
+            raise StorageUnreachableError(
+                f"{self.dialect.name}: {last_error}"
+            ) from last_error
 
         with self._resources_lock:
             existing = self._loop_resources.get(loop)
@@ -707,6 +742,8 @@ class SQLStorageBase(BaseStorage):
                 await self._destroy_loop_resource(resource)
                 return existing
             self._loop_resources[loop] = resource
+        # 建池成功：清除失败冷却（若曾进入冷却，此番重连试探成功即恢复）
+        self._resource_failed_until = 0.0
         return resource
 
     @asynccontextmanager

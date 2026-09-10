@@ -187,6 +187,7 @@ modules = []
 adapters = []
 
 [ErisPulse.storage]
+backend = "sqlite"
 use_global_db = false
 
 [ErisPulse.event.command]
@@ -410,14 +411,52 @@ adapters = ["OldAdapter"]
 
 ## 存储配置
 
+2.8.0 起存储引擎支持三种异步后端，**API 完全一致、配置一键切换**：
+
+| 后端 | 驱动 | 安装 | 特点 |
+|------|------|------|------|
+| SQLite（默认） | aiosqlite | 开箱即用 | 零配置、单文件、WAL 并发 |
+| MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | 已有 MySQL 基础设施、多实例共享 |
+| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | 事务能力强、高并发 |
+
 ```toml
 [ErisPulse.storage]
-use_global_db = false
+backend = "sqlite"        # "sqlite"（默认）/ "mysql" / "postgres"
+use_global_db = false     # 仅 SQLite：使用包内全局数据库 data/config.db
+
+[ErisPulse.storage.mysql]      # backend = "mysql" 时生效
+host = "127.0.0.1"
+port = 3306
+user = "erispulse"
+password = ""
+database = "erispulse"
+# charset = "utf8mb4"
+# pool_min = 1
+# pool_max = 10
+
+[ErisPulse.storage.postgres]   # backend = "postgres" 时生效
+host = "127.0.0.1"
+port = 5432
+user = "erispulse"
+password = ""
+database = "erispulse"
+# pool_min = 1
+# pool_max = 10
 ```
 
 | 配置项 | 类型 | 默认值 | 说明 |
 |---------|------|---------|------|
-| use_global_db | boolean | false | 是否使用全局数据库（包内）而非项目数据库。`true` 时所有项目共享 ErisPulse 包内的 SQLite 数据库；`false`（默认）时每个项目使用 `config/` 目录下独立的数据库 |
+| backend | string | sqlite | 存储后端：`sqlite` / `mysql` / `postgres`，切换零代码改动 |
+| use_global_db | boolean | false | 仅 SQLite：是否使用包内全局数据库而非项目独立数据库 |
+| storage.mysql.* | table | 见上 | MySQL 连接参数（host / port / user / password / database / charset / pool） |
+| storage.postgres.* | table | 见上 | PostgreSQL 连接参数（host / port / user / password / database / pool） |
+
+也支持环境变量覆盖（Docker / 12-factor）：`ErisPulse.storage.postgres.host` → `ERISPULSE_STORAGE_POSTGRES_HOST`。
+
+> [!TIP]
+> - 连接参数变更后需重启框架生效；连接池创建瞬时失败会自动指数退避重试
+> - 切换后端前可用验证脚本自检：`python tests/devs/test_storage_backend_verify.py --backend mysql`
+> - 事务 / 方言差异 / 自定义后端等完整说明见[存储后端](../advanced/storage-backends.md)
 
 ## 事件配置
 

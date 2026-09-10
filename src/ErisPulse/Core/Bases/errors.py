@@ -101,6 +101,22 @@ class WebSocketError(ErisPulseError):
     """
 
 
+class StorageError(ErisPulseError):
+    """
+    存储异常基类
+
+    所有存储后端相关的异常基类。
+    """
+
+
+class StorageUnreachableError(StorageError):
+    """
+    存储后端不可达
+
+    后端连接池创建在自动重试耗尽后仍失败（数据库不可达 / 凭据错误 /
+    网络隔离等）。框架保持运行，存储操作在冷却期内快速失败并自动重连。
+    """
+
 
 class InteractionError(ErisPulseError):
     """

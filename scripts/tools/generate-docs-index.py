@@ -362,6 +362,8 @@ class DocsIndexGenerator:
         "advanced/ownership.md": 13,
         "advanced/interaction.md": 14,
         "advanced/module-communication.md": 15,
+        "advanced/storage-backends.md": 16,
+        "advanced/errors.md": 17,
         # AI 辅助开发
         "ai-support/README.md": 1,
         # 生态模块
@@ -508,6 +510,8 @@ class DocsIndexGenerator:
         "advanced/i18n.md": "fa-language",
         "advanced/scope.md": "fa-shield-halved",
         "advanced/ownership.md": "fa-user-tag",
+        "advanced/storage-backends.md": "fa-server",
+        "advanced/errors.md": "fa-triangle-exclamation",
         # AI 辅助开发
         "ai-support/README.md": "fa-robot",
         # 生态模块

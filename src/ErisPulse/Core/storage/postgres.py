@@ -14,6 +14,7 @@ ErisPulse PostgreSQL 存储后端（asyncpg 异步原生实现）
 import re
 from typing import Any
 
+from ..Bases.errors import StorageUnreachableError
 from ..Bases.sql_base import SQLDialect, SQLStorageBase, _SingletonMixin
 from ..constants import (
     DEFAULT_STORAGE_PG_DATABASE,
@@ -122,7 +123,13 @@ class PostgresStorage(_SingletonMixin, SQLStorageBase):
         }
 
         logger.info(i18n.t("core.storage.backend_init", backend="postgres"))
-        self._init_db()
+        try:
+            self._init_db()
+        except StorageUnreachableError as e:
+            # 数据库不可达：框架照常启动（存储未就绪，操作快速失败），
+            # 冷却结束后自动重连；已由 _get_loop_resource 记录 WARNING
+            logger.error(i18n.t("core.storage.init_db_error", error=e))
+            return
         self._finish_init()
         # 连接参数无法运行时热切换，变更时告警需重启
         self._watch_storage_config(self._check_config_changed)
