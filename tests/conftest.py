@@ -20,6 +20,37 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 # ==================== 测试环境设置 ====================
 
 
+@pytest.fixture(scope="function", autouse=True)
+def _reset_event_dedupe() -> Generator[None, None, None]:
+    """
+    测试期间禁用事件幂等去重，用例后恢复
+
+    问题背景：``AdapterManager.emit`` 按 ``event["id"]`` LRU 去重（防平台
+    重连重推），而测试普遍使用固定 id 的合成事件且同一用例内连续多次
+    emit——第 2 条起会被误判为重复而丢弃。
+
+    此 fixture 在每个用例期间关闭去重（``adapter._event_dedupe_enabled = False``），
+    结束后恢复惰性配置态；去重功能本身由专用用例显式开启覆盖。
+
+    {!--< internal-use >!--}
+    """
+    try:
+        from ErisPulse.Core.adapter import adapter as _adapter
+
+        _adapter._event_dedupe_enabled = False
+        _adapter._seen_event_ids.clear()
+    except Exception:
+        pass
+    yield
+    try:
+        from ErisPulse.Core.adapter import adapter as _adapter
+
+        _adapter._event_dedupe_enabled = None
+        _adapter._seen_event_ids.clear()
+    except Exception:
+        pass
+
+
 @pytest.fixture(scope="session")
 def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     """
@@ -124,7 +155,7 @@ def clean_environment(test_data_dir: Path) -> Generator[None, None, None]:
 @pytest.fixture(scope="session", autouse=True)
 def _close_storage_on_teardown() -> Generator[None, None, None]:
     """
-    测试会话结束时关闭 storage 单例的 sqlite 连接，避免 ResourceWarning
+    测试会话结束时关闭 storage 单例的后端资源，避免 ResourceWarning
 
     {!--< internal-use >!--}
     """
@@ -132,14 +163,8 @@ def _close_storage_on_teardown() -> Generator[None, None, None]:
     try:
         from ErisPulse.Core.storage import storage as _storage
 
-        if hasattr(_storage, "_local"):
-            conn = getattr(_storage._local, "transaction_conn", None)
-            if conn is not None:
-                try:
-                    conn.close()
-                except Exception:
-                    pass
-                _storage._local.transaction_conn = None
+        if hasattr(_storage, "close"):
+            _storage.close()
     except Exception:
         pass
 

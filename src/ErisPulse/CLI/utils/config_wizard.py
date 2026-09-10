@@ -524,6 +524,9 @@ def fill_config_fields(config_class, current_values: dict) -> dict:
     """
     渲染整个配置类的表单并收集用户输入
 
+    ``example`` 字段不进入向导（默认值不落盘，仅记录在 config.full.example）；
+    嵌套 dataclass 字段（schema 含 ``fields`` 子树）递归渲染为子表单。
+
     :param config_class: dataclass 配置类
     :param current_values: 当前存储的配置字典（作为各字段初值）
     :return: 收集后的配置字典
@@ -531,12 +534,31 @@ def fill_config_fields(config_class, current_values: dict) -> dict:
     from ErisPulse.Core.Bases.config_schema import resolve_config_schema
 
     schema = resolve_config_schema(config_class)
-    current_store = dict(current_values or {})
-    values = dict(current_store)
-    for name, field_schema in _sort_fields(schema.get("fields", {})):
+    values = dict(current_values or {})
+    _fill_from_schema_fields(schema.get("fields", {}), values)
+    return values
+
+
+def _fill_from_schema_fields(fields_dict: dict, values: dict) -> None:
+    """
+    {!--< internal-use >!--}
+    按 schema 字段树渲染表单并就地收集到 values（嵌套子树递归）
+    """
+    current_store = dict(values)
+    for name, field_schema in _sort_fields(fields_dict):
+        if field_schema.get("example") and name not in current_store:
+            # example 字段仅当用户已显式设置时保留原值，不主动询问
+            continue
+        nested_fields = field_schema.get("fields")
+        if isinstance(nested_fields, dict):
+            sub_values = current_store.get(name)
+            if not isinstance(sub_values, dict):
+                sub_values = {}
+            _fill_from_schema_fields(nested_fields, sub_values)
+            values[name] = sub_values
+            continue
         has_value = name in current_store
         values[name] = _prompt_field(name, field_schema, values.get(name), has_value)
-    return values
 
 
 def _validate_dataclass(config_class, data: dict) -> list[str]:

@@ -1,5 +1,29 @@
 {
+  "version": 2,
   "hash": "d98766b423e445c28357e4effda48f9f",
-  "translated_at": "2026-07-29T11:21:36.251335",
-  "target_lang": "en"
+  "file_hash": "d98766b423e445c28357e4effda48f9f",
+  "translated_at": "2026-09-07T11:30:52.002513",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "c67bd4276dfef7e7fdd800581ca814b1",
+      "translation": "# Getting Started\n\n> This guide is a **detailed supplement** to the [5-Minute Quick Start](../quick-start.md). If you haven't yet run your first robot, please complete the quick start first.\n\nAfter your robot is up and running, this guide will help you systematically understand the framework's core concepts and common capabilities."
+    },
+    {
+      "hash": "2a013cccadd1b226cfaf67a3ab240632",
+      "translation": "## Learning Path\n\nIt is recommended to read in the following order:\n\n| Step | Topic | Description |\n|------|-------|-------------|\n| 1 | [Create Your First Bot](first-bot.md) | Write a command handler and understand the runtime mechanism |\n| 2 | [Basic Concepts](basic-concepts.md) | Understand the core architecture and module design of ErisPulse |\n| 3 | [Event Handling Introduction](event-handling.md) | Learn how to handle various events such as messages, commands, and notifications |\n| 4 | [Common Task Examples](common-tasks.md) | Master commonly used features such as data persistence, scheduled tasks, and permission control |\n| 5 | [IDE Completion Guide](ide-completion.md) | Generate type stubs to enable IDE auto-completion for platform-specific methods |"
+    },
+    {
+      "hash": "4aa00b789df7bd8851d4ef496bac3e58",
+      "translation": "## Development Approach Selection\n\nErisPulse supports two development approaches:\n\n| Approach | Use Case | Description |\n|----------|----------|-------------|\n| **Embedded Development** | Rapid prototyping, internal project features | Write processors directly in `main.py` without creating a separate module |\n| **Module Development** (Recommended) | Production environment, feature distribution | Create a standalone Python package and install it using `epsdk install` for use |\n\n> For a detailed comparison and examples of both approaches, please refer to [Create Your First Bot](first-bot.md) and [Getting Started with Module Development](../developer-guide/modules/getting-started.md)."
+    },
+    {
+      "hash": "aa1c8a494a818a7fb3f2dddbd706427d",
+      "translation": "## Architecture Overview\n\nErisPulse adopts an event-driven architecture, and its core consists of the following systems:\n\n- **Adapter System** — Communicates with various platforms, converting platform events into the unified OneBot12 standard format\n- **Event System** — Handles five types of events: messages, commands, notifications, requests, and meta-events\n- **Module System** — Extends functionality through independent modules, supporting dependency management and lazy loading\n- **Core Modules** — Provide foundational capabilities such as Storage (storage), Config (configuration), Logger (logging), and Router (routing)\n\n> For a detailed architecture diagram and initialization flow, please refer to [Architecture Overview](../architecture.md)."
+    },
+    {
+      "hash": "81d2ca0cf2f8dbc6cebf47b9c51f74f4",
+      "translation": "## Getting Started\n\nReady to get started?\n\n- [Create Your First Bot](first-bot.md) — 5 minutes to get started"
+    }
+  ]
 }

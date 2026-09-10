@@ -4,6 +4,7 @@ ErisPulse 配置中心
 集中管理所有配置项，避免循环导入问题
 提供自动补全缺失配置项的功能
 添加内存缓存和延迟写入机制以提高性能
+基于 tomlkit 实现注释保留写入：配置文件中的注释与键顺序在任何框架写入后均不丢失
 
 {!--< tips >!--}
 1. 使用 getConfig(key) / setConfig(key, value) 读写配置
@@ -18,7 +19,9 @@ import time
 from pathlib import Path
 from typing import Any, TypeAlias
 
-import toml
+import tomlkit
+from tomlkit.exceptions import ParseError
+from tomlkit.items import Table
 
 from .constants import (
     CONFIG_CACHE_TIMEOUT_SECS,
@@ -140,11 +143,12 @@ class ConfigManager:
             if str(config_dir) and not config_dir.exists():
                 config_dir.mkdir(parents=True, exist_ok=True)
 
+            # tomlkit 解析保留原文件注释与键顺序，迁移后内容与原文件一致
             with Path(old_config_path).open(encoding="utf-8") as f:
-                old_config = toml.load(f)
+                old_doc = tomlkit.parse(f.read())
 
             with Path(self.CONFIG_FILE).open("w", encoding="utf-8") as f:
-                toml.dump(old_config, f)
+                f.write(tomlkit.dumps(old_doc))
 
             readme_content = f"""# 配置文件迁移说明
 
@@ -158,7 +162,7 @@ class ConfigManager:
 ## 原配置内容
 
 ```toml
-{toml.dumps(old_config)}
+{tomlkit.dumps(old_doc)}
 ```
 
 ## 注意事项
@@ -205,16 +209,15 @@ class ConfigManager:
 
             try:
                 with path.open(encoding="utf-8") as f:
-                    config = toml.load(f)
-            except toml.TomlDecodeError as e:
-                # 态1：TOML 语法错误——给出行号/列号与原因，便于用户精确定位
+                    config = tomlkit.parse(f.read()).unwrap()
+            except ParseError as e:                # 态1：TOML 语法错误——给出行号/列号与原因，便于用户精确定位
                 # 保留上次有效缓存，避免半成品 TOML 干扰运行中的进程
                 self._log_config_error(
                     i18n.t(
                         "core.config.toml_malformed",
                         path=self.CONFIG_FILE,
-                        line=getattr(e, "lineno", "?"),
-                        col=getattr(e, "colno", "?"),
+                        line=getattr(e, "line", "?"),
+                        col=getattr(e, "col", "?"),
                         reason=getattr(e, "msg", str(e)),
                     )
                 )
@@ -299,21 +302,6 @@ class ConfigManager:
         except (ImportError, AttributeError):
             pass
 
-    @staticmethod
-    def _sort_config_dict(config_dict: dict[str, Any]) -> dict[str, Any]:
-        """
-        递归地对配置字典按键排序
-
-        :param config_dict: dict 待排序的配置字典
-        :return: dict 排序后的配置字典
-
-        {!--< internal-use >!--}
-        {!--< /internal-use >!--}
-        """
-        return {
-            k: ConfigManager._sort_config_dict(v) if isinstance(v, dict) else v for k, v in sorted(config_dict.items())
-        }
-
     @property
     def _malformed_sentinel_path(self) -> Path:
         """
@@ -328,11 +316,53 @@ class ConfigManager:
         """
         return Path(self.CONFIG_FILE).parent / ".flush_malformed_cooldown"
 
+    @staticmethod
+    def _set_doc_path(doc: Any, keys: list[str], value: Any) -> None:
+        """
+        在 tomlkit 文档树中按点分路径写入值
+
+        中间层节点缺失或非表时以空表替换（与 dict 语义一致）；
+        叶子写入保留既有注释与顺序，新键追加至所在节末尾。
+
+        :param doc: tomlkit 文档/表对象
+        :param keys: 点分路径拆分后的键列表
+        :param value: 待写入的值（plain dict 会转换为标准 table）
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        node = doc
+        for k in keys[:-1]:
+            child = node.get(k)
+            if not isinstance(child, Table):
+                node[k] = {}
+                child = node[k]
+            node = child
+        node[keys[-1]] = value
+
+    @staticmethod
+    def _doc_to_plain_dict(doc: Any) -> dict[str, Any]:
+        """
+        将 tomlkit 文档转为 plain dict 缓存
+
+        经 body 低层插入的条目不进入容器索引，直接 ``unwrap()`` 会丢失；
+        渲染后重新解析可保证缓存与文件内容严格一致。
+
+        :param doc: tomlkit 文档对象
+        :return: dict 纯字典形式的配置内容
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        return tomlkit.parse(tomlkit.dumps(doc)).unwrap()
+
     def _flush_config(self) -> None:
         """
         将待写入的配置刷新到文件
 
-        使用文件锁确保多线程环境下的原子性操作
+        使用文件锁确保多线程环境下的原子性操作。
+        基于 tomlkit 在解析出的文档树上做增量修改后整体回写，
+        文件中已有的注释与键顺序不因框架写入而丢失或重排。
 
         {!--< internal-use >!--}
         {!--< /internal-use >!--}
@@ -346,26 +376,17 @@ class ConfigManager:
                 try:
                     if Path(self.CONFIG_FILE).exists():
                         with Path(self.CONFIG_FILE).open(encoding="utf-8") as f:
-                            config = toml.load(f)
+                            doc = tomlkit.parse(f.read())
                     else:
-                        config = {}
+                        doc = tomlkit.document()
 
-                    # 应用待写入的更改
+                    # 应用待写入的更改（注释保留：仅触碰脏键所在行，其余原样保留）
                     for key, value in self._dirty_keys.items():
-                        keys = key.split(".")
-                        current = config
-                        for k in keys[:-1]:
-                            if k not in current:
-                                current[k] = {}
-                            current = current[k]
-                        current[keys[-1]] = value
-
-                    # 对配置进行排序
-                    sorted_config = self._sort_config_dict(config)
+                        self._set_doc_path(doc, key.split("."), value)
 
                     temp_file = self.CONFIG_FILE + ".tmp"
                     with Path(temp_file).open("w", encoding="utf-8") as f:
-                        toml.dump(sorted_config, f)
+                        f.write(tomlkit.dumps(doc))
 
                     # 原子性重命名
                     if os.name == "nt":
@@ -376,8 +397,8 @@ class ConfigManager:
                     else:
                         Path(temp_file).rename(self.CONFIG_FILE)
 
-                    # 更新缓存并清除待写入队列
-                    self._cache = sorted_config
+                    # 更新缓存并清除待写入队列（转回 plain dict，保持缓存类型不变）
+                    self._cache = self._doc_to_plain_dict(doc)
                     self._cache_timestamp = time.time()
                     self._dirty_keys.clear()
                     # 写入成功 → 清除告警冷却标记，下次再损坏可立即告警
@@ -396,7 +417,7 @@ class ConfigManager:
                     except OSError:
                         pass
 
-                except toml.TomlDecodeError as e:
+                except ParseError as e:
                     # 配置文件已损坏（语法错误）→ 无法安全地读取-合并-写入。
                     # 不清空 _dirty_keys，待用户修复文件后下次 flush 再写入。
                     # 去重：使用配置目录下的哨兵文件 mtime 做冷却。
@@ -423,8 +444,8 @@ class ConfigManager:
                                 i18n.t(
                                     "core.config.flush_malformed",
                                     path=self.CONFIG_FILE,
-                                    line=getattr(e, "lineno", "?"),
-                                    col=getattr(e, "colno", "?"),
+                                    line=getattr(e, "line", "?"),
+                                    col=getattr(e, "col", "?"),
                                     reason=getattr(e, "msg", str(e)),
                                 )
                             )
@@ -794,6 +815,142 @@ class ConfigManager:
 
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, lambda: self.setConfig(key, value, immediate))
+
+    def setConfigTemplate(self, key: str, toml_text: str, immediate: bool = True) -> bool:
+        """
+        以带注释的 TOML 模板文本写入指定配置节
+
+        用于适配器/模块首次生成配置模板：模板中的字段注释原样落盘。
+        目标节已存在时不覆盖（由调用方保证仅在配置缺失时调用）；
+        文件其余内容与注释不受影响。
+
+        :param key: str 配置节键（支持点分路径，如 ``"MyAdapter"``）
+        :param toml_text: str 模板 TOML 文本（仅键值与注释，不含节头）
+        :param immediate: bool 是否立即写入磁盘 (默认: True)
+        :return: bool 是否写入成功
+
+        :example:
+        >>> sdk.config.setConfigTemplate("MyAdapter", '# API 令牌\\ntoken = ""')
+        """
+        try:
+            parsed = tomlkit.parse(toml_text)
+        except ParseError as e:
+            self._log_config_error(
+                i18n.t(
+                    "core.config.template_malformed",
+                    key=key,
+                    line=getattr(e, "line", "?"),
+                    col=getattr(e, "col", "?"),
+                    reason=getattr(e, "msg", str(e)),
+                )
+            )
+            return False
+
+        # 模板条目（含独立注释与空行）逐项搬运到新表，保留注释
+        section = tomlkit.table()
+        for item_key, item in parsed.body:
+            section.value.body.append((item_key, item))
+
+        with self._lock:
+            with self._file_lock:
+                try:
+                    if Path(self.CONFIG_FILE).exists():
+                        with Path(self.CONFIG_FILE).open(encoding="utf-8") as f:
+                            doc = tomlkit.parse(f.read())
+                    else:
+                        doc = tomlkit.document()
+
+                    # 定位父节点，目标节已存在则不覆盖
+                    keys = key.split(".")
+                    node = doc
+                    exists = True
+                    for k in keys:
+                        child = node.get(k)
+                        if not isinstance(child, Table):
+                            exists = False
+                            break
+                        node = child
+                    if exists:
+                        return False
+
+                    parent = doc
+                    for k in keys[:-1]:
+                        child = parent.get(k)
+                        if not isinstance(child, Table):
+                            parent[k] = {}
+                            child = parent[k]
+                        parent = child
+                    parent[keys[-1]] = section
+
+                    if not immediate:
+                        self._cache = self._doc_to_plain_dict(doc)
+                        self._cache_timestamp = time.time()
+                        return True
+
+                    temp_file = self.CONFIG_FILE + ".tmp"
+                    with Path(temp_file).open("w", encoding="utf-8") as f:
+                        f.write(tomlkit.dumps(doc))
+
+                    # 原子性重命名
+                    if os.name == "nt":
+                        if Path(self.CONFIG_FILE).exists():
+                            Path(temp_file).replace(self.CONFIG_FILE)
+                        else:
+                            Path(temp_file).rename(self.CONFIG_FILE)
+                    else:
+                        Path(temp_file).rename(self.CONFIG_FILE)
+
+                    self._cache = self._doc_to_plain_dict(doc)
+                    self._cache_timestamp = time.time()
+                    # 写入成功 → 清除告警冷却标记（与 _flush_config 行为一致）
+                    sentinel = self._malformed_sentinel_path
+                    try:
+                        if sentinel.exists():
+                            sentinel.unlink()
+                    except Exception:
+                        pass
+
+                    # 同步 mtime，避免文件监听任务把自身写入误判为外部修改
+                    try:
+                        self._config_mtime = Path(self.CONFIG_FILE).stat().st_mtime
+                        self._last_self_write_mtime = self._config_mtime
+                    except OSError:
+                        pass
+
+                    return True
+
+                except ParseError as e:
+                    self._log_config_error(
+                        i18n.t(
+                            "core.config.toml_malformed",
+                            path=self.CONFIG_FILE,
+                            line=getattr(e, "line", "?"),
+                            col=getattr(e, "col", "?"),
+                            reason=getattr(e, "msg", str(e)),
+                        )
+                    )
+                    return False
+                except Exception as e:
+                    try:
+                        from .logger import logger
+
+                        logger.error(
+                            i18n.t(
+                                "core.config.write_failed",
+                                path=self.CONFIG_FILE,
+                                error=e,
+                            )
+                        )
+                    except (ImportError, AttributeError):
+                        pass
+                    # 清理临时文件
+                    temp_file = self.CONFIG_FILE + ".tmp"
+                    if Path(temp_file).exists():
+                        try:
+                            Path(temp_file).unlink()
+                        except Exception:
+                            pass
+                    return False
 
     async def aforce_save(self) -> None:
         """

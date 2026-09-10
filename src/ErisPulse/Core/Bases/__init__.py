@@ -9,7 +9,8 @@ from .converter import BaseConverter
 from .send_rules import SendContext
 from .send_builder import SendBuilder, BatchContext
 from .module import BaseModule, ModuleMeta
-from .storage import BaseStorage, BaseQueryBuilder
+from .storage import AsyncBridge, BaseStorage, BaseQueryBuilder
+from .sql_base import AlterTableBuilder, SQLDialect, SQLQueryBuilder, SQLStorageBase
 from .kv_builder import KVQueryBuilder
 from .errors import (
     ErisPulseError,
@@ -17,6 +18,14 @@ from .errors import (
     ClientConnectionError,
     ClientTimeoutError,
     HTTPStatusError,
+    InteractionError,
+    ModuleCallError,
+    ModuleCallTimeoutError,
+    ModuleError,
+    ModuleNotAvailableError,
+    ServiceNotProvidedError,
+    StorageError,
+    StorageUnreachableError,
     WebSocketError,
     WebSocketDisconnect,
 )
@@ -66,16 +75,30 @@ __all__ = [
     "I18nConfig",
     # i18n 单键声明
     "I18nKey",
+    "AsyncBridge",
+    "InteractionError",
     "KVQueryBuilder",
+    "ModuleCallError",
+    "ModuleCallTimeoutError",
+    "ModuleError",
     "ModuleMeta",
+    "ModuleNotAvailableError",
     "RequestDSL",
     "SendBuilder",
     "SendContext",
     "SendDSL",
+    "ServiceNotProvidedError",
     "SseEmitter",
+    "StorageError",
+    "StorageUnreachableError",
     "WSMessage",
     "WebSocketConnection",
     "WebSocketConnectionBase",
     "WebSocketDisconnect",
     "WebSocketError",
+    # SQL 存储基类（自定义 SQL 后端扩展用）
+    "AlterTableBuilder",
+    "SQLDialect",
+    "SQLQueryBuilder",
+    "SQLStorageBase",
 ]

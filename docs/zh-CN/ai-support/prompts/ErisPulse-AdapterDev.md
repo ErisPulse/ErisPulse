@@ -2971,6 +2971,10 @@ metadata = {
     "description": str | dict,  # 字段描述（支持 i18n）
     "required": bool,         # 是否必填（校验 + WebUI 必填标记）
     "secret": bool,           # 是否敏感（WebUI 显示为 ***，日志中脱敏）
+    "example": bool,          # 不落盘标志：不写入 config.toml（默认值/模板均排除），
+                              # 仅渲染进 config.full.example；schema 带 "example": true 标记，
+                              # CLI 配置向导默认跳过；用户手动设置后正常持久化
+    "min": number, "max": number,  # 数值范围校验
     "ui": {                   # WebUI 控件配置（旧名 "webui" 仍兼容）
         "widget": str,        # 控件类型: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # 分组: "basic" | "advanced" | "connection" 等
@@ -3035,6 +3039,89 @@ MyConfig._schema_meta = {
 
 框架的 `resolve_config_schema()` 会根据当前语言自动解析上述所有字段的 i18n 键；
 `get_config_schema()` 则原样透传 i18n 字典，由前端自行解析。
+
+#### docstring 自动生成字段描述（v2.8.0+）
+
+未在 metadata 中声明 `description` 的字段，框架会自动从配置类 docstring 中
+提取字段说明作为兜底，支持两种常见风格（可混用）：
+
+```python
+@dataclass
+class MyConfig(BaseConfig):
+    """
+    MyAdapter 配置
+
+    :ivar endpoint: 平台 API 地址        # reST 风格
+    :ivar timeout: 请求超时秒数
+    """
+
+    endpoint: str = "https://api.example.com"   # 无 metadata description → 注释/描述取 docstring
+    timeout: int = 30
+
+    # Google 风格同样支持（Attributes: 段）：
+    # Attributes:
+    #     endpoint: 平台 API 地址
+```
+
+优先级：**metadata description > docstring 字段说明 > 空**。
+i18n 字典形式的 description 不受影响（始终优先）。
+
+#### 嵌套配置（v2.8.0+）
+
+字段类型为嵌套 dataclass 时，框架递归处理：schema 以 `"type": "table"` +
+`"fields"` 子树承载（WebUI 渲染为可折叠嵌套分组），TOML 模板渲染为 `[子表]` 节，
+默认值 / 填充 / 校验 / i18n 解析均递归生效。
+
+```python
+@dataclass
+class RetryConfig(BaseConfig):
+    """重试策略
+
+    :ivar max_retries: 最大重试次数
+    """
+    max_retries: int = 3
+    backoff: float = 0.5
+
+@dataclass
+class MyConfig(BaseConfig):
+    """MyAdapter 配置"""
+    endpoint: str = "https://api.example.com"
+    retry: RetryConfig = field(default_factory=RetryConfig)   # 嵌套配置段
+```
+
+生成的 TOML 模板：
+
+```toml
+endpoint = "https://api.example.com"
+
+[retry]
+# 最大重试次数
+max_retries = 3
+backoff = 0.5
+```
+
+> 嵌套类型建议使用直接类型注解；字符串注解（如延迟求值场景）需保证
+> 类型可从配置类所在模块全局、`__qualname__` 外层类命名空间或类属性中按名解析。
+
+#### 不落盘的 example 字段（v2.8.0+）
+
+```python
+gc_interval: int = field(default=300, metadata={"example": True})
+```
+
+带 `example: True` 的字段：
+
+- 不写入 config.toml（适配器/模块配置模板与默认值均排除，运行时走代码默认值）
+- 仅渲染进项目内 `config.full.example`（供用户参考，按需手动复制到 config.toml）
+- schema 中带 `"example": true` 标记（面板可自行决定展示策略），CLI 配置向导默认跳过
+- 用户手动设置该键后正常持久化、正常热更新（用户显式意图优先）
+
+适合"冗杂又很少触碰"的高级配置项，保持用户的 config.toml 最小化。
+
+> ⚠️ `_schema_meta` 是类级元数据（非配置字段）。若在 dataclass 类体内部声明，
+> 必须加 `ClassVar` 注解（`_schema_meta: ClassVar[dict] = {...}`），否则会被
+> dataclass 视为普通字段。框架对下划线前缀字段已做防御性排除（不进入任何
+> schema / 模板 / 默认值 / 校验输出），但仍建议规范声明。
 
 ### 声明式翻译键（v2.7.0+）
 
@@ -7133,6 +7220,7 @@ sdk.adapter.get_status_summary()
 | `is_enabled(name)` | 检查是否启用 |
 | `enable(name)` / `disable(name)` | 启用/禁用模块 |
 | `load(name)` / `unload(name)` | 加载/卸载模块 |
+| `call(module, method, *args, timeout=None, **kwargs)` | 跨模块调用目标模块的服务方法（协议化 RPC） |
 | `list_registered()` | 列出已注册模块 |
 | `list_loaded()` | 列出已加载模块 |
 | `get_info(name)` | 获取模块信息 |
@@ -7146,6 +7234,71 @@ module = sdk.module.ModuleName
 module = sdk.ModuleName  # 等价快捷方式
 ```
 
+### 模块间调用（RPC）
+
+```python
+# 协议化调用：类型化错误 / 懒模块自动唤醒 / owner 归因 / 超时语义
+result = await sdk.module.call("Chat", "get_history", session_id, n=20)
+```
+
+与服务方裸属性访问 `sdk.module.Chat.get_history(...)` 的差异：
+
+| | `module.call()` | 裸属性访问 |
+|---|---|---|
+| 目标未注册/未启用 | 抛 `ModuleNotAvailableError` | 抛 `AttributeError` |
+| 懒加载模块 | 自动唤醒 | 异步初始化模块抛 RuntimeError |
+| `current_owner` | 归因到目标模块 | 保持调用方 |
+| 超时 | 默认 30s，可覆盖 | 无 |
+| scope 审计 | `actions.<调用方>.call` | 无 |
+
+### 服务契约（meta.services）
+
+服务方在 `get_meta()` 的 `services` 字段声明对外白名单（与 `commands` 对称），声明后调用面收紧：
+
+```python
+class ChatModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(services=["get_history", "translate"])
+
+    async def get_history(self, session_id, n=20): ...
+```
+
+- **缺省 = 开发者无感**：未声明 `services` 时任意**公开**方法可被调用（向后兼容），下划线私有方法始终禁止；限制的主控制权在用户侧 scope 配置
+- 声明后：仅白名单内方法可调，越界抛 `ServiceNotProvidedError`
+- 调用方限制：`scope.set_action("CallerModule", "call", deny="Chat.get_history")`
+
+**服务介绍（description）**：`services` 支持 dict 形态为每个服务声明介绍
+（支持纯字符串或 i18n 字典），供服务目录 / AI 调用点描述消费：
+
+```python
+return ModuleMeta(
+    services=[
+        "get_history",                              # 简单形态：介绍自动取方法 docstring 首行
+        {"name": "translate", "description": "把文本翻译成指定语言"},
+        {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "摘要对话"}},
+    ],
+)
+```
+
+介绍解析优先级：**显式 description（i18n 解析为当前语言）> 方法 docstring 首行 > 空串**。
+
+### 服务目录（services）
+
+```python
+sdk.module.services()
+# {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
+#            'description': '获取会话历史'}]}
+
+sdk.module.services("Chat")  # 仅查询指定模块
+```
+
+仅列出**显式声明** `meta.services` 的模块；每个服务附方法签名字符串
+与介绍文本，为 MCP 化（调用点暴露给 AI）提供数据基础。
+
+> 定向事件投递属于生命周期层：`lifecycle.emit(event, data, to="ModuleName")`，
+> 详见 [模块间通信](../advanced/module-communication.md)。
+
 ## Lifecycle 模块
 
 事件驱动的生命周期管理器，提供事件提交和监听功能。
@@ -7157,9 +7310,9 @@ module = sdk.ModuleName  # 等价快捷方式
 | `on(event, priority=0)` | 装饰器注册事件处理器，支持点号匹配和通配符 `*` |
 | `register(event, handler, priority=0)` | 函数式注册处理器 |
 | `unregister(event, handler=None)` | 移除处理器 |
-| `emit(event, data)` | 异步触发事件 |
-| `emit_sync(event, data)` | 同步触发事件 |
-| `submit_event(event_type, msg, data, source)` | 提交标准格式事件（兼容旧版） |
+| `emit(event, data, to=None)` | 异步触发事件；`to` 指定 owner 时定向投递 |
+| `emit_sync(event, data, to=None)` | 同步触发事件（异步处理器以 create_task 调度） |
+| `submit_event(event_type, msg, data, source, to=None)` | 提交标准格式事件（兼容旧版） |
 | `start_timer(id)` / `stop_timer(id)` | 性能计时器 |
 
 ### 示例
@@ -7174,6 +7327,9 @@ async def handle_any_module_event(event_data):
     print(f"模块事件: {event_data}")
 
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
+
+# 定向投递：仅分发给 Chat 模块注册的钩子
+await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
 ```
 
 > 完整的标准事件列表和详细用法请参考 [生命周期管理](../advanced/lifecycle.md)。
@@ -7248,7 +7404,82 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 | `events` | 各类事件处理器数量（message/notice/request/meta/commands） |
 | `router` | 服务器运行状态、HTTP/WebSocket 路由数量 |
 
-> 新增于 2.5.2
+> [!NOTE]
+> 新增于 ErisPulse **2.5.2+**
+
+## Interaction 交互会话
+
+管理 wait_reply 挂起等待与会话互斥租约（`sdk.interaction`）。
+
+### 常用方法
+
+```python
+# 会话定时提醒：5 分钟无回复则提醒，用户回复自动取消
+reminder = event.remind(300, "还在吗？")
+reminder.cancel()  # 手动取消
+
+# 超时升级：到点必达（不被回复取消）
+event.escalate(1800, lambda e: notify_master("30 分钟未处理"))
+
+# 多路等待：先到先得
+which, reply = await event.select(
+    event.expect(pattern="同意*", user="A"),
+    event.expect(pattern="拒绝*", user="B"),
+    timeout=60,
+)
+
+# 会话级等待：同群任何人的回复均可命中
+reply = await event.wait_reply(session=True, prompt="谁能帮忙答一下？")
+
+# 查询会话当前归属（谁正在与该用户交互）
+owner = sdk.interaction.get_owner_of(event)
+
+# 声明会话互斥租约（被占用返回 None）
+lease = sdk.interaction.acquire(event)
+if lease:
+    try:
+        ...  # 独占交互
+    finally:
+        lease.release()
+
+# 上下文管理器形式（被占用抛 SessionOccupiedError）
+with sdk.interaction.hold(event) as lease:
+    ...
+
+# 挂起会话统计
+sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'timers': 3, 'owners': {'Chat': 3}}
+```
+
+模块卸载 / 适配器关闭时其挂起的等待与定时器自动取消（等待方立即返回 `None`），
+回复命中时自动复查 scope 权限（用户被拉黑 / 模块被解绑则终止等待）。
+
+> [!NOTE]
+> 本节能力新增于 ErisPulse **2.8.0+**
+
+## Transcript 会话收件箱
+
+每会话近期消息流的自动记录与查询（`sdk.transcript`），作为 AI 对话、
+防复读等上下文记忆类模块的公共底座。
+
+### 常用方法
+
+```python
+# 便捷查询（推荐）：当前会话最近 20 条（含用户与机器人，时间升序）
+messages = await event.history(20)
+for m in messages:
+    print(m["role"], ":", m["text"])
+
+# 管理器 API
+sdk.transcript.append(event, "user", "文本")
+sdk.transcript.get(event, n=20)
+sdk.transcript.clear(event)
+```
+
+配置（`ErisPulse.transcript`）：`enabled`（默认开启）、`max_per_session`（每会话上限，默认 50）、
+`ttl_hours`（全局过期时间，默认 168 小时）。数据存独立 SQLite 表，超限/过期惰性清理。
+
+> [!NOTE]
+> 本节能力新增于 ErisPulse **2.8.0+**
 
 
 
@@ -7854,6 +8085,28 @@ for row in rows:
 
 #### 将元组转为字典
 
+推荐直接在链上调用 `ToDict()`，SELECT 结果自动以字典返回（列名 → 值）：
+
+```python
+# ToDict 链：结果为 list[dict]，列名自动取自查询元数据（SELECT * 同样支持）
+rows = sdk.storage.Table("users").Select("name", "age").ToDict().Execute()
+# rows: [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}, ...]
+
+for row in rows:
+    print(row["name"], row["age"])
+
+# ExecuteOne 同样生效
+row = sdk.storage.Table("users").Select("name", "age") \
+    .Where("id = ?", 1) \
+    .ToDict() \
+    .ExecuteOne()
+# row: {"name": "Alice", "age": 30} 或 None
+```
+
+> `ToDict()` 是链式标记（返回 self）：未调用它的链保持原有 `list[tuple]` 行为，完全向后兼容；`copy()` 会保留该标志。
+
+手动 zip 方式（与 ToDict 等价，适合无法改链的场景）：
+
 ```python
 columns = ["id", "name", "age"]
 rows = sdk.storage.Table("users").Select(*columns).Execute()
@@ -8010,6 +8263,38 @@ except Exception:
 # Alice 的记录仍然存在
 ```
 
+## 异步原生 API
+
+2.8.0 起存储层以异步为原生主接口，所有终止方法都有对应的 a 前缀异步版本，
+异步 handler 内推荐使用（避免同步兼容层短暂阻塞事件循环）：
+
+```python
+# 异步事务
+async with sdk.storage.atransaction():
+    await sdk.storage.aset("key1", "value1")
+    await sdk.storage.aset("key2", {"nested": True})
+
+# 异步链式查询
+rows = await sdk.storage.Table("users").Select("name", "age").ToDict().aExecute()
+row = await sdk.storage.Table("users").Select("*").Where("id = ?", 1).aExecuteOne()
+total = await sdk.storage.Table("users").Where("age > ?", 18).aCount()
+exists = await sdk.storage.Table("users").Where("name = ?", "Alice").aExists()
+
+# 异步 KV
+await sdk.storage.aset("app.name", "MyApp")
+value = await sdk.storage.aget("app.name")
+keys = await sdk.storage.aget_all_keys()
+```
+
+| 同步（兼容层） | 异步原生 |
+|------|------|
+| `get` / `set` / `delete` | `aget` / `aset` / `adelete` |
+| `get_all_keys` / `clear` | `aget_all_keys` / `aclear` |
+| `get_multi` / `set_multi` / `delete_multi` | `aget_multi` / `aset_multi` / `adelete_multi` |
+| `transaction()` | `atransaction()` |
+| `CreateTable` / `DropTable` / `HasTable` | `aCreateTable` / `aDropTable` / `aHasTable` |
+| `Execute` / `ExecuteOne` / `Count` / `Exists` | `aExecute` / `aExecuteOne` / `aCount` / `aExists` |
+
 ## 返回值说明
 
 | 操作 | 返回类型 | 说明 |
@@ -8087,37 +8372,45 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ## 自定义存储后端
 
-继承 `BaseStorage` 和 `BaseQueryBuilder` 实现自定义存储后端：
+2.8.0 起抽象层以**异步方法为原生契约**：继承 `BaseStorage` 实现异步抽象方法，
+同步 `get/set/Execute` 等由基类自动桥接提供：
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 class MyQueryBuilder(BaseQueryBuilder):
-    def Execute(self):
+    async def aExecute(self):
         # 实现具体执行逻辑
         ...
 
-    def ExecuteOne(self):
+    async def aExecuteOne(self):
         ...
 
-    def Count(self):
+    async def aCount(self):
         ...
 
-    def Exists(self):
+    async def aExists(self):
         ...
 
 
 class MyStorage(BaseStorage):
-    def get(self, key, default=None):
+    async def aget(self, key, default=None):
         ...
 
-    def set(self, key, value):
+    async def aset(self, key, value):
         ...
 
-    # 实现其他抽象方法...
+    # 实现其他异步抽象方法与事务连接 hook ...
     def Table(self, table_name):
         return MyQueryBuilder(self, table_name)
 ```
+
+> [!TIP]
+> 若不想实现事务连接路由（`conn` 关键字参数），保持类属性
+> `_SUPPORTS_CONN_ROUTING = False`（默认）即可，事务功能仍可用（隔离性受限）。
+> 纯 SQL 后端可直接继承 `Core/Bases/sql_base.py` 的 `SQLStorageBase` +
+> `SQLQueryBuilder`，只需提供连接管理与方言执行漏斗，详见
+> [存储后端](storage-backends.md)。
 
 
 
@@ -8128,7 +8421,7 @@ class MyStorage(BaseStorage):
 ErisPulse 提供统一的钩子/生命周期系统，用于监控系统各组件的运行状态，以及实现审计、统计、自定义逻辑等扩展功能。
 
 系统支持三种触发方式：
-- `await lifecycle.emit("event", data)` — 精简版，传递任意数据
+- `await lifecycle.emit("event", data)` — 精简版，传递任意数据（`to="Owner"` 时定向投递）
 - `lifecycle.emit_sync("event", data)` — 同步版（用于非异步上下文）
 - `await lifecycle.submit_event("event", ...)` — 兼容旧版，自动构建标准事件格式
 
@@ -8184,6 +8477,33 @@ async def second_handler(data):
 async def on_anything(data):
     print(f"收到事件: {data}")
 ```
+
+### 定向传播（emit to=）
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
+
+`emit()` 指定 `to` 参数后进入定向传播：事件只分发给以该拥有者（owner）身份注册的
+处理器（模块在 `on_load` 内注册的钩子自动归属本模块），其它模块与通配符 `*`
+处理器不感知。
+
+```python
+# 投递方：事件只投给 Chat 模块注册的钩子
+await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
+
+# 订阅方（Chat 模块内）：注册同名钩子，owner 在注册时自动记录
+@sdk.lifecycle.on("message_received")
+async def on_message_received(data): ...
+
+@sdk.lifecycle.on("message")   # 点式父级前缀同样生效（按 owner 过滤）
+async def on_any(data): ...
+```
+
+- 目标 owner 无已注册钩子 → 事件**静默丢弃**（可用 `has_handlers()` 提前探测）
+- `data` 为 dict 时自动携带 `_trace_id`（不覆盖已有值）
+- `emit_sync` / `submit_event` 同样支持 `to=` 参数
+- 模块间通信的三层模型（RPC / 定向 / 广播）见
+  [模块间通信](module-communication.md)
 
 ### 一次性注册（once）
 
@@ -8408,9 +8728,9 @@ STANDARD_EVENTS = {
 
 | 方法 | 说明 |
 |------|------|
-| `await lifecycle.emit(event, data=None)` | 异步触发，处理器返回非 None 可修改 data |
-| `lifecycle.emit_sync(event, data=None)` | 同步触发，异步处理器以 create_task 调度 |
-| `await lifecycle.submit_event(event_type, *, source, msg, data)` | 兼容旧版，自动构建标准事件格式 |
+| `await lifecycle.emit(event, data=None, *, to=None)` | 异步触发，处理器返回非 None 可修改 data；`to` 指定 owner 时定向投递 |
+| `lifecycle.emit_sync(event, data=None, *, to=None)` | 同步触发，异步处理器以 create_task 调度 |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None)` | 兼容旧版，自动构建标准事件格式 |
 
 ### 工具
 
@@ -9577,6 +9897,12 @@ scope.delete_module("onebot11", bot_id="123456")
 > `merge=True` 是**写时并集**（与该级现有绑定合并条目）；跨级解析期的
 > `merge = true` 配置键见上文[绑定继承](#绑定继承merge)——两者是独立机制。
 
+> **运行时绑定（`persist=False`）语义**：运行时绑定保存在独立的覆盖层中，
+> **任意后续配置写入 / 配置文件热更新都不会冲掉它们**（配置树重建后按写入顺序
+> 自动重放，含运行时删除）。它们不落盘，进程重启后丢失；模块卸载时该模块写入的
+> 运行时绑定会被兜底清理。随后对同一路径执行 `persist=True` 写入（用户持久化语义）
+> 将取代运行时规则。
+
 ### ② 身份维度
 
 ```python
@@ -9788,6 +10114,7 @@ with owner_scope("MyModule"):
 | 主人身源 provider | `master.provider` | `master.unregister_by_owner()` |
 | i18n 翻译键 | `I18nClass` 声明（domain=模块名） | `i18n.unregister_domain()` |
 | 事件覆写（运行时） | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
+| 交互会话（wait_reply 等待 / 租约） | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()`（等待方立即收到取消） |
 | 上下文数据 | `runtime/context` 按 owner 记录 | 按模块精确清理 |
 
 适配器侧的对应资源（以平台名为 owner）在适配器 `shutdown()` / `restart()`
@@ -9798,6 +10125,7 @@ with owner_scope("MyModule"):
 | 适配器自有的 `on()` 处理器与中间件 | `adapter.unregister_handlers_by_owner(platform)` |
 | 平台事件方法扩展（`EventMixin`） | `unregister_platform_event_methods(platform)` |
 | 自定义会话类型 | `unregister_custom_types_by_owner(platform)` |
+| 交互会话（该平台挂起的 wait_reply / 租约） | `interaction.cancel_by_platform(platform)` |
 | i18n 翻译域（domain=配置键） | `i18n.unregister_domain(配置键)` |
 | 细颗粒命名空间路由 | `router.unregister_all_by_owner(platform)` |
 
@@ -9876,6 +10204,234 @@ class MyModule(BaseModule):
   卸载时不会被取消（详见[生命周期管理](lifecycle.md#后台任务归属与自动取消)）。
 - 清理链"失败仅告警"：单步清理异常不会阻断其余资源回收，日志 DEBUG/WARNING
   级别可见，排障时可开启 TRACE。
+
+
+
+### 模块间通信
+
+# 模块间通信
+
+> [!NOTE]
+> 本章内容需要 ErisPulse **2.8.0+**。
+
+ErisPulse 的模块之间有**三层通信模型**，按"点对点 → 定向 → 广播"排列：
+
+| 层 | API | 语义 | 典型场景 |
+|---|---|---|---|
+| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | 点对点请求-响应，带契约 / 审计 / 超时 | 调用另一模块的能力（查历史、翻译、退款） |
+| **定向事件** | `await lifecycle.emit("message_received", {...}, to="Chat")` | 仅分发给指定模块注册的生命周期钩子 | 上游状态变化通知下游（"收到新消息了"） |
+| **广播** | `await lifecycle.emit("config.updated", {...})` | 全框架可见的生命周期事件 | 配置热更新、模块上下线 |
+
+{!--< tips >!--}
+选型口诀：**要返回值用 `call`，只通知一个模块的钩子用 `emit(..., to=...)`，通知所有人用 `emit(...)`**。
+{!--< /tips >!--}
+
+## RPC：module.call
+
+```python
+result = await sdk.module.call("Chat", "get_history", session_id, n=20)
+```
+
+与裸属性访问 `sdk.module.Chat.get_history(...)`（保留不变）的差异：
+
+| | `module.call()` | 裸属性访问 |
+|---|---|---|
+| 目标未注册 / 未启用 | 抛 `ModuleNotAvailableError` | 抛 `AttributeError` |
+| 懒加载模块 | **自动唤醒**（事件驱动模块走激活锁） | 异步初始化模块抛 RuntimeError |
+| `current_owner` | 归因到**目标模块**（其内部 wait_reply / 发送 / 日志正确归属） | 保持调用方 |
+| 超时 | 默认 30 秒（`timeout=` 覆盖，None 不限时） | 无 |
+| scope 审计 | 调用方过出站闸口 `actions.<调用方>.call` | 无 |
+| 契约校验 | `meta.services` 白名单 | 无 |
+
+### 异常体系
+
+```
+ModuleError                      # 模块系统异常基类
+└── ModuleCallError              # 跨模块调用基类（含 module / method 属性）
+    ├── ModuleNotAvailableError  # 目标未注册 / 未启用 / 唤醒失败
+    ├── ServiceNotProvidedError  # 方法不在 services 白名单 / 私有方法 / 不存在
+    └── ModuleCallTimeoutError   # 协程方法超时
+```
+
+均挂在 `ErisPulseError` 体系下，可 `from ErisPulse.Core import ModuleCallError` 捕获。
+
+## 服务契约：meta.services
+
+服务方在 `get_meta()` 声明对外提供的白名单（与 `commands` 字段对称）：
+
+```python
+from ErisPulse.Core.Bases import BaseModule, ModuleMeta
+
+class ChatModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="聊天",
+            services=[
+                "get_history",                                       # 简单形态
+                {"name": "translate", "description": "把文本翻译成指定语言"},  # 带介绍
+            ],
+        )
+
+    async def get_history(self, session_id, n=20): ...
+    async def translate(self, text, target_lang): ...
+    def _internal_helper(self): ...   # 下划线方法始终禁止被外部调用
+```
+
+**开发者无感是默认**：
+
+- 未声明 `services` → 所有**公开**方法天然可被 `module.call()` 调用（与裸属性访问一致），
+  无需任何声明
+- 声明后 → 收紧为白名单，越界调用抛 `ServiceNotProvidedError`——用于标记
+  "这些方法才是对外承诺"
+- 限制的**主控制权在用户侧**：`scope.actions` 配置决定"谁能调用谁"（见下文审计），
+  模块作者的 `services` 只是服务面声明，两层互不替代
+
+**服务介绍**：给每个服务配上人类 / AI 可读的描述——不需要就什么都不写，
+介绍自动取**方法 docstring 首行**（框架本就要求 docstring 风格）：
+
+```python
+async def translate(self, text, target_lang):
+    """把文本翻译成指定语言"""    # ← 这一行自动成为服务介绍
+    ...
+```
+
+需要精细控制（覆盖 docstring / 多语言）时用 dict 形态声明 description（支持 i18n 字典）：
+
+```python
+services=[
+    {"name": "translate", "description": "把文本翻译成指定语言"},
+    {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "摘要对话"}},
+]
+```
+
+## 服务目录：services()
+
+```python
+sdk.module.services()
+# {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
+#            'description': '把文本翻译成指定语言'}]}
+
+sdk.module.services("Chat")   # 仅查询指定模块
+```
+
+- 只列出**显式声明** `meta.services` 的模块（未声明模块不出现在目录中）
+- 每个服务带方法签名字符串（`inspect.signature` 提取）与介绍文本
+- 同时进入拓扑：`sdk.module.get_topology()` 的各模块条目带 `services` 字段
+
+{!--< tips >!--}
+**MCP 化路线**：服务目录（名称 + 签名 + 描述）即 MCP tool 的形状——
+每个服务天然长成 ``{"name", "description", "parameters"}``。
+未来框架可把 ``services()`` 直接暴露为 MCP server 端点，让 AI 发现并调用模块能力；
+``scope.actions.call`` 审计天然成为 AI 调用的安全闸口。
+{!--< /tips >!--}
+
+## 出站审计：谁能调用谁
+
+每次 `module.call()` 都以**调用方模块**的身份过 scope 出站闸口：
+
+```toml
+[ErisPulse.scope.actions.CallerModule.call]
+deny = ["Chat.get_history"]        # 禁止 CallerModule 调 Chat 的 get_history
+# allow = ["Chat.get_*"]           # 或白名单：只允许调 Chat 的 get 开头服务
+```
+
+- `name` 格式为 `<目标模块>.<方法名>`，支持精确 / glob / `re:` 正则
+- 框架层调用（无 owner 上下文，如启动脚本）不受审计约束
+- 被拒调用抛 `ModuleCallError`（TRACE 日志 `core.module.call_denied`）
+
+配置方式详见 [作用域（scope）](scope.md)的出站维度。
+
+## 定向事件：lifecycle.emit 的 to 参数
+
+生命周期事件支持定向传播：`to` 指定目标拥有者（owner）后，事件只分发给以该
+owner 身份注册的钩子（模块在 `on_load` 内注册的钩子自动归属本模块），
+其它模块与通配符 `*` 处理器不感知。
+
+```python
+from ErisPulse.Core.lifecycle import lifecycle
+
+# 投递方：事件只投给 Chat 模块注册的钩子
+await lifecycle.emit("message_received", {"text": "hi", "from": "u1"}, to="Chat")
+
+# 订阅方（Chat 模块内）：注册同名钩子，owner 在注册时自动记录
+@lifecycle.on("message_received")
+async def on_message_received(data): ...
+
+@lifecycle.on("message")          # 点式父级前缀同样生效（按 owner 过滤）
+async def on_any(data): ...
+```
+
+语义细节：
+
+- 目标 owner 无已注册钩子 → 事件**静默丢弃**（**不发往不存在的地方**），
+  可用 `lifecycle.has_handlers("message_received")` 提前探测
+- `data` 为 dict 时自动携带 `_trace_id`（不覆盖已有值），与全链路追踪打通
+- 广播与定向共用一套钩子注册：`emit(...)` 不带 `to` 即全框架广播，
+  带 `to` 则同一事件只对目标模块可见
+- `emit_sync` / `submit_event`（兼容 API）同样支持 `to=` 参数
+
+> [!NOTE]
+> 定向事件是轻量通知，**不做目标校验与懒唤醒**；需要目标存在性校验、
+> 契约审计或返回值时，改用 [RPC：module.call](#rpcmodulecall)。
+
+## 懒加载与调用
+
+`module.call()` 对懒加载模块是**透明唤醒**：
+
+- 事件驱动懒模块（`activate_on` 声明）→ 走激活锁 `_activate()`，激活后触发器 stub 自动注销
+- 普通懒模块 → 同步初始化或常规加载路径（幂等）
+- 唤醒失败 → `ModuleNotAvailableError`
+
+即：**调用方不需要关心目标模块是否已加载**，也无需为唤醒它而等待某条事件。
+
+定向事件（`lifecycle.emit(..., to=...)`）不做懒唤醒——目标未加载即无钩子，
+事件静默丢弃；需要确保送达时改用 `module.call()`。
+
+## 冷启动回放
+
+新装 / 重启的模块错过了一段聊天——`get_load_strategy(replay=...)` 让框架在模块
+就绪后，把会话收件箱里最近的消息**回放给该模块自己**：
+
+```python
+from ErisPulse.loaders import ModuleLoadStrategy
+
+class MyAIModule(BaseModule):
+    @staticmethod
+    def get_load_strategy():
+        return ModuleLoadStrategy(
+            lazy_load=False,
+            priority=100,
+            replay="5m",        # 回放最近 5 分钟（"1h" / "300" 秒写法均可）
+        )
+
+    async def on_load(self, event):
+        @message.on_message()
+        async def handle(e):
+            if e.get("replayed"):
+                # 合成事件：仅补上下文，不要触发发送等副作用
+                ...
+```
+
+语义细节：
+
+- 数据源是[会话收件箱](interaction.md#会话收件箱eventhistory)（`sdk.transcript.recent()`），
+  模块加载完成后后台执行，不阻塞启动
+- 合成事件带 `replayed: True` 标志、完整 `platform / detail_type / user_id / alt_message`，
+  **只分发给本模块的处理器**——其他模块不受回放影响
+- 收件箱未启用 / 无记录 / 时长声明非法（`replay_invalid` 告警）时静默跳过
+
+## 事件幂等去重
+
+平台 websocket 重连后经常重推同一事件（相同 `event["id"]`）——分发入口按 id 做
+LRU 去重（容量 4096），同 id 事件只分发一次。
+
+```toml
+[ErisPulse.framework]
+event_dedupe = true   # 默认开启；测试环境固定 id 合成事件可关闭
+```
+
+适配器**注册**（新连接生命周期起点）时自动重置去重缓存。
 
 
 

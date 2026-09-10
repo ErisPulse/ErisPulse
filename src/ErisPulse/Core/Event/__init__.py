@@ -11,6 +11,14 @@ ErisPulse 事件处理模块
 """
 
 from .command import command
+from .interaction import (
+    InteractionCancelled,
+    InteractionLease,
+    InteractionManager,
+    Reminder,
+    SessionOccupiedError,
+    interaction,
+)
 from .message import message
 from .message_builder import MessageBuilder
 from .meta import meta
@@ -75,6 +83,9 @@ def _clear_all_handlers():
     # 清除命令处理器
     command._clear_commands()
 
+    # 清除交互会话管理器（wait_reply 等待表与租约）
+    interaction.clear()
+
     # 清除各类事件处理器
     message._clear_message_handlers()
     notice._clear_notice_handlers()
@@ -90,9 +101,14 @@ __all__ = [
     "SEND_TYPES",
     "Conversation",
     "Event",
+    "InteractionCancelled",
+    "InteractionLease",
+    "InteractionManager",
     "MessageBuilder",
     "ReceiveType",
+    "Reminder",
     "SendType",
+    "SessionOccupiedError",
     "clear_custom_types",
     "command",
     "convert_to_receive_type",
@@ -105,6 +121,7 @@ __all__ = [
     "get_standard_types",
     "get_target_id",
     "infer_receive_type",
+    "interaction",
     "is_standard_type",
     "is_valid_send_type",
     "message",

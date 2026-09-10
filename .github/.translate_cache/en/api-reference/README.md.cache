@@ -1,5 +1,25 @@
 {
+  "version": 2,
   "hash": "ab8282f0b15eb2ad1e72465822b4e151",
-  "translated_at": "2026-06-06T16:03:57.278282",
-  "target_lang": "en"
+  "file_hash": "ab8282f0b15eb2ad1e72465822b4e151",
+  "translated_at": "2026-09-07T10:56:49.105685",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "b9374c15ad65d412753dd1eaeacda794",
+      "translation": "# API Reference\n\nThis directory contains the API reference documentation for the ErisPulse framework."
+    },
+    {
+      "hash": "b584821c750da33e7633216dd780abbb",
+      "translation": "## Documentation List\n\n| Documentation | Description |\n|---------------|-------------|\n| [Core Module API](core-modules.md) | Quick reference for Storage, Config, Logger, Adapter, Module, Lifecycle, Router, and HTTP Client APIs |\n| [Event System API](event-system.md) | API reference for Command, Message, Notice, Request, and Meta event modules |\n| [Adapter System API](adapter-system.md) | API reference for Adapter Manager, SendDSL, Middleware, and Bot state management |\n| [Auto-generated API](auto_api/README.md) | Complete API documentation automatically generated from source code docstrings |\n\n> Manually written API documentation focuses on usage examples and quick reference; auto-generated API documentation includes complete class/method signatures. The two complement each other."
+    },
+    {
+      "hash": "67699607665af80ffadd39e475efa8e7",
+      "translation": "## Module Overview\n\n### Core Modules\n\n| Module | Access Path | Description |\n|--------|-------------|-------------|\n| `sdk.storage` | `sdk.storage` | Key-value storage based on SQLite + SQL chain query |\n| `sdk.config` | `sdk.config` | Configuration management in TOML format |\n| `sdk.logger` | `sdk.logger` | Modular logging system, supports sub-loggers |\n| `sdk.adapter` | `sdk.adapter` | Multi-platform adapter management |\n| `sdk.module` | `sdk.module` | Module registration, loading, and unloading management |\n| `sdk.lifecycle` | `sdk.lifecycle` | Lifecycle event management |\n| `sdk.router` | `sdk.router` | HTTP/WebSocket routing management |\n| `sdk.client` | `sdk.client` | Unified HTTP/WS client |\n\n### Event System\n\n| Module | Import Path | Description |\n|--------|-------------|-------------|\n| `command` | `ErisPulse.Core.Event.command` | Command handling (prefix parsing, aliases) |\n| `message` | `ErisPulse.Core.Event.message` | Message events (private chat, group chat, @ messages) |\n| `notice` | `ErisPulse.Core.Event.notice` | Notice events (friend, group member changes) |\n| `request` | `ErisPulse.Core.Event.request` | Request events (friend requests, group invitations) |\n| `meta` | `ErisPulse.Core.Event.meta` | Meta events (connection, disconnection, heartbeat) |\n\n### Base Classes\n\n| Base Class | Import Path | Description |\n|------------|-------------|-------------|\n| `BaseModule` | `ErisPulse.Core.Bases.module.BaseModule` | Module base class (on_load/on_unload) |\n| `BaseAdapter` | `ErisPulse.Core.Bases.adapter.BaseAdapter` | Adapter base class (start/shutdown/call_api) |"
+    },
+    {
+      "hash": "d85fddc08712ad6c4c130cbfb1736332",
+      "translation": "## Related Documentation\n\n- [Core Concepts](../getting-started/basic-concepts.md) - Understand the framework's core concepts\n- [Module Development Guide](../developer-guide/modules/) - Develop custom modules\n- [Adapter Development Guide](../developer-guide/adapters/) - Develop platform adapters\n- [Advanced Topics](../advanced/) - In-depth documentation on routing, HTTP clients, SQL builders, and more"
+    }
+  ]
 }

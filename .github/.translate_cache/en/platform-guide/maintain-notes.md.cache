@@ -1,5 +1,37 @@
 {
+  "version": 2,
   "hash": "c9f7259dda1bc3a0eaceb849daf9f291",
-  "translated_at": "2026-05-25T13:58:10.080894",
-  "target_lang": "en"
+  "file_hash": "c9f7259dda1bc3a0eaceb849daf9f291",
+  "translated_at": "2026-09-07T11:38:27.506314",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "9a7f94587efdee2e1ac2ed2063f810c9",
+      "translation": "# Documentation Maintenance Instructions\n\nThis document is maintained by each adapter developer to document the differences and extended features of the adapter in relation to the OneBot12 standard.  \nAdapter developers should update this document when releasing new versions."
+    },
+    {
+      "hash": "23d0f671d7bcf562099861036f8356b3",
+      "translation": "## Update Requirements\n\n1. Accurately describe the platform-specific send methods and parameters.\n2. Provide detailed explanations of the differences from the OneBot12 standard.\n3. Offer clear code examples and parameter descriptions.\n4. Maintain uniform document formatting for easy user access.\n5. Keep version information and maintainer contact details up to date."
+    },
+    {
+      "hash": "8ef887def1eb909ea7a676b9cd80f08d",
+      "translation": "## Documentation Structure Guidelines\n\n### 1. Basic Information Section\nEach platform feature documentation should include the following basic information:\n```markdown\n# Platform Name Adapter Documentation\n\nAdapter Name: [Adapter class name]\nPlatform Overview: [Brief platform introduction]\nSupported Protocol/API Version: [Specific protocol or API version]\nMaintainer: [Maintainer name/team]\nCorresponding Module Version: [Version number]\n```\n\n### 2. Supported Message Sending Types\nList all supported sending methods and their parameters in detail:\n```markdown\n## Supported Message Sending Types\n\nAll sending methods are implemented using a fluent syntax, for example:\n[Code Example]\n\nThe supported sending types include:\n- Method 1: Description\n- Method 2: Description\n- ...\n\n### Parameter Description\n| Parameter | Type | Description |\n|-----------|------|-------------|\n| Parameter Name | Type | Description |\n```\n\n### 3. Platform-Specific Event Types\nDescribe the platform-specific event types and their formats in detail:\n```markdown\n## Platform-Specific Event Types\n\n[Platform Name] events are converted to the OneBot12 protocol, where standard fields fully comply with the OneBot12 protocol, but there are the following differences:\n\n### Core Differences\n1. Platform-Specific Event Types:\n   - Event Type 1: Description\n   - Event Type 2: Description\n2. Extended Fields:\n   - Field Description\n\n### Special Field Example\n[JSON Example]\n```\n\n### 4. Extended Field Description\n```markdown\n## Extended Field Description\n\n- All platform-specific fields are prefixed with `[platform]_`\n- Original data is preserved in the `[platform]_raw` field\n- [Other special field descriptions]\n```\n\n### 5. Configuration Options (if applicable)\n```markdown\n## Configuration Options\n\nThe [Platform Name] adapter supports the following configuration options:\n\n### Basic Configuration\n- Configuration Item 1: Description\n- Configuration Item 2: Description\n\n### Special Configuration\n- Special Configuration Item 1: Description\n```"
+    },
+    {
+      "hash": "a70bd32818492c1767f209a0c316bba5",
+      "translation": "## Content Writing Guidelines\n\n### Code Example Guidelines\n1. All code examples must be complete and runnable examples.\n2. Use standard import methods:\n```python\nfrom ErisPulse.Core import adapter\n[Adapter Instance] = adapter.get(\"[Adapter Name]\")\n```\n3. Provide examples for various usage scenarios.\n\n### Documentation Format Guidelines\n1. Use standard Markdown syntax.\n2. Use clear heading levels, with a maximum of 4 levels.\n3. Use standard Markdown table format for tables.\n4. Use appropriate language identifiers for code blocks.\n\n### Version Update Notes\nWhen updating the documentation, update the version information at the top of the document:\n```markdown\n## Document Information\n\n- Corresponding Module Version: [New Version Number]\n- Maintainer: [Maintainer Information]\n- Last Updated: [Date]\n```"
+    },
+    {
+      "hash": "d03d1f2d72ec7e282347dbd0677d8b0f",
+      "translation": "## Quality Checklist\n\nBefore submitting documentation updates, please check the following:\n\n- [ ] The document structure meets the specification requirements\n- [ ] All code examples can run successfully\n- [ ] Parameter descriptions are complete and accurate\n- [ ] Event format examples match actual outputs\n- [ ] Links and references are correct\n- [ ] No grammar or spelling errors\n- [ ] Version information has been updated\n- [ ] Maintainer information is accurate"
+    },
+    {
+      "hash": "461b7a1ead7be97e46c7e6d5d80bdf25",
+      "translation": "## Reference Documents\n\nWhen writing, please refer to the following documents to ensure consistency:\n- [OneBot12 Specification](https://12.onebot.dev/)\n- [ErisPulse Core Concepts](../getting-started/basic-concepts.md)\n- [Event Conversion Standard](../standards/event-conversion.md)\n- [API Response Specification](../standards/api-response.md)\n- [Other Platform Adapter Documentation](./)"
+    },
+    {
+      "hash": "8a3dc839f06d37f7768aaec9415587c0",
+      "translation": "## Contributing Process\n\n1. Fork the [ErisPulse](https://github.com/ErisPulse/ErisPulse) repository\n2. Modify the corresponding platform documentation under the `docs/platform-features/` directory\n3. Ensure the documentation complies with the above specification requirements\n4. Submit a Pull Request and provide a detailed explanation of the changes\n\nIf you have any questions, please contact the relevant adapter maintainer or ask in the project Issues."
+    }
+  ]
 }

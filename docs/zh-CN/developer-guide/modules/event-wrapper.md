@@ -87,6 +87,41 @@ async def price_command(event: Event):
         await event.reply(f"收到金额：{reply.get_text()}")
 ```
 
+## 交互会话进阶
+
+> [!NOTE]
+> 本节能力需要 ErisPulse **2.8.0+**。
+
+```python
+# 会话定时提醒：5 分钟无回复则提醒，用户回复后自动取消
+reminder = event.remind(300, "还在吗？不想聊了回复「退出」")
+reminder.cancel()  # 也可手动取消
+
+# 超时升级：到点必达（不被回复取消），如长时间未处理通知主人
+event.escalate(1800, lambda e: notify_master("工单超时"))
+
+# 多路等待：同时等"同意"与"拒绝"，先到先得
+which, reply = await event.select(
+    event.expect(pattern="同意*", user="10001"),
+    event.expect(pattern="拒绝*", user="10002"),
+    timeout=60,
+)
+if which is None:
+    await event.reply("超时未收到审批")
+
+# 会话级等待：同群任何人的回复均可命中（群协作）
+reply = await event.wait_reply(session=True, prompt="哪位大佬帮忙答一下？")
+
+# 会话收件箱：当前会话最近 20 条消息（含机器人，AI 上下文 / 防复读底座）
+messages = await event.history(20)
+
+# 消息事务：异常时自动撤回事务内已发送的消息
+async with event.message_tx():
+    await event.reply("处理中，请稍候...")
+    result = await do_something()
+    await event.reply(f"完成：{result}")
+```
+
 ## 命令信息获取
 
 ```python

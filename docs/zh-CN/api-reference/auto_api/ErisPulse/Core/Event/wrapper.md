@@ -204,6 +204,26 @@ ErisPulse 事件包装类
 ---
 
 
+### `_consume_task_exception(task: 'asyncio.Task')`
+
+> **内部方法** 消费后台检查点任务的异常（防未检索告警）
+
+---
+
+
+### `async _rollback_receipts(receipts: list[dict[str, str]])`
+
+> **内部方法**
+逆序撤回消息事务账本中的消息（能力感知）
+
+适配器未实现 ``delete_message``（Api 能力缺失）时跳过该条并记录 TRACE 日志；
+单条撤回失败不中断后续撤回。
+
+- **receipts**: 消息回执账本
+
+---
+
+
 ## 类列表
 
 
@@ -234,6 +254,20 @@ OneBot12 标准事件数据结构
 :ivar operator_id: str 操作者ID
 :ivar comment: str 请求附言
 :ivar request_id: str 请求标识符
+
+
+### `class Expectation`
+
+等待期望描述（:meth:`Event.expect` 创建，传给 :meth:`Event.select` 做多路等待）
+
+本身不注册任何等待——仅在 ``select()`` 调用时统一注册，
+任一路命中即返回该路结果，其余自动取消。
+
+:attribute pattern: glob 文本过滤（``*`` / ``?`` / ``[seq]``）
+:attribute regex: 正则文本过滤（与 pattern 同时给定时须都匹配）
+:attribute validator: 回复校验函数（接收 Event，返回 bool）
+:attribute user: 限定回复者 user_id（None 不限定）
+:attribute session: 会话级等待（同会话任何人可命中，忽略 user）
 
 
 ### `class Event(dict)`
@@ -1127,6 +1161,147 @@ OneBot12 标准事件数据结构
 ---
 
 
+##### `remind(delay: float, text: str | None = None)`
+
+会话定时提醒：delay 秒后无回复则提醒 / 执行回调
+
+挂在当前会话上的定时器——用户**在该会话回复后自动取消**
+（"如果没在时限内回复就提醒"）；也可 ``reminder.cancel()`` 手动取消；
+归属模块卸载 / 适配器关闭时随归属清理自动取消。
+
+- **delay** (`延迟秒数`): - **text**: 到期发送到当前会话的提醒文本（与 callback 二选一，同时给定时文本优先）
+- **callback** (`到期执行的回调（同步或异步，接收当前`): Event 为参数）
+**返回值** (`:class:`~ErisPulse.Core.Event.interaction.Reminder``): 句柄；超过单会话上限时返回 None
+**异常**: `RuntimeError` - text 与 callback 均未提供时
+
+**示例**:
+```python
+>>> reminder = event.remind(300, "还在吗？不想聊就回复「退出」哦")
+>>> # 用户 5 分钟内回复 → 提醒自动取消；未回复 → 到期发送
+
+> **提示**
+> 单会话同时最多挂 5 个活跃提醒（超出返回 None）。
+```
+
+---
+
+
+##### `escalate(delay: float, callback: Any)`
+
+超时升级：delay 秒后执行升级回调（**不被用户回复取消**）
+
+与 :meth:`remind` 的差异：remind 是"没回复就提醒、回复即取消"，
+escalate 是"到点必达"的升级动作（如长时间无处理通知主人、转人工），
+仅手动 ``cancel()`` / 模块卸载 / 适配器关闭才取消。
+
+- **delay** (`延迟秒数`): - **callback**: 到期执行的回调（同步或异步，接收当前 Event 为参数）
+**返回值** (`:class:`~ErisPulse.Core.Event.interaction.Reminder``): 句柄
+
+**示例**:
+```python
+>>> event.escalate(1800, lambda e: notify_master("工单 30 分钟未处理"))
+```
+
+---
+
+
+##### `async history(n: int = 20)`
+
+查询当前会话的近期消息（会话收件箱）
+
+返回当前会话（platform:detail_type:target_id）最近的消息流，
+含用户与机器人双方，按时间升序。收件箱未启用或无记录时返回空列表。
+
+- **n** (`返回的最大条数（默认`): 20）
+**返回值** (`消息列表，每条含`): role / text / ts / event_id
+
+**示例**:
+```python
+>>> messages = await event.history(10)
+>>> for m in messages:
+...     print(m["role"], ":", m["text"])
+```
+
+---
+
+
+##### `expect(pattern: str | None = None, regex: str | None = None, validator: Any = None, user: str | None = None, session: bool = False)`
+
+构造一条等待期望（不注册，传给 :meth:`select` 做多路等待）
+
+- **pattern** (`glob`): 文本过滤（``*`` / ``?`` / ``[seq]``）
+- **regex** (`正则文本过滤（与`): pattern 同时给定时须都匹配）
+- **validator** (`回复校验函数（接收`): Event，返回 bool）
+- **user** (`限定回复者`): user_id（None 不限定）
+- **session** (`会话级等待——同会话任何人可命中（忽略`): user）
+**返回值** (`期望描述对象`): 
+**示例**:
+```python
+>>> which, reply = await event.select(
+...     event.expect(pattern="同意*", user="10001"),
+...     event.expect(pattern="拒绝*", user="10002"),
+...     timeout=60,
+... )
+```
+
+---
+
+
+##### `async select()`
+
+多路等待：同时挂起多条期望，任一命中即返回该路结果（先到先得）
+
+典型场景：同时等待"管理员同意"与"用户回复"、多人协作投票等。
+未命中的等待在返回前自动取消；全部超时返回 ``(None, None)``。
+命中的事件已被框架认领（mark_processed），不会被低优先级处理器重复消费。
+
+- **expectations** (`:meth:`expect``): 构造的期望描述（至少一条）
+- **timeout** (`统一超时秒数（None`): 表示不限时）
+**返回值** (```(命中的期望下标,`): 回复事件)``；超时返回 ``(None, None)``
+**异常**: `ValueError` - 未提供任何期望时
+
+**示例**:
+```python
+>>> which, reply = await event.select(
+...     event.expect(pattern="同意*", user="10001"),
+...     event.expect(pattern="拒绝*", user="10002"),
+...     timeout=60,
+... )
+>>> if which is None:
+...     await event.reply("超时未收到审批")
+>>> elif which == 0:
+...     await event.reply("已同意")
+```
+
+---
+
+
+##### `message_tx()`
+
+开启消息事务
+
+事务内的所有出站发送（reply / Send DSL）自动记入回执账本；
+以异常退出事务时，已发送的消息按逆序自动撤回。
+
+撤回是**能力感知**的：适配器未实现 ``delete_message`` 时跳过撤回
+（账本仍正常记录），平台不支持撤回的消息不报错。
+
+**返回值** (`异步上下文管理器`): 
+**示例**:
+```python
+>>> async with event.message_tx():
+...     await event.reply("正在处理，请稍候")
+...     result = await do_something()
+...     await event.reply(f"完成: {result}")
+>>> # do_something() 抛出异常时，前面两条消息自动撤回
+
+> **提示**
+> 嵌套事务各自独立记账；事务外发送不记账（零开销）。
+```
+
+---
+
+
 ##### `to_dict()`
 
 转换为字典（过滤内部键）
@@ -1261,6 +1436,15 @@ OneBot12 标准事件数据结构
 ---
 
 
+### `class _MessageTx`
+
+> **内部方法**
+消息事务上下文管理器（由 :meth:`Event.message_tx` 创建）
+
+事务内所有出站发送自动记入回执账本；异常退出时逆序撤回已发送的消息
+（适配器需实现 ``delete_message``，未实现时跳过）。正常退出不撤回。
+
+
 ### `class Conversation`
 
 多轮对话上下文
@@ -1356,6 +1540,36 @@ OneBot12 标准事件数据结构
 
 结束对话
 
+终态自动清除已保存的对话检查点。
+
+---
+
+
+##### `remind(delay: float, text: str | None = None)`
+
+会话定时提醒（转发到当前对话事件的 ``Event.remind``）
+
+delay 秒后无回复则发送提醒文本 / 执行回调；用户在会话回复后自动取消。
+
+- **delay** (`延迟秒数`): - **text**: 到期发送的提醒文本（与 callback 二选一）
+- **callback** (`到期执行的回调（接收当前`): Event 为参数）
+**返回值** (`Reminder`): 句柄；超过单会话上限时返回 None
+
+**示例**:
+```python
+>>> conv.remind(120, "还在考虑吗？需要帮助请输入「帮助」")
+```
+
+---
+
+
+##### `escalate(delay: float, callback: Any)`
+
+超时升级（转发到当前对话事件的 ``Event.escalate``，不被回复取消）
+
+- **delay** (`延迟秒数`): - **callback**: 到期执行的回调（接收当前 Event 为参数）
+**返回值** (`Reminder`): 句柄
+
 ---
 
 
@@ -1443,27 +1657,79 @@ OneBot12 标准事件数据结构
 ---
 
 
+##### `_checkpoint_key(event: 'Event')`
+
+> **内部方法**
+生成对话检查点存储键（含 target 维度，避免同一用户多会话互覆）
+
+- **event** (`事件对象`): **返回值**: 存储键（conversation:{platform}:{user_id}:{target_id}）
+
+---
+
+
+##### `_checkpoint_ttl()`
+
+> **内部方法**
+读取检查点过期时长（ErisPulse.interaction.checkpoint_ttl，秒）
+
+**返回值**: 过期秒数
+
+---
+
+
+##### `_schedule_checkpoint()`
+
+> **内部方法** 后台保存检查点（分支跳转自动触发，失败静默）
+
+---
+
+
+##### `_schedule_checkpoint_clear()`
+
+> **内部方法** 后台清除检查点（对话终态自动触发，失败静默）
+
+---
+
+
+##### `async _checkpoint(save: bool)`
+
+> **内部方法** 检查点写入/清除的统一异常兜底
+
+---
+
+
 ##### `async save()`
 
-保存对话状态到 storage
+保存对话状态到 storage（自动检查点）
+
+分支跳转（goto/start）时框架自动调用；也可手动调用强制存档。
+存储键含 target 维度（conversation:{platform}:{user_id}:{target_id}），
+同一用户在不同会话中的对话互不覆盖。
 
 **示例**:
 ```python
 >>> await conv.save()
 
 > **提示**
-> 保存内容包括: 当前分支、上下文数据、活跃状态
-> 可用于重启后恢复对话
+> 保存内容包括: 当前分支、上下文数据、活跃状态、存档时间。
+> 超过 ``ErisPulse.interaction.checkpoint_ttl``（默认 24h）的存档在恢复时被丢弃。
 ```
 
 ---
 
 
-##### `async resume(event: 'Event | None' = None)`
+##### `async resume(event: 'Event | None' = None, with_history: int = 10)`
 
-从 storage 恢复对话状态
+从 storage 恢复对话状态（含会话接管与历史带回）
+
+恢复流程：读取检查点（含 target 维度新键，旧格式自动迁移）→
+**会话接管**（自动 acquire 会话租约，被其他模块占用时放弃恢复）→
+落地上下文并从收件箱带回最近消息到 :attr:`recent_history`。
+
+超过 checkpoint_ttl 的存档视为过期，丢弃并返回 False。
 
 - **event** (`Event`): 新的事件对象 (可选, 不传则使用原事件)
+- **with_history** (`恢复时从会话收件箱带回的最近消息条数（0`): 关闭）
 **返回值** (`bool`): 是否恢复成功
 
 **示例**:
@@ -1474,7 +1740,9 @@ OneBot12 标准事件数据结构
 ...     conv.goto(conv.get_current_branch())
 
 > **提示**
-> 需要在 resume() 之前先注册好所有分支
+> 需要在 resume() 之前先注册好所有分支；注册分支后也可使用
+> :meth:`register_resume_handler` 声明恢复工厂，由框架在重启后
+> 首条命中消息自动完成恢复。
 ```
 
 ---
@@ -1484,10 +1752,49 @@ OneBot12 标准事件数据结构
 
 清除保存的对话状态
 
+同时清理含 target 的新键与旧格式键。
+
 **示例**:
 ```python
 >>> await conv.clear_saved()
 ```
+
+---
+
+
+##### `register_resume_handler(platform: str | None = None)`
+
+注册对话恢复工厂（类装饰器方法，模块加载时调用）
+
+框架在重启后收到该会话的首条消息时，若存在有效检查点，
+会调用已注册的工厂重建 Conversation（模块需在工厂内重新注册所有分支），
+随后自动 ``goto`` 到存档分支继续对话。
+
+- **platform** (`仅匹配指定平台的事件；None`): 表示匹配所有平台
+**返回值** (`装饰器`): 
+**示例**:
+```python
+>>> @Conversation.register_resume_handler()
+... def make_conversation(event) -> Conversation:
+...     conv = event.conversation()
+...     @conv.branch("menu")
+...     async def menu(conv, event): ...
+...     return conv
+```
+
+---
+
+
+##### `async try_auto_resume(event: 'Event')`
+
+> **内部方法**
+尝试对当前消息事件自动恢复挂起的对话（框架在消息入口调用）
+
+无已注册恢复工厂时立即返回（零开销路径）；存在有效检查点且
+某工厂成功重建对话时，恢复上下文、认领事件并跳转到存档分支。
+
+- **event** (`消息事件（Event`): 包装类）
+**返回值**: 是否完成了自动恢复（事件已被消费）
 
 ---
 

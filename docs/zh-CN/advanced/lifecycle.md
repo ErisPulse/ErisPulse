@@ -3,7 +3,7 @@
 ErisPulse 提供统一的钩子/生命周期系统，用于监控系统各组件的运行状态，以及实现审计、统计、自定义逻辑等扩展功能。
 
 系统支持三种触发方式：
-- `await lifecycle.emit("event", data)` — 精简版，传递任意数据
+- `await lifecycle.emit("event", data)` — 精简版，传递任意数据（`to="Owner"` 时定向投递）
 - `lifecycle.emit_sync("event", data)` — 同步版（用于非异步上下文）
 - `await lifecycle.submit_event("event", ...)` — 兼容旧版，自动构建标准事件格式
 
@@ -59,6 +59,33 @@ async def second_handler(data):
 async def on_anything(data):
     print(f"收到事件: {data}")
 ```
+
+### 定向传播（emit to=）
+
+> [!NOTE]
+> 本特性需要 ErisPulse **2.8.0+**。
+
+`emit()` 指定 `to` 参数后进入定向传播：事件只分发给以该拥有者（owner）身份注册的
+处理器（模块在 `on_load` 内注册的钩子自动归属本模块），其它模块与通配符 `*`
+处理器不感知。
+
+```python
+# 投递方：事件只投给 Chat 模块注册的钩子
+await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
+
+# 订阅方（Chat 模块内）：注册同名钩子，owner 在注册时自动记录
+@sdk.lifecycle.on("message_received")
+async def on_message_received(data): ...
+
+@sdk.lifecycle.on("message")   # 点式父级前缀同样生效（按 owner 过滤）
+async def on_any(data): ...
+```
+
+- 目标 owner 无已注册钩子 → 事件**静默丢弃**（可用 `has_handlers()` 提前探测）
+- `data` 为 dict 时自动携带 `_trace_id`（不覆盖已有值）
+- `emit_sync` / `submit_event` 同样支持 `to=` 参数
+- 模块间通信的三层模型（RPC / 定向 / 广播）见
+  [模块间通信](module-communication.md)
 
 ### 一次性注册（once）
 
@@ -283,9 +310,9 @@ STANDARD_EVENTS = {
 
 | 方法 | 说明 |
 |------|------|
-| `await lifecycle.emit(event, data=None)` | 异步触发，处理器返回非 None 可修改 data |
-| `lifecycle.emit_sync(event, data=None)` | 同步触发，异步处理器以 create_task 调度 |
-| `await lifecycle.submit_event(event_type, *, source, msg, data)` | 兼容旧版，自动构建标准事件格式 |
+| `await lifecycle.emit(event, data=None, *, to=None)` | 异步触发，处理器返回非 None 可修改 data；`to` 指定 owner 时定向投递 |
+| `lifecycle.emit_sync(event, data=None, *, to=None)` | 同步触发，异步处理器以 create_task 调度 |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None)` | 兼容旧版，自动构建标准事件格式 |
 
 ### 工具
 

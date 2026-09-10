@@ -35,6 +35,24 @@ project/
 
 > **运行中改坏配置文件？** 如果你在机器人运行期间手动编辑 `config.toml` 引入了语法错误，框架在下次写入（合并配置）时会输出「配置文件已损坏（语法错误，第 X 行），无法合并写入——请先修复配置文件后重启」，而不是令人困惑的「写入失败」。待写入的配置项会被保留，不会丢失。
 
+## 注释保留与最小化落盘
+
+config.toml 中的**注释与键顺序在框架写入后完整保留**：无论是代码 `setConfig()`、
+CLI 配置向导保存还是适配器/模块首次生成配置模板，框架都只改动涉及的键，
+你写的注释、整理的顺序不会被抹掉或重排（基于 tomlkit 注释保留往返实现）。
+
+框架对落盘内容保持克制：
+
+- **框架默认配置不自动落盘**：`gc`、`scope`、`transcript` 等内置默认值仅驻内存，
+  config.toml 只包含你显式设置的键，保持最小化。完整可配置项参考项目内的
+  `config/config.full.example`，按需复制到 config.toml 修改即可（未配置项一律走内置默认值，行为不变）
+- **`config.full.example` 自动维护**：无论是否执行过 `epsdk init`，只要启动框架
+  （`epsdk run` / `main.py`），都会在 `config/config.full.example` 缺失时自动生成
+  完整配置参考；文件首行为框架自维护标记，生成器内容更新（如新增配置项、新装
+  组件）时启动会刷新一次，删除/改动首行即转为手动接管、框架不再覆盖
+- **适配器/模块配置模板**：首次初始化时以带注释的模板落盘（字段描述即注释）；
+  声明为 `example` 标志的字段不落盘，仅记录在 config.full.example 供参考
+
 ## 环境变量覆盖
 
 框架支持用环境变量**覆盖** `ErisPulse.*` 配置项（适合 Docker / 容器化 / CI 部署，无需修改 `config.toml`）。
@@ -169,6 +187,7 @@ modules = []
 adapters = []
 
 [ErisPulse.storage]
+backend = "sqlite"
 use_global_db = false
 
 [ErisPulse.event.command]
@@ -392,14 +411,52 @@ adapters = ["OldAdapter"]
 
 ## 存储配置
 
+2.8.0 起存储引擎支持三种异步后端，**API 完全一致、配置一键切换**：
+
+| 后端 | 驱动 | 安装 | 特点 |
+|------|------|------|------|
+| SQLite（默认） | aiosqlite | 开箱即用 | 零配置、单文件、WAL 并发 |
+| MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | 已有 MySQL 基础设施、多实例共享 |
+| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | 事务能力强、高并发 |
+
 ```toml
 [ErisPulse.storage]
-use_global_db = false
+backend = "sqlite"        # "sqlite"（默认）/ "mysql" / "postgres"
+use_global_db = false     # 仅 SQLite：使用包内全局数据库 data/config.db
+
+[ErisPulse.storage.mysql]      # backend = "mysql" 时生效
+host = "127.0.0.1"
+port = 3306
+user = "erispulse"
+password = ""
+database = "erispulse"
+# charset = "utf8mb4"
+# pool_min = 1
+# pool_max = 10
+
+[ErisPulse.storage.postgres]   # backend = "postgres" 时生效
+host = "127.0.0.1"
+port = 5432
+user = "erispulse"
+password = ""
+database = "erispulse"
+# pool_min = 1
+# pool_max = 10
 ```
 
 | 配置项 | 类型 | 默认值 | 说明 |
 |---------|------|---------|------|
-| use_global_db | boolean | false | 是否使用全局数据库（包内）而非项目数据库。`true` 时所有项目共享 ErisPulse 包内的 SQLite 数据库；`false`（默认）时每个项目使用 `config/` 目录下独立的数据库 |
+| backend | string | sqlite | 存储后端：`sqlite` / `mysql` / `postgres`，切换零代码改动 |
+| use_global_db | boolean | false | 仅 SQLite：是否使用包内全局数据库而非项目独立数据库 |
+| storage.mysql.* | table | 见上 | MySQL 连接参数（host / port / user / password / database / charset / pool） |
+| storage.postgres.* | table | 见上 | PostgreSQL 连接参数（host / port / user / password / database / pool） |
+
+也支持环境变量覆盖（Docker / 12-factor）：`ErisPulse.storage.postgres.host` → `ERISPULSE_STORAGE_POSTGRES_HOST`。
+
+> [!TIP]
+> - 连接参数变更后需重启框架生效；连接池创建瞬时失败会自动指数退避重试
+> - 切换后端前可用验证脚本自检：`python tests/devs/test_storage_backend_verify.py --backend mysql`
+> - 事务 / 方言差异 / 自定义后端等完整说明见[存储后端](../advanced/storage-backends.md)
 
 ## 事件配置
 

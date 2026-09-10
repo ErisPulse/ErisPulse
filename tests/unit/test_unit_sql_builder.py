@@ -1,7 +1,8 @@
 """
 存储管理 SQL 链式查询单元测试
 
-测试 SQLiteQueryBuilder、AlterTableBuilder 及 StorageManager 新增的表管理方法
+测试 SQLQueryBuilder、AlterTableBuilder 及存储管理器新增的表管理方法。
+（2.8.0 起查询构建器统一为方言无关的 SQLQueryBuilder，同步终止方法为兼容层）
 """
 
 import os
@@ -9,8 +10,9 @@ import tempfile
 
 import pytest
 
+from ErisPulse.Core.Bases.sql_base import SQLQueryBuilder
 from ErisPulse.Core.Bases.storage import BaseQueryBuilder, BaseStorage
-from ErisPulse.Core.storage import SQLiteQueryBuilder, StorageManager
+from ErisPulse.Core.storage import StorageManager
 
 # ==================== Fixtures ====================
 
@@ -72,7 +74,7 @@ class TestABCContracts:
         assert issubclass(StorageManager, BaseStorage)
 
     def test_sqlite_query_builder_inherits_base(self):
-        assert issubclass(SQLiteQueryBuilder, BaseQueryBuilder)
+        assert issubclass(SQLQueryBuilder, BaseQueryBuilder)
 
 
 # ==================== CreateTable / DropTable / HasTable ====================
@@ -202,6 +204,64 @@ class TestSelect:
     def test_execute_one_no_result(self, sm, users_table):
         row = sm.Table("users").Select("name").Where("name = ?", "Nobody").ExecuteOne()
         assert row is None
+
+
+class TestToDict:
+    """ToDict() 链：SELECT 结果以 dict 返回（默认 tuple 行为不变）"""
+
+    def test_default_returns_tuples(self, sm, users_table):
+        sm.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+
+        rows = sm.Table("users").Select("name", "age").Execute()
+        assert rows == [("Alice", 30)]
+
+    def test_to_dict_returns_dicts(self, sm, users_table):
+        sm.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+
+        rows = sm.Table("users").Select("name", "age").ToDict().Execute()
+        assert rows == [{"name": "Alice", "age": 30}]
+
+    def test_to_dict_select_all(self, sm, users_table):
+        sm.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+
+        rows = sm.Table("users").Select().ToDict().Execute()
+        assert len(rows) == 1
+        assert rows[0]["name"] == "Alice"
+        assert rows[0]["age"] == 30
+        assert "id" in rows[0]
+
+    def test_to_dict_execute_one(self, sm, users_table):
+        sm.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+
+        row = sm.Table("users").Select("name", "age").Where("name = ?", "Alice").ToDict().ExecuteOne()
+        assert row == {"name": "Alice", "age": 30}
+
+    def test_to_dict_execute_one_no_result(self, sm, users_table):
+        row = sm.Table("users").Select("name").Where("name = ?", "Nobody").ToDict().ExecuteOne()
+        assert row is None
+
+    def test_to_dict_with_order_limit(self, sm, users_table):
+        sm.Table("users").InsertMulti([
+            {"name": "Alice", "age": 30},
+            {"name": "Bob", "age": 25},
+        ]).Execute()
+
+        rows = sm.Table("users").Select("name").OrderBy("age", desc=True).Limit(1).ToDict().Execute()
+        assert rows == [{"name": "Alice"}]
+
+    def test_to_dict_copy_preserves_flag(self, sm, users_table):
+        sm.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+
+        base = sm.Table("users").Select("name").ToDict().Where("age > ?", 18)
+        copied = base.copy()
+        assert copied._as_dict is True
+        assert copied.Execute() == [{"name": "Alice"}]
+
+    def test_to_dict_does_not_mutate_non_select(self, sm, users_table):
+        sm.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
+
+        affected = sm.Table("users").Update({"age": 31}).Where("name = ?", "Alice").ToDict().Execute()
+        assert affected == 1
 
 
 # ==================== SQLiteQueryBuilder — Where ====================

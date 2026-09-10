@@ -1,24 +1,25 @@
 # Type Stub Generation (IDE Completion)
 
-ErisPulse dynamically discovers modules/adapters via entry-points, and the exact types of user classes are not known at the static level. The `epsdk types` command scans installed modules/adapters and generates a type stub file, allowing users to use these types as variable annotations to obtain IDE completion.
+ErisPulse dynamically discovers modules/adapters via entry-points, and the entry points cannot statically know the specific types of user classes.  
+The `epsdk types` command scans installed modules/adapters to generate a type stub file, allowing users to use these types as variable annotations to obtain IDE completion.
 
 ## Core Design Principles
 
-The stub file **only exports types**, without providing any runtime instances:
+Stub files **export only types** and provide no runtime instances:
 
-- All imports are under ``TYPE_CHECKING``, **zero runtime overhead, zero behavior change**
-- Type names use the PascalCase form of the entry-point name (e.g., ``yunhu`` → ``Yunhu``), corresponding to the names passed into ``sdk.adapter.get()`` / ``sdk.module.get()``
-- Users use ``sdk.module.get(...)`` / ``sdk.adapter.get(...)`` as usual to get instances, but use imported types for **variable annotations**
+- All imports are under ``TYPE_CHECKING``, **zero runtime overhead, no behavior changes**
+- Type names use PascalCase form of entry-point names (e.g., ``yunhu`` → ``Yunhu``), matching the names passed to ``sdk.adapter.get()`` / ``sdk.module.get()``
+- Users use ``sdk.module.get(...)`` / ``sdk.adapter.get(...)`` as usual to get instances in their code, only using imported types for **variable annotations**
 
 ## Basic Usage
 
-Run in the project root directory:
+Run the following command in the project root directory:
 
 ```bash
 epsdk types
 ```
 
-This generates `_ep_types.py` in the current directory, containing types for all installed modules/adapters.
+This will generate `_ep_types.py` in the current directory, containing types for all installed modules/adapters.
 
 ## Using in Code
 
@@ -26,7 +27,7 @@ This generates `_ep_types.py` in the current directory, containing types for all
 from _ep_types import MyModule, Yunhu
 from ErisPulse import sdk
 
-# Using imported types as variable annotations enables IDE completion for the class methods
+# By using the imported types as variable annotations, IDE will provide completion for the class's methods
 my_mod: MyModule = sdk.module.get("MyModule")
 my_mod.hello()                  # ← IDE completes hello
 
@@ -37,13 +38,13 @@ await my_adapter.Send.To("group", "123").Board(...)   # ← Completes platform-s
 ## How It Works
 
 1. Scan `erispulse.adapter` / `erispulse.module` entry-points
-2. Use a subprocess to introspect in the target Python environment, collecting actual class information for each adapter/module (including module path and qualified name)
+2. Inspect each adapter/module's actual class information (including module path and qualified name) within the target Python environment via a subprocess
 3. Generate a `.py` file, where:
-   - All ``from xxx import Yyy as Zzz`` are under ``TYPE_CHECKING``
-   - ``Zzz`` is the PascalCase form of the entry-point name
-4. The IDE reads the ``TYPE_CHECKING`` section to provide completion; no code is executed at runtime
+   - All `from xxx import Yyy as Zzz` statements are included under `TYPE_CHECKING`
+   - `Zzz` is the PascalCase form of the entry-point name
+4. The IDE reads the `TYPE_CHECKING` section to provide code completion; no code is executed at runtime
 
-Example of generated stub:
+Example of generated stubs:
 
 ```python
 # _ep_types.py (auto-generated)
@@ -64,22 +65,23 @@ if TYPE_CHECKING:
 
 | Option | Description |
 |--------|-------------|
-| `-o, --output PATH` | Specify the output file path (default `./_ep_types.py`) |
-| `--force` | Overwrite existing stub file |
-| `--adapters-only` | Only scan adapters |
-| `--modules-only` | Only scan modules |
+| `-o, --output PATH` | Specify the output file path (default: `./_ep_types.py`) |
+| `--force` | Overwrite existing stub files |
+| `--adapters-only` | Scan only adapters |
+| `--modules-only` | Scan only modules |
 
 ## When to Regenerate
 
 - After installing/uninstalling new modules or adapters
-- After modules/adapters update their public API
-- When IDE completion fails or types are outdated
+- After modules/adapters update their public APIs
+- When IDE auto-completion fails or types are outdated
 
 ## Relationship with SendDSL Standard Methods
 
-The `SendDSL` base class already includes standard send methods (Text/Image/Voice/Video/File), so any way of obtaining a `SendDSL` instance can complete these methods. The `types` command is mainly used to complete **platform-specific methods** (e.g., Yunhu's `Board`, Sandbox's `Dice`) and **module-specific methods**.
+The `SendDSL` base class already has built-in standard sending methods (Text/Image/Voice/Video/File), and any instance of `SendDSL` obtained through any method can complete these methods.  
+The `types` command is mainly used to complete **platform-specific methods** (such as `Board` for Yunhu, `Dice` for Sandbox) and **module-specific methods**.
 
 ## Related Documentation
 
-- [SendDSL Detailed Explanation](../developer-guide/adapters/send-dsl.md) - Description of standard send methods
-- [Getting Started with Adapter Development](../developer-guide/adapters/getting-started.md) - Creating adapters
+- [SendDSL Detailed Explanation](../developer-guide/adapters/send-dsl.md) - Standard sending method description
+- [Getting Started with Adapter Development](../developer-guide/adapters/getting-started.md) - Creating an adapter

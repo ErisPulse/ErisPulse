@@ -64,8 +64,10 @@ ErisPulse SDK 主类
 > - client: HTTP 客户端
 > - master: 框架主人管理器
 > - scope: 作用域管理器（模块 / 身份 / 出站 三维，"什么范围内生效"）
+> - transcript: 会话收件箱（每会话近期消息流的记录与查询）
+> - interaction: 交互会话管理器（wait_reply 等待表 / 会话租约 / 按归属取消）
 > - Event: 事件模块包（command 命令处理器 / message / notice / request 等事件处理器）
-> - context: 模块上下文管理（owner_scope / get_current_owner）
+> - context: 模块上下文管理（owner_scope / get_current_owner / trace-id / 消息事务账本）
 
 
 #### 嵌套类

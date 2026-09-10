@@ -4,9 +4,9 @@ This directory contains the code and documentation style guidelines for the Eris
 
 ## Documentation List
 
-- [Comment Style Guidelines](docstring.md) - Formatting standards for method comments and docstrings
+- [Docstring Style Guide](docstring.md) - Format guidelines for method docstrings and documentation strings
 
-## Target Audience
+## Audience
 
 These documents are suitable for the following developers:
 
@@ -16,20 +16,20 @@ These documents are suitable for the following developers:
 
 ## Purpose
 
-The purpose of this style guide:
+The purpose of the style guide:
 
 - Ensure consistency in code comments
 - Support automatic API documentation generation
 - Improve code readability and maintainability
 
-## Benefits of Following the Guidelines
+## Benefits of Following Standards
 
-- Unified code style
-- Comprehensive API documentation
-- Better team collaboration
+- Consistent code style  
+- Comprehensive API documentation  
+- Better team collaboration  
 - Support for automated documentation generation
 
 ## Related Documentation
 
-- [Developer Guide](../developer-guide/) - Developing custom modules and adapters
+- [Developer Guide](../developer-guide/) - Develop custom modules and adapters
 - [Technical Standards](../standards/) - Framework technical specifications

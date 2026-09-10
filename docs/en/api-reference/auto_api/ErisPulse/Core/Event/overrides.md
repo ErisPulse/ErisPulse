@@ -83,6 +83,27 @@ acl    allow / deny      命令用户黑白名单（command 专属，按命令�
 ---
 
 
+### `_set_runtime_override(path: str, value)`
+
+> **内部方法** 记录运行时覆写（value 为参数字典或删除哨兵）
+
+---
+
+
+### `_clear_runtime_override(prefix: str)`
+
+> **内部方法** 清除某路径及其子路径的运行时覆写记录（持久化语义优先）
+
+---
+
+
+### `_replay_runtime()`
+
+> **内部方法** 配置重载后按写入顺序重放运行时覆写到内存态
+
+---
+
+
 ### `_warn_invalid(path: str, actual: str)`
 
 > **内部方法** 输出配置格式告警（同一路径去重）

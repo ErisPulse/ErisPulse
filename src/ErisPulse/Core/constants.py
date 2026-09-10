@@ -213,6 +213,51 @@ DEFAULT_KV_TABLE_NAME: Final[str] = "config"
 # 修改影响: 数据存储位置。
 DEFAULT_USE_GLOBAL_DB: Final[bool] = False
 
+# 默认存储后端（sqlite / mysql / postgres）。
+# 配置默认值，对应 ErisPulse.storage.backend。
+# 修改影响: 框架运行时数据的存储介质；切换后端需迁移数据。
+DEFAULT_STORAGE_BACKEND: Final[str] = "sqlite"
+
+# MySQL 后端默认连接参数（ErisPulse.storage.mysql 配置节）。
+# 修改影响: 未显式配置时使用的连接默认值。
+DEFAULT_STORAGE_MYSQL_HOST: Final[str] = "127.0.0.1"
+DEFAULT_STORAGE_MYSQL_PORT: Final[int] = 3306
+DEFAULT_STORAGE_MYSQL_USER: Final[str] = "erispulse"
+DEFAULT_STORAGE_MYSQL_PASSWORD: Final[str] = ""
+DEFAULT_STORAGE_MYSQL_DATABASE: Final[str] = "erispulse"
+DEFAULT_STORAGE_MYSQL_CHARSET: Final[str] = "utf8mb4"
+DEFAULT_STORAGE_MYSQL_POOL_MIN: Final[int] = 1
+DEFAULT_STORAGE_MYSQL_POOL_MAX: Final[int] = 10
+
+# PostgreSQL 后端默认连接参数（ErisPulse.storage.postgres 配置节）。
+# 修改影响: 未显式配置时使用的连接默认值。
+DEFAULT_STORAGE_PG_HOST: Final[str] = "127.0.0.1"
+DEFAULT_STORAGE_PG_PORT: Final[int] = 5432
+DEFAULT_STORAGE_PG_USER: Final[str] = "erispulse"
+DEFAULT_STORAGE_PG_PASSWORD: Final[str] = ""
+DEFAULT_STORAGE_PG_DATABASE: Final[str] = "erispulse"
+DEFAULT_STORAGE_PG_POOL_MIN: Final[int] = 1
+DEFAULT_STORAGE_PG_POOL_MAX: Final[int] = 10
+
+# ==============================================================================
+# 存储连接失败重试与冷却
+#
+# 控制建池失败时的重试与快速失败行为（sql_base 建池快速失败与自动重连）。
+# 使用位置: Core/Bases/sql_base.py -> _get_loop_resource()
+# ==============================================================================
+
+# 建池瞬时失败的指数退避重试次数。
+# 修改影响: 数据库不可达时单次操作的最大重试次数。
+STORAGE_POOL_CREATE_RETRIES: Final[int] = 3
+
+# 建池重试的退避基数（秒），实际退避 = 基数 × 尝试序号。
+# 修改影响: 每次重试的等待时长。
+STORAGE_POOL_CREATE_BACKOFF_SECS: Final[float] = 1.5
+
+# 重试耗尽后的冷却期（秒）：期间后续存储操作快速失败，冷却结束自动重连试探。
+# 修改影响: 连接不可达时存储恢复探测的频率。
+STORAGE_POOL_FAIL_COOLDOWN_SECS: Final[float] = 30.0
+
 # ==============================================================================
 # 路由限流
 #
@@ -390,6 +435,56 @@ DEFAULT_WAIT_TIMEOUT_SECS: Final[float] = 60.0
 # 使用位置: Core/Event/wrapper.py -> Conversation 字段重试。
 # 修改影响: 验证器拒绝回复后的重试次数。
 DEFAULT_MAX_RETRIES: Final[int] = 3
+
+# 交互会话互斥租约（InteractionLease）的默认存活时间（秒）。
+# 使用位置: Core/Event/interaction.py -> InteractionManager.acquire()
+# 修改影响: acquire() 未显式传 ttl 时租约自动过期的时长。过期后其他模块可再次 acquire。
+DEFAULT_INTERACTION_LEASE_TTL_SECS: Final[float] = 3600.0
+
+# 对话检查点（Conversation 自动存档）的默认过期时间（秒）。
+# 使用位置: Core/Event/wrapper.py -> Conversation.save()/resume()
+# 修改影响: 重启恢复时超过该时长的检查点被视为过期丢弃。可通过
+# ErisPulse.interaction.checkpoint_ttl 配置覆盖。
+DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS: Final[float] = 86400.0
+
+# ==============================================================================
+# 会话收件箱（transcript）
+# ==============================================================================
+
+# 会话收件箱的存储表名。
+# 使用位置: Core/transcript.py
+# 修改影响: 变更后旧表数据不再被读取（需手动迁移）。
+TRANSCRIPT_TABLE: Final[str] = "transcript"
+
+# 会话收件箱是否默认启用。
+# 使用位置: Core/transcript.py
+# 修改影响: 关闭后入站/出站消息不再自动记录。可通过 ErisPulse.transcript.enabled 覆盖。
+DEFAULT_TRANSCRIPT_ENABLED: Final[bool] = True
+
+# 每会话保留的最大消息条数。
+# 使用位置: Core/transcript.py -> retention
+# 修改影响: 单会话收件箱的内存/存储占用上限。可通过 ErisPulse.transcript.max_per_session 覆盖。
+DEFAULT_TRANSCRIPT_MAX_PER_SESSION: Final[int] = 50
+
+# 会话收件箱全局过期时间（小时）。
+# 使用位置: Core/transcript.py -> retention
+# 修改影响: 超过时长的消息记录在惰性清理时删除。可通过 ErisPulse.transcript.ttl_hours 覆盖。
+DEFAULT_TRANSCRIPT_TTL_HOURS: Final[float] = 168.0
+
+# 模块间调用（module.call）的默认超时（秒）。
+# 使用位置: Core/module.py -> ModuleManager.call()
+# 修改影响: 调用目标方法未在时限内返回时抛出 ModuleCallTimeoutError。
+DEFAULT_MODULE_CALL_TIMEOUT_SECS: Final[float] = 30.0
+
+# 事件幂等去重的 LRU 容量（记录最近 N 个已分发事件的 id）。
+# 使用位置: Core/adapter.py -> AdapterManager._is_duplicate_event()
+# 修改影响: 平台重连重推同 id 事件的去重窗口——容量越大可回溯越久，内存占用略增。
+DEFAULT_EVENT_DEDUPE_CAPACITY: Final[int] = 4096
+
+# 单会话同时挂起的 remind 定时器上限。
+# 使用位置: Core/Event/interaction.py -> InteractionManager.add_reminder()
+# 修改影响: 超出上限的新 remind 被拒绝（返回取消句柄为 None），防止定时器滥用。
+DEFAULT_MAX_SESSION_REMINDERS: Final[int] = 5
 
 # 事件处理器执行耗时警告阈值（秒）。
 # 使用位置: Core/adapter.py -> emit() 中的 handler 执行监控。
@@ -963,7 +1058,31 @@ __all__ = [
     "DEFAULT_STRICT_MODE",
     "DEFAULT_UNINIT_TIMEOUT_SECS",
     "DEFAULT_USE_GLOBAL_DB",
+    "DEFAULT_STORAGE_BACKEND",
+    "DEFAULT_STORAGE_MYSQL_CHARSET",
+    "DEFAULT_STORAGE_MYSQL_DATABASE",
+    "DEFAULT_STORAGE_MYSQL_HOST",
+    "DEFAULT_STORAGE_MYSQL_PASSWORD",
+    "DEFAULT_STORAGE_MYSQL_POOL_MAX",
+    "DEFAULT_STORAGE_MYSQL_POOL_MIN",
+    "DEFAULT_STORAGE_MYSQL_PORT",
+    "DEFAULT_STORAGE_MYSQL_USER",
+    "DEFAULT_STORAGE_PG_DATABASE",
+    "DEFAULT_STORAGE_PG_HOST",
+    "DEFAULT_STORAGE_PG_PASSWORD",
+    "DEFAULT_STORAGE_PG_POOL_MAX",
+    "DEFAULT_STORAGE_PG_POOL_MIN",
+    "DEFAULT_STORAGE_PG_PORT",
+    "DEFAULT_STORAGE_PG_USER",
     "DEFAULT_WAIT_TIMEOUT_SECS",
+    "DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS",
+    "DEFAULT_INTERACTION_LEASE_TTL_SECS",
+    "DEFAULT_TRANSCRIPT_ENABLED",
+    "DEFAULT_TRANSCRIPT_MAX_PER_SESSION",
+    "DEFAULT_TRANSCRIPT_TTL_HOURS",
+    "DEFAULT_MODULE_CALL_TIMEOUT_SECS",
+    "DEFAULT_EVENT_DEDUPE_CAPACITY",
+    "DEFAULT_MAX_SESSION_REMINDERS",
     "DEFAULT_WS_AUTO_ACCEPT",
     "DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS",
     "DEFAULT_WS_CLIENT_HEARTBEAT_SECS",

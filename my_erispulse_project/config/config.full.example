@@ -1,0 +1,112 @@
+# ErisPulse full config reference (auto-maintained by framework, gen=1). Remove or edit this line to take manual control.
+
+# ErisPulse 完整配置示例
+# 此文件展示所有可用配置项及其默认值
+# 如需使用，将所需配置复制到 config.toml 并按需修改
+
+# ==================== 服务器 ====================
+
+[ErisPulse.server]
+host = "0.0.0.0"              # 监听地址
+port = 8000                   # 监听端口
+auto_start = true             # 是否自动启动 HTTP 服务器 (纯 WS/轮询适配器可设 false)
+ssl_certfile = "config/ssl/cert.pem"   # SSL 证书路径（留空表示不启用）
+ssl_keyfile = "config/ssl/key.pem"    # SSL 密钥路径（留空表示不启用）
+# 默认证书放 config/ssl/ 目录（相对路径跟随项目运行目录）；也可用下方内联 PEM（优先于路径）：
+# ssl_cert = """-----BEGIN CERTIFICATE-----
+# ...
+# -----END CERTIFICATE-----"""
+# ssl_key = """-----BEGIN PRIVATE KEY-----
+# ...
+# -----END PRIVATE KEY-----"""
+
+# ==================== 日志 ====================
+
+[ErisPulse.logger]
+level = "INFO"                # 日志级别: DEBUG/INFO/WARNING/ERROR
+log_files = []                # 日志文件列表, 如 ["logs/app.log"]（与 log_dir 互斥，优先级更高）
+log_dir = ""                  # 日志目录, 如 "logs"（设置后自动分段轮转）
+log_rotation = "size"         # 分段方式: "size"(按大小) / "date"(按时间) / "none"
+log_max_size_mb = 10          # size 模式单文件上限（MB）
+log_backup_count = 5          # 保留的历史日志文件数
+log_rotation_when = "midnight"  # date 模式轮转周期: S/M/H/D/midnight
+memory_limit = 1000           # 内存日志条数上限
+
+# ==================== 存储 ====================
+
+[ErisPulse.storage]
+backend = "sqlite"           # 存储后端: "sqlite" / "mysql" / "postgres"
+use_global_db = false         # 是否使用全局数据库
+
+[ErisPulse.storage.mysql]     # MySQL 连接参数（backend = "mysql" 时生效），需安装: pip install ErisPulse[mysql]
+host = "127.0.0.1"
+port = 3306
+user = "erispulse"
+password = ""
+database = "erispulse"
+
+[ErisPulse.storage.postgres]  # PostgreSQL 连接参数（backend = "postgres" 时生效），需安装: pip install ErisPulse[postgres]
+host = "127.0.0.1"
+port = 5432
+user = "erispulse"
+password = ""
+database = "erispulse"
+
+# ==================== 事件系统 ====================
+
+[ErisPulse.event.message]
+ignore_self = true            # 忽略自身消息
+
+[ErisPulse.event.command]
+prefix = "/"                  # 命令前缀
+case_sensitive = true         # 区分大小写
+allow_space_prefix = false    # 允许前缀前有空格
+must_at_bot = false           # 必须艾特Bot才触发
+
+# ==================== 框架 ====================
+
+[ErisPulse.framework]
+enable_lazy_loading = true     # 启用模块懒加载（默认 true）
+plugins_dir = "plugins"        # 本地插件文件夹（相对项目根目录，支持字符串或列表）
+uninit_timeout = 30            # 反初始化/优雅收尾统一超时（秒），同时约束：
+                                #   - 单个模块 on_unload / 单个适配器 shutdown 超时强杀
+                                #   - uninit() 整体流程兜底超时
+strict_mode = false            # 严格模式（模块/适配器白名单外的拒绝加载）
+strict_mode_exceptions = { modules = [], adapters = [] }  # 严格模式下豁免的模块/适配器
+handler_max_concurrency = 64   # 事件处理器同时并发数上限
+proactive_gc_interval = 300    # 主动 GC 间隔（秒，0 禁用）
+proactive_gc_generation = 2    # 常规回收分代 (0/1/2)
+proactive_gc_full_every = 10   # 每 N 轮一次全量回收（0 禁用）
+proactive_gc_memory_growth_mb = 100  # 全量回收的内存增长门限（0 不设限）
+proactive_gc_idle_only = true  # 事件洪峰时跳过 Python GC
+proactive_gc_gen0_min = 100    # gen0 垃圾量下限，低于则跳过回收
+offline_bot_expiry = 3600      # 离线 Bot 过期清理（秒）
+
+# ==================== 路由增强 ====================
+
+[ErisPulse.router.cors]
+enabled = false
+allow_origins = ["*"]
+allow_methods = ["*"]
+allow_headers = ["*"]
+allow_credentials = false
+max_age = 600
+
+[ErisPulse.router.security]
+enabled = false
+
+[ErisPulse.router.security.headers]
+X-Content-Type-Options = "nosniff"
+X-Frame-Options = "DENY"
+
+# ==================== 适配器状态 ====================
+
+[ErisPulse.adapters.status]
+# yunhu = false
+# telegram = false
+# onebot11 = false
+
+# ==================== 模块状态 ====================
+
+[ErisPulse.modules.status]
+# MyModule = true

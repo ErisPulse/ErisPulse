@@ -20,6 +20,7 @@ from .Bases import (
     BaseQueryBuilder,
     KVQueryBuilder,
 )
+from .Bases.sql_base import AlterTableBuilder, SQLDialect, SQLQueryBuilder, SQLStorageBase
 from .Bases import HttpRequest, WebSocketConnection, WebSocketConnectionBase, WSMessage
 from .Bases import (
     WebSocketDisconnect,
@@ -28,6 +29,14 @@ from .Bases import (
     ClientConnectionError,
     ClientTimeoutError,
     HTTPStatusError,
+    InteractionError,
+    ModuleCallError,
+    ModuleCallTimeoutError,
+    ModuleError,
+    ModuleNotAvailableError,
+    ServiceNotProvidedError,
+    StorageError,
+    StorageUnreachableError,
     WebSocketError,
 )
 from .Bases import BaseClient, BaseHttpResponse, BaseClientWebSocket
@@ -43,9 +52,13 @@ from .i18n import i18n, I18nManager
 from .master import master, MasterManager, MasterProvider
 from .scope import scope, ScopeManager
 from .text_match import compile_entry_matcher, compile_text_matcher, extract_text
+from .transcript import transcript, TranscriptManager
 
 from . import Event
 from .Event.message_builder import MessageBuilder
+
+# 收件箱出站自动记录（message.sent 钩子；内部幂等，未启用时跳过注册）
+transcript.attach()
 
 env = storage
 
@@ -53,6 +66,7 @@ client = Client()
 
 __all__ = [
     "AdapterManager",  # 适配器管理器类
+    "AlterTableBuilder",  # ALTER TABLE 构建器
     "ApiDSL",  # 标准 API 动作 DSL 类
     "BaseAdapter",  # 适配器基类
     "BaseClient",  # HTTP 客户端基类
@@ -76,7 +90,13 @@ __all__ = [
     "HttpRequest",  # HTTP 请求类
     "HttpResponse",  # HTTP 响应类
     "I18nManager",  # 国际化管理器类
+    "InteractionError",  # 交互会话异常基类
     "KVQueryBuilder",  # KV 查询构建器
+    "ModuleCallError",  # 模块间调用异常基类
+    "ModuleCallTimeoutError",  # 模块间调用超时异常
+    "ModuleError",  # 模块系统异常基类
+    "ModuleNotAvailableError",  # 目标模块不可用异常
+    "ServiceNotProvidedError",  # 服务未提供异常
     "LifecycleManager",  # 生命周期管理器类
     "Logger",  # 日志类
     "LoggerChild",  # 日志子类
@@ -92,7 +112,13 @@ __all__ = [
     "SendBuilder",  # 批量发送构建器类
     "SendContext",  # 发送任务实时上下文类
     "SendDSL",  # 发送消息 DSL 类
-    "StorageManager",  # 存储管理器类
+    "SQLDialect",  # SQL 方言基类
+    "SQLQueryBuilder",  # SQL 查询构建器（方言无关）
+    "SQLStorageBase",  # SQL 存储后端共享基类
+    "StorageError",  # 存储异常基类
+    "StorageUnreachableError",  # 存储后端不可达异常
+    "StorageManager",  # 存储管理器类（SQLite 后端向后兼容别名）
+    "TranscriptManager",  # 会话收件箱管理器类
     "WSMessage",  # WebSocket 消息类
     "WebSocketConnection",  # WebSocket 连接类
     "WebSocketConnectionBase",  # WebSocket 连接基类
@@ -113,4 +139,5 @@ __all__ = [
     "router",  # 路由模块单例
     "scope",  # 作用域模块单例
     "storage",  # 存储模块单例
+    "transcript",  # 会话收件箱模块单例
 ]

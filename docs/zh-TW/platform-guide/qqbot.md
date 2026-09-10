@@ -1,6 +1,6 @@
 # QQBot平台特性文件
 
-QQBotAdapter 是基於 QQBot（QQ 機器人文件）協議所建構的適配器，整合了 QQBot 所有功能模組，提供統一的事件處理與訊息操作介面。
+QQBotAdapter 是基於 QQBot（QQ機器人文件）協議建構的適配器，整合了 QQBot 所有功能模組，提供統一的事件處理和訊息操作介面。
 
 ---
 
@@ -11,8 +11,8 @@ QQBotAdapter 是基於 QQBot（QQ 機器人文件）協議所建構的適配器�
 
 ## 基本資訊
 
-- 平台簡介：QQBot 是 QQ 官方提供的機器人的開發接口，支援群聊、私聊、頻道等多種場景
-- 適配器名稱：QQBotAdapter
+- 平台簡介：QQBot 是 QQ 官方提供的機器人的開發介面，支援群聊、私聊、頻道等多種場景
+- 适配器名称：QQBotAdapter
 - 連接方式：WebSocket 長連接（透過 QQBot 網關）
 - 認證方式：基於 appId + clientSecret 獲取 access_token
 - 鏈式修飾支援：支援 `.Reply()`、`.At()`、`.AtAll()`、`.Keyboard()` 等鏈式修飾方法
@@ -27,18 +27,18 @@ appid = "YOUR_APPID"          # QQ機器人應用ID（必填）
 secret = "YOUR_CLIENT_SECRET"  # QQ機器人客戶端密鑰（必填）
 sandbox = false                 # 是否使用沙盒環境（可選，預設為false）
 intents = [1, 30, 25]          # 訂閱的事件 intents 位（可選）
-gateway_url = "wss://api.sgroup.qq.com/websocket/"  # 自訂網關地址（可選）
+gateway_url = "wss://api.sgroup.qq.com/websocket/"  # 自訂網關位址（可選）
 ```
 
 **配置項說明：**
 - `appid`：QQ機器人的應用ID（必填），從QQ開放平台獲取
 - `secret`：QQ機器人的客戶端密鑰（必填），從QQ開放平台獲取
-- `sandbox`：是否使用沙盒環境，沙盒環境API地址為 `https://sandbox.api.sgroup.qq.com`
+- `sandbox`：是否使用沙盒環境，沙盒環境API位址為 `https://sandbox.api.sgroup.qq.com`
 - `intents`：事件訂閱 intents 列表，每個值會被左移位後按位或運算
   - `1`：頻道相關事件
   - `25`：頻道訊息事件
   - `30`：群@訊息事件
-- `gateway_url`：WebSocket 網關地址，預設為 `wss://api.sgroup.qq.com/websocket/`
+- `gateway_url`：WebSocket 網關位址，預設為 `wss://api.sgroup.qq.com/websocket/`
 
 **API環境：**
 - 正式環境：`https://api.sgroup.qq.com`
@@ -56,10 +56,10 @@ await qqbot.Send.To("user", user_openid).Text("Hello World!")
 
 支援的發送類型包括：
 - `.Text(text: str)`：發送純文字訊息。
-- `.Image(file: bytes | str)`：發送圖片訊息，支援檔案路徑、URL、二進位元資料。
-- `.Markdown(content: str)`：發送Markdown格式訊息。
-- `.Ark(template_id: int, kv: list)`：發送Ark模板訊息。
-- `.Embed(embed_data: dict)`：發送Embed訊息。
+- `.Image(file: bytes | str)`：發送圖片訊息，支援檔案路徑、URL、二進位數據。
+- `.Markdown(content: str)`：發送 Markdown 格式訊息。
+- `.Ark(template_id: int, kv: list)`：發送 Ark 模板訊息。
+- `.Embed(embed_data: dict)`：發送 Embed 訊息。
 - `.Raw_ob12(message: List[Dict], **kwargs)`：發送 OneBot12 格式訊息。
 
 ### 鏈式修飾方法（可組合使用）
@@ -68,7 +68,7 @@ await qqbot.Send.To("user", user_openid).Text("Hello World!")
 
 - `.Reply(message_id: str)`：回覆指定訊息。
 - `.At(user_id: str)`：@指定使用者（以 `<@user_id>` 格式插入內容）。
-- `.AtAll()`：@所有人（插入 `@所有人` 文字）。
+- `.AtAll()`：@所有人（插入 `@所有人` 文本）。
 - `.Keyboard(keyboard: dict)`：新增鍵盤按鈕。
 
 ### 鏈式呼叫示例
@@ -90,7 +90,7 @@ await qqbot.Send.To("group", group_openid).At("member_openid").Text("你好")
 await qqbot.Send.To("group", group_openid).Reply(msg_id).At("member_openid").Keyboard(keyboard).Text("複合訊息")
 ```
 
-### OneBot12訊息支援
+### OneBot12 訊息支援
 
 適配器支援發送 OneBot12 格式的訊息，便於跨平台訊息相容：
 
@@ -112,10 +112,10 @@ await qqbot.Send.To("group", group_openid).Reply(msg_id).Raw_ob12(ob12_msg)
 {
     "status": "ok",           // 執行狀態: "ok" 或 "failed"
     "retcode": 0,             // 返回碼
-    "data": {...},            // 响應數據
+    "data": {...},            // 响应数据
     "message_id": "123456",   // 消息ID
     "message": "",            // 錯誤信息
-    "qqbot_raw": {...}        // 原始響應數據
+    "qqbot_raw": {...}        // 原始响应数据
 }
 ```
 
@@ -159,7 +159,7 @@ await qqbot.Send.To("group", group_openid).Reply(msg_id).Raw_ob12(ob12_msg)
   "group_id": "GROUP_OPENID",
   "qqbot_group_openid": "GROUP_OPENID",
   "qqbot_member_openid": "MEMBER_OPENID",
-  "qqbot_event_id": "訊息事件ID",
+  "qqbot_event_id": "消息事件ID",
   "qqbot_reply_token": "回覆token"
 }
 
@@ -169,18 +169,18 @@ await qqbot.Send.To("group", group_openid).Reply(msg_id).Raw_ob12(ob12_msg)
   "detail_type": "private",
   "user_id": "USER_OPENID",
   "qqbot_openid": "USER_OPENID",
-  "qqbot_event_id": "訊息事件ID",
+  "qqbot_event_id": "消息事件ID",
   "qqbot_reply_token": "回覆token"
 }
 
-# 互動事件
+# 交互事件
 {
   "type": "notice",
   "detail_type": "qqbot_interaction",
-  "qqbot_interaction_id": "互動ID",
-  "qqbot_interaction_type": "互動類型",
+  "qqbot_interaction_id": "交互ID",
+  "qqbot_interaction_type": "交互類型",
   "qqbot_interaction_data": {
-    "...": "互動資料"
+    "...": "交互資料"
   }
 }
 
@@ -189,14 +189,14 @@ await qqbot.Send.To("group", group_openid).Reply(msg_id).Raw_ob12(ob12_msg)
   "type": "notice",
   "detail_type": "qqbot_audit_pass",
   "qqbot_audit_id": "審核ID",
-  "qqbot_message_id": "訊息ID"
+  "qqbot_message_id": "消息ID"
 }
 
 # 消息刪除
 {
   "type": "notice",
   "detail_type": "qqbot_message_delete",
-  "message_id": "被刪除的訊息ID",
+  "message_id": "被刪除的消息ID",
   "operator_id": "操作者ID"
 }
 
@@ -230,12 +230,12 @@ QQBot 的附件根據 `content_type` 自動轉換為對應消息段：
 
 | content_type 前綴 | 轉換類型 | 說明 |
 |---|---|---|
-| `image` | `image` | 圖片訊息 |
-| `video` | `video` | 影片訊息 |
-| `audio` | `voice` | 語音訊息 |
-| 其他 | `file` | 檔案訊息 |
+| `image` | `image` | 圖片消息 |
+| `video` | `video` | 影片消息 |
+| `audio` | `voice` | 語音消息 |
+| 其他 | `file` | 檔案消息 |
 
-附件訊息段結構：
+附件消息段結構：
 ```json
 {
   "type": "image",
@@ -253,24 +253,24 @@ QQBot 的附件根據 `content_type` 自動轉換為對應消息段：
 
 ### 連接流程
 
-1. 使用 appId + clientSecret 獲取 access_token
+1. 使用 `appId` + `clientSecret` 獲取 `access_token`
 2. 連接到 WebSocket 網關
-3. 收到 OP_HELLO（op=10）訊息，獲取心跳間隔
-4. 發送 OP_IDENTIFY（op=2）進行身份驗證
-5. 收到 READY 事件，獲取 session_id 和 bot_id
-6. 開始心跳循環（OP_HEARTBEAT，op=1）
-7. 接收事件分發（OP_DISPATCH，op=0）
+3. 收到 `OP_HELLO`（op=10）訊息，獲取心跳間隔
+4. 發送 `OP_IDENTIFY`（op=2）進行身份驗證
+5. 收到 `READY` 事件，獲取 `session_id` 和 `bot_id`
+6. 開始心跳循環（`OP_HEARTBEAT`，op=1）
+7. 接收事件分發（`OP_DISPATCH`，op=0）
 
 ### 斷線重連
 
-- 支援自動重連，最大重連次數為50次
+- 支持自動重連，最大重連次數為50次
 - 重連等待時間採用指數退避演算法：`min(5 * 2^min(count, 6), 300)` 秒
-- 支援會話恢復（OP_RESUME，op=6），使用 session_id + seq 恢復
-- 收到 OP_RECONNECT（op=7）或 OP_INVALID_SESSION（op=9）時自動觸發重連
+- 支持會話恢復（`OP_RESUME`，op=6），使用 `session_id` + `seq` 恢復
+- 收到 `OP_RECONNECT`（op=7）或 `OP_INVALID_SESSION`（op=9）時自動觸發重連
 
-### Token刷新
+### Token 刷新
 
-- access_token 有效期通常為7200秒
+- `access_token` 有效期通常為7200秒
 - 适配器自動每 7080 秒（7200-120）刷新一次 token
 - 刷新接口：`POST https://bots.qq.com/app/getAppAccessToken`
 
@@ -286,11 +286,11 @@ for intent in intents:
 ```
 
 常用的 intent 位：
-| intent 值 | 說明 |
+| intent值 | 說明 |
 |----------|------|
 | 1 | 頻道相關事件（GUILD_CREATE 等） |
 | 25 | 頻道訊息事件（AT_MESSAGE_CREATE 等） |
-| 30 | 群組 @ 訊息事件（GROUP_AT_MESSAGE_CREATE 等） |
+| 30 | 群 @ 訊息事件（GROUP_AT_MESSAGE_CREATE 等） |
 
 ## 使用示例
 

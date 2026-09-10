@@ -1,0 +1,41 @@
+{
+  "version": 2,
+  "hash": "e81b387bf6241d50fc0a29b589e16431",
+  "file_hash": "e81b387bf6241d50fc0a29b589e16431",
+  "translated_at": "2026-09-10T07:03:32.153072",
+  "target_lang": "ru",
+  "chunks": [
+    {
+      "hash": "a73b35a1c124a858e56480103ddc62aa",
+      "translation": "# Системы хранения данных\n\nErisPulse включает три асинхронных встроенных хранилища, которые можно переключать с помощью конфигурации одним кликом, **API полностью идентичен, переключение не требует изменений кода**:\n\n| Хранилище | Драйвер | Установка | Особенности |\n|------|------|------|------|\n| SQLite (по умолчанию) | aiosqlite | Готово к использованию | Нулевая настройка, одиночный файл, WAL-параллелизм |\n| MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | Подходит для уже существующей инфраструктуры MySQL, общий доступ между несколькими экземплярами |\n| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | Сильная поддержка транзакций, экосистема JSONB, высокая параллельность |\n\n{!--< tips >!--}\n1. Асинхронные методы являются основными интерфейсами (`aget/aset/atransaction/aExecute`), синхронные API являются слоем совместимости\n2. Все данные, связанные с конфигурацией фреймворка, почтовыми ящиками сессий, контрольными точками диалогов и т.д., хранятся в одном и том же хранилище — переключение хранилища означает полную миграцию\n{!--< /tips >!--}"
+    },
+    {
+      "hash": "76e0fd25ed7cbc2783013357bbb37f84",
+      "translation": "## Выбор хранилища\n\nНастройте в `config/config.toml`:\n\n```toml\n[ErisPulse.storage]\nbackend = \"sqlite\"        # \"sqlite\" (по умолчанию) / \"mysql\" / \"postgres\"\nuse_global_db = false     # Только для SQLite: использование глобальной базы данных в пакете data/config.db\n```\n\nТакже поддерживаются перекрытия через переменные окружения (Docker / 12-factor):\n\n```bash\nERISPULSE_STORAGE_BACKEND=postgres\nERISPULSE_STORAGE_POSTGRES_HOST=db.example.com\nERISPULSE_STORAGE_POSTGRES_PASSWORD=secret\n```\n\nПравила именования переменных окружения: путь конфигурации в верхнем регистре, точки заменяются на нижние подчеркивания  \n(`ErisPulse.storage.postgres.host` → `ERISPULSE_STORAGE_POSTGRES_HOST`)."
+    },
+    {
+      "hash": "04941a69ef97cd6fa94ff680d5ce273c",
+      "translation": "## Параметры подключения\n\n### MySQL (`ErisPulse.storage.mysql`)\n\n```toml\n[ErisPulse.storage.mysql]\nhost = \"127.0.0.1\"\nport = 3306\nuser = \"erispulse\"\npassword = \"\"\ndatabase = \"erispulse\"\ncharset = \"utf8mb4\"\npool_min = 1\npool_max = 10\n```\n\n### PostgreSQL (`ErisPulse.storage.postgres`)\n\n```toml\n[ErisPulse.storage.postgres]\nhost = \"127.0.0.1\"\nport = 5432\nuser = \"erispulse\"\npassword = \"\"\ndatabase = \"erispulse\"\npool_min = 1\npool_max = 10\n```\n\n> [!NOTE]\n> Изменения параметров подключения требуют перезапуска фреймворка для применения (при горячей перезагрузке конфигурации будет выведено предупреждение).  \n> Пул соединений создается по требованию для каждого цикла событий, при временных сбоях (колебания сети / окно перезапуска базы данных) автоматически происходит повторная попытка с экспоненциальной задержкой."
+    },
+    {
+      "hash": "e2a9f5a1780ab5799315f1c00995abaf",
+      "translation": "## Поведение при сбое подключения\n\nРабота и запуск фреймворка **не зависят от доступности базы данных** — сбой подключения к MySQL / PostgreSQL не приведёт к краху или невозможности запуска фреймворка:\n\n1. При мгновенном сбое создания пула автоматически происходит повторная попытка с экспоненциальной задержкой (по умолчанию 3 попытки)\n2. После исчерпания попыток → запись в лог WARNING (с указанием причины и времени ожидания), фреймворк запускается и продолжает работу, но операции с хранилищем временно недоступны\n3. В течение периода ожидания (по умолчанию 30 секунд) последующие операции с хранилищем **быстро завершаются с ошибкой** (без блокировки, без замедления остальных функций)\n4. После окончания периода ожидания автоматически происходит попытка повторного подключения — при восстановлении базы данных хранилище также восстанавливается, без необходимости перезапуска\n\nПример записи в лог: `mysql: Создание пула соединений окончательно не удалось (повторные попытки 3), автоматическое повторное подключение через 30 секунд; в течение этого времени операции с хранилищем будут быстро завершаться с ошибкой, остальные функции фреймворка не затронуты`"
+    },
+    {
+      "hash": "5e228c9acaa842fed2641f61482b3281",
+      "translation": "## Асинхронный нативный API\n\n```python\n# Операции с парой ключ-значение\nawait sdk.storage.aset(\"app.name\", \"MyApp\")\nvalue = await sdk.storage.aget(\"app.name\")\nkeys = await sdk.storage.aget_all_keys()\n\n# Операции с таблицами\nawait sdk.storage.aCreateTable(\"users\", {\n    \"id\": \"INTEGER PRIMARY KEY AUTOINCREMENT\",\n    \"name\": \"TEXT NOT NULL\",\n})\nrows = await sdk.storage.Table(\"users\").Select(\"name\").ToDict().aExecute()\n\n# Асинхронная транзакция\nasync with sdk.storage.atransaction():\n    await sdk.storage.aset(\"key1\", \"value1\")\n    await sdk.storage.Table(\"users\").Insert({\"name\": \"Alice\"}).aExecute()\n```\n\nСинхронный API (`get/set/transaction/Table(...).Execute()`) по-прежнему доступен, внутри он выполняется через `AsyncBridge` в фоновом цикле событий — вызовы из асинхронного обработчика могут временно блокировать цикл событий, рекомендуется использовать методы с префиксом `a`. Полный список методов см. в [SQL-построителе запросов](sql-builder.md)."
+    },
+    {
+      "hash": "fb0f5a54e8e15925c34bc9789399f653",
+      "translation": "## Различия в поведении диалектов\n\nВсе различия в диалектах скрыты внутри фреймворка, код вызывающей стороны не должен их учитывать:\n\n| Различие | SQLite | MySQL | PostgreSQL |\n|------|------|------|------|\n| Заполнители | `?` | `%s` (автоматически переводится) | `$1..$n` (автоматически переводится) |\n| UPSERT для пары ключ-значение | `INSERT OR REPLACE` | `ON DUPLICATE KEY UPDATE` | `ON CONFLICT DO UPDATE` |\n| Тип столбца значения для пары ключ-значение | `TEXT` | `LONGTEXT` | `TEXT` |\n| Автоматически увеличивающийся первичный ключ | Нативная поддержка | `AUTO_INCREMENT` (автоматически переводится) | `SERIAL` (автоматически переводится) |\n\nОпределение типов столбцов при создании таблиц должно использовать стиль SQLite (например, `\"INTEGER PRIMARY KEY AUTOINCREMENT\"`, `\"TEXT NOT NULL\"`, `\"DOUBLE DEFAULT 0.0\"`), диалект автоматически переводит их в эквивалентные записи для целевой СУБД."
+    },
+    {
+      "hash": "4456caf0b2aa114376e6566017473994",
+      "translation": "## Пользовательские SQL-хранилища\n\nДля чисто SQL-хранилищ можно наследовать общий базовый класс, предоставив только управление подключениями и диалект выполнения:\n\n```python\nfrom ErisPulse.Core.Bases.sql_base import SQLDialect, SQLStorageBase\n\nclass MyDialect(SQLDialect):\n    name = \"mydb\"\n    # Переопределение: перевод заполнителей / ссылок на идентификаторы / UPSERT / сопоставление типов ...\n\nclass MyStorage(SQLStorageBase):\n    dialect = MyDialect()\n\n    async def _create_loop_resource(self): ...   # Пул соединений\n    async def _destroy_loop_resource(self, r): ...\n    async def _acquire_resource_conn(self, r): ...\n    async def _release_resource_conn(self, r, c): ...\n    async def _open_txn_conn(self): ...\n    async def _close_txn_conn(self, c): ...\n    async def _exec_query_on(self, kind, sql, params, conn): ...  # Очередь выполнения запросов\n```\n\nДля не-SQL хранилищ (например, Redis) можно наследовать `BaseStorage` и реализовать асинхронные интерфейсы для пары ключ-значение, после чего можно использовать `KVQueryBuilder` для получения цепочки запросов к таблицам (фильтрация в памяти, подходит для небольших объемов данных)."
+    },
+    {
+      "hash": "3ae6982fe94da206150b970519863c8b",
+      "translation": "## Связанная документация\n\n- [SQL-построитель запросов](sql-builder.md) - Синтаксис цепочки запросов и асинхронный API\n- [API основных модулей](../api-reference/core-modules.md) - Полный API модуля Storage\n- [API базовых классов хранилищ](../api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md) - Абстрактные интерфейсы SQLStorageBase / SQLDialect"
+    }
+  ]
+}

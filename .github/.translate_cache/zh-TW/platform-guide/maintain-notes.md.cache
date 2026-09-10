@@ -1,5 +1,37 @@
 {
+  "version": 2,
   "hash": "c9f7259dda1bc3a0eaceb849daf9f291",
-  "translated_at": "2026-05-25T14:50:36.515559",
-  "target_lang": "zh-TW"
+  "file_hash": "c9f7259dda1bc3a0eaceb849daf9f291",
+  "translated_at": "2026-09-07T11:38:34.659768",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "9a7f94587efdee2e1ac2ed2063f810c9",
+      "translation": "# 文件維護說明\n\n此文件由各適配器開發者維護，用於說明該適配器與 OneBot12 標準的差異和擴展功能。  \n請適配器開發者在發布新版本時同步更新此文件。"
+    },
+    {
+      "hash": "23d0f671d7bcf562099861036f8356b3",
+      "translation": "## 更新要求\n\n1. 準確描述平台特有的發送方法和參數  \n2. 詳細說明與 OneBot12 標準的差異點  \n3. 提供清晰的程式碼範例和參數說明  \n4. 保持文件格式統一，便於使用者查閱  \n5. 及時更新版本資訊和維護者聯絡方式"
+    },
+    {
+      "hash": "8ef887def1eb909ea7a676b9cd80f08d",
+      "translation": "## 文件結構規範\n\n### 1. 基本資訊部分\n每個平台特性文件應包含以下基本資訊：\n```markdown\n# 平台名稱適配器文件\n\n適配器名稱：[適配器類名]\n平台簡介：[平台簡要介紹]\n支援的協定/API版本：[具體協定或API版本]\n維護者：[維護者姓名/團隊]\n對應模組版本: [版本號]\n```\n\n### 2. 支援的訊息發送類型\n詳細列出所有支援的發送方法及其參數：\n```markdown\n## 支援的訊息發送類型\n\n所有發送方法均透過串接語法實現，例如：\n[程式碼範例]\n\n支援的發送類型包括：\n- 方法1：說明\n- 方法2：說明\n- ...\n\n### 參數說明\n| 參數 | 類型 | 說明 |\n|------|------|------|\n| 參數名 | 類型 | 說明 |\n```\n\n### 3. 特有事件類型\n詳細描述平台特有的事件類型及格式：\n```markdown\n## 特有事件類型\n\n[平台名稱]事件轉換至OneBot12協定，其中標準欄位完全遵守OneBot12協定，但存在以下差異：\n\n### 核心差異點\n1. 特有事件類型：\n   - 事件類型1：說明\n   - 事件類型2：說明\n2. 擴展欄位：\n   - 欄位說明\n\n### 特殊欄位範例\n[JSON範例]\n```\n\n### 4. 擴展欄位說明\n```markdown\n## 擴展欄位說明\n\n- 所有特有欄位均以 `[platform]_` 前綴標示\n- 保留原始資料在 `[platform]_raw` 欄位\n- [其他特殊欄位說明]\n```\n\n### 5. 配置選項（如適用）\n```markdown\n## 配置選項\n\n[平台名稱] 適配器支援以下配置選項：\n\n### 基本配置\n- 配置項1: 說明\n- 配置項2: 說明\n\n### 特殊配置\n- 特殊配置項1: 說明\n```"
+    },
+    {
+      "hash": "a70bd32818492c1767f209a0c316bba5",
+      "translation": "## 內容編寫規範\n\n### 程式碼範例規範\n1. 所有程式碼範例必須是可執行的完整範例\n2. 使用標準的匯入方式：\n```python\nfrom ErisPulse.Core import adapter\n[適配器實例] = adapter.get(\"[適配器名稱]\")\n```\n3. 提供多種使用場景的範例\n\n### 文件格式規範\n1. 使用標準的 Markdown 語法\n2. 標題層級清晰，最多使用 4 級標題\n3. 表格使用標準的 Markdown 表格格式\n4. 程式碼區塊使用適當的語言標識\n\n### 版本更新說明\n每次更新文件時，應在文件頂部更新版本資訊：\n```markdown\n## 文件資訊\n\n- 對應模組版本: [新版本號]\n- 維護者: [維護者資訊]\n- 最後更新: [日期]\n```"
+    },
+    {
+      "hash": "d03d1f2d72ec7e282347dbd0677d8b0f",
+      "translation": "## 質量檢查清單\n\n在提交文件更新之前，請檢查以下內容：\n\n- [ ] 文件結構符合規範要求\n- [ ] 所有程式碼範例可以正常執行\n- [ ] 參數說明完整且準確\n- [ ] 事件格式範例符合實際輸出\n- [ ] 鏈接和引用正確無誤\n- [ ] 語法和拼字無錯誤\n- [ ] 版本資訊已更新\n- [ ] 維護者資訊準確"
+    },
+    {
+      "hash": "461b7a1ead7be97e46c7e6d5d80bdf25",
+      "translation": "## 參考文件\n\n撰寫時請參考以下文件以確保一致性：\n- [OneBot12 標準文件](https://12.onebot.dev/)\n- [ErisPulse 核心概念](../getting-started/basic-concepts.md)\n- [事件轉換標準](../standards/event-conversion.md)\n- [API 回應規範](../standards/api-response.md)\n- [其他平台適配器文件](./)"
+    },
+    {
+      "hash": "8a3dc839f06d37f7768aaec9415587c0",
+      "translation": "## 貢獻流程\n\n1. Fork [ErisPulse](https://github.com/ErisPulse/ErisPulse) 倉庫\n2. 在 `docs/platform-features/` 目錄下修改對應的平台文件\n3. 確保文件符合上述規範要求\n4. 提交 Pull Request 並詳細說明修改內容\n\n如有疑問，請聯繫相關適配器維護者或在項目 Issues 中提問。"
+    }
+  ]
 }

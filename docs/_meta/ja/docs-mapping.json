@@ -14,13 +14,13 @@
           "icon": "fa-flag"
         },
         {
-          "title": "ファーストステップ",
+          "title": "すぐに始める",
           "path": "quick-start.md",
           "level": 1,
           "icon": "fa-bolt"
         },
         {
-          "title": "アーキテクチャ概要",
+          "title": "架構概要",
           "path": "architecture.md",
           "level": 1,
           "icon": "fa-sitemap"
@@ -58,19 +58,19 @@
           "icon": "fa-lightbulb"
         },
         {
-          "title": "よくあるタスクの例",
+          "title": "一般的タスクの例",
           "path": "getting-started/common-tasks.md",
           "level": 1,
           "icon": "fa-list-check"
         },
         {
-          "title": "イベント処理の入門",
+          "title": "イベント処理入門",
           "path": "getting-started/event-handling.md",
           "level": 1,
           "icon": "fa-bolt-lightning"
         },
         {
-          "title": "タイプのスタブ生成（IDEの補完）",
+          "title": "タイプ スタンプ生成（IDE の補完）",
           "path": "getting-started/ide-completion.md",
           "level": 1,
           "icon": "fa-keyboard"
@@ -90,7 +90,7 @@
           "icon": "fa-book-open"
         },
         {
-          "title": "インストールのリファレンス",
+          "title": "インストールの参考",
           "path": "user-guide/installation.md",
           "level": 1,
           "icon": "fa-download"
@@ -128,7 +128,7 @@
           "icon": "fa-code"
         },
         {
-          "title": "公開とモジュールストアガイド",
+          "title": "リリースとモジュールストアガイド",
           "path": "developer-guide/publishing.md",
           "level": 1,
           "icon": "fa-upload"
@@ -170,7 +170,7 @@
           "icon": "fa-network-wired",
           "documents": [
             {
-              "title": "アダプタ開発入門",
+              "title": "アダプター開発入門",
               "path": "developer-guide/adapters/getting-started.md",
               "level": 1,
               "icon": "fa-network-wired"
@@ -188,7 +188,7 @@
               "icon": "fa-code-branch"
             },
             {
-              "title": "アダプター開発のベストプラクティス",
+              "title": "アダプタ開発のベストプラクティス",
               "path": "developer-guide/adapters/best-practices.md",
               "level": 1,
               "icon": "fa-medal"
@@ -221,7 +221,7 @@
           "icon": "fa-comments"
         },
         {
-          "title": "OneBot12プラットフォームの特徴",
+          "title": "OneBot12プラットフォーム仕様ドキュメント",
           "path": "platform-guide/onebot12.md",
           "level": 1,
           "icon": "fa-comments"
@@ -239,13 +239,13 @@
           "icon": "fa-envelope"
         },
         {
-          "title": "雲湖プラットフォームの特徴ドキュメント",
+          "title": "雲湖プラットフォームの機能ドキュメント",
           "path": "platform-guide/yunhu.md",
           "level": 1,
           "icon": "fa-cloud"
         },
         {
-          "title": "Yunhu ユーザープラットフォーム特性ドキュメント",
+          "title": "雲湖ユーザープラットフォームの機能ドキュメント",
           "path": "platform-guide/yunhu_user.md",
           "level": 1,
           "icon": "fa-user"
@@ -269,31 +269,31 @@
           "icon": "fa-th-large"
         },
         {
-          "title": "Discord プラットフォームの特徴ドキュメント",
+          "title": "Discordプラットフォーム特徴ドキュメント",
           "path": "platform-guide/discord.md",
           "level": 1,
           "icon": "fa-gamepad"
         },
         {
-          "title": "WeChatMpアダプタ - プラットフォーム特徴ドキュメント",
+          "title": "微信公众号（WechatMp）アダプター - プラットフォーム特性ドキュメント",
           "path": "platform-guide/wechatmp.md",
           "level": 1,
           "icon": "fa-mobile-screen"
         },
         {
-          "title": "プラットフォームの特徴説明 — Webhook 一般ブリッジアダプタ",
+          "title": "プラットフォームの機能説明 — Webhook 一般的なブリッジアダプター",
           "path": "platform-guide/webhook.md",
           "level": 1,
           "icon": "fa-link"
         },
         {
-          "title": "花楓コーヒーショップ（RockyChat）プラットフォーム特性ドキュメント",
+          "title": "花楓カフェ（RockyChat）プラットフォームの機能ドキュメント",
           "path": "platform-guide/ideaura.md",
           "level": 1,
           "icon": "fa-wand-magic-sparkles"
         },
         {
-          "title": "ドキュメントメンテナンス手順",
+          "title": "ドキュメントの保守に関する説明",
           "path": "platform-guide/maintain-notes.md",
           "level": 1,
           "icon": "fa-wrench"
@@ -336,7 +336,7 @@
     "高度なトピック": {
       "description": "フレームワークの高度な機能を深く理解する",
       "icon": "fa-fire",
-      "count": 12,
+      "count": 16,
       "documents": [
         {
           "title": "高級トピック",
@@ -351,7 +351,7 @@
           "icon": "fa-clock-rotate-left"
         },
         {
-          "title": "ラグジュアリー・ロード・モジュール・システム",
+          "title": "ラグジュアリー ロード モジュール システム",
           "path": "advanced/lazy-loading.md",
           "level": 1,
           "icon": "fa-hourglass-half"
@@ -363,7 +363,7 @@
           "icon": "fa-route"
         },
         {
-          "title": "MessageBuilder 詳細",
+          "title": "MessageBuilder 详解",
           "path": "advanced/message-builder.md",
           "level": 1,
           "icon": "fa-comment-dots"
@@ -381,7 +381,7 @@
           "icon": "fa-globe"
         },
         {
-          "title": "SQLクエリビルダー",
+          "title": "SQL クエリビルダー",
           "path": "advanced/sql-builder.md",
           "level": 1,
           "icon": "fa-database"
@@ -393,7 +393,7 @@
           "icon": "fa-language"
         },
         {
-          "title": "スコープ（scope）",
+          "title": "スコープ (scope)",
           "path": "advanced/scope.md",
           "level": 1,
           "icon": "fa-shield-halved"
@@ -405,7 +405,31 @@
           "icon": "fa-user-tag"
         },
         {
-          "title": "起動プロセスと手動制御",
+          "title": "交互会話システム",
+          "path": "advanced/interaction.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "モジュール間通信",
+          "path": "advanced/module-communication.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "ストレージバックエンド",
+          "path": "advanced/storage-backends.md",
+          "level": 1,
+          "icon": "fa-server"
+        },
+        {
+          "title": "エラー体系とキャッチガイド",
+          "path": "advanced/errors.md",
+          "level": 1,
+          "icon": "fa-triangle-exclamation"
+        },
+        {
+          "title": "スタートフローと手動制御",
           "path": "advanced/startup.md",
           "level": 1,
           "icon": "fa-fire"
@@ -419,7 +443,7 @@
       "count": 4,
       "documents": [
         {
-          "title": "エコモジュール",
+          "title": "エコシステムモジュール",
           "path": "ecosystem/README.md",
           "level": 1,
           "icon": "fa-cubes"
@@ -451,7 +475,7 @@
       "count": 1,
       "documents": [
         {
-          "title": "AI支援開発",
+          "title": "AI補助開発",
           "path": "ai-support/README.md",
           "level": 1,
           "icon": "fa-robot"
@@ -465,13 +489,13 @@
       "count": 7,
       "documents": [
         {
-          "title": "技術基準",
+          "title": "技術仕様",
           "path": "standards/README.md",
           "level": 1,
           "icon": "fa-gavel"
         },
         {
-          "title": "ErisPulse セッション型標準",
+          "title": "ErisPulse セッションタイプ標準",
           "path": "standards/session-types.md",
           "level": 1,
           "icon": "fa-layer-group"
@@ -483,7 +507,7 @@
           "icon": "fa-arrow-right-arrow-left"
         },
         {
-          "title": "アダプター標準化変換仕様",
+          "title": "アダプタ標準化変換規格",
           "path": "standards/event-conversion.md",
           "level": 1,
           "icon": "fa-shuffle"
@@ -495,7 +519,7 @@
           "icon": "fa-paper-plane"
         },
         {
-          "title": "ErisPulse 要求操作規格",
+          "title": "ErisPulse リクエスト操作規格",
           "path": "standards/request-action-spec.md",
           "level": 1,
           "icon": "fa-hand-paper"

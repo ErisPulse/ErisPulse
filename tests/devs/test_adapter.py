@@ -1,5 +1,6 @@
 import asyncio
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -65,7 +66,7 @@ class TestCase:
     """测试用例类"""
     name: str
     enabled: bool = True
-    async_func: callable | None = None
+    async_func: Callable | None = None
     description: str = ""
 
 

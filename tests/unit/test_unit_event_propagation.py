@@ -135,13 +135,13 @@ class TestCommandDispatchClaim:
 
     @pytest.fixture(autouse=True)
     def setup_command(self):
-        from ErisPulse.Core.Event import command
+        from ErisPulse.Core.Event import command, interaction
 
         command.commands.clear()
         command.aliases.clear()
         command.groups.clear()
         command.permissions.clear()
-        command._waiting_replies.clear()
+        interaction.clear()
         # 确保解析参数可预测（不依赖外部配置加载）
         command.prefix = "/"
         command._prefixes = ["/"]

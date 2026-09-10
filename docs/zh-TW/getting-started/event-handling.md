@@ -12,7 +12,7 @@ ErisPulse 支援以下事件類型：
 | 命令事件 | 以命令前綴開頭的訊息 | 命令處理、功能入口 |
 | 通知事件 | 系統通知（好友添加、群成員變更等） | 歡迎訊息、狀態通知 |
 | 請求事件 | 使用者請求（好友請求、群邀請） | 自動處理請求 |
-| 元事件 | 系統級事件（連接、心跳） | 連接監控、狀態檢查 |
+| 元事件 | 系統級事件（連線、心跳） | 連線監控、狀態檢查 |
 
 ## 消息事件處理
 
@@ -99,7 +99,7 @@ from ErisPulse.Core.Event import command
 async def help_handler(event):
     help_text = """
 可用命令：
-/help - 显示帮助
+/help - 顯示幫助
 /ping - 測試連接
 /info - 查看資訊
     """
@@ -124,7 +124,7 @@ async def help_handler(event):
 ```python
 @command("echo", help="回顯訊息")
 async def echo_handler(event):
-    # 獲取命令參數
+    # 取得命令參數
     args = event.get_command_args()
     
     if not args:
@@ -150,8 +150,8 @@ async def stop_handler(event):
 命令權限分三層，由上至下逐層判定（**上層拒絕則不再看下層**）：
 
 ```python
-# ① 命令權限 ACL（使用者端設定）：按命令的使用者黑白名單，拒絕時回覆「權限不足」
-# ② master=True —— 僅框架主人可執行（框架自動檢查，拒絕時回覆「權限不足」）
+# ① 命令權限 ACL（使用者端設定）：按命令的使用者黑白名單，拒絕時回覆"權限不足"
+# ② master=True —— 僅框架主人可執行（框架自動檢查，拒絕時回覆"權限不足"）
 @command("restart", master=True, help="重啟模組")
 async def restart_handler(event):
     await event.reply("模組已重啟")
@@ -166,7 +166,7 @@ async def panel_handler(event):
 ```
 
 **命令使用者 ACL**（`ErisPulse.event.command.acl`）：使用者可為任意命令設定使用者黑白名單，
-命令名稱支援精確與 glob 模式（如 `"roll*"`），拒絕時回覆「權限不足」：
+命令名稱支援精確與 glob 模式（如 `"roll*"`），拒絕時回覆"權限不足"：
 
 ```toml
 # config.toml —— 僅允許 123456 執行 restart；666 一律拒絕
@@ -185,12 +185,12 @@ from ErisPulse.Core.Event import command
 command.allow_user("restart", "onebot11", "123456")   # 允許名單
 command.deny_user("restart", "onebot11", "666")       # 拒絕名單
 command.remove_acl("restart")                          # 清除黑白名單
-command.get_acl("restart")                             # 查詢目前名單
+command.get_acl("restart")                             # 查詢當前名單
 ```
 
-> 命令處理器從事件包匯入：`from ErisPulse.Core.Event import command`；
+> 命令處理器從事件包導入：`from ErisPulse.Core.Event import command`；
 > 也可經 SDK 事件包存取：`sdk.Event.command`（兩者為同一單例）。
-> 在模組內通常已隨命令裝飾器匯入（`from ErisPulse.Core.Event import command`）。
+> 在模組內通常已隨命令裝飾器導入（`from ErisPulse.Core.Event import command`）。
 
 跨命令 / 跨使用者的**事件級**存取控制（某人 / 某群 / 某 Bot 的訊息收不收）
 走作用域**身份維度**（`scope.identity`）；**模組級**可用性（哪些模組能用）
@@ -258,31 +258,31 @@ async def handler_c(event):
 
 ## 作用域過濾：為什麼我的模組沒收到訊息
 
-事件到達後有兩道**靜默**過濾（都不回應、不報錯）：
+事件到達後會經過兩道**靜默**過濾（均不回應、不報錯）：
 
-1. **身份維度**（`ErisPulse.scope.identity`）：事件進入分發入口時，按 用戶 > 群 > Bot > 適配器 判定收不收。  
-   被拒絕的**整個事件**直接丟棄，任何處理器（含命令分發器）都不會觸發。
-2. **模組維度**（`ErisPulse.scope`）：事件到達某模組的處理器/命令時，按 會話 > Bot > 平台 判定  
-   該模組是否可用，**不通過就靜默跳過**。
+1. **身份維度**（`ErisPulse.scope.identity`）：事件進入分發入口時，依序按使用者 > 群組 > Bot > 適配器判斷是否接收。
+   被拒絕的**整個事件**會直接丟棄，任何處理器（包含命令分發器）都不會觸發。
+2. **模組維度**（`ErisPulse.scope`）：事件到達某模組的處理器/命令時，依序按會話 > Bot > 平台判斷
+   該模組是否可用，**不通過則靜默跳過**。
 
 ```toml
 # 例1：某群所有訊息不傳播
 [ErisPulse.scope.identity.sessions.onebot11."group_123"]
 deny = true
 
-# 例2：把 MyModule 屏蔽在某個 Bot
+# 例2：將 MyModule 屏蔽在某個 Bot
 [ErisPulse.scope.bots.onebot11."123456"]
 blocked = ["MyModule"]
 ```
 
-此時該群的訊息到達時，`MyModule` 的命令與事件處理器**都不會被調度**。這不是 bug，而是過濾機制——排查「模組沒反應」時，優先檢查作用域的身份與模組綁定。
+此時該群的訊息到達時，`MyModule` 的命令與事件處理器**都不會被調度**。這不是 bug，而是過濾機制——排查「模組沒反應」時，請優先檢查作用域的身份與模組綁定。
 
-- 過濾日誌只在 **TRACE** 級可見（`core.scope.identity_denied` / `core.scope.denied`），預設 INFO 級看不到任何痕跡
+- 過濾日誌僅在 **TRACE** 級別可見（`core.scope.identity_denied` / `core.scope.denied`），預設 INFO 級別看不到任何痕跡
 - 框架級處理器（如命令分發器 `scope_exempt=True`）不受**模組維度**影響，但受**身份維度**影響（整個事件已丟棄）
-- 命令執行前還有第三道：命令用戶 ACL（拒絕時回應「權限不足」，見上節）
+- 命令執行前還有第三道：命令使用者 ACL（拒絕時回應「權限不足」，見上節）
 - 第四道是**事件覆寫**（見下節）
 
-> 作用域配置、匹配語法、執行時 API 請見 [作用域（scope）](../../advanced/scope.md)。
+> 作用域配置、匹配語法、執行時 API 請參閱 [作用域（scope）](../../advanced/scope.md)。
 
 ## 事件覆寫：不改模組代碼，覆寫任意事件類型的行為
 
@@ -290,19 +290,20 @@ blocked = ["MyModule"]
 > 本特性需要 ErisPulse **2.8.0+**。
 
 事件處理器在註冊時聲明的參數（`pattern` / `regex` / `master` / `hidden` 等）只是**開發者預設**。  
-統一覆寫系統讓使用者按**事件類型**覆寫任意模組的行為——OneBot12 標準類型（meta / message / notice / request）與 ErisPulse 扩展類型（command）各自擁有專屬的可覆寫參數：
+統一覆寫系統讓使用者按**事件類型**覆寫任意模組的行為——OneBot12 標準類型  
+（meta / message / notice / request）與 ErisPulse 扩展類型（command）各自擁有專屬的可覆寫參數：
 
 | 事件類型 | 可覆寫參數 | 作用 |
 |---------|-----------|------|
-| `message` | `pattern` / `regex` / `detail_types` | 文字觸發條件 + 消息子類型白名單 |
-| `notice` | `detail_types` / `pattern` / `regex` | 通知子類型白名單 + 文字條件 |
-| `request` | `detail_types` / `pattern` / `regex` | 請求子類型白名單 + 文字條件 |
+| `message` | `pattern` / `regex` / `detail_types` | 文本觸發條件 + 消息子類型白名單 |
+| `notice` | `detail_types` / `pattern` / `regex` | 通知子類型白名單 + 文本條件 |
+| `request` | `detail_types` / `pattern` / `regex` | 請求子類型白名單 + 文本條件 |
 | `meta` | `detail_types` | 元事件子類型白名單（connect / heartbeat 等） |
 | `command` | `master` / `hidden` / `aliases` / `prefix` / `help` / `usage` | 命令實現參數（使用者優先） |
 | `acl`（command 專屬） | `allow` / `deny` | 命令使用者黑白名單（按命令名 glob） |
 
 ```toml
-# message：覆寫文字觸發條件（與程式碼內條件 AND）
+# message：覆寫文本觸發條件（與程式碼內條件 AND）
 [ErisPulse.event.overrides.message.ChatModule]
 pattern = "閒聊*"
 
@@ -323,12 +324,13 @@ allow = ["onebot11:u_vip"]
 acl_default_allow = true
 ```
 
-執行時 API（`from ErisPulse.Core.Event import overrides` 或 `sdk.Event.overrides`，**類型子命名空間**——每類型對稱的 `set` / `get` / `delete` 三件套）：
+執行時 API（`from ErisPulse.Core.Event import overrides` 或 `sdk.Event.overrides`，  
+**類型子命名空間**——每類型對稱的 `set` / `get` / `delete` 三件套）：
 
 ```python
 from ErisPulse.Core.Event import overrides
 
-overrides.message.set("ChatModule", pattern="閒聊*")   # message 文字條件
+overrides.message.set("ChatModule", pattern="閒聊*")   # message 文本條件
 overrides.notice.set("MyModule", detail_types=["group_increase"])
 overrides.command.set("MyModule", "restart", master=True)  # 命令參數
 overrides.acl.set("roll*", deny=["onebot11:u_bad"])    # 命令使用者黑名單
@@ -337,18 +339,18 @@ overrides.message.get("ChatModule")     # {"pattern": "閒聊*"}
 overrides.message.delete("ChatModule")  # 恢復開發者預設
 ```
 
-- 覆寫條件與處理器程式碼內條件**同時生效**（AND 語義）；`command` 參數與開發者宣告**深合併**（覆寫優先）
+- 覆寫條件與處理器程式碼內條件**同時生效**（AND 語意）；`command` 參數與開發者聲明**深合併**（覆寫優先）
 - `detail_types`：事件缺 `detail_type` 時放行（不誤殺未知事件）
-- `pattern` / `regex`：無文字的事件（connect / heartbeat 等）不受限制，直接放行
+- `pattern` / `regex`：無文本的事件（connect / heartbeat 等）不受限制，直接放行
 - `command` 覆寫鍵 `master` 同步映射儲存鍵 `must_master`；禁用命令統一走 `acl` deny
-- 配置改了立即生效（熱更新），格式校驗告警（未知參數 / 壞項目忽略）
+- 配置改了立即生效（熱更新），格式校驗告警（未知參數 / 壞條目忽略）
 
 ## 鏈路控制：認領與阻斷
 
 > [!NOTE]  
-> `event.done()` / `event.mark_processed()` 的 `claim=` / `stop=` 參數本特性需要 ErisPulse **2.7.1+**。
+> `event.done()` / `event.mark_processed()` 的 `claim=` / `stop=` 參數需要 ErisPulse **2.7.1+**。
 
-ErisPulse 將「認領」與「阻斷」兩個正交語義解耦，透過 `event.done()` 統一控制，便於在命令處理周圍疊加日誌、審計、權限等觀察層。
+ErisPulse 將「認領」與「阻斷」兩個正交語意解耦，透過 `event.done()` 統一控制，便於在命令處理周圍疊加日誌、審計、權限等觀察層。
 
 **兩個概念的準確定義：**
 
@@ -380,7 +382,7 @@ async def firewall(event):
 
 ### 命令與回覆的 block 配置
 
-命令匹配成功 / `wait_reply` 匹配到回覆後，預設會阻斷傳播（向後兼容）。可透過配置放行，讓低優先級處理器（日誌 / 審計 / 權限）也能觀測這些訊息：
+命令匹配成功 / `wait_reply` 匹配到回覆後，預設會阻斷傳播（向後相容）。可透過配置放行，讓低優先級處理器（日誌 / 審計 / 權限）也能觀測這些訊息：
 
 ```toml
 [ErisPulse.event.command]
@@ -516,10 +518,10 @@ await event.reply("你好")
 await event.reply("http://example.com/image.jpg", method="Image")  # 圖片
 await event.reply("http://example.com/voice.mp3", method="Voice")  # 語音
 
-# @單個使用者
+# @單個用戶
 await event.reply("你好", at_users=["user123"])
 
-# @多個使用者
+# @多個用戶
 await event.reply("大家好", at_users=["user1", "user2", "user3"])
 
 # 回覆訊息
@@ -528,18 +530,18 @@ await event.reply("回覆內容", reply_to="msg_id")
 # @全體成員
 await event.reply("公告", at_all=True)
 
-# 組合使用：@使用者 + 回覆訊息
+# 組合使用：@用戶 + 回覆訊息
 await event.reply("內容", at_users=["user1"], reply_to="msg_id")
 ```
 
-### 等待使用者回覆
+### 等待用戶回覆
 
 ```python
-@command("ask", help="詢問使用者")
+@command("ask", help="詢問用戶")
 async def ask_handler(event):
     await event.reply("請輸入你的名字:")
     
-    # 等待使用者回覆，超時時間 30 秒
+    # 等待用戶回覆，超時時間 30 秒
     reply = await event.wait_reply(timeout=30)
     
     if reply:
@@ -599,7 +601,7 @@ async def confirm_handler(event):
 
 ### 確認對話 (confirm)
 
-等待使用者確認或否定，自動識別內建中英文確認詞：
+等待用戶確認或否定，自動識別內建中英文確認詞：
 
 ```python
 @command("confirm", help="確認操作")
@@ -614,9 +616,9 @@ if await event.confirm("繼續嗎？", yes_words={"go", "繼續"}, no_words={"st
     pass
 ```
 
-### 選擇選單 (choose)
+### 選擇菜單 (choose)
 
-使用者可回覆選項編號或選項文字：
+用戶可回覆選項編號或選項文字：
 
 ```python
 @command("choose", help="選擇")
@@ -633,7 +635,7 @@ async def choose_handler(event):
         await event.reply("超時未選擇")
 ```
 
-**合併模式**：`merge_prompt=True` 時將選項拼入提示訊息，用使用者指定的 `method` 一條訊息發送：
+**合併模式**：`merge_prompt=True` 時將選項拼入提示訊息，用用戶指定的 `method` 一條訊息發送：
 
 ```python
 # 用 Markdown 發送合併後的提示 + 選項
@@ -648,11 +650,11 @@ choice = await event.choose(
 > `{options}` 占位符控制選項插入位置；不寫則追加到 prompt 末尾。  
 > 可透過 `placeholder` 參數自訂占位符（如 `placeholder="[choices]"`）。  
 > `options_format="auto"`（預設）根據 method 自動選擇樣式：Markdown→無序列表，Html→有序列表，其他→純文字列表。  
-> 文字類方法（Text/Markdown/Html 等）預設合併選項到末尾；非文字方法（Image 等）預設拆分為兩條訊息。
+> 文本類方法（Text/Markdown/Html 等）預設合併選項到末尾；非文本方法（Image 等）預設拆分為兩條訊息。
 
 ### 收集表單 (collect)
 
-多階段收集使用者輸入：
+多階段收集用戶輸入：
 
 ```python
 @command("register", help="註冊")
@@ -672,7 +674,7 @@ async def register_handler(event):
 
 ### 等待任意事件 (wait_for)
 
-等待滿足條件的任意事件，不限於同一使用者：
+等待滿足條件的任意事件，不限於同一用戶：
 
 ```python
 @command("wait_member", help="等待新成員")
@@ -725,7 +727,7 @@ ErisPulse 內建了中英文確認詞集合：
 - **確認詞** (`CONFIRM_YES_WORDS`): 是、yes、y、確認、確定、好、好的、ok、true、對、嗯、行、同意、沒問題...
 - **否定詞** (`CONFIRM_NO_WORDS`): 否、no、n、取消、不、不要、不行、cancel、false、錯、拒絕、不可以...
 
-## 事件資料存取
+## 事件數據訪問
 
 ### Event 物件常用方法
 
@@ -754,7 +756,7 @@ async def info_handler(event):
     self_id = event.get_self_user_id()
     self_platform = event.get_self_platform()
     
-    # 原始資料
+    # 原始數據
     raw_data = event.get_raw()
     raw_type = event.get_raw_type()
     
@@ -775,7 +777,7 @@ async def info_handler(event):
 
 ### 平台擴展方法
 
-除了內建方法外，各平台適配器還會註冊平台專有方法，方便你存取平台特有的資料。
+除了內置方法外，各平台適配器還會註冊平台專有方法，方便你訪問平台特有的數據。
 
 ```python
 from ErisPulse.Core.Event import message
@@ -784,7 +786,7 @@ from ErisPulse.Core.Event import message
 async def handle_message(event):
     platform = event.get_platform()
 
-    # 根據平台呼叫專有方法
+    # 根據平台調用專有方法
     if platform == "telegram":
         chat_type = event.get_chat_type()      # Telegram 專有方法
     elif platform == "email":
@@ -857,7 +859,7 @@ async def conditional_handler(event):
 
 ## 下一步
 
-- [常見任務示例](common-tasks.md) - 學習常用功能的實現（含訊息發送進階：重試/超時/批量）
+- [常見任務範例](common-tasks.md) - 學習常用功能的實現（含訊息發送進階：重試/超時/批量）
 - [平台特性指南](../platform-guide/README.md) - Send DSL 鏈式發送、發送規則、批量建構的完整說明
 - [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md) - 深入了解 Event 物件
 - [使用者使用指南](../user-guide/) - 了解配置和模組管理

@@ -73,6 +73,124 @@
 
 ---
 
+## [2.8.0-dev.2] - 2026/09/10
+> 开发版本
+
+**版本摘要**
+新增交互会话基础设施与基础原语：交互会话管理器（wait_reply 等待表抽为一等基础设施，owner / platform 双维度归属清理、回复命中权限复查、会话互斥租约）、Conversation 自动检查点（分支跳转自动存档 + 重启自动恢复）、端到端事件追踪（trace-id 贯穿入站 / 处理 / 出站 / 生命周期钩子）、消息事务（出站回执账本 + 异常自动撤回）、会话收件箱（每会话消息流自动记录与查询）。存储查询构建器新增 `ToDict()` 链。存储层升级为多后端异步原生架构：内置 sqlite / mysql / postgres 三种异步驱动后端（配置切换、API 完全一致），`BaseStorage` 抽象翻转为异步原生契约，同步 API 转为兼容层（现有同步调用代码零改动）；存储连接失败不再阻塞或崩溃框架——建池重试耗尽后快速失败进入冷却（默认 30 秒）并自动重连试探，数据库恢复即随之恢复。修复 wait_reply 挂起回复被高优先级处理器饿死的问题；另落地模块间 RPC 协议化（module.call / provides 收敛为 meta.services 契约 + services() 服务目录 + 生命周期定向事件 `lifecycle.emit(..., to=...)` 按注册 owner 定向投递）、会话定时器（remind 回复即取消 / escalate 到点必达）、多路等待（event.select + wait_reply 会话级 anyone 可答）、事件幂等去重（重连重推只分发一次）、冷启动回放（strategy 声明 replay，新模块自动获得最近会话上下文）、对话恢复即接管（resume 自动持有会话租约并带回收件箱历史）。此外落地配置系统体验升级：配置文件注释与键顺序在框架写入后完整保留（tomlkit）、框架默认配置不再自动落盘（config.toml 保持最小化，完整配置参考 `config.full.example`）、声明式配置新增 `example` 字段标志 / docstring 描述兜底 / 嵌套 dataclass 支持；修复作用域 `persist=False` 运行时绑定被任意后续配置写入静默冲掉（#432）、慢日志归属 `owner=<unknown>`、Docker 升级 pre 后被入口点自愈静默还原正式版、配置面板 `[object Object]` 渲染问题。
+
+**升级建议**
+- 是否建议升级：建议升级
+- 交互会话归属清理修复了模块卸载 / 平台关闭后等待方干等超时的资源泄漏；自动检查点与 trace-id 对现有代码零侵入
+- 存储后端默认仍为 SQLite，行为兼容；需要 MySQL / PostgreSQL 时配置 `ErisPulse.storage.backend` 并安装对应可选驱动即可
+
+**注意事项**
+- **行为变更**：同一会话键重复注册等待（如两个模块对同一用户 wait_reply）时，旧等待方现在立即收到取消（返回 `None`），不再静默覆盖后干等超时
+- **行为变更**：回复消息已被高优先级处理器认领时，挂起的等待仍会命中消费该消息（对话连续性优先）；不希望此行为的模块需自行调整处理器认领策略
+- 存储查询构建器默认行为不变（tuple 行）；仅显式调用 `ToDict()` 的链返回 dict
+- **异步主接口**：同步存储 API 在异步上下文（事件循环所在线程）中调用时经后台桥接执行（功能正确，但会短暂阻塞该事件循环），异步 handler 内推荐使用 `await storage.aget/aset(...)` 与 `aExecute()` 系列终止方法；`storage.get/set/Table(...).Execute()` 等既有同步用法不受影响
+- **自定义存储后端**：继承 `BaseStorage` 的第三方后端需按异步契约迁移（实现 a 前缀异步方法与事务连接 hook）；仅使用框架存储 API（不自定义后端）的模块 / 适配器无需任何改动
+- **存储连接失败不阻塞框架**：数据库不可达时存储操作快速失败（返回 `False`/`None` 并记日志），框架与消息处理继续运行；冷却期（默认 30 秒）结束自动重连试探，无需重启
+- **行为变更**：config.toml 不再自动填充框架默认键（gc / scope / transcript 等约 60+ 项）；需要调整时参考项目内 `config.full.example` 手动添加，未配置项一律走内置默认值，行为不变
+- **行为变更**：框架写入不再对配置文件按字典序重排，保持用户原有键顺序
+- 存量用户的 config.toml 已有键不受影响，无需迁移
+- Dashboard 需强刷浏览器缓存（dash.js 有更新）
+
+### 新增
+
+- @wsu2059q
+  - **多后端存储引擎（sqlite / mysql / postgres，异步原生）** `Core/storage/` 包 / `Core/Bases/sql_base.py`：
+    - 内置三种后端：SQLite（aiosqlite，默认，零配置）/ MySQL（aiomysql）/ PostgreSQL（asyncpg），通过 `ErisPulse.storage.backend` 配置或环境变量 `ERISPULSE_STORAGE_BACKEND` 切换，三种后端 API 完全一致、切换零代码改动；驱动为可选依赖 `pip install ErisPulse[mysql]` / `ErisPulse[postgres]`，缺失时报清晰错误并提示安装命令
+    - 后端连接参数：`ErisPulse.storage.mysql` / `ErisPulse.storage.postgres` 配置节（host / port / user / password / database / charset / pool 等，支持 12-factor 环境变量覆盖如 `ERISPULSE_STORAGE_POSTGRES_HOST`）
+    - 方言差异收敛到 `SQLDialect`：占位符翻译（`?` / `%s` / `$n`）、标识符引用（MySQL 保留字 `key` 自动反引号）、UPSERT 语法（`INSERT OR REPLACE` / `ON DUPLICATE KEY UPDATE` / `ON CONFLICT DO UPDATE`）、自增主键翻译（`INTEGER PRIMARY KEY AUTOINCREMENT` → `AUTO_INCREMENT` / `SERIAL`）、列类型映射与表存在性查询；共享 SQL 基类 `SQLStorageBase` 统一实现嵌套键 KV、批量操作、DDL、ALTER TABLE 与事务编排
+    - 连接管理：池 / 共享连接按事件循环惰性创建（同步桥接循环与用户异步循环各自独立），池创建瞬时失败自动指数退避重试；`aclose()` / `close()` 释放当前循环资源，`sdk.uninit()` 关停链统一释放主循环与同步桥接循环两侧的连接资源（消除退出期 aiomysql/asyncpg 连接被 GC 时 `Event loop is closed` 噪音）；MySQL 对 `CREATE/DROP TABLE IF EXISTS` 的服务器 NOTE 警告按 DB-API 规则抑制（幂等 DDL 不再刷 `Table 'config' already exists`）；SQLite 采用 WAL + busy_timeout 多循环并发安全，非事务操作 autocommit、事务使用专用连接
+    - 连接失败快速失败与自动恢复：建池重试耗尽（默认 3 次，指数退避基数 1.5s）后记录 WARNING 并进入冷却期（默认 30 秒）——期间存储操作快速失败（吞异常记日志返回 `False`/`None`），框架**不阻塞、不崩溃**、照常启动与处理消息；冷却结束自动重连试探，数据库恢复即随之恢复；新增异常 `StorageError` / `StorageUnreachableError`（挂入 `ErisPulseError` 体系，`Core` 聚合导出）
+    - 事务：异步 `async with storage.atransaction():` / 同步 `with storage.transaction():`，事务内操作（含查询构建器链）路由到事务专用连接，嵌套自动复用外层，异常自动回滚并传播；KV 读取路径缺表自动重建
+    - CLI `init` 配置脚手架与 `create` 模板、`examples/` 示例同步更新（含异步推荐写法指引）
+  - **交互会话管理器** `Core/Event/interaction.py`（`sdk.interaction` / `from ErisPulse.Core.Event import interaction`）：
+    - wait_reply 底层等待表抽为一等基础设施：等待条目记录注册时归属（owner，自动捕获 `current_owner`）与平台（platform），按 会话键 / owner / platform 三索引管理
+    - 按维度精确取消：模块卸载 / 适配器关闭自动取消其挂起的等待，等待方立即收到取消（`InteractionCancelled`，挂入 `InteractionError` 异常体系）而非干等超时；同会话被新等待 / 租约取代时旧等待方同样立即取消（reason: conflict / owner_unload / platform_stop / revoked）
+    - 回复命中权限复查：pattern / regex / validator 通过后复查 scope 身份维度（用户被拉黑）与模块维度（owner 模块在该会话被解绑），任一失败终止等待，消息继续走常规处理
+    - 会话互斥租约：`acquire(event, ttl=...)`（deny 策略，被占用返回 None）/ `hold(event)` 上下文管理器（占用时抛 `SessionOccupiedError`）/ `get_owner_of(event)` 查询"该用户正被谁占用"；租约支持 `renew()` / `release()` 与 TTL 惰性过期
+    - 诊断：`counts()`（waits / leases / per-owner 计数）
+  - **模块间通信（RPC 协议化 + 定向事件）** `Core/module.py` / `Core/Bases/module.py` / `Core/Bases/errors.py` / `Core/lifecycle.py`：
+    - **协议化调用** `await sdk.module.call("Chat", "get_history", session_id, n=20)`：与裸属性访问（`module.Chat.fn()`，保留不变）的差异——目标未注册 / 未启用抛类型化异常而非 AttributeError；懒加载模块自动唤醒（事件驱动模块走激活锁）；被调方法执行期间 `current_owner` 归因到目标模块（其内部 wait_reply / 出站发送 / 日志正确归属）；协程方法默认 30s 超时（`ErisPulse` 常量 `DEFAULT_MODULE_CALL_TIMEOUT_SECS`，可用 `timeout=` 覆盖，None 不限时）
+    - **服务契约**：`get_meta()` 的 `ModuleMeta.services = ["get_history", ...]` 字段声明对外服务白名单（与 `commands` 对称），调用白名单外方法抛 `ServiceNotProvidedError`；未声明时保持向后兼容（任意公开方法可调，下划线私有方法始终禁止）——**开发者无感是默认**，限制主控制权在用户侧 scope 配置；`services` 支持 dict 形态（`{"name", "description"}`）声明服务介绍，介绍解析优先级 = 显式 description（支持 i18n 字典）> 方法 docstring 首行 > 空串
+    - **服务目录** `sdk.module.services(module=None)`：列出各模块显式声明的服务及方法签名字符串（`inspect.signature` 提取）与介绍文本（description），为 MCP 化（调用点暴露给 AI）与生态服务发现提供数据基础
+    - **出站审计**：调用方经过 scope 出站维度 `actions.<caller>.call` 判定（`name=<目标模块>.<方法>`，支持 glob / `re:` 正则），可按模块细粒度限制"谁能调用谁"；框架层调用（无 owner）不受约束
+    - **定向事件** `await lifecycle.emit("message_received", {...}, to="Chat")`：`emit` / `emit_sync` / `submit_event` 新增 `to=` 参数，事件只分发给以目标 owner 身份注册的钩子（模块在 `on_load` 内注册自动归属；点式父级前缀同样按 owner 过滤；通配符 `*` 不参与定向分发），dict 数据自动携带 `_trace_id`；目标 owner 无钩子时静默丢弃——轻量通知不做目标校验与懒唤醒，需要目标存在性校验 / 契约审计 / 返回值时改用 `module.call()`
+    - 异常体系：`ModuleError` → `ModuleCallError` → `ModuleNotAvailableError` / `ServiceNotProvidedError` / `ModuleCallTimeoutError`（挂入 `ErisPulseError` 体系，`Core` 聚合导出）
+  - **会话定时器** `Core/Event/wrapper.py` / `Core/Event/interaction.py`：定时器挂交互会话索引（随模块卸载 / 适配器关闭自动取消，单会话活跃上限 5）
+    - `event.remind(300, "还在吗？")`（或 `conv.remind(...)`）：delay 秒后向会话发提醒 / 执行 callback，**用户回复自动取消**——"没回复就提醒"；支持 `reminder.cancel()` 手动取消
+    - `event.escalate(1800, fn)`：超时升级**不被回复取消**（到点必达，如通知主人 / 转人工）
+  - **多路等待与会话级等待** `Core/Event/wrapper.py` / `Core/Event/command.py` / `Core/Event/interaction.py`：
+    - `wait_reply(..., session=True)`：会话级等待（键不含 user 维度），同群 / 频道任何人的回复均可命中（群协作场景）
+    - `which, reply = await event.select(event.expect(pattern="同意*", user="A"), event.expect(...), timeout=60)`：同时挂起多条期望先到先得，未命中的自动取消；超时返回 `(None, None)`；期望支持 pattern / regex / validator / user 限定 / session
+  - **事件幂等去重** `Core/adapter.py`：分发入口按 `event["id"]` LRU 去重（容量 4096），平台 websocket 重连重推同 id 事件只分发一次；配置 `ErisPulse.framework.event_dedupe`（默认开启），适配器注册视为新连接生命周期、自动重置去重缓存
+  - **冷启动回放** `Core/module.py` / `Core/transcript.py` / `Core/Event/base.py`：`get_load_strategy(replay="5m")` 声明后，模块加载完成自动从会话收件箱回放最近消息（仅分发给该模块的处理器，合成事件带 `replayed: True` 标志供处理器跳过副作用）——新装模块热插拔进进行中的聊天；收件箱记录新增 sender 字段（旧表自动补列）
+  - **对话恢复接管** `Core/Event/wrapper.py`：`Conversation.resume()` 成功时自动 acquire 会话租约（被其他模块占用时放弃恢复，避免对话打架）并从收件箱带回最近消息到 `conv.recent_history`（`with_history` 参数可调 / 0 关闭）
+  - **服务目录进拓扑**：`get_topology()` 各模块条目新增 `services` 字段（meta.services 声明），与 `sdk.module.services()` 目录呼应
+  - **Conversation 自动检查点** `Core/Event/wrapper.py`：
+    - 分支跳转（`goto()` / `start()`）自动后台保存检查点；对话终态（`stop()` / `wait()` 超时 / `collect()` 失败）自动清除
+    - 存储键补 target 维度：`conversation:{platform}:{user_id}:{target_id}`（同一用户在不同会话中的对话互不覆盖）；旧格式（不含 target）存档读取时自动迁移至新键
+    - 检查点 TTL：`ErisPulse.interaction.checkpoint_ttl`（默认 24h），过期存档在恢复时丢弃并清理
+    - 重启自动恢复：`Conversation.register_resume_handler(platform=None)` 注册恢复工厂（工厂内重新注册分支并返回 Conversation），框架在重启后首条命中消息自动完成 恢复上下文 → 认领事件 → 跳转存档分支；无工厂注册时零开销
+  - **端到端事件追踪（trace-id）** `runtime/context.py` / `Core/adapter.py` / `Core/Bases/adapter.py` / `Core/lifecycle.py`：
+    - 事件入站时从 `event["id"]` 取得（缺失自动生成）写入 `current_trace_id` 上下文，随事件分发复制到各 handler Task；`get_current_trace_id()` 读取
+    - 出站发送自动携带：`[Send]` 日志行附加 `[trace:...]` 标记；`message.sending` / `message.sent` 钩子数据（`send_ctx`）新增 `trace_id` 与 `preview`（发送文本预览，截断）字段
+    - `lifecycle.emit()` 的 dict 数据自动补 `_trace_id`（不覆盖已有值）——一条消息被多个模块接力处理时全链路可用同一 ID 串联
+  - **消息事务（message transaction）** `runtime/context.py` / `Core/Bases/adapter.py` / `Core/Event/wrapper.py`：
+    - `event.message_tx()` 异步上下文管理器：事务内所有出站发送自动记入回执账本（`send_receipts` 上下文，响应含非空 `message_id` 时记录 platform / bot_id / message_id / trace_id）；异常退出事务时逆序自动撤回
+    - 撤回能力感知：适配器未实现 `delete_message` 时跳过该条（TRACE 日志），单条撤回失败不中断；事务外发送不记账（零开销）
+  - **会话收件箱（transcript）** `Core/transcript.py`（`sdk.transcript` / `event.history(n)`）：
+    - 每会话（`platform:detail_type:target_id`）近期消息流自动记录：入站消息在分发管线记录（role=`user`），机器人出站文本经 `message.sent` 钩子记录（role=`bot`，读取 send_ctx 的 `preview`）
+    - 存储：独立 SQLite 表（经 storage `Table`），保留策略 = 每会话条数上限 + 全局 TTL（惰性触发清理）
+    - 配置节 `ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`；手动 API `transcript.append()` / `get()` / `clear()`；`event.history(n)` 便捷查询（时间升序，条目含 role / text / ts / event_id）
+  - **存储查询构建器 `ToDict()` 链** `Core/Bases/storage.py` / `Core/storage.py` / `Core/Bases/kv_builder.py`：
+    - `.Select(...).ToDict().Execute()`：SELECT 结果以 dict（列名 → 值）返回，列名取自 `cursor.description`（`SELECT *` 与表达式列均正确）；`ExecuteOne()` 同样生效；SQL 与 KV 两个构建器均支持，`copy()` 保留标志
+  - i18n 五语言同步：新增 `core.interaction.*`（冲突取消 / 权限复查 / 租约 / 消息事务）/ `core.transcript.*` / `core.event.conversation_auto_resumed` / `core.adapter.interaction_clean_failed` 等键；清理 `core.command.reply_*` 死键
+  - 文档：`advanced/conversation.md` 更新自动检查点与恢复工厂；`advanced/sql-builder.md` 新增 ToDict；`advanced/ownership.md` 补交互会话归属清理；新增 `advanced/errors.md` 异常总览（全异常树 / 发生位置 / 处理建议）；`advanced/storage-backends.md` 新增连接失败行为说明；`user-guide/configuration.md` 补多后端存储配置
+- @wsu2059q
+  - **声明式配置增强** `Core/Bases/config_schema` / `Core/config.py` / `CLI/commands/init.py`：
+    - `example` 字段标志：`metadata={"example": True}` 的字段默认不写入 config.toml 模板与默认值（运行时走代码默认值，用户手动设置后正常持久化），仅渲染进 `config.full.example`；schema 带 `"example": true` 标记供面板自行决定展示策略，CLI 配置向导默认跳过
+    - docstring 自动生成字段描述：未声明 metadata `description` 时，自动从配置类 docstring 提取 `:ivar 字段名: 说明`（reST）或 `Attributes:` 段（Google）作为兜底；优先级 metadata > docstring；新增公共 API `get_field_docstrings()`
+    - 嵌套 dataclass 配置：字段类型为嵌套 dataclass 时（支持直接注解与经模块全局 / 类属性链解析的字符串注解），schema 以 `"type": "table"` + `"fields"` 子树承载，TOML 模板渲染为 `[子表]` 节，默认值 / 填充 / 校验 / i18n 解析全部递归；WebUI 渲染为可折叠嵌套分组而非整棵平铺
+    - `ConfigManager` 新增 `setConfigTemplate(key, toml_text)`：以带注释模板文本写入配置节（目标节已存在时不覆盖，其余内容与注释不受影响）；适配器/模块 `_ensure_config_exists` 改走该 API，首次初始化的配置模板现真正以带注释形式落盘（此前注释仅出现在日志中）
+    - `config.full.example` 改由 `runtime/example_config` 单一生成源：`epsdk init` 与**框架启动**（`sdk.run` / `epsdk run`，未 init 直接运行同样生效）共用；文件首行带自维护标记（gen 变更时启动自动刷新，补新增配置项与组件段），删除/改动首行即手动接管不再覆盖；示例含已安装适配器/模块 ConfigClass 的带注释配置（含 example 字段）
+
+### 修复
+
+- @wsu2059q
+  - `wait_reply` 挂起的回复被高优先级处理器抢先认领后，等待方永远收不到回复（饿死）：回复命中判定提前至消息分发入口（`_processed` 检查之前），对话连续性优先于命令匹配
+- @wsu2059q
+  - 修复作用域 `persist=False` 运行时绑定被任意后续配置写入静默冲掉的问题（#432）：
+    - 运行时绑定改经独立覆盖层记录（含删除哨兵），配置树重建后按写入顺序重放，任意无关配置写入 / 重载不再丢失运行时规则
+    - `config.set` / `config.updated` 精确失效：仅 scope 配置节实际变化时才重建配置树（附带收益：无关写入不再冲刷判定 LRU 缓存）
+    - 模块卸载时随调用方兜底清理运行时绑定（`scope.unregister_by_owner`）
+    - 事件覆写（`Core.Event.overrides`）的 persist=False 运行时覆写存在同类问题，同步以覆盖层架构修复
+  - 修复事件分发慢日志归属显示 `owner=<unknown>`：
+    - 事件分发期注入平台 owner 兜底上下文，无归属的框架内部处理器至少归因到平台名
+    - 命令分发处理器实际执行了某模块的命令时（含懒加载模块经 `activate_on` 占位命令首令激活），慢日志优先归因到该命令所属模块——激活耗时主体是它，不再显示 `<unknown>`
+    - 归属优先级：注册 owner > 实际执行的命令所属模块 > 分发期平台上下文
+  - 修复 Docker 镜像升级到 pre/rc 后在容器重启被入口点自愈**静默还原为镜像内置正式版**：
+    - `docker-entrypoint.sh` 核心包自愈改为**版本感知**：持久卷内用户显式安装的版本（与镜像内置版不同，含 pre/rc）损坏时从 PyPI 重装同版本（保留升级意图，固定 spec 自动携带预发布标记），绝不静默降级；仅在安装版本与镜像一致或未记录时才从镜像备份还原
+  - 修复配置面板 select 选项与字典字段渲染为 `[object Object]`：
+    - 框架 i18n 解析器支持仅含 `default` 的字典（如动态生成的选项标签）还原为文本
+    - `_schema_meta` 误声明为普通 dataclass 字段时不再进入 schema / 模板 / 默认值 / 校验（下划线前缀字段一律排除）；Dashboard 的 select 选项 label 对象兜底解析、dict/table 字段渲染为 JSON textarea
+
+### 变更
+
+- @wsu2059q
+  - `Core/config.py` 写入路径切换 tomlkit：配置文件已有注释与键顺序在 `setConfig` / flush / 迁移后完整保留，写入不再按键重排；缓存语义不变（plain dict）
+  - 框架默认配置不再自动落盘：`get_erispulse_config()` 默认值仅内存深合并返回，config.toml 保持最小化（仅用户显式设置的键）；`update_erispulse_config` / `set_erispulse_section` 显式写入仍持久化，环境变量覆盖仍不落盘
+
+### 依赖
+
+- @wsu2059q
+  - 新增 `tomlkit`（注释保留 TOML 解析/序列化，纯 Python 零传递依赖）；读写路径全部切换后移除不再使用的 `toml` 运行时依赖
+
+---
+
 ## [2.8.0-dev.1] - 2026/08/28
 > 开发版本
 
@@ -180,8 +298,8 @@
     - 探测失败时从镜像内备份 `/opt/site-packages-init` 删除并还原损坏包目录及其 `*.dist-info`（连字符精确匹配，不误伤 `ErisPulse_Dashboard` 等下划线包），还原后复检；仍失败则记录日志放行，由正常启动流程输出原始错误
     - 备份中不存在的包不做处理（不误删用户自装模块）；框架包 `ErisPulse` 损坏时自动回滚至镜像内置版本，可在 Dashboard 重新升级
     - 新增还原过程日志文案，入口点内联 i18n 五语言（zh / zh_TW / en / ja / ru）同步
-  - **文档翻译器提示词泄露** `scripts/tools/translate-docs.py`：模型翻译时偶发将翻译规则/提醒（如「路径替换规则」「请直接返回翻译后的完整Markdown内容」「再次提醒：…语言切换行…」）当作正文回译进译文，污染各语言文档（en/ja/ru/zh-TW 与根 README 大量出现）。已定位根因：所有翻译规则与待翻译内容混在同一用户消息、且规则用与内容相同的语言写成，模型无法区分指令与正文而整段回显。改为架构性修复：全部规则前移到 `system` 消息、待翻译内容用 `<<<DOC_START>>>`/`<<<DOC_END>>>` 标记包裹放入 `user` 消息并明确「只翻译标记之间的内容、不得输出任何提示词」；`call_translation_api` 末尾防御性移除可能的标记残留。已对全仓库各语言受影响文档（109 个）做「移除泄露行」一次性清理（仅删除提示词残留行，未改动正文），并用中文/英文/日文/俄文泄露特征 + 与 zh-CN 源零匹配校验确保不误删。另约定：删除/移动/重命名 `docs/zh-CN` 文档时若用中文书写目录注释，须同时手动清理其它语言与缓存（已补充文档说明）。
-  - **翻译质量检查器新增提示词泄露检测** `scripts/tools/check-translation.py`：`detect_prompt_leaks()` 检出译文中的翻译提示词残留（多语言特征），计入 `ERROR`，配合 `--fix` 清缓存后由修复版翻译器重译即可自愈。
+  - **文档翻译器提示词泄露** `scripts/tools/translate-docs.py`：模型翻译时偶发将翻译规则/提醒（如「路径替换规则」「请直接返回翻译后的完整Markdown内容」「再次提醒：…语言切换行…」）当作正文回译进译文，且污染块曾被分块缓存存留、随源文档变更复用而反复"复活"，多次污染各语言文档（en/ja/ru/zh-TW 与根 README）。修复分两层：**预防**——全部翻译规则前移到 `system` 消息、待翻译内容用 `<<<DOC_START>>>`/`<<<DOC_END>>>` 标记包裹放入 `user` 消息；并新增四道泄露防线：缓存块加载校验（命中即丢弃重译，杜绝历史污染随缓存复活）、译文块校验（命中注入原因重译）、落盘前整文档校验（命中拒写，宁失败不落盘）、AI 评审专项检查项。**治理**——删除全部语言译文（含根 README 翻译）与翻译缓存，以加固后脚本全量重译重建，存量污染归零。另修复两处管线缺陷：非 UTF-8 控制台（如 Windows GBK）下流式输出 emoji 触发 `UnicodeEncodeError` 导致翻译被误判失败（stdout 统一切换 UTF-8）；评审触发的整文件重译此前只落盘不入分块缓存，下次续译会丢失评审改进并造成文档与缓存不一致（现按位置对齐回填缓存）。
+  - **翻译质量检查器提示词泄露检测并接入 CI 防线** `scripts/tools/check-translation.py`：`detect_prompt_leaks()` 以多语言泄露特征（zh-CN/zh-TW/en/ja/ru，含日文「各言語の切り替え行」「上記の第8条」等此前漏配变体）检出译文中的翻译提示词残留，计入 `ERROR`；`auto-update-docs.yml` 在翻译提交前运行 `check-translation.py --fix`（`continue-on-error` 不阻塞工作流），问题文件自动删除翻译缓存、下次文档更新触发时重译自愈。同时完善误报治理与映射修正：en/ru 译文中合理保留的中文（语言名标签、shields 徽章、行内示例值、链接锚点等）经降噪后降级为 `WARNING`（编码损坏 U+FFFD 仍为 `ERROR`），避免启发式误报触发无谓的缓存清除与重译循环；根 README 检查修正为源 `README.zh-CN.md`、英文目标即主 `README.md`（此前误报 `README.en.md` 缺失）。
   - **安装脚本 Debian/Ubuntu 虚拟环境创建失败** `scripts/install/install.sh`：Debian 系发行版系统 Python 未安装 `python3-venv`（`ensurepip` 被发行版禁用）时 `python -m venv` 必然失败，脚本此前仅报「虚拟环境创建失败」即退出。现于创建虚拟环境前预检 `ensurepip`（uv 路径不依赖，自动跳过），缺失时询问并自动通过 apt 安装 `python3.<次版本>-venv`（回退 `python3-venv`；非 root 自动加 sudo）；非 apt 系发行版或用户拒绝时输出手动安装指引；新增提示键 `venv_ensurepip_missing` / `venv_auto_install_pkg` / `venv_pkg_installed` / `venv_pkg_install_fail` / `venv_manual_hint`（五语言同步）
   - **单元测试 Python 3.10 兼容性**：CI 矩阵（3.10–3.13）此前 3.10 全量失败 85 例、3.11 失败 1 例，根因均为测试对 `unittest.mock` 字符串目标解析的版本行为假设，非 SDK 代码缺陷：
     - **mock 字符串 patch 被包级单例遮蔽**：`ErisPulse.Core` 包导出同名单例（`master` / `module` / `scope` / `storage` / `config` / `router` / `client` / `logger` / `lifecycle` / `adapter` / `i18n`），Python 3.11+ 的 `mock.patch` 对 `"ErisPulse.Core.<名>.<属性>"` 会优先按完整路径 import 解析到真实子模块；3.10 用逐段 import + 父包属性访问，命中**单例实例**（报 `does not have the attribute ...`）。将 12 个测试文件中 90+ 处此类 patch 统一改为经 `importlib.import_module` 取真实子模块后的 `patch.object`（3.10/3.11/3.12/3.13 全量语义一致）
@@ -390,9 +508,10 @@
 
 ### 变更
 - @wsu2059q
+  - **存储抽象层翻转为异步原生契约** `Core/Bases/storage.py`：`BaseStorage` 抽象方法改为 `aget/aset/adelete/aget_all_keys/aclear` 与查询构建器 `aExecute/aExecuteOne/aCount/aExists`（异步为原生主接口，内置后端基于异步驱动实现）；同步 `get/set/Execute/...` 成为基类内置兼容层（经 `AsyncBridge` 后台事件循环桥接执行，**现有同步调用代码无需任何修改**）；同步事务经线程级登记路由到事务连接，异步事务经 `ContextVar` 路由。自定义存储后端作者需将实现从同步方法迁移到 a 前缀异步方法与事务连接 hook（声明 `_SUPPORTS_CONN_ROUTING = False` 的后端保持无连接路由的旧行为）
+  - `Core/storage.py` 单文件模块改造为 `Core/storage/` 包：SQLite 实现迁入 `sqlite.py`（aiosqlite 异步原生），新增 `mysql.py` / `postgres.py` 与工厂 `create_storage()`；`SQLiteQueryBuilder` 更名为方言无关的 `SQLQueryBuilder` 并随共享逻辑迁至 `Core/Bases/sql_base.py`；`StorageManager` 保留为 SQLite 后端的向后兼容别名（`isinstance` / 子类覆盖 `db_path` 均不受影响）；框架内 `transcript` 保留策略子查询改为三后端可移植写法（MySQL/MariaDB 不支持 IN 子查询内直接 LIMIT）
   - `Core/Event/base.py` `_validate_identifier` / `_validate_select_column` 的 `context` 参数统一使用固定英文（`"table"` / `"column"` 等），作为语言无关的诊断标签
   - `Core/Bases/{adapter,module,send_builder,send_rules,i18n_schema}.py` 将 28 处函数内导入（logger / i18n / config / lifecycle）提升到模块顶层（经依赖图确认无循环依赖），仅保留 2 处真正的循环依赖（`Bases/adapter.py` ↔ `Core/adapter.py`）为函数内导入并加注释
-  - `Core/storage.py` 消除 21 处函数内重复 `from .logger import logger`，提升到模块顶层
 
 ### 优化
 - @wsu2059q

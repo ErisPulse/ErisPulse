@@ -1,33 +1,31 @@
 # ErisPulse-Dashboard
 
-[ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) is a **Web Management Panel Module** directly maintained by ErisDev, providing ErisPulse with a visual runtime management interface: module control, configuration editing, log viewing, event stream monitoring, etc.
+[ErisPulse-Dashboard](https://pypi.org/project/ErisPulse-Dashboard/) is a **web management panel module** directly maintained by ErisDev, providing a visual runtime management interface for ErisPulse: module start/stop, configuration editing, log viewing, event stream monitoring, and more.
 
 > [!IMPORTANT]
-> Dashboard is **not** a built-in feature of the ErisPulse framework and requires separate installation:
+> Dashboard **is not** a built-in feature of the ErisPulse framework and must be installed separately:
 >
 > ```bash
 > epsdk install Dashboard
 > ```
 
-Dashboard also supports other ErisPulse modules to register custom management pages to the sidebar. Once registered, users can directly switch to the module's dedicated view page in the Dashboard without the need for additional development of independent frontend interfaces.
+The Dashboard also supports other ErisPulse modules registering custom management pages to the sidebar. After registration, users can directly switch to the dedicated view page of that module within the Dashboard, without needing to develop an additional standalone frontend interface.
 
 > [!NOTE]
 > View registration is an **optional feature**.
 >
-> - If the Dashboard module is **not installed** or **not loaded**, calling `sdk.Dashboard.register_view()` will throw an exception
-> - Please be sure to wrap registration code with `try/except` to ensure other functionality of the module itself is not affected
-> - It is recommended to check if the Dashboard is available before registering: `hasattr(sdk, 'Dashboard') and sdk.Dashboard`
+> - If the Dashboard module is **not installed** or **not loaded**, calling `sdk.Dashboard.register_view()` will raise an exception
+> - Be sure to wrap registration code with `try/except` to ensure other features of the module are not affected
+> - It is recommended to check if Dashboard is available before registering: `hasattr(sdk, 'Dashboard') and sdk.Dashboard`
 
----
-
-## How it works
+## How It Works
 
 ```
 Module on_load()
   → Calls sdk.Dashboard.register_view(...)
-  → Dashboard backend stores view info
+  → Dashboard backend stores view information
   → WebSocket notifies frontend
-  → Frontend dynamically creates sidebar nav item + page container
+  → Frontend dynamically creates sidebar navigation item + page container
   → User clicks to view module view
 ```
 
@@ -38,17 +36,17 @@ Module on_load()
 ```python
 sdk.Dashboard.register_view(
     id="MyModule",                    # Required, unique identifier
-    title="My Module",                # Chinese display name
-    title_en="My Module",             # English display name
-    icon_svg='<svg>...</svg>',        # Sidebar icon SVG
-    html_content='<div>...</div>',     # Page HTML content
-    js_content='function xxx() {}',    # Page JavaScript logic
+    title="我的模块",                  # Chinese name
+    title_en="My Module",             # English name
+    icon_svg='<svg>...</svg>',        # SVG icon for sidebar
+    html_content='<div>...</div>',     # HTML content for the page
+    js_content='function xxx() {}',    # JavaScript logic for the page
     css_content='.my-style {}',        # Optional custom CSS
-    iframe_url='',                     # iframe mode URL (choose one between html_content and iframe_url)
-    loader="loadMyModuleView",         # JS function name to call when switching to this page
+    iframe_url='',                     # URL for iframe mode (either this or html_content)
+    loader="loadMyModuleView",         # JS function name called when switching to this page
     group="group_extensions",          # Sidebar group
-    group_title="",                    # Custom group Chinese name
-    group_title_en="",                 # Custom group English name
+    group_title="",                    # Custom group Chinese title
+    group_title_en="",                 # Custom group English title
 )
 ```
 
@@ -56,20 +54,20 @@ sdk.Dashboard.register_view(
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `id` | `str` | Yes | Unique identifier for the view, recommended to use module name |
+| `id` | `str` | Yes | Unique identifier for the view, recommended to use the module name |
 | `title` | `str` | No | Chinese display name, defaults to `id` |
 | `title_en` | `str` | No | English display name, defaults to `title` |
 | `icon_svg` | `str` | No | Full SVG string for the sidebar icon |
-| `html_content` | `str` | No* | Page HTML content for injection mode |
-| `js_content` | `str` | No | Page JavaScript code |
-| `css_content` | `str` | No | Page custom CSS styles |
-| `iframe_url` | `str` | No* | URL for iframe mode, will be ignored if `html_content` is set |
-| `loader` | `str` | No | JS function name to automatically call when page is activated |
+| `html_content` | `str` | No* | HTML content for the injected mode page |
+| `js_content` | `str` | No | JavaScript code for the page |
+| `css_content` | `str` | No | Custom CSS styles for the page |
+| `iframe_url` | `str` | No* | URL for iframe mode, if set, `html_content` is ignored |
+| `loader` | `str` | No | Name of the JS function automatically called when the page is activated |
 | `group` | `str` | No | Sidebar group identifier, default is `group_extensions` |
-| `group_title` | `str` | No | Custom group Chinese title |
-| `group_title_en` | `str` | No | Custom group English title |
+| `group_title` | `str` | No | Custom Chinese title for the group |
+| `group_title_en` | `str` | No | Custom English title for the group |
 
-> *At least one of `html_content` and `iframe_url` must be provided, otherwise the page will be blank.
+> *Either `html_content` or `iframe_url` must be provided; otherwise, the page will be blank.
 
 ---
 
@@ -77,50 +75,48 @@ sdk.Dashboard.register_view(
 
 ### Mode 1: HTML/JS Injection (Recommended)
 
-Provide HTML, JS, CSS strings directly, and Dashboard will inject the content into the page. This mode is fully consistent with Dashboard styles; it is recommended to use the CSS class names provided by Dashboard.
+Directly provide HTML, JS, and CSS strings. The Dashboard will inject the content into the page. This mode is fully consistent with the Dashboard's styling, and it is recommended to use the CSS class names provided by the Dashboard.
 
 ```python
 sdk.Dashboard.register_view(
     id="HelloPage",
-    title="Hello Page", title_en="Hello",
+    title="你好页面", title_en="Hello",
     icon_svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>',
-    html_content='<h1 class="page-title">Hello World</h1><div class="card"><div class="card-body">This is an example page</div></div>',
+    html_content='<h1 class="page-title">Hello World</h1><div class="card"><div class="card-body">这是一个示例页面</div></div>',
     group="group_tools",
 )
 ```
 
-> For a complete weather module example (including API routes, JS interaction, etc.), see [Complete Module Example](#complete-module-example) below.
+> For a complete weather module example (including API routes, JS interactions, etc.), see the [Complete Module Example](#complete-module-example) below.
 
 ### Mode 2: iframe Embedding
 
-Module provides its own HTML page URL (must register routes by itself), and Dashboard embeds it via iframe. Suitable for scenarios requiring completely independent UI or complex interactions.
+The module provides its own HTML page URL (which needs to be registered separately), and the Dashboard embeds it using an iframe. This mode is suitable for scenarios requiring a completely independent UI or complex interactions.
 
 ```python
 sdk.Dashboard.register_view(
     id="MyVisualizer",
-    title="Data Visualizer", title_en="Data Visualizer",
+    title="数据可视化", title_en="Data Visualizer",
     iframe_url="/MyVisualizer/view",
     group="group_tools",
 )
 ```
 
-> The iframe mode will automatically append a `token` parameter to the URL for authentication.
+> In iframe mode, a `token` parameter is automatically appended to the URL for authentication purposes.
 
----
+## Sidebar Grouping
 
-## Sidebar Groups
+Modules can specify which sidebar group the window belongs to. Dashboard provides the following built-in groups:
 
-Modules can specify which sidebar group the view belongs to. Dashboard includes the following built-in groups:
-
-| Group ID | Chinese Name | Position |
-|----------|--------------|----------|
+| Group Identifier | Chinese Name | Position |
+|------------------|--------------|----------|
 | `group_overview` | Overview | Group 1 |
 | `group_events` | Events | Group 2 |
 | `group_extensions` | Extensions | Group 3 (Default) |
 | `group_system` | System | Group 4 |
 | `group_tools` | Tools | Group 5 |
 
-Specify a built-in group name, and the module view will be appended to the end of that group:
+Specify a built-in group name, and the module window will be appended to the end of that group:
 
 ```python
 group="group_tools"  # Appends to the "Tools" group
@@ -130,52 +126,48 @@ You can also use a custom group name (not starting with `group_`), and Dashboard
 
 ```python
 group="my_group",
-group_title="My Group",
+group_title="我的分组",
 group_title_en="My Group",
 ```
 
----
-
 ## Common CSS Class Names
 
-When using the HTML injection mode for module views, you can directly use the existing CSS class names provided by Dashboard to maintain visual consistency:
+When using the HTML injection mode in module windows, you can directly use the existing CSS class names from Dashboard to maintain visual consistency:
 
-| Class Name | Usage |
-|------------|-------|
+| Class Name | Purpose |
+|------------|---------|
 | `page-title` | Page title, e.g., `<h1 class="page-title">Title</h1>` |
 | `card` | Card container |
-| `card-header` | Card title bar |
+| `card-header` | Card header bar |
 | `card-body` | Card content area |
 | `grid-2` | Two-column grid layout |
 | `grid-3` | Three-column grid layout |
-| `btn` | Base button |
+| `btn` | Basic button |
 | `btn-primary` | Primary button (blue) |
 | `btn-secondary` | Secondary button |
 | `btn-icon` | Icon button |
-| `btn-danger` | Dangerous action button |
+| `btn-danger` | Button for dangerous operations |
 
-Dashboard uses CSS variables to control theme colors, which you can reference directly in your module view:
+Dashboard uses CSS variables to control theme colors. You can directly reference these variables in module windows:
 
-| CSS Variable | Usage |
-|--------------|-------|
+| CSS Variable | Purpose |
+|--------------|---------|
 | `var(--bg-p)` | Primary background color |
 | `var(--bg-s)` | Secondary background color |
-| `var(--bg-t)` | Tertiary background color (cards, etc.) |
+| `var(--bg-t)` | Tertiary background color (for cards, etc.) |
 | `var(--tx-p)` | Primary text color |
 | `var(--tx-s)` | Secondary text color |
-| `var(--tx-t)` | Tertiary text color |
+| `var(--tx-t)` | Auxiliary text color |
 | `var(--bd)` | Border color |
 | `var(--accent)` | Accent color |
 | `var(--ok-c)` | Success color |
 | `var(--er-c)` | Error color |
 
-These variables automatically switch according to Dashboard's light/dark theme; no extra processing is needed by the module.
+These variables automatically switch based on Dashboard's light/dark theme, so modules do not need additional handling.
 
----
+## Authentication and API Calls
 
-## Authentication & API Calls
-
-When calling a module's own API in the JS of a module view, you need to carry the Dashboard's Token for authentication:
+When calling the module's own API from the JavaScript in the module window, you need to include the Dashboard's Token for authentication:
 
 ```javascript
 var token = localStorage.getItem('__ep_tk__');
@@ -185,7 +177,7 @@ var resp = await fetch('/YourModule/api/data', {
 var data = await resp.json();
 ```
 
-Module API endpoints can decide whether to verify the Token themselves. If verification is required, extract it from the request headers:
+The module's API endpoint can decide whether to validate the Token. If validation is required, you can extract it from the request headers:
 
 ```python
 async def _api_data(self, request):
@@ -199,7 +191,7 @@ async def _api_data(self, request):
 
 ## Complete Module Example
 
-The following is a complete weather module example demonstrating how to register a view, provide API data, and clean up resources on unload:
+The following is a complete weather module example, demonstrating how to register a window, provide API data, and clean up resources upon unloading:
 
 ```python
 from ErisPulse import sdk
@@ -270,7 +262,7 @@ class Main(BaseModule):
                         <div class="card">
                             <div class="card-header">Current Weather</div>
                             <div class="card-body">
-                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">Click refresh to load</div>
+                                <div id="weather-info" style="font-size:14px;color:var(--tx-s)">Click to refresh and load</div>
                             </div>
                         </div>
                         <div class="card">
@@ -293,10 +285,10 @@ class Main(BaseModule):
                             });
                             var data = await resp.json();
                             el.innerHTML = '<p>City: ' + (data.city || '--') + '</p>' +
-                                           '<p>Temp: ' + (data.temp || '--') + '°C</p>' +
+                                           '<p>Temperature: ' + (data.temp || '--') + '°C</p>' +
                                            '<p>Humidity: ' + (data.humidity || '--') + '%</p>';
                         } catch (e) {
-                            el.textContent = 'Load failed: ' + e.message;
+                            el.textContent = 'Failed to load: ' + e.message;
                         }
                     }
                 ''',
@@ -309,9 +301,9 @@ class Main(BaseModule):
 
 ---
 
-## Unregister View
+## Unregistering Views
 
-When a module is unloaded, call `unregister_view()` to clean up the registered view:
+When the module is unloaded, `unregister_view()` should be called to clean up registered views:
 
 ```python
 async def on_unload(self, event):
@@ -319,16 +311,16 @@ async def on_unload(self, event):
         self.sdk.Dashboard.unregister_view("Weather")
 ```
 
-After unregistration, the Dashboard frontend will remove sidebar navigation items and page content in real-time via WebSocket, without requiring a page refresh.
+After unregistration, the Dashboard frontend will remove the sidebar navigation item and page content in real-time via WebSocket, without requiring a user refresh.
 
 ---
 
-## Considerations
+## Notes
 
-1. **Loading Order** — The loading priority of Dashboard is `99999` (high priority). Your module's priority should be lower than this value (e.g., `50`) to ensure Dashboard loads first
-2. **Defensive Programming** — Wrap view registration with `try/except`, as the Dashboard module might not be installed or loaded
-3. **Resource Cleanup** — Call `unregister_view()` in `on_unload` to remove registered views
-4. **ID Uniqueness** — The `id` parameter must be unique across the entire Dashboard; it is recommended to use the module name directly
-5. **SVG Icon** — `icon_svg` should be a complete `<svg>` tag; recommended size is `viewBox="0 0 24 24"` using `stroke="currentColor"` to inherit the Dashboard theme color
-6. **JS Function Naming** — Function names in `js_content` should be unique (e.g., `loadWeatherView`) to avoid conflicts with other modules
-7. **Dynamic Updates** — After a module registers/unregisters views, the Dashboard frontend will update the sidebar in real-time via WebSocket, without page refresh
+1. **Load Order** — The Dashboard's load priority is `99999` (high priority). Your module's priority should be lower than this value (e.g., `50`), ensuring the Dashboard loads first.
+2. **Defensive Programming** — Use `try/except` to wrap window registration, as the Dashboard module may not be installed or loaded.
+3. **Resource Cleanup** — Call `unregister_view()` in `on_unload` to remove registered windows.
+4. **ID Uniqueness** — The `id` parameter must be unique throughout the Dashboard. It is recommended to use the module name directly.
+5. **SVG Icon** — `icon_svg` should be a complete `<svg>` tag. It is recommended to use `viewBox="0 0 24 24"` and `stroke="currentColor"` to inherit the Dashboard's main theme color.
+6. **JS Function Naming** — The function names in `js_content` should be unique (e.g., `loadWeatherView`), to avoid conflicts with other modules.
+7. **Dynamic Updates** — After registering or unregistering windows, the Dashboard frontend will update the sidebar in real time via WebSocket, without requiring a page refresh.

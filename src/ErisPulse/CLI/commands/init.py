@@ -175,128 +175,16 @@ class InitCommand(Command):
         """
         生成完整的配置示例文本
 
-        配置注释跟随 CLI 语言（缺失语言回退英文），
-        文案键集中于 ``scaffold_text`` 的 ``cfg.*`` 键族维护。
+        生成逻辑收归 ``ErisPulse.runtime.example_config``（框架运行与 CLI 共用：
+        含自维护首行标记、静态框架段与已安装组件声明式段）。此处仅保留调用入口。
 
         :param adapter_list: [list] 适配器名称列表 (默认: None)
         :return: [str] 完整配置示例字符串
         """
-        from ..utils.scaffold_text import ScaffoldText
+        from ErisPulse.runtime.example_config import render_full_example
 
-        st = ScaffoldText()
-        lines = [
-            st.t("cfg.header.title"),
-            st.t("cfg.header.desc"),
-            st.t("cfg.header.usage"),
-            "",
-            st.t("cfg.section.server"),
-            "",
-            "[ErisPulse.server]",
-            f'host = "0.0.0.0"              # {st.t("cfg.server.host")}',
-            f"port = 8000                   # {st.t('cfg.server.port')}",
-            f"auto_start = true             # {st.t('cfg.server.auto_start')}",
-            f'ssl_certfile = "config/ssl/cert.pem"   # {st.t("cfg.server.ssl_certfile")}',
-            f'ssl_keyfile = "config/ssl/key.pem"    # {st.t("cfg.server.ssl_keyfile")}',
-            st.t("cfg.server.ssl_inline_hint"),
-            '# ssl_cert = """-----BEGIN CERTIFICATE-----',
-            "# ...",
-            '# -----END CERTIFICATE-----"""',
-            '# ssl_key = """-----BEGIN PRIVATE KEY-----',
-            "# ...",
-            '# -----END PRIVATE KEY-----"""',
-            "",
-            st.t("cfg.section.logger"),
-            "",
-            "[ErisPulse.logger]",
-            f'level = "INFO"                # {st.t("cfg.logger.level")}',
-            f"log_files = []                # {st.t('cfg.logger.log_files')}",
-            f'log_dir = ""                  # {st.t("cfg.logger.log_dir")}',
-            f'log_rotation = "size"         # {st.t("cfg.logger.log_rotation")}',
-            f"log_max_size_mb = 10          # {st.t('cfg.logger.log_max_size_mb')}",
-            f"log_backup_count = 5          # {st.t('cfg.logger.log_backup_count')}",
-            f'log_rotation_when = "midnight"  # {st.t("cfg.logger.log_rotation_when")}',
-            f"memory_limit = 1000           # {st.t('cfg.logger.memory_limit')}",
-            "",
-            st.t("cfg.section.storage"),
-            "",
-            "[ErisPulse.storage]",
-            f"use_global_db = false         # {st.t('cfg.storage.use_global_db')}",
-            "",
-            st.t("cfg.section.event"),
-            "",
-            "[ErisPulse.event.message]",
-            f"ignore_self = true            # {st.t('cfg.event.ignore_self')}",
-            "",
-            "[ErisPulse.event.command]",
-            f'prefix = "/"                  # {st.t("cfg.command.prefix")}',
-            f"case_sensitive = true         # {st.t('cfg.command.case_sensitive')}",
-            f"allow_space_prefix = false    # {st.t('cfg.command.allow_space_prefix')}",
-            f"must_at_bot = false           # {st.t('cfg.command.must_at_bot')}",
-            "",
-            st.t("cfg.section.framework"),
-            "",
-            "[ErisPulse.framework]",
-            f"enable_lazy_loading = true     # {st.t('cfg.framework.enable_lazy_loading')}",
-            f'plugins_dir = "plugins"        # {st.t("cfg.framework.plugins_dir")}',
-            f"uninit_timeout = 30            # {st.t('cfg.framework.uninit_timeout')}",
-            f"                                {st.t('cfg.framework.uninit_timeout_line1')}",
-            f"                                {st.t('cfg.framework.uninit_timeout_line2')}",
-            f"strict_mode = false            # {st.t('cfg.framework.strict_mode')}",
-            f"strict_mode_exceptions = {{ modules = [], adapters = [] }}  # {st.t('cfg.framework.strict_mode_exceptions')}",
-            f"handler_max_concurrency = 64   # {st.t('cfg.framework.handler_max_concurrency')}",
-            f"proactive_gc_interval = 300    # {st.t('cfg.framework.proactive_gc_interval')}",
-            f"proactive_gc_generation = 2    # {st.t('cfg.framework.proactive_gc_generation')}",
-            f"proactive_gc_full_every = 10   # {st.t('cfg.framework.proactive_gc_full_every')}",
-            f"proactive_gc_memory_growth_mb = 100  # {st.t('cfg.framework.proactive_gc_memory_growth_mb')}",
-            f"proactive_gc_idle_only = true  # {st.t('cfg.framework.proactive_gc_idle_only')}",
-            f"proactive_gc_gen0_min = 100    # {st.t('cfg.framework.proactive_gc_gen0_min')}",
-            f"offline_bot_expiry = 3600      # {st.t('cfg.framework.offline_bot_expiry')}",
-            "",
-            st.t("cfg.section.router"),
-            "",
-            "[ErisPulse.router.cors]",
-            "enabled = false",
-            'allow_origins = ["*"]',
-            'allow_methods = ["*"]',
-            'allow_headers = ["*"]',
-            "allow_credentials = false",
-            "max_age = 600",
-            "",
-            "[ErisPulse.router.security]",
-            "enabled = false",
-            "",
-            "[ErisPulse.router.security.headers]",
-            'X-Content-Type-Options = "nosniff"',
-            'X-Frame-Options = "DENY"',
-            "",
-            st.t("cfg.section.adapter_status"),
-            "",
-            "[ErisPulse.adapters.status]",
-        ]
+        return render_full_example(adapter_list=adapter_list)
 
-        if adapter_list:
-            lines.extend(f"# {adapter} = false" for adapter in adapter_list)
-        else:
-            lines.extend(
-                [
-                    "# yunhu = false",
-                    "# telegram = false",
-                    "# onebot11 = false",
-                ]
-            )
-
-        lines.extend(
-            [
-                "",
-                st.t("cfg.section.module_status"),
-                "",
-                "[ErisPulse.modules.status]",
-                "# MyModule = true",
-                "",
-            ]
-        )
-
-        return "\n".join(lines)
 
     async def _fetch_available_adapters(self):
         """
