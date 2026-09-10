@@ -62,6 +62,7 @@ ErisPulse 是一个可扩展的多平台消息处理框架，支持通过适配�
 | [生态总览](ecosystem/README.md) | 如何安装生态模块、为什么这些不是内置功能 |
 | [ErisPulse-App](ecosystem/app.md) | 官方全平台客户端（Android / Windows / Linux / macOS）：原生界面管理多个实例，**手机直接运行**，桌面托盘常驻 |
 | [ErisPulse-Dashboard](ecosystem/dashboard.md) | Web 管理面板 + 视窗注册 API（模块可向侧边栏注册自定义页面） |
+| [ErisPulse-Cron](ecosystem/cron.md) | 定时任务调度模块：一次性 / 间隔 / Cron 表达式，回调传参，SQLite 持久化，其他模块可托管定时回调 |
 | [ErisPulse-Takumi](ecosystem/takumi.md) | 图片渲染（HTML / 节点树 / SVG / 动画，内置中英文字体） |
 
 ### 五、我要为 ErisPulse 贡献

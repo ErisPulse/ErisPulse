@@ -229,6 +229,42 @@ async def on_load(self, event):
     # 不需要手动注销，框架会自动处理
 ```
 
+## 工具模块：托管别人东西时要接住"卸载通知"
+
+**什么时候需要**：你的模块替其他模块保管东西（定时回调、订阅者、连接、缓存条目……）。这些引用在对方模块卸载后如果一直不丢弃，对方实例就永远无法被回收——这是工具模块最常见的内存泄漏来源。
+
+```python
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.runtime import off_cleanup, on_cleanup
+
+class MyToolModule(BaseModule):
+    def __init__(self):
+        self._entries = {}  # {模块名: 托管的东西}
+
+    def register(self, entry):
+        owner = on_cleanup(self._drop)   # ① 登记时挂入清理链，自动识别调用方
+        self._entries.setdefault(owner, []).append(entry)
+
+    def _drop(self, owner: str):
+        self._entries.pop(owner, None)   # ② 对方卸载时框架自动调用：丢弃它的东西
+
+    async def on_unload(self, event):
+        off_cleanup(self._drop)          # ③ 自己卸载前注销钩子
+```
+
+就这么多，框架保证：
+
+- 对方模块被**卸载 / 禁用**（或适配器关闭）时，`_drop("对方模块名")` 一定会被调用
+- **调用方识别全自动**：对方在 `on_load` 里直接调 `sdk.MyToolModule.register(...)`，或经 `sdk.module.call("MyToolModule", "register", ...)` 调用，都能正确识别是谁
+- 不用操心时机——钩子在框架清理链内触发，早于泄漏诊断，不会误报
+
+不接入的后果：对方 `purge` 彻底卸载时实例无法回收（泄漏诊断报"不可回收"）；若对方自己也不在 `on_unload` 里向你注销，泄漏就是永久性的。
+
+**普通模块（不托管别人东西）不需要关心这个**——框架资源（命令 / 处理器 / 路由 / 后台任务……）的卸载清理是全自动的。
+
+> 触发时机、调用方识别规则、超时与容错等细节见
+> [归属权系统 · 工具模块指南](../../advanced/ownership.md#工具模块指南托管其它模块的句柄)。
+
 ## 错误处理
 
 ### 1. 分类异常处理

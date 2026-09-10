@@ -197,6 +197,7 @@ TRANSLATIONS = {
     "core.adapter.tasks_cancelled": "介面卡 {platform} 關閉時兜底取消了 {count} 個未結束後台任務",
     "core.adapter.unloaded": "介面卡 {platform} 已卸載並註銷",
     "core.adapter.tasks_cancel_failed": "介面卡 {platform} 後台任務取消失敗: {error}",
+    "core.adapter.cleanup_hooks_failed": "介面卡 {platform} 歸屬清理鉤子觸發失敗: {error}",
     "core.adapter.dependencies_missing": "介面卡 {platform} 硬依賴缺失，跳過啟動: {deps}",
     "core.adapter.state_skipped_dependency": "介面卡 {platform} 因依賴缺失未啟動: {deps}",
     "core.adapter.dependency_hook_register_failed": "註冊模組依賴通知鉤子失敗: {error}",
@@ -332,6 +333,10 @@ TRANSLATIONS = {
     "core.router.root_page_text": "你似乎存取了根路徑，這裡沒有內容哦~",
     "core.router.link_docs": "文件",
     "core.router.link_community": "社群",
+    # ==================== 歸屬清理鉤子 ====================
+    "core.cleanup.executed": "已觸發 {owner} 的 {count} 個歸屬清理鉤子",
+    "core.cleanup.failed": "歸屬清理鉤子 {callback}（owner={owner}）執行失敗: {error}",
+    "core.cleanup.timeout": "歸屬清理鉤子 {callback}（owner={owner}）執行超時（{timeout}s）",
     # ==================== 生命週期管理 ====================
     "core.lifecycle.event_name_required": "事件名稱必須是非空字串",
     "core.lifecycle.to_required": "定向投遞目標 to 必須是非空字串",

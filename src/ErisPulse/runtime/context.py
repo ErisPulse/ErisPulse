@@ -30,6 +30,20 @@ from typing import Any
 #: 值为 None 表示当前不在任何模块/适配器的加载上下文中。
 current_owner: ContextVar[str | None] = ContextVar("current_owner", default=None)
 
+#: 当前跨模块调用的调用方身份（模块名或适配器平台名）。
+#:
+#: 生命周期
+#:   由 ``Core/module.py:ModuleManager.call`` 在执行目标模块方法期间注入：
+#:   调用发生时捕获 ``current_owner``（即调用方），目标方法执行期间
+#:   ``current_owner`` 归因到目标模块（日志/出站发送归属谁的代码归因谁），
+#:   而 ``current_caller`` 保留调用方身份，供被调方识别"谁在调用我"。
+#:
+#: 用途
+#:   工具模块（定时任务 / 注册表等）经 ``module.call`` 被调用时，
+#:   通过 ``get_current_caller()`` 获取调用来源模块，为托管资源正确记名
+#:   （``on_cleanup`` 在 owner 上下文缺失时同样回退读取此值）。
+current_caller: ContextVar[str | None] = ContextVar("current_caller", default=None)
+
 #: 当前 handler / Task 执行期间累计的 wait_reply 调用记录。
 #:
 #: 生命周期
@@ -115,6 +129,23 @@ def get_current_owner() -> str | None:
     return current_owner.get()
 
 
+def get_current_caller() -> str | None:
+    """
+    获取当前跨模块调用的调用方身份（模块名或适配器平台名）
+
+    经 ``sdk.module.call()`` 被调用期间，``current_owner`` 已归因到目标
+    模块（自己的代码归属自己），而调用方身份保留在本上下文中——被调方
+    可据此识别"谁在调用我"。直接属性访问（``sdk.Cron.once(...)``）不经
+    此上下文，此时调用方身份即 ``get_current_owner()``。
+
+    :return: 调用方身份，非 ``module.call`` 调用链或框架层调用时返回 None
+
+    :example:
+    >>> caller = get_current_caller()  # "OrderModule" 或 None
+    """
+    return current_caller.get()
+
+
 def get_handler_waits() -> list[dict[str, Any]] | None:
     """
     获取当前 handler 的 wait_reply 调用记录（slow-log 归因用）
@@ -155,8 +186,10 @@ def get_send_receipts() -> list[dict[str, str]] | None:
 
 
 __all__ = [
+    "current_caller",
     "current_owner",
     "current_trace_id",
+    "get_current_caller",
     "get_current_owner",
     "get_current_trace_id",
     "get_handler_waits",

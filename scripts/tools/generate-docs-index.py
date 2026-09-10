@@ -370,7 +370,8 @@ class DocsIndexGenerator:
         "ecosystem/README.md": 1,
         "ecosystem/app.md": 2,
         "ecosystem/dashboard.md": 3,
-        "ecosystem/takumi.md": 4,
+        "ecosystem/cron.md": 4,
+        "ecosystem/takumi.md": 5,
         # 技术标准
         "standards/README.md": 1,
         "standards/session-types.md": 2,
@@ -518,6 +519,7 @@ class DocsIndexGenerator:
         "ecosystem/README.md": "fa-cubes",
         "ecosystem/app.md": "fa-mobile-screen",
         "ecosystem/dashboard.md": "fa-table-columns",
+        "ecosystem/cron.md": "fa-clock",
         "ecosystem/takumi.md": "fa-image",
         # 技术标准
         "standards/README.md": "fa-gavel",
