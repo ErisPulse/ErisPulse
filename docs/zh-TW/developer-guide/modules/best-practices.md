@@ -59,7 +59,7 @@ class MyModule(BaseModule):
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-也可以繼續使用手動方式讀寫配置儲存（見[模組核心概念](core-concepts.md#配置管理)）。
+也可以繼續使用手動方式讀取和寫入配置儲存（見[模組核心概念](core-concepts.md#配置管理)）。
 
 ### 宣告式翻譯鍵（v2.7.0+）
 
@@ -90,7 +90,7 @@ class MyModule(BaseModule):
         )
 ```
 
-詳細用法見 [i18n 文檔](../../advanced/i18n.md#推薦寫法透過-i18nclass-宣告翻譯鍵-v270)。
+詳細用法見 [i18n 文檔](../../advanced/i18n.md#推薦寫法通過-i18nclass-宣告翻譯鍵-v270)。
 
 ## 異步編程
 
@@ -113,7 +113,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# 不要使用 aiohttp 直接導入（不便於框架統一管理）
+# 不要使用 aiohttp 直接匯入（不利於框架統一管理）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -146,7 +146,7 @@ async def on_load(self, event: dict):
 ```
 
 > [!NOTE]
-> 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**），而不是 `asyncio.create_task`——後者建立的裸任務不歸屬模組，卸載時不會被自動清理，會持有 `self` 引用導致模組實例無法被回收（熱重載泄漏）。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
+> 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**），而不是 `asyncio.create_task`——後者創建的裸任務不歸屬模組，卸載時不會被自動清理，會持有 `self` 引用導致模組實例無法被回收（熱重載泄漏）。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
 
 ### 3. 資源管理
 
@@ -197,7 +197,7 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# 高頻觸發（每則訊息都要處理）或啟動時就必須就緒的模組：立即加載
+# 高頻觸發（每條訊息都要處理）或啟動時就必須就緒的模組：立即加載
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -229,9 +229,9 @@ async def on_load(self, event):
     # 不需要手動註銷，框架會自動處理
 ```
 
-## 工具模組：托管別人東西時要接住"卸載通知"
+## 工具模組：托管别人东西时要接住"卸载通知"
 
-**什麼時候需要**：你的模組替其他模組保管東西（定時回調、訂閱者、連接、快取條目……）。這些引用在對方模組卸載後如果一直不丟棄，對方實例就永遠無法被回收——這是工具模組最常見的記憶體洩漏來源。
+**什么时候需要**：你的模組替其他模組保管东西（定時回調、訂閱者、連接、快取條目……）。這些引用在對方模組卸載後如果一直不丟棄，對方實例就永遠無法被回收——這是工具模組最常見的記憶體泄漏來源。
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -249,18 +249,18 @@ class MyToolModule(BaseModule):
         self._entries.pop(owner, None)   # ② 對方卸載時框架自動呼叫：丟棄它的东西
 
     async def on_unload(self, event):
-        off_cleanup(self._drop)          # ③ 自己卸載前註銷鈎子
+        off_cleanup(self._drop)          # ③ 自己卸載前註銷鉤子
 ```
 
 就這麼多，框架保證：
 
 - 對方模組被**卸載 / 禁用**（或適配器關閉）時，`_drop("對方模組名")` 一定會被呼叫
 - **呼叫方識別全自動**：對方在 `on_load` 裡直接調 `sdk.MyToolModule.register(...)`，或經 `sdk.module.call("MyToolModule", "register", ...)` 調用，都能正確識別是誰
-- 不用操心時機——鈎子在框架清理鏈內觸發，早於泄漏診斷，不會誤報
+- 不用操心時機——鉤子在框架清理鏈內觸發，早於泄漏診斷，不會誤報
 
 不接入的後果：對方 `purge` 彻底卸載時實例無法回收（泄漏診斷報"不可回收"）；若對方自己也不在 `on_unload` 裡向你註銷，泄漏就是永久性的。
 
-**普通模組（不托管別人東西）不需要關心這個**——框架資源（命令 / 處理器 / 路由 / 後台任務……）的卸載清理是全自動的。
+**普通模組（不托管别人东西）不需要關心這個**——框架資源（命令 / 處理器 / 路由 / 後台任務……）的卸載清理是全自動的。
 
 > 觸發時機、呼叫方識別規則、超時與容錯等細節見
 > [歸屬權系統 · 工具模組指南](../../advanced/ownership.md#工具模組指南托管其它模組的句柄)。
@@ -270,6 +270,8 @@ class MyToolModule(BaseModule):
 ### 1. 分類異常處理
 
 ```python
+from ErisPulse.Core.Bases.errors import ClientError
+
 async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
@@ -277,10 +279,9 @@ async def handle_event(self, event: Event):
         # 預期的業務錯誤
         self.logger.warning(f"業務警告: {e}")
         await event.reply(f"參數錯誤: {e}")
-    except aiohttp.ClientError as e:
-        # 網路錯誤（推薦使用 sdk.client + ClientError 替代）
-        # 舊代碼直接用 aiohttp 仍可正常工作，但新代碼推薦使用 ErisPulse 異常體系
-        self.logger.error(f"網路錯誤: {e}")
+    except ClientError as e:
+        # 網路錯誤（sdk.client 的底層 aiohttp 異常已自動轉換）
+        self.logger.error(f"網路錯誤 {e.method} {e.url}: {e}")
         await event.reply("網路請求失敗，請稍後重試")
     except Exception as e:
         # 未預期的錯誤
@@ -305,7 +306,7 @@ async def fetch_with_timeout(self, url, timeout=30):
         raise
 ```
 
-## 儲存系統
+## 存儲系統
 
 ### 1. 使用事務
 
@@ -343,7 +344,7 @@ def cache_multiple_items(self, items):
 ### 1. 合理使用日誌等級
 
 ```python
-# DEBUG: 細節的除錯資訊（僅開發時）
+# DEBUG: 詳細的除錯資訊（僅開發時）
 self.logger.debug(f"輸入參數: {params}")
 
 # INFO: 正常運行資訊
@@ -351,8 +352,8 @@ self.logger.info("模組已加載")
 self.logger.info(f"處理請求: {request_id}")
 
 # WARNING: 警告資訊，不影響主要功能
-self.logger.warning(f"配置項 {key} 未設置，使用預設值")
-self.logger.warning("API 呼應慢，可能需要優化")
+self.logger.warning(f"配置項 {key} 未設定，使用預設值")
+self.logger.warning("API 回應慢，可能需要優化")
 
 # ERROR: 錯誤資訊
 self.logger.error(f"API 請求失敗: {e}")
@@ -362,14 +363,14 @@ self.logger.error(f"處理事件失敗: {e}", exc_info=True)
 self.logger.critical("資料庫連線失敗，機器人無法正常運行")
 ```
 
-### 2. 結構化日誌
+### 2. 構造化日誌
 
 ```python
-# 使用結構化日誌，便於解析
+# 使用構造化日誌，便於解析
 self.logger.info(f"處理請求: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
-# ❌ 使用非結構化日誌
-self.logger.info(f"處理請求了，來自用戶 {user_id}，用時 {duration} 毫秒")
+# ❌ 使用非構造化日誌
+self.logger.info(f"處理請求了，來自使用者 {user_id}，用時 {duration} 毫秒")
 ```
 
 ## 性能優化
@@ -430,7 +431,7 @@ class MyModule(BaseModule):
 
     def check_api_key(self):
         if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("請在 config.toml 中配置有效的 API 密鑰")
+            raise ValueError("請在 config.toml 中設定有效的 API 密鑰")
 
 # ❌ 敏感資料硬編碼
 class MyModule(BaseModule):
@@ -494,7 +495,7 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-遵循語義化版本：
+遵循語意化版本：
 - MAJOR.MINOR.PATCH
 - 主版本：不相容的 API 變更
 - 次版本：向下相容的功能新增
