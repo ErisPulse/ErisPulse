@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1536,
+  "total_keywords": 1544,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -69,7 +69,7 @@
     "1. 使用事务": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 274,
+        "line": 310,
         "level": 3,
         "title": "1. 使用事务"
       }
@@ -85,7 +85,7 @@
     "1. 使用缓存": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 341,
+        "line": 377,
         "level": 3,
         "title": "1. 使用缓存"
       }
@@ -107,7 +107,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 234,
+        "line": 270,
         "level": 3,
         "title": "1. 分类异常处理"
       }
@@ -145,7 +145,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 424,
+        "line": 460,
         "level": 3,
         "title": "1. 单元测试"
       }
@@ -169,7 +169,7 @@
     "1. 合理使用日志级别": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 307,
+        "line": 343,
         "level": 3,
         "title": "1. 合理使用日志级别"
       }
@@ -225,7 +225,7 @@
     "1. 敏感数据保护": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 378,
+        "line": 414,
         "level": 3,
         "title": "1. 敏感数据保护"
       }
@@ -273,7 +273,7 @@
     "1. 版本管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 453,
+        "line": 489,
         "level": 3,
         "title": "1. 版本管理"
       }
@@ -505,7 +505,7 @@
     "2. README 头部": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 467,
+        "line": 503,
         "level": 3,
         "title": "2. README 头部"
       }
@@ -625,7 +625,7 @@
     "2. 批量操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 290,
+        "line": 326,
         "level": 3,
         "title": "2. 批量操作"
       }
@@ -727,7 +727,7 @@
     "2. 结构化日志": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 329,
+        "line": 365,
         "level": 3,
         "title": "2. 结构化日志"
       }
@@ -759,7 +759,7 @@
     "2. 超时处理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 256,
+        "line": 292,
         "level": 3,
         "title": "2. 超时处理"
       }
@@ -767,7 +767,7 @@
     "2. 输入验证": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 404,
+        "line": 440,
         "level": 3,
         "title": "2. 输入验证"
       }
@@ -783,7 +783,7 @@
     "2. 避免阻塞操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 362,
+        "line": 398,
         "level": 3,
         "title": "2. 避免阻塞操作"
       }
@@ -813,7 +813,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 437,
+        "line": 473,
         "level": 3,
         "title": "2. 集成测试"
       }
@@ -2324,6 +2324,12 @@
         "line": 335,
         "level": 3,
         "title": "API 概览"
+      },
+      {
+        "document": "ecosystem/cron.md",
+        "line": 47,
+        "level": 2,
+        "title": "API 概览"
       }
     ],
     "API 调用": [
@@ -2738,6 +2744,14 @@
         "line": 1,
         "level": 1,
         "title": "ErisPulse-App"
+      }
+    ],
+    "ErisPulse-Cron": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-Cron"
       }
     ],
     "ErisPulse-Dashboard": [
@@ -4291,7 +4305,7 @@
     "owner 上下文机制": [
       {
         "document": "advanced/ownership.md",
-        "line": 17,
+        "line": 18,
         "level": 2,
         "title": "owner 上下文机制"
       }
@@ -5223,7 +5237,7 @@
     "五、我要为 ErisPulse 贡献": [
       {
         "document": "README.md",
-        "line": 67,
+        "line": 68,
         "level": 3,
         "title": "五、我要为 ErisPulse 贡献"
       }
@@ -5813,7 +5827,7 @@
     "其他": [
       {
         "document": "README.md",
-        "line": 85,
+        "line": 86,
         "level": 2,
         "title": "其他"
       }
@@ -5966,6 +5980,14 @@
         "title": "列出组件"
       }
     ],
+    "创建任务": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 49,
+        "level": 3,
+        "title": "创建任务"
+      }
+    ],
     "创建对话": [
       {
         "document": "advanced/conversation.md",
@@ -6112,6 +6134,12 @@
         "line": 11,
         "level": 2,
         "title": "功能速览"
+      },
+      {
+        "document": "ecosystem/cron.md",
+        "line": 16,
+        "level": 2,
+        "title": "功能速览"
       }
     ],
     "加密模式说明": [
@@ -6227,7 +6255,7 @@
     "卸载/禁用清理序列": [
       {
         "document": "advanced/ownership.md",
-        "line": 76,
+        "line": 78,
         "level": 2,
         "title": "卸载/禁用清理序列"
       }
@@ -6986,6 +7014,14 @@
         "line": 177,
         "level": 3,
         "title": "回复邮件事件（email_reply）"
+      }
+    ],
+    "回调": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 67,
+        "level": 3,
+        "title": "回调"
       }
     ],
     "回调查询事件": [
@@ -7831,7 +7867,7 @@
     "存储系统": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 272,
+        "line": 308,
         "level": 2,
         "title": "存储系统"
       },
@@ -7877,7 +7913,7 @@
     "安全性": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 376,
+        "line": 412,
         "level": 2,
         "title": "安全性"
       }
@@ -8210,6 +8246,22 @@
         "title": "工具方法"
       }
     ],
+    "工具模块指南：托管其它模块的句柄": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 155,
+        "level": 2,
+        "title": "工具模块指南：托管其它模块的句柄"
+      }
+    ],
+    "工具模块：托管别人东西时要接住\"卸载通知\"": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 232,
+        "level": 2,
+        "title": "工具模块：托管别人东西时要接住\"卸载通知\""
+      }
+    ],
     "已修复的 Bug": [
       {
         "document": "bug-tracker.md",
@@ -8539,7 +8591,7 @@
     "开发方式": [
       {
         "document": "README.md",
-        "line": 78,
+        "line": 79,
         "level": 2,
         "title": "开发方式"
       }
@@ -8731,7 +8783,7 @@
     "归属资源全景": [
       {
         "document": "advanced/ownership.md",
-        "line": 42,
+        "line": 43,
         "level": 2,
         "title": "归属资源全景"
       }
@@ -8872,6 +8924,12 @@
         "title": "快速开始"
       },
       {
+        "document": "ecosystem/cron.md",
+        "line": 27,
+        "level": 2,
+        "title": "快速开始"
+      },
+      {
         "document": "quick-start.md",
         "line": 1,
         "level": 1,
@@ -8889,7 +8947,7 @@
     "性能优化": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 339,
+        "line": 375,
         "level": 2,
         "title": "性能优化"
       }
@@ -8969,7 +9027,7 @@
     "我也想把自己的模块列在这里？": [
       {
         "document": "ecosystem/README.md",
-        "line": 29,
+        "line": 30,
         "level": 2,
         "title": "我也想把自己的模块列在这里？"
       }
@@ -9253,7 +9311,7 @@
     "推荐写法": [
       {
         "document": "advanced/ownership.md",
-        "line": 118,
+        "line": 121,
         "level": 3,
         "title": "推荐写法"
       }
@@ -9787,7 +9845,7 @@
     "日志记录": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 305,
+        "line": 341,
         "level": 2,
         "title": "日志记录"
       },
@@ -10483,7 +10541,7 @@
     "模块作者指南": [
       {
         "document": "advanced/ownership.md",
-        "line": 116,
+        "line": 119,
         "level": 2,
         "title": "模块作者指南"
       }
@@ -10494,6 +10552,14 @@
         "line": 193,
         "level": 2,
         "title": "模块加载策略"
+      }
+    ],
+    "模块卸载时的行为": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 104,
+        "level": 2,
+        "title": "模块卸载时的行为"
       }
     ],
     "模块发现机制": [
@@ -10737,7 +10803,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 140,
+        "line": 143,
         "level": 3,
         "title": "注意事项"
       },
@@ -10801,7 +10867,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 422,
+        "line": 458,
         "level": 2,
         "title": "测试"
       }
@@ -11705,7 +11771,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 508,
+        "line": 544,
         "level": 2,
         "title": "相关文档"
       },
@@ -11743,13 +11809,19 @@
     "相关链接": [
       {
         "document": "README.md",
-        "line": 97,
+        "line": 98,
         "level": 2,
         "title": "相关链接"
       },
       {
         "document": "ecosystem/app.md",
         "line": 100,
+        "level": 2,
+        "title": "相关链接"
+      },
+      {
+        "document": "ecosystem/cron.md",
+        "line": 113,
         "level": 2,
         "title": "相关链接"
       },
@@ -11900,6 +11972,14 @@
         "line": 19,
         "level": 3,
         "title": "简单计数器"
+      }
+    ],
+    "管理任务": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 79,
+        "level": 3,
+        "title": "管理任务"
       }
     ],
     "管理功能": [
@@ -12259,7 +12339,7 @@
     "获取帮助": [
       {
         "document": "README.md",
-        "line": 91,
+        "line": 92,
         "level": 2,
         "title": "获取帮助"
       }
@@ -12411,7 +12491,7 @@
     "设计边界：哪些资源不随卸载清理": [
       {
         "document": "advanced/ownership.md",
-        "line": 101,
+        "line": 104,
         "level": 2,
         "title": "设计边界：哪些资源不随卸载清理"
       }
@@ -13401,7 +13481,7 @@
     "部署": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 451,
+        "line": 487,
         "level": 2,
         "title": "部署"
       }
@@ -13937,7 +14017,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 232,
+        "line": 268,
         "level": 2,
         "title": "错误处理"
       },
@@ -13992,6 +14072,14 @@
         "line": 122,
         "level": 3,
         "title": "错误码说明"
+      }
+    ],
+    "错过策略（missed_policy）": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 92,
+        "level": 3,
+        "title": "错过策略（missed_policy）"
       }
     ],
     "附件消息段": [

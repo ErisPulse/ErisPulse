@@ -767,6 +767,8 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
 调用方经过 scope 出站维度（``actions.<caller>.call``）审计；
 被调方法执行期间 ``current_owner`` 归因到目标模块，
 其内部的 wait_reply / 出站发送 / 日志等正确归属；
+调用方身份保留在 ``current_caller`` 上下文中（``get_current_caller()``
+读取），供被调方识别调用来源；
 协程方法带超时语义（超时抛 :class:`ModuleCallTimeoutError`）。
 
 - **module_name** (`目标模块名`): - **method**: 目标方法名

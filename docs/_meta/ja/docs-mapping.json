@@ -440,7 +440,7 @@
     "エコシステムモジュール": {
       "description": "コミュニティが保守するサードパーティモジュール",
       "icon": "fa-cubes",
-      "count": 4,
+      "count": 5,
       "documents": [
         {
           "title": "エコシステムモジュール",
@@ -459,6 +459,12 @@
           "path": "ecosystem/dashboard.md",
           "level": 1,
           "icon": "fa-table-columns"
+        },
+        {
+          "title": "ErisPulse-Cron",
+          "path": "ecosystem/cron.md",
+          "level": 1,
+          "icon": "fa-clock"
         },
         {
           "title": "ErisPulse-Takumi",

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1587,
+  "total_keywords": 1597,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -50,12 +50,12 @@
         "title": "1. Dockerfileの作成"
       }
     ],
-    "1. Event パッケージクラスの使用": [
+    "1. Event 包装クラスの使用": [
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 166,
         "level": 3,
-        "title": "1. Event パッケージクラスの使用"
+        "title": "1. Event 包装クラスの使用"
       }
     ],
     "1. Mixin クラスを使用した一括登録（推奨）": [
@@ -106,6 +106,14 @@
         "title": "1. pyproject.toml の設定"
       }
     ],
+    "1. エラーの分類処理": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 273,
+        "level": 3,
+        "title": "1. エラーの分類処理"
+      }
+    ],
     "1. エラータイプの分類": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -117,7 +125,7 @@
     "1. キャッシュの使用": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 341,
+        "line": 380,
         "level": 3,
         "title": "1. キャッシュの使用"
       }
@@ -125,7 +133,7 @@
     "1. トランザクションの使用": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 274,
+        "line": 313,
         "level": 3,
         "title": "1. トランザクションの使用"
       }
@@ -133,7 +141,7 @@
     "1. バージョン管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 453,
+        "line": 492,
         "level": 3,
         "title": "1. バージョン管理"
       }
@@ -189,7 +197,7 @@
     "1. ログレベルの適切な使用": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 307,
+        "line": 346,
         "level": 3,
         "title": "1. ログレベルの適切な使用"
       }
@@ -200,14 +208,6 @@
         "line": 9,
         "level": 3,
         "title": "1. 何时发送 Meta 事件"
-      }
-    ],
-    "1. 例外の分類処理": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 234,
-        "level": 3,
-        "title": "1. 例外の分類処理"
       }
     ],
     "1. 例外処理": [
@@ -235,7 +235,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 424,
+        "line": 463,
         "level": 3,
         "title": "1. 単体テスト"
       }
@@ -283,7 +283,7 @@
     "1. 敏感データの保護": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 378,
+        "line": 417,
         "level": 3,
         "title": "1. 敏感データの保護"
       }
@@ -568,12 +568,12 @@
         "title": "2. PyPI への配布"
       }
     ],
-    "2. READMEのヘッダー": [
+    "2. README ヘッダー": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 467,
+        "line": 506,
         "level": 3,
-        "title": "2. READMEのヘッダー"
+        "title": "2. README ヘッダー"
       }
     ],
     "2. Send 内部クラス（通常はオーバーライド不要）": [
@@ -627,7 +627,7 @@
     "2. タイムアウト処理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 256,
+        "line": 295,
         "level": 3,
         "title": "2. タイムアウト処理"
       }
@@ -643,7 +643,7 @@
     "2. バッチ操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 290,
+        "line": 329,
         "level": 3,
         "title": "2. バッチ操作"
       }
@@ -667,7 +667,7 @@
     "2. ブロッキング操作の回避": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 362,
+        "line": 401,
         "level": 3,
         "title": "2. ブロッキング操作の回避"
       }
@@ -710,12 +710,12 @@
         "title": "2. ログ記録"
       }
     ],
-    "2. 入力検証": [
+    "2. 入力の検証": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 404,
+        "line": 443,
         "level": 3,
-        "title": "2. 入力検証"
+        "title": "2. 入力の検証"
       }
     ],
     "2. 加載層：Loader": [
@@ -750,12 +750,12 @@
         "title": "2. 応答の標準化"
       }
     ],
-    "2. 懒惰ロードの適切な使用": [
+    "2. 懒惰なロードの使用": [
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 182,
         "level": 3,
-        "title": "2. 懒惰ロードの適切な使用"
+        "title": "2. 懒惰なロードの使用"
       }
     ],
     "2. 接続状態管理": [
@@ -793,7 +793,7 @@
     "2. 構造化ログ": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 329,
+        "line": 368,
         "level": 3,
         "title": "2. 構造化ログ"
       }
@@ -831,7 +831,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 437,
+        "line": 476,
         "level": 3,
         "title": "2. 統合テスト"
       }
@@ -1039,7 +1039,7 @@
     "3. イベントハンドラの登録": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 216,
+        "line": 219,
         "level": 3,
         "title": "3. イベントハンドラの登録"
       }
@@ -2390,6 +2390,12 @@
         "line": 332,
         "level": 3,
         "title": "API 概要"
+      },
+      {
+        "document": "ecosystem/cron.md",
+        "line": 43,
+        "level": 2,
+        "title": "API 概要"
       }
     ],
     "APIの登録": [
@@ -2874,6 +2880,14 @@
         "line": 1,
         "level": 1,
         "title": "ErisPulse-App"
+      }
+    ],
+    "ErisPulse-Cron": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse-Cron"
       }
     ],
     "ErisPulse-Dashboard": [
@@ -4537,7 +4551,7 @@
     "owner コンテキストメカニズム": [
       {
         "document": "advanced/ownership.md",
-        "line": 14,
+        "line": 16,
         "level": 2,
         "title": "owner コンテキストメカニズム"
       }
@@ -4788,12 +4802,12 @@
         "title": "③ 出站次元（制限モジュールが発信する呼び出しを制限）"
       }
     ],
-    "あなたの進むべき道を選ぶ": [
+    "お好みの学習経路を選択": [
       {
         "document": "README.md",
         "line": 9,
         "level": 2,
-        "title": "あなたの進むべき道を選ぶ"
+        "title": "お好みの学習経路を選択"
       }
     ],
     "すぐに始める": [
@@ -4815,7 +4829,7 @@
     "その他": [
       {
         "document": "README.md",
-        "line": 83,
+        "line": 84,
         "level": 2,
         "title": "その他"
       }
@@ -5729,7 +5743,7 @@
     "エラー処理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 232,
+        "line": 271,
         "level": 2,
         "title": "エラー処理"
       },
@@ -6282,6 +6296,14 @@
         "title": "コード説明"
       }
     ],
+    "コールバック": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 63,
+        "level": 3,
+        "title": "コールバック"
+      }
+    ],
     "コールバッククエリイベント": [
       {
         "document": "platform-guide/telegram.md",
@@ -6469,7 +6491,7 @@
     "ストレージシステム": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 272,
+        "line": 311,
         "level": 2,
         "title": "ストレージシステム"
       },
@@ -6515,7 +6537,7 @@
     "セキュリティ": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 376,
+        "line": 415,
         "level": 2,
         "title": "セキュリティ"
       }
@@ -6622,6 +6644,22 @@
         "line": 317,
         "level": 3,
         "title": "タイムアウトによる自動キャンセル（Timeout）"
+      }
+    ],
+    "タスクの作成": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 45,
+        "level": 3,
+        "title": "タスクの作成"
+      }
+    ],
+    "タスクの管理": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 75,
+        "level": 3,
+        "title": "タスクの管理"
       }
     ],
     "タプルを辞書に変換": [
@@ -6868,6 +6906,14 @@
         "title": "ツールメソッド"
       }
     ],
+    "ツールモジュールガイド：他のモジュールのハンドルを管理する": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 142,
+        "level": 2,
+        "title": "ツールモジュールガイド：他のモジュールのハンドルを管理する"
+      }
+    ],
     "テスト": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -6877,7 +6923,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 422,
+        "line": 461,
         "level": 2,
         "title": "テスト"
       }
@@ -7393,7 +7439,7 @@
     "パフォーマンス最適化": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 339,
+        "line": 378,
         "level": 2,
         "title": "パフォーマンス最適化"
       }
@@ -7863,7 +7909,7 @@
     "ヘルプを求める": [
       {
         "document": "README.md",
-        "line": 89,
+        "line": 90,
         "level": 2,
         "title": "ヘルプを求める"
       }
@@ -8518,6 +8564,14 @@
         "title": "モジュールでの使用例"
       }
     ],
+    "モジュールのアンロード時の動作": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 98,
+        "level": 2,
+        "title": "モジュールのアンロード時の動作"
+      }
+    ],
     "モジュールのインストール": [
       {
         "document": "quick-start.md",
@@ -8715,7 +8769,7 @@
     "モジュール開発者ガイド": [
       {
         "document": "advanced/ownership.md",
-        "line": 105,
+        "line": 109,
         "level": 2,
         "title": "モジュール開発者ガイド"
       }
@@ -8828,6 +8882,14 @@
         "line": 469,
         "level": 3,
         "title": "ユーティリティメソッド"
+      }
+    ],
+    "ユーティリティモジュール：他人のものを管理するときは「アンロード通知」を受け止める": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 235,
+        "level": 2,
+        "title": "ユーティリティモジュール：他人のものを管理するときは「アンロード通知」を受け止める"
       }
     ],
     "ライフサイクルの全体像": [
@@ -9289,7 +9351,7 @@
     "ログ記録": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 305,
+        "line": 344,
         "level": 2,
         "title": "ログ記録"
       },
@@ -9372,12 +9434,12 @@
         "title": "ワイルドカードと正規表現による監視"
       }
     ],
-    "一、私はロボットを使いたい": [
+    "一、ロボットを使いたい": [
       {
         "document": "README.md",
         "line": 13,
         "level": 3,
-        "title": "一、私はロボットを使いたい"
+        "title": "一、ロボットを使いたい"
       }
     ],
     "一回限りの登録（once）": [
@@ -9484,12 +9546,12 @@
         "title": "一覧表示と発見"
       }
     ],
-    "三、私は内部の仕組みを深く理解したい": [
+    "三、内部原理を深く理解したい": [
       {
         "document": "README.md",
         "line": 38,
         "level": 3,
-        "title": "三、私は内部の仕組みを深く理解したい"
+        "title": "三、内部原理を深く理解したい"
       }
     ],
     "並列と直列": [
@@ -9532,20 +9594,20 @@
         "title": "事件拡張メソッド"
       }
     ],
-    "二、私はモジュール / アダプタを開発したい": [
+    "二、モジュール / アダプタを開発したい": [
       {
         "document": "README.md",
         "line": 27,
         "level": 3,
-        "title": "二、私はモジュール / アダプタを開発したい"
+        "title": "二、モジュール / アダプタを開発したい"
       }
     ],
-    "五、私は ErisPulse に貢献したい": [
+    "五、ErisPulse に貢献したい": [
       {
         "document": "README.md",
-        "line": 67,
+        "line": 68,
         "level": 3,
-        "title": "五、私は ErisPulse に貢献したい"
+        "title": "五、ErisPulse に貢献したい"
       }
     ],
     "交互イベントの処理": [
@@ -10151,7 +10213,7 @@
     "卸載/無効化のクリーンアップシーケンス": [
       {
         "document": "advanced/ownership.md",
-        "line": 70,
+        "line": 73,
         "level": 2,
         "title": "卸載/無効化のクリーンアップシーケンス"
       }
@@ -11251,7 +11313,7 @@
     "所属リソースの概要": [
       {
         "document": "advanced/ownership.md",
-        "line": 37,
+        "line": 39,
         "level": 2,
         "title": "所属リソースの概要"
       }
@@ -11533,9 +11595,17 @@
     "推奨される書き方": [
       {
         "document": "advanced/ownership.md",
-        "line": 107,
+        "line": 111,
         "level": 3,
         "title": "推奨される書き方"
+      }
+    ],
+    "推奨モジュールと公式クライアント": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 19,
+        "level": 2,
+        "title": "推奨モジュールと公式クライアント"
       }
     ],
     "推奨方法：I18nClass を使って翻訳キーを宣言する（v2.7.0+）": [
@@ -11544,14 +11614,6 @@
         "line": 77,
         "level": 3,
         "title": "推奨方法：I18nClass を使って翻訳キーを宣言する（v2.7.0+）"
-      }
-    ],
-    "推荐モジュールと公式クライアント": [
-      {
-        "document": "ecosystem/README.md",
-        "line": 19,
-        "level": 2,
-        "title": "推荐モジュールと公式クライアント"
       }
     ],
     "提出可能なタイプ": [
@@ -12252,6 +12314,14 @@
         "title": "機能概要"
       }
     ],
+    "機能速覧": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 14,
+        "level": 2,
+        "title": "機能速覧"
+      }
+    ],
     "次に進む": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -12339,7 +12409,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 129,
+        "line": 133,
         "level": 3,
         "title": "注意事項"
       },
@@ -12635,7 +12705,7 @@
     "私も自分のモジュールをここに掲載したい！": [
       {
         "document": "ecosystem/README.md",
-        "line": 29,
+        "line": 30,
         "level": 2,
         "title": "私も自分のモジュールをここに掲載したい！"
       }
@@ -13383,7 +13453,7 @@
     "設計の境界：アンインストール時にクリーンアップされないリソース": [
       {
         "document": "advanced/ownership.md",
-        "line": 92,
+        "line": 96,
         "level": 2,
         "title": "設計の境界：アンインストール時にクリーンアップされないリソース"
       }
@@ -13806,12 +13876,28 @@
         "title": "速率制限"
       }
     ],
+    "速習": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 23,
+        "level": 2,
+        "title": "速習"
+      }
+    ],
     "進捗監視（OnProgress / OnError）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 327,
         "level": 3,
         "title": "進捗監視（OnProgress / OnError）"
+      }
+    ],
+    "遅れ時のポリシー（missed_policy）": [
+      {
+        "document": "ecosystem/cron.md",
+        "line": 88,
+        "level": 3,
+        "title": "遅れ時のポリシー（missed_policy）"
       }
     ],
     "遅延送信（Defer）": [
@@ -13841,7 +13927,7 @@
     "部署": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 451,
+        "line": 490,
         "level": 2,
         "title": "部署"
       }
@@ -13929,7 +14015,7 @@
     "開発方法": [
       {
         "document": "README.md",
-        "line": 76,
+        "line": 77,
         "level": 2,
         "title": "開発方法"
       }
@@ -14054,12 +14140,6 @@
         "title": "関連ドキュメント"
       },
       {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 508,
-        "level": 2,
-        "title": "関連ドキュメント"
-      },
-      {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 390,
         "level": 2,
@@ -14093,13 +14173,19 @@
     "関連リンク": [
       {
         "document": "README.md",
-        "line": 95,
+        "line": 96,
         "level": 2,
         "title": "関連リンク"
       },
       {
         "document": "ecosystem/app.md",
         "line": 89,
+        "level": 2,
+        "title": "関連リンク"
+      },
+      {
+        "document": "ecosystem/cron.md",
+        "line": 105,
         "level": 2,
         "title": "関連リンク"
       },
@@ -14126,6 +14212,12 @@
       {
         "document": "api-reference/core-modules.md",
         "line": 508,
+        "level": 2,
+        "title": "関連文書"
+      },
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 547,
         "level": 2,
         "title": "関連文書"
       }
