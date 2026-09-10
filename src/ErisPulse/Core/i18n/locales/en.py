@@ -225,7 +225,6 @@ TRANSLATIONS = {
     "core.module.call_method_missing": "[Module] module '{module}' has no callable method '{method}'",
     "core.module.call_activate_failed": "[Module] module call failed: lazy module '{name}' activation failed",
     "core.module.call_timeout": "[Module] module call timed out: {module}.{method} exceeded {timeout}s",
-    "core.module.emit_target_disabled": "[Module] module event delivery failed: target module '{name}' is not registered or not enabled",
     "core.module.on_load_failed": "Module {name} on_load method execution failed: {error}",
     "core.module.load_success_msg": "Module {name} loaded successfully",
     "core.module.init_done_msg": "Module {name} initialization complete",
@@ -335,6 +334,7 @@ TRANSLATIONS = {
     "core.router.link_community": "Community",
     # ==================== Lifecycle Management ====================
     "core.lifecycle.event_name_required": "Event name must be a non-empty string",
+    "core.lifecycle.to_required": "Directed delivery target 'to' must be a non-empty string",
     "core.lifecycle.event_type_none": "Event type cannot be None",
     "core.lifecycle.event_type_empty": "Event type must be a non-empty string, received: {type}",
     "core.lifecycle.handler_error": "Lifecycle event handler execution error {event}: {error}",
@@ -378,6 +378,7 @@ TRANSLATIONS = {
     "core.storage.driver_missing": "Storage backend {backend} is missing its driver dependency, run: pip install ErisPulse[{extra}]",
     "core.storage.pool_init_failed": "Failed to initialize the {backend} connection pool: {error}",
     "core.storage.pool_retry": "{backend} connection pool creation failed (attempt {attempt}), retrying with backoff: {error}",
+    "core.storage.pool_exhausted": "{backend} connection pool creation failed permanently (retried {retries} times); auto-reconnect in {cooldown}s. Storage operations will fail fast meanwhile; the rest of the framework is unaffected: {error}",
     "core.storage.aclose_failed": "Failed to close storage backend resources: {error}",
     "core.storage.bridge_closed": "The storage sync bridge is closed and cannot execute async operations",
     "core.storage.bridge_reentrant": "Cannot call sync compatibility APIs from the storage bridge thread; use async methods instead",

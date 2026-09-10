@@ -225,7 +225,6 @@ TRANSLATIONS = {
     "core.module.call_method_missing": "[Module] モジュール '{module}' に呼び出し可能なメソッド '{method}' がありません",
     "core.module.call_activate_failed": "[Module] モジュール間呼び出し失敗: 遅延ロードモジュール '{name}' のアクティベーションに失敗",
     "core.module.call_timeout": "[Module] モジュール間呼び出しタイムアウト: {module}.{method} が {timeout}s を超過",
-    "core.module.emit_target_disabled": "[Module] モジュールイベント配信失敗: 対象モジュール '{name}' は未登録か無効です",
     "core.module.on_load_failed": "モジュール {name} の on_load メソッドの実行に失敗しました: {error}",
     "core.module.load_success_msg": "モジュール {name} の読み込みに成功しました",
     "core.module.init_done_msg": "モジュール {name} の初期化が完了しました",
@@ -335,6 +334,7 @@ TRANSLATIONS = {
     "core.router.link_community": "コミュニティ",
     # ==================== ライフサイクル管理 ====================
     "core.lifecycle.event_name_required": "イベント名は空でない文字列でなければなりません",
+    "core.lifecycle.to_required": "配信先 to は空でない文字列でなければなりません",
     "core.lifecycle.event_type_none": "イベントタイプを None にすることはできません",
     "core.lifecycle.event_type_empty": "イベントタイプは空でない文字列でなければなりません、受信値: {type}",
     "core.lifecycle.handler_error": "ライフサイクルイベントハンドラーの実行エラー {event}: {error}",
@@ -378,6 +378,7 @@ TRANSLATIONS = {
     "core.storage.driver_missing": "ストレージバックエンド {backend} にドライバー依存がありません。実行してください: pip install ErisPulse[{extra}]",
     "core.storage.pool_init_failed": "{backend} 接続プールの初期化に失敗しました: {error}",
     "core.storage.pool_retry": "{backend} 接続プールの作成に失敗しました（{attempt} 回目）、バックオフして再試行します: {error}",
+    "core.storage.pool_exhausted": "{backend} 接続プールの作成が最終的に失敗しました（{retries} 回再試行）、{cooldown} 秒後に自動再接続します。その間ストレージ操作は即座に失敗しますが、フレームワークの他の機能には影響しません: {error}",
     "core.storage.aclose_failed": "ストレージバックエンドのリソース解放に失敗しました: {error}",
     "core.storage.bridge_closed": "ストレージ同期ブリッジは閉じられており、非同期操作を実行できません",
     "core.storage.bridge_reentrant": "ストレージブリッジスレッド内から同期互換インターフェースを呼び出すことはできません。非同期メソッドを使用してください",

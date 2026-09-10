@@ -225,7 +225,6 @@ TRANSLATIONS = {
     "core.module.call_method_missing": "[Module] в модуле '{module}' нет вызываемого метода '{method}'",
     "core.module.call_activate_failed": "[Module] ошибка межмодульного вызова: не удалось активировать ленивый модуль '{name}'",
     "core.module.call_timeout": "[Module] таймаут межмодульного вызова: {module}.{method} превысил {timeout}s",
-    "core.module.emit_target_disabled": "[Module] не удалось доставить событие модулю: цель '{name}' не зарегистрирована или отключена",
     "core.module.on_load_failed": "Ошибка выполнения метода on_load модуля {name}: {error}",
     "core.module.load_success_msg": "Модуль {name} успешно загружен",
     "core.module.init_done_msg": "Инициализация модуля {name} завершена",
@@ -335,6 +334,7 @@ TRANSLATIONS = {
     "core.router.link_community": "Сообщество",
     # ==================== Управление жизненным циклом ====================
     "core.lifecycle.event_name_required": "Имя события должно быть непустой строкой",
+    "core.lifecycle.to_required": "Цель направленной доставки to должна быть непустой строкой",
     "core.lifecycle.event_type_none": "Тип события не может быть None",
     "core.lifecycle.event_type_empty": "Тип события должен быть непустой строкой, получено: {type}",
     "core.lifecycle.handler_error": "Ошибка выполнения обработчика события жизненного цикла {event}: {error}",
@@ -378,6 +378,7 @@ TRANSLATIONS = {
     "core.storage.driver_missing": "Для серверной части {backend} отсутствует драйвер, выполните: pip install ErisPulse[{extra}]",
     "core.storage.pool_init_failed": "Не удалось инициализировать пул соединений {backend}: {error}",
     "core.storage.pool_retry": "Не удалось создать пул соединений {backend} (попытка {attempt}), повтор с задержкой: {error}",
+    "core.storage.pool_exhausted": "Не удалось создать пул соединений {backend} (после {retries} попыток); автоматическое переподключение через {cooldown} с. Операции хранения будут завершаться быстро, остальные функции фреймворка не затронуты: {error}",
     "core.storage.aclose_failed": "Не удалось освободить ресурсы хранилища: {error}",
     "core.storage.bridge_closed": "Синхронный мост хранилища закрыт, невозможно выполнить асинхронную операцию",
     "core.storage.bridge_reentrant": "Нельзя вызывать синхронные совместимые интерфейсы из потока моста хранилища; используйте асинхронные методы",
