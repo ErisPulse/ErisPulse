@@ -17,6 +17,7 @@ from typing import Any
 
 import aiosqlite
 
+from ..Bases.errors import StorageUnreachableError
 from ..Bases.sql_base import SQLDialect, SQLStorageBase, _SingletonMixin
 from ..constants import (
     DEFAULT_USE_GLOBAL_DB,
@@ -104,7 +105,13 @@ class SQLiteStorage(_SingletonMixin, SQLStorageBase):
             self.db_path = self.DEFAULT_PROJECT_DB_PATH
 
         logger.debug(i18n.t("core.storage.init_db", path=self.db_path))
-        self._init_db()
+        try:
+            self._init_db()
+        except StorageUnreachableError as e:
+            # 数据库不可达（罕见）：框架照常启动（存储未就绪，操作快速失败）；
+            # 已由 _get_loop_resource 记录 WARNING
+            logger.error(i18n.t("core.storage.init_db_error", error=e))
+            return
 
         self._last_use_global_db = use_global_db
         self._finish_init()
