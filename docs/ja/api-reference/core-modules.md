@@ -235,7 +235,7 @@ sdk.adapter.get_status_summary()
 
 > 完全なアダプタ管理 API は、[アダプタシステム API](adapter-system.md) を参照してください。
 
-## Module モジュール
+## Module 模块
 
 モジュールマネージャーは、プラグインの登録、ロード、アンロードを管理します。
 
@@ -244,15 +244,14 @@ sdk.adapter.get_status_summary()
 | メソッド | 説明 |
 |------|------|
 | `get(name)` | モジュールインスタンスまたは遅延ロードプロキシを取得（登録済みだがロードされていない場合はプロキシを返す） |
-| `exists(name)` | 登録されているか確認 |
-| `is_loaded(name)` | ロードされているか確認 |
-| `is_enabled(name)` | 有効化されているか確認 |
+| `exists(name)` | 登録済みかどうかを確認 |
+| `is_loaded(name)` | ロード済みかどうかを確認 |
+| `is_enabled(name)` | 有効かどうかを確認 |
 | `enable(name)` / `disable(name)` | モジュールを有効化/無効化 |
 | `load(name)` / `unload(name)` | モジュールをロード/アンロード |
-| `call(module, method, *args, timeout=None, **kwargs)` | 指定モジュールのサービスメソッドを呼び出す（プロトコル化された RPC） |
-| `emit_to(module, event, data)` | 指定モジュールにライフサイクルイベントを送信 |
-| `list_registered()` | 登録済みモジュールを一覧表示 |
-| `list_loaded()` | ロード済みモジュールを一覧表示 |
+| `call(module, method, *args, timeout=None, **kwargs)` | 目標モジュールのサービスメソッドを跨モジュールで呼び出す（プロトコル化されたRPC） |
+| `list_registered()` | 登録済みモジュールをリストアップ |
+| `list_loaded()` | ロード済みモジュールをリストアップ |
 | `get_info(name)` | モジュール情報を取得 |
 | `get_status_summary()` | モジュールの状態概要を取得 |
 
@@ -267,7 +266,7 @@ module = sdk.ModuleName  # 等価なショートカット
 ### モジュール間呼び出し（RPC）
 
 ```python
-# プロトコル化された呼び出し：型付きエラー / 遅延モジュールの自動起動 / owner帰属 / タイムアウト設定
+# プロトコル化された呼び出し：型付きエラー / 遅延モジュールの自動起動 / ownerの帰属 / タイムアウトの意味
 result = await sdk.module.call("Chat", "get_history", session_id, n=20)
 ```
 
@@ -275,15 +274,15 @@ result = await sdk.module.call("Chat", "get_history", session_id, n=20)
 
 | | `module.call()` | 属性アクセス |
 |---|---|---|
-| 目標が未登録/未有効化 | `ModuleNotAvailableError` をスロー | `AttributeError` をスロー |
-| 遅延ロードモジュール | 自動起動 | 非同期初期化モジュールは `RuntimeError` をスロー |
+| 目標が未登録/未有効化 | `ModuleNotAvailableError` を投げる | `AttributeError` を投げる |
+| 遅延ロードモジュール | 自動的に起動 | 非同期初期化モジュールは `RuntimeError` を投げる |
 | `current_owner` | 目標モジュールに帰属 | 呼び出し元のまま |
-| タイムアウト | 30秒（カスタマイズ可能） | なし |
+| タイムアウト | 30秒（デフォルト）、オーバーライド可能 | なし |
 | scope 審査 | `actions.<呼び出し元>.call` | なし |
 
 ### サービス契約（meta.services）
 
-`get_meta()` の `services` フィールドで外部公開白名单を宣言し、宣言後は呼び出し範囲を絞る：
+サービス側は `get_meta()` の `services` フィールドに外部公開白名单を宣言し（`commands` と対称）、宣言後は呼び出し面が厳しくなる：
 
 ```python
 class ChatModule(BaseModule):
@@ -294,23 +293,23 @@ class ChatModule(BaseModule):
     async def get_history(self, session_id, n=20): ...
 ```
 
-- **デフォルト = 開発者無感覚**：`services` を宣言していない場合、任意の**公開**メソッドが呼び出せる（後方互換性）、アンダースコア付きのプライベートメソッドは常に禁止；制限の主制御権はユーザー側の scope 設定
-- 宣言後：白名单内のメソッドのみ呼び出せる、越境時は `ServiceNotProvidedError` をスロー
-- 呼び出し側制限：`scope.set_action("CallerModule", "call", deny="Chat.get_history")`
+- **デフォルト = 開発者に無感覚**：`services` を宣言していない場合、任意の**公開**メソッドは呼び出せる（後方互換性あり）、アンダースコア付きのプライベートメソッドは常に禁止；制限の主制御権はユーザー側の scope 設定にある
+- 宣言後：白名单内のメソッドのみ呼び出せる、範囲外は `ServiceNotProvidedError` を投げる
+- 呼び出し側の制限：`scope.set_action("CallerModule", "call", deny="Chat.get_history")`
 
-**サービス紹介（description）**：`services` は各サービスに説明を宣言するための dict 形態もサポート（純文字列または i18n 辞書）、サービスディレクトリや AI 呼び出し点の消費説明に利用：
+**サービス紹介（description）**：`services` は各サービスに紹介を宣言する dict 形態もサポート（純粋な文字列または i18n 辞書）し、サービスディレクトリ / AI 呼び出しポイントの説明に利用できる：
 
 ```python
 return ModuleMeta(
     services=[
-        "get_history",                              # 簡単な形態：説明はメソッドの docstring 1行目を自動的に利用
+        "get_history",                              # 簡単な形：紹介はメソッドの docstring 首行を自動的に取得
         {"name": "translate", "description": "テキストを指定言語に翻訳する"},
         {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "会話の要約"}},
     ],
 )
 ```
 
-説明の解析優先順位：**明示的な description（i18n は現在の言語に解析）> メソッドの docstring 1行目 > 空文字列**。
+紹介の解析優先度：**明示的な description（i18n は現在の言語に解析）> メソッドの docstring 首行 > 空文字列**。
 
 ### サービスディレクトリ（services）
 
@@ -322,37 +321,25 @@ sdk.module.services()
 sdk.module.services("Chat")  # 特定モジュールのみを照会
 ```
 
-`meta.services` を**明示的に宣言**したモジュールのみを一覧表示；各サービスにはメソッドのシグネチャ文字列と説明テキストが付いており、MCP 化（AI に呼び出し点を公開）のためのデータ基盤を提供する。
+`meta.services` を**明示的に宣言**したモジュールのみをリストアップ；各サービスにはメソッドのシグネチャ文字列と紹介テキストが付与され、MCP 化（呼び出しポイントを AI に公開）のためのデータ基盤となる。
 
-### 定向イベント（emit_to）
-
-```python
-# 投递側：目標モジュールが有効化された後に module.<名称>.<イベント> に投递
-await sdk.module.emit_to("Chat", "message_received", {"text": "hi"})
-
-# 訂正側（Chat モジュール内）：命名空間のフックを登録
-lifecycle.on("module.Chat.message_received", handler)
-lifecycle.on("module.Chat", handler)  # またはそのモジュールのすべての定向イベントを受信
-```
-
-> [!NOTE]
-> 本節の機能は ErisPulse **2.8.0+** で追加されました。
+> 定向イベント投递はライフサイクル層に属する：`lifecycle.emit(event, data, to="ModuleName")`、詳しくは [モジュール間通信](../advanced/module-communication.md) を参照。
 
 ## Lifecycle モジュール
 
-イベント駆動のライフサイクルマネージャーで、イベントの送信と監視機能を提供します。
+イベント駆動型のライフサイクルマネージャーで、イベントの送信とリスナー登録機能を提供します。
 
 ### API 概要
 
 | メソッド | 説明 |
 |------|------|
-| `on(event, priority=0)` | デコレータでイベントハンドラを登録し、ドットマッチとワイルドカード `*` をサポート |
+| `on(event, priority=0)` | イベントハンドラのデコレータ登録。ドット記法とワイルドカード `*` をサポート |
 | `register(event, handler, priority=0)` | 関数形式でハンドラを登録 |
-| `unregister(event, handler=None)` | ハンドラを削除 |
-| `emit(event, data)` | 非同期でイベントをトリガー |
-| `emit_sync(event, data)` | 同期でイベントをトリガー |
-| `submit_event(event_type, msg, data, source)` | 標準形式のイベントを送信（旧版と互換性あり） |
-| `start_timer(id)` / `stop_timer(id)` | パフォーマンスタイマー |
+| `unregister(event, handler=None)` | ハンドラの削除 |
+| `emit(event, data, to=None)` | 非同期でイベントをトリガー。`to` に owner を指定すると、特定のオブジェクトに送信 |
+| `emit_sync(event, data, to=None)` | 同期でイベントをトリガー（非同期ハンドラは create_task でスケジュール） |
+| `submit_event(event_type, msg, data, source, to=None)` | 標準形式のイベントを送信（従来の形式と互換） |
+| `start_timer(id)` / `stop_timer(id)` | パフォーマンス計測用タイマー |
 
 ### 例
 
@@ -366,9 +353,12 @@ async def handle_any_module_event(event_data):
     print(f"モジュールイベント: {event_data}")
 
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
+
+# ディレクティブ送信：Chat モジュールに登録されたフックにのみ送信
+await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
 ```
 
-> 完全な標準イベントリストと詳細な使い方は、[ライフサイクル管理](../advanced/lifecycle.md)を参照してください。
+> 完全な標準イベント一覧と詳細な使い方は、[ライフサイクル管理](../advanced/lifecycle.md) を参照してください。
 
 ## Router モジュール
 

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "bd2e3072f8106457938c6f395fcb7c59",
-  "file_hash": "bd2e3072f8106457938c6f395fcb7c59",
-  "translated_at": "2026-09-08T14:31:37.421318",
+  "hash": "86852d38e7e2c601fb00cfd5e0600173",
+  "file_hash": "86852d38e7e2c601fb00cfd5e0600173",
+  "translated_at": "2026-09-10T07:01:34.203454",
   "target_lang": "ja",
   "chunks": [
     {
@@ -34,8 +34,8 @@
       "translation": "## メッセージトランザクション：message_tx\n\nトランザクション内のすべての出力メッセージは自動的に記録されます。**例外が発生した場合、逆順に自動的に送信済みメッセージを撤回**します（アダプターが `delete_message` を実装していない場合はスキップされますが、台帳は正常に記録されます）。\n\n```python\nasync with event.message_tx():\n    await event.reply(\"処理中です、少々お待ちください\")\n    result = await do_something()          # ここで例外が発生 →\n    await event.reply(f\"完了: {result}\")   # 以前の「処理中」は自動的に撤回されます\n```\n\nトランザクション外で送信したメッセージは記録されません（ゼロオーバーヘッド）。`get_send_receipts()` を使用して、現在のトランザクションで送信された回執を確認できます。"
     },
     {
-      "hash": "bc883aff1c3e8ad4134f18bef6a25bde",
-      "translation": "## 鏈路追跡：trace-id\n\n各インバウンドイベントは、自動的に追跡ID（`event[\"id\"]` を再利用、存在しない場合は生成）を取得し、以下を貫く：\n\n- handlerコンテキスト（`get_current_trace_id()` で読み取り）\n- アウトバウンド送信（`[Send]` ログ行に `[trace:...]` を追加、`message.sending/sent` ホッキングの `trace_id` フィールド）\n- ライフサイクルホッキングデータ（dictに自動的に `_trace_id` を追加）\n- 定向イベント（`emit_to`）とメッセージトランザクションの確認\n\n1つのメッセージが複数のモジュールによって連携処理される場合、同一のIDで全チェーンを連結し、（ログ / 遅いクエリ / 審計）を可能にする。"
+      "hash": "a149314e314cf92524cf4e6b8861163d",
+      "translation": "## 鏈路追跡：trace-id\n\n各々の入力イベントは、自動的に追跡ID（`event[\"id\"]` を再利用、存在しない場合は生成）を取得し、以下を貫く：\n\n- handlerコンテキスト（`get_current_trace_id()` で読み取り）\n- 出力送信（`[Send]` ログ行に `[trace:...]` を追加、`message.sending/sent` ホッカーの `trace_id` フィールド）\n- ライフサイクルホッカーのデータ（dict に自動的に `_trace_id` を追加）\n- 指定イベント（`lifecycle.emit(..., to=...)`）およびメッセージトランザクションの返信\n\n1つのメッセージが複数のモジュールによって連携処理される場合、同一のIDで全チェーンを連結し、ログ / 遅いクエリ / 審計に利用可能。"
     },
     {
       "hash": "e1c59e3eda70804926b3fcdbae217169",
