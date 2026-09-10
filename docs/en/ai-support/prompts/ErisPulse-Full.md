@@ -3366,9 +3366,10 @@ epsdk create module -n MyModule -f
 ### 配置文件说明
 
 # Configuration File Documentation
-> This document introduces the framework's configuration file. If a third-party module requires configuration, please refer to the module's documentation.
 
-ErisPulse uses a TOML-formatted configuration file `config/config.toml` to manage project settings.
+> This document will introduce the framework's configuration file. If any third-party modules require configuration, please refer to the module's documentation.
+
+ErisPulse uses a TOML-formatted configuration file `config/config.toml` to manage project configurations.
 
 ## Configuration File Location
 
@@ -3386,52 +3387,52 @@ project/
 The framework distinguishes three error states when loading `config.toml` and provides **actionable diagnostic information** instead of silently falling back to default configurations:
 
 | Error State | Trigger Condition | Framework Behavior |
-|-------------|-------------------|--------------------|
-| File Missing | `config.toml` does not exist | Normal on first startup, silently uses empty configuration (no warning) |
-| TOML Syntax Error | File exists but format is invalid (e.g., missing quotes, un-closed parentheses) | Outputs **line/column number and reason**, and indicates fallback to default configuration |
-| Permission/Other Error | No read permission, IO errors, etc. | Outputs **clear reason**, and indicates fallback to default configuration |
+|---------|---------|---------|
+| File Missing | `config.toml` does not exist | Normal on first startup, silently use empty configuration (no warning) |
+| TOML Syntax Error | File exists but format is invalid (e.g., missing quotes, unclosed parentheses) | Output **line/column number and reason**, and indicate that default configuration has been reverted |
+| Permission/Other Error | No read permission, IO errors, etc. | Output **clear reason**, and indicate that default configuration has been reverted |
 
 For example, if you accidentally write the configuration as `port = 8000` (missing quotes for a string), the log will output something like:
 
 ```
-[ERROR] [Config] Syntax error in config file config/config.toml (line 3, column 1): ...
-[WARNING] [Config] Failed to read configuration file. Continuing with last valid configuration; changes in this file did not take effect—please fix and reload or restart
+[ERROR] [Config] Configuration file config/config.toml has a syntax error (line 3, column 1): ...
+[WARNING] [Config] Failed to read configuration file. Continuing with last valid configuration, modifications in this file did not take effect—please fix and reload or restart
 ```
 
-This allows you to immediately locate the issue at the **default INFO level** without confusion over why your configuration changes didn't take effect.
+This allows you to immediately locate the issue at the **default INFO level** instead of being confused about why your configuration changes did not take effect.
 
-> **What if you break the config file during runtime?** If you manually edit `config.toml` during bot operation and introduce a syntax error, the framework will output "Configuration file damaged (syntax error, line X), unable to merge and write—please fix the configuration file and restart" when it next attempts to write (merge configuration), rather than a confusing "write failed". The configuration items to be written are retained and not lost.
+> **What if the configuration file is corrupted during runtime?** If you manually edit `config.toml` during robot operation and introduce a syntax error, the framework will output "Configuration file is damaged (syntax error, line X), unable to merge and write—please fix the configuration file and restart" when attempting to write (merge) next time, rather than a confusing "write failure." The configuration items to be written will be retained and not lost.
 
-## Comment Preservation and Minimal Disk Write
+## Comment Retention and Minimal Disk Write
 
-Comments and key order in `config.toml` are **fully preserved after framework write**: whether through code `setConfig()`, CLI configuration wizard save, or adapter/module first-generation configuration template, the framework only modifies the relevant keys, and your comments and arranged order are not erased or reordered (based on tomlkit comment-preserving round-trip implementation).
+Comments and key order in `config.toml` are **fully retained after framework writes**: whether through code `setConfig()`, CLI configuration wizard save, or adapter/module initial configuration template, the framework only modifies the involved keys. Your comments and sorted order will not be erased or reordered (based on tomlkit comment-retaining round-trip implementation).
 
-The framework is restrained about what is written to disk:
+The framework keeps disk writes minimal:
 
-- **Default framework configuration is not automatically written to disk**: `gc`, `scope`, `transcript`, and other built-in default values only reside in memory; `config.toml` only contains keys you explicitly set, keeping it minimal. Refer to the project's `config/config.full.example` for a complete list of configurable items. Copy and modify as needed (unconfigured items always use built-in defaults, behavior unchanged).
-- **`config.full.example` is automatically maintained**: Regardless of whether `epsdk init` is executed, as long as the framework is started (`epsdk run` / `main.py`), a complete configuration reference will be automatically generated in `config/config.full.example` if the file is missing. The file's first line is a framework-maintained marker; when the generator content updates (e.g., new configuration items, newly installed components), the startup will refresh once. Deleting or modifying the first line switches to manual takeover, and the framework will no longer overwrite.
-- **Adapter/Module Configuration Templates**: First initialization saves templates with comments (field descriptions are comments); fields marked as `example` do not write to disk, only recorded in `config.full.example` for reference.
+- **Framework default configurations are not automatically written to disk**: `gc`, `scope`, `transcript`, and other built-in defaults only reside in memory; `config.toml` only contains your explicitly set keys, keeping it minimal. Refer to `config/config.full.example` in the project for a complete list of configurable items. Copy and modify as needed (unconfigured items always use built-in defaults, behavior remains unchanged).
+- **`config.full.example` is automatically maintained**: Regardless of whether `epsdk init` has been executed, as long as the framework is started (`epsdk run` / `main.py`), a complete configuration reference will be automatically generated in `config/config.full.example` if the file is missing. The first line is a marker for framework self-maintenance. When generators update (e.g., new configuration items, newly installed components), the startup will refresh once. If the first line is deleted or modified, manual takeover is assumed and the framework will no longer overwrite.
+- **Adapter/Module Configuration Templates**: First initialization saves a template with comments (field descriptions are comments); fields marked as `example` do not write to disk, only recorded in `config.full.example` for reference.
 
 ## Environment Variable Override
 
-The framework supports overriding `ErisPulse.*` configuration items using environment variables (suitable for Docker/containerized/CI deployment, no need to modify `config.toml`).
+The framework supports overriding `ErisPulse.*` configuration items using environment variables (suitable for Docker/containerization/CI deployment, no need to modify `config.toml`).
 
-Naming rule: Replace the dot-separated path `ErisPulse.<section>.<key>` with all uppercase, replace `.` with `_`, and add the `ERISPULSE_` prefix:
+Naming rule: Convert the dot-separated path `ErisPulse.<section>.<key>` to all uppercase, replace `.` with `_`, and add the `ERISPULSE_` prefix:
 
 | Configuration Item | Environment Variable | Example Value |
-|----------------------|----------------------|---------------|
+|--------|---------|--------|
 | `ErisPulse.server.port` | `ERISPULSE_SERVER_PORT` | `9000` |
 | `ErisPulse.server.host` | `ERISPULSE_SERVER_HOST` | `0.0.0.0` |
 | `ErisPulse.logger.level` | `ERISPULSE_LOGGER_LEVEL` | `DEBUG` |
 | `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |
 
 Behavior description:
-- **Highest priority**: Environment variables override "configuration file" and "default values", automatically converting to the original value type (`bool` / `int` / `float` / comma-separated `list` / string).
-- **Not persistent**: The override only takes effect during runtime, not written back to `config.toml`.
-- **Supports hot update**: After modifying environment variables during runtime, combined with configuration monitoring reload, the changes take effect.
+- **Highest priority**: Environment variables override "configuration file" and "default values," automatically converting to the original value type (`bool` / `int` / `float` / comma-separated `list` / string)
+- **Not persistent**: The override only takes effect during runtime and does not write back to `config.toml`
+- **Supports hot updates**: After modifying environment variables during runtime, combined with configuration monitoring reload, changes take effect
 
 ```bash
-# Example of Docker deployment: No need to modify config.toml, directly override port
+# Docker deployment example: Deploy without modifying config.toml, directly override port
 ERISPULSE_SERVER_PORT=9000 docker compose up -d
 ```
 
@@ -3439,38 +3440,38 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 
 ## Configuration Hot Update
 
-Starting from version 2.7.0, the framework has implemented **systematic support for configuration hot updates**. After external modification of `config.toml` (detected every 5 seconds by a background watcher) or code calling `setConfig()`, components automatically respond:
+Since version 2.7.0, the framework has provided **systematic support for configuration hot updates**. After external modification of `config.toml` (background watcher checks every 5 seconds), or code calls `setConfig()`, each component automatically responds:
 
-| Component | Hot-updated Configuration | Behavior |
-|-----------|---------------------------|----------|
-| **Logger** | `logger.level` / `log_files` / `log_dir` (including segment parameters) / `memory_limit` / `format` / `exclude_levels` | Automatically reapplies (with change detection) |
+| Component | Configurations Supporting Hot Updates | Behavior |
+|------|----------------|------|
+| **Logger** | `logger.level` / `log_files` / `log_dir` (including segmentation parameters) / `memory_limit` / `format` / `exclude_levels` | Automatically reapplies (with change detection) |
 | **Command System** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | Takes effect on the next message |
 | **Adapter Concurrency** | `framework.handler_max_concurrency` | Invalidates cached semaphore, rebuilds with new value |
-| **Proactive GC** | `framework.proactive_gc_*` | Configuration change immediately restarts GC task, supports runtime adjustment/disable/re-enable |
+| **Proactive GC** | `framework.proactive_gc_*` | Configuration changes immediately restart GC tasks, supports runtime adjustment/disable/re-enable |
 | **Master System** | `master.users` | Each `is_master()` check reads in real-time, no restart needed |
 | **Modules/Adapters** | Their respective configuration items | Triggers `on_config_update(old, new)` callback |
 
-**Configuration that requires restart** (cannot be safely hot-switched, warning "needs process restart to take effect" is output on change):
+**Configurations requiring restart** (cannot be safely hot-switched, warnings output when changed "requires process restart to take effect"):
 
 | Configuration | Reason |
-|---------------|--------|
-| `router.cors.*` / `router.security.*` | Middleware is written into FastAPI at service startup, cannot be safely hot-switched at runtime |
-| `storage.use_global_db` | SQLite file handle is already open at runtime, switching paths is unsafe |
+|------|------|
+| `router.cors.*` / `router.security.*` | Middleware written to FastAPI at service startup, cannot be safely hot-switched at runtime |
+| `storage.use_global_db` | SQLite file handle already opened at runtime, switching paths is unsafe |
 
-> **What if editing and saving goes wrong midway?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, avoiding broadcasting an empty configuration to components (preventing `on_config_update` from receiving empty values and mistakenly reverting to default).
+> **What if editing and saving the file fails midway?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, not broadcast empty configuration to components (avoiding `on_config_update` receiving empty values and mistakenly reverting to defaults).
 
 ### Internal Breakdown of Hot Update Chain
 
-"How do components know when the configuration changes?" — Behind the scenes is a detection → reload → broadcast chain:
+"How do components know when the configuration is changed?" Behind the scenes is a detection → reload → broadcast chain:
 
 ```mermaid
 flowchart TD
-    A["External edit of config.toml"] --> B{"Who notices first?"}
+    A["External edit config.toml"] --> B{"Who finds out first?"}
     B -->|"Background watcher thread<br/>Polls mtime every 5 seconds"| C["_check_file_change determines change"]
-    B -->|"Any getConfig() read<br/>If cache is over 60 seconds"| C
+    B -->|"Any getConfig() read, if cache exceeds 60 seconds"| C
     C --> D["_load_config re-parses TOML"]
     D --> E{"Parse successful?"}
-    E -->|"No (syntax error)"| F["Retains last valid configuration<br/>Does not broadcast, outputs diagnostic log"]
+    E -->|"No (syntax error)"| F["Retain last valid configuration<br/>Do not broadcast, output diagnostic logs"]
     E -->|"Yes"| G["lifecycle.emit config.updated<br/>Carries old_config / new_config"]
     G --> H["Component listeners respond<br/>(logger / scope / command / GC ... )"]
 ```
@@ -3478,34 +3479,34 @@ flowchart TD
 **Two detection paths** (either one suffices, both provide fallback):
 
 | Path | Mechanism | Trigger Timing |
-|------|-----------|----------------|
-| Background watcher | Daemon thread `config-watcher` polls file `mtime` every **5 seconds** | External file modification detected within 5 seconds at most |
-| Lazy detection | Any `getConfig()` read checks file if cache is over **60 seconds** | Next time configuration is read |
+|------|------|---------|
+| Background watcher | Daemon thread `config-watcher` polls file `mtime` every **5 seconds** | Changes to external files are detected within 5 seconds at most |
+| Lazy detection | Any `getConfig()` read, if cache exceeds **60 seconds** then checks file first | Next time configuration is read |
 
-> **The framework does not hurt itself**: When `setConfig()` writes to disk, it records the "mtime written by itself", and the watcher excludes it, treating only **external edits** as changes.
+> **The framework will not harm itself**: `setConfig()` records the "mtime written by itself" when writing to disk. The watcher compares it and excludes it, treating only **external edits** as changes.
 
 **Two types of configuration change events**:
 
 | Event | Triggerer | Data | Typical Scenario |
-|-------|-----------|------|------------------|
-| `config.set` | Code / Dashboard calls `setConfig()` | `{key, old_value, new_value}` | Single key write (template generation, status recording, runtime configuration change) |
-| `config.updated` | External edit detected by watcher/lazy detection | `{old_config, new_config, config_file}` | Hand-editing `config.toml` |
+|------|--------|------|---------|
+| `config.set` | Code / Dashboard calls `setConfig()` | `{key, old_value, new_value}` | Single-key write (template generation, status recording, runtime configuration change) |
+| `config.updated` | External edit detected by watcher/lazy detection | `{old_config, new_config, config_file}` | Manual edit of `config.toml` |
 
-> `setConfig()` defaults to **delayed disk write** (5 seconds, merges multiple writes), `immediate=True` writes immediately. The watcher detects external changes and only updates the in-memory cache, **does not** write external changes back to the file.
+> `setConfig()` defaults to **delayed disk write (5 seconds)** (merging multiple writes), `immediate=True` writes immediately. The watcher detects external modifications and only updates the in-memory cache, **does not** write external changes back to the file.
 
-**List of automatic response components** (both event types are typically subscribed to, response content is consistent):
+**List of automatic response components** (both event types are usually subscribed, response content is consistent):
 
 | Component | Listener | Response |
-|-----------|----------|----------|
-| Logger | `config.set` + `config.updated` | Level/file/directory segment/memory limit/format/level exclusion reapplies (with change detection, no change means no action) |
-| Scope | `config.updated` | Scope binding cache rebuilds |
-| Command System | `config.updated` | Prefix/case sensitivity/space prefix/must_at_bot parsing parameters refresh, takes effect on next message |
-| Adapter Concurrency | `config.set` + `config.updated` | `handler_max_concurrency` invalidates and rebuilds semaphore |
-| Proactive GC | `config.set` + `config.updated` | `proactive_gc_*` immediately restarts GC background task |
-| Adapter | Routes to `on_config_update` | Each adapter's `on_config_update(old, new)` callback |
-| Module | Routes to `on_config_update` | Each module's `on_config_update(old, new)` callback |
-| Storage | `config.updated` | `use_global_db` change **only warns** (needs restart) |
-| Router | `config.updated` | `cors.*` / `security.*` change **only warns** (needs restart) |
+|------|------|------|
+| Logger | `config.set` + `config.updated` | Reapply level/file/directory segmentation/memory limit/format/level exclusion (with change detection, no change means no action) |
+| Scope | `config.updated` | Rebuild scope binding cache |
+| Command System | `config.updated` | Refresh prefix/case sensitivity/space prefix/must_at_bot parsing parameters, takes effect on next message |
+| Adapter Concurrency | `config.set` + `config.updated` | Invalidate and rebuild semaphore with `handler_max_concurrency` |
+| Proactive GC | `config.set` + `config.updated` | Immediately restart GC background task with `proactive_gc_*` |
+| Adapter | Route to `on_config_update` | Each adapter's `on_config_update(old, new)` callback |
+| Module | Route to `on_config_update` | Each module's `on_config_update(old, new)` callback |
+| Storage | `config.updated` | `use_global_db` change **only warns** (requires restart) |
+| Router | `config.updated` | `cors.*` / `security.*` change **only warns** (requires restart) |
 
 ## Complete Configuration Example
 
@@ -3545,6 +3546,7 @@ modules = []
 adapters = []
 
 [ErisPulse.storage]
+backend = "sqlite"
 use_global_db = false
 
 [ErisPulse.event.command]
@@ -3572,16 +3574,16 @@ ssl_keyfile = "/path/to/key.pem"
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------------------|------|---------------|-------------|
+|---------|------|---------|------|
 | host | string | 0.0.0.0 | Listening address, 0.0.0.0 means all interfaces |
 | port | integer | 8000 | Listening port number |
-| auto_start | boolean | true | Whether to automatically start the routing server during `sdk.init()`. Set to `false` to skip starting the routing server (pure event/no WebUI scenario) |
+| auto_start | boolean | true | Whether to automatically start the routing server in `sdk.init()`. Set to `false` to skip the routing server startup (pure event/no WebUI scenario) |
 | ssl_certfile | string | empty | SSL certificate file path |
 | ssl_keyfile | string | empty | SSL private key file path |
 
 ## Master System Configuration
 
-The master system is used to identify the "master account" of the framework (e.g., bot administrator). `master.users` supports two writing methods:
+The master system is used to identify the "framework master" account (e.g., Bot administrator). `master.users` supports two writing methods:
 
 ```toml
 [ErisPulse.master]
@@ -3593,37 +3595,37 @@ users = ["123456", "789012"]
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------------------|------|---------------|-------------|
-| users | array / object | empty | Master account list. `list` form is global master (effective on all platforms); `dict` form specifies per platform (key is platform name, value is the master account list for that platform) |
+|---------|------|---------|------|
+| users | array / object | empty | List of master account IDs. `list` form is global master (effective on all platforms); `dict` form specifies per platform (key is platform name, value is the list of master account IDs for that platform) |
 
-Code checks using `master.is_master(event)` or `master.is_master(platform, user_id)`, each call reads the configuration in real-time (supports hot update, no restart needed):
+Code checks using `master.is_master(event)` or `master.is_master(platform, user_id)`, each call reads the configuration in real-time (supports hot updates, no restart needed):
 
 ```python
 from ErisPulse.Core import master
 
 if master.is_master(event):
-    await event.reply("Hello master")
+    await event.reply("Hello, Master")
 ```
 
-### Master Determination Chain and Runtime Additions/Removals
+### Master Identification Chain and Runtime Additions/Deletions
 
-The master determination chain is **configuration master → runtime record → provider chain**:
+The master identification chain is **configuration master → runtime record → provider chain**:
 
 ```python
 from ErisPulse.Core import master
 
 master.is_master(event)                      # Determine from event
 master.is_master("yunhu", "123")             # Explicit determination
-master.add("yunhu", "123")                   # Runtime addition (default persistent; persist=False is only in-memory)
-master.remove("yunhu", "123")                # Removal (default persistent)
-master.list()                                # Aggregation: {"global": [...], "<platform>": [...]}
+master.add("yunhu", "123")                   # Add at runtime (defaults to persistence; persist=False only in memory)
+master.remove("yunhu", "123")                # Remove (defaults to persistence)
+master.list()                                # Aggregate: {"global": [...], "<platform>": [...]}
 ```
 
 ### Custom Identity Source (Provider)
 
-In addition to configuration, custom identity sources can be registered: `fn(platform, user_id) -> bool`, which are tried in sequence when built-in identity sources (configuration + runtime record) do not match; any provider that allows access is recognized as a master. Suitable for integrating adapter administrator interfaces, database roles, and other external identity systems.
+In addition to configuration, you can register a custom identity source: `fn(platform, user_id) -> bool`, which is tried in sequence when built-in identity sources (configuration + runtime record) do not match. If any provider allows, the user is recognized as a master. Suitable for integrating with adapter administrator interfaces, database roles, and other external identity systems.
 
-The registration entry `master.provider` supports both decorator and function-based writing methods, and unregistration is done through the unregistered function:
+Registration entry `master.provider` supports both decorator and function-based writing methods. Unregister is done through the registered function's `fn.unregister()`:
 
 ```python
 from ErisPulse.Core import master
@@ -3636,16 +3638,17 @@ def admin_provider(platform, user_id):
 master.is_master("yunhu", "999")   # True
 admin_provider.unregister()        # Unregister when no longer needed
 
-# Method 2: Function-based (register during module loading / unregister during unloading)
+# Method 2: Function-based (register at module loading, unregister at unload)
 fn = master.provider(admin_provider)
 fn.unregister()
 ```
 
-> Provider exceptions are caught and skipped, not blocking the identity determination chain. Binding instance methods cannot attach `unregister`, so for paired registration/unregistration scenarios, use a **module-level function**.
+> Provider exceptions are caught and skipped, not blocking the identity determination chain.
+> Binding instance methods cannot attach `unregister`, for paired registration/unregistration scenarios, use a **module-level function**.
 
 ### User Priority: Master Effect Scope Decided by User
 
-The `master=True` of a command is only a **developer default**: The user can override or loosen it via `ErisPulse.event.overrides.command.<module>.<cmd>.master = true/false` (see [Unified Event Override Configuration](#unified-event-override-configuration-eventoverrides), explicit user configuration takes effect).
+The `master=True` of a command is only a **developer's default**: users can override or loosen it in `ErisPulse.event.overrides.command.<module>.<cmd>.master = true/false` (see [Unified Event Override Configuration](#unified-event-override-configuration-eventoverrides), explicit user configuration takes effect).
 
 ## Logging Configuration
 
@@ -3653,27 +3656,27 @@ The `master=True` of a command is only a **developer default**: The user can ove
 [ErisPulse.logger]
 level = "INFO"
 log_files = []                # Explicit list of log files (mutually exclusive with log_dir, higher priority)
-log_dir = ""                  # Log directory (automatically segment-rotates after setting; mutually exclusive with log_files, log_files has higher priority)
-log_rotation = "size"         # Segmenting method: "size" / "date" / "none"
-log_max_size_mb = 10          # Single file size limit in size mode (MB), rotates to .1/.2 backup after exceeding
+log_dir = ""                  # Log directory (auto-created). After setting, automatically segments and rotates logs in `erispulse.log` in the directory according to `log_rotation`; mutually exclusive with `log_files`, `log_files` has higher priority
+log_rotation = "size"         # Segmentation method: "size" / "date" / "none"
+log_max_size_mb = 10          # Single file size limit (MB) in size mode, rotates to `.1`/`.2` backup when exceeded
 log_backup_count = 5          # Number of retained historical log files, oldest backups beyond this are automatically deleted
-log_rotation_when = "midnight"  # Date mode rotation cycle: S/M/H/D/midnight (default is midnight daily)
+log_rotation_when = "midnight"  # Date mode rotation cycle: S/M/H/D/midnight (default daily at midnight)
 memory_limit = 1000
 exclude_levels = ["EVENT"]
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------------------|------|---------------|-------------|
-| level | string | INFO | Log level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed debugging information of the framework internal) |
-| format | string | rich | Log output format: `rich` (colorful, default), `plain` (plain text without color, suitable for log collection/pipeline redirection), `json` (structured JSON, suitable for ELK, etc.) |
-| log_files | array | empty | List of log output files (explicit paths, not segmented) |
-| log_dir | string | empty | Log output directory (automatically created). After setting, writes to `erispulse.log` in the directory and automatically segments according to `log_rotation`; mutually exclusive with `log_files`, `log_files` has higher priority |
-| log_rotation | string | size | Segmenting method: `size` (by size) / `date` (by time) / `none` (no segmentation) |
-| log_max_size_mb | float | 10 | Single file size limit in size mode (MB), rotates to .1/.2 backup after exceeding |
+|---------|------|---------|------|
+| level | string | INFO | Log level: TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL (TRACE is the lowest level, outputs detailed debugging information from the framework) |
+| format | string | rich | Log output format: `rich` (colored, default), `plain` (plain text without color, suitable for log collection/pipeline redirection), `json` (structured JSON, suitable for ELK, etc.) |
+| log_files | array | empty | List of log output files (explicit paths, no segmentation) |
+| log_dir | string | empty | Log output directory (auto-created). After setting, logs are written to `erispulse.log` in the directory and automatically segmented according to `log_rotation`; mutually exclusive with `log_files`, `log_files` has higher priority |
+| log_rotation | string | size | Segmentation method: `size` (by size) / `date` (by time) / `none` (no segmentation) |
+| log_max_size_mb | float | 10 | Single file size limit (MB) in size mode, rotates to `.1`/`.2` backup when exceeded |
 | log_backup_count | integer | 5 | Number of retained historical log files, oldest backups beyond this are automatically deleted |
-| log_rotation_when | string | midnight | Date mode rotation cycle: `S`/`M`/`H`/`D`/`midnight` (default is midnight daily) |
+| log_rotation_when | string | midnight | Date mode rotation cycle: `S`/`M`/`H`/`D`/`midnight` (default daily at midnight) |
 | memory_limit | integer | 1000 | Number of log entries saved in memory |
-| exclude_levels | array | empty | Levels to exclude. Logs of excluded levels are **completely discarded** (not written to memory, not pushed to Dashboard subscribers, not printed, not written to file). Supports hot update |
+| exclude_levels | array | empty | Levels to exclude. Logs of excluded levels are **completely discarded** (not written to memory, not pushed to Dashboard or other subscribers, not printed, not written to file). Supports hot updates |
 
 You can also dynamically switch in code:
 
@@ -3690,7 +3693,7 @@ logger.set_output_dir("logs", rotation="date", backup_count=7)
 > [!NOTE]
 > `log_dir` and related segmentation configuration require ErisPulse **2.8.0+**.
 
-> **Privacy Protection**: Message receiving and sending content is recorded at the **EVENT level** (value 21). Setting `exclude_levels = ["EVENT"]` prevents the backend (such as the Dashboard log panel) from seeing message content in various groups/private chats, while not affecting other log levels.
+> **Privacy Protection**: Message content is recorded at the **EVENT level** (value 21). Setting `exclude_levels = ["EVENT"]` prevents the backend (e.g., Dashboard log panel) from seeing message content in groups/private chats, while not affecting logs of other levels.
 
 > [!NOTE]
 > The `exclude_levels` feature requires ErisPulse **2.8.0+**.
@@ -3709,48 +3712,48 @@ adapters = []
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------------------|------|---------------|-------------|
-| enable_lazy_loading | boolean | true | Whether to enable module lazy loading |
+|---------|------|---------|------|
+| enable_lazy_loading | boolean | true | Whether to enable lazy loading of modules |
 | uninit_timeout | integer | 30 | Graceful shutdown timeout (seconds), forcibly terminates after exceeding. 0 means no timeout set |
-| strict_mode | integer | 0 | Strict mode level, see "Strict Mode" section below |
-| handler_max_concurrency | integer | 64 | Maximum concurrent Task count for event handlers, increasing this improves throughput but increases memory usage |
-| offline_bot_expiry | integer | 3600 | Automatic expiration time for offline bot records (seconds), 0 means never expires |
+| strict_mode | integer | 0 | Strict mode level, see "Strict Mode" below |
+| handler_max_concurrency | integer | 64 | Maximum number of concurrent tasks for event handlers, increasing improves throughput but increases memory usage |
+| offline_bot_expiry | integer | 3600 | Automatic expiration time for offline bot records (seconds), 0 means no expiration |
 
 ### Proactive GC Configuration
 
-After SDK initialization, a proactive GC background task is started, periodically performing Python GC and internal resource recycling (such as cleaning offline bots). All parameters support hot updates, and the task is immediately restarted when changes occur.
+After SDK initialization, a proactive GC background task is started, periodically performing Python GC and internal resource recycling (e.g., cleaning up offline bots). All parameters support hot updates, and changes immediately restart the task.
 
 | Configuration Item | Type | Default Value | Description |
-|---------------------|------|---------------|-------------|
+|---------|------|---------|------|
 | proactive_gc_interval | number | 300 | Recycling interval (seconds), supports decimals. 0 means disable proactive GC |
-| proactive_gc_generation | integer | 0 | Regular round recycling generation (0/1/2, clamped to 0..2). Note that `gc.collect(2)` is equivalent to full recycling, default 0 maintains lightness; deep recycling is triggered periodically by `proactive_gc_full_every` |
-| proactive_gc_full_every | integer | 20 | Full recycling every N rounds, 0 means disable periodic full recycling. Full recycling is constrained by the `proactive_gc_memory_growth_mb` threshold |
-| proactive_gc_memory_growth_mb | integer | 32 | Full recycling memory growth threshold (MB): compared against the memory baseline after the last full recycling (preferring tracemalloc, then RSS), full recycling only occurs when growth reaches this value. 0 means no threshold set |
-| proactive_gc_idle_only | boolean | false | When enabled, Python GC is skipped in this round during event peaks (pending handlers exist), avoiding pauses and message processing competition; internal resource recycling is unaffected |
-| proactive_gc_gen0_min | integer | 500 | Lower bound for triggering regular round recycling of gen0 garbage: `gc.get_count()[0]` below this value directly skips (empty round has almost zero overhead). 0 means always recycle |
+| proactive_gc_generation | integer | 0 | Regular round recycling generation (0/1/2, clamped to 0..2). Note that `gc.collect(2)` is equivalent to full recycling, default 0 keeps it lightweight; deep recycling is triggered periodically by `proactive_gc_full_every` |
+| proactive_gc_full_every | integer | 20 | Full recycling every N rounds, 0 means disable periodic full recycling. Full recycling is constrained by `proactive_gc_memory_growth_mb` threshold |
+| proactive_gc_memory_growth_mb | integer | 32 | Full recycling memory growth threshold (MB): compares the memory baseline after the last full recycling (prioritizing tracemalloc, then RSS), only performs full recycling when the growth reaches this value. 0 means no threshold set |
+| proactive_gc_idle_only | boolean | false | When enabled, skips Python GC during event peaks (pending handlers exist), avoiding pauses and message processing competition; internal resource recycling is unaffected |
+| proactive_gc_gen0_min | integer | 500 | Lower bound for triggering regular round recycling of gen0 garbage: `gc.get_count()[0]` below this value directly skips (empty rounds nearly zero overhead). 0 means always recycle |
 
-> **Change in 2.7.1**: The default `proactive_gc_generation` is adjusted from `2` to `0`, and `proactive_gc_full_every` is adjusted from `0` to `20`. Previously `generation=2` meant full recycling every round; the new default maintains recycling coverage while significantly reducing empty round overhead. Explicitly configured old values still behave as intended.
+> **Change in 2.7.1**: The default `proactive_gc_generation` is adjusted from `2` to `0`, and `proactive_gc_full_every` is adjusted from `0` to `20`. Previously, `generation=2` meant full recycling every round; the new default maintains coverage while significantly reducing empty round overhead. Explicitly configured old values still follow literal semantics.
 
 ### Strict Mode
 
-Strict mode controls the handling strategy for modules/adapters when they are non-compliant or fail during the loading phase. Modern modules/adapters should inherit corresponding base classes (`BaseModule`/`BaseAdapter`); components that do not inherit base classes affect the framework's context system and fallback cleanup, potentially causing resource leaks.
+Strict mode controls the handling strategy for modules/adapters that are non-compliant or fail during the loading phase. Modern modules/adapters should inherit corresponding base classes (`BaseModule`/`BaseAdapter`); components not inheriting base classes affect the framework's context system and fallback cleanup, potentially causing resource leaks.
 
-> **Change in 2.5.2**: The default level is adjusted from `1` (skip) to `0` (lenient) to reduce loading issues for new users. Components that do not inherit base classes will still be attempted to load with a WARNING, rather than being directly rejected. To restore the previous behavior, explicitly set `strict_mode = 1`.
+> **Change in 2.5.2**: The default level is adjusted from `1` (skip) to `0` (lenient) to reduce loading issues for new users. Components not inheriting base classes will be warned and attempted to load, rather than directly rejected. To restore old behavior, explicitly set `strict_mode = 1`.
 
 | Level | Name | Behavior |
-|-------|------|----------|
-| 0 | Lenient (default) | Violations only warn, components that do not inherit base classes are still attempted to load (compatible with old components) |
-| 1 | Strict-Skip | Reject components that do not inherit base classes and skip, other components start normally |
-| 2 | Strict-Fatal | Collect all violations and report them together, then terminate the entire startup |
+|------|------|------|
+| 0 | Lenient (default) | Non-compliance only warns, components not inheriting base classes are still attempted to load (compatible with old components) |
+| 1 | Strict-Skip | Rejects components not inheriting base classes and skips them, other components start normally |
+| 2 | Strict-Fatal | Collects all violations and reports them collectively, then terminates the entire startup |
 
-In all levels, "loading/registration/initialization phase errors" from components themselves are always skipped; the difference is in:
+In all levels, "errors during loading/registration/initialization phase" (component self-crash) are always skipped. The difference lies in:
 
-- **0 → 1**: The only behavioral change is that "not inheriting base classes" changes from "still loading" to "skipping".
-- **1 → 2**: All violations (not inheriting base classes, loading failure, registration failure, initialization failure, etc.) are upgraded to fatal, collected at the startup checkpoint and reported as a violation list, then terminated.
+- **0 → 1**: The only behavioral change is that "not inheriting base class" changes from "still loading" to "skipping."
+- **1 → 2**: All violations (not inheriting base class, loading failure, registration failure, initialization failure, etc.) are upgraded to fatal, collected at the startup checkpoint and output as a violation list before terminating.
 
-#### Exemption List
+#### Exception List
 
-If some components temporarily cannot migrate (e.g., dependent old modules), they can be added to the exemption list. Components listed here will be treated leniently even if non-compliant, and continue loading:
+If certain components temporarily cannot migrate (e.g., dependent old modules), you can add them to the exception list. Components listed here will be treated leniently even if non-compliant, continuing to load:
 
 ```toml
 [ErisPulse.framework.strict_mode_exceptions]
@@ -3758,18 +3761,56 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> When a component is rejected by strict mode, the log will clearly indicate how to resume loading (add to the exemption list or lower the level).
+> When a component is rejected by strict mode, the log will clearly indicate how to restore loading (add to exception list or lower level).
 
 ## Storage Configuration
 
+Since version 2.8.0, the storage engine supports three asynchronous backends, with **completely consistent APIs and one-click configuration switching**:
+
+| Backend | Driver | Installation | Characteristics |
+|------|------|------|------|
+| SQLite (Default) | aiosqlite | Ready to use out of the box | Zero configuration, single file, WAL concurrency |
+| MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | Existing MySQL infrastructure, shared multi-instance |
+| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | Strong transaction capability, high concurrency |
+
 ```toml
 [ErisPulse.storage]
-use_global_db = false
+backend = "sqlite"        # "sqlite" (default) / "mysql" / "postgres"
+use_global_db = false     # Only for SQLite: use package-wide global database data/config.db
+
+[ErisPulse.storage.mysql]      #生效于backend = "mysql"时
+host = "127.0.0.1"
+port = 3306
+user = "erispulse"
+password = ""
+database = "erispulse"
+# charset = "utf8mb4"
+# pool_min = 1
+# pool_max = 10
+
+[ErisPulse.storage.postgres]   #生效于backend = "postgres"时
+host = "127.0.0.1"
+port = 5432
+user = "erispulse"
+password = ""
+database = "erispulse"
+# pool_min = 1
+# pool_max = 10
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------------------|------|---------------|-------------|
-| use_global_db | boolean | false | Whether to use a global database (within package) instead of the project database. When `true`, all projects share the SQLite database within the ErisPulse package; when `false` (default), each project uses an independent database in the `config/` directory |
+|---------|------|---------|------|
+| backend | string | sqlite | Storage backend: `sqlite` / `mysql` / `postgres`, switch with zero code changes |
+| use_global_db | boolean | false | Only for SQLite: whether to use the package-wide global database instead of the project-specific database |
+| storage.mysql.* | table | see above | MySQL connection parameters (host / port / user / password / database / charset / pool) |
+| storage.postgres.* | table | see above | PostgreSQL connection parameters (host / port / user / password / database / pool) |
+
+Environment variables are also supported for overriding (Docker / 12-factor): `ErisPulse.storage.postgres.host` → `ERISPULSE_STORAGE_POSTGRES_HOST`.
+
+> [!TIP]
+> - Connection parameters require a framework restart to take effect after changes; automatic exponential backoff retry on initial connection pool creation failure
+> - Use a verification script before switching backends: `python tests/devs/test_storage_backend_verify.py --backend mysql`
+> - For complete details on transactions, dialect differences, and custom backends, see [Storage Backends](../advanced/storage-backends.md)
 
 ## Event Configuration
 
@@ -3783,11 +3824,11 @@ allow_space_prefix = false
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------------------|------|---------------|-------------|
+|---------|------|---------|------|
 | prefix | string | / | Command prefix |
-| case_sensitive | boolean | true | Whether to distinguish case (`/Help` and `/help` are different commands) |
+| case_sensitive | boolean | true | Whether to distinguish case (`/Help` and `/help` as different commands) |
 | allow_space_prefix | boolean | false | Whether to allow space as a prefix |
-| must_at_bot | boolean | false | Whether to require @bot to trigger the command (private chat is not restricted) |
+| must_at_bot | boolean | false | Whether the command must be triggered by @ing the bot (private chats are not restricted) |
 
 ### Message Configuration
 
@@ -3797,8 +3838,8 @@ ignore_self = true
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------------------|------|---------------|-------------|
-| ignore_self | boolean | true | Whether to ignore the bot's own messages |
+|---------|------|---------|------|
+| ignore_self | boolean | true | Whether to ignore messages from the bot itself |
 
 ## Internationalization Configuration
 
@@ -3808,8 +3849,8 @@ language = "auto"
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------------------|------|---------------|-------------|
-| language | string | auto | Language for displaying framework built-in text. Set to `auto` to automatically detect system language, or set to a specific code: `zh-CN`, `zh-TW`, `en`, `ja`, `ru` |
+|---------|------|---------|------|
+| language | string | auto | The display language for framework built-in text. Set to `auto` to automatically detect system language, or set to a specific code: `zh-CN`, `zh-TW`, `en`, `ja`, `ru` |
 
 ## Module Configuration
 
@@ -3838,62 +3879,64 @@ sdk.config.setConfig("MyModule.timeout", 60)
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` defaults to delayed write (about every 5 seconds batched to file), set `immediate=True` to immediately persist. Configuration changes trigger the `config.set` lifecycle event.
+> `setConfig` defaults to delayed write (about every 5 seconds batch save to file), setting `immediate=True` immediately persists. Configuration changes trigger the `config.set` lifecycle event.
 
 ## Scope Configuration (scope)
 
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-Scope declares "what range it is effective in" — which modules are available in a certain platform/Bot/session (① module dimension), whether events are received for a certain user/group/Bot/adapter (② identity dimension), and which outbound calls a module can initiate (③ outbound dimension):
+Scope declares "**what range it is effective in**"—which modules are available in a certain platform/Bot/session (① module dimension), which events of a certain user/group/Bot/adapter are received (② identity dimension), and which outbound calls a module can initiate (③ outbound dimension):
 
 ```toml
 [ErisPulse.scope]
-default_allow = true        # Global default (false = implicit deny strict mode; does not affect outbound dimension)
+default_allow = true        # Global default (false = implicit denial in strict mode; does not affect outbound dimension)
 cache_size = 1024           # LRU cache size
 
-# ① Module dimension (priority: session > Bot > platform; entries support exact/glob/re: regex)
+# ① Module dimension (priority: session > Bot > platform; entries support precise/glob/re: regex)
 [ErisPulse.scope.platforms.onebot11]
 modules = ["Chat", "Tool*"]
 blocked = ["re:^Danger"]
 
-# Sub-level binding write merge = true merges with lower priority entry by entry (default overall overwrite)
+# Sub-level binding with merge=true merges entries with lower priority (default is overall overwrite)
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Music"]
 merge = true
 
-# ② Identity dimension (priority: user > session > Bot > adapter; only allow or deny in each level)
+# ② Identity dimension (priority: user > session > Bot > adapter; only allow or deny per level)
 [ErisPulse.scope.identity.adapters.onebot11]
-deny = true                 # All events on this platform are discarded at the entry
+deny = true                 # Deny all events on this platform at entry
 [ErisPulse.scope.identity.users.onebot11]
-allow = ["u_admin"]         # User key supports glob / re: regex
+allow = ["u_admin"]         # User keys support glob/re: regex
 deny = ["u_bad", "spam_*"]
 
-# ③ Outbound dimension (default all allowed; rules are inline tables, entries support exact/glob/re: regex)
+# ③ Outbound dimension (default is fully allowed; rules are inline tables, entries support precise/glob/re: regex)
 [ErisPulse.scope.actions.MyModule]
-send = { deny = true }                    # Completely deny sending
-api = { allow = ["get_*"] }               # Only allow standard API query types
-request = { deny = true }                 # Deny handling requests
+send = { deny = true }                    # Deny all sending
+api = { allow = ["get_*"] }               # Only allow standard query APIs
+request = { deny = true }                 # Deny request handling
 ```
 
 | Configuration Item | Type | Description |
-|---------------------|------|-------------|
-| `scope.default_allow` | boolean | Global default: allow/deny for modules/identity not matched by rules (`true`) |
+|---------|------|------|
+| `scope.default_allow` | boolean | Global default: allow/deny for modules/identity not matched by rules (true) |
 | `scope.cache_size` | integer | LRU cache size (default 1024) |
 | `scope.platforms / bots / sessions` | table | ① Module three-level binding: `{modules=[...], blocked=[...], merge=bool?}` |
 | `scope.identity.adapters / bots / sessions / users` | table | ② Identity four-level binding: `{allow=true}` / `{deny=true}` |
-| `scope.actions.<module>.<action>` | table | ③ Outbound rules: `{allow=[...], deny=true|[...]}` (action takes send / api / request) |
+| `scope.actions.<module>.<action>` | table | ③ Outbound rules: `{allow=[...], deny=true|[...]}` (actions are send/api/request) |
 
-> Detailed explanation and runtime API (dimensional `sdk.scope.set_module()` / `set_identity()` / `set_action()`, determination `is_allowed()` / `is_identity_allowed()` / `is_action_allowed()`, and dictionary-style fallback `get()` / `set()` / `delete()`) are available in [Scope (scope)](../advanced/scope.md).
+> Detailed explanation and runtime API (dimensional `sdk.scope.set_module()` / `set_identity()` /
+> `set_action()`, determination `is_allowed()` / `is_identity_allowed()` / `is_action_allowed()`,
+> and dictionary-style default `get()` / `set()` / `delete()`) can be found in [Scope (scope)](../advanced/scope.md).
 
 ## Unified Event Override Configuration (event.overrides)
 
-Unified override system: Overwrite behavior of any module handler by **event type** without modifying module code. Standard types (meta / message / notice / request) and extended types (command) each have their own overridable parameters:
+Unified override system: Override behavior of any module handler by **event type** without modifying module code. OneBot12 standard types (meta/message/notice/request) and extended types (command) each have their own configurable parameters:
 
 ```toml
 [ErisPulse.event.overrides]
 
-# message: text trigger conditions (AND with conditions in code)
+# message: Text trigger conditions (AND with code-side conditions)
 [ErisPulse.event.overrides.message.ChatModule]
 pattern = "闲聊*"
 
@@ -3901,32 +3944,34 @@ pattern = "闲聊*"
 [ErisPulse.event.overrides.notice.MyModule]
 detail_types = ["group_increase"]
 
-# command (extended type): implement parameter override (user priority; disable via acl deny)
+# command (extended type): Implement parameter override (user priority; disable via acl deny)
 [ErisPulse.event.overrides.command.MyModule.restart]
-master = true               # Override to only framework master (false opens developer's master restriction)
+master = true               # Override to only allow framework master (false opens developer's master restriction)
 hidden = true               # Hide in help list
-aliases = ["rs"]            #生效别名
+aliases = ["rs"]            # Effective alias
 
-# acl (command exclusive): command user allow/deny lists (command names support glob / re: regex, exact keys take priority)
+# acl (command-specific): User allow/deny lists (command names support glob/re: regex, exact keys have priority)
 [ErisPulse.event.overrides.acl."roll*"]
 allow = ["onebot11:u_vip"]  # User identifier "platform:user_id"
 deny = ["onebot11:u_bad"]
 
-# ACL default: allow unconfigured commands (true) / strictly deny (false)
+# ACL default: Allow (true) / strictly deny (false) commands without ACL configuration
 acl_default_allow = true
 ```
 
 | Configuration Item | Type | Description |
-|---------------------|------|-------------|
+|---------|------|------|
 | `event.overrides.message.<module>` | table | Text condition: `{pattern="...", regex="..."}` |
 | `event.overrides.notice / request.<module>` | table | `{detail_types=[...], pattern, regex}` |
 | `event.overrides.meta.<module>` | table | `{detail_types=[...]}` |
-| `event.overrides.command.<module>` | table | Module-level parameter override (e.g., `hidden = true`) |
+| `event.overrides.command.<module>` | table | Module-level parameter override (scalar values like `hidden = true`) |
 | `event.overrides.command.<module>.<command>` | table | Command-level override (command-level priority) |
-| `event.overrides.acl.<command name>` | table | User allow/deny lists: `{allow=[...], deny=[...]}` |
-| `event.overrides.acl_default_allow` | boolean | ACL default: allow unconfigured commands (true) / strictly deny (false) |
+| `event.overrides.acl.<command_name>` | table | User allow/deny lists: `{allow=[...], deny=[...]}` |
+| `event.overrides.acl_default_allow` | boolean | ACL default: Allow (true) / strictly deny (false) commands without ACL configuration |
 
-> Runtime API (after `from ErisPulse.Core.Event import overrides`, call `overrides.message.set()` / `overrides.command.set()` / `overrides.acl.set()` via type sub-namespace, or access via `sdk.Event.overrides`) is available in [Event Handling Introduction · Event Override](../getting-started/event-handling.md#event-override-dont-modify-module-code-override-behavior-of-any-event-type).
+> Runtime API (after `from ErisPulse.Core.Event import overrides` call sub-namespace by type `overrides.message.set()` / `overrides.command.set()` / `overrides.acl.set()` etc.,
+> or access via `sdk.Event.overrides`)
+> See [Event Handling Introduction · Event Override](../getting-started/event-handling.md#event-override-does-not-modify-module-code-override-behavior-of-any-event-type) for details.
 
 ## Command Parsing Configuration (event.command)
 
@@ -9794,11 +9839,11 @@ API 参考
 
 # Core Module API
 
-This document provides a quick reference for the ErisPulse core module API, including method signatures and brief descriptions. Click the "Full Documentation" link for each module to view detailed usage and examples.
+This document provides a quick reference of the ErisPulse core module APIs, including method signatures and brief descriptions. Click the "Full Documentation" link for each module to learn detailed usage and examples.
 
 ## Storage Module
 
-A key-value storage system based on SQLite, supporting generic SQL chainable queries.
+A key-value storage system based on SQLite, supporting generic SQL chained queries.
 
 ### Basic Operations
 
@@ -9830,13 +9875,13 @@ with sdk.storage.transaction():
 ### Attribute Access
 
 ```python
-sdk.storage.my_key          # equivalent to sdk.storage.get("my_key")
-sdk.storage.my_key = "val"  # equivalent to sdk.storage.set("my_key", "val")
+sdk.storage.my_key          # Equivalent to sdk.storage.get("my_key")
+sdk.storage.my_key = "val"  # Equivalent to sdk.storage.set("my_key", "val")
 ```
 
-### SQL Chainable Queries
+### SQL Chained Query
 
-The Storage module provides a chainable query builder style for generic SQL queries, supporting CRUD operations on custom tables.
+The Storage module provides a chained-call style generic SQL query builder, supporting CRUD operations for custom tables.
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -9848,11 +9893,11 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> For the complete chainable query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), refer to [SQL Query Builder](../advanced/sql-builder.md).
+> For the full chained query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), refer to [SQL Query Builder](../advanced/sql-builder.md).
 
 ### Storage Backend Abstraction
 
-`StorageManager` inherits from the `BaseStorage` abstract base class, supporting extension to other storage mediums (Redis, MySQL, etc.).
+`StorageManager` inherits from the `BaseStorage` abstract base class, supporting extensions to other storage media (Redis, MySQL, etc.).
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -9860,22 +9905,22 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 ### Asynchronous Interfaces
 
-The Storage and Config modules both provide asynchronous methods (prefixed with `a`), which can be safely called within asynchronous handlers. Synchronous methods are retained for backward compatibility, requiring no modifications to existing code.
+Both Storage and Config modules provide asynchronous methods (prefixed with `a`), which can be safely called in asynchronous handlers. Synchronous methods are retained, requiring no changes to existing code.
 
 ```python
-# Asynchronous Storage
+# Asynchronous storage
 value = await sdk.storage.aget("key")
 await sdk.storage.aset("key", "value")
 await sdk.storage.adelete("key")
 keys = await sdk.storage.aget_all_keys()
 await sdk.storage.aclear()
 
-# Asynchronous Batch Operations
+# Asynchronous batch operations
 values = await sdk.storage.aget_multi(["k1", "k2"])
 await sdk.storage.aset_multi({"k1": "v1", "k2": "v2"})
 await sdk.storage.adelete_multi(["k1", "k2"])
 
-# Asynchronous Configuration
+# Asynchronous configuration
 value = await sdk.config.agetConfig("MyModule.key")
 await sdk.config.asetConfig("MyModule.key", "value")
 await sdk.config.aforce_save()
@@ -9890,11 +9935,11 @@ TOML-based configuration file management, supporting dot-separated key paths.
 
 | Method | Description |
 |------|------|
-| `getConfig(key, default)` | Retrieve configuration, supports dot paths like `"MyModule.subkey"` |
+| `getConfig(key, default)` | Read configuration, supports dot paths like `"MyModule.subkey"` |
 | `setConfig(key, value, immediate=False)` | Write configuration. If `immediate=True`, save immediately to file |
-| `force_save()` | Force-write in-memory configuration to file |
+| `force_save()` | Force write in-memory configuration to file |
 | `reload()` | Reload configuration from file |
-| `agetConfig(key, default)` | Asynchronously retrieve configuration |
+| `agetConfig(key, default)` | Asynchronously read configuration |
 | `asetConfig(key, value, immediate)` | Asynchronously write configuration |
 | `aforce_save()` | Asynchronously force save |
 | `areload()` | Asynchronously reload |
@@ -9909,11 +9954,11 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` uses delayed write by default (batch save every 5 seconds). Setting `immediate=True` will immediately persist to the configuration file. Configuration changes trigger the `config.set` lifecycle event.
+> `setConfig` uses delayed writing by default (batch saved every 5 seconds). Setting `immediate=True` forces immediate persistence to the configuration file. Configuration changes trigger the `config.set` lifecycle event.
 
 ## Logger Module
 
-A modular logging system based on Rich output, supporting sub-loggers and module-level control.
+A modular logging system based on Rich output, supporting child loggers and module-level control.
 
 ### Basic Usage
 
@@ -9925,11 +9970,11 @@ sdk.logger.error("Error message")
 sdk.logger.critical("Critical error")
 ```
 
-### Sub-loggers
+### Child Loggers
 
 ```python
 child_logger = sdk.logger.get_child("MyModule")
-child_logger.info("Submodule log")
+child_logger.info("Child module log")
 
 child_logger.get_child("utils")  # Supports nesting
 ```
@@ -9940,9 +9985,9 @@ child_logger.get_child("utils")  # Supports nesting
 sdk.logger.set_level("DEBUG")                          # Global level
 sdk.logger.set_module_level("MyModule", "DEBUG")       # Module level
 
-# Supported levels (from low to high):
+# Supported levels (from lowest to highest):
 # TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
-# TRACE is the lowest level, outputting detailed framework internal debug information (event dispatch, route registration, etc.)
+# TRACE is the lowest level, outputs detailed framework debug information (event dispatch, route registration, etc.)
 sdk.logger.set_level("TRACE")                          # Enable all logs
 ```
 
@@ -9950,16 +9995,16 @@ sdk.logger.set_level("TRACE")                          # Enable all logs
 
 For modules like Dashboard to receive structured logs in real-time, supporting level filtering and historical replay.
 
-> **Explicitly subscribe to lower-level logs**: The `min_level` of a subscriber can be lower than the global log level. In this case, low-level logs are **only pushed to matching subscribers**, not output to the console, nor written to memory, thus avoiding pollution of the main log stream.
+> **Explicit subscription of low-level logs**: The `min_level` of a subscriber can be lower than the global log level. In this case, low-level logs are **only pushed to matching subscribers**, not output to console, nor written to memory, thus avoiding pollution of the main log stream.
 >
 > ```python
-> # Global level is INFO, but you can still subscribe to DEBUG logs individually
+> # Global level is INFO, but can still subscribe to DEBUG logs
 > @sdk.logger.handler("debug-tracer", min_level="DEBUG")
 > def on_debug(log_data: dict): ...
 > ```
 
 ```python
-# Decorator approach
+# Decorator style
 @sdk.logger.handler("my-handler", min_level="INFO")
 def on_log(log_data: dict):
     # log_data = {
@@ -9970,14 +10015,14 @@ def on_log(log_data: dict):
     # }
     pass
 
-# Direct call approach
+# Direct call style
 sdk.logger.handler("my-handler", min_level="INFO")(on_log)
 sdk.logger.remove_handler("my-handler")
 ```
 
 | Method | Description |
 |------|------|
-| `handler(id, *, min_level)(func)` | Decorator/functional approach. If `id` is empty, the function name is used. `min_level` can be lower than the global level (low-level logs are only pushed to matching subscribers, not to console/memory). History logs are automatically replayed upon registration |
+| `handler(id, *, min_level)(func)` | Decorator/inline call dual-use. If `id` is empty, function name is used. `min_level` can be lower than global level (low-level logs are only pushed to subscribers, not to console/memory). History logs are automatically replayed upon registration |
 | `remove_handler(id)` | Remove subscriber |
 
 ### Output Control
@@ -9997,14 +10042,14 @@ Adapter manager, managing registration, startup, and shutdown of multi-platform 
 
 | Method | Description |
 |------|------|
-| `get(platform)` | Retrieve adapter instance |
+| `get(platform)` | Get adapter instance |
 | `exists(platform)` | Check if adapter is registered |
 | `enable(platform)` / `disable(platform)` | Enable/disable adapter |
 | `is_enabled(platform)` | Check if enabled |
-| `startup(platforms)` / `shutdown(platforms)` | Start/stop adapter |
+| `startup(platforms)` / `shutdown(platforms)` | Start/stop adapters |
 | `is_running(platform)` | Check if adapter is running |
 | `list_running()` | List all running adapters |
-| `platforms` | Retrieve list of all platform names |
+| `platforms` | Get list of all platform names |
 
 ### Adapter Events
 
@@ -10027,28 +10072,27 @@ sdk.adapter.is_bot_online("telegram", "123456")
 sdk.adapter.get_status_summary()
 ```
 
-> For the complete adapter management API, see [Adapter System API](adapter-system.md).
+> For the full adapter management API, see [Adapter System API](adapter-system.md).
 
 ## Module Module
 
-The module manager, responsible for registering, loading, and unloading plugins.
+Module manager, managing plugin registration, loading, and unloading.
 
 ### API Overview
 
 | Method | Description |
-|--------|-------------|
-| `get(name)` | Retrieve a module instance or a lazy-loading proxy (returns a proxy if the module is registered but not loaded) |
-| `exists(name)` | Check if the module is registered |
-| `is_loaded(name)` | Check if the module is loaded |
-| `is_enabled(name)` | Check if the module is enabled |
-| `enable(name)` / `disable(name)` | Enable/disable the module |
-| `load(name)` / `unload(name)` | Load/unload the module |
-| `call(module, method, *args, timeout=None, **kwargs)` | Call a service method in a target module across modules (protocolized RPC) |
-| `emit_to(module, event, data)` | Deliver a lifecycle event to a specific module |
-| `list_registered()` | List all registered modules |
-| `list_loaded()` | List all loaded modules |
-| `get_info(name)` | Retrieve module information |
-| `get_status_summary()` | Get a status summary of modules |
+|------|------|
+| `get(name)` | Get module instance or lazy-loaded proxy (returns proxy if registered but not loaded) |
+| `exists(name)` | Check if registered |
+| `is_loaded(name)` | Check if loaded |
+| `is_enabled(name)` | Check if enabled |
+| `enable(name)` / `disable(name)` | Enable/disable module |
+| `load(name)` / `unload(name)` | Load/unload module |
+| `call(module, method, *args, timeout=None, **kwargs)` | Cross-module call to target module's service method (protocolized RPC) |
+| `list_registered()` | List registered modules |
+| `list_loaded()` | List loaded modules |
+| `get_info(name)` | Get module information |
+| `get_status_summary()` | Get module status summary |
 
 ### Attribute Access
 
@@ -10058,26 +10102,26 @@ module = sdk.module.ModuleName
 module = sdk.ModuleName  # Equivalent shortcut
 ```
 
-### Inter-Module Calls (RPC)
+### Inter-Module Call (RPC)
 
 ```python
-# Protocolized call: typed errors / lazy module auto-wakeup / owner attribution / timeout semantics
+# Protocolized call: typed errors / lazy module auto-wake / owner attribution / timeout semantics
 result = await sdk.module.call("Chat", "get_history", session_id, n=20)
 ```
 
-Differences between `module.call()` and direct service access `sdk.module.Chat.get_history(...)`:
+Difference between `module.call()` and direct service access `sdk.module.Chat.get_history(...)`:
 
 | | `module.call()` | Direct attribute access |
 |---|---|---|
-| Target not registered/unavailable | Throws `ModuleNotAvailableError` | Throws `AttributeError` |
-| Lazy-loaded module | Automatically wakes up | Async initialization throws `RuntimeError` |
-| `current_owner` | Attributed to the target module | Retains the caller's context |
+| Target not registered/enabled | Throws `ModuleNotAvailableError` | Throws `AttributeError` |
+| Lazy-loaded module | Auto-wakes | Async initialization of module throws RuntimeError |
+| `current_owner` | Attributed to target module | Retains caller |
 | Timeout | Default 30s, can be overridden | None |
 | Scope audit | `actions.<caller>.call` | None |
 
-### Service Contract (`meta.services`)
+### Service Contract (meta.services)
 
-Service providers declare a white-list of exposed services in the `services` field of `get_meta()`, symmetric to `commands`. After declaration, the call surface is restricted:
+Service provider declares the public white list in the `services` field of `get_meta()` (symmetrical to `commands`). After declaration, the call surface is tightened:
 
 ```python
 class ChatModule(BaseModule):
@@ -10088,49 +10132,37 @@ class ChatModule(BaseModule):
     async def get_history(self, session_id, n=20): ...
 ```
 
-- **Default = Developer-agnostic**: If `services` is not declared, any **public** method can be called (backward compatibility), and private methods (prefixed with underscore) are always forbidden; the primary control for restrictions lies in the user-side scope configuration.
-- After declaration: Only methods in the whitelist are callable, and calling outside the whitelist throws `ServiceNotProvidedError`.
-- Caller restrictions: `scope.set_action("CallerModule", "call", deny="Chat.get_history")`
+- **Default = Developer-transparent**: If `services` is not declared, any **public** method can be called (backward compatibility), private methods with underscore are always prohibited; control of restrictions is mainly on the user-side scope configuration
+- After declaration: Only methods in the whitelist are callable, calling outside throws `ServiceNotProvidedError`
+- Caller restriction: `scope.set_action("CallerModule", "call", deny="Chat.get_history")`
 
-**Service Description (`description`)**: `services` supports a dict format to declare descriptions for each service (supports plain strings or i18n dictionaries), providing data for service directories or AI consumption:
+**Service Description (description)**: `services` supports dict form to declare description for each service (supports plain string or i18n dict), for service directory / AI call point description consumption:
 
 ```python
 return ModuleMeta(
     services=[
-        "get_history",                              # Simple form: description automatically taken from the first line of the method's docstring
-        {"name": "translate", "description": "Translate text into the specified language"},
+        "get_history",                              # Simple form: description automatically taken from first line of method docstring
+        {"name": "translate", "description": "Translate text into specified language"},
         {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "Summarize conversation"}},
     ],
 )
 ```
 
-Description resolution priority: **Explicit description (i18n resolved to current language) > First line of method docstring > Empty string**.
+Description resolution priority: **Explicit description (i18n resolved to current language) > Method docstring first line > Empty string**.
 
-### Service Directory (`services`)
+### Service Directory (services)
 
 ```python
 sdk.module.services()
 # {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
-#            'description': 'Retrieve conversation history'}]}
+#            'description': 'Get session history'}]}
 
-sdk.module.services("Chat")  # Query only a specific module
+sdk.module.services("Chat")  # Query only specified module
 ```
 
-Lists only modules that explicitly declare `meta.services`. Each service includes a method signature string and description text, providing the data foundation for MCP (exposing call points to AI).
+Only lists modules that explicitly declare `meta.services`. Each service includes method signature string and description text, providing data foundation for MCP (exposing call points to AI).
 
-### Directed Events (`emit_to`)
-
-```python
-# Sender: Validates that the target module is enabled and delivers the event to `module.<name>.<event>`
-await sdk.module.emit_to("Chat", "message_received", {"text": "hi"})
-
-# Subscriber (within the Chat module): Registers a namespace hook
-lifecycle.on("module.Chat.message_received", handler)
-lifecycle.on("module.Chat", handler)  # Or receive all directed events from this module
-```
-
-> [!NOTE]
-> This feature is new in ErisPulse **2.8.0+**
+> Directed event delivery belongs to the lifecycle layer: `lifecycle.emit(event, data, to="ModuleName")`, see [Inter-Module Communication](../advanced/module-communication.md).
 
 ## Lifecycle Module
 
@@ -10141,11 +10173,11 @@ Event-driven lifecycle manager, providing event submission and listening functio
 | Method | Description |
 |------|------|
 | `on(event, priority=0)` | Decorator to register event handler, supports dot matching and wildcard `*` |
-| `register(event, handler, priority=0)` | Functional approach to register handler |
+| `register(event, handler, priority=0)` | Functional registration of handler |
 | `unregister(event, handler=None)` | Remove handler |
-| `emit(event, data)` | Asynchronously trigger event |
-| `emit_sync(event, data)` | Synchronously trigger event |
-| `submit_event(event_type, msg, data, source)` | Submit standard format event (compatible with old version) |
+| `emit(event, data, to=None)` | Asynchronously trigger event; if `to` specifies owner, event is directed |
+| `emit_sync(event, data, to=None)` | Synchronously trigger event (asynchronous handlers are scheduled with create_task) |
+| `submit_event(event_type, msg, data, source, to=None)` | Submit standard format event (compatible with old version) |
 | `start_timer(id)` / `stop_timer(id)` | Performance timer |
 
 ### Example
@@ -10160,15 +10192,18 @@ async def handle_any_module_event(event_data):
     print(f"Module event: {event_data}")
 
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
+
+# Directed delivery: only distributed to hooks registered by Chat module
+await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
 ```
 
 > For the complete list of standard events and detailed usage, see [Lifecycle Management](../advanced/lifecycle.md).
 
 ## Router Module
 
-HTTP/WebSocket router manager, based on FastAPI + Uvicorn, supporting decorator routing, middleware, grouping, rate limiting, CORS.
+HTTP/WebSocket router manager, based on FastAPI + Uvicorn, supporting decorator routes, middleware, grouping, rate limiting, CORS.
 
-> For the complete router API documentation (decorator routing, WebSocket, middleware, rate limiting, CORS, security headers, etc.), see [Router Manager](../advanced/router.md).
+> For the complete router API documentation (decorator routes, WebSocket, middleware, rate limiting, CORS, security headers, etc.), see [Router Manager](../advanced/router.md).
 
 ### Quick Reference
 
@@ -10193,7 +10228,7 @@ async def list_users(request: HttpRequest):
 
 ## HTTP Client Module
 
-Unified network client, aggregating HTTP requests, WebSocket connections, connection pooling, automatic retries, request statistics, and lifecycle event integration.
+Unified network client, aggregating HTTP requests, WebSocket connections, connection pool management, automatic retries, request statistics, and lifecycle event integration.
 
 > For the complete network client documentation (request methods, response objects, WebSocket client, exception system, etc.), see [Network Client](../advanced/http-client.md).
 
@@ -10216,7 +10251,7 @@ async for text in ws.iter_text():
 
 ### dump_state()
 
-Exports a snapshot of the current running state of the framework, for debugging and diagnostics.
+Exports a snapshot of the current running state of the framework, used for debugging and diagnosis.
 
 ```python
 import json
@@ -10227,44 +10262,44 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 The returned structure contains the status of the following subsystems:
 
 | Field | Description |
-|-------|-------------|
-| `sdk` | SDK initialization status, Python version, runtime platform, timestamp |
-| `adapters` | List of registered/started adapters, online status of Bots on each platform |
-| `modules` | List of registered/active/disabled/lazy-loaded modules |
-| `events` | Number of event handlers for each type (message/notice/request/meta/commands) |
+|------|------|
+| `sdk` | SDK initialization status, Python version, running platform, timestamp |
+| `adapters` | List of registered/started adapters, online status of bots on each platform |
+| `modules` | List of registered/enabled/disabled/lazy-loaded modules |
+| `events` | Number of handlers for various event types (message/notice/request/meta/commands) |
 | `router` | Server running status, number of HTTP/WebSocket routes |
 
 > [!NOTE]
 > Added in ErisPulse **2.5.2+**
 
-## Interaction Interactions
+## Interaction Session
 
-Manage wait_reply suspended waiting and session mutual exclusion leases (`sdk.interaction`).
+Manages wait_reply suspension and session mutual exclusion leases (`sdk.interaction`).
 
 ### Common Methods
 
 ```python
-# Session timeout reminder: Remind after 5 minutes of no reply, reminder is automatically canceled when user replies
+# Session timeout reminder: Remind after 5 minutes of no reply, reminder is automatically canceled if user replies
 reminder = event.remind(300, "Are you still there?")
-reminder.cancel()  # Cancel manually
+reminder.cancel()  # Manually cancel
 
-# Timeout escalation: Must escalate at a specific time (not canceled by reply)
-event.escalate(1800, lambda e: notify_master("30 minutes not handled"))
+# Timeout escalation: Guaranteed delivery at a certain point (not canceled by reply)
+event.escalate(1800, lambda e: notify_master("30 minutes not processed"))
 
 # Multi-path waiting: First come, first served
 which, reply = await event.select(
     event.expect(pattern="agree*", user="A"),
-    event.expect(pattern="refuse*", user="B"),
+    event.expect(pattern="reject*", user="B"),
     timeout=60,
 )
 
-# Session-level waiting: Reply from anyone in the same group can trigger the event
-reply = await event.wait_reply(session=True, prompt="Can someone help answer this?")
+# Session-level waiting: Reply from anyone in the same group can match
+reply = await event.wait_reply(session=True, prompt="Can someone help answer?")
 
-# Query current session ownership (who is currently interacting with this user)
+# Query current session ownership (who is interacting with this user)
 owner = sdk.interaction.get_owner_of(event)
 
-# Acquire session mutual exclusion lease (returns None if occupied)
+# Declare session mutual exclusion lease (returns None if occupied)
 lease = sdk.interaction.acquire(event)
 if lease:
     try:
@@ -10276,23 +10311,23 @@ if lease:
 with sdk.interaction.hold(event) as lease:
     ...
 
-# Suspended session statistics
+# Session suspension statistics
 sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'timers': 3, 'owners': {'Chat': 3}}
 ```
 
-When the module is unloaded or the adapter is closed, all suspended waits and timers are automatically canceled (waiters immediately return `None`). When a reply matches, scope permissions are automatically rechecked (if the user is blacklisted or the module is unbound, the wait is terminated).
+When modules are unloaded or adapters are shut down, their suspended waits and timers are automatically canceled (waiting parties immediately return `None`), and reply matches automatically recheck scope permissions (if user is blacklisted or module is unbound, waiting is terminated).
 
 > [!NOTE]
-> This feature was added in ErisPulse **2.8.0+**
+> This section's capabilities were added in ErisPulse **2.8.0+**
 
-## Transcript Conversation Inbox
+## Transcript Session Inbox
 
-An automatic record and query of recent message streams for each conversation (`sdk.transcript`), serving as a common foundation for context-aware modules such as AI conversations and anti-spam features.
+Automatic recording and querying of recent message streams per session (`sdk.transcript`), serving as a public base for context memory modules like AI conversation and anti-repetition.
 
 ### Common Methods
 
 ```python
-# Convenient query (recommended): The last 20 messages (including users and robots, in ascending time order)
+# Convenient query (recommended): Last 20 messages in current session (including user and bot, in ascending order)
 messages = await event.history(20)
 for m in messages:
     print(m["role"], ":", m["text"])
@@ -10303,10 +10338,10 @@ sdk.transcript.get(event, n=20)
 sdk.transcript.clear(event)
 ```
 
-Configuration (`ErisPulse.transcript`): `enabled` (default: enabled), `max_per_session` (maximum per session, default: 50), `ttl_hours` (global expiration time in hours, default: 168). Data is stored in a separate SQLite table, with lazy cleanup when limits are exceeded or data expires.
+Configuration (`ErisPulse.transcript`): `enabled` (default enabled), `max_per_session` (default 50 per session limit), `ttl_hours` (default 168 hours global expiration). Data is stored in a separate SQLite table, with lazy cleanup for over-limit or expired entries.
 
 > [!NOTE]
-> This feature was added in ErisPulse **2.8.0+**
+> This section's capabilities were added in ErisPulse **2.8.0+**
 
 
 
@@ -14991,12 +15026,12 @@ flowchart TD
 
 # Lifecycle Management
 
-ErisPulse provides a unified hook/lifecycle system to monitor the running status of system components and implement extended features such as auditing, statistics, and custom logic.
+ErisPulse provides a unified hook/lifecycle system for monitoring the operational status of various system components and enabling extended features such as auditing, statistics, and custom logic.
 
-The system supports three triggering methods:
-- `await lifecycle.emit("event", data)` — a concise version, passing arbitrary data
-- `lifecycle.emit_sync("event", data)` — a synchronous version (for non-async contexts)
-- `await lifecycle.submit_event("event", ...)` — backward compatible with older versions, automatically constructs standard event formats
+The system supports three types of trigger methods:
+- `await lifecycle.emit("event", data)` — A concise version that passes arbitrary data (when `to="Owner"`, the data is directed to a specific recipient)
+- `lifecycle.emit_sync("event", data)` — A synchronous version (used in non-asynchronous contexts)
+- `await lifecycle.submit_event("event", ...)` — Compatible with the legacy version, automatically constructs a standard event format
 
 ## Event Handling Mechanism
 
@@ -15016,14 +15051,14 @@ sdk.lifecycle.register("module.load", on_module_load, priority=10)
 # Unregister
 sdk.lifecycle.unregister("module.load", on_module_load)
 
-# Batch unregister by owner (automatically called by the framework during module/adapter unload)
+# Batch unregister by owner (automatically called by framework when module/unloader)
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
 print(f"Cleaned up {removed} lifecycle hooks")
 ```
 
 ### Priority
 
-Handlers support the `priority` parameter, where higher values execute earlier (consistent with the module loader):
+Handlers support the `priority` parameter, where higher values execute first (consistent with the module loader):
 
 ```python
 @sdk.lifecycle.on("adapter.event.receive", priority=10)  # Executes first
@@ -15037,7 +15072,7 @@ async def second_handler(data):
 
 ### Dot-Structure Events
 
-When a specific event is triggered, its parent events are also triggered:
+When triggering a specific event, its parent events are also triggered:
 - Triggering `module.load` also triggers `module`
 - Triggering `adapter.event.receive` also triggers `adapter.event` and `adapter`
 
@@ -15051,9 +15086,33 @@ async def on_anything(data):
     print(f"Received event: {data}")
 ```
 
+###定向传播（emit to=）
+
+> [!NOTE]
+> This feature requires ErisPulse **2.8.0+**.
+
+When `emit()` specifies the `to` parameter, it enters directed propagation: events are only distributed to handlers registered with that owner (hooks registered by modules in `on_load` are automatically assigned to the module), and other modules and wildcard `*` handlers are not notified.
+
+```python
+# Emitter: Events are only sent to hooks registered by the Chat module
+await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
+
+# Subscriber (inside Chat module): Register hooks with the same name, owner is automatically recorded during registration
+@sdk.lifecycle.on("message_received")
+async def on_message_received(data): ...
+
+@sdk.lifecycle.on("message")   # Dot-structure parent prefixes also apply (filtered by owner)
+async def on_any(data): ...
+```
+
+- If the target owner has no registered hooks → the event is **silently discarded** (use `has_handlers()` to check beforehand)
+- When `data` is a dict, it automatically carries `_trace_id` (without overwriting existing values)
+- `emit_sync` / `submit_event` also support the `to=` parameter
+- Three-layer model for inter-module communication (RPC / directed / broadcast) is detailed in [Inter-Module Communication](module-communication.md)
+
 ### One-Time Registration (once)
 
-Since version 2.7.0, handlers registered with `lifecycle.once()` are automatically unregistered after being triggered once, suitable for one-time hooks such as "first ready":
+Since 2.7.0, handlers registered with `lifecycle.once()` are automatically unregistered after being triggered once, suitable for one-time hooks such as "first ready":
 
 ```python
 @sdk.lifecycle.once("core.init.complete")
@@ -15061,25 +15120,25 @@ async def on_first_ready(data):
     print("First ready, will not trigger again")
 ```
 
-- Same priority semantics as `on()` (`priority` value higher means earlier execution)
-- Automatic unregistration, no manual `unregister` required
+- Same priority semantics as `on()` (higher `priority` values execute first)
+- Automatically unregistered, no need for manual `unregister`
 - Supports both synchronous and asynchronous handlers
 
 ### Listener Query (has_handlers)
 
-For hot-path short-circuit scenarios, use `has_handlers()` to check if there are any listeners before avoiding unnecessary event traversal and task scheduling:
+In hot-path short-circuit scenarios, use `has_handlers()` to check if listeners exist beforehand, avoiding unnecessary event traversal and task scheduling:
 
 ```python
 if sdk.lifecycle.has_handlers("message.sending"):
     await sdk.lifecycle.emit("message.sending", send_ctx)
 ```
 
-- Covers **exact event names**, **wildcards `*`**, and **parent event** matching
-- Returns `False` if no listeners are present, allowing safe skipping of `emit`
+- Covers three matching types: exact event names, wildcards `*`, and parent events
+- Returns `False` if there are no listeners, allowing safe skipping of `emit`
 
-## Hook Breakpoints Overview
+## Hook Breakpoint Overview
 
-A typical lifecycle event sequence for a message from platform entry to completion in the framework:
+A typical lifecycle event sequence diagram of a message from the platform entering the framework to completion:
 
 ```mermaid
 sequenceDiagram
@@ -15090,18 +15149,18 @@ sequenceDiagram
 
     P->>A: Native event arrives
     A->>F: adapter.event.receive (earliest)
-    F->>F: event.pre_process (before handler execution)
-    F->>M: Dispatch to processor (commands/messages/notifications, etc.)
+    F->>F: event.pre_process (before processor execution)
+    F->>M: Distributed to processor (commands/messages/notifications, etc.)
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending (before sending)
     F->>A: SendDSL send
-    A->>P: Send to platform
+    A->>P: Sent to platform
     A->>F: message.sent (after sending)
     F->>F: adapter.event.dispatched (after dispatching)
 ```
 
-The framework provides the following built-in hook breakpoints, which users can listen to using `@sdk.lifecycle.on()` to implement custom logic.
+The framework includes the following built-in hook breakpoints, and users can listen to any breakpoint to implement custom logic using `@sdk.lifecycle.on()`.
 
 ### Core Initialization
 
@@ -15109,14 +15168,14 @@ The framework provides the following built-in hook breakpoints, which users can 
 |---------|---------|------|
 | `core.init.start` | SDK initialization starts | `{}` |
 | `core.init.complete` | SDK initialization completes | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str (only on failure)}` |
-| `core.uninit.complete` | SDK uninitialization completes | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str (only on failure)}` |
+| `core.uninit.complete` | SDK deinitialization completes | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str (only on failure)}` |
 
 ### Configuration Changes
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
 | `config.set` | A configuration item is modified | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | After detecting a full tree change from external editing of config.toml | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.updated` | The entire configuration tree is detected as changed after editing config.toml externally | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
 **Example: Configuration Audit**
 
@@ -15131,7 +15190,7 @@ def audit_config(data):
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
 | `module.register` | Module class registered to manager | `{"module_name": str, "success": bool}` |
-| `module.load` | Module loaded (instance created successfully) | `{"module_name": str, "success": bool}` |
+| `module.load` | Module loaded (successful instantiation) | `{"module_name": str, "success": bool}` |
 | `module.init` | Module initialized (including lazy loading) | `{"module_name": str, "success": bool}` |
 | `module.unload` | Module unloaded | `{"module_name": str, "success": bool}` |
 
@@ -15139,11 +15198,11 @@ def audit_config(data):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `adapter.load` | Adapter registered | `{"platform": str, "success": bool}` |
-| `adapter.start` | Adapter started | `{"platforms": [str]}` |
+| `adapter.load` | Adapter registration completes | `{"platform": str, "success": bool}` |
+| `adapter.start` | Adapter starts | `{"platforms": [str]}` |
 | `adapter.status.change` | Adapter status changes | `{"platform": str, "status": str, "retry_count": int, "error": str (only on failure)}` |
-| `adapter.stop` | Adapter stopped | `{"platforms": [str]}` |
-| `adapter.stopped` | Adapter stopped completely | `{"platforms": [str]}` |
+| `adapter.stop` | Adapter stops | `{"platforms": [str]}` |
+| `adapter.stopped` | Adapter shutdown completes | `{"platforms": [str]}` |
 | `adapter.bot.online` | Bot goes online | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
 | `adapter.bot.offline` | Bot goes offline | `{"platform": str, "bot_id": str, "status": str}` |
 
@@ -15153,7 +15212,7 @@ def audit_config(data):
 |---------|---------|------|
 | `adapter.event.receive` | External platform event received (earliest) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
 | `adapter.event.dispatched` | Event dispatching completes | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
-| `event.pre_process` | Before event handler execution begins | `{"event_type": str, "platform": str, "detail_type": str}` |
+| `event.pre_process` | Event processor begins execution | `{"event_type": str, "platform": str, "detail_type": str}` |
 
 **Example: Event Counting**
 
@@ -15176,7 +15235,7 @@ def log_unhandled(data):
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
 | `message.sending` | Message about to be sent | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
-| `message.sent` | Message sent successfully | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | Message sending completes | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
 **Example: Message Sending Audit**
 
@@ -15220,10 +15279,10 @@ def log_http(data):
 
 | Hook Name | Trigger Timing | Data |
 |---------|---------|------|
-| `server.start` | Routing server started | `{"base_url": str, "host": str, "port": int}` |
-| `server.stop` | Routing server stopped | `{}` |
+| `server.start` | Router server starts | `{"base_url": str, "host": str, "port": int}` |
+| `server.stop` | Router server stops | `{}` |
 | `server.websocket.connect` | WebSocket connection established | `{"path": str, "module_name": str, "client_ip": str}` |
-| `server.websocket.disconnect` | WebSocket connection closed | `{"path": str, "module_name": str, "reason": str, "error": str (only on abnormal closure)}` |
+| `server.websocket.disconnect` | WebSocket connection broken | `{"path": str, "module_name": str, "reason": str, "error": str (only on abnormal disconnection)}` |
 
 **Example: WebSocket Connection Monitoring**
 
@@ -15265,30 +15324,30 @@ STANDARD_EVENTS = {
 ### Registration and Unregistration
 
 | Method | Description |
-|------|------|
-| `@lifecycle.on(event, *, priority=0)` | Decorator-based handler registration |
-| `lifecycle.register(event, handler, *, priority=0)` | Programmatic registration |
-| `lifecycle.unregister(event, handler=None)` | Unregister (if handler=None, unregister all handlers for this event) |
+|--------|-------------|
+| `@lifecycle.on(event, *, priority=0)` | Decorator to register a handler |
+| `lifecycle.register(event, handler, *, priority=0)` | Register programmatically |
+| `lifecycle.unregister(event, handler=None)` | Unregister (removes all handlers for the event if handler=None) |
 
 ### Triggering
 
 | Method | Description |
-|------|------|
-| `await lifecycle.emit(event, data=None)` | Asynchronous trigger, handler returning non-None modifies data |
-| `lifecycle.emit_sync(event, data=None)` | Synchronous trigger, asynchronous handlers scheduled with create_task |
-| `await lifecycle.submit_event(event_type, *, source, msg, data)` | Backward compatible, automatically constructs standard event format |
+|--------|-------------|
+| `await lifecycle.emit(event, data=None, *, to=None)` | Asynchronously trigger, handlers returning non-None can modify data; `to` specifies the owner for targeted delivery |
+| `lifecycle.emit_sync(event, data=None, *, to=None)` | Synchronously trigger, asynchronous handlers are scheduled with create_task |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None)` | Backward compatible, automatically constructs standard event format |
 
 ### Utilities
 
 | Method | Description |
-|------|------|
+|--------|-------------|
 | `lifecycle.start_timer(timer_id)` | Start timing |
-| `lifecycle.get_duration(timer_id)` | Get elapsed time (in seconds) |
-| `lifecycle.stop_timer(timer_id)` | Stop timing and return elapsed time |
-| `lifecycle.list_hooks()` | List all registered hooks and handler counts |
+| `lifecycle.get_duration(timer_id)` | Get elapsed duration (in seconds) |
+| `lifecycle.stop_timer(timer_id)` | Stop timing and return elapsed duration |
+| `lifecycle.list_hooks()` | List all registered hooks and their handler counts |
 | `lifecycle.clear()` | Clear all handlers and timers |
 
-## Example Usage in Modules
+## Example Usage in a Module
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -15309,7 +15368,7 @@ class Main(BaseModule):
         async def log_cmd(data):
             sdk.logger.info(f"Command executed: /{data['command']} by {data['user_id']}")
         
-        # Configuration change audit
+        # Audit configuration changes
         @sdk.lifecycle.on("config.set")
         def audit(data):
             sdk.logger.info(f"Configuration change: {data['key']} = {data['new_value']}")
@@ -15320,19 +15379,19 @@ class Main(BaseModule):
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-Background tasks created by modules that are not canceled in `on_unload` will hold a reference to `self`, preventing the module instance from being recycled (residual old instances after hot reload). The framework provides the following fallback mechanism:
+If asyncio background tasks created by a module are not cancelled in `on_unload`, they will hold a reference to `self`, preventing the module instance from being garbage collected (leading to old instances lingering after hot reload). The framework provides the following fallback mechanisms:
 
 - **`self.spawn(coro)`** (recommended within modules): Tasks are automatically assigned to the module name, and when the module is unloaded, the framework cancels unfinished tasks after `on_unload` and logs a warning.
-- **`spawn_background(coro)`** (`ErisPulse.runtime`): Automatically captures the current `owner_scope` context; `cancel_owner_tasks(owner)` cancels tasks by assignment, `cancel_all_background_tasks()` is used as a fallback in `sdk.uninit()`.
-- **Adapters**: When closing, background tasks under the platform name are also canceled as a fallback.
+- **`spawn_background(coro)`** (`ErisPulse.runtime`): Automatically captures the current `owner_scope` context; `cancel_owner_tasks(owner)` cancels tasks by ownership, and `cancel_all_background_tasks()` serves as a fallback for `sdk.uninit()`.
+- **Adapters**: When closing, they also automatically cancel background tasks under the platform name.
 
 ```python
 async def on_load(self, event):
-    # Recommended: Use self.spawn() for background tasks, framework automatically cancels them as a fallback when unloaded
+    # Recommended: Use self.spawn() for background tasks, and the framework automatically cancels them after unload.
     self.spawn(self._poll())
 
 async def on_unload(self, event):
-    # For fine-grained control, still recommend manually canceling and waiting for completion
+    # For scenarios requiring fine control, it is still recommended to manually cancel and wait for cleanup.
     if self._poll_task:
         self._poll_task.cancel()
         await asyncio.gather(self._poll_task, return_exceptions=True)
@@ -15344,16 +15403,16 @@ async def _poll(self):
 ```
 
 > [!IMPORTANT]
-> The framework's fallback is a **forced cancel** (`cancel_owner_tasks`), which occurs after `on_unload` returns. Therefore, tasks requiring graceful termination (flushing buffers, persisting state, closing connections) **must** be manually `cancel()` and `await`ed in `on_unload`—do not rely on the fallback to preserve termination logic. The framework only guarantees that tasks holding a reference to `self` are cleaned up, not that they terminate gracefully. For tasks requiring `await` results, directly `await` them, do not delegate them to background tasks.
+> The framework's fallback mechanism is a **forced cancel** (`cancel_owner_tasks`), which occurs after `on_unload` returns. Therefore, tasks that require graceful cleanup (flushing buffers, persisting state, closing connections) **must** manually `cancel()` and `await` completion within `on_unload`—do not rely on the fallback to preserve cleanup logic. The framework only guarantees that tasks holding a reference to `self` are not left behind, not that they are cancelled gracefully. For tasks that require awaiting results, directly `await` them instead of delegating them to background tasks.
 
 ## Notes
 
-1. **Handlers can be synchronous or asynchronous**: The system automatically recognizes and correctly calls them.
-2. **Data passing**: In `emit()` mode, if a handler returns a non-None value, it modifies the data passed to subsequent handlers.
-3. **Event naming conventions**: It is recommended to use dot-structure naming for events to facilitate using parent event listeners.
-4. **Error isolation**: An exception in a single handler does not affect the execution of other handlers.
-5. **Synchronous triggering limitation**: In `emit_sync()`, asynchronous handlers are scheduled in a fire-and-forget manner, and their return values cannot be returned.
-6. **Lifecycle cleanup**: When `sdk.uninit()` is called, all registered handlers and timers are cleared.
+1. **Processors can be synchronous or asynchronous**: The system automatically recognizes and correctly invokes them.
+2. **Data passing**: In `emit()` mode, if a processor returns a non-None value, it modifies the data passed to subsequent processors.
+3. **Event naming convention**: It is recommended to use dot-structured naming for events, which facilitates listening at the parent level.
+4. **Error isolation**: An exception in a single processor does not affect the execution of other processors.
+5. **Synchronous triggering limitation**: In `emit_sync()`, asynchronous processors are scheduled in a fire-and-forget manner, and their return values cannot be returned.
+6. **Lifecycle cleanup**: When `sdk.uninit()` is called, all registered processors and timers are cleared.
 7. **Loading priority**: If you need to listen to events during the framework initialization phase, it is recommended to set a high priority and disable lazy loading.
 
 
@@ -16389,15 +16448,15 @@ async def chat_handler(event):
 > [!NOTE]
 > This chapter requires ErisPulse **2.8.0+**.
 
-ErisPulse has built "continuous interaction with users" into its core infrastructure: from a single `wait_reply`, to scheduled reminders, multi-path waiting, session mutual exclusion, and restart recovery, all are managed by a unified **Interactive Session Manager** (`Core/Event/interaction.py`, `sdk.interaction`).
+ErisPulse has made "continuous interaction with users" into a framework-level infrastructure: from a single `wait_reply`, to scheduled reminders, multi-path waiting, session mutual exclusion, and restart recovery, all are scheduled by a unified **Interactive Session Manager** (`Core/Event/interaction.py`, `sdk.interaction`).
 
 {!--< tips >!--}
-Each capability covered in this document comes with its own **ownership** (owner): interactive waiting, leases, and timers all record the module name at registration time. When the module is unloaded or the adapter is closed, the framework automatically cleans up and notifies the waiting party immediately, rather than waiting until timeout. This is an extension of the ownership system in the interactive dimension (see [Ownership System](ownership.md)).
+Every capability covered in this article has its own **ownership (owner)**: interaction waiting, leases, and timers all record the module name at registration time. When the module is unloaded or the adapter is closed, the framework automatically cleans up, and the waiting party immediately receives a notification instead of waiting for a timeout — this is an extension of the ownership system in the interaction dimension (see [Ownership System](ownership.md)).
 {!--< /tips >!--}
 
-## Waiting for Reply: wait_reply
+## Waiting for Reply: `wait_reply`
 
-`wait_reply` is the cornerstone of interactive sessions—suspending the current coroutine and waiting for a reply from the target user in the next message.
+`wait_reply` is the cornerstone of interactive sessions — it suspends the current coroutine and waits for the target user to "reply" in the next message.
 
 ```python
 from ErisPulse.Core.Event import command
@@ -16415,17 +16474,17 @@ async def ask_command(event):
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `prompt` | The prompt message sent before suspending | None |
-| `timeout` | Timeout for waiting (seconds) | 60 |
+| `prompt` | The prompt message sent before suspension | None |
+| `timeout` | Wait timeout (seconds) | 60 |
 | `pattern` | Glob filter (`*` / `?` / `[seq]`), continue waiting if not matched | None |
-| `regex` | Regular expression filter (must match both pattern and regex if both are provided), continue waiting if not matched | None |
-| `validator` | Validation function (receives Event, returns bool), continue waiting if failed | None |
-| `callback` | Callback when reply is received (alternative to value-returning approach) | None |
-| `method` | Method for sending prompt | "Text" |
+| `regex` | Regex filter (must match both `pattern` and `regex` if both provided), continue waiting if not matched | None |
+| `validator` | Validation function (receives Event, returns bool), continue waiting if fails | None |
+| `callback` | Callback when reply is received (alternative to value-returning style) | None |
+| `method` | Method for sending the prompt | "Text" |
 | `session` | **Session-level waiting**: replies from anyone in the same session (group/channel) can match | False |
 
 ```python
-# Accept only numeric amounts, otherwise continue waiting
+# Only accepts numeric amounts, otherwise continue waiting
 reply = await event.wait_reply("Please enter the amount:", regex=r"\d+\s*元", timeout=30)
 
 # Session-level waiting: group collaboration scenario, any group member's reply can match
@@ -16434,76 +16493,75 @@ reply = await event.wait_reply(session=True, prompt="Which expert can help answe
 
 ### When Will Waiting Be Cancelled
 
-Waiting is no longer "only waiting until timeout"—the following conditions will cause the waiting to **terminate immediately** (`wait_reply` returns `None`), rather than letting the caller wait until timeout:
+Waiting is no longer "only waiting for timeout" — the following situations will **immediately terminate** the waiting (returning `None` from `wait_reply`), rather than letting the caller wait until timeout:
 
 | Trigger | Cancellation Reason (`InteractionCancelled.reason`) | Description |
-|---------|------------------------------------------------------|-------------|
-| Owner module is unloaded / disabled | `owner_unload` | Ownership cleanup: whoever registered the waiting, when they disappear, it is reclaimed together |
-| Adapter is stopped / restarted | `platform_stop` | All waiting suspended on this platform is cancelled |
-| Same session is replaced by new waiting / lease | `conflict` | See "Session Arbitration" below |
-| Replier is blacklisted / owner module is unbound | `revoked` | Permission recheck for reply hit: scope identity dimension + module dimension |
-| User reply is matched | —— | Normal path, returns reply event |
+|---------|-----------------------------------------------------|-------------|
+| Owner module unloaded / disabled | `owner_unload` | Ownership cleanup: whoever registered the wait will be reclaimed when it disappears |
+| Adapter closed / restarted | `platform_stop` | All waits suspended on this platform are cancelled |
+| Same session replaced by new wait / lease | `conflict` | See "Session Arbitration" below |
+| Replier blacklisted / owner module unbound | `revoked` | Permission复查 (scope identity dimension + module dimension) for reply matching |
+| User replies matched | — | Normal path, returns reply event |
 
-The underlying exception is `InteractionCancelled` (attached to the `InteractionError` exception hierarchy), and `wait_reply` has converted it to returning `None`; calling parties who need the reason can directly use the low-level API `sdk.interaction.register()`.
+The underlying exception is `InteractionCancelled` (attached to the `InteractionError` exception hierarchy), and `wait_reply` has converted it to return `None`; callers who need the reason can directly use the low-level API `sdk.interaction.register()`.
 
-### Complete Reply Matching Decision Chain
+### Complete Decision Chain for Reply Matching
 
-When a reply message arrives, the interaction manager follows the following sequence to decide (executed **before** command matching, conversation continuity takes priority— even if the message has been claimed by another high-priority processor, the suspended conversation can still complete):
+When a reply message arrives, the interaction manager executes the following decision chain (executed before command matching, prioritizing conversation continuity — even if the message has been claimed by a higher-priority processor, the suspended conversation can still complete):
 
 ```
-Session key hit (exact user dimension → session-level fallback)
+Session key match (exact user dimension → session-level fallback)
   → pattern / regex text filter (continue waiting if not matched)
-  → validator check (continue waiting if failed)
-  → Permission recheck (scope identity dimension + owner module dimension, terminate waiting if failed)
+  → validator check (continue waiting if fails)
+  → Permission复查 (scope identity dimension + owner module dimension, terminates wait if fails)
   → Wake up waiting party + claim event (mark_processed)
 ```
 
-## Session Timers: remind / escalate
+## Session Timers: `remind` / `escalate`
 
-Transform "timeout" from a return value into a programmable primitive. Timers are attached to interactive sessions and are automatically cancelled when the module is unloaded or the adapter is closed, with a single session active remind limit of 5.
+Turn "timeout" from a return value into a programmable primitive. Timers are attached to interactive sessions and are automatically cancelled when the module is unloaded or the adapter is closed, with a maximum of 5 active reminds per session.
 
-### remind: Remind if No Reply
+### `remind`: Remind if no reply
 
 ```python
 @command("ticket")
 async def ticket_command(event):
-    await event.reply("Your ticket has been submitted, and the processing result will be notified here.")
+    await event.reply("Your ticket has been submitted. The processing result will be notified here.")
     # Remind gently after 5 minutes of no reply; any reply from the user will automatically cancel it
-    event.remind(300, "Are you still there? I will notify you as soon as there is a result.")
+    event.remind(300, "Still there? We will notify you as soon as there is a result.")
     reply = await event.wait_reply(timeout=3600)
     ...
 ```
 
-- `event.remind(delay, text=None, *, callback=None)`: Sends `text` (or executes `callback(event)`, supports synchronous / asynchronous) to the current session when the timer expires.
+- `event.remind(delay, text=None, *, callback=None)`: Sends `text` (or executes `callback(event)`, supports synchronous / asynchronous) to the current session upon expiration.
 - Returns a `Reminder` handle: `reminder.cancel()` to manually cancel, `reminder.expired` to query status.
-- Automatically cancels after the user replies in this session—this is the semantics of "reminder":
-  Reminders only appear when the user is silent.
-- Also available within `Conversation`: `conv.remind(120, "Are you still considering?")`
+- Automatically cancelled by user replies in the session — this is the semantic of "reminder": reminders only appear when the user is silent.
+- Also available within `Conversation`: `conv.remind(120, "Still considering?")`
 
-### escalate: Guaranteed Upgrade at a Point in Time
+### `escalate`: Guaranteed escalation at a specific time
 
 ```python
-event.escalate(1800, lambda e: notify_master(f"Ticket not processed for 30 minutes: {event.get_command_args()}"))
+event.escalate(1800, lambda e: notify_master(f"Ticket processed after 30 minutes: {event.get_command_args()}"))
 ```
 
-The only difference from `remind`: **Not cancelled by user replies**—the escalation action (notifying the master, transferring to human) is a "guaranteed timeout" promise, cancelled only by manual `cancel()` / module unload / adapter shutdown.
+The only difference from `remind`: **not cancelled by user replies** — escalation actions (notifying the owner, transferring to human) are a "guaranteed timeout" promise, cancelled only by manual `cancel()` / module unload / adapter shutdown.
 
 | | `remind` | `escalate` |
 |---|---|---|
-| Behavior on expiration | Send text / execute callback | Execute callback |
+| Expiration behavior | Send text / execute callback | Execute callback |
 | User reply | **Automatically cancelled** | Unaffected |
 | Ownership cleanup (unload / close platform) | Cancelled | Cancelled |
-| Single session limit | 5 | Unlimited (cleaned up by ownership) |
+| Maximum per session | 5 | Unlimited (ownership cleanup as fallback) |
 
-## Multi-path Waiting: expect + select
+## Multi-path Waiting: `expect` + `select`
 
-Simultaneously suspends multiple expectations, **first-come, first-served**—typical scenarios: waiting for administrator approval while waiting for user withdrawal, or multi-person collaboration voting.
+Suspends multiple expectations simultaneously, **first-come, first-served** — typical scenarios: waiting for administrator approval while waiting for user withdrawal, or multi-person collaborative voting.
 
 ```python
 which, reply = await event.select(
-    event.expect(pattern="Agree*", user="10001"),
-    event.expect(pattern="Reject*", user="10002"),
-    event.expect(validator=lambda e: e.get_text() == "Suspended", session=True),
+    event.expect(pattern="同意*", user="10001"),
+    event.expect(pattern="拒绝*", user="10002"),
+    event.expect(validator=lambda e: e.get_text() == "搁置", session=True),
     timeout=60,
 )
 if which is None:
@@ -16514,26 +16572,26 @@ elif which == 1:
     await event.reply("Rejected")
 ```
 
-- `event.expect(...)` constructs an **expectation description** (does not register any waiting): supports `pattern` / `regex` / `validator` / `user` (limits the replier) / `session` (anyone can reply)
-- `event.select(*expectations, timeout=60)`: Registers uniformly → returns `(index, reply event)` on the first match → unmet expectations are automatically cancelled; returns `(None, None)` if all time out
-- The matched event has been claimed by the framework (via `mark_processed`), and will not be consumed by other processors again
+- `event.expect(...)` constructs an **expectation description** (does not register any waiting): supports `pattern` / `regex` / `validator` / `user` (limits reply sender) / `session` (anyone can reply).
+- `event.select(*expectations, timeout=60)`: Registers uniformly → returns `(index, reply event)` as soon as any match occurs → unmet expectations are automatically cancelled; returns `(None, None)` if all timeout.
+- The matched event is claimed by the framework (`mark_processed`), and will not be consumed repeatedly by other processors.
 
 {!--< tips >!--}
-Compared to manual orchestration with multi-threaded `asyncio.wait`, `select` automatically cleans up unmet expectations, automatically claims matched events, and ensures permission rechecks and ownership cleanup—all without needing to manage any Future yourself.
+Compared to manually orchestrating `asyncio.wait` in multi-threading: unmet expectations are automatically cleaned up, matched events are automatically claimed, and permission复查 and ownership cleanup are all effective — no need to manage any Future yourself.
 {!--< /tips >!--}
 
-## Session Mutual Exclusion: acquire / hold / get_owner_of
+## Session Mutual Exclusion: `acquire` / `hold` / `get_owner_of`
 
-Ownership moves from "resources" to "sessions"—"who is currently occupying this user" becomes a first-class query.
+Ownership moves from "resources" to "session" — "who is currently occupying this user" becomes a first-class query.
 
 ```python
 # Query: Is this session currently being interacted with? (Returns None if idle)
 owner = sdk.interaction.get_owner_of(event)
 if owner and owner != "MyModule":
-    return  # Another module is already interacting, avoid interrupting
+    return  # Another module is currently in conversation, avoid interference
 
 # Mutual exclusion lease: exclusive session (deny policy, returns None if occupied)
-lease = sdk.interaction.acquire(event)          # Default TTL 1 hour, ttl can be passed
+lease = sdk.interaction.acquire(event)          # Default TTL 1 hour, can pass ttl=
 if lease is None:
     return  # Already occupied
 try:
@@ -16549,54 +16607,54 @@ with sdk.interaction.hold(event) as lease:
     ...  # Automatically released on exit
 ```
 
-Leases support `renew(ttl)` renewal; TTL is lazily expired—the expired lease is automatically cleaned up on next access.
+Leases support `renew(ttl)` renewal; TTL is lazily expired — expired leases are automatically cleaned up on next access.
 
-When `Conversation.resume()` resumes a conversation, the framework automatically acquires the lease (see "Resumption Takes Over" in [Conversation Multi-turn Dialogue](conversation.md))—the resumed conversation naturally holds the session, and other modules cannot insert.
+When `Conversation.resume()` resumes a conversation, the framework automatically acquires the lease (see "Resumption as Takeover" in [Conversation Multi-turn Dialogue](conversation.md)) — the resumed conversation naturally holds the session, and other modules cannot intervene.
 
-## Session Inbox: event.history
+## Session Inbox: `event.history`
 
-A unified record of recent message streams per session (both user and robot), serving as a **shared factual foundation** for AI contexts, anti-repetition, and behavioral analysis modules—modules no longer store history individually.
+A unified record of recent message streams per session (both user and robot), serving as a **shared factual foundation** for AI context, anti-repetition, and behavioral analysis modules — modules no longer store history individually.
 
 ```python
-messages = await event.history(20)   # Recent 20 messages of current session, in ascending time order
+messages = await event.history(20)   # Last 20 messages in the current session, ascending by time
 for m in messages:
     print(m["role"], ":", m["text"])  # role: "user" / "bot"
 ```
 
 - Automatic recording: inbound messages (role=user) + robot outbound text (role=bot)
-- Storage: independent SQLite table, retention policy = per session limit (default 50) + global TTL (default 7 days)
+- Storage: independent SQLite table, retention policy = per-session limit (default 50) + global TTL (default 7 days)
 - Configuration: `ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`
 - Manager API: `sdk.transcript.append() / get() / clear()`
 
-## Message Transaction: message_tx
+## Message Transaction: `message_tx`
 
-All outbound sends within a transaction are automatically recorded; **on abnormal exit, previously sent messages are automatically recalled in reverse order** (skipped if adapter does not implement `delete_message`, but the ledger is still recorded properly).
+All outbound sends within a transaction are automatically recorded; **on abnormal exit, previously sent messages are automatically withdrawn in reverse order** (skipped if adapter does not implement `delete_message`, but the ledger is still recorded normally).
 
 ```python
 async with event.message_tx():
     await event.reply("Processing, please wait")
-    result = await do_something()          # Exception thrown here →
-    await event.reply(f"Completed: {result}")   # The previous "processing" message is automatically recalled
+    result = await do_something()          # If an exception is thrown here →
+    await event.reply(f"Completed: {result}")   # The previous "processing" message is automatically withdrawn
 ```
 
-Outbound sends outside a transaction are not recorded (zero overhead); `get_send_receipts()` can view the receipts of messages already sent in the current transaction.
+Out-of-transaction sends are not recorded (zero overhead); `get_send_receipts()` can view receipts of messages already sent in the current transaction.
 
 ## Trace ID
 
 Each inbound event automatically receives a trace ID (reusing `event["id"], generating one if missing), which is carried through:
 
 - Handler context (`get_current_trace_id()` to read)
-- Outbound sends (`[Send]` log lines append `[trace:...]`, `message.sending/sent` hooks have a `trace_id` field)
+- Outbound sends (`[Send]` log lines append `[trace:...]`, `message.sending/sent` hooks' `trace_id` field)
 - Lifecycle hook data (dict automatically adds `_trace_id`)
-- Directed events (`emit_to`) and message transaction receipts
+- Directed events (`lifecycle.emit(..., to=...)`) and message transaction receipts
 
-When a message is processed by multiple modules, the entire chain can be linked with the same ID (for logging / slow query / audit).
+When a message is processed by multiple modules in succession, the same ID can be used to trace the entire chain (logging / slow query / auditing).
 
 ## Relationship with Other Systems
 
 - **Ownership**: Waiting / leases / timers all record owner, and are reclaimed on unload (see [Ownership System](ownership.md))
-- **Scope**: Permission recheck for reply hits at both identity and module dimensions; cross-module audit steps out of the outbound dimension (see [Scope](scope.md))
-- **Conversation**: Multi-turn dialogue is a branching state machine above interactive sessions (see [Conversation](conversation.md)), and its waiting also enjoys all cancellation / recheck / ownership semantics described on this page
+- **Scope**: Reply matching checks identity + module dimension; cross-module call auditing goes out of the outbound dimension (see [Scope](scope.md))
+- **Conversation**: Multi-turn dialogue is a branch state machine on top of interactive sessions (see [Conversation](conversation.md)), and its waiting also enjoys all cancellation /复查 / ownership semantics described on this page.
 
 
 
@@ -16604,19 +16662,19 @@ When a message is processed by multiple modules, the entire chain can be linked 
 
 # Inter-Module Communication
 
-> [!NOTE]
+> [!NOTE]  
 > This chapter requires ErisPulse **2.8.0+**.
 
-ErisPulse has a **three-layer communication model** between modules, ordered as "point-to-point → directed → broadcast":
+ErisPulse's modules have a **three-layer communication model**, ordered as "point-to-point → directed → broadcast":
 
-| Layer | API | Semantics | Typical Scenarios |
+| Layer | API | Semantics | Typical Scenario |
 |---|---|---|---|
-| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | Point-to-point request-response, with contract / audit / timeout | Invoking another module's capability (e.g., check history, translate, refund) |
-| **Directed Events** | `await sdk.module.emit_to("Chat", "message_received", {...})` | Notification sent to a specific module | Upstream state change notification to downstream (e.g., "new message received") |
-| **Broadcast** | `await lifecycle.emit("config.updated", {...})` | Framework-wide lifecycle events | Hot configuration updates, module up/down events |
+| **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | Point-to-point request-response with contract / audit / timeout | Invoking capabilities of another module (e.g., fetching history, translation, refund) |
+| **Directed Events** | `await lifecycle.emit("message_received", {...}, to="Chat")` | Distributed only to lifecycle hooks registered by the specified module | Notifying downstream modules of upstream state changes ("a new message was received") |
+| **Broadcast** | `await lifecycle.emit("config.updated", {...})` | Framework-wide visible lifecycle events | Hot configuration updates, module up/down events |
 
 {!--< tips >!--}
-Selection mnemonic: **Use `call` when you need a return value, `emit_to` to notify a single module, and `lifecycle` to notify everyone.** 
+Selection rule: **Use `call` when you need a return value, use `emit(..., to=...)` when you only want to notify a specific module's hooks, and use `emit(...)` to notify everyone.**  
 {!--< /tips >!--}
 
 ## RPC: module.call
@@ -16625,15 +16683,15 @@ Selection mnemonic: **Use `call` when you need a return value, `emit_to` to noti
 result = await sdk.module.call("Chat", "get_history", session_id, n=20)
 ```
 
-Differences between `module.call()` and direct attribute access `sdk.module.Chat.get_history(...)` (which remains unchanged):
+Difference from direct attribute access `sdk.module.Chat.get_history(...)` (unchanged):
 
 | | `module.call()` | Direct attribute access |
 |---|---|---|
-| Target not registered / disabled | Raises `ModuleNotAvailableError` | Raises `AttributeError` |
-| Lazy-loaded module | **Automatically wakes up** (event-driven modules go through activation lock) | Asynchronous module initialization raises RuntimeError |
-| `current_owner` | Attributed to the **target module** (its internal `wait_reply` / send / logging correctly attributed) | Remains the caller |
-| Timeout | Default 30 seconds (`timeout=` overrides, None means no timeout) | None |
-| Scope audit | Caller passes through outbound gate `actions.<caller>.call` | None |
+| Target not registered / disabled | Throws `ModuleNotAvailableError` | Throws `AttributeError` |
+| Lazy-loaded modules | **Automatically wakes up** (event-driven modules go through activation lock) | Asynchronous initialization throws RuntimeError |
+| `current_owner` | Attributed to the **target module** (its internal wait_reply / send / logs are correctly attributed) | Remains the caller |
+| Timeout | Default 30 seconds (`timeout=` overrides, None means unlimited) | None |
+| Scope audit | Caller goes through the outbound gate `actions.<caller>.call` | None |
 | Contract validation | `meta.services` whitelist | None |
 
 ### Exception Hierarchy
@@ -16646,11 +16704,11 @@ ModuleError                      # Base class for module system exceptions
     └── ModuleCallTimeoutError   # Coroutine method timeout
 ```
 
-All exceptions are part of the `ErisPulseError` hierarchy and can be caught with `from ErisPulse.Core import ModuleCallError`.
+All exceptions are under the `ErisPulseError` hierarchy and can be caught using `from ErisPulse.Core import ModuleCallError`.
 
 ## Service Contract: meta.services
 
-The service provider declares the whitelisted services offered externally in `get_meta()` (symmetrical to the `commands` field):
+Service providers declare a whitelist of publicly available services in `get_meta()` (symmetrical to the `commands` field):
 
 ```python
 from ErisPulse.Core.Bases import BaseModule, ModuleMeta
@@ -16659,42 +16717,42 @@ class ChatModule(BaseModule):
     @staticmethod
     def get_meta() -> ModuleMeta:
         return ModuleMeta(
-            name="聊天",
+            name="Chat",
             services=[
                 "get_history",                                       # Simple form
-                {"name": "translate", "description": "把文本翻译成指定语言"},  # With description
+                {"name": "translate", "description": "Translate text into a specified language"},  # With description
             ],
         )
 
     async def get_history(self, session_id, n=20): ...
     async def translate(self, text, target_lang): ...
-    def _internal_helper(self): ...   # Underscore-prefixed methods are always forbidden from external calls
+    def _internal_helper(self): ...   # Underscore-prefixed methods are always forbidden for external calls
 ```
 
-**Default behavior is invisible to developers**:
+**Default behavior is unnoticeable**:
 
-- If `services` is not declared → all **public** methods are naturally callable via `module.call()` (consistent with raw attribute access),  
-  requiring no declaration at all
-- After declaration → restricted to the whitelist, out-of-bounds calls throw `ServiceNotProvidedError`—used to mark  
-  "these methods are the ones externally committed"
-- The main control authority lies with the user side: `scope.actions` configuration determines "who can call whom" (see auditing below),  
-  the module author's `services` is only a service surface declaration; the two layers are independent and not interchangeable
+- If `services` is not declared → All **public** methods are naturally callable via `module.call()` (consistent with direct attribute access),  
+  no declaration is required
+- After declaration → Restrict to the whitelist, calls beyond the list throw `ServiceNotProvidedError`—used to mark  
+  "these methods are the ones promised externally"
+- The main control authority lies with the user side: `scope.actions` configuration determines "who can call whom" (see audit below),  
+  the module author's `services` is only a service declaration, and the two layers are not interchangeable
 
-**Service Descriptions**: Provide human-readable / AI-readable descriptions for each service—omit if unnecessary,  
-descriptions automatically use the **first line of the method's docstring** (the framework already requires docstring style):
+**Service Descriptions**: Provide human-readable / AI-readable descriptions for each service—no need to write anything if not required,  
+the description is automatically taken from the **first line of the method's docstring** (the framework already requires docstring style):
 
 ```python
 async def translate(self, text, target_lang):
-    """把文本翻译成指定语言"""    # ← This line automatically becomes the service description
+    """Translate text into a specified language"""    # ← This line automatically becomes the service description
     ...
 ```
 
-For fine-grained control (overriding docstring / multi-language support), use dict form to declare `description` (supports i18n dictionary):
+For fine-grained control (overriding docstring / multilingual), use dict form to declare `description` (supports i18n dictionary):
 
 ```python
 services=[
-    {"name": "translate", "description": "把文本翻译成指定语言"},
-    {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "摘要对话"}},
+    {"name": "translate", "description": "Translate text into a specified language"},
+    {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "Summarize conversation"}},
 ]
 ```
 
@@ -16703,72 +16761,86 @@ services=[
 ```python
 sdk.module.services()
 # {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
-#            'description': 'Translate text into the specified language'}]}
+#            'description': 'Translate text into a specified language'}]}
 
-sdk.module.services("Chat")   # Query only a specific module
+sdk.module.services("Chat")   # Only query a specific module
 ```
 
-- Only modules that explicitly declare `meta.services` are listed (modules without declaration do not appear in the directory)
-- Each service includes a method signature string (extracted using `inspect.signature`) and a description text
-- When entering the topology: each module entry in `sdk.module.get_topology()` includes a `services` field
+- Only lists modules that explicitly declare `meta.services` (modules not declared do not appear in the directory)
+- Each service includes method signature string (extracted via `inspect.signature`) and description text
+- Also included in topology: `sdk.module.get_topology()` entries for each module include a `services` field
 
 {!--< tips >!--}
-**MCP Roadmap**: The service directory (name + signature + description) is essentially the shape of an MCP tool — each service naturally forms a ``{"name", "description", "parameters"}`` structure.
-In the future, the framework can directly expose ``services()`` as an endpoint on the MCP server, allowing AI to discover and invoke module capabilities;
-``scope.actions.call`` auditing naturally becomes a security gate for AI calls.
+**MCP Roadmap**: The service directory (name + signature + description) is the shape of an MCP tool—  
+each service naturally becomes ``{"name", "description", "parameters"}``.  
+In the future, the framework can expose ``services()`` directly as an MCP server endpoint, allowing AI to discover and invoke module capabilities;  
+``scope.actions.call`` audit naturally becomes the security gate for AI calls.
 {!--< /tips >!--}
 
-## Outbound Auditing: Who Can Call Whom
+## Outbound Audit: Who Can Call Whom
 
-Every `module.call()` passes through the outbound gate as the **caller module**:
+Each `module.call()` passes through the scope outbound gate as the **caller module**'s identity:
 
 ```toml
 [ErisPulse.scope.actions.CallerModule.call]
-deny = ["Chat.get_history"]        # Deny CallerModule from calling Chat.get_history
-# allow = ["Chat.get_*"]           # Or whitelist: only allow calling Chat methods starting with "get_"
+deny = ["Chat.get_history"]        # Prohibit CallerModule from calling Chat's get_history
+# allow = ["Chat.get_*"]           # Or whitelist: only allow calling Chat's get-* services
 ```
 
-- The `name` format is `<target_module>.<method_name>`, supporting exact match, glob, or `re:` regular expressions
-- Calls from the framework layer (without owner context, such as startup scripts) are not subject to auditing constraints
+- `name` format is `<target module>.<method name>`, supports exact / glob / `re:` regex
+- Framework-level calls (without owner context, e.g., startup scripts) are not subject to audit constraints
 - Denied calls throw `ModuleCallError` (TRACE log `core.module.call_denied`)
 
-For configuration details, see the outbound dimension in [Scope](scope.md).
+See [Scope (scope)](scope.md) for configuration details on the outbound dimension.
 
-## Directed Event: emit_to
+## Directed Events: lifecycle.emit's to parameter
+
+Lifecycle events support directed propagation: `to` specifies the target owner (owner), and the event is only distributed to hooks registered by that owner (hooks automatically registered by the module in `on_load` are assigned to the module itself),  
+other modules and wildcard `*` handlers are not notified.
 
 ```python
-# Emitter side: After validating that the target is enabled, the event enters the module.<name>.<event> namespace
-await sdk.module.emit_to("Chat", "message_received", {"text": "hi", "from": "u1"})
-
-# Subscriber side (within the Chat module): Register hooks by namespace
 from ErisPulse.Core.lifecycle import lifecycle
 
-@lifecycle.on("module.Chat.message_received")
+# Emitter: Event is only sent to hooks registered by the Chat module
+await lifecycle.emit("message_received", {"text": "hi", "from": "u1"}, to="Chat")
+
+# Subscriber (inside Chat module): Register same-name hook, owner is automatically recorded at registration
+@lifecycle.on("message_received")
 async def on_message_received(data): ...
 
-@lifecycle.on("module.Chat")          # Or receive all directed events from this module
+@lifecycle.on("message")          # Dot-prefixed parent prefix also works (filtered by owner)
 async def on_any(data): ...
 ```
 
 Semantic details:
 
-- If the target is not registered / not enabled → `ModuleNotAvailableError` (**do not send to non-existent locations**)
-- If the target is a lazy-loaded module → **wake up first, then deliver** (directed events serve as activation sources, aligning with the semantics of `activate_on`)
-- When `data` is a dict, it automatically carries `_trace_id` (without overwriting existing values), integrating with full-chain tracing
+- If the target owner has no registered hooks → The event is **silently discarded** (events are not sent to non-existent places),  
+  use `lifecycle.has_handlers("message_received")` to probe in advance
+- When `data` is a dict, `_trace_id` is automatically added (without overwriting existing values), connecting to full-chain tracing
+- Broadcast and directed events share the same hook registration: `emit(...)` without `to` broadcasts to the entire framework,  
+  with `to` the same event is only visible to the target module
+- `emit_sync` / `submit_event` (compatible API) also support the `to=` parameter
 
-## Lazy Loading and Invocation
+> [!NOTE]  
+> Directed events are lightweight notifications, **do not perform target validation or lazy wake-up**;  
+> if target existence validation, contract audit, or return values are needed, switch to [RPC: module.call](#rpcmodulecall).
 
-`module.call()` and `emit_to()` transparently awaken lazy-loaded modules:
+## Lazy Loading and Calls
 
-- Event-driven lazy modules (`activate_on` declaration) → Use activation lock `_activate()`, and the trigger stub is automatically unregistered after activation.
-- Regular lazy modules → Synchronize initialization or follow the regular loading path (idempotent).
-- Wakeup failure → `ModuleNotAvailableError` (for `call`) / Activation failure (for `emit_to`).
+`module.call()` transparently wakes up lazy-loaded modules:
 
-That is: **the caller does not need to care whether the target module is loaded, nor wait for any event to awaken it.**
+- Event-driven lazy modules (`activate_on` declared) → Go through the activation lock `_activate()`, stubs are automatically unregistered after activation
+- Ordinary lazy modules → Synchronous initialization or regular loading path (idempotent)
+- Activation failure → `ModuleNotAvailableError`
+
+That is: **the caller does not need to care if the target module is loaded**, nor does it need to wait for the target module to be awakened.
+
+Directed events (`lifecycle.emit(..., to=...)`) do not perform lazy wake-up—no hooks are present if the target is not loaded,  
+the event is silently discarded; use `module.call()` if delivery must be ensured.
 
 ## Cold Start Replay
 
-When a module is newly installed or restarted, it may miss some chat messages. The `get_load_strategy(replay=...)` method allows the framework to replay the most recent messages from the session inbox to the module itself after it becomes ready:
+A newly installed / restarted module misses some chat history—`get_load_strategy(replay=...)` allows the framework to replay the module's inbox messages **after the module is ready**:
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -16779,33 +16851,36 @@ class MyAIModule(BaseModule):
         return ModuleLoadStrategy(
             lazy_load=False,
             priority=100,
-            replay="5m",        # Replay the most recent 5 minutes ("1h" or "300" seconds are also valid)
+            replay="5m",        # Replay the last 5 minutes (can also use "1h" / "300" seconds)
         )
 
     async def on_load(self, event):
         @message.on_message()
         async def handle(e):
             if e.get("replayed"):
-                # Synthetic event: only restore context, do not trigger side effects such as sending
+                # Synthetic event: only supplement context, do not trigger side effects like sending
                 ...
 ```
 
 Semantic details:
 
-- The data source is the [session inbox](interaction.md#session-inbox-eventhistory) (`sdk.transcript.recent()`), and the replay is executed in the background after the module finishes loading, without blocking the startup process.
-- Synthetic events are marked with `replayed: True` and include complete fields such as `platform`, `detail_type`, `user_id`, and `alt_message`, and are **only distributed to this module's handlers**—other modules are unaffected by the replay.
-- If the inbox is not enabled, there are no records, or the duration declaration is invalid (`replay_invalid` warning), the replay is silently skipped.
+- The data source is the [session inbox](interaction.md#session-inbox-eventhistory) (`sdk.transcript.recent()`),  
+  executed in the background after module loading, not blocking startup
+- Synthetic events include the `replayed: True` flag, complete `platform / detail_type / user_id / alt_message`,  
+  **only distributed to the module's own handlers**—other modules are unaffected by replay
+- If the inbox is not enabled / no records exist / the replay duration is invalid (`replay_invalid` warning), it is silently skipped
 
 ## Event Idempotency Deduplication
 
-After the platform's WebSocket reconnects, it often resends the same event (with the same `event["id"]`) — the distribution entry uses LRU deduplication by ID (capacity 4096), ensuring each event with the same ID is only distributed once.
+After platform websocket reconnection, the same event (same `event["id"]`) is often resent—distribution entry performs LRU deduplication (capacity 4096),  
+so the same id event is only distributed once.
 
 ```toml
 [ErisPulse.framework]
-event_dedupe = true   # Enabled by default; can be disabled in test environments where fixed ID synthetic events are used
+event_dedupe = true   # Default is enabled; disable for test environments with fixed id synthetic events
 ```
 
-The deduplication cache is automatically reset when the adapter registers (the starting point of a new connection lifecycle).
+The deduplication cache is automatically reset when adapters register (start of new connection lifecycle).
 
 
 

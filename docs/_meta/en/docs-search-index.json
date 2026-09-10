@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1548,
+  "total_keywords": 1559,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -150,6 +150,14 @@
         "line": 50,
         "level": 3,
         "title": "1. Health Check (GET)"
+      }
+    ],
+    "1. I Want to Use a Robot": [
+      {
+        "document": "README.md",
+        "line": 13,
+        "level": 3,
+        "title": "1. I Want to Use a Robot"
       }
     ],
     "1. Implement Connection Retry": [
@@ -580,6 +588,14 @@
         "line": 65,
         "level": 3,
         "title": "2. Event Object"
+      }
+    ],
+    "2. I Want to Develop Modules / Adapters": [
+      {
+        "document": "README.md",
+        "line": 27,
+        "level": 3,
+        "title": "2. I Want to Develop Modules / Adapters"
       }
     ],
     "2. Incorrect Timestamp Format": [
@@ -1050,6 +1066,14 @@
         "title": "3. Heartbeat Keepalive and Meta Heartbeat"
       }
     ],
+    "3. I Want to Deeply Understand the Principles": [
+      {
+        "document": "README.md",
+        "line": 38,
+        "level": 3,
+        "title": "3. I Want to Deeply Understand the Principles"
+      }
+    ],
     "3. Improving Code Quality": [
       {
         "document": "standards/README.md",
@@ -1354,6 +1378,14 @@
         "title": "4. Custom Type Extension"
       }
     ],
+    "4. Ecosystem and Official Clients": [
+      {
+        "document": "README.md",
+        "line": 56,
+        "level": 3,
+        "title": "4. Ecosystem and Official Clients"
+      }
+    ],
     "4. Event Convenience Methods": [
       {
         "document": "standards/request-action-spec.md",
@@ -1600,6 +1632,14 @@
         "line": 180,
         "level": 2,
         "title": "5. Handling Unknown Events"
+      }
+    ],
+    "5. I Want to Contribute to ErisPulse": [
+      {
+        "document": "README.md",
+        "line": 67,
+        "level": 3,
+        "title": "5. I Want to Contribute to ErisPulse"
       }
     ],
     "5. Implement Send Class": [
@@ -2293,7 +2333,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 345,
+        "line": 332,
         "level": 3,
         "title": "API Overview"
       }
@@ -2563,7 +2603,7 @@
     "Adapter Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 147,
+        "line": 171,
         "level": 3,
         "title": "Adapter Lifecycle"
       }
@@ -2845,7 +2885,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 259,
+        "line": 258,
         "level": 3,
         "title": "Attribute Access"
       },
@@ -2979,7 +3019,7 @@
     "Background Task Ownership and Automatic Cancellation": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 327,
+        "line": 351,
         "level": 2,
         "title": "Background Task Ownership and Automatic Cancellation"
       }
@@ -3758,6 +3798,14 @@
         "title": "Checkpoint TTL"
       }
     ],
+    "Child Loggers": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 134,
+        "level": 3,
+        "title": "Child Loggers"
+      }
+    ],
     "Choose Your Path": [
       {
         "document": "README.md",
@@ -3772,6 +3820,14 @@
         "line": 259,
         "level": 3,
         "title": "Client (Network Client)"
+      }
+    ],
+    "Client Series — `Core/client.py` / `Core/Bases/client.py`": [
+      {
+        "document": "advanced/errors.md",
+        "line": 34,
+        "level": 3,
+        "title": "Client Series — `Core/client.py` / `Core/Bases/client.py`"
       }
     ],
     "ClientWebSocket Properties": [
@@ -3817,7 +3873,7 @@
     "Cold Start Replay": [
       {
         "document": "advanced/module-communication.md",
-        "line": 165,
+        "line": 179,
         "level": 2,
         "title": "Cold Start Replay"
       }
@@ -3873,7 +3929,7 @@
     "Command Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 409,
+        "line": 450,
         "level": 3,
         "title": "Command Configuration"
       }
@@ -3949,7 +4005,7 @@
     "Command Parsing Configuration (event.command)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 564,
+        "line": 609,
         "level": 2,
         "title": "Command Parsing Configuration (event.command)"
       }
@@ -3973,17 +4029,17 @@
     "Command System": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 198,
+        "line": 222,
         "level": 3,
         "title": "Command System"
       }
     ],
-    "Comment Preservation and Minimal Disk Write": [
+    "Comment Retention and Minimal Disk Write": [
       {
         "document": "user-guide/configuration.md",
-        "line": 38,
+        "line": 39,
         "level": 2,
-        "title": "Comment Preservation and Minimal Disk Write"
+        "title": "Comment Retention and Minimal Disk Write"
       }
     ],
     "Common CSS Class Names": [
@@ -4037,13 +4093,13 @@
     "Common Methods": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 450,
+        "line": 440,
         "level": 3,
         "title": "Common Methods"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 498,
+        "line": 488,
         "level": 3,
         "title": "Common Methods"
       }
@@ -4091,7 +4147,7 @@
     "Complete API Reference": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 272,
+        "line": 296,
         "level": 2,
         "title": "Complete API Reference"
       }
@@ -4099,9 +4155,17 @@
     "Complete Configuration Example": [
       {
         "document": "user-guide/configuration.md",
-        "line": 143,
+        "line": 144,
         "level": 2,
         "title": "Complete Configuration Example"
+      }
+    ],
+    "Complete Decision Chain for Reply Matching": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 63,
+        "level": 3,
+        "title": "Complete Decision Chain for Reply Matching"
       }
     ],
     "Complete Email Event": [
@@ -4154,14 +4218,6 @@
         "line": 192,
         "level": 2,
         "title": "Complete Module Example"
-      }
-    ],
-    "Complete Reply Matching Decision Chain": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 63,
-        "level": 3,
-        "title": "Complete Reply Matching Decision Chain"
       }
     ],
     "Component Relationships": [
@@ -4225,7 +4281,7 @@
     "Configuration Changes": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 123,
+        "line": 147,
         "level": 3,
         "title": "Configuration Changes"
       }
@@ -4315,7 +4371,7 @@
     "Configuration File Location": [
       {
         "document": "user-guide/configuration.md",
-        "line": 6,
+        "line": 7,
         "level": 2,
         "title": "Configuration File Location"
       }
@@ -4345,7 +4401,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 73,
+        "line": 74,
         "level": 2,
         "title": "Configuration Hot Update"
       }
@@ -4381,7 +4437,7 @@
     "Configuration Loading Error Handling": [
       {
         "document": "user-guide/configuration.md",
-        "line": 17,
+        "line": 18,
         "level": 2,
         "title": "Configuration Loading Error Handling"
       }
@@ -4462,6 +4518,14 @@
         "line": 446,
         "level": 3,
         "title": "Connection Events"
+      }
+    ],
+    "Connection Failure Behavior": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 70,
+        "level": 2,
+        "title": "Connection Failure Behavior"
       }
     ],
     "Connection Flow": [
@@ -4739,7 +4803,7 @@
     "Core Initialization": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 115,
+        "line": 139,
         "level": 3,
         "title": "Core Initialization"
       }
@@ -4907,7 +4971,7 @@
     "Custom Identity Source (Provider)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 255,
+        "line": 257,
         "level": 3,
         "title": "Custom Identity Source (Provider)"
       }
@@ -4923,7 +4987,7 @@
     "Custom SQL Backend": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 106,
+        "line": 117,
         "level": 2,
         "title": "Custom SQL Backend"
       }
@@ -5225,25 +5289,17 @@
     "Dialect Behavior Differences": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 93,
+        "line": 104,
         "level": 2,
         "title": "Dialect Behavior Differences"
       }
     ],
-    "Directed Event: emit_to": [
+    "Directed Events: lifecycle.emit's to parameter": [
       {
         "document": "advanced/module-communication.md",
-        "line": 133,
+        "line": 134,
         "level": 2,
-        "title": "Directed Event: emit_to"
-      }
-    ],
-    "Directed Events (`emit_to`)": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 327,
-        "level": 3,
-        "title": "Directed Events (`emit_to`)"
+        "title": "Directed Events: lifecycle.emit's to parameter"
       }
     ],
     "Directory Structure": [
@@ -5350,6 +5406,14 @@
         "title": "Document Information"
       }
     ],
+    "Document List": [
+      {
+        "document": "advanced/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "Document List"
+      }
+    ],
     "Documentation": [
       {
         "document": "developer-guide/publishing.md",
@@ -5405,12 +5469,6 @@
       }
     ],
     "Documentation List": [
-      {
-        "document": "advanced/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "Documentation List"
-      },
       {
         "document": "api-reference/README.md",
         "line": 5,
@@ -5565,7 +5623,7 @@
     "Environment Variable Override": [
       {
         "document": "user-guide/configuration.md",
-        "line": 48,
+        "line": 49,
         "level": 2,
         "title": "Environment Variable Override"
       }
@@ -5743,7 +5801,7 @@
     "Event Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 407,
+        "line": 448,
         "level": 2,
         "title": "Event Configuration"
       }
@@ -5933,7 +5991,7 @@
     "Event Idempotency Deduplication": [
       {
         "document": "advanced/module-communication.md",
-        "line": 195,
+        "line": 211,
         "level": 2,
         "title": "Event Idempotency Deduplication"
       }
@@ -5999,7 +6057,7 @@
     "Event Reception and Processing": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 159,
+        "line": 183,
         "level": 3,
         "title": "Event Reception and Processing"
       }
@@ -6137,17 +6195,17 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 357,
+        "line": 344,
         "level": 3,
         "title": "Example"
       }
     ],
-    "Example Usage in Modules": [
+    "Example Usage in a Module": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 300,
+        "line": 324,
         "level": 2,
-        "title": "Example Usage in Modules"
+        "title": "Example Usage in a Module"
       }
     ],
     "Example of Return Value Handling": [
@@ -6156,6 +6214,14 @@
         "line": 333,
         "level": 3,
         "title": "Example of Return Value Handling"
+      }
+    ],
+    "Exception Descriptions and Occurrence Locations": [
+      {
+        "document": "advanced/errors.md",
+        "line": 32,
+        "level": 2,
+        "title": "Exception Descriptions and Occurrence Locations"
       }
     ],
     "Exception Handling": [
@@ -6172,6 +6238,14 @@
         "title": "Exception Handling"
       }
     ],
+    "Exception Handling Recommendations": [
+      {
+        "document": "advanced/errors.md",
+        "line": 107,
+        "level": 2,
+        "title": "Exception Handling Recommendations"
+      }
+    ],
     "Exception Hierarchy": [
       {
         "document": "advanced/http-client.md",
@@ -6186,12 +6260,36 @@
         "title": "Exception Hierarchy"
       }
     ],
+    "Exception List": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 387,
+        "level": 4,
+        "title": "Exception List"
+      }
+    ],
+    "Exception Overview": [
+      {
+        "document": "advanced/errors.md",
+        "line": 11,
+        "level": 2,
+        "title": "Exception Overview"
+      }
+    ],
     "Exception System": [
       {
         "document": "advanced/http-client.md",
         "line": 369,
         "level": 2,
         "title": "Exception System"
+      }
+    ],
+    "Exception System and Handling Guide": [
+      {
+        "document": "advanced/errors.md",
+        "line": 1,
+        "level": 1,
+        "title": "Exception System and Handling Guide"
       }
     ],
     "Execute Logic After Successful Send": [
@@ -6208,14 +6306,6 @@
         "line": 291,
         "level": 3,
         "title": "Executing Logic After Successful Send (Hook)"
-      }
-    ],
-    "Exemption List": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 384,
-        "level": 4,
-        "title": "Exemption List"
       }
     ],
     "Exit Code 42 Contract": [
@@ -6555,7 +6645,7 @@
     "Framework Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 331,
+        "line": 334,
         "level": 2,
         "title": "Framework Configuration"
       }
@@ -6566,6 +6656,14 @@
         "line": 673,
         "level": 3,
         "title": "Framework Helper Methods"
+      }
+    ],
+    "Framework Internal Parameter Validation (ValueError)": [
+      {
+        "document": "advanced/errors.md",
+        "line": 103,
+        "level": 3,
+        "title": "Framework Internal Parameter Validation (ValueError)"
       }
     ],
     "Friend Added": [
@@ -6897,7 +6995,7 @@
     "HTTP Client Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 400,
+        "line": 390,
         "level": 2,
         "title": "HTTP Client Module"
       }
@@ -6937,7 +7035,7 @@
     "HTTP Routing": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 213,
+        "line": 237,
         "level": 3,
         "title": "HTTP Routing"
       }
@@ -7122,12 +7220,12 @@
         "title": "Home Entry"
       }
     ],
-    "Hook Breakpoints Overview": [
+    "Hook Breakpoint Overview": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 89,
+        "line": 113,
         "level": 2,
-        "title": "Hook Breakpoints Overview"
+        "title": "Hook Breakpoint Overview"
       }
     ],
     "Hot Module Reload Architecture": [
@@ -7206,14 +7304,6 @@
         "title": "HttpResponse"
       }
     ],
-    "I. I Want to Use a Robot": [
-      {
-        "document": "README.md",
-        "line": 13,
-        "level": 3,
-        "title": "I. I Want to Use a Robot"
-      }
-    ],
     "I18nClass Key Path Rules": [
       {
         "document": "advanced/i18n.md",
@@ -7228,30 +7318,6 @@
         "line": 426,
         "level": 3,
         "title": "I18nManager"
-      }
-    ],
-    "II. I Want to Develop Modules / Adapters": [
-      {
-        "document": "README.md",
-        "line": 27,
-        "level": 3,
-        "title": "II. I Want to Develop Modules / Adapters"
-      }
-    ],
-    "III. I Want to Deeply Understand the Principles": [
-      {
-        "document": "README.md",
-        "line": 38,
-        "level": 3,
-        "title": "III. I Want to Deeply Understand the Principles"
-      }
-    ],
-    "IV. Ecosystem and Official Clients": [
-      {
-        "document": "README.md",
-        "line": 56,
-        "level": 3,
-        "title": "IV. Ecosystem and Official Clients"
       }
     ],
     "Image Download and Storage": [
@@ -7489,17 +7555,17 @@
     "Intended Audience": [
       {
         "document": "advanced/README.md",
-        "line": 26,
+        "line": 27,
         "level": 2,
         "title": "Intended Audience"
       }
     ],
-    "Inter-Module Calls (RPC)": [
+    "Inter-Module Call (RPC)": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 267,
+        "line": 266,
         "level": 3,
-        "title": "Inter-Module Calls (RPC)"
+        "title": "Inter-Module Call (RPC)"
       }
     ],
     "Inter-Module Communication": [
@@ -7516,20 +7582,28 @@
         "title": "Inter-Module Communication"
       }
     ],
-    "Interaction Interactions": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 446,
-        "level": 2,
-        "title": "Interaction Interactions"
-      }
-    ],
     "Interaction Methods": [
       {
         "document": "api-reference/event-system.md",
         "line": 427,
         "level": 3,
         "title": "Interaction Methods"
+      }
+    ],
+    "Interaction Session": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 436,
+        "level": 2,
+        "title": "Interaction Session"
+      }
+    ],
+    "Interaction — `Core/Event/interaction.py`": [
+      {
+        "document": "advanced/errors.md",
+        "line": 72,
+        "level": 3,
+        "title": "Interaction — `Core/Event/interaction.py`"
       }
     ],
     "Interactive Initialization (Recommended)": [
@@ -7589,7 +7663,7 @@
     "Internal Breakdown of Hot Update Chain": [
       {
         "document": "user-guide/configuration.md",
-        "line": 95,
+        "line": 96,
         "level": 3,
         "title": "Internal Breakdown of Hot Update Chain"
       }
@@ -7613,7 +7687,7 @@
     "Internationalization Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 436,
+        "line": 477,
         "level": 2,
         "title": "Internationalization Configuration"
       }
@@ -7674,12 +7748,12 @@
         "title": "Lazy Loading System"
       }
     ],
-    "Lazy Loading and Invocation": [
+    "Lazy Loading and Calls": [
       {
         "document": "advanced/module-communication.md",
-        "line": 155,
+        "line": 166,
         "level": 2,
-        "title": "Lazy Loading and Invocation"
+        "title": "Lazy Loading and Calls"
       }
     ],
     "Lazy-Loaded Module System": [
@@ -7761,7 +7835,7 @@
     "Lifecycle Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 341,
+        "line": 328,
         "level": 2,
         "title": "Lifecycle Module"
       }
@@ -7825,7 +7899,7 @@
     "Listener Query (has_handlers)": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 77,
+        "line": 101,
         "level": 3,
         "title": "Listener Query (has_handlers)"
       }
@@ -7995,7 +8069,7 @@
     "Logging Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 283,
+        "line": 286,
         "level": 2,
         "title": "Logging Configuration"
       }
@@ -8114,18 +8188,18 @@
         "title": "Manual Response Construction (Legacy Method Still Compatible)"
       }
     ],
-    "Master Determination Chain and Runtime Additions/Removals": [
+    "Master Identification Chain and Runtime Additions/Deletions": [
       {
         "document": "user-guide/configuration.md",
-        "line": 241,
+        "line": 243,
         "level": 3,
-        "title": "Master Determination Chain and Runtime Additions/Removals"
+        "title": "Master Identification Chain and Runtime Additions/Deletions"
       }
     ],
     "Master System Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 215,
+        "line": 217,
         "level": 2,
         "title": "Master System Configuration"
       }
@@ -8189,7 +8263,7 @@
     "Message Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 425,
+        "line": 466,
         "level": 3,
         "title": "Message Configuration"
       }
@@ -8427,7 +8501,7 @@
     "Message Sending": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 183,
+        "line": 207,
         "level": 3,
         "title": "Message Sending"
       }
@@ -8472,12 +8546,12 @@
         "title": "Message Statistics"
       }
     ],
-    "Message Transaction: message_tx": [
+    "Message Transaction: `message_tx`": [
       {
         "document": "advanced/interaction.md",
-        "line": 185,
+        "line": 184,
         "level": 2,
-        "title": "Message Transaction: message_tx"
+        "title": "Message Transaction: `message_tx`"
       }
     ],
     "Message Type Detection": [
@@ -8773,7 +8847,7 @@
     "Module Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 447,
+        "line": 488,
         "level": 2,
         "title": "Module Configuration"
       }
@@ -8821,7 +8895,7 @@
     "Module Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 138,
+        "line": 162,
         "level": 3,
         "title": "Module Lifecycle"
       },
@@ -8868,6 +8942,14 @@
         "line": 16,
         "level": 2,
         "title": "Module Overview"
+      }
+    ],
+    "Module Series — `Core/module.py` (`sdk.module.call`)": [
+      {
+        "document": "advanced/errors.md",
+        "line": 82,
+        "level": 3,
+        "title": "Module Series — `Core/module.py` (`sdk.module.call`)"
       }
     ],
     "Module-Level Control": [
@@ -8980,12 +9062,12 @@
         "title": "Multi-language Coverage"
       }
     ],
-    "Multi-path Waiting: expect + select": [
+    "Multi-path Waiting: `expect` + `select`": [
       {
         "document": "advanced/interaction.md",
-        "line": 112,
+        "line": 111,
         "level": 2,
-        "title": "Multi-path Waiting: expect + select"
+        "title": "Multi-path Waiting: `expect` + `select`"
       }
     ],
     "Multi-turn conversation (conversation)": [
@@ -9031,7 +9113,7 @@
     "Native Asynchronous API": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 70,
+        "line": 81,
         "level": 2,
         "title": "Native Asynchronous API"
       }
@@ -9143,7 +9225,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 566,
+        "line": 611,
         "level": 2,
         "title": "Next Steps"
       },
@@ -9195,7 +9277,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 358,
+        "line": 382,
         "level": 2,
         "title": "Notes"
       },
@@ -9329,7 +9411,7 @@
     "One-Time Registration (once)": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 63,
+        "line": 87,
         "level": 3,
         "title": "One-Time Registration (once)"
       }
@@ -9466,12 +9548,12 @@
         "title": "Others"
       }
     ],
-    "Outbound Auditing: Who Can Call Whom": [
+    "Outbound Audit: Who Can Call Whom": [
       {
         "document": "advanced/module-communication.md",
-        "line": 117,
+        "line": 118,
         "level": 2,
-        "title": "Outbound Auditing: Who Can Call Whom"
+        "title": "Outbound Audit: Who Can Call Whom"
       }
     ],
     "Outbound Protocols": [
@@ -9863,7 +9945,7 @@
     "Prerequisites": [
       {
         "document": "advanced/README.md",
-        "line": 34,
+        "line": 35,
         "level": 2,
         "title": "Prerequisites"
       }
@@ -9903,7 +9985,7 @@
     "Proactive GC Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 352,
+        "line": 355,
         "level": 3,
         "title": "Proactive GC Configuration"
       }
@@ -10149,13 +10231,13 @@
     "Quick Reference": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 379,
+        "line": 369,
         "level": 3,
         "title": "Quick Reference"
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 406,
+        "line": 396,
         "level": 3,
         "title": "Quick Reference"
       },
@@ -10397,7 +10479,7 @@
     "Registration and Unregistration": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 274,
+        "line": 298,
         "level": 3,
         "title": "Registration and Unregistration"
       }
@@ -10410,12 +10492,6 @@
         "title": "Related Documentation"
       },
       {
-        "document": "advanced/interaction.md",
-        "line": 215,
-        "level": 2,
-        "title": "Related Documentation"
-      },
-      {
         "document": "advanced/lazy-loading.md",
         "line": 224,
         "level": 2,
@@ -10423,7 +10499,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 368,
+        "line": 392,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -10435,7 +10511,7 @@
       },
       {
         "document": "advanced/module-communication.md",
-        "line": 206,
+        "line": 223,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -10453,7 +10529,7 @@
       },
       {
         "document": "advanced/storage-backends.md",
-        "line": 131,
+        "line": 142,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -10471,7 +10547,7 @@
       },
       {
         "document": "api-reference/core-modules.md",
-        "line": 517,
+        "line": 507,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -10550,6 +10626,12 @@
         "title": "Related Documents"
       },
       {
+        "document": "advanced/interaction.md",
+        "line": 214,
+        "level": 2,
+        "title": "Related Documents"
+      },
+      {
         "document": "advanced/sql-builder.md",
         "line": 436,
         "level": 2,
@@ -10601,7 +10683,7 @@
     "Relationship with Other Systems": [
       {
         "document": "advanced/interaction.md",
-        "line": 209,
+        "line": 208,
         "level": 2,
         "title": "Relationship with Other Systems"
       }
@@ -11083,7 +11165,7 @@
     "Router Module": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 373,
+        "line": 363,
         "level": 2,
         "title": "Router Module"
       }
@@ -11195,7 +11277,7 @@
     "SDK Debugging": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 421,
+        "line": 411,
         "level": 2,
         "title": "SDK Debugging"
       }
@@ -11214,12 +11296,12 @@
         "title": "SDK Object"
       }
     ],
-    "SQL Chainable Queries": [
+    "SQL Chained Query": [
       {
         "document": "api-reference/core-modules.md",
         "line": 43,
         "level": 3,
-        "title": "SQL Chainable Queries"
+        "title": "SQL Chained Query"
       }
     ],
     "SQL Query Builder": [
@@ -11257,7 +11339,7 @@
     "Scope Configuration (scope)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 476,
+        "line": 517,
         "level": 2,
         "title": "Scope Configuration (scope)"
       }
@@ -11587,17 +11669,17 @@
     "Server Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 196,
+        "line": 198,
         "level": 2,
         "title": "Server Configuration"
       }
     ],
-    "Service Contract (`meta.services`)": [
+    "Service Contract (meta.services)": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 284,
+        "line": 283,
         "level": 3,
-        "title": "Service Contract (`meta.services`)"
+        "title": "Service Contract (meta.services)"
       }
     ],
     "Service Contract: meta.services": [
@@ -11608,12 +11690,12 @@
         "title": "Service Contract: meta.services"
       }
     ],
-    "Service Directory (`services`)": [
+    "Service Directory (services)": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 315,
+        "line": 314,
         "level": 3,
-        "title": "Service Directory (`services`)"
+        "title": "Service Directory (services)"
       }
     ],
     "Service Directory: services()": [
@@ -11638,28 +11720,28 @@
         "title": "Session Identifiers"
       }
     ],
-    "Session Inbox: event.history": [
+    "Session Inbox: `event.history`": [
       {
         "document": "advanced/interaction.md",
-        "line": 170,
+        "line": 169,
         "level": 2,
-        "title": "Session Inbox: event.history"
+        "title": "Session Inbox: `event.history`"
       }
     ],
-    "Session Mutual Exclusion: acquire / hold / get_owner_of": [
+    "Session Mutual Exclusion: `acquire` / `hold` / `get_owner_of`": [
       {
         "document": "advanced/interaction.md",
-        "line": 139,
+        "line": 138,
         "level": 2,
-        "title": "Session Mutual Exclusion: acquire / hold / get_owner_of"
+        "title": "Session Mutual Exclusion: `acquire` / `hold` / `get_owner_of`"
       }
     ],
-    "Session Timers: remind / escalate": [
+    "Session Timers: `remind` / `escalate`": [
       {
         "document": "advanced/interaction.md",
         "line": 75,
         "level": 2,
-        "title": "Session Timers: remind / escalate"
+        "title": "Session Timers: `remind` / `escalate`"
       }
     ],
     "Severity Classification": [
@@ -11841,7 +11923,7 @@
     "Standard Event Definitions": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 249,
+        "line": 273,
         "level": 2,
         "title": "Standard Event Definitions"
       }
@@ -12009,7 +12091,7 @@
     "Storage Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 396,
+        "line": 399,
         "level": 2,
         "title": "Storage Configuration"
       }
@@ -12020,6 +12102,14 @@
         "line": 5,
         "level": 2,
         "title": "Storage Module"
+      }
+    ],
+    "Storage Series — `Core/storage` / `Core/Bases/sql_base.py`": [
+      {
+        "document": "advanced/errors.md",
+        "line": 61,
+        "level": 3,
+        "title": "Storage Series — `Core/storage` / `Core/Bases/sql_base.py`"
       }
     ],
     "Storage System": [
@@ -12039,17 +12129,9 @@
     "Strict Mode": [
       {
         "document": "user-guide/configuration.md",
-        "line": 367,
+        "line": 370,
         "level": 3,
         "title": "Strict Mode"
-      }
-    ],
-    "Sub-loggers": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 134,
-        "level": 3,
-        "title": "Sub-loggers"
       }
     ],
     "Success Response": [
@@ -12399,7 +12481,7 @@
     "Trace ID": [
       {
         "document": "advanced/interaction.md",
-        "line": 198,
+        "line": 197,
         "level": 2,
         "title": "Trace ID"
       }
@@ -12428,12 +12510,12 @@
         "title": "Transaction Usage"
       }
     ],
-    "Transcript Conversation Inbox": [
+    "Transcript Session Inbox": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 494,
+        "line": 484,
         "level": 2,
-        "title": "Transcript Conversation Inbox"
+        "title": "Transcript Session Inbox"
       }
     ],
     "Translation Key Naming": [
@@ -12455,7 +12537,7 @@
     "Triggering": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 282,
+        "line": 306,
         "level": 3,
         "title": "Triggering"
       }
@@ -12503,7 +12585,7 @@
     "Unified Event Override Configuration (event.overrides)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 522,
+        "line": 565,
         "level": 2,
         "title": "Unified Event Override Configuration (event.overrides)"
       }
@@ -12771,7 +12853,7 @@
     "User Priority: Master Effect Scope Decided by User": [
       {
         "document": "user-guide/configuration.md",
-        "line": 279,
+        "line": 282,
         "level": 3,
         "title": "User Priority: Master Effect Scope Decided by User"
       }
@@ -12959,7 +13041,7 @@
     "Utilities": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 290,
+        "line": 314,
         "level": 3,
         "title": "Utilities"
       }
@@ -12976,14 +13058,6 @@
         "line": 468,
         "level": 3,
         "title": "Utility Methods"
-      }
-    ],
-    "V. I Want to Contribute to ErisPulse": [
-      {
-        "document": "README.md",
-        "line": 67,
-        "level": 3,
-        "title": "V. I Want to Contribute to ErisPulse"
       }
     ],
     "Verification of Installation": [
@@ -13058,12 +13132,12 @@
         "title": "Waiting for Replies"
       }
     ],
-    "Waiting for Reply: wait_reply": [
+    "Waiting for Reply: `wait_reply`": [
       {
         "document": "advanced/interaction.md",
         "line": 12,
         "level": 2,
-        "title": "Waiting for Reply: wait_reply"
+        "title": "Waiting for Reply: `wait_reply`"
       }
     ],
     "Waiting for Results": [
@@ -13117,7 +13191,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 228,
+        "line": 252,
         "level": 3,
         "title": "WebSocket"
       }
@@ -13186,6 +13260,14 @@
         "line": 130,
         "level": 3,
         "title": "WebSocket Registration"
+      }
+    ],
+    "WebSocket Series — `Core/client.py` (`send` / `receive`)": [
+      {
+        "document": "advanced/errors.md",
+        "line": 54,
+        "level": 3,
+        "title": "WebSocket Series — `Core/client.py` (`send` / `receive`)"
       }
     ],
     "What is an Adapter": [
@@ -13602,6 +13684,14 @@
         "title": "`call_api` Method"
       }
     ],
+    "`escalate`: Guaranteed escalation at a specific time": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 96,
+        "level": 3,
+        "title": "`escalate`: Guaranteed escalation at a specific time"
+      }
+    ],
     "`hasattr` / `dir` Support": [
       {
         "document": "api-reference/event-system.md",
@@ -13624,6 +13714,14 @@
         "line": 38,
         "level": 3,
         "title": "`keep_running` Parameter"
+      }
+    ],
+    "`remind`: Remind if no reply": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 79,
+        "level": 3,
+        "title": "`remind`: Remind if no reply"
       }
     ],
     "`t()` Method Details": [
@@ -13789,17 +13887,9 @@
     "dump_state()": [
       {
         "document": "api-reference/core-modules.md",
-        "line": 423,
+        "line": 413,
         "level": 3,
         "title": "dump_state()"
-      }
-    ],
-    "escalate: Guaranteed Upgrade at a Point in Time": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 97,
-        "level": 3,
-        "title": "escalate: Guaranteed Upgrade at a Point in Time"
       }
     ],
     "get() Method": [
@@ -13952,14 +14042,6 @@
         "line": 19,
         "level": 2,
         "title": "pyproject.toml Configuration"
-      }
-    ],
-    "remind: Remind if No Reply": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 79,
-        "level": 3,
-        "title": "remind: Remind if No Reply"
       }
     ],
     "run": [

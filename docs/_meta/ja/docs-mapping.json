@@ -336,7 +336,7 @@
     "高度なトピック": {
       "description": "フレームワークの高度な機能を深く理解する",
       "icon": "fa-fire",
-      "count": 15,
+      "count": 16,
       "documents": [
         {
           "title": "高級トピック",
@@ -417,14 +417,20 @@
           "icon": "fa-fire"
         },
         {
-          "title": "スタートフローと手動制御",
-          "path": "advanced/startup.md",
-          "level": 1,
-          "icon": "fa-fire"
-        },
-        {
           "title": "ストレージバックエンド",
           "path": "advanced/storage-backends.md",
+          "level": 1,
+          "icon": "fa-server"
+        },
+        {
+          "title": "エラー体系とキャッチガイド",
+          "path": "advanced/errors.md",
+          "level": 1,
+          "icon": "fa-triangle-exclamation"
+        },
+        {
+          "title": "スタートフローと手動制御",
+          "path": "advanced/startup.md",
           "level": 1,
           "icon": "fa-fire"
         }
