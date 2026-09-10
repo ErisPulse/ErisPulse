@@ -10027,15 +10027,17 @@ topology = sdk.get_topology()
 
 # 所有者（owner）システム
 
-所有権は、モジュールの「プラグインアンドプレイ」の基盤です。モジュールが読み込まれる際に登録されるフレームワークリソースはすべて自動的に所有者に記名され、モジュールのアンロード/無効化時に所有者に基づいて一括で回収されます。モジュールの作者はリソースを宣言するだけで、手動でクリーンアップロジックを書く必要はありません。
+所有者（owner）は、モジュールの「プラグイン方式」の基盤です。モジュールが読み込まれる際に登録するすべてのフレームワークリソースは自動的に所有者に記名され、モジュールのアンロードや無効化時に、記名されたリソースを所有者が一括して回収します。モジュール開発者はリソースを宣言するだけで、手動でのクリーンアップロジックを書く必要はありません。
 
-> **関連システム**：スコープはイベント配信時に「リソースが有効かどうか」を決定し、所有権はライフサイクル中に「リソースが誰に属するか、誰がアンロード時に回収されるか」を決定します。  
-> スコープの詳細は[統一制御面（scope）](scope.md)を参照してください。バックグラウンドタスクの詳細は[ライフサイクル管理](lifecycle.md#バックグラウンドタスクの所有と自動キャンセル)を参照してください。
+> **関連システム**：スコープ（scope）は、イベントの配信時に「リソースが有効かどうか」を決定します。  
+> 所有者は、モジュールのライフサイクル中に「どの所有者がリソースを所有しているか」、「誰がアンロード時にリソースを回収するか」を決定します。  
+> スコープの詳細は[統一制御面（scope）](scope.md)を参照してください。バックグラウンドタスクの詳細は、[ライフサイクル管理](lifecycle.md#バックグラウンドタスクの所有と自動キャンセル)を参照してください。
 
 {!--< tips >!--}
-1. 所有権は**登録の瞬間**に `current_owner` に基づいて自動的に記録され、モジュールのコードに変更は一切不要です。
-2. アンロード/無効化は同じクリーンアップチェーン（`_cleanup_module_registrations`）を使用し、各ステップで失敗しても警告のみで中断はしません。
-3. ユーザー設定のリソース（永続化オーバーライド / スコープルール / コマンドACL）は、モジュールのアンロード時にクリーンアップされません。
+1. 所有者は**登録の瞬間**に `current_owner` に基づいて自動的に記録されます。モジュールコードの変更は一切不要です。
+2. アンロード/無効化は共通のクリーンアップチェーン（`_cleanup_module_registrations`）を使用します。各ステップで失敗しても警告のみを表示し、処理を中断しません。
+3. ユーザー設定のリソース（永続化された上書き / スコープルール / コマンドACL）は、モジュールのアンロード時にクリーンアップされません。
+4. ツールモジュールが外部ハンドルをホストしている場合、`on_cleanup(cb)` を使用してクリーンアップチェーンに登録できます。他のモジュールがアンロードされた際に、自動的にコールバックされます（[ツールモジュールガイド](#ツールモジュールガイド外部モジュールのハンドルをホストする)を参照してください）。
 {!--< /tips >!--}
 
 ## owner コンテキストメカニズム
@@ -10063,58 +10065,60 @@ with owner_scope("MyModule"):
 
 ## 所属リソースの概要
 
-モジュールがロードコンテキスト内で登録した以下のリソースはすべて所有者として記録され、アンロード/無効化時に自動的にリソースを回収します。
+モジュールは、ロードコンテキスト内で以下のリソースを登録し、それらの所属を記録します。アンロードまたは無効化時に、これらのリソースは自動的に回収されます。
 
 | リソース | 登録方法 | クリーンアップ呼び出し |
 |------|----------|----------|
-| コマンド | `@command()` / コマンド dict 宣言 | `command.unregister_by_owner()` |
-| イベントハンドラ | `@message` / `@notice` / `@request` / `@meta` | `handler.unregister_by_owner()` |
-| アダプタイベントリスナー | `sdk.adapter.on()` / `raw=True` | `adapter.unregister_handlers_by_owner()` |
-| アダプタミドルウェア | `@sdk.adapter.middleware` | 同上 |
+| コマンド | `@command()` / コマンド dict 声明 | `command.unregister_by_owner()` |
+| イベントハンドラー | `@message` / `@notice` / `@request` / `@meta` | `handler.unregister_by_owner()` |
+| 适配器イベントリスナー | `sdk.adapter.on()` / `raw=True` | `adapter.unregister_handlers_by_owner()` |
+| 适配器ミドルウェア | `@sdk.adapter.middleware` | 同上 |
 | ルーティング（HTTP/WS/SSE） | `router.http()` / `websocket()` / `sse()` | 名前空間 + owner による二重保証 |
 | ルーティングミドルウェア | `@router.middleware()` / `add_middleware()` | `router.unregister_all_by_owner()` |
-| Dashboard ホームエントリ | `router.register_home_entry()` | `unregister_home_entries_by_owner()` |
-| 自作セッションタイプ | `register_custom_type()` | `unregister_custom_types_by_owner()` |
+| Dashboard ホームエントリー | `router.register_home_entry()` | `unregister_home_entries_by_owner()` |
+| 自定义会話タイプ | `register_custom_type()` | `unregister_custom_types_by_owner()` |
 | バックグラウンドタスク | `self.spawn()` | `cancel_owner_tasks()` |
+| 外部所属クリーンアップフック（ツールモジュール管理） | `runtime.on_cleanup(cb)` | `run_owner_cleanups()`（アンロード/無効化/适配器終了時） |
 | ライフサイクルフック | `lifecycle.register()` | `lifecycle.unregister_by_owner()` |
 | 主人身源プロバイダ | `master.provider` | `master.unregister_by_owner()` |
-| i18n 翻訳キー | `I18nClass` 宣言（domain=モジュール名） | `i18n.unregister_domain()` |
+| i18n 翻訳キー | `I18nClass` 声明（domain=モジュール名） | `i18n.unregister_domain()` |
 | イベントオーバーライド（実行時） | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
-| 交互セッション（wait_reply 等待 / リース） | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()`（待機側は即時キャンセル受信） |
+| 交互会話（wait_reply 等待 / リース） | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()`（待機側が即座にキャンセルを受け取る） |
 | コンテキストデータ | `runtime/context` は owner ごとに記録 | モジュール単位で正確にクリーンアップ |
 
-アダプタ側の対応するリソース（プラットフォーム名を owner とする）は、アダプタの `shutdown()` / `restart()` 時に `_cleanup_adapter_resources` によって回収され、以下も含まれます：
+适配器側の対応リソース（プラットフォーム名を owner として）は、适配器の `shutdown()` / `restart()` 時に `_cleanup_adapter_resources` によって回収されます。以下も含まれます：
 
 | リソース | クリーンアップ呼び出し |
 |------|----------|
-| アダプタ独自の `on()` ハンドラとミドルウェア | `adapter.unregister_handlers_by_owner(platform)` |
+| 适配器独自の `on()` ハンドラーとミドルウェア | `adapter.unregister_handlers_by_owner(platform)` |
 | プラットフォームイベントメソッド拡張（`EventMixin`） | `unregister_platform_event_methods(platform)` |
-| 自作セッションタイプ | `unregister_custom_types_by_owner(platform)` |
-| 交互セッション（該当プラットフォームで保留中の wait_reply / リース） | `interaction.cancel_by_platform(platform)` |
+| 自定义会話タイプ | `unregister_custom_types_by_owner(platform)` |
+| 交互会話（該当プラットフォームで待機中の wait_reply / リース） | `interaction.cancel_by_platform(platform)` |
 | i18n 翻訳ドメイン（domain=設定キー） | `i18n.unregister_domain(設定キー)` |
 | 細粒度の名前空間ルーティング | `router.unregister_all_by_owner(platform)` |
 
 ## 卸載/無効化のクリーンアップシーケンス
 
-`unload()` および `disable()` は、同じクリーンアップチェーンを使用します（各ステップで個別に try/except を使用し、失敗してもログに記録され、**後続のクリーンアップを中断しません**）：
+`unload()` と `disable()` は、それぞれ独立した try/except で処理されるクリーンアップチェーンを共有します。失敗してもログに記録されるのみで、**後続のクリーンアップを中断することはありません**。
 
 ```mermaid
 flowchart TD
     A["unload / disable"] --> B["on_unload()（タイムアウト保護）"]
-    B --> C["バックグラウンドタスクのキャンセル（cancel_owner_tasks）"]
-    C --> D["_cleanup_module_registrations"]
+    B --> C["バックグラウンドタスクの強制キャンセル（cancel_owner_tasks）"]
+    C --> C1["外部の所有者クリーンアップフック<br/>（ツールモジュール on_cleanup で登録、run_owner_cleanups でトリガー）"]
+    C1 --> D["_cleanup_module_registrations"]
     D --> D1["i18n 翻訳ドメイン"]
-    D1 --> D2["ルーティング：名前空間 + owner のデフォルト処理<br/>（ミドルウェア / ホームページエントリを含む）"]
+    D1 --> D2["ルーティング：名前空間 + owner の強制クリーンアップ<br/>（ミドルウェア / ホームページエントリ含む）"]
     D2 --> D3["アダプタイベントハンドラ / ミドルウェア"]
     D3 --> D4["コマンド + イベントハンドラ"]
     D4 --> D5["カスタムセッションタイプ"]
-    D5 --> D6["実行時イベントのオーバーライド（persist=False）"]
+    D5 --> D6["ランタイムイベントの上書き（persist=False）"]
     D6 --> D7["所有者プロバイダ"]
     D7 --> D8["ライフサイクルフック"]
-    D8 --> E["SDK属性の削除 + ラグジュアリプロキシ"]
+    D8 --> E["SDK 属性と遅延ロードプロキシの削除"]
 ```
 
-`sdk.uninit()` で終了する際には、以下のグローバルなデフォルト処理が追加されます：すべてのアダプタのシャットダウン → すべてのモジュールの unload → `router.stop()`（ルーティング/ミドルウェア/ホームページエントリのクリア）→ `cancel_all_background_tasks()` → イベントハンドラおよびフックのクリア。
+`sdk.uninit()` で終了する際には、以下のグローバルな強制クリーンアップが行われます：すべてのアダプタのシャットダウン → すべてのモジュールの unload → `router.stop()`（ルーティング/ミドルウェア/ホームページエントリのクリア）→ `cancel_all_background_tasks()` → イベントハンドラとフックのクリア。
 
 ## 設計の境界：アンインストール時にクリーンアップされないリソース
 
@@ -10161,6 +10165,57 @@ class MyModule(BaseModule):
 - **カスタム domain の i18n 登録**：`i18n.register(domain=...)` の domain がモジュール名と異なる場合、自動回収されません。domain=モジュール名を維持してください。
 - **バックグラウンドタスクは必ず self.spawn() を使用**：裸の `asyncio.create_task` はモジュールに帰属せず、アンロード時にキャンセルされません（詳細は[ライフサイクル管理](lifecycle.md#バックグラウンドタスクの帰属と自動キャンセル)を参照）。
 - クリーンアップの「失敗は警告のみ」：1ステップのクリーンアップで異常が発生しても、他のリソースの回収は妨げられません。デバッグ/警告レベルのログで確認でき、トラブルシューティング時には TRACE を有効にしてください。
+
+## ツールモジュールガイド：他のモジュールのハンドルを管理する
+
+**シナリオ**：定時タスク、レジストリ、コネクションプールなど「ツールモジュール」は、他のモジュールが保管するものを代わりに管理します。  
+相手が `on_load` で `sdk.Cron.on_trigger(handler)` を呼び出すと、あなたのコンテナは相手のインスタンスを指すコールバックを保持します。  
+フレームワークは相手が登録したフレームワークリソースを自動的にクリーンアップしますが、  
+**あなたが私有コンテナに保持している参照**はクリーンアップできません：  
+相手がアンロードされた後も、あなたのコンテナは相手のインスタンスを保持しているため、  
+GC で回収されず（メモリリーク）、`purge` のリーク診断では「回収不可」と表示されます。
+
+**解決策**：相手のものを登録する関数内で `on_cleanup()` を呼び出します。  
+フレームワークは相手がアンロード / 禁用されたときに、あなたのクリーンアップ関数を自動的にコールバックします：
+
+```python
+from ErisPulse.Core.Bases import BaseModule
+from ErisPulse.runtime import off_cleanup, on_cleanup
+
+class CronModule(BaseModule):
+    def __init__(self):
+        self._entries = {}  # {モジュール名: そのモジュールが管理するコールバックリスト}
+
+    def on_trigger(self, handler):
+        # 自動的に呼び出し元のモジュール名を識別します（on_load からの直接呼び出し / module.call いずれでも正しく動作）。
+        # 戻り値は解析された owner で、そのまま記名キーとして使用できます。
+        owner = on_cleanup(self._drop)
+        self._entries.setdefault(owner, []).append(handler)
+
+    def _drop(self, owner: str):
+        """相手のモジュールがアンロード / 禁用されたときにフレームワークが自動的に呼び出す：
+        そのハンドルを破棄するだけです。"""
+        self._entries.pop(owner, None)
+
+    async def on_unload(self, event):
+        off_cleanup(self._drop)  # ③ 自分がアンロードされる前にフックを解除し、フック表が self を保持しないようにします。
+```
+
+フレームワークが保証する動作：
+
+| 注目点 | 行動 |
+|--------|------|
+| 発動タイミング | 相手のモジュールがアンロード / 禁用される時、またはアダプタが閉じられる時——いずれもフレームワークのクリーンアップチェーン内で発動し、purge のリーク診断より前に行われます。 |
+| 呼び出し元の識別 | 直接呼び出しでは `current_owner` を取得、`module.call()` を経由して呼び出された場合は呼び出し元（`current_caller`）を取得、または `on_cleanup(cb, owner="モジュール名")` で明示的に指定することもできます。 |
+| コールバックの署名 | `cb(owner: str)`、同期 / 非同期のどちらでも可；非同期は `CLEANUP_CALLBACK_TIMEOUT_SECS`（デフォルト 10 秒）のタイムアウト保護付き。 |
+| 容錯 | 1 件のコールバックが例外 / タイムアウトしてもログを記録するだけで、他のフックやクリーンアップチェーンには影響しません。 |
+| 重複登録 | 同じ `(owner, callback)` は冪等的に重複除去されます。 |
+
+**不要な場合**：相手が登録するのはフレームワークリソース（コマンド、イベントハンドラ、ルーティング、バックグラウンドタスクなど）であれば、  
+フレームワークが自動的にクリーンアップします（上記の[リソースの所有権](#リソースの所有権)を参照）。  
+フレームワークリソースではない、**あなたが私有コンテナに保持している相手のハンドル**のみ、  
+`on_cleanup` が必要です。  
+モジュール開発者向けの速見版は、[ベストプラクティス · ツールモジュール](../developer-guide/modules/best-practices.md#ツールモジュール相手のものを管理する際にはアンロード通知を受け止める) を参照してください。
 
 
 
@@ -13603,6 +13658,114 @@ async def on_unload(self, event):
 5. **SVG アイコン** — `icon_svg` は完全な `<svg>` タグである必要があります。推奨サイズは `viewBox="0 0 24 24"` です。`stroke="currentColor"` を使用して、Dashboard のテーマ色を継承します。
 6. **JS 関数名** — `js_content` 内の関数名は一意である必要があります（例：`loadWeatherView`）。他のモジュールとの衝突を避けるためです。
 7. **動的更新** — モジュールがウィンドウを登録または解除した後、Dashboard のフロントエンドは WebSocket を使用してサイドバーをリアルタイムに更新します。ページをリフレッシュする必要はありません。
+
+
+
+### Cron 定时任务
+
+# ErisPulse-Cron
+
+[ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) は ErisPulse エコシステムの**スケジュールタスクモジュール**です。他のモジュールに統一されたスケジュールタスク API を提供します。1回限りのスケジュール、間隔ループ、Cron 表現式の3種類のタスクタイプをサポートし、コールバックにパラメータを渡すことができます。SQLite を用いた永続化により、再起動してもタスクが失われることはありません。
+
+> [!IMPORTANT]
+> Cron は ErisPulse フレームワークの組み込み機能ではなく、個別にインストールする必要があります：
+>
+> ```bash
+> epsdk install Cron
+> ```
+
+インストール後は `sdk.Cron` を使ってすべてのインターフェースにアクセスできます。
+
+## 機能速覧
+
+- **3 種類のタイミング設定**：1 回限り (`once`)、間隔によるループ (`interval`)、Cron 式 (`cron`)
+- **コールバック引数**：`callback_data` を作成時に渡すことで、トリガー時に元のデータを返却し、タスクの元を識別可能
+- **永続化**：SQLite に保存 (`sdk.storage`) され、フレームワークの再起動後も自動的に復元
+- **遅れ対応戦略**：即時実行 / 飛ばす / 再スケジューリング、タスクごとに選択可能
+- **タスク管理**：一時停止、再開、キャンセル、手動実行、期限切れタスクのクリーンアップ
+- **Dashboard 連携**：[ErisPulse-Dashboard](dashboard.md) をインストールしている場合、管理ウィンドウが自動的に登録される
+
+## 速習
+
+```python
+from ErisPulse import sdk
+
+# 1. コールバックハンドラの登録
+@sdk.Cron.on_trigger
+async def handle_trigger(info):
+    data = info["callback_data"]
+    print(f"タスクがトリガーされました: {info['task_id']}, データ: {data}")
+
+# 2. タイマーの作成
+task_id = sdk.Cron.once(
+    delay=60,
+    callback_data={"type": "reminder", "msg": "水分補給の時間です"},
+)
+```
+
+---
+
+## API 概要
+
+### タスクの作成
+
+```python
+# 一回限り：600 秒遅延してトリガー
+sdk.Cron.once(delay=600, callback_data={"order_id": "123"}, label="注文のタイムアウト通知")
+
+# 間隔ループ：300 秒ごとにトリガー、最大 100 回
+sdk.Cron.interval(interval_seconds=300, callback_data={"monitor": "server-1"}, max_runs=100)
+
+# Cron 式：平日の毎日 9:30
+sdk.Cron.cron(expression="30 9 * * 1-5", callback_data={"type": "daily_report"})
+
+# 一般的なオプションパラメータ：trigger_at（絶対タイムスタンプ）、delay（最初の遅延）、timezone、
+# max_runs（0=無限）、label、source（作成者モジュール名）、missed_policy（遅れ時のポリシー）
+```
+
+一般的な Cron 式：`*/5 * * * *`（5 分ごと）、`0 8 * * *`（毎日 8 時）、`30 9 * * 1-5`（平日の 9:30）、`0 0 1 * *`（毎月 1 日）。
+
+### コールバック
+
+```python
+@sdk.Cron.on_trigger
+async def my_handler(info):
+    # info には task_id / task_type / callback_data / label / source /
+    # run_count / max_runs / created_at / last_run / trigger_time が含まれる
+    ...
+```
+
+複数のハンドラを登録可能で、すべて順次実行され、1 つのハンドラの例外は他のハンドラに影響しない。
+
+### タスクの管理
+
+```python
+sdk.Cron.cancel(task_id)                  # キャンセル
+sdk.Cron.pause(task_id)                   # 一時停止
+sdk.Cron.resume(task_id)                  # 再開（reschedule=True で次回トリガーを再計算）
+await sdk.Cron.trigger_now(task_id)       # 手動で即時トリガー（元のスケジュールには影響しない）
+sdk.Cron.get_task(task_id)                # 1 つのタスクを取得
+sdk.Cron.list_tasks(source="MyModule")    # タスク一覧（source/status/task_type によるフィルタリング可能）
+sdk.Cron.delete_task(task_id)             # タスク記録を削除
+sdk.Cron.cleanup()                        # 7 日前に完了/キャンセルされたタスクをクリーンアップ
+```
+
+### 遅れ時のポリシー（missed_policy）
+
+フレームワークの再起動後に、トリガー時間に遅れたタスクに対して：
+
+| ポリシー | 行為 |
+|------|------|
+| `fire_immediately` | 即時トリガー（デフォルト） |
+| `skip` | 今回のトリガーをスキップし、次回を待つ |
+| `reschedule` | 現在時刻から次回トリガーを再計算 |
+
+## モジュールのアンロード時の動作
+
+Cron のタスクデータは**永続化されたアセット**です。タスクを作成したモジュールがアンロードまたは無効化されても、既に作成されたタスクは削除されません。ただし、そのモジュールが登録したコールバックハンドルはクリーンアップされます。所有権システムに基づく[外部クリーンアップフック](../advanced/ownership.md#ツールモジュールガイド-他のモジュールのハンドルを管理する)により、Cron が他のモジュールのコールバックを管理する場合、自動的に所有者を記録します。その他のモジュールがアンロードまたは無効化された際に、そのコールバックハンドルは自動的に破棄され、他のモジュールのインスタンスが正常にリサイクルされることが保証されます。
+
+- タスク作成元のモジュールが**再ロード**された後、`on_trigger` を再び実行することで、再びトリガーを受け取ることができます。
+- 使用しなくなったタスクは `sdk.Cron.cancel(task_id)` / `delete_task(task_id)` を使用してクリーンアップできます。
 
 
 

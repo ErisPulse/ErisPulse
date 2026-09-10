@@ -399,7 +399,7 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "所屬權（owner）系統",
+          "title": "归屬權（owner）系統",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
@@ -440,7 +440,7 @@
     "生態模組": {
       "description": "社群維護的第三方擴展模組",
       "icon": "fa-cubes",
-      "count": 4,
+      "count": 5,
       "documents": [
         {
           "title": "生態模組",
@@ -459,6 +459,12 @@
           "path": "ecosystem/dashboard.md",
           "level": 1,
           "icon": "fa-table-columns"
+        },
+        {
+          "title": "ErisPulse-Cron",
+          "path": "ecosystem/cron.md",
+          "level": 1,
+          "icon": "fa-clock"
         },
         {
           "title": "ErisPulse-Takumi",
