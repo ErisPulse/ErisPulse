@@ -24,6 +24,8 @@ from .errors import (
     ModuleError,
     ModuleNotAvailableError,
     ServiceNotProvidedError,
+    StorageError,
+    StorageUnreachableError,
     WebSocketError,
     WebSocketDisconnect,
 )
@@ -87,6 +89,8 @@ __all__ = [
     "SendDSL",
     "ServiceNotProvidedError",
     "SseEmitter",
+    "StorageError",
+    "StorageUnreachableError",
     "WSMessage",
     "WebSocketConnection",
     "WebSocketConnectionBase",

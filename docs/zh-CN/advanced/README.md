@@ -17,6 +17,7 @@
 - [MessageBuilder 详解](message-builder.md) - OneBot12 消息段构建器的双模式用法
 - [SQL 查询构建器](sql-builder.md) - 通用 SQL 链式查询构建器及存储后端抽象
 - [存储后端](storage-backends.md) - sqlite / mysql / postgres 异步原生存储后端的选择、配置与切换
+- [异常体系与捕获指南](errors.md) - 框架全部异常类型、发生位置与捕获建议
 - [会话类型系统](../standards/session-types.md) - 会话类型定义、映射与自定义类型注册
 - [Conversation 多轮对话](conversation.md) - 多轮对话上下文的交互方法
 
