@@ -4931,7 +4931,7 @@ sdk.adapter.get_status_summary()
 
 > 完全なアダプタ管理 API は、[アダプタシステム API](adapter-system.md) を参照してください。
 
-## Module モジュール
+## Module 模块
 
 モジュールマネージャーは、プラグインの登録、ロード、アンロードを管理します。
 
@@ -4940,15 +4940,14 @@ sdk.adapter.get_status_summary()
 | メソッド | 説明 |
 |------|------|
 | `get(name)` | モジュールインスタンスまたは遅延ロードプロキシを取得（登録済みだがロードされていない場合はプロキシを返す） |
-| `exists(name)` | 登録されているか確認 |
-| `is_loaded(name)` | ロードされているか確認 |
-| `is_enabled(name)` | 有効化されているか確認 |
+| `exists(name)` | 登録済みかどうかを確認 |
+| `is_loaded(name)` | ロード済みかどうかを確認 |
+| `is_enabled(name)` | 有効かどうかを確認 |
 | `enable(name)` / `disable(name)` | モジュールを有効化/無効化 |
 | `load(name)` / `unload(name)` | モジュールをロード/アンロード |
-| `call(module, method, *args, timeout=None, **kwargs)` | 指定モジュールのサービスメソッドを呼び出す（プロトコル化された RPC） |
-| `emit_to(module, event, data)` | 指定モジュールにライフサイクルイベントを送信 |
-| `list_registered()` | 登録済みモジュールを一覧表示 |
-| `list_loaded()` | ロード済みモジュールを一覧表示 |
+| `call(module, method, *args, timeout=None, **kwargs)` | 目標モジュールのサービスメソッドを跨モジュールで呼び出す（プロトコル化されたRPC） |
+| `list_registered()` | 登録済みモジュールをリストアップ |
+| `list_loaded()` | ロード済みモジュールをリストアップ |
 | `get_info(name)` | モジュール情報を取得 |
 | `get_status_summary()` | モジュールの状態概要を取得 |
 
@@ -4963,7 +4962,7 @@ module = sdk.ModuleName  # 等価なショートカット
 ### モジュール間呼び出し（RPC）
 
 ```python
-# プロトコル化された呼び出し：型付きエラー / 遅延モジュールの自動起動 / owner帰属 / タイムアウト設定
+# プロトコル化された呼び出し：型付きエラー / 遅延モジュールの自動起動 / ownerの帰属 / タイムアウトの意味
 result = await sdk.module.call("Chat", "get_history", session_id, n=20)
 ```
 
@@ -4971,15 +4970,15 @@ result = await sdk.module.call("Chat", "get_history", session_id, n=20)
 
 | | `module.call()` | 属性アクセス |
 |---|---|---|
-| 目標が未登録/未有効化 | `ModuleNotAvailableError` をスロー | `AttributeError` をスロー |
-| 遅延ロードモジュール | 自動起動 | 非同期初期化モジュールは `RuntimeError` をスロー |
+| 目標が未登録/未有効化 | `ModuleNotAvailableError` を投げる | `AttributeError` を投げる |
+| 遅延ロードモジュール | 自動的に起動 | 非同期初期化モジュールは `RuntimeError` を投げる |
 | `current_owner` | 目標モジュールに帰属 | 呼び出し元のまま |
-| タイムアウト | 30秒（カスタマイズ可能） | なし |
+| タイムアウト | 30秒（デフォルト）、オーバーライド可能 | なし |
 | scope 審査 | `actions.<呼び出し元>.call` | なし |
 
 ### サービス契約（meta.services）
 
-`get_meta()` の `services` フィールドで外部公開白名单を宣言し、宣言後は呼び出し範囲を絞る：
+サービス側は `get_meta()` の `services` フィールドに外部公開白名单を宣言し（`commands` と対称）、宣言後は呼び出し面が厳しくなる：
 
 ```python
 class ChatModule(BaseModule):
@@ -4990,23 +4989,23 @@ class ChatModule(BaseModule):
     async def get_history(self, session_id, n=20): ...
 ```
 
-- **デフォルト = 開発者無感覚**：`services` を宣言していない場合、任意の**公開**メソッドが呼び出せる（後方互換性）、アンダースコア付きのプライベートメソッドは常に禁止；制限の主制御権はユーザー側の scope 設定
-- 宣言後：白名单内のメソッドのみ呼び出せる、越境時は `ServiceNotProvidedError` をスロー
-- 呼び出し側制限：`scope.set_action("CallerModule", "call", deny="Chat.get_history")`
+- **デフォルト = 開発者に無感覚**：`services` を宣言していない場合、任意の**公開**メソッドは呼び出せる（後方互換性あり）、アンダースコア付きのプライベートメソッドは常に禁止；制限の主制御権はユーザー側の scope 設定にある
+- 宣言後：白名单内のメソッドのみ呼び出せる、範囲外は `ServiceNotProvidedError` を投げる
+- 呼び出し側の制限：`scope.set_action("CallerModule", "call", deny="Chat.get_history")`
 
-**サービス紹介（description）**：`services` は各サービスに説明を宣言するための dict 形態もサポート（純文字列または i18n 辞書）、サービスディレクトリや AI 呼び出し点の消費説明に利用：
+**サービス紹介（description）**：`services` は各サービスに紹介を宣言する dict 形態もサポート（純粋な文字列または i18n 辞書）し、サービスディレクトリ / AI 呼び出しポイントの説明に利用できる：
 
 ```python
 return ModuleMeta(
     services=[
-        "get_history",                              # 簡単な形態：説明はメソッドの docstring 1行目を自動的に利用
+        "get_history",                              # 簡単な形：紹介はメソッドの docstring 首行を自動的に取得
         {"name": "translate", "description": "テキストを指定言語に翻訳する"},
         {"name": "summarize", "description": {"i18n": "Chat.meta.svc.summarize", "default": "会話の要約"}},
     ],
 )
 ```
 
-説明の解析優先順位：**明示的な description（i18n は現在の言語に解析）> メソッドの docstring 1行目 > 空文字列**。
+紹介の解析優先度：**明示的な description（i18n は現在の言語に解析）> メソッドの docstring 首行 > 空文字列**。
 
 ### サービスディレクトリ（services）
 
@@ -5018,37 +5017,25 @@ sdk.module.services()
 sdk.module.services("Chat")  # 特定モジュールのみを照会
 ```
 
-`meta.services` を**明示的に宣言**したモジュールのみを一覧表示；各サービスにはメソッドのシグネチャ文字列と説明テキストが付いており、MCP 化（AI に呼び出し点を公開）のためのデータ基盤を提供する。
+`meta.services` を**明示的に宣言**したモジュールのみをリストアップ；各サービスにはメソッドのシグネチャ文字列と紹介テキストが付与され、MCP 化（呼び出しポイントを AI に公開）のためのデータ基盤となる。
 
-### 定向イベント（emit_to）
-
-```python
-# 投递側：目標モジュールが有効化された後に module.<名称>.<イベント> に投递
-await sdk.module.emit_to("Chat", "message_received", {"text": "hi"})
-
-# 訂正側（Chat モジュール内）：命名空間のフックを登録
-lifecycle.on("module.Chat.message_received", handler)
-lifecycle.on("module.Chat", handler)  # またはそのモジュールのすべての定向イベントを受信
-```
-
-> [!NOTE]
-> 本節の機能は ErisPulse **2.8.0+** で追加されました。
+> 定向イベント投递はライフサイクル層に属する：`lifecycle.emit(event, data, to="ModuleName")`、詳しくは [モジュール間通信](../advanced/module-communication.md) を参照。
 
 ## Lifecycle モジュール
 
-イベント駆動のライフサイクルマネージャーで、イベントの送信と監視機能を提供します。
+イベント駆動型のライフサイクルマネージャーで、イベントの送信とリスナー登録機能を提供します。
 
 ### API 概要
 
 | メソッド | 説明 |
 |------|------|
-| `on(event, priority=0)` | デコレータでイベントハンドラを登録し、ドットマッチとワイルドカード `*` をサポート |
+| `on(event, priority=0)` | イベントハンドラのデコレータ登録。ドット記法とワイルドカード `*` をサポート |
 | `register(event, handler, priority=0)` | 関数形式でハンドラを登録 |
-| `unregister(event, handler=None)` | ハンドラを削除 |
-| `emit(event, data)` | 非同期でイベントをトリガー |
-| `emit_sync(event, data)` | 同期でイベントをトリガー |
-| `submit_event(event_type, msg, data, source)` | 標準形式のイベントを送信（旧版と互換性あり） |
-| `start_timer(id)` / `stop_timer(id)` | パフォーマンスタイマー |
+| `unregister(event, handler=None)` | ハンドラの削除 |
+| `emit(event, data, to=None)` | 非同期でイベントをトリガー。`to` に owner を指定すると、特定のオブジェクトに送信 |
+| `emit_sync(event, data, to=None)` | 同期でイベントをトリガー（非同期ハンドラは create_task でスケジュール） |
+| `submit_event(event_type, msg, data, source, to=None)` | 標準形式のイベントを送信（従来の形式と互換） |
+| `start_timer(id)` / `stop_timer(id)` | パフォーマンス計測用タイマー |
 
 ### 例
 
@@ -5062,9 +5049,12 @@ async def handle_any_module_event(event_data):
     print(f"モジュールイベント: {event_data}")
 
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
+
+# ディレクティブ送信：Chat モジュールに登録されたフックにのみ送信
+await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
 ```
 
-> 完全な標準イベントリストと詳細な使い方は、[ライフサイクル管理](../advanced/lifecycle.md)を参照してください。
+> 完全な標準イベント一覧と詳細な使い方は、[ライフサイクル管理](../advanced/lifecycle.md) を参照してください。
 
 ## Router モジュール
 
@@ -6562,14 +6552,14 @@ async with event.message_tx():
 
 ## 鏈路追跡：trace-id
 
-各インバウンドイベントは、自動的に追跡ID（`event["id"]` を再利用、存在しない場合は生成）を取得し、以下を貫く：
+各々の入力イベントは、自動的に追跡ID（`event["id"]` を再利用、存在しない場合は生成）を取得し、以下を貫く：
 
 - handlerコンテキスト（`get_current_trace_id()` で読み取り）
-- アウトバウンド送信（`[Send]` ログ行に `[trace:...]` を追加、`message.sending/sent` ホッキングの `trace_id` フィールド）
-- ライフサイクルホッキングデータ（dictに自動的に `_trace_id` を追加）
-- 定向イベント（`emit_to`）とメッセージトランザクションの確認
+- 出力送信（`[Send]` ログ行に `[trace:...]` を追加、`message.sending/sent` ホッカーの `trace_id` フィールド）
+- ライフサイクルホッカーのデータ（dict に自動的に `_trace_id` を追加）
+- 指定イベント（`lifecycle.emit(..., to=...)`）およびメッセージトランザクションの返信
 
-1つのメッセージが複数のモジュールによって連携処理される場合、同一のIDで全チェーンを連結し、（ログ / 遅いクエリ / 審計）を可能にする。
+1つのメッセージが複数のモジュールによって連携処理される場合、同一のIDで全チェーンを連結し、ログ / 遅いクエリ / 審計に利用可能。
 
 ## 他のシステムとの関係
 
@@ -6587,16 +6577,16 @@ async with event.message_tx():
 > [!NOTE]
 > 本章の内容は ErisPulse **2.8.0+** が必要です。
 
-ErisPulse のモジュール間には**3層の通信モデル**があり、「点対点 → 定向 → ブロードキャスト」の順序で配置されています：
+ErisPulse のモジュール間には**3つの通信モデル**があり、"点対点 → 定向 → ブロードキャスト"の順序で配置されています：
 
-| 層 | API | 意味 | 代表的な場面 |
+| 層 | API | 語義 | 典型的な場面 |
 |---|---|---|---|
 | **RPC** | `await sdk.module.call("Chat", "get_history", ...)` | 点対点のリクエスト-レスポンス、契約 / 審計 / タイムアウト付き | 他のモジュールの機能を呼び出す（履歴の取得、翻訳、返金など） |
-| **定向イベント** | `await sdk.module.emit_to("Chat", "message_received", {...})` | 指定されたモジュールに送信される通知 | 上流の状態変化を下流に通知する（「新しいメッセージを受け取りました」など） |
-| **ブロードキャスト** | `await lifecycle.emit("config.updated", {...})` | フレームワーク全体で見えるライフサイクルイベント | 設定のホットアップデート、モジュールの起動 / 停止 |
+| **定向イベント** | `await lifecycle.emit("message_received", {...}, to="Chat")` | 指定されたモジュールが登録したライフサイクルフックにのみ配信 | 上流の状態変化を下流に通知する（"新しいメッセージを受け取りました"） |
+| **ブロードキャスト** | `await lifecycle.emit("config.updated", {...})` | フレームワーク全体で見えるライフサイクルイベント | 設定のホット更新、モジュールの起動・停止 |
 
 {!--< tips >!--}
-選択の口訣：**戻り値が必要な場合は `call` を使い、1つのモジュールに通知したい場合は `emit_to` を使い、全員に通知したい場合は `lifecycle` を使う**。
+選択の口訣：**返り値が必要な場合は `call` を使い、特定のモジュールのフックに通知する場合は `emit(..., to=...)` を使い、全員に通知する場合は `emit(...)` を使う**。
 {!--< /tips >!--}
 
 ## RPC：module.call
@@ -6713,37 +6703,46 @@ deny = ["Chat.get_history"]        # CallerModule が Chat の get_history を�
 
 設定方法は [スコープ（scope）](docs/ja/scope.md) の出向の観点を参照してください。
 
-## 定向イベント：emit_to
+## 定向イベント: lifecycle.emit の to パラメータ
+
+ライフサイクルイベントは、`to` パラメータで送信先の所有者（owner）を指定することで、特定のオーナーにイベントを送信できます。この場合、イベントはそのオーナーとして登録されたフック（モジュールが `on_load` 内で登録するフックは自動的に自身のモジュールに属します）にのみ配信され、他のモジュールやワイルドカード `*` のハンドラはイベントを感知しません。
 
 ```python
-# 投递元：対象モジュールが有効化されたことを確認した後、イベントは module.<名前>.<イベント> の名前空間に送信されます
-await sdk.module.emit_to("Chat", "message_received", {"text": "hi", "from": "u1"})
-
-# 訂正元（Chat モジュール内）：名前空間に従ってフックを登録します
 from ErisPulse.Core.lifecycle import lifecycle
 
-@lifecycle.on("module.Chat.message_received")
+# 送信側：イベントは Chat モジュールが登録したフックにのみ送信されます
+await lifecycle.emit("message_received", {"text": "hi", "from": "u1"}, to="Chat")
+
+# 受信側（Chat モジュール内）：同名のフックを登録し、owner は登録時に自動的に記録されます
+@lifecycle.on("message_received")
 async def on_message_received(data): ...
 
-@lifecycle.on("module.Chat")          # または、このモジュールのすべての定向イベントを受け取ります
+@lifecycle.on("message")          # 点式の親プレフィックスも同様に有効（owner でフィルタリング）
 async def on_any(data): ...
 ```
 
-意味の詳細：
+動作の詳細：
 
-- 対象が登録されていない / 有効化されていない場合 → `ModuleNotAvailableError`（**存在しない場所には送信されません**）
-- 対象が遅延ロードモジュールの場合 → **まず起動してから投递します**（定向イベントはアクティベーションの源であり、`activate_on` の意味と一致します）
-- `data` が dict の場合、自動的に `_trace_id` を付加します（既存の値は上書きされません）、全トラッキング連携が可能です
+- 指定されたオーナーに登録されたフックがない場合 → イベントは**静かに破棄**されます（**存在しない場所に送信されません**）。  
+  事前に `lifecycle.has_handlers("message_received")` を使用して存在を確認できます。
+- `data` が dict の場合、自動的に `_trace_id` を追加します（既存の値は上書きされません）。これにより、全トラッキングフローと連携できます。
+- ブロードキャストと定向は、同じフック登録システムを使用します：`emit(...)` に `to=` を指定しない場合、イベントはフレームワーク全体にブロードキャストされます。`to=` を指定すると、同一イベントは対象モジュールのみに表示されます。
+- `emit_sync` / `submit_event`（互換 API）も `to=` パラメータをサポートします。
 
-## 懒惰ロードと呼び出し
+> [!NOTE]  
+> 定向イベントは軽量な通知であり、**送信先の存在確認や遅延起動は行いません**。送信先の存在確認、契約の監査、または戻り値が必要な場合は、[RPC: module.call](#rpcmodulecall) を使用してください。
 
-`module.call()` および `emit_to()` は、**遅延ロードモジュールに対して透明な起動**を提供します：
+## 慢的ロードと呼び出し
 
-- イベント駆動型遅延モジュール（`activate_on` で宣言）→ 活性化ロック `_activate()` を通る。活性化後、トリガースタブは自動的に登録解除される。
+`module.call()` は、**遅延ロードモジュールに対して透明な起動**を提供します：
+
+- イベント駆動の遅延モジュール（`activate_on` で宣言）→ 活性化ロック `_activate()` を通ります。活性化後、トリガースタブは自動的に登録解除されます。
 - 通常の遅延モジュール → 同期初期化または通常のロード経路（冪等性）
-- 起動失敗 → `ModuleNotAvailableError`（`call`）/ 活性化失敗（`emit_to`）
+- 起動失敗 → `ModuleNotAvailableError`
 
-つまり、**呼び出し元は、対象モジュールが既にロードされているかどうかを気にする必要がなく、また、特定のイベントを待つ必要もない**。
+つまり、**呼び出し元は対象モジュールが既にロードされているかどうかを気にする必要がなく、またその起動のために特定のイベントを待つ必要もありません。**
+
+対象イベント（`lifecycle.emit(..., to=...)`）は遅延起動を行いません。対象がロードされていない場合、フックは存在せず、イベントは静かに破棄されます。確実に送信する必要がある場合は、`module.call()` を使用してください。
 
 ## クールスタートリプレイ
 
@@ -8322,12 +8321,12 @@ async def on_server_stop(event):
 
 # ライフサイクル管理
 
-ErisPulse は、システム各コンポーネントの実行状態を監視し、監査、統計、カスタムロジックなどの拡張機能を実現するための、統一されたフック/ライフサイクルシステムを提供しています。
+ErisPulse は、システムの各コンポーネントの実行状態を監視し、監査、統計、カスタムロジックなどの拡張機能を実現するための統一されたフック/ライフサイクルシステムを提供します。
 
-システムは以下の3種類のトリガ方式をサポートしています：
-- `await lifecycle.emit("event", data)` — 精選版、任意のデータを渡す
-- `lifecycle.emit_sync("event", data)` — 同期版（非非同期コンテキストで使用）
-- `await lifecycle.submit_event("event", ...)` — 旧版と互換性があり、標準イベント形式を自動的に構築する
+システムは以下の3つのトリガー方式をサポートします：
+- `await lifecycle.emit("event", data)` — 精簡版、任意のデータを渡す（`to="Owner"` の場合、指定された宛先に投递）
+- `lifecycle.emit_sync("event", data)` — 同期版（非非同期コンテキスト用）
+- `await lifecycle.submit_event("event", ...)` — 従来版と互換性があり、標準イベント形式を自動的に構築
 
 ## イベント処理メカニズム
 
@@ -8336,18 +8335,18 @@ ErisPulse は、システム各コンポーネントの実行状態を監視し�
 ```python
 from ErisPulse import sdk
 
-# デコレーターモード
+# デコレータ形式
 @sdk.lifecycle.on("module.load")
 async def on_module_load(data):
     print(f"モジュールのロード: {data}")
 
-# プログラミングによる登録
+# プログラム的な登録
 sdk.lifecycle.register("module.load", on_module_load, priority=10)
 
-# 登録の解除
+# 登録解除
 sdk.lifecycle.unregister("module.load", on_module_load)
 
-# 所有者ごとの一括解除（モジュール/アダプターのアンロード時にフレームワークが自動的に呼び出す）
+# 所有者ごとの一括登録解除（モジュール/アダプタのアンロード時にフレームワークが自動的に呼び出す）
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
 print(f"クリーンアップしたライフサイクルフック数: {removed}")
 ```
@@ -8366,88 +8365,113 @@ async def second_handler(data):
     pass
 ```
 
-### 点構造イベント
+### ポイント構造イベント
 
-具体的なイベントが発生すると、その親イベントも同時に発生します：
-- `module.load` が発生すると、`module` も同時に発生します
-- `adapter.event.receive` が発生すると、`adapter.event` と `adapter` も同時に発生します
+具体的なイベントをトリガーすると、その親イベントもトリガーされます：
+- `module.load` をトリガーすると、`module` もトリガーされます
+- `adapter.event.receive` をトリガーすると、`adapter.event` と `adapter` もトリガーされます
 
 ### ワイルドカード
 
-`*` を登録することで、すべてのイベントをキャッチできます：
+`*` を登録すると、すべてのイベントをキャッチできます：
 
 ```python
 @sdk.lifecycle.on("*")
 async def on_anything(data):
-    print(f"イベントを受信: {data}")
+    print(f"イベント受信: {data}")
 ```
+
+### 指定送信（emit to=）
+
+> [!NOTE]
+> この機能は ErisPulse **2.8.0+** が必要です。
+
+`emit()` で `to` パラメータを指定すると、指定された所有者（owner）として登録されたハンドラにのみイベントが配信されます（モジュールは `on_load` 内で登録されたフックは自動的に自身の所有者に属します）。他のモジュールやワイルドカード `*` ハンドラは感知しません。
+
+```python
+# 送信側：イベントは Chat モジュールが登録したフックにのみ配信される
+await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
+
+# 受信側（Chat モジュール内）：同名のフックを登録し、owner は登録時に自動的に記録
+@sdk.lifecycle.on("message_received")
+async def on_message_received(data): ...
+
+@sdk.lifecycle.on("message")   # ポイント構造の親プレフィックスも同様に効果あり（owner でフィルタリング）
+async def on_any(data): ...
+```
+
+- 目標の owner に登録されたフックがない場合 → イベントは**静かに破棄**されます（`has_handlers()` で事前に検出可能）
+- `data` が dict の場合、自動的に `_trace_id` を付与（既存値を上書きしない）
+- `emit_sync` / `submit_event` も同様に `to=` パラメータをサポート
+- モジュール間通信の3層モデル（RPC / 指定送信 / ブロードキャスト）は
+  [モジュール間通信](module-communication.md) を参照してください
 
 ### 一回限りの登録（once）
 
-2.7.0 以降、`lifecycle.once()` で登録されたハンドラは**一度実行された後、自動的に登録解除**されます。これは「初回準備完了」のような一回限りのフックに適しています：
+2.7.0 から、`lifecycle.once()` で登録されたハンドラは**1回実行後に自動的に登録解除**されます。これは「初期準備完了」のような一回限りのフックに適しています。
 
 ```python
 @sdk.lifecycle.once("core.init.complete")
 async def on_first_ready(data):
-    print("初回準備完了、以降は再発生しません")
+    print("初期準備完了、以降はトリガーされません")
 ```
 
-- `on()` と同じ優先度パラメータの意味（`priority` の数値が大きいほど先に実行）
+- `on()` と同じ優先度パラメータの意味（`priority` 数値が大きいほど先に実行）
 - 自動的に登録解除され、手動での `unregister` は不要
-- 同期/非同期のハンドラともサポート
+- 同期/非同期のハンドラ両方に対応
 
-### 監視者の照会（has_handlers）
+### 監視者照会（has_handlers）
 
-ホットパスのショートカット処理では、`has_handlers()` を使って監視者が存在するかを事前に確認し、不要なイベントのループ処理やタスクスケジューリングを回避できます：
+ホットパスの短絡処理では、`has_handlers()` を使って監視者がいるかどうかを事前に判断し、不要なイベントのループやタスクスケジューリングを避けることができます。
 
 ```python
 if sdk.lifecycle.has_handlers("message.sending"):
     await sdk.lifecycle.emit("message.sending", send_ctx)
 ```
 
-- 精確なイベント名、ワイルドカード `*`、親イベントの3種類のマッチングをカバー
-- 監視者が存在しない場合は `False` を返し、`emit` を安全にスキップできます
+- **正確なイベント名、ワイルドカード `*`、親イベント**の3種類のマッチングをカバー
+- 監視者がいない場合、`False` を返し、`emit` を安全にスキップ可能
 
-## フックブレークポイント一覧
+## フックの断点一覧
 
-プラットフォームからフレームワークへメッセージが届き、処理が完了するまでの典型的なライフサイクルイベントの時系列：
+プラットフォームからフレームワークに入り、処理が完了するまでの典型的なライフサイクルイベントの順序：
 
 ```mermaid
 sequenceDiagram
     participant P as プラットフォーム
-    participant A as アダプター
+    participant A as アダプタ
     participant F as フレームワークコア
-    participant M as モジュールプロセッサー
+    participant M as モジュールハンドラ
 
-    P->>A: ネイティブイベントが到着
+    P->>A: ネイティブイベント到着
     A->>F: adapter.event.receive（最も初期）
-    F->>F: event.pre_process（プロセッサー実行前）
-    F->>M: プロセッサーに配信（コマンド/メッセージ/通知など）
+    F->>F: event.pre_process（ハンドラ実行前）
+    F->>M: ハンドラに配信（コマンド/メッセージ/通知など）
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending（送信前）
-    F->>A: SendDSL による送信
-    A->>P: プラットフォームへ送信
+    F->>A: SendDSL 送信
+    A->>P: プラットフォームに送信
     A->>F: message.sent（送信完了）
     F->>F: adapter.event.dispatched（配信完了）
 ```
 
-フレームワークには以下のフックブレークポイントが内蔵されており、ユーザーは `@sdk.lifecycle.on()` を使って任意のブレークポイントを監視し、カスタムロジックを実装できます。
+フレームワークは以下のフック断点を内蔵しており、ユーザーは `@sdk.lifecycle.on()` を使って任意の断点を監視し、カスタムロジックを実装できます。
 
 ### コア初期化
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `core.init.start` | SDK の初期化開始 | `{}` |
-| `core.init.complete` | SDK の初期化完了 | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(失敗時のみ)}` |
-| `core.uninit.complete` | SDK の反初期化完了 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(失敗時のみ)}` |
+| `core.init.start` | SDK 初期化開始 | `{}` |
+| `core.init.complete` | SDK 初期化完了 | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(失敗時のみ)}` |
+| `core.uninit.complete` | SDK 反初期化完了 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(失敗時のみ)}` |
 
 ### 設定変更
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
 | `config.set` | 設定項目が変更された | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | 外部で config.toml を編集した後にツリー全体の変更が検出された | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.updated` | 外部から config.toml を編集した後にツリー全体の変更が検出された | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
 **例：設定監査**
 
@@ -8457,34 +8481,34 @@ def audit_config(data):
     print(f"[監査] {data['key']}: {data['old_value']} -> {data['new_value']}")
 ```
 
-### モジュールライフサイクル
+### モジュールのライフサイクル
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
 | `module.register` | モジュールクラスがマネージャーに登録された | `{"module_name": str, "success": bool}` |
 | `module.load` | モジュールのロード完了（インスタンス化成功） | `{"module_name": str, "success": bool}` |
 | `module.init` | モジュールの初期化完了（遅延ロード含む） | `{"module_name": str, "success": bool}` |
 | `module.unload` | モジュールのアンロード | `{"module_name": str, "success": bool}` |
 
-### アダプターのライフサイクル
+### アダプタのライフサイクル
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `adapter.load` | アダプターの登録完了 | `{"platform": str, "success": bool}` |
-| `adapter.start` | アダプターの起動 | `{"platforms": [str]}` |
-| `adapter.status.change` | アダプターのステータス変更 | `{"platform": str, "status": str, "retry_count": int, "error": str(失敗時のみ)}` |
-| `adapter.stop` | アダプターの停止 | `{"platforms": [str]}` |
-| `adapter.stopped` | アダプターの停止完了 | `{"platforms": [str]}` |
+| `adapter.load` | アダプタの登録完了 | `{"platform": str, "success": bool}` |
+| `adapter.start` | アダプタの起動 | `{"platforms": [str]}` |
+| `adapter.status.change` | アダプタの状態変化 | `{"platform": str, "status": str, "retry_count": int, "error": str(失敗時のみ)}` |
+| `adapter.stop` | アダプタの停止 | `{"platforms": [str]}` |
+| `adapter.stopped` | アダプタの停止完了 | `{"platforms": [str]}` |
 | `adapter.bot.online` | Bot のオンライン | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
 | `adapter.bot.offline` | Bot のオフライン | `{"platform": str, "bot_id": str, "status": str}` |
 
-### イベント受信と処理
+### イベントの受信と処理
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `adapter.event.receive` | 外部プラットフォームのイベントを受信（最も初期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.receive` | 外部プラットフォームイベントを受信した（最も初期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
 | `adapter.event.dispatched` | イベントの配信完了 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
-| `event.pre_process` | イベントプロセッサーの実行前に | `{"event_type": str, "platform": str, "detail_type": str}` |
+| `event.pre_process` | イベントハンドラの実行前に | `{"event_type": str, "platform": str, "detail_type": str}` |
 
 **例：イベント統計**
 
@@ -8504,9 +8528,9 @@ def log_unhandled(data):
 
 ### メッセージ送信
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `message.sending` | メッセージが送信される直前 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sending` | メッセージの送信直前 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 | `message.sent` | メッセージの送信完了 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
 **例：メッセージ送信監査**
@@ -8519,9 +8543,9 @@ def log_sending(data):
 
 ### コマンドシステム
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `command.matched` | コマンドがマッチし、実行される直前 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
+| `command.matched` | コマンドがマッチし、実行直前 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
 | `command.executed` | コマンドの実行完了 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(失敗時のみ)}` |
 
 **例：コマンド統計**
@@ -8532,12 +8556,12 @@ def count_commands(data):
     print(f"[コマンド] /{data['command']} from {data['user_id']}@{data['platform']}")
 ```
 
-### HTTPルート
+### HTTP ルーティング
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `server.request` | HTTPリクエストを受け取った | `{"method": str, "path": str, "client_ip": str}` |
-| `server.response` | HTTPレスポンスを送信した | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
+| `server.request` | HTTPリクエスト受信 | `{"method": str, "path": str, "client_ip": str}` |
+| `server.response` | HTTPレスポンス送信 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
 **例：リクエストログ**
 
@@ -8549,12 +8573,12 @@ def log_http(data):
 
 ### WebSocket
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `server.start` | ルーティングサーバーの起動 | `{"base_url": str, "host": str, "port": int}` |
-| `server.stop` | ルーティングサーバーの停止 | `{}` |
-| `server.websocket.connect` | WebSocket接続の確立 | `{"path": str, "module_name": str, "client_ip": str}` |
-| `server.websocket.disconnect` | WebSocket接続の切断 | `{"path": str, "module_name": str, "reason": str, "error": str(異常時のみ)}` |
+| `server.start` | ルーティングサーバー起動 | `{"base_url": str, "host": str, "port": int}` |
+| `server.stop` | ルーティングサーバー停止 | `{}` |
+| `server.websocket.connect` | WebSocket接続確立 | `{"path": str, "module_name": str, "client_ip": str}` |
+| `server.websocket.disconnect` | WebSocket接続切断 | `{"path": str, "module_name": str, "reason": str, "error": str(異常時のみ)}` |
 
 **例：WebSocket接続監視**
 
@@ -8591,32 +8615,32 @@ STANDARD_EVENTS = {
 }
 ```
 
-## 完全な API リファレンス
+## 完全なAPIリファレンス
 
 ### 登録と解除
 
-| 方法 | 説明 |
+| メソッド | 説明 |
 |------|------|
-| `@lifecycle.on(event, *, priority=0)` | デコレータによるハンドラの登録 |
+| `@lifecycle.on(event, *, priority=0)` | デコレータでハンドラを登録 |
 | `lifecycle.register(event, handler, *, priority=0)` | プログラム的な登録 |
-| `lifecycle.unregister(event, handler=None)` | 登録解除（handler=None の場合、該当イベントの全ハンドラを解除） |
+| `lifecycle.unregister(event, handler=None)` | 登録解除（handler=None の場合、該当イベントのすべてのハンドラを解除） |
 
 ### トリガー
 
-| 方法 | 説明 |
+| メソッド | 説明 |
 |------|------|
-| `await lifecycle.emit(event, data=None)` | 非同期でトリガーし、ハンドラが None 以外を返すと data を変更可能 |
-| `lifecycle.emit_sync(event, data=None)` | 同期でトリガーし、非同期ハンドラは create_task でスケジュール |
-| `await lifecycle.submit_event(event_type, *, source, msg, data)` | 旧版との互換性用、自動で標準イベント形式を構築 |
+| `await lifecycle.emit(event, data=None, *, to=None)` | 非同期でトリガー、ハンドラが非 None を返すと data を変更可能；`to` で所有者を指定すると宛先送信 |
+| `lifecycle.emit_sync(event, data=None, *, to=None)` | 同期でトリガー、非同期ハンドラは create_task でスケジューリング |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None)` | 従来版と互換性があり、標準イベント形式を自動的に構築 |
 
 ### ユーティリティ
 
-| 方法 | 説明 |
+| メソッド | 説明 |
 |------|------|
-| `lifecycle.start_timer(timer_id)` | タイマーを開始 |
+| `lifecycle.start_timer(timer_id)` | タイマー開始 |
 | `lifecycle.get_duration(timer_id)` | 経過時間（秒）を取得 |
-| `lifecycle.stop_timer(timer_id)` | タイマーを停止し、経過時間を返す |
-| `lifecycle.list_hooks()` | 登録済みのすべてのフックとハンドラ数をリストアップ |
+| `lifecycle.stop_timer(timer_id)` | タイマー停止し、経過時間を返す |
+| `lifecycle.list_hooks()` | すべての登録済みフックとハンドラ数をリストアップ |
 | `lifecycle.clear()` | すべてのハンドラとタイマーをクリア |
 
 ## モジュールでの使用例
@@ -8627,7 +8651,7 @@ from ErisPulse import sdk
 
 class Main(BaseModule):
     async def on_load(self, event):
-        # 簡単なメッセージ統計の実装
+        # 単純なメッセージ統計の実装
         self.msg_count = 0
         
         @sdk.lifecycle.on("adapter.event.receive")
@@ -8640,30 +8664,30 @@ class Main(BaseModule):
         async def log_cmd(data):
             sdk.logger.info(f"コマンド実行: /{data['command']} by {data['user_id']}")
         
-        # 設定変更の監査
+        # 設定変更監査
         @sdk.lifecycle.on("config.set")
         def audit(data):
             sdk.logger.info(f"設定変更: {data['key']} = {data['new_value']}")
 ```
 
-## バックグラウンドタスクの所有権と自動キャンセル
+## バックグラウンドタスクの所有者と自動解除
 
 > [!NOTE]
 > この機能は ErisPulse **2.8.0+** が必要です。
 
-モジュールが作成した asyncio バックグラウンドタスクが `on_unload` でキャンセルされない場合、`self` の参照を保持し、モジュールインスタンスの回収ができない（ホットリロード後に古いインスタンスが残る）可能性があります。フレームワークは以下のバックアップメカニズムを提供しています：
+モジュールが作成した asyncio バックグラウンドタスクが `on_unload` でキャンセルされない場合、`self` の参照が保持され、モジュールのインスタンスが回収されず（ホットリロード後に古いインスタンスが残る）ます。フレームワークは以下のバックアップメカニズムを提供します：
 
-- **`self.spawn(coro)`**（モジュール内で推奨）：タスクは自動的にモジュール名に属し、モジュールのアンロード時にフレームワークは `on_unload` **の後**に未終了のタスクをバックアップでキャンセルし、警告を記録します。
-- **`spawn_background(coro)`**（`ErisPulse.runtime`）：現在の `owner_scope` コンテキストを自動的にキャプチャします。`cancel_owner_tasks(owner)` は所有者に属するタスクをキャンセルし、`cancel_all_background_tasks()` は `sdk.uninit()` のバックアップとして使用します。
-- **アダプター**：閉じるとき、プラットフォーム名以下のバックグラウンドタスクも同様にバックアップでキャンセルされます。
+- **`self.spawn(coro)`**（モジュール内で推奨）：タスクは自動的にモジュール名に所有者として登録され、モジュールのアンロード時にフレームワークが `on_unload` **後に**未終了のタスクをバックアップでキャンセルし、警告を記録します
+- **`spawn_background(coro)`**（`ErisPulse.runtime`）：現在の `owner_scope` コンテキストを自動的にキャプチャします；`cancel_owner_tasks(owner)` で所有者ごとにキャンセル、`cancel_all_background_tasks()` は `sdk.uninit()` のバックアップとして使用
+- **アダプタ**：プラットフォーム名に属するバックグラウンドタスクも同様にアンロード時にバックアップでキャンセルされます
 
 ```python
 async def on_load(self, event):
-    # 推奨：バックグラウンドタスクは self.spawn() を使用し、アンロード時にフレームワークが自動的にバックアップでキャンセルします
+    # 推奨：バックグラウンドタスクは self.spawn() を使用し、アンロード時にフレームワークがバックアップでキャンセル
     self.spawn(self._poll())
 
 async def on_unload(self, event):
-    # 精密な制御が必要な場合、手動でキャンセルして終了処理を待つことを推奨します
+    # 精密な制御が必要な場合は、手動でキャンセルし、終了処理を待つ
     if self._poll_task:
         self._poll_task.cancel()
         await asyncio.gather(self._poll_task, return_exceptions=True)
@@ -8675,17 +8699,17 @@ async def _poll(self):
 ```
 
 > [!IMPORTANT]
-> フレームワークのバックアップは**強制的なキャンセル**（`cancel_owner_tasks`）です。これは `on_unload` の返り値の後に実行されます。したがって、優雅な終了処理が必要なタスク（バッファのフラッシュ、ステートの永続化、接続の閉鎖）は、`on_unload` で手動で `cancel()` し、`await` で終了処理を完了させる必要があります。バックアップが終了処理を保持することを期待しないでください。フレームワークは「`self` を保持するタスクが残らないこと」を保証しますが、「優雅な終了」を保証するものではありません。`await` の結果が必要なタスクは、バックグラウンドタスクに投げることなく、直接 `await` してください。
+> フレームワークのバックアップは**強制キャンセル**（`cancel_owner_tasks`）であり、`on_unload` の返り値の後に実行されます。そのため、優雅な終了処理が必要なタスク（バッファのフラッシュ、状態の永続化、接続の切断）は**必ず**`on_unload` で `cancel()` + `await` で完了させる必要があります — バックアップが終了処理を保証するとは限りません。フレームワークは「`self` を保持するタスクが残らない」ことを保証しますが、「優雅」を保証するわけではありません。`await` の結果が必要なタスクは、直接 `await` してください。バックグラウンドタスクに投げないでください。
 
 ## 注意事項
 
-1. **プロセッサは同期または非同期のいずれでも使用可能**：システムは自動的に識別し、正しく呼び出します。
-2. **データの渡し方**：`emit()` モードでは、プロセッサが None 以外の値を返すと、次のプロセッサに渡される data が変更されます。
-3. **イベント名の命名規則**：親イベントのリスナーを使用しやすいよう、ドット構造でイベント名を命名することを推奨します。
-4. **エラーの隔離**：単一のプロセッサでの例外は、他のプロセッサの実行に影響しません。
-5. **同期トリガーの制限**：`emit_sync()` では、非同期プロセッサは fire-and-forget 方式でスケジュールされ、返り値は返却できません。
-6. **ライフサイクルのクリーンアップ**：`sdk.uninit()` を呼び出すと、登録済みのすべてのプロセッサとタイマーがクリーンアップされます。
-7. **ロードの優先度**：フレームワークの初期化段階でイベントをリッスンする必要がある場合は、高い優先度を設定し、ラグジュアリー読み込みを無効化することを推奨します。
+1. **ハンドラは同期または非同期**：システムは自動的に認識し、正しく呼び出します
+2. **データの渡し方**：`emit()` モードでは、ハンドラが非 None を返すと、後続のハンドラに渡される data が変更されます
+3. **イベント名の命名規則**：点構造のイベント名を使用することを推奨し、親イベントの監視に便利です
+4. **エラーの隔離**：個々のハンドラの例外は他のハンドラの実行に影響しません
+5. **同期トリガーの制限**：`emit_sync()` 中の非同期ハンドラは fire-and-forget 方式でスケジューリングされ、返り値は戻りません
+6. **ライフサイクルのクリーンアップ**：`sdk.uninit()` を呼び出すと、すべての登録済みハンドラとタイマーがクリアされます
+7. **ロード優先性**：フレームワークの初期化段階でイベントを監視したい場合は、高優先度を設定し、遅延ロードを無効にすることを推奨します
 
 
 

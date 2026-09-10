@@ -336,7 +336,7 @@
     "進階主題": {
       "description": "深入理解框架的進階特性",
       "icon": "fa-fire",
-      "count": 15,
+      "count": 16,
       "documents": [
         {
           "title": "高級主題",
@@ -417,14 +417,20 @@
           "icon": "fa-fire"
         },
         {
-          "title": "啟動流程與手動控制",
-          "path": "advanced/startup.md",
-          "level": 1,
-          "icon": "fa-fire"
-        },
-        {
           "title": "存儲後端",
           "path": "advanced/storage-backends.md",
+          "level": 1,
+          "icon": "fa-server"
+        },
+        {
+          "title": "異常體系與捕獲指南",
+          "path": "advanced/errors.md",
+          "level": 1,
+          "icon": "fa-triangle-exclamation"
+        },
+        {
+          "title": "啟動流程與手動控制",
+          "path": "advanced/startup.md",
           "level": 1,
           "icon": "fa-fire"
         }
