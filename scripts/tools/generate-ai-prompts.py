@@ -302,6 +302,7 @@ SECTION_ECOSYSTEM = Section(
     entries=[
         DocEntry("ErisPulse-App 安装与使用", "ecosystem/app.md"),
         DocEntry("Dashboard 使用与视窗注册", "ecosystem/dashboard.md"),
+        DocEntry("Cron 定时任务", "ecosystem/cron.md"),
         DocEntry("Takumi 图片渲染", "ecosystem/takumi.md"),
     ],
 )

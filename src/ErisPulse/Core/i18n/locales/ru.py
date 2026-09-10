@@ -197,6 +197,7 @@ TRANSLATIONS = {
     "core.adapter.tasks_cancelled": "Адаптер {platform} принудительно отменил {count} незавершённых фоновых задач при остановке",
     "core.adapter.unloaded": "Адаптер {platform} выгружен и снят с регистрации",
     "core.adapter.tasks_cancel_failed": "Не удалось отменить фоновые задачи адаптера {platform}: {error}",
+    "core.adapter.cleanup_hooks_failed": "Не удалось выполнить перехватчики очистки владения адаптера {platform}: {error}",
     "core.adapter.dependencies_missing": "Отсутствуют обязательные зависимости адаптера {platform}, запуск пропущен: {deps}",
     "core.adapter.state_skipped_dependency": "Адаптер {platform} не запущен из-за отсутствия зависимостей: {deps}",
     "core.adapter.dependency_hook_register_failed": "Не удалось зарегистрировать перехватчик уведомлений о зависимостях: {error}",
@@ -332,6 +333,10 @@ TRANSLATIONS = {
     "core.router.root_page_text": "Похоже, вы перешли на корневой путь, здесь нет содержимого~",
     "core.router.link_docs": "Документация",
     "core.router.link_community": "Сообщество",
+    # ==================== Перехватчики очистки владения ====================
+    "core.cleanup.executed": "Выполнено перехватчиков очистки владения для {owner}: {count}",
+    "core.cleanup.failed": "Ошибка перехватчика очистки владения {callback} (owner={owner}): {error}",
+    "core.cleanup.timeout": "Истекло время ожидания перехватчика очистки владения {callback} (owner={owner}, {timeout}s)",
     # ==================== Управление жизненным циклом ====================
     "core.lifecycle.event_name_required": "Имя события должно быть непустой строкой",
     "core.lifecycle.to_required": "Цель направленной доставки to должна быть непустой строкой",

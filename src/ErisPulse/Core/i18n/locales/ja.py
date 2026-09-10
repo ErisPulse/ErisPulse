@@ -197,6 +197,7 @@ TRANSLATIONS = {
     "core.adapter.tasks_cancelled": "アダプター {platform} の停止時に未完了のバックグラウンドタスク {count} 個を強制キャンセルしました",
     "core.adapter.unloaded": "アダプター {platform} をアンロードして登録解除しました",
     "core.adapter.tasks_cancel_failed": "アダプター {platform} のバックグラウンドタスクのキャンセルに失敗しました: {error}",
+    "core.adapter.cleanup_hooks_failed": "アダプター {platform} のオーナークリーンアップフックの実行に失敗しました: {error}",
     "core.adapter.dependencies_missing": "アダプター {platform} の必須依存関係が不足しているため起動をスキップします: {deps}",
     "core.adapter.state_skipped_dependency": "アダプター {platform} は依存関係不足のため起動しませんでした: {deps}",
     "core.adapter.dependency_hook_register_failed": "モジュール依存通知フックの登録に失敗しました: {error}",
@@ -332,6 +333,10 @@ TRANSLATIONS = {
     "core.router.root_page_text": "ルートパスにアクセスしたようですが、ここにはコンテンツがありません～",
     "core.router.link_docs": "ドキュメント",
     "core.router.link_community": "コミュニティ",
+    # ==================== オーナークリーンアップフック ====================
+    "core.cleanup.executed": "{owner} のオーナークリーンアップフック {count} 個を実行しました",
+    "core.cleanup.failed": "オーナークリーンアップフック {callback}（owner={owner}）の実行に失敗しました: {error}",
+    "core.cleanup.timeout": "オーナークリーンアップフック {callback}（owner={owner}）がタイムアウトしました（{timeout}s）",
     # ==================== ライフサイクル管理 ====================
     "core.lifecycle.event_name_required": "イベント名は空でない文字列でなければなりません",
     "core.lifecycle.to_required": "配信先 to は空でない文字列でなければなりません",

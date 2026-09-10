@@ -12,8 +12,10 @@ ErisPulse 运行时配置和管理模块
 # （避免在 runtime 初始化阶段触发 Core.Bases 完整加载链，导致循环引用）
 # 注意：i18n_schema 的 BaseI18n / I18nKey 已不再从 runtime 导出，请从 Core.Bases 导入
 from .context import (
+    current_caller,
     current_owner,
     current_trace_id,
+    get_current_caller,
     get_current_owner,
     get_current_trace_id,
     get_handler_waits,
@@ -54,6 +56,7 @@ from .hints import (
     suggest_similar,
 )
 from .memory import get_rss_mb, get_traced_mb, log_snapshot, snapshot
+from .owner_cleanup import off_cleanup, on_cleanup, run_owner_cleanups
 from .plugin_reload import PluginReloadWatcher
 from .tasks import cancel_all_background_tasks, cancel_owner_tasks, get_owner_tasks, spawn_background
 
@@ -79,10 +82,12 @@ __all__ = [
     # 异常诊断
     "extract_user_frame",
     "format_diagnostic_block",
+    "current_caller",
     "current_owner",
     "current_trace_id",
     "get_config",
     "get_config_schema",
+    "get_current_caller",
     "get_current_owner",
     "get_erispulse_config",
     "get_event_config",
@@ -103,11 +108,14 @@ __all__ = [
     # 异常诊断
     "log_diagnostic",
     "log_snapshot",
+    "off_cleanup",
+    "on_cleanup",
     "owner_scope",
     "PluginReloadWatcher",
     "redact_secret",
     "register_config_i18n",
     "resolve_config_schema",
+    "run_owner_cleanups",
     "send_receipts",
     "setup_exception_handling",
     "snapshot",

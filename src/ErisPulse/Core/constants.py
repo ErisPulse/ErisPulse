@@ -907,6 +907,12 @@ DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS: Final[float] = 5.0
 # 修改影响: 设大确保任务彻底回收，设小加速卸载流程。
 DEFAULT_OWNER_CANCEL_TIMEOUT_SECS: Final[float] = 5.0
 
+# 归属清理钩子中单个异步回调的执行超时（秒）。
+# 使用位置: runtime/owner_cleanup.py（run_owner_cleanups 触发外部工具模块
+# 登记的 on_cleanup 钩子时，对异步回调施加 wait_for 超时保护）。
+# 修改影响: 设大容忍慢清理（拖长卸载流程），设小加速卸载（超时钩子被放弃并告警）。
+CLEANUP_CALLBACK_TIMEOUT_SECS: Final[float] = 10.0
+
 # 模块注册来源标识：本地插件文件夹（plugins/ 目录）。
 # 使用位置: loaders/plugin_folder.py（构造 meta.source）与 Core/module.py
 # （purge 卸载时仅对本地插件清理 sys.modules）。
@@ -991,6 +997,7 @@ __all__ = [
     "ADAPTER_STATUS_STOP_FAILED",
     "BOT_STATUS_OFFLINE",
     "BOT_STATUS_ONLINE",
+    "CLEANUP_CALLBACK_TIMEOUT_SECS",
     "CONFIG_CACHE_TIMEOUT_SECS",
     "CONFIG_KEY_ADAPTER_STATUS",
     "CONFIG_KEY_ADAPTER_STATUS_OF",

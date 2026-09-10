@@ -9,7 +9,7 @@ import inspect
 import warnings
 from typing import Any, TypeVar
 
-from ..runtime.context import current_owner
+from ..runtime.context import current_caller, current_owner
 from .Bases import BaseModule
 from .Bases.errors import (
     ModuleCallError,
@@ -714,6 +714,20 @@ class ModuleManager(ManagerBase):
                     )
                 )
 
+            # 触发外部工具模块登记的归属清理钩子（on_cleanup）：
+            # 工具模块借此抛弃内部持有的本模块句柄，使本模块实例可被 GC
+            from ..runtime.owner_cleanup import run_owner_cleanups
+
+            cleaned_hooks = await run_owner_cleanups(module_name)
+            if cleaned_hooks > 0:
+                logger.debug(
+                    i18n.t(
+                        "core.cleanup.executed",
+                        owner=module_name,
+                        count=cleaned_hooks,
+                    )
+                )
+
             # 清理模块在加载上下文内注册的全部框架资源（unload / disable 共用）
             self._cleanup_module_registrations(module_name)
 
@@ -1233,10 +1247,11 @@ class ModuleManager(ManagerBase):
 
         instance = self._modules.get(module_name)
         if instance and hasattr(instance, "on_unload"):
+            from ..runtime.owner_cleanup import run_owner_cleanups
             from ..runtime.tasks import cancel_owner_tasks, spawn_background
 
-            async def _report_cancelled() -> None:
-                """兜底取消模块后台任务并记录数量"""
+            async def _fallback_cleanup() -> None:
+                """兜底收尾：取消后台任务并触发外部归属清理钩子"""
                 cancelled = await cancel_owner_tasks(module_name)
                 if cancelled > 0:
                     logger.warning(
@@ -1244,6 +1259,15 @@ class ModuleManager(ManagerBase):
                             "core.module.unload_tasks_cancelled",
                             name=module_name,
                             count=cancelled,
+                        )
+                    )
+                cleaned_hooks = await run_owner_cleanups(module_name)
+                if cleaned_hooks > 0:
+                    logger.debug(
+                        i18n.t(
+                            "core.cleanup.executed",
+                            owner=module_name,
+                            count=cleaned_hooks,
                         )
                     )
 
@@ -1275,7 +1299,7 @@ class ModuleManager(ManagerBase):
                                 error=e,
                             )
                         )
-                    await _report_cancelled()
+                    await _fallback_cleanup()
 
                 spawn_background(_unload_then_cancel_tasks())
             else:
@@ -1284,7 +1308,7 @@ class ModuleManager(ManagerBase):
                     instance.on_unload({"module_name": module_name})
                 except Exception as e:
                     logger.error(i18n.t("core.module.on_unload_failed", name=module_name, error=e))
-                spawn_background(_report_cancelled())
+                spawn_background(_fallback_cleanup())
 
         # 清理模块在加载上下文内注册的全部框架资源（与 unload 共用，
         # 含 master provider / 适配器处理器 / 自定义会话类型等，保持卸载对等）
@@ -2038,6 +2062,8 @@ class ModuleManager(ManagerBase):
         调用方经过 scope 出站维度（``actions.<caller>.call``）审计；
         被调方法执行期间 ``current_owner`` 归因到目标模块，
         其内部的 wait_reply / 出站发送 / 日志等正确归属；
+        调用方身份保留在 ``current_caller`` 上下文中（``get_current_caller()``
+        读取），供被调方识别调用来源；
         协程方法带超时语义（超时抛 :class:`ModuleCallTimeoutError`）。
 
         :param module_name: 目标模块名
@@ -2110,8 +2136,10 @@ class ModuleManager(ManagerBase):
                 module_name, method, i18n.t("core.module.call_method_missing", module=module_name, method=method)
             )
 
-        # 执行：owner 归因到目标模块（与命令执行语义一致——执行谁的代码归因谁）
-        token = current_owner.set(module_name)
+        # 执行：owner 归因到目标模块（与命令执行语义一致——执行谁的代码归因谁），
+        # 调用方身份保留在 current_caller，供被调方识别调用来源
+        owner_token = current_owner.set(module_name)
+        caller_token = current_caller.set(caller)
         try:
             result = func(*args, **kwargs)
             if inspect.iscoroutine(result):
@@ -2125,7 +2153,8 @@ class ModuleManager(ManagerBase):
                     ) from None
             return result
         finally:
-            current_owner.reset(token)
+            current_owner.reset(owner_token)
+            current_caller.reset(caller_token)
 
     # 兼容性方法 - 保持向后兼容
     def list_modules(self) -> dict[str, bool]:

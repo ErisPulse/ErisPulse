@@ -1075,6 +1075,24 @@ class AdapterManager(ManagerBase):
                 i18n.t("core.adapter.tasks_cancel_failed", platform=platform, error=e)
             )
 
+        # 触发以平台名为 owner 登记的外部归属清理钩子（on_cleanup）
+        try:
+            from ..runtime.owner_cleanup import run_owner_cleanups
+
+            cleaned_hooks = await run_owner_cleanups(platform)
+            if cleaned_hooks > 0:
+                logger.trace(
+                    i18n.t(
+                        "core.cleanup.executed",
+                        owner=platform,
+                        count=cleaned_hooks,
+                    )
+                )
+        except Exception as e:
+            logger.trace(
+                i18n.t("core.adapter.cleanup_hooks_failed", platform=platform, error=e)
+            )
+
         try:
             from .router import router
 

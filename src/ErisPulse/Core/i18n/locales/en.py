@@ -197,6 +197,7 @@ TRANSLATIONS = {
     "core.adapter.tasks_cancelled": "Adapter {platform} force-cancelled {count} unfinished background task(s) on shutdown",
     "core.adapter.unloaded": "Adapter {platform} unloaded and unregistered",
     "core.adapter.tasks_cancel_failed": "Failed to cancel background tasks of adapter {platform}: {error}",
+    "core.adapter.cleanup_hooks_failed": "Failed to run ownership cleanup hooks of adapter {platform}: {error}",
     "core.adapter.dependencies_missing": "Adapter {platform} hard dependencies missing, skipping startup: {deps}",
     "core.adapter.state_skipped_dependency": "Adapter {platform} not started due to missing dependencies: {deps}",
     "core.adapter.dependency_hook_register_failed": "Failed to register module dependency notification hook: {error}",
@@ -332,6 +333,10 @@ TRANSLATIONS = {
     "core.router.root_page_text": "You seem to have accessed the root path, there is no content here~",
     "core.router.link_docs": "Docs",
     "core.router.link_community": "Community",
+    # ==================== Ownership Cleanup Hooks ====================
+    "core.cleanup.executed": "Ran {count} ownership cleanup hook(s) for {owner}",
+    "core.cleanup.failed": "Ownership cleanup hook {callback} for {owner} failed: {error}",
+    "core.cleanup.timeout": "Ownership cleanup hook {callback} for {owner} timed out after {timeout}s",
     # ==================== Lifecycle Management ====================
     "core.lifecycle.event_name_required": "Event name must be a non-empty string",
     "core.lifecycle.to_required": "Directed delivery target 'to' must be a non-empty string",
