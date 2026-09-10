@@ -250,7 +250,6 @@ sdk.adapter.get_status_summary()
 | `enable(name)` / `disable(name)` | 启用/禁用模块 |
 | `load(name)` / `unload(name)` | 加载/卸载模块 |
 | `call(module, method, *args, timeout=None, **kwargs)` | 跨模块调用目标模块的服务方法（协议化 RPC） |
-| `emit_to(module, event, data)` | 向指定模块定向投递生命周期事件 |
 | `list_registered()` | 列出已注册模块 |
 | `list_loaded()` | 列出已加载模块 |
 | `get_info(name)` | 获取模块信息 |
@@ -326,19 +325,8 @@ sdk.module.services("Chat")  # 仅查询指定模块
 仅列出**显式声明** `meta.services` 的模块；每个服务附方法签名字符串
 与介绍文本，为 MCP 化（调用点暴露给 AI）提供数据基础。
 
-### 定向事件（emit_to）
-
-```python
-# 投递方：校验目标模块启用后投递到 module.<名称>.<事件>
-await sdk.module.emit_to("Chat", "message_received", {"text": "hi"})
-
-# 订阅方（Chat 模块内）：注册命名空间钩子
-lifecycle.on("module.Chat.message_received", handler)
-lifecycle.on("module.Chat", handler)  # 或接收该模块的全部定向事件
-```
-
-> [!NOTE]
-> 本节能力新增于 ErisPulse **2.8.0+**
+> 定向事件投递属于生命周期层：`lifecycle.emit(event, data, to="ModuleName")`，
+> 详见 [模块间通信](../advanced/module-communication.md)。
 
 ## Lifecycle 模块
 
@@ -351,9 +339,9 @@ lifecycle.on("module.Chat", handler)  # 或接收该模块的全部定向事件
 | `on(event, priority=0)` | 装饰器注册事件处理器，支持点号匹配和通配符 `*` |
 | `register(event, handler, priority=0)` | 函数式注册处理器 |
 | `unregister(event, handler=None)` | 移除处理器 |
-| `emit(event, data)` | 异步触发事件 |
-| `emit_sync(event, data)` | 同步触发事件 |
-| `submit_event(event_type, msg, data, source)` | 提交标准格式事件（兼容旧版） |
+| `emit(event, data, to=None)` | 异步触发事件；`to` 指定 owner 时定向投递 |
+| `emit_sync(event, data, to=None)` | 同步触发事件（异步处理器以 create_task 调度） |
+| `submit_event(event_type, msg, data, source, to=None)` | 提交标准格式事件（兼容旧版） |
 | `start_timer(id)` / `stop_timer(id)` | 性能计时器 |
 
 ### 示例
@@ -368,6 +356,9 @@ async def handle_any_module_event(event_data):
     print(f"模块事件: {event_data}")
 
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
+
+# 定向投递：仅分发给 Chat 模块注册的钩子
+await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
 ```
 
 > 完整的标准事件列表和详细用法请参考 [生命周期管理](../advanced/lifecycle.md)。

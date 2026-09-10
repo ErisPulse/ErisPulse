@@ -73,11 +73,11 @@
 
 ---
 
-## [2.8.0-dev.2] - 2026/09/08
+## [2.8.0-dev.2] - 2026/09/10
 > 开发版本
 
 **版本摘要**
-新增交互会话基础设施与基础原语：交互会话管理器（wait_reply 等待表抽为一等基础设施，owner / platform 双维度归属清理、回复命中权限复查、会话互斥租约）、Conversation 自动检查点（分支跳转自动存档 + 重启自动恢复）、端到端事件追踪（trace-id 贯穿入站 / 处理 / 出站 / 生命周期钩子）、消息事务（出站回执账本 + 异常自动撤回）、会话收件箱（每会话消息流自动记录与查询）。存储查询构建器新增 `ToDict()` 链。存储层升级为多后端异步原生架构：内置 sqlite / mysql / postgres 三种异步驱动后端（配置切换、API 完全一致），`BaseStorage` 抽象翻转为异步原生契约，同步 API 转为兼容层（现有同步调用代码零改动）。修复 wait_reply 挂起回复被高优先级处理器饿死的问题；另落地模块间 RPC 协议化（module.call / provides 收敛为 meta.services 契约 + services() 服务目录 + emit_to 定向事件并可唤醒懒模块）、会话定时器（remind 回复即取消 / escalate 到点必达）、多路等待（event.select + wait_reply 会话级 anyone 可答）、事件幂等去重（重连重推只分发一次）、冷启动回放（strategy 声明 replay，新模块自动获得最近会话上下文）、对话恢复即接管（resume 自动持有会话租约并带回收件箱历史）。此外落地配置系统体验升级：配置文件注释与键顺序在框架写入后完整保留（tomlkit）、框架默认配置不再自动落盘（config.toml 保持最小化，完整配置参考 `config.full.example`）、声明式配置新增 `example` 字段标志 / docstring 描述兜底 / 嵌套 dataclass 支持；修复作用域 `persist=False` 运行时绑定被任意后续配置写入静默冲掉（#432）、慢日志归属 `owner=<unknown>`、Docker 升级 pre 后被入口点自愈静默还原正式版、配置面板 `[object Object]` 渲染问题。
+新增交互会话基础设施与基础原语：交互会话管理器（wait_reply 等待表抽为一等基础设施，owner / platform 双维度归属清理、回复命中权限复查、会话互斥租约）、Conversation 自动检查点（分支跳转自动存档 + 重启自动恢复）、端到端事件追踪（trace-id 贯穿入站 / 处理 / 出站 / 生命周期钩子）、消息事务（出站回执账本 + 异常自动撤回）、会话收件箱（每会话消息流自动记录与查询）。存储查询构建器新增 `ToDict()` 链。存储层升级为多后端异步原生架构：内置 sqlite / mysql / postgres 三种异步驱动后端（配置切换、API 完全一致），`BaseStorage` 抽象翻转为异步原生契约，同步 API 转为兼容层（现有同步调用代码零改动）；存储连接失败不再阻塞或崩溃框架——建池重试耗尽后快速失败进入冷却（默认 30 秒）并自动重连试探，数据库恢复即随之恢复。修复 wait_reply 挂起回复被高优先级处理器饿死的问题；另落地模块间 RPC 协议化（module.call / provides 收敛为 meta.services 契约 + services() 服务目录 + 生命周期定向事件 `lifecycle.emit(..., to=...)` 按注册 owner 定向投递）、会话定时器（remind 回复即取消 / escalate 到点必达）、多路等待（event.select + wait_reply 会话级 anyone 可答）、事件幂等去重（重连重推只分发一次）、冷启动回放（strategy 声明 replay，新模块自动获得最近会话上下文）、对话恢复即接管（resume 自动持有会话租约并带回收件箱历史）。此外落地配置系统体验升级：配置文件注释与键顺序在框架写入后完整保留（tomlkit）、框架默认配置不再自动落盘（config.toml 保持最小化，完整配置参考 `config.full.example`）、声明式配置新增 `example` 字段标志 / docstring 描述兜底 / 嵌套 dataclass 支持；修复作用域 `persist=False` 运行时绑定被任意后续配置写入静默冲掉（#432）、慢日志归属 `owner=<unknown>`、Docker 升级 pre 后被入口点自愈静默还原正式版、配置面板 `[object Object]` 渲染问题。
 
 **升级建议**
 - 是否建议升级：建议升级
@@ -90,6 +90,7 @@
 - 存储查询构建器默认行为不变（tuple 行）；仅显式调用 `ToDict()` 的链返回 dict
 - **异步主接口**：同步存储 API 在异步上下文（事件循环所在线程）中调用时经后台桥接执行（功能正确，但会短暂阻塞该事件循环），异步 handler 内推荐使用 `await storage.aget/aset(...)` 与 `aExecute()` 系列终止方法；`storage.get/set/Table(...).Execute()` 等既有同步用法不受影响
 - **自定义存储后端**：继承 `BaseStorage` 的第三方后端需按异步契约迁移（实现 a 前缀异步方法与事务连接 hook）；仅使用框架存储 API（不自定义后端）的模块 / 适配器无需任何改动
+- **存储连接失败不阻塞框架**：数据库不可达时存储操作快速失败（返回 `False`/`None` 并记日志），框架与消息处理继续运行；冷却期（默认 30 秒）结束自动重连试探，无需重启
 - **行为变更**：config.toml 不再自动填充框架默认键（gc / scope / transcript 等约 60+ 项）；需要调整时参考项目内 `config.full.example` 手动添加，未配置项一律走内置默认值，行为不变
 - **行为变更**：框架写入不再对配置文件按字典序重排，保持用户原有键顺序
 - 存量用户的 config.toml 已有键不受影响，无需迁移
@@ -103,6 +104,7 @@
     - 后端连接参数：`ErisPulse.storage.mysql` / `ErisPulse.storage.postgres` 配置节（host / port / user / password / database / charset / pool 等，支持 12-factor 环境变量覆盖如 `ERISPULSE_STORAGE_POSTGRES_HOST`）
     - 方言差异收敛到 `SQLDialect`：占位符翻译（`?` / `%s` / `$n`）、标识符引用（MySQL 保留字 `key` 自动反引号）、UPSERT 语法（`INSERT OR REPLACE` / `ON DUPLICATE KEY UPDATE` / `ON CONFLICT DO UPDATE`）、自增主键翻译（`INTEGER PRIMARY KEY AUTOINCREMENT` → `AUTO_INCREMENT` / `SERIAL`）、列类型映射与表存在性查询；共享 SQL 基类 `SQLStorageBase` 统一实现嵌套键 KV、批量操作、DDL、ALTER TABLE 与事务编排
     - 连接管理：池 / 共享连接按事件循环惰性创建（同步桥接循环与用户异步循环各自独立），池创建瞬时失败自动指数退避重试；`aclose()` / `close()` 释放当前循环资源，`sdk.uninit()` 关停链统一释放主循环与同步桥接循环两侧的连接资源（消除退出期 aiomysql/asyncpg 连接被 GC 时 `Event loop is closed` 噪音）；MySQL 对 `CREATE/DROP TABLE IF EXISTS` 的服务器 NOTE 警告按 DB-API 规则抑制（幂等 DDL 不再刷 `Table 'config' already exists`）；SQLite 采用 WAL + busy_timeout 多循环并发安全，非事务操作 autocommit、事务使用专用连接
+    - 连接失败快速失败与自动恢复：建池重试耗尽（默认 3 次，指数退避基数 1.5s）后记录 WARNING 并进入冷却期（默认 30 秒）——期间存储操作快速失败（吞异常记日志返回 `False`/`None`），框架**不阻塞、不崩溃**、照常启动与处理消息；冷却结束自动重连试探，数据库恢复即随之恢复；新增异常 `StorageError` / `StorageUnreachableError`（挂入 `ErisPulseError` 体系，`Core` 聚合导出）
     - 事务：异步 `async with storage.atransaction():` / 同步 `with storage.transaction():`，事务内操作（含查询构建器链）路由到事务专用连接，嵌套自动复用外层，异常自动回滚并传播；KV 读取路径缺表自动重建
     - CLI `init` 配置脚手架与 `create` 模板、`examples/` 示例同步更新（含异步推荐写法指引）
   - **交互会话管理器** `Core/Event/interaction.py`（`sdk.interaction` / `from ErisPulse.Core.Event import interaction`）：
@@ -111,12 +113,12 @@
     - 回复命中权限复查：pattern / regex / validator 通过后复查 scope 身份维度（用户被拉黑）与模块维度（owner 模块在该会话被解绑），任一失败终止等待，消息继续走常规处理
     - 会话互斥租约：`acquire(event, ttl=...)`（deny 策略，被占用返回 None）/ `hold(event)` 上下文管理器（占用时抛 `SessionOccupiedError`）/ `get_owner_of(event)` 查询"该用户正被谁占用"；租约支持 `renew()` / `release()` 与 TTL 惰性过期
     - 诊断：`counts()`（waits / leases / per-owner 计数）
-  - **模块间通信（RPC 协议化 + 定向事件）** `Core/module.py` / `Core/Bases/module.py` / `Core/Bases/errors.py`：
+  - **模块间通信（RPC 协议化 + 定向事件）** `Core/module.py` / `Core/Bases/module.py` / `Core/Bases/errors.py` / `Core/lifecycle.py`：
     - **协议化调用** `await sdk.module.call("Chat", "get_history", session_id, n=20)`：与裸属性访问（`module.Chat.fn()`，保留不变）的差异——目标未注册 / 未启用抛类型化异常而非 AttributeError；懒加载模块自动唤醒（事件驱动模块走激活锁）；被调方法执行期间 `current_owner` 归因到目标模块（其内部 wait_reply / 出站发送 / 日志正确归属）；协程方法默认 30s 超时（`ErisPulse` 常量 `DEFAULT_MODULE_CALL_TIMEOUT_SECS`，可用 `timeout=` 覆盖，None 不限时）
     - **服务契约**：`get_meta()` 的 `ModuleMeta.services = ["get_history", ...]` 字段声明对外服务白名单（与 `commands` 对称），调用白名单外方法抛 `ServiceNotProvidedError`；未声明时保持向后兼容（任意公开方法可调，下划线私有方法始终禁止）——**开发者无感是默认**，限制主控制权在用户侧 scope 配置；`services` 支持 dict 形态（`{"name", "description"}`）声明服务介绍，介绍解析优先级 = 显式 description（支持 i18n 字典）> 方法 docstring 首行 > 空串
     - **服务目录** `sdk.module.services(module=None)`：列出各模块显式声明的服务及方法签名字符串（`inspect.signature` 提取）与介绍文本（description），为 MCP 化（调用点暴露给 AI）与生态服务发现提供数据基础
     - **出站审计**：调用方经过 scope 出站维度 `actions.<caller>.call` 判定（`name=<目标模块>.<方法>`，支持 glob / `re:` 正则），可按模块细粒度限制"谁能调用谁"；框架层调用（无 owner）不受约束
-    - **定向事件** `await sdk.module.emit_to("Chat", "message_received", {...})`：投递前校验目标模块已注册且启用（未加载的懒加载目标先激活再投递——定向事件即激活源，与 activate_on 语义对齐；用户主动 disable 仍拒绝），事件自动挂 `module.<名称>.` 命名空间（订阅 `module.<名称>` 可收全部定向事件），dict 数据自动携带 `_trace_id`
+    - **定向事件** `await lifecycle.emit("message_received", {...}, to="Chat")`：`emit` / `emit_sync` / `submit_event` 新增 `to=` 参数，事件只分发给以目标 owner 身份注册的钩子（模块在 `on_load` 内注册自动归属；点式父级前缀同样按 owner 过滤；通配符 `*` 不参与定向分发），dict 数据自动携带 `_trace_id`；目标 owner 无钩子时静默丢弃——轻量通知不做目标校验与懒唤醒，需要目标存在性校验 / 契约审计 / 返回值时改用 `module.call()`
     - 异常体系：`ModuleError` → `ModuleCallError` → `ModuleNotAvailableError` / `ServiceNotProvidedError` / `ModuleCallTimeoutError`（挂入 `ErisPulseError` 体系，`Core` 聚合导出）
   - **会话定时器** `Core/Event/wrapper.py` / `Core/Event/interaction.py`：定时器挂交互会话索引（随模块卸载 / 适配器关闭自动取消，单会话活跃上限 5）
     - `event.remind(300, "还在吗？")`（或 `conv.remind(...)`）：delay 秒后向会话发提醒 / 执行 callback，**用户回复自动取消**——"没回复就提醒"；支持 `reminder.cancel()` 手动取消
@@ -147,7 +149,7 @@
   - **存储查询构建器 `ToDict()` 链** `Core/Bases/storage.py` / `Core/storage.py` / `Core/Bases/kv_builder.py`：
     - `.Select(...).ToDict().Execute()`：SELECT 结果以 dict（列名 → 值）返回，列名取自 `cursor.description`（`SELECT *` 与表达式列均正确）；`ExecuteOne()` 同样生效；SQL 与 KV 两个构建器均支持，`copy()` 保留标志
   - i18n 五语言同步：新增 `core.interaction.*`（冲突取消 / 权限复查 / 租约 / 消息事务）/ `core.transcript.*` / `core.event.conversation_auto_resumed` / `core.adapter.interaction_clean_failed` 等键；清理 `core.command.reply_*` 死键
-  - 文档：`advanced/conversation.md` 更新自动检查点与恢复工厂；`advanced/sql-builder.md` 新增 ToDict；`advanced/ownership.md` 补交互会话归属清理
+  - 文档：`advanced/conversation.md` 更新自动检查点与恢复工厂；`advanced/sql-builder.md` 新增 ToDict；`advanced/ownership.md` 补交互会话归属清理；新增 `advanced/errors.md` 异常总览（全异常树 / 发生位置 / 处理建议）；`advanced/storage-backends.md` 新增连接失败行为说明；`user-guide/configuration.md` 补多后端存储配置
 - @wsu2059q
   - **声明式配置增强** `Core/Bases/config_schema` / `Core/config.py` / `CLI/commands/init.py`：
     - `example` 字段标志：`metadata={"example": True}` 的字段默认不写入 config.toml 模板与默认值（运行时走代码默认值，用户手动设置后正常持久化），仅渲染进 `config.full.example`；schema 带 `"example": true` 标记供面板自行决定展示策略，CLI 配置向导默认跳过

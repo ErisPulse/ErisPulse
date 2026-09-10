@@ -640,3 +640,206 @@ class TestLifecycleOwnerTracking:
         await manager.emit("test.event", {"key": "value"})
         assert len(results) == 1
         assert results[0]["key"] == "value"
+
+
+# ==================== 定向传播（emit to=）测试 ====================
+
+
+class TestDirectedEmit:
+    """emit(..., to=) 定向投递：仅分发给指定 owner 注册的处理器"""
+
+    @pytest.fixture
+    def manager(self):
+        """创建生命周期管理器实例"""
+        manager = LifecycleManager()
+        manager._hooks.clear()
+        manager._timers.clear()
+        return manager
+
+    @pytest.mark.asyncio
+    async def test_to_delivers_only_to_owner_hooks(self, manager):
+        """定向投递只触发目标 owner 的钩子，其它 owner 不感知"""
+        from ErisPulse.runtime.context import current_owner
+
+        got_a, got_b = [], []
+
+        def make(reg_owner, sink):
+            token = current_owner.set(reg_owner)
+            try:
+                manager.register("maintenance", lambda d: sink.append(d))
+            finally:
+                current_owner.reset(token)
+
+        make("ModuleA", got_a)
+        make("ModuleB", got_b)
+
+        await manager.emit("maintenance", {"action": "reload"}, to="ModuleA")
+
+        assert len(got_a) == 1
+        assert got_b == []
+
+    @pytest.mark.asyncio
+    async def test_to_parent_prefix_with_owner(self, manager):
+        """定向投递支持点式父级前缀匹配（按 owner 过滤）"""
+        from ErisPulse.runtime.context import current_owner
+
+        got = []
+        token = current_owner.set("Chat")
+        try:
+            manager.register("message", lambda d: got.append(d))
+        finally:
+            current_owner.reset(token)
+
+        await manager.emit("message.received", {"text": "hi"}, to="Chat")
+
+        assert got == [{"text": "hi"}]
+
+    @pytest.mark.asyncio
+    async def test_to_wildcard_excluded(self, manager):
+        """通配符 * 处理器不参与定向分发"""
+        from ErisPulse.runtime.context import current_owner
+
+        wildcard_called = []
+        manager.register("*", lambda d: wildcard_called.append(d))
+
+        got = []
+        token = current_owner.set("Chat")
+        try:
+            manager.register("solo", lambda d: got.append(d))
+        finally:
+            current_owner.reset(token)
+
+        await manager.emit("solo", {"n": 1}, to="Chat")
+
+        assert got == [{"n": 1}]
+        assert wildcard_called == []
+
+    @pytest.mark.asyncio
+    async def test_to_unknown_owner_silent(self, manager):
+        """目标 owner 无已注册钩子时静默丢弃，data 原样返回"""
+        from ErisPulse.runtime.context import current_owner
+
+        got = []
+        token = current_owner.set("Chat")
+        try:
+            manager.register("solo", lambda d: got.append(d))
+        finally:
+            current_owner.reset(token)
+
+        result = await manager.emit("solo", {"n": 1}, to="Ghost")
+
+        assert result == {"n": 1}
+        assert got == []
+
+    @pytest.mark.asyncio
+    async def test_to_handler_chain_return_value(self, manager):
+        """定向投递下处理器返回非 None 值继续沿链传递"""
+        from ErisPulse.runtime.context import current_owner
+
+        token = current_owner.set("Chat")
+        try:
+            @manager.on("chain")
+            async def first(data):
+                return {**data, "step": 1}
+
+            @manager.on("chain")
+            async def second(data):
+                return {**data, "step": 2}
+        finally:
+            current_owner.reset(token)
+
+        result = await manager.emit("chain", {}, to="Chat")
+
+        assert result == {"step": 2}
+
+    @pytest.mark.asyncio
+    async def test_to_attaches_trace_id(self, manager):
+        """定向投递时 dict 数据自动附加 _trace_id（不覆盖已有值）"""
+        from ErisPulse.runtime.context import current_owner, current_trace_id
+
+        got = []
+        token = current_owner.set("Chat")
+        try:
+            manager.register("traced", lambda d: got.append(d))
+        finally:
+            current_owner.reset(token)
+
+        tid = current_trace_id.set("trace-xyz")
+        try:
+            await manager.emit("traced", {"n": 1}, to="Chat")
+            await manager.emit("traced", {"n": 2, "_trace_id": "keep"}, to="Chat")
+        finally:
+            current_trace_id.reset(tid)
+
+        assert got[0]["_trace_id"] == "trace-xyz"
+        assert got[1]["_trace_id"] == "keep"
+
+    @pytest.mark.asyncio
+    async def test_to_empty_rejected(self, manager):
+        """to 为空字符串时抛 ValueError"""
+        with pytest.raises(ValueError):
+            await manager.emit("some.event", {}, to="")
+
+        with pytest.raises(ValueError):
+            manager.emit_sync("some.event", {}, to="")
+
+    @pytest.mark.asyncio
+    async def test_broadcast_without_to_unaffected(self, manager):
+        """不带 to 的广播路径不受影响：无 owner 钩子照常触发"""
+        got = []
+        manager.register("solo", lambda d: got.append(d))
+
+        await manager.emit("solo", {"n": 1})
+
+        assert got == [{"n": 1}]
+
+    def test_emit_sync_with_to(self, manager):
+        """emit_sync 定向传播按 owner 过滤"""
+        from ErisPulse.runtime.context import current_owner
+
+        got_a, got_b = [], []
+
+        def make(reg_owner, sink):
+            token = current_owner.set(reg_owner)
+            try:
+                manager.register("sync.evt", lambda d: sink.append(d))
+            finally:
+                current_owner.reset(token)
+
+        make("ModuleA", got_a)
+        make("ModuleB", got_b)
+
+        manager.emit_sync("sync.evt", {"n": 1}, to="ModuleB")
+
+        assert got_b == [{"n": 1}]
+        assert got_a == []
+
+    @pytest.mark.asyncio
+    async def test_submit_event_with_to(self, manager):
+        """submit_event 透传 to= 给 emit"""
+        from ErisPulse.runtime.context import current_owner
+
+        got_a, got_b = [], []
+
+        def make(reg_owner, sink):
+            token = current_owner.set(reg_owner)
+            try:
+                manager.register("submit.evt", lambda d: sink.append(d))
+            finally:
+                current_owner.reset(token)
+
+        make("ModuleA", got_a)
+        make("ModuleB", got_b)
+
+        await manager.submit_event("submit.evt", data={"k": "v"}, to="ModuleA")
+
+        assert len(got_a) == 1
+        assert got_a[0]["event"] == "submit.evt"
+        assert got_a[0]["data"] == {"k": "v"}
+        assert got_b == []
+
+    @pytest.mark.asyncio
+    async def test_submit_event_with_empty_to_rejected(self, manager):
+        """submit_event 空字符串 to 同样抛 ValueError"""
+        with pytest.raises(ValueError):
+            await manager.submit_event("some.event", to="")
