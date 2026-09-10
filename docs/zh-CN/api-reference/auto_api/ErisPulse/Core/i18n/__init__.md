@@ -171,6 +171,18 @@ BCP 47 格式的 locale 名称（如 "zh-CN", "en-US"）
 ---
 
 
+##### `_emit_language_changed(language: str, previous: str | None)`
+
+发出语言切换事件（``i18n.language.changed``）
+
+- **language** (`切换后的语言代码`): - **previous**: 切换前的语言代码（进程首个语言设置时为 None）
+
+> **内部方法**
+事件失败静默跳过，不影响语言切换本身。
+
+---
+
+
 ##### `_persist_global_language(lang: str)`
 
 将语言选择写入全局状态文件

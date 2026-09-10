@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1597,
+  "total_keywords": 1602,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -106,14 +106,6 @@
         "title": "1. pyproject.toml の設定"
       }
     ],
-    "1. エラーの分類処理": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 273,
-        "level": 3,
-        "title": "1. エラーの分類処理"
-      }
-    ],
     "1. エラータイプの分類": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -125,7 +117,7 @@
     "1. キャッシュの使用": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 380,
+        "line": 381,
         "level": 3,
         "title": "1. キャッシュの使用"
       }
@@ -133,7 +125,7 @@
     "1. トランザクションの使用": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 313,
+        "line": 314,
         "level": 3,
         "title": "1. トランザクションの使用"
       }
@@ -141,7 +133,7 @@
     "1. バージョン管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 492,
+        "line": 493,
         "level": 3,
         "title": "1. バージョン管理"
       }
@@ -197,7 +189,7 @@
     "1. ログレベルの適切な使用": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 346,
+        "line": 347,
         "level": 3,
         "title": "1. ログレベルの適切な使用"
       }
@@ -208,6 +200,14 @@
         "line": 9,
         "level": 3,
         "title": "1. 何时发送 Meta 事件"
+      }
+    ],
+    "1. 例外の分類処理": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 273,
+        "level": 3,
+        "title": "1. 例外の分類処理"
       }
     ],
     "1. 例外処理": [
@@ -235,7 +235,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 463,
+        "line": 464,
         "level": 3,
         "title": "1. 単体テスト"
       }
@@ -283,7 +283,7 @@
     "1. 敏感データの保護": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 417,
+        "line": 418,
         "level": 3,
         "title": "1. 敏感データの保護"
       }
@@ -571,7 +571,7 @@
     "2. README ヘッダー": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 506,
+        "line": 507,
         "level": 3,
         "title": "2. README ヘッダー"
       }
@@ -627,7 +627,7 @@
     "2. タイムアウト処理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 295,
+        "line": 296,
         "level": 3,
         "title": "2. タイムアウト処理"
       }
@@ -643,7 +643,7 @@
     "2. バッチ操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 329,
+        "line": 330,
         "level": 3,
         "title": "2. バッチ操作"
       }
@@ -667,7 +667,7 @@
     "2. ブロッキング操作の回避": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 401,
+        "line": 402,
         "level": 3,
         "title": "2. ブロッキング操作の回避"
       }
@@ -713,7 +713,7 @@
     "2. 入力の検証": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 443,
+        "line": 444,
         "level": 3,
         "title": "2. 入力の検証"
       }
@@ -793,7 +793,7 @@
     "2. 構造化ログ": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 368,
+        "line": 369,
         "level": 3,
         "title": "2. 構造化ログ"
       }
@@ -831,7 +831,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 476,
+        "line": 477,
         "level": 3,
         "title": "2. 統合テスト"
       }
@@ -2637,7 +2637,7 @@
     "Client 系列 — `Core/client.py` / `Core/Bases/client.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 34,
+        "line": 61,
         "level": 3,
         "title": "Client 系列 — `Core/client.py` / `Core/Bases/client.py`"
       }
@@ -3049,7 +3049,7 @@
     "HTTP ルーティング": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 238,
+        "line": 248,
         "level": 3,
         "title": "HTTP ルーティング"
       }
@@ -3068,6 +3068,14 @@
         "line": 435,
         "level": 3,
         "title": "HTTPStatusError"
+      }
+    ],
+    "HTTPクライアント": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 306,
+        "level": 3,
+        "title": "HTTPクライアント"
       }
     ],
     "HTTPリクエストパラメータ": [
@@ -3113,7 +3121,7 @@
     "Interaction — `Core/Event/interaction.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 72,
+        "line": 98,
         "level": 3,
         "title": "Interaction — `Core/Event/interaction.py`"
       }
@@ -3249,7 +3257,7 @@
     "Module 系列 — `Core/module.py`（`sdk.module.call`）": [
       {
         "document": "advanced/errors.md",
-        "line": 82,
+        "line": 110,
         "level": 3,
         "title": "Module 系列 — `Core/module.py`（`sdk.module.call`）"
       }
@@ -3715,7 +3723,7 @@
     "Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 61,
+        "line": 88,
         "level": 3,
         "title": "Storage 系列 — `Core/storage` / `Core/Bases/sql_base.py`"
       }
@@ -3803,7 +3811,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 253,
+        "line": 263,
         "level": 3,
         "title": "WebSocket"
       }
@@ -3851,7 +3859,7 @@
     "WebSocket 系列 — `Core/client.py`（`send` / `receive`）": [
       {
         "document": "advanced/errors.md",
-        "line": 54,
+        "line": 81,
         "level": 3,
         "title": "WebSocket 系列 — `Core/client.py`（`send` / `receive`）"
       }
@@ -4978,14 +4986,6 @@
         "title": "アダプタのホット起動・停止"
       }
     ],
-    "アダプタのライフサイクル": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 172,
-        "level": 3,
-        "title": "アダプタのライフサイクル"
-      }
-    ],
     "アダプタの停止": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -5024,6 +5024,14 @@
         "line": 239,
         "level": 3,
         "title": "アダプタインスタンスの取得"
+      }
+    ],
+    "アダプタライフサイクル": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 182,
+        "level": 3,
+        "title": "アダプタライフサイクル"
       }
     ],
     "アダプター": [
@@ -5254,14 +5262,6 @@
         "title": "イベントの冪等性と重複除去"
       }
     ],
-    "イベントの受信と処理": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 184,
-        "level": 3,
-        "title": "イベントの受信と処理"
-      }
-    ],
     "イベントの監視": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -5480,6 +5480,14 @@
         "title": "イベント処理入門"
       }
     ],
+    "イベント受信と処理": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 194,
+        "level": 3,
+        "title": "イベント受信と処理"
+      }
+    ],
     "イベント変換": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -5676,6 +5684,14 @@
         "title": "エコシステムモジュール"
       }
     ],
+    "エラーのキャプチャに関する提案": [
+      {
+        "document": "advanced/errors.md",
+        "line": 145,
+        "level": 2,
+        "title": "エラーのキャプチャに関する提案"
+      }
+    ],
     "エラーの概要": [
       {
         "document": "advanced/errors.md",
@@ -5718,6 +5734,14 @@
         "title": "エラーコード規格"
       }
     ],
+    "エラーシステムとキャッチガイド": [
+      {
+        "document": "advanced/errors.md",
+        "line": 1,
+        "level": 1,
+        "title": "エラーシステムとキャッチガイド"
+      }
+    ],
     "エラーハンドリング": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -5730,14 +5754,6 @@
         "line": 945,
         "level": 2,
         "title": "エラーハンドリング"
-      }
-    ],
-    "エラー体系とキャッチガイド": [
-      {
-        "document": "advanced/errors.md",
-        "line": 1,
-        "level": 1,
-        "title": "エラー体系とキャッチガイド"
       }
     ],
     "エラー処理": [
@@ -6119,7 +6135,7 @@
     "コマンドシステム": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 223,
+        "line": 233,
         "level": 3,
         "title": "コマンドシステム"
       }
@@ -6491,7 +6507,7 @@
     "ストレージシステム": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 311,
+        "line": 312,
         "level": 2,
         "title": "ストレージシステム"
       },
@@ -6518,6 +6534,14 @@
         "title": "ストレージバックエンド抽象"
       }
     ],
+    "ストレージ接続状態": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 284,
+        "level": 3,
+        "title": "ストレージ接続状態"
+      }
+    ],
     "ストレージ設定": [
       {
         "document": "user-guide/configuration.md",
@@ -6537,7 +6561,7 @@
     "セキュリティ": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 415,
+        "line": 416,
         "level": 2,
         "title": "セキュリティ"
       }
@@ -6923,7 +6947,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 461,
+        "line": 462,
         "level": 2,
         "title": "テスト"
       }
@@ -7113,7 +7137,7 @@
     "トリガー": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 307,
+        "line": 358,
         "level": 3,
         "title": "トリガー"
       }
@@ -7353,7 +7377,7 @@
     "バックグラウンドタスクの所有者と自動解除": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 352,
+        "line": 404,
         "level": 2,
         "title": "バックグラウンドタスクの所有者と自動解除"
       }
@@ -7439,7 +7463,7 @@
     "パフォーマンス最適化": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 378,
+        "line": 379,
         "level": 2,
         "title": "パフォーマンス最適化"
       }
@@ -7530,12 +7554,12 @@
         "title": "フォーム収集 (collect)"
       }
     ],
-    "フックの断点一覧": [
+    "フックブレークポイント一覧": [
       {
         "document": "advanced/lifecycle.md",
         "line": 114,
         "level": 2,
-        "title": "フックの断点一覧"
+        "title": "フックブレークポイント一覧"
       }
     ],
     "フットスタジの作成": [
@@ -7557,7 +7581,7 @@
     "フレームワーク内部のパラメータ検証（ValueError）": [
       {
         "document": "advanced/errors.md",
-        "line": 103,
+        "line": 139,
         "level": 3,
         "title": "フレームワーク内部のパラメータ検証（ValueError）"
       }
@@ -8427,7 +8451,7 @@
     "メッセージ送信": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 208,
+        "line": 218,
         "level": 3,
         "title": "メッセージ送信"
       }
@@ -8559,7 +8583,7 @@
     "モジュールでの使用例": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 325,
+        "line": 377,
         "level": 2,
         "title": "モジュールでの使用例"
       }
@@ -8611,12 +8635,6 @@
       }
     ],
     "モジュールのライフサイクル": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 163,
-        "level": 3,
-        "title": "モジュールのライフサイクル"
-      },
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 5,
@@ -8692,6 +8710,14 @@
         "line": 5,
         "level": 2,
         "title": "モジュールストアの概要"
+      }
+    ],
+    "モジュールライフサイクル": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 172,
+        "level": 3,
+        "title": "モジュールライフサイクル"
       }
     ],
     "モジュールレベルの制御": [
@@ -8871,7 +8897,7 @@
     "ユーティリティ": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 315,
+        "line": 367,
         "level": 3,
         "title": "ユーティリティ"
       }
@@ -9351,7 +9377,7 @@
     "ログ記録": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 344,
+        "line": 345,
         "level": 2,
         "title": "ログ記録"
       },
@@ -10328,12 +10354,12 @@
         "title": "各環節の詳細解説"
       }
     ],
-    "各種例外の説明と発生位置": [
+    "各種例外の説明と発生場所": [
       {
         "document": "advanced/errors.md",
-        "line": 32,
+        "line": 59,
         "level": 2,
-        "title": "各種例外の説明と発生位置"
+        "title": "各種例外の説明と発生場所"
       }
     ],
     "同期フロー": [
@@ -10382,6 +10408,14 @@
         "line": 24,
         "level": 3,
         "title": "国内用のイメージ加速"
+      }
+    ],
+    "国際化": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 316,
+        "level": 3,
+        "title": "国際化"
       }
     ],
     "国際化 (i18n) システム": [
@@ -10780,12 +10814,12 @@
         "title": "学習パス"
       }
     ],
-    "完全なAPIリファレンス": [
+    "完全な API リファレンス": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 297,
+        "line": 348,
         "level": 2,
-        "title": "完全なAPIリファレンス"
+        "title": "完全な API リファレンス"
       }
     ],
     "完全なメールイベント": [
@@ -11502,14 +11536,6 @@
         "title": "指定送信（emit to=）"
       }
     ],
-    "捕獲の提案": [
-      {
-        "document": "advanced/errors.md",
-        "line": 107,
-        "level": 2,
-        "title": "捕獲の提案"
-      }
-    ],
     "接続の切断": [
       {
         "document": "advanced/http-client.md",
@@ -12186,6 +12212,14 @@
         "title": "構築モードに入る"
       }
     ],
+    "構造化属性": [
+      {
+        "document": "advanced/errors.md",
+        "line": 34,
+        "level": 2,
+        "title": "構造化属性"
+      }
+    ],
     "標準 API 動作（ApiDSL）": [
       {
         "document": "platform-guide/yunhu.md",
@@ -12245,7 +12279,7 @@
     "標準イベント定義": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 274,
+        "line": 322,
         "level": 2,
         "title": "標準イベント定義"
       }
@@ -12403,7 +12437,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 383,
+        "line": 435,
         "level": 2,
         "title": "注意事項"
       },
@@ -12657,7 +12691,7 @@
     "登録と解除": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 299,
+        "line": 350,
         "level": 3,
         "title": "登録と解除"
       }
@@ -13389,7 +13423,7 @@
     "設定変更": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 148,
+        "line": 157,
         "level": 3,
         "title": "設定変更"
       }
@@ -13927,7 +13961,7 @@
     "部署": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 490,
+        "line": 491,
         "level": 2,
         "title": "部署"
       }
@@ -14205,7 +14239,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 393,
+        "line": 445,
         "level": 2,
         "title": "関連文書"
       },
@@ -14217,7 +14251,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 547,
+        "line": 548,
         "level": 2,
         "title": "関連文書"
       }

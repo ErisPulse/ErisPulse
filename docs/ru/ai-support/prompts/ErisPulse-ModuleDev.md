@@ -3072,42 +3072,42 @@ async def ai_chat(self, prompt: str):
 
 ### 模块开发最佳实践
 
-# Лучшие практики разработки модулей
+# Рекомендации по разработке модулей
 
-В этом документе представлены рекомендации по лучшим практикам разработки модулей ErisPulse.
+В настоящем документе представлены лучшие практики разработки модулей для ErisPulse.
 
-## Проектирование модулей
+## Дизайн модуля
 
 ### 1. Принцип единственной ответственности
 
-Каждый модуль должен отвечать только за одну основную функцию:
+Каждый модуль должен отвечать за одну основную функцию:
 
 ```python
-# Хорошее проектирование: каждый модуль отвечает за одну функцию
+# Хороший дизайн: каждый модуль отвечает за одну функцию
 class WeatherModule(BaseModule):
-    """Модуль получения погоды"""
+    """Модуль для получения погоды"""
     pass
 
 class NewsModule(BaseModule):
-    """Модуль получения новостей"""
+    """Модуль для получения новостей"""
     pass
 
-# Плохое проектирование: один модуль отвечает за несколько несвязанных функций
+# Плохой дизайн: один модуль отвечает за несколько несвязанных функций
 class UtilityModule(BaseModule):
-    """Содержит погоду, новости, анекдоты и другие функции"""
+    """Содержит функции погоды, новостей, анекдотов и т.д."""
     pass
 ```
 
-### 2. Правила именования модулей
+### 2. Нормы именования модулей
 
 ```toml
 [project]
-name = "ErisPulse-ModuleName"  # Использование префикса ErisPulse-
+name = "ErisPulse-ModuleName"  # Использовать префикс ErisPulse-
 ```
 
 ### 3. Четкое управление конфигурацией
 
-Рекомендуется использовать декларативную конфигурацию (`ConfigClass` + `BaseConfig`), чтобы получить такие возможности, как типобезопасность, автоматическое создание шаблонов, поддержка веб-интерфейса и т.д.:
+Рекомендуется использовать декларативную конфигурацию (`ConfigClass` + `BaseConfig`), чтобы получить типобезопасность, автоматическое создание шаблонов и поддержку форм веб-интерфейса:
 
 ```python
 from dataclasses import dataclass, field
@@ -3129,22 +3129,22 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def do_something(self):
-        cfg = self.cfg  # Типобезопасно, считывается в реальном времени
+        cfg = self.cfg  # Типобезопасный доступ к конфигурации
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-Также можно продолжать использовать ручной способ чтения и записи конфигурации (см. [Основные понятия модуля](core-concepts.md#управление-конфигурацией)).
+Также можно продолжать использовать ручное управление конфигурацией (см. [Основные концепции модуля](core-concepts.md#управление-конфигурацией)).
 
 ### Декларативные ключи перевода (v2.7.0+)
 
-Модуль может объявлять ключи перевода через `I18nClass`, фреймворк автоматически зарегистрирует их в системе перевода, без необходимости вызывать `i18n.register()` вручную.
+Модуль может объявлять ключи перевода через `I18nClass`, и фреймворк автоматически зарегистрирует их в системе i18n, без необходимости вызывать `i18n.register()` вручную.
 
 ```python
 from ErisPulse.Core.Bases import BaseI18n, I18nKey
 
 class MyModule(BaseModule):
     class I18nClass(BaseI18n):
-        # Ключ перевода с подстановочными значениями
+        # Ключ перевода с подстановками
         welcome: I18nKey = I18nKey(
             default="Welcome, {name}!",
             zh_CN="Добро пожаловать, {name}!",
@@ -3164,14 +3164,14 @@ class MyModule(BaseModule):
         )
 ```
 
-Более подробная информация доступна в [документации по i18n](../../advanced/i18n.md#рекомендуемый-способ-объявления-ключей-перевода-через-i18nclass-v270).
+Подробное использование см. в [документации по i18n](../../advanced/i18n.md#рекомендуемый-способ-объявления-ключей-перевода-через-i18nclass-v270).
 
 ## Асинхронное программирование
 
 ### 1. Использование асинхронных библиотек
 
 ```python
-# Рекомендуется использовать встроенный HTTP-клиент SDK (асинхронный, с автоматической логированием и статистикой)
+# Рекомендуется использовать встроенный HTTP-клиент SDK (асинхронный, с автоматическим логированием и статистикой)
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -3187,7 +3187,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# Не используйте aiohttp напрямую (трудно управлять в рамках фреймворка)
+# Не используйте прямой импорт aiohttp (трудно управлять из фреймворка)
 import aiohttp
 
 class MyModule(BaseModule):
@@ -3196,31 +3196,31 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Не используйте requests (синхронный, заблокирует цикл событий)
+# Не используйте requests (синхронный, блокирует цикл событий)
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # заблокирует цикл событий
+        return requests.get(url).json()  # Блокирует цикл событий
 ```
 
-### 2. Правильное выполнение асинхронных операций
+### 2. Корректное выполнение асинхронных операций
 
 ```python
-from ErisPulse.Core.Event import Event  # аннотация event: Event обеспечивает автодополнение в IDE
+from ErisPulse.Core.Event import Event  # Подсказки IDE доступны через event: Event
 
 async def handle_command(self, event: Event):
-    # Длительные операции, результат которых нужно ожидать: используйте await (жизненный цикл ясен)
+    # Длительные операции, результат которых нужно получить: await (жизненный цикл ясен)
     result = await self._long_operation()
 
 async def on_load(self, event: dict):
-    # Фоновые задачи (опрос/таймеры/fire-and-forget): используйте self.spawn(),
-    # при выгрузке модуля фреймворк отменяет задачу после on_unload, предотвращая утечку
+    # Фоновые задачи (опрос/таймер/fire-and-forget): используйте self.spawn(),
+    # модуль при выгрузке автоматически отменяет задачи после on_unload, предотвращая утечку
     self.spawn(self._poll())
 ```
 
 > [!NOTE]
-> Рекомендуется использовать `self.spawn()` (ErisPulse **2.8.0+**), а не `asyncio.create_task` — задачи, созданные через `asyncio.create_task`, не принадлежат модулю, и при выгрузке модуля не будут автоматически отменены, что приведёт к удержанию ссылки на `self` и невозможности сборки мусора (утечка при горячей перезагрузке). Подробнее см. [Управление жизненным циклом](../../advanced/lifecycle.md#фоновые-задачи-принадлежность-и-автоматическая-отмена).
+> Фоновые задачи рекомендуется выполнять через `self.spawn()` (ErisPulse **2.8.0+**), а не `asyncio.create_task` — последний создает задачу без привязки к модулю, которая не будет автоматически отменена при выгрузке, и может привести к утечке памяти. Подробнее см. [Управление жизненным циклом](../../advanced/lifecycle.md#автоматическая-отмена-задач-фоновых-задач).
 
 ### 3. Управление ресурсами
 
@@ -3230,7 +3230,7 @@ async def on_load(self, event):
     pass
     
 async def on_unload(self, event):
-    # Если требуется кастомный клиент, не забудьте очистить ресурсы
+    # Если нужно использовать собственный клиент, не забудьте очистить ресурсы
     pass
 ```
 
@@ -3239,7 +3239,7 @@ async def on_unload(self, event):
 ### 1. Использование обёртки Event
 
 ```python
-# Удобный способ использования обёртки Event
+# Использование удобных методов обёртки Event
 @command("info")
 async def info_command(event: Event):
     user_id = event.get_user_id()
@@ -3255,7 +3255,7 @@ async def info_command(event: Event):
 ### 2. Разумное использование ленивой загрузки
 
 ```python
-# Модуль с редко используемыми командами: объявите триггер activate_on, модуль активируется при первом совпадении команды (сохраняется ленивая загрузка)
+# Модуль с редко используемыми командами: объявите триггер activate_on, модуль активируется при первом совпадении команды (сохраняя ленивую загрузку)
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -3263,7 +3263,7 @@ class CommandModule(BaseModule):
             {"command": {"name": "dice", "help": "Бросить кубик", "aliases": ["d"]}},
         ])
 
-# Модуль с редко используемыми слушателями: объявите триггер события, модуль активируется при поступлении события
+# Модуль с редкими триггерами событий: объявите триггер activate_on, модуль активируется при поступлении события
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -3271,7 +3271,7 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# Модули с частым срабатыванием (обрабатываются каждое сообщение) или модули, которые должны быть готовы при запуске: загрузка немедленная
+# Модули, часто вызываемые (каждое сообщение) или требующие готовности при запуске: загружайте немедленно
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -3284,14 +3284,13 @@ class UtilityModule(BaseModule):
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-> Полный синтаксис activate_on (три формы событий / сокращённое объявление команды и dict / цепочка возврата help) см. в
-> [Системе ленивой загрузки модулей](../../advanced/lazy-loading.md#event-driven-lazy-activation-activate-on).
+> Полный синтаксис `activate_on` (форма триггера события / упрощённая и dict-форма объявления / цепочка help) см. в [системе ленивой загрузки модулей](../../advanced/lazy-loading.md#активация-по-триггеру-activate_on).
 
-### 3. Регистрация обработчика событий
+### 3. Регистрация обработчиков событий
 
 ```python
 async def on_load(self, event):
-    # Регистрация обработчиков событий в on_load
+    # Регистрируйте обработчики событий в on_load
     @command("hello")
     async def hello_handler(event: Event):
         await event.reply("Привет!")
@@ -3300,12 +3299,12 @@ async def on_load(self, event):
     async def group_handler(event: Event):
         self.logger.info("Получено групповое сообщение")
     
-    # Не нужно вручную отписываться, фреймворк обработает это автоматически
+    # Не нужно отменять регистрацию, фреймворк сделает это автоматически
 ```
 
-## Модуль инструментов: при хранении чужих вещей нужно ловить "уведомления об отключении"
+## Инструментальные модули: при хранении чужих объектов нужно учитывать "уведомление об отключении"
 
-**Когда это нужно**: ваш модуль хранит что-то от имени других модулей (постоянные обратные вызовы, подписчики, соединения, элементы кэша и т.д.). Если эти ссылки не будут удалены после отключения модуля-владельца, экземпляр этого модуля никогда не будет собран сборщиком мусора — это наиболее частая причина утечек памяти в модулях-инструментах.
+**Когда это необходимо**: Ваш модуль хранит что-то от имени другого модуля (обратные вызовы по таймеру, подписчики, соединения, кэш и т.д.). Если эти ссылки не будут удалены после выгрузки модуля-владельца, экземпляр не сможет быть освобождён — это наиболее распространённая причина утечек памяти в инструментальных модулях.
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -3313,59 +3312,60 @@ from ErisPulse.runtime import off_cleanup, on_cleanup
 
 class MyToolModule(BaseModule):
     def __init__(self):
-        self._entries = {}  # {имя_модуля: хранимая_вещь}
+        self._entries = {}  # {имя модуля: хранимые вещи}
 
     def register(self, entry):
-        owner = on_cleanup(self._drop)   # ① При регистрации вешаем обработчик очистки, автоматически определяется вызывающий модуль
+        owner = on_cleanup(self._drop)   # ① При регистрации добавляем в цепочку очистки, автоматически определяется вызывающий модуль
         self._entries.setdefault(owner, []).append(entry)
 
     def _drop(self, owner: str):
-        self._entries.pop(owner, None)   # ② При отключении модуля-владельца фреймворк автоматически вызывает: удаляет его вещь
+        self._entries.pop(owner, None)   # ② При выгрузке модуля-владельца фреймворк автоматически вызывает: удаляем его объекты
 
     async def on_unload(self, event):
-        off_cleanup(self._drop)          # ③ Перед собственным отключением отменяем хук
+        off_cleanup(self._drop)          # ③ Перед собственной выгрузкой отменяем хук
 ```
 
-Вот и всё. Фреймворк гарантирует:
+Таким образом, фреймворк гарантирует:
 
-- Когда модуль-владелец будет **отключен / отключен** (или отключено адаптерное соединение), `_drop("имя_модуля_владельца")` обязательно будет вызван
-- **Автоматическое определение вызывающего модуля**: если модуль-владелец вызывает `sdk.MyToolModule.register(...)` прямо в `on_load`, или использует `sdk.module.call("MyToolModule", "register", ...)`, то идентификатор будет определён корректно
-- Не нужно беспокоиться о времени — хук вызывается в цепочке очистки фреймворка, до диагностики утечек, ошибок не будет
+- При **выгрузке / отключении** модуля-владельца (или при остановке адаптера) `_drop("имя модуля-владельца")` обязательно будет вызван
+- **Автоматическое определение вызывающего модуля**: если модуль-владелец вызывает `sdk.MyToolModule.register(...)` или через `sdk.module.call("MyToolModule", "register", ...)` — будет правильно определён владелец
+- Не нужно заботиться о времени — хук вызывается в цепочке фреймворка, до диагностики утечек, не приведёт к ложным срабатываниям
 
-Если этого не сделать: при полной очистке модуля-владельца его экземпляр не будет собран (диагностика утечек покажет "нельзя собрать"); если модуль-владелец сам не отменит уведомление в `on_unload`, утечка будет постоянной.
+Последствия неподключения: при полной выгрузке модуля-владельца экземпляр не может быть освобождён (диагностика утечек сообщает "недостижимый"); если модуль-владелец также не отменяет уведомление, утечка будет постоянной.
 
-**Обычные модули (не хранящие чужие вещи) не должны беспокоиться об этом** — автоматическая очистка ресурсов фреймворка (команды / обработчики / маршруты / фоновые задачи и т.д.) происходит автоматически.
+**Обычные модули (не хранящие чужие объекты) не должны этим заниматься** — очистка ресурсов (команды / обработчики / маршрутизация / фоновые задачи и т.д.) автоматически выполняется фреймворком.
 
-> Подробности о триггерах, правилах определения владельца, таймаутах и обработке ошибок см. в [Система принадлежности · Руководство по инструментальным модулям](../../advanced/ownership.md#инструментальные-модули-хранение-дескрипторов-других-модулей).
+> Подробности о времени срабатывания, правилах определения вызывающего модуля, таймаутах и обработке ошибок см. в [системе принадлежности · руководство по инструментальным модулям](../../advanced/ownership.md#руководство-по-инструментальным-модулям-хранение-дескрипторов-других-модулей).
 
 ## Обработка ошибок
 
-### 1. Обработка исключений по категориям
+### 1. Классификация обработки исключений
 
 ```python
+from ErisPulse.Core.Bases.errors import ClientError
+
 async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
     except ValueError as e:
         # Ожидаемая бизнес-ошибка
-        self.logger.warning(f"Предупреждение бизнес-логики: {e}")
+        self.logger.warning(f"Предупреждение бизнеса: {e}")
         await event.reply(f"Ошибка параметра: {e}")
-    except aiohttp.ClientError as e:
-        # Ошибка сети (рекомендуется использовать sdk.client + ClientError вместо этого)
-        # Старый код, использующий напрямую aiohttp, по-прежнему работает, но в новом коде рекомендуется использовать систему исключений ErisPulse
-        self.logger.error(f"Ошибка сети: {e}")
-        await event.reply("Ошибка сетевого запроса, попробуйте позже")
+    except ClientError as e:
+        # Ошибка сети (нижележащие исключения aiohttp уже автоматически преобразованы)
+        self.logger.error(f"Ошибка сети {e.method} {e.url}: {e}")
+        await event.reply("Ошибка запроса, попробуйте позже")
     except Exception as e:
         # Неожиданная ошибка
         self.logger.error(f"Неизвестная ошибка: {e}", exc_info=True)
-        await event.reply("Обработка не удалась, свяжитесь с администратором")
+        await event.reply("Обработка не удалась, обратитесь к администратору")
         raise
 ```
 
-### 2. Обработка тайм-аутов
+### 2. Обработка таймаутов
 
 ```python
-# Рекомендуется использовать встроенный клиент SDK (имеет встроенные тайм-ауты и повторные попытки)
+# Рекомендуется использовать встроенный клиент SDK (с таймаутом и повторами)
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -3374,7 +3374,7 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"Тайм-аут запроса: {url}")
+        self.logger.warning(f"Таймаут запроса: {url}")
         raise
 ```
 
@@ -3383,29 +3383,29 @@ async def fetch_with_timeout(self, url, timeout=30):
 ### 1. Использование транзакций
 
 ```python
-# Использование транзакции для обеспечения согласованности данных
+# Использование транзакций для обеспечения согласованности данных
 async def update_user(self, user_id, data):
     with self.sdk.storage.transaction():
         self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
         self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 
-# ❌ Без транзакции может возникнуть несогласованность данных
+# ❌ Без транзакций возможна несогласованность данных
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
-    # Если здесь произойдет ошибка, предыдущая операция не может быть отменена
+    # Если здесь произойдёт ошибка, предыдущий вызов не откатится
     self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 ```
 
-### 2. Пакетные операции
+### 2. Массовые операции
 
 ```python
-# Использование пакетных операций для повышения производительности
+# Использование массовых операций для повышения производительности
 def cache_multiple_items(self, items):
     self.sdk.storage.set_multi({
         f"item:{k}": v for k, v in items.items()
     })
 
-# ❌ Вызовы по одному снижают эффективность
+# ❌ Многократные вызовы менее эффективны
 def cache_multiple_items(self, items):
     for k, v in items.items():
         self.sdk.storage.set(f"item:{k}", v)
@@ -3416,33 +3416,33 @@ def cache_multiple_items(self, items):
 ### 1. Разумное использование уровней логирования
 
 ```python
-# DEBUG: Подробная отладочная информация (только в режиме разработки)
-self.logger.debug(f"Входные параметры: {params}")
+# DEBUG: Подробная отладочная информация (только в разработке)
+self.logger.debug(f"Параметры ввода: {params}")
 
 # INFO: Информация о нормальной работе
 self.logger.info("Модуль загружен")
 self.logger.info(f"Обработка запроса: {request_id}")
 
 # WARNING: Предупреждения, не влияющие на основную функциональность
-self.logger.warning(f"Параметр конфигурации {key} не задан, используется значение по умолчанию")
-self.logger.warning("API-ответ медленный, возможно, требуется оптимизация")
+self.logger.warning(f"Параметр {key} не задан, используется значение по умолчанию")
+self.logger.warning("API отвечает медленно, возможно, нужно оптимизировать")
 
 # ERROR: Ошибки
-self.logger.error(f"Ошибка запроса API: {e}")
+self.logger.error(f"Ошибка API: {e}")
 self.logger.error(f"Ошибка обработки события: {e}", exc_info=True)
 
 # CRITICAL: Критические ошибки, требующие немедленного вмешательства
-self.logger.critical("Не удалось подключиться к базе данных, бот не может нормально работать")
+self.logger.critical("Ошибка подключения к базе данных, робот не может нормально работать")
 ```
 
 ### 2. Структурированное логирование
 
 ```python
-# Использование структурированного логирования для удобства анализа
+# Использование структурированного логирования для упрощения анализа
 self.logger.info(f"Обработка запроса: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
 # ❌ Использование неструктурированного логирования
-self.logger.info(f"Запрос обработан, от пользователя {user_id}, затрачено {duration} миллисекунд")
+self.logger.info(f"Обработка запроса, от пользователя {user_id}, заняло {duration} миллисекунд")
 ```
 
 ## Оптимизация производительности
@@ -3460,7 +3460,7 @@ class MyModule(BaseModule):
             if key in self._cache:
                 return self._cache[key]
             
-            # Получение данных из базы данных
+            # Получение из базы данных
             data = await self._fetch_from_db(key)
             
             # Кэширование данных
@@ -3487,7 +3487,7 @@ async def process_message(self, event: Event):
 ### 1. Защита конфиденциальных данных
 
 ```python
-# Конфиденциальные данные хранятся в конфигурации (декларативный ConfigClass, поле secret не попадает в логи/экспорт)
+# Конфиденциальные данные хранятся в конфигурации (декларативный ConfigClass, поля с secret не попадают в логи/экспорт)
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
@@ -3495,7 +3495,7 @@ from ErisPulse.Core.Bases import BaseModule, BaseConfig
 class MyModuleConfig(BaseConfig):
     api_key: str = field(
         default="",
-        metadata={"description": "API-ключ", "secret": True},
+        metadata={"description": "Ключ API", "secret": True},
     )
 
 class MyModule(BaseModule):
@@ -3503,23 +3503,23 @@ class MyModule(BaseModule):
 
     def check_api_key(self):
         if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("Пожалуйста, настройте действительный API-ключ в config.toml")
+            raise ValueError("Укажите действительный ключ API в config.toml")
 
-# ❌ Конфиденциальные данные жестко закодированы
+# ❌ Конфиденциальные данные в коде
 class MyModule(BaseModule):
     API_KEY = "sk-1234567890"  # Не делайте так!
 ```
 
-### 2. Валидация входных данных
+### 2. Проверка входных данных
 
 ```python
-# Валидация пользовательского ввода
+# Проверка входных данных пользователя
 async def process_command(self, event: Event):
     user_input = event.get_text()
     
     # Проверка длины ввода
     if len(user_input) > 1000:
-        await event.reply("Слишком длинный ввод, пожалуйста, введите снова")
+        await event.reply("Слишком длинный ввод, попробуйте снова")
         return
     
     # Проверка формата ввода
@@ -3530,7 +3530,7 @@ async def process_command(self, event: Event):
 
 ## Тестирование
 
-### 1. Юнит-тесты
+### 1. Модульные тесты
 
 ```python
 import pytest
@@ -3538,7 +3538,7 @@ from ErisPulse.Core.Bases import BaseModule
 
 class TestMyModule:
     def test_config_defaults(self):
-        """Тестирование значений по умолчанию конфигурации"""
+        """Тест значений по умолчанию конфигурации"""
         config = MyModule.ConfigClass()
         assert config.timeout == 30
 ```
@@ -3548,11 +3548,11 @@ class TestMyModule:
 ```python
 @pytest.mark.asyncio
 async def test_command_handling():
-    """Тестирование обработки команд"""
+    """Тест обработки команд"""
     module = MyModule()
     await module.on_load({})
     
-    # Симуляция события команды
+    # Симуляция командного события
     event = create_test_command_event("hello")
     await module.handle_command(event)
 ```
@@ -3567,17 +3567,17 @@ name = "ErisPulse-MyModule"
 version = "1.0.0"
 ```
 
-Следуйте семантической версиировке:
+Соблюдайте семантическое управление версиями:
 - MAJOR.MINOR.PATCH
 - Главная версия: несовместимые изменения API
-- Подверсия: добавление функций, совместимых с предыдущими версиями
-- Ревизия: исправления, совместимые с предыдущими версиями
+- Подверсия: добавление совместимых функций
+- Исправление: исправления совместимых ошибок
 
 ### 2. Заголовок README
 
-README, созданный с помощью `epsdk create`, уже содержит логотип и шапку ErisPulse. Рекомендуется использовать два режима:
+README, созданный с помощью `epsdk create`, уже содержит логотип и шапку ErisPulse. Два рекомендуемых варианта:
 
-**Режим A — только логотип ErisPulse (по умолчанию):**
+**Вариант A — Только логотип ErisPulse (по умолчанию):**
 
 ```markdown
 <div align="center">
@@ -3586,7 +3586,7 @@ README, созданный с помощью `epsdk create`, уже содерж
 
 # MyModule
 
-**Однострочное описание**
+**Одно предложение описания**
 
 <p>
   <a href="https://pypi.org/project/ErisPulse-MyModule/"><img src="https://img.shields.io/pypi/v/ErisPulse-MyModule?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -3598,7 +3598,7 @@ README, созданный с помощью `epsdk create`, уже содерж
 </div>
 ```
 
-**Режим B — иконка модуля × логотип ErisPulse (если есть пользовательская иконка):**
+**Вариант B — Иконка модуля × Логотип ErisPulse (если есть пользовательская иконка):**
 
 ```markdown
 <div align="center">
@@ -3608,11 +3608,11 @@ README, созданный с помощью `epsdk create`, уже содерж
 <img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
 
 # MyModule
-(Строки с бейджами аналогичны выше)
+(Та же строка с шаблонами)
 </div>
 ```
 
-Можно дополнительно добавить бейджи для GitHub Stars, Downloads и т.д. Логотип также можно загрузить в проект локально (`.github/assets/ErisPulseLogo.png`) и использовать относительный путь для ссылки.
+Можно дополнительно добавить шаблоны GitHub Stars, Downloads и т.д. Логотип можно также загрузить в проект локально (`.github/assets/ErisPulseLogo.png`) и использовать относительный путь.
 
 
 
@@ -8406,9 +8406,9 @@ if sdk.lifecycle.has_handlers("message.sending"):
 - Проверка охватывает три типа совпадений: точное имя события, шаблон `*`, родительские события
 - Возвращает `False`, если слушателей нет, что позволяет безопасно пропустить `emit`
 
-## Список точек останова хуков
+## Обзор точек остановки хука
 
-Типичный цикл событий жизненного цикла сообщения от платформы до завершения обработки:
+Типичный порядок событий жизненного цикла сообщения от платформы до завершения обработки в рамках фреймворка:
 
 ```mermaid
 sequenceDiagram
@@ -8417,35 +8417,44 @@ sequenceDiagram
     participant F as Ядро фреймворка
     participant M as Обработчик модуля
 
-    P->>A: Прибытие оригинального события
-    A->>F: adapter.event.receive (самая ранняя точка)
+    P->>A: Прибытие исходного события
+    A->>F: adapter.event.receive (самый ранний)
     F->>F: event.pre_process (перед выполнением обработчика)
-    F->>M: Диспетчеризация к обработчику (команды/сообщения/уведомления и т.д.)
+    F->>M: Распределение к обработчику (команды/сообщения/уведомления и т.д.)
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending (перед отправкой)
     F->>A: SendDSL отправка
     A->>P: Отправка на платформу
     A->>F: message.sent (отправка завершена)
-    F->>F: adapter.event.dispatched (диспетчеризация завершена)
+    F->>F: adapter.event.dispatched (распределение завершено)
 ```
 
-Фреймворк содержит следующие встроенные точки останова хуков, пользователь может прослушивать любую точку останова с помощью `@sdk.lifecycle.on()` для реализации пользовательской логики.
+Фреймворк содержит следующие точки остановки хука, которые пользователи могут прослушивать с помощью `@sdk.lifecycle.on()` для реализации пользовательской логики.
 
-### Основная инициализация
+### Ядро инициализации
 
-| Имя хука | Точка срабатывания | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
 | `core.init.start` | Начало инициализации SDK | `{}` |
-| `core.init.complete` | Завершение инициализации SDK | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str (только при сбое)}` |
-| `core.uninit.complete` | Завершение обратной инициализации SDK | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str (только при сбое)}` |
+| `core.init.stage` | Начало этапа инициализации (выдается в фоновом режиме) | `{"stage": str}`, значения: `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
+| `core.init.complete` | Завершение инициализации SDK | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str (только при неудаче)}` |
+| `core.uninit.complete` | Завершение обратной инициализации SDK | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str (только при неудаче)}` |
 
-### Изменения конфигурации
+**Пример: отображение прогресса запуска**
 
-| Имя хука | Точка срабатывания | Данные |
+```python
+@sdk.lifecycle.on("core.init.stage")
+def show_stage(data):
+    print(f"[Запуск] Вход в этап: {data['stage']}")
+```
+
+### Изменение конфигурации
+
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
-| `config.set` | Изменение конфигурационного параметра | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | Обнаружено изменение всей конфигурации после внешнего редактирования config.toml | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.set` | Изменение параметра конфигурации | `{"key": str, "old_value": Any, "new_value": Any}` |
+| `config.updated` | Обнаружено изменение всей конфигурации после редактирования config.toml | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
 **Пример: аудит конфигурации**
 
@@ -8457,20 +8466,21 @@ def audit_config(data):
 
 ### Жизненный цикл модуля
 
-| Имя хука | Точка срабатывания | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
 | `module.register` | Регистрация класса модуля в менеджере | `{"module_name": str, "success": bool}` |
 | `module.load` | Завершение загрузки модуля (успешное инстанцирование) | `{"module_name": str, "success": bool}` |
 | `module.init` | Завершение инициализации модуля (включая ленивую загрузку) | `{"module_name": str, "success": bool}` |
 | `module.unload` | Выгрузка модуля | `{"module_name": str, "success": bool}` |
+| `module.reload` | Завершение горячей перезагрузки модуля (включая перезагрузку зависимостей) | `{"module_name": str, "success": bool}` |
 
 ### Жизненный цикл адаптера
 
-| Имя хука | Точка срабатывания | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
 | `adapter.load` | Завершение регистрации адаптера | `{"platform": str, "success": bool}` |
 | `adapter.start` | Запуск адаптера | `{"platforms": [str]}` |
-| `adapter.status.change` | Изменение статуса адаптера | `{"platform": str, "status": str, "retry_count": int, "error": str (только при сбое)}` |
+| `adapter.status.change` | Изменение состояния адаптера | `{"platform": str, "status": str, "retry_count": int, "error": str (только при неудаче)}` |
 | `adapter.stop` | Остановка адаптера | `{"platforms": [str]}` |
 | `adapter.stopped` | Завершение остановки адаптера | `{"platforms": [str]}` |
 | `adapter.bot.online` | Онлайн бота | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
@@ -8478,10 +8488,10 @@ def audit_config(data):
 
 ### Прием и обработка событий
 
-| Имя хука | Точка срабатывания | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
-| `adapter.event.receive` | Получение события с внешней платформы (самая ранняя точка) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
-| `adapter.event.dispatched` | Завершение диспетчеризации события | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
+| `adapter.event.receive` | Получение внешнего события платформы (самый ранний) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.dispatched` | Завершение распределения события | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
 | `event.pre_process` | Начало выполнения обработчика события | `{"event_type": str, "platform": str, "detail_type": str}` |
 
 **Пример: статистика событий**
@@ -8502,9 +8512,9 @@ def log_unhandled(data):
 
 ### Отправка сообщений
 
-| Имя хука | Точка срабатывания | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
-| `message.sending` | Сообщение отправляется | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sending` | Сообщение готовится к отправке | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 | `message.sent` | Сообщение отправлено | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
 **Пример: аудит отправки сообщений**
@@ -8517,10 +8527,10 @@ def log_sending(data):
 
 ### Командная система
 
-| Имя хука | Точка срабатывания | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
-| `command.matched` | Команда совпала и готова к исполнению | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
-| `command.executed` | Команда выполнена | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str (только при сбое)}` |
+| `command.matched` | Команда сопоставлена и готова к выполнению | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
+| `command.executed` | Команда выполнена | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str (только при неудаче)}` |
 
 **Пример: статистика команд**
 
@@ -8530,9 +8540,9 @@ def count_commands(data):
     print(f"[Команда] /{data['command']} от {data['user_id']}@{data['platform']}")
 ```
 
-### HTTP маршрутизация
+### HTTP-маршрутизация
 
-| Имя хука | Точка срабатывания | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
 | `server.request` | Получение HTTP-запроса | `{"method": str, "path": str, "client_ip": str}` |
 | `server.response` | Отправка HTTP-ответа | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
@@ -8547,10 +8557,10 @@ def log_http(data):
 
 ### WebSocket
 
-| Имя хука | Точка срабатывания | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
-| `server.start` | Запуск сервера маршрутизации | `{"base_url": str, "host": str, "port": int}` |
-| `server.stop` | Остановка сервера маршрутизации | `{}` |
+| `server.start` | Запуск маршрутизатора сервера | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str (только при неудаче)}` |
+| `server.stop` | Остановка маршрутизатора сервера | `{}` |
 | `server.websocket.connect` | Установление WebSocket-соединения | `{"path": str, "module_name": str, "client_ip": str}` |
 | `server.websocket.disconnect` | Разрыв WebSocket-соединения | `{"path": str, "module_name": str, "reason": str, "error": str (только при аномалии)}` |
 
@@ -8566,12 +8576,50 @@ def on_ws_disconnect(data):
     print(f"[WS] Отключение: {data['path']} ({data['reason']})")
 ```
 
-## Стандартные определения событий
+### Состояние подключения к хранилищу
+
+Создание, сбой и восстановление пула подключений к хранилищу (все события происходят в фоновом режиме, не блокируют операции хранилища):
+
+| Имя хука | Точка остановки | Данные |
+|---------|---------|------|
+| `storage.ready` | Пул подключений к хранилищу готов (первое успешное создание пула в каждом цикле событий) | `{"backend": str}` |
+| `storage.unreachable` | Повторные попытки подключения исчерпаны, вступает период охлаждения (в течение которого операции завершаются мгновенно с ошибкой) | `{"backend": str, "error": str, "cooldown": float}` |
+| `storage.recovered` | Период охлаждения завершен, повторное подключение успешно, хранилище снова доступно | `{"backend": str}` |
+
+**Пример: оповещение о сбое хранилища**
 
 ```python
-STANDARD_EVENTS = {
-    "core": ["init.start", "init.complete", "uninit.complete"],
-    "module": ["load", "init", "unload", "register"],
+@sdk.lifecycle.on("storage.unreachable")
+def alert_storage_down(data):
+    print(f"[Предупреждение] Хранилище {data['backend']} недоступно: {data['error']}, автоматическое переподключение через {data['cooldown']} секунд")
+
+@sdk.lifecycle.on("storage.recovered")
+def notify_storage_back(data):
+    print(f"[Восстановление] Хранилище {data['backend']} снова доступно")
+```
+
+### HTTP-клиент
+
+События запросов и подключений `sdk.client` (все события происходят в фоновом режиме):
+
+| Имя хука | Точка остановки | Данные |
+|---------|---------|------|
+| `client.request.success` | Успешный HTTP-запрос | `{"method": str, "url": str, "status": int, "elapsed": float}` |
+| `client.request.failed` | HTTP-запрос неудачен после исчерпания попыток повтора | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
+| `client.ws.connect` | Установление WebSocket-соединения | `{"url": str}` |
+
+### Межкультурная локализация
+
+| Имя хука | Точка остановки | Данные |
+|---------|---------|------|
+| `i18n.language.changed` | Смена языка фреймворка (через `i18n.set_language`) | `{"language": str, "previous": str}` |
+
+## Определение стандартных событий
+
+```python
+СТАНДАРТНЫЕ_СОБЫТИЯ = {
+    "core": ["init.start", "init.stage", "init.complete", "uninit.complete"],
+    "module": ["load", "init", "unload", "register", "reload"],
     "adapter": [
         "load", "start", "status.change", "stop", "stopped",
         "event.receive", "event.dispatched",
@@ -8585,35 +8633,39 @@ STANDARD_EVENTS = {
     "event": ["pre_process"],
     "message": ["sending", "sent"],
     "command": ["matched", "executed"],
-    "config": ["set"],
+    "config": ["set", "updated"],
+    "storage": ["ready", "unreachable", "recovered"],
+    "client": ["request.success", "request.failed", "ws.connect"],
+    "i18n": ["language.changed"],
 }
 ```
 
-## Полная справочная информация по API
+## Полная справочная документация API
 
 ### Регистрация и отмена
 
 | Метод | Описание |
-|-------|----------|
+|------|------|
 | `@lifecycle.on(event, *, priority=0)` | Декоратор для регистрации обработчика |
 | `lifecycle.register(event, handler, *, priority=0)` | Программная регистрация |
-| `lifecycle.unregister(event, handler=None)` | Отмена регистрации (при handler=None отменяются все обработчики события) |
+| `lifecycle.unregister(event, handler=None)` | Отмена регистрации (если `handler=None`, отменяются все обработчики события) |
 
 ### Вызов
 
 | Метод | Описание |
-|-------|----------|
-| `await lifecycle.emit(event, data=None, *, to=None)` | Асинхронный вызов, возвращаемое значение обработчиком может изменить data; при указании `to` событие направляется владельцу |
-| `lifecycle.emit_sync(event, data=None, *, to=None)` | Синхронный вызов, асинхронные обработчики запускаются через create_task |
-| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None)` | Совместимость со старыми версиями, автоматическое построение стандартного формата события |
+|------|------|
+| `await lifecycle.emit(event, data=None, *, to=None)` | Асинхронный вызов, обработчики выполняются **параллельно** (не блокируются друг другом, возвращаются, когда все завершены), возвращаемые значения не None возвращаются по приоритету в виде цепочки замены `data`; `to` указывает `owner` для направленной доставки |
+| `lifecycle.fire(event, data=None, *, to=None)` | **Фоновый вызов (бросил в ведро и ушел)**: обработчики выполняются в фоновых задачах параллельно, без ожидания, без возвращаемого значения; при отсутствии слушателей нулевые накладные расходы. Подходит для частых горячих путей и чисто наблюдаемых событий; для последовательных и чувствительных к порядку потребителей (например, `config.set`) используйте `emit` |
+| `lifecycle.emit_sync(event, data=None, *, to=None)` | Синхронный вызов, асинхронные обработчики планируются с помощью `create_task` |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | Совместимость со старой версией, автоматически строит стандартный формат события; при `background=True` используется фоновый вызов `fire` |
 
-### Утилиты
+### Инструменты
 
 | Метод | Описание |
-|-------|----------|
+|------|------|
 | `lifecycle.start_timer(timer_id)` | Начать отсчет времени |
 | `lifecycle.get_duration(timer_id)` | Получить прошедшее время (в секундах) |
-| `lifecycle.stop_timer(timer_id)` | Остановить отсчет и вернуть прошедшее время |
+| `lifecycle.stop_timer(timer_id)` | Остановить отсчет времени и вернуть прошедшее время |
 | `lifecycle.list_hooks()` | Вывести список всех зарегистрированных хуков и количество обработчиков |
 | `lifecycle.clear()` | Очистить все обработчики и таймеры |
 

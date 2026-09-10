@@ -34,13 +34,17 @@ ErisPulse 基础异常
 所有 HTTP/WS 客户端请求相关的异常基类。
 可用于统一捕获所有客户端错误。
 
+:attribute url: 请求 URL（构建异常时提供则非空）
+:attribute method: 请求方法（GET / POST 等，构建异常时提供则非空）
+:attribute attempts: 已尝试的请求次数（重试耗尽时提供）
+
 **示例**:
 ```python
 >>> from ErisPulse.Core.Bases.errors import ClientError
 >>> try:
 ...     resp = await sdk.client.get("https://example.com")
 ... except ClientError as e:
-...     print(f"请求失败: {e}")
+...     print(f"请求失败: {e} url={e.url}")
 ```
 
 
@@ -113,6 +117,13 @@ WebSocket 连接、通信相关的异常。
 后端连接池创建在自动重试耗尽后仍失败（数据库不可达 / 凭据错误 /
 网络隔离等）。框架保持运行，存储操作在冷却期内快速失败并自动重连。
 
+连接状态变化的运行时感知推荐订阅生命周期事件
+``storage.unreachable`` / ``storage.recovered``（本异常主要供
+直接操作存储底层的场景捕获）。
+
+:attribute backend: 存储后端名（sqlite / mysql / postgres）
+:attribute cooldown: 冷却时长（秒，进入冷却时提供）
+
 
 ### `class InteractionError(ErisPulseError)`
 
@@ -161,6 +172,8 @@ WebSocket 连接、通信相关的异常。
 
 目标方法在超时时限内未返回时抛出。
 
+:attribute timeout: 超时时限（秒）
+
 
 ### `class WebSocketDisconnect(WebSocketError)`
 
@@ -180,4 +193,36 @@ WebSocket 断开连接异常
 ... except WebSocketDisconnect as e:
 ...     print(f"断开: code={e.code}, reason={e.reason}")
 ```
+
+
+### `class InteractionCancelled(InteractionError)`
+
+交互会话被取消
+
+挂起的 ``wait_reply`` / 租约因非超时原因终止时设置到 future 上，
+等待方可捕获本异常获取原因；上层 ``wait_reply`` 将其转换为返回 None。
+
+:attribute reason: 取消原因（conflict / owner_unload / platform_stop / revoked / cancelled / cleared）
+:attribute wait_key: 关联的会话键
+
+
+### `class SessionOccupiedError(InteractionError)`
+
+会话已被其他模块占用
+
+:meth:`InteractionManager.hold` 获取互斥租约失败时抛出。
+
+:attribute wait_key: 会话键
+:attribute owner: 当前占用者（模块名 / 平台名，未知时为 None）
+
+
+### `class StrictModeError(ErisPulseError)`
+
+严格模式致命错误
+
+当严格模式级别为 2（致命）且检测到违规时，在检查点抛出此异常，
+用于中止整个启动流程。
+
+> **提示**
+> 此异常不应被加载器捕获吞掉，应向上传播至初始化协调器
 

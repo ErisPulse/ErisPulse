@@ -3356,6 +3356,8 @@ class MyToolModule(BaseModule):
 ### 1. 分类异常处理
 
 ```python
+from ErisPulse.Core.Bases.errors import ClientError
+
 async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
@@ -3363,10 +3365,9 @@ async def handle_event(self, event: Event):
         # 预期的业务错误
         self.logger.warning(f"业务警告: {e}")
         await event.reply(f"参数错误: {e}")
-    except aiohttp.ClientError as e:
-        # 网络错误（推荐使用 sdk.client + ClientError 替代）
-        # 旧代码直接用 aiohttp 仍可正常工作，但新代码推荐使用 ErisPulse 异常体系
-        self.logger.error(f"网络错误: {e}")
+    except ClientError as e:
+        # 网络错误（sdk.client 的底层 aiohttp 异常已自动转换）
+        self.logger.error(f"网络错误 {e.method} {e.url}: {e}")
         await event.reply("网络请求失败，请稍后重试")
     except Exception as e:
         # 未预期的错误
@@ -8498,8 +8499,17 @@ sequenceDiagram
 | 钩子名称 | 触发时机 | 数据 |
 |---------|---------|------|
 | `core.init.start` | SDK 初始化开始 | `{}` |
-| `core.init.complete` | SDK 初始化完成 | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(仅失败时)}` |
+| `core.init.stage` | 初始化各阶段开始（后台发射） | `{"stage": str}`，取值 `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
+| `core.init.complete` | SDK 初始化完成 | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(仅失败时)}` |
 | `core.uninit.complete` | SDK 反初始化完成 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(仅失败时)}` |
+
+**示例：启动进度展示**
+
+```python
+@sdk.lifecycle.on("core.init.stage")
+def show_stage(data):
+    print(f"[启动] 进入阶段: {data['stage']}")
+```
 
 ### 配置变更
 
@@ -8524,6 +8534,7 @@ def audit_config(data):
 | `module.load` | 模块加载完成（实例化成功） | `{"module_name": str, "success": bool}` |
 | `module.init` | 模块初始化完毕（含懒加载） | `{"module_name": str, "success": bool}` |
 | `module.unload` | 模块卸载 | `{"module_name": str, "success": bool}` |
+| `module.reload` | 模块热重载完成（含级联重载依赖者） | `{"module_name": str, "success": bool}` |
 
 ### 适配器生命周期
 
@@ -8610,7 +8621,7 @@ def log_http(data):
 
 | 钩子名称 | 触发时机 | 数据 |
 |---------|---------|------|
-| `server.start` | 路由服务器启动 | `{"base_url": str, "host": str, "port": int}` |
+| `server.start` | 路由服务器启动 | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str(仅失败时)}` |
 | `server.stop` | 路由服务器停止 | `{}` |
 | `server.websocket.connect` | WebSocket 连接建立 | `{"path": str, "module_name": str, "client_ip": str}` |
 | `server.websocket.disconnect` | WebSocket 连接断开 | `{"path": str, "module_name": str, "reason": str, "error": str(仅异常时)}` |
@@ -8627,12 +8638,50 @@ def on_ws_disconnect(data):
     print(f"[WS] 断开: {data['path']} ({data['reason']})")
 ```
 
+### 存储连接状态
+
+存储后端连接池的建立、故障与恢复（均后台发射，不阻塞存储操作）：
+
+| 钩子名称 | 触发时机 | 数据 |
+|---------|---------|------|
+| `storage.ready` | 存储后端连接池就绪（每事件循环首次建池成功） | `{"backend": str}` |
+| `storage.unreachable` | 连接重试耗尽进入冷却期（期间操作快速失败） | `{"backend": str, "error": str, "cooldown": float}` |
+| `storage.recovered` | 冷却结束重连成功，存储恢复可用 | `{"backend": str}` |
+
+**示例：存储故障告警**
+
+```python
+@sdk.lifecycle.on("storage.unreachable")
+def alert_storage_down(data):
+    print(f"[告警] 存储后端 {data['backend']} 不可达: {data['error']}，{data['cooldown']}s 后自动重连")
+
+@sdk.lifecycle.on("storage.recovered")
+def notify_storage_back(data):
+    print(f"[恢复] 存储后端 {data['backend']} 已恢复可用")
+```
+
+### HTTP 客户端
+
+`sdk.client` 的请求与连接事件（均后台发射）：
+
+| 钩子名称 | 触发时机 | 数据 |
+|---------|---------|------|
+| `client.request.success` | HTTP 请求成功 | `{"method": str, "url": str, "status": int, "elapsed": float}` |
+| `client.request.failed` | HTTP 请求重试耗尽最终失败 | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
+| `client.ws.connect` | WebSocket 连接建立 | `{"url": str}` |
+
+### 国际化
+
+| 钩子名称 | 触发时机 | 数据 |
+|---------|---------|------|
+| `i18n.language.changed` | 框架语言切换（`i18n.set_language`） | `{"language": str, "previous": str}` |
+
 ## 标准事件定义
 
 ```python
 STANDARD_EVENTS = {
-    "core": ["init.start", "init.complete", "uninit.complete"],
-    "module": ["load", "init", "unload", "register"],
+    "core": ["init.start", "init.stage", "init.complete", "uninit.complete"],
+    "module": ["load", "init", "unload", "register", "reload"],
     "adapter": [
         "load", "start", "status.change", "stop", "stopped",
         "event.receive", "event.dispatched",
@@ -8646,7 +8695,10 @@ STANDARD_EVENTS = {
     "event": ["pre_process"],
     "message": ["sending", "sent"],
     "command": ["matched", "executed"],
-    "config": ["set"],
+    "config": ["set", "updated"],
+    "storage": ["ready", "unreachable", "recovered"],
+    "client": ["request.success", "request.failed", "ws.connect"],
+    "i18n": ["language.changed"],
 }
 ```
 
@@ -8664,9 +8716,10 @@ STANDARD_EVENTS = {
 
 | 方法 | 说明 |
 |------|------|
-| `await lifecycle.emit(event, data=None, *, to=None)` | 异步触发，处理器返回非 None 可修改 data；`to` 指定 owner 时定向投递 |
+| `await lifecycle.emit(event, data=None, *, to=None)` | 异步触发，处理器**并行执行**（互不阻塞，返回时全部完成），返回非 None 值按优先级顺序回放链式替换 data；`to` 指定 owner 时定向投递 |
+| `lifecycle.fire(event, data=None, *, to=None)` | **后台发射（扔桶即走）**：处理器在后台任务中并行执行、不等待、无返回值；无监听者时零开销。适用于高频热路径与纯观测事件；关停序列与顺序敏感消费（如 `config.set`）请用 `emit` |
 | `lifecycle.emit_sync(event, data=None, *, to=None)` | 同步触发，异步处理器以 create_task 调度 |
-| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None)` | 兼容旧版，自动构建标准事件格式 |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 兼容旧版，自动构建标准事件格式；`background=True` 时走 `fire` 后台发射 |
 
 ### 工具
 

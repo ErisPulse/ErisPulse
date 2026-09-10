@@ -22,7 +22,7 @@
 - **模块总数**: 114
 - **类总数**: 149（包括 5 个嵌套类）
 - **函数总数**: 250
-- **方法总数**: 1399
+- **方法总数**: 1403
 
 ---
 
@@ -226,7 +226,7 @@
 
 ### [ErisPulse.Core.Bases.errors](ErisPulse/Core/Bases/errors.md)
 
-15 个类
+18 个类
 
 
 ### [ErisPulse.Core.Bases.i18n_schema](ErisPulse/Core/Bases/i18n_schema.md)
@@ -236,7 +236,7 @@
 
 ### [ErisPulse.Core.Bases.kv_builder](ErisPulse/Core/Bases/kv_builder.md)
 
-1 个类 | 9 个方法
+1 个类 | 10 个方法
 
 
 ### [ErisPulse.Core.Bases.manager](ErisPulse/Core/Bases/manager.md)
@@ -266,7 +266,7 @@
 
 ### [ErisPulse.Core.Bases.sql_base](ErisPulse/Core/Bases/sql_base.md)
 
-5 个类 | 66 个方法 | 3 个函数
+5 个类 | 67 个方法 | 3 个函数
 
 
 ### [ErisPulse.Core.Bases.storage](ErisPulse/Core/Bases/storage.md)
@@ -296,7 +296,7 @@
 
 ### [ErisPulse.Core.Event.interaction](ErisPulse/Core/Event/interaction.md)
 
-7 个类 | 32 个方法
+5 个类 | 32 个方法
 
 
 ### [ErisPulse.Core.Event.message](ErisPulse/Core/Event/message.md)
@@ -371,7 +371,7 @@
 
 ### [ErisPulse.Core.i18n.__init__](ErisPulse/Core/i18n/__init__.md)
 
-1 个类 | 20 个方法
+1 个类 | 21 个方法
 
 
 ### [ErisPulse.Core.i18n.constants](ErisPulse/Core/i18n/constants.md)
@@ -411,7 +411,7 @@
 
 ### [ErisPulse.Core.lifecycle](ErisPulse/Core/lifecycle.md)
 
-2 个类 | 17 个方法 | 1 个函数
+2 个类 | 18 个方法 | 1 个函数
 
 
 ### [ErisPulse.Core.logger](ErisPulse/Core/logger.md)
@@ -531,7 +531,7 @@
 
 ### [ErisPulse.loaders.strict](ErisPulse/loaders/strict.md)
 
-4 个类 | 10 个方法
+3 个类 | 10 个方法
 
 
 ### [ErisPulse.runtime.__init__](ErisPulse/runtime/__init__.md)

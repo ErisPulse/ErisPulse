@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1567,
+  "total_keywords": 1572,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -195,7 +195,7 @@
     "1. Protection of Sensitive Data": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 414,
+        "line": 415,
         "level": 3,
         "title": "1. Protection of Sensitive Data"
       }
@@ -203,7 +203,7 @@
     "1. Reasonable Use of Log Levels": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 343,
+        "line": 344,
         "level": 3,
         "title": "1. Reasonable Use of Log Levels"
       }
@@ -273,7 +273,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 460,
+        "line": 461,
         "level": 3,
         "title": "1. Unit Tests"
       }
@@ -289,7 +289,7 @@
     "1. Use Caching": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 377,
+        "line": 378,
         "level": 3,
         "title": "1. Use Caching"
       }
@@ -305,7 +305,7 @@
     "1. Use Transactions": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 310,
+        "line": 311,
         "level": 3,
         "title": "1. Use Transactions"
       }
@@ -321,7 +321,7 @@
     "1. Version Management": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 489,
+        "line": 490,
         "level": 3,
         "title": "1. Version Management"
       }
@@ -505,7 +505,7 @@
     "2. Avoid Blocking Operations": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 398,
+        "line": 399,
         "level": 3,
         "title": "2. Avoid Blocking Operations"
       }
@@ -521,7 +521,7 @@
     "2. Batch Operations": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 326,
+        "line": 327,
         "level": 3,
         "title": "2. Batch Operations"
       }
@@ -593,7 +593,7 @@
     "2. Input Validation": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 440,
+        "line": 441,
         "level": 3,
         "title": "2. Input Validation"
       }
@@ -607,7 +607,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 473,
+        "line": 474,
         "level": 3,
         "title": "2. Integration Tests"
       }
@@ -669,7 +669,7 @@
     "2. README Header": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 503,
+        "line": 504,
         "level": 3,
         "title": "2. README Header"
       }
@@ -773,7 +773,7 @@
     "2. Structured Logging": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 365,
+        "line": 366,
         "level": 3,
         "title": "2. Structured Logging"
       }
@@ -797,7 +797,7 @@
     "2. Timeout Handling": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 292,
+        "line": 293,
         "level": 3,
         "title": "2. Timeout Handling"
       }
@@ -2569,7 +2569,7 @@
     "Adapter Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 171,
+        "line": 182,
         "level": 3,
         "title": "Adapter Lifecycle"
       }
@@ -2985,7 +2985,7 @@
     "Background Task Ownership and Automatic Cancellation": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 351,
+        "line": 404,
         "level": 2,
         "title": "Background Task Ownership and Automatic Cancellation"
       }
@@ -3382,14 +3382,6 @@
         "line": 441,
         "level": 2,
         "title": "Best Practices"
-      }
-    ],
-    "Best Practices for Module Development": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 1,
-        "level": 1,
-        "title": "Best Practices for Module Development"
       }
     ],
     "Binding Inheritance (merge)": [
@@ -3815,7 +3807,7 @@
     "Client Series — `Core/client.py` / `Core/Bases/client.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 34,
+        "line": 61,
         "level": 3,
         "title": "Client Series — `Core/client.py` / `Core/Bases/client.py`"
       }
@@ -4019,7 +4011,7 @@
     "Command System": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 222,
+        "line": 233,
         "level": 3,
         "title": "Command System"
       }
@@ -4137,7 +4129,7 @@
     "Complete API Reference": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 296,
+        "line": 348,
         "level": 2,
         "title": "Complete API Reference"
       }
@@ -4271,7 +4263,7 @@
     "Configuration Changes": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 147,
+        "line": 157,
         "level": 3,
         "title": "Configuration Changes"
       }
@@ -4793,7 +4785,7 @@
     "Core Initialization": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 139,
+        "line": 140,
         "level": 3,
         "title": "Core Initialization"
       }
@@ -5159,7 +5151,7 @@
     "Deployment": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 487,
+        "line": 488,
         "level": 2,
         "title": "Deployment"
       }
@@ -5298,6 +5290,14 @@
         "line": 134,
         "level": 2,
         "title": "Directed Events: lifecycle.emit's to parameter"
+      }
+    ],
+    "Directed Propagation (emit to=)": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 63,
+        "level": 3,
+        "title": "Directed Propagation (emit to=)"
       }
     ],
     "Directory Structure": [
@@ -6063,7 +6063,7 @@
     "Event Reception and Processing": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 183,
+        "line": 194,
         "level": 3,
         "title": "Event Reception and Processing"
       }
@@ -6206,14 +6206,6 @@
         "title": "Example"
       }
     ],
-    "Example Usage in a Module": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 324,
-        "level": 2,
-        "title": "Example Usage in a Module"
-      }
-    ],
     "Example of Return Value Handling": [
       {
         "document": "advanced/sql-builder.md",
@@ -6225,7 +6217,7 @@
     "Exception Descriptions and Occurrence Locations": [
       {
         "document": "advanced/errors.md",
-        "line": 32,
+        "line": 59,
         "level": 2,
         "title": "Exception Descriptions and Occurrence Locations"
       }
@@ -6242,14 +6234,6 @@
         "line": 364,
         "level": 3,
         "title": "Exception Handling"
-      }
-    ],
-    "Exception Handling Recommendations": [
-      {
-        "document": "advanced/errors.md",
-        "line": 107,
-        "level": 2,
-        "title": "Exception Handling Recommendations"
       }
     ],
     "Exception Hierarchy": [
@@ -6673,7 +6657,7 @@
     "Framework Internal Parameter Validation (ValueError)": [
       {
         "document": "advanced/errors.md",
-        "line": 103,
+        "line": 140,
         "level": 3,
         "title": "Framework Internal Parameter Validation (ValueError)"
       }
@@ -7004,6 +6988,14 @@
         "title": "Guild Message Segments"
       }
     ],
+    "HTTP Client": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 306,
+        "level": 3,
+        "title": "HTTP Client"
+      }
+    ],
     "HTTP Client Module": [
       {
         "document": "api-reference/core-modules.md",
@@ -7047,7 +7039,7 @@
     "HTTP Routing": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 237,
+        "line": 248,
         "level": 3,
         "title": "HTTP Routing"
       }
@@ -7164,6 +7156,14 @@
         "title": "Handling Reaction Events"
       }
     ],
+    "Handling Recommendations": [
+      {
+        "document": "advanced/errors.md",
+        "line": 146,
+        "level": 2,
+        "title": "Handling Recommendations"
+      }
+    ],
     "Handling Shortcut Menu Events": [
       {
         "document": "platform-guide/yunhu.md",
@@ -7235,7 +7235,7 @@
     "Hook Breakpoint Overview": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 113,
+        "line": 114,
         "level": 2,
         "title": "Hook Breakpoint Overview"
       }
@@ -7645,7 +7645,7 @@
     "Interaction — `Core/Event/interaction.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 72,
+        "line": 99,
         "level": 3,
         "title": "Interaction — `Core/Event/interaction.py`"
       }
@@ -7718,6 +7718,14 @@
         "line": 570,
         "level": 2,
         "title": "Internal Decomposition of the Send Chain"
+      }
+    ],
+    "Internationalization": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 316,
+        "level": 3,
+        "title": "Internationalization"
       }
     ],
     "Internationalization (i18n) System": [
@@ -7943,7 +7951,7 @@
     "Listener Query (has_handlers)": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 101,
+        "line": 102,
         "level": 3,
         "title": "Listener Query (has_handlers)"
       }
@@ -8099,7 +8107,7 @@
     "Logging": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 341,
+        "line": 342,
         "level": 2,
         "title": "Logging"
       },
@@ -8553,7 +8561,7 @@
     "Message Sending": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 207,
+        "line": 218,
         "level": 3,
         "title": "Message Sending"
       }
@@ -8928,6 +8936,14 @@
         "title": "Module Development"
       }
     ],
+    "Module Development Best Practices": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 1,
+        "level": 1,
+        "title": "Module Development Best Practices"
+      }
+    ],
     "Module Discovery Mechanism": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -8947,7 +8963,7 @@
     "Module Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 162,
+        "line": 172,
         "level": 3,
         "title": "Module Lifecycle"
       },
@@ -8999,9 +9015,17 @@
     "Module Series — `Core/module.py` (`sdk.module.call`)": [
       {
         "document": "advanced/errors.md",
-        "line": 82,
+        "line": 111,
         "level": 3,
         "title": "Module Series — `Core/module.py` (`sdk.module.call`)"
+      }
+    ],
+    "Module Usage Example": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 377,
+        "level": 2,
+        "title": "Module Usage Example"
       }
     ],
     "Module-Level Control": [
@@ -9329,7 +9353,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 382,
+        "line": 435,
         "level": 2,
         "title": "Notes"
       },
@@ -9463,7 +9487,7 @@
     "One-Time Registration (once)": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 87,
+        "line": 88,
         "level": 3,
         "title": "One-Time Registration (once)"
       }
@@ -9789,7 +9813,7 @@
     "Performance Optimization": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 375,
+        "line": 376,
         "level": 2,
         "title": "Performance Optimization"
       }
@@ -10545,7 +10569,7 @@
     "Registration and Unregistration": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 298,
+        "line": 350,
         "level": 3,
         "title": "Registration and Unregistration"
       }
@@ -10565,7 +10589,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 392,
+        "line": 445,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -10649,7 +10673,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 544,
+        "line": 545,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11443,7 +11467,7 @@
     "Security": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 412,
+        "line": 413,
         "level": 2,
         "title": "Security"
       }
@@ -11995,7 +12019,7 @@
     "Standard Event Definitions": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 273,
+        "line": 322,
         "level": 2,
         "title": "Standard Event Definitions"
       }
@@ -12168,6 +12192,14 @@
         "title": "Storage Configuration"
       }
     ],
+    "Storage Connection Status": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 284,
+        "level": 3,
+        "title": "Storage Connection Status"
+      }
+    ],
     "Storage Module": [
       {
         "document": "api-reference/core-modules.md",
@@ -12179,7 +12211,7 @@
     "Storage Series — `Core/storage` / `Core/Bases/sql_base.py`": [
       {
         "document": "advanced/errors.md",
-        "line": 61,
+        "line": 88,
         "level": 3,
         "title": "Storage Series — `Core/storage` / `Core/Bases/sql_base.py`"
       }
@@ -12187,7 +12219,7 @@
     "Storage System": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 308,
+        "line": 309,
         "level": 2,
         "title": "Storage System"
       },
@@ -12204,6 +12236,14 @@
         "line": 370,
         "level": 3,
         "title": "Strict Mode"
+      }
+    ],
+    "Structured Properties": [
+      {
+        "document": "advanced/errors.md",
+        "line": 34,
+        "level": 2,
+        "title": "Structured Properties"
       }
     ],
     "Success Response": [
@@ -12513,7 +12553,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 458,
+        "line": 459,
         "level": 2,
         "title": "Testing"
       }
@@ -12609,7 +12649,7 @@
     "Triggering": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 306,
+        "line": 358,
         "level": 3,
         "title": "Triggering"
       }
@@ -13113,7 +13153,7 @@
     "Utilities": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 314,
+        "line": 367,
         "level": 3,
         "title": "Utilities"
       }
@@ -13132,12 +13172,12 @@
         "title": "Utility Methods"
       }
     ],
-    "Utility Modules: When Hosting Others, You Must Catch \"Unload Notifications\"": [
+    "Utility Modules: Receiving \"Unload Notifications\" When Hosting Other Modules": [
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 232,
         "level": 2,
-        "title": "Utility Modules: When Hosting Others, You Must Catch \"Unload Notifications\""
+        "title": "Utility Modules: Receiving \"Unload Notifications\" When Hosting Other Modules"
       }
     ],
     "V. I Want to Contribute to ErisPulse": [
@@ -13279,7 +13319,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 252,
+        "line": 263,
         "level": 3,
         "title": "WebSocket"
       }
@@ -13353,7 +13393,7 @@
     "WebSocket Series — `Core/client.py` (`send` / `receive`)": [
       {
         "document": "advanced/errors.md",
-        "line": 54,
+        "line": 81,
         "level": 3,
         "title": "WebSocket Series — `Core/client.py` (`send` / `receive`)"
       }

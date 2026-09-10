@@ -42,17 +42,6 @@ ErisPulse 交互会话管理
 ## 类列表
 
 
-### `class InteractionCancelled(InteractionError)`
-
-交互会话被取消
-
-挂起的 ``wait_reply`` / 租约因非超时原因终止时设置到 future 上，
-等待方可捕获本异常获取原因；上层 ``wait_reply`` 将其转换为返回 None。
-
-:attribute reason: 取消原因（conflict / owner_unload / platform_stop / revoked / cancelled / cleared）
-:attribute wait_key: 关联的会话键
-
-
 ### `class _Entry`
 
 > **内部方法** 交互会话条目（等待回复或互斥租约）
@@ -448,11 +437,6 @@ ErisPulse 交互会话管理
 ```
 
 ---
-
-
-### `class SessionOccupiedError(InteractionError)`
-
-会话已被其他模块占用（:meth:`InteractionManager.hold` 获取失败时抛出）
 
 
 ### `class _LeaseContext`

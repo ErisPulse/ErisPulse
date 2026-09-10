@@ -423,7 +423,7 @@
           "icon": "fa-server"
         },
         {
-          "title": "異常體系與捕獲指南",
+          "title": "錯誤體系與捕獲指南",
           "path": "advanced/errors.md",
           "level": 1,
           "icon": "fa-triangle-exclamation"
