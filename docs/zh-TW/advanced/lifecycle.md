@@ -113,21 +113,21 @@ if sdk.lifecycle.has_handlers("message.sending"):
 - 覆蓋**精確事件名、通配符 `*`、父級事件**三種匹配
 - 無任何監聽者時返回 `False`，可安全跳過 `emit`
 
-## 鈎子斷點一覽
+## 鈎子斷點概覽
 
-一條訊息從平台進入框架到處理完成的典型生命週期事件時序：
+一條消息從平台進入框架到處理完成的典型生命周期事件時序：
 
 ```mermaid
 sequenceDiagram
     participant P as 平台
-    participant A as 適配器
+    participant A as 适配器
     participant F as 框架核心
-    participant M as 模組處理器
+    participant M as 模塊處理器
 
     P->>A: 原生事件到達
     A->>F: adapter.event.receive（最早期）
     F->>F: event.pre_process（處理器執行前）
-    F->>M: 分發到處理器（命令/訊息/通知等）
+    F->>M: 分發到處理器（命令/消息/通知等）
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending（發送前）
@@ -137,19 +137,28 @@ sequenceDiagram
     F->>F: adapter.event.dispatched（分發完成）
 ```
 
-框架內建了以下鈎子斷點，使用者可以透過 `@sdk.lifecycle.on()` 監聽任意斷點實現自定義邏輯。
+框架內建了以下鈎子斷點，使用者可以透過 `@sdk.lifecycle.on()` 監聽任意斷點實現自訂邏輯。
 
 ### 核心初始化
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `core.init.start` | SDK 初始化開始 | `{}` |
-| `core.init.complete` | SDK 初始化完成 | `{"duration": float, "success": bool, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(僅失敗時)}` |
+| `core.init.stage` | 初始化各階段開始（背景發射） | `{"stage": str}`，取值 `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
+| `core.init.complete` | SDK 初始化完成 | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(僅失敗時)}` |
 | `core.uninit.complete` | SDK 反初始化完成 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(僅失敗時)}` |
+
+**範例：啟動進度展示**
+
+```python
+@sdk.lifecycle.on("core.init.stage")
+def show_stage(data):
+    print(f"[啟動] 進入階段: {data['stage']}")
+```
 
 ### 配置變更
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `config.set` | 配置項被修改 | `{"key": str, "old_value": Any, "new_value": Any}` |
 | `config.updated` | 外部編輯 config.toml 後檢測到整樹變更 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
@@ -162,30 +171,31 @@ def audit_config(data):
     print(f"[審計] {data['key']}: {data['old_value']} -> {data['new_value']}")
 ```
 
-### 模組生命週期
+### 模塊生命週期
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
-| `module.register` | 模組類註冊到管理器 | `{"module_name": str, "success": bool}` |
-| `module.load` | 模組加載完成（實例化成功） | `{"module_name": str, "success": bool}` |
-| `module.init` | 模組初始化完畢（含懶加載） | `{"module_name": str, "success": bool}` |
-| `module.unload` | 模組卸載 | `{"module_name": str, "success": bool}` |
+| `module.register` | 模塊類註冊到管理器 | `{"module_name": str, "success": bool}` |
+| `module.load` | 模塊載入完成（實例化成功） | `{"module_name": str, "success": bool}` |
+| `module.init` | 模塊初始化完畢（含懶加載） | `{"module_name": str, "success": bool}` |
+| `module.unload` | 模塊卸載 | `{"module_name": str, "success": bool}` |
+| `module.reload` | 模塊熱重載完成（含級聯重載依賴者） | `{"module_name": str, "success": bool}` |
 
-### 適配器生命週期
+### 适配器生命週期
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
-| `adapter.load` | 適配器註冊完成 | `{"platform": str, "success": bool}` |
-| `adapter.start` | 適配器啟動 | `{"platforms": [str]}` |
-| `adapter.status.change` | 適配器狀態變化 | `{"platform": str, "status": str, "retry_count": int, "error": str(僅失敗時)}` |
-| `adapter.stop` | 適配器關閉 | `{"platforms": [str]}` |
-| `adapter.stopped` | 適配器關閉完成 | `{"platforms": [str]}` |
+| `adapter.load` | 适配器註冊完成 | `{"platform": str, "success": bool}` |
+| `adapter.start` | 适配器啟動 | `{"platforms": [str]}` |
+| `adapter.status.change` | 适配器狀態變化 | `{"platform": str, "status": str, "retry_count": int, "error": str(僅失敗時)}` |
+| `adapter.stop` | 适配器關閉 | `{"platforms": [str]}` |
+| `adapter.stopped` | 适配器關閉完成 | `{"platforms": [str]}` |
 | `adapter.bot.online` | Bot 上線 | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
 | `adapter.bot.offline` | Bot 下線 | `{"platform": str, "bot_id": str, "status": str}` |
 
 ### 事件接收與處理
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `adapter.event.receive` | 收到外部平台事件（最早期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
 | `adapter.event.dispatched` | 事件分發完成 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
@@ -209,7 +219,7 @@ def log_unhandled(data):
 
 ### 消息發送
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `message.sending` | 消息即將發送 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 | `message.sent` | 消息發送完成 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
@@ -224,7 +234,7 @@ def log_sending(data):
 
 ### 命令系統
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `command.matched` | 命令被匹配並即將執行 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
 | `command.executed` | 命令執行完成 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(僅失敗時)}` |
@@ -239,10 +249,10 @@ def count_commands(data):
 
 ### HTTP 路由
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
 | `server.request` | HTTP 請求接收 | `{"method": str, "path": str, "client_ip": str}` |
-| `server.response` | HTTP 回應發送 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
+| `server.response` | HTTP 响應發送 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
 **範例：請求日誌**
 
@@ -254,9 +264,9 @@ def log_http(data):
 
 ### WebSocket
 
-| 鈎子名稱 | 觸發時機 | 資料 |
+| 鈎子名稱 | 觸發時機 | 數據 |
 |---------|---------|------|
-| `server.start` | 路由伺服器啟動 | `{"base_url": str, "host": str, "port": int}` |
+| `server.start` | 路由伺服器啟動 | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str(僅失敗時)}` |
 | `server.stop` | 路由伺服器停止 | `{}` |
 | `server.websocket.connect` | WebSocket 連接建立 | `{"path": str, "module_name": str, "client_ip": str}` |
 | `server.websocket.disconnect` | WebSocket 連接斷開 | `{"path": str, "module_name": str, "reason": str, "error": str(僅異常時)}` |
@@ -273,12 +283,50 @@ def on_ws_disconnect(data):
     print(f"[WS] 斷開: {data['path']} ({data['reason']})")
 ```
 
+### 存儲連接狀態
+
+儲存後端連接池的建立、故障與恢復（均背景發射，不阻塞儲存操作）：
+
+| 鈎子名稱 | 觸發時機 | 數據 |
+|---------|---------|------|
+| `storage.ready` | 存儲後端連接池就緒（每事件循環首次建池成功） | `{"backend": str}` |
+| `storage.unreachable` | 連接重試耗盡進入冷卻期（期間操作快速失敗） | `{"backend": str, "error": str, "cooldown": float}` |
+| `storage.recovered` | 冷卻結束重連成功，儲存恢復可用 | `{"backend": str}` |
+
+**範例：儲存故障告警**
+
+```python
+@sdk.lifecycle.on("storage.unreachable")
+def alert_storage_down(data):
+    print(f"[告警] 存儲後端 {data['backend']} 不可達: {data['error']}，{data['cooldown']}s 後自動重連")
+
+@sdk.lifecycle.on("storage.recovered")
+def notify_storage_back(data):
+    print(f"[恢復] 存儲後端 {data['backend']} 已恢復可用")
+```
+
+### HTTP 客戶端
+
+`sdk.client` 的請求與連接事件（均背景發射）：
+
+| 鈎子名稱 | 觸發時機 | 數據 |
+|---------|---------|------|
+| `client.request.success` | HTTP 請求成功 | `{"method": str, "url": str, "status": int, "elapsed": float}` |
+| `client.request.failed` | HTTP 請求重試耗盡最終失敗 | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
+| `client.ws.connect` | WebSocket 連接建立 | `{"url": str}` |
+
+### 國際化
+
+| 鈎子名稱 | 觸發時機 | 數據 |
+|---------|---------|------|
+| `i18n.language.changed` | 框架語言切換（`i18n.set_language`） | `{"language": str, "previous": str}` |
+
 ## 標準事件定義
 
 ```python
 STANDARD_EVENTS = {
-    "core": ["init.start", "init.complete", "uninit.complete"],
-    "module": ["load", "init", "unload", "register"],
+    "core": ["init.start", "init.stage", "init.complete", "uninit.complete"],
+    "module": ["load", "init", "unload", "register", "reload"],
     "adapter": [
         "load", "start", "status.change", "stop", "stopped",
         "event.receive", "event.dispatched",
@@ -292,7 +340,10 @@ STANDARD_EVENTS = {
     "event": ["pre_process"],
     "message": ["sending", "sent"],
     "command": ["matched", "executed"],
-    "config": ["set"],
+    "config": ["set", "updated"],
+    "storage": ["ready", "unreachable", "recovered"],
+    "client": ["request.success", "request.failed", "ws.connect"],
+    "i18n": ["language.changed"],
 }
 ```
 
@@ -310,9 +361,10 @@ STANDARD_EVENTS = {
 
 | 方法 | 說明 |
 |------|------|
-| `await lifecycle.emit(event, data=None, *, to=None)` | 異步觸發，處理器返回非 None 可修改 data；`to` 指定 owner 時定向投遞 |
+| `await lifecycle.emit(event, data=None, *, to=None)` | 異步觸發，處理器**並行執行**（互不阻塞，返回時全部完成），返回非 None 值按優先級順序回放鏈式替換 data；`to` 指定 owner 時定向投遞 |
+| `lifecycle.fire(event, data=None, *, to=None)` | **背景發射（扔桶即走）**：處理器在背景任務中並行執行、不等待、無返回值；無監聽者時零開銷。適用於高頻熱路徑與純觀測事件；關閉序列與順序敏感消費（如 `config.set`）請用 `emit` |
 | `lifecycle.emit_sync(event, data=None, *, to=None)` | 同步觸發，異步處理器以 create_task 調度 |
-| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None)` | 兼容舊版，自動建構標準事件格式 |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 兼容舊版，自動建構標準事件格式；`background=True` 時走 `fire` 背景發射 |
 
 ### 工具
 
@@ -321,7 +373,7 @@ STANDARD_EVENTS = {
 | `lifecycle.start_timer(timer_id)` | 開始計時 |
 | `lifecycle.get_duration(timer_id)` | 獲取已持續時間（秒） |
 | `lifecycle.stop_timer(timer_id)` | 停止計時並返回持續時間 |
-| `lifecycle.list_hooks()` | 列出所有已註冊鈎子及處理器數量 |
+| `lifecycle.list_hooks()` | 列出所有已註冊鉤子及處理器數量 |
 | `lifecycle.clear()` | 清除所有處理器和計時器 |
 
 ## 模組中使用範例

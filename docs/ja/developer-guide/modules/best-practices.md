@@ -270,9 +270,11 @@ class MyToolModule(BaseModule):
 
 ## エラー処理
 
-### 1. エラーの分類処理
+### 1. 例外の分類処理
 
 ```python
+from ErisPulse.Core.Bases.errors import ClientError
+
 async def handle_event(self, event: Event):
     try:
         result = await self._process(event)
@@ -280,22 +282,21 @@ async def handle_event(self, event: Event):
         # 予期されたビジネスエラー
         self.logger.warning(f"ビジネス警告: {e}")
         await event.reply(f"パラメータエラー: {e}")
-    except aiohttp.ClientError as e:
-        # ネットワークエラー（推奨：sdk.client + ClientError で置き換え）
-        # 旧コードで直接 aiohttp を使っても正常に動作しますが、新規コードでは ErisPulse の例外体系を使用することを推奨します
-        self.logger.error(f"ネットワークエラー: {e}")
-        await event.reply("ネットワークリクエストに失敗しました、後で再試行してください")
+    except ClientError as e:
+        # ネットワークエラー（sdk.client の下層 aiohttp 例外は自動的に変換済み）
+        self.logger.error(f"ネットワークエラー {e.method} {e.url}: {e}")
+        await event.reply("ネットワークリクエストに失敗しました。後でもう一度お試しください")
     except Exception as e:
         # 予期しないエラー
-        self.logger.error(f"未知のエラー: {e}", exc_info=True)
-        await event.reply("処理に失敗しました、管理者に連絡してください")
+        self.logger.error(f"不明なエラー: {e}", exc_info=True)
+        await event.reply("処理に失敗しました。管理者にお問い合わせください")
         raise
 ```
 
 ### 2. タイムアウト処理
 
 ```python
-# 推奨：SDK 内部のクライアントを使用（タイムアウトとリトライが付属）
+# 推奨される SDK 内部クライアント（タイムアウトとリトライ機能を内蔵）
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -304,7 +305,7 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"リクエストがタイムアウトしました: {url}")
+        self.logger.warning(f"リクエストタイムアウト: {url}")
         raise
 ```
 
