@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "hash": "e523160c99fc952497915ef1ab070d45",
+  "file_hash": "e523160c99fc952497915ef1ab070d45",
+  "translated_at": "2026-09-10T11:50:39.040219",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "99cbf532c64c02b92299e7ffb6e2baf0",
+      "translation": "# ErisPulse-Cron\n\n[ErisPulse-Cron](https://github.com/wsu2059q/ErisPulse-Cron) 是 ErisPulse 生態的**定時任務調度模組**，為其他模組提供統一的定時任務 API：支援一次性定時、間隔循環、Cron 表達式三種任務類型，回呼傳參，SQLite 持久化（重啟不丟任務）。\n\n> [!IMPORTANT]\n> Cron **不是** ErisPulse 框架的內建功能，需要單獨安裝：\n>\n> ```bash\n> epsdk install Cron\n> ```\n\n安裝後透過 `sdk.Cron` 訪問全部接口。"
+    },
+    {
+      "hash": "5ebd1ec7ac212e0bafb877a370d1f90f",
+      "translation": "## 功能速覽\n\n- **三種定時類型**：一次性（`once`）、間隔循環（`interval`）、Cron 表達式（`cron`）\n- **回調傳參**：建立時傳入 `callback_data`，觸發時原樣返回，方便識別任務來源\n- **持久化**：任務儲存在 SQLite（經 `sdk.storage`），框架重啟後自動恢復\n- **錯過策略**：立即觸發 / 跳過 / 重新排程，可按任務選擇\n- **任務管理**：暫停、恢復、取消、手動觸發、清理過期任務\n- **Dashboard 集成**：已安裝 [ErisPulse-Dashboard](dashboard.md) 時自動註冊管理視窗"
+    },
+    {
+      "hash": "a0494e600c793fee5764d3660208b79c",
+      "translation": "## 快速開始\n\n```python\nfrom ErisPulse import sdk\n\n# 1. 註冊回調處理器\n@sdk.Cron.on_trigger\nasync def handle_trigger(info):\n    data = info[\"callback_data\"]\n    print(f\"任務觸發: {info['task_id']}, 數據: {data}\")\n\n# 2. 創建定時任務\ntask_id = sdk.Cron.once(\n    delay=60,\n    callback_data={\"type\": \"reminder\", \"msg\": \"該喝水了\"},\n)\n```\n\n---"
+    },
+    {
+      "hash": "07f421ef415f2e89675f97b5bf966c48",
+      "translation": "## API 概覽\n\n### 創建任務\n\n```python\n# 一次性：延遲 600 秒觸發\nsdk.Cron.once(delay=600, callback_data={\"order_id\": \"123\"}, label=\"訂單超時提醒\")\n\n# 間隔循環：每 300 秒觸發，最多 100 次\nsdk.Cron.interval(interval_seconds=300, callback_data={\"monitor\": \"server-1\"}, max_runs=100)\n\n# Cron 表達式：工作日每天 9:30\nsdk.Cron.cron(expression=\"30 9 * * 1-5\", callback_data={\"type\": \"daily_report\"})\n\n# 通用可選參數：trigger_at（絕對時間戳）、delay（首次延遲）、timezone、\n# max_runs（0=無限）、label、source（創建者模組名）、missed_policy（錯過策略）\n```\n\n常用 Cron 表達式：`*/5 * * * *`（每 5 分鐘）、`0 8 * * *`（每天早 8 點）、`30 9 * * 1-5`（工作日 9:30）、`0 0 1 * *`（每月 1 號）。\n\n### 回調\n\n```python\n@sdk.Cron.on_trigger\nasync def my_handler(info):\n    # info 含 task_id / task_type / callback_data / label / source /\n    # run_count / max_runs / created_at / last_run / trigger_time\n    ...\n```\n\n支援註冊多個 handler，全部依次調用，單個 handler 異常不會影響其他 handler。\n\n### 管理任務\n\n```python\nsdk.Cron.cancel(task_id)                  # 取消\nsdk.Cron.pause(task_id)                   # 暫停\nsdk.Cron.resume(task_id)                  # 恢復（reschedule=True 重新計算下次觸發）\nawait sdk.Cron.trigger_now(task_id)       # 手動立即觸發（不影響原計劃）\nsdk.Cron.get_task(task_id)                # 查看單個任務\nsdk.Cron.list_tasks(source=\"MyModule\")    # 列出任務（支援 source/status/task_type 過濾）\nsdk.Cron.delete_task(task_id)             # 刪除任務記錄\nsdk.Cron.cleanup()                        # 清理 7 天前的已完成/已取消任務\n```\n\n### 錯過策略（missed_policy）\n\n框架重啟後，對於錯過觸發時間的任務：\n\n| 策略 | 行為 |\n|------|------|\n| `fire_immediately` | 立即觸發（預設） |\n| `skip` | 跳過本次，等下次 |\n| `reschedule` | 從當前時間重新計算下次觸發 |"
+    },
+    {
+      "hash": "7c16125e158993274edbf26399bee6b6",
+      "translation": "## 模組卸載時的行為\n\nCron 的任務資料是**持久化資產**：任務創建方模組被卸載或停用不會刪除已建立的任務。但該模組註冊的回呼句柄會被清除——基於歸屬權系統的[外部清理鉤子](../advanced/ownership.md#工具模組指南托管其它模組的句柄)，Cron 在替其他模組托管回呼時會自動記名，當對方模組被卸載/停用時會自動拋棄其回呼句柄，確保對方模組實例可以被正常回收。\n\n- 任務創建方**重新載入**後重新 `on_trigger` 即恢復接收觸發\n- 不再需要的任務可用 `sdk.Cron.cancel(task_id)` / `delete_task(task_id)` 清理"
+    },
+    {
+      "hash": "085dbb7129d2816884289cb6ae3cc23e",
+      "translation": "## 相關連結\n\n- [GitHub 倉庫](https://github.com/wsu2059q/ErisPulse-Cron)\n- [PyPI 頁面](https://pypi.org/project/ErisPulse-Cron/)\n- [歸屬權（owner）系統](../advanced/ownership.md)"
+    }
+  ]
+}
