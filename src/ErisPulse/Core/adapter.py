@@ -2523,12 +2523,15 @@ class AdapterManager(ManagerBase):
 
         return {"adapters": adapters_summary}
 
-    def get_topology(self) -> dict[str, Any]:
+    def get_topology(self, *, json_safe: bool = True) -> dict[str, Any]:
         """
         获取适配器与 Bot 的拓扑树数据（便于 WebUI 展示）
 
         聚合每个适配器的运行状态、下属 Bot 状态，以及平台级 / Bot 级
         模块作用域绑定，展示"适配器 → Bot → 作用域"的归属关系。
+
+        :param json_safe: 是否输出可直接 JSON 序列化的安全结构（默认 True），
+                          对适配器作者可能塞入 Bot ``info`` 的任意对象做净化。
 
         :return: 拓扑树字典
             {"adapters": {platform: {
@@ -2542,6 +2545,7 @@ class AdapterManager(ManagerBase):
         >>> print(topology["adapters"]["onebot11"]["bots"])
         {"123456": {...}}
         """
+        from .config import json_safe as _json_safe
         from .config import parse_bool_config
         from .scope import scope
 
@@ -2581,7 +2585,8 @@ class AdapterManager(ManagerBase):
                     "scope": scope.get(platform_name),
                 }
 
-        return {"adapters": adapters_summary}
+        result = {"adapters": adapters_summary}
+        return _json_safe(result) if json_safe else result
 
     # ==================== 工具方法 ====================
 

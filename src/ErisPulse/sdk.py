@@ -2106,7 +2106,7 @@ class SDK:
         return True
 
 
-    def get_topology(self) -> dict[str, Any]:
+    def get_topology(self, *, json_safe: bool = True) -> dict[str, Any]:
         """
         获取完整的拓扑树数据（便于 Dashboard 等管理界面展示）
 
@@ -2114,6 +2114,10 @@ class SDK:
         - ``modules``：每个模块拥有的命令 / 事件处理器 / 路由 / 生命周期钩子
         - ``adapters``：每个适配器的运行状态、下属 Bot 状态与作用域绑定
         - ``scope``：作用域（模块 / 身份 / 文本 / 出站动作）
+
+        :param json_safe: 是否输出可直接 JSON 序列化的安全结构（默认 True）。
+                          安全模式下模块 ``info`` 只保留纯数据 meta 子表，
+                          并对整树做序列化兜底净化，返回值可直接 ``json.dumps``。
 
         :return: 拓扑树字典
             {"modules": {...}, "adapters": {...}, "scope": {...}}
@@ -2124,8 +2128,8 @@ class SDK:
         ["chat"]
         """
         return {
-            "modules": self.module.get_topology().get("modules", {}),
-            "adapters": self.adapter.get_topology().get("adapters", {}),
+            "modules": self.module.get_topology(json_safe=json_safe).get("modules", {}),
+            "adapters": self.adapter.get_topology(json_safe=json_safe).get("adapters", {}),
             "scope": self.scope.topology(),
         }
 
