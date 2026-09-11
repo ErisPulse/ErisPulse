@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "056caa29d1629f4a9133f66d1a4337f7",
-  "file_hash": "056caa29d1629f4a9133f66d1a4337f7",
-  "translated_at": "2026-09-09T16:09:29.232650",
+  "hash": "80cb35bddc508593f64776bef0e545aa",
+  "file_hash": "80cb35bddc508593f64776bef0e545aa",
+  "translated_at": "2026-09-11T12:36:55.824408",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -50,8 +50,8 @@
       "translation": "## 常見問題與注意事項\n\n### 1. 配置層級與覆蓋\n\n- 模組維度：會話級 > Bot 級 > 平台級，**整體覆蓋**（子級 `merge = true` 時逐條目並集）。\n  想\"平台允許 Chat，Bot 再加 Music\"，可在 Bot 級寫 `merge = true`，或同時列出兩者\n- 身份維度：用戶 > 會話 > Bot > 適配器，取**最具體**的已配置策略（可做例外放行）\n- 命令用戶黑白名單：精確命令名優先於 glob 鍵（見 `event.command.acl`）\n\n### 2. 模組/命令沒反應\n\n先懷疑作用域而不是模組本身：\n\n```python\nfrom ErisPulse import sdk\n\nprint(sdk.scope.is_allowed(event.get_platform(), bot_id, \"MyModule\", session_id))\nprint(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, user_id))\nprint(sdk.scope.stats())   # module_filtered / identity_denied > 0 說明被靜默篩選\n```\n\n被篩選是**靜默**的（模組維度與身份維度不回覆，避免暴露規則），但統計會累積；\n命令維度被 ACL 拒絕會顯式回覆\"權限不足\"。\n\n### 3. 出站動作被拒時排查\n\n```python\nfrom ErisPulse import sdk\n\nprint(sdk.scope.get(\"actions.MyModule\"))\nprint(sdk.scope.stats())   # action_denied > 0 說明有呼叫被擋截\n```\n\n擋截是**顯式**的：被拒呼叫回傳 `retcode = 34601` 的標準失敗回應（不發起網路請求）。\n\n### 4. 會話標識跨平台隔離\n\n`(platform, session_id)` 組合才是唯一標識。`scope.sessions.onebot11.\"789\"`\n只作用於 onebot11，不影響 telegram 上同為 `789` 的會話。身份維度的用戶鍵同理。"
     },
     {
-      "hash": "68aec71bf73a7ad8a66c15268319c08e",
-      "translation": "## 拓撲樹 API\n\n`ModuleManager.get_topology()` 與 `AdapterManager.get_topology()` 提供模組/適配器歸屬關係資料，\n`sdk.get_topology()` 一鍵聚合（含作用域 `scope`）：\n\n```python\nfrom ErisPulse import sdk\n\ntopology = sdk.get_topology()\n# {\n#   \"modules\": {                                   # 模組 → 擁有的資源\n#     \"Chat\": {\n#       \"loaded\": True, \"enabled\": True,\n#       \"commands\": [\"chat\", \"translate\"],\n#       \"handlers\": {\"message\": 2, \"notice\": 1},\n#       \"routes\": {\"http\": [\"/Chat/api\"], \"ws\": [], \"sse\": []},\n#       \"lifecycle_hooks\": 3,\n#     }\n#   },\n#   \"adapters\": {                                  # 適配器 → Bot → 作用域\n#     \"onebot11\": {\n#       \"status\": \"started\", \"enabled\": True,\n#       \"bots\": {\"123456\": {\"status\": \"online\", \"scope\": {...}}},\n#       \"scope\": {\"modules\": [...], \"blocked\": [...]},\n#     }\n#   },\n#   \"scope\": {                                     # 作用域（模組 / 身份 / 出站動作）\n#     \"platforms\": {...}, \"bots\": {...}, \"sessions\": {...},\n#     \"identity\": {\"adapters\": {...}, \"bots\": {...}, \"sessions\": {...}, \"users\": {...}},\n#     \"actions\": {...},\n#   },\n# }\n```\n\n- 模組拓撲聚合了該模組註冊的命令、事件處理器、HTTP/WS/SSE 路由與生命週期鉤子，便於繪製模組資源樹。\n- 適配器拓撲聚合了各適配器狀態、下屬 Bot 狀態及平台級/Bot 級作用域綁定（模組維度）。"
+      "hash": "ceac8ae0cf12332cffe94125f68a75f2",
+      "translation": "## 拓撲樹 API\n\n`ModuleManager.get_topology()` 與 `AdapterManager.get_topology()` 提供模組/適配器歸屬關係資料，  \n`sdk.get_topology()` 一鍵聚合（含作用域 `scope`）：\n\n```python\nfrom ErisPulse import sdk\n\ntopology = sdk.get_topology()\n# {\n#   \"modules\": {                                   # 模組 → 擁有的資源\n#     \"Chat\": {\n#       \"loaded\": True, \"enabled\": True,\n#       \"commands\": [\"chat\", \"translate\"],\n#       \"handlers\": {\"message\": 2, \"notice\": 1},\n#       \"routes\": {\"http\": [\"/Chat/api\"], \"ws\": [], \"sse\": []},\n#       \"lifecycle_hooks\": 3,\n#     }\n#   },\n#   \"adapters\": {                                  # 適配器 → Bot → 作用域\n#     \"onebot11\": {\n#       \"status\": \"started\", \"enabled\": True,\n#       \"bots\": {\"123456\": {\"status\": \"online\", \"scope\": {...}}},\n#       \"scope\": {\"modules\": [...], \"blocked\": [...]},\n#     }\n#   },\n#   \"scope\": {                                     # 作用域（模組 / 身份 / 出站動作）\n#     \"platforms\": {...}, \"bots\": {...}, \"sessions\": {...},\n#     \"identity\": {\"adapters\": {...}, \"bots\": {...}, \"sessions\": {...}, \"users\": {...}},\n#     \"actions\": {...},\n#   },\n# }\n```\n\n- 模組拓撲聚合了該模組註冊的命令、事件處理器、HTTP/WS/SSE 路由與生命週期鉤子，便於繪製模組資源樹。\n- 適配器拓撲聚合了各適配器狀態、下屬 Bot 狀態及平台級/Bot 級作用域綁定（模組維度）。\n- **JSON 安全輸出**：`get_topology(json_safe=...)` 預設 `True`，返回的結構可直接 `json.dumps`——模組 `info` 僅保留純資料的 `meta` 子表（丟棄 `module_class` / `strategy` 等執行時物件），並對其餘節點（含適配器作者塞入 Bot `info` 的任意物件）做兜底淨化（類物件取 `__name__`、不可序列化物件退化 `str()`）。Dashboard / WebUI 可直接序列化返回；需要原始物件時傳 `json_safe=False`。"
     }
   ]
 }
