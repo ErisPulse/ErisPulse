@@ -24,6 +24,7 @@ from .constants import (
     FALLBACK_LANGUAGE,
     SUPPORTED_LANGUAGES,
 )
+from ..constants import EVENT_I18N_LANGUAGE_CHANGED
 
 
 class I18nManager:
@@ -449,10 +450,10 @@ class I18nManager:
         {!--< /internal-use >!--}
         """
         try:
-            from .lifecycle import lifecycle
+            from ..lifecycle import lifecycle
 
             lifecycle.emit_sync(
-                "i18n.language.changed",
+                EVENT_I18N_LANGUAGE_CHANGED,
                 {"language": language, "previous": previous},
             )
         except Exception:

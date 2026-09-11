@@ -106,6 +106,7 @@
     - 新增事件：`storage.ready/unreachable/recovered`（连接池就绪 / 重试耗尽进入冷却 / 冷却结束重连成功，载荷含 `backend` 与 `cooldown`；恢复时补 INFO 日志）；`client.request.failed`（重试耗尽最终失败，含 method/url/error/attempts/elapsed）；`module.reload`（热重载完成）；`server.start` 失败分支补 `success/error` 字段；`i18n.language.changed`（语言切换）；`core.init.stage`（初始化七阶段进度，后台发射）
     - 各阶段启动时长统计：`core.init.complete` 载荷新增 `stages: {stage: 耗时秒}`，init 汇总以 DEBUG 输出各阶段时长（供启动优化分析）
     - `STANDARD_EVENTS` 登记补全：新增 `storage` / `client` / `i18n` 域，补登记既有 `client.request.success` / `client.ws.connect` / `config.updated` / `module.reload`
+    - 事件名常量化：新增事件名（`EVENT_STORAGE_*` / `EVENT_CLIENT_REQUEST_*` / `EVENT_CORE_INIT_STAGE` / `EVENT_MODULE_RELOAD` / `EVENT_I18N_LANGUAGE_CHANGED`））收敛至 `Core/constants.py`，发射点 / `STANDARD_EVENTS` / 测试统一引用，改名只动一处
   - **异常体系优化**：
     - 结构化属性：`ClientError` 系补 `.url/.method/.attempts`（重试循环上下文不再丢失）；`StorageUnreachableError` 补 `.backend/.cooldown`；`ModuleCallTimeoutError` 补 `.timeout`
     - 归位合规：`SessionOccupiedError` / `InteractionCancelled` 定义迁入 `Core/Bases/errors.py`（interaction.py 保留导入别名），`StrictModeError` 挂入 `ErisPulseError` 层级，三者均从 `ErisPulse.Core` 聚合导出

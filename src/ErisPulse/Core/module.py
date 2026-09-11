@@ -23,6 +23,7 @@ from .constants import (
     CONFIG_KEY_MODULE_STATUS_OF,
     CONFIG_KEY_MODULES_STATUS,
     DEFAULT_MODULE_ENABLED,
+    EVENT_MODULE_RELOAD,
     MODULE_SOURCE_PLUGIN_FOLDER,
 )
 from .i18n import i18n
@@ -647,7 +648,7 @@ class ModuleManager(ManagerBase):
             logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
             return False
         success = await loader.reload_module(name, self, self._sdk)
-        await lifecycle.emit("module.reload", {"module_name": name, "success": success})
+        await lifecycle.emit(EVENT_MODULE_RELOAD, {"module_name": name, "success": success})
         return success
 
     async def _unload_single_module(self, module_name: str) -> bool:

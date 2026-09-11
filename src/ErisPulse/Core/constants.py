@@ -358,6 +358,22 @@ FALLBACK_IPV6_HOST: Final[str] = "localhost"
 # 修改影响: lifecycle.submit_event() 的 source 默认值。影响事件溯源。
 DEFAULT_EVENT_SOURCE: Final[str] = "ErisPulse"
 
+# 生命周期事件名（2.8.0 新增事件的发射点/STANDARD_EVENTS/测试共用）。
+# 使用位置: 各发射点（Core/Bases/sql_base.py、Core/client.py、Core/module.py、
+#           Core/i18n/__init__.py、sdk.py）+ LifecycleManager.STANDARD_EVENTS 登记 +
+#           tests/unit/test_unit_storage_failover.py 注册断言。
+# 修改影响: 事件名是对外契约，变更会静默破坏外部监听者——发射点常量化后
+#           改名只需动这里，但仍需同步文档（advanced/lifecycle.md）。
+EVENT_CORE_INIT_STAGE: Final[str] = "core.init.stage"
+EVENT_MODULE_RELOAD: Final[str] = "module.reload"
+EVENT_STORAGE_READY: Final[str] = "storage.ready"
+EVENT_STORAGE_UNREACHABLE: Final[str] = "storage.unreachable"
+EVENT_STORAGE_RECOVERED: Final[str] = "storage.recovered"
+EVENT_CLIENT_REQUEST_SUCCESS: Final[str] = "client.request.success"
+EVENT_CLIENT_REQUEST_FAILED: Final[str] = "client.request.failed"
+EVENT_CLIENT_WS_CONNECT: Final[str] = "client.ws.connect"
+EVENT_I18N_LANGUAGE_CHANGED: Final[str] = "i18n.language.changed"
+
 # 反初始化时等待事件处理完成的缓冲时间（秒）。
 # 修改影响: 设大确保异步事件处理完成，设小加速关闭流程。过小可能丢失事件。
 UNINIT_SETTLE_DELAY_SECS: Final[float] = 0.1
@@ -1023,6 +1039,15 @@ __all__ = [
     "DEFAULT_CORS_METHODS",
     "DEFAULT_CORS_ORIGINS",
     "DEFAULT_EVENT_SOURCE",
+    "EVENT_CLIENT_REQUEST_FAILED",
+    "EVENT_CLIENT_REQUEST_SUCCESS",
+    "EVENT_CLIENT_WS_CONNECT",
+    "EVENT_CORE_INIT_STAGE",
+    "EVENT_I18N_LANGUAGE_CHANGED",
+    "EVENT_MODULE_RELOAD",
+    "EVENT_STORAGE_READY",
+    "EVENT_STORAGE_RECOVERED",
+    "EVENT_STORAGE_UNREACHABLE",
     "DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS",
     "DEFAULT_HANDLER_MAX_CONCURRENCY",
     "DEFAULT_HANDLER_PRIORITY",

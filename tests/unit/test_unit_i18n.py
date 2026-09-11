@@ -401,3 +401,25 @@ class TestLanguagePriority:
         )
         I18nManager._global_state_path = staticmethod(lambda: fake_path)
         assert manager._load_global_language() is None
+
+
+
+class TestLanguageChangedEvent:
+    """语言切换事件（i18n.language.changed）回归测试"""
+
+    def test_set_language_emits_event(self):
+        """set_language 发出 i18n.language.changed 事件且载荷含前后语言"""
+        from ErisPulse.Core.constants import EVENT_I18N_LANGUAGE_CHANGED
+        from ErisPulse.Core.i18n import i18n
+        from ErisPulse.Core.lifecycle import lifecycle
+
+        seen = []
+        lifecycle.register(EVENT_I18N_LANGUAGE_CHANGED, lambda data: seen.append(data))
+        try:
+            i18n.set_language("zh-CN", persist=False)
+            i18n.set_language("en", persist=False)
+            assert seen and seen[-1]["language"] == "en"
+            assert seen[-1]["previous"] == "zh-CN"
+        finally:
+            lifecycle.unregister(EVENT_I18N_LANGUAGE_CHANGED)
+            i18n.set_language("zh-CN", persist=False)

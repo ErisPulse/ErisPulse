@@ -19,7 +19,19 @@ from collections.abc import Callable
 from typing import Any
 
 from ..runtime.context import current_owner
-from .constants import DEFAULT_EVENT_SOURCE, HANDLER_SLOW_THRESHOLD_SECS
+from .constants import (
+    DEFAULT_EVENT_SOURCE,
+    EVENT_CLIENT_REQUEST_FAILED,
+    EVENT_CLIENT_REQUEST_SUCCESS,
+    EVENT_CLIENT_WS_CONNECT,
+    EVENT_CORE_INIT_STAGE,
+    EVENT_I18N_LANGUAGE_CHANGED,
+    EVENT_MODULE_RELOAD,
+    EVENT_STORAGE_READY,
+    EVENT_STORAGE_RECOVERED,
+    EVENT_STORAGE_UNREACHABLE,
+    HANDLER_SLOW_THRESHOLD_SECS,
+)
 from .i18n import i18n
 
 
@@ -83,8 +95,8 @@ class LifecycleManager:
 
     # 预定义的标准事件列表
     STANDARD_EVENTS = {
-        "core": ["init.start", "init.stage", "init.complete", "uninit.complete"],
-        "module": ["load", "init", "unload", "register", "reload"],
+        "core": ["init.start", EVENT_CORE_INIT_STAGE, "init.complete", "uninit.complete"],
+        "module": ["load", "init", "unload", "register", EVENT_MODULE_RELOAD],
         "adapter": [
             "load",
             "start",
@@ -108,9 +120,9 @@ class LifecycleManager:
         "message": ["sending", "sent"],
         "command": ["matched", "executed"],
         "config": ["set", "updated"],
-        "storage": ["ready", "unreachable", "recovered"],
-        "client": ["request.success", "request.failed", "ws.connect"],
-        "i18n": ["language.changed"],
+        "storage": [EVENT_STORAGE_READY, EVENT_STORAGE_UNREACHABLE, EVENT_STORAGE_RECOVERED],
+        "client": [EVENT_CLIENT_REQUEST_SUCCESS, EVENT_CLIENT_REQUEST_FAILED, EVENT_CLIENT_WS_CONNECT],
+        "i18n": [EVENT_I18N_LANGUAGE_CHANGED],
     }
 
     def __init__(self):
