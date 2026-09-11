@@ -337,8 +337,8 @@ print(sdk.scope.stats())   # action_denied > 0 なら、呼び出しがブロッ
 
 ## 拓扑ツリー API
 
-`ModuleManager.get_topology()` および `AdapterManager.get_topology()` は、モジュール/アダプターの所属関係データを提供します。  
-`sdk.get_topology()` は、スコープを含むデータを一括して取得します。
+`ModuleManager.get_topology()` と `AdapterManager.get_topology()` は、モジュール/アダプタの所属関係データを提供します。  
+`sdk.get_topology()` は、スコープ（作用域）を含むデータを一括して取得します。
 
 ```python
 from ErisPulse import sdk
@@ -354,14 +354,14 @@ topology = sdk.get_topology()
 #       "lifecycle_hooks": 3,
 #     }
 #   },
-#   "adapters": {                                  # アダプター → Bot → スコープ
+#   "adapters": {                                  # アダプタ → Bot → スコープ
 #     "onebot11": {
 #       "status": "started", "enabled": True,
 #       "bots": {"123456": {"status": "online", "scope": {...}}},
 #       "scope": {"modules": [...], "blocked": [...]},
 #     }
 #   },
-#   "scope": {                                     # スコープ（モジュール / アイデンティティ / 出力アクション）
+#   "scope": {                                     # スコープ（モジュール / 身元 / 出力アクション）
 #     "platforms": {...}, "bots": {...}, "sessions": {...},
 #     "identity": {"adapters": {...}, "bots": {...}, "sessions": {...}, "users": {...}},
 #     "actions": {...},
@@ -369,5 +369,6 @@ topology = sdk.get_topology()
 # }
 ```
 
-- モジュールのトポロジーは、登録されたコマンド、イベントハンドラー、HTTP/WS/SSEルート、およびライフサイクルフックを統合し、モジュールリソースツリーの描画に便利です。
-- アダプターのトポロジーは、各アダプターのステータス、所属するBotのステータス、およびプラットフォームレベル/Botレベルのスコープバインディング（モジュール次元）を統合します。
+- モジュールのトポロジーは、登録されたコマンド、イベントハンドラ、HTTP/WS/SSEルート、ライフサイクルフックを統合し、モジュールリソースツリーの描画に便利です。
+- アダプタのトポロジーは、各アダプタのステータス、所属するBotのステータス、プラットフォーム/Botレベルのスコープバインディング（モジュール次元）を統合します。
+- **JSON セーフ出力**：`get_topology(json_safe=...)` はデフォルトで `True` です。返却される構造は `json.dumps` で直接シリアライズ可能です。モジュールの `info` は純粋なデータの `meta`サブテーブルのみ保持し、`module_class` / `strategy` などの実行時オブジェクトは破棄されます。また、その他のノード（アダプタがBotの `info` に挿入した任意のオブジェクトを含む）は、デフォルトで処理されます（クラスオブジェクトは `__name__` を取得、シリアライズできないオブジェクトは `str()` に変換）。Dashboard / WebUI は返却値を直接シリアライズできます。元のオブジェクトが必要な場合は `json_safe=False` を指定してください。
