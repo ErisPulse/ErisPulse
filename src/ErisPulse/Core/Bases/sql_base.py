@@ -26,6 +26,9 @@ from typing import Any
 
 from ..constants import (
     DEFAULT_KV_TABLE_NAME,
+    EVENT_STORAGE_READY,
+    EVENT_STORAGE_RECOVERED,
+    EVENT_STORAGE_UNREACHABLE,
     STORAGE_MAX_LIST_INDEX,
     STORAGE_POOL_CREATE_BACKOFF_SECS,
     STORAGE_POOL_CREATE_RETRIES,
@@ -739,7 +742,7 @@ class SQLStorageBase(BaseStorage):
                 )
             )
             await self._emit_storage_event(
-                "storage.unreachable",
+                EVENT_STORAGE_UNREACHABLE,
                 backend=self.dialect.name,
                 error=str(last_error),
                 cooldown=self._RESOURCE_FAIL_COOLDOWN_SECS,
@@ -759,10 +762,10 @@ class SQLStorageBase(BaseStorage):
         # 建池成功：清除失败冷却（若曾进入冷却，此番重连试探成功即恢复）
         self._resource_failed_until = 0.0
         logger.debug(i18n.t("core.storage.pool_ready", backend=self.dialect.name))
-        await self._emit_storage_event("storage.ready", backend=self.dialect.name)
+        await self._emit_storage_event(EVENT_STORAGE_READY, backend=self.dialect.name)
         if was_cooling:
             logger.info(i18n.t("core.storage.recovered", backend=self.dialect.name))
-            await self._emit_storage_event("storage.recovered", backend=self.dialect.name)
+            await self._emit_storage_event(EVENT_STORAGE_RECOVERED, backend=self.dialect.name)
         return resource
 
     async def _emit_storage_event(self, event: str, **data: Any) -> None:

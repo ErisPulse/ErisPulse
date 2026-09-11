@@ -141,10 +141,16 @@ async def test_storage_lifecycle_events_emitted(tmp_path, monkeypatch):
             seen[kind].append(data)
         return _h
 
+    from ErisPulse.Core.constants import (
+        EVENT_STORAGE_READY,
+        EVENT_STORAGE_RECOVERED,
+        EVENT_STORAGE_UNREACHABLE,
+    )
+
     for name, kind in (
-        ("storage.ready", "ready"),
-        ("storage.unreachable", "unreachable"),
-        ("storage.recovered", "recovered"),
+        (EVENT_STORAGE_READY, "ready"),
+        (EVENT_STORAGE_UNREACHABLE, "unreachable"),
+        (EVENT_STORAGE_RECOVERED, "recovered"),
     ):
         lifecycle.on(name)(_make(kind))
 
@@ -192,5 +198,5 @@ async def test_storage_lifecycle_events_emitted(tmp_path, monkeypatch):
     assert seen["recovered"][0]["backend"] == "sqlite"
 
     await backend.aclose()
-    for name in ("storage.ready", "storage.unreachable", "storage.recovered"):
+    for name in (EVENT_STORAGE_READY, EVENT_STORAGE_UNREACHABLE, EVENT_STORAGE_RECOVERED):
         lifecycle.unregister(name)
