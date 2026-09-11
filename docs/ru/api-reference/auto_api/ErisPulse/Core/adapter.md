@@ -793,6 +793,9 @@ self字段标准扩展：
 聚合每个适配器的运行状态、下属 Bot 状态，以及平台级 / Bot 级
 模块作用域绑定，展示"适配器 → Bot → 作用域"的归属关系。
 
+- **json_safe** (`是否输出可直接`): JSON 序列化的安全结构（默认 True），
+                  对适配器作者可能塞入 Bot ``info`` 的任意对象做净化。
+
 **返回值** (`拓扑树字典`): {"adapters": {platform: {
         "status": str, "enabled": bool,
         "bots": {bot_id: {"status", "last_active", "info", "scope"}},

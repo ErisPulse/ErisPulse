@@ -36,6 +36,20 @@ ErisPulse 配置中心
 ---
 
 
+### `json_safe(value: Any, _depth: int = 0)`
+
+递归将任意结构转换为可直接 JSON 序列化的等价结构
+
+供 ``get_topology`` 等面向 WebUI 的聚合方法保证输出可序列化：
+dict / list / tuple / set 递归处理；类对象（``type``）取
+``__name__``；其余不可序列化对象退化为 ``str()`` 表示。
+
+- **value** (`任意值`): - **_depth** (`internal-use`): 递归深度保护
+**返回值** (`可被`): ``json.dumps`` 序列化的等价结构
+
+---
+
+
 ## 类列表
 
 
