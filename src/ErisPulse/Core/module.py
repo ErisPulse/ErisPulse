@@ -1640,12 +1640,17 @@ class ModuleManager(ManagerBase):
 
         return {"modules": modules_summary}
 
-    def get_topology(self) -> dict[str, Any]:
+    def get_topology(self, *, json_safe: bool = True) -> dict[str, Any]:
         """
         获取模块的拓扑树数据（便于 WebUI 展示）
 
         聚合每个模块拥有的命令、事件处理器、路由与生命周期钩子，
         按 owner（模块名）归并，展示模块与资源的归属关系。
+
+        :param json_safe: 是否输出可直接 JSON 序列化的安全结构（默认 True）。
+                          安全模式下 ``info`` 只保留纯数据的 ``meta`` 子表
+                          （丢弃 ``module_class`` / ``strategy`` 等运行时对象），
+                          并对整树做序列化兜底净化。
 
         :return: 拓扑树字典
             {"modules": {name: {
@@ -1665,6 +1670,7 @@ class ModuleManager(ManagerBase):
         >>> print(topology["modules"]["Chat"]["commands"])
         ["chat"]
         """
+        from .config import json_safe as _json_safe
         from .config import parse_bool_config
         from .Event import command, message, meta, notice, request
         from .lifecycle import lifecycle
@@ -1714,11 +1720,15 @@ class ModuleManager(ManagerBase):
                     pass
             ns_routes = routes_by_namespace.get(name, {})
             service_names = self._service_names(name)
+            info_entry = self._module_info.get(name)
+            if json_safe and isinstance(info_entry, dict):
+                # 安全模式只取纯数据的 meta 子表，丢弃 module_class / strategy 等运行时对象
+                info_entry = _json_safe(info_entry.get("meta") or {})
             modules_summary[name] = {
                 "loaded": name in self._loaded_modules,
                 "enabled": parse_bool_config(config.getConfig(CONFIG_KEY_MODULE_STATUS_OF.format(name), True)),
                 "load_strategy": strategy,
-                "info": self._module_info.get(name),
+                "info": info_entry,
                 "commands": sorted(commands_by_owner.get(name, [])),
                 "services": sorted(service_names or []),
                 "handlers": handlers_by_owner.get(name, {}),
@@ -1731,7 +1741,8 @@ class ModuleManager(ManagerBase):
                 "scope_applies": True,
             }
 
-        return {"modules": modules_summary}
+        result = {"modules": modules_summary}
+        return _json_safe(result) if json_safe else result
 
     # ==================== 模块间通信 ====================
 

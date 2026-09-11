@@ -114,6 +114,9 @@
     - 懒加载异常统一：初始化失败后的属性访问由 `RuntimeError` 改为 `ModuleNotAvailableError`（与 `module.call` 类型化语义对齐）
     - 事件处理器异常诊断增强：单行错误日志附用户代码帧定位（`@ 文件:行号 位于 函数()`），不刷屏
     - 死代码清理：module 注册不可达校验、adapter 注册重复分支、kv_builder 同步/异步重复校验段
+  - **拓扑树 JSON 安全输出** `Core/config.py` / `Core/module.py` / `Core/adapter.py` / `sdk.py`：
+    - `ModuleManager.get_topology()` / `AdapterManager.get_topology()` / `sdk.get_topology()` 新增关键字参数 `json_safe`（默认 `True`）：输出保证可直接 `json.dumps`——模块 `info` 仅保留纯数据的 `meta` 子表（丢弃 `module_class` / `strategy` 等运行时对象），整树再经新增工具函数 `config.json_safe()` 兜底净化（dict / list / tuple / set 递归、类对象取 `__name__`、其余不可序列化对象退化 `str()`，含递归深度保护），适配器 / 模块塞入 Bot `info` 的任意运行时对象不再导致 Dashboard 序列化失败；传 `json_safe=False` 保留原始对象（含运行时引用），供需要自行取用的消费方
+    - 文档：`docs/zh-CN/advanced/scope.md` 拓扑树 API 补充 `json_safe` 语义说明；新增单元测试 `test_unit_topology.py::TestJsonSafeUtil` / `TestTopologyJsonSafe`
   - **修复**：`spawn_background` 从非主循环线程（同步桥接线程等）调度时优先投递回已注册主循环——原直接在按次运行（`run_until_complete` 用完即停）的桥接循环上 `ensure_future`，后台任务会被孤立而永不执行（首次暴露于 init 期桥接线程上发射的 `storage.ready`）
   - 文档：`advanced/lifecycle.md` 同步新事件表 / `fire` 与并行语义 / 标准事件定义；`advanced/errors.md` 重构（异常总览树补全、结构化属性表、模块访问路径异常类型表、存储异常定位引导走事件、适配器 retcode 双通道说明）；`developer-guide/modules/best-practices.md` 错误处理示例清理 `aiohttp.ClientError` 残留（统一 `ClientError`）
 

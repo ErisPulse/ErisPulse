@@ -135,6 +135,111 @@ class TestSdkTopology:
         assert isinstance(topo["scope"], dict)
 
 
+class TestJsonSafeUtil:
+    """Core.config.json_safe() 递归净化"""
+
+    def test_primitives_passthrough(self):
+        """标量 / 空值原样返回"""
+        from ErisPulse.Core.config import json_safe
+
+        assert json_safe(None) is None
+        assert json_safe("x") == "x"
+        assert json_safe(3) == 3
+        assert json_safe(1.5) == 1.5
+        assert json_safe(True) is True
+
+    def test_containers_recursed_and_serializable(self):
+        """容器递归处理且整体可 json.dumps"""
+        import json
+
+        from ErisPulse.Core.config import json_safe
+
+        out = json_safe({"a": [1, (2, 3)], "b": {object()}})
+        assert out["a"][0] == 1
+        assert out["a"][1] == [2, 3]  # tuple → list
+        assert isinstance(out["b"], list)  # set → list
+        assert json.dumps(out)
+
+    def test_type_to_name_and_object_fallback(self):
+        """类对象取 __name__，其余不可序列化对象退化 str()"""
+        from ErisPulse.Core.config import json_safe
+
+        class _Dummy:
+            def __repr__(self):
+                return "<dummy>"
+
+        assert json_safe(ScopeManager) == "ScopeManager"
+        assert json_safe(_Dummy()) == "<dummy>"
+
+    def test_depth_guard(self):
+        """超深结构截断为 str，避免无限递归"""
+        import json
+
+        from ErisPulse.Core.config import json_safe
+
+        root: dict = {}
+        cursor = root
+        for _ in range(20):
+            child: dict = {}
+            cursor["k"] = child
+            cursor = child
+        assert json.dumps(json_safe(root))
+
+
+class TestTopologyJsonSafe:
+    """get_topology 的 JSON 安全输出"""
+
+    def test_topology_default_is_json_serializable(self):
+        """默认 json_safe=True 时三种拓扑均可直接 json.dumps"""
+        import json
+
+        from ErisPulse import sdk
+        from ErisPulse.Core import adapter, module
+
+        for topo in (
+            module.get_topology(),
+            adapter.get_topology(),
+            sdk.get_topology(),
+        ):
+            assert json.dumps(topo)
+
+    def test_module_info_runtime_objects_stripped_in_safe_mode(self):
+        """安全模式下模块 info 只保留纯数据 meta 子表"""
+        import json
+
+        from ErisPulse.Core import module
+
+        class _FakeModule:
+            pass
+
+        module.register(
+            "SafeInfoMod",
+            _FakeModule,
+            {
+                "meta": {"name": "SafeInfoMod", "description": "demo"},
+                "module_class": _FakeModule,
+                "strategy": object(),
+            },
+        )
+        try:
+            safe_entry = module.get_topology()["modules"].get("SafeInfoMod")
+            assert safe_entry is not None
+            # 运行时对象（module_class / strategy）被丢弃，仅剩 meta 纯数据
+            assert safe_entry["info"] == {
+                "name": "SafeInfoMod",
+                "description": "demo",
+            }
+            json.dumps(safe_entry)
+
+            raw_entry = module.get_topology(json_safe=False)["modules"].get(
+                "SafeInfoMod"
+            )
+            assert raw_entry is not None
+            assert raw_entry["info"]["module_class"] is _FakeModule
+        finally:
+            module.unregister("SafeInfoMod")
+
+
 class TestLifecycleOwnerCounts:
     """LifecycleManager.get_owner_counts()"""
 
