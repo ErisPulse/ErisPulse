@@ -2300,6 +2300,14 @@
         "title": "API вызовы"
       }
     ],
+    "API дерева топологии": [
+      {
+        "document": "advanced/scope.md",
+        "line": 350,
+        "level": 2,
+        "title": "API дерева топологии"
+      }
+    ],
     "API основных модулей": [
       {
         "document": "api-reference/core-modules.md",
@@ -2914,14 +2922,6 @@
         "line": 92,
         "level": 4,
         "title": "Telegram"
-      }
-    ],
-    "Topology Tree API": [
-      {
-        "document": "advanced/scope.md",
-        "line": 350,
-        "level": 2,
-        "title": "Topology Tree API"
       }
     ],
     "WSMessage": [
@@ -3881,7 +3881,7 @@
     "Аудит исходящих вызовов: кто может вызывать кого": [
       {
         "document": "advanced/module-communication.md",
-        "line": 117,
+        "line": 118,
         "level": 2,
         "title": "Аудит исходящих вызовов: кто может вызывать кого"
       }
@@ -4298,12 +4298,12 @@
         "title": "Возвращаемые значения операций с запросами"
       }
     ],
-    "Восстановление при холодном запуске": [
+    "Воспроизведение при холодном запуске": [
       {
         "document": "advanced/module-communication.md",
-        "line": 165,
+        "line": 180,
         "level": 2,
-        "title": "Восстановление при холодном запуске"
+        "title": "Воспроизведение при холодном запуске"
       }
     ],
     "Восстановление — это принятие управления": [
@@ -5302,12 +5302,12 @@
         "title": "Значения состояния бота"
       }
     ],
-    "Идемпотентность и дедупликация событий": [
+    "Идемпотентная дедупликация событий": [
       {
         "document": "advanced/module-communication.md",
-        "line": 198,
+        "line": 213,
         "level": 2,
-        "title": "Идемпотентность и дедупликация событий"
+        "title": "Идемпотентная дедупликация событий"
       }
     ],
     "Идентификатор аккаунта в событиях": [
@@ -5357,7 +5357,7 @@
       },
       {
         "document": "advanced/module-communication.md",
-        "line": 37,
+        "line": 35,
         "level": 3,
         "title": "Иерархия исключений"
       }
@@ -6126,12 +6126,12 @@
         "title": "Контракт с кодом выхода 42"
       }
     ],
-    "Контракт сервисов: meta.services": [
+    "Контракт сервиса: meta.services": [
       {
         "document": "advanced/module-communication.md",
         "line": 47,
         "level": 2,
-        "title": "Контракт сервисов: meta.services"
+        "title": "Контракт сервиса: meta.services"
       }
     ],
     "Контроль вывода": [
@@ -6416,12 +6416,12 @@
         "title": "Краткий справочник"
       }
     ],
-    "Ленивая загрузка и вызовы": [
+    "Ленивая загрузка и вызов": [
       {
         "document": "advanced/module-communication.md",
-        "line": 155,
+        "line": 167,
         "level": 2,
-        "title": "Ленивая загрузка и вызовы"
+        "title": "Ленивая загрузка и вызов"
       }
     ],
     "Логика выполнения после успешной отправки (Hook)": [
@@ -7220,12 +7220,12 @@
         "title": "Направленная рассылка (emit to=)"
       }
     ],
-    "Направленные события: emit_to": [
+    "Направленные события: параметр to в lifecycle.emit": [
       {
         "document": "advanced/module-communication.md",
-        "line": 133,
+        "line": 134,
         "level": 2,
-        "title": "Направленные события: emit_to"
+        "title": "Направленные события: параметр to в lifecycle.emit"
       }
     ],
     "Наследование": [
@@ -11693,7 +11693,7 @@
       },
       {
         "document": "advanced/module-communication.md",
-        "line": 209,
+        "line": 225,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -12135,7 +12135,7 @@
     "Служебный каталог: services()": [
       {
         "document": "advanced/module-communication.md",
-        "line": 96,
+        "line": 97,
         "level": 2,
         "title": "Служебный каталог: services()"
       }

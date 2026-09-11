@@ -616,6 +616,11 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
 聚合每个模块拥有的命令、事件处理器、路由与生命周期钩子，
 按 owner（模块名）归并，展示模块与资源的归属关系。
 
+- **json_safe** (`是否输出可直接`): JSON 序列化的安全结构（默认 True）。
+                  安全模式下 ``info`` 只保留纯数据的 ``meta`` 子表
+                  （丢弃 ``module_class`` / ``strategy`` 等运行时对象），
+                  并对整树做序列化兜底净化。
+
 **返回值** (`拓扑树字典`): {"modules": {name: {
         "loaded": bool, "enabled": bool,
         "load_strategy": {"lazy": bool|None, "priority": int|None},
