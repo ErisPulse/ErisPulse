@@ -39,6 +39,9 @@ from .constants import (
     DEFAULT_HTTP_CLIENT_USER_AGENT,
     DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS,
     DEFAULT_WS_CLIENT_HEARTBEAT_SECS,
+    EVENT_CLIENT_REQUEST_FAILED,
+    EVENT_CLIENT_REQUEST_SUCCESS,
+    EVENT_CLIENT_WS_CONNECT,
     WS_CLOSE_NORMAL,
 )
 from .i18n import i18n
@@ -626,7 +629,7 @@ class Client(BaseClient):
 
                     self._stats["total_requests"] += 1
                     lifecycle.fire(
-                        "client.request.success",
+                        EVENT_CLIENT_REQUEST_SUCCESS,
                         {
                             "method": method,
                             "url": str(url),
@@ -753,7 +756,7 @@ class Client(BaseClient):
                 last_exc.attempts = retries + 1
 
         lifecycle.fire(
-            "client.request.failed",
+            EVENT_CLIENT_REQUEST_FAILED,
             {
                 "method": method,
                 "url": str(url),
@@ -807,7 +810,7 @@ class Client(BaseClient):
             )
 
             await lifecycle.emit(
-                "client.ws.connect",
+                EVENT_CLIENT_WS_CONNECT,
                 {
                     "url": str(url),
                 },

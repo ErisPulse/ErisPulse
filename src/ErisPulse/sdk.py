@@ -32,6 +32,7 @@ from .Core.constants import (
     DEFAULT_PROACTIVE_GC_MEMORY_GROWTH_MB,
     DEFAULT_UNINIT_TIMEOUT_SECS,
     ENV_SUPERVISED,
+    EVENT_CORE_INIT_STAGE,
     HARD_RESTART_EXIT_CODE,
     LIFECYCLE_TIMER_CORE_INIT,
     LIFECYCLE_TIMER_CORE_UNINIT,
@@ -402,7 +403,7 @@ class SDK:
                 stage_order.append(stage)
                 current_stage[0] = stage
                 await self.lifecycle.submit_event(
-                    "core.init.stage",
+                    EVENT_CORE_INIT_STAGE,
                     msg=i18n.t(msg_key),
                     data={"stage": stage},
                     background=True,
