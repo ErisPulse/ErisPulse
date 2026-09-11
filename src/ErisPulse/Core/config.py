@@ -1000,4 +1000,29 @@ def parse_bool_config(value: Any) -> bool:
     return bool(value)
 
 
-__all__ = ["ConfigManager", "config", "parse_bool_config"]
+def json_safe(value: Any, _depth: int = 0) -> Any:
+    """
+    递归将任意结构转换为可直接 JSON 序列化的等价结构
+
+    供 ``get_topology`` 等面向 WebUI 的聚合方法保证输出可序列化：
+    dict / list / tuple / set 递归处理；类对象（``type``）取
+    ``__name__``；其余不可序列化对象退化为 ``str()`` 表示。
+
+    :param value: 任意值
+    :param _depth: [internal-use] 递归深度保护
+    :return: 可被 ``json.dumps`` 序列化的等价结构
+    """
+    if _depth > 12:
+        return str(value)
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, dict):
+        return {str(k): json_safe(v, _depth + 1) for k, v in value.items()}
+    if isinstance(value, (list, tuple, set)):
+        return [json_safe(v, _depth + 1) for v in value]
+    if isinstance(value, type):
+        return getattr(value, "__name__", str(value))
+    return str(value)
+
+
+__all__ = ["ConfigManager", "config", "parse_bool_config", "json_safe"]
