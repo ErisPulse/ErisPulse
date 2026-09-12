@@ -12096,7 +12096,7 @@ A: 对于不通用或平台特有的类型，使用 `{platform}_raw` 和 `{platf
 
 ### 4.1 标准消息段
 
-标准消息段类型**不添加**平台前缀：
+标准消息段**不需要**平台前缀。
 
 | 类型 | 说明 | data 字段 |
 |------|------|----------|
@@ -12109,6 +12109,7 @@ A: 对于不通用或平台特有的类型，使用 `{platform}_raw` 和 `{platf
 | `reply` | 回复 | `message_id: str` |
 | `face` | 表情 | `id: str` |
 | `location` | 位置 | `latitude: float`, `longitude: float` |
+| `keyboard` | 按钮/内联键盘 | `rows: list[list[button]]`（见 4.1.1） |
 
 ```json
 {
@@ -12118,6 +12119,46 @@ A: 对于不通用或平台特有的类型，使用 `{platform}_raw` 和 `{platf
   }
 }
 ```
+
+### 4.1.1 keyboard 按钮/内联键盘段（跨平台通用）
+
+按钮/内联键盘在多个平台（Telegram / 云湖 / QQBot / Kook / Discord 等）均有对应能力，
+属于**跨平台通用概念**，因此作为标准消息段（无平台前缀）。适配器应将标准段转换为
+平台原生结构；平台原生扩展段（如 `telegram_inline_keyboard`）继续保留透传。
+
+```json
+{
+  "type": "keyboard",
+  "data": {
+    "rows": [
+      [
+        {"label": "选项A", "type": "callback", "data": "vote:A"},
+        {"label": "官网",   "type": "link",     "data": "https://example.com"}
+      ]
+    ]
+  }
+}
+```
+
+**字段说明：**
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `rows` | 二维数组 | 是 | 每个子数组为一行按钮 |
+| `rows[][].label` | str | 是 | 按钮显示文本 |
+| `rows[][].type` | str | 是 | `callback`（点击回传数据）/ `link`（跳转URL） |
+| `rows[][].data` | str | 是 | 回调数据（type=callback）或跳转地址（type=link） |
+| `rows[][].*` | Any | 否 | 平台特有可选字段（如 `web_app`、`menus`），适配器按能力映射或忽略 |
+
+**适配器转换参考**（完整映射与交互回调事件标准见 [跨平台交互组件标准](standardization-guide.md)）：
+
+| 平台 | 标准段 → 平台原生 |
+|------|------------------|
+| Telegram | `inline_keyboard`：`[{text, callback_data \| url}]` |
+| 云湖 | `buttons`：`[{label, action_type: 2=回调 \| 1=跳转, ...}]` |
+| QQBot | `keyboard.content.rows`：`[{label, type: 2=回调 \| 0=跳转, data}]`（需 markdown 类型消息） |
+| Kook | 卡片 action-group 模块 |
+| Discord | components：`action_row` + `buttons`（custom_id/url） |
 
 ### 4.2 平台扩展消息段
 
@@ -19986,7 +20027,7 @@ OneBot11Adapter 是基于 OneBot V11 协议构建的适配器。
 
 ## 文档信息
 
-- 对应模块版本: 4.0.0
+- 对应模块版本: 4.3.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -19997,6 +20038,57 @@ OneBot11Adapter 是基于 OneBot V11 协议构建的适配器。
 - 多账户支持：默认多账户架构，支持同时配置和运行多个 OneBot 账户
 - 配置键名：`OneBotAdapter`
 
+## v5 范式更新（4.3.0）
+
+本适配器已完成 v5 范式对齐（增量升级，API 兼容）：
+
+- **BaseConverter 继承**：转换器公共字段（id/time/platform/self/raw）由框架 uild_base_event 构建，按 OB11 字段名（echo/time/self_id）覆盖
+- **spawn_background 任务归属**：Client 模式连接任务改用 
+untime.spawn_background（owner 归属，shutdown 自动回收）
+- **框架软依赖**：安装适配器不再声明 ErisPulse 硬依赖，避免 pip 解析时调整框架版本；运行时检测 ErisPulse>=2.7.1 并在版本过低时打日志提示
+- **启动版本日志**：初始化时输出 OneBotAdapter v4.3.0 已加载
+
+已有能力（4.2.0 起支持）：多账户、Api DSL 标准动作映射（get_self_info→get_login_info 等）、Request DSL（好友/群请求审批：event.approve() / event.reject()）、EventMixin、i18n。
+
+---
+## 标准Api动作（Api DSL）
+
+适配器将 OneBot12 标准动作名自动映射到 OB11 动作名，模块可跨平台统一调用：
+
+| OB12 标准动作 | OB11 动作 | 说明 |
+|--------------|-----------|------|
+| get_self_info | get_login_info | 字段标准化 user_id/user_name/user_displayname |
+| get_user_info | get_stranger_info | 字段标准化 |
+| delete_message | delete_msg | 撤回消息 |
+| leave_group | set_group_leave | 退出群 |
+| get_friend_list | get_friend_list | 动作名一致，默认透传 |
+| get_group_info | get_group_info | 动作名一致，默认透传 |
+| upload_file | upload_group_file / upload_private_file | 扩展 group_id/user_id 可选参数，filetype 自动检测类型路由 |
+
+### 基本用法
+
+```python
+from ErisPulse import sdk
+onebot = sdk.adapter.get("onebot11")
+
+# 获取机器人信息
+result = await onebot.Api.get_self_info()
+print(result["data"]["user_id"], result["data"]["user_name"])
+
+# 撤回消息
+await onebot.Api.delete_message(message_id=123456)
+
+# 上传群文件（filetype 自动检测类型路由到 upload_group_file）
+result = await onebot.Api.upload_file(group_id=123456, file="/path/to/file.zip")
+
+# 指定账户（多账户）
+result = await onebot.Api.Using("main").get_self_info()
+
+# 未映射的 OB11 动作通过 call() 逃生舱调用（NapCat/Lagrange 等扩展通用）
+result = await onebot.Api.call("send_poke", group_id=123, user_id=456)
+```
+
+---
 ## 支持的消息发送类型
 
 所有发送方法均通过链式语法实现，例如：
@@ -20508,7 +20600,7 @@ OneBot12Adapter 是基于 OneBot V12 协议构建的适配器，作为 ErisPulse
 
 ## 文档信息
 
-- 对应模块版本: 4.0.0
+- 对应模块版本: 4.3.0
 - 维护者: ErisPulse
 - 协议版本: OneBot V12
 
@@ -20519,6 +20611,71 @@ OneBot12Adapter 是基于 OneBot V12 协议构建的适配器，作为 ErisPulse
 - 支持的协议/API版本：OneBot V12
 - 多账户支持：完全多账户架构，支持同时配置和运行多个OneBot12账户
 
+## v5 范式更新（4.3.0）
+
+本适配器已完成 v5 范式对齐（增量升级，API 兼容）：
+
+- **BaseConverter 继承**：转换器公共字段（id/time/platform/self/raw）由框架 uild_base_event 构建，按 OB11 字段名（echo/time/self_id）覆盖
+- **spawn_background 任务归属**：Client 模式连接任务改用 
+untime.spawn_background（owner 归属，shutdown 自动回收）
+- **框架软依赖**：安装适配器不再声明 ErisPulse 硬依赖，避免 pip 解析时调整框架版本；运行时检测 ErisPulse>=2.7.1 并在版本过低时打日志提示
+- **启动版本日志**：初始化时输出 OneBotAdapter v4.3.0 已加载
+
+已有能力（4.2.0 起支持）：多账户、Api DSL 标准动作映射（get_self_info→get_login_info 等）、Request DSL（好友/群请求审批：event.approve() / event.reject()）、EventMixin、i18n。
+
+---
+## 标准Api动作（Api DSL）
+
+OneBot12 后端原生支持所有 OB12 标准动作名，Api DSL 默认直接委托 call_api 透传（无需映射）：
+
+```python
+from ErisPulse import sdk
+ob12 = sdk.adapter.get("onebot12")
+
+result = await ob12.Api.get_self_info()
+result = await ob12.Api.get_friend_list()
+await ob12.Api.delete_message(message_id="MSG_ID")
+
+# 指定账户（多账户）
+result = await ob12.Api.Using("main").get_self_info()
+
+# 平台扩展动作
+result = await ob12.Api.call("extend_action", param=1)
+```
+
+> 支持的动作以后端实现为准（NapCat/Lagrange/LLOneBot 等）；不支持的动作由后端返回错误并透传。
+
+---
+
+## 请求操作（Request DSL）
+
+基于 OneBot12 标准的 handle_quick_request 动作，处理好友请求与加群邀请的同意/拒绝：
+
+### Event 便捷方法
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    if event.get("platform") != "onebot12":
+        return
+    comment = event.get("comment", "")
+    if comment == "passphrase":
+        await event.approve()      # 同意
+    else:
+        await event.reject()       # 拒绝
+```
+
+### 手动调用 Request DSL
+
+```python
+await ob12.Request("request_flag").accept()
+await ob12.Request("request_flag").reject()
+await ob12.Request("request_flag").Using("main").accept()
+```
+
+---
 ## 支持的消息发送类型
 
 所有发送方法均通过链式语法实现，例如：
@@ -20953,7 +21110,7 @@ OneBot12使用标准化的消息段格式：
 
 ### Telegram 适配
 
-﻿# Telegram平台特性文档
+# Telegram平台特性文档
 
 TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消息类型和事件处理。
 
@@ -20961,7 +21118,7 @@ TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消�
 
 ## 文档信息
 
-- 对应模块版本: 4.1.1
+- 对应模块版本: 4.2.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -20971,6 +21128,60 @@ TelegramAdapter 是基于 Telegram Bot API 构建的适配器，支持多种消�
 - 支持的协议/API版本：Telegram Bot API
 - 会话类型映射：`private` → 发送时用 `user`，`group`/`supergroup` → `group`，`channel` → `channel`
 
+## 标准Api动作（Api DSL）
+
+适配器将 OB12 标准动作映射到 Telegram Bot API 并标准化 data 字段：
+
+| OB12 标准动作 | Telegram API | data 字段 |
+|--------------|--------------|----------|
+| get_self_info | getMe | user_id / user_name / user_displayname |
+| get_user_info(user_id) | getChat | user_id / user_name / user_displayname |
+| get_group_info(group_id) | getChat | group_id / group_name |
+| get_group_member_info(group_id, user_id) | getChatMember | user_id / user_name / telegram_role |
+| delete_message(message_id) | deleteMessage | 自动按消息登记表补全 chat_id |
+| leave_group(group_id) | leaveChat | - |
+
+扩展动作：get_group_admin_list(group_id)（管理员列表）、get_chat_member_count(chat_id)（成员数）。
+
+```python
+from ErisPulse import sdk
+telegram = sdk.adapter.get("telegram")
+
+result = await telegram.Api.get_self_info()
+result = await telegram.Api.get_group_info(group_id=-100123)
+result = await telegram.Api.get_group_admin_list(-100123)
+await telegram.Api.delete_message(message_id=55)   # 自动补全 chat_id
+result = await telegram.Api.Using("main").get_self_info()
+```
+
+> Telegram Bot API 无获取好友列表/群列表接口，get_friend_list/get_group_list 返回 
+etcode=10002。
+
+---
+
+## 请求操作（Request DSL）
+
+处理加群申请（chat_join_request 事件），基于 pproveChatJoinRequest / declineChatJoinRequest：
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_request()
+async def handle_join_request(event):
+    if event.get("platform") != "telegram":
+        return
+    # event["request_id"] 为合成标识（tjr_{chat_id}_{user_id}_{date}）
+    if event.get("user_nickname"):
+        await event.approve()          # 同意
+    # await event.reject()             # 拒绝
+
+# 手动调用（需先收到过对应请求事件以登记上下文）
+await telegram.Request(event["request_id"]).accept()
+await telegram.Request(event["request_id"]).reject()
+await telegram.Request(event["request_id"]).Using("main").accept()
+```
+
+---
 ## 支持的消息发送类型
 
 所有发送方法均通过链式语法实现，例如：
@@ -21351,7 +21562,7 @@ YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功�
 
 ## 文档信息
 
-- 对应模块版本: 4.3.0
+- 对应模块版本: 4.4.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -21362,6 +21573,48 @@ YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功�
 - 链式修饰支持：支持 `.Reply()` 等链式修饰方法
 - OneBot12兼容：支持发送 OneBot12 格式消息
 
+## v5 范式更新（4.4.0）
+
+本适配器已完成 v5 范式对齐（增量升级，API 兼容）：
+
+- **官方服务端API全集**（Api DSL 扩展方法）：编辑消息、批量发送、消息列表、用户/全局看板、群成员禁言、移除群成员、群消息类型控制、群标签 CRUD、用户打标签
+- **标准 keyboard 段**（跨平台交互组件标准）：{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}} 段自动转换为云湖 buttons；.Buttons(rows) / .Keyboard(rows) 修饰器接受通用结构（原生结构向后兼容）
+- **交互回调标准字段**：按钮点击/A2UI 事件包含 interaction_id / utton_data 标准字段
+- **spawn_background 任务归属**：WS 连接任务改用 
+untime.spawn_background
+- **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
+
+### 平台扩展动作（call / Api 方法）
+
+```python
+from ErisPulse import sdk
+yunhu = sdk.adapter.get("yunhu")
+
+# Api 方法（官方服务端API）
+await yunhu.Api.edit_message(msg_id, recv_id, "group", "text", {"text": "新内容"})
+await yunhu.Api.batch_send(["userId1", "userId2"], "text", {"text": "公告"})
+await yunhu.Api.get_message_list(group_id, "group", before=10)
+await yunhu.Api.set_user_board(chat_id, "group", "看板内容", expire_time=3600)
+await yunhu.Api.dismiss_global_board()
+await yunhu.Api.gag_group_member(group_id, user_id, 600)      # 禁言600秒，0=解除
+await yunhu.Api.remove_group_member(group_id, user_id)
+await yunhu.Api.set_group_msg_type_limit(group_id, "text,image")
+await yunhu.Api.create_group_tag(group_id, "VIP", color="#FF5733")
+await yunhu.Api.add_user_tag(group_id, user_id, "VIP")
+
+# 按钮点击回调（标准字段）
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_button(event):
+    if event.get("platform") == "yunhu" and event.get("button_data"):
+        data = event["button_data"]     # 跨平台统一取值
+        interaction_id = event["interaction_id"]
+```
+
+> 完整标准说明见 [跨平台交互组件标准](../../standards/standardization-guide.md)。
+
+---
 ## 支持的消息发送类型
 
 所有发送方法均通过链式语法实现，例如：
@@ -22050,7 +22303,7 @@ EmailAdapter 是基于 SMTP/IMAP 协议的邮件适配器，支持邮件发送�
 
 ## 文档信息
 
-- 对应模块版本: 4.1.0
+- 对应模块版本: 4.2.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -22098,6 +22351,24 @@ email = "backup@example.com"
 password = "another-password"
 enabled = true
 ```
+
+## v5 范式更新（4.2.0）
+
+- **Api DSL 最小集**：get_self_info（邮箱地址）/get_status/get_version/get_supported_actions
+- **spawn_background 任务归属**：IMAP 轮询任务改用 runtime.spawn_background
+- **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
+- 导入路径更新至 Core.Bases；_load_accounts 保留（全局默认值合并为该适配器特有逻辑）
+
+---
+
+
+### 已对接平台能力
+
+- **接收**：IMAP 轮询收信（正文/HTML/附件解析为消息段），未读增量检测
+- **发送**：SMTP 发信（Subject/Text/Html/Cc/Bcc/ReplyTo/Attachment），支持多账户
+- **API**：账户信息与运行状态（最小集）；邮件撤回/群组等概念不适用
+
+---
 
 ## 支持的消息发送类型
 
@@ -22370,7 +22641,7 @@ KookAdapter 是基于Kook（开黑啦）Bot WebSocket 协议构建的适配器�
 
 ## 文档信息
 
-- 对应模块版本: 0.1.0
+- 对应模块版本: 4.1.0
 - 维护者: ShanFish
 
 ## 基本信息
@@ -22415,6 +22686,51 @@ enabled = true
 - Kook API 基础地址：`https://www.kookapp.cn/api/v3`
 - WebSocket 网关通过 API 动态获取：`POST /gateway/index`
 
+## v5 范式更新（4.1.0）
+
+本适配器已完成 v5 范式对齐（增量升级，API 兼容）：
+
+- **BaseConverter 继承**：转换器公共字段由框架 `build_base_event` 构建
+- **Api DSL**：标准Api动作映射（见下）
+- **标准 keyboard 段**：`{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}}` 文本+键盘自动组合为 Kook 卡片消息（section + action-group）；.Keyboard(rows) 修饰器接受通用结构
+- **spawn_background 任务归属**：连接任务改用 
+untime.spawn_background
+- **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
+
+### 标准Api动作
+
+```python
+from ErisPulse import sdk
+kook = sdk.adapter.get("kook")
+
+result = await kook.Api.get_self_info()              # GET /users/@me
+result = await kook.Api.get_user_info(user_id)       # POST /user/view
+result = await kook.Api.get_guild_info(guild_id)     # POST /guild/view
+result = await kook.Api.get_guild_list()             # POST /guild/list
+result = await kook.Api.get_channel_info(channel_id) # POST /channel/view
+result = await kook.Api.get_channel_list(guild_id)   # POST /channel/list
+await kook.Api.delete_message(msg_id)                # POST /message/delete
+result = await kook.Api.Using("main").get_self_info()
+```
+
+### 按钮（keyboard）
+
+```python
+rows = [[{"label": "选项A", "type": "callback", "data": "vote:A"},
+         {"label": "官网",  "type": "link",     "data": "https://example.com"}]]
+await kook.Send.To("channel", channel_id).Keyboard(rows).Text("请选择")
+# 文本与按钮自动组合为 Kook 卡片消息（section + action-group）
+
+# 按钮点击回调（标准字段）
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_button(event):
+    if event.get("platform") == "kook" and event.get("button_data"):
+        data = event["button_data"]
+```
+
+---
 ## 支持的消息发送类型
 
 所有发送方法均通过链式语法实现，例如：
@@ -22866,7 +23182,7 @@ MatrixAdapter 是基于 [Matrix协议](https://spec.matrix.org/) 构建的适配
 
 ## 文档信息
 
-- 对应模块版本: 4.1.0
+- 对应模块版本: 4.2.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -22914,6 +23230,37 @@ enabled = true
 **认证方式：**
 - 方式一（推荐）：直接提供 `access_token`
 - 方式二：提供 `user_id` 和 `password`，适配器会自动调用登录接口获取 token
+
+## v5 范式更新（4.2.0）
+
+- **BaseConverter 继承**：转换器公共字段由框架 build_base_event 构建
+- **Api DSL**：get_self_info/get_user_info/get_group_info/get_group_list/get_group_member_list/leave_group/delete_message(redact) + 元动作
+- **消息事件补充 message_id**（event_id）；消息登记表支撑 delete_message
+- **spawn_background 任务归属**：同步/心跳任务改用 runtime.spawn_background
+- **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
+- Matrix 无原生按钮能力，标准 keyboard 段优雅忽略（不报错）
+
+### 标准Api动作示例
+
+```python
+from ErisPulse import sdk
+matrix = sdk.adapter.get("matrix")
+result = await matrix.Api.get_self_info()            # /account/whoami
+result = await matrix.Api.get_group_info(room_id)    # m.room.name
+result = await matrix.Api.get_group_list()           # /joined_rooms
+await matrix.Api.delete_message(event_id)            # redact（登记表补全 room_id）
+```
+
+---
+
+
+### 已对接平台能力
+
+- **事件**：消息（m.room.message：文本/图片/文件/音视频/回复/编辑）、成员增减（m.room.member）、房间名称变更等状态事件
+- **会话**：私聊（DM 房间自动发现）/ 群组（房间）；发送支持 Text/Image/File/Voice/Video/Markdown/Raw_ob12
+- **API**：whoami/profile/joined_rooms/房间状态/成员列表/leave/redact（见上方 Api DSL）
+
+---
 
 ## 支持的消息发送类型
 
@@ -23295,322 +23642,198 @@ async def handle_member_change(event):
 
 # QQBot平台特性文档
 
-QQBotAdapter 是基于QQBot（QQ机器人文档）协议构建的适配器，整合了QQBot所有功能模块，提供统一的事件处理和消息操作接口。
+QQBotAdapter 是基于QQ官方机器人（QQ OpenAPI）协议构建的适配器，整合群聊、私聊、频道等全场景功能，提供 OneBot12 标准事件、标准Api动作与请求操作接口。
 
 ---
 
 ## 文档信息
 
-- 对应模块版本: 1.0.0
+- 对应模块版本: 5.0.0
 - 维护者: ErisPulse
 
 ## 基本信息
 
-- 平台简介：QQBot是QQ官方提供的机器人的开发接口，支持群聊、私聊、频道等多种场景
+- 平台简介：QQ官方机器人开发接口，支持群聊、私聊、频道等多种场景
 - 适配器名称：QQBotAdapter
-- 连接方式：WebSocket 长连接（通过QQBot网关）
-- 认证方式：基于 appId + clientSecret 获取 access_token
-- 链式修饰支持：支持 `.Reply()`、`.At()`、`.AtAll()`、`.Keyboard()` 等链式修饰方法
-- OneBot12兼容：支持发送 OneBot12 格式消息
+- 连接方式：**WebSocket 长连接**（默认）或 **Webhook HTTP 回调**（按账户配置，Ed25519 验签）
+- 认证方式：appId + clientSecret 获取 access_token（7200s，提前45s自动刷新）
+- API根地址：`https://api.bot.qq.com`（v5 起官方统一域名，sandbox 已废弃）
+- OneBot12兼容：消息收发、事件、**标准Api动作**、**请求操作**全覆盖
+- 多账户：支持，`accounts` 下任意账户并行（可混合 websocket/webhook 模式）
 
 ## 配置说明
 
 ```toml
 # config.toml
 [QQBot_Adapter]
-appid = "YOUR_APPID"          # QQ机器人应用ID（必填）
-secret = "YOUR_CLIENT_SECRET"  # QQ机器人客户端密钥（必填）
-sandbox = false                 # 是否使用沙盒环境（可选，默认为false）
-intents = [1, 30, 25]          # 订阅的事件 intents 位（可选）
-gateway_url = "wss://api.sgroup.qq.com/websocket/"  # 自定义网关地址（可选）
+intents = "[0, 9, 12, 25, 26, 27]"   # 全局：订阅的事件 intents（JSON数组，支持事件名）
+
+[QQBot_Adapter.accounts.default]
+appid = "YOUR_APPID"                 # QQ机器人应用ID（必填）
+secret = "YOUR_CLIENT_SECRET"        # QQ机器人客户端密钥（必填）
+mode = "websocket"                   # 事件接收方式：websocket / webhook
+bot_id = ""                          # 机器人ID（留空自动获取；可手动填写用于 Using() 定位）
+gateway_url = ""                     # WebSocket网关地址（留空通过 /gateway/bot 动态获取）
+api_base_url = "https://api.bot.qq.com"  # API根地址（可自定义用于代理）
+webhook_path = "/webhook"            # Webhook回调路径（mode=webhook 时生效）
+enabled = true
 ```
 
-**配置项说明：**
-- `appid`：QQ机器人的应用ID（必填），从QQ开放平台获取
-- `secret`：QQ机器人的客户端密钥（必填），从QQ开放平台获取
-- `sandbox`：是否使用沙盒环境，沙盒环境API地址为 `https://sandbox.api.sgroup.qq.com`
-- `intents`：事件订阅 intents 列表，每个值会被左移位后按位或运算
-  - `1`：频道相关事件
-  - `25`：频道消息事件
-  - `30`：群@消息事件
-- `gateway_url`：WebSocket 网关地址，默认为 `wss://api.sgroup.qq.com/websocket/`
+**v5 破坏性变更：**
+- 官方统一使用 `api.bot.qq.com`，`sandbox` 配置废弃（旧配置自动迁移并忽略）
+- 旧版扁平配置（`[QQBot_Adapter]` 下直接写 appid/secret）自动迁移到 `accounts.default`
+- 框架为**软依赖**：安装适配器不会拉动框架版本；运行时检测 `ErisPulse>=2.7.1` 并提示
 
-**API环境：**
-- 正式环境：`https://api.sgroup.qq.com`
-- 沙盒环境：`https://sandbox.api.sgroup.qq.com`
+**intents 说明（支持位序号或事件名）：**
 
-## 支持的消息发送类型
+| 位 | 事件名 | 说明 |
+|----|--------|------|
+| 0 | GUILDS | 频道变更 |
+| 1 | GUILD_MEMBERS | 频道成员变更 |
+| 9 | GUILD_MESSAGES | 频道消息（私域） |
+| 12 | DIRECT_MESSAGE | 频道私信 |
+| 24 | GROUP_MEMBER | 群成员变更（v5新增） |
+| 25 | GROUP_AND_C2C_EVENT | 群@消息与私聊消息 |
+| 26 | INTERACTION | 交互事件（按钮等） |
+| 27 | MESSAGE_AUDIT | 消息审核事件 |
+| 30 | PUBLIC_GUILD_MESSAGES | 频道消息（公域） |
 
-所有发送方法均通过链式语法实现，例如：
+## 消息发送
+
+### 基础发送
+
 ```python
-from ErisPulse.Core import adapter
-qqbot = adapter.get("qqbot")
+from ErisPulse import sdk
+qqbot = sdk.adapter.get("qqbot")
 
 await qqbot.Send.To("user", user_openid).Text("Hello World!")
+
+# 群聊@消息（自动使用 <qqbot-at-user id="x" /> 格式）
+await qqbot.Send.To("group", group_openid).At("member_openid").Text("@你")
+
+# 频道消息（@ 自动使用 <@user_id> 格式）
+await qqbot.Send.To("channel", channel_id).Text("频道消息")
+
+# 被动回复（自动携带 msg_id，无需手动 Reply）
+await qqbot.Send.To("group", group_openid).Reply(msg_id).Text("回复内容")
+
+# 富媒体（URL / 本地路径 / 二进制；超过5MB自动分片上传）
+await qqbot.Send.To("group", gid).Image("https://example.com/img.png")
+
+# Markdown（原生 / 模板）
+await qqbot.Send.To("group", gid).Markdown("# 标题\n- 列表")
+await qqbot.Send.To("user", uid).Markdown(template_id=1, kv=[{"key": "title", "value": "通知"}])
+
+# 键盘（自动置为 markdown 类型并附带 bot_appid）
+await qqbot.Send.To("group", gid).Keyboard(keyboard).Text("请选择")
+
+# 流式消息（单聊）
+await qqbot.Send.To("user", openid).Stream("回答内容")
+
+# 多账户
+await qqbot.Send.Using("account2").To("group", gid).Text("来自第二个机器人")
 ```
 
-支持的发送类型包括：
-- `.Text(text: str)`：发送纯文本消息。
-- `.Image(file: bytes | str)`：发送图片消息，支持文件路径、URL、二进制数据。
-- `.Markdown(content: str)`：发送Markdown格式消息。
-- `.Ark(template_id: int, kv: list)`：发送Ark模板消息。
-- `.Embed(embed_data: dict)`：发送Embed消息。
-- `.Raw_ob12(message: List[Dict], **kwargs)`：发送 OneBot12 格式消息。
-
-### 链式修饰方法（可组合使用）
-
-链式修饰方法返回 `self`，支持链式调用，必须在最终发送方法前调用：
-
-- `.Reply(message_id: str)`：回复指定消息。
-- `.At(user_id: str)`：@指定用户（以 `<@user_id>` 格式插入内容）。
-- `.AtAll()`：@所有人（插入 `@所有人` 文本）。
-- `.Keyboard(keyboard: dict)`：添加键盘按钮。
-
-### 链式调用示例
+## OneBot12 标准Api动作
 
 ```python
-# 基础发送
-await qqbot.Send.To("user", user_openid).Text("Hello")
-
-# 回复消息
-await qqbot.Send.To("group", group_openid).Reply(msg_id).Text("回复消息")
-
-# 回复 + 按钮
-await qqbot.Send.To("group", group_openid).Reply(msg_id).Keyboard(keyboard).Text("带回复和键盘的消息")
-
-# @用户
-await qqbot.Send.To("group", group_openid).At("member_openid").Text("你好")
-
-# 组合使用
-await qqbot.Send.To("group", group_openid).Reply(msg_id).At("member_openid").Keyboard(keyboard).Text("复合消息")
+result = await qqbot.Api.get_self_info()                     # 机器人信息
+result = await qqbot.Api.get_group_info(group_openid)        # 群信息
+result = await qqbot.Api.get_group_member_list(group_openid) # 群成员列表（自动分页）
+result = await qqbot.Api.get_guild_list()                    # 频道列表
+result = await qqbot.Api.get_channel_list(guild_id)          # 子频道列表
+await qqbot.Api.delete_message(message_id)                   # 撤回（自动按消息来源路由端点）
+result = await qqbot.Api.get_status()                        # 多账户运行状态
+result = await qqbot.Api.Using("account2").get_self_info()   # 指定账户
 ```
 
-### OneBot12消息支持
+支持的标准动作：`get_self_info` / `get_group_info` / `get_group_member_info` / `get_group_member_list` / `get_guild_info` / `get_guild_list` / `get_guild_member_info` / `get_guild_member_list` / `get_channel_info` / `get_channel_list` / `set_channel_name` / `leave_channel` / `delete_message` / `get_status` / `get_version` / `get_supported_actions`。不支持的动作返回 `retcode=10002`。
 
-适配器支持发送 OneBot12 格式的消息，便于跨平台消息兼容：
+## 请求操作（入群申请审批）
+
+`GROUP_JOIN_REQUEST` 事件转换为 OneBot12 `request` 事件，支持标准化审批：
 
 ```python
-# 发送 OneBot12 格式消息
-ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
-await qqbot.Send.To("user", user_openid).Raw_ob12(ob12_msg)
+from ErisPulse.Core.Event import request as request_event
 
-# 配合链式修饰
-ob12_msg = [{"type": "text", "data": {"text": "回复消息"}}]
-await qqbot.Send.To("group", group_openid).Reply(msg_id).Raw_ob12(ob12_msg)
+@request_event.on_request()
+async def handle_join(event):
+    if event.get("platform") == "qqbot":
+        await event.approve()                  # 同意
+        # await event.reject(comment="理由")   # 拒绝
 ```
 
-## 发送方法返回值
+`request_id` = 官方 `join_request_id`，适配器自动缓存申请上下文并路由到 `POST /v2/groups/{group_openid}/approval_join_request/{member_openid}`。
 
-所有发送方法均返回一个 Task 对象，可以直接 await 获取发送结果。返回结果遵循 ErisPulse 适配器标准化返回规范：
+## @机器人检测机制（重要）
 
-```python
-{
-    "status": "ok",           // 执行状态: "ok" 或 "failed"
-    "retcode": 0,             // 返回码
-    "data": {...},            // 响应数据
-    "message_id": "123456",   // 消息ID
-    "message": "",            // 错误信息
-    "qqbot_raw": {...}        // 原始响应数据
-}
-```
+QQ官方的"被@"事实由事件名承载，且群消息 @ 标记为 `<@{群空间openid}>`（与 READY 返回的 bot_id **不在同一 id 体系**）。适配器自动处理：
 
-### 错误码说明
+1. **标记解析**：`<@openid>` 与 `<qqbot-at-user>` 两种风格均解析为 mention 段（文本中无残留）
+2. **名称归一化**：`/users/@me` 返回的机器人名与 mentions 数组昵称一致时，认定为@机器人，mention 段归一化为 bot_id（原始 openid 保留在 `data.qqbot_openid`）
+3. **openid 学习**：自动学习机器人在各群的 openid，用于"接收全部群消息"模式下的@识别
+4. **注入保证**：`GROUP_AT_MESSAGE_CREATE` / `AT_MESSAGE_CREATE` 保证存在机器人 mention 段
+
+因此 `on_at_message()` / `event.is_at_message()` 在 qqbot 平台可直接使用。开启"接收全部群消息"权限后，@消息以 `GROUP_MESSAGE_CREATE` 推送（`GROUP_AT_MESSAGE_CREATE` 不再到达），适配器同样能识别。
+
+## 平台原生API方法族
+
+适配器暴露完整QQ官方API（详情见适配器仓库 platform-features.md）：
+
+- **机器人**：`get_me()`、`reply_interaction()`
+- **频道**：`get_guilds/get_guild/mute_guild_all/roles管理/api_permission`
+- **子频道**：`get_channels/get_channel/create_channel/update_channel/delete_channel/pins`
+- **频道成员**：`get_guild_members/get_guild_member/mute/roles/kick`
+- **权限/表态/日程/帖子/音频**：全套方法
+- **群管理**（部分接口仅白名单机器人）：`get_group_members/get_group_bot_state/黑名单/入群审批/禁言/审批策略`
+- **菜单面板**：`get_custom_menu/update_custom_menu/指令面板CRUD`
+- **富媒体**：`_upload_media`（URL/路径/二进制，超5MB自动分片）、`stream_message`（流式消息）
+
+## WebSocket / Webhook 连接
+
+### WebSocket 流程
+
+1. appId + clientSecret 获取 access_token（提前45s自动刷新，失败重试3次）
+2. 通过 `GET /gateway/bot` 动态获取网关地址（配置 `gateway_url` 时直接使用）
+3. OP_HELLO → Identify/Resume → READY（获取 session_id 与 bot_id）→ 心跳循环
+4. 断线重连：最大50次，指数退避 `min(5 * 2^n, 300)` 秒；OP_RECONNECT 保留会话
+
+### Webhook 模式
+
+账户 `mode = "webhook"` 后通过 ErisPulse router 注册 HTTP 路由：
+
+- Ed25519 验签（种子 = secret 循环填充至32字节），验证 `X-Signature-Ed25519` 对 `X-Signature-Timestamp + body`
+- 自动处理 op=13 签名验证握手与 op=0 事件分发
+- 依赖 `cryptography` 库（随适配器安装）
+
+## 错误码说明
 
 | retcode | 说明 |
 |---------|------|
 | 0 | 成功 |
-| 10003 | 无法确定发送目标 |
+| 10001 | 参数缺失 |
+| 10002 | 不支持的动作 |
+| 10003 | 无法确定目标/账户 |
 | 32000 | 请求超时 |
-| 33000 | API调用异常 |
-| 34000 | API返回了意外格式或业务错误 |
-
-## 特有事件类型
-
-需要 `platform=="qqbot"` 检测再使用本平台特性
-
-### 核心差异点
-
-1. **openid体系**：QQBot使用 openid 而非 QQ号，用户和群的标识均为 openid 字符串
-2. **群消息必须@**：群内消息仅在用户@机器人时才会收到（`GROUP_AT_MESSAGE_CREATE`）
-3. **频道系统**：QQBot支持频道（Guild）和子频道（Channel）的消息和事件
-4. **消息审核**：发送的消息可能需要经过审核，通过 `qqbot_audit_pass`/`qqbot_audit_reject` 事件通知结果
-5. **被动回复**：群消息和私聊消息支持被动回复机制，需要在发送时携带 `msg_id`
-
-### 扩展字段
-
-- 所有特有字段均以 `qqbot_` 前缀标识
-- 保留原始数据在 `qqbot_raw` 字段
-- `qqbot_raw_type` 标识原始QQBot事件类型（如 `C2C_MESSAGE_CREATE`）
-- 附件数据通过 `qqbot_attachment` 字段保存原始附件信息
-
-### 特殊字段示例
-
-```python
-# 群@消息
-{
-  "type": "message",
-  "detail_type": "group",
-  "user_id": "MEMBER_OPENID",
-  "group_id": "GROUP_OPENID",
-  "qqbot_group_openid": "GROUP_OPENID",
-  "qqbot_member_openid": "MEMBER_OPENID",
-  "qqbot_event_id": "消息事件ID",
-  "qqbot_reply_token": "回复token"
-}
-
-# 私聊消息
-{
-  "type": "message",
-  "detail_type": "private",
-  "user_id": "USER_OPENID",
-  "qqbot_openid": "USER_OPENID",
-  "qqbot_event_id": "消息事件ID",
-  "qqbot_reply_token": "回复token"
-}
-
-# 交互事件
-{
-  "type": "notice",
-  "detail_type": "qqbot_interaction",
-  "qqbot_interaction_id": "交互ID",
-  "qqbot_interaction_type": "交互类型",
-  "qqbot_interaction_data": {
-    "...": "交互数据"
-  }
-}
-
-# 消息审核
-{
-  "type": "notice",
-  "detail_type": "qqbot_audit_pass",
-  "qqbot_audit_id": "审核ID",
-  "qqbot_message_id": "消息ID"
-}
-
-# 消息删除
-{
-  "type": "notice",
-  "detail_type": "qqbot_message_delete",
-  "message_id": "被删除的消息ID",
-  "operator_id": "操作者ID"
-}
-
-# 表情回应
-{
-  "type": "notice",
-  "detail_type": "qqbot_reaction_add",
-  "qqbot_raw": {
-    "...": "原始数据"
-  }
-}
-```
-
-### 频道消息段
-
-频道消息支持 `mentions` 字段，转换后以 `mention` 消息段表示：
-
-```json
-{
-  "type": "mention",
-  "data": {
-    "user_id": "被@用户ID",
-    "user_name": "被@用户昵称"
-  }
-}
-```
-
-### 附件消息段
-
-QQBot的附件根据 `content_type` 自动转换为对应消息段：
-
-| content_type 前缀 | 转换类型 | 说明 |
-|---|---|---|
-| `image` | `image` | 图片消息 |
-| `video` | `video` | 视频消息 |
-| `audio` | `voice` | 语音消息 |
-| 其他 | `file` | 文件消息 |
-
-附件消息段结构：
-```json
-{
-  "type": "image",
-  "data": {
-    "url": "附件URL",
-    "qqbot_attachment": {
-      "content_type": "image/png",
-      "url": "原始附件URL"
-    }
-  }
-}
-```
-
-## WebSocket连接
-
-### 连接流程
-
-1. 使用 appId + clientSecret 获取 access_token
-2. 连接到 WebSocket 网关
-3. 收到 OP_HELLO（op=10）消息，获取心跳间隔
-4. 发送 OP_IDENTIFY（op=2）进行身份验证
-5. 收到 READY 事件，获取 session_id 和 bot_id
-6. 开始心跳循环（OP_HEARTBEAT，op=1）
-7. 接收事件分发（OP_DISPATCH，op=0）
-
-### 断线重连
-
-- 支持自动重连，最大重连次数为50次
-- 重连等待时间采用指数退避算法：`min(5 * 2^min(count, 6), 300)` 秒
-- 支持会话恢复（OP_RESUME，op=6），使用 session_id + seq 恢复
-- 收到 OP_RECONNECT（op=7）或 OP_INVALID_SESSION（op=9）时自动触发重连
-
-### Token刷新
-
-- access_token 有效期通常为7200秒
-- 适配器自动每 7080 秒（7200-120）刷新一次 token
-- 刷新接口：`POST https://bots.qq.com/app/getAppAccessToken`
-
-## 事件订阅（Intents）
-
-intents 值通过位运算组合：
-
-```python
-intents = [1, 30, 25]
-value = 0
-for intent in intents:
-    value |= (1 << intent)
-```
-
-常用的 intent 位：
-| intent值 | 说明 |
-|----------|------|
-| 1 | 频道相关事件（GUILD_CREATE等） |
-| 25 | 频道消息事件（AT_MESSAGE_CREATE等） |
-| 30 | 群@消息事件（GROUP_AT_MESSAGE_CREATE等） |
+| 33000 | 网络/API调用异常 |
+| 34001 | 请求不存在或已过期（Request DSL） |
+| 34100 | 媒体上传失败 |
+| 34000+ | 平台业务错误（透传官方 code） |
 
 ## 使用示例
 
-### 处理群消息
+### 处理群消息（@检测）
 
 ```python
 from ErisPulse.Core.Event import message
-from ErisPulse import sdk
 
-qqbot = sdk.adapter.get("qqbot")
-
-@message.on_message()
-async def handle_group_msg(event):
+@message.on_at_message()
+async def handle_at(event):
     if event.get("platform") != "qqbot":
         return
-    if event.get("detail_type") != "group":
-        return
-
     text = event.get_text()
-    group_id = event.get("group_id")
-
-    if text == "hello":
-        await qqbot.Send.To("group", group_id).Reply(
-            event.get("message_id")
-        ).Text("Hello!")
+    if text == "签到":
+        await event.reply("已签到")
 ```
 
 ### 处理交互事件
@@ -23622,43 +23845,28 @@ from ErisPulse.Core.Event import notice
 async def handle_interaction(event):
     if event.get("platform") != "qqbot":
         return
-
     if event.get("detail_type") == "qqbot_interaction":
-        interaction_id = event.get("qqbot_interaction_id", "")
-        interaction_data = event.get("qqbot_interaction_data", {})
-        # 处理交互...
+        await qqbot.reply_interaction(event.get("qqbot_interaction_id"), code=0)
+        button_id = event.get("qqbot_button_id", "")
+        # 处理按钮...
 ```
 
-### 发送媒体消息
+### 多账户启动
 
-```python
-# 发送图片（URL）
-await qqbot.Send.To("group", group_openid).Image("https://example.com/image.png")
+```toml
+[QQBot_Adapter.accounts.bot_a]
+appid = "A_APPID"
+secret = "..."
+enabled = true
 
-# 发送图片（二进制）
-with open("image.png", "rb") as f:
-    image_bytes = f.read()
-await qqbot.Send.To("user", user_openid).Image(image_bytes)
+[QQBot_Adapter.accounts.bot_b]
+appid = "B_APPID"
+secret = "..."
+mode = "webhook"
+enabled = true
 ```
 
-### 监听消息审核结果
-
-```python
-@notice.on_notice()
-async def handle_audit(event):
-    if event.get("platform") != "qqbot":
-        return
-
-    detail_type = event.get("detail_type")
-
-    if detail_type == "qqbot_audit_pass":
-        msg_id = event.get("qqbot_message_id")
-        print(f"消息审核通过: {msg_id}")
-
-    elif detail_type == "qqbot_audit_reject":
-        reason = event.get("qqbot_audit_reject_reason", "")
-        print(f"消息审核拒绝: {reason}")
-```
+两个账户并行启动：bot_a 走 WebSocket，bot_b 走 Webhook，互不影响。
 
 
 
@@ -23672,7 +23880,7 @@ YunhuUserAdapter 是基于云湖用户账户协议构建的适配器，通过用
 
 ## 文档信息
 
-- 对应模块版本: 1.4.0
+- 对应模块版本: 4.2.0
 - 维护者: wsu2059
 
 ## 基本信息
@@ -23684,6 +23892,82 @@ YunhuUserAdapter 是基于云湖用户账户协议构建的适配器，通过用
 - OneBot12兼容：支持发送 OneBot12 格式消息
 - 通信方式：通过邮箱登录获取 token，使用 WebSocket 接收事件，HTTP + Protobuf 协议发送消息
 - 会话类型：支持私聊（user）、群聊（group）、机器人会话（bot）
+
+## v5 范式更新（4.2.0）
+
+- **BaseConverter 继承**；**spawn_background 任务归属**（WS 监听任务）
+- **用户API全集**（基于 yhchatAPI full.proto / v1 端点，protobuf over HTTP）：
+  - 用户：get_user / edit_nickname / edit_avatar
+  - 好友：通讯录 / 申请列表 / 申请 / 同意 / 忽略 / 删除
+  - 群组：群信息 / 成员列表 / 创建 / 解散 / 邀请 / 移出 / 禁言 / 机器人列表
+  - 会话：会话列表；消息：列表 / 撤回 / 按钮上报
+- **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
+
+## 已对接平台功能清单
+
+### 事件接收（WebSocket，protobuf 编码）
+
+| WS cmd | 事件 | 说明 |
+|--------|------|------|
+| `push_message` | `message` | 私聊/群聊/Bot 会话消息（文本/HTML/Markdown/图片/视频/语音/文件/表情/表单/文章/贴纸/按钮/A2UI） |
+| `edit_message` | `notice` (`message_edit`) | 消息编辑通知 |
+| `file_send_message` | `notice` (`yunhu_user_file_send`) | 超级文件分享 |
+| `bot_board_message` | `notice` (`yunhu_user_bot_board`) | 机器人公告看板 |
+
+### Api DSL 方法对照（ YunhuHTTPClient → 用户API v1 端点 ）
+
+| 分类 | Api 方法 | 端点 | 说明 |
+|------|---------|------|------|
+| 账户 | `get_self_info()` | `/user/info` | 登录用户信息（昵称/头像/user_id） |
+| 用户 | `get_user(user_id)` | `/user/get-user` | 用户详细信息 |
+| 用户 | `edit_nickname(nickname)` | `/user/edit-nickname` | 修改自己昵称 |
+| 用户 | `edit_avatar(url)` | `/user/edit-avatar` | 修改自己头像 |
+| 好友 | `get_friend_address_book(md5)` | `/friend/address-book-list` | 通讯录（游标翻页） |
+| 好友 | `get_friend_requests()` | `/friend/request-list` | 好友/加群申请列表 |
+| 好友 | `friend_apply(user_id, desc)` | `/friend/apply` | 申请添加好友 |
+| 好友 | `friend_agree_apply(user_id)` | `/friend/agree-apply` | 同意好友申请 |
+| 好友 | `friend_ignore_apply(user_id)` | `/friend/ignore-apply` | 忽略好友申请 |
+| 好友 | `friend_delete(user_id)` | `/friend/delete-friend` | 删除好友 |
+| 群组 | `get_group_info(group_id)` | `/group/info` | 群组信息 |
+| 群组 | `get_group_member_list(group_id)` | `/group/list-member` | 群成员列表（支持关键词） |
+| 群组 | `create_group(name, ...)` | `/group/create-group` | 创建群组 |
+| 群组 | `dismiss_group(group_id)` | `/group/dismiss-group` | 解散群组 |
+| 群组 | `group_invite(group_id, user_ids)` | `/group/invite` | 邀请进群 |
+| 群组 | `group_remove_member(group_id, user_id)` | `/group/remove-member` | 移出群成员 |
+| 群组 | `group_gag_member(group_id, user_id, 秒)` | `/group/gag-member` | 禁言群成员（0=解除） |
+| 群组 | `get_group_bot_list(group_id)` | `/group/bot-list` | 群内机器人列表 |
+| 会话 | `get_conversation_list(md5)` | `/conversation/list` | 会话列表（游标翻页） |
+| 消息 | `get_message_list(chat_id, chat_type, ...)` | `/msg/list-message` | 消息列表（多种翻页变体见 HTTP 客户端） |
+| 消息 | `delete_message(msg_id, chat_id, chat_type)` | `/msg/recall-msg` | 撤回消息（批量撤回见 HTTP 客户端） |
+| 消息 | `button_report(...)` | `/msg/button-report` | 按钮点击上报 |
+| 元动作 | `get_status` / `get_version` / `get_supported_actions` | - | 运行状态/版本/支持动作 |
+
+### 尚未对接（端点已知，full.proto 消息齐备，可按需扩展）
+
+- 用户：验证码登录、勋章、金豆记录、绑定手机/邮箱、通知设置、用户数据存取
+- 好友：免打扰（no-notify）、删除申请记录
+- 群组：指令列表、分类、推荐、直播间、编辑群信息/群昵称/关键词、入群自动审批、群文件限制、事件 SSE
+- 会话：置顶/排序/删除、免打扰
+- 消息：转发、A2UI 提交、消息列表图片获取、文件下载记录
+- 群标签：list / relate / relate-cancel / create / edit / delete / members（端点 `/group-tag/*`）
+
+> 扩展方式：在 `YunhuHTTPClient` 中按既有模式追加方法（`_proto_request` / `_json_request` 通用封装），再在 `Api` 类暴露即可。端点与消息定义参考 `yhchatAPI/src/api/v1/*.md` 与 `yhchatAPI/src/full.proto`。
+
+### 用户API示例
+
+```python
+from ErisPulse import sdk
+yunhu_user = sdk.adapter.get("yunhu_user")
+
+result = await yunhu_user.Api.get_self_info()
+result = await yunhu_user.Api.get_friend_requests()          # 好友申请列表
+await yunhu_user.Api.friend_agree_apply(user_id)             # 同意好友申请
+result = await yunhu_user.Api.get_group_member_list(group_id)
+result = await yunhu_user.Api.get_conversation_list()        # 会话列表
+await yunhu_user.Api.delete_message(msg_id, chat_id, chat_type)  # 撤回
+```
+
+---
 
 ## 支持的消息发送类型
 
@@ -24458,7 +24742,7 @@ IdeauraAdapter 是基于花枫咖啡馆（RockyChat）平台 API 构建的适配
 ## 文档信息
 
 - 对应模块: ErisPulse-Ideaura
-- 对应模块版本: 4.0.1
+- 对应模块版本: 4.1.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -24468,6 +24752,24 @@ IdeauraAdapter 是基于花枫咖啡馆（RockyChat）平台 API 构建的适配
 - 多账户支持：支持通过 Bot Token 配置多个账户
 - 链式修饰支持：支持 `.At()`、`.AtAll()`、`.Reply()`、`.Command()` 等链式修饰方法
 - OneBot12兼容：支持发送 OneBot12 格式消息
+
+## v5 范式更新（4.1.0）
+
+- **BaseConverter 继承**：转换器公共字段由框架 build_base_event 构建
+- **spawn_background 任务归属**：账户连接任务改用 runtime.spawn_background
+- **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
+- Request DSL 暂缓（好友申请审批 API 待平台提供）
+
+---
+
+
+### 已对接平台能力
+
+- **事件**：消息编辑/撤回/转发/已读（ideaura_message_*）、好友申请（friend_request）、好友增删（friend_increase/decrease）、在线状态（friend_online/offline）
+- **发送**：Text / Image / Markdown / Raw_ob12（链式 Reply/At/AtAll 修饰）
+- **未对接**：好友申请审批 API（平台暂未提供）、Api DSL（平台 REST 面待开放后补充）
+
+---
 
 ## 支持的消息发送类型
 
@@ -24956,7 +25258,7 @@ DiscordAdapter 是基于 Discord Gateway (WebSocket) 和 REST API v10 协议构�
 
 ## 文档信息
 
-- 对应模块版本: 4.1.0
+- 对应模块版本: 4.2.0
 - 维护者: ErisPulse
 - Discord API 版本: v10
 
@@ -25016,6 +25318,45 @@ Intents 使用位掩码，计算方式为各 Intent 值按位或（`|`）：
 - Discord REST API 基础地址：`https://discord.com/api/v10`
 - Gateway WebSocket 地址：通过 `GET /gateway/bot` 动态获取，通常为 `wss://gateway.discord.gg/?v=10&encoding=json`
 
+## v5 范式更新（4.2.0）
+
+本适配器已完成 v5 范式对齐（增量升级，API 兼容）：
+
+- **BaseConverter 继承**：转换器公共字段由框架 `build_base_event` 构建
+- **Api DSL**：标准Api动作映射（见下）
+- **标准 keyboard 段**：转换为 Discord components（action row + buttons）；.Keyboard(rows) 修饰器接受通用结构
+- **交互回调标准字段**：INTERACTION_CREATE 事件包含 interaction_id / utton_data
+- **spawn_background 任务归属**：连接任务改用 
+untime.spawn_background
+- **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
+
+### 标准Api动作
+
+```python
+from ErisPulse import sdk
+discord = sdk.adapter.get("discord")
+
+result = await discord.Api.get_self_info()                # GET /users/@me
+result = await discord.Api.get_user_info(user_id)         # GET /users/{id}
+result = await discord.Api.get_guild_info(guild_id)       # GET /guilds/{id}
+result = await discord.Api.get_guild_list()               # GET /users/@me/guilds
+result = await discord.Api.get_channel_list(guild_id)     # GET /guilds/{id}/channels
+result = await discord.Api.get_guild_member_info(gid, uid)
+await discord.Api.delete_message(message_id)              # 登记表自动补全 channel_id
+await discord.Api.leave_guild(guild_id)
+result = await discord.Api.Using("main").get_self_info()
+```
+
+### 按钮（keyboard / components）
+
+```python
+rows = [[{"label": "点击", "type": "callback", "data": "btn:1"},
+         {"label": "官网",  "type": "link",     "data": "https://example.com"}]]
+await discord.Send.To("channel", channel_id).Keyboard(rows).Text("请选择")
+# 自动转换为 components: callback → custom_id / link → url
+```
+
+---
 ## 支持的消息发送类型
 
 所有发送方法均通过链式语法实现，例如：
@@ -25399,6 +25740,23 @@ async def handle_interaction(event):
 
 ### Webhook 适配
 
+
+### 已对接平台能力
+
+- **入站**：外部系统 POST 到 callback_path → 转为 OneBot12 事件（json/text 段透传）
+- **出站**：模块 Send → POST 到 outgoing_url（双桥接）
+- **API**：桥接身份信息与运行状态（最小集）
+
+---
+
+## v5 范式更新（4.2.0）
+
+- **Api DSL 最小集**：get_self_info/get_status/get_version/get_supported_actions
+- **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
+- 导入路径更新至 Core.Bases
+
+---
+
 # 平台特性说明 — Webhook 通用桥接适配器
 
 本文档详细说明 Webhook 适配器的双向桥接协议、字段映射与实现特性。
@@ -25628,6 +25986,23 @@ Webhook 适配器是一个**协议级桥接器**，不绑定任何特定平台�
 - 模块版本: 4.1.0
 - 维护者: ErisPulse
 - 依赖: `cryptography`
+
+## v5 范式更新（4.2.0）
+
+- **BaseConverter 继承**：转换器公共字段由框架 build_base_event 构建
+- **Api DSL 最小集**：get_self_info（appid）/get_status/get_version/get_supported_actions
+- **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
+
+---
+
+
+### 已对接平台能力
+
+- **接收**：公众号回调消息与关注/取关等事件（明文/安全模式），签名校验
+- **发送**：客服消息（Text/Image 等，经 Send DSL）
+- **API**：账户信息（appid）与运行状态（最小集）
+
+---
 
 ## 支持的消息发送类型
 

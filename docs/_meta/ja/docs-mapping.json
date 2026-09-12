@@ -206,7 +206,7 @@
     "プラットフォームガイド": {
       "description": "各プラットフォームの機能とアダプターの説明",
       "icon": "fa-plug",
-      "count": 15,
+      "count": 17,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures ドキュメント",
@@ -227,7 +227,7 @@
           "icon": "fa-comments"
         },
         {
-          "title": "ドキュメント情報",
+          "title": "Telegramプラットフォームの特徴ドキュメント",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
@@ -245,7 +245,7 @@
           "icon": "fa-cloud"
         },
         {
-          "title": "雲湖ユーザープラットフォームの機能ドキュメント",
+          "title": "雲湖ユーザープラットフォーム特徴ドキュメント",
           "path": "platform-guide/yunhu_user.md",
           "level": 1,
           "icon": "fa-user"
@@ -297,6 +297,18 @@
           "path": "platform-guide/maintain-notes.md",
           "level": 1,
           "icon": "fa-wrench"
+        },
+        {
+          "title": "Sandbox プラットフォームの機能ドキュメント",
+          "path": "platform-guide/sandbox.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "Terminal プラットフォーム機能ドキュメント",
+          "path": "platform-guide/terminal.md",
+          "level": 1,
+          "icon": "fa-plug"
         }
       ],
       "subgroups": {}
@@ -492,10 +504,10 @@
     "技術標準": {
       "description": "フレームワークの技術仕様と標準",
       "icon": "fa-gavel",
-      "count": 7,
+      "count": 8,
       "documents": [
         {
-          "title": "技術仕様",
+          "title": "技術標準",
           "path": "standards/README.md",
           "level": 1,
           "icon": "fa-gavel"
@@ -535,6 +547,12 @@
           "path": "standards/api-action-spec.md",
           "level": 1,
           "icon": "fa-bolt"
+        },
+        {
+          "title": "アダプター標準化ガイドライン（概要）",
+          "path": "standards/standardization-guide.md",
+          "level": 1,
+          "icon": "fa-gavel"
         }
       ],
       "subgroups": {}

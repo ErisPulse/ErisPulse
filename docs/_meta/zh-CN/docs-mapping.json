@@ -206,7 +206,7 @@
     "平台特性指南": {
       "description": "各平台特性和适配器说明",
       "icon": "fa-plug",
-      "count": 15,
+      "count": 17,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures 文档",
@@ -227,7 +227,7 @@
           "icon": "fa-comments"
         },
         {
-          "title": "文档信息",
+          "title": "Telegram平台特性文档",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
@@ -297,6 +297,18 @@
           "path": "platform-guide/maintain-notes.md",
           "level": 1,
           "icon": "fa-wrench"
+        },
+        {
+          "title": "Sandbox 平台特性文档",
+          "path": "platform-guide/sandbox.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "Terminal 平台特性文档",
+          "path": "platform-guide/terminal.md",
+          "level": 1,
+          "icon": "fa-plug"
         }
       ],
       "subgroups": {}
@@ -492,7 +504,7 @@
     "技术标准": {
       "description": "框架的技术规范和标准",
       "icon": "fa-gavel",
-      "count": 7,
+      "count": 8,
       "documents": [
         {
           "title": "技术标准",
@@ -535,6 +547,12 @@
           "path": "standards/api-action-spec.md",
           "level": 1,
           "icon": "fa-bolt"
+        },
+        {
+          "title": "适配器标准化指南（总纲）",
+          "path": "standards/standardization-guide.md",
+          "level": 1,
+          "icon": "fa-gavel"
         }
       ],
       "subgroups": {}

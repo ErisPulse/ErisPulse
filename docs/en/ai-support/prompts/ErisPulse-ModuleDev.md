@@ -9894,9 +9894,9 @@ Block is **explicit**: denied calls return the standard failure response (`retco
 
 The `(platform, session_id)` combination is the unique identifier. `scope.sessions.onebot11."789"` only applies to onebot11, not affecting a session with the same `789` on Telegram. The same applies to identity dimension user keys.
 
-## Topology Tree API
+## Topology API
 
-`ModuleManager.get_topology()` and `AdapterManager.get_topology()` provide module/adapter ownership relationship data, and `sdk.get_topology()` aggregates them (including scope):
+`ModuleManager.get_topology()` and `AdapterManager.get_topology()` provide data on module/adapter ownership relationships. `sdk.get_topology()` offers a one-click aggregation (including scope `scope`):
 
 ```python
 from ErisPulse import sdk
@@ -9919,7 +9919,7 @@ topology = sdk.get_topology()
 #       "scope": {"modules": [...], "blocked": [...]},
 #     }
 #   },
-#   "scope": {                                     # Scope (module / identity / outbound actions)
+#   "scope": {                                     # Scope (module / identity / outbound action)
 #     "platforms": {...}, "bots": {...}, "sessions": {...},
 #     "identity": {"adapters": {...}, "bots": {...}, "sessions": {...}, "users": {...}},
 #     "actions": {...},
@@ -9927,8 +9927,9 @@ topology = sdk.get_topology()
 # }
 ```
 
-- Module topology aggregates commands, event handlers, HTTP/WS/SSE routes, and lifecycle hooks registered by the module, useful for drawing module resource trees.
-- Adapter topology aggregates status of each adapter, status of subordinate Bots, and platform-level/Bot-level scope bindings (module dimension).
+- The module topology aggregates commands, event handlers, HTTP/WS/SSE routes, and lifecycle hooks registered by the module, which is useful for drawing a module resource tree.
+- The adapter topology aggregates the status of each adapter, the status of its subordinate Bots, and platform-level/Bot-level scope bindings (at the module level).
+- **JSON-safe output**: `get_topology(json_safe=...)` is `True` by default, and the returned structure can be directly `json.dumps`—the module's `info` retains only the pure data sub-table `meta` (discarding runtime objects like `module_class` / `strategy`), and other nodes (including arbitrary objects inserted by adapter authors into Bot `info`) are sanitized by default (class objects use `__name__`, non-serializable objects are converted to `str()`). Dashboard/WebUI can directly serialize the returned data; for raw objects, pass `json_safe=False`.
 
 
 

@@ -206,7 +206,7 @@
     "Platform Guide": {
       "description": "Platform features and adapter documentation",
       "icon": "fa-plug",
-      "count": 15,
+      "count": 17,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures Documentation",
@@ -227,7 +227,7 @@
           "icon": "fa-comments"
         },
         {
-          "title": "Documentation Information",
+          "title": "Telegram Platform Features Documentation",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
@@ -245,13 +245,13 @@
           "icon": "fa-cloud"
         },
         {
-          "title": "Yunhu User Platform Feature Document",
+          "title": "Yunhu User Platform Features Documentation",
           "path": "platform-guide/yunhu_user.md",
           "level": 1,
           "icon": "fa-user"
         },
         {
-          "title": "QQBot Platform Feature Documentation",
+          "title": "QQBot Platform Features Documentation",
           "path": "platform-guide/qqbot.md",
           "level": 1,
           "icon": "fa-comment-dots"
@@ -297,6 +297,18 @@
           "path": "platform-guide/maintain-notes.md",
           "level": 1,
           "icon": "fa-wrench"
+        },
+        {
+          "title": "Sandbox Platform Feature Documentation",
+          "path": "platform-guide/sandbox.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "Terminal Platform Features Documentation",
+          "path": "platform-guide/terminal.md",
+          "level": 1,
+          "icon": "fa-plug"
         }
       ],
       "subgroups": {}
@@ -492,7 +504,7 @@
     "Technical Standards": {
       "description": "Framework technical specifications and standards",
       "icon": "fa-gavel",
-      "count": 7,
+      "count": 8,
       "documents": [
         {
           "title": "Technical Standards",
@@ -535,6 +547,12 @@
           "path": "standards/api-action-spec.md",
           "level": 1,
           "icon": "fa-bolt"
+        },
+        {
+          "title": "Adapter Standardization Guide (General Overview)",
+          "path": "standards/standardization-guide.md",
+          "level": 1,
+          "icon": "fa-gavel"
         }
       ],
       "subgroups": {}

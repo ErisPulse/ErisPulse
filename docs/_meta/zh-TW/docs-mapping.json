@@ -206,7 +206,7 @@
     "平台特性指南": {
       "description": "各平台特性和適配器說明",
       "icon": "fa-plug",
-      "count": 15,
+      "count": 17,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures 文件",
@@ -227,7 +227,7 @@
           "icon": "fa-comments"
         },
         {
-          "title": "文件資訊",
+          "title": "Telegram 平台特性文件",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
@@ -251,7 +251,7 @@
           "icon": "fa-user"
         },
         {
-          "title": "QQBot平台特性文件",
+          "title": "QQBot 平台特性文件",
           "path": "platform-guide/qqbot.md",
           "level": 1,
           "icon": "fa-comment-dots"
@@ -297,6 +297,18 @@
           "path": "platform-guide/maintain-notes.md",
           "level": 1,
           "icon": "fa-wrench"
+        },
+        {
+          "title": "Sandbox 平台特性文件",
+          "path": "platform-guide/sandbox.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "終端平台特性文件",
+          "path": "platform-guide/terminal.md",
+          "level": 1,
+          "icon": "fa-plug"
         }
       ],
       "subgroups": {}
