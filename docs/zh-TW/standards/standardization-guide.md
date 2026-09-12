@@ -1,0 +1,267 @@
+# 適配器標準化指南（總綱）
+
+本文檔是 ErisPulse 適配器標準化的**總綱**：確立跨平台標準化的原則、標準地圖、
+差異處理模式、新能力進入標準的流程，並給出**互動元件標準**（按鈕/鍵盤、下拉選擇等）
+與**互動回調事件**的完整定義。任何適配器開發者在實現新功能時應**優先採用標準定義**，
+使模組開發者用同一份程式碼在任意平台獲得一致的體驗——命名一致、參數一致、回傳一致。
+
+---
+
+## 1. 標準化原則
+
+1. **命名一致**：同一概念在所有平台使用同一命名（如撤回統一 `delete_message`，
+   按鈕段統一 `keyboard`），不因平台而異
+2. **參數一致**：標準動作/段/方法的參數結構在所有平台保持一致；平台特有參數
+   以**可選擴展參數**或**擴展欄位**提供，不污染標準簽名
+3. **返回一致**：所有 API/發送呼叫返回標準回應結構（`status/retcode/data/message_id/message`），
+   `data` 內的標準欄位（如 `user_id/user_name`）語義一致；平台原始數據放 `{platform}_raw`
+4. **擴展有據**：平台特有能力按 `{platform}_` 前綴命名（段：`yunhu_form`；
+   動作：`yunhu.board`；事件欄位：`qqbot_button_id`），明確標識非跨平台
+5. **差異在適配器層吸收**：模組代碼面向標準編程，平台差異由適配器轉換
+   （參數映射、欄位標準化、能力降級），不要求模組寫平台分支
+6. **能力降級不報錯**：平台不支援某標準能力時，優雅降級（返回 `retcode=10002`、
+   組件文本化進 `alt_message`），不拋異常中斷模組邏輯
+
+## 2. 標準地圖
+
+| 領域 | 標準文件 | 覆蓋內容 |
+|------|---------|---------|
+| 事件轉換 | [事件轉換標準](event-conversion.md) | 事件結構、標準訊息段（text/image/mention/reply/keyboard 等）、平台擴展段規範 |
+| 互動元件 | **本文檔 §5** | 按鈕/鍵盤、下拉選擇、卡片、互動回調事件標準欄位、修飾器約定、各平台映射 |
+| API 動作 | [API 動作標準](api-action-spec.md) | OneBot12 標準動作（使用者/群組/頻道/訊息/管理/元動作）的統一介面與 `ApiDSL` |
+| 請求操作 | [請求操作規範](request-action-spec.md) | 請求事件欄位（request_id）與 Request DSL（approve/reject） |
+| 發送方法 | [發送方法規範](send-method-spec.md) | Send 類方法命名、參數、修飾器、反向轉換（OB12→平台） |
+| 會話類型 | [會話類型標準](session-types.md) | user/group/channel/guild/dms 等會話類型定義與映射 |
+| API 回應 | [API 回應標準](api-response.md) | 標準回應結構與 retcode 約定 |
+
+## 3. 標準化工作流（新能力如何進入標準）
+
+```
+平台特有能力（{platform}_ 前綴）
+        │  ≥2 個平台出現同類能力
+        ▼
+識別共性（抽取通用概念與參數子集）
+        │
+        ▼
+標準草案（命名 + 參數 + 返回 + 各平台映射表）
+        │  評審
+        ▼
+寫入本總綱/各領域標準文檔 + 框架基類/適配器實現相容層
+        │
+        ▼
+標準段/動作（無前綴）——模組可跨平台使用
+```
+
+**示例**：按鈕最初各平台獨立實現（`telegram_inline_keyboard` / 雲湖按鈕 /
+QQBot 按鍵）→ 出現在 ≥3 個平台 → 抽取通用結構（`label/type/data` + rows）
+→ 發布標準 `keyboard` 段 → 各適配器實現相容層（修飾器接受通用結構 + 標準段轉換 + 原生段透傳）。
+
+### 3.1 命名規則
+
+| 對象 | 規則 | 示例 |
+|------|------|------|
+| 標準訊息段 | 小寫，通用概念無前綴 | `keyboard`、`select`、`mention` |
+| 平台擴展段 | `{platform}_` 前綴 | `telegram_sticker`、`yunhu_form` |
+| 標準Api動作 | OB12 標準名（snake_case） | `get_group_info`、`delete_message` |
+| 平台擴展動作 | `{platform}.` 前綴或協議通用名 | `yunhu.board`、`send_poke`（OB11 擴展） |
+| 修飾器 | PascalCase，通用能力進框架基類 | `.Keyboard(rows)`、`.At(uid)` |
+| 事件標準字段 | 通用概念無前綴 | `interaction_id`、`button_data`、`request_id` |
+| 事件平台字段 | `{platform}_` 前綴 | `qqbot_event_id`、`telegram_chat_id` |
+
+### 3.2 參數與返回規則
+
+- 標準參數在所有平台**同名同義**；單位/格式在標準文件中明確（如秒級時間戳、字串ID）
+- 必填參數取各平台能力的**公共子集**；平台增強能力為可選參數
+- 平台強約束（如 QQBot 富媒體不能與 event_id 混發）由適配器自動處理/降級，不暴露給模組
+- 返回 `data` 的標準字段全平台一致；平台額外資訊放 `data` 內平台命名字段或 `{platform}_raw`
+
+## 4. 差異處理模式（適配器層）
+
+| 模式 | 說明 | 範例 |
+|------|------|------|
+| **參數映射** | 標準參數 → 平台原生參數 | `delete_message(message_id)` → TG `deleteMessage(chat_id, message_id)`（登記表補全 chat_id） |
+| **結構轉換** | 標準段落 → 平台原生結構 | `keyboard` 段 → `inline_keyboard` / buttons / QQBot keyboard |
+| **動作映射** | 標準動作名 → 平台動作名 | `get_self_info` → `get_login_info`（OB11） |
+| **欄位標準化** | 平台回應 → 標準欄位 | `getMe()` → `{user_id, user_name, user_displayname}` |
+| **合成標識** | 平台無原生標識時生成確定性ID | TG join request 無ID → `tjr_{chat}_{user}_{date}` |
+| **能力降級** | 不支援時文字化/回傳10002 | Kook 無 keyboard → alt_message 文字化；`get_friend_list` → 10002 |
+| **歸一化** | 平台髒資料 → 標準格式 | QQBot @標記 openid → bot_id（名稱歸一化） |
+| **雙軌相容** | 標準結構與平台原生結構同時接受 | `.Keyboard()` 接受通用 rows 或原生結構 |
+
+## 5. 交互元件標準
+
+### 5.1 元件清單與狀態
+
+| 元件 | 標準段 type | 狀態 | 已支援平台 |
+|------|------------|------|-----------|
+| 按鈕/鍵盤（keyboard） | `keyboard` | ✅ 已標準化 | Telegram / 雲湖 / QQBot |
+| 下拉選擇（select） | `select` | 📋 預留（結構見 §5.4） | Discord / Telegram(bot) |
+| 卡片（card） | `card` | 📋 預留（見 §5.5） | Kook / 雲湖(html) |
+| 模態框（modal） | `modal` | 📋 預留 | Discord |
+
+> 修飾器層級約定：通用交互元件的 Send 修飾器由**適配器 Send 類實現**（框架基類
+> 不內置），命名遵循 §5.2 約定，參數遵循本文檔標準結構。
+
+### 5.2 keyboard 按鈕/內聯鍵盤
+
+#### 消息段結構（發送方向）
+
+```json
+{
+  "type": "keyboard",
+  "data": {
+    "rows": [
+      [
+        {"label": "選項A", "type": "callback", "data": "vote:A"},
+        {"label": "官網",   "type": "link",     "data": "https://example.com"}
+      ]
+    ]
+  }
+}
+```
+
+| 字段 | 類型 | 必填 | 說明 |
+|------|------|------|------|
+| `data.rows` | 二維陣列 | 是 | 每個子陣列為一行按鈕 |
+| `rows[][].label` | str | 是 | 按鈕顯示文本 |
+| `rows[][].type` | str | 是 | `callback`（點擊回傳資料）/ `link`（跳轉URL） |
+| `rows[][].data` | str | 是 | 回調資料（callback）或跳轉位址（link） |
+| `rows[][].*` | Any | 否 | 平台特有可選字段（如 `web_app`、`menus`），適配器按能力映射或忽略 |
+
+#### 各平台映射對照
+
+| 平台 | 標準段 → 原生結構 | 原生結構參考 |
+|------|------------------|-------------|
+| Telegram | `reply_markup.inline_keyboard`：`[{text, callback_data \| url}]` | callback→`callback_data`（≤64字節），link→`url` |
+| 雲湖 | `content.buttons`：`[{label, action_type}]` | callback→`action_type:2` + `action` + `value`，link→`action_type:1` + `url` |
+| QQBot | `keyboard.content.rows`：`[{label, type, data}]` | callback→`type:2` + `data`，link→`type:0` + `data`（訊息須為 markdown 類型） |
+| Kook | 卡片 `action-group` 模塊：`[{type, text, value, click}]` | callback→`click:return` + `value`，link→`click:link` + `url` |
+| Discord | `components[].components`：`[{label, style, custom_id \| url}]` | callback→`style:1` + `custom_id`，link→`style:5` + `url` |
+
+#### Send 修飾器（各適配器 Send 類實現）
+
+通用修飾器由**各適配器在自己的 Send 類中實現**（不修改框架基類）：
+
+- `.Keyboard(rows)`：標準命名，接受 §5.2 通用 rows 結構，內部生成標準 `keyboard`
+  消息段（或直接轉換為平台原生結構），由 `Raw_ob12` 統一處理
+- `.Buttons(rows)`：可選語義別名，行為一致
+- **向後相容**：檢測到平台原生結構時直接透傳（不報錯、不轉換）
+- 平台原生擴展段（如 `telegram_inline_keyboard`）繼續透傳，不受影響
+
+```python
+# 同一份程式碼，任意平台（各適配器提供修飾器與轉換）
+rows = [[{"label": "讚", "type": "callback", "data": "like:1"},
+         {"label": "主頁", "type": "link", "data": "https://example.com"}]]
+await adapter.Send.To("group", gid).Keyboard(rows).Text("請選擇")
+```
+
+> 適配器相容清單：QQBot / Telegram / 雲湖 已實現（修飾器 + 標準段轉換）；
+> 新適配器按本文檔實現即可（見 §7 Checklist）。
+
+### 5.3 交互回調事件（點擊按鈕之後）
+
+使用者點擊按鈕後，平台推送的事件**必須**提供以下標準字段（detail_type 可保留平台命名）：
+
+| 標準字段 | 類型 | 必填 | 說明 |
+|---------|------|------|------|
+| `interaction_id` | str | 是 | 本次交互的ID（可用於回應，如轉圈/提示） |
+| `button_data` | str | 是 | 按鈕回傳資料（即 §5.2 的 `data`） |
+| `button_label` | str | 否 | 按鈕顯示文本 |
+| `user_id` | str | 是 | 點擊者 |
+| `message_id` | str | 否 | 按鈕所在訊息 |
+| `group_id` / `channel_id` | str | 否 | 來源會話 |
+
+**detail_type 約定**：保留各平台現有命名（`qqbot_interaction` / `telegram_callback_query` /
+`yunhu_a2ui_button` 等），但**標準字段必須齊備**——模組用 `event.get("button_data")` 即可跨平台取值。
+
+**Event 擴展方法建議**（適配器 EventMixin 提供）：
+
+```python
+def get_button_data(self) -> str: ...     # button_data
+def get_interaction_id(self) -> str: ...  # interaction_id
+```
+
+**回應交互**（按平台能力）：`adapter.reply_interaction(interaction_id, code=0)`（QQBot）/
+`answerCallbackQuery`（Telegram）等，命名跟隨平台方法族，不強制統一。
+
+#### 各平台回調事件映射
+
+| 平台 | 原生事件 | detail_type | interaction_id 來源 | button_data 來源 |
+|------|---------|-------------|--------------------|-----------------|
+| Telegram | `callback_query` | `telegram_callback_query`（notice） | `callback_query.id` | `callback_query.data` |
+| 雲湖 | 按鈕點擊事件 | `yunhu_button_click` / `yunhu_a2ui_button` | `buttonId` / `sourceComponentId` | `value` / `actionName` |
+| QQBot | `INTERACTION_CREATE` | `qqbot_interaction` | `interaction.id` | `data.resolved.button_data` |
+| Kook | 按鈕 點擊事件 | `kook_button_click` | `msg_id`+`value` | `value` |
+| Discord | `INTERACTION_CREATE` | `discord_interaction` | `interaction.id` | `data.custom_id` |
+
+### 5.4 select 下拉選擇（預留）
+
+```json
+{
+  "type": "select",
+  "data": {
+    "placeholder": "請選擇",
+    "options": [
+      {"label": "選項A", "data": "opt:A"},
+      {"label": "選項B", "data": "opt:B"}
+    ],
+    "min_values": 1,
+    "max_values": 1
+  }
+}
+```
+
+回調事件複用 §5.3 字段（`button_data` = 所選 `data`，多選時為 JSON 陣列）。
+首批實現平台：Discord（select menu）、Telegram（keyboard 切換）。未實現平台收到該段
+應在 `alt_message` 中降級為文字列表。
+
+### 5.5 card 卡片（預留，暫緩標準化）
+
+卡片結構差異極大（Kook 全功能卡片模組 vs 雲湖 html vs QQ markdown+keyboard），
+暫不做强標準。建議：
+
+- 富文字卡片用 `text` + `keyboard` 組合表達（多數場景足夠）
+- 平台全功能卡片繼續用 `{platform}_card` 擴展段（如 `kook_card`）
+- 待出現 ≥2 個平台的同構卡片能力再評審提升
+
+---
+
+## 6. 未來候選（Roadmap）
+
+以下能力已在 ≥2 平台出現或預期出現，按優先級推進標準化：
+
+| 候選 | 涉及平台 | 優先級 | 備註 |
+|------|---------|--------|------|
+| select 下拉選擇 | Discord / Telegram | 高 | 結構草案見 §5.4 |
+| 表態/表情回應（reactions） | QQBot / Telegram / Discord / Kook | 高 | 動作 + 事件兩側標準化 |
+| 群管理動作（禁言/踢人/審批） | QQBot / 雲湖 / OB11 | 高 | 多數已實現為平台動作，待抽取標準簽名 |
+| 公告/看板 | 雲湖 / Telegram / Discord | 中 | `set_announcement` 類動作 |
+| 檔案上傳標準（file_id 兩段式） | 各平台 | 中 | 見 API 動作標準（當前降級可用） |
+| 卡片 card | Kook / 雲湖 | 低 | 結構差異大，見 §5.5 |
+| 表單 form | 雲湖 | 低 | 平台特有，保持 `{platform}_` 前綴 |
+| 媒體轉碼/大小探測 | 各平台 | 低 | 適配器內部實現，不對外標準化 |
+
+## 7. 新適配器開發者的標準 Checkl ist
+
+開發新適配器時，請依照此清單逐一對照實現（★ 為必須，其餘為推薦）：
+
+- [ ] ★ 將事件轉換為 OneBot12 標準結構，繼承 `BaseConverter`
+- [ ] ★ 支援標準消息段的收發（text/image/mention/reply/keyboard…）
+- [ ] ★ 實現 `Raw_ob12`（含標準段 → 平台結構轉換；標準 `keyboard` 段必做）
+- [ ] ★ 返回標準回應結構（`make_response`/`make_error`）
+- [ ] ★ 支援多帳號：`AccountConfigClass(BotAccountConfig)` + `_resolve_account`
+- [ ] ★ Send 類繼承 `BaseAdapter.Send`，使用 `_apply_modifiers`/`send_context`
+- [ ] ☆ API DSL：標準動作映射到平台 API（詳見 API 動作標準）
+- [ ] ☆ Request DSL：請求事件包含 `request_id` + `accept/reject`
+- [ ] ☆ 互動元件：`keyboard` 段轉換 + 互動回調標準欄位 + `.Keyboard()`/.Buttons()` 修飾器（適配器 Send 類實現）
+- [ ] ☆ EventMixin：`get_raw_event()` / `get_button_data()` 等平台擴展方法
+- [ ] ☆ 生命週期任務使用 `runtime.spawn_background`
+- [ ] ☆ 配置讀取使用 `self.cfg`
+- [ ] ☆ 框架軟依賴：不宣告 ErisPulse 硬依賴 + 運行時版本檢測
+- [ ] ☆ i18n：配置欄位與日誌多語言
+- [ ] ☆ platform-guide 平台文件 + 適配器倉庫 platform-features.md
+
+## 8. 相關文件
+
+- 各領域標準請參見 §2 標準地圖
+- 框架內建適配器可作為參考實作：QQBot（v5 範式全量）、OneBot11（Api DSL 映射）、雲湖（BaseConverter + Web API 擴展）
