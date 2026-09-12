@@ -1,19 +1,19 @@
 # Matrix平台特性文件
 
-MatrixAdapter 是基於 [Matrix協議](https://spec.matrix.org/) 建構的適配器，整合了 Matrix 協議的所有核心功能模組，提供統一的事件處理和訊息操作接口。
+MatrixAdapter 是基於 [Matrix協議](https://spec.matrix.org/) 建構的適配器，整合了 Matrix 協議的所有核心功能模組，提供統一的事件處理和訊息操作介面。
 
 ---
 
 ## 文件資訊
 
-- 對應模組版本: 4.1.0
+- 對應模組版本: 4.2.0
 - 維護者: ErisPulse
 
 ## 基本資訊
 
-- 平台簡介：Matrix 是一個開放的去中心化通訊協定，支援私聊、群組等多種場景
+- 平台簡介：Matrix 是一個開放的去中心化通信協議，支援私聊、群組等多種場景
 - 適配器名稱：MatrixAdapter
-- 多帳戶支援：支援同時設定多個 Matrix 帳戶
+- 多帳戶支援：支援同時配置多個 Matrix 帳戶
 - 連接方式：Long Polling（透過 Matrix Sync API `/sync`）
 - 認證方式：基於 access_token 或 user_id + password 登錄獲取 token
 - 鏈式修飾支援：支援 `.Reply()`、`.At()`、`.AtAll()` 等鏈式修飾方法
@@ -27,7 +27,7 @@ MatrixAdapter 支援多帳戶配置，每個帳戶獨立配置 homeserver 和認
 # config.toml
 # 帳戶1
 [Matrix_Adapter.accounts.default]
-homeserver = "https://matrix.org"          # Matrix 伺服器位址（必填）
+homeserver = "https://matrix.org"          # Matrix 伺服器地址（必填）
 access_token = "YOUR_ACCESS_TOKEN"          # 訪問權杖（與 user_id+password 二選一）
 user_id = ""                                # Matrix 用戶 ID（如 @bot:matrix.org）
 password = ""                               # Matrix 用戶密碼
@@ -41,23 +41,51 @@ access_token = "ANOTHER_TOKEN"
 enabled = true
 ```
 
-> 兼容舊配置：若偵測到舊的單帳戶 `[Matrix_Adapter]` 配置（含 access_token），會自動遷移為 `accounts.default`。
+> 兼容舊配置：若檢測到舊的單帳戶 `[Matrix_Adapter]` 配置（含 access_token），會自動遷移為 `accounts.default`。
 
 **配置項說明（每個帳戶）：**
-- `homeserver`：Matrix 伺服器位址（必填），預設為 `https://matrix.org`
-- `access_token`：訪問權杖，可從 Matrix 客戶端取得。如果已有 token，直接填寫即可
+- `homeserver`：Matrix 伺服器地址（必填），預設為 `https://matrix.org`
+- `access_token`：訪問權杖，可從 Matrix 客戶端獲取。如果已有 token，直接填寫即可
 - `user_id`：Matrix 用戶 ID（如 `@bot:matrix.org`），與 `password` 配合使用進行登入
-- `password`：Matrix 用戶密碼，用於自動登入取得 access_token
+- `password`：Matrix 用戶密碼，用於自動登入獲取 access_token
 - `auto_accept_invites`：是否自動接受房間邀請，預設為 `true`
 - `enabled`：是否啟用該帳戶（可選，預設為 true）
 
 **認證方式：**
 - 方式一（推薦）：直接提供 `access_token`
-- 方式二：提供 `user_id` 和 `password`，適配器會自動呼叫登入介面取得 token
+- 方式二：提供 `user_id` 和 `password`，適配器會自動呼叫登入介面獲取 token
+
+## v5 範式更新（4.2.0）
+
+- **BaseConverter 繼承**：轉換器公共欄位由框架 build_base_event 構建
+- **Api DSL**：get_self_info/get_user_info/get_group_info/get_group_list/get_group_member_list/leave_group/delete_message(redact) + 元動作
+- **消息事件補充 message_id**（event_id）；消息登記表支援 delete_message
+- **spawn_background 任務歸屬**：同步/心跳任務改用 runtime.spawn_background
+- **框架軟依賴**：運行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌
+- Matrix 無原生按鈕能力，標準 keyboard 段優雅忽略（不報錯）
+
+### 標準Api動作示例
+
+```python
+from ErisPulse import sdk
+matrix = sdk.adapter.get("matrix")
+result = await matrix.Api.get_self_info()            # /account/whoami
+result = await matrix.Api.get_group_info(room_id)    # m.room.name
+result = await matrix.Api.get_group_list()           # /joined_rooms
+await matrix.Api.delete_message(event_id)            # redact（登記表補全 room_id）
+```
+
+---
+
+### 已對接平台能力
+
+- **事件**：消息（m.room.message：文本/圖片/文件/音視頻/回覆/編輯）、成員增減（m.room.member）、房間名稱變更等狀態事件
+- **會話**：私聊（DM 房間自動發現）/ 群組（房間）；發送支援 Text/Image/File/Voice/Video/Markdown/Raw_ob12
+- **API**：whoami/profile/joined_rooms/房間狀態/成員列表/leave/redact（見上方 Api DSL）
 
 ## 支援的消息傳送類型
 
-所有傳送方法均透過鏈式語法實現，例如：
+所有傳送方法皆透過鏈式語法實現，例如：
 ```python
 from ErisPulse.Core import adapter
 matrix = adapter.get("matrix")
@@ -67,21 +95,21 @@ await matrix.Send.To("group", room_id).Text("Hello World!")
 
 支援的傳送類型包括：
 - `.Text(text: str)`：傳送純文字訊息。
-- `.Image(file: bytes | str)`：傳送圖片訊息，支援檔案路徑、URL、MXC URI、二進制資料。
-- `.Voice(file: bytes | str)`：傳送語音訊息，支援檔案路徑、URL、MXC URI、二進制資料。
-- `.Video(file: bytes | str)`：傳送影片訊息，支援檔案路徑、URL、MXC URI、二進制資料。
-- `.File(file: bytes | str, filename: str = "")`：傳送檔案訊息，支援檔案路徑、URL、MXC URI、二進制資料。
+- `.Image(file: bytes | str)`：傳送圖片訊息，支援檔案路徑、URL、MXC URI、二進位資料。
+- `.Voice(file: bytes | str)`：傳送語音訊息，支援檔案路徑、URL、MXC URI、二進位資料。
+- `.Video(file: bytes | str)`：傳送影片訊息，支援檔案路徑、URL、MXC URI、二進位資料。
+- `.File(file: bytes | str, filename: str = "")`：傳送檔案訊息，支援檔案路徑、URL、MXC URI、二進位資料。
 - `.Notice(text: str)`：傳送通知訊息（Matrix 的 m.notice 類型）。
-- `.Html(html: str, fallback: str = "")`：傳送 HTML 格式訊息，支援富文本內容。
+- `.Html(html: str, fallback: str = "")`：傳送 HTML 格式訊息，支援豐富文字內容。
 - `.Raw_ob12(message: List[Dict], **kwargs)`：傳送 OneBot12 格式訊息。
 
 ### 鏈式修飾方法（可組合使用）
 
 鏈式修飾方法返回 `self`，支援鏈式呼叫，必須在最終傳送方法前呼叫：
 
-- `.Reply(message_id: str)`：回覆指定訊息（透過 Matrix 的 `m.in_reply_to` 關係）。
-- `.At(user_id: str)`：@指定使用者（透過 Matrix 的 `m.mentions` 欄位實現）。
-- `.AtAll()`：@房間內所有人（透過 Matrix 的 `@room` 提及實現）。
+- `.Reply(message_id: str)`：回覆指定訊息（透過 Matrix `m.in_reply_to` 關係）。
+- `.At(user_id: str)`：@指定使用者（透過 Matrix `m.mentions` 欄位實現）。
+- `.AtAll()`：@房間內所有人（透過 Matrix `@room` 提及實現）。
 
 ### 鏈式呼叫範例
 
@@ -162,20 +190,20 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
 
 1. **去中心化架構**：Matrix 是一個去中心化的通信協議，使用者ID格式為 `@user:server.domain`，房間ID格式為 `!room_id:server.domain`
 2. **房間概念**：Matrix 不區分群聊和私聊，所有對話都是「房間」。適配器透過 DM（Direct Message）帳戶資料自動識別私聊房間
-3. **Long Polling 同步**：使用 `/sync` API 進行長輪詢以獲取新事件，而非 WebSocket
+3. **Long Polling 同步**：使用 `/sync` API 進行長輪詢以取得新事件，而非 WebSocket
 4. **MXC URI**：媒體檔案透過 `mxc://server.domain/media_id` 格式引用
 5. **HTML 富文本**：支援透過 `formatted_body` 發送 HTML 格式訊息
-6. **表情回應**：支援訊息層級的表情回應（Reaction），區別於傳統的回覆訊息
+6. **表情回應**：支援訊息層級的表情回應（Reaction），有別於傳統的回覆訊息
 7. **訊息編輯**：支援透過 `m.replace` 關係編輯已發送的訊息
 8. **訊息撤回**：支援透過 `m.room.redaction` 撤回/刪除訊息
 
 ### 擴展欄位
 
-- 所有特有欄位均以 `matrix_` 前綴標識
+- 所有特有欄位均以 `matrix_` 前綴標示
 - 保留原始資料在 `matrix_raw` 欄位
-- `matrix_raw_type` 標識原始Matrix事件類型（如 `m.room.message`、`m.room.member`）
+- `matrix_raw_type` 標示原始Matrix事件類型（如 `m.room.message`、`m.room.member`）
 
-### 特殊欄位示例
+### 特殊欄位範例
 
 ```python
 # 群組訊息
@@ -236,12 +264,12 @@ Matrix訊息根據 `msgtype` 自動轉換為對應的訊息段：
 | m.notice | `text` | 通知訊息 |
 | m.emote | `text` | 動作訊息 |
 | m.image | `image` | 圖片訊息 |
-| m.audio | `voice` | 音頻訊息 |
-| m.video | `video` | 視頻訊息 |
+| m.audio | `voice` | 音訊訊息 |
+| m.video | `video` | 影片訊息 |
 | m.file | `file` | 檔案訊息 |
 | m.location | `location` | 位置訊息 |
 
-訊息段結構示例：
+訊息段結構範例：
 
 ```json
 // 文本訊息（帶HTML）
@@ -287,10 +315,10 @@ MatrixAdapter 註冊了以下事件混入方法，可在事件處理中直接呼
 
 | 方法 | 回傳類型 | 說明 |
 |------|----------|------|
-| `get_room_id()` | `str` | 獲取房間ID |
-| `get_matrix_event_type()` | `str` | 獲取原始Matrix事件類型 |
-| `get_matrix_sender()` | `str` | 獲取原始發送者ID |
-| `get_reaction_key()` | `str` | 獲取回應表情 |
+| `get_room_id()` | `str` | 取得房間ID |
+| `get_matrix_event_type()` | `str` | 取得原始Matrix事件類型 |
+| `get_matrix_sender()` | `str` | 取得原始發送者ID |
+| `get_reaction_key()` | `str` | 取得回應表情 |
 | `is_edited()` | `bool` | 判斷訊息是否為編輯訊息 |
 | `is_notice()` | `bool` | 判斷訊息是否為 m.notice 類型 |
 
@@ -312,9 +340,9 @@ async def handle_message(event):
 ### 同步流程
 
 1. 使用 access_token 或 user_id + password 進行認證
-2. 調用 `/_matrix/client/v3/account/whoami` 獲取 bot_user_id
+2. 調用 `/_matrix/client/v3/account/whoami` 以獲取 bot_user_id
 3. 發出 connect 元事件
-4. 執行初始同步（`/_matrix/client/v3/sync?timeout=0`）獲取 `next_batch` token
+4. 執行初始同步（`/_matrix/client/v3/sync?timeout=0`）以獲取 `next_batch` token
 5. 發現 DM 房間（`/_matrix/client/v3/user/{user_id}/account_data/m.direct`）
 6. 開始 Long Polling 同步循環（`/_matrix/client/v3/sync?since={next_batch}&timeout=30000`）
 7. 處理每次同步返回的新事件並轉換發出
@@ -330,7 +358,7 @@ async def handle_message(event):
 - 收到房間邀請（`invite` 狀態的房間）時，如果 `auto_accept_invites` 配置為 `true`（預設），適配器會自動加入房間
 - 加入房間調用 `/_matrix/client/v3/join/{room_id}` 接口
 
-## 使用範例
+## 使用示例
 
 ### 處理群組訊息
 
@@ -390,7 +418,7 @@ await matrix.Send.To("group", room_id).Image(image_bytes)
 # 發送圖片（本地檔案路徑）
 await matrix.Send.To("group", room_id).Image("/path/to/image.png")
 
-# 發送檔案（附檔名）
+# 發送檔案（帶檔案名）
 await matrix.Send.To("group", room_id).File("/path/to/document.pdf", filename="文件.pdf")
 ```
 
@@ -426,5 +454,4 @@ async def handle_member_change(event):
         user_id = event.get("user_id")
         operator_id = event.get("operator_id")
         print(f"用戶 {user_id} 被移除，操作者: {operator_id}")
-
 ```

@@ -1,37 +1,37 @@
 {
   "version": 2,
-  "hash": "390bb8a2ebe919229ad26da9b85bdcff",
-  "file_hash": "390bb8a2ebe919229ad26da9b85bdcff",
-  "translated_at": "2026-09-07T11:59:46.791412",
+  "hash": "c7680c2ede1516963d4bf565f5fe81f6",
+  "file_hash": "c7680c2ede1516963d4bf565f5fe81f6",
+  "translated_at": "2026-09-12T10:39:55.100744",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "9e2d790ef2d5dbde9b7e7b3fa82b048f",
-      "translation": "# Technical Standards\n\nThis document contains the technical standards specification for ErisPulse, ensuring consistency and compatibility among its components."
+      "hash": "b4b1e38ce194e8c0197893f82419bc87",
+      "translation": "# Technical Standards\n\n> **General Principles**: [Adapter Standardization Guide](standardization-guide.md) — Standardization principles, standard maps, naming conventions, difference handling patterns, and developer Checklist. Please read it first for new adapters/new capabilities.\n\nThis document contains the technical standards specifications for ErisPulse, ensuring consistency and compatibility among components."
     },
     {
-      "hash": "9caad7b637b53c0b36aa426ed079dc92",
-      "translation": "## Standard Documentation List\n\n1. [Session Type Standard](session-types.md) - ErisPulse session type definition and mapping specification\n2. [Event Conversion Standard](event-conversion.md) - Platform event conversion specification, extension naming convention, and message segment standard\n3. [API Response Standard](api-response.md) - Adapter API response format standard and extension requirements\n4. [Send Method Specification](send-method-spec.md) - Naming, parameter specifications for Send class methods, and reverse conversion requirements\n5. [Request Action Specification](request-action-spec.md) - Request event field requirements, HandleRequest DSL, and adapter implementation requirements\n6. [API Action Standard](api-action-spec.md) - Unified interface for OneBot12 standard API actions (user/group/channel/message management/file with chunking/meta actions)"
+      "hash": "82a3fbcbf39b81ff7f1498f70f1d79f4",
+      "translation": "## Standard Document List\n\n1. [Session Type Standard](session-types.md) - ErisPulse session type definitions and mapping specifications\n2. [Event Conversion Standard](event-conversion.md) - Platform event conversion specifications, extension naming conventions, and message segment standards\n3. [API Response Standard](api-response.md) - Adapter API response format standards and extension requirements\n4. [Send Method Specification](send-method-spec.md) - Naming, parameter specifications for Send class methods, and reverse conversion requirements\n5. [Request Action Specification](request-action-spec.md) - Request event field requirements, HandleRequest DSL, and adapter implementation requirements\n6. [API Action Standard](api-action-spec.md) - Unified interface for OneBot12 standard API actions (user/group/channel/message management/file with chunking/meta actions)\n7. [Adapter Standardization Guide (General Outline)](standardization-guide.md) - Standardization principles/workflow/naming conventions + interaction component standards (buttons/keyboards/interaction callback events) and platform mappings"
     },
     {
-      "hash": "1dc425b803f091b542603e5e3c9b8086",
-      "translation": "## Standard Overview\n\nErisPulse adopts OneBot12 as its core event standard, and extends and refines it based on this foundation.\n\n### Core Principles\n\n1. **Compatibility**: All standards must remain compatible with the OneBot12 standard.\n2. **Extensibility**: Platform-specific features are extended using prefixes to avoid conflicts.\n3. **Consistency**: Critical fields such as timestamps and ID formats must be uniformly handled.\n4. **Traceability**: Original data is retained for debugging and issue troubleshooting."
+      "hash": "305a62f045da78c28cfb14b8fa4afbc2",
+      "translation": "## Standard Overview\n\nErisPulse adopts OneBot12 as its core event standard, and extends and refines it based on this foundation.\n\n### Core Principles\n\n1. **Compatibility**: All standards must remain compatible with the OneBot12 standard.\n2. **Extensibility**: Platform-specific features are extended using prefixes to avoid conflicts.\n3. **Consistency**: Key fields such as timestamps and ID formats must be uniformly handled.\n4. **Traceability**: Original data is retained for debugging and issue troubleshooting."
     },
     {
-      "hash": "51e84f7360e835d60dfa3b3710308ab8",
-      "translation": "## Why is a Standard Needed?\n\n### 1. Ensuring Cross-Platform Compatibility\n\nEvent formats vary across different platforms. Standardized conversion ensures:\n- Module code needs to be written only once, and can run on all platforms\n- Event handling logic remains consistent\n- Development and maintenance costs are reduced\n\n### 2. Standardizing API Interfaces\n\nA unified API response format ensures:\n- Modules can consistently handle API errors\n- Error messages are uniform and easy to understand\n- Return data structures are consistent\n\n### 3. Improving Code Quality\n\nStandard specifications help:\n- Maintain consistent code style\n- Reduce naming conflicts\n- Improve code readability"
+      "hash": "e70effc442459290d52c5ae39d2e3478",
+      "translation": "## Why is a Standard Needed?\n\n### 1. Ensure Cross-Platform Compatibility\n\nEvent formats vary across different platforms. Standardized conversion ensures:\n- Module code needs to be written only once and can run on all platforms\n- Event handling logic remains consistent\n- Development and maintenance costs are reduced\n\n### 2. Standardize API Interfaces\n\nA unified API response format ensures:\n- Modules can consistently handle API errors\n- Error messages are uniform and easy to understand\n- Return data structures are consistent\n\n### 3. Improve Code Quality\n\nStandardized specifications help:\n- Maintain consistent code style\n- Reduce naming conflicts\n- Improve code readability"
     },
     {
-      "hash": "dfb98b9f713cefe82f0c11c81b075b42",
-      "translation": "## Benefits of Following Standards\n\n### For Adapter Developers\n\n- Clear transformation rules\n- Unified response format\n- Easy debugging and testing\n\n### For Module Developers\n\n- Consistent event interface\n- Predictable API behavior\n- Simplified cross-platform development\n\n### For End Users\n\n- Stable system behavior\n- Unified message format\n- Good compatibility"
+      "hash": "a7b7fc76f5296187eee344e34807f30a",
+      "translation": "## Benefits of Following Standards\n\n### For Adapter Developers\n\n- Clear conversion rules\n- Unified response format\n- Easy debugging and testing\n\n### For Module Developers\n\n- Consistent event interface\n- Predictable API behavior\n- Simplified cross-platform development\n\n### For End Users\n\n- Stable system behavior\n- Uniform message format\n- Good compatibility"
     },
     {
-      "hash": "9328791be47e9dfa5822d3274aaa1d88",
-      "translation": "## Standard Compliance Checklist\n\n### Event Transformation\n\n- [ ] All standard fields have been correctly mapped\n- [ ] Platform-specific fields have been prefixed\n- [ ] Timestamps have been converted to 10-digit second-level\n- [ ] Raw data has been saved in {platform}_raw\n- [ ] Raw event type has been saved in {platform}_raw_type\n- [ ] The alt_message of message segments has been generated\n- [ ] Request events include the request_id field\n\n### API Response\n\n- [ ] Includes the status field\n- [ ] Includes the retcode field\n- [ ] Includes the data field\n- [ ] Includes the message_id field\n- [ ] Includes the message field\n- [ ] Return codes follow the OneBot12 specification\n\n### Send Method Naming\n\n- [ ] Uses PascalCase (PascalCase)\n- [ ] Returns a Task object\n- [ ] Modifier methods return self\n- [ ] Parameter names follow the specification\n\n### Request Operations\n\n- [ ] HandleRequest class has implemented _do_accept / _do_reject\n- [ ] Operations return the standard API response format\n- [ ] Unsupported operations return retcode=10002"
+      "hash": "12e1dbdd4343a9c452ab87f8b832247e",
+      "translation": "## Standard Compliance Checklist\n\n### Event Transformation\n\n- [ ] All standard fields have been correctly mapped\n- [ ] Platform-specific fields have been prefixed\n- [ ] Timestamps have been converted to 10-digit second-level\n- [ ] Raw data has been saved in {platform}_raw\n- [ ] Original event type has been saved in {platform}_raw_type\n- [ ] alt_message for message segments has been generated\n- [ ] Request events include the request_id field\n\n### API Response\n\n- [ ] Contains status field\n- [ ] Contains retcode field\n- [ ] Contains data field\n- [ ] Contains message_id field\n- [ ] Contains message field\n- [ ] Return codes follow the OneBot12 specification\n\n### Send Method Naming\n\n- [ ] Uses PascalCase naming convention\n- [ ] Returns a Task object\n- [ ] Modifier methods return self\n- [ ] Parameter names conform to standards\n\n### Request Operations\n\n- [ ] HandleRequest class has implemented _do_accept / _do_reject\n- [ ] Operations return standard API response format\n- [ ] Unsupported operations return retcode=10002"
     },
     {
-      "hash": "30c833cd8a64927eaecac70e44ce2323",
-      "translation": "## Related Documentation\n\n- [Platform Features Guide](../platform-guide/) - Learn about the feature differences across platforms\n- [Developer Guide](../developer-guide/) - Develop custom modules and adapters"
+      "hash": "e3c1e79fb398b2f460229813e0179b94",
+      "translation": "## Related Documentation\n\n- [Platform Features Guide](../platform-guide/) - Learn about the feature differences between platforms\n- [Developer Guide](../developer-guide/) - Develop custom modules and adapters"
     }
   ]
 }
