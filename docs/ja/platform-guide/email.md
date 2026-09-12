@@ -6,7 +6,7 @@ EmailAdapter は SMTP/IMAP プロトコルに基づいたメールアダプタ�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.1.0
+- 対応モジュールバージョン: 4.2.0
 - メンテナー: ErisPulse
 
 ## 基本情報
@@ -54,6 +54,21 @@ email = "backup@example.com"
 password = "another-password"
 enabled = true
 ```
+
+## v5 フレームワークの更新（4.2.0）
+
+- **API DSL 最小セット**：get_self_info（メールアドレス）/get_status/get_version/get_supported_actions
+- **spawn_background でのタスクの所有権**：IMAP ポーリングタスクを runtime.spawn_background に変更
+- **フレームワークのソフト依存**：ErisPulse>=2.7.1 の実行時検出と警告；起動時にバージョンログを出力
+- インポートパスを Core.Bases に更新；_load_accounts は保持（グローバルのデフォルト値はこのアダプタ固有のロジックに統合）
+
+---
+
+### 対応済みプラットフォーム機能
+
+- **受信**：IMAP ポーリングによるメール受信（本文/HTML/添付ファイルをメッセージセグメントに解析）、未読メールの増分検出
+- **送信**：SMTP によるメール送信（Subject/Text/Html/Cc/Bcc/ReplyTo/Attachment）、複数アカウント対応
+- **API**：アカウント情報と実行状態（最小セット）；メールの取り消しやグループなどの概念は適用されない
 
 ## 支援されるメッセージ送信タイプ
 

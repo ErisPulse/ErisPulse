@@ -133,14 +133,14 @@
 }
 ```
 
-## 4. Message Segment Standards
+## 4. Message Segment Standard
 
 ### 4.1 Standard Message Segments
 
-Standard message segment types **do not** include platform prefixes:
+Standard message segments **do not** require a platform prefix.
 
-| Type | Description | data Fields |
-|------|-------------|-------------|
+| Type | Description | data field |
+|------|-------------|------------|
 | `text` | Plain text | `text: str` |
 | `image` | Image | `file: str/bytes`, `url: str` |
 | `audio` | Audio | `file: str/bytes`, `url: str` |
@@ -150,6 +150,7 @@ Standard message segment types **do not** include platform prefixes:
 | `reply` | Reply | `message_id: str` |
 | `face` | Emoji | `id: str` |
 | `location` | Location | `latitude: float`, `longitude: float` |
+| `keyboard` | Button / Inline Keyboard | `rows: list[list[button]]` (see 4.1.1) |
 
 ```json
 {
@@ -160,9 +161,47 @@ Standard message segment types **do not** include platform prefixes:
 }
 ```
 
-### 4.2 Platform Extension Message Segments
+### 4.1.1 keyboard Button / Inline Keyboard Segment (Cross-Platform Compatible)
 
-Platform-specific message segments must include a platform prefix:
+Buttons and inline keyboards are supported on multiple platforms (Telegram / Yunhu / QQBot / Kook / Discord, etc.), making them a **cross-platform compatible concept**. Therefore, they are defined as standard message segments (without platform prefix). Adapters should convert standard segments into platform-native structures; platform-native extended segments (e.g., `telegram_inline_keyboard`) remain as passthrough.
+
+```json
+{
+  "type": "keyboard",
+  "data": {
+    "rows": [
+      [
+        {"label": "Option A", "type": "callback", "data": "vote:A"},
+        {"label": "Official Website", "type": "link", "data": "https://example.com"}
+      ]
+    ]
+  }
+}
+```
+
+**Field Description:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `rows` | 2D array | Yes | Each sub-array represents a row of buttons |
+| `rows[][].label` | str | Yes | Button display text |
+| `rows[][].type` | str | Yes | `callback` (click to return data) / `link` (redirect to URL) |
+| `rows[][].data` | str | Yes | Callback data (type=callback) or redirect address (type=link) |
+| `rows[][].*` | Any | No | Platform-specific optional fields (e.g., `web_app`, `menus`), adapters map or ignore based on capability |
+
+**Adapter Conversion Reference** (for full mapping and interaction callback event standards, see [Cross-Platform Interaction Component Standard](standardization-guide.md)):
+
+| Platform | Standard Segment → Platform Native |
+|----------|-----------------------------------|
+| Telegram | `inline_keyboard`: `[{text, callback_data \| url}]` |
+| Yunhu | `buttons`: `[{label, action_type: 2=callback \| 1=redirect, ...}]` |
+| QQBot | `keyboard.content.rows`: `[{label, type: 2=callback \| 0=redirect, data}]` (requires markdown-type message) |
+| Kook | Card action-group module |
+| Discord | components: `action_row` + `buttons` (custom_id/url) |
+
+### 4.2 Platform-Extended Message Segments
+
+Platform-specific message segments require a platform prefix:
 
 ```json
 // Yunhu - Form
@@ -172,10 +211,10 @@ Platform-specific message segments must include a platform prefix:
 {"type": "telegram_sticker", "data": {"file_id": "CAACAgIAAxkBAA...", "emoji": "😂"}}
 ```
 
-**Extension Message Segment Requirements**:
-1. **No prefixes in data fields**: `{"type": "yunhu_form", "data": {"form_id": "..."}}` instead of `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
-2. **Provide fallback solutions**: Modules may not recognize extension message segments; adapters should provide text alternatives in `alt_message`
-3. **Complete documentation**: Each extension message segment must be documented in the adapter documentation with `type`, `data` structure, and usage scenarios
+**Extended Message Segment Requirements**:
+1. **No prefix in data fields**: `{"type": "yunhu_form", "data": {"form_id": "..."}}` instead of `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
+2. **Provide fallback options**: Modules may not recognize extended message segments; adapters should provide text alternatives in `alt_message`
+3. **Complete documentation**: Each extended message segment must be documented in the adapter, including `type`, `data` structure, and usage scenarios
 
 ## 5. Handling Unknown Events
 

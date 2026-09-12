@@ -4,9 +4,9 @@ OneBot11Adapter is an adapter built based on the OneBot V11 protocol.
 
 ---
 
-## Documentation Information
+## Document Information
 
-- Corresponding Module Version: 4.0.0
+- Corresponding Module Version: 4.3.0
 - Maintainer: ErisPulse
 
 ## Basic Information
@@ -16,6 +16,56 @@ OneBot11Adapter is an adapter built based on the OneBot V11 protocol.
 - Supported Protocol/API Version: OneBot V11
 - Multi-account Support: Default multi-account architecture, supports configuring and running multiple OneBot accounts simultaneously
 - Configuration Key Name: `OneBotAdapter`
+
+## v5 Paradigm Update (4.3.0)
+
+The adapter has completed alignment with the v5 paradigm (incremental upgrade, API compatible):
+
+- **BaseConverter Inheritance**: Common fields of converters (id/time/platform/self/raw) are built by the framework's build_base_event, and are overridden according to OB11 field names (echo/time/self_id).
+- **spawn_background Task Ownership**: For Client mode connections, the task now uses runtime.spawn_background (owner assignment, automatic shutdown cleanup).
+- **Framework Soft Dependency**: Installing the adapter no longer declares a hard dependency on ErisPulse, avoiding pip resolution issues when adjusting framework versions; at runtime, it checks for ErisPulse>=2.7.1 and logs a warning if the version is too low.
+- **Startup Version Log**: Outputs "OneBotAdapter v4.3.0 loaded" during initialization.
+
+Existing capabilities (supported since 4.2.0): Multi-account support, standard action mapping for Api DSL (e.g., get_self_info → get_login_info), Request DSL (friend/group request approval: event.approve() / event.reject()), EventMixin, and i18n.
+
+## Standard API Actions (API DSL)
+
+The adapter automatically maps OneBot12 standard action names to OB11 action names, allowing modules to uniformly invoke actions across platforms:
+
+| OB12 Standard Action | OB11 Action | Description |
+|----------------------|-------------|-------------|
+| get_self_info | get_login_info | Standardized fields: user_id/user_name/user_displayname |
+| get_user_info | get_stranger_info | Standardized fields |
+| delete_message | delete_msg | Recall message |
+| leave_group | set_group_leave | Leave group |
+| get_friend_list | get_friend_list | Action names are consistent, default pass-through |
+| get_group_info | get_group_info | Action names are consistent, default pass-through |
+| upload_file | upload_group_file / upload_private_file | Optional group_id/user_id parameters, filetype automatically detected and routed to appropriate function |
+
+### Basic Usage
+
+```python
+from ErisPulse import sdk
+onebot = sdk.adapter.get("onebot11")
+
+# Get bot information
+result = await onebot.Api.get_self_info()
+print(result["data"]["user_id"], result["data"]["user_name"])
+
+# Recall message
+await onebot.Api.delete_message(message_id=123456)
+
+# Upload group file (filetype automatically detected and routed to upload_group_file)
+result = await onebot.Api.upload_file(group_id=123456, file="/path/to/file.zip")
+
+# Specify account (multi-account)
+result = await onebot.Api.Using("main").get_self_info()
+
+# Unmapped OB11 actions can be called via the call() escape hatch (works with extensions like NapCat/Lagrange)
+result = await onebot.Api.call("send_poke", group_id=123, user_id=456)
+```
+
+---
 
 ## Supported Message Sending Types
 

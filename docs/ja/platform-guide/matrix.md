@@ -6,7 +6,7 @@ MatrixAdapter は [Matrixプロトコル](https://spec.matrix.org/) を基盤と
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.1.0
+- 対応モジュールバージョン: 4.2.0
 - メンテナー: ErisPulse
 
 ## 基本情報
@@ -54,6 +54,34 @@ enabled = true
 **認証方法：**
 - 方法1（推奨）：`access_token` を直接提供
 - 方法2：`user_id` と `password` を提供、アダプタは自動的にログインAPIを呼び出してトークンを取得
+
+## v5 フレームワークの更新（4.2.0）
+
+- **BaseConverter の継承**：コンバーターの共通フィールドはフレームワークの build_base_event によって構築されます。
+- **Api DSL**：get_self_info/get_user_info/get_group_info/get_group_list/get_group_member_list/leave_group/delete_message(redact) + 元アクション
+- **メッセージイベントの拡充**：message_id（event_id）を追加；delete_message をサポートするためのメッセージ登録表
+- **spawn_background でのタスクの所属**：同期/ハートビートタスクは runtime.spawn_background を使用するように変更
+- **フレームワークのソフト依存**：ErisPulse>=2.7.1 の実行時検出と警告表示；起動時にバージョンログを出力
+- Matrix にはネイティブのボタン機能がないため、標準の keyboard 段はエラーを出さずに優雅に無視されます。
+
+### 標準 Api アクションの例
+
+```python
+from ErisPulse import sdk
+matrix = sdk.adapter.get("matrix")
+result = await matrix.Api.get_self_info()            # /account/whoami
+result = await matrix.Api.get_group_info(room_id)    # m.room.name
+result = await matrix.Api.get_group_list()           # /joined_rooms
+await matrix.Api.delete_message(event_id)            # redact（登録表に room_id を補完）
+```
+
+---
+
+### 対応プラットフォームの機能
+
+- **イベント**：メッセージ（m.room.message：テキスト/画像/ファイル/音声/動画/返信/編集）、メンバーの追加・削除（m.room.member）、部屋名変更などのステータスイベント
+- **会話**：プライベートチャット（DM ルームの自動発見）/ グループ（ルーム）；送信は Text/Image/File/Voice/Video/Markdown/Raw_ob12 をサポート
+- **API**：whoami/profile/joined_rooms/部屋の状態/メンバー一覧/leave/redact（上記の Api DSL 参照）
 
 ## 支援されるメッセージ送信タイプ
 

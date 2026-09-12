@@ -6,7 +6,7 @@ DiscordAdapter 是基於 Discord Gateway (WebSocket) 和 REST API v10 協議建�
 
 ## 文件資訊
 
-- 對應模組版本: 4.1.0
+- 對應模組版本: 4.2.0
 - 維護者: ErisPulse
 - Discord API 版本: v10
 
@@ -65,6 +65,45 @@ Intents 使用位遮罩，計算方式為各 Intent 值按位或（`|`）：
 **API 環境：**
 - Discord REST API 基礎位址：`https://discord.com/api/v10`
 - Gateway WebSocket 位址：透過 `GET /gateway/bot` 動態獲取，通常為 `wss://gateway.discord.gg/?v=10&encoding=json`
+
+## v5 範式更新（4.2.0）
+
+本適配器已完成 v5 範式對齊（增量升級，API 兼容）：
+
+- **BaseConverter 繼承**：轉換器公共欄位由框架 `build_base_event` 構建
+- **Api DSL**：標準 Api 動作映射（見下）
+- **標準 keyboard 段**：轉換為 Discord components（action row + buttons）；.Keyboard(rows) 修飾器接受通用結構
+- **互動回調標準欄位**：INTERACTION_CREATE 事件包含 interaction_id / button_data
+- **spawn_background 任務歸屬**：連接任務改用 `runtime.spawn_background`
+- **框架軟依賴**：運行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌
+
+### 標準 Api 動作
+
+```python
+from ErisPulse import sdk
+discord = sdk.adapter.get("discord")
+
+result = await discord.Api.get_self_info()                # GET /users/@me
+result = await discord.Api.get_user_info(user_id)         # GET /users/{id}
+result = await discord.Api.get_guild_info(guild_id)       # GET /guilds/{id}
+result = await discord.Api.get_guild_list()               # GET /users/@me/guilds
+result = await discord.Api.get_channel_list(guild_id)     # GET /guilds/{id}/channels
+result = await discord.Api.get_guild_member_info(gid, uid)
+await discord.Api.delete_message(message_id)              # 登記表自動補全 channel_id
+await discord.Api.leave_guild(guild_id)
+result = await discord.Api.Using("main").get_self_info()
+```
+
+### 按鈕（keyboard / components）
+
+```python
+rows = [[{"label": "點擊", "type": "callback", "data": "btn:1"},
+         {"label": "官網",  "type": "link",     "data": "https://example.com"}]]
+await discord.Send.To("channel", channel_id).Keyboard(rows).Text("請選擇")
+# 自動轉換為 components: callback → custom_id / link → url
+```
+
+---
 
 ## 支援的消息發送類型
 

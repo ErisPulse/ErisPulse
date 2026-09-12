@@ -6,7 +6,7 @@ OneBot12Adapter 是基於 OneBot V12 協議所建構的適配器，作為 ErisPu
 
 ## 文件資訊
 
-- 對應模組版本: 4.0.0
+- 對應模組版本: 4.3.0
 - 維護者: ErisPulse
 - 協定版本: OneBot V12
 
@@ -16,6 +16,68 @@ OneBot12Adapter 是基於 OneBot V12 協議所建構的適配器，作為 ErisPu
 - 適配器名稱：OneBot12Adapter
 - 支援的協議/API版本：OneBot V12
 - 多帳戶支援：完全多帳戶架構，支援同時設定和運行多個OneBot12帳戶
+
+## v5 範式更新（4.3.0）
+
+本適配器已完成 v5 範式對齊（增量升級，API 兼容）：
+
+- **BaseConverter 繼承**：轉換器公共欄位（id/time/platform/self/raw）由框架 build_base_event 構建，按 OB11 欄位名（echo/time/self_id）覆蓋
+- **spawn_background 任務歸屬**：Client 模式連接任務改用 asyncio.spawn_background（owner 歸屬，shutdown 自動回收）
+- **框架軟依賴**：安裝適配器不再聲明 ErisPulse 硬依賴，避免 pip 解析時調整框架版本；運行時檢測 ErisPulse>=2.7.1 並在版本過低時打日誌提示
+- **啟動版本日誌**：初始化時輸出 OneBotAdapter v4.3.0 已加載
+
+已有能力（4.2.0 起支援）：多帳戶、Api DSL 標準動作映射（get_self_info→get_login_info 等）、Request DSL（好友/群請求審批：event.approve() / event.reject()）、EventMixin、i18n。
+
+## 標準 Api 動作（Api DSL）
+
+OneBot12 後端原生支援所有 OB12 標準動作名，Api DSL 預設直接委派 call_api 透傳（無需映射）：
+
+```python
+from ErisPulse import sdk
+ob12 = sdk.adapter.get("onebot12")
+
+result = await ob12.Api.get_self_info()
+result = await ob12.Api.get_friend_list()
+await ob12.Api.delete_message(message_id="MSG_ID")
+
+# 指定帳戶（多帳戶）
+result = await ob12.Api.Using("main").get_self_info()
+
+# 平台擴展動作
+result = await ob12.Api.call("extend_action", param=1)
+```
+
+> 支援的動作以後端實作為準（NapCat/Lagrange/LLOneBot 等）；不支援的動作由後端回傳錯誤並透傳。
+
+## 請求操作（Request DSL）
+
+基於 OneBot12 標準的 handle_quick_request 動作，處理好友請求與加群邀請的同意/拒絕：
+
+### Event 便捷方法
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    if event.get("platform") != "onebot12":
+        return
+    comment = event.get("comment", "")
+    if comment == "passphrase":
+        await event.approve()      # 同意
+    else:
+        await event.reject()       # 拒絕
+```
+
+### 手動呼叫 Request DSL
+
+```python
+await ob12.Request("request_flag").accept()
+await ob12.Request("request_flag").reject()
+await ob12.Request("request_flag").Using("main").accept()
+```
+
+---
 
 ## 支援的消息發送類型
 

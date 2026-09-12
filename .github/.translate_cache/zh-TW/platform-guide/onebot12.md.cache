@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "68bc04f8e3a4e141dca51af83a22f843",
-  "file_hash": "68bc04f8e3a4e141dca51af83a22f843",
-  "translated_at": "2026-09-07T11:46:05.141517",
+  "hash": "b49060faface9b230d6892d418125992",
+  "file_hash": "b49060faface9b230d6892d418125992",
+  "translated_at": "2026-09-12T10:24:40.012056",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,12 +10,24 @@
       "translation": "# OneBot12 平台特性文件\n\nOneBot12Adapter 是基於 OneBot V12 協議所建構的適配器，作為 ErisPulse 框架的基準協議適配器。\n\n---"
     },
     {
-      "hash": "daccbccc03116075366543a1bdf2b6dd",
-      "translation": "## 文件資訊\n\n- 對應模組版本: 4.0.0\n- 維護者: ErisPulse\n- 協定版本: OneBot V12"
+      "hash": "297b86753895e9c5004a7d330a197c38",
+      "translation": "## 文件資訊\n\n- 對應模組版本: 4.3.0\n- 維護者: ErisPulse\n- 協定版本: OneBot V12"
     },
     {
       "hash": "7cb073c9fc9ab7b7662e50a0ec987111",
       "translation": "## 基本資訊\n\n- 平台簡介：OneBot V12 是一個通用的聊天機器人應用介面標準，是ErisPulse框架的基線協議\n- 適配器名稱：OneBot12Adapter\n- 支援的協議/API版本：OneBot V12\n- 多帳戶支援：完全多帳戶架構，支援同時設定和運行多個OneBot12帳戶"
+    },
+    {
+      "hash": "c9d96089dd0e4352162c9b1f90c43015",
+      "translation": "## v5 範式更新（4.3.0）\n\n本適配器已完成 v5 範式對齊（增量升級，API 兼容）：\n\n- **BaseConverter 繼承**：轉換器公共欄位（id/time/platform/self/raw）由框架 build_base_event 構建，按 OB11 欄位名（echo/time/self_id）覆蓋\n- **spawn_background 任務歸屬**：Client 模式連接任務改用 asyncio.spawn_background（owner 歸屬，shutdown 自動回收）\n- **框架軟依賴**：安裝適配器不再聲明 ErisPulse 硬依賴，避免 pip 解析時調整框架版本；運行時檢測 ErisPulse>=2.7.1 並在版本過低時打日誌提示\n- **啟動版本日誌**：初始化時輸出 OneBotAdapter v4.3.0 已加載\n\n已有能力（4.2.0 起支援）：多帳戶、Api DSL 標準動作映射（get_self_info→get_login_info 等）、Request DSL（好友/群請求審批：event.approve() / event.reject()）、EventMixin、i18n。"
+    },
+    {
+      "hash": "5a00d5e09ab0097710fb705690c0f14b",
+      "translation": "## 標準 Api 動作（Api DSL）\n\nOneBot12 後端原生支援所有 OB12 標準動作名，Api DSL 預設直接委派 call_api 透傳（無需映射）：\n\n```python\nfrom ErisPulse import sdk\nob12 = sdk.adapter.get(\"onebot12\")\n\nresult = await ob12.Api.get_self_info()\nresult = await ob12.Api.get_friend_list()\nawait ob12.Api.delete_message(message_id=\"MSG_ID\")\n\n# 指定帳戶（多帳戶）\nresult = await ob12.Api.Using(\"main\").get_self_info()\n\n# 平台擴展動作\nresult = await ob12.Api.call(\"extend_action\", param=1)\n```\n\n> 支援的動作以後端實作為準（NapCat/Lagrange/LLOneBot 等）；不支援的動作由後端回傳錯誤並透傳。"
+    },
+    {
+      "hash": "7c3ee066adcc659888f7edfaccfdeb94",
+      "translation": "## 請求操作（Request DSL）\n\n基於 OneBot12 標準的 handle_quick_request 動作，處理好友請求與加群邀請的同意/拒絕：\n\n### Event 便捷方法\n\n```python\nfrom ErisPulse.Core.Event import request\n\n@request.on_friend_request()\nasync def handle_friend_request(event):\n    if event.get(\"platform\") != \"onebot12\":\n        return\n    comment = event.get(\"comment\", \"\")\n    if comment == \"passphrase\":\n        await event.approve()      # 同意\n    else:\n        await event.reject()       # 拒絕\n```\n\n### 手動呼叫 Request DSL\n\n```python\nawait ob12.Request(\"request_flag\").accept()\nawait ob12.Request(\"request_flag\").reject()\nawait ob12.Request(\"request_flag\").Using(\"main\").accept()\n```\n\n---"
     },
     {
       "hash": "ab9378dff908def24864d7859e7c7043",

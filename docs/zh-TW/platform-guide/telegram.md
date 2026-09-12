@@ -1,4 +1,4 @@
-﻿# Telegram 平台特性文件
+# Telegram 平台特性文件
 
 TelegramAdapter 是基於 Telegram Bot API 建構的適配器，支援多種訊息類型和事件處理。
 
@@ -6,7 +6,7 @@ TelegramAdapter 是基於 Telegram Bot API 建構的適配器，支援多種訊�
 
 ## 文件資訊
 
-- 對應模組版本: 4.1.1
+- 對應模組版本: 4.2.0
 - 維護者: ErisPulse
 
 ## 基本資訊
@@ -15,6 +15,58 @@ TelegramAdapter 是基於 Telegram Bot API 建構的適配器，支援多種訊�
 - 適配器名稱：TelegramAdapter
 - 支援的協定/API版本：Telegram Bot API
 - 會話類型映射：`private` → 發送時用 `user`，`group`/`supergroup` → `group`，`channel` → `channel`
+
+## 標準 Api 動作（Api DSL）
+
+適配器將 OB12 標準動作映射到 Telegram Bot API 並標準化 data 欄位：
+
+| OB12 標準動作 | Telegram API | data 欄位 |
+|--------------|--------------|----------|
+| get_self_info | getMe | user_id / user_name / user_displayname |
+| get_user_info(user_id) | getChat | user_id / user_name / user_displayname |
+| get_group_info(group_id) | getChat | group_id / group_name |
+| get_group_member_info(group_id, user_id) | getChatMember | user_id / user_name / telegram_role |
+| delete_message(message_id) | deleteMessage | 自動按訊息登記表補全 chat_id |
+| leave_group(group_id) | leaveChat | - |
+
+擴展動作：get_group_admin_list(group_id)（管理員列表）、get_chat_member_count(chat_id)（成員數）。
+
+```python
+from ErisPulse import sdk
+telegram = sdk.adapter.get("telegram")
+
+result = await telegram.Api.get_self_info()
+result = await telegram.Api.get_group_info(group_id=-100123)
+result = await telegram.Api.get_group_admin_list(-100123)
+await telegram.Api.delete_message(message_id=55)   # 自動補全 chat_id
+result = await telegram.Api.Using("main").get_self_info()
+```
+
+> Telegram Bot API 無獲取好友列表/群列表介面，get_friend_list/get_group_list 返回 errorcode=10002。
+
+## 請求操作（Request DSL）
+
+處理加群申請（chat_join_request 事件），基於 `approveChatJoinRequest` / `declineChatJoinRequest`：
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_request()
+async def handle_join_request(event):
+    if event.get("platform") != "telegram":
+        return
+    # event["request_id"] 為合成標識（tjr_{chat_id}_{user_id}_{date}）
+    if event.get("user_nickname"):
+        await event.approve()          # 同意
+    # await event.reject()             # 拒絕
+
+# 手動呼叫（需先收到過對應請求事件以登記上下文）
+await telegram.Request(event["request_id"]).accept()
+await telegram.Request(event["request_id"]).reject()
+await telegram.Request(event["request_id"]).Using("main").accept()
+```
+
+---
 
 ## 支援的消息傳送類型
 

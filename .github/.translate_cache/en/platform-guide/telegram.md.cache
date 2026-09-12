@@ -1,21 +1,29 @@
 {
   "version": 2,
-  "hash": "8e973b63931275f3cae35782a83ad417",
-  "file_hash": "8e973b63931275f3cae35782a83ad417",
-  "translated_at": "2026-09-07T11:48:08.083980",
+  "hash": "31a8227dd67a3f5cf9c4dedb8174e7bb",
+  "file_hash": "31a8227dd67a3f5cf9c4dedb8174e7bb",
+  "translated_at": "2026-09-12T10:25:01.324567",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "3e9918201477e492efca5ede3658436d",
-      "translation": "﻿# Telegram Platform Features Documentation\n\nTelegramAdapter is an adapter built on top of the Telegram Bot API, supporting multiple message types and event handling.\n\n---"
+      "hash": "000e747ec931cc2aaf9423a4d875fcd7",
+      "translation": "# Telegram Platform Features Documentation\n\nTelegramAdapter is an adapter built on top of the Telegram Bot API, supporting various message types and event handling.\n\n---"
     },
     {
-      "hash": "e33f3952eaca57eee580c17bb6853963",
-      "translation": "## Documentation Information\n\n- Corresponding Module Version: 4.1.1\n- Maintainer: ErisPulse"
+      "hash": "d5769e0ae79f68cdc351193894aba07b",
+      "translation": "## Documentation Information\n\n- Corresponding Module Version: 4.2.0\n- Maintainer: ErisPulse"
     },
     {
       "hash": "ecdddf468c42689284d0bae7ae9c1140",
       "translation": "## Basic Information\n\n- Platform Introduction: Telegram is a cross-platform instant messaging software\n- Adapter Name: TelegramAdapter\n- Supported Protocol/API Version: Telegram Bot API\n- Session Type Mapping: `private` → use `user` when sending, `group`/`supergroup` → `group`, `channel` → `channel`"
+    },
+    {
+      "hash": "6464813902a44d437d7a2a33fe4639b0",
+      "translation": "## Standard API Actions (API DSL)\n\nAdapters map OB12 standard actions to the Telegram Bot API and standardize the `data` field:\n\n| OB12 Standard Action | Telegram API | data Field |\n|----------------------|--------------|------------|\n| get_self_info | getMe | user_id / user_name / user_displayname |\n| get_user_info(user_id) | getChat | user_id / user_name / user_displayname |\n| get_group_info(group_id) | getChat | group_id / group_name |\n| get_group_member_info(group_id, user_id) | getChatMember | user_id / user_name / telegram_role |\n| delete_message(message_id) | deleteMessage | chat_id is automatically completed via message registry |\n| leave_group(group_id) | leaveChat | - |\n\nExtended actions: get_group_admin_list(group_id) (admin list), get_chat_member_count(chat_id) (member count).\n\n```python\nfrom ErisPulse import sdk\ntelegram = sdk.adapter.get(\"telegram\")\n\nresult = await telegram.Api.get_self_info()\nresult = await telegram.Api.get_group_info(group_id=-100123)\nresult = await telegram.Api.get_group_admin_list(-100123)\nawait telegram.Api.delete_message(message_id=55)   # chat_id is automatically completed\nresult = await telegram.Api.Using(\"main\").get_self_info()\n```\n\n> The Telegram Bot API does not provide an interface to retrieve friend/group lists; get_friend_list/get_group_list return errorcode=10002.\n\n---"
+    },
+    {
+      "hash": "241eca79b8ea29ee273d4e4aa1e3a10b",
+      "translation": "## Request Operations (Request DSL)\n\nHandle group join requests (chat_join_request event), based on `approveChatJoinRequest` / `declineChatJoinRequest`:\n\n```python\nfrom ErisPulse.Core.Event import request\n\n@request.on_request()\nasync def handle_join_request(event):\n    if event.get(\"platform\") != \"telegram\":\n        return\n    # event[\"request_id\"] is a synthetic identifier (tjr_{chat_id}_{user_id}_{date})\n    if event.get(\"user_nickname\"):\n        await event.approve()          # Approve\n    # await event.reject()             # Reject\n\n# Manual invocation (requires prior receipt of the corresponding request event to register context)\nawait telegram.Request(event[\"request_id\"]).accept()\nawait telegram.Request(event[\"request_id\"]).reject()\nawait telegram.Request(event[\"request_id\"]).Using(\"main\").accept()\n```\n\n---"
     },
     {
       "hash": "d0604e5e6d7afaee4fba560f3378a916",

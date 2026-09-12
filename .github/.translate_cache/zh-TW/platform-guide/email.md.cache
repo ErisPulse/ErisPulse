@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "a0ef4540f2c54c9fe8bb6e167415d7fb",
-  "file_hash": "a0ef4540f2c54c9fe8bb6e167415d7fb",
-  "translated_at": "2026-09-07T11:34:37.980535",
+  "hash": "f1b46940e620e8a6edccbbcb6a8021a3",
+  "file_hash": "f1b46940e620e8a6edccbbcb6a8021a3",
+  "translated_at": "2026-09-12T10:26:14.678429",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# 郵件平台特性文件\n\nEmailAdapter 是基於 SMTP/IMAP 協議的郵件適配器，支援郵件發送、接收和處理。\n\n---"
     },
     {
-      "hash": "6e2010b0836c4c98adf0292ff78ea9b2",
-      "translation": "## 文件資訊\n\n- 對應模組版本: 4.1.0\n- 維護者: ErisPulse"
+      "hash": "d5769e0ae79f68cdc351193894aba07b",
+      "translation": "## 文件資訊\n\n- 對應模組版本: 4.2.0\n- 維護者: ErisPulse"
     },
     {
       "hash": "ebfd0de1173b98b4565e6eea62e7b86a",
@@ -20,6 +20,10 @@
     {
       "hash": "b19b0577912cfefb1e37fa681faa9a06",
       "translation": "## 配置說明\n\n### 全局配置（EmailAdapter）\n\n| 配置項 | 類型 | 默認值 | 說明 |\n|--------|------|--------|------|\n| `imap_server` | str | `imap.example.com` | 默認 IMAP 伺服器地址 |\n| `imap_port` | int | `993` | 默認 IMAP 端口 |\n| `smtp_server` | str | `smtp.example.com` | 默認 SMTP 伺服器地址 |\n| `smtp_port` | int | `465` | 默認 SMTP 端口 |\n| `ssl` | bool | `true` | 是否默認啟用 SSL |\n| `timeout` | int | `30` | 默認連接超時（秒） |\n| `poll_interval` | int | `60` | IMAP 輪詢間隔（秒） |\n| `max_retries` | int | `3` | 連接失敗最大重試次數 |\n\n### 帳戶配置（EmailAdapter.accounts）\n\n每個帳戶對應一個獨立的郵箱。帳戶級配置優先於全局配置。\n\n```toml\n[EmailAdapter.accounts.default]\nemail = \"user@example.com\"\npassword = \"your-password-or-auth-code\"\nimap_server = \"imap.example.com\"    # 可選，留空使用全局默認\nimap_port = 993                      # 可選\nsmtp_server = \"smtp.example.com\"    # 可選\nsmtp_port = 465                      # 可選\nssl = true                           # 可選\ntimeout = 30                         # 可選\nenabled = true\n\n[EmailAdapter.accounts.backup]\nemail = \"backup@example.com\"\npassword = \"another-password\"\nenabled = true\n```"
+    },
+    {
+      "hash": "67f3e55002371d1142e8e53d0e26594a",
+      "translation": "## v5 範式更新（4.2.0）\n\n- **Api DSL 最小集**：get_self_info（電子信箱）/get_status/get_version/get_supported_actions\n- **spawn_background 任務歸屬**：IMAP 輪詢任務改用 runtime.spawn_background\n- **框架軟依賴**：運行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌\n- 導入路徑更新至 Core.Bases；_load_accounts 保留（全域預設值合併為該適配器特有邏輯）\n\n---\n\n### 已對接平台能力\n\n- **接收**：IMAP 輪詢收信（正文/HTML/附件解析為訊息段），未讀增量檢測\n- **发送**：SMTP 發信（Subject/Text/Html/Cc/Bcc/ReplyTo/Attachment），支援多帳戶\n- **API**：帳戶資訊與運行狀態（最小集）；郵件撤回/群組等概念不適用\n\n---"
     },
     {
       "hash": "388ede0e2e56f886d2fdd2b97965aca1",

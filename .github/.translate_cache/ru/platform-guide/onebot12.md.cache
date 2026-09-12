@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "68bc04f8e3a4e141dca51af83a22f843",
-  "file_hash": "68bc04f8e3a4e141dca51af83a22f843",
-  "translated_at": "2026-09-07T12:07:32.845084",
+  "hash": "b49060faface9b230d6892d418125992",
+  "file_hash": "b49060faface9b230d6892d418125992",
+  "translated_at": "2026-09-12T10:24:49.917711",
   "target_lang": "ru",
   "chunks": [
     {
@@ -10,12 +10,24 @@
       "translation": "# Документация по функциям платформы OneBot12\n\nOneBot12Adapter — это адаптер, построенный на основе протокола OneBot V12, выступающий в качестве базового протокольного адаптера для фреймворка ErisPulse.\n\n---"
     },
     {
-      "hash": "daccbccc03116075366543a1bdf2b6dd",
-      "translation": "## Информация о документе\n\n- Версия соответствующего модуля: 4.0.0\n- Ответственный: ErisPulse\n- Версия протокола: OneBot V12"
+      "hash": "297b86753895e9c5004a7d330a197c38",
+      "translation": "## Информация о документе\n\n- Версия соответствующего модуля: 4.3.0\n- Ответственный: ErisPulse\n- Версия протокола: OneBot V12"
     },
     {
       "hash": "7cb073c9fc9ab7b7662e50a0ec987111",
       "translation": "## Основная информация\n\n- Краткое описание платформы: OneBot V12 — это универсальный стандарт интерфейса приложений для чат-ботов, базовый протокол для фреймворка ErisPulse.\n- Название адаптера: OneBot12Adapter\n- Поддерживаемые версии протокола/API: OneBot V12\n- Поддержка нескольких аккаунтов: Полностью архитектура с поддержкой нескольких аккаунтов, позволяет одновременно настроить и запустить несколько OneBot12-аккаунтов."
+    },
+    {
+      "hash": "c9d96089dd0e4352162c9b1f90c43015",
+      "translation": "## Обновление парадигмы v5 (4.3.0)\n\nАдаптер успешно обновлён до парадигмы v5 (постепенное обновление, совместимость API):\n\n- **Наследование BaseConverter**: Общие поля преобразователя (id/time/platform/self/raw) создаются с помощью build_base_event фреймворка, и переопределяются по именам полей OB11 (echo/time/self_id)\n- **Принадлежность задачи spawn_background**: Задача подключения в режиме Client теперь использует runtime.spawn_background (принадлежит owner, автоматически освобождается при завершении)\n- **Мягкая зависимость от фреймворка**: Установка адаптера больше не требует жёсткой зависимости от ErisPulse, что предотвращает изменение версии фреймворка при разрешении зависимостей pip; во время выполнения проверяется ErisPulse>=2.7.1, и при слишком низкой версии выводится предупреждение в лог\n- **Журнал версии при запуске**: При инициализации выводится сообщение о загрузке OneBotAdapter v4.3.0\n\nДоступные возможности (поддержка начиная с 4.2.0): мультиаккаунт, стандартные действия Api DSL (get_self_info→get_login_info и т.д.), Request DSL (одобрение/отклонение запросов на добавление в друзья/в группу: event.approve() / event.reject()), EventMixin, i18n.\n\n---"
+    },
+    {
+      "hash": "5a00d5e09ab0097710fb705690c0f14b",
+      "translation": "## Стандартные действия API (DSL API)\n\nOneBot12 поддерживает все стандартные имена действий OB12, API DSL по умолчанию напрямую делегирует call_api (без отображения):\n\n```python\nfrom ErisPulse import sdk\nob12 = sdk.adapter.get(\"onebot12\")\n\nresult = await ob12.Api.get_self_info()\nresult = await ob12.Api.get_friend_list()\nawait ob12.Api.delete_message(message_id=\"MSG_ID\")\n\n# Указание аккаунта (множественные аккаунты)\nresult = await ob12.Api.Using(\"main\").get_self_info()\n\n# Расширения платформы\nresult = await ob12.Api.call(\"extend_action\", param=1)\n```\n\n> Поддерживаемые действия определяются реализацией бэкенда (NapCat/Lagrange/LLOneBot и др.); действия, которые не поддерживаются бэкендом, возвращают ошибку и прозрачно передаются."
+    },
+    {
+      "hash": "7c3ee066adcc659888f7edfaccfdeb94",
+      "translation": "## Операции с запросами (Request DSL)\n\nНа основе стандарта OneBot12, действие handle_quick_request обрабатывает запросы от друзей и приглашения в группы, позволяя принять или отклонить их:\n\n### Удобные методы Event\n\n```python\nfrom ErisPulse.Core.Event import request\n\n@request.on_friend_request()\nasync def handle_friend_request(event):\n    if event.get(\"platform\") != \"onebot12\":\n        return\n    comment = event.get(\"comment\", \"\")\n    if comment == \"passphrase\":\n        await event.approve()      # Принять\n    else:\n        await event.reject()       # Отклонить\n```\n\n### Ручное вызов Request DSL\n\n```python\nawait ob12.Request(\"request_flag\").accept()\nawait ob12.Request(\"request_flag\").reject()\nawait ob12.Request(\"request_flag\").Using(\"main\").accept()\n```"
     },
     {
       "hash": "ab9378dff908def24864d7859e7c7043",

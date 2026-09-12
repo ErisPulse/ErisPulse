@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "9b88e30ee269193f9debe3094132091c",
-  "file_hash": "9b88e30ee269193f9debe3094132091c",
-  "translated_at": "2026-09-07T11:40:35.693078",
+  "hash": "bb13f7935deecc00c5d4f341f0db695f",
+  "file_hash": "bb13f7935deecc00c5d4f341f0db695f",
+  "translated_at": "2026-09-12T10:22:01.168312",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Discordプラットフォーム特徴ドキュメント\n\nDiscordAdapterは、Discord Gateway (WebSocket) およびREST API v10プロトコルに基づいて構築されたアダプタであり、Discord Botのコア機能を統合し、統一されたイベント処理およびメッセージ操作インターフェースを提供します。\n\n---"
     },
     {
-      "hash": "caebdec59b6b4c4ea89ffb60302d4c25",
-      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 4.1.0\n- メンテナー: ErisPulse\n- Discord API バージョン: v10"
+      "hash": "9440a345968aaeaa7d1faab44e6cb430",
+      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 4.2.0\n- メンテナー: ErisPulse\n- Discord API バージョン: v10"
     },
     {
       "hash": "c03cd78761a0dee8587daba3fd6f14ee",
@@ -20,6 +20,10 @@
     {
       "hash": "8e27712d8b672919ffd33bf01a149ead",
       "translation": "## 設定の説明\n\nDiscordAdapter は、複数のアカウントを設定できるようになっており、各アカウントは個別の Discord Bot に対応します。\n\n```toml\n# config.toml\n\n# アカウント1\n[DiscordAdapter.accounts.default]\ntoken = \"YOUR_BOT_TOKEN\"       # Discord Bot Token（必須）\nintents = 33281                 # Gateway Intents（オプション、デフォルト値は 33281）\nenabled = true                  # 有効にするかどうか（オプション、デフォルト値は true）\n\n# アカウント2\n[DiscordAdapter.accounts.bot2]\ntoken = \"ANOTHER_BOT_TOKEN\"\nintents = 33281\nenabled = true\n```\n\n**各アカウントの設定項目の説明:**\n\n- `token`：Discord Bot Token（必須）。[Discord Developer Portal](https://discord.com/developers/applications) から取得します。\n- `intents`：Gateway Intents のビットマスク（オプション、デフォルト値は `33281`）。Bot がサブスクライブするイベントの種類を決定します。\n- `bot_id`：Bot のユーザー ID（オプション、実行時に READY イベントから自動的に取得されるため、手動で入力する必要はありません）。\n- `enabled`：このアカウントを有効にするかどうか（オプション、デフォルト値は `true`）。\n\n### Gateway Intents\n\nIntents はビットマスクを使用し、各 Intent の値をビット論理和（`|`）で計算します：\n\n| Intent | ビット | 値 | 説明 | Privileged |\n|-------|------|------|------|------|\n| GUILDS | `1 << 0` | 1 | サーバーの作成/削除/更新、チャンネル、役割の変更 | いいえ |\n| GUILD_MEMBERS | `1 << 1` | 2 | メンバーの加入/退去/更新 | はい |\n| GUILD_MESSAGES | `1 << 9` | 512 | サーバー内のメッセージの送受信 | いいえ |\n| MESSAGE_CONTENT | `1 << 15` | 32768 | メッセージの内容（この Intent がない場合、content は空になります） | はい |\n\nデフォルト値 `33281` は `GUILDS(1) | GUILD_MESSAGES(512) | MESSAGE_CONTENT(32768)` に等しいです。\n\n> **注意**：Privileged Intents は、Discord Developer Portal → Bot → Privileged Gateway Intents で有効にする必要があります。Bot が 100 以上のサーバーに存在する場合、Discord による審査も必要です。\n\n**API 環境:**\n- Discord REST API の基本アドレス：`https://discord.com/api/v10`\n- Gateway WebSocket アドレス：`GET /gateway/bot` を使用して動的に取得します。通常は `wss://gateway.discord.gg/?v=10&encoding=json` です。"
+    },
+    {
+      "hash": "b2c05becb7ba56a2059e1486bdf8b4d8",
+      "translation": "## v5 ファンタムの更新（4.2.0）\n\nこのアダプターは v5 ファンタムに準拠しました（段階的なアップグレード、API は互換性を保持）。\n\n- **BaseConverter 継承**：コンバーターの共通フィールドはフレームワーク `build_base_event` によって構築されます。\n- **Api DSL**：標準的な Api アクションマッピング（以下を参照）\n- **標準 keyboard 段**：Discord components（action row + buttons）に変換されます。.Keyboard(rows) 修飾子は汎用構造を受け取ります。\n- **インタラクションコールバックの標準フィールド**：INTERACTION_CREATE イベントには interaction_id / button_data が含まれます。\n- **spawn_background タスクの所属**：接続タスクは runtime.spawn_background を使用します。\n- **フレームワークのソフト依存**：ErisPulse>=2.7.1 を実行時に検出し、警告を表示します。起動時にバージョンログを出力します。\n\n### 標準 Api アクション\n\n```python\nfrom ErisPulse import sdk\ndiscord = sdk.adapter.get(\"discord\")\n\nresult = await discord.Api.get_self_info()                # GET /users/@me\nresult = await discord.Api.get_user_info(user_id)         # GET /users/{id}\nresult = await discord.Api.get_guild_info(guild_id)       # GET /guilds/{id}\nresult = await discord.Api.get_guild_list()               # GET /users/@me/guilds\nresult = await discord.Api.get_channel_list(guild_id)     # GET /guilds/{id}/channels\nresult = await discord.Api.get_guild_member_info(gid, uid)\nawait discord.Api.delete_message(message_id)              # 登録表は自動的に channel_id を補完します\nawait discord.Api.leave_guild(guild_id)\nresult = await discord.Api.Using(\"main\").get_self_info()\n```\n\n### ボタン（keyboard / components）\n\n```python\nrows = [[{\"label\": \"クリック\", \"type\": \"callback\", \"data\": \"btn:1\"},\n         {\"label\": \"公式サイト\",  \"type\": \"link\",     \"data\": \"https://example.com\"}]]\nawait discord.Send.To(\"channel\", channel_id).Keyboard(rows).Text(\"選択してください\")\n# 自動的に components に変換されます：callback → custom_id / link → url\n```\n\n---"
     },
     {
       "hash": "6d164d5b69c475e7ff249535d02fef8b",

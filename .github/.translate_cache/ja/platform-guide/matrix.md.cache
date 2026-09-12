@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "8d1b7adff69eab6161f0fa4f923c1473",
-  "file_hash": "8d1b7adff69eab6161f0fa4f923c1473",
-  "translated_at": "2026-09-07T11:47:58.969425",
+  "hash": "eac68d6511353e2af7f08e8a97ac33e9",
+  "file_hash": "eac68d6511353e2af7f08e8a97ac33e9",
+  "translated_at": "2026-09-12T10:21:13.727503",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Matrixプラットフォームの機能ドキュメント\n\nMatrixAdapter は [Matrixプロトコル](https://spec.matrix.org/) を基盤として構築されたアダプタであり、Matrixプロトコルのすべてのコア機能モジュールを統合し、統一されたイベント処理およびメッセージ操作インターフェースを提供します。\n\n---"
     },
     {
-      "hash": "6e2010b0836c4c98adf0292ff78ea9b2",
-      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 4.1.0\n- メンテナー: ErisPulse"
+      "hash": "d5769e0ae79f68cdc351193894aba07b",
+      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 4.2.0\n- メンテナー: ErisPulse"
     },
     {
       "hash": "1eb942372d9163e41bc7f5ed2bca28b2",
@@ -20,6 +20,10 @@
     {
       "hash": "457aecd7db9f23d2ef2213c809d1c8dc",
       "translation": "## 設定の説明\n\nMatrixAdapter は複数のアカウントをサポートしており、各アカウントは homeserver と認証情報を個別に設定できます。\n\n```toml\n# config.toml\n# アカウント1\n[Matrix_Adapter.accounts.default]\nhomeserver = \"https://matrix.org\"          # Matrixサーバーのアドレス（必須）\naccess_token = \"YOUR_ACCESS_TOKEN\"          # アクセストークン（user_id + password と二択）\nuser_id = \"\"                                # MatrixユーザーID（例: @bot:matrix.org）\npassword = \"\"                               # Matrixユーザーのパスワード\nauto_accept_invites = true                  # ルーム招待を自動的に受け入れるか（オプション、デフォルトはtrue）\nenabled = true                              # アカウントの有効化（オプション、デフォルトはtrue）\n\n# アカウント2\n[Matrix_Adapter.accounts.bot2]\nhomeserver = \"https://matrix.example.com\"\naccess_token = \"ANOTHER_TOKEN\"\nenabled = true\n```\n\n> 旧設定の互換性：`[Matrix_Adapter]` 配置（access_token を含む）が検出された場合、自動的に `accounts.default` に移行されます。\n\n**各アカウントの設定項目の説明：**\n- `homeserver`：Matrixサーバーのアドレス（必須）、デフォルトは `https://matrix.org`\n- `access_token`：アクセス用トークン、Matrixクライアントから取得可能。既存のトークンがある場合は、そのまま記入してください。\n- `user_id`：MatrixユーザーID（例: `@bot:matrix.org`）、`password` と併用してログインに使用\n- `password`：Matrixユーザーのパスワード、`access_token` の取得に自動ログインに使用\n- `auto_accept_invites`：ルーム招待を自動的に受け入れるか、デフォルトは `true`\n- `enabled`：アカウントの有効化（オプション、デフォルトはtrue）\n\n**認証方法：**\n- 方法1（推奨）：`access_token` を直接提供\n- 方法2：`user_id` と `password` を提供、アダプタは自動的にログインAPIを呼び出してトークンを取得"
+    },
+    {
+      "hash": "c8b191b95a8b5d30a8f7fba2d1d0e8f2",
+      "translation": "## v5 フレームワークの更新（4.2.0）\n\n- **BaseConverter の継承**：コンバーターの共通フィールドはフレームワークの build_base_event によって構築されます。\n- **Api DSL**：get_self_info/get_user_info/get_group_info/get_group_list/get_group_member_list/leave_group/delete_message(redact) + 元アクション\n- **メッセージイベントの拡充**：message_id（event_id）を追加；delete_message をサポートするためのメッセージ登録表\n- **spawn_background でのタスクの所属**：同期/ハートビートタスクは runtime.spawn_background を使用するように変更\n- **フレームワークのソフト依存**：ErisPulse>=2.7.1 の実行時検出と警告表示；起動時にバージョンログを出力\n- Matrix にはネイティブのボタン機能がないため、標準の keyboard 段はエラーを出さずに優雅に無視されます。\n\n### 標準 Api アクションの例\n\n```python\nfrom ErisPulse import sdk\nmatrix = sdk.adapter.get(\"matrix\")\nresult = await matrix.Api.get_self_info()            # /account/whoami\nresult = await matrix.Api.get_group_info(room_id)    # m.room.name\nresult = await matrix.Api.get_group_list()           # /joined_rooms\nawait matrix.Api.delete_message(event_id)            # redact（登録表に room_id を補完）\n```\n\n---\n\n### 対応プラットフォームの機能\n\n- **イベント**：メッセージ（m.room.message：テキスト/画像/ファイル/音声/動画/返信/編集）、メンバーの追加・削除（m.room.member）、部屋名変更などのステータスイベント\n- **会話**：プライベートチャット（DM ルームの自動発見）/ グループ（ルーム）；送信は Text/Image/File/Voice/Video/Markdown/Raw_ob12 をサポート\n- **API**：whoami/profile/joined_rooms/部屋の状態/メンバー一覧/leave/redact（上記の Api DSL 参照）"
     },
     {
       "hash": "fff45f0b977664165873f0364e6fe15c",

@@ -7,6 +7,20 @@
 - 維護者: ErisPulse
 - 依賴: `cryptography`
 
+## v5 範式更新（4.2.0）
+
+- **BaseConverter 繼承**：轉換器公共欄位由框架 build_base_event 構建
+- **Api DSL 最小集**：get_self_info（appid）/get_status/get_version/get_supported_actions
+- **框架軟依賴**：執行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌
+
+---
+
+### 已對接平台能力
+
+- **接收**：公眾號回調訊息與關注/取關等事件（明文/安全模式），簽名校驗
+- **發送**：客服訊息（Text/Image 等，經 Send DSL）
+- **API**：帳戶資訊（appid）與運行狀態（最小集）
+
 ## 支援的消息傳送類型
 
 | 方法 | 說明 | 微信 API |

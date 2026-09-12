@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "548f3a3af360aa19d1ea8293abb40fe3",
-  "file_hash": "548f3a3af360aa19d1ea8293abb40fe3",
-  "translated_at": "2026-09-07T12:46:47.874601",
+  "hash": "275d65f15b74f86c99fcb91fca74a76e",
+  "file_hash": "275d65f15b74f86c99fcb91fca74a76e",
+  "translated_at": "2026-09-12T10:28:07.949099",
   "target_lang": "ru",
   "chunks": [
     {
@@ -10,12 +10,16 @@
       "translation": "# Документация по функциям платформы Yunhu\n\nYunhuAdapter — это адаптер, построенный на базе протокола Yunhu, объединяющий все модули функций Yunhu и предоставляющий единый интерфейс обработки событий и операций сообщений.\n\n---"
     },
     {
-      "hash": "a1376ffeea270fa68d8b22165af6dbcc",
-      "translation": "## Информация о документации\n\n- Соответствующая версия модуля: 4.3.0\n- Ответственный: ErisPulse"
+      "hash": "c461de40d423dc82175b0ac2c05feab4",
+      "translation": "## Информация о документации\n\n- Версия соответствующего модуля: 4.4.0\n- Ответственный: ErisPulse"
     },
     {
       "hash": "54547432378884d983fe78296feb2c12",
       "translation": "## Основная информация\n\n- Описание платформы: Yunhu (云湖) — это корпоративная платформа мгновенного обмена сообщениями\n- Имя адаптера: YunhuAdapter\n- Поддержка нескольких аккаунтов: поддержка распознавания и настройки нескольких аккаунтов роботов Yunhu посредством bot_id\n- Поддержка цепочки модификаторов: поддержка цепочки модификаторов, таких как `.Reply()`\n- Совместимость с OneBot12: поддержка отправки сообщений в формате OneBot12"
+    },
+    {
+      "hash": "55c8290a6145a0845cfd6cc0a0d87889",
+      "translation": "## Обновление парадигмы v5 (4.4.0)\n\nАдаптер был обновлен до соответствия парадигме v5 (инкрементальное обновление, совместимость API):\n\n- **Полный набор официальных серверных API** (расширения методов DSL Api): редактирование сообщений, пакетная отправка, список сообщений, панели пользователей/глобальные панели, ограничение участников группы, удаление участников группы, контроль типов сообщений в группе, CRUD-операции с тегами групп, добавление тегов пользователям\n- **Стандартный сегмент keyboard** (стандартный компонент взаимодействия между платформами): сегмент {\"type\": \"keyboard\", \"data\": {\"rows\": [[{\"label\", \"type\": \"callback|link\", \"data\"}]]}} автоматически преобразуется в buttons облака; декораторы .Buttons(rows) / .Keyboard(rows) принимают общую структуру (оригинальная структура обратно совместима)\n- **Стандартные поля для обратного вызова взаимодействия**: события нажатия кнопок/A2UI включают стандартные поля interaction_id / button_data\n- **Принадлежность задачи spawn_background**: задачи WS-подключения теперь используют runtime.spawn_background\n- **Мягкие зависимости фреймворка**: во время выполнения проверяется наличие ErisPulse>=2.7.1 и выводится соответствующее уведомление; при запуске выводится лог версии\n\n### Платформенные расширенные действия (call / методы Api)\n\n```python\nfrom ErisPulse import sdk\nyunhu = sdk.adapter.get(\"yunhu\")\n\n# Методы Api (официальные серверные API)\nawait yunhu.Api.edit_message(msg_id, recv_id, \"group\", \"text\", {\"text\": \"Новый контент\"})\nawait yunhu.Api.batch_send([\"userId1\", \"userId2\"], \"text\", {\"text\": \"Анонс\"})\nawait yunhu.Api.get_message_list(group_id, \"group\", before=10)\nawait yunhu.Api.set_user_board(chat_id, \"group\", \"Содержание панели\", expire_time=3600)\nawait yunhu.Api.dismiss_global_board()\nawait yunhu.Api.gag_group_member(group_id, user_id, 600)      # Запрет на 600 секунд, 0=отмена\nawait yunhu.Api.remove_group_member(group_id, user_id)\nawait yunhu.Api.set_group_msg_type_limit(group_id, \"text,image\")\nawait yunhu.Api.create_group_tag(group_id, \"VIP\", color=\"#FF5733\")\nawait yunhu.Api.add_user_tag(group_id, user_id, \"VIP\")\n\n# Обратный вызов нажатия кнопки (стандартные поля)\nfrom ErisPulse.Core.Event import notice\n\n@notice.on_notice()\nasync def handle_button(event):\n    if event.get(\"platform\") == \"yunhu\" and event.get(\"button_data\"):\n        data = event[\"button_data\"]     # Единый доступ к данным между платформами\n        interaction_id = event[\"interaction_id\"]\n```\n\n> Подробное описание стандарта доступно в [Стандарте компонентов взаимодействия между платформами](../../standards/standardization-guide.md)."
     },
     {
       "hash": "126d901c9b0e8bbd8c5e0f1be0dfec94",

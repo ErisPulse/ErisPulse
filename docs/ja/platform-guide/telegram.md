@@ -1,12 +1,12 @@
-﻿# Telegramプラットフォームの機能ドキュメント
+# Telegramプラットフォームの特徴ドキュメント
 
-TelegramAdapter は、Telegram Bot API を基に構築されたアダプタであり、さまざまなメッセージタイプとイベント処理をサポートしています。
+TelegramAdapter は、Telegram Bot API を基に構築されたアダプタであり、さまざまなメッセージタイプとイベント処理に対応しています。
 
 ---
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.1.1  
+- 対応モジュールバージョン: 4.2.0
 - メンテナー: ErisPulse
 
 ## 基本情報
@@ -15,6 +15,58 @@ TelegramAdapter は、Telegram Bot API を基に構築されたアダプタで�
 - アダプタ名：TelegramAdapter
 - 対応するプロトコル/APIバージョン：Telegram Bot API
 - セッションタイプのマッピング：`private` → 送信時に `user` を使用、`group`/`supergroup` → `group`、`channel` → `channel`
+
+## 標準Apiアクション（Api DSL）
+
+アダプターは OB12 標準アクションを Telegram Bot API にマッピングし、`data` フィールドを標準化します：
+
+| OB12 標準アクション | Telegram API | data フィールド |
+|-------------------|--------------|----------------|
+| get_self_info | getMe | user_id / user_name / user_displayname |
+| get_user_info(user_id) | getChat | user_id / user_name / user_displayname |
+| get_group_info(group_id) | getChat | group_id / group_name |
+| get_group_member_info(group_id, user_id) | getChatMember | user_id / user_name / telegram_role |
+| delete_message(message_id) | deleteMessage | 自動的にメッセージ登録表から chat_id を補完 |
+| leave_group(group_id) | leaveChat | - |
+
+拡張アクション：get_group_admin_list(group_id)（管理者リスト）、get_chat_member_count(chat_id)（メンバー数）。
+
+```python
+from ErisPulse import sdk
+telegram = sdk.adapter.get("telegram")
+
+result = await telegram.Api.get_self_info()
+result = await telegram.Api.get_group_info(group_id=-100123)
+result = await telegram.Api.get_group_admin_list(-100123)
+await telegram.Api.delete_message(message_id=55)   # 自動的に chat_id を補完
+result = await telegram.Api.Using("main").get_self_info()
+```
+
+> Telegram Bot API には友達リスト/グループリストを取得するインターフェースがなく、get_friend_list/get_group_list は `errorcode=10002` を返します。
+
+## 要求操作（Request DSL）
+
+加群申請（chat_join_request イベント）を処理し、`approveChatJoinRequest` / `declineChatJoinRequest` を使用します。
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_request()
+async def handle_join_request(event):
+    if event.get("platform") != "telegram":
+        return
+    # event["request_id"] は合成された識別子（tjr_{chat_id}_{user_id}_{date}）です
+    if event.get("user_nickname"):
+        await event.approve()          # 同意
+    # await event.reject()             # 拒絶
+
+# 手動呼び出し（対応する要求イベントを事前に受信してコンテキストを登録しておく必要があります）
+await telegram.Request(event["request_id"]).accept()
+await telegram.Request(event["request_id"]).reject()
+await telegram.Request(event["request_id"]).Using("main").accept()
+```
+
+---
 
 ## 支援されるメッセージ送信タイプ
 

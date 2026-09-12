@@ -7,8 +7,8 @@ IdeauraAdapter は、花楓カフェ（RockyChat）プラットフォームの A
 ## ドキュメント情報
 
 - 対応モジュール: ErisPulse-Ideaura
-- 対応モジュールバージョン: 4.0.1
-- 管理者: ErisPulse
+- 対応モジュールのバージョン: 4.1.0
+- 維持管理者: ErisPulse
 
 ## 基本情報
 
@@ -17,6 +17,21 @@ IdeauraAdapter は、花楓カフェ（RockyChat）プラットフォームの A
 - マルチアカウント対応：Bot Token による複数アカウントの設定が可能です。
 - チェーン修飾子対応：`.At()`、`.AtAll()`、`.Reply()`、`.Command()` などのチェーン修飾メソッドに対応しています。
 - OneBot12互換：OneBot12形式のメッセージ送信が可能です。
+
+## v5 フレームワークの更新 (4.1.0)
+
+- **BaseConverter の継承**：コンバーターの共通フィールドはフレームワークの build_base_event で構築される
+- **spawn_background のタスク所属**：アカウント接続タスクは runtime.spawn_background を使用する
+- **フレームワークのソフト依存**：ErisPulse>=2.7.1 の実行時検出と警告メッセージの出力；起動時にバージョンログを出力
+- Request DSL は保留（フレンド申請承認 API はプラットフォーム提供待ち）
+
+---
+
+### 対応済みプラットフォーム機能
+
+- **イベント**：メッセージの編集/削除/転送/既読（ideaura_message_*）、フレンド申請（friend_request）、フレンドの追加/削除（friend_increase/decrease）、オンラインステータス（friend_online/offline）
+- **送信**：Text / Image / Markdown / Raw_ob12（チェーン式の Reply/At/AtAll 修飾子付き）
+- **未対応**：フレンド申請承認 API（プラットフォームがまだ提供していない）、Api DSL（プラットフォームの REST インターフェースが開放された後に追加予定）
 
 ## 支援されるメッセージ送信タイプ
 

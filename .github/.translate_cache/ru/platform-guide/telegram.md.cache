@@ -1,21 +1,29 @@
 {
   "version": 2,
-  "hash": "8e973b63931275f3cae35782a83ad417",
-  "file_hash": "8e973b63931275f3cae35782a83ad417",
-  "translated_at": "2026-09-07T12:10:55.179442",
+  "hash": "31a8227dd67a3f5cf9c4dedb8174e7bb",
+  "file_hash": "31a8227dd67a3f5cf9c4dedb8174e7bb",
+  "translated_at": "2026-09-12T10:25:40.575060",
   "target_lang": "ru",
   "chunks": [
     {
-      "hash": "3e9918201477e492efca5ede3658436d",
-      "translation": "﻿# Характеристики платформы Telegram\n\nTelegramAdapter — это адаптер, построенный на основе Telegram Bot API, поддерживающий различные типы сообщений и обработку событий.\n\n---"
+      "hash": "000e747ec931cc2aaf9423a4d875fcd7",
+      "translation": "# Документация по функциям платформы Telegram\n\nTelegramAdapter — это адаптер, построенный на основе Telegram Bot API, поддерживающий различные типы сообщений и обработку событий.\n\n---"
     },
     {
-      "hash": "e33f3952eaca57eee580c17bb6853963",
-      "translation": "## Информация о документации\n\n- Версия соответствующего модуля: 4.1.1\n- Ответственный: ErisPulse"
+      "hash": "d5769e0ae79f68cdc351193894aba07b",
+      "translation": "## Информация о документации\n\n- Соответствующая версия модуля: 4.2.0\n- Поддерживается: ErisPulse"
     },
     {
       "hash": "ecdddf468c42689284d0bae7ae9c1140",
       "translation": "## Основная информация\n\n- Краткое описание платформы: Telegram - это мультиплатформенный мессенджер\n- Имя адаптера: TelegramAdapter\n- Поддерживаемый протокол/API-версия: Telegram Bot API\n- Сопоставление типов сессий: `private` → при отправке используется `user`, `group`/`supergroup` → `group`, `channel` → `channel`"
+    },
+    {
+      "hash": "6464813902a44d437d7a2a33fe4639b0",
+      "translation": "## Стандартные действия API (DSL API)\n\nАдаптер сопоставляет стандартные действия OB12 с Telegram Bot API и стандартизирует поле data:\n\n| Стандартное действие OB12 | Telegram API | Поле data |\n|--------------------------|--------------|-----------|\n| get_self_info | getMe | user_id / user_name / user_displayname |\n| get_user_info(user_id) | getChat | user_id / user_name / user_displayname |\n| get_group_info(group_id) | getChat | group_id / group_name |\n| get_group_member_info(group_id, user_id) | getChatMember | user_id / user_name / telegram_role |\n| delete_message(message_id) | deleteMessage | chat_id автоматически заполняется по таблице сообщений |\n| leave_group(group_id) | leaveChat | - |\n\nРасширенные действия: get_group_admin_list(group_id) (список администраторов), get_chat_member_count(chat_id) (количество участников).\n\n```python\nfrom ErisPulse import sdk\ntelegram = sdk.adapter.get(\"telegram\")\n\nresult = await telegram.Api.get_self_info()\nresult = await telegram.Api.get_group_info(group_id=-100123)\nresult = await telegram.Api.get_group_admin_list(-100123)\nawait telegram.Api.delete_message(message_id=55)   # chat_id автоматически заполняется\nresult = await telegram.Api.Using(\"main\").get_self_info()\n```\n\n> Telegram Bot API не имеет интерфейса для получения списка друзей/групп, get_friend_list/get_group_list возвращает errorcode=10002.\n\n---"
+    },
+    {
+      "hash": "241eca79b8ea29ee273d4e4aa1e3a10b",
+      "translation": "## Операции с запросами (Request DSL)\n\nОбработка запросов на добавление в группу (событие chat_join_request), на основе approveChatJoinRequest / declineChatJoinRequest:\n\n```python\nfrom ErisPulse.Core.Event import request\n\n@request.on_request()\nasync def handle_join_request(event):\n    if event.get(\"platform\") != \"telegram\":\n        return\n    # event[\"request_id\"] - это синтетический идентификатор (tjr_{chat_id}_{user_id}_{date})\n    if event.get(\"user_nickname\"):\n        await event.approve()          # Подтвердить\n    # await event.reject()             # Отклонить\n\n# Вызов вручную (требуется предварительное получение соответствующего события запроса для регистрации контекста)\nawait telegram.Request(event[\"request_id\"]).accept()\nawait telegram.Request(event[\"request_id\"]).reject()\nawait telegram.Request(event[\"request_id\"]).Using(\"main\").accept()\n```\n\n---"
     },
     {
       "hash": "d0604e5e6d7afaee4fba560f3378a916",

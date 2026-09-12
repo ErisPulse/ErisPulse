@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "68bc04f8e3a4e141dca51af83a22f843",
-  "file_hash": "68bc04f8e3a4e141dca51af83a22f843",
-  "translated_at": "2026-09-07T11:43:46.382603",
+  "hash": "b49060faface9b230d6892d418125992",
+  "file_hash": "b49060faface9b230d6892d418125992",
+  "translated_at": "2026-09-12T10:23:24.053486",
   "target_lang": "en",
   "chunks": [
     {
@@ -10,12 +10,24 @@
       "translation": "# OneBot12 Platform Feature Documentation\n\nOneBot12Adapter is an adapter built based on the OneBot V12 protocol, serving as the baseline protocol adapter for the ErisPulse framework.\n\n---"
     },
     {
-      "hash": "daccbccc03116075366543a1bdf2b6dd",
-      "translation": "## Document Information\n\n- Corresponding Module Version: 4.0.0\n- Maintainer: ErisPulse\n- Protocol Version: OneBot V12"
+      "hash": "297b86753895e9c5004a7d330a197c38",
+      "translation": "## Document Information\n\n- Corresponding Module Version: 4.3.0\n- Maintainer: ErisPulse\n- Protocol Version: OneBot V12"
     },
     {
       "hash": "7cb073c9fc9ab7b7662e50a0ec987111",
       "translation": "## Basic Information\n\n- Platform Overview: OneBot V12 is a general-purpose chatbot application interface standard, serving as the baseline protocol for the ErisPulse framework.\n- Adapter Name: OneBot12Adapter\n- Supported Protocol/API Version: OneBot V12\n- Multi-Account Support: Fully multi-account architecture, supporting the configuration and operation of multiple OneBot12 accounts simultaneously."
+    },
+    {
+      "hash": "c9d96089dd0e4352162c9b1f90c43015",
+      "translation": "## v5 Paradigm Update (4.3.0)\n\nThis adapter has completed alignment with the v5 paradigm (incremental upgrade, API compatible):\n\n- **BaseConverter Inheritance**: Common fields of the converter (id/time/platform/self/raw) are built by the framework's `build_base_event`, and are overridden by OB11 field names (echo/time/self_id).\n- **spawn_background Task Ownership**: The Client mode connection task now uses `runtime.spawn_background` (owner assignment, automatic shutdown cleanup).\n- **Framework Soft Dependency**: Installing the adapter no longer declares a hard dependency on ErisPulse, avoiding pip resolution issues that adjust framework versions; at runtime, ErisPulse>=2.7.1 is detected, and a log warning is issued if the version is too low.\n- **Startup Version Log**: Outputs \"OneBotAdapter v4.3.0 loaded\" during initialization.\n\nExisting capabilities (supported since 4.2.0): Multi-account, standard API DSL action mapping (e.g., `get_self_info` → `get_login_info`), Request DSL (friend/group request approval: `event.approve()` / `event.reject()`), EventMixin, i18n.\n\n---"
+    },
+    {
+      "hash": "5a00d5e09ab0097710fb705690c0f14b",
+      "translation": "## Standard API Actions (Api DSL)\n\nOneBot12 backends natively support all OB12 standard action names. The Api DSL is by default directly delegated to call_api for transparent transmission (no mapping required):\n\n```python\nfrom ErisPulse import sdk\nob12 = sdk.adapter.get(\"onebot12\")\n\nresult = await ob12.Api.get_self_info()\nresult = await ob12.Api.get_friend_list()\nawait ob12.Api.delete_message(message_id=\"MSG_ID\")\n\n# Specify account (multi-account)\nresult = await ob12.Api.Using(\"main\").get_self_info()\n\n# Platform extension actions\nresult = await ob12.Api.call(\"extend_action\", param=1)\n```\n\n> Supported actions are subject to backend implementation (NapCat/Lagrange/LLOneBot, etc.); unsupported actions will return errors from the backend and be transparently transmitted."
+    },
+    {
+      "hash": "7c3ee066adcc659888f7edfaccfdeb94",
+      "translation": "## Request Operations (Request DSL)\n\nBased on the OneBot12 standard `handle_quick_request` action, handle the approval/rejection of friend requests and group invitation requests:\n\n### Event Convenience Methods\n\n```python\nfrom ErisPulse.Core.Event import request\n\n@request.on_friend_request()\nasync def handle_friend_request(event):\n    if event.get(\"platform\") != \"onebot12\":\n        return\n    comment = event.get(\"comment\", \"\")\n    if comment == \"passphrase\":\n        await event.approve()      # Approve\n    else:\n        await event.reject()       # Reject\n```\n\n### Manual Request DSL Calls\n\n```python\nawait ob12.Request(\"request_flag\").accept()\nawait ob12.Request(\"request_flag\").reject()\nawait ob12.Request(\"request_flag\").Using(\"main\").accept()\n```\n\n---"
     },
     {
       "hash": "ab9378dff908def24864d7859e7c7043",

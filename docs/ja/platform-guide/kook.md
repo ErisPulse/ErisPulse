@@ -6,7 +6,7 @@ KookAdapter は、Kook（開黒啦）Bot WebSocket プロトコルに基づい�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 0.1.0
+- 対応モジュールバージョン: 4.1.0
 - メンテナー: ShanFish
 
 ## 基本情報
@@ -50,6 +50,49 @@ enabled = true
 **API 環境：**
 - Kook API 基本アドレス：`https://www.kookapp.cn/api/v3`
 - WebSocket ゲートウェイは API を介して動的に取得されます：`POST /gateway/index`
+
+## v5 フレームワークの更新（4.1.0）
+
+このアダプタは v5 フレームワークに準拠した更新を完了しました（段階的なアップグレード、API は互換性を保つ）。
+
+- **BaseConverter の継承**：コンバーターの共通フィールドはフレームワークの `build_base_event` によって構築されます。
+- **Api DSL**：標準的な API アクションのマッピング（下記を参照）
+- **標準的な keyboard セグメント**：`{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}}` テキストとキーボードは自動的に Kook カードメッセージ（section + action-group）に組み合わされます。.Keyboard(rows) 修飾子は一般的な構造を受け付けます。
+- **spawn_background でのタスクの所属**：接続タスクは `untime.spawn_background` を使用します。
+- **フレームワークのソフト依存**：ErisPulse>=2.7.1 の実行時検出と警告メッセージを出力します。起動時にバージョンのログを出力します。
+
+### 標準的な API アクション
+
+```python
+from ErisPulse import sdk
+kook = sdk.adapter.get("kook")
+
+result = await kook.Api.get_self_info()              # GET /users/@me
+result = await kook.Api.get_user_info(user_id)       # POST /user/view
+result = await kook.Api.get_guild_info(guild_id)     # POST /guild/view
+result = await kook.Api.get_guild_list()             # POST /guild/list
+result = await kook.Api.get_channel_info(channel_id) # POST /channel/view
+result = await kook.Api.get_channel_list(guild_id)   # POST /channel/list
+await kook.Api.delete_message(msg_id)                # POST /message/delete
+result = await kook.Api.Using("main").get_self_info()
+```
+
+### ボタン（keyboard）
+
+```python
+rows = [[{"label": "オプションA", "type": "callback", "data": "vote:A"},
+         {"label": "公式サイト",  "type": "link",     "data": "https://example.com"}]]
+await kook.Send.To("channel", channel_id).Keyboard(rows).Text("選択してください")
+# テキストとボタンは自動的に Kook カードメッセージ（section + action-group）に組み合わされます。
+
+# ボタンのクリックコールバック（標準的なフィールド）
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_button(event):
+    if event.get("platform") == "kook" and event.get("button_data"):
+        data = event["button_data"]
+```
 
 ## 支援されるメッセージ送信タイプ
 

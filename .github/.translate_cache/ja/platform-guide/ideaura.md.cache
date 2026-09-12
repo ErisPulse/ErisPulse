@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "b988c36ddff16f58ef8c09fd21c671b8",
-  "file_hash": "b988c36ddff16f58ef8c09fd21c671b8",
-  "translated_at": "2026-09-07T11:44:54.487683",
+  "hash": "581ad372f3548c98bdbc894300302fbf",
+  "file_hash": "581ad372f3548c98bdbc894300302fbf",
+  "translated_at": "2026-09-12T10:23:47.565519",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,12 +10,16 @@
       "translation": "# 花楓カフェ（RockyChat）プラットフォームの機能ドキュメント\n\nIdeauraAdapter は、花楓カフェ（RockyChat）プラットフォームの API を基に構築されたアダプターであり、すべてのプラットフォーム機能モジュールを統合し、一貫したイベント処理とメッセージ操作インターフェースを提供します。\n\n---"
     },
     {
-      "hash": "2d953250c4c9910f99d2572b3ea02038",
-      "translation": "## ドキュメント情報\n\n- 対応モジュール: ErisPulse-Ideaura\n- 対応モジュールバージョン: 4.0.1\n- 管理者: ErisPulse"
+      "hash": "d7e638b601683aec3afc08ef61c8cfaa",
+      "translation": "## ドキュメント情報\n\n- 対応モジュール: ErisPulse-Ideaura\n- 対応モジュールのバージョン: 4.1.0\n- 維持管理者: ErisPulse"
     },
     {
       "hash": "ba7be8ca44b3a3db8900b4ac53a42094",
       "translation": "## 基本情報\n\n- プラットフォーム紹介：花楓コーヒーショップ（RockyChat）は、リアルタイム通信プラットフォームです。\n- アダプタ名：IdeauraAdapter\n- マルチアカウント対応：Bot Token による複数アカウントの設定が可能です。\n- チェーン修飾子対応：`.At()`、`.AtAll()`、`.Reply()`、`.Command()` などのチェーン修飾メソッドに対応しています。\n- OneBot12互換：OneBot12形式のメッセージ送信が可能です。"
+    },
+    {
+      "hash": "98f80a2f5b7e9da9cee4c92424cdc540",
+      "translation": "## v5 フレームワークの更新 (4.1.0)\n\n- **BaseConverter の継承**：コンバーターの共通フィールドはフレームワークの build_base_event で構築される\n- **spawn_background のタスク所属**：アカウント接続タスクは runtime.spawn_background を使用する\n- **フレームワークのソフト依存**：ErisPulse>=2.7.1 の実行時検出と警告メッセージの出力；起動時にバージョンログを出力\n- Request DSL は保留（フレンド申請承認 API はプラットフォーム提供待ち）\n\n---\n\n### 対応済みプラットフォーム機能\n\n- **イベント**：メッセージの編集/削除/転送/既読（ideaura_message_*）、フレンド申請（friend_request）、フレンドの追加/削除（friend_increase/decrease）、オンラインステータス（friend_online/offline）\n- **送信**：Text / Image / Markdown / Raw_ob12（チェーン式の Reply/At/AtAll 修飾子付き）\n- **未対応**：フレンド申請承認 API（プラットフォームがまだ提供していない）、Api DSL（プラットフォームの REST インターフェースが開放された後に追加予定）"
     },
     {
       "hash": "8c46bdfd3a1bffee8e956d87d7b3aabe",

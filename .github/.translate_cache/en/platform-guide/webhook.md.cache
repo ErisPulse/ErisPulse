@@ -1,10 +1,18 @@
 {
   "version": 2,
-  "hash": "874e1f65883386ce14ae0c142b98917d",
-  "file_hash": "874e1f65883386ce14ae0c142b98917d",
-  "translated_at": "2026-09-07T11:49:04.995938",
+  "hash": "047dd3dc25ad91fcd92f8656e299b0ba",
+  "file_hash": "047dd3dc25ad91fcd92f8656e299b0ba",
+  "translated_at": "2026-09-12T10:26:47.536837",
   "target_lang": "en",
   "chunks": [
+    {
+      "hash": "1a6c6f5bbea0915ddf66b37b2e549874",
+      "translation": "### Supported Platform Capabilities\n\n- **Inbound**: External systems POST to `callback_path` → converted to OneBot12 events (json/text segments are transparently passed through)\n- **Outbound**: Module `Send` → POST to `outgoing_url` (dual bridging)\n- **API**: Bridging identity information and runtime status (minimal set)"
+    },
+    {
+      "hash": "2482a3e8a95baf1c9e79ae16ed95379d",
+      "translation": "## v5 Paradigm Update (4.2.0)\n\n- **Minimal API DSL**: `get_self_info`, `get_status`, `get_version`, `get_supported_actions`\n- **Framework Soft Dependency**: Runtime detection of ErisPulse>=2.7.1 with prompt; version log output on startup\n- Import path updated to Core.Bases"
+    },
     {
       "hash": "88eba211c1ace553dab49fa3c3bef169",
       "translation": "# Platform Feature Description — Webhook Universal Bridge Adapter\n\nThis document provides a detailed explanation of the bidirectional bridge protocol, field mapping, and implementation features of the Webhook adapter."

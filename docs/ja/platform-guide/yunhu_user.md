@@ -1,28 +1,103 @@
-# 雲湖ユーザープラットフォームの機能ドキュメント
+# 雲湖ユーザープラットフォーム特徴ドキュメント
 
-YunhuUserAdapter は、雲湖ユーザーアカウントプロトコルに基づいて構築されたアダプタであり、ユーザーメールアドレスアカウントによるログイン、WebSocket を使用したイベント受信、一貫したイベント処理およびメッセージ操作インターフェースを提供します。
+YunhuUserAdapter は、雲湖ユーザーアカウントプロトコルに基づいて構築されたアダプターです。ユーザーアカウント（ロボットアカウントではなく）を使用してメールアドレスでログインし、WebSocket を使用してイベントを受信し、統一されたイベント処理とメッセージ操作のインターフェースを提供します。
 
 ---
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 1.4.0
-- メンテナー: wsu2059
+- 対応モジュールバージョン: 4.2.0
+- 維持管理者: wsu2059
 
 ## 基本情報
 
-- プラットフォーム概要：雲湖（Yunhu）はエンタープライズ向けのリアルタイムコミュニケーションプラットフォームです。このアダプターは**ユーザーのアカウント**（ロボットアカウントではなく）を使用して対話します。
-- アダプター名：YunhuUserAdapter
-- 複数アカウント対応：アカウント名で識別し、複数のユーザーアカウントを設定できます
-- チェーン修飾子対応：`.Reply()` などのチェーン修飾子メソッドをサポート
-- OneBot12互換：OneBot12形式のメッセージ送信をサポート
-- 通信方式：メールアドレスでログインし、トークンを取得してWebSocketでイベントを受信し、HTTP + Protobufプロトコルでメッセージを送信
-- 会話タイプ：プライベートチャット（user）、グループチャット（group）、ロボット会話（bot）をサポート
+- プラットフォーム概要: 雲湖（Yunhu）はエンタープライズ向けのリアルタイムコミュニケーションプラットフォームであり、このアダプターは**ユーザーアカウント**（ロボットアカウントではなく）を通じて対応します。
+- アダプター名: YunhuUserAdapter
+- マルチアカウント対応: アカウント名で識別し、複数のユーザーアカウントを設定できます。
+- チェーン修飾対応: `.Reply()` などのチェーン修飾メソッドをサポートします。
+- OneBot12互換: OneBot12形式のメッセージ送信をサポートします。
+- 通信方式: メールアドレスでログインし、token を取得し、WebSocket を使用してイベントを受信し、HTTP + Protobuf プロトコルを使用してメッセージを送信します。
+- 会話タイプ: プライベートチャット（user）、グループチャット（group）、ロボット会話（bot）をサポートします。
+
+## v5 ファンタジー更新（4.2.0）
+
+- **BaseConverter 継承**；**spawn_background タスクの所属**（WS 監視タスク）
+- **ユーザーアプリケーションプログラミングインターフェース（API）全集**（yhchatAPI full.proto / v1 エンドポイント、Protobuf over HTTP をベース）：
+  - ユーザー：get_user / edit_nickname / edit_avatar
+  - フレンド：アドレスブック / 申請リスト / 申請 / 承認 / 無視 / 削除
+  - グループ：グループ情報 / メンバー一覧 / 作成 / 解散 / 招待 / 除外 / 禁言 / ロボット一覧
+  - 会話：会話一覧；メッセージ：一覧 / 撤回 / ボタン報告
+- **フレームワークソフト依存**：ErisPulse>=2.7.1 を実行時に検出し、警告を表示します；起動時にバージョンログを出力します
+
+## 対応プラットフォーム機能リスト
+
+### イベント受信（WebSocket、protobuf エンコード）
+
+| WS cmd | イベント | 説明 |
+|--------|------|------|
+| `push_message` | `message` | プライベートチャット/グループチャット/Bot 会話メッセージ（テキスト/HTML/Markdown/画像/動画/音声/ファイル/絵文字/フォーム/記事/ステッカー/ボタン/A2UI） |
+| `edit_message` | `notice` (`message_edit`) | メッセージ編集通知 |
+| `file_send_message` | `notice` (`yunhu_user_file_send`) | スーパーファイル共有 |
+| `bot_board_message` | `notice` (`yunhu_user_bot_board`) | ロボット公告ボード |
+
+### Api DSL メソッド対照表（ YunhuHTTPClient → ユーザーアプリケーションプログラミングインターフェース v1 エンドポイント ）
+
+| 分類 | Api メソッド | エンドポイント | 説明 |
+|------|---------|------|------|
+| アカウント | `get_self_info()` | `/user/info` | ログインユーザー情報（ニックネーム/プロフィール画像/user_id） |
+| ユーザー | `get_user(user_id)` | `/user/get-user` | ユーザー詳細情報 |
+| ユーザー | `edit_nickname(nickname)` | `/user/edit-nickname` | 自分のニックネームを変更します |
+| ユーザー | `edit_avatar(url)` | `/user/edit-avatar` | 自分のプロフィール画像を変更します |
+| フレンド | `get_friend_address_book(md5)` | `/friend/address-book-list` | アドレスブック（カーソル付きページング） |
+| フレンド | `get_friend_requests()` | `/friend/request-list` | フレンド/グループ参加申請リスト |
+| フレンド | `friend_apply(user_id, desc)` | `/friend/apply` | フレンド申請を送信します |
+| フレンド | `friend_agree_apply(user_id)` | `/friend/agree-apply` | フレンド申請を承認します |
+| フレンド | `friend_ignore_apply(user_id)` | `/friend/ignore-apply` | フレンド申請を無視します |
+| フレンド | `friend_delete(user_id)` | `/friend/delete-friend` | フレンドを削除します |
+| グループ | `get_group_info(group_id)` | `/group/info` | グループ情報 |
+| グループ | `get_group_member_list(group_id)` | `/group/list-member` | グループメンバー一覧（キーワード検索対応） |
+| グループ | `create_group(name, ...)` | `/group/create-group` | グループを作成します |
+| グループ | `dismiss_group(group_id)` | `/group/dismiss-group` | グループを解散します |
+| グループ | `group_invite(group_id, user_ids)` | `/group/invite` | メンバーを招待します |
+| グループ | `group_remove_member(group_id, user_id)` | `/group/remove-member` | メンバーをグループから除外します |
+| グループ | `group_gag_member(group_id, user_id, 秒)` | `/group/gag-member` | グループメンバーを一時的に禁止します（0=解除） |
+| グループ | `get_group_bot_list(group_id)` | `/group/bot-list` | グループ内のロボット一覧 |
+| 会話 | `get_conversation_list(md5)` | `/conversation/list` | 会話一覧（カーソル付きページング） |
+| メッセージ | `get_message_list(chat_id, chat_type, ...)` | `/msg/list-message` | メッセージ一覧（複数のページング変種あり HTTP クライアントを参照） |
+| メッセージ | `delete_message(msg_id, chat_id, chat_type)` | `/msg/recall-msg` | メッセージを撤回します（一括撤回は HTTP クライアントを参照） |
+| メッセージ | `button_report(...)` | `/msg/button-report` | ボタンクリック報告 |
+| 元アクション | `get_status` / `get_version` / `get_supported_actions` | - | 実行状態/バージョン/サポートアクション |
+
+### 未対応（エンドポイントは既知、full.proto メッセージは完全、必要に応じて拡張可能）
+
+- ユーザー：認証コードログイン、バッジ、金豆記録、電話番号/メールアドレスのバインド、通知設定、ユーザーのデータ保存と取得
+- フレンド：通知を無視（no-notify）、申請記録の削除
+- グループ：コマンドリスト、カテゴリ、おすすめ、ライブ配信、グループ情報を編集/グループニックネーム/キーワード、グループ参加の自動承認、グループファイル制限、イベント SSE
+- 会話：固定/並べ替え/削除、通知を無視
+- メッセージ：転送、A2UI提出、メッセージ一覧の画像取得、ファイルのダウンロード記録
+- グループタグ：list / relate / relate-cancel / create / edit / delete / members（エンドポイント `/group-tag/*`）
+
+> 拡張方法：`YunhuHTTPClient` に既存のパターンに従ってメソッドを追加します（`_proto_request` / `_json_request` 一般的なラッパー）、そして `Api` クラスで公開します。エンドポイントとメッセージ定義は `yhchatAPI/src/api/v1/*.md` と `yhchatAPI/src/full.proto` を参照してください。
+
+### ユーザーアプリケーションプログラミングインターフェースの例
+
+```python
+from ErisPulse import sdk
+yunhu_user = sdk.adapter.get("yunhu_user")
+
+result = await yunhu_user.Api.get_self_info()
+result = await yunhu_user.Api.get_friend_requests()          # フレンド申請リスト
+await yunhu_user.Api.friend_agree_apply(user_id)             # フレンド申請を承認
+result = await yunhu_user.Api.get_group_member_list(group_id)
+result = await yunhu_user.Api.get_conversation_list()        # 会話リスト
+await yunhu_user.Api.delete_message(msg_id, chat_id, chat_type)  # メッセージを撤回
+```
+
+---
 
 ## 支援されるメッセージ送信タイプ
 
-すべての送信メソッドは、チェーン式構文で実装されています。たとえば：
-
+すべての送信メソッドはチェーン構文で実装されています。例：
 ```python
 from ErisPulse.Core import adapter
 yunhu_user = adapter.get("yunhu_user")
@@ -30,17 +105,16 @@ yunhu_user = adapter.get("yunhu_user")
 await yunhu_user.Send.To("user", user_id).Text("Hello World!")
 ```
 
-サポートされている送信タイプは以下の通りです。
-
-- `.Text(text: str, buttons: Optional[List] = None)`：純粋なテキストメッセージを送信します。
+サポートされる送信タイプは以下の通りです：
+- `.Text(text: str, buttons: Optional[List] = None)`：テキストメッセージを送信します。
 - `.Html(html: str, buttons: Optional[List] = None)`：HTML形式のメッセージを送信します。
 - `.Markdown(markdown: str, buttons: Optional[List] = None)`：Markdown形式のメッセージを送信します。
-- `.Image(file: Union[str, bytes], buttons: Optional[List] = None)`：画像メッセージを送信します。URL、ローカルパス、またはバイナリデータをサポートします。
-- `.Video(file: Union[str, bytes], buttons: Optional[List] = None)`：動画メッセージを送信します。URL、ローカルパス、またはバイナリデータをサポートします。
-- `.Audio(file: Union[str, bytes], buttons: Optional[List] = None)`：音声メッセージを送信します。URL、ローカルパス、またはバイナリデータをサポートし、自動的に音声長を検出します。
+- `.Image(file: Union[str, bytes], buttons: Optional[List] = None)`：画像メッセージを送信します。URL、ローカルパスまたはバイナリデータをサポートします。
+- `.Video(file: Union[str, bytes], buttons: Optional[List] = None)`：動画メッセージを送信します。URL、ローカルパスまたはバイナリデータをサポートします。
+- `.Audio(file: Union[str, bytes], buttons: Optional[List] = None)`：音声メッセージを送信します。URL、ローカルパスまたはバイナリデータをサポートし、音声の長さを自動検出します。
 - `.Voice(file: Union[str, bytes], buttons: Optional[List] = None)`：`.Audio()` の別名です。
-- `.File(file: Union[str, bytes], file_name: Optional[str] = None, buttons: Optional[List] = None)`：ファイルメッセージを送信します。URL、ローカルパス、またはバイナリデータをサポートします。
-- `.Face(file: Union[str, bytes], buttons: Optional[List] = None)`：絵文字/ステッカーのメッセージを送信します。ステッカーID、ステッカーURL、またはバイナリ画像データをサポートします。
+- `.File(file: Union[str, bytes], file_name: Optional[str] = None, buttons: Optional[List] = None)`：ファイルメッセージを送信します。URL、ローカルパスまたはバイナリデータをサポートします。
+- `.Face(file: Union[str, bytes], buttons: Optional[List] = None)`：絵文字/ステッカーメッセージを送信します。ステッカーID、ステッカーURLまたはバイナリ画像データをサポートします。
 - `.A2ui(a2ui_data: Union[str, Dict, List], buttons: Optional[List] = None)`：A2UIメッセージ（メッセージタイプ14）を送信します。A2UI JSONデータはtextフィールドに埋め込まれて送信されます。
 - `.Edit(msg_id: str, text: str, content_type: str = "text")`：既存のメッセージを編集します。
 - `.Recall(msg_id: str)`：メッセージを撤回します。
@@ -48,28 +122,26 @@ await yunhu_user.Send.To("user", user_id).Text("Hello World!")
 
 ### メディアファイル処理
 
-すべてのメディアタイプ（画像、動画、音声、ファイル）は以下の入力方法をサポートします。
+すべてのメディアタイプ（画像、動画、音声、ファイル）は以下の入力方法をサポートしています：
+- **URL**：`"https://example.com/image.jpg"` — 自動的にダウンロードしてアップロード
+- **ローカルパス**：`"/path/to/file.jpg"` — 自動的に読み込んでアップロード
+- **バイナリデータ**：`open("file.jpg", "rb").read()` — 直接アップロード
 
-- **URL**：`"https://example.com/image.jpg"` — 自動的にダウンロード後にアップロードされます。
-- **ローカルパス**：`"/path/to/file.jpg"` — 自動的に読み取り後にアップロードされます。
-- **バイナリデータ**：`open("file.jpg", "rb").read()` — 直接アップロードされます。
-
-メディアファイルは自動的に七牛雲ストレージにアップロードされ、以下の機能をサポートします。
-
-- 自動的に `filetype` ライブラリでファイルタイプとMIMEを検出します。
-- 自動的にファイルサイズを計算します。
-- 音声ファイルは自動的に時長を検出します（MP3、MP4/M4A形式をサポート）。
+メディアファイルは自動的に七牛雲ストレージにアップロードされ、以下の特徴をサポートします：
+- 自動的に `filetype` ライブラリを使ってファイルタイプとMIMEを検出します
+- 自動的にファイルサイズを計算します
+- 音声ファイルはMP3、MP4/M4A形式を自動的に検出します
 
 ### ボタンパラメータの説明
 
-`buttons` パラメータは、ボタンのレイアウトと機能を示すネストされたリストです。各ボタンオブジェクトには以下のフィールドが含まれます。
+`buttons` パラメータは、ボタンのレイアウトと機能を示すネストされたリストです。各ボタンオブジェクトには以下のフィールドが含まれます：
 
-| フィールド         | 型   | 必須 | 説明                                                                 |
+| フィールド         | タイプ   | 必須 | 説明                                                                 |
 |--------------|--------|----------|----------------------------------------------------------------------|
 | `text`       | string | 是       | ボタン上の文字                                                         |
-| `actionType` | int    | 是       | 動作タイプ：<br>`1`: URLにジャンプ<br>`2`: コピー<br>`3`: クリックして報告            |
-| `url`        | string | 否       | `actionType=1` の場合、ジャンプ先のURLを示します                         |
-| `value`      | string | 否       | `actionType=2` の場合、この値がクリップボードにコピーされます<br>`actionType=3` の場合、この値がサブスクライバーに送信されます |
+| `actionType` | int    | 是       | アクションタイプ：<br>`1`: URLにジャンプ<br>`2`: コピー<br>`3`: クリック報告            |
+| `url`        | string | 否       | `actionType=1` の場合、ジャンプ先のURLとして使用されます                         |
+| `value`      | string | 否       | `actionType=2` の場合、この値がクリップボードにコピーされます<br>`actionType=3` の場合、この値がサブスクライバに送信されます |
 
 例：
 ```python
@@ -80,21 +152,21 @@ buttons = [
         {"text": "イベントを報告", "actionType": 3, "value": "xxxxx"}
     ]
 ]
-await yunhu_user.Send.To("user", user_id).Buttons(buttons).Text("ボタン付きのメッセージ")
+await yunhu_user.Send.To("user", user_id).Buttons(buttons).Text("ボタン付きメッセージ")
 ```
 
-### チェーン式修飾メソッド（組み合わせて使用可能）
+### チェーン修飾メソッド（組み合わせて使用可能）
 
-チェーン式修飾メソッドは `self` を返し、チェーン式呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります。
+チェーン修飾メソッドは `self` を返すため、チェーンで呼び出すことができます。最終的な送信メソッドの前に呼び出す必要があります：
 
 - `.Reply(message_id: str)`：指定されたメッセージに返信します。
-- `.At(user_id: str)`：@指定ユーザー（テキスト形式 @user_id）。
-- `.AtAll()`：@全員（偽@全員、@allテキストを送信します）。
+- `.At(user_id: str)`：指定されたユーザーを@します（テキスト形式の@user_id）。
+- `.AtAll()`：全員を@します（偽@全員、@allテキストを送信）。
 - `.Buttons(buttons: List)`：ボタンを追加します。
 
-> **注意：** ユーザーアカウントは特殊なため、管理者でなくても@全員ができますが、この `AtAll()` は@全員のテキストを送信するだけで、偽@全員です。
+> **注意：** ユーザーアカウントは特殊であるため、管理者でなくても全員を@できますが、この `AtAll()` は単に全員を@するテキストを送信するだけです。これは偽@全員です。
 
-### チェーン式呼び出しの例
+### チェーン呼び出しの例
 
 ```python
 # 基本的な送信
@@ -104,15 +176,15 @@ await yunhu_user.Send.To("user", user_id).Text("Hello")
 await yunhu_user.Send.To("group", group_id).Reply(msg_id).Text("返信メッセージ")
 
 # 返信 + ボタン
-await yunhu_user.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("返信とボタン付きのメッセージ")
+await yunhu_user.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("返信とボタン付きメッセージ")
 
 # 指定アカウント + 返信 + ボタン
-await yunhu_user.Send.Using("default").To("group", group_id).Reply(msg_id).Buttons(buttons).Text("完全なチェーン式呼び出し")
+await yunhu_user.Send.Using("default").To("group", group_id).Reply(msg_id).Buttons(buttons).Text("完全なチェーン呼び出し")
 ```
 
 ### OneBot12メッセージのサポート
 
-アダプターはOneBot12形式のメッセージを送信することをサポートし、プラットフォーム間のメッセージ互換性を確保します。
+アダプターはOneBot12形式のメッセージを送信することができ、クロスプラットフォームのメッセージ互換性を確保します：
 
 - `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12形式のメッセージを送信します。
 
@@ -121,25 +193,24 @@ await yunhu_user.Send.Using("default").To("group", group_id).Reply(msg_id).Butto
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await yunhu_user.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
-# チェーン式修飾と併用
+# チェーン修飾と組み合わせて使用
 ob12_msg = [{"type": "text", "data": {"text": "返信メッセージ"}}]
 await yunhu_user.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 ```
 
-Raw_ob12は、混合メッセージセグメントをグループ化して処理することをサポートします。
-
-- `text`、`mention` タイプは1つのグループとして送信できます。
-- `image`、`video`、`audio`、`file`、`face`、`markdown`、`html`、`a2ui` などのタイプはそれぞれ独立したグループになります。
-- `reply` タイプは任意のグループに追加できます。
+Raw_ob12は、混合メッセージセグメントを自動的に処理します：
+- `text`、`mention` などのタイプはグループにまとめられます
+- `image`、`video`、`audio`、`file`、`face`、`markdown`、`html`、`a2ui` などのタイプはそれぞれ独立したグループになります
+- `reply` などのタイプは、どのグループにも追加できます
 
 ## 送信メソッドの戻り値
 
-すべての送信メソッドは Task オブジェクトを返し、これに直接 await を使用して送信結果を取得できます。返り値は ErisPulse アダプタ標準化返り値規格に従います：
+すべての送信メソッドはTaskオブジェクトを返し、awaitで送信結果を取得できます。返り値はErisPulseアダプターの標準化された返り値規格に従います：
 
 ```python
 {
     "status": "ok",           // 実行ステータス
-    "retcode": 0,             // 戻りコード
+    "retcode": 0,             // 返り値コード
     "data": {...},            // 応答データ
     "message_id": "123456",   // メッセージID
     "message": "",            // エラーメッセージ
@@ -147,41 +218,41 @@ Raw_ob12は、混合メッセージセグメントをグループ化して処理
 }
 ```
 
-## 特有イベントタイプ
+## 特有のイベントタイプ
 
-このプラットフォームの機能を使用するには、`platform == "yunhu_user"` の検証が必要です。
+`platform == "yunhu_user"` で検証してから、このプラットフォームの特有の機能を使用する必要があります。
 
 ### 核心的な差異点
 
-1. 特有イベントタイプ:
+1. 特有のイベントタイプ：
     - スーパーファイル共有: `yunhu_user_file_send`
     - ロボット公告ボード: `yunhu_user_bot_board`
     - メッセージ編集通知: `message_edit`
-    - メッセージ削除通知: `message_delete`（取り消し）
-2. 特有メッセージセグメントタイプ:
+    - メッセージ削除通知: `message_delete`（撤回）
+2. 特有のメッセージセグメントタイプ:
     - フォームメッセージセグメント: `yunhu_user_form`
     - 記事メッセージセグメント: `yunhu_user_post`
     - ステッカー・メッセージセグメント: `yunhu_user_sticker`
-    - ボタンメッセージセグメント: `yunhu_user_button`
-    - A2UIメッセージセグメント: `a2ui`
+    - ボタン・メッセージセグメント: `yunhu_user_button`
+    - A2UI・メッセージセグメント: `a2ui`
 3. 拡張フィールド:
-    - すべての特有フィールドは `yunhu_user_` で始まるプレフィックスで識別されます
-    - 元のデータは `yunhu_user_raw` フィールドに保持されます
+    - すべての特有のフィールドは `yunhu_user_` で始まります
+    - 元のデータは `yunhu_user_raw` フィールドに保存されます
     - 元のイベントタイプは `yunhu_user_raw_type` フィールドに記録されます
-    - プライベートチャットでは `self.user_id` は現在ログインしているユーザーIDを示します
+    - プライベートチャットでは `self.user_id` は現在のログインユーザーIDを示します
 
-### 対応する元のイベントタイプ
+### 支援される元のイベントタイプ
 
 | 元のイベントタイプ | OneBot12 タイプ | 説明 |
 |-------------|--------------|------|
-| `push_message` | `message` | プッシュメッセージ（プライベートチャット、グループチャット、Bot会話） |
+| `push_message` | `message` | メッセージ送信（プライベートチャット、グループチャット、Bot 会話） |
 | `edit_message` | `notice` (`message_edit`) | メッセージ編集イベント |
 | `file_send_message` | `notice` (`yunhu_user_file_send`) | スーパーファイル共有イベント |
 | `bot_board_message` | `notice` (`yunhu_user_bot_board`) | ロボット公告ボードイベント |
 
 > 他のイベントタイプ（`heartbeat_ack`、`draft_input`、`stream_message` など）は無視されます。
 
-### OneBot12 がサポートする detail_type
+### OneBot12 でサポートされる detail_type
 
 | OneBot12 detail_type | 雲湖 chat_type | 説明 |
 |---------------------|---------------|------|
@@ -293,7 +364,7 @@ from ErisPulse.Core.Event import message, notice
 
 @message.on_message()
 async def handle_yunhu_user_message(event):
-    """雲湖ユーザーのメッセージを処理"""
+    """雲湖ユーザーのメッセージを処理する"""
     if event.get("platform") != "yunhu_user":
         return
     
@@ -303,7 +374,7 @@ async def handle_yunhu_user_message(event):
     
     print(f"ユーザー {user_nickname}({user_id}): {alt_message}")
     
-    # メッセージセグメント内の特有タイプをチェック
+    # メッセージセグメント内の特有のタイプをチェック
     for segment in event.get("message", []):
         seg_type = segment.get("type", "")
         
@@ -321,7 +392,7 @@ async def handle_yunhu_user_message(event):
         
         elif seg_type == "yunhu_user_button":
             buttons = segment["data"]["buttons"]
-            print(f"メッセージにボタンが含まれています: {buttons}")
+            print(f"ボタンを含むメッセージ: {buttons}")
         
         elif seg_type == "a2ui":
             a2ui_data = segment["data"]["a2ui"]
@@ -332,7 +403,7 @@ async def handle_yunhu_user_message(event):
 
 @notice.on_notice()
 async def handle_yunhu_user_notice(event):
-    """雲湖ユーザーの通知イベントを処理"""
+    """雲湖ユーザーの通知イベントを処理する"""
     if event.get("platform") != "yunhu_user":
         return
     
@@ -351,23 +422,23 @@ async def handle_yunhu_user_notice(event):
     elif detail_type == "yunhu_user_bot_board":
         board_data = event.get("yunhu_user_bot_board", {})
         bot_name = event.get("bot_name", "")
-        print(f"ロボット {bot_name} が公告を発表しました: {board_data.get('content', '')}")
+        print(f"ロボット {bot_name} が公告を投稿しました: {board_data.get('content', '')}")
 ```
 
 ## 拡張フィールドの説明
 
-- すべての独自フィールドは `yunhu_user_` という接頭辞で識別され、標準フィールドとの衝突を避ける。
-- 元のデータは `yunhu_user_raw` フィールドに保存され、クラウド湖プラットフォームの完全な元のデータにアクセスできるようにする。
-- 元のイベントタイプは `yunhu_user_raw_type` フィールドに記録される（例: `push_message`、`edit_message` など）。
-- `self.user_id` は現在ログインしているユーザーIDを表し、ログインレスポンスから取得する。
-- スーパーファイル共有は `yunhu_user_file_send` フィールドを通じてファイル共有データを提供する。
-- ロボットの公告ボードは `yunhu_user_bot_board` フィールドを通じて公告データを提供する。
+- すべての特有のフィールドは `yunhu_user_` で始まり、標準のフィールドとの衝突を避ける
+- 元のデータは `yunhu_user_raw` フィールドに保存され、雲湖プラットフォームの完全な元のデータにアクセスできる
+- 元のイベントタイプは `yunhu_user_raw_type` フィールドに記録される（例: `push_message`、`edit_message` など）
+- `self.user_id` は現在のログインユーザーIDを示す（ログイン応答から取得）
+- スーパーファイル共有は `yunhu_user_file_send` フィールドを通じてファイル共有データを提供する
+- ロボット公告ボードは `yunhu_user_bot_board` フィールドを通じて公告データを提供する
 
-### 独自メッセージセグメントタイプ
+### 特有のメッセージセグメントタイプ
 
 #### フォームメッセージセグメント (yunhu_user_form)
 
-content_type が 5 の場合、メッセージセグメントタイプは `yunhu_user_form` となる：
+content_type が 5 の場合、メッセージセグメントタイプは `yunhu_user_form` です：
 
 ```json
 {
@@ -380,7 +451,7 @@ content_type が 5 の場合、メッセージセグメントタイプは `yunhu
 
 #### 記事メッセージセグメント (yunhu_user_post)
 
-content_type が 6 の場合、メッセージセグメントタイプは `yunhu_user_post` となる：
+content_type が 6 の場合、メッセージセグメントタイプは `yunhu_user_post` です：
 
 ```json
 {
@@ -393,32 +464,32 @@ content_type が 6 の場合、メッセージセグメントタイプは `yunhu
 }
 ```
 
-| フィールド | 型 | 説明 |
+| フィールド | タイプ | 説明 |
 |------|------|------|
-| `post_id` | string | 記事の一意の識別子 |
-| `post_title` | string | 記事タイトル |
-| `post_content` | string | 記事内容 |
+| `post_id` | string | 記事のユニークな識別子 |
+| `post_title` | string | 記事のタイトル |
+| `post_content` | string | 記事の内容 |
 
-#### スタンプメッセージセグメント (yunhu_user_sticker)
+#### ステッカー・メッセージセグメント (yunhu_user_sticker)
 
-content_type が 7 の場合、メッセージセグメントタイプは `yunhu_user_sticker` となる：
+content_type が 7 の場合、メッセージセグメントタイプは `yunhu_user_sticker` です：
 
 ```json
 {
     "type": "yunhu_user_sticker",
     "data": {
-        "file_id": "スタンプ画像のURL"
+        "file_id": "ステッカー画像のURL"
     }
 }
 ```
 
-| フィールド | 型 | 説明 |
+| フィールド | タイプ | 説明 |
 |------|------|------|
-| `file_id` | string | スタンプ画像のURL |
+| `file_id` | string | ステッカー画像のURL |
 
-#### ボタンメッセージセグメント (yunhu_user_button)
+#### ボタン・メッセージセグメント (yunhu_user_button)
 
-メッセージにボタンが含まれる場合、`yunhu_user_button` メッセージセグメントが追加される：
+メッセージにボタンが含まれる場合、`yunhu_user_button` メッセージセグメントが追加されます：
 
 ```json
 {
@@ -431,7 +502,7 @@ content_type が 7 の場合、メッセージセグメントタイプは `yunhu
 
 #### A2UI メッセージセグメント (a2ui)
 
-content_type が 14 の場合、メッセージセグメントタイプは `a2ui` となる：
+content_type が 14 の場合、メッセージセグメントタイプは `a2ui` です：
 
 ```json
 {
@@ -442,24 +513,26 @@ content_type が 14 の場合、メッセージセグメントタイプは `a2ui
 }
 ```
 
-## 複数アカウントの設定
+---
+
+## マルチアカウントの設定
 
 ### 設定の説明
 
-YunhuUserAdapter は、複数のユーザー アカウントを同時に設定および実行することをサポートしています。
+YunhuUserAdapter は複数のユーザーアカウントを同時に設定および実行することをサポートしています。
 
 ```toml
 # config.toml
 [YunhuUserAdapter]
-ws_reconnect_interval = 30  # WebSocket 再接続間隔（秒）
-ws_timeout = 70             # WebSocket タイムアウト時間（秒）
+ws_reconnect_interval = 30  # WebSocket再接続間隔（秒）
+ws_timeout = 70             # WebSocketタイムアウト時間（秒）
 
 [YunhuUserAdapter.accounts.default]
 email = "user1@example.com"  # ユーザーのメールアドレス（必須）
 password = "password1"       # ユーザーのパスワード（必須）
-platform = "windows"         # ログインプラットフォーム（オプション、デフォルトは windows）
-device_id = ""               # デバイスID（オプション、未入力で自動生成）
-enabled = true               # アカウントの有効化（オプション、デフォルトは true）
+platform = "windows"         # ログインプラットフォーム（オプション、デフォルトはwindows）
+device_id = ""               # デバイスID（オプション、未設定の場合は自動生成）
+enabled = true               # アカウントを有効にするかどうか（オプション、デフォルトはtrue）
 
 [YunhuUserAdapter.accounts.account2]
 email = "user2@example.com"
@@ -470,47 +543,47 @@ enabled = true
 ```
 
 **設定項目の説明：**
-- `email`：ユーザーのメールアドレス（必須）、雲湖プラットフォームへのログインに使用
+- `email`：ユーザーのメールアドレス（必須）、雲湖プラットフォームにログインするために使用
 - `password`：ユーザーのパスワード（必須）
-- `platform`：ログインプラットフォーム識別子（オプション、デフォルトは `windows`）、利用可能な値：`windows`、`macos`、`linux`、`ios`、`android`
-- `device_id`：デバイスID（オプション、未入力で自動生成）、セッションの一貫性を保つために固定値を設定することを推奨
-- `enabled`：アカウントの有効化（オプション、デフォルトは `true`）
+- `platform`：ログインプラットフォームの識別子（オプション、デフォルトは `windows`）、有効値は `windows`、`macos`、`linux`、`ios`、`android`
+- `device_id`：デバイスID（オプション、未設定の場合は自動生成）、固定値を設定してセッションの一貫性を保つことを推奨
+- `enabled`：アカウントを有効にするかどうか（オプション、デフォルトは `true`）
 
-**アダプタレベルの設定：**
-- `ws_reconnect_interval`：WebSocket 再接続間隔（秒、デフォルトは 30）
-- `ws_timeout`：WebSocket タイムアウト時間（秒、デフォルトは 70）
+**アダプターのレベルの設定：**
+- `ws_reconnect_interval`：WebSocket再接続間隔（秒、デフォルトは30）
+- `ws_timeout`：WebSocketタイムアウト時間（秒、デフォルトは70）
 
 **重要な注意事項：**
-1. アダプタはメールアドレスによるログイン方式でトークンを取得し、ログイン後に WebSocket を通じてイベントを受信します。
-2. WebSocket 接続が切断された場合、自動的に再接続が行われ、最大3回まで再試行されます。
-3. 各アカウントに固定の `device_id` を設定することを推奨します。これにより、セッションの一貫性が保たれます。
-4. テンプレートアカウント（デフォルトのメールアドレスとパスワード）は、自動的にスキップされます。
+1. アダプターはメールアドレスを使用してログインし、tokenを取得し、WebSocketを介してイベントを受信します
+2. WebSocket接続が切断された場合、自動的に再接続され、最大3回まで再試行されます
+3. 各アカウントに固定の `device_id` を設定することを推奨します。これにより、セッションの一貫性が保たれます
+4. 未変更のテンプレートアカウント（デフォルトのメールアドレスとパスワード）は自動的にスキップされます
 
-### Send DSL を使用してアカウントを指定
+### Send DSL を使用してアカウントを指定する
 
-`Using()` メソッドを使用して、どのアカウントを使ってメッセージを送信するかを指定できます。このメソッドは2種類の引数をサポートします：
-- **アカウント名**：設定ファイル中のアカウント名（例：`default`、`account2`）
+`Using()` メソッドを使用して、どのアカウントを使ってメッセージを送信するかを指定することができます。このメソッドは2つのパラメータをサポートします：
+- **アカウント名**：設定ファイルのアカウント名（例：`default`、`account2`）
 - **user_id**：ログイン後に取得されるユーザーID
 
 ```python
 from ErisPulse.Core import adapter
 yunhu_user = adapter.get("yunhu_user")
 
-# アカウント名を使ってメッセージを送信
+# アカウント名を使ってメッセージを送信する
 await yunhu_user.Send.Using("default").To("user", "user123").Text("Hello from account1!")
 
-# user_id を使ってメッセージを送信（対応するアカウントを自動的に検索）
+# user_idを使ってメッセージを送信する（自動的に対応するアカウントを検索）
 await yunhu_user.Send.Using("user_id_here").To("group", "group456").Text("Hello from user!")
 
-# 指定しない場合、最初に有効化されたアカウントが使用されます
+# 指定しない場合は、最初に有効なアカウントが使用されます
 await yunhu_user.Send.To("user", "user123").Text("Hello from default account!")
 ```
 
-> **注意：** `user_id` を使用する場合、システムは設定ファイル内で一致するアカウントを自動的に検索します。イベントの返信処理では、`event["self"]["user_id"]` を使用して同じアカウントに返信するのに特に便利です。
+> **ヒント：** `user_id` を使用する場合、システムは設定ファイルに一致するアカウントを自動的に検索します。これはイベントの返信を処理するときに特に便利です。`event["self"]["user_id"]` を使用して、同じアカウントで返信することができます。
 
 ### イベントにおけるアカウント識別
 
-受信したイベントには、対応するユーザーID情報が自動的に含まれます：
+受信したイベントには自動的に対応するユーザーID情報が含まれています：
 
 ```python
 from ErisPulse.Core.Event import message
@@ -518,11 +591,11 @@ from ErisPulse.Core.Event import message
 @message.on_message()
 async def handle_message(event):
     if event["platform"] == "yunhu_user":
-        # 現在ログインしているユーザーIDを取得
+        # 現在のログインユーザーIDを取得
         my_user_id = event["self"]["user_id"]
-        print(f"メッセージはアカウント: {my_user_id} から送信されました。")
+        print(f"メッセージはアカウント: {my_user_id} から来ています")
         
-        # 同じアカウントを使って返信
+        # 同じアカウントを使ってメッセージを返信する
         yunhu_user = adapter.get("yunhu_user")
         await yunhu_user.Send.Using(my_user_id).To(
             event["detail_type"],
@@ -532,38 +605,38 @@ async def handle_message(event):
 
 ### ログ情報
 
-アダプタは、ログにアカウント情報を自動的に含め、デバッグや追跡に便利です：
+アダプターはログに自動的にアカウント情報を含め、デバッグや追跡に役立ちます：
 
 ```
-[INFO] アカウント default (user1@example.com) がログイン成功、ユーザーID: 12345678
-[INFO] アカウント default の WebSocket 監視タスクが起動しました
-[INFO] アカウント account2 (user2@example.com) がログイン成功、ユーザーID: 87654321
+[INFO] アカウント default (user1@example.com) にログイン成功、ユーザーID: 12345678
+[INFO] アカウント default のWebSocket監視タスクが起動しました
+[INFO] アカウント account2 (user2@example.com) にログイン成功、ユーザーID: 87654321
 ```
 
 ### 管理インターフェース
 
 ```python
-# すべてのアカウント情報を取得
+# すべてのアカウント情報を取得する
 accounts = yunhu_user.accounts
-# 戻り値の形式: {"default": {"name": "default", "email": "...", "token": "...", "user_id": "...", ...}, ...}
+# 戻り値形式: {"default": {"name": "default", "email": "...", "token": "...", "user_id": "...", ...}, ...}
 
-# アカウントが有効かどうかをチェック
+# アカウントが有効かどうかをチェックする
 for account_name, account_config in yunhu_user._account_configs.items():
     print(f"{account_name}: enabled={account_config.enabled}")
 
-# アカウント名から HTTP クライアントを取得
+# アカウント名からHTTPクライアントを取得する
 http_client = yunhu_user._get_http_client("default")
 
-# user_id からアカウントを検索
+# user_idからアカウントを検索する
 account_name = yunhu_user._get_account_by_user_id("12345678")
 ```
 
-## API 呼び出し
+## APIの呼び出し
 
-アダプターは `call_api` メソッドを提供し、プラットフォーム API を直接呼び出すことができます。
+アダプターは `call_api` メソッドを提供し、プラットフォームのAPIを直接呼び出すことができます：
 
 ```python
-# メッセージの送信
+# メッセージを送信する
 result = await yunhu_user.call_api("/send", 
     target_type="group", 
     target_id="group_id",
@@ -571,30 +644,30 @@ result = await yunhu_user.call_api("/send",
     message={"text": "Hello", "msg_type": 1}
 )
 
-# メッセージの編集
+# メッセージを編集する
 result = await yunhu_user.call_api("/edit",
     target_type="group",
     target_id="group_id",
     msg_id="msg_id",
-    text="新内容",
+    text="新しい内容",
     content_type="text"
 )
 
-# メッセージの撤回
+# メッセージを撤回する
 result = await yunhu_user.call_api("/recall",
     target_type="group",
     target_id="group_id",
     msg_id="msg_id"
 )
 
-# メッセージの一括撤回
+# メッセージを一括撤回する
 result = await yunhu_user.call_api("/recall_batch",
     target_type="group",
     target_id="group_id",
     msg_id_list=["msg_id_1", "msg_id_2"]
 )
 
-# メッセージリストの取得
+# メッセージ一覧を取得する
 result = await yunhu_user.call_api("/list",
     chat_id="group_id",
     chat_type=2,
@@ -602,14 +675,14 @@ result = await yunhu_user.call_api("/list",
     msg_id=""
 )
 
-# メッセージ編集履歴の取得
+# メッセージ編集履歴を取得する
 result = await yunhu_user.call_api("/list_edit_record",
     msg_id="msg_id",
     size=10,
     page=1
 )
 
-# ボタンイベントの報告
+# ボタンイベント報告
 result = await yunhu_user.call_api("/button_report",
     chat_id="group_id",
     chat_type=2,
@@ -619,16 +692,16 @@ result = await yunhu_user.call_api("/button_report",
 )
 ```
 
-**サポートされる API エンドポイント:**
+**サポートされているAPIエンドポイント：**
 
 | エンドポイント | 説明 |
 |------|------|
-| `/send` | メッセージの送信 |
-| `/edit` | メッセージの編集 |
-| `/recall` | メッセージの撤回 |
-| `/recall_batch` | メッセージの一括撤回 |
-| `/list` | メッセージリストの取得 |
-| `/list_by_seq` | シーケンスによるメッセージの取得 |
-| `/list_by_mid_seq` | メッセージIDとシーケンスによるメッセージの取得 |
-| `/list_edit_record` | メッセージ編集履歴の取得 |
-| `/button_report` | ボタンイベントの報告 |
+| `/send` | メッセージを送信する |
+| `/edit` | メッセージを編集する |
+| `/recall` | メッセージを撤回する |
+| `/recall_batch` | メッセージを一括撤回する |
+| `/list` | メッセージ一覧を取得する |
+| `/list_by_seq` | シーケンスでメッセージを取得する |
+| `/list_by_mid_seq` | メッセージIDとシーケンスでメッセージを取得する |
+| `/list_edit_record` | メッセージ編集履歴を取得する |
+| `/button_report` | ボタンイベント報告を送信する |

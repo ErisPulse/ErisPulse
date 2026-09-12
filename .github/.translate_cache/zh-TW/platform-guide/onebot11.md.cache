@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "0f6710bb3a57b16c9794e7c2c493eb4a",
-  "file_hash": "0f6710bb3a57b16c9794e7c2c493eb4a",
-  "translated_at": "2026-09-07T11:43:46.811687",
+  "hash": "8e71d3a4c2dfbd3ef5a4e332b8b98aa8",
+  "file_hash": "8e71d3a4c2dfbd3ef5a4e332b8b98aa8",
+  "translated_at": "2026-09-12T10:29:00.088186",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,12 +10,20 @@
       "translation": "# OneBot11 平台特性文件\n\nOneBot11Adapter 是基於 OneBot V11 協議所建構的適配器。\n\n---\ndocs/zh-TW/quick-start.md"
     },
     {
-      "hash": "83863958e0c878f73382a19311f69780",
-      "translation": "## 文件資訊\n\n- 對應模組版本: 4.0.0\n- 維護者: ErisPulse"
+      "hash": "a1376ffeea270fa68d8b22165af6dbcc",
+      "translation": "## 文件資訊\n\n- 對應模組版本: 4.3.0\n- 維護者: ErisPulse"
     },
     {
       "hash": "41ee104b8f054db6dc1094d1cc97d583",
       "translation": "## 基本資訊\n\n- 平台簡介：OneBot 是一個聊天機器人應用介面標準\n- 適配器名稱：OneBotAdapter\n- 支援的協定/API 版本：OneBot V11\n- 多帳戶支援：預設多帳戶架構，支援同時設定和執行多個 OneBot 帳戶\n- 配置鍵名：`OneBotAdapter`"
+    },
+    {
+      "hash": "c9d96089dd0e4352162c9b1f90c43015",
+      "translation": "## v5 範式更新（4.3.0）\n\n本適配器已完成 v5 範式對齊（增量升級，API 兼容）：\n\n- **BaseConverter 繼承**：轉換器公共欄位（id/time/platform/self/raw）由框架 build_base_event 建構，按 OB11 欄位名（echo/time/self_id）覆蓋\n- **spawn_background 任務歸屬**：Client 模式連接任務改用 asyncio.spawn_background（owner 歸屬，shutdown 自動回收）\n- **框架軟依賴**：安裝適配器不再聲明 ErisPulse 硬依賴，避免 pip 解析時調整框架版本；執行時檢測 ErisPulse>=2.7.1 並在版本過低時打日誌提示\n- **啟動版本日誌**：初始化時輸出 OneBotAdapter v4.3.0 已載入\n\n已有能力（4.2.0 起支援）：多帳號、Api DSL 標準動作映射（get_self_info→get_login_info 等）、Request DSL（好友/群請求審批：event.approve() / event.reject()）、EventMixin、i18n。"
+    },
+    {
+      "hash": "4bf6ba61087bb54661cdbd935ee81ca2",
+      "translation": "## 標準 Api 動作（Api DSL）\n\n適配器將 OneBot12 標準動作名自動映射到 OB11 動作名，模組可跨平台統一呼叫：\n\n| OB12 標準動作 | OB11 動作 | 說明 |\n|--------------|-----------|------|\n| get_self_info | get_login_info | 欄位標準化 user_id/user_name/user_displayname |\n| get_user_info | get_stranger_info | 欄位標準化 |\n| delete_message | delete_msg | 撤回訊息 |\n| leave_group | set_group_leave | 退出群 |\n| get_friend_list | get_friend_list | 動作名一致，預設透傳 |\n| get_group_info | get_group_info | 動作名一致，預設透傳 |\n| upload_file | upload_group_file / upload_private_file | 擴展 group_id/user_id 可選參數，filetype 自動偵測類型路由 |\n\n### 基本用法\n\n```python\nfrom ErisPulse import sdk\nonebot = sdk.adapter.get(\"onebot11\")\n\n# 獲取機器人資訊\nresult = await onebot.Api.get_self_info()\nprint(result[\"data\"][\"user_id\"], result[\"data\"][\"user_name\"])\n\n# 撤回訊息\nawait onebot.Api.delete_message(message_id=123456)\n\n# 上傳群檔案（filetype 自動偵測類型路由到 upload_group_file）\nresult = await onebot.Api.upload_file(group_id=123456, file=\"/path/to/file.zip\")\n\n# 指定帳戶（多帳戶）\nresult = await onebot.Api.Using(\"main\").get_self_info()\n\n# 未映射的 OB11 動作透過 call() 逃生艙呼叫（NapCat/Lagrange 等擴展通用）\nresult = await onebot.Api.call(\"send_poke\", group_id=123, user_id=456)\n```"
     },
     {
       "hash": "41be246a280ce033ee5201e27f1aaa01",

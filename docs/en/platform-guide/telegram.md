@@ -1,12 +1,12 @@
-﻿# Telegram Platform Features Documentation
+# Telegram Platform Features Documentation
 
-TelegramAdapter is an adapter built on top of the Telegram Bot API, supporting multiple message types and event handling.
+TelegramAdapter is an adapter built on top of the Telegram Bot API, supporting various message types and event handling.
 
 ---
 
 ## Documentation Information
 
-- Corresponding Module Version: 4.1.1
+- Corresponding Module Version: 4.2.0
 - Maintainer: ErisPulse
 
 ## Basic Information
@@ -15,6 +15,60 @@ TelegramAdapter is an adapter built on top of the Telegram Bot API, supporting m
 - Adapter Name: TelegramAdapter
 - Supported Protocol/API Version: Telegram Bot API
 - Session Type Mapping: `private` → use `user` when sending, `group`/`supergroup` → `group`, `channel` → `channel`
+
+## Standard API Actions (API DSL)
+
+Adapters map OB12 standard actions to the Telegram Bot API and standardize the `data` field:
+
+| OB12 Standard Action | Telegram API | data Field |
+|----------------------|--------------|------------|
+| get_self_info | getMe | user_id / user_name / user_displayname |
+| get_user_info(user_id) | getChat | user_id / user_name / user_displayname |
+| get_group_info(group_id) | getChat | group_id / group_name |
+| get_group_member_info(group_id, user_id) | getChatMember | user_id / user_name / telegram_role |
+| delete_message(message_id) | deleteMessage | chat_id is automatically completed via message registry |
+| leave_group(group_id) | leaveChat | - |
+
+Extended actions: get_group_admin_list(group_id) (admin list), get_chat_member_count(chat_id) (member count).
+
+```python
+from ErisPulse import sdk
+telegram = sdk.adapter.get("telegram")
+
+result = await telegram.Api.get_self_info()
+result = await telegram.Api.get_group_info(group_id=-100123)
+result = await telegram.Api.get_group_admin_list(-100123)
+await telegram.Api.delete_message(message_id=55)   # chat_id is automatically completed
+result = await telegram.Api.Using("main").get_self_info()
+```
+
+> The Telegram Bot API does not provide an interface to retrieve friend/group lists; get_friend_list/get_group_list return errorcode=10002.
+
+---
+
+## Request Operations (Request DSL)
+
+Handle group join requests (chat_join_request event), based on `approveChatJoinRequest` / `declineChatJoinRequest`:
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_request()
+async def handle_join_request(event):
+    if event.get("platform") != "telegram":
+        return
+    # event["request_id"] is a synthetic identifier (tjr_{chat_id}_{user_id}_{date})
+    if event.get("user_nickname"):
+        await event.approve()          # Approve
+    # await event.reject()             # Reject
+
+# Manual invocation (requires prior receipt of the corresponding request event to register context)
+await telegram.Request(event["request_id"]).accept()
+await telegram.Request(event["request_id"]).reject()
+await telegram.Request(event["request_id"]).Using("main").accept()
+```
+
+---
 
 ## Supported Message Sending Types
 

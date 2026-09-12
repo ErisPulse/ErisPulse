@@ -7,6 +7,20 @@
 - メンテナー: ErisPulse
 - 依存: `cryptography`
 
+## v5 フレームワークの更新 (4.2.0)
+
+- **BaseConverter 継承**：変換器の共通フィールドは、フレームワークの build_base_event によって構築されます。
+- **Api DSL 最小セット**：get_self_info（appid）/get_status/get_version/get_supported_actions
+- **フレームワークのソフト依存**：実行時に ErisPulse>=2.7.1 を検出し、警告を出力します。起動時にバージョンログを出力します。
+
+---
+
+### 対応プラットフォーム機能
+
+- **受信**：公式アカウントのコールバックメッセージと、フォロー/アンフォローなどのイベント（平文/セキュリティモード）、署名検証
+- **送信**：カスタマーメッセージ（Text/Image など、Send DSL を経由）
+- **API**：アカウント情報（appid）と実行状態（最小セット）
+
 ## 支援するメッセージ送信タイプ
 
 | 方法 | 説明 | WeChat API |
