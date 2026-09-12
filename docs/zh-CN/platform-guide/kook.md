@@ -6,7 +6,7 @@ KookAdapter 是基于Kook（开黑啦）Bot WebSocket 协议构建的适配器�
 
 ## 文档信息
 
-- 对应模块版本: 0.1.0
+- 对应模块版本: 4.1.0
 - 维护者: ShanFish
 
 ## 基本信息
@@ -51,6 +51,50 @@ enabled = true
 - Kook API 基础地址：`https://www.kookapp.cn/api/v3`
 - WebSocket 网关通过 API 动态获取：`POST /gateway/index`
 
+## v5 范式更新（4.1.0）
+
+本适配器已完成 v5 范式对齐（增量升级，API 兼容）：
+
+- **BaseConverter 继承**：转换器公共字段由框架 `build_base_event` 构建
+- **Api DSL**：标准Api动作映射（见下）
+- **标准 keyboard 段**：`{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}}` 文本+键盘自动组合为 Kook 卡片消息（section + action-group）；.Keyboard(rows) 修饰器接受通用结构
+- **spawn_background 任务归属**：连接任务改用 untime.spawn_background
+- **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
+
+### 标准Api动作
+
+```python
+from ErisPulse import sdk
+kook = sdk.adapter.get("kook")
+
+result = await kook.Api.get_self_info()              # GET /users/@me
+result = await kook.Api.get_user_info(user_id)       # POST /user/view
+result = await kook.Api.get_guild_info(guild_id)     # POST /guild/view
+result = await kook.Api.get_guild_list()             # POST /guild/list
+result = await kook.Api.get_channel_info(channel_id) # POST /channel/view
+result = await kook.Api.get_channel_list(guild_id)   # POST /channel/list
+await kook.Api.delete_message(msg_id)                # POST /message/delete
+result = await kook.Api.Using("main").get_self_info()
+```
+
+### 按钮（keyboard）
+
+```python
+rows = [[{"label": "选项A", "type": "callback", "data": "vote:A"},
+         {"label": "官网",  "type": "link",     "data": "https://example.com"}]]
+await kook.Send.To("channel", channel_id).Keyboard(rows).Text("请选择")
+# 文本与按钮自动组合为 Kook 卡片消息（section + action-group）
+
+# 按钮点击回调（标准字段）
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_button(event):
+    if event.get("platform") == "kook" and event.get("button_data"):
+        data = event["button_data"]
+```
+
+---
 ## 支持的消息发送类型
 
 所有发送方法均通过链式语法实现，例如：

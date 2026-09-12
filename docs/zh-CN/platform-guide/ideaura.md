@@ -7,7 +7,7 @@ IdeauraAdapter 是基于花枫咖啡馆（RockyChat）平台 API 构建的适配
 ## 文档信息
 
 - 对应模块: ErisPulse-Ideaura
-- 对应模块版本: 4.0.1
+- 对应模块版本: 4.1.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -17,6 +17,24 @@ IdeauraAdapter 是基于花枫咖啡馆（RockyChat）平台 API 构建的适配
 - 多账户支持：支持通过 Bot Token 配置多个账户
 - 链式修饰支持：支持 `.At()`、`.AtAll()`、`.Reply()`、`.Command()` 等链式修饰方法
 - OneBot12兼容：支持发送 OneBot12 格式消息
+
+## v5 范式更新（4.1.0）
+
+- **BaseConverter 继承**：转换器公共字段由框架 build_base_event 构建
+- **spawn_background 任务归属**：账户连接任务改用 runtime.spawn_background
+- **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
+- Request DSL 暂缓（好友申请审批 API 待平台提供）
+
+---
+
+
+### 已对接平台能力
+
+- **事件**：消息编辑/撤回/转发/已读（ideaura_message_*）、好友申请（friend_request）、好友增删（friend_increase/decrease）、在线状态（friend_online/offline）
+- **发送**：Text / Image / Markdown / Raw_ob12（链式 Reply/At/AtAll 修饰）
+- **未对接**：好友申请审批 API（平台暂未提供）、Api DSL（平台 REST 面待开放后补充）
+
+---
 
 ## 支持的消息发送类型
 
