@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1608,
+  "total_keywords": 1628,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -222,6 +222,14 @@
         "title": "1. 概述"
       }
     ],
+    "1. 標準化原則": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 10,
+        "level": 2,
+        "title": "1. 標準化原則"
+      }
+    ],
     "1. 標準化回應格式": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -270,12 +278,12 @@
         "title": "1. 發送訊息"
       }
     ],
-    "1. 確保跨平台兼容": [
+    "1. 確保跨平台兼容性": [
       {
         "document": "standards/README.md",
-        "line": 27,
+        "line": 31,
         "level": 3,
-        "title": "1. 確保跨平台兼容"
+        "title": "1. 確保跨平台兼容性"
       }
     ],
     "1. 維護平台特性文件": [
@@ -684,6 +692,14 @@
         "title": "2. 構造化日誌"
       }
     ],
+    "2. 標準地圖": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 25,
+        "level": 2,
+        "title": "2. 標準地圖"
+      }
+    ],
     "2. 標準字段要求": [
       {
         "document": "standards/event-conversion.md",
@@ -743,7 +759,7 @@
     "2. 規範 API 接口": [
       {
         "document": "standards/README.md",
-        "line": 34,
+        "line": 39,
         "level": 3,
         "title": "2. 規範 API 接口"
       }
@@ -1077,7 +1093,7 @@
     "3. 提高代碼質量": [
       {
         "document": "standards/README.md",
-        "line": 41,
+        "line": 47,
         "level": 3,
         "title": "3. 提高代碼質量"
       }
@@ -1104,6 +1120,14 @@
         "line": 42,
         "level": 2,
         "title": "3. 標準動作列表"
+      }
+    ],
+    "3. 標準化工作流（新能力如何進入標準）": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 37,
+        "level": 2,
+        "title": "3. 標準化工作流（新能力如何進入標準）"
       }
     ],
     "3. 清晰的配置管理": [
@@ -1170,6 +1194,14 @@
         "title": "3. 適配器關閉時清理"
       }
     ],
+    "3.1 命名規則": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 59,
+        "level": 3,
+        "title": "3.1 命名規則"
+      }
+    ],
     "3.1 映射原則": [
       {
         "document": "standards/session-types.md",
@@ -1208,6 +1240,14 @@
         "line": 88,
         "level": 3,
         "title": "3.1 鏈式呼叫"
+      }
+    ],
+    "3.2 參數與返回規則": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 71,
+        "level": 3,
+        "title": "3.2 參數與返回規則"
       }
     ],
     "3.2 回傳碼規範": [
@@ -1394,6 +1434,14 @@
         "title": "4. 實現要求"
       }
     ],
+    "4. 差異處理模式（適配器層）": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 78,
+        "level": 2,
+        "title": "4. 差異處理模式（適配器層）"
+      }
+    ],
     "4. 擴展欄位說明": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -1570,6 +1618,14 @@
         "title": "5. supervisord"
       }
     ],
+    "5. 交互元件標準": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 91,
+        "level": 2,
+        "title": "5. 交互元件標準"
+      }
+    ],
     "5. 初始化模組": [
       {
         "document": "advanced/startup.md",
@@ -1666,6 +1722,14 @@
         "title": "5.1 `message_id` 必選欄位"
       }
     ],
+    "5.1 元件清單與狀態": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 93,
+        "level": 3,
+        "title": "5.1 元件清單與狀態"
+      }
+    ],
     "5.1 推斷優先級": [
       {
         "document": "standards/session-types.md",
@@ -1706,6 +1770,14 @@
         "title": "5.2 `{platform}_raw` 原始回應欄位"
       }
     ],
+    "5.2 keyboard 按鈕/內聯鍵盤": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 105,
+        "level": 3,
+        "title": "5.2 keyboard 按鈕/內聯鍵盤"
+      }
+    ],
     "5.2 使用範例": [
       {
         "document": "standards/session-types.md",
@@ -1720,6 +1792,14 @@
         "line": 240,
         "level": 3,
         "title": "5.2 覆蓋標準方法（映射到平台原生 API）"
+      }
+    ],
+    "5.3 交互回調事件（點擊按鈕之後）": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 161,
+        "level": 3,
+        "title": "5.3 交互回調事件（點擊按鈕之後）"
       }
     ],
     "5.3 平台不支援請求操作": [
@@ -1746,6 +1826,14 @@
         "title": "5.3 框架擴展回應碼（34xxx 平台錯誤段的低三位自定義）"
       }
     ],
+    "5.4 select 下拉選擇（預留）": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 197,
+        "level": 3,
+        "title": "5.4 select 下拉選擇（預留）"
+      }
+    ],
     "5.4 總結：Send 與 Request 並行": [
       {
         "document": "standards/request-action-spec.md",
@@ -1760,6 +1848,14 @@
         "line": 176,
         "level": 3,
         "title": "5.4 適配器實現檢查清單"
+      }
+    ],
+    "5.5 card 卡片（預留，暫緩標準化）": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 218,
+        "level": 3,
+        "title": "5.5 card 卡片（預留，暫緩標準化）"
       }
     ],
     "5.5 適配器 `__init__` 注意事項": [
@@ -1816,6 +1912,14 @@
         "line": 237,
         "level": 2,
         "title": "6. 擴展命名規範"
+      }
+    ],
+    "6. 未來候選（Roadmap）": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 229,
+        "level": 2,
+        "title": "6. 未來候選（Roadmap）"
       }
     ],
     "6. 注意事項": [
@@ -1986,6 +2090,14 @@
         "title": "7. 實現 Request 類（請求操作）"
       }
     ],
+    "7. 新適配器開發者的標準 Checkl ist": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 244,
+        "level": 2,
+        "title": "7. 新適配器開發者的標準 Checkl ist"
+      }
+    ],
     "7. 方法發現": [
       {
         "document": "standards/send-method-spec.md",
@@ -2118,6 +2230,12 @@
       {
         "document": "standards/request-action-spec.md",
         "line": 372,
+        "level": 2,
+        "title": "8. 相關文件"
+      },
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 264,
         "level": 2,
         "title": "8. 相關文件"
       }
@@ -2311,7 +2429,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 80,
+        "line": 87,
         "level": 3,
         "title": "API 回應"
       }
@@ -2817,7 +2935,7 @@
     "Event Mixin 方法": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 284,
+        "line": 312,
         "level": 3,
         "title": "Event Mixin 方法"
       }
@@ -3205,7 +3323,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 111,
+        "line": 139,
         "level": 3,
         "title": "OneBot12 訊息支援"
       }
@@ -3428,6 +3546,14 @@
         "title": "Sandbox 平台特性文件"
       }
     ],
+    "Send 修飾器（各適配器 Send 類實現）": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 141,
+        "level": 4,
+        "title": "Send 修飾器（各適配器 Send 類實現）"
+      }
+    ],
     "Send 嵌套類": [
       {
         "document": "api-reference/adapter-system.md",
@@ -3535,7 +3661,7 @@
     "Sync API 連接": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 310,
+        "line": 338,
         "level": 2,
         "title": "Sync API 連接"
       }
@@ -4594,6 +4720,12 @@
         "title": "v5 範式更新（4.2.0）"
       },
       {
+        "document": "platform-guide/matrix.md",
+        "line": 58,
+        "level": 2,
+        "title": "v5 範式更新（4.2.0）"
+      },
+      {
         "document": "platform-guide/webhook.md",
         "line": 7,
         "level": 2,
@@ -5231,7 +5363,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 70,
+        "line": 77,
         "level": 3,
         "title": "事件轉換"
       }
@@ -5626,6 +5758,12 @@
         "title": "使用示例"
       },
       {
+        "document": "platform-guide/matrix.md",
+        "line": 361,
+        "level": 2,
+        "title": "使用示例"
+      },
+      {
         "document": "platform-guide/qqbot.md",
         "line": 181,
         "level": 2,
@@ -5642,12 +5780,6 @@
       {
         "document": "platform-guide/discord.md",
         "line": 397,
-        "level": 2,
-        "title": "使用範例"
-      },
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 333,
         "level": 2,
         "title": "使用範例"
       },
@@ -6462,6 +6594,22 @@
         "title": "可選字段"
       }
     ],
+    "各平台回調事件映射": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 187,
+        "level": 4,
+        "title": "各平台回調事件映射"
+      }
+    ],
+    "各平台映射對照": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 131,
+        "level": 4,
+        "title": "各平台映射對照"
+      }
+    ],
     "各環節詳解": [
       {
         "document": "advanced/startup.md",
@@ -6497,7 +6645,7 @@
     "同步流程": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 312,
+        "line": 340,
         "level": 3,
         "title": "同步流程"
       }
@@ -7831,7 +7979,7 @@
     "對最終用戶": [
       {
         "document": "standards/README.md",
-        "line": 62,
+        "line": 69,
         "level": 3,
         "title": "對最終用戶"
       }
@@ -7839,7 +7987,7 @@
     "對模組開發者": [
       {
         "document": "standards/README.md",
-        "line": 56,
+        "line": 63,
         "level": 3,
         "title": "對模組開發者"
       }
@@ -7847,7 +7995,7 @@
     "對適配器開發者": [
       {
         "document": "standards/README.md",
-        "line": 50,
+        "line": 57,
         "level": 3,
         "title": "對適配器開發者"
       }
@@ -8000,6 +8148,12 @@
       {
         "document": "platform-guide/ideaura.md",
         "line": 30,
+        "level": 3,
+        "title": "已對接平台能力"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 80,
         "level": 3,
         "title": "已對接平台能力"
       },
@@ -8487,7 +8641,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 322,
+        "line": 350,
         "level": 3,
         "title": "心跳機制"
       }
@@ -8687,7 +8841,7 @@
     "房間邀請": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 328,
+        "line": 356,
         "level": 3,
         "title": "房間邀請"
       }
@@ -8993,7 +9147,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 172,
+        "line": 200,
         "level": 3,
         "title": "擴展欄位"
       }
@@ -9095,7 +9249,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 58,
+        "line": 86,
         "level": 2,
         "title": "支援的消息傳送類型"
       },
@@ -9839,7 +9993,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 18,
+        "line": 21,
         "level": 3,
         "title": "核心原則"
       }
@@ -9879,7 +10033,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 161,
+        "line": 189,
         "level": 3,
         "title": "核心差異點"
       },
@@ -10096,6 +10250,14 @@
         "title": "標準 OB12 映射"
       }
     ],
+    "標準Api動作示例": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 67,
+        "level": 3,
+        "title": "標準Api動作示例"
+      }
+    ],
     "標準事件定義": [
       {
         "document": "advanced/lifecycle.md",
@@ -10147,7 +10309,7 @@
     "標準文件列表": [
       {
         "document": "standards/README.md",
-        "line": 5,
+        "line": 7,
         "level": 2,
         "title": "標準文件列表"
       }
@@ -10163,7 +10325,7 @@
     "標準概述": [
       {
         "document": "standards/README.md",
-        "line": 14,
+        "line": 17,
         "level": 2,
         "title": "標準概述"
       }
@@ -10179,7 +10341,7 @@
     "標準遵循檢查清單": [
       {
         "document": "standards/README.md",
-        "line": 68,
+        "line": 75,
         "level": 2,
         "title": "標準遵循檢查清單"
       }
@@ -10664,6 +10826,14 @@
         "title": "消息段標準"
       }
     ],
+    "消息段結構（發送方向）": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 107,
+        "level": 4,
+        "title": "消息段結構（發送方向）"
+      }
+    ],
     "消息段轉換": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -10901,7 +11071,7 @@
     "為什麼需要標準？": [
       {
         "document": "standards/README.md",
-        "line": 25,
+        "line": 28,
         "level": 2,
         "title": "為什麼需要標準？"
       }
@@ -10965,7 +11135,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 157,
+        "line": 185,
         "level": 2,
         "title": "特有事件類型"
       },
@@ -11016,18 +11186,18 @@
         "line": 233,
         "level": 3,
         "title": "特殊欄位示例"
-      },
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 178,
-        "level": 3,
-        "title": "特殊欄位示例"
       }
     ],
     "特殊欄位範例": [
       {
         "document": "platform-guide/discord.md",
         "line": 262,
+        "level": 3,
+        "title": "特殊欄位範例"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 206,
         "level": 3,
         "title": "特殊欄位範例"
       }
@@ -11427,7 +11597,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 376,
+        "line": 404,
         "level": 3,
         "title": "發送媒體訊息"
       }
@@ -11481,7 +11651,7 @@
     "發送方法命名": [
       {
         "document": "standards/README.md",
-        "line": 89,
+        "line": 96,
         "level": 3,
         "title": "發送方法命名"
       }
@@ -11513,7 +11683,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 133,
+        "line": 161,
         "level": 2,
         "title": "發送方法返回值"
       },
@@ -11625,7 +11795,7 @@
     "監聽成員變更": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 410,
+        "line": 438,
         "level": 3,
         "title": "監聽成員變更"
       }
@@ -11825,7 +11995,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 102,
+        "line": 109,
         "level": 2,
         "title": "相關文件"
       },
@@ -12535,7 +12705,7 @@
     "處理群組訊息": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 335,
+        "line": 363,
         "level": 3,
         "title": "處理群組訊息"
       }
@@ -12543,7 +12713,7 @@
     "處理表情回應": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 359,
+        "line": 387,
         "level": 3,
         "title": "處理表情回應"
       }
@@ -12551,7 +12721,7 @@
     "處理訊息編輯": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 397,
+        "line": 425,
         "level": 3,
         "title": "處理訊息編輯"
       }
@@ -12745,7 +12915,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 229,
+        "line": 257,
         "level": 3,
         "title": "訊息段類型"
       }
@@ -12967,7 +13137,7 @@
     "請求操作": [
       {
         "document": "standards/README.md",
-        "line": 96,
+        "line": 103,
         "level": 3,
         "title": "請求操作"
       },
@@ -13674,6 +13844,14 @@
         "title": "適配器核心概念"
       }
     ],
+    "適配器標準化指南（總綱）": [
+      {
+        "document": "standards/standardization-guide.md",
+        "line": 1,
+        "level": 1,
+        "title": "適配器標準化指南（總綱）"
+      }
+    ],
     "適配器標準化轉換規範": [
       {
         "document": "standards/event-conversion.md",
@@ -13765,7 +13943,7 @@
     "遵循標準的好處": [
       {
         "document": "standards/README.md",
-        "line": 48,
+        "line": 55,
         "level": 2,
         "title": "遵循標準的好處"
       }
@@ -14151,7 +14329,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 148,
+        "line": 176,
         "level": 3,
         "title": "錯誤碼說明"
       },
@@ -14265,7 +14443,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 78,
+        "line": 106,
         "level": 3,
         "title": "鏈式修飾方法（可組合使用）"
       },
@@ -14349,7 +14527,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 86,
+        "line": 114,
         "level": 3,
         "title": "鏈式呼叫範例"
       },

@@ -504,7 +504,7 @@
     "技術標準": {
       "description": "框架的技術規範和標準",
       "icon": "fa-gavel",
-      "count": 7,
+      "count": 8,
       "documents": [
         {
           "title": "技術標準",
@@ -547,6 +547,12 @@
           "path": "standards/api-action-spec.md",
           "level": 1,
           "icon": "fa-bolt"
+        },
+        {
+          "title": "適配器標準化指南（總綱）",
+          "path": "standards/standardization-guide.md",
+          "level": 1,
+          "icon": "fa-gavel"
         }
       ],
       "subgroups": {}
