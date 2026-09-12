@@ -6,7 +6,7 @@ MatrixAdapter 是基于 [Matrix协议](https://spec.matrix.org/) 构建的适配
 
 ## 文档信息
 
-- 对应模块版本: 4.1.0
+- 对应模块版本: 4.2.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -54,6 +54,37 @@ enabled = true
 **认证方式：**
 - 方式一（推荐）：直接提供 `access_token`
 - 方式二：提供 `user_id` 和 `password`，适配器会自动调用登录接口获取 token
+
+## v5 范式更新（4.2.0）
+
+- **BaseConverter 继承**：转换器公共字段由框架 build_base_event 构建
+- **Api DSL**：get_self_info/get_user_info/get_group_info/get_group_list/get_group_member_list/leave_group/delete_message(redact) + 元动作
+- **消息事件补充 message_id**（event_id）；消息登记表支撑 delete_message
+- **spawn_background 任务归属**：同步/心跳任务改用 runtime.spawn_background
+- **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
+- Matrix 无原生按钮能力，标准 keyboard 段优雅忽略（不报错）
+
+### 标准Api动作示例
+
+```python
+from ErisPulse import sdk
+matrix = sdk.adapter.get("matrix")
+result = await matrix.Api.get_self_info()            # /account/whoami
+result = await matrix.Api.get_group_info(room_id)    # m.room.name
+result = await matrix.Api.get_group_list()           # /joined_rooms
+await matrix.Api.delete_message(event_id)            # redact（登记表补全 room_id）
+```
+
+---
+
+
+### 已对接平台能力
+
+- **事件**：消息（m.room.message：文本/图片/文件/音视频/回复/编辑）、成员增减（m.room.member）、房间名称变更等状态事件
+- **会话**：私聊（DM 房间自动发现）/ 群组（房间）；发送支持 Text/Image/File/Voice/Video/Markdown/Raw_ob12
+- **API**：whoami/profile/joined_rooms/房间状态/成员列表/leave/redact（见上方 Api DSL）
+
+---
 
 ## 支持的消息发送类型
 

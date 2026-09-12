@@ -6,7 +6,7 @@ OneBot12Adapter 是基于 OneBot V12 协议构建的适配器，作为 ErisPulse
 
 ## 文档信息
 
-- 对应模块版本: 4.0.0
+- 对应模块版本: 4.3.0
 - 维护者: ErisPulse
 - 协议版本: OneBot V12
 
@@ -17,6 +17,70 @@ OneBot12Adapter 是基于 OneBot V12 协议构建的适配器，作为 ErisPulse
 - 支持的协议/API版本：OneBot V12
 - 多账户支持：完全多账户架构，支持同时配置和运行多个OneBot12账户
 
+## v5 范式更新（4.3.0）
+
+本适配器已完成 v5 范式对齐（增量升级，API 兼容）：
+
+- **BaseConverter 继承**：转换器公共字段（id/time/platform/self/raw）由框架 uild_base_event 构建，按 OB11 字段名（echo/time/self_id）覆盖
+- **spawn_background 任务归属**：Client 模式连接任务改用 untime.spawn_background（owner 归属，shutdown 自动回收）
+- **框架软依赖**：安装适配器不再声明 ErisPulse 硬依赖，避免 pip 解析时调整框架版本；运行时检测 ErisPulse>=2.7.1 并在版本过低时打日志提示
+- **启动版本日志**：初始化时输出 OneBotAdapter v4.3.0 已加载
+
+已有能力（4.2.0 起支持）：多账户、Api DSL 标准动作映射（get_self_info→get_login_info 等）、Request DSL（好友/群请求审批：event.approve() / event.reject()）、EventMixin、i18n。
+
+---
+## 标准Api动作（Api DSL）
+
+OneBot12 后端原生支持所有 OB12 标准动作名，Api DSL 默认直接委托 call_api 透传（无需映射）：
+
+```python
+from ErisPulse import sdk
+ob12 = sdk.adapter.get("onebot12")
+
+result = await ob12.Api.get_self_info()
+result = await ob12.Api.get_friend_list()
+await ob12.Api.delete_message(message_id="MSG_ID")
+
+# 指定账户（多账户）
+result = await ob12.Api.Using("main").get_self_info()
+
+# 平台扩展动作
+result = await ob12.Api.call("extend_action", param=1)
+```
+
+> 支持的动作以后端实现为准（NapCat/Lagrange/LLOneBot 等）；不支持的动作由后端返回错误并透传。
+
+---
+
+## 请求操作（Request DSL）
+
+基于 OneBot12 标准的 handle_quick_request 动作，处理好友请求与加群邀请的同意/拒绝：
+
+### Event 便捷方法
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    if event.get("platform") != "onebot12":
+        return
+    comment = event.get("comment", "")
+    if comment == "passphrase":
+        await event.approve()      # 同意
+    else:
+        await event.reject()       # 拒绝
+```
+
+### 手动调用 Request DSL
+
+```python
+await ob12.Request("request_flag").accept()
+await ob12.Request("request_flag").reject()
+await ob12.Request("request_flag").Using("main").accept()
+```
+
+---
 ## 支持的消息发送类型
 
 所有发送方法均通过链式语法实现，例如：

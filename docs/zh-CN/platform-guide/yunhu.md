@@ -6,7 +6,7 @@ YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功�
 
 ## 文档信息
 
-- 对应模块版本: 4.3.0
+- 对应模块版本: 4.4.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -17,6 +17,47 @@ YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功�
 - 链式修饰支持：支持 `.Reply()` 等链式修饰方法
 - OneBot12兼容：支持发送 OneBot12 格式消息
 
+## v5 范式更新（4.4.0）
+
+本适配器已完成 v5 范式对齐（增量升级，API 兼容）：
+
+- **官方服务端API全集**（Api DSL 扩展方法）：编辑消息、批量发送、消息列表、用户/全局看板、群成员禁言、移除群成员、群消息类型控制、群标签 CRUD、用户打标签
+- **标准 keyboard 段**（跨平台交互组件标准）：{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}} 段自动转换为云湖 buttons；.Buttons(rows) / .Keyboard(rows) 修饰器接受通用结构（原生结构向后兼容）
+- **交互回调标准字段**：按钮点击/A2UI 事件包含 interaction_id / utton_data 标准字段
+- **spawn_background 任务归属**：WS 连接任务改用 untime.spawn_background
+- **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
+
+### 平台扩展动作（call / Api 方法）
+
+```python
+from ErisPulse import sdk
+yunhu = sdk.adapter.get("yunhu")
+
+# Api 方法（官方服务端API）
+await yunhu.Api.edit_message(msg_id, recv_id, "group", "text", {"text": "新内容"})
+await yunhu.Api.batch_send(["userId1", "userId2"], "text", {"text": "公告"})
+await yunhu.Api.get_message_list(group_id, "group", before=10)
+await yunhu.Api.set_user_board(chat_id, "group", "看板内容", expire_time=3600)
+await yunhu.Api.dismiss_global_board()
+await yunhu.Api.gag_group_member(group_id, user_id, 600)      # 禁言600秒，0=解除
+await yunhu.Api.remove_group_member(group_id, user_id)
+await yunhu.Api.set_group_msg_type_limit(group_id, "text,image")
+await yunhu.Api.create_group_tag(group_id, "VIP", color="#FF5733")
+await yunhu.Api.add_user_tag(group_id, user_id, "VIP")
+
+# 按钮点击回调（标准字段）
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_button(event):
+    if event.get("platform") == "yunhu" and event.get("button_data"):
+        data = event["button_data"]     # 跨平台统一取值
+        interaction_id = event["interaction_id"]
+```
+
+> 完整标准说明见 [跨平台交互组件标准](../../standards/standardization-guide.md)。
+
+---
 ## 支持的消息发送类型
 
 所有发送方法均通过链式语法实现，例如：

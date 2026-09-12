@@ -6,7 +6,7 @@ DiscordAdapter 是基于 Discord Gateway (WebSocket) 和 REST API v10 协议构�
 
 ## 文档信息
 
-- 对应模块版本: 4.1.0
+- 对应模块版本: 4.2.0
 - 维护者: ErisPulse
 - Discord API 版本: v10
 
@@ -66,6 +66,44 @@ Intents 使用位掩码，计算方式为各 Intent 值按位或（`|`）：
 - Discord REST API 基础地址：`https://discord.com/api/v10`
 - Gateway WebSocket 地址：通过 `GET /gateway/bot` 动态获取，通常为 `wss://gateway.discord.gg/?v=10&encoding=json`
 
+## v5 范式更新（4.2.0）
+
+本适配器已完成 v5 范式对齐（增量升级，API 兼容）：
+
+- **BaseConverter 继承**：转换器公共字段由框架 `build_base_event` 构建
+- **Api DSL**：标准Api动作映射（见下）
+- **标准 keyboard 段**：转换为 Discord components（action row + buttons）；.Keyboard(rows) 修饰器接受通用结构
+- **交互回调标准字段**：INTERACTION_CREATE 事件包含 interaction_id / utton_data
+- **spawn_background 任务归属**：连接任务改用 untime.spawn_background
+- **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
+
+### 标准Api动作
+
+```python
+from ErisPulse import sdk
+discord = sdk.adapter.get("discord")
+
+result = await discord.Api.get_self_info()                # GET /users/@me
+result = await discord.Api.get_user_info(user_id)         # GET /users/{id}
+result = await discord.Api.get_guild_info(guild_id)       # GET /guilds/{id}
+result = await discord.Api.get_guild_list()               # GET /users/@me/guilds
+result = await discord.Api.get_channel_list(guild_id)     # GET /guilds/{id}/channels
+result = await discord.Api.get_guild_member_info(gid, uid)
+await discord.Api.delete_message(message_id)              # 登记表自动补全 channel_id
+await discord.Api.leave_guild(guild_id)
+result = await discord.Api.Using("main").get_self_info()
+```
+
+### 按钮（keyboard / components）
+
+```python
+rows = [[{"label": "点击", "type": "callback", "data": "btn:1"},
+         {"label": "官网",  "type": "link",     "data": "https://example.com"}]]
+await discord.Send.To("channel", channel_id).Keyboard(rows).Text("请选择")
+# 自动转换为 components: callback → custom_id / link → url
+```
+
+---
 ## 支持的消息发送类型
 
 所有发送方法均通过链式语法实现，例如：
