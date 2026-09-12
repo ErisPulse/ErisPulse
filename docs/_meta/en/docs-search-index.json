@@ -128,12 +128,12 @@
         "title": "1. Discovery Layer: Finder"
       }
     ],
-    "1. Ensuring Cross-Platform Compatibility": [
+    "1. Ensure Cross-Platform Compatibility": [
       {
         "document": "standards/README.md",
-        "line": 27,
+        "line": 30,
         "level": 3,
-        "title": "1. Ensuring Cross-Platform Compatibility"
+        "title": "1. Ensure Cross-Platform Compatibility"
       }
     ],
     "1. Exception Handling": [
@@ -770,20 +770,20 @@
         "title": "2. Standard Session Types"
       }
     ],
+    "2. Standardize API Interfaces": [
+      {
+        "document": "standards/README.md",
+        "line": 37,
+        "level": 3,
+        "title": "2. Standardize API Interfaces"
+      }
+    ],
     "2. Standardize Timestamps": [
       {
         "document": "developer-guide/adapters/best-practices.md",
         "line": 246,
         "level": 3,
         "title": "2. Standardize Timestamps"
-      }
-    ],
-    "2. Standardizing API Interfaces": [
-      {
-        "document": "standards/README.md",
-        "line": 34,
-        "level": 3,
-        "title": "2. Standardizing API Interfaces"
       }
     ],
     "2. Structured Logging": [
@@ -1066,12 +1066,12 @@
         "title": "3. Heartbeat Keepalive and Meta Heartbeat"
       }
     ],
-    "3. Improving Code Quality": [
+    "3. Improve Code Quality": [
       {
         "document": "standards/README.md",
-        "line": 41,
+        "line": 44,
         "level": 3,
-        "title": "3. Improving Code Quality"
+        "title": "3. Improve Code Quality"
       }
     ],
     "3. Missing `self` Field": [
@@ -2469,7 +2469,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 80,
+        "line": 83,
         "level": 3,
         "title": "API Response"
       }
@@ -3509,7 +3509,7 @@
     "Benefits of Following Standards": [
       {
         "document": "standards/README.md",
-        "line": 48,
+        "line": 51,
         "level": 2,
         "title": "Benefits of Following Standards"
       }
@@ -5013,7 +5013,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 18,
+        "line": 21,
         "level": 3,
         "title": "Core Principles"
       }
@@ -6295,7 +6295,7 @@
     "Event Transformation": [
       {
         "document": "standards/README.md",
-        "line": 70,
+        "line": 73,
         "level": 3,
         "title": "Event Transformation"
       }
@@ -6775,7 +6775,7 @@
     "For Adapter Developers": [
       {
         "document": "standards/README.md",
-        "line": 50,
+        "line": 53,
         "level": 3,
         "title": "For Adapter Developers"
       }
@@ -6783,7 +6783,7 @@
     "For End Users": [
       {
         "document": "standards/README.md",
-        "line": 62,
+        "line": 65,
         "level": 3,
         "title": "For End Users"
       }
@@ -6791,7 +6791,7 @@
     "For Module Developers": [
       {
         "document": "standards/README.md",
-        "line": 56,
+        "line": 59,
         "level": 3,
         "title": "For Module Developers"
       }
@@ -10953,7 +10953,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 102,
+        "line": 105,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11243,7 +11243,7 @@
     "Request Operations": [
       {
         "document": "standards/README.md",
-        "line": 96,
+        "line": 99,
         "level": 3,
         "title": "Request Operations"
       }
@@ -11821,7 +11821,7 @@
     "Send Method Naming": [
       {
         "document": "standards/README.md",
-        "line": 89,
+        "line": 92,
         "level": 3,
         "title": "Send Method Naming"
       }
@@ -12327,17 +12327,17 @@
     "Standard Compliance Checklist": [
       {
         "document": "standards/README.md",
-        "line": 68,
+        "line": 71,
         "level": 2,
         "title": "Standard Compliance Checklist"
       }
     ],
-    "Standard Documentation List": [
+    "Standard Document List": [
       {
         "document": "standards/README.md",
-        "line": 5,
+        "line": 7,
         "level": 2,
-        "title": "Standard Documentation List"
+        "title": "Standard Document List"
       }
     ],
     "Standard Event Definitions": [
@@ -12391,7 +12391,7 @@
     "Standard Overview": [
       {
         "document": "standards/README.md",
-        "line": 14,
+        "line": 17,
         "level": 2,
         "title": "Standard Overview"
       }
@@ -13831,7 +13831,7 @@
     "Why is a Standard Needed?": [
       {
         "document": "standards/README.md",
-        "line": 25,
+        "line": 28,
         "level": 2,
         "title": "Why is a Standard Needed?"
       }
