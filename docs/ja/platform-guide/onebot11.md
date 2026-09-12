@@ -6,7 +6,7 @@ OneBot11Adapter は、OneBot V11 プロトコルに基づいて構築された�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.0.0
+- 対応モジュールバージョン: 4.3.0
 - メンテナー: ErisPulse
 
 ## 基本情報
@@ -16,6 +16,58 @@ OneBot11Adapter は、OneBot V11 プロトコルに基づいて構築された�
 - 対応プロトコル/APIバージョン：OneBot V11
 - マルチアカウント対応：デフォルトでマルチアカウントアーキテクチャを採用しており、複数の OneBot アカウントを同時に設定および実行できます。
 - 設定キー名：`OneBotAdapter`
+
+## v5 フレームワークの更新 (4.3.0)
+
+このアダプタは v5 フレームワークに準拠しました（段階的なアップグレード、API 互換性を維持）：
+
+- **BaseConverter 継承**：コンバーターの共通フィールド（id/time/platform/self/raw）は、フレームワークの build_base_event によって構築され、OB11 のフィールド名（echo/time/self_id）に従って上書きされます。
+- **spawn_background によるタスクの所有**：Client モードでの接続タスクは、asyncio.spawn_background を使用して実行されます（所有者としての所有、シャットダウン時に自動回収）。
+- **フレームワークのソフト依存**：アダプタのインストール時に ErisPulse のハード依存を宣言しなくなり、pip による解析時にフレームワークのバージョンが変更されるのを回避します。実行時に ErisPulse >= 2.7.1 を検出し、バージョンが低すぎる場合はログで警告を出します。
+- **起動時のバージョンログ**：初期化時に OneBotAdapter v4.3.0 がロードされたことを出力します。
+
+既存の機能（4.2.0 以降でサポート）：多アカウント、Api DSL 標準アクションのマッピング（get_self_info → get_login_info など）、Request DSL（友人/グループリクエストの承認：event.approve() / event.reject()）、EventMixin、i18n。
+
+---
+
+## 標準Api動作（Api DSL）
+
+アダプタは OneBot12 標準アクション名を自動的に OB11 アクション名にマッピングし、モジュールはプラットフォームをまたいで統一して呼び出すことができます。
+
+| OB12 標準アクション | OB11 アクション | 説明 |
+|-------------------|----------------|------|
+| get_self_info     | get_login_info | フィールドの標準化 user_id/user_name/user_displayname |
+| get_user_info     | get_stranger_info | フィールドの標準化 |
+| delete_message    | delete_msg     | メッセージの撤回 |
+| leave_group       | set_group_leave | グループから退出 |
+| get_friend_list   | get_friend_list | アクション名が一致し、デフォルトで透過 |
+| get_group_info    | get_group_info | アクション名が一致し、デフォルトで透過 |
+| upload_file       | upload_group_file / upload_private_file | 拡張 group_id/user_id 任意パラメータ、filetype は自動検出でタイプルーティング |
+
+### 基本的な使い方
+
+```python
+from ErisPulse import sdk
+onebot = sdk.adapter.get("onebot11")
+
+# ロボット情報の取得
+result = await onebot.Api.get_self_info()
+print(result["data"]["user_id"], result["data"]["user_name"])
+
+# メッセージの撤回
+await onebot.Api.delete_message(message_id=123456)
+
+# グループファイルのアップロード（filetype は自動検出で upload_group_file にルーティング）
+result = await onebot.Api.upload_file(group_id=123456, file="/path/to/file.zip")
+
+# 指定アカウント（複数アカウント）
+result = await onebot.Api.Using("main").get_self_info()
+
+# マッピングされていない OB11 アクションは call() でエスケープ（NapCat/Lagrange などの拡張も通用）
+result = await onebot.Api.call("send_poke", group_id=123, user_id=456)
+```
+
+---
 
 ## 支持するメッセージ送信タイプ
 

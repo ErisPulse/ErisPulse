@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "f8e2cf460b7f679bb574df13ce8e760b",
-  "file_hash": "f8e2cf460b7f679bb574df13ce8e760b",
-  "translated_at": "2026-09-07T12:03:24.388095",
+  "hash": "9422c5b2da437d7afcf63105595c778f",
+  "file_hash": "9422c5b2da437d7afcf63105595c778f",
+  "translated_at": "2026-09-12T10:26:11.761065",
   "target_lang": "ja",
   "chunks": [
     {
@@ -12,6 +12,10 @@
     {
       "hash": "4f7ae8b760f8f5e1b905891b2753c320",
       "translation": "## 基本情報\n- モジュール名: `ErisPulse-WechatMpAdapter`\n- プラットフォーム識別子: `mp`（別名: `wechat_mp`）\n- モジュールバージョン: 4.1.0\n- メンテナー: ErisPulse\n- 依存: `cryptography`"
+    },
+    {
+      "hash": "c3e718ebdaa0d944a6d5e231bfc3b6b4",
+      "translation": "## v5 フレームワークの更新 (4.2.0)\n\n- **BaseConverter 継承**：変換器の共通フィールドは、フレームワークの build_base_event によって構築されます。\n- **Api DSL 最小セット**：get_self_info（appid）/get_status/get_version/get_supported_actions\n- **フレームワークのソフト依存**：実行時に ErisPulse>=2.7.1 を検出し、警告を出力します。起動時にバージョンログを出力します。\n\n---\n\n### 対応プラットフォーム機能\n\n- **受信**：公式アカウントのコールバックメッセージと、フォロー/アンフォローなどのイベント（平文/セキュリティモード）、署名検証\n- **送信**：カスタマーメッセージ（Text/Image など、Send DSL を経由）\n- **API**：アカウント情報（appid）と実行状態（最小セット）"
     },
     {
       "hash": "5a31f4da1ab530aebcecf5636951aa52",

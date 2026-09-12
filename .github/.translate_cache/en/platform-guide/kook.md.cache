@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "44cf5393eb10b018ff984c9dcddf3118",
-  "file_hash": "44cf5393eb10b018ff984c9dcddf3118",
-  "translated_at": "2026-09-07T11:38:32.521954",
+  "hash": "08b112d48016fe3e4972050151f66155",
+  "file_hash": "08b112d48016fe3e4972050151f66155",
+  "translated_at": "2026-09-12T10:26:43.909851",
   "target_lang": "en",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Kook Platform Features Documentation\n\nKookAdapter is an adapter built on the Kook (Kaihei La) Bot WebSocket protocol, integrating all Kook functionality modules and providing a unified interface for event handling and message operations.\n\n---"
     },
     {
-      "hash": "2441774a7219c519f5aee89326d0536e",
-      "translation": "## Document Information\n\n- Corresponding Module Version: 0.1.0\n- Maintainer: ShanFish"
+      "hash": "6cafcd5b58a009c89389b0d0a60592be",
+      "translation": "## Document Information\n\n- Corresponding Module Version: 4.1.0\n- Maintainer: ShanFish"
     },
     {
       "hash": "42be3516e8846a4c36bcd9b87021aaad",
@@ -20,6 +20,10 @@
     {
       "hash": "a1458fdeec0e92d6bc77918446d0e8c1",
       "translation": "## Configuration\n\nKookAdapter supports multi-account configuration, where each account corresponds to an independent Kook bot.\n\n```toml\n# config.toml\n# Account 1\n[KookAdapter.accounts.default]\ntoken = \"YOUR_BOT_TOKEN\"     # Kook Bot Token (required, format: Bot xxx/xxx)\nbot_id = \"\"                   # Bot User ID (optional, if not set, it will be parsed from token)\ncompress = true               # Whether to enable WebSocket compression (optional, default is true)\nenabled = true                # Whether to enable this account (optional, default is true)\n\n# Account 2\n[KookAdapter.accounts.bot2]\ntoken = \"ANOTHER_BOT_TOKEN\"\nbot_id = \"\"\nenabled = true\n```\n\n> Compatibility with old configurations: If an old single-account `[KookAdapter]` configuration (including token) is detected, it will be automatically migrated to `accounts.default`.\n\n**Configuration item description (per account):**\n- `token`: The Token of the Kook Bot (required), obtained from [Kook Developer Center](https://developer.kookapp.cn), format is `Bot xxx/xxx`\n- `bot_id`: The User ID of the Bot (optional), if not set, the adapter will try to automatically parse it from the token. It is recommended to manually set it to ensure accuracy\n- `compress`: Whether to enable WebSocket data compression (optional, default is `true`), enables zlib decompression of data\n- `enabled`: Whether to enable this account (optional, default is true)\n\n**API Environment:**\n- Kook API base address: `https://www.kookapp.cn/api/v3`\n- WebSocket gateway is dynamically obtained through API: `POST /gateway/index`"
+    },
+    {
+      "hash": "8d51963f663fd04472d7dc41b0a2f517",
+      "translation": "## v5 Paradigm Update (4.1.0)\n\nThis adapter has completed alignment with the v5 paradigm (incremental upgrade, API compatible):\n\n- **BaseConverter Inheritance**: Common fields of converters are built by the framework `build_base_event`\n- **Api DSL**: Standard API action mapping (see below)\n- **Standard keyboard segment**: `{\"type\": \"keyboard\", \"data\": {\"rows\": [[{\"label\", \"type\": \"callback|link\", \"data\"}]]}}` Text + keyboard automatically combine into Kook card messages (section + action-group); .Keyboard(rows) decorator accepts generic structure\n- **spawn_background task ownership**: Connection tasks use runtime.spawn_background\n- **Framework soft dependency**: Runtime detection of ErisPulse>=2.7.1 with prompt; version logs output on startup\n\n### Standard API Actions\n\n```python\nfrom ErisPulse import sdk\nkook = sdk.adapter.get(\"kook\")\n\nresult = await kook.Api.get_self_info()              # GET /users/@me\nresult = await kook.Api.get_user_info(user_id)       # POST /user/view\nresult = await kook.Api.get_guild_info(guild_id)     # POST /guild/view\nresult = await kook.Api.get_guild_list()             # POST /guild/list\nresult = await kook.Api.get_channel_info(channel_id) # POST /channel/view\nresult = await kook.Api.get_channel_list(guild_id)   # POST /channel/list\nawait kook.Api.delete_message(msg_id)                # POST /message/delete\nresult = await kook.Api.Using(\"main\").get_self_info()\n```\n\n### Buttons (keyboard)\n\n```python\nrows = [[{\"label\": \"Option A\", \"type\": \"callback\", \"data\": \"vote:A\"},\n         {\"label\": \"Website\",  \"type\": \"link\",     \"data\": \"https://example.com\"}]]\nawait kook.Send.To(\"channel\", channel_id).Keyboard(rows).Text(\"Please select\")\n# Text and buttons automatically combine into Kook card messages (section + action-group)\n\n# Button click callback (standard fields)\nfrom ErisPulse.Core.Event import notice\n\n@notice.on_notice()\nasync def handle_button(event):\n    if event.get(\"platform\") == \"kook\" and event.get(\"button_data\"):\n        data = event[\"button_data\"]\n```\n---"
     },
     {
       "hash": "4b53297ad2a98129aab42e8a36b96382",

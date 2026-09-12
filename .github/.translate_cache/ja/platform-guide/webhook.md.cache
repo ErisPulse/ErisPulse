@@ -1,10 +1,18 @@
 {
   "version": 2,
-  "hash": "874e1f65883386ce14ae0c142b98917d",
-  "file_hash": "874e1f65883386ce14ae0c142b98917d",
-  "translated_at": "2026-09-07T12:03:56.324751",
+  "hash": "047dd3dc25ad91fcd92f8656e299b0ba",
+  "file_hash": "047dd3dc25ad91fcd92f8656e299b0ba",
+  "translated_at": "2026-09-12T10:30:11.855491",
   "target_lang": "ja",
   "chunks": [
+    {
+      "hash": "1a6c6f5bbea0915ddf66b37b2e549874",
+      "translation": "### 対応プラットフォーム機能\n\n- **入力**：外部システムが callback_path に POST → OneBot12 イベントに変換（json/textセグメントを透過）\n- **出力**：モジュール Send → outgoing_url に POST（二重ブリッジ）\n- **API**：ブリッジの認証情報と実行状態（最小限の機能）"
+    },
+    {
+      "hash": "2482a3e8a95baf1c9e79ae16ed95379d",
+      "translation": "## v5 ファンダメンタルの更新（4.2.0）\n\n- **Api DSL 最小集**：get_self_info / get_status / get_version / get_supported_actions\n- **フレームワークのソフト依存**：実行時に ErisPulse>=2.7.1 を検出し、警告を表示；起動時にバージョンのログを出力\n- インポートパスを Core.Bases に更新"
+    },
     {
       "hash": "88eba211c1ace553dab49fa3c3bef169",
       "translation": "# プラットフォームの機能説明 — Webhook 一般的なブリッジアダプター\n\nこのドキュメントでは、Webhookアダプターの双方向ブリッジプロトコル、フィールドマッピング、実装の特徴について詳しく説明します。"

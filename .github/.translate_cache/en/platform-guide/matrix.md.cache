@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "8d1b7adff69eab6161f0fa4f923c1473",
-  "file_hash": "8d1b7adff69eab6161f0fa4f923c1473",
-  "translated_at": "2026-09-07T11:41:05.631081",
+  "hash": "eac68d6511353e2af7f08e8a97ac33e9",
+  "file_hash": "eac68d6511353e2af7f08e8a97ac33e9",
+  "translated_at": "2026-09-12T10:21:05.050123",
   "target_lang": "en",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Matrix Platform Features Document\n\nMatrixAdapter is an adapter built based on the [Matrix protocol](https://spec.matrix.org/), integrating all core functional modules of the Matrix protocol and providing a unified interface for event handling and message operations.\n\n---"
     },
     {
-      "hash": "6e2010b0836c4c98adf0292ff78ea9b2",
-      "translation": "## Documentation Information\n\n- Corresponding Module Version: 4.1.0\n- Maintainer: ErisPulse"
+      "hash": "d5769e0ae79f68cdc351193894aba07b",
+      "translation": "## Documentation Information\n\n- Corresponding Module Version: 4.2.0\n- Maintainer: ErisPulse"
     },
     {
       "hash": "1eb942372d9163e41bc7f5ed2bca28b2",
@@ -20,6 +20,10 @@
     {
       "hash": "457aecd7db9f23d2ef2213c809d1c8dc",
       "translation": "## Configuration Instructions\n\nMatrixAdapter supports multi-account configuration, with each account having its own homeserver and authentication information.\n\n```toml\n# config.toml\n# Account 1\n[Matrix_Adapter.accounts.default]\nhomeserver = \"https://matrix.org\"          # Matrix server address (required)\naccess_token = \"YOUR_ACCESS_TOKEN\"          # Access token (choose either this or user_id+password)\nuser_id = \"\"                                # Matrix user ID (e.g., @bot:matrix.org)\npassword = \"\"                               # Matrix user password\nauto_accept_invites = true                  # Whether to automatically accept room invitations (optional, default is true)\nenabled = true                              # Whether to enable this account (optional, default is true)\n\n# Account 2\n[Matrix_Adapter.accounts.bot2]\nhomeserver = \"https://matrix.example.com\"\naccess_token = \"ANOTHER_TOKEN\"\nenabled = true\n```\n\n> Backward compatibility: If an old single-account `[Matrix_Adapter]` configuration (including access_token) is detected, it will be automatically migrated to `accounts.default`.\n\n**Configuration Item Descriptions (per account):**\n- `homeserver`: Matrix server address (required), default is `https://matrix.org`\n- `access_token`: Access token, which can be obtained from a Matrix client. If you already have a token, simply fill it in\n- `user_id`: Matrix user ID (e.g., `@bot:matrix.org`), used together with `password` for login\n- `password`: Matrix user password, used for automatic login to obtain the access token\n- `auto_accept_invites`: Whether to automatically accept room invitations, default is `true`\n- `enabled`: Whether to enable this account (optional, default is true)\n\n**Authentication Methods:**\n- Method 1 (Recommended): Provide `access_token` directly\n- Method 2: Provide `user_id` and `password`, the adapter will automatically call the login API to obtain the token"
+    },
+    {
+      "hash": "c8b191b95a8b5d30a8f7fba2d1d0e8f2",
+      "translation": "## v5 Paradigm Update (4.2.0)\n\n- **BaseConverter Inheritance**: Common fields of converters are built by the framework's build_base_event\n- **Api DSL**: get_self_info/get_user_info/get_group_info/get_group_list/get_group_member_list/leave_group/delete_message(redact) + meta actions\n- **Message Event Supplement message_id** (event_id); Message registration table supports delete_message\n- **spawn_background Task Ownership**: Synchronous/heartbeat tasks now use runtime.spawn_background\n- **Framework Soft Dependency**: Runtime checks for ErisPulse>=2.7.1 and provides warnings; Version logs are output on startup\n- Matrix lacks native button capabilities, so standard keyboard segments are gracefully ignored (without errors)\n\n### Standard Api Action Examples\n\n```python\nfrom ErisPulse import sdk\nmatrix = sdk.adapter.get(\"matrix\")\nresult = await matrix.Api.get_self_info()            # /account/whoami\nresult = await matrix.Api.get_group_info(room_id)    # m.room.name\nresult = await matrix.Api.get_group_list()           # /joined_rooms\nawait matrix.Api.delete_message(event_id)            # redact (registration table completes room_id)\n```\n\n---\n\n### Supported Platform Capabilities\n\n- **Events**: Message events (m.room.message: text/image/file/audio/video/reply/edit), member addition/removal (m.room.member), room name change, and other state events\n- **Conversations**: Direct messages (DM rooms auto-discovered) / group chats (rooms); support sending Text/Image/File/Voice/Video/Markdown/Raw_ob12\n- **APIs**: whoami/profile/joined_rooms/room status/member list/leave/redact (see above Api DSL)"
     },
     {
       "hash": "fff45f0b977664165873f0364e6fe15c",

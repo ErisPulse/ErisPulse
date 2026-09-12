@@ -7,6 +7,22 @@
 - Maintainer: ErisPulse
 - Dependencies: `cryptography`
 
+## v5 Paradigm Update (4.2.0)
+
+- **BaseConverter Inheritance**: Common fields of converters are built by the framework's build_base_event
+- **Api DSL Minimal Set**: get_self_info (appid) / get_status / get_version / get_supported_actions
+- **Framework Soft Dependency**: Runtime detection of ErisPulse>=2.7.1 with prompt; version logs output on startup
+
+---
+
+### Platform Capabilities Already Integrated
+
+- **Receiving**: Official account callback messages and events such as follow/unfollow (plaintext/secure mode), signature verification
+- **Sending**: Customer service messages (Text/Image, etc., via Send DSL)
+- **API**: Account information (appid) and runtime status (minimal set)
+
+---
+
 ## Supported Message Sending Types
 
 | Method | Description | WeChat API |

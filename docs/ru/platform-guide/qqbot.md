@@ -1,324 +1,198 @@
 # Документация по функциям платформы QQBot
 
-QQBotAdapter — это адаптер, построенный на основе протокола QQBot (документация по роботу QQ), объединяющий все функциональные модули QQBot и предоставляющий единый интерфейс для обработки событий и операций с сообщениями.
-
----
+QQBotAdapter — это адаптер, построенный на основе протокола QQ-бота (QQ OpenAPI), объединяющий функции для чатов в группах, личных сообщений и каналов, предоставляющий стандартные события OneBot12, стандартные API-действия и интерфейсы для выполнения запросов.
 
 ## Информация о документации
 
-- Соответствующая версия модуля: 1.0.0
+- Версия соответствующего модуля: 5.0.0
 - Ответственный: ErisPulse
 
 ## Основная информация
 
-- Описание платформы: QQBot — это официальный интерфейс разработки ботов от QQ, поддерживающий различные сценарии, такие как групповые чаты, личные сообщения и каналы.
-- Название адаптера: QQBotAdapter
-- Способ подключения: WebSocket-длинное соединение (через шлюз QQBot)
-- Способ аутентификации: получение access_token на основе appId + clientSecret
-- Поддержка цепочки модификаторов: поддержка методов цепочки модификаторов, таких как `.Reply()`, `.At()`, `.AtAll()`, `.Keyboard()` и т.д.
-- Совместимость с OneBot12: поддержка отправки сообщений в формате OneBot12
+- Краткое описание платформы: Официальный интерфейс разработки ботов QQ, поддерживает различные сценарии, такие как групповые чаты, личные сообщения, каналы и т.д.
+- Имя адаптера: QQBotAdapter
+- Способ подключения: **WebSocket-длинное соединение** (по умолчанию) или **Webhook HTTP-обратный вызов** (по настройкам аккаунта, проверка подписи Ed25519)
+- Способ аутентификации: appId + clientSecret для получения access_token (7200 секунд, автоматическое обновление за 45 секунд до истечения срока действия)
+- Корневой адрес API: `https://api.bot.qq.com` (начиная с v5 официальный единый домен, sandbox устарел)
+- Совместимость с OneBot12: полная поддержка отправки и получения сообщений, событий, **стандартных API-действий**, **операций запроса**
+- Множественные аккаунты: поддерживается, произвольные аккаунты в разделе `accounts` могут работать параллельно (можно смешивать режимы websocket/webhook)
 
-## Инструкция по настройке
+## Конфигурация
 
 ```toml
 # config.toml
 [QQBot_Adapter]
-appid = "YOUR_APPID"          # ID приложения QQ-бота (обязательно)
-secret = "YOUR_CLIENT_SECRET" # Ключ клиента QQ-бота (обязательно)
-sandbox = false                 # Использовать ли песочницу (необязательно, по умолчанию false)
-intents = [1, 30, 25]          # Подписка на события intents (необязательно)
-gateway_url = "wss://api.sgroup.qq.com/websocket/"  # Пользовательский URL вебсокет-шлюза (необязательно)
+intents = "[0, 9, 12, 25, 26, 27]"   # Глобально: подписанные события intents (JSON массив, поддерживает имена событий)
+
+[QQBot_Adapter.accounts.default]
+appid = "YOUR_APPID"                 # ID приложения QQ-бота (обязательно)
+secret = "YOUR_CLIENT_SECRET"        # Секретный ключ клиента QQ-бота (обязательно)
+mode = "websocket"                   # Способ получения событий: websocket / webhook
+bot_id = ""                          # ID бота (оставьте пустым для автоматического получения; можно вручную указать для использования в Using())
+gateway_url = ""                     # URL WebSocket-шлюза (оставьте пустым для динамического получения через /gateway/bot)
+api_base_url = "https://api.bot.qq.com"  # Корневой URL API (можно настроить для прокси)
+webhook_path = "/webhook"            # Путь обратного вызова webhook (действует при mode=webhook)
+enabled = true
 ```
 
-**Описание параметров:**
-- `appid`: ID приложения QQ-бота (обязательно), получается на платформе открытых данных QQ
-- `secret`: Ключ клиента QQ-бота (обязательно), получается на платформе открытых данных QQ
-- `sandbox`: Использовать ли песочницу, API-адрес в песочнице: `https://sandbox.api.sgroup.qq.com`
-- `intents`: Список подписки на события intents, каждое значение сдвигается влево и объединяется битовым оператором ИЛИ
-  - `1`: События, связанные с каналами
-  - `25`: События сообщений каналов
-  - `30`: События упоминаний в группе
-- `gateway_url`: URL вебсокет-шлюза, по умолчанию: `wss://api.sgroup.qq.com/websocket/`
+**Версия v5 — критические изменения:**
+- Официальный единый URL `api.bot.qq.com`, конфигурация `sandbox` устарела (старые настройки автоматически переносятся и игнорируются)
+- Старая плоская конфигурация (appid/secret непосредственно в `[QQBot_Adapter]`) автоматически переносится в `accounts.default`
+- Фреймворк является **опциональной зависимостью**: установка адаптера не влияет на версию фреймворка; в процессе выполнения проверяется наличие `ErisPulse>=2.7.1` и выводится соответствующее уведомление
 
-**Среда API:**
-- Основная среда: `https://api.sgroup.qq.com`
-- Песочная среда: `https://sandbox.api.sgroup.qq.com`
+**Описание intents (поддерживает номера позиций или имена событий):**
 
-## Поддерживаемые типы отправки сообщений
+| Позиция | Имя события | Описание |
+|----|--------|------|
+| 0 | GUILDS | Изменения каналов |
+| 1 | GUILD_MEMBERS | Изменения участников канала |
+| 9 | GUILD_MESSAGES | Сообщения канала (внутриканальные) |
+| 12 | DIRECT_MESSAGE | Личные сообщения канала |
+| 24 | GROUP_MEMBER | Изменения участников группы (ново в v5) |
+| 25 | GROUP_AND_C2C_EVENT | Сообщения упоминания в группе и личные сообщения |
+| 26 | INTERACTION | Взаимодействие (кнопки и т.д.) |
+| 27 | MESSAGE_AUDIT | События проверки сообщений |
+| 30 | PUBLIC_GUILD_MESSAGES | Сообщения канала (внешние каналы) |
 
-Все методы отправки реализованы с использованием цепочечного синтаксиса, например:
+## Отправка сообщений
+
+### Базовая отправка
+
 ```python
-from ErisPulse.Core import adapter
-qqbot = adapter.get("qqbot")
+from ErisPulse import sdk
+qqbot = sdk.adapter.get("qqbot")
 
 await qqbot.Send.To("user", user_openid).Text("Hello World!")
+
+# Упоминание в чате (автоматически использует формат <qqbot-at-user id="x" />)
+await qqbot.Send.To("group", group_openid).At("member_openid").Text("@你")
+
+# Сообщение в канале (автоматически использует формат <@user_id>)
+await qqbot.Send.To("channel", channel_id).Text("Сообщение в канале")
+
+# Ответ на сообщение (автоматически включает msg_id, не нужно использовать Reply вручную)
+await qqbot.Send.To("group", group_openid).Reply(msg_id).Text("Содержимое ответа")
+
+# Мультимедиа (URL / локальный путь / бинарные данные; файлы больше 5 МБ загружаются по частям)
+await qqbot.Send.To("group", gid).Image("https://example.com/img.png")
+
+# Markdown (в виде исходного текста / шаблона)
+await qqbot.Send.To("group", gid).Markdown("# Заголовок\n- Список")
+await qqbot.Send.To("user", uid).Markdown(template_id=1, kv=[{"key": "title", "value": "Уведомление"}])
+
+# Клавиатура (автоматически устанавливается тип markdown и добавляется bot_appid)
+await qqbot.Send.To("group", gid).Keyboard(keyboard).Text("Выберите опцию")
+
+# Потоковое сообщение (личный чат)
+await qqbot.Send.To("user", openid).Stream("Содержимое ответа")
+
+# Множественные аккаунты
+await qqbot.Send.Using("account2").To("group", gid).Text("От второго бота")
 ```
 
-Поддерживаемые типы отправки включают:
-- `.Text(text: str)` — отправка обычного текстового сообщения.
-- `.Image(file: bytes | str)` — отправка сообщения с изображением, поддерживает путь к файлу, URL и бинарные данные.
-- `.Markdown(content: str)` — отправка сообщения в формате Markdown.
-- `.Ark(template_id: int, kv: list)` — отправка сообщения в формате Ark с использованием шаблона.
-- `.Embed(embed_data: dict)` — отправка встраиваемого сообщения (Embed).
-- `.Raw_ob12(message: List[Dict], **kwargs)` — отправка сообщения в формате OneBot12.
-
-### Методы цепочечных модификаторов (можно комбинировать)
-
-Методы цепочечных модификаторов возвращают `self`, что позволяет использовать цепочечные вызовы. Они должны вызываться до окончательного метода отправки:
-
-- `.Reply(message_id: str)` — ответ на указанное сообщение.
-- `.At(user_id: str)` — упоминание пользователя (вставляет текст `<@user_id>`).
-- `.AtAll()` — упоминание всех участников (вставляет текст `@всех`).
-- `.Keyboard(keyboard: dict)` — добавление кнопок клавиатуры.
-
-### Примеры цепочечных вызовов
+## OneBot12 стандартный API-действия
 
 ```python
-# Базовая отправка
-await qqbot.Send.To("user", user_openid).Text("Hello")
-
-# Ответ на сообщение
-await qqbot.Send.To("group", group_openid).Reply(msg_id).Text("Ответ на сообщение")
-
-# Ответ + клавиатура
-await qqbot.Send.To("group", group_openid).Reply(msg_id).Keyboard(keyboard).Text("Сообщение с ответом и клавиатурой")
-
-# Упоминание пользователя
-await qqbot.Send.To("group", group_openid).At("member_openid").Text("Привет")
-
-# Комбинированный вызов
-await qqbot.Send.To("group", group_openid).Reply(msg_id).At("member_openid").Keyboard(keyboard).Text("Сложное сообщение")
+result = await qqbot.Api.get_self_info()                     # Информация о боте
+result = await qqbot.Api.get_group_info(group_openid)        # Информация о группе
+result = await qqbot.Api.get_group_member_list(group_openid) # Список участников группы (автоматическая пагинация)
+result = await qqbot.Api.get_guild_list()                    # Список каналов
+result = await qqbot.Api.get_channel_list(guild_id)          # Список подканалов
+await qqbot.Api.delete_message(message_id)                   # Отмена сообщения (автоматический маршрут по источнику сообщения)
+result = await qqbot.Api.get_status()                        # Статус работы нескольких аккаунтов
+result = await qqbot.Api.Using("account2").get_self_info()   # Указание аккаунта
 ```
 
-### Поддержка OneBot12 сообщений
+Поддерживаемые стандартные действия: `get_self_info` / `get_group_info` / `get_group_member_info` / `get_group_member_list` / `get_guild_info` / `get_guild_list` / `get_guild_member_info` / `get_guild_member_list` / `get_channel_info` / `get_channel_list` / `set_channel_name` / `leave_channel` / `delete_message` / `get_status` / `get_version` / `get_supported_actions`. Действия, которые не поддерживаются, возвращают `retcode=10002`.
 
-Адаптер поддерживает отправку сообщений в формате OneBot12 для обеспечения совместимости между платформами:
+## Операции с запросами (одобрение заявки на вступление в группу)
+
+Событие `GROUP_JOIN_REQUEST` преобразуется в событие `request` по стандарту OneBot12 и поддерживает стандартизованное одобрение:
 
 ```python
-# Отправка сообщения в формате OneBot12
-ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
-await qqbot.Send.To("user", user_openid).Raw_ob12(ob12_msg)
+from ErisPulse.Core.Event import request as request_event
 
-# Комбинирование с цепочечными модификаторами
-ob12_msg = [{"type": "text", "data": {"text": "Ответ на сообщение"}}]
-await qqbot.Send.To("group", group_openid).Reply(msg_id).Raw_ob12(ob12_msg)
+@request_event.on_request()
+async def handle_join(event):
+    if event.get("platform") == "qqbot":
+        await event.approve()                  # Принять
+        # await event.reject(comment="Причина")   # Отклонить
 ```
 
-## Возвращаемое значение методов отправки
+`request_id` = `join_request_id` от официального API, адаптер автоматически кэширует контекст заявки и маршрутизирует запрос на `POST /v2/groups/{group_openid}/approval_join_request/{member_openid}`.
 
-Все методы отправки возвращают объект Task, который можно напрямую использовать с await для получения результата отправки. Возвращаемый результат соответствует стандартизированному формату возврата адаптера ErisPulse:
+## @Механизм обнаружения бота (важно)
 
-```python
-{
-    "status": "ok",           // Статус выполнения: "ok" или "failed"
-    "retcode": 0,             // Код возврата
-    "data": {...},            // Данные ответа
-    "message_id": "123456",  // Идентификатор сообщения
-    "message": "",            // Сообщение об ошибке
-    "qqbot_raw": {...}        // Исходные данные ответа
-}
-```
+Факт упоминания бота в QQ официально передаётся через имя события, а упоминание пользователя в группе имеет вид `<@{openid пространства группы}>` (это **не** относится к той же системе идентификаторов, что и bot_id, возвращаемый READY). Адаптер автоматически обрабатывает:
 
-### Описание кодов ошибок
+1. **Анализ меток**: `<@openid>` и `<qqbot-at-user>` оба стиля анализируются как упоминания (упоминания не остаются в тексте)
+2. **Нормализация имён**: если имя бота, возвращённое `/users/@me`, совпадает с именем в массиве упоминаний, упоминание нормализуется как bot_id (оригинальный openid сохраняется в `data.qqbot_openid`)
+3. **Обучение openid**: автоматически обучается openid бота в каждой группе, используется для распознавания упоминаний в режиме "получать все сообщения из группы"
+4. **Гарантия вставки**: `GROUP_AT_MESSAGE_CREATE` / `AT_MESSAGE_CREATE` гарантируют наличие упоминания бота
+
+Таким образом, `on_at_message()` / `event.is_at_message()` можно использовать напрямую на платформе qqbot. После включения разрешения "получать все сообщения из группы" упоминания будут отправляться через `GROUP_MESSAGE_CREATE` (событие `GROUP_AT_MESSAGE_CREATE` больше не поступит), адаптер также способен распознавать упоминания.
+
+## Семейство методов платформенных API
+
+Адаптер предоставляет полный набор официальных API QQ (подробности см. в файле platform-features.md репозитория адаптера):
+
+- **Бот**: `get_me()`, `reply_interaction()`
+- **Каналы**: `get_guilds/get_guild/mute_guild_all/управление_ролями/api_permission`
+- **Подканалы**: `get_channels/get_channel/create_channel/update_channel/delete_channel/pins`
+- **Участники канала**: `get_guild_members/get_guild_member/mute/roles/kick`
+- **Разрешения/реакции/планы/посты/аудио**: полный набор методов
+- **Групповое управление** (некоторые интерфейсы доступны только для ботов из белого списка): `get_group_members/get_group_bot_state/черный_список/входящие_запросы/запрет_речи/стратегии_одобрения`
+- **Панели меню**: `get_custom_menu/update_custom_menu/CRUD_панелей_команд`
+- **Мультимедиа**: `_upload_media` (URL/путь/бинарные данные, автоматическое разделение на части при размере более 5 МБ), `stream_message` (потоковые сообщения)
+
+## WebSocket / Webhook подключение
+
+### Поток WebSocket
+
+1. appId + clientSecret для получения access_token (автоматическое обновление за 45 с до истечения срока действия, неудача повторяется 3 раза)
+2. Используя `GET /gateway/bot` динамически получите адрес шлюза (при настройке `gateway_url` используйте его напрямую)
+3. OP_HELLO → Identify/Resume → READY (получение session_id и bot_id) → цикл поддержания соединения
+4. Переподключение при разрыве: максимум 50 попыток, экспоненциальная задержка `min(5 * 2^n, 300)` секунд; OP_RECONNECT сохраняет сессию
+
+### Режим Webhook
+
+После установки режима `mode = "webhook"` для аккаунта, через маршрутизатор ErisPulse зарегистрируйте HTTP-маршруты:
+
+- Верификация подписи Ed25519 (семя = secret, заполненное до 32 байт), проверка `X-Signature-Ed25519` для `X-Signature-Timestamp + body`
+- Автоматическая обработка рукопожатия верификации подписи op=13 и распределение событий op=0
+- Зависимость от библиотеки `cryptography` (устанавливается вместе с адаптером)
+
+## Описание кодов ошибок
 
 | retcode | Описание |
 |---------|----------|
 | 0 | Успешно |
-| 10003 | Не удалось определить цель отправки |
+| 10001 | Отсутствуют параметры |
+| 10002 | Действие не поддерживается |
+| 10003 | Цель/учетная запись не может быть определена |
 | 32000 | Время ожидания запроса истекло |
-| 33000 | Ошибка вызова API |
-| 34000 | API вернул неожиданный формат или произошла бизнес-ошибка |
+| 33000 | Аномалия сети/вызов API |
+| 34001 | Запрос не существует или просрочен (Request DSL) |
+| 34100 | Не удалось загрузить медиафайл |
+| 34000+ | Ошибка бизнес-процесса платформы (прозрачный код от официального источника) |
 
-## Специфические типы событий
+## Использование примеров
 
-Необходимо использовать `platform=="qqbot"` для проверки перед использованием функций данной платформы.
-
-### Основные отличия
-
-1. **Система openid**: QQBot использует openid вместо QQ-номера, идентификаторы пользователей и групп представлены строками openid.
-2. **Обязательное упоминание в группах**: Сообщения в группах обрабатываются только в случае, если пользователь упоминает бота (`GROUP_AT_MESSAGE_CREATE`).
-3. **Система каналов**: QQBot поддерживает сообщения и события в каналах (Guild) и подканалах (Channel).
-4. **Проверка сообщений**: Отправленные сообщения могут требовать проверки, результат уведомляется через события `qqbot_audit_pass`/`qqbot_audit_reject`.
-5. **Пассивный ответ**: Поддержка пассивного ответа на сообщения в группах и личные сообщения, при отправке необходимо указывать `msg_id`.
-
-### Дополнительные поля
-
-- Все специфические поля имеют префикс `qqbot_`.
-- Оригинальные данные сохраняются в поле `qqbot_raw`.
-- Поле `qqbot_raw_type` указывает тип исходного события QQBot (например, `C2C_MESSAGE_CREATE`).
-- Информация об вложениях сохраняется в поле `qqbot_attachment`.
-
-### Примеры специальных полей
-
-```python
-# Сообщение упоминания в группе
-{
-  "type": "message",
-  "detail_type": "group",
-  "user_id": "MEMBER_OPENID",
-  "group_id": "GROUP_OPENID",
-  "qqbot_group_openid": "GROUP_OPENID",
-  "qqbot_member_openid": "MEMBER_OPENID",
-  "qqbot_event_id": "ID события сообщения",
-  "qqbot_reply_token": "Токен ответа"
-}
-
-# Личное сообщение
-{
-  "type": "message",
-  "detail_type": "private",
-  "user_id": "USER_OPENID",
-  "qqbot_openid": "USER_OPENID",
-  "qqbot_event_id": "ID события сообщения",
-  "qqbot_reply_token": "Токен ответа"
-}
-
-# Взаимодействие
-{
-  "type": "notice",
-  "detail_type": "qqbot_interaction",
-  "qqbot_interaction_id": "ID взаимодействия",
-  "qqbot_interaction_type": "Тип взаимодействия",
-  "qqbot_interaction_data": {
-    "...": "Данные взаимодействия"
-  }
-}
-
-# Проверка сообщений
-{
-  "type": "notice",
-  "detail_type": "qqbot_audit_pass",
-  "qqbot_audit_id": "ID проверки",
-  "qqbot_message_id": "ID сообщения"
-}
-
-# Удаление сообщения
-{
-  "type": "notice",
-  "detail_type": "qqbot_message_delete",
-  "message_id": "ID удаленного сообщения",
-  "operator_id": "ID оператора"
-}
-
-# Ответ эмоций
-{
-  "type": "notice",
-  "detail_type": "qqbot_reaction_add",
-  "qqbot_raw": {
-    "...": "Оригинальные данные"
-  }
-}
-```
-
-### Сообщения в каналах
-
-Сообщения в каналах поддерживают поле `mentions`, которое преобразуется в сообщение типа `mention`:
-
-```json
-{
-  "type": "mention",
-  "data": {
-    "user_id": "ID упомянутого пользователя",
-    "user_name": "Имя упомянутого пользователя"
-  }
-}
-```
-
-### Сообщения с вложениями
-
-Вложения в QQBot автоматически преобразуются в соответствующие типы сообщений в зависимости от `content_type`:
-
-| Префикс `content_type` | Тип преобразования | Описание |
-|---|---|---|
-| `image` | `image` | Сообщение с изображением |
-| `video` | `video` | Сообщение с видео |
-| `audio` | `voice` | Голосовое сообщение |
-| Другое | `file` | Сообщение с файлом |
-
-Структура сообщения с вложениями:
-```json
-{
-  "type": "image",
-  "data": {
-    "url": "URL вложения",
-    "qqbot_attachment": {
-      "content_type": "image/png",
-      "url": "Оригинальный URL вложения"
-    }
-  }
-}
-```
-
-## WebSocket соединение
-
-### Процесс подключения
-
-1. Получить access_token с помощью appId + clientSecret
-2. Подключиться к WebSocket-шлюзу
-3. Получить сообщение OP_HELLO (op=10), чтобы узнать интервал для пинга
-4. Отправить OP_IDENTIFY (op=2) для аутентификации
-5. Получить событие READY, чтобы узнать session_id и bot_id
-6. Начать цикл пингов (OP_HEARTBEAT, op=1)
-7. Получать события (OP_DISPATCH, op=0)
-
-### Переподключение при разрыве соединения
-
-- Поддерживается автоматическое переподключение, максимальное количество попыток — 50
-- Время ожидания перед повторным подключением рассчитывается по экспоненциальному алгоритму отступления: `min(5 * 2^min(count, 6), 300)` секунд
-- Поддерживается восстановление сессии (OP_RESUME, op=6), используя session_id + seq
-- При получении сообщения OP_RECONNECT (op=7) или OP_INVALID_SESSION (op=9) автоматически запускается переподключение
-
-### Обновление токена
-
-- Срок действия access_token обычно составляет 7200 секунд
-- Адаптер автоматически обновляет токен каждые 7080 секунд (7200-120)
-- Интерфейс обновления: `POST https://bots.qq.com/app/getAppAccessToken`
-
-## События подписки (Intents)
-
-Значения intents объединяются с помощью побитовой операции:
-
-```python
-intents = [1, 30, 25]
-value = 0
-for intent in intents:
-    value |= (1 << intent)
-```
-
-Часто используемые значения intent:
-| intent значение | Описание |
-|------------------|----------|
-| 1 | События, связанные с каналами (GUILD_CREATE и др.) |
-| 25 | События сообщений в канале (AT_MESSAGE_CREATE и др.) |
-| 30 | События сообщений с упоминанием в группе (GROUP_AT_MESSAGE_CREATE и др.) |
-
-## Примеры использования
-
-### Обработка групповых сообщений
+### Обработка групповых сообщений (по @)
 
 ```python
 from ErisPulse.Core.Event import message
-from ErisPulse import sdk
 
-qqbot = sdk.adapter.get("qqbot")
-
-@message.on_message()
-async def handle_group_msg(event):
+@message.on_at_message()
+async def handle_at(event):
     if event.get("platform") != "qqbot":
         return
-    if event.get("detail_type") != "group":
-        return
-
     text = event.get_text()
-    group_id = event.get("group_id")
-
-    if text == "hello":
-        await qqbot.Send.To("group", group_id).Reply(
-            event.get("message_id")
-        ).Text("Hello!")
+    if text == "签到":
+        await event.reply("已签到")
 ```
 
-### Обработка событий взаимодействия
+### Обработка взаимодействий
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -327,40 +201,25 @@ from ErisPulse.Core.Event import notice
 async def handle_interaction(event):
     if event.get("platform") != "qqbot":
         return
-
     if event.get("detail_type") == "qqbot_interaction":
-        interaction_id = event.get("qqbot_interaction_id", "")
-        interaction_data = event.get("qqbot_interaction_data", {})
-        # Обработка взаимодействия...
+        await qqbot.reply_interaction(event.get("qqbot_interaction_id"), code=0)
+        button_id = event.get("qqbot_button_id", "")
+        # Обработка кнопки...
 ```
 
-### Отправка медиа-сообщений
+### Запуск нескольких аккаунтов
 
-```python
-# Отправка изображения (по URL)
-await qqbot.Send.To("group", group_openid).Image("https://example.com/image.png")
+```toml
+[QQBot_Adapter.accounts.bot_a]
+appid = "A_APPID"
+secret = "..."
+enabled = true
 
-# Отправка изображения (в байтах)
-with open("image.png", "rb") as f:
-    image_bytes = f.read()
-await qqbot.Send.To("user", user_openid).Image(image_bytes)
+[QQBot_Adapter.accounts.bot_b]
+appid = "B_APPID"
+secret = "..."
+mode = "webhook"
+enabled = true
 ```
 
-### Наблюдение за результатами проверки сообщений
-
-```python
-@notice.on_notice()
-async def handle_audit(event):
-    if event.get("platform") != "qqbot":
-        return
-
-    detail_type = event.get("detail_type")
-
-    if detail_type == "qqbot_audit_pass":
-        msg_id = event.get("qqbot_message_id")
-        print(f"Проверка сообщения пройдена: {msg_id}")
-
-    elif detail_type == "qqbot_audit_reject":
-        reason = event.get("qqbot_audit_reject_reason", "")
-        print(f"Проверка сообщения отклонена: {reason}")
-```
+Два аккаунта запускаются параллельно: bot_a использует WebSocket, bot_b использует Webhook, они не влияют друг на друга.

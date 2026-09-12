@@ -1,21 +1,61 @@
 # Документация по функциям платформы Yunhu
 
-YunhuAdapter — это адаптер, построенный на протоколе Yunhu, объединяющий все функциональные модули Yunhu и предоставляющий единый интерфейс обработки событий и операций сообщений.
+YunhuAdapter — это адаптер, построенный на базе протокола Yunhu, объединяющий все модули функций Yunhu и предоставляющий единый интерфейс обработки событий и операций сообщений.
 
 ---
 
 ## Информация о документации
 
-- Версия соответствующего модуля: 4.3.0
+- Версия соответствующего модуля: 4.4.0
 - Ответственный: ErisPulse
 
 ## Основная информация
 
-- Краткое описание платформы: Yunhu — корпоративная платформа мгновенной коммуникации
-- Название адаптера: YunhuAdapter
-- Поддержка нескольких аккаунтов: поддержка идентификации и настройки нескольких аккаунтов роботов Yunhu через bot_id
-- Поддержка цепочечных модификаторов: поддержка цепочечных методов модификации, таких как `.Reply()`
+- Описание платформы: Yunhu (云湖) — это корпоративная платформа мгновенного обмена сообщениями
+- Имя адаптера: YunhuAdapter
+- Поддержка нескольких аккаунтов: поддержка распознавания и настройки нескольких аккаунтов роботов Yunhu посредством bot_id
+- Поддержка цепочки модификаторов: поддержка цепочки модификаторов, таких как `.Reply()`
 - Совместимость с OneBot12: поддержка отправки сообщений в формате OneBot12
+
+## Обновление парадигмы v5 (4.4.0)
+
+Адаптер был обновлен до соответствия парадигме v5 (инкрементальное обновление, совместимость API):
+
+- **Полный набор официальных серверных API** (расширения методов DSL Api): редактирование сообщений, пакетная отправка, список сообщений, панели пользователей/глобальные панели, ограничение участников группы, удаление участников группы, контроль типов сообщений в группе, CRUD-операции с тегами групп, добавление тегов пользователям
+- **Стандартный сегмент keyboard** (стандартный компонент взаимодействия между платформами): сегмент {"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}} автоматически преобразуется в buttons облака; декораторы .Buttons(rows) / .Keyboard(rows) принимают общую структуру (оригинальная структура обратно совместима)
+- **Стандартные поля для обратного вызова взаимодействия**: события нажатия кнопок/A2UI включают стандартные поля interaction_id / button_data
+- **Принадлежность задачи spawn_background**: задачи WS-подключения теперь используют runtime.spawn_background
+- **Мягкие зависимости фреймворка**: во время выполнения проверяется наличие ErisPulse>=2.7.1 и выводится соответствующее уведомление; при запуске выводится лог версии
+
+### Платформенные расширенные действия (call / методы Api)
+
+```python
+from ErisPulse import sdk
+yunhu = sdk.adapter.get("yunhu")
+
+# Методы Api (официальные серверные API)
+await yunhu.Api.edit_message(msg_id, recv_id, "group", "text", {"text": "Новый контент"})
+await yunhu.Api.batch_send(["userId1", "userId2"], "text", {"text": "Анонс"})
+await yunhu.Api.get_message_list(group_id, "group", before=10)
+await yunhu.Api.set_user_board(chat_id, "group", "Содержание панели", expire_time=3600)
+await yunhu.Api.dismiss_global_board()
+await yunhu.Api.gag_group_member(group_id, user_id, 600)      # Запрет на 600 секунд, 0=отмена
+await yunhu.Api.remove_group_member(group_id, user_id)
+await yunhu.Api.set_group_msg_type_limit(group_id, "text,image")
+await yunhu.Api.create_group_tag(group_id, "VIP", color="#FF5733")
+await yunhu.Api.add_user_tag(group_id, user_id, "VIP")
+
+# Обратный вызов нажатия кнопки (стандартные поля)
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_button(event):
+    if event.get("platform") == "yunhu" and event.get("button_data"):
+        data = event["button_data"]     # Единый доступ к данным между платформами
+        interaction_id = event["interaction_id"]
+```
+
+> Подробное описание стандарта доступно в [Стандарте компонентов взаимодействия между платформами](../../standards/standardization-guide.md).
 
 ## Поддерживаемые типы отправки сообщений
 
@@ -28,23 +68,23 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 ```
 
 Поддерживаемые типы отправки включают:
-- `.Text(text: str)` — отправка текстового сообщения.
-- `.Html(html: str)` — отправка сообщения в формате HTML.
+- `.Text(text: str)` — отправка обычного текстового сообщения.
+- `.Html(html: str)` — отправка HTML-форматированного сообщения.
 - `.Markdown(markdown: str)` — отправка сообщения в формате Markdown.
 - `.A2UI(text: str)` — отправка сообщения в формате A2UI.
-- `.Image(file: bytes, stream: bool = False, filename: str = None)` — отправка изображения, поддержка потоковой загрузки и пользовательского имени файла.
-- `.Video(file: bytes, stream: bool = False, filename: str = None)` — отправка видео, поддержка потоковой загрузки и пользовательского имени файла.
-- `.File(file: bytes, stream: bool = False, filename: str = None)` — отправка файла, поддержка потоковой загрузки и пользовательского имени файла.
+- `.Image(file: bytes, stream: bool = False, filename: str = None)` — отправка изображения, поддержка потоковой загрузки и возможность указать имя файла.
+- `.Video(file: bytes, stream: bool = False, filename: str = None)` — отправка видео, поддержка потоковой загрузки и возможность указать имя файла.
+- `.File(file: bytes, stream: bool = False, filename: str = None)` — отправка файла, поддержка потоковой загрузки и возможность указать имя файла.
 - `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)` — массовая отправка сообщений.
 - `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)` — редактирование существующего сообщения.
 - `.Recall(msg_id: str)` — отмена отправки сообщения.
-- `.Board(content: str, content_type: str = "text")` — публикация на доске объявлений. Область действия определяется методом `To()` (указанный цель — локальная доска, не указано — глобальная доска). Цепочечные модификаторы: `.Expire(duration)` относительный срок действия (в секундах), `.ExpireAt(timestamp)` абсолютный срок действия (в секундах), `.ForMember(member_id)` доска для участника группы; **если содержимое пустое, автоматически превращается в отмену доски**. По-прежнему поддерживается старый стиль `Board("local", "Объявление")`.
-- `.DismissBoard()` — отмена доски объявлений. Область действия определяется методом `To()`, поддержка `.ForMember(member_id)`; по-прежнему поддерживается старый стиль `DismissBoard("local")`.
+- `.Board(content: str, content_type: str = "text")` — публикация сообщения на доске объявлений. Область действия определяется методом `To()` (указание цели = локальная доска, не указано = глобальная доска). Цепочка модификаторов: `.Expire(duration)` — относительное время истечения (в секундах), `.ExpireAt(timestamp)` — абсолютное время истечения (секундный временной штамп), `.ForMember(member_id)` — доска объявлений для участника группы; **при пустом содержимом автоматически преобразуется в отмену доски объявлений**. По-прежнему поддерживается старый способ явного указания области действия `Board("local", "公告")`.
+- `.DismissBoard()` — отмена доски объявлений. Область действия определяется методом `To()` и поддерживает `.ForMember(member_id)`; по-прежнему поддерживается старый способ `DismissBoard("local")`.
 - `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)` — отправка потокового сообщения.
 
 ### Методы управления группами
 
-Все методы управления группами необходимо использовать с цепочечным синтаксисом, например:
+Все методы управления группами требуют цепочечного синтаксиса для указания группы, например:
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
@@ -52,19 +92,19 @@ yunhu = adapter.get("yunhu")
 await yunhu.Send.To("group", group_id).Kick(user_id)
 ```
 
-- `.Kick(user_id: str)` — исключение участника группы. Робот должен иметь права на исключение участников группы.
-- `.Ban(user_id: str, duration: int = 600)` — запрет на отправку сообщений пользователю. `duration` — длительность запрета (в секундах), 0 означает разрешение, -1 — пожизненный запрет. Робот должен иметь права на запрет пользователей.
-- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)` — создание тега группы. `color` имеет формат #RRGGBB, `sort` — чем меньше, тем выше в списке. Робот должен иметь права на управление тегами группы.
-- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)` — изменение тега группы. Параметры не обязательны, если не указаны, не изменяются. Робот должен иметь права на управление тегами группы.
-- `.DeleteTag(tag: str)` — удаление тега группы. Робот должен иметь права на управление тегами группы.
+- `.Kick(user_id: str)` — исключение участника из группы. Робот должен иметь права `Разрешить исключение участников из группы`.
+- `.Ban(user_id: str, duration: int = 600)` — мут участника. `duration` — длительность мута (в секундах), 0 — размут, -1 — пожизненный мут. Робот должен иметь права `Разрешить мутить участников`.
+- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)` — создание тега группы. `color` в формате #RRGGBB, `sort` — чем меньше, тем выше в списке. Робот должен иметь права `Разрешить управлять тегами`.
+- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)` — изменение тега группы. Каждый параметр необязателен, если не передан, то не изменяется. Робот должен иметь права `Разрешить управлять тегами`.
+- `.DeleteTag(tag: str)` — удаление тега группы. Робот должен иметь права `Разрешить управлять тегами`.
 - `.GetTagList()` — получение списка тегов группы. Возвращает данные с массивом `list`.
-- `.AddUserTag(user_id: str, tag: str)` — добавление тега пользователю. Робот должен иметь права на управление тегами группы.
-- `.RemoveUserTag(user_id: str, tag: str)` — удаление тега у пользователя. Робот должен иметь права на управление тегами группы.
-- `.SetMsgTypeLimit(types: str)` — ограничение типов сообщений в группе. `types` — имена типов сообщений, разделенные запятыми (например, `"text,image,video"`), пустая строка означает отсутствие ограничений. Робот должен иметь права на изменение информации о группе.
+- `.AddUserTag(user_id: str, tag: str)` — добавление тега участнику. Робот должен иметь права `Разрешить управлять тегами`.
+- `.RemoveUserTag(user_id: str, tag: str)` — удаление тега у участника. Робот должен иметь права `Разрешить управлять тегами`.
+- `.SetMsgTypeLimit(types: str)` — ограничение типов сообщений в группе. `types` — имена типов сообщений, разделенные запятыми (например, `"text,image,video"`), пустая строка означает отсутствие ограничений. Робот должен иметь права `Разрешить изменять информацию о группе`.
 
-### Методы получения сообщений
+### Методы запроса сообщений
 
-Получение списка истории сообщений в конкретном диалоге (пользователь/группа) необходимо использовать цепочечный синтаксис, например:
+Получение списка истории сообщений в указанном диалоге (пользователь/группа) требует цепочечного синтаксиса для указания цели, например:
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
@@ -76,62 +116,62 @@ result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
   - `message_id` — идентификатор сообщения (необязательно). Если не указан, в сочетании с `before` возвращает последние N сообщений.
   - `before` — возвращает N сообщений до указанного идентификатора.
   - `after` — возвращает N сообщений после указанного идентификатора.
-  - > **Внимание:** `before` и `after` должны быть указаны хотя бы один и больше нуля, иначе сервер не вернет никаких сообщений.
+  - > **Примечание:** необходимо указать хотя бы один из параметров `before` или `after`, и значение должно быть больше 0, иначе сервер не вернет никаких сообщений.
 
-Область действия доски объявлений определяется методом `To()`:
-- Указание `To(target_type, target_id)` → локальная доска (указанная группа/пользователь)
+Область действия доски объявлений определяется автоматически методом `To()`:
+- Указание `To(target_type, target_id)` → локальная доска (указанная цель/группа)
 - Не указано `To()` → глобальная доска
 
 ```python
-# Локальная доска (относительный срок действия 60 секунд)
-await yunhu.Send.To("group", group_id).Expire(60).Board("Объявление", content_type="markdown")
+# Локальная доска (относительное истечение через 60 секунд)
+await yunhu.Send.To("group", group_id).Expire(60).Board("公告", content_type="markdown")
 
 # Доска для участника группы (видна только указанному участнику)
-await yunhu.Send.To("group", group_id).ForMember(user_id).Board("Только ты видишь")
+await yunhu.Send.To("group", group_id).ForMember(user_id).Board("仅你可见")
 
-# Абсолютный срок действия по метке времени
-await yunhu.Send.To("group", group_id).ExpireAt(1785208268).Board("Объявление по указанному времени")
+# Абсолютное время истечения
+await yunhu.Send.To("group", group_id).ExpireAt(1785208268).Board("指定时间过期")
 
 # Глобальная доска
-await yunhu.Send.Board("Глобальное объявление")
+await yunhu.Send.Board("全局公告")
 
 # Очистка локальной доски (пустое содержимое → автоматическая отмена)
 await yunhu.Send.To("group", group_id).Board("")
 ```
 
-### Пояснение параметров кнопок
+### Параметры кнопок
 
-Параметр `buttons` представляет собой вложенный список, описывающий макет и функциональность кнопок. Каждый объект кнопки содержит следующие поля:
+Параметр `buttons` представляет собой вложенный список, описывающий расположение и функции кнопок. Каждый объект кнопки содержит следующие поля:
 
 | Поле         | Тип   | Обязательно | Описание                                                                 |
 |--------------|--------|----------|----------------------------------------------------------------------|
-| `text`       | string | Yes       | Текст на кнопке                                                         |
-| `actionType` | int    | Yes       | Тип действия：<br>`1`: переход по URL<br>`2`: копирование<br>`3`: отправка события |
-| `url`        | string | No       | Используется, когда `actionType=1`, указывает целевой URL для перехода                         |
-| `value`      | string | No       | Когда `actionType=2`, значение копируется в буфер обмена<br>Когда `actionType=3`, значение отправляется подписчику |
+| `text`       | string | Да       | Текст на кнопке                                                         |
+| `actionType` | int    | Да       | Тип действия:<br>`1`: переход по URL<br>`2`: копирование<br>`3`: отправка события            |
+| `url`        | string | Нет       | Используется, когда `actionType=1`, указывает целевой URL для перехода                         |
+| `value`      | string | Нет       | При `actionType=2` значение копируется в буфер обмена<br>При `actionType=3` значение отправляется подписчику |
 
 Пример:
 ```python
 buttons = [
     [
-        {"text": "Копировать", "actionType": 2, "value": "xxxx"},
-        {"text": "Перейти", "actionType": 1, "url": "http://www.baidu.com"},
-        {"text": "Сообщить событие", "actionType": 3, "value": "xxxxx"}
+        {"text": "复制", "actionType": 2, "value": "xxxx"},
+        {"text": "点击跳转", "actionType": 1, "url": "http://www.baidu.com"},
+        {"text": "汇报事件", "actionType": 3, "value": "xxxxx"}
     ]
 ]
-await yunhu.Send.To("user", user_id).Buttons(buttons).Text("Сообщение с кнопками")
+await yunhu.Send.To("user", user_id).Buttons(buttons).Text("带按钮的消息")
 ```
-> **Внимание:**
-> - Только при нажатии кнопки **сообщить событие** будет отправлено уведомление, **копирование** и **переход по URL** не могут получить уведомления.
+> **Примечание:**
+> - Только при нажатии кнопки типа **汇报事件** будет отправлено уведомление, кнопки **复制** и **跳转URL** не будут вызывать уведомления.
 
-### Цепочечные модификаторы (можно комбинировать)
+### Методы цепочечного модифицирования (можно комбинировать)
 
-Цепочечные модификаторы возвращают `self`, поддерживают цепочечное использование и должны вызываться до окончательного метода отправки:
+Методы цепочечного модифицирования возвращают `self`, поддерживают цепочечное использование и должны вызываться до окончательного метода отправки:
 
-- `.Reply(message_id: str)` — ответить на указанное сообщение.
-- `.At(user_id: str)` — упомянуть указанного пользователя.
-- `.AtAll()` — упомянуть всех.
-- `.Buttons(buttons: List)` — добавить кнопки.
+- `.Reply(message_id: str)` — ответ на указанное сообщение.
+- `.At(user_id: str)` — упоминание указанного пользователя.
+- `.AtAll()` — упоминание всех участников.
+- `.Buttons(buttons: List)` — добавление кнопок.
 
 ### Примеры цепочечного вызова
 
@@ -140,10 +180,10 @@ await yunhu.Send.To("user", user_id).Buttons(buttons).Text("Сообщение �
 await yunhu.Send.To("user", user_id).Text("Hello")
 
 # Ответ на сообщение
-await yunhu.Send.To("group", group_id).Reply(msg_id).Text("Ответ на сообщение")
+await yunhu.Send.To("group", group_id).Reply(msg_id).Text("回复消息")
 
 # Ответ + кнопки
-await yunhu.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("Сообщение с ответом и кнопками")
+await yunhu.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("带回复和按钮的消息")
 ```
 
 ### Примеры управления группами
@@ -152,65 +192,65 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("Со
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
-# Исключение участника группы
+# Исключение участника из группы
 await yunhu.Send.To("group", group_id).Kick(user_id)
 
-# Запрет на отправку сообщений пользователю (10 минут)
+# Мут участника (10 минут)
 await yunhu.Send.To("group", group_id).Ban(user_id, duration=600)
 
-# Разрешение запрета
+# Размут
 await yunhu.Send.To("group", group_id).Ban(user_id, duration=0)
 
-# Пожизненный запрет
+# Пожизненный мут
 await yunhu.Send.To("group", group_id).Ban(user_id, duration=-1)
 
 # Создание тега группы
-await yunhu.Send.To("group", group_id).CreateTag("VIP-пользователь", color="#FF5733", desc="VIP-участник")
+await yunhu.Send.To("group", group_id).CreateTag("VIP用户", color="#FF5733", desc="VIP会员")
 
 # Изменение тега группы
-await yunhu.Send.To("group", group_id).EditTag("VIP-пользователь", new_tag="SVIP-пользователь", color="#33C4FF")
+await yunhu.Send.To("group", group_id).EditTag("VIP用户", new_tag="SVIP用户", color="#33C4FF")
 
 # Удаление тега группы
-await yunhu.Send.To("group", group_id).DeleteTag("VIP-пользователь")
+await yunhu.Send.To("group", group_id).DeleteTag("VIP用户")
 
 # Получение списка тегов группы
 result = await yunhu.Send.To("group", group_id).GetTagList()
 
-# Добавление тега пользователю
-await yunhu.Send.To("group", group_id).AddUserTag(user_id, "VIP-пользователь")
+# Добавление тега участнику
+await yunhu.Send.To("group", group_id).AddUserTag(user_id, "VIP用户")
 
-# Удаление тега у пользователя
-await yunhu.Send.To("group", group_id).RemoveUserTag(user_id, "VIP-пользователь")
+# Удаление тега у участника
+await yunhu.Send.To("group", group_id).RemoveUserTag(user_id, "VIP用户")
 
-# Ограничение типов сообщений в группе
+# Ограничение типов сообщений
 await yunhu.Send.To("group", group_id).SetMsgTypeLimit("text,image,video")
 
 # Отмена ограничения типов сообщений
 await yunhu.Send.To("group", group_id).SetMsgTypeLimit("")
 ```
 
-### Примеры получения сообщений
+### Примеры запроса сообщений
 
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
-# Получение последних 10 сообщений в группе (всего возвращается 10 сообщений)
+# Получение последних 10 сообщений группы (всего 10 сообщений)
 result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
 
-# Получение 10 сообщений до указанного идентификатора (всего возвращается 11 сообщений)
+# Получение 10 сообщений до указанного идентификатора (всего 11 сообщений)
 result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10)
 
-# Получение по 10 сообщений до и после указанного идентификатора (всего возвращается 21 сообщение)
+# Получение по 10 сообщений до и после указанного идентификатора (всего 21 сообщение)
 result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10, after=10)
 
-# Получение истории сообщений в диалоге с пользователем
+# Получение истории сообщений диалога с пользователем
 result = await yunhu.Send.To("user", user_id).GetMessages(message_id="msg_xxx", before=10)
 ```
 
 ### Поддержка OneBot12 сообщений
 
-Адаптер поддерживает отправку сообщений в формате OneBot12, что обеспечивает совместимость между платформами:
+Адаптер поддерживает отправку OneBot12 формата сообщений, что обеспечивает совместимость между платформами:
 
 - `.Raw_ob12(message: List[Dict], **kwargs)` — отправка сообщения в формате OneBot12.
 
@@ -220,34 +260,34 @@ ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await yunhu.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
 # В сочетании с цепочечными модификаторами
-ob12_msg = [{"type": "text", "data": {"text": "Ответ на сообщение"}}]
+ob12_msg = [{"type": "text", "data": {"text": "回复消息"}}]
 await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 ```
 
-## Стандартные API действия (ApiDSL)
+## Стандартные действия API (ApiDSL)
 
 > [!NOTE]
 > Эта функция требует ErisPulse **2.7.0+** и YunhuAdapter **4.3.0+**.
 
-Помимо `Send` цепочечной отправки, адаптер предоставляет внутренний класс `Api`, который раскрывает стандартные действия OneBot12 и расширенные действия платформы Yunhu. Все методы возвращают стандартный формат ответа.
+Помимо цепочечной отправки `Send`, адаптер также предоставляет внутренний класс `Api`, который предоставляет стандартные действия API OneBot12 и расширенные действия платформы Yunhu. Все методы возвращают стандартный формат ответа.
 
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
-# Информация (через публичный Web API, без аутентификации)
-result = await yunhu.Api.get_self_info()              # Информация о роботе
+# Информационный запрос (через открытый Web API, без аутентификации)
+result = await yunhu.Api.get_self_info()              # Информация о самом боте
 result = await yunhu.Api.get_user_info("7058262")     # Информация о любом пользователе
 result = await yunhu.Api.get_group_info("635409929")  # Информация о группе
 
-# Файловые операции
+# Операции с файлами
 result = await yunhu.Api.upload_file(type="path", name="a.png", path="./a.png")
 result = await yunhu.Api.get_file("https://chat-file.jwznb.com/xxx")
 
-# Отмена сообщения (требуется дополнительный chat_id + chat_type)
+# Отмена сообщения (требуется дополнительная передача chat_id + chat_type)
 await yunhu.Api.delete_message("msg_id", chat_id="123", chat_type="group")
 
-# Многозадачность: указание учетной записи Bot
+# Множественные аккаунты: указание учетной записи бота
 info = await yunhu.Api.Using("bot1").get_self_info()
 ```
 
@@ -255,85 +295,85 @@ info = await yunhu.Api.Using("bot1").get_self_info()
 
 | Метод | Описание | Источник данных |
 |------|------|---------|
-| `get_self_info()` | Информация о роботе | Публичный Web API (bot-info) |
-| `get_user_info(user_id)` | Информация о пользователе (любой пользователь может запросить) | Публичный Web API (user/homepage) |
-| `get_group_info(group_id)` | Информация о группе | Публичный Web API (group-info) |
-| `upload_file(*, type, name, ...)` | Загрузка файла (автоматически определяет image/video/file) | Bot открытый API |
-| `get_file(file_id)` | Получение файла (file_id — это URL) | — |
-| `delete_message(message_id, *, chat_id, chat_type)` | Отмена сообщения | Bot открытый API (/bot/recall) |
+| `get_self_info()` | Информация о самом боте | Открытый Web API (bot-info) |
+| `get_user_info(user_id)` | Информация о пользователе (любой пользователь может получить доступ) | Открытый Web API (user/homepage) |
+| `get_group_info(group_id)` | Информация о группе | Открытый Web API (group-info) |
+| `upload_file(*, type, name, ...)` | Загрузка файла (автоматическое определение image/video/file) | Open API бота |
+| `get_file(file_id)` | Получение файла (file_id - это URL) | — |
+| `delete_message(message_id, *, chat_id, chat_type)` | Отмена сообщения | Open API бота (/bot/recall) |
 
-> **Внимание:** `get_self_info` / `get_user_info` / `get_group_info` реализованы через **непубличный публичный Web API** (chat-web-go.jwzhd.com). Эти интерфейсы не требуют аутентификации, но не являются официальной документацией и могут изменяться вместе с обновлениями платформы; в случае сбоя возвращается стандартный ответ об ошибке.
+> **Внимание**: `get_self_info` / `get_user_info` / `get_group_info` реализованы через **неофициальные открытые Web API** (chat-web-go.jwzhd.com). Эти интерфейсы не требуют аутентификации, но не документированы официально и могут меняться с обновлениями платформы; при сбое возвращается стандартный ответ об ошибке.
 
-### Неподдерживаемые стандартные действия
+### Не поддерживаемые стандартные действия
 
-Следующие стандартные действия не поддерживаются платформой Yunhu, вызов возвращает `retcode=10002` (не поддерживаемая операция):
-- `get_friend_list` (Bot открытый API "список пользователей робота" еще не доступен)
+Следующие стандартные действия отсутствуют в API Yunhu, при вызове возвращается `retcode=10002` (не поддерживаемая операция):
+- `get_friend_list` (список пользователей бота в Open API пока не доступен)
 - `get_group_list` / `get_group_member_info` / `get_group_member_list`
 - `set_group_name` / `leave_group`
 
 ### Расширенные действия платформы
 
-С помощью `Api.call("yunhu.xxx", **params)` вызываются расширенные действия Yunhu (параметры используют стиль именования OB12, адаптер автоматически переводит в поля Yunhu):
+Через `Api.call("yunhu.xxx", **params)` вызываются специфичные для Yunhu действия (параметры используют имена в стиле OB12, адаптер автоматически переводит их в поля Yunhu):
 
-| Расширенное действие | Описание | Эквивалент Send метода |
+| Расширенное действие | Описание | Эквивалентный метод Send |
 |---------|------|---------------|
 | `yunhu.recall` | Отмена сообщения (msg_id, chat_id, chat_type) | `Send.To(...).Recall(msg_id)` |
 | `yunhu.kick` | Исключение участника группы (group_id, user_id) | `Send.To("group", g).Kick(uid)` |
 | `yunhu.ban` | Запрет (group_id, user_id, duration) | `Send.To("group", g).Ban(uid, duration)` |
-| `yunhu.unban` | Разрешение запрета (group_id, user_id) | `Send.To("group", g).Ban(uid, duration=0)` |
-| `yunhu.tag.create/edit/delete/list` | CRUD тегов группы (group_id, ...) | `Send.To("group", g).CreateTag(...)` и т.д. |
-| `yunhu.tag.relate` / `yunhu.tag.relate_cancel` | Добавление/удаление тега у пользователя | `Send.To("group", g).AddUserTag(...)` и т.д. |
-| `yunhu.set_member_title` / `yunhu.unset_member_title` | **Синоним семантики титула участника** (тег ≈ титул, внутреннее сопоставление к tag.relate) | — |
-| `yunhu.msg_type_limit` | Ограничение типов сообщений в группе (group_id, type) | `Send.To("group", g).SetMsgTypeLimit(...)` |
+| `yunhu.unban` | Отмена запрета (group_id, user_id) | `Send.To("group", g).Ban(uid, duration=0)` |
+| `yunhu.tag.create/edit/delete/list` | CRUD-операции с тегами группы (group_id, ...) | `Send.To("group", g).CreateTag(...)` и т.д. |
+| `yunhu.tag.relate` / `yunhu.tag.relate_cancel` | Добавление/удаление тега для пользователя | `Send.To("group", g).AddUserTag(...)` и т.д. |
+| `yunhu.set_member_title` / `yunhu.unset_member_title` | **Синоним семантики заголовка участника** (тег ≈ заголовок, внутреннее сопоставление к tag.relate) | — |
+| `yunhu.msg_type_limit` | Ограничение типа сообщений в группе (group_id, type) | `Send.To("group", g).SetMsgTypeLimit(...)` |
 | `yunhu.get_messages` | Получение истории сообщений (chat_id, chat_type, message_id?, before?, after?) | `Send.To(...).GetMessages(...)` |
-| `yunhu.bot_info` | Публичный запрос информации о bot (bot_id) | — |
-| `yunhu.user_homepage` | Публичный запрос домашней страницы пользователя (user_id) | — |
+| `yunhu.bot_info` | Открытый запрос bot-info (bot_id) | — |
+| `yunhu.user_homepage` | Открытый запрос домашней страницы пользователя (user_id) | — |
 
 ```python
-# Пример расширенного действия
+# Примеры расширенных действий платформы
 await yunhu.Api.call("yunhu.kick", group_id="123", user_id="456")
 await yunhu.Api.call("yunhu.set_member_title", group_id="123", user_id="456", title="VIP")
 result = await yunhu.Api.call("yunhu.get_messages", chat_id="123", chat_type="group", before=10)
 ```
 
-> **Теги и титулы:** Семантика "тегов" в Yunhu эквивалентна OneBot12 `title` участника группы. `yunhu.set_member_title` — это синоним семантический для `yunhu.tag.relate`, оба внутренне сопоставляются с одним и тем же конечным пунктом. В событиях сообщений роль отправителя отображается из `senderUserLevel` в стандартное поле `role` (`owner/admin/member`).
+> **Теги и заголовки**: Семантика "тегов" в Yunhu эквивалентна OneBot12 для участника группы `title`. `yunhu.set_member_title` является семантическим синонимом `yunhu.tag.relate`, оба внутренне сопоставляются к одному конечному пункту. Роль отправителя в событии сообщения группы отображается через `senderUserLevel` в стандартное поле `role` (owner/admin/member).
 
 ## Возвращаемое значение методов отправки
 
-Все методы отправки возвращают объект Task, который можно ожидать для получения результата отправки. Возвращаемый результат соответствует стандартизированному формату ответа адаптера ErisPulse:
+Все методы отправки возвращают объект Task, который можно напрямую ожидать с помощью await для получения результата отправки. Возвращаемый результат соответствует стандартизированному формату ответа адаптера ErisPulse:
 
 ```python
 {
     "status": "ok",           // Статус выполнения
     "retcode": 0,             // Код возврата
     "data": {...},            // Данные ответа
-    "self": {...},            // Информация о себе (включает bot_id)
+    "self": {...},            // Информация о себе (содержит bot_id)
     "message_id": "123456",   // Идентификатор сообщения
     "message": "",            // Сообщение об ошибке
-    "yunhu_raw": {...}        // Оригинальные данные ответа
+    "yunhu_raw": {...}        // Необработанные данные ответа
 }
 ```
 
-## Уникальные типы событий
+## Типы событий, специфичные для платформы
 
-Требуется platform=="yunhu" для использования функций данной платформы
+Необходимо проверить platform=="yunhu", чтобы использовать функции данной платформы.
 
 ### Основные отличия
 
-1. Уникальные типы событий:
-    - Формы (например, команды формы): yunhu_form
-    - Эмодзи/стикер-сообщения: yunhu_expression
+1. Специфичные типы событий:
+    - Форма (например, форма-команда): yunhu_form
+    - Эмодзи/стикер-сообщение: yunhu_expression
     - Нажатие кнопки: yunhu_button_click
     - Нажатие кнопки A2UI: yunhu_a2ui_button
-    - Настройки робота: yunhu_bot_setting
-    - Быстрые меню: yunhu_shortcut_menu
+    - Настройка бота: yunhu_bot_setting
+    - Быстрое меню: yunhu_shortcut_menu
 2. Расширение стандартных полей (4.3.0+):
-    - В событиях сообщений добавлено стандартное поле `role` (отображается из `senderUserLevel` в `owner`/`admin`/`member`)
+    - В событиях сообщений добавлено стандартное поле `role` (отображается из yunhu `senderUserLevel` как `owner`/`admin`/`member`)
     - Добавлено поле `user_avatar` (URL аватара отправителя)
 3. Расширенные поля:
-    - Все уникальные поля имеют префикс yunhu_
-    - Сохраняются исходные данные в поле yunhu_raw
-    - В личных сообщениях self.user_id обозначает ID робота
+    - Все специфичные поля имеют префикс yunhu_
+    - Исходные данные сохраняются в поле yunhu_raw
+    - В личных сообщениях self.user_id обозначает ID бота
 
 ### Примеры специальных полей
 
@@ -343,13 +383,13 @@ result = await yunhu.Api.call("yunhu.get_messages", chat_id="123", chat_type="gr
   "type": "message",
   "detail_type": "private",
   "yunhu_command": {
-    "name": "Название команды формы",
+    "name": "Название формы",
     "id": "ID команды",
     "form": {
       "ID_поля1": {
         "id": "ID_поля1",
         "type": "input/textarea/select/radio/checkbox/switch",
-        "label": "Название поля",
+        "label": "Метка поля",
         "value": "Значение поля"
       }
     }
@@ -382,7 +422,7 @@ result = await yunhu.Api.call("yunhu.get_messages", chat_id="123", chat_type="gr
     "action_name": "Название действия",
     "source_component_id": "ID исходного компонента",
     "form_context": {},
-    "interaction_json": "Строка JSON с данными взаимодействия"
+    "interaction_json": "JSON-строка с данными взаимодействия"
   }
 }
 
@@ -393,21 +433,22 @@ from ErisPulse.Core.Event import notice
 
 @notice.on_notice()
 async def handle_yunhu_notice(event):
-    """Обработка уведомления Yunhu
+    """Обработка уведомления платформы Yunhu
 
-    Использование универсального декоратора on_notice() для обработки всех уведомлений,
-    затем через detail_type различаем типы уведомлений
-    event.reply() автоматически отправляет ответ через платформу Yunhu
+    Используйте общий декоратор on_notice() для обработки всех уведомлений,
+    затем различайте типы уведомлений по detail_type.
+    event.reply() автоматически отправит ответ через платформу Yunhu.
     """
-    # Проверка, является ли событие нажатия кнопки
+
+# Проверка, является ли событие нажатием кнопки
     if event.get("detail_type") == "yunhu_button_click":
         user_id = event.get_user_id()
         user_nickname = event.get_user_nickname()
         button_value = event.get("yunhu_button", {}).get("value", "")
 
-        print(f"Пользователь {user_nickname}({user_id}) нажал кнопку: {button_value}")
+        print(f"Пользователь {user_nickname}({user_id}) нажал на кнопку: {button_value}")
 
-        # Использование event.reply() для автоматической отправки ответа (согласно платформе)
+# Автоматическая отправка ответа с помощью event.reply() (система автоматически выбирает правильный способ отправки в зависимости от платформы)
         if button_value == "confirm":
             await event.reply("Вы нажали кнопку подтверждения!")
         elif button_value == "cancel":
@@ -415,17 +456,17 @@ async def handle_yunhu_notice(event):
         else:
             await event.reply(f"Получен ваш выбор: {button_value}")
 
-    # Обработка события быстрого меню
+# Обработка событий контекстного меню
     elif event.get("detail_type") == "yunhu_shortcut_menu":
         menu_id = event.get("yunhu_menu", {}).get("id", "")
-        await event.reply(f"Запущено быстрое меню: {menu_id}")
+        await event.reply(f"Сработало контекстное меню: {menu_id}")
 
-    # Обработка изменения настроек робота
+# Обработка изменений настроек бота
     elif event.get("detail_type") == "yunhu_bot_setting":
         settings = event.get("yunhu_setting", {})
         await event.reply(f"Настройки обновлены: {settings}")
 
-    # Обработка события кнопки A2UI
+# Обработка событий кнопок A2UI
     elif event.get("detail_type") == "yunhu_a2ui_button":
         a2ui = event.get("yunhu_a2ui", {})
         action_name = a2ui.get("action_name", "")
@@ -433,7 +474,7 @@ async def handle_yunhu_notice(event):
         await event.reply(f"Действие A2UI: {action_name}, данные формы: {form_context}")
 ```
 
-### Использование цепочечного вызова для отправки сообщений с кнопками
+### Использование цепочки вызовов для отправки сообщения с кнопками
 
 ```python
 from ErisPulse import sdk
@@ -444,39 +485,39 @@ buttons = [
     [
         {"text": "Подтвердить", "actionType": 3, "value": "confirm"},
         {"text": "Отменить", "actionType": 3, "value": "cancel"},
-        {"text": "Просмотреть подробности", "actionType": 1, "url": "http://example.com/detail"}
+        {"text": "Посмотреть подробнее", "actionType": 1, "url": "http://example.com/detail"}
     ]
 ]
 
 # Отправка сообщения с кнопками в группу
-await yunhu.Send.To("group", "123456").Buttons(buttons).Text("Пожалуйста, подтвердите следующую операцию")
+await yunhu.Send.To("group", "123456").Buttons(buttons).Text("Пожалуйста, подтвердите следующее действие")
 
-# Отправка сообщения с кнопками в личный чат
-await yunhu.Send.To("user", "789").Buttons(buttons).Text("Выберите свои предпочтения")
+# Отправка сообщения с кнопками в личный чат пользователя  
+await yunhu.Send.To("user", "789").Buttons(buttons).Text("Пожалуйста, выберите свои предпочтительные настройки")  
+
+### Отправка сообщения A2UI  
+
+```python  
+from ErisPulse import sdk  
+
+yunhu = sdk.adapter.get("yunhu")  
 ```
 
-### Отправка A2UI сообщений
-
-```python
-from ErisPulse import sdk
-
-yunhu = sdk.adapter.get("yunhu")
-
-# Отправка A2UI сообщений
+# Отправка сообщения A2UI
 await yunhu.Send.To("user", user_id).A2UI("Содержание интерактивной карточки A2UI")
 ```
 
-# Настройки робота
+# Настройка бота
 {
   "type": "notice",
   "detail_type": "yunhu_bot_setting",
   "group_id": "ID группы (может быть пустым)",
-  "user_nickname": "Никнейм пользователя",
+  "user_nickname": "Имя пользователя",
   "yunhu_setting": {
-    "ID_параметра": {
-      "id": "ID параметра",
+    "ID настройки": {
+      "id": "ID настройки",
       "type": "input/radio/checkbox/select/switch",
-      "value": "Значение параметра"
+      "value": "Значение настройки"
     }
   }
 }
@@ -485,9 +526,9 @@ await yunhu.Send.To("user", user_id).A2UI("Содержание интеракт
 {
   "type": "notice",
   "detail_type": "yunhu_shortcut_menu",
-  "user_id": "ID пользователя, вызвавшего меню",
-  "user_nickname": "Никнейм пользователя",
-  "group_id": "ID группы (если это чат группы)",
+  "user_id": "ID пользователя, запустившего меню",
+  "user_nickname": "Имя пользователя",
+  "group_id": "ID группы (если это групповой чат)",
   "yunhu_menu": {
     "id": "ID меню",
     "type": "Тип меню (целое число)",
@@ -496,26 +537,26 @@ await yunhu.Send.To("user", user_id).A2UI("Содержание интеракт
 }
 ```
 
-## Расширенные методы Event Mixin
+## Event Mixin Расширения
 
-Адаптер зарегистрировал следующие платформенные методы, доступные только при `platform == "yunhu"`:
+Адаптер зарегистрировал следующие методы, специфичные для платформы, доступные только при `platform == "yunhu"`:
 
-| Метод | Тип возвращаемого значения | Описание |
+| Метод | Возвращаемый тип | Описание |
 |------|----------|------|
 | `get_raw_event()` | `dict` | Получить исходные данные события Yunhu (`yunhu_raw`) |
-| `get_sender_level()` | `str` | Уровень отправителя на платформе Yunhu (`owner/administrator/member/unknown`) |
-| `get_sender_role()` | `str` | Роль отправителя по стандарту OneBot12 (`owner/admin/member`) |
-| `get_sender_title()` | `str` | Титул отправителя (доступ к стандартному полю `title`, зарезервировано) |
+| `get_sender_level()` | `str` | Уровень отправителя Yunhu (owner/administrator/member/unknown) |
+| `get_sender_role()` | `str` | Роль отправителя в стандартном формате OneBot12 (owner/admin/member) |
+| `get_sender_title()` | `str` | Титул отправителя (резервный доступ к полю `title`) |
 | `get_sender_avatar()` | `str` | URL аватара отправителя |
-| `get_command()` | `dict` | Данные команды (только для событий команды, `yunhu_command`) |
-| `get_button_value()` | `str` | Значение кнопки в событии нажатия кнопки (`yunhu_button.value`) |
-| `get_a2ui_action()` | `str` | Действие A2UI в событии кнопки (`actionName`) |
-| `get_a2ui_form_context()` | `dict` | Контекст формы A2UI в событии кнопки |
-| `get_menu_id()` | `str` | ID события быстрого меню (`yunhu_menu.id`) |
-| `get_setting()` | `dict` | Данные настроек в событии изменения настроек (`yunhu_setting`) |
-| `is_command_message()` | `bool` | Является ли событие командой |
-| `is_button_click()` | `bool` | Является ли событие нажатием кнопки |
-| `is_a2ui_button()` | `bool` | Является ли событие нажатием кнопки A2UI |
+| `get_command()` | `dict` | Данные команды (только для событий сообщений команд, `yunhu_command`) |
+| `get_button_value()` | `str` | Значение кнопки в событии нажатия (поле `yunhu_button.value`) |
+| `get_a2ui_action()` | `str` | Название действия кнопки A2UI |
+| `get_a2ui_form_context()` | `dict` | Контекст формы события кнопки A2UI |
+| `get_menu_id()` | `str` | Идентификатор события быстрого меню (поле `yunhu_menu.id`) |
+| `get_setting()` | `dict` | Данные настроек события робота (поле `yunhu_setting`) |
+| `is_command_message()` | `bool` | Является ли сообщение командой |
+| `is_button_click()` | `bool` | Является ли событием нажатия кнопки |
+| `is_a2ui_button()` | `bool` | Является ли событием кнопки A2UI |
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -533,21 +574,21 @@ async def handle_yunhu_notice(event):
         menu_id = event.get_menu_id()
 ```
 
-## Пояснение расширенных полей
+## Описание расширенных полей
 
-- Все уникальные поля имеют префикс `yunhu_`, чтобы избежать конфликта с стандартными полями
-- Сохраняются исходные данные в поле `yunhu_raw`, для доступа к полным исходным данным платформы Yunhu
-- `self.user_id` обозначает ID робота (получается из конфигурации bot_id)
-- Команды формы предоставляются через поле `yunhu_command`
-- События нажатия кнопки предоставляются через поле `yunhu_button`
-- События нажатия кнопки A2UI предоставляются через поле `yunhu_a2ui`
-- События изменения настроек робота предоставляются через поле `yunhu_setting`
-- События быстрого меню предоставляются через поле `yunhu_menu`
-- Эмодзи/стикер-сообщения предоставляются через сегмент `yunhu_expression` со стикер-данными (sticker_id, ID пакета стикеров, размер изображения и т.д.)
+- Все специфические поля имеют префикс `yunhu_`, чтобы избежать конфликта с стандартными полями
+- Исходные данные сохраняются в поле `yunhu_raw`, что позволяет получить доступ к полным исходным данным платформы Yunhu
+- `self.user_id` обозначает ID бота (получается из конфигурации через bot_id)
+- Команды формы предоставляются в виде структурированных данных через поле `yunhu_command`
+- События нажатия кнопки предоставляются через поле `yunhu_button`, содержащее информацию о кнопке
+- События кнопок A2UI предоставляются через поле `yunhu_a2ui`, содержащее информацию об A2UI-взаимодействии
+- Изменения настроек бота предоставляются через поле `yunhu_setting`, содержащее данные настроек
+- Операции с быстрым меню предоставляются через поле `yunhu_menu`, содержащее информацию о меню
+- Сообщения с эмодзи/наклейками предоставляются через сегмент сообщения `yunhu_expression`, содержащий данные о наклейке (sticker_id, ID набора наклеек, размеры изображения и т.д.)
 
-### Сегмент эмодзи/стикера (yunhu_expression)
+### Сегмент сообщения с эмодзи/наклейками (yunhu_expression)
 
-При отправке пользователем эмодзи или стикера тип сегмента сообщения — `yunhu_expression`:
+Когда пользователь отправляет эмодзи или наклейку, тип сегмента сообщения будет `yunhu_expression`:
 
 ```json
 {
@@ -565,12 +606,12 @@ async def handle_yunhu_notice(event):
 
 | Поле | Тип | Описание |
 |------|------|------|
-| `sticker_id` | string | Уникальный идентификатор стикера |
-| `sticker_pack_id` | string | ID пакета стикеров |
+| `sticker_id` | string | Уникальный идентификатор наклейки |
+| `sticker_pack_id` | string | ID набора наклеек |
 | `expression_id` | string | ID эмодзи |
-| `image_name` | string | Путь к файлу изображения стикера |
-| `width` | int | Ширина изображения (опционально) |
-| `height` | int | Высота изображения (опционально) |
+| `image_name` | string | Путь к файлу изображения эмодзи |
+| `width` | int | Ширина изображения (необязательно) |
+| `height` | int | Высота изображения (необязательно) |
 
 Пример использования:
 ```python
@@ -582,69 +623,67 @@ async def handle_message(event):
         for segment in event.get("message", []):
             if segment.get("type") == "yunhu_expression":
                 data = segment["data"]
-                print(f"Получен стикер: sticker_id={data['sticker_id']}, ID пакета={data['sticker_pack_id']}")
+                print(f"Получен эмодзи: sticker_id={data['sticker_id']}, ID пака={data['sticker_pack_id']}")
 ```
 
----
-
-## Конфигурация нескольких роботов
+## Многоботная конфигурация
 
 ### Описание конфигурации
 
-Адаптер Yunhu поддерживает одновременную конфигурацию и запуск нескольких роботов платформы Yunhu.
+Адаптер Yunhu поддерживает одновременную настройку и запуск нескольких аккаунтов ботов Yunhu.
 
 ```toml
 # config.toml
 [Yunhu_Adapter.accounts.bot1]
-token = "your_bot1_token"  # API токен робота (обязательно)
-mode = "ws"  # Режим приема (опционально, по умолчанию "ws", значения: "ws", "webhook")
-webhook_path = "/webhook/bot1"  # Путь для webhook (опционально, по умолчанию "/webhook")
-enabled = true  # Включить ли аккаунт (опционально, по умолчанию true)
+token = "your_bot1_token"  # Токен бота (обязательно)
+mode = "ws"  # Режим получения (необязательно, по умолчанию "ws", доступны значения: "ws", "webhook")
+webhook_path = "/webhook/bot1"  # Путь для webhook (необязательно, по умолчанию "/webhook")
+enabled = true  # Включить аккаунт (необязательно, по умолчанию true)
 
 [Yunhu_Adapter.accounts.bot2]
-token = "your_bot2_token"  # Токен второго робота
+token = "your_bot2_token"  # Токен второго бота
 webhook_path = "/webhook/bot2"  # Отдельный путь для webhook
 enabled = true
 ```
 
-**Описание параметров конфигурации:**
-- `token` — API токен, предоставленный платформой Yunhu (обязательно)
-- `mode` — режим приема (опционально, по умолчанию "ws", значения: "ws", "webhook")
-- `webhook_path` — HTTP путь для приема событий Yunhu (опционально, по умолчанию "/webhook", используется только в режиме webhook)
-- `enabled` — включен ли аккаунт (опционально, по умолчанию true)
+**Описание параметров:**
+- `token`: API-токен, предоставляемый платформой Yunhu (обязательно)
+- `mode`: Режим получения (необязательно, по умолчанию "ws", доступны значения "ws", "webhook")
+- `webhook_path`: HTTP-путь для получения событий Yunhu (необязательно, по умолчанию "/webhook", используется только в режиме webhook)
+- `enabled`: Включить этот аккаунт (необязательно, по умолчанию true)
 
-**Важные указания:**
-1. ID робота платформы Yunhu автоматически определяется во время выполнения, не требуется указывать в конфигурации
-2. В режиме webhook каждый робот должен иметь отдельный `webhook_path` для приема событий
-3. При настройке webhook на платформе Yunhu, настройте соответствующий URL для каждого робота, например:
+**Важные замечания:**
+1. Идентификатор бота на платформе Yunhu **автоматически определяется во время запуска**, не нужно указывать его в конфигурации
+2. В режиме webhook каждый бот должен иметь уникальный `webhook_path` для получения соответствующих событий webhook
+3. При настройке webhook на платформе Yunhu, для каждого бота нужно указать соответствующий URL, например:
    - Bot1: `https://your-domain.com/webhook/bot1`
    - Bot2: `https://your-domain.com/webhook/bot2`
 
-### Использование Send DSL для указания робота
+### Использование Send DSL для указания бота
 
-Можно использовать метод `Using()` для указания робота, через которого отправлять сообщение. Этот метод поддерживает два параметра:
-- **Имя аккаунта** — имя робота в конфигурации (например, `bot1`, `bot2`)
-- **bot_id** — значение `bot_id` в конфигурации
+Можно использовать метод `Using()` для указания бота, через которого будет отправлено сообщение. Этот метод поддерживает два параметра:
+- **Имя аккаунта**: имя бота из конфигурации (например, `bot1`, `bot2`)
+- **bot_id**: значение `bot_id` из конфигурации
 
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
-# Использование имени аккаунта для отправки сообщения
+# Отправка сообщения через имя аккаунта
 await yunhu.Send.Using("bot1").To("user", "user123").Text("Hello from bot1!")
 
-# Использование bot_id для отправки сообщения (автоматически сопоставляется с соответствующим аккаунтом)
+# Отправка сообщения через bot_id (автоматически сопоставляется с соответствующим аккаунтом)
 await yunhu.Send.Using("30535459").To("group", "group456").Text("Hello from bot!")
 
-# Если не указать, используется первый включенный робот
+# Без указания бота используется первый включенный бот
 await yunhu.Send.To("user", "user123").Text("Hello from default bot!")
 ```
 
-> **Примечание:** При использовании `bot_id` система автоматически находит соответствующий аккаунт в конфигурации. Это особенно полезно при обработке событий, где можно использовать `event["self"]["user_id"]` для ответа на то же аккаунт.
+> **Подсказка:** При использовании `bot_id` система автоматически находит соответствующий аккаунт в конфигурации. Это особенно полезно при обработке ответов на события, где можно использовать `event["self"]["user_id"]` для ответа через тот же аккаунт.
 
-### ID робота в событиях
+### Идентификация бота в событиях
 
-Полученные события автоматически содержат информацию об ID робота:
+Полученные события автоматически содержат информацию о `bot_id`:
 
 ```python
 from ErisPulse.Core.Event import message
@@ -652,43 +691,43 @@ from ErisPulse.Core.Event import message
 @message.on_message()
 async def handle_message(event):
     if event["platform"] == "yunhu":
-        # Получить ID робота, вызвавшего событие
+        # Получение ID бота, который вызвал событие
         bot_id = event["self"]["user_id"]
-        print(f"Сообщение от робота: {bot_id}")
+        print(f"Сообщение пришло от бота: {bot_id}")
         
-        # Использовать того же робота для ответа
+        # Ответ через того же бота
         yunhu = adapter.get("yunhu")
         await yunhu.Send.Using(bot_id).To(
             event["detail_type"],
             event["user_id"] if event["detail_type"] == "private" else event["group_id"]
-        ).Text("Ответное сообщение")
+        ).Text("Ответ на сообщение")
 ```
 
-### Информация в журнале
+### Информация в логах
 
-Адаптер автоматически включает `bot_id` в журнал для удобства отладки и отслеживания:
+Адаптер автоматически включает `bot_id` в логи, что облегчает отладку и отслеживание:
 
 ```
-[INFO] [yunhu] [bot:30535459] Получено сообщение от пользователя user123
+[INFO] [yunhu] [bot:30535459] Получено личное сообщение от пользователя user123
 [INFO] [yunhu] [bot:12345678] Сообщение успешно отправлено, message_id: abc123
 ```
 
 ### Интерфейс управления
 
 ```python
-# Получить информацию обо всех аккаунтах
+# Получение информации обо всех аккаунтах
 bots = yunhu.bots
 
-# Проверить статус аккаунта
+# Проверка статуса аккаунта
 bot_status = {
     bot_name: bot_config.enabled
     for bot_name, bot_config in yunhu.bots.items()
 }
 
-# Динамически включить/отключить аккаунт (требуется перезапуск адаптера)
+# Динамическое включение/выключение аккаунта (требуется перезапуск адаптера)
 yunhu.bots["bot1"].enabled = False
 ```
 
 ### Совместимость со старой конфигурацией
 
-Старые конфигурации в формате `[Yunhu_Adapter.bots.*]` (с полем `bot_id`) автоматически мигрируются в формат `accounts` (`bot_id` теперь определяется во время выполнения, значения в конфигурации игнорируются); рекомендуется как можно скорее перейти на новый формат.
+Старая конфигурация `[Yunhu_Adapter.bots.*]` (с полем `bot_id`) автоматически мигрируется в формат `accounts` (`bot_id` теперь определяется во время запуска, значение в конфигурации игнорируется); рекомендуется как можно скорее перейти на новый формат.

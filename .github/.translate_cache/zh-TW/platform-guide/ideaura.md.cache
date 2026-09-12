@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "b988c36ddff16f58ef8c09fd21c671b8",
-  "file_hash": "b988c36ddff16f58ef8c09fd21c671b8",
-  "translated_at": "2026-09-07T11:40:05.380009",
+  "hash": "581ad372f3548c98bdbc894300302fbf",
+  "file_hash": "581ad372f3548c98bdbc894300302fbf",
+  "translated_at": "2026-09-12T10:23:25.994547",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,12 +10,16 @@
       "translation": "# 花楓咖啡館（RockyChat）平台特性文件\n\nIdeauraAdapter 是基於花楓咖啡館（RockyChat）平台 API 建構的適配器，整合了所有平台功能模組，提供統一的事件處理和訊息操作介面。\n\n---"
     },
     {
-      "hash": "2d953250c4c9910f99d2572b3ea02038",
-      "translation": "## 文件資訊\n\n- 對應模組: ErisPulse-Ideaura\n- 對應模組版本: 4.0.1\n- 維護者: ErisPulse"
+      "hash": "d7e638b601683aec3afc08ef61c8cfaa",
+      "translation": "## 文件資訊\n\n- 對應模組: ErisPulse-Ideaura\n- 對應模組版本: 4.1.0\n- 維護者: ErisPulse"
     },
     {
       "hash": "ba7be8ca44b3a3db8900b4ac53a42094",
       "translation": "## 基本資訊\n\n- 平台簡介：花楓咖啡館（RockyChat）是一個即時通訊平台\n- 適配器名稱：IdeauraAdapter\n- 多帳戶支援：支援透過 Bot Token 配置多個帳戶\n- 鏈式修飾支援：支援 `.At()`、`.AtAll()`、`.Reply()`、`.Command()` 等鏈式修飾方法\n- OneBot12 兼容：支援發送 OneBot12 格式訊息"
+    },
+    {
+      "hash": "98f80a2f5b7e9da9cee4c92424cdc540",
+      "translation": "## v5 範式更新（4.1.0）\n\n- **BaseConverter 繼承**：轉換器公共欄位由框架 build_base_event 建構\n- **spawn_background 任務歸屬**：帳戶連接任務改用 runtime.spawn_background\n- **框架軟依賴**：運行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌\n- Request DSL 暫緩（好友申請審批 API 待平台提供）\n\n---\n\n### 已對接平台能力\n\n- **事件**：消息編輯/撤回/轉發/已讀（ideaura_message_*）、好友申請（friend_request）、好友增刪（friend_increase/decrease）、在線狀態（friend_online/offline）\n- **發送**：Text / Image / Markdown / Raw_ob12（鏈式 Reply/At/AtAll 修飾）\n- **未對接**：好友申請審批 API（平台暫未提供）、Api DSL（平台 REST 面待開放後補充）\n\n---"
     },
     {
       "hash": "8c46bdfd3a1bffee8e956d87d7b3aabe",

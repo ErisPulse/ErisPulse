@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "hash": "c8d1e938deeefd08c50aa9da8cba1192",
+  "file_hash": "c8d1e938deeefd08c50aa9da8cba1192",
+  "translated_at": "2026-09-12T10:28:53.742697",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "3b33559c4cde3c50c0835dd578a833a3",
+      "translation": "# Sandbox プラットフォームの機能ドキュメント\n\nSandboxAdapter は ErisPulse に内蔵されたサンドボックスアダプタで、ローカル開発およびモジュールのデバッグに使用されます。本物のプラットフォームを必要とせず、メッセージの送受信をシミュレートできます。\n\n---"
+    },
+    {
+      "hash": "6e2010b0836c4c98adf0292ff78ea9b2",
+      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 4.1.0\n- メンテナー: ErisPulse"
+    },
+    {
+      "hash": "2add3b0a800daa6ba7f573b133226bfe",
+      "translation": "## 基本情報\n\n- プラットフォーム概要：ローカルサンドボックス環境。仮想ユーザー/グループ、Web デバッグパネル、メッセージの永続化を提供\n- アダプタ名：SandboxAdapter\n- プラットフォーム識別子：`sandbox`\n- 単一アカウント設計（ローカルデバッグ用）\n- フレームワーク要件：ソフト依存 `ErisPulse>=2.7.1`（実行時検出による警告、強制ではない）"
+    },
+    {
+      "hash": "5c8ab684c26414cdb4953b80df19f29c",
+      "translation": "## v5 フレームワークの更新（4.1.0）\n\n- **Api DSL 最小化**：`get_self_info` / `get_status` / `get_version` / `get_supported_actions`\n- **spawn_background によるタスクの割り当て**：ハートビートタスクは `runtime.spawn_background` を使用\n- **フレームワークのソフト依存**：`ErisPulse>=2.7.1` の実行時検出と警告\n- インポートパスを `Core.Bases` に更新（BaseConfig）"
+    },
+    {
+      "hash": "6c62d2bacd7ee950e74cd2d5c6c40e43",
+      "translation": "## 標準 API アクションの例\n\n```python\nfrom ErisPulse import sdk\nsandbox = sdk.adapter.get(\"sandbox\")\n\nresult = await sandbox.Api.get_self_info()   # サンドボックスボットのアイデンティティ\nresult = await sandbox.Api.get_status()\nresult = await sandbox.Api.get_supported_actions()\n```"
+    },
+    {
+      "hash": "950ff6ddaab682b592bd7f92b398dfaf",
+      "translation": "## 使用方法\n\n- サンドボックスは仮想ユーザーとグループを提供し、モジュールは本物のプラットフォームのようにメッセージの送受信が可能です。\n- Web デバッグパネルを使用して、手動でメッセージを送信してモジュールの処理ロジックをトリガーできます。\n- メッセージデータは永続的に保存され、再起動後も復元可能です。"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "hash": "2bfa9b84dda7dd3a6022cba97406e012",
+  "file_hash": "2bfa9b84dda7dd3a6022cba97406e012",
+  "translated_at": "2026-09-12T10:30:48.185940",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "801ea581e858921e6eed2a28181710d8",
+      "translation": "# Terminal プラットフォーム機能ドキュメント\n\nTerminalAdapter はコマンドラインターミナルのアダプターです。ターミナルはチャットセッションとして機能し、ローカルでのモジュールロジックの迅速なデバッグに使用されます。\n\n---"
+    },
+    {
+      "hash": "355ff45b64d1e76fde9e42ae8f563746",
+      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 1.1.0\n- メンテナー: ErisPulse"
+    },
+    {
+      "hash": "e1c9704c47ba4a2be3d3c6120e628e0c",
+      "translation": "## 基本情報\n\n- プラットフォーム概要：ローカルのコマンドラインをチャットセッションとして扱い、stdin からの入力はメッセージとして扱い、モジュールからの返信はターミナルに直接出力される\n- アダプタ名：TerminalAdapter\n- プラットフォーム識別子：`terminal`\n- 単一アカウント設計（ローカルデバッグ用）\n- フレームワーク要件：ソフト依存 `ErisPulse>=2.7.1`（実行時に検出して警告を表示するが、強制ではない）"
+    },
+    {
+      "hash": "41f08af72b2159f33630119d0dac06a0",
+      "translation": "## 設定説明\n\n```toml\n[Terminal]\nbot_id = \"terminal_bot\"   # サンドボックス用のロボットID\nbot_name = \"Terminal\"     # 表示名\n```"
+    },
+    {
+      "hash": "2a934798be3daee3ed96232be0615395",
+      "translation": "## v5 フレームワークの更新 (1.1.0)\n\n- **spawn_background によるタスクの割り当て**：stdin 読み取りループを `runtime.spawn_background` に変更\n- **フレームワークのソフト依存**：`ErisPulse>=2.7.1` の実行時検出と警告メッセージの表示；起動時にバージョンログを出力"
+    },
+    {
+      "hash": "4144a6370fce61b9fb24e28425de1a1f",
+      "translation": "## 使用方法\n\n```python\n# モジュールは通常通りメッセージをリッスンします\nfrom ErisPulse.Core.Event import message\n\n@message.on_message()\nasync def handle(event):\n    if event.get(\"platform\") == \"terminal\":\n        await event.reply(\"受信：\" + event.get_text())\n```\n\n- ターミナルに入力されたテキストはユーザーのメッセージとなり、複数行に対応します（空行で終了）\n- 開発段階でモジュールのロジックを迅速に検証する場合に適しており、実際のプラットフォームに接続する必要はありません"
+    }
+  ]
+}

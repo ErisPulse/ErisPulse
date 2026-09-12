@@ -6,7 +6,7 @@ KookAdapter is an adapter built on the Kook (Kaihei La) Bot WebSocket protocol, 
 
 ## Document Information
 
-- Corresponding Module Version: 0.1.0
+- Corresponding Module Version: 4.1.0
 - Maintainer: ShanFish
 
 ## Basic Information
@@ -50,6 +50,50 @@ enabled = true
 **API Environment:**
 - Kook API base address: `https://www.kookapp.cn/api/v3`
 - WebSocket gateway is dynamically obtained through API: `POST /gateway/index`
+
+## v5 Paradigm Update (4.1.0)
+
+This adapter has completed alignment with the v5 paradigm (incremental upgrade, API compatible):
+
+- **BaseConverter Inheritance**: Common fields of converters are built by the framework `build_base_event`
+- **Api DSL**: Standard API action mapping (see below)
+- **Standard keyboard segment**: `{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}}` Text + keyboard automatically combine into Kook card messages (section + action-group); .Keyboard(rows) decorator accepts generic structure
+- **spawn_background task ownership**: Connection tasks use runtime.spawn_background
+- **Framework soft dependency**: Runtime detection of ErisPulse>=2.7.1 with prompt; version logs output on startup
+
+### Standard API Actions
+
+```python
+from ErisPulse import sdk
+kook = sdk.adapter.get("kook")
+
+result = await kook.Api.get_self_info()              # GET /users/@me
+result = await kook.Api.get_user_info(user_id)       # POST /user/view
+result = await kook.Api.get_guild_info(guild_id)     # POST /guild/view
+result = await kook.Api.get_guild_list()             # POST /guild/list
+result = await kook.Api.get_channel_info(channel_id) # POST /channel/view
+result = await kook.Api.get_channel_list(guild_id)   # POST /channel/list
+await kook.Api.delete_message(msg_id)                # POST /message/delete
+result = await kook.Api.Using("main").get_self_info()
+```
+
+### Buttons (keyboard)
+
+```python
+rows = [[{"label": "Option A", "type": "callback", "data": "vote:A"},
+         {"label": "Website",  "type": "link",     "data": "https://example.com"}]]
+await kook.Send.To("channel", channel_id).Keyboard(rows).Text("Please select")
+# Text and buttons automatically combine into Kook card messages (section + action-group)
+
+# Button click callback (standard fields)
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_button(event):
+    if event.get("platform") == "kook" and event.get("button_data"):
+        data = event["button_data"]
+```
+---
 
 ## Supported Message Sending Types
 

@@ -1,17 +1,17 @@
 # Email Platform Feature Documentation
 
-EmailAdapter is a mail adapter based on the SMTP/IMAP protocols, supporting mail sending, receiving, and processing.
+EmailAdapter is an email adapter based on the SMTP/IMAP protocol, supporting email sending, receiving, and processing.
 
 ---
 
-## Documentation Information
+## Document Information
 
-- Corresponding Module Version: 4.1.0
+- Corresponding Module Version: 4.2.0
 - Maintainer: ErisPulse
 
 ## Basic Information
 
-- Platform Overview: A universal adapter for sending and receiving emails via standard SMTP/IMAP protocols
+- Platform Overview: A general-purpose adapter for sending and receiving emails via standard SMTP/IMAP protocols
 - Adapter Name: EmailAdapter
 - Multi-account Support: Supports configuring multiple email accounts simultaneously
 - Connection Method: IMAP long-polling for receiving + SMTP for sending
@@ -35,7 +35,7 @@ EmailAdapter is a mail adapter based on the SMTP/IMAP protocols, supporting mail
 
 ### Account Configuration (EmailAdapter.accounts)
 
-Each account corresponds to a separate email. Account-level configurations take precedence over global configurations.
+Each account corresponds to an independent email. Account-level configurations take precedence over global configurations.
 
 ```toml
 [EmailAdapter.accounts.default]
@@ -55,15 +55,32 @@ password = "another-password"
 enabled = true
 ```
 
+## v5 Paradigm Update (4.2.0)
+
+- **Api DSL Minimal Set**: get_self_info (email address) / get_status / get_version / get_supported_actions
+- **spawn_background Task Ownership**: IMAP polling tasks now use runtime.spawn_background
+- **Framework Soft Dependency**: Runtime checks for ErisPulse>=2.7.1 and prompts; version logs are output on startup
+- Import paths updated to Core.Bases; _load_accounts retained (global default values merged into adapter-specific logic)
+
+---
+
+### Platform Capabilities Already Integrated
+
+- **Receiving**: IMAP polling for receiving messages (body/HTML/attachments parsed into message segments), incremental unread detection
+- **Sending**: SMTP sending (Subject/Text/Html/Cc/Bcc/ReplyTo/Attachment), supports multiple accounts
+- **API**: Account information and runtime status (minimal set); concepts like email recall/group are not applicable
+
+---
+
 ## Supported Message Sending Types
 
-All sending methods are implemented through a fluent (chained) syntax:
+All sending methods are implemented using a chainable syntax:
 
 ```python
 from ErisPulse.Core import adapter
 mail = adapter.get("email")
 
-# Simple plain text email
+# Simple text email
 await mail.Send.To("private", "to@example.com").Subject("Test").Text("Content")
 
 # HTML email with attachments
@@ -79,29 +96,29 @@ await mail.Send.To("private", "to@example.com").Raw_ob12([
     {"type": "file", "data": {"file": "/path/to/attachment.pdf"}},
 ])
 
-# Specify sending account (for multiple accounts)
+# Specify sending account (multi-account)
 await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
 ```
 
-> Note: When using fluent syntax, parameter methods (Subject / Cc / Attachment, etc.) must be called before the sending method (Text / Html / Raw_ob12).
+> Note: When using chainable syntax, parameter methods (Subject / Cc / Attachment, etc.) must be called before the sending method (Text / Html / Raw_ob12).
 
 ### Basic Sending Methods
 
 | Method | Description |
 |--------|-------------|
-| `.Text(text: str)` | Send plain text email |
-| `.Html(html: str)` | Send HTML formatted email |
-| `.Raw_ob12(message, **kwargs)` | Send OneBot12 formatted message |
+| `.Text(text: str)` | Send a plain text email |
+| `.Html(html: str)` | Send an HTML formatted email |
+| `.Raw_ob12(message, **kwargs)` | Send a OneBot12 formatted message |
 
-### Fluent Modifier Methods (return self, can be combined)
+### Chainable Modifier Methods (Return self, can be combined)
 
 | Method | Description |
 |--------|-------------|
-| `.Subject(subject: str)` | Set email subject |
-| `.Cc(emails: Union[str, List[str]])` | Set CC recipients |
-| `.Bcc(emails: Union[str, List[str]])` | Set BCC recipients |
-| `.ReplyTo(email: str)` | Set reply-to address |
-| `.Attachment(file, filename: str = None)` | Add attachment |
+| `.Subject(subject: str)` | Set the email subject |
+| `.Cc(emails: Union[str, List[str]])` | Set the CC addresses |
+| `.Bcc(emails: Union[str, List[str]])` | Set the BCC addresses |
+| `.ReplyTo(email: str)` | Set the reply-to address |
+| `.Attachment(file, filename: str = None)` | Add an attachment |
 
 ### OB12 Message Segment Reverse Conversion (Raw_ob12)
 
@@ -118,13 +135,13 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
 
 ### Core Differences
 
-1. All email events are of `message` type, with `detail_type` fixed as `private`.
-2. `user_id` is the sender's **pure email address**, and `user_nickname` is the sender's display name.
-3. The `message` message segment is in standard OB12 format (text segment + file segment).
-4. The email subject is obtained via the `email_subject` extension field.
-5. The complete raw data is preserved in the `email_raw` field.
+1. All email events are of `message` type, with `detail_type` fixed as `private`
+2. `user_id` is the sender's **pure email address**, `user_nickname` is the sender's display name
+3. `message` message segments are in standard OB12 format (text segment + file segment)
+4. The email subject is obtained via the `email_subject` extension field
+5. The complete original data is preserved in the `email_raw` field
 
-### New Email Event (`email_new`)
+### New Email Event (email_new)
 
 ```json
 {
@@ -145,13 +162,13 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
       }
     }
   ],
-  "alt_message": "Email subject",
+  "alt_message": "Email Subject",
   "user_id": "sender@example.com",
   "user_nickname": "Saber"
 }
 ```
 
-### Email with Attachment
+### Email with Attachments
 
 ```json
 {
@@ -174,9 +191,9 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
 }
 ```
 
-### Reply Email Event (`email_reply`)
+### Reply Email Event (email_reply)
 
-When an email contains the `References` or `In-Reply-To` header, `email_raw_type` is set to `email_reply`:
+When the email contains `References` or `In-Reply-To` headers, `email_raw_type` is `email_reply`:
 
 ```json
 {
@@ -188,15 +205,15 @@ When an email contains the `References` or `In-Reply-To` header, `email_raw_type
 }
 ```
 
-## Field Descriptions
+## Extension Field Descriptions
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `email_raw` | dict | Complete raw email data (subject/from/to/date/cc/bcc/text_content/html_content/attachments, etc.) |
-| `email_raw_type` | str | Raw event type: `email_new` (new email) or `email_reply` (replied email) |
+| `email_raw` | dict | Complete original email data (subject/from/to/date/cc/bcc/text_content/html_content/attachments, etc.) |
+| `email_raw_type` | str | Original event type: `email_new` (new email) or `email_reply` (reply email) |
 | `email_subject` | str | Email subject (convenient access) |
-| `email_from` | str | Sender's raw email address (convenient access) |
-| `attachments` | list | List of attachment data (includes binary `data` field for backward compatibility) |
+| `email_from` | str | Sender's pure email address (convenient access) |
+| `attachments` | list | List of attachment data (including binary `data` field, backward compatible) |
 
 ## Standard Event Examples
 
@@ -260,7 +277,7 @@ When an email contains the `References` or `In-Reply-To` header, `email_raw_type
 }
 ```
 
-## Return Value of Send Method
+## Sending Method Return Values
 
 ```json
 {
@@ -288,7 +305,7 @@ from ErisPulse.Core.Event import message
 async def handle_email(event):
     if event.get("platform") != "email":
         return
-    # Sender's pure email address
+    # Pure email address of sender
     sender = event["user_id"]              # sender@example.com
     
     # Sender's display name
@@ -300,7 +317,7 @@ async def handle_email(event):
     # Plain text body (first text segment)
     text = event.get_text()
     
-    # Full raw data
+    # Complete original data
     raw = event.get("email_raw", {})
     html = raw.get("html_content", "")
     

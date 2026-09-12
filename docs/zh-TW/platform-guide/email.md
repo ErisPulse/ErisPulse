@@ -6,7 +6,7 @@ EmailAdapter 是基於 SMTP/IMAP 協議的郵件適配器，支援郵件發送�
 
 ## 文件資訊
 
-- 對應模組版本: 4.1.0
+- 對應模組版本: 4.2.0
 - 維護者: ErisPulse
 
 ## 基本資訊
@@ -54,6 +54,23 @@ email = "backup@example.com"
 password = "another-password"
 enabled = true
 ```
+
+## v5 範式更新（4.2.0）
+
+- **Api DSL 最小集**：get_self_info（電子信箱）/get_status/get_version/get_supported_actions
+- **spawn_background 任務歸屬**：IMAP 輪詢任務改用 runtime.spawn_background
+- **框架軟依賴**：運行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌
+- 導入路徑更新至 Core.Bases；_load_accounts 保留（全域預設值合併為該適配器特有邏輯）
+
+---
+
+### 已對接平台能力
+
+- **接收**：IMAP 輪詢收信（正文/HTML/附件解析為訊息段），未讀增量檢測
+- **发送**：SMTP 發信（Subject/Text/Html/Cc/Bcc/ReplyTo/Attachment），支援多帳戶
+- **API**：帳戶資訊與運行狀態（最小集）；郵件撤回/群組等概念不適用
+
+---
 
 ## 支援的消息傳送類型
 

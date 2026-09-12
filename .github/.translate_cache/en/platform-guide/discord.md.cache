@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "9b88e30ee269193f9debe3094132091c",
-  "file_hash": "9b88e30ee269193f9debe3094132091c",
-  "translated_at": "2026-09-07T11:34:43.012309",
+  "hash": "bb13f7935deecc00c5d4f341f0db695f",
+  "file_hash": "bb13f7935deecc00c5d4f341f0db695f",
+  "translated_at": "2026-09-12T10:22:01.609233",
   "target_lang": "en",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Discord Platform Feature Documentation\n\nDiscordAdapter is an adapter built on the Discord Gateway (WebSocket) and REST API v10 protocol, integrating the core functionalities of Discord Bots and providing unified event handling and message operation interfaces.\n\n---"
     },
     {
-      "hash": "caebdec59b6b4c4ea89ffb60302d4c25",
-      "translation": "## Documentation Information\n\n- Corresponding Module Version: 4.1.0\n- Maintainer: ErisPulse\n- Discord API Version: v10"
+      "hash": "9440a345968aaeaa7d1faab44e6cb430",
+      "translation": "## Documentation Information\n\n- Corresponding Module Version: 4.2.0\n- Maintainer: ErisPulse\n- Discord API Version: v10"
     },
     {
       "hash": "c03cd78761a0dee8587daba3fd6f14ee",
@@ -20,6 +20,10 @@
     {
       "hash": "8e27712d8b672919ffd33bf01a149ead",
       "translation": "## Configuration\n\nDiscordAdapter supports multi-account configuration, with each account corresponding to an independent Discord Bot.\n\n```toml\n# config.toml\n\n# Account 1\n[DiscordAdapter.accounts.default]\ntoken = \"YOUR_BOT_TOKEN\"       # Discord Bot Token (required)\nintents = 33281                 # Gateway Intents (optional, default: 33281)\nenabled = true                  # Whether to enable (optional, default: true)\n\n# Account 2\n[DiscordAdapter.accounts.bot2]\ntoken = \"ANOTHER_BOT_TOKEN\"\nintents = 33281\nenabled = true\n```\n\n**Configuration Item Description (per account):**\n\n- `token`: Discord Bot Token (required), obtained from [Discord Developer Portal](https://discord.com/developers/applications)\n- `intents`: Gateway Intents bitmask (optional, default: `33281`), determines the types of events the Bot subscribes to\n- `bot_id`: Bot's user ID (optional, automatically retrieved at runtime from the READY event, no need to manually fill)\n- `enabled`: Whether to enable this account (optional, default: `true`)\n\n### Gateway Intents\n\nIntents use a bitmask, calculated as the bitwise OR (`|`) of each Intent value:\n\n| Intent | Bit | Value | Description | Privileged |\n|-------|------|------|------|------|\n| GUILDS | `1 << 0` | 1 | Server creation/deletion/update, channel, role changes | No |\n| GUILD_MEMBERS | `1 << 1` | 2 | Member join/leave/update | Yes |\n| GUILD_MESSAGES | `1 << 9` | 512 | Server message sending/receiving | No |\n| MESSAGE_CONTENT | `1 << 15` | 32768 | Message content (empty if this Intent is not present) | Yes |\n\nDefault value `33281` = `GUILDS(1) | GUILD_MESSAGES(512) | MESSAGE_CONTENT(32768)`.\n\n> **Note**: Privileged Intents must be enabled in Discord Developer Portal → Bot → Privileged Gateway Intents. If the Bot is in more than 100 servers, Discord approval is also required.\n\n**API Environment:**\n- Discord REST API base URL: `https://discord.com/api/v10`\n- Gateway WebSocket URL: Dynamically retrieved via `GET /gateway/bot`, typically `wss://gateway.discord.gg/?v=10&encoding=json`"
+    },
+    {
+      "hash": "b2c05becb7ba56a2059e1486bdf8b4d8",
+      "translation": "## v5 Paradigm Update (4.2.0)\n\nThis adapter has completed alignment with the v5 paradigm (incremental upgrade, API compatible):\n\n- **BaseConverter Inheritance**: Common fields of the converter are built by the framework `build_base_event`\n- **Api DSL**: Standard API action mapping (see below)\n- **Standard keyboard segment**: Converted to Discord components (action row + buttons); .Keyboard(rows) decorator accepts a generic structure\n- **Standard interaction callback fields**: The INTERACTION_CREATE event includes interaction_id / button_data\n- **spawn_background task ownership**: Connection tasks now use runtime.spawn_background\n- **Framework soft dependency**: Runtime detection of ErisPulse>=2.7.1 with prompts; version logs output on startup\n\n### Standard API Actions\n\n```python\nfrom ErisPulse import sdk\ndiscord = sdk.adapter.get(\"discord\")\n\nresult = await discord.Api.get_self_info()                # GET /users/@me\nresult = await discord.Api.get_user_info(user_id)         # GET /users/{id}\nresult = await discord.Api.get_guild_info(guild_id)       # GET /guilds/{id}\nresult = await discord.Api.get_guild_list()               # GET /users/@me/guilds\nresult = await discord.Api.get_channel_list(guild_id)     # GET /guilds/{id}/channels\nresult = await discord.Api.get_guild_member_info(gid, uid)\nawait discord.Api.delete_message(message_id)              # channel_id auto-completed in the registration table\nawait discord.Api.leave_guild(guild_id)\nresult = await discord.Api.Using(\"main\").get_self_info()\n```\n\n### Buttons (keyboard / components)\n\n```python\nrows = [[{\"label\": \"Click\", \"type\": \"callback\", \"data\": \"btn:1\"},\n         {\"label\": \"Website\", \"type\": \"link\", \"data\": \"https://example.com\"}]]\nawait discord.Send.To(\"channel\", channel_id).Keyboard(rows).Text(\"Please Select\")\n# Automatically converts components: callback → custom_id / link → url\n```\n\n---"
     },
     {
       "hash": "6d164d5b69c475e7ff249535d02fef8b",

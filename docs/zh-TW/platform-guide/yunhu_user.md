@@ -6,7 +6,7 @@ YunhuUserAdapter 是基於雲湖使用者帳戶協定建構的適配器，透過
 
 ## 文件資訊
 
-- 對應模組版本: 1.4.0
+- 對應模組版本: 4.2.0
 - 維護者: wsu2059
 
 ## 基本資訊
@@ -18,6 +18,80 @@ YunhuUserAdapter 是基於雲湖使用者帳戶協定建構的適配器，透過
 - OneBot12 兼容：支援發送 OneBot12 格式訊息
 - 通訊方式：透過電子信箱登入獲取 token，使用 WebSocket 接收事件，HTTP + Protobuf 協議發送訊息
 - 會話類型：支援私聊（user）、群聊（group）、機器人會話（bot）
+
+## v5 範式更新（4.2.0）
+
+- **BaseConverter 繼承**；**spawn_background 任務歸屬**（WS 監聽任務）
+- **用戶 API 全集**（基於 yhchatAPI full.proto / v1 端點，protobuf over HTTP）：
+  - 用戶：get_user / edit_nickname / edit_avatar
+  - 好友：通訊錄 / 申請列表 / 申請 / 同意 / 忽略 / 刪除
+  - 群組：群組資訊 / 成員列表 / 建立 / 解散 / 邀請 / 移出 / 禁言 / 机器人列表
+  - 會話：會話列表；訊息：列表 / 撤回 / 按鈕上報
+- **框架軟依賴**：執行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌
+
+## 已對接平台功能清單
+
+### 事件接收（WebSocket，protobuf 編碼）
+
+| WS cmd | 事件 | 說明 |
+|--------|------|------|
+| `push_message` | `message` | 私聊/群聊/Bot 會話消息（文本/HTML/Markdown/圖片/視頻/語音/文件/表情/表單/文章/貼紙/按鈕/A2UI） |
+| `edit_message` | `notice` (`message_edit`) | 消息編輯通知 |
+| `file_send_message` | `notice` (`yunhu_user_file_send`) | 超級文件分享 |
+| `bot_board_message` | `notice` (`yunhu_user_bot_board`) | 機器人公告看板 |
+
+### Api DSL 方法對照（ YunhuHTTPClient → 用戶API v1 端點 ）
+
+| 分類 | Api 方法 | 端點 | 說明 |
+|------|---------|------|------|
+| 賬戶 | `get_self_info()` | `/user/info` | 登錄用戶信息（暱稱/頭像/user_id） |
+| 用戶 | `get_user(user_id)` | `/user/get-user` | 用戶詳細信息 |
+| 用戶 | `edit_nickname(nickname)` | `/user/edit-nickname` | 修改自己暱稱 |
+| 用戶 | `edit_avatar(url)` | `/user/edit-avatar` | 修改自己頭像 |
+| 好友 | `get_friend_address_book(md5)` | `/friend/address-book-list` | 通訊錄（游標翻頁） |
+| 好友 | `get_friend_requests()` | `/friend/request-list` | 好友/加群申請列表 |
+| 好友 | `friend_apply(user_id, desc)` | `/friend/apply` | 申請添加好友 |
+| 好友 | `friend_agree_apply(user_id)` | `/friend/agree-apply` | 同意好友申請 |
+| 好友 | `friend_ignore_apply(user_id)` | `/friend/ignore-apply` | 忽略好友申請 |
+| 好友 | `friend_delete(user_id)` | `/friend/delete-friend` | 刪除好友 |
+| 群組 | `get_group_info(group_id)` | `/group/info` | 群組信息 |
+| 群組 | `get_group_member_list(group_id)` | `/group/list-member` | 群成員列表（支援關鍵字） |
+| 群組 | `create_group(name, ...)` | `/group/create-group` | 創建群組 |
+| 群組 | `dismiss_group(group_id)` | `/group/dismiss-group` | 解散群組 |
+| 群組 | `group_invite(group_id, user_ids)` | `/group/invite` | 邀請進群 |
+| 群組 | `group_remove_member(group_id, user_id)` | `/group/remove-member` | 移出群成員 |
+| 群組 | `group_gag_member(group_id, user_id, 秒)` | `/group/gag-member` | 禁言群成員（0=解除） |
+| 群組 | `get_group_bot_list(group_id)` | `/group/bot-list` | 群內機器人列表 |
+| 會話 | `get_conversation_list(md5)` | `/conversation/list` | 會話列表（游標翻頁） |
+| 消息 | `get_message_list(chat_id, chat_type, ...)` | `/msg/list-message` | 消息列表（多種翻頁變體見 HTTP 客戶端） |
+| 消息 | `delete_message(msg_id, chat_id, chat_type)` | `/msg/recall-msg` | 撤回消息（批量撤回見 HTTP 客戶端） |
+| 消息 | `button_report(...)` | `/msg/button-report` | 按鈕點擊上報 |
+| 元動作 | `get_status` / `get_version` / `get_supported_actions` | - | 運行狀態/版本/支援動作 |
+
+### 尚未對接（端點已知，full.proto 消息齊備，可按需擴展）
+
+- 用戶：驗證碼登入、勳章、金豆記錄、綁定手機/郵箱、通知設定、用戶數據存取
+- 好友：免打擾（no-notify）、刪除申請記錄
+- 群組：指令列表、分類、推薦、直播間、編輯群信息/群暱稱/關鍵字、入群自動審批、群文件限制、事件 SSE
+- 會話：置頂/排序/刪除、免打擾
+- 消息：轉發、A2UI 提交、消息列表圖片獲取、文件下載記錄
+- 群標籤：list / relate / relate-cancel / create / edit / delete / members（端點 `/group-tag/*`）
+
+> 擴展方式：在 `YunhuHTTPClient` 中按既有模式追加方法（`_proto_request` / `_json_request` 通用封裝），再在 `Api` 類暴露即可。端點與消息定義參考 `yhchatAPI/src/api/v1/*.md` 與 `yhchatAPI/src/full.proto`。
+
+### 用戶API示例
+
+```python
+from ErisPulse import sdk
+yunhu_user = sdk.adapter.get("yunhu_user")
+
+result = await yunhu_user.Api.get_self_info()
+result = await yunhu_user.Api.get_friend_requests()          # 好友申請列表
+await yunhu_user.Api.friend_agree_apply(user_id)             # 同意好友申請
+result = await yunhu_user.Api.get_group_member_list(group_id)
+result = await yunhu_user.Api.get_conversation_list()        # 會話列表
+await yunhu_user.Api.delete_message(msg_id, chat_id, chat_type)  # 撤回
+```
 
 ## 支援的消息發送類型
 

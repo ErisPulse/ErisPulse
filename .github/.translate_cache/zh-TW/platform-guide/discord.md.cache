@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "9b88e30ee269193f9debe3094132091c",
-  "file_hash": "9b88e30ee269193f9debe3094132091c",
-  "translated_at": "2026-09-07T11:33:48.548697",
+  "hash": "bb13f7935deecc00c5d4f341f0db695f",
+  "file_hash": "bb13f7935deecc00c5d4f341f0db695f",
+  "translated_at": "2026-09-12T10:23:26.964244",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Discord 平台特性文件\n\nDiscordAdapter 是基於 Discord Gateway (WebSocket) 和 REST API v10 協議建構的適配器，整合了 Discord Bot 的核心功能，提供統一的事件處理和訊息操作介面。\n\n---"
     },
     {
-      "hash": "caebdec59b6b4c4ea89ffb60302d4c25",
-      "translation": "## 文件資訊\n\n- 對應模組版本: 4.1.0\n- 維護者: ErisPulse\n- Discord API 版本: v10"
+      "hash": "9440a345968aaeaa7d1faab44e6cb430",
+      "translation": "## 文件資訊\n\n- 對應模組版本: 4.2.0\n- 維護者: ErisPulse\n- Discord API 版本: v10"
     },
     {
       "hash": "c03cd78761a0dee8587daba3fd6f14ee",
@@ -20,6 +20,10 @@
     {
       "hash": "8e27712d8b672919ffd33bf01a149ead",
       "translation": "## 配置說明\n\nDiscordAdapter 支援多帳戶設定，每個帳戶對應一個獨立的 Discord Bot。\n\n```toml\n# config.toml\n\n# 帳戶1\n[DiscordAdapter.accounts.default]\ntoken = \"YOUR_BOT_TOKEN\"       # Discord Bot Token（必填）\nintents = 33281                 # Gateway Intents（可選，預設 33281）\nenabled = true                  # 是否啟用（可選，預設 true）\n\n# 帳戶2\n[DiscordAdapter.accounts.bot2]\ntoken = \"ANOTHER_BOT_TOKEN\"\nintents = 33281\nenabled = true\n```\n\n**設定項目說明（每個帳戶）：**\n\n- `token`：Discord Bot Token（必填），從 [Discord Developer Portal](https://discord.com/developers/applications) 獲取\n- `intents`：Gateway Intents 位遮罩（可選，預設 `33281`），決定 Bot 訂閱的事件類型\n- `bot_id`：Bot 的使用者 ID（可選，執行時從 READY 事件自動獲取，無需手動填寫）\n- `enabled`：是否啟用該帳戶（可選，預設 `true`）\n\n### Gateway Intents\n\nIntents 使用位遮罩，計算方式為各 Intent 值按位或（`|`）：\n\n| Intent | 位 | 值 | 說明 | Privileged |\n|-------|------|------|------|------|\n| GUILDS | `1 << 0` | 1 | 伺服器建立/刪除/更新、頻道、角色變更 | 否 |\n| GUILD_MEMBERS | `1 << 1` | 2 | 成員加入/離開/更新 | 是 |\n| GUILD_MESSAGES | `1 << 9` | 512 | 伺服器訊息收發 | 否 |\n| MESSAGE_CONTENT | `1 << 15` | 32768 | 訊息內容（無此 Intent 時 content 為空） | 是 |\n\n預設值 `33281` = `GUILDS(1) | GUILD_MESSAGES(512) | MESSAGE_CONTENT(32768)`。\n\n> **注意**：Privileged Intents 需在 Discord Developer Portal → Bot → Privileged Gateway Intents 中開啟。如果 Bot 在超過 100 個伺服器中，還需透過 Discord 審核。\n\n**API 環境：**\n- Discord REST API 基礎位址：`https://discord.com/api/v10`\n- Gateway WebSocket 位址：透過 `GET /gateway/bot` 動態獲取，通常為 `wss://gateway.discord.gg/?v=10&encoding=json`"
+    },
+    {
+      "hash": "b2c05becb7ba56a2059e1486bdf8b4d8",
+      "translation": "## v5 範式更新（4.2.0）\n\n本適配器已完成 v5 範式對齊（增量升級，API 兼容）：\n\n- **BaseConverter 繼承**：轉換器公共欄位由框架 `build_base_event` 構建\n- **Api DSL**：標準 Api 動作映射（見下）\n- **標準 keyboard 段**：轉換為 Discord components（action row + buttons）；.Keyboard(rows) 修飾器接受通用結構\n- **互動回調標準欄位**：INTERACTION_CREATE 事件包含 interaction_id / button_data\n- **spawn_background 任務歸屬**：連接任務改用 `runtime.spawn_background`\n- **框架軟依賴**：運行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌\n\n### 標準 Api 動作\n\n```python\nfrom ErisPulse import sdk\ndiscord = sdk.adapter.get(\"discord\")\n\nresult = await discord.Api.get_self_info()                # GET /users/@me\nresult = await discord.Api.get_user_info(user_id)         # GET /users/{id}\nresult = await discord.Api.get_guild_info(guild_id)       # GET /guilds/{id}\nresult = await discord.Api.get_guild_list()               # GET /users/@me/guilds\nresult = await discord.Api.get_channel_list(guild_id)     # GET /guilds/{id}/channels\nresult = await discord.Api.get_guild_member_info(gid, uid)\nawait discord.Api.delete_message(message_id)              # 登記表自動補全 channel_id\nawait discord.Api.leave_guild(guild_id)\nresult = await discord.Api.Using(\"main\").get_self_info()\n```\n\n### 按鈕（keyboard / components）\n\n```python\nrows = [[{\"label\": \"點擊\", \"type\": \"callback\", \"data\": \"btn:1\"},\n         {\"label\": \"官網\",  \"type\": \"link\",     \"data\": \"https://example.com\"}]]\nawait discord.Send.To(\"channel\", channel_id).Keyboard(rows).Text(\"請選擇\")\n# 自動轉換為 components: callback → custom_id / link → url\n```\n\n---"
     },
     {
       "hash": "6d164d5b69c475e7ff249535d02fef8b",

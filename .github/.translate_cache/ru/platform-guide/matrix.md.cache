@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "8d1b7adff69eab6161f0fa4f923c1473",
-  "file_hash": "8d1b7adff69eab6161f0fa4f923c1473",
-  "translated_at": "2026-09-07T12:01:11.964832",
+  "hash": "eac68d6511353e2af7f08e8a97ac33e9",
+  "file_hash": "eac68d6511353e2af7f08e8a97ac33e9",
+  "translated_at": "2026-09-12T10:21:00.009785",
   "target_lang": "ru",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Документация по функциям платформы Matrix\n\nMatrixAdapter - это адаптер, построенный на основе [протокола Matrix](https://spec.matrix.org/), который объединяет все основные модули протокола Matrix и предоставляет единый интерфейс для обработки событий и операций с сообщениями.\n\n---"
     },
     {
-      "hash": "6e2010b0836c4c98adf0292ff78ea9b2",
-      "translation": "## Информация о документации\n\n- Версия соответствующего модуля: 4.1.0\n- Ответственный: ErisPulse"
+      "hash": "d5769e0ae79f68cdc351193894aba07b",
+      "translation": "## Информация о документации\n\n- Соответствующая версия модуля: 4.2.0\n- Ответственный: ErisPulse"
     },
     {
       "hash": "1eb942372d9163e41bc7f5ed2bca28b2",
@@ -20,6 +20,10 @@
     {
       "hash": "457aecd7db9f23d2ef2213c809d1c8dc",
       "translation": "## Конфигурация\n\nMatrixAdapter поддерживает конфигурацию нескольких аккаунтов, каждый аккаунт имеет собственную конфигурацию сервера homeserver и данных аутентификации.\n\n```toml\n# config.toml\n# Аккаунт 1\n[Matrix_Adapter.accounts.default]\nhomeserver = \"https://matrix.org\"          # Адрес сервера Matrix (обязательно)\naccess_token = \"YOUR_ACCESS_TOKEN\"          # Токен доступа (обязательно, либо с user_id+password)\nuser_id = \"\"                                # ID пользователя Matrix (например @bot:matrix.org)\npassword = \"\"                               # Пароль пользователя Matrix\nauto_accept_invites = true                  # Автоматически принимать приглашения в комнаты (опционально, по умолчанию true)\nenabled = true                              # Включить аккаунт (опционально, по умолчанию true)\n\n# Аккаунт 2\n[Matrix_Adapter.accounts.bot2]\nhomeserver = \"https://matrix.example.com\"\naccess_token = \"ANOTHER_TOKEN\"\nenabled = true\n```\n\n> Совместимость со старой конфигурацией: если обнаружена старая одиночная конфигурация `[Matrix_Adapter]` (с access_token), она автоматически переносится в `accounts.default`.\n\n**Описание параметров (для каждого аккаунта):**\n- `homeserver`: Адрес сервера Matrix (обязательно), по умолчанию `https://matrix.org`\n- `access_token`: Токен доступа, можно получить из клиента Matrix. Если токен уже известен, просто введите его\n- `user_id`: ID пользователя Matrix (например `@bot:matrix.org`), используется вместе с `password` для входа\n- `password`: Пароль пользователя Matrix, используется для автоматического входа и получения access_token\n- `auto_accept_invites`: Автоматически принимать приглашения в комнаты, по умолчанию `true`\n- `enabled`: Включить этот аккаунт (опционально, по умолчанию true)\n\n**Способы аутентификации:**\n- Способ 1 (рекомендуется): Прямое указание `access_token`\n- Способ 2: Указание `user_id` и `password`, адаптер автоматически вызывает интерфейс входа для получения токена"
+    },
+    {
+      "hash": "c8b191b95a8b5d30a8f7fba2d1d0e8f2",
+      "translation": "## Обновление парадигмы v5 (4.2.0)\n\n- **Наследование BaseConverter**: общие поля конвертера строятся фреймворком build_base_event\n- **DSL API**: get_self_info/get_user_info/get_group_info/get_group_list/get_group_member_list/leave_group/delete_message(redact) + метадействия\n- **Дополнение к событию сообщения message_id** (event_id); таблица регистрации сообщений поддерживает delete_message\n- **Принадлежность задачи spawn_background**: синхронные/пинговые задачи используют runtime.spawn_background\n- **Мягкая зависимость фреймворка**: проверка версии ErisPulse>=2.7.1 и вывод подсказки; вывод логов версии при запуске\n- У Matrix нет встроенной возможности кнопок, стандартный сегмент keyboard игнорируется (без ошибок)\n\n### Примеры стандартных действий API\n\n```python\nfrom ErisPulse import sdk\nmatrix = sdk.adapter.get(\"matrix\")\nresult = await matrix.Api.get_self_info()            # /account/whoami\nresult = await matrix.Api.get_group_info(room_id)    # m.room.name\nresult = await matrix.Api.get_group_list()           # /joined_rooms\nawait matrix.Api.delete_message(event_id)            # redact (таблица регистрации дополняет room_id)\n```\n\n---\n\n### Поддерживаемые возможности платформ\n\n- **События**: сообщения (m.room.message: текст/изображение/файл/аудио/видео/ответ/редактирование), изменение участников (m.room.member), изменение названия комнаты и другие статусные события\n- **Сессии**: личные сообщения (автоматическое обнаружение комнат DM) / группы (комнаты); отправка поддерживает Text/Image/File/Voice/Video/Markdown/Raw_ob12\n- **API**: whoami/profile/joined_rooms/статус комнаты/список участников/leave/redact (см. выше DSL API)"
     },
     {
       "hash": "fff45f0b977664165873f0364e6fe15c",

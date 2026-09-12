@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "548f3a3af360aa19d1ea8293abb40fe3",
-  "file_hash": "548f3a3af360aa19d1ea8293abb40fe3",
-  "translated_at": "2026-09-07T12:13:35.264199",
+  "hash": "275d65f15b74f86c99fcb91fca74a76e",
+  "file_hash": "275d65f15b74f86c99fcb91fca74a76e",
+  "translated_at": "2026-09-12T10:29:41.529943",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,12 +10,16 @@
       "translation": "# 雲湖プラットフォームの機能ドキュメント\n\nYunhuAdapter は、雲湖プロトコルに基づいて構築されたアダプタであり、すべての雲湖機能モジュールを統合し、一貫したイベント処理とメッセージ操作のインターフェースを提供します。\n\n---"
     },
     {
-      "hash": "a1376ffeea270fa68d8b22165af6dbcc",
-      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 4.3.0\n- メンテナー: ErisPulse"
+      "hash": "c461de40d423dc82175b0ac2c05feab4",
+      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 4.4.0\n- メンテナー: ErisPulse"
     },
     {
       "hash": "54547432378884d983fe78296feb2c12",
       "translation": "## 基本情報\n\n- プラットフォーム概要：雲湖（Yunhu）はエンタープライズ向けリアルタイムメッセージングプラットフォームです。\n- アダプタ名：YunhuAdapter\n- 複数アカウント対応：bot_id で識別し、複数の雲湖ロボットアカウントを設定できます。\n- チェーン修飾子対応：`.Reply()` などのチェーン修飾子メソッドをサポートしています。\n- OneBot12互換：OneBot12形式のメッセージ送信をサポートしています。"
+    },
+    {
+      "hash": "55c8290a6145a0845cfd6cc0a0d87889",
+      "translation": "## v5 フレームワーク更新（4.4.0）\n\nこのアダプタは v5 フレームワークへの対応を完了しました（段階的アップグレード、API 互換性を保持）：\n\n- **公式サーバーサイド API 全集**（Api DSL 拡張メソッド）：メッセージ編集、一括送信、メッセージ一覧、ユーザー/グローバルダッシュボード、グループメンバーのミュート、グループメンバーの削除、グループメッセージタイプ制限、グループタグの CRUD、ユーザーへのタグ付与\n- **標準 keyboard 段**（クロスプラットフォーム対応のインタラクティブコンポーネント）：{\"type\": \"keyboard\", \"data\": {\"rows\": [[{\"label\", \"type\": \"callback|link\", \"data\"}]]}} 段は自動的に Yunhu の buttons に変換されます。.Buttons(rows) / .Keyboard(rows) 修飾子は汎用構造を受け付けます（ネイティブ構造は後方互換性を保持）\n- **インタラクティブコールバックの標準フィールド**：ボタンクリック/A2UI イベントには interaction_id / button_data という標準フィールドが含まれます\n- **spawn_background によるタスクの所属**：WS 接続タスクは runtime.spawn_background を使用します\n- **フレームワークのソフト依存性**：ErisPulse>=2.7.1 を実行時に検出し、警告を出力します。起動時にバージョンログを出力します\n\n### プラットフォーム拡張アクション（call / Api メソッド）\n\n```python\nfrom ErisPulse import sdk\nyunhu = sdk.adapter.get(\"yunhu\")\n\n# Api メソッド（公式サーバーサイド API）\nawait yunhu.Api.edit_message(msg_id, recv_id, \"group\", \"text\", {\"text\": \"新内容\"})\nawait yunhu.Api.batch_send([\"userId1\", \"userId2\"], \"text\", {\"text\": \"公告\"})\nawait yunhu.Api.get_message_list(group_id, \"group\", before=10)\nawait yunhu.Api.set_user_board(chat_id, \"group\", \"看板内容\", expire_time=3600)\nawait yunhu.Api.dismiss_global_board()\nawait yunhu.Api.gag_group_member(group_id, user_id, 600)      # 600秒間ミュート、0=解除\nawait yunhu.Api.remove_group_member(group_id, user_id)\nawait yunhu.Api.set_group_msg_type_limit(group_id, \"text,image\")\nawait yunhu.Api.create_group_tag(group_id, \"VIP\", color=\"#FF5733\")\nawait yunhu.Api.add_user_tag(group_id, user_id, \"VIP\")\n\n# ボタンクリックコールバック（標準フィールド）\nfrom ErisPulse.Core.Event import notice\n\n@notice.on_notice()\nasync def handle_button(event):\n    if event.get(\"platform\") == \"yunhu\" and event.get(\"button_data\"):\n        data = event[\"button_data\"]     # クロスプラットフォームで統一された値の取得\n        interaction_id = event[\"interaction_id\"]\n```\n\n> 詳細な標準仕様は [クロスプラットフォーム対応インタラクティブコンポーネント標準](../../standards/standardization-guide.md) を参照してください。"
     },
     {
       "hash": "126d901c9b0e8bbd8c5e0f1be0dfec94",

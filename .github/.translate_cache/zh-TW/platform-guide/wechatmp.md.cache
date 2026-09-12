@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "f8e2cf460b7f679bb574df13ce8e760b",
-  "file_hash": "f8e2cf460b7f679bb574df13ce8e760b",
-  "translated_at": "2026-09-07T11:50:57.960770",
+  "hash": "9422c5b2da437d7afcf63105595c778f",
+  "file_hash": "9422c5b2da437d7afcf63105595c778f",
+  "translated_at": "2026-09-12T10:23:43.874193",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -12,6 +12,10 @@
     {
       "hash": "4f7ae8b760f8f5e1b905891b2753c320",
       "translation": "## 基本資訊\n- 模組名稱: `ErisPulse-WechatMpAdapter`\n- 平台標識: `mp`（別名: `wechat_mp`）\n- 模組版本: 4.1.0\n- 維護者: ErisPulse\n- 依賴: `cryptography`"
+    },
+    {
+      "hash": "c3e718ebdaa0d944a6d5e231bfc3b6b4",
+      "translation": "## v5 範式更新（4.2.0）\n\n- **BaseConverter 繼承**：轉換器公共欄位由框架 build_base_event 構建\n- **Api DSL 最小集**：get_self_info（appid）/get_status/get_version/get_supported_actions\n- **框架軟依賴**：執行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌\n\n---\n\n### 已對接平台能力\n\n- **接收**：公眾號回調訊息與關注/取關等事件（明文/安全模式），簽名校驗\n- **發送**：客服訊息（Text/Image 等，經 Send DSL）\n- **API**：帳戶資訊（appid）與運行狀態（最小集）"
     },
     {
       "hash": "5a31f4da1ab530aebcecf5636951aa52",

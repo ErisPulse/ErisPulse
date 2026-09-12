@@ -6,7 +6,7 @@ DiscordAdapterは、Discord Gateway (WebSocket) およびREST API v10プロト�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.1.0
+- 対応モジュールバージョン: 4.2.0
 - メンテナー: ErisPulse
 - Discord API バージョン: v10
 
@@ -65,6 +65,45 @@ Intents はビットマスクを使用し、各 Intent の値をビット論理�
 **API 環境:**
 - Discord REST API の基本アドレス：`https://discord.com/api/v10`
 - Gateway WebSocket アドレス：`GET /gateway/bot` を使用して動的に取得します。通常は `wss://gateway.discord.gg/?v=10&encoding=json` です。
+
+## v5 ファンタムの更新（4.2.0）
+
+このアダプターは v5 ファンタムに準拠しました（段階的なアップグレード、API は互換性を保持）。
+
+- **BaseConverter 継承**：コンバーターの共通フィールドはフレームワーク `build_base_event` によって構築されます。
+- **Api DSL**：標準的な Api アクションマッピング（以下を参照）
+- **標準 keyboard 段**：Discord components（action row + buttons）に変換されます。.Keyboard(rows) 修飾子は汎用構造を受け取ります。
+- **インタラクションコールバックの標準フィールド**：INTERACTION_CREATE イベントには interaction_id / button_data が含まれます。
+- **spawn_background タスクの所属**：接続タスクは runtime.spawn_background を使用します。
+- **フレームワークのソフト依存**：ErisPulse>=2.7.1 を実行時に検出し、警告を表示します。起動時にバージョンログを出力します。
+
+### 標準 Api アクション
+
+```python
+from ErisPulse import sdk
+discord = sdk.adapter.get("discord")
+
+result = await discord.Api.get_self_info()                # GET /users/@me
+result = await discord.Api.get_user_info(user_id)         # GET /users/{id}
+result = await discord.Api.get_guild_info(guild_id)       # GET /guilds/{id}
+result = await discord.Api.get_guild_list()               # GET /users/@me/guilds
+result = await discord.Api.get_channel_list(guild_id)     # GET /guilds/{id}/channels
+result = await discord.Api.get_guild_member_info(gid, uid)
+await discord.Api.delete_message(message_id)              # 登録表は自動的に channel_id を補完します
+await discord.Api.leave_guild(guild_id)
+result = await discord.Api.Using("main").get_self_info()
+```
+
+### ボタン（keyboard / components）
+
+```python
+rows = [[{"label": "クリック", "type": "callback", "data": "btn:1"},
+         {"label": "公式サイト",  "type": "link",     "data": "https://example.com"}]]
+await discord.Send.To("channel", channel_id).Keyboard(rows).Text("選択してください")
+# 自動的に components に変換されます：callback → custom_id / link → url
+```
+
+---
 
 ## 支援されるメッセージ送信タイプ
 

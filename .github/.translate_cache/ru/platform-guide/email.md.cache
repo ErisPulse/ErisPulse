@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "a0ef4540f2c54c9fe8bb6e167415d7fb",
-  "file_hash": "a0ef4540f2c54c9fe8bb6e167415d7fb",
-  "translated_at": "2026-09-07T11:55:27.935295",
+  "hash": "f1b46940e620e8a6edccbbcb6a8021a3",
+  "file_hash": "f1b46940e620e8a6edccbbcb6a8021a3",
+  "translated_at": "2026-09-12T10:25:03.147544",
   "target_lang": "ru",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Документация по функциональным возможностям почтовой платформы\n\nEmailAdapter — это почтовый адаптер, основанный на протоколах SMTP/IMAP, поддерживающий отправку, получение и обработку электронной почты.\n\n---"
     },
     {
-      "hash": "6e2010b0836c4c98adf0292ff78ea9b2",
-      "translation": "## Информация о документации\n\n- Версия соответствующего модуля: 4.1.0\n- Ответственный: ErisPulse"
+      "hash": "d5769e0ae79f68cdc351193894aba07b",
+      "translation": "## Информация о документации\n\n- Версия соответствующего модуля: 4.2.0\n- Ответственный: ErisPulse"
     },
     {
       "hash": "ebfd0de1173b98b4565e6eea62e7b86a",
@@ -20,6 +20,10 @@
     {
       "hash": "b19b0577912cfefb1e37fa681faa9a06",
       "translation": "## Инструкция по конфигурации\n\n### Глобальная конфигурация (EmailAdapter)\n\n| Параметр | Тип | Значение по умолчанию | Описание |\n|----------|-----|------------------------|----------|\n| `imap_server` | str | `imap.example.com` | Адрес сервера IMAP по умолчанию |\n| `imap_port` | int | `993` | Порт IMAP по умолчанию |\n| `smtp_server` | str | `smtp.example.com` | Адрес сервера SMTP по умолчанию |\n| `smtp_port` | int | `465` | Порт SMTP по умолчанию |\n| `ssl` | bool | `true` | Использовать SSL по умолчанию |\n| `timeout` | int | `30` | Время ожидания подключения по умолчанию (секунды) |\n| `poll_interval` | int | `60` | Интервал опроса IMAP (секунды) |\n| `max_retries` | int | `3` | Максимальное количество попыток при неудачном подключении |\n\n### Конфигурация аккаунта (EmailAdapter.accounts)\n\nКаждый аккаунт соответствует отдельной электронной почте. Конфигурация аккаунта имеет приоритет над глобальной конфигурацией.\n\n```toml\n[EmailAdapter.accounts.default]\nemail = \"user@example.com\"\npassword = \"your-password-or-auth-code\"\nimap_server = \"imap.example.com\"    # Опционально, оставьте пустым для использования глобального значения по умолчанию\nimap_port = 993                      # Опционально\nsmtp_server = \"smtp.example.com\"    # Опционально\nsmtp_port = 465                      # Опционально\nssl = true                           # Опционально\ntimeout = 30                         # Опционально\nenabled = true\n\n[EmailAdapter.accounts.backup]\nemail = \"backup@example.com\"\npassword = \"another-password\"\nenabled = true\n```"
+    },
+    {
+      "hash": "67f3e55002371d1142e8e53d0e26594a",
+      "translation": "## Обновление парадигмы v5 (4.2.0)\n\n- **Минимальный набор Api DSL**: get_self_info (адрес электронной почты)/get_status/get_version/get_supported_actions\n- **Принадлежность задачи spawn_background**: Задачи IMAP-опроса теперь используют runtime.spawn_background\n- **Мягкая зависимость от фреймворка**: Проверка наличия ErisPulse>=2.7.1 во время выполнения с соответствующим сообщением; вывод логов версии при запуске\n- Обновление путей импорта до Core.Bases; _load_accounts сохраняется (глобальные значения по умолчанию объединяются в логику, специфичную для этого адаптера)\n\n---\n\n### Поддерживаемые возможности платформ\n\n- **Прием**: Опрос IMAP для получения писем (анализ тела/HTML/вложений в сообщения), обнаружение новых непрочитанных писем\n- **Отправка**: Отправка писем через SMTP (Subject/Text/Html/Cc/Bcc/ReplyTo/Attachment), поддержка нескольких учетных записей\n- **API**: Информация о счетах и статус выполнения (минимальный набор); понятия отмены писем/группы не применимы"
     },
     {
       "hash": "388ede0e2e56f886d2fdd2b97965aca1",

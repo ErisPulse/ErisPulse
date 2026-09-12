@@ -6,7 +6,7 @@ OneBot12Adapter — это адаптер, построенный на осно�
 
 ## Информация о документе
 
-- Версия соответствующего модуля: 4.0.0
+- Версия соответствующего модуля: 4.3.0
 - Ответственный: ErisPulse
 - Версия протокола: OneBot V12
 
@@ -16,6 +16,68 @@ OneBot12Adapter — это адаптер, построенный на осно�
 - Название адаптера: OneBot12Adapter
 - Поддерживаемые версии протокола/API: OneBot V12
 - Поддержка нескольких аккаунтов: Полностью архитектура с поддержкой нескольких аккаунтов, позволяет одновременно настроить и запустить несколько OneBot12-аккаунтов.
+
+## Обновление парадигмы v5 (4.3.0)
+
+Адаптер успешно обновлён до парадигмы v5 (постепенное обновление, совместимость API):
+
+- **Наследование BaseConverter**: Общие поля преобразователя (id/time/platform/self/raw) создаются с помощью build_base_event фреймворка, и переопределяются по именам полей OB11 (echo/time/self_id)
+- **Принадлежность задачи spawn_background**: Задача подключения в режиме Client теперь использует runtime.spawn_background (принадлежит owner, автоматически освобождается при завершении)
+- **Мягкая зависимость от фреймворка**: Установка адаптера больше не требует жёсткой зависимости от ErisPulse, что предотвращает изменение версии фреймворка при разрешении зависимостей pip; во время выполнения проверяется ErisPulse>=2.7.1, и при слишком низкой версии выводится предупреждение в лог
+- **Журнал версии при запуске**: При инициализации выводится сообщение о загрузке OneBotAdapter v4.3.0
+
+Доступные возможности (поддержка начиная с 4.2.0): мультиаккаунт, стандартные действия Api DSL (get_self_info→get_login_info и т.д.), Request DSL (одобрение/отклонение запросов на добавление в друзья/в группу: event.approve() / event.reject()), EventMixin, i18n.
+
+---
+
+## Стандартные действия API (DSL API)
+
+OneBot12 поддерживает все стандартные имена действий OB12, API DSL по умолчанию напрямую делегирует call_api (без отображения):
+
+```python
+from ErisPulse import sdk
+ob12 = sdk.adapter.get("onebot12")
+
+result = await ob12.Api.get_self_info()
+result = await ob12.Api.get_friend_list()
+await ob12.Api.delete_message(message_id="MSG_ID")
+
+# Указание аккаунта (множественные аккаунты)
+result = await ob12.Api.Using("main").get_self_info()
+
+# Расширения платформы
+result = await ob12.Api.call("extend_action", param=1)
+```
+
+> Поддерживаемые действия определяются реализацией бэкенда (NapCat/Lagrange/LLOneBot и др.); действия, которые не поддерживаются бэкендом, возвращают ошибку и прозрачно передаются.
+
+## Операции с запросами (Request DSL)
+
+На основе стандарта OneBot12, действие handle_quick_request обрабатывает запросы от друзей и приглашения в группы, позволяя принять или отклонить их:
+
+### Удобные методы Event
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    if event.get("platform") != "onebot12":
+        return
+    comment = event.get("comment", "")
+    if comment == "passphrase":
+        await event.approve()      # Принять
+    else:
+        await event.reject()       # Отклонить
+```
+
+### Ручное вызов Request DSL
+
+```python
+await ob12.Request("request_flag").accept()
+await ob12.Request("request_flag").reject()
+await ob12.Request("request_flag").Using("main").accept()
+```
 
 ## Типы поддерживаемых сообщений
 

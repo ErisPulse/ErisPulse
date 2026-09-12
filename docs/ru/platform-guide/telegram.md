@@ -1,4 +1,4 @@
-﻿# Характеристики платформы Telegram
+# Документация по функциям платформы Telegram
 
 TelegramAdapter — это адаптер, построенный на основе Telegram Bot API, поддерживающий различные типы сообщений и обработку событий.
 
@@ -6,8 +6,8 @@ TelegramAdapter — это адаптер, построенный на осно�
 
 ## Информация о документации
 
-- Версия соответствующего модуля: 4.1.1
-- Ответственный: ErisPulse
+- Соответствующая версия модуля: 4.2.0
+- Поддерживается: ErisPulse
 
 ## Основная информация
 
@@ -15,6 +15,60 @@ TelegramAdapter — это адаптер, построенный на осно�
 - Имя адаптера: TelegramAdapter
 - Поддерживаемый протокол/API-версия: Telegram Bot API
 - Сопоставление типов сессий: `private` → при отправке используется `user`, `group`/`supergroup` → `group`, `channel` → `channel`
+
+## Стандартные действия API (DSL API)
+
+Адаптер сопоставляет стандартные действия OB12 с Telegram Bot API и стандартизирует поле data:
+
+| Стандартное действие OB12 | Telegram API | Поле data |
+|--------------------------|--------------|-----------|
+| get_self_info | getMe | user_id / user_name / user_displayname |
+| get_user_info(user_id) | getChat | user_id / user_name / user_displayname |
+| get_group_info(group_id) | getChat | group_id / group_name |
+| get_group_member_info(group_id, user_id) | getChatMember | user_id / user_name / telegram_role |
+| delete_message(message_id) | deleteMessage | chat_id автоматически заполняется по таблице сообщений |
+| leave_group(group_id) | leaveChat | - |
+
+Расширенные действия: get_group_admin_list(group_id) (список администраторов), get_chat_member_count(chat_id) (количество участников).
+
+```python
+from ErisPulse import sdk
+telegram = sdk.adapter.get("telegram")
+
+result = await telegram.Api.get_self_info()
+result = await telegram.Api.get_group_info(group_id=-100123)
+result = await telegram.Api.get_group_admin_list(-100123)
+await telegram.Api.delete_message(message_id=55)   # chat_id автоматически заполняется
+result = await telegram.Api.Using("main").get_self_info()
+```
+
+> Telegram Bot API не имеет интерфейса для получения списка друзей/групп, get_friend_list/get_group_list возвращает errorcode=10002.
+
+---
+
+## Операции с запросами (Request DSL)
+
+Обработка запросов на добавление в группу (событие chat_join_request), на основе approveChatJoinRequest / declineChatJoinRequest:
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_request()
+async def handle_join_request(event):
+    if event.get("platform") != "telegram":
+        return
+    # event["request_id"] - это синтетический идентификатор (tjr_{chat_id}_{user_id}_{date})
+    if event.get("user_nickname"):
+        await event.approve()          # Подтвердить
+    # await event.reject()             # Отклонить
+
+# Вызов вручную (требуется предварительное получение соответствующего события запроса для регистрации контекста)
+await telegram.Request(event["request_id"]).accept()
+await telegram.Request(event["request_id"]).reject()
+await telegram.Request(event["request_id"]).Using("main").accept()
+```
+
+---
 
 ## Типы поддерживаемых сообщений
 

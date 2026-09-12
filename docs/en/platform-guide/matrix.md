@@ -6,7 +6,7 @@ MatrixAdapter is an adapter built based on the [Matrix protocol](https://spec.ma
 
 ## Documentation Information
 
-- Corresponding Module Version: 4.1.0
+- Corresponding Module Version: 4.2.0
 - Maintainer: ErisPulse
 
 ## Basic Information
@@ -54,6 +54,34 @@ enabled = true
 **Authentication Methods:**
 - Method 1 (Recommended): Provide `access_token` directly
 - Method 2: Provide `user_id` and `password`, the adapter will automatically call the login API to obtain the token
+
+## v5 Paradigm Update (4.2.0)
+
+- **BaseConverter Inheritance**: Common fields of converters are built by the framework's build_base_event
+- **Api DSL**: get_self_info/get_user_info/get_group_info/get_group_list/get_group_member_list/leave_group/delete_message(redact) + meta actions
+- **Message Event Supplement message_id** (event_id); Message registration table supports delete_message
+- **spawn_background Task Ownership**: Synchronous/heartbeat tasks now use runtime.spawn_background
+- **Framework Soft Dependency**: Runtime checks for ErisPulse>=2.7.1 and provides warnings; Version logs are output on startup
+- Matrix lacks native button capabilities, so standard keyboard segments are gracefully ignored (without errors)
+
+### Standard Api Action Examples
+
+```python
+from ErisPulse import sdk
+matrix = sdk.adapter.get("matrix")
+result = await matrix.Api.get_self_info()            # /account/whoami
+result = await matrix.Api.get_group_info(room_id)    # m.room.name
+result = await matrix.Api.get_group_list()           # /joined_rooms
+await matrix.Api.delete_message(event_id)            # redact (registration table completes room_id)
+```
+
+---
+
+### Supported Platform Capabilities
+
+- **Events**: Message events (m.room.message: text/image/file/audio/video/reply/edit), member addition/removal (m.room.member), room name change, and other state events
+- **Conversations**: Direct messages (DM rooms auto-discovered) / group chats (rooms); support sending Text/Image/File/Voice/Video/Markdown/Raw_ob12
+- **APIs**: whoami/profile/joined_rooms/room status/member list/leave/redact (see above Api DSL)
 
 ## Supported Message Sending Types
 

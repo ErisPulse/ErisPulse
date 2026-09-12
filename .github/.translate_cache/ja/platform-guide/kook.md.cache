@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "44cf5393eb10b018ff984c9dcddf3118",
-  "file_hash": "44cf5393eb10b018ff984c9dcddf3118",
-  "translated_at": "2026-09-07T11:45:00.620036",
+  "hash": "08b112d48016fe3e4972050151f66155",
+  "file_hash": "08b112d48016fe3e4972050151f66155",
+  "translated_at": "2026-09-12T10:30:13.260791",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# Kookプラットフォームの機能ドキュメント\n\nKookAdapter は、Kook（開黒啦）Bot WebSocket プロトコルに基づいて構築されたアダプタであり、Kook のすべての機能モジュールを統合し、一貫したイベント処理とメッセージ操作インターフェースを提供します。\n\n---"
     },
     {
-      "hash": "2441774a7219c519f5aee89326d0536e",
-      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 0.1.0\n- メンテナー: ShanFish"
+      "hash": "6cafcd5b58a009c89389b0d0a60592be",
+      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 4.1.0\n- メンテナー: ShanFish"
     },
     {
       "hash": "42be3516e8846a4c36bcd9b87021aaad",
@@ -20,6 +20,10 @@
     {
       "hash": "a1458fdeec0e92d6bc77918446d0e8c1",
       "translation": "## 設定の説明\n\nKookAdapter は、複数のアカウントをサポートしており、各アカウントは独立した Kook ロボットに対応します。\n\n```toml\n# config.toml\n# アカウント1\n[KookAdapter.accounts.default]\ntoken = \"YOUR_BOT_TOKEN\"     # Kook Bot Token（必須、形式: Bot xxx/xxx）\nbot_id = \"\"                   # Bot ユーザーID（任意、空欄の場合は token から解析）\ncompress = true               # WebSocket 圧縮を有効にするか（任意、デフォルトは true）\nenabled = true                # 有効にするか（任意、デフォルトはtrue）\n\n# アカウント2\n[KookAdapter.accounts.bot2]\ntoken = \"ANOTHER_BOT_TOKEN\"\nbot_id = \"\"\nenabled = true\n```\n\n> 旧設定の互換性：`[KookAdapter]` に token を含む旧の単一アカウント設定が検出された場合、`accounts.default` に自動的に移行されます。\n\n**各アカウントの設定項目の説明：**\n- `token`：Kook Bot のトークン（必須）、[Kook開発者センター](https://developer.kookapp.cn) から取得し、形式は `Bot xxx/xxx` です。\n- `bot_id`：Bot のユーザーID（任意）、空欄の場合は、トークンから自動的に解析されます。正確さを保証するため、手動で入力することを推奨します。\n- `compress`：WebSocket データ圧縮を有効にするか（任意、デフォルトは `true`）、有効にすると zlib でデータを解凍します。\n- `enabled`：このアカウントを有効にするか（任意、デフォルトは true）\n\n**API 環境：**\n- Kook API 基本アドレス：`https://www.kookapp.cn/api/v3`\n- WebSocket ゲートウェイは API を介して動的に取得されます：`POST /gateway/index`"
+    },
+    {
+      "hash": "8d51963f663fd04472d7dc41b0a2f517",
+      "translation": "## v5 フレームワークの更新（4.1.0）\n\nこのアダプタは v5 フレームワークに準拠した更新を完了しました（段階的なアップグレード、API は互換性を保つ）。\n\n- **BaseConverter の継承**：コンバーターの共通フィールドはフレームワークの `build_base_event` によって構築されます。\n- **Api DSL**：標準的な API アクションのマッピング（下記を参照）\n- **標準的な keyboard セグメント**：`{\"type\": \"keyboard\", \"data\": {\"rows\": [[{\"label\", \"type\": \"callback|link\", \"data\"}]]}}` テキストとキーボードは自動的に Kook カードメッセージ（section + action-group）に組み合わされます。.Keyboard(rows) 修飾子は一般的な構造を受け付けます。\n- **spawn_background でのタスクの所属**：接続タスクは `untime.spawn_background` を使用します。\n- **フレームワークのソフト依存**：ErisPulse>=2.7.1 の実行時検出と警告メッセージを出力します。起動時にバージョンのログを出力します。\n\n### 標準的な API アクション\n\n```python\nfrom ErisPulse import sdk\nkook = sdk.adapter.get(\"kook\")\n\nresult = await kook.Api.get_self_info()              # GET /users/@me\nresult = await kook.Api.get_user_info(user_id)       # POST /user/view\nresult = await kook.Api.get_guild_info(guild_id)     # POST /guild/view\nresult = await kook.Api.get_guild_list()             # POST /guild/list\nresult = await kook.Api.get_channel_info(channel_id) # POST /channel/view\nresult = await kook.Api.get_channel_list(guild_id)   # POST /channel/list\nawait kook.Api.delete_message(msg_id)                # POST /message/delete\nresult = await kook.Api.Using(\"main\").get_self_info()\n```\n\n### ボタン（keyboard）\n\n```python\nrows = [[{\"label\": \"オプションA\", \"type\": \"callback\", \"data\": \"vote:A\"},\n         {\"label\": \"公式サイト\",  \"type\": \"link\",     \"data\": \"https://example.com\"}]]\nawait kook.Send.To(\"channel\", channel_id).Keyboard(rows).Text(\"選択してください\")\n# テキストとボタンは自動的に Kook カードメッセージ（section + action-group）に組み合わされます。\n\n# ボタンのクリックコールバック（標準的なフィールド）\nfrom ErisPulse.Core.Event import notice\n\n@notice.on_notice()\nasync def handle_button(event):\n    if event.get(\"platform\") == \"kook\" and event.get(\"button_data\"):\n        data = event[\"button_data\"]\n```"
     },
     {
       "hash": "4b53297ad2a98129aab42e8a36b96382",
