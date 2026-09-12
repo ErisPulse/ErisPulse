@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1665,
+  "total_keywords": 1666,
   "keywords": {
     "0 Успешно (OK)": [
       {
@@ -145,7 +145,7 @@
     "1. Обеспечение совместимости между платформами": [
       {
         "document": "standards/README.md",
-        "line": 27,
+        "line": 30,
         "level": 3,
         "title": "1. Обеспечение совместимости между платформами"
       }
@@ -751,7 +751,7 @@
     "2. Стандартизация интерфейсов API": [
       {
         "document": "standards/README.md",
-        "line": 34,
+        "line": 37,
         "level": 3,
         "title": "2. Стандартизация интерфейсов API"
       }
@@ -1079,7 +1079,7 @@
     "3. Повышение качества кода": [
       {
         "document": "standards/README.md",
-        "line": 41,
+        "line": 44,
         "level": 3,
         "title": "3. Повышение качества кода"
       }
@@ -4955,7 +4955,7 @@
     "Для конечных пользователей": [
       {
         "document": "standards/README.md",
-        "line": 62,
+        "line": 65,
         "level": 3,
         "title": "Для конечных пользователей"
       }
@@ -4963,7 +4963,7 @@
     "Для разработчиков адаптеров": [
       {
         "document": "standards/README.md",
-        "line": 50,
+        "line": 53,
         "level": 3,
         "title": "Для разработчиков адаптеров"
       }
@@ -4971,7 +4971,7 @@
     "Для разработчиков модулей": [
       {
         "document": "standards/README.md",
-        "line": 56,
+        "line": 59,
         "level": 3,
         "title": "Для разработчиков модулей"
       }
@@ -5448,6 +5448,14 @@
         "title": "Запросы на приглашение в группу"
       }
     ],
+    "Запросы операций": [
+      {
+        "document": "standards/README.md",
+        "line": 99,
+        "level": 3,
+        "title": "Запросы операций"
+      }
+    ],
     "Запуск адаптера": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -5624,14 +5632,6 @@
         "line": 544,
         "level": 3,
         "title": "Именование ключей перевода"
-      }
-    ],
-    "Именование методов отправки": [
-      {
-        "document": "standards/README.md",
-        "line": 89,
-        "level": 3,
-        "title": "Именование методов отправки"
       }
     ],
     "Импорт": [
@@ -7528,6 +7528,14 @@
         "title": "Навигационная регистрация"
       }
     ],
+    "Назначение методов отправки": [
+      {
+        "document": "standards/README.md",
+        "line": 92,
+        "level": 3,
+        "title": "Назначение методов отправки"
+      }
+    ],
     "Направленная рассылка (emit to=)": [
       {
         "document": "advanced/lifecycle.md",
@@ -7768,6 +7776,14 @@
         "line": 37,
         "level": 2,
         "title": "Обзор ресурсов, привязанных к модулю"
+      }
+    ],
+    "Обзор стандарта": [
+      {
+        "document": "standards/README.md",
+        "line": 17,
+        "level": 2,
+        "title": "Обзор стандарта"
       }
     ],
     "Обзор типов событий": [
@@ -8264,14 +8280,6 @@
         "title": "Обучение"
       }
     ],
-    "Общее описание": [
-      {
-        "document": "standards/README.md",
-        "line": 14,
-        "level": 2,
-        "title": "Общее описание"
-      }
-    ],
     "Общее описание адаптера": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -8465,12 +8473,6 @@
       }
     ],
     "Операции запросов": [
-      {
-        "document": "standards/README.md",
-        "line": 96,
-        "level": 3,
-        "title": "Операции запросов"
-      },
       {
         "document": "standards/request-action-spec.md",
         "line": 347,
@@ -9087,7 +9089,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 18,
+        "line": 21,
         "level": 3,
         "title": "Основные принципы"
       }
@@ -9209,7 +9211,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 80,
+        "line": 83,
         "level": 3,
         "title": "Ответы API"
       }
@@ -10473,7 +10475,7 @@
     "Почему нужен стандарт?": [
       {
         "document": "standards/README.md",
-        "line": 25,
+        "line": 28,
         "level": 2,
         "title": "Почему нужен стандарт?"
       }
@@ -10553,7 +10555,7 @@
     "Преимущества соблюдения стандартов": [
       {
         "document": "standards/README.md",
-        "line": 48,
+        "line": 51,
         "level": 2,
         "title": "Преимущества соблюдения стандартов"
       }
@@ -10583,7 +10585,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 70,
+        "line": 73,
         "level": 3,
         "title": "Преобразование событий"
       }
@@ -12265,7 +12267,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 102,
+        "line": 105,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -13188,6 +13190,22 @@
         "title": "Список поддерживаемых методов отправки"
       }
     ],
+    "Список проверки соответствия стандартам": [
+      {
+        "document": "standards/README.md",
+        "line": 71,
+        "level": 2,
+        "title": "Список проверки соответствия стандартам"
+      }
+    ],
+    "Список стандартных документов": [
+      {
+        "document": "standards/README.md",
+        "line": 7,
+        "level": 2,
+        "title": "Список стандартных документов"
+      }
+    ],
     "Список функций, подключённых к платформе": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -13428,14 +13446,6 @@
         "title": "Стандартизированный протокол преобразования адаптеров"
       }
     ],
-    "Стандартная контрольная проверка": [
-      {
-        "document": "standards/README.md",
-        "line": 68,
-        "level": 2,
-        "title": "Стандартная контрольная проверка"
-      }
-    ],
     "Стандартное сопоставление OB12": [
       {
         "document": "platform-guide/onebot11.md",
@@ -13540,14 +13550,6 @@
         "line": 209,
         "level": 3,
         "title": "Стандартные типы сообщений"
-      }
-    ],
-    "Стандартный список документов": [
-      {
-        "document": "standards/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "Стандартный список документов"
       }
     ],
     "Стандартный формат": [
