@@ -11402,13 +11402,13 @@ clear_custom_types(platform="discord")  # Очистить только для �
 }
 ```
 
-## 4. Стандартные сообщения
+## 4. Стандартные элементы сообщений
 
-### 4.1 Стандартные сообщения
+### 4.1 Стандартные элементы сообщений
 
-Типы стандартных сообщений **не** добавляют префикс платформы:
+Стандартные элементы сообщений **не требуют** префикса платформы.
 
-| Тип | Описание | Поле data |
+| Тип | Описание | Поля data |
 |------|------|----------|
 | `text` | Чистый текст | `text: str` |
 | `image` | Изображение | `file: str/bytes`, `url: str` |
@@ -11419,6 +11419,7 @@ clear_custom_types(platform="discord")  # Очистить только для �
 | `reply` | Ответ на сообщение | `message_id: str` |
 | `face` | Эмодзи | `id: str` |
 | `location` | Местоположение | `latitude: float`, `longitude: float` |
+| `keyboard` | Кнопки / встроенная клавиатура | `rows: list[list[button]]` (см. 4.1.1) |
 
 ```json
 {
@@ -11429,9 +11430,47 @@ clear_custom_types(platform="discord")  # Очистить только для �
 }
 ```
 
-### 4.2 Расширенные сообщения платформы
+### 4.1.1 Элемент клавиатуры/встроенной клавиатуры (keyboard) (универсальный для всех платформ)
 
-Сообщения, специфичные для платформы, должны иметь префикс платформы:
+Кнопки / встроенная клавиатура присутствуют на многих платформах (Telegram / Yunhu / QQBot / Kook / Discord и др.), и являются **универсальной концепцией**, поэтому они представлены как стандартный элемент сообщения (без префикса платформы). Адаптеры должны преобразовывать стандартный элемент в структуру, специфичную для платформы; расширенные элементы платформы (например, `telegram_inline_keyboard`) должны сохраняться и передаваться без изменений.
+
+```json
+{
+  "type": "keyboard",
+  "data": {
+    "rows": [
+      [
+        {"label": "Опция A", "type": "callback", "data": "vote:A"},
+        {"label": "Официальный сайт", "type": "link", "data": "https://example.com"}
+      ]
+    ]
+  }
+}
+```
+
+**Описание полей:**
+
+| Поле | Тип | Обязательно | Описание |
+|------|------|------|------|
+| `rows` | Двумерный массив | Да | Каждый подмассив представляет строку кнопок |
+| `rows[][].label` | str | Да | Текст, отображаемый на кнопке |
+| `rows[][].type` | str | Да | `callback` (отправка данных при нажатии) / `link` (переход по URL) |
+| `rows[][].data` | str | Да | Данные для обратного вызова (type=callback) или адрес перехода (type=link) |
+| `rows[][].*` | Any | Нет | Платформенно-специфичные дополнительные поля (например, `web_app`, `menus`), адаптер должен соответствующим образом сопоставлять или игнорировать их |
+
+**Примеры преобразования адаптера** (полное сопоставление и стандартные события обратного вызова для межплатформенной взаимодействия см. в [стандарте межплатформенных компонентов взаимодействия](standardization-guide.md)):
+
+| Платформа | Стандартный элемент → платформенно-специфичный |
+|------|------------------|
+| Telegram | `inline_keyboard`: `[{text, callback_data \| url}]` |
+| Yunhu | `buttons`: `[{label, action_type: 2=callback \| 1=link, ...}]` |
+| QQBot | `keyboard.content.rows`: `[{label, type: 2=callback \| 0=link, data}]` (требуется сообщение в формате markdown) |
+| Kook | Модуль action-group в карточке |
+| Discord | components: `action_row` + `buttons` (custom_id/url) |
+
+### 4.2 Расширенные элементы сообщений платформы
+
+Специфичные для платформы элементы сообщений должны иметь префикс платформы:
 
 ```json
 // Yunhu - форма
@@ -11441,10 +11480,10 @@ clear_custom_types(platform="discord")  # Очистить только для �
 {"type": "telegram_sticker", "data": {"file_id": "CAACAgIAAxkBAA...", "emoji": "😂"}}
 ```
 
-**Требования к расширенным сообщениям**:
-1. **Поля в data не имеют префикса**: `{"type": "yunhu_form", "data": {"form_id": "..."}}`, а не `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
-2. **Предоставление альтернативного варианта**: Модуль может не распознавать расширенные сообщения, адаптер должен предоставить текстовый альтернативный вариант в `alt_message`
-3. **Полная документация**: Каждый расширенный тип сообщения должен быть подробно описан в документации адаптера: `type`, структура `data` и сценарии использования
+**Требования к расширенным элементам сообщений:**
+1. **Поля внутри data не имеют префикса**: `{"type": "yunhu_form", "data": {"form_id": "..."}}`, а не `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
+2. **Обеспечение обратной совместимости**: Модуль может не распознавать расширенный элемент сообщения, адаптер должен предоставить текстовую альтернативу в `alt_message`
+3. **Полная документация**: Каждый расширенный элемент сообщения должен быть подробно описан в документации адаптера, включая структуру `type`, `data` и сценарии использования
 
 ## 5. Обработка неизвестных событий
 
@@ -14488,8 +14527,8 @@ OneBot11Adapter — это адаптер, построенный на осно�
 
 ## Информация о документации
 
-- Версия соответствующего модуля: 4.0.0
-- Поддержка: ErisPulse
+- Версия соответствующего модуля: 4.3.0
+- Ответственный: ErisPulse
 
 ## Основная информация
 
@@ -14498,6 +14537,58 @@ OneBot11Adapter — это адаптер, построенный на осно�
 - Поддерживаемые версии протокола/API: OneBot V11
 - Поддержка нескольких аккаунтов: По умолчанию используется архитектура с несколькими аккаунтами, поддерживается одновременная настройка и запуск нескольких аккаунтов OneBot
 - Ключ конфигурации: `OneBotAdapter`
+
+## Обновление парадигмы v5 (4.3.0)
+
+Адаптер был обновлен до соответствия парадигме v5 (постепенное обновление, совместимость API):
+
+- **Наследование BaseConverter**: Общие поля конвертера (id/time/platform/self/raw) создаются с помощью build_base_event фреймворка, и перекрываются именами полей OB11 (echo/time/self_id)
+- **Принадлежность задачи spawn_background**: Задача подключения в режиме Client теперь использует runtime.spawn_background (принадлежность owner, автоматическая утилизация при завершении)
+- **Мягкая зависимость от фреймворка**: При установке адаптера больше не требуется жесткая зависимость от ErisPulse, что предотвращает изменение версии фреймворка при разрешении pip; во время выполнения проверяется ErisPulse>=2.7.1, и при низкой версии выводится предупреждение в лог
+- **Журнал версии при запуске**: При инициализации выводится сообщение "OneBotAdapter v4.3.0 loaded"
+
+Существующие возможности (поддержка с 4.2.0): поддержка нескольких аккаунтов, стандартное сопоставление действий Api DSL (get_self_info→get_login_info и т.д.), Request DSL (одобрение/отклонение запросов от друзей/групп: event.approve() / event.reject()), EventMixin, i18n.
+
+---
+
+## Стандартные действия API (DSL API)
+
+Адаптер автоматически сопоставляет стандартные имена действий OneBot12 с именами действий OB11, что позволяет модулям использовать единый интерфейс для всех платформ:
+
+| Стандартное действие OB12 | Действие OB11 | Описание |
+|--------------------------|---------------|----------|
+| get_self_info | get_login_info | Поля стандартизированы: user_id/user_name/user_displayname |
+| get_user_info | get_stranger_info | Поля стандартизированы |
+| delete_message | delete_msg | Отправка сообщения |
+| leave_group | set_group_leave | Выход из группы |
+| get_friend_list | get_friend_list | Имя действия совпадает, вызов прозрачно передается |
+| get_group_info | get_group_info | Имя действия совпадает, вызов прозрачно передается |
+| upload_file | upload_group_file / upload_private_file | Дополнительные необязательные параметры group_id/user_id, filetype автоматически определяет тип и перенаправляет на upload_group_file |
+
+### Базовое использование
+
+```python
+from ErisPulse import sdk
+onebot = sdk.adapter.get("onebot11")
+
+# Получение информации о боте
+result = await onebot.Api.get_self_info()
+print(result["data"]["user_id"], result["data"]["user_name"])
+
+# Отправка сообщения
+await onebot.Api.delete_message(message_id=123456)
+
+# Загрузка файла в группу (filetype автоматически определяет тип и перенаправляет на upload_group_file)
+result = await onebot.Api.upload_file(group_id=123456, file="/path/to/file.zip")
+
+# Указание аккаунта (множественные аккаунты)
+result = await onebot.Api.Using("main").get_self_info()
+
+# Несопоставленные действия OB11 вызываются через call() (универсальный метод для расширений, таких как NapCat/Lagrange)
+result = await onebot.Api.call("send_poke", group_id=123, user_id=456)
+```
+
+---
 
 ## Поддерживаемые типы отправки сообщений
 
@@ -15012,7 +15103,7 @@ OneBot12Adapter — это адаптер, построенный на осно�
 
 ## Информация о документе
 
-- Версия соответствующего модуля: 4.0.0
+- Версия соответствующего модуля: 4.3.0
 - Ответственный: ErisPulse
 - Версия протокола: OneBot V12
 
@@ -15022,6 +15113,68 @@ OneBot12Adapter — это адаптер, построенный на осно�
 - Название адаптера: OneBot12Adapter
 - Поддерживаемые версии протокола/API: OneBot V12
 - Поддержка нескольких аккаунтов: Полностью архитектура с поддержкой нескольких аккаунтов, позволяет одновременно настроить и запустить несколько OneBot12-аккаунтов.
+
+## Обновление парадигмы v5 (4.3.0)
+
+Адаптер успешно обновлён до парадигмы v5 (постепенное обновление, совместимость API):
+
+- **Наследование BaseConverter**: Общие поля преобразователя (id/time/platform/self/raw) создаются с помощью build_base_event фреймворка, и переопределяются по именам полей OB11 (echo/time/self_id)
+- **Принадлежность задачи spawn_background**: Задача подключения в режиме Client теперь использует runtime.spawn_background (принадлежит owner, автоматически освобождается при завершении)
+- **Мягкая зависимость от фреймворка**: Установка адаптера больше не требует жёсткой зависимости от ErisPulse, что предотвращает изменение версии фреймворка при разрешении зависимостей pip; во время выполнения проверяется ErisPulse>=2.7.1, и при слишком низкой версии выводится предупреждение в лог
+- **Журнал версии при запуске**: При инициализации выводится сообщение о загрузке OneBotAdapter v4.3.0
+
+Доступные возможности (поддержка начиная с 4.2.0): мультиаккаунт, стандартные действия Api DSL (get_self_info→get_login_info и т.д.), Request DSL (одобрение/отклонение запросов на добавление в друзья/в группу: event.approve() / event.reject()), EventMixin, i18n.
+
+---
+
+## Стандартные действия API (DSL API)
+
+OneBot12 поддерживает все стандартные имена действий OB12, API DSL по умолчанию напрямую делегирует call_api (без отображения):
+
+```python
+from ErisPulse import sdk
+ob12 = sdk.adapter.get("onebot12")
+
+result = await ob12.Api.get_self_info()
+result = await ob12.Api.get_friend_list()
+await ob12.Api.delete_message(message_id="MSG_ID")
+
+# Указание аккаунта (множественные аккаунты)
+result = await ob12.Api.Using("main").get_self_info()
+
+# Расширения платформы
+result = await ob12.Api.call("extend_action", param=1)
+```
+
+> Поддерживаемые действия определяются реализацией бэкенда (NapCat/Lagrange/LLOneBot и др.); действия, которые не поддерживаются бэкендом, возвращают ошибку и прозрачно передаются.
+
+## Операции с запросами (Request DSL)
+
+На основе стандарта OneBot12, действие handle_quick_request обрабатывает запросы от друзей и приглашения в группы, позволяя принять или отклонить их:
+
+### Удобные методы Event
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    if event.get("platform") != "onebot12":
+        return
+    comment = event.get("comment", "")
+    if comment == "passphrase":
+        await event.approve()      # Принять
+    else:
+        await event.reject()       # Отклонить
+```
+
+### Ручное вызов Request DSL
+
+```python
+await ob12.Request("request_flag").accept()
+await ob12.Request("request_flag").reject()
+await ob12.Request("request_flag").Using("main").accept()
+```
 
 ## Типы поддерживаемых сообщений
 
@@ -15457,7 +15610,7 @@ OneBot12 использует стандартизированный форма�
 
 ### Telegram 适配
 
-﻿# Характеристики платформы Telegram
+# Документация по функциям платформы Telegram
 
 TelegramAdapter — это адаптер, построенный на основе Telegram Bot API, поддерживающий различные типы сообщений и обработку событий.
 
@@ -15465,8 +15618,8 @@ TelegramAdapter — это адаптер, построенный на осно�
 
 ## Информация о документации
 
-- Версия соответствующего модуля: 4.1.1
-- Ответственный: ErisPulse
+- Соответствующая версия модуля: 4.2.0
+- Поддерживается: ErisPulse
 
 ## Основная информация
 
@@ -15474,6 +15627,60 @@ TelegramAdapter — это адаптер, построенный на осно�
 - Имя адаптера: TelegramAdapter
 - Поддерживаемый протокол/API-версия: Telegram Bot API
 - Сопоставление типов сессий: `private` → при отправке используется `user`, `group`/`supergroup` → `group`, `channel` → `channel`
+
+## Стандартные действия API (DSL API)
+
+Адаптер сопоставляет стандартные действия OB12 с Telegram Bot API и стандартизирует поле data:
+
+| Стандартное действие OB12 | Telegram API | Поле data |
+|--------------------------|--------------|-----------|
+| get_self_info | getMe | user_id / user_name / user_displayname |
+| get_user_info(user_id) | getChat | user_id / user_name / user_displayname |
+| get_group_info(group_id) | getChat | group_id / group_name |
+| get_group_member_info(group_id, user_id) | getChatMember | user_id / user_name / telegram_role |
+| delete_message(message_id) | deleteMessage | chat_id автоматически заполняется по таблице сообщений |
+| leave_group(group_id) | leaveChat | - |
+
+Расширенные действия: get_group_admin_list(group_id) (список администраторов), get_chat_member_count(chat_id) (количество участников).
+
+```python
+from ErisPulse import sdk
+telegram = sdk.adapter.get("telegram")
+
+result = await telegram.Api.get_self_info()
+result = await telegram.Api.get_group_info(group_id=-100123)
+result = await telegram.Api.get_group_admin_list(-100123)
+await telegram.Api.delete_message(message_id=55)   # chat_id автоматически заполняется
+result = await telegram.Api.Using("main").get_self_info()
+```
+
+> Telegram Bot API не имеет интерфейса для получения списка друзей/групп, get_friend_list/get_group_list возвращает errorcode=10002.
+
+---
+
+## Операции с запросами (Request DSL)
+
+Обработка запросов на добавление в группу (событие chat_join_request), на основе approveChatJoinRequest / declineChatJoinRequest:
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_request()
+async def handle_join_request(event):
+    if event.get("platform") != "telegram":
+        return
+    # event["request_id"] - это синтетический идентификатор (tjr_{chat_id}_{user_id}_{date})
+    if event.get("user_nickname"):
+        await event.approve()          # Подтвердить
+    # await event.reject()             # Отклонить
+
+# Вызов вручную (требуется предварительное получение соответствующего события запроса для регистрации контекста)
+await telegram.Request(event["request_id"]).accept()
+await telegram.Request(event["request_id"]).reject()
+await telegram.Request(event["request_id"]).Using("main").accept()
+```
+
+---
 
 ## Типы поддерживаемых сообщений
 
@@ -15849,22 +16056,62 @@ enabled = true
 
 # Документация по функциям платформы Yunhu
 
-YunhuAdapter — это адаптер, построенный на протоколе Yunhu, объединяющий все функциональные модули Yunhu и предоставляющий единый интерфейс обработки событий и операций сообщений.
+YunhuAdapter — это адаптер, построенный на базе протокола Yunhu, объединяющий все модули функций Yunhu и предоставляющий единый интерфейс обработки событий и операций сообщений.
 
 ---
 
 ## Информация о документации
 
-- Версия соответствующего модуля: 4.3.0
+- Версия соответствующего модуля: 4.4.0
 - Ответственный: ErisPulse
 
 ## Основная информация
 
-- Краткое описание платформы: Yunhu — корпоративная платформа мгновенной коммуникации
-- Название адаптера: YunhuAdapter
-- Поддержка нескольких аккаунтов: поддержка идентификации и настройки нескольких аккаунтов роботов Yunhu через bot_id
-- Поддержка цепочечных модификаторов: поддержка цепочечных методов модификации, таких как `.Reply()`
+- Описание платформы: Yunhu (云湖) — это корпоративная платформа мгновенного обмена сообщениями
+- Имя адаптера: YunhuAdapter
+- Поддержка нескольких аккаунтов: поддержка распознавания и настройки нескольких аккаунтов роботов Yunhu посредством bot_id
+- Поддержка цепочки модификаторов: поддержка цепочки модификаторов, таких как `.Reply()`
 - Совместимость с OneBot12: поддержка отправки сообщений в формате OneBot12
+
+## Обновление парадигмы v5 (4.4.0)
+
+Адаптер был обновлен до соответствия парадигме v5 (инкрементальное обновление, совместимость API):
+
+- **Полный набор официальных серверных API** (расширения методов DSL Api): редактирование сообщений, пакетная отправка, список сообщений, панели пользователей/глобальные панели, ограничение участников группы, удаление участников группы, контроль типов сообщений в группе, CRUD-операции с тегами групп, добавление тегов пользователям
+- **Стандартный сегмент keyboard** (стандартный компонент взаимодействия между платформами): сегмент {"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}} автоматически преобразуется в buttons облака; декораторы .Buttons(rows) / .Keyboard(rows) принимают общую структуру (оригинальная структура обратно совместима)
+- **Стандартные поля для обратного вызова взаимодействия**: события нажатия кнопок/A2UI включают стандартные поля interaction_id / button_data
+- **Принадлежность задачи spawn_background**: задачи WS-подключения теперь используют runtime.spawn_background
+- **Мягкие зависимости фреймворка**: во время выполнения проверяется наличие ErisPulse>=2.7.1 и выводится соответствующее уведомление; при запуске выводится лог версии
+
+### Платформенные расширенные действия (call / методы Api)
+
+```python
+from ErisPulse import sdk
+yunhu = sdk.adapter.get("yunhu")
+
+# Методы Api (официальные серверные API)
+await yunhu.Api.edit_message(msg_id, recv_id, "group", "text", {"text": "Новый контент"})
+await yunhu.Api.batch_send(["userId1", "userId2"], "text", {"text": "Анонс"})
+await yunhu.Api.get_message_list(group_id, "group", before=10)
+await yunhu.Api.set_user_board(chat_id, "group", "Содержание панели", expire_time=3600)
+await yunhu.Api.dismiss_global_board()
+await yunhu.Api.gag_group_member(group_id, user_id, 600)      # Запрет на 600 секунд, 0=отмена
+await yunhu.Api.remove_group_member(group_id, user_id)
+await yunhu.Api.set_group_msg_type_limit(group_id, "text,image")
+await yunhu.Api.create_group_tag(group_id, "VIP", color="#FF5733")
+await yunhu.Api.add_user_tag(group_id, user_id, "VIP")
+
+# Обратный вызов нажатия кнопки (стандартные поля)
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_button(event):
+    if event.get("platform") == "yunhu" and event.get("button_data"):
+        data = event["button_data"]     # Единый доступ к данным между платформами
+        interaction_id = event["interaction_id"]
+```
+
+> Подробное описание стандарта доступно в [Стандарте компонентов взаимодействия между платформами](../../standards/standardization-guide.md).
 
 ## Поддерживаемые типы отправки сообщений
 
@@ -15877,23 +16124,23 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 ```
 
 Поддерживаемые типы отправки включают:
-- `.Text(text: str)` — отправка текстового сообщения.
-- `.Html(html: str)` — отправка сообщения в формате HTML.
+- `.Text(text: str)` — отправка обычного текстового сообщения.
+- `.Html(html: str)` — отправка HTML-форматированного сообщения.
 - `.Markdown(markdown: str)` — отправка сообщения в формате Markdown.
 - `.A2UI(text: str)` — отправка сообщения в формате A2UI.
-- `.Image(file: bytes, stream: bool = False, filename: str = None)` — отправка изображения, поддержка потоковой загрузки и пользовательского имени файла.
-- `.Video(file: bytes, stream: bool = False, filename: str = None)` — отправка видео, поддержка потоковой загрузки и пользовательского имени файла.
-- `.File(file: bytes, stream: bool = False, filename: str = None)` — отправка файла, поддержка потоковой загрузки и пользовательского имени файла.
+- `.Image(file: bytes, stream: bool = False, filename: str = None)` — отправка изображения, поддержка потоковой загрузки и возможность указать имя файла.
+- `.Video(file: bytes, stream: bool = False, filename: str = None)` — отправка видео, поддержка потоковой загрузки и возможность указать имя файла.
+- `.File(file: bytes, stream: bool = False, filename: str = None)` — отправка файла, поддержка потоковой загрузки и возможность указать имя файла.
 - `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)` — массовая отправка сообщений.
 - `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)` — редактирование существующего сообщения.
 - `.Recall(msg_id: str)` — отмена отправки сообщения.
-- `.Board(content: str, content_type: str = "text")` — публикация на доске объявлений. Область действия определяется методом `To()` (указанный цель — локальная доска, не указано — глобальная доска). Цепочечные модификаторы: `.Expire(duration)` относительный срок действия (в секундах), `.ExpireAt(timestamp)` абсолютный срок действия (в секундах), `.ForMember(member_id)` доска для участника группы; **если содержимое пустое, автоматически превращается в отмену доски**. По-прежнему поддерживается старый стиль `Board("local", "Объявление")`.
-- `.DismissBoard()` — отмена доски объявлений. Область действия определяется методом `To()`, поддержка `.ForMember(member_id)`; по-прежнему поддерживается старый стиль `DismissBoard("local")`.
+- `.Board(content: str, content_type: str = "text")` — публикация сообщения на доске объявлений. Область действия определяется методом `To()` (указание цели = локальная доска, не указано = глобальная доска). Цепочка модификаторов: `.Expire(duration)` — относительное время истечения (в секундах), `.ExpireAt(timestamp)` — абсолютное время истечения (секундный временной штамп), `.ForMember(member_id)` — доска объявлений для участника группы; **при пустом содержимом автоматически преобразуется в отмену доски объявлений**. По-прежнему поддерживается старый способ явного указания области действия `Board("local", "公告")`.
+- `.DismissBoard()` — отмена доски объявлений. Область действия определяется методом `To()` и поддерживает `.ForMember(member_id)`; по-прежнему поддерживается старый способ `DismissBoard("local")`.
 - `.Stream(content_type: str, content_generator: AsyncGenerator, **kwargs)` — отправка потокового сообщения.
 
 ### Методы управления группами
 
-Все методы управления группами необходимо использовать с цепочечным синтаксисом, например:
+Все методы управления группами требуют цепочечного синтаксиса для указания группы, например:
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
@@ -15901,19 +16148,19 @@ yunhu = adapter.get("yunhu")
 await yunhu.Send.To("group", group_id).Kick(user_id)
 ```
 
-- `.Kick(user_id: str)` — исключение участника группы. Робот должен иметь права на исключение участников группы.
-- `.Ban(user_id: str, duration: int = 600)` — запрет на отправку сообщений пользователю. `duration` — длительность запрета (в секундах), 0 означает разрешение, -1 — пожизненный запрет. Робот должен иметь права на запрет пользователей.
-- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)` — создание тега группы. `color` имеет формат #RRGGBB, `sort` — чем меньше, тем выше в списке. Робот должен иметь права на управление тегами группы.
-- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)` — изменение тега группы. Параметры не обязательны, если не указаны, не изменяются. Робот должен иметь права на управление тегами группы.
-- `.DeleteTag(tag: str)` — удаление тега группы. Робот должен иметь права на управление тегами группы.
+- `.Kick(user_id: str)` — исключение участника из группы. Робот должен иметь права `Разрешить исключение участников из группы`.
+- `.Ban(user_id: str, duration: int = 600)` — мут участника. `duration` — длительность мута (в секундах), 0 — размут, -1 — пожизненный мут. Робот должен иметь права `Разрешить мутить участников`.
+- `.CreateTag(tag: str, color: str = None, desc: str = None, sort: int = None)` — создание тега группы. `color` в формате #RRGGBB, `sort` — чем меньше, тем выше в списке. Робот должен иметь права `Разрешить управлять тегами`.
+- `.EditTag(tag: str, new_tag: str = None, color: str = None, desc: str = None, sort: int = None)` — изменение тега группы. Каждый параметр необязателен, если не передан, то не изменяется. Робот должен иметь права `Разрешить управлять тегами`.
+- `.DeleteTag(tag: str)` — удаление тега группы. Робот должен иметь права `Разрешить управлять тегами`.
 - `.GetTagList()` — получение списка тегов группы. Возвращает данные с массивом `list`.
-- `.AddUserTag(user_id: str, tag: str)` — добавление тега пользователю. Робот должен иметь права на управление тегами группы.
-- `.RemoveUserTag(user_id: str, tag: str)` — удаление тега у пользователя. Робот должен иметь права на управление тегами группы.
-- `.SetMsgTypeLimit(types: str)` — ограничение типов сообщений в группе. `types` — имена типов сообщений, разделенные запятыми (например, `"text,image,video"`), пустая строка означает отсутствие ограничений. Робот должен иметь права на изменение информации о группе.
+- `.AddUserTag(user_id: str, tag: str)` — добавление тега участнику. Робот должен иметь права `Разрешить управлять тегами`.
+- `.RemoveUserTag(user_id: str, tag: str)` — удаление тега у участника. Робот должен иметь права `Разрешить управлять тегами`.
+- `.SetMsgTypeLimit(types: str)` — ограничение типов сообщений в группе. `types` — имена типов сообщений, разделенные запятыми (например, `"text,image,video"`), пустая строка означает отсутствие ограничений. Робот должен иметь права `Разрешить изменять информацию о группе`.
 
-### Методы получения сообщений
+### Методы запроса сообщений
 
-Получение списка истории сообщений в конкретном диалоге (пользователь/группа) необходимо использовать цепочечный синтаксис, например:
+Получение списка истории сообщений в указанном диалоге (пользователь/группа) требует цепочечного синтаксиса для указания цели, например:
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
@@ -15925,62 +16172,62 @@ result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
   - `message_id` — идентификатор сообщения (необязательно). Если не указан, в сочетании с `before` возвращает последние N сообщений.
   - `before` — возвращает N сообщений до указанного идентификатора.
   - `after` — возвращает N сообщений после указанного идентификатора.
-  - > **Внимание:** `before` и `after` должны быть указаны хотя бы один и больше нуля, иначе сервер не вернет никаких сообщений.
+  - > **Примечание:** необходимо указать хотя бы один из параметров `before` или `after`, и значение должно быть больше 0, иначе сервер не вернет никаких сообщений.
 
-Область действия доски объявлений определяется методом `To()`:
-- Указание `To(target_type, target_id)` → локальная доска (указанная группа/пользователь)
+Область действия доски объявлений определяется автоматически методом `To()`:
+- Указание `To(target_type, target_id)` → локальная доска (указанная цель/группа)
 - Не указано `To()` → глобальная доска
 
 ```python
-# Локальная доска (относительный срок действия 60 секунд)
-await yunhu.Send.To("group", group_id).Expire(60).Board("Объявление", content_type="markdown")
+# Локальная доска (относительное истечение через 60 секунд)
+await yunhu.Send.To("group", group_id).Expire(60).Board("公告", content_type="markdown")
 
 # Доска для участника группы (видна только указанному участнику)
-await yunhu.Send.To("group", group_id).ForMember(user_id).Board("Только ты видишь")
+await yunhu.Send.To("group", group_id).ForMember(user_id).Board("仅你可见")
 
-# Абсолютный срок действия по метке времени
-await yunhu.Send.To("group", group_id).ExpireAt(1785208268).Board("Объявление по указанному времени")
+# Абсолютное время истечения
+await yunhu.Send.To("group", group_id).ExpireAt(1785208268).Board("指定时间过期")
 
 # Глобальная доска
-await yunhu.Send.Board("Глобальное объявление")
+await yunhu.Send.Board("全局公告")
 
 # Очистка локальной доски (пустое содержимое → автоматическая отмена)
 await yunhu.Send.To("group", group_id).Board("")
 ```
 
-### Пояснение параметров кнопок
+### Параметры кнопок
 
-Параметр `buttons` представляет собой вложенный список, описывающий макет и функциональность кнопок. Каждый объект кнопки содержит следующие поля:
+Параметр `buttons` представляет собой вложенный список, описывающий расположение и функции кнопок. Каждый объект кнопки содержит следующие поля:
 
 | Поле         | Тип   | Обязательно | Описание                                                                 |
 |--------------|--------|----------|----------------------------------------------------------------------|
-| `text`       | string | Yes       | Текст на кнопке                                                         |
-| `actionType` | int    | Yes       | Тип действия：<br>`1`: переход по URL<br>`2`: копирование<br>`3`: отправка события |
-| `url`        | string | No       | Используется, когда `actionType=1`, указывает целевой URL для перехода                         |
-| `value`      | string | No       | Когда `actionType=2`, значение копируется в буфер обмена<br>Когда `actionType=3`, значение отправляется подписчику |
+| `text`       | string | Да       | Текст на кнопке                                                         |
+| `actionType` | int    | Да       | Тип действия:<br>`1`: переход по URL<br>`2`: копирование<br>`3`: отправка события            |
+| `url`        | string | Нет       | Используется, когда `actionType=1`, указывает целевой URL для перехода                         |
+| `value`      | string | Нет       | При `actionType=2` значение копируется в буфер обмена<br>При `actionType=3` значение отправляется подписчику |
 
 Пример:
 ```python
 buttons = [
     [
-        {"text": "Копировать", "actionType": 2, "value": "xxxx"},
-        {"text": "Перейти", "actionType": 1, "url": "http://www.baidu.com"},
-        {"text": "Сообщить событие", "actionType": 3, "value": "xxxxx"}
+        {"text": "复制", "actionType": 2, "value": "xxxx"},
+        {"text": "点击跳转", "actionType": 1, "url": "http://www.baidu.com"},
+        {"text": "汇报事件", "actionType": 3, "value": "xxxxx"}
     ]
 ]
-await yunhu.Send.To("user", user_id).Buttons(buttons).Text("Сообщение с кнопками")
+await yunhu.Send.To("user", user_id).Buttons(buttons).Text("带按钮的消息")
 ```
-> **Внимание:**
-> - Только при нажатии кнопки **сообщить событие** будет отправлено уведомление, **копирование** и **переход по URL** не могут получить уведомления.
+> **Примечание:**
+> - Только при нажатии кнопки типа **汇报事件** будет отправлено уведомление, кнопки **复制** и **跳转URL** не будут вызывать уведомления.
 
-### Цепочечные модификаторы (можно комбинировать)
+### Методы цепочечного модифицирования (можно комбинировать)
 
-Цепочечные модификаторы возвращают `self`, поддерживают цепочечное использование и должны вызываться до окончательного метода отправки:
+Методы цепочечного модифицирования возвращают `self`, поддерживают цепочечное использование и должны вызываться до окончательного метода отправки:
 
-- `.Reply(message_id: str)` — ответить на указанное сообщение.
-- `.At(user_id: str)` — упомянуть указанного пользователя.
-- `.AtAll()` — упомянуть всех.
-- `.Buttons(buttons: List)` — добавить кнопки.
+- `.Reply(message_id: str)` — ответ на указанное сообщение.
+- `.At(user_id: str)` — упоминание указанного пользователя.
+- `.AtAll()` — упоминание всех участников.
+- `.Buttons(buttons: List)` — добавление кнопок.
 
 ### Примеры цепочечного вызова
 
@@ -15989,10 +16236,10 @@ await yunhu.Send.To("user", user_id).Buttons(buttons).Text("Сообщение �
 await yunhu.Send.To("user", user_id).Text("Hello")
 
 # Ответ на сообщение
-await yunhu.Send.To("group", group_id).Reply(msg_id).Text("Ответ на сообщение")
+await yunhu.Send.To("group", group_id).Reply(msg_id).Text("回复消息")
 
 # Ответ + кнопки
-await yunhu.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("Сообщение с ответом и кнопками")
+await yunhu.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("带回复和按钮的消息")
 ```
 
 ### Примеры управления группами
@@ -16001,65 +16248,65 @@ await yunhu.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("Со
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
-# Исключение участника группы
+# Исключение участника из группы
 await yunhu.Send.To("group", group_id).Kick(user_id)
 
-# Запрет на отправку сообщений пользователю (10 минут)
+# Мут участника (10 минут)
 await yunhu.Send.To("group", group_id).Ban(user_id, duration=600)
 
-# Разрешение запрета
+# Размут
 await yunhu.Send.To("group", group_id).Ban(user_id, duration=0)
 
-# Пожизненный запрет
+# Пожизненный мут
 await yunhu.Send.To("group", group_id).Ban(user_id, duration=-1)
 
 # Создание тега группы
-await yunhu.Send.To("group", group_id).CreateTag("VIP-пользователь", color="#FF5733", desc="VIP-участник")
+await yunhu.Send.To("group", group_id).CreateTag("VIP用户", color="#FF5733", desc="VIP会员")
 
 # Изменение тега группы
-await yunhu.Send.To("group", group_id).EditTag("VIP-пользователь", new_tag="SVIP-пользователь", color="#33C4FF")
+await yunhu.Send.To("group", group_id).EditTag("VIP用户", new_tag="SVIP用户", color="#33C4FF")
 
 # Удаление тега группы
-await yunhu.Send.To("group", group_id).DeleteTag("VIP-пользователь")
+await yunhu.Send.To("group", group_id).DeleteTag("VIP用户")
 
 # Получение списка тегов группы
 result = await yunhu.Send.To("group", group_id).GetTagList()
 
-# Добавление тега пользователю
-await yunhu.Send.To("group", group_id).AddUserTag(user_id, "VIP-пользователь")
+# Добавление тега участнику
+await yunhu.Send.To("group", group_id).AddUserTag(user_id, "VIP用户")
 
-# Удаление тега у пользователя
-await yunhu.Send.To("group", group_id).RemoveUserTag(user_id, "VIP-пользователь")
+# Удаление тега у участника
+await yunhu.Send.To("group", group_id).RemoveUserTag(user_id, "VIP用户")
 
-# Ограничение типов сообщений в группе
+# Ограничение типов сообщений
 await yunhu.Send.To("group", group_id).SetMsgTypeLimit("text,image,video")
 
 # Отмена ограничения типов сообщений
 await yunhu.Send.To("group", group_id).SetMsgTypeLimit("")
 ```
 
-### Примеры получения сообщений
+### Примеры запроса сообщений
 
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
-# Получение последних 10 сообщений в группе (всего возвращается 10 сообщений)
+# Получение последних 10 сообщений группы (всего 10 сообщений)
 result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
 
-# Получение 10 сообщений до указанного идентификатора (всего возвращается 11 сообщений)
+# Получение 10 сообщений до указанного идентификатора (всего 11 сообщений)
 result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10)
 
-# Получение по 10 сообщений до и после указанного идентификатора (всего возвращается 21 сообщение)
+# Получение по 10 сообщений до и после указанного идентификатора (всего 21 сообщение)
 result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10, after=10)
 
-# Получение истории сообщений в диалоге с пользователем
+# Получение истории сообщений диалога с пользователем
 result = await yunhu.Send.To("user", user_id).GetMessages(message_id="msg_xxx", before=10)
 ```
 
 ### Поддержка OneBot12 сообщений
 
-Адаптер поддерживает отправку сообщений в формате OneBot12, что обеспечивает совместимость между платформами:
+Адаптер поддерживает отправку OneBot12 формата сообщений, что обеспечивает совместимость между платформами:
 
 - `.Raw_ob12(message: List[Dict], **kwargs)` — отправка сообщения в формате OneBot12.
 
@@ -16069,34 +16316,34 @@ ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await yunhu.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
 # В сочетании с цепочечными модификаторами
-ob12_msg = [{"type": "text", "data": {"text": "Ответ на сообщение"}}]
+ob12_msg = [{"type": "text", "data": {"text": "回复消息"}}]
 await yunhu.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 ```
 
-## Стандартные API действия (ApiDSL)
+## Стандартные действия API (ApiDSL)
 
 > [!NOTE]
 > Эта функция требует ErisPulse **2.7.0+** и YunhuAdapter **4.3.0+**.
 
-Помимо `Send` цепочечной отправки, адаптер предоставляет внутренний класс `Api`, который раскрывает стандартные действия OneBot12 и расширенные действия платформы Yunhu. Все методы возвращают стандартный формат ответа.
+Помимо цепочечной отправки `Send`, адаптер также предоставляет внутренний класс `Api`, который предоставляет стандартные действия API OneBot12 и расширенные действия платформы Yunhu. Все методы возвращают стандартный формат ответа.
 
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
-# Информация (через публичный Web API, без аутентификации)
-result = await yunhu.Api.get_self_info()              # Информация о роботе
+# Информационный запрос (через открытый Web API, без аутентификации)
+result = await yunhu.Api.get_self_info()              # Информация о самом боте
 result = await yunhu.Api.get_user_info("7058262")     # Информация о любом пользователе
 result = await yunhu.Api.get_group_info("635409929")  # Информация о группе
 
-# Файловые операции
+# Операции с файлами
 result = await yunhu.Api.upload_file(type="path", name="a.png", path="./a.png")
 result = await yunhu.Api.get_file("https://chat-file.jwznb.com/xxx")
 
-# Отмена сообщения (требуется дополнительный chat_id + chat_type)
+# Отмена сообщения (требуется дополнительная передача chat_id + chat_type)
 await yunhu.Api.delete_message("msg_id", chat_id="123", chat_type="group")
 
-# Многозадачность: указание учетной записи Bot
+# Множественные аккаунты: указание учетной записи бота
 info = await yunhu.Api.Using("bot1").get_self_info()
 ```
 
@@ -16104,85 +16351,85 @@ info = await yunhu.Api.Using("bot1").get_self_info()
 
 | Метод | Описание | Источник данных |
 |------|------|---------|
-| `get_self_info()` | Информация о роботе | Публичный Web API (bot-info) |
-| `get_user_info(user_id)` | Информация о пользователе (любой пользователь может запросить) | Публичный Web API (user/homepage) |
-| `get_group_info(group_id)` | Информация о группе | Публичный Web API (group-info) |
-| `upload_file(*, type, name, ...)` | Загрузка файла (автоматически определяет image/video/file) | Bot открытый API |
-| `get_file(file_id)` | Получение файла (file_id — это URL) | — |
-| `delete_message(message_id, *, chat_id, chat_type)` | Отмена сообщения | Bot открытый API (/bot/recall) |
+| `get_self_info()` | Информация о самом боте | Открытый Web API (bot-info) |
+| `get_user_info(user_id)` | Информация о пользователе (любой пользователь может получить доступ) | Открытый Web API (user/homepage) |
+| `get_group_info(group_id)` | Информация о группе | Открытый Web API (group-info) |
+| `upload_file(*, type, name, ...)` | Загрузка файла (автоматическое определение image/video/file) | Open API бота |
+| `get_file(file_id)` | Получение файла (file_id - это URL) | — |
+| `delete_message(message_id, *, chat_id, chat_type)` | Отмена сообщения | Open API бота (/bot/recall) |
 
-> **Внимание:** `get_self_info` / `get_user_info` / `get_group_info` реализованы через **непубличный публичный Web API** (chat-web-go.jwzhd.com). Эти интерфейсы не требуют аутентификации, но не являются официальной документацией и могут изменяться вместе с обновлениями платформы; в случае сбоя возвращается стандартный ответ об ошибке.
+> **Внимание**: `get_self_info` / `get_user_info` / `get_group_info` реализованы через **неофициальные открытые Web API** (chat-web-go.jwzhd.com). Эти интерфейсы не требуют аутентификации, но не документированы официально и могут меняться с обновлениями платформы; при сбое возвращается стандартный ответ об ошибке.
 
-### Неподдерживаемые стандартные действия
+### Не поддерживаемые стандартные действия
 
-Следующие стандартные действия не поддерживаются платформой Yunhu, вызов возвращает `retcode=10002` (не поддерживаемая операция):
-- `get_friend_list` (Bot открытый API "список пользователей робота" еще не доступен)
+Следующие стандартные действия отсутствуют в API Yunhu, при вызове возвращается `retcode=10002` (не поддерживаемая операция):
+- `get_friend_list` (список пользователей бота в Open API пока не доступен)
 - `get_group_list` / `get_group_member_info` / `get_group_member_list`
 - `set_group_name` / `leave_group`
 
 ### Расширенные действия платформы
 
-С помощью `Api.call("yunhu.xxx", **params)` вызываются расширенные действия Yunhu (параметры используют стиль именования OB12, адаптер автоматически переводит в поля Yunhu):
+Через `Api.call("yunhu.xxx", **params)` вызываются специфичные для Yunhu действия (параметры используют имена в стиле OB12, адаптер автоматически переводит их в поля Yunhu):
 
-| Расширенное действие | Описание | Эквивалент Send метода |
+| Расширенное действие | Описание | Эквивалентный метод Send |
 |---------|------|---------------|
 | `yunhu.recall` | Отмена сообщения (msg_id, chat_id, chat_type) | `Send.To(...).Recall(msg_id)` |
 | `yunhu.kick` | Исключение участника группы (group_id, user_id) | `Send.To("group", g).Kick(uid)` |
 | `yunhu.ban` | Запрет (group_id, user_id, duration) | `Send.To("group", g).Ban(uid, duration)` |
-| `yunhu.unban` | Разрешение запрета (group_id, user_id) | `Send.To("group", g).Ban(uid, duration=0)` |
-| `yunhu.tag.create/edit/delete/list` | CRUD тегов группы (group_id, ...) | `Send.To("group", g).CreateTag(...)` и т.д. |
-| `yunhu.tag.relate` / `yunhu.tag.relate_cancel` | Добавление/удаление тега у пользователя | `Send.To("group", g).AddUserTag(...)` и т.д. |
-| `yunhu.set_member_title` / `yunhu.unset_member_title` | **Синоним семантики титула участника** (тег ≈ титул, внутреннее сопоставление к tag.relate) | — |
-| `yunhu.msg_type_limit` | Ограничение типов сообщений в группе (group_id, type) | `Send.To("group", g).SetMsgTypeLimit(...)` |
+| `yunhu.unban` | Отмена запрета (group_id, user_id) | `Send.To("group", g).Ban(uid, duration=0)` |
+| `yunhu.tag.create/edit/delete/list` | CRUD-операции с тегами группы (group_id, ...) | `Send.To("group", g).CreateTag(...)` и т.д. |
+| `yunhu.tag.relate` / `yunhu.tag.relate_cancel` | Добавление/удаление тега для пользователя | `Send.To("group", g).AddUserTag(...)` и т.д. |
+| `yunhu.set_member_title` / `yunhu.unset_member_title` | **Синоним семантики заголовка участника** (тег ≈ заголовок, внутреннее сопоставление к tag.relate) | — |
+| `yunhu.msg_type_limit` | Ограничение типа сообщений в группе (group_id, type) | `Send.To("group", g).SetMsgTypeLimit(...)` |
 | `yunhu.get_messages` | Получение истории сообщений (chat_id, chat_type, message_id?, before?, after?) | `Send.To(...).GetMessages(...)` |
-| `yunhu.bot_info` | Публичный запрос информации о bot (bot_id) | — |
-| `yunhu.user_homepage` | Публичный запрос домашней страницы пользователя (user_id) | — |
+| `yunhu.bot_info` | Открытый запрос bot-info (bot_id) | — |
+| `yunhu.user_homepage` | Открытый запрос домашней страницы пользователя (user_id) | — |
 
 ```python
-# Пример расширенного действия
+# Примеры расширенных действий платформы
 await yunhu.Api.call("yunhu.kick", group_id="123", user_id="456")
 await yunhu.Api.call("yunhu.set_member_title", group_id="123", user_id="456", title="VIP")
 result = await yunhu.Api.call("yunhu.get_messages", chat_id="123", chat_type="group", before=10)
 ```
 
-> **Теги и титулы:** Семантика "тегов" в Yunhu эквивалентна OneBot12 `title` участника группы. `yunhu.set_member_title` — это синоним семантический для `yunhu.tag.relate`, оба внутренне сопоставляются с одним и тем же конечным пунктом. В событиях сообщений роль отправителя отображается из `senderUserLevel` в стандартное поле `role` (`owner/admin/member`).
+> **Теги и заголовки**: Семантика "тегов" в Yunhu эквивалентна OneBot12 для участника группы `title`. `yunhu.set_member_title` является семантическим синонимом `yunhu.tag.relate`, оба внутренне сопоставляются к одному конечному пункту. Роль отправителя в событии сообщения группы отображается через `senderUserLevel` в стандартное поле `role` (owner/admin/member).
 
 ## Возвращаемое значение методов отправки
 
-Все методы отправки возвращают объект Task, который можно ожидать для получения результата отправки. Возвращаемый результат соответствует стандартизированному формату ответа адаптера ErisPulse:
+Все методы отправки возвращают объект Task, который можно напрямую ожидать с помощью await для получения результата отправки. Возвращаемый результат соответствует стандартизированному формату ответа адаптера ErisPulse:
 
 ```python
 {
     "status": "ok",           // Статус выполнения
     "retcode": 0,             // Код возврата
     "data": {...},            // Данные ответа
-    "self": {...},            // Информация о себе (включает bot_id)
+    "self": {...},            // Информация о себе (содержит bot_id)
     "message_id": "123456",   // Идентификатор сообщения
     "message": "",            // Сообщение об ошибке
-    "yunhu_raw": {...}        // Оригинальные данные ответа
+    "yunhu_raw": {...}        // Необработанные данные ответа
 }
 ```
 
-## Уникальные типы событий
+## Типы событий, специфичные для платформы
 
-Требуется platform=="yunhu" для использования функций данной платформы
+Необходимо проверить platform=="yunhu", чтобы использовать функции данной платформы.
 
 ### Основные отличия
 
-1. Уникальные типы событий:
-    - Формы (например, команды формы): yunhu_form
-    - Эмодзи/стикер-сообщения: yunhu_expression
+1. Специфичные типы событий:
+    - Форма (например, форма-команда): yunhu_form
+    - Эмодзи/стикер-сообщение: yunhu_expression
     - Нажатие кнопки: yunhu_button_click
     - Нажатие кнопки A2UI: yunhu_a2ui_button
-    - Настройки робота: yunhu_bot_setting
-    - Быстрые меню: yunhu_shortcut_menu
+    - Настройка бота: yunhu_bot_setting
+    - Быстрое меню: yunhu_shortcut_menu
 2. Расширение стандартных полей (4.3.0+):
-    - В событиях сообщений добавлено стандартное поле `role` (отображается из `senderUserLevel` в `owner`/`admin`/`member`)
+    - В событиях сообщений добавлено стандартное поле `role` (отображается из yunhu `senderUserLevel` как `owner`/`admin`/`member`)
     - Добавлено поле `user_avatar` (URL аватара отправителя)
 3. Расширенные поля:
-    - Все уникальные поля имеют префикс yunhu_
-    - Сохраняются исходные данные в поле yunhu_raw
-    - В личных сообщениях self.user_id обозначает ID робота
+    - Все специфичные поля имеют префикс yunhu_
+    - Исходные данные сохраняются в поле yunhu_raw
+    - В личных сообщениях self.user_id обозначает ID бота
 
 ### Примеры специальных полей
 
@@ -16192,13 +16439,13 @@ result = await yunhu.Api.call("yunhu.get_messages", chat_id="123", chat_type="gr
   "type": "message",
   "detail_type": "private",
   "yunhu_command": {
-    "name": "Название команды формы",
+    "name": "Название формы",
     "id": "ID команды",
     "form": {
       "ID_поля1": {
         "id": "ID_поля1",
         "type": "input/textarea/select/radio/checkbox/switch",
-        "label": "Название поля",
+        "label": "Метка поля",
         "value": "Значение поля"
       }
     }
@@ -16231,7 +16478,7 @@ result = await yunhu.Api.call("yunhu.get_messages", chat_id="123", chat_type="gr
     "action_name": "Название действия",
     "source_component_id": "ID исходного компонента",
     "form_context": {},
-    "interaction_json": "Строка JSON с данными взаимодействия"
+    "interaction_json": "JSON-строка с данными взаимодействия"
   }
 }
 
@@ -16242,21 +16489,22 @@ from ErisPulse.Core.Event import notice
 
 @notice.on_notice()
 async def handle_yunhu_notice(event):
-    """Обработка уведомления Yunhu
+    """Обработка уведомления платформы Yunhu
 
-    Использование универсального декоратора on_notice() для обработки всех уведомлений,
-    затем через detail_type различаем типы уведомлений
-    event.reply() автоматически отправляет ответ через платформу Yunhu
+    Используйте общий декоратор on_notice() для обработки всех уведомлений,
+    затем различайте типы уведомлений по detail_type.
+    event.reply() автоматически отправит ответ через платформу Yunhu.
     """
-    # Проверка, является ли событие нажатия кнопки
+
+# Проверка, является ли событие нажатием кнопки
     if event.get("detail_type") == "yunhu_button_click":
         user_id = event.get_user_id()
         user_nickname = event.get_user_nickname()
         button_value = event.get("yunhu_button", {}).get("value", "")
 
-        print(f"Пользователь {user_nickname}({user_id}) нажал кнопку: {button_value}")
+        print(f"Пользователь {user_nickname}({user_id}) нажал на кнопку: {button_value}")
 
-        # Использование event.reply() для автоматической отправки ответа (согласно платформе)
+# Автоматическая отправка ответа с помощью event.reply() (система автоматически выбирает правильный способ отправки в зависимости от платформы)
         if button_value == "confirm":
             await event.reply("Вы нажали кнопку подтверждения!")
         elif button_value == "cancel":
@@ -16264,17 +16512,17 @@ async def handle_yunhu_notice(event):
         else:
             await event.reply(f"Получен ваш выбор: {button_value}")
 
-    # Обработка события быстрого меню
+# Обработка событий контекстного меню
     elif event.get("detail_type") == "yunhu_shortcut_menu":
         menu_id = event.get("yunhu_menu", {}).get("id", "")
-        await event.reply(f"Запущено быстрое меню: {menu_id}")
+        await event.reply(f"Сработало контекстное меню: {menu_id}")
 
-    # Обработка изменения настроек робота
+# Обработка изменений настроек бота
     elif event.get("detail_type") == "yunhu_bot_setting":
         settings = event.get("yunhu_setting", {})
         await event.reply(f"Настройки обновлены: {settings}")
 
-    # Обработка события кнопки A2UI
+# Обработка событий кнопок A2UI
     elif event.get("detail_type") == "yunhu_a2ui_button":
         a2ui = event.get("yunhu_a2ui", {})
         action_name = a2ui.get("action_name", "")
@@ -16282,7 +16530,7 @@ async def handle_yunhu_notice(event):
         await event.reply(f"Действие A2UI: {action_name}, данные формы: {form_context}")
 ```
 
-### Использование цепочечного вызова для отправки сообщений с кнопками
+### Использование цепочки вызовов для отправки сообщения с кнопками
 
 ```python
 from ErisPulse import sdk
@@ -16293,39 +16541,39 @@ buttons = [
     [
         {"text": "Подтвердить", "actionType": 3, "value": "confirm"},
         {"text": "Отменить", "actionType": 3, "value": "cancel"},
-        {"text": "Просмотреть подробности", "actionType": 1, "url": "http://example.com/detail"}
+        {"text": "Посмотреть подробнее", "actionType": 1, "url": "http://example.com/detail"}
     ]
 ]
 
 # Отправка сообщения с кнопками в группу
-await yunhu.Send.To("group", "123456").Buttons(buttons).Text("Пожалуйста, подтвердите следующую операцию")
+await yunhu.Send.To("group", "123456").Buttons(buttons).Text("Пожалуйста, подтвердите следующее действие")
 
-# Отправка сообщения с кнопками в личный чат
-await yunhu.Send.To("user", "789").Buttons(buttons).Text("Выберите свои предпочтения")
+# Отправка сообщения с кнопками в личный чат пользователя  
+await yunhu.Send.To("user", "789").Buttons(buttons).Text("Пожалуйста, выберите свои предпочтительные настройки")  
+
+### Отправка сообщения A2UI  
+
+```python  
+from ErisPulse import sdk  
+
+yunhu = sdk.adapter.get("yunhu")  
 ```
 
-### Отправка A2UI сообщений
-
-```python
-from ErisPulse import sdk
-
-yunhu = sdk.adapter.get("yunhu")
-
-# Отправка A2UI сообщений
+# Отправка сообщения A2UI
 await yunhu.Send.To("user", user_id).A2UI("Содержание интерактивной карточки A2UI")
 ```
 
-# Настройки робота
+# Настройка бота
 {
   "type": "notice",
   "detail_type": "yunhu_bot_setting",
   "group_id": "ID группы (может быть пустым)",
-  "user_nickname": "Никнейм пользователя",
+  "user_nickname": "Имя пользователя",
   "yunhu_setting": {
-    "ID_параметра": {
-      "id": "ID параметра",
+    "ID настройки": {
+      "id": "ID настройки",
       "type": "input/radio/checkbox/select/switch",
-      "value": "Значение параметра"
+      "value": "Значение настройки"
     }
   }
 }
@@ -16334,9 +16582,9 @@ await yunhu.Send.To("user", user_id).A2UI("Содержание интеракт
 {
   "type": "notice",
   "detail_type": "yunhu_shortcut_menu",
-  "user_id": "ID пользователя, вызвавшего меню",
-  "user_nickname": "Никнейм пользователя",
-  "group_id": "ID группы (если это чат группы)",
+  "user_id": "ID пользователя, запустившего меню",
+  "user_nickname": "Имя пользователя",
+  "group_id": "ID группы (если это групповой чат)",
   "yunhu_menu": {
     "id": "ID меню",
     "type": "Тип меню (целое число)",
@@ -16345,26 +16593,26 @@ await yunhu.Send.To("user", user_id).A2UI("Содержание интеракт
 }
 ```
 
-## Расширенные методы Event Mixin
+## Event Mixin Расширения
 
-Адаптер зарегистрировал следующие платформенные методы, доступные только при `platform == "yunhu"`:
+Адаптер зарегистрировал следующие методы, специфичные для платформы, доступные только при `platform == "yunhu"`:
 
-| Метод | Тип возвращаемого значения | Описание |
+| Метод | Возвращаемый тип | Описание |
 |------|----------|------|
 | `get_raw_event()` | `dict` | Получить исходные данные события Yunhu (`yunhu_raw`) |
-| `get_sender_level()` | `str` | Уровень отправителя на платформе Yunhu (`owner/administrator/member/unknown`) |
-| `get_sender_role()` | `str` | Роль отправителя по стандарту OneBot12 (`owner/admin/member`) |
-| `get_sender_title()` | `str` | Титул отправителя (доступ к стандартному полю `title`, зарезервировано) |
+| `get_sender_level()` | `str` | Уровень отправителя Yunhu (owner/administrator/member/unknown) |
+| `get_sender_role()` | `str` | Роль отправителя в стандартном формате OneBot12 (owner/admin/member) |
+| `get_sender_title()` | `str` | Титул отправителя (резервный доступ к полю `title`) |
 | `get_sender_avatar()` | `str` | URL аватара отправителя |
-| `get_command()` | `dict` | Данные команды (только для событий команды, `yunhu_command`) |
-| `get_button_value()` | `str` | Значение кнопки в событии нажатия кнопки (`yunhu_button.value`) |
-| `get_a2ui_action()` | `str` | Действие A2UI в событии кнопки (`actionName`) |
-| `get_a2ui_form_context()` | `dict` | Контекст формы A2UI в событии кнопки |
-| `get_menu_id()` | `str` | ID события быстрого меню (`yunhu_menu.id`) |
-| `get_setting()` | `dict` | Данные настроек в событии изменения настроек (`yunhu_setting`) |
-| `is_command_message()` | `bool` | Является ли событие командой |
-| `is_button_click()` | `bool` | Является ли событие нажатием кнопки |
-| `is_a2ui_button()` | `bool` | Является ли событие нажатием кнопки A2UI |
+| `get_command()` | `dict` | Данные команды (только для событий сообщений команд, `yunhu_command`) |
+| `get_button_value()` | `str` | Значение кнопки в событии нажатия (поле `yunhu_button.value`) |
+| `get_a2ui_action()` | `str` | Название действия кнопки A2UI |
+| `get_a2ui_form_context()` | `dict` | Контекст формы события кнопки A2UI |
+| `get_menu_id()` | `str` | Идентификатор события быстрого меню (поле `yunhu_menu.id`) |
+| `get_setting()` | `dict` | Данные настроек события робота (поле `yunhu_setting`) |
+| `is_command_message()` | `bool` | Является ли сообщение командой |
+| `is_button_click()` | `bool` | Является ли событием нажатия кнопки |
+| `is_a2ui_button()` | `bool` | Является ли событием кнопки A2UI |
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -16382,21 +16630,21 @@ async def handle_yunhu_notice(event):
         menu_id = event.get_menu_id()
 ```
 
-## Пояснение расширенных полей
+## Описание расширенных полей
 
-- Все уникальные поля имеют префикс `yunhu_`, чтобы избежать конфликта с стандартными полями
-- Сохраняются исходные данные в поле `yunhu_raw`, для доступа к полным исходным данным платформы Yunhu
-- `self.user_id` обозначает ID робота (получается из конфигурации bot_id)
-- Команды формы предоставляются через поле `yunhu_command`
-- События нажатия кнопки предоставляются через поле `yunhu_button`
-- События нажатия кнопки A2UI предоставляются через поле `yunhu_a2ui`
-- События изменения настроек робота предоставляются через поле `yunhu_setting`
-- События быстрого меню предоставляются через поле `yunhu_menu`
-- Эмодзи/стикер-сообщения предоставляются через сегмент `yunhu_expression` со стикер-данными (sticker_id, ID пакета стикеров, размер изображения и т.д.)
+- Все специфические поля имеют префикс `yunhu_`, чтобы избежать конфликта с стандартными полями
+- Исходные данные сохраняются в поле `yunhu_raw`, что позволяет получить доступ к полным исходным данным платформы Yunhu
+- `self.user_id` обозначает ID бота (получается из конфигурации через bot_id)
+- Команды формы предоставляются в виде структурированных данных через поле `yunhu_command`
+- События нажатия кнопки предоставляются через поле `yunhu_button`, содержащее информацию о кнопке
+- События кнопок A2UI предоставляются через поле `yunhu_a2ui`, содержащее информацию об A2UI-взаимодействии
+- Изменения настроек бота предоставляются через поле `yunhu_setting`, содержащее данные настроек
+- Операции с быстрым меню предоставляются через поле `yunhu_menu`, содержащее информацию о меню
+- Сообщения с эмодзи/наклейками предоставляются через сегмент сообщения `yunhu_expression`, содержащий данные о наклейке (sticker_id, ID набора наклеек, размеры изображения и т.д.)
 
-### Сегмент эмодзи/стикера (yunhu_expression)
+### Сегмент сообщения с эмодзи/наклейками (yunhu_expression)
 
-При отправке пользователем эмодзи или стикера тип сегмента сообщения — `yunhu_expression`:
+Когда пользователь отправляет эмодзи или наклейку, тип сегмента сообщения будет `yunhu_expression`:
 
 ```json
 {
@@ -16414,12 +16662,12 @@ async def handle_yunhu_notice(event):
 
 | Поле | Тип | Описание |
 |------|------|------|
-| `sticker_id` | string | Уникальный идентификатор стикера |
-| `sticker_pack_id` | string | ID пакета стикеров |
+| `sticker_id` | string | Уникальный идентификатор наклейки |
+| `sticker_pack_id` | string | ID набора наклеек |
 | `expression_id` | string | ID эмодзи |
-| `image_name` | string | Путь к файлу изображения стикера |
-| `width` | int | Ширина изображения (опционально) |
-| `height` | int | Высота изображения (опционально) |
+| `image_name` | string | Путь к файлу изображения эмодзи |
+| `width` | int | Ширина изображения (необязательно) |
+| `height` | int | Высота изображения (необязательно) |
 
 Пример использования:
 ```python
@@ -16431,69 +16679,67 @@ async def handle_message(event):
         for segment in event.get("message", []):
             if segment.get("type") == "yunhu_expression":
                 data = segment["data"]
-                print(f"Получен стикер: sticker_id={data['sticker_id']}, ID пакета={data['sticker_pack_id']}")
+                print(f"Получен эмодзи: sticker_id={data['sticker_id']}, ID пака={data['sticker_pack_id']}")
 ```
 
----
-
-## Конфигурация нескольких роботов
+## Многоботная конфигурация
 
 ### Описание конфигурации
 
-Адаптер Yunhu поддерживает одновременную конфигурацию и запуск нескольких роботов платформы Yunhu.
+Адаптер Yunhu поддерживает одновременную настройку и запуск нескольких аккаунтов ботов Yunhu.
 
 ```toml
 # config.toml
 [Yunhu_Adapter.accounts.bot1]
-token = "your_bot1_token"  # API токен робота (обязательно)
-mode = "ws"  # Режим приема (опционально, по умолчанию "ws", значения: "ws", "webhook")
-webhook_path = "/webhook/bot1"  # Путь для webhook (опционально, по умолчанию "/webhook")
-enabled = true  # Включить ли аккаунт (опционально, по умолчанию true)
+token = "your_bot1_token"  # Токен бота (обязательно)
+mode = "ws"  # Режим получения (необязательно, по умолчанию "ws", доступны значения: "ws", "webhook")
+webhook_path = "/webhook/bot1"  # Путь для webhook (необязательно, по умолчанию "/webhook")
+enabled = true  # Включить аккаунт (необязательно, по умолчанию true)
 
 [Yunhu_Adapter.accounts.bot2]
-token = "your_bot2_token"  # Токен второго робота
+token = "your_bot2_token"  # Токен второго бота
 webhook_path = "/webhook/bot2"  # Отдельный путь для webhook
 enabled = true
 ```
 
-**Описание параметров конфигурации:**
-- `token` — API токен, предоставленный платформой Yunhu (обязательно)
-- `mode` — режим приема (опционально, по умолчанию "ws", значения: "ws", "webhook")
-- `webhook_path` — HTTP путь для приема событий Yunhu (опционально, по умолчанию "/webhook", используется только в режиме webhook)
-- `enabled` — включен ли аккаунт (опционально, по умолчанию true)
+**Описание параметров:**
+- `token`: API-токен, предоставляемый платформой Yunhu (обязательно)
+- `mode`: Режим получения (необязательно, по умолчанию "ws", доступны значения "ws", "webhook")
+- `webhook_path`: HTTP-путь для получения событий Yunhu (необязательно, по умолчанию "/webhook", используется только в режиме webhook)
+- `enabled`: Включить этот аккаунт (необязательно, по умолчанию true)
 
-**Важные указания:**
-1. ID робота платформы Yunhu автоматически определяется во время выполнения, не требуется указывать в конфигурации
-2. В режиме webhook каждый робот должен иметь отдельный `webhook_path` для приема событий
-3. При настройке webhook на платформе Yunhu, настройте соответствующий URL для каждого робота, например:
+**Важные замечания:**
+1. Идентификатор бота на платформе Yunhu **автоматически определяется во время запуска**, не нужно указывать его в конфигурации
+2. В режиме webhook каждый бот должен иметь уникальный `webhook_path` для получения соответствующих событий webhook
+3. При настройке webhook на платформе Yunhu, для каждого бота нужно указать соответствующий URL, например:
    - Bot1: `https://your-domain.com/webhook/bot1`
    - Bot2: `https://your-domain.com/webhook/bot2`
 
-### Использование Send DSL для указания робота
+### Использование Send DSL для указания бота
 
-Можно использовать метод `Using()` для указания робота, через которого отправлять сообщение. Этот метод поддерживает два параметра:
-- **Имя аккаунта** — имя робота в конфигурации (например, `bot1`, `bot2`)
-- **bot_id** — значение `bot_id` в конфигурации
+Можно использовать метод `Using()` для указания бота, через которого будет отправлено сообщение. Этот метод поддерживает два параметра:
+- **Имя аккаунта**: имя бота из конфигурации (например, `bot1`, `bot2`)
+- **bot_id**: значение `bot_id` из конфигурации
 
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
-# Использование имени аккаунта для отправки сообщения
+# Отправка сообщения через имя аккаунта
 await yunhu.Send.Using("bot1").To("user", "user123").Text("Hello from bot1!")
 
-# Использование bot_id для отправки сообщения (автоматически сопоставляется с соответствующим аккаунтом)
+# Отправка сообщения через bot_id (автоматически сопоставляется с соответствующим аккаунтом)
 await yunhu.Send.Using("30535459").To("group", "group456").Text("Hello from bot!")
 
-# Если не указать, используется первый включенный робот
+# Без указания бота используется первый включенный бот
 await yunhu.Send.To("user", "user123").Text("Hello from default bot!")
 ```
 
-> **Примечание:** При использовании `bot_id` система автоматически находит соответствующий аккаунт в конфигурации. Это особенно полезно при обработке событий, где можно использовать `event["self"]["user_id"]` для ответа на то же аккаунт.
+> **Подсказка:** При использовании `bot_id` система автоматически находит соответствующий аккаунт в конфигурации. Это особенно полезно при обработке ответов на события, где можно использовать `event["self"]["user_id"]` для ответа через тот же аккаунт.
 
-### ID робота в событиях
+### Идентификация бота в событиях
 
-Полученные события автоматически содержат информацию об ID робота:
+Полученные события автоматически содержат информацию о `bot_id`:
 
 ```python
 from ErisPulse.Core.Event import message
@@ -16501,100 +16747,100 @@ from ErisPulse.Core.Event import message
 @message.on_message()
 async def handle_message(event):
     if event["platform"] == "yunhu":
-        # Получить ID робота, вызвавшего событие
+        # Получение ID бота, который вызвал событие
         bot_id = event["self"]["user_id"]
-        print(f"Сообщение от робота: {bot_id}")
+        print(f"Сообщение пришло от бота: {bot_id}")
         
-        # Использовать того же робота для ответа
+        # Ответ через того же бота
         yunhu = adapter.get("yunhu")
         await yunhu.Send.Using(bot_id).To(
             event["detail_type"],
             event["user_id"] if event["detail_type"] == "private" else event["group_id"]
-        ).Text("Ответное сообщение")
+        ).Text("Ответ на сообщение")
 ```
 
-### Информация в журнале
+### Информация в логах
 
-Адаптер автоматически включает `bot_id` в журнал для удобства отладки и отслеживания:
+Адаптер автоматически включает `bot_id` в логи, что облегчает отладку и отслеживание:
 
 ```
-[INFO] [yunhu] [bot:30535459] Получено сообщение от пользователя user123
+[INFO] [yunhu] [bot:30535459] Получено личное сообщение от пользователя user123
 [INFO] [yunhu] [bot:12345678] Сообщение успешно отправлено, message_id: abc123
 ```
 
 ### Интерфейс управления
 
 ```python
-# Получить информацию обо всех аккаунтах
+# Получение информации обо всех аккаунтах
 bots = yunhu.bots
 
-# Проверить статус аккаунта
+# Проверка статуса аккаунта
 bot_status = {
     bot_name: bot_config.enabled
     for bot_name, bot_config in yunhu.bots.items()
 }
 
-# Динамически включить/отключить аккаунт (требуется перезапуск адаптера)
+# Динамическое включение/выключение аккаунта (требуется перезапуск адаптера)
 yunhu.bots["bot1"].enabled = False
 ```
 
 ### Совместимость со старой конфигурацией
 
-Старые конфигурации в формате `[Yunhu_Adapter.bots.*]` (с полем `bot_id`) автоматически мигрируются в формат `accounts` (`bot_id` теперь определяется во время выполнения, значения в конфигурации игнорируются); рекомендуется как можно скорее перейти на новый формат.
+Старая конфигурация `[Yunhu_Adapter.bots.*]` (с полем `bot_id`) автоматически мигрируется в формат `accounts` (`bot_id` теперь определяется во время запуска, значение в конфигурации игнорируется); рекомендуется как можно скорее перейти на новый формат.
 
 
 
 ### 邮件适配
 
-# Документация по функциональности почтовой платформы
+# Документация по функциональным возможностям почтовой платформы
 
-EmailAdapter — это почтовый адаптер на основе протоколов SMTP/IMAP, поддерживающий отправку, получение и обработку электронной почты.
+EmailAdapter — это почтовый адаптер, основанный на протоколах SMTP/IMAP, поддерживающий отправку, получение и обработку электронной почты.
 
 ---
 
 ## Информация о документации
 
-- Версия соответствующего модуля: 4.1.0
+- Версия соответствующего модуля: 4.2.0
 - Ответственный: ErisPulse
 
 ## Основная информация
 
-- Краткое описание: Общий адаптер для отправки и получения почты с использованием стандартных протоколов SMTP/IMAP
+- Краткое описание платформы: универсальный адаптер для отправки и получения почты через стандартные протоколы SMTP/IMAP
 - Название адаптера: EmailAdapter
-- Поддержка нескольких аккаунтов: Поддерживает одновременную настройку нескольких почтовых аккаунтов
-- Способ подключения: Получение по протоколу IMAP с использованием длинного опроса + отправка по SMTP
-- Способ аутентификации: Адрес электронной почты + пароль/код авторизации
-- Совместимость с OneBot12: Поддерживает отправку сообщений в формате OneBot12
+- Поддержка нескольких аккаунтов: поддерживает настройку нескольких почтовых аккаунтов одновременно
+- Способ подключения: получение через IMAP-длинный опрос + отправка через SMTP
+- Способ аутентификации: адрес электронной почты + пароль/код авторизации
+- Совместимость с OneBot12: поддерживает отправку сообщений в формате OneBot12
 
-## Описание конфигурации
+## Инструкция по конфигурации
 
 ### Глобальная конфигурация (EmailAdapter)
 
 | Параметр | Тип | Значение по умолчанию | Описание |
-|----------|-----|-----------------------|----------|
+|----------|-----|------------------------|----------|
 | `imap_server` | str | `imap.example.com` | Адрес сервера IMAP по умолчанию |
 | `imap_port` | int | `993` | Порт IMAP по умолчанию |
 | `smtp_server` | str | `smtp.example.com` | Адрес сервера SMTP по умолчанию |
 | `smtp_port` | int | `465` | Порт SMTP по умолчанию |
-| `ssl` | bool | `true` | Использовать ли SSL по умолчанию |
-| `timeout` | int | `30` | Время ожидания подключения (секунды) |
+| `ssl` | bool | `true` | Использовать SSL по умолчанию |
+| `timeout` | int | `30` | Время ожидания подключения по умолчанию (секунды) |
 | `poll_interval` | int | `60` | Интервал опроса IMAP (секунды) |
 | `max_retries` | int | `3` | Максимальное количество попыток при неудачном подключении |
 
-### Конфигурация аккаунтов (EmailAdapter.accounts)
+### Конфигурация аккаунта (EmailAdapter.accounts)
 
-Каждый аккаунт соответствует отдельной почте. Настройки аккаунта имеют приоритет над глобальными.
+Каждый аккаунт соответствует отдельной электронной почте. Конфигурация аккаунта имеет приоритет над глобальной конфигурацией.
 
 ```toml
 [EmailAdapter.accounts.default]
 email = "user@example.com"
 password = "your-password-or-auth-code"
-imap_server = "imap.example.com"    # Необязательно, оставьте пустым, чтобы использовать глобальное значение по умолчанию
-imap_port = 993                      # Необязательно
-smtp_server = "smtp.example.com"    # Необязательно
-smtp_port = 465                      # Необязательно
-ssl = true                           # Необязательно
-timeout = 30                         # Необязательно
+imap_server = "imap.example.com"    # Опционально, оставьте пустым для использования глобального значения по умолчанию
+imap_port = 993                      # Опционально
+smtp_server = "smtp.example.com"    # Опционально
+smtp_port = 465                      # Опционально
+ssl = true                           # Опционально
+timeout = 30                         # Опционально
 enabled = true
 
 [EmailAdapter.accounts.backup]
@@ -16603,7 +16849,22 @@ password = "another-password"
 enabled = true
 ```
 
-## Поддерживаемые типы отправки сообщений
+## Обновление парадигмы v5 (4.2.0)
+
+- **Минимальный набор Api DSL**: get_self_info (адрес электронной почты)/get_status/get_version/get_supported_actions
+- **Принадлежность задачи spawn_background**: Задачи IMAP-опроса теперь используют runtime.spawn_background
+- **Мягкая зависимость от фреймворка**: Проверка наличия ErisPulse>=2.7.1 во время выполнения с соответствующим сообщением; вывод логов версии при запуске
+- Обновление путей импорта до Core.Bases; _load_accounts сохраняется (глобальные значения по умолчанию объединяются в логику, специфичную для этого адаптера)
+
+---
+
+### Поддерживаемые возможности платформ
+
+- **Прием**: Опрос IMAP для получения писем (анализ тела/HTML/вложений в сообщения), обнаружение новых непрочитанных писем
+- **Отправка**: Отправка писем через SMTP (Subject/Text/Html/Cc/Bcc/ReplyTo/Attachment), поддержка нескольких учетных записей
+- **API**: Информация о счетах и статус выполнения (минимальный набор); понятия отмены писем/группы не применимы
+
+## Типы поддерживаемых отправляемых сообщений
 
 Все методы отправки реализованы с использованием цепочечного синтаксиса:
 
@@ -16621,54 +16882,54 @@ await mail.Send.To("private", "to@example.com") \
     .Attachment("report.pdf") \
     .Html("<h1>HTML-содержание</h1>")
 
-# Отправка стандартного сообщения OB12 с помощью Raw_ob12
+# Использование Raw_ob12 для отправки стандартных сообщений OB12
 await mail.Send.To("private", "to@example.com").Raw_ob12([
     {"type": "text", "data": {"text": "Текст письма"}},
     {"type": "file", "data": {"file": "/path/to/attachment.pdf"}},
 ])
 
-# Указание аккаунта отправки (множественные аккаунты)
+# Указание учетной записи для отправки (множественные учетные записи)
 await mail.Send.Using("default").To("private", "to@example.com").Text("Содержание")
 ```
 
-> Примечание: При использовании цепочечного синтаксиса методы параметров (Subject / Cc / Attachment и т.д.) должны вызываться до метода отправки (Text / Html / Raw_ob12).
+> Важно: при использовании цепочечного синтаксиса методы с параметрами (Subject / Cc / Attachment и т.д.) должны вызываться до методов отправки (Text / Html / Raw_ob12).
 
 ### Основные методы отправки
 
 | Метод | Описание |
-|-------|----------|
-| `.Text(text: str)` | Отправка простого текстового письма |
+|------|------|
+| `.Text(text: str)` | Отправка текстового письма |
 | `.Html(html: str)` | Отправка письма в формате HTML |
 | `.Raw_ob12(message, **kwargs)` | Отправка сообщения в формате OneBot12 |
 
-### Методы цепочки (возвращают self, могут использоваться вместе)
+### Методы цепочечного синтаксиса (возвращают self, могут использоваться в комбинации)
 
 | Метод | Описание |
-|-------|----------|
+|------|------|
 | `.Subject(subject: str)` | Установка темы письма |
-| `.Cc(emails: Union[str, List[str]])` | Установка адресов копии (Cc) |
-| `.Bcc(emails: Union[str, List[str]])` | Установка адресов скрытой копии (Bcc) |
-| `.ReplyTo(email: str)` | Установка адреса ответа |
+| `.Cc(emails: Union[str, List[str]])` | Установка адресов копии |
+| `.Bcc(emails: Union[str, List[str]])` | Установка адресов скрытой копии |
+| `.ReplyTo(email: str)` | Установка адреса для ответа |
 | `.Attachment(file, filename: str = None)` | Добавление вложения |
 
-### Обратное преобразование сообщений OB12 (Raw_ob12)
+### Обратное преобразование OB12-сегментов сообщений (Raw_ob12)
 
-| Сегмент OB12 | Преобразование в содержание письма |
-|-------------|----------------------------------|
-| `text` | Текстовое содержание письма |
-| `image` | Вложение с изображением |
-| `video` | Вложение с видео |
-| `file` | Вложение с файлом |
-| `audio` | Вложение с аудио |
-| `markdown` | Преобразование в HTML-содержание письма |
+| OB12-сегмент | Преобразование в содержимое письма |
+|------------|--------------|
+| `text` | Текстовое содержимое |
+| `image` | Вложение-изображение |
+| `video` | Вложение-видео |
+| `file` | Вложение-файл |
+| `audio` | Вложение-аудио |
+| `markdown` | Преобразование в HTML-содержимое |
 
-## Специфические типы событий
+## Типы событий, специфичные для почты
 
-### Основные отличия
+### Основные различия
 
-1. Все события почты имеют тип `message`, `detail_type` фиксирован как `private`
-2. `user_id` — это чистый адрес электронной почты отправителя, `user_nickname` — имя отправителя
-3. `message` — сегменты стандартного формата OB12 (сегмент text + сегмент file)
+1. Все почтовые события имеют тип `message`, а `detail_type` всегда равен `private`
+2. `user_id` — это **чистый адрес электронной почты** отправителя, а `user_nickname` — отображаемое имя отправителя
+3. Сегмент `message` сообщения имеет стандартный формат OB12 (сегмент text + сегмент file)
 4. Тема письма доступна через расширенное поле `email_subject`
 5. Полные исходные данные сохраняются в поле `email_raw`
 
@@ -16689,7 +16950,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Соде�
     {
       "type": "text",
       "data": {
-        "text": "Содержание письма"
+        "text": "Содержимое тела письма"
       }
     }
   ],
@@ -16699,7 +16960,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Соде�
 }
 ```
 
-### Письмо с вложениями
+### Письмо с вложением
 
 ```json
 {
@@ -16724,7 +16985,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Соде�
 
 ### Событие ответа на письмо (email_reply)
 
-Когда письмо содержит заголовки `References` или `In-Reply-To`, `email_raw_type` имеет значение `email_reply`:
+Когда письмо содержит заголовки `References` или `In-Reply-To`, `email_raw_type` принимает значение `email_reply`:
 
 ```json
 {
@@ -16739,16 +17000,16 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Соде�
 ## Описание расширенных полей
 
 | Поле | Тип | Описание |
-|------|-----|----------|
-| `email_raw` | dict | Полные исходные данные письма (subject/from/to/date/cc/bcc/text_content/html_content/attachments и т.д.) |
-| `email_raw_type` | str | Тип исходного события: `email_new` (новое письмо) или `email_reply` (ответ на письмо) |
-| `email_subject` | str | Тема письма (удобный доступ) |
-| `email_from` | str | Адрес отправителя (удобный доступ) |
-| `attachments` | list | Список данных вложений (содержит двоичные данные `data`, обратная совместимость) |
+|------|------|------|
+| `email_raw` | dict | Полные исходные данные электронной почты (subject/from/to/date/cc/bcc/text_content/html_content/attachments и т.д.) |
+| `email_raw_type` | str | Тип исходного события: `email_new` (новое письмо) или `email_reply` (ответное письмо) |
+| `email_subject` | str | Тема письма (быстрый доступ) |
+| `email_from` | str | Адрес электронной почты отправителя (быстрый доступ) |
+| `attachments` | list | Список данных вложений (содержит двоичное поле `data`, обратная совместимость) |
 
 ## Примеры стандартных событий
 
-### Полное событие письма
+### Полное событие электронной почты
 
 ```json
 {
@@ -16808,7 +17069,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Соде�
 }
 ```
 
-## Возвращаемые значения методов отправки
+## Возвращаемое значение метода отправки
 
 ```json
 {
@@ -16827,7 +17088,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Соде�
 }
 ```
 
-## Примеры обработки событий
+## Пример обработки событий
 
 ```python
 from ErisPulse.Core.Event import message
@@ -16836,16 +17097,16 @@ from ErisPulse.Core.Event import message
 async def handle_email(event):
     if event.get("platform") != "email":
         return
-    # Адрес отправителя
+    # Адрес отправителя (только почта)
     sender = event["user_id"]              # sender@example.com
     
-    # Имя отправителя
+    # Отображаемое имя отправителя
     nickname = event.get("user_nickname")  # Sender
     
     # Тема письма
     subject = event.get("email_subject")   # Уведомление о встрече
     
-    # Текстовое содержание (первый сегмент text)
+    # Текстовое тело (первый текстовый сегмент)
     text = event.get_text()
     
     # Полные исходные данные
@@ -16874,8 +17135,8 @@ KookAdapter — это адаптер, построенный на основе 
 
 ## Информация о документации
 
-- Версия соответствующего модуля: 0.1.0
-- Ответственный: ShanFish
+- Версия соответствующего модуля: 4.1.0
+- Поддержка: ShanFish
 
 ## Основная информация
 
@@ -16918,6 +17179,49 @@ enabled = true
 **Среда API:**
 - Базовый адрес API Kook: `https://www.kookapp.cn/api/v3`
 - WebSocket-шлюз получается динамически через API: `POST /gateway/index`
+
+## Обновление парадигмы v5 (4.1.0)
+
+Данный адаптер завершил выравнивание по парадигме v5 (инкрементальное обновление, API-совместимость):
+
+- **Наследование BaseConverter**: Общие поля преобразователя строятся фреймворком `build_base_event`
+- **Api DSL**: Стандартное сопоставление действий Api (см. ниже)
+- **Стандартный сегмент keyboard**: `{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}}` Текст и клавиатура автоматически комбинируются в сообщение-карточку Kook (section + action-group); декоратор .Keyboard(rows) принимает общую структуру
+- **Принадлежность задачи spawn_background**: Задачи подключения используют runtime.spawn_background
+- **Мягкая зависимость от фреймворка**: Время выполнения проверяет ErisPulse>=2.7.1 и выводит подсказку; при запуске выводится лог версии
+
+### Стандартные действия Api
+
+```python
+from ErisPulse import sdk
+kook = sdk.adapter.get("kook")
+
+result = await kook.Api.get_self_info()              # GET /users/@me
+result = await kook.Api.get_user_info(user_id)       # POST /user/view
+result = await kook.Api.get_guild_info(guild_id)     # POST /guild/view
+result = await kook.Api.get_guild_list()             # POST /guild/list
+result = await kook.Api.get_channel_info(channel_id) # POST /channel/view
+result = await kook.Api.get_channel_list(guild_id)   # POST /channel/list
+await kook.Api.delete_message(msg_id)                # POST /message/delete
+result = await kook.Api.Using("main").get_self_info()
+```
+
+### Кнопки (keyboard)
+
+```python
+rows = [[{"label": "Опция A", "type": "callback", "data": "vote:A"},
+         {"label": "Официальный сайт",  "type": "link",     "data": "https://example.com"}]]
+await kook.Send.To("channel", channel_id).Keyboard(rows).Text("Пожалуйста, выберите")
+# Текст и кнопки автоматически комбинируются в сообщение-карточку Kook (section + action-group)
+
+# Обратный вызов при нажатии кнопки (стандартные поля)
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_button(event):
+    if event.get("platform") == "kook" and event.get("button_data"):
+        data = event["button_data"]
+```
 
 ## Типы отправляемых сообщений
 
@@ -17370,7 +17674,7 @@ MatrixAdapter - это адаптер, построенный на основе 
 
 ## Информация о документации
 
-- Версия соответствующего модуля: 4.1.0
+- Соответствующая версия модуля: 4.2.0
 - Ответственный: ErisPulse
 
 ## Основная информация
@@ -17418,6 +17722,34 @@ enabled = true
 **Способы аутентификации:**
 - Способ 1 (рекомендуется): Прямое указание `access_token`
 - Способ 2: Указание `user_id` и `password`, адаптер автоматически вызывает интерфейс входа для получения токена
+
+## Обновление парадигмы v5 (4.2.0)
+
+- **Наследование BaseConverter**: общие поля конвертера строятся фреймворком build_base_event
+- **DSL API**: get_self_info/get_user_info/get_group_info/get_group_list/get_group_member_list/leave_group/delete_message(redact) + метадействия
+- **Дополнение к событию сообщения message_id** (event_id); таблица регистрации сообщений поддерживает delete_message
+- **Принадлежность задачи spawn_background**: синхронные/пинговые задачи используют runtime.spawn_background
+- **Мягкая зависимость фреймворка**: проверка версии ErisPulse>=2.7.1 и вывод подсказки; вывод логов версии при запуске
+- У Matrix нет встроенной возможности кнопок, стандартный сегмент keyboard игнорируется (без ошибок)
+
+### Примеры стандартных действий API
+
+```python
+from ErisPulse import sdk
+matrix = sdk.adapter.get("matrix")
+result = await matrix.Api.get_self_info()            # /account/whoami
+result = await matrix.Api.get_group_info(room_id)    # m.room.name
+result = await matrix.Api.get_group_list()           # /joined_rooms
+await matrix.Api.delete_message(event_id)            # redact (таблица регистрации дополняет room_id)
+```
+
+---
+
+### Поддерживаемые возможности платформ
+
+- **События**: сообщения (m.room.message: текст/изображение/файл/аудио/видео/ответ/редактирование), изменение участников (m.room.member), изменение названия комнаты и другие статусные события
+- **Сессии**: личные сообщения (автоматическое обнаружение комнат DM) / группы (комнаты); отправка поддерживает Text/Image/File/Voice/Video/Markdown/Raw_ob12
+- **API**: whoami/profile/joined_rooms/статус комнаты/список участников/leave/redact (см. выше DSL API)
 
 ## Поддерживаемые типы отправки сообщений
 
@@ -17798,325 +18130,199 @@ async def handle_member_change(event):
 
 # Документация по функциям платформы QQBot
 
-QQBotAdapter — это адаптер, построенный на основе протокола QQBot (документация по роботу QQ), объединяющий все функциональные модули QQBot и предоставляющий единый интерфейс для обработки событий и операций с сообщениями.
-
----
+QQBotAdapter — это адаптер, построенный на основе протокола QQ-бота (QQ OpenAPI), объединяющий функции для чатов в группах, личных сообщений и каналов, предоставляющий стандартные события OneBot12, стандартные API-действия и интерфейсы для выполнения запросов.
 
 ## Информация о документации
 
-- Соответствующая версия модуля: 1.0.0
+- Версия соответствующего модуля: 5.0.0
 - Ответственный: ErisPulse
 
 ## Основная информация
 
-- Описание платформы: QQBot — это официальный интерфейс разработки ботов от QQ, поддерживающий различные сценарии, такие как групповые чаты, личные сообщения и каналы.
-- Название адаптера: QQBotAdapter
-- Способ подключения: WebSocket-длинное соединение (через шлюз QQBot)
-- Способ аутентификации: получение access_token на основе appId + clientSecret
-- Поддержка цепочки модификаторов: поддержка методов цепочки модификаторов, таких как `.Reply()`, `.At()`, `.AtAll()`, `.Keyboard()` и т.д.
-- Совместимость с OneBot12: поддержка отправки сообщений в формате OneBot12
+- Краткое описание платформы: Официальный интерфейс разработки ботов QQ, поддерживает различные сценарии, такие как групповые чаты, личные сообщения, каналы и т.д.
+- Имя адаптера: QQBotAdapter
+- Способ подключения: **WebSocket-длинное соединение** (по умолчанию) или **Webhook HTTP-обратный вызов** (по настройкам аккаунта, проверка подписи Ed25519)
+- Способ аутентификации: appId + clientSecret для получения access_token (7200 секунд, автоматическое обновление за 45 секунд до истечения срока действия)
+- Корневой адрес API: `https://api.bot.qq.com` (начиная с v5 официальный единый домен, sandbox устарел)
+- Совместимость с OneBot12: полная поддержка отправки и получения сообщений, событий, **стандартных API-действий**, **операций запроса**
+- Множественные аккаунты: поддерживается, произвольные аккаунты в разделе `accounts` могут работать параллельно (можно смешивать режимы websocket/webhook)
 
-## Инструкция по настройке
+## Конфигурация
 
 ```toml
 # config.toml
 [QQBot_Adapter]
-appid = "YOUR_APPID"          # ID приложения QQ-бота (обязательно)
-secret = "YOUR_CLIENT_SECRET" # Ключ клиента QQ-бота (обязательно)
-sandbox = false                 # Использовать ли песочницу (необязательно, по умолчанию false)
-intents = [1, 30, 25]          # Подписка на события intents (необязательно)
-gateway_url = "wss://api.sgroup.qq.com/websocket/"  # Пользовательский URL вебсокет-шлюза (необязательно)
+intents = "[0, 9, 12, 25, 26, 27]"   # Глобально: подписанные события intents (JSON массив, поддерживает имена событий)
+
+[QQBot_Adapter.accounts.default]
+appid = "YOUR_APPID"                 # ID приложения QQ-бота (обязательно)
+secret = "YOUR_CLIENT_SECRET"        # Секретный ключ клиента QQ-бота (обязательно)
+mode = "websocket"                   # Способ получения событий: websocket / webhook
+bot_id = ""                          # ID бота (оставьте пустым для автоматического получения; можно вручную указать для использования в Using())
+gateway_url = ""                     # URL WebSocket-шлюза (оставьте пустым для динамического получения через /gateway/bot)
+api_base_url = "https://api.bot.qq.com"  # Корневой URL API (можно настроить для прокси)
+webhook_path = "/webhook"            # Путь обратного вызова webhook (действует при mode=webhook)
+enabled = true
 ```
 
-**Описание параметров:**
-- `appid`: ID приложения QQ-бота (обязательно), получается на платформе открытых данных QQ
-- `secret`: Ключ клиента QQ-бота (обязательно), получается на платформе открытых данных QQ
-- `sandbox`: Использовать ли песочницу, API-адрес в песочнице: `https://sandbox.api.sgroup.qq.com`
-- `intents`: Список подписки на события intents, каждое значение сдвигается влево и объединяется битовым оператором ИЛИ
-  - `1`: События, связанные с каналами
-  - `25`: События сообщений каналов
-  - `30`: События упоминаний в группе
-- `gateway_url`: URL вебсокет-шлюза, по умолчанию: `wss://api.sgroup.qq.com/websocket/`
+**Версия v5 — критические изменения:**
+- Официальный единый URL `api.bot.qq.com`, конфигурация `sandbox` устарела (старые настройки автоматически переносятся и игнорируются)
+- Старая плоская конфигурация (appid/secret непосредственно в `[QQBot_Adapter]`) автоматически переносится в `accounts.default`
+- Фреймворк является **опциональной зависимостью**: установка адаптера не влияет на версию фреймворка; в процессе выполнения проверяется наличие `ErisPulse>=2.7.1` и выводится соответствующее уведомление
 
-**Среда API:**
-- Основная среда: `https://api.sgroup.qq.com`
-- Песочная среда: `https://sandbox.api.sgroup.qq.com`
+**Описание intents (поддерживает номера позиций или имена событий):**
 
-## Поддерживаемые типы отправки сообщений
+| Позиция | Имя события | Описание |
+|----|--------|------|
+| 0 | GUILDS | Изменения каналов |
+| 1 | GUILD_MEMBERS | Изменения участников канала |
+| 9 | GUILD_MESSAGES | Сообщения канала (внутриканальные) |
+| 12 | DIRECT_MESSAGE | Личные сообщения канала |
+| 24 | GROUP_MEMBER | Изменения участников группы (ново в v5) |
+| 25 | GROUP_AND_C2C_EVENT | Сообщения упоминания в группе и личные сообщения |
+| 26 | INTERACTION | Взаимодействие (кнопки и т.д.) |
+| 27 | MESSAGE_AUDIT | События проверки сообщений |
+| 30 | PUBLIC_GUILD_MESSAGES | Сообщения канала (внешние каналы) |
 
-Все методы отправки реализованы с использованием цепочечного синтаксиса, например:
+## Отправка сообщений
+
+### Базовая отправка
+
 ```python
-from ErisPulse.Core import adapter
-qqbot = adapter.get("qqbot")
+from ErisPulse import sdk
+qqbot = sdk.adapter.get("qqbot")
 
 await qqbot.Send.To("user", user_openid).Text("Hello World!")
+
+# Упоминание в чате (автоматически использует формат <qqbot-at-user id="x" />)
+await qqbot.Send.To("group", group_openid).At("member_openid").Text("@你")
+
+# Сообщение в канале (автоматически использует формат <@user_id>)
+await qqbot.Send.To("channel", channel_id).Text("Сообщение в канале")
+
+# Ответ на сообщение (автоматически включает msg_id, не нужно использовать Reply вручную)
+await qqbot.Send.To("group", group_openid).Reply(msg_id).Text("Содержимое ответа")
+
+# Мультимедиа (URL / локальный путь / бинарные данные; файлы больше 5 МБ загружаются по частям)
+await qqbot.Send.To("group", gid).Image("https://example.com/img.png")
+
+# Markdown (в виде исходного текста / шаблона)
+await qqbot.Send.To("group", gid).Markdown("# Заголовок\n- Список")
+await qqbot.Send.To("user", uid).Markdown(template_id=1, kv=[{"key": "title", "value": "Уведомление"}])
+
+# Клавиатура (автоматически устанавливается тип markdown и добавляется bot_appid)
+await qqbot.Send.To("group", gid).Keyboard(keyboard).Text("Выберите опцию")
+
+# Потоковое сообщение (личный чат)
+await qqbot.Send.To("user", openid).Stream("Содержимое ответа")
+
+# Множественные аккаунты
+await qqbot.Send.Using("account2").To("group", gid).Text("От второго бота")
 ```
 
-Поддерживаемые типы отправки включают:
-- `.Text(text: str)` — отправка обычного текстового сообщения.
-- `.Image(file: bytes | str)` — отправка сообщения с изображением, поддерживает путь к файлу, URL и бинарные данные.
-- `.Markdown(content: str)` — отправка сообщения в формате Markdown.
-- `.Ark(template_id: int, kv: list)` — отправка сообщения в формате Ark с использованием шаблона.
-- `.Embed(embed_data: dict)` — отправка встраиваемого сообщения (Embed).
-- `.Raw_ob12(message: List[Dict], **kwargs)` — отправка сообщения в формате OneBot12.
-
-### Методы цепочечных модификаторов (можно комбинировать)
-
-Методы цепочечных модификаторов возвращают `self`, что позволяет использовать цепочечные вызовы. Они должны вызываться до окончательного метода отправки:
-
-- `.Reply(message_id: str)` — ответ на указанное сообщение.
-- `.At(user_id: str)` — упоминание пользователя (вставляет текст `<@user_id>`).
-- `.AtAll()` — упоминание всех участников (вставляет текст `@всех`).
-- `.Keyboard(keyboard: dict)` — добавление кнопок клавиатуры.
-
-### Примеры цепочечных вызовов
+## OneBot12 стандартный API-действия
 
 ```python
-# Базовая отправка
-await qqbot.Send.To("user", user_openid).Text("Hello")
-
-# Ответ на сообщение
-await qqbot.Send.To("group", group_openid).Reply(msg_id).Text("Ответ на сообщение")
-
-# Ответ + клавиатура
-await qqbot.Send.To("group", group_openid).Reply(msg_id).Keyboard(keyboard).Text("Сообщение с ответом и клавиатурой")
-
-# Упоминание пользователя
-await qqbot.Send.To("group", group_openid).At("member_openid").Text("Привет")
-
-# Комбинированный вызов
-await qqbot.Send.To("group", group_openid).Reply(msg_id).At("member_openid").Keyboard(keyboard).Text("Сложное сообщение")
+result = await qqbot.Api.get_self_info()                     # Информация о боте
+result = await qqbot.Api.get_group_info(group_openid)        # Информация о группе
+result = await qqbot.Api.get_group_member_list(group_openid) # Список участников группы (автоматическая пагинация)
+result = await qqbot.Api.get_guild_list()                    # Список каналов
+result = await qqbot.Api.get_channel_list(guild_id)          # Список подканалов
+await qqbot.Api.delete_message(message_id)                   # Отмена сообщения (автоматический маршрут по источнику сообщения)
+result = await qqbot.Api.get_status()                        # Статус работы нескольких аккаунтов
+result = await qqbot.Api.Using("account2").get_self_info()   # Указание аккаунта
 ```
 
-### Поддержка OneBot12 сообщений
+Поддерживаемые стандартные действия: `get_self_info` / `get_group_info` / `get_group_member_info` / `get_group_member_list` / `get_guild_info` / `get_guild_list` / `get_guild_member_info` / `get_guild_member_list` / `get_channel_info` / `get_channel_list` / `set_channel_name` / `leave_channel` / `delete_message` / `get_status` / `get_version` / `get_supported_actions`. Действия, которые не поддерживаются, возвращают `retcode=10002`.
 
-Адаптер поддерживает отправку сообщений в формате OneBot12 для обеспечения совместимости между платформами:
+## Операции с запросами (одобрение заявки на вступление в группу)
+
+Событие `GROUP_JOIN_REQUEST` преобразуется в событие `request` по стандарту OneBot12 и поддерживает стандартизованное одобрение:
 
 ```python
-# Отправка сообщения в формате OneBot12
-ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
-await qqbot.Send.To("user", user_openid).Raw_ob12(ob12_msg)
+from ErisPulse.Core.Event import request as request_event
 
-# Комбинирование с цепочечными модификаторами
-ob12_msg = [{"type": "text", "data": {"text": "Ответ на сообщение"}}]
-await qqbot.Send.To("group", group_openid).Reply(msg_id).Raw_ob12(ob12_msg)
+@request_event.on_request()
+async def handle_join(event):
+    if event.get("platform") == "qqbot":
+        await event.approve()                  # Принять
+        # await event.reject(comment="Причина")   # Отклонить
 ```
 
-## Возвращаемое значение методов отправки
+`request_id` = `join_request_id` от официального API, адаптер автоматически кэширует контекст заявки и маршрутизирует запрос на `POST /v2/groups/{group_openid}/approval_join_request/{member_openid}`.
 
-Все методы отправки возвращают объект Task, который можно напрямую использовать с await для получения результата отправки. Возвращаемый результат соответствует стандартизированному формату возврата адаптера ErisPulse:
+## @Механизм обнаружения бота (важно)
 
-```python
-{
-    "status": "ok",           // Статус выполнения: "ok" или "failed"
-    "retcode": 0,             // Код возврата
-    "data": {...},            // Данные ответа
-    "message_id": "123456",  // Идентификатор сообщения
-    "message": "",            // Сообщение об ошибке
-    "qqbot_raw": {...}        // Исходные данные ответа
-}
-```
+Факт упоминания бота в QQ официально передаётся через имя события, а упоминание пользователя в группе имеет вид `<@{openid пространства группы}>` (это **не** относится к той же системе идентификаторов, что и bot_id, возвращаемый READY). Адаптер автоматически обрабатывает:
 
-### Описание кодов ошибок
+1. **Анализ меток**: `<@openid>` и `<qqbot-at-user>` оба стиля анализируются как упоминания (упоминания не остаются в тексте)
+2. **Нормализация имён**: если имя бота, возвращённое `/users/@me`, совпадает с именем в массиве упоминаний, упоминание нормализуется как bot_id (оригинальный openid сохраняется в `data.qqbot_openid`)
+3. **Обучение openid**: автоматически обучается openid бота в каждой группе, используется для распознавания упоминаний в режиме "получать все сообщения из группы"
+4. **Гарантия вставки**: `GROUP_AT_MESSAGE_CREATE` / `AT_MESSAGE_CREATE` гарантируют наличие упоминания бота
+
+Таким образом, `on_at_message()` / `event.is_at_message()` можно использовать напрямую на платформе qqbot. После включения разрешения "получать все сообщения из группы" упоминания будут отправляться через `GROUP_MESSAGE_CREATE` (событие `GROUP_AT_MESSAGE_CREATE` больше не поступит), адаптер также способен распознавать упоминания.
+
+## Семейство методов платформенных API
+
+Адаптер предоставляет полный набор официальных API QQ (подробности см. в файле platform-features.md репозитория адаптера):
+
+- **Бот**: `get_me()`, `reply_interaction()`
+- **Каналы**: `get_guilds/get_guild/mute_guild_all/управление_ролями/api_permission`
+- **Подканалы**: `get_channels/get_channel/create_channel/update_channel/delete_channel/pins`
+- **Участники канала**: `get_guild_members/get_guild_member/mute/roles/kick`
+- **Разрешения/реакции/планы/посты/аудио**: полный набор методов
+- **Групповое управление** (некоторые интерфейсы доступны только для ботов из белого списка): `get_group_members/get_group_bot_state/черный_список/входящие_запросы/запрет_речи/стратегии_одобрения`
+- **Панели меню**: `get_custom_menu/update_custom_menu/CRUD_панелей_команд`
+- **Мультимедиа**: `_upload_media` (URL/путь/бинарные данные, автоматическое разделение на части при размере более 5 МБ), `stream_message` (потоковые сообщения)
+
+## WebSocket / Webhook подключение
+
+### Поток WebSocket
+
+1. appId + clientSecret для получения access_token (автоматическое обновление за 45 с до истечения срока действия, неудача повторяется 3 раза)
+2. Используя `GET /gateway/bot` динамически получите адрес шлюза (при настройке `gateway_url` используйте его напрямую)
+3. OP_HELLO → Identify/Resume → READY (получение session_id и bot_id) → цикл поддержания соединения
+4. Переподключение при разрыве: максимум 50 попыток, экспоненциальная задержка `min(5 * 2^n, 300)` секунд; OP_RECONNECT сохраняет сессию
+
+### Режим Webhook
+
+После установки режима `mode = "webhook"` для аккаунта, через маршрутизатор ErisPulse зарегистрируйте HTTP-маршруты:
+
+- Верификация подписи Ed25519 (семя = secret, заполненное до 32 байт), проверка `X-Signature-Ed25519` для `X-Signature-Timestamp + body`
+- Автоматическая обработка рукопожатия верификации подписи op=13 и распределение событий op=0
+- Зависимость от библиотеки `cryptography` (устанавливается вместе с адаптером)
+
+## Описание кодов ошибок
 
 | retcode | Описание |
 |---------|----------|
 | 0 | Успешно |
-| 10003 | Не удалось определить цель отправки |
+| 10001 | Отсутствуют параметры |
+| 10002 | Действие не поддерживается |
+| 10003 | Цель/учетная запись не может быть определена |
 | 32000 | Время ожидания запроса истекло |
-| 33000 | Ошибка вызова API |
-| 34000 | API вернул неожиданный формат или произошла бизнес-ошибка |
+| 33000 | Аномалия сети/вызов API |
+| 34001 | Запрос не существует или просрочен (Request DSL) |
+| 34100 | Не удалось загрузить медиафайл |
+| 34000+ | Ошибка бизнес-процесса платформы (прозрачный код от официального источника) |
 
-## Специфические типы событий
+## Использование примеров
 
-Необходимо использовать `platform=="qqbot"` для проверки перед использованием функций данной платформы.
-
-### Основные отличия
-
-1. **Система openid**: QQBot использует openid вместо QQ-номера, идентификаторы пользователей и групп представлены строками openid.
-2. **Обязательное упоминание в группах**: Сообщения в группах обрабатываются только в случае, если пользователь упоминает бота (`GROUP_AT_MESSAGE_CREATE`).
-3. **Система каналов**: QQBot поддерживает сообщения и события в каналах (Guild) и подканалах (Channel).
-4. **Проверка сообщений**: Отправленные сообщения могут требовать проверки, результат уведомляется через события `qqbot_audit_pass`/`qqbot_audit_reject`.
-5. **Пассивный ответ**: Поддержка пассивного ответа на сообщения в группах и личные сообщения, при отправке необходимо указывать `msg_id`.
-
-### Дополнительные поля
-
-- Все специфические поля имеют префикс `qqbot_`.
-- Оригинальные данные сохраняются в поле `qqbot_raw`.
-- Поле `qqbot_raw_type` указывает тип исходного события QQBot (например, `C2C_MESSAGE_CREATE`).
-- Информация об вложениях сохраняется в поле `qqbot_attachment`.
-
-### Примеры специальных полей
-
-```python
-# Сообщение упоминания в группе
-{
-  "type": "message",
-  "detail_type": "group",
-  "user_id": "MEMBER_OPENID",
-  "group_id": "GROUP_OPENID",
-  "qqbot_group_openid": "GROUP_OPENID",
-  "qqbot_member_openid": "MEMBER_OPENID",
-  "qqbot_event_id": "ID события сообщения",
-  "qqbot_reply_token": "Токен ответа"
-}
-
-# Личное сообщение
-{
-  "type": "message",
-  "detail_type": "private",
-  "user_id": "USER_OPENID",
-  "qqbot_openid": "USER_OPENID",
-  "qqbot_event_id": "ID события сообщения",
-  "qqbot_reply_token": "Токен ответа"
-}
-
-# Взаимодействие
-{
-  "type": "notice",
-  "detail_type": "qqbot_interaction",
-  "qqbot_interaction_id": "ID взаимодействия",
-  "qqbot_interaction_type": "Тип взаимодействия",
-  "qqbot_interaction_data": {
-    "...": "Данные взаимодействия"
-  }
-}
-
-# Проверка сообщений
-{
-  "type": "notice",
-  "detail_type": "qqbot_audit_pass",
-  "qqbot_audit_id": "ID проверки",
-  "qqbot_message_id": "ID сообщения"
-}
-
-# Удаление сообщения
-{
-  "type": "notice",
-  "detail_type": "qqbot_message_delete",
-  "message_id": "ID удаленного сообщения",
-  "operator_id": "ID оператора"
-}
-
-# Ответ эмоций
-{
-  "type": "notice",
-  "detail_type": "qqbot_reaction_add",
-  "qqbot_raw": {
-    "...": "Оригинальные данные"
-  }
-}
-```
-
-### Сообщения в каналах
-
-Сообщения в каналах поддерживают поле `mentions`, которое преобразуется в сообщение типа `mention`:
-
-```json
-{
-  "type": "mention",
-  "data": {
-    "user_id": "ID упомянутого пользователя",
-    "user_name": "Имя упомянутого пользователя"
-  }
-}
-```
-
-### Сообщения с вложениями
-
-Вложения в QQBot автоматически преобразуются в соответствующие типы сообщений в зависимости от `content_type`:
-
-| Префикс `content_type` | Тип преобразования | Описание |
-|---|---|---|
-| `image` | `image` | Сообщение с изображением |
-| `video` | `video` | Сообщение с видео |
-| `audio` | `voice` | Голосовое сообщение |
-| Другое | `file` | Сообщение с файлом |
-
-Структура сообщения с вложениями:
-```json
-{
-  "type": "image",
-  "data": {
-    "url": "URL вложения",
-    "qqbot_attachment": {
-      "content_type": "image/png",
-      "url": "Оригинальный URL вложения"
-    }
-  }
-}
-```
-
-## WebSocket соединение
-
-### Процесс подключения
-
-1. Получить access_token с помощью appId + clientSecret
-2. Подключиться к WebSocket-шлюзу
-3. Получить сообщение OP_HELLO (op=10), чтобы узнать интервал для пинга
-4. Отправить OP_IDENTIFY (op=2) для аутентификации
-5. Получить событие READY, чтобы узнать session_id и bot_id
-6. Начать цикл пингов (OP_HEARTBEAT, op=1)
-7. Получать события (OP_DISPATCH, op=0)
-
-### Переподключение при разрыве соединения
-
-- Поддерживается автоматическое переподключение, максимальное количество попыток — 50
-- Время ожидания перед повторным подключением рассчитывается по экспоненциальному алгоритму отступления: `min(5 * 2^min(count, 6), 300)` секунд
-- Поддерживается восстановление сессии (OP_RESUME, op=6), используя session_id + seq
-- При получении сообщения OP_RECONNECT (op=7) или OP_INVALID_SESSION (op=9) автоматически запускается переподключение
-
-### Обновление токена
-
-- Срок действия access_token обычно составляет 7200 секунд
-- Адаптер автоматически обновляет токен каждые 7080 секунд (7200-120)
-- Интерфейс обновления: `POST https://bots.qq.com/app/getAppAccessToken`
-
-## События подписки (Intents)
-
-Значения intents объединяются с помощью побитовой операции:
-
-```python
-intents = [1, 30, 25]
-value = 0
-for intent in intents:
-    value |= (1 << intent)
-```
-
-Часто используемые значения intent:
-| intent значение | Описание |
-|------------------|----------|
-| 1 | События, связанные с каналами (GUILD_CREATE и др.) |
-| 25 | События сообщений в канале (AT_MESSAGE_CREATE и др.) |
-| 30 | События сообщений с упоминанием в группе (GROUP_AT_MESSAGE_CREATE и др.) |
-
-## Примеры использования
-
-### Обработка групповых сообщений
+### Обработка групповых сообщений (по @)
 
 ```python
 from ErisPulse.Core.Event import message
-from ErisPulse import sdk
 
-qqbot = sdk.adapter.get("qqbot")
-
-@message.on_message()
-async def handle_group_msg(event):
+@message.on_at_message()
+async def handle_at(event):
     if event.get("platform") != "qqbot":
         return
-    if event.get("detail_type") != "group":
-        return
-
     text = event.get_text()
-    group_id = event.get("group_id")
-
-    if text == "hello":
-        await qqbot.Send.To("group", group_id).Reply(
-            event.get("message_id")
-        ).Text("Hello!")
+    if text == "签到":
+        await event.reply("已签到")
 ```
 
-### Обработка событий взаимодействия
+### Обработка взаимодействий
 
 ```python
 from ErisPulse.Core.Event import notice
@@ -18125,43 +18331,28 @@ from ErisPulse.Core.Event import notice
 async def handle_interaction(event):
     if event.get("platform") != "qqbot":
         return
-
     if event.get("detail_type") == "qqbot_interaction":
-        interaction_id = event.get("qqbot_interaction_id", "")
-        interaction_data = event.get("qqbot_interaction_data", {})
-        # Обработка взаимодействия...
+        await qqbot.reply_interaction(event.get("qqbot_interaction_id"), code=0)
+        button_id = event.get("qqbot_button_id", "")
+        # Обработка кнопки...
 ```
 
-### Отправка медиа-сообщений
+### Запуск нескольких аккаунтов
 
-```python
-# Отправка изображения (по URL)
-await qqbot.Send.To("group", group_openid).Image("https://example.com/image.png")
+```toml
+[QQBot_Adapter.accounts.bot_a]
+appid = "A_APPID"
+secret = "..."
+enabled = true
 
-# Отправка изображения (в байтах)
-with open("image.png", "rb") as f:
-    image_bytes = f.read()
-await qqbot.Send.To("user", user_openid).Image(image_bytes)
+[QQBot_Adapter.accounts.bot_b]
+appid = "B_APPID"
+secret = "..."
+mode = "webhook"
+enabled = true
 ```
 
-### Наблюдение за результатами проверки сообщений
-
-```python
-@notice.on_notice()
-async def handle_audit(event):
-    if event.get("platform") != "qqbot":
-        return
-
-    detail_type = event.get("detail_type")
-
-    if detail_type == "qqbot_audit_pass":
-        msg_id = event.get("qqbot_message_id")
-        print(f"Проверка сообщения пройдена: {msg_id}")
-
-    elif detail_type == "qqbot_audit_reject":
-        reason = event.get("qqbot_audit_reject_reason", "")
-        print(f"Проверка сообщения отклонена: {reason}")
-```
+Два аккаунта запускаются параллельно: bot_a использует WebSocket, bot_b использует Webhook, они не влияют друг на друга.
 
 
 
@@ -18173,7 +18364,7 @@ YunhuUserAdapter представляет собой адаптер, постр�
 
 ## Информация о документации
 
-- Соответствующая версия модуля: 1.4.0
+- Версия соответствующего модуля: 4.2.0
 - Ответственный: wsu2059
 
 ## Основная информация
@@ -18185,6 +18376,80 @@ YunhuUserAdapter представляет собой адаптер, постр�
 - Совместимость с OneBot12: Поддерживает отправку сообщений в формате OneBot12
 - Способ связи: Авторизация через электронную почту для получения токена, получение событий через WebSocket, отправка сообщений через HTTP + Protobuf
 - Типы сессий: Поддерживает личные сообщения (user), групповые чаты (group), сессии бота (bot)
+
+## Обновление парадигмы v5 (4.2.0)
+
+- **Наследование BaseConverter**; **принадлежность задачи spawn_background** (задача WS-слушателя)
+- **Полный API-интерфейс пользователя** (на основе yhchatAPI full.proto / v1-точка подключения, protobuf over HTTP):
+  - Пользователь: get_user / edit_nickname / edit_avatar
+  - Друзья: адресная книга / список заявок / заявка / принять / проигнорировать / удалить
+  - Группы: информация о группе / список участников / создать / распустить / пригласить / исключить / отключить голос / список ботов
+  - Сессии: список сессий; сообщения: список / отозвать / отчет о нажатии кнопки
+- **Мягкая зависимость от фреймворка**: во время выполнения проверяется наличие ErisPulse>=2.7.1 и выводится предупреждение; при запуске выводится лог версии
+
+## Список функций, подключённых к платформе
+
+### Получение событий (WebSocket, protobuf-кодирование)
+
+| WS cmd | Событие | Описание |
+|--------|---------|----------|
+| `push_message` | `message` | Сообщения в личных/групповых чатах/чате с ботом (текст/HTML/Markdown/изображения/видео/аудио/файлы/эмодзи/формы/статьи/стикеры/кнопки/A2UI) |
+| `edit_message` | `notice` (`message_edit`) | Уведомление об изменении сообщения |
+| `file_send_message` | `notice` (`yunhu_user_file_send`) | Обмен суперфайлами |
+| `bot_board_message` | `notice` (`yunhu_user_bot_board`) | Баннер с уведомлениями бота |
+
+### Методы Api DSL (YunhuHTTPClient → конечные точки API v1 для пользователя)
+
+| Категория | Метод Api | Конечная точка | Описание |
+|-----------|-----------|----------------|----------|
+| Аккаунт | `get_self_info()` | `/user/info` | Информация о пользователе (ник/аватар/user_id) |
+| Пользователь | `get_user(user_id)` | `/user/get-user` | Детальная информация о пользователе |
+| Пользователь | `edit_nickname(nickname)` | `/user/edit-nickname` | Изменить свой никнейм |
+| Пользователь | `edit_avatar(url)` | `/user/edit-avatar` | Изменить свой аватар |
+| Друзья | `get_friend_address_book(md5)` | `/friend/address-book-list` | Адресная книга (постраничный просмотр) |
+| Друзья | `get_friend_requests()` | `/friend/request-list` | Список запросов на добавление в друзья/в группы |
+| Друзья | `friend_apply(user_id, desc)` | `/friend/apply` | Запрос на добавление в друзья |
+| Друзья | `friend_agree_apply(user_id)` | `/friend/agree-apply` | Подтвердить запрос на добавление в друзья |
+| Друзья | `friend_ignore_apply(user_id)` | `/friend/ignore-apply` | Игнорировать запрос на добавление в друзья |
+| Друзья | `friend_delete(user_id)` | `/friend/delete-friend` | Удалить друга |
+| Группы | `get_group_info(group_id)` | `/group/info` | Информация о группе |
+| Группы | `get_group_member_list(group_id)` | `/group/list-member` | Список участников группы (поддержка поиска по ключевым словам) |
+| Группы | `create_group(name, ...)` | `/group/create-group` | Создать группу |
+| Группы | `dismiss_group(group_id)` | `/group/dismiss-group` | Распустить группу |
+| Группы | `group_invite(group_id, user_ids)` | `/group/invite` | Пригласить в группу |
+| Группы | `group_remove_member(group_id, user_id)` | `/group/remove-member` | Удалить участника из группы |
+| Группы | `group_gag_member(group_id, user_id, секунды)` | `/group/gag-member` | Замолчить участника (0=отменить) |
+| Группы | `get_group_bot_list(group_id)` | `/group/bot-list` | Список ботов в группе |
+| Чаты | `get_conversation_list(md5)` | `/conversation/list` | Список чатов (постраничный просмотр) |
+| Сообщения | `get_message_list(chat_id, chat_type, ...)` | `/msg/list-message` | Список сообщений (различные варианты прокрутки см. в HTTP-клиенте) |
+| Сообщения | `delete_message(msg_id, chat_id, chat_type)` | `/msg/recall-msg` | Отозвать сообщение (массовое удаление см. в HTTP-клиенте) |
+| Сообщения | `button_report(...)` | `/msg/button-report` | Отправить отчёт о нажатии кнопки |
+| Операции | `get_status` / `get_version` / `get_supported_actions` | - | Статус работы/версия/поддерживаемые действия |
+
+### Функции, ещё не подключены (конечные точки известны, сообщения в full.proto полны, можно расширять по мере необходимости)
+
+- Пользователь: вход по коду подтверждения, значки, запись о золотых бобах, привязка телефона/почты, настройки уведомлений, хранение и доступ к данным пользователя
+- Друзья: исключение уведомлений (no-notify), удаление записей о запросах
+- Группы: список команд, категории, рекомендации, прямые трансляции, редактирование информации/никнейма/ключевых слов, автоматическое одобрение приглашений, ограничения на файлы, события SSE
+- Чаты: закрепление/сортировка/удаление, исключение уведомлений
+- Сообщения: пересылка, отправка A2UI, получение изображений из списка сообщений, запись загрузки файлов
+- Групповые теги: list / relate / relate-cancel / create / edit / delete / members (конечные точки `/group-tag/*`)
+
+> Способ расширения: добавить методы в `YunhuHTTPClient` по уже существующему шаблону (использовать общую обёртку `_proto_request` / `_json_request`), затем экспортировать в классе `Api`. Описание конечных точек и сообщений смотрите в `yhchatAPI/src/api/v1/*.md` и `yhchatAPI/src/full.proto`.
+
+### Пример использования API пользователя
+
+```python
+from ErisPulse import sdk
+yunhu_user = sdk.adapter.get("yunhu_user")
+
+result = await yunhu_user.Api.get_self_info()
+result = await yunhu_user.Api.get_friend_requests()          # Список запросов на добавление в друзья
+await yunhu_user.Api.friend_agree_apply(user_id)             # Подтвердить запрос на добавление в друзья
+result = await yunhu_user.Api.get_group_member_list(group_id)
+result = await yunhu_user.Api.get_conversation_list()        # Список чатов
+await yunhu_user.Api.delete_message(msg_id, chat_id, chat_type)  # Отозвать сообщение
+```
 
 ## Поддерживаемые типы отправки сообщений
 
@@ -18960,7 +19225,7 @@ IdeauraAdapter — это адаптер, построенный на основ
 ## Информация о документации
 
 - Соответствующий модуль: ErisPulse-Ideaura
-- Версия модуля: 4.0.1
+- Версия модуля: 4.1.0
 - Ответственный: ErisPulse
 
 ## Основная информация
@@ -18970,6 +19235,21 @@ IdeauraAdapter — это адаптер, построенный на основ
 - **Поддержка нескольких аккаунтов:** Поддерживает настройку нескольких аккаунтов через Bot Token
 - **Поддержка цепочки модификаторов:** Поддерживает цепочечные методы модификаторов, такие как `.At()`、`.AtAll()`、`.Reply()`、`.Command()`
 - **Совместимость с OneBot12:** Поддерживает отправку сообщений в формате OneBot12
+
+## Обновление парадигмы v5 (4.1.0)
+
+- **Наследование BaseConverter**: Общие поля конвертера строятся фреймворком build_base_event
+- **Принадлежность задачи spawn_background**: Задачи подключения аккаунта используют runtime.spawn_background
+- **Мягкая зависимость фреймворка**: Фреймворк проверяет наличие ErisPulse>=2.7.1 и выводит предупреждение; при запуске выводит лог версии
+- Request DSL временно отложен (API для одобрения заявок в друзья ожидает предоставления платформой)
+
+---
+
+### Поддерживаемые функции платформы
+
+- **События**: Редактирование/удаление/пересылка/прочтение сообщений (ideaura_message_*), заявка в друзья (friend_request), добавление/удаление друга (friend_increase/decrease), изменение статуса онлайн (friend_online/offline)
+- **Отправка**: Текст / Изображение / Markdown / Raw_ob12 (цепочечные модификаторы Reply/At/AtAll)
+- **Не поддерживается**: API для одобрения заявок в друзья (платформа пока не предоставила), Api DSL (REST-интерфейс платформы будет добавлен позже)
 
 ## Типы поддерживаемых сообщений
 
@@ -19448,29 +19728,29 @@ async def handle_message(event):
 
 # Документация по функциям платформы Discord
 
-DiscordAdapter — это адаптер, построенный на основе протокола Discord Gateway (WebSocket) и REST API v10, объединяющий основные функции Discord Bot и предоставляющий единый интерфейс для обработки событий и операций с сообщениями.
+DiscordAdapter — это адаптер, построенный на протоколах Discord Gateway (WebSocket) и REST API v10, объединяющий основные функции Discord Bot и предоставляющий единый интерфейс для обработки событий и операций с сообщениями.
 
 ---
 
 ## Информация о документации
 
-- Версия модуля: 4.1.0
-- Разработчик: ErisPulse
+- Версия соответствующего модуля: 4.2.0
+- Ответственный: ErisPulse
 - Версия Discord API: v10
 
 ## Основная информация
 
-- Краткое описание: Discord — популярная платформа для коммуникации в сообществах, поддерживающая серверы, каналы, личные сообщения и другие формы общения, а также предоставляет полный интерфейт для разработки ботов.
+- Краткое описание платформы: Discord — это популярная платформа для коммуникации в сообществах, поддерживающая различные формы общения, такие как серверы, каналы, личные сообщения, а также предоставляет полный интерфейт разработки ботов
 - Название адаптера: DiscordAdapter
-- Поддержка нескольких аккаунтов: Поддерживает настройку нескольких Discord-ботов.
-- Способ подключения: WebSocket Gateway (для получения событий) + REST API (для отправки сообщений/вызовов интерфейсов)
-- Метод аутентификации: Bot Token (в HTTP-заголовке `Authorization: Bot {token}`, в payload IDENTIFY для Gateway)
-- Поддержка цепочки модификаторов: Поддерживает цепочечные методы модификации, такие как `.Reply()`, `.At()`, `.AtAll()`
+- Поддержка нескольких аккаунтов: Поддерживает настройку нескольких Discord-ботов одновременно
+- Способ подключения: Gateway WebSocket (для получения событий) + REST API (для отправки сообщений/вызова интерфейсов)
+- Способ аутентификации: Bot Token (HTTP-заголовок `Authorization: Bot {token}`, в payload IDENTIFY для Gateway передается токен)
+- Поддержка цепочечных модификаторов: Поддерживает цепочечные методы модификаторов, такие как `.Reply()`, `.At()`, `.AtAll()`
 - Совместимость с OneBot12: Поддерживает отправку сообщений в формате OneBot12
 
 ## Описание конфигурации
 
-DiscordAdapter поддерживает настройку нескольких аккаунтов, каждый из которых соответствует отдельному Discord Bot.
+DiscordAdapter поддерживает конфигурацию нескольких аккаунтов, каждый аккаунт соответствует отдельному Discord-боту.
 
 ```toml
 # config.toml
@@ -19479,7 +19759,7 @@ DiscordAdapter поддерживает настройку нескольких 
 [DiscordAdapter.accounts.default]
 token = "YOUR_BOT_TOKEN"       # Discord Bot Token (обязательно)
 intents = 33281                 # Gateway Intents (необязательно, по умолчанию 33281)
-enabled = true                  # Включить аккаунт (необязательно, по умолчанию true)
+enabled = true                  # Включить (необязательно, по умолчанию true)
 
 # Аккаунт 2
 [DiscordAdapter.accounts.bot2]
@@ -19488,35 +19768,73 @@ intents = 33281
 enabled = true
 ```
 
-**Описание параметров (для каждого аккаунта):**
+**Описание параметров конфигурации (для каждого аккаунта):**
 
 - `token`: Discord Bot Token (обязательно), получается в [Discord Developer Portal](https://discord.com/developers/applications)
-- `intents`: Bitmask Gateway Intents (необязательно, по умолчанию `33281`), определяет типы событий, которые бот подписывается
-- `bot_id`: ID пользователя бота (необязательно, автоматически получается из события READY, не нужно вручную заполнять)
-- `enabled`: Включить аккаунт (необязательно, по умолчанию `true`)
+- `intents`: Bitmask для Gateway Intents (необязательно, по умолчанию `33281`), определяет типы событий, на которые бот подписывается
+- `bot_id`: ID пользователя бота (необязательно, ID бота автоматически получается во время выполнения из события READY, не нужно заполнять вручную)
+- `enabled`: Включить этот аккаунт (необязательно, по умолчанию `true`)
 
 ### Gateway Intents
 
-Intents используются как bitmask, вычисляются путем побитового сложения (OR) значений Intent:
+Intents используют bitmask, вычисляются путем побитового OR (`|`) значений каждого Intent:
 
-| Intent | Bit | Value | Description | Privileged |
+| Intent | Bit | Значение | Описание | Привилегированный |
 |-------|------|------|------|------|
-| GUILDS | `1 << 0` | 1 | Создание/удаление/обновление серверов, каналов, ролей | No |
-| GUILD_MEMBERS | `1 << 1` | 2 | Участие/выход/обновление участников | Yes |
-| GUILD_MESSAGES | `1 << 9` | 512 | Отправка/получение сообщений на серверах | No |
-| MESSAGE_CONTENT | `1 << 15` | 32768 | Текст сообщений (если отсутствует этот Intent, content будет пустым) | Yes |
+| GUILDS | `1 << 0` | 1 | Создание/удаление/обновление серверов, каналов, изменение ролей | Нет |
+| GUILD_MEMBERS | `1 << 1` | 2 | Участие/выход/обновление участников | Да |
+| GUILD_MESSAGES | `1 << 9` | 512 | Отправка/получение сообщений на сервере | Нет |
+| MESSAGE_CONTENT | `1 << 15` | 32768 | Содержимое сообщений (без этого Intent значение content будет пустым) | Да |
 
 Значение по умолчанию `33281` = `GUILDS(1) | GUILD_MESSAGES(512) | MESSAGE_CONTENT(32768)`.
 
-> **Внимание**: Privileged Intents должны быть включены в Discord Developer Portal → Bot → Privileged Gateway Intents. Если бот находится более чем на 100 серверах, также требуется прохождение проверки Discord.
+> **Внимание:** Привилегированные Intents необходимо включить в Discord Developer Portal → Bot → Privileged Gateway Intents. Если бот находится на более чем 100 серверах, также требуется прохождение проверки Discord.
 
 **API-среда:**
 - Основной адрес REST API Discord: `https://discord.com/api/v10`
 - Адрес WebSocket Gateway: получается динамически через `GET /gateway/bot`, обычно `wss://gateway.discord.gg/?v=10&encoding=json`
 
+## Обновление до v5 (4.2.0)
+
+Данный адаптер был обновлен до соответствия v5 (постепенное обновление, совместимость API сохранена):
+
+- **BaseConverter наследование**: Общие поля конвертера строятся с помощью `build_base_event` из фреймворка
+- **Api DSL**: Стандартное сопоставление API-действий (см. ниже)
+- **Стандартный сегмент keyboard**: Преобразуется в Discord components (строка действий + кнопки); модификатор .Keyboard(rows) принимает общую структуру
+- **Стандартные поля для взаимодействий**: Событие INTERACTION_CREATE содержит interaction_id / button_data
+- **Задачи spawn_background**: Задачи подключения используют runtime.spawn_background
+- **Мягкая зависимость от фреймворка**: Проверка на ErisPulse>=2.7.1 и вывод предупреждения при запуске; вывод версии в логах
+
+### Стандартные API-действия
+
+```python
+from ErisPulse import sdk
+discord = sdk.adapter.get("discord")
+
+result = await discord.Api.get_self_info()                # GET /users/@me
+result = await discord.Api.get_user_info(user_id)         # GET /users/{id}
+result = await discord.Api.get_guild_info(guild_id)       # GET /guilds/{id}
+result = await discord.Api.get_guild_list()               # GET /users/@me/guilds
+result = await discord.Api.get_channel_list(guild_id)     # GET /guilds/{id}/channels
+result = await discord.Api.get_guild_member_info(gid, uid)
+await discord.Api.delete_message(message_id)              # Автоматически дополняется channel_id
+await discord.Api.leave_guild(guild_id)
+result = await discord.Api.Using("main").get_self_info()
+```
+
+### Кнопки (keyboard / components)
+
+```python
+rows = [[{"label": "Нажми", "type": "callback", "data": "btn:1"},
+         {"label": "Сайт",  "type": "link",     "data": "https://example.com"}]]
+await discord.Send.To("channel", channel_id).Keyboard(rows).Text("Выберите")
+# Автоматически преобразуется в components: callback → custom_id / link → url
+```
+
+---
 ## Поддерживаемые типы отправки сообщений
 
-Все методы отправки сообщений реализованы с использованием цепочки вызовов, например:
+Все методы отправки сообщений реализованы с использованием цепочечного синтаксиса, например:
 ```python
 from ErisPulse.Core import adapter
 discord = adapter.get("discord")
@@ -19524,24 +19842,24 @@ discord = adapter.get("discord")
 await discord.Send.To("group", channel_id).Text("Hello World!")
 ```
 
-Поддерживаемые типы отправки включают:
-- `.Text(text: str)`: Отправка обычного текстового сообщения.
-- `.Embed(embed: dict | list)`: Отправка встраиваемого сообщения Embed, поддерживает одно или несколько Embed.
-- `.Image(file: bytes | str, filename: str = "image.png")`: Отправка изображения, поддерживает бинарные данные или URL.
-- `.File(file: bytes | str, filename: str = None)`: Отправка файла, поддерживает бинарные данные или URL.
-- `.Reply(content: str, message_id: str)` (удобный метод): Ответ на указанное сообщение.
-- `.Raw_ob12(message: List[Dict], **kwargs)`: Отправка сообщения в формате OneBot12.
-- `.Raw_json(json_str: str)`: Отправка произвольного JSON-запроса к Discord API.
+Поддерживаемые типы отправки сообщений включают:
+- `.Text(text: str)` — отправка текстового сообщения.
+- `.Embed(embed: dict | list)` — отправка встроенных сообщений Embed, поддерживается как одно, так и несколько Embed.
+- `.Image(file: bytes | str, filename: str = "image.png")` — отправка изображения, поддерживается бинарные данные или URL.
+- `.File(file: bytes | str, filename: str = None)` — отправка файла, поддерживается бинарные данные или URL.
+- `.Reply(content: str, message_id: str)` — ответ на указанное сообщение (удобный метод).
+- `.Raw_ob12(message: List[Dict], **kwargs)` — отправка сообщений в формате OneBot12.
+- `.Raw_json(json_str: str)` — отправка произвольных JSON-запросов Discord API.
 
-### Цепочные модификаторы (можно комбинировать)
+### Цепочечные модификаторы (можно комбинировать)
 
-Методы модификации возвращают `self`, поддерживают цепочечные вызовы и должны вызываться перед окончательным методом отправки:
+Цепочечные модификаторы возвращают `self`, позволяя цепочечное использование, обязательно должны вызываться перед окончательным методом отправки:
 
-- `.Reply(message_id: str)`: Ответить (ссылка) на указанное сообщение, устанавливает `message_reference`.
-- `.At(user_id: str)`: Упомянуть пользователя, преобразуется в `<@user_id>`, может вызываться несколько раз.
-- `.AtAll()`: Упомянуть всех, преобразуется в `@everyone`.
+- `.Reply(message_id: str)` — ответ (ссылка) на указанное сообщение, устанавливает `message_reference`.
+- `.At(user_id: str)` — упоминание пользователя, преобразуется в `<@user_id>`, можно вызывать несколько раз.
+- `.AtAll()` — упоминание всех, преобразуется в `@everyone`.
 
-### Примеры цепочечных вызовов
+### Примеры цепочечного вызова
 
 ```python
 # Базовая отправка
@@ -19550,8 +19868,8 @@ await discord.Send.To("group", channel_id).Text("Hello")
 # Ответ на сообщение
 await discord.Send.To("group", channel_id).Reply(msg_id).Text("Ответ на сообщение")
 
-# Удобный ответ (одним вызовом)
-await discord.Send.To("group", channel_id).Reply("Содержание ответа", msg_id)
+# Удобный ответ (одно действие)
+await discord.Send.To("group", channel_id).Reply("Содержимое ответа", msg_id)
 
 # Упоминание пользователя
 await discord.Send.To("group", channel_id).At("user_id").Text("Привет")
@@ -19562,13 +19880,13 @@ await discord.Send.To("group", channel_id).At("user1").At("user2").Text("Упо�
 # Упоминание всех
 await discord.Send.To("group", channel_id).AtAll().Text("Анонс")
 
-# Комбинированный вызов
-await discord.Send.To("group", channel_id).Reply(msg_id).At("user_id").Text("Составное сообщение")
+# Комбинированное использование
+await discord.Send.To("group", channel_id).Reply(msg_id).At("user_id").Text("Сложное сообщение")
 
-# Встраиваемое сообщение
+# Встроенное сообщение
 embed = {
     "title": "Уведомление",
-    "description": "Это встраиваемое сообщение",
+    "description": "Это встроенное сообщение",
     "color": 5814783,
     "fields": [{"name": "Поле", "value": "Значение", "inline": True}],
 }
@@ -19578,13 +19896,13 @@ await discord.Send.To("group", channel_id).Embed(embed)
 await discord.Send.To("group", channel_id).Image("https://example.com/image.png")
 ```
 
-### Отправка личных сообщений
+### Личные сообщения
 
 При отправке личных сообщений адаптер автоматически создает DM-канал:
 
 ```python
 # Отправка личного сообщения
-await discord.Send.To("user", user_id).Text("Содержание личного сообщения")
+await discord.Send.To("user", user_id).Text("Содержимое личного сообщения")
 await discord.Send.To("user", user_id).Embed(embed)
 ```
 
@@ -19594,7 +19912,7 @@ await discord.Send.To("user", user_id).Embed(embed)
 # Отмена отправки сообщения
 await discord.Send.To("group", channel_id).Recall(msg_id)
 
-# Отправка в формате OneBot12
+# OneBot12 формат
 ob12_msg = [
     {"type": "text", "data": {"text": "Hello "}},
     {"type": "mention", "data": {"user_id": "user_id"}},
@@ -19604,7 +19922,7 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 
 ## Возвращаемые значения методов отправки
 
-Все методы отправки сообщений возвращают объект Task, который можно ожидать с помощью await. Результат соответствует стандартизированному формату возврата ErisPulse:
+Все методы отправки возвращают объект Task, который можно await-ом получить результат отправки. Возвращаемый результат соответствует стандартизированному формату возврата адаптера ErisPulse:
 
 ```python
 {
@@ -19621,27 +19939,27 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 
 | retcode | Описание |
 |---------|------|
-| 0 | Успех |
-| 33001 | Ошибка сети (ошибка подключения, тайм-аут и т.д.) |
-| 34000 | Ошибка, возвращенная Discord API (недостаточно прав, неверные параметры и т.д.) |
+| 0 | Успешно |
+| 33001 | Ошибка сети (ошибка подключения, таймаут и т.д.) |
+| 34000 | Ошибка Discord API (недостаточно прав, неверные параметры и т.д.) |
 
-## Специфические типы событий
+## Уникальные типы событий
 
-Необходимо проверять `platform == "discord"`, чтобы использовать особенности этой платформы.
+Необходимо использовать `platform == "discord"` для проверки и использования особенностей данной платформы.
 
 ### Основные различия
 
-1. **Система серверов/каналов**: Discord использует двухуровневую структуру из серверов (Guild) и каналов (Channel), канал является основной целью отправки сообщений
+1. **Система серверов/каналов**: Discord использует двухуровневую структуру серверов (Guild) и каналов (Channel), канал является основной целью отправки сообщений
 2. **События Gateway**: Все события получают через WebSocket Gateway, используя механизм Opcode + Dispatch
-3. **Подписка на события Intents**: Подписка на типы событий через bitmask, `MESSAGE_CONTENT` требует привилегированных прав
-4. **Типы сообщений**: Поддерживает текст, изображения, файлы, видео, аудио, Embed, Sticker и другие типы сообщений
-5. **Формат упоминаний**: Discord использует формат `<@user_id>` для упоминания пользователей
+3. **Подписка на Intents**: Подписка на типы событий через bitmask, `MESSAGE_CONTENT` требует привилегированных прав
+4. **Типы сообщений**: Поддерживаются текст, изображение, файл, видео, аудио, Embed, Sticker и другие типы сообщений
+5. **Формат упоминания**: Discord использует формат `<@user_id>` для упоминания пользователей
 
 ### Расширенные поля
 
-Все специфические поля имеют префикс `discord_`:
+Все дополнительные поля имеют префикс `discord_`:
 - `discord_raw`: Оригинальные данные события Discord
-- `discord_raw_type`: Имя типа события (например, `MESSAGE_CREATE`)
+- `discord_raw_type`: Имя оригинального типа события (например, `MESSAGE_CREATE`)
 - `discord_guild_id`: ID сервера
 - `discord_channel_id`: ID канала
 
@@ -19649,8 +19967,8 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 
 | Сцена Discord | detail_type | Описание |
 |---|---|---|
-| Канал сообщений | `channel` | Расширенный тип ErisPulse |
-| Личные сообщения (DM) | `private` | Стандартный тип OneBot12 |
+| Сообщение в канале | `channel` | Расширенный тип ErisPulse |
+| Личное сообщение (DM) | `private` | Стандартный тип OneBot12 |
 
 ### Отображение типов событий
 
@@ -19659,9 +19977,9 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 | MESSAGE_CREATE | message | channel/private | Создание сообщения |
 | MESSAGE_UPDATE | message | channel/private | Редактирование сообщения |
 | MESSAGE_DELETE | notice | group_message_delete / private_message_delete | Удаление сообщения |
-| GUILD_MEMBER_ADD | notice | group_member_increase | Участие пользователя |
-| GUILD_MEMBER_REMOVE | notice | group_member_decrease | Уход пользователя |
-| GUILD_MEMBER_UPDATE | notice | group_member_update | Обновление информации о пользователе |
+| GUILD_MEMBER_ADD | notice | group_member_increase | Участник присоединился |
+| GUILD_MEMBER_REMOVE | notice | group_member_decrease | Участник покинул |
+| GUILD_MEMBER_UPDATE | notice | group_member_update | Обновление информации о участнике |
 | GUILD_ROLE_CREATE | notice | group_role_create | Создание роли |
 | GUILD_ROLE_DELETE | notice | group_role_delete | Удаление роли |
 | CHANNEL_CREATE | notice | channel_create | Создание канала |
@@ -19700,9 +20018,9 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
   "discord_raw_type": "MESSAGE_CREATE",
   "discord_channel_id": "ID DM-канала",
   "message": [
-    {"type": "text", "data": {"text": "Содержание личного сообщения"}}
+    {"type": "text", "data": {"text": "Содержимое личного сообщения"}}
   ],
-  "alt_message": "Содержание личного сообщения"
+  "alt_message": "Содержимое личного сообщения"
 }
 
 # Сообщение с Embed
@@ -19712,7 +20030,7 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
   "message": [
     {"type": "discord_embed", "data": {"embed": {...}}}
   ],
-  "alt_message": "[Встраиваемое сообщение]"
+  "alt_message": "[Встроенное сообщение]"
 }
 
 # Сообщение с вложениями
@@ -19720,31 +20038,31 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
   "type": "message",
   "detail_type": "channel",
   "message": [
-    {"type": "text", "data": {"text": "Смотри на эту картинку"}},
+    {"type": "text", "data": {"text": "Посмотри на это изображение"}},
     {"type": "image", "data": {"file": "URL изображения", "url": "URL изображения", "file_name": "image.png"}}
   ],
-  "alt_message": "Смотри на эту картинку[изображение]"
+  "alt_message": "Посмотри на это изображение[изображение]"
 }
 ```
 
 ### Типы сообщений
 
-Содержимое сообщений Discord автоматически преобразуется в соответствующие типы сообщений на основе полей `content`, `attachments`, `embeds`:
+Содержимое Discord-сообщений автоматически преобразуется в соответствующие типы сообщений на основе `content`, `attachments`, `embeds`:
 
 | Источник | Тип преобразования | Описание |
 |---|---|---|
-| Текст в `content` | `text` | Обычный текст |
-| Упоминание `<@id>` в `content` | `mention` | Упоминание пользователя |
-| Упоминание `<@&id>` в `content` | `discord_role_mention` | Упоминание роли |
-| Упоминание `<#id>` в `content` | `discord_channel_mention` | Упоминание канала |
-| `attachments` (image/*) | `image` | Изображение |
-| `attachments` (video/*) | `video` | Видео |
-| `attachments` (audio/*) | `audio` | Аудио |
-| `attachments` (другое) | `file` | Файл |
-| `embeds` | `discord_embed` | Встраиваемое сообщение |
-| `sticker_items` | `discord_sticker` | Стикер |
+| Текст content | `text` | Текстовое содержимое |
+| Текст content `<@id>` | `mention` | Упоминание пользователя |
+| Текст content `<@&id>` | `discord_role_mention` | Упоминание роли |
+| Текст content `<#id>` | `discord_channel_mention` | Упоминание канала |
+| attachments (image/*) | `image` | Вложение изображения |
+| attachments (video/*) | `video` | Вложение видео |
+| attachments (audio/*) | `audio` | Вложение аудио |
+| attachments (другое) | `file` | Вложение файла |
+| embeds | `discord_embed` | Встроенное сообщение |
+| sticker_items | `discord_sticker` | Наклейка |
 
-### Сообщение `discord_embed`
+### Сообщение типа discord_embed
 
 ```json
 {
@@ -19763,11 +20081,11 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 }
 ```
 
-## Подключение через Gateway
+## Подключение к Gateway
 
 ### Процесс подключения
 
-1. Вызов `GET /gateway/bot` для получения URL WebSocket-шлюза
+1. Вызов `GET /gateway/bot` для получения URL WebSocket Gateway
 2. Подключение к `wss://gateway.discord.gg/?v=10&encoding=json`
 3. Получение opcode 10 HELLO: содержит `heartbeat_interval`
 4. Отправка opcode 2 IDENTIFY: содержит token, intents, properties
@@ -19780,28 +20098,28 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 | Opcode | Название | Направление | Описание |
 |--------|------|------|------|
 | 0 | Dispatch | Получение | Распределение событий (с полями `t`, `s`, `d`) |
-| 1 | Heartbeat | Отправка/Получение |心跳 (с последним seq) |
+| 1 | Heartbeat | Отправка/Получение |心跳 (содержит последний seq) |
 | 2 | Identify | Отправка | Аутентификация |
 | 6 | Resume | Отправка | Восстановление сессии |
 | 7 | Reconnect | Получение | Сервер требует переподключения |
 | 9 | Invalid Session | Получение | Недействительная сессия |
-| 10 | Hello | Получение | Приветствие при подключении (с heartbeat_interval) |
+| 10 | Hello | Получение | Приветствие подключения (с heartbeat_interval) |
 | 11 | Heartbeat ACK | Получение | Подтверждение心跳 |
 
 ### Переподключение и RESUME
 
-- При разрыве соединения адаптер автоматически переподключается
-- Если была предыдущая сессия, сначала пытается восстановить сессию с помощью RESUME (opcode 6)
-- RESUME содержит `token`, `session_id`, последний `seq`, после восстановления дополняет пропущенные события
-- При получении opcode 7 (Reconnect) сохраняет состояние сессии и переподключается
-- При получении opcode 9 (Invalid Session) с `d=false` сбрасывает сессию и выполняет новый IDENTIFY
+- При разрыве соединения адаптер автоматически повторяет попытку подключения
+- Если ранее был `session_id`, сначала попытка RESUME (opcode 6) для восстановления сессии
+- RESUME содержит `token`, `session_id`, последний `seq`, после восстановления досылаются упущенные события
+- При получении opcode 7 (Reconnect) сохраняется состояние сессии и переподключение
+- При получении opcode 9 (Invalid Session) и `d=false` сессия удаляется и выполняется повторная идентификация
 
 ### Механизм心跳
 
-- После получения HELLO ждет `heartbeat_interval * random()` миллисекунд, затем отправляет первый heartbeat
-- Затем отправляет heartbeat каждые `heartbeat_interval` миллисекунд
+- После получения HELLO, после `heartbeat_interval * random()` миллисекунд отправляется первый heartbeat
+- Затем каждые `heartbeat_interval` миллисекунд отправляется heartbeat
 - heartbeat содержит последний `seq` (opcode 1, `d: seq`)
-- Если heartbeat отправлен, но в течение `heartbeat_interval` не получено ACK (opcode 11), считается, что соединение нарушено и происходит переподключение
+- Если heartbeat отправлен, но в течение `heartbeat_interval` не получено ACK (opcode 11), считается, что соединение нестабильно, и выполняется переподключение
 
 ## Примеры использования
 
@@ -19841,11 +20159,11 @@ async def handle_private_msg(event):
     await discord.Send.To("user", user_id).Text(f"Вы сказали: {text}")
 ```
 
-### Отправка Embed-сообщения
+### Отправка встроенного сообщения
 
 ```python
 embed = {
-    "title": "Анонс сервера",
+    "title": "Объявление сервера",
     "description": "Добро пожаловать в Discord-адаптер ErisPulse",
     "color": 3447003,
     "fields": [
@@ -19874,11 +20192,11 @@ async def handle(event):
 
     if embeds:
         await discord.Send.To("group", channel_id).Text(
-            f"Получено {len(embeds)} Embed-сообщений"
+            f"Получено {len(embeds)} встроенных сообщений"
         )
 ```
 
-### Обработка взаимодействий
+### Обработка событий взаимодействия
 
 ```python
 from ErisPulse.Core.Event import request
@@ -19890,40 +20208,56 @@ async def handle_interaction(event):
 
     interaction = event.get_interaction_data()
     if interaction.get("type") == 3:  # MESSAGE_COMPONENT
-        await event.reply("Кнопка нажата!")
+        await event.reply("Кнопка была нажата!")
 ```
 
 
 
 ### Webhook 适配
 
-# Описание функций платформы — универсальный мостовой адаптер Webhook
+### Поддерживаемые возможности платформы
 
-В настоящем документе подробно описаны двунаправленный мостовой протокол, сопоставление полей и особенности реализации адаптера Webhook.
+- **Входящие события**: Внешняя система POST-запрос к callback_path → преобразуется в событие OneBot12 (прозрачный проход json/text-сегментов)
+- **Исходящие события**: Модуль Send → POST-запрос к outgoing_url (двойной мост)
+- **API**: Мост с информацией об идентификации и статусе выполнения (минимальный набор)
+
+---
+
+## Обновление парадигмы v5 (4.2.0)
+
+- **Минимальный набор DSL API**: get_self_info/get_status/get_version/get_supported_actions
+- **Мягкая зависимость от фреймворка**: При запуске проверяется наличие ErisPulse>=2.7.1 и выводится предупреждение; в логе выводится версия
+- Обновлен путь импорта до Core.Bases
+
+---
+
+# Описание функциональных возможностей платформы — универсальный адаптер-мост Webhook
+
+В этом документе подробно описаны двунаправленный протокол моста, сопоставление полей и особенности реализации Webhook-адаптера.
 
 ## Обзор
 
-Адаптер вебхука представляет собой **мост на уровне протокола**, не привязанный к какой-либо конкретной платформе. Он отправляет и получает сообщения через HTTP, что позволяет любой системе, способной отправлять HTTP-запросы, подключаться к ErisPulse.
+Webhook-адаптер является **протокольным мостом**, не привязанным к какой-либо конкретной платформе. Он отправляет и получает сообщения через HTTP, позволяя любому системе, способной инициировать HTTP-запросы, подключиться к ErisPulse.
 
 ```
-Направление входящих сообщений           Направление исходящих сообщений
+Направление входящих событий            Направление исходящих событий
 ────────                                ────────
-Внешняя система                         Модуль ErisPulse
+Внешняя система                        Модуль ErisPulse
    │                                       │
    │ POST JSON                             │ Send.Text(...)
    ▼                                       ▼
 ┌──────────────────────────────────────────────────┐
 │              WebhookAdapter                       │
 │  ┌──────────────────┐   ┌──────────────────┐    │
-│  │ Входящие маршруты │   │ Исходящие пересылки │    │
+│  │ Входящие маршруты │   │ Передача исходящих │    │
 │  │ GET  (проверка здоровья) │   │ client.post()    │    │
-│  │ POST (прием событий)    │   │ → outgoing_url   │    │
+│  │ POST (прием событий) │   │ → outgoing_url   │    │
 │  └────────┬─────────┘   └────────▲─────────┘    │
 │           │                      │               │
 │           ▼                      │               │
 │  ┌──────────────────┐   ┌──────────────────┐    │
-│  │ WebhookConverter │   │ Класс Send       │    │
-│  │ JSON → OneBot12  │   │ Сообщения → JSON │    │
+│  │ WebhookConverter │   │ Класс Send        │    │
+│  │ JSON → OneBot12  │   │ Сегменты сообщений → JSON │    │
 │  └────────┬─────────┘   └────────▲─────────┘    │
 └───────────┼──────────────────────┼───────────────┘
             ▼                      │
@@ -19942,11 +20276,11 @@ async def handle_interaction(event):
 | `default` | `webhook_bot` | `/webhook/default` | `https://a.com/recv` | `key1` |
 | `discord` | `discord_bot` | `/webhook/discord` | `https://b.com/send` | `key2` |
 
-При запуске каждый аккаунт независимо регистрирует маршруты и независимо эмитит событие connect.
+При запуске каждый аккаунт регистрирует маршруты и отдельно отправляет событие connect.
 
-## Протокол входящих данных
+## Входящий протокол
 
-### 1. Проверка работоспособности (GET)
+### 1. Проверка здоровья (GET)
 
 - **Путь**: `{callback_path}`
 - **Метод**: `GET`
@@ -19957,12 +20291,12 @@ async def handle_interaction(event):
 {"status": "ok", "account": "default"}
 ```
 
-### 2. Получение событий (POST)
+### 2. Прием событий (POST)
 
 - **Путь**: `{callback_path}`
 - **Метод**: `POST`
 - **Content-Type**: `application/json`
-- **Аутентификация** (при настройке секрета): Заголовок `X-Webhook-Secret` или Query `?secret=`
+- **Аутентификация** (при наличии секрета): Заголовок `X-Webhook-Secret` или параметр запроса `?secret=`
 
 #### Тело запроса
 
@@ -19980,13 +20314,13 @@ async def handle_interaction(event):
 ```
 
 | Поле | Обязательно | Описание |
-|------|-------------|----------|
+|------|------|------|
 | `user_id` | Да | Идентификатор отправителя |
-| `user_nickname` | Нет | Никнейм отправителя |
-| `group_id` | Нет | Идентификатор группы/канала (при групповом чате) |
-| `detail_type` | Нет | Тип сессии (`private`/`group`), по умолчанию используется значение по умолчанию аккаунта |
-| `message` | Да | Массив сообщений OneBot12 |
-| `raw` | Нет | Исходные данные, сохраняются в `webhook_raw` без изменений |
+| `user_nickname` | Нет | Имя отправителя |
+| `group_id` | Нет | Идентификатор группы/канала (если в групповом чате) |
+| `detail_type` | Нет | Тип чата (`private`/`group`), по умолчанию используется значение по умолчанию аккаунта |
+| `message` | Да | Массив сегментов OneBot12 |
+| `raw` | Нет | Исходные данные, сохраняются в `webhook_raw` |
 
 #### Ответ
 
@@ -19994,43 +20328,43 @@ async def handle_interaction(event):
 {"status": "ok"}
 ```
 
-Ошибочные ответы содержат HTTP-статус:
+Ошибочные ответы с HTTP-статусом:
 
-| Статус | Описание |
-|--------|----------|
-| 400 | Неверный JSON / тело не является объектом |
+| Статус | Значение |
+|--------|------|
+| 400 | Неверный JSON / body не является объектом |
 | 401 | Ошибка аутентификации |
 | 404 | Неизвестный аккаунт |
-| 500 | Ошибка рассылки события |
+| 500 | Ошибка распределения события |
 
 ### 3. Сопоставление полей (входящий JSON → событие OneBot12)
 
 | Входящий JSON | Поле события OneBot12 | Описание |
-|---------------|-----------------------|----------|
+|-----------|-------------------|------|
 | — | `id` | Генерируется автоматически |
-| — | `time` | Текущая временная метка Unix (в секундах) |
+| — | `time` | Текущий Unix-время (секунды) |
 | — | `type` | Фиксированное значение `message` |
 | `detail_type` | `detail_type` | По умолчанию используется значение по умолчанию аккаунта |
 | — | `platform` | Фиксированное значение `webhook` |
 | — | `self.platform` | Фиксированное значение `webhook` |
-| — | `self.user_id` | Идентификатор бота аккаунта |
-| `user_id` | `user_id` | Передается без изменений |
-| `user_nickname` | `user_nickname` | Передается без изменений (необязательно) |
-| `group_id` | `group_id` | Передается без изменений (необязательно) |
-| `message` | `message` | Передается без изменений |
-| Полное тело запроса | `webhook_raw` | Исходный запрос |
-| Имя аккаунта | `webhook_account` | Имя аккаунта, который сгенерировал событие |
+| — | `self.user_id` | Идентификатор аккаунта `bot_id` |
+| `user_id` | `user_id` | Прозрачный проход |
+| `user_nickname` | `user_nickname` | Прозрачный проход (необязательно) |
+| `group_id` | `group_id` | Прозрачный проход (необязательно) |
+| `message` | `message` | Прозрачный проход |
+| Полное тело | `webhook_raw` | Исходный запрос |
+| Имя аккаунта | `webhook_account` | Аккаунт, сгенерировавший событие |
 | `type` или `message` | `webhook_raw_type` | Тип исходного события |
 
-## Протокол исходящих сообщений
+## Исходящий протокол
 
 ### 1. Отправка сообщений
 
-Когда модуль вызывает методы, такие как `Send.To(...).Text(...)`, адаптер отправляет POST-запрос на `outgoing_url`:
+При вызове методов модуля `Send.To(...).Text(...)` и т.д. адаптер отправляет POST-запрос на `outgoing_url`:
 
 - **Метод**: `POST`
 - **Content-Type**: `application/json`
-- **Заголовок аутентификации** (при настройке секрета): `X-Webhook-Secret: {secret}`
+- **Заголовок аутентификации** (при наличии секрета): `X-Webhook-Secret: {secret}`
 
 #### Тело запроса
 
@@ -20040,23 +20374,23 @@ async def handle_interaction(event):
   "target_id": "target_user_id",
   "account": "default",
   "message": [
-    {"type": "text", "data": {"text": "Сообщение"}}
+    {"type": "text", "data": {"text": "消息内容"}}
   ],
   "timestamp": 1700000000
 }
 ```
 
 | Поле | Описание |
-|------|----------|
+|------|------|
 | `target_type` | Тип цели (из `Send.To(type, id)`), по умолчанию используется значение по умолчанию аккаунта |
 | `target_id` | Идентификатор цели (из `Send.To`) |
 | `account` | Имя отправляющего аккаунта |
-| `message` | Массив сообщений OneBot12 |
-| `timestamp` | Время отправки (в секундах) |
+| `message` | Массив сегментов OneBot12 |
+| `timestamp` | Время отправки (секунды) |
 
 ### 2. Стандартизация ответа
 
-Адаптер преобразует ответ от цели в стандартный формат ответа ErisPulse:
+Адаптер преобразует ответ от цели в стандартный формат ErisPulse:
 
 ```json
 {
@@ -20069,50 +20403,50 @@ async def handle_interaction(event):
 }
 ```
 
-Из JSON-ответа цели извлекается идентификатор сообщения `message_id`. Если цель не возвращает `message_id`, поле остается пустой строкой.
+Из JSON-ответа цели извлекается `message_id`. Если `message_id` не возвращается, значение будет пустой строкой.
 
-В случае ошибки запроса возвращается ответ об ошибке (с `status: "failed"`, `retcode: 33001`).
+При ошибке запроса возвращается ответ с `status: "failed"`, `retcode: 33001`.
 
-## Метод Send
-
-| Метод | Описание |
-|------|------|
-| `Text(text)` | Отправить текст, обёртка `[{"type":"text","data":{"text":text}}]` |
-| `Image(file)` | Отправить изображение, обёртка `[{"type":"image","data":{"file":file}}]` |
-| `Raw_ob12(message)` | Отправить сегмент сообщения OneBot12 |
-| `Json(data)` | Прямая передача JSON, обёртка `[{"type":"json","data":{"raw":data}}]` |
-
-Модификаторы `At` / `AtAll` / `Reply` предоставляются базовым классом фреймворка и объединяются в сегмент сообщения через `_apply_modifiers`.
-
-## Миксин событий (WebhookEventMixin)
+## Методы Send
 
 | Метод | Описание |
 |------|------|
-| `get_raw_data()` | Получить необработанные данные тела запроса (`webhook_raw`) |
-| `get_detail_type()` | Получить тип сессии |
-| `get_webhook_account()` | Получить имя аккаунта, который сгенерировал это событие |
+| `Text(text)` | Отправка текста, преобразуется в `[{"type":"text","data":{"text":text}}]` |
+| `Image(file)` | Отправка изображения, преобразуется в `[{"type":"image","data":{"file":file}}]` |
+| `Raw_ob12(message)` | Отправка OneBot12-сегментов |
+| `Json(data)` | Прозрачный проход исходного JSON, преобразуется в `[{"type":"json","data":{"raw":data}}]` |
 
-## Характеристики
+Модификаторы `At` / `AtAll` / `Reply` предоставляются базовым классом фреймворка и объединяются в сегменты сообщения через `_apply_modifiers`.
 
-| Характеристика | Статус поддержки |
-|----------------|------------------|
-| Многоконтурность | ✅ Каждый аккаунт имеет отдельный мост |
-| Входная аутентификация | ✅ Двухрежимная (Header / Query) |
-| Проверка работоспособности | ✅ GET возвращает статус |
-| Исходная аутентификация | ✅ Header содержит секрет |
-| Стандартные события OneBot12 | ✅ Полные поля стандарта |
-| Метасобытия | ✅ connect / disconnect |
-| Обнаружение маршрутов | ✅ Регистрация в пространстве имён `webhook` |
+## Расширенные методы события (WebhookEventMixin)
+
+| Метод | Описание |
+|------|------|
+| `get_raw_data()` | Получение исходного тела запроса (`webhook_raw`) |
+| `get_detail_type()` | Получение типа чата |
+| `get_webhook_account()` | Получение имени аккаунта, сгенерировавшего событие |
+
+## Матрица функциональных возможностей
+
+| Функция | Поддержка |
+|------|----------|
+| Множественные аккаунты | ✅ Каждый аккаунт работает независимо |
+| Входящая аутентификация | ✅ Два режима: заголовок и параметр запроса |
+| Проверка здоровья | ✅ GET возвращает статус |
+| Исходящая аутентификация | ✅ Заголовок с секретом |
+| События OneBot12 | ✅ Полный набор стандартных полей |
+| Мета-события | ✅ connect / disconnect |
+| Обнаружение маршрутов | ✅ Регистрация в пространстве имен `webhook` |
 | WebSocket | ❌ Только HTTP |
-| Загрузка медиа | ❌ Передача через URL, без прямой передачи бинарных данных |
+| Загрузка медиа | ❌ Только через URL, не передача двоичных данных |
 
 ## Примечания
 
-1. **Только входящие сообщения**: если `outgoing_url` оставить пустым, этот аккаунт будет использоваться только для входящих сообщений, попытка отправки сообщений вернёт ошибку
-2. **Безопасность ключа**: `secret` хранится в конфигурации в зашифрованном виде (metadata secret), рекомендуется использовать HTTPS для передачи данных
-3. **Уникальность пути**: `callback_path` для нескольких аккаунтов должны быть различны, чтобы избежать конфликтов маршрутизации
-4. **Идемпотентность**: адаптер не гарантирует удаление дубликатов входящих событий, внешняя система должна самостоятельно обрабатывать повторные попытки
-5. **Таймаут**: исходящие запросы используют встроенный `client` ErisPulse, наследуя глобальную конфигурацию таймаута
+1. **Односторонняя отправка**: Если `outgoing_url` оставлен пустым, аккаунт будет принимать только входящие события, попытка отправки сообщения вернет ошибку
+2. **Безопасность секрета**: `secret` хранится в конфигурации в зашифрованном виде (metadata secret), рекомендуется использовать HTTPS при передаче
+3. **Уникальность пути**: `callback_path` для нескольких аккаунтов должен быть уникальным, чтобы избежать конфликтов маршрутов
+4. **Идемпотентность**: Адаптер не гарантирует уникальность входящих событий, внешняя система должна самостоятельно обрабатывать повторные запросы
+5. **Таймаут**: Исходящие запросы используют встроенный клиент ErisPulse и наследуют глобальные настройки таймаута
 
 
 
@@ -20124,43 +20458,57 @@ async def handle_interaction(event):
 - Название модуля: `ErisPulse-WechatMpAdapter`
 - Идентификатор платформы: `mp` (альтернативное имя: `wechat_mp`)
 - Версия модуля: 4.1.0
-- Автор поддержки: ErisPulse
+- Разработчик: ErisPulse
 - Зависимости: `cryptography`
+
+## Обновление парадигмы v5 (4.2.0)
+
+- **Наследование BaseConverter**: Общие поля конвертера строятся фреймворком build_base_event
+- **Минимальный набор DSL-команд API**: get_self_info (appid) / get_status / get_version / get_supported_actions
+- **Мягкая зависимость фреймворка**: Во время выполнения проверяется наличие ErisPulse>=2.7.1 и выводится предупреждение; при запуске выводится лог версии
+
+---
+
+### Поддерживаемые возможности платформ
+
+- **Прием**: Обратные сообщения от публичного аккаунта и события подписки/отписки и т.д. (в открытом виде/в защищенном режиме), проверка подлинности подписи
+- **Отправка**: Сообщения службы поддержки (Text/Image и т.д., через Send DSL)
+- **API**: Информация о счете (appid) и состояние выполнения (минимальный набор)
 
 ## Поддерживаемые типы отправки сообщений
 
 | Метод | Описание | API WeChat |
 |------|------|---------|
-| `Text(text)` | Отправка текста | Клиентская служба `message/custom/send` |
-| `Image(file)` | Отправка изображения (автоматически загружается и получается media_id) | Клиентская служба + `media/upload` |
-| `Voice(file)` | Отправка голосового сообщения (автоматически загружается и получается media_id) | Клиентская служба + `media/upload` |
-| `Video(file, title, description)` | Отправка видео (автоматически загружается и получается media_id) | Клиентская служба + `media/upload` |
-| `Music(url, title, description, ...)` | Отправка музыки | Клиентская служба |
-| `News(articles)` | Отправка многокомпонентного сообщения | Клиентская служба |
+| `Text(text)` | Отправка текста | Клиентская поддержка `message/custom/send` |
+| `Image(file)` | Отправка изображения (автоматическая загрузка для получения media_id) | Клиентская поддержка + `media/upload` |
+| `Voice(file)` | Отправка голосового сообщения (автоматическая загрузка для получения media_id) | Клиентская поддержка + `media/upload` |
+| `Video(file, title, description)` | Отправка видео (автоматическая загрузка для получения media_id) | Клиентская поддержка + `media/upload` |
+| `Music(url, title, description, ...)` | Отправка музыки | Клиентская поддержка |
+| `News(articles)` | Отправка сообщения с изображением и текстом | Клиентская поддержка |
 | `Template(template_id, data, url)` | Отправка шаблонного сообщения | `message/template/send` |
-| `Menu(head_content, list, tail_content)` | Отправка сообщения-меню | Клиентская служба `msgmenu` |
-| `Raw_ob12(message)` | Отправка сообщения OneBot12 | - |
+| `Menu(head_content, list, tail_content)` | Отправка сообщения с меню | Клиентская поддержка `msgmenu` |
+| `Raw_ob12(message)` | Отправка сообщения в формате OneBot12 | - |
 
 ### Описание медиафайлов
-- Поддерживается три типа параметров:
-  - `str` URL (начинается с `http://` / `https://`): автоматически загружается и загружается
-  - `str` локальный путь к файлу: автоматически читается и загружается
+- Поддерживаются три типа параметров:
+  - `str` URL (начинается с `http://` или `https://`): автоматически загружается и загружается на сервер
+  - `str` локальный путь к файлу: автоматически читается и загружается на сервер
   - `bytes` двоичные данные: загружаются напрямую
   - `str` media_id: с префиксом `media:` можно повторно использовать уже загруженный media_id
 - После загрузки получается временный материал `media_id`, срок действия которого составляет 3 дня
 
 ### Важные ограничения
-- Клиентская служба может отправлять только в течение **48 часов** после взаимодействия пользователя с публичной страницей
-- Для отправки после 48 часов необходимо использовать шаблонные сообщения (требуется авторизация пользователя)
-- Непроверенные сервисные аккаунты (`verified=false`) не могут отправлять активно, могут только пассивно отвечать (см. раздел «Проверенные сервисные аккаунты и пассивные ответы»)
+- Сообщения клиентской поддержки можно отправлять только в течение **48 часов** после взаимодействия пользователя с публикацией
+- После истечения 48 часов необходимо использовать шаблонные сообщения (требуется сценарий авторизации пользователя)
+- Непроверенные сервисные аккаунты (с `verified=false`) не могут отправлять сообщения активно, могут только отвечать пассивно (см. выше «Проверенные сервисные аккаунты и пассивные ответы»)
 
 ## Типы событий
 
 ### События сообщений (message)
-Все сообщения пользователей имеют `detail_type: private` (сценарий 1v1 публичной страницы).
+Все сообщения от пользователей имеют `detail_type: private` (сценарий 1v1 для публичных аккаунтов).
 
-| MsgType WeChat | Тип сообщения | Описание |
-|-------------|-----------|------|
+| Тип сообщения WeChat | Тип сегмента сообщения | Описание |
+|---------------------|-----------------------|----------|
 | `text` | `text` | Текстовое сообщение |
 | `image` | `image` | Сообщение с изображением |
 | `voice` | `voice` | Голосовое сообщение (с результатом распознавания речи) |
@@ -20170,60 +20518,60 @@ async def handle_interaction(event):
 | `link` | `text` | Сообщение с ссылкой (преобразуется в текст) |
 
 ### События уведомлений (notice)
-События различаются по полю `mp_event`.
+Типы событий различаются по полю `mp_event`.
 
-| Event WeChat | `mp_event` | Описание |
-|-----------|-----------|------|
-| `subscribe` | `subscribe` | Подписка на публичную страницу |
+| Событие WeChat | `mp_event` | Описание |
+|----------------|------------|----------|
+| `subscribe` | `subscribe` | Подписка на публичный аккаунт |
 | `unsubscribe` | `unsubscribe` | Отмена подписки |
 | `SCAN` | `scan` | Сканирование QR-кода с параметрами |
-| `LOCATION` | `location_report` | Отчет о геолокации |
+| `LOCATION` | `location_report` | Отправка геолокации |
 | `CLICK` | `menu_click` | Нажатие на пользовательское меню |
-| `VIEW` | `menu_view` | Переход по ссылке в меню |
+| `VIEW` | `menu_view` | Переход по ссылке из меню |
 | `TEMPLATESENDJOBFINISH` | `template_send_finish` | Результат отправки шаблонного сообщения |
-| `MASSSENDJOBFINISH` | `mass_send_finish` | Результат отправки массового сообщения |
+| `MASSSENDJOBFINISH` | `mass_send_finish` | Результат массовой рассылки сообщений |
 
-## Расширенные поля платформы
+## Расширение платформы
 
-Специфические поля WeChat в объекте события (с префиксом `mp_`):
+Поле, специфичное для WeChat, в объекте события (префикс `mp_`):
 
 | Поле | Тип | Описание |
 |------|------|------|
-| `mp_raw` | str | Исходный XML-данные |
+| `mp_raw` | str | Исходные XML-данные |
 | `mp_raw_type` | str | Тип исходного сообщения/события |
 | `mp_msg_id` | str | ID сообщения WeChat |
-| `mp_event` | str | Тип события (только уведомления) |
+| `mp_event` | str | Тип события (только для уведомлений о событиях) |
 | `mp_event_key` | str | Ключ события (нажатие меню/сканирование и т.д.) |
-| `mp_to_user` | str | Идентификатор получателя (ID публичной страницы) |
-| `mp_from_user` | str | OpenID отправителя |
-| `mp_data` | dict | Словарь данных, полученных из XML |
+| `mp_to_user` | str | Ответный微信号 (оригинальный ID публичного аккаунта) |
+| `mp_from_user` | str | Отправитель OpenID |
+| `mp_data` | dict | Данные XML, разобранные в словарь |
 
-## Расширенные методы событий
+## Методы расширения событий
 
-Регистрация через `register_event_mixin("mp", ...)` позволяет вызывать методы непосредственно на объекте события:
+Регистрируются с помощью `register_event_mixin("mp", ...)`, после чего можно напрямую вызывать на объекте события:
 
 | Метод | Возвращаемое значение | Описание |
 |------|--------|------|
 | `get_openid()` | str | OpenID отправителя |
 | `get_msg_type()` | str | Тип исходного сообщения WeChat |
-| `get_event()` | str | Тип события (только уведомления) |
-| `get_content()` | str | Чистый текст сообщения |
-| `get_raw_xml()` | str | Исходные XML-данные |
+| `get_event()` | str | Тип события (только для уведомлений о событиях) |
+| `get_content()` | str | Содержимое сообщения в виде обычного текста |
+| `get_raw_xml()` | str | Исходные данные в формате XML |
 
 ## Параметры конфигурации
 
-### Многоконтурная конфигурация
+### Конфигурация нескольких аккаунтов
 
-Каждый аккаунт соответствует одной публичной странице:
+Каждый аккаунт соответствует одному публичному аккаунту:
 
 ```toml
 [WechatMpAdapter.accounts.main]
 appid = "wx1234567890abcdef"
 appsecret = "your_app_secret_here"
 token = "your_callback_token"
-encoding_aes_key = ""                    # Требуется для безопасного/совместимого режима (43 символа)
-callback_path = "/mp/main"               # Путь обратной связи
-verified = true                          # Является ли проверенным сервисным аккаунтом (влияет на возможность активной отправки)
+encoding_aes_key = ""                    # Требуется только для режима безопасности/совместимости (43 символа)
+callback_path = "/mp/main"               # Путь обратного вызова
+verified = true                          # Является ли аккаунтом с подтвержденной сертификацией (влияет на возможность отправки сообщений)
 enable = true
 
 [WechatMpAdapter.accounts.secondary]
@@ -20237,53 +20585,54 @@ enable = true
 ### Описание полей конфигурации
 
 | Поле | Обязательно | Описание |
-|------|------|------|
-| `appid` | Да | AppID публичной страницы |
-| `appsecret` | Да | AppSecret публичной страницы (secret) |
-| `token` | Нет | Токен для проверки обратной связи (рекомендуется для включения проверки подписи) |
-| `encoding_aes_key` | Нет | Ключ для шифрования/дешифрования сообщений (43 символа, требуется для безопасного режима) |
-| `callback_path` | Нет | Шаблон пути обратной связи, по умолчанию `/mp/{account}`, `{account}` заменяется именем аккаунта |
-| `verified` | Нет | Является ли **проверенным сервисным аккаунтом**, по умолчанию `true` (см. ниже) |
-| `enable` | Нет | Включен ли аккаунт, по умолчанию true |
+|------|-------------|----------|
+| `appid` | Да | AppID публичного аккаунта |
+| `appsecret` | Да | AppSecret (secret) публичного аккаунта |
+| `token` | Нет | Токен для проверки обратного вызова (рекомендуется использовать для включения проверки подписи) |
+| `encoding_aes_key` | Нет | Ключ для шифрования и дешифрования сообщений (43 символа, требуется в режиме безопасности) |
+| `callback_path` | Нет | Шаблон пути обратного вызова, по умолчанию `/mp/{account}`, где `{account}` заменяется именем аккаунта |
+| `verified` | Нет | Является ли аккаунтом с **подтвержденной сертификацией**, по умолчанию `true` (см. ниже) |
+| `enable` | Нет | Включена ли конфигурация, по умолчанию `true` |
 
-### Проверенные сервисные аккаунты и пассивные ответы (verified)
+### Подтвержденный сервисный аккаунт и пассивные ответы (verified)
 
-- `verified = true` (по умолчанию, проверенный сервисный аккаунт): можно в любое время использовать **клиентскую службу** для активной отправки (в течение 48 часов) и шаблонные сообщения
-- `verified = false` (непроверенный подписной аккаунт):
-  - Клиентская служба / шаблонные сообщения **можно отправлять только в контексте пассивного ответа webhook** (в течение 15 секунд после получения сообщения пользователя, один раз) — адаптер автоматически перехватит отправку и преобразует её в пассивный ответ
-  - Активная отправка (например, по расписанию) возвращает ошибку `retcode=34003`
+- `verified = true` (по умолчанию, подтвержденный сервисный аккаунт): можно использовать **сообщения службы поддержки** для отправки активных сообщений (в течение 48 часов) и шаблонные сообщения.
+- `verified = false` (не подтвержденный аккаунт подписки):
+  - Сообщения службы поддержки / шаблонные сообщения **можно отправлять только в контексте пассивного ответа webhook** (в течение 15 секунд после получения сообщения от пользователя, один раз) — адаптер автоматически перехватывает отправку и преобразует её в пассивный ответ.
+  - Активная отправка (например, по расписанию) вернет ошибку с кодом `retcode=34003`.
 
 ## Описание режимов шифрования
 
-WeChat предоставляет три режима шифрования сообщений:
+Мини-приложение WeChat предоставляет три режима шифрования и расшифровки сообщений:
 
 | Режим | Описание | encoding_aes_key | Проверяемое поле |
 |------|------|-----------------|---------|
-| Режим без шифрования | XML передается в открытом виде | Не требуется | `signature` |
-| Совместимый режим | Одновременно присутствуют открытые и зашифрованные данные | Необязательно | `signature` / `msg_signature` |
-| Безопасный режим | Все данные зашифрованы | Обязательно | `msg_signature` |
+| Режим в открытом виде | XML передается в открытом виде | Не требуется | `signature` |
+| Совместимый режим | Существуют как открытые, так и зашифрованные сообщения | Необязателен | `signature` / `msg_signature` |
+| Безопасный режим | Все сообщения зашифрованы | Обязателен | `msg_signature` |
 
 Адаптер автоматически обрабатывает:
-- Режим без шифрования: проверка `signature`, прямое парсинг XML
-- Безопасный/совместимый режим: проверка поля `Encrypt`, проверка `msg_signature`, дешифровка с использованием AES-256-CBC
-- Для дешифровки требуется библиотека `cryptography` (указана в зависимостях)
+- Режим в открытом виде: проверяет `signature` и напрямую анализирует XML
+- Безопасный/совместимый режим: обнаруживает поле `Encrypt`, проверяет `msg_signature` и расшифровывает с помощью AES-256-CBC
+- Расшифровка зависит от библиотеки `cryptography` (уже указана в зависимостях)
 
-## Обратные маршруты
+## Callback-маршруты
 
-Адаптер регистрирует два маршрута (GET + POST) для каждого включенного аккаунта:
+Адаптер регистрирует два маршрута (GET и POST) для каждого включённого аккаунта:
 
-- **GET**: проверка подключения сервера WeChat, проверка подписи и возврат `echostr`
-- **POST**: получение сообщений и событий пользователя, проверка подписи → дешифровка (если требуется) → преобразование → эмит
+- **GET**: Проверка подключения сервера WeChat, после проверки подписи возвращает `echostr`
+- **POST**: Приём сообщений и событий от пользователя, проверка подписи → расшифровка (при необходимости) → преобразование → emit
 
-Фактический путь будет автоматически добавлять префикс модуля, например, зарегистрированный путь `/mp/main`, фактический путь будет `/mp_{account}_verify/mp/main` и `/mp_{account}_message/mp/main`.
+Фактические пути доступа автоматически добавляют префикс модуля, например, путь регистрации `/mp/main`,
+фактические пути доступа будут `/mp_{account}_verify/mp/main` и `/mp_{account}_message/mp/main`.
 
-## Ответы API
+## API-ответ
 
 Все вызовы `call_api` возвращают стандартизированный ответ:
 
 - Успех: `status: "ok"`, `retcode: 0`
 - Ошибка: `status: "failed"`, `retcode: 34000+errcode`
-- Всегда включает `mp_raw` (исходный ответ), `message_id`
+- Всегда включает `mp_raw` (сырой ответ) и `message_id`
 
 
 

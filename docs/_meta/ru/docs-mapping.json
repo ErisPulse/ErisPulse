@@ -206,7 +206,7 @@
     "Руководство по платформам": {
       "description": "Возможности платформ и документация адаптеров",
       "icon": "fa-plug",
-      "count": 15,
+      "count": 17,
       "documents": [
         {
           "title": "Документация по функциям платформы ErisPulse",
@@ -227,13 +227,13 @@
           "icon": "fa-comments"
         },
         {
-          "title": "Информация о документации",
+          "title": "Документация по функциям платформы Telegram",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
         },
         {
-          "title": "Документация по функциональности почтовой платформы",
+          "title": "Документация по функциональным возможностям почтовой платформы",
           "path": "platform-guide/email.md",
           "level": 1,
           "icon": "fa-envelope"
@@ -281,7 +281,7 @@
           "icon": "fa-mobile-screen"
         },
         {
-          "title": "Описание функций платформы — универсальный мостовой адаптер Webhook",
+          "title": "Описание функциональных возможностей платформы — универсальный адаптер-мост Webhook",
           "path": "platform-guide/webhook.md",
           "level": 1,
           "icon": "fa-link"
@@ -297,6 +297,18 @@
           "path": "platform-guide/maintain-notes.md",
           "level": 1,
           "icon": "fa-wrench"
+        },
+        {
+          "title": "Документация по функциям платформы Sandbox",
+          "path": "platform-guide/sandbox.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "Документация по функциям платформы Terminal",
+          "path": "platform-guide/terminal.md",
+          "level": 1,
+          "icon": "fa-plug"
         }
       ],
       "subgroups": {}
@@ -492,7 +504,7 @@
     "Технические стандарты": {
       "description": "Технические спецификации и стандарты фреймворка",
       "icon": "fa-gavel",
-      "count": 7,
+      "count": 8,
       "documents": [
         {
           "title": "Технические стандарты",
@@ -535,6 +547,12 @@
           "path": "standards/api-action-spec.md",
           "level": 1,
           "icon": "fa-bolt"
+        },
+        {
+          "title": "Руководство по стандартизации адаптеров (общие положения)",
+          "path": "standards/standardization-guide.md",
+          "level": 1,
+          "icon": "fa-gavel"
         }
       ],
       "subgroups": {}

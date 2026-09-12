@@ -11440,11 +11440,11 @@ A: 一般的でない、またはプラットフォーム固有のタイプに�
 }
 ```
 
-## 4. メッセージセグメント標準
+## 4. 消息セグメント標準
 
 ### 4.1 標準メッセージセグメント
 
-標準メッセージセグメントタイプには**プラットフォームプレフィックスを追加しない**：
+標準メッセージセグメントには**プラットフォームプレフィックスを付与する必要はありません**。
 
 | タイプ | 説明 | data フィールド |
 |------|------|----------|
@@ -11455,8 +11455,9 @@ A: 一般的でない、またはプラットフォーム固有のタイプに�
 | `file` | ファイル | `file: str/bytes`, `url: str`, `filename: str` |
 | `mention` | ユーザーへのメンション | `user_id: str`, `user_name: str` |
 | `reply` | メッセージへの返信 | `message_id: str` |
-| `face` | エモート | `id: str` |
+| `face` | スタンプ | `id: str` |
 | `location` | 位置情報 | `latitude: float`, `longitude: float` |
+| `keyboard` | ボタン/インラインキーボード | `rows: list[list[button]]`（4.1.1参照） |
 
 ```json
 {
@@ -11467,22 +11468,60 @@ A: 一般的でない、またはプラットフォーム固有のタイプに�
 }
 ```
 
-### 4.2 プラットフォーム拡張メッセージセグメント
+### 4.1.1 keyboard ボタン/インラインキーボードセグメント（クロスプラットフォーム互換）
 
-プラットフォーム固有のメッセージセグメントには、プラットフォームプレフィックスを追加する必要があります：
+ボタン/インラインキーボードは、Telegram / 云湖 / QQBot / Kook / Discord などの複数のプラットフォームで対応しており、**クロスプラットフォームで共通する概念**です。したがって、プラットフォームプレフィックスなしの標準メッセージセグメントとして扱います。アダプタは、標準セグメントをプラットフォーム固有の構造に変換する必要があります。一方、プラットフォーム固有の拡張セグメント（例: `telegram_inline_keyboard`）はそのまま透かし（透伝）されます。
 
 ```json
-// 雲湖 - フォーム
+{
+  "type": "keyboard",
+  "data": {
+    "rows": [
+      [
+        {"label": "選択肢A", "type": "callback", "data": "vote:A"},
+        {"label": "公式サイト", "type": "link", "data": "https://example.com"}
+      ]
+    ]
+  }
+}
+```
+
+**フィールドの説明：**
+
+| フィールド | 型 | 必須 | 説明 |
+|------|------|------|------|
+| `rows` | 2次元配列 | はい | 各サブ配列が1行のボタンを表す |
+| `rows[][].label` | str | はい | ボタンに表示するテキスト |
+| `rows[][].type` | str | はい | `callback`（クリック時にデータを返す） / `link`（URLに移動） |
+| `rows[][].data` | str | はい | コールバックデータ（type=callback）または移動先URL（type=link） |
+| `rows[][].*` | Any | いいえ | プラットフォーム固有のオプションフィールド（例: `web_app`、`menus`）、アダプタは対応能力に応じてマッピングまたは無視する |
+
+**アダプタの変換例**（完全なマッピングとインタラクションコールバックイベントの標準は [クロスプラットフォームインタラクションコンポーネント標準](docs/ja/standardization-guide.md)を参照してください）：
+
+| プラットフォーム | 標準セグメント → プラットフォーム固有 |
+|------|------------------|
+| Telegram | `inline_keyboard`：`[{text, callback_data \| url}]` |
+| 云湖 | `buttons`：`[{label, action_type: 2=コールバック \| 1=移動, ...}]` |
+| QQBot | `keyboard.content.rows`：`[{label, type: 2=コールバック \| 0=移動, data}]`（markdown形式のメッセージが必要） |
+| Kook | カードの action-group モジュール |
+| Discord | components：`action_row` + `buttons`（custom_id/url） |
+
+### 4.2 プラットフォーム拡張メッセージセグメント
+
+プラットフォーム固有のメッセージセグメントには、**プラットフォームプレフィックスを付与する必要があります**。
+
+```json
+// 云湖 - フォーム
 {"type": "yunhu_form", "data": {"form_id": "123456", "form_name": "登録フォーム"}}
 
-// Telegram - ステッカー
+// Telegram - スタンプ
 {"type": "telegram_sticker", "data": {"file_id": "CAACAgIAAxkBAA...", "emoji": "😂"}}
 ```
 
-**拡張メッセージセグメントの要件**：
-1. **data 内部のフィールドにプレフィックスを追加しない**：`{"type": "yunhu_form", "data": {"form_id": "..."}}` ではなく `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
-2. **降格対応を提供する**：モジュールが拡張メッセージセグメントを認識できない場合、アダプターは `alt_message` にテキストによる代替を提供する
-3. **ドキュメントの完全性**：各拡張メッセージセグメントは、アダプターのドキュメントで `type`、`data` の構造と使用場面を説明する必要がある
+**拡張メッセージセグメントの要件：**
+1. **data内部のフィールドにプレフィックスを付与しない**：`{"type": "yunhu_form", "data": {"form_id": "..."}}` ではなく `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
+2. **降格（代替）対応を提供する**：モジュールが拡張メッセージセグメントを認識できない場合、アダプタは `alt_message` にテキストによる代替を提供する
+3. **ドキュメントの完全性**：各拡張メッセージセグメントは、アダプタのドキュメントで `type`、`data` の構造と使用シーンを明確に説明する必要がある
 
 ## 5. 未知イベントの処理
 
@@ -14479,7 +14518,7 @@ OneBot11Adapter は、OneBot V11 プロトコルに基づいて構築された�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.0.0
+- 対応モジュールバージョン: 4.3.0
 - メンテナー: ErisPulse
 
 ## 基本情報
@@ -14489,6 +14528,58 @@ OneBot11Adapter は、OneBot V11 プロトコルに基づいて構築された�
 - 対応プロトコル/APIバージョン：OneBot V11
 - マルチアカウント対応：デフォルトでマルチアカウントアーキテクチャを採用しており、複数の OneBot アカウントを同時に設定および実行できます。
 - 設定キー名：`OneBotAdapter`
+
+## v5 フレームワークの更新 (4.3.0)
+
+このアダプタは v5 フレームワークに準拠しました（段階的なアップグレード、API 互換性を維持）：
+
+- **BaseConverter 継承**：コンバーターの共通フィールド（id/time/platform/self/raw）は、フレームワークの build_base_event によって構築され、OB11 のフィールド名（echo/time/self_id）に従って上書きされます。
+- **spawn_background によるタスクの所有**：Client モードでの接続タスクは、asyncio.spawn_background を使用して実行されます（所有者としての所有、シャットダウン時に自動回収）。
+- **フレームワークのソフト依存**：アダプタのインストール時に ErisPulse のハード依存を宣言しなくなり、pip による解析時にフレームワークのバージョンが変更されるのを回避します。実行時に ErisPulse >= 2.7.1 を検出し、バージョンが低すぎる場合はログで警告を出します。
+- **起動時のバージョンログ**：初期化時に OneBotAdapter v4.3.0 がロードされたことを出力します。
+
+既存の機能（4.2.0 以降でサポート）：多アカウント、Api DSL 標準アクションのマッピング（get_self_info → get_login_info など）、Request DSL（友人/グループリクエストの承認：event.approve() / event.reject()）、EventMixin、i18n。
+
+---
+
+## 標準Api動作（Api DSL）
+
+アダプタは OneBot12 標準アクション名を自動的に OB11 アクション名にマッピングし、モジュールはプラットフォームをまたいで統一して呼び出すことができます。
+
+| OB12 標準アクション | OB11 アクション | 説明 |
+|-------------------|----------------|------|
+| get_self_info     | get_login_info | フィールドの標準化 user_id/user_name/user_displayname |
+| get_user_info     | get_stranger_info | フィールドの標準化 |
+| delete_message    | delete_msg     | メッセージの撤回 |
+| leave_group       | set_group_leave | グループから退出 |
+| get_friend_list   | get_friend_list | アクション名が一致し、デフォルトで透過 |
+| get_group_info    | get_group_info | アクション名が一致し、デフォルトで透過 |
+| upload_file       | upload_group_file / upload_private_file | 拡張 group_id/user_id 任意パラメータ、filetype は自動検出でタイプルーティング |
+
+### 基本的な使い方
+
+```python
+from ErisPulse import sdk
+onebot = sdk.adapter.get("onebot11")
+
+# ロボット情報の取得
+result = await onebot.Api.get_self_info()
+print(result["data"]["user_id"], result["data"]["user_name"])
+
+# メッセージの撤回
+await onebot.Api.delete_message(message_id=123456)
+
+# グループファイルのアップロード（filetype は自動検出で upload_group_file にルーティング）
+result = await onebot.Api.upload_file(group_id=123456, file="/path/to/file.zip")
+
+# 指定アカウント（複数アカウント）
+result = await onebot.Api.Using("main").get_self_info()
+
+# マッピングされていない OB11 アクションは call() でエスケープ（NapCat/Lagrange などの拡張も通用）
+result = await onebot.Api.call("send_poke", group_id=123, user_id=456)
+```
+
+---
 
 ## 支持するメッセージ送信タイプ
 
@@ -15006,8 +15097,8 @@ OneBot12Adapter は、OneBot V12 プロトコルに基づいて構築された�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.0.0
-- メンテナー: ErisPulse
+- 対応モジュールバージョン: 4.3.0
+- メンテナ: ErisPulse
 - プロトコルバージョン: OneBot V12
 
 ## 基本情報
@@ -15016,6 +15107,66 @@ OneBot12Adapter は、OneBot V12 プロトコルに基づいて構築された�
 - アダプタ名: OneBot12Adapter
 - 対応するプロトコル/APIバージョン: OneBot V12
 - 多アカウント対応: 完全な多アカウントアーキテクチャを採用しており、複数のOneBot12アカウントを同時に設定・実行することができます。
+
+## v5 フレームワークの更新（4.3.0）
+
+このアダプタは v5 フレームワークに準拠しました（段階的なアップグレード、API は互換性があります）：
+
+- **BaseConverter 継承**：コンバーターの共通フィールド（id/time/platform/self/raw）は、フレームワークの build_base_event によって構築され、OB11 のフィールド名（echo/time/self_id）に従って上書きされます。
+- **spawn_background でのタスクの所有**：Client モードの接続タスクは、asyncio.spawn_background を使用し、タスクの所有者を明示的に指定し、シャットダウン時に自動的にリソースを回収します。
+- **フレームワークのソフト依存**：アダプタのインストール時に ErisPulse をハード依存として宣言しなくなりました。これにより、pip の解析時にフレームワークのバージョンが誤って調整されるのを回避します。実行時に ErisPulse >= 2.7.1 を検出し、バージョンが低すぎる場合はログで警告を出します。
+- **起動時のバージョンログ**：初期化時に OneBotAdapter v4.3.0 がロードされたことを出力します。
+
+既存の機能（4.2.0 以降でサポート）：複数アカウント、Api DSL の標準アクションマッピング（get_self_info→get_login_info など）、Request DSL（友人/グループリクエストの承認：event.approve() / event.reject()）、EventMixin、i18n。
+
+## 標準Apiアクション（Api DSL）
+
+OneBot12 バックエンドは、OB12の標準アクション名をすべてネイティブでサポートしています。Api DSL はデフォルトで call_api を直接透過的に委譲します（マッピングは不要です）：
+
+```python
+from ErisPulse import sdk
+ob12 = sdk.adapter.get("onebot12")
+
+result = await ob12.Api.get_self_info()
+result = await ob12.Api.get_friend_list()
+await ob12.Api.delete_message(message_id="MSG_ID")
+
+# アカウントを指定（複数アカウント）
+result = await ob12.Api.Using("main").get_self_info()
+
+# プラットフォーム拡張アクション
+result = await ob12.Api.call("extend_action", param=1)
+```
+
+> アクションのサポートは、バックエンドの実装（NapCat/Lagrange/LLOneBot など）に準じます。サポートされていないアクションは、バックエンドがエラーを返し透過的に転送します。
+
+## リクエスト操作（Request DSL）
+
+OneBot12 標準の handle_quick_request 動作に基づき、フレンドリクエストとグループ参加招待の承認/拒否を処理します。
+
+### Event 便利メソッド
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    if event.get("platform") != "onebot12":
+        return
+    comment = event.get("comment", "")
+    if comment == "passphrase":
+        await event.approve()      # 承認
+    else:
+        await event.reject()       # 拒否
+```
+
+### 手動による Request DSL 呼び出し
+
+```python
+await ob12.Request("request_flag").accept()
+await ob12.Request("request_flag").reject()
+await ob12.Request("request_flag").Using("main").accept()
+```
 
 ## 支持するメッセージ送信タイプ
 
@@ -15451,15 +15602,15 @@ OneBot12標準API規格に従います：
 
 ### Telegram 适配
 
-﻿# Telegramプラットフォームの機能ドキュメント
+# Telegramプラットフォームの特徴ドキュメント
 
-TelegramAdapter は、Telegram Bot API を基に構築されたアダプタであり、さまざまなメッセージタイプとイベント処理をサポートしています。
+TelegramAdapter は、Telegram Bot API を基に構築されたアダプタであり、さまざまなメッセージタイプとイベント処理に対応しています。
 
 ---
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.1.1  
+- 対応モジュールバージョン: 4.2.0
 - メンテナー: ErisPulse
 
 ## 基本情報
@@ -15468,6 +15619,58 @@ TelegramAdapter は、Telegram Bot API を基に構築されたアダプタで�
 - アダプタ名：TelegramAdapter
 - 対応するプロトコル/APIバージョン：Telegram Bot API
 - セッションタイプのマッピング：`private` → 送信時に `user` を使用、`group`/`supergroup` → `group`、`channel` → `channel`
+
+## 標準Apiアクション（Api DSL）
+
+アダプターは OB12 標準アクションを Telegram Bot API にマッピングし、`data` フィールドを標準化します：
+
+| OB12 標準アクション | Telegram API | data フィールド |
+|-------------------|--------------|----------------|
+| get_self_info | getMe | user_id / user_name / user_displayname |
+| get_user_info(user_id) | getChat | user_id / user_name / user_displayname |
+| get_group_info(group_id) | getChat | group_id / group_name |
+| get_group_member_info(group_id, user_id) | getChatMember | user_id / user_name / telegram_role |
+| delete_message(message_id) | deleteMessage | 自動的にメッセージ登録表から chat_id を補完 |
+| leave_group(group_id) | leaveChat | - |
+
+拡張アクション：get_group_admin_list(group_id)（管理者リスト）、get_chat_member_count(chat_id)（メンバー数）。
+
+```python
+from ErisPulse import sdk
+telegram = sdk.adapter.get("telegram")
+
+result = await telegram.Api.get_self_info()
+result = await telegram.Api.get_group_info(group_id=-100123)
+result = await telegram.Api.get_group_admin_list(-100123)
+await telegram.Api.delete_message(message_id=55)   # 自動的に chat_id を補完
+result = await telegram.Api.Using("main").get_self_info()
+```
+
+> Telegram Bot API には友達リスト/グループリストを取得するインターフェースがなく、get_friend_list/get_group_list は `errorcode=10002` を返します。
+
+## 要求操作（Request DSL）
+
+加群申請（chat_join_request イベント）を処理し、`approveChatJoinRequest` / `declineChatJoinRequest` を使用します。
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_request()
+async def handle_join_request(event):
+    if event.get("platform") != "telegram":
+        return
+    # event["request_id"] は合成された識別子（tjr_{chat_id}_{user_id}_{date}）です
+    if event.get("user_nickname"):
+        await event.approve()          # 同意
+    # await event.reject()             # 拒絶
+
+# 手動呼び出し（対応する要求イベントを事前に受信してコンテキストを登録しておく必要があります）
+await telegram.Request(event["request_id"]).accept()
+await telegram.Request(event["request_id"]).reject()
+await telegram.Request(event["request_id"]).Using("main").accept()
+```
+
+---
 
 ## 支援されるメッセージ送信タイプ
 
@@ -15850,7 +16053,7 @@ YunhuAdapter は、雲湖プロトコルに基づいて構築されたアダプ�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.3.0
+- 対応モジュールバージョン: 4.4.0
 - メンテナー: ErisPulse
 
 ## 基本情報
@@ -15860,6 +16063,46 @@ YunhuAdapter は、雲湖プロトコルに基づいて構築されたアダプ�
 - 複数アカウント対応：bot_id で識別し、複数の雲湖ロボットアカウントを設定できます。
 - チェーン修飾子対応：`.Reply()` などのチェーン修飾子メソッドをサポートしています。
 - OneBot12互換：OneBot12形式のメッセージ送信をサポートしています。
+
+## v5 フレームワーク更新（4.4.0）
+
+このアダプタは v5 フレームワークへの対応を完了しました（段階的アップグレード、API 互換性を保持）：
+
+- **公式サーバーサイド API 全集**（Api DSL 拡張メソッド）：メッセージ編集、一括送信、メッセージ一覧、ユーザー/グローバルダッシュボード、グループメンバーのミュート、グループメンバーの削除、グループメッセージタイプ制限、グループタグの CRUD、ユーザーへのタグ付与
+- **標準 keyboard 段**（クロスプラットフォーム対応のインタラクティブコンポーネント）：{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}} 段は自動的に Yunhu の buttons に変換されます。.Buttons(rows) / .Keyboard(rows) 修飾子は汎用構造を受け付けます（ネイティブ構造は後方互換性を保持）
+- **インタラクティブコールバックの標準フィールド**：ボタンクリック/A2UI イベントには interaction_id / button_data という標準フィールドが含まれます
+- **spawn_background によるタスクの所属**：WS 接続タスクは runtime.spawn_background を使用します
+- **フレームワークのソフト依存性**：ErisPulse>=2.7.1 を実行時に検出し、警告を出力します。起動時にバージョンログを出力します
+
+### プラットフォーム拡張アクション（call / Api メソッド）
+
+```python
+from ErisPulse import sdk
+yunhu = sdk.adapter.get("yunhu")
+
+# Api メソッド（公式サーバーサイド API）
+await yunhu.Api.edit_message(msg_id, recv_id, "group", "text", {"text": "新内容"})
+await yunhu.Api.batch_send(["userId1", "userId2"], "text", {"text": "公告"})
+await yunhu.Api.get_message_list(group_id, "group", before=10)
+await yunhu.Api.set_user_board(chat_id, "group", "看板内容", expire_time=3600)
+await yunhu.Api.dismiss_global_board()
+await yunhu.Api.gag_group_member(group_id, user_id, 600)      # 600秒間ミュート、0=解除
+await yunhu.Api.remove_group_member(group_id, user_id)
+await yunhu.Api.set_group_msg_type_limit(group_id, "text,image")
+await yunhu.Api.create_group_tag(group_id, "VIP", color="#FF5733")
+await yunhu.Api.add_user_tag(group_id, user_id, "VIP")
+
+# ボタンクリックコールバック（標準フィールド）
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_button(event):
+    if event.get("platform") == "yunhu" and event.get("button_data"):
+        data = event["button_data"]     # クロスプラットフォームで統一された値の取得
+        interaction_id = event["interaction_id"]
+```
+
+> 詳細な標準仕様は [クロスプラットフォーム対応インタラクティブコンポーネント標準](../../standards/standardization-guide.md) を参照してください。
 
 ## 支援されるメッセージ送信タイプ
 
@@ -16553,7 +16796,7 @@ EmailAdapter は SMTP/IMAP プロトコルに基づいたメールアダプタ�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.1.0
+- 対応モジュールバージョン: 4.2.0
 - メンテナー: ErisPulse
 
 ## 基本情報
@@ -16601,6 +16844,21 @@ email = "backup@example.com"
 password = "another-password"
 enabled = true
 ```
+
+## v5 フレームワークの更新（4.2.0）
+
+- **API DSL 最小セット**：get_self_info（メールアドレス）/get_status/get_version/get_supported_actions
+- **spawn_background でのタスクの所有権**：IMAP ポーリングタスクを runtime.spawn_background に変更
+- **フレームワークのソフト依存**：ErisPulse>=2.7.1 の実行時検出と警告；起動時にバージョンログを出力
+- インポートパスを Core.Bases に更新；_load_accounts は保持（グローバルのデフォルト値はこのアダプタ固有のロジックに統合）
+
+---
+
+### 対応済みプラットフォーム機能
+
+- **受信**：IMAP ポーリングによるメール受信（本文/HTML/添付ファイルをメッセージセグメントに解析）、未読メールの増分検出
+- **送信**：SMTP によるメール送信（Subject/Text/Html/Cc/Bcc/ReplyTo/Attachment）、複数アカウント対応
+- **API**：アカウント情報と実行状態（最小セット）；メールの取り消しやグループなどの概念は適用されない
 
 ## 支援されるメッセージ送信タイプ
 
@@ -16873,7 +17131,7 @@ KookAdapter は、Kook（開黒啦）Bot WebSocket プロトコルに基づい�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 0.1.0
+- 対応モジュールバージョン: 4.1.0
 - メンテナー: ShanFish
 
 ## 基本情報
@@ -16917,6 +17175,49 @@ enabled = true
 **API 環境：**
 - Kook API 基本アドレス：`https://www.kookapp.cn/api/v3`
 - WebSocket ゲートウェイは API を介して動的に取得されます：`POST /gateway/index`
+
+## v5 フレームワークの更新（4.1.0）
+
+このアダプタは v5 フレームワークに準拠した更新を完了しました（段階的なアップグレード、API は互換性を保つ）。
+
+- **BaseConverter の継承**：コンバーターの共通フィールドはフレームワークの `build_base_event` によって構築されます。
+- **Api DSL**：標準的な API アクションのマッピング（下記を参照）
+- **標準的な keyboard セグメント**：`{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}}` テキストとキーボードは自動的に Kook カードメッセージ（section + action-group）に組み合わされます。.Keyboard(rows) 修飾子は一般的な構造を受け付けます。
+- **spawn_background でのタスクの所属**：接続タスクは `untime.spawn_background` を使用します。
+- **フレームワークのソフト依存**：ErisPulse>=2.7.1 の実行時検出と警告メッセージを出力します。起動時にバージョンのログを出力します。
+
+### 標準的な API アクション
+
+```python
+from ErisPulse import sdk
+kook = sdk.adapter.get("kook")
+
+result = await kook.Api.get_self_info()              # GET /users/@me
+result = await kook.Api.get_user_info(user_id)       # POST /user/view
+result = await kook.Api.get_guild_info(guild_id)     # POST /guild/view
+result = await kook.Api.get_guild_list()             # POST /guild/list
+result = await kook.Api.get_channel_info(channel_id) # POST /channel/view
+result = await kook.Api.get_channel_list(guild_id)   # POST /channel/list
+await kook.Api.delete_message(msg_id)                # POST /message/delete
+result = await kook.Api.Using("main").get_self_info()
+```
+
+### ボタン（keyboard）
+
+```python
+rows = [[{"label": "オプションA", "type": "callback", "data": "vote:A"},
+         {"label": "公式サイト",  "type": "link",     "data": "https://example.com"}]]
+await kook.Send.To("channel", channel_id).Keyboard(rows).Text("選択してください")
+# テキストとボタンは自動的に Kook カードメッセージ（section + action-group）に組み合わされます。
+
+# ボタンのクリックコールバック（標準的なフィールド）
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_button(event):
+    if event.get("platform") == "kook" and event.get("button_data"):
+        data = event["button_data"]
+```
 
 ## 支援されるメッセージ送信タイプ
 
@@ -17370,7 +17671,7 @@ MatrixAdapter は [Matrixプロトコル](https://spec.matrix.org/) を基盤と
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.1.0
+- 対応モジュールバージョン: 4.2.0
 - メンテナー: ErisPulse
 
 ## 基本情報
@@ -17418,6 +17719,34 @@ enabled = true
 **認証方法：**
 - 方法1（推奨）：`access_token` を直接提供
 - 方法2：`user_id` と `password` を提供、アダプタは自動的にログインAPIを呼び出してトークンを取得
+
+## v5 フレームワークの更新（4.2.0）
+
+- **BaseConverter の継承**：コンバーターの共通フィールドはフレームワークの build_base_event によって構築されます。
+- **Api DSL**：get_self_info/get_user_info/get_group_info/get_group_list/get_group_member_list/leave_group/delete_message(redact) + 元アクション
+- **メッセージイベントの拡充**：message_id（event_id）を追加；delete_message をサポートするためのメッセージ登録表
+- **spawn_background でのタスクの所属**：同期/ハートビートタスクは runtime.spawn_background を使用するように変更
+- **フレームワークのソフト依存**：ErisPulse>=2.7.1 の実行時検出と警告表示；起動時にバージョンログを出力
+- Matrix にはネイティブのボタン機能がないため、標準の keyboard 段はエラーを出さずに優雅に無視されます。
+
+### 標準 Api アクションの例
+
+```python
+from ErisPulse import sdk
+matrix = sdk.adapter.get("matrix")
+result = await matrix.Api.get_self_info()            # /account/whoami
+result = await matrix.Api.get_group_info(room_id)    # m.room.name
+result = await matrix.Api.get_group_list()           # /joined_rooms
+await matrix.Api.delete_message(event_id)            # redact（登録表に room_id を補完）
+```
+
+---
+
+### 対応プラットフォームの機能
+
+- **イベント**：メッセージ（m.room.message：テキスト/画像/ファイル/音声/動画/返信/編集）、メンバーの追加・削除（m.room.member）、部屋名変更などのステータスイベント
+- **会話**：プライベートチャット（DM ルームの自動発見）/ グループ（ルーム）；送信は Text/Image/File/Voice/Video/Markdown/Raw_ob12 をサポート
+- **API**：whoami/profile/joined_rooms/部屋の状態/メンバー一覧/leave/redact（上記の Api DSL 参照）
 
 ## 支援されるメッセージ送信タイプ
 
@@ -17800,324 +18129,198 @@ async def handle_member_change(event):
 
 # QQBotプラットフォームの特徴ドキュメント
 
-QQBotAdapter は、QQBot（QQロボットのドキュメント）プロトコルに基づいて構築されたアダプターであり、QQBotのすべての機能モジュールを統合し、一貫したイベント処理とメッセージ操作のインターフェースを提供します。
+QQBotAdapter は、QQ公式のロボット（QQ OpenAPI）プロトコルに基づいて構築されたアダプターです。グループチャット、プライベートチャット、チャンネルなど、全シーンの機能を統合し、OneBot12 標準イベント、標準APIアクション、およびリクエスト操作インターフェースを提供します。
 
 ---
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 1.0.0
+- 対応モジュールバージョン: 5.0.0
 - メンテナー: ErisPulse
 
 ## 基本情報
 
-- プラットフォーム概要：QQBotはQQ公式が提供するBot開発用のAPIで、グループチャット、プライベートチャット、チャンネルなど多様な場面に対応しています。
+- プラットフォーム概要：QQ公式ロボット開発インターフェース。グループチャット、プライベートチャット、チャンネルなど、さまざまなシナリオに対応。
 - アダプタ名：QQBotAdapter
-- 接続方法：WebSocket長時間接続（QQBotゲートウェイを使用）
-- 認証方法：appId + clientSecretを用いてaccess_tokenを取得
-- チェーン修飾サポート：`.Reply()`、`.At()`、`.AtAll()`、`.Keyboard()` などのチェーン修飾メソッドに対応
-- OneBot12互換：OneBot12形式のメッセージ送信に対応
+- 接続方法：**WebSocket 長接続**（デフォルト）または **Webhook HTTPコールバック**（アカウント設定に応じて、Ed25519検証付き）
+- 認証方式：appId + clientSecret から access_token を取得（7200秒、45秒前に自動更新）
+- APIルートアドレス：`https://api.bot.qq.com`（v5以降、公式統一ドメイン。sandboxは廃止）
+- OneBot12互換性：メッセージ送受信、イベント、**標準APIアクション**、**リクエスト操作**を完全カバー。
+- 複数アカウント：サポート。`accounts` で任意のアカウントを並列実行可能（WebSocket/Webhookモードを混在させることも可能）。
 
 ## 設定の説明
 
 ```toml
 # config.toml
 [QQBot_Adapter]
-appid = "YOUR_APPID"          # QQ ロボットアプリのID（必須）
-secret = "YOUR_CLIENT_SECRET"  # QQ ロボットクライアントのシークレット（必須）
-sandbox = false                 # サンドボックス環境を使用するかどうか（オプション、デフォルトはfalse）
-intents = [1, 30, 25]          # 訂読するイベント intents ビット（オプション）
-gateway_url = "wss://api.sgroup.qq.com/websocket/"  # カスタムのゲートウェイアドレス（オプション）
+intents = "[0, 9, 12, 25, 26, 27]"   # グローバル：サブスクライブするイベント intents（JSON配列、イベント名をサポート）
+
+[QQBot_Adapter.accounts.default]
+appid = "YOUR_APPID"                 # QQボットアプリID（必須）
+secret = "YOUR_CLIENT_SECRET"        # QQボットクライアントシークレット（必須）
+mode = "websocket"                   # イベント受信方式：websocket / webhook
+bot_id = ""                          # ボットID（空欄の場合は自動取得；Using()で指定する場合に手動で記入可能）
+gateway_url = ""                     # WebSocketゲートウェイアドレス（空欄の場合は /gateway/bot から動的に取得）
+api_base_url = "https://api.bot.qq.com"  # APIルートアドレス（プロキシに使用する場合にカスタマイズ可能）
+webhook_path = "/webhook"            # Webhookコールバックパス（mode=webhook の場合に有効）
+enabled = true
 ```
 
-**設定項目の説明：**
-- `appid`：QQ ロボットのアプリID（必須）、QQオープンプラットフォームから取得
-- `secret`：QQ ロボットのクライアントシークレット（必須）、QQオープンプラットフォームから取得
-- `sandbox`：サンドボックス環境を使用するかどうか、サンドボックス環境のAPIアドレスは `https://sandbox.api.sgroup.qq.com`
-- `intents`：イベントのサブスクリプション intents リスト、各値は左シフト後にビット演算 OR で結合される
-  - `1`：チャンネル関連イベント
-  - `25`：チャンネルメッセージイベント
-  - `30`：グループのメンションメッセージイベント
-- `gateway_url`：WebSocket ゲートウェイアドレス、デフォルトは `wss://api.sgroup.qq.com/websocket/`
+**v5の破壊的変更：**
+- 公式では `api.bot.qq.com` を統一使用し、`sandbox` 設定は廃止されました（旧設定は自動的に移行され無視されます）
+- 旧バージョンのフラットな設定（`[QQBot_Adapter]` の下に直接 appid/secret を記述）は `accounts.default` に自動的に移行されます
+- フレームワークは**ソフト依存**です：アダプタをインストールしてもフレームワークのバージョンは引きずりません；実行時に `ErisPulse>=2.7.1` を検出し、警告を表示します
 
-**API環境：**
-- 本番環境：`https://api.sgroup.qq.com`
-- サンドボックス環境：`https://sandbox.api.sgroup.qq.com`
+**intentsの説明（ビット番号またはイベント名をサポート）：**
 
-## 支持するメッセージ送信タイプ
+| ビット | イベント名 | 説明 |
+|----|--------|------|
+| 0 | GUILDS | チャンネルの変更 |
+| 1 | GUILD_MEMBERS | チャンネルメンバーの変更 |
+| 9 | GUILD_MESSAGES | チャンネルメッセージ（プライベートドメイン） |
+| 12 | DIRECT_MESSAGE | チャンネルのダイレクトメッセージ |
+| 24 | GROUP_MEMBER | グループメンバーの変更（v5で追加） |
+| 25 | GROUP_AND_C2C_EVENT | グループメンションメッセージとプライベートチャットメッセージ |
+| 26 | INTERACTION | インタラクションイベント（ボタンなど） |
+| 27 | MESSAGE_AUDIT | メッセージ審査イベント |
+| 30 | PUBLIC_GUILD_MESSAGES | チャンネルメッセージ（パブリックドメイン） |
 
-すべての送信メソッドは、チェーン式の構文で実装されています。たとえば：
+## メッセージ送信
+
+### 基本送信
 
 ```python
-from ErisPulse.Core import adapter
-qqbot = adapter.get("qqbot")
+from ErisPulse import sdk
+qqbot = sdk.adapter.get("qqbot")
 
 await qqbot.Send.To("user", user_openid).Text("Hello World!")
+
+# グループメンション（自動的に <qqbot-at-user id="x" /> 形式を使用）
+await qqbot.Send.To("group", group_openid).At("member_openid").Text("@あなた")
+
+# チャンネルメッセージ（自動的に <@user_id> 形式を使用）
+await qqbot.Send.To("channel", channel_id).Text("チャンネルメッセージ")
+
+# パッシブリプライ（自動的に msg_id を付与、手動での Reply は不要）
+await qqbot.Send.To("group", group_openid).Reply(msg_id).Text("返信内容")
+
+# フルメディア（URL / 本地パス / 二進制；5MBを超える場合は自動的に分割アップロード）
+await qqbot.Send.To("group", gid).Image("https://example.com/img.png")
+
+# Markdown（ネイティブ / テンプレート）
+await qqbot.Send.To("group", gid).Markdown("# タイトル\n- リスト")
+await qqbot.Send.To("user", uid).Markdown(template_id=1, kv=[{"key": "title", "value": "通知"}])
+
+# キーボード（自動的に markdown タイプに設定し、bot_appid を付与）
+await qqbot.Send.To("group", gid).Keyboard(keyboard).Text("選択してください")
+
+# ストリームメッセージ（1:1チャット）
+await qqbot.Send.To("user", openid).Stream("回答内容")
+
+# 複数アカウント
+await qqbot.Send.Using("account2").To("group", gid).Text("2番目のボットからのメッセージ")
 ```
 
-サポートされている送信タイプは以下の通りです：
-
-- `.Text(text: str)`：純粋なテキストメッセージを送信します。
-- `.Image(file: bytes | str)`：画像メッセージを送信します。ファイルパス、URL、バイナリデータをサポートします。
-- `.Markdown(content: str)`：Markdown形式のメッセージを送信します。
-- `.Ark(template_id: int, kv: list)`：Arkテンプレートメッセージを送信します。
-- `.Embed(embed_data: dict)`：Embedメッセージを送信します。
-- `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12形式のメッセージを送信します。
-
-### チェーン式修飾メソッド（複数組み合わせて使用可能）
-
-チェーン式修飾メソッドは `self` を返し、チェーン式で呼び出すことができます。最終的な送信メソッドの前に必ず呼び出す必要があります：
-
-- `.Reply(message_id: str)`：指定されたメッセージに返信します。
-- `.At(user_id: str)`：指定されたユーザーを@します（`<@user_id>`形式で内容に挿入します）。
-- `.AtAll()`：全員を@します（`@所有人`というテキストを挿入します）。
-- `.Keyboard(keyboard: dict)`：キーボードボタンを追加します。
-
-### チェーン式呼び出しの例
+## OneBot12 標準APIアクション
 
 ```python
-# 基本的な送信
-await qqbot.Send.To("user", user_openid).Text("Hello")
-
-# メッセージの返信
-await qqbot.Send.To("group", group_openid).Reply(msg_id).Text("返信メッセージ")
-
-# 返信 + ボタン
-await qqbot.Send.To("group", group_openid).Reply(msg_id).Keyboard(keyboard).Text("返信とキーボード付きのメッセージ")
-
-# ユーザーを@する
-await qqbot.Send.To("group", group_openid).At("member_openid").Text("こんにちは")
-
-# 組み合わせて使用
-await qqbot.Send.To("group", group_openid).Reply(msg_id).At("member_openid").Keyboard(keyboard).Text("複合メッセージ")
+result = await qqbot.Api.get_self_info()                     # ロボット情報
+result = await qqbot.Api.get_group_info(group_openid)        # グループ情報
+result = await qqbot.Api.get_group_member_list(group_openid) # グループメンバー一覧（自動ページング）
+result = await qqbot.Api.get_guild_list()                    # チャンネル一覧
+result = await qqbot.Api.get_channel_list(guild_id)          # サブチャンネル一覧
+await qqbot.Api.delete_message(message_id)                   # メッセージの削除（自動でメッセージの送信元に応じたエンドポイントをルーティング）
+result = await qqbot.Api.get_status()                        # 複数アカウントの実行状態
+result = await qqbot.Api.Using("account2").get_self_info()   # 指定アカウント
 ```
 
-### OneBot12メッセージのサポート
+サポートされる標準アクション: `get_self_info` / `get_group_info` / `get_group_member_info` / `get_group_member_list` / `get_guild_info` / `get_guild_list` / `get_guild_member_info` / `get_guild_member_list` / `get_channel_info` / `get_channel_list` / `set_channel_name` / `leave_channel` / `delete_message` / `get_status` / `get_version` / `get_supported_actions`。サポートされていないアクションは `retcode=10002` を返します。
 
-アダプタはOneBot12形式のメッセージ送信をサポートしており、プラットフォーム間のメッセージ互換性に役立ちます：
+## 要求操作（グループ参加申請の承認）
+
+`GROUP_JOIN_REQUEST` イベントは OneBot12 の `request` イベントに変換され、標準化された承認がサポートされています。
 
 ```python
-# OneBot12形式のメッセージを送信
-ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
-await qqbot.Send.To("user", user_openid).Raw_ob12(ob12_msg)
+from ErisPulse.Core.Event import request as request_event
 
-# チェーン式修飾との組み合わせ
-ob12_msg = [{"type": "text", "data": {"text": "返信メッセージ"}}]
-await qqbot.Send.To("group", group_openid).Reply(msg_id).Raw_ob12(ob12_msg)
+@request_event.on_request()
+async def handle_join(event):
+    if event.get("platform") == "qqbot":
+        await event.approve()                  # 承認
+        # await event.reject(comment="理由")   # 拒否
 ```
 
-## 送信メソッドの戻り値
+`request_id` は公式の `join_request_id` に対応し、アダプターは申請のコンテキストを自動的にキャッシュし、`POST /v2/groups/{group_openid}/approval_join_request/{member_openid}` にルーティングします。
 
-すべての送信メソッドは Task オブジェクトを返します。これに await を直接適用して送信結果を取得できます。返り値は ErisPulse アダプターの標準化された返り値規格に準拠しています：
+## @ロボット検出メカニズム（重要）
 
-```python
-{
-    "status": "ok",           // 実行ステータス: "ok" または "failed"
-    "retcode": 0,             // 戻りコード
-    "data": {...},            // 応答データ
-    "message_id": "123456",   // メッセージID
-    "message": "",            // エラーメッセージ
-    "qqbot_raw": {...}        // 元の応答データ
-}
-```
+QQ公式の「@された」事実はイベント名によって保持され、グループメッセージの@マークは `<@{群空間openid}>`（READYが返すbot_idとは**同一のID体系ではない**）です。アダプターは自動的に以下を処理します：
 
-### エラーコードの説明
+1. **マーク解析**：`<@openid>` と `<qqbot-at-user>` の2種類のスタイルがmentionセグメントとして解析され、テキスト中に残りません。
+2. **名前の正規化**：`/users/@me`が返すロボット名とmentions配列のニックネームが一致する場合、@ロボットと認識し、mentionセグメントをbot_idに正規化します（元のopenidは`data.qqbot_openid`に保持されます）。
+3. **openidの学習**：ロボットが各グループにおけるopenidを自動的に学習し、「すべてのグループメッセージを受信」モードでの@識別に使用します。
+4. **注入保証**：`GROUP_AT_MESSAGE_CREATE` / `AT_MESSAGE_CREATE`はロボットのmentionセグメントが存在することを保証します。
+
+したがって、qqbotプラットフォームでは`on_at_message()` / `event.is_at_message()`を直接使用できます。"すべてのグループメッセージを受信"権限を有効にした後、@メッセージは`GROUP_MESSAGE_CREATE`として送信されます（`GROUP_AT_MESSAGE_CREATE`はもはや到達しません）。アダプターは同様に認識します。
+
+## プラットフォームネイティブAPIメソッド族
+
+アダプタは、QQ公式APIの完全なセットを公開しています（詳細はアダプタリポジトリの platform-features.md を参照）：
+
+- **ロボット**: `get_me()`、`reply_interaction()`
+- **チャンネル**: `get_guilds/get_guild/mute_guild_all/roles管理/api_permission`
+- **サブチャンネル**: `get_channels/get_channel/create_channel/update_channel/delete_channel/pins`
+- **チャンネルメンバー**: `get_guild_members/get_guild_member/mute/roles/kick`
+- **権限/リアクション/スケジュール/投稿/音声**: 全てのメソッド
+- **グループ管理**（一部のインターフェースはホワイトリストロボット限定）: `get_group_members/get_group_bot_state/ブラックリスト/入群承認/ミュート/承認ポリシー`
+- **メニュー/パネル**: `get_custom_menu/update_custom_menu/コマンドパネルCRUD`
+- **豊富なメディア**: `_upload_media`（URL/パス/バイナリ、5MBを超える場合は自動的に分割）、`stream_message`（ストリームメッセージ）
+
+## WebSocket / Webhook 接続
+
+### WebSocket フロー
+
+1. appId + clientSecret を使用して access_token を取得（事前に45秒前に自動的に更新、失敗した場合は3回リトライ）
+2. `GET /gateway/bot` を使用して動的にゲートウェイアドレスを取得（`gateway_url` を設定する場合は直接使用）
+3. OP_HELLO → Identify/Resume → READY（session_id と bot_id を取得）→ ハートビートループ
+4. 接続切断後の再接続：最大50回、指数バックオフ `min(5 * 2^n, 300)` 秒を使用；OP_RECONNECT はセッションを保持
+
+### Webhook モード
+
+アカウントの `mode = "webhook"` が設定された後、ErisPulse router を使用して HTTP ルーティングを登録：
+
+- Ed25519 による検証（シード = secret を32バイトに循環的に埋め込む）、`X-Signature-Ed25519` と `X-Signature-Timestamp + body` の検証
+- 自動的に op=13 の署名検証ハンドシェイクと op=0 のイベント配信を処理
+- `cryptography` ライブラリに依存（アダプタのインストール時に付属）
+
+## エラーコードの説明
 
 | retcode | 説明 |
 |---------|------|
 | 0 | 成功 |
-| 10003 | 送信先が特定できません |
-| 32000 | 要求のタイムアウト |
-| 33000 | APIの呼び出しに異常が発生しました |
-| 34000 | APIが予期しない形式または業務上のエラーを返しました |
-
-## 特有イベントタイプ
-
-このプラットフォームの機能を使用するには、`platform=="qqbot"` の検出が必要です。
-
-### 核心的な違い
-
-1. **openid体系**：QQBotは QQ番号ではなく openid を使用しており、ユーザーとグループの識別子はすべて openid 文字列です。
-2. **グループメッセージは必ず@**：グループ内でのメッセージは、ユーザーがロボットを@した場合にのみ受け取れます（`GROUP_AT_MESSAGE_CREATE`）。
-3. **チャンネルシステム**：QQBotはチャンネル（Guild）とサブチャンネル（Channel）のメッセージとイベントをサポートしています。
-4. **メッセージ審査**：送信されたメッセージは審査を通過する必要があり、`qqbot_audit_pass`/`qqbot_audit_reject` イベントで結果が通知されます。
-5. **受動的返信**：グループメッセージとプライベートチャットメッセージは受動的返信メカニズムをサポートしており、返信時に `msg_id` を含める必要があります。
-
-### 拡張フィールド
-
-- すべての特有フィールドは `qqbot_` で始まるプレフィックスで識別されます。
-- 保持された元のデータは `qqbot_raw` フィールドに格納されます。
-- `qqbot_raw_type` は元のQQBotイベントタイプを識別します（例：`C2C_MESSAGE_CREATE`）。
-- 附件データは `qqbot_attachment` フィールドに格納されます。
-
-### 特殊フィールドの例
-
-```python
-# グループ@メッセージ
-{
-  "type": "message",
-  "detail_type": "group",
-  "user_id": "MEMBER_OPENID",
-  "group_id": "GROUP_OPENID",
-  "qqbot_group_openid": "GROUP_OPENID",
-  "qqbot_member_openid": "MEMBER_OPENID",
-  "qqbot_event_id": "メッセージイベントID",
-  "qqbot_reply_token": "返信トークン"
-}
-
-# プライベートチャットメッセージ
-{
-  "type": "message",
-  "detail_type": "private",
-  "user_id": "USER_OPENID",
-  "qqbot_openid": "USER_OPENID",
-  "qqbot_event_id": "メッセージイベントID",
-  "qqbot_reply_token": "返信トークン"
-}
-
-# インタラクションイベント
-{
-  "type": "notice",
-  "detail_type": "qqbot_interaction",
-  "qqbot_interaction_id": "インタラクションID",
-  "qqbot_interaction_type": "インタラクションタイプ",
-  "qqbot_interaction_data": {
-    "...": "インタラクションデータ"
-  }
-}
-
-# メッセージ審査
-{
-  "type": "notice",
-  "detail_type": "qqbot_audit_pass",
-  "qqbot_audit_id": "審査ID",
-  "qqbot_message_id": "メッセージID"
-}
-
-# メッセージ削除
-{
-  "type": "notice",
-  "detail_type": "qqbot_message_delete",
-  "message_id": "削除されたメッセージID",
-  "operator_id": "操作者ID"
-}
-
-# メッセージ反応
-{
-  "type": "notice",
-  "detail_type": "qqbot_reaction_add",
-  "qqbot_raw": {
-    "...": "元のデータ"
-  }
-}
-```
-
-### チャンネルメッセージセグメント
-
-チャンネルメッセージは `mentions` フィールドをサポートし、変換後は `mention` メッセージセグメントとして表示されます：
-
-```json
-{
-  "type": "mention",
-  "data": {
-    "user_id": "@されたユーザーID",
-    "user_name": "@されたユーザーのニックネーム"
-  }
-}
-```
-
-### 附件メッセージセグメント
-
-QQBotの附件は `content_type` に基づいて自動的に対応するメッセージセグメントに変換されます：
-
-| content_type 前綴 | 変換タイプ | 説明 |
-|---|---|---|
-| `image` | `image` | 画像メッセージ |
-| `video` | `video` | 動画メッセージ |
-| `audio` | `voice` | 音声メッセージ |
-| その他 | `file` | ファイルメッセージ |
-
-附件メッセージセグメントの構造は以下の通りです：
-```json
-{
-  "type": "image",
-  "data": {
-    "url": "附件URL",
-    "qqbot_attachment": {
-      "content_type": "image/png",
-      "url": "元の附件URL"
-    }
-  }
-}
-```
-
-## WebSocket接続
-
-### 接続フロー
-
-1. appId + clientSecret を使用して access_token を取得する
-2. WebSocket ゲートウェイに接続する
-3. OP_HELLO（op=10）メッセージを受信し、ハートビートの間隔を取得する
-4. 認証のために OP_IDENTIFY（op=2）を送信する
-5. READY イベントを受信し、session_id と bot_id を取得する
-6. ハートビートループを開始する（OP_HEARTBEAT、op=1）
-7. イベントの配信を受信する（OP_DISPATCH、op=0）
-
-### 接続切断後の再接続
-
-- 自動再接続をサポートし、最大再接続回数は50回
-- 再接続待機時間は指数バックオフアルゴリズムを使用：`min(5 * 2^min(count, 6), 300)` 秒
-- session_id + seq を使用してセッションの復元をサポート（OP_RESUME、op=6）
-- OP_RECONNECT（op=7）または OP_INVALID_SESSION（op=9）を受信した際に自動的に再接続をトリガーする
-
-### Tokenの更新
-
-- access_token の有効期限は通常7200秒
-- アダプターは自動的に7080秒（7200-120）ごとにトークンを更新する
-- 更新インターフェース：`POST https://bots.qq.com/app/getAppAccessToken`
-
-## イベントのサブスクライブ（Intents）
-
-Intents 値はビット演算によって組み合わせられます：
-
-```python
-intents = [1, 30, 25]
-value = 0
-for intent in intents:
-    value |= (1 << intent)
-```
-
-一般的に使用される Intent ビット：
-| Intent値 | 説明 |
-|----------|------|
-| 1 | チャンネル関連イベント（GUILD_CREATEなど） |
-| 25 | チャンネルメッセージイベント（AT_MESSAGE_CREATEなど） |
-| 30 | グループメンションメッセージイベント（GROUP_AT_MESSAGE_CREATEなど） |
+| 10001 | パラメータが不足しています |
+| 10002 | 対応していないアクションです |
+| 10003 | 目標/アカウントを特定できません |
+| 32000 | リクエストタイムアウト |
+| 33000 | ネットワーク/API呼び出し異常 |
+| 34001 | リクエストが存在しないか、期限切れです（Request DSL） |
+| 34100 | メディアのアップロードに失敗しました |
+| 34000+ | プラットフォームのビジネスエラー（公式の code をそのまま転送） |
 
 ## 使用例
 
-### 群メッセージの処理
+### 群メッセージの処理（@検出）
 
 ```python
 from ErisPulse.Core.Event import message
-from ErisPulse import sdk
 
-qqbot = sdk.adapter.get("qqbot")
-
-@message.on_message()
-async def handle_group_msg(event):
+@message.on_at_message()
+async def handle_at(event):
     if event.get("platform") != "qqbot":
         return
-    if event.get("detail_type") != "group":
-        return
-
     text = event.get_text()
-    group_id = event.get("group_id")
-
-    if text == "hello":
-        await qqbot.Send.To("group", group_id).Reply(
-            event.get("message_id")
-        ).Text("Hello!")
+    if text == "签到":
+        await event.reply("已签到")
 ```
 
 ### 交互イベントの処理
@@ -18129,73 +18332,133 @@ from ErisPulse.Core.Event import notice
 async def handle_interaction(event):
     if event.get("platform") != "qqbot":
         return
-
     if event.get("detail_type") == "qqbot_interaction":
-        interaction_id = event.get("qqbot_interaction_id", "")
-        interaction_data = event.get("qqbot_interaction_data", {})
-        # 交互イベントの処理...
+        await qqbot.reply_interaction(event.get("qqbot_interaction_id"), code=0)
+        button_id = event.get("qqbot_button_id", "")
+        # ボタンの処理...
 ```
 
-### メディアメッセージの送信
+### 複数アカウントの起動
 
-```python
-# 画像の送信（URL）
-await qqbot.Send.To("group", group_openid).Image("https://example.com/image.png")
+```toml
+[QQBot_Adapter.accounts.bot_a]
+appid = "A_APPID"
+secret = "..."
+enabled = true
 
-# 画像の送信（バイナリ）
-with open("image.png", "rb") as f:
-    image_bytes = f.read()
-await qqbot.Send.To("user", user_openid).Image(image_bytes)
+[QQBot_Adapter.accounts.bot_b]
+appid = "B_APPID"
+secret = "..."
+mode = "webhook"
+enabled = true
 ```
 
-### メッセージ審査結果の監視
-
-```python
-@notice.on_notice()
-async def handle_audit(event):
-    if event.get("platform") != "qqbot":
-        return
-
-    detail_type = event.get("detail_type")
-
-    if detail_type == "qqbot_audit_pass":
-        msg_id = event.get("qqbot_message_id")
-        print(f"メッセージ審査通過: {msg_id}")
-
-    elif detail_type == "qqbot_audit_reject":
-        reason = event.get("qqbot_audit_reject_reason", "")
-        print(f"メッセージ審査拒否: {reason}")
-```
+2つのアカウントを並行して起動：bot_a は WebSocket を使用し、bot_b は Webhook を使用し、互いに影響を受けません。
 
 
 
 ### 云湖用户端适配
 
-# 雲湖ユーザープラットフォームの機能ドキュメント
+# 雲湖ユーザープラットフォーム特徴ドキュメント
 
-YunhuUserAdapter は、雲湖ユーザーアカウントプロトコルに基づいて構築されたアダプタであり、ユーザーメールアドレスアカウントによるログイン、WebSocket を使用したイベント受信、一貫したイベント処理およびメッセージ操作インターフェースを提供します。
+YunhuUserAdapter は、雲湖ユーザーアカウントプロトコルに基づいて構築されたアダプターです。ユーザーアカウント（ロボットアカウントではなく）を使用してメールアドレスでログインし、WebSocket を使用してイベントを受信し、統一されたイベント処理とメッセージ操作のインターフェースを提供します。
 
 ---
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 1.4.0
-- メンテナー: wsu2059
+- 対応モジュールバージョン: 4.2.0
+- 維持管理者: wsu2059
 
 ## 基本情報
 
-- プラットフォーム概要：雲湖（Yunhu）はエンタープライズ向けのリアルタイムコミュニケーションプラットフォームです。このアダプターは**ユーザーのアカウント**（ロボットアカウントではなく）を使用して対話します。
-- アダプター名：YunhuUserAdapter
-- 複数アカウント対応：アカウント名で識別し、複数のユーザーアカウントを設定できます
-- チェーン修飾子対応：`.Reply()` などのチェーン修飾子メソッドをサポート
-- OneBot12互換：OneBot12形式のメッセージ送信をサポート
-- 通信方式：メールアドレスでログインし、トークンを取得してWebSocketでイベントを受信し、HTTP + Protobufプロトコルでメッセージを送信
-- 会話タイプ：プライベートチャット（user）、グループチャット（group）、ロボット会話（bot）をサポート
+- プラットフォーム概要: 雲湖（Yunhu）はエンタープライズ向けのリアルタイムコミュニケーションプラットフォームであり、このアダプターは**ユーザーアカウント**（ロボットアカウントではなく）を通じて対応します。
+- アダプター名: YunhuUserAdapter
+- マルチアカウント対応: アカウント名で識別し、複数のユーザーアカウントを設定できます。
+- チェーン修飾対応: `.Reply()` などのチェーン修飾メソッドをサポートします。
+- OneBot12互換: OneBot12形式のメッセージ送信をサポートします。
+- 通信方式: メールアドレスでログインし、token を取得し、WebSocket を使用してイベントを受信し、HTTP + Protobuf プロトコルを使用してメッセージを送信します。
+- 会話タイプ: プライベートチャット（user）、グループチャット（group）、ロボット会話（bot）をサポートします。
+
+## v5 ファンタジー更新（4.2.0）
+
+- **BaseConverter 継承**；**spawn_background タスクの所属**（WS 監視タスク）
+- **ユーザーアプリケーションプログラミングインターフェース（API）全集**（yhchatAPI full.proto / v1 エンドポイント、Protobuf over HTTP をベース）：
+  - ユーザー：get_user / edit_nickname / edit_avatar
+  - フレンド：アドレスブック / 申請リスト / 申請 / 承認 / 無視 / 削除
+  - グループ：グループ情報 / メンバー一覧 / 作成 / 解散 / 招待 / 除外 / 禁言 / ロボット一覧
+  - 会話：会話一覧；メッセージ：一覧 / 撤回 / ボタン報告
+- **フレームワークソフト依存**：ErisPulse>=2.7.1 を実行時に検出し、警告を表示します；起動時にバージョンログを出力します
+
+## 対応プラットフォーム機能リスト
+
+### イベント受信（WebSocket、protobuf エンコード）
+
+| WS cmd | イベント | 説明 |
+|--------|------|------|
+| `push_message` | `message` | プライベートチャット/グループチャット/Bot 会話メッセージ（テキスト/HTML/Markdown/画像/動画/音声/ファイル/絵文字/フォーム/記事/ステッカー/ボタン/A2UI） |
+| `edit_message` | `notice` (`message_edit`) | メッセージ編集通知 |
+| `file_send_message` | `notice` (`yunhu_user_file_send`) | スーパーファイル共有 |
+| `bot_board_message` | `notice` (`yunhu_user_bot_board`) | ロボット公告ボード |
+
+### Api DSL メソッド対照表（ YunhuHTTPClient → ユーザーアプリケーションプログラミングインターフェース v1 エンドポイント ）
+
+| 分類 | Api メソッド | エンドポイント | 説明 |
+|------|---------|------|------|
+| アカウント | `get_self_info()` | `/user/info` | ログインユーザー情報（ニックネーム/プロフィール画像/user_id） |
+| ユーザー | `get_user(user_id)` | `/user/get-user` | ユーザー詳細情報 |
+| ユーザー | `edit_nickname(nickname)` | `/user/edit-nickname` | 自分のニックネームを変更します |
+| ユーザー | `edit_avatar(url)` | `/user/edit-avatar` | 自分のプロフィール画像を変更します |
+| フレンド | `get_friend_address_book(md5)` | `/friend/address-book-list` | アドレスブック（カーソル付きページング） |
+| フレンド | `get_friend_requests()` | `/friend/request-list` | フレンド/グループ参加申請リスト |
+| フレンド | `friend_apply(user_id, desc)` | `/friend/apply` | フレンド申請を送信します |
+| フレンド | `friend_agree_apply(user_id)` | `/friend/agree-apply` | フレンド申請を承認します |
+| フレンド | `friend_ignore_apply(user_id)` | `/friend/ignore-apply` | フレンド申請を無視します |
+| フレンド | `friend_delete(user_id)` | `/friend/delete-friend` | フレンドを削除します |
+| グループ | `get_group_info(group_id)` | `/group/info` | グループ情報 |
+| グループ | `get_group_member_list(group_id)` | `/group/list-member` | グループメンバー一覧（キーワード検索対応） |
+| グループ | `create_group(name, ...)` | `/group/create-group` | グループを作成します |
+| グループ | `dismiss_group(group_id)` | `/group/dismiss-group` | グループを解散します |
+| グループ | `group_invite(group_id, user_ids)` | `/group/invite` | メンバーを招待します |
+| グループ | `group_remove_member(group_id, user_id)` | `/group/remove-member` | メンバーをグループから除外します |
+| グループ | `group_gag_member(group_id, user_id, 秒)` | `/group/gag-member` | グループメンバーを一時的に禁止します（0=解除） |
+| グループ | `get_group_bot_list(group_id)` | `/group/bot-list` | グループ内のロボット一覧 |
+| 会話 | `get_conversation_list(md5)` | `/conversation/list` | 会話一覧（カーソル付きページング） |
+| メッセージ | `get_message_list(chat_id, chat_type, ...)` | `/msg/list-message` | メッセージ一覧（複数のページング変種あり HTTP クライアントを参照） |
+| メッセージ | `delete_message(msg_id, chat_id, chat_type)` | `/msg/recall-msg` | メッセージを撤回します（一括撤回は HTTP クライアントを参照） |
+| メッセージ | `button_report(...)` | `/msg/button-report` | ボタンクリック報告 |
+| 元アクション | `get_status` / `get_version` / `get_supported_actions` | - | 実行状態/バージョン/サポートアクション |
+
+### 未対応（エンドポイントは既知、full.proto メッセージは完全、必要に応じて拡張可能）
+
+- ユーザー：認証コードログイン、バッジ、金豆記録、電話番号/メールアドレスのバインド、通知設定、ユーザーのデータ保存と取得
+- フレンド：通知を無視（no-notify）、申請記録の削除
+- グループ：コマンドリスト、カテゴリ、おすすめ、ライブ配信、グループ情報を編集/グループニックネーム/キーワード、グループ参加の自動承認、グループファイル制限、イベント SSE
+- 会話：固定/並べ替え/削除、通知を無視
+- メッセージ：転送、A2UI提出、メッセージ一覧の画像取得、ファイルのダウンロード記録
+- グループタグ：list / relate / relate-cancel / create / edit / delete / members（エンドポイント `/group-tag/*`）
+
+> 拡張方法：`YunhuHTTPClient` に既存のパターンに従ってメソッドを追加します（`_proto_request` / `_json_request` 一般的なラッパー）、そして `Api` クラスで公開します。エンドポイントとメッセージ定義は `yhchatAPI/src/api/v1/*.md` と `yhchatAPI/src/full.proto` を参照してください。
+
+### ユーザーアプリケーションプログラミングインターフェースの例
+
+```python
+from ErisPulse import sdk
+yunhu_user = sdk.adapter.get("yunhu_user")
+
+result = await yunhu_user.Api.get_self_info()
+result = await yunhu_user.Api.get_friend_requests()          # フレンド申請リスト
+await yunhu_user.Api.friend_agree_apply(user_id)             # フレンド申請を承認
+result = await yunhu_user.Api.get_group_member_list(group_id)
+result = await yunhu_user.Api.get_conversation_list()        # 会話リスト
+await yunhu_user.Api.delete_message(msg_id, chat_id, chat_type)  # メッセージを撤回
+```
+
+---
 
 ## 支援されるメッセージ送信タイプ
 
-すべての送信メソッドは、チェーン式構文で実装されています。たとえば：
-
+すべての送信メソッドはチェーン構文で実装されています。例：
 ```python
 from ErisPulse.Core import adapter
 yunhu_user = adapter.get("yunhu_user")
@@ -18203,17 +18466,16 @@ yunhu_user = adapter.get("yunhu_user")
 await yunhu_user.Send.To("user", user_id).Text("Hello World!")
 ```
 
-サポートされている送信タイプは以下の通りです。
-
-- `.Text(text: str, buttons: Optional[List] = None)`：純粋なテキストメッセージを送信します。
+サポートされる送信タイプは以下の通りです：
+- `.Text(text: str, buttons: Optional[List] = None)`：テキストメッセージを送信します。
 - `.Html(html: str, buttons: Optional[List] = None)`：HTML形式のメッセージを送信します。
 - `.Markdown(markdown: str, buttons: Optional[List] = None)`：Markdown形式のメッセージを送信します。
-- `.Image(file: Union[str, bytes], buttons: Optional[List] = None)`：画像メッセージを送信します。URL、ローカルパス、またはバイナリデータをサポートします。
-- `.Video(file: Union[str, bytes], buttons: Optional[List] = None)`：動画メッセージを送信します。URL、ローカルパス、またはバイナリデータをサポートします。
-- `.Audio(file: Union[str, bytes], buttons: Optional[List] = None)`：音声メッセージを送信します。URL、ローカルパス、またはバイナリデータをサポートし、自動的に音声長を検出します。
+- `.Image(file: Union[str, bytes], buttons: Optional[List] = None)`：画像メッセージを送信します。URL、ローカルパスまたはバイナリデータをサポートします。
+- `.Video(file: Union[str, bytes], buttons: Optional[List] = None)`：動画メッセージを送信します。URL、ローカルパスまたはバイナリデータをサポートします。
+- `.Audio(file: Union[str, bytes], buttons: Optional[List] = None)`：音声メッセージを送信します。URL、ローカルパスまたはバイナリデータをサポートし、音声の長さを自動検出します。
 - `.Voice(file: Union[str, bytes], buttons: Optional[List] = None)`：`.Audio()` の別名です。
-- `.File(file: Union[str, bytes], file_name: Optional[str] = None, buttons: Optional[List] = None)`：ファイルメッセージを送信します。URL、ローカルパス、またはバイナリデータをサポートします。
-- `.Face(file: Union[str, bytes], buttons: Optional[List] = None)`：絵文字/ステッカーのメッセージを送信します。ステッカーID、ステッカーURL、またはバイナリ画像データをサポートします。
+- `.File(file: Union[str, bytes], file_name: Optional[str] = None, buttons: Optional[List] = None)`：ファイルメッセージを送信します。URL、ローカルパスまたはバイナリデータをサポートします。
+- `.Face(file: Union[str, bytes], buttons: Optional[List] = None)`：絵文字/ステッカーメッセージを送信します。ステッカーID、ステッカーURLまたはバイナリ画像データをサポートします。
 - `.A2ui(a2ui_data: Union[str, Dict, List], buttons: Optional[List] = None)`：A2UIメッセージ（メッセージタイプ14）を送信します。A2UI JSONデータはtextフィールドに埋め込まれて送信されます。
 - `.Edit(msg_id: str, text: str, content_type: str = "text")`：既存のメッセージを編集します。
 - `.Recall(msg_id: str)`：メッセージを撤回します。
@@ -18221,28 +18483,26 @@ await yunhu_user.Send.To("user", user_id).Text("Hello World!")
 
 ### メディアファイル処理
 
-すべてのメディアタイプ（画像、動画、音声、ファイル）は以下の入力方法をサポートします。
+すべてのメディアタイプ（画像、動画、音声、ファイル）は以下の入力方法をサポートしています：
+- **URL**：`"https://example.com/image.jpg"` — 自動的にダウンロードしてアップロード
+- **ローカルパス**：`"/path/to/file.jpg"` — 自動的に読み込んでアップロード
+- **バイナリデータ**：`open("file.jpg", "rb").read()` — 直接アップロード
 
-- **URL**：`"https://example.com/image.jpg"` — 自動的にダウンロード後にアップロードされます。
-- **ローカルパス**：`"/path/to/file.jpg"` — 自動的に読み取り後にアップロードされます。
-- **バイナリデータ**：`open("file.jpg", "rb").read()` — 直接アップロードされます。
-
-メディアファイルは自動的に七牛雲ストレージにアップロードされ、以下の機能をサポートします。
-
-- 自動的に `filetype` ライブラリでファイルタイプとMIMEを検出します。
-- 自動的にファイルサイズを計算します。
-- 音声ファイルは自動的に時長を検出します（MP3、MP4/M4A形式をサポート）。
+メディアファイルは自動的に七牛雲ストレージにアップロードされ、以下の特徴をサポートします：
+- 自動的に `filetype` ライブラリを使ってファイルタイプとMIMEを検出します
+- 自動的にファイルサイズを計算します
+- 音声ファイルはMP3、MP4/M4A形式を自動的に検出します
 
 ### ボタンパラメータの説明
 
-`buttons` パラメータは、ボタンのレイアウトと機能を示すネストされたリストです。各ボタンオブジェクトには以下のフィールドが含まれます。
+`buttons` パラメータは、ボタンのレイアウトと機能を示すネストされたリストです。各ボタンオブジェクトには以下のフィールドが含まれます：
 
-| フィールド         | 型   | 必須 | 説明                                                                 |
+| フィールド         | タイプ   | 必須 | 説明                                                                 |
 |--------------|--------|----------|----------------------------------------------------------------------|
 | `text`       | string | 是       | ボタン上の文字                                                         |
-| `actionType` | int    | 是       | 動作タイプ：<br>`1`: URLにジャンプ<br>`2`: コピー<br>`3`: クリックして報告            |
-| `url`        | string | 否       | `actionType=1` の場合、ジャンプ先のURLを示します                         |
-| `value`      | string | 否       | `actionType=2` の場合、この値がクリップボードにコピーされます<br>`actionType=3` の場合、この値がサブスクライバーに送信されます |
+| `actionType` | int    | 是       | アクションタイプ：<br>`1`: URLにジャンプ<br>`2`: コピー<br>`3`: クリック報告            |
+| `url`        | string | 否       | `actionType=1` の場合、ジャンプ先のURLとして使用されます                         |
+| `value`      | string | 否       | `actionType=2` の場合、この値がクリップボードにコピーされます<br>`actionType=3` の場合、この値がサブスクライバに送信されます |
 
 例：
 ```python
@@ -18253,21 +18513,21 @@ buttons = [
         {"text": "イベントを報告", "actionType": 3, "value": "xxxxx"}
     ]
 ]
-await yunhu_user.Send.To("user", user_id).Buttons(buttons).Text("ボタン付きのメッセージ")
+await yunhu_user.Send.To("user", user_id).Buttons(buttons).Text("ボタン付きメッセージ")
 ```
 
-### チェーン式修飾メソッド（組み合わせて使用可能）
+### チェーン修飾メソッド（組み合わせて使用可能）
 
-チェーン式修飾メソッドは `self` を返し、チェーン式呼び出しをサポートします。最終的な送信メソッドの前に呼び出す必要があります。
+チェーン修飾メソッドは `self` を返すため、チェーンで呼び出すことができます。最終的な送信メソッドの前に呼び出す必要があります：
 
 - `.Reply(message_id: str)`：指定されたメッセージに返信します。
-- `.At(user_id: str)`：@指定ユーザー（テキスト形式 @user_id）。
-- `.AtAll()`：@全員（偽@全員、@allテキストを送信します）。
+- `.At(user_id: str)`：指定されたユーザーを@します（テキスト形式の@user_id）。
+- `.AtAll()`：全員を@します（偽@全員、@allテキストを送信）。
 - `.Buttons(buttons: List)`：ボタンを追加します。
 
-> **注意：** ユーザーアカウントは特殊なため、管理者でなくても@全員ができますが、この `AtAll()` は@全員のテキストを送信するだけで、偽@全員です。
+> **注意：** ユーザーアカウントは特殊であるため、管理者でなくても全員を@できますが、この `AtAll()` は単に全員を@するテキストを送信するだけです。これは偽@全員です。
 
-### チェーン式呼び出しの例
+### チェーン呼び出しの例
 
 ```python
 # 基本的な送信
@@ -18277,15 +18537,15 @@ await yunhu_user.Send.To("user", user_id).Text("Hello")
 await yunhu_user.Send.To("group", group_id).Reply(msg_id).Text("返信メッセージ")
 
 # 返信 + ボタン
-await yunhu_user.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("返信とボタン付きのメッセージ")
+await yunhu_user.Send.To("group", group_id).Reply(msg_id).Buttons(buttons).Text("返信とボタン付きメッセージ")
 
 # 指定アカウント + 返信 + ボタン
-await yunhu_user.Send.Using("default").To("group", group_id).Reply(msg_id).Buttons(buttons).Text("完全なチェーン式呼び出し")
+await yunhu_user.Send.Using("default").To("group", group_id).Reply(msg_id).Buttons(buttons).Text("完全なチェーン呼び出し")
 ```
 
 ### OneBot12メッセージのサポート
 
-アダプターはOneBot12形式のメッセージを送信することをサポートし、プラットフォーム間のメッセージ互換性を確保します。
+アダプターはOneBot12形式のメッセージを送信することができ、クロスプラットフォームのメッセージ互換性を確保します：
 
 - `.Raw_ob12(message: List[Dict], **kwargs)`：OneBot12形式のメッセージを送信します。
 
@@ -18294,25 +18554,24 @@ await yunhu_user.Send.Using("default").To("group", group_id).Reply(msg_id).Butto
 ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
 await yunhu_user.Send.To("user", user_id).Raw_ob12(ob12_msg)
 
-# チェーン式修飾と併用
+# チェーン修飾と組み合わせて使用
 ob12_msg = [{"type": "text", "data": {"text": "返信メッセージ"}}]
 await yunhu_user.Send.To("group", group_id).Reply(msg_id).Raw_ob12(ob12_msg)
 ```
 
-Raw_ob12は、混合メッセージセグメントをグループ化して処理することをサポートします。
-
-- `text`、`mention` タイプは1つのグループとして送信できます。
-- `image`、`video`、`audio`、`file`、`face`、`markdown`、`html`、`a2ui` などのタイプはそれぞれ独立したグループになります。
-- `reply` タイプは任意のグループに追加できます。
+Raw_ob12は、混合メッセージセグメントを自動的に処理します：
+- `text`、`mention` などのタイプはグループにまとめられます
+- `image`、`video`、`audio`、`file`、`face`、`markdown`、`html`、`a2ui` などのタイプはそれぞれ独立したグループになります
+- `reply` などのタイプは、どのグループにも追加できます
 
 ## 送信メソッドの戻り値
 
-すべての送信メソッドは Task オブジェクトを返し、これに直接 await を使用して送信結果を取得できます。返り値は ErisPulse アダプタ標準化返り値規格に従います：
+すべての送信メソッドはTaskオブジェクトを返し、awaitで送信結果を取得できます。返り値はErisPulseアダプターの標準化された返り値規格に従います：
 
 ```python
 {
     "status": "ok",           // 実行ステータス
-    "retcode": 0,             // 戻りコード
+    "retcode": 0,             // 返り値コード
     "data": {...},            // 応答データ
     "message_id": "123456",   // メッセージID
     "message": "",            // エラーメッセージ
@@ -18320,41 +18579,41 @@ Raw_ob12は、混合メッセージセグメントをグループ化して処理
 }
 ```
 
-## 特有イベントタイプ
+## 特有のイベントタイプ
 
-このプラットフォームの機能を使用するには、`platform == "yunhu_user"` の検証が必要です。
+`platform == "yunhu_user"` で検証してから、このプラットフォームの特有の機能を使用する必要があります。
 
 ### 核心的な差異点
 
-1. 特有イベントタイプ:
+1. 特有のイベントタイプ：
     - スーパーファイル共有: `yunhu_user_file_send`
     - ロボット公告ボード: `yunhu_user_bot_board`
     - メッセージ編集通知: `message_edit`
-    - メッセージ削除通知: `message_delete`（取り消し）
-2. 特有メッセージセグメントタイプ:
+    - メッセージ削除通知: `message_delete`（撤回）
+2. 特有のメッセージセグメントタイプ:
     - フォームメッセージセグメント: `yunhu_user_form`
     - 記事メッセージセグメント: `yunhu_user_post`
     - ステッカー・メッセージセグメント: `yunhu_user_sticker`
-    - ボタンメッセージセグメント: `yunhu_user_button`
-    - A2UIメッセージセグメント: `a2ui`
+    - ボタン・メッセージセグメント: `yunhu_user_button`
+    - A2UI・メッセージセグメント: `a2ui`
 3. 拡張フィールド:
-    - すべての特有フィールドは `yunhu_user_` で始まるプレフィックスで識別されます
-    - 元のデータは `yunhu_user_raw` フィールドに保持されます
+    - すべての特有のフィールドは `yunhu_user_` で始まります
+    - 元のデータは `yunhu_user_raw` フィールドに保存されます
     - 元のイベントタイプは `yunhu_user_raw_type` フィールドに記録されます
-    - プライベートチャットでは `self.user_id` は現在ログインしているユーザーIDを示します
+    - プライベートチャットでは `self.user_id` は現在のログインユーザーIDを示します
 
-### 対応する元のイベントタイプ
+### 支援される元のイベントタイプ
 
 | 元のイベントタイプ | OneBot12 タイプ | 説明 |
 |-------------|--------------|------|
-| `push_message` | `message` | プッシュメッセージ（プライベートチャット、グループチャット、Bot会話） |
+| `push_message` | `message` | メッセージ送信（プライベートチャット、グループチャット、Bot 会話） |
 | `edit_message` | `notice` (`message_edit`) | メッセージ編集イベント |
 | `file_send_message` | `notice` (`yunhu_user_file_send`) | スーパーファイル共有イベント |
 | `bot_board_message` | `notice` (`yunhu_user_bot_board`) | ロボット公告ボードイベント |
 
 > 他のイベントタイプ（`heartbeat_ack`、`draft_input`、`stream_message` など）は無視されます。
 
-### OneBot12 がサポートする detail_type
+### OneBot12 でサポートされる detail_type
 
 | OneBot12 detail_type | 雲湖 chat_type | 説明 |
 |---------------------|---------------|------|
@@ -18466,7 +18725,7 @@ from ErisPulse.Core.Event import message, notice
 
 @message.on_message()
 async def handle_yunhu_user_message(event):
-    """雲湖ユーザーのメッセージを処理"""
+    """雲湖ユーザーのメッセージを処理する"""
     if event.get("platform") != "yunhu_user":
         return
     
@@ -18476,7 +18735,7 @@ async def handle_yunhu_user_message(event):
     
     print(f"ユーザー {user_nickname}({user_id}): {alt_message}")
     
-    # メッセージセグメント内の特有タイプをチェック
+    # メッセージセグメント内の特有のタイプをチェック
     for segment in event.get("message", []):
         seg_type = segment.get("type", "")
         
@@ -18494,7 +18753,7 @@ async def handle_yunhu_user_message(event):
         
         elif seg_type == "yunhu_user_button":
             buttons = segment["data"]["buttons"]
-            print(f"メッセージにボタンが含まれています: {buttons}")
+            print(f"ボタンを含むメッセージ: {buttons}")
         
         elif seg_type == "a2ui":
             a2ui_data = segment["data"]["a2ui"]
@@ -18505,7 +18764,7 @@ async def handle_yunhu_user_message(event):
 
 @notice.on_notice()
 async def handle_yunhu_user_notice(event):
-    """雲湖ユーザーの通知イベントを処理"""
+    """雲湖ユーザーの通知イベントを処理する"""
     if event.get("platform") != "yunhu_user":
         return
     
@@ -18524,23 +18783,23 @@ async def handle_yunhu_user_notice(event):
     elif detail_type == "yunhu_user_bot_board":
         board_data = event.get("yunhu_user_bot_board", {})
         bot_name = event.get("bot_name", "")
-        print(f"ロボット {bot_name} が公告を発表しました: {board_data.get('content', '')}")
+        print(f"ロボット {bot_name} が公告を投稿しました: {board_data.get('content', '')}")
 ```
 
 ## 拡張フィールドの説明
 
-- すべての独自フィールドは `yunhu_user_` という接頭辞で識別され、標準フィールドとの衝突を避ける。
-- 元のデータは `yunhu_user_raw` フィールドに保存され、クラウド湖プラットフォームの完全な元のデータにアクセスできるようにする。
-- 元のイベントタイプは `yunhu_user_raw_type` フィールドに記録される（例: `push_message`、`edit_message` など）。
-- `self.user_id` は現在ログインしているユーザーIDを表し、ログインレスポンスから取得する。
-- スーパーファイル共有は `yunhu_user_file_send` フィールドを通じてファイル共有データを提供する。
-- ロボットの公告ボードは `yunhu_user_bot_board` フィールドを通じて公告データを提供する。
+- すべての特有のフィールドは `yunhu_user_` で始まり、標準のフィールドとの衝突を避ける
+- 元のデータは `yunhu_user_raw` フィールドに保存され、雲湖プラットフォームの完全な元のデータにアクセスできる
+- 元のイベントタイプは `yunhu_user_raw_type` フィールドに記録される（例: `push_message`、`edit_message` など）
+- `self.user_id` は現在のログインユーザーIDを示す（ログイン応答から取得）
+- スーパーファイル共有は `yunhu_user_file_send` フィールドを通じてファイル共有データを提供する
+- ロボット公告ボードは `yunhu_user_bot_board` フィールドを通じて公告データを提供する
 
-### 独自メッセージセグメントタイプ
+### 特有のメッセージセグメントタイプ
 
 #### フォームメッセージセグメント (yunhu_user_form)
 
-content_type が 5 の場合、メッセージセグメントタイプは `yunhu_user_form` となる：
+content_type が 5 の場合、メッセージセグメントタイプは `yunhu_user_form` です：
 
 ```json
 {
@@ -18553,7 +18812,7 @@ content_type が 5 の場合、メッセージセグメントタイプは `yunhu
 
 #### 記事メッセージセグメント (yunhu_user_post)
 
-content_type が 6 の場合、メッセージセグメントタイプは `yunhu_user_post` となる：
+content_type が 6 の場合、メッセージセグメントタイプは `yunhu_user_post` です：
 
 ```json
 {
@@ -18566,32 +18825,32 @@ content_type が 6 の場合、メッセージセグメントタイプは `yunhu
 }
 ```
 
-| フィールド | 型 | 説明 |
+| フィールド | タイプ | 説明 |
 |------|------|------|
-| `post_id` | string | 記事の一意の識別子 |
-| `post_title` | string | 記事タイトル |
-| `post_content` | string | 記事内容 |
+| `post_id` | string | 記事のユニークな識別子 |
+| `post_title` | string | 記事のタイトル |
+| `post_content` | string | 記事の内容 |
 
-#### スタンプメッセージセグメント (yunhu_user_sticker)
+#### ステッカー・メッセージセグメント (yunhu_user_sticker)
 
-content_type が 7 の場合、メッセージセグメントタイプは `yunhu_user_sticker` となる：
+content_type が 7 の場合、メッセージセグメントタイプは `yunhu_user_sticker` です：
 
 ```json
 {
     "type": "yunhu_user_sticker",
     "data": {
-        "file_id": "スタンプ画像のURL"
+        "file_id": "ステッカー画像のURL"
     }
 }
 ```
 
-| フィールド | 型 | 説明 |
+| フィールド | タイプ | 説明 |
 |------|------|------|
-| `file_id` | string | スタンプ画像のURL |
+| `file_id` | string | ステッカー画像のURL |
 
-#### ボタンメッセージセグメント (yunhu_user_button)
+#### ボタン・メッセージセグメント (yunhu_user_button)
 
-メッセージにボタンが含まれる場合、`yunhu_user_button` メッセージセグメントが追加される：
+メッセージにボタンが含まれる場合、`yunhu_user_button` メッセージセグメントが追加されます：
 
 ```json
 {
@@ -18604,7 +18863,7 @@ content_type が 7 の場合、メッセージセグメントタイプは `yunhu
 
 #### A2UI メッセージセグメント (a2ui)
 
-content_type が 14 の場合、メッセージセグメントタイプは `a2ui` となる：
+content_type が 14 の場合、メッセージセグメントタイプは `a2ui` です：
 
 ```json
 {
@@ -18615,24 +18874,26 @@ content_type が 14 の場合、メッセージセグメントタイプは `a2ui
 }
 ```
 
-## 複数アカウントの設定
+---
+
+## マルチアカウントの設定
 
 ### 設定の説明
 
-YunhuUserAdapter は、複数のユーザー アカウントを同時に設定および実行することをサポートしています。
+YunhuUserAdapter は複数のユーザーアカウントを同時に設定および実行することをサポートしています。
 
 ```toml
 # config.toml
 [YunhuUserAdapter]
-ws_reconnect_interval = 30  # WebSocket 再接続間隔（秒）
-ws_timeout = 70             # WebSocket タイムアウト時間（秒）
+ws_reconnect_interval = 30  # WebSocket再接続間隔（秒）
+ws_timeout = 70             # WebSocketタイムアウト時間（秒）
 
 [YunhuUserAdapter.accounts.default]
 email = "user1@example.com"  # ユーザーのメールアドレス（必須）
 password = "password1"       # ユーザーのパスワード（必須）
-platform = "windows"         # ログインプラットフォーム（オプション、デフォルトは windows）
-device_id = ""               # デバイスID（オプション、未入力で自動生成）
-enabled = true               # アカウントの有効化（オプション、デフォルトは true）
+platform = "windows"         # ログインプラットフォーム（オプション、デフォルトはwindows）
+device_id = ""               # デバイスID（オプション、未設定の場合は自動生成）
+enabled = true               # アカウントを有効にするかどうか（オプション、デフォルトはtrue）
 
 [YunhuUserAdapter.accounts.account2]
 email = "user2@example.com"
@@ -18643,47 +18904,47 @@ enabled = true
 ```
 
 **設定項目の説明：**
-- `email`：ユーザーのメールアドレス（必須）、雲湖プラットフォームへのログインに使用
+- `email`：ユーザーのメールアドレス（必須）、雲湖プラットフォームにログインするために使用
 - `password`：ユーザーのパスワード（必須）
-- `platform`：ログインプラットフォーム識別子（オプション、デフォルトは `windows`）、利用可能な値：`windows`、`macos`、`linux`、`ios`、`android`
-- `device_id`：デバイスID（オプション、未入力で自動生成）、セッションの一貫性を保つために固定値を設定することを推奨
-- `enabled`：アカウントの有効化（オプション、デフォルトは `true`）
+- `platform`：ログインプラットフォームの識別子（オプション、デフォルトは `windows`）、有効値は `windows`、`macos`、`linux`、`ios`、`android`
+- `device_id`：デバイスID（オプション、未設定の場合は自動生成）、固定値を設定してセッションの一貫性を保つことを推奨
+- `enabled`：アカウントを有効にするかどうか（オプション、デフォルトは `true`）
 
-**アダプタレベルの設定：**
-- `ws_reconnect_interval`：WebSocket 再接続間隔（秒、デフォルトは 30）
-- `ws_timeout`：WebSocket タイムアウト時間（秒、デフォルトは 70）
+**アダプターのレベルの設定：**
+- `ws_reconnect_interval`：WebSocket再接続間隔（秒、デフォルトは30）
+- `ws_timeout`：WebSocketタイムアウト時間（秒、デフォルトは70）
 
 **重要な注意事項：**
-1. アダプタはメールアドレスによるログイン方式でトークンを取得し、ログイン後に WebSocket を通じてイベントを受信します。
-2. WebSocket 接続が切断された場合、自動的に再接続が行われ、最大3回まで再試行されます。
-3. 各アカウントに固定の `device_id` を設定することを推奨します。これにより、セッションの一貫性が保たれます。
-4. テンプレートアカウント（デフォルトのメールアドレスとパスワード）は、自動的にスキップされます。
+1. アダプターはメールアドレスを使用してログインし、tokenを取得し、WebSocketを介してイベントを受信します
+2. WebSocket接続が切断された場合、自動的に再接続され、最大3回まで再試行されます
+3. 各アカウントに固定の `device_id` を設定することを推奨します。これにより、セッションの一貫性が保たれます
+4. 未変更のテンプレートアカウント（デフォルトのメールアドレスとパスワード）は自動的にスキップされます
 
-### Send DSL を使用してアカウントを指定
+### Send DSL を使用してアカウントを指定する
 
-`Using()` メソッドを使用して、どのアカウントを使ってメッセージを送信するかを指定できます。このメソッドは2種類の引数をサポートします：
-- **アカウント名**：設定ファイル中のアカウント名（例：`default`、`account2`）
+`Using()` メソッドを使用して、どのアカウントを使ってメッセージを送信するかを指定することができます。このメソッドは2つのパラメータをサポートします：
+- **アカウント名**：設定ファイルのアカウント名（例：`default`、`account2`）
 - **user_id**：ログイン後に取得されるユーザーID
 
 ```python
 from ErisPulse.Core import adapter
 yunhu_user = adapter.get("yunhu_user")
 
-# アカウント名を使ってメッセージを送信
+# アカウント名を使ってメッセージを送信する
 await yunhu_user.Send.Using("default").To("user", "user123").Text("Hello from account1!")
 
-# user_id を使ってメッセージを送信（対応するアカウントを自動的に検索）
+# user_idを使ってメッセージを送信する（自動的に対応するアカウントを検索）
 await yunhu_user.Send.Using("user_id_here").To("group", "group456").Text("Hello from user!")
 
-# 指定しない場合、最初に有効化されたアカウントが使用されます
+# 指定しない場合は、最初に有効なアカウントが使用されます
 await yunhu_user.Send.To("user", "user123").Text("Hello from default account!")
 ```
 
-> **注意：** `user_id` を使用する場合、システムは設定ファイル内で一致するアカウントを自動的に検索します。イベントの返信処理では、`event["self"]["user_id"]` を使用して同じアカウントに返信するのに特に便利です。
+> **ヒント：** `user_id` を使用する場合、システムは設定ファイルに一致するアカウントを自動的に検索します。これはイベントの返信を処理するときに特に便利です。`event["self"]["user_id"]` を使用して、同じアカウントで返信することができます。
 
 ### イベントにおけるアカウント識別
 
-受信したイベントには、対応するユーザーID情報が自動的に含まれます：
+受信したイベントには自動的に対応するユーザーID情報が含まれています：
 
 ```python
 from ErisPulse.Core.Event import message
@@ -18691,11 +18952,11 @@ from ErisPulse.Core.Event import message
 @message.on_message()
 async def handle_message(event):
     if event["platform"] == "yunhu_user":
-        # 現在ログインしているユーザーIDを取得
+        # 現在のログインユーザーIDを取得
         my_user_id = event["self"]["user_id"]
-        print(f"メッセージはアカウント: {my_user_id} から送信されました。")
+        print(f"メッセージはアカウント: {my_user_id} から来ています")
         
-        # 同じアカウントを使って返信
+        # 同じアカウントを使ってメッセージを返信する
         yunhu_user = adapter.get("yunhu_user")
         await yunhu_user.Send.Using(my_user_id).To(
             event["detail_type"],
@@ -18705,38 +18966,38 @@ async def handle_message(event):
 
 ### ログ情報
 
-アダプタは、ログにアカウント情報を自動的に含め、デバッグや追跡に便利です：
+アダプターはログに自動的にアカウント情報を含め、デバッグや追跡に役立ちます：
 
 ```
-[INFO] アカウント default (user1@example.com) がログイン成功、ユーザーID: 12345678
-[INFO] アカウント default の WebSocket 監視タスクが起動しました
-[INFO] アカウント account2 (user2@example.com) がログイン成功、ユーザーID: 87654321
+[INFO] アカウント default (user1@example.com) にログイン成功、ユーザーID: 12345678
+[INFO] アカウント default のWebSocket監視タスクが起動しました
+[INFO] アカウント account2 (user2@example.com) にログイン成功、ユーザーID: 87654321
 ```
 
 ### 管理インターフェース
 
 ```python
-# すべてのアカウント情報を取得
+# すべてのアカウント情報を取得する
 accounts = yunhu_user.accounts
-# 戻り値の形式: {"default": {"name": "default", "email": "...", "token": "...", "user_id": "...", ...}, ...}
+# 戻り値形式: {"default": {"name": "default", "email": "...", "token": "...", "user_id": "...", ...}, ...}
 
-# アカウントが有効かどうかをチェック
+# アカウントが有効かどうかをチェックする
 for account_name, account_config in yunhu_user._account_configs.items():
     print(f"{account_name}: enabled={account_config.enabled}")
 
-# アカウント名から HTTP クライアントを取得
+# アカウント名からHTTPクライアントを取得する
 http_client = yunhu_user._get_http_client("default")
 
-# user_id からアカウントを検索
+# user_idからアカウントを検索する
 account_name = yunhu_user._get_account_by_user_id("12345678")
 ```
 
-## API 呼び出し
+## APIの呼び出し
 
-アダプターは `call_api` メソッドを提供し、プラットフォーム API を直接呼び出すことができます。
+アダプターは `call_api` メソッドを提供し、プラットフォームのAPIを直接呼び出すことができます：
 
 ```python
-# メッセージの送信
+# メッセージを送信する
 result = await yunhu_user.call_api("/send", 
     target_type="group", 
     target_id="group_id",
@@ -18744,30 +19005,30 @@ result = await yunhu_user.call_api("/send",
     message={"text": "Hello", "msg_type": 1}
 )
 
-# メッセージの編集
+# メッセージを編集する
 result = await yunhu_user.call_api("/edit",
     target_type="group",
     target_id="group_id",
     msg_id="msg_id",
-    text="新内容",
+    text="新しい内容",
     content_type="text"
 )
 
-# メッセージの撤回
+# メッセージを撤回する
 result = await yunhu_user.call_api("/recall",
     target_type="group",
     target_id="group_id",
     msg_id="msg_id"
 )
 
-# メッセージの一括撤回
+# メッセージを一括撤回する
 result = await yunhu_user.call_api("/recall_batch",
     target_type="group",
     target_id="group_id",
     msg_id_list=["msg_id_1", "msg_id_2"]
 )
 
-# メッセージリストの取得
+# メッセージ一覧を取得する
 result = await yunhu_user.call_api("/list",
     chat_id="group_id",
     chat_type=2,
@@ -18775,14 +19036,14 @@ result = await yunhu_user.call_api("/list",
     msg_id=""
 )
 
-# メッセージ編集履歴の取得
+# メッセージ編集履歴を取得する
 result = await yunhu_user.call_api("/list_edit_record",
     msg_id="msg_id",
     size=10,
     page=1
 )
 
-# ボタンイベントの報告
+# ボタンイベント報告
 result = await yunhu_user.call_api("/button_report",
     chat_id="group_id",
     chat_type=2,
@@ -18792,19 +19053,19 @@ result = await yunhu_user.call_api("/button_report",
 )
 ```
 
-**サポートされる API エンドポイント:**
+**サポートされているAPIエンドポイント：**
 
 | エンドポイント | 説明 |
 |------|------|
-| `/send` | メッセージの送信 |
-| `/edit` | メッセージの編集 |
-| `/recall` | メッセージの撤回 |
-| `/recall_batch` | メッセージの一括撤回 |
-| `/list` | メッセージリストの取得 |
-| `/list_by_seq` | シーケンスによるメッセージの取得 |
-| `/list_by_mid_seq` | メッセージIDとシーケンスによるメッセージの取得 |
-| `/list_edit_record` | メッセージ編集履歴の取得 |
-| `/button_report` | ボタンイベントの報告 |
+| `/send` | メッセージを送信する |
+| `/edit` | メッセージを編集する |
+| `/recall` | メッセージを撤回する |
+| `/recall_batch` | メッセージを一括撤回する |
+| `/list` | メッセージ一覧を取得する |
+| `/list_by_seq` | シーケンスでメッセージを取得する |
+| `/list_by_mid_seq` | メッセージIDとシーケンスでメッセージを取得する |
+| `/list_edit_record` | メッセージ編集履歴を取得する |
+| `/button_report` | ボタンイベント報告を送信する |
 
 
 
@@ -18969,8 +19230,8 @@ IdeauraAdapter は、花楓カフェ（RockyChat）プラットフォームの A
 ## ドキュメント情報
 
 - 対応モジュール: ErisPulse-Ideaura
-- 対応モジュールバージョン: 4.0.1
-- 管理者: ErisPulse
+- 対応モジュールのバージョン: 4.1.0
+- 維持管理者: ErisPulse
 
 ## 基本情報
 
@@ -18979,6 +19240,21 @@ IdeauraAdapter は、花楓カフェ（RockyChat）プラットフォームの A
 - マルチアカウント対応：Bot Token による複数アカウントの設定が可能です。
 - チェーン修飾子対応：`.At()`、`.AtAll()`、`.Reply()`、`.Command()` などのチェーン修飾メソッドに対応しています。
 - OneBot12互換：OneBot12形式のメッセージ送信が可能です。
+
+## v5 フレームワークの更新 (4.1.0)
+
+- **BaseConverter の継承**：コンバーターの共通フィールドはフレームワークの build_base_event で構築される
+- **spawn_background のタスク所属**：アカウント接続タスクは runtime.spawn_background を使用する
+- **フレームワークのソフト依存**：ErisPulse>=2.7.1 の実行時検出と警告メッセージの出力；起動時にバージョンログを出力
+- Request DSL は保留（フレンド申請承認 API はプラットフォーム提供待ち）
+
+---
+
+### 対応済みプラットフォーム機能
+
+- **イベント**：メッセージの編集/削除/転送/既読（ideaura_message_*）、フレンド申請（friend_request）、フレンドの追加/削除（friend_increase/decrease）、オンラインステータス（friend_online/offline）
+- **送信**：Text / Image / Markdown / Raw_ob12（チェーン式の Reply/At/AtAll 修飾子付き）
+- **未対応**：フレンド申請承認 API（プラットフォームがまだ提供していない）、Api DSL（プラットフォームの REST インターフェースが開放された後に追加予定）
 
 ## 支援されるメッセージ送信タイプ
 
@@ -19463,7 +19739,7 @@ DiscordAdapterは、Discord Gateway (WebSocket) およびREST API v10プロト�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.1.0
+- 対応モジュールバージョン: 4.2.0
 - メンテナー: ErisPulse
 - Discord API バージョン: v10
 
@@ -19522,6 +19798,45 @@ Intents はビットマスクを使用し、各 Intent の値をビット論理�
 **API 環境:**
 - Discord REST API の基本アドレス：`https://discord.com/api/v10`
 - Gateway WebSocket アドレス：`GET /gateway/bot` を使用して動的に取得します。通常は `wss://gateway.discord.gg/?v=10&encoding=json` です。
+
+## v5 ファンタムの更新（4.2.0）
+
+このアダプターは v5 ファンタムに準拠しました（段階的なアップグレード、API は互換性を保持）。
+
+- **BaseConverter 継承**：コンバーターの共通フィールドはフレームワーク `build_base_event` によって構築されます。
+- **Api DSL**：標準的な Api アクションマッピング（以下を参照）
+- **標準 keyboard 段**：Discord components（action row + buttons）に変換されます。.Keyboard(rows) 修飾子は汎用構造を受け取ります。
+- **インタラクションコールバックの標準フィールド**：INTERACTION_CREATE イベントには interaction_id / button_data が含まれます。
+- **spawn_background タスクの所属**：接続タスクは runtime.spawn_background を使用します。
+- **フレームワークのソフト依存**：ErisPulse>=2.7.1 を実行時に検出し、警告を表示します。起動時にバージョンログを出力します。
+
+### 標準 Api アクション
+
+```python
+from ErisPulse import sdk
+discord = sdk.adapter.get("discord")
+
+result = await discord.Api.get_self_info()                # GET /users/@me
+result = await discord.Api.get_user_info(user_id)         # GET /users/{id}
+result = await discord.Api.get_guild_info(guild_id)       # GET /guilds/{id}
+result = await discord.Api.get_guild_list()               # GET /users/@me/guilds
+result = await discord.Api.get_channel_list(guild_id)     # GET /guilds/{id}/channels
+result = await discord.Api.get_guild_member_info(gid, uid)
+await discord.Api.delete_message(message_id)              # 登録表は自動的に channel_id を補完します
+await discord.Api.leave_guild(guild_id)
+result = await discord.Api.Using("main").get_self_info()
+```
+
+### ボタン（keyboard / components）
+
+```python
+rows = [[{"label": "クリック", "type": "callback", "data": "btn:1"},
+         {"label": "公式サイト",  "type": "link",     "data": "https://example.com"}]]
+await discord.Send.To("channel", channel_id).Keyboard(rows).Text("選択してください")
+# 自動的に components に変換されます：callback → custom_id / link → url
+```
+
+---
 
 ## 支援されるメッセージ送信タイプ
 
@@ -19908,6 +20223,18 @@ async def handle_interaction(event):
 
 ### Webhook 适配
 
+### 対応プラットフォーム機能
+
+- **入力**：外部システムが callback_path に POST → OneBot12 イベントに変換（json/textセグメントを透過）
+- **出力**：モジュール Send → outgoing_url に POST（二重ブリッジ）
+- **API**：ブリッジの認証情報と実行状態（最小限の機能）
+
+## v5 ファンダメンタルの更新（4.2.0）
+
+- **Api DSL 最小集**：get_self_info / get_status / get_version / get_supported_actions
+- **フレームワークのソフト依存**：実行時に ErisPulse>=2.7.1 を検出し、警告を表示；起動時にバージョンのログを出力
+- インポートパスを Core.Bases に更新
+
 # プラットフォームの機能説明 — Webhook 一般的なブリッジアダプター
 
 このドキュメントでは、Webhookアダプターの双方向ブリッジプロトコル、フィールドマッピング、実装の特徴について詳しく説明します。
@@ -20137,6 +20464,20 @@ Webhook アダプタは、**プロトコルレベルのブリッジ**です。�
 - モジュールバージョン: 4.1.0
 - メンテナー: ErisPulse
 - 依存: `cryptography`
+
+## v5 フレームワークの更新 (4.2.0)
+
+- **BaseConverter 継承**：変換器の共通フィールドは、フレームワークの build_base_event によって構築されます。
+- **Api DSL 最小セット**：get_self_info（appid）/get_status/get_version/get_supported_actions
+- **フレームワークのソフト依存**：実行時に ErisPulse>=2.7.1 を検出し、警告を出力します。起動時にバージョンログを出力します。
+
+---
+
+### 対応プラットフォーム機能
+
+- **受信**：公式アカウントのコールバックメッセージと、フォロー/アンフォローなどのイベント（平文/セキュリティモード）、署名検証
+- **送信**：カスタマーメッセージ（Text/Image など、Send DSL を経由）
+- **API**：アカウント情報（appid）と実行状態（最小セット）
 
 ## 支援するメッセージ送信タイプ
 
