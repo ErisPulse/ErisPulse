@@ -6,7 +6,7 @@ OneBot12Adapter is an adapter built based on the OneBot V12 protocol, serving as
 
 ## Document Information
 
-- Corresponding Module Version: 4.0.0
+- Corresponding Module Version: 4.3.0
 - Maintainer: ErisPulse
 - Protocol Version: OneBot V12
 
@@ -16,6 +16,70 @@ OneBot12Adapter is an adapter built based on the OneBot V12 protocol, serving as
 - Adapter Name: OneBot12Adapter
 - Supported Protocol/API Version: OneBot V12
 - Multi-Account Support: Fully multi-account architecture, supporting the configuration and operation of multiple OneBot12 accounts simultaneously.
+
+## v5 Paradigm Update (4.3.0)
+
+This adapter has completed alignment with the v5 paradigm (incremental upgrade, API compatible):
+
+- **BaseConverter Inheritance**: Common fields of the converter (id/time/platform/self/raw) are built by the framework's `build_base_event`, and are overridden by OB11 field names (echo/time/self_id).
+- **spawn_background Task Ownership**: The Client mode connection task now uses `runtime.spawn_background` (owner assignment, automatic shutdown cleanup).
+- **Framework Soft Dependency**: Installing the adapter no longer declares a hard dependency on ErisPulse, avoiding pip resolution issues that adjust framework versions; at runtime, ErisPulse>=2.7.1 is detected, and a log warning is issued if the version is too low.
+- **Startup Version Log**: Outputs "OneBotAdapter v4.3.0 loaded" during initialization.
+
+Existing capabilities (supported since 4.2.0): Multi-account, standard API DSL action mapping (e.g., `get_self_info` → `get_login_info`), Request DSL (friend/group request approval: `event.approve()` / `event.reject()`), EventMixin, i18n.
+
+---
+
+## Standard API Actions (Api DSL)
+
+OneBot12 backends natively support all OB12 standard action names. The Api DSL is by default directly delegated to call_api for transparent transmission (no mapping required):
+
+```python
+from ErisPulse import sdk
+ob12 = sdk.adapter.get("onebot12")
+
+result = await ob12.Api.get_self_info()
+result = await ob12.Api.get_friend_list()
+await ob12.Api.delete_message(message_id="MSG_ID")
+
+# Specify account (multi-account)
+result = await ob12.Api.Using("main").get_self_info()
+
+# Platform extension actions
+result = await ob12.Api.call("extend_action", param=1)
+```
+
+> Supported actions are subject to backend implementation (NapCat/Lagrange/LLOneBot, etc.); unsupported actions will return errors from the backend and be transparently transmitted.
+
+## Request Operations (Request DSL)
+
+Based on the OneBot12 standard `handle_quick_request` action, handle the approval/rejection of friend requests and group invitation requests:
+
+### Event Convenience Methods
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    if event.get("platform") != "onebot12":
+        return
+    comment = event.get("comment", "")
+    if comment == "passphrase":
+        await event.approve()      # Approve
+    else:
+        await event.reject()       # Reject
+```
+
+### Manual Request DSL Calls
+
+```python
+await ob12.Request("request_flag").accept()
+await ob12.Request("request_flag").reject()
+await ob12.Request("request_flag").Using("main").accept()
+```
+
+---
 
 ## Supported Message Sending Types
 

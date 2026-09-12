@@ -1,10 +1,18 @@
 {
   "version": 2,
-  "hash": "874e1f65883386ce14ae0c142b98917d",
-  "file_hash": "874e1f65883386ce14ae0c142b98917d",
-  "translated_at": "2026-09-07T11:49:07.393100",
+  "hash": "047dd3dc25ad91fcd92f8656e299b0ba",
+  "file_hash": "047dd3dc25ad91fcd92f8656e299b0ba",
+  "translated_at": "2026-09-12T10:27:23.975078",
   "target_lang": "zh-TW",
   "chunks": [
+    {
+      "hash": "1a6c6f5bbea0915ddf66b37b2e549874",
+      "translation": "### 已對接平台能力\n\n- **入站**：外部系統 POST 到 callback_path → 轉為 OneBot12 事件（json/text 段透傳）\n- **出站**：模組 Send → POST 到 outgoing_url（雙橋接）\n- **API**：橋接身份資訊與執行狀態（最小集）"
+    },
+    {
+      "hash": "2482a3e8a95baf1c9e79ae16ed95379d",
+      "translation": "## v5 範式更新（4.2.0）\n\n- **Api DSL 最小集**：get_self_info/get_status/get_version/get_supported_actions\n- **框架軟依賴**：執行時偵測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌\n- 導入路徑更新至 Core.Bases\n\n---"
+    },
     {
       "hash": "88eba211c1ace553dab49fa3c3bef169",
       "translation": "# 平台特性說明 — Webhook 通用橋接適配器\n\n本文檔詳細說明 Webhook 適配器的雙向橋接協定、欄位映射與實作特性。"

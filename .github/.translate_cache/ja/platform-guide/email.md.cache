@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "a0ef4540f2c54c9fe8bb6e167415d7fb",
-  "file_hash": "a0ef4540f2c54c9fe8bb6e167415d7fb",
-  "translated_at": "2026-09-07T11:40:59.808922",
+  "hash": "f1b46940e620e8a6edccbbcb6a8021a3",
+  "file_hash": "f1b46940e620e8a6edccbbcb6a8021a3",
+  "translated_at": "2026-09-12T10:27:56.961702",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# メールプラットフォームの機能ドキュメント\n\nEmailAdapter は SMTP/IMAP プロトコルに基づいたメールアダプタであり、メールの送信、受信、および処理をサポートしています。\n\n---"
     },
     {
-      "hash": "6e2010b0836c4c98adf0292ff78ea9b2",
-      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 4.1.0\n- メンテナー: ErisPulse"
+      "hash": "d5769e0ae79f68cdc351193894aba07b",
+      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 4.2.0\n- メンテナー: ErisPulse"
     },
     {
       "hash": "ebfd0de1173b98b4565e6eea62e7b86a",
@@ -20,6 +20,10 @@
     {
       "hash": "b19b0577912cfefb1e37fa681faa9a06",
       "translation": "## 設定説明\n\n### グローバル設定（EmailAdapter）\n\n| 設定項目 | 型 | デフォルト値 | 説明 |\n|--------|------|--------|------|\n| `imap_server` | str | `imap.example.com` | デフォルトの IMAP サーバーのアドレス |\n| `imap_port` | int | `993` | デフォルトの IMAP ポート |\n| `smtp_server` | str | `smtp.example.com` | デフォルトの SMTP サーバーのアドレス |\n| `smtp_port` | int | `465` | デフォルトの SMTP ポート |\n| `ssl` | bool | `true` | デフォルトで SSL を有効にするかどうか |\n| `timeout` | int | `30` | デフォルトの接続タイムアウト（秒） |\n| `poll_interval` | int | `60` | IMAP ポーリング間隔（秒） |\n| `max_retries` | int | `3` | 接続失敗時の最大再試行回数 |\n\n### アカウント設定（EmailAdapter.accounts）\n\n各アカウントは個別のメールアドレスに対応します。アカウントレベルの設定はグローバル設定よりも優先されます。\n\n```toml\n[EmailAdapter.accounts.default]\nemail = \"user@example.com\"\npassword = \"your-password-or-auth-code\"\nimap_server = \"imap.example.com\"    # オプション、空欄の場合はグローバルのデフォルトを使用\nimap_port = 993                      # オプション\nsmtp_server = \"smtp.example.com\"    # オプション\nsmtp_port = 465                      # オプション\nssl = true                           # オプション\ntimeout = 30                         # オプション\nenabled = true\n\n[EmailAdapter.accounts.backup]\nemail = \"backup@example.com\"\npassword = \"another-password\"\nenabled = true\n```"
+    },
+    {
+      "hash": "67f3e55002371d1142e8e53d0e26594a",
+      "translation": "## v5 フレームワークの更新（4.2.0）\n\n- **API DSL 最小セット**：get_self_info（メールアドレス）/get_status/get_version/get_supported_actions\n- **spawn_background でのタスクの所有権**：IMAP ポーリングタスクを runtime.spawn_background に変更\n- **フレームワークのソフト依存**：ErisPulse>=2.7.1 の実行時検出と警告；起動時にバージョンログを出力\n- インポートパスを Core.Bases に更新；_load_accounts は保持（グローバルのデフォルト値はこのアダプタ固有のロジックに統合）\n\n---\n\n### 対応済みプラットフォーム機能\n\n- **受信**：IMAP ポーリングによるメール受信（本文/HTML/添付ファイルをメッセージセグメントに解析）、未読メールの増分検出\n- **送信**：SMTP によるメール送信（Subject/Text/Html/Cc/Bcc/ReplyTo/Attachment）、複数アカウント対応\n- **API**：アカウント情報と実行状態（最小セット）；メールの取り消しやグループなどの概念は適用されない"
     },
     {
       "hash": "388ede0e2e56f886d2fdd2b97965aca1",

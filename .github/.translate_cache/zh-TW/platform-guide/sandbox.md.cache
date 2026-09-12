@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "hash": "c8d1e938deeefd08c50aa9da8cba1192",
+  "file_hash": "c8d1e938deeefd08c50aa9da8cba1192",
+  "translated_at": "2026-09-12T10:25:56.418561",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "3b33559c4cde3c50c0835dd578a833a3",
+      "translation": "# Sandbox 平台特性文件\n\nSandboxAdapter 是 ErisPulse 內建的沙盒適配器，用於本地開發與模組調試——無需真實平台即可模擬訊息的收發。\n\n---"
+    },
+    {
+      "hash": "6e2010b0836c4c98adf0292ff78ea9b2",
+      "translation": "## 文件資訊\n\n- 對應模組版本: 4.1.0\n- 維護者: ErisPulse"
+    },
+    {
+      "hash": "2add3b0a800daa6ba7f573b133226bfe",
+      "translation": "## 基本資訊\n\n- 平台簡介：本地沙盒環境，提供虛擬使用者/群組、Web 調試面板與訊息持久化\n- 適配器名稱：SandboxAdapter\n- 平台標識：`sandbox`\n- 單帳戶設計（本地調試場景）\n- 框架要求：軟依賴 `ErisPulse>=2.7.1`（執行時檢測提示，不強制）"
+    },
+    {
+      "hash": "5c8ab684c26414cdb4953b80df19f29c",
+      "translation": "## v5 範式更新（4.1.0）\n\n- **Api DSL 最小集**：`get_self_info` / `get_status` / `get_version` / `get_supported_actions`\n- **spawn_background 任務歸屬**：心跳任務改用 `runtime.spawn_background`\n- **框架軟依賴**：運行時偵測 `ErisPulse>=2.7.1` 並提示\n- 導入路徑更新至 `Core.Bases`（BaseConfig）"
+    },
+    {
+      "hash": "6c62d2bacd7ee950e74cd2d5c6c40e43",
+      "translation": "## 標準 API 動作示例\n\n```python\nfrom ErisPulse import sdk\nsandbox = sdk.adapter.get(\"sandbox\")\n\nresult = await sandbox.Api.get_self_info()   # 沙盒機器人身份\nresult = await sandbox.Api.get_status()\nresult = await sandbox.Api.get_supported_actions()\n```"
+    },
+    {
+      "hash": "950ff6ddaab682b592bd7f92b398dfaf",
+      "translation": "## 使用說明\n\n- 沙盒提供虛擬用戶與群組，模組可像真實平台一樣收發訊息\n- Web 調試面板可手動發送訊息觸發模組處理邏輯\n- 訊息數據持久化儲存，重啟後可恢復"
+    }
+  ]
+}

@@ -6,7 +6,7 @@ MatrixAdapter - это адаптер, построенный на основе 
 
 ## Информация о документации
 
-- Версия соответствующего модуля: 4.1.0
+- Соответствующая версия модуля: 4.2.0
 - Ответственный: ErisPulse
 
 ## Основная информация
@@ -54,6 +54,34 @@ enabled = true
 **Способы аутентификации:**
 - Способ 1 (рекомендуется): Прямое указание `access_token`
 - Способ 2: Указание `user_id` и `password`, адаптер автоматически вызывает интерфейс входа для получения токена
+
+## Обновление парадигмы v5 (4.2.0)
+
+- **Наследование BaseConverter**: общие поля конвертера строятся фреймворком build_base_event
+- **DSL API**: get_self_info/get_user_info/get_group_info/get_group_list/get_group_member_list/leave_group/delete_message(redact) + метадействия
+- **Дополнение к событию сообщения message_id** (event_id); таблица регистрации сообщений поддерживает delete_message
+- **Принадлежность задачи spawn_background**: синхронные/пинговые задачи используют runtime.spawn_background
+- **Мягкая зависимость фреймворка**: проверка версии ErisPulse>=2.7.1 и вывод подсказки; вывод логов версии при запуске
+- У Matrix нет встроенной возможности кнопок, стандартный сегмент keyboard игнорируется (без ошибок)
+
+### Примеры стандартных действий API
+
+```python
+from ErisPulse import sdk
+matrix = sdk.adapter.get("matrix")
+result = await matrix.Api.get_self_info()            # /account/whoami
+result = await matrix.Api.get_group_info(room_id)    # m.room.name
+result = await matrix.Api.get_group_list()           # /joined_rooms
+await matrix.Api.delete_message(event_id)            # redact (таблица регистрации дополняет room_id)
+```
+
+---
+
+### Поддерживаемые возможности платформ
+
+- **События**: сообщения (m.room.message: текст/изображение/файл/аудио/видео/ответ/редактирование), изменение участников (m.room.member), изменение названия комнаты и другие статусные события
+- **Сессии**: личные сообщения (автоматическое обнаружение комнат DM) / группы (комнаты); отправка поддерживает Text/Image/File/Voice/Video/Markdown/Raw_ob12
+- **API**: whoami/profile/joined_rooms/статус комнаты/список участников/leave/redact (см. выше DSL API)
 
 ## Поддерживаемые типы отправки сообщений
 

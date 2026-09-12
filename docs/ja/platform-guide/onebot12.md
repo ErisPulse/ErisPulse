@@ -6,8 +6,8 @@ OneBot12Adapter は、OneBot V12 プロトコルに基づいて構築された�
 
 ## ドキュメント情報
 
-- 対応モジュールバージョン: 4.0.0
-- メンテナー: ErisPulse
+- 対応モジュールバージョン: 4.3.0
+- メンテナ: ErisPulse
 - プロトコルバージョン: OneBot V12
 
 ## 基本情報
@@ -16,6 +16,66 @@ OneBot12Adapter は、OneBot V12 プロトコルに基づいて構築された�
 - アダプタ名: OneBot12Adapter
 - 対応するプロトコル/APIバージョン: OneBot V12
 - 多アカウント対応: 完全な多アカウントアーキテクチャを採用しており、複数のOneBot12アカウントを同時に設定・実行することができます。
+
+## v5 フレームワークの更新（4.3.0）
+
+このアダプタは v5 フレームワークに準拠しました（段階的なアップグレード、API は互換性があります）：
+
+- **BaseConverter 継承**：コンバーターの共通フィールド（id/time/platform/self/raw）は、フレームワークの build_base_event によって構築され、OB11 のフィールド名（echo/time/self_id）に従って上書きされます。
+- **spawn_background でのタスクの所有**：Client モードの接続タスクは、asyncio.spawn_background を使用し、タスクの所有者を明示的に指定し、シャットダウン時に自動的にリソースを回収します。
+- **フレームワークのソフト依存**：アダプタのインストール時に ErisPulse をハード依存として宣言しなくなりました。これにより、pip の解析時にフレームワークのバージョンが誤って調整されるのを回避します。実行時に ErisPulse >= 2.7.1 を検出し、バージョンが低すぎる場合はログで警告を出します。
+- **起動時のバージョンログ**：初期化時に OneBotAdapter v4.3.0 がロードされたことを出力します。
+
+既存の機能（4.2.0 以降でサポート）：複数アカウント、Api DSL の標準アクションマッピング（get_self_info→get_login_info など）、Request DSL（友人/グループリクエストの承認：event.approve() / event.reject()）、EventMixin、i18n。
+
+## 標準Apiアクション（Api DSL）
+
+OneBot12 バックエンドは、OB12の標準アクション名をすべてネイティブでサポートしています。Api DSL はデフォルトで call_api を直接透過的に委譲します（マッピングは不要です）：
+
+```python
+from ErisPulse import sdk
+ob12 = sdk.adapter.get("onebot12")
+
+result = await ob12.Api.get_self_info()
+result = await ob12.Api.get_friend_list()
+await ob12.Api.delete_message(message_id="MSG_ID")
+
+# アカウントを指定（複数アカウント）
+result = await ob12.Api.Using("main").get_self_info()
+
+# プラットフォーム拡張アクション
+result = await ob12.Api.call("extend_action", param=1)
+```
+
+> アクションのサポートは、バックエンドの実装（NapCat/Lagrange/LLOneBot など）に準じます。サポートされていないアクションは、バックエンドがエラーを返し透過的に転送します。
+
+## リクエスト操作（Request DSL）
+
+OneBot12 標準の handle_quick_request 動作に基づき、フレンドリクエストとグループ参加招待の承認/拒否を処理します。
+
+### Event 便利メソッド
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend_request(event):
+    if event.get("platform") != "onebot12":
+        return
+    comment = event.get("comment", "")
+    if comment == "passphrase":
+        await event.approve()      # 承認
+    else:
+        await event.reject()       # 拒否
+```
+
+### 手動による Request DSL 呼び出し
+
+```python
+await ob12.Request("request_flag").accept()
+await ob12.Request("request_flag").reject()
+await ob12.Request("request_flag").Using("main").accept()
+```
 
 ## 支持するメッセージ送信タイプ
 

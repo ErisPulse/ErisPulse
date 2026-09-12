@@ -1,3 +1,15 @@
+### Supported Platform Capabilities
+
+- **Inbound**: External systems POST to `callback_path` → converted to OneBot12 events (json/text segments are transparently passed through)
+- **Outbound**: Module `Send` → POST to `outgoing_url` (dual bridging)
+- **API**: Bridging identity information and runtime status (minimal set)
+
+## v5 Paradigm Update (4.2.0)
+
+- **Minimal API DSL**: `get_self_info`, `get_status`, `get_version`, `get_supported_actions`
+- **Framework Soft Dependency**: Runtime detection of ErisPulse>=2.7.1 with prompt; version log output on startup
+- Import path updated to Core.Bases
+
 # Platform Feature Description — Webhook Universal Bridge Adapter
 
 This document provides a detailed explanation of the bidirectional bridge protocol, field mapping, and implementation features of the Webhook adapter.

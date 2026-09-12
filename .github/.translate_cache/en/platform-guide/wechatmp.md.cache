@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "f8e2cf460b7f679bb574df13ce8e760b",
-  "file_hash": "f8e2cf460b7f679bb574df13ce8e760b",
-  "translated_at": "2026-09-07T11:49:44.665717",
+  "hash": "9422c5b2da437d7afcf63105595c778f",
+  "file_hash": "9422c5b2da437d7afcf63105595c778f",
+  "translated_at": "2026-09-12T10:22:50.864599",
   "target_lang": "en",
   "chunks": [
     {
@@ -12,6 +12,10 @@
     {
       "hash": "4f7ae8b760f8f5e1b905891b2753c320",
       "translation": "## Basic Information\n- Module Name: `ErisPulse-WechatMpAdapter`\n- Platform Identifier: `mp` (Alias: `wechat_mp`)\n- Module Version: 4.1.0\n- Maintainer: ErisPulse\n- Dependencies: `cryptography`"
+    },
+    {
+      "hash": "c3e718ebdaa0d944a6d5e231bfc3b6b4",
+      "translation": "## v5 Paradigm Update (4.2.0)\n\n- **BaseConverter Inheritance**: Common fields of converters are built by the framework's build_base_event\n- **Api DSL Minimal Set**: get_self_info (appid) / get_status / get_version / get_supported_actions\n- **Framework Soft Dependency**: Runtime detection of ErisPulse>=2.7.1 with prompt; version logs output on startup\n\n---\n\n### Platform Capabilities Already Integrated\n\n- **Receiving**: Official account callback messages and events such as follow/unfollow (plaintext/secure mode), signature verification\n- **Sending**: Customer service messages (Text/Image, etc., via Send DSL)\n- **API**: Account information (appid) and runtime status (minimal set)\n\n---"
     },
     {
       "hash": "5a31f4da1ab530aebcecf5636951aa52",

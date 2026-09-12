@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "b988c36ddff16f58ef8c09fd21c671b8",
-  "file_hash": "b988c36ddff16f58ef8c09fd21c671b8",
-  "translated_at": "2026-09-07T11:37:52.486951",
+  "hash": "581ad372f3548c98bdbc894300302fbf",
+  "file_hash": "581ad372f3548c98bdbc894300302fbf",
+  "translated_at": "2026-09-12T10:24:10.218649",
   "target_lang": "en",
   "chunks": [
     {
@@ -10,12 +10,16 @@
       "translation": "# Platform Features Document for Huafeng Coffeehouse (RockyChat)\n\nIdeauraAdapter is an adapter built on the RockyChat platform API, integrating all platform functionality modules and providing a unified interface for event handling and message operations.\n\n---"
     },
     {
-      "hash": "2d953250c4c9910f99d2572b3ea02038",
-      "translation": "## Documentation Information\n\n- Corresponding Module: ErisPulse-Ideaura\n- Corresponding Module Version: 4.0.1\n- Maintainer: ErisPulse"
+      "hash": "d7e638b601683aec3afc08ef61c8cfaa",
+      "translation": "## Documentation Information\n\n- Corresponding Module: ErisPulse-Ideaura\n- Corresponding Module Version: 4.1.0\n- Maintainer: ErisPulse"
     },
     {
       "hash": "ba7be8ca44b3a3db8900b4ac53a42094",
       "translation": "## Basic Information\n\n- Platform Introduction: Huafeng Coffee Shop (RockyChat) is an instant messaging platform.\n- Adapter Name: IdeauraAdapter\n- Multi-account Support: Supports configuring multiple accounts via Bot Token.\n- Chainable Modifier Support: Supports chainable modifier methods such as `.At()`, `.AtAll()`, `.Reply()`, `.Command()`, etc.\n- OneBot12 Compatibility: Supports sending OneBot12 formatted messages."
+    },
+    {
+      "hash": "98f80a2f5b7e9da9cee4c92424cdc540",
+      "translation": "## v5 Paradigm Update (4.1.0)\n\n- **BaseConverter Inheritance**: Common fields of converters are built by the framework's build_base_event\n- **spawn_background Task Ownership**: Account connection tasks are now using runtime.spawn_background\n- **Framework Soft Dependencies**: Runtime checks for ErisPulse>=2.7.1 and provides a warning; version logs are output on startup\n- Request DSL Postponed (Friend Request Approval API is pending platform support)\n\n---\n\n### Platforms Supported\n\n- **Events**: Message edit/withdraw/forward/read (ideaura_message_*), friend request, friend increase/decrease, online status (friend_online/offline)\n- **Sending**: Text / Image / Markdown / Raw_ob12 (with chainable Reply/At/AtAll modifiers)\n- **Not Supported**: Friend Request Approval API (not yet provided by the platform), Api DSL (REST API pending platform availability)"
     },
     {
       "hash": "8c46bdfd3a1bffee8e956d87d7b3aabe",

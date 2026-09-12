@@ -6,7 +6,7 @@ DiscordAdapter is an adapter built on the Discord Gateway (WebSocket) and REST A
 
 ## Documentation Information
 
-- Corresponding Module Version: 4.1.0
+- Corresponding Module Version: 4.2.0
 - Maintainer: ErisPulse
 - Discord API Version: v10
 
@@ -65,6 +65,45 @@ Default value `33281` = `GUILDS(1) | GUILD_MESSAGES(512) | MESSAGE_CONTENT(32768
 **API Environment:**
 - Discord REST API base URL: `https://discord.com/api/v10`
 - Gateway WebSocket URL: Dynamically retrieved via `GET /gateway/bot`, typically `wss://gateway.discord.gg/?v=10&encoding=json`
+
+## v5 Paradigm Update (4.2.0)
+
+This adapter has completed alignment with the v5 paradigm (incremental upgrade, API compatible):
+
+- **BaseConverter Inheritance**: Common fields of the converter are built by the framework `build_base_event`
+- **Api DSL**: Standard API action mapping (see below)
+- **Standard keyboard segment**: Converted to Discord components (action row + buttons); .Keyboard(rows) decorator accepts a generic structure
+- **Standard interaction callback fields**: The INTERACTION_CREATE event includes interaction_id / button_data
+- **spawn_background task ownership**: Connection tasks now use runtime.spawn_background
+- **Framework soft dependency**: Runtime detection of ErisPulse>=2.7.1 with prompts; version logs output on startup
+
+### Standard API Actions
+
+```python
+from ErisPulse import sdk
+discord = sdk.adapter.get("discord")
+
+result = await discord.Api.get_self_info()                # GET /users/@me
+result = await discord.Api.get_user_info(user_id)         # GET /users/{id}
+result = await discord.Api.get_guild_info(guild_id)       # GET /guilds/{id}
+result = await discord.Api.get_guild_list()               # GET /users/@me/guilds
+result = await discord.Api.get_channel_list(guild_id)     # GET /guilds/{id}/channels
+result = await discord.Api.get_guild_member_info(gid, uid)
+await discord.Api.delete_message(message_id)              # channel_id auto-completed in the registration table
+await discord.Api.leave_guild(guild_id)
+result = await discord.Api.Using("main").get_self_info()
+```
+
+### Buttons (keyboard / components)
+
+```python
+rows = [[{"label": "Click", "type": "callback", "data": "btn:1"},
+         {"label": "Website", "type": "link", "data": "https://example.com"}]]
+await discord.Send.To("channel", channel_id).Keyboard(rows).Text("Please Select")
+# Automatically converts components: callback → custom_id / link → url
+```
+
+---
 
 ## Supported Message Sending Types
 

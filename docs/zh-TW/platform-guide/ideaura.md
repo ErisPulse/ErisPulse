@@ -7,20 +7,37 @@ IdeauraAdapter 是基於花楓咖啡館（RockyChat）平台 API 建構的適配
 ## 文件資訊
 
 - 對應模組: ErisPulse-Ideaura
-- 對應模組版本: 4.0.1
+- 對應模組版本: 4.1.0
 - 維護者: ErisPulse
 
 ## 基本資訊
 
 - 平台簡介：花楓咖啡館（RockyChat）是一個即時通訊平台
 - 適配器名稱：IdeauraAdapter
-- 多帳號支援：支援透過 Bot Token 配置多個帳號
+- 多帳戶支援：支援透過 Bot Token 配置多個帳戶
 - 鏈式修飾支援：支援 `.At()`、`.AtAll()`、`.Reply()`、`.Command()` 等鏈式修飾方法
 - OneBot12 兼容：支援發送 OneBot12 格式訊息
 
-## 支援的訊息發送類型
+## v5 範式更新（4.1.0）
 
-所有發送方法均透過鏈式語法實現，例如：
+- **BaseConverter 繼承**：轉換器公共欄位由框架 build_base_event 建構
+- **spawn_background 任務歸屬**：帳戶連接任務改用 runtime.spawn_background
+- **框架軟依賴**：運行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌
+- Request DSL 暫緩（好友申請審批 API 待平台提供）
+
+---
+
+### 已對接平台能力
+
+- **事件**：消息編輯/撤回/轉發/已讀（ideaura_message_*）、好友申請（friend_request）、好友增刪（friend_increase/decrease）、在線狀態（friend_online/offline）
+- **發送**：Text / Image / Markdown / Raw_ob12（鏈式 Reply/At/AtAll 修飾）
+- **未對接**：好友申請審批 API（平台暫未提供）、Api DSL（平台 REST 面待開放後補充）
+
+---
+
+## 支援的消息傳送類型
+
+所有傳送方法均透過鏈式語法實現，例如：
 ```python
 from ErisPulse.Core import adapter
 ideaura = adapter.get("ideaura")
@@ -28,37 +45,37 @@ ideaura = adapter.get("ideaura")
 await ideaura.Send.To("group", "chatroom").Text("Hello World!")
 ```
 
-支援的發送類型包括：
-- `.Text(text: str)`：發送純文字訊息。
-- `.Image(file, filename: str = None)`：發送圖片訊息，支援 bytes/URL/本地路徑。
-- `.Video(file, filename: str = None)`：發送影片訊息，支援 bytes/URL/本地路徑。
-- `.File(file, filename: str = None)`：發送檔案訊息，支援 bytes/URL/本地路徑。
-- `.Voice(file, filename: str = None)`：發送語音訊息（作為檔案發送）。
-- `.Face(face_id: str)`：發送表情（以純文字形式發送 emoji）。
-- `.Markdown(text: str)`：發送 Markdown 格式訊息。
-- `.Html(html: str)`：發送 HTML 格式訊息。
+支援的傳送類型包括：
+- `.Text(text: str)`：傳送純文字訊息。
+- `.Image(file, filename: str = None)`：傳送圖片訊息，支援 bytes/URL/本地路徑。
+- `.Video(file, filename: str = None)`：傳送影片訊息，支援 bytes/URL/本地路徑。
+- `.File(file, filename: str = None)`：傳送檔案訊息，支援 bytes/URL/本地路徑。
+- `.Voice(file, filename: str = None)`：傳送語音訊息（以檔案形式傳送）。
+- `.Face(face_id: str)`：傳送表情（以純文字形式傳送 emoji）。
+- `.Markdown(text: str)`：傳送 Markdown 格式訊息。
+- `.Html(html: str)`：傳送 HTML 格式訊息。
 - `.Edit(message_id: str, text: str, content_type: str = "text")`：編輯已有訊息。
 - `.Recall(message_id: str)`：撤回訊息。
 
 ### 鏈式修飾方法（可組合使用）
 
-鏈式修飾方法返回 `self`，支援鏈式呼叫，必須在最終發送方法前呼叫：
+鏈式修飾方法返回 `self`，支援鏈式呼叫，必須在最終傳送方法前呼叫：
 
-- `.At(user_id: str, name: str = None)`：@指定用戶。
+- `.At(user_id: str, name: str = None)`：@指定使用者。
 - `.AtAll()`：@所有人。
 - `.Reply(message_id: str)`：回覆指定訊息。
-- `.Command(command_id: str)`：觸發 Bot 指令，配合發送方法使用（將訊息作為指定指令發送）。
+- `.Command(command_id: str)`：觸發 Bot 指令，配合傳送方法使用（將訊息作為指定指令傳送）。
 
-### 鏈式呼叫示例
+### 鏈式呼叫範例
 
 ```python
-# 基礎發送
+# 基礎傳送
 await ideaura.Send.To("user", user_id).Text("Hello")
 
 # 觸發 Bot 指令
 await ideaura.Send.To("group", "chatroom").Command("550e8400-e29b-41d4-a716-446655440000").Text("/weather 北京")
 
-# @用戶
+# @使用者
 await ideaura.Send.To("group", "chatroom").At("456").Text("@李四 你好")
 
 # @多人
@@ -77,18 +94,18 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).At("456").Text("回覆�
 # 發送到聊天室
 await ideaura.Send.To("group", "chatroom").Text("聊天室訊息")
 
-# 發送到話題
-await ideaura.Send.To("group", "topic_id").Text("話題訊息")
+# 發送到主題
+await ideaura.Send.To("group", "topic_id").Text("主題訊息")
 
-# 發送私聊訊息
-await ideaura.Send.To("user", "user_id").Text("私聊訊息")
+# 發送私訊
+await ideaura.Send.To("user", "user_id").Text("私訊訊息")
 ```
 
 ### OneBot12 訊息支援
 
-適配器支援發送 OneBot12 格式的訊息，便於跨平台訊息相容：
+適配器支援傳送 OneBot12 格式的訊息，便於跨平台訊息相容：
 
-- `.Raw_ob12(message: List[Dict], **kwargs)`：發送 OneBot12 格式訊息。
+- `.Raw_ob12(message: List[Dict], **kwargs)`：傳送 OneBot12 格式訊息。
 
 ```python
 # 發送 OneBot12 格式訊息
@@ -102,17 +119,17 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
 
 ## 發送方法返回值
 
-所有發送方法均返回一個 Task 對象，可直接 await 獲取發送結果。返回結果遵循 ErisPulse 適配器標準化返回規範：
+所有發送方法均返回一個 Task 對象，可以直接 await 獲取發送結果。返回結果遵循 ErisPulse 适配器标准化返回规范：
 
 ```python
 {
     "status": "ok",           // 執行狀態
     "retcode": 0,             // 返回碼
-    "data": {...},            // 回應資料
-    "self": {...},            // 自身資訊（包含 user_id）
-    "message_id": "123456",   // 訊息ID
-    "message": "",            // 錯誤資訊
-    "ideaura_raw": {...}      // 原始回應資料
+    "data": {...},            // 响应数据
+    "self": {...},            // 自身信息（包含 user_id）
+    "message_id": "123456",   // 消息ID
+    "message": "",            // 錯誤信息
+    "ideaura_raw": {...}      // 原始響應數據
 }
 ```
 
@@ -123,32 +140,32 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
 ### 核心差異點
 
 1. 特有事件類型：
-    - 訊息編輯：ideaura_message_edit
-    - 訊息撤回：ideaura_message_recall
-    - 訊息轉發：ideaura_message_forward
-    - 訊息已讀：ideaura_message_read
+    - 消息編輯：ideaura_message_edit
+    - 消息撤回：ideaura_message_recall
+    - 消息轉發：ideaura_message_forward
+    - 消息已讀：ideaura_message_read
     - 好友被拒：ideaura_friend_rejected
     - 好友上線：ideaura_friend_online
     - 好友下線：ideaura_friend_offline
     - 用戶狀態變更：ideaura_user_status_change
-    - 轉發訊息段：ideaura_forwarded
+    - 轉發消息段：ideaura_forwarded
     - 編輯標記段：ideaura_edited
-    - Markdown訊息段：ideaura_markdown
-    - HTML訊息段：ideaura_html
-    - Bot指令訊息段：ideaura_command
-2. 擴展欄位：
-    - 所有特有欄位均以 `ideaura_` 前綴標示
-    - 保留原始資料在 `ideaura_raw` 欄位
+    - Markdown消息段：ideaura_markdown
+    - HTML消息段：ideaura_html
+    - Bot指令消息段：ideaura_command
+2. 擴展字段：
+    - 所有特有字段均以 `ideaura_` 前綴標識
+    - 保留原始數據在 `ideaura_raw` 字段
     - `self.user_id` 表示當前帳戶的用戶ID
 
-### 訊息編輯事件
+### 消息編輯事件
 
 ```python
 {
   "type": "notice",
   "detail_type": "ideaura_message_edit",
   "platform": "ideaura",
-  "message_id": "訊息ID",
+  "message_id": "消息ID",
   "user_id": "編輯者ID",
   "ideaura_new_content": "編輯後的內容",
   "ideaura_updated_message": { ... },
@@ -156,14 +173,14 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
 }
 ```
 
-### 訊息撤回事件
+### 消息撤回事件
 
 ```python
 {
   "type": "notice",
   "detail_type": "ideaura_message_recall",
   "platform": "ideaura",
-  "message_id": "被撤回的訊息ID",
+  "message_id": "被撤回的消息ID",
   "user_id": "撤回者ID",
   "group_id": "chatroom",
   "ideaura_source_type": "chatroom",
@@ -172,29 +189,29 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
 }
 ```
 
-### 訊息轉發事件
+### 消息轉發事件
 
 ```python
 {
   "type": "notice",
   "detail_type": "ideaura_message_forward",
   "platform": "ideaura",
-  "message_id": "原始訊息ID",
+  "message_id": "原始消息ID",
   "user_id": "轉發者ID",
   "ideaura_forward_to": "目標話題ID",
-  "ideaura_original_message_id": "原始訊息ID",
-  "ideaura_forwarded_message_id": "轉發後的新訊息ID"
+  "ideaura_original_message_id": "原始消息ID",
+  "ideaura_forwarded_message_id": "轉發後的新消息ID"
 }
 ```
 
-### 訊息已讀事件
+### 消息已讀事件
 
 ```python
 {
   "type": "notice",
   "detail_type": "ideaura_message_read",
   "platform": "ideaura",
-  "message_id": "訊息ID",
+  "message_id": "消息ID",
   "ideaura_reader_id": "已讀者ID",
   "ideaura_reader_name": "已讀者暱稱"
 }
@@ -249,7 +266,7 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
   "user_id": "請求者ID",
   "user_nickname": "請求者暱稱",
   "ideaura_request_id": "請求ID",
-  "ideaura_message": "驗證訊息"
+  "ideaura_message": "驗證消息"
 }
 ```
 
@@ -268,9 +285,9 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
 }
 ```
 
-### 轉發訊息段 (ideaura_forwarded)
+### 轉發消息段 (ideaura_forwarded)
 
-當收到轉發訊息時，訊息段類型為 `ideaura_forwarded`：
+當收到轉發消息時，消息段類型為 `ideaura_forwarded`：
 
 ```json
 {
@@ -282,14 +299,14 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
 }
 ```
 
-| 欄位 | 類型 | 說明 |
+| 字段 | 類型 | 說明 |
 |------|------|------|
-| `forward_source_id` | string | 轉發源訊息ID |
-| `original_message_id` | string | 原始訊息ID |
+| `forward_source_id` | string | 轉發源消息ID |
+| `original_message_id` | string | 原始消息ID |
 
-### Bot 指令訊息段 (ideaura_command)
+### Bot 指令消息段 (ideaura_command)
 
-當使用者觸發 Bot 指令時，訊息段類型為 `ideaura_command`：
+當用戶觸發 Bot 指令時，消息段類型為 `ideaura_command`：
 
 ```json
 {
@@ -300,7 +317,7 @@ await ideaura.Send.To("group", "chatroom").Reply(msg_id).Raw_ob12(ob12_msg)
 }
 ```
 
-| 欄位 | 類型 | 說明 |
+| 字段 | 類型 | 說明 |
 |------|------|------|
 | `command_id` | string | 指令 UUID |
 
@@ -312,11 +329,11 @@ from ErisPulse.Core.Event import notice, message
 @message.on_message()
 async def handle_message(event):
     if event.get_platform() == "ideaura":
-        # 處理訊息事件
+        # 處理消息事件
         for segment in event.get("message", []):
             if segment.get("type") == "ideaura_forwarded":
                 data = segment["data"]
-                print(f"轉發訊息，源ID: {data['forward_source_id']}")
+                print(f"轉發消息，源ID: {data['forward_source_id']}")
 
 @notice.on_notice()
 async def handle_notice(event):
@@ -327,11 +344,11 @@ async def handle_notice(event):
 
     if detail_type == "ideaura_message_edit":
         new_content = event.get("ideaura_new_content", "")
-        print(f"訊息被編輯: {new_content}")
+        print(f"消息被編輯: {new_content}")
 
     elif detail_type == "ideaura_message_recall":
         message_id = event.get("message_id")
-        print(f"訊息被撤回: {message_id}")
+        print(f"消息被撤回: {message_id}")
 
     elif detail_type == "ideaura_friend_online":
         friend_name = event.get_user_nickname()
@@ -342,23 +359,23 @@ async def handle_notice(event):
         print(f"用戶狀態變更: {status}")
 ```
 
-## Event Mixin 擴展方法
+## Event Mixin 扩展方法
 
 適配器註冊了以下平台專有方法，僅在 `platform == "ideaura"` 時可用：
 
 | 方法 | 回傳類型 | 說明 |
 |------|----------|------|
-| `get_source_type()` | `str` | 訊息來源類型（`chatroom`/`topic`/`private`） |
+| `get_source_type()` | `str` | 消息來源類型（`chatroom`/`topic`/`private`） |
 | `get_sender_name()` | `str` | 發送者暱稱 |
 | `get_sender_avatar()` | `str` | 發送者頭像 URL |
 | `is_sender_bot()` | `bool` | 發送者是否為機器人 |
 | `is_receiver_bot()` | `bool` | 接收者是否為機器人 |
 | `get_command_id()` | `str` | 觸發的 Bot 指令 ID（若有，`ideaura_command_id`） |
 | `get_command()` | `str` | `get_command_id()` 的別名 |
-| `get_topic_name()` | `str` | 話題名稱 |
-| `get_message_type()` | `str` | 訊息類型（normal/edited/forwarded/quoted） |
-| `get_message_subtype()` | `str` | 訊息子類型（text/image/video/file/markdown/html） |
-| `is_self_message()` | `bool` | 是否為自己發送的訊息 |
+| `get_topic_name()` | `str` | 主題名稱 |
+| `get_message_type()` | `str` | 消息類型（normal/edited/forwarded/quoted） |
+| `get_message_subtype()` | `str` | 消息子類型（text/image/video/file/markdown/html） |
+| `is_self_message()` | `bool` | 是否為自己發送的消息 |
 
 ```python
 from ErisPulse.Core.Event import message
@@ -380,10 +397,10 @@ async def handle_message(event):
 
 ### 配置說明
 
-IdeauraAdapter 支援同時配置和運行多個帳戶，使用 **Bot Token** 認證。
+IdeauraAdapter 支援同時配置和運行多個帳戶，使用 **Bot Token** 進行認證。
 
 > [!WARNING]
-> 4.0.1 起**移除電子信箱密碼登入**，僅支援 Bot Token。Bot Token 需前往 [MSCPO 開放平台](https://open.mscpo.com/rockychat/bots) 取得（以 `bot-token-` 開頭）。
+> 從 4.0.1 版本起**移除電郵密碼登入**，僅支援 Bot Token。Bot Token 需前往 [MSCPO 開放平台](https://open.mscpo.com/rockychat/bots) 取得（以 `bot-token-` 開頭）。
 
 ```toml
 # config.toml
@@ -445,12 +462,10 @@ async def handle_message(event):
         print(f"訊息來自帳戶: {account_id}")
 ```
 
----
-
 ## 擴展欄位說明
 
-- 所有特有欄位均以 `ideaura_` 前綴標示，避免與標準欄位衝突
-- 保留原始資料在 `ideaura_raw` 欄位，便於存取平台的完整原始資料
+- 所有特有欄位均以 `ideaura_` 前綴標識，避免與標準欄位衝突
+- 保留原始數據在 `ideaura_raw` 欄位，便於訪問平台的完整原始數據
 - `self.user_id` 表示當前登入帳戶的用戶ID
 - `ideaura_source_type`：訊息來源類型（`chatroom`/`topic`/`private`）
 - `ideaura_sender_name`：發送者暱稱
@@ -461,34 +476,32 @@ async def handle_message(event):
 - `ideaura_message_type`：訊息類型（normal/edited/forwarded/quoted）
 - `ideaura_message_subtype`：訊息子類型（text/image/video/file/markdown/html）
 
-### 檔案處理特性
+### 文件處理特性
 
-- 檔案大小限制：10MB（下載和本地讀取均有限制）
-- 自動檔案類型檢測：透過檔案頭魔法字節檢測實際類型
-- 智能檔案名解析：對 `.bin`/`.dat`/`.tmp` 等無意義擴展名自動修正
-- 支援 bytes、URL、本地路徑三種檔案輸入方式
-- URL 檔案自動下載並上傳到伺服器
+- 文件大小限制：10MB（下載和本地讀取均有限制）
+- 自動文件類型檢測：透過文件頭魔術字節檢測實際類型
+- 智能文件名解析：對 `.bin`/`.dat`/`.tmp` 等無意義擴展名自動修正
+- 支援 bytes、URL、本地路徑三種文件輸入方式
+- URL 文件自動下載並上傳到伺服器
 
-### 支援的檔案類型
+### 支援的文件類型
 
-透過魔法字節自動檢測：
+透過魔術字節自動檢測：
 
 | 類型 | 擴展名 |
 |------|--------|
 | 圖片 | png, jpg, gif, webp |
-| 影片 | mp4, avi, flv |
-| 音訊 | mp3, wav, ogg |
+| 視頻 | mp4, avi, flv |
+| 音頻 | mp3, wav, ogg |
 | 文件 | pdf, docx |
-
----
 
 ## 注意事項
 
-1. API 伺服器預設位址為 `https://api.mscpo.com/api/rockychat`（可透過 `base_url` 自訂）；WebSocket 位址 `wss://api-cofe.allons-y.uk:3009/mqtt` 為平台固有位址，不隨適配器名稱變化
-2. 適配器使用 WebSocket 長連線接收事件，支援自動重連（固定5秒延遲）
-3. 自身發送的訊息（`isSelf: true`）會被自動過濾，不會產生事件
+1. API 伺服器預設位址為 `https://api.mscpo.com/api/rockychat`（可透過 `base_url` 自訂）；WebSocket 位址 `wss://api-cofe.allons-y.uk:3009/mqtt` 為平台固有位址，不隨適配器名稱變更
+2. 適配器使用 WebSocket 長連線接收事件，支援自動重連（固定 5 秒延遲）
+3. 自身發送的消息（`isSelf: true`）會被自動過濾，不會產生事件
 4. @全體（`AtAll()`）需要管理員權限
 5. 檔案上傳大小限制為 10MB
 6. 音訊檔案作為 `file` 子類型發送（平台不區分獨立音訊類型）
 7. 表情（`Face()`）以純文字形式發送 emoji
-8. 程式退出時請呼叫 `shutdown()` 確保資源釋放
+8. 程式退出時請調用 `shutdown()` 確保資源釋放

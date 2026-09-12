@@ -4,9 +4,9 @@ YunhuAdapter is an adapter built based on the Yunhu protocol, integrating all Yu
 
 ---
 
-## Document Information
+## Documentation Information
 
-- Corresponding Module Version: 4.3.0
+- Corresponding Module Version: 4.4.0
 - Maintainer: ErisPulse
 
 ## Basic Information
@@ -16,6 +16,46 @@ YunhuAdapter is an adapter built based on the Yunhu protocol, integrating all Yu
 - Multi-account Support: Supports identifying and configuring multiple Yunhu bot accounts via `bot_id`.
 - Chained Modifier Support: Supports chained modifier methods such as `.Reply()`.
 - OneBot12 Compatibility: Supports sending messages in the OneBot12 format.
+
+## v5 Paradigm Update (4.4.0)
+
+This adapter has completed alignment with the v5 paradigm (incremental upgrade, API compatible):
+
+- **Official Server API Suite** (Api DSL extension methods): Edit message, batch send, message list, user/global dashboard, mute group members, remove group members, group message type control, group tag CRUD, user tagging
+- **Standard keyboard segment** (cross-platform interaction component standard): {"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}} segment automatically converted to Yunhu buttons; .Buttons(rows) / .Keyboard(rows) decorators accept generic structure (native structure is backward compatible)
+- **Standard interaction callback fields**: Button click/A2UI events include standard fields interaction_id / button_data
+- **spawn_background task ownership**: WS connection tasks now use runtime.spawn_background
+- **Framework soft dependencies**: Runtime detection of ErisPulse>=2.7.1 with prompts; version logs output on startup
+
+### Platform Extension Actions (call / Api Methods)
+
+```python
+from ErisPulse import sdk
+yunhu = sdk.adapter.get("yunhu")
+
+# Api Methods (Official Server API)
+await yunhu.Api.edit_message(msg_id, recv_id, "group", "text", {"text": "New Content"})
+await yunhu.Api.batch_send(["userId1", "userId2"], "text", {"text": "Announcement"})
+await yunhu.Api.get_message_list(group_id, "group", before=10)
+await yunhu.Api.set_user_board(chat_id, "group", "Dashboard Content", expire_time=3600)
+await yunhu.Api.dismiss_global_board()
+await yunhu.Api.gag_group_member(group_id, user_id, 600)      # Mute for 600 seconds, 0 = unmute
+await yunhu.Api.remove_group_member(group_id, user_id)
+await yunhu.Api.set_group_msg_type_limit(group_id, "text,image")
+await yunhu.Api.create_group_tag(group_id, "VIP", color="#FF5733")
+await yunhu.Api.add_user_tag(group_id, user_id, "VIP")
+
+# Button Click Callback (Standard Fields)
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_button(event):
+    if event.get("platform") == "yunhu" and event.get("button_data"):
+        data = event["button_data"]     # Cross-platform unified field access
+        interaction_id = event["interaction_id"]
+```
+
+> Complete standard documentation available at [Cross-Platform Interaction Component Standard](../../standards/standardization-guide.md).
 
 ## Supported Message Sending Types
 

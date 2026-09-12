@@ -7,7 +7,7 @@ IdeauraAdapter is an adapter built on the RockyChat platform API, integrating al
 ## Documentation Information
 
 - Corresponding Module: ErisPulse-Ideaura
-- Corresponding Module Version: 4.0.1
+- Corresponding Module Version: 4.1.0
 - Maintainer: ErisPulse
 
 ## Basic Information
@@ -17,6 +17,21 @@ IdeauraAdapter is an adapter built on the RockyChat platform API, integrating al
 - Multi-account Support: Supports configuring multiple accounts via Bot Token.
 - Chainable Modifier Support: Supports chainable modifier methods such as `.At()`, `.AtAll()`, `.Reply()`, `.Command()`, etc.
 - OneBot12 Compatibility: Supports sending OneBot12 formatted messages.
+
+## v5 Paradigm Update (4.1.0)
+
+- **BaseConverter Inheritance**: Common fields of converters are built by the framework's build_base_event
+- **spawn_background Task Ownership**: Account connection tasks are now using runtime.spawn_background
+- **Framework Soft Dependencies**: Runtime checks for ErisPulse>=2.7.1 and provides a warning; version logs are output on startup
+- Request DSL Postponed (Friend Request Approval API is pending platform support)
+
+---
+
+### Platforms Supported
+
+- **Events**: Message edit/withdraw/forward/read (ideaura_message_*), friend request, friend increase/decrease, online status (friend_online/offline)
+- **Sending**: Text / Image / Markdown / Raw_ob12 (with chainable Reply/At/AtAll modifiers)
+- **Not Supported**: Friend Request Approval API (not yet provided by the platform), Api DSL (REST API pending platform availability)
 
 ## Supported Message Sending Types
 

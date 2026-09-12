@@ -1,321 +1,197 @@
-# QQBot平台特性文件
+# QQBot 平台特性文件
 
-QQBotAdapter 是基於 QQBot（QQ機器人文件）協議建構的適配器，整合了 QQBot 所有功能模組，提供統一的事件處理和訊息操作介面。
+QQBotAdapter 是基於 QQ 官方機器人（QQ OpenAPI）協定建構的適配器，整合群聊、私聊、頻道等全場景功能，提供 OneBot12 標準事件、標準 API 動作與請求操作介面。
 
 ---
 
 ## 文件資訊
 
-- 對應模組版本: 1.0.0
+- 對應模組版本: 5.0.0
 - 維護者: ErisPulse
 
 ## 基本資訊
 
-- 平台簡介：QQBot 是 QQ 官方提供的機器人的開發介面，支援群聊、私聊、頻道等多種場景
-- 适配器名称：QQBotAdapter
-- 連接方式：WebSocket 長連接（透過 QQBot 網關）
-- 認證方式：基於 appId + clientSecret 獲取 access_token
-- 鏈式修飾支援：支援 `.Reply()`、`.At()`、`.AtAll()`、`.Keyboard()` 等鏈式修飾方法
-- OneBot12 兼容：支援發送 OneBot12 格式訊息
+- 平台簡介：QQ官方機器人開發介面，支援群聊、私聊、頻道等多種場景
+- 適配器名稱：QQBotAdapter
+- 連接方式：**WebSocket 長連線**（預設）或 **Webhook HTTP 回調**（依帳戶設定，Ed25519 驗簽）
+- 認證方式：appId + clientSecret 取得 access_token（7200秒，提前45秒自動刷新）
+- API根地址：`https://api.bot.qq.com`（v5 起官方統一域名，sandbox 已廢棄）
+- OneBot12相容：訊息收發、事件、**標準Api動作**、**請求操作**全面覆蓋
+- 多帳戶：支援，`accounts` 下任意帳戶並行（可混合 websocket/webhook 模式）
 
 ## 配置說明
 
 ```toml
 # config.toml
 [QQBot_Adapter]
-appid = "YOUR_APPID"          # QQ機器人應用ID（必填）
-secret = "YOUR_CLIENT_SECRET"  # QQ機器人客戶端密鑰（必填）
-sandbox = false                 # 是否使用沙盒環境（可選，預設為false）
-intents = [1, 30, 25]          # 訂閱的事件 intents 位（可選）
-gateway_url = "wss://api.sgroup.qq.com/websocket/"  # 自訂網關位址（可選）
+intents = "[0, 9, 12, 25, 26, 27]"   # 全局：訂閱的事件 intents（JSON數組，支援事件名）
+
+[QQBot_Adapter.accounts.default]
+appid = "YOUR_APPID"                 # QQ機器人應用ID（必填）
+secret = "YOUR_CLIENT_SECRET"        # QQ機器人客戶端密鑰（必填）
+mode = "websocket"                   # 事件接收方式：websocket / webhook
+bot_id = ""                          # 機器人ID（留空自動獲取；可手動填寫用於 Using() 定位）
+gateway_url = ""                     # WebSocket網關地址（留空通過 /gateway/bot 動態獲取）
+api_base_url = "https://api.bot.qq.com"  # API根地址（可自定義用於代理）
+webhook_path = "/webhook"            # Webhook回調路徑（mode=webhook 時生效）
+enabled = true
 ```
 
-**配置項說明：**
-- `appid`：QQ機器人的應用ID（必填），從QQ開放平台獲取
-- `secret`：QQ機器人的客戶端密鑰（必填），從QQ開放平台獲取
-- `sandbox`：是否使用沙盒環境，沙盒環境API位址為 `https://sandbox.api.sgroup.qq.com`
-- `intents`：事件訂閱 intents 列表，每個值會被左移位後按位或運算
-  - `1`：頻道相關事件
-  - `25`：頻道訊息事件
-  - `30`：群@訊息事件
-- `gateway_url`：WebSocket 網關位址，預設為 `wss://api.sgroup.qq.com/websocket/`
+**v5 破壞性變更：**
+- 官方統一使用 `api.bot.qq.com`，`sandbox` 配置廢棄（舊配置自動遷移並忽略）
+- 舊版扁平配置（`[QQBot_Adapter]` 下直接寫 appid/secret）自動遷移到 `accounts.default`
+- 框架為**軟依賴**：安裝適配器不會拉取框架版本；運行時檢測 `ErisPulse>=2.7.1` 並提示
 
-**API環境：**
-- 正式環境：`https://api.sgroup.qq.com`
-- 沙盒環境：`https://sandbox.api.sgroup.qq.com`
+**intents 說明（支援位序號或事件名）：**
 
-## 支援的消息發送類型
+| 位 | 事件名 | 說明 |
+|----|--------|------|
+| 0 | GUILDS | 頻道變更 |
+| 1 | GUILD_MEMBERS | 頻道成員變更 |
+| 9 | GUILD_MESSAGES | 頻道消息（私域） |
+| 12 | DIRECT_MESSAGE | 頻道私信 |
+| 24 | GROUP_MEMBER | 群成員變更（v5新增） |
+| 25 | GROUP_AND_C2C_EVENT | 群@消息與私聊消息 |
+| 26 | INTERACTION | 交互事件（按鈕等） |
+| 27 | MESSAGE_AUDIT | 消息審核事件 |
+| 30 | PUBLIC_GUILD_MESSAGES | 頻道消息（公域） |
 
-所有發送方法均透過鏈式語法實現，例如：
+## 消息發送
+
+### 基礎發送
+
 ```python
-from ErisPulse.Core import adapter
-qqbot = adapter.get("qqbot")
+from ErisPulse import sdk
+qqbot = sdk.adapter.get("qqbot")
 
 await qqbot.Send.To("user", user_openid).Text("Hello World!")
+
+# 群聊@消息（自動使用 <qqbot-at-user id="x" /> 格式）
+await qqbot.Send.To("group", group_openid).At("member_openid").Text("@你")
+
+# 頻道消息（@ 自動使用 <@user_id> 格式）
+await qqbot.Send.To("channel", channel_id).Text("頻道消息")
+
+# 被動回覆（自動攜帶 msg_id，無需手動 Reply）
+await qqbot.Send.To("group", group_openid).Reply(msg_id).Text("回覆內容")
+
+# 富媒體（URL / 本地路徑 / 二進制；超過5MB自動分片上傳）
+await qqbot.Send.To("group", gid).Image("https://example.com/img.png")
+
+# Markdown（原生 / 模板）
+await qqbot.Send.To("group", gid).Markdown("# 標題\n- 列表")
+await qqbot.Send.To("user", uid).Markdown(template_id=1, kv=[{"key": "title", "value": "通知"}])
+
+# 鍵盤（自動置為 markdown 類型並附帶 bot_appid）
+await qqbot.Send.To("group", gid).Keyboard(keyboard).Text("請選擇")
+
+# 流式消息（單聊）
+await qqbot.Send.To("user", openid).Stream("回答內容")
+
+# 多賬戶
+await qqbot.Send.Using("account2").To("group", gid).Text("來自第二個機器人")
 ```
 
-支援的發送類型包括：
-- `.Text(text: str)`：發送純文字訊息。
-- `.Image(file: bytes | str)`：發送圖片訊息，支援檔案路徑、URL、二進位數據。
-- `.Markdown(content: str)`：發送 Markdown 格式訊息。
-- `.Ark(template_id: int, kv: list)`：發送 Ark 模板訊息。
-- `.Embed(embed_data: dict)`：發送 Embed 訊息。
-- `.Raw_ob12(message: List[Dict], **kwargs)`：發送 OneBot12 格式訊息。
-
-### 鏈式修飾方法（可組合使用）
-
-鏈式修飾方法返回 `self`，支援鏈式呼叫，必須在最終發送方法前呼叫：
-
-- `.Reply(message_id: str)`：回覆指定訊息。
-- `.At(user_id: str)`：@指定使用者（以 `<@user_id>` 格式插入內容）。
-- `.AtAll()`：@所有人（插入 `@所有人` 文本）。
-- `.Keyboard(keyboard: dict)`：新增鍵盤按鈕。
-
-### 鏈式呼叫示例
+## OneBot12 標準 API 動作
 
 ```python
-# 基礎發送
-await qqbot.Send.To("user", user_openid).Text("Hello")
-
-# 回覆訊息
-await qqbot.Send.To("group", group_openid).Reply(msg_id).Text("回覆訊息")
-
-# 回覆 + 按鈕
-await qqbot.Send.To("group", group_openid).Reply(msg_id).Keyboard(keyboard).Text("帶回覆和鍵盤的訊息")
-
-# @使用者
-await qqbot.Send.To("group", group_openid).At("member_openid").Text("你好")
-
-# 組合使用
-await qqbot.Send.To("group", group_openid).Reply(msg_id).At("member_openid").Keyboard(keyboard).Text("複合訊息")
+result = await qqbot.Api.get_self_info()                     # 机器人信息
+result = await qqbot.Api.get_group_info(group_openid)        # 群信息
+result = await qqbot.Api.get_group_member_list(group_openid) # 群成员列表（自動分頁）
+result = await qqbot.Api.get_guild_list()                    # 頻道列表
+result = await qqbot.Api.get_channel_list(guild_id)          # 子頻道列表
+await qqbot.Api.delete_message(message_id)                   # 撤回（自動按訊息來源路由端點）
+result = await qqbot.Api.get_status()                        # 多帳戶運行狀態
+result = await qqbot.Api.Using("account2").get_self_info()   # 指定帳戶
 ```
 
-### OneBot12 訊息支援
+支援的標準動作：`get_self_info` / `get_group_info` / `get_group_member_info` / `get_group_member_list` / `get_guild_info` / `get_guild_list` / `get_guild_member_info` / `get_guild_member_list` / `get_channel_info` / `get_channel_list` / `set_channel_name` / `leave_channel` / `delete_message` / `get_status` / `get_version` / `get_supported_actions`。不支援的動作返回 `retcode=10002`。
 
-適配器支援發送 OneBot12 格式的訊息，便於跨平台訊息相容：
+## 請求操作（入群申請審批）
+
+`GROUP_JOIN_REQUEST` 事件轉換為 OneBot12 `request` 事件，支援標準化審批：
 
 ```python
-# 發送 OneBot12 格式訊息
-ob12_msg = [{"type": "text", "data": {"text": "Hello"}}]
-await qqbot.Send.To("user", user_openid).Raw_ob12(ob12_msg)
+from ErisPulse.Core.Event import request as request_event
 
-# 配合鏈式修飾
-ob12_msg = [{"type": "text", "data": {"text": "回覆訊息"}}]
-await qqbot.Send.To("group", group_openid).Reply(msg_id).Raw_ob12(ob12_msg)
+@request_event.on_request()
+async def handle_join(event):
+    if event.get("platform") == "qqbot":
+        await event.approve()                  # 同意
+        # await event.reject(comment="理由")   # 拒絕
 ```
 
-## 發送方法返回值
+`request_id` = 官方 `join_request_id`，適配器自動快取申請上下文並路由到 `POST /v2/groups/{group_openid}/approval_join_request/{member_openid}`。
 
-所有發送方法均返回一個 Task 對象，可以直接 await 獲取發送結果。返回結果遵循 ErisPulse 适配器标准化返回规范：
+## @機器人檢測機制（重要）
 
-```python
-{
-    "status": "ok",           // 執行狀態: "ok" 或 "failed"
-    "retcode": 0,             // 返回碼
-    "data": {...},            // 响应数据
-    "message_id": "123456",   // 消息ID
-    "message": "",            // 錯誤信息
-    "qqbot_raw": {...}        // 原始响应数据
-}
-```
+QQ官方的「被@」事實由事件名承載，且群消息 @ 標記為 `<@{群空間openid}>`（與 READY 返回的 bot_id **不在同一 id 体系**）。適配器自動處理：
 
-### 錯誤碼說明
+1. **標記解析**：`<@openid>` 與 `<qqbot-at-user>` 兩種風格均解析為 mention 段（文本中無殘留）
+2. **名稱歸一化**：`/users/@me` 返回的機器人名與 mentions 數組暱稱一致時，認定為@機器人，mention 段歸一化為 bot_id（原始 openid 保留在 `data.qqbot_openid`）
+3. **openid 學習**：自動學習機器人在各群的 openid，用於「接收全部群消息」模式下的@識別
+4. **注入保證**：`GROUP_AT_MESSAGE_CREATE` / `AT_MESSAGE_CREATE` 保證存在機器人 mention 段
+
+因此 `on_at_message()` / `event.is_at_message()` 在 qqbot 平台可直接使用。開啟「接收全部群消息」權限後，@消息以 `GROUP_MESSAGE_CREATE` 推送（`GROUP_AT_MESSAGE_CREATE` 不再到達），適配器同樣能識別。
+
+## 平台原生API方法族
+
+適配器公開完整的QQ官方API（詳情請見適配器倉庫 platform-features.md）：
+
+- **機器人**：`get_me()`、`reply_interaction()`
+- **頻道**：`get_guilds/get_guild/mute_guild_all/roles管理/api_permission`
+- **子頻道**：`get_channels/get_channel/create_channel/update_channel/delete_channel/pins`
+- **頻道成員**：`get_guild_members/get_guild_member/mute/roles/kick`
+- **權限/表態/日程/帖子/音頻**：全套方法
+- **群管理**（部分接口僅限白名單機器人）：`get_group_members/get_group_bot_state/ blacklist/入群審批/禁言/審批策略`
+- **菜單面板**：`get_custom_menu/update_custom_menu/指令面板CRUD`
+- **富媒體**：`_upload_media`（URL/路徑/二進制，超過5MB自動分片）、`stream_message`（流式消息）
+
+## WebSocket / Webhook 連線
+
+### WebSocket 流程
+
+1. appId + clientSecret 取得 access_token（提前 45 秒自動刷新，失敗重試 3 次）
+2. 透過 `GET /gateway/bot` 動態取得網關位址（設定 `gateway_url` 時直接使用）
+3. OP_HELLO → Identify/Resume → READY（取得 session_id 與 bot_id）→ 心跳循環
+4. 斷線重連：最多 50 次，指數退避 `min(5 * 2^n, 300)` 秒；OP_RECONNECT 保留會話
+
+### Webhook 模式
+
+帳戶 `mode = "webhook"` 後透過 ErisPulse router 註冊 HTTP 路由：
+
+- Ed25519 驗簽（種子 = secret 循環填滿至 32 位元組），驗證 `X-Signature-Ed25519` 對 `X-Signature-Timestamp + body`
+- 自動處理 op=13 簽名驗證握手與 op=0 事件分發
+- 依賴 `cryptography` 庫（隨適配器安裝）
+
+## 錯誤碼說明
 
 | retcode | 說明 |
 |---------|------|
 | 0 | 成功 |
-| 10003 | 無法確定發送目標 |
-| 32000 | 請求超時 |
-| 33000 | API調用異常 |
-| 34000 | API返回了意外格式或業務錯誤 |
-
-## 特有事件類型
-
-需要 `platform=="qqbot"` 檢測再使用本平台特性
-
-### 核心差異點
-
-1. **openid體系**：QQBot 使用 openid 而非 QQ號，使用者和群的標識均為 openid 字串
-2. **群消息必須@**：群內消息僅在使用者 @ 機器人時才會收到（`GROUP_AT_MESSAGE_CREATE`）
-3. **頻道系統**：QQBot 支援頻道（Guild）和子頻道（Channel）的消息和事件
-4. **消息審核**：發送的消息可能需要經過審核，透過 `qqbot_audit_pass`/`qqbot_audit_reject` 事件通知結果
-5. **被動回覆**：群消息和私聊消息支援被動回覆機制，需要在發送時攜帶 `msg_id`
-
-### 擴展欄位
-
-- 所有特有欄位均以 `qqbot_` 前綴標識
-- 保留原始資料在 `qqbot_raw` 欄位
-- `qqbot_raw_type` 標識原始QQBot事件類型（如 `C2C_MESSAGE_CREATE`）
-- 附件資料透過 `qqbot_attachment` 欄位保存原始附件資訊
-
-### 特殊欄位示例
-
-```python
-# 群@消息
-{
-  "type": "message",
-  "detail_type": "group",
-  "user_id": "MEMBER_OPENID",
-  "group_id": "GROUP_OPENID",
-  "qqbot_group_openid": "GROUP_OPENID",
-  "qqbot_member_openid": "MEMBER_OPENID",
-  "qqbot_event_id": "消息事件ID",
-  "qqbot_reply_token": "回覆token"
-}
-
-# 私聊消息
-{
-  "type": "message",
-  "detail_type": "private",
-  "user_id": "USER_OPENID",
-  "qqbot_openid": "USER_OPENID",
-  "qqbot_event_id": "消息事件ID",
-  "qqbot_reply_token": "回覆token"
-}
-
-# 交互事件
-{
-  "type": "notice",
-  "detail_type": "qqbot_interaction",
-  "qqbot_interaction_id": "交互ID",
-  "qqbot_interaction_type": "交互類型",
-  "qqbot_interaction_data": {
-    "...": "交互資料"
-  }
-}
-
-# 消息審核
-{
-  "type": "notice",
-  "detail_type": "qqbot_audit_pass",
-  "qqbot_audit_id": "審核ID",
-  "qqbot_message_id": "消息ID"
-}
-
-# 消息刪除
-{
-  "type": "notice",
-  "detail_type": "qqbot_message_delete",
-  "message_id": "被刪除的消息ID",
-  "operator_id": "操作者ID"
-}
-
-# 表情回應
-{
-  "type": "notice",
-  "detail_type": "qqbot_reaction_add",
-  "qqbot_raw": {
-    "...": "原始資料"
-  }
-}
-```
-
-### 頻道消息段
-
-頻道消息支援 `mentions` 欄位，轉換後以 `mention` 消息段表示：
-
-```json
-{
-  "type": "mention",
-  "data": {
-    "user_id": "被@使用者ID",
-    "user_name": "被@使用者暱稱"
-  }
-}
-```
-
-### 附件消息段
-
-QQBot 的附件根據 `content_type` 自動轉換為對應消息段：
-
-| content_type 前綴 | 轉換類型 | 說明 |
-|---|---|---|
-| `image` | `image` | 圖片消息 |
-| `video` | `video` | 影片消息 |
-| `audio` | `voice` | 語音消息 |
-| 其他 | `file` | 檔案消息 |
-
-附件消息段結構：
-```json
-{
-  "type": "image",
-  "data": {
-    "url": "附件URL",
-    "qqbot_attachment": {
-      "content_type": "image/png",
-      "url": "原始附件URL"
-    }
-  }
-}
-```
-
-## WebSocket 連接
-
-### 連接流程
-
-1. 使用 `appId` + `clientSecret` 獲取 `access_token`
-2. 連接到 WebSocket 網關
-3. 收到 `OP_HELLO`（op=10）訊息，獲取心跳間隔
-4. 發送 `OP_IDENTIFY`（op=2）進行身份驗證
-5. 收到 `READY` 事件，獲取 `session_id` 和 `bot_id`
-6. 開始心跳循環（`OP_HEARTBEAT`，op=1）
-7. 接收事件分發（`OP_DISPATCH`，op=0）
-
-### 斷線重連
-
-- 支持自動重連，最大重連次數為50次
-- 重連等待時間採用指數退避演算法：`min(5 * 2^min(count, 6), 300)` 秒
-- 支持會話恢復（`OP_RESUME`，op=6），使用 `session_id` + `seq` 恢復
-- 收到 `OP_RECONNECT`（op=7）或 `OP_INVALID_SESSION`（op=9）時自動觸發重連
-
-### Token 刷新
-
-- `access_token` 有效期通常為7200秒
-- 适配器自動每 7080 秒（7200-120）刷新一次 token
-- 刷新接口：`POST https://bots.qq.com/app/getAppAccessToken`
-
-## 事件訂閱（Intents）
-
-intents 值透過位元運算組合：
-
-```python
-intents = [1, 30, 25]
-value = 0
-for intent in intents:
-    value |= (1 << intent)
-```
-
-常用的 intent 位：
-| intent值 | 說明 |
-|----------|------|
-| 1 | 頻道相關事件（GUILD_CREATE 等） |
-| 25 | 頻道訊息事件（AT_MESSAGE_CREATE 等） |
-| 30 | 群 @ 訊息事件（GROUP_AT_MESSAGE_CREATE 等） |
+| 10001 | 參數缺失 |
+| 10002 | 不支援的動作 |
+| 10003 | 無法確定目標/帳戶 |
+| 32000 | 請求逾時 |
+| 33000 | 網路/API呼叫異常 |
+| 34001 | 請求不存在或已過期（Request DSL） |
+| 34100 | 媒體上傳失敗 |
+| 34000+ | 平台業務錯誤（透傳官方 code） |
 
 ## 使用示例
 
-### 處理群消息
+### 處理群消息（@檢測）
 
 ```python
 from ErisPulse.Core.Event import message
-from ErisPulse import sdk
 
-qqbot = sdk.adapter.get("qqbot")
-
-@message.on_message()
-async def handle_group_msg(event):
+@message.on_at_message()
+async def handle_at(event):
     if event.get("platform") != "qqbot":
         return
-    if event.get("detail_type") != "group":
-        return
-
     text = event.get_text()
-    group_id = event.get("group_id")
-
-    if text == "hello":
-        await qqbot.Send.To("group", group_id).Reply(
-            event.get("message_id")
-        ).Text("Hello!")
+    if text == "簽到":
+        await event.reply("已簽到")
 ```
 
 ### 處理互動事件
@@ -327,40 +203,25 @@ from ErisPulse.Core.Event import notice
 async def handle_interaction(event):
     if event.get("platform") != "qqbot":
         return
-
     if event.get("detail_type") == "qqbot_interaction":
-        interaction_id = event.get("qqbot_interaction_id", "")
-        interaction_data = event.get("qqbot_interaction_data", {})
-        # 處理互動...
+        await qqbot.reply_interaction(event.get("qqbot_interaction_id"), code=0)
+        button_id = event.get("qqbot_button_id", "")
+        # 處理按鈕...
 ```
 
-### 發送媒體訊息
+### 多帳號啟動
 
-```python
-# 發送圖片（URL）
-await qqbot.Send.To("group", group_openid).Image("https://example.com/image.png")
+```toml
+[QQBot_Adapter.accounts.bot_a]
+appid = "A_APPID"
+secret = "..."
+enabled = true
 
-# 發送圖片（二進位）
-with open("image.png", "rb") as f:
-    image_bytes = f.read()
-await qqbot.Send.To("user", user_openid).Image(image_bytes)
+[QQBot_Adapter.accounts.bot_b]
+appid = "B_APPID"
+secret = "..."
+mode = "webhook"
+enabled = true
 ```
 
-### 監聽訊息審核結果
-
-```python
-@notice.on_notice()
-async def handle_audit(event):
-    if event.get("platform") != "qqbot":
-        return
-
-    detail_type = event.get("detail_type")
-
-    if detail_type == "qqbot_audit_pass":
-        msg_id = event.get("qqbot_message_id")
-        print(f"訊息審核通過: {msg_id}")
-
-    elif detail_type == "qqbot_audit_reject":
-        reason = event.get("qqbot_audit_reject_reason", "")
-        print(f"訊息審核拒絕: {reason}")
-```
+兩個帳號並行啟動：bot_a 走 WebSocket，bot_b 走 Webhook，互不影響。

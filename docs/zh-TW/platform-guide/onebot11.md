@@ -7,7 +7,7 @@ docs/zh-TW/quick-start.md
 
 ## 文件資訊
 
-- 對應模組版本: 4.0.0
+- 對應模組版本: 4.3.0
 - 維護者: ErisPulse
 
 ## 基本資訊
@@ -17,6 +17,54 @@ docs/zh-TW/quick-start.md
 - 支援的協定/API 版本：OneBot V11
 - 多帳戶支援：預設多帳戶架構，支援同時設定和執行多個 OneBot 帳戶
 - 配置鍵名：`OneBotAdapter`
+
+## v5 範式更新（4.3.0）
+
+本適配器已完成 v5 範式對齊（增量升級，API 兼容）：
+
+- **BaseConverter 繼承**：轉換器公共欄位（id/time/platform/self/raw）由框架 build_base_event 建構，按 OB11 欄位名（echo/time/self_id）覆蓋
+- **spawn_background 任務歸屬**：Client 模式連接任務改用 asyncio.spawn_background（owner 歸屬，shutdown 自動回收）
+- **框架軟依賴**：安裝適配器不再聲明 ErisPulse 硬依賴，避免 pip 解析時調整框架版本；執行時檢測 ErisPulse>=2.7.1 並在版本過低時打日誌提示
+- **啟動版本日誌**：初始化時輸出 OneBotAdapter v4.3.0 已載入
+
+已有能力（4.2.0 起支援）：多帳號、Api DSL 標準動作映射（get_self_info→get_login_info 等）、Request DSL（好友/群請求審批：event.approve() / event.reject()）、EventMixin、i18n。
+
+## 標準 Api 動作（Api DSL）
+
+適配器將 OneBot12 標準動作名自動映射到 OB11 動作名，模組可跨平台統一呼叫：
+
+| OB12 標準動作 | OB11 動作 | 說明 |
+|--------------|-----------|------|
+| get_self_info | get_login_info | 欄位標準化 user_id/user_name/user_displayname |
+| get_user_info | get_stranger_info | 欄位標準化 |
+| delete_message | delete_msg | 撤回訊息 |
+| leave_group | set_group_leave | 退出群 |
+| get_friend_list | get_friend_list | 動作名一致，預設透傳 |
+| get_group_info | get_group_info | 動作名一致，預設透傳 |
+| upload_file | upload_group_file / upload_private_file | 擴展 group_id/user_id 可選參數，filetype 自動偵測類型路由 |
+
+### 基本用法
+
+```python
+from ErisPulse import sdk
+onebot = sdk.adapter.get("onebot11")
+
+# 獲取機器人資訊
+result = await onebot.Api.get_self_info()
+print(result["data"]["user_id"], result["data"]["user_name"])
+
+# 撤回訊息
+await onebot.Api.delete_message(message_id=123456)
+
+# 上傳群檔案（filetype 自動偵測類型路由到 upload_group_file）
+result = await onebot.Api.upload_file(group_id=123456, file="/path/to/file.zip")
+
+# 指定帳戶（多帳戶）
+result = await onebot.Api.Using("main").get_self_info()
+
+# 未映射的 OB11 動作透過 call() 逃生艙呼叫（NapCat/Lagrange 等擴展通用）
+result = await onebot.Api.call("send_poke", group_id=123, user_id=456)
+```
 
 ## 支援的消息發送類型
 

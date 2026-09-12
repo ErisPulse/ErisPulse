@@ -1,21 +1,29 @@
 {
   "version": 2,
-  "hash": "8e973b63931275f3cae35782a83ad417",
-  "file_hash": "8e973b63931275f3cae35782a83ad417",
-  "translated_at": "2026-09-07T12:01:10.551268",
+  "hash": "31a8227dd67a3f5cf9c4dedb8174e7bb",
+  "file_hash": "31a8227dd67a3f5cf9c4dedb8174e7bb",
+  "translated_at": "2026-09-12T10:29:36.568802",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "3e9918201477e492efca5ede3658436d",
-      "translation": "﻿# Telegramプラットフォームの機能ドキュメント\n\nTelegramAdapter は、Telegram Bot API を基に構築されたアダプタであり、さまざまなメッセージタイプとイベント処理をサポートしています。\n\n---"
+      "hash": "000e747ec931cc2aaf9423a4d875fcd7",
+      "translation": "# Telegramプラットフォームの特徴ドキュメント\n\nTelegramAdapter は、Telegram Bot API を基に構築されたアダプタであり、さまざまなメッセージタイプとイベント処理に対応しています。\n\n---"
     },
     {
-      "hash": "e33f3952eaca57eee580c17bb6853963",
-      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 4.1.1  \n- メンテナー: ErisPulse"
+      "hash": "d5769e0ae79f68cdc351193894aba07b",
+      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 4.2.0\n- メンテナー: ErisPulse"
     },
     {
       "hash": "ecdddf468c42689284d0bae7ae9c1140",
       "translation": "## 基本情報\n\n- プラットフォームの概要：Telegram はクロスプラットフォームのリアルタイム通信ソフトウェアです。\n- アダプタ名：TelegramAdapter\n- 対応するプロトコル/APIバージョン：Telegram Bot API\n- セッションタイプのマッピング：`private` → 送信時に `user` を使用、`group`/`supergroup` → `group`、`channel` → `channel`"
+    },
+    {
+      "hash": "6464813902a44d437d7a2a33fe4639b0",
+      "translation": "## 標準Apiアクション（Api DSL）\n\nアダプターは OB12 標準アクションを Telegram Bot API にマッピングし、`data` フィールドを標準化します：\n\n| OB12 標準アクション | Telegram API | data フィールド |\n|-------------------|--------------|----------------|\n| get_self_info | getMe | user_id / user_name / user_displayname |\n| get_user_info(user_id) | getChat | user_id / user_name / user_displayname |\n| get_group_info(group_id) | getChat | group_id / group_name |\n| get_group_member_info(group_id, user_id) | getChatMember | user_id / user_name / telegram_role |\n| delete_message(message_id) | deleteMessage | 自動的にメッセージ登録表から chat_id を補完 |\n| leave_group(group_id) | leaveChat | - |\n\n拡張アクション：get_group_admin_list(group_id)（管理者リスト）、get_chat_member_count(chat_id)（メンバー数）。\n\n```python\nfrom ErisPulse import sdk\ntelegram = sdk.adapter.get(\"telegram\")\n\nresult = await telegram.Api.get_self_info()\nresult = await telegram.Api.get_group_info(group_id=-100123)\nresult = await telegram.Api.get_group_admin_list(-100123)\nawait telegram.Api.delete_message(message_id=55)   # 自動的に chat_id を補完\nresult = await telegram.Api.Using(\"main\").get_self_info()\n```\n\n> Telegram Bot API には友達リスト/グループリストを取得するインターフェースがなく、get_friend_list/get_group_list は `errorcode=10002` を返します。"
+    },
+    {
+      "hash": "241eca79b8ea29ee273d4e4aa1e3a10b",
+      "translation": "## 要求操作（Request DSL）\n\n加群申請（chat_join_request イベント）を処理し、`approveChatJoinRequest` / `declineChatJoinRequest` を使用します。\n\n```python\nfrom ErisPulse.Core.Event import request\n\n@request.on_request()\nasync def handle_join_request(event):\n    if event.get(\"platform\") != \"telegram\":\n        return\n    # event[\"request_id\"] は合成された識別子（tjr_{chat_id}_{user_id}_{date}）です\n    if event.get(\"user_nickname\"):\n        await event.approve()          # 同意\n    # await event.reject()             # 拒絶\n\n# 手動呼び出し（対応する要求イベントを事前に受信してコンテキストを登録しておく必要があります）\nawait telegram.Request(event[\"request_id\"]).accept()\nawait telegram.Request(event[\"request_id\"]).reject()\nawait telegram.Request(event[\"request_id\"]).Using(\"main\").accept()\n```\n\n---"
     },
     {
       "hash": "d0604e5e6d7afaee4fba560f3378a916",

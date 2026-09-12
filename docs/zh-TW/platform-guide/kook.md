@@ -6,7 +6,7 @@ KookAdapter 是基於 Kook（開黑啦）Bot WebSocket 協議建構的適配器�
 
 ## 文件資訊
 
-- 對應模組版本: 0.1.0  
+- 對應模組版本: 4.1.0
 - 維護者: ShanFish
 
 ## 基本資訊
@@ -50,6 +50,49 @@ enabled = true
 **API環境：**
 - Kook API 基礎地址：`https://www.kookapp.cn/api/v3`
 - WebSocket 網關透過 API 動態獲取：`POST /gateway/index`
+
+## v5 範式更新（4.1.0）
+
+本適配器已完成 v5 範式對齊（增量升級，API 兼容）：
+
+- **BaseConverter 繼承**：轉換器公共欄位由框架 `build_base_event` 構建
+- **Api DSL**：標準 Api 動作映射（見下）
+- **標準 keyboard 段**：`{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}}` 文本+鍵盤自動組合為 Kook 卡片消息（section + action-group）；.Keyboard(rows) 修飾器接受通用結構
+- **spawn_background 任務歸屬**：連接任務改用 `runtime.spawn_background`
+- **框架軟依賴**：運行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌
+
+### 標準 Api 動作
+
+```python
+from ErisPulse import sdk
+kook = sdk.adapter.get("kook")
+
+result = await kook.Api.get_self_info()              # GET /users/@me
+result = await kook.Api.get_user_info(user_id)       # POST /user/view
+result = await kook.Api.get_guild_info(guild_id)     # POST /guild/view
+result = await kook.Api.get_guild_list()             # POST /guild/list
+result = await kook.Api.get_channel_info(channel_id) # POST /channel/view
+result = await kook.Api.get_channel_list(guild_id)   # POST /channel/list
+await kook.Api.delete_message(msg_id)                # POST /message/delete
+result = await kook.Api.Using("main").get_self_info()
+```
+
+### 按鈕（keyboard）
+
+```python
+rows = [[{"label": "選項A", "type": "callback", "data": "vote:A"},
+         {"label": "官網",  "type": "link",     "data": "https://example.com"}]]
+await kook.Send.To("channel", channel_id).Keyboard(rows).Text("請選擇")
+# 文本與按鈕自動組合為 Kook 卡片消息（section + action-group）
+
+# 按鈕點擊回調（標準欄位）
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
+async def handle_button(event):
+    if event.get("platform") == "kook" and event.get("button_data"):
+        data = event["button_data"]
+```
 
 ## 支援的消息傳送類型
 

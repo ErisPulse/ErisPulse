@@ -1,3 +1,15 @@
+### 対応プラットフォーム機能
+
+- **入力**：外部システムが callback_path に POST → OneBot12 イベントに変換（json/textセグメントを透過）
+- **出力**：モジュール Send → outgoing_url に POST（二重ブリッジ）
+- **API**：ブリッジの認証情報と実行状態（最小限の機能）
+
+## v5 ファンダメンタルの更新（4.2.0）
+
+- **Api DSL 最小集**：get_self_info / get_status / get_version / get_supported_actions
+- **フレームワークのソフト依存**：実行時に ErisPulse>=2.7.1 を検出し、警告を表示；起動時にバージョンのログを出力
+- インポートパスを Core.Bases に更新
+
 # プラットフォームの機能説明 — Webhook 一般的なブリッジアダプター
 
 このドキュメントでは、Webhookアダプターの双方向ブリッジプロトコル、フィールドマッピング、実装の特徴について詳しく説明します。

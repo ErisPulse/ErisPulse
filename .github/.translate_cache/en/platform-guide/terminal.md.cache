@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "hash": "2bfa9b84dda7dd3a6022cba97406e012",
+  "file_hash": "2bfa9b84dda7dd3a6022cba97406e012",
+  "translated_at": "2026-09-12T10:27:55.732526",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "801ea581e858921e6eed2a28181710d8",
+      "translation": "# Terminal Platform Features Documentation\n\nTerminalAdapter is a command-line terminal adapter—where the terminal serves as a chat session, enabling rapid local debugging of module logic.\n\n---"
+    },
+    {
+      "hash": "355ff45b64d1e76fde9e42ae8f563746",
+      "translation": "## Documentation Information\n\n- Corresponding Module Version: 1.1.0\n- Maintainer: ErisPulse"
+    },
+    {
+      "hash": "e1c9704c47ba4a2be3d3c6120e628e0c",
+      "translation": "## Basic Information\n\n- Platform Introduction: Treat the local command line as a chat session, where stdin input is a message, and module responses are directly printed to the terminal\n- Adapter Name: TerminalAdapter\n- Platform Identifier: `terminal`\n- Single account design (for local debugging scenarios)\n- Framework Requirements: Soft dependency `ErisPulse>=2.7.1` (runtime detection prompts, not enforced)"
+    },
+    {
+      "hash": "41f08af72b2159f33630119d0dac06a0",
+      "translation": "## Configuration Description\n\n```toml\n[Terminal]\nbot_id = \"terminal_bot\"   # Sandbox bot ID\nbot_name = \"Terminal\"     # Display name\n```"
+    },
+    {
+      "hash": "2a934798be3daee3ed96232be0615395",
+      "translation": "## v5 Paradigm Update (1.1.0)\n\n- **spawn_background Task Ownership**: The stdin reading loop now uses `runtime.spawn_background`.\n- **Framework Soft Dependency**: Runtime checks for `ErisPulse>=2.7.1` and provides a warning; version logs are output on startup."
+    },
+    {
+      "hash": "4144a6370fce61b9fb24e28425de1a1f",
+      "translation": "## Usage Instructions\n\n```python\n# The module can listen to messages as usual\nfrom ErisPulse.Core.Event import message\n\n@message.on_message()\nasync def handle(event):\n    if event.get(\"platform\") == \"terminal\":\n        await event.reply(\"Received: \" + event.get_text())\n```\n\n- Text entered in the terminal is treated as user messages and supports multi-line input (terminated by an empty line)\n- Suitable for quickly verifying module logic during development, without needing to connect to a real platform"
+    }
+  ]
+}

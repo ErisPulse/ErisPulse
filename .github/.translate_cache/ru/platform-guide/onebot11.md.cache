@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "0f6710bb3a57b16c9794e7c2c493eb4a",
-  "file_hash": "0f6710bb3a57b16c9794e7c2c493eb4a",
-  "translated_at": "2026-09-07T12:04:33.316944",
+  "hash": "8e71d3a4c2dfbd3ef5a4e332b8b98aa8",
+  "file_hash": "8e71d3a4c2dfbd3ef5a4e332b8b98aa8",
+  "translated_at": "2026-09-12T10:26:48.603212",
   "target_lang": "ru",
   "chunks": [
     {
@@ -10,12 +10,20 @@
       "translation": "# Документация по функциям платформы OneBot11\n\nOneBot11Adapter — это адаптер, построенный на основе протокола OneBot V11.\n\n---"
     },
     {
-      "hash": "83863958e0c878f73382a19311f69780",
-      "translation": "## Информация о документации\n\n- Версия соответствующего модуля: 4.0.0\n- Поддержка: ErisPulse"
+      "hash": "a1376ffeea270fa68d8b22165af6dbcc",
+      "translation": "## Информация о документации\n\n- Версия соответствующего модуля: 4.3.0\n- Ответственный: ErisPulse"
     },
     {
       "hash": "41ee104b8f054db6dc1094d1cc97d583",
       "translation": "## Основная информация\n\n- Краткое описание платформы: OneBot — это стандарт интерфейса приложений для чат-ботов\n- Название адаптера: OneBotAdapter\n- Поддерживаемые версии протокола/API: OneBot V11\n- Поддержка нескольких аккаунтов: По умолчанию используется архитектура с несколькими аккаунтами, поддерживается одновременная настройка и запуск нескольких аккаунтов OneBot\n- Ключ конфигурации: `OneBotAdapter`"
+    },
+    {
+      "hash": "c9d96089dd0e4352162c9b1f90c43015",
+      "translation": "## Обновление парадигмы v5 (4.3.0)\n\nАдаптер был обновлен до соответствия парадигме v5 (постепенное обновление, совместимость API):\n\n- **Наследование BaseConverter**: Общие поля конвертера (id/time/platform/self/raw) создаются с помощью build_base_event фреймворка, и перекрываются именами полей OB11 (echo/time/self_id)\n- **Принадлежность задачи spawn_background**: Задача подключения в режиме Client теперь использует runtime.spawn_background (принадлежность owner, автоматическая утилизация при завершении)\n- **Мягкая зависимость от фреймворка**: При установке адаптера больше не требуется жесткая зависимость от ErisPulse, что предотвращает изменение версии фреймворка при разрешении pip; во время выполнения проверяется ErisPulse>=2.7.1, и при низкой версии выводится предупреждение в лог\n- **Журнал версии при запуске**: При инициализации выводится сообщение \"OneBotAdapter v4.3.0 loaded\"\n\nСуществующие возможности (поддержка с 4.2.0): поддержка нескольких аккаунтов, стандартное сопоставление действий Api DSL (get_self_info→get_login_info и т.д.), Request DSL (одобрение/отклонение запросов от друзей/групп: event.approve() / event.reject()), EventMixin, i18n.\n\n---"
+    },
+    {
+      "hash": "4bf6ba61087bb54661cdbd935ee81ca2",
+      "translation": "## Стандартные действия API (DSL API)\n\nАдаптер автоматически сопоставляет стандартные имена действий OneBot12 с именами действий OB11, что позволяет модулям использовать единый интерфейс для всех платформ:\n\n| Стандартное действие OB12 | Действие OB11 | Описание |\n|--------------------------|---------------|----------|\n| get_self_info | get_login_info | Поля стандартизированы: user_id/user_name/user_displayname |\n| get_user_info | get_stranger_info | Поля стандартизированы |\n| delete_message | delete_msg | Отправка сообщения |\n| leave_group | set_group_leave | Выход из группы |\n| get_friend_list | get_friend_list | Имя действия совпадает, вызов прозрачно передается |\n| get_group_info | get_group_info | Имя действия совпадает, вызов прозрачно передается |\n| upload_file | upload_group_file / upload_private_file | Дополнительные необязательные параметры group_id/user_id, filetype автоматически определяет тип и перенаправляет на upload_group_file |\n\n### Базовое использование\n\n```python\nfrom ErisPulse import sdk\nonebot = sdk.adapter.get(\"onebot11\")\n\n# Получение информации о боте\nresult = await onebot.Api.get_self_info()\nprint(result[\"data\"][\"user_id\"], result[\"data\"][\"user_name\"])\n\n# Отправка сообщения\nawait onebot.Api.delete_message(message_id=123456)\n\n# Загрузка файла в группу (filetype автоматически определяет тип и перенаправляет на upload_group_file)\nresult = await onebot.Api.upload_file(group_id=123456, file=\"/path/to/file.zip\")\n\n# Указание аккаунта (множественные аккаунты)\nresult = await onebot.Api.Using(\"main\").get_self_info()\n\n# Несопоставленные действия OB11 вызываются через call() (универсальный метод для расширений, таких как NapCat/Lagrange)\nresult = await onebot.Api.call(\"send_poke\", group_id=123, user_id=456)\n```\n\n---"
     },
     {
       "hash": "41be246a280ce033ee5201e27f1aaa01",
