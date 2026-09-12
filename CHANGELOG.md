@@ -73,6 +73,33 @@
 
 ---
 
+## [2.8.0] - 2026/09/12
+> 正式发布
+
+**版本摘要**
+2.8.0 是聚焦「用户控制权、生态协作与生产韧性」的综合性版本，覆盖九大方向：(1) **作用域三维体系**——新增作用域（scope）系统将权限/访问控制统一为三维：模块维度（平台/Bot/会话三级绑定模块可用性，支持 glob/`re:` 正则与 `merge` 绑定继承）、身份维度（适配器/Bot/会话/用户四级事件准入，deny 优先，被拒事件分发入口完全丢弃）、出站维度（`scope.actions.<module>.<action>` 对 send/api 做方法级白/黑名单，被拒调用返回 `retcode=34601` 且不发起网络请求）；运行时 `sdk.scope` 提供维度化参数方法与字典式兜底（`get/set/delete` 点分路径直达任意节），控制权完全交给用户；配套统一事件覆写体系（按模块覆写任意事件类型的触发条件与命令实现参数 master/hidden/aliases 等，语义用户优先）与命令自持 ACL（`event.command.acl`）；主人系统支持自定义身份源 provider 链。(2) **交互会话基础设施**——wait_reply 等待表抽为一等基础设施（owner/platform 双维度归属清理、回复命中权限复查、会话互斥租约 `acquire`/`hold`）、Conversation 自动检查点（分支跳转自动存档 + 重启自动恢复）、会话定时器（`remind` 回复即取消 / `escalate` 到点必达）、多路等待（`event.select` 先到先得）、事件幂等去重（平台重连重推同 id 事件只分发一次）、冷启动回放（strategy 声明 replay 新模块自动获得最近会话上下文）、对话恢复接管（`resume` 自动持有租约）、会话收件箱（transcript 自动记录每会话消息流）、端到端事件追踪（trace-id 贯穿入站/处理/出站/生命周期钩子）、消息事务（`event.message_tx()` 回执账本 + 异常自动撤回）；修复 wait_reply 挂起回复被高优先级处理器饿死的问题。(3) **多后端异步存储**——内置 sqlite / mysql / postgres 三种异步驱动后端（配置切换、API 完全一致、驱动可选安装），`BaseStorage` 抽象翻转为异步原生契约（同步 API 转兼容层，现有同步代码零改动），查询构建器新增 `ToDict()` 链；连接失败不阻塞、不崩溃框架——建池重试耗尽快速失败进入冷却期，冷却结束自动重连试探。(4) **模块间 RPC 协议化**——`module.call()` 类型化调用（目标未注册抛类型化异常、懒加载模块自动唤醒、默认 30s 超时）、`services` 服务契约声明与 `sdk.module.services()` 服务目录、定向事件 `lifecycle.emit(..., to=...)` 按注册 owner 定向投递。(5) **归属权清理体系**——模块卸载/禁用与适配器关闭/重启的注册型资源兜底清理扩面（路由中间件/Dashboard 首页入口/事件处理器与中间件/自定义会话类型/运行时事件覆写/master provider 等），新增**外部归属清理钩子** `on_cleanup`（工具模块托管其它模块的资源时挂入框架清理链）与**调用来源感知** `current_caller`（被调方经 `get_current_caller()` 识别调用来源）。(6) **生命周期事件体系充实**——处理器改为并行执行、新增 `lifecycle.fire()` 后台零成本发射（热路径事件全部切换）；新增 `storage.ready/unreachable/recovered`、`client.request.failed`、`module.reload`、`i18n.language.changed`、`core.init.stage` 事件与各阶段启动时长统计。(7) **配置系统体验升级**——框架写入完整保留配置文件注释与键顺序（tomlkit）、框架默认配置不再自动落盘（完整配置参考 `config.full.example`，启动自动刷新）、声明式配置增强（`example` 字段标志/docstring 描述兜底/嵌套 dataclass/`setConfigTemplate` 带注释模板写入）、新增 CLI `config` 命令（schema 驱动交互配置向导，含适配器多账户管理）与安装后自动衔接引导；修复作用域 `persist=False` 运行时绑定被后续配置写入冲掉（#432）。(8) **模块系统增强**——模块 meta 元信息（`get_meta()`/`ModuleMeta`，支持 i18n 字段）与命令总览、拓扑树 API（`get_topology()`，含 `json_safe` 安全输出）、本地插件文件夹免打包即插即用、模块热重载归一 `sdk.reload_module`（本地插件与 PyPI 包一致）、`activate_on` 事件驱动懒激活、日志等级屏蔽（`exclude_levels`）与目录分段日志。(9) **异常体系与工程现代化**——异常补齐结构化属性、`SessionOccupiedError`/`InteractionCancelled`/`StrictModeError` 等迁入统一 `ErisPulseError` 层级并聚合导出、异常消息 i18n 全覆盖、懒加载失败异常统一为 `ModuleNotAvailableError`；CI 矩阵测试（Python 3.10–3.13）、uv 化安装、PEP 639/735 元数据、pre-commit、pip-audit 依赖审计、Docker 核心包半写损坏自动探测还原、文档翻译管线围栏校验与提示词泄露防护加固。
+
+**升级建议**
+- **建议升级**
+- 升级原因：
+  - 作用域三维体系把权限/访问控制权完全交给用户（平台绑定、身份准入、出站白黑名单），无需改模块代码
+  - 配置向导（`epsdk config`）+ 声明式配置增强显著降低上手与部署成本；配置注释/键序保留消除"写一次配置被洗掉注释"的痛点
+  - 交互会话基础设施（归属清理、租约、检查点、事务）与归属权清理扩面消除模块卸载/平台关闭后的资源泄漏与对话打架
+  - 多后端存储与连接失败韧性面向生产部署；trace-id 与生命周期事件提升可观测性
+- 从 2.8.0-dev 预发布版升级：dev 阶段 API 直接切换不保留门面，请过一遍下方注意事项与移除清单（重点 `reload_plugin` → `reload_module`、`access` 并入 `scope.identity`）
+- 从 2.7.x 升级：本条目为凝练总结，各 dev 条目保留完整细节可作变更手册查阅
+
+**注意事项**
+- ⚠️ **移除**：`sdk.reload_plugin` / `ModuleLoader.reload_plugin` 更名为 `sdk.reload_module` / `ModuleLoader.reload_module`（热重载归一，本地插件与 PyPI 安装包一致）；独立事件准入系统 `Core/access.py` 与配置节 `ErisPulse.access` 整体并入作用域身份维度（`scope.identity`）；命令 ACL 独立配置节 `ErisPulse.event.command.permissions` 移除（统一存储于 `event.command.acl`）；dev.0 作用域雏形 bind 系 API（`bind_module` / `bind_identity` 等）收敛为字典式 `scope.set/get/delete`
+- ⚠️ **行为变更**：config.toml 不再自动填充框架默认键（约 60+ 项，未配置项一律走内置默认值、行为不变，需要调整时参考项目内 `config.full.example` 手动添加）；框架写入不再按字典序重排配置、用户注释与键顺序完整保留；同一会话键重复注册等待时旧等待方立即收到取消（返回 `None`），不再静默覆盖后干等超时；回复消息已被高优先级处理器认领时，挂起的等待仍会命中消费该消息（对话连续性优先）；事件幂等去重默认开启（`ErisPulse.framework.event_dedupe`）
+- ⚠️ **自定义存储后端**：继承 `BaseStorage` 的第三方后端需按异步契约迁移（实现 a 前缀异步方法与事务连接 hook）；仅使用框架存储 API 的模块/适配器零改动；同步存储 API 在异步上下文（事件循环所在线程）经后台桥接执行，异步 handler 内推荐 `await storage.aget/aset(...)` 系
+- ⚠️ **生命周期处理器并行执行**：`emit` 的处理器经 gather 并发（返回值按优先级顺序回放），依赖串行执行顺序或链式传递中间修改的消费方需评估；`lifecycle.fire()` 为后台发射，不保证执行时机、进程退出时可能丢失
+- 懒加载失败异常由 `RuntimeError` 统一为 `ModuleNotAvailableError`（请改捕获类型）；`SessionOccupiedError` / `InteractionCancelled` / `StrictModeError` 迁入统一异常层级并从 `ErisPulse.Core` 导出（旧位置保留导入别名）
+- 拓扑树 API 输出默认 `json_safe=True`（仅保留可序列化数据，丢弃运行时对象），需要原始对象时传 `json_safe=False`
+- 存储连接失败不阻塞框架：数据库不可达时存储操作快速失败（返回 `False`/`None` 并记日志），冷却期（默认 30 秒）结束自动重连
+
+---
+
 ## [2.8.0-dev.3] - 2026/09/10
 > 开发版本
 
