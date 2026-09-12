@@ -411,7 +411,7 @@ class _TypeNamespace:
                     expected=", ".join(sorted(spec)),
                 )
             )
-            
+
         cleaned: dict = {}
         for k, v in params.items():
             if v is None:
