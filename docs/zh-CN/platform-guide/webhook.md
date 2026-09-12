@@ -1,3 +1,20 @@
+
+### 已对接平台能力
+
+- **入站**：外部系统 POST 到 callback_path → 转为 OneBot12 事件（json/text 段透传）
+- **出站**：模块 Send → POST 到 outgoing_url（双桥接）
+- **API**：桥接身份信息与运行状态（最小集）
+
+---
+
+## v5 范式更新（4.2.0）
+
+- **Api DSL 最小集**：get_self_info/get_status/get_version/get_supported_actions
+- **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
+- 导入路径更新至 Core.Bases
+
+---
+
 # 平台特性说明 — Webhook 通用桥接适配器
 
 本文档详细说明 Webhook 适配器的双向桥接协议、字段映射与实现特性。

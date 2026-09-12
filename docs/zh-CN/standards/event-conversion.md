@@ -136,7 +136,7 @@
 
 ### 4.1 标准消息段
 
-标准消息段类型**不添加**平台前缀：
+标准消息段**不需要**平台前缀。
 
 | 类型 | 说明 | data 字段 |
 |------|------|----------|
@@ -149,6 +149,7 @@
 | `reply` | 回复 | `message_id: str` |
 | `face` | 表情 | `id: str` |
 | `location` | 位置 | `latitude: float`, `longitude: float` |
+| `keyboard` | 按钮/内联键盘 | `rows: list[list[button]]`（见 4.1.1） |
 
 ```json
 {
@@ -158,6 +159,46 @@
   }
 }
 ```
+
+### 4.1.1 keyboard 按钮/内联键盘段（跨平台通用）
+
+按钮/内联键盘在多个平台（Telegram / 云湖 / QQBot / Kook / Discord 等）均有对应能力，
+属于**跨平台通用概念**，因此作为标准消息段（无平台前缀）。适配器应将标准段转换为
+平台原生结构；平台原生扩展段（如 `telegram_inline_keyboard`）继续保留透传。
+
+```json
+{
+  "type": "keyboard",
+  "data": {
+    "rows": [
+      [
+        {"label": "选项A", "type": "callback", "data": "vote:A"},
+        {"label": "官网",   "type": "link",     "data": "https://example.com"}
+      ]
+    ]
+  }
+}
+```
+
+**字段说明：**
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `rows` | 二维数组 | 是 | 每个子数组为一行按钮 |
+| `rows[][].label` | str | 是 | 按钮显示文本 |
+| `rows[][].type` | str | 是 | `callback`（点击回传数据）/ `link`（跳转URL） |
+| `rows[][].data` | str | 是 | 回调数据（type=callback）或跳转地址（type=link） |
+| `rows[][].*` | Any | 否 | 平台特有可选字段（如 `web_app`、`menus`），适配器按能力映射或忽略 |
+
+**适配器转换参考**（完整映射与交互回调事件标准见 [跨平台交互组件标准](standardization-guide.md)）：
+
+| 平台 | 标准段 → 平台原生 |
+|------|------------------|
+| Telegram | `inline_keyboard`：`[{text, callback_data \| url}]` |
+| 云湖 | `buttons`：`[{label, action_type: 2=回调 \| 1=跳转, ...}]` |
+| QQBot | `keyboard.content.rows`：`[{label, type: 2=回调 \| 0=跳转, data}]`（需 markdown 类型消息） |
+| Kook | 卡片 action-group 模块 |
+| Discord | components：`action_row` + `buttons`（custom_id/url） |
 
 ### 4.2 平台扩展消息段
 

@@ -6,7 +6,7 @@ OneBot11Adapter 是基于 OneBot V11 协议构建的适配器。
 
 ## 文档信息
 
-- 对应模块版本: 4.0.0
+- 对应模块版本: 4.3.0
 - 维护者: ErisPulse
 
 ## 基本信息
@@ -17,6 +17,56 @@ OneBot11Adapter 是基于 OneBot V11 协议构建的适配器。
 - 多账户支持：默认多账户架构，支持同时配置和运行多个 OneBot 账户
 - 配置键名：`OneBotAdapter`
 
+## v5 范式更新（4.3.0）
+
+本适配器已完成 v5 范式对齐（增量升级，API 兼容）：
+
+- **BaseConverter 继承**：转换器公共字段（id/time/platform/self/raw）由框架 uild_base_event 构建，按 OB11 字段名（echo/time/self_id）覆盖
+- **spawn_background 任务归属**：Client 模式连接任务改用 untime.spawn_background（owner 归属，shutdown 自动回收）
+- **框架软依赖**：安装适配器不再声明 ErisPulse 硬依赖，避免 pip 解析时调整框架版本；运行时检测 ErisPulse>=2.7.1 并在版本过低时打日志提示
+- **启动版本日志**：初始化时输出 OneBotAdapter v4.3.0 已加载
+
+已有能力（4.2.0 起支持）：多账户、Api DSL 标准动作映射（get_self_info→get_login_info 等）、Request DSL（好友/群请求审批：event.approve() / event.reject()）、EventMixin、i18n。
+
+---
+## 标准Api动作（Api DSL）
+
+适配器将 OneBot12 标准动作名自动映射到 OB11 动作名，模块可跨平台统一调用：
+
+| OB12 标准动作 | OB11 动作 | 说明 |
+|--------------|-----------|------|
+| get_self_info | get_login_info | 字段标准化 user_id/user_name/user_displayname |
+| get_user_info | get_stranger_info | 字段标准化 |
+| delete_message | delete_msg | 撤回消息 |
+| leave_group | set_group_leave | 退出群 |
+| get_friend_list | get_friend_list | 动作名一致，默认透传 |
+| get_group_info | get_group_info | 动作名一致，默认透传 |
+| upload_file | upload_group_file / upload_private_file | 扩展 group_id/user_id 可选参数，filetype 自动检测类型路由 |
+
+### 基本用法
+
+```python
+from ErisPulse import sdk
+onebot = sdk.adapter.get("onebot11")
+
+# 获取机器人信息
+result = await onebot.Api.get_self_info()
+print(result["data"]["user_id"], result["data"]["user_name"])
+
+# 撤回消息
+await onebot.Api.delete_message(message_id=123456)
+
+# 上传群文件（filetype 自动检测类型路由到 upload_group_file）
+result = await onebot.Api.upload_file(group_id=123456, file="/path/to/file.zip")
+
+# 指定账户（多账户）
+result = await onebot.Api.Using("main").get_self_info()
+
+# 未映射的 OB11 动作通过 call() 逃生舱调用（NapCat/Lagrange 等扩展通用）
+result = await onebot.Api.call("send_poke", group_id=123, user_id=456)
+```
+
+---
 ## 支持的消息发送类型
 
 所有发送方法均通过链式语法实现，例如：
