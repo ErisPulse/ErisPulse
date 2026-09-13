@@ -3393,6 +3393,10 @@ project/
 ├── main.py
 ```
 
+### 多實例提示與鎖檔案
+
+框架啟動時會在 `config/` 目錄下建立 `.erispulse_config.lock` 鎖檔案並持有至進程退出（用於偵測多實例共享配置目錄）。如果日誌出現「偵測到配置檔案可能正被另一個 ErisPulse 實例同時使用」的告警，說明有**兩個以上的 ErisPulse 進程在寫同一份配置**（典型場景：多個容器掛載了同一個主機 `config/` 目錄）—— 並發寫入會互相覆蓋，請為每個實例使用獨立的配置目錄。
+
 ## 配置載入錯誤處理
 
 框架在載入 `config.toml` 時會區分三種錯誤狀態，並提供**可操作的診斷資訊**，而不是靜默回退到預設配置：
@@ -9685,9 +9689,9 @@ pip install ErisPulse-MyModule
 
 ## 發布前檢查清單
 
-在推送至 PyPI 之前，請逐項確認以下內容：
+在推送到 PyPI 之前，請逐項確認以下內容：
 
-### 代碼質量
+### 代碼品質
 
 - [ ] 所有公開 API 有類型註解（函數簽名和返回值）
 - [ ] 所有公開方法有文件字串（`"""..."""` 格式，包含 `:param` / `:return` / `:raises`）
@@ -9698,6 +9702,7 @@ pip install ErisPulse-MyModule
 ### 兼容性
 
 - [ ] `pyproject.toml` 聲明了最低 SDK 版本：`dependencies = ["ErisPulse>=x.y.z"]`
+- [ ] 模組在 `get_meta()` 的 `ModuleMeta(min_sdk_version="x.y.z")` 聲明了運行時最低 SDK 版本（適配器用類屬性 `min_sdk_version`）——用戶環境 SDK 過低時框架在載入期明確報錯並跳過，而非報出難以定位的執行時異常
 - [ ] 測試了 Python 3.10 / 3.11 / 3.12 / 3.13
 - [ ] 測試了目標作業系統（Windows / Linux / macOS，如適用）
 - [ ] 無循環導入依賴
@@ -9710,8 +9715,8 @@ pip install ErisPulse-MyModule
 
 ### 文件
 
-- [ ] `README.md` 有安裝說明和基本使用範例
-- [ ] `README.md` 說明了配置方式（配置檔範例 + 環境變數）
+- [ ] `README.md` 有安裝說明和基本使用示例
+- [ ] `README.md` 說明了配置方式（配置檔示例 + 環境變數）
 - [ ] `CHANGELOG.md` 記錄了所有變更
 - [ ] 適配器更新了平台特性文件（支援的 Send 類型、事件類型等）
 

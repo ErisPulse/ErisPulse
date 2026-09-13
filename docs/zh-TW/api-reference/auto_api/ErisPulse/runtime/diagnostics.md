@@ -111,6 +111,8 @@ ErisPulse 异常诊断模块
 
 - **exc** (`BaseException`): 异常对象
 - **hint_key** (`str`): | None 自定义提示行的 i18n key（默认使用通用提示）
+- **hint_params** (`dict[str,`): Any] | None 提示行模板的填充参数
+    （如 ``{"name": module_name}``，对应提示文案中的 ``{name}`` 占位符）
 - **candidates** (`list[str]`): | None 相似名称候选，用于附加「你是不是想写」提示
 - **depth** (`int`): 最多保留的用户帧数量
 **返回值** (`str`): 多行诊断文本；无可用信息时返回空字符串
@@ -135,6 +137,7 @@ ErisPulse 异常诊断模块
 
 - **exc** (`BaseException`): 异常对象
 - **hint_key** (`str`): | None 自定义提示行的 i18n key
+- **hint_params** (`dict[str,`): Any] | None 提示行模板的填充参数
 - **candidates** (`list[str]`): | None 相似名称候选
 - **depth** (`int`): 最多保留的用户帧数量
 - **logger** (`Any`): 指定 logger 实例（默认使用 ``Core.logger.logger``）
