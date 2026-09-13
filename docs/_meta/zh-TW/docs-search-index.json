@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1628,
+  "total_keywords": 1625,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -161,7 +161,7 @@
     "1. 建立 Dockerfile": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 202,
+        "line": 203,
         "level": 3,
         "title": "1. 建立 Dockerfile"
       }
@@ -609,7 +609,7 @@
     "2. 建立 GitHub Actions 工作流程": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 230,
+        "line": 231,
         "level": 3,
         "title": "2. 建立 GitHub Actions 工作流程"
       }
@@ -1157,7 +1157,7 @@
     "3. 觸發建構": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 299,
+        "line": 300,
         "level": 3,
         "title": "3. 觸發建構"
       }
@@ -1501,7 +1501,7 @@
     "4. 設定鏡像為公開": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 314,
+        "line": 315,
         "level": 3,
         "title": "4. 設定鏡像為公開"
       }
@@ -1669,7 +1669,7 @@
     "5. 用戶使用": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 321,
+        "line": 322,
         "level": 3,
         "title": "5. 用戶使用"
       }
@@ -2819,7 +2819,7 @@
     "Docker 鏡像 vs PyPI 發布": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 376,
+        "line": 377,
         "level": 3,
         "title": "Docker 鏡像 vs PyPI 發布"
       }
@@ -3910,12 +3910,12 @@
         "title": "[BUG-008] Bot 離線事件在 shutdown 過程中被重複提交"
       }
     ],
-    "[BUG-009] LazyModule 同步存取 BaseModule 導致未初始化完成": [
+    "[BUG-009] LazyModule 同步訪問 BaseModule 導致未初始化完成": [
       {
         "document": "bug-tracker.md",
         "line": 281,
         "level": 3,
-        "title": "[BUG-009] LazyModule 同步存取 BaseModule 導致未初始化完成"
+        "title": "[BUG-009] LazyModule 同步訪問 BaseModule 導致未初始化完成"
       }
     ],
     "[BUG-010] 配置系統多線程寫入導致數據丟失": [
@@ -3926,12 +3926,12 @@
         "title": "[BUG-010] 配置系統多線程寫入導致數據丟失"
       }
     ],
-    "[BUG-011] Windows 下 CTRL+C 無法停止程序": [
+    "[BUG-011] Windows 下 CTRL+C 無法停止程式": [
       {
         "document": "bug-tracker.md",
         "line": 324,
         "level": 3,
-        "title": "[BUG-011] Windows 下 CTRL+C 無法停止程序"
+        "title": "[BUG-011] Windows 下 CTRL+C 無法停止程式"
       }
     ],
     "[BUG-012] 熱重啟後已更新模組的 Python 代碼未生效": [
@@ -3950,28 +3950,28 @@
         "title": "[BUG-013] 模組加載策略排序邏輯錯誤"
       }
     ],
-    "[BUG-014] 適配器中間件返回 None 導致事件數據丟失": [
+    "[BUG-014] 適配器中間件返回 None 導致事件資料丟失": [
       {
         "document": "bug-tracker.md",
         "line": 388,
         "level": 3,
-        "title": "[BUG-014] 適配器中間件返回 None 導致事件數據丟失"
+        "title": "[BUG-014] 適配器中間件返回 None 導致事件資料丟失"
       }
     ],
-    "[BUG-015] 配置文件路徑依賴工作目錄": [
+    "[BUG-015] 配置檔案路徑依賴工作目錄": [
       {
         "document": "bug-tracker.md",
         "line": 408,
         "level": 3,
-        "title": "[BUG-015] 配置文件路徑依賴工作目錄"
+        "title": "[BUG-015] 配置檔案路徑依賴工作目錄"
       }
     ],
-    "[BUG-016] BaseStorage 將存儲值 None 與鍵不存在混淆": [
+    "[BUG-016] BaseStorage 將儲存值 None 與鍵不存在混淆": [
       {
         "document": "bug-tracker.md",
         "line": 428,
         "level": 3,
-        "title": "[BUG-016] BaseStorage 將存儲值 None 與鍵不存在混淆"
+        "title": "[BUG-016] BaseStorage 將儲存值 None 與鍵不存在混淆"
       }
     ],
     "[BUG-017] WebSocket 路由 auto_accept 標誌在服務重啟後丟失": [
@@ -3982,12 +3982,12 @@
         "title": "[BUG-017] WebSocket 路由 auto_accept 標誌在服務重啟後丟失"
       }
     ],
-    "[BUG-018] HTTP/WS 客戶端併發呼叫導致崩潰與連接泄漏": [
+    "[BUG-018] HTTP/WS 客戶端併發呼叫導致崩潰與連接洩漏": [
       {
         "document": "bug-tracker.md",
         "line": 468,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS 客戶端併發呼叫導致崩潰與連接泄漏"
+        "title": "[BUG-018] HTTP/WS 客戶端併發呼叫導致崩潰與連接洩漏"
       }
     ],
     "[BUG-019] 適配器熱重載時路由衝突導致重載失敗": [
@@ -4014,20 +4014,20 @@
         "title": "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式"
       }
     ],
-    "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）": [
+    "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填補）": [
       {
         "document": "bug-tracker.md",
         "line": 570,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）"
+        "title": "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填補）"
       }
     ],
-    "[BUG-023] 修改賬戶配置後适配器緩存未刷新導致賬戶解析失敗": [
+    "[BUG-023] 修改賬戶配置後適配器緩存未刷新導致賬戶解析失敗": [
       {
         "document": "bug-tracker.md",
         "line": 609,
         "level": 3,
-        "title": "[BUG-023] 修改賬戶配置後适配器緩存未刷新導致賬戶解析失敗"
+        "title": "[BUG-023] 修改賬戶配置後適配器緩存未刷新導致賬戶解析失敗"
       }
     ],
     "[BUG-024] storage.set() 寫入大數字 ID 鍵時觸發 OOM Kill": [
@@ -4086,68 +4086,36 @@
         "title": "[BUG-032] 配置延遲刷盤期間「寫後立讀」讀到舊值"
       }
     ],
-    "[BUG-033] wait_reply 挂起的回复被高优先级处理器饿死": [
+    "[BUG-033] wait_reply 挂起的回覆被高優先級處理器餓死": [
       {
         "document": "bug-tracker.md",
         "line": 862,
         "level": 3,
-        "title": "[BUG-033] wait_reply 挂起的回复被高优先级处理器饿死"
+        "title": "[BUG-033] wait_reply 挂起的回覆被高優先級處理器餓死"
       }
     ],
-    "[BUG-034] 作用域 persist=False 運行时绑定被任意后续配置写入静默冲掉": [
+    "[BUG-034] 作用域 persist=False 運行時綁定被任意後續配置寫入靜默沖掉": [
       {
         "document": "bug-tracker.md",
         "line": 884,
         "level": 3,
-        "title": "[BUG-034] 作用域 persist=False 運行时绑定被任意后续配置写入静默冲掉"
+        "title": "[BUG-034] 作用域 persist=False 運行時綁定被任意後續配置寫入靜默沖掉"
       }
     ],
-    "[BUG-035] 配置面板 select 选项与字典字段渲染为 [object Object]": [
+    "[BUG-035] 配置面板 select 選項與字典字段渲染為 [object Object]": [
       {
         "document": "bug-tracker.md",
         "line": 904,
         "level": 3,
-        "title": "[BUG-035] 配置面板 select 选项与字典字段渲染为 [object Object]"
+        "title": "[BUG-035] 配置面板 select 選項與字典字段渲染為 [object Object]"
       }
     ],
-    "[BUG-036] 事件处理器注册时未正确处理 OneBot12 的 friend_increase/friend_decrease": [
+    "[BUG-036] 多實例共享配置目錄時配置寫入偶發失敗（ENOENT）": [
       {
         "document": "bug-tracker.md",
         "line": 922,
         "level": 3,
-        "title": "[BUG-036] 事件处理器注册时未正确处理 OneBot12 的 friend_increase/friend_decrease"
-      }
-    ],
-    "[BUG-037] 事件处理器在 OneBot12 中未正确处理 friend_increase/friend_decrease 事件": [
-      {
-        "document": "bug-tracker.md",
-        "line": 938,
-        "level": 3,
-        "title": "[BUG-037] 事件处理器在 OneBot12 中未正确处理 friend_increase/friend_decrease 事件"
-      }
-    ],
-    "[BUG-038] 事件处理器在 OneBot12 中未正确处理 friend_increase/friend_decrease 事件": [
-      {
-        "document": "bug-tracker.md",
-        "line": 954,
-        "level": 3,
-        "title": "[BUG-038] 事件处理器在 OneBot12 中未正确处理 friend_increase/friend_decrease 事件"
-      }
-    ],
-    "[BUG-039] 事件处理器在 OneBot12 中未正确处理 friend_increase/friend_decrease 事件": [
-      {
-        "document": "bug-tracker.md",
-        "line": 970,
-        "level": 3,
-        "title": "[BUG-039] 事件处理器在 OneBot12 中未正确处理 friend_increase/friend_decrease 事件"
-      }
-    ],
-    "[BUG-040] 事件处理器在 OneBot12 中未正确处理 friend_increase/friend_decrease 事件": [
-      {
-        "document": "bug-tracker.md",
-        "line": 986,
-        "level": 3,
-        "title": "[BUG-040] 事件处理器在 OneBot12 中未正确处理 friend_increase/friend_decrease 事件"
+        "title": "[BUG-036] 多實例共享配置目錄時配置寫入偶發失敗（ENOENT）"
       }
     ],
     "__init__.py": [
@@ -4839,7 +4807,7 @@
     "一個套件可以註冊多個模組嗎？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 178,
+        "line": 179,
         "level": 3,
         "title": "一個套件可以註冊多個模組嗎？"
       }
@@ -4935,7 +4903,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 628,
+        "line": 632,
         "level": 2,
         "title": "下一步"
       },
@@ -5059,7 +5027,7 @@
     "主人系統配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 224,
+        "line": 228,
         "level": 2,
         "title": "主人系統配置"
       }
@@ -5067,7 +5035,7 @@
     "主動 GC 配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 367,
+        "line": 371,
         "level": 3,
         "title": "主動 GC 配置"
       }
@@ -5387,7 +5355,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 460,
+        "line": 464,
         "level": 2,
         "title": "事件配置"
       }
@@ -5592,6 +5560,14 @@
         "title": "代理配置"
       }
     ],
+    "代碼品質": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 127,
+        "level": 3,
+        "title": "代碼品質"
+      }
+    ],
     "代碼說明": [
       {
         "document": "getting-started/first-bot.md",
@@ -5600,18 +5576,10 @@
         "title": "代碼說明"
       }
     ],
-    "代碼質量": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 127,
-        "level": 3,
-        "title": "代碼質量"
-      }
-    ],
     "伺服器配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 205,
+        "line": 209,
         "level": 2,
         "title": "伺服器配置"
       }
@@ -5651,7 +5619,7 @@
     "作用域配置（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 529,
+        "line": 533,
         "level": 2,
         "title": "作用域配置（scope）"
       }
@@ -5801,7 +5769,7 @@
     "使用者優先：主人生效範圍由使用者最終決定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 292,
+        "line": 296,
         "level": 3,
         "title": "使用者優先：主人生效範圍由使用者最終決定"
       }
@@ -6273,7 +6241,7 @@
     "判定鏈與運行時增刪": [
       {
         "document": "user-guide/configuration.md",
-        "line": 250,
+        "line": 254,
         "level": 3,
         "title": "判定鏈與運行時增刪"
       }
@@ -6391,7 +6359,7 @@
     "包名必須以 `ErisPulse-` 開頭嗎？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 174,
+        "line": 175,
         "level": 3,
         "title": "包名必須以 `ErisPulse-` 開頭嗎？"
       }
@@ -6629,7 +6597,7 @@
     "同時發布到 Docker Hub": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 353,
+        "line": 354,
         "level": 3,
         "title": "同時發布到 Docker Hub"
       }
@@ -6749,7 +6717,7 @@
     "命令解析配置（event.command）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 626,
+        "line": 630,
         "level": 2,
         "title": "命令解析配置（event.command）"
       }
@@ -6793,7 +6761,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 462,
+        "line": 466,
         "level": 3,
         "title": "命令配置"
       }
@@ -6865,7 +6833,7 @@
     "嚴格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 382,
+        "line": 386,
         "level": 3,
         "title": "嚴格模式"
       }
@@ -7013,7 +6981,7 @@
     "國際化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 489,
+        "line": 493,
         "level": 2,
         "title": "國際化配置"
       }
@@ -7406,6 +7374,14 @@
         "title": "多元素訊息"
       }
     ],
+    "多實例提示與鎖檔案": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 17,
+        "level": 3,
+        "title": "多實例提示與鎖檔案"
+      }
+    ],
     "多實例部署": [
       {
         "document": "user-guide/deployment.md",
@@ -7709,7 +7685,7 @@
     "存儲配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 411,
+        "line": 415,
         "level": 2,
         "title": "存儲配置"
       }
@@ -7893,7 +7869,7 @@
     "完整配置示例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 151,
+        "line": 155,
         "level": 2,
         "title": "完整配置示例"
       }
@@ -7963,7 +7939,7 @@
     "審核需要多長時間？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 188,
+        "line": 189,
         "level": 3,
         "title": "審核需要多長時間？"
       }
@@ -8305,7 +8281,7 @@
       },
       {
         "document": "developer-guide/publishing.md",
-        "line": 172,
+        "line": 173,
         "level": 2,
         "title": "常見問題"
       },
@@ -9335,7 +9311,7 @@
     "文件": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 148,
+        "line": 149,
         "level": 3,
         "title": "文件"
       }
@@ -9681,7 +9657,7 @@
     "日誌配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 298,
+        "line": 302,
         "level": 2,
         "title": "日誌配置"
       }
@@ -10151,7 +10127,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 346,
+        "line": 350,
         "level": 2,
         "title": "框架配置"
       }
@@ -10521,7 +10497,7 @@
     "模組配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 500,
+        "line": 504,
         "level": 2,
         "title": "模組配置"
       }
@@ -11079,7 +11055,7 @@
     "熱更新鏈路內部拆解": [
       {
         "document": "user-guide/configuration.md",
-        "line": 103,
+        "line": 107,
         "level": 3,
         "title": "熱更新鏈路內部拆解"
       }
@@ -11269,7 +11245,7 @@
     "環境變數覆蓋": [
       {
         "document": "user-guide/configuration.md",
-        "line": 56,
+        "line": 60,
         "level": 2,
         "title": "環境變數覆蓋"
       }
@@ -11505,7 +11481,7 @@
     "發布": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 155,
+        "line": 156,
         "level": 3,
         "title": "發布"
       }
@@ -12299,7 +12275,7 @@
     "統一事件覆寫配置（event.overrides）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 579,
+        "line": 583,
         "level": 2,
         "title": "統一事件覆寫配置（event.overrides）"
       }
@@ -12318,6 +12294,14 @@
         "line": 149,
         "level": 3,
         "title": "統一的模組獲取入口"
+      }
+    ],
+    "統計概覽": [
+      {
+        "document": "bug-tracker.md",
+        "line": 90,
+        "level": 2,
+        "title": "統計概覽"
       }
     ],
     "綁定繼承（merge）": [
@@ -12374,14 +12358,6 @@
         "line": 650,
         "level": 3,
         "title": "繼承關係"
-      }
-    ],
-    "统计概览": [
-      {
-        "document": "bug-tracker.md",
-        "line": 90,
-        "level": 2,
-        "title": "统计概览"
       }
     ],
     "群成員增加": [
@@ -12563,7 +12539,7 @@
     "自訂身份源（provider）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 264,
+        "line": 268,
         "level": 3,
         "title": "自訂身份源（provider）"
       }
@@ -12939,7 +12915,7 @@
     "訊息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 478,
+        "line": 482,
         "level": 3,
         "title": "訊息配置"
       }
@@ -13035,7 +13011,7 @@
     "註釋保留與最小化落盤": [
       {
         "document": "user-guide/configuration.md",
-        "line": 38,
+        "line": 42,
         "level": 2,
         "title": "註釋保留與最小化落盤"
       }
@@ -13227,7 +13203,7 @@
     "豁免清單": [
       {
         "document": "user-guide/configuration.md",
-        "line": 399,
+        "line": 403,
         "level": 4,
         "title": "豁免清單"
       }
@@ -13465,7 +13441,7 @@
     "透過 Docker 鏡像分發應用": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 192,
+        "line": 193,
         "level": 2,
         "title": "透過 Docker 鏡像分發應用"
       }
@@ -13769,7 +13745,7 @@
     "適用場景": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 196,
+        "line": 197,
         "level": 3,
         "title": "適用場景"
       }
@@ -14007,7 +13983,7 @@
     "配置": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 142,
+        "line": 143,
         "level": 3,
         "title": "配置"
       },
@@ -14097,7 +14073,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 81,
+        "line": 85,
         "level": 2,
         "title": "配置熱更新"
       }
@@ -14219,7 +14195,7 @@
     "配置載入錯誤處理": [
       {
         "document": "user-guide/configuration.md",
-        "line": 17,
+        "line": 21,
         "level": 2,
         "title": "配置載入錯誤處理"
       }
@@ -14613,7 +14589,7 @@
     "開發模式測試": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 162,
+        "line": 163,
         "level": 2,
         "title": "開發模式測試"
       }

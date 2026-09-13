@@ -3398,6 +3398,10 @@ project/
 ├── main.py
 ```
 
+### 多实例提示与锁文件
+
+框架启动时会在 `config/` 目录下创建 `.erispulse_config.lock` 锁文件并持有到进程退出（用于检测多实例共享配置目录）。如果日志出现「检测到配置文件可能正被另一个 ErisPulse 实例同时使用」的告警，说明有**两个以上的 ErisPulse 进程在写同一份配置**（典型场景：多个容器挂载了同一个宿主机 `config/` 目录）——并发写入会互相覆盖，请为每个实例使用独立的配置目录。
+
 ## 配置加载错误处理
 
 框架在加载 `config.toml` 时会区分三种错误状态，并给出**可操作的诊断信息**，而不是静默回退到默认配置：
@@ -9656,6 +9660,7 @@ pip install ErisPulse-MyModule
 ### 兼容性
 
 - [ ] `pyproject.toml` 声明了最低 SDK 版本：`dependencies = ["ErisPulse>=x.y.z"]`
+- [ ] 模块在 `get_meta()` 的 `ModuleMeta(min_sdk_version="x.y.z")` 声明了运行时最低 SDK 版本（适配器用类属性 `min_sdk_version`）——用户环境 SDK 过低时框架在加载期明确报错并跳过，而非报出难以定位的运行时异常
 - [ ] 测试了 Python 3.10 / 3.11 / 3.12 / 3.13
 - [ ] 测试了目标操作系统（Windows / Linux / macOS，如适用）
 - [ ] 无循环导入依赖

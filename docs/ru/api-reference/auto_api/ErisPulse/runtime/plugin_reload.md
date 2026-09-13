@@ -11,7 +11,7 @@ ErisPulse 本地插件热重载监控
 配置）下 ``.py`` 文件的变更，变化时自动重新加载对应插件。
 
 设计要点：
-- 复用 CLI 的 :class:`PollingObserver`（纯 Python mtime 轮询，后台守护线程）
+- 复用 :class:`~ErisPulse.runtime.file_watcher.PollingObserver`（纯 Python mtime 轮询，后台守护线程）
 - 文件变更回调在线程中触发，通过 :func:`asyncio.run_coroutine_threadsafe`
   把重载协程调度回主事件循环执行，避免线程内直接 await
 - 变更去抖：短时间（默认 1 秒）内的连续变更只触发一次重载
