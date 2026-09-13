@@ -17,6 +17,7 @@ config/config.db
 config/config.db-journal
 config/config.db-wal
 config/config.db-shm
+.erispulse_config.lock
 
 # site-packages
 config/.packages

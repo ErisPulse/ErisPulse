@@ -51,6 +51,7 @@ class ModuleMeta:
     tags: list[str] = field(default_factory=list)
     commands: list[str] | None = None
     services: "list[str | dict[str, Any]] | None" = None
+    min_sdk_version: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """
@@ -112,6 +113,8 @@ class BaseModule(ABC):
             - 简单形态：``["get_history", "translate"]``（方法名，介绍自动取 docstring 首行）
             - 完整形态：``[{"name": "get_history", "description": "查询会话历史"}]``
               （``description`` 支持纯字符串或 i18n 字典，声明后覆盖 docstring）
+        - ``min_sdk_version``: 运行时所需最低 SDK 版本（如 ``"2.8.1"``；
+            SDK 低于该版本时框架在加载期明确报错并跳过本模块）
 
         **i18n 支持**：字段值可为纯字符串，或 i18n 字典
         ``{"i18n": "key.path", "default": "兜底文本"}``（与配置 description 约定一致）。

@@ -26,54 +26,8 @@ from ..console import console
 from ..constants import PYPI_PACKAGE_JSON_URL_TEMPLATE
 from ..i18n import i18n
 
-# 版本号解析正则（PEP 440 子集，纯标准库，不依赖 packaging）：
-# 支持 epoch (1!)、release 段、预发布后缀 (dev/a/alpha/b/beta/rc/c/pre)、
-# post 版本 (1.0.postN) 与本地版本 (1.0+local)。
-# 例如 2.5.0-dev.1 / 2.5.0a1 / 1.0rc1 / 1.0.post1 / 1.0+local / 1!1.0 均可解析。
-# 不支持的格式（如 1.0.post1.dev1 这类 post 后跟 dev）由 _parse_version 返回 None 退化处理。
-_VERSION_RE = re.compile(
-    r"^\s*v?(?P<epoch>\d+!)?(?P<release>\d+(?:\.\d+)*)"
-    r"(?:[-._]?(?P<pre>dev|alpha|beta|rc|a|b|c|pre)[-._]?(?P<num>\d*))?"
-    r"(?:[-._]?post[-._]?(?P<post>\d+))?"
-    r"(?:\+(?P<local>[a-zA-Z0-9]+(?:[.-][a-zA-Z0-9]+)*))?",
-    re.IGNORECASE,
-)
-# 预发布类型排序权重：正式版 > rc > beta > alpha > dev
-_PRE_RELEASE_RANK = {
-    "dev": 0,
-    "alpha": 1,
-    "a": 1,
-    "beta": 2,
-    "b": 2,
-    "rc": 3,
-    "c": 3,
-    "pre": 3,
-}
-
-
-def _parse_version(version: str) -> dict | None:
-    """
-    将版本号解析为结构化组件（PEP 440 子集，纯标准库）。
-
-    与 :meth:`PackageManager._version_key` / :meth:`PackageManager._is_pre_release`
-    共用同一解析口径，避免不同正则导致判定分歧（如 ``1.0c2`` 此前在
-    ``_is_pre_release`` 与 ``_version_key`` 间判定口径不一致）。
-
-    :param version: [str] 版本号字符串
-    :return: [Optional[dict]] 含 epoch/release/pre_type/pre_num/post/local 的字典，
-             无法解析时返回 None
-    """
-    match = _VERSION_RE.match(str(version).strip().lstrip("vV"))
-    if not match:
-        return None
-    return {
-        "epoch": int((match.group("epoch") or "0").rstrip("!") or 0),
-        "release": match.group("release"),
-        "pre_type": match.group("pre"),
-        "pre_num": match.group("num"),
-        "post": match.group("post"),
-        "local": match.group("local"),
-    }
+# 版本号解析与比较的唯一实现在 runtime/version.py（PEP 440 子集，纯标准库）；
+# 本模块经下方方法级委托复用同一解析口径，避免双正则导致判定分歧
 
 
 class PackageManager:
@@ -853,63 +807,28 @@ class PackageManager:
         """
         将版本号解析为可比较的元组键
 
-        遵循项目命名规则排序：正式版 > post > rc > beta > alpha > dev；
-        epoch 优先于一切 release 段；本地版本 (+local) 不影响主排序，
-        但同一版本号带 local 段者 > 不带 local 段者。
-        例如 2.4.5-dev.1 先于 2.4.5 正式版，1.0 < 1.0.post1 < 1.1。
+        委托 :func:`ErisPulse.runtime.version.version_key`（框架内唯一实现）。
 
         :param version: [str] 版本号字符串
-        :return: [tuple] 可直接用于排序/比较的元组键
+        :return: [tuple] 逐段可比较的比较键元组
         """
-        parsed = _parse_version(version)
-        if parsed is None:
-            # 无法解析时退化为基础键，保证不抛异常
-            return (0, (0, 0, 0, 0), (1,), (0,), ((1, str(version).lower()),))
+        from ...runtime.version import version_key
 
-        release = tuple(int(x) for x in parsed["release"].split("."))
-        # release 段对齐到固定长度，确保 (2.5) 与 (2.5.0) 可正确比较
-        padded = release + (0,) * max(0, 4 - len(release))
-
-        pre_type = parsed["pre_type"]
-        if pre_type is None:
-            # 正式版：预发布键高于任何预发布版本
-            pre_key = (1,)
-        else:
-            rank = _PRE_RELEASE_RANK.get(pre_type.lower(), 1)
-            pre_num = int(parsed["pre_num"] or 0)
-            pre_key = (0, rank, pre_num)
-
-        # post 段：无 post 视为 post0，保证 1.0 == 1.0.post0 < 1.0.post1
-        post_num = int(parsed["post"] or 0)
-        post_key = (post_num,)
-
-        local = parsed["local"]
-        if local:
-            # 本地段按 "数值段 < 字母段" 拆分，避免 int/str 直接比较抛异常
-            local_key = tuple(
-                (0, int(part)) if part.isdigit() else (1, part.lower())
-                for part in local.split(".")
-            )
-        else:
-            local_key = ()
-
-        return (parsed["epoch"], padded, pre_key, post_key, local_key)
+        return version_key(version)
 
     def _compare_versions(self, version1: str, version2: str) -> int:
         """
         比较两个版本号的大小
 
+        委托 :func:`ErisPulse.runtime.version.compare_versions`（框架内唯一实现）。
+
         :param version1: [str] 第一个版本号
         :param version2: [str] 第二个版本号
         :return: [int] version1 大于/等于/小于 version2 时分别返回 1/0/-1
         """
-        k1 = self._version_key(version1)
-        k2 = self._version_key(version2)
-        if k1 > k2:
-            return 1
-        if k1 < k2:
-            return -1
-        return 0
+        from ...runtime.version import compare_versions
+
+        return compare_versions(version1, version2)
 
     def _check_sdk_compatibility(self, min_sdk_version: str) -> tuple[bool, str]:
         """
@@ -1435,14 +1354,16 @@ class PackageManager:
         """
         判断版本号是否为预发布版本
 
-        与 :meth:`_version_key` 复用同一解析口径（:func:`_parse_version`）：
-        仅当版本含预发布段 (dev/alpha/beta/rc/c/pre) 时返回 True；
-        post 版本 (1.0.post1) 与本地版本 (1.0+local) 不计为预发布。
+        与 :meth:`_version_key` 共用同一解析口径（:func:`ErisPulse.runtime.version.parse_version`）。
+        当版本号含预发布段 (dev/alpha/beta/rc/c/pre) 时返回 True。
+        post 版本 (1.0.post1) 与本地版本 (1.0+local) 不视为预发布版本
 
         :param version: [str] 版本号字符串
-        :return: [bool] 是预发布版本返回 True
+        :return: [bool] 是预发布版本时返回 True
         """
-        parsed = _parse_version(version)
+        from ...runtime.version import parse_version
+
+        parsed = parse_version(version)
         return parsed is not None and parsed["pre_type"] is not None
 
     def update_self(self, target_version: str | None = None, force: bool = False) -> bool:

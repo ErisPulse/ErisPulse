@@ -6,7 +6,7 @@
 {!--< tips >!--}
 1. 通过定期比较 .py 文件的 mtime 检测变更
 2. 接口与 watchdog.observers.Observer 保持一致 (schedule/start/stop/join)
-3. 用于实现 CLI 的热重载功能
+3. 供运行时插件热重载（runtime/plugin_reload）与 CLI 热重载（CLI/commands/run）共用
 {!--< /tips >!--}
 """
 

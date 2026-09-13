@@ -168,7 +168,7 @@ class TestFormatDiagnosticBlock:
         )
 
     def test_format_with_custom_hint_key(self):
-        """测试自定义 hint_key"""
+        """测试自定义 hint_key + hint_params 参数填充"""
         from ErisPulse.Core.i18n import i18n
 
         # 注册一个测试 hint key
@@ -180,9 +180,32 @@ class TestFormatDiagnosticBlock:
         try:
             raise ValueError("测试错误")
         except Exception as e:
+            block = format_diagnostic_block(
+                e,
+                hint_key="test.diag.custom_hint",
+                hint_params={"name": "DemoModule"},
+            )
+
+        # hint_params 应填充模板占位符，而非输出原始 {name}
+        assert "DemoModule" in block
+        assert "{name}" not in block
+        assert "→" in block
+        i18n.unregister_domain("test_diag")
+
+    def test_format_with_hint_key_without_params_not_crash(self):
+        """不传 hint_params 时占位符模板不崩溃（回退通用提示，向后兼容）"""
+        from ErisPulse.Core.i18n import i18n
+
+        i18n.register(
+            "zh-CN",
+            {"test.diag.custom_hint": "这是自定义提示 {name}"},
+            domain="test_diag",
+        )
+        try:
+            raise ValueError("测试错误")
+        except Exception as e:
             block = format_diagnostic_block(e, hint_key="test.diag.custom_hint")
 
-        # 由于 hint_key 渲染时无 name 参数，可能回退；这里主要验证不崩溃
         assert isinstance(block, str)
         assert "→" in block
         i18n.unregister_domain("test_diag")

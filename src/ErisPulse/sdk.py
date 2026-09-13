@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import asyncio
 import importlib
-import importlib.metadata
 import inspect
 import os
 import sys
@@ -237,6 +236,8 @@ class SDK:
         >>> print(sdk.version)
         '2.6.2'
         """
+        import importlib.metadata
+
         try:
             return importlib.metadata.version("ErisPulse")
         except importlib.metadata.PackageNotFoundError:

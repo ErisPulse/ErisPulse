@@ -10,8 +10,6 @@ ErisPulse SDK 主模块
 {!--< /tips >!--}
 """
 
-import importlib.metadata
-
 # 导入核心模块
 from .Core import (
     BaseAdapter,
@@ -40,13 +38,32 @@ from .sdk import SDK, sdk
 
 # ==================== 版本信息 ====================
 
-__version__ = "UnknownVersion"
 __author__ = "ErisPulse"
 
-try:
-    __version__ = importlib.metadata.version("ErisPulse")
-except importlib.metadata.PackageNotFoundError:
-    pass
+
+def __getattr__(name: str):
+    """
+    惰性解析 ``__version__``（首次访问时经包元数据读取）
+
+    :param name: 属性名
+    :return: 属性值
+    :raises AttributeError: 未知属性时抛出
+
+    {!--< internal-use >!--}
+    避免在 ``import ErisPulse`` 时为读取版本号而加载 importlib.metadata
+    及其依赖链（email/zipfile/asyncio 等，冷启动约数十毫秒）
+    {!--< /internal-use >!--}
+    """
+    if name == "__version__":
+        global __version__
+        import importlib.metadata
+
+        try:
+            __version__ = importlib.metadata.version("ErisPulse")
+        except importlib.metadata.PackageNotFoundError:
+            __version__ = "UnknownVersion"
+        return __version__
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 # 向后兼容性导出

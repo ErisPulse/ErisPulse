@@ -10,7 +10,6 @@ ErisPulse 基础发现器
 {!--< /tips >!--}
 """
 
-import importlib.metadata
 import json
 import subprocess
 import sys
@@ -259,7 +258,9 @@ class BaseFinder(ABC):
                 if self._last_error is not None:
                     return []
             else:
-                # 加载 entry-points（当前环境）
+                # 本地 entry-points（当前环境）
+                import importlib.metadata
+
                 entry_points = importlib.metadata.entry_points()
 
                 if hasattr(entry_points, "select"):
@@ -344,6 +345,8 @@ class BaseFinder(ABC):
         {!--< /tips >!--}
         """
         try:
+            import importlib.metadata
+
             dist = importlib.metadata.distribution(package_name)
             if top_level := dist.read_text("top_level.txt"):
                 return [

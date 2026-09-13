@@ -205,6 +205,7 @@ def format_diagnostic_block(
     exc: BaseException,
     *,
     hint_key: str | None = None,
+    hint_params: dict[str, Any] | None = None,
     candidates: list[str] | None = None,
     depth: int = 3,
 ) -> str:
@@ -216,6 +217,8 @@ def format_diagnostic_block(
 
     :param exc: BaseException 异常对象
     :param hint_key: str | None 自定义提示行的 i18n key（默认使用通用提示）
+    :param hint_params: dict[str, Any] | None 提示行模板的填充参数
+        （如 ``{"name": module_name}``，对应提示文案中的 ``{name}`` 占位符）
     :param candidates: list[str] | None 相似名称候选，用于附加「你是不是想写」提示
     :param depth: int 最多保留的用户帧数量
     :return: str 多行诊断文本；无可用信息时返回空字符串
@@ -260,7 +263,7 @@ def format_diagnostic_block(
         try:
             from ..Core.i18n import i18n
 
-            lines.append(i18n.t(hint_key))
+            lines.append(i18n.t(hint_key, **(hint_params or {})))
         except Exception:
             lines.append(_t("core.diag.hint"))
     else:
@@ -273,6 +276,7 @@ def log_diagnostic(
     exc: BaseException,
     *,
     hint_key: str | None = None,
+    hint_params: dict[str, Any] | None = None,
     candidates: list[str] | None = None,
     depth: int = 3,
     logger: Any = None,
@@ -285,6 +289,7 @@ def log_diagnostic(
 
     :param exc: BaseException 异常对象
     :param hint_key: str | None 自定义提示行的 i18n key
+    :param hint_params: dict[str, Any] | None 提示行模板的填充参数
     :param candidates: list[str] | None 相似名称候选
     :param depth: int 最多保留的用户帧数量
     :param logger: Any 指定 logger 实例（默认使用 ``Core.logger.logger``）
@@ -304,7 +309,11 @@ def log_diagnostic(
             return
 
     block = format_diagnostic_block(
-        exc, hint_key=hint_key, candidates=candidates, depth=depth
+        exc,
+        hint_key=hint_key,
+        hint_params=hint_params,
+        candidates=candidates,
+        depth=depth,
     )
     if block:
         logger.error(block)

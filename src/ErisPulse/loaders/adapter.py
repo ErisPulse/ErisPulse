@@ -11,7 +11,6 @@ ErisPulse 适配器加载器
 """
 
 import asyncio
-import importlib.metadata
 import inspect
 import sys
 from typing import Any, cast
@@ -21,7 +20,7 @@ from ..Core.i18n import i18n
 from ..Core.lifecycle import lifecycle
 from ..Core.logger import logger
 from ..finders import AdapterFinder
-from .bases.loader import BaseLoader
+from .bases.loader import BaseLoader, resolve_min_sdk_version
 
 
 class AdapterLoader(BaseLoader):
@@ -158,6 +157,8 @@ class AdapterLoader(BaseLoader):
         try:
             loaded_class = entry_point.load()
             adapter_obj = sys.modules[loaded_class.__module__]
+            import importlib.metadata
+
             dist = (
                 importlib.metadata.distribution(entry_point.dist.name)
                 if entry_point.dist
@@ -176,6 +177,10 @@ class AdapterLoader(BaseLoader):
                 if self._strict().decide(meta_name, "adapter", "not_base_class"):
                     return objs, enabled_list, disabled_list, is_new
 
+            # 运行时最低 SDK 版本检查：不满足时明确报错并跳过（声明缺失则放行）
+            if not self._check_sdk_version(meta_name, "adapter", loaded_class):
+                return objs, enabled_list, disabled_list, is_new
+
             # 依赖声明（2.8.0+）：来自适配器类属性 depends / optional_modules
             depends_decl = dict(getattr(loaded_class, "depends", None) or {})
             optional_modules = list(
@@ -192,6 +197,9 @@ class AdapterLoader(BaseLoader):
                     "author": getattr(adapter_obj, "__author__", ""),
                     "license": getattr(adapter_obj, "__license__", ""),
                     "package": entry_point.dist.name if entry_point.dist else None,
+                    "min_sdk_version": resolve_min_sdk_version(
+                        loaded_class, meta_name
+                    ),
                     "depends": depends_decl,
                     "optional_modules": optional_modules,
                     "top_level": self._finder.get_top_level_modules(
@@ -227,7 +235,11 @@ class AdapterLoader(BaseLoader):
             )
             from ..runtime.diagnostics import log_diagnostic
 
-            log_diagnostic(e, hint_key="loader.adapter.diag_hint")
+            log_diagnostic(
+                e,
+                hint_key="loader.adapter.diag_hint",
+                hint_params={"name": meta_name},
+            )
 
         return objs, enabled_list, disabled_list, is_new
 
@@ -307,7 +319,11 @@ class AdapterLoader(BaseLoader):
                     )
                     from ..runtime.diagnostics import log_diagnostic
 
-                    log_diagnostic(e, hint_key="loader.adapter.diag_hint")
+                    log_diagnostic(
+                        e,
+                        hint_key="loader.adapter.diag_hint",
+                        hint_params={"name": name},
+                    )
                     # 提交适配器加载失败事件
                     await lifecycle.submit_event(
                         "adapter.load",
