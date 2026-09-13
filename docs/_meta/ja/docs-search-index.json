@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1659,
+  "total_keywords": 1662,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -8,14 +8,6 @@
         "line": 64,
         "level": 4,
         "title": "0 成功（OK）"
-      }
-    ],
-    "1 つのパッケージに複数のモジュールを登録できますか？": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 178,
-        "level": 3,
-        "title": "1 つのパッケージに複数のモジュールを登録できますか？"
       }
     ],
     "1 本レールインストールスクリプト（推奨）": [
@@ -42,12 +34,12 @@
         "title": "1. CLI run コマンド（開発/簡単なデプロイ、推奨）"
       }
     ],
-    "1. Dockerfileの作成": [
+    "1. Dockerfile の作成": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 202,
+        "line": 203,
         "level": 3,
-        "title": "1. Dockerfileの作成"
+        "title": "1. Dockerfile の作成"
       }
     ],
     "1. Event 包装クラスの使用": [
@@ -520,6 +512,14 @@
         "title": "1xxxx 動作リクエストエラー（Request Error）"
       }
     ],
+    "1つのパッケージで複数のモジュールを登録できますか？": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 179,
+        "level": 3,
+        "title": "1つのパッケージで複数のモジュールを登録できますか？"
+      }
+    ],
     "2 種の注入モード": [
       {
         "document": "ecosystem/dashboard.md",
@@ -552,12 +552,12 @@
         "title": "2. Event オブジェクト"
       }
     ],
-    "2. GitHub Actionsワークフローの作成": [
+    "2. GitHub Actions ワークフローの作成": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 230,
+        "line": 231,
         "level": 3,
-        "title": "2. GitHub Actionsワークフローの作成"
+        "title": "2. GitHub Actions ワークフローの作成"
       }
     ],
     "2. IDのみを指定する": [
@@ -568,12 +568,12 @@
         "title": "2. IDのみを指定する"
       }
     ],
-    "2. PyPI への配布": [
+    "2. PyPI への公開": [
       {
         "document": "developer-guide/publishing.md",
         "line": 75,
         "level": 3,
-        "title": "2. PyPI への配布"
+        "title": "2. PyPI への公開"
       }
     ],
     "2. README ヘッダー": [
@@ -1084,12 +1084,12 @@
         "title": "3. ハートビート保活と Meta ハートビート"
       }
     ],
-    "3. ビルドのトリガー": [
+    "3. ビルドの起動": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 299,
+        "line": 300,
         "level": 3,
-        "title": "3. ビルドのトリガー"
+        "title": "3. ビルドの起動"
       }
     ],
     "3. フィールドマッピング（入力JSON → OneBot12イベント）": [
@@ -1116,12 +1116,12 @@
         "title": "3. プラットフォーム固有のメソッドをサポート"
       }
     ],
-    "3. モジュールストアへの提出": [
+    "3. モジュール商店への登録": [
       {
         "document": "developer-guide/publishing.md",
         "line": 90,
         "level": 3,
-        "title": "3. モジュールストアへの提出"
+        "title": "3. モジュール商店への登録"
       }
     ],
     "3. リソース管理": [
@@ -1431,7 +1431,7 @@
     "4. イメージを公開に設定": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 314,
+        "line": 315,
         "level": 3,
         "title": "4. イメージを公開に設定"
       }
@@ -1466,6 +1466,14 @@
         "line": 161,
         "level": 2,
         "title": "4. 使用方法"
+      }
+    ],
+    "4. 公開済みモジュールの管理": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 106,
+        "level": 3,
+        "title": "4. 公開済みモジュールの管理"
       }
     ],
     "4. 実装要件": [
@@ -1530,14 +1538,6 @@
         "line": 121,
         "level": 2,
         "title": "4. 自定义型の拡張"
-      }
-    ],
-    "4. 配布済みモジュールの管理": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 106,
-        "level": 3,
-        "title": "4. 配布済みモジュールの管理"
       }
     ],
     "4.1 Event メソッド一覧": [
@@ -1679,7 +1679,7 @@
     "5. ユーザーの使用": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 321,
+        "line": 322,
         "level": 3,
         "title": "5. ユーザーの使用"
       }
@@ -2896,12 +2896,12 @@
         "title": "Discord固有メソッドの使用"
       }
     ],
-    "Docker Hubへの同時公開": [
+    "Docker Hub への同時公開": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 353,
+        "line": 354,
         "level": 3,
-        "title": "Docker Hubへの同時公開"
+        "title": "Docker Hub への同時公開"
       }
     ],
     "Docker を使用する": [
@@ -2910,6 +2910,22 @@
         "line": 26,
         "level": 3,
         "title": "Docker を使用する"
+      }
+    ],
+    "Docker イメージ vs PyPI 公開": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 377,
+        "level": 3,
+        "title": "Docker イメージ vs PyPI 公開"
+      }
+    ],
+    "Docker イメージによるアプリケーションの配布": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 193,
+        "level": 2,
+        "title": "Docker イメージによるアプリケーションの配布"
       }
     ],
     "Docker 方式": [
@@ -2926,22 +2942,6 @@
         "line": 5,
         "level": 2,
         "title": "Docker 部署（推奨）"
-      }
-    ],
-    "Dockerイメージ vs PyPI公開": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 376,
-        "level": 3,
-        "title": "Dockerイメージ vs PyPI公開"
-      }
-    ],
-    "Dockerイメージによるアプリケーションの配布": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 192,
-        "level": 2,
-        "title": "Dockerイメージによるアプリケーションの配布"
       }
     ],
     "Embedメッセージの送信": [
@@ -4110,36 +4110,36 @@
         "title": "Windows PowerShell 実行ポリシー"
       }
     ],
-    "[BUG-001] イベントハンドラの重複登録によるイベントの多重処理": [
+    "[BUG-001] イベントハンドラの重複登録によりイベントが複数回処理される": [
       {
         "document": "bug-tracker.md",
         "line": 115,
         "level": 3,
-        "title": "[BUG-001] イベントハンドラの重複登録によるイベントの多重処理"
+        "title": "[BUG-001] イベントハンドラの重複登録によりイベントが複数回処理される"
       }
     ],
-    "[BUG-002] Init コマンドのアダプタ設定パス型エラー": [
+    "[BUG-002] Init コマンドのアダプタ設定パスの型エラー": [
       {
         "document": "bug-tracker.md",
         "line": 135,
         "level": 3,
-        "title": "[BUG-002] Init コマンドのアダプタ設定パス型エラー"
+        "title": "[BUG-002] Init コマンドのアダプタ設定パスの型エラー"
       }
     ],
-    "[BUG-003] 再起動後のコマンドイベントが無効になる": [
+    "[BUG-003] 再起動後にコマンドイベントが無効になる": [
       {
         "document": "bug-tracker.md",
         "line": 159,
         "level": 3,
-        "title": "[BUG-003] 再起動後のコマンドイベントが無効になる"
+        "title": "[BUG-003] 再起動後にコマンドイベントが無効になる"
       }
     ],
-    "[BUG-004] ライフサイクルイベントハンドラがクリーンアップされない": [
+    "[BUG-004] ライフサイクルイベントハンドラがクリアされない": [
       {
         "document": "bug-tracker.md",
         "line": 179,
         "level": 3,
-        "title": "[BUG-004] ライフサイクルイベントハンドラがクリーンアップされない"
+        "title": "[BUG-004] ライフサイクルイベントハンドラがクリアされない"
       }
     ],
     "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない": [
@@ -4150,44 +4150,44 @@
         "title": "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない"
       }
     ],
-    "[BUG-006] adapter.clear() が _started_instances をクリーンアップしない": [
+    "[BUG-006] adapter.clear() が _started_instances をクリアしないため、再起動後に状態が正しくない": [
       {
         "document": "bug-tracker.md",
         "line": 219,
         "level": 3,
-        "title": "[BUG-006] adapter.clear() が _started_instances をクリーンアップしない"
+        "title": "[BUG-006] adapter.clear() が _started_instances をクリアしないため、再起動後に状態が正しくない"
       }
     ],
-    "[BUG-007] command.wait_reply() で非推奨の asyncio.get_event_loop() を使用": [
+    "[BUG-007] command.wait_reply() が廃止された asyncio.get_event_loop() を使用している": [
       {
         "document": "bug-tracker.md",
         "line": 239,
         "level": 3,
-        "title": "[BUG-007] command.wait_reply() で非推奨の asyncio.get_event_loop() を使用"
+        "title": "[BUG-007] command.wait_reply() が廃止された asyncio.get_event_loop() を使用している"
       }
     ],
-    "[BUG-008] Bot オフラインイベントが shutdown 過程で重複送信される": [
+    "[BUG-008] Bot オンライン/オフイベントが shutdown 過程で繰り返し送信される": [
       {
         "document": "bug-tracker.md",
         "line": 259,
         "level": 3,
-        "title": "[BUG-008] Bot オフラインイベントが shutdown 過程で重複送信される"
+        "title": "[BUG-008] Bot オンライン/オフイベントが shutdown 過程で繰り返し送信される"
       }
     ],
-    "[BUG-009] LazyModule が同期アクセスで BaseModule を初期化していない": [
+    "[BUG-009] LazyModule 同期アクセスで BaseModule が初期化完了していない": [
       {
         "document": "bug-tracker.md",
         "line": 279,
         "level": 3,
-        "title": "[BUG-009] LazyModule が同期アクセスで BaseModule を初期化していない"
+        "title": "[BUG-009] LazyModule 同期アクセスで BaseModule が初期化完了していない"
       }
     ],
-    "[BUG-010] 設定システムのマルチスレッド書き込みによるデータロス": [
+    "[BUG-010] 複数スレッドでの構成書き込みによりデータが失われる": [
       {
         "document": "bug-tracker.md",
         "line": 299,
         "level": 3,
-        "title": "[BUG-010] 設定システムのマルチスレッド書き込みによるデータロス"
+        "title": "[BUG-010] 複数スレッドでの構成書き込みによりデータが失われる"
       }
     ],
     "[BUG-011] Windows で CTRL+C でプログラムを停止できない": [
@@ -4230,12 +4230,12 @@
         "title": "[BUG-015] 設定ファイルパスが作業ディレクトリに依存する"
       }
     ],
-    "[BUG-016] BaseStorage がストレージ値 None とキーが存在しないを混同する": [
+    "[BUG-016] BaseStorage がストレージ値 None とキーが存在しないことを混同する": [
       {
         "document": "bug-tracker.md",
         "line": 426,
         "level": 3,
-        "title": "[BUG-016] BaseStorage がストレージ値 None とキーが存在しないを混同する"
+        "title": "[BUG-016] BaseStorage がストレージ値 None とキーが存在しないことを混同する"
       }
     ],
     "[BUG-017] WebSocket ルート auto_accept フラグがサービス再起動後に失われる": [
@@ -4246,12 +4246,12 @@
         "title": "[BUG-017] WebSocket ルート auto_accept フラグがサービス再起動後に失われる"
       }
     ],
-    "[BUG-018] HTTP/WS クライアントの並行呼び出しによるクラッシュと接続リーク": [
+    "[BUG-018] HTTP/WS クライアントの並行呼び出しによりクラッシュや接続漏れが発生する": [
       {
         "document": "bug-tracker.md",
         "line": 466,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS クライアントの並行呼び出しによるクラッシュと接続リーク"
+        "title": "[BUG-018] HTTP/WS クライアントの並行呼び出しによりクラッシュや接続漏れが発生する"
       }
     ],
     "[BUG-019] アダプタのホットリロード時にルートの競合によりリロードが失敗する": [
@@ -4262,20 +4262,12 @@
         "title": "[BUG-019] アダプタのホットリロード時にルートの競合によりリロードが失敗する"
       }
     ],
-    "[BUG-020] 子プロセスモデル `ep run <script>` でスクリプトのサブパッケージが見つからない": [
+    "[BUG-020] 子プロセスモード `ep run <script>` でスクリプトの子パッケージが見つからない": [
       {
         "document": "bug-tracker.md",
         "line": 518,
         "level": 3,
-        "title": "[BUG-020] 子プロセスモデル `ep run <script>` でスクリプトのサブパッケージが見つからない"
-      }
-    ],
-    "[BUG-020] 配置監視の競合により setConfig の遅延書き込みが静かにデータを失う": [
-      {
-        "document": "bug-tracker.md",
-        "line": 800,
-        "level": 3,
-        "title": "[BUG-020] 配置監視の競合により setConfig の遅延書き込みが静かにデータを失う"
+        "title": "[BUG-020] 子プロセスモード `ep run <script>` でスクリプトの子パッケージが見つからない"
       }
     ],
     "[BUG-021] SQL クエリビルダーが合法なワイルドカードとリスト式を拒否する": [
@@ -4286,92 +4278,108 @@
         "title": "[BUG-021] SQL クエリビルダーが合法なワイルドカードとリスト式を拒否する"
       }
     ],
-    "[BUG-022] _resolve_account() のアカウント解決のリバージョン（_accounts_data が未設定）": [
+    "[BUG-022] _resolve_account() のアカウント解決のリグレッション（_accounts_data が未充填）": [
       {
         "document": "bug-tracker.md",
-        "line": 567,
+        "line": 568,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() のアカウント解決のリバージョン（_accounts_data が未設定）"
+        "title": "[BUG-022] _resolve_account() のアカウント解決のリグレッション（_accounts_data が未充填）"
       }
     ],
-    "[BUG-023] アカウント設定を変更した後にアダプタのキャッシュが更新されずアカウント解決に失敗する": [
+    "[BUG-023] 構成を変更した後にアダプタのキャッシュが更新されずアカウント解決に失敗する": [
       {
         "document": "bug-tracker.md",
-        "line": 606,
+        "line": 607,
         "level": 3,
-        "title": "[BUG-023] アカウント設定を変更した後にアダプタのキャッシュが更新されずアカウント解決に失敗する"
+        "title": "[BUG-023] 構成を変更した後にアダプタのキャッシュが更新されずアカウント解決に失敗する"
       }
     ],
     "[BUG-024] storage.set() で大数 ID キーを書き込むと OOM Kill が発生する": [
       {
         "document": "bug-tracker.md",
-        "line": 626,
+        "line": 627,
         "level": 3,
         "title": "[BUG-024] storage.set() で大数 ID キーを書き込むと OOM Kill が発生する"
       }
     ],
-    "[BUG-025] on_config_update コールバックがコアルートに登録されていない": [
+    "[BUG-025] on_config_update コールバックがフレームワークのルーティングに含まれていない": [
       {
         "document": "bug-tracker.md",
-        "line": 672,
+        "line": 673,
         "level": 3,
-        "title": "[BUG-025] on_config_update コールバックがコアルートに登録されていない"
+        "title": "[BUG-025] on_config_update コールバックがフレームワークのルーティングに含まれていない"
       }
     ],
-    "[BUG-026] notice/request イベントの reply 目的推定が間違っている": [
+    "[BUG-026] notice/request イベントの reply 目標が誤って推定される": [
       {
         "document": "bug-tracker.md",
-        "line": 702,
+        "line": 703,
         "level": 3,
-        "title": "[BUG-026] notice/request イベントの reply 目的推定が間違っている"
+        "title": "[BUG-026] notice/request イベントの reply 目標が誤って推定される"
       }
     ],
-    "[BUG-027] ルートリミットクリーンアップタスクが固定ウィンドウを使用して長ウィンドウルールが無効になる": [
+    "[BUG-027] ルートリミットクリーンアップタスクが固定ウィンドウを使用して長時間のリミットルールが無効になる": [
       {
         "document": "bug-tracker.md",
-        "line": 733,
+        "line": 734,
         "level": 3,
-        "title": "[BUG-027] ルートリミットクリーンアップタスクが固定ウィンドウを使用して長ウィンドウルールが無効になる"
+        "title": "[BUG-027] ルートリミットクリーンアップタスクが固定ウィンドウを使用して長時間のリミットルールが無効になる"
       }
     ],
-    "[BUG-029] 設定監視タスクが不完全な TOML をブロードキャストし、例外を静かに飲み込む": [
+    "[BUG-029] 構成の監視タスクが半分の TOML をブロードキャストし、例外を静かに飲み込む": [
       {
         "document": "bug-tracker.md",
-        "line": 765,
+        "line": 766,
         "level": 3,
-        "title": "[BUG-029] 設定監視タスクが不完全な TOML をブロードキャストし、例外を静かに飲み込む"
+        "title": "[BUG-029] 構成の監視タスクが半分の TOML をブロードキャストし、例外を静かに飲み込む"
       }
     ],
-    "[BUG-032] 設定の遅延書き込み中に「書き込んだ後に読む」で古い値を読む": [
+    "[BUG-030] 配置の watcher 競合により setConfig の遅延書き込みが静かにデータを失う": [
       {
         "document": "bug-tracker.md",
-        "line": 836,
+        "line": 802,
         "level": 3,
-        "title": "[BUG-032] 設定の遅延書き込み中に「書き込んだ後に読む」で古い値を読む"
+        "title": "[BUG-030] 配置の watcher 競合により setConfig の遅延書き込みが静かにデータを失う"
       }
     ],
-    "[BUG-033] wait_reply で待機中の返信が高優先度のハンドラに食い込まれる": [
+    "[BUG-032] 構成の遅延書き込み中に「書き込み直後」に読み取ると古い値が返される": [
       {
         "document": "bug-tracker.md",
-        "line": 858,
+        "line": 838,
         "level": 3,
-        "title": "[BUG-033] wait_reply で待機中の返信が高優先度のハンドラに食い込まれる"
+        "title": "[BUG-032] 構成の遅延書き込み中に「書き込み直後」に読み取ると古い値が返される"
       }
     ],
-    "[BUG-034] persist=False のスコープ設定は任意の後続の設定書き込みによって静かに破棄される": [
+    "[BUG-033] wait_reply で保留中の返信が高優先度のハンドラに食い込まれる": [
       {
         "document": "bug-tracker.md",
-        "line": 880,
+        "line": 860,
         "level": 3,
-        "title": "[BUG-034] persist=False のスコープ設定は任意の後続の設定書き込みによって静かに破棄される"
+        "title": "[BUG-033] wait_reply で保留中の返信が高優先度のハンドラに食い込まれる"
       }
     ],
-    "[BUG-035] 設定パネルの select 項目と dict フィールドが [object Object] にレンダリングされる": [
+    "[BUG-034] persist=False のスコープの実行時バインディングが任意の後続構成書き込みで静かに上書きされる": [
       {
         "document": "bug-tracker.md",
-        "line": 900,
+        "line": 882,
         "level": 3,
-        "title": "[BUG-035] 設定パネルの select 項目と dict フィールドが [object Object] にレンダリングされる"
+        "title": "[BUG-034] persist=False のスコープの実行時バインディングが任意の後続構成書き込みで静かに上書きされる"
+      }
+    ],
+    "[BUG-035] 構成パネルの select 項目と dict フィールドが [object Object] にレンダリングされる": [
+      {
+        "document": "bug-tracker.md",
+        "line": 902,
+        "level": 3,
+        "title": "[BUG-035] 構成パネルの select 項目と dict フィールドが [object Object] にレンダリングされる"
+      }
+    ],
+    "[BUG-036] 複数インスタンスが共有する構成ディレクトリで構成の書き込みが偶発的に失敗する（ENOENT）": [
+      {
+        "document": "bug-tracker.md",
+        "line": 920,
+        "level": 3,
+        "title": "[BUG-036] 複数インスタンスが共有する構成ディレクトリで構成の書き込みが偶発的に失敗する（ENOENT）"
       }
     ],
     "__init__.py": [
@@ -5256,6 +5264,14 @@
         "title": "アクティブ状態の管理"
       }
     ],
+    "アダプタ": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 60,
+        "level": 4,
+        "title": "アダプタ"
+      }
+    ],
     "アダプタがMetaイベントを送信": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -5326,14 +5342,6 @@
         "line": 182,
         "level": 3,
         "title": "アダプタライフサイクル"
-      }
-    ],
-    "アダプター": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 60,
-        "level": 4,
-        "title": "アダプター"
       }
     ],
     "アダプターでの使用": [
@@ -5831,7 +5839,7 @@
     "イベント設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 451,
+        "line": 455,
         "level": 2,
         "title": "イベント設定"
       }
@@ -6489,7 +6497,7 @@
     "コマンド解析の設定（event.command）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 617,
+        "line": 621,
         "level": 2,
         "title": "コマンド解析の設定（event.command）"
       }
@@ -6497,7 +6505,7 @@
     "コマンド設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 453,
+        "line": 457,
         "level": 3,
         "title": "コマンド設定"
       }
@@ -6505,7 +6513,7 @@
     "コメントの保持と最小限の書き込み": [
       {
         "document": "user-guide/configuration.md",
-        "line": 38,
+        "line": 42,
         "level": 2,
         "title": "コメントの保持と最小限の書き込み"
       }
@@ -6673,7 +6681,7 @@
     "サーバーの設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 197,
+        "line": 201,
         "level": 2,
         "title": "サーバーの設定"
       }
@@ -6769,7 +6777,7 @@
     "スコープの設定（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 520,
+        "line": 524,
         "level": 2,
         "title": "スコープの設定（scope）"
       }
@@ -6839,7 +6847,7 @@
     "ストレージ設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 402,
+        "line": 406,
         "level": 2,
         "title": "ストレージ設定"
       }
@@ -7425,7 +7433,7 @@
     "ドキュメント": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 148,
+        "line": 149,
         "level": 3,
         "title": "ドキュメント"
       }
@@ -7731,7 +7739,7 @@
     "パッケージ名は `ErisPulse-` で始める必要がありますか？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 174,
+        "line": 175,
         "level": 3,
         "title": "パッケージ名は `ErisPulse-` で始める必要がありますか？"
       }
@@ -8129,7 +8137,7 @@
     "プロアクティブGC設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 358,
+        "line": 362,
         "level": 3,
         "title": "プロアクティブGC設定"
       }
@@ -8241,7 +8249,7 @@
     "ホットアップデートの内部処理の詳細": [
       {
         "document": "user-guide/configuration.md",
-        "line": 95,
+        "line": 99,
         "level": 3,
         "title": "ホットアップデートの内部処理の詳細"
       }
@@ -8759,7 +8767,7 @@
     "メッセージ設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 469,
+        "line": 473,
         "level": 3,
         "title": "メッセージ設定"
       }
@@ -8996,18 +9004,10 @@
         "title": "モジュールの取得の統一されたエントリーポイント"
       }
     ],
-    "モジュールの更新": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 115,
-        "level": 2,
-        "title": "モジュールの更新"
-      }
-    ],
     "モジュールの設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 491,
+        "line": 495,
         "level": 2,
         "title": "モジュールの設定"
       }
@@ -9028,14 +9028,6 @@
         "title": "モジュールクラスでの使用"
       }
     ],
-    "モジュールストアの概要": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 5,
-        "level": 2,
-        "title": "モジュールストアの概要"
-      }
-    ],
     "モジュールライフサイクル": [
       {
         "document": "advanced/lifecycle.md",
@@ -9050,6 +9042,22 @@
         "line": 114,
         "level": 3,
         "title": "モジュールレベルの制御"
+      }
+    ],
+    "モジュール商店の概要": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 5,
+        "level": 2,
+        "title": "モジュール商店の概要"
+      }
+    ],
+    "モジュール商店への公開ガイド": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 1,
+        "level": 1,
+        "title": "モジュール商店への公開ガイド"
       }
     ],
     "モジュール概要": [
@@ -9205,7 +9213,7 @@
     "ユーザー優先：主人生効果範囲はユーザーが最終決定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 283,
+        "line": 287,
         "level": 3,
         "title": "ユーザー優先：主人生効果範囲はユーザーが最終決定"
       }
@@ -9474,36 +9482,12 @@
         "title": "リバースプロキシ"
       }
     ],
-    "リリース": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 155,
-        "level": 3,
-        "title": "リリース"
-      }
-    ],
-    "リリースとモジュールストアガイド": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 1,
-        "level": 1,
-        "title": "リリースとモジュールストアガイド"
-      }
-    ],
     "リリースガイド": [
       {
         "document": "developer-guide/README.md",
         "line": 22,
         "level": 3,
         "title": "リリースガイド"
-      }
-    ],
-    "リリース前のチェックリスト": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 123,
-        "level": 2,
-        "title": "リリース前のチェックリスト"
       }
     ],
     "リンク制御": [
@@ -9729,7 +9713,7 @@
     "ログ設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 289,
+        "line": 293,
         "level": 2,
         "title": "ログ設定"
       }
@@ -9870,6 +9854,14 @@
         "title": "一般的な設定位置"
       }
     ],
+    "一般的な質問": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 173,
+        "level": 2,
+        "title": "一般的な質問"
+      }
+    ],
     "一般的インターフェース": [
       {
         "document": "platform-guide/README.md",
@@ -9902,14 +9894,6 @@
         "title": "一般的質問と注意事項"
       }
     ],
-    "一覧表示と発見": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 9,
-        "level": 3,
-        "title": "一覧表示と発見"
-      }
-    ],
     "三、内部原理を深く理解したい": [
       {
         "document": "README.md",
@@ -9937,7 +9921,7 @@
     "主人システム設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 216,
+        "line": 220,
         "level": 2,
         "title": "主人システム設定"
       }
@@ -10202,12 +10186,12 @@
         "title": "保留エラーセグメント"
       }
     ],
-    "修正済みバグ": [
+    "修正されたバグ": [
       {
         "document": "bug-tracker.md",
         "line": 113,
         "level": 2,
-        "title": "修正済みバグ"
+        "title": "修正されたバグ"
       }
     ],
     "修飾の組み合わせ": [
@@ -10296,6 +10280,30 @@
         "line": 28,
         "level": 3,
         "title": "全パラメータ一覧"
+      }
+    ],
+    "公開": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 156,
+        "level": 3,
+        "title": "公開"
+      }
+    ],
+    "公開前のチェックリスト": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 123,
+        "level": 2,
+        "title": "公開前のチェックリスト"
+      }
+    ],
+    "公開済みモジュールの更新": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 115,
+        "level": 2,
+        "title": "公開済みモジュールの更新"
       }
     ],
     "兼容性": [
@@ -10469,7 +10477,7 @@
     "判定チェーンと実行時追加・削除": [
       {
         "document": "user-guide/configuration.md",
-        "line": 242,
+        "line": 246,
         "level": 3,
         "title": "判定チェーンと実行時追加・削除"
       }
@@ -10619,7 +10627,7 @@
     "厳格モード": [
       {
         "document": "user-guide/configuration.md",
-        "line": 373,
+        "line": 377,
         "level": 3,
         "title": "厳格モード"
       }
@@ -10795,7 +10803,7 @@
     "国際化設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 480,
+        "line": 484,
         "level": 2,
         "title": "国際化設定"
       }
@@ -11249,7 +11257,7 @@
     "完全な設定例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 143,
+        "line": 147,
         "level": 2,
         "title": "完全な設定例"
       }
@@ -11377,7 +11385,7 @@
     "審査にはどのくらい時間がかかりますか？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 188,
+        "line": 189,
         "level": 3,
         "title": "審査にはどのくらい時間がかかりますか？"
       }
@@ -11572,12 +11580,6 @@
         "title": "常見問題"
       },
       {
-        "document": "developer-guide/publishing.md",
-        "line": 172,
-        "level": 2,
-        "title": "常見問題"
-      },
-      {
         "document": "user-guide/installation.md",
         "line": 106,
         "level": 2,
@@ -11652,14 +11654,6 @@
         "line": 37,
         "level": 3,
         "title": "快速構築モード（静的）"
-      }
-    ],
-    "快速配布": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 34,
-        "level": 2,
-        "title": "快速配布"
       }
     ],
     "快速開始": [
@@ -12575,7 +12569,7 @@
     "框架設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 337,
+        "line": 341,
         "level": 2,
         "title": "框架設定"
       }
@@ -12845,7 +12839,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 619,
+        "line": 623,
         "level": 2,
         "title": "次に進む"
       }
@@ -13065,7 +13059,7 @@
     "環境変数による上書き": [
       {
         "document": "user-guide/configuration.md",
-        "line": 48,
+        "line": 52,
         "level": 2,
         "title": "環境変数による上書き"
       }
@@ -13347,7 +13341,7 @@
     "統一イベントオーバーライド設定 (event.overrides)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 572,
+        "line": 576,
         "level": 2,
         "title": "統一イベントオーバーライド設定 (event.overrides)"
       }
@@ -13475,7 +13469,7 @@
     "自定义アイデンティティソース（provider）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 256,
+        "line": 260,
         "level": 3,
         "title": "自定义アイデンティティソース（provider）"
       }
@@ -13580,6 +13574,14 @@
         "line": 334,
         "level": 4,
         "title": "複数アカウント設定"
+      }
+    ],
+    "複数インスタンスの注意点とロックファイル": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 17,
+        "level": 3,
+        "title": "複数インスタンスの注意点とロックファイル"
       }
     ],
     "複数メッセージの一括送信": [
@@ -13713,7 +13715,7 @@
     "設定": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 142,
+        "line": 143,
         "level": 3,
         "title": "設定"
       },
@@ -13741,7 +13743,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 73,
+        "line": 77,
         "level": 2,
         "title": "設定のホットアップデート"
       }
@@ -13795,7 +13797,7 @@
     "設定の読み込みエラー処理": [
       {
         "document": "user-guide/configuration.md",
-        "line": 17,
+        "line": 21,
         "level": 2,
         "title": "設定の読み込みエラー処理"
       }
@@ -14013,7 +14015,7 @@
     "豁免リスト": [
       {
         "document": "user-guide/configuration.md",
-        "line": 390,
+        "line": 394,
         "level": 4,
         "title": "豁免リスト"
       }
@@ -14382,6 +14384,14 @@
         "title": "通知操作者"
       }
     ],
+    "速攻公開": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 34,
+        "level": 2,
+        "title": "速攻公開"
+      }
+    ],
     "速攻起動": [
       {
         "document": "user-guide/deployment.md",
@@ -14430,12 +14440,12 @@
         "title": "遅延送信（Defer）"
       }
     ],
-    "適用シーン": [
+    "適用場面": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 196,
+        "line": 197,
         "level": 3,
-        "title": "適用シーン"
+        "title": "適用場面"
       }
     ],
     "選択メニュー (choose)": [
@@ -14529,7 +14539,7 @@
     "開発モードでのテスト": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 162,
+        "line": 163,
         "level": 2,
         "title": "開発モードでのテスト"
       }
@@ -14742,6 +14752,14 @@
         "line": 548,
         "level": 2,
         "title": "関連文書"
+      }
+    ],
+    "閲覧と発見": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 9,
+        "level": 3,
+        "title": "閲覧と発見"
       }
     ],
     "附件付きメール": [
