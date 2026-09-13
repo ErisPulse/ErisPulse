@@ -928,7 +928,7 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 **影响版本**: 2.2.0-dev.0 - 2.8.0
 
-**修复版本**: 2.8.1-dev.0
+**修复版本**: 2.8.1
 
 **修复内容**: 配置写入统一收敛到 `_atomic_write_text()`：同目录 `mkstemp` 生成进程唯一临时文件（消除固定名争抢，多实例下退化为 last-writer-wins，不再 ENOENT）→ 写毕 `flush + fsync` 强制数据落盘（消除「rename 已生效、数据未落盘」窗口）→ `os.replace` 原子替换目标（POSIX/Windows 均原子，任一时刻磁盘上要么完整旧内容、要么完整新内容）；POSIX 下额外 fsync 配置目录。`_flush_config`、`setConfigTemplate`、根目录配置迁移三处写入点全部切换；异常路径清理逻辑随唯一临时文件名重构。新增**多实例检测**：启动时 advisory lock（POSIX `flock` / Windows `msvcrt.locking`）独占持有配置目录锁文件 `.erispulse_config.lock`，被占用即输出 i18n 告警（不阻塞启动），锁由 OS 在进程退出时自动释放、无幽灵锁。
 
@@ -954,7 +954,7 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 **影响版本**: 引入命令系统起 - 2.8.0
 
-**修复版本**: 2.8.1-dev.0
+**修复版本**: 2.8.1
 
 **修复内容**: 匹配层改为**最长前缀匹配**：从最长候选（`" ".join(parts[:n])`，n 上限为已注册命令名/别名的最大 token 数缓存 `_max_name_tokens`）逐级降级尝试，命中即以剩余 token 为参数执行，下游作用域/ACL/覆写/master/权限链对命令全名自然生效。配套语义：父子并存时未注册的子命令输入回落父命令（历史行为不变）；子命令未声明 `permission` 时沿父链继承最近声明权限的祖先命令（保护父命令即保护其下全部子命令）；仅注册单 token 命令时首轮即命中，分发开销与原先一致。`unregister` / `unregister_by_owner` / 全量清理同步维护 token 数缓存。
 
