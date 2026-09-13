@@ -49,12 +49,19 @@ async def secret_handler(event):
 @command("admin.reload", group="admin", help="重新載入模組")
 async def reload_handler(event):
     pass
+
+# 子命令（以空格分隔的多 token 命令名）
+# 匹配採用最長前綴：/admin add x 會優先命中 admin add（args 為 ["x"]）；
+# 子命令未聲明 permission 時繼承父鏈上最近聲明權限的祖先命令
+@command("admin add", help="新增管理員")
+async def admin_add_handler(event):
+    pass
 ```
 
 ### 命令資訊
 
-所有命令查詢 API 均支援可選的**會話上下文**：傳 `event=`（Event 或 dict）或
-顯式 `platform=` / `bot_id=` / `session_id=`（與 event 叠加時顯式參數優先），
+所有命令查詢 API 均支援可選的**會話上下文**：傳入 `event=`（Event 或 dict）或
+顯式 `platform=` / `bot_id=` / `session_id=`（與 event 重疊時顯式參數優先），
 即按作用域模組維度過濾當前會話不可用模組的命令（詳見 advanced/scope.md）；
 全部為可選關鍵字參數，不傳時保持原有全量行為。
 
@@ -62,7 +69,7 @@ async def reload_handler(event):
 # 獲取命令幫助
 help_text = command.help()
 
-# 會話感知幫助：只列出當前會話可用的命令
+# 會話感知幫助：僅列出當前會話可用的命令
 help_text = command.help(event=event)
 
 # 獲取特定命令（返回合併覆蓋後的生效參數；會話不可用時返回 None）
@@ -80,7 +87,7 @@ admin_commands = command.get_group_commands("admin", event=event)
 # 獲取所有可見命令
 visible_commands = command.get_visible_commands()
 
-# 會話感知的可見命令（event 或顯式參數任一即可）
+# 會話感知的可見命令（event 或顯式關鍵字任一即可）
 visible_commands = command.get_visible_commands(event=event)
 visible_commands = command.get_visible_commands(
     platform=event.get("platform"),
