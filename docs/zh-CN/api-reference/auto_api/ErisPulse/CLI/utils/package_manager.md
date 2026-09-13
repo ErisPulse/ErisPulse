@@ -11,24 +11,6 @@ ErisPulse SDK 包管理器
 
 ---
 
-## 函数列表
-
-
-### `_parse_version(version: str)`
-
-将版本号解析为结构化组件（PEP 440 子集，纯标准库）。
-
-与 :meth:`PackageManager._version_key` / :meth:`PackageManager._is_pre_release`
-共用同一解析口径，避免不同正则导致判定分歧（如 ``1.0c2`` 此前在
-``_is_pre_release`` 与 ``_version_key`` 间判定口径不一致）。
-
-- **version** (`str`): 版本号字符串
-**返回值** (`Optional[dict`): ] 含 epoch/release/pre_type/pre_num/post/local 的字典，
-         无法解析时返回 None
-
----
-
-
 ## 类列表
 
 
@@ -343,13 +325,10 @@ uv 创建的 venv 默认不含 pip（uv 自身可装包）。当 uv 不可用或
 
 将版本号解析为可比较的元组键
 
-遵循项目命名规则排序：正式版 > post > rc > beta > alpha > dev；
-epoch 优先于一切 release 段；本地版本 (+local) 不影响主排序，
-但同一版本号带 local 段者 > 不带 local 段者。
-例如 2.4.5-dev.1 先于 2.4.5 正式版，1.0 < 1.0.post1 < 1.1。
+委托 :func:`ErisPulse.runtime.version.version_key`（框架内唯一实现）。
 
 - **version** (`str`): 版本号字符串
-**返回值** (`tuple`): 可直接用于排序/比较的元组键
+**返回值** (`tuple`): 逐段可比较的比较键元组
 
 ---
 
@@ -357,6 +336,8 @@ epoch 优先于一切 release 段；本地版本 (+local) 不影响主排序，
 ##### `_compare_versions(version1: str, version2: str)`
 
 比较两个版本号的大小
+
+委托 :func:`ErisPulse.runtime.version.compare_versions`（框架内唯一实现）。
 
 - **version1** (`str`): 第一个版本号
 - **version2** (`str`): 第二个版本号
@@ -481,12 +462,12 @@ epoch 优先于一切 release 段；本地版本 (+local) 不影响主排序，
 
 判断版本号是否为预发布版本
 
-与 :meth:`_version_key` 复用同一解析口径（:func:`_parse_version`）：
-仅当版本含预发布段 (dev/alpha/beta/rc/c/pre) 时返回 True；
-post 版本 (1.0.post1) 与本地版本 (1.0+local) 不计为预发布。
+与 :meth:`_version_key` 共用同一解析口径（:func:`ErisPulse.runtime.version.parse_version`）。
+当版本号含预发布段 (dev/alpha/beta/rc/c/pre) 时返回 True。
+post 版本 (1.0.post1) 与本地版本 (1.0+local) 不视为预发布版本
 
 - **version** (`str`): 版本号字符串
-**返回值** (`bool`): 是预发布版本返回 True
+**返回值** (`bool`): 是预发布版本时返回 True
 
 ---
 

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1593,
+  "total_keywords": 1595,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -115,7 +115,7 @@
     "1. 创建 Dockerfile": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 202,
+        "line": 203,
         "level": 3,
         "title": "1. 创建 Dockerfile"
       }
@@ -561,7 +561,7 @@
     "2. 创建 GitHub Actions 工作流": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 230,
+        "line": 231,
         "level": 3,
         "title": "2. 创建 GitHub Actions 工作流"
       }
@@ -1165,7 +1165,7 @@
     "3. 触发构建": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 299,
+        "line": 300,
         "level": 3,
         "title": "3. 触发构建"
       }
@@ -1501,7 +1501,7 @@
     "4. 设置镜像为公开": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 314,
+        "line": 315,
         "level": 3,
         "title": "4. 设置镜像为公开"
       }
@@ -1669,7 +1669,7 @@
     "5. 用户使用": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 321,
+        "line": 322,
         "level": 3,
         "title": "5. 用户使用"
       }
@@ -2819,7 +2819,7 @@
     "Docker 镜像 vs PyPI 发布": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 376,
+        "line": 377,
         "level": 3,
         "title": "Docker 镜像 vs PyPI 发布"
       }
@@ -4136,6 +4136,14 @@
         "title": "[BUG-035] 配置面板 select 选项与字典字段渲染为 [object Object]"
       }
     ],
+    "[BUG-036] 多实例共享配置目录时配置写入偶发失败（ENOENT）": [
+      {
+        "document": "bug-tracker.md",
+        "line": 923,
+        "level": 3,
+        "title": "[BUG-036] 多实例共享配置目录时配置写入偶发失败（ENOENT）"
+      }
+    ],
     "__init__.py": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -4825,7 +4833,7 @@
     "一个包可以注册多个模块吗？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 178,
+        "line": 179,
         "level": 3,
         "title": "一个包可以注册多个模块吗？"
       }
@@ -4921,7 +4929,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 629,
+        "line": 633,
         "level": 2,
         "title": "下一步"
       },
@@ -5015,7 +5023,7 @@
     "严格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 383,
+        "line": 387,
         "level": 3,
         "title": "严格模式"
       }
@@ -5085,7 +5093,7 @@
     "主人系统配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 225,
+        "line": 229,
         "level": 2,
         "title": "主人系统配置"
       }
@@ -5093,7 +5101,7 @@
     "主动 GC 配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 368,
+        "line": 372,
         "level": 3,
         "title": "主动 GC 配置"
       }
@@ -5447,7 +5455,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 461,
+        "line": 465,
         "level": 2,
         "title": "事件配置"
       }
@@ -5769,7 +5777,7 @@
     "作用域配置（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 530,
+        "line": 534,
         "level": 2,
         "title": "作用域配置（scope）"
       }
@@ -6403,7 +6411,7 @@
     "判定链与运行时增删": [
       {
         "document": "user-guide/configuration.md",
-        "line": 251,
+        "line": 255,
         "level": 3,
         "title": "判定链与运行时增删"
       }
@@ -6495,7 +6503,7 @@
     "包名必须以 `ErisPulse-` 开头吗？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 174,
+        "line": 175,
         "level": 3,
         "title": "包名必须以 `ErisPulse-` 开头吗？"
       }
@@ -6715,7 +6723,7 @@
     "发布": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 155,
+        "line": 156,
         "level": 3,
         "title": "发布"
       }
@@ -7023,7 +7031,7 @@
     "同时发布到 Docker Hub": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 353,
+        "line": 354,
         "level": 3,
         "title": "同时发布到 Docker Hub"
       }
@@ -7235,7 +7243,7 @@
     "命令解析配置（event.command）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 627,
+        "line": 631,
         "level": 2,
         "title": "命令解析配置（event.command）"
       }
@@ -7251,7 +7259,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 463,
+        "line": 467,
         "level": 3,
         "title": "命令配置"
       }
@@ -7383,7 +7391,7 @@
     "国际化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 490,
+        "line": 494,
         "level": 2,
         "title": "国际化配置"
       }
@@ -7926,6 +7934,14 @@
         "title": "多元素消息"
       }
     ],
+    "多实例提示与锁文件": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 17,
+        "level": 3,
+        "title": "多实例提示与锁文件"
+      }
+    ],
     "多实例部署": [
       {
         "document": "user-guide/deployment.md",
@@ -8237,7 +8253,7 @@
     "存储配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 412,
+        "line": 416,
         "level": 2,
         "title": "存储配置"
       }
@@ -8419,7 +8435,7 @@
     "完整配置示例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 152,
+        "line": 156,
         "level": 2,
         "title": "完整配置示例"
       }
@@ -8451,7 +8467,7 @@
     "审核需要多长时间？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 188,
+        "line": 189,
         "level": 3,
         "title": "审核需要多长时间？"
       }
@@ -8769,7 +8785,7 @@
       },
       {
         "document": "developer-guide/publishing.md",
-        "line": 172,
+        "line": 173,
         "level": 2,
         "title": "常见问题"
       },
@@ -9035,7 +9051,7 @@
     "开发模式测试": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 162,
+        "line": 163,
         "level": 2,
         "title": "开发模式测试"
       }
@@ -9957,7 +9973,7 @@
     "文档": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 148,
+        "line": 149,
         "level": 3,
         "title": "文档"
       }
@@ -10295,7 +10311,7 @@
     "日志配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 299,
+        "line": 303,
         "level": 2,
         "title": "日志配置"
       }
@@ -10405,7 +10421,7 @@
     "服务器配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 206,
+        "line": 210,
         "level": 2,
         "title": "服务器配置"
       }
@@ -10935,7 +10951,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 347,
+        "line": 351,
         "level": 2,
         "title": "框架配置"
       }
@@ -11159,7 +11175,7 @@
     "模块配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 501,
+        "line": 505,
         "level": 2,
         "title": "模块配置"
       }
@@ -11307,7 +11323,7 @@
     "注释保留与最小化落盘": [
       {
         "document": "user-guide/configuration.md",
-        "line": 38,
+        "line": 42,
         "level": 2,
         "title": "注释保留与最小化落盘"
       }
@@ -11709,7 +11725,7 @@
     "消息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 479,
+        "line": 483,
         "level": 3,
         "title": "消息配置"
       }
@@ -11773,7 +11789,7 @@
     "热更新链路内部拆解": [
       {
         "document": "user-guide/configuration.md",
-        "line": 103,
+        "line": 107,
         "level": 3,
         "title": "热更新链路内部拆解"
       }
@@ -11911,7 +11927,7 @@
     "环境变量覆盖": [
       {
         "document": "user-guide/configuration.md",
-        "line": 56,
+        "line": 60,
         "level": 2,
         "title": "环境变量覆盖"
       }
@@ -12011,7 +12027,7 @@
     "用户优先：主人生效范围由用户最终决定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 293,
+        "line": 297,
         "level": 3,
         "title": "用户优先：主人生效范围由用户最终决定"
       }
@@ -12579,7 +12595,7 @@
     "统一事件覆写配置（event.overrides）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 580,
+        "line": 584,
         "level": 2,
         "title": "统一事件覆写配置（event.overrides）"
       }
@@ -12787,7 +12803,7 @@
     "自定义身份源（provider）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 265,
+        "line": 269,
         "level": 3,
         "title": "自定义身份源（provider）"
       }
@@ -13171,7 +13187,7 @@
     "豁免清单": [
       {
         "document": "user-guide/configuration.md",
-        "line": 400,
+        "line": 404,
         "level": 4,
         "title": "豁免清单"
       }
@@ -13595,7 +13611,7 @@
     "适用场景": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 196,
+        "line": 197,
         "level": 3,
         "title": "适用场景"
       }
@@ -13919,7 +13935,7 @@
     "通过 Docker 镜像分发应用": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 192,
+        "line": 193,
         "level": 2,
         "title": "通过 Docker 镜像分发应用"
       }
@@ -14023,7 +14039,7 @@
     "配置": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 142,
+        "line": 143,
         "level": 3,
         "title": "配置"
       },
@@ -14037,7 +14053,7 @@
     "配置加载错误处理": [
       {
         "document": "user-guide/configuration.md",
-        "line": 17,
+        "line": 21,
         "level": 2,
         "title": "配置加载错误处理"
       }
@@ -14129,7 +14145,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 81,
+        "line": 85,
         "level": 2,
         "title": "配置热更新"
       }

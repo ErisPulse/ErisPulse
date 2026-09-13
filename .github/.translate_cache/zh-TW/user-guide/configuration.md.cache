@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "5678544629ee7fc7e26b4bba5ac50f6f",
-  "file_hash": "5678544629ee7fc7e26b4bba5ac50f6f",
-  "translated_at": "2026-09-10T07:03:27.968118",
+  "hash": "33b7abf9b7e8cd63b4934aa4d8651ff1",
+  "file_hash": "33b7abf9b7e8cd63b4934aa4d8651ff1",
+  "translated_at": "2026-09-13T09:33:38.649423",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# 配置文件說明  \n> 本文件將介紹框架的配置文件，若有第三方模組需要配置，請參考模組的文件。\n\nErisPulse 使用 TOML 格式的配置文件 `config/config.toml` 來管理專案配置。"
     },
     {
-      "hash": "f8e8f27e6f7b5ed0d3858050fa443378",
-      "translation": "## 配置文件位置\n\n配置文件位於專案根目錄的 `config/` 資料夾中：\n\n```\nproject/\n├── config/\n│   └── config.toml\n├── main.py\n```"
+      "hash": "e642dc8e9b37f9f9f2466648852c173c",
+      "translation": "## 配置文件位置\n\n配置文件位於專案根目錄的 `config/` 資料夾中：\n\n```\nproject/\n├── config/\n│   └── config.toml\n├── main.py\n```\n\n### 多實例提示與鎖檔案\n\n框架啟動時會在 `config/` 目錄下建立 `.erispulse_config.lock` 鎖檔案並持有至進程退出（用於偵測多實例共享配置目錄）。如果日誌出現「偵測到配置檔案可能正被另一個 ErisPulse 實例同時使用」的告警，說明有**兩個以上的 ErisPulse 進程在寫同一份配置**（典型場景：多個容器掛載了同一個主機 `config/` 目錄）—— 並發寫入會互相覆蓋，請為每個實例使用獨立的配置目錄。"
     },
     {
       "hash": "e572693b30658e94967b5faec4248aee",
