@@ -21,6 +21,8 @@ from ErisPulse.runtime.context import current_owner
 
 # importlib.import_module 返回真实子模块（Core.config 包属性被 ConfigManager 单例遮蔽）
 config_module = importlib.import_module("ErisPulse.Core.config")
+# 同理：Core.Event.command 包属性被 command 单例遮蔽，patch 时必须用真实模块对象
+command_module = importlib.import_module("ErisPulse.Core.Event.command")
 
 
 @pytest.fixture(autouse=True)
@@ -544,7 +546,7 @@ class TestDuplicateRegistrationWarning:
     """跨模块重名注册告警；同 owner 重注册（懒激活占位流程）不告警"""
 
     def test_different_owner_warns_and_last_wins(self):
-        with patch("ErisPulse.Core.Event.command.logger") as log_mock:
+        with patch.object(command_module, "logger") as log_mock:
             token_a = current_owner.set("ModuleA")
             try:
 
@@ -569,7 +571,7 @@ class TestDuplicateRegistrationWarning:
         assert command_handler.commands["dup"]["func"] is dup_b  # 后注册者生效
 
     def test_same_owner_reregister_no_warning(self):
-        with patch("ErisPulse.Core.Event.command.logger") as log_mock:
+        with patch.object(command_module, "logger") as log_mock:
             token = current_owner.set("ModuleA")
             try:
 

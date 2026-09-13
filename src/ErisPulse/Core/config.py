@@ -389,7 +389,9 @@ class ConfigManager:
                 f.write(text)
                 f.flush()
                 os.fsync(f.fileno())
-            Path(temp_file).replace(config_path)
+            # 直接调用 os.replace（不走 Path.replace：旧版本 pathlib 经
+            # _accessor 静态绑定，运行期替换 os.replace 不可观测）
+            os.replace(temp_file, config_path)
         except BaseException:
             try:
                 Path(temp_file).unlink()
