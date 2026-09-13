@@ -26,7 +26,7 @@
           "icon": "fa-sitemap"
         },
         {
-          "title": "バグ追跡器",
+          "title": "バグトラッカー",
           "path": "bug-tracker.md",
           "level": 1,
           "icon": "fa-bug"
