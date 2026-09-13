@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "cc2c6150bee9b487ac70823edb496064",
-  "file_hash": "cc2c6150bee9b487ac70823edb496064",
-  "translated_at": "2026-09-07T11:03:59.249013",
+  "hash": "01a8bd0d492a1118d3fc41d9287941f0",
+  "file_hash": "01a8bd0d492a1118d3fc41d9287941f0",
+  "translated_at": "2026-09-13T09:33:26.117468",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -22,8 +22,8 @@
       "translation": "## 更新已發佈模組\n\n1. 更新 `pyproject.toml` 中的 `version`\n2. 重新建置並上傳：`python -m build && python -m twine upload dist/*`\n3. 模組商店會自動同步 PyPI 上的最新版本\n\n使用者透過 `epsdk upgrade MyModule` 即可升級。"
     },
     {
-      "hash": "3b25b561e4d7d86b127a4328985ed6ad",
-      "translation": "## 發布前檢查清單\n\n在推送至 PyPI 之前，請逐項確認以下內容：\n\n### 代碼質量\n\n- [ ] 所有公開 API 有類型註解（函數簽名和返回值）\n- [ ] 所有公開方法有文件字串（`\"\"\"...\"\"\"` 格式，包含 `:param` / `:return` / `:raises`）\n- [ ] 通過 `ruff check`（無警告）\n- [ ] 測試覆蓋率 ≥ 80%\n- [ ] 通過 `pytest` 全部用例\n\n### 兼容性\n\n- [ ] `pyproject.toml` 聲明了最低 SDK 版本：`dependencies = [\"ErisPulse>=x.y.z\"]`\n- [ ] 測試了 Python 3.10 / 3.11 / 3.12 / 3.13\n- [ ] 測試了目標作業系統（Windows / Linux / macOS，如適用）\n- [ ] 無循環導入依賴\n\n### 配置\n\n- [ ] 如果使用宣告式配置（`ConfigClass` + `BaseConfig` / `BotAccountConfig`），配置欄位有 `description`（推薦 i18n 格式）和 `ui` 元數據\n- [ ] 如果註冊了 i18n 翻譯鍵，已覆蓋所有 5 種語言（zh-CN / zh-TW / en / ja / ru）\n- [ ] 敏感欄位標記了 `secret=True`\n\n### 文件\n\n- [ ] `README.md` 有安裝說明和基本使用範例\n- [ ] `README.md` 說明了配置方式（配置檔範例 + 環境變數）\n- [ ] `CHANGELOG.md` 記錄了所有變更\n- [ ] 適配器更新了平台特性文件（支援的 Send 類型、事件類型等）\n\n### 發布\n\n- [ ] `pyproject.toml` 版本號已更新\n- [ ] 建構通過：`python -m build`\n- [ ] 已推送到 PyPI：`python -m twine upload dist/*`\n- [ ] 安裝驗證通過：`pip install ErisPulse-xxx && epsdk run`"
+      "hash": "3270e760b3052c71fb78fc66b25c1981",
+      "translation": "## 發布前檢查清單\n\n在推送到 PyPI 之前，請逐項確認以下內容：\n\n### 代碼品質\n\n- [ ] 所有公開 API 有類型註解（函數簽名和返回值）\n- [ ] 所有公開方法有文件字串（`\"\"\"...\"\"\"` 格式，包含 `:param` / `:return` / `:raises`）\n- [ ] 通過 `ruff check`（無警告）\n- [ ] 測試覆蓋率 ≥ 80%\n- [ ] 通過 `pytest` 全部用例\n\n### 兼容性\n\n- [ ] `pyproject.toml` 聲明了最低 SDK 版本：`dependencies = [\"ErisPulse>=x.y.z\"]`\n- [ ] 模組在 `get_meta()` 的 `ModuleMeta(min_sdk_version=\"x.y.z\")` 聲明了運行時最低 SDK 版本（適配器用類屬性 `min_sdk_version`）——用戶環境 SDK 過低時框架在載入期明確報錯並跳過，而非報出難以定位的執行時異常\n- [ ] 測試了 Python 3.10 / 3.11 / 3.12 / 3.13\n- [ ] 測試了目標作業系統（Windows / Linux / macOS，如適用）\n- [ ] 無循環導入依賴\n\n### 配置\n\n- [ ] 如果使用宣告式配置（`ConfigClass` + `BaseConfig` / `BotAccountConfig`），配置欄位有 `description`（推薦 i18n 格式）和 `ui` 元數據\n- [ ] 如果註冊了 i18n 翻譯鍵，已覆蓋所有 5 種語言（zh-CN / zh-TW / en / ja / ru）\n- [ ] 敏感欄位標記了 `secret=True`\n\n### 文件\n\n- [ ] `README.md` 有安裝說明和基本使用示例\n- [ ] `README.md` 說明了配置方式（配置檔示例 + 環境變數）\n- [ ] `CHANGELOG.md` 記錄了所有變更\n- [ ] 適配器更新了平台特性文件（支援的 Send 類型、事件類型等）\n\n### 發布\n\n- [ ] `pyproject.toml` 版本號已更新\n- [ ] 建構通過：`python -m build`\n- [ ] 已推送到 PyPI：`python -m twine upload dist/*`\n- [ ] 安裝驗證通過：`pip install ErisPulse-xxx && epsdk run`"
     },
     {
       "hash": "c9db6ccf678a75cd2c69c68be9f752e9",
