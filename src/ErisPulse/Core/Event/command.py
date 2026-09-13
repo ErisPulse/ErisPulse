@@ -60,6 +60,9 @@ class CommandHandler:
         self.aliases: dict[str, str] = {}  # 别名映射
         self.groups: dict[str, list[str]] = {}  # 命令组
         self.permissions: dict[str, Callable] = {}  # 权限检查函数
+        # 已注册命令名/别名的最大 token 数（命令名支持空格分隔的子命令形式，
+        # 如 "admin add"；匹配阶段据此决定最长前缀尝试次数，注册/注销时重算）
+        self._max_name_tokens: int = 1
 
         # 从配置读取命令解析参数（并订阅热更新）
         self._refresh_command_config()
@@ -101,23 +104,62 @@ class CommandHandler:
         """配置变更回调：刷新命令解析参数、实现参数覆盖与用户 ACL"""
         self._refresh_command_config()
 
-    # ==================== 作用域上下文（scope 委托） ====================
-
-        # ==================== 作用域上下文（scope 委托） ====================
-
-    @staticmethod
-    def _scope() -> Any:
+    def _recompute_max_name_tokens(self) -> None:
         """
         {!--< internal-use >!--}
-        延迟获取作用域单例（避免模块初始化阶段的循环依赖）
+        重算已注册命令名 / 别名中的最大 token 数
 
-        用于模块维度作用域检查与事件上下文提取。
-
-        :return: scope 单例（ScopeManager）
+        命令名支持空格分隔的子命令形式（如 ``"admin add"``），匹配阶段按
+        最长前缀尝试；此缓存在注册与注销后重算，消息分发期只做字典查找。
         """
-        from ..scope import scope
+        self._max_name_tokens = max(
+            (len(name.split()) for name in {**self.commands, **self.aliases}),
+            default=1,
+        )
 
-        return scope
+    def _resolve_command_tokens(self, parts: list[str]) -> tuple[str | None, str | None, list[str]]:
+        """
+        {!--< internal-use >!--}
+        按"最长前缀匹配"从已切分的命令 token 中解析命令名与参数
+
+        依次尝试 ``parts[:n]``（n 从最大注册 token 数降到 1）组成的候选名，
+        先查别名映射再查命令表；命中即返回，未命中继续降级尝试。
+
+        :param parts: 空格切分后的命令 token 列表（大小写已按配置归一）
+        :return: ``(命中的候选名（可能为别名形式）, 解析后的命令全名, 子命令名之后的剩余参数)``；
+                 全部未命中返回 ``(None, None, [])``
+        """
+        for n in range(min(self._max_name_tokens, len(parts)), 0, -1):
+            candidate = " ".join(parts[:n])
+            actual = self.aliases.get(candidate, candidate)
+            if actual in self.commands:
+                return candidate, actual, parts[n:]
+        return None, None, []
+
+    def _inherited_permission(self, name: str) -> Callable | None:
+        """
+        {!--< internal-use >!--}
+        沿命令名父链向上查找最近声明了权限函数的祖先命令
+
+        子命令（空格分隔的多 token 命令名，如 ``"admin add"``）自身未声明
+        permission 时调用：逐级去掉末尾 token 查找已注册祖先，返回第一个
+        声明了权限的祖先的权限函数——保护父命令即保护其下全部子命令
+        （声明了权限的祖先会跳过未声明权限的中间祖先继续上溯）。
+        仅读取注册值，不递归用户覆写。
+
+        :param name: 已解析的命令全名
+        :return: 祖先的权限检查函数；无可继承权限时返回 None
+        """
+        tokens = name.split()
+        while len(tokens) > 1:
+            tokens.pop()
+            parent_info = self.commands.get(" ".join(tokens))
+            if parent_info is None:
+                continue
+            permission = parent_info.get("permission")
+            if permission:
+                return permission
+        return None
 
     # ==================== 作用域上下文（scope 委托） ====================
 
@@ -218,6 +260,9 @@ class CommandHandler:
                     if cmd_name not in self.groups[group]:
                         self.groups[group].append(cmd_name)
 
+            # 命令名集合变化，重算最长前缀匹配的 token 数缓存
+            self._recompute_max_name_tokens()
+
             return func
 
         return decorator
@@ -259,6 +304,10 @@ class CommandHandler:
             # 最后移除命令本身
             del self.commands[cmd_name]
 
+        if commands_to_remove:
+            # 命令名集合变化，重算最长前缀匹配的 token 数缓存
+            self._recompute_max_name_tokens()
+
         return result
 
     def unregister_by_owner(self, owner: str) -> int:
@@ -290,6 +339,9 @@ class CommandHandler:
         self.groups = {k: v for k, v in self.groups.items() if v}
 
         if to_remove:
+            # 命令名集合变化，重算最长前缀匹配的 token 数缓存
+            self._recompute_max_name_tokens()
+
             from ..logger import logger as _logger
 
             _logger.trace(i18n.t("core.command.cleaned", owner=owner, count=len(to_remove), commands=to_remove))
@@ -572,15 +624,16 @@ class CommandHandler:
         if not parts:
             return False
 
-        cmd_name = parts[0]
-        args = parts[1:] if len(parts) > 1 else []
-
-        # 处理大小写敏感性
+        # 处理大小写敏感性（check_text 已按配置归一，此处兜底防御）
         if not self.case_sensitive:
-            cmd_name = cmd_name.lower()
+            parts = [part.lower() for part in parts]
 
-        # 处理别名
-        actual_cmd_name = self.aliases.get(cmd_name, cmd_name)
+        # 最长前缀匹配：命令名支持空格分隔的子命令形式（如 "admin add"），
+        # 从最长候选逐级降级尝试；仅注册过单 token 命令时首轮即命中，
+        # 开销与原先一致（/admin add x 同时注册了 admin 时优先命中子命令）
+        cmd_name, actual_cmd_name, args = self._resolve_command_tokens(parts)
+        if cmd_name is None:
+            return False
 
         logger.trace(
             i18n.t(
@@ -662,8 +715,13 @@ class CommandHandler:
                     await self._send_permission_denied(event)
                     return False
 
-            # 检查权限
-            permission_func = _effective.get("permission") or self.permissions.get(actual_cmd_name)
+            # 检查权限：子命令未声明权限时继承最近声明了权限的祖先命令
+            # （如 /admin 声明权限后，/admin add 等子命令自动受同一权限保护）
+            permission_func = (
+                _effective.get("permission")
+                or self.permissions.get(actual_cmd_name)
+                or self._inherited_permission(actual_cmd_name)
+            )
             if permission_func:
                 try:
                     has_permission = (
@@ -890,6 +948,7 @@ class CommandHandler:
         self.aliases.clear()
         self.groups.clear()
         self.permissions.clear()
+        self._recompute_max_name_tokens()
         interaction.clear()
         # 从共享 handler 中注销命令分发器（不清除其他 handler 的消息处理器）
         if self._bound_handler is not None and self._dispatcher_registered:
