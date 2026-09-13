@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1662,
+  "total_keywords": 1664,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -205,7 +205,7 @@
     "1. 例外処理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 802,
+        "line": 842,
         "level": 3,
         "title": "1. 例外処理"
       }
@@ -713,7 +713,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 820,
+        "line": 860,
         "level": 3,
         "title": "2. ログ記録"
       }
@@ -1175,7 +1175,7 @@
     "3. 条件処理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 836,
+        "line": 876,
         "level": 3,
         "title": "3. 条件処理"
       }
@@ -2669,7 +2669,7 @@
     "Bot 状態の照会": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 478,
+        "line": 518,
         "level": 3,
         "title": "Bot 状態の照会"
       }
@@ -2691,7 +2691,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 272,
+        "line": 279,
         "level": 3,
         "title": "Bot 状態照会"
       }
@@ -3103,7 +3103,7 @@
     "Event オブジェクトの一般的なメソッド": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 725,
+        "line": 765,
         "level": 3,
         "title": "Event オブジェクトの一般的なメソッド"
       }
@@ -3116,20 +3116,20 @@
         "title": "Event ショートカットメソッド"
       }
     ],
+    "Event ラッパークラス": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 283,
+        "level": 2,
+        "title": "Event ラッパークラス"
+      }
+    ],
     "Event 便利メソッド": [
       {
         "document": "platform-guide/onebot12.md",
         "line": 56,
         "level": 3,
         "title": "Event 便利メソッド"
-      }
-    ],
-    "Event 包装クラス": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 276,
-        "level": 2,
-        "title": "Event 包装クラス"
       }
     ],
     "Event 包装クラスで修飾メソッドを使用する": [
@@ -3367,7 +3367,7 @@
     "Message メッセージモジュール": [
       {
         "document": "api-reference/event-system.md",
-        "line": 145,
+        "line": 152,
         "level": 2,
         "title": "Message メッセージモジュール"
       }
@@ -3383,7 +3383,7 @@
     "Meta メタイベントモジュール": [
       {
         "document": "api-reference/event-system.md",
-        "line": 247,
+        "line": 254,
         "level": 2,
         "title": "Meta メタイベントモジュール"
       }
@@ -3423,7 +3423,7 @@
     "Notice 通知モジュール": [
       {
         "document": "api-reference/event-system.md",
-        "line": 193,
+        "line": 200,
         "level": 2,
         "title": "Notice 通知モジュール"
       }
@@ -3645,7 +3645,7 @@
     "Request リクエストモジュール": [
       {
         "document": "api-reference/event-system.md",
-        "line": 225,
+        "line": 232,
         "level": 2,
         "title": "Request リクエストモジュール"
       }
@@ -4118,12 +4118,12 @@
         "title": "[BUG-001] イベントハンドラの重複登録によりイベントが複数回処理される"
       }
     ],
-    "[BUG-002] Init コマンドのアダプタ設定パスの型エラー": [
+    "[BUG-002] Init コマンドアダプタ設定パス型エラー": [
       {
         "document": "bug-tracker.md",
         "line": 135,
         "level": 3,
-        "title": "[BUG-002] Init コマンドのアダプタ設定パスの型エラー"
+        "title": "[BUG-002] Init コマンドアダプタ設定パス型エラー"
       }
     ],
     "[BUG-003] 再起動後にコマンドイベントが無効になる": [
@@ -4150,28 +4150,28 @@
         "title": "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない"
       }
     ],
-    "[BUG-006] adapter.clear() が _started_instances をクリアしないため、再起動後に状態が正しくない": [
+    "[BUG-006] adapter.clear() が _started_instances をクリアしないため、再起動後の状態が正しくない": [
       {
         "document": "bug-tracker.md",
         "line": 219,
         "level": 3,
-        "title": "[BUG-006] adapter.clear() が _started_instances をクリアしないため、再起動後に状態が正しくない"
+        "title": "[BUG-006] adapter.clear() が _started_instances をクリアしないため、再起動後の状態が正しくない"
       }
     ],
-    "[BUG-007] command.wait_reply() が廃止された asyncio.get_event_loop() を使用している": [
+    "[BUG-007] command.wait_reply() で廃止された asyncio.get_event_loop() を使用": [
       {
         "document": "bug-tracker.md",
         "line": 239,
         "level": 3,
-        "title": "[BUG-007] command.wait_reply() が廃止された asyncio.get_event_loop() を使用している"
+        "title": "[BUG-007] command.wait_reply() で廃止された asyncio.get_event_loop() を使用"
       }
     ],
-    "[BUG-008] Bot オンライン/オフイベントが shutdown 過程で繰り返し送信される": [
+    "[BUG-008] Bot オンラインイベントが shutdown プロセス中に繰り返し送信される": [
       {
         "document": "bug-tracker.md",
         "line": 259,
         "level": 3,
-        "title": "[BUG-008] Bot オンライン/オフイベントが shutdown 過程で繰り返し送信される"
+        "title": "[BUG-008] Bot オンラインイベントが shutdown プロセス中に繰り返し送信される"
       }
     ],
     "[BUG-009] LazyModule 同期アクセスで BaseModule が初期化完了していない": [
@@ -4182,12 +4182,12 @@
         "title": "[BUG-009] LazyModule 同期アクセスで BaseModule が初期化完了していない"
       }
     ],
-    "[BUG-010] 複数スレッドでの構成書き込みによりデータが失われる": [
+    "[BUG-010] 複数スレッドでの設定書き込みによりデータが失われる": [
       {
         "document": "bug-tracker.md",
         "line": 299,
         "level": 3,
-        "title": "[BUG-010] 複数スレッドでの構成書き込みによりデータが失われる"
+        "title": "[BUG-010] 複数スレッドでの設定書き込みによりデータが失われる"
       }
     ],
     "[BUG-011] Windows で CTRL+C でプログラムを停止できない": [
@@ -4206,12 +4206,12 @@
         "title": "[BUG-012] ホットリスタート後に更新されたモジュールの Python コードが有効にならない"
       }
     ],
-    "[BUG-013] モジュールロード戦略のソートロジックが誤っている": [
+    "[BUG-013] モジュールロード戦略のソートロジックにエラー": [
       {
         "document": "bug-tracker.md",
         "line": 366,
         "level": 3,
-        "title": "[BUG-013] モジュールロード戦略のソートロジックが誤っている"
+        "title": "[BUG-013] モジュールロード戦略のソートロジックにエラー"
       }
     ],
     "[BUG-014] アダプタミドルウェアが None を返すとイベントデータが失われる": [
@@ -4222,20 +4222,20 @@
         "title": "[BUG-014] アダプタミドルウェアが None を返すとイベントデータが失われる"
       }
     ],
-    "[BUG-015] 設定ファイルパスが作業ディレクトリに依存する": [
+    "[BUG-015] 設定ファイルパスが作業ディレクトリに依存": [
       {
         "document": "bug-tracker.md",
         "line": 406,
         "level": 3,
-        "title": "[BUG-015] 設定ファイルパスが作業ディレクトリに依存する"
+        "title": "[BUG-015] 設定ファイルパスが作業ディレクトリに依存"
       }
     ],
-    "[BUG-016] BaseStorage がストレージ値 None とキーが存在しないことを混同する": [
+    "[BUG-016] BaseStorage がストア値 None とキーが存在しないを混同する": [
       {
         "document": "bug-tracker.md",
         "line": 426,
         "level": 3,
-        "title": "[BUG-016] BaseStorage がストレージ値 None とキーが存在しないことを混同する"
+        "title": "[BUG-016] BaseStorage がストア値 None とキーが存在しないを混同する"
       }
     ],
     "[BUG-017] WebSocket ルート auto_accept フラグがサービス再起動後に失われる": [
@@ -4246,140 +4246,148 @@
         "title": "[BUG-017] WebSocket ルート auto_accept フラグがサービス再起動後に失われる"
       }
     ],
-    "[BUG-018] HTTP/WS クライアントの並行呼び出しによりクラッシュや接続漏れが発生する": [
+    "[BUG-018] HTTP/WS クライアントの並行呼び出しによるクラッシュと接続漏れ": [
       {
         "document": "bug-tracker.md",
         "line": 466,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS クライアントの並行呼び出しによりクラッシュや接続漏れが発生する"
+        "title": "[BUG-018] HTTP/WS クライアントの並行呼び出しによるクラッシュと接続漏れ"
       }
     ],
-    "[BUG-019] アダプタのホットリロード時にルートの競合によりリロードが失敗する": [
+    "[BUG-019] アダプタのホットリロード時にルートの衝突によりリロードが失敗する": [
       {
         "document": "bug-tracker.md",
         "line": 494,
         "level": 3,
-        "title": "[BUG-019] アダプタのホットリロード時にルートの競合によりリロードが失敗する"
+        "title": "[BUG-019] アダプタのホットリロード時にルートの衝突によりリロードが失敗する"
       }
     ],
-    "[BUG-020] 子プロセスモード `ep run <script>` でスクリプトの子パッケージが見つからない": [
+    "[BUG-020] サブプロセスモード `ep run <script>` でスクリプト所在ディレクトリのサブパッケージが見つからない": [
       {
         "document": "bug-tracker.md",
         "line": 518,
         "level": 3,
-        "title": "[BUG-020] 子プロセスモード `ep run <script>` でスクリプトの子パッケージが見つからない"
+        "title": "[BUG-020] サブプロセスモード `ep run <script>` でスクリプト所在ディレクトリのサブパッケージが見つからない"
       }
     ],
-    "[BUG-021] SQL クエリビルダーが合法なワイルドカードとリスト式を拒否する": [
+    "[BUG-021] SQL クエリビルダが正当なワイルドカードとリスト式を拒否する": [
       {
         "document": "bug-tracker.md",
         "line": 538,
         "level": 3,
-        "title": "[BUG-021] SQL クエリビルダーが合法なワイルドカードとリスト式を拒否する"
+        "title": "[BUG-021] SQL クエリビルダが正当なワイルドカードとリスト式を拒否する"
       }
     ],
-    "[BUG-022] _resolve_account() のアカウント解決のリグレッション（_accounts_data が未充填）": [
+    "[BUG-022] _resolve_account() アカウント解析のリグレッション（_accounts_data 未充填）": [
       {
         "document": "bug-tracker.md",
-        "line": 568,
+        "line": 561,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() のアカウント解決のリグレッション（_accounts_data が未充填）"
+        "title": "[BUG-022] _resolve_account() アカウント解析のリグレッション（_accounts_data 未充填）"
       }
     ],
-    "[BUG-023] 構成を変更した後にアダプタのキャッシュが更新されずアカウント解決に失敗する": [
+    "[BUG-023] アカウント配置を変更した後、アダプタのキャッシュが更新されずアカウント解析に失敗する": [
       {
         "document": "bug-tracker.md",
-        "line": 607,
+        "line": 600,
         "level": 3,
-        "title": "[BUG-023] 構成を変更した後にアダプタのキャッシュが更新されずアカウント解決に失敗する"
+        "title": "[BUG-023] アカウント配置を変更した後、アダプタのキャッシュが更新されずアカウント解析に失敗する"
       }
     ],
-    "[BUG-024] storage.set() で大数 ID キーを書き込むと OOM Kill が発生する": [
+    "[BUG-024] storage.set() で大数字 ID キーを書き込む際に OOM Kill が発生する": [
       {
         "document": "bug-tracker.md",
-        "line": 627,
+        "line": 620,
         "level": 3,
-        "title": "[BUG-024] storage.set() で大数 ID キーを書き込むと OOM Kill が発生する"
+        "title": "[BUG-024] storage.set() で大数字 ID キーを書き込む際に OOM Kill が発生する"
       }
     ],
-    "[BUG-025] on_config_update コールバックがフレームワークのルーティングに含まれていない": [
+    "[BUG-025] on_config_update コールバックがコアルートにルーティングされていない": [
       {
         "document": "bug-tracker.md",
-        "line": 673,
+        "line": 666,
         "level": 3,
-        "title": "[BUG-025] on_config_update コールバックがフレームワークのルーティングに含まれていない"
+        "title": "[BUG-025] on_config_update コールバックがコアルートにルーティングされていない"
       }
     ],
-    "[BUG-026] notice/request イベントの reply 目標が誤って推定される": [
+    "[BUG-026] notice/request イベント reply 目標推論エラー": [
       {
         "document": "bug-tracker.md",
-        "line": 703,
+        "line": 696,
         "level": 3,
-        "title": "[BUG-026] notice/request イベントの reply 目標が誤って推定される"
+        "title": "[BUG-026] notice/request イベント reply 目標推論エラー"
       }
     ],
-    "[BUG-027] ルートリミットクリーンアップタスクが固定ウィンドウを使用して長時間のリミットルールが無効になる": [
+    "[BUG-027] ルートリミットクリアタスクが固定ウィンドウを使用して長時間のリミットルールを無効にする": [
       {
         "document": "bug-tracker.md",
-        "line": 734,
+        "line": 727,
         "level": 3,
-        "title": "[BUG-027] ルートリミットクリーンアップタスクが固定ウィンドウを使用して長時間のリミットルールが無効になる"
+        "title": "[BUG-027] ルートリミットクリアタスクが固定ウィンドウを使用して長時間のリミットルールを無効にする"
       }
     ],
-    "[BUG-029] 構成の監視タスクが半分の TOML をブロードキャストし、例外を静かに飲み込む": [
+    "[BUG-029] 配置監視タスクが半完成の TOML をブロードキャストし、例外を静かに飲み込む": [
       {
         "document": "bug-tracker.md",
-        "line": 766,
+        "line": 759,
         "level": 3,
-        "title": "[BUG-029] 構成の監視タスクが半分の TOML をブロードキャストし、例外を静かに飲み込む"
+        "title": "[BUG-029] 配置監視タスクが半完成の TOML をブロードキャストし、例外を静かに飲み込む"
       }
     ],
-    "[BUG-030] 配置の watcher 競合により setConfig の遅延書き込みが静かにデータを失う": [
+    "[BUG-030] 配置 watcher 競合により setConfig 延期書き込みが静かにデータを失う": [
       {
         "document": "bug-tracker.md",
-        "line": 802,
+        "line": 796,
         "level": 3,
-        "title": "[BUG-030] 配置の watcher 競合により setConfig の遅延書き込みが静かにデータを失う"
+        "title": "[BUG-030] 配置 watcher 競合により setConfig 延期書き込みが静かにデータを失う"
       }
     ],
-    "[BUG-032] 構成の遅延書き込み中に「書き込み直後」に読み取ると古い値が返される": [
+    "[BUG-032] 配置遅延書き込み中に「書き込み後すぐに読み取り」で旧値を読み込む": [
       {
         "document": "bug-tracker.md",
-        "line": 838,
+        "line": 832,
         "level": 3,
-        "title": "[BUG-032] 構成の遅延書き込み中に「書き込み直後」に読み取ると古い値が返される"
+        "title": "[BUG-032] 配置遅延書き込み中に「書き込み後すぐに読み取り」で旧値を読み込む"
       }
     ],
-    "[BUG-033] wait_reply で保留中の返信が高優先度のハンドラに食い込まれる": [
+    "[BUG-033] wait_reply が保留中の返信を高優先度のハンドラに食い尽くされる": [
       {
         "document": "bug-tracker.md",
-        "line": 860,
+        "line": 854,
         "level": 3,
-        "title": "[BUG-033] wait_reply で保留中の返信が高優先度のハンドラに食い込まれる"
+        "title": "[BUG-033] wait_reply が保留中の返信を高優先度のハンドラに食い尽くされる"
       }
     ],
-    "[BUG-034] persist=False のスコープの実行時バインディングが任意の後続構成書き込みで静かに上書きされる": [
+    "[BUG-034] スコープ persist=False 時の実行時バインディングが任意の後続設定書き込みで静かに上書きされる": [
       {
         "document": "bug-tracker.md",
-        "line": 882,
+        "line": 876,
         "level": 3,
-        "title": "[BUG-034] persist=False のスコープの実行時バインディングが任意の後続構成書き込みで静かに上書きされる"
+        "title": "[BUG-034] スコープ persist=False 時の実行時バインディングが任意の後続設定書き込みで静かに上書きされる"
       }
     ],
-    "[BUG-035] 構成パネルの select 項目と dict フィールドが [object Object] にレンダリングされる": [
+    "[BUG-035] 配置パネル select 選択肢と dict フィールドが [object Object] にレンダリングされる": [
       {
         "document": "bug-tracker.md",
-        "line": 902,
+        "line": 896,
         "level": 3,
-        "title": "[BUG-035] 構成パネルの select 項目と dict フィールドが [object Object] にレンダリングされる"
+        "title": "[BUG-035] 配置パネル select 選択肢と dict フィールドが [object Object] にレンダリングされる"
       }
     ],
-    "[BUG-036] 複数インスタンスが共有する構成ディレクトリで構成の書き込みが偶発的に失敗する（ENOENT）": [
+    "[BUG-036] 複数インスタンスが共有する配置ディレクトリで配置書き込みが偶発的に失敗する（ENOENT）": [
       {
         "document": "bug-tracker.md",
-        "line": 920,
+        "line": 914,
         "level": 3,
-        "title": "[BUG-036] 複数インスタンスが共有する構成ディレクトリで構成の書き込みが偶発的に失敗する（ENOENT）"
+        "title": "[BUG-036] 複数インスタンスが共有する配置ディレクトリで配置書き込みが偶発的に失敗する（ENOENT）"
+      }
+    ],
+    "[BUG-037] 空白区切りのコマンド名で登録した後、決してトリガーされない": [
+      {
+        "document": "bug-tracker.md",
+        "line": 940,
+        "level": 3,
+        "title": "[BUG-037] 空白区切りのコマンド名で登録した後、決してトリガーされない"
       }
     ],
     "__init__.py": [
@@ -4401,7 +4409,7 @@
     "`hasattr` / `dir` のサポート": [
       {
         "document": "api-reference/event-system.md",
-        "line": 558,
+        "line": 565,
         "level": 4,
         "title": "`hasattr` / `dir` のサポート"
       }
@@ -4809,7 +4817,7 @@
     "reply メソッドを使用した返信の送信": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 502,
+        "line": 542,
         "level": 3,
         "title": "reply メソッドを使用した返信の送信"
       }
@@ -5489,7 +5497,7 @@
     "アダプタ：プラットフォーム拡張メソッドの登録": [
       {
         "document": "api-reference/event-system.md",
-        "line": 565,
+        "line": 572,
         "level": 4,
         "title": "アダプタ：プラットフォーム拡張メソッドの登録"
       }
@@ -5543,7 +5551,7 @@
     "イベントのオーバーライド：モジュールのコードを変更せずに、任意のイベントタイプの動作を上書き": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 282,
+        "line": 322,
         "level": 2,
         "title": "イベントのオーバーライド：モジュールのコードを変更せずに、任意のイベントタイプの動作を上書き"
       }
@@ -5641,7 +5649,7 @@
     "イベントデータのアクセス": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 723,
+        "line": 763,
         "level": 2,
         "title": "イベントデータのアクセス"
       }
@@ -5711,7 +5719,7 @@
     "イベント処理のベストプラクティス": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 800,
+        "line": 840,
         "level": 2,
         "title": "イベント処理のベストプラクティス"
       }
@@ -5965,7 +5973,7 @@
     "インタラクティブ処理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 500,
+        "line": 540,
         "level": 2,
         "title": "インタラクティブ処理"
       }
@@ -6205,7 +6213,7 @@
     "グループ招待リクエスト": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 440,
+        "line": 480,
         "level": 3,
         "title": "グループ招待リクエスト"
       }
@@ -6365,7 +6373,7 @@
     "コマンドと返信の block 設定": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 376,
+        "line": 416,
         "level": 3,
         "title": "コマンドと返信の block 設定"
       }
@@ -6389,7 +6397,7 @@
     "コマンドの優先度": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 198,
+        "line": 238,
         "level": 3,
         "title": "コマンドの優先度"
       }
@@ -6397,7 +6405,7 @@
     "コマンドの権限とアクセス制御": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 146,
+        "line": 192,
         "level": 3,
         "title": "コマンドの権限とアクセス制御"
       }
@@ -6469,13 +6477,13 @@
     "コマンド情報": [
       {
         "document": "api-reference/event-system.md",
-        "line": 54,
+        "line": 61,
         "level": 3,
         "title": "コマンド情報"
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 336,
+        "line": 343,
         "level": 3,
         "title": "コマンド情報"
       },
@@ -6649,7 +6657,7 @@
     "コールバック付きの返信を待つ": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 574,
+        "line": 614,
         "level": 3,
         "title": "コールバック付きの返信を待つ"
       }
@@ -6660,6 +6668,14 @@
         "line": 107,
         "level": 2,
         "title": "サイドバーのグループ化"
+      }
+    ],
+    "サブコマンド": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 148,
+        "level": 3,
+        "title": "サブコマンド"
       }
     ],
     "サブロガー": [
@@ -6785,7 +6801,7 @@
     "スコープフィルタリング：なぜ私のモジュールはメッセージを受け取らないのか？": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 254,
+        "line": 294,
         "level": 2,
         "title": "スコープフィルタリング：なぜ私のモジュールはメッセージを受け取らないのか？"
       }
@@ -6903,7 +6919,7 @@
     "セッション識別子": [
       {
         "document": "api-reference/event-system.md",
-        "line": 296,
+        "line": 303,
         "level": 3,
         "title": "セッション識別子"
       }
@@ -7607,7 +7623,7 @@
     "ハートビートイベント": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 469,
+        "line": 509,
         "level": 3,
         "title": "ハートビートイベント"
       }
@@ -7715,8 +7731,8 @@
     "バッチ登録（Mixin クラス）": [
       {
         "document": "api-reference/event-system.md",
-        "line": 585,
-        "level": 5,
+        "line": 592,
+        "level": 4,
         "title": "バッチ登録（Mixin クラス）"
       }
     ],
@@ -7841,7 +7857,7 @@
     "フォーム収集 (collect)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 648,
+        "line": 688,
         "level": 3,
         "title": "フォーム収集 (collect)"
       }
@@ -7865,7 +7881,7 @@
     "フレンドリクエスト": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 424,
+        "line": 464,
         "level": 3,
         "title": "フレンドリクエスト"
       }
@@ -7980,12 +7996,12 @@
         "title": "プラットフォームネイティブAPIメソッド族"
       }
     ],
-    "プラットフォームメソッドの分離": [
+    "プラットフォームメソッドの隔離": [
       {
         "document": "api-reference/event-system.md",
-        "line": 542,
+        "line": 549,
         "level": 4,
-        "title": "プラットフォームメソッドの分離"
+        "title": "プラットフォームメソッドの隔離"
       }
     ],
     "プラットフォーム固有のメソッド": [
@@ -8053,7 +8069,7 @@
     "プラットフォーム拡張メソッド": [
       {
         "document": "api-reference/event-system.md",
-        "line": 506,
+        "line": 513,
         "level": 3,
         "title": "プラットフォーム拡張メソッド"
       },
@@ -8065,7 +8081,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 771,
+        "line": 811,
         "level": 3,
         "title": "プラットフォーム拡張メソッド"
       }
@@ -8113,7 +8129,7 @@
     "プラットフォーム登録メソッドの照会": [
       {
         "document": "api-reference/event-system.md",
-        "line": 527,
+        "line": 534,
         "level": 4,
         "title": "プラットフォーム登録メソッドの照会"
       }
@@ -8121,7 +8137,7 @@
     "プラットフォーム能力照会": [
       {
         "document": "api-reference/event-system.md",
-        "line": 380,
+        "line": 387,
         "level": 3,
         "title": "プラットフォーム能力照会"
       }
@@ -8397,17 +8413,17 @@
     "メソッドの優先順位": [
       {
         "document": "api-reference/event-system.md",
-        "line": 689,
+        "line": 696,
         "level": 3,
         "title": "メソッドの優先順位"
       }
     ],
-    "メソッドの解除": [
+    "メソッドの解除登録": [
       {
         "document": "api-reference/event-system.md",
-        "line": 631,
-        "level": 5,
-        "title": "メソッドの解除"
+        "line": 638,
+        "level": 4,
+        "title": "メソッドの解除登録"
       }
     ],
     "メソッドの詳細情報の取得": [
@@ -8451,7 +8467,7 @@
     "メタイベント": [
       {
         "document": "api-reference/event-system.md",
-        "line": 249,
+        "line": 256,
         "level": 3,
         "title": "メタイベント"
       }
@@ -8499,7 +8515,7 @@
     "メッセージイベント": [
       {
         "document": "api-reference/event-system.md",
-        "line": 147,
+        "line": 154,
         "level": 3,
         "title": "メッセージイベント"
       }
@@ -8663,7 +8679,7 @@
     "メッセージメソッド": [
       {
         "document": "api-reference/event-system.md",
-        "line": 309,
+        "line": 316,
         "level": 3,
         "title": "メッセージメソッド"
       }
@@ -9181,7 +9197,7 @@
     "ユーザーの返信を待つ": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 530,
+        "line": 570,
         "level": 3,
         "title": "ユーザーの返信を待つ"
       }
@@ -9226,12 +9242,12 @@
         "title": "ユーザー状態変更イベント"
       }
     ],
-    "ユーザー：プラットフォーム拡張メソッドを使用": [
+    "ユーザー：プラットフォーム拡張メソッドの使用": [
       {
         "document": "api-reference/event-system.md",
-        "line": 510,
+        "line": 517,
         "level": 4,
-        "title": "ユーザー：プラットフォーム拡張メソッドを使用"
+        "title": "ユーザー：プラットフォーム拡張メソッドの使用"
       }
     ],
     "ユーティリティ": [
@@ -9245,7 +9261,7 @@
     "ユーティリティメソッド": [
       {
         "document": "api-reference/event-system.md",
-        "line": 469,
+        "line": 476,
         "level": 3,
         "title": "ユーティリティメソッド"
       }
@@ -9369,7 +9385,7 @@
     "リクエストイベント": [
       {
         "document": "api-reference/event-system.md",
-        "line": 227,
+        "line": 234,
         "level": 3,
         "title": "リクエストイベント"
       }
@@ -9385,7 +9401,7 @@
     "リクエストイベント処理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 422,
+        "line": 462,
         "level": 2,
         "title": "リクエストイベント処理"
       }
@@ -9493,7 +9509,7 @@
     "リンク制御": [
       {
         "document": "api-reference/event-system.md",
-        "line": 480,
+        "line": 487,
         "level": 3,
         "title": "リンク制御"
       }
@@ -9501,7 +9517,7 @@
     "リンク制御：認領とブロック": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 341,
+        "line": 381,
         "level": 2,
         "title": "リンク制御：認領とブロック"
       }
@@ -9610,28 +9626,28 @@
         "title": "レスポンスの送信"
       }
     ],
-    "レプリを待つ": [
+    "レプリィメソッド": [
       {
         "document": "api-reference/event-system.md",
-        "line": 90,
+        "line": 399,
         "level": 3,
-        "title": "レプリを待つ"
+        "title": "レプリィメソッド"
       }
     ],
-    "レプリメソッド": [
+    "レプリィ待ち": [
       {
         "document": "api-reference/event-system.md",
-        "line": 392,
+        "line": 97,
         "level": 3,
-        "title": "レプリメソッド"
+        "title": "レプリィ待ち"
       }
     ],
-    "レプリ機能": [
+    "レプリィ機能": [
       {
         "document": "api-reference/event-system.md",
-        "line": 348,
+        "line": 355,
         "level": 3,
-        "title": "レプリ機能"
+        "title": "レプリィ機能"
       }
     ],
     "レンダラーアン instance": [
@@ -9913,7 +9929,7 @@
     "並行イベント処理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 211,
+        "line": 251,
         "level": 3,
         "title": "並行イベント処理"
       }
@@ -9975,7 +9991,7 @@
     "交互メソッド": [
       {
         "document": "api-reference/event-system.md",
-        "line": 428,
+        "line": 435,
         "level": 3,
         "title": "交互メソッド"
       },
@@ -10037,7 +10053,7 @@
     "任意イベントの待機 (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 668,
+        "line": 708,
         "level": 3,
         "title": "任意イベントの待機 (wait_for)"
       }
@@ -10186,12 +10202,12 @@
         "title": "保留エラーセグメント"
       }
     ],
-    "修正されたバグ": [
+    "修正済みのバグ": [
       {
         "document": "bug-tracker.md",
         "line": 113,
         "level": 2,
-        "title": "修正されたバグ"
+        "title": "修正済みのバグ"
       }
     ],
     "修飾の組み合わせ": [
@@ -10229,7 +10245,7 @@
     "優先度システム": [
       {
         "document": "api-reference/event-system.md",
-        "line": 700,
+        "line": 707,
         "level": 2,
         "title": "優先度システム"
       }
@@ -10245,7 +10261,7 @@
     "元イベント処理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 451,
+        "line": 491,
         "level": 2,
         "title": "元イベント処理"
       }
@@ -10342,14 +10358,6 @@
         "title": "内容作成規格"
       }
     ],
-    "内置メソッドの上書き": [
-      {
-        "document": "api-reference/event-system.md",
-        "line": 643,
-        "level": 5,
-        "title": "内置メソッドの上書き"
-      }
-    ],
     "内蔵フォント": [
       {
         "document": "ecosystem/takumi.md",
@@ -10364,6 +10372,14 @@
         "line": 434,
         "level": 3,
         "title": "内部デフォルト値"
+      }
+    ],
+    "内部メソッドの上書き": [
+      {
+        "document": "api-reference/event-system.md",
+        "line": 650,
+        "level": 4,
+        "title": "内部メソッドの上書き"
       }
     ],
     "再生成のタイミング": [
@@ -10581,8 +10597,8 @@
     "単一メソッドの登録": [
       {
         "document": "api-reference/event-system.md",
-        "line": 569,
-        "level": 5,
+        "line": 576,
+        "level": 4,
         "title": "単一メソッドの登録"
       }
     ],
@@ -10699,7 +10715,7 @@
     "友達追加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 390,
+        "line": 430,
         "level": 3,
         "title": "友達追加"
       }
@@ -11153,7 +11169,7 @@
     "多段対話 (conversation)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 689,
+        "line": 729,
         "level": 3,
         "title": "多段対話 (conversation)"
       }
@@ -11745,8 +11761,8 @@
     "戻り値の規則": [
       {
         "document": "api-reference/event-system.md",
-        "line": 606,
-        "level": 5,
+        "line": 613,
+        "level": 4,
         "title": "戻り値の規則"
       }
     ],
@@ -11971,7 +11987,7 @@
     "接続イベント": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 453,
+        "line": 493,
         "level": 3,
         "title": "接続イベント"
       }
@@ -12410,12 +12426,12 @@
         "title": "条件フィルタ"
       }
     ],
-    "条件監視": [
+    "条件付き監視": [
       {
         "document": "api-reference/event-system.md",
-        "line": 176,
+        "line": 183,
         "level": 3,
-        "title": "条件監視"
+        "title": "条件付き監視"
       }
     ],
     "条目テンプレート": [
@@ -12459,7 +12475,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 280,
+        "line": 287,
         "level": 3,
         "title": "核心メソッド"
       }
@@ -12593,7 +12609,7 @@
     "検証付きの返信を待つ": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 547,
+        "line": 587,
         "level": 3,
         "title": "検証付きの返信を待つ"
       }
@@ -12871,7 +12887,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 853,
+        "line": 893,
         "level": 2,
         "title": "次のステップ"
       },
@@ -13195,7 +13211,7 @@
     "確認対話 (confirm)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 595,
+        "line": 635,
         "level": 3,
         "title": "確認対話 (confirm)"
       }
@@ -13309,7 +13325,7 @@
     "組み込みの確認語": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 716,
+        "line": 756,
         "level": 3,
         "title": "組み込みの確認語"
       }
@@ -13373,7 +13389,7 @@
     "群メンバーの増加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 402,
+        "line": 442,
         "level": 3,
         "title": "群メンバーの増加"
       }
@@ -13381,7 +13397,7 @@
     "群メンバーの減少": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 412,
+        "line": 452,
         "level": 3,
         "title": "群メンバーの減少"
       }
@@ -14047,7 +14063,7 @@
     "跨プラットフォームメソッドの登録": [
       {
         "document": "api-reference/event-system.md",
-        "line": 668,
+        "line": 675,
         "level": 3,
         "title": "跨プラットフォームメソッドの登録"
       }
@@ -14055,7 +14071,7 @@
     "跨プラットフォーム拡張（ワイルドカード）": [
       {
         "document": "api-reference/event-system.md",
-        "line": 664,
+        "line": 671,
         "level": 2,
         "title": "跨プラットフォーム拡張（ワイルドカード）"
       },
@@ -14309,7 +14325,7 @@
     "通知イベント": [
       {
         "document": "api-reference/event-system.md",
-        "line": 195,
+        "line": 202,
         "level": 3,
         "title": "通知イベント"
       }
@@ -14363,7 +14379,7 @@
     "通知イベント処理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 388,
+        "line": 428,
         "level": 2,
         "title": "通知イベント処理"
       }
@@ -14451,7 +14467,7 @@
     "選択メニュー (choose)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 612,
+        "line": 652,
         "level": 3,
         "title": "選択メニュー (choose)"
       }
@@ -14637,7 +14653,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 716,
+        "line": 723,
         "level": 2,
         "title": "関連ドキュメント"
       },
