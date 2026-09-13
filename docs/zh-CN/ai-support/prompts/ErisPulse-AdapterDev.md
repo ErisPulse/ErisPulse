@@ -1182,6 +1182,9 @@ async def echo_handler(event):
         await event.reply(f"你说了: {' '.join(args)}")
 ```
 
+参数保留用户输入的原始大小写（即使配置为大小写不敏感，
+命令名匹配归一也不会影响参数内容）。
+
 ### 命令组
 
 ```python
@@ -1242,6 +1245,9 @@ async def admin_add_handler(event):
 
 注意：`master=True` 与 `hidden` **不会**继承，需要时请在子命令上单独声明；
 用户 ACL（黑白名单）按命令全名匹配，glob 规则如 `"admin*"` 可覆盖整组子命令。
+
+`/help` 的命令总览中，子命令会自动挂到可见的父命令下缩进展示
+（`admin` → `admin add` 缩进一级，`admin user` → `admin user ban` 缩进两级）。
 
 ### 命令权限与访问控制
 
