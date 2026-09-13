@@ -582,6 +582,7 @@ TRANSLATIONS = {
     "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
     "core.command.not_registered": "[Command] not registered: cmd={cmd_name} platform={platform} user={user_id}",
     "core.command.acl_denied": "[Command] ACL denied: cmd={cmd_name} user={user_id}",
+    "core.command.duplicate_name": "コマンド '{cmd_name}' はモジュール {old_owner} によって登録されており、モジュール {new_owner} によって上書きされます（後から登録されたものが有効）",
     "core.event.command.permission_denied": "このコマンドを実行する権限がありません",
     "core.event.command.send_permission_denied_failed": "権限不足メッセージの送信に失敗しました: {error}",
     "core.event.command.execution_failed": "コマンド実行エラー: {error}",
@@ -594,6 +595,7 @@ TRANSLATIONS = {
     "core.event.command.no_commands": "利用可能なコマンドがありません",
     "core.event.command.available_commands": "利用可能なコマンド:",
     "core.event.command.list_item": "  {prefix}{cmd_name} - {help_text}",
+    "core.event.command.list_item_child": "{prefix}{cmd_name} - {help_text}",
     # ==================== Lifecycle ====================
     "core.lifecycle.emit_enter": "[Lifecycle] emit {event}, matched {count} handlers",
     "core.lifecycle.emit_wildcard": "[Lifecycle] wildcard handlers for {event}: {count}",

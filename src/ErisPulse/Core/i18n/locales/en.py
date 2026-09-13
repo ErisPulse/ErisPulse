@@ -582,6 +582,7 @@ TRANSLATIONS = {
     "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
     "core.command.not_registered": "[Command] not registered: cmd={cmd_name} platform={platform} user={user_id}",
     "core.command.acl_denied": "[Command] ACL denied: cmd={cmd_name} user={user_id}",
+    "core.command.duplicate_name": "Command '{cmd_name}' was registered by module {old_owner} and will be overridden by module {new_owner} (last registration wins)",
     "core.event.command.permission_denied": "Insufficient permissions to execute this command",
     "core.event.command.send_permission_denied_failed": "Failed to send permission denied message: {error}",
     "core.event.command.execution_failed": "Command execution error: {error}",
@@ -594,6 +595,7 @@ TRANSLATIONS = {
     "core.event.command.no_commands": "No commands available",
     "core.event.command.available_commands": "Available commands:",
     "core.event.command.list_item": "  {prefix}{cmd_name} - {help_text}",
+    "core.event.command.list_item_child": "{prefix}{cmd_name} - {help_text}",
     # ==================== Lifecycle ====================
     "core.lifecycle.emit_enter": "[Lifecycle] emit {event}, matched {count} handlers",
     "core.lifecycle.emit_wildcard": "[Lifecycle] wildcard handlers for {event}: {count}",
