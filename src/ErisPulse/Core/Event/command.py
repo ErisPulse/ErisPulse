@@ -117,24 +117,24 @@ class CommandHandler:
             default=1,
         )
 
-    def _resolve_command_tokens(self, parts: list[str]) -> tuple[str | None, str | None, list[str]]:
+    def _resolve_command_tokens(self, parts: list[str]) -> tuple[str | None, str | None, int]:
         """
         {!--< internal-use >!--}
-        按"最长前缀匹配"从已切分的命令 token 中解析命令名与参数
+        按"最长前缀匹配"从已切分的命令 token 中解析命令名
 
         依次尝试 ``parts[:n]``（n 从最大注册 token 数降到 1）组成的候选名，
         先查别名映射再查命令表；命中即返回，未命中继续降级尝试。
 
         :param parts: 空格切分后的命令 token 列表（大小写已按配置归一）
-        :return: ``(命中的候选名（可能为别名形式）, 解析后的命令全名, 子命令名之后的剩余参数)``；
-                 全部未命中返回 ``(None, None, [])``
+        :return: ``(命中的候选名（可能为别名形式）, 解析后的命令全名, 命中的 token 数)``；
+                 全部未命中返回 ``(None, None, 0)``
         """
         for n in range(min(self._max_name_tokens, len(parts)), 0, -1):
             candidate = " ".join(parts[:n])
             actual = self.aliases.get(candidate, candidate)
             if actual in self.commands:
-                return candidate, actual, parts[n:]
-        return None, None, []
+                return candidate, actual, n
+        return None, None, 0
 
     def _inherited_permission(self, name: str) -> Callable | None:
         """
@@ -227,6 +227,19 @@ class CommandHandler:
 
             # 注册命令
             for cmd_name in cmd_names:
+                # 跨模块重名检测：后注册者会静默顶掉先注册者（"命令没反应"
+                # 的常见病灶）；同 owner 重注册属正常流程（如懒激活占位命令
+                # 被真实命令替换），不告警
+                _existing = self.commands.get(cmd_name)
+                if _existing is not None and _existing.get("owner") != current_owner.get():
+                    logger.warning(
+                        i18n.t(
+                            "core.command.duplicate_name",
+                            cmd_name=cmd_name,
+                            old_owner=_existing.get("owner") or "-",
+                            new_owner=current_owner.get() or "-",
+                        )
+                    )
                 self.commands[cmd_name] = {
                     "func": func,
                     "help": help,
@@ -308,7 +321,8 @@ class CommandHandler:
             # 命令名集合变化，重算最长前缀匹配的 token 数缓存
             self._recompute_max_name_tokens()
 
-        return result
+        # 共享 handler 注销与命令映射移除任一成功即视为注销成功
+        return result or bool(commands_to_remove)
 
     def unregister_by_owner(self, owner: str) -> int:
         """
@@ -577,7 +591,7 @@ class CommandHandler:
                         return False
 
             # 尝试执行命令
-            return await self._try_execute_command(event, text, check_text, matched_prefix)
+            return await self._try_execute_command(event, text, matched_prefix)
 
         # 从 message 列表和 alt_message 中提取文本内容
         message_segments = event.get("message", [])
@@ -605,7 +619,7 @@ class CommandHandler:
         await self._check_pending_reply(event)
         return
 
-    async def _try_execute_command(self, event: "Event", original_text: str, check_text: str, prefix: str) -> bool:
+    async def _try_execute_command(self, event: "Event", original_text: str, prefix: str) -> bool:
         """
         尝试执行命令
 
@@ -613,27 +627,27 @@ class CommandHandler:
         内部使用的方法，用于尝试解析和执行命令
 
         :param event: 消息事件数据
-        :param original_text: 原始文本内容
-        :param check_text: 用于检查的文本内容（可能已转换为小写）
+        :param original_text: 原始文本内容（命令名匹配时按配置做大小写归一，参数保留原文）
         :param prefix: 已匹配的命令前缀（可能已转换为小写）
         :return: 是否成功执行命令
         """
-        # 解析命令和参数
-        command_text = check_text[len(prefix) :].strip()
-        parts = command_text.split()
-        if not parts:
+        # 解析命令和参数：参数与 raw 载荷保留用户原始大小写（取自 original_text，
+        # 前缀为配置字面量、在大小写归一前后长度一致），仅命令名匹配候选做归一
+        command_text = original_text[len(prefix) :].strip()
+        raw_parts = command_text.split()
+        if not raw_parts:
             return False
 
-        # 处理大小写敏感性（check_text 已按配置归一，此处兜底防御）
-        if not self.case_sensitive:
-            parts = [part.lower() for part in parts]
+        # 处理大小写敏感性：候选名归一化用于匹配，参数列表保留原始形式
+        parts = raw_parts if self.case_sensitive else [part.lower() for part in raw_parts]
 
         # 最长前缀匹配：命令名支持空格分隔的子命令形式（如 "admin add"），
         # 从最长候选逐级降级尝试；仅注册过单 token 命令时首轮即命中，
         # 开销与原先一致（/admin add x 同时注册了 admin 时优先命中子命令）
-        cmd_name, actual_cmd_name, args = self._resolve_command_tokens(parts)
+        cmd_name, actual_cmd_name, matched = self._resolve_command_tokens(parts)
         if cmd_name is None:
             return False
+        args = raw_parts[matched:]
 
         logger.trace(
             i18n.t(
@@ -1156,6 +1170,7 @@ class CommandHandler:
         该会话（platform / bot / session）下被作用域禁用的模块，其命令不再列出
         （与分发静默语义一致）；② 覆盖——帮助文本 / usage / 可见性读取
         ``event.overrides.command`` 覆写值（用户优先）。
+        子命令（空格分隔多 token 命令名）在其可见父命令下缩进展示。
 
         :param command_name: 命令名称，如果为None则生成所有命令的帮助
         :param show_hidden: 是否显示隐藏命令
@@ -1206,14 +1221,33 @@ class CommandHandler:
         help_lines = [i18n.t("core.event.command.available_commands")]
         for cmd_name, cmd_info in commands_to_show.items():
             help_text = cmd_info.get("help", i18n.t("core.event.command.no_help_item"))
-            help_lines.append(
-                i18n.t(
-                    "core.event.command.list_item",
-                    prefix=display_prefix,
-                    cmd_name=cmd_name,
-                    help_text=help_text,
+            # 子命令（空格分隔多 token 命令名）在可见父命令下缩进展示，
+            # 缩进深度 = 可见祖先链长度（admin → admin user → admin user ban）
+            depth = 0
+            tokens = cmd_name.split()
+            while len(tokens) > 1:
+                tokens.pop()
+                if " ".join(tokens) in commands_to_show:
+                    depth += 1
+            if depth:
+                help_lines.append(
+                    "  " * (depth + 1)
+                    + i18n.t(
+                        "core.event.command.list_item_child",
+                        prefix=display_prefix,
+                        cmd_name=cmd_name,
+                        help_text=help_text,
+                    )
                 )
-            )
+            else:
+                help_lines.append(
+                    i18n.t(
+                        "core.event.command.list_item",
+                        prefix=display_prefix,
+                        cmd_name=cmd_name,
+                        help_text=help_text,
+                    )
+                )
         return "\n".join(help_lines)
 
     def _owner_blocked(self, info: dict, ctx: dict[str, str | None]) -> bool:

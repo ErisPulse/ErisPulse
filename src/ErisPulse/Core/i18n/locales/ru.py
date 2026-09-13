@@ -582,6 +582,7 @@ TRANSLATIONS = {
     "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
     "core.command.not_registered": "[Command] not registered: cmd={cmd_name} platform={platform} user={user_id}",
     "core.command.acl_denied": "[Command] ACL denied: cmd={cmd_name} user={user_id}",
+    "core.command.duplicate_name": "Команда '{cmd_name}', зарегистрированная модулем {old_owner}, будет переопределена модулем {new_owner} (действует последняя регистрация)",
     "core.event.command.permission_denied": "Недостаточно прав для выполнения этой команды",
     "core.event.command.send_permission_denied_failed": "Не удалось отправить сообщение об отказе в доступе: {error}",
     "core.event.command.execution_failed": "Ошибка выполнения команды: {error}",
@@ -594,6 +595,7 @@ TRANSLATIONS = {
     "core.event.command.no_commands": "Нет доступных команд",
     "core.event.command.available_commands": "Доступные команды:",
     "core.event.command.list_item": "  {prefix}{cmd_name} - {help_text}",
+    "core.event.command.list_item_child": "{prefix}{cmd_name} - {help_text}",
     # ==================== Lifecycle ====================
     "core.lifecycle.emit_enter": "[Lifecycle] emit {event}, matched {count} handlers",
     "core.lifecycle.emit_wildcard": "[Lifecycle] wildcard handlers for {event}: {count}",

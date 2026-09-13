@@ -443,8 +443,8 @@ class TestUnregisterAndCache:
         async def admin_add(event):
             calls.append(event.get_command_name())
 
-        assert command_handler.unregister(admin_add) is False  # 返回值仅反映共享 handler 注销结果（历史语义）
-        assert command_handler.get_command("admin add") is None  # 命令映射已移除
+        assert command_handler.unregister(admin_add) is True  # 命令映射移除成功即返回 True
+        assert command_handler.get_command("admin add") is None
         assert command_handler._max_name_tokens == 1
 
         await _dispatch("/admin add x")
@@ -483,3 +483,160 @@ class TestUnregisterAndCache:
         assert command_handler._max_name_tokens == 2
         command_handler._clear_commands()
         assert command_handler._max_name_tokens == 1
+
+
+class TestArgsOriginalCasing:
+    """参数与 raw 载荷保留用户原始大小写，仅命令名匹配做归一"""
+
+    @pytest.mark.asyncio
+    async def test_case_insensitive_mode_preserves_args(self):
+        """大小写不敏感模式 → 参数/原文保留原始大小写（历史版本会被整体小写）"""
+        calls = []
+        original = command_handler.case_sensitive
+        command_handler.case_sensitive = False
+        try:
+
+            @command_handler("echo")
+            async def echo(event):
+                calls.append((event.get_command_args(), event.get_command_raw()))
+
+            await _dispatch("/echo Hello WORLD MiXeD")
+            assert calls == [(["Hello", "WORLD", "MiXeD"], "echo Hello WORLD MiXeD")]
+        finally:
+            command_handler.case_sensitive = original
+
+    @pytest.mark.asyncio
+    async def test_case_sensitive_mode_preserves_args(self):
+        """大小写敏感模式 → 参数/原文保留原始大小写（行为不变）"""
+        calls = []
+        original = command_handler.case_sensitive
+        command_handler.case_sensitive = True
+        try:
+
+            @command_handler("echo")
+            async def echo(event):
+                calls.append((event.get_command_args(), event.get_command_raw()))
+
+            await _dispatch("/echo Hello WORLD")
+            assert calls == [(["Hello", "WORLD"], "echo Hello WORLD")]
+        finally:
+            command_handler.case_sensitive = original
+
+    @pytest.mark.asyncio
+    async def test_case_insensitive_match_with_mixed_case_command(self):
+        """大小写不敏感模式 → 命令名大小写随意、参数保留原文（子命令路径）"""
+        calls = []
+        original = command_handler.case_sensitive
+        command_handler.case_sensitive = False
+        try:
+
+            @command_handler("admin add")
+            async def admin_add(event):
+                calls.append((event.get_command_name(), event.get_command_args()))
+
+            await _dispatch("/ADMIN ADD Hello")
+            assert calls == [("admin add", ["Hello"])]
+        finally:
+            command_handler.case_sensitive = original
+
+
+class TestDuplicateRegistrationWarning:
+    """跨模块重名注册告警；同 owner 重注册（懒激活占位流程）不告警"""
+
+    def test_different_owner_warns_and_last_wins(self):
+        with patch("ErisPulse.Core.Event.command.logger") as log_mock:
+            token_a = current_owner.set("ModuleA")
+            try:
+
+                @command_handler("dup")
+                async def dup_a(event):
+                    pass
+
+            finally:
+                current_owner.reset(token_a)
+
+            token_b = current_owner.set("ModuleB")
+            try:
+
+                @command_handler("dup")
+                async def dup_b(event):
+                    pass
+
+            finally:
+                current_owner.reset(token_b)
+
+        assert log_mock.warning.called  # 输出重名覆盖告警
+        assert command_handler.commands["dup"]["func"] is dup_b  # 后注册者生效
+
+    def test_same_owner_reregister_no_warning(self):
+        with patch("ErisPulse.Core.Event.command.logger") as log_mock:
+            token = current_owner.set("ModuleA")
+            try:
+
+                @command_handler("dup2")
+                async def dup2_a(event):
+                    pass
+
+                @command_handler("dup2")
+                async def dup2_b(event):
+                    pass
+
+            finally:
+                current_owner.reset(token)
+
+        assert not log_mock.warning.called  # 同 owner 重注册（如懒激活占位替换）不告警
+        assert command_handler.commands["dup2"]["func"] is dup2_b
+
+
+class TestHelpGrouping:
+    """/help 子命令在可见父命令下缩进展示"""
+
+    def test_children_indented_under_parent(self):
+        @command_handler("admin", help="管理")
+        async def admin(event):
+            pass
+
+        @command_handler("admin add", help="添加")
+        async def admin_add(event):
+            pass
+
+        @command_handler("admin user", help="用户管理")
+        async def admin_user(event):
+            pass
+
+        @command_handler("admin user ban", help="封禁")
+        async def ban(event):
+            pass
+
+        @command_handler("standalone", help="独立命令")
+        async def standalone(event):
+            pass
+
+        prefix = command_handler.prefix[0] if isinstance(command_handler.prefix, list) else command_handler.prefix
+        text = command_handler.help()
+        lines = {
+            line.strip().split(" - ")[0]: line
+            for line in text.splitlines()
+            if " - " in line
+        }
+
+        # 顶层条目：2 空格缩进（list_item 自带）
+        assert lines[f"{prefix}admin"].startswith("  " + prefix)
+        assert lines[f"{prefix}standalone"].startswith("  " + prefix)
+        # 子命令缩进深度按可见祖先链递增（父 2 格 → 子 4 格 → 孙 6 格）
+        assert lines[f"{prefix}admin add"].startswith("    " + prefix)
+        assert lines[f"{prefix}admin user ban"].startswith("      " + prefix)
+        # 父命令条目位于子命令之前
+        assert text.index(f"{prefix}admin -") < text.index(f"{prefix}admin add")
+
+    def test_orphan_subcommand_renders_flat(self):
+        """父命令不可见（未注册）→ 子命令按顶层条目平铺展示"""
+
+        @command_handler("orphan add", help="无父命令")
+        async def orphan_add(event):
+            pass
+
+        text = command_handler.help()
+        orphan_line = next(line for line in text.splitlines() if "orphan add" in line)
+        assert orphan_line.startswith("  ")  # 顶层缩进
+        assert not orphan_line.startswith("    ")  # 不按子命令缩进
