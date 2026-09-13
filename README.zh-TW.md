@@ -8,7 +8,7 @@
 
 事件驅動的多平台聊天機器人開發框架。
 
-基於 OneBot12 標準接口，一次編寫多平台部署；靈活的插件系統、熱重載支援和完整的開發者工具鏈，適用於從簡單聊天機器人到複雜自動化系統的各種場景。
+基於 OneBot12 標準介面，一次編寫多平台部署；靈活的插件系統、熱重載支援和完整的開發者工具鏈，適用於從簡單聊天機器人到複雜自動化系統的各種場景。
 
 <p>
   <a href="https://pypi.org/project/ErisPulse/"><img src="https://img.shields.io/pypi/v/ErisPulse?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -23,7 +23,7 @@
   <a href="https://www.erisdev.com"><img src="https://img.shields.io/badge/文件-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="文件"></a>
   <a href="https://deepwiki.com/ErisPulse/ErisPulse"><img src="https://img.shields.io/badge/DeepWiki-ErisPulse-8A2BE2?style=for-the-badge&logo=readthedocs&logoColor=white" alt="DeepWiki"></a>
   <a href="https://www.erisdev.com/#market"><img src="https://img.shields.io/badge/模組市場-erisdev.com-C724B1?style=for-the-badge&logo=webpack&logoColor=white" alt="模組市場"></a>
-  <a href="https://github.com/ErisPulse/ErisPulse/discussions"><img src="https://img.shields.io/badge/GitHub-討論-181717?style=for-the-badge&logo=github" alt="討論"></a>
+  <a href="https://github.com/ErisPulse/ErisPulse/discussions"><img src="https://img.shields.io/badge/GitHub-Discussions-181717?style=for-the-badge&logo=github" alt="討論"></a>
 </p>
 
 <br clear="both">
@@ -45,7 +45,7 @@
 
 ### 事件驅動架構
 
-基於 OneBot12 標準的統一事件模型——不再為每個平台寫一套 if/elif 判斷訊息類型，一份 handler 自動適配所有適配器
+基於 OneBot12 的統一事件模型，一份 handler 適配所有適配器
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -55,7 +55,7 @@
 
 ### 跨平台相容
 
-同一份業務代碼在所有平台運行——一次編寫即可服務 QQ / Telegram / Kook / Yunhu / 微信公眾號 等 15+ 平台，無需重複開發
+QQ / Telegram / Kook / 雲湖 等 15+ 平台，業務程式碼零變動
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -65,7 +65,7 @@
 
 ### 模組化設計
 
-靈活的插件系統支援執行時熱插拔——安裝/卸載/啟用/禁用模組無需重新啟動進程，配合作用域系統按平台 / Bot / 會話精確控制模組可用性，像拼積木一樣組裝機器人能力
+插件熱插拔無需重啟，作用域按平台 / Bot / 會話管控
 
 </td>
 </tr>
@@ -77,7 +77,7 @@
 
 ### 熱重載
 
-本地插件儲存檔案即生效（0.5 秒級），任意模組（含 PyPI 安裝包）`sdk.reload_module()` 一行熱重載，開發調試體驗接近解釋型腳本語言
+儲存即生效，熱重載輕盈無感
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -87,7 +87,7 @@
 
 ### AI 輔助
 
-自然語言描述需求直接生成可用模組——不會寫適配器？告訴 AI 你要接入什麼平台，它幫你寫
+自然語言描述需求，直接生成可用模組
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -97,52 +97,11 @@
 
 ### 簡潔優雅
 
-直覺化的鏈式 API 設計——@用戶、回覆、重試、批量發送等複雜邏輯一行代碼完成，代碼如羽毛般輕盈可讀
+鏈式 API：@ 使用者、回覆、重試、批量發送一行完成
 
 </td>
 </tr>
 </table>
-
----
-
-## 作用域（Scope）——三維權限控制面
-
-不修改任何模組程式碼，在設定檔中統一宣告「何種範圍內生效」：
-
-```toml
-[ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Tool*"]           # ① 模組維度：該平台只開放這些模組（glob / 正規表示式）
-
-[ErisPulse.scope.identity.users.onebot11]
-deny = ["u_bad", "spam_*"]            # ② 身份維度：黑名單使用者的事件直接丟棄
-
-[ErisPulse.scope.actions.MyModule]
-send = { allow = ["Text"] }           # ③ 出站維度：該模組只允許發送文字
-api = { deny = ["set_*", "leave_*"] } #    並禁止管理類 API
-```
-
-```python
-# 運行時同樣可調用，立即生效（支援點分路徑的字典式讀寫）
-sdk.scope.set_action("MyModule", "api", deny=["set_*"])
-```
-
-> 詳見 [作用域（scope）](docs/zh-TW/advanced/scope.md)
-
----
-
-## 事件覆寫——不改模組代碼，覆寫任意事件類型的行為
-
-```toml
-# 覆寫訊息處理器觸發條件（與程式碼內條件 AND；meta/message/notice/request/command 全類型支援）
-[ErisPulse.event.overrides.message.ChatModule]
-pattern = "閒聊*"
-
-# 覆寫命令實現參數（master / hidden / aliases / prefix 等，使用者優先）
-[ErisPulse.event.overrides.command.MyModule.restart]
-master = true
-```
-
-> 請參閱 [事件覆寫](docs/zh-TW/getting-started/event-handling.md)
 
 ---
 
@@ -562,6 +521,47 @@ graph TB
 | **HttpClient** | 統一 HTTP/WS 客戶端（基於 aiohttp），內建重試與 ErisPulse 異常體系 |
 
 更多設計詳情（初始化流程、生命週期事件、模組加載策略），見[架構概覽](docs/zh-TW/architecture.md)。
+
+## 作用域（Scope）——三維權限控制面
+
+不修改任何模組程式碼，在設定檔中統一宣告「何種範圍內生效」：
+
+```toml
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Tool*"]           # ① 模組維度：該平台只開放這些模組（glob / 正規表示式）
+
+[ErisPulse.scope.identity.users.onebot11]
+deny = ["u_bad", "spam_*"]            # ② 身份維度：黑名單使用者的事件直接丟棄
+
+[ErisPulse.scope.actions.MyModule]
+send = { allow = ["Text"] }           # ③ 出站維度：該模組只允許發送文字
+api = { deny = ["set_*", "leave_*"] } #    並禁止管理類 API
+```
+
+```python
+# 運行時同樣可調用，立即生效（支援點分路徑的字典式讀寫）
+sdk.scope.set_action("MyModule", "api", deny=["set_*"])
+```
+
+> 詳見 [作用域（scope）](docs/zh-TW/advanced/scope.md)
+
+---
+
+## 事件覆寫——不改模組代碼，覆寫任意事件類型的行為
+
+```toml
+# 覆寫訊息處理器觸發條件（與程式碼內條件 AND；meta/message/notice/request/command 全類型支援）
+[ErisPulse.event.overrides.message.ChatModule]
+pattern = "閒聊*"
+
+# 覆寫命令實現參數（master / hidden / aliases / prefix 等，使用者優先）
+[ErisPulse.event.overrides.command.MyModule.restart]
+master = true
+```
+
+> 請參閱 [事件覆寫](docs/zh-TW/getting-started/event-handling.md)
+
+---
 
 ## 生態
 
