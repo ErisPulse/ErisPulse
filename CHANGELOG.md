@@ -26,6 +26,7 @@
 3. **回退即无痕**：本版本引入又在发布前被回退 / 撤销的功能，不做记录
 4. **琐碎不记**：纯测试补充、仓库地址变更、无用户感知的内部微调不记
 5. **同主题合并**：同一文件 / 同一模块的多条文档、测试更新合并为一条
+6. **摘要从简**：**版本摘要** 控制在 2–3 句话，只说清"本版本是什么主题、最重磅的 1–3 项变更"，不逐条罗列子功能、不粘贴 API / 配置 / 参数细节（这些归入下方变更分类）；**升级建议** / **注意事项** 同样只给结论与行动项，不复述正文
 
 ### 变更类型分类
 
@@ -47,7 +48,7 @@
   > 正式发布
 
   **版本摘要**
-  简要描述本版本的主要变更内容和亮点。
+  用 2-3 句话概括本版本主题与最重磅的 1-3 项变更，不罗列子功能细节（细节写在下方变更分类）。
 
   **升级建议**
   - 是否建议升级：建议升级 / 可选升级 / 跳过升级
@@ -73,11 +74,43 @@
 
 ---
 
+## [2.8.1-dev.0] - 2026/09/13
+> 开发版
+
+**版本摘要**
+本版本聚焦稳定性与启动体验：配置写入重构为「唯一临时文件 + fsync + `os.replace`」原子路径、多实例共享配置目录时输出告警（不再出现 `ENOENT` 写失败与写入丢失，并消除强杀/断电产生空文件的隐患），同时修复加载诊断提示 `{name}` 占位符未填充。新增模块/适配器运行时最低 SDK 版本检查（`ModuleMeta.min_sdk_version`，版本过低加载期明确报错并跳过），并完成 `import ErisPulse` 冷启动性能优化（切断运行时对 CLI 包的启动期依赖、`importlib.metadata` 惰性化）。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 升级原因：多实例共享配置目录的用户可消除写入失败告警；所有用户可获得启动加速与加载诊断提示修复；单实例用户可随下一个版本顺带升级
+
+**注意事项**
+- 配置目录下会新增 `.erispulse_config.lock` 锁文件（框架持有至进程退出，退出自动释放），属正常现象，请勿删除或纳入版本管理（已加入 .gitignore 模板）
+- 若日志出现「检测到配置文件可能正被另一个 ErisPulse 实例同时使用」告警，说明有多个实例在写同一份配置，请为每个实例使用独立的配置目录
+- 模块/适配器可通过 `get_meta()` 的 `ModuleMeta(min_sdk_version=...)`（适配器用类属性）声明运行时所需最低 SDK 版本；未声明则不做检查，现有组件零改动
+- 本版本无任何 API / 配置格式变更，模块与适配器无需改动
+
+### 新增
+
+- @YingXinche
+  - `loaders` 组件加载期运行时最低 SDK 版本检查：`ModuleMeta.min_sdk_version` 声明字段（适配器/插件回退类属性声明），SDK 过低时明确报错并跳过加载，与严格模式（strict_mode）协同；启动模板与发布检查清单同步
+  - `runtime/version` 版本解析比较唯一实现（PEP 440 子集，自 CLI 包管理器上提收编），加载器与 CLI 共用同一解析口径
+  - 启动性能优化：`runtime` 不再在启动期引入 CLI 包（`file_watcher` 上移至 `runtime/`）；`importlib.metadata` 全线惰性化（根包 `__version__` PEP 562 惰性解析、路由版本/加载器/查找器元数据首次使用时读取），导入期减少 urllib/ssl/subprocess 等模块加载
+
+### 修复
+
+- @YingXinche
+  - `Core/config` 修复多实例共享配置目录时配置写入偶发失败（ENOENT、本次写入被丢弃）的问题：写入改为唯一临时文件 + fsync + `os.replace` 原子替换，迁移路径同步切换，并消除进程被强杀/断电下文件损坏的潜在风险
+  - `runtime/diagnostics` 修复诊断提示行 `{name}` 占位符未填充、原样输出的问题：`log_diagnostic`/`format_diagnostic_block` 新增 `hint_params` 参数，加载器/适配器诊断提示现输出具体组件名
+  - `Core/config` 新增多实例共享配置目录检测：advisory lock 占用即输出告警（i18n 五语言），不阻塞启动
+
+---
+
 ## [2.8.0] - 2026/09/12
 > 正式发布
 
 **版本摘要**
-2.8.0 是聚焦「用户控制权、生态协作与生产韧性」的综合性版本，覆盖九大方向：(1) **作用域三维体系**——新增作用域（scope）系统将权限/访问控制统一为三维：模块维度（平台/Bot/会话三级绑定模块可用性，支持 glob/`re:` 正则与 `merge` 绑定继承）、身份维度（适配器/Bot/会话/用户四级事件准入，deny 优先，被拒事件分发入口完全丢弃）、出站维度（`scope.actions.<module>.<action>` 对 send/api 做方法级白/黑名单，被拒调用返回 `retcode=34601` 且不发起网络请求）；运行时 `sdk.scope` 提供维度化参数方法与字典式兜底（`get/set/delete` 点分路径直达任意节），控制权完全交给用户；配套统一事件覆写体系（按模块覆写任意事件类型的触发条件与命令实现参数 master/hidden/aliases 等，语义用户优先）与命令自持 ACL（`event.command.acl`）；主人系统支持自定义身份源 provider 链。(2) **交互会话基础设施**——wait_reply 等待表抽为一等基础设施（owner/platform 双维度归属清理、回复命中权限复查、会话互斥租约 `acquire`/`hold`）、Conversation 自动检查点（分支跳转自动存档 + 重启自动恢复）、会话定时器（`remind` 回复即取消 / `escalate` 到点必达）、多路等待（`event.select` 先到先得）、事件幂等去重（平台重连重推同 id 事件只分发一次）、冷启动回放（strategy 声明 replay 新模块自动获得最近会话上下文）、对话恢复接管（`resume` 自动持有租约）、会话收件箱（transcript 自动记录每会话消息流）、端到端事件追踪（trace-id 贯穿入站/处理/出站/生命周期钩子）、消息事务（`event.message_tx()` 回执账本 + 异常自动撤回）；修复 wait_reply 挂起回复被高优先级处理器饿死的问题。(3) **多后端异步存储**——内置 sqlite / mysql / postgres 三种异步驱动后端（配置切换、API 完全一致、驱动可选安装），`BaseStorage` 抽象翻转为异步原生契约（同步 API 转兼容层，现有同步代码零改动），查询构建器新增 `ToDict()` 链；连接失败不阻塞、不崩溃框架——建池重试耗尽快速失败进入冷却期，冷却结束自动重连试探。(4) **模块间 RPC 协议化**——`module.call()` 类型化调用（目标未注册抛类型化异常、懒加载模块自动唤醒、默认 30s 超时）、`services` 服务契约声明与 `sdk.module.services()` 服务目录、定向事件 `lifecycle.emit(..., to=...)` 按注册 owner 定向投递。(5) **归属权清理体系**——模块卸载/禁用与适配器关闭/重启的注册型资源兜底清理扩面（路由中间件/Dashboard 首页入口/事件处理器与中间件/自定义会话类型/运行时事件覆写/master provider 等），新增**外部归属清理钩子** `on_cleanup`（工具模块托管其它模块的资源时挂入框架清理链）与**调用来源感知** `current_caller`（被调方经 `get_current_caller()` 识别调用来源）。(6) **生命周期事件体系充实**——处理器改为并行执行、新增 `lifecycle.fire()` 后台零成本发射（热路径事件全部切换）；新增 `storage.ready/unreachable/recovered`、`client.request.failed`、`module.reload`、`i18n.language.changed`、`core.init.stage` 事件与各阶段启动时长统计。(7) **配置系统体验升级**——框架写入完整保留配置文件注释与键顺序（tomlkit）、框架默认配置不再自动落盘（完整配置参考 `config.full.example`，启动自动刷新）、声明式配置增强（`example` 字段标志/docstring 描述兜底/嵌套 dataclass/`setConfigTemplate` 带注释模板写入）、新增 CLI `config` 命令（schema 驱动交互配置向导，含适配器多账户管理）与安装后自动衔接引导；修复作用域 `persist=False` 运行时绑定被后续配置写入冲掉（#432）。(8) **模块系统增强**——模块 meta 元信息（`get_meta()`/`ModuleMeta`，支持 i18n 字段）与命令总览、拓扑树 API（`get_topology()`，含 `json_safe` 安全输出）、本地插件文件夹免打包即插即用、模块热重载归一 `sdk.reload_module`（本地插件与 PyPI 包一致）、`activate_on` 事件驱动懒激活、日志等级屏蔽（`exclude_levels`）与目录分段日志。(9) **异常体系与工程现代化**——异常补齐结构化属性、`SessionOccupiedError`/`InteractionCancelled`/`StrictModeError` 等迁入统一 `ErisPulseError` 层级并聚合导出、异常消息 i18n 全覆盖、懒加载失败异常统一为 `ModuleNotAvailableError`；CI 矩阵测试（Python 3.10–3.13）、uv 化安装、PEP 639/735 元数据、pre-commit、pip-audit 依赖审计、Docker 核心包半写损坏自动探测还原、文档翻译管线围栏校验与提示词泄露防护加固。
+2.8.0 是聚焦「用户控制权、生态协作与生产韧性」的综合性大版本：新增**作用域三维体系**（模块绑定 / 身份准入 / 出站白黑名单，配套统一事件覆写与命令 ACL）把权限控制权完全交给用户，落地**交互会话基础设施**（租约、检查点、定时器、消息事务、trace-id）与**多后端异步存储**（sqlite / mysql / postgres，连接失败不阻塞框架），并充实生命周期事件、配置体验（注释保留、`epsdk config` 向导）与模块系统（meta、热重载、懒激活），统一异常层级。
 
 **升级建议**
 - **建议升级**
@@ -104,7 +137,8 @@
 > 开发版本
 
 **版本摘要**
-归属权清理链向外部开放：新增**外部归属清理钩子**（`runtime/owner_cleanup.py`），工具模块（定时任务、注册表、连接池等）托管其它模块的资源时可通过 `on_cleanup(cb)` 挂入框架清理链，对方模块被卸载 / 禁用（或适配器关闭）时自动回调，工具模块据此抛弃内部持有的句柄，使已卸载模块实例可被正常 GC 回收。配套新增**调用来源感知**：`module.call()` 执行期间注入 `current_caller` 调用方上下文（owner 仍归因目标模块），被调方经 `get_current_caller()` 识别调用来源，`on_cleanup` 在 RPC 调用链内自动记名到真实调用方。**生命周期事件体系充实**：处理器改为并行执行 + 新增 `fire()` 后台零成本发射（热路径事件全部切换）；新增 `storage.ready/unreachable/recovered`（连接状态感知）、`client.request.failed`、`module.reload`、`i18n.language.changed`、`core.init.stage` 事件与各阶段启动时长统计（`core.init.complete.stages`）。**异常体系优化**：ClientError/StorageUnreachableError/ModuleCallTimeoutError 补齐结构化属性；`SessionOccupiedError`/`InteractionCancelled`/`StrictModeError` 迁入统一异常层级并聚合导出；懒加载失败异常统一为 `ModuleNotAvailableError`；异常消息 i18n 全覆盖；事件处理器异常日志附用户代码帧定位。**修复**：从桥接线程等非主循环线程调度的后台任务改为投递回主循环（原可能在按次运行的桥接循环上被孤立而永不执行）。新增生态模块文档 `ecosystem/cron.md`（ErisPulse-Cron 定时任务调度）。
+归属权清理链向外部工具模块开放（`on_cleanup` / `get_current_caller`），生命周期事件体系进一步充实（处理器并行执行、`fire()` 后台发射，新增存储 / 客户端 / i18n / 启动阶段事件），异常体系补齐结构化属性并完成统一归位。
+另修复非主循环线程调度的后台任务被孤立而永不执行的问题，并新增生态文档 `ecosystem/cron.md`。
 
 **升级建议**
 - 是否建议升级：建议升级
@@ -153,7 +187,8 @@
 > 开发版本
 
 **版本摘要**
-新增交互会话基础设施与基础原语：交互会话管理器（wait_reply 等待表抽为一等基础设施，owner / platform 双维度归属清理、回复命中权限复查、会话互斥租约）、Conversation 自动检查点（分支跳转自动存档 + 重启自动恢复）、端到端事件追踪（trace-id 贯穿入站 / 处理 / 出站 / 生命周期钩子）、消息事务（出站回执账本 + 异常自动撤回）、会话收件箱（每会话消息流自动记录与查询）。存储查询构建器新增 `ToDict()` 链。存储层升级为多后端异步原生架构：内置 sqlite / mysql / postgres 三种异步驱动后端（配置切换、API 完全一致），`BaseStorage` 抽象翻转为异步原生契约，同步 API 转为兼容层（现有同步调用代码零改动）；存储连接失败不再阻塞或崩溃框架——建池重试耗尽后快速失败进入冷却（默认 30 秒）并自动重连试探，数据库恢复即随之恢复。修复 wait_reply 挂起回复被高优先级处理器饿死的问题；另落地模块间 RPC 协议化（module.call / provides 收敛为 meta.services 契约 + services() 服务目录 + 生命周期定向事件 `lifecycle.emit(..., to=...)` 按注册 owner 定向投递）、会话定时器（remind 回复即取消 / escalate 到点必达）、多路等待（event.select + wait_reply 会话级 anyone 可答）、事件幂等去重（重连重推只分发一次）、冷启动回放（strategy 声明 replay，新模块自动获得最近会话上下文）、对话恢复即接管（resume 自动持有会话租约并带回收件箱历史）。此外落地配置系统体验升级：配置文件注释与键顺序在框架写入后完整保留（tomlkit）、框架默认配置不再自动落盘（config.toml 保持最小化，完整配置参考 `config.full.example`）、声明式配置新增 `example` 字段标志 / docstring 描述兜底 / 嵌套 dataclass 支持；修复作用域 `persist=False` 运行时绑定被任意后续配置写入静默冲掉（#432）、慢日志归属 `owner=<unknown>`、Docker 升级 pre 后被入口点自愈静默还原正式版、配置面板 `[object Object]` 渲染问题。
+落地交互会话基础设施（管理器与互斥租约、自动检查点、消息事务、trace-id、会话收件箱）与模块间 RPC 协议化（`module.call` / 服务契约 / 定向事件），存储层升级为多后端异步原生架构（sqlite / mysql / postgres，连接失败快速失败并自动重连，不阻塞框架）。
+配置系统同步升级：写入完整保留注释与键顺序、默认配置不再落盘、声明式配置增强；并修复 wait_reply 回复被高优先级处理器饿死、作用域 `persist=False` 绑定被冲掉（#432）等问题。
 
 **升级建议**
 - 是否建议升级：建议升级
@@ -271,8 +306,8 @@
 > 开发版本
 
 **版本摘要**
-新增 CLI `config` 命令与安装后配置引导：`epsdk config` 按适配器/模块声明的 `ConfigClass`/`AccountConfigClass` 生成 schema 驱动的交互表单（含适配器多账户管理与启用开关），无需手写 config.toml；`epsdk install`（交互式路径）与 `epsdk init` 安装成功后自动检测新装包的配置声明并引导填写。向导已完善交互细节：字段值来源标注（已有配置/默认值）、布尔开关用字段名提问、已就绪目标提示、成功写入合并为一条汇总、账户名空输入视为取消，并统一字段描述语言（Core i18n 跟随 `epsdk i18n` 设置，消除中英混排）。另修复 Docker 部署 site-packages 持久化卷核心包半写损坏（如 click 截断导致 `module 'click' has no attribute 'Choice'` 启动失败）无法自愈的问题，入口点启动时自动探测并从镜像备份还原。
-本版重构权限/访问控制为**作用域（scope）三维体系 + 事件/命令覆写体系**，控制权完全交给用户——在各系统注册的**上层**统一声明。**作用域**（配置 `ErisPulse.scope` / 运行时 `sdk.scope`）按事件处理生命周期回答四个"什么范围内生效"：**① 模块维度**（平台 / Bot / 会话三级绑定模块可用性，条目支持 glob / `re:` 正则，子级绑定支持 `merge = true` 与低优先级逐条目并集）；**② 身份维度**（适配器 / Bot / 会话 / 用户四级事件准入，用户键支持 glob/正则，被拒事件在分发入口完全丢弃）；**③ 出站维度**（`scope.actions.<module>.<action>` 内联表规则——`send` 可按发送方法名、`api` 可按标准动作名做白/黑名单细粒度限制（如 `send = { allow = ["Text"] }` 只许发文本、`api = { deny = ["set_*"] }` 禁管理类 API），被拒调用返回 `retcode=34601` 且不发起网络请求）。**事件覆写**（新模块 `Core/Event/overrides.py`，配置 `ErisPulse.event.overrides` / `sdk.Event.overrides`）：按模块覆写**全部事件类型**处理器的 pattern/regex 触发条件（与代码内条件 AND；无文本事件不受约束），与命令覆写 `event.command.overrides` 对称。运行时 API 面向**维度化参数方法 + 字典式兜底**收敛：判定三问 `is_allowed()` / `is_identity_allowed()` / `is_action_allowed()`；配置读写 `scope.get(path)` / `scope.set(path, value)` / `scope.delete(path)`（点分路径直达任意节，dict 深合并写入、写后立读），并支持 `scope[path]` / `scope[path] = v` / `del scope[path]` / `path in scope` 协议。**命令系统自持**用户侧配置：用户黑白名单 ACL 存 `ErisPulse.event.command.acl`（命令名支持 glob、精确键优先，`event.command.default_allow` 兜底严格模式，`command.allow_user()` 等直接实现）；实现参数覆写存 `ErisPulse.event.command.overrides`（覆盖 `master`/`hidden`/`aliases`/`prefix` 等，语义**用户优先**，运行时 `overrides.command.set()`）。作用域配置加载 / 热更新时逐节校验格式，坏节告警并忽略（写错即告警并忽略）。`epsdk config` 新增 `--json` 输出配置状态（供脚本 / CI 消费）。主人系统支持**自定义身份源 provider 链**（`master.provider` 装饰器/函数两用 + `fn.unregister()`，可接入适配器管理员接口、数据库角色等外部身份体系，模块卸载自动注销）。`ErisPulse.access` 与 `ErisPulse.event.command.permissions` 旧配置节移除（能力分别并入作用域身份维度与命令 ACL，dev 阶段直接切换不保留门面）。匹配条目语法全系统统一（`Core/text_match.py`：精确名 / glob / `re:` 正则，默认大小写不敏感），`adapter.on()` 新增 `detail_type` / `pattern` / `regex` 条件参数，`activate_on` 事件触发器 detail_type 支持 glob。另完成一批现代化工程设施：CI 矩阵测试（Python 3.10–3.13）、uv 化安装、PEP 639/735 元数据、pre-commit 卫生钩子、ruff 检查范围与 CI 对齐、pip-audit 依赖审计与 dependabot。
+本版重构权限/访问控制为**作用域（scope）三维体系 + 事件/命令覆写体系**，控制权完全交给用户：模块维度（平台 / Bot / 会话三级绑定模块可用性，支持 glob / `re:` 与 `merge` 继承）、身份维度（四级事件准入，deny 优先，被拒事件完全丢弃）、出站维度（`send` / `api` 方法级白黑名单，被拒返回 `retcode=34601`），运行时经 `sdk.scope` 维度化方法或字典式 `get/set/delete` 操作，旧 `ErisPulse.access` 与命令权限节直接移除。
+配套新增 CLI `config` 配置向导（含安装后自动衔接、`--json` 状态输出）与主人系统自定义身份源 provider 链，并修复配置「写后立读」不一致、翻译管线代码块围栏损坏等一批问题。
 
 ### 新增
 - @wsu2059q
@@ -411,7 +446,7 @@
 > 开发版本
 
 **版本摘要**
-本开发版本聚焦六组能力：(1) **模块作用域系统**——按"适配器平台 + Bot + 会话"三级绑定模块（白名单/黑名单，优先级 会话>Bot>平台），默认允许全部模块，模块与适配器零改动即可适配，被禁模块静默忽略；(2) **拓扑树 API**——`ModuleManager/AdapterManager/ScopeManager.get_topology()` 与 `sdk.get_topology()` 聚合命令/事件处理器/路由/生命周期钩子归属，供 Dashboard 绘制模块资源树；(3) **日志等级屏蔽**——`[ErisPulse.logger] exclude_levels` 屏蔽指定等级日志（如 `["EVENT"]` 隐藏消息收发内容，实现后台隐私）；(4) **模块介绍 meta 与命令总览**——`BaseModule.get_meta()` 声明式元信息（推荐返回 `ModuleMeta` 配置类，dict 兼容，支持 i18n 字段），`ModuleManager.get_meta()` / `get_commands_overview()` 按模块聚合命令总览；(5) **本地插件文件夹**——`plugins/` 免打包即插即用（单文件/包两种布局，本地优先覆盖 PyPI 同名安装包），配合 **热重载**（`sdk.enable_plugin_hot_reload()` 自动监控本地插件变更 / `sdk.reload_plugin()` 手动重载任意模块）与 **CLI `create module --local`**（生成本地插件结构）;(6) **`activate_on` 事件驱动懒激活**——`ModuleLoadStrategy` 声明事件/命令触发懒加载，事件到达时按需激活模块；
+本开发版本聚焦模块作用域与生态协作基础：新增按「平台 + Bot + 会话」三级绑定的模块作用域系统（附拓扑树 API 与日志等级屏蔽），模块介绍 meta 元信息与命令总览，本地插件文件夹免打包即插即用（含热重载与 `create module --local`），以及 `activate_on` 事件驱动懒激活。
 
 ### 新增
 - @wsu2059q

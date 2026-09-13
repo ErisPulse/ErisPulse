@@ -5,6 +5,9 @@ ErisPulse 配置中心
 提供自动补全缺失配置项的功能
 添加内存缓存和延迟写入机制以提高性能
 基于 tomlkit 实现注释保留写入：配置文件中的注释与键顺序在任何框架写入后均不丢失
+配置写入采用"唯一临时文件 + fsync + 原子替换"（``os.replace``）：
+进程被杀（OOM / SIGKILL）或断电时磁盘上的配置文件要么是完整旧内容、要么是完整新内容，
+不会出现空文件或半写状态；临时文件名按进程唯一，多实例共享配置目录时不再互相争抢踩踏
 
 {!--< tips >!--}
 1. 使用 getConfig(key) / setConfig(key, value) 读写配置
@@ -14,6 +17,7 @@ ErisPulse 配置中心
 
 import atexit
 import os
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -25,6 +29,7 @@ from tomlkit.items import Table
 
 from .constants import (
     CONFIG_CACHE_TIMEOUT_SECS,
+    CONFIG_LOCK_FILE_NAME,
     CONFIG_WRITE_DELAY_SECS,
     DEFAULT_CONFIG_FILE_PATH,
 )
@@ -55,6 +60,7 @@ class ConfigManager:
         self._atexit_registered = False  # atexit 钩子注册标记
         self._last_self_write_mtime: float = 0.0  # 框架自身最后一次刷盘的 mtime
         self._migrate_config()  # 迁移旧配置文件
+        self._acquire_instance_lock()  # 尝试独占配置目录（多实例共享检测，仅告警不阻塞）
         self._load_config()  # 初始化时加载配置
         self._watch_config_file()  # 记录配置文件 mtime 以便后续监听
         self._start_config_watcher()  # 启动后台文件变化监听
@@ -147,8 +153,8 @@ class ConfigManager:
             with Path(old_config_path).open(encoding="utf-8") as f:
                 old_doc = tomlkit.parse(f.read())
 
-            with Path(self.CONFIG_FILE).open("w", encoding="utf-8") as f:
-                f.write(tomlkit.dumps(old_doc))
+            # 原子写入：避免"新文件半写 + 旧文件已删"窗口内中断导致配置丢失
+            self._atomic_write_text(tomlkit.dumps(old_doc))
 
             readme_content = f"""# 配置文件迁移说明
 
@@ -316,6 +322,90 @@ class ConfigManager:
         """
         return Path(self.CONFIG_FILE).parent / ".flush_malformed_cooldown"
 
+    def _acquire_instance_lock(self) -> None:
+        """
+        尝试以独占方式锁定配置目录的实例锁文件，检测多实例共享配置目录
+
+        锁文件位于配置文件同级目录（:data:`~.constants.CONFIG_LOCK_FILE_NAME`），
+        进程持锁后全生命周期不释放，由 OS 在进程退出时自动归还——
+        无需清理逻辑，进程被强杀也不会留下"幽灵锁"。
+        锁被占用说明另一个 ErisPulse 实例正在使用同一配置目录，
+        此时仅记录告警（并发写入可能互相覆盖），不阻塞框架启动。
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        self._instance_lock_fd: int | None = None
+        lock_path = Path(self.CONFIG_FILE).parent / CONFIG_LOCK_FILE_NAME
+        try:
+            lock_path.parent.mkdir(parents=True, exist_ok=True)
+            fd = os.open(str(lock_path), os.O_CREAT | os.O_RDWR, 0o644)
+        except OSError:
+            return  # 文件系统只读等场景：放弃检测，不影响框架启动
+        try:
+            if os.name == "nt":
+                import msvcrt
+
+                msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            self._instance_lock_fd = fd
+        except OSError:
+            os.close(fd)
+            self._log_config_error(
+                i18n.t("core.config.multi_instance_detected", path=self.CONFIG_FILE),
+                level="warning",
+            )
+        except Exception:
+            # 平台不支持等异常场景：静默放弃检测，不影响框架启动
+            os.close(fd)
+
+    def _atomic_write_text(self, text: str) -> None:
+        """
+        原子写入配置文件（唯一临时文件 + fsync + ``os.replace``）
+
+        旧实现使用固定名 ``<config>.tmp`` 并在 rename 前不落盘，存在两类丢文件场景：
+        多实例共享配置目录时同名临时文件被对端 truncate / rename（ENOENT 争抢）；
+        进程被杀或断电时 rename 元数据先于数据块落盘（ext4 延迟分配），留下空文件。
+        现改为：同目录 ``mkstemp`` 生成进程唯一临时文件 → 写毕 ``flush + fsync``
+        强制数据落盘 → ``os.replace`` 原子替换目标（POSIX / Windows 均原子）；
+        POSIX 下额外 fsync 配置目录，尽力保证断电后替换结果不回退。
+
+        :param text: str 待写入的完整文件内容
+        :raises OSError: 临时文件创建、写入或替换失败时抛出，由调用方按写失败处理
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        config_path = Path(self.CONFIG_FILE)
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+        fd, temp_file = tempfile.mkstemp(
+            dir=str(config_path.parent), prefix=config_path.name + ".", suffix=".tmp"
+        )
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                f.write(text)
+                f.flush()
+                os.fsync(f.fileno())
+            Path(temp_file).replace(config_path)
+        except BaseException:
+            try:
+                Path(temp_file).unlink()
+            except OSError:
+                pass
+            raise
+        if os.name == "posix":
+            try:
+                dir_fd = os.open(str(config_path.parent), os.O_RDONLY)
+                try:
+                    os.fsync(dir_fd)
+                finally:
+                    os.close(dir_fd)
+            except OSError:
+                pass
+
     @staticmethod
     def _set_doc_path(doc: Any, keys: list[str], value: Any) -> None:
         """
@@ -384,18 +474,8 @@ class ConfigManager:
                     for key, value in self._dirty_keys.items():
                         self._set_doc_path(doc, key.split("."), value)
 
-                    temp_file = self.CONFIG_FILE + ".tmp"
-                    with Path(temp_file).open("w", encoding="utf-8") as f:
-                        f.write(tomlkit.dumps(doc))
-
-                    # 原子性重命名
-                    if os.name == "nt":
-                        if Path(self.CONFIG_FILE).exists():
-                            Path(temp_file).replace(self.CONFIG_FILE)
-                        else:
-                            Path(temp_file).rename(self.CONFIG_FILE)
-                    else:
-                        Path(temp_file).rename(self.CONFIG_FILE)
+                    # 原子写入：唯一临时文件 + fsync + os.replace（多实例/断电安全）
+                    self._atomic_write_text(tomlkit.dumps(doc))
 
                     # 更新缓存并清除待写入队列（转回 plain dict，保持缓存类型不变）
                     self._cache = self._doc_to_plain_dict(doc)
@@ -450,13 +530,6 @@ class ConfigManager:
                                 )
                             )
                         except (ImportError, AttributeError):
-                            pass
-                    # 清理临时文件
-                    temp_file = self.CONFIG_FILE + ".tmp"
-                    if Path(temp_file).exists():
-                        try:
-                            Path(temp_file).unlink()
-                        except Exception:
                             pass
                 except Exception as e:
                     try:
@@ -887,18 +960,8 @@ class ConfigManager:
                         self._cache_timestamp = time.time()
                         return True
 
-                    temp_file = self.CONFIG_FILE + ".tmp"
-                    with Path(temp_file).open("w", encoding="utf-8") as f:
-                        f.write(tomlkit.dumps(doc))
-
-                    # 原子性重命名
-                    if os.name == "nt":
-                        if Path(self.CONFIG_FILE).exists():
-                            Path(temp_file).replace(self.CONFIG_FILE)
-                        else:
-                            Path(temp_file).rename(self.CONFIG_FILE)
-                    else:
-                        Path(temp_file).rename(self.CONFIG_FILE)
+                    # 原子写入：唯一临时文件 + fsync + os.replace（多实例/断电安全）
+                    self._atomic_write_text(tomlkit.dumps(doc))
 
                     self._cache = self._doc_to_plain_dict(doc)
                     self._cache_timestamp = time.time()
@@ -943,13 +1006,6 @@ class ConfigManager:
                         )
                     except (ImportError, AttributeError):
                         pass
-                    # 清理临时文件
-                    temp_file = self.CONFIG_FILE + ".tmp"
-                    if Path(temp_file).exists():
-                        try:
-                            Path(temp_file).unlink()
-                        except Exception:
-                            pass
                     return False
 
     async def aforce_save(self) -> None:

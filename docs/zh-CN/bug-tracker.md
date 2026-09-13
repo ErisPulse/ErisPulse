@@ -93,13 +93,13 @@
 |--------|------|
 | 🔴 严重 | 16 |
 | 🟡 中等 | 16 |
-| 🟢 轻微 | 2 |
-| **合计** | **34** |
+| 🟢 轻微 | 3 |
+| **合计** | **35** |
 
 | 类型 | 数量 |
 |------|------|
 | 适配器 | 6 |
-| 配置系统 | 9 |
+| 配置系统 | 10 |
 | 事件系统 | 6 |
 | CLI | 3 |
 | 存储 | 3 |
@@ -916,4 +916,30 @@ _apply_rate_limit 解析 window=3600（100/hour）
 **回归测试**: `tests/unit/test_unit_config.py::TestResolveI18nDefaultOnlyDict`、`TestSchemaUnderscoreFieldExclusion`
 
 **严重性**: 🟡 中等
+**类型**: 配置系统
+
+---
+
+### [BUG-036] 多实例共享配置目录时配置写入偶发失败（ENOENT）
+
+**问题**: Docker 部署场景下（多容器挂载同一宿主机配置目录），日志偶发连续两条 `Failed to write configuration file ... [Errno 2] No such file or directory: '...config.toml.tmp' -> '...config.toml'`。该次配置写入被丢弃（旧配置完整保留，未观察到配置丢失），功能不受影响，但告警反复出现干扰排查，且待写入的配置项需等待下次写入才能落盘。
+
+**原因**: 根因链路：`_flush_config` / `setConfigTemplate` 使用**固定名**临时文件 `config.toml.tmp` 承载新内容，`write()` 后不 `fsync` 直接 `rename()`。两个 ErisPulse 实例共享同一配置目录时，B 实例 `open("w")` 可能 **truncate** A 实例正在写的临时文件 → A rename 时目标已被 B 取走或内容被截断，报 ENOENT（即用户日志中的连续两条错误）。已报告案例中仅表现为写入失败告警（旧配置保留）；若交错时序更极端，rename 可能输出空/半截的 `config.toml`（属潜在风险，尚未在真实环境爆发）。单实例场景下 ext4 延迟分配同样存在「rename 元数据先于数据块落盘」的崩溃窗口（SIGKILL / 断电）。`_file_lock` 为进程内 `threading.RLock`，对跨进程/跨容器写入无约束。
+
+**影响版本**: 2.2.0-dev.0 - 2.8.0
+
+**修复版本**: 2.8.1-dev.0
+
+**修复内容**: 配置写入统一收敛到 `_atomic_write_text()`：同目录 `mkstemp` 生成进程唯一临时文件（消除固定名争抢，多实例下退化为 last-writer-wins，不再 ENOENT）→ 写毕 `flush + fsync` 强制数据落盘（消除「rename 已生效、数据未落盘」窗口）→ `os.replace` 原子替换目标（POSIX/Windows 均原子，任一时刻磁盘上要么完整旧内容、要么完整新内容）；POSIX 下额外 fsync 配置目录。`_flush_config`、`setConfigTemplate`、根目录配置迁移三处写入点全部切换；异常路径清理逻辑随唯一临时文件名重构。新增**多实例检测**：启动时 advisory lock（POSIX `flock` / Windows `msvcrt.locking`）独占持有配置目录锁文件 `.erispulse_config.lock`，被占用即输出 i18n 告警（不阻塞启动），锁由 OS 在进程退出时自动释放、无幽灵锁。
+
+**修复日期**: 2026/09/13
+
+**复现步骤**: ① 两个容器挂载同一宿主机 `config/` 目录并同时运行 ErisPulse；② 任一实例触发配置写入（如模块注册默认配置）；③ 观察日志出现 ENOENT 写失败告警，本次写入被丢弃（旧配置保留）。
+
+**关联**: 用户报告（1Panel 容器 ×2）
+
+**回归测试**: `tests/unit/test_unit_config_atomic_write.py`（内容完整写入/无临时文件残留/写失败保原文件/双实例并发写入文件始终合法/锁文件创建/多实例告警/迁移原子写入）
+
+**严重性**: 🟢 轻微
+
 **类型**: 配置系统
