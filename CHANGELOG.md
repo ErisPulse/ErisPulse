@@ -97,6 +97,11 @@
   - `runtime/version` 版本解析比较唯一实现（PEP 440 子集，自 CLI 包管理器上提收编），加载器与 CLI 共用同一解析口径
   - 启动性能优化：`runtime` 不再在启动期引入 CLI 包（`file_watcher` 上移至 `runtime/`）；`importlib.metadata` 全线惰性化（根包 `__version__` PEP 562 惰性解析、路由版本/加载器/查找器元数据首次使用时读取），导入期减少 urllib/ssl/subprocess 等模块加载
 
+### 优化
+
+- @YingXinche
+  - `README` 首页排版调整：核心特性文案精简为短句，作用域（Scope）与事件覆写章节由开头移至核心模块之后（避免进阶能力抢占入门阅读动线）
+
 ### 修复
 
 - @YingXinche
