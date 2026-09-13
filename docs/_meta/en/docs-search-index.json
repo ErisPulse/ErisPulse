@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1620,
+  "total_keywords": 1624,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -80,20 +80,20 @@
         "title": "1. Core Principles"
       }
     ],
+    "1. Create Dockerfile": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 203,
+        "level": 3,
+        "title": "1. Create Dockerfile"
+      }
+    ],
     "1. Create Project": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 47,
         "level": 3,
         "title": "1. Create Project"
-      }
-    ],
-    "1. Create a Dockerfile": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 202,
-        "level": 3,
-        "title": "1. Create a Dockerfile"
       }
     ],
     "1. Declarative Configuration (Recommended)": [
@@ -558,12 +558,12 @@
         "title": "2. Correct Asynchronous Operations"
       }
     ],
-    "2. Create a GitHub Actions Workflow": [
+    "2. Create GitHub Actions Workflow": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 230,
+        "line": 231,
         "level": 3,
-        "title": "2. Create a GitHub Actions Workflow"
+        "title": "2. Create GitHub Actions Workflow"
       }
     ],
     "2. Create pyproject.toml": [
@@ -1170,12 +1170,12 @@
         "title": "3. Standardized Workflow (How New Capabilities Enter the Standard)"
       }
     ],
-    "3. Submit to Module Store": [
+    "3. Submit to the Module Store": [
       {
         "document": "developer-guide/publishing.md",
         "line": 90,
         "level": 3,
-        "title": "3. Submit to Module Store"
+        "title": "3. Submit to the Module Store"
       }
     ],
     "3. Support Platform-Specific Methods": [
@@ -1186,12 +1186,12 @@
         "title": "3. Support Platform-Specific Methods"
       }
     ],
-    "3. Trigger the Build": [
+    "3. Trigger Build": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 299,
+        "line": 300,
         "level": 3,
-        "title": "3. Trigger the Build"
+        "title": "3. Trigger Build"
       }
     ],
     "3.1 Common Fields": [
@@ -1482,12 +1482,12 @@
         "title": "4. Session Identifier Isolation Across Platforms"
       }
     ],
-    "4. Set the Image as Public": [
+    "4. Set Image to Public": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 314,
+        "line": 315,
         "level": 3,
-        "title": "4. Set the Image as Public"
+        "title": "4. Set Image to Public"
       }
     ],
     "4. Starting Adapters": [
@@ -1701,7 +1701,7 @@
     "5. User Usage": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 321,
+        "line": 322,
         "level": 3,
         "title": "5. User Usage"
       }
@@ -2878,6 +2878,14 @@
         "title": "Api DSL Method Mapping (YunhuHTTPClient → UserAPI v1 Endpoints)"
       }
     ],
+    "Applicable Scenarios": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 197,
+        "level": 3,
+        "title": "Applicable Scenarios"
+      }
+    ],
     "Architecture Design": [
       {
         "document": "advanced/sql-builder.md",
@@ -3798,12 +3806,12 @@
         "title": "Callback Routes"
       }
     ],
-    "Can a single package register multiple modules?": [
+    "Can one package register multiple modules?": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 178,
+        "line": 179,
         "level": 3,
-        "title": "Can a single package register multiple modules?"
+        "title": "Can one package register multiple modules?"
       }
     ],
     "Case-Insensitive Method Calls": [
@@ -4073,7 +4081,7 @@
     "Command Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 450,
+        "line": 454,
         "level": 3,
         "title": "Command Configuration"
       }
@@ -4149,7 +4157,7 @@
     "Command Parsing Configuration (event.command)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 609,
+        "line": 610,
         "level": 2,
         "title": "Command Parsing Configuration (event.command)"
       }
@@ -4181,7 +4189,7 @@
     "Comment Retention and Minimal Disk Write": [
       {
         "document": "user-guide/configuration.md",
-        "line": 39,
+        "line": 42,
         "level": 2,
         "title": "Comment Retention and Minimal Disk Write"
       }
@@ -4299,7 +4307,7 @@
     "Complete Configuration Example": [
       {
         "document": "user-guide/configuration.md",
-        "line": 144,
+        "line": 147,
         "level": 2,
         "title": "Complete Configuration Example"
       }
@@ -4399,7 +4407,7 @@
     "Configuration": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 142,
+        "line": 143,
         "level": 3,
         "title": "Configuration"
       },
@@ -4521,7 +4529,7 @@
     "Configuration File Location": [
       {
         "document": "user-guide/configuration.md",
-        "line": 7,
+        "line": 6,
         "level": 2,
         "title": "Configuration File Location"
       }
@@ -4551,7 +4559,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 74,
+        "line": 77,
         "level": 2,
         "title": "Configuration Hot Update"
       }
@@ -4587,7 +4595,7 @@
     "Configuration Loading Error Handling": [
       {
         "document": "user-guide/configuration.md",
-        "line": 18,
+        "line": 21,
         "level": 2,
         "title": "Configuration Loading Error Handling"
       }
@@ -5114,12 +5122,12 @@
         "title": "Custom Fonts"
       }
     ],
-    "Custom Identity Source (Provider)": [
+    "Custom Identity Source (provider)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 257,
+        "line": 260,
         "level": 3,
-        "title": "Custom Identity Source (Provider)"
+        "title": "Custom Identity Source (provider)"
       }
     ],
     "Custom Message Segment Types": [
@@ -5360,6 +5368,14 @@
         "title": "Detailed Initialization Stages"
       }
     ],
+    "Determination Chain and Runtime Additions/Removals": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 246,
+        "level": 3,
+        "title": "Determination Chain and Runtime Additions/Removals"
+      }
+    ],
     "Developer Guide": [
       {
         "document": "developer-guide/README.md",
@@ -5395,7 +5411,7 @@
     "Development Mode Testing": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 162,
+        "line": 163,
         "level": 2,
         "title": "Development Mode Testing"
       }
@@ -5499,7 +5515,7 @@
     "Distributing Applications via Docker Images": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 192,
+        "line": 193,
         "level": 2,
         "title": "Distributing Applications via Docker Images"
       }
@@ -5523,7 +5539,7 @@
     "Docker Image vs PyPI Publishing": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 376,
+        "line": 377,
         "level": 3,
         "title": "Docker Image vs PyPI Publishing"
       }
@@ -5579,7 +5595,7 @@
     "Documentation": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 148,
+        "line": 149,
         "level": 3,
         "title": "Documentation"
       }
@@ -5797,7 +5813,7 @@
     "Environment Variable Override": [
       {
         "document": "user-guide/configuration.md",
-        "line": 49,
+        "line": 52,
         "level": 2,
         "title": "Environment Variable Override"
       }
@@ -5983,7 +5999,7 @@
     "Event Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 448,
+        "line": 452,
         "level": 2,
         "title": "Event Configuration"
       }
@@ -6434,14 +6450,6 @@
         "title": "Exception Hierarchy"
       }
     ],
-    "Exception List": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 387,
-        "level": 4,
-        "title": "Exception List"
-      }
-    ],
     "Exception Overview": [
       {
         "document": "advanced/errors.md",
@@ -6480,6 +6488,14 @@
         "line": 291,
         "level": 3,
         "title": "Executing Logic After Successful Send (Hook)"
+      }
+    ],
+    "Exemption List": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 391,
+        "level": 4,
+        "title": "Exemption List"
       }
     ],
     "Exit Code 42 Contract": [
@@ -6578,12 +6594,6 @@
       {
         "document": "ai-support/README.md",
         "line": 126,
-        "level": 2,
-        "title": "FAQ"
-      },
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 172,
         "level": 2,
         "title": "FAQ"
       },
@@ -6823,7 +6833,7 @@
     "Framework Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 334,
+        "line": 338,
         "level": 2,
         "title": "Framework Configuration"
       }
@@ -6842,6 +6852,14 @@
         "line": 140,
         "level": 3,
         "title": "Framework Internal Parameter Validation (ValueError)"
+      }
+    ],
+    "Frequently Asked Questions": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 173,
+        "level": 2,
+        "title": "Frequently Asked Questions"
       }
     ],
     "Friend Added": [
@@ -7460,12 +7478,12 @@
         "title": "How WebUI Consumes"
       }
     ],
-    "How long does the review process take?": [
+    "How long does the review take?": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 188,
+        "line": 189,
         "level": 3,
-        "title": "How long does the review process take?"
+        "title": "How long does the review take?"
       }
     ],
     "How to change the command prefix?": [
@@ -7883,7 +7901,7 @@
     "Internal Breakdown of Hot Update Chain": [
       {
         "document": "user-guide/configuration.md",
-        "line": 96,
+        "line": 99,
         "level": 3,
         "title": "Internal Breakdown of Hot Update Chain"
       }
@@ -7915,7 +7933,7 @@
     "Internationalization Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 477,
+        "line": 481,
         "level": 2,
         "title": "Internationalization Configuration"
       }
@@ -8297,7 +8315,7 @@
     "Logging Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 286,
+        "line": 290,
         "level": 2,
         "title": "Logging Configuration"
       }
@@ -8432,18 +8450,10 @@
         "title": "Manual Response Construction (Legacy Method Still Compatible)"
       }
     ],
-    "Master Identification Chain and Runtime Additions/Deletions": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 243,
-        "level": 3,
-        "title": "Master Identification Chain and Runtime Additions/Deletions"
-      }
-    ],
     "Master System Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 217,
+        "line": 220,
         "level": 2,
         "title": "Master System Configuration"
       }
@@ -8507,7 +8517,7 @@
     "Message Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 466,
+        "line": 470,
         "level": 3,
         "title": "Message Configuration"
       }
@@ -9113,7 +9123,7 @@
     "Module Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 488,
+        "line": 492,
         "level": 2,
         "title": "Module Configuration"
       }
@@ -9218,6 +9228,14 @@
         "title": "Module Series — `Core/module.py` (`sdk.module.call`)"
       }
     ],
+    "Module Store Overview": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 5,
+        "level": 2,
+        "title": "Module Store Overview"
+      }
+    ],
     "Module Usage Example": [
       {
         "document": "advanced/lifecycle.md",
@@ -9312,6 +9330,14 @@
         "title": "Multi-Instance Deployment"
       }
     ],
+    "Multi-Instance Warning and Lock File": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 17,
+        "level": 3,
+        "title": "Multi-Instance Warning and Lock File"
+      }
+    ],
     "Multi-Platform Adaptation": [
       {
         "document": "getting-started/common-tasks.md",
@@ -9371,7 +9397,7 @@
     "Must package names start with `ErisPulse-`?": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 174,
+        "line": 175,
         "level": 3,
         "title": "Must package names start with `ErisPulse-`?"
       }
@@ -9507,7 +9533,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 611,
+        "line": 612,
         "level": 2,
         "title": "Next Steps"
       },
@@ -9922,14 +9948,6 @@
         "title": "Overview of SDK Top-Level Entry Points"
       }
     ],
-    "Overview of the Module Store": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 5,
-        "level": 2,
-        "title": "Overview of the Module Store"
-      }
-    ],
     "Owner Context Mechanism": [
       {
         "document": "advanced/ownership.md",
@@ -10282,12 +10300,12 @@
         "title": "PostgreSQL (`ErisPulse.storage.postgres`)"
       }
     ],
-    "Pre-release Checklist": [
+    "Pre-publish Checklist": [
       {
         "document": "developer-guide/publishing.md",
         "line": 123,
         "level": 2,
-        "title": "Pre-release Checklist"
+        "title": "Pre-publish Checklist"
       }
     ],
     "Prerequisites": [
@@ -10333,7 +10351,7 @@
     "Proactive GC Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 355,
+        "line": 359,
         "level": 3,
         "title": "Proactive GC Configuration"
       }
@@ -10424,12 +10442,20 @@
         "title": "Publish Your Module"
       }
     ],
-    "Publish to Docker Hub as well": [
+    "Publish to Docker Hub Simultaneously": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 353,
+        "line": 354,
         "level": 3,
-        "title": "Publish to Docker Hub as well"
+        "title": "Publish to Docker Hub Simultaneously"
+      }
+    ],
+    "Publishing": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 156,
+        "level": 3,
+        "title": "Publishing"
       }
     ],
     "Publishing Guide": [
@@ -10576,6 +10602,14 @@
         "title": "Quick Initialization"
       }
     ],
+    "Quick Publish": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 34,
+        "level": 2,
+        "title": "Quick Publish"
+      }
+    ],
     "Quick Reference": [
       {
         "document": "api-reference/core-modules.md",
@@ -10606,12 +10640,6 @@
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 45,
-        "level": 2,
-        "title": "Quick Start"
-      },
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 34,
         "level": 2,
         "title": "Quick Start"
       },
@@ -11054,14 +11082,6 @@
         "line": 79,
         "level": 2,
         "title": "Relationship with SendDSL Standard Methods"
-      }
-    ],
-    "Release": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 155,
-        "level": 3,
-        "title": "Release"
       }
     ],
     "Render HTML": [
@@ -11717,7 +11737,7 @@
     "Scope Configuration (scope)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 517,
+        "line": 521,
         "level": 2,
         "title": "Scope Configuration (scope)"
       }
@@ -12043,7 +12063,7 @@
     "Server Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 198,
+        "line": 201,
         "level": 2,
         "title": "Server Configuration"
       }
@@ -12511,7 +12531,7 @@
     "Storage Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 399,
+        "line": 403,
         "level": 2,
         "title": "Storage Configuration"
       }
@@ -12557,7 +12577,7 @@
     "Strict Mode": [
       {
         "document": "user-guide/configuration.md",
-        "line": 370,
+        "line": 374,
         "level": 3,
         "title": "Strict Mode"
       }
@@ -13039,7 +13059,7 @@
     "Unified Event Override Configuration (event.overrides)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 565,
+        "line": 567,
         "level": 2,
         "title": "Unified Event Override Configuration (event.overrides)"
       }
@@ -13176,6 +13196,14 @@
         "title": "Unsupported Standard Actions"
       }
     ],
+    "Update Published Modules": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 115,
+        "level": 2,
+        "title": "Update Published Modules"
+      }
+    ],
     "Update Requirements": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -13198,14 +13226,6 @@
         "line": 202,
         "level": 3,
         "title": "Updating Data"
-      }
-    ],
-    "Updating Published Modules": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 115,
-        "level": 2,
-        "title": "Updating Published Modules"
       }
     ],
     "Upgrade Components": [
@@ -13286,14 +13306,6 @@
         "title": "Use Adapter Event Listening"
       }
     ],
-    "Use Cases": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 196,
-        "level": 3,
-        "title": "Use Cases"
-      }
-    ],
     "User Data Storage": [
       {
         "document": "getting-started/common-tasks.md",
@@ -13310,12 +13322,12 @@
         "title": "User Guide"
       }
     ],
-    "User Priority: Master Effect Scope Decided by User": [
+    "User Priority: Master Scope Decided by User": [
       {
         "document": "user-guide/configuration.md",
-        "line": 282,
+        "line": 285,
         "level": 3,
-        "title": "User Priority: Master Effect Scope Decided by User"
+        "title": "User Priority: Master Scope Decided by User"
       }
     ],
     "User Status Change Event": [
@@ -13890,12 +13902,12 @@
         "title": "Yunhu User Platform Features Documentation"
       }
     ],
-    "[BUG-001] Event handler duplicate registration causes event to be processed multiple times": [
+    "[BUG-001] Event handler registered multiple times causing event to be processed multiple times": [
       {
         "document": "bug-tracker.md",
         "line": 117,
         "level": 3,
-        "title": "[BUG-001] Event handler duplicate registration causes event to be processed multiple times"
+        "title": "[BUG-001] Event handler registered multiple times causing event to be processed multiple times"
       }
     ],
     "[BUG-002] Init command adapter configuration path type error": [
@@ -13914,28 +13926,28 @@
         "title": "[BUG-003] Commands fail after restart"
       }
     ],
-    "[BUG-004] Lifecycle event handlers not cleared": [
+    "[BUG-004] Lifecycle event handler not cleaned up": [
       {
         "document": "bug-tracker.md",
         "line": 181,
         "level": 3,
-        "title": "[BUG-004] Lifecycle event handlers not cleared"
+        "title": "[BUG-004] Lifecycle event handler not cleaned up"
       }
     ],
-    "[BUG-005] Event.is_friend_add/is_friend_delete's detail_type inconsistent with OB12 standard": [
+    "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard": [
       {
         "document": "bug-tracker.md",
         "line": 201,
         "level": 3,
-        "title": "[BUG-005] Event.is_friend_add/is_friend_delete's detail_type inconsistent with OB12 standard"
+        "title": "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard"
       }
     ],
-    "[BUG-006] adapter.clear() does not clear _started_instances causing incorrect state after restart": [
+    "[BUG-006] adapter.clear() does not clean _started_instances causing incorrect state after restart": [
       {
         "document": "bug-tracker.md",
         "line": 221,
         "level": 3,
-        "title": "[BUG-006] adapter.clear() does not clear _started_instances causing incorrect state after restart"
+        "title": "[BUG-006] adapter.clear() does not clean _started_instances causing incorrect state after restart"
       }
     ],
     "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()": [
@@ -13946,20 +13958,20 @@
         "title": "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()"
       }
     ],
-    "[BUG-008] Bot offline event is repeatedly submitted during shutdown": [
+    "[BUG-008] Bot offline event submitted repeatedly during shutdown": [
       {
         "document": "bug-tracker.md",
         "line": 261,
         "level": 3,
-        "title": "[BUG-008] Bot offline event is repeatedly submitted during shutdown"
+        "title": "[BUG-008] Bot offline event submitted repeatedly during shutdown"
       }
     ],
-    "[BUG-009] LazyModule synchronous access to BaseModule causes incomplete initialization": [
+    "[BUG-009] LazyModule synchronously accessing BaseModule causes incomplete initialization": [
       {
         "document": "bug-tracker.md",
         "line": 281,
         "level": 3,
-        "title": "[BUG-009] LazyModule synchronous access to BaseModule causes incomplete initialization"
+        "title": "[BUG-009] LazyModule synchronously accessing BaseModule causes incomplete initialization"
       }
     ],
     "[BUG-010] Multi-threaded configuration system write causes data loss": [
@@ -13978,20 +13990,20 @@
         "title": "[BUG-011] Windows Ctrl+C cannot stop the program"
       }
     ],
-    "[BUG-012] Hot restart does not apply updated module code": [
+    "[BUG-012] Updated module Python code not effective after hot restart": [
       {
         "document": "bug-tracker.md",
         "line": 348,
         "level": 3,
-        "title": "[BUG-012] Hot restart does not apply updated module code"
+        "title": "[BUG-012] Updated module Python code not effective after hot restart"
       }
     ],
-    "[BUG-013] Module loading strategy sort logic error": [
+    "[BUG-013] Module loading strategy sorting logic error": [
       {
         "document": "bug-tracker.md",
         "line": 368,
         "level": 3,
-        "title": "[BUG-013] Module loading strategy sort logic error"
+        "title": "[BUG-013] Module loading strategy sorting logic error"
       }
     ],
     "[BUG-014] Adapter middleware returning None causes event data loss": [
@@ -14010,12 +14022,12 @@
         "title": "[BUG-015] Configuration file path depends on working directory"
       }
     ],
-    "[BUG-016] BaseStorage confuses storing value None with nonexistent key": [
+    "[BUG-016] BaseStorage confuses storing value None with non-existent key": [
       {
         "document": "bug-tracker.md",
         "line": 428,
         "level": 3,
-        "title": "[BUG-016] BaseStorage confuses storing value None with nonexistent key"
+        "title": "[BUG-016] BaseStorage confuses storing value None with non-existent key"
       }
     ],
     "[BUG-017] WebSocket route auto_accept flag lost after service restart": [
@@ -14026,20 +14038,20 @@
         "title": "[BUG-017] WebSocket route auto_accept flag lost after service restart"
       }
     ],
-    "[BUG-018] Concurrent calls to HTTP/WS client cause crashes and connection leaks": [
+    "[BUG-018] HTTP/WS client concurrent calls cause crashes and connection leaks": [
       {
         "document": "bug-tracker.md",
         "line": 468,
         "level": 3,
-        "title": "[BUG-018] Concurrent calls to HTTP/WS client cause crashes and connection leaks"
+        "title": "[BUG-018] HTTP/WS client concurrent calls cause crashes and connection leaks"
       }
     ],
-    "[BUG-019] Adapter hot reload causes route conflicts leading to reload failure": [
+    "[BUG-019] Adapter hot reload causes route conflicts and reload failure": [
       {
         "document": "bug-tracker.md",
         "line": 496,
         "level": 3,
-        "title": "[BUG-019] Adapter hot reload causes route conflicts leading to reload failure"
+        "title": "[BUG-019] Adapter hot reload causes route conflicts and reload failure"
       }
     ],
     "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in script's directory": [
@@ -14058,58 +14070,58 @@
         "title": "[BUG-021] SQL query builder rejects valid wildcard and list expressions"
       }
     ],
-    "[BUG-022] _resolve_account() account resolution regression (_accounts_data not filled)": [
+    "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)": [
       {
         "document": "bug-tracker.md",
-        "line": 570,
+        "line": 569,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() account resolution regression (_accounts_data not filled)"
+        "title": "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)"
       }
     ],
-    "[BUG-023] Adapter cache not refreshed after account configuration modification causes account resolution failure": [
+    "[BUG-023] Adapter cache not refreshed after account configuration modification causing account resolution failure": [
       {
         "document": "bug-tracker.md",
-        "line": 609,
+        "line": 608,
         "level": 3,
-        "title": "[BUG-023] Adapter cache not refreshed after account configuration modification causes account resolution failure"
+        "title": "[BUG-023] Adapter cache not refreshed after account configuration modification causing account resolution failure"
       }
     ],
-    "[BUG-024] storage.set() writing large numeric key triggers OOM Kill": [
+    "[BUG-024] storage.set() writing large numeric ID key triggers OOM Kill": [
       {
         "document": "bug-tracker.md",
-        "line": 629,
+        "line": 628,
         "level": 3,
-        "title": "[BUG-024] storage.set() writing large numeric key triggers OOM Kill"
+        "title": "[BUG-024] storage.set() writing large numeric ID key triggers OOM Kill"
       }
     ],
-    "[BUG-025] on_config_update callback not called by core router": [
+    "[BUG-025] on_config_update callback not triggered by core router": [
       {
         "document": "bug-tracker.md",
-        "line": 675,
+        "line": 674,
         "level": 3,
-        "title": "[BUG-025] on_config_update callback not called by core router"
+        "title": "[BUG-025] on_config_update callback not triggered by core router"
       }
     ],
     "[BUG-026] notice/request event reply target inference error": [
       {
         "document": "bug-tracker.md",
-        "line": 705,
+        "line": 704,
         "level": 3,
         "title": "[BUG-026] notice/request event reply target inference error"
       }
     ],
-    "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limit rules to fail": [
+    "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rules to fail": [
       {
         "document": "bug-tracker.md",
-        "line": 736,
+        "line": 735,
         "level": 3,
-        "title": "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limit rules to fail"
+        "title": "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rules to fail"
       }
     ],
     "[BUG-029] Configuration listener broadcasts incomplete TOML and silently swallows exceptions": [
       {
         "document": "bug-tracker.md",
-        "line": 768,
+        "line": 767,
         "level": 3,
         "title": "[BUG-029] Configuration listener broadcasts incomplete TOML and silently swallows exceptions"
       }
@@ -14117,41 +14129,49 @@
     "[BUG-030] Configuration watcher race condition causes setConfig delayed write to silently drop data": [
       {
         "document": "bug-tracker.md",
-        "line": 804,
+        "line": 803,
         "level": 3,
         "title": "[BUG-030] Configuration watcher race condition causes setConfig delayed write to silently drop data"
       }
     ],
-    "[BUG-032] Configuration delay write period \"write then read immediately\" reads old value": [
+    "[BUG-032] Configuration delay write period \"write-then-read\" reads old values": [
       {
         "document": "bug-tracker.md",
-        "line": 840,
+        "line": 839,
         "level": 3,
-        "title": "[BUG-032] Configuration delay write period \"write then read immediately\" reads old value"
+        "title": "[BUG-032] Configuration delay write period \"write-then-read\" reads old values"
       }
     ],
-    "[BUG-033] wait_reply hanging replies are starved by high-priority processors": [
+    "[BUG-033] wait_reply hung replies are starved by high-priority processors": [
       {
         "document": "bug-tracker.md",
-        "line": 862,
+        "line": 861,
         "level": 3,
-        "title": "[BUG-033] wait_reply hanging replies are starved by high-priority processors"
+        "title": "[BUG-033] wait_reply hung replies are starved by high-priority processors"
       }
     ],
-    "[BUG-034] Runtime binding with persist=False in scope is silently overridden by any subsequent configuration write": [
+    "[BUG-034] Scope persist=False runtime binding silently overridden by any subsequent config write": [
       {
         "document": "bug-tracker.md",
-        "line": 884,
+        "line": 883,
         "level": 3,
-        "title": "[BUG-034] Runtime binding with persist=False in scope is silently overridden by any subsequent configuration write"
+        "title": "[BUG-034] Scope persist=False runtime binding silently overridden by any subsequent config write"
       }
     ],
-    "[BUG-035] Configuration panel select options and dict fields render as [object Object]": [
+    "[BUG-035] Configuration panel select options and dict fields rendered as [object Object]": [
       {
         "document": "bug-tracker.md",
-        "line": 904,
+        "line": 903,
         "level": 3,
-        "title": "[BUG-035] Configuration panel select options and dict fields render as [object Object]"
+        "title": "[BUG-035] Configuration panel select options and dict fields rendered as [object Object]"
+      }
+    ],
+    "[BUG-036] Multi-instance shared configuration directory causes occasional configuration write failures (ENOENT)": [
+      {
+        "document": "bug-tracker.md",
+        "line": 921,
+        "level": 3,
+        "title": "[BUG-036] Multi-instance shared configuration directory causes occasional configuration write failures (ENOENT)"
       }
     ],
     "__init__.py": [

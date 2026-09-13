@@ -128,7 +128,7 @@
           "icon": "fa-code"
         },
         {
-          "title": "リリースとモジュールストアガイド",
+          "title": "モジュール商店への公開ガイド",
           "path": "developer-guide/publishing.md",
           "level": 1,
           "icon": "fa-upload"
