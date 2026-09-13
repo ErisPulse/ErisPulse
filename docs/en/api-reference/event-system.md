@@ -1,21 +1,21 @@
 # Event System API
 
-This document provides a detailed introduction to the ErisPulse event system API.
+This document provides a detailed introduction to the ErisPulse Event System API.
 
-The event system categorizes platform events by type and distributes them to five types of handlers:
+The event system distributes platform events into five categories of handlers based on their types:
 
 ```mermaid
 flowchart LR
-    A["Platform Event<br/> (OneBot12 Standard)"] --> B{"Event Type"}
+    A["Platform Event<br/>（OneBot12 Standard）"] --> B{"Event Type"}
     B --> C["command<br/>Command Handler"]
     B --> D["message<br/>Message Handler"]
-    B --> E["notice<br/>Notice Handler"]
-    B --> F["request<br/>Request Handler"]
-    B --> G["meta<br/>Meta Event Handler"]
+    D --> E["notice<br/>Notice Handler"]
+    D --> F["request<br/>Request Handler"]
+    D --> G["meta<br/>Meta Event Handler"]
     C & D & E & F & G --> H["Event Wrapper Class<br/>reply / get_text / done, etc."]
 ```
 
-## Command Command Module
+## Command Module
 
 ### Registering Commands
 
@@ -23,7 +23,7 @@ flowchart LR
 from ErisPulse.Core.Event import command
 
 # Basic command
-@command("hello", help="Send a greeting")
+@command("hello", help="Send greeting")
 async def hello_handler(event):
     await event.reply("Hello!")
 
@@ -49,35 +49,42 @@ async def secret_handler(event):
 @command("admin.reload", group="admin", help="Reload module")
 async def reload_handler(event):
     pass
+
+# Sub-command (multi-token command name separated by spaces)
+# Matching uses longest prefix: /admin add x matches admin add first (args is ["x"]);
+# Sub-commands without declared permission inherit the nearest ancestor command's permission
+@command("admin add", help="Add admin")
+async def admin_add_handler(event):
+    pass
 ```
 
 ### Command Information
 
-All command query APIs support optional **session context**: pass `event=` (Event or dict) or explicitly `platform=` / `bot_id=` / `session_id=` (explicit parameters take precedence when overlapped with event), i.e., filter commands unavailable in the current session by scope module dimension (see advanced/scope.md); all are optional keyword arguments, and if not provided, the original full behavior is maintained.
+All command query APIs support optional **session context**: pass `event=` (Event or dict) or explicitly `platform=` / `bot_id=` / `session_id=` (explicit parameters take precedence when overlapping with event), filtering commands unavailable in the current session by scope module dimension (see advanced/scope.md); all are optional keyword arguments, and behavior remains full if none are provided.
 
 ```python
 # Get command help
 help_text = command.help()
 
-# Session-aware help: only list commands available in the current session
+# Session-aware help: only list commands available in current session
 help_text = command.help(event=event)
 
-# Get specific command (returns merged and overridden effective parameters; returns None if session unavailable)
+# Get specific command (returns merged effective parameters; returns None if not available in session)
 cmd_info = command.get_command("admin")
 cmd_info = command.get_command("admin", event=event)
 
-# Get all commands (filters out unavailable module commands in session-aware mode)
+# Get all commands (filters out commands unavailable in session)
 all_commands = command.get_commands()
 all_commands = command.get_commands(event=event)
 
-# Get all commands in a command group (supports session-aware filtering)
+# Get all commands in a group (supports session-aware filtering)
 admin_commands = command.get_group_commands("admin")
 admin_commands = command.get_group_commands("admin", event=event)
 
 # Get all visible commands
 visible_commands = command.get_visible_commands()
 
-# Session-aware visible commands (either event or explicit keywords are sufficient)
+# Session-aware visible commands (either event or explicit keyword parameters are sufficient)
 visible_commands = command.get_visible_commands(event=event)
 visible_commands = command.get_visible_commands(
     platform=event.get("platform"),
@@ -90,7 +97,7 @@ visible_commands = command.get_visible_commands(
 
 ```python
 # Wait for user reply
-@command("ask", help="Ask for user information")
+@command("ask", help="Ask user information")
 async def ask_command(event):
     reply = await command.wait_reply(
         event,
@@ -110,7 +117,7 @@ def validate_age(event_data):
     except ValueError:
         return False
 
-@command("age", help="Ask for user age")
+@command("age", help="Ask user age")
 async def age_command(event):
     await event.reply("Please enter your age:")
     
@@ -130,7 +137,7 @@ async def handle_confirmation(reply_event):
     if text in ["是", "yes", "y"]:
         await event.reply("Operation confirmed!")
     else:
-        await event.reply("Operation cancelled.")
+        await event.reply("Operation canceled.")
 
 @command("confirm", help="Confirm operation")
 async def confirm_command(event):
@@ -176,52 +183,52 @@ async def at_handler(event):
 
 ```python
 # Use priority to control execution order
-@message.on_message(priority=10)  # Higher values mean higher priority
+@message.on_message(priority=10)  # Higher value means higher priority
 async def high_priority_handler(event):
     pass
 
-# Implement conditional filtering within the handler
+# Implement conditional filtering inside the handler
 @message.on_message()
 async def filtered_handler(event):
-    if "keyword" not in event.get_text():
+    if "Keyword" not in event.get_text():
         return
     # Process messages containing the keyword
     pass
 ```
 
-## Notice Notification Module
+## Notice Module
 
-### Notification Events
+### Notice Events
 
 ```python
 from ErisPulse.Core.Event import notice
 
-# Friend Added
+# Friend added
 @notice.on_friend_add()
 async def friend_add_handler(event):
     user_id = event.get_user_id()
-    await event.reply("Welcome to add me as a friend!")
+    await event.reply("Welcome! Thanks for adding me as a friend!")
 
-# Friend Removed
+# Friend removed
 @notice.on_friend_remove()
 async def friend_remove_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"Friend removed: {user_id}")
 
-# Group Member Added
+# Group member increased
 @notice.on_group_increase()
 async def member_increase_handler(event):
     user_id = event.get_user_id()
     await event.reply(f"Welcome new member!")
 
-# Group Member Removed
+# Group member decreased
 @notice.on_group_decrease()
 async def member_decrease_handler(event):
     user_id = event.get_user_id()
     sdk.logger.info(f"Group member left: {user_id}")
 ```
 
-## Request Request Module
+## Request Module
 
 ### Request Events
 
@@ -233,7 +240,7 @@ from ErisPulse.Core.Event import request
 async def friend_request_handler(event):
     user_id = event.get_user_id()
     comment = event.get_comment()
-    sdk.logger.info(f"Friend request: {user_id}, comment: {comment}")
+    sdk.logger.info(f"Friend request: {user_id}, remark: {comment}")
 
 # Group invitation request
 @request.on_group_request()
@@ -243,7 +250,7 @@ async def group_request_handler(event):
     sdk.logger.info(f"Group invitation: {group_id}, from: {user_id}")
 ```
 
-## Meta Meta Event Module
+## Meta Module
 
 ### Meta Events
 
@@ -254,13 +261,13 @@ from ErisPulse.Core.Event import meta
 @meta.on_connect()
 async def connect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"Connection successful on platform {platform}")
+    sdk.logger.info(f"Platform {platform} connected successfully")
 
 # Disconnection event
 @meta.on_disconnect()
 async def disconnect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"Disconnected from platform {platform}")
+    sdk.logger.info(f"Platform {platform} disconnected")
 
 # Heartbeat event
 @meta.on_heartbeat()
@@ -270,7 +277,7 @@ async def heartbeat_handler(event):
 
 ### Bot Status Query
 
-After the adapter sends a meta event, the framework will automatically track the Bot status. For query APIs and lifecycle event listeners, please refer to [Adapter System API - Bot Status Management](adapter-system.md#bot-status-management).
+After the adapter sends a meta event, the framework automatically tracks the Bot's status. For query APIs and lifecycle event listeners, refer to [Adapter System API - Bot Status Management](adapter-system.md#bot-状态管理).
 
 ## Event Wrapper Class
 
@@ -292,7 +299,7 @@ self_user_id = event.get_self_user_id()
 self_info = event.get_self_info()
 ```
 
-### Session Identifiers
+### Session Identifier
 
 ```python
 # Unified target ID: returns group_id for group chats, user_id for private chats, etc.
@@ -303,7 +310,7 @@ session_id = event.get_session_id()
 # Example: "telegram:private:12345", "qq:group:67890"
 ```
 
-`get_target_id()` returns the first non-empty value in the following order: `group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`. This is suitable for scenarios requiring unified session identifiers, such as context management and state storage.
+`get_target_id()` returns the first non-empty value in the following order: `group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id`. It is suitable for scenarios such as context management and state storage where a unified identifier for sessions is needed.
 
 ### Message Methods
 
@@ -321,12 +328,12 @@ sender = event.get_sender()
 # Get group information
 group_id = event.get_group_id()
 
-# Check message type
+# Determine message type
 is_msg = event.is_message()
 is_private = event.is_private_message()
 is_group = event.is_group_message()
 
-# @ message related
+# @message related
 is_at = event.is_at_message()
 has_mention = event.has_mention()
 mentions = event.get_mentions()
@@ -340,7 +347,7 @@ cmd_name = event.get_command_name()
 cmd_args = event.get_command_args()
 cmd_raw = event.get_command_raw()
 
-# Check if it is a command
+# Determine if it is a command
 is_cmd = event.is_command()
 ```
 
@@ -353,7 +360,7 @@ await event.reply("This is a message")
 # Specify sending method
 await event.reply("http://example.com/image.jpg", method="Image")
 
-# Reply with @user and reply to message
+# Reply with @ user and reply message
 await event.reply("Hello", at_users=["user1"], reply_to="msg_id")
 
 # @all members
@@ -363,7 +370,7 @@ await event.reply("Announcement", at_all=True)
 await event.reply("Board content", method="Board",
                   via=[("Expire", 3600), ("ForMember", "114514")])
 
-# Get send chain, freely append modifier methods and send methods (suitable for multiple modifiers / action-type methods)
+# Get send chain, freely append modifier and sending methods (suitable for consecutive multiple modifiers/action-type methods)
 await event.send_chain().Expire(3600).Board("Board content")
 await event.send_chain().DismissBoard()
 
@@ -379,18 +386,18 @@ reply = await event.wait_reply(timeout=30)
 ### Platform Capability Query
 
 ```python
-# Check if current platform supports a specific sending method
+# Check if current platform supports a certain sending method
 if event.supports("Image"):
     await event.reply(url, method="Image")
 
-# List all available sending methods on current platform
+# List all available sending methods for current platform
 methods = event.available_methods()
 # ["Text", "Image", "Voice", ...]
 ```
 
 ### Reply Methods
 
-The `reply()` method supports specifying the sending type via the `method` parameter and two convenient boolean parameters:
+The `reply()` method supports specifying the sending type via the `method` parameter, along with two convenient boolean parameters:
 
 ```python
 # Simple text reply
@@ -405,7 +412,7 @@ await event.reply("Received", quote=True)
 # Combine usage
 await event.reply("Received", at_sender=True, quote=True)
 
-# Send image (using method parameter)
+# Send image (use method parameter)
 if event.supports("Image"):
     await event.reply("http://example.com/img.jpg", method="Image")
 else:
@@ -417,53 +424,53 @@ else:
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `content` | str | Content to send |
-| `method` | str | Sending method, default "Text", optional "Image"/"Voice"/"Video"/"File" etc. |
+| `method` | str | Sending method, default "Text", options include "Image"/"Voice"/"Video"/"File", etc. |
 | `at_sender` | bool | Whether to @ sender (automatically extract user_id) |
-| `quote` | bool | Whether to quote reply current message (automatically extract message_id) |
-| `at_users` | list[str] | List of @ users |
+| `quote` | bool | Whether to quote and reply to current message (automatically extract message_id) |
+| `at_users` | list[str] | List of users to @ |
 | `reply_to` | str | Manually specify the message ID to reply to |
 | `at_all` | bool | Whether to @ all members |
 
 ### Interaction Methods
 
 ```python
-# confirm — confirmation dialog (returns True/False/None)
-if await event.confirm("Are you sure to execute this operation?"):
+# confirm — Confirm dialog (returns True/False/None)
+if await event.confirm("Are you sure you want to execute this operation?"):
     await event.reply("Confirmed")
 
 # Use non-Text method to send confirmation prompt
 if await event.confirm("http://example.com/image.jpg", method="Image"):
     await event.reply("Confirmed image prompt")
 
-# choose — selection menu (returns option index or None)
-choice = await event.choose("Please select color:", ["Red", "Green", "Blue"])
+# choose — Select menu (returns option index or None)
+choice = await event.choose("Please select a color:", ["Red", "Green", "Blue"])
 
 # options_format="auto" (default) automatically chooses style based on method:
-# Markdown→unordered list (- 1. option), Html→ordered list (<ol>), others→plain text list
-# Text-based methods (Markdown/Html etc.) merge options to the end by default
-# merge_prompt=True forces any method to merge; placeholder can customize placeholder
+# Markdown→unordered list (- 1. Option), Html→ordered list (<ol>), others→plain text list
+# For text-based methods (Markdown/Html, etc.), options are merged to the end by default
+# merge_prompt=True forces merging for any method; placeholder can customize placeholder
 choice = await event.choose(
     "## Please select\n{options}", ["A", "B"],
     method="Markdown", merge_prompt=True,
 )
 
-# collect — form collection (returns {key: value} dict or None)
+# collect — Form collection (returns {key: value} dict or None)
 data = await event.collect([
-    {"key": "name", "prompt": "Please enter name:"},
-    {"key": "age", "prompt": "Please enter age:",
+    {"key": "name", "prompt": "Please enter your name:"},
+    {"key": "age", "prompt": "Please enter your age:",
      "validator": lambda e: e.get_text().isdigit()},
-    {"key": "avatar", "prompt": "Please send avatar:", "method": "Image"},
+    {"key": "avatar", "prompt": "Please send your avatar:", "method": "Image"},
 ])
 
-# wait_for — wait for any event satisfying condition
+# wait_for — Wait for an event satisfying a condition
 evt = await event.wait_for(event_type="notice", condition=lambda e: ..., timeout=120)
 
-# conversation — multi-turn conversation context
+# conversation — Multi-turn conversation context
 conv = event.conversation(timeout=60)
 await conv.say("Welcome!")
 ```
 
-> For complete parameter descriptions and more examples of interaction methods, please refer to [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md) and [Conversation Multi-turn Dialogue](../advanced/conversation.md).
+> For complete parameter descriptions and more examples of interaction methods, refer to [Event Wrapper Class Details](../developer-guide/modules/event-wrapper.md) and [Conversation Multi-turn Dialogue](../advanced/conversation.md).
 
 ### Utility Methods
 
@@ -476,21 +483,21 @@ raw = event.get_raw()
 raw_type = event.get_raw_type()
 ```
 
-### Link Control
+### Chain Control
 
-`event.done(claim=, stop=)` uniformly controls two orthogonal semantics: "claim" and "block":
+`event.done(claim=, stop=)` uniformly controls the two orthogonal semantics of "claim" and "block":
 
-- **Claim (claim)**: Mark the event as processed (`_processed`), so the command dispatcher skips it for deduplication.
+- **Claim (claim)**: Mark the event as processed (`_processed`), the command dispatcher uses this to skip duplicate processing.
 - **Block (stop)**: Prevent propagation to lower-priority handlers (`_propagation_stopped`).
 
 ```python
 # Claim + Block (default)
 event.done()
 
-# Only claim, do not block (lower-priority observers still see it)
+# Claim only, do not block (lower-priority observers still see it)
 event.done(stop=False)
 
-# Only block, do not claim (e.g., firewall / rate limiting)
+# Block only, do not claim (e.g., firewall / rate limiting)
 event.done(claim=False)
 
 # mark_processed is the main method, done is its alias
@@ -504,11 +511,11 @@ event.is_stopped()    # whether propagation has been blocked
 
 ### Platform Extension Methods
 
-Adapters can register platform-specific methods for Event, available only on instances of the corresponding platform.
+Adapters can register platform-specific methods for Event, which are only available on instances of the corresponding platform.
 
 #### User: Using Platform Extension Methods
 
-After adapters register platform-specific methods, you can directly call them in event handlers. Each platform's methods differ; please refer to the corresponding [platform documentation](../platform-guide/).
+After an adapter registers platform-specific methods, you can directly call them in event handlers. The methods vary by platform; please refer to the corresponding [Platform Documentation](../platform-guide/).
 
 ```python
 from ErisPulse.Core.Event import message
@@ -517,18 +524,18 @@ from ErisPulse.Core.Event import message
 async def handle_message(event):
     platform = event.get_platform()
 
-    # Call specific methods based on platform
+    # Call platform-specific methods based on platform
     if platform == "email":
-        subject = event.get_subject()           # Email specific
-        attachments = event.get_attachments()   # Email specific
+        subject = event.get_subject()           # Email-specific
+        attachments = event.get_attachments()   # Email-specific
 ```
 
-#### Query Registered Platform Methods
+#### Querying Platform-Registered Methods
 
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
 
-# View which methods are registered for a specific platform
+# View which methods are registered for a platform
 methods = get_platform_event_methods("email")
 # ["get_subject", "get_from", "get_attachments", ...]
 
@@ -557,15 +564,15 @@ event.get_subject()      # ❌ AttributeError
 #### `hasattr` / `dir` Support
 
 ```python
-hasattr(event, "get_subject")   # True only when platform="email"
+hasattr(event, "get_subject")   # True only if platform="email"
 "get_subject" in dir(event)     # Same as above
 ```
 
 #### Adapter: Registering Platform Extension Methods
 
-Adapters can register platform-specific methods for Event using decorators. The first parameter of the method is `self` (Event instance), allowing free access to event data.
+Adapters can register platform-specific methods for Event using decorators. The method's first parameter is `self` (Event instance), allowing free access to event data.
 
-#### Single Method Registration
+##### Single Method Registration
 
 ```python
 from ErisPulse.Core.Event import register_event_method
@@ -581,7 +588,7 @@ def get_from(self):
     return self.get("email_raw", {}).get("from", {})
 ```
 
-#### Batch Registration (Mixin Class)
+##### Batch Registration (Mixin Class)
 
 When there are many methods, it is recommended to use a Mixin class for batch registration:
 
@@ -602,19 +609,19 @@ class EmailEventMixin:
 register_event_mixin("email", EmailEventMixin)
 ```
 
-#### Return Value Specification
+##### Return Value Specification
 
 | Scenario | Return Value | User Usage |
 |----------|--------------|------------|
-| Return data (text, dict, etc.) | Return the value directly | `subject = event.get_subject()` |
+| Return data (text, dictionary, etc.) | Return the value directly | `subject = event.get_subject()` |
 | Execute operation (send message, etc.) | Return `asyncio.Task` | `task = event.do_something()` (optional `await`) |
 
-> **Recommendation**: Methods that do not return data should return `asyncio.Task`, so users can decide whether to `await`. Even if not `awaited`, the operation will be executed.
+> **Recommendation**: For non-data-returning methods, return `asyncio.Task`, so users can decide whether to `await`, and the operation will complete even if not awaited.
 
 ```python
 @register_event_method("email")
 def forward_email(self, to_address: str):
-    """Forward email — return Task, user can decide whether to await"""
+    """Forward email — returns Task, user can decide whether to await"""
     import asyncio
     return asyncio.create_task(
         self._do_forward(to_address)
@@ -627,23 +634,23 @@ await event.forward_email("user@example.com")
 event.forward_email("user@example.com")
 ```
 
-#### Unregister Methods
+##### Unregistering Methods
 
 ```python
 from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
 
-# Unregister single method
+# Unregister a single method
 unregister_event_method("email", "get_subject")
 
 # Unregister all methods for a platform (call during adapter shutdown)
 unregister_platform_event_methods("email")
 ```
 
-#### Overriding Built-in Methods
+##### Overriding Built-in Methods
 
-`register_event_mixin` / `register_event_method` supports overriding Event built-in methods (such as `confirm`, `choose`, `collect`, `wait_reply`, `reply`, etc.). Registered platform methods take precedence over built-in methods via `Event.__getattribute__`, allowing adapters to provide platform-specific interaction implementations.
+`register_event_mixin` / `register_event_method` supports overriding Event built-in methods (such as `confirm`, `choose`, `collect`, `wait_reply`, `reply`, etc.). Registered platform methods take precedence over built-in methods through `Event.__getattribute__`, so adapters can provide platform-specific interactive implementations.
 
-Built-in implementations are exported as `_builtin_*` functions, and overridden methods can call them as fallback:
+Built-in implementations are exported as `_builtin_*` functions, and overriding methods can call them as fallback:
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin, _builtin_choose
@@ -662,7 +669,7 @@ register_event_mixin("yunhu", YunhuEventMixin)
 
 ## Cross-Platform Extension (Wildcard)
 
-`register_event_method` and `register_event_mixin` support passing `"*"` as the platform name. The registered methods are available on Event instances across **all platforms**. This is suitable for reusable functional modules such as AI chat and context management that require cross-platform use.
+`register_event_method` and `register_event_mixin` support passing `"*"` as the platform name, registering methods available on Event instances of **all platforms**. Suitable for features like AI chat and context management that need cross-platform reuse.
 
 ### Registering Cross-Platform Methods
 
@@ -671,11 +678,11 @@ from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    """self is the Event instance, allowing free access to event data and built-in methods"""
+    """self is Event instance, can freely access event data and built-in methods"""
     await self.reply(f"AI: {prompt}")
 ```
 
-After registration, all platform event handlers can call the method:
+After registration, all platform event handlers can call:
 
 ```python
 from ErisPulse.Core.Event import message
@@ -687,33 +694,33 @@ async def handler(event):
 
 ### Method Resolution Priority
 
-When accessing Event methods via attributes, the resolution order is as follows:
+When accessing Event methods via attributes, the resolution order is:
 
-1. **Platform-specific methods** (overrides for the current platform)
+1. **Platform-specific methods** (overrides for current platform)
 2. **Wildcard methods** (`"*"` registered cross-platform methods)
-3. **Built-in methods** (`reply`, `confirm`, etc.)
+3. **Built-in methods** (`reply`, `confirm`, `choose`, `collect`, `wait_reply`, `reply`, etc.)
 4. **Dictionary key access**
 
-> Therefore, wildcard methods can override built-in methods (such as `reply`), but they can be further overridden by platform-specific methods with the same name.
+> Thus, wildcard methods can override built-in methods (such as `reply`), but can be further overridden by same-named platform-specific methods.
 
 ## Priority System
 
-Event handlers support priorities, where a higher number indicates a higher priority:
+Event handlers support priority, where higher values mean higher priority:
 
 ```python
-# High-priority handlers execute first
+# High-priority handler executes first
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     pass
 
-# Low-priority handlers execute later
+# Low-priority handler executes later
 @message.on_message(priority=0)
 async def low_priority_handler(event):
     pass
 ```
 
-## Related Documents
+## Related Documentation
 
-- [Core Modules API](core-modules.md) - Core Modules API
+- [Core Module API](core-modules.md) - Core Module API
 - [Adapter System API](adapter-system.md) - Adapter Management API
-- [Module Development Guide](../developer-guide/modules/) - Developing Custom Modules
+- [Module Development Guide](../developer-guide/modules/) - Develop Custom Modules

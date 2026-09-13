@@ -172,10 +172,37 @@ class PluginFolderLoader:
                 depends = []
 
             from ..Core.Bases.module import BaseModule
+            from ..runtime.version import check_min_sdk_version
+            from .bases.loader import resolve_min_sdk_version
 
             is_base_module = inspect.isclass(module_class) and issubclass(
                 module_class, BaseModule
             )
+
+            # 运行时最低 SDK 版本检查：不满足时明确报错并跳过（声明缺失则放行）
+            declared_sdk = resolve_min_sdk_version(module_class, name=name)
+            if declared_sdk:
+                satisfied, current, required, parseable = check_min_sdk_version(
+                    str(declared_sdk)
+                )
+                if not parseable:
+                    logger.warning(
+                        i18n.t(
+                            "loader.plugin.sdk_version_invalid",
+                            name=name,
+                            value=declared_sdk,
+                        )
+                    )
+                elif not satisfied:
+                    logger.error(
+                        i18n.t(
+                            "loader.plugin.sdk_version_unsupported",
+                            name=name,
+                            required=required,
+                            current=current,
+                        )
+                    )
+                    return None
 
             module_info = {
                 "meta": {
@@ -185,6 +212,7 @@ class PluginFolderLoader:
                     "author": getattr(module_obj, "__author__", ""),
                     "license": getattr(module_obj, "__license__", ""),
                     "package": None,  # 本地插件非安装包
+                    "min_sdk_version": str(declared_sdk) if declared_sdk else None,
                     "lazy_load": lazy_load,
                     "priority": priority,
                     "depends": list(depends),

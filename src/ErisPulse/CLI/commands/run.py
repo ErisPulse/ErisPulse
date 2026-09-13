@@ -16,11 +16,11 @@ from pathlib import Path
 
 from rich.panel import Panel
 
+from ...runtime.file_watcher import FileSystemEventHandler, PollingObserver
 from ..base import Command
 from ..console import console
 from ..constants import ENV_SUPERVISED, HARD_RESTART_EXIT_CODE
 from ..i18n import i18n
-from ..utils.file_watcher import FileSystemEventHandler, PollingObserver
 
 
 class ReloadHandler(FileSystemEventHandler):
