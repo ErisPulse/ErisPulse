@@ -1181,6 +1181,9 @@ async def echo_handler(event):
         await event.reply(f"你说了: {' '.join(args)}")
 ```
 
+参数保留用户输入的原始大小写（即使配置为大小写不敏感，
+命令名匹配归一也不会影响参数内容）。
+
 ### 命令组
 
 ```python
@@ -1192,6 +1195,58 @@ async def reload_handler(event):
 async def stop_handler(event):
     await event.reply("机器人已停止")
 ```
+
+`group` 参数仅用于帮助列表归类；上面示例中的 `admin.reload` 是一个**整体命令名**
+（点号只是命名风格，用户需输入 `/admin.reload`）。
+
+### 子命令
+
+命令名支持**空格分隔**的多 token 形式，实现 `/admin add`、`/admin user ban` 这样的子命令：
+
+```python
+@command("admin", help="管理命令")
+async def admin_handler(event):
+    await event.reply("用法：/admin add | /admin remove")
+
+@command("admin add", help="添加管理员")
+async def admin_add_handler(event):
+    target = event.get_command_args()[0]
+    await event.reply(f"已添加 {target}")
+
+@command("admin remove", aliases=["a remove"], help="移除管理员")
+async def admin_remove_handler(event):
+    await event.reply("已移除")
+```
+
+匹配规则（**最长前缀匹配**）：
+
+- `/admin add x` 优先命中 `admin add`，`event.get_command_args()` 返回 `["x"]`（子命令名之后的参数）
+- 仅注册了 `admin` 时，`/admin add x` 命中 `admin`，`get_command_args()` 返回 `["add", "x"]`（历史行为不变）
+- 别名支持多 token 形式（如 `a remove`），也可用单 token 别名（如 `a`）指向子命令
+- 父子命令同时注册时，未注册的子命令输入（如 `/admin list x`）回落到父命令
+
+**权限继承**：子命令未声明 `permission` 时，自动继承父链上最近声明了权限的祖先命令——
+保护 `/admin` 即自动保护其下全部子命令；子命令自身声明的权限优先：
+
+```python
+def is_admin(event):
+    return event.get_user_id() in {"user123"}
+
+@command("admin", permission=is_admin, help="管理命令")
+async def admin_handler(event):
+    ...
+
+# 无需重复声明 permission，自动继承 is_admin
+@command("admin add", help="添加管理员")
+async def admin_add_handler(event):
+    ...
+```
+
+注意：`master=True` 与 `hidden` **不会**继承，需要时请在子命令上单独声明；
+用户 ACL（黑白名单）按命令全名匹配，glob 规则如 `"admin*"` 可覆盖整组子命令。
+
+`/help` 的命令总览中，子命令会自动挂到可见的父命令下缩进展示
+（`admin` → `admin add` 缩进一级，`admin user` → `admin user ban` 缩进两级）。
 
 ### 命令权限与访问控制
 
@@ -3774,6 +3829,7 @@ pip install ErisPulse-MyModule
 ### 兼容性
 
 - [ ] `pyproject.toml` 声明了最低 SDK 版本：`dependencies = ["ErisPulse>=x.y.z"]`
+- [ ] 模块在 `get_meta()` 的 `ModuleMeta(min_sdk_version="x.y.z")` 声明了运行时最低 SDK 版本（适配器用类属性 `min_sdk_version`）——用户环境 SDK 过低时框架在加载期明确报错并跳过，而非报出难以定位的运行时异常
 - [ ] 测试了 Python 3.10 / 3.11 / 3.12 / 3.13
 - [ ] 测试了目标操作系统（Windows / Linux / macOS，如适用）
 - [ ] 无循环导入依赖
@@ -5261,6 +5317,13 @@ async def secret_handler(event):
 # 命令组
 @command("admin.reload", group="admin", help="重新加载模块")
 async def reload_handler(event):
+    pass
+
+# 子命令（空格分隔的多 token 命令名）
+# 匹配采用最长前缀：/admin add x 优先命中 admin add（args 为 ["x"]）；
+# 子命令未声明 permission 时继承父链上最近声明权限的祖先命令
+@command("admin add", help="添加管理员")
+async def admin_add_handler(event):
     pass
 ```
 

@@ -13,9 +13,10 @@
 <p>
   <a href="https://pypi.org/project/ErisPulse/"><img src="https://img.shields.io/pypi/v/ErisPulse?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
   <a href="https://pypi.org/project/ErisPulse/"><img src="https://img.shields.io/badge/Python-3.10+-FFD43B?style=for-the-badge&logo=python&logoColor=blue" alt="Python"></a>
+  <a href="https://github.com/botuniverse/onebot-11"><img src="https://img.shields.io/badge/OneBot-11-black?style=for-the-badge" alt="OneBot 11"></a>
+  <a href="https://12.onebot.dev/"><img src="https://img.shields.io/badge/OneBot-12-black?style=for-the-badge" alt="OneBot 12"></a>
   <a href="https://hub.docker.com/r/erispulse/erispulse"><img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"></a>
   <a href="https://github.com/ErisPulse/ErisPulse/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"></a>
-  <a href="https://github.com/ErisPulse/ErisPulse"><img src="https://img.shields.io/github/stars/ErisPulse/ErisPulse?style=for-the-badge&logo=github&color=brightgreen" alt="Stars"></a>
   <a href="https://pepy.tech/project/ErisPulse"><img src="https://img.shields.io/pepy/dt/ErisPulse?style=for-the-badge&color=blue" alt="Downloads"></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json&style=for-the-badge" alt="Ruff"></a>
   <a href="https://socket.dev/pypi/package/erispulse"><img src="https://img.shields.io/badge/Socket-Secure-2ea043?style=for-the-badge&logo=socket&logoColor=white" alt="Socket"></a>
@@ -44,7 +45,7 @@
 
 ### 事件驱动架构
 
-基于 OneBot12 标准的统一事件模型——不再为每个平台写一套 if/elif 判断消息类型，一份 handler 自动适配所有适配器
+基于 OneBot12 的统一事件模型，一份 handler 适配所有适配器
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -54,7 +55,7 @@
 
 ### 跨平台兼容
 
-同一份业务代码在所有平台运行——一次编写即可服务 QQ / Telegram / Kook / Yunhu / 微信公众号 等 15+ 平台，无需重复开发
+QQ / Telegram / Kook / 云湖 等 15+ 平台，业务代码零改动
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -64,7 +65,7 @@
 
 ### 模块化设计
 
-灵活的插件系统支持运行时热插拔——安装/卸载/启用/禁用模块无需重启进程，配合作用域系统按平台 / Bot / 会话精确控制模块可用性，像搭积木一样组装机器人能力
+插件热插拔无需重启，作用域按平台 / Bot / 会话管控
 
 </td>
 </tr>
@@ -76,7 +77,7 @@
 
 ### 热重载
 
-本地插件保存文件即生效（0.5 秒级），任意模块（含 PyPI 安装包）`sdk.reload_module()` 一行热重载，开发调试体验接近解释型脚本语言
+保存即生效，热重载轻盈无感
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -86,7 +87,7 @@
 
 ### AI 辅助
 
-自然语言描述需求直接生成可用模块——不会写适配器？告诉 AI 你要接入什么平台，它帮你写
+自然语言描述需求，直接生成可用模块
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -96,52 +97,11 @@
 
 ### 简洁优雅
 
-直觉化的链式 API 设计——@用户、回复、重试、批量发送等复杂逻辑一行代码完成，代码如羽毛般轻盈可读
+链式 API：@ 用户、回复、重试、批量发送一行完成
 
 </td>
 </tr>
 </table>
-
----
-
-## 作用域（Scope）——三维权限控制面
-
-不改任何模块代码，在配置中统一声明"什么范围内生效"：
-
-```toml
-[ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Tool*"]           # ① 模块维度：该平台只开放这些模块（glob / 正则）
-
-[ErisPulse.scope.identity.users.onebot11]
-deny = ["u_bad", "spam_*"]            # ② 身份维度：黑名单用户的事件直接丢弃
-
-[ErisPulse.scope.actions.MyModule]
-send = { allow = ["Text"] }           # ③ 出站维度：该模块只许发文本
-api = { deny = ["set_*", "leave_*"] } #    并禁止管理类 API
-```
-
-```python
-# 运行时同样可调，立即生效（支持点分路径的字典式读写）
-sdk.scope.set_action("MyModule", "api", deny=["set_*"])
-```
-
-> 详见 [作用域（scope）](docs/zh-CN/advanced/scope.md)
-
----
-
-## 事件覆写——不改模块代码，覆写任意事件类型的行为
-
-```toml
-# 覆写消息处理器触发条件（与代码内条件 AND；meta/message/notice/request/command 全类型支持）
-[ErisPulse.event.overrides.message.ChatModule]
-pattern = "闲聊*"
-
-# 覆写命令实现参数（master / hidden / aliases / prefix 等，用户优先）
-[ErisPulse.event.overrides.command.MyModule.restart]
-master = true
-```
-
-> 详见 [事件覆写](docs/zh-CN/getting-started/event-handling.md)
 
 ---
 
@@ -567,6 +527,47 @@ graph TB
 | **HttpClient** | 统一 HTTP/WS 客户端（基于 aiohttp），内置重试与 ErisPulse 异常体系 |
 
 更多设计详情（初始化流程、生命周期事件、模块加载策略），见[架构概览](docs/zh-CN/architecture.md)。
+
+---
+
+## 作用域（Scope）——三维权限控制面
+
+不改任何模块代码，在配置中统一声明"什么范围内生效"：
+
+```toml
+[ErisPulse.scope.platforms.onebot11]
+modules = ["Chat", "Tool*"]           # ① 模块维度：该平台只开放这些模块（glob / 正则）
+
+[ErisPulse.scope.identity.users.onebot11]
+deny = ["u_bad", "spam_*"]            # ② 身份维度：黑名单用户的事件直接丢弃
+
+[ErisPulse.scope.actions.MyModule]
+send = { allow = ["Text"] }           # ③ 出站维度：该模块只许发文本
+api = { deny = ["set_*", "leave_*"] } #    并禁止管理类 API
+```
+
+```python
+# 运行时同样可调，立即生效（支持点分路径的字典式读写）
+sdk.scope.set_action("MyModule", "api", deny=["set_*"])
+```
+
+> 详见 [作用域（scope）](docs/zh-CN/advanced/scope.md)
+
+---
+
+## 事件覆写——不改模块代码，覆写任意事件类型的行为
+
+```toml
+# 覆写消息处理器触发条件（与代码内条件 AND；meta/message/notice/request/command 全类型支持）
+[ErisPulse.event.overrides.message.ChatModule]
+pattern = "闲聊*"
+
+# 覆写命令实现参数（master / hidden / aliases / prefix 等，用户优先）
+[ErisPulse.event.overrides.command.MyModule.restart]
+master = true
+```
+
+> 详见 [事件覆写](docs/zh-CN/getting-started/event-handling.md)
 
 ---
 

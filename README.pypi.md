@@ -6,6 +6,8 @@ An event-driven, multi-platform chatbot development framework based on the OneBo
 
 [![PyPI](https://img.shields.io/pypi/v/ErisPulse?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/ErisPulse/)
 [![Python](https://img.shields.io/badge/Python-3.10+-FFD43B?style=for-the-badge&logo=python&logoColor=blue)](https://pypi.org/project/ErisPulse/)
+[![OneBot 11](https://img.shields.io/badge/OneBot-11-black?style=for-the-badge)](https://github.com/botuniverse/onebot-11)
+[![OneBot 12](https://img.shields.io/badge/OneBot-12-black?style=for-the-badge)](https://12.onebot.dev/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](https://github.com/ErisPulse/ErisPulse/blob/main/LICENSE)
 [![Docs](https://img.shields.io/badge/docs-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white)](https://www.erisdev.com)
 [![Stars](https://img.shields.io/github/stars/ErisPulse/ErisPulse?style=for-the-badge&logo=github&color=brightgreen)](https://github.com/ErisPulse/ErisPulse)

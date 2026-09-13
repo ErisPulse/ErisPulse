@@ -166,6 +166,8 @@ class Main(BaseModule):
             description={{\"i18n\": \"module.{name}.meta.description\", \"default\": \"{name} module\"}},
             version=\"0.1.0\",
             author=\"ErisDev\",
+            # 最低 SDK 版本（可选）：不满足时框架在加载期明确报错并跳过本模块
+            min_sdk_version=\"2.8.0\",
             group=\"default\",
             tags=[\"{name}\"],
             # 对外服务白名单（可选）：声明后其他模块可经 sdk.module.call() 调用这些方法；
@@ -296,6 +298,9 @@ class {name}(BaseAdapter):
     #                                               # on_dependency_ready/lost 回调
     depends: ClassVar[dict] = {{}}
     optional_modules: ClassVar[list] = []
+
+    # 声明所需最低 SDK 版本：不满足时框架在加载期明确报错并跳过本适配器（可选）
+    min_sdk_version = "2.8.0"
 
     # {text[adapter.config_hint]}
     @dataclass
