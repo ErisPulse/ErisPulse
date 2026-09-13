@@ -582,6 +582,7 @@ TRANSLATIONS = {
     "core.command.executing": "[Command] executing: cmd={cmd_name} handler={handler} platform={platform} user={user_id}",
     "core.command.not_registered": "[Command] not registered: cmd={cmd_name} platform={platform} user={user_id}",
     "core.command.acl_denied": "[Command] ACL denied: cmd={cmd_name} user={user_id}",
+    "core.command.duplicate_name": "命令 {cmd_name} 重名註冊：已由模組 {old_owner} 註冊，將被模組 {new_owner} 覆蓋（後註冊者生效）",
     "core.event.command.permission_denied": "權限不足，無法執行該命令",
     "core.event.command.send_permission_denied_failed": "傳送權限拒絕訊息失敗: {error}",
     "core.event.command.execution_failed": "命令執行出錯: {error}",
@@ -594,6 +595,7 @@ TRANSLATIONS = {
     "core.event.command.no_commands": "暫無可用命令",
     "core.event.command.available_commands": "可用命令:",
     "core.event.command.list_item": "  {prefix}{cmd_name} - {help_text}",
+    "core.event.command.list_item_child": "{prefix}{cmd_name} - {help_text}",
     # ==================== Lifecycle ====================
     "core.lifecycle.emit_enter": "[Lifecycle] emit {event}, matched {count} handlers",
     "core.lifecycle.emit_wildcard": "[Lifecycle] wildcard handlers for {event}: {count}",
