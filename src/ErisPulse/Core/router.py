@@ -17,7 +17,6 @@ from __future__ import annotations
 import asyncio
 import errno
 import functools
-import importlib.metadata
 import inspect
 import ipaddress
 import socket
@@ -66,7 +65,7 @@ from .i18n import i18n
 from .lifecycle import lifecycle
 from .logger import logger
 
-ERISPULSE_VERSION = "UnknownVersion"
+ERISPULSE_VERSION: str | None = None  # 惰性解析缓存，见 _erispulse_version()
 
 # Web 栈是否已懒加载完成
 _WEB_STACK_LOADED: bool = False
@@ -154,10 +153,27 @@ def _web_stack_required(fn: Callable[..., Any]) -> Callable[..., Any]:
 
     return _sync_wrapper
 
-try:
-    ERISPULSE_VERSION = importlib.metadata.version("ErisPulse")
-except importlib.metadata.PackageNotFoundError:
-    pass
+
+def _erispulse_version() -> str:
+    """
+    惰性获取 SDK 版本号（首次访问经包元数据读取，结果缓存）
+
+    :return: str 版本号；元数据不可用时返回 "UnknownVersion"
+
+    {!--< internal-use >!--}
+    避免在导入期为读版本号而加载 importlib.metadata 依赖链
+    {!--< /internal-use >!--}
+    """
+    global ERISPULSE_VERSION
+    if ERISPULSE_VERSION is None:
+        import importlib.metadata
+
+        try:
+            ERISPULSE_VERSION = importlib.metadata.version("ErisPulse")
+        except importlib.metadata.PackageNotFoundError:
+            ERISPULSE_VERSION = "UnknownVersion"
+    return ERISPULSE_VERSION
+
 
 HTTPHandler: TypeAlias = Callable
 # WebSocket 尚未加载（懒加载），使用字符串前向引用避免在导入期解析。
@@ -410,7 +426,7 @@ class RouterManager:
             self._app = FastAPI(
                 title="ErisPulse Router",
                 description=i18n.t("core.router.app_description"),
-                version=ERISPULSE_VERSION,
+                version=_erispulse_version(),
             )
             self._setup_core_routes()
             self._setup_error_pages()
@@ -878,7 +894,7 @@ class RouterManager:
                 })
 
             html = render_root_page(
-                version=ERISPULSE_VERSION,
+                version=_erispulse_version(),
                 sub_text=i18n.t("core.router.root_page_text"),
                 docs_link=i18n.t("core.router.link_docs"),
                 community_link=i18n.t("core.router.link_community"),

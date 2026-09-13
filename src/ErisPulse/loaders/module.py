@@ -11,7 +11,6 @@ ErisPulse 模块加载器
 """
 
 import asyncio
-import importlib.metadata
 import inspect
 import re
 import sys
@@ -25,7 +24,7 @@ from ..Core.i18n import i18n
 from ..Core.lifecycle import lifecycle
 from ..Core.logger import logger
 from ..finders import ModuleFinder
-from .bases.loader import BaseLoader
+from .bases.loader import BaseLoader, resolve_min_sdk_version
 
 if TYPE_CHECKING:
     pass
@@ -429,6 +428,8 @@ class ModuleLoader(BaseLoader):
 
         # 清理已导入的包模块并刷新导入系统，强制重新导入（pip 升级后取新代码）
         self._purge_installed_modules(top_level)
+        import importlib
+
         importlib.invalidate_caches()
         self._finder.clear_cache()
 
@@ -518,6 +519,8 @@ class ModuleLoader(BaseLoader):
         {!--< /internal-use >!--}
         """
         module_obj = sys.modules[loaded_obj.__module__]
+        import importlib.metadata
+
         dist = (
             importlib.metadata.distribution(entry_point.dist.name)
             if entry_point.dist
@@ -535,6 +538,10 @@ class ModuleLoader(BaseLoader):
             # 严格模式：按级别决定容忍加载或拒绝（跳过）
             if self._strict().decide(meta_name, "module", "not_base_class"):
                 return None
+
+        # 运行时最低 SDK 版本检查：不满足时明确报错并跳过（声明缺失则放行）
+        if not self._check_sdk_version(meta_name, "module", loaded_obj):
+            return None
 
         # 获取模块加载策略
         strategy = self._get_load_strategy(loaded_obj)
@@ -556,6 +563,7 @@ class ModuleLoader(BaseLoader):
                 "author": getattr(module_obj, "__author__", ""),
                 "license": getattr(module_obj, "__license__", ""),
                 "package": entry_point.dist.name if entry_point.dist else None,
+                "min_sdk_version": resolve_min_sdk_version(loaded_obj, meta_name),
                 "lazy_load": lazy_load,
                 "priority": priority,
                 "depends": list(depends),
@@ -637,7 +645,11 @@ class ModuleLoader(BaseLoader):
             )
             from ..runtime.diagnostics import log_diagnostic
 
-            log_diagnostic(e, hint_key="loader.module.diag_hint")
+            log_diagnostic(
+                e,
+                hint_key="loader.module.diag_hint",
+                hint_params={"name": meta_name},
+            )
 
         return objs, enabled_list, disabled_list, is_new
 
@@ -1065,7 +1077,11 @@ class ModuleLoader(BaseLoader):
                 )
                 from ..runtime.diagnostics import log_diagnostic
 
-                log_diagnostic(e, hint_key="loader.module.diag_hint")
+                log_diagnostic(
+                    e,
+                    hint_key="loader.module.diag_hint",
+                    hint_params={"name": meta_name},
+                )
 
         return True
 
@@ -1259,7 +1275,13 @@ class LazyModule:
             )
             from ..runtime.diagnostics import log_diagnostic
 
-            log_diagnostic(e, hint_key="loader.module.diag_hint")
+            log_diagnostic(
+                e,
+                hint_key="loader.module.diag_hint",
+                hint_params={
+                    "name": object.__getattribute__(self, "_module_name")
+                },
+            )
             object.__setattr__(self, "_initialized", False)
             object.__setattr__(self, "_init_failed", True)
 
@@ -1462,7 +1484,13 @@ class LazyModule:
             )
             from ..runtime.diagnostics import log_diagnostic
 
-            log_diagnostic(e, hint_key="loader.module.diag_hint")
+            log_diagnostic(
+                e,
+                hint_key="loader.module.diag_hint",
+                hint_params={
+                    "name": object.__getattribute__(self, "_module_name")
+                },
+            )
 
     def __getattr__(self, name: str) -> Any:
         """
@@ -1944,7 +1972,7 @@ class ModuleActivator(LazyModule):
                 if isinstance(meta, dict):
                     description = meta.get("description")
                 elif meta is not None and hasattr(meta, "to_dict"):
-                    description = meta.to_dict().get("description")
+                    description = cast("Any", meta).to_dict().get("description")
                 else:
                     description = None
                 if isinstance(description, dict):
@@ -1964,8 +1992,10 @@ class ModuleActivator(LazyModule):
         package = module_info.get("meta", {}).get("package")
         if package:
             try:
+                import importlib.metadata
+
                 dist = importlib.metadata.distribution(package)
-                summary = dist.metadata.get("Summary", "")
+                summary = cast("Any", dist.metadata).get("Summary", "")
                 if summary:
                     return str(summary)
             except Exception:

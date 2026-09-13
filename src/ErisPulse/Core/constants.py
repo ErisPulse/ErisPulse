@@ -121,6 +121,12 @@ CONFIG_CACHE_TIMEOUT_SECS: Final[int] = 60
 # 修改影响: setConfig() 后多久才真正写入磁盘。设大减少磁盘写入频率，设小数据安全性更高。
 CONFIG_WRITE_DELAY_SECS: Final[int] = 5
 
+# 多实例检测锁文件名（位于配置文件同级目录，进程独占持有，退出由 OS 自动释放）。
+# 使用位置: Core/config.py -> ConfigManager._acquire_instance_lock()
+# 修改影响: 检测"多个 ErisPulse 实例共享同一配置目录"所用的锁文件路径。
+# 变更后旧版本实例不再能被新版本检测到（跨版本互检失效）。
+CONFIG_LOCK_FILE_NAME: Final[str] = ".erispulse_config.lock"
+
 # ==============================================================================
 # 日志系统
 #
@@ -1021,6 +1027,7 @@ __all__ = [
     "CONFIG_KEY_MODULE_STATUS_OF",
     "CONFIG_KEY_ROUTER_CORS",
     "CONFIG_KEY_ROUTER_SECURITY",
+    "CONFIG_LOCK_FILE_NAME",
     "CONFIG_ROOT_KEY",
     "CONFIG_WRITE_DELAY_SECS",
     "CONFIRM_HINT_WORDS",
