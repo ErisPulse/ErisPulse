@@ -68,14 +68,14 @@ ErisPulse 命令处理模块
 ##### `_resolve_command_tokens(parts: list[str])`
 
 > **内部方法**
-按"最长前缀匹配"从已切分的命令 token 中解析命令名与参数
+按"最长前缀匹配"从已切分的命令 token 中解析命令名
 
 依次尝试 ``parts[:n]``（n 从最大注册 token 数降到 1）组成的候选名，
 先查别名映射再查命令表；命中即返回，未命中继续降级尝试。
 
 - **parts** (`空格切分后的命令`): token 列表（大小写已按配置归一）
-**返回值** (```(命中的候选名（可能为别名形式）,`): 解析后的命令全名, 子命令名之后的剩余参数)``；
-         全部未命中返回 ``(None, None, [])``
+**返回值** (```(命中的候选名（可能为别名形式）,`): 解析后的命令全名, 命中的 token 数)``；
+         全部未命中返回 ``(None, None, 0)``
 
 ---
 
@@ -172,16 +172,15 @@ permission 时调用：逐级去掉末尾 token 查找已注册祖先，返回�
 ---
 
 
-##### `async _try_execute_command(event: 'Event', original_text: str, check_text: str, prefix: str)`
+##### `async _try_execute_command(event: 'Event', original_text: str, prefix: str)`
 
 尝试执行命令
 
 > **内部方法**
 内部使用的方法，用于尝试解析和执行命令
 
-- **event** (`消息事件数据`): - **original_text**: 原始文本内容
-- **check_text** (`用于检查的文本内容（可能已转换为小写）`): - **prefix**: 已匹配的命令前缀（可能已转换为小写）
-**返回值**: 是否成功执行命令
+- **event** (`消息事件数据`): - **original_text**: 原始文本内容（命令名匹配时按配置做大小写归一，参数保留原文）
+- **prefix** (`已匹配的命令前缀（可能已转换为小写）`): **返回值**: 是否成功执行命令
 
 ---
 
@@ -358,6 +357,7 @@ permission 时调用：逐级去掉末尾 token 查找已注册祖先，返回�
 该会话（platform / bot / session）下被作用域禁用的模块，其命令不再列出
 （与分发静默语义一致）；② 覆盖——帮助文本 / usage / 可见性读取
 ``event.overrides.command`` 覆写值（用户优先）。
+子命令（空格分隔多 token 命令名）在其可见父命令下缩进展示。
 
 - **command_name** (`命令名称，如果为None则生成所有命令的帮助`): - **show_hidden**: 是否显示隐藏命令
 - **event** (`可选，事件上下文（Event`): 或 dict）。提供时按作用域过滤
