@@ -49,6 +49,13 @@ async def secret_handler(event):
 @command("admin.reload", group="admin", help="重新加载模块")
 async def reload_handler(event):
     pass
+
+# 子命令（空格分隔的多 token 命令名）
+# 匹配采用最长前缀：/admin add x 优先命中 admin add（args 为 ["x"]）；
+# 子命令未声明 permission 时继承父链上最近声明权限的祖先命令
+@command("admin add", help="添加管理员")
+async def admin_add_handler(event):
+    pass
 ```
 
 ### 命令信息

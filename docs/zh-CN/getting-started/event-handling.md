@@ -145,6 +145,55 @@ async def stop_handler(event):
     await event.reply("机器人已停止")
 ```
 
+`group` 参数仅用于帮助列表归类；上面示例中的 `admin.reload` 是一个**整体命令名**
+（点号只是命名风格，用户需输入 `/admin.reload`）。
+
+### 子命令
+
+命令名支持**空格分隔**的多 token 形式，实现 `/admin add`、`/admin user ban` 这样的子命令：
+
+```python
+@command("admin", help="管理命令")
+async def admin_handler(event):
+    await event.reply("用法：/admin add | /admin remove")
+
+@command("admin add", help="添加管理员")
+async def admin_add_handler(event):
+    target = event.get_command_args()[0]
+    await event.reply(f"已添加 {target}")
+
+@command("admin remove", aliases=["a remove"], help="移除管理员")
+async def admin_remove_handler(event):
+    await event.reply("已移除")
+```
+
+匹配规则（**最长前缀匹配**）：
+
+- `/admin add x` 优先命中 `admin add`，`event.get_command_args()` 返回 `["x"]`（子命令名之后的参数）
+- 仅注册了 `admin` 时，`/admin add x` 命中 `admin`，`get_command_args()` 返回 `["add", "x"]`（历史行为不变）
+- 别名支持多 token 形式（如 `a remove`），也可用单 token 别名（如 `a`）指向子命令
+- 父子命令同时注册时，未注册的子命令输入（如 `/admin list x`）回落到父命令
+
+**权限继承**：子命令未声明 `permission` 时，自动继承父链上最近声明了权限的祖先命令——
+保护 `/admin` 即自动保护其下全部子命令；子命令自身声明的权限优先：
+
+```python
+def is_admin(event):
+    return event.get_user_id() in {"user123"}
+
+@command("admin", permission=is_admin, help="管理命令")
+async def admin_handler(event):
+    ...
+
+# 无需重复声明 permission，自动继承 is_admin
+@command("admin add", help="添加管理员")
+async def admin_add_handler(event):
+    ...
+```
+
+注意：`master=True` 与 `hidden` **不会**继承，需要时请在子命令上单独声明；
+用户 ACL（黑白名单）按命令全名匹配，glob 规则如 `"admin*"` 可覆盖整组子命令。
+
 ### 命令权限与访问控制
 
 命令权限分三层，从上到下逐层判定（**上层拒绝则不再看下层**）：
