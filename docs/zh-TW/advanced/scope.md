@@ -6,14 +6,14 @@
 作用域回答四個問題：**哪些模組可用、誰的事件收不收、某模組處理什麼文字、
 模組能向外做什麼**。
 控制權完全交給使用者：在模組 / 適配器 / 處理器 / 出站呼叫註冊的**上層**（配置
-`ErisPulse.scope` 或執行時 `sdk.scope`）統一聲明，事件管線在入口、處理器篩選
+`ErisPulse.scope` 或執行時 `sdk.scope`）統一宣告，事件管線在入口、處理器過濾
 與出站閘口自動讀取並執行。
 
 | 維度 | 控制什麼 | 拒絕行為 | 配置路徑 |
 |------|---------|---------|---------|
-| **① 模組** | 哪些模組可用（平台 / Bot / 會話三級） | 靜默忽略（不回覆、不認領） | `scope.platforms / bots / sessions` |
+| **① 模組** | 哪些模組可用（平台 / Bot / 會話三級） | 靜默忽略（不回覆；命中的命令仍被認領阻斷） | `scope.platforms / bots / sessions` |
 | **② 身份** | 事件收不收（適配器 / Bot / 會話 / 用戶四級） | 入口完全丟棄（靜默） | `scope.identity.*` |
-| **③ 出站** | 模組能發起哪些出站呼叫（訊息 / API / 請求，方法級白名單/黑名單） | 失敗回應（`retcode=34601`） | `scope.actions` |
+| **③ 出站** | 模組能發起哪些出站呼叫（訊息 / API / 請求，方法級白名單黑名單） | 失敗回應（`retcode=34601`） | `scope.actions` |
 
 > **相關系統**：命令是特殊的訊息事件處理器，其用戶黑白名單（ACL）與
 > 實現參數覆寫由命令系統自持（`ErisPulse.event.command`），
@@ -33,16 +33,16 @@
 
 ## 匹配條目語法（全系統統一）
 
-作用域所有"名字列表"（模組名、身份鍵、出站條目）共用同一套匹配語法
+作用域所有「名字列表」（模組名、身份鍵、出站條目）共用同一套匹配語法
 （`ErisPulse.Core.text_match`）：
 
 | 語法 | 示例 | 說明 |
 |------|------|------|
 | 精確名 | `"Chat"` | 全值比較，**大小寫不敏感** |
-| glob | `"Tool*"`、`"spam_*"` | `*` 任意串 / `?` 單字符 / `[seq]` 字符集，大小寫不敏感 |
-| 正則 | `"re:^Danger.*"` | 以 `re:` 前綴聲明，正則 `search` 匹配，默认大小寫不敏感 |
+| glob | `"Tool*"`、`"spam_*"` | `*` 任意串 / `?` 單字元 / `[seq]` 字元集，大小寫不敏感 |
+| 正則 | `"re:^Danger.*"` | 以 `re:` 前綴宣告，正則 `search` 匹配，預設大小寫不敏感 |
 
-- 非法正則**靜默降級**為"不匹配"（不拋錯、不崩潰）
+- 非法正則**靜默降級**為「不匹配」（不拋錯、不崩潰）
 - 裝飾器參數（`pattern=` / `regex=`）為固定語義：`pattern` 是 glob、`regex` 是正則源碼
   （不加 `re:` 前綴）；作用域配置裡的正則條目**必須**帶 `re:` 前綴
 
@@ -54,10 +54,10 @@
 - **模組維度**：未命中任何綁定 → `default_allow` 決定放行 / 拒絕
 - **身份維度**：未命中任何策略 → `default_allow` 決定放行 / 拒絕
 
-設為 `false` 即開啟"隱式拒絕"嚴格模式：白名單式管理，
+設為 `false` 即開啟「隱式拒絕」嚴格模式：白名單式管理，
 **沒顯式允許的一律拒絕**。
 
-> **例外**：③ 出站維度**不受** `default_allow` 影響——它是獨立的收緊開關，
+> **例外**：③ 出站維度**不受** `default_allow` 影響——它是獨立的收紧開關，
 > 預設全允許，僅顯式規則才限制（框架層 owner 為空的呼叫恆放行）。
 > 這樣嚴格的全局模式不會意外掐斷所有模組的訊息回覆。
 > 命令 ACL 有獨立的 `ErisPulse.event.command.default_allow` 兜底，互不影響。
@@ -99,8 +99,8 @@ request = { deny = true }                                 # 禁止處理請求
 
 ## ① 模組維度
 
-回答"某個上下文裡，哪些模組可用"。預設全部開放；配置綁定後才開始篩選，
-**模組與適配器無需任何改動**。
+回答「某個上下文裡，哪些模組可用」。預設全部開放；配置綁定後才開始過濾，
+**模組與適配器無需任何修改**。
 
 ```mermaid
 flowchart TD
@@ -108,20 +108,21 @@ flowchart TD
     B --> C{"解析鏈：會話級 > Bot 級 > 平台級<br/>（子級 merge = true 時逐級並集）"}
     C -->|"命中"| D["blocked 命中 → 拒絕<br/>modules 非空 → 僅白名單放行<br/>都空 → default_allow"]
     C -->|"未命中"| E["default_allow（預設 true = 放行）"]
-    D -->|"拒絕"| Z["靜默忽略<br/>（不回覆、不認領，僅 TRACE 日誌）"]
+    D -->|"拒絕"| Z["靜默忽略<br/>（不回覆、僅 TRACE 日誌；命中的命令仍被認領阻斷）"]
 ```
 
 - **解析優先級：會話級 > Bot 級 > 平台級**，高優先級綁定**整體覆蓋**低優先級；
   子級綁定寫 `merge = true` 時改為與低優先級**逐條目並集**（modules / blocked 各自合併，
   `merge` 本身是控制鍵，不算條目）
-- **靜默語義**：被篩選模組的命令與處理器不觸發、不回覆、不認領（防止跨命令誤匹配），
-  僅 TRACE 級日誌可見（`core.scope.denied`）
+- **靜默語義**：被過濾模組的命令與處理器不觸發、不回覆，僅 TRACE 級日誌可見
+  （`core.scope.denied`）；命中的**命令**仍會被認領阻斷——命令文字不再漏給
+  低優先級訊息處理器，消除「命令被拒後訊息處理器又回應一次」的雙重回應歧義
 - **框架級處理器**（`scope_exempt=True` 或 owner 為空）不受影響；模組名為空（框架層資源）恆放行
 - **會話感知幫助與命令查詢**：命令查詢 API（`command.help` /
   `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`，
   以及 `module.get_commands_overview`）均支援可選 `event=` 或顯式
   `platform=` / `bot_id=` / `session_id=` 關鍵字——當前會話不可用模組的命令
-  不再出現在結果中（`get_command` 回傳 None、單命令幫助按"未註冊"處理，
+  不再出現在結果中（`get_command` 回傳 None、單命令幫助按「未註冊」處理，
   與靜默語義一致）；不傳上下文則保持全量行為
 
 ### 綁定繼承（merge）
@@ -142,13 +143,13 @@ merge = true                    # 該 Bot 實際生效 = ["Chat", "Tool", "Music
 
 ## ② 身份維度（事件准入）
 
-回答"誰的事件收不收"。被拒絕的事件在**分發入口完全丟棄**——
+回答「誰的事件收不收」。被拒絕的事件在**分發入口完全丟棄**——
 不進入中間件與任何處理器（含框架級），僅 TRACE 級日誌可見（`core.scope.identity_denied`）。
 
 - **解析優先級：用戶 > 會話 > Bot > 適配器**，取最具體的已配置策略；deny 優先於 allow
 - 每級綁定是二元策略：`{ allow = true }` 或 `{ deny = true }`
 - 用戶鍵支援 glob / 正則（如 `"spam_*"` 拉黑一批垃圾用戶）
-- 典型用法——上級 deny、個人 allow 做"例外放行"：
+- 典型用法——上級 deny、個人 allow 做「例外放行」：
 
 ```toml
 [ErisPulse.scope.identity.adapters.onebot11]
@@ -159,7 +160,7 @@ allow = ["u_admin"]   # 即使適配器級拒絕，u_admin 的事件仍然放行
 
 ## ③ 出站維度（限制模組發起出站呼叫）
 
-限制模組**發起的出站動作**：訊息發送 / 標準 API 動作 / 請求操作。
+約束模組**發起的出站動作**：訊息發送 / 標準 API 動作 / 請求操作。
 三類動作對應底層 DSL：`Event.reply` 與 `Send`（send）、`Api` / `call_api`（api）、
 `Request` 的 accept/reject（request）。模組在事件 handler 執行期發起的出站呼叫
 攜帶模組 owner，由本維度統一判定。
@@ -271,7 +272,7 @@ scope.delete_identity("onebot11", user_id="u_bad")
 ### ③ 出站維度
 
 ```python
-# 設置限制規則（allow: str|list；deny: bool|str|list；整規則替換語義）
+# 設定限制規則（allow: str|list；deny: bool|str|list；整規則替換語義）
 scope.set_action("MyModule", "send", deny=True)                    # 全禁發送
 scope.set_action("MyModule", "send", allow=["Text"])               # 僅允許發文本
 scope.set_action("MyModule", "api", deny=["set_*", "leave_*"])     # 禁管理類 API
@@ -317,12 +318,12 @@ del scope["platforms.onebot11"]      # 刪
   （`scope.cache_size` 可調），`set` / `delete` /
   配置熱更新（`config.updated` / `config.set`）自動失效
 - 所有維度配置改了**立即生效**，無需重啟
-- 作用域是"逐事件"判斷，不跨事件記憶：配置變了，下一個事件即按新規則
+- 作用域是「逐事件」判斷，不跨事件記憶：配置變了，下一個事件即按新規則
 
 ## 配置格式校驗
 
-加載 / 熱更新時逐節校驗配置格式：類型錯誤的節（如 `platforms` 寫成了字串）、
-非法的出站規則（如 `allow` 寫成數字）、未知動作名、未知的頂層鍵（如 `alow` 拼寫錯誤）
+載入 / 熱更新時逐節校驗配置格式：類型錯誤的節（如 `platforms` 寫成了字串）、
+非法的出站規則（如 `allow` 寫成數字）、未知動作名、未知的頂層鍵（如 `alow` 拼錯）
 會輸出 **WARNING** 並忽略對應節 / 條目，其餘合法配置照常生效——寫錯不再靜默失效。
 
 ## 常見問題與注意事項
@@ -330,7 +331,7 @@ del scope["platforms.onebot11"]      # 刪
 ### 1. 配置層級與覆蓋
 
 - 模組維度：會話級 > Bot 級 > 平台級，**整體覆蓋**（子級 `merge = true` 時逐條目並集）。
-  想"平台允許 Chat，Bot 再加 Music"，可在 Bot 級寫 `merge = true`，或同時列出兩者
+  想「平台允許 Chat，Bot 再加 Music」，可在 Bot 級寫 `merge = true`，或同時列出兩者
 - 身份維度：用戶 > 會話 > Bot > 適配器，取**最具體**的已配置策略（可做例外放行）
 - 命令用戶黑白名單：精確命令名優先於 glob 鍵（見 `event.command.acl`）
 
@@ -343,11 +344,11 @@ from ErisPulse import sdk
 
 print(sdk.scope.is_allowed(event.get_platform(), bot_id, "MyModule", session_id))
 print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, user_id))
-print(sdk.scope.stats())   # module_filtered / identity_denied > 0 說明被靜默篩選
+print(sdk.scope.stats())   # module_filtered / identity_denied > 0 說明被靜默過濾
 ```
 
-被篩選是**靜默**的（模組維度與身份維度不回覆，避免暴露規則），但統計會累積；
-命令維度被 ACL 拒絕會顯式回覆"權限不足"。
+被過濾是**靜默**的（模組維度與身份維度不回覆，避免暴露規則），但統計會累計；
+命令維度被 ACL 拒絕會顯式回覆「權限不足」。
 
 ### 3. 出站動作被拒時排查
 
@@ -367,7 +368,7 @@ print(sdk.scope.stats())   # action_denied > 0 說明有呼叫被擋截
 
 ## 拓撲樹 API
 
-`ModuleManager.get_topology()` 與 `AdapterManager.get_topology()` 提供模組/適配器歸屬關係資料，  
+`ModuleManager.get_topology()` 與 `AdapterManager.get_topology()` 提供模組/適配器歸屬關係資料，
 `sdk.get_topology()` 一鍵聚合（含作用域 `scope`）：
 
 ```python
