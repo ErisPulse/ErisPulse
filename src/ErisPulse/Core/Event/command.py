@@ -31,6 +31,7 @@ from ...runtime.context import current_owner, handler_waits
 from .. import adapter, logger
 from ..constants import (
     DEFAULT_COMMAND_ALLOW_SPACE_PREFIX,
+    DEFAULT_COMMAND_BLOCK,
     DEFAULT_COMMAND_CASE_SENSITIVE,
     DEFAULT_COMMAND_DISPATCHER_PRIORITY,
     DEFAULT_COMMAND_MUST_AT_BOT,
@@ -99,6 +100,8 @@ class CommandHandler:
         self.case_sensitive = command_config.get("case_sensitive", DEFAULT_COMMAND_CASE_SENSITIVE)
         self.allow_space_prefix = command_config.get("allow_space_prefix", DEFAULT_COMMAND_ALLOW_SPACE_PREFIX)
         self.must_at_bot = command_config.get("must_at_bot", DEFAULT_COMMAND_MUST_AT_BOT)
+        # 命令命中后是否阻断向低优先级处理器传播（认领不受此开关影响）
+        self.block = command_config.get("block", DEFAULT_COMMAND_BLOCK)
 
     def _on_config_updated(self, _data: dict) -> None:
         """配置变更回调：刷新命令解析参数、实现参数覆盖与用户 ACL"""
@@ -131,8 +134,12 @@ class CommandHandler:
         """
         for n in range(min(self._max_name_tokens, len(parts)), 0, -1):
             candidate = " ".join(parts[:n])
-            actual = self.aliases.get(candidate, candidate)
-            if actual in self.commands:
+            # 命令名优先于别名：同名冲突时注册的命令生效（别名在注册期
+            # 已告警并让位），消除别名静默劫持命令的歧义
+            if candidate in self.commands:
+                return candidate, candidate, n
+            actual = self.aliases.get(candidate)
+            if actual is not None and actual in self.commands:
                 return candidate, actual, n
         return None, None, 0
 
@@ -240,6 +247,17 @@ class CommandHandler:
                             new_owner=current_owner.get() or "-",
                         )
                     )
+                # 命令名 vs 别名冲突：命令名优先，指向其它命令的既有别名
+                # 被本命令遮蔽，移除该别名（否则它成为永远不可达的死条目）
+                if cmd_name in self.aliases and self.aliases[cmd_name] != main_name:
+                    logger.warning(
+                        i18n.t(
+                            "core.command.name_conflicts_alias",
+                            cmd_name=cmd_name,
+                            main_name=self.aliases[cmd_name],
+                        )
+                    )
+                    self.aliases.pop(cmd_name, None)
                 self.commands[cmd_name] = {
                     "func": func,
                     "help": help,
@@ -262,8 +280,27 @@ class CommandHandler:
 
             # 注册aliases参数中的别名
             for alias in alias_list:
-                if alias not in self.aliases:
-                    self.aliases[alias] = main_name
+                if alias in self.commands:
+                    # 别名与已注册命令重名：命令名优先，该别名不生效
+                    logger.warning(
+                        i18n.t(
+                            "core.command.alias_conflicts_command",
+                            alias=alias,
+                            cmd_name=alias,
+                        )
+                    )
+                    continue
+                if alias in self.aliases:
+                    # 同名别名已指向其它命令：保持先注册者生效
+                    logger.warning(
+                        i18n.t(
+                            "core.command.alias_conflicts_alias",
+                            alias=alias,
+                            main_name=self.aliases[alias],
+                        )
+                    )
+                    continue
+                self.aliases[alias] = main_name
 
             # 添加到命令组
             if group:
@@ -649,6 +686,13 @@ class CommandHandler:
             return False
         args = raw_parts[matched:]
 
+        # 命中即认领：文本已解析为一条注册命令，无论后续作用域 / ACL /
+        # 主人 / 权限判定结果如何，都不再漏给低优先级消息处理器——
+        # 消除"命令被拒后 on_message 又响应一次"的双重响应歧义
+        # （scope 拒绝仍保持静默不回复；ErisPulse.event.command.block=false
+        #   可放行阻断，供日志 / 审计观察者继续看到）
+        event.mark_processed(claim=True, stop=self.block)
+
         logger.trace(
             i18n.t(
                 "core.command.parsed",
@@ -776,8 +820,8 @@ class CommandHandler:
 
             event["command"] = command_info
 
-            # 标记事件已被处理（认领 + 阻断，阻止低优先级处理器再介入）
-            event.mark_processed()
+            # 认领已在命令命中时完成（见上方 mark_processed），
+            # 此处直接进入权限钩子与执行阶段
 
             # 钩子: 命令匹配（后台发射，不阻塞命令分发）
             from ..lifecycle import lifecycle
@@ -996,7 +1040,8 @@ class CommandHandler:
         >>> command.get_command("admin")
         >>> command.get_command("admin", event=event)   # 会话不可用时返回 None
         """
-        actual_name = self.aliases.get(name, name)
+        # 命令名优先于别名（与分发解析一致）
+        actual_name = name if name in self.commands else self.aliases.get(name, name)
         info = self.commands.get(actual_name)
         if info is None:
             return None
@@ -1219,35 +1264,47 @@ class CommandHandler:
             return i18n.t("core.event.command.no_commands")
 
         help_lines = [i18n.t("core.event.command.available_commands")]
-        for cmd_name, cmd_info in commands_to_show.items():
-            help_text = cmd_info.get("help", i18n.t("core.event.command.no_help_item"))
-            # 子命令（空格分隔多 token 命令名）在可见父命令下缩进展示，
-            # 缩进深度 = 可见祖先链长度（admin → admin user → admin user ban）
-            depth = 0
-            tokens = cmd_name.split()
-            while len(tokens) > 1:
-                tokens.pop()
-                if " ".join(tokens) in commands_to_show:
-                    depth += 1
-            if depth:
-                help_lines.append(
-                    "  " * (depth + 1)
-                    + i18n.t(
-                        "core.event.command.list_item_child",
-                        prefix=display_prefix,
-                        cmd_name=cmd_name,
-                        help_text=help_text,
-                    )
+
+        # 子命令（空格分隔多 token 命令名）挂到最近的可见祖先下先序展示：
+        # 父命令始终位于子命令之前（与注册顺序无关），兄弟命令保持注册顺序
+        _children: dict[str | None, list[str]] = {}
+        for _name in commands_to_show:
+            _tokens = _name.split()
+            _anchor = None
+            while len(_tokens) > 1:
+                _tokens.pop()
+                if " ".join(_tokens) in commands_to_show:
+                    _anchor = " ".join(_tokens)
+                    break
+            _children.setdefault(_anchor, []).append(_name)
+
+        def _emit_tree(anchor: str | None, depth: int) -> None:
+            for _name in _children.get(anchor, []):
+                _help_text = commands_to_show[_name].get(
+                    "help", i18n.t("core.event.command.no_help_item")
                 )
-            else:
-                help_lines.append(
-                    i18n.t(
-                        "core.event.command.list_item",
-                        prefix=display_prefix,
-                        cmd_name=cmd_name,
-                        help_text=help_text,
+                if depth:
+                    help_lines.append(
+                        "  " * (depth + 1)
+                        + i18n.t(
+                            "core.event.command.list_item_child",
+                            prefix=display_prefix,
+                            cmd_name=_name,
+                            help_text=_help_text,
+                        )
                     )
-                )
+                else:
+                    help_lines.append(
+                        i18n.t(
+                            "core.event.command.list_item",
+                            prefix=display_prefix,
+                            cmd_name=_name,
+                            help_text=_help_text,
+                        )
+                    )
+                _emit_tree(_name, depth + 1)
+
+        _emit_tree(None, 0)
         return "\n".join(help_lines)
 
     def _owner_blocked(self, info: dict, ctx: dict[str, str | None]) -> bool:

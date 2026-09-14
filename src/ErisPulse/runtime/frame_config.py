@@ -11,6 +11,7 @@ from typing import Any
 from ..Core.constants import (
     CONFIG_ROOT_KEY,
     DEFAULT_COMMAND_ALLOW_SPACE_PREFIX,
+    DEFAULT_COMMAND_BLOCK,
     DEFAULT_COMMAND_CASE_SENSITIVE,
     DEFAULT_COMMAND_MUST_AT_BOT,
     DEFAULT_COMMAND_PREFIX,
@@ -57,6 +58,7 @@ from ..Core.constants import (
     DEFAULT_TRANSCRIPT_TTL_HOURS,
     DEFAULT_UNINIT_TIMEOUT_SECS,
     DEFAULT_USE_GLOBAL_DB,
+    DEFAULT_WAIT_REPLY_BLOCK,
 )
 
 # 默认配置
@@ -142,6 +144,12 @@ DEFAULT_ERISPULSE_CONFIG = {
             "case_sensitive": DEFAULT_COMMAND_CASE_SENSITIVE,
             "allow_space_prefix": DEFAULT_COMMAND_ALLOW_SPACE_PREFIX,
             "must_at_bot": DEFAULT_COMMAND_MUST_AT_BOT,
+            # 命令命中后是否阻断向低优先级处理器传播（认领不受影响）
+            "block": DEFAULT_COMMAND_BLOCK,
+        },
+        "wait_reply": {
+            # wait_reply 命中回复后是否阻断向低优先级处理器传播（认领不受影响）
+            "block": DEFAULT_WAIT_REPLY_BLOCK,
         },
     },
     # 框架主人系统配置

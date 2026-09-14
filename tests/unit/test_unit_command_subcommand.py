@@ -29,6 +29,7 @@ command_module = importlib.import_module("ErisPulse.Core.Event.command")
 def clean_state():
     from ErisPulse.Core.adapter import adapter
     from ErisPulse.Core.Event import _clear_all_handlers
+    from ErisPulse.Core.Event.message import message as message_handler
 
     _clear_all_handlers()
     command_handler.commands.clear()
@@ -36,6 +37,7 @@ def clean_state():
     command_handler.groups.clear()
     command_handler.permissions.clear()
     command_handler._max_name_tokens = 1
+    command_handler.block = True
     interaction.clear()
     overrides_mod._command.clear()
     overrides_mod.clear()
@@ -43,6 +45,8 @@ def clean_state():
     adapter._raw_handlers.clear()
     adapter._onebot_middlewares.clear()
     adapter._bots.clear()
+    message_handler.handler.handlers.clear()
+    message_handler.handler._handler_map.clear()
     yield
     _clear_all_handlers()
     command_handler.commands.clear()
@@ -50,6 +54,7 @@ def clean_state():
     command_handler.groups.clear()
     command_handler.permissions.clear()
     command_handler._max_name_tokens = 1
+    command_handler.block = True
     interaction.clear()
     overrides_mod._command.clear()
     overrides_mod.clear()
@@ -57,6 +62,8 @@ def clean_state():
     adapter._raw_handlers.clear()
     adapter._onebot_middlewares.clear()
     adapter._bots.clear()
+    message_handler.handler.handlers.clear()
+    message_handler.handler._handler_map.clear()
 
 
 def _msg(text, platform="onebot11", bot_id="bot_x", user_id="u1", group_id=None):
@@ -642,3 +649,226 @@ class TestHelpGrouping:
         orphan_line = next(line for line in text.splitlines() if "orphan add" in line)
         assert orphan_line.startswith("  ")  # 顶层缩进
         assert not orphan_line.startswith("    ")  # 不按子命令缩进
+
+    def test_child_registered_before_parent_still_nested(self):
+        """子命令先于父命令注册 → 父命令仍显示在子命令之前"""
+
+        @command_handler("admin add", help="添加")
+        async def admin_add(event):
+            pass
+
+        @command_handler("admin", help="管理")
+        async def admin(event):
+            pass
+
+        prefix = command_handler.prefix[0] if isinstance(command_handler.prefix, list) else command_handler.prefix
+        text = command_handler.help()
+        assert text.index(f"{prefix}admin -") < text.index(f"{prefix}admin add")  # 父先子后
+        child_line = next(line for line in text.splitlines() if f"{prefix}admin add" in line)
+        assert child_line.startswith("    ")  # 子命令缩进不变
+
+
+class TestClaimOnMatch:
+    """命令命中即认领：拒绝路径不再漏给消息处理器（双重响应歧义消除）"""
+
+    @staticmethod
+    def _register_observer(received: list):
+        from ErisPulse.Core.Event.message import message as message_handler
+
+        @message_handler.on_message()
+        async def observer(event):
+            received.append(event.get("alt_message"))
+
+        return observer
+
+    @pytest.mark.asyncio
+    async def test_permission_denied_no_double_response(self):
+        """权限拒绝 → 命令不执行，消息处理器也不再收到命令文本"""
+        calls, observed = [], []
+        self._register_observer(observed)
+
+        def deny(event):
+            return False
+
+        @command_handler("locked", permission=deny)
+        async def locked(event):
+            calls.append("locked")
+
+        await _dispatch("/locked x")
+        assert calls == []       # 命令被拒
+        assert observed == []    # 命中即认领，不漏给消息处理器
+
+    @pytest.mark.asyncio
+    async def test_master_denied_no_double_response(self):
+        """master 拒绝 → 同样认领阻断"""
+        calls, observed = [], []
+        self._register_observer(observed)
+
+        @command_handler("secret", master=True)
+        async def secret(event):
+            calls.append("secret")
+
+        await _dispatch("/secret")
+        assert calls == []
+        assert observed == []
+
+    @pytest.mark.asyncio
+    async def test_scope_denied_silent_but_claimed(self):
+        """scope 拒绝 → 静默（不回复）但仍认领阻断"""
+        from ErisPulse.Core.scope import scope as scope_manager
+
+        calls, observed = [], []
+        self._register_observer(observed)
+        token = current_owner.set("ModuleA")
+        try:
+
+            @command_handler("scoped")
+            async def scoped(event):
+                calls.append("scoped")
+
+        finally:
+            current_owner.reset(token)
+
+        scope_manager.set_module("onebot11", blocked=["ModuleA"], persist=False)
+        try:
+            await _dispatch("/scoped")
+            assert calls == []       # 静默不执行
+            assert observed == []    # 不漏给消息处理器
+        finally:
+            scope_manager.delete_module("onebot11", persist=False)
+
+    @pytest.mark.asyncio
+    async def test_block_false_lets_observers_see(self):
+        """ErisPulse.event.command.block=false → 仅认领不阻断，观察者可见"""
+        calls, observed = [], []
+        self._register_observer(observed)
+        command_handler.block = False
+        try:
+
+            def deny(event):
+                return False
+
+            @command_handler("locked", permission=deny)
+            async def locked(event):
+                calls.append("locked")
+
+            await _dispatch("/locked x")
+            assert calls == []               # 命令仍被拒
+            assert observed == ["/locked x"]  # 观察者可见（仅认领）
+        finally:
+            command_handler.block = True
+
+    @pytest.mark.asyncio
+    async def test_unmatched_still_reaches_observers(self):
+        """未命中任何命令 → 照旧漏给消息处理器（行为不变）"""
+        observed = []
+        self._register_observer(observed)
+
+        @command_handler("known")
+        async def known(event):
+            pass
+
+        await _dispatch("/unknown x")
+        assert observed == ["/unknown x"]
+
+
+class TestAliasPrecedence:
+    """命令名优先于别名：消除别名静默劫持"""
+
+    @pytest.mark.asyncio
+    async def test_command_wins_over_alias(self):
+        """命令 "b" 与别名 "b"→"a" 冲突 → 命令 b 生效，别名不注册"""
+        calls = []
+
+        @command_handler("b")
+        async def b_cmd(event):
+            calls.append("b")
+
+        @command_handler("a", aliases=["b"])
+        async def a_cmd(event):
+            calls.append("a")
+
+        assert "b" not in command_handler.aliases  # 别名未注册
+        await _dispatch("/b")
+        assert calls == ["b"]
+
+    @pytest.mark.asyncio
+    async def test_new_command_removes_stale_alias(self):
+        """后注册的命令名遮蔽既有别名 → 死别名被移除，命令可达"""
+        calls = []
+
+        @command_handler("a", aliases=["x"])
+        async def a_cmd(event):
+            calls.append("a")
+
+        assert command_handler.aliases.get("x") == "a"
+
+        @command_handler("x")
+        async def x_cmd(event):
+            calls.append("x")
+
+        assert "x" not in command_handler.aliases
+        await _dispatch("/x")
+        assert calls == ["x"]
+
+    @pytest.mark.asyncio
+    async def test_duplicate_alias_first_wins(self):
+        """同名别名重复注册 → 保持先注册者生效"""
+        calls = []
+
+        @command_handler("a1", aliases=["s"])
+        async def a1(event):
+            calls.append("a1")
+
+        @command_handler("a2", aliases=["s"])
+        async def a2(event):
+            calls.append("a2")
+
+        assert command_handler.aliases.get("s") == "a1"
+        await _dispatch("/s")
+        assert calls == ["a1"]
+
+
+class TestAliasConflictWarnings:
+    """别名冲突三类注册均告警"""
+
+    def test_alias_conflicts_command_warns(self):
+        with patch.object(command_module, "logger") as log_mock:
+
+            @command_handler("b")
+            async def b_cmd(event):
+                pass
+
+            @command_handler("a", aliases=["b"])
+            async def a_cmd(event):
+                pass
+
+        assert log_mock.warning.called
+
+    def test_name_conflicts_alias_warns_and_removes(self):
+        with patch.object(command_module, "logger") as log_mock:
+
+            @command_handler("a", aliases=["x"])
+            async def a_cmd(event):
+                pass
+
+            @command_handler("x")
+            async def x_cmd(event):
+                pass
+
+        assert log_mock.warning.called
+        assert "x" not in command_handler.aliases
+
+    def test_alias_vs_alias_warns(self):
+        with patch.object(command_module, "logger") as log_mock:
+
+            @command_handler("a1", aliases=["s"])
+            async def a1(event):
+                pass
+
+            @command_handler("a2", aliases=["s"])
+            async def a2(event):
+                pass
+
+        assert log_mock.warning.called
+        assert command_handler.aliases.get("s") == "a1"
