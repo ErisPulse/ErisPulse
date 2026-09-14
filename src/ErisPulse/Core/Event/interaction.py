@@ -43,10 +43,12 @@ import time
 from typing import TYPE_CHECKING, Any
 
 from ...runtime.context import current_owner
+from ...runtime import get_event_config
 from ..Bases.errors import InteractionCancelled, SessionOccupiedError
 from ..constants import (
     DEFAULT_INTERACTION_LEASE_TTL_SECS,
     DEFAULT_MAX_SESSION_REMINDERS,
+    DEFAULT_WAIT_REPLY_BLOCK,
     UNKNOWN_PLATFORM,
 )
 from ..i18n import i18n
@@ -459,10 +461,17 @@ class InteractionManager:
         if not entry.future.done():
             entry.future.set_result(event)
 
-        # 认领事件（claim + 阻断），阻止低优先级处理器再介入
+        # 认领事件（认领 + 阻断），阻止低优先级处理器再介入；
+        # ErisPulse.event.wait_reply.block = false 时仅认领不阻断（观察者可见）
+        try:
+            wait_reply_block = get_event_config().get("wait_reply", {}).get(
+                "block", DEFAULT_WAIT_REPLY_BLOCK
+            )
+        except Exception:
+            wait_reply_block = DEFAULT_WAIT_REPLY_BLOCK
         mark_processed = getattr(event, "mark_processed", None)
         if callable(mark_processed):
-            mark_processed()
+            mark_processed(claim=True, stop=wait_reply_block)
         return True
 
     def _check_revoked(self, entry: _Entry, event: "Event") -> str | None:
