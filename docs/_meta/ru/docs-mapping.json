@@ -405,7 +405,7 @@
           "icon": "fa-language"
         },
         {
-          "title": "Scope",
+          "title": "Scope (область видимости)",
           "path": "advanced/scope.md",
           "level": 1,
           "icon": "fa-shield-halved"
