@@ -1,8 +1,8 @@
 # イベントシステム API
 
-本文档详细介绍了 ErisPulse 事件系统的 API。
+このドキュメントは、ErisPulse イベントシステムの API を詳細に説明します。
 
-イベントシステムは、プラットフォームイベントを 5 つのタイプのハンドラに分類して配信します。
+イベントシステムは、OneBot12 標準に準拠したプラットフォームイベントを、以下の5つのカテゴリに分類して各ハンドラに配信します：
 
 ```mermaid
 flowchart LR
@@ -12,7 +12,7 @@ flowchart LR
     B --> E["notice<br/>通知ハンドラ"]
     B --> F["request<br/>リクエストハンドラ"]
     B --> G["meta<br/>メタイベントハンドラ"]
-    C & D & E & F & G --> H["Eventラッパークラス<br/>reply / get_text / done 等"]
+    C & D & E & F & G --> H["Event 包装クラス<br/>reply / get_text / done 等"]
 ```
 
 ## Command コマンドモジュール
@@ -46,46 +46,47 @@ async def secret_handler(event):
     pass
 
 # コマンドグループ
-@command("admin.reload", group="admin", help="モジュールを再ロード")
+@command("admin.reload", group="admin", help="モジュールを再読み込み")
 async def reload_handler(event):
     pass
 
-# サブコマンド（スペースで区切られた複数のトークンを持つコマンド名）
-# 最長前接辞マッチングを使用：/admin add x は admin add（args が ["x"]）に優先的にマッチ；
-# 子コマンドに permission が宣言されていない場合、親コマンドの最近の ancestor コマンドの permission を継承
+# サブコマンド（スペースで区切られた複数のトークンからなるコマンド名）
+# 最長一致を採用：/admin add x は admin add（args が ["x"]）に一致する；
+# 子コマンドに permission が宣言されていない場合、直近の親コマンドの permission を継承する
 @command("admin add", help="管理者を追加")
 async def admin_add_handler(event):
     pass
 ```
 
+**命名衝突ルール**：コマンド名は別名よりも優先されます。既存のコマンドと重複する別名を登録した場合、その別名は無効となり警告が表示されます。既存の別名と重複するコマンド名を登録した場合、コマンド名が優先され、死んだ別名は自動的に削除されます。この2種類の衝突はすべて WARNING ログで出力され、静かに上書きされることはありません。
+
 ### コマンド情報
 
-すべてのコマンドクエリAPIは、オプションの**セッションコンテキスト**をサポートします：`event=`（Event または dict）または明示的な `platform=` / `bot_id=` / `session_id=`（event と重複する場合は明示的な引数が優先）を渡すことで、現在のセッションで利用できないモジュールのコマンドをスコープの次元でフィルタリングします（advanced/scope.mdを参照）；
-すべてがオプションのキーワード引数であり、渡さない場合は既定の全量の動作を維持します。
+すべてのコマンド情報取得 API は、オプションの**セッションコンテキスト**をサポートしています：`event=`（Event または dict）または明示的な `platform=` / `bot_id=` / `session_id=`（event と重複する場合、明示的なパラメータが優先されます）。つまり、作用域モジュール次元でフィルタリングされ、現在のセッションで利用できないモジュールのコマンドは除外されます（advanced/scope.md を参照）。すべてのパラメータはオプションであり、指定しない場合は従来通り全量のコマンドが返されます。
 
 ```python
-# コマンドヘルプを取得
+# コマンドのヘルプを取得
 help_text = command.help()
 
-# セッション感知ヘルプ：現在のセッションで利用可能なコマンドのみを表示
+# セッション感知のヘルプ：現在のセッションで利用可能なコマンドのみを表示
 help_text = command.help(event=event)
 
-# 特定のコマンドを取得（マージされた有効なパラメータを返す；セッションで利用できない場合は None を返す）
+# 特定のコマンドを取得（有効なパラメータがマージ・上書きされた結果を返す；セッションで利用できない場合は None を返す）
 cmd_info = command.get_command("admin")
 cmd_info = command.get_command("admin", event=event)
 
-# すべてのコマンドを取得（セッション感知時、利用できないモジュールのコマンドをフィルタリング）
+# すべてのコマンドを取得（セッション感知のフィルタリングが適用される）
 all_commands = command.get_commands()
 all_commands = command.get_commands(event=event)
 
-# コマンドグループ内のすべてのコマンドを取得（セッション感知フィルタリングをサポート）
+# コマンドグループ内のすべてのコマンドを取得（セッション感知のフィルタリングが適用される）
 admin_commands = command.get_group_commands("admin")
 admin_commands = command.get_group_commands("admin", event=event)
 
 # すべての表示可能なコマンドを取得
 visible_commands = command.get_visible_commands()
 
-# セッション感知の表示可能なコマンド（event または明示的なキーワード引数のいずれかで可能）
+# セッション感知の表示可能なコマンド（event または明示的なキーワードのいずれかで指定可能）
 visible_commands = command.get_visible_commands(event=event)
 visible_commands = command.get_visible_commands(
     platform=event.get("platform"),
@@ -94,15 +95,15 @@ visible_commands = command.get_visible_commands(
 )
 ```
 
-### レプリィ待ち
+### レプリを待つ
 
 ```python
-# ユーザーの返信を待つ
-@command("ask", help="ユーザー情報を尋ねる")
+# ユーザーからの返信を待つ
+@command("ask", help="ユーザーの情報を尋ねる")
 async def ask_command(event):
     reply = await command.wait_reply(
         event,
-        prompt="名前を入力してください:",  # すでに送信済み
+        prompt="名前を入力してください:",  # すでに上に送信済み
         timeout=30.0
     )
     
@@ -110,7 +111,7 @@ async def ask_command(event):
         name = reply.get_text()
         await event.reply(f"こんにちは、{name}！")
 
-# 検証付きのレプリィ待ち
+# 検証付きの待機返信
 def validate_age(event_data):
     try:
         age = int(event_data.get_text())
@@ -130,9 +131,9 @@ async def age_command(event):
     
     if reply:
         age = int(reply.get_text())
-        await event.reply(f"年齢は {age} 歳です")
+        await event.reply(f"あなたの年齢は {age} 歳です")
 
-# コールバック付きのレプリィ待ち
+# コールバック付きの待機返信
 async def handle_confirmation(reply_event):
     text = reply_event.get_text().lower()
     if text in ["はい", "yes", "y"]:
@@ -140,11 +141,11 @@ async def handle_confirmation(reply_event):
     else:
         await event.reply("操作がキャンセルされました。")
 
-@command("confirm", help="操作を確認")
+@command("confirm", help="操作を確認する")
 async def confirm_command(event):
     await command.wait_reply(
         event,
-        prompt="はいまたはいいえを入力してください:",
+        prompt="'はい'または'いいえ'を入力してください:",
         callback=handle_confirmation
     )
 ```
@@ -159,7 +160,7 @@ from ErisPulse.Core.Event import message
 # すべてのメッセージを監視
 @message.on_message()
 async def message_handler(event):
-    sdk.logger.info(f"メッセージを受け取りました: {event.get_text()}")
+    sdk.logger.info(f"メッセージを受信しました: {event.get_text()}")
 
 # プライベートメッセージを監視
 @message.on_private_message()
@@ -183,7 +184,7 @@ async def at_handler(event):
 ### 条件付き監視
 
 ```python
-# 優先度を使って実行順序を制御
+# 优先度で実行順序を制御
 @message.on_message(priority=10)  # 数値が大きいほど優先度が高い
 async def high_priority_handler(event):
     pass
@@ -220,13 +221,13 @@ async def friend_remove_handler(event):
 @notice.on_group_increase()
 async def member_increase_handler(event):
     user_id = event.get_user_id()
-    await event.reply(f"新メンバーを歓迎します！")
+    await event.reply(f"新しいメンバーを歓迎します！")
 
 # グループメンバー削除
 @notice.on_group_decrease()
 async def member_decrease_handler(event):
     user_id = event.get_user_id()
-    sdk.logger.info(f"グループメンバーの退会: {user_id}")
+    sdk.logger.info(f"グループメンバーが退出しました: {user_id}")
 ```
 
 ## Request リクエストモジュール
@@ -241,7 +242,7 @@ from ErisPulse.Core.Event import request
 async def friend_request_handler(event):
     user_id = event.get_user_id()
     comment = event.get_comment()
-    sdk.logger.info(f"フレンドリクエスト: {user_id}, コメント: {comment}")
+    sdk.logger.info(f"フレンドリクエスト: {user_id}, 備考: {comment}")
 
 # グループ招待リクエスト
 @request.on_group_request()
@@ -262,13 +263,13 @@ from ErisPulse.Core.Event import meta
 @meta.on_connect()
 async def connect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"プラットフォーム {platform} に接続成功")
+    sdk.logger.info(f"プラットフォーム {platform} に接続しました")
 
 # 接続切断イベント
 @meta.on_disconnect()
 async def disconnect_handler(event):
     platform = event.get_platform()
-    sdk.logger.info(f"プラットフォーム {platform} が切断されました")
+    sdk.logger.info(f"プラットフォーム {platform} から切断されました")
 
 # ハートビートイベント
 @meta.on_heartbeat()
@@ -276,13 +277,13 @@ async def heartbeat_handler(event):
     sdk.logger.debug("ハートビートを受信しました")
 ```
 
-### Bot 状態照会
+### Bot 状態の照会
 
-アダプタが meta イベントを送信すると、フレームワークは自動的に Bot 状態を追跡します。照会 API とライフサイクルイベントの監視は [アダプタシステム API - Bot 状態管理](adapter-system.md#bot-状態管理) を参照してください。
+アダプタがメタイベントを送信した後、フレームワークは自動的に Bot の状態を追跡します。照会 API とライフサイクルイベントの監視は [アダプタシステム API - Bot 状態管理](adapter-system.md#bot-状態管理) を参照してください。
 
-## Event ラッパークラス
+## Event 包装クラス
 
-Event モジュールのイベントハンドラは、dict を継承した Event ラッパークラスのインスタンスを受け取り、便利なメソッドを提供します。
+Event モジュールのイベントハンドラは Event 包装クラスのインスタンスを受け取り、dict を継承し便利なメソッドを提供します。
 
 ### 核心メソッド
 
@@ -303,15 +304,15 @@ self_info = event.get_self_info()
 ### セッション識別子
 
 ```python
-# 統一されたターゲット ID：グループチャットは group_id を返し、プライベートチャットは user_id を返す、以此类推
+# 統一されたターゲットID：グループなら group_id、プライベートなら user_id、以此類推
 target_id = event.get_target_id()
 
-# セッションの唯一の識別子、形式: {platform}:{detail_type}:{target_id}
+# セッションの唯一識別子、形式: {platform}:{detail_type}:{target_id}
 session_id = event.get_session_id()
 # 例: "telegram:private:12345"、"qq:group:67890"
 ```
 
-`get_target_id()` は、`group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id` の順に最初の非空値を返します。これは、コンテキスト管理、状態の保存など、セッションを統一的に識別する必要がある場面に適しています。
+`get_target_id()` は、`group_id` → `channel_id` → `guild_id` → `thread_id` → `user_id` の順に最初の非空値を返します。これは、セッションの統一識別子が必要なコンテキスト管理や状態保存などの場面に適しています。
 
 ### メッセージメソッド
 
@@ -329,7 +330,7 @@ sender = event.get_sender()
 # グループ情報を取得
 group_id = event.get_group_id()
 
-# メッセージタイプを判断
+# メッセージタイプを判定
 is_msg = event.is_message()
 is_private = event.is_private_message()
 is_group = event.is_group_message()
@@ -348,31 +349,31 @@ cmd_name = event.get_command_name()
 cmd_args = event.get_command_args()
 cmd_raw = event.get_command_raw()
 
-# それがコマンドかどうかを判断
+# それがコマンドかどうかを判定
 is_cmd = event.is_command()
 ```
 
-### レプリィ機能
+### レプリ機能
 
 ```python
-# 基本的なレプリィ
+# 基本的なレプリ
 await event.reply("これはメッセージです")
 
 # 送信方法を指定
 await event.reply("http://example.com/image.jpg", method="Image")
 
-# @ユーザーと返信メッセージを含む
+# @ユーザーと返信メッセージを指定
 await event.reply("こんにちは", at_users=["user1"], reply_to="msg_id")
 
 # @全員
 await event.reply("お知らせ", at_all=True)
 
-# プラットフォーム固有の修飾方法を使用（via パラメータ）
-await event.reply("ボードの内容", method="Board",
+# プラットフォーム固有の修飾メソッドを使用（via パラメータ）
+await event.reply("掲示板内容", method="Board",
                   via=[("Expire", 3600), ("ForMember", "114514")])
 
-# 送信チェーンを取得し、修飾方法と送信方法を自由に追加（複数の修飾/アクション型メソッドに適しています）
-await event.send_chain().Expire(3600).Board("ボードの内容")
+# 送信チェーンを取得し、自由に修飾メソッドや送信メソッドを追加（複数の修飾 / 動作型メソッドに適している）
+await event.send_chain().Expire(3600).Board("掲示板内容")
 await event.send_chain().DismissBoard()
 
 # OneBot12 メッセージセグメントを使って返信
@@ -380,28 +381,28 @@ from ErisPulse.Core.Event import MessageBuilder
 msg = MessageBuilder().text("Hello").image("url").build()
 await event.reply_ob12(msg)
 
-# レプリィを待つ
+# レプリを待つ
 reply = await event.wait_reply(timeout=30)
 ```
 
-### プラットフォーム能力照会
+### プラットフォーム機能の照会
 
 ```python
-# 現在のプラットフォームが特定の送信方法をサポートしているかをチェック
+# 現在のプラットフォームが特定の送信方法をサポートしているか確認
 if event.supports("Image"):
     await event.reply(url, method="Image")
 
-# 現在のプラットフォームで利用可能なすべての送信方法をリストアップ
+# 現在のプラットフォームで利用可能なすべての送信方法を取得
 methods = event.available_methods()
 # ["Text", "Image", "Voice", ...]
 ```
 
-### レプリィメソッド
+### レプリメソッド
 
-`reply()` メソッドは、`method` パラメータを使って送信タイプを指定し、2つの便利なブール値パラメータもサポートします：
+`reply()` メソッドは `method` パラメータで送信タイプを指定でき、2つの便利なブール値パラメータもサポートします：
 
 ```python
-# 簡単なテキスト返信
+# 簡単なテキストレプリ
 await event.reply("こんにちは")
 
 # 送信者に@を付けて返信
@@ -420,42 +421,42 @@ else:
     await event.reply("[画像] http://example.com/img.jpg")
 ```
 
-**パラメータの説明**：
+**パラメータ説明**：
 
 | パラメータ | 型 | 説明 |
 |------|------|------|
 | `content` | str | 送信内容 |
 | `method` | str | 送信方法、デフォルトは "Text"、"Image"/"Voice"/"Video"/"File" など |
-| `at_sender` | bool | 送信者に@を付けるかどうか（user_id を自動的に抽出） |
-| `quote` | bool | 現在のメッセージを引用して返信するかどうか（message_id を自動的に抽出） |
-| `at_users` | list[str] | @するユーザーのリスト |
-| `reply_to` | str | 手動で指定する返信メッセージの ID |
+| `at_sender` | bool | 送信者に@を付けるかどうか（user_id を自動抽出） |
+| `quote` | bool | 現在のメッセージを引用して返信するかどうか（message_id を自動抽出） |
+| `at_users` | list[str] | @する特定のユーザーのリスト |
+| `reply_to` | str | 手動で返信するメッセージ ID |
 | `at_all` | bool | 全員に@するかどうか |
 
-### 交互メソッド
+### インタラクティブメソッド
 
 ```python
 # confirm — 確認対話（True/False/None を返す）
 if await event.confirm("この操作を実行してもよろしいですか？"):
-    await event.reply("確認されました")
+    await event.reply("確認しました")
 
-# Text 以外の方法で確認の提示を送信
+# Text 以外の方法で確認メッセージを送信
 if await event.confirm("http://example.com/image.jpg", method="Image"):
     await event.reply("画像の確認が完了しました")
 
 # choose — 選択メニュー（選択肢のインデックスまたは None を返す）
 choice = await event.choose("色を選択してください：", ["赤", "緑", "青"])
 
-# options_format="auto"（デフォルト）method に応じてスタイルを自動選択：
-# Markdown→箇条書き（- 1.選択肢）、Html→順序付きリスト（<ol>）、その他→純粋なテキストリスト
-# テキスト系の方法（Markdown/Html など）はデフォルトで選択肢を末尾に結合
-# merge_prompt=True で任意の method に強制的に結合；placeholder で占位符をカスタマイズ
+# options_format="auto"（デフォルト）は method に応じてスタイルを自動選択：
+# Markdown→無序リスト（- 1.選択肢）、Html→順序リスト（<ol>）、それ以外→純粋なテキストリスト
+# テキスト系メソッド（Markdown/Html など）はデフォルトで選択肢を末尾に結合
+# merge_prompt=True は任意の method で強制的に結合する
 choice = await event.choose(
     "## 選択してください\n{options}", ["A", "B"],
     method="Markdown", merge_prompt=True,
 )
 
-# collect — フォーム収集（{key: value} 辞書または None を返す）
+# collect — フォーム収集（{key: value} の辞書または None を返す）
 data = await event.collect([
     {"key": "name", "prompt": "名前を入力してください："},
     {"key": "age", "prompt": "年齢を入力してください：",
@@ -466,17 +467,17 @@ data = await event.collect([
 # wait_for — 条件を満たす任意のイベントを待つ
 evt = await event.wait_for(event_type="notice", condition=lambda e: ..., timeout=120)
 
-# conversation — 複数ラウンド対話コンテキスト
+# conversation — 複数回の対話コンテキスト
 conv = event.conversation(timeout=60)
 await conv.say("ようこそ！")
 ```
 
-> 完全な交互メソッドのパラメータ説明とより多くの例は [Event ラッパークラスの詳細](../developer-guide/modules/event-wrapper.md) と [Conversation 複数ラウンド対話](../advanced/conversation.md) を参照してください。
+> 完全なインタラクティブメソッドのパラメータ説明とその他の例は [Event 包装クラスの詳細](../developer-guide/modules/event-wrapper.md) と [Conversation 複数回対話](../advanced/conversation.md) を参照してください。
 
 ### ユーティリティメソッド
 
 ```python
-# _ で始まる内部キーをフィルタリングして辞書に変換
+# すべての内部キー（_ で始まる）をフィルタリングして辞書に変換
 event_dict = event.to_dict()
 
 # 元のデータを取得
@@ -486,28 +487,28 @@ raw_type = event.get_raw_type()
 
 ### リンク制御
 
-`event.done(claim=, stop=)` は「認領」および「ブロック」の2つの正交的な意味を統一的に制御します：
+`event.done(claim=, stop=)` は「認定」および「ブロック」の2つの正交的な意味を統一的に制御します：
 
-- **認領（claim）**：イベントが処理されたことをマーク（`_processed`）、コマンドディスパッチャーはこれに基づいて重複処理をスキップ
-- **ブロック（stop）**：低優先度のハンドラへのイベント伝播を阻止（`_propagation_stopped`）
+- **認定 (claim)**：イベントが処理済みであることをマーク（_processed）し、コマンドディスパッチャーは重複処理を避けるためにそれをスキップします。
+- **ブロック (stop)**：イベントが低優先度のハンドラに伝播しないようにします（_propagation_stopped）。
 
 ```python
-# 認領 + ブロック（デフォルト）
+# 認定 + ブロック（デフォルト）
 event.done()
 
-# 認領のみ、ブロックしない（低優先度の観測者はまだイベントを見ることができます）
+# 認定のみ、ブロックしない（低優先度の観測者はまだイベントを見ることができます）
 event.done(stop=False)
 
-# ブロックのみ、認領しない（例：ファイアウォール / 限流）
+# 認定しない、ブロックのみ（ファイアウォール / 限流など）
 event.done(claim=False)
 
-# mark_processed が主メソッドで、done はその別名
-event.mark_processed()             # 等価 event.done()
-event.mark_processed(stop=False)   # 等価 event.done(stop=False)
+# mark_processed が主メソッドで、done はそのエイリアスです
+event.mark_processed()             # event.done() と同等
+event.mark_processed(stop=False)   # event.done(stop=False) と同等
 
 # 状態を照会
-event.is_processed()  # 既に認領されているか
-event.is_stopped()    # 伝播がブロックされているか
+event.is_processed()  # イベントが認定されているか
+event.is_stopped()    # イベントの伝播がブロックされているか
 ```
 
 ### プラットフォーム拡張メソッド
@@ -536,7 +537,7 @@ async def handle_message(event):
 ```python
 from ErisPulse.Core.Event import get_platform_event_methods
 
-# 特定のプラットフォームで登録されたメソッドを照会
+# 特定のプラットフォームに登録されたメソッドを確認
 methods = get_platform_event_methods("email")
 # ["get_subject", "get_from", "get_attachments", ...]
 
@@ -546,9 +547,9 @@ for method_name in get_platform_event_methods(event.get_platform()):
     print(f"{method_name}: {method()}")
 ```
 
-#### プラットフォームメソッドの隔離
+#### プラットフォームメソッドの分離
 
-異なるプラットフォームで登録されたメソッドは互いに干渉しません：
+異なるプラットフォームに登録されたメソッドは互いに干渉しません：
 
 ```python
 # メールイベント - メール固有のメソッドのみ
@@ -562,18 +563,18 @@ event.get_chat_type()    # ✅ "private"
 event.get_subject()      # ❌ AttributeError
 ```
 
-#### `hasattr` / `dir` のサポート
+#### hasattr / dir のサポート
 
 ```python
-hasattr(event, "get_subject")   # platform="email" のみで True を返す
+hasattr(event, "get_subject")   # platform が "email" の場合にのみ True を返す
 "get_subject" in dir(event)     # 同上
 ```
 
 #### アダプタ：プラットフォーム拡張メソッドの登録
 
-アダプタはデコレータを使って Event にプラットフォーム固有のメソッドを登録でき、メソッドの最初の引数は `self`（Event インスタンス）で、イベントデータに自由にアクセスできます。
+アダプタはデコレータを使って Event にプラットフォーム固有のメソッドを登録できます。メソッドの最初のパラメータは self（Event インスタンス）で、イベントデータに自由にアクセスできます。
 
-#### 単一メソッドの登録
+##### 単一メソッドの登録
 
 ```python
 from ErisPulse.Core.Event import register_event_method
@@ -589,9 +590,9 @@ def get_from(self):
     return self.get("email_raw", {}).get("from", {})
 ```
 
-#### バッチ登録（Mixin クラス）
+##### マルチメソッド登録（Mixin クラス）
 
-メソッドが多い場合は、Mixin クラスを使ってバッチ登録することを推奨します：
+メソッドが多い場合は、Mixin クラスを使って一括登録することを推奨します：
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin
@@ -606,36 +607,36 @@ class EmailEventMixin:
     def get_attachments(self):
         return self.get("email_raw", {}).get("attachments", [])
 
-# 一度にすべてのメソッドを登録
+# 一括でメソッドを登録
 register_event_mixin("email", EmailEventMixin)
 ```
 
-#### 戻り値の規則
+##### 戻り値の規則
 
-| 情景 | 戻り値 | ユーザーの使用方法 |
+| 場面 | 戻り値 | ユーザーの使用方法 |
 |------|--------|------------|
-| データを返す（テキスト、辞書など） | 直接戻り値を返す | `subject = event.get_subject()` |
-| 操作を実行する（メッセージ送信など） | `asyncio.Task` を返す | `task = event.do_something()` は `await` が選択可能 |
+| データを返す（テキスト、辞書など） | 戻り値を直接返す | `subject = event.get_subject()` |
+| 操作を実行する（メッセージ送信など） | `asyncio.Task` を返す | `task = event.do_something()` は `await` が可能 |
 
-> **推奨**：データを返さないメソッドは `asyncio.Task` を返すようにし、ユーザーが `await` を選択できるようにします。`await` しなくても操作は完了します。
+> **推奨**：データ以外のメソッドは `asyncio.Task` を返すようにし、ユーザーが `await` するかどうかを自由に選択できるようにします。`await` しなくても操作は完了します。
 
 ```python
 @register_event_method("email")
 def forward_email(self, to_address: str):
-    """メール転送 — Task を返す、ユーザーは `await` を選択可能"""
+    """メールを転送 — Task を返すので、ユーザーは await するかどうかを自由に選択できる"""
     import asyncio
     return asyncio.create_task(
         self._do_forward(to_address)
     )
 
-# ユーザーは `await` して結果を待つこともできます
+# ユーザーは await して結果を待つこともできる
 await event.forward_email("user@example.com")
 
-# または `await` しないで、バックグラウンドで実行することもできます
+# または await しなくても、バックグラウンドで実行される
 event.forward_email("user@example.com")
 ```
 
-#### メソッドの解除登録
+##### メソッドの解除登録
 
 ```python
 from ErisPulse.Core.Event import unregister_event_method, unregister_platform_event_methods
@@ -643,25 +644,25 @@ from ErisPulse.Core.Event import unregister_event_method, unregister_platform_ev
 # 単一メソッドの解除登録
 unregister_event_method("email", "get_subject")
 
-# 特定のプラットフォームのすべてのメソッドを解除登録（アダプタのシャットダウン時に呼び出す）
+# 特定プラットフォームのすべてのメソッドを解除登録（アダプタのシャットダウン時に呼び出す）
 unregister_platform_event_methods("email")
 ```
 
-#### 内部メソッドの上書き
+##### 内部メソッドの上書き
 
-`register_event_mixin` / `register_event_method` は Event 内部メソッド（`confirm`、`choose`、`collect`、`wait_reply`、`reply` など）を上書きすることをサポートします。登録されたプラットフォームメソッドは `Event.__getattribute__` によって内部メソッドよりも優先して有効になるため、アダプタはプラットフォーム特有のインタラクティブ実装を提供できます。
+`register_event_mixin` / `register_event_method` は Event の内部メソッド（`confirm`、`choose`、`collect`、`wait_reply`、`reply` など）を上書きすることもできます。登録されたプラットフォームメソッドは `Event.__getattribute__` により内部メソッドよりも優先され、アダプタはプラットフォーム特有のインタラクティブな実装を提供できます。
 
-内部実装は `_builtin_*` 関数としてエクスポートされ、上書きする側はそれらをバックアップとして呼び出すことができます。
+内部実装は `_builtin_*` 関数としてエクスポートされ、上書きする側はそれらをバックアップとして呼び出すことができます：
 
 ```python
 from ErisPulse.Core.Event import register_event_mixin, _builtin_choose
 
 class YunhuEventMixin:
     async def choose(self, prompt, options, timeout=60, method="Text"):
-        # 雲湖プラットフォームはボタンコンポーネントを使用
+        # 雲湖プラットフォームではボタンコンポーネントを使用
         buttons = [[{"text": opt} for opt in options]]
         await self.reply(prompt)
-        # ...ボタンのコールバックまたはテキストの返信を待つ...
+        # ...ボタンのコールバックまたはテキスト返信を待つ...
         # 内部ロジックに回帰
         return await _builtin_choose(self, None, options, timeout, "Text")
 
@@ -670,7 +671,7 @@ register_event_mixin("yunhu", YunhuEventMixin)
 
 ## 跨プラットフォーム拡張（ワイルドカード）
 
-`register_event_method` と `register_event_mixin` は `"*"` をプラットフォーム名として渡すことができ、登録されたメソッドは**すべてのプラットフォーム**の Event インスタンスで利用可能です。AI チャット、コンテキスト管理など、プラットフォーム間で再利用可能な機能モジュールに適しています。
+`register_event_method` および `register_event_mixin` は `"*"` をプラットフォーム名として渡すことができ、登録されたメソッドは**すべてのプラットフォーム**の Event インスタンスで利用可能です。AI対話、コンテキスト管理など、プラットフォーム間で再利用可能な機能モジュールに適しています。
 
 ### 跨プラットフォームメソッドの登録
 
@@ -679,7 +680,7 @@ from ErisPulse.Core.Event.wrapper import register_event_method
 
 @register_event_method("*")
 async def ai_chat(self, prompt: str):
-    """self は Event インスタンスで、イベントデータと内部メソッドに自由にアクセス可能"""
+    """self は Event インスタンスで、イベントデータや内部メソッドに自由にアクセスできる"""
     await self.reply(f"AI: {prompt}")
 ```
 
@@ -702,19 +703,19 @@ Event メソッドを属性アクセスで取得する際の優先順位は以�
 3. **内部メソッド**（`reply`、`confirm` など）
 4. **辞書キーのアクセス**
 
-> したがって、ワイルドカードメソッドは内部メソッド（`reply` など）を上書きできますが、同名のプラットフォーム固有のメソッドによってさらに上書きされます。
+> したがって、ワイルドカードメソッドは内部メソッド（`reply` など）を上書きできますが、同名のプラットフォーム固有メソッドによりさらに上書きされます。
 
-## 優先度システム
+## 优先度システム
 
-イベントハンドラは優先度をサポートし、数値が大きいほど優先度が高くなります：
+イベントハンドラは优先度をサポートし、数値が大きいほど优先度が高くなります：
 
 ```python
-# 高優先度のハンドラが先に実行されます
+# 高优先度ハンドラが先に実行される
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     pass
 
-# 低優先度のハンドラが後に実行されます
+# 低优先度ハンドラが後に実行される
 @message.on_message(priority=0)
 async def low_priority_handler(event):
     pass
@@ -724,4 +725,4 @@ async def low_priority_handler(event):
 
 - [コアモジュール API](core-modules.md) - コアモジュール API
 - [アダプタシステム API](adapter-system.md) - Adapter 管理 API
-- [モジュール開発ガイド](../developer-guide/modules/) - 自作モジュールの開発ガイド
+- [モジュール開発ガイド](../developer-guide/modules/) - 自作モジュールの開発
