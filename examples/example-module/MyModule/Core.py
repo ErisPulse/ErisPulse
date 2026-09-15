@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 
 from ErisPulse import SDK
+from ErisPulse.Core import Depends
 from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, I18nKey, ModuleMeta
 from ErisPulse.Core.Event import Event, command, message, notice
 from ErisPulse.runtime import off_cleanup, on_cleanup
@@ -256,6 +257,35 @@ class Main(BaseModule):
                 await event.reply(i18n.t("MyModule.greeting", name=name))
             else:
                 await event.reply(i18n.t("MyModule.timeout_hint"))
+
+        # 声明式参数与选项（推荐写法）：args= 声明位置参数、options= 声明选项，
+        # 框架自动完成类型转换并按名注入处理器参数；用户输入错误时框架自动
+        # 回复本地化提示与用法（/help 也会自动展示参数用法），无需手写解析。
+        # 类型支持 str / int / float / bool / literal(枚举) / duration(时长) / rest(剩余文本)
+        @command(
+            "roll",
+            args="<count:int> [sides:int=6]",
+            options={"verbose": "-v/--verbose", "label": "--label"},
+            help="掷骰子示例",
+        )
+        async def roll_command(event: Event, count: int, sides: int = 6, verbose: bool = False, label: str = ""):
+            import random
+
+            total = sum(random.randint(1, sides) for _ in range(count))
+            prefix = f"[{label}] " if label else ""
+            detail = f"（详细模式：{count} 次 {sides} 面骰）" if verbose else ""
+            await event.reply(f"{prefix}掷了 {count} 次 {sides} 面骰，总点数：{total}{detail}")
+
+        # 依赖注入（推荐写法）：公共依赖抽为函数，处理器以 Depends(...) 声明，
+        # 框架在调用前自动以上下文对象调用依赖函数并按名注入。
+        # 可用于命令 / 事件处理器 / 生命周期钩子 / SSE 路由全部注入点
+        async def get_user_name(event: Event):
+            return event.get_user_name() or event.get_user_id()
+
+        @command("greet", args="[name:str]", help="问候示例（依赖注入）")
+        async def greet_command(event: Event, name: str = "", user_name=Depends(get_user_name)):
+            target = name or user_name
+            await event.reply(f"你好，{target}！")
 
     async def _register_message_handlers(self):
         """注册消息和通知处理器"""

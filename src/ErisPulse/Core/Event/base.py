@@ -25,6 +25,7 @@ from ..constants import (
     HANDLER_SLOW_THRESHOLD_SECS,
     UNKNOWN_PLATFORM,
 )
+from ..di import extract_depends, resolve_depends
 from ..i18n import i18n
 from ..lifecycle import lifecycle
 from .wrapper import Event
@@ -41,7 +42,14 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
     :param event: 事件对象
     """
     handler = handler_info["func"]
-    _hname = getattr(handler, "__qualname__", getattr(handler, "__name__", str(handler)))
+    # 处理器名 + 定义位置标注（模块:行号）：模块作者自定的方法名（如
+    # Main._handle_message）不带位置时易与框架内部函数混淆，看不出归属
+    from ...runtime.diagnostics import handler_source_loc
+
+    _hname = (
+        getattr(handler, "__qualname__", getattr(handler, "__name__", str(handler)))
+        + handler_source_loc(handler)
+    )
     _owner = handler_info.get("owner") or current_owner.get()
 
     # 切换到本 handler 的局部 wait 记录器。
@@ -51,14 +59,52 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
     _wait_token = handler_waits.set(_local_waits)
 
     _t = _time.monotonic()
+    # 执行前归属（看门狗消息用）：注册 owner > 分发期上下文。
+    # 命令 owner 在 handler 执行中才写入事件（如命令分发器），结束统计另行归因
+    _pre_owner = handler_info.get("owner") or current_owner.get()
+    _owner_tag_pre = f" owner={_pre_owner}" if _pre_owner else " owner=<unknown>"
+
+    # 看门狗：处理器执行中超过阈值时采样其协程栈，直接定位业务代码的等待点
+    # （结束统计只有总耗时；等 AI / HTTP / 卡死时用户需要知道"停在哪个文件哪一行"）。
+    # 采样目标是外层分发 Task（current_task），其协程栈覆盖本函数与业务 handler；
+    # call_later 定时器比新建 Task 轻，handler 正常快速完成时仅付出一次 cancel
+    from ...runtime.diagnostics import deepest_user_frame
+
+    _dispatch_task = asyncio.current_task()
+    _watchdog_handle = None
+    if _dispatch_task is not None:
+
+        def _slow_watchdog() -> None:
+            # 处理器仍在执行（未 done）→ 协程栈正挂在 await 点上，采样即所得
+            if _dispatch_task.done():
+                return
+            logger.warning(
+                i18n.t(
+                    "core.event.handler_still_running",
+                    handler=_hname,
+                    threshold=HANDLER_SLOW_THRESHOLD_SECS,
+                    loc=deepest_user_frame(_dispatch_task) or "<unknown>",
+                    owner=_owner_tag_pre,
+                )
+            )
+
+        _watchdog_handle = asyncio.get_running_loop().call_later(
+            HANDLER_SLOW_THRESHOLD_SECS, _slow_watchdog
+        )
+
     # 注入 owner 上下文：handler 执行期间 current_owner = 模块 owner，
     # 使其内部发起的出站调用（Send / Api / Request）能被作用域权限识别与按 owner 清理
     _owner_token = current_owner.set(_owner) if _owner else None
     try:
+        # 依赖注入解析（Depends）：上下文为 Event；依赖异常走本函数统一错误路径
+        _depends = handler_info.get("depends")
         if inspect.iscoroutinefunction(handler):
-            await handler(event)
+            if _depends:
+                await handler(event, **await resolve_depends(_depends, event))
+            else:
+                await handler(event)
         else:
-            handler(event)
+            handler(event, **(await resolve_depends(_depends, event)) if _depends else {})
     except Exception as e:
         # 单行错误 + 用户代码帧定位（不刷屏：不输出完整堆栈，仅指向出错位置）
         _loc = ""
@@ -88,6 +134,8 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
         )
         return
     finally:
+        if _watchdog_handle is not None:
+            _watchdog_handle.cancel()
         if _owner_token is not None:
             current_owner.reset(_owner_token)
         _elapsed = _time.monotonic() - _t
@@ -98,16 +146,19 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
     _wait_total = sum(w.get("duration", 0.0) for w in _local_waits)
     _pure = max(0.0, _elapsed - _wait_total)
 
-    # 归属信息（同时附加到日志，便于排查具体业务模块）。
+    # 归属信息（结束后计算：同时附加到日志，便于排查具体业务模块）。
     # 优先级：注册 owner > 实际执行的命令所属模块 > 分发期平台上下文。
     # 命令分发类处理器自身无注册 owner，但其内部实际执行了某模块的命令时
-    # （含懒加载模块经 activate_on 占位命令首令激活），归因到该命令所属
-    # 模块——耗时主体是它，不应显示为 <unknown> 或平台名
+    # （含懒加载模块经 activate_on 占位命令首令激活，命令 owner 在执行中
+    # 写入事件），归因到该命令所属模块——耗时主体是它，不应显示为
+    # <unknown> 或平台名；同时附上命令名，结束统计直接给出"哪个命令慢"
     _warn_owner = handler_info.get("owner")
     if not _warn_owner and isinstance(event, dict):
         _warn_owner = (event.get("command") or {}).get("owner")
     _warn_owner = _warn_owner or _owner
     _owner_tag = f" owner={_warn_owner}" if _warn_owner else " owner=<unknown>"
+    _cmd_name = (event.get("command") or {}).get("name") if isinstance(event, dict) else None
+    _cmd_tag = f" [command={_cmd_name}]" if _cmd_name else ""
 
     if _local_waits:
         # 该 handler 调用过 wait_reply —— 在白名单内：
@@ -123,6 +174,7 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
                     pure=f"{_pure:.4f}",
                     waits=_wait_keys,
                     owner=_owner_tag,
+                    cmd=_cmd_tag,
                 )
             )
         else:
@@ -134,10 +186,13 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
                     wait=f"{_wait_total:.4f}",
                     pure=f"{_pure:.4f}",
                     owner=_owner_tag,
+                    cmd=_cmd_tag,
                 )
             )
     elif _elapsed > HANDLER_SLOW_THRESHOLD_SECS:
-        logger.warning(i18n.t("core.event.slow_handler", handler=_hname, elapsed=f"{_elapsed:.4f}", owner=_owner_tag))
+        logger.warning(
+            i18n.t("core.event.slow_handler", handler=_hname, elapsed=f"{_elapsed:.4f}", owner=_owner_tag, cmd=_cmd_tag)
+        )
 
 
 class BaseEventHandler:
@@ -192,6 +247,7 @@ class BaseEventHandler:
             "module": self.module_name,
             "owner": current_owner.get(),
             "scope_exempt": scope_exempt,
+            "depends": extract_depends(handler),
         }
         self.handlers.append(handler_info)
         self._handler_map[id(handler)] = handler_info

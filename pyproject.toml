@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ErisPulse"
-version = "2.8.6"
+version = "2.9.0-dev.0"
 description = "Event-driven modular async bot framework — write once, deploy to any platform | 事件驱动的模块化异步机器人框架，一次编写，多平台部署"
 readme = "README.pypi.md"
 requires-python = ">=3.10"
@@ -168,6 +168,7 @@ ignore = [
     "RUF003",  # ambiguous-unicode-character-comment
 
     # 框架/异步代码风格性规则（强行修会破坏 API 或语义）
+    "B008",     # function-call-in-default-argument —— 依赖注入（Depends）声明的标准形态，DI 框架惯例豁免
     "PLC0415",  # import-outside-top-level —— 异步框架中 lazy import 是常用且必要的模式
     "PLR0911",  # too-many-return-statements
     "PLR0912",  # too-many-branches

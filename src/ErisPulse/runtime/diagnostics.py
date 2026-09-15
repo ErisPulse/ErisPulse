@@ -13,6 +13,7 @@ ErisPulse 异常诊断模块
 """
 
 import linecache
+import sys
 import traceback
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,7 @@ from typing import Any
 from .hints import best_match
 
 _FRAMEWORK_ROOT: Path | None = None
+_STDLIB_ROOT: Path | None = None
 
 
 def _get_framework_root() -> Path:
@@ -62,6 +64,37 @@ def _is_framework_frame(filename: str) -> bool:
         return root in fpath.parents or fpath == root
     except Exception:
         return False
+
+
+def _is_stdlib_frame(filename: str) -> bool:
+    """
+    判断给定文件是否属于 Python 标准库
+
+    {!--< internal-use >!--}
+    用于协程等待链采样时跳过 asyncio 等标准库帧（如 ``sleep``），直接
+    定位业务代码的等待点。venv 环境下 ``sys.base_prefix`` 指向真实
+    Python 安装目录，site-packages（第三方库）不在其中、不受影响。
+    """
+    global _STDLIB_ROOT
+    try:
+        if _STDLIB_ROOT is None:
+            _STDLIB_ROOT = Path(sys.base_prefix).resolve()
+        if Path() == _STDLIB_ROOT:
+            return False
+        return _STDLIB_ROOT in Path(filename).resolve().parents
+    except Exception:
+        return False
+
+
+def _is_internal_frame(filename: str) -> bool:
+    """
+    判断给定文件是否为框架或标准库内部帧（非业务代码）
+
+    {!--< internal-use >!--}
+    框架帧与标准库帧统一视为非业务帧；协程等待链采样时两者都跳过。
+    第三方库（site-packages）不在此列——卡在第三方库内部同样具有定位价值。
+    """
+    return _is_framework_frame(filename) or _is_stdlib_frame(filename)
 
 
 def _short_filename(filename: str) -> str:
@@ -319,8 +352,101 @@ def log_diagnostic(
         logger.error(block)
 
 
+def handler_source_loc(handler: Any) -> str:
+    """
+    生成事件处理器的定义位置标注（慢日志归因用）
+
+    返回形如 ``" (module.path:123)"`` 的标注串，拼接在处理器名后，
+    让 ``Main._handle_message`` 这类自定方法名能一眼定位到定义文件。
+    对 ``functools.wraps`` 包装的处理器自动经 ``__wrapped__`` 下钻到原始
+    函数取位置（包装函数的 ``__module__`` 被复制自原函数而 ``__code__``
+    是框架内包装定义处，直接取会错配）；对绑定方法取底层函数。
+    无源码信息（内置函数 / partial 等）时返回空串。
+
+    :param handler: 事件处理器（函数 / 绑定方法 / wraps 包装函数）
+    :return: 位置标注串（含前导空格；无源码信息时为空串）
+
+    :example:
+    >>> handler_source_loc(my_handler)
+    ' (my_module.views:42)'
+    """
+    try:
+        fn = getattr(handler, "__func__", handler)  # 绑定方法取底层函数
+        fn = getattr(fn, "__wrapped__", fn)  # wraps 包装下钻到原始函数
+        code = getattr(fn, "__code__", None)
+        module = getattr(fn, "__module__", "") or ""
+        if code is not None and module:
+            return f" ({module}:{code.co_firstlineno})"
+    except Exception:
+        pass
+    return ""
+
+
+def _coro_await_frames(coro: Any, max_depth: int = 64) -> list:
+    """
+    沿协程 ``cr_await`` 等待链收集帧（从最外层到最深挂起点）
+
+    {!--< internal-use >!--}
+    ``Task.get_stack()`` 只返回协程根帧的 ``f_back`` 调用链——协程 ``await``
+    另一个协程时不产生调用栈关系，内层帧拿不到；等待链须沿 ``cr_await``
+    逐级下钻（即 asyncio 调试输出挂起位置的同一机制）。
+
+    :param coro: 协程对象（Task 的根协程）
+    :param max_depth: 最大下钻深度（防循环引用兜底）
+    :return: 帧列表（frames[0] 最外层，末位为最深挂起帧）
+    """
+    frames: list = []
+    seen: set[int] = set()
+    current = coro
+    while current is not None and max_depth > 0:
+        key = id(current)
+        if key in seen:
+            break
+        seen.add(key)
+        max_depth -= 1
+        frame = getattr(current, "cr_frame", None)
+        if frame is not None:
+            frames.append(frame)
+        current = getattr(current, "cr_await", None)
+    return frames
+
+
+def deepest_user_frame(task: Any) -> str:
+    """
+    抓取运行中 Task 协程等待链最深的用户代码帧（慢执行定位）
+
+    事件处理器执行超过阈值时，结束统计只能给出总耗时；本函数在执行中
+    沿 Task 根协程的 ``cr_await`` 等待链下钻，返回最靠近挂起点（await 处）
+    的非框架帧描述，直接定位业务代码的等待位置——无论等待的是 AI /
+    HTTP 还是任何第三方库。Task 未在等待（CPU 密集 / 已结束 / 无用户帧）
+    时返回空串。
+
+    :param task: 运行中的 asyncio.Task
+    :return: 形如 ``"my_module/client.py:88 in chat"`` 的描述串；无法采样时为空串
+
+    :example:
+    >>> deepest_user_frame(asyncio.current_task())
+    'QvQChat/AIEngine/client.py:88 in chat'
+    """
+    try:
+        frames = _coro_await_frames(task.get_coro())
+    except Exception:
+        return ""
+    for frame in reversed(frames):
+        code = frame.f_code
+        try:
+            if _is_internal_frame(code.co_filename):
+                continue
+            return f"{_short_filename(code.co_filename)}:{frame.f_lineno} in {code.co_name}"
+        except Exception:
+            continue  # 单帧格式化失败跳过，继续尝试更外层帧
+    return ""
+
+
 __all__ = [
+    "deepest_user_frame",
     "extract_user_frame",
     "format_diagnostic_block",
+    "handler_source_loc",
     "log_diagnostic",
 ]

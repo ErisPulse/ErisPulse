@@ -136,6 +136,88 @@ async def echo_handler(event):
 参数保留用户输入的原始大小写（即使配置为大小写不敏感，
 命令名匹配归一也不会影响参数内容）。
 
+### 声明式参数与选项（args= / options=）
+
+手动解析参数需要自己处理类型转换与错误提示。声明 `args=` / `options=` 后，
+框架在权限检查通过后自动解析命令参数并**按名注入处理器**；用户输入错误时
+自动回复本地化提示与用法（不会抛异常崩溃），`/help <命令>` 也会自动展示用法：
+
+```python
+@command(
+    "roll",
+    args="<count:int> [sides:int=6]",
+    options={"verbose": "-v/--verbose", "label": "--label"},
+    help="掷骰子",
+)
+async def roll_handler(event, count: int, sides: int = 6, verbose: bool = False, label: str = ""):
+    total = sum(random.randint(1, sides) for _ in range(count))
+    await event.reply(f"掷了 {count} 次 {sides} 面骰，总点数：{total}")
+```
+
+`args=` 位置参数语法：`<count:int>` 必填、`[sides:int=6]` 可选（含默认值）。支持类型：
+
+| 类型 | 示例输入 | 说明 |
+|------|---------|------|
+| `str` | `hello` | 文本（缺省类型） |
+| `int` / `float` | `3` / `0.5` | 数值 |
+| `bool` | `是` / `yes` / `はい` / `да` / `true` / `no` / `取消` | 布尔值，复用交互确认（`Event.confirm()`）的确认词表 |
+| `literal` | `<mode:literal=fast|slow>` | 枚举，仅接受列出的值；可选形式默认取首个 |
+| `duration` | `90s`、`1h30m`、`1d` | 时长，按秒折算为 float |
+| `rest` | `<text:rest>` | 剩余全部文本（必须位于最后） |
+
+`options=` 选项为字典式声明：键为处理器参数名，值为旗标形式（多个别名以 `/` 分隔）。
+注解为 `bool` 的参数是布尔旗标（出现即 `True`）；其余（缺省按 `str`）是带值选项，
+支持 `--label hello` 与 `--label=hello` 两种取值，类型跟随处理器注解。
+选项先被识别剔除，剩余 token 再按 `args=` 解析（`rest` 覆盖剔除选项后的剩余文本）。
+
+**行为要点**：
+
+- 权限检查先于参数解析——无权限用户不会触发解析
+- 解析失败（类型不符 / 缺少参数 / 参数过多 / 未知选项）自动回复本地化错误 + 用法，命令仍被认领
+- 声明的参数名必须存在于处理器签名中，否则注册期抛 `ValueError`
+- 不声明 `args=` / `options=` 的命令行为完全不变（向后兼容）
+
+### 依赖注入（Depends）
+
+公共依赖（数据库会话、配置读取等）可抽为依赖函数，处理器以
+`Depends(依赖函数)` 作为参数默认值声明，框架在调用前自动以上下文对象
+调用依赖函数并按名注入：
+
+```python
+from ErisPulse.Core import Depends
+
+async def get_session(event):
+    return await sdk.module.call("DB", "get_session")
+
+@command("admin")
+async def admin_handler(event, db=Depends(get_session)):
+    ...
+```
+
+覆盖全部框架注入点——命令处理器、事件处理器（`message.on_message()` 等）、
+生命周期钩子（`sdk.lifecycle.on`）、SSE 路由处理器。依赖函数的第一个参数
+是注入点上下文对象（事件场景为 `Event`，生命周期为事件 `data`，
+路由为 `HttpRequest` / `SseEmitter`）；同步与异步依赖函数均可声明。
+
+**声明其它模块的服务**（语法糖）：
+
+```python
+@command("query")
+async def query_handler(event, session=Depends.module("DB", "get_session")):
+    ...
+```
+
+`Depends.module(模块名, 方法名, *固定参数)` 等价于在依赖函数内调用
+`sdk.module.call(...)`。模块实例化（`__init__`）不在覆盖范围——实例化时无
+上下文对象；FastAPI 承载的 HTTP 路由请用 FastAPI 原生 `fastapi.Depends`。
+
+**行为要点**：
+
+- 声明在注册期校验（fail-fast）：依赖不可调用、或与 `args=` / `options=` 参数重名时抛 `ValueError`
+- 依赖函数抛出的异常与处理器自身异常同口径处理（命令自动回复错误）
+- 不声明 `Depends` 的处理器零开销（分发期无任何反射）
+- FastAPI 承载的 HTTP 路由请使用 FastAPI 原生 `fastapi.Depends`
+
 ### 命令组
 
 ```python

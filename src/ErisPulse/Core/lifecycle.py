@@ -32,6 +32,7 @@ from .constants import (
     EVENT_STORAGE_UNREACHABLE,
     HANDLER_SLOW_THRESHOLD_SECS,
 )
+from .di import call_with_depends_sync, extract_depends, resolve_depends
 from .i18n import i18n
 
 
@@ -104,6 +105,7 @@ class LifecycleManager:
             "stop",
             "stopped",
             "event.receive",
+            "event.blocked",
             "event.dispatched",
             "bot.online",
             "bot.offline",
@@ -126,8 +128,8 @@ class LifecycleManager:
     }
 
     def __init__(self):
-        # _hooks 存储 (priority, handler, owner) 三元组
-        self._hooks: dict[str, list[tuple[int, Callable, str | None]]] = {}
+        # _hooks 存储 (priority, handler, owner, depends) 四元组（depends: Depends 依赖声明）
+        self._hooks: dict[str, list[tuple[int, Callable, str | None, dict]]] = {}
         self._timers: dict[str, float] = {}
 
     # ==================== 注册 API ====================
@@ -156,7 +158,7 @@ class LifecycleManager:
 
         def decorator(func: Callable) -> Callable:
             owner = current_owner.get()
-            self._hooks.setdefault(event, []).append((priority, func, owner))
+            self._hooks.setdefault(event, []).append((priority, func, owner, extract_depends(func)))
             self._hooks[event].sort(key=lambda x: x[0], reverse=True)
             return func
 
@@ -176,7 +178,7 @@ class LifecycleManager:
         if not isinstance(event, str) or not event:
             raise ValueError(i18n.t("core.lifecycle.event_name_required"))
         owner = current_owner.get()
-        self._hooks.setdefault(event, []).append((priority, handler, owner))
+        self._hooks.setdefault(event, []).append((priority, handler, owner, extract_depends(handler)))
         self._hooks[event].sort(key=lambda x: x[0], reverse=True)
 
     def once(self, event: str, *, priority: int = 0) -> Callable:
@@ -255,7 +257,7 @@ class LifecycleManager:
             self._hooks.pop(event, None)
         else:
             handlers = self._hooks.get(event, [])
-            self._hooks[event] = [(p, h, o) for p, h, o in handlers if h != handler]
+            self._hooks[event] = [(p, h, o, d) for p, h, o, d in handlers if h != handler]
 
     def unregister_by_owner(self, owner: str) -> int:
         """
@@ -273,7 +275,7 @@ class LifecycleManager:
         for event in list(self._hooks.keys()):
             original_len = len(self._hooks[event])
             self._hooks[event] = [
-                (p, h, o) for p, h, o in self._hooks[event] if o != owner
+                (p, h, o, d) for p, h, o, d in self._hooks[event] if o != owner
             ]
             removed += original_len - len(self._hooks[event])
             if not self._hooks[event]:
@@ -292,7 +294,7 @@ class LifecycleManager:
         """
         counts: dict[str, int] = {}
         for handlers in self._hooks.values():
-            for (_priority, _handler, owner) in handlers:
+            for (_priority, _handler, owner, _depends) in handlers:
                 if owner:
                     counts[owner] = counts.get(owner, 0) + 1
         return counts
@@ -340,7 +342,7 @@ class LifecycleManager:
             keys = [event] + [".".join(parts[:i]) for i in range(len(parts) - 1, 0, -1)]
             for key in keys:
                 handlers = self._hooks.get(key)
-                if handlers and any(o == to for (_p, _h, o) in handlers):
+                if handlers and any(o == to for (_p, _h, o, _d) in handlers):
                     data = await self._execute_handlers(key, event, data, owner_filter=to)
             return data
 
@@ -397,7 +399,7 @@ class LifecycleManager:
             keys = [event] + [".".join(parts[:i]) for i in range(len(parts) - 1, 0, -1)]
             for key in keys:
                 handlers = self._hooks.get(key)
-                if handlers and any(o == to for (_p, _h, o) in handlers):
+                if handlers and any(o == to for (_p, _h, o, _d) in handlers):
                     data = self._execute_handlers_sync(key, event, data, owner_filter=to)
             return data
 
@@ -560,14 +562,14 @@ class LifecycleManager:
         :return: Any 处理器链处理结果
         """
         selected = [
-            (priority, handler, h_owner)
-            for priority, handler, h_owner in self._hooks[hook_name]
+            (priority, handler, h_owner, depends)
+            for priority, handler, h_owner, depends in self._hooks[hook_name]
             if owner_filter is None or h_owner == owner_filter
         ]
         if not selected:
             return data
 
-        async def _run_one(handler: Callable, priority: int) -> Any:
+        async def _run_one(handler: Callable, priority: int, depends: dict) -> Any:
             hname = getattr(
                 handler, "__qualname__", getattr(handler, "__name__", str(handler))
             )
@@ -576,10 +578,15 @@ class LifecycleManager:
                     i18n.t("core.lifecycle.handler_exec", handler=hname, priority=priority, event=event)
                 )
                 _t = time.monotonic()
-                if inspect.iscoroutinefunction(handler):
-                    result = await handler(data)
+                # 依赖注入解析（Depends）：上下文为事件数据 data
+                if depends:
+                    call_kwargs = await resolve_depends(depends, data)
                 else:
-                    result = handler(data)
+                    call_kwargs = {}
+                if inspect.iscoroutinefunction(handler):
+                    result = await handler(data, **call_kwargs)
+                else:
+                    result = handler(data, **call_kwargs)
                 _elapsed = time.monotonic() - _t
                 if _elapsed > HANDLER_SLOW_THRESHOLD_SECS:
                     _get_logger().warning(
@@ -593,7 +600,7 @@ class LifecycleManager:
                 return None
 
         results = await asyncio.gather(
-            *(_run_one(handler, priority) for priority, handler, _ in selected)
+            *(_run_one(handler, priority, depends) for priority, handler, _, depends in selected)
         )
         for result in results:
             if result is not None:
@@ -612,18 +619,22 @@ class LifecycleManager:
         :param owner_filter: str 仅执行该拥有者注册的处理器（定向传播，None 不限）
         :return: Any 处理后的数据
         """
-        for _, handler, _owner in self._hooks[hook_name]:
+        for _, handler, _owner, depends in self._hooks[hook_name]:
             if owner_filter is not None and _owner != owner_filter:
                 continue
             try:
+                call_kwargs = call_with_depends_sync(handler, data) if depends else {}
                 if inspect.iscoroutinefunction(handler):
                     from ..runtime.tasks import spawn_background
 
-                    spawn_background(handler(data))
+                    spawn_background(handler(data, **call_kwargs))
                 else:
-                    result = handler(data)
+                    result = handler(data, **call_kwargs)
                     if result is not None:
                         data = result
+            except TypeError as e:
+                # 同步上下文不支持异步依赖：记日志并跳过
+                _get_logger().error(str(e))
             except Exception as e:
                 _get_logger().error(
                     i18n.t("core.lifecycle.handler_error", event=event, error=e)

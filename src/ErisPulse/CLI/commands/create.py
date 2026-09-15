@@ -219,6 +219,8 @@ class Main(BaseModule):
         # 跨命令的用户黑白名单用覆写系统 ACL
         # （ErisPulse.event.overrides.acl 或 overrides.acl.set(name, allow/deny)，命令名支持 glob）；
         # 模块级可用性 / 事件准入 / 出站限制由作用域 scope 管理（用户可控）
+        # 命令支持声明式参数与选项（args= / options=）：框架自动解析并按名注入处理器参数，
+        # 用户输入错误自动回复本地化提示与用法（类型：str/int/float/bool/literal/duration/rest）
         @command(\"hello\", help=i18n.t(\"module.{name}.command.hello.help\"))
         async def hello_command(event: Event):
             await event.reply(i18n.t(\"module.{name}.command.hello.reply\"))
