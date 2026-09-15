@@ -74,6 +74,47 @@
 
 ---
 
+## [2.9.0-dev.0] - 2026/09/15
+> 开发版
+
+**版本摘要**
+本版本开启 2.9「模块开发体验」主线（EPRFC-2026-001）：命令系统支持声明式参数与选项（`args=` / `options=`），框架自动完成类型转换与按名注入，输入错误自动回复本地化提示与用法；统一依赖注入（`Depends`）覆盖命令 / 事件 / 生命周期 / SSE 路由全部注入点；中间件获得事件否决权（显式返回 `False` 即在事件层面丢弃，配套 `adapter.event.blocked` 钩子审计）。均为新增能力，现有模块无需任何改动。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 升级原因：纯新增能力（命令不写 `args=` / `options=` / `Depends`、中间件不返回 `False` 即原行为），无需适配成本
+
+**注意事项**
+- `args=` 声明语法：`<count:int>` 必填、`[sides:int=6]` 可选；类型支持 `str` / `int` / `float` / `bool` / `literal`（枚举）/ `duration`（如 `90s`、`1h30m`）/ `rest`（剩余全部文本）
+- `options=` 为字典式声明：`bool` 注解的参数为布尔旗标（`-v/--verbose`），其余为带值选项（`--label hello` 或 `--label=hello`），类型跟随处理器注解；选项先于位置参数解析
+- 权限检查先于参数解析（无权限用户不会触发解析）；解析失败时命令仍被认领（不漏给低优先级消息处理器）
+- 声明参数名必须存在于处理器签名中，否则注册期抛 `ValueError`（fail-fast）
+- 中间件只有显式返回 `False` 才否决事件；返回空字典 / `0` 等 falsy 值不否决（保持历史行为）
+- 依赖注入声明（`Depends`）与 `args=` / `options=` 参数重名时注册期抛 `ValueError`；生命周期钩子的同步执行路径（`emit_sync`）不支持异步依赖（记错误日志并跳过）；FastAPI 承载的 HTTP 路由使用 FastAPI 原生 `fastapi.Depends`
+
+### 新增
+
+- @YingXinche
+  - `Core/Event/command` 命令装饰器新增 `args=` / `options=` 声明式参数与选项：框架在权限检查通过后自动解析命令参数并按名注入处理器（`@command("roll", args="<count:int> [sides:int=6]")` → `async def roll(event, count, sides=6)`），支持 str / int / float / bool / literal（枚举）/ duration（时长）/ rest（剩余文本）七种类型；未声明时行为完全不变（向后兼容）
+  - `Core/Event/command_args` 新增声明解析引擎：注册期解析 `args=` / `options=` 声明（语法错误、处理器签名不匹配直接抛 ValueError）；分发期选项先剔除、剩余 token 按声明解析为处理器关键字参数
+  - `Core/Event/command` 用户输入错误（类型不符 / 缺少参数 / 参数过多 / 未知选项 / 选项缺值）自动回复本地化错误提示与用法（i18n 五语言），不抛异常崩溃；`command.executed` 生命周期钩子标记 `success=False`
+  - `Core/Event/command` `/help <命令>` 在未声明 `usage=` 时按 `args=` / `options=` 自动生成用法串（如 `/roll <count> [sides=6] [-v, --verbose]`）；显式声明的 `usage=` 优先
+  - `Core/constants` 确认词表（`CONFIRM_YES_WORDS` / `CONFIRM_NO_WORDS`）扩充常用词并新增 `COMMAND_ARG_DURATION_UNITS`（duration 单位 → 秒权重）；命令参数 `bool` 类型直接复用确认词表（zh/en/ja/ru，与 `Event.confirm()` 同一判定口径与维护来源），不再单独维护 token 集合
+  - `Core/adapter` 中间件事件否决权：中间件显式返回 `False` 时事件被丢弃（不进入任何处理器、无任何出站副作用），返回 dict / None 行为不变（现有中间件零影响）；否决时输出 TRACE 日志并触发 `adapter.event.blocked` 生命周期钩子（携带中间件名与完整事件），防火墙 / 限流场景不再需要高优先级事件处理器绕行实现
+  - `Core/constants` 新增 `EVENT_ADAPTER_EVENT_BLOCKED`（`adapter.event.blocked`）事件名常量并登记 `LifecycleManager.STANDARD_EVENTS`
+  - `Core/di` 统一依赖注入：处理器参数以 `db=Depends(get_session)` 声明依赖，框架在调用前自动以上下文对象（Event / 生命周期 data / 路由 HttpRequest、SseEmitter）调用依赖函数并按名注入；覆盖命令处理器、事件处理器（全部事件类型）、生命周期钩子、SSE 路由四个注入点与模块 `on_load` / `on_unload`，同步与异步依赖均可声明；声明在注册期校验（fail-fast），不声明时零开销（分发期无反射）；导出命名空间 `ErisPulse.di` 与 `ErisPulse.Core.Depends`
+  - `Core/di` 依赖声明语法糖：`Depends.module("DB", "get_session", ...)` 声明其它模块的服务（支持固定参数透传，等价于依赖函数内调用 `sdk.module.call(...)`）
+  - `Core/Event/command` `args=` / `options=` 声明与 `Depends` 参数重名时注册期抛 `ValueError`（fail-fast）
+
+### 修复
+
+- @YingXinche
+  - `Core/adapter` 修复慢事件日志指向错误：框架桥接分发层（`BaseEventHandler._process_event` 挂载到适配器总线的整体耗时）超阈值时以框架函数名发 WARNING，用户无法据此定位真正的慢处理器（现降级为 TRACE——慢的根因由内层 EventHandler 告警，消除重复与误导）
+  - `Core/Event/base` 慢事件日志重构为三层业务定位，Event 分发链路只透传不再出现在告警中：① 执行中看门狗——处理器超阈值仍未完成时采样其协程等待链，直接报告"当前停在哪个文件哪一行"（如 `当前位于 QvQChat/AIEngine/client.py:88 in chat`，无论等待的是 AI / HTTP 还是任何第三方库，且卡死处理器此前完全无告警、现同样触发）；② 结束统计——处理器名附带定义位置标注（入口 `Main._handle_message (QvQChat/Main.py:123)`）、命令分发场景附上 `[command=roll]` 标明具体慢命令、总耗时与 owner 归属；③ 标准库帧（asyncio sleep 等）自动跳过，直达业务等待点
+  - `runtime/diagnostics` 新增 `handler_source_loc`（处理器定义位置标注）与 `deepest_user_frame`（协程等待链采样，沿 `cr_await` 下钻 + framework/stdlib 帧过滤）两个定位工具
+
+---
+
 ## [2.8.2-dev.0] - 2026/09/14
 > 开发版
 

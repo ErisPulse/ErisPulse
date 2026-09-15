@@ -574,7 +574,7 @@ class TestLifecycleOwnerTracking:
 
         # 验证 owner 被正确标记
         assert len(manager._hooks["test.event"]) == 1
-        priority, func, owner = manager._hooks["test.event"][0]
+        priority, func, owner, depends = manager._hooks["test.event"][0]
         assert owner == "TestModule"
 
     def test_register_without_owner(self, manager):
@@ -585,7 +585,7 @@ class TestLifecycleOwnerTracking:
 
         manager.register("test.event", handler)
 
-        priority, func, owner = manager._hooks["test.event"][0]
+        priority, func, owner, depends = manager._hooks["test.event"][0]
         assert owner is None
 
     def test_unregister_by_owner(self, manager):

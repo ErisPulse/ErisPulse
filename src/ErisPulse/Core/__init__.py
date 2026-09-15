@@ -53,6 +53,7 @@ from .router import router, RouterManager, RouteGroup
 from .config import config, ConfigManager
 from .i18n import i18n, I18nManager
 from .master import master, MasterManager, MasterProvider
+from .di import Depends
 from .scope import scope, ScopeManager
 from .text_match import compile_entry_matcher, compile_text_matcher, extract_text
 from .transcript import transcript, TranscriptManager
@@ -86,6 +87,7 @@ __all__ = [
     "ClientTimeoutError",  # HTTP 超时错误基类
     "ClientWebSocket",  # WebSocket 客户端类
     "ConfigManager",  # 配置管理器类
+    "Depends",  # 依赖注入声明标记
     "ErisPulseError",  # ErisPulse 错误基类
     "Event",  # 事件模块包
     "HTTPStatusError",  # HTTP 状态错误基类
