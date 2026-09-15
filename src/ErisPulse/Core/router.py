@@ -61,6 +61,7 @@ from .constants import (
     WS_CLOSE_INTERNAL_ERROR,
     WS_CLOSE_POLICY_VIOLATION,
 )
+from .di import extract_depends, resolve_depends
 from .i18n import i18n
 from .lifecycle import lifecycle
 from .logger import logger
@@ -655,6 +656,9 @@ class RouterManager:
             elif first.name in _REQUEST_LIKE_NAMES:
                 wants_request = True
 
+        # 依赖注入声明（Depends）：注册期提取，上下文为处理器第一参（HttpRequest / SseEmitter）
+        _depends = extract_depends(handler)
+
         async def wrapper(request: Request):
             queue: asyncio.Queue = asyncio.Queue()
             is_closed = False
@@ -671,10 +675,13 @@ class RouterManager:
 
             if wants_request:
                 sse = SseEmitter(on_send=on_send, on_close=on_close, request=request)
-                handler_task = asyncio.create_task(handler(HttpRequest(request), sse))
+                http_request = HttpRequest(request)
+                dep_kwargs = await resolve_depends(_depends, http_request)
+                handler_task = asyncio.create_task(handler(http_request, sse, **dep_kwargs))
             else:
                 sse = SseEmitter(on_send=on_send, on_close=on_close, request=request)
-                handler_task = asyncio.create_task(handler(sse))
+                dep_kwargs = await resolve_depends(_depends, sse)
+                handler_task = asyncio.create_task(handler(sse, **dep_kwargs))
 
             async def generator():
                 yield ":ok\n\n"

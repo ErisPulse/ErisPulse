@@ -74,6 +74,47 @@
 
 ---
 
+## [2.9.0-dev.0] - 2026/09/15
+> 开发版
+
+**版本摘要**
+本版本开启 2.9「模块开发体验」主线（EPRFC-2026-001）：命令系统支持声明式参数与选项（`args=` / `options=`），框架自动完成类型转换与按名注入，输入错误自动回复本地化提示与用法；统一依赖注入（`Depends`）覆盖命令 / 事件 / 生命周期 / SSE 路由全部注入点；中间件获得事件否决权（显式返回 `False` 即在事件层面丢弃，配套 `adapter.event.blocked` 钩子审计）；声明式配置支持环境变量绑定（`metadata={"env": ...}`，Docker / CI 免改配置文件）。均为新增能力，现有模块无需任何改动。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 升级原因：纯新增能力（命令不写 `args=` / `options=` / `Depends`、中间件不返回 `False` 即原行为），无需适配成本
+
+**注意事项**
+- `args=` 声明语法：`<count:int>` 必填、`[sides:int=6]` 可选；类型支持 `str` / `int` / `float` / `bool` / `literal`（枚举）/ `duration`（如 `90s`、`1h30m`）/ `rest`（剩余全部文本）
+- `options=` 为字典式声明：`bool` 注解的参数为布尔旗标（`-v/--verbose`），其余为带值选项（`--label hello` 或 `--label=hello`），类型跟随处理器注解；选项先于位置参数解析
+- 权限检查先于参数解析（无权限用户不会触发解析）；解析失败时命令仍被认领（不漏给低优先级消息处理器）
+- 声明参数名必须存在于处理器签名中，否则注册期抛 `ValueError`（fail-fast）
+- 中间件只有显式返回 `False` 才否决事件；返回空字典 / `0` 等 falsy 值不否决（保持历史行为）
+- 依赖注入声明（`Depends`）与 `args=` / `options=` 参数重名时注册期抛 `ValueError`；生命周期钩子的同步执行路径（`emit_sync`）不支持异步依赖（记错误日志并跳过）；FastAPI 承载的 HTTP 路由使用 FastAPI 原生 `fastapi.Depends`
+
+### 新增
+
+- @YingXinche
+  - `Core/Event/command` 命令装饰器新增 `args=` / `options=` 声明式参数与选项：框架在权限检查通过后自动解析命令参数并按名注入处理器（`@command("roll", args="<count:int> [sides:int=6]")` → `async def roll(event, count, sides=6)`），支持 str / int / float / bool / literal（枚举）/ duration（时长）/ rest（剩余文本）七种类型；未声明时行为完全不变（向后兼容）
+  - `Core/Event/command_args` 新增声明解析引擎：注册期解析 `args=` / `options=` 声明（语法错误、处理器签名不匹配直接抛 ValueError）；分发期选项先剔除、剩余 token 按声明解析为处理器关键字参数
+  - `Core/Event/command` 用户输入错误（类型不符 / 缺少参数 / 参数过多 / 未知选项 / 选项缺值）自动回复本地化错误提示与用法（i18n 五语言），不抛异常崩溃；`command.executed` 生命周期钩子标记 `success=False`
+  - `Core/Event/command` `/help <命令>` 在未声明 `usage=` 时按 `args=` / `options=` 自动生成用法串（如 `/roll <count> [sides=6] [-v, --verbose]`）；显式声明的 `usage=` 优先
+  - `Core/constants` 确认词表（`CONFIRM_YES_WORDS` / `CONFIRM_NO_WORDS`）扩充常用词并新增 `COMMAND_ARG_DURATION_UNITS`（duration 单位 → 秒权重）；命令参数 `bool` 类型直接复用确认词表（zh/en/ja/ru，与 `Event.confirm()` 同一判定口径与维护来源），不再单独维护 token 集合
+  - `Core/adapter` 中间件事件否决权：中间件显式返回 `False` 时事件被丢弃（不进入任何处理器、无任何出站副作用），返回 dict / None 行为不变（现有中间件零影响）；否决时输出 TRACE 日志并触发 `adapter.event.blocked` 生命周期钩子（携带中间件名与完整事件），防火墙 / 限流场景不再需要高优先级事件处理器绕行实现
+  - `Core/constants` 新增 `EVENT_ADAPTER_EVENT_BLOCKED`（`adapter.event.blocked`）事件名常量并登记 `LifecycleManager.STANDARD_EVENTS`
+  - `Core/di` 统一依赖注入：处理器参数以 `db=Depends(get_session)` 声明依赖，框架在调用前自动以上下文对象（Event / 生命周期 data / 路由 HttpRequest、SseEmitter）调用依赖函数并按名注入；覆盖命令处理器、事件处理器（全部事件类型）、生命周期钩子、SSE 路由四个注入点与模块 `on_load` / `on_unload`，同步与异步依赖均可声明；声明在注册期校验（fail-fast），不声明时零开销（分发期无反射）；导出 `ErisPulse.Core.Depends`
+  - `Core/di` 依赖声明语法糖：`Depends.module("DB", "get_session", ...)` 声明其它模块的服务（支持固定参数透传，等价于依赖函数内调用 `sdk.module.call(...)`）
+  - `Core/Bases/model` 内置数据模型层（ORM）阶段一（EPRFC-2026-001 方向四）：继承 `Model` 并以 `Field` 声明字段即得自动建表与 Active Record CRUD（`await User.create(name=..)` / `User.where(User.age > 18).all()` / save / delete / 批量操作）；SQLite / MySQL / PostgreSQL 由存储配置透明切换；与声明式配置类共享约束词表、校验器引擎（`validate_field_constraints`）与类型类别注册表（`python_type_category`），类基座分立互不影响；从 `ErisPulse.Core.Bases` 导入（`Model` / `Field`，含 `BaseModel` 别名，导入规则与 BaseConfig 一致）
+  - `Core/Bases/config_schema` 配置环境变量映射（EPRFC-2026-001 方向九）：声明式配置字段以 `field(metadata={"env": "MYMODULE_API_KEY"})` 绑定环境变量，优先级 环境变量 > config.toml > 声明默认值；值按字段注解自动转换（str/int/float/bool，list/dict 走 JSON），转换失败忽略覆盖并告警；读取、热更新、校验同一管道保证声明一处处处生效；配置面板 Schema 标注 env 名、config.toml 模板注释提示可用环境变量（不写入实际值防泄露）；未声明 env 的字段行为完全不变，Docker / CI 场景免改配置文件
+  - `Core/Event/command` `args=` / `options=` 声明与 `Depends` 参数重名时注册期抛 `ValueError`（fail-fast）
+
+### 修复
+
+- @YingXinche
+  - `Core/adapter` 修复慢事件日志指向错误：框架桥接分发层（`BaseEventHandler._process_event` 挂载到适配器总线的整体耗时）超阈值时以框架函数名发 WARNING，用户无法据此定位真正的慢处理器（现降级为 TRACE——慢的根因由内层 EventHandler 告警，消除重复与误导）
+  - `Core/Event/base` 慢事件日志重构为三层业务定位，Event 分发链路只透传不再出现在告警中：① 执行中看门狗——处理器超阈值仍未完成时采样其协程等待链，直接报告"当前停在哪个文件哪一行"（如 `当前位于 QvQChat/AIEngine/client.py:88 in chat`，无论等待的是 AI / HTTP 还是任何第三方库，且卡死处理器此前完全无告警、现同样触发）；② 结束统计——处理器名附带定义位置标注（入口 `Main._handle_message (QvQChat/Main.py:123)`）、命令分发场景附上 `[command=roll]` 标明具体慢命令、总耗时与 owner 归属；③ 标准库帧（asyncio sleep 等）自动跳过，直达业务等待点
+  - `runtime/diagnostics` 新增 `handler_source_loc`（处理器定义位置标注）与 `deepest_user_frame`（协程等待链采样，沿 `cr_await` 下钻 + framework/stdlib 帧过滤）两个定位工具
+
 ## [2.8.3] - 2026/09/18
 > 正式发布
 
@@ -95,7 +136,7 @@
 > 开发版
 
 **版本摘要**
-本版本为 2.8.x 系列的边界收束版：为 `wait_reply` 等待期间补全命令交互（命中已注册命令的消息放行命令分发器执行，等待继续挂起）、修复 `activate_on` 懒激活失败后彻底失联的问题（保留触发器并支持冷却重试），并收敛命令 ACL 双默认放行配置的叠加语义、补充对话检查点主动清理。
+本版本为 2.8.x 系列的边界收束版：为 `wait_reply` 等待期间补全命令交互（命中已注册命令的消息放行命令分发器执行，等待继续挂起）、修复 `activate_on` 懒激活失败后彻底失联的问题（保留触发器并支持冷却重试），并补充对话检查点主动清理。
 
 **升级建议**
 - **是否建议升级**：建议升级
@@ -111,6 +152,7 @@
   - `Core/Event/wrapper` `wait_reply()` 新增 `cmdpass` 参数（三态：None=跟随全局配置 / True=跳过命令匹配 / False=强制命令放行）：等待期间命中已注册命令的消息放行给命令分发器执行，等待继续挂起——补全交互式对话缺失的命令交互（此前等待吞掉一切文本，`/cancel` 这类取消命令永远无法命中）
   - `runtime/frame_config` 新增配置 `ErisPulse.event.wait_reply.cmdpass`（默认 `false` 不跳过）；`Core/Event/command` 新增内部判定 `_is_command_text()`（前缀 + 命令名/别名匹配口径与命令执行一致）
   - `Core/Event/wrapper` 对话检查点主动清理：新增周期任务（`CONVERSATION_CHECKPOINT_GC_INTERVAL_SECS`，默认 1h，首条消息惰性启动）枚举过期存档并删除——补全"仅在 resume 时惰性清理"的缺口，长期未恢复的存档不再永久驻留存储
+  - `runtime/tasks` Owner 感知 Task Factory（`install_owner_task_factory`，随框架启动自动安装）：事件循环级任务工厂——`owner_scope` 上下文内**任何** `asyncio.create_task`（含第三方库内部创建）自动登记归属，模块卸载 / 适配器关闭时随归属兜底取消；无归属（框架自身）任务行为不变；`run_in_executor` 与独立事件循环不在此列
 
 ### 修复
 

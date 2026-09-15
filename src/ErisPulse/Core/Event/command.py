@@ -15,6 +15,7 @@ ErisPulse 命令处理模块
 2. 支持命令权限控制（master / permission 函数 / 覆写系统 ACL）
 3. 支持命令帮助系统
 4. 支持等待用户回复交互
+5. 支持声明式参数与选项（``args=`` / ``options=``）：自动类型转换、本地化错误提示与 usage 生成
 {!--< /tips >!--}
 """
 
@@ -42,9 +43,17 @@ from ..constants import (
     DETAIL_TYPE_USER,
     UNKNOWN_PLATFORM,
 )
+from ..di import extract_depends, resolve_depends
 from ..i18n import i18n
 from . import overrides
 from .base import BaseEventHandler
+from .command_args import (
+    CommandArgsError,
+    bind_command_arguments,
+    format_usage,
+    parse_args_spec,
+    parse_options_spec,
+)
 from .interaction import InteractionCancelled, interaction
 from .session_type import get_send_type_and_target_id, infer_receive_type
 
@@ -195,6 +204,8 @@ class CommandHandler:
         usage: str | None = None,
         hidden: bool = False,
         master: bool = False,
+        args: str | None = None,
+        options: dict | None = None,
     ):
         """
         命令装饰器
@@ -208,7 +219,24 @@ class CommandHandler:
         :param usage: 命令使用方法
         :param hidden: 是否在帮助中隐藏命令
         :param master: 是否仅允许框架主人执行（框架自动检查 ``master.is_master(event)``）
+        :param args: 声明式位置参数定义，如 ``"<count:int> [sides:int=6]"``。类型支持
+            ``str`` / ``int`` / ``float`` / ``bool`` / ``literal``（枚举，``<mode:literal=fast|slow>``）/
+            ``duration``（如 ``90s``、``1h30m``）/ ``rest``（剩余全部文本，须在最后）。
+            可选条目未声明默认值（``[name:type]``）时回填处理器签名同名参数的默认值。
+            声明后框架在权限检查通过后自动解析并按名注入处理器参数，用户输入错误时
+            自动回复本地化提示与用法（不会抛异常崩溃）；不声明则保持原行为
+        :param options: 声明式选项定义，如 ``{"verbose": "-v/--verbose", "label": "--label"}``。
+            键为处理器参数名，值为旗标形式（多个别名以 ``/`` 分隔）：注解为 ``bool`` 的参数
+            为布尔旗标；其余（缺省按 ``str``）为带值选项，支持 ``--label hello`` 与
+            ``--label=hello`` 取值，类型跟随处理器注解。选项先于位置参数解析——``rest``
+            覆盖剔除选项后的剩余文本。声明参数名必须存在于处理器签名中（否则注册期抛 ValueError）
         :return: 装饰器函数
+
+        :example:
+        >>> @command("roll", args="<count:int> [sides:int=6]",
+        ...          options={"verbose": "-v/--verbose", "label": "--label"})
+        ... async def roll(event, count: int, sides: int = 6, verbose: bool = False, label: str = ""):
+        ...     await event.reply(f"掷了 {count} 次 {sides} 面骰")
         """
 
         def decorator(func: Callable):
@@ -226,6 +254,38 @@ class CommandHandler:
                 cmd_names = [func.__name__]
 
             main_name = cmd_names[0]
+
+            # 声明式参数/选项（args= / options=）注册期解析与校验（fail-fast）：
+            # 语法错误或处理器签名不匹配直接抛 ValueError，避免到分发期才发现
+            args_spec = parse_args_spec(args) if args else None
+            options_spec = parse_options_spec(options, func) if options else None
+            declared = [entry.name for entry in (args_spec or [])] + list((options_spec or {}).keys())
+            # 依赖注入声明（Depends）：与 args=/options= 参数重名即注册期冲突（fail-fast）
+            depends = extract_depends(func)
+            if declared:
+                conflict = [n for n in declared if n in depends]
+                if conflict:
+                    raise ValueError(
+                        i18n.t(
+                            "core.command.args.depends_conflict",
+                            cmd=main_name,
+                            names=", ".join(conflict),
+                        )
+                    )
+            if declared:
+                sig_params = inspect.signature(func).parameters
+                accepted = set(sig_params)
+                if any(p.kind is inspect.Parameter.VAR_KEYWORD for p in sig_params.values()):
+                    accepted.add("*")
+                missing = [n for n in declared if n not in accepted]
+                if missing:
+                    raise ValueError(
+                        i18n.t(
+                            "core.command.args.param_mismatch",
+                            cmd=main_name,
+                            names=", ".join(missing),
+                        )
+                    )
 
             # 添加别名
             alias_list = aliases or []
@@ -268,6 +328,9 @@ class CommandHandler:
                     "must_master": master,
                     "main_name": main_name,
                     "owner": current_owner.get(),
+                    "args_spec": args_spec,
+                    "options_spec": options_spec,
+                    "depends": depends,
                 }
 
                 # 注册别名映射（name列表中的额外名称）
@@ -881,6 +944,47 @@ class CommandHandler:
                 },
             )
 
+            # 声明式参数/选项解析（args= / options=）：位于全部权限检查之后——
+            # 无权限用户不会触发解析；解析失败自动回复本地化错误与用法，
+            # 命令仍保持已认领状态（不漏给低优先级消息处理器）
+            kwargs: dict[str, Any] = {}
+            if _effective.get("args_spec") or _effective.get("options_spec"):
+                try:
+                    kwargs = bind_command_arguments(
+                        args, _effective.get("args_spec"), _effective.get("options_spec")
+                    )
+                except CommandArgsError as e:
+                    error_text = str(e)
+                    usage_line = i18n.t(
+                        "core.command.args.usage",
+                        usage=self._usage_line(actual_cmd_name, _effective),
+                    )
+                    logger.trace(
+                        i18n.t(
+                            "core.command.args_parse_failed",
+                            cmd_name=actual_cmd_name,
+                            error=error_text,
+                            platform=event.get("platform", UNKNOWN_PLATFORM),
+                            user_id=event.get("user_id", ""),
+                        )
+                    )
+                    await self._send_args_error(event, f"{error_text}\n{usage_line}")
+                    # 钩子: 命令执行失败（参数错误，后台发射）
+                    from ..lifecycle import lifecycle
+
+                    lifecycle.fire(
+                        "command.executed",
+                        {
+                            "command": actual_cmd_name,
+                            "args": args,
+                            "platform": event.get("platform", UNKNOWN_PLATFORM),
+                            "user_id": event.get("user_id", ""),
+                            "success": False,
+                            "error": error_text,
+                        },
+                    )
+                    return True
+
             try:
                 # 把注册时记录的 owner 注入上下文，让用户 handler 内部的
                 # wait_reply / 日志等能正确归因到具体业务模块。
@@ -896,10 +1000,15 @@ class CommandHandler:
                 cmd_owner = cmd_info.get("owner")
                 _owner_token = current_owner.set(cmd_owner) if cmd_owner else None
                 try:
+                    # 依赖注入解析（Depends）：上下文为 Event；依赖异常走统一错误路径
+                    _depends = _effective.get("depends")
+                    if _depends:
+                        dep_kwargs = await resolve_depends(_depends, event)
+                        kwargs = {**kwargs, **dep_kwargs}
                     if inspect.iscoroutinefunction(handler):
-                        await handler(event)
+                        await handler(event, **kwargs)
                     else:
-                        handler(event)
+                        handler(event, **kwargs)
                 finally:
                     if _owner_token is not None:
                         current_owner.reset(_owner_token)
@@ -1010,6 +1119,53 @@ class CommandHandler:
                 await send_dsl.Text(i18n.t("core.event.command.execution_failed", error=error))
         except Exception as e:
             logger.error(i18n.t("core.event.command.send_error_failed", error=e))
+
+    async def _send_args_error(self, event: dict[str, Any], text: str):
+        """
+        发送命令参数错误消息（args= / options= 解析失败时的本地化提示 + 用法）
+
+        {!--< internal-use >!--}
+        内部使用的方法
+
+        :param event: 事件数据
+        :param text: 已本地化的错误文本（含用法行）
+        """
+        try:
+            platform = event.get("platform")
+
+            # 使用会话类型管理模块获取发送类型和目标ID
+            send_type, target_id = get_send_type_and_target_id(event, platform)
+
+            if platform and hasattr(adapter, platform):
+                adapter_instance = getattr(adapter, platform)
+                bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
+                send_dsl = adapter_instance.Send.To(send_type, target_id)
+                if bot_id:
+                    send_dsl = send_dsl.Using(bot_id)
+                await send_dsl.Text(text)
+        except Exception as e:
+            logger.error(i18n.t("core.event.command.send_error_failed", error=e))
+
+    def _usage_line(self, cmd_name: str, effective: dict, display_prefix: str | None = None) -> str:
+        """
+        {!--< internal-use >!--}
+        计算命令的生效 usage 行（帮助展示与参数错误提示共用）
+
+        优先取开发者声明的 ``usage=``（含覆写）；未声明且注册了 ``args=`` /
+        ``options=`` 时按声明自动生成；否则回退 ``{前缀}{命令名}``。
+
+        :param cmd_name: 命令名
+        :param effective: 合并覆写后的命令生效参数
+        :param display_prefix: 显示用前缀（None 时取配置前缀首个）
+        :return: usage 字符串
+        """
+        usage = effective.get("usage")
+        if usage:
+            return usage
+        if display_prefix is None:
+            display_prefix = self.prefix[0] if isinstance(self.prefix, list) else self.prefix
+        tail = format_usage(effective.get("args_spec"), effective.get("options_spec"))
+        return f"{display_prefix}{cmd_name} {tail}".rstrip() if tail else f"{display_prefix}{cmd_name}"
 
     def bind_message_handler(self, handler: BaseEventHandler) -> None:
         """
@@ -1285,7 +1441,8 @@ class CommandHandler:
             effective = self.get_command(command_name, event=event)
             if effective:
                 help_text = effective.get("help", i18n.t("core.event.command.no_help"))
-                usage = effective.get("usage", f"{display_prefix}{command_name}")
+                # usage 优先取声明值；注册了 args=/options= 且未声明 usage 时自动生成
+                usage = self._usage_line(command_name, effective, display_prefix)
                 return i18n.t(
                     "core.event.command.help_command",
                     command_name=command_name,

@@ -835,14 +835,12 @@ class SDK:
                             instance = object.__getattribute__(attr_value, "_instance")
                             if hasattr(instance, "on_unload"):
                                 try:
-                                    import inspect
+                                    from .Core.di import call_with_depends
 
-                                    if inspect.iscoroutinefunction(instance.on_unload):
-                                        await instance.on_unload(
-                                            {"module_name": lm_name}
-                                        )
-                                    else:
-                                        instance.on_unload({"module_name": lm_name})
+                                    await call_with_depends(
+                                        instance.on_unload,
+                                        {"module_name": lm_name},
+                                    )
                                 except Exception as e:
                                     self.logger.warning(
                                         i18n.t(
