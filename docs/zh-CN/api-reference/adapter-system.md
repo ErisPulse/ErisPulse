@@ -81,6 +81,7 @@ async def my_middleware(event):
 - **执行顺序**：中间件按注册顺序执行（先注册先执行）
 - **数据传递**：每个中间件接收上一个中间件返回的 `event` 数据；如果某个中间件返回 `None`，则忽略该返回值并保留原数据继续传递（同时输出 `warning` 级别日志）
 - **修改数据**：中间件可以修改事件数据并返回修改后的字典
+- **事件否决**：中间件显式返回 `False` 时否决事件——事件被丢弃，不进入任何处理器、无任何出站副作用；否决时输出 TRACE 日志并触发 `adapter.event.blocked` 生命周期钩子（携带中间件名与完整事件）
 
 ```python
 @sdk.adapter.middleware
@@ -93,12 +94,13 @@ async def filter_spam(event):
     if event.get("detail_type") == "private":
         text = event.get("alt_message", "")
         if "垃圾广告" in text:
-            return None   # 返回 None 不会阻止事件传播，仅忽略此返回值
+            return False  # 否决：事件被丢弃，不进入任何处理器
     return event
 ```
 
-> **注意**：中间件目前不支持阻断事件传播。如需过滤特定事件，请在事件处理器中通过条件判断实现。
-> 但您可以在Event模块中设置搞优先级处理器然后在处理器内使用设定 `event.mark_processed()` 来阻断低优先级事件处理器
+> **注意**：只有显式返回 `False` 才否决事件（返回空字典 / `0` / `""` 等 falsy 值不否决）；
+> 返回 `None` 仍然是放行且载荷不变。否决后的事件可通过监听
+> `adapter.event.blocked` 钩子进行审计与排查"事件为什么没响应"。
 
 ## Send 消息发送
 

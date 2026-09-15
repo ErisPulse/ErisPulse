@@ -38,6 +38,7 @@ from .constants import (
     DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS,
     DEFAULT_HANDLER_MAX_CONCURRENCY,
     DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
+    EVENT_ADAPTER_EVENT_BLOCKED,
     HANDLER_SLOW_THRESHOLD_SECS,
     LOG_MESSAGE_TRUNCATE_CHARS,
 )
@@ -1640,13 +1641,23 @@ class AdapterManager(ManagerBase):
         注册期间若处于模块加载上下文（current_owner 已设置），自动记录归属，
         模块卸载时随处理器一并移除。
 
+        中间件在事件分发前顺序执行，返回契约：
+
+        - 返回 ``dict``：改写事件载荷（后续处理器收到改写后的事件）
+        - 返回 ``None``：放行，载荷不变（输出 WARNING 提示——建议显式 ``return data``）
+        - 返回 ``False``：**显式否决**——事件被丢弃，不进入任何处理器、
+          无任何出站副作用；否决时输出 TRACE 日志并触发
+          ``adapter.event.blocked`` 生命周期钩子（携带中间件名与完整事件）
+
         :param func: 中间件函数
         :return: 中间件函数
 
         :example:
         >>> @sdk.adapter.middleware
         >>> async def onebot_middleware(data):
-        >>>     print("处理OneBot12数据:", data)
+        >>>     if _is_banned(data):
+        >>>         return False  # 否决：事件被丢弃（防火墙 / 限流场景）
+        >>>     data["rate_marked"] = True
         >>>     return data
         """
         self._onebot_middlewares.append(func)
@@ -1928,9 +1939,36 @@ class AdapterManager(ManagerBase):
                     )
 
         # 先执行OneBot12中间件（中间件可以修改数据，必须顺序执行）
+        # 返回契约：dict = 改写事件载荷；None = 放行（载荷不变）；False = 显式否决
         processed_data = data
         for middleware in self._onebot_middlewares:
             result = await middleware(processed_data)
+            if result is False:
+                # 显式否决：事件被丢弃——不进入任何处理器，无任何出站副作用。
+                # 仅显式返回 False 才否决（返回 None / dict 行为不变，现有中间件零影响）；
+                # TRACE 日志 + adapter.event.blocked 钩子（携带中间件名）供排查"事件没响应"
+                mw_name = getattr(middleware, "__qualname__", repr(middleware))
+                logger.trace(
+                    i18n.t(
+                        "core.adapter.middleware_veto",
+                        name=mw_name,
+                        event_type=event_type,
+                        platform=platform,
+                        user_id=data.get("user_id", "") if isinstance(data, dict) else "",
+                    )
+                )
+                lifecycle.fire(
+                    EVENT_ADAPTER_EVENT_BLOCKED,
+                    {
+                        "middleware": mw_name,
+                        "platform": platform,
+                        "event_type": event_type,
+                        "detail_type": detail_type,
+                        "event": processed_data,
+                        "_trace_id": trace_id,
+                    },
+                )
+                return
             if result is not None:
                 processed_data = result
             else:
@@ -2143,6 +2181,17 @@ class AdapterManager(ManagerBase):
         :return: asyncio.Task
         """
         _func_name = getattr(func, "__qualname__", getattr(func, "__name__", str(func)))
+        # 慢日志归因补定义位置标注（模块:行号），模块作者自定的方法名不再与框架函数混淆
+        from ..runtime.diagnostics import handler_source_loc
+
+        _func_name = _func_name + handler_source_loc(func)
+        # 框架桥接处理器（BaseEventHandler._process_event 挂载到适配器总线）：
+        # 其 Task 耗时 ≈ 内部串行执行的各业务处理器耗时之和，慢的根因已由
+        # EventHandler._invoke_handler 按单个处理器精确告警（含 owner 与定义位置）；
+        # 此层再以框架函数名发 WARNING 只会指向错误位置，故降级为 TRACE 供深度排查。
+        # adapter.on() 会以 functools.wraps 包装处理器（丢失 __self__），须经 __wrapped__ 回溯
+        _origin_func = getattr(func, "__wrapped__", func)
+        _is_bridge = type(getattr(_origin_func, "__self__", None)).__name__ == "BaseEventHandler"
 
         # 在 Task 顶层准备 wait_reply 累加器（list 对象，可跨 ContextVar 共享）。
         # 注意：ContextVar 的 set()/reset() 必须在同一个 Task Context 内完成，
@@ -2186,17 +2235,30 @@ class AdapterManager(ManagerBase):
                 if _task_waits:
                     # 调用过 wait_reply：纯等待属于交互白名单
                     if _pure > HANDLER_SLOW_THRESHOLD_SECS:
-                        logger.warning(
-                            i18n.t(
-                                "core.adapter.handler_slow",
-                                handler=_func_name,
-                                elapsed=f"{elapsed:.2f}",
-                                threshold=HANDLER_SLOW_THRESHOLD_SECS,
-                                type=event_type,
-                                platform=platform,
-                                tag=_owner_tag,
+                        if _is_bridge:
+                            # 桥接层总分慢：单个处理器的慢已由内层精确告警，此处仅 TRACE
+                            logger.trace(
+                                i18n.t(
+                                    "core.adapter.handler_slow_bridge",
+                                    elapsed=f"{elapsed:.2f}",
+                                    threshold=HANDLER_SLOW_THRESHOLD_SECS,
+                                    type=event_type,
+                                    platform=platform,
+                                    tag=_owner_tag,
+                                )
                             )
-                        )
+                        else:
+                            logger.warning(
+                                i18n.t(
+                                    "core.adapter.handler_slow",
+                                    handler=_func_name,
+                                    elapsed=f"{elapsed:.2f}",
+                                    threshold=HANDLER_SLOW_THRESHOLD_SECS,
+                                    type=event_type,
+                                    platform=platform,
+                                    tag=_owner_tag,
+                                )
+                            )
                     else:
                         logger.trace(
                             i18n.t(
@@ -2211,17 +2273,30 @@ class AdapterManager(ManagerBase):
                             )
                         )
                 elif elapsed > HANDLER_SLOW_THRESHOLD_SECS:
-                    logger.warning(
-                        i18n.t(
-                            "core.adapter.handler_slow",
-                            handler=_func_name,
-                            elapsed=f"{elapsed:.2f}",
-                            threshold=HANDLER_SLOW_THRESHOLD_SECS,
-                            type=event_type,
-                            platform=platform,
-                            tag=_owner_tag,
+                    if _is_bridge:
+                        # 桥接层总分慢：单个处理器的慢已由内层精确告警，此处仅 TRACE
+                        logger.trace(
+                            i18n.t(
+                                "core.adapter.handler_slow_bridge",
+                                elapsed=f"{elapsed:.2f}",
+                                threshold=HANDLER_SLOW_THRESHOLD_SECS,
+                                type=event_type,
+                                platform=platform,
+                                tag=_owner_tag,
+                            )
                         )
-                    )
+                    else:
+                        logger.warning(
+                            i18n.t(
+                                "core.adapter.handler_slow",
+                                handler=_func_name,
+                                elapsed=f"{elapsed:.2f}",
+                                threshold=HANDLER_SLOW_THRESHOLD_SECS,
+                                type=event_type,
+                                platform=platform,
+                                tag=_owner_tag,
+                            )
+                        )
 
         try:
             task = asyncio.create_task(_safe_run())

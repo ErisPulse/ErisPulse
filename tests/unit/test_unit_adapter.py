@@ -493,6 +493,151 @@ class TestAdapterManager:
         assert handler_data[0]["middleware_added"] is True
 
 
+class TestMiddlewareVeto:
+    """中间件事件否决权（显式返回 False 丢弃事件；None / dict 语义不变）"""
+
+    @pytest.fixture
+    def manager(self):
+        """创建适配器管理器实例"""
+        manager = AdapterManager()
+        manager._adapters.clear()
+        manager._started_instances.clear()
+        manager._adapter_info.clear()
+        manager._onebot_handlers.clear()
+        manager._raw_handlers.clear()
+        manager._onebot_middlewares.clear()
+        return manager
+
+    @staticmethod
+    def _event():
+        return {
+            "id": "veto_1",
+            "type": "message",
+            "platform": "test",
+            "self": {"platform": "test", "user_id": "bot_123"},
+            "message": [],
+        }
+
+    @pytest.mark.asyncio
+    async def test_false_drops_event(self, manager):
+        """返回 False → 事件被丢弃，不进入任何处理器（含通配符）"""
+        middleware_seen, handler_seen = [], []
+
+        @manager.middleware
+        async def firewall(data):
+            middleware_seen.append(data)
+            return False
+
+        @manager.on("message")
+        async def handler(data):
+            handler_seen.append(data)
+
+        @manager.on("*")
+        async def wildcard(data):
+            handler_seen.append(("wildcard", data))
+
+        await manager.emit(self._event())
+        await asyncio.sleep(0.05)
+
+        assert len(middleware_seen) == 1
+        assert handler_seen == []
+
+    @pytest.mark.asyncio
+    async def test_veto_fires_blocked_hook(self, manager):
+        """否决触发 adapter.event.blocked 钩子（携带中间件名与完整事件）"""
+        blocked, handler_seen = [], []
+
+        async def on_blocked(data):
+            blocked.append(data)
+
+        lifecycle.register("adapter.event.blocked", on_blocked)
+        try:
+
+            @manager.middleware
+            async def firewall(data):
+                return False
+
+            @manager.on("message")
+            async def handler(data):
+                handler_seen.append(data)
+
+            await manager.emit(self._event())
+            await asyncio.sleep(0.05)
+        finally:
+            lifecycle.unregister("adapter.event.blocked", on_blocked)
+
+        assert handler_seen == []
+        assert len(blocked) == 1
+        assert blocked[0]["middleware"] == firewall.__qualname__
+        assert blocked[0]["event_type"] == "message"
+        assert blocked[0]["platform"] == "test"
+        assert blocked[0]["event"]["id"] == "veto_1"
+
+    @pytest.mark.asyncio
+    async def test_veto_stops_middleware_chain(self, manager):
+        """否决后链上后续中间件不再执行"""
+        later_seen, handler_seen = [], []
+
+        @manager.middleware
+        async def first(data):
+            return False
+
+        @manager.middleware
+        async def second(data):
+            later_seen.append(data)
+            return data
+
+        @manager.on("message")
+        async def handler(data):
+            handler_seen.append(data)
+
+        await manager.emit(self._event())
+        await asyncio.sleep(0.05)
+
+        assert later_seen == []
+        assert handler_seen == []
+
+    @pytest.mark.asyncio
+    async def test_none_keeps_payload_unchanged(self, manager):
+        """返回 None → 放行且载荷不变（现有语义）"""
+        handler_seen = []
+
+        @manager.middleware
+        async def passthrough(data):
+            return None
+
+        @manager.on("message")
+        async def handler(data):
+            handler_seen.append(data)
+
+        event = self._event()
+        event["marker"] = "keep"
+        await manager.emit(event)
+        await asyncio.sleep(0.05)
+
+        assert len(handler_seen) == 1
+        assert handler_seen[0]["marker"] == "keep"
+
+    @pytest.mark.asyncio
+    async def test_false_value_not_triggered_by_falsy_data(self, manager):
+        """只有显式 False 才否决：空 dict / 0 / "" 等 falsy 返回值不否决"""
+        handler_seen = []
+
+        @manager.middleware
+        async def returns_empty_dict(data):
+            return {}  # falsy 但不是 False → 按改写处理（替换为空 dict）
+
+        @manager.on("message")
+        async def handler(data):
+            handler_seen.append(data)
+
+        await manager.emit(self._event())
+        await asyncio.sleep(0.05)
+
+        assert len(handler_seen) == 1
+        assert handler_seen[0] == {}  # 空 dict 作为新载荷进入处理器（历史行为）
+
+
 class TestEventDedupe:
     """事件幂等去重（ErisPulse.framework.event_dedupe）"""
 

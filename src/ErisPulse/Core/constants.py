@@ -380,6 +380,12 @@ EVENT_CLIENT_REQUEST_FAILED: Final[str] = "client.request.failed"
 EVENT_CLIENT_WS_CONNECT: Final[str] = "client.ws.connect"
 EVENT_I18N_LANGUAGE_CHANGED: Final[str] = "i18n.language.changed"
 
+# 中间件事件否决钩子（2.9.0 新增）：中间件显式返回 False 丢弃事件时发射，
+# data 携带 middleware（中间件名）/ platform / event_type / detail_type / event（完整事件载荷）。
+# 使用位置: Core/adapter.py -> _emit_dispatch() 中间件链。
+# 修改影响: 事件名是对外契约，变更会静默破坏外部监听者——仍需同步文档（advanced/lifecycle.md）。
+EVENT_ADAPTER_EVENT_BLOCKED: Final[str] = "adapter.event.blocked"
+
 # 反初始化时等待事件处理完成的缓冲时间（秒）。
 # 修改影响: 设大确保异步事件处理完成，设小加速关闭流程。过小可能丢失事件。
 UNINIT_SETTLE_DELAY_SECS: Final[float] = 0.1
@@ -452,6 +458,11 @@ ACTIVATE_RETRY_COOLDOWN_SECS: Final[float] = 30.0
 # 是否忽略自身发送的消息。
 # 配置默认值。设为 False 会导致命令系统处理自己发出的消息（通常不期望）。
 DEFAULT_MESSAGE_IGNORE_SELF: Final[bool] = True
+
+# duration 类型支持的单位 → 秒权重（单位大小写不敏感；组合形式如 1h30m 逐段累加）。
+# 修改影响: <timeout:duration> / [timeout:duration=30s] 可解析的单位集合；
+#           命令治理（cooldown=，2.9 后续特性）声明复用同一时长语法，改动需同步评估。
+COMMAND_ARG_DURATION_UNITS: Final[dict] = {"s": 1.0, "m": 60.0, "h": 3600.0, "d": 86400.0}
 
 # ==============================================================================
 # 事件处理器默认值
@@ -659,28 +670,32 @@ CONVERSATION_KEY_PREFIX: Final[str] = "conversation"
 # ==============================================================================
 # 确认词汇集
 #
-# 用于 Event.confirm() 判断用户回复是"肯定"还是"否定"。
-# 使用位置: Core/Event/wrapper.py -> _builtin_confirm()
-# 修改影响: 用户用自然语言回复时的匹配结果。支持 zh/en/ja/ru 四种语言。
+# 用于 Event.confirm() 判断用户回复是"肯定"还是"否定"，以及命令参数
+# bool 类型（args= 声明）的取值判定。
+# 使用位置: Core/Event/wrapper.py -> _builtin_confirm()；Core/Event/command_args.py -> _bool_value()
+# 修改影响: 用户用自然语言回复时的匹配结果、/cmd <flag:bool> 的可接受输入。支持 zh/en/ja/ru 语言。
 # ==============================================================================
 
 CONFIRM_YES_WORDS: Final[frozenset] = frozenset(
     {
         # 中文
         "是",
+        "是的",
         "确认",
         "确定",
         "好",
         "好的",
+        "好呀",
         "对",
+        "真的",
         "嗯",
+        "嗯嗯",
         "行",
         "同意",
         "没问题",
         "可以",
         "当然",
-        "嗯嗯",
-        "是的",
+        "当然可以",
         # 英文
         "yes",
         "y",
@@ -688,6 +703,8 @@ CONFIRM_YES_WORDS: Final[frozenset] = frozenset(
         "okay",
         "true",
         "sure",
+        "fine",
+        "alright",
         "yeah",
         "yep",
         "confirm",
@@ -704,6 +721,7 @@ CONFIRM_YES_WORDS: Final[frozenset] = frozenset(
         "もちろんです",
         "そう",
         "そうです",
+        "うん",
         # 俄文
         "да",
         "конечно",
@@ -723,14 +741,16 @@ CONFIRM_NO_WORDS: Final[frozenset] = frozenset(
         "不",
         "不要",
         "不行",
+        "不用",
+        "不是",
+        "不是的",
+        "别",
         "错",
         "不对",
-        "别",
         "拒绝",
         "不可以",
         "算了",
         "不需要",
-        "不是",
         # 英文
         "no",
         "n",
@@ -738,6 +758,7 @@ CONFIRM_NO_WORDS: Final[frozenset] = frozenset(
         "false",
         "nope",
         "nah",
+        "stop",
         "decline",
         "declined",
         "disagree",
@@ -748,6 +769,7 @@ CONFIRM_NO_WORDS: Final[frozenset] = frozenset(
         "いいえ",
         "いや",
         "だめ",
+        "ううん",
         "無理",
         "却下",
         "不可",
@@ -1054,6 +1076,7 @@ __all__ = [
     "BOT_STATUS_OFFLINE",
     "BOT_STATUS_ONLINE",
     "CLEANUP_CALLBACK_TIMEOUT_SECS",
+    "COMMAND_ARG_DURATION_UNITS",
     "CONFIG_CACHE_TIMEOUT_SECS",
     "CONFIG_KEY_ADAPTER_STATUS",
     "CONFIG_KEY_ADAPTER_STATUS_OF",
@@ -1080,6 +1103,7 @@ __all__ = [
     "DEFAULT_CORS_METHODS",
     "DEFAULT_CORS_ORIGINS",
     "DEFAULT_EVENT_SOURCE",
+    "EVENT_ADAPTER_EVENT_BLOCKED",
     "EVENT_CLIENT_REQUEST_FAILED",
     "EVENT_CLIENT_REQUEST_SUCCESS",
     "EVENT_CLIENT_WS_CONNECT",

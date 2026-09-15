@@ -1,78 +1,51 @@
-# 更新日志
+## [2.9.0-dev.0] - 2026/09/15
+> 开发版
 
-所有版本更新遵循 [语义化版本控制](https://semver.org/lang/zh-CN/) 规范。
+**版本摘要**
+本版本开启 2.9「模块开发体验」主线（EPRFC-2026-001）：命令系统支持声明式参数与选项（`args=` / `options=`），框架自动完成类型转换与按名注入，输入错误自动回复本地化提示与用法；统一依赖注入（`Depends`）覆盖命令 / 事件 / 生命周期 / SSE 路由全部注入点；中间件获得事件否决权（显式返回 `False` 即在事件层面丢弃，配套 `adapter.event.blocked` 钩子审计）；声明式配置支持环境变量绑定（`metadata={"env": ...}`，Docker / CI 免改配置文件）；命令治理声明化（`cooldown=` / `rate_limit=` / `deprecated=`，方向七全量）、处理器节流（`throttle=`，方向八）、分发决策链追踪（`Core/Event/trace`，方向五——回答"命令为什么没触发"）。均为新增能力，现有模块无需任何改动。
 
-> **如何阅读本日志**
-> 每个版本分为不同类型的变更部分。建议开发者在升级前先阅读对应版本的 "移除" 和 "变更" 部分。
+**升级建议**
+- **是否建议升级**：建议升级
+- 升级原因：纯新增能力（命令不写 `args=` / `options=` / `Depends`、中间件不返回 `False` 即原行为），无需适配成本
 
-> **贡献日志**
-> 如需为新版本添加日志，请在对应版本号下补充内容，并注明日期和主要贡献者。若同一主题此前已有条目，请直接更新为最终形态，勿追加过程记录（详见下方「写作规范」）。
+**注意事项**
+- `args=` 声明语法：`<count:int>` 必填、`[sides:int=6]` 可选；类型支持 `str` / `int` / `float` / `bool` / `literal`（枚举）/ `duration`（如 `90s`、`1h30m`）/ `rest`（剩余全部文本）
+- `options=` 为字典式声明：`bool` 注解的参数为布尔旗标（`-v/--verbose`），其余为带值选项（`--label hello` 或 `--label=hello`），类型跟随处理器注解；选项先于位置参数解析
+- 权限检查先于参数解析（无权限用户不会触发解析）；解析失败时命令仍被认领（不漏给低优先级消息处理器）
+- 声明参数名必须存在于处理器签名中，否则注册期抛 `ValueError`（fail-fast）
+- 中间件只有显式返回 `False` 才否决事件；返回空字典 / `0` 等 falsy 值不否决（保持历史行为）
+- 依赖注入声明（`Depends`）与 `args=` / `options=` 参数重名时注册期抛 `ValueError`；生命周期钩子的同步执行路径（`emit_sync`）不支持异步依赖（记错误日志并跳过）；FastAPI 承载的 HTTP 路由使用 FastAPI 原生 `fastapi.Depends`
 
----
+### 新增
 
-## 规则
+- @YingXinche
+  - `Core/Event/command` 命令装饰器新增 `args=` / `options=` 声明式参数与选项：框架在权限检查通过后自动解析命令参数并按名注入处理器（`@command("roll", args="<count:int> [sides:int=6]")` → `async def roll(event, count, sides=6)`），支持 str / int / float / bool / literal（枚举）/ duration（时长）/ rest（剩余文本）七种类型；未声明时行为完全不变（向后兼容）
+  - `Core/Event/command_args` 新增声明解析引擎：注册期解析 `args=` / `options=` 声明（语法错误、处理器签名不匹配直接抛 ValueError）；分发期选项先剔除、剩余 token 按声明解析为处理器关键字参数
+  - `Core/Event/command` 用户输入错误（类型不符 / 缺少参数 / 参数过多 / 未知选项 / 选项缺值）自动回复本地化错误提示与用法（i18n 五语言），不抛异常崩溃；`command.executed` 生命周期钩子标记 `success=False`
+  - `Core/Event/command` `/help <命令>` 在未声明 `usage=` 时按 `args=` / `options=` 自动生成用法串（如 `/roll <count> [sides=6] [-v, --verbose]`）；显式声明的 `usage=` 优先
+  - `Core/constants` 确认词表（`CONFIRM_YES_WORDS` / `CONFIRM_NO_WORDS`）扩充常用词并新增 `COMMAND_ARG_DURATION_UNITS`（duration 单位 → 秒权重）；命令参数 `bool` 类型直接复用确认词表（zh/en/ja/ru，与 `Event.confirm()` 同一判定口径与维护来源），不再单独维护 token 集合
+  - `Core/adapter` 中间件事件否决权：中间件显式返回 `False` 时事件被丢弃（不进入任何处理器、无任何出站副作用），返回 dict / None 行为不变（现有中间件零影响）；否决时输出 TRACE 日志并触发 `adapter.event.blocked` 生命周期钩子（携带中间件名与完整事件），防火墙 / 限流场景不再需要高优先级事件处理器绕行实现
+  - `Core/constants` 新增 `EVENT_ADAPTER_EVENT_BLOCKED`（`adapter.event.blocked`）事件名常量并登记 `LifecycleManager.STANDARD_EVENTS`
+  - `Core/di` 统一依赖注入：处理器参数以 `db=Depends(get_session)` 声明依赖，框架在调用前自动以上下文对象（Event / 生命周期 data / 路由 HttpRequest、SseEmitter）调用依赖函数并按名注入；覆盖命令处理器、事件处理器（全部事件类型）、生命周期钩子、SSE 路由四个注入点与模块 `on_load` / `on_unload`，同步与异步依赖均可声明；声明在注册期校验（fail-fast），不声明时零开销（分发期无反射）；导出 `ErisPulse.Core.Depends`
+  - `Core/di` 依赖注入请求级缓存：`Depends(..., use_cache=True)`（默认开启）——同一次事件分发内相同依赖只解析一次、所有注入点共享结果（如数据库会话复用），跨请求不复用；`Depends.module` 语法糖以声明元组为稳定缓存标识，同一模块调用的多次声明共享缓存；不在缓存作用域内（lifecycle / 路由独立调用链）每次解析
+  - `Core/di` 依赖声明语法糖：`Depends.module("DB", "get_session", ...)` 声明其它模块的服务（支持固定参数透传，等价于依赖函数内调用 `sdk.module.call(...)`）
+  - `Core/Bases/model` 内置数据模型层（ORM）阶段一（EPRFC-2026-001 方向四）：继承 `Model` 并以 `Field` 声明字段即得自动建表与 Active Record CRUD（`await User.create(name=..)` / `User.where(User.age > 18).all()` / save / delete / 批量操作）；处于 `storage.atransaction()` 环境事务内时读写自动复用事务连接、随事务统一提交/回滚（不独立提交）；`save` 主键缺失退化为插入时自增主键同样回填到实例；`list[int]` / `dict[str, int]` 等参数化泛型注解按容器类别识别并走 JSON 列存储；SQL 标识符与索引 DDL 按方言生成（MySQL 不支持 `IF NOT EXISTS` 建索引由存在性预检承接，三后端行为一致），SQLite / MySQL / PostgreSQL 由存储配置透明切换；与声明式配置类共享约束词表、校验器引擎（`validate_field_constraints`）与类型类别注册表（`python_type_category`），类基座分立互不影响；从 `ErisPulse.Core.Bases` 导入（`Model` / `Field`，含 `BaseModel` 别名，导入规则与 BaseConfig 一致）
+  - `Core/Event/trace` 分发决策链追踪（EPRFC-2026-001 方向五·场景三落地）：`start_dispatch_trace()` 采集一次分发的全部判定点——命令文本判定、命令命中（未命中附 difflib 拼写建议）、作用域、用户 ACL、主人、权限函数（含检查异常）、冷却 / 限流静默丢弃、废弃拒绝与提示、参数解析、执行结果、中间件否决；记录为机器可读 dict（stage / verdict / message_key / params），`format_dispatch_trace()` 以当前语言渲染因果链、`final_verdict()` 推断总结论；未处于采集上下文时 `trace_step()` 零开销直接返回，生产路径无感知；配套 `docs/zh-CN/developer-guide/module-troubleshooting.md` 排查指南（三类问题 × 判定链定位法）
+  - `Core/Event/command` 命令治理声明化（EPRFC-2026-001 方向七全量：cooldown / rate_limit / deprecated）：
+    - `cooldown=`：`@command("daily", cooldown="1d", cooldown_key="user", cooldown_reply="今天已签到")` 一行声明替代手写冷却计时；时长语法与 `args=` 的 duration 一致（`30s` / `1h30m` / `1d`，注册期 fail-fast 校验）
+    - `rate_limit=`：滑动窗口限流 `"次数/窗口"`（如 `"5/minute"` / `"10/s"` / `"3/2m"`，窗口支持小数秒）；窗口满默认静默丢弃，`rate_limit_reply=` 可选回复；与 cooldown 可同时声明（冷却先判，冷却命中不占限流窗口）
+    - `deprecated=`：调用自动回复废弃文案（默认继续执行）；`deprecated_reject=True` 拒绝执行（`command.executed` 钩子记 `success=False, error="deprecated"`）；`/help` 列表与单命令帮助自动显示废弃标记与文案
+    - 三者键粒度（`*_key=`）统一为 user（默认）/ session / global 三选一，复用 `platform:bot:目标` 会话键体系；命中均默认静默丢弃（对称于作用域静默，命令仍被认领不漏给低优先级处理器）；判定位于全部权限检查与参数解析通过、实际执行前（无权限不触发、参数错误不消耗）；状态为进程内内存，模块卸载（unregister / unregister_by_owner / _clear_commands）自动清理；`Core/Event/command_args` 新增公开 `parse_duration()`、`command` 新增 `parse_rate_limit()`（注册期解析，口径统一）
+  - `Core/Event/message` 处理器节流声明化（EPRFC-2026-001 方向八）：`@message.on_message(throttle="2s", throttle_key="user")` 替代手写防刷屏——同键事件在间隔内至多处理一条，其余静默丢弃（TRACE 日志）；`on_message` / `on_private_message` / `on_group_message` / `on_at_message` 四个装饰器均支持，节流与 `pattern=` / `regex=` / detail_type 条件叠加生效；实现为既有处理器条件机制上的框架包装器（`Core/Event/throttle.make_throttle_condition()`），节流状态随条件闭库存活、处理器注销后由 GC 回收；debounce（窗口内只处理最后一条）涉及分发语义改动，仍排期后续
+  - `Core/Bases/config_schema` 配置环境变量映射（EPRFC-2026-001 方向九）：声明式配置字段以 `field(metadata={"env": "MYMODULE_API_KEY"})` 绑定环境变量，优先级 环境变量 > config.toml > 声明默认值；值按字段注解自动转换（str/int/float/bool，list/dict 走 JSON），转换失败忽略覆盖并告警；读取、热更新、校验同一管道保证声明一处处处生效；配置面板 Schema 标注 env 名、config.toml 模板注释提示可用环境变量（不写入实际值防泄露）；未声明 env 的字段行为完全不变，Docker / CI 场景免改配置文件
+  - `Core/Event/command` `args=` / `options=` 声明与 `Depends` 参数重名时注册期抛 `ValueError`（fail-fast）
 
-### 必须包含的信息
-1. **贡献者信息**：每项变更必须标明贡献者，格式为 `@Github用户名`
-2. **变更类型**：明确标识变更类型（详见下方分类说明）
-3. **日期信息**：版本发布日期采用 `YYYY/MM/DD` 格式
+### 修复
 
-### 写作规范
-
-日志记录的是**发布状态之间的净差异**，而非开发过程：
-
-1. **只记最终形态**：同一版本内对同一主题的多次修改，直接更新既有条目为最终状态，不追加"后期迭代 / 修正 / 不再…"式过程记录
-2. **版内修复不单列**：本版本引入又在本版本内修复的缺陷，并入对应特性条目（描述最终行为即可），不单独记录
-3. **回退即无痕**：本版本引入又在发布前被回退 / 撤销的功能，不做记录
-4. **琐碎不记**：纯测试补充、仓库地址变更、无用户感知的内部微调不记
-5. **同主题合并**：同一文件 / 同一模块的多条文档、测试更新合并为一条
-6. **摘要从简**：**版本摘要** 控制在 2–3 句话，只说清"本版本是什么主题、最重磅的 1–3 项变更"，不逐条罗列子功能、不粘贴 API / 配置 / 参数细节（这些归入下方变更分类）；**升级建议** / **注意事项** 同样只给结论与行动项，不复述正文
-
-### 变更类型分类
-
-| 类型 | 英文标签 | 说明 | 示例 |
-|------|---------|------|------|
-| 新增 | Added | 新功能、新API、新模块等 | 新增命令系统支持 |
-| 优化 | Improved | 性能提升、用户体验改进、代码优化 | 优化内存使用效率 |
-| 变更 | Changed | 功能行为变更、配置变更、API变更（非破坏性） | 调整默认配置项 |
-| 修复 | Fixed | Bug修复 | 修复空指针异常 |
-| 移除 | Removed | 删除的功能、API或模块 | 移除废弃的API |
-| 废弃 | Deprecated | 标记为弃用的功能（计划未来移除） | 某方法即将废弃 |
-| 重构 | Refactored | 内部代码重构（不影响公共API） | 重构加载系统架构 |
-| 安全 | Security | 安全修复或增强 | 修复权限漏洞 |
-
-### 示例格式
-
-```markdown
-  ## [version] - 2025/08/20
-  > 正式发布
-
-  **版本摘要**
-  用 2-3 句话概括本版本主题与最重磅的 1-3 项变更，不罗列子功能细节（细节写在下方变更分类）。
-
-  **升级建议**
-  - 是否建议升级：建议升级 / 可选升级 / 跳过升级
-  - 升级原因和理由
-
-  **注意事项**
-  - 从低版本升级时需要注意的重要事项
-  - 弃用功能说明
-  - 兼容性变更说明
-
-  ### 新增
-
-  - By [贡献者](https://github.com/贡献者)
-    - `模块名` 模块新增功能描述：
-      - 具体功能点1
-      - 具体功能点2
-
-  ### 优化
-
-  - @用户名
-    - 优化某模块的性能
-```
-
----
+- @YingXinche
+  - `Core/adapter` 修复慢事件日志指向错误：框架桥接分发层（`BaseEventHandler._process_event` 挂载到适配器总线的整体耗时）超阈值时以框架函数名发 WARNING，用户无法据此定位真正的慢处理器（现降级为 TRACE——慢的根因由内层 EventHandler 告警，消除重复与误导）
+  - `Core/Event/base` 慢事件日志重构为三层业务定位，Event 分发链路只透传不再出现在告警中：① 执行中看门狗——处理器超阈值仍未完成时采样其协程等待链，直接报告"当前停在哪个文件哪一行"（如 `当前位于 QvQChat/AIEngine/client.py:88 in chat`，无论等待的是 AI / HTTP 还是任何第三方库，且卡死处理器此前完全无告警、现同样触发）；② 结束统计——处理器名附带定义位置标注（入口 `Main._handle_message (QvQChat/Main.py:123)`）、命令分发场景附上 `[command=roll]` 标明具体慢命令、总耗时与 owner 归属；③ 标准库帧（asyncio sleep 等）自动跳过，直达业务等待点
+  - `runtime/diagnostics` 新增 `handler_source_loc`（处理器定义位置标注）与 `deepest_user_frame`（协程等待链采样，沿 `cr_await` 下钻 + framework/stdlib 帧过滤）两个定位工具
 
 ## [2.8.6] - 2026/09/22
 > 正式发布
@@ -186,9 +159,11 @@
 - 新项目由 `pyproject.toml` 声明依赖：请使用 `epsdk run`（自动使用项目 `.venv`）运行机器人，**不要** `uv run epsdk run`——`uv run` 在无项目目录时会创建一次性隔离环境，其中安装的包不会持久化
 - `epsdk install` 在项目内会同步回写 `pyproject.toml` 依赖清单（uv 后端走 `uv add`）
 
+
 ### 新增
 
 - @YingXinche
+
   - `CLI/commands/init` 初始化命令支持指定任意目录与项目环境自包含：
     - 位置参数 `epsdk init ../apps/mybot` 与 `--path <父目录>` 组合 `-n` 支持任意创建位置（名称校验仅针对末段，`--here` 语义不变）
     - 生成 `pyproject.toml` 依赖清单（`erispulse` 与所选适配器包写入 `dependencies`）
@@ -208,6 +183,10 @@
 - @YingXinche
   - `CLI/commands/doctor` 环境诊断新增「项目虚拟环境」检测项：显示 `.venv` 解释器路径与 venv 内 pip 可用性（uv 后端替代时如实标注）
   - `CLI/i18n` 五语言新增 CLI 词条（目录/虚拟环境/依赖安装/git 问询等全流程文案）
+
+---
+
+
 
 ---
 
@@ -232,7 +211,7 @@
 > 开发版
 
 **版本摘要**
-本版本为 2.8.x 系列的边界收束版：为 `wait_reply` 等待期间补全命令交互（命中已注册命令的消息放行命令分发器执行，等待继续挂起）、修复 `activate_on` 懒激活失败后彻底失联的问题（保留触发器并支持冷却重试），并收敛命令 ACL 双默认放行配置的叠加语义、补充对话检查点主动清理。
+本版本为 2.8.x 系列的边界收束版：为 `wait_reply` 等待期间补全命令交互（命中已注册命令的消息放行命令分发器执行，等待继续挂起）、修复 `activate_on` 懒激活失败后彻底失联的问题（保留触发器并支持冷却重试），并补充对话检查点主动清理。
 
 **升级建议**
 - **是否建议升级**：建议升级
@@ -248,6 +227,7 @@
   - `Core/Event/wrapper` `wait_reply()` 新增 `cmdpass` 参数（三态：None=跟随全局配置 / True=跳过命令匹配 / False=强制命令放行）：等待期间命中已注册命令的消息放行给命令分发器执行，等待继续挂起——补全交互式对话缺失的命令交互（此前等待吞掉一切文本，`/cancel` 这类取消命令永远无法命中）
   - `runtime/frame_config` 新增配置 `ErisPulse.event.wait_reply.cmdpass`（默认 `false` 不跳过）；`Core/Event/command` 新增内部判定 `_is_command_text()`（前缀 + 命令名/别名匹配口径与命令执行一致）
   - `Core/Event/wrapper` 对话检查点主动清理：新增周期任务（`CONVERSATION_CHECKPOINT_GC_INTERVAL_SECS`，默认 1h，首条消息惰性启动）枚举过期存档并删除——补全"仅在 resume 时惰性清理"的缺口，长期未恢复的存档不再永久驻留存储
+  - `runtime/tasks` Owner 感知 Task Factory（`install_owner_task_factory`，随框架启动自动安装）：事件循环级任务工厂——`owner_scope` 上下文内**任何** `asyncio.create_task`（含第三方库内部创建）自动登记归属，模块卸载 / 适配器关闭时随归属兜底取消；无归属（框架自身）任务行为不变；`run_in_executor` 与独立事件循环不在此列
 
 ### 修复
 

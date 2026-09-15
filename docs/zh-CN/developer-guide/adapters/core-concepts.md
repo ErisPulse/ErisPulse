@@ -221,6 +221,30 @@ async def filter_middleware(data):
     return data  # 必须返回数据以继续传递
 ```
 
+#### 中间件返回契约
+
+| 返回值 | 行为 |
+|--------|------|
+| `dict` | 改写事件载荷（后续处理器收到改写后的事件） |
+| `None` | 放行，载荷不变（输出 WARNING 提示——建议显式 `return data`） |
+| `False` | **否决**：事件被丢弃，不进入任何处理器、无任何出站副作用 |
+
+否决适用于防火墙、限流、黑名单等"在事件层面直接丢弃"的场景（此前只能用高优先级事件处理器绕行实现）。否决时框架输出 TRACE 日志并触发 `adapter.event.blocked` 生命周期钩子（携带 `middleware` 中间件名、完整 `event`、`platform` / `event_type` / `detail_type`），便于排查"事件为什么没响应"：
+
+```python
+@sdk.adapter.middleware
+async def rate_limit_middleware(data):
+    """限流中间件"""
+    if _is_rate_limited(data):
+        return False  # 否决：事件被丢弃
+    data["rate_marked"] = True
+    return data
+
+@sdk.lifecycle.on("adapter.event.blocked")
+async def on_event_blocked(data):
+    print(f"事件被 {data['middleware']} 否决: {data['event_type']}")
+```
+
 #### 中间件执行顺序
 
 中间件按照注册顺序执行，后注册的中间件先执行。

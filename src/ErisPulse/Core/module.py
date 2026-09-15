@@ -26,6 +26,7 @@ from .constants import (
     EVENT_MODULE_RELOAD,
     MODULE_SOURCE_PLUGIN_FOLDER,
 )
+from .di import call_with_depends, call_with_depends_sync
 from .i18n import i18n
 from .lifecycle import lifecycle
 from .logger import logger
@@ -428,10 +429,7 @@ class ModuleManager(ManagerBase):
 
                 if hasattr(instance, "on_load"):
                     try:
-                        if inspect.iscoroutinefunction(instance.on_load):
-                            await instance.on_load({"module_name": module_name})
-                        else:
-                            instance.on_load({"module_name": module_name})
+                        await call_with_depends(instance.on_load, {"module_name": module_name})
                     except Exception as e:
                         logger.error(i18n.t("core.module.on_load_failed", name=module_name, error=e))
                         return False
@@ -675,14 +673,11 @@ class ModuleManager(ManagerBase):
             instance = self._modules.get(module_name)
             if instance and hasattr(instance, "on_unload"):
                 try:
-                    if inspect.iscoroutinefunction(instance.on_unload):
-                        # 优雅收尾超时保护：on_unload 卡死不再阻塞卸载/级联/重载/uninit
-                        await asyncio.wait_for(
-                            instance.on_unload({"module_name": module_name}),
-                            timeout=unload_timeout,
-                        )
-                    else:
-                        instance.on_unload({"module_name": module_name})
+                    # 优雅收尾超时保护：on_unload 卡死不再阻塞卸载/级联/重载/uninit
+                    await asyncio.wait_for(
+                        call_with_depends(instance.on_unload, {"module_name": module_name}),
+                        timeout=unload_timeout,
+                    )
                 except asyncio.TimeoutError:
                     logger.warning(
                         i18n.t(
@@ -1274,7 +1269,7 @@ class ModuleManager(ManagerBase):
                     unload_timeout = self._unload_timeout()
                     try:
                         await asyncio.wait_for(
-                            instance.on_unload({"module_name": module_name}),
+                            call_with_depends(instance.on_unload, {"module_name": module_name}),
                             timeout=unload_timeout,
                         )
                     except asyncio.TimeoutError:
@@ -1299,7 +1294,10 @@ class ModuleManager(ManagerBase):
             else:
                 # 同步 on_unload 内联执行（保持在路由/事件清理之前完成）
                 try:
-                    instance.on_unload({"module_name": module_name})
+                    call_with_depends_sync(instance.on_unload, {"module_name": module_name})
+                except TypeError as e:
+                    # 同步上下文不支持异步依赖
+                    logger.error(str(e))
                 except Exception as e:
                     logger.error(i18n.t("core.module.on_unload_failed", name=module_name, error=e))
                 spawn_background(_fallback_cleanup())
