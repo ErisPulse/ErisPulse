@@ -664,6 +664,8 @@ TRANSLATIONS = {
     "core.config.field_type_mismatch": "{field} の型は {expected} のはずです、実際は {actual} です",
     "core.config.i18n_language_description": "表示言語 (auto=自動検出, zh-CN, zh-TW, en, ja, ru)",
     "core.config.required_suffix": "（必須）",
+    "core.config.env_hint": "環境変数 {env} で上書きできます（このファイルより優先）",
+    "core.config.env_convert_failed": "環境変数 {env} の値をフィールド型に変換できず、上書きを無視しました：{value!r}（{error}）",
     "core.event.adapter_not_found": "プラットフォーム '{platform}' のアダプターが見つかりません (利用可能: {available})",
     "core.event.branch_exec_error": "ブランチ '{name}' の実行例外: {error}",
     "core.event.branch_not_defined": "ブランチ '{name}' は定義されていません",

@@ -12,14 +12,18 @@ ErisPulse 通用配置 Schema 模块
 4. description 支持 i18n 多语言：{"i18n": "key.path", "default": "默认文本"}
 5. 未声明 description 时自动从类 docstring 提取字段说明兜底（:ivar: 或 Attributes: 风格）
 6. 通过 field(metadata={"example": True}) 声明仅进 config.full.example 的示例字段（不自动落盘）
-7. 使用 dataclass_to_toml_with_comments() 生成带注释的配置模板
-8. 使用 dict_to_dataclass() 从 TOML 字典填充 dataclass
-9. 使用 validate_config() 校验配置实例
-10. 使用 get_config_schema() 生成 WebUI JSON Schema（含 i18n 支持）
+7. 通过 field(metadata={"env": "MYMODULE_API_KEY"}) 声明环境变量绑定：
+   优先级 环境变量 > config.toml > 声明默认值（Docker / CI 场景免改配置文件）
+8. 使用 dataclass_to_toml_with_comments() 生成带注释的配置模板
+9. 使用 dict_to_dataclass() 从 TOML 字典填充 dataclass（含环境变量覆盖）
+10. 使用 validate_config() 校验配置实例
+11. 使用 get_config_schema() 生成 WebUI JSON Schema（含 i18n 支持）
 {!--< /tips >!--}
 """
 
 import inspect
+import json
+import os
 import re
 import sys
 from collections.abc import Mapping
@@ -542,6 +546,11 @@ def dataclass_to_toml_with_comments(
             suffix = i18n.t("core.config.required_suffix") if required else ""
             lines.append(f"# {description}{suffix}")
 
+        # 环境变量绑定提示（仅提示，不把 env 值写入模板）
+        env_name = meta.get("env")
+        if isinstance(env_name, str) and env_name:
+            lines.append(f"# {i18n.t('core.config.env_hint', env=env_name)}")
+
         # secret 字段不把真实值写入模板文件，避免配置文件泄露敏感信息
         effective_value = (
             "" if (is_secret and value not in ("", None, [], {})) else value
@@ -558,6 +567,55 @@ def dataclass_to_toml_with_comments(
     return "\n".join(lines)
 
 
+def _env_override_value(f):
+    """
+    读取字段声明的环境变量覆盖值（``metadata: {"env": "NAME"}``）
+
+    {!--< internal-use >!--}
+    优先级：环境变量 > config.toml > 声明默认值。环境变量值为字符串，
+    按字段注解转换——``int`` / ``float`` / ``bool`` 复用 :func:`_coerce_value`，
+    ``list`` / ``dict`` 走 JSON 解析，``str`` 原样。转换失败（如整型字段
+    收到非数字）时输出警告并回退（视为未覆盖）。
+
+    :param f: dataclass Field 对象
+    :return: 覆盖值；未声明 env / 环境变量不存在 / 转换失败时返回 MISSING
+    """
+    env_name = (f.metadata or {}).get("env")
+    if not isinstance(env_name, str) or not env_name:
+        return MISSING
+    raw = os.environ.get(env_name)
+    if raw is None or raw == "":
+        return MISSING
+
+    type_str = str(f.type).lower()
+    logger = _get_config_logger()
+    try:
+        if "list" in type_str or "dict" in type_str:
+            value = json.loads(raw)
+            if not isinstance(value, (list, dict)):
+                raise ValueError(raw[:50])
+        else:
+            value = _coerce_value(raw, f.type)
+            # 转换后类型必须匹配注解（_coerce_value 失败时原样返回字符串）
+            if "bool" in type_str and not isinstance(value, bool):
+                raise ValueError(raw[:50])
+            if "int" in type_str and (isinstance(value, bool) or not isinstance(value, int)):
+                raise ValueError(raw[:50])
+            if "float" in type_str and (isinstance(value, bool) or not isinstance(value, (int, float))):
+                raise ValueError(raw[:50])
+        return value
+    except (ValueError, TypeError) as e:
+        logger.warning(i18n.t("core.config.env_convert_failed", env=env_name, value=raw[:50], error=e))
+        return MISSING
+
+
+def _get_config_logger():
+    """{!--< internal-use >!--} 延迟获取日志器（避免循环依赖）"""
+    from ..logger import logger
+
+    return logger
+
+
 def dict_to_dataclass(config_class: type, data: dict):
     """
     从 TOML dict 填充 dataclass 实例
@@ -566,6 +624,7 @@ def dict_to_dataclass(config_class: type, data: dict):
     - 忽略 dataclass 中不存在的字段
     - 使用 default/default_factory 填充缺失字段
     - 嵌套 dataclass 字段递归填充（dict → 嵌套实例）
+    - 环境变量覆盖（``metadata: {"env": "NAME"}``）：优先级 环境变量 > data > default
 
     :param config_class: dataclass 类
     :param data: 字典数据（通常来自 TOML 解析）
@@ -586,6 +645,12 @@ def dict_to_dataclass(config_class: type, data: dict):
             kwargs[f.name] = dict_to_dataclass(
                 nested, raw if isinstance(raw, dict) else {}
             )
+            continue
+
+        # 环境变量覆盖优先于 data 与 default（声明一处、处处生效）
+        env_value = _env_override_value(f)
+        if env_value is not MISSING:
+            kwargs[f.name] = env_value
             continue
 
         raw_value = data.get(f.name, MISSING)
@@ -784,6 +849,11 @@ def _schema_fields(config_class: type) -> dict:
 
         if meta.get("example", False):
             field_schema["example"] = True
+
+        # 环境变量绑定声明（面板可据此提示"支持环境变量覆盖"）
+        env_name = meta.get("env")
+        if isinstance(env_name, str) and env_name:
+            field_schema["env"] = env_name
 
         _apply_ui_meta(field_schema, ui_meta)
 
