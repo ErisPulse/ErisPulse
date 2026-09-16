@@ -664,6 +664,8 @@ TRANSLATIONS = {
     "core.config.field_type_mismatch": "Тип {field} должен быть {expected}, получено {actual}",
     "core.config.i18n_language_description": "Язык интерфейса (auto=автоопределение, zh-CN, zh-TW, en, ja, ru)",
     "core.config.required_suffix": "(обязательно)",
+    "core.config.env_hint": "Может быть переопределено переменной окружения {env} (имеет приоритет над этим файлом)",
+    "core.config.env_convert_failed": "Значение переменной окружения {env} не может быть преобразовано к типу поля; переопределение проигнорировано: {value!r} ({error})",
     "core.event.adapter_not_found": "Адаптер для платформы '{platform}' не найден (доступны: {available})",
     "core.event.branch_exec_error": "Ошибка выполнения ветви '{name}': {error}",
     "core.event.branch_not_defined": "Ветвь '{name}' не определена",

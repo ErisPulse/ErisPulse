@@ -664,6 +664,8 @@ TRANSLATIONS = {
     "core.config.field_type_mismatch": "{field} 類型應為 {expected}，實際為 {actual}",
     "core.config.i18n_language_description": "顯示語言 (auto=自動偵測, zh-CN, zh-TW, en, ja, ru)",
     "core.config.required_suffix": "（必填）",
+    "core.config.env_hint": "可由環境變數 {env} 覆蓋（優先級高於本檔案）",
+    "core.config.env_convert_failed": "環境變數 {env} 的值無法轉換為欄位類型，已忽略該覆蓋：{value!r}（{error}）",
     "core.event.adapter_not_found": "找不到平台 '{platform}' 的適配器 (可用平台: {available})",
     "core.event.branch_exec_error": "分支 '{name}' 執行例外: {error}",
     "core.event.branch_not_defined": "分支 '{name}' 未定義",

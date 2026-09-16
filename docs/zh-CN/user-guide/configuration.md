@@ -82,6 +82,32 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 
 > 注：`ErisPulse.server.port` 这类框架配置走 `get_server_config()` 等 API 读取，均受环境变量覆盖影响。
 
+### 模块配置的环境变量绑定（2.9.0+）
+
+模块自己的声明式配置（`ConfigClass`）支持字段级环境变量绑定——在 `field(metadata=...)` 中声明 `env`：
+
+```python
+@dataclass
+class MyConfig(BaseConfig):
+    api_key: str = field(default="", metadata={
+        "description": "API 密钥",
+        "env": "MYMODULE_API_KEY",   # 环境变量绑定
+    })
+    retries: int = field(default=3, metadata={"env": "MYMODULE_RETRIES"})
+```
+
+行为说明：
+
+- **优先级**：环境变量 > `config.toml` > 声明默认值（配置文件热更新后同样保持此优先级）
+- **类型转换**：环境变量值按字段注解自动转换——`str` 原样、`int` / `float` / `bool`（`true` / `1` / `yes` / `on`）自动转换、`list` / `dict` 走 JSON 解析；转换失败时忽略该覆盖（回退配置文件 / 默认值）并输出告警
+- **声明一处、处处生效**：配置读取、热更新、校验使用同一管道；配置面板 Schema 会标注 `env` 名，`config.toml` 模板注释也会提示可用的环境变量（模板不写入环境变量的实际值，避免泄露）
+- **完全兼容**：未声明 `env` 的字段行为不变；直接实例化 ConfigClass（不经框架配置管道）不受环境变量影响
+
+```bash
+# Docker 部署示例：不修改 config.toml，直接注入模块密钥
+MYMODULE_API_KEY=sk-xxx docker compose up -d
+```
+
 ## 配置热更新
 
 从 2.7.0 起，框架对配置热更新做了**系统化支持**。外部修改 `config.toml` 后（后台 watcher 每 5 秒检测一次），或代码调用 `setConfig()` 后，各组件自动响应：
