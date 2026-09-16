@@ -664,6 +664,8 @@ TRANSLATIONS = {
     "core.config.field_type_mismatch": "{field} type should be {expected}, got {actual}",
     "core.config.i18n_language_description": "Display language (auto=auto-detect, zh-CN, zh-TW, en, ja, ru)",
     "core.config.required_suffix": "(required)",
+    "core.config.env_hint": "Can be overridden by environment variable {env} (takes precedence over this file)",
+    "core.config.env_convert_failed": "Value of environment variable {env} cannot be converted to the field type; override ignored: {value!r} ({error})",
     "core.event.adapter_not_found": "Adapter for platform '{platform}' not found (available: {available})",
     "core.event.branch_exec_error": "Branch '{name}' execution error: {error}",
     "core.event.branch_not_defined": "Branch '{name}' not defined",

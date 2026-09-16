@@ -664,6 +664,8 @@ TRANSLATIONS = {
     "core.config.field_type_mismatch": "{field} 类型应为 {expected}，实际为 {actual}",
     "core.config.i18n_language_description": "显示语言 (auto=自动检测, zh-CN, zh-TW, en, ja, ru)",
     "core.config.required_suffix": "（必填）",
+    "core.config.env_hint": "可由环境变量 {env} 覆盖（优先级高于本文件）",
+    "core.config.env_convert_failed": "环境变量 {env} 的值无法转换为字段类型，已忽略该覆盖：{value!r}（{error}）",
     "core.event.adapter_not_found": "找不到平台 '{platform}' 的适配器 (可用平台: {available})",
     "core.event.branch_exec_error": "分支 '{name}' 执行异常: {error}",
     "core.event.branch_not_defined": "分支 '{name}' 未定义",
