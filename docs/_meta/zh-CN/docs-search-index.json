@@ -201,7 +201,7 @@
     "1. 异常处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 864,
+        "line": 868,
         "level": 3,
         "title": "1. 异常处理"
       }
@@ -337,7 +337,7 @@
     "1. 配置层级与覆盖": [
       {
         "document": "advanced/scope.md",
-        "line": 330,
+        "line": 331,
         "level": 3,
         "title": "1. 配置层级与覆盖"
       }
@@ -663,7 +663,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 882,
+        "line": 886,
         "level": 3,
         "title": "2. 日志记录"
       }
@@ -719,7 +719,7 @@
     "2. 模块/命令没反应": [
       {
         "document": "advanced/scope.md",
-        "line": 337,
+        "line": 338,
         "level": 3,
         "title": "2. 模块/命令没反应"
       }
@@ -1013,7 +1013,7 @@
     "3. 出站动作被拒时排查": [
       {
         "document": "advanced/scope.md",
-        "line": 352,
+        "line": 353,
         "level": 3,
         "title": "3. 出站动作被拒时排查"
       }
@@ -1109,7 +1109,7 @@
     "3. 条件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 898,
+        "line": 902,
         "level": 3,
         "title": "3. 条件处理"
       }
@@ -1397,7 +1397,7 @@
     "4. 会话标识跨平台隔离": [
       {
         "document": "advanced/scope.md",
-        "line": 363,
+        "line": 364,
         "level": 3,
         "title": "4. 会话标识跨平台隔离"
       }
@@ -2625,7 +2625,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 281,
+        "line": 285,
         "level": 3,
         "title": "Bot 状态查询"
       },
@@ -2637,7 +2637,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 540,
+        "line": 544,
         "level": 3,
         "title": "Bot 状态查询"
       }
@@ -2951,7 +2951,7 @@
     "Event 包装类": [
       {
         "document": "api-reference/event-system.md",
-        "line": 285,
+        "line": 289,
         "level": 2,
         "title": "Event 包装类"
       }
@@ -2975,7 +2975,7 @@
     "Event 对象常用方法": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 787,
+        "line": 791,
         "level": 3,
         "title": "Event 对象常用方法"
       }
@@ -3191,7 +3191,7 @@
     "Message 消息模块": [
       {
         "document": "api-reference/event-system.md",
-        "line": 154,
+        "line": 158,
         "level": 2,
         "title": "Message 消息模块"
       }
@@ -3215,7 +3215,7 @@
     "Meta 元事件模块": [
       {
         "document": "api-reference/event-system.md",
-        "line": 256,
+        "line": 260,
         "level": 2,
         "title": "Meta 元事件模块"
       }
@@ -3247,7 +3247,7 @@
     "Notice 通知模块": [
       {
         "document": "api-reference/event-system.md",
-        "line": 202,
+        "line": 206,
         "level": 2,
         "title": "Notice 通知模块"
       }
@@ -3471,7 +3471,7 @@
     "Request 请求模块": [
       {
         "document": "api-reference/event-system.md",
-        "line": 234,
+        "line": 238,
         "level": 2,
         "title": "Request 请求模块"
       }
@@ -4171,7 +4171,7 @@
     "`hasattr` / `dir` 支持": [
       {
         "document": "api-reference/event-system.md",
-        "line": 567,
+        "line": 571,
         "level": 4,
         "title": "`hasattr` / `dir` 支持"
       }
@@ -4793,7 +4793,7 @@
       },
       {
         "document": "advanced/scope.md",
-        "line": 234,
+        "line": 235,
         "level": 3,
         "title": "① 模块维度"
       }
@@ -4801,7 +4801,7 @@
     "② 身份维度": [
       {
         "document": "advanced/scope.md",
-        "line": 258,
+        "line": 259,
         "level": 3,
         "title": "② 身份维度"
       }
@@ -4809,7 +4809,7 @@
     "② 身份维度（事件准入）": [
       {
         "document": "advanced/scope.md",
-        "line": 143,
+        "line": 144,
         "level": 2,
         "title": "② 身份维度（事件准入）"
       }
@@ -4817,7 +4817,7 @@
     "③ 出站维度": [
       {
         "document": "advanced/scope.md",
-        "line": 271,
+        "line": 272,
         "level": 3,
         "title": "③ 出站维度"
       }
@@ -4825,7 +4825,7 @@
     "③ 出站维度（限制模块发起出站调用）": [
       {
         "document": "advanced/scope.md",
-        "line": 160,
+        "line": 161,
         "level": 2,
         "title": "③ 出站维度（限制模块发起出站调用）"
       }
@@ -4919,7 +4919,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 915,
+        "line": 919,
         "level": 2,
         "title": "下一步"
       },
@@ -5231,7 +5231,7 @@
     "事件处理最佳实践": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 862,
+        "line": 866,
         "level": 2,
         "title": "事件处理最佳实践"
       }
@@ -5329,7 +5329,7 @@
     "事件数据访问": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 785,
+        "line": 789,
         "level": 2,
         "title": "事件数据访问"
       }
@@ -5575,7 +5575,7 @@
     "交互式处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 562,
+        "line": 566,
         "level": 2,
         "title": "交互式处理"
       }
@@ -5597,7 +5597,7 @@
     "交互方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 437,
+        "line": 441,
         "level": 3,
         "title": "交互方法"
       },
@@ -5691,7 +5691,7 @@
     "优先级系统": [
       {
         "document": "api-reference/event-system.md",
-        "line": 709,
+        "line": 713,
         "level": 2,
         "title": "优先级系统"
       }
@@ -5731,7 +5731,7 @@
     "会话标识": [
       {
         "document": "api-reference/event-system.md",
-        "line": 305,
+        "line": 309,
         "level": 3,
         "title": "会话标识"
       },
@@ -5833,7 +5833,7 @@
     "使用 reply 方法发送回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 564,
+        "line": 568,
         "level": 3,
         "title": "使用 reply 方法发送回复"
       }
@@ -6035,7 +6035,7 @@
     "元事件": [
       {
         "document": "api-reference/event-system.md",
-        "line": 258,
+        "line": 262,
         "level": 3,
         "title": "元事件"
       }
@@ -6051,7 +6051,7 @@
     "元事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 513,
+        "line": 517,
         "level": 2,
         "title": "元事件处理"
       }
@@ -6215,7 +6215,7 @@
     "内置确认词": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 778,
+        "line": 782,
         "level": 3,
         "title": "内置确认词"
       }
@@ -6411,7 +6411,7 @@
     "判定语义": [
       {
         "document": "advanced/scope.md",
-        "line": 186,
+        "line": 187,
         "level": 3,
         "title": "判定语义"
       }
@@ -6427,7 +6427,7 @@
     "判定（三问）": [
       {
         "document": "advanced/scope.md",
-        "line": 221,
+        "line": 222,
         "level": 3,
         "title": "判定（三问）"
       }
@@ -6551,7 +6551,7 @@
     "单个方法注册": [
       {
         "document": "api-reference/event-system.md",
-        "line": 578,
+        "line": 582,
         "level": 4,
         "title": "单个方法注册"
       }
@@ -7159,13 +7159,13 @@
     "命令信息": [
       {
         "document": "api-reference/event-system.md",
-        "line": 61,
+        "line": 65,
         "level": 3,
         "title": "命令信息"
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 345,
+        "line": 349,
         "level": 3,
         "title": "命令信息"
       },
@@ -7299,7 +7299,7 @@
     "回复功能": [
       {
         "document": "api-reference/event-system.md",
-        "line": 357,
+        "line": 361,
         "level": 3,
         "title": "回复功能"
       },
@@ -7327,7 +7327,7 @@
     "回复方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 401,
+        "line": 405,
         "level": 3,
         "title": "回复方法"
       }
@@ -8055,7 +8055,7 @@
     "多轮对话 (conversation)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 751,
+        "line": 755,
         "level": 3,
         "title": "多轮对话 (conversation)"
       }
@@ -8127,7 +8127,7 @@
     "好友添加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 452,
+        "line": 456,
         "level": 3,
         "title": "好友添加"
       }
@@ -8143,7 +8143,7 @@
     "好友请求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 486,
+        "line": 490,
         "level": 3,
         "title": "好友请求"
       }
@@ -8637,7 +8637,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 478,
+        "line": 482,
         "level": 3,
         "title": "工具方法"
       }
@@ -8717,7 +8717,7 @@
     "带回调的等待回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 636,
+        "line": 640,
         "level": 3,
         "title": "带回调的等待回复"
       }
@@ -8733,7 +8733,7 @@
     "带验证的等待回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 609,
+        "line": 613,
         "level": 3,
         "title": "带验证的等待回复"
       }
@@ -8821,7 +8821,7 @@
     "常见问题与注意事项": [
       {
         "document": "advanced/scope.md",
-        "line": 328,
+        "line": 329,
         "level": 2,
         "title": "常见问题与注意事项"
       }
@@ -8899,7 +8899,7 @@
     "平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 515,
+        "line": 519,
         "level": 3,
         "title": "平台扩展方法"
       },
@@ -8911,7 +8911,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 833,
+        "line": 837,
         "level": 3,
         "title": "平台扩展方法"
       }
@@ -8927,7 +8927,7 @@
     "平台方法隔离": [
       {
         "document": "api-reference/event-system.md",
-        "line": 551,
+        "line": 555,
         "level": 4,
         "title": "平台方法隔离"
       }
@@ -8989,7 +8989,7 @@
     "平台能力查询": [
       {
         "document": "api-reference/event-system.md",
-        "line": 389,
+        "line": 393,
         "level": 3,
         "title": "平台能力查询"
       },
@@ -9259,7 +9259,7 @@
     "心跳事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 531,
+        "line": 535,
         "level": 3,
         "title": "心跳事件"
       }
@@ -9661,7 +9661,7 @@
     "批量注册（Mixin 类）": [
       {
         "document": "api-reference/event-system.md",
-        "line": 594,
+        "line": 598,
         "level": 4,
         "title": "批量注册（Mixin 类）"
       }
@@ -9685,7 +9685,7 @@
     "拓扑树 API": [
       {
         "document": "advanced/scope.md",
-        "line": 368,
+        "line": 369,
         "level": 2,
         "title": "拓扑树 API"
       }
@@ -9951,7 +9951,7 @@
     "收集表单 (collect)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 710,
+        "line": 714,
         "level": 3,
         "title": "收集表单 (collect)"
       }
@@ -10243,7 +10243,7 @@
     "方法解析优先级": [
       {
         "document": "api-reference/event-system.md",
-        "line": 698,
+        "line": 702,
         "level": 3,
         "title": "方法解析优先级"
       }
@@ -10517,7 +10517,7 @@
     "条件监听": [
       {
         "document": "api-reference/event-system.md",
-        "line": 185,
+        "line": 189,
         "level": 3,
         "title": "条件监听"
       }
@@ -10587,7 +10587,7 @@
     "查询平台已注册方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 536,
+        "line": 540,
         "level": 4,
         "title": "查询平台已注册方法"
       }
@@ -10867,7 +10867,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 289,
+        "line": 293,
         "level": 3,
         "title": "核心方法"
       },
@@ -11285,7 +11285,7 @@
     "注册跨平台方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 677,
+        "line": 681,
         "level": 3,
         "title": "注册跨平台方法"
       }
@@ -11347,7 +11347,7 @@
     "注销方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 640,
+        "line": 644,
         "level": 4,
         "title": "注销方法"
       }
@@ -11409,7 +11409,7 @@
     "消息事件": [
       {
         "document": "api-reference/event-system.md",
-        "line": 156,
+        "line": 160,
         "level": 3,
         "title": "消息事件"
       }
@@ -11573,7 +11573,7 @@
     "消息方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 318,
+        "line": 322,
         "level": 3,
         "title": "消息方法"
       }
@@ -12075,7 +12075,7 @@
     "用户：使用平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 519,
+        "line": 523,
         "level": 4,
         "title": "用户：使用平台扩展方法"
       }
@@ -12247,7 +12247,7 @@
       },
       {
         "document": "api-reference/event-system.md",
-        "line": 725,
+        "line": 729,
         "level": 2,
         "title": "相关文档"
       },
@@ -12347,7 +12347,7 @@
     "确认对话 (confirm)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 657,
+        "line": 661,
         "level": 3,
         "title": "确认对话 (confirm)"
       }
@@ -12409,7 +12409,7 @@
     "等待任意事件 (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 730,
+        "line": 734,
         "level": 3,
         "title": "等待任意事件 (wait_for)"
       }
@@ -12425,7 +12425,7 @@
     "等待回复": [
       {
         "document": "api-reference/event-system.md",
-        "line": 99,
+        "line": 103,
         "level": 3,
         "title": "等待回复"
       }
@@ -12449,7 +12449,7 @@
     "等待用户回复": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 592,
+        "line": 596,
         "level": 3,
         "title": "等待用户回复"
       }
@@ -12595,7 +12595,7 @@
     "绑定继承（merge）": [
       {
         "document": "advanced/scope.md",
-        "line": 127,
+        "line": 128,
         "level": 3,
         "title": "绑定继承（merge）"
       }
@@ -12651,7 +12651,7 @@
     "缓存与热更新": [
       {
         "document": "advanced/scope.md",
-        "line": 314,
+        "line": 315,
         "level": 2,
         "title": "缓存与热更新"
       }
@@ -12667,7 +12667,7 @@
     "群成员减少": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 474,
+        "line": 478,
         "level": 3,
         "title": "群成员减少"
       }
@@ -12675,7 +12675,7 @@
     "群成员增加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 464,
+        "line": 468,
         "level": 3,
         "title": "群成员增加"
       }
@@ -12731,7 +12731,7 @@
     "群邀请请求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 502,
+        "line": 506,
         "level": 3,
         "title": "群邀请请求"
       }
@@ -12923,7 +12923,7 @@
     "覆写内置方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 652,
+        "line": 656,
         "level": 4,
         "title": "覆写内置方法"
       }
@@ -12939,7 +12939,7 @@
     "规则形态（内联表）": [
       {
         "document": "advanced/scope.md",
-        "line": 167,
+        "line": 168,
         "level": 3,
         "title": "规则形态（内联表）"
       }
@@ -13065,7 +13065,7 @@
     "请求事件": [
       {
         "document": "api-reference/event-system.md",
-        "line": 236,
+        "line": 240,
         "level": 3,
         "title": "请求事件"
       }
@@ -13081,7 +13081,7 @@
     "请求事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 484,
+        "line": 488,
         "level": 2,
         "title": "请求事件处理"
       }
@@ -13323,7 +13323,7 @@
     "跨平台扩展（通配符）": [
       {
         "document": "api-reference/event-system.md",
-        "line": 673,
+        "line": 677,
         "level": 2,
         "title": "跨平台扩展（通配符）"
       },
@@ -13441,7 +13441,7 @@
     "运行时 API": [
       {
         "document": "advanced/scope.md",
-        "line": 210,
+        "line": 211,
         "level": 2,
         "title": "运行时 API"
       }
@@ -13519,7 +13519,7 @@
     "返回值规范": [
       {
         "document": "api-reference/event-system.md",
-        "line": 615,
+        "line": 619,
         "level": 4,
         "title": "返回值规范"
       }
@@ -13559,7 +13559,7 @@
     "连接事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 515,
+        "line": 519,
         "level": 3,
         "title": "连接事件"
       }
@@ -13801,7 +13801,7 @@
     "适配器：注册平台扩展方法": [
       {
         "document": "api-reference/event-system.md",
-        "line": 574,
+        "line": 578,
         "level": 3,
         "title": "适配器：注册平台扩展方法"
       }
@@ -13817,7 +13817,7 @@
     "选择菜单 (choose)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 674,
+        "line": 678,
         "level": 3,
         "title": "选择菜单 (choose)"
       }
@@ -13825,7 +13825,7 @@
     "通用": [
       {
         "document": "advanced/scope.md",
-        "line": 285,
+        "line": 286,
         "level": 3,
         "title": "通用"
       }
@@ -13865,7 +13865,7 @@
     "通知事件": [
       {
         "document": "api-reference/event-system.md",
-        "line": 204,
+        "line": 208,
         "level": 3,
         "title": "通知事件"
       }
@@ -13889,7 +13889,7 @@
     "通知事件处理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 450,
+        "line": 454,
         "level": 2,
         "title": "通知事件处理"
       }
@@ -14147,7 +14147,7 @@
     "配置格式校验": [
       {
         "document": "advanced/scope.md",
-        "line": 322,
+        "line": 323,
         "level": 2,
         "title": "配置格式校验"
       }
@@ -14517,7 +14517,7 @@
     "链路控制": [
       {
         "document": "api-reference/event-system.md",
-        "line": 489,
+        "line": 493,
         "level": 3,
         "title": "链路控制"
       }
@@ -14707,7 +14707,7 @@
     "高级：字典式点分路径兜底": [
       {
         "document": "advanced/scope.md",
-        "line": 297,
+        "line": 298,
         "level": 3,
         "title": "高级：字典式点分路径兜底"
       }

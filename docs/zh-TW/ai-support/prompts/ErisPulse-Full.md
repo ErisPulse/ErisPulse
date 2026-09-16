@@ -1108,19 +1108,19 @@ class Main(BaseModule):
 
 ## 事件類型概覽
 
-ErisPulse 支援以下事件類型：
+ErisPulse 支持以下事件類型：
 
 | 事件類型 | 說明 | 適用場景 |
 |---------|------|---------|
 | 消息事件 | 用戶發送的任何消息 | 聊天機器人、內容過濾 |
 | 命令事件 | 以命令前綴開頭的消息 | 命令處理、功能入口 |
-| 通知事件 | 系統通知（好友添加、群成員變化等） | 歡迎訊息、狀態通知 |
+| 通知事件 | 系統通知（好友添加、群成員變化等） | 歡迎消息、狀態通知 |
 | 請求事件 | 用戶請求（好友請求、群邀請） | 自動處理請求 |
 | 元事件 | 系統級事件（連接、心跳） | 連接監控、狀態檢查 |
 
 ## 消息事件處理
 
-> **提示**: 建議在事件處理器中使用 `Event` 類型註解，以獲得 IDE 自動補全和類型檢查支援。
+> **提示**: 建議在事件處理器中使用 `Event` 類型註解，以獲得 IDE 自動補全和類型檢查支持。
 
 ```python
 from ErisPulse.Core.Event import Event  # 導入事件類型用於註解
@@ -1135,29 +1135,29 @@ from ErisPulse.Core.Event import message, Event
 async def message_handler(event: Event):
     text = event.get_text()
     user_id = event.get_user_id()
-    sdk.logger.info(f"收到 {user_id} 的訊息: {text}")
+    sdk.logger.info(f"收到 {user_id} 的消息: {text}")
 ```
 
-### 監聽私聊訊息
+### 監聽私聊消息
 
 ```python
 @message.on_private_message()
 async def private_handler(event: Event):
     user_id = event.get_user_id()
-    await event.reply(f"你好，{user_id}！這是私聊訊息。")
+    await event.reply(f"你好，{user_id}！這是私聊消息。")
 ```
 
-### 監聽群聊訊息
+### 監聽群聊消息
 
 ```python
 @message.on_group_message()
 async def group_handler(event: Event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"群 {group_id} 中 {user_id} 發送了訊息")
+    sdk.logger.info(f"群 {group_id} 中 {user_id} 發送了消息")
 ```
 
-### 監聽@訊息
+### 監聽@消息
 
 ```python
 @message.on_at_message()
@@ -1170,11 +1170,11 @@ async def at_handler(event: Event):
 ### 通配符與正則監聽
 
 四個消息裝飾器（`on_message` / `on_private_message` / `on_group_message` /
-`on_at_message`）均支援 `pattern`（glob 通配符）與 `regex`（正則），不匹配的訊息
+`on_at_message`）均支持 `pattern`（glob 通配符）與 `regex`（正則），不匹配的消息
 **不會觸發**處理器：
 
 ```python
-# glob 通配符：* 任意串、? 單字符、[seq] 字符集
+# glob 通配符：* 任意串、? 单字符、[seq] 字符集
 @message.on_message(pattern="簽到*")
 async def signin_handler(event: Event):
     await event.reply("簽到成功")
@@ -1190,7 +1190,7 @@ async def combined_handler(event: Event):
     pass
 ```
 
-`wait_reply` 同樣支援這兩個參數（見[等待回覆](../developer-guide/modules/event-wrapper.md#等待回覆功能)）。
+`wait_reply` 同樣支持這兩個參數（見[等待回覆](../developer-guide/modules/event-wrapper.md#等待回覆功能)）。
 
 ## 命令事件處理
 
@@ -1199,13 +1199,13 @@ async def combined_handler(event: Event):
 ```python
 from ErisPulse.Core.Event import command
 
-@command("help", help="顯示幫助資訊")
+@command("help", help="顯示幫助信息")
 async def help_handler(event):
     help_text = """
 可用命令：
 /help - 顯示幫助
 /ping - 測試連接
-/info - 查看資訊
+/info - 查看信息
     """
     await event.reply(help_text)
 ```
@@ -1213,12 +1213,12 @@ async def help_handler(event):
 ### 命令別名
 
 ```python
-@command(["help", "h"], aliases=["幫助"], help="顯示幫助資訊")
+@command(["help", "h"], aliases=["幫助"], help="顯示幫助信息")
 async def help_handler(event):
-    await event.reply("幫助資訊...")
+    await event.reply("幫助信息...")
 ```
 
-用戶可以使用以下任何方式呼叫：
+用戶可以使用以下任何方式調用：
 - `/help`
 - `/h`
 - `/幫助`
@@ -1226,7 +1226,7 @@ async def help_handler(event):
 ### 命令參數
 
 ```python
-@command("echo", help="回顯訊息")
+@command("echo", help="回顯消息")
 async def echo_handler(event):
     # 獲取命令參數
     args = event.get_command_args()
@@ -1299,23 +1299,23 @@ async def admin_add_handler(event):
 ```
 
 注意：`master=True` 與 `hidden` **不會**繼承，需要時請在子命令上單獨聲明；
-用戶 ACL（黑白名單）按命令全名匹配，glob 规則如 `"admin*"` 可覆蓋整組子命令。
+用戶 ACL（黑白名單）按命令全名匹配，glob 規則如 `"admin*"` 可覆蓋整組子命令。
 
 `/help` 的命令總覽中，子命令會自動掛到可見的父命令下縮進展示
 （`admin` → `admin add` 縮進一級，`admin user` → `admin user ban` 縮進兩級）。
 
-### 命令權限與訪問控制
+### 命令權限與存取控制
 
 命令權限分三層，從上到下逐層判定（**上層拒絕則不再看下層**）：
 
 ```python
 # ① 命令權限 ACL（用戶側配置）：按命令的用戶黑白名單，拒絕時回覆"權限不足"
 # ② master=True —— 僅框架主人可執行（框架自動檢查，拒絕時回覆"權限不足"）
-@command("restart", master=True, help="重新啟動模組")
+@command("restart", master=True, help="重啟模組")
 async def restart_handler(event):
-    await event.reply("模組已重新啟動")
+    await event.reply("模組已重啟")
 
-# ③ permission=調用函數 —— 命令自身的控制邏輯（返回 True 才執行）
+# ③ permission=呼叫函數 —— 命令自身的控制邏輯（返回 True 才執行）
 def is_admin(event):
     return event.get_user_id() in {"user123", "user456"}
 
@@ -1351,13 +1351,13 @@ command.get_acl("restart")                             # 查詢當前名單
 > 也可經 SDK 事件包訪問：`sdk.Event.command`（兩者為同一單例）。
 > 在模組內通常已隨命令裝飾器導入（`from ErisPulse.Core.Event import command`）。
 
-跨命令 / 跨用戶的**事件級**訪問控制（某人 / 某群 / 某 Bot 的訊息收不收）
+跨命令 / 跨用戶的**事件級**存取控制（某人 / 某群 / 某 Bot 的訊息收不收）
 走作用域**身份維度**（`scope.identity`）；**模組級**可用性（哪些模組能用）
 走作用域**模組維度**（`scope.platforms / bots / sessions`）。
 詳見[作用域（scope）](../advanced/scope.md)。
 
 > 建議：命令內部需要聯動業務邏輯的用 `master=True` / `permission`；純按用戶 / 群做
-> 訪問控制的用作用域身份維度；控制模組可用性的用作用域模組維度。
+> 存取控制的用作用域身份維度；控制模組可用性的用作用域模組維度。
 
 ### 命令優先級
 
@@ -1390,7 +1390,7 @@ priority=0 組: [處理器A ||處理器B] 並行 → 合併結果
 - **跨級串行**：不同優先級的組按順序執行（數值越大越先執行），確保高優先級處理器先運行
 - **Copy-On-Write**：處理器無修改時不建立副本，確保零開銷
 - **衝突處理**：同優先級多處理器修改同一字段時，使用最後修改值並記錄警告日誌
-- **中斷機制**：任意處理器調用 `event.done()`（預設）或 `event.done(claim=False)` 後，跳過後續低優先級組。認領與阻斷的區別見下文[「鏈路控制：認領與阻斷」](#鏈路控制認領與阻斷)
+- **中斷機制**：任意處理器呼叫 `event.done()`（預設）或 `event.done(claim=False)` 後，跳過後續低優先級組。認領與阻斷的區別見下文[「鏈路控制：認領與阻斷」](#鏈路控制認領與阻斷)
 
 ```python
 # 示例：同優先級處理器並行執行
@@ -1419,7 +1419,7 @@ async def handler_c(event):
 
 事件到達後有兩道**靜默**過濾（都不回覆、不報錯）：
 
-1. **身份維度**（`ErisPulse.scope.identity`）：事件進入分發入口時，按 用戶 > 群 > Bot > 適配器 判定收不收。
+1. **身份維度**（`ErisPulse.scope.identity`）：事件進入分發入口時，按 用戶 > 群 > Bot > 介面器 判定收不收。
    被拒絕的**整個事件**直接丟棄，任何處理器（含命令分發器）都不會觸發。
 2. **模組維度**（`ErisPulse.scope`）：事件到達某模組的處理器/命令時，按 會話 > Bot > 平台 判定
    該模組是否可用，**不通過就靜默跳過**。
@@ -1454,15 +1454,15 @@ blocked = ["MyModule"]
 
 | 事件類型 | 可覆寫參數 | 作用 |
 |---------|-----------|------|
-| `message` | `pattern` / `regex` / `detail_types` | 文本觸發條件 + 訊息子類型白名單 |
-| `notice` | `detail_types` / `pattern` / `regex` | 通知子類型白名單 + 文本條件 |
-| `request` | `detail_types` / `pattern` / `regex` | 請求子類型白名單 + 文本條件 |
+| `message` | `pattern` / `regex` / `detail_types` | 文字觸發條件 + 訊息子類型白名單 |
+| `notice` | `detail_types` / `pattern` / `regex` | 通知子類型白名單 + 文字條件 |
+| `request` | `detail_types` / `pattern` / `regex` | 請求子類型白名單 + 文字條件 |
 | `meta` | `detail_types` | 元事件子類型白名單（connect / heartbeat 等） |
 | `command` | `master` / `hidden` / `aliases` / `prefix` / `help` / `usage` | 命令實現參數（用戶優先） |
 | `acl`（command 專屬） | `allow` / `deny` | 命令用戶黑白名單（按命令名 glob） |
 
 ```toml
-# message：覆寫文本觸發條件（與程式內條件 AND）
+# message：覆寫文字觸發條件（與程式內條件 AND）
 [ErisPulse.event.overrides.message.ChatModule]
 pattern = "閒聊*"
 
@@ -1489,7 +1489,7 @@ acl_default_allow = true
 ```python
 from ErisPulse.Core.Event import overrides
 
-overrides.message.set("ChatModule", pattern="閒聊*")   # message 文本條件
+overrides.message.set("ChatModule", pattern="閒聊*")   # message 文字條件
 overrides.notice.set("MyModule", detail_types=["group_increase"])
 overrides.command.set("MyModule", "restart", master=True)  # 命令參數
 overrides.acl.set("roll*", deny=["onebot11:u_bad"])    # 命令用戶黑名單
@@ -1500,7 +1500,7 @@ overrides.message.delete("ChatModule")  # 恢復開發者預設
 
 - 覆寫條件與處理器程式內條件**同時生效**（AND 語義）；`command` 參數與開發者聲明**深合併**（覆寫優先）
 - `detail_types`：事件缺 `detail_type` 時放行（不誤殺未知事件）
-- `pattern` / `regex`：無文本的事件（connect / heartbeat 等）不受約束，直接放行
+- `pattern` / `regex`：無文字的事件（connect / heartbeat 等）不受約束，直接放行
 - `command` 覆寫鍵 `master` 同步映射儲存鍵 `must_master`；禁用命令統一走 `acl` deny
 - 配置改了立即生效（熱更新），格式校驗告警（未知參數 / 壞條目忽略）
 
@@ -1519,7 +1519,7 @@ ErisPulse 將「認領」與「阻斷」兩個正交語義解耦，透過 `event
 | `event.done(...)` | 認領 | 阻斷 | 場景 |
 |-------------------|------|------|------|
 | `event.done()` | ✔ | ✔ | 命令 / 處理器處理完的標準做法 |
-| `event.done(stop=False)` | ✔ | ✘ | 僅認領：低優先級仍會執行（日誌 / 統計） |
+| `event.done(stop=False)` | ✔ | ✘ | 僅認領，讓低優先級仍會執行（日誌 / 統計） |
 | `event.done(claim=False)` | ✘ | ✔ | 僅阻斷（如防火牆 / 限流），但不做命令去重 |
 
 `event.done(claim=, stop=)` 是 `event.mark_processed(claim=, stop=)` 的別名，二者參數與行為完全等價。
@@ -1541,15 +1541,19 @@ async def firewall(event):
 
 ### 命令與回覆的 block 配置
 
-命令匹配成功 / `wait_reply` 匹配到回覆後，預設會阻斷傳播（向後兼容）。可透過配置放行，讓低優先級處理器（日誌 / 審計 / 權限）也能觀測這些訊息：
+**命令命中即認領**：訊息一旦匹配到已註冊命令名（含子命令/別名），無論後續作用域或權限判定結果如何，都會被認領並預設阻斷傳播——被權限拒絕的命令再也不會漏給低優先級訊息處理器（消除"命令被拒後 on_message 又響應一次"的雙重響應）。
+
+可透過配置放行阻斷，讓低優先級觀察者（日誌 / 審計 / 權限）也能看到這些訊息：
 
 ```toml
 [ErisPulse.event.command]
-block = false   # 命令訊息繼續流向低優先級處理器
+block = false   # 命令訊息繼續流向低優先級處理器（認領不受影響，不會重複消費）
 
 [ErisPulse.event.wait_reply]
 block = false   # 被 wait_reply 消費的回覆繼續流向低優先級處理器
 ```
+
+> 注意：`block` 只控制**阻斷**（stop），不影響**認領**（claim）——命中的命令永遠不會被訊息處理器重複消費；未命中任何命令的訊息照常流向訊息處理器。
 
 ## 通知事件處理
 
@@ -1599,8 +1603,8 @@ async def friend_request_handler(event):
     
     sdk.logger.info(f"收到好友請求: {user_id}, 附言: {comment}")
     
-    # 可以透過適配器 API 處理請求
-    # 具體實作請參考各適配器文件
+    # 可以透過介面器 API 處理請求
+    # 具體實作請參考各介面器文件
 ```
 
 ### 群邀請請求
@@ -1643,7 +1647,7 @@ async def heartbeat_handler(event):
 
 ### Bot 狀態查詢
 
-當適配器發送 meta 事件後，框架自動追蹤 Bot 狀態，你可以隨時查詢：
+當介面器發送 meta 事件後，框架自動追蹤 Bot 狀態，你可以隨時查詢：
 
 ```python
 from ErisPulse import sdk
@@ -1653,7 +1657,7 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
     telegram = sdk.adapter.get("telegram")
     await telegram.Send.To("user", "123456").Text("Bot 在線")
 
-# 列出當前所有在線 Bot
+# 列出目前所有在線 Bot
 bots = sdk.adapter.list_bots()
 for platform, bot_list in bots.items():
     for bot_id, info in bot_list.items():
@@ -1663,7 +1667,7 @@ for platform, bot_list in bots.items():
 summary = sdk.adapter.get_status_summary()
 ```
 
-## 互動式處理
+## 交互式處理
 
 ### 使用 reply 方法發送回覆
 
@@ -1777,7 +1781,7 @@ if await event.confirm("繼續嗎？", yes_words={"go", "繼續"}, no_words={"st
 
 ### 選擇菜單 (choose)
 
-用戶可回覆選項編號或選項文本：
+用戶可回覆選項編號或選項文字：
 
 ```python
 @command("choose", help="選擇")
@@ -1854,7 +1858,7 @@ async def wait_member_handler(event):
 
 ### 多輪對話 (conversation)
 
-創建可互動的多輪對話上下文：
+建立可互動的多輪對話上下文：
 
 ```python
 @command("survey", help="問卷調查")
@@ -1886,9 +1890,9 @@ ErisPulse 內建了中英文確認詞集合：
 - **確認詞** (`CONFIRM_YES_WORDS`): 是、yes、y、確認、確定、好、好的、ok、true、對、嗯、行、同意、沒問題...
 - **否定詞** (`CONFIRM_NO_WORDS`): 否、no、n、取消、不、不要、不行、cancel、false、錯、拒絕、不可以...
 
-## 事件資料訪問
+## 事件資料存取
 
-### Event 對象常用方法
+### Event 物件常用方法
 
 ```python
 @command("info")
@@ -1936,7 +1940,7 @@ async def info_handler(event):
 
 ### 平台擴展方法
 
-除了內建方法外，各平台適配器還會註冊平台專有方法，方便你訪問平台特有的資料。
+除了內建方法外，各平台介面器還會註冊平台專有方法，方便你存取平台特有的資料。
 
 ```python
 from ErisPulse.Core.Event import message
@@ -10598,24 +10602,23 @@ async def reload_handler(event):
 
 # 子命令（以空格分隔的多 token 命令名）
 # 匹配採用最長前綴：/admin add x 會優先命中 admin add（args 為 ["x"]）；
-# 子命令未聲明 permission 時繼承父鏈上最近聲明權限的祖先命令
+# 子命令未聲明 permission 時會繼承父鏈上最近聲明權限的祖先命令
 @command("admin add", help="新增管理員")
 async def admin_add_handler(event):
     pass
 ```
 
+**命名衝突規則**：命令名優先於別名。註冊與既有命令重名的別名時，該別名不生效並輸出警告；註冊與既有別名重名的命令時，命令名優先生效、死別名會自動移除——這兩類衝突都會有 WARNING 日誌，不會靜默劫持。
+
 ### 命令資訊
 
-所有命令查詢 API 均支援可選的**會話上下文**：傳入 `event=`（Event 或 dict）或
-顯式 `platform=` / `bot_id=` / `session_id=`（與 event 重疊時顯式參數優先），
-即按作用域模組維度過濾當前會話不可用模組的命令（詳見 advanced/scope.md）；
-全部為可選關鍵字參數，不傳時保持原有全量行為。
+所有命令查詢 API 均支援可選的**會話上下文**：傳 `event=`（Event 或 dict）或顯式 `platform=` / `bot_id=` / `session_id=`（與 event 重疊時，顯式參數優先），即按作用域模組維度過濾當前會話不可用模組的命令（詳見 advanced/scope.md）；全部為可選關鍵字參數，不傳時保持原有全量行為。
 
 ```python
 # 獲取命令幫助
 help_text = command.help()
 
-# 會話感知幫助：僅列出當前會話可用的命令
+# 會話感知幫助：只列出當前會話可用的命令
 help_text = command.help(event=event)
 
 # 獲取特定命令（返回合併覆蓋後的生效參數；會話不可用時返回 None）
@@ -17889,14 +17892,14 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 作用域回答四個問題：**哪些模組可用、誰的事件收不收、某模組處理什麼文字、
 模組能向外做什麼**。
 控制權完全交給使用者：在模組 / 適配器 / 處理器 / 出站呼叫註冊的**上層**（配置
-`ErisPulse.scope` 或執行時 `sdk.scope`）統一聲明，事件管線在入口、處理器篩選
+`ErisPulse.scope` 或執行時 `sdk.scope`）統一宣告，事件管線在入口、處理器過濾
 與出站閘口自動讀取並執行。
 
 | 維度 | 控制什麼 | 拒絕行為 | 配置路徑 |
 |------|---------|---------|---------|
-| **① 模組** | 哪些模組可用（平台 / Bot / 會話三級） | 靜默忽略（不回覆、不認領） | `scope.platforms / bots / sessions` |
+| **① 模組** | 哪些模組可用（平台 / Bot / 會話三級） | 靜默忽略（不回覆；命中的命令仍被認領阻斷） | `scope.platforms / bots / sessions` |
 | **② 身份** | 事件收不收（適配器 / Bot / 會話 / 用戶四級） | 入口完全丟棄（靜默） | `scope.identity.*` |
-| **③ 出站** | 模組能發起哪些出站呼叫（訊息 / API / 請求，方法級白名單/黑名單） | 失敗回應（`retcode=34601`） | `scope.actions` |
+| **③ 出站** | 模組能發起哪些出站呼叫（訊息 / API / 請求，方法級白名單黑名單） | 失敗回應（`retcode=34601`） | `scope.actions` |
 
 > **相關系統**：命令是特殊的訊息事件處理器，其用戶黑白名單（ACL）與
 > 實現參數覆寫由命令系統自持（`ErisPulse.event.command`），
@@ -17916,16 +17919,16 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 
 ## 匹配條目語法（全系統統一）
 
-作用域所有"名字列表"（模組名、身份鍵、出站條目）共用同一套匹配語法
+作用域所有「名字列表」（模組名、身份鍵、出站條目）共用同一套匹配語法
 （`ErisPulse.Core.text_match`）：
 
 | 語法 | 示例 | 說明 |
 |------|------|------|
 | 精確名 | `"Chat"` | 全值比較，**大小寫不敏感** |
-| glob | `"Tool*"`、`"spam_*"` | `*` 任意串 / `?` 單字符 / `[seq]` 字符集，大小寫不敏感 |
-| 正則 | `"re:^Danger.*"` | 以 `re:` 前綴聲明，正則 `search` 匹配，默认大小寫不敏感 |
+| glob | `"Tool*"`、`"spam_*"` | `*` 任意串 / `?` 單字元 / `[seq]` 字元集，大小寫不敏感 |
+| 正則 | `"re:^Danger.*"` | 以 `re:` 前綴宣告，正則 `search` 匹配，預設大小寫不敏感 |
 
-- 非法正則**靜默降級**為"不匹配"（不拋錯、不崩潰）
+- 非法正則**靜默降級**為「不匹配」（不拋錯、不崩潰）
 - 裝飾器參數（`pattern=` / `regex=`）為固定語義：`pattern` 是 glob、`regex` 是正則源碼
   （不加 `re:` 前綴）；作用域配置裡的正則條目**必須**帶 `re:` 前綴
 
@@ -17937,10 +17940,10 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 - **模組維度**：未命中任何綁定 → `default_allow` 決定放行 / 拒絕
 - **身份維度**：未命中任何策略 → `default_allow` 決定放行 / 拒絕
 
-設為 `false` 即開啟"隱式拒絕"嚴格模式：白名單式管理，
+設為 `false` 即開啟「隱式拒絕」嚴格模式：白名單式管理，
 **沒顯式允許的一律拒絕**。
 
-> **例外**：③ 出站維度**不受** `default_allow` 影響——它是獨立的收緊開關，
+> **例外**：③ 出站維度**不受** `default_allow` 影響——它是獨立的收紧開關，
 > 預設全允許，僅顯式規則才限制（框架層 owner 為空的呼叫恆放行）。
 > 這樣嚴格的全局模式不會意外掐斷所有模組的訊息回覆。
 > 命令 ACL 有獨立的 `ErisPulse.event.command.default_allow` 兜底，互不影響。
@@ -17982,8 +17985,8 @@ request = { deny = true }                                 # 禁止處理請求
 
 ## ① 模組維度
 
-回答"某個上下文裡，哪些模組可用"。預設全部開放；配置綁定後才開始篩選，
-**模組與適配器無需任何改動**。
+回答「某個上下文裡，哪些模組可用」。預設全部開放；配置綁定後才開始過濾，
+**模組與適配器無需任何修改**。
 
 ```mermaid
 flowchart TD
@@ -17991,20 +17994,21 @@ flowchart TD
     B --> C{"解析鏈：會話級 > Bot 級 > 平台級<br/>（子級 merge = true 時逐級並集）"}
     C -->|"命中"| D["blocked 命中 → 拒絕<br/>modules 非空 → 僅白名單放行<br/>都空 → default_allow"]
     C -->|"未命中"| E["default_allow（預設 true = 放行）"]
-    D -->|"拒絕"| Z["靜默忽略<br/>（不回覆、不認領，僅 TRACE 日誌）"]
+    D -->|"拒絕"| Z["靜默忽略<br/>（不回覆、僅 TRACE 日誌；命中的命令仍被認領阻斷）"]
 ```
 
 - **解析優先級：會話級 > Bot 級 > 平台級**，高優先級綁定**整體覆蓋**低優先級；
   子級綁定寫 `merge = true` 時改為與低優先級**逐條目並集**（modules / blocked 各自合併，
   `merge` 本身是控制鍵，不算條目）
-- **靜默語義**：被篩選模組的命令與處理器不觸發、不回覆、不認領（防止跨命令誤匹配），
-  僅 TRACE 級日誌可見（`core.scope.denied`）
+- **靜默語義**：被過濾模組的命令與處理器不觸發、不回覆，僅 TRACE 級日誌可見
+  （`core.scope.denied`）；命中的**命令**仍會被認領阻斷——命令文字不再漏給
+  低優先級訊息處理器，消除「命令被拒後訊息處理器又回應一次」的雙重回應歧義
 - **框架級處理器**（`scope_exempt=True` 或 owner 為空）不受影響；模組名為空（框架層資源）恆放行
 - **會話感知幫助與命令查詢**：命令查詢 API（`command.help` /
   `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`，
   以及 `module.get_commands_overview`）均支援可選 `event=` 或顯式
   `platform=` / `bot_id=` / `session_id=` 關鍵字——當前會話不可用模組的命令
-  不再出現在結果中（`get_command` 回傳 None、單命令幫助按"未註冊"處理，
+  不再出現在結果中（`get_command` 回傳 None、單命令幫助按「未註冊」處理，
   與靜默語義一致）；不傳上下文則保持全量行為
 
 ### 綁定繼承（merge）
@@ -18025,13 +18029,13 @@ merge = true                    # 該 Bot 實際生效 = ["Chat", "Tool", "Music
 
 ## ② 身份維度（事件准入）
 
-回答"誰的事件收不收"。被拒絕的事件在**分發入口完全丟棄**——
+回答「誰的事件收不收」。被拒絕的事件在**分發入口完全丟棄**——
 不進入中間件與任何處理器（含框架級），僅 TRACE 級日誌可見（`core.scope.identity_denied`）。
 
 - **解析優先級：用戶 > 會話 > Bot > 適配器**，取最具體的已配置策略；deny 優先於 allow
 - 每級綁定是二元策略：`{ allow = true }` 或 `{ deny = true }`
 - 用戶鍵支援 glob / 正則（如 `"spam_*"` 拉黑一批垃圾用戶）
-- 典型用法——上級 deny、個人 allow 做"例外放行"：
+- 典型用法——上級 deny、個人 allow 做「例外放行」：
 
 ```toml
 [ErisPulse.scope.identity.adapters.onebot11]
@@ -18042,7 +18046,7 @@ allow = ["u_admin"]   # 即使適配器級拒絕，u_admin 的事件仍然放行
 
 ## ③ 出站維度（限制模組發起出站呼叫）
 
-限制模組**發起的出站動作**：訊息發送 / 標準 API 動作 / 請求操作。
+約束模組**發起的出站動作**：訊息發送 / 標準 API 動作 / 請求操作。
 三類動作對應底層 DSL：`Event.reply` 與 `Send`（send）、`Api` / `call_api`（api）、
 `Request` 的 accept/reject（request）。模組在事件 handler 執行期發起的出站呼叫
 攜帶模組 owner，由本維度統一判定。
@@ -18154,7 +18158,7 @@ scope.delete_identity("onebot11", user_id="u_bad")
 ### ③ 出站維度
 
 ```python
-# 設置限制規則（allow: str|list；deny: bool|str|list；整規則替換語義）
+# 設定限制規則（allow: str|list；deny: bool|str|list；整規則替換語義）
 scope.set_action("MyModule", "send", deny=True)                    # 全禁發送
 scope.set_action("MyModule", "send", allow=["Text"])               # 僅允許發文本
 scope.set_action("MyModule", "api", deny=["set_*", "leave_*"])     # 禁管理類 API
@@ -18200,12 +18204,12 @@ del scope["platforms.onebot11"]      # 刪
   （`scope.cache_size` 可調），`set` / `delete` /
   配置熱更新（`config.updated` / `config.set`）自動失效
 - 所有維度配置改了**立即生效**，無需重啟
-- 作用域是"逐事件"判斷，不跨事件記憶：配置變了，下一個事件即按新規則
+- 作用域是「逐事件」判斷，不跨事件記憶：配置變了，下一個事件即按新規則
 
 ## 配置格式校驗
 
-加載 / 熱更新時逐節校驗配置格式：類型錯誤的節（如 `platforms` 寫成了字串）、
-非法的出站規則（如 `allow` 寫成數字）、未知動作名、未知的頂層鍵（如 `alow` 拼寫錯誤）
+載入 / 熱更新時逐節校驗配置格式：類型錯誤的節（如 `platforms` 寫成了字串）、
+非法的出站規則（如 `allow` 寫成數字）、未知動作名、未知的頂層鍵（如 `alow` 拼錯）
 會輸出 **WARNING** 並忽略對應節 / 條目，其餘合法配置照常生效——寫錯不再靜默失效。
 
 ## 常見問題與注意事項
@@ -18213,7 +18217,7 @@ del scope["platforms.onebot11"]      # 刪
 ### 1. 配置層級與覆蓋
 
 - 模組維度：會話級 > Bot 級 > 平台級，**整體覆蓋**（子級 `merge = true` 時逐條目並集）。
-  想"平台允許 Chat，Bot 再加 Music"，可在 Bot 級寫 `merge = true`，或同時列出兩者
+  想「平台允許 Chat，Bot 再加 Music」，可在 Bot 級寫 `merge = true`，或同時列出兩者
 - 身份維度：用戶 > 會話 > Bot > 適配器，取**最具體**的已配置策略（可做例外放行）
 - 命令用戶黑白名單：精確命令名優先於 glob 鍵（見 `event.command.acl`）
 
@@ -18226,11 +18230,11 @@ from ErisPulse import sdk
 
 print(sdk.scope.is_allowed(event.get_platform(), bot_id, "MyModule", session_id))
 print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, user_id))
-print(sdk.scope.stats())   # module_filtered / identity_denied > 0 說明被靜默篩選
+print(sdk.scope.stats())   # module_filtered / identity_denied > 0 說明被靜默過濾
 ```
 
-被篩選是**靜默**的（模組維度與身份維度不回覆，避免暴露規則），但統計會累積；
-命令維度被 ACL 拒絕會顯式回覆"權限不足"。
+被過濾是**靜默**的（模組維度與身份維度不回覆，避免暴露規則），但統計會累計；
+命令維度被 ACL 拒絕會顯式回覆「權限不足」。
 
 ### 3. 出站動作被拒時排查
 
@@ -18250,7 +18254,7 @@ print(sdk.scope.stats())   # action_denied > 0 說明有呼叫被擋截
 
 ## 拓撲樹 API
 
-`ModuleManager.get_topology()` 與 `AdapterManager.get_topology()` 提供模組/適配器歸屬關係資料，  
+`ModuleManager.get_topology()` 與 `AdapterManager.get_topology()` 提供模組/適配器歸屬關係資料，
 `sdk.get_topology()` 一鍵聚合（含作用域 `scope`）：
 
 ```python

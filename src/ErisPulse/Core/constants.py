@@ -421,6 +421,19 @@ DEFAULT_COMMAND_ALLOW_SPACE_PREFIX: Final[bool] = False
 # 配置默认值。True 时群消息中 /help 需要 @Bot /help 才生效，私聊不受影响。
 DEFAULT_COMMAND_MUST_AT_BOT: Final[bool] = False
 
+# 命令命中后是否阻断向低优先级处理器（如 on_message）传播。
+# 配置默认值，可被 ErisPulse.event.command.block 覆盖。
+# 使用位置: Core/Event/command.py 命令命中认领处（mark_processed 的 stop 参数）。
+# 修改影响: False 时命中命令的消息仍会被低优先级观察者（日志/审计）看到；
+# 注意认领（claim）不受此开关影响——命中命令永远不会被消息处理器重复消费。
+DEFAULT_COMMAND_BLOCK: Final[bool] = True
+
+# wait_reply 命中用户回复后是否阻断向低优先级处理器传播。
+# 配置默认值，可被 ErisPulse.event.wait_reply.block 覆盖。
+# 使用位置: Core/Event/interaction.py 回复命中认领处（mark_processed 的 stop 参数）。
+# 修改影响: False 时被等待方消费的回复仍会被低优先级观察者看到；认领不受影响。
+DEFAULT_WAIT_REPLY_BLOCK: Final[bool] = True
+
 # 是否忽略自身发送的消息。
 # 配置默认值。设为 False 会导致命令系统处理自己发出的消息（通常不期望）。
 DEFAULT_MESSAGE_IGNORE_SELF: Final[bool] = True
