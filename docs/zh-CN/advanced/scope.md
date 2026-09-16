@@ -11,7 +11,7 @@
 
 | 维度 | 控制什么 | 拒绝行为 | 配置路径 |
 |------|---------|---------|---------|
-| **① 模块** | 哪些模块可用（平台 / Bot / 会话三级） | 静默忽略（不回复、不认领） | `scope.platforms / bots / sessions` |
+| **① 模块** | 哪些模块可用（平台 / Bot / 会话三级） | 静默忽略（不回复；命中的命令仍被认领阻断） | `scope.platforms / bots / sessions` |
 | **② 身份** | 事件收不收（适配器 / Bot / 会话 / 用户四级） | 入口完全丢弃（静默） | `scope.identity.*` |
 | **③ 出站** | 模块能发起哪些出站调用（消息 / API / 请求，方法级白黑名单） | 失败响应（`retcode=34601`） | `scope.actions` |
 
@@ -108,14 +108,15 @@ flowchart TD
     B --> C{"解析链：会话级 > Bot 级 > 平台级<br/>（子级 merge = true 时逐级并集）"}
     C -->|"命中"| D["blocked 命中 → 拒绝<br/>modules 非空 → 仅白名单放行<br/>都空 → default_allow"]
     C -->|"未命中"| E["default_allow（默认 true = 放行）"]
-    D -->|"拒绝"| Z["静默忽略<br/>（不回复、不认领，仅 TRACE 日志）"]
+    D -->|"拒绝"| Z["静默忽略<br/>（不回复、仅 TRACE 日志；命中的命令仍被认领阻断）"]
 ```
 
 - **解析优先级：会话级 > Bot 级 > 平台级**，高优先级绑定**整体覆盖**低优先级；
   子级绑定写 `merge = true` 时改为与低优先级**逐条目并集**（modules / blocked 各自合并，
   `merge` 本身是控制键，不算条目）
-- **静默语义**：被过滤模块的命令与处理器不触发、不回复、不认领（防止跨命令误匹配），
-  仅 TRACE 级日志可见（`core.scope.denied`）
+- **静默语义**：被过滤模块的命令与处理器不触发、不回复，仅 TRACE 级日志可见
+  （`core.scope.denied`）；命中的**命令**仍会被认领阻断——命令文本不再漏给
+  低优先级消息处理器，消除"命令被拒后消息处理器又响应一次"的双重响应歧义
 - **框架级处理器**（`scope_exempt=True` 或 owner 为空）不受影响；模块名为空（框架层资源）始终放行
 - **会话感知帮助与命令查询**：命令查询 API（`command.help` /
   `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`，

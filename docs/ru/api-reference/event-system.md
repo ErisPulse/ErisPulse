@@ -15,7 +15,7 @@ flowchart LR
     C & D & E & F & G --> H["Обёртка Event<br/>reply / get_text / done и др."]
 ```
 
-## Модуль Command (Команды)
+## Модуль команд Command
 
 ### Регистрация команд
 
@@ -27,7 +27,7 @@ from ErisPulse.Core.Event import command
 async def hello_handler(event):
     await event.reply("Привет!")
 
-# Команда с алиасами
+# Команда с псевдонимами
 @command(["help", "h"], aliases=["помощь"], help="Показать помощь")
 async def help_handler(event):
     pass
@@ -50,17 +50,19 @@ async def secret_handler(event):
 async def reload_handler(event):
     pass
 
-# Подкоманды (команды с разделёнными пробелом токенами)
-# Совпадение происходит по самому длинному префиксу: /admin add x сначала попадает в admin add (args = ["x"]);
-# Подкоманды без объявленного permission наследуют право доступа от ближайшего предка, где оно объявлено
+# Подкоманда (многословные команды, разделённые пробелами)
+# Сопоставление происходит по самому длинному префиксу: /admin add x будет сопоставлено с admin add (args = ["x"]);
+# Подкоманды, у которых не объявлен permission, наследуют право доступа от ближайшей родительской команды
 @command("admin add", help="Добавить администратора")
 async def admin_add_handler(event):
     pass
 ```
 
-### Информация о команде
+**Правила конфликтов имён**: Имя команды имеет приоритет над псевдонимом. При регистрации псевдонима, совпадающего с существующей командой, этот псевдоним не будет активирован и будет выдано предупреждение; при регистрации команды с именем, совпадающим с существующим псевдонимом, имя команды будет активировано, а старый псевдоним будет удалён — оба типа конфликтов будут иметь WARNING-логи, и не будет тихого перехвата.
 
-Все API-запросы к командам поддерживают необязательный **контекст сессии**: передача `event=` (Event или dict) или явные `platform=` / `bot_id=` / `session_id=` (при совпадении с event, явные параметры имеют приоритет), т.е. фильтрация по области действия модуля (см. advanced/scope.md); все параметры необязательны, при отсутствии возвращается полный список команд.
+### Информация о командах
+
+Все API-запросы к информации о командах поддерживают необязательный **контекст сессии**: передача `event=` (Event или dict) или явные `platform=` / `bot_id=` / `session_id=` (явные параметры имеют приоритет при совмещении с event), то есть фильтрация команд по области действия модуля, исключая команды, недоступные в текущей сессии (см. advanced/scope.md); все параметры необязательны, при их отсутствии сохраняется поведение по умолчанию.
 
 ```python
 # Получить справку по команде
@@ -69,7 +71,7 @@ help_text = command.help()
 # Сессионная справка: показать только доступные в текущей сессии команды
 help_text = command.help(event=event)
 
-# Получить конкретную команду (возвращает объединённые параметры; возвращает None, если недоступна)
+# Получить конкретную команду (возвращает объединённые и перезаписанные параметры; возвращает None, если недоступна в сессии)
 cmd_info = command.get_command("admin")
 cmd_info = command.get_command("admin", event=event)
 
@@ -77,14 +79,14 @@ cmd_info = command.get_command("admin", event=event)
 all_commands = command.get_commands()
 all_commands = command.get_commands(event=event)
 
-# Получить все команды в группе (поддерживает фильтрацию по сессии)
+# Получить все команды из группы (поддерживает сессионную фильтрацию)
 admin_commands = command.get_group_commands("admin")
 admin_commands = command.get_group_commands("admin", event=event)
 
 # Получить все видимые команды
 visible_commands = command.get_visible_commands()
 
-# Сессионные видимые команды (достаточно event или явных параметров)
+# Видимые команды с сессионной фильтрацией (достаточно event или любых явных параметров)
 visible_commands = command.get_visible_commands(event=event)
 visible_commands = command.get_visible_commands(
     platform=event.get("platform"),
@@ -109,7 +111,7 @@ async def ask_command(event):
         name = reply.get_text()
         await event.reply(f"Привет, {name}!")
 
-# Ожидание ответа с валидацией
+# Ожидание ответа с проверкой
 def validate_age(event_data):
     try:
         age = int(event_data.get_text())
@@ -131,7 +133,7 @@ async def age_command(event):
         age = int(reply.get_text())
         await event.reply(f"Ваш возраст: {age} лет")
 
-# Ожидание ответа с колбэком
+# Ожидание ответа с обратным вызовом
 async def handle_confirmation(reply_event):
     text = reply_event.get_text().lower()
     if text in ["да", "yes", "y"]:

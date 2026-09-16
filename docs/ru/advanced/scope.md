@@ -1,28 +1,23 @@
-# Scope
+# Scope (область видимости)
 
 > [!NOTE]
-> This feature requires ErisPulse **2.8.0+**.
+> Эта функция требует ErisPulse **2.8.0+**.
 
-Scope answers four questions: **which modules are available, whether events from whom are received, what text is processed by a module, and what a module can do externally**. Control is fully handed over to the user: the **upper layer** (configured via `ErisPulse.scope` or runtime `sdk.scope`) where modules / adapters / processors / outbound calls are registered, declares these uniformly. The event pipeline automatically reads and executes these at entry, processor filtering, and outbound gateways.
+Область видимости отвечает на четыре вопроса: **какие модули доступны, какие события принимать, какой текст обрабатывает конкретный модуль, и что модуль может делать за пределами**. Полный контроль предоставляется пользователю: права на уровне **выше** (в конфигурации `ErisPulse.scope` или во время выполнения `sdk.scope`) объявляются при регистрации модуля / адаптера / обработчика / вызова на выходе, а цепочка событий автоматически читает и выполняет эти настройки на входе, при фильтрации обработчиков и на выходе.
 
-| Dimension | What is controlled | Rejection behavior | Configuration path |
+| Масштаб | Что контролируется | Поведение при отклонении | Путь настройки |
 |------|---------|---------|---------|
-| **① Module** | Which modules are available (platform / Bot / session three levels) | Silently ignored (no reply, no claim) | `scope.platforms / bots / sessions` |
-| **② Identity** | Whether to receive events (adapter / Bot / session / user four levels) | Completely discarded at entry (silent) | `scope.identity.*` |
-| **③ Outbound** | Which outbound calls a module can initiate (messages / API / requests, method-level whitelists and blacklists) | Failed response (`retcode=34601`) | `scope.actions` |
+| **① Модуль** | Какие модули доступны (три уровня: платформа / Bot / сессия) | Просто игнорировать (не отвечать; при этом команды, которые были распознаны, всё равно блокируются) | `scope.platforms / bots / sessions` |
+| **② Идентичность** | Принимать или нет события (четыре уровня: адаптер / Bot / сессия / пользователь) | Полностью отбрасывать на входе (без уведомления) | `scope.identity.*` |
+| **③ Выход** | Какие выходные вызовы может инициировать модуль (сообщения / API / запросы, белый и чёрный списки на уровне методов) | Ответ с ошибкой (код `retcode=34601`) | `scope.actions` |
 
-> **Related system**: Commands are special message event processors, their user allow/deny lists (ACL) and implementation parameter overrides are self-contained by the command system (`ErisPulse.event.command`), see [Introduction to Event Handling](../getting-started/event-handling.md) and [Configuration Guide](../user-guide/configuration.md).
+> **Связанные системы**: Команды являются специальными обработчиками событий сообщений, их пользовательские белый и чёрный списки (ACL) и перезапись параметров реализации управляются системой команд (`ErisPulse.event.command`). Подробнее см. в [Введение в обработку событий](../getting-started/event-handling.md) и [Руководство по конфигурации](../user-guide/configuration.md).
 
 {!--< tips >!--}
-1. Import the singleton via `from ErisPulse.Core import scope` (same object as `sdk.scope`)
-2. Check: `scope.is_allowed(...)` / `scope.is_identity_allowed(...)` /
-   `scope.is_action_allowed(...)` correspond to the three gates ①②③
-3. Read/write: dimension-specific parameter methods (IDE can auto-complete) —
-   `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`;
-   There are also dictionary-style fallback methods `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
-4. Event processor text condition overrides are found in
-   [Introduction to Event Handling · Event Overriding](../getting-started/event-handling.md#event-overriding-overwrite-the-behavior-of-any-event-type-without-modifying-the-module-code);
-   Command ACL / parameter overrides are found in [Introduction to Event Handling](../getting-started/event-handling.md)
+1. Импортируйте синглтон через `from ErisPulse.Core import scope` (объект `sdk.scope` — тот же самый)
+2. Проверка: `scope.is_allowed(...)` / `scope.is_identity_allowed(...)` / `scope.is_action_allowed(...)` — соответствующие три порта
+3. Чтение и запись: методы с параметрами по уровням (IDE подсказывает) — `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`; также есть универсальные методы с использованием словаря `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
+4. Переопределение текста обработчиком событий см. в [Введение в обработку событий · Переопределение событий](../getting-started/event-handling.md#переопределение-событий-без-изменения-кода-модуля-переопределяйте-поведение-любого-типа-событий); ACL команд и переопределение параметров см. в [Введение в обработку событий](../getting-started/event-handling.md)
 {!--< /tips >!--}
 
 ## Matching Entry Syntax (Unified Across the System)
@@ -88,48 +83,49 @@ api = { allow = ["get_*"] }                               # Allow only query-typ
 request = { deny = true }                                 # Disable request handling
 ```
 
-## ① Module Dimension
+## ① Модульный уровень
 
-Answers "which modules are available in a given context." By default, all are open; filtering starts only after configuration binding,
-**no changes are needed for modules or adapters**.
+Ответ на вопрос: "Какие модули доступны в определённом контексте?" По умолчанию все модули открыты; фильтрация начинается только после привязки конфигурации.
+**Модули и адаптеры не требуют никаких изменений**.
 
 ```mermaid
 flowchart TD
-    A["Event arrives at a module's handler/command"] --> B{"scope.is_allowed<br/>(platform, bot, module, session)"}
-    B --> C{"Parse chain: session-level > Bot-level > platform-level<br/> (if sub-level merge = true, merge entries step by step)"}
-    C -->|"Matched"| D["blocked matched → deny<br/>modules non-empty → only whitelist allowed<br/>both empty → default_allow"]
-    C -->|"Not matched"| E["default_allow (default true = allow)"]
-    D -->|"Denied"| Z["Silently ignored<br/> (no reply, no claim, only TRACE log visible)"]
+    A["Событие достигает обработчика/команды модуля"] --> B{"scope.is_allowed<br/>(platform, bot, module, session)"}
+    B --> C{"Анализ цепочки: сеанс > уровень бота > уровень платформы<br/> (если merge = true, объединение поэлементно)"}
+    C -->|"Соответствует"| D["blocked совпадает → отклонить<br/>modules не пуст → разрешить только по белому списку<br/>оба пусты → default_allow"]
+    C -->|"Не соответствует"| E["default_allow (по умолчанию true = разрешить)"]
+    D -->|"Отклонено"| Z["Тихое игнорирование<br/> (не отвечать, только лог TRACE; при этом команды остаются заблокированными)"]
 ```
 
-- **Parse priority: session-level > Bot-level > platform-level**, higher priority bindings **fully override** lower ones;
-  if a sub-level binding sets `merge = true`, it instead performs a **per-entry union** with lower levels (both `modules` and `blocked` are merged separately,
-  `merge` itself is a control key and not counted as an entry)
-- **Silent semantics**: Commands and processors of filtered modules do not trigger, reply, or claim (to prevent cross-command mis-matches),
-  only TRACE-level logs are visible (`core.scope.denied`)
-- **Framework-level processors** (`scope_exempt=True` or owner is empty) are unaffected; modules with empty names (framework-level resources) are always allowed
-- **Session-aware help and command queries**: Command query APIs (`command.help` /
+- **Приоритет анализа: сеанс > уровень бота > уровень платформы**, привязки высокого приоритета **полностью перекрывают** привязки низкого приоритета;
+  если в привязке подуровня указано `merge = true`, то происходит **объединение поэлементно** с привязками низкого уровня (объединяются `modules` и `blocked` по отдельности,
+  `merge` сам по себе является ключом и не считается элементом)
+- **Тихая семантика**: команды и обработчики модуля, отфильтрованные по этой схеме, не запускаются и не отвечают, видны только логи уровня TRACE
+  (`core.scope.denied`); при этом **команды**, которые были заблокированы, по-прежнему считаются заблокированными — текст команды больше не передаётся
+  низкоуровневым обработчикам сообщений, устраняя двойную реакцию, когда команда отклоняется, а затем сообщение обрабатывается ещё раз
+- **Обработчики на уровне фреймворка** (`scope_exempt=True` или `owner` пуст) не затрагиваются; модули с пустым именем (ресурсы на уровне фреймворка) всегда разрешаются
+- **Помощь и запросы команд с учётом сеанса**: API запросов команд (`command.help` /
   `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`,
-  and `module.get_commands_overview`) all support optional `event=` or explicit
-  `platform=` / `bot_id=` / `session_id=` keywords—commands from modules unavailable in the current session
-  no longer appear in the results (`get_command` returns None, single command help is treated as "not registered",
-  consistent with silent semantics); if no context is provided, full behavior is maintained
+  а также `module.get_commands_overview`) поддерживают необязательный параметр `event=` или явные
+  ключевые слова `platform=` / `bot_id=` / `session_id=` — команды, недоступные в текущем сеансе, больше не отображаются в результатах (в `get_command` возвращается None, одиночная помощь обрабатывается как "не зарегистрировано",
+  что соответствует тихой семантике); если контекст не передаётся, поведение остаётся полным
 
-### Binding Inheritance (merge)
+### Наследование привязок (merge)
 
-The default full override semantics are clear and predictable; when you need to **append** to an upper-level binding, set `merge = true` in the sub-level:
+По умолчанию семантика полного перекрытия привязок ясна и предсказуема; если необходимо добавить к привязкам верхнего уровня
+**дополнительные значения**, в привязке подуровня укажите `merge = true`:
 
 ```toml
 [ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Tool"]      # Platform-level: allow Chat, Tool
+modules = ["Chat", "Tool"]      # Уровень платформы: разрешить Chat, Tool
 
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Music"]
-merge = true                    # The actual effect for this Bot = ["Chat", "Tool", "Music"]
+merge = true                    # Для этого бота фактически生效 = ["Chat", "Tool", "Music"]
 ```
 
-- **Merge rules**: `modules` and `blocked` each take a **union**; within a binding, `blocked` still takes precedence over `modules`
-- **Chained merging**: Platform → Bot → Session are layered step by step, each level independently decides `merge` or override
+- **Правила объединения**: `modules` и `blocked` объединяются **поэлементно**; внутри привязки `blocked` по-прежнему имеет приоритет над `modules`
+- **Цепочка объединения**: платформа → бот → сеанс объединяются поэтапно, каждый уровень независимо определяет, использовать `merge` или перекрытие
 
 ## ② Identity Dimension (Event Admission)
 
