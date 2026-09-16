@@ -42,8 +42,8 @@ import asyncio
 import time
 from typing import TYPE_CHECKING, Any
 
-from ...runtime.context import current_owner
 from ...runtime import get_event_config
+from ...runtime.context import current_owner
 from ..Bases.errors import InteractionCancelled, SessionOccupiedError
 from ..constants import (
     DEFAULT_INTERACTION_LEASE_TTL_SECS,
