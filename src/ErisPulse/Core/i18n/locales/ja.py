@@ -658,6 +658,7 @@ TRANSLATIONS = {
     "core.di.not_callable": "Depends で宣言された依存は呼び出し可能ではありません：{dep}",
     "core.di.sync_ctx_async_dep": "同期実行コンテキストでハンドラー {handler} が非同期依存を宣言しているためスキップしました",
     "core.config.field_above_max": "{field} の値 {value} は最大値 {max} を超えています",
+    "core.config.field_too_long": "{field} の長さ {length} が最大長 {max} を超えています",
     "core.config.field_below_min": "{field} の値 {value} は最小値 {min} を下回っています",
     "core.config.field_option_invalid": "{field} の値 '{value}' は許可されたオプションにありません",
     "core.config.field_required_empty": "{field}（{desc}）は空にできません",

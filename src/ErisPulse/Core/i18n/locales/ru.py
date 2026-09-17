@@ -658,6 +658,7 @@ TRANSLATIONS = {
     "core.di.not_callable": "Зависимость, объявленная через Depends, не является вызываемой: {dep}",
     "core.di.sync_ctx_async_dep": "Обработчик {handler} объявляет асинхронную зависимость в синхронном контексте выполнения; пропущен",
     "core.config.field_above_max": "Значение {field} {value} больше максимума {max}",
+    "core.config.field_too_long": "Длина {field} {length} превышает максимум {max}",
     "core.config.field_below_min": "Значение {field} {value} меньше минимума {min}",
     "core.config.field_option_invalid": "Значение {field} '{value}' не входит в разрешённые параметры",
     "core.config.field_required_empty": "{field} ({desc}) не может быть пустым",

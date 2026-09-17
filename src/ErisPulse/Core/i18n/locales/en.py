@@ -658,6 +658,7 @@ TRANSLATIONS = {
     "core.di.not_callable": "Dependency declared via Depends is not callable: {dep}",
     "core.di.sync_ctx_async_dep": "Handler {handler} declares an async dependency in a sync execution context; skipped",
     "core.config.field_above_max": "{field} value {value} is above maximum {max}",
+    "core.config.field_too_long": "{field} length {length} exceeds maximum {max}",
     "core.config.field_below_min": "{field} value {value} is below minimum {min}",
     "core.config.field_option_invalid": "{field} value '{value}' not in allowed options",
     "core.config.field_required_empty": "{field} ({desc}) cannot be empty",
