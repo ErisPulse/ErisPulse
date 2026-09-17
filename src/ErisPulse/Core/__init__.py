@@ -19,6 +19,9 @@ from .Bases import (
     BaseStorage,
     BaseQueryBuilder,
     KVQueryBuilder,
+    BaseModel,
+    Model,
+    Field,
 )
 from .Bases.sql_base import AlterTableBuilder, SQLDialect, SQLQueryBuilder, SQLStorageBase
 from .Bases import HttpRequest, WebSocketConnection, WebSocketConnectionBase, WSMessage
@@ -79,6 +82,9 @@ __all__ = [
     "BaseHttpResponse",  # HTTP 响应基类
     "BaseModule",  # 模块基类
     "BaseQueryBuilder",  # 查询构建器基类
+    "BaseModel",  # ORM 模型基类（= Model）
+    "Model",  # ORM 模型基类（Active Record）
+    "Field",  # ORM 字段声明描述符
     "BaseStorage",  # 存储基类
     "BatchContext",  # 批量发送上下文类
     "Client",  # HTTP 客户端类

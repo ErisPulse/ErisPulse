@@ -658,6 +658,7 @@ TRANSLATIONS = {
     "core.di.not_callable": "依赖注入（Depends）声明的依赖不可调用：{dep}",
     "core.di.sync_ctx_async_dep": "同步执行上下文中处理器 {handler} 声明了异步依赖，已跳过该处理器",
     "core.config.field_above_max": "{field} 的值 {value} 大于最大值 {max}",
+    "core.config.field_too_long": "{field} 长度 {length} 超过最大长度 {max}",
     "core.config.field_below_min": "{field} 的值 {value} 小于最小值 {min}",
     "core.config.field_option_invalid": "{field} 的值 '{value}' 不在允许的选项中",
     "core.config.field_required_empty": "{field}（{desc}）不能为空",

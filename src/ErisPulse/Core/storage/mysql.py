@@ -68,6 +68,9 @@ class MySQLDialect(SQLDialect):
         """{!--< internal-use >!--} ``INT/BIGINT AUTO_INCREMENT PRIMARY KEY``"""
         base = "INT" if base_type.upper() in ("INTEGER", "INT") else base_type.upper()
         return f"{base} AUTO_INCREMENT PRIMARY KEY"
+    def last_insert_id_sql(self) -> str:
+        """{!--< internal-use >!--} 连接级 LAST_INSERT_ID()"""
+        return "SELECT LAST_INSERT_ID()"
 
     _type_map: dict[str, str] = {
         "CLOB": "LONGTEXT",

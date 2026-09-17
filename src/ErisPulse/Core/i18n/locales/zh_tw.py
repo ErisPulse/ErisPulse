@@ -658,6 +658,7 @@ TRANSLATIONS = {
     "core.di.not_callable": "依賴注入（Depends）宣告的依賴不可調用：{dep}",
     "core.di.sync_ctx_async_dep": "同步執行上下文中處理器 {handler} 宣告了非同步依賴，已跳過該處理器",
     "core.config.field_above_max": "{field} 的值 {value} 大於最大值 {max}",
+    "core.config.field_too_long": "{field} 長度 {length} 超過最大長度 {max}",
     "core.config.field_below_min": "{field} 的值 {value} 小於最小值 {min}",
     "core.config.field_option_invalid": "{field} 的值 '{value}' 不在允許的選項中",
     "core.config.field_required_empty": "{field}（{desc}）不能為空",

@@ -70,6 +70,9 @@ class PostgresDialect(SQLDialect):
         """{!--< internal-use >!--} ``SERIAL/BIGSERIAL PRIMARY KEY``"""
         base = "BIGSERIAL" if base_type.upper().startswith("BIG") else "SERIAL"
         return f"{base} PRIMARY KEY"
+    def last_insert_id_sql(self) -> str:
+        """{!--< internal-use >!--} 连接级 lastval()"""
+        return "SELECT lastval()"
 
     _type_map: dict[str, str] = {
         "DOUBLE": "DOUBLE PRECISION",
