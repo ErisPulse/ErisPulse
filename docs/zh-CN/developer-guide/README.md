@@ -11,6 +11,10 @@
 3. [Event 包装类详解](modules/event-wrapper.md) - Event 对象的完整说明
 4. [模块最佳实践](modules/best-practices.md) - 开发高质量模块的建议
 
+### 数据模型
+
+1. [数据模型层（ORM）](orm.md) - 声明式模型、自动建表与增删改查
+
 ### 适配器开发
 
 1. [适配器开发入门](adapters/getting-started.md) - 创建第一个适配器

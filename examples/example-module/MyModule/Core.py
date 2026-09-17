@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from ErisPulse import SDK
 from ErisPulse.Core import Depends
-from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, I18nKey, ModuleMeta
+from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, Field, I18nKey, Model, ModuleMeta
 from ErisPulse.Core.Event import Event, command, message, notice
 from ErisPulse.runtime import off_cleanup, on_cleanup
 
@@ -281,6 +281,18 @@ class Main(BaseModule):
         # 可用于命令 / 事件处理器 / 生命周期钩子 / SSE 路由全部注入点
         async def get_user_name(event: Event):
             return event.get_user_name() or event.get_user_id()
+
+        # 数据模型（ORM，可选）：继承 Model 声明字段即得自动建表与 CRUD，
+        # 后端由 ErisPulse.storage.backend 配置决定（sqlite/mysql/postgres 透明切换）
+        class NoteRecord(Model):
+            __tablename__ = "mymodule_notes"
+
+            id: int = Field(primary_key=True, autoincrement=True)
+            content: str = Field(max_length=255)
+            created_by: str = Field(default="")
+
+        async def _init_note_table(self):
+            await self.NoteRecord.create_table()
 
         @command("greet", args="[name:str]", help="问候示例（依赖注入）")
         async def greet_command(event: Event, name: str = "", user_name=Depends(get_user_name)):

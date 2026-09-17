@@ -44,6 +44,7 @@ from .config_schema import (
     BotAccountConfig,
     I18nConfig,
 )
+from .model import BaseModel, ColumnExpr, Condition, Field, Model, QuerySet
 from .i18n_schema import (
     BaseI18n,
     I18nKey,
@@ -63,6 +64,7 @@ __all__ = [
     "BaseHttpResponse",
     # i18n 键声明 Schema 基类（命名对齐 BaseConfig）
     "BaseI18n",
+    "BaseModel",
     "BaseModule",
     "BaseQueryBuilder",
     "BaseStorage",
@@ -71,7 +73,10 @@ __all__ = [
     "ClientConnectionError",
     "ClientError",
     "ClientTimeoutError",
+    "Condition",
+    "ColumnExpr",
     "ErisPulseError",
+    "Field",
     "HTTPStatusError",
     "HttpRequest",
     # i18n 配置 Schema（控制显示语言）
@@ -82,11 +87,13 @@ __all__ = [
     "InteractionCancelled",
     "InteractionError",
     "KVQueryBuilder",
+    "Model",
     "ModuleCallError",
     "ModuleCallTimeoutError",
     "ModuleError",
     "ModuleMeta",
     "ModuleNotAvailableError",
+    "QuerySet",
     "RequestDSL",
     "SendBuilder",
     "SendContext",

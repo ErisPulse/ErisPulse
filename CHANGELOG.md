@@ -104,7 +104,7 @@
   - `Core/constants` 新增 `EVENT_ADAPTER_EVENT_BLOCKED`（`adapter.event.blocked`）事件名常量并登记 `LifecycleManager.STANDARD_EVENTS`
   - `Core/di` 统一依赖注入：处理器参数以 `db=Depends(get_session)` 声明依赖，框架在调用前自动以上下文对象（Event / 生命周期 data / 路由 HttpRequest、SseEmitter）调用依赖函数并按名注入；覆盖命令处理器、事件处理器（全部事件类型）、生命周期钩子、SSE 路由四个注入点与模块 `on_load` / `on_unload`，同步与异步依赖均可声明；声明在注册期校验（fail-fast），不声明时零开销（分发期无反射）；导出 `ErisPulse.Core.Depends`
   - `Core/di` 依赖声明语法糖：`Depends.module("DB", "get_session", ...)` 声明其它模块的服务（支持固定参数透传，等价于依赖函数内调用 `sdk.module.call(...)`）
-  - `Core/Bases/model` 内置数据模型层（ORM）阶段一（EPRFC-2026-001 方向四）：继承 `Model` 并以 `Field` 声明字段即得自动建表与 Active Record CRUD；从 `ErisPulse.Core.Bases` 导入（`Model` / `Field`，含 `BaseModel` 别名）
+  - `Core/Bases/model` 内置数据模型层（ORM）阶段一（EPRFC-2026-001 方向四）：继承 `Model` 并以 `Field` 声明字段即得自动建表与 Active Record CRUD（`await User.create(name=..)` / `User.where(User.age > 18).all()` / save / delete / 批量操作）；SQLite / MySQL / PostgreSQL 由存储配置透明切换；与声明式配置类共享约束词表、校验器引擎（`validate_field_constraints`）与类型类别注册表（`python_type_category`），类基座分立互不影响；从 `ErisPulse.Core.Bases` 导入（`Model` / `Field`，含 `BaseModel` 别名，导入规则与 BaseConfig 一致）
   - `Core/Bases/config_schema` 配置环境变量映射（EPRFC-2026-001 方向九）：声明式配置字段以 `field(metadata={"env": "MYMODULE_API_KEY"})` 绑定环境变量，优先级 环境变量 > config.toml > 声明默认值；值按字段注解自动转换（str/int/float/bool，list/dict 走 JSON），转换失败忽略覆盖并告警；读取、热更新、校验同一管道保证声明一处处处生效；配置面板 Schema 标注 env 名、config.toml 模板注释提示可用环境变量（不写入实际值防泄露）；未声明 env 的字段行为完全不变，Docker / CI 场景免改配置文件
   - `Core/Event/command` `args=` / `options=` 声明与 `Depends` 参数重名时注册期抛 `ValueError`（fail-fast）
 

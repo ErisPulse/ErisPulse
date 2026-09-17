@@ -232,6 +232,35 @@ def _type_default(type_hint) -> object:
     return ""
 
 
+def python_type_category(type_hint) -> str:
+    """
+    识别 Python 类型注解的类别（声明式字段层的类型映射同源注册表）
+
+    配置层（TOML 类型映射 :func:`_python_type_to_toml_type`）与 ORM 层
+    （SQL 方言列类型映射，见 ``Core/Bases/model.py``）从同一类别派生各自的
+    目标类型——一份识别逻辑，两侧消费。
+
+    :param type_hint: Python 类型注解
+    :return: 类别名（"int" / "float" / "bool" / "list" / "dict" / "str"）
+
+    {!--< tips >!--}
+    1. 新增受支持的注解类别时，本函数与两个下游映射需同步扩展
+    {!--< /tips >!--}
+    """
+    type_str = str(type_hint).lower()
+    if "int" in type_str:
+        return "int"
+    if "float" in type_str:
+        return "float"
+    if "bool" in type_str:
+        return "bool"
+    if "list" in type_str:
+        return "list"
+    if "dict" in type_str:
+        return "dict"
+    return "str"
+
+
 def _python_type_to_toml_type(type_hint) -> str:
     """
     将 Python 类型注解转为 TOML 类型字符串
@@ -242,18 +271,14 @@ def _python_type_to_toml_type(type_hint) -> str:
     :param type_hint: Python 类型注解
     :return: TOML 类型名（integer/float/boolean/array/table/string）
     """
-    type_str = str(type_hint).lower()
-    if "int" in type_str:
-        return "integer"
-    if "float" in type_str:
-        return "float"
-    if "bool" in type_str:
-        return "boolean"
-    if "list" in type_str:
-        return "array"
-    if "dict" in type_str:
-        return "table"
-    return "string"
+    return {
+        "int": "integer",
+        "float": "float",
+        "bool": "boolean",
+        "list": "array",
+        "dict": "table",
+        "str": "string",
+    }[python_type_category(type_hint)]
 
 
 def _format_toml_value(value) -> str:
@@ -717,6 +742,67 @@ def _notify_instance_config_update(
             logger.error(i18n.t(i18n_key, **params))
         except Exception:
             pass
+
+
+def validate_field_constraints(
+    label: str,
+    value: Any,
+    *,
+    required: bool = False,
+    choices: "list | tuple | None" = None,
+    min_value: "int | float | None" = None,
+    max_value: "int | float | None" = None,
+    max_length: "int | None" = None,
+) -> "list[str]":
+    """
+    字段约束校验共享引擎（声明式字段层的校验器同源实现）
+
+    配置写入校验（:func:`validate_config` 的约束步骤）与 ORM 插入/更新
+    校验（``Core/Bases/model.py``）共用同一判定语义：required 非空、
+    枚举、数值范围、字符串长度。参数由各消费方从自己的声明形态解析
+    （config 从 metadata/ui 元数据，ORM 从 Field 参数）。
+
+    :param label: 字段标签（错误信息定位用，如字段名）
+    :param value: 待校验的值
+    :param required: 是否必填（非空）
+    :param choices: 枚举选项（None 不校验）
+    :param min_value: 数值下界（None 不校验）
+    :param max_value: 数值上界（None 不校验）
+    :param max_length: 字符串最大长度（None 不校验）
+    :return: 本地化错误列表（空列表 = 通过）
+
+    {!--< tips >!--}
+    1. 空值（None/空串/空容器）跳过除 required 外的全部检查——与
+       validate_config 的既有语义一致
+    {!--< /tips >!--}
+    """
+    errors: list[str] = []
+
+    is_empty = value is None or (isinstance(value, str) and not value.strip()) or (
+        isinstance(value, (list, dict)) and len(value) == 0
+    )
+    if is_empty:
+        if required:
+            errors.append(i18n.t("core.config.field_required_empty", field=label, desc=label))
+        return errors
+
+    if choices:
+        plain_opts = [o.get("value") if isinstance(o, dict) else o for o in choices]
+        if value not in plain_opts:
+            errors.append(i18n.t("core.config.field_option_invalid", field=label, value=value))
+
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        if min_value is not None and value < min_value:
+            errors.append(i18n.t("core.config.field_below_min", field=label, value=value, min=min_value))
+        if max_value is not None and value > max_value:
+            errors.append(i18n.t("core.config.field_above_max", field=label, value=value, max=max_value))
+
+    if max_length is not None and isinstance(value, str) and len(value) > max_length:
+        errors.append(
+            i18n.t("core.config.field_too_long", field=label, length=len(value), max=max_length)
+        )
+
+    return errors
 
 
 def validate_config(instance) -> list[str]:

@@ -103,8 +103,11 @@ def _validate_column_type(col_type: str) -> None:
         raise ValueError(i18n.t("core.storage.col_type_empty"))
     stripped = col_type.strip().upper()
     first_word = stripped.split()[0] if stripped.split() else ""
-    if first_word.rstrip("(") not in _VALID_COLUMN_TYPES and not _IDENTIFIER_RE.match(
-        first_word.rstrip("(")
+    # 首词剥除括号参数（如 VARCHAR(64) → VARCHAR）后再匹配白名单，
+    # 与 SQLDialect._map_first_word 的解析口径一致
+    base_word = first_word.split("(", 1)[0]
+    if base_word.rstrip("(") not in _VALID_COLUMN_TYPES and not _IDENTIFIER_RE.match(
+        base_word
     ):
         raise ValueError(i18n.t("core.storage.unsafe_col_type", type=col_type))
     dangerous_chars = (";", "--", "/*", "*/", "\x00")
@@ -221,6 +224,18 @@ class SQLDialect:
         :return: 方言等价定义
         """
         return f"{base_type} PRIMARY KEY AUTOINCREMENT"
+
+    def last_insert_id_sql(self) -> str:
+        """
+        生成"最近一次插入的自增主键"查询 SQL
+
+        供 ORM（Core/Bases/model.py）在 INSERT 后同一连接上回填自增主键。
+        须与 INSERT 在同一连接/事务内执行（MySQL LAST_INSERT_ID() 与
+        PostgreSQL lastval() 均为连接级语义）。
+
+        :return: 查询 SQL（内部 ``?`` 占位符记号，无参数）
+        """
+        return "SELECT last_insert_rowid()"
 
     def _map_first_word(self, word: str) -> str:
         """{!--< internal-use >!--} 按首词映射列类型，保留括号参数与后缀"""
