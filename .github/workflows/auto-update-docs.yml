@@ -32,7 +32,7 @@ jobs:
     steps:
       - name: Generate App Token
         id: app-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.ERISBOT_APP_ID }}
           private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
@@ -206,7 +206,7 @@ jobs:
       - name: Refresh token for translation commit
         id: refresh-token-translate
         if: steps.translate-docs.outputs.docs_updated == 'true'
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.ERISBOT_APP_ID }}
           private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
@@ -316,7 +316,7 @@ jobs:
       - name: Refresh token for generated docs commit
         id: refresh-token-gen
         if: steps.update-api.outputs.api_updated == 'true' || steps.generate-ai-prompts.outputs.ai_prompts_updated == 'true' || steps.generate-docs-index.outputs.docs_index_updated == 'true'
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.ERISBOT_APP_ID }}
           private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
