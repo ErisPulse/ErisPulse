@@ -15,11 +15,17 @@ import inspect
 import re
 import sys
 import threading
+import time
 import weakref
 from typing import TYPE_CHECKING, Any, cast
 
 from ..Core.Bases.errors import ModuleNotAvailableError
-from ..Core.constants import ACTIVATION_STUB_PRIORITY, MODULE_ENTRY_POINT_GROUP, MODULE_SOURCE_PLUGIN_FOLDER
+from ..Core.constants import (
+    ACTIVATE_RETRY_COOLDOWN_SECS,
+    ACTIVATION_STUB_PRIORITY,
+    MODULE_ENTRY_POINT_GROUP,
+    MODULE_SOURCE_PLUGIN_FOLDER,
+)
 from ..Core.i18n import i18n
 from ..Core.lifecycle import lifecycle
 from ..Core.logger import logger
@@ -1810,9 +1816,10 @@ class ModuleActivator(LazyModule):
     参与模块作用域过滤；命令触发器 stub 以同名占位命令注册到命令管理器。
 
     {!--< tips >!--}
-    1. stub 带 owner 走作用域过滤：模块未对该 Bot / 会话 / 平台启用时不触发
+    1. stub 以 owner 走作用域过滤：模块未对该 Bot / 会话 / 平台启用时不触发
     2. 激活成功后自动注销所有 stub，模块按普通模块继续运行
-    3. 激活失败不重试，stub 一并注销，避免每次事件都重复尝试
+    3. 激活失败保留 stub：冷却期（ACTIVATE_RETRY_COOLDOWN_SECS）内短路避免
+       重复尝试，冷却后再次触发可自动重试
     {!--< /tips >!--}
     """
 
@@ -1820,6 +1827,7 @@ class ModuleActivator(LazyModule):
     __slots__ = (
         "_activated",
         "_activation_failed",
+        "_activation_failed_at",
         "_activation_lock",
         "_command_meta",
         "_command_stubs",
@@ -1852,6 +1860,7 @@ class ModuleActivator(LazyModule):
         object.__setattr__(self, "_activation_lock", asyncio.Lock())
         object.__setattr__(self, "_activated", False)
         object.__setattr__(self, "_activation_failed", False)
+        object.__setattr__(self, "_activation_failed_at", 0.0)
         object.__setattr__(self, "_event_stubs", [])
         object.__setattr__(self, "_command_stubs", [])
 
@@ -2016,6 +2025,10 @@ class ModuleActivator(LazyModule):
         """
         激活模块
 
+        激活失败后保留触发器 stub：冷却期（ACTIVATE_RETRY_COOLDOWN_SECS）内
+        短路返回（避免每次事件都重复尝试），冷却结束后再次触发可自动重试——
+        修复此前"失败即彻底失联（stub 一并注销）无恢复路径"的问题。
+
         :return: bool 是否激活成功
         """
         if object.__getattribute__(self, "_activated"):
@@ -2023,15 +2036,23 @@ class ModuleActivator(LazyModule):
         async with object.__getattribute__(self, "_activation_lock"):
             if object.__getattribute__(self, "_activated"):
                 return True
+            # 失败冷却：距上次失败不足冷却期则短路（stub 仍在，事件照常触发到此）
+            if object.__getattribute__(self, "_activation_failed"):
+                elapsed = time.monotonic() - object.__getattribute__(self, "_activation_failed_at")
+                if elapsed < ACTIVATE_RETRY_COOLDOWN_SECS:
+                    return False
+                # 冷却结束：清除失败标志（含初始化层），允许重试
+                object.__setattr__(self, "_activation_failed", False)
+                object.__setattr__(self, "_init_failed", False)
             await self._initialize()
             if object.__getattribute__(self, "_initialized"):
                 object.__setattr__(self, "_activated", True)
                 # 成功：注销所有 stub，避免转发时把 stub 自身当作目标递归
                 self._deregister_stubs()
                 return True
-            # 失败不重试：注销 stub，避免后续事件重复尝试
+            # 失败：保留 stub（用户再次触发可冷却重试），记录失败时间供冷却判定
             object.__setattr__(self, "_activation_failed", True)
-            self._deregister_stubs()
+            object.__setattr__(self, "_activation_failed_at", time.monotonic())
             logger.error(
                 i18n.t(
                     "loader.activate.activation_failed",

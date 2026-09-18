@@ -59,6 +59,7 @@ from ..Core.constants import (
     DEFAULT_UNINIT_TIMEOUT_SECS,
     DEFAULT_USE_GLOBAL_DB,
     DEFAULT_WAIT_REPLY_BLOCK,
+    DEFAULT_WAIT_REPLY_CMDPASS,
 )
 
 # 默认配置
@@ -150,6 +151,8 @@ DEFAULT_ERISPULSE_CONFIG = {
         "wait_reply": {
             # wait_reply 命中回复后是否阻断向低优先级处理器传播（认领不受影响）
             "block": DEFAULT_WAIT_REPLY_BLOCK,
+            # 等待期间是否跳过命令匹配（False=命中已注册命令的消息放行给命令分发器执行）
+            "cmdpass": DEFAULT_WAIT_REPLY_CMDPASS,
         },
     },
     # 框架主人系统配置

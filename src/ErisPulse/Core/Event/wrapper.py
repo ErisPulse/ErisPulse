@@ -23,6 +23,7 @@ from .. import adapter, logger
 from ..constants import (
     CONFIRM_NO_WORDS,
     CONFIRM_YES_WORDS,
+    CONVERSATION_CHECKPOINT_GC_INTERVAL_SECS,
     CONVERSATION_KEY_PREFIX,
     DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS,
     DEFAULT_MAX_RETRIES,
@@ -237,6 +238,7 @@ async def _builtin_wait_reply(
     method: str = DEFAULT_SEND_METHOD,
     pattern: str | None = None,
     regex: str | None = None,
+    cmdpass: bool | None = None,
 ) -> Optional["Event"]:
     """
     内置 wait_reply 实现
@@ -245,6 +247,9 @@ async def _builtin_wait_reply(
 
     :param pattern: glob 通配符，回复文本不匹配时继续等待（超时返回 None）
     :param regex: 正则表达式，回复文本不匹配时继续等待（与 pattern 同时给定时须都匹配）
+    :param cmdpass: 是否跳过命令匹配的三态（None=跟随全局配置，默认不跳过——
+        等待期间命中已注册命令的消息放行给命令分发器执行；True=跳过命令匹配，
+        等待期间消息一律作为回复消费）
     """
     from .command import command as command_handler
 
@@ -257,6 +262,7 @@ async def _builtin_wait_reply(
         method=method,
         pattern=pattern,
         regex=regex,
+        cmdpass=cmdpass,
     )
 
     if result:
@@ -1440,6 +1446,7 @@ class Event(dict):
         method: str = DEFAULT_SEND_METHOD,
         pattern: str | None = None,
         regex: str | None = None,
+        cmdpass: bool | None = None,
     ) -> Optional["Event"]:
         """
         等待用户回复
@@ -1451,13 +1458,16 @@ class Event(dict):
         :param method: 发送方法，默认为 "Text"（可选: "Image", "Markdown", "Html" 等）
         :param pattern: glob 通配符（``*`` / ``?`` / ``[seq]``），回复文本不匹配时继续等待
         :param regex: 正则表达式，回复文本不匹配时继续等待（与 pattern 同时给定时须都匹配）
+        :param cmdpass: 是否跳过命令匹配的三态（None=跟随全局配置，默认不跳过——
+            等待期间命中已注册命令的消息（如 /cancel）放行给命令分发器执行，
+            等待继续挂起；True=跳过命令匹配，等待期间消息一律作为回复消费）
         :return: 用户回复的事件数据，如果超时则返回None
 
         :example:
-        >>> reply = await event.wait_reply(prompt="请输入金额:", regex=r"\\d+\\s*元")
+        >>> reply = await event.wait_reply(prompt="请输入金额:", regex=r"\\\\d+\\\\s*元")
         """
         return await _builtin_wait_reply(
-            self, prompt, timeout, callback, validator, method, pattern, regex
+            self, prompt, timeout, callback, validator, method, pattern, regex, cmdpass
         )
 
     # ==================== 交互式对话方法 ====================
@@ -2744,6 +2754,9 @@ class Conversation:
         if not _conversation_resume_handlers:
             return False
 
+        # 首条消息到达时惰性启动过期检查点周期清理（一次性，失败静默）
+        _start_checkpoint_gc()
+
         try:
             from ..storage import storage
 
@@ -2798,6 +2811,42 @@ class Conversation:
             return True
         return False
 
+    @classmethod
+    async def _gc_expired_checkpoints(cls) -> int:
+        """
+        {!--< internal-use >!--}
+        主动清理过期对话检查点（周期任务调用）
+
+        枚举 `conversation:` 前缀的全部存储键，按 `saved_at` 与
+        `ErisPulse.interaction.checkpoint_ttl` 判定过期并删除——补全
+        "仅在 resume 时惰性清理"的缺口，长期未恢复的存档不再永久驻留。
+
+        :return: 清理的存档数量
+        """
+        from ..storage import storage
+
+        cutoff = time.time() - cls._checkpoint_ttl()
+        prefix = CONVERSATION_KEY_PREFIX + ":"
+        removed = 0
+        try:
+            keys = await storage.aget_all_keys()
+        except Exception:
+            return 0
+        for key in keys:
+            if not str(key).startswith(prefix):
+                continue
+            try:
+                data = await storage.aget(key)
+                saved_at = data.get("saved_at") if isinstance(data, dict) else None
+                if isinstance(saved_at, (int, float)) and saved_at < cutoff:
+                    if await storage.adelete(key):
+                        removed += 1
+            except Exception:
+                continue
+        if removed:
+            logger.info(i18n.t("core.event.conversation_checkpoint_gc", removed=removed))
+        return removed
+
 
 __all__ = [
     "CONFIRM_NO_WORDS",
@@ -2816,3 +2865,34 @@ __all__ = [
     "unregister_event_method",
     "unregister_platform_event_methods",
 ]
+
+
+# ==================== 检查点主动 GC 周期任务（2.8.3）====================
+
+_checkpoint_gc_started = False
+
+
+def _start_checkpoint_gc():
+    """{!--< internal-use >!--} 惰性启动过期检查点周期清理（仅启动一次，失败静默）"""
+    global _checkpoint_gc_started
+    if _checkpoint_gc_started:
+        return
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        return
+    _checkpoint_gc_started = True
+    task = loop.create_task(_checkpoint_gc_loop())
+    task.add_done_callback(_consume_task_exception)
+
+
+async def _checkpoint_gc_loop():
+    """{!--< internal-use >!--} 周期清理循环（CONVERSATION_CHECKPOINT_GC_INTERVAL_SECS 间隔）"""
+    while True:
+        await asyncio.sleep(CONVERSATION_CHECKPOINT_GC_INTERVAL_SECS)
+        try:
+            await Conversation._gc_expired_checkpoints()
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            pass
