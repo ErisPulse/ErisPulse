@@ -9,6 +9,8 @@
 2. 任务自动归属到当前 ``owner_scope`` 上下文（模块/适配器），卸载时可由框架兜底取消
 3. ``cancel_owner_tasks(owner)`` 取消并等待指定归属者的全部后台任务
 4. ``cancel_all_background_tasks()`` 供 ``sdk.uninit()`` 兜底清理
+5. ``install_owner_task_factory()``（随启动自动安装）：事件循环级任务工厂，
+   owner 上下文内**任何** ``asyncio.create_task``（含第三方库）自动归属、卸载兜底取消
 {!--< /tips >!--}
 """
 
@@ -16,6 +18,7 @@ from __future__ import annotations
 
 import asyncio
 import threading
+import weakref
 from collections.abc import Awaitable, Coroutine
 from typing import Any, TypeVar, cast
 
@@ -56,6 +59,7 @@ def register_main_loop(loop: asyncio.AbstractEventLoop) -> None:
     global _MAIN_LOOP
     with _MAIN_LOOP_LOCK:
         _MAIN_LOOP = loop
+    install_owner_task_factory(loop)
 
 
 def _get_main_loop() -> asyncio.AbstractEventLoop | None:
@@ -246,8 +250,50 @@ def spawn_background(coro: Awaitable[_T] | Coroutine[_T, Any, Any], *, owner: st
 
 __all__ = [
     "cancel_all_background_tasks",
+    "install_owner_task_factory",
     "cancel_owner_tasks",
     "get_owner_tasks",
     "register_main_loop",
     "spawn_background",
 ]
+
+
+# ==================== Owner 感知的 Task Factory ====================
+#
+# asyncio 官方扩展点（loop.set_task_factory）：事件循环上**任何**任务创建
+# （含第三方库 aiohttp / APScheduler 等内部 create_task）都会经过这里。
+# 创建瞬间读取 current_owner——owner_scope 上下文内的任务自动登记到归属表，
+# 卸载时随 cancel_owner_tasks 兜底取消；无归属上下文（框架自身）的任务
+# 不登记、行为与默认完全一致。
+
+_FACTORY_INSTALLED_LOOPS: weakref.WeakSet[asyncio.AbstractEventLoop] = weakref.WeakSet()
+
+
+def _owner_aware_task_factory(loop: asyncio.AbstractEventLoop, coro: Coroutine[Any, Any, Any], **kwargs: Any) -> asyncio.Task[Any]:
+    """{!--< internal-use >!--} 任务创建钩子：归属上下文内的任务自动登记（供卸载兜底取消）"""
+    task = asyncio.Task(coro, **kwargs)
+    owner = current_owner.get()
+    if owner is not None:
+        _track_owner_task(owner, task)
+    return task
+
+
+def install_owner_task_factory(loop: asyncio.AbstractEventLoop) -> bool:
+    """
+    为事件循环安装 owner 感知的任务工厂（幂等）
+
+    安装后，`owner_scope` 上下文内通过 `asyncio.create_task` / `ensure_future`
+    创建的**所有**任务（包括第三方库内部创建的）自动登记到当前归属者名下，
+    模块卸载 / 适配器关闭时随 `cancel_owner_tasks` 兜底取消。无归属上下文
+    （owner=None）的任务不受影响。
+
+    由 `register_main_loop` 在框架启动时自动调用。
+
+    :param loop: 目标事件循环
+    :return: 是否实际安装（重复调用返回 False）
+    """
+    if loop in _FACTORY_INSTALLED_LOOPS:
+        return False
+    loop.set_task_factory(_owner_aware_task_factory)
+    _FACTORY_INSTALLED_LOOPS.add(loop)
+    return True

@@ -660,6 +660,7 @@ TRANSLATIONS = {
     "core.event.conversation_checkpoint_expired": "[Conversation] 检查点已过期，已丢弃",
 
     "core.event.conversation_checkpoint_failed": "[Conversation] 检查点操作失败: {error}",
+    "core.event.conversation_checkpoint_gc": "[Conversation] 已主动清理 {removed} 个过期对话检查点",
 
     "core.event.conversation_condition_error": "[Conversation] 字段 condition 执行异常，跳过: {error}",
     "core.event.conversation_resume_failed": "[Conversation] resume 失败: {error}",
@@ -733,6 +734,7 @@ TRANSLATIONS = {
     "core.interaction.message_tx_no_capability": "[Interaction] 平台 '{platform}' 不支持撤回，跳过 message_id={message_id}",
     "core.interaction.message_tx_rollback_failed": "[Interaction] 消息撤回失败: message_id={message_id}, error={error}",
     "core.interaction.reply_not_matched": "[Interaction] 回复 pattern/regex 未命中，继续等待: key={wait_key} user={user_id} platform={platform}",
+    "core.interaction.cmdpass_hit": "[Interaction] 等待期间命中命令文本，放行命令分发: key={wait_key} user={user_id} platform={platform}",
     "core.interaction.reply_validation_failed": "[Interaction] 回复校验未通过，继续等待: key={wait_key} user={user_id}",
     "core.interaction.revoked": "[Interaction] 权限复查未通过({reason})，终止会话: key={wait_key} owner={owner}",
     "core.interaction.validator_error": "[Interaction] validator 执行异常: {error}",
