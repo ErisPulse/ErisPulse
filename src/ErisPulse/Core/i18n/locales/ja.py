@@ -660,6 +660,7 @@ TRANSLATIONS = {
     "core.event.conversation_checkpoint_expired": "[Conversation] チェックポイントが期限切れのため破棄しました",
 
     "core.event.conversation_checkpoint_failed": "[Conversation] チェックポイント操作に失敗: {error}",
+    "core.event.conversation_checkpoint_gc": "[Conversation] 期限切れの会話チェックポイントを {removed} 件削除しました",
 
     "core.event.conversation_condition_error": "[Conversation] フィールド condition の実行例外、スキップ: {error}",
     "core.event.conversation_resume_failed": "[Conversation] resume 失敗: {error}",
@@ -733,6 +734,7 @@ TRANSLATIONS = {
     "core.interaction.message_tx_no_capability": "[Interaction] プラットフォーム '{platform}' は取り消し非対応のため message_id={message_id} をスキップします",
     "core.interaction.message_tx_rollback_failed": "[Interaction] メッセージ取り消しに失敗: message_id={message_id}, error={error}",
     "core.interaction.reply_not_matched": "[Interaction] 返信の pattern/regex が不一致、待機継続: key={wait_key} user={user_id} platform={platform}",
+    "core.interaction.cmdpass_hit": "[Interaction] 待機中にコマンドテキストを検出、コマンドディスパッチへ: key={wait_key} user={user_id} platform={platform}",
     "core.interaction.reply_validation_failed": "[Interaction] 返信の検証に失敗、待機継続: key={wait_key} user={user_id}",
     "core.interaction.revoked": "[Interaction] 権限再チェック不合格({reason})、セッションを終了: key={wait_key} owner={owner}",
     "core.interaction.validator_error": "[Interaction] validator エラー: {error}",

@@ -7,6 +7,7 @@
 """
 
 import asyncio
+import time
 
 import pytest
 
@@ -496,3 +497,156 @@ class TestContextVars:
 
         receipts = [{"platform": "no_such_platform", "bot_id": "b", "message_id": "m", "trace_id": None}]
         asyncio.run(_rollback_receipts(receipts))
+
+
+# ==================== 命令穿透（cmdpass，2.8.3）====================
+
+
+class TestCommandPassthrough:
+    """等待期间命中已注册命令的消息放行命令分发器（cmdpass，默认不跳过）"""
+
+    def _cmd_evt(self, text="/cancel", user_id="u1"):
+        data = _evt(user_id=user_id)
+        data["id"] = f"evt_cmd_{text}_{user_id}"
+        data["message"] = [{"type": "text", "data": {"text": text}}]
+        data["alt_message"] = text
+        return data
+
+    @pytest.fixture(autouse=True)
+    def register_cancel_command(self):
+        from ErisPulse.Core.Event.command import command as command_handler
+
+        calls = []
+
+        @command_handler("cancel", hidden=True)
+        async def cancel_cmd(event):
+            calls.append(event.get("alt_message"))
+
+        self.calls = calls
+        yield
+        command_handler.unregister("cancel")
+
+    @pytest.mark.asyncio
+    async def test_default_releases_command_to_dispatcher(self):
+        """默认：等待期间命令文本不作为回复消费（放行命令分发器）"""
+        from ErisPulse.Core.Event.wrapper import Event
+
+        loop = asyncio.get_running_loop()
+        future = loop.create_future()
+        interaction.register(_evt(), future)  # cmdpass=None → 跟随全局（默认 False 不跳过）
+
+        ev = Event(self._cmd_evt("/cancel"))
+        hit = await interaction.resolve(ev)
+        assert hit is False  # 未被等待消费
+        assert future.done() is False  # 等待继续挂起
+        assert ev.get("_processed") is not True  # 事件未认领，命令分发器可接管
+
+    @pytest.mark.asyncio
+    async def test_cmdpass_true_swallows_command(self):
+        """cmdpass=True：跳过命令匹配，命令文本作为回复消费（旧行为按次保留）"""
+        from ErisPulse.Core.Event.wrapper import Event
+
+        loop = asyncio.get_running_loop()
+        future = loop.create_future()
+        interaction.register(_evt(), future, cmdpass=True)
+
+        ev = Event(self._cmd_evt("/cancel"))
+        hit = await interaction.resolve(ev)
+        assert hit is True
+        assert future.result().get("alt_message") == "/cancel"
+
+    @pytest.mark.asyncio
+    async def test_plain_text_still_resolves(self):
+        """非命令文本照常命中等待（穿透判定不误伤普通回复）"""
+        from ErisPulse.Core.Event.wrapper import Event
+
+        loop = asyncio.get_running_loop()
+        future = loop.create_future()
+        interaction.register(_evt(), future)
+
+        ev = Event(self._cmd_evt("plain answer"))
+        assert await interaction.resolve(ev) is True
+
+    @pytest.mark.asyncio
+    async def test_unregistered_command_not_released(self):
+        """未注册的 /nope 不是命令 → 作为回复命中等待"""
+        from ErisPulse.Core.Event.wrapper import Event
+
+        loop = asyncio.get_running_loop()
+        future = loop.create_future()
+        interaction.register(_evt(), future)
+
+        ev = Event(self._cmd_evt("/nope"))
+        assert await interaction.resolve(ev) is True
+
+    def test_is_command_text_matrix(self):
+        from ErisPulse.Core.Event.command import command as command_handler
+
+        assert command_handler._is_command_text("/cancel") is True
+        assert command_handler._is_command_text("/cancel now") is True
+        assert command_handler._is_command_text("/nope") is False
+        assert command_handler._is_command_text("plain") is False
+        assert command_handler._is_command_text("") is False
+
+
+# ==================== 检查点主动 GC（2.8.3）====================
+
+
+class TestCheckpointGC:
+    """过期对话检查点主动清理（补全 resume 惰性清理的缺口）"""
+
+    @pytest.mark.asyncio
+    async def test_gc_removes_only_expired(self, monkeypatch):
+        import importlib
+        import os
+        import tempfile
+
+        from ErisPulse.Core.Bases.storage import BaseStorage
+        from ErisPulse.Core.Event.wrapper import Conversation
+        from ErisPulse.runtime.context import current_owner
+
+        # importlib 取真实子模块（Core 包的 storage 属性被单例遮蔽）
+        storage_pkg = importlib.import_module("ErisPulse.Core.storage")
+
+        # 独立临时 sqlite 后端（隔离全局单例）
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".db", delete=False) as f:
+            temp_path = f.name
+        StorageManager = storage_pkg.StorageManager
+        StorageManager._instance = None
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = temp_path
+        manager._init_db()
+        manager._initialized = True
+
+        monkeypatch.setattr(storage_pkg, "storage", manager)
+        assert isinstance(storage_pkg.storage, BaseStorage)
+
+        token = current_owner.set(None)
+        try:
+            await storage_pkg.storage.aset(
+                "conversation:demo:u1:t1",
+                {"version": 2, "alive": True, "branch": "menu", "saved_at": time.time() - 100000},
+            )
+            await storage_pkg.storage.aset(
+                "conversation:demo:u2:t2",
+                {"version": 2, "alive": True, "branch": "menu", "saved_at": time.time()},
+            )
+            await storage_pkg.storage.aset("other:key", "keep-me")
+
+            removed = await Conversation._gc_expired_checkpoints()
+
+            assert removed == 1
+            assert await storage_pkg.storage.aget("conversation:demo:u1:t1") is None
+            assert await storage_pkg.storage.aget("conversation:demo:u2:t2") is not None
+            assert await storage_pkg.storage.aget("other:key") == "keep-me"
+        finally:
+            current_owner.reset(token)
+            monkeypatch.undo()
+            StorageManager._instance = None
+            for ext in ["", "-wal", "-shm"]:
+                path = temp_path + ext
+                if os.path.exists(path):
+                    try:
+                        os.remove(path)
+                    except PermissionError:
+                        pass

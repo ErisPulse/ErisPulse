@@ -434,6 +434,21 @@ DEFAULT_COMMAND_BLOCK: Final[bool] = True
 # 修改影响: False 时被等待方消费的回复仍会被低优先级观察者看到；认领不受影响。
 DEFAULT_WAIT_REPLY_BLOCK: Final[bool] = True
 
+# wait_reply 等待期间是否跳过命令匹配（cmdpass=True 时等待吞掉一切文本）。
+# 交互式对话机制原本未考虑命令交互——等待期间 /cancel 这类命令永远无法
+# 命中；默认 False 补全该能力：命中已注册命令的消息放行给命令分发器执行
+# （等待继续挂起，命令执行完用户仍可继续回复）。需要"等待吞一切"旧行为的
+# 场景可配置 ErisPulse.event.wait_reply.cmdpass = true；单次等待可用
+# wait_reply(cmdpass=...) 三态覆盖（None=跟随全局）。
+# 使用位置: Core/Event/interaction.py -> resolve() 命令穿透判定。
+DEFAULT_WAIT_REPLY_CMDPASS: Final[bool] = False
+
+# activate_on 懒激活失败后的重试冷却期（秒）。
+# 失败后保留触发器 stub，冷却期内重复触发短路返回（避免每次事件都重复
+# 尝试失败的初始化），冷却结束后再次触发自动重试——补全失败后的恢复路径。
+# 使用位置: loaders/module.py -> LazyModule._activate()。
+ACTIVATE_RETRY_COOLDOWN_SECS: Final[float] = 30.0
+
 # 是否忽略自身发送的消息。
 # 配置默认值。设为 False 会导致命令系统处理自己发出的消息（通常不期望）。
 DEFAULT_MESSAGE_IGNORE_SELF: Final[bool] = True
@@ -481,6 +496,12 @@ DEFAULT_INTERACTION_LEASE_TTL_SECS: Final[float] = 3600.0
 # 修改影响: 重启恢复时超过该时长的检查点被视为过期丢弃。可通过
 # ErisPulse.interaction.checkpoint_ttl 配置覆盖。
 DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS: Final[float] = 86400.0
+
+# 过期对话检查点主动清理的周期（秒）。
+# 使用位置: Core/Event/wrapper.py -> _checkpoint_gc_loop()（惰性启动的周期任务）。
+# 修改影响: 补全"仅在 resume 时惰性清理"的缺口——长期未恢复的过期存档
+# 按该周期被主动删除，不再永久驻留存储。
+CONVERSATION_CHECKPOINT_GC_INTERVAL_SECS: Final[float] = 3600.0
 
 # ==============================================================================
 # 会话收件箱（transcript）
@@ -1126,8 +1147,11 @@ __all__ = [
     "DEFAULT_STORAGE_PG_POOL_MIN",
     "DEFAULT_STORAGE_PG_PORT",
     "DEFAULT_STORAGE_PG_USER",
+    "DEFAULT_WAIT_REPLY_CMDPASS",
+    "ACTIVATE_RETRY_COOLDOWN_SECS",
     "DEFAULT_WAIT_TIMEOUT_SECS",
     "DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS",
+    "CONVERSATION_CHECKPOINT_GC_INTERVAL_SECS",
     "DEFAULT_INTERACTION_LEASE_TTL_SECS",
     "DEFAULT_TRANSCRIPT_ENABLED",
     "DEFAULT_TRANSCRIPT_MAX_PER_SESSION",

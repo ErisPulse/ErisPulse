@@ -660,6 +660,7 @@ TRANSLATIONS = {
     "core.event.conversation_checkpoint_expired": "[Conversation] контрольная точка истекла и отброшена",
 
     "core.event.conversation_checkpoint_failed": "[Conversation] ошибка операции контрольной точки: {error}",
+    "core.event.conversation_checkpoint_gc": "[Conversation] удалено просроченных точек возобновления диалога: {removed}",
 
     "core.event.conversation_condition_error": "[Conversation] ошибка выполнения условия поля, пропущено: {error}",
     "core.event.conversation_resume_failed": "[Conversation] ошибка resume: {error}",
@@ -733,6 +734,7 @@ TRANSLATIONS = {
     "core.interaction.message_tx_no_capability": "[Interaction] платформа '{platform}' не поддерживает отзыв, пропускаем message_id={message_id}",
     "core.interaction.message_tx_rollback_failed": "[Interaction] не удалось отозвать сообщение: message_id={message_id}, error={error}",
     "core.interaction.reply_not_matched": "[Interaction] ответ не совпал с pattern/regex, продолжаем ожидание: key={wait_key} user={user_id} platform={platform}",
+    "core.interaction.cmdpass_hit": "[Interaction] во время ожидания обнаружена команда, передана диспетчеру: key={wait_key} user={user_id} platform={platform}",
     "core.interaction.reply_validation_failed": "[Interaction] проверка ответа не пройдена, продолжаем ожидание: key={wait_key} user={user_id}",
     "core.interaction.revoked": "[Interaction] повторная проверка прав не пройдена ({reason}), сессия завершена: key={wait_key} owner={owner}",
     "core.interaction.validator_error": "[Interaction] ошибка validator: {error}",

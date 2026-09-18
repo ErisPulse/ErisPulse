@@ -660,6 +660,7 @@ TRANSLATIONS = {
     "core.event.conversation_checkpoint_expired": "[Conversation] checkpoint expired and discarded",
 
     "core.event.conversation_checkpoint_failed": "[Conversation] checkpoint operation failed: {error}",
+    "core.event.conversation_checkpoint_gc": "[Conversation] purged {removed} expired conversation checkpoints",
 
     "core.event.conversation_condition_error": "[Conversation] field condition execution error, skipped: {error}",
     "core.event.conversation_resume_failed": "[Conversation] resume failed: {error}",
@@ -733,6 +734,7 @@ TRANSLATIONS = {
     "core.interaction.message_tx_no_capability": "[Interaction] platform '{platform}' does not support recall, skipping message_id={message_id}",
     "core.interaction.message_tx_rollback_failed": "[Interaction] message recall failed: message_id={message_id}, error={error}",
     "core.interaction.reply_not_matched": "[Interaction] reply pattern/regex not matched, keep waiting: key={wait_key} user={user_id} platform={platform}",
+    "core.interaction.cmdpass_hit": "[Interaction] command text matched during wait, released to command dispatcher: key={wait_key} user={user_id} platform={platform}",
     "core.interaction.reply_validation_failed": "[Interaction] reply validation failed, keep waiting: key={wait_key} user={user_id}",
     "core.interaction.revoked": "[Interaction] permission re-check failed ({reason}), session terminated: key={wait_key} owner={owner}",
     "core.interaction.validator_error": "[Interaction] validator error: {error}",

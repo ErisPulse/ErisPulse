@@ -337,6 +337,13 @@ blocked = ["MyModule"]
 - 命令执行前还有第三道：命令用户 ACL（拒绝时回复"权限不足"，见上节）
 - 第四道是**事件覆写**（见下节）
 
+> [!NOTE]
+> **作用域过滤与事件认领（claim）的关系**：两道静默过滤都发生在处理器
+> **调度之前**——被过滤跳过的处理器没有机会执行，自然也不参与
+> `event.done()` / `mark_processed()` 的认领状态。事件是否已被认领，
+> 只由**实际执行**的处理器（命令命中认领、回复命中认领、显式调用）决定；
+> 作用域拒绝本身既不认领也不阻断（静默跳过，消息继续走完剩余分发链）。
+
 > 作用域配置、匹配语法、运行时 API 见 [作用域（scope）](../../advanced/scope.md)。
 
 ## 事件覆写：不改模块代码，覆写任意事件类型的行为
@@ -398,6 +405,10 @@ overrides.message.delete("ChatModule")  # 恢复开发者默认
 - `detail_types`：事件缺 `detail_type` 时放行（不误杀未知事件）
 - `pattern` / `regex`：无文本的事件（connect / heartbeat 等）不受约束，直接放行
 - `command` 覆写键 `master` 同步映射存储键 `must_master`；禁用命令统一走 `acl` deny
+- **键名映射说明**：`overrides.command.set("My", "restart", master=True)` 的参数名
+  `master` 仅为配置别名，实际存储键与 `get()` 返回值中的键名统一为 **`must_master`**
+  （`get()` 返回 `{"must_master": true}`）——运行时判断读取的是存储键，请勿按
+  `master` 键名读取
 - 配置改了立即生效（热更新），格式校验告警（未知参数 / 坏条目忽略）
 
 ## 链路控制：认领与阻断
@@ -609,6 +620,13 @@ async def ask_handler(event):
     else:
         await event.reply("等待超时，请重新输入。")
 ```
+
+> [!TIP]
+> **等待期间命令仍然可用**（2.8.3+）：以命令前缀开头且命中已注册命令的
+> 消息（如 `/cancel`）会**执行命令**而非作为回复内容，等待继续挂起——
+> 用户可以随时取消/切换，命令执行完仍可继续回复。需要"等待吞掉一切文本"
+> 的旧行为时：配置 `ErisPulse.event.wait_reply.cmdpass = true`，或单次
+> `wait_reply(cmdpass=True)`。
 
 ### 带验证的等待回复
 
