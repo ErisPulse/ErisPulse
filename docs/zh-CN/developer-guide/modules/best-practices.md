@@ -146,7 +146,11 @@ async def on_load(self, event: dict):
 ```
 
 > [!NOTE]
-> 后台任务推荐 `self.spawn()`（ErisPulse **2.8.0+**），而不是 `asyncio.create_task`——后者创建的裸任务不归属模块，卸载时不会被自动清理，会持有 `self` 引用导致模块实例无法被回收（热重载泄漏）。详见 [生命周期管理](../../advanced/lifecycle.md#后台任务归属与自动取消)。
+> 后台任务推荐 `self.spawn()`（ErisPulse **2.8.0+**）。**2.8.3 起**裸 `asyncio.create_task`
+> 也会自动隐式归属模块（Task Factory 自动登记，卸载时兜底取消，不再泄漏 `self` 引用）；
+> `self.spawn()` 仍是推荐写法——支持非主循环线程调度回主循环、显式 `owner=` 指定。
+> **2.8.3 之前**的版本裸任务不归属、会持有 `self` 引用导致模块实例无法被回收
+> （热重载泄漏），必须用 `self.spawn()`。详见 [生命周期管理](../../advanced/lifecycle.md#后台任务归属与自动取消)。自动取消)。
 
 ### 3. 资源管理
 

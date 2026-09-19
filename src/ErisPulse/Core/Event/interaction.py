@@ -49,6 +49,7 @@ from ..constants import (
     DEFAULT_INTERACTION_LEASE_TTL_SECS,
     DEFAULT_MAX_SESSION_REMINDERS,
     DEFAULT_WAIT_REPLY_BLOCK,
+    DEFAULT_WAIT_REPLY_CMDPASS,
     UNKNOWN_PLATFORM,
 )
 from ..i18n import i18n
@@ -77,6 +78,7 @@ class _Entry:
 
     __slots__ = (
         "callback",
+        "cmdpass",
         "expires_at",
         "future",
         "key",
@@ -101,6 +103,8 @@ class _Entry:
         self.validator: Any = None
         self.pattern: str | None = None
         self.regex: str | None = None
+        # 命令穿透三态（2.8.3）：None=跟随全局配置 / True=强制豁免 / False=强制吞
+        self.cmdpass: bool | None = None
         # lease 类别字段
         self.ttl: float = 0.0
         self.expires_at: float = 0.0
@@ -337,6 +341,7 @@ class InteractionManager:
         regex: str | None = None,
         owner: str | None = None,
         session_scope: bool = False,
+        cmdpass: bool | None = None,
     ) -> _Entry:
         """
         {!--< internal-use >!--}
@@ -354,6 +359,8 @@ class InteractionManager:
         :param regex: 正则文本过滤
         :param owner: 归属者（模块名），None 时从 current_owner 上下文捕获
         :param session_scope: 会话级等待（同会话任何人的回复均可命中，键不含 user 维度）
+        :param cmdpass: 是否跳过命令匹配的三态（None=跟随全局配置，默认不跳过；
+            True=跳过命令匹配，等待期间消息一律作为回复消费）
         :return: 注册的条目（含推导的会话键）
         """
         if session_scope:
@@ -375,6 +382,7 @@ class InteractionManager:
         entry.validator = validator
         entry.pattern = pattern
         entry.regex = regex
+        entry.cmdpass = cmdpass
         entry.timestamp = time.monotonic()
 
         if session_scope:
@@ -408,6 +416,33 @@ class InteractionManager:
                 return False
             key = session_key
             entry = s_entry
+
+        # 命令匹配跳过判定（cmdpass，默认 False）：等待期间命中已注册命令
+        # 的消息放行给命令分发器执行——交互式对话机制原本未考虑命令交互，
+        # 等待吞掉一切文本导致 /cancel 这类命令永远无法命中。
+        # cmdpass=True 时跳过命令匹配、消息一律作为回复消费。
+        # 放行时不消费事件、等待继续挂起——命令执行完用户仍可继续回复。
+        cmdpass = entry.cmdpass
+        if cmdpass is None:
+            cmdpass = bool(
+                get_event_config()
+                .get("wait_reply", {})
+                .get("cmdpass", DEFAULT_WAIT_REPLY_CMDPASS)
+            )
+        if not cmdpass and event.get("type", "") == "message":
+            from .command import command as _command_handler
+
+            text = event.get("alt_message", "") or ""
+            if text and _command_handler._is_command_text(text):
+                logger.trace(
+                    i18n.t(
+                        "core.interaction.cmdpass_hit",
+                        wait_key=key,
+                        user_id=event.get("user_id", ""),
+                        platform=event.get("platform", UNKNOWN_PLATFORM),
+                    )
+                )
+                return False
 
         # pattern（glob）/ regex（正则）过滤：不匹配则继续等待（不消费 future）
         if entry.pattern or entry.regex:

@@ -409,6 +409,7 @@ class CommandHandler:
         pattern: str | None = None,
         regex: str | None = None,
         session: bool = False,
+        cmdpass: bool | None = None,
     ) -> dict[str, Any] | None:
         """
         等待用户回复
@@ -423,6 +424,9 @@ class CommandHandler:
         :param regex: 正则表达式，回复文本不匹配时继续等待（与 pattern 同时给定时须都匹配）
         :param session: 会话级等待——同会话（群 / 频道）中**任何人**的回复均可命中
             （如群协作场景：" anyone 输入「开始」即开始"）；默认 False 仅等待原回复者
+        :param cmdpass: 是否跳过命令匹配的三态（None=跟随全局配置，默认不跳过——
+            等待期间命中已注册命令的消息放行给命令分发器执行，等待继续挂起；
+            True=跳过命令匹配，等待期间消息一律作为回复消费）
         :return: 用户回复的事件数据，如果超时则返回None
 
         {!--< tips >!--}
@@ -468,6 +472,7 @@ class CommandHandler:
             pattern=pattern,
             regex=regex,
             session_scope=session,
+            cmdpass=cmdpass,
         )
         wait_key = entry.key
 
@@ -655,6 +660,46 @@ class CommandHandler:
         # 如果都没有匹配，检查是否是等待回复的消息
         await self._check_pending_reply(event)
         return
+
+    def _is_command_text(self, text: str) -> bool:
+        """
+        判定文本是否形如一条已注册命令（前缀 + 命令名/别名命中），不执行命令
+
+        供交互等待（wait_reply）的命令穿透判定复用——等待期间命中命令的
+        消息放行给命令分发器执行。判定口径与 :meth:`_try_execute_command`
+        的匹配逻辑一致（前缀 / 大小写归一 / 子命令最长前缀匹配）。
+
+        :param text: 待判定的消息文本
+        :return: 是否形如已注册命令
+
+        {!--< internal-use >!--}
+        内部使用的方法
+        {!--< /internal-use >!--}
+        """
+        if not text:
+            return False
+
+        check_text = text if self.case_sensitive else text.lower()
+        prefixes = self._prefixes if self.case_sensitive else [p.lower() for p in self._prefixes]
+
+        matched_prefix = None
+        for prefix in prefixes:
+            has_prefix = check_text.startswith(prefix)
+            has_space_prefix = self.allow_space_prefix and check_text.startswith(prefix + " ")
+            if has_prefix or has_space_prefix:
+                matched_prefix = prefix
+                break
+        if matched_prefix is None:
+            return False
+
+        command_text = text[len(matched_prefix) :].strip()
+        raw_parts = command_text.split()
+        if not raw_parts:
+            return False
+
+        parts = raw_parts if self.case_sensitive else [part.lower() for part in raw_parts]
+        cmd_name, _actual, _matched = self._resolve_command_tokens(parts)
+        return cmd_name is not None
 
     async def _try_execute_command(self, event: "Event", original_text: str, prefix: str) -> bool:
         """

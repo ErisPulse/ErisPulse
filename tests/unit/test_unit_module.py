@@ -1970,3 +1970,96 @@ class TestUnloadTimeout:
 
         config.setConfig("ErisPulse.framework", {}, immediate=True)
         assert manager._unload_timeout() == float(DEFAULT_UNINIT_TIMEOUT_SECS)
+
+
+class TestModuleActivateOnFailureRecovery:
+    """激活失败保留触发器 stub，冷却后可重试（2.8.3 修复彻底失联问题）"""
+
+    def _make_manager(self):
+        from ErisPulse.Core.module import ModuleManager
+
+        manager = ModuleManager()
+        manager._modules.clear()
+        return manager
+
+    def _make_activator(self, manager, cls, activate_on):
+        from ErisPulse.loaders.module import ModuleActivator
+
+        class _Sdk:
+            pass
+
+        return ModuleActivator(
+            "dice",
+            cls,
+            _Sdk(),
+            {"meta": {"name": "dice", "is_base_module": True}},
+            manager,
+            activate_on=activate_on,
+        )
+
+    @staticmethod
+    def _make_switchable_class():
+        """初始化成败可开关的模块类（模拟先失败后修复）"""
+
+        class Dice:
+            fail = True
+            init_calls = 0
+
+            def __init__(self):
+                type(self).init_calls += 1
+                if type(self).fail:
+                    raise RuntimeError("boom")
+
+            async def on_load(self, event):
+                from ErisPulse.Core.Event.command import command as command_handler
+
+                @command_handler("roll", hidden=True)
+                async def roll(event):
+                    pass
+
+            @staticmethod
+            def get_meta():
+                return {"description": "掷骰子"}
+
+        return Dice
+
+    @pytest.mark.asyncio
+    async def test_failure_keeps_stub_and_retries_after_cooldown(self):
+        from ErisPulse.Core.Event.command import command
+
+        manager = self._make_manager()
+        cls = self._make_switchable_class()
+        manager.register("dice", cls, {"meta": {"name": "dice", "is_base_module": True}})
+        act = self._make_activator(manager, cls, [{"command": "roll"}])
+
+        try:
+            assert "roll" in command.commands  # stub 已注册
+
+            # 第一次激活失败：stub 保留（不再注销）
+            assert await act._activate() is False
+            assert "roll" in command.commands
+            assert object.__getattribute__(act, "_activation_failed") is True
+            assert cls.init_calls == 1
+
+            # 冷却期内重试：短路（不再重复初始化）
+            assert await act._activate() is False
+            assert cls.init_calls == 1
+
+            # 修复模块 + 冷却结束（回拨失败时间戳模拟时间流逝）
+            cls.fail = False
+            failed_at = object.__getattribute__(act, "_activation_failed_at")
+            object.__setattr__(
+                act, "_activation_failed_at", failed_at - 3600.0
+            )
+
+            assert await act._activate() is True
+            assert cls.init_calls == 2
+            # 真实命令接管，stub 已注销
+            real = command.commands["roll"]
+            assert real["func"].__name__ == "roll"
+            assert not any(
+                info["func"] is not real["func"] for info in command.commands.values()
+            )
+        finally:
+            act._deregister_stubs()
+            manager._modules.clear()
