@@ -22,10 +22,16 @@ ErisPulse 依赖注入模块
 
 import inspect
 from collections.abc import Callable
+from contextvars import ContextVar
 from dataclasses import dataclass
 from typing import Any
 
 from .i18n import i18n
+
+#: 请求级依赖缓存（一次事件分发内所有注入点共享；由分发入口置空 dict、
+#: 结束复位为 None）。None 表示当前不在缓存作用域内（如 lifecycle / 路由
+#: 的独立调用链）——此时依赖解析不读写缓存。
+_di_cache: ContextVar[dict[Any, Any] | None] = ContextVar("_di_cache", default=None)
 
 
 @dataclass(frozen=True)
@@ -36,6 +42,9 @@ class Depends:
     :param dependency: 依赖函数（同步或异步），签名 ``dependency(ctx)``——
         ``ctx`` 为注入点上下文对象（Event / data / HttpRequest 等），
         返回值按参数名注入处理器
+    :param use_cache: 请求级缓存开关（默认开启）：同一次事件分发内，
+        相同依赖函数只解析一次、所有注入点共享结果（如数据库会话复用）；
+        置 ``False`` 每次注入都重新解析
 
     :example:
     >>> async def get_db(event):
@@ -46,6 +55,10 @@ class Depends:
     """
 
     dependency: Callable
+    use_cache: bool = True
+    # 请求级缓存的稳定标识（缺省用依赖函数对象本身；module 语法糖用声明元组，
+    # 使同一模块调用的多次声明共享缓存）
+    cache_key: Any = None
 
     @staticmethod
     def module(module_name: str, method: str, *args: Any, **kwargs: Any) -> "Depends":
@@ -71,7 +84,10 @@ class Depends:
                 return await result
             return result
 
-        return Depends(dependency=_call_module)
+        return Depends(
+            dependency=_call_module,
+            cache_key=("module", module_name, method, args, tuple(sorted(kwargs.items()))),
+        )
 
 
 def extract_depends(func: Callable) -> dict[str, Depends]:
@@ -110,17 +126,30 @@ async def resolve_depends(depends: dict[str, Depends], ctx: Any) -> dict[str, An
     同步依赖直接调用；异步依赖依次 await。任一依赖抛出的异常原样向上
     传播，由注入点的统一错误路径处理（与处理器自身异常同口径）。
 
+    请求级缓存（默认开启）：处于缓存作用域内（事件分发链）且声明
+    ``use_cache=True`` 时，相同依赖函数只解析一次、结果在整次事件内共享；
+    ``use_cache=False`` 或不在作用域内（lifecycle / 路由独立调用链）时
+    每次解析。
+
     :param depends: :func:`extract_depends` 的提取结果
     :param ctx: 注入点上下文对象（作为依赖函数第一参数）
     :return: 参数名 → 依赖函数返回值
     """
+    cache = _di_cache.get()
     kwargs: dict[str, Any] = {}
     for name, dep in depends.items():
         dep_fn = dep.dependency
+        cache_key = dep.cache_key if dep.cache_key is not None else dep_fn
+        if cache is not None and dep.use_cache and cache_key in cache:
+            kwargs[name] = cache[cache_key]
+            continue
         if inspect.iscoroutinefunction(dep_fn):
-            kwargs[name] = await dep_fn(ctx)
+            value = await dep_fn(ctx)
         else:
-            kwargs[name] = dep_fn(ctx)
+            value = dep_fn(ctx)
+        if cache is not None and dep.use_cache:
+            cache[cache_key] = value
+        kwargs[name] = value
     return kwargs
 
 
