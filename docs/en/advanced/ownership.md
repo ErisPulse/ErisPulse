@@ -104,9 +104,51 @@ Ownership only recovers **runtime resources registered by module code**. The fol
 
 Runtime temporary writes (`persist=False`) are reclaimed by owner—**persistence is the boundary between "user assets" and "module runtime state."**
 
+## Internal Implementation: How Ownership Works
+
+The ownership system consists of **two independent chains**. Understanding their division of labor is essential for troubleshooting ownership issues:
+
+### Attribution Chain (contextvar Propagation)
+
+The `ContextVar`s in `runtime/context.py`, such as `current_owner`, are responsible for **attribution** — "whom does the resource registered or the call initiated by the code at this moment belong to?" The propagation rules follow the semantics of Python's `contextvars`:
+
+| Execution Path | Context Propagated? | Attribution Result |
+|----------------|---------------------|---------------------|
+| Synchronous call chain / `await` chain | ✅ Propagated | Correct attribution |
+| `asyncio.create_task` within `owner_scope` | ✅ Propagated (task copies context at creation) | Framework calls **inside** the task are correctly attributed |
+| `run_in_executor` / bare thread | ❌ Not propagated | Attribution lost |
+| Custom event loop | ❌ Not propagated | Attribution lost |
+
+> Attribution ≠ Registration: Context propagation only affects "to whom it is attributed." Whether the resource is cleaned up depends on whether it enters the subsequent cancellation chain.
+
+### Cancellation Chain (Task Registry)
+
+The `_owner_tasks` registry in `runtime/tasks.py` manages **lifecycle** — "which unfinished tasks belong to the owner, and cancel them all together during unload." Tasks enter the registry through:
+
+1. **Explicit Scheduling**: `spawn_background()` / `self.spawn()` → captures `current_owner` at creation (or explicitly via `owner=` parameter) → registers into the table;
+2. **Task Factory Automatic Registration** (2.8.3): `install_owner_task_factory()` is installed into the main event loop at framework startup — **any** task creation (including `create_task` inside third-party libraries) is processed by the factory, reading `current_owner`; if not None, it registers.
+
+Registry self-cleans: Each task includes a `done_callback`, and once completed, it is removed from the table, preventing leaks.
+
+### Cancellation Timing (Module Unload)
+
+```
+module.unload()
+  → on_unload(event)                    # Module self-cleans (fallback timeout protection)
+  → Framework deregisters commands/events/hooks/routes for this owner
+  → cancel_owner_tasks(owner)           # Registry fallback cancellation
+      → cancel each task.cancel()       # Excludes the task itself executing cancellation logic
+      → await gather(pending, timeout)  # Wait for cleanup (no blocking after timeout)
+```
+
+### Troubleshooting Approach
+
+- **Resources not cleaned up** → Check the registry: `get_owner_tasks("MyModule")` whether it contains the task; if not, the registration path did not pass through the ownership chain (import phase / thread / independent loop), refer to the table above for identification.
+- **Incorrect attribution** → Check the value of `get_current_owner()` at the time of error; for asynchronously delayed execution (callbacks/tasks), attribution is taken from the context at creation, not at execution time.
+
 ## Module Author Guide
 
-### Recommended Style
+### Recommended Practices
 
 ```python
 from ErisPulse import sdk
@@ -115,7 +157,7 @@ from ErisPulse.runtime import owner_scope, spawn_background
 
 class MyModule(BaseModule):
     async def on_load(self, event):
-        # Framework resources: automatically attributed, no manual cleanup needed
+        # Framework resources: automatically owned, no manual cleanup required
         self.task = self.spawn(self.polling())      # Background task
         sdk.router.register_home_entry("My Module", "/my")  # Home entry
 
@@ -124,16 +166,31 @@ class MyModule(BaseModule):
             self.client.on_event(self._handle)      # Hypothetical custom registration
 
     async def on_unload(self, event):
-        # Framework resources have been automatically reclaimed; only clean up resources not covered by owner_scope
+        # Framework resources have been automatically cleaned up, only clean up non-owner_scope covered resources
         await self.client.close()
 ```
 
 ### Notes
 
-- **Registration during import has no ownership**: Hooks/handlers registered at the module level (during import) occur before `owner_scope` and are treated as framework-level resources (owner=None) and **not cleaned up**. Always register inside `on_load()`.
-- **Custom i18n domain registration**: If `i18n.register(domain=...)` uses a domain different from the module name, it will not be automatically reclaimed; ensure `domain=module name`.
-- **Background tasks must use `self.spawn()`**: Bare `asyncio.create_task` is not attributed to the module and will not be cancelled on unload (see [Lifecycle Management](lifecycle.md#Background Task Ownership and Automatic Cancellation)).
-- **Cleanup chain "failure only logs warnings"**: Individual cleanup exceptions do not block other resource cleanup; DEBUG/WARNING level logs are visible, and TRACE can be enabled for troubleshooting.
+- **Registration during import has no ownership**: Hooks/handlers registered at the module's top level (during import) occur before `owner_scope`, and are considered framework-level resources (owner=None) and **will not be cleaned up**. Always register inside `on_load()`.
+- **Custom domain i18n registration**: When `i18n.register(domain=...)` uses a domain different from the module name, it won't be automatically cleaned up. Please ensure domain=module name.
+- **Background tasks recommended via `self.spawn()`**: As of 2.8.3, raw `asyncio.create_task` will also **automatically register ownership** (Task Factory automatically registers, cancels on unload as a fallback). However, `self.spawn()` remains the recommended approach—supporting non-main loop thread scheduling back to the main loop, explicit `owner=` assignment, and fire-and-forget to prevent GC. **For versions before 2.8.3**, raw tasks are not owned, and `self.spawn()` must be used.
+- **Cleanup chain "failure only logs warning"**: Single-step cleanup exceptions will not block other resource releases, visible in DEBUG/WARNING log levels; enable TRACE for troubleshooting.
+
+### Registration Timing → Ownership Result Comparison Table
+
+| Registration Scenario | Ownership Result | Explanation |
+|-----------------------|------------------|-------------|
+| Registered inside `on_load()` via framework APIs (commands/events/lifecycle/routing decorators) | Owned by module | Automatically unregistered on unload |
+| Registered at module top level (during import) | **No ownership** (owner=None) | Not cleaned up, do not use |
+| Background tasks created via `self.spawn()` | Owned by module | Automatically cancelled on unload |
+| Registered inside `owner_scope("Name")` via third-party APIs | Owned by module | Depends on third-party callbacks executing synchronously within scope |
+| Raw `asyncio.create_task` (including `loop.create_task` / `ensure_future`) | **Automatic ownership** (Task Factory, 2.8.3+) | Instantly reads `current_owner` on creation, automatically registers within owner context, cancels on unload as a fallback; see [Internal Implementation](#internal-implementation-how-ownership-works) below |
+| Tasks created internally within third-party library asynchronous callbacks (e.g., aiohttp / APScheduler) | **Automatic ownership** (Task Factory, 2.8.3+) | If `current_owner` is injected (e.g., during framework handler execution), the task automatically registers |
+| `run_in_executor` (thread pool) | **No ownership** (not asyncio.Task) | Threads are not managed by Task Factory, lifecycle must be managed manually |
+| Registration within an independent event loop (self-created loop) | **No ownership** | Task Factory is only installed in the main loop; contextvars do not propagate across event loops |
+
+> Principle: **Ownership follows the `current_owner` context at the moment of registration**; any asynchronous delay, thread pools, or independent loops will detach from this context—explicitly enter `owner_scope` when ownership is required.
 
 ## Guide to Utility Modules: Managing Handles for Other Modules
 

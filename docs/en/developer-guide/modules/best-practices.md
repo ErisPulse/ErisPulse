@@ -1,15 +1,15 @@
 # Module Development Best Practices
 
-This document provides best practice recommendations for ErisPulse module development.
+This document provides best practices for developing modules in ErisPulse.
 
 ## Module Design
 
 ### 1. Single Responsibility Principle
 
-Each module should be responsible for only one core function:
+Each module should only be responsible for one core function:
 
 ```python
-# Good design: each module handles one feature
+# Good design: each module handles only one function
 class WeatherModule(BaseModule):
     """Weather query module"""
     pass
@@ -20,7 +20,7 @@ class NewsModule(BaseModule):
 
 # Bad design: one module handles multiple unrelated functions
 class UtilityModule(BaseModule):
-    """Contains weather, news, jokes, and more"""
+    """Contains weather, news, jokes, and other functions"""
     pass
 ```
 
@@ -55,15 +55,15 @@ class MyModule(BaseModule):
     ConfigClass = MyModuleConfig
 
     async def do_something(self):
-        cfg = self.cfg  # Type-safe, real-time read
+        cfg = self.cfg  # Type-safe, real-time reading
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-You can also continue to use manual configuration storage (see [Module Core Concepts](core-concepts.md#configuration-management)).
+You can also continue using manual configuration storage reading and writing (see [Module Core Concepts](core-concepts.md#configuration-management)).
 
 ### Declarative Translation Keys (v2.7.0+)
 
-Modules can centrally declare translation keys via `I18nClass`, and the framework automatically registers them into the i18n system, eliminating the need for manual `i18n.register()`.
+Modules can centrally declare translation keys via `I18nClass`, and the framework automatically registers them to the i18n system, eliminating the need to manually call `i18n.register()`.
 
 ```python
 from ErisPulse.Core.Bases import BaseI18n, I18nKey
@@ -90,7 +90,7 @@ class MyModule(BaseModule):
         )
 ```
 
-For detailed usage, see [i18n Documentation](../../advanced/i18n.md#recommended-usage-by-declaring-translation-keys-via-i18nclass-v270).
+See [i18n documentation](../../advanced/i18n.md#recommended-usage-declaring-translation-keys-via-i18nclass-v270) for detailed usage.
 
 ## Asynchronous Programming
 
@@ -105,7 +105,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# Can also use sdk.client (same effect)
+# Alternatively, use sdk.client (same effect)
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -122,31 +122,35 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# Do not use requests (synchronous, blocks event loop)
+# Do not use requests (synchronous, blocks the event loop)
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # Blocks event loop
+        return requests.get(url).json()  # Blocks the event loop
 ```
 
 ### 2. Correct Asynchronous Operations
 
 ```python
-from ErisPulse.Core.Event import Event  # Event annotation provides IDE completion
+from ErisPulse.Core.Event import Event  # event: Event annotation provides IDE completion
 
 async def handle_command(self, event: Event):
-    # Time-consuming operations requiring results: await directly (clear lifecycle)
+    # Time-consuming operations that need to wait for results: directly await (clear lifecycle)
     result = await self._long_operation()
 
 async def on_load(self, event: dict):
-    # Background tasks (polling/timed/fire-and-forget): use self.spawn(),
-    # when the module unloads, the framework cancels in on_unload, avoiding holding self and causing leaks
+    # Background tasks (polling/timing/fire-and-forget): use self.spawn(),
+    # when the module unloads, the framework cancels in on_unload, avoiding holding self causing leaks
     self.spawn(self._poll())
 ```
 
-> [!NOTE]  
-> Background tasks are recommended to use `self.spawn()` (ErisPulse **2.8.0+**), rather than `asyncio.create_task`—the latter creates bare tasks not belonging to the module, which are not automatically cleaned up when unloading, holding a `self` reference and causing module instances to not be recycled (hot reload leak). See [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation).
+> [!NOTE]
+> Background tasks are recommended to use `self.spawn()` (ErisPulse **2.8.0+**). **From 2.8.3 onwards**, raw `asyncio.create_task`
+> will also be automatically registered to the module (Task Factory automatically registers, cancels in on_unload, no longer leaks `self` reference);
+> `self.spawn()` remains the recommended approach—supports non-main thread scheduling back to main loop, explicit `owner=` specification.
+> **Before 2.8.3**, raw tasks are not registered, holding `self` reference causing module instance unable to be recycled
+> (hot reload leak), must use `self.spawn()`. See [Lifecycle Management](../../advanced/lifecycle.md#background-task-ownership-and-automatic-cancellation).
 
 ### 3. Resource Management
 
@@ -156,7 +160,7 @@ async def on_load(self, event):
     pass
     
 async def on_unload(self, event):
-    # If custom client is needed, remember to clean up resources
+    # If you need a custom client, remember to clean up resources
     pass
 ```
 
@@ -165,14 +169,14 @@ async def on_unload(self, event):
 ### 1. Use Event Wrapper Class
 
 ```python
-# Use Event wrapper class's convenient methods
+# Use convenient methods of Event wrapper class
 @command("info")
 async def info_command(event: Event):
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
-    await event.reply(f"你好，{nickname}！")
+    await event.reply(f"Hello, {nickname}!")
 
-# Not directly accessing dictionary
+# Rather than directly accessing dictionary
 @command("info")
 async def info_command(event: Event):
     user_id = event["user_id"]  # Less clear, prone to errors
@@ -181,7 +185,7 @@ async def info_command(event: Event):
 ### 2. Reasonable Use of Lazy Loading
 
 ```python
-# Low-frequency command module: declare activate_on trigger, automatically activate on first matching command arrival (maintain lazy loading)
+# Low-frequency command module: declare activate_on trigger, automatically activates on first matching command arrival (maintain lazy loading)
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -189,7 +193,7 @@ class CommandModule(BaseModule):
             {"command": {"name": "dice", "help": "Roll a dice", "aliases": ["d"]}},
         ])
 
-# Low-frequency listener module: declare event trigger, activate automatically when event arrives
+# Low-frequency listener module: declare event trigger, automatically activates on event arrival
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -197,7 +201,7 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# High-frequency trigger (process every message) or modules that must be ready at startup: load immediately
+# High-frequency triggers (every message needs processing) or modules that must be ready at startup: load immediately
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -210,7 +214,7 @@ class UtilityModule(BaseModule):
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-> `activate_on`'s full syntax (event three forms / command shorthand and dict declaration / help fallback chain) is detailed in  
+> The complete syntax of `activate_on` (event three forms / command shorthand and dict declaration / help fallback chain) is detailed in
 > [Lazy Loading Module System](../../advanced/lazy-loading.md#event-driven-lazy-activation-activate_on).
 
 ### 3. Event Handler Registration
@@ -220,18 +224,18 @@ async def on_load(self, event):
     # Register event handlers in on_load
     @command("hello")
     async def hello_handler(event: Event):
-        await event.reply("你好！")
+        await event.reply("Hello!")
     
     @message.on_group_message()
     async def group_handler(event: Event):
         self.logger.info("Received group message")
     
-    # No need to manually deregister, framework handles it automatically
+    # No need to manually unregister, framework handles automatically
 ```
 
-## Utility Modules: Receiving "Unload Notifications" When Hosting Other Modules
+## Utility Module: When Hosting Other Things, You Must Catch "Unload Notification"
 
-**When is it needed**: Your module is holding things for other modules (timed callbacks, subscribers, connections, cache entries...). If these references are not discarded after the other module unloads, the other instance can never be recycled—this is the most common source of memory leaks in utility modules.
+**When is it needed**: Your module holds things for other modules (timers, subscribers, connections, cache entries...). If these references are not discarded after the other module unloads, the other instance can never be recycled—this is the most common source of memory leaks in utility modules.
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -239,31 +243,31 @@ from ErisPulse.runtime import off_cleanup, on_cleanup
 
 class MyToolModule(BaseModule):
     def __init__(self):
-        self._entries = {}  # {module name: things being held}
+        self._entries = {}  # {module name: hosted things}
 
     def register(self, entry):
-        owner = on_cleanup(self._drop)   # ① Register cleanup chain at registration, automatically identify caller
+        owner = on_cleanup(self._drop)   # ① Register cleanup chain on registration, automatically recognize caller
         self._entries.setdefault(owner, []).append(entry)
 
     def _drop(self, owner: str):
         self._entries.pop(owner, None)   # ② When the other module unloads, framework automatically calls: discard its things
 
     async def on_unload(self, event):
-        off_cleanup(self._drop)          # ③ Unregister hook before unloading
+        off_cleanup(self._drop)          # ③ Unregister hook before unloading self
 ```
 
-That's it, the framework guarantees:
+That's it. The framework ensures:
 
 - When the other module is **unloaded / disabled** (or adapter closed), `_drop("other module name")` will definitely be called
-- **Caller identification is automatic**: Whether the caller directly calls `sdk.MyToolModule.register(...)` in `on_load`, or calls it via `sdk.module.call("MyToolModule", "register", ...)`, it can correctly identify who it is
-- No need to worry about timing—the hook is triggered within the framework's cleanup chain, earlier than leak detection, and will not report false positives
+- **Caller identification is automatic**: The caller directly calls `sdk.MyToolModule.register(...)` in `on_load`, or calls via `sdk.module.call("MyToolModule", "register", ...)`; both can correctly identify who it is
+- No need to worry about timing—the hook triggers in the framework cleanup chain, earlier than leak detection, no false positives
 
-Consequences of not integrating: When the other module `purge` is fully unloaded, the instance cannot be recycled (leak diagnosis reports "non-reclaimable"); if the other module does not deregister with you in `on_unload`, the leak is permanent.
+Consequences of not hooking in: The instance cannot be recycled when the other `purge` unloads completely (leak diagnosis reports "un回收able"); if the other module does not unregister you in `on_unload`, the leak is permanent.
 
-**Normal modules (not hosting other modules) do not need to worry about this**—the framework's resource (commands / handlers / routes / background tasks...) unloading cleanup is fully automatic.
+**Ordinary modules (not hosting other things) do not need to care about this**—framework resources (commands / handlers / routing / background tasks...) are automatically cleaned up on unload.
 
-> Trigger timing, caller identification rules, timeout and fault tolerance details are found in  
-> [Ownership System · Tool Module Guide](../../advanced/ownership.md#tool-module-guide-handling-handles-from-other-modules).
+> Trigger timing, caller identification rules, timeout and fault tolerance details are detailed in
+> [Ownership System · Utility Module Guide](../../advanced/ownership.md#utility-module-guide-hosting-handles-from-other-modules).
 
 ## Error Handling
 
@@ -280,7 +284,7 @@ async def handle_event(self, event: Event):
         self.logger.warning(f"Business warning: {e}")
         await event.reply(f"Parameter error: {e}")
     except ClientError as e:
-        # Network error (sdk.client's underlying aiohttp exceptions are automatically converted)
+        # Network error (sdk.client's underlying aiohttp exception is automatically converted)
         self.logger.error(f"Network error {e.method} {e.url}: {e}")
         await event.reply("Network request failed, please try again later")
     except Exception as e:
@@ -293,7 +297,7 @@ async def handle_event(self, event: Event):
 ### 2. Timeout Handling
 
 ```python
-# Recommended to use SDK built-in client (includes timeout and retry)
+# Recommended to use SDK built-in client (with timeout and retry)
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -311,16 +315,16 @@ async def fetch_with_timeout(self, url, timeout=30):
 ### 1. Use Transactions
 
 ```python
-# Use transactions to ensure data consistency
+# Use transaction to ensure data consistency
 async def update_user(self, user_id, data):
     with self.sdk.storage.transaction():
         self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
         self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 
-# ❌ Not using transactions may lead to data inconsistency
+# ❌ Not using transaction may cause data inconsistency
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
-    # If an error occurs here, the above setting cannot be rolled back
+    # If this fails, the above setting cannot be rolled back
     self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 ```
 
@@ -344,23 +348,23 @@ def cache_multiple_items(self, items):
 ### 1. Reasonable Use of Log Levels
 
 ```python
-# DEBUG: Detailed debugging information (only for development)
+# DEBUG: Detailed debug information (only during development)
 self.logger.debug(f"Input parameters: {params}")
 
-# INFO: Normal operational information
+# INFO: Normal operation information
 self.logger.info("Module loaded")
 self.logger.info(f"Processing request: {request_id}")
 
 # WARNING: Warning information, does not affect main functionality
 self.logger.warning(f"Configuration item {key} not set, using default value")
-self.logger.warning("API response is slow, optimization may be needed")
+self.logger.warning("API response slow, may need optimization")
 
 # ERROR: Error information
 self.logger.error(f"API request failed: {e}")
-self.logger.error(f"Failed to process event: {e}", exc_info=True)
+self.logger.error(f"Event processing failed: {e}", exc_info=True)
 
 # CRITICAL: Fatal error, needs immediate handling
-self.logger.critical("Database connection failed, bot cannot operate normally")
+self.logger.critical("Database connection failed, bot cannot run normally")
 ```
 
 ### 2. Structured Logging
@@ -388,7 +392,7 @@ class MyModule(BaseModule):
             if key in self._cache:
                 return self._cache[key]
             
-            # Fetch from database
+            # Get from database
             data = await self._fetch_from_db(key)
             
             # Cache data
@@ -406,16 +410,16 @@ async def process_message(self, event: Event):
 
 # ❌ Blocking operation
 async def process_message(self, event: Event):
-    # Synchronous operation, blocks event loop
+    # Synchronous operation, blocks the event loop
     result = self._sync_process(event)
 ```
 
 ## Security
 
-### 1. Protection of Sensitive Data
+### 1. Sensitive Data Protection
 
 ```python
-# Sensitive data stored in configuration (declarative ConfigClass, secret field does not enter logs/export)
+# Sensitive data stored in configuration (declarative ConfigClass, secret fields not in logs/export)
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
@@ -423,7 +427,7 @@ from ErisPulse.Core.Bases import BaseModule, BaseConfig
 class MyModuleConfig(BaseConfig):
     api_key: str = field(
         default="",
-        metadata={"description": "API Key", "secret": True},
+        metadata={"description": "API key", "secret": True},
     )
 
 class MyModule(BaseModule):
@@ -433,9 +437,9 @@ class MyModule(BaseModule):
         if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
             raise ValueError("Please configure a valid API key in config.toml")
 
-# ❌ Sensitive data hardcoded
+# ❌ Hardcoded sensitive data
 class MyModule(BaseModule):
-    API_KEY = "sk-1234567890"  # Do not do this!
+    API_KEY = "sk-1234567890"  # Don't do this!
 ```
 
 ### 2. Input Validation
@@ -503,9 +507,9 @@ Follow semantic versioning:
 
 ### 2. README Header
 
-The README generated by `epsdk create` already includes the ErisPulse header (logo + badge line). Two recommended formats:
+The README generated by `epsdk create` already includes the ErisPulse header (Logo + badge row). Two recommended modes:
 
-**Format A — Only ErisPulse Logo (Default):**
+**Mode A — Only ErisPulse Logo (Default):**
 
 ```markdown
 <div align="center">
@@ -526,7 +530,7 @@ The README generated by `epsdk create` already includes the ErisPulse header (lo
 </div>
 ```
 
-**Format B — Module Icon × ErisPulse Logo (when having a custom icon):**
+**Mode B — Module Icon × ErisPulse Logo (with custom icon):**
 
 ```markdown
 <div align="center">
@@ -536,11 +540,11 @@ The README generated by `epsdk create` already includes the ErisPulse header (lo
 <img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
 
 # MyModule
-(Header badges same as above)
+(Badge row same as above)
 </div>
 ```
 
-Badges such as GitHub Stars and Downloads can be added as needed. The logo can also be downloaded locally (`.github/assets/ErisPulseLogo.png`) and referenced with a relative path.
+You can add GitHub Stars, Downloads, and other badges as needed. The logo can also be downloaded to the project locally (`.github/assets/ErisPulseLogo.png`) and referenced with a relative path.
 
 ## Related Documentation
 
