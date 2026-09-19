@@ -113,7 +113,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# 不要使用 aiohttp 直接匯入（不利於框架統一管理）
+# 不要使用 aiohttp 直接導入（不便於框架統一管理）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -122,21 +122,21 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# 不要使用 requests（同步，會阻塞事件迴圈）
+# 不要使用 requests（同步，會阻塞事件循環）
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # 會阻塞事件迴圈
+        return requests.get(url).json()  # 會阻塞事件循環
 ```
 
 ### 2. 正確的異步操作
 
 ```python
-from ErisPulse.Core.Event import Event  # event: Event 注解可獲得 IDE 補全
+from ErisPulse.Core.Event import Event  # event: Event 注解可獲得 IDE 补全
 
 async def handle_command(self, event: Event):
-    # 需要等待結果的耗時操作：直接 await（生命週期明確）
+    # 需要等待結果的耗時操作：直接 await（生命周期明確）
     result = await self._long_operation()
 
 async def on_load(self, event: dict):
@@ -146,7 +146,11 @@ async def on_load(self, event: dict):
 ```
 
 > [!NOTE]
-> 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**），而不是 `asyncio.create_task`——後者創建的裸任務不歸屬模組，卸載時不會被自動清理，會持有 `self` 引用導致模組實例無法被回收（熱重載泄漏）。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
+> 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**）。**2.8.3 起**裸 `asyncio.create_task`
+> 也會自動隱式歸屬模組（Task Factory 自動登記，卸載時兜底取消，不再泄漏 `self` 引用）；
+> `self.spawn()` 仍是推薦寫法——支援非主循環線程調度回主循環、顯式 `owner=` 指定。
+> **2.8.3 之前**的版本裸任務不歸屬、會持有 `self` 引用導致模組實例無法被回收
+> （熱重載泄漏），必須用 `self.spawn()`。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
 
 ### 3. 資源管理
 
