@@ -234,3 +234,71 @@ class TestCancelSelfProtection:
         t = asyncio.get_event_loop().create_task(parent())
         result = await asyncio.wait_for(t, timeout=3)
         assert result == "ok", "不应被取消或递归卡死"
+
+
+# ==================== Owner 感知 Task Factory（隐式归属全覆盖）====================
+
+
+class TestOwnerTaskFactory:
+    """事件循环级任务工厂：owner 上下文内任何 asyncio 注册自动归属、卸载兜底取消"""
+
+    @pytest.fixture(autouse=True)
+    async def _factory_installed(self):
+        from ErisPulse.runtime.tasks import install_owner_task_factory
+
+        install_owner_task_factory(asyncio.get_running_loop())
+        yield
+        for owner in ("Demo", "HandlerMod"):
+            for t in get_owner_tasks(owner):
+                t.cancel()
+            await cancel_owner_tasks(owner)
+
+    async def test_bare_create_task_inside_owner_scope(self):
+        """owner_scope 内裸 asyncio.create_task（模拟第三方库）→ 自动归属、可被取消"""
+        cancelled = []
+
+        async def sleeper():
+            try:
+                await asyncio.sleep(60)
+            except asyncio.CancelledError:
+                cancelled.append(1)
+
+        with owner_scope("Demo"):
+            t1 = asyncio.create_task(sleeper())
+            t2 = asyncio.get_running_loop().create_task(sleeper())
+
+        await asyncio.sleep(0)
+        tracked = get_owner_tasks("Demo")
+        assert t1 in tracked and t2 in tracked
+
+        assert await cancel_owner_tasks("Demo") >= 2
+        await asyncio.sleep(0.05)
+        assert len(cancelled) >= 2
+
+    async def test_implicit_owner_during_handler_execution(self):
+        """隐式归属：框架注入 owner 上下文（模拟事件处理器执行期间）的裸注册自动归属"""
+        from ErisPulse.runtime.context import current_owner
+
+        captured = {}
+
+        # 模拟框架：处理器执行前注入 owner（与 _invoke_handler 行为一致），
+        # 处理器内部（第三方库）创建任务——不经 spawn_background
+        async def fake_handler_task():
+            captured["task"] = asyncio.create_task(_forever())
+
+        token = current_owner.set("HandlerMod")
+        try:
+            await fake_handler_task()
+        finally:
+            current_owner.reset(token)
+
+        assert captured["task"] in get_owner_tasks("HandlerMod")
+        captured["task"].cancel()
+
+    async def test_unowned_tasks_untouched(self):
+        """无归属上下文（框架自身）的任务不登记、行为不变"""
+        t = asyncio.create_task(_forever())
+        await asyncio.sleep(0)
+        assert t not in get_owner_tasks("Demo")
+        t.cancel()
+        assert await cancel_owner_tasks("Demo") == 0
