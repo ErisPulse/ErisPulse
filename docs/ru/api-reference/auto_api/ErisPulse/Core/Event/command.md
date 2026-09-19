@@ -141,7 +141,7 @@ permission 时调用：逐级去掉末尾 token 查找已注册祖先，返回�
 ---
 
 
-##### `async wait_reply(event: dict[str, Any], prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD, pattern: str | None = None, regex: str | None = None, session: bool = False)`
+##### `async wait_reply(event: dict[str, Any], prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD, pattern: str | None = None, regex: str | None = None, session: bool = False, cmdpass: bool | None = None)`
 
 等待用户回复
 
@@ -152,6 +152,8 @@ permission 时调用：逐级去掉末尾 token 查找已注册祖先，返回�
 - **regex** (`正则表达式，回复文本不匹配时继续等待（与`): pattern 同时给定时须都匹配）
 - **session** (`会话级等待——同会话（群`): / 频道）中**任何人**的回复均可命中
     （如群协作场景：" anyone 输入「开始」即开始"）；默认 False 仅等待原回复者
+- **cmdpass** (`是否跳过命令匹配的三态（None=跟随全局配置，默认不跳过——`): 等待期间命中已注册命令的消息放行给命令分发器执行，等待继续挂起；
+    True=跳过命令匹配，等待期间消息一律作为回复消费）
 **返回值** (`用户回复的事件数据，如果超时则返回None`): > **提示**
 > 等待期间归属模块被卸载 / 适配器关闭 / 同会话被新的等待或租约取代 /
 > 回复者权限被撤销时，等待立即终止并返回 None（底层为
@@ -168,6 +170,20 @@ permission 时调用：逐级去掉末尾 token 查找已注册祖先，返回�
 内部使用的方法，用于从消息中解析并执行命令
 
 - **event**: 消息事件数据
+
+---
+
+
+##### `_is_command_text(text: str)`
+
+判定文本是否形如一条已注册命令（前缀 + 命令名/别名命中），不执行命令
+
+供交互等待（wait_reply）的命令穿透判定复用——等待期间命中命令的
+消息放行给命令分发器执行。判定口径与 :meth:`_try_execute_command`
+的匹配逻辑一致（前缀 / 大小写归一 / 子命令最长前缀匹配）。
+
+- **text** (`待判定的消息文本`): **返回值** (`是否形如已注册命令`): > **内部方法**
+内部使用的方法
 
 ---
 

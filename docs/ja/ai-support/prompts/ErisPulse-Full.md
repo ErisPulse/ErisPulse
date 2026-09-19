@@ -5578,27 +5578,27 @@ async def ai_chat(self, prompt: str):
 
 # モジュール開発のベストプラクティス
 
-本文書では、ErisPulse モジュール開発におけるベストプラクティスを提供します。
+このドキュメントでは、ErisPulse モジュール開発におけるベストプラクティスを提供します。
 
 ## モジュール設計
 
-### 1. 単一責任原則
+### 1. 単一責任の原則
 
-各モジュールは、1つの中心的な機能のみを担当するべきです：
+各モジュールは1つのコア機能のみを担当するようにします：
 
 ```python
 # 良い設計：各モジュールは1つの機能のみを担当
 class WeatherModule(BaseModule):
-    """天気照会モジュール"""
+    """天気情報取得モジュール"""
     pass
 
 class NewsModule(BaseModule):
-    """ニュース照会モジュール"""
+    """ニュース情報取得モジュール"""
     pass
 
 # 悪い設計：1つのモジュールが複数の無関係な機能を担当
 class UtilityModule(BaseModule):
-    """天気、ニュース、ジョークなど複数の機能を含む"""
+    """天気、ニュース、ジョーク等多个機能を含む"""
     pass
 ```
 
@@ -5606,12 +5606,12 @@ class UtilityModule(BaseModule):
 
 ```toml
 [project]
-name = "ErisPulse-ModuleName"  # ErisPulse- という接頭辞を使用
+name = "ErisPulse-ModuleName"  # ErisPulse- プレフィックスを使用
 ```
 
 ### 3. 明確な設定管理
 
-宣言的設定（`ConfigClass` + `BaseConfig`）を使用することを推奨します。これにより、型安全性、自動テンプレート生成、WebUIフォームサポートなどの機能が得られます：
+宣言的設定（`ConfigClass` + `BaseConfig`）を使用することを推奨します。これにより、型安全、自動テンプレート生成、WebUIフォームサポートなどの機能が得られます：
 
 ```python
 from dataclasses import dataclass, field
@@ -5637,18 +5637,18 @@ class MyModule(BaseModule):
         await self._fetch(cfg.api_url, timeout=cfg.timeout)
 ```
 
-また、手動で設定ストアを読み書きし続けることも可能です（[モジュールの基本概念](core-concepts.md#設定管理)を参照してください）。
+手動で設定ストアを読み書きする方法も引き続き使用できます（[モジュールの基本概念](core-concepts.md#設定管理)を参照）。
 
 ### 宣言的翻訳キー（v2.7.0+）
 
-モジュールは `I18nClass` を使って翻訳キーを一括で宣言し、フレームワークが i18n システムに自動的に登録します。`i18n.register()` を手動で呼び出す必要はありません。
+モジュールは `I18nClass` を使って翻訳キーを集中宣言し、フレームワークが i18n システムに自動登録します。`i18n.register()` を手動で呼び出す必要はありません。
 
 ```python
 from ErisPulse.Core.Bases import BaseI18n, I18nKey
 
 class MyModule(BaseModule):
     class I18nClass(BaseI18n):
-        # プレースホルダー付きの業務翻訳キー
+        # プレースホルダー付きのビジネス翻訳キー
         welcome: I18nKey = I18nKey(
             default="Welcome, {name}!",
             zh_CN="ようこそ、{name}！",
@@ -5657,7 +5657,7 @@ class MyModule(BaseModule):
             ja="ようこそ、{name}！",
             ru="Добро пожаловать, {name}!",
         )
-        # 設定フィールドの説明の翻訳
+        # 設定項目説明の翻訳
         api_url: I18nKey = I18nKey(
             default="API URL",
             zh_CN="API アドレス",
@@ -5668,14 +5668,14 @@ class MyModule(BaseModule):
         )
 ```
 
-詳細な使い方は [i18n ドキュメント](../../advanced/i18n.md#推奨書き方-i18nclass-宣言翻訳キー-v270) を参照してください。
+詳細な使い方は [i18n ドキュメント](../../advanced/i18n.md#推奨の書き方-i18nclass-を使って翻訳キーを宣言する-v270)を参照してください。
 
 ## 非同期プログラミング
 
 ### 1. 非同期ライブラリの使用
 
 ```python
-# 推奨：SDK 内部の HTTP クライアントを使用（非同期、自動ログと統計）
+# 推奨：SDK 内部の HTTP クライアント（非同期、自動ログと統計）
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -5683,7 +5683,7 @@ class MyModule(BaseModule):
         resp = await client.get(url)
         return await resp.json()
 
-# sdk.client を直接使用することも可能（効果は同じ）
+# sdk.client を使っても同じ効果
 from ErisPulse import sdk
 
 class MyModule(BaseModule):
@@ -5691,7 +5691,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# aiohttp を直接インポートしないこと（フレームワークによる統一管理が困難）
+# aiohttp を直接インポートしないこと（フレームワークが統一管理できない）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -5700,7 +5700,7 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# requests を使用しないこと（同期的で、イベントループをブロックする）
+# requests を使用しないこと（同期でイベントループをブロックする）
 import requests
 
 class MyModule(BaseModule):
@@ -5714,28 +5714,29 @@ class MyModule(BaseModule):
 from ErisPulse.Core.Event import Event  # event: Event 注釈で IDE の補完が得られる
 
 async def handle_command(self, event: Event):
-    # 結果を待つ必要がある時間のかかる操作：直接 await（ライフサイクルが明確）
+    # 結果を待つ必要がある処理：await で直接待つ（ライフサイクルが明確）
     result = await self._long_operation()
 
 async def on_load(self, event: dict):
-    # バックグラウンドタスク（ポーリング/定時/fire-and-forget）：self.spawn() を使用し、
-    # モジュールのアンロード時にフレームワークが on_unload の後にバックグラウンドタスクをキャンセルし、
-    # self を保持してメモリリークを防ぐ
+    # バックグラウンドタスク（ポーリング/タイマー/fire-and-forget）：self.spawn() を使う
+    # モジュールのアンロード時にフレームワークが on_unload の後に自動的にキャンセルし、self へのリファレンスを保持しない
     self.spawn(self._poll())
 ```
 
 > [!NOTE]
-> バックグラウンドタスクは `self.spawn()` を推奨します（ErisPulse **2.8.0+**）。`asyncio.create_task` はモジュールに属さない裸のタスクを作成するため、アンロード時に自動的にキャンセルされず、self の参照を保持してモジュールインスタンスが回収されない（ホットリロードのリーク）可能性があります。詳細は [ライフサイクル管理](../../advanced/lifecycle.md#バックグラウンドタスクの帰属と自動キャンセル) を参照してください。
+> バックグラウンドタスクは `self.spawn()` を推奨します（ErisPulse **2.8.0+**）。**2.8.3 以降**は、裸の `asyncio.create_task` も自動的にモジュールに所属します（タスクファクトリーが自動的に登録され、アンロード時に自動的にキャンセルされ、`self` リファレンスを保持しません）。
+> `self.spawn()` は、非メインループスレッドからメインループにスケジューリングするサポートや、明示的な `owner=` 指定が可能なため、引き続き推奨されます。
+> **2.8.3 以前**のバージョンでは、裸のタスクは所属せず、`self` リファレンスを保持してモジュールインスタンスが回収できず（ホットリロード時のリーク）、`self.spawn()` を使用する必要があります。詳細は [ライフサイクル管理](../../advanced/lifecycle.md#バックグラウンドタスクの所属と自動キャンセル) を参照してください。
 
 ### 3. リソース管理
 
 ```python
 async def on_load(self, event):
-    # SDK クライアントは接続プールを自動管理するため、手動でセッションを作成する必要はない
+    # SDK クライアントは接続プールを自動管理するため、手動でセッションを作成する必要はありません
     pass
     
 async def on_unload(self, event):
-    # 自前でクライアントを作成する場合は、リソースをクリーンアップすること
+    # 自前でクライアントを作成する場合、リソースのクリーンアップを忘れずに
     pass
 ```
 
@@ -5757,11 +5758,10 @@ async def info_command(event: Event):
     user_id = event["user_id"]  # 明確さに欠け、間違いやすい
 ```
 
-### 2. 懒惰なロードの使用
+### 2. ラグジュアリーの適切な使用
 
 ```python
-# 低頻度コマンドモジュール：activate_on トリガーを宣言し、
-# 最初の一致するコマンドが到着したときに自動的にアクティブ化（遅延ロードを維持）
+# 低頻度コマンドモジュール：activate_on トリガーを宣言し、最初の一致するコマンドが到着したときに自動的にアクティブ化（ラグジュアリーを維持）
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -5769,8 +5769,7 @@ class CommandModule(BaseModule):
             {"command": {"name": "dice", "help": "サイコロを振る", "aliases": ["d"]}},
         ])
 
-# 低頻度リスナーのモジュール：イベントトリガーを宣言し、
-# イベントが到着したときに自動的にアクティブ化
+# 低頻度リスナーモジュール：イベントトリガーを宣言し、イベントが到着したときに自動的にアクティブ化
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -5778,21 +5777,21 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# 高頻度トリガー（メッセージ毎に処理する）または起動時に即座に準備が必要なモジュール：即時ロード
+# 高頻度トリガー（メッセージ毎に処理が必要）または起動時に既に準備が必要なモジュール：即時ロード
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# ユーティリティモジュールは遅延ロードが適している
+# ユーティリティモジュールはラグジュアリーが適している
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-> `activate_on` の完全な構文（イベント三形式 / コマンドの簡略化と dict 宣言 / help フォールバックチェーン）は
-> [遅延ロードモジュールシステム](../../advanced/lazy-loading.md#イベント駆動遅延アクティベーションactivate_on) を参照してください。
+> `activate_on` の完全な構文（イベントの3形式 / コマンドの簡易記法と dict 宣言 / help フォールバックチェーン）は
+> [ラグジュアリーのモジュールシステム](../../advanced/lazy-loading.md#イベント駆動のラグジュアリー活性化activate_on)を参照してください。
 
 ### 3. イベントハンドラの登録
 
@@ -5805,14 +5804,14 @@ async def on_load(self, event):
     
     @message.on_group_message()
     async def group_handler(event: Event):
-        self.logger.info("グループメッセージを受け取りました")
+        self.logger.info("グループメッセージを受信しました")
     
-    # 手動で登録解除する必要はない、フレームワークが自動的に処理する
+    # 手動でアンロードする必要はなく、フレームワークが自動的に処理します
 ```
 
 ## ユーティリティモジュール：他人のものを管理するときは「アンロード通知」を受け止める
 
-**いつ必要か**：あなたのモジュールが他のモジュールのものを保管している場合（定時コールバック、サブスクライバー、接続、キャッシュエントリーなど…）。これらの参照は、他のモジュールがアンロードされた後も削除されない場合、他のモジュールのインスタンスは永遠に回収されない—これはユーティリティモジュールで最も一般的なメモリリークの原因です。
+**いつ必要か**：あなたのモジュールが他のモジュールのものを保管している場合（タイマーのコールバック、サブスクライバー、接続、キャッシュエントリなど）。これらのリファレンスが、相手のモジュールがアンロードされた後も削除されない場合、相手のインスタンスは永遠に回収されません。これはユーティリティモジュールで最も一般的なメモリリークの原因です。
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -5827,28 +5826,28 @@ class MyToolModule(BaseModule):
         self._entries.setdefault(owner, []).append(entry)
 
     def _drop(self, owner: str):
-        self._entries.pop(owner, None)   # ② 他のモジュールがアンロードされたときにフレームワークが自動的に呼び出す：そのものの削除
+        self._entries.pop(owner, None)   # ② 相手がアンロードされたときにフレームワークが自動的に呼び出す：そのものの削除
 
     async def on_unload(self, event):
-        off_cleanup(self._drop)          # ③ 自分がアンロードされる前にフックを解除
+        off_cleanup(self._drop)          # ③ 自分がアンロードする前にフックをアン登録
 ```
 
-以上で、フレームワークは保証します：
+これで、フレームワークは保証します：
 
-- 他のモジュールが**アンロード / 禁用**（またはアダプターが閉じる）されたとき、`_drop("他のモジュール名")` は必ず呼び出されます
-- **呼び出し元の識別は自動的**：他のモジュールが `on_load` で `sdk.MyToolModule.register(...)` を直接呼び出すか、`sdk.module.call("MyToolModule", "register", ...)` を経由して呼び出すかに関わらず、正しく識別されます
-- 時機を気にする必要はありません—フックはフレームワークのクリーンアップチェーン内で発動し、リーク診断より早く、誤報することはありません
+- 相手のモジュールが**アンロード / 禁用**（またはアダプターが閉じられた）ときに、`_drop("相手のモジュール名")` は必ず呼び出されます
+- **呼び出し元の識別は自動的**：相手が `on_load` で直接 `sdk.MyToolModule.register(...)` を呼び出すか、`sdk.module.call("MyToolModule", "register", ...)` を経由して呼び出すかに関わらず、正しく識別されます
+- 時機の心配は不要——フックはフレームワークのクリーンアップチェーン内でトリガーされ、リーク診断よりも早く、誤った報告は発生しません
 
-接続しない場合の結果：他のモジュールが `purge` で完全にアンロードされたときにインスタンスが回収されない（リーク診断で「回収不可」が表示される）；もし他のモジュールが自分自身の `on_unload` で自分に登録解除しない場合、リークは永久的になります。
+接続しない場合の結果：相手が `purge` で完全にアンロードされたときにインスタンスが回収できず（リーク診断で「回収不可能」と表示される）；もし相手も `on_unload` で自分にアン登録しない場合、リークは永久的になります。
 
-**他人のものを保管していない普通のモジュールはこのことを気にする必要はありません**—フレームワークがリソース（コマンド / ハンドラ / ルーティング / バックグラウンドタスク…）のアンロードクリーンアップを自動的に行います。
+**他人のものを保管していない普通のモジュールは、これに関係ありません**——フレームワークのリソース（コマンド / ハンドラ / ルーティング / バックグラウンドタスクなど）のアンロードクリーンアップはすべて自動的です。
 
-> 発動タイミング、呼び出し元の識別ルール、タイムアウトと耐障害性などの詳細は
-> [所有権システム・ユーティリティモジュールガイド](../../advanced/ownership.md#ユーティリティモジュールガイド他人のハンドルを管理) を参照してください。
+> トリガーのタイミング、呼び出し元の識別ルール、タイムアウトとフォールトトレランスなどの詳細は
+> [所有権システム · ユーティリティモジュールガイド](../../advanced/ownership.md#ユーティリティモジュールガイド他人のモジュールのハンドルを保管する)を参照してください。
 
 ## エラー処理
 
-### 1. 例外の分類処理
+### 1. エラーの分類処理
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError
@@ -5861,20 +5860,20 @@ async def handle_event(self, event: Event):
         self.logger.warning(f"ビジネス警告: {e}")
         await event.reply(f"パラメータエラー: {e}")
     except ClientError as e:
-        # ネットワークエラー（sdk.client の下層 aiohttp 例外は自動的に変換済み）
+        # ネットワークエラー（sdk.client の下層 aiohttp エラーは自動的に変換される）
         self.logger.error(f"ネットワークエラー {e.method} {e.url}: {e}")
         await event.reply("ネットワークリクエストに失敗しました。後でもう一度お試しください")
     except Exception as e:
         # 予期しないエラー
         self.logger.error(f"不明なエラー: {e}", exc_info=True)
-        await event.reply("処理に失敗しました。管理者にお問い合わせください")
+        await event.reply("処理に失敗しました。管理者に連絡してください")
         raise
 ```
 
 ### 2. タイムアウト処理
 
 ```python
-# 推奨される SDK 内部クライアント（タイムアウトとリトライ機能を内蔵）
+# 推奨：SDK 内部クライアントを使用（タイムアウトとリトライが付属）
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -5898,10 +5897,10 @@ async def update_user(self, user_id, data):
         self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
         self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 
-# ❌ トランザクションを使用しないとデータの一貫性が保証されない
+# ❌ トランザクションを使用しないとデータの一貫性が保てない
 async def update_user(self, user_id, data):
     self.sdk.storage.set(f"user:{user_id}:profile", data["profile"])
-    # ここでエラーが発生すると、上記の設定はロールバックされない
+    # ここでエラーが発生すると、上記の設定はロールバックできない
     self.sdk.storage.set(f"user:{user_id}:settings", data["settings"])
 ```
 
@@ -5914,7 +5913,7 @@ def cache_multiple_items(self, items):
         f"item:{k}": v for k, v in items.items()
     })
 
-# ❌ 複数回の呼び出しは効率が悪い
+# ❌ 複数回呼び出すと効率が悪い
 def cache_multiple_items(self, items):
     for k, v in items.items():
         self.sdk.storage.set(f"item:{k}", v)
@@ -5928,30 +5927,30 @@ def cache_multiple_items(self, items):
 # DEBUG: 詳細なデバッグ情報（開発時のみ）
 self.logger.debug(f"入力パラメータ: {params}")
 
-# INFO: 正常な動作情報
+# INFO: 正常動作の情報
 self.logger.info("モジュールがロードされました")
-self.logger.info(f"リクエストを処理中: {request_id}")
+self.logger.info(f"リクエストを処理しました: {request_id}")
 
-# WARNING: 警告情報、主要な機能に影響しない
-self.logger.warning(f"設定項目 {key} が設定されていないため、デフォルト値を使用します")
-self.logger.warning("API の応答が遅い、最適化が必要かもしれません")
+# WARNING: 警告情報、主要機能に影響しない
+self.logger.warning(f"設定項目 {key} が設定されていません。デフォルト値を使用します")
+self.logger.warning("API 応答が遅いです。最適化が必要かもしれません")
 
 # ERROR: エラー情報
 self.logger.error(f"API リクエストに失敗しました: {e}")
-self.logger.error(f"イベント処理に失敗しました: {e}", exc_info=True)
+self.logger.error(f"イベントの処理に失敗しました: {e}", exc_info=True)
 
-# CRITICAL: 致命的なエラー、すぐに処理が必要
-self.logger.critical("データベース接続に失敗しました、ロボットは正常に動作できません")
+# CRITICAL: 致命的なエラー、即時対応が必要
+self.logger.critical("データベース接続に失敗しました。ロボットは正常に動作できません")
 ```
 
 ### 2. 構造化ログ
 
 ```python
 # 構造化ログを使用して、解析しやすくする
-self.logger.info(f"リクエストを処理中: request_id={request_id}, user_id={user_id}, duration={duration}ms")
+self.logger.info(f"リクエストを処理しました: request_id={request_id}, user_id={user_id}, duration={duration}ms")
 
-# ❌ 構造化されていないログ
-self.logger.info(f"リクエストを処理しました、ユーザー {user_id} から、{duration} ミリ秒かかりました")
+# ❌ 非構造化ログ
+self.logger.info(f"リクエストを処理しました。ユーザー {user_id} から、{duration} ミリ秒かかりました")
 ```
 
 ## パフォーマンス最適化
@@ -5987,7 +5986,7 @@ async def process_message(self, event: Event):
 
 # ❌ ブロッキング操作
 async def process_message(self, event: Event):
-    # 同期操作、イベントループをブロックする
+    # 同期操作でイベントループをブロック
     result = self._sync_process(event)
 ```
 
@@ -5996,7 +5995,7 @@ async def process_message(self, event: Event):
 ### 1. 敏感データの保護
 
 ```python
-# 敏感データは設定に格納（宣言的 ConfigClass、secret フィールドはログ/エクスポートに含まれない）
+# 敏感データは設定に保存（宣言的 ConfigClass、secret フィールドはログ/エクスポートに含まれない）
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
@@ -6016,19 +6015,19 @@ class MyModule(BaseModule):
 
 # ❌ 敏感データをハードコード
 class MyModule(BaseModule):
-    API_KEY = "sk-1234567890"  # こうしないでください！
+    API_KEY = "sk-1234567890"  # これを行わないでください！
 ```
 
-### 2. 入力の検証
+### 2. 入力検証
 
 ```python
-# ユーザー入力を検証
+# ユーザー入力の検証
 async def process_command(self, event: Event):
     user_input = event.get_text()
     
     # 入力長の検証
     if len(user_input) > 1000:
-        await event.reply("入力が長すぎます、再入力してください")
+        await event.reply("入力が長すぎます。再入力してください")
         return
     
     # 入力形式の検証
@@ -6066,7 +6065,7 @@ async def test_command_handling():
     await module.handle_command(event)
 ```
 
-## 部署
+## 配布
 
 ### 1. バージョン管理
 
@@ -6078,13 +6077,13 @@ version = "1.0.0"
 
 セマンティックバージョニングに従います：
 - MAJOR.MINOR.PATCH
-- メジャーバージョン：互換性のない API 変更
-- マイナーバージョン：互換性のある機能追加
-- パッチ：互換性のある問題修正
+- 主バージョン：互換性のない API 変更
+- 次バージョン：互換性のある機能追加
+- 修正番号：互換性のある問題修正
 
 ### 2. README ヘッダー
 
-`epsdk create` で生成された README には、ErisPulse ヘッダー識別子（ロゴ + バッジ行）が既に含まれています。2つの推奨モードがあります：
+`epsdk create` で生成された README には ErisPulse ヘッダー（ロゴ + バッジ行）が既に含まれています。2つの推奨モードがあります：
 
 **モード A — ErisPulse ロゴのみ（デフォルト）：**
 
@@ -6107,7 +6106,7 @@ version = "1.0.0"
 </div>
 ```
 
-**モード B — モジュールアイコン × ErisPulse ロゴ（独自のアイコンがある場合）：**
+**モード B — モジュールアイコン × ErisPulse ロゴ（独自アイコンがある場合）：**
 
 ```markdown
 <div align="center">
@@ -6117,11 +6116,11 @@ version = "1.0.0"
 <img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/.github/assets/ErisPulseLogo.png" height="120" alt="ErisPulse" />
 
 # MyModule
-（バッジ行は上記と同じ）
+（バッジ行は上と同じ）
 </div>
 ```
 
-GitHub Stars、Downloads などのバッジを必要に応じて追加できます。ロゴはプロジェクトにローカルにダウンロードして、相対パスを参照することもできます（`.github/assets/ErisPulseLogo.png`）。
+GitHub スターやダウンロード数などのバッジを必要に応じて追加できます。ロゴはプロジェクトにローカルにダウンロードして、相対パスで参照することもできます（`.github/assets/ErisPulseLogo.png`）。
 
 
 
@@ -18102,117 +18101,157 @@ topology = sdk.get_topology()
 
 ### 归属权（owner）系统
 
-# 所有者（owner）システム
+# 所属権（owner）システム
 
-所有者（owner）は、モジュールの「プラグイン方式」の基盤です。モジュールが読み込まれる際に登録するすべてのフレームワークリソースは自動的に所有者に記名され、モジュールのアンロードや無効化時に、記名されたリソースを所有者が一括して回収します。モジュール開発者はリソースを宣言するだけで、手動でのクリーンアップロジックを書く必要はありません。
+所属権は、モジュールの「プラグイン・アンド・プレイ」の基盤です。モジュールがロード時に登録するすべてのフレームワークリソースは自動的に所有者として記名され、アンロード/無効化時には所有者に応じて一括で回収されます。モジュールの開発者はリソースを宣言するだけで、手動でクリーンアップロジックを書く必要はありません。
 
-> **関連システム**：スコープ（scope）は、イベントの配信時に「リソースが有効かどうか」を決定します。  
-> 所有者は、モジュールのライフサイクル中に「どの所有者がリソースを所有しているか」、「誰がアンロード時にリソースを回収するか」を決定します。  
-> スコープの詳細は[統一制御面（scope）](scope.md)を参照してください。バックグラウンドタスクの詳細は、[ライフサイクル管理](lifecycle.md#バックグラウンドタスクの所有と自動キャンセル)を参照してください。
+> **関連システム**：スコープ（scope）は、イベントの配信時に「リソースが有効かどうか」を決定し、所属権はライフサイクルの中で「リソースは誰のものか、誰がアンロード時に回収されるか」を決定します。スコープについては [統一制御面（scope）](scope.md) を参照し、バックグラウンドタスクについては [ライフサイクル管理](lifecycle.md#バックグラウンドタスクの所有と自動キャンセル) を参照してください。
 
 {!--< tips >!--}
-1. 所有者は**登録の瞬間**に `current_owner` に基づいて自動的に記録されます。モジュールコードの変更は一切不要です。
-2. アンロード/無効化は共通のクリーンアップチェーン（`_cleanup_module_registrations`）を使用します。各ステップで失敗しても警告のみを表示し、処理を中断しません。
-3. ユーザー設定のリソース（永続化された上書き / スコープルール / コマンドACL）は、モジュールのアンロード時にクリーンアップされません。
-4. ツールモジュールが外部ハンドルをホストしている場合、`on_cleanup(cb)` を使用してクリーンアップチェーンに登録できます。他のモジュールがアンロードされた際に、自動的にコールバックされます（[ツールモジュールガイド](#ツールモジュールガイド外部モジュールのハンドルをホストする)を参照してください）。
+1. 所属は**登録瞬間**に `current_owner` によって自動的に記録され、モジュールのコードは変更を必要としません。
+2. アンロード/無効化は共通のクリーンアップチェーン（`_cleanup_module_registrations`）を使用し、各ステップで失敗しても警告のみで中断されません。
+3. ユーザーの設定語義のリソース（永続化オーバーライド / scope 規則 / コマンド ACL）は、モジュールのアンロード時にクリーンアップされません。
+4. ツールモジュールが外部ハンドルをホストしている場合、`on_cleanup(cb)` を使ってクリーンアップチェーンに登録し、他のモジュールがアンロードされた際に自動的にコールバックされます（[ツールモジュールガイド](#ツールモジュールガイド他のモジュールのハンドルをホストする) を参照）。
 {!--< /tips >!--}
 
 ## owner コンテキストメカニズム
 
-owner は、コンテキスト変数 `current_owner` を介して `ErisPulse.runtime.context` に渡されます：
+owner は `current_owner` というコンテキスト変数を通じて `ErisPulse.runtime.context` に渡されます：
 
 ```python
 from ErisPulse.runtime import owner_scope, get_current_owner
 
 with owner_scope("MyModule"):
-    # このスコープ内に登録されたすべてのリソースは自動的に MyModule に属します
+    # この区間で登録されるすべてのリソースは自動的に MyModule に所属します
     assert get_current_owner() == "MyModule"
 ```
 
-フレームワークは、以下のタイミングで自動的に owner を注入します（モジュールやアダプターのコードで手動でラップする必要はありません）：
+フレームワークは以下のタイミングで owner を自動的に注入します（モジュール/アダプタのコードは手動でラップする必要はありません）：
 
-| 時点 | owner 値 | 位置 |
+| 時機 | owner 値 | 位置 |
 |------|----------|------|
 | モジュール `load()` | モジュール名 | インスタンス化 + `on_load` 全体 |
-| アダプター `start()` / `restart()` | プラットフォーム名 | アダプター起動全体 |
-| `activate_on` ラグジュアリスタブ登録 | モジュール名 | 占位コマンド/ハンドラの登録 |
-| イベントハンドラ実行中 | ハンドラ所属モジュール名 | handler / コマンドエントリポイントの再注入 |
+| アダプタ `start()` / `restart()` | プラットフォーム名 | アダプタの起動全体 |
+| `activate_on` ラグジュアリスタブ登録 | モジュール名 | 位置コマンド/ハンドラの登録 |
+| イベントハンドラ実行中 | ハンドラの所属モジュール名 | handler / コマンドエントリポイントの再注入 |
 
-実行中の再注入とは、モジュールが `on_load` で宣言したコマンドハンドラが**実行中**に登録型 API（例：`sdk.adapter.on()`、`overrides.*.set(persist=False)`）を呼び出す場合、それらも自動的にこのモジュールに属することを意味します。
+実行中の再注入とは、モジュールが `on_load` で宣言したコマンドハンドラが**実行中**に登録型 API（`sdk.adapter.on()`、`overrides.*.set(persist=False)`）を呼び出す場合、それらも自動的に本モジュールに所属することを意味します。
 
-## 所属リソースの概要
+## 所属リソースの全貌
 
-モジュールは、ロードコンテキスト内で以下のリソースを登録し、それらの所属を記録します。アンロードまたは無効化時に、これらのリソースは自動的に回収されます。
+モジュールがロードコンテキスト内で登録する以下のリソースはすべて所属が記録され、アンロード/無効化時に自動的に回収されます：
 
 | リソース | 登録方法 | クリーンアップ呼び出し |
 |------|----------|----------|
-| コマンド | `@command()` / コマンド dict 声明 | `command.unregister_by_owner()` |
-| イベントハンドラー | `@message` / `@notice` / `@request` / `@meta` | `handler.unregister_by_owner()` |
-| 适配器イベントリスナー | `sdk.adapter.on()` / `raw=True` | `adapter.unregister_handlers_by_owner()` |
-| 适配器ミドルウェア | `@sdk.adapter.middleware` | 同上 |
-| ルーティング（HTTP/WS/SSE） | `router.http()` / `websocket()` / `sse()` | 名前空間 + owner による二重保証 |
+| コマンド | `@command()` / コマンド dict 宣言 | `command.unregister_by_owner()` |
+| イベントハンドラ | `@message` / `@notice` / `@request` / `@meta` | `handler.unregister_by_owner()` |
+| アダプタイベントリスナー | `sdk.adapter.on()` / `raw=True` | `adapter.unregister_handlers_by_owner()` |
+| アダプタミドルウェア | `@sdk.adapter.middleware` | 同上 |
+| ルーティング（HTTP/WS/SSE） | `router.http()` / `websocket()` / `sse()` | 名前空間と owner による二重保証 |
 | ルーティングミドルウェア | `@router.middleware()` / `add_middleware()` | `router.unregister_all_by_owner()` |
-| Dashboard ホームエントリー | `router.register_home_entry()` | `unregister_home_entries_by_owner()` |
-| 自定义会話タイプ | `register_custom_type()` | `unregister_custom_types_by_owner()` |
+| Dashboard ホームエントリ | `router.register_home_entry()` | `unregister_home_entries_by_owner()` |
+| 自定義セッションタイプ | `register_custom_type()` | `unregister_custom_types_by_owner()` |
 | バックグラウンドタスク | `self.spawn()` | `cancel_owner_tasks()` |
-| 外部所属クリーンアップフック（ツールモジュール管理） | `runtime.on_cleanup(cb)` | `run_owner_cleanups()`（アンロード/無効化/适配器終了時） |
+| 外部所属クリーンアップフック（ツールモジュールが他のモジュールのハンドルをホスト） | `runtime.on_cleanup(cb)` | `run_owner_cleanups()`（アンロード/無効化/アダプタのシャットダウンチェーン内でトリガー） |
 | ライフサイクルフック | `lifecycle.register()` | `lifecycle.unregister_by_owner()` |
-| 主人身源プロバイダ | `master.provider` | `master.unregister_by_owner()` |
-| i18n 翻訳キー | `I18nClass` 声明（domain=モジュール名） | `i18n.unregister_domain()` |
+| 主人身源 provider | `master.provider` | `master.unregister_by_owner()` |
+| i18n 翻訳キー | `I18nClass` 宣言（domain=モジュール名） | `i18n.unregister_domain()` |
 | イベントオーバーライド（実行時） | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
-| 交互会話（wait_reply 等待 / リース） | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()`（待機側が即座にキャンセルを受け取る） |
-| コンテキストデータ | `runtime/context` は owner ごとに記録 | モジュール単位で正確にクリーンアップ |
+| 交互セッション（wait_reply 等待 / リース） | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()`（待機側が即座にキャンセルを受け取る） |
+| コンテキストデータ | `runtime/context` は owner ごとに記録 | モジュールごとに正確にクリーンアップ |
 
-适配器側の対応リソース（プラットフォーム名を owner として）は、适配器の `shutdown()` / `restart()` 時に `_cleanup_adapter_resources` によって回収されます。以下も含まれます：
+アダプタ側の対応するリソース（プラットフォーム名を owner として）は、アダプタ `shutdown()` / `restart()` 時に `_cleanup_adapter_resources` によって回収され、以下も含まれます：
 
 | リソース | クリーンアップ呼び出し |
 |------|----------|
-| 适配器独自の `on()` ハンドラーとミドルウェア | `adapter.unregister_handlers_by_owner(platform)` |
+| アダプタ独自の `on()` ハンドラとミドルウェア | `adapter.unregister_handlers_by_owner(platform)` |
 | プラットフォームイベントメソッド拡張（`EventMixin`） | `unregister_platform_event_methods(platform)` |
-| 自定义会話タイプ | `unregister_custom_types_by_owner(platform)` |
-| 交互会話（該当プラットフォームで待機中の wait_reply / リース） | `interaction.cancel_by_platform(platform)` |
+| 自定義セッションタイプ | `unregister_custom_types_by_owner(platform)` |
+| 交互セッション（そのプラットフォームで待機中の wait_reply / リース） | `interaction.cancel_by_platform(platform)` |
 | i18n 翻訳ドメイン（domain=設定キー） | `i18n.unregister_domain(設定キー)` |
-| 細粒度の名前空間ルーティング | `router.unregister_all_by_owner(platform)` |
+| 細かい粒度の名前空間ルーティング | `router.unregister_all_by_owner(platform)` |
 
-## 卸載/無効化のクリーンアップシーケンス
+## アンロード/無効化クリーンアップシーケンス
 
-`unload()` と `disable()` は、それぞれ独立した try/except で処理されるクリーンアップチェーンを共有します。失敗してもログに記録されるのみで、**後続のクリーンアップを中断することはありません**。
+`unload()` と `disable()` は共通のクリーンアップチェーンを使用します（各ステップは独立した try/except で、失敗してもログに記録され、**後続のクリーンアップを中断しません**）：
 
 ```mermaid
 flowchart TD
     A["unload / disable"] --> B["on_unload()（タイムアウト保護）"]
-    B --> C["バックグラウンドタスクの強制キャンセル（cancel_owner_tasks）"]
-    C --> C1["外部の所有者クリーンアップフック<br/>（ツールモジュール on_cleanup で登録、run_owner_cleanups でトリガー）"]
+    B --> C["バックグラウンドタスクのキャンセル（cancel_owner_tasks）"]
+    C --> C1["外部所属クリーンアップフック<br/>（ツールモジュール on_cleanup 登録、run_owner_cleanups トリガー）"]
     C1 --> D["_cleanup_module_registrations"]
     D --> D1["i18n 翻訳ドメイン"]
-    D1 --> D2["ルーティング：名前空間 + owner の強制クリーンアップ<br/>（ミドルウェア / ホームページエントリ含む）"]
+    D1 --> D2["ルーティング：名前空間 + owner による兜底<br/>（ミドルウェア / ホームエントリ含む）"]
     D2 --> D3["アダプタイベントハンドラ / ミドルウェア"]
     D3 --> D4["コマンド + イベントハンドラ"]
-    D4 --> D5["カスタムセッションタイプ"]
-    D5 --> D6["ランタイムイベントの上書き（persist=False）"]
-    D6 --> D7["所有者プロバイダ"]
+    D4 --> D5["自定義セッションタイプ"]
+    D5 --> D6["実行時イベントオーバーライド（persist=False）"]
+    D6 --> D7["主人身源 provider"]
     D7 --> D8["ライフサイクルフック"]
-    D8 --> E["SDK 属性と遅延ロードプロキシの削除"]
+    D8 --> E["SDK 属性の削除 + ラグジュアリスタブ"]
 ```
 
-`sdk.uninit()` で終了する際には、以下のグローバルな強制クリーンアップが行われます：すべてのアダプタのシャットダウン → すべてのモジュールの unload → `router.stop()`（ルーティング/ミドルウェア/ホームページエントリのクリア）→ `cancel_all_background_tasks()` → イベントハンドラとフックのクリア。
+`sdk.uninit()` による終了時には、以下のグローバルな兜底処理が行われます：すべてのアダプタのシャットダウン → すべてのモジュールのアンロード → `router.stop()`（ルーティング/ミドルウェア/ホームエントリのクリア）→ `cancel_all_background_tasks()` → イベントハンドラとフックのクリア。
 
-## 設計の境界：アンインストール時にクリーンアップされないリソース
+## 設計境界：アンロード時にクリーンアップされないリソース
 
-所有権は**モジュールコードが登録したランタイムリソース**のみを回収します。以下のリソースは**ユーザーの設定の意味**（制御権はユーザーにあり、意図的に設定している可能性がある）に属し、モジュールのアンインストール後も設定に従って永続的に保持されます：
+所属権は**モジュールコードが登録した実行時リソース**のみを回収します。以下のリソースは**ユーザーの設定語義**（制御権はユーザーにあり、意図的に設定されている）に属し、モジュールのアンロード後も設定に従って永続的に保持されます：
 
-| リソース | 意味 | 説明 |
+| リソース | 語義 | 説明 |
 |------|------|------|
-| `overrides.*.set(persist=True)` | 永続化されたオーバーライド | 設定ファイルに書き込まれ、再起動後に有効。モジュールのアンインストール時に削除されない（ユーザーが明示的に設定） |
-| `scope.set_action()` などのスコープルール | 権限制御面 | ユーザー/Dashboard によって管理され、モジュールのアンインストール時にルールは回収されない |
-| `overrides.acl.set(persist=True)` | コマンド ACL | 上記と同じ |
-| Conversation `save()` による永続化 | 複数回の対話の保存 | データ資産はクリーンアップされない |
+| `overrides.*.set(persist=True)` | 永続化オーバーライド | 設定ファイルに書き込まれ、再起動後も有効；モジュールのアンロード時に削除されない（ユーザーが明示的に設定） |
+| `scope.set_action()` などのスコープルール | 権限制御面 | ユーザー/Dashboard によって管理され、モジュールをアンロードしてもルールは回収されない |
+| `overrides.acl.set(persist=True)` | コマンド ACL | 同上 |
+| Conversation `save()` 永続化 | 多回対話の保存 | データ資産はクリーンアップされない |
 
-ランタイムに一時的に書き込まれたもの（`persist=False`）は、所有者に従って回収されます。**永続化の有無が「ユーザーの資産」と「モジュールのランタイム状態」の境界線です**。
+実行時に一時的に書き込まれたもの（`persist=False`）は owner に応じて回収されます。**永続化の有無が「ユーザー資産」と「モジュールの実行時状態」の境界線です**。
+
+## 内部実装：所属権がどのように機能するか
+
+所属権システムは**2つの独立したチェーン**で構成されており、所属権の問題を調査するためには、それらの役割を理解することが前提です。
+
+### 課題チェーン（contextvar 伝播）
+
+`runtime/context.py` の `current_owner` などの ContextVar は**課題**（「このコードが登録するリソース/発生する呼び出しが誰のものか」）を担当します。伝播ルールは Python の contextvars 言語仕様に従います：
+
+| 実行経路 | context が伝播するか | 課題結果 |
+|---------|----------------|---------|
+| 同期呼び出しチェーン / `await` チェーン | ✅ 伝播 | 正しい課題 |
+| `owner_scope` 内の `asyncio.create_task` | ✅ 伝播（task は作成時の context をコピー） | その task 内のフレームワーク呼び出しが正しい課題になる |
+| `run_in_executor` / ブルートスレッド | ❌ 伝播しない | 課題が失われる |
+| 自作のイベントループ | ❌ 伝播しない | 課題が失われる |
+
+> 課題 ≠ 登録：context の伝播は「誰のものか」を決定するだけです。リソースがクリーンアップされるかどうかは、登録チェーンに進んでいるかどうかにかかっています。
+
+### キャンセルチェーン（タスク登録表）
+
+`runtime/tasks.py` の `_owner_tasks` 登録表は**ライフサイクル**（「owner 名下に未完了のタスクが何個あるか、アンロード時に一括でキャンセルする」）を担当します。タスクが登録表に入る経路は以下の通りです：
+
+1. **明示的なスケジュール**：`spawn_background()` / `self.spawn()` → 作成時に `current_owner`（または明示的な `owner=` パラメータ）をキャプチャ → 登録表に登録；
+2. **Task Factory の自動登録**（2.8.3）：`install_owner_task_factory()` はフレームワークの起動時にメインイベントループにインストールされ、**すべてのタスクの作成**（サードパーティライブラリの内部の `create_task` を含む）がファクトリを経由するときに `current_owner` を読み取り、None でなければ登録されます。
+
+登録表は自動的にクリーンアップされます：各タスクは `done_callback` を持っていて、完了すると表から削除され、リークがありません。
+
+### キャンセルタイミング（モジュールアンロード）
+
+```
+module.unload()
+  → on_unload(event)                    # モジュール独自のクリーンアップ（兜底タイムアウト保護）
+  → フレームワークがこの owner のコマンド/イベント/フック/ルーティングを登録解除
+  → cancel_owner_tasks(owner)           # タスク登録表による兜底キャンセル
+      → 各 task.cancel()                # 自身のキャンセルロジックを実行中のタスクを除外
+      → await gather(pending, timeout)  # 回収を待つ（タイムアウト後もブロックしない）
+```
+
+### 調査の考え方
+
+- **リソースがクリーンアップされない** → 登録表をチェック：`get_owner_tasks("MyModule")` に該当タスクが含まれているか確認します。含まれていない場合は、登録経路が所属チェーンを経ていない（import 時 / スレッド / 独立ループ）ことが原因です。上記表を参照して位置を特定します。
+- **課題が間違っている** → `get_current_owner()` をエラーが発生した瞬間の値で確認します。非同期の遅延実行（コールバック/タスク）の課題は、作成時の context に基づき、実行時の値とは異なります。
 
 ## モジュール開発者ガイド
 
-### 推奨される書き方
+### 推奨書き方
 
 ```python
 from ErisPulse import sdk
@@ -18221,39 +18260,46 @@ from ErisPulse.runtime import owner_scope, spawn_background
 
 class MyModule(BaseModule):
     async def on_load(self, event):
-        # フレームワークリソース：自動帰属、手動クリーンアップ不要
+        # フレームワークリソース：自動的に所属し、手動でクリーンアップする必要はありません
         self.task = self.spawn(self.polling())      # バックグラウンドタスク
-        sdk.router.register_home_entry("私のモジュール", "/my")  # ホームページエントリ
+        sdk.router.register_home_entry("私のモジュール", "/my")  # ホームエントリ
 
-        # モジュール独自リソース：owner_scope に包むことで帰属体系に組み込む
+        # モジュール独自のリソース：owner_scope に包むと所属体系に組み込まれます
         with owner_scope("MyModule"):
-            self.client.on_event(self._handle)      # 仮想のカスタム登録
+            self.client.on_event(self._handle)      # 假想の独自登録
 
     async def on_unload(self, event):
-        # フレームワークリソースは自動回収済み、owner_scope がカバーしない独自リソースのみクリーンアップ
+        # フレームワークリソースはすでに自動的に回収されているので、owner_scope がカバーしていない独自リソースのみクリーンアップします
         await self.client.close()
 ```
 
 ### 注意事項
 
-- **import 時の登録は帰属対象外**：モジュールの最上層（import 時）に登録されたフック/ハンドラーは
-  `owner_scope` より前に行われ、フレームワークレベルのリソース（owner=None）として扱われ、**クリーンアップされません**。
-  すべて `on_load()` 内で登録してください。
-- **カスタム domain の i18n 登録**：`i18n.register(domain=...)` の domain がモジュール名と異なる場合、自動回収されません。domain=モジュール名を維持してください。
-- **バックグラウンドタスクは必ず self.spawn() を使用**：裸の `asyncio.create_task` はモジュールに帰属せず、アンロード時にキャンセルされません（詳細は[ライフサイクル管理](lifecycle.md#バックグラウンドタスクの帰属と自動キャンセル)を参照）。
-- クリーンアップの「失敗は警告のみ」：1ステップのクリーンアップで異常が発生しても、他のリソースの回収は妨げられません。デバッグ/警告レベルのログで確認でき、トラブルシューティング時には TRACE を有効にしてください。
+- **import 時の登録には所属がありません**：モジュールのトップレベル（import 時）に登録されたフック/ハンドラは `owner_scope` より前に発生し、フレームワークリソース（owner=None）として扱われ、**クリーンアップされません**。すべて `on_load()` 内で登録してください。
+- **独自の domain を持つ i18n 登録**：`i18n.register(domain=...)` の domain がモジュール名と異なる場合、自動的に回収されません。domain=モジュール名を保つようにしてください。
+- **バックグラウンドタスクの推奨 `self.spawn()`**：2.8.3 以降、裸の `asyncio.create_task` も**自動的に所属**（Task Factory が自動登録し、アンロード時に兜底キャンセル）されます。ただし、`self.spawn()` は依然として推奨です —— 非メインループスレッドからメインループにスケジューリングできる、明示的な `owner=` 指定、fire-and-forget による GC 防止が可能です。**2.8.3 以前のバージョンでは、裸のタスクは所属せず、`self.spawn()` を使用する必要があります**。
+- クリーンアップチェーンの「失敗は警告のみ」：1ステップのクリーンアップエラーは残りのリソース回収を中断せず、ログの DEBUG/WARNING レベルで確認できます。トラブルシューティング時には TRACE を有効化できます。
 
-## ツールモジュールガイド：他のモジュールのハンドルを管理する
+### 登録タイミング → 所属結果対照表
 
-**シナリオ**：定時タスク、レジストリ、コネクションプールなど「ツールモジュール」は、他のモジュールが保管するものを代わりに管理します。  
-相手が `on_load` で `sdk.Cron.on_trigger(handler)` を呼び出すと、あなたのコンテナは相手のインスタンスを指すコールバックを保持します。  
-フレームワークは相手が登録したフレームワークリソースを自動的にクリーンアップしますが、  
-**あなたが私有コンテナに保持している参照**はクリーンアップできません：  
-相手がアンロードされた後も、あなたのコンテナは相手のインスタンスを保持しているため、  
-GC で回収されず（メモリリーク）、`purge` のリーク診断では「回収不可」と表示されます。
+| 登録状況 | 所属結果 | 説明 |
+|---------|---------|------|
+| `on_load()` 内でフレームワーク API（コマンド/イベント/lifecycle/ルーティングデコレータ）を使って登録 | 所属モジュール | アンロード時に自動的に登録解除 |
+| モジュールのトップレベル（import 時）に登録 | **所属なし**（owner=None） | クリーンアップされません。使用しないでください |
+| `self.spawn()` で作成されたバックグラウンドタスク | 所属モジュール | アンロード時に自動的にキャンセル |
+| `owner_scope("Name")` 内でサードパーティ API を使って登録 | 所属モジュール | サードパーティのコールバックが scope 内で同期的に実行されていることを前提とします |
+| 裸の `asyncio.create_task`（`loop.create_task` / `ensure_future` を含む） | **自動的に所属**（Task Factory、2.8.3+） | 作成瞬間に `current_owner` を読み取り、owner コンテキスト内では自動的に登録され、アンロード時に兜底キャンセルされます。詳細は下記の [内部実装](#内部実装所属権がどのように機能するか) を参照 |
+| 第三者ライブラリの非同期コールバック（aiohttp / APScheduler 等）内で作成されたタスク | **自動的に所属**（Task Factory、2.8.3+） | コールバックが実行されるときに `current_owner` が注入されている場合（フレームワークハンドラの実行中など）、タスクは自動的に登録されます |
+| `run_in_executor`（スレッドプール） | **所属なし**（asyncio.Task ではない） | スレッドはタスクファクトリの管理外であり、ライフサイクルを手動で管理する必要があります |
+| 独自のイベントループ（自作ループ）での登録 | **所属なし** | Task Factory はメインループにのみインストールされています。contextvars もイベントループ間で伝播しません |
 
-**解決策**：相手のものを登録する関数内で `on_cleanup()` を呼び出します。  
-フレームワークは相手がアンロード / 禁用されたときに、あなたのクリーンアップ関数を自動的にコールバックします：
+> 原則：**所属は登録瞬間の `current_owner` コンテキストに従います**。非同期の遅延、スレッドプール、独自ループはすべてこのコンテキストから外れます —— 所属が必要な場合は、明示的に `owner_scope` に入ります。
+
+## ツールモジュールガイド：他のモジュールのハンドルをホストする
+
+**シナリオ**：定時タスク、レジストリ、接続プールなど「ツールモジュール」は他のモジュールが保持するもの（ハンドル）を代わりに管理します。たとえば、他のモジュールが `sdk.Cron.on_trigger(handler)` を呼び出すと、あなたのコンテナにはそのモジュールのインスタンスを指すコールバックが保存されます。フレームワークは他のモジュールが登録したすべてのフレームワークリソースを自動的にクリーンアップしますが、**あなたが****私有コンテナに保持している参照**はクリーンアップできません。他のモジュールがアンロードされた後も、あなたのコンテナはそのインスタンスを保持しているため、GC で回収されず（メモリリーク）、`purge` デバッグ診断では「回収不能」と表示されます。
+
+**解決策**：他のモジュールのものを登録する関数内で `on_cleanup()` を呼び出し、フレームワークは他のモジュールがアンロード/無効化されたときに自動的にあなたのクリーンアップ関数を呼び出します：
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -18261,38 +18307,33 @@ from ErisPulse.runtime import off_cleanup, on_cleanup
 
 class CronModule(BaseModule):
     def __init__(self):
-        self._entries = {}  # {モジュール名: そのモジュールが管理するコールバックリスト}
+        self._entries = {}  # {モジュール名: そのモジュールがホストするコールバックのリスト}
 
     def on_trigger(self, handler):
-        # 自動的に呼び出し元のモジュール名を識別します（on_load からの直接呼び出し / module.call いずれでも正しく動作）。
-        # 戻り値は解析された owner で、そのまま記名キーとして使用できます。
+        # 自動的に呼び出し元モジュール名を識別（on_load からの直接呼び出し / module.call のいずれでも正しく動作）
+        # 戻り値は解析された owner で、記名キーとして直接使用できます
         owner = on_cleanup(self._drop)
         self._entries.setdefault(owner, []).append(handler)
 
     def _drop(self, owner: str):
-        """相手のモジュールがアンロード / 禁用されたときにフレームワークが自動的に呼び出す：
-        そのハンドルを破棄するだけです。"""
+        """他のモジュールがアンロード/無効化された際にフレームワークが自動的に呼び出す：そのハンドルを破棄するだけ"""
         self._entries.pop(owner, None)
 
     async def on_unload(self, event):
-        off_cleanup(self._drop)  # ③ 自分がアンロードされる前にフックを解除し、フック表が self を保持しないようにします。
+        off_cleanup(self._drop)  # ③ 自分がアンロードする前にフックを登録解除し、self を保持しないようにする
 ```
 
-フレームワークが保証する動作：
+フレームワークが保証する動作は以下の通りです：
 
-| 注目点 | 行動 |
+| 点 | 行動 |
 |--------|------|
-| 発動タイミング | 相手のモジュールがアンロード / 禁用される時、またはアダプタが閉じられる時——いずれもフレームワークのクリーンアップチェーン内で発動し、purge のリーク診断より前に行われます。 |
-| 呼び出し元の識別 | 直接呼び出しでは `current_owner` を取得、`module.call()` を経由して呼び出された場合は呼び出し元（`current_caller`）を取得、または `on_cleanup(cb, owner="モジュール名")` で明示的に指定することもできます。 |
-| コールバックの署名 | `cb(owner: str)`、同期 / 非同期のどちらでも可；非同期は `CLEANUP_CALLBACK_TIMEOUT_SECS`（デフォルト 10 秒）のタイムアウト保護付き。 |
-| 容錯 | 1 件のコールバックが例外 / タイムアウトしてもログを記録するだけで、他のフックやクリーンアップチェーンには影響しません。 |
-| 重複登録 | 同じ `(owner, callback)` は冪等的に重複除去されます。 |
+| トリガーのタイミング | 他のモジュールがアンロード/無効化されたとき、またはアダプタが閉じられたとき —— いずれもフレームワークのクリーンアップチェーン内でトリガーされ、purge デバッグ診断より前に発生します |
+| 呼び出し元の識別 | 直接呼び出しの場合は `current_owner` を取得、`module.call()` を通じて呼び出された場合は呼び出し元（`current_caller`）を取得、または `on_cleanup(cb, owner="モジュール名")` で明示的に指定することもできます |
+| コールバックの署名 | `cb(owner: str)`、同期/非同期の両方をサポート、非同期の場合はタイムアウト保護（`CLEANUP_CALLBACK_TIMEOUT_SECS`、デフォルト 10 秒）が付与されます |
+| 容赦 | 1つのコールバックのエラー/タイムアウトは、他のフックやクリーンアップチェーンに影響を与えません |
+| 重複登録 | 同じ `(owner, callback)` は冪等的に重複登録を除去します |
 
-**不要な場合**：相手が登録するのはフレームワークリソース（コマンド、イベントハンドラ、ルーティング、バックグラウンドタスクなど）であれば、  
-フレームワークが自動的にクリーンアップします（上記の[リソースの所有権](#リソースの所有権)を参照）。  
-フレームワークリソースではない、**あなたが私有コンテナに保持している相手のハンドル**のみ、  
-`on_cleanup` が必要です。  
-モジュール開発者向けの速見版は、[ベストプラクティス · ツールモジュール](../developer-guide/modules/best-practices.md#ツールモジュール相手のものを管理する際にはアンロード通知を受け止める) を参照してください。
+**不要な場合**：もし他のモジュールが登録したリソースがフレームワークリソース（コマンド、イベントハンドラ、ルーティング、バックグラウンドタスク……）であれば、フレームワークが既に自動的にクリーンアップしています（上記 [所属リソースの全貌](#所属リソースの全貌) を参照）。あなたが私有コンテナに保持している他のモジュールのハンドルだけが `on_cleanup` が必要です。モジュール開発者の視点からの速查版は [ベストプラクティス・ツールモジュール](../developer-guide/modules/best-practices.md#ツールモジュールが他のモジュールのものをホストする場合にアンロード通知を受け取る必要がある) を参照してください。
 
 
 

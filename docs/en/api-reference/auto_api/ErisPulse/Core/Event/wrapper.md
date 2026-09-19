@@ -103,7 +103,7 @@ ErisPulse 事件包装类
 ---
 
 
-### `async _builtin_wait_reply(event: 'Event', prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD, pattern: str | None = None, regex: str | None = None)`
+### `async _builtin_wait_reply(event: 'Event', prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD, pattern: str | None = None, regex: str | None = None, cmdpass: bool | None = None)`
 
 内置 wait_reply 实现
 
@@ -111,6 +111,8 @@ ErisPulse 事件包装类
 
 - **pattern** (`glob`): 通配符，回复文本不匹配时继续等待（超时返回 None）
 - **regex** (`正则表达式，回复文本不匹配时继续等待（与`): pattern 同时给定时须都匹配）
+- **cmdpass** (`是否跳过命令匹配的三态（None=跟随全局配置，默认不跳过——`): 等待期间命中已注册命令的消息放行给命令分发器执行；True=跳过命令匹配，
+    等待期间消息一律作为回复消费）
 
 ---
 
@@ -220,6 +222,20 @@ ErisPulse 事件包装类
 单条撤回失败不中断后续撤回。
 
 - **receipts**: 消息回执账本
+
+---
+
+
+### `_start_checkpoint_gc()`
+
+> **内部方法** 惰性启动过期检查点周期清理（仅启动一次，失败静默）
+
+---
+
+
+### `async _checkpoint_gc_loop()`
+
+> **内部方法** 周期清理循环（CONVERSATION_CHECKPOINT_GC_INTERVAL_SECS 间隔）
 
 ---
 
@@ -913,7 +929,7 @@ OneBot12 标准事件数据结构
 ---
 
 
-##### `async wait_reply(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD, pattern: str | None = None, regex: str | None = None)`
+##### `async wait_reply(prompt: str | None = None, timeout: float = DEFAULT_WAIT_TIMEOUT_SECS, callback: Callable[[dict[str, Any]], Awaitable[Any]] | None = None, validator: Callable[[dict[str, Any]], bool] | None = None, method: str = DEFAULT_SEND_METHOD, pattern: str | None = None, regex: str | None = None, cmdpass: bool | None = None)`
 
 等待用户回复
 
@@ -922,10 +938,12 @@ OneBot12 标准事件数据结构
 - **method** (`发送方法，默认为`): "Text"（可选: "Image", "Markdown", "Html" 等）
 - **pattern** (`glob`): 通配符（``*`` / ``?`` / ``[seq]``），回复文本不匹配时继续等待
 - **regex** (`正则表达式，回复文本不匹配时继续等待（与`): pattern 同时给定时须都匹配）
+- **cmdpass** (`是否跳过命令匹配的三态（None=跟随全局配置，默认不跳过——`): 等待期间命中已注册命令的消息（如 /cancel）放行给命令分发器执行，
+    等待继续挂起；True=跳过命令匹配，等待期间消息一律作为回复消费）
 **返回值** (`用户回复的事件数据，如果超时则返回None`): 
 **示例**:
 ```python
->>> reply = await event.wait_reply(prompt="请输入金额:", regex=r"\d+\s*元")
+>>> reply = await event.wait_reply(prompt="请输入金额:", regex=r"\\d+\\s*元")
 ```
 
 ---
@@ -1795,6 +1813,20 @@ delay 秒后无回复则发送提醒文本 / 执行回调；用户在会话回�
 
 - **event** (`消息事件（Event`): 包装类）
 **返回值**: 是否完成了自动恢复（事件已被消费）
+
+---
+
+
+##### `async _gc_expired_checkpoints()`
+
+> **内部方法**
+主动清理过期对话检查点（周期任务调用）
+
+枚举 `conversation:` 前缀的全部存储键，按 `saved_at` 与
+`ErisPulse.interaction.checkpoint_ttl` 判定过期并删除——补全
+"仅在 resume 时惰性清理"的缺口，长期未恢复的存档不再永久驻留。
+
+**返回值**: 清理的存档数量
 
 ---
 

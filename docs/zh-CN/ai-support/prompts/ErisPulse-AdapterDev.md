@@ -1386,6 +1386,13 @@ blocked = ["MyModule"]
 - 命令执行前还有第三道：命令用户 ACL（拒绝时回复"权限不足"，见上节）
 - 第四道是**事件覆写**（见下节）
 
+> [!NOTE]
+> **作用域过滤与事件认领（claim）的关系**：两道静默过滤都发生在处理器
+> **调度之前**——被过滤跳过的处理器没有机会执行，自然也不参与
+> `event.done()` / `mark_processed()` 的认领状态。事件是否已被认领，
+> 只由**实际执行**的处理器（命令命中认领、回复命中认领、显式调用）决定；
+> 作用域拒绝本身既不认领也不阻断（静默跳过，消息继续走完剩余分发链）。
+
 > 作用域配置、匹配语法、运行时 API 见 [作用域（scope）](../../advanced/scope.md)。
 
 ## 事件覆写：不改模块代码，覆写任意事件类型的行为
@@ -1447,6 +1454,10 @@ overrides.message.delete("ChatModule")  # 恢复开发者默认
 - `detail_types`：事件缺 `detail_type` 时放行（不误杀未知事件）
 - `pattern` / `regex`：无文本的事件（connect / heartbeat 等）不受约束，直接放行
 - `command` 覆写键 `master` 同步映射存储键 `must_master`；禁用命令统一走 `acl` deny
+- **键名映射说明**：`overrides.command.set("My", "restart", master=True)` 的参数名
+  `master` 仅为配置别名，实际存储键与 `get()` 返回值中的键名统一为 **`must_master`**
+  （`get()` 返回 `{"must_master": true}`）——运行时判断读取的是存储键，请勿按
+  `master` 键名读取
 - 配置改了立即生效（热更新），格式校验告警（未知参数 / 坏条目忽略）
 
 ## 链路控制：认领与阻断
@@ -1658,6 +1669,13 @@ async def ask_handler(event):
     else:
         await event.reply("等待超时，请重新输入。")
 ```
+
+> [!TIP]
+> **等待期间命令仍然可用**（2.8.3+）：以命令前缀开头且命中已注册命令的
+> 消息（如 `/cancel`）会**执行命令**而非作为回复内容，等待继续挂起——
+> 用户可以随时取消/切换，命令执行完仍可继续回复。需要"等待吞掉一切文本"
+> 的旧行为时：配置 `ErisPulse.event.wait_reply.cmdpass = true`，或单次
+> `wait_reply(cmdpass=True)`。
 
 ### 带验证的等待回复
 
@@ -10286,6 +10304,57 @@ flowchart TD
 运行时临时写入（`persist=False`）则随 owner 回收——**持久化与否即
 "用户资产"与"模块运行时状态"的分界线**。
 
+## 内部实现：归属如何工作
+
+归属系统由**两条独立链路**构成，理解它们的分工是排查归属问题的前提：
+
+### 归因链（contextvar 传播）
+
+`runtime/context.py` 的 `current_owner` 等 ContextVar 负责**归因**——
+"此刻这段代码注册的资源/发起的调用记在谁头上"。传播规则遵循 Python
+contextvars 语义：
+
+| 执行路径 | context 是否传播 | 归因结果 |
+|---------|----------------|---------|
+| 同步调用链 / `await` 链 | ✅ 传播 | 正确归因 |
+| `owner_scope` 内 `asyncio.create_task` | ✅ 传播（task 拷贝创建时刻的 context） | 任务**内部**的框架调用正确归因 |
+| `run_in_executor` / 裸线程 | ❌ 不传播 | 归因丢失 |
+| 自建事件循环 | ❌ 不传播 | 归因丢失 |
+
+> 归因 ≠ 登记：context 传播只影响"记在谁头上"，资源能否被清理
+> 取决于是否进入了下述取消链。
+
+### 取消链（任务登记表）
+
+`runtime/tasks.py` 的 `_owner_tasks` 登记表负责**生命周期**——
+"owner 名下有哪些未完成任务，卸载时统一取消"。任务进入登记表的途径：
+
+1. **显式调度**：`spawn_background()` / `self.spawn()` → 创建时捕获
+   `current_owner`（或显式 `owner=` 参数）→ 登记入表；
+2. **Task Factory 自动登记**（2.8.3）：`install_owner_task_factory()`
+   在框架启动时安装到主事件循环——**任何**任务创建（含第三方库内部的
+   `create_task`）经过工厂时读取 `current_owner`，非 None 即登记。
+
+登记表自清理：每个任务带 `done_callback`，完成即从表中移除，无泄漏。
+
+### 取消时序（模块卸载）
+
+```
+module.unload()
+  → on_unload(event)                    # 模块自行清理（兜底超时保护）
+  → 框架注销该 owner 的命令/事件/钩子/路由
+  → cancel_owner_tasks(owner)           # 任务登记表兜底取消
+      → 逐个 task.cancel()              # 排除当前执行取消逻辑的任务自身
+      → await gather(pending, timeout)  # 等待回收（超时不再阻塞）
+```
+
+### 排查思路
+
+- **资源没被清理** → 查登记表：`get_owner_tasks("MyModule")` 是否含该任务；
+  不含即注册路径未经过归属链（import 期 / 线程 / 独立循环），对照上表定位。
+- **归因错误** → 查 `get_current_owner()` 在出错时刻的值；异步延迟执行
+  （回调/任务）的归因取自创建时刻 context，而非执行时刻。
+
 ## 模块作者指南
 
 ### 推荐写法
@@ -10317,10 +10386,28 @@ class MyModule(BaseModule):
   一律放到 `on_load()` 内注册。
 - **自定义 domain 的 i18n 注册**：`i18n.register(domain=...)` 的 domain
   不等于模块名时不会被自动回收，请保持 domain=模块名。
-- **后台任务务必用 `self.spawn()`**：裸 `asyncio.create_task` 不归属模块，
-  卸载时不会被取消（详见[生命周期管理](lifecycle.md#后台任务归属与自动取消)）。
+- **后台任务推荐 `self.spawn()`**：2.8.3 起裸 `asyncio.create_task` 也会**自动隐式归属**
+  （Task Factory 自动登记，卸载时兜底取消）；但 `self.spawn()` 仍是推荐写法——
+  支持非主循环线程调度回主循环、显式 `owner=` 指定与 fire-and-forget 防 GC。
+  **2.8.3 之前**的版本裸任务不归属，必须用 `self.spawn()`。
 - 清理链"失败仅告警"：单步清理异常不会阻断其余资源回收，日志 DEBUG/WARNING
   级别可见，排障时可开启 TRACE。
+
+### 注册时机 → 归属结果对照表
+
+| 注册场景 | 归属结果 | 说明 |
+|---------|---------|------|
+| `on_load()` 内经框架 API（命令/事件/lifecycle/路由装饰器）注册 | 归属模块 | 卸载时自动注销 |
+| 模块顶层（import 期）注册 | **无归属**（owner=None） | 不被清理，请勿使用 |
+| `self.spawn()` 创建的后台任务 | 归属模块 | 卸载时自动取消 |
+| `owner_scope("Name")` 内经第三方 API 注册 | 归属模块 | 依赖第三方回调在 scope 内同步执行 |
+| 裸 `asyncio.create_task`（含 `loop.create_task` / `ensure_future`） | **自动归属**（Task Factory，2.8.3+） | 创建瞬间读取 `current_owner`，owner 上下文内自动登记、卸载兜底取消；见下文[内部实现](#内部实现归属如何工作) |
+| 第三方库异步回调（aiohttp / APScheduler 等）内部创建的任务 | **自动归属**（Task Factory，2.8.3+） | 回调执行时若 `current_owner` 已注入（如框架处理器执行期间），任务自动登记 |
+| `run_in_executor`（线程池） | **无归属**（非 asyncio.Task） | 线程不受任务工厂管辖，须自行管理生命周期 |
+| 独立事件循环（自建 loop）中的注册 | **无归属** | Task Factory 仅安装于主循环；contextvars 也不跨事件循环传播 |
+
+> 原则：**归属跟随注册瞬间的 `current_owner` 上下文**；任何异步延迟、
+> 线程池、独立循环都会脱离该上下文——需要归属时请显式进入 `owner_scope`。
 
 ## 工具模块指南：托管其它模块的句柄
 
