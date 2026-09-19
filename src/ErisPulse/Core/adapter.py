@@ -493,7 +493,11 @@ class AdapterManager(ManagerBase):
         platform = name
         adapter_class = class_type
         adapter_info = info
-        # None / 非类 / 非 BaseAdapter 子类统一在子类校验处报错
+        # None / 非类 / 非 BaseAdapter 子类统一在此显式报错：
+        # None 直接给出契约 TypeError（若漏到 _is_subclass 会以 AttributeError
+        # 形式炸出，违背契约）；非 None 时校验并收窄类型供后续实例化调用
+        if adapter_class is None:
+            raise TypeError(i18n.t("core.adapter.must_inherit_base"))
         if not self._is_subclass(adapter_class, BaseAdapter):
             raise TypeError(i18n.t("core.adapter.must_inherit_base"))
 
