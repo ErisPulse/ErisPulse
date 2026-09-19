@@ -1052,19 +1052,19 @@ class Main(BaseModule):
 
 ## 事件類型概覽
 
-ErisPulse 支持以下事件類型：
+ErisPulse 支援以下事件類型：
 
 | 事件類型 | 說明 | 適用場景 |
 |---------|------|---------|
 | 消息事件 | 用戶發送的任何消息 | 聊天機器人、內容過濾 |
 | 命令事件 | 以命令前綴開頭的消息 | 命令處理、功能入口 |
-| 通知事件 | 系統通知（好友添加、群成員變化等） | 歡迎消息、狀態通知 |
+| 通知事件 | 系統通知（好友添加、群成員變化等） | 歡迎訊息、狀態通知 |
 | 請求事件 | 用戶請求（好友請求、群邀請） | 自動處理請求 |
 | 元事件 | 系統級事件（連接、心跳） | 連接監控、狀態檢查 |
 
 ## 消息事件處理
 
-> **提示**: 建議在事件處理器中使用 `Event` 類型註解，以獲得 IDE 自動補全和類型檢查支持。
+> **提示**: 建議在事件處理器中使用 `Event` 類型註解，以獲得 IDE 自動補全和類型檢查支援。
 
 ```python
 from ErisPulse.Core.Event import Event  # 導入事件類型用於註解
@@ -1079,29 +1079,29 @@ from ErisPulse.Core.Event import message, Event
 async def message_handler(event: Event):
     text = event.get_text()
     user_id = event.get_user_id()
-    sdk.logger.info(f"收到 {user_id} 的消息: {text}")
+    sdk.logger.info(f"收到 {user_id} 的訊息: {text}")
 ```
 
-### 監聽私聊消息
+### 監聽私聊訊息
 
 ```python
 @message.on_private_message()
 async def private_handler(event: Event):
     user_id = event.get_user_id()
-    await event.reply(f"你好，{user_id}！這是私聊消息。")
+    await event.reply(f"你好，{user_id}！這是私聊訊息。")
 ```
 
-### 監聽群聊消息
+### 監聽群聊訊息
 
 ```python
 @message.on_group_message()
 async def group_handler(event: Event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"群 {group_id} 中 {user_id} 發送了消息")
+    sdk.logger.info(f"群 {group_id} 中 {user_id} 發送了訊息")
 ```
 
-### 監聽@消息
+### 監聽@訊息
 
 ```python
 @message.on_at_message()
@@ -1114,11 +1114,11 @@ async def at_handler(event: Event):
 ### 通配符與正則監聽
 
 四個消息裝飾器（`on_message` / `on_private_message` / `on_group_message` /
-`on_at_message`）均支持 `pattern`（glob 通配符）與 `regex`（正則），不匹配的消息
+`on_at_message`）均支援 `pattern`（glob 通配符）與 `regex`（正則），不匹配的訊息
 **不會觸發**處理器：
 
 ```python
-# glob 通配符：* 任意串、? 单字符、[seq] 字符集
+# glob 通配符：* 任意串、? 單字符、[seq] 字符集
 @message.on_message(pattern="簽到*")
 async def signin_handler(event: Event):
     await event.reply("簽到成功")
@@ -1134,7 +1134,7 @@ async def combined_handler(event: Event):
     pass
 ```
 
-`wait_reply` 同樣支持這兩個參數（見[等待回覆](../developer-guide/modules/event-wrapper.md#等待回覆功能)）。
+`wait_reply` 同樣支援這兩個參數（見[等待回覆](../developer-guide/modules/event-wrapper.md#等待回覆功能)）。
 
 ## 命令事件處理
 
@@ -1143,13 +1143,13 @@ async def combined_handler(event: Event):
 ```python
 from ErisPulse.Core.Event import command
 
-@command("help", help="顯示幫助信息")
+@command("help", help="顯示幫助資訊")
 async def help_handler(event):
     help_text = """
 可用命令：
 /help - 顯示幫助
 /ping - 測試連接
-/info - 查看信息
+/info - 查看資訊
     """
     await event.reply(help_text)
 ```
@@ -1157,12 +1157,12 @@ async def help_handler(event):
 ### 命令別名
 
 ```python
-@command(["help", "h"], aliases=["幫助"], help="顯示幫助信息")
+@command(["help", "h"], aliases=["幫助"], help="顯示幫助資訊")
 async def help_handler(event):
-    await event.reply("幫助信息...")
+    await event.reply("幫助資訊...")
 ```
 
-用戶可以使用以下任何方式調用：
+用戶可以使用以下任何方式呼叫：
 - `/help`
 - `/h`
 - `/幫助`
@@ -1170,7 +1170,7 @@ async def help_handler(event):
 ### 命令參數
 
 ```python
-@command("echo", help="回顯消息")
+@command("echo", help="回顯訊息")
 async def echo_handler(event):
     # 獲取命令參數
     args = event.get_command_args()
@@ -1243,23 +1243,23 @@ async def admin_add_handler(event):
 ```
 
 注意：`master=True` 與 `hidden` **不會**繼承，需要時請在子命令上單獨聲明；
-用戶 ACL（黑白名單）按命令全名匹配，glob 規則如 `"admin*"` 可覆蓋整組子命令。
+用戶 ACL（黑白名單）按命令全名匹配，glob 规則如 `"admin*"` 可覆蓋整組子命令。
 
 `/help` 的命令總覽中，子命令會自動掛到可見的父命令下縮進展示
 （`admin` → `admin add` 縮進一級，`admin user` → `admin user ban` 縮進兩級）。
 
-### 命令權限與存取控制
+### 命令權限與訪問控制
 
 命令權限分三層，從上到下逐層判定（**上層拒絕則不再看下層**）：
 
 ```python
 # ① 命令權限 ACL（用戶側配置）：按命令的用戶黑白名單，拒絕時回覆"權限不足"
 # ② master=True —— 僅框架主人可執行（框架自動檢查，拒絕時回覆"權限不足"）
-@command("restart", master=True, help="重啟模組")
+@command("restart", master=True, help="重新啟動模組")
 async def restart_handler(event):
-    await event.reply("模組已重啟")
+    await event.reply("模組已重新啟動")
 
-# ③ permission=呼叫函數 —— 命令自身的控制邏輯（返回 True 才執行）
+# ③ permission=調用函數 —— 命令自身的控制邏輯（返回 True 才執行）
 def is_admin(event):
     return event.get_user_id() in {"user123", "user456"}
 
@@ -1295,13 +1295,13 @@ command.get_acl("restart")                             # 查詢當前名單
 > 也可經 SDK 事件包訪問：`sdk.Event.command`（兩者為同一單例）。
 > 在模組內通常已隨命令裝飾器導入（`from ErisPulse.Core.Event import command`）。
 
-跨命令 / 跨用戶的**事件級**存取控制（某人 / 某群 / 某 Bot 的訊息收不收）
+跨命令 / 跨用戶的**事件級**訪問控制（某人 / 某群 / 某 Bot 的訊息收不收）
 走作用域**身份維度**（`scope.identity`）；**模組級**可用性（哪些模組能用）
 走作用域**模組維度**（`scope.platforms / bots / sessions`）。
 詳見[作用域（scope）](../advanced/scope.md)。
 
 > 建議：命令內部需要聯動業務邏輯的用 `master=True` / `permission`；純按用戶 / 群做
-> 存取控制的用作用域身份維度；控制模組可用性的用作用域模組維度。
+> 訪問控制的用作用域身份維度；控制模組可用性的用作用域模組維度。
 
 ### 命令優先級
 
@@ -1334,7 +1334,7 @@ priority=0 組: [處理器A ||處理器B] 並行 → 合併結果
 - **跨級串行**：不同優先級的組按順序執行（數值越大越先執行），確保高優先級處理器先運行
 - **Copy-On-Write**：處理器無修改時不建立副本，確保零開銷
 - **衝突處理**：同優先級多處理器修改同一字段時，使用最後修改值並記錄警告日誌
-- **中斷機制**：任意處理器呼叫 `event.done()`（預設）或 `event.done(claim=False)` 後，跳過後續低優先級組。認領與阻斷的區別見下文[「鏈路控制：認領與阻斷」](#鏈路控制認領與阻斷)
+- **中斷機制**：任意處理器調用 `event.done()`（預設）或 `event.done(claim=False)` 後，跳過後續低優先級組。認領與阻斷的區別見下文[「鏈路控制：認領與阻斷」](#鏈路控制認領與阻斷)
 
 ```python
 # 示例：同優先級處理器並行執行
@@ -1361,11 +1361,11 @@ async def handler_c(event):
 
 ## 作用域過濾：為什麼我的模組沒收到訊息
 
-事件到達後有兩道**靜默**過濾（都不回覆、不報錯）：
+事件到達後有兩道**靜默**過濾（都不回應、不報錯）：
 
-1. **身份維度**（`ErisPulse.scope.identity`）：事件進入分發入口時，按 用戶 > 群 > Bot > 介面器 判定收不收。
+1. **身份維度**（`ErisPulse.scope.identity`）：事件進入分發入口時，依 按用戶 > 群 > Bot > 適配器 判定是否接收。
    被拒絕的**整個事件**直接丟棄，任何處理器（含命令分發器）都不會觸發。
-2. **模組維度**（`ErisPulse.scope`）：事件到達某模組的處理器/命令時，按 會話 > Bot > 平台 判定
+2. **模組維度**（`ErisPulse.scope`）：事件到達某模組的處理器/命令時，依 會話 > Bot > 平台 判定
    該模組是否可用，**不通過就靜默跳過**。
 
 ```toml
@@ -1373,40 +1373,47 @@ async def handler_c(event):
 [ErisPulse.scope.identity.sessions.onebot11."group_123"]
 deny = true
 
-# 例2：把 MyModule 屏蔽在某個 Bot
+# 例2：將 MyModule 屏蔽在某個 Bot
 [ErisPulse.scope.bots.onebot11."123456"]
 blocked = ["MyModule"]
 ```
 
-此時該群的訊息到達時，`MyModule` 的命令與事件處理器**都不會被調度**。這不是 bug，是過濾機制——排查「模組沒反應」時優先檢查作用域的身份與模組綁定。
+此時該群的訊息到達時，`MyModule` 的命令與事件處理器**都不會被調度**。這不是 bug，而是過濾機制——排查「模組沒反應」時，應優先檢查作用域的身份與模組綁定。
 
-- 過濾日誌只在 **TRACE** 級可見（`core.scope.identity_denied` / `core.scope.denied`），預設 INFO 看不到任何痕跡
+- 過濾日誌只在 **TRACE** 級可見（`core.scope.identity_denied` / `core.scope.denied`），預設 INFO 級看不到任何痕跡
 - 框架級處理器（如命令分發器 `scope_exempt=True`）不受**模組維度**影響，但受**身份維度**影響（整個事件已丟棄）
-- 命令執行前還有第三道：命令用戶 ACL（拒絕時回覆"權限不足"，見上節）
+- 命令執行前還有第三道：命令用戶 ACL（拒絕時回應「權限不足」，見上節）
 - 第四道是**事件覆寫**（見下節）
 
-> 作用域配置、匹配語法、運行時 API 見 [作用域（scope）](../../advanced/scope.md)。
+> [!NOTE]
+> **作用域過濾與事件認領（claim）的關係**：兩道靜默過濾都發生在處理器
+> **調度之前**——被過濾跳過的處理器沒有機會執行，自然也不參與
+> `event.done()` / `mark_processed()` 的認領狀態。事件是否已被認領，
+> 只由**實際執行**的處理器（命令命中認領、回應命中認領、顯式呼叫）決定；
+> 作用域拒絕本身既不認領也不阻斷（靜默跳過，訊息繼續走完剩餘分發鏈）。
+
+> 作用域配置、匹配語法、執行時 API 見 [作用域（scope）](../../advanced/scope.md)。
 
 ## 事件覆寫：不改模組程式碼，覆寫任意事件類型的行為
 
-> [!NOTE]
+> [!NOTE]  
 > 本特性需要 ErisPulse **2.8.0+**。
 
-事件處理器在註冊時聲明的參數（`pattern` / `regex` / `master` / `hidden` 等）只是**開發者預設**。
-統一覆寫系統讓用戶按**事件類型**覆寫任意模組的行為——OneBot12 標準類型
+事件處理器在註冊時宣告的參數（`pattern` / `regex` / `master` / `hidden` 等）只是**開發者預設**。  
+統一覆寫系統讓使用者按**事件類型**覆寫任意模組的行為——OneBot12 標準類型  
 （meta / message / notice / request）與 ErisPulse 擴展類型（command）各自擁有專屬的可覆寫參數：
 
 | 事件類型 | 可覆寫參數 | 作用 |
 |---------|-----------|------|
-| `message` | `pattern` / `regex` / `detail_types` | 文字觸發條件 + 訊息子類型白名單 |
+| `message` | `pattern` / `regex` / `detail_types` | 文字觸發條件 + 消息子類型白名單 |
 | `notice` | `detail_types` / `pattern` / `regex` | 通知子類型白名單 + 文字條件 |
 | `request` | `detail_types` / `pattern` / `regex` | 請求子類型白名單 + 文字條件 |
 | `meta` | `detail_types` | 元事件子類型白名單（connect / heartbeat 等） |
-| `command` | `master` / `hidden` / `aliases` / `prefix` / `help` / `usage` | 命令實現參數（用戶優先） |
-| `acl`（command 專屬） | `allow` / `deny` | 命令用戶黑白名單（按命令名 glob） |
+| `command` | `master` / `hidden` / `aliases` / `prefix` / `help` / `usage` | 命令實現參數（使用者優先） |
+| `acl`（command 專屬） | `allow` / `deny` | 命令使用者黑白名單（按命令名 glob） |
 
 ```toml
-# message：覆寫文字觸發條件（與程式內條件 AND）
+# message：覆寫文字觸發條件（與程式碼內條件 AND）
 [ErisPulse.event.overrides.message.ChatModule]
 pattern = "閒聊*"
 
@@ -1414,12 +1421,12 @@ pattern = "閒聊*"
 [ErisPulse.event.overrides.notice.MyModule]
 detail_types = ["group_increase"]
 
-# command：覆寫實現參數（用戶優先——可收緊或放開開發者預設）
+# command：覆寫實現參數（使用者優先——可收緊或放寬開發者預設）
 [ErisPulse.event.overrides.command.MyModule.restart]
 master = true
 hidden = true
 
-# acl：命令用戶黑白名單（跨命令 glob）
+# acl：命令使用者黑白名單（跨命令 glob）
 [ErisPulse.event.overrides.acl."roll*"]
 allow = ["onebot11:u_vip"]
 
@@ -1427,7 +1434,7 @@ allow = ["onebot11:u_vip"]
 acl_default_allow = true
 ```
 
-運行時 API（`from ErisPulse.Core.Event import overrides` 或 `sdk.Event.overrides`，
+執行時 API（`from ErisPulse.Core.Event import overrides` 或 `sdk.Event.overrides`，  
 **類型子命名空間**——每類型對稱的 `set` / `get` / `delete` 三件套）：
 
 ```python
@@ -1436,22 +1443,26 @@ from ErisPulse.Core.Event import overrides
 overrides.message.set("ChatModule", pattern="閒聊*")   # message 文字條件
 overrides.notice.set("MyModule", detail_types=["group_increase"])
 overrides.command.set("MyModule", "restart", master=True)  # 命令參數
-overrides.acl.set("roll*", deny=["onebot11:u_bad"])    # 命令用戶黑名單
+overrides.acl.set("roll*", deny=["onebot11:u_bad"])    # 命令使用者黑名單
 
 overrides.message.get("ChatModule")     # {"pattern": "閒聊*"}
 overrides.message.delete("ChatModule")  # 恢復開發者預設
 ```
 
-- 覆寫條件與處理器程式內條件**同時生效**（AND 語義）；`command` 參數與開發者聲明**深合併**（覆寫優先）
+- 覆寫條件與處理器程式碼內條件**同時生效**（AND 語意）；`command` 參數與開發者宣告**深度合併**（覆寫優先）
 - `detail_types`：事件缺 `detail_type` 時放行（不誤殺未知事件）
-- `pattern` / `regex`：無文字的事件（connect / heartbeat 等）不受約束，直接放行
+- `pattern` / `regex`：無文字的事件（connect / heartbeat 等）不受限制，直接放行
 - `command` 覆寫鍵 `master` 同步映射儲存鍵 `must_master`；禁用命令統一走 `acl` deny
+- **鍵名映射說明**：`overrides.command.set("My", "restart", master=True)` 的參數名  
+  `master` 僅為配置別名，實際儲存鍵與 `get()` 回傳值中的鍵名統一為 **`must_master`**  
+  （`get()` 回傳 `{"must_master": true}`）——執行時判斷讀取的是儲存鍵，請勿按  
+  `master` 鍵名讀取
 - 配置改了立即生效（熱更新），格式校驗告警（未知參數 / 壞條目忽略）
 
 ## 鏈路控制：認領與阻斷
 
-> [!NOTE]
-> `event.done()` / `event.mark_processed()` 的 `claim=` / `stop=` 參數本特性需要 ErisPulse **2.7.1+**。
+> [!NOTE]  
+> `event.done()` / `event.mark_processed()` 的 `claim=` / `stop=` 參數此特性需要 ErisPulse **2.7.1+**。
 
 ErisPulse 將「認領」與「阻斷」兩個正交語義解耦，透過 `event.done()` 統一控制，便於在命令處理周圍疊加日誌、審計、權限等觀察層。
 
@@ -1463,7 +1474,7 @@ ErisPulse 將「認領」與「阻斷」兩個正交語義解耦，透過 `event
 | `event.done(...)` | 認領 | 阻斷 | 場景 |
 |-------------------|------|------|------|
 | `event.done()` | ✔ | ✔ | 命令 / 處理器處理完的標準做法 |
-| `event.done(stop=False)` | ✔ | ✘ | 僅認領，讓低優先級仍會執行（日誌 / 統計） |
+| `event.done(stop=False)` | ✔ | ✘ | 僅認領，讓低優先級觀察者（日誌 / 統計）繼續看到 |
 | `event.done(claim=False)` | ✘ | ✔ | 僅阻斷（如防火牆 / 限流），但不做命令去重 |
 
 `event.done(claim=, stop=)` 是 `event.mark_processed(claim=, stop=)` 的別名，二者參數與行為完全等價。
@@ -1485,7 +1496,7 @@ async def firewall(event):
 
 ### 命令與回覆的 block 配置
 
-**命令命中即認領**：訊息一旦匹配到已註冊命令名（含子命令/別名），無論後續作用域或權限判定結果如何，都會被認領並預設阻斷傳播——被權限拒絕的命令再也不會漏給低優先級訊息處理器（消除"命令被拒後 on_message 又響應一次"的雙重響應）。
+**命令命中即認領**：訊息一旦匹配到已註冊命令名（含子命令/別名），無論後續作用域或權限判定結果如何，都會被認領並預設阻斷傳播——被權限拒絕的命令不再漏給低優先級訊息處理器（消除「命令被拒後 on_message 又響應一次」的雙重響應）。
 
 可透過配置放行阻斷，讓低優先級觀察者（日誌 / 審計 / 權限）也能看到這些訊息：
 
@@ -1497,7 +1508,7 @@ block = false   # 命令訊息繼續流向低優先級處理器（認領不受�
 block = false   # 被 wait_reply 消費的回覆繼續流向低優先級處理器
 ```
 
-> 注意：`block` 只控制**阻斷**（stop），不影響**認領**（claim）——命中的命令永遠不會被訊息處理器重複消費；未命中任何命令的訊息照常流向訊息處理器。
+> 注意：`block` 僅控制**阻斷**（stop），不影響**認領**（claim）——命中的命令永遠不會被訊息處理器重複消費；未命中任何命令的訊息照常流向訊息處理器。
 
 ## 通知事件處理
 
@@ -1547,8 +1558,8 @@ async def friend_request_handler(event):
     
     sdk.logger.info(f"收到好友請求: {user_id}, 附言: {comment}")
     
-    # 可以透過介面器 API 處理請求
-    # 具體實作請參考各介面器文件
+    # 可以透過適配器 API 處理請求
+    # 具體實作請參考各適配器文件
 ```
 
 ### 群邀請請求
@@ -1591,7 +1602,7 @@ async def heartbeat_handler(event):
 
 ### Bot 狀態查詢
 
-當介面器發送 meta 事件後，框架自動追蹤 Bot 狀態，你可以隨時查詢：
+當適配器發送 meta 事件後，框架自動追蹤 Bot 狀態，你可以隨時查詢：
 
 ```python
 from ErisPulse import sdk
@@ -1601,7 +1612,7 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
     telegram = sdk.adapter.get("telegram")
     await telegram.Send.To("user", "123456").Text("Bot 在線")
 
-# 列出目前所有在線 Bot
+# 列出當前所有在線 Bot
 bots = sdk.adapter.list_bots()
 for platform, bot_list in bots.items():
     for bot_id, info in bot_list.items():
@@ -1611,7 +1622,7 @@ for platform, bot_list in bots.items():
 summary = sdk.adapter.get_status_summary()
 ```
 
-## 交互式處理
+## 互動式處理
 
 ### 使用 reply 方法發送回覆
 
@@ -1657,6 +1668,13 @@ async def ask_handler(event):
     else:
         await event.reply("等待超時，請重新輸入。")
 ```
+
+> [!TIP]
+> **等待期間命令仍然可用**（2.8.3+）：以命令前綴開頭且命中已註冊命令的
+> 訊息（如 `/cancel`）會**執行命令**而非作為回覆內容，等待繼續掛起——
+> 用戶可以隨時取消/切換，命令執行完仍可繼續回覆。需要"等待吞掉一切文字"
+> 的旧行為時：配置 `ErisPulse.event.wait_reply.cmdpass = true`，或單次
+> `wait_reply(cmdpass=True)`。
 
 ### 帶驗證的等待回覆
 
@@ -1718,7 +1736,7 @@ async def confirm_handler(event):
     else:
         await event.reply("已取消")
 
-# 自定義確認詞
+# 自訂確認詞
 if await event.confirm("繼續嗎？", yes_words={"go", "繼續"}, no_words={"stop", "停止"}):
     pass
 ```
@@ -1755,9 +1773,9 @@ choice = await event.choose(
 ```
 
 > `{options}` 占位符控制選項插入位置；不寫則追加到 prompt 末尾。
-> 可透過 `placeholder` 參數自定義占位符（如 `placeholder="[choices]"`）。
-> `options_format="auto"`（預設）根據 method 自動選擇樣式：Markdown→無序列表，Html→有序列表，其他→純文本列表。
-> 文本類方法（Text/Markdown/Html 等）預設合併選項到末尾；非文本方法（Image 等）預設拆分為兩條訊息。
+> 可透過 `placeholder` 參數自訂占位符（如 `placeholder="[choices]"`）。
+> `options_format="auto"`（預設）根據 method 自動選擇樣式：Markdown→無序列表，Html→有序列表，其他→純文字列表。
+> 文字類方法（Text/Markdown/Html 等）預設合併選項到末尾；非文字方法（Image 等）預設拆分為兩條訊息。
 
 ### 收集表單 (collect)
 
@@ -1770,11 +1788,11 @@ async def register_handler(event):
         {"key": "name", "prompt": "請輸入姓名："},
         {"key": "age", "prompt": "請輸入年齡：", 
          "validator": lambda e: e.get_text().isdigit()},
-        {"key": "email", "prompt": "請輸入郵箱："}
+        {"key": "email", "prompt": "請輸入電子信箱："}
     ])
     
     if data:
-        await event.reply(f"註冊成功！\n姓名：{data['name']}\n年齡：{data['age']}\n郵箱：{data['email']}")
+        await event.reply(f"註冊成功！\n姓名：{data['name']}\n年齡：{data['age']}\n電子信箱：{data['email']}")
     else:
         await event.reply("註冊超時或輸入無效")
 ```
@@ -1834,9 +1852,9 @@ ErisPulse 內建了中英文確認詞集合：
 - **確認詞** (`CONFIRM_YES_WORDS`): 是、yes、y、確認、確定、好、好的、ok、true、對、嗯、行、同意、沒問題...
 - **否定詞** (`CONFIRM_NO_WORDS`): 否、no、n、取消、不、不要、不行、cancel、false、錯、拒絕、不可以...
 
-## 事件資料存取
+## 事件資料訪問
 
-### Event 物件常用方法
+### Event 對象常用方法
 
 ```python
 @command("info")
@@ -1884,7 +1902,7 @@ async def info_handler(event):
 
 ### 平台擴展方法
 
-除了內建方法外，各平台介面器還會註冊平台專有方法，方便你存取平台特有的資料。
+除了內建方法外，各平台適配器還會註冊平台專有方法，方便你訪問平台特有的資料。
 
 ```python
 from ErisPulse.Core.Event import message
@@ -3274,7 +3292,7 @@ class MyModule(BaseModule):
         resp = await sdk.client.get(url)
         return await resp.json()
 
-# 不要使用 aiohttp 直接匯入（不利於框架統一管理）
+# 不要使用 aiohttp 直接導入（不便於框架統一管理）
 import aiohttp
 
 class MyModule(BaseModule):
@@ -3283,21 +3301,21 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# 不要使用 requests（同步，會阻塞事件迴圈）
+# 不要使用 requests（同步，會阻塞事件循環）
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # 會阻塞事件迴圈
+        return requests.get(url).json()  # 會阻塞事件循環
 ```
 
 ### 2. 正確的異步操作
 
 ```python
-from ErisPulse.Core.Event import Event  # event: Event 注解可獲得 IDE 補全
+from ErisPulse.Core.Event import Event  # event: Event 注解可獲得 IDE 补全
 
 async def handle_command(self, event: Event):
-    # 需要等待結果的耗時操作：直接 await（生命週期明確）
+    # 需要等待結果的耗時操作：直接 await（生命周期明確）
     result = await self._long_operation()
 
 async def on_load(self, event: dict):
@@ -3307,7 +3325,11 @@ async def on_load(self, event: dict):
 ```
 
 > [!NOTE]
-> 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**），而不是 `asyncio.create_task`——後者創建的裸任務不歸屬模組，卸載時不會被自動清理，會持有 `self` 引用導致模組實例無法被回收（熱重載泄漏）。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
+> 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**）。**2.8.3 起**裸 `asyncio.create_task`
+> 也會自動隱式歸屬模組（Task Factory 自動登記，卸載時兜底取消，不再泄漏 `self` 引用）；
+> `self.spawn()` 仍是推薦寫法——支援非主循環線程調度回主循環、顯式 `owner=` 指定。
+> **2.8.3 之前**的版本裸任務不歸屬、會持有 `self` 引用導致模組實例無法被回收
+> （熱重載泄漏），必須用 `self.spawn()`。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
 
 ### 3. 資源管理
 
@@ -10188,20 +10210,17 @@ topology = sdk.get_topology()
 
 ### 归属权（owner）系统
 
-# 归屬權（owner）系統
+# 所有权（owner）系統
 
-歸屬權是模組「即插即用」的基石：模組在載入期間註冊的一切框架資源自動記名，卸載/禁用時按記名一鍵回收——模組作者只需宣告資源，無需手寫清理邏輯。
+所有權是模組「即插即用」的基石：模組在載入期間註冊的一切框架資源自動記名，卸載/停用時按記名一鍵回收——模組作者只需聲明資源，無需手寫清理邏輯。
 
-> **相關系統**：作用域（scope）在事件分發時決定「資源是否生效」，  
-> 歸屬權在生命週期中決定「資源歸誰、誰卸載時被回收」。  
-> 作用域詳見[統一控制面（scope）](scope.md)，背景任務詳見  
-> [生命週期管理](lifecycle.md#背景任務歸屬與自動取消)。
+> **相關系統**：作用域（scope）在事件分發時決定「資源是否生效」，所有權在生命週期中決定「資源歸誰、誰卸載時被回收」。作用域詳見[統一控制面（scope）](scope.md)，背景任務詳見 [生命週期管理](lifecycle.md#背景任務所有權與自動取消)。
 
 {!--< tips >!--}
-1. 歸屬在**註冊瞬間**按 `current_owner` 自動記錄，模組程式碼零修改
-2. 卸載/禁用共用同一條清理鏈（`_cleanup_module_registrations`），每步失敗僅告警不中斷
-3. 使用者設定語意的資源（持久化覆寫 / scope 規則 / 命令 ACL）**不**隨模組卸載清理
-4. 工具模組托管的外部句柄可用 `on_cleanup(cb)` 掛入清理鏈，對方模組卸載時自動回呼（見[工具模組指南](#工具模組指南托管其它模組的句柄)）
+1. 所有權在**註冊瞬間**按 `current_owner` 自動記錄，模組程式碼零修改
+2. 卸載/停用共用同一條清理鏈（`_cleanup_module_registrations`），每步失敗僅警告不中斷
+3. 用戶配置語意的資源（持久化覆寫 / scope 規則 / 命令 ACL）**不**隨模組卸載清理
+4. 工具模組托管的外部句柄可用 `on_cleanup(cb)` 掛入清理鏈，對方模組卸載時自動回調（見[工具模組指南](#工具模組指南托管其它模組的句柄)）
 {!--< /tips >!--}
 
 ## owner 上下文機制
@@ -10222,20 +10241,20 @@ with owner_scope("MyModule"):
 |------|----------|------|
 | 模組 `load()` | 模組名 | 實例化 + `on_load` 全程 |
 | 適配器 `start()` / `restart()` | 平台名 | 適配器啟動全程 |
-| `activate_on` 懶加載 stub 註冊 | 模組名 | 佔位命令/處理器註冊 |
+| `activate_on` 慢載入 stub 註冊 | 模組名 | 占位命令/處理器註冊 |
 | 事件處理器執行期 | 處理器歸屬模組名 | handler / 命令入口重注入 |
 
-執行期重注入意味著：模組在 `on_load` 裡宣告的命令處理器**運行中**呼叫
+執行期重注入意味著：模組在 `on_load` 裡宣告的命令處理器**執行中**呼叫
 註冊型 API（如 `sdk.adapter.on()`、`overrides.*.set(persist=False)`），
 同樣會自動歸屬本模組。
 
 ## 歸屬資源全景
 
-模組在加載上下文內註冊的以下資源均記錄歸屬，卸載/禁用時自動回收：
+模組在載入上下文內註冊的以下資源均記錄歸屬，卸載/停用時自動回收：
 
-| 資源 | 註冊方式 | 清理調用 |
+| 資源 | 註冊方式 | 清理呼叫 |
 |------|----------|----------|
-| 命令 | `@command()` / 命令 dict 聲明 | `command.unregister_by_owner()` |
+| 命令 | `@command()` / 命令 dict 宣告 | `command.unregister_by_owner()` |
 | 事件處理器 | `@message` / `@notice` / `@request` / `@meta` | `handler.unregister_by_owner()` |
 | 適配器事件監聽 | `sdk.adapter.on()` / `raw=True` | `adapter.unregister_handlers_by_owner()` |
 | 適配器中間件 | `@sdk.adapter.middleware` | 同上 |
@@ -10243,64 +10262,118 @@ with owner_scope("MyModule"):
 | 路由中間件 | `@router.middleware()` / `add_middleware()` | `router.unregister_all_by_owner()` |
 | Dashboard 首頁入口 | `router.register_home_entry()` | `unregister_home_entries_by_owner()` |
 | 自定義會話類型 | `register_custom_type()` | `unregister_custom_types_by_owner()` |
-| 後台任務 | `self.spawn()` | `cancel_owner_tasks()` |
-| 外部歸屬清理鉤子（工具模組托管） | `runtime.on_cleanup(cb)` | `run_owner_cleanups()`（卸載/禁用/適配器關閉鏈內觸發） |
-| 生命週期鉤子 | `lifecycle.register()` | `lifecycle.unregister_by_owner()` |
+| 背景任務 | `self.spawn()` | `cancel_owner_tasks()` |
+| 外部歸屬清理鈎子（工具模組托管） | `runtime.on_cleanup(cb)` | `run_owner_cleanups()`（卸載/停用/適配器關閉鏈內觸發） |
+| 生命週期鈎子 | `lifecycle.register()` | `lifecycle.unregister_by_owner()` |
 | 主人身源 provider | `master.provider` | `master.unregister_by_owner()` |
-| i18n 翻譯鍵 | `I18nClass` 聲明（domain=模組名） | `i18n.unregister_domain()` |
-| 事件覆寫（運行時） | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
-| 交互會話（wait_reply 等待 / 租約） | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()`（等待方立即收到取消） |
-| 上下文數據 | `runtime/context` 按 owner 記錄 | 按模組精確清理 |
+| i18n 翻譯鍵 | `I18nClass` 宣告（domain=模組名） | `i18n.unregister_domain()` |
+| 事件覆寫（執行時） | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
+| 互動會話（wait_reply 等待 / 租約） | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()`（等待方立即收到取消） |
+| 上下文資料 | `runtime/context` 按 owner 記錄 | 按模組精確清理 |
 
-適配器側的對應資源（以平台名為 owner）在適配器 `shutdown()` / `restart()` 時由 `_cleanup_adapter_resources` 回收，另含：
+適配器側的對應資源（以平台名為 owner）在適配器 `shutdown()` / `restart()`
+時由 `_cleanup_adapter_resources` 回收，另含：
 
-| 資源 | 清理調用 |
+| 資源 | 清理呼叫 |
 |------|----------|
 | 適配器自有的 `on()` 處理器與中間件 | `adapter.unregister_handlers_by_owner(platform)` |
 | 平台事件方法擴展（`EventMixin`） | `unregister_platform_event_methods(platform)` |
 | 自定義會話類型 | `unregister_custom_types_by_owner(platform)` |
-| 交互會話（該平台掛起的 wait_reply / 租約） | `interaction.cancel_by_platform(platform)` |
+| 互動會話（該平台掛起的 wait_reply / 租約） | `interaction.cancel_by_platform(platform)` |
 | i18n 翻譯域（domain=配置鍵） | `i18n.unregister_domain(配置鍵)` |
 | 細顆粒命名空間路由 | `router.unregister_all_by_owner(platform)` |
 
 ## 卸載/停用清理序列
 
-`unload()` 與 `disable()` 共用同一条清理鏈（每步獨立 try/except，失敗僅記錄日誌，**不中斷後續清理**）：
+`unload()` 與 `disable()` 共用同一條清理鏈（每步獨立 try/except，
+失敗僅記日誌，**不中斷後續清理**）：
 
 ```mermaid
 flowchart TD
     A["unload / disable"] --> B["on_unload()（超時保護）"]
     B --> C["兜底取消背景任務（cancel_owner_tasks）"]
-    C --> C1["外部歸屬清理鉤子<br/>（工具模塊 on_cleanup 登記，run_owner_cleanups 觸發）"]
+    C --> C1["外部歸屬清理鈎子<br/>（工具模組 on_cleanup 登記，run_owner_cleanups 觸發）"]
     C1 --> D["_cleanup_module_registrations"]
     D --> D1["i18n 翻譯域"]
     D1 --> D2["路由：命名空間 + owner 兜底<br/>（含中間件 / 首頁入口）"]
     D2 --> D3["適配器事件處理器 / 中間件"]
     D3 --> D4["命令 + 事件處理器"]
     D4 --> D5["自定義會話類型"]
-    D5 --> D6["運行時事件覆寫（persist=False）"]
+    D5 --> D6["執行時事件覆寫（persist=False）"]
     D6 --> D7["主人身源 provider"]
-    D7 --> D8["生命週期鉤子"]
-    D8 --> E["移除 SDK 屬性 + 慢加載代理"]
+    D7 --> D8["生命週期鈎子"]
+    D8 --> E["移除 SDK 屬性 + 慢載入代理"]
 ```
 
-`sdk.uninit()` 退出時另有全局兜底：全部適配器 shutdown → 全部模塊 unload →
+`sdk.uninit()` 退出時另有全域兜底：全部適配器 shutdown → 全部模組 unload →
 `router.stop()`（清空路由/中間件/首頁入口）→ `cancel_all_background_tasks()` →
-清空事件處理器與鉤子。
+清空事件處理器與鈎子。
 
 ## 設計邊界：哪些資源不隨卸載清理
 
-歸屬權只回收**模組代碼註冊的執行時資源**。以下資源屬**使用者配置語意**
-（控制權在使用者，可能刻意配置），模組卸載後隨配置持續保留：
+所有權只回收**模組程式碼註冊的執行時資源**。以下資源屬**用戶配置語意**
+（控制權在用戶，可能刻意配置），模組卸載後隨配置持久保留：
 
 | 資源 | 語意 | 說明 |
 |------|------|------|
-| `overrides.*.set(persist=True)` | 持久化覆寫 | 寫入配置檔，跨重啟生效；模組卸載不刪除（使用者顯式配置） |
-| `scope.set_action()` 等作用域規則 | 權限控制面 | 由使用者/Dashboard 管理，卸載模組不回收規則 |
+| `overrides.*.set(persist=True)` | 持久化覆寫 | 寫入配置檔案，跨重啟生效；模組卸載不刪（用戶顯式配置） |
+| `scope.set_action()` 等作用域規則 | 權限控制面 | 由用戶/Dashboard 管理，卸載模組不回收規則 |
 | `overrides.acl.set(persist=True)` | 命令 ACL | 同上 |
-| Conversation `save()` 持久化 | 多輪對話存檔 | 資料資產不清理 |
+| Conversation `save()` 持久化 | 多輪對話存檔 | 數據資產不清理 |
 
-執行時暫時寫入（`persist=False`）則隨 owner 回收——**持久化與否即為**<br>**「使用者資產」與「模組執行時狀態」的分界線**。
+執行時臨時寫入（`persist=False`）則隨 owner 回收——**持久化與否即**
+"用戶資產"與"模組執行時狀態"的分界線。
+
+## 內部實現：所有權如何工作
+
+所有權系統由**兩條獨立鏈路**構成，理解它們的分工是排查所有權問題的前提：
+
+### 歸因鏈（contextvar 傳播）
+
+`runtime/context.py` 的 `current_owner` 等 ContextVar 負責**歸因**——
+"此刻這段程式碼註冊的資源/發起的呼叫記在誰頭上"。傳播規則遵循 Python
+contextvars 語意：
+
+| 執行路徑 | context 是否傳播 | 歸因結果 |
+|---------|----------------|---------|
+| 同步呼叫鏈 / `await` 鏈 | ✅ 傳播 | 正確歸因 |
+| `owner_scope` 內 `asyncio.create_task` | ✅ 傳播（task 拷貝建立時刻的 context） | 任務**內部**的框架呼叫正確歸因 |
+| `run_in_executor` / 裸執行緒 | ❌ 不傳播 | 歸因丟失 |
+| 自建事件迴圈 | ❌ 不傳播 | 歸因丟失 |
+
+> 歸因 ≠ 登記：context 傳播只影響"記在誰頭上"，資源能否被清理
+> 取決於是否進入了下述取消鏈。
+
+### 取消鏈（任務登記表）
+
+`runtime/tasks.py` 的 `_owner_tasks` 登記表負責**生命週期**——
+"owner 名下有哪些未完成任務，卸載時統一取消"。任務進入登記表的途徑：
+
+1. **顯式調度**：`spawn_background()` / `self.spawn()` → 建立時捕獲
+   `current_owner`（或顯式 `owner=` 參數）→ 登記入表；
+2. **Task Factory 自動登記**（2.8.3）：`install_owner_task_factory()`
+   在框架啟動時安裝到主事件迴圈——**任何**任務建立（含第三方庫內部的
+   `create_task`）經過工廠時讀取 `current_owner`，非 None 即登記。
+
+登記表自清理：每個任務帶 `done_callback`，完成即從表中移除，無泄漏。
+
+### 取消時序（模組卸載）
+
+```
+module.unload()
+  → on_unload(event)                    # 模組自行清理（兜底超時保護）
+  → 框架註銷該 owner 的命令/事件/鈎子/路由
+  → cancel_owner_tasks(owner)           # 任務登記表兜底取消
+      → 逐個 task.cancel()              # 排除當前執行取消邏輯的任務自身
+      → await gather(pending, timeout)  # 等待回收（超時不再阻塞）
+```
+
+### 排查思路
+
+- **資源沒被清理** → 查登記表：`get_owner_tasks("MyModule")` 是否含該任務；
+  不含即註冊路徑未經過所有權鏈（import 期 / 執行緒 / 獨立迴圈），對照上表定位。
+- **歸因錯誤** → 查 `get_current_owner()` 在出錯時刻的值；異步延遲執行
+  （回調/任務）的歸因取自建立時刻 context，而非執行時刻。
 
 ## 模組作者指南
 
@@ -10314,10 +10387,10 @@ from ErisPulse.runtime import owner_scope, spawn_background
 class MyModule(BaseModule):
     async def on_load(self, event):
         # 框架資源：自動歸屬，無需手動清理
-        self.task = self.spawn(self.polling())      # 後台任務
+        self.task = self.spawn(self.polling())      # 背景任務
         sdk.router.register_home_entry("我的模組", "/my")  # 首頁入口
 
-        # 模組自有資源：包進 owner_scope 即納入歸屬體系
+        # 模組自有資源：包進 owner_scope 即納入所有權體系
         with owner_scope("MyModule"):
             self.client.on_event(self._handle)      # 假想的自定義註冊
 
@@ -10328,26 +10401,44 @@ class MyModule(BaseModule):
 
 ### 注意事項
 
-- **import 時註冊無歸屬**：模組頂層（import 時）註冊的鉤子/處理程序發生在
+- **import 期註冊無所有權**：模組頂層（import 時）註冊的鈎子/處理器發生在
   `owner_scope` 之前，會被視為框架級資源（owner=None）而**不被清理**。
   一律放到 `on_load()` 內註冊。
 - **自定義 domain 的 i18n 註冊**：`i18n.register(domain=...)` 的 domain
   不等於模組名時不會被自動回收，請保持 domain=模組名。
-- **後台任務務必用 `self.spawn()`**：裸 `asyncio.create_task` 不歸屬模組，
-  卸載時不會被取消（詳見[生命週期管理](lifecycle.md#後台任務歸屬與自動取消)）。
-- 清理鏈「失敗僅告警」：單步清理異常不會阻斷其餘資源回收，日誌 DEBUG/WARNING
+- **背景任務推薦 `self.spawn()`**：2.8.3 起裸 `asyncio.create_task` 也會**自動隱式所有權**
+  （Task Factory 自動登記，卸載時兜底取消）；但 `self.spawn()` 仍是推薦寫法——
+  支援非主迴圈執行緒調度回主迴圈、顯式 `owner=` 指定與 fire-and-forget 防 GC。
+  **2.8.3 之前的版本**裸任務不所有權，必須用 `self.spawn()`。
+- 清理鏈"失敗僅警告"：單步清理異常不會阻斷其餘資源回收，日誌 DEBUG/WARNING
   級別可見，排障時可開啟 TRACE。
 
-## 工具模組指南：托管其他模組的句柄
+### 註冊時機 → 所有權結果對照表
 
-**場景**：定時任務、註冊表、連接池等「工具模組」會替其他模組保管物件——
-對方在 `on_load` 中呼叫 `sdk.Cron.on_trigger(handler)`，你的容器就會存下
-一個指向對方實例的回調。框架會自動清理對方註冊的所有框架資源，但清理不了
-你**私有容器中的引用**：對方卸載後你的容器仍持有它的實例，它就無法被
-GC 回收（記憶體洩漏，`purge` 泄漏診斷會報「不可回收」）。
+| 註冊場景 | 所有權結果 | 說明 |
+|---------|---------|------|
+| `on_load()` 內經框架 API（命令/事件/lifecycle/路由裝飾器）註冊 | 歸屬模組 | 卸載時自動註銷 |
+| 模組頂層（import 期）註冊 | **無所有權**（owner=None） | 不被清理，請勿使用 |
+| `self.spawn()` 建立的背景任務 | 歸屬模組 | 卸載時自動取消 |
+| `owner_scope("Name")` 內經第三方 API 註冊 | 歸屬模組 | 依賴第三方回調在 scope 內同步執行 |
+| 裸 `asyncio.create_task`（含 `loop.create_task` / `ensure_future`） | **自動所有權**（Task Factory，2.8.3+） | 建立瞬間讀取 `current_owner`，owner 上下文內自動登記、卸載兜底取消；見下文[內部實現](#內部實現所有權如何工作) |
+| 第三方庫異步回調（aiohttp / APScheduler 等）內部建立的任務 | **自動所有權**（Task Factory，2.8.3+） | 回調執行時若 `current_owner` 已注入（如框架處理器執行期間），任務自動登記 |
+| `run_in_executor`（執行緒池） | **無所有權**（非 asyncio.Task） | 執行緒不受任務工廠管轄，須自行管理生命週期 |
+| 獨立事件迴圈（自建 loop）中的註冊 | **無所有權** | Task Factory 僅安裝於主迴圈；contextvars 也不跨事件迴圈傳播 |
 
-**解法**：在登記對方物件的同一個函數中呼叫 `on_cleanup()`，
-框架會在對方卸載 / 禁用時自動回呼你的清理函數：
+> 原則：**所有權跟隨註冊瞬間的 `current_owner` 上下文**；任何異步延遲、
+> 執行緒池、獨立迴圈都會脫離該上下文——需要所有權時請顯式進入 `owner_scope`。
+
+## 工具模組指南：托管其它模組的句柄
+
+**場景**：定時任務、註冊表、連接池這類「工具模組」會替其它模組保管東西——
+對方在 `on_load` 裡呼叫 `sdk.Cron.on_trigger(handler)`，你的容器裡就存下了
+一個指向對方實例的回調。框架會自動清理對方註冊的一切框架資源，但清理不了
+你**私有容器裡的引用**：對方卸載後你的容器還拉著它的實例，它就無法被
+GC 回收（記憶體洩漏，`purge` 泄漏診斷報"不可回收"）。
+
+**解法**：在登記對方東西的同一個函數裡呼叫 `on_cleanup()`，
+框架會在對方卸載 / 停用時自動回調你的清理函數：
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -10359,12 +10450,12 @@ class CronModule(BaseModule):
 
     def on_trigger(self, handler):
         # 自動識別呼叫方模組名（on_load 直接呼叫 / module.call 均正確），
-        # 返回值是解析出的 owner，可直接用作記名鍵
+        # 回傳值是解析出的 owner，可直接用作記名鍵
         owner = on_cleanup(self._drop)
         self._entries.setdefault(owner, []).append(handler)
 
     def _drop(self, owner: str):
-        """對方模組被卸載/禁用時由框架自動呼叫：拋棄它的句柄即可"""
+        """對方模組被卸載/停用時由框架自動呼叫：拋棄它的句柄即可"""
         self._entries.pop(owner, None)
 
     async def on_unload(self, event):
@@ -10376,16 +10467,16 @@ class CronModule(BaseModule):
 | 關注點 | 行為 |
 |--------|------|
 | 觸發時機 | 對方模組 unload / disable，或適配器關閉——均在框架清理鏈內觸發，早於 purge 泄漏診斷 |
-| 呼叫方識別 | 直接呼叫取 `current_owner`；經 `module.call()` 被呼叫取呼叫方（`current_caller`）；也可 `on_cleanup(cb, owner="模組名")` 明確指定 |
-| 回呼簽名 | `cb(owner: str)`，同步 / 異步均可；異步帶超時保護（`CLEANUP_CALLBACK_TIMEOUT_SECS`，預設 10 秒） |
-| 容錯 | 單個回呼異常 / 超時只記錄日誌，不影響其他鈎子與清理鏈 |
+| 調用方識別 | 直接呼叫取 `current_owner`；經 `module.call()` 被呼叫取呼叫方（`current_caller`）；也可 `on_cleanup(cb, owner="模組名")` 显式指定 |
+| 回調簽名 | `cb(owner: str)`，同步 / 異步均可；異步帶超時保護（`CLEANUP_CALLBACK_TIMEOUT_SECS`，預設 10 秒） |
+| 容錯 | 單個回調異常 / 超時只記日誌，不受影響其餘鈎子與清理鏈 |
 | 重複登記 | 同一 `(owner, callback)` 幂等去重 |
 
 **什麼時候不需要**：如果對方註冊的是框架資源（命令、事件處理器、路由、
-後台任務……），框架已自動清理（見上文[歸屬資源全景](#歸屬資源全景)）。
-只有你私有容器中持有的對方句柄才需要 `on_cleanup`。
+背景任務……），框架已自動清理（見上文[歸屬資源全景](#歸屬資源全景)）。
+只有你私有容器裡持有的對方句柄才需要 `on_cleanup`。
 模組開發視角的速查版見
-[最佳實踐 · 工具模組](../developer-guide/modules/best-practices.md#工具模組托管别人东西时要接住卸载通知)。
+[最佳實踐 · 工具模組](../developer-guide/modules/best-practices.md#工具模組托管別人東西時要接住卸載通知)。
 
 
 

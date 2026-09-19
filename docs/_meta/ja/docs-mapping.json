@@ -411,7 +411,7 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "所有者（owner）システム",
+          "title": "所属権（owner）システム",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
