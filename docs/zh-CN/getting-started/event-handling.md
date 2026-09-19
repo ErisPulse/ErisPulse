@@ -194,6 +194,10 @@ async def admin_handler(event, db=Depends(get_session)):
     ...
 ```
 
+默认开启**请求级缓存**：同一次事件分发内，相同依赖函数只解析一次、所有
+注入点共享结果（如 `get_db` 在一次事件中只建一次数据库会话）；跨请求自动
+不复用。可用 `Depends(get_db, use_cache=False)` 关闭单条依赖的缓存。
+
 覆盖全部框架注入点——命令处理器、事件处理器（`message.on_message()` 等）、
 生命周期钩子（`sdk.lifecycle.on`）、SSE 路由处理器。依赖函数的第一个参数
 是注入点上下文对象（事件场景为 `Event`，生命周期为事件 `data`，

@@ -388,3 +388,140 @@ class TestLifecycleInjection:
             current_owner.reset(token)
         assert lifecycle.unregister_by_owner("OwnerX") >= 1
         assert all(o != "OwnerX" for _, _, o, _ in lifecycle._hooks.get("di.test.owner", []))
+
+
+# ==================== 请求级缓存（use_cache，2.9.0）====================
+
+
+class TestRequestScopedCache:
+    """请求级依赖缓存：同一次事件分发内相同依赖只解析一次"""
+
+    @pytest.fixture
+    def di_scope(self):
+        from ErisPulse.Core.di import _di_cache
+
+        token = _di_cache.set({})
+        yield _di_cache.get()
+        _di_cache.reset(token)
+
+    @pytest.mark.asyncio
+    async def test_same_dependency_resolved_once(self, di_scope):
+        calls = []
+
+        async def get_db(ctx):
+            calls.append(ctx)
+            return "CONN"
+
+        depends = {"a": Depends(get_db), "b": Depends(get_db)}
+        kw = await resolve_depends(depends, "CTX")
+        assert kw == {"a": "CONN", "b": "CONN"}
+        assert calls == ["CTX"]  # 只解析一次
+
+    @pytest.mark.asyncio
+    async def test_cache_scoped_to_request(self, monkeypatch):
+        """缓存作用域为单次请求：跨请求不复用（每次请求新的缓存 dict）"""
+        from ErisPulse.Core.di import _di_cache
+
+        calls = []
+
+        async def get_db(ctx):
+            calls.append(ctx)
+            return f"conn-{len(calls)}"
+
+        depends = {"db": Depends(get_db)}
+
+        # 请求 1
+        token = _di_cache.set({})
+        try:
+            kw1 = await resolve_depends(depends, "req1")
+        finally:
+            _di_cache.reset(token)
+        # 请求 2（新的缓存作用域）
+        token = _di_cache.set({})
+        try:
+            kw2 = await resolve_depends(depends, "req2")
+        finally:
+            _di_cache.reset(token)
+
+        assert kw1["db"] == "conn-1"
+        assert kw2["db"] == "conn-2"  # 跨请求重新解析
+        assert len(calls) == 2
+
+    @pytest.mark.asyncio
+    async def test_use_cache_false_resolves_each_time(self, di_scope):
+        calls = []
+
+        async def fresh(ctx):
+            calls.append(1)
+            return len(calls)
+
+        depends = {"a": Depends(fresh, use_cache=False), "b": Depends(fresh, use_cache=False)}
+        kw = await resolve_depends(depends, None)
+        assert kw == {"a": 1, "b": 2}  # use_cache=False 每次都解析
+
+    @pytest.mark.asyncio
+    async def test_no_cache_scope_unchanged(self):
+        """不在缓存作用域内（lifecycle / 路由独立调用链）→ 每次解析（原行为）"""
+        calls = []
+
+        async def get_db(ctx):
+            calls.append(1)
+            return "x"
+
+        depends = {"a": Depends(get_db), "b": Depends(get_db)}
+        kw = await resolve_depends(depends, None)
+        assert kw == {"a": "x", "b": "x"}
+        assert len(calls) == 2
+
+    @pytest.mark.asyncio
+    async def test_module_sugar_shared_cache(self, di_scope):
+        """Depends.module 语法糖：同一模块调用的多次声明共享请求级缓存（稳定 cache_key）"""
+        from ErisPulse.Core.module import module as module_manager
+
+        fake_call = AsyncMock(return_value="S1")
+        depends = {"a": Depends.module("DB", "get_session"), "b": Depends.module("DB", "get_session")}
+
+        with patch.object(module_manager, "call", new=fake_call):
+            kw = await resolve_depends(depends, None)
+        assert kw == {"a": "S1", "b": "S1"}
+        assert fake_call.await_count == 1  # 稳定 cache_key：只调用一次
+
+    @pytest.mark.asyncio
+    async def test_module_sugar_distinct_args_not_shared(self, di_scope):
+        """不同固定参数的模块声明不共享缓存"""
+        from ErisPulse.Core.module import module as module_manager
+
+        fake_call = AsyncMock(side_effect=["A", "B"])
+        depends = {
+            "a": Depends.module("KV", "get", "name"),
+            "b": Depends.module("KV", "get", "other"),
+        }
+
+        with patch.object(module_manager, "call", new=fake_call):
+            kw = await resolve_depends(depends, None)
+        assert kw == {"a": "A", "b": "B"}
+        assert fake_call.await_count == 2
+
+
+    @pytest.mark.asyncio
+    async def test_emit_level_cache_scope(self):
+        """真链路：同一次 emit 内多个处理器共享缓存；跨 emit 隔离"""
+        from ErisPulse.Core.Event.command import command as command_handler
+
+        calls = []
+
+        async def get_db(ctx):
+            calls.append(1)
+            return "CONN"
+
+        first = []
+
+        @command_handler("dia")
+        async def dia(event, db=Depends(get_db)):
+            first.append(db)
+
+        await _dispatch("/dia")
+        assert first == ["CONN"] and len(calls) == 1  # 单请求单解析
+
+        await _dispatch("/dia")  # 第二次 emit：新请求作用域
+        assert len(calls) == 2

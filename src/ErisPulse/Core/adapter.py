@@ -42,6 +42,7 @@ from .constants import (
     HANDLER_SLOW_THRESHOLD_SECS,
     LOG_MESSAGE_TRUNCATE_CHARS,
 )
+from .di import _di_cache
 from .i18n import i18n
 from .lifecycle import lifecycle
 from .logger import logger
@@ -2201,6 +2202,9 @@ class AdapterManager(ManagerBase):
 
         async def _safe_run():
             _wait_token = handler_waits.set(_task_waits)
+            # 请求级依赖缓存作用域（Depends use_cache）：一次事件分发内
+            # 所有处理器共享同一缓存 dict——如数据库会话在一次事件内只解析一次
+            _di_token = _di_cache.set({})
             t0 = time.monotonic()
             try:
                 # 并发背压控制：限制同时在途的 handler Task 数量
@@ -2221,6 +2225,7 @@ class AdapterManager(ManagerBase):
             finally:
                 elapsed = time.monotonic() - t0
                 handler_waits.reset(_wait_token)
+                _di_cache.reset(_di_token)
 
                 _wait_total = sum(w.get("duration", 0.0) for w in _task_waits)
                 _pure = max(0.0, elapsed - _wait_total)
