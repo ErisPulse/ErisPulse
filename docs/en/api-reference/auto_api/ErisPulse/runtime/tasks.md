@@ -15,6 +15,8 @@
 > 2. 任务自动归属到当前 ``owner_scope`` 上下文（模块/适配器），卸载时可由框架兜底取消
 > 3. ``cancel_owner_tasks(owner)`` 取消并等待指定归属者的全部后台任务
 > 4. ``cancel_all_background_tasks()`` 供 ``sdk.uninit()`` 兜底清理
+> 5. ``install_owner_task_factory()``（随启动自动安装）：事件循环级任务工厂，
+> owner 上下文内**任何** ``asyncio.create_task``（含第三方库）自动归属、卸载兜底取消
 
 ---
 
@@ -129,6 +131,29 @@
 ```python
 >>> spawn_background(some_async_work())
 ```
+
+---
+
+
+### `_owner_aware_task_factory(loop: asyncio.AbstractEventLoop, coro: Coroutine[Any, Any, Any])`
+
+> **内部方法** 任务创建钩子：归属上下文内的任务自动登记（供卸载兜底取消）
+
+---
+
+
+### `install_owner_task_factory(loop: asyncio.AbstractEventLoop)`
+
+为事件循环安装 owner 感知的任务工厂（幂等）
+
+安装后，`owner_scope` 上下文内通过 `asyncio.create_task` / `ensure_future`
+创建的**所有**任务（包括第三方库内部创建的）自动登记到当前归属者名下，
+模块卸载 / 适配器关闭时随 `cancel_owner_tasks` 兜底取消。无归属上下文
+（owner=None）的任务不受影响。
+
+由 `register_main_loop` 在框架启动时自动调用。
+
+- **loop** (`目标事件循环`): **返回值** (`是否实际安装（重复调用返回`): False）
 
 ---
 

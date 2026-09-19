@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1627,
+  "total_keywords": 1633,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -45,7 +45,7 @@
     "1. 使用 Event 包裝類": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 165,
+        "line": 169,
         "level": 3,
         "title": "1. 使用 Event 包裝類"
       }
@@ -61,7 +61,7 @@
     "1. 使用事務": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 311,
+        "line": 315,
         "level": 3,
         "title": "1. 使用事務"
       }
@@ -69,7 +69,7 @@
     "1. 使用快取": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 378,
+        "line": 382,
         "level": 3,
         "title": "1. 使用快取"
       }
@@ -99,7 +99,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 270,
+        "line": 274,
         "level": 3,
         "title": "1. 分類異常處理"
       }
@@ -107,7 +107,7 @@
     "1. 合理使用日誌等級": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 344,
+        "line": 348,
         "level": 3,
         "title": "1. 合理使用日誌等級"
       }
@@ -129,7 +129,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 461,
+        "line": 465,
         "level": 3,
         "title": "1. 單元測試"
       }
@@ -193,7 +193,7 @@
     "1. 敏感資料保護": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 415,
+        "line": 419,
         "level": 3,
         "title": "1. 敏感資料保護"
       }
@@ -249,7 +249,7 @@
     "1. 版本管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 490,
+        "line": 494,
         "level": 3,
         "title": "1. 版本管理"
       }
@@ -257,7 +257,7 @@
     "1. 異常處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 868,
+        "line": 886,
         "level": 3,
         "title": "1. 異常處理"
       }
@@ -513,7 +513,7 @@
     "2. README 頭部": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 504,
+        "line": 508,
         "level": 3,
         "title": "2. README 頭部"
       }
@@ -577,7 +577,7 @@
     "2. 合理使用懶加載": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 181,
+        "line": 185,
         "level": 3,
         "title": "2. 合理使用懶加載"
       }
@@ -625,7 +625,7 @@
     "2. 批量操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 327,
+        "line": 331,
         "level": 3,
         "title": "2. 批量操作"
       }
@@ -655,7 +655,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 886,
+        "line": 904,
         "level": 3,
         "title": "2. 日誌記錄"
       }
@@ -687,7 +687,7 @@
     "2. 構造化日誌": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 366,
+        "line": 370,
         "level": 3,
         "title": "2. 構造化日誌"
       }
@@ -775,7 +775,7 @@
     "2. 超時處理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 293,
+        "line": 297,
         "level": 3,
         "title": "2. 超時處理"
       }
@@ -783,7 +783,7 @@
     "2. 輸入驗證": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 441,
+        "line": 445,
         "level": 3,
         "title": "2. 輸入驗證"
       }
@@ -799,7 +799,7 @@
     "2. 避免阻塞操作": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 399,
+        "line": 403,
         "level": 3,
         "title": "2. 避免阻塞操作"
       }
@@ -829,7 +829,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 474,
+        "line": 478,
         "level": 3,
         "title": "2. 集成測試"
       }
@@ -1005,7 +1005,7 @@
     "3. 事件處理器註冊": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 216,
+        "line": 220,
         "level": 3,
         "title": "3. 事件處理器註冊"
       }
@@ -1109,7 +1109,7 @@
     "3. 條件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 902,
+        "line": 920,
         "level": 3,
         "title": "3. 條件處理"
       }
@@ -1173,7 +1173,7 @@
     "3. 資源管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 151,
+        "line": 155,
         "level": 3,
         "title": "3. 資源管理"
       }
@@ -2637,7 +2637,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 544,
+        "line": 555,
         "level": 3,
         "title": "Bot 狀態查詢"
       }
@@ -2972,20 +2972,20 @@
         "title": "Event 回覆方法"
       }
     ],
+    "Event 對象常用方法": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 809,
+        "level": 3,
+        "title": "Event 對象常用方法"
+      }
+    ],
     "Event 快捷方法": [
       {
         "document": "platform-guide/onebot11.md",
         "line": 191,
         "level": 3,
         "title": "Event 快捷方法"
-      }
-    ],
-    "Event 物件常用方法": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 791,
-        "level": 3,
-        "title": "Event 物件常用方法"
       }
     ],
     "GET": [
@@ -4497,7 +4497,7 @@
     "owner 上下文機制": [
       {
         "document": "advanced/ownership.md",
-        "line": 17,
+        "line": 14,
         "level": 2,
         "title": "owner 上下文機制"
       }
@@ -4892,6 +4892,12 @@
         "title": "下一步"
       },
       {
+        "document": "getting-started/event-handling.md",
+        "line": 937,
+        "level": 2,
+        "title": "下一步"
+      },
+      {
         "document": "getting-started/first-bot.md",
         "line": 156,
         "level": 2,
@@ -5207,7 +5213,7 @@
     "事件處理": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 163,
+        "line": 167,
         "level": 2,
         "title": "事件處理"
       },
@@ -5259,7 +5265,7 @@
     "事件處理最佳實踐": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 866,
+        "line": 884,
         "level": 2,
         "title": "事件處理最佳實踐"
       }
@@ -5311,17 +5317,17 @@
     "事件覆寫：不改模組程式碼，覆寫任意事件類型的行為": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 342,
+        "line": 349,
         "level": 2,
         "title": "事件覆寫：不改模組程式碼，覆寫任意事件類型的行為"
       }
     ],
-    "事件資料存取": [
+    "事件資料訪問": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 789,
+        "line": 807,
         "level": 2,
-        "title": "事件資料存取"
+        "title": "事件資料訪問"
       }
     ],
     "事件轉換": [
@@ -5484,6 +5490,14 @@
         "title": "互動式安裝"
       }
     ],
+    "互動式處理": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 577,
+        "level": 2,
+        "title": "互動式處理"
+      }
+    ],
     "互動方法": [
       {
         "document": "api-reference/event-system.md",
@@ -5520,14 +5534,6 @@
         "line": 66,
         "level": 3,
         "title": "五、我要為 ErisPulse 貢獻"
-      }
-    ],
-    "交互式處理": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 566,
-        "level": 2,
-        "title": "交互式處理"
       }
     ],
     "什麼是適配器": [
@@ -5683,7 +5689,7 @@
     "使用 reply 方法發送回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 568,
+        "line": 579,
         "level": 3,
         "title": "使用 reply 方法發送回覆"
       }
@@ -5959,7 +5965,7 @@
     "元事件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 517,
+        "line": 528,
         "level": 2,
         "title": "元事件處理"
       }
@@ -6013,7 +6019,7 @@
     "內建確認詞": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 782,
+        "line": 800,
         "level": 3,
         "title": "內建確認詞"
       }
@@ -6040,6 +6046,14 @@
         "line": 273,
         "level": 4,
         "title": "內聯查詢事件"
+      }
+    ],
+    "內部實現：所有權如何工作": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 115,
+        "level": 2,
+        "title": "內部實現：所有權如何工作"
       }
     ],
     "全參數一覽": [
@@ -6401,7 +6415,7 @@
     "卸載/停用清理序列": [
       {
         "document": "advanced/ownership.md",
-        "line": 76,
+        "line": 74,
         "level": 2,
         "title": "卸載/停用清理序列"
       }
@@ -6548,6 +6562,22 @@
         "title": "反向轉換與訊息建構"
       }
     ],
+    "取消時序（模組卸載）": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 148,
+        "level": 3,
+        "title": "取消時序（模組卸載）"
+      }
+    ],
+    "取消鏈（任務登記表）": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 135,
+        "level": 3,
+        "title": "取消鏈（任務登記表）"
+      }
+    ],
     "可用屬性": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -6668,12 +6698,12 @@
         "title": "命令基礎"
       }
     ],
-    "命令權限與存取控制": [
+    "命令權限與訪問控制": [
       {
         "document": "getting-started/event-handling.md",
         "line": 203,
         "level": 3,
-        "title": "命令權限與存取控制"
+        "title": "命令權限與訪問控制"
       }
     ],
     "命令沒有響應？": [
@@ -6703,7 +6733,7 @@
     "命令與回覆的 block 配置": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 438,
+        "line": 449,
         "level": 3,
         "title": "命令與回覆的 block 配置"
       }
@@ -7495,7 +7525,7 @@
     "多輪對話 (conversation)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 755,
+        "line": 773,
         "level": 3,
         "title": "多輪對話 (conversation)"
       }
@@ -7567,7 +7597,7 @@
     "好友添加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 456,
+        "line": 467,
         "level": 3,
         "title": "好友添加"
       }
@@ -7583,7 +7613,7 @@
     "好友請求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 490,
+        "line": 501,
         "level": 3,
         "title": "好友請求"
       }
@@ -7679,7 +7709,7 @@
     "存儲系統": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 309,
+        "line": 313,
         "level": 2,
         "title": "存儲系統"
       }
@@ -7719,7 +7749,7 @@
     "安全性": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 413,
+        "line": 417,
         "level": 2,
         "title": "安全性"
       }
@@ -8092,18 +8122,18 @@
         "title": "工具方法"
       }
     ],
-    "工具模組指南：托管其他模組的句柄": [
+    "工具模組指南：托管其它模組的句柄": [
       {
         "document": "advanced/ownership.md",
-        "line": 151,
+        "line": 220,
         "level": 2,
-        "title": "工具模組指南：托管其他模組的句柄"
+        "title": "工具模組指南：托管其它模組的句柄"
       }
     ],
     "工具模組：托管别人东西时要接住\"卸载通知\"": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 232,
+        "line": 236,
         "level": 2,
         "title": "工具模組：托管别人东西时要接住\"卸载通知\""
       }
@@ -8223,7 +8253,7 @@
     "帶回調的等待回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 640,
+        "line": 658,
         "level": 3,
         "title": "帶回調的等待回覆"
       }
@@ -8239,7 +8269,7 @@
     "帶驗證的等待回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 613,
+        "line": 631,
         "level": 3,
         "title": "帶驗證的等待回覆"
       }
@@ -8417,7 +8447,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 837,
+        "line": 855,
         "level": 3,
         "title": "平台擴展方法"
       }
@@ -8554,14 +8584,6 @@
         "title": "引導式註冊"
       }
     ],
-    "归屬權（owner）系統": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 1,
-        "level": 1,
-        "title": "归屬權（owner）系統"
-      }
-    ],
     "後台任務歸屬與自動取消": [
       {
         "document": "advanced/lifecycle.md",
@@ -8613,7 +8635,7 @@
     "心跳事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 535,
+        "line": 546,
         "level": 3,
         "title": "心跳事件"
       }
@@ -8755,7 +8777,7 @@
     "性能優化": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 376,
+        "line": 380,
         "level": 2,
         "title": "性能優化"
       }
@@ -8830,6 +8852,14 @@
         "line": 356,
         "level": 3,
         "title": "房間邀請"
+      }
+    ],
+    "所有权（owner）系統": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 1,
+        "level": 1,
+        "title": "所有权（owner）系統"
       }
     ],
     "手動呼叫 Request DSL": [
@@ -9046,6 +9076,14 @@
         "title": "排序、分頁"
       }
     ],
+    "排查思路": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 159,
+        "level": 3,
+        "title": "排查思路"
+      }
+    ],
     "接收訊息": [
       {
         "document": "advanced/http-client.md",
@@ -9065,7 +9103,7 @@
     "推薦寫法": [
       {
         "document": "advanced/ownership.md",
-        "line": 117,
+        "line": 168,
         "level": 3,
         "title": "推薦寫法"
       }
@@ -9297,7 +9335,7 @@
     "收集表單 (collect)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 714,
+        "line": 732,
         "level": 3,
         "title": "收集表單 (collect)"
       }
@@ -9639,7 +9677,7 @@
     "日誌記錄": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 342,
+        "line": 346,
         "level": 2,
         "title": "日誌記錄"
       },
@@ -10397,7 +10435,7 @@
     "模組作者指南": [
       {
         "document": "advanced/ownership.md",
-        "line": 115,
+        "line": 166,
         "level": 2,
         "title": "模組作者指南"
       }
@@ -10616,10 +10654,18 @@
         "title": "權限控制"
       }
     ],
+    "歸因鏈（contextvar 傳播）": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 119,
+        "level": 3,
+        "title": "歸因鏈（contextvar 傳播）"
+      }
+    ],
     "歸屬資源全景": [
       {
         "document": "advanced/ownership.md",
-        "line": 42,
+        "line": 39,
         "level": 2,
         "title": "歸屬資源全景"
       }
@@ -10639,7 +10685,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 139,
+        "line": 190,
         "level": 3,
         "title": "注意事項"
       },
@@ -10969,7 +11015,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 459,
+        "line": 463,
         "level": 2,
         "title": "測試"
       }
@@ -11770,12 +11816,12 @@
         "title": "監聽 Bot 生命週期"
       }
     ],
-    "監聽@消息": [
+    "監聽@訊息": [
       {
         "document": "getting-started/event-handling.md",
         "line": 56,
         "level": 3,
-        "title": "監聽@消息"
+        "title": "監聽@訊息"
       }
     ],
     "監聽成員變更": [
@@ -11802,20 +11848,20 @@
         "title": "監聽生命週期事件"
       }
     ],
-    "監聽私聊消息": [
+    "監聽私聊訊息": [
       {
         "document": "getting-started/event-handling.md",
         "line": 37,
         "level": 3,
-        "title": "監聽私聊消息"
+        "title": "監聽私聊訊息"
       }
     ],
-    "監聽群聊消息": [
+    "監聽群聊訊息": [
       {
         "document": "getting-started/event-handling.md",
         "line": 46,
         "level": 3,
-        "title": "監聽群聊消息"
+        "title": "監聽群聊訊息"
       }
     ],
     "監聽者查詢（has_handlers）": [
@@ -11957,7 +12003,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 545,
+        "line": 549,
         "level": 2,
         "title": "相關文件"
       },
@@ -12021,7 +12067,7 @@
     "確認對話 (confirm)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 661,
+        "line": 679,
         "level": 3,
         "title": "確認對話 (confirm)"
       }
@@ -12077,7 +12123,7 @@
     "等待任意事件 (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 734,
+        "line": 752,
         "level": 3,
         "title": "等待任意事件 (wait_for)"
       }
@@ -12117,7 +12163,7 @@
     "等待用戶回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 596,
+        "line": 607,
         "level": 3,
         "title": "等待用戶回覆"
       }
@@ -12373,7 +12419,7 @@
     "群成員增加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 468,
+        "line": 479,
         "level": 3,
         "title": "群成員增加"
       }
@@ -12381,7 +12427,7 @@
     "群成員減少": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 478,
+        "line": 489,
         "level": 3,
         "title": "群成員減少"
       }
@@ -12437,7 +12483,7 @@
     "群邀請請求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 506,
+        "line": 517,
         "level": 3,
         "title": "群邀請請求"
       }
@@ -12941,7 +12987,7 @@
     "設計邊界：哪些資源不隨卸載清理": [
       {
         "document": "advanced/ownership.md",
-        "line": 101,
+        "line": 100,
         "level": 2,
         "title": "設計邊界：哪些資源不隨卸載清理"
       }
@@ -12984,6 +13030,14 @@
         "line": 20,
         "level": 3,
         "title": "註冊命令"
+      }
+    ],
+    "註冊時機 → 所有權結果對照表": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 204,
+        "level": 3,
+        "title": "註冊時機 → 所有權結果對照表"
       }
     ],
     "註冊與取消": [
@@ -13107,7 +13161,7 @@
     "請求事件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 488,
+        "line": 499,
         "level": 2,
         "title": "請求事件處理"
       }
@@ -13561,7 +13615,7 @@
     "通知事件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 454,
+        "line": 465,
         "level": 2,
         "title": "通知事件處理"
       }
@@ -13617,7 +13671,7 @@
     "連接事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 519,
+        "line": 530,
         "level": 3,
         "title": "連接事件"
       }
@@ -13945,7 +13999,7 @@
     "選擇菜單 (choose)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 678,
+        "line": 696,
         "level": 3,
         "title": "選擇菜單 (choose)"
       }
@@ -13953,7 +14007,7 @@
     "部署": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 488,
+        "line": 492,
         "level": 2,
         "title": "部署"
       }
@@ -14341,7 +14395,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 268,
+        "line": 272,
         "level": 2,
         "title": "錯誤處理"
       },
@@ -14543,7 +14597,7 @@
     "鏈路控制：認領與阻斷": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 403,
+        "line": 414,
         "level": 2,
         "title": "鏈路控制：認領與阻斷"
       }
