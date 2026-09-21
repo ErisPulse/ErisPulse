@@ -2763,7 +2763,7 @@ After installation, re-run the installation script. The new installation script 
 
 # CLI Command Reference
 
-The ErisPulse command-line tool (`epsdk`) provides project management and package management functions.
+The ErisPulse command-line tool (`epsdk`) provides project management and package management functionality.
 
 > **Tip**: You can view detailed parameter descriptions for any command using `epsdk <command> --help`.
 
@@ -2772,7 +2772,7 @@ The ErisPulse command-line tool (`epsdk`) provides project management and packag
 ## Package Management Commands
 
 | Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+|------|------|------|------|
 | `install` | `i`, `add` | `[package]... [--upgrade/-U] [--pre] [-e PATH] [--user] [--no-deps] [-t DIR] [--index-url URL] [--extra-index-url URL] [--no-cache-dir] [-r FILE] [-c FILE] [--force-reinstall] [--ignore-installed] [--compile/--no-compile] [--prefix DIR] [--src DIR] [--config-settings SETTINGS] [--no-binary FORMAT] [--only-binary FORMAT] [--prefer-binary] [--build-isolation/--no-build-isolation] [--upgrade-strategy {eager,only-if-needed,to-satisfy-only}] [--break-system-packages] [--no-uv]` | Install modules/adapters |
 | `uninstall` | `rm`, `remove` | `<package>... [--no-uv]` | Uninstall modules/adapters |
 | `upgrade` | `up` | `[package]... [--force/-f] [--pre] [--no-uv]` | Upgrade specified modules or all |
@@ -2781,19 +2781,19 @@ The ErisPulse command-line tool (`epsdk`) provides project management and packag
 ## Diagnostic Commands
 
 | Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+|------|------|------|------|
 | `doctor` | `diag` | `[--verbose]` | Diagnose environment and output health report |
 
 ### install
 
-Install ErisPulse module or adapter packages. If no package name is specified, enter the interactive installation interface.
+Installs ErisPulse modules or adapter packages. If no package name is specified, enters interactive installation interface.
 
 **Aliases:** `i`, `add`
 
 **Parameters:**
 
 | Parameter | Short | Description |
-|-----------|-------|-------------|
+|------|--------|------|
 | `[package]...` | | Package names to install, multiple can be specified |
 | `--upgrade` | `-U` | Upgrade to the latest version during installation |
 | `--pre` | | Allow installation of pre-release versions |
@@ -2819,13 +2819,13 @@ Install ErisPulse module or adapter packages. If no package name is specified, e
 | `--build-isolation` | | Enable build isolation |
 | `--no-build-isolation` | | Disable build isolation |
 | `--upgrade-strategy` | | Upgrade strategy: `eager`, `only-if-needed`, `to-satisfy-only` |
-| `--break-system-packages` | | Allow modification of system package manager managed Python packages |
+| `--break-system-packages` | | Allow modification of Python packages managed by the system package manager |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
 
 ```bash
-# Install a single module
+# Install single module
 epsdk install Weather
 
 # Install multiple modules
@@ -2840,21 +2840,21 @@ epsdk install -e ./my-adapter
 
 ### uninstall
 
-Uninstall installed ErisPulse modules or adapter packages. If no package name is specified, enter the interactive uninstallation interface.
+Uninstalls installed ErisPulse modules or adapter packages. If no package name is specified, enters interactive uninstallation interface.
 
 **Aliases:** `rm`, `remove`
 
 **Parameters:**
 
 | Parameter | Description |
-|-----------|-------------|
+|------|------|
 | `<package>...` | Package names to uninstall, multiple can be specified |
 | `--no-uv` | Use pip instead of uv |
 
 **Examples:**
 
 ```bash
-# Uninstall a single module
+# Uninstall single module
 epsdk uninstall Weather
 
 # Uninstall multiple modules
@@ -2863,14 +2863,14 @@ epsdk uninstall Yunhu Weather
 
 ### upgrade
 
-Upgrade installed ErisPulse components. If no package name is specified, enter interactive upgrade of all.
+Upgrades installed ErisPulse components. If no package name is specified, enters interactive upgrade interface for all.
 
 **Aliases:** `up`
 
 **Parameters:**
 
 | Parameter | Short | Description |
-|-----------|-------|-------------|
+|------|--------|------|
 | `[package]...` | | Package names to upgrade, multiple can be specified |
 | `--force` | `-f` | Force upgrade, skip confirmation |
 | `--pre` | | Allow upgrade to pre-release versions |
@@ -2891,29 +2891,29 @@ epsdk upgrade -f
 
 ### self-update
 
-Update the ErisPulse SDK itself to the latest version.
+Updates the ErisPulse SDK to the latest version.
 
 **Aliases:** `su`, `update`
 
 **Parameters:**
 
 | Parameter | Short | Description |
-|-----------|-------|-------------|
-| `[version]` | | Specify the target version to update to |
-| `--pre` | | Allow updating to pre-release versions |
+|------|--------|------|
+| `[version]` | | Target version number to update to |
+| `--pre` | | Allow update to pre-release version |
 | `--force` | `-f` | Force update, skip confirmation |
 | `--no-uv` | | Use pip instead of uv |
 
 **Examples:**
 
 ```bash
-# Update to the latest stable version
+# Update to latest stable version
 epsdk self-update
 
-# Update to a specific version
+# Update to specified version
 epsdk self-update 1.2.3
 
-# Allow pre-release versions
+# Allow pre-release version
 epsdk self-update --pre
 
 # Force update
@@ -2925,22 +2925,22 @@ epsdk self-update -f
 ## Information Query Commands
 
 | Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+|------|------|------|------|
 | `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | List installed components |
 | `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | List remote available components |
 
 ### list
 
-List installed ErisPulse modules and adapters.
+Lists installed ErisPulse modules and adapters.
 
 **Aliases:** `l`, `ls`
 
 **Parameters:**
 
 | Parameter | Short | Description |
-|-----------|-------|-------------|
+|------|--------|------|
 | `--type` | `-t` | Specify type: `modules`, `adapters`, `all` (default) |
-| `--outdated` | `-o` | Only display upgradable packages |
+| `--outdated` | `-o` | Only display packages that can be upgraded |
 
 **Examples:**
 
@@ -2948,26 +2948,26 @@ List installed ErisPulse modules and adapters.
 # List all installed components
 epsdk list
 
-# List only modules
+# Only list modules
 epsdk list -t modules
 
-# List only adapters
+# Only list adapters
 epsdk list -t adapters
 
-# Only show upgradable packages
+# Only display packages that can be upgraded
 epsdk list -o
 ```
 
 ### list-remote
 
-List available ErisPulse modules and adapters in the remote repository.
+Lists available ErisPulse modules and adapters in the remote repository.
 
 **Aliases:** `lsr`
 
 **Parameters:**
 
 | Parameter | Short | Description |
-|-----------|-------|-------------|
+|------|--------|------|
 | `--type` | `-t` | Specify type: `modules`, `adapters`, `all` (default) |
 | `--refresh` | `-r` | Force refresh remote package list cache |
 
@@ -2977,7 +2977,7 @@ List available ErisPulse modules and adapters in the remote repository.
 # List all remote available components
 epsdk list-remote
 
-# List only remote modules
+# Only list remote modules
 epsdk list-remote -t modules
 
 # Force refresh cache and list
@@ -2989,12 +2989,12 @@ epsdk list-remote -r
 ## Configuration Commands
 
 | Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
-| `config` | `cfg`, `conf` | `[name] [--list/-l]` | Interactively configure declarative configuration items for adapters/modules |
+|------|------|------|------|
+| `config` | `cfg`, `conf` | `[name] [--list/-l]` | Interactive configuration of adapter/module declarative configuration items |
 
 ### config
 
-Interactively fill in declarative configuration items for adapters/modules. The wizard is driven by the adapter/module's declared configuration class (`ConfigClass` / `AccountConfigClass`), generating forms and validating automatically, without manually writing `config.toml`.
+Interactive filling of adapter/module declarative configuration items. The wizard is driven by the adapter/module's declared configuration class (`ConfigClass` / `AccountConfigClass`), which automatically generates forms and validates them, eliminating the need to manually write `config.toml`.
 
 Adapters additionally support multi-account (bot account) management: adding/editing/deleting accounts, and enabling/disabling switches.
 
@@ -3003,9 +3003,9 @@ Adapters additionally support multi-account (bot account) management: adding/edi
 **Parameters:**
 
 | Parameter | Short | Description |
-|-----------|-------|-------------|
+|------|--------|------|
 | `[name]` | | Target name (adapter platform name or module name), leave blank to enter interactive selection |
-| `--list` | `-l` | Only list the configuration status of all targets, do not enter the wizard |
+| `--list` | `-l` | Only list all target configuration states, do not enter wizard |
 
 **Examples:**
 
@@ -3025,45 +3025,50 @@ epsdk config MyModule
 
 **Description:**
 
-- Configuration status is divided into four levels: `Ready` (validation passed), `Incomplete` (missing or validation failed required fields), `Not Configured` (never generated), `No Configuration` (target did not declare configuration class)
-- Field values are marked with source: existing configuration displays `Current: value`, unconfigured displays schema default value `Default: value`; pressing Enter retains the value
-- Secret-type fields (declared as `secret`) do not echo input, pressing Enter retains the set value
-- In interactive selection mode, after a single wizard ends, it returns to the selection menu (status refreshed), allowing continuous configuration of multiple targets, leaving blank exits
-- If global form validation fails and re-entry is abandoned, the current wizard ends without writing any configuration (to avoid generating "enabled but incomplete configuration" semi-finished states)
-- After saving, immediately write to `config/config.toml`, visible in Dashboard and running SDK; running adapters need to restart the process to apply new account configurations
-- After `epsdk install` (interactive installation) and `epsdk init` successfully install an adapter, if configuration declaration is detected, it automatically guides into this wizard; when installing directly via command line, only configuration prompts are printed
+- Configuration status is divided into four levels: `Ready` (validation passed), `Incomplete` (missing or validation failed required fields), `Unconfigured` (never generated), `No Configuration` (target did not declare configuration class)
+- Field values are marked with source: existing configuration displays ` (current:value)`, unconfigured displays schema default value ` (default:value)`; pressing Enter retains the value
+- Secret-type fields (declared `secret`) do not echo input, pressing Enter retains the set value
+- In interactive selection mode, after a single wizard ends, it returns to the selection menu (status refreshed), allowing multiple targets to be configured continuously, leaving blank to exit
+- If global form validation fails and re-entry is abandoned, the current wizard is terminated and no configuration is written (to avoid creating a "enabled but incomplete configuration" semi-finished state)
+- Saved configuration is immediately written to `config/config.toml`, visible to Dashboard and running SDK; running adapters apply new account configuration by restarting the process
+- `epsdk install` (interactive installation) and `epsdk init` automatically guide into this wizard after successfully installing adapters; when installing directly via command line, only configuration prompts are printed
 
 ---
 
 ## Runtime Control Commands
 
+> [!TIP]
+> `epsdk run` will automatically detect and use the `.venv` virtual environment in the project directory to run the robot
+> (you can also explicitly specify the interpreter via the `ERISPULSE_PYTHON` environment variable). `epsdk install` /
+> `uninstall` / `upgrade` / `list` also act on the project virtual environment.
+
 | Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+|------|------|------|------|
 | `run` | `r` | `[script] [--reload]` | Run specified script or SDK |
 
 ### run
 
-Run ErisPulse project script or directly start the SDK. Supports hot-reload mode.
+Runs ErisPulse project scripts or directly starts the SDK. Supports hot-reload mode.
 
 **Aliases:** `r`
 
 **Parameters:**
 
 | Parameter | Description |
-|-----------|-------------|
-| `[script]` | Script file to run, if not specified, run the SDK |
+|------|------|
+| `[script]` | Script file to run, if not specified, run SDK |
 | `--reload` | Enable hot-reload mode, monitor file changes and automatically restart |
 
 **Examples:**
 
 ```bash
-# Directly run the SDK
+# Directly run SDK
 epsdk run
 
 # Run specified script file
 epsdk run main.py
 
-# Hot-reload mode run (restart automatically on file change)
+# Hot-reload mode run (auto-restart on file change)
 epsdk run main.py --reload
 
 # SDK hot-reload mode
@@ -3075,23 +3080,26 @@ epsdk run --reload
 ## Project Management Commands
 
 | Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
-| `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | Initialize ErisPulse project |
+|------|------|------|------|
+| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | Initialize ErisPulse project |
 | `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | Create module/adapter scaffold |
 
 ### init
 
-Initialize a new ErisPulse project. Supports interactive and quick modes.
+Initializes a new ErisPulse project. Supports interactive and quick mode, generates `pyproject.toml` (dependency list) from version 2.8.4 onwards, optionally creates project `.venv` virtual environment and installs framework and adapters, and supports **specifying any directory**.
 
 **Parameters:**
 
 | Parameter | Short | Description |
-|-----------|-------|-------------|
+|------|--------|------|
+| `[path]` | | Target path (can include parent directory, e.g. `../apps/mybot`; pure name is equivalent to `--project-name`) |
 | `--project-name` | `-n` | Project name |
-| `--quick` | `-q` | Quick mode, skip interactive wizard |
+| `--path` | | Project parent directory (combined with `-n` to specify creation location) |
+| `--quick` | `-q` | Quick mode, skip interactive wizard (default creates `.venv` and installs dependencies) |
 | `--force` | `-f` | Force overwrite existing configuration files |
 | `--here` | | Initialize in current directory, do not create subdirectory |
 | `--no-uv` | | Use pip instead of uv |
+| `--no-venv` | | Skip virtual environment creation and dependency installation |
 
 **Examples:**
 
@@ -3099,24 +3107,38 @@ Initialize a new ErisPulse project. Supports interactive and quick modes.
 # Interactive initialization
 epsdk init
 
-# Quick initialization
+# Quick initialization (creates my_bot/ in current directory, including pyproject.toml + .venv)
 epsdk init -q -n my_bot
+
+# Initialize in specified directory (../apps/mybot)
+epsdk init ../apps/mybot
+
+# Combine parent directory and project name
+epsdk init -n my_bot --path ../apps
 
 # Force overwrite existing configuration
 epsdk init -f
 
 # Initialize in current directory
 epsdk init --here -n my_bot
+
+# Generate project structure only, skip virtual environment
+epsdk init --no-venv -n my_bot
 ```
+
+init output: `main.py`, `pyproject.toml` (dependency list), `config/config.toml` + `config.full.example`, `config/ssl/`, `logs/`, `.gitignore`, `README.md`; if virtual environment creation is selected, additionally generates `.venv` and installs `erispulse` and selected adapters within it.
+
+> [!WARNING]
+> **Do not use `uv run epsdk run` to run the robot**. `uv run` creates a **one-time isolated environment** when executed in a directory without `pyproject.toml`—packages installed via `epsdk install` in it will not persist. Please use `epsdk run` within the project directory (which automatically uses the project `.venv`), or activate the virtual environment before running.
 
 ### create
 
-Create ErisPulse module or adapter scaffold project.
+Creates a scaffold project for ErisPulse module or adapter.
 
 **Parameters:**
 
 | Parameter | Short | Description |
-|-----------|-------|-------------|
+|------|--------|------|
 | `{module,adapter}` | | Type to create: `module` or `adapter` |
 | `--name` | `-n` | Project name (PascalCase) |
 | `--description` | `-d` | Project description |
@@ -3125,12 +3147,12 @@ Create ErisPulse module or adapter scaffold project.
 | `--homepage` | | Project homepage URL |
 | `--output` | `-o` | Output directory (default current directory) |
 | `--force` | `-f` | Force overwrite existing directory |
-| `--local` | | Create local plugin (only `module` available): generate `plugins/<name>/` package structure,免打包安装 (no packaging required for installation) |
+| `--local` | | Create local plugin (only available for `module`): generates `plugins/<name>/` package structure,免打包安装 (no packaging required for installation) |
 
 **Examples:**
 
 ```bash
-# Interactive creation (guides type selection and information entry)
+# Interactive creation (guided selection of type and filling of information)
 epsdk create
 
 # Directly create Module project
@@ -3157,20 +3179,20 @@ epsdk create module -n MyModule -f
 ## Language Commands
 
 | Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+|------|------|------|------|
 | `i18n` | `language`, `lang` | `[lang] [--list/-l]` | View or switch CLI display language |
 
 ### i18n
 
-View current CLI language, list supported languages, switch display language. If no parameter is specified, enter interactive selection interface.
+View current CLI language, list supported languages, switch display language. If no parameter is specified, enters interactive selection interface.
 
 **Aliases:** `language`, `lang`
 
 **Parameters:**
 
 | Parameter | Short | Description |
-|-----------|-------|-------------|
-| `[lang]` | | Language code to switch to (e.g., `zh-CN`, `en`, `ja`, `ru`) |
+|------|--------|------|
+| `[lang]` | | Language code to switch to (e.g. `zh-CN`, `en`, `ja`, `ru`) |
 | `--list` | `-l` | List all supported languages |
 
 **Examples:**
@@ -3194,19 +3216,19 @@ epsdk i18n --list
 ## Type Stub Commands
 
 | Command | Alias | Parameters | Description |
-|---------|-------|------------|-------------|
+|------|------|------|------|
 | `types` | `t`, `stub` | `[--output/-o <path>] [--force] [--adapters-only] [--modules-only]` | Generate type stub files to enable IDE completion |
 
 ### types
 
-Scan installed ErisPulse modules and adapters, generate `.pyi` type stub files for them, enabling accurate code completion and type checking support in IDEs.
+Scans installed ErisPulse modules and adapters, generates `.pyi` type stub files for them, thus enabling accurate code completion and type checking support in IDEs.
 
 **Aliases:** `t`, `stub`
 
 **Parameters:**
 
 | Parameter | Short | Description |
-|-----------|-------|-------------|
+|------|--------|------|
 | `--output` | `-o` | Output path (default `ep-stubs/` in current directory) |
 | `--force` | | Force overwrite existing stub files |
 | `--adapters-only` | | Generate type stubs only for adapters |
@@ -3237,12 +3259,12 @@ epsdk types --force
 The following parameters apply to all commands:
 
 | Parameter | Short | Description |
-|-----------|-------|-------------|
+|------|--------|------|
 | `--help` | `-h` | Display help information |
 | `--version` | `-V` | Display version information |
 | `--verbose` | `-v` | Display detailed output (can be stacked with `-vv`/`-vvv`) |
 | `--no-color` | | Disable colored output (suitable for CI / log collection) |
-| `--yes` | `-y` | Automatically confirm all interactive prompts (non-interactive operation) |
+| `--yes` | `-y` | Automatically confirm all interactive prompts (non-interactive execution) |
 
 ---
 
@@ -3253,10 +3275,10 @@ The following parameters apply to all commands:
 > [!NOTE]
 > This command requires ErisPulse **2.7.0+**.
 
-Diagnose the current CLI runtime environment and output a health report. Used to troubleshoot issues like "why can't it install / connect."
+Diagnoses the current CLI runtime environment and outputs a health report. Used to troubleshoot "why can't install / connect" issues.
 
 | Parameter | Description |
-|-----------|-------------|
+|------|------|
 | `--verbose` | Display detailed diagnostic information |
 
 **Check items**:
@@ -3264,7 +3286,7 @@ Diagnose the current CLI runtime environment and output a health report. Used to
 - **Installation backend**: Whether `uv` or `pip` is used
 - **Target interpreter**: The actual Python environment where packages are installed
 - **Configuration file**: Whether `config/config.toml` exists
-- **PyPI connectivity**: Whether PyPI can be accessed (and display the number of discovered components)
+- **PyPI connectivity**: Whether PyPI can be accessed (and displays the number of discovered components)
 - **System proxy**: Whether a proxy is detected
 
 ```bash
@@ -3292,10 +3314,10 @@ The interactive interface provides:
 
 ## Common Usage
 
-### Install Modules
+### Installing Modules
 
 ```bash
-# Install a single module
+# Install single module
 epsdk install Weather
 
 # Install multiple modules
@@ -3305,33 +3327,33 @@ epsdk install Yunhu Weather
 epsdk install Weather -U
 ```
 
-### List Components
+### Listing Components
 
 ```bash
 # List all components
 epsdk list
 
-# List only adapters
+# Only list adapters
 epsdk list -t adapters
 
-# List only upgradable components
+# Only list upgradable components
 epsdk list -o
 
 # View remote available components
 epsdk list-remote
 ```
 
-### Uninstall Components
+### Uninstalling Components
 
 ```bash
-# Uninstall a single component
+# Uninstall single component
 epsdk uninstall Weather
 
 # Uninstall multiple components
 epsdk uninstall Yunhu Weather
 ```
 
-### Configure Components
+### Configuring Components
 
 ```bash
 # View configuration status
@@ -3344,7 +3366,7 @@ epsdk config
 epsdk config yunhu
 ```
 
-### Upgrade Components
+### Upgrading Components
 
 ```bash
 # Upgrade all components
@@ -3357,17 +3379,17 @@ epsdk upgrade Weather
 epsdk upgrade -f
 ```
 
-### Run Project
+### Running Projects
 
 ```bash
-# Normal run
+# Run normally
 epsdk run main.py
 
 # Hot-reload mode
 epsdk run main.py --reload
 ```
 
-### Switch Language
+### Switching Language
 
 ```bash
 # Interactive language selection
@@ -3380,7 +3402,7 @@ epsdk i18n en
 epsdk i18n --list
 ```
 
-### Generate Type Stubs
+### Generating Type Stubs
 
 ```bash
 # Generate all type stubs
@@ -3390,7 +3412,7 @@ epsdk types
 epsdk types --modules-only
 ```
 
-### Initialize Project
+### Initializing Projects
 
 ```bash
 # Interactive initialization
@@ -3400,10 +3422,10 @@ epsdk init
 epsdk init -q -n my_bot
 ```
 
-### Create Scaffold
+### Creating Scaffolds
 
 ```bash
-# Interactive creation (guides type selection and information entry)
+# Interactive creation (guided selection of type and filling of information)
 epsdk create
 
 # Directly create Module project

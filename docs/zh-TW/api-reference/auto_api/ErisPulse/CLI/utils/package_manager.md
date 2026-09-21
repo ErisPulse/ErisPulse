@@ -11,6 +11,73 @@ ErisPulse SDK 包管理器
 
 ---
 
+## 函数列表
+
+
+### `create_project_venv(project_dir: Path)`
+
+在项目目录创建 `.venv` 虚拟环境
+
+优先使用 uv（`uv venv`，秒级、无 pip）；uv 不可用时回退
+`python -m venv`（自带 pip）。
+
+- **project_dir** (`项目目录（.venv`): 创建于其下）
+**返回值** (`成功时返回`): .venv 的 Python 解释器路径；失败返回 None
+
+---
+
+
+### `uv_add(project_dir: Path, packages: 'list[str]')`
+
+在项目目录执行 `uv add <packages>`（安装依赖并同步写入 pyproject.toml）
+
+uv 会自动创建/使用项目 `.venv` 并生成 uv.lock——安装与依赖声明
+一步完成，天然免疫 `uv sync` 的未声明包清理。
+
+- **project_dir** (`项目目录（须已生成`): pyproject.toml）
+- **packages** (`包名列表`): **返回值**: 是否成功
+
+---
+
+
+### `append_pyproject_dependencies(project_dir: Path, packages: 'list[str]')`
+
+手动向 pyproject.toml 的 project.dependencies 追加依赖（pip 回退路径用）
+
+使用 tomlkit 保留文件注释与格式。
+
+- **project_dir** (`项目目录`): - **packages**: 依赖包名列表
+**返回值** (`是否成功（pyproject`): 不存在 / 解析失败返回 False）
+
+---
+
+
+### `resolve_target_python(project_dir: 'Path | None' = None)`
+
+解析目标 Python 解释器（CLI 各命令统一入口）
+
+优先级：`ERISPULSE_PYTHON` 环境变量 > 项目 `.venv` 内解释器 >
+`VIRTUAL_ENV` > 当前解释器。
+
+- **project_dir** (`项目目录（默认当前目录）；在该目录下探测`): `.venv`
+**返回值** (`(解释器路径,`): 来源描述)——来源用于提示用户当前操作所作用的环境
+
+---
+
+
+### `warn_if_uv_isolated()`
+
+检测当前是否处于 uv 无项目的隔离运行上下文并输出警告
+
+`uv run` 在**无 pyproject.toml** 的目录执行时，命令运行于一次性
+隔离环境——其中安装的包不会持久化。通过 `UV` 环境变量识别 uv
+上下文，结合 cwd 项目文件缺失判定隔离场景。
+
+**返回值** (`是否处于隔离场景（True`): = 已输出警告）
+
+---
+
+
 ## 类列表
 
 
@@ -38,9 +105,13 @@ ErisPulse包管理器
 ---
 
 
-##### `__init__()`
+##### `__init__(python_executable: 'str | None' = None)`
 
 初始化包管理器，设置缓存、查找器、代理与 uv 相关状态
+
+- **python_executable** (`str | None`): 显式指定目标 Python 解释器
+    （如项目 .venv 内的解释器）。指定后查找器与安装/卸载目标环境
+    全部指向该解释器；None 时按 _get_target_python() 自动解析
 
 ---
 

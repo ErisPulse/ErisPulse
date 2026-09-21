@@ -3507,7 +3507,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 349,
+        "line": 371,
         "level": 3,
         "title": "create"
       }
@@ -3531,7 +3531,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 488,
+        "line": 510,
         "level": 3,
         "title": "doctor"
       }
@@ -3579,7 +3579,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 400,
+        "line": 422,
         "level": 3,
         "title": "i18n"
       }
@@ -3587,7 +3587,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 319,
+        "line": 324,
         "level": 3,
         "title": "init"
       }
@@ -3651,7 +3651,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 281,
+        "line": 286,
         "level": 3,
         "title": "run"
       }
@@ -3707,7 +3707,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 437,
+        "line": 459,
         "level": 3,
         "title": "types"
       }
@@ -4582,12 +4582,12 @@
         "title": "Выбор хранилища"
       }
     ],
-    "Вывод списка компонентов": [
+    "Вывод компонентов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 545,
+        "line": 567,
         "level": 3,
-        "title": "Вывод списка компонентов"
+        "title": "Вывод компонентов"
       }
     ],
     "Выгрузка и полная выгрузка (purge)": [
@@ -4646,20 +4646,20 @@
         "title": "Высокоуровневые методы (рекомендуется)"
       }
     ],
+    "Генерация типовых аннотаций": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 642,
+        "level": 3,
+        "title": "Генерация типовых аннотаций"
+      }
+    ],
     "Генерация типовых заглушек (автодополнение в IDE)": [
       {
         "document": "getting-started/ide-completion.md",
         "line": 1,
         "level": 1,
         "title": "Генерация типовых заглушек (автодополнение в IDE)"
-      }
-    ],
-    "Генерация файлов типов": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 620,
-        "level": 3,
-        "title": "Генерация файлов типов"
       }
     ],
     "Главная страница": [
@@ -4697,7 +4697,7 @@
     "Глобальные параметры": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 472,
+        "line": 494,
         "level": 2,
         "title": "Глобальные параметры"
       }
@@ -4913,7 +4913,7 @@
     "Диагностика окружения": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 486,
+        "line": 508,
         "level": 2,
         "title": "Диагностика окружения"
       }
@@ -5457,7 +5457,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 597,
+        "line": 619,
         "level": 3,
         "title": "Запуск проекта"
       }
@@ -5625,7 +5625,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 630,
+        "line": 652,
         "level": 3,
         "title": "Инициализация проекта"
       }
@@ -5733,7 +5733,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 517,
+        "line": 539,
         "level": 2,
         "title": "Интерактивная установка"
       }
@@ -6274,14 +6274,6 @@
         "title": "Командная система"
       }
     ],
-    "Команды генерации типовых файлов": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 431,
-        "level": 2,
-        "title": "Команды генерации типовых файлов"
-      }
-    ],
     "Команды диагностики": [
       {
         "document": "user-guide/cli-reference.md",
@@ -6290,12 +6282,12 @@
         "title": "Команды диагностики"
       }
     ],
-    "Команды для информации": [
+    "Команды информации": [
       {
         "document": "user-guide/cli-reference.md",
         "line": 162,
         "level": 2,
-        "title": "Команды для информации"
+        "title": "Команды информации"
       }
     ],
     "Команды конфигурации": [
@@ -6304,6 +6296,14 @@
         "line": 226,
         "level": 2,
         "title": "Команды конфигурации"
+      }
+    ],
+    "Команды типовых аннотаций": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 453,
+        "level": 2,
+        "title": "Команды типовых аннотаций"
       }
     ],
     "Команды управления запуском": [
@@ -6325,17 +6325,17 @@
     "Команды управления проектом": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 312,
+        "line": 317,
         "level": 2,
         "title": "Команды управления проектом"
       }
     ],
-    "Команды языка интерфейса": [
+    "Команды языка": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 394,
+        "line": 416,
         "level": 2,
-        "title": "Команды языка интерфейса"
+        "title": "Команды языка"
       }
     ],
     "Комбинация правил и фоновое выполнение": [
@@ -6536,14 +6536,6 @@
         "line": 452,
         "level": 3,
         "title": "Конфигурация команд"
-      }
-    ],
-    "Конфигурация компонентов": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 571,
-        "level": 3,
-        "title": "Конфигурация компонентов"
       }
     ],
     "Конфигурация ленивой загрузки": [
@@ -7572,6 +7564,14 @@
         "title": "Настройка для рабочей среды"
       }
     ],
+    "Настройка компонентов": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 593,
+        "level": 3,
+        "title": "Настройка компонентов"
+      }
+    ],
     "Начало обучения": [
       {
         "document": "getting-started/README.md",
@@ -7873,7 +7873,7 @@
     "Обновление компонентов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 584,
+        "line": 606,
         "level": 3,
         "title": "Обновление компонентов"
       }
@@ -11522,20 +11522,20 @@
         "title": "Распространение приложений через Docker-образы"
       }
     ],
+    "Распространенные сценарии": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 552,
+        "level": 2,
+        "title": "Распространенные сценарии"
+      }
+    ],
     "Распространённые места конфигурации": [
       {
         "document": "user-guide/README.md",
         "line": 31,
         "level": 3,
         "title": "Распространённые места конфигурации"
-      }
-    ],
-    "Распространённые сценарии": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 530,
-        "level": 2,
-        "title": "Распространённые сценарии"
       }
     ],
     "Расширение для всех платформ (шаблон \"*\")": [
@@ -12665,7 +12665,7 @@
     "Смена языка": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 607,
+        "line": 629,
         "level": 3,
         "title": "Смена языка"
       }
@@ -13005,7 +13005,7 @@
     "Создание шаблона": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 640,
+        "line": 662,
         "level": 3,
         "title": "Создание шаблона"
       }
@@ -14147,7 +14147,7 @@
     "Удаление компонентов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 561,
+        "line": 583,
         "level": 3,
         "title": "Удаление компонентов"
       }
@@ -14461,7 +14461,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 532,
+        "line": 554,
         "level": 3,
         "title": "Установка модуля"
       }

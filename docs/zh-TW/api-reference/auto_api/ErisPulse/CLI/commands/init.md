@@ -21,6 +21,13 @@ Init 命令实现
 ---
 
 
+### `_validate_project_path(value: str)`
+
+项目路径校验：末段（项目名）须为合法名称，父目录部分不限制
+
+---
+
+
 ## 类列表
 
 
@@ -41,12 +48,15 @@ init 命令
 ---
 
 
-##### `_init_project(project_name: str, adapter_list: list | None = None, in_current_dir: bool = False)`
+##### `_init_project(project_name: str, adapter_list: list | None = None, target_dir: Path | None = None, create_venv: bool = True, git_init: bool = False, in_current_dir: bool = False)`
 
-创建项目目录结构并生成配置文件
+创建项目目录结构并生成配置文件、依赖清单与虚拟环境
 
 - **project_name** (`str`): 项目名称
 - **adapter_list** (`list`): 适配器名称列表 (默认: None)
+- **target_dir** (`Path | None`): 项目父目录 (默认: None，即当前目录)
+- **create_venv** (`bool`): 是否创建虚拟环境并安装依赖 (默认: True)
+- **git_init** (`bool`): 是否初始化 git 仓库 (默认: False)
 - **in_current_dir** (`bool`): 是否在当前目录初始化 (默认: False)
 **返回值** (`bool`): 初始化成功返回 True，失败返回 False
 
@@ -75,13 +85,15 @@ init 命令
 ---
 
 
-##### `_interactive_init(project_name: str | None = None, force: bool = False, here: bool = False)`
+##### `_interactive_init(project_name: str | None = None, force: bool = False, here: bool = False, target_dir: Path | None = None, create_venv: bool = True)`
 
 交互式初始化项目，引导用户配置项目位置及基本参数
 
 - **project_name** (`str`): 项目名称 (默认: None)
 - **force** (`bool`): 是否强制覆盖已存在目录 (默认: False)
 - **here** (`bool`): 是否在当前目录初始化 (默认: False)
+- **target_dir** (`Path | None`): 项目父目录 (默认: None)
+- **create_venv** (`bool`): 是否创建虚拟环境并安装依赖 (默认: True)
 **返回值** (`bool`): 初始化成功返回 True，失败返回 False
 
 ---
