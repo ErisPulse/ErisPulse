@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1668,
+  "total_keywords": 1674,
   "keywords": {
     "0 Успешно (OK)": [
       {
@@ -45,7 +45,7 @@
     "1. Защита конфиденциальных данных": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 413,
+        "line": 417,
         "level": 3,
         "title": "1. Защита конфиденциальных данных"
       }
@@ -69,7 +69,7 @@
     "1. Использование кэширования": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 376,
+        "line": 380,
         "level": 3,
         "title": "1. Использование кэширования"
       }
@@ -77,7 +77,7 @@
     "1. Использование обёртки Event": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 165,
+        "line": 169,
         "level": 3,
         "title": "1. Использование обёртки Event"
       }
@@ -85,7 +85,7 @@
     "1. Использование транзакций": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 309,
+        "line": 313,
         "level": 3,
         "title": "1. Использование транзакций"
       }
@@ -99,7 +99,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 268,
+        "line": 272,
         "level": 3,
         "title": "1. Классификация обработки исключений"
       }
@@ -129,7 +129,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 459,
+        "line": 463,
         "level": 3,
         "title": "1. Модульные тесты"
       }
@@ -257,7 +257,7 @@
     "1. Разумное использование уровней логирования": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 342,
+        "line": 346,
         "level": 3,
         "title": "1. Разумное использование уровней логирования"
       }
@@ -321,7 +321,7 @@
     "1. Управление версиями": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 488,
+        "line": 492,
         "level": 3,
         "title": "1. Управление версиями"
       }
@@ -553,7 +553,7 @@
     "2. Заголовок README": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 502,
+        "line": 506,
         "level": 3,
         "title": "2. Заголовок README"
       }
@@ -561,7 +561,7 @@
     "2. Избегание блокирующих операций": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 397,
+        "line": 401,
         "level": 3,
         "title": "2. Избегание блокирующих операций"
       }
@@ -575,17 +575,9 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 472,
+        "line": 476,
         "level": 3,
         "title": "2. Интеграционные тесты"
-      }
-    ],
-    "2. Корректное выполнение асинхронных операций": [
-      {
-        "document": "developer-guide/modules/best-practices.md",
-        "line": 133,
-        "level": 3,
-        "title": "2. Корректное выполнение асинхронных операций"
       }
     ],
     "2. Логирование": [
@@ -605,7 +597,7 @@
     "2. Массовые операции": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 325,
+        "line": 329,
         "level": 3,
         "title": "2. Массовые операции"
       }
@@ -645,7 +637,7 @@
     "2. Обработка таймаутов": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 291,
+        "line": 295,
         "level": 3,
         "title": "2. Обработка таймаутов"
       }
@@ -682,6 +674,14 @@
         "title": "2. Поддерживаемые типы отправки сообщений"
       }
     ],
+    "2. Правильные асинхронные операции": [
+      {
+        "document": "developer-guide/modules/best-practices.md",
+        "line": 133,
+        "level": 3,
+        "title": "2. Правильные асинхронные операции"
+      }
+    ],
     "2. Прием событий (POST)": [
       {
         "document": "platform-guide/webhook.md",
@@ -693,7 +693,7 @@
     "2. Проверка входных данных": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 439,
+        "line": 443,
         "level": 3,
         "title": "2. Проверка входных данных"
       }
@@ -709,7 +709,7 @@
     "2. Разумное использование ленивой загрузки": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 181,
+        "line": 185,
         "level": 3,
         "title": "2. Разумное использование ленивой загрузки"
       }
@@ -789,7 +789,7 @@
     "2. Структурированное логирование": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 364,
+        "line": 368,
         "level": 3,
         "title": "2. Структурированное логирование"
       }
@@ -1109,7 +1109,7 @@
     "3. Регистрация обработчиков событий": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 215,
+        "line": 219,
         "level": 3,
         "title": "3. Регистрация обработчиков событий"
       }
@@ -1189,7 +1189,7 @@
     "3. Управление ресурсами": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 151,
+        "line": 155,
         "level": 3,
         "title": "3. Управление ресурсами"
       }
@@ -4145,7 +4145,7 @@
     "Безопасность": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 411,
+        "line": 415,
         "level": 2,
         "title": "Безопасность"
       }
@@ -4269,7 +4269,7 @@
     "Важные замечания": [
       {
         "document": "advanced/ownership.md",
-        "line": 131,
+        "line": 173,
         "level": 3,
         "title": "Важные замечания"
       }
@@ -4376,6 +4376,14 @@
         "line": 99,
         "level": 3,
         "title": "Внутренняя разбивка цепочки горячей перезагрузки"
+      }
+    ],
+    "Внутренняя реализация: как работает принадлежность": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 107,
+        "level": 2,
+        "title": "Внутренняя реализация: как работает принадлежность"
       }
     ],
     "Возвращаемое значение метода отправки": [
@@ -4900,14 +4908,6 @@
         "line": 102,
         "level": 4,
         "title": "Декораторы правил отправки"
-      }
-    ],
-    "Децерализация/отключение последовательности очистки": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 71,
-        "level": 2,
-        "title": "Децерализация/отключение последовательности очистки"
       }
     ],
     "Диагностика окружения": [
@@ -5679,7 +5679,7 @@
     "Инструментальные модули: при хранении чужих объектов нужно учитывать \"уведомление об отключении\"": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 231,
+        "line": 235,
         "level": 2,
         "title": "Инструментальные модули: при хранении чужих объектов нужно учитывать \"уведомление об отключении\""
       }
@@ -6715,7 +6715,7 @@
     "Логирование": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 340,
+        "line": 344,
         "level": 2,
         "title": "Логирование"
       }
@@ -7782,12 +7782,12 @@
         "title": "Обзор методов"
       }
     ],
-    "Обзор ресурсов, привязанных к модулю": [
+    "Обзор ресурсов с принадлежностью": [
       {
         "document": "advanced/ownership.md",
         "line": 37,
         "level": 2,
-        "title": "Обзор ресурсов, привязанных к модулю"
+        "title": "Обзор ресурсов с принадлежностью"
       }
     ],
     "Обзор стандарта": [
@@ -8069,7 +8069,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 266,
+        "line": 270,
         "level": 2,
         "title": "Обработка ошибок"
       },
@@ -8149,7 +8149,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 163,
+        "line": 167,
         "level": 2,
         "title": "Обработка событий"
       },
@@ -8783,7 +8783,7 @@
     "Оптимизация производительности": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 374,
+        "line": 378,
         "level": 2,
         "title": "Оптимизация производительности"
       }
@@ -10506,6 +10506,22 @@
         "title": "Порядок выполнения промежуточных обработчиков"
       }
     ],
+    "Последовательность отмены (выгрузка модуля)": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 133,
+        "level": 3,
+        "title": "Последовательность отмены (выгрузка модуля)"
+      }
+    ],
+    "Последовательность очистки при выгрузке/отключении": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 71,
+        "level": 2,
+        "title": "Последовательность очистки при выгрузке/отключении"
+      }
+    ],
     "Поток WebSocket": [
       {
         "document": "platform-guide/qqbot.md",
@@ -11445,7 +11461,7 @@
     "Развертывание": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 486,
+        "line": 490,
         "level": 2,
         "title": "Развертывание"
       }
@@ -11955,7 +11971,7 @@
     "Рекомендуемый стиль": [
       {
         "document": "advanced/ownership.md",
-        "line": 109,
+        "line": 151,
         "level": 3,
         "title": "Рекомендуемый стиль"
       }
@@ -11963,7 +11979,7 @@
     "Руководство для авторов модулей": [
       {
         "document": "advanced/ownership.md",
-        "line": 107,
+        "line": 149,
         "level": 2,
         "title": "Руководство для авторов модулей"
       }
@@ -11974,14 +11990,6 @@
         "line": 1,
         "level": 1,
         "title": "Руководство для разработчиков"
-      }
-    ],
-    "Руководство по модулю-инструменту: хэндлы для других модулей": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 138,
-        "level": 2,
-        "title": "Руководство по модулю-инструменту: хэндлы для других модулей"
       }
     ],
     "Руководство по наблюдателям": [
@@ -12030,6 +12038,14 @@
         "line": 1,
         "level": 1,
         "title": "Руководство по стандартизации адаптеров (общие положения)"
+      }
+    ],
+    "Руководство по утилитным модулям: хранение дескрипторов других модулей": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 195,
+        "level": 2,
+        "title": "Руководство по утилитным модулям: хранение дескрипторов других модулей"
       }
     ],
     "Руководство пользователя": [
@@ -12261,7 +12277,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 543,
+        "line": 547,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -12496,14 +12512,6 @@
         "title": "Синхронный процесс"
       }
     ],
-    "Система владельцев (owner)": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 1,
-        "level": 1,
-        "title": "Система владельцев (owner)"
-      }
-    ],
     "Система интерактивных сессий": [
       {
         "document": "advanced/interaction.md",
@@ -12560,6 +12568,14 @@
         "title": "Система правил отправки"
       }
     ],
+    "Система принадлежности (owner)": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 1,
+        "level": 1,
+        "title": "Система принадлежности (owner)"
+      }
+    ],
     "Система приоритетов": [
       {
         "document": "api-reference/event-system.md",
@@ -12579,7 +12595,7 @@
     "Система хранения": [
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 307,
+        "line": 311,
         "level": 2,
         "title": "Система хранения"
       },
@@ -13400,6 +13416,14 @@
         "title": "Справочник по установке"
       }
     ],
+    "Сравнение сценариев регистрации → результат принадлежности": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 180,
+        "level": 3,
+        "title": "Сравнение сценариев регистрации → результат принадлежности"
+      }
+    ],
     "Ссылки": [
       {
         "document": "platform-guide/README.md",
@@ -13696,6 +13720,14 @@
         "title": "Стратегия обработки пропущенных задач (`missed_policy`)"
       }
     ],
+    "Стратегия отладки": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 144,
+        "level": 3,
+        "title": "Стратегия отладки"
+      }
+    ],
     "Строгий режим": [
       {
         "document": "user-guide/configuration.md",
@@ -13829,7 +13861,7 @@
       },
       {
         "document": "developer-guide/modules/best-practices.md",
-        "line": 457,
+        "line": 461,
         "level": 2,
         "title": "Тестирование"
       }
@@ -14644,6 +14676,22 @@
         "line": 148,
         "level": 3,
         "title": "Цепочка модификаторов"
+      }
+    ],
+    "Цепочка отмены (таблица задач)": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 124,
+        "level": 3,
+        "title": "Цепочка отмены (таблица задач)"
+      }
+    ],
+    "Цепочка привязки (contextvar-передача)": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 111,
+        "level": 3,
+        "title": "Цепочка привязки (contextvar-передача)"
       }
     ],
     "Цепочка проверки и добавление/удаление в режиме выполнения": [

@@ -1345,48 +1345,50 @@ async def handler_c(event):
 >
 > **Slow logs**: If a single handler takes over **1 second**, the framework logs a WARNING (via `handler_slow`). The wait time in `wait_reply` is excluded from the timing, so "waiting for reply" does not cause a false slow report.
 
-## Scope Filtering: Why My Module Didn't Receive Messages
+## Scope Filtering: Why Didn't My Module Receive the Message
 
-After an event arrives, there are two **silent** filters (neither reply nor error):
+After an event arrives, there are two **silent** filters (neither replies nor reports errors):
 
-1. **Identity dimension** (`ErisPulse.scope.identity`): When an event enters the dispatch entry, it is checked based on user > group > bot > adapter to determine whether to receive it.
-   Events rejected by this filter are **completely discarded**, and no handler (including the command dispatcher) is triggered.
-2. **Module dimension** (`ErisPulse.scope`): When an event reaches a module's handler/command, it is checked based on session > bot > platform to determine if the module is available, and **skipped silently** if not.
+1. **Identity dimension** (`ErisPulse.scope.identity`): When an event enters the distribution entry point, it is determined whether to receive based on User > Group > Bot > Adapter.  
+   Events that are rejected are **entirely discarded**, and no handler (including the command dispatcher) will be triggered.
+2. **Module dimension** (`ErisPulse.scope`): When an event reaches a module's handler/command, it is determined based on Session > Bot > Platform whether the module is available; if it does not pass, it is **silently skipped**.
 
 ```toml
-# Example 1: All messages in a group are not propagated
+# Example 1: Do not propagate all messages in a group
 [ErisPulse.scope.identity.sessions.onebot11."group_123"]
 deny = true
 
-# Example 2: Blocking MyModule in a specific bot
+# Example 2: Block MyModule from a specific Bot
 [ErisPulse.scope.bots.onebot11."123456"]
 blocked = ["MyModule"]
 ```
 
-In this case, when messages from that group arrive, `MyModule`'s command and event handlers **will not be scheduled**. This is not a bug, but a filtering mechanism—when troubleshooting "module not responding," check the scope identity and module binding first.
+In this case, when messages arrive from that group, the `MyModule` command and event handlers **will not be scheduled**. This is not a bug, but the filtering mechanism—when troubleshooting "module not responding," prioritize checking the identity and module binding of the scope.
 
-- Filter logs are only visible at **TRACE** level (via `core.scope.identity_denied` / `core.scope.denied`), and are not visible at default INFO level
-- Framework-level handlers (e.g., command dispatcher with `scope_exempt=True`) are not affected by the **module dimension** but are affected by the **identity dimension** (the entire event is discarded)
-- Before command execution, there is a third filter: command user ACL (replies "Permission denied" on rejection, see previous section)
-- The fourth filter is **event overwriting** (see next section)
+- Filter logs are only visible at the **TRACE** level (`core.scope.identity_denied` / `core.scope.denied`), and no trace is visible by default at the INFO level.
+- Framework-level handlers (such as the command dispatcher with `scope_exempt=True`) are not affected by the **module dimension**, but are affected by the **identity dimension** (the entire event has been discarded).
+- Before command execution, there is a third filter: command user ACL (replies with "insufficient permissions" when denied, see previous section).
+- The fourth filter is **event overwriting** (see next section).
 
-> Scope configuration, matching syntax, and runtime API are detailed in [Scope (scope)](../../advanced/scope.md).
+> [!NOTE]
+> **Relationship between scope filtering and event claiming (claim)**: Both silent filters occur before the handler is **scheduled**—handlers that are filtered out do not have the opportunity to execute and therefore do not participate in the claim status of `event.done()` / `mark_processed()`. Whether an event has been claimed is determined solely by the **actual executed** handlers (command matching claims, reply matching claims, explicit calls); scope rejection neither claims nor blocks (it silently skips, and the message continues through the remaining distribution chain).
 
-## Event Overwriting: Modify Any Event Behavior Without Changing Module Code
+> For scope configuration, matching syntax, and runtime API, see [Scope](../../advanced/scope.md).
+
+## Event Override: Overwrite Behavior of Any Event Type Without Modifying Module Code
 
 > [!NOTE]
 > This feature requires ErisPulse **2.8.0+**.
 
-Event handlers, when registered, declare parameters (e.g., `pattern` / `regex` / `master` / `hidden`) as **developer defaults**.
-The unified overwriting system allows users to overwrite any module's behavior by **event type**—OneBot12 standard types (meta / message / notice / request) and ErisPulse extended types (command) each have their own set of overwritable parameters:
+Event handlers declare parameters (`pattern` / `regex` / `master` / `hidden`, etc.) at registration time as **default** for developers. The unified override system allows users to overwrite any module's behavior by **event type**—OneBot12 standard types (`meta` / `message` / `notice` / `request`) and ErisPulse extension types (`command`) each have their own set of overridable parameters:
 
-| Event Type | Overwritable Parameters | Function |
+| Event Type | Overridable Parameters | Purpose |
 |---------|-----------|------|
 | `message` | `pattern` / `regex` / `detail_types` | Text trigger conditions + message subtype whitelist |
 | `notice` | `detail_types` / `pattern` / `regex` | Notification subtype whitelist + text conditions |
 | `request` | `detail_types` / `pattern` / `regex` | Request subtype whitelist + text conditions |
-| `meta` | `detail_types` | Meta event subtype whitelist (connect / heartbeat, etc.) |
-| `command` | `master` / `hidden` / `aliases` / `prefix` / `help` / `usage` | Command implementation parameters (user priority) |
+| `meta` | `detail_types` | Meta-event subtype whitelist (e.g., connect / heartbeat) |
+| `command` | `master` / `hidden` / `aliases` / `prefix` / `help` / `usage` | Command implementation parameters (user preference) |
 | `acl` (command-specific) | `allow` / `deny` | Command user whitelist/blacklist (by command name glob) |
 
 ```toml
@@ -1398,20 +1400,20 @@ pattern = "闲聊*"
 [ErisPulse.event.overrides.notice.MyModule]
 detail_types = ["group_increase"]
 
-# command: Overwrite implementation parameters (user priority—can tighten or loosen developer defaults)
+# command: Overwrite implementation parameters (user preference—can tighten or loosen developer defaults)
 [ErisPulse.event.overrides.command.MyModule.restart]
 master = true
 hidden = true
 
-# acl: Command user whitelist/blacklist (cross-command glob)
+# acl: Command user whitelist/blacklist (across commands via glob)
 [ErisPulse.event.overrides.acl."roll*"]
 allow = ["onebot11:u_vip"]
 
-# ACL fallback (false = strict mode: no ACL means reject)
+# ACL fallback (false = strict mode: no ACL means deny)
 acl_default_allow = true
 ```
 
-Runtime API (via `from ErisPulse.Core.Event import overrides` or `sdk.Event.overrides`, **type-specific subnamespaces**—symmetrical `set` / `get` / `delete` trio for each type):
+Runtime API (`from ErisPulse.Core.Event import overrides` or `sdk.Event.overrides`, **type sub-namespace**—each type has symmetric `set` / `get` / `delete` trio):
 
 ```python
 from ErisPulse.Core.Event import overrides
@@ -1422,14 +1424,15 @@ overrides.command.set("MyModule", "restart", master=True)  # command parameter
 overrides.acl.set("roll*", deny=["onebot11:u_bad"])    # command user blacklist
 
 overrides.message.get("ChatModule")     # {"pattern": "闲聊*"}
-overrides.message.delete("ChatModule")  # Restore developer defaults
+overrides.message.delete("ChatModule")  # Restore developer default
 ```
 
-- Overwrite conditions and handler code conditions **both take effect** (AND semantics); `command` parameters and developer declarations **deep merge** (overwrite takes precedence)
-- `detail_types`: Events without `detail_type` are allowed (no accidental killing of unknown events)
-- `pattern` / `regex`: Events without text (connect / heartbeat, etc.) are not constrained and allowed directly
-- `command` overwrite key `master` is synchronized to storage key `must_master`; disabling commands is unified through `acl` deny
-- Configuration changes take effect immediately (hot reload), format validation warnings (unknown parameters / bad entries are ignored)
+- Overwrite conditions and handler code conditions **both take effect** (AND semantics); `command` parameters and developer declarations are **deep merged** (overwrite takes precedence)
+- `detail_types`: Events without `detail_type` are allowed (prevents accidental blocking of unknown events)
+- `pattern` / `regex`: Events without text (e.g., connect / heartbeat) are not constrained and are directly allowed
+- `command` overwrite key `master` synchronously maps to storage key `must_master`; disabled commands go through `acl` deny
+- **Key mapping explanation**: In `overrides.command.set("My", "restart", master=True)`, the parameter name `master` is merely a configuration alias. The actual storage key and the key name in `get()` return value are unified as **`must_master`** (`get()` returns `{"must_master": true}`) — runtime checks read from the storage key, do not read by the `master` key name
+- Configuration changes take effect immediately (hot update), format validation warnings (unknown parameters / bad entries are ignored)
 
 ## Link Control: Claiming and Blocking
 
@@ -1594,17 +1597,17 @@ for platform, bot_list in bots.items():
 summary = sdk.adapter.get_status_summary()
 ```
 
-## Interactive Handling
+## Interactive Processing
 
-### Using reply method to send replies
+### Sending Replies Using the `reply` Method
 
-The `event.reply()` method supports various modifier parameters, making it convenient to send messages with @ mentions, replies, etc.:
+The `event.reply()` method supports various modifiers, making it convenient to send messages with features like @ mentions and replies:
 
 ```python
 # Simple reply
 await event.reply("Hello")
 
-# Send different types of messages
+# Send messages of different types
 await event.reply("http://example.com/image.jpg", method="Image")  # Image
 await event.reply("http://example.com/voice.mp3", method="Voice")  # Voice
 
@@ -1617,37 +1620,40 @@ await event.reply("Hello everyone", at_users=["user1", "user2", "user3"])
 # Reply to a message
 await event.reply("Reply content", reply_to="msg_id")
 
-# @ all members
+# @全体成员 (Mention all members)
 await event.reply("Announcement", at_all=True)
 
-# Combine: @ user + reply to message
+# Combine: @ users + reply to a message
 await event.reply("Content", at_users=["user1"], reply_to="msg_id")
 ```
 
-### Waiting for User Reply
+### Waiting for User Replies
 
 ```python
-@command("ask", help="Ask user")
+@command("ask", help="Ask the user")
 async def ask_handler(event):
     await event.reply("Please enter your name:")
     
-    # Wait for user reply, timeout 30 seconds
+    # Wait for user reply, timeout after 30 seconds
     reply = await event.wait_reply(timeout=30)
     
     if reply:
         name = reply.get_text()
         await event.reply(f"Hello, {name}!")
     else:
-        await event.reply("Timeout, please re-enter.")
+        await event.reply("Timeout, please try again.")
 ```
 
-### Waiting Reply with Validation
+> [!TIP]
+> **Commands remain available during waiting** (2.8.3+): Messages starting with the command prefix and matching registered commands (e.g., `/cancel`) will **execute the command** instead of being treated as reply content, suspending the wait—users can cancel or switch at any time, and after command execution, replies can continue. For the old behavior of "waiting to swallow all text": set `ErisPulse.event.wait_reply.cmdpass = true`, or use `wait_reply(cmdpass=True)` once.
+
+### Waiting for Replies with Validation
 
 ```python
-@command("age", help="Ask age")
+@command("age", help="Ask for age")
 async def age_handler(event):
     def validate_age(event_data):
-        """Validate if age is valid"""
+        """Validate if the age is valid"""
         try:
             age = int(event_data.get_text())
             return 0 <= age <= 150
@@ -1668,7 +1674,7 @@ async def age_handler(event):
         await event.reply("Invalid input or timeout")
 ```
 
-### Waiting Reply with Callback
+### Waiting for Replies with Callback
 
 ```python
 @command("confirm", help="Confirm operation")
@@ -1689,66 +1695,66 @@ async def confirm_handler(event):
     )
 ```
 
-### Confirmation Dialogue (confirm)
+### Confirmation Dialogue (`confirm`)
 
-Wait for user confirmation or negation, automatically recognize built-in Chinese/English confirmation words:
+Wait for user confirmation or negation, automatically recognizing built-in Chinese and English confirmation words:
 
 ```python
 @command("confirm", help="Confirm operation")
 async def confirm_handler(event):
-    if await event.confirm("Are you sure to execute this operation?"):
+    if await event.confirm("Are you sure you want to execute this operation?"):
         await event.reply("Confirmed, executing...")
     else:
         await event.reply("Canceled")
 
 # Custom confirmation words
-if await event.confirm("Continue?", yes_words={"go", "继续"}, no_words={"stop", "停止"}):
+if await event.confirm("Continue?", yes_words={"go", "continue"}, no_words={"stop", "stop"}):
     pass
 ```
 
-### Selection Menu (choose)
+### Selection Menu (`choose`)
 
-User can reply with option number or option text:
+Users can reply with option numbers or option text:
 
 ```python
 @command("choose", help="Choose")
 async def choose_handler(event):
     choice = await event.choose(
         "Please select a color:",
-        ["Red", "Green", "Blue"]
+        ["red", "green", "blue"]
     )
     
     if choice is not None:
-        colors = ["Red", "Green", "Blue"]
+        colors = ["red", "green", "blue"]
         await event.reply(f"You selected: {colors[choice]}")
     else:
-        await event.reply("Timed out, no selection made")
+        await event.reply("Timeout, no selection made")
 ```
 
-**Merge Mode**: `merge_prompt=True` combines options into the prompt message, sending them in a single message via the specified `method`:
+**Merge mode**: When `merge_prompt=True`, options are merged into the prompt message and sent in a single message using the specified `method`:
 
 ```python
-# Send merged prompt + options as Markdown
+# Send merged prompt + options using Markdown
 choice = await event.choose(
     "## Please select a color\n{options}\nPlease reply with the number",
-    ["Red", "Green", "Blue"],
+    ["red", "green", "blue"],
     method="Markdown",
     merge_prompt=True,
 )
 ```
 
-> The `{options}` placeholder controls where options are inserted; if not specified, they are appended to the end of the prompt. You can customize the placeholder via the `placeholder` parameter (e.g., `placeholder="[choices]"`). `options_format="auto"` (default) automatically chooses the style based on the method: unordered list for Markdown, ordered list for Html, plain text list for others. Text-based methods (Text/Markdown/Html, etc.) default to merging options to the end; non-text methods (Image, etc.) default to splitting into two messages.
+> The `{options}` placeholder controls the insertion position of options; if not specified, options are appended to the end of the prompt. You can customize the placeholder using the `placeholder` parameter (e.g., `placeholder="[choices]"`). `options_format="auto"` (default) automatically selects the style based on the method: unordered list for Markdown, ordered list for Html, and plain text list otherwise. For text-based methods (Text/Markdown/Html, etc.), options are merged by default; for non-text methods (Image, etc.), options are sent as separate messages by default.
 
-### Collect Form (collect)
+### Collecting Forms (`collect`)
 
-Collect user input in multiple steps:
+Collect user input across multiple steps:
 
 ```python
 @command("register", help="Register")
 async def register_handler(event):
     data = await event.collect([
         {"key": "name", "prompt": "Please enter your name:"},
-        {"key": "age", "prompt": "Please enter your age:",
+        {"key": "age", "prompt": "Please enter your age:", 
          "validator": lambda e: e.get_text().isdigit()},
         {"key": "email", "prompt": "Please enter your email:"}
     ])
@@ -1756,17 +1762,17 @@ async def register_handler(event):
     if data:
         await event.reply(f"Registration successful!\nName: {data['name']}\nAge: {data['age']}\nEmail: {data['email']}")
     else:
-        await event.reply("Registration timed out or invalid input")
+        await event.reply("Registration timeout or invalid input")
 ```
 
-### Wait for Any Event (wait_for)
+### Waiting for Any Event (`wait_for`)
 
-Wait for an event that meets the condition, not limited to the same user:
+Wait for any event that meets a specified condition, not limited to the same user:
 
 ```python
 @command("wait_member", help="Wait for new member")
 async def wait_member_handler(event):
-    await event.reply("Waiting for group member to join...")
+    await event.reply("Waiting for new member to join...")
     
     evt = await event.wait_for(
         event_type="notice",
@@ -1777,12 +1783,12 @@ async def wait_member_handler(event):
     if evt:
         await event.reply(f"Welcome new member: {evt.get_user_id()}")
     else:
-        await event.reply("Timed out")
+        await event.reply("Timeout")
 ```
 
-### Multi-turn Conversation (conversation)
+### Multi-turn Dialogue (`conversation`)
 
-Create an interactive multi-turn conversation context:
+Create an interactive multi-turn dialogue context:
 
 ```python
 @command("survey", help="Survey")
@@ -1795,7 +1801,7 @@ async def survey_handler(event):
         reply = await conv.wait()
         
         if reply is None:
-            await conv.say("Conversation timed out, goodbye!")
+            await conv.say("Dialogue timeout, goodbye!")
             break
         
         text = reply.get_text()
@@ -1804,15 +1810,15 @@ async def survey_handler(event):
             await conv.say("Goodbye!")
             break
         
-        await conv.say(f"You said: {text}, continue entering or reply 'Exit' to end")
+        await conv.say(f"You said: {text}, continue typing or reply 'Exit' to end")
 ```
 
 ### Built-in Confirmation Words
 
-ErisPulse includes built-in Chinese/English confirmation word sets:
+ErisPulse includes built-in Chinese and English confirmation word sets:
 
-- **Confirmation words** (`CONFIRM_YES_WORDS`): 是, yes, y, confirm, ok, true, 对, 嗯, 行, agree, no problem, ...
-- **Negation words** (`CONFIRM_NO_WORDS`): 否, no, n, cancel, 不, 不要, 不行, false, 错, reject, 不可以, ...
+- **Confirmation words** (`CONFIRM_YES_WORDS`): 是、yes、y、确认、确定、好、好的、ok、true、对、嗯、行、同意、没问题...
+- **Negation words** (`CONFIRM_NO_WORDS`): 否、no、n、取消、不、不要、不行、cancel、false、错、拒绝、不可以...
 
 ## Event Data Access
 
@@ -10181,9 +10187,51 @@ Ownership only recovers **runtime resources registered by module code**. The fol
 
 Runtime temporary writes (`persist=False`) are reclaimed by owner—**persistence is the boundary between "user assets" and "module runtime state."**
 
+## Internal Implementation: How Ownership Works
+
+The ownership system consists of **two independent chains**. Understanding their division of labor is essential for troubleshooting ownership issues:
+
+### Attribution Chain (contextvar Propagation)
+
+The `ContextVar`s in `runtime/context.py`, such as `current_owner`, are responsible for **attribution** — "whom does the resource registered or the call initiated by the code at this moment belong to?" The propagation rules follow the semantics of Python's `contextvars`:
+
+| Execution Path | Context Propagated? | Attribution Result |
+|----------------|---------------------|---------------------|
+| Synchronous call chain / `await` chain | ✅ Propagated | Correct attribution |
+| `asyncio.create_task` within `owner_scope` | ✅ Propagated (task copies context at creation) | Framework calls **inside** the task are correctly attributed |
+| `run_in_executor` / bare thread | ❌ Not propagated | Attribution lost |
+| Custom event loop | ❌ Not propagated | Attribution lost |
+
+> Attribution ≠ Registration: Context propagation only affects "to whom it is attributed." Whether the resource is cleaned up depends on whether it enters the subsequent cancellation chain.
+
+### Cancellation Chain (Task Registry)
+
+The `_owner_tasks` registry in `runtime/tasks.py` manages **lifecycle** — "which unfinished tasks belong to the owner, and cancel them all together during unload." Tasks enter the registry through:
+
+1. **Explicit Scheduling**: `spawn_background()` / `self.spawn()` → captures `current_owner` at creation (or explicitly via `owner=` parameter) → registers into the table;
+2. **Task Factory Automatic Registration** (2.8.3): `install_owner_task_factory()` is installed into the main event loop at framework startup — **any** task creation (including `create_task` inside third-party libraries) is processed by the factory, reading `current_owner`; if not None, it registers.
+
+Registry self-cleans: Each task includes a `done_callback`, and once completed, it is removed from the table, preventing leaks.
+
+### Cancellation Timing (Module Unload)
+
+```
+module.unload()
+  → on_unload(event)                    # Module self-cleans (fallback timeout protection)
+  → Framework deregisters commands/events/hooks/routes for this owner
+  → cancel_owner_tasks(owner)           # Registry fallback cancellation
+      → cancel each task.cancel()       # Excludes the task itself executing cancellation logic
+      → await gather(pending, timeout)  # Wait for cleanup (no blocking after timeout)
+```
+
+### Troubleshooting Approach
+
+- **Resources not cleaned up** → Check the registry: `get_owner_tasks("MyModule")` whether it contains the task; if not, the registration path did not pass through the ownership chain (import phase / thread / independent loop), refer to the table above for identification.
+- **Incorrect attribution** → Check the value of `get_current_owner()` at the time of error; for asynchronously delayed execution (callbacks/tasks), attribution is taken from the context at creation, not at execution time.
+
 ## Module Author Guide
 
-### Recommended Style
+### Recommended Practices
 
 ```python
 from ErisPulse import sdk
@@ -10192,7 +10240,7 @@ from ErisPulse.runtime import owner_scope, spawn_background
 
 class MyModule(BaseModule):
     async def on_load(self, event):
-        # Framework resources: automatically attributed, no manual cleanup needed
+        # Framework resources: automatically owned, no manual cleanup required
         self.task = self.spawn(self.polling())      # Background task
         sdk.router.register_home_entry("My Module", "/my")  # Home entry
 
@@ -10201,16 +10249,31 @@ class MyModule(BaseModule):
             self.client.on_event(self._handle)      # Hypothetical custom registration
 
     async def on_unload(self, event):
-        # Framework resources have been automatically reclaimed; only clean up resources not covered by owner_scope
+        # Framework resources have been automatically cleaned up, only clean up non-owner_scope covered resources
         await self.client.close()
 ```
 
 ### Notes
 
-- **Registration during import has no ownership**: Hooks/handlers registered at the module level (during import) occur before `owner_scope` and are treated as framework-level resources (owner=None) and **not cleaned up**. Always register inside `on_load()`.
-- **Custom i18n domain registration**: If `i18n.register(domain=...)` uses a domain different from the module name, it will not be automatically reclaimed; ensure `domain=module name`.
-- **Background tasks must use `self.spawn()`**: Bare `asyncio.create_task` is not attributed to the module and will not be cancelled on unload (see [Lifecycle Management](lifecycle.md#Background Task Ownership and Automatic Cancellation)).
-- **Cleanup chain "failure only logs warnings"**: Individual cleanup exceptions do not block other resource cleanup; DEBUG/WARNING level logs are visible, and TRACE can be enabled for troubleshooting.
+- **Registration during import has no ownership**: Hooks/handlers registered at the module's top level (during import) occur before `owner_scope`, and are considered framework-level resources (owner=None) and **will not be cleaned up**. Always register inside `on_load()`.
+- **Custom domain i18n registration**: When `i18n.register(domain=...)` uses a domain different from the module name, it won't be automatically cleaned up. Please ensure domain=module name.
+- **Background tasks recommended via `self.spawn()`**: As of 2.8.3, raw `asyncio.create_task` will also **automatically register ownership** (Task Factory automatically registers, cancels on unload as a fallback). However, `self.spawn()` remains the recommended approach—supporting non-main loop thread scheduling back to the main loop, explicit `owner=` assignment, and fire-and-forget to prevent GC. **For versions before 2.8.3**, raw tasks are not owned, and `self.spawn()` must be used.
+- **Cleanup chain "failure only logs warning"**: Single-step cleanup exceptions will not block other resource releases, visible in DEBUG/WARNING log levels; enable TRACE for troubleshooting.
+
+### Registration Timing → Ownership Result Comparison Table
+
+| Registration Scenario | Ownership Result | Explanation |
+|-----------------------|------------------|-------------|
+| Registered inside `on_load()` via framework APIs (commands/events/lifecycle/routing decorators) | Owned by module | Automatically unregistered on unload |
+| Registered at module top level (during import) | **No ownership** (owner=None) | Not cleaned up, do not use |
+| Background tasks created via `self.spawn()` | Owned by module | Automatically cancelled on unload |
+| Registered inside `owner_scope("Name")` via third-party APIs | Owned by module | Depends on third-party callbacks executing synchronously within scope |
+| Raw `asyncio.create_task` (including `loop.create_task` / `ensure_future`) | **Automatic ownership** (Task Factory, 2.8.3+) | Instantly reads `current_owner` on creation, automatically registers within owner context, cancels on unload as a fallback; see [Internal Implementation](#internal-implementation-how-ownership-works) below |
+| Tasks created internally within third-party library asynchronous callbacks (e.g., aiohttp / APScheduler) | **Automatic ownership** (Task Factory, 2.8.3+) | If `current_owner` is injected (e.g., during framework handler execution), the task automatically registers |
+| `run_in_executor` (thread pool) | **No ownership** (not asyncio.Task) | Threads are not managed by Task Factory, lifecycle must be managed manually |
+| Registration within an independent event loop (self-created loop) | **No ownership** | Task Factory is only installed in the main loop; contextvars do not propagate across event loops |
+
+> Principle: **Ownership follows the `current_owner` context at the moment of registration**; any asynchronous delay, thread pools, or independent loops will detach from this context—explicitly enter `owner_scope` when ownership is required.
 
 ## Guide to Utility Modules: Managing Handles for Other Modules
 

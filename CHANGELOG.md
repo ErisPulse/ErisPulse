@@ -74,6 +74,61 @@
 
 ---
 
+## [2.8.4] - 2026/09/19
+> 正式发布
+
+**版本摘要**
+本版本聚焦 CLI 脚手架与环境系统：`init` 支持指定任意目录、生成 `pyproject.toml` 依赖清单并可选创建项目 `.venv`（框架与适配器安装进虚拟环境）；`run` / `install` / `uninstall` / `upgrade` / `list` 全命令感知项目虚拟环境；新增 uv 隔离环境检测与 git / .gitignore / README 脚手架。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 升级原因：CLI 体验优化，框架运行时行为不变；新项目建议直接以 `epsdk init` 建立自包含环境
+
+**注意事项**
+- 新项目由 `pyproject.toml` 声明依赖：请使用 `epsdk run`（自动使用项目 `.venv`）运行机器人，**不要** `uv run epsdk run`——`uv run` 在无项目目录时会创建一次性隔离环境，其中安装的包不会持久化
+- `epsdk install` 在项目内会同步回写 `pyproject.toml` 依赖清单（uv 后端走 `uv add`）
+
+---
+
+## [2.8.4-dev.0] - 2026/09/19
+> 开发版
+
+**版本摘要**
+本版本聚焦 CLI 脚手架与环境系统：`init` 支持指定任意目录并生成 `pyproject.toml`（项目依赖清单）、可选创建项目 `.venv` 并将框架与适配器安装进虚拟环境；`run` / `install` / `uninstall` / `upgrade` 全命令感知项目虚拟环境；新增 uv 隔离环境检测（`uv run` 无项目语义下安装的包不会持久化）与 git / .gitignore / README 脚手架。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 升级原因：CLI 体验优化，框架运行时行为不变
+
+**注意事项**
+- 新项目由 `pyproject.toml` 声明依赖：请使用 `epsdk run`（自动使用项目 `.venv`）运行机器人，**不要** `uv run epsdk run`——`uv run` 在无项目目录时会创建一次性隔离环境，其中安装的包不会持久化
+- `epsdk install` 在项目内会同步回写 `pyproject.toml` 依赖清单（uv 后端走 `uv add`）
+
+### 新增
+
+- @YingXinche
+  - `CLI/commands/init` 初始化命令支持指定任意目录与项目环境自包含：
+    - 位置参数 `epsdk init ../apps/mybot` 与 `--path <父目录>` 组合 `-n` 支持任意创建位置（名称校验仅针对末段，`--here` 语义不变）
+    - 生成 `pyproject.toml` 依赖清单（`erispulse` 与所选适配器包写入 `dependencies`）
+    - 可选创建项目 `.venv` 并安装依赖：uv 可用走 `uv add`（建环境 + 装包 + 写清单一步完成），回退 `python -m venv` + pip 安装 + 手动回写依赖清单
+    - 交互模式新增虚拟环境创建问询（默认是）与 git 仓库初始化问询；固定生成 `.gitignore`（logs / `.venv` / ssl 证书等）与 `README.md` 骨架
+    - 新增 `--no-venv` 参数跳过环境创建
+  - `CLI/commands/run` `epsdk run` 使用项目 `.venv` 解释器运行机器人：
+    - 解析优先级：`ERISPULSE_PYTHON` 环境变量 > 项目 `.venv` > `VIRTUAL_ENV` > 当前解释器（带来源提示）
+    - `install` / `uninstall` / `upgrade` / `list` / `list-remote` / `types` 同步感知项目虚拟环境——列出的组件、安装/卸载的目标均为项目环境
+  - `CLI/utils/package_manager` 新增环境基建函数：
+    - `resolve_target_python()` 统一目标解释器解析（全命令共用一份实现）
+    - `create_project_venv()`（uv venv 优先 / `python -m venv` 回退）、`uv_add()`（安装 + 写清单一步完成）、`append_pyproject_dependencies()`（tomlkit 保格式回写 + 去重）
+    - `warn_if_uv_isolated()` uv 隔离环境检测：`uv run` 无项目语义下创建一次性隔离空间、安装的包不会持久化——检测到该场景时输出警告引导使用项目目录与 `epsdk run`
+
+### 优化
+
+- @YingXinche
+  - `CLI/commands/doctor` 环境诊断新增「项目虚拟环境」检测项：显示 `.venv` 解释器路径与 venv 内 pip 可用性（uv 后端替代时如实标注）
+  - `CLI/i18n` 五语言新增 CLI 词条（目录/虚拟环境/依赖安装/git 问询等全流程文案）
+
+---
+
 ## [2.8.3] - 2026/09/18
 > 正式发布
 
