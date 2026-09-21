@@ -4,24 +4,32 @@
 
 ## 內容列表
 
-### 模塊開發
+### 模組開發
 
-1. [模塊開發入門](modules/getting-started.md) - 創建第一個模塊
-2. [模塊核心概念](modules/core-concepts.md) - 模塊的核心概念和架構
+1. [模組開發入門](modules/getting-started.md) - 創建第一個模組
+2. [模組核心概念](modules/core-concepts.md) - 模組的核心概念和架構
 3. [Event 包裝類詳解](modules/event-wrapper.md) - Event 對象的完整說明
-4. [模塊最佳實踐](modules/best-practices.md) - 開發高品質模塊的建議
+4. [模組最佳實踐](modules/best-practices.md) - 開發高品質模組的建議
 
-### 適配器開發
+### 數據模型
 
-1. [適配器開發入門](adapters/getting-started.md) - 創建第一個適配器
-2. [適配器核心概念](adapters/core-concepts.md) - 適配器的核心概念
-3. [SendDSL 詳解](adapters/send-dsl.md) - Send 消息發送 DSL 的完整說明
+1. [數據模型層（ORM）](orm.md) - 聲明式模型、自動建表與增刪改查
+
+### 适配器開發
+
+1. [适配器开发入门](adapters/getting-started.md) - 創建第一個适配器
+2. [适配器核心概念](adapters/core-concepts.md) - 适配器的核心概念
+3. [SendDSL 详解](adapters/send-dsl.md) - Send 消息發送 DSL 的完整說明
 4. [事件轉換器](adapters/converter.md) - 實現事件轉換器
-5. [適配器最佳實踐](adapters/best-practices.md) - 開發高品質適配器的建議
+5. [适配器最佳实践](adapters/best-practices.md) - 開發高品質适配器的建議
+
+### 測試與排查
+
+1. [模組測試（ErisPulse-Testing）](testing.md) - TestBot、事件工廠與斷言面
 
 ### 發布指南
 
-- [發布與模塊商店指南](publishing.md) - 將你的作品發布到 PyPI 和 ErisPulse 模塊商店
+- [發布與模組商店指南](publishing.md) - 將你的作品發布到 PyPI 和 ErisPulse 模組商店
 
 ## 開發準備
 

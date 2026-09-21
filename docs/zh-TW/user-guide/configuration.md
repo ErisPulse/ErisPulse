@@ -59,9 +59,9 @@ CLI 配置向導儲存還是適配器/模組首次生成配置範本，框架都
 
 ## 環境變數覆蓋
 
-框架支援用環境變數**覆蓋** `ErisPulse.*` 配置項（適合 Docker / 容器化 / CI 部署，無需修改 `config.toml`）。
+框架支援使用環境變數**覆蓋** `ErisPulse.*` 配置項（適合 Docker / 容器化 / CI 部署，無需修改 `config.toml`）。
 
-命名規則：把點分路徑 `ErisPulse.<section>.<key>` 改為全大寫、`.` 替換為 `_`，並加上 `ERISPULSE_` 前綴：
+命名規則：將點分路徑 `ErisPulse.<section>.<key>` 改為全大寫、`.` 替換為 `_`，並加上 `ERISPULSE_` 前綴：
 
 | 配置項 | 環境變數 | 示例值 |
 |--------|---------|--------|
@@ -81,6 +81,32 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 ```
 
 > 註：`ErisPulse.server.port` 這類框架配置走 `get_server_config()` 等 API 讀取，均受環境變數覆蓋影響。
+
+### 模組配置的環境變數綁定（2.9.0+）
+
+模組自己的宣告式配置（`ConfigClass`）支援欄位級環境變數綁定——在 `field(metadata=...)` 中宣告 `env`：
+
+```python
+@dataclass
+class MyConfig(BaseConfig):
+    api_key: str = field(default="", metadata={
+        "description": "API 密鑰",
+        "env": "MYMODULE_API_KEY",   # 環境變數綁定
+    })
+    retries: int = field(default=3, metadata={"env": "MYMODULE_RETRIES"})
+```
+
+行為說明：
+
+- **優先級**：環境變數 > `config.toml` > 宣告預設值（配置文件熱更新後同樣保持此優先級）
+- **類型轉換**：環境變數值按欄位註解自動轉換——`str` 原樣、`int` / `float` / `bool`（`true` / `1` / `yes` / `on`）自動轉換、`list` / `dict` 走 JSON 解析；轉換失敗時忽略該覆蓋（回退配置文件 / 預設值）並輸出告警
+- **宣告一次、處處生效**：配置讀取、熱更新、校驗使用同一管道；配置面板 Schema 會標註 `env` 名，`config.toml` 模板註釋也會提示可用的環境變數（模板不寫入環境變數的實際值，避免洩露）
+- **完全相容**：未宣告 `env` 的欄位行為不變；直接實例化 ConfigClass（不經框架配置管道）不受環境變數影響
+
+```bash
+# Docker 部署示例：不修改 config.toml，直接注入模組密鑰
+MYMODULE_API_KEY=sk-xxx docker compose up -d
+```
 
 ## 配置熱更新
 

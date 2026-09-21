@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "hash": "78036019e77157ecce23a491a460a197",
+  "file_hash": "78036019e77157ecce23a491a460a197",
+  "translated_at": "2026-09-21T14:38:52.991521",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "436e5f0a864bb691cd650d32514a9996",
+      "translation": "# Data Model Layer (ORM)\n\nStarting from version 2.9.0, the framework includes a built-in declarative data model layer: by inheriting `Model` and declaring fields using `Field`, you automatically gain capabilities for table creation and CRUD operations. The models are built directly on top of the built-in storage layer—SQLite, MySQL, or PostgreSQL is determined by the `ErisPulse.storage.backend` configuration. **Switching the backend requires no changes to the model code.**"
+    },
+    {
+      "hash": "c1b572c8a25677998e6ff5138ed757d1",
+      "translation": "## Model Declaration\n\n```python\nfrom ErisPulse.Core.Bases import Model, Field\n\nclass User(Model):\n    id: int = Field(primary_key=True, autoincrement=True)\n    name: str = Field(max_length=64)\n    age: int = Field(default=0, ge=0, le=150)\n    role: str = Field(default=\"user\", choices=[\"user\", \"admin\"])\n    tags: list = Field(default_factory=list)          # JSON column, automatically serialized on read/write\n    bio: str = Field(default=\"\", description={\"i18n\": \"user.bio\", \"default\": \"Introduction\"})\n```\n\n- The table name is automatically derived from the class name in snake_case (`UserProfile → user_profile`), and can be overridden using `__tablename__ = \"xxx\"`\n- The constraint options for `Field` are consistent with the declarative configuration class (`choices` / `ge` / `le` / `max_length`, `description` also supports i18n dictionary); the validator engine shares the same source as configuration validation"
+    },
+    {
+      "hash": "2250175b6f3cfb6c4ae127c1ca94f673",
+      "translation": "## Field Parameters\n\n| Parameter | Description |\n|-----------|-------------|\n| `default` | Default value (required NOT NULL if not provided and not auto-increment) |\n| `default_factory` | Factory for mutable default values (e.g., `list`) |\n| `primary_key` | Primary key |\n| `autoincrement` | Auto-incrementing primary key (implicitly a primary key, automatically filled after `create`) |\n| `max_length` | Maximum string length (generates `VARCHAR(n)`, validation on write) |\n| `nullable` | Whether NULL is allowed (default False) |\n| `index` | Generate regular index |\n| `unique` | Unique constraint |\n| `choices` / `ge` / `le` | Enum / numeric range (validation on write) |\n| `description` | Description (i18n dictionary, same format as configuration class) |\n| `column_type` | Override SQL column type definition |"
+    },
+    {
+      "hash": "e66d4fa207a283a011577d62cf31457f",
+      "translation": "## Table Creation and CRUD\n\n```python\nawait User.create_table()                      # Idempotent (IF NOT EXISTS)\n\nuser = await User.create(name=\"Alice\", age=20) # Insert (auto-increment primary key is automatically filled back)\ngot = await User.get(id=user.id)               # Get the first record by exact match\n\nusers = await User.where(User.age > 18).order_by(\"-age\").limit(10).all()\nfirst = await User.where(User.name == \"Alice\").first()\ntotal = await User.count(User.age > 18)\n\nuser.age = 21\nawait user.save()                              # Update by primary key (with constraint validation); if primary key is missing, it falls back to insert (auto-increment primary key is also filled back to the instance)\nawait user.delete()                            # Delete by primary key\n\nawait User.update_all(User.age > 18, role=\"adult\")  # Batch update\nawait User.delete_all(User.age > 100)               # Batch delete\n```\n\nQuery expressions support `> >= < <= == !=`, `in_([...])`, and combinations using `&` (AND) / `|` (OR):\n\n```python\nawait User.where((User.age > 18) & User.name.in_([\"Alice\", \"Bob\"])).all()\n```"
+    },
+    {
+      "hash": "169054700cd60a4cc73604923c492e9a",
+      "translation": "## Transactions\n\nThe ORM's read and write operations share the same transaction routing as the framework's storage layer: within the `storage.atransaction()` context, `create`, `save`, `delete`, and queries automatically reuse the transaction connection, committing or rolling back together with the transaction, and will not be committed independently.\n\n```python\nasync with storage.atransaction():\n    await User.create(name=\"Alice\")\n    ...  # If an exception is thrown within the block, the above INSERT will also be rolled back\n```"
+    },
+    {
+      "hash": "d3213f4ba15862cae2a37aff953f3c34",
+      "translation": "## Relationship with Declarative Configuration Classes\n\nModel declarations and `ConfigClass` (`@dataclass + field(metadata=...)`) **share the same underlying system**—constraint vocabulary, validator engine (`validate_field_constraints`), and type category registry (`python_type_category`). However, their class bases are intentionally separated: configuration fields are ordinary values (TOML round-trip, hot reload on single load), while model fields are column descriptors (class access = query expression, row-by-row instance). One declaration syntax, two distinct bases, each serving their own purpose."
+    },
+    {
+      "hash": "cc29020da1e377ef8ada6594097eb1c7",
+      "translation": "## Boundaries and Considerations\n\n- The backend is determined by the global storage configuration; models can override this with a custom `BaseStorage` instance via the `__storage__` class attribute (for test injection purposes).\n- Fields of type `list` / `dict` (including parameterized generics such as `list[int]` or `dict[str, int]`) are stored as JSON text according to their container type, with automatic serialization on read and write.\n- Constraint validation is automatically executed before writing (`create` / `save`), and a failure throws a `ValueError` with a localized message.\n- Automatic migration (schema diff) and relationship mapping are planned as future features.\n- Behavior on storage connection failure is consistent with the storage layer: the framework does not crash, and automatic reconnection occurs after a cooldown period."
+    }
+  ]
+}

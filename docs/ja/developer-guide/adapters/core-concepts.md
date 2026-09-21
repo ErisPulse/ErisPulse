@@ -43,37 +43,37 @@ ErisPulseアダプタのコアコンセプトを理解することは、アダ�
 - **正方向変換**（Converter）：プラットフォーム独自イベント → OneBot12標準イベント、元データは`{platform}_raw`に保持
 - **逆方向変換**（Raw_ob12）：OneBot12メッセージセグメント → プラットフォームAPI呼び出し、返却は標準レスポンス形式
 
-## AdapterManager アダプタマネージャー
+## AdapterManager 适配器管理器
 
-`AdapterManager`はErisPulseアダプタシステムのコアコンポーネントで、すべてのプラットフォームアダプタの登録、起動、停止、イベント配信を管理します。
+`AdapterManager` は、ErisPulse におけるアダプタシステムの中心となるコンポーネントであり、すべてのプラットフォームアダプタの登録、起動、停止、およびイベントの配信を管理します。
 
-### コア機能
+### 核心機能
 
-- **アダプタ登録**：複数のプラットフォームアダプタを登録・管理
+- **アダプタの登録**：複数のプラットフォームアダプタの登録と管理
 - **ライフサイクル管理**：アダプタの起動と停止を制御
-- **イベント配信**：OneBot12標準イベントとプラットフォーム独自イベントを配信
+- **イベント配信**：OneBot12 標準イベントとプラットフォーム固有のイベントを配信
 - **設定管理**：アダプタの有効/無効状態を管理
-- **ミドルウェアサポート**：OneBot12イベントミドルウェアをサポート
+- **ミドルウェアサポート**：OneBot12 イベントミドルウェアをサポート
 
-### 基本使用
+### 基本的な使用方法
 
 ```python
 from ErisPulse import sdk
 
-# アダプタの登録（通常Loaderが自動的に実行）
+# アダプタの登録（通常は Loader が自動で行う）
 sdk.adapter.register("myplatform", MyPlatformAdapter)
 
 # すべてのアダプタを起動
 await sdk.adapter.startup()
 
-# 指定プラットフォームを起動
+# 指定のアダプタを起動
 await sdk.adapter.startup(["myplatform"])
 # すべてのアダプタを起動
 await sdk.adapter.startup()
 
-# アダプタインスタンスの取得
+# アダプタのインスタンスを取得
 my_adapter = sdk.adapter.get("myplatform")
-# または属性アクセス
+# または属性アクセスで取得
 my_adapter = sdk.adapter.myplatform
 
 # すべてのアダプタを停止
@@ -88,22 +88,22 @@ await sdk.adapter.shutdown()
 # すべての登録済みアダプタを起動
 await sdk.adapter.startup()
 
-# 指定プラットフォームを起動
+# 指定のプラットフォームを起動
 await sdk.adapter.startup(["platform1", "platform2"])
 ```
 
-**起動プロセス**：
+**起動フロー:**
 
-1. `adapter.start`ライフサイクルイベントを送信
-2. `adapter.status.change`イベントを送信（starting）
-3. 各アダプタを並行起動
-4. 起動失敗時は指数バックオフ戦略で自動リトライ
-5. 起動成功後`adapter.status.change`イベントを送信（started）
+1. `adapter.start` ライフサイクルイベントを送信
+2. `adapter.status.change` イベントを送信（starting）
+3. 各アダプタを並行して起動
+4. 起動に失敗した場合、指数バックオフ戦略で自動的に再試行
+5. 起動成功後に `adapter.status.change` イベントを送信（started）
 
-**リトライメカニズム**：
+**再試行メカニズム:**
 
-- 最初の4回：60秒、10分、30分、60分
-- 5回目以降：3時間固定間隔
+- 最初の4回の再試行：60秒、10分、30分、60分
+- 5回目以降：3時間の固定間隔
 
 #### アダプタの停止
 
@@ -112,17 +112,17 @@ await sdk.adapter.startup(["platform1", "platform2"])
 await sdk.adapter.shutdown()
 ```
 
-**停止プロセス**：
+**停止フロー:**
 
-1. `adapter.stop`ライフサイクルイベントを送信
-2. すべてのアダプタの`shutdown()`メソッドを呼び出す
+1. `adapter.stop` ライフサイクルイベントを送信
+2. すべてのアダプタの `shutdown()` メソッドを呼び出す
 3. ルーティングサーバーを停止
 4. イベントハンドラをクリア
-5. `adapter.stopped`ライフサイクルイベントを送信
+5. `adapter.stopped` ライフサイクルイベントを送信
 
 ### 設定管理
 
-#### プラットフォームのステータス確認
+#### プラットフォームの状態確認
 
 ```python
 # プラットフォームが登録されているか確認
@@ -131,18 +131,18 @@ exists = sdk.adapter.exists("myplatform")
 # プラットフォームが有効か確認
 enabled = sdk.adapter.is_enabled("myplatform")
 
-# in演算子を使用
+# in 演算子を使用
 if "myplatform" in sdk.adapter:
-    print("プラットフォームが存在し、有効です")
+    print("プラットフォームは存在し、有効です")
 ```
 
 #### プラットフォームの一覧表示
 
 ```python
-# すべての登録済みプラットフォームをリスト
+# すべての登録済みプラットフォームを取得
 platforms = sdk.adapter.list_registered()
 
-# すべてのプラットフォームとそのステータスをリスト
+# すべてのプラットフォームとその状態を取得
 status_dict = sdk.adapter.list_items()
 # 戻り値: {"platform1": true, "platform2": false, ...}
 
@@ -152,7 +152,7 @@ enabled_platforms = [p for p, enabled in status_dict.items() if enabled]
 
 ### イベントの監視
 
-#### OneBot12標準イベント
+#### OneBot12 標準イベント
 
 ```python
 from ErisPulse import sdk
@@ -160,46 +160,46 @@ from ErisPulse import sdk
 # すべてのプラットフォームの標準メッセージイベントを監視
 @sdk.adapter.on("message")
 async def handle_message(data):
-    print(f"OneBot12メッセージを受信: {data}")
+    print(f"OneBot12 消息を受け取りました: {data}")
 
 # 特定プラットフォームの標準メッセージイベントを監視
 @sdk.adapter.on("message", platform="myplatform")
 async def handle_platform_message(data):
-    print(f"myplatformメッセージを受信: {data}")
+    print(f"myplatform 消息を受け取りました: {data}")
 
 # すべてのイベントを監視
 @sdk.adapter.on("*")
 async def handle_any_event(data):
-    print(f"イベントを受信: {data.get('type')}")
+    print(f"イベントを受け取りました: {data.get('type')}")
 ```
 
-#### プラットフォーム独自イベント
+#### プラットフォーム固有イベント
 
 ```python
-# 特定プラットフォームの独自イベントを監視
+# 特定プラットフォームの固有イベントを監視
 @sdk.adapter.on("raw_event_type", raw=True, platform="myplatform")
 async def handle_raw_event(data):
-    print(f"独自イベントを受信: {data}")
+    print(f"固有イベントを受け取りました: {data}")
 
-# すべてのプラットフォームの独自イベントを監視（ワイルドカード）
+# すべてのプラットフォームの固有イベントを監視（ワイルドカード）
 @sdk.adapter.on("*", raw=True)
 async def handle_all_raw_events(data):
-    print(f"独自イベントを受信: {data}")
+    print(f"固有イベントを受け取りました: {data}")
 ```
 
 #### イベント配信メカニズム
 
-`adapter.emit(event_data)`を呼び出したとき：
+`adapter.emit(event_data)` を呼び出すと、以下の処理が行われます。
 
-1. **ミドルウェア処理**：まずすべてのOneBot12ミドルウェアを実行
-2. **標準イベント配信**：マッチするOneBot12イベントハンドラに配信
-3. **独自イベント配信**：元データがあれば独自イベントハンドラに配信
+1. **ミドルウェア処理**：すべての OneBot12 ミドルウェアを実行
+2. **標準イベント配信**：一致する OneBot12 イベントハンドラに配信
+3. **固有イベント配信**：元のデータがある場合、固有イベントハンドラに配信
 
-**マッチルール**：
+**一致ルール:**
 
-- 精確マッチ：`@sdk.adapter.on("message")`は`message`イベントのみマッチ
-- ワイルドカード：`@sdk.adapter.on("*")`はすべてのイベントにマッチ
-- プラットフォームフィルタ：`platform="myplatform"`は指定プラットフォームのイベントのみ配信
+- 精確一致：`@sdk.adapter.on("message")` は `message` イベントのみを一致
+- ワイルドカード：`@sdk.adapter.on("*")` はすべてのイベントを一致
+- プラットフォームフィルタ：`platform="myplatform"` は指定プラットフォームのイベントのみを配信
 
 ### ミドルウェア
 
@@ -209,28 +209,53 @@ async def handle_all_raw_events(data):
 @sdk.adapter.middleware
 async def logging_middleware(data):
     """ログ記録ミドルウェア"""
-    print(f"イベントを処理: {data.get('type')}")
-    return data  # 必須でデータを返す
+    print(f"イベントを処理中: {data.get('type')}")
+    return data  # 必ずデータを返す必要がある
 
 @sdk.adapter.middleware
 async def filter_middleware(data):
-    """イベントフィルタミドルウェア"""
-    # 不要なイベントをフィルタ
+    """イベントフィルタリングミドルウェア"""
+    # 不要なイベントをフィルタリング
     if data.get("type") == "notice":
-        return None  # Noneを返すとミドルウェアチェーンはその返り値を無視し、元のデータを引き続き伝播
-    return data  # 必須でデータを返すことで伝播を続ける
+        return None  # None を返す場合、ミドルウェアチェーンはその返り値を無視し、元のデータをそのまま次に渡す
+    return data  # 必ずデータを返すことで次に渡す
+
+```
+
+#### ミドルウェアの返り値契約
+
+| 返り値 | 行動 |
+|--------|------|
+| `dict` | イベントの負荷を上書き（後続のハンドラは上書きされたイベントを受け取る） |
+| `None` | 放行、負荷は変更なし（警告レベルのログを出力するため、明示的に `return data` を使用することを推奨） |
+| `False` | **否決**：イベントはドロップされ、ハンドラには届かない、出力副作用も一切発生しない |
+
+否決は、ファイアウォール、リクエスト制限、ブラックリストなど、イベント単位で直接ドロップする場面に使用される（以前は高優先度のイベントハンドラで回避するしかなかった）。否決された場合、フレームワークは TRACE ログを出力し、`adapter.event.blocked` ライフサイクルフックをトリガー（`middleware` ミドルウェア名、完全な `event`、`platform` / `event_type` / `detail_type` を含む）し、"なぜイベントが反応しなかったのか"を調査できるようにする。
+
+```python
+@sdk.adapter.middleware
+async def rate_limit_middleware(data):
+    """リクエスト制限ミドルウェア"""
+    if _is_rate_limited(data):
+        return False  # 否決：イベントはドロップされる
+    data["rate_marked"] = True
+    return data
+
+@sdk.lifecycle.on("adapter.event.blocked")
+async def on_event_blocked(data):
+    print(f"イベントは {data['middleware']} によって否決されました: {data['event_type']}")
 ```
 
 #### ミドルウェアの実行順序
 
 ミドルウェアは登録順に実行され、後から登録されたミドルウェアが先に実行されます。
 
-> **注意**：ミドルウェアが`None`を返した場合（`return data`を忘れているなど）、フレームワークはその返り値を無視し元のデータを引き続き伝播し、warningレベルのログを出力します。これにより、1つのミドルウェアのミスがイベントチェーン全体を中断することはありません。
+> **注意**：ミドルウェアが `None` を返した場合（たとえば `return data` を忘れている場合）、フレームワークはその返り値を無視して元のデータをそのまま次に渡し、警告レベルのログを出力します。これにより、単一のミドルウェアのミスがイベントチェーン全体を中断することを防ぎます。
 
 ```python
-# 登録順
+# 登録順序
 sdk.adapter.middleware(middleware1)  # 最後に実行
-sdk.adapter.middleware(middleware2)  # 中間実行
+sdk.adapter.middleware(middleware2)  # 中間に実行
 sdk.adapter.middleware(middleware3)  # 最初に実行
 
 # 実行順序：middleware3 -> middleware2 -> middleware1
@@ -238,7 +263,7 @@ sdk.adapter.middleware(middleware3)  # 最初に実行
 
 ### アダプタインスタンスの取得
 
-#### get()メソッド
+#### get() メソッド
 
 ```python
 adapter = sdk.adapter.get("myplatform")

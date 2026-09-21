@@ -45,14 +45,14 @@ Forward Conversion (Receiving Direction)                           Reverse Conve
 
 ## AdapterManager Adapter Manager
 
-`AdapterManager` is the core component of the ErisPulse adapter system, responsible for managing all platform adapters' registration, startup, shutdown, and event distribution.
+`AdapterManager` is the core component of ErisPulse's adapter system, responsible for managing the registration, startup, shutdown, and event distribution of all platform adapters.
 
-### Core Functions
+### Core Features
 
 - **Adapter Registration**: Register and manage multiple platform adapters
-- **Lifecycle Management**: Control adapter startup and shutdown
-- **Event Distribution**: Distribute OneBot12 standard events and native platform events
-- **Configuration Management**: Manage adapter enable/disable status
+- **Lifecycle Management**: Control the startup and shutdown of adapters
+- **Event Distribution**: Distribute OneBot12 standard events and platform-native events
+- **Configuration Management**: Manage the enabled/disabled status of adapters
 - **Middleware Support**: Support OneBot12 event middleware
 
 ### Basic Usage
@@ -60,13 +60,13 @@ Forward Conversion (Receiving Direction)                           Reverse Conve
 ```python
 from ErisPulse import sdk
 
-# Register adapter (usually handled automatically by Loader)
+# Register adapters (usually done automatically by Loader)
 sdk.adapter.register("myplatform", MyPlatformAdapter)
 
 # Start all adapters
 await sdk.adapter.startup()
 
-# Start specified adapter
+# Start specified adapters
 await sdk.adapter.startup(["myplatform"])
 # Start all adapters
 await sdk.adapter.startup()
@@ -82,41 +82,41 @@ await sdk.adapter.shutdown()
 
 ### Startup and Shutdown
 
-#### Start Adapter
+#### Start Adapters
 
 ```python
 # Start all registered adapters
 await sdk.adapter.startup()
 
-# Start specified platform
+# Start specified platforms
 await sdk.adapter.startup(["platform1", "platform2"])
 ```
 
-**Startup Process**:
+**Startup Process:**
 
 1. Submit `adapter.start` lifecycle event
 2. Submit `adapter.status.change` event (starting)
-3. Parallel start of each adapter
+3. Parallel start each adapter
 4. If startup fails, automatically retry (exponential backoff strategy)
 5. After successful startup, submit `adapter.status.change` event (started)
 
-**Retry Mechanism**:
+**Retry Mechanism:**
 
 - First 4 retries: 60 seconds, 10 minutes, 30 minutes, 60 minutes
-- 5th and subsequent: Fixed interval of 3 hours
+- 5th and later: Fixed interval of 3 hours
 
-#### Shutdown Adapter
+#### Shutdown Adapters
 
 ```python
 # Shutdown all adapters
 await sdk.adapter.shutdown()
 ```
 
-**Shutdown Process**:
+**Shutdown Process:**
 
 1. Submit `adapter.stop` lifecycle event
-2. Call all adapters' `shutdown()` method
-3. Shutdown routing server
+2. Call `shutdown()` method for all adapters
+3. Shutdown router server
 4. Clear event handlers
 5. Submit `adapter.stopped` lifecycle event
 
@@ -157,31 +157,31 @@ enabled_platforms = [p for p, enabled in status_dict.items() if enabled]
 ```python
 from ErisPulse import sdk
 
-# Listen to all standard message events
+# Listen for standard message events from all platforms
 @sdk.adapter.on("message")
 async def handle_message(data):
     print(f"Received OneBot12 message: {data}")
 
-# Listen to standard message events for specific platform
+# Listen for standard message events from a specific platform
 @sdk.adapter.on("message", platform="myplatform")
 async def handle_platform_message(data):
-    print(f"Received message from myplatform: {data}")
+    print(f"Received myplatform message: {data}")
 
-# Listen to all events
+# Listen for all events
 @sdk.adapter.on("*")
 async def handle_any_event(data):
     print(f"Received event: {data.get('type')}")
 ```
 
-#### Native Platform Events
+#### Platform Native Events
 
 ```python
-# Listen to specific native event
+# Listen for native events from a specific platform
 @sdk.adapter.on("raw_event_type", raw=True, platform="myplatform")
 async def handle_raw_event(data):
     print(f"Received native event: {data}")
 
-# Listen to all native events (wildcard)
+# Listen for native events from all platforms (wildcard)
 @sdk.adapter.on("*", raw=True)
 async def handle_all_raw_events(data):
     print(f"Received native event: {data}")
@@ -195,13 +195,13 @@ When calling `adapter.emit(event_data)`:
 2. **Standard Event Distribution**: Distribute to matching OneBot12 event handlers
 3. **Native Event Distribution**: If raw data exists, distribute to native event handlers
 
-**Matching Rules**:
+**Matching Rules:**
 
 - Exact match: `@sdk.adapter.on("message")` only matches `message` events
 - Wildcard: `@sdk.adapter.on("*")` matches all events
 - Platform filtering: `platform="myplatform"` only distributes events from the specified platform
 
-### Middlewares
+### Middleware
 
 #### Add Middleware
 
@@ -217,21 +217,45 @@ async def filter_middleware(data):
     """Event filtering middleware"""
     # Filter out unwanted events
     if data.get("type") == "notice":
-        return None  # If None is returned, middleware chain ignores this return value, preserving original data for continuation
-    return data  # Must return data to continue propagation
+        return None  # Returning None means the middleware chain ignores this return value, keeping original data for further processing
+    return data  # Must return data to continue passing
+```
+
+#### Middleware Return Contract
+
+| Return Value | Behavior |
+|--------------|----------|
+| `dict`       | Rewrite event payload (subsequent handlers receive rewritten event) |
+| `None`       | Allow passage, payload unchanged (outputs WARNING log — recommend explicit `return data`) |
+| `False`      | **Reject**: Event is discarded, not passed to any handler, no outbound side effects |
+
+Reject is suitable for firewall, rate limiting, blacklist scenarios where events are discarded at the event level ("direct discard at event level") (previously only achievable via high-priority event handlers). When rejecting, the framework outputs TRACE log and triggers the `adapter.event.blocked` lifecycle hook (carrying `middleware` middleware name, full `event`, `platform` / `event_type` / `detail_type`), facilitating troubleshooting of "why an event received no response":
+
+```python
+@sdk.adapter.middleware
+async def rate_limit_middleware(data):
+    """Rate limiting middleware"""
+    if _is_rate_limited(data):
+        return False  # Reject: event is discarded
+    data["rate_marked"] = True
+    return data
+
+@sdk.lifecycle.on("adapter.event.blocked")
+async def on_event_blocked(data):
+    print(f"Event rejected by {data['middleware']}: {data['event_type']}")
 ```
 
 #### Middleware Execution Order
 
-Middlewares execute in registration order, with later registered middlewares executed first.
+Middlewares execute in registration order, with later-registered middlewares executing first.
 
-> **Note**: If a middleware returns `None` (e.g., forgetting `return data`), the framework will ignore this return value and preserve the original data for continuation, while outputting a warning-level log. This ensures that a single middleware failure does not interrupt the entire event chain.
+> **Note**: If a middleware returns `None` (e.g., forgetting to `return data`), the framework ignores this return value and continues passing the original data, while outputting a warning-level log. This ensures that a single middleware mistake does not interrupt the entire event chain.
 
 ```python
 # Registration order
-sdk.adapter.middleware(middleware1)  # Last to execute
-sdk.adapter.middleware(middleware2)  # Middle execution
-sdk.adapter.middleware(middleware3)  # First to execute
+sdk.adapter.middleware(middleware1)  # Executes last
+sdk.adapter.middleware(middleware2)  # Executes in the middle
+sdk.adapter.middleware(middleware3)  # Executes first
 
 # Execution order: middleware3 -> middleware2 -> middleware1
 ```

@@ -86,18 +86,18 @@ async def combined_handler(event: Event):
 
 `wait_reply` also supports these two parameters (see [Wait for Reply Functionality](../developer-guide/modules/event-wrapper.md#wait-for-reply-functionality)).
 
-## Handling Command Events
+## Command Event Handling
 
 ### Basic Commands
 
 ```python
 from ErisPulse.Core.Event import command
 
-@command("help", help="Display help information")
+@command("help", help="Show help information")
 async def help_handler(event):
     help_text = """
 Available commands:
-/help - Display help
+/help - Show help
 /ping - Test connection
 /info - View information
     """
@@ -107,7 +107,7 @@ Available commands:
 ### Command Aliases
 
 ```python
-@command(["help", "h"], aliases=["帮助"], help="Display help information")
+@command(["help", "h"], aliases=["帮助"], help="Show help information")
 async def help_handler(event):
     await event.reply("Help information...")
 ```
@@ -131,7 +131,99 @@ async def echo_handler(event):
         await event.reply(f"You said: {' '.join(args)}")
 ```
 
-Arguments retain the original case of the user's input (even if configured to be case-insensitive, case normalization for command name matching does not affect the argument content).
+Arguments preserve the original case of user input (even if configured to be case-insensitive, command name matching normalization does not affect argument content).
+
+### Declarative Arguments and Options (`args=` / `options=`)
+
+Manual argument parsing requires handling type conversion and error messages yourself. After declaring `args=` / `options=`, the framework automatically parses command arguments and injects them by name into the handler after permission checks pass; when users input incorrectly, it automatically replies with localized error messages and usage (without throwing an exception crash), and `/help <command>` automatically displays usage:
+
+```python
+@command(
+    "roll",
+    args="<count:int> [sides:int=6]",
+    options={"verbose": "-v/--verbose", "label": "--label"},
+    help="Roll dice",
+)
+async def roll_handler(event, count: int, sides: int = 6, verbose: bool = False, label: str = ""):
+    total = sum(random.randint(1, sides) for _ in range(count))
+    await event.reply(f"Rolled {count} dice with {sides} sides, total points: {total}")
+```
+
+`args=` positional argument syntax: `<count:int>` required, `[sides:int=6]` optional (with default value). Supported types:
+
+| Type | Example Input | Description |
+|------|---------|------|
+| `str` | `hello` | Text (default type) |
+| `int` / `float` | `3` / `0.5` | Numeric |
+| `bool` | `是` / `yes` / `はい` / `да` / `true` / `no` / `取消` | Boolean, reuses confirmation word list from `Event.confirm()` |
+| `literal` | `<mode:literal=fast|slow>` | Enum, only accepts listed values; optional form defaults to first |
+| `duration` | `90s`、`1h30m`、`1d` | Duration, converted to float in seconds |
+| `rest` | `<text:rest>` | Remaining full text (must be last) |
+
+`options=` options are declared as a dictionary: key is the handler parameter name, value is the flag form (multiple aliases separated by `/`). Parameters annotated as `bool` are boolean flags (set to `True` if present); others (defaulting to `str`) are value options, supporting both `--label hello` and `--label=hello` value forms, with type following the handler annotation. Options are first recognized and removed, remaining tokens are parsed according to `args=` (with `rest` covering the remaining text after option removal).
+
+**Behavior Points**:
+
+- Permission checks precede argument parsing—users without permission do not trigger parsing
+- Parsing failure (type mismatch / missing parameters / too many parameters / unknown options) automatically replies with localized error + usage, the command is still claimed
+- The declared parameter names must exist in the handler signature, otherwise a `ValueError` is thrown at registration
+- Commands without `args=` / `options=` declaration behave unchanged (backward compatibility)
+
+### Command Cooldown (`cooldown=`)
+
+Manual cooldown timing can be replaced with the `cooldown=` declaration. Duration syntax is consistent with the `duration` type in `args=` (e.g., `"30s"`, `"1h30m"`, `"1d"`):
+
+```python
+@command("daily", cooldown="1d", cooldown_key="user", cooldown_reply="Already checked in today")
+async def daily_handler(event):
+    await event.reply("Check-in successful!")
+```
+
+`cooldown_key=` controls the granularity of the cooldown: `"user"` (default, shared by the same user), `"session"` (shared by the same session, e.g., the same group), `"global"` (shared by all users and all sessions).
+
+**Behavior Points**:
+
+- If cooldown is hit, it is **silently discarded** by default (symmetrical to silent scope); if `cooldown_reply=` is declared, it replies with the specified text when cooldown is hit
+- The command is claimed immediately upon hitting cooldown—commands that hit cooldown are not missed by lower-priority message handlers
+- Cooldown starts timing before all permission checks and argument parsing are passed, and before the command is actually executed: users without permission do not trigger cooldown, and parameter errors do not consume cooldown
+- The status is in-process memory, automatically cleared when the module is unloaded; cross-process sharing / persistent storage across restarts is not in scope
+- Declaration is validated at registration (fail-fast): invalid duration syntax, `cooldown_key=` not in whitelist, `cooldown_reply=` not paired with `cooldown=` all throw `ValueError`
+
+### Dependency Injection (`Depends`)
+
+Common dependencies (database sessions, configuration reading, etc.) can be extracted as dependency functions. Handlers declare dependencies as default values using `Depends(dependency function)`, and the framework automatically calls the dependency function with the context object and injects it by name before calling:
+
+```python
+from ErisPulse.Core import Depends
+
+async def get_session(event):
+    return await sdk.module.call("DB", "get_session")
+
+@command("admin")
+async def admin_handler(event, db=Depends(get_session)):
+    ...
+```
+
+Request-level caching is enabled by default: within the same event dispatch, the same dependency function is parsed only once, and all injection points share the result (e.g., `get_db` only creates one database session within a single event); it is not reused across requests. You can disable caching for a single dependency using `Depends(get_db, use_cache=False)`.
+
+Covers all framework injection points—command handlers, event handlers (`message.on_message()` etc.), lifecycle hooks (`sdk.lifecycle.on`), SSE route handlers. The first parameter of the dependency function is the context object of the injection point (event scene is `Event`, lifecycle is event `data`, route is `HttpRequest` / `SseEmitter`); both synchronous and asynchronous dependency functions can be declared.
+
+**Declaring services from other modules** (syntactic sugar):
+
+```python
+@command("query")
+async def query_handler(event, session=Depends.module("DB", "get_session")):
+    ...
+```
+
+`Depends.module(module_name, method_name, *fixed_args)` is equivalent to calling `sdk.module.call(...)` within the dependency function. Module instantiation (`__init__`) is not covered—there is no context object during instantiation; for HTTP routes carried by FastAPI, use FastAPI's native `fastapi.Depends`.
+
+**Behavior Points**:
+
+- Declaration is validated at registration (fail-fast): dependency is not callable, or conflicts with `args=` / `options=` parameters throw `ValueError`
+- Exceptions thrown by dependency functions and handler exceptions are handled at the same level (command automatically replies with errors)
+- Handlers without `Depends` declaration have zero overhead (no reflection during dispatch)
+- For HTTP routes carried by FastAPI, use FastAPI's native `fastapi.Depends`
 
 ### Command Groups
 
@@ -140,16 +232,16 @@ Arguments retain the original case of the user's input (even if configured to be
 async def reload_handler(event):
     await event.reply("Module reloaded")
 
-@command("admin.stop", group="admin", help="Stop the bot")
+@command("admin.stop", group="admin", help="Stop bot")
 async def stop_handler(event):
     await event.reply("Bot stopped")
 ```
 
-The `group` parameter is only used for help list categorization; the `admin.reload` in the above example is a **single command name** (the dot is just a naming convention; users must input `/admin.reload`).
+The `group` parameter is only used for categorizing help lists; in the above example, `admin.reload` is a **single command name** (the dot is just a naming style, users need to input `/admin.reload`).
 
 ### Subcommands
 
-Command names support **multi-token** forms separated by spaces, enabling subcommands like `/admin add` and `/admin user ban`:
+Command names support **multi-token forms separated by spaces**, enabling subcommands like `/admin add` and `/admin user ban`:
 
 ```python
 @command("admin", help="Admin commands")
@@ -168,12 +260,12 @@ async def admin_remove_handler(event):
 
 Matching rules (**longest prefix match**):
 
-- `/admin add x` prioritizes `admin add`, `event.get_command_args()` returns `["x"]` (arguments after the subcommand name)
-- If only `admin` is registered, `/admin add x` matches `admin`, `get_command_args()` returns `["add", "x"]` (historical behavior unchanged)
+- `/admin add x` matches `admin add` first, `event.get_command_args()` returns `["x"]` (arguments after the subcommand name)
+- When only `admin` is registered, `/admin add x` matches `admin`, `get_command_args()` returns `["add", "x"]` (unchanged historical behavior)
 - Alias supports multi-token forms (e.g., `a remove`), single-token aliases (e.g., `a`) can also point to subcommands
-- When both parent and child commands are registered, unregistered subcommands (e.g., `/admin list x`) fall back to the parent command
+- When parent and child commands are both registered, unregistered subcommands (e.g., `/admin list x`) fall back to the parent command
 
-**Permission Inheritance**: If a subcommand does not declare `permission`, it automatically inherits the permission from the nearest ancestor command that declared it—protecting `/admin` automatically protects all its subcommands; a subcommand's own declared permission takes precedence:
+**Permission Inheritance**: When subcommands do not declare `permission`, they automatically inherit the nearest ancestor command on the parent chain that declared permission—protecting `/admin` automatically protects all its subcommands; permission declared in the subcommand itself takes precedence:
 
 ```python
 def is_admin(event):
@@ -189,22 +281,22 @@ async def admin_add_handler(event):
     ...
 ```
 
-Note: `master=True` and `hidden` **will not** be inherited; declare them separately on subcommands when needed; user ACL (whitelist/blacklist) matches command full name, glob rules like `"admin*"` can cover entire subcommand groups.
+Note: `master=True` and `hidden` **do not** inherit; declare them separately on subcommands when needed; user ACL (whitelist/blacklist) matches full command name, glob rules like `"admin*"` can cover entire groups of subcommands.
 
-In `/help` command overview, subcommands will automatically be indented under visible parent commands (e.g., `admin` → `admin add` is indented one level, `admin user` → `admin user ban` is indented two levels).
+In the `/help` command overview, subcommands are automatically displayed indented under visible parent commands (`admin` → `admin add` indented one level, `admin user` → `admin user ban` indented two levels).
 
 ### Command Permissions and Access Control
 
-Command permissions are divided into three layers, checked from top to bottom (if upper layer rejects, lower layers are not checked):
+Command permissions are divided into three layers, determined from top to bottom (if the upper layer rejects, lower layers are not checked):
 
 ```python
-# ① Command permission ACL (user-side configuration): user whitelist/blacklist for commands, replies "Permission denied" on rejection
-# ② master=True — only the framework owner can execute (framework automatically checks, replies "Permission denied" on rejection)
+# ① Command permission ACL (user-side configuration): user whitelist/blacklist for commands, replies "Permission denied" when denied
+# ② master=True — only the framework owner can execute (framework automatically checks, replies "Permission denied" when denied)
 @command("restart", master=True, help="Restart module")
 async def restart_handler(event):
     await event.reply("Module restarted")
 
-# ③ permission=call function — command's own control logic (returns True to execute)
+# ③ permission=callable function — command-specific control logic (executes only if returns True)
 def is_admin(event):
     return event.get_user_id() in {"user123", "user456"}
 
@@ -213,16 +305,16 @@ async def panel_handler(event):
     await event.reply("Welcome to the admin panel")
 ```
 
-**Command User ACL** (`ErisPulse.event.command.acl`): Users can configure user whitelists/blacklists for any command, command names support exact and glob patterns (e.g., `"roll*"`), replies "Permission denied" on rejection:
+**Command User ACL** (`ErisPulse.event.command.acl`): Users can configure user whitelist/blacklist for any command, command names support exact and glob patterns (e.g., `"roll*"`), replies "Permission denied" when denied:
 
 ```toml
-# config.toml — allow only 123456 to execute restart; 666 is always rejected
+# config.toml — only allow 123456 to execute restart; 666 is always denied
 [ErisPulse.event.command.acl.restart]
 allow = ["onebot11:123456"]
 deny = ["onebot11:666"]
 ```
 
-Check order: `deny` matched → reject; `allow` non-empty and not matched → reject; if no ACL configured, follow `event.command.default_allow` (false = strict mode, no ACL means reject; true means default to developer's `master=True` / `permission`). Runtime API (command name supports glob):
+Order of determination: `deny` hit → deny; `allow` non-empty and not hit → deny; when no ACL is configured, follow `event.command.default_allow` (false = strict mode, no ACL means deny; true means give developers default `master=True` / `permission`). Runtime API (command name supports glob):
 
 ```python
 from ErisPulse.Core.Event import command
@@ -233,17 +325,17 @@ command.remove_acl("restart")                          # Clear whitelist/blackli
 command.get_acl("restart")                             # Query current list
 ```
 
-> Command handlers are imported from event package: `from ErisPulse.Core.Event import command`; can also access via SDK event package: `sdk.Event.command` (both are the same singleton). Usually imported with command decorators in modules (`from ErisPulse.Core.Event import command`).
+> Command handlers are imported from the event package: `from ErisPulse.Core.Event import command`; can also be accessed via the SDK event package: `sdk.Event.command` (both are the same singleton). Usually already imported within modules (via `from ErisPulse.Core.Event import command`).
 
-Cross-command / cross-user **event-level** access control (whether to receive messages from someone / a group / a bot) goes through **scope identity dimension** (`scope.identity`); **module-level** availability (which modules can be used) goes through **scope module dimension** (`scope.platforms / bots / sessions`).
+Cross-command / cross-user **event-level** access control (whether messages from a certain person / group / Bot are received) is handled by the **identity dimension** of scope (`scope.identity`); **module-level** availability (which modules can be used) is handled by the **module dimension** of scope (`scope.platforms / bots / sessions`).
 See [Scope (scope)](../advanced/scope.md).
 
-> Suggestion: Use `master=True` / `permission` for command internal business logic linkage; use scope identity dimension for access control based on user / group; use scope module dimension for controlling module availability.
+> Recommendation: Use `master=True` / `permission` for business logic linkage within commands; use the identity dimension of scope for access control based on user / group; use the module dimension of scope for controlling module availability.
 
 ### Command Priority
 
 ```python
-# Higher priority number means earlier execution
+# Higher priority number, earlier execution
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     await event.reply("High priority handler")
@@ -255,26 +347,26 @@ async def low_priority_handler(event):
 
 ### Parallel Event Handling
 
-ErisPulse's event system adopts a **parallel within same priority, serial across different priorities** scheduling model:
+ErisPulse's event system uses a **parallel execution within the same priority, serial execution across different priorities** scheduling model:
 
 ```
 Event arrives
     ↓
-priority=10 group: [Handler C || Handler D] parallel → merge results
+priority=10 group: [HandlerC || HandlerD] parallel → merge results
     ↓ (if not interrupted)
-priority=0 group: [Handler A || Handler B] parallel → merge results
+priority=0 group: [HandlerA || HandlerB] parallel → merge results
     ↓
 ...
 ```
 
-- **Parallel within same priority**: Handlers with the same priority execute simultaneously, improving throughput
-- **Serial across priorities**: Groups with different priorities execute in order (higher number executes first), ensuring high-priority handlers run first
+- **Parallel within same priority**: Multiple handlers with the same priority execute simultaneously, improving throughput
+- **Serial across priorities**: Groups with different priorities execute in order (higher numerical values execute first), ensuring high-priority handlers run first
 - **Copy-On-Write**: No copy is created if handlers do not modify, ensuring zero overhead
 - **Conflict handling**: When multiple handlers at the same priority modify the same field, the last modification is used and a warning log is recorded
 - **Interruption mechanism**: After any handler calls `event.done()` (default) or `event.done(claim=False)`, subsequent lower-priority groups are skipped. The difference between claiming and blocking is explained in the following section [Link Control: Claiming and Blocking](#link-control-claiming-and-blocking)
 
 ```python
-# Example: Parallel execution of handlers with same priority
+# Example: Parallel execution of handlers with the same priority
 @message.on_message(priority=0)
 async def handler_a(event):
     # Process task A
@@ -285,16 +377,16 @@ async def handler_b(event):
     # Executes in parallel with handler_a
     event['result_b'] = process_b()
 
-# Serial execution across priorities
+# Serial execution of different priorities
 @message.on_message(priority=10)
 async def handler_c(event):
     # Highest priority, executes first
     pass
 ```
 
-> **Concurrency limit**: All matching handlers' Tasks are **immediately created**, but a semaphore limits the **maximum number of concurrent executions**, defaulting to **64** (configurable via `ErisPulse.framework.handler_max_concurrency`, supports hot reload). Tasks exceeding the limit wait in the semaphore queue until previous tasks complete. This acts as a "pressure relief valve" during event spikes.
+> **Concurrency limit**: All matching handlers' tasks are **immediately created**, but a semaphore limits the **number of concurrently executing tasks**, with a default limit of **64** (`ErisPulse.framework.handler_max_concurrency`, supports hot updates). Tasks exceeding the limit queue on the semaphore, waiting for previous tasks to complete before proceeding. This acts as your "pressure relief valve" during event surges.
 >
-> **Slow logs**: If a single handler takes over **1 second**, the framework logs a WARNING (via `handler_slow`). The wait time in `wait_reply` is excluded from the timing, so "waiting for reply" does not cause a false slow report.
+> **Slow logs**: If a single handler takes more than **1 second**, the framework logs a WARNING (`handler_slow`). The waiting time for `wait_reply` is excluded from the timing, so waiting for replies does not cause a false slow report.
 
 ## Scope Filtering: Why Didn't My Module Receive the Message
 

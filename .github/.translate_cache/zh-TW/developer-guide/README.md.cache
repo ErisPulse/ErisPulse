@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "af3d7fde0143996c1708eb99bdc3badf",
-  "file_hash": "af3d7fde0143996c1708eb99bdc3badf",
-  "translated_at": "2026-09-07T11:03:29.513705",
+  "hash": "5452ce2bc9f91267c6cb36c9bc9f86e5",
+  "file_hash": "5452ce2bc9f91267c6cb36c9bc9f86e5",
+  "translated_at": "2026-09-21T14:38:26.710384",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# 開發者指南\n\n本指南協助您開發自訂模組和適配器，以擴充 ErisPulse 的功能。"
     },
     {
-      "hash": "477828ae297d0b08fc3af76894260a7f",
-      "translation": "## 內容列表\n\n### 模塊開發\n\n1. [模塊開發入門](modules/getting-started.md) - 創建第一個模塊\n2. [模塊核心概念](modules/core-concepts.md) - 模塊的核心概念和架構\n3. [Event 包裝類詳解](modules/event-wrapper.md) - Event 對象的完整說明\n4. [模塊最佳實踐](modules/best-practices.md) - 開發高品質模塊的建議\n\n### 適配器開發\n\n1. [適配器開發入門](adapters/getting-started.md) - 創建第一個適配器\n2. [適配器核心概念](adapters/core-concepts.md) - 適配器的核心概念\n3. [SendDSL 詳解](adapters/send-dsl.md) - Send 消息發送 DSL 的完整說明\n4. [事件轉換器](adapters/converter.md) - 實現事件轉換器\n5. [適配器最佳實踐](adapters/best-practices.md) - 開發高品質適配器的建議\n\n### 發布指南\n\n- [發布與模塊商店指南](publishing.md) - 將你的作品發布到 PyPI 和 ErisPulse 模塊商店"
+      "hash": "ea2f7329c845f9eafa71d08511c0b230",
+      "translation": "## 內容列表\n\n### 模組開發\n\n1. [模組開發入門](modules/getting-started.md) - 創建第一個模組\n2. [模組核心概念](modules/core-concepts.md) - 模組的核心概念和架構\n3. [Event 包裝類詳解](modules/event-wrapper.md) - Event 對象的完整說明\n4. [模組最佳實踐](modules/best-practices.md) - 開發高品質模組的建議\n\n### 數據模型\n\n1. [數據模型層（ORM）](orm.md) - 聲明式模型、自動建表與增刪改查\n\n### 适配器開發\n\n1. [适配器开发入门](adapters/getting-started.md) - 創建第一個适配器\n2. [适配器核心概念](adapters/core-concepts.md) - 适配器的核心概念\n3. [SendDSL 详解](adapters/send-dsl.md) - Send 消息發送 DSL 的完整說明\n4. [事件轉換器](adapters/converter.md) - 實現事件轉換器\n5. [适配器最佳实践](adapters/best-practices.md) - 開發高品質适配器的建議\n\n### 測試與排查\n\n1. [模組測試（ErisPulse-Testing）](testing.md) - TestBot、事件工廠與斷言面\n\n### 發布指南\n\n- [發布與模組商店指南](publishing.md) - 將你的作品發布到 PyPI 和 ErisPulse 模組商店"
     },
     {
       "hash": "a69f12905cab94d5d7c997a0184db083",
