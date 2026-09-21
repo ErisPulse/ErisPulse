@@ -278,8 +278,12 @@ class CommandHandler:
         """
         计算当前自然周期的标识键（本地时区）
 
+        {!--< internal-use >!--}
+        供分发期配额判定使用；周期切换键随之变化即自动重置
+
         :param unit: 周期单位（minute / hour / day）
-        :return: 周期键（如 ``"2026-09-21"``），周期切换键随之变化即自动重置
+        :return: 周期键（如 ``"2026-09-21"``）
+        {!--< /internal-use >!--}
         """
         import time as _time
 

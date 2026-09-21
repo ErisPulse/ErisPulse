@@ -276,6 +276,28 @@ class Main(BaseModule):
             detail = f"（详细模式：{count} 次 {sides} 面骰）" if verbose else ""
             await event.reply(f"{prefix}掷了 {count} 次 {sides} 面骰，总点数：{total}{detail}")
 
+        # 命令治理（推荐写法）：冷却 / 限流 / 废弃一行声明，替代手写计时与窗口。
+        # 键粒度 user（默认）/ session / global；命中默认静默丢弃，*_reply= 可选回复。
+        # 时长语法与 args= 的 duration 一致（"1d" / "1h30m"）；限流为滑动窗口 "次数/窗口"。
+        @command(
+            "daily",
+            cooldown="1d",
+            cooldown_key="user",
+            cooldown_reply="今天已签到",
+            help="每日签到示例（冷却声明）",
+        )
+        async def daily_command(event: Event):
+            await event.reply("签到成功！")
+
+        @command(
+            "search",
+            rate_limit="5/minute",
+            rate_limit_key="user",
+            help="搜索示例（限流声明）",
+        )
+        async def search_command(event: Event):
+            await event.reply("搜索结果")
+
         # 依赖注入（推荐写法）：公共依赖抽为函数，处理器以 Depends(...) 声明，
         # 框架在调用前自动以上下文对象调用依赖函数并按名注入。
         # 可用于命令 / 事件处理器 / 生命周期钩子 / SSE 路由全部注入点
