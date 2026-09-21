@@ -31,6 +31,7 @@ def clean_state():
     command_handler.permissions.clear()
     command_handler._cooldowns.clear()
     command_handler._rate_limits.clear()
+    command_handler._usage_counts.clear()
     command_handler._max_name_tokens = 1
     command_handler.block = True
     adapter._onebot_handlers.clear()
@@ -45,6 +46,7 @@ def clean_state():
     command_handler.permissions.clear()
     command_handler._cooldowns.clear()
     command_handler._rate_limits.clear()
+    command_handler._usage_counts.clear()
     command_handler._max_name_tokens = 1
     command_handler.block = True
     adapter._onebot_handlers.clear()
@@ -331,3 +333,127 @@ class TestRateLimitTrace:
 
         stages = [(r["stage"], r["verdict"]) for r in records]
         assert ("rate_limit", "dropped") in stages
+
+
+class TestUsageLimit:
+    """usage_limit= 自然周期配额"""
+
+    @pytest.fixture(autouse=True)
+    def fake_storage(self, monkeypatch):
+        """以内存 dict 替换 storage KV（实际定义在 SQLStorageBase），隔离真实 DB 跨运行持久化"""
+        from ErisPulse.Core.Bases.sql_base import SQLStorageBase
+
+        stored: dict = {}
+
+        async def fake_aget(self, key, default=None, **kwargs):
+            return stored.get(key, default)
+
+        async def fake_aset(self, key, value, **kwargs):
+            stored[key] = value
+            return True
+
+        monkeypatch.setattr(SQLStorageBase, "aget", fake_aget)
+        monkeypatch.setattr(SQLStorageBase, "aset", fake_aset)
+        self._stored = stored
+        yield
+
+    def test_valid_declaration_stored(self):
+        @command_handler("us_ok", usage_limit="3/day", usage_limit_key="user", usage_limit_reply="今日已用完")
+        async def us_ok(event):
+            pass
+
+        info = command_handler.commands["us_ok"]
+        assert info["usage_spec"] == (3, "day")
+        assert info["usage_limit_key"] == "user"
+        assert info["usage_limit_reply"] == "今日已用完"
+
+    def test_invalid_declarations_rejected(self):
+        with pytest.raises(ValueError):
+
+            @command_handler("us_bad", usage_limit="3/week")
+            async def us_bad(event):
+                pass
+
+        with pytest.raises(ValueError):
+
+            @command_handler("us_key", usage_limit="1/day", usage_limit_key="room")
+            async def us_key(event):
+                pass
+
+        with pytest.raises(ValueError):
+
+            @command_handler("us_reply", usage_limit_reply="x")
+            async def us_reply(event):
+                pass
+
+    def test_period_key_formats(self):
+        day = command_handler.usage_period_key("day")
+        hour = command_handler.usage_period_key("hour")
+        minute = command_handler.usage_period_key("minute")
+        assert len(day) == 10 and "T" not in day
+        assert "T" in hour and len(hour) == 13
+        assert len(minute) == 16
+
+    async def test_quota_count_and_reply(self):
+        calls, replies = [], []
+
+        @command_handler("us_count", usage_limit="2/day", usage_limit_reply="今日次数已用完")
+        async def us_count(event):
+            calls.append(1)
+
+        with patch.object(
+            command_handler, "_send_args_error", new=AsyncMock(side_effect=lambda e, t: replies.append(t))
+        ):
+            await _dispatch("/us_count")
+            await _dispatch("/us_count")
+            await _dispatch("/us_count")  # 第 3 次：配额用尽
+
+        assert len(calls) == 2
+        assert replies == ["今日次数已用完"]
+
+    async def test_user_isolation_and_memory_fallback(self, monkeypatch):
+        """storage 异常时回退内存计数；用户间隔离"""
+        calls = []
+
+        @command_handler("us_iso", usage_limit="1/day")
+        async def us_iso(event):
+            calls.append(event.get("user_id"))
+
+        await _dispatch("/us_iso", user_id="u1")
+        await _dispatch("/us_iso", user_id="u1")  # 同用户：用尽
+        await _dispatch("/us_iso", user_id="u2")  # 其他用户独立
+        assert calls == ["u1", "u2"]
+
+    async def test_persisted_count_survives_memory_reset(self, monkeypatch):
+        """storage 计数高于内存时以其为准（模拟重启后内存清零）"""
+        calls = []
+
+        @command_handler("us_persist", usage_limit="2/day")
+        async def us_persist(event):
+            calls.append(1)
+
+        stored = self._stored
+
+        await _dispatch("/us_persist")
+        await _dispatch("/us_persist")
+        assert len(calls) == 2
+
+        command_handler._usage_counts.clear()  # 模拟重启：内存清零
+        await _dispatch("/us_persist")  # storage 计数=2 ≥ 上限：仍拒绝
+        assert len(calls) == 2
+
+    async def test_cleanup_on_unregister(self):
+        from ErisPulse.runtime.context import current_owner
+
+        token = current_owner.set("us_mod")
+        try:
+
+            @command_handler("us_clean", usage_limit="2/day")
+            async def us_clean(event):
+                pass
+        finally:
+            current_owner.reset(token)
+
+        command_handler._usage_counts["us_clean\x00scope\x00period"] = 5
+        command_handler.unregister_by_owner("us_mod")
+        assert command_handler._usage_counts == {}
