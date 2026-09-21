@@ -25,6 +25,22 @@ ErisPulse 命令处理模块
 
 ---
 
+## 函数列表
+
+
+### `parse_rate_limit(spec: str)`
+
+解析限流声明（如 ``"5/minute"``、``"10/s"``）为 (次数, 窗口秒)
+
+滑动窗口语义：窗口内至多放行 ``次数`` 次，超出静默丢弃。单位支持
+second / minute / hour / day（含单字母缩写，大小写不敏感）。
+
+- **spec** (`限流声明字符串`): **返回值** (`(limit,`): window_seconds)
+**异常**: `ValueError` - 语法非法或次数非正时
+
+---
+
+
 ## 类列表
 
 
@@ -109,7 +125,7 @@ permission 时调用：逐级去掉末尾 token 查找已注册祖先，返回�
 ---
 
 
-##### `__call__(name: str | list[str] | None = None, aliases: list[str] | None = None, group: str | None = None, priority: int = 0, permission: Callable | None = None, help: str | None = None, usage: str | None = None, hidden: bool = False, master: bool = False, args: str | None = None, options: dict | None = None, cooldown: str | None = None, cooldown_key: str = 'user', cooldown_reply: str | None = None)`
+##### `__call__(name: str | list[str] | None = None, aliases: list[str] | None = None, group: str | None = None, priority: int = 0, permission: Callable | None = None, help: str | None = None, usage: str | None = None, hidden: bool = False, master: bool = False, args: str | None = None, options: dict | None = None, cooldown: str | None = None, cooldown_key: str = 'user', cooldown_reply: str | None = None, rate_limit: str | None = None, rate_limit_key: str = 'user', rate_limit_reply: str | None = None, deprecated: str | None = None, deprecated_reject: bool = False)`
 
 命令装饰器
 
@@ -138,6 +154,14 @@ permission 时调用：逐级去掉末尾 token 查找已注册祖先，返回�
     （同一会话共享）/ ``"global"``（所有用户所有会话共享）。``user`` / ``session``
     复用 ``platform:bot:目标`` 会话键体系。非法值注册期抛 ValueError
 - **cooldown_reply** (`冷却命中时的回复文案（可选）。缺省静默丢弃；指定后冷却`): 命中即回复该文案（原文发送，不做格式化）
+- **rate_limit** (`滑动窗口限流声明（EPRFC-2026-001`): 方向七），如 ``"5/minute"`` /
+    ``"10/s"`` / ``"100/day"``——窗口内至多执行次数，超出默认静默丢弃（命令仍被
+    认领）；与 ``cooldown=`` 共享会话键体系，可同时声明（冷却先判、限流后判）
+- **rate_limit_key** (`限流键粒度：``"user"``（默认）/`): ``"session"`` / ``"global"``
+- **rate_limit_reply** (`限流命中时的回复文案（可选，缺省静默丢弃）`): - **deprecated**: 命令废弃声明（EPRFC-2026-001 方向七）：非空文案即标记废弃——
+    调用时自动回复该文案（help 列表显示废弃标记），默认仍继续执行
+- **deprecated_reject** (`废弃命令拒绝执行（默认`): False 继续执行；True 时回复
+    废弃文案后不再执行处理器）
 **返回值** (`装饰器函数`): 
 **示例**:
 ```python
@@ -148,6 +172,10 @@ permission 时调用：逐级去掉末尾 token 查找已注册祖先，返回�
 >>> @command("daily", cooldown="1d", cooldown_key="user", cooldown_reply="今天已签到")
 ... async def daily(event):
 ...     await event.reply("签到成功！")
+>>> @command("search", rate_limit="5/minute", rate_limit_key="user")
+... async def search(event): ...
+>>> @command("oldcmd", deprecated="请用 /newcmd", deprecated_reject=True)
+... async def old(event): ...
 ```
 
 ---

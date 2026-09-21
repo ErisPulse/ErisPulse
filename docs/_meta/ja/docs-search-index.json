@@ -114,6 +114,14 @@
         "title": "1. エラータイプの分類"
       }
     ],
+    "1. エラーハンドリング": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 1000,
+        "level": 3,
+        "title": "1. エラーハンドリング"
+      }
+    ],
     "1. キャッシュの使用": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -200,14 +208,6 @@
         "line": 9,
         "level": 3,
         "title": "1. 何时发送 Meta 事件"
-      }
-    ],
-    "1. 例外処理": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 954,
-        "level": 3,
-        "title": "1. 例外処理"
       }
     ],
     "1. 単一責任の原則": [
@@ -721,7 +721,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 972,
+        "line": 1018,
         "level": 3,
         "title": "2. ログ記録"
       }
@@ -1175,7 +1175,7 @@
     "3. 条件処理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 988,
+        "line": 1034,
         "level": 3,
         "title": "3. 条件処理"
       }
@@ -2670,6 +2670,12 @@
         "line": 280,
         "level": 3,
         "title": "Bot 状態の照会"
+      },
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 669,
+        "level": 3,
+        "title": "Bot 状態の照会"
       }
     ],
     "Bot 状態値": [
@@ -2702,14 +2708,6 @@
         "line": 5,
         "level": 2,
         "title": "Bot 状態管理と Meta イベント"
-      }
-    ],
-    "Botのステータス照会": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 627,
-        "level": 3,
-        "title": "Botのステータス照会"
       }
     ],
     "Botコマンドメッセージセグメント (ideaura_command)": [
@@ -3143,7 +3141,7 @@
     "Eventオブジェクトの一般的なメソッド": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 877,
+        "line": 923,
         "level": 3,
         "title": "Eventオブジェクトの一般的なメソッド"
       }
@@ -4824,12 +4822,12 @@
         "title": "remind：返信がなければリマインド"
       }
     ],
-    "replyメソッドを使用した返信の送信": [
+    "replyメソッドを使って返信を送信": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 651,
+        "line": 693,
         "level": 3,
-        "title": "replyメソッドを使用した返信の送信"
+        "title": "replyメソッドを使って返信を送信"
       }
     ],
     "run": [
@@ -5618,6 +5616,14 @@
         "title": "イベントの種類概要"
       }
     ],
+    "イベントオーバーライド：モジュールのコードを変更せずに、任意のイベントタイプの動作を上書き": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 463,
+        "level": 2,
+        "title": "イベントオーバーライド：モジュールのコードを変更せずに、任意のイベントタイプの動作を上書き"
+      }
+    ],
     "イベントコンバーター実装ガイド": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -5659,7 +5665,7 @@
     "イベントデータのアクセス": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 875,
+        "line": 921,
         "level": 2,
         "title": "イベントデータのアクセス"
       }
@@ -5696,14 +5702,6 @@
         "title": "イベントフロー"
       }
     ],
-    "イベント上書き：モジュールのコードを変更せずに、任意のイベントタイプの動作を上書き": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 425,
-        "level": 2,
-        "title": "イベント上書き：モジュールのコードを変更せずに、任意のイベントタイプの動作を上書き"
-      }
-    ],
     "イベント例": [
       {
         "document": "platform-guide/onebot11.md",
@@ -5737,7 +5735,7 @@
     "イベント処理のベストプラクティス": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 952,
+        "line": 998,
         "level": 2,
         "title": "イベント処理のベストプラクティス"
       }
@@ -6255,7 +6253,7 @@
     "グループメンバーの増加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 551,
+        "line": 593,
         "level": 3,
         "title": "グループメンバーの増加"
       }
@@ -6263,7 +6261,7 @@
     "グループメンバーの減少": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 561,
+        "line": 603,
         "level": 3,
         "title": "グループメンバーの減少"
       }
@@ -6271,7 +6269,7 @@
     "グループ招待リクエスト": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 589,
+        "line": 631,
         "level": 3,
         "title": "グループ招待リクエスト"
       }
@@ -6423,7 +6421,7 @@
     "コマンドと返信の block 設定": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 521,
+        "line": 563,
         "level": 3,
         "title": "コマンドと返信の block 設定"
       }
@@ -6436,6 +6434,38 @@
         "title": "コマンドのプレフィックスを変更するには？"
       }
     ],
+    "コマンドの優先度": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 377,
+        "level": 3,
+        "title": "コマンドの優先度"
+      }
+    ],
+    "コマンドの別名": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 108,
+        "level": 3,
+        "title": "コマンドの別名"
+      }
+    ],
+    "コマンドの引数": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 121,
+        "level": 3,
+        "title": "コマンドの引数"
+      }
+    ],
+    "コマンドの権限とアクセス制御": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 324,
+        "level": 3,
+        "title": "コマンドの権限とアクセス制御"
+      }
+    ],
     "コマンドの登録": [
       {
         "document": "api-reference/event-system.md",
@@ -6444,20 +6474,20 @@
         "title": "コマンドの登録"
       }
     ],
-    "コマンドイベント処理": [
+    "コマンドの管理（cooldown= / rate_limit= / deprecated=）": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 173,
+        "level": 3,
+        "title": "コマンドの管理（cooldown= / rate_limit= / deprecated=）"
+      }
+    ],
+    "コマンドイベントの処理": [
       {
         "document": "getting-started/event-handling.md",
         "line": 90,
         "level": 2,
-        "title": "コマンドイベント処理"
-      }
-    ],
-    "コマンドエイリアス": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 108,
-        "level": 3,
-        "title": "コマンドエイリアス"
+        "title": "コマンドイベントの処理"
       }
     ],
     "コマンドオプション": [
@@ -6468,18 +6498,10 @@
         "title": "コマンドオプション"
       }
     ],
-    "コマンドクールダウン（cooldown=）": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 173,
-        "level": 3,
-        "title": "コマンドクールダウン（cooldown=）"
-      }
-    ],
     "コマンドグループ": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 230,
+        "line": 264,
         "level": 3,
         "title": "コマンドグループ"
       }
@@ -6500,28 +6522,12 @@
         "title": "コマンドデコレータ"
       }
     ],
-    "コマンド優先度": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 338,
-        "level": 3,
-        "title": "コマンド優先度"
-      }
-    ],
     "コマンド基礎": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 414,
         "level": 4,
         "title": "コマンド基礎"
-      }
-    ],
-    "コマンド引数": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 121,
-        "level": 3,
-        "title": "コマンド引数"
       }
     ],
     "コマンド情報": [
@@ -6550,14 +6556,6 @@
         "line": 125,
         "level": 2,
         "title": "コマンド情報の取得"
-      }
-    ],
-    "コマンド権限とアクセス制御": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 290,
-        "level": 3,
-        "title": "コマンド権限とアクセス制御"
       }
     ],
     "コマンド解析の設定（event.command）": [
@@ -6715,7 +6713,7 @@
     "コールバック付きの待機返信": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 726,
+        "line": 772,
         "level": 3,
         "title": "コールバック付きの待機返信"
       }
@@ -6731,7 +6729,7 @@
     "サブコマンド": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 244,
+        "line": 278,
         "level": 3,
         "title": "サブコマンド"
       }
@@ -6859,7 +6857,7 @@
     "スコープフィルタリング：なぜ私のモジュールはメッセージを受け取らないのか": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 394,
+        "line": 433,
         "level": 2,
         "title": "スコープフィルタリング：なぜ私のモジュールはメッセージを受け取らないのか"
       }
@@ -7710,6 +7708,14 @@
         "title": "ノードツリーの例"
       }
     ],
+    "ハンドラのスロットリング（throttle=）": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 213,
+        "level": 3,
+        "title": "ハンドラのスロットリング（throttle=）"
+      }
+    ],
     "ハンドラの登録": [
       {
         "document": "advanced/lifecycle.md",
@@ -7721,7 +7727,7 @@
     "ハートビートイベント": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 618,
+        "line": 660,
         "level": 3,
         "title": "ハートビートイベント"
       }
@@ -7824,6 +7830,14 @@
         "line": 135,
         "level": 4,
         "title": "バッチ構築モード（Build）"
+      }
+    ],
+    "バリデーション付きの待機返信": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 745,
+        "level": 3,
+        "title": "バリデーション付きの待機返信"
       }
     ],
     "バージョン更新の説明": [
@@ -7955,7 +7969,7 @@
     "フォーム収集 (collect)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 800,
+        "line": 846,
         "level": 3,
         "title": "フォーム収集 (collect)"
       }
@@ -8179,7 +8193,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 923,
+        "line": 969,
         "level": 3,
         "title": "プラットフォーム拡張メソッド"
       }
@@ -8446,14 +8460,6 @@
         "title": "マルチメソッド登録（Mixin クラス）"
       }
     ],
-    "マルチラウンド対話 (conversation)": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 841,
-        "level": 3,
-        "title": "マルチラウンド対話 (conversation)"
-      }
-    ],
     "マルチ待機：expect + select": [
       {
         "document": "advanced/interaction.md",
@@ -8576,6 +8582,14 @@
         "line": 257,
         "level": 3,
         "title": "メタイベント"
+      }
+    ],
+    "メタイベントの処理": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 642,
+        "level": 2,
+        "title": "メタイベントの処理"
       }
     ],
     "メタイベントの送信": [
@@ -9335,7 +9349,7 @@
     "ユーザーの返信を待つ": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 679,
+        "line": 721,
         "level": 3,
         "title": "ユーザーの返信を待つ"
       }
@@ -9647,7 +9661,7 @@
     "リンク制御：認領とブロック": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 486,
+        "line": 528,
         "level": 2,
         "title": "リンク制御：認領とブロック"
       }
@@ -9920,12 +9934,12 @@
         "title": "ワイルドカード"
       }
     ],
-    "ワイルドカードと正規表現による監視": [
+    "ワイルドカードと正規表現の監視": [
       {
         "document": "getting-started/event-handling.md",
         "line": 66,
         "level": 3,
-        "title": "ワイルドカードと正規表現による監視"
+        "title": "ワイルドカードと正規表現の監視"
       }
     ],
     "一、私はロボットを使いたい": [
@@ -10064,12 +10078,12 @@
         "title": "並列と直列"
       }
     ],
-    "並行イベント処理": [
+    "並列イベント処理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 351,
+        "line": 390,
         "level": 3,
-        "title": "並行イベント処理"
+        "title": "並列イベント処理"
       }
     ],
     "主人システム設定": [
@@ -10150,6 +10164,14 @@
         "title": "交互会話システム"
       }
     ],
+    "交互処理": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 691,
+        "level": 2,
+        "title": "交互処理"
+      }
+    ],
     "他のシステムとの関係": [
       {
         "document": "advanced/interaction.md",
@@ -10182,12 +10204,12 @@
         "title": "仮想環境の有効化"
       }
     ],
-    "任意のイベントを待つ (wait_for)": [
+    "任意イベントを待つ (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 820,
+        "line": 866,
         "level": 3,
-        "title": "任意のイベントを待つ (wait_for)"
+        "title": "任意イベントを待つ (wait_for)"
       }
     ],
     "优先度システム": [
@@ -10329,7 +10351,7 @@
     "依存注入（Depends）": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 194,
+        "line": 227,
         "level": 3,
         "title": "依存注入（Depends）"
       }
@@ -10404,14 +10426,6 @@
         "line": 270,
         "level": 3,
         "title": "元イベント (Meta Events)"
-      }
-    ],
-    "元イベントの処理": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 600,
-        "level": 2,
-        "title": "元イベントの処理"
       }
     ],
     "元データ": [
@@ -10506,12 +10520,12 @@
         "title": "内容作成規格"
       }
     ],
-    "内蔵の確認語": [
+    "内置確認語": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 868,
+        "line": 914,
         "level": 3,
-        "title": "内蔵の確認語"
+        "title": "内置確認語"
       }
     ],
     "内蔵フォント": [
@@ -10871,7 +10885,7 @@
     "友達リクエスト": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 573,
+        "line": 615,
         "level": 3,
         "title": "友達リクエスト"
       }
@@ -10903,7 +10917,7 @@
     "友達追加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 539,
+        "line": 581,
         "level": 3,
         "title": "友達追加"
       }
@@ -11362,6 +11376,14 @@
         "title": "多プラットフォーム対応"
       }
     ],
+    "多段会話 (conversation)": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 887,
+        "level": 3,
+        "title": "多段会話 (conversation)"
+      }
+    ],
     "多言語のカバー": [
       {
         "document": "advanced/i18n.md",
@@ -11708,14 +11730,6 @@
         "line": 5,
         "level": 2,
         "title": "対話の作成"
-      }
-    ],
-    "対話処理": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 649,
-        "level": 2,
-        "title": "対話処理"
       }
     ],
     "対話形式でのインストール": [
@@ -12205,7 +12219,7 @@
     "接続イベント": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 602,
+        "line": 644,
         "level": 3,
         "title": "接続イベント"
       }
@@ -12840,14 +12854,6 @@
         "title": "検索機能"
       }
     ],
-    "検証付きの待機返信": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 699,
-        "level": 3,
-        "title": "検証付きの待機返信"
-      }
-    ],
     "概要": [
       {
         "document": "advanced/http-client.md",
@@ -13089,7 +13095,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 1005,
+        "line": 1051,
         "level": 2,
         "title": "次に進む"
       },
@@ -13458,12 +13464,12 @@
         "title": "省略可能なフィールド"
       }
     ],
-    "確認対話 (confirm)": [
+    "確認ダイアログ (confirm)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 747,
+        "line": 793,
         "level": 3,
-        "title": "確認対話 (confirm)"
+        "title": "確認ダイアログ (confirm)"
       }
     ],
     "私も自分のモジュールをここに掲載したい！": [
@@ -13853,7 +13859,7 @@
     "要求イベントの処理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 571,
+        "line": 613,
         "level": 2,
         "title": "要求イベントの処理"
       }
@@ -14599,7 +14605,7 @@
     "通知イベントの処理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 537,
+        "line": 579,
         "level": 2,
         "title": "通知イベントの処理"
       }
@@ -14717,7 +14723,7 @@
     "選択メニュー (choose)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 764,
+        "line": 810,
         "level": 3,
         "title": "選択メニュー (choose)"
       }
