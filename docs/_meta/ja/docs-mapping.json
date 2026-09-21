@@ -102,7 +102,7 @@
           "icon": "fa-sliders"
         },
         {
-          "title": "CLI コマンドリファレンス",
+          "title": "CLIコマンドリファレンス",
           "path": "user-guide/cli-reference.md",
           "level": 1,
           "icon": "fa-terminal"
