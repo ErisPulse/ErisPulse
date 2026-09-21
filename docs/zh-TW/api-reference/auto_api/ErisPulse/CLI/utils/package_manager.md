@@ -65,6 +65,45 @@ uv 会自动创建/使用项目 `.venv` 并生成 uv.lock——安装与依赖�
 ---
 
 
+### `build_uv_tool_update_command(uv_cmd: 'list[str]', target_version: 'str | None')`
+
+构建 uv tool 通道的 SDK 自更新命令
+
+- **uv_cmd** (`list[str`): ] uv 命令前缀（如 ["uv"]）
+- **target_version** (`str | None`): 目标版本号；None 表示升级到最新
+**返回值** (`list[str`): ] 完整命令列表
+
+---
+
+
+### `_ps_quote(text: str)`
+
+转义 PowerShell 单引号字符串中的单引号
+
+- **text** (`str`): 原始文本
+**返回值** (`str`): 可安全嵌入 PowerShell 单引号字面量的文本
+
+---
+
+
+### `build_windows_tool_update_script(cmd: 'list[str]', parent_pid: int, msg_done: str, msg_failed: str, press_key: str)`
+
+生成 Windows 分离更新用的 PowerShell 脚本文本
+
+脚本流程：等待当前 CLI 进程退出（工具环境文件不再被占用）→ 执行
+uv tool 更新命令 → 报告结果 → 自删除 → 等待用户按键，防止新控制台
+窗口瞬间关闭导致看不到结果。
+
+- **cmd** (`list[str`): ] 更新命令（如 ["uv", "tool", "upgrade", "ErisPulse"]）
+- **parent_pid** (`int`): 当前 CLI 进程 PID（脚本等待其退出）
+- **msg_done** (`str`): 更新成功提示
+- **msg_failed** (`str`): 更新失败提示
+- **press_key** (`str`): 退出前按键提示
+**返回值** (`str`): PowerShell 脚本文本
+
+---
+
+
 ### `warn_if_uv_isolated()`
 
 检测当前是否处于 uv 无项目的隔离运行上下文并输出警告
@@ -74,6 +113,34 @@ uv 会自动创建/使用项目 `.venv` 并生成 uv.lock——安装与依赖�
 上下文，结合 cwd 项目文件缺失判定隔离场景。
 
 **返回值** (`是否处于隔离场景（True`): = 已输出警告）
+
+---
+
+
+### `is_uv_tool_env()`
+
+检测当前解释器是否位于 `uv tool install` 创建的工具环境中
+
+uv tool 环境位于 uv 数据目录下的 ``uv/tools/<包名>/``（Linux:
+``~/.local/share/uv/tools``，Windows: ``%APPDATA%\uv\tools``），
+通过 ``sys.prefix`` 路径特征识别，不依赖任何环境变量——
+uv tool 的入口 shim 执行时不会设置 UV 变量。
+
+**返回值** (`bool`): 当前 epsdk 运行于 uv tool 环境时返回 True
+
+---
+
+
+### `warn_if_uv_tool_env_without_project()`
+
+检测「uv tool 环境运行 + 无项目环境」场景并输出提示
+
+`uv tool install ErisPulse` 后，epsdk 运行于全局工具环境；若用户
+未在项目内（无 `.venv` 且未激活 `VIRTUAL_ENV`），组件安装目标会
+落到工具环境自身——升级 SDK 时 `uv tool upgrade` 会将其抹掉。
+检测到该场景时提示在项目内操作。
+
+**返回值** (`bool`): 处于该场景时返回 True（已输出提示）
 
 ---
 
@@ -539,6 +606,23 @@ post 版本 (1.0.post1) 与本地版本 (1.0+local) 不视为预发布版本
 
 - **version** (`str`): 版本号字符串
 **返回值** (`bool`): 是预发布版本时返回 True
+
+---
+
+
+##### `_spawn_windows_tool_update(cmd: 'list[str]', target_version: 'str | None', current_version: str)`
+
+Windows 下以分离进程执行 uv tool 自更新
+
+当前 CLI 进程就运行在待替换的工具环境内，Windows 不允许删除运行中
+的 exe——更新必须等本进程退出后进行。此方法生成 PowerShell 脚本
+（等待本进程 → 执行更新 → 报告结果），以新控制台窗口分离启动后立
+即返回；调用方随后正常退出 CLI，脚本接管更新。
+
+- **cmd** (`list[str`): ] uv tool 更新命令
+- **target_version** (`str | None`): 目标版本号（None 表示最新）
+- **current_version** (`str`): 当前已安装版本号
+**返回值** (`bool`): 更新进程启动成功返回 True（结果以新窗口输出为准）
 
 ---
 
