@@ -12,6 +12,7 @@ from ..console import console
 from ..i18n import i18n
 from ..utils import PackageManager
 from ..utils.display import interactive_select_table
+from ..utils.package_manager import resolve_target_python, warn_if_uv_isolated
 
 
 class UninstallCommand(Command):
@@ -29,7 +30,8 @@ class UninstallCommand(Command):
         """
         初始化卸载命令，创建包管理器实例
         """
-        self.package_manager = PackageManager()
+        py_exec, _py_source = resolve_target_python()
+        self.package_manager = PackageManager(python_executable=py_exec)
 
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument(
@@ -40,6 +42,7 @@ class UninstallCommand(Command):
         )
 
     def execute(self, args):
+        warn_if_uv_isolated()
         self.package_manager.no_uv = getattr(args, "no_uv", False)
         if args.package:
             success = self.package_manager.uninstall_package(args.package)

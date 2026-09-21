@@ -16,6 +16,7 @@ from ..base import Command
 from ..console import console
 from ..i18n import i18n
 from ..utils import PackageManager
+from ..utils.package_manager import resolve_target_python
 
 
 class DoctorCommand(Command):
@@ -32,7 +33,8 @@ class DoctorCommand(Command):
 
     def __init__(self):
         """初始化 DoctorCommand，创建包管理器实例"""
-        self.package_manager = PackageManager()
+        py_exec, _py_source = resolve_target_python()
+        self.package_manager = PackageManager(python_executable=py_exec)
 
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument(
@@ -78,6 +80,38 @@ class DoctorCommand(Command):
         rows.append(
             (self._status(True), i18n.t("cli.doctor.target_python"), target_python)
         )
+
+        # 3.5 项目虚拟环境（.venv 存在性与 pip 可用性）
+        project_venv_py = resolve_target_python(Path.cwd())[0]
+        venv_detected = project_venv_py != sys.executable or Path(".venv").exists()
+        if venv_detected:
+            venv_pip = (
+                Path(".venv")
+                / ("Scripts" if sys.platform == "win32" else "bin")
+                / "pip.exe"
+                if sys.platform == "win32"
+                else Path(".venv") / "bin" / "pip"
+            )
+            pip_note = (
+                i18n.t("cli.doctor.venv_pip_ok")
+                if venv_pip.exists()
+                else "uv（pip 不可用，uv 后端替代）"
+            )
+            rows.append(
+                (
+                    self._status(True),
+                    i18n.t("cli.doctor.venv"),
+                    f"{project_venv_py}（{pip_note}）",
+                )
+            )
+        else:
+            rows.append(
+                (
+                    self._status(True),
+                    i18n.t("cli.doctor.venv"),
+                    i18n.t("cli.doctor.venv_missing"),
+                )
+            )
 
         # 4. 配置文件
         config_path = Path("config") / "config.toml"

@@ -298,8 +298,9 @@ class TypesCommand(Command):
             [{"name": str, "class": type, "module_path": str, "qualname": str}, ...]
         """
         from ..utils import PackageManager
+        from ..utils.package_manager import resolve_target_python
 
-        target_python = PackageManager()._get_target_python()
+        target_python = PackageManager(python_executable=resolve_target_python()[0])._get_target_python()
         raw_entries = self._introspect_remote(
             target_python, ADAPTER_ENTRY_POINT_GROUP, kind="adapter"
         )
@@ -323,8 +324,9 @@ class TypesCommand(Command):
             [{"name": str, "class": type, "module_path": str, "qualname": str, "methods": list[str]}, ...]
         """
         from ..utils import PackageManager
+        from ..utils.package_manager import resolve_target_python
 
-        target_python = PackageManager()._get_target_python()
+        target_python = PackageManager(python_executable=resolve_target_python()[0])._get_target_python()
         raw_entries = self._introspect_remote(
             target_python, MODULE_ENTRY_POINT_GROUP, kind="module"
         )

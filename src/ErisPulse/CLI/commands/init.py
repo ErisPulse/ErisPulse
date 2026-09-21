@@ -6,6 +6,7 @@ Init 命令实现
 
 import asyncio
 import concurrent.futures
+import re
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
@@ -18,11 +19,31 @@ from ..console import console
 from ..i18n import i18n
 from ..utils import PackageManager
 from ..utils.display import _input, prompt_validated, section_header
+from ..utils.package_manager import (
+    append_pyproject_dependencies,
+    create_project_venv,
+    resolve_target_python,
+    uv_add,
+    warn_if_uv_isolated,
+)
 
 
 def _validate_project_name(name: str) -> bool:
     """项目名称校验：仅允许字母、数字、下划线、连字符和点号"""
     return bool(name) and all(c.isalnum() or c in ("_", "-", ".") for c in name)
+
+
+def _validate_project_path(value: str) -> bool:
+    """项目路径校验：末段（项目名）须为合法名称，父目录部分不限制"""
+    from pathlib import PurePath
+
+    if not value or value.strip() != value:
+        return False
+    try:
+        Path(value)
+    except (ValueError, OSError):
+        return False
+    return _validate_project_name(PurePath(value).name)
 
 
 class InitCommand(Command):
@@ -43,6 +64,12 @@ class InitCommand(Command):
         self.package_manager = PackageManager()
 
     def add_arguments(self, parser: ArgumentParser):
+        parser.add_argument(
+            "path",
+            nargs="?",
+            default=None,
+            help=i18n.t("cli.init.path_help"),
+        )
         parser.add_argument("--project-name", "-n", help=i18n.t("cli.init.name_help"))
         parser.add_argument("--quick", "-q", action="store_true", help=i18n.t("cli.init.quick_help"))
         parser.add_argument("--force", "-f", action="store_true", help=i18n.t("cli.init.force_help"))
@@ -52,21 +79,65 @@ class InitCommand(Command):
             help=i18n.t("cli.init.here_help"),
         )
         parser.add_argument("--no-uv", action="store_true", help=i18n.t("cli.init.nouv_help"))
+        parser.add_argument("--no-venv", action="store_true", help=i18n.t("cli.init.novenv_help"))
+        parser.add_argument(
+            "--path",
+            dest="path_dir",
+            default=None,
+            help=i18n.t("cli.init.path_dir_help"),
+        )
 
     def execute(self, args):
         self.no_uv = getattr(args, "no_uv", False)
+        self.no_venv = getattr(args, "no_venv", False)
         here = getattr(args, "here", False)
+        path_arg = getattr(args, "path", None)
+        path_dir = getattr(args, "path_dir", None)
+
+        # uv 隔离环境检测：无项目的 `uv run` 语义下安装的包不会持久化
+        warn_if_uv_isolated()
+
+        # 解析创建位置与项目名（优先级：--here > 位置 path > --path/-n > 交互）
+        target_dir: Path | None = None
+        project_name = args.project_name
+
+        if path_dir:
+            target_dir = Path(path_dir)
+        if path_arg:
+            p = Path(path_arg)
+            if project_name is None:
+                project_name = p.name
+            if target_dir is None and str(p.parent) not in (".", ""):
+                target_dir = p.parent
+
+        create_venv = not self.no_venv
 
         if args.quick:
             if here:
-                name = args.project_name or Path.cwd().name
-                success = self._init_project(name, [], in_current_dir=True)
-            elif args.project_name:
-                success = self._init_project(args.project_name, [])
+                name = project_name or Path.cwd().name
+                success = self._init_project(
+                    name, [], in_current_dir=True, create_venv=create_venv
+                )
+            elif project_name:
+                success = self._init_project(
+                    project_name, [], target_dir=target_dir, create_venv=create_venv
+                )
             else:
-                success = self._interactive_init(args.project_name, args.force, here)
+                success = self._interactive_init(
+                    args.project_name,
+                    args.force,
+                    here,
+                    target_dir=target_dir,
+                    create_venv=create_venv,
+                )
         else:
-            success = self._interactive_init(args.project_name, args.force, here)
+            success = self._interactive_init(
+                project_name,
+                args.force,
+                here,
+                target_dir=target_dir,
+                create_venv=create_venv,
+            )
 
         if success:
             console.print(f"[success]  {i18n.t('cli.init.complete')}[/]")
@@ -78,13 +149,19 @@ class InitCommand(Command):
         self,
         project_name: str,
         adapter_list: list | None = None,
+        target_dir: Path | None = None,
+        create_venv: bool = True,
+        git_init: bool = False,
         in_current_dir: bool = False,
     ) -> bool:
         """
-        创建项目目录结构并生成配置文件
+        创建项目目录结构并生成配置文件、依赖清单与虚拟环境
 
         :param project_name: [str] 项目名称
         :param adapter_list: [list] 适配器名称列表 (默认: None)
+        :param target_dir: [Path | None] 项目父目录 (默认: None，即当前目录)
+        :param create_venv: [bool] 是否创建虚拟环境并安装依赖 (默认: True)
+        :param git_init: [bool] 是否初始化 git 仓库 (默认: False)
         :param in_current_dir: [bool] 是否在当前目录初始化 (默认: False)
         :return: [bool] 初始化成功返回 True，失败返回 False
         """
@@ -96,7 +173,12 @@ class InitCommand(Command):
                 console.print(f"[error]  {i18n.t('cli.init.invalid_name')}[/]")
                 return False
 
-            project_path = Path(project_name)
+            if target_dir is not None:
+                target_dir = Path(target_dir)
+                target_dir.mkdir(parents=True, exist_ok=True)
+                project_path = target_dir / project_name
+            else:
+                project_path = Path(project_name)
             display_name = project_name
 
             if project_path.exists():
@@ -106,7 +188,7 @@ class InitCommand(Command):
                     console.print(f"[error]  {i18n.t('cli.init.file_exists_not_dir', name=project_name)}[/]")
                     return False
             else:
-                project_path.mkdir()
+                project_path.mkdir(parents=True, exist_ok=True)
                 console.print(f"[success]  {i18n.t('cli.init.created_dir', name=project_name)}[/]")
 
         try:
@@ -155,6 +237,71 @@ class InitCommand(Command):
                     f.write('if __name__ == "__main__":\n')
                     f.write("    asyncio.run(main())\n")
 
+            # ---- pyproject.toml（依赖清单）----
+            pyproject_file = project_path / "pyproject.toml"
+            if not pyproject_file.exists():
+                pkg_name = re.sub(r"[^a-zA-Z0-9_.]", "_", display_name)
+                with pyproject_file.open("w", encoding="utf-8") as f:
+                    f.write("[project]\n")
+                    f.write(f'name = "{pkg_name}"\n')
+                    f.write('version = "0.1.0"\n')
+                    f.write('description = "ErisPulse project"\n')
+                    f.write('requires-python = ">=3.10"\n')
+                    f.write("dependencies = [\n")
+                    f.write('    "erispulse>=2.8.3",\n')
+                    for adapter in adapter_list or []:
+                        f.write(f'    "{adapter}",\n')
+                    f.write("]\n")
+                console.print(f"[success]  {i18n.t('cli.init.pyproject_created')}[/]")
+
+            # ---- .gitignore ----
+            gitignore_file = project_path / ".gitignore"
+            if not gitignore_file.exists():
+                with gitignore_file.open("w", encoding="utf-8") as f:
+                    f.write("__pycache__/\n*.py[cod]\n.venv/\nlogs/\nconfig/ssl/*.pem\n*.egg-info/\n.env\n")
+                console.print(f"[success]  {i18n.t('cli.init.gitignore_created')}[/]")
+
+            # ---- README.md ----
+            readme_file = project_path / "README.md"
+            if not readme_file.exists():
+                with readme_file.open("w", encoding="utf-8") as f:
+                    f.write(f"# {display_name}\n\nErisPulse 项目。\n\n```bash\nepsdk run\n```\n")
+                console.print(f"[success]  {i18n.t('cli.init.readme_created')}[/]")
+
+            # ---- 虚拟环境与依赖安装 ----
+            if create_venv:
+                console.print(f"[info]  {i18n.t('cli.init.venv_creating')}[/]")
+                venv_python = None
+                if uv_add(project_path, ["erispulse>=2.8.3"]):
+                    # uv add 自动创建 .venv、安装依赖并写入 pyproject 依赖清单
+                    venv_python = resolve_target_python(project_path)[0]
+                    console.print(f"[success]  {i18n.t('cli.init.venv_created')}[/]")
+                    console.print(f"[success]  {i18n.t('cli.init.deps_installed')}[/]")
+                else:
+                    venv_python = create_project_venv(project_path)
+                    if venv_python:
+                        console.print(f"[success]  {i18n.t('cli.init.venv_created')}[/]")
+                        pm = PackageManager(python_executable=venv_python)
+                        if pm.install_package(["erispulse>=2.8.3"]):
+                            append_pyproject_dependencies(project_path, ["erispulse>=2.8.3"])
+                            console.print(f"[success]  {i18n.t('cli.init.deps_installed')}[/]")
+                        else:
+                            console.print(
+                                f"[warning]  {i18n.t('cli.init.deps_failed', packages='erispulse')}[/]"
+                            )
+                    else:
+                        console.print(f"[warning]  {i18n.t('cli.init.venv_failed')}[/]")
+                self._project_python = venv_python
+                self._project_path = project_path
+
+            # ---- git 仓库 ----
+            if git_init:
+                import subprocess as _subprocess
+
+                result = _subprocess.run(["git", "init"], cwd=str(project_path), capture_output=True, text=True, check=False)
+                if result.returncode == 0:
+                    console.print(f"[success]  {i18n.t('cli.init.git_inited')}[/]")
+
             console.print(f"[success]  {i18n.t('cli.init.display_success', name=display_name)}[/]")
             console.print()
             console.print(Text(i18n.t("cli.create.next_steps"), style="bold"))
@@ -162,8 +309,9 @@ class InitCommand(Command):
                 console.print(f"    · {i18n.t('cli.init.edit_config', path='config/config.toml')}")
                 console.print(f"    · {i18n.t('cli.init.run_direct')}")
             else:
-                console.print(f"    · {i18n.t('cli.init.edit_config', path=f'{display_name}/config/config.toml')}")
-                console.print(f"    · {i18n.t('cli.init.cd_and_run', dir=display_name)}")
+                display_dir = display_name if target_dir is None else str(Path(target_dir) / display_name)
+                console.print(f"    · {i18n.t('cli.init.edit_config', path=f'{display_dir}/config/config.toml')}")
+                console.print(f"    · {i18n.t('cli.init.cd_and_run', dir=display_dir)}")
             return True
 
         except Exception as e:
@@ -209,13 +357,22 @@ class InitCommand(Command):
             "email": i18n.t("cli.init.adapter_desc_email"),
         }
 
-    def _interactive_init(self, project_name: str | None = None, force: bool = False, here: bool = False) -> bool:
+    def _interactive_init(
+        self,
+        project_name: str | None = None,
+        force: bool = False,
+        here: bool = False,
+        target_dir: Path | None = None,
+        create_venv: bool = True,
+    ) -> bool:
         """
         交互式初始化项目，引导用户配置项目位置及基本参数
 
         :param project_name: [str] 项目名称 (默认: None)
         :param force: [bool] 是否强制覆盖已存在目录 (默认: False)
         :param here: [bool] 是否在当前目录初始化 (默认: False)
+        :param target_dir: [Path | None] 项目父目录 (默认: None)
+        :param create_venv: [bool] 是否创建虚拟环境并安装依赖 (默认: True)
         :return: [bool] 初始化成功返回 True，失败返回 False
         """
         try:
@@ -244,12 +401,16 @@ class InitCommand(Command):
                 project_path = Path()
             else:
                 project_name = prompt_validated(
-                    i18n.t("cli.init.name_prompt"),
+                    i18n.t("cli.init.name_with_path_hint"),
                     default=project_name or "my_erispulse_project",
-                    validate=_validate_project_name,
+                    validate=_validate_project_path,
                     error_msg=i18n.t("cli.init.name_error"),
                 )
-                project_path = Path(project_name)
+                p = Path(project_name)
+                if target_dir is None and str(p.parent) not in (".", ""):
+                    target_dir = p.parent
+                project_name = p.name
+                project_path = (Path(target_dir) if target_dir else Path()) / project_name
                 if project_path.exists() and not force:
                     if not Confirm.ask(
                         f"  [cyan]{i18n.t('cli.init.dir_overwrite_prompt', name=project_name)}[/]",
@@ -258,7 +419,23 @@ class InitCommand(Command):
                         console.print(f"[info]  {i18n.t('cli.init.cancelled')}[/]")
                         return False
 
-            if not self._init_project(project_name, [], in_current_dir=in_current_dir):
+            # 虚拟环境与 git 仓库问询
+            if not getattr(self, "no_venv", False):
+                create_venv = Confirm.ask(
+                    f"  [cyan]{i18n.t('cli.init.venv_prompt')}[/]", default=True
+                )
+            git_init = Confirm.ask(
+                f"  [cyan]{i18n.t('cli.init.git_prompt')}[/]", default=False
+            )
+
+            if not self._init_project(
+                project_name,
+                [],
+                target_dir=target_dir,
+                create_venv=create_venv,
+                git_init=git_init,
+                in_current_dir=in_current_dir,
+            ):
                 return False
 
             from ErisPulse import config
@@ -381,7 +558,8 @@ class InitCommand(Command):
 
         from ..utils import config_wizard
 
-        pkg_manager = PackageManager()
+        project_python = getattr(self, "_project_python", None)
+        pkg_manager = PackageManager(python_executable=project_python)
         pkg_manager.no_uv = getattr(self, "no_uv", False)
         for adapter_name in adapter_names:
             package_name = None

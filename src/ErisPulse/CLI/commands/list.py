@@ -14,6 +14,7 @@ from ..base import Command
 from ..console import console
 from ..i18n import i18n
 from ..utils import PackageManager
+from ..utils.package_manager import resolve_target_python
 
 
 class ListCommand(Command):
@@ -31,7 +32,8 @@ class ListCommand(Command):
         """
         初始化 ListCommand，创建包管理器实例
         """
-        self.package_manager = PackageManager()
+        py_exec, _py_source = resolve_target_python()
+        self.package_manager = PackageManager(python_executable=py_exec)
 
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument(

@@ -21,6 +21,7 @@ from ..base import Command
 from ..console import console
 from ..constants import ENV_SUPERVISED, HARD_RESTART_EXIT_CODE
 from ..i18n import i18n
+from ..utils.package_manager import resolve_target_python, warn_if_uv_isolated
 
 
 class ReloadHandler(FileSystemEventHandler):
@@ -110,6 +111,15 @@ class RunCommand(Command):
         script = args.script
         reload_mode = args.reload
 
+        # uv 隔离环境检测：无项目的 `uv run` 语义下安装的包不会持久化
+        warn_if_uv_isolated()
+        # 目标解释器解析：项目 .venv 优先（bot 依赖应装在项目环境而非全局）
+        self.python_exe, self.python_source = resolve_target_python()
+        if self.python_source != "当前解释器":
+            console.print(
+                f"[info]  {i18n.t('cli.run.venv_using', python=self.python_exe)}[/]"
+            )
+
         if script:
             if not Path(script).exists():
                 # 列出当前目录的 .py 文件作为上下文参考
@@ -177,7 +187,7 @@ class RunCommand(Command):
             return
 
         cmd = [
-            sys.executable,
+            getattr(self, "python_exe", sys.executable),
             "-c",
             "import asyncio; from ErisPulse import sdk; "
             "asyncio.run(sdk.run(keep_running=True))",
@@ -275,7 +285,7 @@ class RunCommand(Command):
         def _spawn():
             """启动脚本子进程并记录到 reload_state"""
             reload_state["process"] = subprocess.Popen(
-                [sys.executable, script_path_abs]
+                [getattr(self, "python_exe", sys.executable), script_path_abs]
             )
 
         class _ScriptReloadHandler(FileSystemEventHandler):
