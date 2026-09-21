@@ -1233,10 +1233,11 @@ async def roll_handler(event, count: int, sides: int = 6, verbose: bool = False,
 - 声明的参数名必须存在于处理器签名中，否则注册期抛 `ValueError`
 - 不声明 `args=` / `options=` 的命令行为完全不变（向后兼容）
 
-### 命令冷却（cooldown=）
+### 命令治理（cooldown= / rate_limit= / deprecated=）
 
-手写冷却计时可用 `cooldown=` 声明替代。时长语法与 `args=` 的 `duration`
-类型一致（如 `"30s"`、`"1h30m"`、`"1d"`）：
+手写冷却计时、限流窗口、废弃提示可用声明替代，三者可任意组合。
+
+**冷却**——时长语法与 `args=` 的 `duration` 类型一致（如 `"30s"`、`"1h30m"`、`"1d"`）：
 
 ```python
 @command("daily", cooldown="1d", cooldown_key="user", cooldown_reply="今天已签到")
@@ -1244,16 +1245,50 @@ async def daily_handler(event):
     await event.reply("签到成功！")
 ```
 
-`cooldown_key=` 控制冷却粒度：`"user"`（默认，同一用户共享）、`"session"`
-（同一会话共享，如同一群）、`"global"`（所有用户所有会话共享）。
+**限流**——滑动窗口声明 `"次数/窗口"`（如 `"5/minute"`、`"10/s"`、`"3/2m"`）：
+
+```python
+@command("search", rate_limit="5/minute", rate_limit_key="user")
+async def search_handler(event):
+    await event.reply("搜索结果")
+```
+
+**废弃**——调用时自动回复废弃文案，`deprecated_reject=True` 拒绝执行：
+
+```python
+@command("oldcmd", deprecated="请用 /newcmd", deprecated_reject=True)
+async def old_handler(event): ...
+```
+
+键粒度（`cooldown_key=` / `rate_limit_key=`）：`"user"`（默认，同一用户共享）、
+`"session"`（同一会话共享，如同一群）、`"global"`（所有用户所有会话共享）。
 
 **行为要点**：
 
-- 冷却命中默认**静默丢弃**（对称于作用域静默）；声明 `cooldown_reply=` 后命中即回复该文案
-- 命令命中即认领——冷却命中的命令不会漏给低优先级消息处理器
-- 冷却在全部权限检查与参数解析通过、命令实际执行前开始计时：无权限用户不触发冷却，参数错误不消耗冷却
+- 冷却 / 限流命中默认**静默丢弃**（对称于作用域静默）；声明 `cooldown_reply=` / `rate_limit_reply=` 后命中即回复该文案
+- 命令命中即认领——治理命中的命令不会漏给低优先级消息处理器
+- 治理判定位于全部权限检查与参数解析通过、实际执行前：无权限用户不触发，参数错误不消耗
+- 同时声明冷却与限流时冷却先判（冷却命中不占限流窗口）
+- `deprecated=` 默认回复文案后**继续执行**；`deprecated_reject=True` 拒绝执行（`command.executed` 钩子记 `success=False, error="deprecated"`）
+- `/help` 列表与单命令帮助自动显示废弃标记与文案
 - 状态为进程内内存，模块卸载时自动清理；跨进程共享 / 重启持久化不在范围内
-- 声明在注册期校验（fail-fast）：时长语法非法、`cooldown_key=` 非白名单值、`cooldown_reply=` 未搭配 `cooldown=` 均抛 `ValueError`
+- 声明在注册期校验（fail-fast）：语法非法、键粒度非白名单值、reply 未搭配主声明均抛 `ValueError`
+
+### 处理器节流（throttle=）
+
+消息处理器防刷屏声明——同键事件在间隔内至多处理一条，其余静默丢弃：
+
+```python
+from ErisPulse import sdk
+
+@sdk.message.on_message(throttle="2s", throttle_key="user")
+async def handler(event): ...
+```
+
+`on_message` / `on_private_message` / `on_group_message` / `on_at_message`
+均支持；`throttle_key=` 与命令治理同一套键粒度（user / session / global），
+时长语法与 `duration` 一致。节流与 `pattern=` / `regex=` 等既有条件叠加
+生效（全部满足才触发）；间隔内丢弃仅记 TRACE 日志；声明在注册期校验。
 
 ### 依赖注入（Depends）
 

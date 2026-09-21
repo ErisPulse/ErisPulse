@@ -41,12 +41,15 @@ ErisPulse 消息处理模块
 #### 方法列表
 
 
-##### `on_message(priority: int = 0, pattern: str | None = None, regex: str | None = None)`
+##### `on_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user')`
 
 消息事件装饰器
 
 - **priority** (`处理器优先级`): - **pattern**: glob 通配符（``*`` / ``?`` / ``[seq]``），消息文本须匹配才触发
 - **regex** (`正则表达式，消息文本须匹配（search）才触发；与`): pattern 同时给定时须都匹配
+- **throttle** (`节流间隔声明（如`): ``"2s"`` / ``"1h30m"``，duration 语法）——
+    同键事件在间隔内至多处理一条，其余静默丢弃（EPRFC-2026-001 方向八）
+- **throttle_key** (`节流键粒度：``user``（默认）/`): ``session`` / ``global``
 **返回值**: 装饰器函数
 
 ---
@@ -70,12 +73,15 @@ ErisPulse 消息处理模块
 ---
 
 
-##### `on_private_message(priority: int = 0, pattern: str | None = None, regex: str | None = None)`
+##### `on_private_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user')`
 
 私聊消息事件装饰器
 
 - **priority** (`处理器优先级`): - **pattern**: glob 通配符（``*`` / ``?`` / ``[seq]``），消息文本须匹配才触发
 - **regex** (`正则表达式，消息文本须匹配（search）才触发；与`): pattern 同时给定时须都匹配
+- **throttle** (`节流间隔声明（如`): ``"2s"`` / ``"1h30m"``，duration 语法）——
+    同键事件在间隔内至多处理一条，其余静默丢弃（EPRFC-2026-001 方向八）
+- **throttle_key** (`节流键粒度：``user``（默认）/`): ``session`` / ``global``
 **返回值**: 装饰器函数
 
 ---
@@ -90,12 +96,15 @@ ErisPulse 消息处理模块
 ---
 
 
-##### `on_group_message(priority: int = 0, pattern: str | None = None, regex: str | None = None)`
+##### `on_group_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user')`
 
 群聊消息事件装饰器
 
 - **priority** (`处理器优先级`): - **pattern**: glob 通配符（``*`` / ``?`` / ``[seq]``），消息文本须匹配才触发
 - **regex** (`正则表达式，消息文本须匹配（search）才触发；与`): pattern 同时给定时须都匹配
+- **throttle** (`节流间隔声明（如`): ``"2s"`` / ``"1h30m"``，duration 语法）——
+    同键事件在间隔内至多处理一条，其余静默丢弃（EPRFC-2026-001 方向八）
+- **throttle_key** (`节流键粒度：``user``（默认）/`): ``session`` / ``global``
 **返回值**: 装饰器函数
 
 ---
@@ -110,12 +119,15 @@ ErisPulse 消息处理模块
 ---
 
 
-##### `on_at_message(priority: int = 0, pattern: str | None = None, regex: str | None = None)`
+##### `on_at_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user')`
 
 @消息事件装饰器
 
 - **priority** (`处理器优先级`): - **pattern**: glob 通配符（``*`` / ``?`` / ``[seq]``），消息文本须匹配才触发
 - **regex** (`正则表达式，消息文本须匹配（search）才触发；与`): pattern 同时给定时须都匹配
+- **throttle** (`节流间隔声明（如`): ``"2s"`` / ``"1h30m"``，duration 语法）——
+    同键事件在间隔内至多处理一条，其余静默丢弃（EPRFC-2026-001 方向八）
+- **throttle_key** (`节流键粒度：``user``（默认）/`): ``session`` / ``global``
 **返回值**: 装饰器函数
 
 ---
