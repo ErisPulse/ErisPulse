@@ -1711,15 +1711,18 @@ def append_pyproject_dependencies(project_dir: Path, packages: "list[str]") -> b
     :return: 是否成功（pyproject 不存在 / 解析失败返回 False）
     """
     import tomlkit
-    import tomllib
 
     pyproject = Path(project_dir) / "pyproject.toml"
     if not pyproject.exists():
         return False
     try:
-        with pyproject.open("rb") as f:
-            doc = tomllib.load(f)
-        deps: list = doc.get("project", {}).get("dependencies", [])
+        # tomlkit 解析保留注释与格式（其文档为 dict 子类，get 行为与
+        # tomllib 一致；不用 tomllib——它是 Python 3.11+ 标准库）
+        doc_kit = tomlkit.parse(pyproject.read_text(encoding="utf-8"))
+        proj = doc_kit.get("project")
+        if proj is None:
+            return False
+        deps: list = proj.get("dependencies", [])
         added = False
         for pkg in packages:
             if not any(str(d).split("[;")[0].split("==")[0].split(">=")[0].strip().lower() == pkg.lower() for d in deps):
@@ -1727,11 +1730,6 @@ def append_pyproject_dependencies(project_dir: Path, packages: "list[str]") -> b
                 added = True
         if not added:
             return True
-        # tomllib 读的是普通 dict——用 tomlkit 重新解析原文件以保留格式后写回
-        doc_kit = tomlkit.parse(pyproject.read_text(encoding="utf-8"))
-        proj = doc_kit.get("project")
-        if proj is None:
-            return False
         proj["dependencies"] = deps
         pyproject.write_text(tomlkit.dumps(doc_kit), encoding="utf-8")
         return True
@@ -1848,8 +1846,6 @@ def warn_if_uv_isolated() -> bool:
 
     :return: 是否处于隔离场景（True = 已输出警告）
     """
-    import tomllib
-
     if "UV" not in os.environ:
         return False
     if Path("pyproject.toml").exists():
@@ -1859,7 +1855,6 @@ def warn_if_uv_isolated() -> bool:
         + i18n.t("cli.uv.isolated_warning")
         + "[/]"
     )
-    _ = tomllib  # 保留显式依赖提示位（pyproject 探测未来可深化）
     return True
 
 
