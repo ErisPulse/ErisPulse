@@ -64,6 +64,18 @@ class MySQLDialect(SQLDialect):
             [table_name],
         )
 
+    def create_index_sql(self, table: str, index: str, column: str) -> str:
+        """{!--< internal-use >!--} 裸 CREATE INDEX（MySQL 不支持 IF NOT EXISTS，幂等由 has_index_sql 预检承接）"""
+        return f"CREATE INDEX {self.quote(index)} ON {self.quote(table)} ({self.quote(column)})"
+
+    def has_index_sql(self, table: str, index: str) -> tuple[str, list[str]]:
+        """{!--< internal-use >!--} information_schema 索引查询当前数据库"""
+        return (
+            "SELECT index_name FROM information_schema.statistics "
+            "WHERE table_schema = DATABASE() AND table_name = ? AND index_name = ?",
+            [table, index],
+        )
+
     def autoincrement_column(self, base_type: str) -> str:
         """{!--< internal-use >!--} ``INT/BIGINT AUTO_INCREMENT PRIMARY KEY``"""
         base = "INT" if base_type.upper() in ("INTEGER", "INT") else base_type.upper()

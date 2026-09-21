@@ -16,10 +16,14 @@ ErisPulse 数据模型层（ORM）—— 声明式模型与 Active Record CRUD
 1. 表名默认取类名 snake_case（``UserProfile → user_profile``），可用
    ``__tablename__`` 覆写
 2. ``Field(autoincrement=True)`` 的主键由数据库自增，``create`` 后自动回填
-3. ``list`` / ``dict`` 类型字段以 JSON 文本列存储，读写自动序列化
+   （``save`` 主键缺失退化为插入时同样回填）
+3. ``list`` / ``dict`` 类型字段（含 ``list[int]`` 等参数化泛型）以 JSON
+   文本列存储，读写自动序列化
 4. 环境无关：``Model.__storage__`` 可覆写为自定义 ``BaseStorage`` 实例
    （默认使用全局 ``ErisPulse.Core.storage`` 单例）
-5. 自动迁移（schema diff）与关系映射为后续版本能力，本层不包含
+5. 处于 ``storage.atransaction()`` 环境事务内时，读写自动复用事务连接，
+   随事务统一提交/回滚
+6. 自动迁移（schema diff）与关系映射为后续版本能力，本层不包含
 {!--< /tips >!--}
 
 :example:
@@ -41,7 +45,8 @@ import re
 from typing import Any, ClassVar
 
 from .config_schema import python_type_category, validate_field_constraints
-from .sql_base import BaseStorage, SQLStorageBase
+from .sql_base import BaseStorage, SQLDialect, SQLStorageBase
+from .storage import _current_txn
 
 _UNSET = object()
 _SNAKE_RE = re.compile(r"(?<!^)(?=[A-Z])")
@@ -283,14 +288,18 @@ class Condition:
     def __or__(self, other: Condition) -> Condition:
         return Condition(combinator="OR", left=self, right=other)
 
-    def compile(self) -> tuple[str, list[Any]]:
-        """编译为 (WHERE 片段, 参数列表)；片段为空串表示无条件"""
+    def compile(self, dialect: SQLDialect | None = None) -> tuple[str, list[Any]]:
+        """
+        编译为 (WHERE 片段, 参数列表)；片段为空串表示无条件
+
+        :param dialect: 方言（提供时标识符按方言引号引用，缺省为双引号记号）
+        """
         if self.combinator:
             left, right = self.left, self.right
             if left is None or right is None:
                 return "", []
-            left_sql, left_params = left.compile()
-            right_sql, right_params = right.compile()
+            left_sql, left_params = left.compile(dialect)
+            right_sql, right_params = right.compile(dialect)
             if not left_sql:
                 return right_sql, right_params
             if not right_sql:
@@ -298,7 +307,7 @@ class Condition:
             return f"({left_sql} {self.combinator} {right_sql})", [*left_params, *right_params]
 
         assert self.column is not None  # 叶子节点必有列名
-        quoted = f'"{_validate_column(self.column)}"'
+        quoted = _quote_ident(self.column, dialect)
         if self.op == "IN":
             if not self.value:
                 return "1=0", []  # 空集合 IN 恒假
@@ -317,6 +326,14 @@ def _validate_column(name: str) -> str:
     if not _IDENTIFIER_RE.fullmatch(name):
         raise ValueError(f"invalid column name: {name!r}")
     return name
+
+
+def _quote_ident(name: str, dialect: SQLDialect | None = None) -> str:
+    """
+    标识符引用（优先方言引号；无方言时回落双引号记号，SQLite/Postgres 通用）
+    """
+    _validate_column(name)
+    return dialect.quote(name) if dialect is not None else f'"{name}"'
 
 
 class QuerySet:
@@ -352,20 +369,20 @@ class QuerySet:
 
     # ---- SQL 构建 ----
 
-    def _where_clause(self) -> tuple[str, list[Any]]:
+    def _where_clause(self, dialect: SQLDialect | None = None) -> tuple[str, list[Any]]:
         if self._condition is None:
             return "", []
-        sql, params = self._condition.compile()
+        sql, params = self._condition.compile(dialect)
         return (f" WHERE {sql}", params) if sql else ("", [])
 
-    def _order_clause(self) -> str:
+    def _order_clause(self, dialect: SQLDialect | None = None) -> str:
         if not self._order:
             return ""
         parts = []
         for item in self._order:
             desc = item.startswith("-")
-            name = _validate_column(item[1:] if desc else item)
-            parts.append(f'"{name}" DESC' if desc else f'"{name}" ASC')
+            name = _quote_ident(item[1:] if desc else item, dialect)
+            parts.append(f"{name} DESC" if desc else f"{name} ASC")
         return " ORDER BY " + ", ".join(parts)
 
     def _limit_clause(self, params: list[Any]) -> str:
@@ -383,11 +400,12 @@ class QuerySet:
     async def all(self) -> list[Any]:
         """执行查询，返回模型实例列表"""
         storage = self._model._get_storage()
-        where_sql, where_params = self._where_clause()
+        dialect = storage.dialect
+        where_sql, where_params = self._where_clause(dialect)
         params: list[Any] = [*where_params]
         sql = (
-            f'SELECT * FROM "{self._model.table_name()}"{where_sql}'
-            f"{self._order_clause()}{self._limit_clause(params)}"
+            f"SELECT * FROM {_quote_ident(self._model.table_name(), dialect)}{where_sql}"
+            f"{self._order_clause(dialect)}{self._limit_clause(params)}"
         )
         rows, cols = await storage._execute_query("select", sql, params)
         return [self._model._row_to_instance(dict(zip(cols or [], row, strict=False))) for row in rows]
@@ -401,8 +419,9 @@ class QuerySet:
     async def count(self) -> int:
         """符合条件的行数"""
         storage = self._model._get_storage()
-        where_sql, where_params = self._where_clause()
-        sql = f'SELECT COUNT(*) FROM "{self._model.table_name()}"{where_sql}'
+        dialect = storage.dialect
+        where_sql, where_params = self._where_clause(dialect)
+        sql = f"SELECT COUNT(*) FROM {_quote_ident(self._model.table_name(), dialect)}{where_sql}"
         return int(await storage._execute_query("count", sql, where_params))
 
     async def update(self, **values: Any) -> int:
@@ -415,13 +434,17 @@ class QuerySet:
         updates = {k: v for k, v in values.items() if k in fields_map}
         if not updates:
             return 0
+        storage = self._model._get_storage()
+        dialect = storage.dialect
         sets, params = [], []
         for name, value in updates.items():
-            sets.append(f'"{name}" = ?')
+            sets.append(f"{_quote_ident(name, dialect)} = ?")
             params.append(fields_map[name].to_db_value(value))
-        where_sql, where_params = self._where_clause()
-        sql = f'UPDATE "{self._model.table_name()}" SET {", ".join(sets)}{where_sql}'
-        storage = self._model._get_storage()
+        where_sql, where_params = self._where_clause(dialect)
+        sql = (
+            f"UPDATE {_quote_ident(self._model.table_name(), dialect)} "
+            f"SET {', '.join(sets)}{where_sql}"
+        )
         return int(await storage._execute_query("dml", sql, [*params, *where_params]))
 
     async def delete(self) -> int:
@@ -430,9 +453,10 @@ class QuerySet:
 
         :return: 受影响行数
         """
-        where_sql, where_params = self._where_clause()
-        sql = f'DELETE FROM "{self._model.table_name()}"{where_sql}'
         storage = self._model._get_storage()
+        dialect = storage.dialect
+        where_sql, where_params = self._where_clause(dialect)
+        sql = f"DELETE FROM {_quote_ident(self._model.table_name(), dialect)}{where_sql}"
         return int(await storage._execute_query("dml", sql, where_params))
 
 
@@ -575,7 +599,8 @@ class Model:
         """
         自动建表（幂等：CREATE TABLE IF NOT EXISTS；方言翻译由存储层承接）
 
-        声明了 ``index=True`` 的字段会同步生成普通索引。
+        声明了 ``index=True`` 的字段会同步生成普通索引（MySQL 等不支持
+        ``IF NOT EXISTS`` 建索引的方言由存在性预检保证幂等）。
 
         :return: 是否成功
         """
@@ -583,11 +608,16 @@ class Model:
         cols = {name: f.column_definition() for name, f in cls._fields.items()}
         if not await storage.aCreateTable(cls.table_name(), cols):
             return False
+        dialect = storage.dialect
         for name, field_obj in cls._fields.items():
             if field_obj.index:
                 idx = f"idx_{cls.table_name()}_{name}"
-                sql = f'CREATE INDEX IF NOT EXISTS "{idx}" ON "{cls.table_name()}" ("{name}")'
-                await storage._execute_query("dml", sql, [])
+                exists_sql, exists_params = dialect.has_index_sql(cls.table_name(), idx)
+                row, _ = await storage._execute_query("one", exists_sql, exists_params)
+                if row is None:
+                    await storage._execute_query(
+                        "dml", dialect.create_index_sql(cls.table_name(), idx, name), []
+                    )
         return True
 
     @classmethod
@@ -640,11 +670,30 @@ class Model:
         """
         插入一行并返回实例（自增主键自动回填）
 
+        处于 ``storage.atransaction()`` 环境事务内时，INSERT 复用事务连接，
+        随事务统一提交/回滚，不独立提交。
+
         :raises ValueError: 约束校验失败（必填缺失 / 枚举外 / 越界 / 超长）
         """
         instance = cls(**kwargs)
         instance._validate()
+        await cls._insert_and_backfill(instance)
+        return instance
+
+    @classmethod
+    async def _insert_and_backfill(cls, instance: Model) -> None:
+        """
+        {!--< internal-use >!--}
+        INSERT 一行并按需回填自增主键到实例（:meth:`create` 与 :meth:`save` 共用）
+
+        列参数构建（自增主键交由数据库、可空/有默认字段 None 跳过、JSON 序列化）
+        与连接路由在此收敛：处于环境事务内复用事务连接，否则开事务专用连接
+        自管提交（自增回填要求 INSERT 与 last-id 查询同连接）。
+
+        :param instance: 已完成约束校验的待插入实例
+        """
         storage = cls._get_storage()
+        dialect = storage.dialect
 
         cols, params = [], []
         for name, field_obj in cls._fields.items():
@@ -657,9 +706,9 @@ class Model:
             cols.append(name)
             params.append(field_obj.to_db_value(value))
 
-        quoted = [f'"{c}"' for c in cols]
+        quoted = [_quote_ident(c, dialect) for c in cols]
         marks = ", ".join("?" for _ in cols)
-        sql = f'INSERT INTO "{cls.table_name()}" ({", ".join(quoted)}) VALUES ({marks})'
+        sql = f"INSERT INTO {_quote_ident(cls.table_name(), dialect)} ({', '.join(quoted)}) VALUES ({marks})"
 
         pk = cls._pk_field()
         needs_backfill = (
@@ -667,30 +716,39 @@ class Model:
             and pk.autoincrement
             and instance.__dict__.get(pk.name) is None
         )
-        assert pk is not None or not needs_backfill
 
-        if needs_backfill and storage.dialect is not None:
-            # 自增回填：INSERT 与 last-id 查询须同连接 → 事务连接承载
-            pk_field = pk
-            assert pk_field is not None  # needs_backfill 隐含主键存在
-            conn = await storage._acquire_txn_conn()
-            try:
-                await storage._begin_txn(conn)
-                await storage._execute_query("dml", sql, params, conn=conn)
-                row, _ = await storage._execute_query(
-                    "one", storage.dialect.last_insert_id_sql(), [], conn=conn
-                )
-                await storage._commit_txn(conn)
-            except Exception:
-                await storage._rollback_txn(conn)
-                raise
-            finally:
-                await storage._release_txn_conn(conn)
-            if row:
-                setattr(instance, pk_field.name, row[0])
-        else:
+        if not needs_backfill or storage.dialect is None:
             await storage._execute_query("dml", sql, params)
-        return instance
+            return
+
+        # 自增回填：INSERT 与 last-id 查询须同连接 → 事务连接承载
+        assert pk is not None  # needs_backfill 隐含主键存在
+        txn = _current_txn.get()
+        if txn is not None and txn.conn is not None:
+            # 环境事务内：直接复用事务连接，提交/回滚归外层事务
+            await storage._execute_query("dml", sql, params, conn=txn.conn)
+            row, _ = await storage._execute_query(
+                "one", storage.dialect.last_insert_id_sql(), [], conn=txn.conn
+            )
+            if row:
+                setattr(instance, pk.name, row[0])
+            return
+
+        conn = await storage._acquire_txn_conn()
+        try:
+            await storage._begin_txn(conn)
+            await storage._execute_query("dml", sql, params, conn=conn)
+            row, _ = await storage._execute_query(
+                "one", storage.dialect.last_insert_id_sql(), [], conn=conn
+            )
+            await storage._commit_txn(conn)
+        except Exception:
+            await storage._rollback_txn(conn)
+            raise
+        finally:
+            await storage._release_txn_conn(conn)
+        if row:
+            setattr(instance, pk.name, row[0])
 
     @classmethod
     async def count(cls, *conditions: Condition) -> int:
@@ -711,27 +769,29 @@ class Model:
 
     async def save(self) -> int:
         """
-        按主键更新本行（先约束校验）；主键缺失时退化为插入
+        按主键更新本行（先约束校验）；主键缺失时退化为插入（自增主键同样回填到本实例）
 
         :return: 受影响行数
         """
         self._validate()
         pk = self._pk_field()
         if pk is None or self.__dict__.get(pk.name) is None:
-            await type(self).create(
-                **{n: self.__dict__.get(n) for n in self._fields if n != (pk.name if pk else "")}
-            )
+            await type(self)._insert_and_backfill(self)
             return 1
         storage = self._get_storage()
+        dialect = storage.dialect
         sets, params = [], []
         for name in self._fields:
             if name == pk.name:
                 continue
-            sets.append(f'"{name}" = ?')
+            sets.append(f"{_quote_ident(name, dialect)} = ?")
             params.append(self._fields[name].to_db_value(self.__dict__.get(name)))
         if not sets:
             return 0
-        sql = f'UPDATE "{type(self).table_name()}" SET {", ".join(sets)} WHERE "{pk.name}" = ?'
+        sql = (
+            f"UPDATE {_quote_ident(type(self).table_name(), dialect)} "
+            f"SET {', '.join(sets)} WHERE {_quote_ident(pk.name, dialect)} = ?"
+        )
         params.append(self.__dict__.get(pk.name))
         return int(await storage._execute_query("dml", sql, params))
 
@@ -746,7 +806,11 @@ class Model:
         if pk is None or self.__dict__.get(pk.name) is None:
             raise ValueError(f"{type(self).__name__} has no primary key value to delete")
         storage = self._get_storage()
-        sql = f'DELETE FROM "{type(self).table_name()}" WHERE "{pk.name}" = ?'
+        dialect = storage.dialect
+        sql = (
+            f"DELETE FROM {_quote_ident(type(self).table_name(), dialect)} "
+            f"WHERE {_quote_ident(pk.name, dialect)} = ?"
+        )
         return int(await storage._execute_query("dml", sql, [self.__dict__.get(pk.name)]))
 
 
