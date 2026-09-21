@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "a60955b24db5c8925d2dffe7ba297507",
-  "file_hash": "a60955b24db5c8925d2dffe7ba297507",
-  "translated_at": "2026-09-07T12:15:34.189619",
+  "hash": "3044ee885c1e743ff683095b14cc7fe1",
+  "file_hash": "3044ee885c1e743ff683095b14cc7fe1",
+  "translated_at": "2026-09-21T11:17:21.865685",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -14,8 +14,8 @@
       "translation": "## 系統要求\n\n- Python 3.10 或更高版本\n- pip 或 uv（推薦）\n- 足夠的磁碟空間（至少 100MB）"
     },
     {
-      "hash": "d588381833d7a59395c1506d42a2270e",
-      "translation": "## 安裝方式\n\n### 方式一：使用 pip 安裝\n\n```bash\n# 安裝 ErisPulse\npip install ErisPulse\n\n# 升級到最新版本\npip install ErisPulse --upgrade\n```\n\n### 方式二：使用 uv 安裝（推薦）\n\nuv 是一個更快的 Python 工具鏈，推薦用於開發環境。\n\n#### 安裝 uv\n\n```bash\n# 使用 pip 安裝 uv\npip install uv\n\n# 驗證安裝\nuv --version\n```\n\n#### 建立虛擬環境\n\n```bash\n# 建立專案目錄\nmkdir my_bot && cd my_bot\n\n# 安裝 Python 3.12\nuv python install 3.12\n\n# 建立虛擬環境\nuv venv\n```\n\n#### 激活虛擬環境\n\n```bash\n# Windows\n.venv\\Scripts\\activate\n\n# Linux/Mac\nsource .venv/bin/activate\n```\n\n#### 安裝 ErisPulse\n\n```bash\n# 安裝 ErisPulse\nuv pip install ErisPulse --upgrade\n```"
+      "hash": "a5c38fb5214f1c38b7a570258c9d958b",
+      "translation": "## 安裝方式\n\n### 方式一：使用 pip 安裝\n\n```bash\n# 安裝 ErisPulse\npip install ErisPulse\n\n# 升級到最新版本\npip install ErisPulse --upgrade\n```\n\n### 方式二：使用 uv 安裝（推薦）\n\nuv 是一個更快的 Python 工具鏈，推薦用於開發環境。\n\n#### 安裝 uv\n\n```bash\n# 使用 pip 安裝 uv\npip install uv\n\n# 驗證安裝\nuv --version\n```\n\n#### 建立虛擬環境\n\n```bash\n# 建立專案資料夾\nmkdir my_bot && cd my_bot\n\n# 安裝 Python 3.12\nuv python install 3.12\n\n# 建立虛擬環境\nuv venv\n```\n\n#### 激活虛擬環境\n\n```bash\n# Windows\n.venv\\Scripts\\activate\n\n# Linux/Mac\nsource .venv/bin/activate\n```\n\n#### 安裝 ErisPulse\n\n```bash\n# 安裝 ErisPulse\nuv pip install ErisPulse --upgrade\n```\n\n### 方式三：使用 uv tool 安裝（全域 CLI，推薦）\n\n如果只想將 `epsdk` 當作全域命令列工具使用，`uv tool install` 是最乾淨的方式——\nepsdk 在獨立的工具環境中運行，不會污染任何專案環境：\n\n```bash\n# 安裝（epsdk 立即可用，無需激活任何虛擬環境）\nuv tool install ErisPulse\n\n# 升級（或直接使用 epsdk self-update，會自動走此通道）\nuv tool upgrade ErisPulse\n```\n\n> [!NOTE]\n> 工具環境中的 epsdk 在專案資料夾內運行時會自動感知專案 `.venv`：\n> `epsdk install` 將元件安裝進專案環境、`epsdk run` 使用專案環境運行機器人，\n> 框架本體仍由工具環境提供，兩邊互不干擾。"
     },
     {
       "hash": "358f974f4ee2f44daa4450252b751cdc",

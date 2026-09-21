@@ -21,7 +21,11 @@ from ..base import Command
 from ..console import console
 from ..constants import ENV_SUPERVISED, HARD_RESTART_EXIT_CODE
 from ..i18n import i18n
-from ..utils.package_manager import resolve_target_python, warn_if_uv_isolated
+from ..utils.package_manager import (
+    resolve_target_python,
+    warn_if_uv_isolated,
+    warn_if_uv_tool_env_without_project,
+)
 
 
 class ReloadHandler(FileSystemEventHandler):
@@ -113,6 +117,8 @@ class RunCommand(Command):
 
         # uv 隔离环境检测：无项目的 `uv run` 语义下安装的包不会持久化
         warn_if_uv_isolated()
+        # uv tool 环境且无项目环境：组件应装进项目 .venv 而非工具环境
+        warn_if_uv_tool_env_without_project()
         # 目标解释器解析：项目 .venv 优先（bot 依赖应装在项目环境而非全局）
         self.python_exe, self.python_source = resolve_target_python()
         if self.python_source != "当前解释器":

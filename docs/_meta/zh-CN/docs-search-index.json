@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1603,
+  "total_keywords": 1604,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2779,7 +2779,7 @@
     "Debian/Ubuntu 虚拟环境创建失败": [
       {
         "document": "user-guide/installation.md",
-        "line": 141,
+        "line": 159,
         "level": 3,
         "title": "Debian/Ubuntu 虚拟环境创建失败"
       }
@@ -3867,7 +3867,7 @@
     "Windows PowerShell 执行策略": [
       {
         "document": "user-guide/installation.md",
-        "line": 133,
+        "line": 151,
         "level": 3,
         "title": "Windows PowerShell 执行策略"
       }
@@ -4251,7 +4251,7 @@
     "config": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 232,
+        "line": 237,
         "level": 3,
         "title": "config"
       }
@@ -4307,7 +4307,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 371,
+        "line": 379,
         "level": 3,
         "title": "create"
       }
@@ -4355,7 +4355,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 510,
+        "line": 519,
         "level": 3,
         "title": "doctor"
       }
@@ -4411,7 +4411,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 422,
+        "line": 430,
         "level": 3,
         "title": "i18n"
       }
@@ -4419,7 +4419,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 324,
+        "line": 329,
         "level": 3,
         "title": "init"
       }
@@ -4451,7 +4451,7 @@
     "list": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 169,
+        "line": 174,
         "level": 3,
         "title": "list"
       }
@@ -4459,7 +4459,7 @@
     "list-remote": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 198,
+        "line": 203,
         "level": 3,
         "title": "list-remote"
       }
@@ -4563,7 +4563,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 286,
+        "line": 291,
         "level": 3,
         "title": "run"
       }
@@ -4651,7 +4651,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 459,
+        "line": 467,
         "level": 3,
         "title": "types"
       }
@@ -4931,7 +4931,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 174,
+        "line": 182,
         "level": 2,
         "title": "下一步"
       },
@@ -4943,7 +4943,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 153,
+        "line": 171,
         "level": 2,
         "title": "下一步"
       }
@@ -5567,7 +5567,7 @@
     "交互式初始化（推荐）": [
       {
         "document": "quick-start.md",
-        "line": 63,
+        "line": 71,
         "level": 3,
         "title": "交互式初始化（推荐）"
       }
@@ -5583,13 +5583,13 @@
     "交互式安装": [
       {
         "document": "quick-start.md",
-        "line": 109,
+        "line": 117,
         "level": 3,
         "title": "交互式安装"
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 539,
+        "line": 548,
         "level": 2,
         "title": "交互式安装"
       }
@@ -5989,7 +5989,7 @@
     "信息查询命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 162,
+        "line": 166,
         "level": 2,
         "title": "信息查询命令"
       }
@@ -6091,7 +6091,7 @@
     "全局参数": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 494,
+        "line": 502,
         "level": 2,
         "title": "全局参数"
       }
@@ -6279,7 +6279,7 @@
     "切换语言": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 629,
+        "line": 638,
         "level": 3,
         "title": "切换语言"
       }
@@ -6303,7 +6303,7 @@
     "列出组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 567,
+        "line": 576,
         "level": 3,
         "title": "列出组件"
       }
@@ -6335,7 +6335,7 @@
     "创建脚手架": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 662,
+        "line": 671,
         "level": 3,
         "title": "创建脚手架"
       }
@@ -6389,13 +6389,13 @@
     "初始化项目": [
       {
         "document": "quick-start.md",
-        "line": 61,
+        "line": 69,
         "level": 2,
         "title": "初始化项目"
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 652,
+        "line": 661,
         "level": 3,
         "title": "初始化项目"
       }
@@ -6543,7 +6543,7 @@
     "升级组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 606,
+        "line": 615,
         "level": 3,
         "title": "升级组件"
       }
@@ -6607,7 +6607,7 @@
     "卸载组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 583,
+        "line": 592,
         "level": 3,
         "title": "卸载组件"
       }
@@ -7143,7 +7143,7 @@
     "启用 IDE 补全（可选）": [
       {
         "document": "quick-start.md",
-        "line": 127,
+        "line": 135,
         "level": 2,
         "title": "启用 IDE 补全（可选）"
       }
@@ -8371,7 +8371,7 @@
     "安装失败": [
       {
         "document": "user-guide/installation.md",
-        "line": 111,
+        "line": 129,
         "level": 3,
         "title": "安装失败"
       }
@@ -8403,13 +8403,13 @@
     "安装模块": [
       {
         "document": "quick-start.md",
-        "line": 95,
+        "line": 103,
         "level": 2,
         "title": "安装模块"
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 554,
+        "line": 563,
         "level": 3,
         "title": "安装模块"
       }
@@ -8803,7 +8803,7 @@
     "常见用法": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 552,
+        "line": 561,
         "level": 2,
         "title": "常见用法"
       }
@@ -8837,7 +8837,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 109,
+        "line": 127,
         "level": 2,
         "title": "常见问题"
       }
@@ -9353,7 +9353,7 @@
     "快速初始化": [
       {
         "document": "quick-start.md",
-        "line": 76,
+        "line": 84,
         "level": 3,
         "title": "快速初始化"
       }
@@ -9527,7 +9527,7 @@
     "手动创建项目": [
       {
         "document": "quick-start.md",
-        "line": 86,
+        "line": 94,
         "level": 3,
         "title": "手动创建项目"
       }
@@ -10227,9 +10227,17 @@
     "方式三：使用 ErisPulse-App 客户端（免终端）": [
       {
         "document": "user-guide/installation.md",
-        "line": 72,
+        "line": 90,
         "level": 3,
         "title": "方式三：使用 ErisPulse-App 客户端（免终端）"
+      }
+    ],
+    "方式三：使用 uv tool 安装（全局 CLI，推荐）": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 68,
+        "level": 3,
+        "title": "方式三：使用 uv tool 安装（全局 CLI，推荐）"
       }
     ],
     "方式二：event.send_chain()": [
@@ -10603,7 +10611,7 @@
     "查看可用模块": [
       {
         "document": "quick-start.md",
-        "line": 103,
+        "line": 111,
         "level": 3,
         "title": "查看可用模块"
       }
@@ -11015,7 +11023,7 @@
     "检查安装": [
       {
         "document": "user-guide/installation.md",
-        "line": 86,
+        "line": 104,
         "level": 3,
         "title": "检查安装"
       }
@@ -11131,7 +11139,7 @@
     "模块安装失败": [
       {
         "document": "user-guide/installation.md",
-        "line": 126,
+        "line": 144,
         "level": 3,
         "title": "模块安装失败"
       }
@@ -11999,7 +12007,7 @@
     "环境诊断": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 508,
+        "line": 517,
         "level": 2,
         "title": "环境诊断"
       }
@@ -12075,7 +12083,7 @@
     "生成类型存根": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 642,
+        "line": 651,
         "level": 3,
         "title": "生成类型存根"
       }
@@ -12595,7 +12603,7 @@
     "类型存根命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 453,
+        "line": 461,
         "level": 2,
         "title": "类型存根命令"
       }
@@ -13083,7 +13091,7 @@
     "语言命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 416,
+        "line": 424,
         "level": 2,
         "title": "语言命令"
       }
@@ -13481,7 +13489,7 @@
     "运行控制命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 275,
+        "line": 280,
         "level": 2,
         "title": "运行控制命令"
       }
@@ -13521,7 +13529,7 @@
     "运行测试": [
       {
         "document": "user-guide/installation.md",
-        "line": 93,
+        "line": 111,
         "level": 3,
         "title": "运行测试"
       }
@@ -13529,13 +13537,13 @@
     "运行项目": [
       {
         "document": "quick-start.md",
-        "line": 117,
+        "line": 125,
         "level": 2,
         "title": "运行项目"
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 619,
+        "line": 628,
         "level": 3,
         "title": "运行项目"
       }
@@ -13983,7 +13991,7 @@
     "通过 CLI 安装": [
       {
         "document": "quick-start.md",
-        "line": 97,
+        "line": 105,
         "level": 3,
         "title": "通过 CLI 安装"
       }
@@ -14133,7 +14141,7 @@
     "配置命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 226,
+        "line": 231,
         "level": 2,
         "title": "配置命令"
       }
@@ -14171,7 +14179,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 158,
+        "line": 166,
         "level": 2,
         "title": "配置文件"
       }
@@ -14257,7 +14265,7 @@
     "配置组件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 593,
+        "line": 602,
         "level": 3,
         "title": "配置组件"
       }
@@ -14347,7 +14355,7 @@
     "配置错误": [
       {
         "document": "user-guide/installation.md",
-        "line": 119,
+        "line": 137,
         "level": 3,
         "title": "配置错误"
       }
@@ -14685,7 +14693,7 @@
     "项目初始化与模块安装": [
       {
         "document": "user-guide/installation.md",
-        "line": 68,
+        "line": 86,
         "level": 2,
         "title": "项目初始化与模块安装"
       }
@@ -14701,7 +14709,7 @@
     "项目管理命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 317,
+        "line": 322,
         "level": 2,
         "title": "项目管理命令"
       }
@@ -14715,7 +14723,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 146,
+        "line": 154,
         "level": 2,
         "title": "项目结构"
       }
@@ -14731,7 +14739,7 @@
     "验证安装": [
       {
         "document": "user-guide/installation.md",
-        "line": 84,
+        "line": 102,
         "level": 2,
         "title": "验证安装"
       }

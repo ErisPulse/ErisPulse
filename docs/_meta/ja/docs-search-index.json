@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1671,
+  "total_keywords": 1673,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -10,12 +10,12 @@
         "title": "0 成功（OK）"
       }
     ],
-    "1 本レールインストールスクリプト（推奨）": [
+    "1 本化インストールスクリプト（推奨）": [
       {
         "document": "quick-start.md",
         "line": 7,
         "level": 3,
-        "title": "1 本レールインストールスクリプト（推奨）"
+        "title": "1 本化インストールスクリプト（推奨）"
       }
     ],
     "1. BaseAdapter 層（通常はオーバーライド不要）": [
@@ -114,14 +114,6 @@
         "title": "1. エラータイプの分類"
       }
     ],
-    "1. エラーハンドリング": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 848,
-        "level": 3,
-        "title": "1. エラーハンドリング"
-      }
-    ],
     "1. キャッシュの使用": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -208,6 +200,14 @@
         "line": 9,
         "level": 3,
         "title": "1. 何时发送 Meta 事件"
+      }
+    ],
+    "1. 例外処理": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 860,
+        "level": 3,
+        "title": "1. 例外処理"
       }
     ],
     "1. 単一責任の原則": [
@@ -721,7 +721,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 866,
+        "line": 878,
         "level": 3,
         "title": "2. ログ記録"
       }
@@ -1175,7 +1175,7 @@
     "3. 条件処理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 882,
+        "line": 894,
         "level": 3,
         "title": "3. 条件処理"
       }
@@ -2706,6 +2706,14 @@
         "title": "Bot 状態管理と Meta イベント"
       }
     ],
+    "Botのステータス照会": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 533,
+        "level": 3,
+        "title": "Botのステータス照会"
+      }
+    ],
     "Botコマンドメッセージセグメント (ideaura_command)": [
       {
         "document": "platform-guide/ideaura.md",
@@ -2718,12 +2726,6 @@
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 1065,
-        "level": 3,
-        "title": "Botステータスの照会"
-      },
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 524,
         "level": 3,
         "title": "Botステータスの照会"
       }
@@ -2755,17 +2757,17 @@
     "CLI によるインストール": [
       {
         "document": "quick-start.md",
-        "line": 97,
+        "line": 105,
         "level": 3,
         "title": "CLI によるインストール"
       }
     ],
-    "CLI コマンドリファレンス": [
+    "CLIコマンドリファレンス": [
       {
         "document": "user-guide/cli-reference.md",
         "line": 1,
         "level": 1,
-        "title": "CLI コマンドリファレンス"
+        "title": "CLIコマンドリファレンス"
       }
     ],
     "CORS 設定": [
@@ -2867,7 +2869,7 @@
     "Debian/Ubuntu 仮想環境の作成失敗": [
       {
         "document": "user-guide/installation.md",
-        "line": 138,
+        "line": 153,
         "level": 3,
         "title": "Debian/Ubuntu 仮想環境の作成失敗"
       }
@@ -3143,7 +3145,7 @@
     "Eventオブジェクトの一般的なメソッド": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 771,
+        "line": 783,
         "level": 3,
         "title": "Eventオブジェクトの一般的なメソッド"
       }
@@ -3263,7 +3265,7 @@
     "IDE補完の有効化（オプション）": [
       {
         "document": "quick-start.md",
-        "line": 127,
+        "line": 135,
         "level": 2,
         "title": "IDE補完の有効化（オプション）"
       }
@@ -4105,7 +4107,7 @@
     "Windows PowerShell 実行ポリシー": [
       {
         "document": "user-guide/installation.md",
-        "line": 130,
+        "line": 145,
         "level": 3,
         "title": "Windows PowerShell 実行ポリシー"
       }
@@ -4481,7 +4483,7 @@
     "config": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 232,
+        "line": 237,
         "level": 3,
         "title": "config"
       }
@@ -4537,7 +4539,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 371,
+        "line": 379,
         "level": 3,
         "title": "create"
       }
@@ -4585,7 +4587,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 510,
+        "line": 519,
         "level": 3,
         "title": "doctor"
       }
@@ -4657,7 +4659,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 422,
+        "line": 430,
         "level": 3,
         "title": "i18n"
       }
@@ -4673,7 +4675,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 324,
+        "line": 329,
         "level": 3,
         "title": "init"
       }
@@ -4705,7 +4707,7 @@
     "list": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 169,
+        "line": 174,
         "level": 3,
         "title": "list"
       }
@@ -4713,7 +4715,7 @@
     "list-remote": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 198,
+        "line": 203,
         "level": 3,
         "title": "list-remote"
       }
@@ -4774,12 +4776,12 @@
         "title": "owner コンテキストメカニズム"
       }
     ],
-    "pip を使用したインストール": [
+    "pip を使用してインストール": [
       {
         "document": "quick-start.md",
         "line": 51,
         "level": 3,
-        "title": "pip を使用したインストール"
+        "title": "pip を使用してインストール"
       }
     ],
     "pip 方式": [
@@ -4814,18 +4816,18 @@
         "title": "remind：返信がなければリマインド"
       }
     ],
-    "replyメソッドを使って返信を送信": [
+    "replyメソッドを使用した返信の送信": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 548,
+        "line": 557,
         "level": 3,
-        "title": "replyメソッドを使って返信を送信"
+        "title": "replyメソッドを使用した返信の送信"
       }
     ],
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 286,
+        "line": 291,
         "level": 3,
         "title": "run"
       }
@@ -4913,7 +4915,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 459,
+        "line": 467,
         "level": 3,
         "title": "types"
       }
@@ -5600,12 +5602,12 @@
         "title": "イベントの種類"
       }
     ],
-    "イベントオーバーライド：モジュールのコードを変更せずに、任意のイベントタイプの動作を上書きする": [
+    "イベントの種類概要": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 325,
+        "line": 5,
         "level": 2,
-        "title": "イベントオーバーライド：モジュールのコードを変更せずに、任意のイベントタイプの動作を上書きする"
+        "title": "イベントの種類概要"
       }
     ],
     "イベントコンバーター実装ガイド": [
@@ -5646,18 +5648,10 @@
         "title": "イベントタイプのマッピング"
       }
     ],
-    "イベントタイプの概要": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 5,
-        "level": 2,
-        "title": "イベントタイプの概要"
-      }
-    ],
     "イベントデータのアクセス": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 769,
+        "line": 781,
         "level": 2,
         "title": "イベントデータのアクセス"
       }
@@ -5694,6 +5688,14 @@
         "title": "イベントフロー"
       }
     ],
+    "イベント上書き：モジュールのコードを変更せずに、任意のイベントタイプの動作を上書き": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 331,
+        "level": 2,
+        "title": "イベント上書き：モジュールのコードを変更せずに、任意のイベントタイプの動作を上書き"
+      }
+    ],
     "イベント例": [
       {
         "document": "platform-guide/onebot11.md",
@@ -5727,7 +5729,7 @@
     "イベント処理のベストプラクティス": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 846,
+        "line": 858,
         "level": 2,
         "title": "イベント処理のベストプラクティス"
       }
@@ -5911,13 +5913,13 @@
     "インストールの確認": [
       {
         "document": "user-guide/installation.md",
-        "line": 81,
+        "line": 96,
         "level": 2,
         "title": "インストールの確認"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 83,
+        "line": 98,
         "level": 3,
         "title": "インストールの確認"
       }
@@ -5925,7 +5927,7 @@
     "インストール失敗": [
       {
         "document": "user-guide/installation.md",
-        "line": 108,
+        "line": 123,
         "level": 3,
         "title": "インストール失敗"
       }
@@ -5957,7 +5959,7 @@
     "インタラクティブなインストール": [
       {
         "document": "quick-start.md",
-        "line": 109,
+        "line": 117,
         "level": 3,
         "title": "インタラクティブなインストール"
       }
@@ -5973,7 +5975,7 @@
     "インタラクティブな初期化（推奨）": [
       {
         "document": "quick-start.md",
-        "line": 63,
+        "line": 71,
         "level": 3,
         "title": "インタラクティブな初期化（推奨）"
       }
@@ -5984,14 +5986,6 @@
         "line": 436,
         "level": 3,
         "title": "インタラクティブメソッド"
-      }
-    ],
-    "インタラクティブ処理": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 546,
-        "level": 2,
-        "title": "インタラクティブ処理"
       }
     ],
     "インラインキーボード付きメッセージ": [
@@ -6245,7 +6239,7 @@
     "グループメンバーの増加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 448,
+        "line": 457,
         "level": 3,
         "title": "グループメンバーの増加"
       }
@@ -6253,7 +6247,7 @@
     "グループメンバーの減少": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 458,
+        "line": 467,
         "level": 3,
         "title": "グループメンバーの減少"
       }
@@ -6261,7 +6255,7 @@
     "グループ招待リクエスト": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 486,
+        "line": 495,
         "level": 3,
         "title": "グループ招待リクエスト"
       }
@@ -6309,7 +6303,7 @@
     "グローバルパラメータ": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 494,
+        "line": 502,
         "level": 2,
         "title": "グローバルパラメータ"
       }
@@ -6421,9 +6415,17 @@
     "コマンドと返信の block 設定": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 418,
+        "line": 427,
         "level": 3,
         "title": "コマンドと返信の block 設定"
+      }
+    ],
+    "コマンドのエイリアス": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 108,
+        "level": 3,
+        "title": "コマンドのエイリアス"
       }
     ],
     "コマンドのプレフィックスを変更するには？": [
@@ -6437,17 +6439,25 @@
     "コマンドの優先度": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 243,
+        "line": 244,
         "level": 3,
         "title": "コマンドの優先度"
       }
     ],
-    "コマンドの別名": [
+    "コマンドの引数": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 107,
+        "line": 121,
         "level": 3,
-        "title": "コマンドの別名"
+        "title": "コマンドの引数"
+      }
+    ],
+    "コマンドの権限とアクセス制御": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 197,
+        "level": 3,
+        "title": "コマンドの権限とアクセス制御"
       }
     ],
     "コマンドの登録": [
@@ -6461,7 +6471,7 @@
     "コマンドイベントの処理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 89,
+        "line": 90,
         "level": 2,
         "title": "コマンドイベントの処理"
       }
@@ -6477,7 +6487,7 @@
     "コマンドグループ": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 136,
+        "line": 137,
         "level": 3,
         "title": "コマンドグループ"
       }
@@ -6506,14 +6516,6 @@
         "title": "コマンド基礎"
       }
     ],
-    "コマンド引数": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 120,
-        "level": 3,
-        "title": "コマンド引数"
-      }
-    ],
     "コマンド情報": [
       {
         "document": "api-reference/event-system.md",
@@ -6540,14 +6542,6 @@
         "line": 125,
         "level": 2,
         "title": "コマンド情報の取得"
-      }
-    ],
-    "コマンド権限とアクセス制御": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 196,
-        "level": 3,
-        "title": "コマンド権限とアクセス制御"
       }
     ],
     "コマンド解析の設定（event.command）": [
@@ -6593,7 +6587,7 @@
     "コンポーネントのアップグレード": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 606,
+        "line": 615,
         "level": 3,
         "title": "コンポーネントのアップグレード"
       }
@@ -6601,7 +6595,7 @@
     "コンポーネントのアンインストール": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 583,
+        "line": 592,
         "level": 3,
         "title": "コンポーネントのアンインストール"
       }
@@ -6609,7 +6603,7 @@
     "コンポーネントのリスト表示": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 567,
+        "line": 576,
         "level": 3,
         "title": "コンポーネントのリスト表示"
       }
@@ -6617,7 +6611,7 @@
     "コンポーネントの設定": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 593,
+        "line": 602,
         "level": 3,
         "title": "コンポーネントの設定"
       }
@@ -6705,7 +6699,7 @@
     "コールバック付きの待機返信": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 620,
+        "line": 632,
         "level": 3,
         "title": "コールバック付きの待機返信"
       }
@@ -6721,7 +6715,7 @@
     "サブコマンド": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 150,
+        "line": 151,
         "level": 3,
         "title": "サブコマンド"
       }
@@ -6849,7 +6843,7 @@
     "スコープフィルタリング：なぜ私のモジュールはメッセージを受け取らないのか": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 299,
+        "line": 300,
         "level": 2,
         "title": "スコープフィルタリング：なぜ私のモジュールはメッセージを受け取らないのか"
       }
@@ -6991,7 +6985,7 @@
     "タイプストアブの生成": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 642,
+        "line": 651,
         "level": 3,
         "title": "タイプストアブの生成"
       }
@@ -6999,7 +6993,7 @@
     "タイプストアブコマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 453,
+        "line": 461,
         "level": 2,
         "title": "タイプストアブコマンド"
       }
@@ -7299,7 +7293,7 @@
     "テストの実行": [
       {
         "document": "user-guide/installation.md",
-        "line": 90,
+        "line": 105,
         "level": 3,
         "title": "テストの実行"
       }
@@ -7679,7 +7673,7 @@
     "ハートビートイベント": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 515,
+        "line": 524,
         "level": 3,
         "title": "ハートビートイベント"
       }
@@ -7873,7 +7867,7 @@
     "ファスト初期化": [
       {
         "document": "quick-start.md",
-        "line": 76,
+        "line": 84,
         "level": 3,
         "title": "ファスト初期化"
       }
@@ -7905,7 +7899,7 @@
     "フォーム収集 (collect)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 694,
+        "line": 706,
         "level": 3,
         "title": "フォーム収集 (collect)"
       }
@@ -7918,12 +7912,12 @@
         "title": "フックブレークポイント一覧"
       }
     ],
-    "フットスタジの作成": [
+    "フットスタンドの作成": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 662,
+        "line": 671,
         "level": 3,
-        "title": "フットスタジの作成"
+        "title": "フットスタンドの作成"
       }
     ],
     "フレームワーク内部のパラメータ検証（ValueError）": [
@@ -8121,7 +8115,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 817,
+        "line": 829,
         "level": 3,
         "title": "プラットフォーム拡張メソッド"
       }
@@ -8201,13 +8195,13 @@
     "プロジェクトの初期化": [
       {
         "document": "quick-start.md",
-        "line": 61,
+        "line": 69,
         "level": 2,
         "title": "プロジェクトの初期化"
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 652,
+        "line": 661,
         "level": 3,
         "title": "プロジェクトの初期化"
       }
@@ -8215,7 +8209,7 @@
     "プロジェクトの初期化とモジュールのインストール": [
       {
         "document": "user-guide/installation.md",
-        "line": 68,
+        "line": 83,
         "level": 2,
         "title": "プロジェクトの初期化とモジュールのインストール"
       }
@@ -8223,13 +8217,13 @@
     "プロジェクトの実行": [
       {
         "document": "quick-start.md",
-        "line": 117,
+        "line": 125,
         "level": 2,
         "title": "プロジェクトの実行"
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 619,
+        "line": 628,
         "level": 3,
         "title": "プロジェクトの実行"
       }
@@ -8251,7 +8245,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 146,
+        "line": 154,
         "level": 2,
         "title": "プロジェクト構造"
       }
@@ -8259,7 +8253,7 @@
     "プロジェクト管理コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 317,
+        "line": 322,
         "level": 2,
         "title": "プロジェクト管理コマンド"
       }
@@ -8402,6 +8396,14 @@
         "line": 593,
         "level": 5,
         "title": "マルチメソッド登録（Mixin クラス）"
+      }
+    ],
+    "マルチラウンド対話 (conversation)": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 747,
+        "level": 3,
+        "title": "マルチラウンド対話 (conversation)"
       }
     ],
     "マルチ待機：expect + select": [
@@ -8995,13 +8997,13 @@
     "モジュールのインストール": [
       {
         "document": "quick-start.md",
-        "line": 95,
+        "line": 103,
         "level": 2,
         "title": "モジュールのインストール"
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 554,
+        "line": 563,
         "level": 3,
         "title": "モジュールのインストール"
       }
@@ -9079,7 +9081,7 @@
     "モジュールインストール失敗": [
       {
         "document": "user-guide/installation.md",
-        "line": 123,
+        "line": 138,
         "level": 3,
         "title": "モジュールインストール失敗"
       }
@@ -9245,7 +9247,7 @@
     "ユーザーの返信を待つ": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 576,
+        "line": 585,
         "level": 3,
         "title": "ユーザーの返信を待つ"
       }
@@ -9557,7 +9559,7 @@
     "リンク制御：認領とブロック": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 383,
+        "line": 392,
         "level": 2,
         "title": "リンク制御：認領とブロック"
       }
@@ -9889,7 +9891,7 @@
     "一般的な使い方": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 552,
+        "line": 561,
         "level": 2,
         "title": "一般的な使い方"
       }
@@ -9966,12 +9968,12 @@
         "title": "並列と直列"
       }
     ],
-    "並行イベント処理": [
+    "並列イベント処理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 256,
+        "line": 257,
         "level": 3,
-        "title": "並行イベント処理"
+        "title": "並列イベント処理"
       }
     ],
     "主人システム設定": [
@@ -10087,7 +10089,7 @@
     "任意のイベントを待つ (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 714,
+        "line": 726,
         "level": 3,
         "title": "任意のイベントを待つ (wait_for)"
       }
@@ -10295,7 +10297,7 @@
     "元イベントの処理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 497,
+        "line": 506,
         "level": 2,
         "title": "元イベントの処理"
       }
@@ -10392,12 +10394,12 @@
         "title": "内容作成規格"
       }
     ],
-    "内置の確認単語": [
+    "内蔵の確認語": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 762,
+        "line": 774,
         "level": 3,
-        "title": "内置の確認単語"
+        "title": "内蔵の確認語"
       }
     ],
     "内蔵フォント": [
@@ -10559,7 +10561,7 @@
     "利用可能なモジュールの確認": [
       {
         "document": "quick-start.md",
-        "line": 103,
+        "line": 111,
         "level": 3,
         "title": "利用可能なモジュールの確認"
       }
@@ -10733,7 +10735,7 @@
     "友達リクエスト": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 470,
+        "line": 479,
         "level": 3,
         "title": "友達リクエスト"
       }
@@ -10765,7 +10767,7 @@
     "友達追加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 436,
+        "line": 445,
         "level": 3,
         "title": "友達追加"
       }
@@ -10885,7 +10887,7 @@
     "基本コマンド": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 91,
+        "line": 92,
         "level": 3,
         "title": "基本コマンド"
       }
@@ -11216,14 +11218,6 @@
         "title": "多プラットフォーム対応"
       }
     ],
-    "多段対話 (conversation)": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 735,
-        "level": 3,
-        "title": "多段対話 (conversation)"
-      }
-    ],
     "多言語のカバー": [
       {
         "document": "advanced/i18n.md",
@@ -11367,7 +11361,7 @@
     "実行制御コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 275,
+        "line": 280,
         "level": 2,
         "title": "実行制御コマンド"
       }
@@ -11548,12 +11542,20 @@
         "title": "対話の作成"
       }
     ],
-    "対話形式のインストール": [
+    "対話処理": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 555,
+        "level": 2,
+        "title": "対話処理"
+      }
+    ],
+    "対話形式でのインストール": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 539,
+        "line": 548,
         "level": 2,
-        "title": "対話形式のインストール"
+        "title": "対話形式でのインストール"
       }
     ],
     "対象読者": [
@@ -11647,7 +11649,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 106,
+        "line": 121,
         "level": 2,
         "title": "常見問題"
       }
@@ -11739,7 +11741,7 @@
     "情報照会コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 162,
+        "line": 166,
         "level": 2,
         "title": "情報照会コマンド"
       }
@@ -11859,7 +11861,7 @@
     "手動でのプロジェクト作成": [
       {
         "document": "quick-start.md",
-        "line": 86,
+        "line": 94,
         "level": 3,
         "title": "手動でのプロジェクト作成"
       }
@@ -12029,7 +12031,7 @@
     "接続イベント": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 499,
+        "line": 508,
         "level": 3,
         "title": "接続イベント"
       }
@@ -12297,9 +12299,17 @@
     "方法3：ErisPulse-Appクライアントの使用（ターミナル不要）": [
       {
         "document": "user-guide/installation.md",
-        "line": 72,
+        "line": 87,
         "level": 3,
         "title": "方法3：ErisPulse-Appクライアントの使用（ターミナル不要）"
+      }
+    ],
+    "方法3：uv toolを使用したインストール（グローバルCLI、推奨）": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 68,
+        "level": 3,
+        "title": "方法3：uv toolを使用したインストール（グローバルCLI、推奨）"
       }
     ],
     "方法速查表": [
@@ -12648,6 +12658,14 @@
         "title": "検索機能"
       }
     ],
+    "検証付きの待機返信": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 605,
+        "level": 3,
+        "title": "検証付きの待機返信"
+      }
+    ],
     "概要": [
       {
         "document": "advanced/http-client.md",
@@ -12888,6 +12906,12 @@
         "title": "次に進む"
       },
       {
+        "document": "getting-started/event-handling.md",
+        "line": 911,
+        "level": 2,
+        "title": "次に進む"
+      },
+      {
         "document": "user-guide/configuration.md",
         "line": 623,
         "level": 2,
@@ -12920,12 +12944,6 @@
         "title": "次のステップ"
       },
       {
-        "document": "getting-started/event-handling.md",
-        "line": 899,
-        "level": 2,
-        "title": "次のステップ"
-      },
-      {
         "document": "getting-started/first-bot.md",
         "line": 156,
         "level": 2,
@@ -12933,13 +12951,13 @@
       },
       {
         "document": "quick-start.md",
-        "line": 174,
+        "line": 182,
         "level": 2,
         "title": "次のステップ"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 150,
+        "line": 165,
         "level": 2,
         "title": "次のステップ"
       }
@@ -13125,7 +13143,7 @@
     "環境診断": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 508,
+        "line": 517,
         "level": 2,
         "title": "環境診断"
       }
@@ -13253,7 +13271,7 @@
     "確認対話 (confirm)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 641,
+        "line": 653,
         "level": 3,
         "title": "確認対話 (confirm)"
       }
@@ -13645,7 +13663,7 @@
     "要求イベントの処理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 468,
+        "line": 477,
         "level": 2,
         "title": "要求イベントの処理"
       }
@@ -13725,7 +13743,7 @@
     "言語の切り替え": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 629,
+        "line": 638,
         "level": 3,
         "title": "言語の切り替え"
       }
@@ -13733,7 +13751,7 @@
     "言語コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 416,
+        "line": 424,
         "level": 2,
         "title": "言語コマンド"
       }
@@ -13847,7 +13865,7 @@
     "設定エラー": [
       {
         "document": "user-guide/installation.md",
-        "line": 116,
+        "line": 131,
         "level": 3,
         "title": "設定エラー"
       }
@@ -13881,7 +13899,7 @@
     "設定コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 226,
+        "line": 231,
         "level": 2,
         "title": "設定コマンド"
       }
@@ -13895,7 +13913,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 158,
+        "line": 166,
         "level": 2,
         "title": "設定ファイル"
       }
@@ -14391,7 +14409,7 @@
     "通知イベントの処理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 434,
+        "line": 443,
         "level": 2,
         "title": "通知イベントの処理"
       }
@@ -14498,14 +14516,6 @@
         "title": "遅延送信（Defer）"
       }
     ],
-    "適切な入力の待つ": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 593,
-        "level": 3,
-        "title": "適切な入力の待つ"
-      }
-    ],
     "適用場面": [
       {
         "document": "developer-guide/publishing.md",
@@ -14517,7 +14527,7 @@
     "選択メニュー (choose)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 658,
+        "line": 670,
         "level": 3,
         "title": "選択メニュー (choose)"
       }
