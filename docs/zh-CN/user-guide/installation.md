@@ -65,6 +65,24 @@ source .venv/bin/activate
 uv pip install ErisPulse --upgrade
 ```
 
+### 方式三：使用 uv tool 安装（全局 CLI，推荐）
+
+只想把 `epsdk` 当全局命令行工具使用时，`uv tool install` 是最干净的方式——
+epsdk 运行在独立的工具环境中，不污染任何项目环境：
+
+```bash
+# 安装（epsdk 立即可用，无需激活任何虚拟环境）
+uv tool install ErisPulse
+
+# 升级（或直接使用 epsdk self-update，会自动走此通道）
+uv tool upgrade ErisPulse
+```
+
+> [!NOTE]
+> 工具环境里的 epsdk 在项目目录内运行时会自动感知项目 `.venv`：
+> `epsdk install` 将组件安装进项目环境、`epsdk run` 使用项目环境运行机器人，
+> 框架本体仍由工具环境提供，两边互不干扰。
+
 ## 项目初始化与模块安装
 
 安装完成后，项目初始化、模块安装、运行的完整流程见 [5 分钟快速开始](../quick-start.md)。

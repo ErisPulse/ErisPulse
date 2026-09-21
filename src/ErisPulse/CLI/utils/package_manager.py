@@ -727,6 +727,9 @@ class PackageManager:
         uv_cmd = self._get_uv_command()
 
         is_install = bool(args) and args[0] == "install"
+        # 非 install 路径不会读取这两个值；先初始化以收窄作用域分析
+        install_cmd: list[str] = []
+        backend_name = "pip"
         if is_install:
             # 复用共享构建逻辑：得到首选后端 (uv/pip) 的完整 install 命令
             base_cmd, backend_name = self._build_install_command(
@@ -1378,6 +1381,61 @@ class PackageManager:
         parsed = parse_version(version)
         return parsed is not None and parsed["pre_type"] is not None
 
+    def _spawn_windows_tool_update(
+        self, cmd: "list[str]", target_version: "str | None", current_version: str
+    ) -> bool:
+        """
+        Windows 下以分离进程执行 uv tool 自更新
+
+        当前 CLI 进程就运行在待替换的工具环境内，Windows 不允许删除运行中
+        的 exe——更新必须等本进程退出后进行。此方法生成 PowerShell 脚本
+        （等待本进程 → 执行更新 → 报告结果），以新控制台窗口分离启动后立
+        即返回；调用方随后正常退出 CLI，脚本接管更新。
+
+        :param cmd: [list[str]] uv tool 更新命令
+        :param target_version: [str | None] 目标版本号（None 表示最新）
+        :param current_version: [str] 当前已安装版本号
+        :return: [bool] 更新进程启动成功返回 True（结果以新窗口输出为准）
+        """
+        import tempfile
+
+        new_version = target_version or i18n.t("cli.package.latest_version")
+        script = build_windows_tool_update_script(
+            cmd,
+            os.getpid(),
+            msg_done=i18n.t(
+                "cli.package.sdk_update_success", old=current_version, new=new_version
+            ),
+            msg_failed=i18n.t("cli.package.sdk_update_failed"),
+            press_key=i18n.t("cli.update.press_key"),
+        )
+        script_path = str(Path(tempfile.gettempdir()) / "epsdk_tool_update.ps1")
+        # UTF-8 BOM：Windows PowerShell 5.1 对无 BOM 文件按 ANSI 解析，中文会乱码
+        with Path(script_path).open("w", encoding="utf-8-sig") as f:
+            f.write(script)
+
+        console.print(f"[info]{i18n.t('cli.package.starting_update')}[/]")
+        console.print(f"[info]{i18n.t('cli.update.uv_tool_background')}[/]")
+
+        try:
+            subprocess.Popen(
+                [
+                    "powershell",
+                    "-NoProfile",
+                    "-ExecutionPolicy",
+                    "Bypass",
+                    "-File",
+                    script_path,
+                ],
+                creationflags=subprocess.CREATE_NEW_CONSOLE,
+            )
+        except FileNotFoundError:
+            console.print(
+                f"[error]{i18n.t('cli.update.error', error='powershell not found')}[/]"
+            )
+            return False
+        return True
+
     def update_self(self, target_version: str | None = None, force: bool = False) -> bool:
         """
         更新ErisPulse SDK到指定版本或最新版本
@@ -1393,6 +1451,42 @@ class PackageManager:
                 f"[info]{i18n.t('cli.package.already_target_version', version=f'[bold]{current_version}[/]')}[/]"
             )
             return True
+
+        # uv tool 环境自更新：ErisPulse 经 `uv tool install` 安装时，pip 直接升级
+        # 工具环境的内容会在下次 `uv tool upgrade` 时被 uv 的清单还原抹掉，
+        # 必须走 uv tool 通道（upgrade / install --force）更新工具声明本身
+        if is_uv_tool_env():
+            uv_cmd = self._get_uv_command()
+            if uv_cmd:
+                cmd = build_uv_tool_update_command(uv_cmd, target_version)
+                if target_version:
+                    update_desc = i18n.t(
+                        "cli.package.update_desc_with_version", version=target_version
+                    )
+                else:
+                    update_desc = i18n.t("cli.package.update_desc_latest")
+
+                if sys.platform == "win32":
+                    # Windows 规则：运行中的 exe 无法被删除——uv tool upgrade
+                    # 需要重建的 Scripts 目录正被当前进程占用，必须先退出。
+                    # 委托分离的 PowerShell 进程：等待本进程退出后再执行更新。
+                    return self._spawn_windows_tool_update(
+                        cmd, target_version, current_version
+                    )
+
+                # POSIX 规则：允许替换运行中的文件，直接原地执行
+                success = self._execute_backend(cmd, [], update_desc, "uv tool")
+                if success:
+                    new_version = target_version or i18n.t("cli.package.latest_version")
+                    console.print(
+                        f"[success]{i18n.t('cli.package.sdk_update_success', old=current_version, new=new_version)}[/]"
+                    )
+                    if not target_version:
+                        console.print(f"[info]{i18n.t('cli.package.restart_cli')}[/]")
+                else:
+                    console.print(f"[error]{i18n.t('cli.package.sdk_update_failed')}[/]")
+                return success
+            # uv 不可用时继续 pip 流程（弱保证，工具环境可能被后续 upgrade 还原）
 
         package_spec = "ErisPulse"
         if target_version:
@@ -1678,6 +1772,72 @@ def resolve_target_python(project_dir: "Path | None" = None) -> "tuple[str, str]
     return sys.executable, "当前解释器"
 
 
+def build_uv_tool_update_command(
+    uv_cmd: "list[str]", target_version: "str | None"
+) -> "list[str]":
+    """
+    构建 uv tool 通道的 SDK 自更新命令
+
+    :param uv_cmd: [list[str]] uv 命令前缀（如 ["uv"]）
+    :param target_version: [str | None] 目标版本号；None 表示升级到最新
+    :return: [list[str]] 完整命令列表
+    """
+    if target_version:
+        # upgrade 无法钉住版本：用 install --force 以指定版本重装
+        return [*uv_cmd, "tool", "install", f"ErisPulse=={target_version}", "--force"]
+    return [*uv_cmd, "tool", "upgrade", "ErisPulse"]
+
+
+def _ps_quote(text: str) -> str:
+    """
+    转义 PowerShell 单引号字符串中的单引号
+
+    :param text: [str] 原始文本
+    :return: [str] 可安全嵌入 PowerShell 单引号字面量的文本
+    """
+    return text.replace("'", "''")
+
+
+def build_windows_tool_update_script(
+    cmd: "list[str]",
+    parent_pid: int,
+    msg_done: str,
+    msg_failed: str,
+    press_key: str,
+) -> str:
+    """
+    生成 Windows 分离更新用的 PowerShell 脚本文本
+
+    脚本流程：等待当前 CLI 进程退出（工具环境文件不再被占用）→ 执行
+    uv tool 更新命令 → 报告结果 → 自删除 → 等待用户按键，防止新控制台
+    窗口瞬间关闭导致看不到结果。
+
+    :param cmd: [list[str]] 更新命令（如 ["uv", "tool", "upgrade", "ErisPulse"]）
+    :param parent_pid: [int] 当前 CLI 进程 PID（脚本等待其退出）
+    :param msg_done: [str] 更新成功提示
+    :param msg_failed: [str] 更新失败提示
+    :param press_key: [str] 退出前按键提示
+    :return: [str] PowerShell 脚本文本
+    """
+    cmd_line = subprocess.list2cmdline(cmd)
+    return (
+        f"Wait-Process -Id {parent_pid} -Timeout 120 -ErrorAction SilentlyContinue\n"
+        f"Write-Host ''\n"
+        f"Write-Host '> {cmd_line}'\n"
+        f"Write-Host ''\n"
+        f"& {cmd_line}\n"
+        f"if ($LASTEXITCODE -eq 0) {{\n"
+        f"  Write-Host ''\n"
+        f"  Write-Host '[OK] {_ps_quote(msg_done)}'\n"
+        f"}} else {{\n"
+        f"  Write-Host ''\n"
+        f"  Write-Host '[FAIL] {_ps_quote(msg_failed)}'\n"
+        f"}}\n"
+        f"Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -ErrorAction SilentlyContinue\n"
+        f"Read-Host '{_ps_quote(press_key)}' | Out-Null\n"
+    )
+
+
 def warn_if_uv_isolated() -> bool:
     """
     检测当前是否处于 uv 无项目的隔离运行上下文并输出警告
@@ -1700,4 +1860,48 @@ def warn_if_uv_isolated() -> bool:
         + "[/]"
     )
     _ = tomllib  # 保留显式依赖提示位（pyproject 探测未来可深化）
+    return True
+
+
+def is_uv_tool_env() -> bool:
+    """
+    检测当前解释器是否位于 `uv tool install` 创建的工具环境中
+
+    uv tool 环境位于 uv 数据目录下的 ``uv/tools/<包名>/``（Linux:
+    ``~/.local/share/uv/tools``，Windows: ``%APPDATA%\\uv\\tools``），
+    通过 ``sys.prefix`` 路径特征识别，不依赖任何环境变量——
+    uv tool 的入口 shim 执行时不会设置 UV 变量。
+
+    :return: [bool] 当前 epsdk 运行于 uv tool 环境时返回 True
+    """
+    try:
+        prefix = Path(sys.prefix).resolve()
+        for parent in prefix.parents:
+            if parent.name == "tools" and parent.parent.name == "uv":
+                return True
+    except Exception:
+        pass
+    return False
+
+
+def warn_if_uv_tool_env_without_project() -> bool:
+    """
+    检测「uv tool 环境运行 + 无项目环境」场景并输出提示
+
+    `uv tool install ErisPulse` 后，epsdk 运行于全局工具环境；若用户
+    未在项目内（无 `.venv` 且未激活 `VIRTUAL_ENV`），组件安装目标会
+    落到工具环境自身——升级 SDK 时 `uv tool upgrade` 会将其抹掉。
+    检测到该场景时提示在项目内操作。
+
+    :return: [bool] 处于该场景时返回 True（已输出提示）
+    """
+    if not is_uv_tool_env():
+        return False
+    if os.environ.get("VIRTUAL_ENV") or Path(".venv").exists():
+        return False
+    console.print(
+        "[warning]  "
+        + i18n.t("cli.uv.tool_env_hint")
+        + "[/]"
+    )
     return True

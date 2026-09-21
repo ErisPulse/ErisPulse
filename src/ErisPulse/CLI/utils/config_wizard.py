@@ -133,7 +133,7 @@ def _resolve_adapter_config_key(cls) -> str:
     return cls.__name__
 
 
-def _target_from_class(kind: str, name: str, cls, package=None, source="entrypoint") -> ConfigTarget | None:
+def _target_from_class(kind: Literal["adapter", "module"], name: str, cls, package=None, source="entrypoint") -> ConfigTarget | None:
     """
     从目标类构造 ConfigTarget（读取类属性声明，不实例化）
 

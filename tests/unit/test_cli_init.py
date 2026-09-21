@@ -61,7 +61,9 @@ class TestInitProjectPaths:
         monkeypatch.chdir(tmp_path)
         init_cmd._init_project("mybot", [], create_venv=False)
         text = (tmp_path / "mybot" / ".gitignore").read_text(encoding="utf-8")
-        assert ".venv/" in text and "logs/" in text and "*.pem" in text
+        assert ".venv/" in text and "logs/" in text and "config/" in text
+        # Python 常用排除项
+        assert "__pycache__/" in text and "*.egg-info/" in text and ".pytest_cache/" in text
 
     def test_readme_generated(self, init_cmd, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
@@ -177,3 +179,143 @@ class TestAppendPyprojectDependencies:
         from ErisPulse.CLI.utils.package_manager import append_pyproject_dependencies
 
         assert append_pyproject_dependencies(tmp_path, ["x"]) is False
+
+
+class TestUvToolEnv:
+    """uv tool 环境检测（uv tool install ErisPulse 场景）"""
+
+    def test_uv_tool_path_detected(self, monkeypatch, tmp_path):
+        import sys as _sys
+
+        from ErisPulse.CLI.utils import package_manager as pm_module
+
+        tool_prefix = tmp_path / "uv" / "tools" / "ErisPulse"
+        monkeypatch.setattr(_sys, "prefix", str(tool_prefix))
+        assert pm_module.is_uv_tool_env() is True
+
+    def test_normal_env_not_detected(self, monkeypatch, tmp_path):
+        import sys as _sys
+
+        from ErisPulse.CLI.utils import package_manager as pm_module
+
+        monkeypatch.setattr(_sys, "prefix", str(tmp_path / "venv"))
+        assert pm_module.is_uv_tool_env() is False
+
+    def test_warn_silent_without_uv_tool(self, monkeypatch, tmp_path):
+        import sys as _sys
+
+        from ErisPulse.CLI.utils import package_manager as pm_module
+
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.delenv("VIRTUAL_ENV", raising=False)
+        monkeypatch.setattr(_sys, "prefix", str(tmp_path / "venv"))
+        assert pm_module.warn_if_uv_tool_env_without_project() is False
+
+    def test_warn_silent_inside_project(self, monkeypatch, tmp_path):
+        import sys as _sys
+
+        from ErisPulse.CLI.utils import package_manager as pm_module
+
+        monkeypatch.chdir(tmp_path)
+        # 有项目 .venv 时即使处于工具环境也不提示
+        monkeypatch.setattr(_sys, "prefix", str(tmp_path / "uv" / "tools" / "ErisPulse"))
+        assert pm_module.warn_if_uv_tool_env_without_project() is False
+
+
+class TestBannerSuppression:
+    """Banner 静默（非交互终端 / 环境变量）"""
+
+    def test_no_banner_env_suppresses(self, monkeypatch):
+        import ErisPulse.CLI.console as console_module
+
+        monkeypatch.setenv("ERISPULSE_NO_BANNER", "1")
+        monkeypatch.setattr(console_module, "_banner_printed", False)
+        console_module.print_banner()
+        assert console_module._banner_printed is True
+
+    def test_disable_banner(self, monkeypatch):
+        import ErisPulse.CLI.console as console_module
+
+        monkeypatch.setattr(console_module, "_banner_printed", False)
+        console_module.disable_banner()
+        console_module.print_banner()
+        # 禁用后 Banner 不输出（提前返回，不做任何打印）
+        assert console_module._banner_disabled is True
+
+
+class TestVersionCommand:
+    """version 子命令（与 -V 等效的习惯命令）"""
+
+    def test_registered_and_resolvable(self):
+        from ErisPulse.CLI.cli import CLI
+
+        cli = CLI()
+        assert "version" in cli.registry.list_all()
+        assert cli.registry.resolve("ver") == "version"
+
+    def test_execute_prints_version(self, capsys):
+        from ErisPulse.CLI.commands.version import VersionCommand
+
+        VersionCommand().execute(None)
+        out = capsys.readouterr().out
+        assert "ErisPulse" in out
+
+
+class TestUvToolSelfUpdate:
+    """uv tool 通道自更新（Windows 分离进程策略）"""
+
+    def test_build_command_upgrade_latest(self):
+        from ErisPulse.CLI.utils.package_manager import (
+            build_uv_tool_update_command,
+        )
+
+        assert build_uv_tool_update_command(["uv"], None) == [
+            "uv", "tool", "upgrade", "ErisPulse"
+        ]
+
+    def test_build_command_pinned_version(self):
+        from ErisPulse.CLI.utils.package_manager import (
+            build_uv_tool_update_command,
+        )
+
+        assert build_uv_tool_update_command(["uv"], "2.8.4") == [
+            "uv", "tool", "install", "ErisPulse==2.8.4", "--force"
+        ]
+
+    def test_build_windows_script_waits_parent_and_self_deletes(self):
+        from ErisPulse.CLI.utils.package_manager import (
+            build_windows_tool_update_script,
+        )
+
+        script = build_windows_tool_update_script(
+            ["uv", "tool", "upgrade", "ErisPulse"],
+            parent_pid=1234,
+            msg_done="done",
+            msg_failed="failed",
+            press_key="press enter",
+        )
+        assert "Wait-Process -Id 1234" in script  # 等当前进程退出（解除文件占用）
+        assert "uv tool upgrade ErisPulse" in script  # 命令本体（list2cmdline 拼接）
+        assert "Remove-Item" in script  # 自删除
+        assert "Read-Host" in script  # 防窗口闪退
+
+    def test_build_windows_script_quotes_spaced_paths(self):
+        from ErisPulse.CLI.utils.package_manager import (
+            build_windows_tool_update_script,
+        )
+
+        uv_path = "C:" + chr(92) + "Program Files" + chr(92) + "uv" + chr(92) + "uv.exe"
+        script = build_windows_tool_update_script(
+            [uv_path, "tool", "upgrade", "ErisPulse"],
+            parent_pid=1,
+            msg_done="done",
+            msg_failed="failed",
+            press_key="press",
+        )
+        # 含空格的路径经 list2cmdline 加引号，PowerShell & 调用仍合法
+        assert '"' + uv_path + '" tool upgrade ErisPulse' in script
+
+    def test_ps_quote_escapes_single_quotes(self):
+        from ErisPulse.CLI.utils.package_manager import _ps_quote
+
+        assert _ps_quote("it's ok") == "it''s ok"

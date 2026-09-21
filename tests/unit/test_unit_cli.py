@@ -36,6 +36,7 @@ EXPECTED_COMMANDS = {
     "i18n": ["language", "lang"],
     "types": ["t", "stub"],
     "doctor": ["diag"],
+    "version": ["ver"],
 }
 
 
@@ -355,6 +356,7 @@ class TestAliasScheme:
             i18n         -> language, lang
             types        -> t, stub
             doctor       -> diag
+            version      -> ver
         """
         actual = {
             cmd.name: sorted(getattr(cmd, "aliases", []) or [])

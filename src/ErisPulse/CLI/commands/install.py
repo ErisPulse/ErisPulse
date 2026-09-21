@@ -16,7 +16,11 @@ from ..console import console
 from ..i18n import i18n
 from ..utils import PackageManager, config_wizard
 from ..utils.display import interactive_select_table
-from ..utils.package_manager import resolve_target_python, warn_if_uv_isolated
+from ..utils.package_manager import (
+    resolve_target_python,
+    warn_if_uv_isolated,
+    warn_if_uv_tool_env_without_project,
+)
 
 
 class InstallCommand(Command):
@@ -206,6 +210,8 @@ class InstallCommand(Command):
 
     def execute(self, args):
         warn_if_uv_isolated()
+        # uv tool 环境且无项目环境：组件应装进项目 .venv 而非工具环境
+        warn_if_uv_tool_env_without_project()
         self.package_manager.no_uv = getattr(args, "no_uv", False)
         editable_paths = getattr(args, "editable", None)
         requirement_file = getattr(args, "requirement", None)
