@@ -135,9 +135,12 @@
 ---
 
 
-### `_owner_aware_task_factory(loop: asyncio.AbstractEventLoop, coro: Coroutine[Any, Any, Any])`
+### `_owner_aware_task_factory(loop: asyncio.AbstractEventLoop, coro: Any)`
 
 > **内部方法** 任务创建钩子：归属上下文内的任务自动登记（供卸载兜底取消）
+
+``**kwargs`` 必须保留并向 :class:`asyncio.Task` 透传：Python 3.13 起
+事件循环以 ``factory(loop, coro, **kwargs)`` 调用任务工厂（携带 context）。
 
 ---
 

@@ -5388,12 +5388,12 @@
         "title": "`_option_label(option)`"
       }
     ],
-    "`_owner_aware_task_factory(loop: asyncio.AbstractEventLoop, coro: Coroutine[Any, Any, Any])`": [
+    "`_owner_aware_task_factory(loop: asyncio.AbstractEventLoop, coro: Any)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/tasks.md",
         "line": 138,
         "level": 3,
-        "title": "`_owner_aware_task_factory(loop: asyncio.AbstractEventLoop, coro: Coroutine[Any, Any, Any])`"
+        "title": "`_owner_aware_task_factory(loop: asyncio.AbstractEventLoop, coro: Any)`"
       }
     ],
     "`_owner_blocked(info: dict, ctx: dict[str, str | None])`": [
@@ -12981,7 +12981,7 @@
     "`install_owner_task_factory(loop: asyncio.AbstractEventLoop)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/tasks.md",
-        "line": 145,
+        "line": 148,
         "level": 3,
         "title": "`install_owner_task_factory(loop: asyncio.AbstractEventLoop)`"
       }
