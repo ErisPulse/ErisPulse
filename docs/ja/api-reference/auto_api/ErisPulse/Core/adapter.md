@@ -499,12 +499,22 @@ OneBot12协议事件监听装饰器
 注册期间若处于模块加载上下文（current_owner 已设置），自动记录归属，
 模块卸载时随处理器一并移除。
 
+中间件在事件分发前顺序执行，返回契约：
+
+- 返回 ``dict``：改写事件载荷（后续处理器收到改写后的事件）
+- 返回 ``None``：放行，载荷不变（输出 WARNING 提示——建议显式 ``return data``）
+- 返回 ``False``：**显式否决**——事件被丢弃，不进入任何处理器、
+  无任何出站副作用；否决时输出 TRACE 日志并触发
+  ``adapter.event.blocked`` 生命周期钩子（携带中间件名与完整事件）
+
 - **func** (`中间件函数`): **返回值** (`中间件函数`): 
 **示例**:
 ```python
 >>> @sdk.adapter.middleware
 >>> async def onebot_middleware(data):
->>>     print("处理OneBot12数据:", data)
+>>>     if _is_banned(data):
+>>>         return False  # 否决：事件被丢弃（防火墙 / 限流场景）
+>>>     data["rate_marked"] = True
 >>>     return data
 ```
 

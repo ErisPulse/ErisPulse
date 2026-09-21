@@ -18,10 +18,12 @@ ErisPulse 通用配置 Schema 模块
 > 4. description 支持 i18n 多语言：{"i18n": "key.path", "default": "默认文本"}
 > 5. 未声明 description 时自动从类 docstring 提取字段说明兜底（:ivar: 或 Attributes: 风格）
 > 6. 通过 field(metadata={"example": True}) 声明仅进 config.full.example 的示例字段（不自动落盘）
-> 7. 使用 dataclass_to_toml_with_comments() 生成带注释的配置模板
-> 8. 使用 dict_to_dataclass() 从 TOML 字典填充 dataclass
-> 9. 使用 validate_config() 校验配置实例
-> 10. 使用 get_config_schema() 生成 WebUI JSON Schema（含 i18n 支持）
+> 7. 通过 field(metadata={"env": "MYMODULE_API_KEY"}) 声明环境变量绑定：
+> 优先级 环境变量 > config.toml > 声明默认值（Docker / CI 场景免改配置文件）
+> 8. 使用 dataclass_to_toml_with_comments() 生成带注释的配置模板
+> 9. 使用 dict_to_dataclass() 从 TOML 字典填充 dataclass（含环境变量覆盖）
+> 10. 使用 validate_config() 校验配置实例
+> 11. 使用 get_config_schema() 生成 WebUI JSON Schema（含 i18n 支持）
 
 ---
 
@@ -131,6 +133,29 @@ annotations``）；字符串注解从类所在模块全局与类属性（含嵌�
 ---
 
 
+### `python_type_category(type_hint: Any)`
+
+识别 Python 类型注解的类别（声明式字段层的类型映射同源注册表）
+
+配置层（TOML 类型映射 :func:`_python_type_to_toml_type`）与 ORM 层
+（SQL 方言列类型映射，见 ``Core/Bases/model.py``）从同一类别派生各自的
+目标类型——一份识别逻辑，两侧消费。
+
+结构化判定（``typing.get_origin`` / ``issubclass``）：参数化泛型
+（``list[int]`` / ``dict[str, int]``）按容器类别识别；``Optional[X]`` 与
+``X | None`` 取首个非 ``None`` 参数递归；PEP 563 字符串注解（``from
+__future__ import annotations`` 下的 ``__annotations__`` 形态）在受限
+命名空间内求值后同样处理；无法识别的注解回落 ``"str"``。
+
+- **type_hint** (`Python`): 类型注解（类型对象、typing 形态或字符串注解）
+**返回值** (`类别名（"int"`): / "float" / "bool" / "list" / "dict" / "str"）
+
+> **提示**
+> 1. 新增受支持的注解类别时，本函数与两个下游映射需同步扩展
+
+---
+
+
 ### `_python_type_to_toml_type(type_hint)`
 
 将 Python 类型注解转为 TOML 类型字符串
@@ -221,6 +246,29 @@ description 若为 i18n 字典，则使用其 default/fallback 文本；
 ---
 
 
+### `_env_override_value(f)`
+
+读取字段声明的环境变量覆盖值（``metadata: {"env": "NAME"}``）
+
+> **内部方法**
+优先级：环境变量 > config.toml > 声明默认值。环境变量值为字符串，
+按字段注解转换——``int`` / ``float`` / ``bool`` 复用 :func:`_coerce_value`，
+``list`` / ``dict`` 走 JSON 解析，``str`` 原样。转换失败（如整型字段
+收到非数字）时输出警告并回退（视为未覆盖）。
+
+- **f** (`dataclass`): Field 对象
+**返回值** (`覆盖值；未声明`): env / 环境变量不存在 / 转换失败时返回 MISSING
+
+---
+
+
+### `_get_config_logger()`
+
+> **内部方法** 延迟获取日志器（避免循环依赖）
+
+---
+
+
 ### `dict_to_dataclass(config_class: type, data: dict)`
 
 从 TOML dict 填充 dataclass 实例
@@ -229,6 +277,7 @@ description 若为 i18n 字典，则使用其 default/fallback 文本；
 - 忽略 dataclass 中不存在的字段
 - 使用 default/default_factory 填充缺失字段
 - 嵌套 dataclass 字段递归填充（dict → 嵌套实例）
+- 环境变量覆盖（``metadata: {"env": "NAME"}``）：优先级 环境变量 > data > default
 
 - **config_class** (`dataclass`): 类
 - **data** (`字典数据（通常来自`): TOML 解析）
@@ -255,6 +304,29 @@ description 若为 i18n 字典，则使用其 default/fallback 文本；
 - **new_dict** (`变更后的配置字典（可能为`): None）
 - **i18n_key** (`回调异常日志的`): i18n 键（如 ``core.module.config_update_failed``）
 - **log_params** (`异常日志的额外格式化参数（如`): ``{"name": "MyModule"}``）
+
+---
+
+
+### `validate_field_constraints(label: str, value: Any)`
+
+字段约束校验共享引擎（声明式字段层的校验器同源实现）
+
+配置写入校验（:func:`validate_config` 的约束步骤）与 ORM 插入/更新
+校验（``Core/Bases/model.py``）共用同一判定语义：required 非空、
+枚举、数值范围、字符串长度。参数由各消费方从自己的声明形态解析
+（config 从 metadata/ui 元数据，ORM 从 Field 参数）。
+
+- **label** (`字段标签（错误信息定位用，如字段名）`): - **value**: 待校验的值
+- **required** (`是否必填（非空）`): - **choices**: 枚举选项（None 不校验）
+- **min_value** (`数值下界（None`): 不校验）
+- **max_value** (`数值上界（None`): 不校验）
+- **max_length** (`字符串最大长度（None`): 不校验）
+**返回值** (`本地化错误列表（空列表`): = 通过）
+
+> **提示**
+> 1. 空值（None/空串/空容器）跳过除 required 外的全部检查——与
+> validate_config 的既有语义一致
 
 ---
 

@@ -49,9 +49,23 @@ PostgreSQL 方言实现
 ---
 
 
+##### `has_index_sql(table: str, index: str)`
+
+> **内部方法** pg_indexes 查询当前 schema
+
+---
+
+
 ##### `autoincrement_column(base_type: str)`
 
 > **内部方法** ``SERIAL/BIGSERIAL PRIMARY KEY``
+
+---
+
+
+##### `last_insert_id_sql()`
+
+> **内部方法** 连接级 lastval()
 
 ---
 

@@ -119,7 +119,7 @@
     "Руководство разработчика": {
       "description": "Руководство по разработке модулей и адаптеров",
       "icon": "fa-code",
-      "count": 11,
+      "count": 13,
       "documents": [
         {
           "title": "Руководство для разработчиков",
@@ -132,6 +132,18 @@
           "path": "developer-guide/publishing.md",
           "level": 1,
           "icon": "fa-upload"
+        },
+        {
+          "title": "Модульное тестирование (ErisPulse-Testing)",
+          "path": "developer-guide/testing.md",
+          "level": 1,
+          "icon": "fa-code"
+        },
+        {
+          "title": "Уровень модели данных (ORM)",
+          "path": "developer-guide/orm.md",
+          "level": 1,
+          "icon": "fa-code"
         }
       ],
       "subgroups": {

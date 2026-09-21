@@ -1193,6 +1193,114 @@ async def echo_handler(event):
 参数保留用户输入的原始大小写（即使配置为大小写不敏感，
 命令名匹配归一也不会影响参数内容）。
 
+### 声明式参数与选项（args= / options=）
+
+手动解析参数需要自己处理类型转换与错误提示。声明 `args=` / `options=` 后，
+框架在权限检查通过后自动解析命令参数并**按名注入处理器**；用户输入错误时
+自动回复本地化提示与用法（不会抛异常崩溃），`/help <命令>` 也会自动展示用法：
+
+```python
+@command(
+    "roll",
+    args="<count:int> [sides:int=6]",
+    options={"verbose": "-v/--verbose", "label": "--label"},
+    help="掷骰子",
+)
+async def roll_handler(event, count: int, sides: int = 6, verbose: bool = False, label: str = ""):
+    total = sum(random.randint(1, sides) for _ in range(count))
+    await event.reply(f"掷了 {count} 次 {sides} 面骰，总点数：{total}")
+```
+
+`args=` 位置参数语法：`<count:int>` 必填、`[sides:int=6]` 可选（含默认值）。支持类型：
+
+| 类型 | 示例输入 | 说明 |
+|------|---------|------|
+| `str` | `hello` | 文本（缺省类型） |
+| `int` / `float` | `3` / `0.5` | 数值 |
+| `bool` | `是` / `yes` / `はい` / `да` / `true` / `no` / `取消` | 布尔值，复用交互确认（`Event.confirm()`）的确认词表 |
+| `literal` | `<mode:literal=fast|slow>` | 枚举，仅接受列出的值；可选形式默认取首个 |
+| `duration` | `90s`、`1h30m`、`1d` | 时长，按秒折算为 float |
+| `rest` | `<text:rest>` | 剩余全部文本（必须位于最后） |
+
+`options=` 选项为字典式声明：键为处理器参数名，值为旗标形式（多个别名以 `/` 分隔）。
+注解为 `bool` 的参数是布尔旗标（出现即 `True`）；其余（缺省按 `str`）是带值选项，
+支持 `--label hello` 与 `--label=hello` 两种取值，类型跟随处理器注解。
+选项先被识别剔除，剩余 token 再按 `args=` 解析（`rest` 覆盖剔除选项后的剩余文本）。
+
+**行为要点**：
+
+- 权限检查先于参数解析——无权限用户不会触发解析
+- 解析失败（类型不符 / 缺少参数 / 参数过多 / 未知选项）自动回复本地化错误 + 用法，命令仍被认领
+- 声明的参数名必须存在于处理器签名中，否则注册期抛 `ValueError`
+- 不声明 `args=` / `options=` 的命令行为完全不变（向后兼容）
+
+### 命令冷却（cooldown=）
+
+手写冷却计时可用 `cooldown=` 声明替代。时长语法与 `args=` 的 `duration`
+类型一致（如 `"30s"`、`"1h30m"`、`"1d"`）：
+
+```python
+@command("daily", cooldown="1d", cooldown_key="user", cooldown_reply="今天已签到")
+async def daily_handler(event):
+    await event.reply("签到成功！")
+```
+
+`cooldown_key=` 控制冷却粒度：`"user"`（默认，同一用户共享）、`"session"`
+（同一会话共享，如同一群）、`"global"`（所有用户所有会话共享）。
+
+**行为要点**：
+
+- 冷却命中默认**静默丢弃**（对称于作用域静默）；声明 `cooldown_reply=` 后命中即回复该文案
+- 命令命中即认领——冷却命中的命令不会漏给低优先级消息处理器
+- 冷却在全部权限检查与参数解析通过、命令实际执行前开始计时：无权限用户不触发冷却，参数错误不消耗冷却
+- 状态为进程内内存，模块卸载时自动清理；跨进程共享 / 重启持久化不在范围内
+- 声明在注册期校验（fail-fast）：时长语法非法、`cooldown_key=` 非白名单值、`cooldown_reply=` 未搭配 `cooldown=` 均抛 `ValueError`
+
+### 依赖注入（Depends）
+
+公共依赖（数据库会话、配置读取等）可抽为依赖函数，处理器以
+`Depends(依赖函数)` 作为参数默认值声明，框架在调用前自动以上下文对象
+调用依赖函数并按名注入：
+
+```python
+from ErisPulse.Core import Depends
+
+async def get_session(event):
+    return await sdk.module.call("DB", "get_session")
+
+@command("admin")
+async def admin_handler(event, db=Depends(get_session)):
+    ...
+```
+
+默认开启**请求级缓存**：同一次事件分发内，相同依赖函数只解析一次、所有
+注入点共享结果（如 `get_db` 在一次事件中只建一次数据库会话）；跨请求自动
+不复用。可用 `Depends(get_db, use_cache=False)` 关闭单条依赖的缓存。
+
+覆盖全部框架注入点——命令处理器、事件处理器（`message.on_message()` 等）、
+生命周期钩子（`sdk.lifecycle.on`）、SSE 路由处理器。依赖函数的第一个参数
+是注入点上下文对象（事件场景为 `Event`，生命周期为事件 `data`，
+路由为 `HttpRequest` / `SseEmitter`）；同步与异步依赖函数均可声明。
+
+**声明其它模块的服务**（语法糖）：
+
+```python
+@command("query")
+async def query_handler(event, session=Depends.module("DB", "get_session")):
+    ...
+```
+
+`Depends.module(模块名, 方法名, *固定参数)` 等价于在依赖函数内调用
+`sdk.module.call(...)`。模块实例化（`__init__`）不在覆盖范围——实例化时无
+上下文对象；FastAPI 承载的 HTTP 路由请用 FastAPI 原生 `fastapi.Depends`。
+
+**行为要点**：
+
+- 声明在注册期校验（fail-fast）：依赖不可调用、或与 `args=` / `options=` 参数重名时抛 `ValueError`
+- 依赖函数抛出的异常与处理器自身异常同口径处理（命令自动回复错误）
+- 不声明 `Depends` 的处理器零开销（分发期无任何反射）
+- FastAPI 承载的 HTTP 路由请使用 FastAPI 原生 `fastapi.Depends`
+
 ### 命令组
 
 ```python
@@ -2898,6 +3006,30 @@ async def filter_middleware(data):
     if data.get("type") == "notice":
         return None  # 返回 None 时中间件链会忽略该返回值，保留原数据继续传递
     return data  # 必须返回数据以继续传递
+```
+
+#### 中间件返回契约
+
+| 返回值 | 行为 |
+|--------|------|
+| `dict` | 改写事件载荷（后续处理器收到改写后的事件） |
+| `None` | 放行，载荷不变（输出 WARNING 提示——建议显式 `return data`） |
+| `False` | **否决**：事件被丢弃，不进入任何处理器、无任何出站副作用 |
+
+否决适用于防火墙、限流、黑名单等"在事件层面直接丢弃"的场景（此前只能用高优先级事件处理器绕行实现）。否决时框架输出 TRACE 日志并触发 `adapter.event.blocked` 生命周期钩子（携带 `middleware` 中间件名、完整 `event`、`platform` / `event_type` / `detail_type`），便于排查"事件为什么没响应"：
+
+```python
+@sdk.adapter.middleware
+async def rate_limit_middleware(data):
+    """限流中间件"""
+    if _is_rate_limited(data):
+        return False  # 否决：事件被丢弃
+    data["rate_marked"] = True
+    return data
+
+@sdk.lifecycle.on("adapter.event.blocked")
+async def on_event_blocked(data):
+    print(f"事件被 {data['middleware']} 否决: {data['event_type']}")
 ```
 
 #### 中间件执行顺序
@@ -5954,6 +6086,149 @@ services:
 
 
 
+### 模块测试（ErisPulse-Testing）
+
+# 模块测试（ErisPulse-Testing）
+
+[ErisPulse-Testing](https://github.com/wsu2059q/ErisPulse-Testing) 是官方测试工具包（RFC EPRFC-2026-001 方向三）：
+提供 `TestBot`、测试事件工厂、出站消息捕获与断言面，让模块测试像写普通 pytest 一样简单。
+
+```bash
+pip install ErisPulse-Testing
+```
+
+> 单向依赖框架的开发期工具，运行时零介入。真连适配器平台的冒烟测试请使用框架仓库的 `tests/devs/test_adapter.py`。
+
+## 快速开始
+
+```python
+import pytest
+from ErisPulse.Core.Event.command import command
+from ErisPulse_Testing import TestBot, create_command_event
+
+async def test_daily(make_testbot):
+    async with make_testbot(prefix="/") as bot:
+        @command("daily", cooldown="1d", cooldown_reply="今天已签到")
+        async def daily(event):
+            await event.reply("签到成功！")
+
+        await bot.dispatch(create_command_event("daily", user_id="123"))
+        assert bot.last_reply.text == "签到成功！"
+
+        await bot.dispatch(create_command_event("daily", user_id="123"))
+        bot.assert_reply_contains("今天已签到")   # 第二次命中冷却
+```
+
+`TestBot` 推荐以 `async with` 使用：启动时注册 MockAdapter（捕获全部出站）、
+关闭事件去重、应用配置覆写；退出时自动清理框架全局状态，用例之间互不污染。
+
+配套 pytest fixtures（安装后自动可用）：
+
+- `testbot`：function 级标准 TestBot（platform=`test`、前缀 `/`）
+- `make_testbot(**kwargs)`：自定义参数工厂（`prefix` / `config` / `platform` / `bot_id` ...）
+
+建议在测试项目配置 `asyncio_mode = "auto"`（`[tool.pytest.ini_options]`），
+或给用例加 `@pytest.mark.asyncio`。
+
+## 事件工厂
+
+| 函数 | 说明 |
+|------|------|
+| `create_message_event(text, user_id=..., group_id=None, ...)` | 消息事件；`group_id` 为空即私聊 |
+| `create_command_event("roll 3", prefix="/")` | 命令消息（自动加前缀，已带前缀不重复） |
+| `create_notice_event(type, ...)` | 通知事件（如 `friend_add`） |
+| `create_request_event(type, ...)` | 请求事件（如好友申请） |
+| `create_meta_event("connect", ...)` | meta 事件（connect 可让 Bot 上线） |
+
+所有事件使用 uuid 唯一 `id`，天然避开框架的事件去重。
+
+## TestBot API
+
+### 分发
+
+```python
+trace = await bot.dispatch(event)          # 分发并等待处理器落地，返回决策链
+await bot.dispatch(event, drain=False)     # 交互首消息：不等待（wait_reply 处理器长驻）
+await bot.send_message("你好")             # 消息分发快捷方式
+await bot.reply_as("18", user_id="u1")     # 模拟 wait_reply 用户回复（自动等 waiter 就绪）
+```
+
+`dispatch()` 在 emit 后 gather 全部在途处理器 Task，返回即处理完成——**测试里不需要 sleep**。
+
+### 出站断言
+
+```python
+bot.replies                # 全部出站（SentMessage 列表）
+bot.last_reply.text        # 最近一条回复的文本
+bot.replies_to("123")      # 按目标过滤
+bot.clear_replies()        # 阶段间隔离断言
+bot.assert_replied()                       # 存在出站
+bot.assert_replied(contains="签到", to="123")
+bot.assert_not_replied()                   # 无任何出站
+bot.assert_reply_contains("签到成功")       # 存在包含指定文本的出站
+await bot.wait_for_reply(timeout=2)        # 等待异步回复出现
+```
+
+`SentMessage` 字段：`text`（首个 text 段）、`segments`（完整消息段）、
+`target_type` / `target_id` / `bot_id`（发送上下文）、`has_modifier("at")` 等。
+
+### 模块加载
+
+```python
+await bot.load_module("MyModule")   # entry-point 已注册的包名
+await bot.load_module(MyModule)     # 或 BaseModule 子类（自动 register + load）
+await bot.unload_module("MyModule")
+```
+
+`on_load` 内注册的命令 / 事件处理器随模块归属，卸载时自动清理，可直接断言"卸载后命令失效"。
+
+### 依赖替换
+
+```python
+with bot.patch_dependency(get_session, fake_session) as mock:
+    await bot.dispatch(create_command_event("query"))
+    assert mock.called
+```
+
+替换的是命令注册表中 `Depends(get_session)` 声明引用的函数，with 退出自动还原。
+
+### 配置覆写
+
+```python
+bot = TestBot(prefix="//", config={
+    "ErisPulse.event.command.case_sensitive": False,
+    "MyModule.api_key": "test-key",     # 模块配置（self.cfg 可读）
+})
+```
+
+经配置内存层注入（不落盘），命令前缀等随热更新立即生效。
+
+## 分发决策链（排查"命令为什么没触发"）
+
+`dispatch()` 返回 `DispatchTrace`——本次分发经过的每个判定点的因果链：
+
+```python
+trace = await bot.dispatch(create_command_event("dailyx", user_id="123"))
+
+trace.verdict        # executed / rejected / dropped / failed / no_match / passed
+trace.explain()      # 逐行因果说明（当前语言）
+trace.command        # 命中的命令名（未命中为 None）
+trace.steps("cooldown")  # 按阶段过滤判定记录
+
+trace.assert_executed("daily")  # 断言执行（失败时附完整因果链）
+trace.assert_rejected()         # 断言被权限类判定拒绝
+trace.assert_dropped()          # 断言被静默丢弃（冷却等）
+trace.assert_no_match()         # 断言未命中命令
+```
+
+判定覆盖：命令文本判定、命令命中（未命中附拼写建议）、作用域、用户 ACL、
+主人检查、权限函数、冷却静默丢弃、参数解析、执行结果、中间件否决。
+
+生产环境同样可用框架内置的 `ErisPulse.Core.Event.trace`（`start_dispatch_trace()` /
+`format_dispatch_trace()`）采集与渲染决策链。
+
+
+
 ### CLI 命令参考
 
 # CLI 命令参考
@@ -6737,6 +7012,7 @@ async def my_middleware(event):
 - **执行顺序**：中间件按注册顺序执行（先注册先执行）
 - **数据传递**：每个中间件接收上一个中间件返回的 `event` 数据；如果某个中间件返回 `None`，则忽略该返回值并保留原数据继续传递（同时输出 `warning` 级别日志）
 - **修改数据**：中间件可以修改事件数据并返回修改后的字典
+- **事件否决**：中间件显式返回 `False` 时否决事件——事件被丢弃，不进入任何处理器、无任何出站副作用；否决时输出 TRACE 日志并触发 `adapter.event.blocked` 生命周期钩子（携带中间件名与完整事件）
 
 ```python
 @sdk.adapter.middleware
@@ -6749,12 +7025,13 @@ async def filter_spam(event):
     if event.get("detail_type") == "private":
         text = event.get("alt_message", "")
         if "垃圾广告" in text:
-            return None   # 返回 None 不会阻止事件传播，仅忽略此返回值
+            return False  # 否决：事件被丢弃，不进入任何处理器
     return event
 ```
 
-> **注意**：中间件目前不支持阻断事件传播。如需过滤特定事件，请在事件处理器中通过条件判断实现。
-> 但您可以在Event模块中设置搞优先级处理器然后在处理器内使用设定 `event.mark_processed()` 来阻断低优先级事件处理器
+> **注意**：只有显式返回 `False` 才否决事件（返回空字典 / `0` / `""` 等 falsy 值不否决）；
+> 返回 `None` 仍然是放行且载荷不变。否决后的事件可通过监听
+> `adapter.event.blocked` 钩子进行审计与排查"事件为什么没响应"。
 
 ## Send 消息发送
 
@@ -8733,6 +9010,7 @@ def audit_config(data):
 | 钩子名称 | 触发时机 | 数据 |
 |---------|---------|------|
 | `adapter.event.receive` | 收到外部平台事件（最早期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.blocked` | 中间件否决事件（返回 `False`，事件被丢弃不进入任何处理器） | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
 | `adapter.event.dispatched` | 事件分发完成 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
 | `event.pre_process` | 事件处理器开始执行前 | `{"event_type": str, "platform": str, "detail_type": str}` |
 

@@ -1212,7 +1212,7 @@ async def help_handler(event):
     help_text = """
 可用命令：
 /help - 顯示幫助
-/ping - 測試連接
+/ping - 測試連線
 /info - 查看資訊
     """
     await event.reply(help_text)
@@ -1226,7 +1226,7 @@ async def help_handler(event):
     await event.reply("幫助資訊...")
 ```
 
-用戶可以使用以下任何方式呼叫：
+使用者可以使用以下任何方式呼叫：
 - `/help`
 - `/h`
 - `/幫助`
@@ -1236,7 +1236,7 @@ async def help_handler(event):
 ```python
 @command("echo", help="回顯訊息")
 async def echo_handler(event):
-    # 獲取命令參數
+    # 取得命令參數
     args = event.get_command_args()
     
     if not args:
@@ -1245,8 +1245,99 @@ async def echo_handler(event):
         await event.reply(f"你說了: {' '.join(args)}")
 ```
 
-參數保留用戶輸入的原始大小寫（即使配置為大小寫不敏感，
-命令名匹配歸一也不會影響參數內容）。
+參數保留使用者輸入的原始大小寫（即使設定為大小寫不敏感，命令名匹配歸一也不會影響參數內容）。
+
+### 聲明式參數與選項（args= / options=）
+
+手動解析參數需要自己處理類型轉換與錯誤提示。聲明 `args=` / `options=` 後，框架在權限檢查通過後自動解析命令參數並**按名注入處理器**；使用者輸入錯誤時自動回覆本地化提示與用法（不會拋異常崩潰），`/help <命令>` 也會自動展示用法：
+
+```python
+@command(
+    "roll",
+    args="<count:int> [sides:int=6]",
+    options={"verbose": "-v/--verbose", "label": "--label"},
+    help="擲骰子",
+)
+async def roll_handler(event, count: int, sides: int = 6, verbose: bool = False, label: str = ""):
+    total = sum(random.randint(1, sides) for _ in range(count))
+    await event.reply(f"擲了 {count} 次 {sides} 面骰，總點數：{total}")
+```
+
+`args=` 位置參數語法：`<count:int>` 必填、`[sides:int=6]` 可選（含預設值）。支援類型：
+
+| 類型 | 範例輸入 | 說明 |
+|------|---------|------|
+| `str` | `hello` | 文本（缺省類型） |
+| `int` / `float` | `3` / `0.5` | 數值 |
+| `bool` | `是` / `yes` / `はい` / `да` / `true` / `no` / `取消` | 布林值，重用互動確認（`Event.confirm()`）的確認詞表 |
+| `literal` | `<mode:literal=fast|slow>` | 陣列，僅接受列出的值；可選形式預設取首個 |
+| `duration` | `90s`、`1h30m`、`1d` | 時長，按秒折算為 float |
+| `rest` | `<text:rest>` | 剩餘全部文本（必須位於最後） |
+
+`options=` 選項為字典式聲明：鍵為處理器參數名，值為旗標形式（多個別名以 `/` 分隔）。註解為 `bool` 的參數是布林旗標（出現即 `True`）；其餘（缺省按 `str`）是帶值選項，支援 `--label hello` 與 `--label=hello` 兩種取值，類型跟隨處理器註解。選項先被識別剔除，剩餘 token 再按 `args=` 解析（`rest` 覆蓋剔除選項後的剩餘文本）。
+
+**行為要點**：
+
+- 權限檢查先於參數解析——無權限使用者不會觸發解析
+- 解析失敗（類型不符 / 缺少參數 / 參數過多 / 未知選項）自動回覆本地化錯誤 + 用法，命令仍被認領
+- 聲明的參數名必須存在於處理器簽名中，否則註冊期拋 `ValueError`
+- 不聲明 `args=` / `options=` 的命令行為完全不變（向後相容）
+
+### 命令冷卻（cooldown=）
+
+手寫冷卻計時可用 `cooldown=` 聲明替代。時長語法與 `args=` 的 `duration` 類型一致（如 `"30s"`、`"1h30m"`、`"1d"`）：
+
+```python
+@command("daily", cooldown="1d", cooldown_key="user", cooldown_reply="今天已簽到")
+async def daily_handler(event):
+    await event.reply("簽到成功！")
+```
+
+`cooldown_key=` 控制冷卻粒度：`"user"`（預設，同一使用者共享）、`"session"`（同一會話共享，如同一群）、`"global"`（所有使用者所有會話共享）。
+
+**行為要點**：
+
+- 冷卻命中預設**靜默丟棄**（對稱於作用域靜默）；聲明 `cooldown_reply=` 後命中即回覆該文案
+- 命令命中即認領——冷卻命中的命令不會漏給低優先級訊息處理器
+- 冷卻在全部權限檢查與參數解析通過、命令實際執行前開始計時：無權限使用者不觸發冷卻，參數錯誤不消耗冷卻
+- 狀態為進程內記憶體，模組卸載時自動清理；跨進程共享 / 重啟持久化不在範圍內
+- 聲明在註冊期校驗（fail-fast）：時長語法非法、`cooldown_key=` 非白名單值、`cooldown_reply=` 未搭配 `cooldown=` 均拋 `ValueError`
+
+### 依賴注入（Depends）
+
+公共依賴（資料庫會話、設定讀取等）可抽為依賴函數，處理器以 `Depends(依賴函數)` 作為參數預設值聲明，框架在呼叫前以上下文物件呼叫依賴函數並按名注入：
+
+```python
+from ErisPulse.Core import Depends
+
+async def get_session(event):
+    return await sdk.module.call("DB", "get_session")
+
+@command("admin")
+async def admin_handler(event, db=Depends(get_session)):
+    ...
+```
+
+預設開啟**請求級快取**：同一次事件分發內，相同依賴函數只解析一次、所有注入點共享結果（如 `get_db` 在一次事件中只建一次資料庫會話）；跨請求自動不複用。可用 `Depends(get_db, use_cache=False)` 關閉單條依賴的快取。
+
+覆蓋全部框架注入點——命令處理器、事件處理器（`message.on_message()` 等）、生命週期鈎子（`sdk.lifecycle.on`）、SSE 路由處理器。依賴函數的第一個參數是注入點上下文物件（事件場景為 `Event`，生命週期為事件 `data`，路由為 `HttpRequest` / `SseEmitter`）；同步與異步依賴函數均可聲明。
+
+**聲明其它模組的服務**（語法糖）：
+
+```python
+@command("query")
+async def query_handler(event, session=Depends.module("DB", "get_session")):
+    ...
+```
+
+`Depends.module(模組名, 方法名, *固定參數)` 等價於在依賴函數內呼叫 `sdk.module.call(...)`。模組實例化（`__init__`）不在覆蓋範圍——實例化時無上下文物件；FastAPI 承載的 HTTP 路由請用 FastAPI 原生 `fastapi.Depends`。
+
+**行為要點**：
+
+- 聲明在註冊期校驗（fail-fast）：依賴不可呼叫、或與 `args=` / `options=` 參數重名時拋 `ValueError`
+- 依賴函數拋出的異常與處理器自身異常同口徑處理（命令自動回覆錯誤）
+- 不聲明 `Depends` 的處理器零開銷（分發期無任何反射）
+- FastAPI 承載的 HTTP 路由請使用 FastAPI 原生 `fastapi.Depends`
 
 ### 命令組
 
@@ -1260,8 +1351,7 @@ async def stop_handler(event):
     await event.reply("機器人已停止")
 ```
 
-`group` 參數僅用於幫助列表歸類；上面示例中的 `admin.reload` 是一個**整體命令名**
-（點號只是命名風格，用戶需輸入 `/admin.reload`）。
+`group` 參數僅用於幫助列表歸類；上面示例中的 `admin.reload` 是一個**整體命令名**（點號只是命名風格，使用者需輸入 `/admin.reload`）。
 
 ### 子命令
 
@@ -1272,10 +1362,10 @@ async def stop_handler(event):
 async def admin_handler(event):
     await event.reply("用法：/admin add | /admin remove")
 
-@command("admin add", help="添加管理員")
+@command("admin add", help="新增管理員")
 async def admin_add_handler(event):
     target = event.get_command_args()[0]
-    await event.reply(f"已添加 {target}")
+    await event.reply(f"已新增 {target}")
 
 @command("admin remove", aliases=["a remove"], help="移除管理員")
 async def admin_remove_handler(event):
@@ -1284,13 +1374,12 @@ async def admin_remove_handler(event):
 
 匹配規則（**最長前綴匹配**）：
 
-- `/admin add x` 優先命中 `admin add`，`event.get_command_args()` 返回 `["x"]`（子命令名之後的參數）
-- 僅註冊了 `admin` 時，`/admin add x` 命中 `admin`，`get_command_args()` 返回 `["add", "x"]`（歷史行為不變）
+- `/admin add x` 優先命中 `admin add`，`event.get_command_args()` 回傳 `["x"]`（子命令名之後的參數）
+- 僅註冊了 `admin` 時，`/admin add x` 命中 `admin`，`get_command_args()` 回傳 `["add", "x"]`（歷史行為不變）
 - 別名支援多 token 形式（如 `a remove`），也可用單 token 別名（如 `a`）指向子命令
 - 父子命令同時註冊時，未註冊的子命令輸入（如 `/admin list x`）回落到父命令
 
-**權限繼承**：子命令未聲明 `permission` 時，自動繼承父鏈上最近聲明了權限的祖先命令——
-保護 `/admin` 即自動保護其下全部子命令；子命令自身聲明的權限優先：
+**權限繼承**：子命令未聲明 `permission` 時，自動繼承父鏈上最近聲明了權限的祖先命令——保護 `/admin` 即自動保護其下全部子命令；子命令自身聲明的權限優先：
 
 ```python
 def is_admin(event):
@@ -1301,29 +1390,27 @@ async def admin_handler(event):
     ...
 
 # 無需重複聲明 permission，自動繼承 is_admin
-@command("admin add", help="添加管理員")
+@command("admin add", help="新增管理員")
 async def admin_add_handler(event):
     ...
 ```
 
-注意：`master=True` 與 `hidden` **不會**繼承，需要時請在子命令上單獨聲明；
-用戶 ACL（黑白名單）按命令全名匹配，glob 规則如 `"admin*"` 可覆蓋整組子命令。
+注意：`master=True` 與 `hidden` **不會**繼承，需要時請在子命令上單獨聲明；使用者 ACL（黑白名單）按命令全名匹配，glob 规則如 `"admin*"` 可覆蓋整組子命令。
 
-`/help` 的命令總覽中，子命令會自動掛到可見的父命令下縮進展示
-（`admin` → `admin add` 縮進一級，`admin user` → `admin user ban` 縮進兩級）。
+`/help` 的命令總覽中，子命令會自動掛到可見的父命令下縮進展示（`admin` → `admin add` 縮進一級，`admin user` → `admin user ban` 縮進兩級）。
 
 ### 命令權限與訪問控制
 
 命令權限分三層，從上到下逐層判定（**上層拒絕則不再看下層**）：
 
 ```python
-# ① 命令權限 ACL（用戶側配置）：按命令的用戶黑白名單，拒絕時回覆"權限不足"
+# ① 命令權限 ACL（使用者側設定）：按命令的使用者黑白名單，拒絕時回覆"權限不足"
 # ② master=True —— 僅框架主人可執行（框架自動檢查，拒絕時回覆"權限不足"）
-@command("restart", master=True, help="重新啟動模組")
+@command("restart", master=True, help="重啟模組")
 async def restart_handler(event):
-    await event.reply("模組已重新啟動")
+    await event.reply("模組已重啟")
 
-# ③ permission=調用函數 —— 命令自身的控制邏輯（返回 True 才執行）
+# ③ permission=呼叫函數 —— 命令自身的控制邏輯（回傳 True 才執行）
 def is_admin(event):
     return event.get_user_id() in {"user123", "user456"}
 
@@ -1332,8 +1419,7 @@ async def panel_handler(event):
     await event.reply("歡迎來到管理面板")
 ```
 
-**命令用戶 ACL**（`ErisPulse.event.command.acl`）：用戶可為任意命令配置用戶黑白名單，
-命令名支援精確與 glob 模式（如 `"roll*"`），拒絕時回覆"權限不足"：
+**命令使用者 ACL**（`ErisPulse.event.command.acl`）：使用者可為任意命令設定使用者黑白名單，命令名支援精確與 glob 模式（如 `"roll*"`），拒絕時回覆"權限不足"：
 
 ```toml
 # config.toml —— 僅允許 123456 執行 restart；666 一律拒絕
@@ -1342,9 +1428,7 @@ allow = ["onebot11:123456"]
 deny = ["onebot11:666"]
 ```
 
-判定順序：`deny` 命中 → 拒絕；`allow` 非空且未命中 → 拒絕；未配置 ACL 時遵循
-`event.command.default_allow`（`false` = 嚴格模式，無 ACL 即拒；`true` 時交給開發者預設
-`master=True` / `permission`）。運行時 API（命令名支援 glob）：
+判定順序：`deny` 命中 → 拒絕；`allow` 非空且未命中 → 拒絕；未設定 ACL 時遵循 `event.command.default_allow`（`false` = 嚴格模式，無 ACL 即拒；`true` 時交給開發者預設 `master=True` / `permission`）。執行時 API（命令名支援 glob）：
 
 ```python
 from ErisPulse.Core.Event import command
@@ -1355,17 +1439,11 @@ command.remove_acl("restart")                          # 清除黑白名單
 command.get_acl("restart")                             # 查詢當前名單
 ```
 
-> 命令處理器從事件包導入：`from ErisPulse.Core.Event import command`；
-> 也可經 SDK 事件包訪問：`sdk.Event.command`（兩者為同一單例）。
-> 在模組內通常已隨命令裝飾器導入（`from ErisPulse.Core.Event import command`）。
+> 命令處理器從事件包導入：`from ErisPulse.Core.Event import command`；也可經 SDK 事件包訪問：`sdk.Event.command`（兩者為同一單例）。在模組內通常已隨命令裝飾器導入（`from ErisPulse.Core.Event import command`）。
 
-跨命令 / 跨用戶的**事件級**訪問控制（某人 / 某群 / 某 Bot 的訊息收不收）
-走作用域**身份維度**（`scope.identity`）；**模組級**可用性（哪些模組能用）
-走作用域**模組維度**（`scope.platforms / bots / sessions`）。
-詳見[作用域（scope）](../advanced/scope.md)。
+跨命令 / 跨使用者的**事件級**訪問控制（某人 / 某群 / 某 Bot 的訊息收不收）走作用域**身份維度**（`scope.identity`）；**模組級**可用性（哪些模組能用）走作用域**模組維度**（`scope.platforms / bots / sessions`）。詳見[作用域（scope）](../advanced/scope.md)。
 
-> 建議：命令內部需要聯動業務邏輯的用 `master=True` / `permission`；純按用戶 / 群做
-> 訪問控制的用作用域身份維度；控制模組可用性的用作用域模組維度。
+> 建議：命令內部需要聯動業務邏輯的用 `master=True` / `permission`；純按使用者 / 群做訪問控制的用作用域身份維度；控制模組可用性的用作用域模組維度。
 
 ### 命令優先級
 
@@ -1387,9 +1465,9 @@ ErisPulse 事件系統採用**同優先級並行、不同優先級串行**的調
 ```
 事件到達
     ↓
-priority=10 組: [處理器C ||處理器D] 並行 → 合併結果
+priority=10 組: [處理器C || 處理器D] 並行 → 合併結果
     ↓ (如未中斷)
-priority=0 組: [處理器A ||處理器B] 並行 → 合併結果
+priority=0 組: [處理器A || 處理器B] 並行 → 合併結果
     ↓
 ...
 ```
@@ -1397,11 +1475,11 @@ priority=0 組: [處理器A ||處理器B] 並行 → 合併結果
 - **同優先級並行**：優先級相同的多個處理器會同時執行，提高吞吐量
 - **跨級串行**：不同優先級的組按順序執行（數值越大越先執行），確保高優先級處理器先運行
 - **Copy-On-Write**：處理器無修改時不建立副本，確保零開銷
-- **衝突處理**：同優先級多處理器修改同一字段時，使用最後修改值並記錄警告日誌
-- **中斷機制**：任意處理器調用 `event.done()`（預設）或 `event.done(claim=False)` 後，跳過後續低優先級組。認領與阻斷的區別見下文[「鏈路控制：認領與阻斷」](#鏈路控制認領與阻斷)
+- **衝突處理**：同優先級多處理器修改同一欄位時，使用最後修改值並記錄警告日誌
+- **中斷機制**：任意處理器呼叫 `event.done()`（預設）或 `event.done(claim=False)` 後，跳過後續低優先級組。認領與阻斷的區別見下文[「鏈路控制：認領與阻斷」](#鏈路控制認領與阻斷)
 
 ```python
-# 示例：同優先級處理器並行執行
+# 範例：同優先級處理器並行執行
 @message.on_message(priority=0)
 async def handler_a(event):
     # 處理任務A
@@ -3582,9 +3660,9 @@ CLI 配置向導儲存還是適配器/模組首次生成配置範本，框架都
 
 ## 環境變數覆蓋
 
-框架支援用環境變數**覆蓋** `ErisPulse.*` 配置項（適合 Docker / 容器化 / CI 部署，無需修改 `config.toml`）。
+框架支援使用環境變數**覆蓋** `ErisPulse.*` 配置項（適合 Docker / 容器化 / CI 部署，無需修改 `config.toml`）。
 
-命名規則：把點分路徑 `ErisPulse.<section>.<key>` 改為全大寫、`.` 替換為 `_`，並加上 `ERISPULSE_` 前綴：
+命名規則：將點分路徑 `ErisPulse.<section>.<key>` 改為全大寫、`.` 替換為 `_`，並加上 `ERISPULSE_` 前綴：
 
 | 配置項 | 環境變數 | 示例值 |
 |--------|---------|--------|
@@ -3604,6 +3682,32 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 ```
 
 > 註：`ErisPulse.server.port` 這類框架配置走 `get_server_config()` 等 API 讀取，均受環境變數覆蓋影響。
+
+### 模組配置的環境變數綁定（2.9.0+）
+
+模組自己的宣告式配置（`ConfigClass`）支援欄位級環境變數綁定——在 `field(metadata=...)` 中宣告 `env`：
+
+```python
+@dataclass
+class MyConfig(BaseConfig):
+    api_key: str = field(default="", metadata={
+        "description": "API 密鑰",
+        "env": "MYMODULE_API_KEY",   # 環境變數綁定
+    })
+    retries: int = field(default=3, metadata={"env": "MYMODULE_RETRIES"})
+```
+
+行為說明：
+
+- **優先級**：環境變數 > `config.toml` > 宣告預設值（配置文件熱更新後同樣保持此優先級）
+- **類型轉換**：環境變數值按欄位註解自動轉換——`str` 原樣、`int` / `float` / `bool`（`true` / `1` / `yes` / `on`）自動轉換、`list` / `dict` 走 JSON 解析；轉換失敗時忽略該覆蓋（回退配置文件 / 預設值）並輸出告警
+- **宣告一次、處處生效**：配置讀取、熱更新、校驗使用同一管道；配置面板 Schema 會標註 `env` 名，`config.toml` 模板註釋也會提示可用的環境變數（模板不寫入環境變數的實際值，避免洩露）
+- **完全相容**：未宣告 `env` 的欄位行為不變；直接實例化 ConfigClass（不經框架配置管道）不受環境變數影響
+
+```bash
+# Docker 部署示例：不修改 config.toml，直接注入模組密鑰
+MYMODULE_API_KEY=sk-xxx docker compose up -d
+```
 
 ## 配置熱更新
 
@@ -4465,24 +4569,32 @@ tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 
 ## 內容列表
 
-### 模塊開發
+### 模組開發
 
-1. [模塊開發入門](modules/getting-started.md) - 創建第一個模塊
-2. [模塊核心概念](modules/core-concepts.md) - 模塊的核心概念和架構
+1. [模組開發入門](modules/getting-started.md) - 創建第一個模組
+2. [模組核心概念](modules/core-concepts.md) - 模組的核心概念和架構
 3. [Event 包裝類詳解](modules/event-wrapper.md) - Event 對象的完整說明
-4. [模塊最佳實踐](modules/best-practices.md) - 開發高品質模塊的建議
+4. [模組最佳實踐](modules/best-practices.md) - 開發高品質模組的建議
 
-### 適配器開發
+### 數據模型
 
-1. [適配器開發入門](adapters/getting-started.md) - 創建第一個適配器
-2. [適配器核心概念](adapters/core-concepts.md) - 適配器的核心概念
-3. [SendDSL 詳解](adapters/send-dsl.md) - Send 消息發送 DSL 的完整說明
+1. [數據模型層（ORM）](orm.md) - 聲明式模型、自動建表與增刪改查
+
+### 适配器開發
+
+1. [适配器开发入门](adapters/getting-started.md) - 創建第一個适配器
+2. [适配器核心概念](adapters/core-concepts.md) - 适配器的核心概念
+3. [SendDSL 详解](adapters/send-dsl.md) - Send 消息發送 DSL 的完整說明
 4. [事件轉換器](adapters/converter.md) - 實現事件轉換器
-5. [適配器最佳實踐](adapters/best-practices.md) - 開發高品質適配器的建議
+5. [适配器最佳实践](adapters/best-practices.md) - 開發高品質适配器的建議
+
+### 測試與排查
+
+1. [模組測試（ErisPulse-Testing）](testing.md) - TestBot、事件工廠與斷言面
 
 ### 發布指南
 
-- [發布與模塊商店指南](publishing.md) - 將你的作品發布到 PyPI 和 ErisPulse 模塊商店
+- [發布與模組商店指南](publishing.md) - 將你的作品發布到 PyPI 和 ErisPulse 模組商店
 
 ## 開發準備
 
@@ -6818,7 +6930,7 @@ sdk.router.get_module_urls("MyModule")
 ─────────────────                           ─────────────────
                                              
 ┌──────────────────┐                        ┌──────────────────┐
-│ 平台原生事件     │                        │ 模組建構訊息     │
+│ 平台原生事件     │                        │ 模組構建訊息     │
 └────────┬─────────┘                        └────────┬─────────┘
          │                                           │
          ↓                                           ↓
@@ -6852,7 +6964,7 @@ sdk.router.get_module_urls("MyModule")
 
 ## AdapterManager 適配器管理器
 
-`AdapterManager` 是 ErisPulse 適配器系統的核心組件，負責管理所有平台適配器的註冊、啟動、關閉和事件分發。
+`AdapterManager` 是 ErisPulse 適配器系統的核心元件，負責管理所有平台適配器的註冊、啟動、關閉和事件分發。
 
 ### 核心功能
 
@@ -6860,14 +6972,14 @@ sdk.router.get_module_urls("MyModule")
 - **生命週期管理**：控制適配器的啟動和關閉
 - **事件分發**：分發 OneBot12 標準事件和平台原生事件
 - **配置管理**：管理適配器的啟用/禁用狀態
-- **中間件支援**：支援 OneBot12 事件中間件
+- **中介層支援**：支援 OneBot12 事件中介層
 
 ### 基本使用
 
 ```python
 from ErisPulse import sdk
 
-# 注冊適配器（通常由 Loader 自動完成）
+# 註冊適配器（通常由 Loader 自動完成）
 sdk.adapter.register("myplatform", MyPlatformAdapter)
 
 # 啟動所有適配器
@@ -6998,7 +7110,7 @@ async def handle_all_raw_events(data):
 
 當呼叫 `adapter.emit(event_data)` 時：
 
-1. **中間件處理**：先執行所有 OneBot12 中間件
+1. **中介層處理**：先執行所有 OneBot12 中介層
 2. **標準事件分發**：分發到匹配的 OneBot12 事件處理器
 3. **原生事件分發**：如果存在原始資料，分發到原生事件處理器
 
@@ -7008,31 +7120,55 @@ async def handle_all_raw_events(data):
 - 通配符：`@sdk.adapter.on("*")` 匹配所有事件
 - 平台過濾：`platform="myplatform"` 只分發指定平台的事件
 
-### 中間件
+### 中介層
 
-#### 添加中間件
+#### 添加中介層
 
 ```python
 @sdk.adapter.middleware
 async def logging_middleware(data):
-    """日誌記錄中間件"""
+    """日誌記錄中介層"""
     print(f"處理事件: {data.get('type')}")
     return data  # 必須回傳資料
 
 @sdk.adapter.middleware
 async def filter_middleware(data):
-    """事件過濾中間件"""
+    """事件過濾中介層"""
     # 過濾不需要的事件
     if data.get("type") == "notice":
-        return None  # 回傳 None 時中間件鏈會忽略該回傳值，保留原資料繼續傳遞
+        return None  # 回傳 None 時中介層鏈會忽略該回傳值，保留原資料繼續傳遞
     return data  # 必須回傳資料以繼續傳遞
 ```
 
-#### 中間件執行順序
+#### 中介層回傳契約
 
-中間件按照註冊順序執行，後註冊的中間件先執行。
+| 回傳值 | 行為 |
+|--------|------|
+| `dict` | 改寫事件載入（後續處理器收到改寫後的事件） |
+| `None` | 放行，載入不變（輸出 WARNING 提示——建議顯式 `return data`） |
+| `False` | **否決**：事件被丟棄，不進入任何處理器、無任何出站副作用 |
 
-> **注意**：如果中間件回傳 `None`（例如忘記 `return data`），框架會忽略該回傳值並保留原資料繼續傳遞，同時輸出 warning 級別日誌。這確保了單個中間件的失誤不會導致整個事件鏈中斷。
+否決適用於防火牆、限流、黑名單等"在事件層面直接丟棄"的場景（此前只能用高優先級事件處理器繞行實現）。否決時框架輸出 TRACE 日誌並觸發 `adapter.event.blocked` 生命週期鉤子（攜帶 `middleware` 中介層名、完整 `event`、`platform` / `event_type` / `detail_type`），便於排查"事件為什麼沒回應"：
+
+```python
+@sdk.adapter.middleware
+async def rate_limit_middleware(data):
+    """限流中介層"""
+    if _is_rate_limited(data):
+        return False  # 否決：事件被丟棄
+    data["rate_marked"] = True
+    return data
+
+@sdk.lifecycle.on("adapter.event.blocked")
+async def on_event_blocked(data):
+    print(f"事件被 {data['middleware']} 否決: {data['event_type']}")
+```
+
+#### 中介層執行順序
+
+中介層按照註冊順序執行，後註冊的中介層先執行。
+
+> **注意**：如果中介層回傳 `None`（例如忘記 `return data`），框架會忽略該回傳值並保留原資料繼續傳遞，同時輸出 warning 級別日誌。這確保了單個中介層的失誤不會導致整個事件鏈中斷。
 
 ```python
 # 註冊順序
@@ -7088,7 +7224,7 @@ class MyAdapter(BaseAdapter):
     
     # 無需覆寫 __init__，框架自動處理：
     # - self.sdk, self.logger
-    # - self.cfg（類型安全的配置實例，即時讀取）
+    # - self.cfg（類型安全的配置實例，實時讀取）
     # - self.Send, self.Request
     
     async def start(self):
@@ -7109,7 +7245,7 @@ class MyAdapter(BaseAdapter):
 
 框架提供了宣告式配置管理，透過 dataclass 定義配置結構，框架自動處理加載、驗證和範本生成。
 
-#### 單帳號配置
+#### 單帳戶配置
 
 ```python
 from dataclasses import dataclass, field
@@ -7132,21 +7268,21 @@ class TelegramAdapter(BaseAdapter):
     ConfigClass = TelegramConfig
     
     async def start(self):
-        cfg = self.cfg  # 類型安全，即時讀取
+        cfg = self.cfg  # 類型安全，實時讀取
         if not cfg.token:
             raise ValueError("未配置 Token")
         await self._connect(cfg.token, proxy=cfg.proxy)
 ```
 
-#### 多帳號配置
+#### 多帳戶配置
 
-`BotAccountConfig` 基類提供 `enabled` 和 `name` 字段。絕大多數適配器能從平台協定或登入回應中自動取得 bot_id，在事件轉換時注入到帳號配置中。：
+`BotAccountConfig` 基類提供 `enabled` 和 `name` 欄位。絕大多數適配器能從平台協議或登入回應中自動取得 bot_id，在事件轉換時注入到帳戶配置中。：
 
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BotAccountConfig
 
-# 絕大多數適配器：bot_id 運行時自動取得，無需配置
+# 大多數適配器：bot_id 運行時自動取得，無需配置
 @dataclass
 class MyBotConfig(BotAccountConfig):
     token: str = field(default="", metadata={
@@ -7177,11 +7313,11 @@ class MyAdapter(BaseAdapter):
 
 #### metadata 約定
 
-字段 metadata 同時服務於 TOML 注釋生成和 WebUI 表單渲染：
+欄位 metadata 同時服務於 TOML 注釋生成和 WebUI 表單渲染：
 
 ```python
 metadata = {
-    "description": str | dict,  # 字段描述（支援 i18n）
+    "description": str | dict,  # 欄位描述（支援 i18n）
     "required": bool,         # 是否必填（驗證 + WebUI 必填標記）
     "secret": bool,           # 是否敏感（WebUI 顯示為 ***，日誌中脫敏）
     "example": bool,          # 不落盤標誌：不寫入 config.toml（預設值/範本均排除），
@@ -7195,23 +7331,23 @@ metadata = {
         "options": list,      # select 控件的可選項 [{label, value}]，label 支援 i18n
         "placeholder": str | dict,  # 輸入框佔位符（支援 i18n）
     },
-    "extra": dict,            # 額外擴展字段（透傳到 schema）
+    "extra": dict,            # 額外擴展欄位（透傳到 schema）
 }
 ```
 
-所有使用者可見的文本字段均支援 i18n，統一採用 `{"i18n": "key", "default": "文本"}` 格式，
-純字串則原樣透傳（向後相容）。支援的 i18n 字段：
+所有使用者可見的字串欄位均支援 i18n，統一採用 `{"i18n": "key", "default": "文字"}` 格式，
+純字串則原樣透傳（向後相容）。支援的 i18n 欄位：
 
-| 字段 | 位置 | 說明 |
+| 欄位 | 位置 | 說明 |
 |------|------|------|
-| `description` | field metadata | 字段描述 |
+| `description` | field metadata | 欄位描述 |
 | `options[].label` | `ui.options` | select 控件選項標籤 |
 | `placeholder` | `ui.placeholder` | 輸入框佔位符 |
 | `group_labels` | `_schema_meta` | 分組顯示名（Dashboard 分區標題） |
 
-使用 i18n 時，需提前將翻譯鍵註冊到 i18n 系統（詳見 [i18n 文檔](../../advanced/i18n.md#配置字段多語言)）。
+使用 i18n 時，需提前將翻譯鍵註冊到 i18n 系統（詳見 [i18n 文檔](../../advanced/i18n.md#配置欄位多語言)）。
 
-**description / placeholder / options label** 範例：
+**description / placeholder / options label** 示例：
 
 ```python
 token: str = field(
@@ -7239,24 +7375,24 @@ mode: str = field(
 )
 ```
 
-**group_labels** 範例（在配置類定義後宣告）：
+**group_labels** 示例（在配置類定義後聲明）：
 
 ```python
 MyConfig._schema_meta = {
     "group_labels": {
         "basic": {"i18n": "my_adapter.group.basic", "default": "基本設定"},
-        "advanced": {"i18n": "my_adapter.group.advanced", "default": "高階設定"},
+        "advanced": {"i18n": "my_adapter.group.advanced", "default": "高級設定"},
     }
 }
 ```
 
-框架的 `resolve_config_schema()` 會根據當前語言自動解析上述所有字段的 i18n 鍵；
+框架的 `resolve_config_schema()` 會根據目前語言自動解析上述所有欄位的 i18n 鍵；
 `get_config_schema()` 則原樣透傳 i18n 字典，由前端自行解析。
 
-#### docstring 自动生成字段描述（v2.8.0+）
+#### docstring 自动生成欄位描述（v2.8.0+）
 
-未在 metadata 中宣告 `description` 的字段，框架會自動從配置類 docstring 中
-提取字段說明作為兜底，支援兩種常見風格（可混用）：
+未在 metadata 中聲明 `description` 的欄位，框架會自動從配置類 docstring 中
+提取欄位說明作為兜底，支援兩種常見風格（可混用）：
 
 ```python
 @dataclass
@@ -7276,12 +7412,12 @@ class MyConfig(BaseConfig):
     #     endpoint: 平台 API 地址
 ```
 
-優先級：**metadata description > docstring 字段說明 > 空**。
+優先級：**metadata description > docstring 欄位說明 > 空**。
 i18n 字典形式的 description 不受影響（始終優先）。
 
 #### 嵌套配置（v2.8.0+）
 
-字段類型為嵌套 dataclass 時，框架遞迴處理：schema 以 `"type": "table"` +
+欄位類型為嵌套 dataclass 時，框架遞迴處理：schema 以 `"type": "table"` +
 `"fields"` 子樹承載（WebUI 渲染為可摺疊嵌套分組），TOML 範本渲染為 `[子表]` 節，
 預設值 / 填充 / 驗證 / i18n 解析均遞迴生效。
 
@@ -7313,28 +7449,28 @@ max_retries = 3
 backoff = 0.5
 ```
 
-> 嵌套類型建議使用直接類型註解；字串註解（如延遲求值場景）需確保
+> 嵌套類型建議使用直接類型註解；字串註解（如延遲求值場景）需保證
 > 類型可從配置類所在模組全域、`__qualname__` 外層類命名空間或類屬性中按名解析。
 
-#### 不落盤的 example 字段（v2.8.0+）
+#### 不落盤的 example 欄位（v2.8.0+）
 
 ```python
 gc_interval: int = field(default=300, metadata={"example": True})
 ```
 
-帶 `example: True` 的字段：
+帶 `example: True` 的欄位：
 
 - 不寫入 config.toml（適配器/模組配置範本與預設值均排除，運行時走代碼預設值）
 - 僅渲染進專案內 `config.full.example`（供使用者參考，按需手動複製到 config.toml）
 - schema 中帶 `"example": true` 標記（面板可自行決定展示策略），CLI 配置向導預設跳過
 - 使用者手動設定該鍵後正常持久化、正常熱更新（使用者顯式意圖優先）
 
-適合"繁雜又很少觸碰"的高階配置項，保持使用者的 config.toml 最小化。
+適合"繁雜又很少觸碰"的高級配置項目，保持使用者的 config.toml 最小化。
 
-> ⚠️ `_schema_meta` 是類級元數據（非配置字段）。若在 dataclass 類體內部宣告，
+> ⚠️ `_schema_meta` 是類級元資料（非配置欄位）。若在 dataclass 類體內部聲明，
 > 必須加 `ClassVar` 註解（`_schema_meta: ClassVar[dict] = {...}`），否則會被
-> dataclass 視為普通字段。框架對下劃線前綴字段已做防禦性排除（不進入任何
-> schema / 範本 / 預設值 / 驗證輸出），但仍建議規範宣告。
+> dataclass 視為普通欄位。框架對下劃線前綴欄位已做防禦性排除（不進入任何
+> schema / 範本 / 預設值 / 驗證輸出），但仍建議規範聲明。
 
 ### 宣告式翻譯鍵（v2.7.0+）
 
@@ -7349,26 +7485,26 @@ class MyAdapter(BaseAdapter):
     class I18nClass(BaseI18n):
         endpoint: I18nKey = I18nKey(
             default="API Endpoint",
-            zh_CN="API 位址",
+            zh_CN="API 地址",
             zh_TW="API 位址",
             en="API Endpoint",
             ja="APIアドレス",
-            ru="API 地址",
+            ru="API адрес",
         )
         token: I18nKey = I18nKey(
             default="Platform Token",
-            zh_CN="平台權杖",
+            zh_CN="平台 Token",
             zh_TW="平台權杖",
             en="Platform Token",
             ja="プラットフォームトークン",
-            ru="平台權杖",
+            ru="Токен платформы",
         )
 ```
 
 > ``I18nKey.default`` 是**語言無關的兜底文本**，不會註冊到任何語言。
 > 要讓翻譯生效，必須顯式傳入至少一個語言參數。
 
-詳細用法（鍵路徑規則、顯式 key 參數等）見 [i18n 文檔](../../advanced/i18n.md#推薦寫法透過-i18nclass-宣告翻譯鍵-v270)。
+詳細用法（鍵路徑規則、顯式 key 參數等）見 [i18n 文檔](../../advanced/i18n.md#推薦寫法通過-i18nclass-宣告翻譯鍵-v270)。
 
 ### 宣告式事件擴展方法（v2.7.0+）
 
@@ -7402,18 +7538,18 @@ async def handler(event):
 > 適配器的事件擴展方法註冊到自身平台（``self._platform``）。
 > 模組如需跨平台事件擴展，請使用原有的 ``register_event_mixin()`` API。
 
-#### 帳號解析
+#### 帳戶解析
 
-多帳號適配器可使用 `_resolve_account()` 自動解析目標帳號：
+多帳戶適配器可使用 `_resolve_account()` 自動解析目標帳戶：
 
 ```python
 async def call_api(self, endpoint: str, **params):
     account_id = params.pop("account_id", None)
     name, account = self._resolve_account(account_id)
-    # name: 帳號名, account: 配置實例
+    # name: 帳戶名, account: 配置實例
 ```
 
-解析策略：帳號名匹配 → `bot_id` 字段匹配 → 其他 str 字段匹配 → 第一個啟用帳號。
+解析策略：帳戶名匹配 → `bot_id` 欄位匹配 → 其他 str 欄位匹配 → 第一個啟用帳戶。
 
 #### 配置熱更新
 
@@ -7435,10 +7571,10 @@ class MyAdapter(BaseAdapter):
 1. **SDK 引用**：設定 `self.sdk`、`self.logger`
 2. **Send/Request 工廠**：建立 `self.Send` 和 `self.Request`
 3. **配置範本**：如果宣告了 `ConfigClass`，自動生成預設配置範本（首次）
-4. **帳號範本**：如果宣告了 `AccountConfigClass`，自動生成預設帳號範本（首次）
+4. **帳戶範本**：如果宣告了 `AccountConfigClass`，自動生成預設帳戶範本（首次）
 5. **EventMixin 註冊**：如果宣告了 `EventMixin`，在 `AdapterManager` 注入平台名後自動註冊
 
-配置透過 `self.cfg` / `self.accounts` 即時讀取（每次存取都從配置儲存讀取最新值）。`self.config` 作為 `self.cfg` 的相容別名仍可使用。
+配置透過 `self.cfg` / `self.accounts` 實時讀取（每次存取都從配置儲存讀取最新值）。`self.config` 作為 `self.cfg` 的相容別名仍可使用。
 
 大多數適配器無需覆寫 `__init__`。如需自訂初始化：
 
@@ -7472,7 +7608,7 @@ class MyAdapter(BaseAdapter):
 | `_target_id` | 目標ID | `To(id)` 或 `To(type, id)` |
 | `_target_type` | 目標類型 | `To(type, id)` |
 | `_target_to` | 簡化目標ID | `To(id)` |
-| `_account_id` | 發送帳號ID | `Using(account_id)` |
+| `_account_id` | 發送帳戶ID | `Using(account_id)` |
 | `_adapter` | 適配器實例 | 自動設定 |
 | `_at_user_ids` | @使用者列表 | `At(user_id)` |
 | `_reply_message_id` | 回覆的訊息ID | `Reply(message_id)` |
@@ -7489,12 +7625,12 @@ class MyAdapter(BaseAdapter):
 
 ### 基本方法
 
-適配器只需實現 `Raw_ob12`，標準方法（Text/Image/Voice/Video/File）已從 `SendDSL` 基類繼承並預設委託給它：
+適配器只需實現 `Raw_ob12`，標準方法（Text/Image/Voice/Video/File）已從 `SendDSL` 基類繼承並預設委派給它：
 
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """必須實現：OneBot12 訊息段 → 平台 API"""
+        """必須實現：OneBot12 消息段 → 平台 API"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -7505,7 +7641,7 @@ class Send(BaseAdapter.Send):
             )
         return asyncio.create_task(_do_send())
 
-    # Text/Image/Voice/Video/File 已從基類繼承，自動委託 Raw_ob12，無需重複實現
+    # Text/Image/Voice/Video/File 已從基類繼承，自動委派 Raw_ob12，無需重複實現
     # 如需平台特定邏輯，可覆寫單個方法：
     # def Text(self, text: str):
     #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
@@ -7537,7 +7673,7 @@ Converter.convert()
 OneBot12 標準事件
 ```
 
-### 必需字段
+### 必需欄位
 
 所有轉換後的事件必須包含：
 
@@ -7557,7 +7693,7 @@ OneBot12 標準事件
 }
 ```
 
-### 轉換器範例
+### 轉換器示例
 
 ```python
 class MyPlatformConverter:
@@ -7692,11 +7828,11 @@ async def call_api(self, endpoint: str, **params):
     }
 ```
 
-## 多帳號支援
+## 多帳戶支援
 
 ### 宣告式配置（推薦）
 
-使用 `AccountConfigClass` 聲明配置類後，框架自動管理多帳號加載、驗證和範本生成：
+使用 `AccountConfigClass` 宣告配置類後，框架自動管理多帳戶加載、驗證和範本生成：
 
 ```python
 from dataclasses import dataclass, field
@@ -7712,16 +7848,16 @@ class MyAdapter(BaseAdapter):
     
     async def start(self):
         for name, account in self.enabled_accounts.items():
-            self.logger.info(f"啟動帳號 {name}: {account.bot_id}")
+            self.logger.info(f"啟動帳戶 {name}: {account.bot_id}")
             await self._connect(name, account)
     
     async def call_api(self, endpoint: str, **params):
         account_id = params.pop("account_id", None)
         name, account = self._resolve_account(account_id)
-        # 使用 account.token, account.bot_id 等字段
+        # 使用 account.token, account.bot_id 等欄位
 ```
 
-### 帳號配置檔案
+### 帳戶配置檔案
 
 ```toml
 [MyAdapter.accounts.account1]
@@ -7735,22 +7871,22 @@ token = "token2"
 enabled = true
 ```
 
-### 指定帳號發送
+### 指定帳戶發送
 
 ```python
-# 使用 Using 方法指定帳號
+# 使用 Using 方法指定帳戶
 my_adapter = adapter.get("myplatform")
 
 # 透過事件中的 self.user_id（推薦，最通用）
 await my_adapter.Send.Using(event["self"]["user_id"]).To("user", "123").Text("Hello")
 
-# 透過帳號名
+# 透過帳戶名
 await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 ```
 
 ### self.user_id 與 Using 的關係
 
-框架的事件回覆機制會自動從事件的 `self` 字段中提取 `account_id`（優先）或 `user_id`，作為 `Using` 參數傳入。適配器開發者需要確保 Converter 中 `self.user_id` 的值與 `_resolve_account()` 能夠正確匹配。
+框架的事件回應機制會自動從事件的 `self` 欄位中提取 `account_id`（優先）或 `user_id`，作為 `Using` 參數傳入。適配器開發者需要確保 Converter 中 `self.user_id` 的值與 `_resolve_account()` 能夠正確匹配。
 
 **框架內部行為**：
 
@@ -7763,7 +7899,7 @@ if bot_id:
     send_chain = send_chain.Using(bot_id)
 ```
 
-> **關鍵點**：即使適配器只使用一個 Bot 配置，只要 Converter 正確設定了 `self.user_id`，框架就會將其作為 `Using` 參數傳入。適配器需確保 `self.user_id` 與 `AccountConfigClass` 中的標識字段（如 `bot_id`）一致，使 `_resolve_account()` 能匹配到正確帳號。如果 `self.user_id` 為空，框架不會呼叫 `Using`，此時 `call_api` 收到的 `account_id` 為 `None`，`_resolve_account(None)` 回傳第一個啟用的帳號。
+> **關鍵點**：即使適配器只使用一個 Bot 配置，只要 Converter 正確設定了 `self.user_id`，框架就會將其作為 `Using` 參數傳入。適配器需確保 `self.user_id` 與 `AccountConfigClass` 中的標識欄位（如 `bot_id`）一致，使 `_resolve_account()` 能匹配到正確帳戶。如果 `self.user_id` 為空，框架不會呼叫 `Using`，此時 `call_api` 收到的 `account_id` 為 `None`，`_resolve_account(None)` 回傳第一個啟用的帳戶。
 
 ## 錯誤處理
 
@@ -7825,13 +7961,13 @@ AdapterManager 內建了 Bot 狀態追蹤系統，自動維護所有已註冊 Bo
 
 ### 自動發現機制
 
-當適配器透過 `adapter.emit()` 發送事件時，框架會自動檢查事件中的 `self` 字段：
+當適配器透過 `adapter.emit()` 發送事件時，框架會自動檢查事件中的 `self` 欄位：
 
 - **meta 事件**：根據 `detail_type` 執行對應操作（connect 註冊/斷開標記離線/heartbeat 更新活躍時間）
 - **普通事件**（message/notice/request）：自動發現 Bot 並更新活躍時間
 
 ```python
-# 所有包含 self 字段的事件都會觸發自動發現
+# 所有包含 self 欄位的事件都會觸發自動發現
 await self.adapter.emit({
     "type": "message",
     "platform": "myplatform",
@@ -7874,16 +8010,16 @@ await self.adapter.emit({
 })
 ```
 
-### `self` 字段擴展資訊
+### `self` 欄位擴展資訊
 
-`self` 字段除必需的 `platform` 和 `user_id` 外，還支援以下可選字段：
+`self` 欄位除必需的 `platform` 和 `user_id` 外，還支援以下可選欄位：
 
-| 字段 | 說明 |
+| 欄位 | 說明 |
 |---|---|
-| `user_name` | Bot 用戶名 |
+| `user_name` | Bot 使用者名 |
 | `nickname` | Bot 昵稱 |
 | `avatar` | Bot 頭像 URL |
-| `account_id` | 多帳號標識 |
+| `account_id` | 多帳戶標識 |
 
 ### Bot 狀態查詢
 
@@ -11381,17 +11517,17 @@ async def low_priority_handler(event):
 ```python
 from ErisPulse import sdk
 
-# 通過名稱獲取適配器
+# 透過名稱獲取適配器
 adapter = sdk.adapter.get("platform_name")
 
-# 或者也可以直接通過屬性訪問
+# 或者也可以直接透過屬性存取
 adapter = sdk.adapter.platform_name
 ```
 
 ### 使用適配器事件監聽
-> 一般情況下，更建議使用 `Event` 模塊進行事件的監聽/處理;
+> 一般情況下，更建議使用`Event`模組進行事件的監聽/處理;
 >
-> 同時 `Event` 模塊提供了強大的包裝器，可以為您的模塊開發帶來更多便利
+> 同時`Event`模組提供了強大的包裝器，可以為您的模組開發帶來更多便利
 
 ```python
 # 監聽 OneBot12 標準事件
@@ -11419,12 +11555,12 @@ platforms = sdk.adapter.platforms
 # 檢查適配器是否存在
 exists = sdk.adapter.exists("platform_name")
 
-# 啟用/禁用適配器
+# 啟用/停用適配器
 sdk.adapter.enable("platform_name")
 sdk.adapter.disable("platform_name")
 
 # 啟動/關閉適配器
-# 以下方法都只展示了傳入參數的情況，無參數時代表啟動/停止全部已註冊適配器
+# 以下方法都只展示了傳入參數的情況，無參數時代表啟動/停止全部已註冊的適配器
 await sdk.adapter.startup(["platform1", "platform2"])
 await sdk.adapter.shutdown(["platform1", "platform2"])
 
@@ -11437,7 +11573,7 @@ running = sdk.adapter.list_running()
 
 ## 中間件
 
-中間件在事件分發到處理程序之前執行，可以對事件資料進行修改、過濾或記錄。
+中間件在事件分發到處理器之前執行，可以對事件資料進行修改、過濾或記錄。
 
 ### 註冊中間件
 
@@ -11453,6 +11589,7 @@ async def my_middleware(event):
 - **執行順序**：中間件按註冊順序執行（先註冊先執行）
 - **資料傳遞**：每個中間件接收上一個中間件返回的 `event` 資料；如果某個中間件返回 `None`，則忽略該返回值並保留原資料繼續傳遞（同時輸出 `warning` 級別日誌）
 - **修改資料**：中間件可以修改事件資料並返回修改後的字典
+- **事件否決**：中間件顯式返回 `False` 時否決事件——事件被丟棄，不進入任何處理器、無任何出站副作用；否決時輸出 TRACE 日誌並觸發 `adapter.event.blocked` 生命週期鉤子（攜帶中間件名與完整事件）
 
 ```python
 @sdk.adapter.middleware
@@ -11465,12 +11602,13 @@ async def filter_spam(event):
     if event.get("detail_type") == "private":
         text = event.get("alt_message", "")
         if "垃圾廣告" in text:
-            return None   # 返回 None 不會阻止事件傳播，僅忽略此返回值
+            return False  # 否決：事件被丟棄，不進入任何處理器
     return event
 ```
 
-> **注意**：中間件目前不支援阻斷事件傳播。如需過濾特定事件，請在事件處理程序中透過條件判斷實現。  
-> 但您可以在Event模組中設定高優先級處理程序，然後在處理程序內使用設定 `event.mark_processed()` 來阻斷低優先級事件處理程序。
+> **注意**：只有顯式返回 `False` 才否決事件（返回空字典 / `0` / `""` 等 falsy 值不否決）；
+> 返回 `None` 仍然是放行且載荷不變。否決後的事件可透過監聽
+> `adapter.event.blocked` 鉤子進行審計與排查"事件為什麼沒響應"。
 
 ## Send 消息發送
 
@@ -11480,10 +11618,10 @@ async def filter_spam(event):
 # 獲取適配器
 adapter = sdk.adapter.get("platform")
 
-# 發送文字消息
+# 發送文字訊息
 await adapter.Send.To("user", "123").Text("Hello")
 
-# 發送圖片消息
+# 發送圖片訊息
 await adapter.Send.To("group", "456").Image("https://example.com/image.jpg")
 ```
 
@@ -11513,24 +11651,24 @@ info = sdk.adapter.send_info("onebot11", "Text")
 #         {"name": "text", "type": "str", "default": null, "annotation": "str"}
 #     ],
 #     "return_type": "Awaitable[Any]",
-#     "docstring": "發送文字消息..."
+#     "docstring": "發送文字訊息..."
 # }
 ```
 
 ### 鏈式修飾
 
 ```python
-# @用戶
+# @使用者
 await adapter.Send.To("group", "456").At("789").Text("你好")
 
 # @全體成員
 await adapter.Send.To("group", "456").AtAll().Text("大家好")
 
-# 回覆消息
+# 回覆訊息
 await adapter.Send.To("group", "456").Reply("msg_id").Text("回覆內容")
 
 # 組合使用
-await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("回覆@的消息")
+await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("回覆@的訊息")
 ```
 
 ## API 調用
@@ -11583,7 +11721,7 @@ class MyAdapter(BaseAdapter):
         pass
     
     async def call_api(self, endpoint: str, **params):
-        """呼叫平台 API（必須實現）"""
+        """調用平台 API（必須實現）"""
         pass
 ```
 
@@ -11607,7 +11745,7 @@ class MyAdapter(BaseAdapter):
 
 ## Bot 狀態管理
 
-適配器透過發送 OneBot12 標準的 **`meta` 事件** 來告知框架 Bot 的連線狀態。系統會自動從中提取 Bot 信息進行狀態追蹤。
+適配器透過發送 OneBot12 標準的 **`meta` 事件**來告知框架 Bot 的連接狀態。系統自動從中提取 Bot 資訊進行狀態追蹤。
 
 ### meta 事件類型
 
@@ -11615,15 +11753,15 @@ class MyAdapter(BaseAdapter):
 
 | `type` | `detail_type` | 說明 | 觸發時機 |
 |--------|--------------|------|---------|
-| `meta` | `connect` | Bot 連線上線 | 適配器與平台建立連線成功後 |
+| `meta` | `connect` | Bot 連接上線 | 適配器與平台建立連接成功後 |
 | `meta` | `heartbeat` | Bot 心跳 | 定期發送（建議 30-60 秒） |
-| `meta` | `disconnect` | Bot 斷開連線 | 檢測到連線斷開時 |
+| `meta` | `disconnect` | Bot 斷開連接 | 檢測到連接斷開時 |
 
-### self 字段擴展
+### self 欄位擴展
 
-ErisPulse 在 OneBot12 標準的 `self` 字段上擴展了以下可選字段：
+ErisPulse 在 OneBot12 標準的 `self` 欄位上擴展了以下可選欄位：
 
-| 字段 | 類型 | 說明 |
+| 欄位 | 類型 | 說明 |
 |------|------|------|
 | `self.platform` | string | 平台名稱（OB12 標準） |
 | `self.user_id` | string | Bot 用戶 ID（OB12 標準） |
@@ -11633,7 +11771,7 @@ ErisPulse 在 OneBot12 標準的 `self` 字段上擴展了以下可選字段：
 
 ### meta 事件格式
 
-#### connect — 連線上線
+#### connect — 連接上線
 
 ```python
 await adapter.emit({
@@ -11671,9 +11809,9 @@ await adapter.emit({
 })
 ```
 
-系統處理：更新 `last_active` 時間（心跳中也支援更新元信息）。
+系統處理：更新 `last_active` 時間（心跳中也支援更新元資訊）。
 
-#### disconnect — 斷開連線
+#### disconnect — 斷開連接
 
 ```python
 await adapter.emit({
@@ -11693,17 +11831,17 @@ await adapter.emit({
 
 ### 普通事件的自動發現
 
-除了 `meta` 事件外，普通事件（`message`/`notice`/`request`）中的 `self` 字段也會自動發現並註冊 Bot、更新活躍時間。這意味著即使適配器不發送 `connect` 事件，框架也能從第一條普通事件中發現 Bot。
+除了 `meta` 事件外，普通事件（`message`/`notice`/`request`）中的 `self` 欄位也會自動發現並註冊 Bot、更新活躍時間。這意味著即使適配器不發送 `connect` 事件，框架也能從第一條普通事件中發現 Bot。
 
 ### 適配器接入示例
 
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
-        # 與平台建立連線...
+        # 與平台建立連接...
         connection = await self._connect()
         
-        # 連線成功，發送 connect 事件
+        # 連接成功，發送 connect 事件
         await adapter.emit({
             "id": str(uuid4()),
             "time": int(time.time()),
@@ -11721,7 +11859,7 @@ class MyAdapter(BaseAdapter):
         })
     
     async def on_disconnect(self):
-        # 斷開連線，發送 disconnect 事件
+        # 斷開連接，發送 disconnect 事件
         await adapter.emit({
             "id": str(uuid4()),
             "time": int(time.time()),
@@ -11774,12 +11912,12 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 | 狀態 | 說明 |
 |------|------|
 | `online` | 在線（持續收到事件或適配器主動標記） |
-| `offline` | 離線（適配器主動標記或系統關閉時自動設置） |
+| `offline` | 離線（適配器主動標記或系統關閉時自動設定） |
 | `unknown` | 未知（僅註冊但未確認狀態） |
 
 ### 生命週期事件
 
-| 事件名 | 觸發時機 | 數據 |
+| 事件名 | 觸發時機 | 資料 |
 |--------|---------|------|
 | `adapter.bot.online` | 首次自動發現新 Bot | `{platform, bot_id, status}` |
 | `adapter.status.change` | 適配器狀態變化（starting/started/stopping/stopped/stop_failed） | `{platform, status}` |
@@ -15430,7 +15568,7 @@ sdk.lifecycle.register("module.load", on_module_load, priority=10)
 # 取消註冊
 sdk.lifecycle.unregister("module.load", on_module_load)
 
-# 按所有者批量取消註冊（模組/適配器卸載時框架自動調用）
+# 按所有者批量取消註冊（模組/適配器卸載時框架自動呼叫）
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
 print(f"清理了 {removed} 個生命週期鈎子")
 ```
@@ -15489,8 +15627,8 @@ async def on_any(data): ...
 - 目標 owner 無已註冊鈎子 → 事件**靜默丟棄**（可用 `has_handlers()` 提前探測）
 - `data` 為 dict 時自動攜帶 `_trace_id`（不覆蓋已有值）
 - `emit_sync` / `submit_event` 同樣支援 `to=` 參數
-- 模組間通信的三層模型（RPC / 定向 / 廣播）見
-  [模組間通信](module-communication.md)
+- 模組間通訊的三層模型（RPC / 定向 / 廣播）見
+  [模組間通訊](module-communication.md)
 
 ### 一次性註冊（once）
 
@@ -15518,21 +15656,21 @@ if sdk.lifecycle.has_handlers("message.sending"):
 - 覆蓋**精確事件名、通配符 `*`、父級事件**三種匹配
 - 無任何監聽者時返回 `False`，可安全跳過 `emit`
 
-## 鈎子斷點概覽
+## 鈎子斷點一覽
 
-一條消息從平台進入框架到處理完成的典型生命周期事件時序：
+一條訊息從平台進入框架到處理完成的典型生命週期事件時序：
 
 ```mermaid
 sequenceDiagram
     participant P as 平台
-    participant A as 适配器
+    participant A as 適配器
     participant F as 框架核心
-    participant M as 模塊處理器
+    participant M as 模組處理器
 
     P->>A: 原生事件到達
     A->>F: adapter.event.receive（最早期）
     F->>F: event.pre_process（處理器執行前）
-    F->>M: 分發到處理器（命令/消息/通知等）
+    F->>M: 分發到處理器（命令/訊息/通知等）
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending（發送前）
@@ -15542,18 +15680,18 @@ sequenceDiagram
     F->>F: adapter.event.dispatched（分發完成）
 ```
 
-框架內建了以下鈎子斷點，使用者可以透過 `@sdk.lifecycle.on()` 監聽任意斷點實現自訂邏輯。
+框架內建了以下鈎子斷點，使用者可以透過 `@sdk.lifecycle.on()` 監聽任意斷點實現自定義邏輯。
 
 ### 核心初始化
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `core.init.start` | SDK 初始化開始 | `{}` |
 | `core.init.stage` | 初始化各階段開始（背景發射） | `{"stage": str}`，取值 `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
 | `core.init.complete` | SDK 初始化完成 | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(僅失敗時)}` |
 | `core.uninit.complete` | SDK 反初始化完成 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(僅失敗時)}` |
 
-**範例：啟動進度展示**
+**示例：啟動進度展示**
 
 ```python
 @sdk.lifecycle.on("core.init.stage")
@@ -15563,12 +15701,12 @@ def show_stage(data):
 
 ### 配置變更
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `config.set` | 配置項被修改 | `{"key": str, "old_value": Any, "new_value": Any}` |
 | `config.updated` | 外部編輯 config.toml 後檢測到整樹變更 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
-**範例：配置審計**
+**示例：配置審計**
 
 ```python
 @sdk.lifecycle.on("config.set")
@@ -15576,37 +15714,38 @@ def audit_config(data):
     print(f"[審計] {data['key']}: {data['old_value']} -> {data['new_value']}")
 ```
 
-### 模塊生命週期
+### 模組生命週期
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
-| `module.register` | 模塊類註冊到管理器 | `{"module_name": str, "success": bool}` |
-| `module.load` | 模塊載入完成（實例化成功） | `{"module_name": str, "success": bool}` |
-| `module.init` | 模塊初始化完畢（含懶加載） | `{"module_name": str, "success": bool}` |
-| `module.unload` | 模塊卸載 | `{"module_name": str, "success": bool}` |
-| `module.reload` | 模塊熱重載完成（含級聯重載依賴者） | `{"module_name": str, "success": bool}` |
+| `module.register` | 模組類註冊到管理器 | `{"module_name": str, "success": bool}` |
+| `module.load` | 模組加載完成（實例化成功） | `{"module_name": str, "success": bool}` |
+| `module.init` | 模組初始化完畢（含懶加載） | `{"module_name": str, "success": bool}` |
+| `module.unload` | 模組卸載 | `{"module_name": str, "success": bool}` |
+| `module.reload` | 模組熱重載完成（含級聯重載依賴者） | `{"module_name": str, "success": bool}` |
 
-### 适配器生命週期
+### 適配器生命週期
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
-| `adapter.load` | 适配器註冊完成 | `{"platform": str, "success": bool}` |
-| `adapter.start` | 适配器啟動 | `{"platforms": [str]}` |
-| `adapter.status.change` | 适配器狀態變化 | `{"platform": str, "status": str, "retry_count": int, "error": str(僅失敗時)}` |
-| `adapter.stop` | 适配器關閉 | `{"platforms": [str]}` |
-| `adapter.stopped` | 适配器關閉完成 | `{"platforms": [str]}` |
+| `adapter.load` | 適配器註冊完成 | `{"platform": str, "success": bool}` |
+| `adapter.start` | 適配器啟動 | `{"platforms": [str]}` |
+| `adapter.status.change` | 適配器狀態變化 | `{"platform": str, "status": str, "retry_count": int, "error": str(僅失敗時)}` |
+| `adapter.stop` | 適配器關閉 | `{"platforms": [str]}` |
+| `adapter.stopped` | 適配器關閉完成 | `{"platforms": [str]}` |
 | `adapter.bot.online` | Bot 上線 | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
 | `adapter.bot.offline` | Bot 下線 | `{"platform": str, "bot_id": str, "status": str}` |
 
 ### 事件接收與處理
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `adapter.event.receive` | 收到外部平台事件（最早期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.blocked` | 中間件否決事件（返回 `False`，事件被丟棄不進入任何處理器） | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
 | `adapter.event.dispatched` | 事件分發完成 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
 | `event.pre_process` | 事件處理器開始執行前 | `{"event_type": str, "platform": str, "detail_type": str}` |
 
-**範例：事件統計**
+**示例：事件統計**
 
 ```python
 event_counter = {}
@@ -15622,14 +15761,14 @@ def log_unhandled(data):
         print(f"[未處理] {data['platform']}/{data['event_type']}")
 ```
 
-### 消息發送
+### 訊息發送
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
-| `message.sending` | 消息即將發送 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
-| `message.sent` | 消息發送完成 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sending` | 訊息即將發送 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | 訊息發送完成 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
-**範例：消息發送審計**
+**示例：訊息發送審計**
 
 ```python
 @sdk.lifecycle.on("message.sending")
@@ -15639,12 +15778,12 @@ def log_sending(data):
 
 ### 命令系統
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `command.matched` | 命令被匹配並即將執行 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
 | `command.executed` | 命令執行完成 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(僅失敗時)}` |
 
-**範例：命令統計**
+**示例：命令統計**
 
 ```python
 @sdk.lifecycle.on("command.matched")
@@ -15654,12 +15793,12 @@ def count_commands(data):
 
 ### HTTP 路由
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `server.request` | HTTP 請求接收 | `{"method": str, "path": str, "client_ip": str}` |
-| `server.response` | HTTP 响應發送 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
+| `server.response` | HTTP 回應發送 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
-**範例：請求日誌**
+**示例：請求日誌**
 
 ```python
 @sdk.lifecycle.on("server.response")
@@ -15669,14 +15808,14 @@ def log_http(data):
 
 ### WebSocket
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `server.start` | 路由伺服器啟動 | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str(僅失敗時)}` |
 | `server.stop` | 路由伺服器停止 | `{}` |
 | `server.websocket.connect` | WebSocket 連接建立 | `{"path": str, "module_name": str, "client_ip": str}` |
 | `server.websocket.disconnect` | WebSocket 連接斷開 | `{"path": str, "module_name": str, "reason": str, "error": str(僅異常時)}` |
 
-**範例：WebSocket 連接監控**
+**示例：WebSocket 連接監控**
 
 ```python
 @sdk.lifecycle.on("server.websocket.connect")
@@ -15692,29 +15831,29 @@ def on_ws_disconnect(data):
 
 儲存後端連接池的建立、故障與恢復（均背景發射，不阻塞儲存操作）：
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
-| `storage.ready` | 存儲後端連接池就緒（每事件循環首次建池成功） | `{"backend": str}` |
+| `storage.ready` | 儲存後端連接池就緒（每事件迴圈首次建池成功） | `{"backend": str}` |
 | `storage.unreachable` | 連接重試耗盡進入冷卻期（期間操作快速失敗） | `{"backend": str, "error": str, "cooldown": float}` |
 | `storage.recovered` | 冷卻結束重連成功，儲存恢復可用 | `{"backend": str}` |
 
-**範例：儲存故障告警**
+**示例：儲存故障告警**
 
 ```python
 @sdk.lifecycle.on("storage.unreachable")
 def alert_storage_down(data):
-    print(f"[告警] 存儲後端 {data['backend']} 不可達: {data['error']}，{data['cooldown']}s 後自動重連")
+    print(f"[告警] 儲存後端 {data['backend']} 不可達: {data['error']}，{data['cooldown']}s 後自動重連")
 
 @sdk.lifecycle.on("storage.recovered")
 def notify_storage_back(data):
-    print(f"[恢復] 存儲後端 {data['backend']} 已恢復可用")
+    print(f"[恢復] 儲存後端 {data['backend']} 已恢復可用")
 ```
 
 ### HTTP 客戶端
 
 `sdk.client` 的請求與連接事件（均背景發射）：
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `client.request.success` | HTTP 請求成功 | `{"method": str, "url": str, "status": int, "elapsed": float}` |
 | `client.request.failed` | HTTP 請求重試耗盡最終失敗 | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
@@ -15722,7 +15861,7 @@ def notify_storage_back(data):
 
 ### 國際化
 
-| 鈎子名稱 | 觸發時機 | 數據 |
+| 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
 | `i18n.language.changed` | 框架語言切換（`i18n.set_language`） | `{"language": str, "previous": str}` |
 
@@ -15767,7 +15906,7 @@ STANDARD_EVENTS = {
 | 方法 | 說明 |
 |------|------|
 | `await lifecycle.emit(event, data=None, *, to=None)` | 異步觸發，處理器**並行執行**（互不阻塞，返回時全部完成），返回非 None 值按優先級順序回放鏈式替換 data；`to` 指定 owner 時定向投遞 |
-| `lifecycle.fire(event, data=None, *, to=None)` | **背景發射（扔桶即走）**：處理器在背景任務中並行執行、不等待、無返回值；無監聽者時零開銷。適用於高頻熱路徑與純觀測事件；關閉序列與順序敏感消費（如 `config.set`）請用 `emit` |
+| `lifecycle.fire(event, data=None, *, to=None)` | **背景發射（扔桶即走）**：處理器在背景任務中並行執行、不等待、無返回值；無監聽者時零開銷。適用於高頻熱路徑與純觀測事件；關停序列與順序敏感消費（如 `config.set`）請用 `emit` |
 | `lifecycle.emit_sync(event, data=None, *, to=None)` | 同步觸發，異步處理器以 create_task 調度 |
 | `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 兼容舊版，自動建構標準事件格式；`background=True` 時走 `fire` 背景發射 |
 
@@ -15778,10 +15917,10 @@ STANDARD_EVENTS = {
 | `lifecycle.start_timer(timer_id)` | 開始計時 |
 | `lifecycle.get_duration(timer_id)` | 獲取已持續時間（秒） |
 | `lifecycle.stop_timer(timer_id)` | 停止計時並返回持續時間 |
-| `lifecycle.list_hooks()` | 列出所有已註冊鉤子及處理器數量 |
+| `lifecycle.list_hooks()` | 列出所有已註冊鈎子及處理器數量 |
 | `lifecycle.clear()` | 清除所有處理器和計時器 |
 
-## 模組中使用範例
+## 模組中使用示例
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -15808,20 +15947,20 @@ class Main(BaseModule):
             sdk.logger.info(f"配置變更: {data['key']} = {data['new_value']}")
 ```
 
-## 後台任務歸屬與自動取消
+## 背景任務歸屬與自動取消
 
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-模組建立的 asyncio 後台任務若未在 `on_unload` 中取消，會持有 `self` 引用導致模組實例無法被回收（熱重載後舊實例殘留）。框架提供以下兜底機制：
+模組建立的 asyncio 背景任務若未在 `on_unload` 中取消，會持有 `self` 引用導致模組實例無法被回收（熱重載後舊實例殘留）。框架提供以下兜底機制：
 
 - **`self.spawn(coro)`**（模組內推薦）：任務自動歸屬模組名，模組卸載時框架在 `on_unload` **之後**兜底取消未結束的任務並記錄警告
 - **`spawn_background(coro)`**（`ErisPulse.runtime`）：自動捕獲當前 `owner_scope` 上下文；`cancel_owner_tasks(owner)` 按歸屬取消，`cancel_all_background_tasks()` 供 `sdk.uninit()` 兜底
-- **適配器**：關閉時對平台名下的後台任務同樣兜底取消
+- **適配器**：關閉時對平台名下的背景任務同樣兜底取消
 
 ```python
 async def on_load(self, event):
-    # 推薦：後台任務用 self.spawn()，卸載時框架自動兜底取消
+    # 推薦：背景任務用 self.spawn()，卸載時框架自動兜底取消
     self.spawn(self._poll())
 
 async def on_unload(self, event):
@@ -15837,11 +15976,11 @@ async def _poll(self):
 ```
 
 > [!IMPORTANT]
-> 框架兜底是**強制 cancel**（`cancel_owner_tasks`），它發生在 `on_unload` 返回之後。因此需要優雅收尾的任務（flush 緩衝、持久化狀態、關閉連接）**必須**在 `on_unload` 裡自行 `cancel()` + `await` 完成——別指望兜底能保留收尾邏輯。框架只保證「不殘留持有 `self` 的任務」，不保證「優雅」。需要 `await` 結果的任務請直接 `await`，不要丟給後台任務。
+> 框架兜底是**強制 cancel**（`cancel_owner_tasks`），它發生在 `on_unload` 返回之後。因此需要優雅收尾的任務（flush 缓衝、持久化狀態、關閉連接）**必須**在 `on_unload` 裡自行 `cancel()` + `await` 完成——別指望兜底能保留收尾邏輯。框架只保證「不殘留持有 `self` 的任務」，不保證「優雅」。需要 `await` 結果的任務請直接 `await`，不要丟給背景任務。
 
 ## 注意事項
 
-1. **處理器可以是同步或異步**：系統自動辨識並正確調用
+1. **處理器可以是同步或異步**：系統自動辨識並正確呼叫
 2. **資料傳遞**：`emit()` 模式下，處理器返回非 None 值會修改傳遞給後續處理器的 data
 3. **事件命名規範**：建議使用點式結構命名事件，便於使用父級監聽
 4. **錯誤隔離**：單個處理器異常不會影響其他處理器執行

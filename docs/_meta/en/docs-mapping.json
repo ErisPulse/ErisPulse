@@ -119,7 +119,7 @@
     "Developer Guide": {
       "description": "Module and adapter development guides",
       "icon": "fa-code",
-      "count": 11,
+      "count": 13,
       "documents": [
         {
           "title": "Developer Guide",
@@ -132,6 +132,18 @@
           "path": "developer-guide/publishing.md",
           "level": 1,
           "icon": "fa-upload"
+        },
+        {
+          "title": "Module Testing (ErisPulse-Testing)",
+          "path": "developer-guide/testing.md",
+          "level": 1,
+          "icon": "fa-code"
+        },
+        {
+          "title": "Data Model Layer (ORM)",
+          "path": "developer-guide/orm.md",
+          "level": 1,
+          "icon": "fa-code"
         }
       ],
       "subgroups": {

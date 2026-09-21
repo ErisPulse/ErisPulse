@@ -119,7 +119,7 @@
     "開発者ガイド": {
       "description": "モジュールとアダプターの開発ガイド",
       "icon": "fa-code",
-      "count": 11,
+      "count": 13,
       "documents": [
         {
           "title": "開発者ガイド",
@@ -132,6 +132,18 @@
           "path": "developer-guide/publishing.md",
           "level": 1,
           "icon": "fa-upload"
+        },
+        {
+          "title": "モジュールテスト（ErisPulse-Testing）",
+          "path": "developer-guide/testing.md",
+          "level": 1,
+          "icon": "fa-code"
+        },
+        {
+          "title": "データモデル層（ORM）",
+          "path": "developer-guide/orm.md",
+          "level": 1,
+          "icon": "fa-code"
         }
       ],
       "subgroups": {

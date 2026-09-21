@@ -1174,17 +1174,17 @@ async def combined_handler(event: Event):
 
 `wait_reply` はこの2つのパラメータもサポートしています（[返信の待ち機能](../developer-guide/modules/event-wrapper.md#返信の待ち機能)を参照）。
 
-## コマンドイベントの処理
+## コマンドイベント処理
 
 ### 基本コマンド
 
 ```python
 from ErisPulse.Core.Event import command
 
-@command("help", help="ヘルプ情報を表示します")
+@command("help", help="ヘルプ情報を表示")
 async def help_handler(event):
     help_text = """
-利用可能なコマンド:
+利用可能なコマンド：
 /help - ヘルプを表示
 /ping - 接続をテスト
 /info - 情報を表示
@@ -1192,76 +1192,169 @@ async def help_handler(event):
     await event.reply(help_text)
 ```
 
-### コマンドのエイリアス
+### コマンドエイリアス
 
 ```python
-@command(["help", "h"], aliases=["ヘルプ"], help="ヘルプ情報を表示します")
+@command(["help", "h"], aliases=["帮助"], help="ヘルプ情報を表示")
 async def help_handler(event):
     await event.reply("ヘルプ情報...")
 ```
 
-ユーザーは以下のいずれかで呼び出すことができます：
+ユーザーは以下のいずれかの方法で呼び出すことができます：
 - `/help`
 - `/h`
-- `/ヘルプ`
+- `/帮助`
 
-### コマンドの引数
+### コマンド引数
 
 ```python
-@command("echo", help="メッセージを繰り返します")
+@command("echo", help="メッセージを返信")
 async def echo_handler(event):
     # コマンド引数を取得
     args = event.get_command_args()
     
     if not args:
-        await event.reply("繰り返したいメッセージを入力してください")
+        await event.reply("返信するメッセージを入力してください")
     else:
         await event.reply(f"あなたが言った: {' '.join(args)}")
 ```
 
-引数は、大文字小文字を区別する設定が無効であっても、ユーザー入力のまま保持されます（コマンド名のマッチングは正規化されますが、引数の内容には影響しません）。
+引数は、大文字小文字を区別せず設定しても、ユーザー入力の元の大文字小文字が保持されます（コマンド名のマッチングは正規化されますが、引数内容には影響しません）。
+
+### 宣言的引数とオプション（args= / options=）
+
+手動で引数を解析するには、型変換やエラーメッセージの処理を自分で行う必要があります。`args=` / `options=` を宣言すると、権限チェックが通過した後にフレームワークがコマンド引数を自動的に解析し、**名前でハンドラに注入**します。ユーザーの入力が間違っている場合、自動的にローカライズされたエラーメッセージと使い方が返され、例外が発生してクラッシュすることはありません。また、`/help <コマンド>` でも自動的に使い方が表示されます。
+
+```python
+@command(
+    "roll",
+    args="<count:int> [sides:int=6]",
+    options={"verbose": "-v/--verbose", "label": "--label"},
+    help="サイコロを振る",
+)
+async def roll_handler(event, count: int, sides: int = 6, verbose: bool = False, label: str = ""):
+    total = sum(random.randint(1, sides) for _ in range(count))
+    await event.reply(f"{count}回 {sides}面サイコロを振った、合計点数：{total}")
+```
+
+`args=` 位置引数の構文：`<count:int>` は必須、`[sides:int=6]` はオプション（デフォルト値あり）。サポートされる型は以下の通りです：
+
+| 型 | 入力例 | 説明 |
+|------|---------|------|
+| `str` | `hello` | テキスト（デフォルト型） |
+| `int` / `float` | `3` / `0.5` | 数値 |
+| `bool` | `はい` / `yes` / `はい` / `да` / `true` / `no` / `キャンセル` | ブール値、イベントの確認（`Event.confirm()`）で使用する確認語のリストを再利用 |
+| `literal` | `<mode:literal=fast|slow>` | 列挙、指定された値のみを受け入れる；オプション形式ではデフォルトで最初の値を使用 |
+| `duration` | `90s`、`1h30m`、`1d` | 時間、秒に換算されるfloat |
+| `rest` | `<text:rest>` | 残りのすべてのテキスト（最後に位置する必要がある） |
+
+`options=` は辞書形式で宣言されます：キーはハンドラの引数名、値はフラグ形式（複数のエイリアスは `/` で区切る）。`bool` と注釈された引数はブールフラグ（存在すれば `True`）；それ以外（デフォルトでは `str`）は値付きオプションで、`--label hello` と `--label=hello` の両方の形式がサポートされ、型はハンドラの注釈に従います。オプションは先に認識され、残りのトークンは `args=` で解析されます（`rest` はオプションを除外した後の残りのテキストをカバーします）。
+
+**動作の要点**：
+
+- 権限チェックは引数解析より先に実行される—権限がないユーザーは解析をトリガーしない
+- 解析失敗（型が合わない / 必須引数が不足 / 引数が多すぎる / 無効なオプション）は、ローカライズされたエラーメッセージと使い方を自動的に返し、コマンドは引き続き認識される
+- 宣言された引数名はハンドラの署名に存在しなければならない、そうでなければ登録時に `ValueError` が発生する
+- `args=` / `options=` を宣言しないコマンドは、動作が完全に変化しない（後方互換性）
+
+### コマンドクールダウン（cooldown=）
+
+手動でクールダウンを実装する代わりに、`cooldown=` を宣言して代替できます。時間の書式は `args=` の `duration` 型と同じ（例：`"30s"`、`"1h30m"`、`"1d"`）：
+
+```python
+@command("daily", cooldown="1d", cooldown_key="user", cooldown_reply="今日のログイン済み")
+async def daily_handler(event):
+    await event.reply("ログイン完了！")
+```
+
+`cooldown_key=` はクールダウンの粒度を制御します：`"user"`（デフォルト、同一ユーザーで共有）、`"session"`（同一セッションで共有、グループ内）、`"global"`（すべてのユーザーとセッションで共有）。
+
+**動作の要点**：
+
+- クールダウンがヒットした場合、デフォルトでは**静かに無視**される（作用域に応じて静かに無視）
+- `cooldown_reply=` を宣言すると、ヒット時にその文言を返す
+- コマンドがヒットすると認識される—クールダウンがヒットしたコマンドは、低優先度のメッセージハンドラに漏れることはない
+- クールダウンは、すべての権限チェックと引数解析が完了し、コマンドが実際に実行される前に開始される：権限がないユーザーはクールダウンをトリガーせず、引数エラーはクールダウンを消費しない
+- 状態はプロセス内のメモリに保持され、モジュールのアンロード時に自動的にクリーンアップされる；プロセス間共有 / 再起動時の永続化は対象外
+- 宣言時に検証（fail-fast）：時間の書式が不正、`cooldown_key=` がホワイトリストの値でない、`cooldown_reply=` が `cooldown=` と併用されていない場合、すべて `ValueError` が発生する
+
+### 依存注入（Depends）
+
+共通の依存（データベースセッション、設定の読み取りなど）は、依存関数に抽出し、ハンドラに `Depends(依存関数)` をデフォルト値として宣言することで、フレームワークがコンテキストオブジェクトを用いて依存関数を自動的に呼び出し、名前で注入する：
+
+```python
+from ErisPulse.Core import Depends
+
+async def get_session(event):
+    return await sdk.module.call("DB", "get_session")
+
+@command("admin")
+async def admin_handler(event, db=Depends(get_session)):
+    ...
+```
+
+**リクエストレベルのキャッシュ**がデフォルトで有効です：1回のイベント配信内では、同じ依存関数は1回しか解析されず、すべての注入ポイントで結果を共有します（例えば `get_db` は1回のイベント内で1回だけデータベースセッションを確立）。リクエスト間では自動的に再利用されません。`Depends(get_db, use_cache=False)` を使用して、個々の依存のキャッシュを無効にできます。
+
+フレームワークのすべての注入ポイントをオーバーライドできる—コマンドハンドラ、イベントハンドラ（`message.on_message()` など）、ライフサイクルフック（`sdk.lifecycle.on`）、SSEルートハンドラ。依存関数の最初の引数は注入ポイントのコンテキストオブジェクト（イベントの場合は `Event`、ライフサイクルの場合はイベント `data`、ルートの場合は `HttpRequest` / `SseEmitter`）です；同期と非同期の依存関数の両方を宣言できます。
+
+**他のモジュールのサービスを宣言する**（構文糖）：
+
+```python
+@command("query")
+async def query_handler(event, session=Depends.module("DB", "get_session")):
+    ...
+```
+
+`Depends.module(モジュール名, メソッド名, *固定引数)` は、依存関数内で `sdk.module.call(...)` を呼び出すのと同じです。モジュールのインスタンス化（`__init__`）は対象外です—インスタンス化時にはコンテキストオブジェクトがありません；FastAPI が提供する HTTP ルートは FastAPI の元の `fastapi.Depends` を使用してください。
+
+**動作の要点**：
+
+- 宣言時に検証（fail-fast）：依存が呼び出せない、または `args=` / `options=` 引数と重複する場合、`ValueError` が発生する
+- 依存関数が発生させる例外は、ハンドラ自身の例外と同じ口径で処理される（コマンドは自動的にエラーを返す）
+- `Depends` を宣言しないハンドラはゼロオーバーヘッド（配信時に反射が一切行われない）
+- FastAPI が提供する HTTP ルートは FastAPI の元の `fastapi.Depends` を使用してください
 
 ### コマンドグループ
 
 ```python
-@command("admin.reload", group="admin", help="モジュールを再読み込みします")
+@command("admin.reload", group="admin", help="モジュールを再読み込み")
 async def reload_handler(event):
     await event.reply("モジュールを再読み込みしました")
 
-@command("admin.stop", group="admin", help="ロボットを停止します")
+@command("admin.stop", group="admin", help="ロボットを停止")
 async def stop_handler(event):
     await event.reply("ロボットを停止しました")
 ```
 
-`group` パラメータはヘルプリストの分類にのみ使用されます。上記の例では、`admin.reload` は**1つの全体のコマンド名**です（ドットは命名スタイルに過ぎず、ユーザーは `/admin.reload` を入力する必要があります）。
+`group` パラメータはヘルプリストの分類にのみ使用されます；上記の例では `admin.reload` は**全体のコマンド名**です（ドットは命名規則に過ぎず、ユーザーは `/admin.reload` を入力する必要があります）。
 
 ### サブコマンド
 
-コマンド名は**スペース区切りの複数トークン**形式をサポートし、`/admin add`、`/admin user ban` のようなサブコマンドを実現できます：
+コマンド名は**スペース区切りの複数トークン形式**をサポートし、`/admin add`、`/admin user ban` のようなサブコマンドを実現できます：
 
 ```python
 @command("admin", help="管理コマンド")
 async def admin_handler(event):
-    await event.reply("使い方: /admin add | /admin remove")
+    await event.reply("使い方：/admin add | /admin remove")
 
-@command("admin add", help="管理者を追加します")
+@command("admin add", help="管理者を追加")
 async def admin_add_handler(event):
     target = event.get_command_args()[0]
     await event.reply(f"{target} を追加しました")
 
-@command("admin remove", aliases=["a remove"], help="管理者を削除します")
+@command("admin remove", aliases=["a remove"], help="管理者を削除")
 async def admin_remove_handler(event):
     await event.reply("削除しました")
 ```
 
-マッチングルール（**最長接頭辞マッチ**）：
+マッチングルール（**最長前接辞マッチ**）：
 
-- `/admin add x` は `admin add` に優先的にマッチし、`event.get_command_args()` は `["x"]`（サブコマンド名の後の引数）を返します。
-- `admin` のみが登録されている場合、`/admin add x` は `admin` にマッチし、`get_command_args()` は `["add", "x"]`（従来の動作）を返します。
-- 別名は複数トークン形式（`a remove`）もサポートされ、単一トークンの別名（`a`）もサブコマンドに指定できます。
-- 父子コマンドが同時に登録されている場合、未登録のサブコマンド入力（`/admin list x`）は親コマンドに降格します。
+- `/admin add x` は `admin add` に優先的にマッチし、`event.get_command_args()` は `["x"]` を返す（サブコマンド名の後の引数）
+- `admin` のみ登録されている場合、`/admin add x` は `admin` にマッチし、`get_command_args()` は `["add", "x"]` を返す（過去の動作のまま）
+- エイリアスは複数トークン形式（例：`a remove`）をサポートし、単一トークンエイリアス（例：`a`）もサブコマンドに指定可能
+- 父子コマンドが同時に登録されている場合、未登録のサブコマンド入力（例：`/admin list x`）は親コマンドに降格される
 
-**権限継承**：サブコマンドが `permission` を宣言していない場合、直近に権限を宣言した祖先コマンドを自動的に継承します——`/admin` に保護を宣言すれば、その下のすべてのサブコマンドも自動的に保護されます。サブコマンド自身が宣言した権限が優先されます：
+**権限継承**：サブコマンドが `permission` を宣言していない場合、直近で権限を宣言した祖先コマンドの権限を自動的に継承します—`/admin` を保護すれば、その下のすべてのサブコマンドも自動的に保護されます；サブコマンド自身が宣言した権限が優先されます：
 
 ```python
 def is_admin(event):
@@ -1271,28 +1364,28 @@ def is_admin(event):
 async def admin_handler(event):
     ...
 
-# permissionの再宣言は不要、is_adminを自動的に継承
-@command("admin add", help="管理者を追加します")
+# permission を再宣言する必要はなく、is_admin を自動的に継承します
+@command("admin add", help="管理者を追加")
 async def admin_add_handler(event):
     ...
 ```
 
-注意：`master=True` と `hidden` は**継承されません**。必要に応じてサブコマンドで個別に宣言してください。ユーザーアクセス制御（ホワイトリスト/ブラックリスト）はコマンド全名でマッチし、globルール（`"admin*"`）でサブコマンド全体をカバーすることも可能です。
+注意：`master=True` と `hidden` は**継承されません**、必要に応じてサブコマンドで個別に宣言してください；ユーザー ACL（ホワイトリスト/ブラックリスト）はコマンドの完全名でマッチし、`glob` ルール（例：`"admin*"`）でサブコマンド全体をカバーできます。
 
-`/help`のコマンド概要では、サブコマンドは表示可能な親コマンドに自動的にインデント表示されます（`admin` → `admin add`は1段階インデント、`admin user` → `admin user ban`は2段階インデント）。
+`/help` のコマンド一覧では、サブコマンドは表示可能な親コマンドの下に自動的にインデント表示されます（`admin` → `admin add` は1段階インデント、`admin user` → `admin user ban` は2段階インデント）。
 
-### コマンドの権限とアクセス制御
+### コマンド権限とアクセス制御
 
-コマンドの権限は3段階で、上から下へ順次判定されます（**上層が拒否されたら下層は判定されません**）：
+コマンドの権限は3層に分かれ、上から下へ順に判定されます（**上層が拒否すると下層は見ない**）：
 
 ```python
-# ① コマンド権限 ACL（ユーザ側設定）：コマンドのユーザーホワイト/ブラックリストで、拒否時は「権限不足」を返します
-# ② master=True —— フレームワークのオーナーのみ実行可能（フレームワークが自動的にチェックし、拒否時は「権限不足」を返します）
-@command("restart", master=True, help="モジュールを再起動します")
+# ① コマンド権限 ACL（ユーザー側設定）：コマンドごとのユーザーのホワイトリスト/ブラックリスト、拒否時は「権限不足」を返す
+# ② master=True —— フレームワークのオーナーのみ実行可能（フレームワークが自動的にチェック、拒否時は「権限不足」を返す）
+@command("restart", master=True, help="モジュールを再起動")
 async def restart_handler(event):
     await event.reply("モジュールを再起動しました")
 
-# ③ permission=関数呼び出し —— コマンド自身の制御ロジック（Trueを返す場合のみ実行されます）
+# ③ permission=呼び出し関数 —— コマンド自身の制御ロジック（True を返す場合にのみ実行）
 def is_admin(event):
     return event.get_user_id() in {"user123", "user456"}
 
@@ -1301,37 +1394,38 @@ async def panel_handler(event):
     await event.reply("管理パネルへようこそ")
 ```
 
-**コマンドユーザーアクセス制御**（`ErisPulse.event.command.acl`）：ユーザーは任意のコマンドにユーザーホワイト/ブラックリストを設定でき、コマンド名は正確またはglobパターン（`"roll*"`など）で、拒否時は「権限不足」を返します：
+**コマンドユーザー ACL**（`ErisPulse.event.command.acl`）：ユーザーは任意のコマンドにユーザーのホワイトリスト/ブラックリストを設定でき、コマンド名は正確なマッチと glob モード（例：`"roll*"`）をサポートし、拒否時は「権限不足」を返す：
 
 ```toml
-# config.toml —— restartコマンドは123456のみ実行可能；666は一律拒否
+# config.toml —— restart コマンドは 123456 にのみ実行を許可；666 は一律拒否
 [ErisPulse.event.command.acl.restart]
 allow = ["onebot11:123456"]
 deny = ["onebot11:666"]
 ```
 
-判定順序：`deny`が一致 → 拒否；`allow`が非空で一致しない → 拒否；ACLが設定されていない場合、`event.command.default_allow`（`false` = 厳格モード、ACLがないと拒否；`true`の場合は開発者にデフォルトの`master=True` / `permission`を委ねる）に従います。実行時API（コマンド名はglobパターンに対応）：
+判定順序：`deny` がヒット → 拒否；`allow` が空でないかつヒットしない → 拒否；ACL が設定されていない場合は `event.command.default_allow`（`false` = 严格モード、ACL がない場合は拒否；`true` の場合、開発者のデフォルト `master=True` / `permission` に委ねる）に従う。実行時 API（コマンド名は glob をサポート）：
 
 ```python
 from ErisPulse.Core.Event import command
 
 command.allow_user("restart", "onebot11", "123456")   # 許可リスト
 command.deny_user("restart", "onebot11", "666")       # 拒否リスト
-command.remove_acl("restart")                          # ホワイト/ブラックリストを削除
+command.remove_acl("restart")                          # ホワイトリスト/ブラックリストを削除
 command.get_acl("restart")                             # 現在のリストを取得
 ```
 
-> コマンドハンドラはイベントパッケージからインポートされます：`from ErisPulse.Core.Event import command`；またはSDKイベントパッケージからアクセスすることもできます：`sdk.Event.command`（これらは同一のシングルトンです）。モジュール内では通常、コマンドデコレータと共にインポートされています（`from ErisPulse.Core.Event import command`）。
+> コマンドハンドラはイベントパッケージからインポート：`from ErisPulse.Core.Event import command`；SDK イベントパッケージを経由してアクセスすることも可能：`sdk.Event.command`（両者は同一のシングルトン）。
+> モジュール内では通常、コマンドデコレータ経由でインポートされている（`from ErisPulse.Core.Event import command`）。
 
-コマンドやユーザ間の**イベントレベル**のアクセス制御（特定の人の、特定のグループの、特定のBotのメッセージを受信するか）は、**スコープのアイデンティティ次元**（`scope.identity`）で行います。**モジュールレベル**の可用性（どのモジュールが使えるか）は、**スコープのモジュール次元**（`scope.platforms / bots / sessions`）で行います。
-詳細は[スコープ（scope）](../advanced/scope.md)を参照してください。
+コマンド間 / ユーザー間の**イベントレベル**のアクセス制御（特定のユーザー / グループ / Bot のメッセージを受信するか否か）は、作用域の**アイデンティティ次元**（`scope.identity`）を用いる；**モジュールレベル**の可用性（どのモジュールが使えるか）は、作用域の**モジュール次元**（`scope.platforms / bots / sessions`）を用いる。
+詳細は[作用域（scope）](../advanced/scope.md)を参照してください。
 
-> 推奨：コマンド内部でビジネスロジックを連動させる必要がある場合は`master=True` / `permission`を使用してください。純粋にユーザー/グループによるアクセス制御を行う場合はスコープアイデンティティ次元を使用してください。モジュールの可用性を制御する場合はスコープモジュール次元を使用してください。
+> おすすめ：コマンド内部でビジネスロジックと連動する必要がある場合は `master=True` / `permission` を使用する；純粋にユーザー / グループでアクセス制御を行う場合は作用域アイデンティティ次元を使用する；モジュールの可用性を制御する場合は作用域モジュール次元を使用する。
 
-### コマンドの優先度
+### コマンド優先度
 
 ```python
-# 优先度数値が大きいほど、実行が早くなります
+# 優先度の数値が大きいほど、実行が早くなる
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     await event.reply("高優先度のハンドラ")
@@ -1341,48 +1435,48 @@ async def low_priority_handler(event):
     await event.reply("低優先度のハンドラ")
 ```
 
-### 並列イベント処理
+### 並行イベント処理
 
-ErisPulseのイベントシステムは**同優先度並列、異なる優先度直列**のスケジューリングモデルを採用しています：
+ErisPulse のイベントシステムは**同優先度で並行、異なる優先度で直列**のスケジューリングモデルを採用しています：
 
 ```
 イベント到着
     ↓
-priority=10 組: [ハンドラC || ハンドラD] 並列 → 結果をマージ
-    ↓ (中断されていない場合)
-priority=0 組: [ハンドラA || ハンドラB] 並列 → 結果をマージ
+priority=10 組: [ハンドラC || ハンドラD] 並行 → 結果を結合
+    ↓ (中断しない場合)
+priority=0 組: [ハンドラA || ハンドラB] 並行 → 結果を結合
     ↓
 ...
 ```
 
-- **同優先度並列**：優先度が同じ複数のハンドラは同時に実行され、スループットが向上します
-- **跨優先度直列**：異なる優先度のグループは順番に実行され（数値が大きいほど先に実行）、高優先度のハンドラが先に実行されるようにします
-- **Copy-On-Write**：ハンドラが変更しない場合はコピーを作成せず、ゼロオーバーヘッドを確保します
-- **競合処理**：同優先度の複数ハンドラが同じフィールドを変更した場合、最後に変更した値を使用し、警告ログを記録します
-- **中断メカニズム**：任意のハンドラが `event.done()`（デフォルト）または `event.done(claim=False)` を呼び出した後、以降の低優先度グループはスキップされます。認領とブロックの違いは下記の[「リンク制御：認領とブロック」](#リンク制御認領とブロック)を参照してください。
+- **同優先度で並行**：優先度が同じ複数のハンドラは同時に実行され、スループットが向上
+- **跨優先度で直列**：異なる優先度のグループは順番に実行される（数値が大きいほど先に実行）、高優先度ハンドラが先に実行されることを保証
+- **Copy-On-Write**：ハンドラが変更しない限りコピーを作成せず、ゼロオーバーヘッドを保証
+- **衝突処理**：同優先度の複数ハンドラが同じフィールドを変更した場合、最後の変更値を使用し、警告ログを記録
+- **中断メカニズム**：任意のハンドラが `event.done()`（デフォルト）または `event.done(claim=False)` を呼び出した後、以降の低優先度グループをスキップする。認領とブロックの違いは下記の[「リンク制御：認領とブロック」](#リンク制御認領とブロック)を参照してください。
 
 ```python
-# 例：同優先度ハンドラが並列実行される
+# 例：同優先度ハンドラが並行実行される
 @message.on_message(priority=0)
 async def handler_a(event):
-    # タスクAを処理
+    # 作業 A を処理
     event['result_a'] = process_a()
 
 @message.on_message(priority=0)
 async def handler_b(event):
-    # handler_aと並列に実行される
+    # handler_a と並行実行
     event['result_b'] = process_b()
 
-# 異なる優先度で直列実行される
+# 異なる優先度で直列実行
 @message.on_message(priority=10)
 async def handler_c(event):
-    # 一番優先度が高い、最初に実行される
+    # 最も優先度が高い、最初に実行される
     pass
 ```
 
-> **並列上限**：すべてのマッチするハンドラのTaskは**即座に作成**されますが、シグナルマネージャによって**同時に実行される数**が制限されます。デフォルト上限は **64**（`ErisPulse.framework.handler_max_concurrency`、ホットアップデートが可能です）。上限を超えるTaskはシグナルマネージャで待機し、前の処理が完了してから実行されます。イベントの急増時に、これが「圧力緩和弁」になります。
+> **並行上限**：すべてのマッチするハンドラの Task は**即座に作成**されるが、シグナルマニュアルで**同時に実行される数**を制限し、デフォルト上限は **64**（`ErisPulse.framework.handler_max_concurrency`、ホットアップデート可能）。上限を超えた Task はシグナルマニュアル上でキューイングされ、前の処理が完了した後に実行される。イベントのピーク時に、これが「圧力緩和弁」になります。
 >
-> **遅いログ**：単一のハンドラが1秒以上かかる場合、フレームワークはログにWARNINGを出力します（`handler_slow`）。`wait_reply`の待機時間は処理時間から除外され、ユーザーの返信を待つことで誤った遅延とみなされることはありません。
+> **遅延ログ**：個々のハンドラの処理時間が **1秒**を超える場合、フレームワークはログに WARNING（`handler_slow`）を出力します。`wait_reply` の待機時間は処理時間から除外され、ユーザーの返信待ちで誤って遅延と判定されることはありません。
 
 ## スコープフィルタリング：なぜ私のモジュールはメッセージを受け取らないのか
 
@@ -2740,37 +2834,37 @@ ErisPulseアダプタのコアコンセプトを理解することは、アダ�
 - **正方向変換**（Converter）：プラットフォーム独自イベント → OneBot12標準イベント、元データは`{platform}_raw`に保持
 - **逆方向変換**（Raw_ob12）：OneBot12メッセージセグメント → プラットフォームAPI呼び出し、返却は標準レスポンス形式
 
-## AdapterManager アダプタマネージャー
+## AdapterManager 适配器管理器
 
-`AdapterManager`はErisPulseアダプタシステムのコアコンポーネントで、すべてのプラットフォームアダプタの登録、起動、停止、イベント配信を管理します。
+`AdapterManager` は、ErisPulse におけるアダプタシステムの中心となるコンポーネントであり、すべてのプラットフォームアダプタの登録、起動、停止、およびイベントの配信を管理します。
 
-### コア機能
+### 核心機能
 
-- **アダプタ登録**：複数のプラットフォームアダプタを登録・管理
+- **アダプタの登録**：複数のプラットフォームアダプタの登録と管理
 - **ライフサイクル管理**：アダプタの起動と停止を制御
-- **イベント配信**：OneBot12標準イベントとプラットフォーム独自イベントを配信
+- **イベント配信**：OneBot12 標準イベントとプラットフォーム固有のイベントを配信
 - **設定管理**：アダプタの有効/無効状態を管理
-- **ミドルウェアサポート**：OneBot12イベントミドルウェアをサポート
+- **ミドルウェアサポート**：OneBot12 イベントミドルウェアをサポート
 
-### 基本使用
+### 基本的な使用方法
 
 ```python
 from ErisPulse import sdk
 
-# アダプタの登録（通常Loaderが自動的に実行）
+# アダプタの登録（通常は Loader が自動で行う）
 sdk.adapter.register("myplatform", MyPlatformAdapter)
 
 # すべてのアダプタを起動
 await sdk.adapter.startup()
 
-# 指定プラットフォームを起動
+# 指定のアダプタを起動
 await sdk.adapter.startup(["myplatform"])
 # すべてのアダプタを起動
 await sdk.adapter.startup()
 
-# アダプタインスタンスの取得
+# アダプタのインスタンスを取得
 my_adapter = sdk.adapter.get("myplatform")
-# または属性アクセス
+# または属性アクセスで取得
 my_adapter = sdk.adapter.myplatform
 
 # すべてのアダプタを停止
@@ -2785,22 +2879,22 @@ await sdk.adapter.shutdown()
 # すべての登録済みアダプタを起動
 await sdk.adapter.startup()
 
-# 指定プラットフォームを起動
+# 指定のプラットフォームを起動
 await sdk.adapter.startup(["platform1", "platform2"])
 ```
 
-**起動プロセス**：
+**起動フロー:**
 
-1. `adapter.start`ライフサイクルイベントを送信
-2. `adapter.status.change`イベントを送信（starting）
-3. 各アダプタを並行起動
-4. 起動失敗時は指数バックオフ戦略で自動リトライ
-5. 起動成功後`adapter.status.change`イベントを送信（started）
+1. `adapter.start` ライフサイクルイベントを送信
+2. `adapter.status.change` イベントを送信（starting）
+3. 各アダプタを並行して起動
+4. 起動に失敗した場合、指数バックオフ戦略で自動的に再試行
+5. 起動成功後に `adapter.status.change` イベントを送信（started）
 
-**リトライメカニズム**：
+**再試行メカニズム:**
 
-- 最初の4回：60秒、10分、30分、60分
-- 5回目以降：3時間固定間隔
+- 最初の4回の再試行：60秒、10分、30分、60分
+- 5回目以降：3時間の固定間隔
 
 #### アダプタの停止
 
@@ -2809,17 +2903,17 @@ await sdk.adapter.startup(["platform1", "platform2"])
 await sdk.adapter.shutdown()
 ```
 
-**停止プロセス**：
+**停止フロー:**
 
-1. `adapter.stop`ライフサイクルイベントを送信
-2. すべてのアダプタの`shutdown()`メソッドを呼び出す
+1. `adapter.stop` ライフサイクルイベントを送信
+2. すべてのアダプタの `shutdown()` メソッドを呼び出す
 3. ルーティングサーバーを停止
 4. イベントハンドラをクリア
-5. `adapter.stopped`ライフサイクルイベントを送信
+5. `adapter.stopped` ライフサイクルイベントを送信
 
 ### 設定管理
 
-#### プラットフォームのステータス確認
+#### プラットフォームの状態確認
 
 ```python
 # プラットフォームが登録されているか確認
@@ -2828,18 +2922,18 @@ exists = sdk.adapter.exists("myplatform")
 # プラットフォームが有効か確認
 enabled = sdk.adapter.is_enabled("myplatform")
 
-# in演算子を使用
+# in 演算子を使用
 if "myplatform" in sdk.adapter:
-    print("プラットフォームが存在し、有効です")
+    print("プラットフォームは存在し、有効です")
 ```
 
 #### プラットフォームの一覧表示
 
 ```python
-# すべての登録済みプラットフォームをリスト
+# すべての登録済みプラットフォームを取得
 platforms = sdk.adapter.list_registered()
 
-# すべてのプラットフォームとそのステータスをリスト
+# すべてのプラットフォームとその状態を取得
 status_dict = sdk.adapter.list_items()
 # 戻り値: {"platform1": true, "platform2": false, ...}
 
@@ -2849,7 +2943,7 @@ enabled_platforms = [p for p, enabled in status_dict.items() if enabled]
 
 ### イベントの監視
 
-#### OneBot12標準イベント
+#### OneBot12 標準イベント
 
 ```python
 from ErisPulse import sdk
@@ -2857,46 +2951,46 @@ from ErisPulse import sdk
 # すべてのプラットフォームの標準メッセージイベントを監視
 @sdk.adapter.on("message")
 async def handle_message(data):
-    print(f"OneBot12メッセージを受信: {data}")
+    print(f"OneBot12 消息を受け取りました: {data}")
 
 # 特定プラットフォームの標準メッセージイベントを監視
 @sdk.adapter.on("message", platform="myplatform")
 async def handle_platform_message(data):
-    print(f"myplatformメッセージを受信: {data}")
+    print(f"myplatform 消息を受け取りました: {data}")
 
 # すべてのイベントを監視
 @sdk.adapter.on("*")
 async def handle_any_event(data):
-    print(f"イベントを受信: {data.get('type')}")
+    print(f"イベントを受け取りました: {data.get('type')}")
 ```
 
-#### プラットフォーム独自イベント
+#### プラットフォーム固有イベント
 
 ```python
-# 特定プラットフォームの独自イベントを監視
+# 特定プラットフォームの固有イベントを監視
 @sdk.adapter.on("raw_event_type", raw=True, platform="myplatform")
 async def handle_raw_event(data):
-    print(f"独自イベントを受信: {data}")
+    print(f"固有イベントを受け取りました: {data}")
 
-# すべてのプラットフォームの独自イベントを監視（ワイルドカード）
+# すべてのプラットフォームの固有イベントを監視（ワイルドカード）
 @sdk.adapter.on("*", raw=True)
 async def handle_all_raw_events(data):
-    print(f"独自イベントを受信: {data}")
+    print(f"固有イベントを受け取りました: {data}")
 ```
 
 #### イベント配信メカニズム
 
-`adapter.emit(event_data)`を呼び出したとき：
+`adapter.emit(event_data)` を呼び出すと、以下の処理が行われます。
 
-1. **ミドルウェア処理**：まずすべてのOneBot12ミドルウェアを実行
-2. **標準イベント配信**：マッチするOneBot12イベントハンドラに配信
-3. **独自イベント配信**：元データがあれば独自イベントハンドラに配信
+1. **ミドルウェア処理**：すべての OneBot12 ミドルウェアを実行
+2. **標準イベント配信**：一致する OneBot12 イベントハンドラに配信
+3. **固有イベント配信**：元のデータがある場合、固有イベントハンドラに配信
 
-**マッチルール**：
+**一致ルール:**
 
-- 精確マッチ：`@sdk.adapter.on("message")`は`message`イベントのみマッチ
-- ワイルドカード：`@sdk.adapter.on("*")`はすべてのイベントにマッチ
-- プラットフォームフィルタ：`platform="myplatform"`は指定プラットフォームのイベントのみ配信
+- 精確一致：`@sdk.adapter.on("message")` は `message` イベントのみを一致
+- ワイルドカード：`@sdk.adapter.on("*")` はすべてのイベントを一致
+- プラットフォームフィルタ：`platform="myplatform"` は指定プラットフォームのイベントのみを配信
 
 ### ミドルウェア
 
@@ -2906,28 +3000,53 @@ async def handle_all_raw_events(data):
 @sdk.adapter.middleware
 async def logging_middleware(data):
     """ログ記録ミドルウェア"""
-    print(f"イベントを処理: {data.get('type')}")
-    return data  # 必須でデータを返す
+    print(f"イベントを処理中: {data.get('type')}")
+    return data  # 必ずデータを返す必要がある
 
 @sdk.adapter.middleware
 async def filter_middleware(data):
-    """イベントフィルタミドルウェア"""
-    # 不要なイベントをフィルタ
+    """イベントフィルタリングミドルウェア"""
+    # 不要なイベントをフィルタリング
     if data.get("type") == "notice":
-        return None  # Noneを返すとミドルウェアチェーンはその返り値を無視し、元のデータを引き続き伝播
-    return data  # 必須でデータを返すことで伝播を続ける
+        return None  # None を返す場合、ミドルウェアチェーンはその返り値を無視し、元のデータをそのまま次に渡す
+    return data  # 必ずデータを返すことで次に渡す
+
+```
+
+#### ミドルウェアの返り値契約
+
+| 返り値 | 行動 |
+|--------|------|
+| `dict` | イベントの負荷を上書き（後続のハンドラは上書きされたイベントを受け取る） |
+| `None` | 放行、負荷は変更なし（警告レベルのログを出力するため、明示的に `return data` を使用することを推奨） |
+| `False` | **否決**：イベントはドロップされ、ハンドラには届かない、出力副作用も一切発生しない |
+
+否決は、ファイアウォール、リクエスト制限、ブラックリストなど、イベント単位で直接ドロップする場面に使用される（以前は高優先度のイベントハンドラで回避するしかなかった）。否決された場合、フレームワークは TRACE ログを出力し、`adapter.event.blocked` ライフサイクルフックをトリガー（`middleware` ミドルウェア名、完全な `event`、`platform` / `event_type` / `detail_type` を含む）し、"なぜイベントが反応しなかったのか"を調査できるようにする。
+
+```python
+@sdk.adapter.middleware
+async def rate_limit_middleware(data):
+    """リクエスト制限ミドルウェア"""
+    if _is_rate_limited(data):
+        return False  # 否決：イベントはドロップされる
+    data["rate_marked"] = True
+    return data
+
+@sdk.lifecycle.on("adapter.event.blocked")
+async def on_event_blocked(data):
+    print(f"イベントは {data['middleware']} によって否決されました: {data['event_type']}")
 ```
 
 #### ミドルウェアの実行順序
 
 ミドルウェアは登録順に実行され、後から登録されたミドルウェアが先に実行されます。
 
-> **注意**：ミドルウェアが`None`を返した場合（`return data`を忘れているなど）、フレームワークはその返り値を無視し元のデータを引き続き伝播し、warningレベルのログを出力します。これにより、1つのミドルウェアのミスがイベントチェーン全体を中断することはありません。
+> **注意**：ミドルウェアが `None` を返した場合（たとえば `return data` を忘れている場合）、フレームワークはその返り値を無視して元のデータをそのまま次に渡し、警告レベルのログを出力します。これにより、単一のミドルウェアのミスがイベントチェーン全体を中断することを防ぎます。
 
 ```python
-# 登録順
+# 登録順序
 sdk.adapter.middleware(middleware1)  # 最後に実行
-sdk.adapter.middleware(middleware2)  # 中間実行
+sdk.adapter.middleware(middleware2)  # 中間に実行
 sdk.adapter.middleware(middleware3)  # 最初に実行
 
 # 実行順序：middleware3 -> middleware2 -> middleware1
@@ -2935,7 +3054,7 @@ sdk.adapter.middleware(middleware3)  # 最初に実行
 
 ### アダプタインスタンスの取得
 
-#### get()メソッド
+#### get() メソッド
 
 ```python
 adapter = sdk.adapter.get("myplatform")
@@ -5956,6 +6075,145 @@ services:
 
 
 
+### 模块测试（ErisPulse-Testing）
+
+# モジュールテスト（ErisPulse-Testing）
+
+[ErisPulse-Testing](https://github.com/wsu2059q/ErisPulse-Testing) は公式のテストツールキット（RFC EPRFC-2026-001 方向三）です：
+`TestBot`、テストイベントファクトリー、出力メッセージのキャプチャとアサーション機能を提供し、通常の pytest と同じようにモジュールのテストを簡単に行えます。
+
+```bash
+pip install ErisPulse-Testing
+```
+
+> フレームワークの開発期のツールであり、実行時には介入しません。実際のアダプタープラットフォームのスモークテストを行うには、フレームワークリポジトリの `tests/devs/test_adapter.py` を使用してください。
+
+## 快速開始
+
+```python
+import pytest
+from ErisPulse.Core.Event.command import command
+from ErisPulse_Testing import TestBot, create_command_event
+
+async def test_daily(make_testbot):
+    async with make_testbot(prefix="/") as bot:
+        @command("daily", cooldown="1d", cooldown_reply="今日のログイン完了")
+        async def daily(event):
+            await event.reply("ログイン完了！")
+
+        await bot.dispatch(create_command_event("daily", user_id="123"))
+        assert bot.last_reply.text == "ログイン完了！"
+
+        await bot.dispatch(create_command_event("daily", user_id="123"))
+        bot.assert_reply_contains("今日のログイン完了")   # クールダウンの2回目のヒット
+```
+
+`TestBot` は `async with` で使用することを推奨します。起動時に MockAdapter を登録（すべての出力イベントをキャプチャ）、イベントの重複を無効化し、設定のオーバーライドを適用します。終了時にはフレームワークのグローバル状態を自動的にクリーンアップし、テストケース間で相互に汚染されないようにします。
+
+pytest fixtures（インストール後に自動的に利用可能）：
+
+- `testbot`：function 級の標準 TestBot（platform=`test`、プレフィックス `/`）
+- `make_testbot(**kwargs)`：カスタムパラメータのファクトリ（`prefix` / `config` / `platform` / `bot_id` ...）
+
+テストプロジェクトの設定で `asyncio_mode = "auto"` を設定すること（`[tool.pytest.ini_options]`）を推奨します。または、テストケースに `@pytest.mark.asyncio` を追加してください。
+
+## イベント工場
+
+| 関数 | 説明 |
+|------|------|
+| `create_message_event(text, user_id=..., group_id=None, ...)` | メッセージイベント；`group_id` が空の場合はプライベートチャット |
+| `create_command_event("roll 3", prefix="/")` | コマンドメッセージ（自動的にプレフィックスを追加、すでにプレフィックスが付いている場合は重複しない） |
+| `create_notice_event(type, ...)` | 通知イベント（例：`friend_add`） |
+| `create_request_event(type, ...)` | 要求イベント（例：友達申請） |
+| `create_meta_event("connect", ...)` | meta イベント（`connect` は Bot をオンラインにすることができる） |
+
+すべてのイベントは uuid を使用して一意の `id` を持つため、フレームワークのイベント重複回避を自然に回避します。
+
+## TestBot API
+
+### 分发
+
+```python
+trace = await bot.dispatch(event)          # イベントの処理を分派し、タスクの終了を待機して返す
+await bot.dispatch(event, drain=False)     # メッセージの最初の返信：待機しない（wait_reply ハンドラは常駐）
+await bot.send_message("你好")             # メッセージの分派のショートカット
+await bot.reply_as("18", user_id="u1")     # wait_reply のユーザーの返信をシミュレート（自動で waiter の準備完了を待つ）
+```
+
+`dispatch()` は emit 後にすべての処理タスクを gather し、返却された時点で処理が完了するため、**テストでは sleep は不要**です。
+
+### 出力メッセージの検証
+
+```python
+bot.replies                # すべての出力メッセージ（SentMessage のリスト）
+bot.last_reply.text        # 最後の返信メッセージのテキスト
+bot.replies_to("123")      # 目標を基準にフィルタリング
+bot.clear_replies()        # 段階間で検証を隔離
+bot.assert_replied()                       # 出力メッセージが存在する
+bot.assert_replied(contains="签到", to="123")
+bot.assert_not_replied()                   # 何も出力されていない
+bot.assert_reply_contains("签到成功")       # 指定されたテキストを含む出力メッセージが存在する
+await bot.wait_for_reply(timeout=2)        # 異步返信が現れるまで待つ
+```
+
+`SentMessage` のフィールド：`text`（最初のテキストセグメント）、`segments`（完全なメッセージセグメント）、
+`target_type` / `target_id` / `bot_id`（送信の上下文）、`has_modifier("at")` など。
+
+### モジュールのロード
+
+```python
+await bot.load_module("MyModule")   # entry-point が登録済みのパッケージ名
+await bot.load_module(MyModule)     # または BaseModule のサブクラス（自動で register + load）
+await bot.unload_module("MyModule")
+```
+
+`on_load` 内で登録されたコマンド / イベントハンドラはモジュールに属し、アンロード時に自動的にクリーンアップされるため、"アンロード後にコマンドが無効になる"ことを直接検証できます。
+
+### 依存関係の置換
+
+```python
+with bot.patch_dependency(get_session, fake_session) as mock:
+    await bot.dispatch(create_command_event("query"))
+    assert mock.called
+```
+
+コマンド登録表の `Depends(get_session)` で宣言された関数を置換します。with ブロックを抜けると自動で元に戻ります。
+
+### 設定の上書き
+
+```python
+bot = TestBot(prefix="//", config={
+    "ErisPulse.event.command.case_sensitive": False,
+    "MyModule.api_key": "test-key",     # モジュールの設定（self.cfg で読み取れる）
+})
+```
+
+設定はメモリ上に注入され（ファイルに書き込まれない）、コマンドの前処理で即座に反映されます。
+
+## 分配決定チェーン（「なぜコマンドが実行されなかったか」のトラブルシューティング）
+
+`dispatch()` は `DispatchTrace` を返します。これは、今回の分配処理で経由した各判定ポイントの因果関係のチェーンです：
+
+```python
+trace = await bot.dispatch(create_command_event("dailyx", user_id="123"))
+
+trace.verdict        # executed / rejected / dropped / failed / no_match / passed
+trace.explain()      # 因果の説明を1行ずつ出力（現在の言語）
+trace.command        # 命中したコマンド名（未命中の場合は None）
+trace.steps("cooldown")  # 階段ごとに判定記録をフィルタリング
+
+trace.assert_executed("daily")  # 実行を断言（失敗時には因果関係のチェーンを含む）
+trace.assert_rejected()         # 権限系の判定で拒否されたことを断言
+trace.assert_dropped()          # 冷却などにより静かにドロップされたことを断言
+trace.assert_no_match()         # コマンドが一致しなかったことを断言
+```
+
+判定のカバレッジ：コマンドテキストの判定、コマンドの一致（未一致の場合には類似コマンドの提案を含む）、スコープ、ユーザー ACL、オーナーチェック、権限関数、冷却による静かなドロップ、パラメータ解析、実行結果、ミドルウェアによる否決。
+
+本番環境でも、フレームワーク内に用意されている `ErisPulse.Core.Event.trace`（`start_dispatch_trace()` / `format_dispatch_trace()`）を使用して、決定チェーンの収集とレンダリングが可能です。
+
+
+
 ### CLI 命令参考
 
 # CLIコマンドリファレンス
@@ -6667,16 +6925,15 @@ API 参考
 ```python
 from ErisPulse import sdk
 
-# 名称でアダプターを取得
+# 名前でアダプターを取得
 adapter = sdk.adapter.get("platform_name")
 
-# または属性で直接アクセスすることもできます
+# または、属性として直接アクセスすることもできます
 adapter = sdk.adapter.platform_name
 ```
 
 ### アダプターイベントの監視
-> 通常、`Event` モジュールを使用してイベントの監視/処理を行うことを推奨します。
->
+> 通常、`Event` モジュールを使ってイベントの監視/処理を行うことを推奨します。
 > また、`Event` モジュールは強力なラッパーを提供しており、モジュール開発に多くの利便性をもたらします。
 
 ```python
@@ -6710,7 +6967,7 @@ sdk.adapter.enable("platform_name")
 sdk.adapter.disable("platform_name")
 
 # アダプターを起動/停止
-# 以下は引数を渡した場合の例です。引数なしの場合は、登録済みのすべてのアダプターを起動/停止します
+# 以下のメソッドは引数の指定のみを示しており、引数なしの場合はすべての登録されたアダプターを起動/停止します
 await sdk.adapter.startup(["platform1", "platform2"])
 await sdk.adapter.shutdown(["platform1", "platform2"])
 
@@ -6723,7 +6980,7 @@ running = sdk.adapter.list_running()
 
 ## ミドルウェア
 
-ミドルウェアは、イベントがハンドラに配信される前に実行され、イベントデータの変更、フィルタリング、または記録が可能です。
+ミドルウェアは、イベントがハンドラに配信される前に実行され、イベントデータを変更、フィルタ、または記録することができます。
 
 ### ミドルウェアの登録
 
@@ -6736,9 +6993,10 @@ async def my_middleware(event):
 
 ### ミドルウェアの実行モデル
 
-- **実行順序**: ミドルウェアは登録順に実行されます（先に登録されたものが先に実行されます）
-- **データの伝達**: 各ミドルウェアは、前のミドルウェアから返された `event` データを受け取ります。もし、あるミドルウェアが `None` を返した場合、その返値は無視され、元のデータが引き続き伝達されます（`warning` レベルのログが出力されます）
-- **データの変更**: ミドルウェアはイベントデータを変更し、変更後の辞書を返すことができます
+- **実行順序**：ミドルウェアは登録順に実行されます（先に登録されたものから先に実行）
+- **データの伝達**：各ミドルウェアは、前のミドルウェアから返された `event` データを受け取ります。もし、あるミドルウェアが `None` を返した場合、その返り値は無視され、元のデータが引き続き伝達されます（`warning` レベルのログが出力されます）
+- **データの変更**：ミドルウェアはイベントデータを変更し、変更後の辞書を返すことができます
+- **イベントの拒否**：ミドルウェアが明示的に `False` を返した場合、イベントは拒否されます——イベントはハンドラに進まず、出力副作用も一切ありません。拒否された場合は、`TRACE` ログが出力され、`adapter.event.blocked` ライフサイクルフックがトリガーされ、ミドルウェア名と完全なイベントが渡されます
 
 ```python
 @sdk.adapter.middleware
@@ -6751,12 +7009,12 @@ async def filter_spam(event):
     if event.get("detail_type") == "private":
         text = event.get("alt_message", "")
         if "スパム広告" in text:
-            return None   # None を返してもイベントの配信を阻止するわけではなく、単にその返値を無視します
+            return False  # 拒否：イベントはハンドラに進まず、出力副作用も一切ありません
     return event
 ```
 
-> **注意**: ミドルウェアは現在、イベントの配信を阻止する機能をサポートしていません。特定のイベントをフィルタリングする必要がある場合は、イベントハンドラ内で条件分岐によって実現してください。
-> ただし、Event モジュールで優先度の高いハンドラを設定し、ハンドラ内で `event.mark_processed()` を使用することで、低優先度のイベントハンドラを阻止することができます。
+> **注意**：イベントを拒否するのは、明示的に `False` を返した場合のみです（空の辞書 / `0` / `""` などの falsy 値を返しても拒否されません）。
+> `None` を返してもイベントは許可され、負荷は変化しません。拒否されたイベントは、`adapter.event.blocked` フックを監視することで、なぜイベントが反応しなかったのかを監査・調査することができます。
 
 ## Send メッセージ送信
 
@@ -6783,7 +7041,7 @@ await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
 ```
 
-### 送信メソッドのサポート確認
+### 送信メソッドの照会
 
 ```python
 # プラットフォームがサポートするすべての送信メソッドをリストアップ
@@ -6799,7 +7057,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 #         {"name": "text", "type": "str", "default": null, "annotation": "str"}
 #     ],
 #     "return_type": "Awaitable[Any]",
-#     "docstring": "テキストメッセージを送信します..."
+#     "docstring": "テキストメッセージを送信..."
 # }
 ```
 
@@ -6812,7 +7070,7 @@ await adapter.Send.To("group", "456").At("789").Text("こんにちは")
 # @全員
 await adapter.Send.To("group", "456").AtAll().Text("皆さんこんにちは")
 
-# メッセージへの返信
+# メッセージに返信
 await adapter.Send.To("group", "456").Reply("msg_id").Text("返信内容")
 
 # 組み合わせ
@@ -6823,7 +7081,7 @@ await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("返信@メ
 
 ### call_api メソッド
 
-> **注意**: `call_api` は、プラットフォームのネイティブ API を直接呼び出すための低レベルメソッドです。各プラットフォームのパラメータや戻り値は異なりますので、対応するプラットフォームアダプターのドキュメントを参照してください。**メッセージ送信には Send DSL を使用することを推奨します**。Send DSL がサポートしていない場面（プラットフォーム特有のデータの取得、プラットフォーム管理インターフェースの呼び出し等）でのみ `call_api` を使用してください。
+> **注意**：`call_api` は、プラットフォームのネイティブ API を直接呼び出す低レベルメソッドです。各プラットフォームのパラメータと戻り値は異なる可能性があるため、対応するプラットフォームアダプタードキュメントを参照してください。**Send DSL を使用することを推奨します**。Send DSL がサポートしていない場面（プラットフォーム固有のデータの取得、プラットフォーム管理インターフェースの呼び出しなど）でのみ `call_api` を使用してください。
 
 ```python
 # プラットフォーム API を呼び出す
@@ -6834,7 +7092,7 @@ result = await adapter.call_api(
     recvType="user"
 )
 
-# レスポンスの標準化
+# 標準化されたレスポンス
 {
     "status": "ok",
     "retcode": 0,
@@ -6857,19 +7115,19 @@ class MyAdapter(BaseAdapter):
     def __init__(self):
         super().__init__()
         self.sdk = sdk
-        # アダプターを初期化
+        # アダプターの初期化
         pass
     
     async def start(self):
-        """アダプターを起動する（必須）"""
+        """アダプターの起動（必須実装）"""
         pass
     
     async def shutdown(self):
-        """アダプターを停止する（必須）"""
+        """アダプターの停止（必須実装）"""
         pass
     
     async def call_api(self, endpoint: str, **params):
-        """プラットフォーム API を呼び出す（必須）"""
+        """プラットフォーム API の呼び出し（必須実装）"""
         pass
 ```
 
@@ -6893,33 +7151,33 @@ class MyAdapter(BaseAdapter):
 
 ## Bot 状態管理
 
-アダプターは、OneBot12 標準の **`meta` イベント**を送信することで、フレームワークに Bot の接続状態を通知します。システムは、このイベントから Bot 情報を抽出して状態を追跡します。
+アダプターは、OneBot12 標準の **`meta` イベント**を送信することで、フレームワークに Bot の接続状態を通知します。システムは、このイベントから Bot 情報を自動的に抽出し、状態を追跡します。
 
-### meta イベントタイプ
+### meta イベントの種類
 
-アダプターは以下の 3 種類の `meta` イベントを送信する必要があります：
+アダプターは、以下の 3 種類の `meta` イベントを送信する必要があります：
 
 | `type` | `detail_type` | 説明 | 発生タイミング |
 |--------|--------------|------|---------|
-| `meta` | `connect` | Bot 接続オンライン | アダプターがプラットフォームとの接続を確立した直後 |
-| `meta` | `heartbeat` | Bot ハートビート | 定期的に送信（推奨 30-60 秒） |
-| `meta` | `disconnect` | Bot 接続切断 | 接続が切断されたと検出されたとき |
+| `meta` | `connect` | Bot が接続/オンライン | アダプターがプラットフォームとの接続を確立した直後 |
+| `meta` | `heartbeat` | Bot のハートビート | 定期的に送信（推奨 30-60 秒） |
+| `meta` | `disconnect` | Bot が切断 | 接続が切断されたことを検知したとき |
 
 ### self フィールドの拡張
 
-ErisPulse は OneBot12 標準の `self` フィールドに、以下のオプションフィールドを拡張しています：
+ErisPulse は、OneBot12 標準の `self` フィールドに以下のオプションフィールドを拡張しています：
 
 | フィールド | 型 | 説明 |
 |------|------|------|
 | `self.platform` | string | プラットフォーム名（OB12 標準） |
 | `self.user_id` | string | Bot ユーザー ID（OB12 標準） |
-| `self.user_name` | string | Bot 昵称（ErisPulse 拡張） |
+| `self.user_name` | string | Bot ニックネーム（ErisPulse 拡張） |
 | `self.avatar` | string | Bot アバター URL（ErisPulse 拡張） |
-| `self.account_id` | string | マルチアカウント識別子（ErisPulse 拡張） |
+| `self.account_id` | string | 多アカウント識別子（ErisPulse 拡張） |
 
-### meta イベントフォーマット
+### meta イベント形式
 
-#### connect — 接続オンライン
+#### connect — 接続/オンライン
 
 ```python
 await adapter.emit({
@@ -6939,7 +7197,7 @@ await adapter.emit({
 })
 ```
 
-システム処理: Bot を登録し、`online` としてマークし、`adapter.bot.online` ライフサイクルイベントをトリガーします。
+システム処理：Bot を登録し、`online` にマークし、`adapter.bot.online` ライフサイクルイベントをトリガー。
 
 #### heartbeat — ハートビート
 
@@ -6957,9 +7215,9 @@ await adapter.emit({
 })
 ```
 
-システム処理: `last_active` 時間を更新（ハートビートではメタ情報の更新もサポート）。
+システム処理：`last_active` 時間を更新（ハートビート中でも元情報の更新がサポートされています）。
 
-#### disconnect — 接続切断
+#### disconnect — 切断/オフライン
 
 ```python
 await adapter.emit({
@@ -6975,11 +7233,11 @@ await adapter.emit({
 })
 ```
 
-システム処理: Bot を `offline` としてマークし、`adapter.bot.offline` ライフサイクルイベントをトリガーします。
+システム処理：Bot を `offline` にマークし、`adapter.bot.offline` ライフサイクルイベントをトリガー。
 
-### 通常イベントの自動発見
+### 一般イベントの自動発見
 
-`meta` イベント以外にも、通常イベント（`message`/`notice`/`request`）の `self` フィールドから Bot を自動的に発見し、登録して活性時間を更新します。つまり、アダプターが `connect` イベントを送信しなくても、フレームワークは最初の通常イベントから Bot を発見できます。
+`meta` イベント以外にも、一般イベント（`message`/`notice`/`request`）の `self` フィールドから Bot を自動的に発見し、登録して活性時間を更新します。つまり、アダプターが `connect` イベントを送信しなくても、フレームワークは最初の一般イベントから Bot を発見することができます。
 
 ### アダプター接続例
 
@@ -7007,7 +7265,7 @@ class MyAdapter(BaseAdapter):
         })
     
     async def on_disconnect(self):
-        # 接続切断、disconnect イベントを送信
+        # 切断、disconnect イベントを送信
         await adapter.emit({
             "id": str(uuid4()),
             "time": int(time.time()),
@@ -7021,10 +7279,10 @@ class MyAdapter(BaseAdapter):
         })
 ```
 
-### Bot 状態の取得
+### Bot 状態の照会
 
 ```python
-# すべてのアダプターと Bot の完全な状態を取得（WebUI に優しい形式）
+# すべてのアダプターと Bot の完全な状態を取得（WebUI に優しい）
 summary = sdk.adapter.get_status_summary()
 # {
 #     "adapters": {
@@ -7059,15 +7317,15 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 
 | 状態 | 説明 |
 |------|------|
-| `online` | イベントを継続的に受信しているか、アダプターが手動でオンラインとしてマークしている |
-| `offline` | アダプターが手動でオフラインとしてマークした、またはシステムの停止時に自動的に設定される |
-| `unknown` | 登録されているが状態が確認されていない |
+| `online` | イベントを継続的に受信している、またはアダプターが明示的にオンラインとマークした状態 |
+| `offline` | アダプターが明示的にオフラインとマークした、またはシステムが停止時に自動的に設定される状態 |
+| `unknown` | 登録されているが、状態が確認されていない状態 |
 
 ### ライフサイクルイベント
 
 | イベント名 | 発生タイミング | データ |
 |--------|---------|------|
-| `adapter.bot.online` | 新しい Bot が初めて自動的に発見されたとき | `{platform, bot_id, status}` |
+| `adapter.bot.online` | 新しい Bot が自動的に発見されたとき | `{platform, bot_id, status}` |
 | `adapter.status.change` | アダプターの状態が変化したとき（starting/started/stopping/stopped/stop_failed） | `{platform, status}` |
 
 ```python
@@ -7076,13 +7334,13 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 def on_bot_online(event):
     print(f"Bot オンライン: {event['data']['platform']}/{event['data']['bot_id']}")
 
-# アダプター状態変化イベントを監視
+# アダプターの状態変化を監視
 @sdk.lifecycle.on("adapter.status.change")
 def on_status_change(event):
-    print(f"アダプター状態: {event['data']['platform']} -> {event['data']['status']}")
+    print(f"アダプターの状態: {event['data']['platform']} -> {event['data']['status']}")
 ```
 
-> システムの停止時（`shutdown`）に、すべての Bot は自動的に `offline` としてマークされます。
+> システムが停止するとき（`shutdown`）には、すべての Bot が自動的に `offline` にマークされます。
 
 
 
@@ -8530,12 +8788,12 @@ class MyStorage(BaseStorage):
 
 # ライフサイクル管理
 
-ErisPulse は、システムの各コンポーネントの実行状態を監視し、監査、統計、カスタムロジックなどの拡張機能を実現するための統一されたフック/ライフサイクルシステムを提供します。
+ErisPulse は、システム各コンポーネントの実行状態を監視し、監査、統計、カスタムロジックなどの拡張機能を実現するための統一されたフック/ライフサイクルシステムを提供しています。
 
-システムは以下の3つのトリガー方式をサポートします：
-- `await lifecycle.emit("event", data)` — 精簡版、任意のデータを渡す（`to="Owner"` の場合、指定された宛先に投递）
+システムは以下の3種類のトリガ方法をサポートしています：
+- `await lifecycle.emit("event", data)` — 精簡版、任意のデータを渡す（`to="Owner"` の場合、特定の宛先に投送）
 - `lifecycle.emit_sync("event", data)` — 同期版（非非同期コンテキスト用）
-- `await lifecycle.submit_event("event", ...)` — 従来版と互換性があり、標準イベント形式を自動的に構築
+- `await lifecycle.submit_event("event", ...)` — 旧版との互換性、標準イベント形式を自動構築
 
 ## イベント処理メカニズム
 
@@ -8549,7 +8807,7 @@ from ErisPulse import sdk
 async def on_module_load(data):
     print(f"モジュールのロード: {data}")
 
-# プログラム的な登録
+# プログラム的登録
 sdk.lifecycle.register("module.load", on_module_load, priority=10)
 
 # 登録解除
@@ -8557,7 +8815,7 @@ sdk.lifecycle.unregister("module.load", on_module_load)
 
 # 所有者ごとの一括登録解除（モジュール/アダプタのアンロード時にフレームワークが自動的に呼び出す）
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
-print(f"クリーンアップしたライフサイクルフック数: {removed}")
+print(f"クリーンアップされたライフサイクルフック数: {removed}")
 ```
 
 ### 優先度
@@ -8574,11 +8832,11 @@ async def second_handler(data):
     pass
 ```
 
-### ポイント構造イベント
+### 点構造イベント
 
-具体的なイベントをトリガーすると、その親イベントもトリガーされます：
-- `module.load` をトリガーすると、`module` もトリガーされます
-- `adapter.event.receive` をトリガーすると、`adapter.event` と `adapter` もトリガーされます
+特定のイベントをトリガすると、その親イベントもトリガされます：
+- `module.load` をトリガすると、`module` もトリガされます。
+- `adapter.event.receive` をトリガすると、`adapter.event` と `adapter` もトリガされます。
 
 ### ワイルドカード
 
@@ -8590,106 +8848,105 @@ async def on_anything(data):
     print(f"イベント受信: {data}")
 ```
 
-### 指定送信（emit to=）
+### 定向配信（emit to=）
 
 > [!NOTE]
 > この機能は ErisPulse **2.8.0+** が必要です。
 
-`emit()` で `to` パラメータを指定すると、指定された所有者（owner）として登録されたハンドラにのみイベントが配信されます（モジュールは `on_load` 内で登録されたフックは自動的に自身の所有者に属します）。他のモジュールやワイルドカード `*` ハンドラは感知しません。
+`emit()` で `to` パラメータを指定すると、定向配信モードになります：イベントは、その所有者（owner）として登録されたハンドラにのみ配信されます（モジュールは `on_load` 内で登録されたフックは自動的に自身の所有者として登録されます）。他のモジュールやワイルドカード `*` ハンドラはイベントを感知しません。
 
 ```python
-# 送信側：イベントは Chat モジュールが登録したフックにのみ配信される
+# 投递側：イベントは Chat モジュールが登録したハンドラにのみ投递
 await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
 
-# 受信側（Chat モジュール内）：同名のフックを登録し、owner は登録時に自動的に記録
+# 訂正側（Chat モジュール内）：同名のハンドラを登録し、owner は登録時に自動的に記録されます
 @sdk.lifecycle.on("message_received")
 async def on_message_received(data): ...
 
-@sdk.lifecycle.on("message")   # ポイント構造の親プレフィックスも同様に効果あり（owner でフィルタリング）
+@sdk.lifecycle.on("message")   # 点構造の親プレフィックスも同様に効きます（owner でフィルタリング）
 async def on_any(data): ...
 ```
 
-- 目標の owner に登録されたフックがない場合 → イベントは**静かに破棄**されます（`has_handlers()` で事前に検出可能）
-- `data` が dict の場合、自動的に `_trace_id` を付与（既存値を上書きしない）
-- `emit_sync` / `submit_event` も同様に `to=` パラメータをサポート
-- モジュール間通信の3層モデル（RPC / 指定送信 / ブロードキャスト）は
-  [モジュール間通信](module-communication.md) を参照してください
+- 目標の owner に登録されたハンドラがない場合 → イベントは**静かに破棄**されます（`has_handlers()` で事前に検出可能です）。
+- `data` が dict の場合、自動的に `_trace_id` を付与します（既存値を上書きしません）。
+- `emit_sync` / `submit_event` も `to=` パラメータをサポートしています。
+- モジュール間通信の3層モデル（RPC / 定向 / ブロードキャスト）については、[モジュール間通信](module-communication.md)を参照してください。
 
 ### 一回限りの登録（once）
 
-2.7.0 から、`lifecycle.once()` で登録されたハンドラは**1回実行後に自動的に登録解除**されます。これは「初期準備完了」のような一回限りのフックに適しています。
+2.7.0 から、`lifecycle.once()` で登録されたハンドラは**一度トリガされた後、自動的に登録解除**されます。これは「最初の準備完了」のような一回限りのフックに適しています。
 
 ```python
 @sdk.lifecycle.once("core.init.complete")
 async def on_first_ready(data):
-    print("初期準備完了、以降はトリガーされません")
+    print("最初の準備完了、以降はトリガされません")
 ```
 
-- `on()` と同じ優先度パラメータの意味（`priority` 数値が大きいほど先に実行）
-- 自動的に登録解除され、手動での `unregister` は不要
-- 同期/非同期のハンドラ両方に対応
+- `on()` と同じ優先度パラメータの意味（`priority` 数値が大きいほど先に実行されます）。
+- 自動的に登録解除され、手動での `unregister` は不要です。
+- 同期/非同期のハンドラが両方サポートされています。
 
-### 監視者照会（has_handlers）
+### 監視者検索（has_handlers）
 
-ホットパスの短絡処理では、`has_handlers()` を使って監視者がいるかどうかを事前に判断し、不要なイベントのループやタスクスケジューリングを避けることができます。
+ホットパスの短絡処理では、`has_handlers()` を使って監視者が存在するか事前に判断し、不要なイベントのループやタスクのスケジューリングを避けることができます。
 
 ```python
 if sdk.lifecycle.has_handlers("message.sending"):
     await sdk.lifecycle.emit("message.sending", send_ctx)
 ```
 
-- **正確なイベント名、ワイルドカード `*`、親イベント**の3種類のマッチングをカバー
-- 監視者がいない場合、`False` を返し、`emit` を安全にスキップ可能
+- **正確なイベント名、ワイルドカード `*`、親イベント**の3つのマッチングをカバーしています。
+- 監視者がいない場合、`False` を返し、`emit` を安全にスキップできます。
 
 ## フックブレークポイント一覧
 
-プラットフォームからフレームワークにメッセージが到達し、処理が完了するまでの典型的なライフサイクルイベントの時系列：
+プラットフォームからフレームワークにメッセージが届き、処理が完了する典型的なライフサイクルイベントの順序：
 
 ```mermaid
 sequenceDiagram
     participant P as プラットフォーム
     participant A as アダプタ
     participant F as フレームワークコア
-    participant M as モジュールプロセッサ
+    participant M as モジュールハンドラ
 
-    P->>A: ネイティブイベント到達
-    A->>F: adapter.event.receive（最も初期）
-    F->>F: event.pre_process（プロセッサ実行前）
-    F->>M: プロセッサに分散（コマンド/メッセージ/通知など）
+    P->>A: ネイティブイベント到着
+    A->>F: adapter.event.receive（初期段階）
+    F->>F: event.pre_process（ハンドラ実行前）
+    F->>M: ハンドラに配分（コマンド/メッセージ/通知など）
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending（送信前）
-    F->>A: SendDSL 送信
+    F->>A: SendDSL で送信
     A->>P: プラットフォームに送信
     A->>F: message.sent（送信完了）
-    F->>F: adapter.event.dispatched（分散完了）
+    F->>F: adapter.event.dispatched（配分完了）
 ```
 
-フレームワークには以下のフックブレークポイントが内蔵されており、`@sdk.lifecycle.on()` を使って任意のブレークポイントを監視し、カスタムロジックを実装できます。
+フレームワークは以下のフックブレークポイントを内蔵しており、ユーザーは `@sdk.lifecycle.on()` で任意のブレークポイントを監視してカスタムロジックを実装できます。
 
 ### コア初期化
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガタイミング | データ |
 |---------|---------|------|
 | `core.init.start` | SDK 初期化開始 | `{}` |
-| `core.init.stage` | 初期化各段階開始（バックグラウンドで発生） | `{"stage": str}`、値は `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
+| `core.init.stage` | 初期化各段階開始（バックグラウンドで発行） | `{"stage": str}`、値は `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
 | `core.init.complete` | SDK 初期化完了 | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(失敗時のみ)}` |
 | `core.uninit.complete` | SDK 反初期化完了 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(失敗時のみ)}` |
 
-**例：起動プロセス表示**
+**例：起動進捗表示**
 
 ```python
 @sdk.lifecycle.on("core.init.stage")
 def show_stage(data):
-    print(f"[起動] 段階に進入: {data['stage']}")
+    print(f"[起動] 階段に進入: {data['stage']}")
 ```
 
 ### 設定変更
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガタイミング | データ |
 |---------|---------|------|
 | `config.set` | 設定項目が変更された | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | 外部で config.toml を編集した後にツリー全体の変更を検出 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.updated` | 外部で config.toml を編集した後に木全体の変更を検出 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
 **例：設定監査**
 
@@ -8701,33 +8958,34 @@ def audit_config(data):
 
 ### モジュールライフサイクル
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガタイミング | データ |
 |---------|---------|------|
 | `module.register` | モジュールクラスがマネージャーに登録された | `{"module_name": str, "success": bool}` |
-| `module.load` | モジュールのロード完了（インスタンス化成功） | `{"module_name": str, "success": bool}` |
-| `module.init` | モジュールの初期化完了（遅延ロード含む） | `{"module_name": str, "success": bool}` |
+| `module.load` | モジュールのロードが完了した（インスタンス化成功） | `{"module_name": str, "success": bool}` |
+| `module.init` | モジュールの初期化が完了した（遅延ロード含む） | `{"module_name": str, "success": bool}` |
 | `module.unload` | モジュールのアンロード | `{"module_name": str, "success": bool}` |
-| `module.reload` | モジュールのホットリロード完了（依存モジュールも再ロード） | `{"module_name": str, "success": bool}` |
+| `module.reload` | モジュールのホットリロードが完了した（依存モジュールの再ロード含む） | `{"module_name": str, "success": bool}` |
 
 ### アダプタライフサイクル
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガタイミング | データ |
 |---------|---------|------|
-| `adapter.load` | アダプタの登録完了 | `{"platform": str, "success": bool}` |
+| `adapter.load` | アダプタの登録が完了した | `{"platform": str, "success": bool}` |
 | `adapter.start` | アダプタの起動 | `{"platforms": [str]}` |
-| `adapter.status.change` | アダプタのステータス変化 | `{"platform": str, "status": str, "retry_count": int, "error": str(失敗時のみ)}` |
+| `adapter.status.change` | アダプタのステータスが変化した | `{"platform": str, "status": str, "retry_count": int, "error": str(失敗時のみ)}` |
 | `adapter.stop` | アダプタの停止 | `{"platforms": [str]}` |
-| `adapter.stopped` | アダプタの停止完了 | `{"platforms": [str]}` |
+| `adapter.stopped` | アダプタの停止が完了した | `{"platforms": [str]}` |
 | `adapter.bot.online` | Bot のオンライン | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
 | `adapter.bot.offline` | Bot のオフライン | `{"platform": str, "bot_id": str, "status": str}` |
 
 ### イベント受信と処理
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガタイミング | データ |
 |---------|---------|------|
-| `adapter.event.receive` | 外部プラットフォームのイベントを受信（最も初期） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
-| `adapter.event.dispatched` | イベントの分散完了 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
-| `event.pre_process` | イベントプロセッサの実行前に | `{"event_type": str, "platform": str, "detail_type": str}` |
+| `adapter.event.receive` | 外部プラットフォームイベントを受信した（初期段階） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.blocked` | ミドルウェアがイベントを拒否した（`False` を返した場合、イベントは処理されず破棄される） | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
+| `adapter.event.dispatched` | イベントの配分が完了した | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
+| `event.pre_process` | イベントハンドラが実行される前に | `{"event_type": str, "platform": str, "detail_type": str}` |
 
 **例：イベント統計**
 
@@ -8747,10 +9005,10 @@ def log_unhandled(data):
 
 ### メッセージ送信
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガタイミング | データ |
 |---------|---------|------|
 | `message.sending` | メッセージが送信される直前 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
-| `message.sent` | メッセージ送信完了 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | メッセージの送信が完了した | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
 **例：メッセージ送信監査**
 
@@ -8762,10 +9020,10 @@ def log_sending(data):
 
 ### コマンドシステム
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガタイミング | データ |
 |---------|---------|------|
-| `command.matched` | コマンドがマッチし、実行直前 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
-| `command.executed` | コマンド実行完了 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(失敗時のみ)}` |
+| `command.matched` | コマンドがマッチし、実行される直前 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
+| `command.executed` | コマンドの実行が完了した | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(失敗時のみ)}` |
 
 **例：コマンド統計**
 
@@ -8777,10 +9035,10 @@ def count_commands(data):
 
 ### HTTP ルーティング
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガタイミング | データ |
 |---------|---------|------|
-| `server.request` | HTTP リクエスト受信 | `{"method": str, "path": str, "client_ip": str}` |
-| `server.response` | HTTP レスポンス送信 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
+| `server.request` | HTTP リクエストを受け取った | `{"method": str, "path": str, "client_ip": str}` |
+| `server.response` | HTTP レスポンスを送信した | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
 **例：リクエストログ**
 
@@ -8792,12 +9050,12 @@ def log_http(data):
 
 ### WebSocket
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガタイミング | データ |
 |---------|---------|------|
-| `server.start` | ルーティングサーバー起動 | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str(失敗時のみ)}` |
-| `server.stop` | ルーティングサーバー停止 | `{}` |
-| `server.websocket.connect` | WebSocket 接続確立 | `{"path": str, "module_name": str, "client_ip": str}` |
-| `server.websocket.disconnect` | WebSocket 接続切断 | `{"path": str, "module_name": str, "reason": str, "error": str(異常時のみ)}` |
+| `server.start` | ルーティングサーバーの起動 | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str(失敗時のみ)}` |
+| `server.stop` | ルーティングサーバーの停止 | `{}` |
+| `server.websocket.connect` | WebSocket 接続が確立した | `{"path": str, "module_name": str, "client_ip": str}` |
+| `server.websocket.disconnect` | WebSocket 接続が切断した | `{"path": str, "module_name": str, "reason": str, "error": str(異常時のみ)}` |
 
 **例：WebSocket 接続監視**
 
@@ -8813,41 +9071,41 @@ def on_ws_disconnect(data):
 
 ### ストレージ接続状態
 
-ストレージバックエンド接続プールの確立、障害、および回復（すべてバックグラウンドで発生し、ストレージ操作をブロックしない）：
+ストレージバックエンドの接続プールの確立、障害、および回復（すべてバックグラウンドで発行され、ストレージ操作をブロックしません）：
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガタイミング | データ |
 |---------|---------|------|
-| `storage.ready` | ストレージバックエンド接続プールが準備完了（各イベントループで最初に成功したプール確立時） | `{"backend": str}` |
-| `storage.unreachable` | 接続リトライが尽きてクールダウン期間に入る（この間は操作が即座に失敗する） | `{"backend": str, "error": str, "cooldown": float}` |
-| `storage.recovered` | クールダウン終了後に再接続成功し、ストレージが再利用可能になる | `{"backend": str}` |
+| `storage.ready` | ストレージバックエンドの接続プールが準備完了（各イベントループで最初にプールが成功した場合） | `{"backend": str}` |
+| `storage.unreachable` | 接続リトライが尽きてクールダウン期間に入る（この間、操作は即時失敗する） | `{"backend": str, "error": str, "cooldown": float}` |
+| `storage.recovered` | クールダウンが終了し、再接続に成功し、ストレージが再利用可能になった | `{"backend": str}` |
 
 **例：ストレージ障害アラート**
 
 ```python
 @sdk.lifecycle.on("storage.unreachable")
 def alert_storage_down(data):
-    print(f"[アラート] ストレージバックエンド {data['backend']} は到達不可: {data['error']}、{data['cooldown']}s後に自動再接続")
+    print(f"[アラート] ストレージバックエンド {data['backend']} が利用不可: {data['error']}、{data['cooldown']}s 後に自動再接続")
 
 @sdk.lifecycle.on("storage.recovered")
 def notify_storage_back(data):
-    print(f"[回復] ストレージバックエンド {data['backend']} は再利用可能になりました")
+    print(f"[回復] ストレージバックエンド {data['backend']} が再利用可能になりました")
 ```
 
-### HTTPクライアント
+### HTTP クライアント
 
-`sdk.client` のリクエストと接続イベント（すべてバックグラウンドで発生）：
+`sdk.client` のリクエストと接続イベント（すべてバックグラウンドで発行）：
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガタイミング | データ |
 |---------|---------|------|
-| `client.request.success` | HTTPリクエスト成功 | `{"method": str, "url": str, "status": int, "elapsed": float}` |
-| `client.request.failed` | HTTPリクエストのリトライが尽きて最終的に失敗 | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
-| `client.ws.connect` | WebSocket接続確立 | `{"url": str}` |
+| `client.request.success` | HTTP リクエストが成功した | `{"method": str, "url": str, "status": int, "elapsed": float}` |
+| `client.request.failed` | HTTP リクエストがリトライを尽して最終的に失敗した | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
+| `client.ws.connect` | WebSocket 接続が確立した | `{"url": str}` |
 
 ### 国際化
 
-| フック名 | 発生タイミング | データ |
+| フック名 | トリガタイミング | データ |
 |---------|---------|------|
-| `i18n.language.changed` | フレームワークの言語切り替え（`i18n.set_language`） | `{"language": str, "previous": str}` |
+| `i18n.language.changed` | フレームワークの言語が切り替わった（`i18n.set_language`） | `{"language": str, "previous": str}` |
 
 ## 標準イベント定義
 
@@ -8881,28 +9139,28 @@ STANDARD_EVENTS = {
 
 | メソッド | 説明 |
 |------|------|
-| `@lifecycle.on(event, *, priority=0)` | デコレータによるハンドラの登録 |
-| `lifecycle.register(event, handler, *, priority=0)` | プログラム的な登録 |
-| `lifecycle.unregister(event, handler=None)` | 登録の解除（handler=None の場合は該当イベントのすべてのハンドラを解除） |
+| `@lifecycle.on(event, *, priority=0)` | デコレータでハンドラを登録します |
+| `lifecycle.register(event, handler, *, priority=0)` | プログラム的に登録します |
+| `lifecycle.unregister(event, handler=None)` | ハンドラの登録を解除します（handler=None の場合、該当イベントのすべてのハンドラを解除します） |
 
-### トリガー
+### トリガ
 
 | メソッド | 説明 |
 |------|------|
-| `await lifecycle.emit(event, data=None, *, to=None)` | 非同期でトリガーを発生させ、ハンドラは**並列実行**（互いにブロッキングせず、返却時にすべての処理が完了）。非 None 値が返された場合は、優先度順に data をチェーンで置換して返す。`to` に owner を指定した場合は、対象に投递。 |
-| `lifecycle.fire(event, data=None, *, to=None)` | **バックグラウンド発行（投げっぱなし）**：ハンドラはバックグラウンドタスクで並列実行され、待機せず、返り値なし。リスナーがいない場合はオーバーヘッドなし。高頻度のホットパスや観測イベントに適している。シャットダウンシーケンスや順序依存の消費（例：`config.set`）は `emit` を使用すること。 |
-| `lifecycle.emit_sync(event, data=None, *, to=None)` | 同期的にトリガーを発生させ、非同期ハンドラは create_task でスケジューリングされる。 |
-| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 旧版との互換性を持ち、標準的なイベントフォーマットを自動的に構築する。`background=True` の場合、`fire` でバックグラウンド発行される。 |
+| `await lifecycle.emit(event, data=None, *, to=None)` | 非同期でトリガします。ハンドラは**並列実行**されます（互いにブロックせず、返却時にすべて完了）。返り値が None でない場合は、優先度順に data が置き換えられます。`to` で owner を指定すると、宛先に投げられます。 |
+| `lifecycle.fire(event, data=None, *, to=None)` | **バックグラウンドで発行（投げた後は即座に終了）**：ハンドラはバックグラウンドタスクで並列実行され、待機せず、返り値もありません。ハンドラがいない場合、オーバーヘッドはゼロです。高頻度のホットパスや純粋な観測イベントに適しています。シャットダウンシーケンスや順序に敏感な消費（例：`config.set`）は `emit` を使用してください。 |
+| `lifecycle.emit_sync(event, data=None, *, to=None)` | 同期でトリガします。非同期ハンドラは create_task でスケジュールされます。 |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 旧版との互換性のために、標準イベント形式を自動的に構築します。`background=True` の場合、`fire` でバックグラウンドで発行されます。 |
 
 ### ユーティリティ
 
 | メソッド | 説明 |
 |------|------|
-| `lifecycle.start_timer(timer_id)` | タイマーを開始する |
-| `lifecycle.get_duration(timer_id)` | 経過時間を取得（秒） |
-| `lifecycle.stop_timer(timer_id)` | タイマーを停止し、経過時間を返す |
-| `lifecycle.list_hooks()` | すべての登録済みフックとハンドラ数をリストアップする |
-| `lifecycle.clear()` | すべてのハンドラとタイマーをクリアする |
+| `lifecycle.start_timer(timer_id)` | タイマーを開始します。 |
+| `lifecycle.get_duration(timer_id)` | 経過時間を取得します（秒）。 |
+| `lifecycle.stop_timer(timer_id)` | タイマーを停止し、経過時間を返します。 |
+| `lifecycle.list_hooks()` | すべての登録されたフックとハンドラ数をリストアップします。 |
+| `lifecycle.clear()` | すべてのハンドラとタイマーをクリアします。 |
 
 ## モジュールでの使用例
 
@@ -8912,7 +9170,7 @@ from ErisPulse import sdk
 
 class Main(BaseModule):
     async def on_load(self, event):
-        # 単純なメッセージ統計の実装
+        # 簡単なメッセージ統計を実装
         self.msg_count = 0
         
         @sdk.lifecycle.on("adapter.event.receive")
@@ -8925,30 +9183,30 @@ class Main(BaseModule):
         async def log_cmd(data):
             sdk.logger.info(f"コマンド実行: /{data['command']} by {data['user_id']}")
         
-        # 設定変更監査
+        # 設定変更の監査
         @sdk.lifecycle.on("config.set")
         def audit(data):
             sdk.logger.info(f"設定変更: {data['key']} = {data['new_value']}")
 ```
 
-## バックグラウンドタスクの所有者と自動解除
+## バックグラウンドタスクの所有者と自動キャンセル
 
 > [!NOTE]
 > この機能は ErisPulse **2.8.0+** が必要です。
 
-モジュールが作成した asyncio バックグラウンドタスクが `on_unload` でキャンセルされない場合、`self` の参照が保持され、モジュールのインスタンスが回収されず（ホットリロード後に古いインスタンスが残る）ます。フレームワークは以下のバックアップメカニズムを提供します：
+モジュールが作成した asyncio バックグラウンドタスクが `on_unload` でキャンセルされない場合、`self` の参照が保持され、モジュールインスタンスが回収されず（ホットリロード後に古いインスタンスが残る）。フレームワークは以下のバックアップメカニズムを提供しています：
 
-- **`self.spawn(coro)`**（モジュール内で推奨）：タスクは自動的にモジュール名に所有者として登録され、モジュールのアンロード時にフレームワークが `on_unload` **後に**未終了のタスクをバックアップでキャンセルし、警告を記録します
-- **`spawn_background(coro)`**（`ErisPulse.runtime`）：現在の `owner_scope` コンテキストを自動的にキャプチャします；`cancel_owner_tasks(owner)` で所有者ごとにキャンセル、`cancel_all_background_tasks()` は `sdk.uninit()` のバックアップとして使用
-- **アダプタ**：プラットフォーム名に属するバックグラウンドタスクも同様にアンロード時にバックアップでキャンセルされます
+- **`self.spawn(coro)`**（モジュール内推奨）：タスクはモジュール名に自動的に所有者として登録され、モジュールのアンロード時にフレームワークが `on_unload` **後に**未終了のタスクをバックアップでキャンセルし、警告を記録します。
+- **`spawn_background(coro)`**（`ErisPulse.runtime`）：自動的に現在の `owner_scope` コンテキストをキャプチャします。`cancel_owner_tasks(owner)` で所有者ごとにキャンセルし、`cancel_all_background_tasks()` は `sdk.uninit()` のバックアップで使用します。
+- **アダプタ**：プラットフォーム名の下のバックグラウンドタスクも同様にバックアップでキャンセルされます。
 
 ```python
 async def on_load(self, event):
-    # 推奨：バックグラウンドタスクは self.spawn() を使用し、アンロード時にフレームワークがバックアップでキャンセル
+    # 推奨：バックグラウンドタスクは self.spawn() を使用し、アンロード時にフレームワークがバックアップでキャンセルします
     self.spawn(self._poll())
 
 async def on_unload(self, event):
-    # 精密な制御が必要な場合は、手動でキャンセルし、終了処理を待つ
+    # 精密制御の場合は、明示的にキャンセルして終了を待つ必要があります
     if self._poll_task:
         self._poll_task.cancel()
         await asyncio.gather(self._poll_task, return_exceptions=True)
@@ -8960,17 +9218,17 @@ async def _poll(self):
 ```
 
 > [!IMPORTANT]
-> フレームワークのバックアップは**強制キャンセル**（`cancel_owner_tasks`）であり、`on_unload` の返り値の後に実行されます。そのため、優雅な終了処理が必要なタスク（バッファのフラッシュ、状態の永続化、接続の切断）は**必ず**`on_unload` で `cancel()` + `await` で完了させる必要があります — バックアップが終了処理を保証するとは限りません。フレームワークは「`self` を保持するタスクが残らない」ことを保証しますが、「優雅」を保証するわけではありません。`await` の結果が必要なタスクは、直接 `await` してください。バックグラウンドタスクに投げないでください。
+> フレームワークのバックアップは**強制キャンセル**（`cancel_owner_tasks`）です。これは `on_unload` の返り値の後に実行されます。そのため、優雅な終了が必要なタスク（バッファのフラッシュ、状態の永続化、接続の閉じる）は、`on_unload` で明示的に `cancel()` + `await` する必要があります——バックアップが終了ロジックを保持することを期待しないでください。フレームワークは「`self` を保持するタスクが残らない」ことを保証しますが、「優雅」を保証するわけではありません。`await` の結果が必要なタスクは直接 `await` し、バックグラウンドタスクに投げないでください。
 
 ## 注意事項
 
-1. **ハンドラは同期または非同期**：システムは自動的に認識し、正しく呼び出します
-2. **データの渡し方**：`emit()` モードでは、ハンドラが非 None を返すと、後続のハンドラに渡される data が変更されます
-3. **イベント名の命名規則**：点構造のイベント名を使用することを推奨し、親イベントの監視に便利です
-4. **エラーの隔離**：個々のハンドラの例外は他のハンドラの実行に影響しません
-5. **同期トリガーの制限**：`emit_sync()` 中の非同期ハンドラは fire-and-forget 方式でスケジューリングされ、返り値は戻りません
-6. **ライフサイクルのクリーンアップ**：`sdk.uninit()` を呼び出すと、すべての登録済みハンドラとタイマーがクリアされます
-7. **ロード優先性**：フレームワークの初期化段階でイベントを監視したい場合は、高優先度を設定し、遅延ロードを無効にすることを推奨します
+1. **ハンドラは同期または非同期**：システムは自動的に正しく呼び出します。
+2. **データの渡し方**：`emit()` モードでは、ハンドラが None 以外の値を返すと、後続のハンドラに渡される data が変更されます。
+3. **イベント名の命名規則**：点構造の命名を推奨し、親イベントの監視がしやすくなります。
+4. **エラーの隔離**：個々のハンドラの例外は他のハンドラの実行に影響しません。
+5. **同期トリガの制限**：`emit_sync()` では、非同期ハンドラは fire-and-forget でスケジュールされ、返り値は戻されません。
+6. **ライフサイクルのクリーンアップ**：`sdk.uninit()` を呼び出すと、すべての登録されたハンドラとタイマーがクリーンアップされます。
+7. **ロード優先性**：フレームワークの初期化段階でイベントを監視したい場合は、高優先度を設定し、遅延ロードを無効にすることを推奨します。
 
 
 
