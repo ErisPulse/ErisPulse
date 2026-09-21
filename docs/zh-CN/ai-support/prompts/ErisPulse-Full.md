@@ -1566,6 +1566,36 @@ async def handler_c(event):
 >
 > **慢日志**：单个处理器耗时超过 **1 秒**时，框架会在日志打 WARNING（`handler_slow`）。`wait_reply` 的等待时间会从耗时里剔除，不会因为「等人回复」误报慢。
 
+## 中间件：分发前改写与否决
+
+中间件在事件分发**之前**顺序执行，防火墙、限流、事件脱敏等场景的正统实现点：
+
+```python
+from ErisPulse.Core import adapter
+
+@adapter.middleware
+async def firewall(data):
+    if _is_banned(data.get("user_id")):
+        return False          # 否决：事件被丢弃，不进入任何处理器，无出站副作用
+    data["checked"] = True    # 返回 dict：改写载荷（与历史行为一致）
+    # 返回 None：放行，载荷不变（历史行为）
+    return data
+```
+
+| 返回值 | 行为 |
+|--------|------|
+| `False` | **否决**：事件立即丢弃，不进入任何处理器 |
+| `dict` | 改写事件载荷后继续分发 |
+| `None` | 放行，载荷不变 |
+
+否决时框架输出 TRACE 日志并触发 `adapter.event.blocked` 生命周期钩子（携带中间件名与完整事件），供审计「事件为什么没响应」。
+
+## 命令分发决策链：为什么命令没触发
+
+一条命令消息依次经过：**命令文本判定 → 命令名/别名命中（未命中附拼写建议）→ 命中即认领 → 作用域 → 用户 ACL → 主人 → 权限 → 冷却/限流 → 参数解析 → 执行**。任何一步不满足即终止；治理命中（冷却/限流）默认静默丢弃，权限类拒绝会回复用户。
+
+测试中 `ErisPulse-Testing` 的 `dispatch()` 直接返回这条决策链（`DispatchTrace`，`trace.explain()` 输出逐行因果），生产环境可用 `ErisPulse.Core.Event.start_dispatch_trace()` 采集同样的记录。
+
 ## 作用域过滤：为什么我的模块没收到消息
 
 事件到达后有两道**静默**过滤（都不回复、不报错）：

@@ -25,22 +25,6 @@ ErisPulse 命令处理模块
 
 ---
 
-## 函数列表
-
-
-### `parse_rate_limit(spec: str)`
-
-解析限流声明（如 ``"5/minute"``、``"10/s"``）为 (次数, 窗口秒)
-
-滑动窗口语义：窗口内至多放行 ``次数`` 次，超出静默丢弃。单位支持
-second / minute / hour / day（含单字母缩写，大小写不敏感）。
-
-- **spec** (`限流声明字符串`): **返回值** (`(limit,`): window_seconds)
-**异常**: `ValueError` - 语法非法或次数非正时
-
----
-
-
 ## 类列表
 
 
@@ -113,6 +97,45 @@ permission 时调用：逐级去掉末尾 token 查找已注册祖先，返回�
 ---
 
 
+##### `parse_rate_limit(spec: str)`
+
+解析限流声明（如 ``"5/minute"``、``"10/s"``）为 (次数, 窗口秒)
+
+滑动窗口语义：窗口内至多放行 ``次数`` 次，超出静默丢弃。单位支持
+second / minute / hour / day（含单字母缩写与可选数值前缀，大小写不敏感）。
+
+- **spec** (`限流声明字符串`): **返回值** (`(limit,`): window_seconds)
+**异常**: `ValueError` - 语法非法或数值非正时
+
+---
+
+
+##### `parse_usage(spec: str)`
+
+解析配额声明（如 ``"3/day"``）为 (次数, 周期单位)
+
+自然周期语义：周期边界对齐本地时区的自然分钟 / 小时 / 日（如 day 为
+当日 00:00 起，次日自动重置），与 :meth:`parse_rate_limit` 的滑动窗口
+相区分（rate_limit 防瞬时刷屏，usage_limit 管业务配额）。
+
+- **spec** (`配额声明字符串`): **返回值** (`(limit,`): unit)；语法非法时返回错误描述字符串（调用方包装 ValueError）
+
+---
+
+
+##### `usage_period_key(unit: str)`
+
+计算当前自然周期的标识键（本地时区）
+
+> **内部方法**
+供分发期配额判定使用；周期切换键随之变化即自动重置
+
+- **unit** (`周期单位（minute`): / hour / day）
+**返回值** (`周期键（如`): ``"2026-09-21"``）
+
+---
+
+
 ##### `_scope()`
 
 > **内部方法**
@@ -125,7 +148,7 @@ permission 时调用：逐级去掉末尾 token 查找已注册祖先，返回�
 ---
 
 
-##### `__call__(name: str | list[str] | None = None, aliases: list[str] | None = None, group: str | None = None, priority: int = 0, permission: Callable | None = None, help: str | None = None, usage: str | None = None, hidden: bool = False, master: bool = False, args: str | None = None, options: dict | None = None, cooldown: str | None = None, cooldown_key: str = 'user', cooldown_reply: str | None = None, rate_limit: str | None = None, rate_limit_key: str = 'user', rate_limit_reply: str | None = None, deprecated: str | None = None, deprecated_reject: bool = False)`
+##### `__call__(name: str | list[str] | None = None, aliases: list[str] | None = None, group: str | None = None, priority: int = 0, permission: Callable | None = None, help: str | None = None, usage: str | None = None, hidden: bool = False, master: bool = False, args: str | None = None, options: dict | None = None, cooldown: str | None = None, cooldown_key: str = 'user', cooldown_reply: str | None = None, rate_limit: str | None = None, rate_limit_key: str = 'user', rate_limit_reply: str | None = None, usage_limit: str | None = None, usage_limit_key: str = 'user', usage_limit_reply: str | None = None, deprecated: str | None = None, deprecated_reject: bool = False)`
 
 命令装饰器
 
@@ -158,7 +181,12 @@ permission 时调用：逐级去掉末尾 token 查找已注册祖先，返回�
     ``"10/s"`` / ``"100/day"``——窗口内至多执行次数，超出默认静默丢弃（命令仍被
     认领）；与 ``cooldown=`` 共享会话键体系，可同时声明（冷却先判、限流后判）
 - **rate_limit_key** (`限流键粒度：``"user"``（默认）/`): ``"session"`` / ``"global"``
-- **rate_limit_reply** (`限流命中时的回复文案（可选，缺省静默丢弃）`): - **deprecated**: 命令废弃声明（EPRFC-2026-001 方向七）：非空文案即标记废弃——
+- **rate_limit_reply** (`限流命中时的回复文案（可选，缺省静默丢弃）`): - **usage_limit**: 自然周期配额声明（如 ``"3/day"`` / ``"5/hour"`` / ``"10/minute"``）——
+    每键在自然周期（分钟 / 小时 / 日，本地时区）内至多执行 ``次数``，周期切换自动
+    重置；计数经 storage KV 持久化，重启不丢（与 ``rate_limit=`` 滑动窗口的
+    区别：rate_limit 防瞬时刷屏，usage 管业务配额如"每日签到 3 次"）
+- **usage_limit_key** (`配额键粒度：``"user"``（默认）/`): ``"session"`` / ``"global"``
+- **usage_limit_reply** (`配额用尽时的回复文案（可选，缺省静默丢弃）`): - **deprecated**: 命令废弃声明（EPRFC-2026-001 方向七）：非空文案即标记废弃——
     调用时自动回复该文案（help 列表显示废弃标记），默认仍继续执行
 - **deprecated_reject** (`废弃命令拒绝执行（默认`): False 继续执行；True 时回复
     废弃文案后不再执行处理器）
