@@ -511,3 +511,24 @@ def format_usage(args_spec: list[PositionalArg] | None, options_spec: dict[str, 
         else:
             parts.append(f"[{opt.forms[-1]} {opt.type.upper()}]")
     return " ".join(parts)
+
+
+def parse_duration(text: str) -> float:
+    """
+    将时长声明（如 ``"90s"``、``"1h30m"``、``"1d"``）转换为秒数
+
+    语法与 ``args=`` 声明的 ``duration`` 类型一致：1~n 段"数值+单位"
+    （单位 s / m / h / d，大小写不敏感）。供命令治理声明（``cooldown=``）
+    等场景在注册期复用同一解析口径。
+
+    :param text: 时长声明字符串
+    :return: 折算后的秒数（float）
+    :raises ValueError: 格式不合法、包含未知单位或折算值非正
+    """
+    try:
+        seconds = _duration_value(text)
+    except CommandArgsError as e:
+        raise ValueError(str(e)) from e
+    if seconds <= 0:
+        raise ValueError(f"duration must be positive, got {text!r}")
+    return seconds

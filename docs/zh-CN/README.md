@@ -33,6 +33,7 @@ ErisPulse 是一个可扩展的多平台消息处理框架，支持通过适配�
 | **模块开发**（推荐） | [模块开发入门](developer-guide/modules/getting-started.md) | [核心概念](developer-guide/modules/core-concepts.md) · [Event 包装类](developer-guide/modules/event-wrapper.md) · [最佳实践](developer-guide/modules/best-practices.md) |
 | **适配器开发** | [适配器开发入门](developer-guide/adapters/getting-started.md) | [核心概念](developer-guide/adapters/core-concepts.md) · [SendDSL 详解](developer-guide/adapters/send-dsl.md) · [事件转换器](developer-guide/adapters/converter.md) · [最佳实践](developer-guide/adapters/best-practices.md) |
 | **技术标准** | [标准规范总览](standards/README.md) | 适配器开发必须遵循的 [会话类型](standards/session-types.md) · [事件转换](standards/event-conversion.md) · [发送方法](standards/send-method-spec.md) · [API 响应](standards/api-response.md) · [请求操作](standards/request-action-spec.md) 规范 |
+| **测试与排查** | [模块测试（ErisPulse-Testing）](developer-guide/testing.md) | 分发决策链排查"命令为什么没触发" |
 | **发布** | [发布与模块商店](developer-guide/publishing.md) | 将作品发布到 PyPI 和模块商店 |
 
 ### 三、我要深入理解原理

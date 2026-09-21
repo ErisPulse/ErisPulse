@@ -23,6 +23,10 @@
 4. [事件转换器](adapters/converter.md) - 实现事件转换器
 5. [适配器最佳实践](adapters/best-practices.md) - 开发高质量适配器的建议
 
+### 测试与排查
+
+1. [模块测试（ErisPulse-Testing）](testing.md) - TestBot、事件工厂与断言面
+
 ### 发布指南
 
 - [发布与模块商店指南](publishing.md) - 将你的作品发布到 PyPI 和 ErisPulse 模块商店

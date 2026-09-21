@@ -21,6 +21,7 @@ ErisPulse 命令处理模块
 
 import asyncio
 import inspect
+import time
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any
 
@@ -52,10 +53,16 @@ from .command_args import (
     bind_command_arguments,
     format_usage,
     parse_args_spec,
+    parse_duration,
     parse_options_spec,
 )
 from .interaction import InteractionCancelled, interaction
 from .session_type import get_send_type_and_target_id, infer_receive_type
+from .trace import trace_step
+
+# 冷却键粒度白名单（cooldown_key=，EPRFC-2026-001 方向七）：
+# user=同一用户 / session=同一会话 / global=全局共享
+_COOLDOWN_KEY_KINDS = frozenset({"user", "session", "global"})
 
 
 class CommandHandler:
@@ -70,6 +77,10 @@ class CommandHandler:
         self.aliases: dict[str, str] = {}  # 别名映射
         self.groups: dict[str, list[str]] = {}  # 命令组
         self.permissions: dict[str, Callable] = {}  # 权限检查函数
+        # 命令冷却状态（cooldown= 声明，EPRFC-2026-001 方向七）：
+        # 键为 f"{main_name}\x00{scope_key}"（main_name 前缀供注销时按命令清理），
+        # 值为冷却结束时刻（time.monotonic() 秒）。进程内内存，模块卸载自动清理
+        self._cooldowns: dict[str, float] = {}
         # 已注册命令名/别名的最大 token 数（命令名支持空格分隔的子命令形式，
         # 如 "admin add"；匹配阶段据此决定最长前缀尝试次数，注册/注销时重算）
         self._max_name_tokens: int = 1
@@ -206,6 +217,9 @@ class CommandHandler:
         master: bool = False,
         args: str | None = None,
         options: dict | None = None,
+        cooldown: str | None = None,
+        cooldown_key: str = "user",
+        cooldown_reply: str | None = None,
     ):
         """
         命令装饰器
@@ -230,6 +244,16 @@ class CommandHandler:
             为布尔旗标；其余（缺省按 ``str``）为带值选项，支持 ``--label hello`` 与
             ``--label=hello`` 取值，类型跟随处理器注解。选项先于位置参数解析——``rest``
             覆盖剔除选项后的剩余文本。声明参数名必须存在于处理器签名中（否则注册期抛 ValueError）
+        :param cooldown: 命令冷却声明（EPRFC-2026-001 方向七），时长语法与 ``args=`` 的
+            ``duration`` 类型一致（如 ``"30s"``、``"1h30m"``、``"1d"``）。冷却命中时命令
+            默认静默丢弃（对称于作用域静默），命令仍保持已认领状态（不漏给低优先级
+            消息处理器）；冷却在全部权限检查与参数解析通过、命令实际执行前开始计时，
+            参数错误不消耗冷却。进程内内存状态，模块卸载时自动清理
+        :param cooldown_key: 冷却键粒度：``"user"``（默认，同一用户全局共享）/ ``"session"``
+            （同一会话共享）/ ``"global"``（所有用户所有会话共享）。``user`` / ``session``
+            复用 ``platform:bot:目标`` 会话键体系。非法值注册期抛 ValueError
+        :param cooldown_reply: 冷却命中时的回复文案（可选）。缺省静默丢弃；指定后冷却
+            命中即回复该文案（原文发送，不做格式化）
         :return: 装饰器函数
 
         :example:
@@ -237,6 +261,9 @@ class CommandHandler:
         ...          options={"verbose": "-v/--verbose", "label": "--label"})
         ... async def roll(event, count: int, sides: int = 6, verbose: bool = False, label: str = ""):
         ...     await event.reply(f"掷了 {count} 次 {sides} 面骰")
+        >>> @command("daily", cooldown="1d", cooldown_key="user", cooldown_reply="今天已签到")
+        ... async def daily(event):
+        ...     await event.reply("签到成功！")
         """
 
         def decorator(func: Callable):
@@ -260,6 +287,30 @@ class CommandHandler:
             args_spec = parse_args_spec(args) if args else None
             options_spec = parse_options_spec(options, func) if options else None
             declared = [entry.name for entry in (args_spec or [])] + list((options_spec or {}).keys())
+
+            # 冷却声明（cooldown=）注册期解析与校验（fail-fast）：
+            # 时长语法复用 args= duration 的解析口径，粒度白名单校验
+            cooldown_seconds: float | None = None
+            if cooldown:
+                try:
+                    cooldown_seconds = parse_duration(cooldown)
+                except ValueError as e:
+                    raise ValueError(
+                        i18n.t("core.command.cooldown.invalid", cmd=main_name, error=e)
+                    ) from e
+                if cooldown_key not in _COOLDOWN_KEY_KINDS:
+                    raise ValueError(
+                        i18n.t(
+                            "core.command.cooldown.invalid_key",
+                            cmd=main_name,
+                            key=cooldown_key,
+                            kinds=", ".join(sorted(_COOLDOWN_KEY_KINDS)),
+                        )
+                    )
+            elif cooldown_reply:
+                raise ValueError(
+                    i18n.t("core.command.cooldown.reply_without_cooldown", cmd=main_name)
+                )
             # 依赖注入声明（Depends）：与 args=/options= 参数重名即注册期冲突（fail-fast）
             depends = extract_depends(func)
             if declared:
@@ -331,6 +382,9 @@ class CommandHandler:
                     "args_spec": args_spec,
                     "options_spec": options_spec,
                     "depends": depends,
+                    "cooldown_seconds": cooldown_seconds,
+                    "cooldown_key": cooldown_key,
+                    "cooldown_reply": cooldown_reply,
                 }
 
                 # 注册别名映射（name列表中的额外名称）
@@ -414,6 +468,10 @@ class CommandHandler:
             if cmd_name in self.permissions:
                 del self.permissions[cmd_name]
 
+            # 清理该命令的冷却状态（模块卸载自动清理，进程内内存不外泄）
+            prefix = main_name + "\x00"
+            self._cooldowns = {k: v for k, v in self._cooldowns.items() if not k.startswith(prefix)}
+
             # 最后移除命令本身
             del self.commands[cmd_name]
 
@@ -447,6 +505,11 @@ class CommandHandler:
                     group_cmds.remove(cmd_name)
 
             self.permissions.pop(cmd_name, None)
+
+            # 清理该命令的冷却状态（模块卸载自动清理）
+            prefix = main_name + "\x00"
+            self._cooldowns = {k: v for k, v in self._cooldowns.items() if not k.startswith(prefix)}
+
             del self.commands[cmd_name]
 
         # 清理空命令组
@@ -720,6 +783,8 @@ class CommandHandler:
             if command_matched:
                 return
 
+        # 决策链：带前缀的文本未命中任何注册命令（或非命令文本）——放行给消息处理器
+        trace_step("dispatch", "passed", "core.trace.passed_to_message")
         # 如果都没有匹配，检查是否是等待回复的消息
         await self._check_pending_reply(event)
         return
@@ -791,6 +856,20 @@ class CommandHandler:
         # 开销与原先一致（/admin add x 同时注册了 admin 时优先命中子命令）
         cmd_name, actual_cmd_name, matched = self._resolve_command_tokens(parts)
         if cmd_name is None:
+            # 决策链：有命令前缀但未命中任何注册命令（方向五：给出拼写建议）
+            import difflib
+
+            candidates = {**self.commands, **self.aliases}
+            suggestion = (
+                difflib.get_close_matches(parts[0], candidates, n=1, cutoff=0.6) or [None]
+            )[0]
+            trace_step(
+                "command_match",
+                "missed",
+                "core.trace.command_not_found",
+                text=f"{prefix}{raw_parts[0]}",
+                suggestion=suggestion or "",
+            )
             return False
         args = raw_parts[matched:]
 
@@ -800,6 +879,12 @@ class CommandHandler:
         # （scope 拒绝仍保持静默不回复；ErisPulse.event.command.block=false
         #   可放行阻断，供日志 / 审计观察者继续看到）
         event.mark_processed(claim=True, stop=self.block)
+        trace_step(
+            "command_match",
+            "ok",
+            "core.trace.command_matched",
+            command=actual_cmd_name,
+        )
 
         logger.trace(
             i18n.t(
@@ -837,6 +922,13 @@ class CommandHandler:
                     scope.session_id_from_event(event) or None,
                 ):
                     logger.trace(i18n.t("core.scope.denied", module=cmd_owner))
+                    trace_step(
+                        "scope",
+                        "rejected",
+                        "core.trace.scope_denied",
+                        command=actual_cmd_name,
+                        module=cmd_owner,
+                    )
                     return False
 
             # 命令用户 ACL（event.overrides.acl）：命令名支持 glob
@@ -848,6 +940,13 @@ class CommandHandler:
                 event.get("user_id", ""),
             )
             if _allowed is False:
+                trace_step(
+                    "acl",
+                    "rejected",
+                    "core.trace.acl_denied",
+                    command=actual_cmd_name,
+                    user_id=event.get("user_id", ""),
+                )
                 logger.trace(
                     i18n.t(
                         "core.command.acl_denied",
@@ -870,6 +969,12 @@ class CommandHandler:
                 from ..master import master
 
                 if not master.is_master(event):
+                    trace_step(
+                        "master",
+                        "rejected",
+                        "core.trace.master_denied",
+                        command=actual_cmd_name,
+                    )
                     logger.trace(
                         i18n.t(
                             "core.command.master_denied",
@@ -904,10 +1009,23 @@ class CommandHandler:
                                 platform=event.get("platform", UNKNOWN_PLATFORM),
                             )
                         )
+                        trace_step(
+                            "permission",
+                            "rejected",
+                            "core.trace.permission_denied",
+                            command=actual_cmd_name,
+                        )
                         await self._send_permission_denied(event)
                         return False
                 except Exception as e:
                     logger.error(i18n.t("core.command.permission_check_error", error=e))
+                    trace_step(
+                        "permission",
+                        "rejected",
+                        "core.trace.permission_error",
+                        command=actual_cmd_name,
+                        error=str(e),
+                    )
                     await self._send_permission_denied(event)
                     return False
 
@@ -955,6 +1073,13 @@ class CommandHandler:
                     )
                 except CommandArgsError as e:
                     error_text = str(e)
+                    trace_step(
+                        "args",
+                        "failed",
+                        "core.trace.args_failed",
+                        command=actual_cmd_name,
+                        error=error_text,
+                    )
                     usage_line = i18n.t(
                         "core.command.args.usage",
                         usage=self._usage_line(actual_cmd_name, _effective),
@@ -985,6 +1110,41 @@ class CommandHandler:
                     )
                     return True
 
+            # 冷却判定（cooldown=，EPRFC-2026-001 方向七）：位于全部权限检查
+            # 与参数解析之后——无权限用户不触发冷却计时，参数错误不消耗冷却。
+            # 命中默认静默丢弃（对称于作用域静默）；命令已在命中时认领，
+            # 保持不漏给低优先级消息处理器
+            if _effective.get("cooldown_seconds"):
+                scope_key = self._cooldown_scope_key(
+                    _effective.get("cooldown_key", "user"), event
+                )
+                cooldown_entry = f"{cmd_info['main_name']}\x00{scope_key}"
+                _now = time.monotonic()
+                _deadline = self._cooldowns.get(cooldown_entry, 0.0)
+                if _now < _deadline:
+                    trace_step(
+                        "cooldown",
+                        "dropped",
+                        "core.trace.cooldown_dropped",
+                        command=actual_cmd_name,
+                        remain=f"{_deadline - _now:.1f}",
+                    )
+                    logger.trace(
+                        i18n.t(
+                            "core.command.cooldown_hit",
+                            cmd_name=actual_cmd_name,
+                            scope=scope_key,
+                            remain=f"{_deadline - _now:.1f}",
+                            platform=event.get("platform", UNKNOWN_PLATFORM),
+                            user_id=event.get("user_id", ""),
+                        )
+                    )
+                    if _effective.get("cooldown_reply"):
+                        await self._send_args_error(event, _effective["cooldown_reply"])
+                    return True
+                # 执行前即开始计时：实际冷却窗口不受处理耗时影响
+                self._cooldowns[cooldown_entry] = _now + _effective["cooldown_seconds"]
+
             try:
                 # 把注册时记录的 owner 注入上下文，让用户 handler 内部的
                 # wait_reply / 日志等能正确归因到具体业务模块。
@@ -1013,6 +1173,7 @@ class CommandHandler:
                     if _owner_token is not None:
                         current_owner.reset(_owner_token)
 
+                trace_step("execute", "executed", "core.trace.executed", command=actual_cmd_name)
                 # 钩子: 命令执行完成（后台发射）
                 from ..lifecycle import lifecycle
 
@@ -1028,6 +1189,13 @@ class CommandHandler:
                 )
             except Exception as e:
                 logger.error(i18n.t("core.command.exec_error", error=e))
+                trace_step(
+                    "execute",
+                    "failed",
+                    "core.trace.execute_failed",
+                    command=actual_cmd_name,
+                    error=str(e),
+                )
                 await self._send_command_error(event, str(e))
 
                 # 钩子: 命令执行失败（后台发射）
@@ -1145,6 +1313,27 @@ class CommandHandler:
                 await send_dsl.Text(text)
         except Exception as e:
             logger.error(i18n.t("core.event.command.send_error_failed", error=e))
+
+    @staticmethod
+    def _cooldown_scope_key(kind: str, event: "Event") -> str:
+        """
+        {!--< internal-use >!--}
+        计算冷却作用域键（复用 ``platform:bot:目标`` 会话键体系）
+
+        :param kind: 粒度（user / session / global，注册期已校验）
+        :param event: 事件数据
+        :return: 作用域键字符串
+        """
+        if kind == "global":
+            return "global"
+        platform = event.get("platform", UNKNOWN_PLATFORM)
+        bot_id = event.get_self_account_id() or ""
+        if kind == "session":
+            from ..scope import scope
+
+            target = scope.session_id_from_event(event) or ""
+            return f"{platform}:{bot_id}:{target}"
+        return f"{platform}:{bot_id}:{event.get('user_id', '')}"
 
     def _usage_line(self, cmd_name: str, effective: dict, display_prefix: str | None = None) -> str:
         """

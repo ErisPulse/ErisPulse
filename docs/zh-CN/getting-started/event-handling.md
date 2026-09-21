@@ -177,6 +177,28 @@ async def roll_handler(event, count: int, sides: int = 6, verbose: bool = False,
 - 声明的参数名必须存在于处理器签名中，否则注册期抛 `ValueError`
 - 不声明 `args=` / `options=` 的命令行为完全不变（向后兼容）
 
+### 命令冷却（cooldown=）
+
+手写冷却计时可用 `cooldown=` 声明替代。时长语法与 `args=` 的 `duration`
+类型一致（如 `"30s"`、`"1h30m"`、`"1d"`）：
+
+```python
+@command("daily", cooldown="1d", cooldown_key="user", cooldown_reply="今天已签到")
+async def daily_handler(event):
+    await event.reply("签到成功！")
+```
+
+`cooldown_key=` 控制冷却粒度：`"user"`（默认，同一用户共享）、`"session"`
+（同一会话共享，如同一群）、`"global"`（所有用户所有会话共享）。
+
+**行为要点**：
+
+- 冷却命中默认**静默丢弃**（对称于作用域静默）；声明 `cooldown_reply=` 后命中即回复该文案
+- 命令命中即认领——冷却命中的命令不会漏给低优先级消息处理器
+- 冷却在全部权限检查与参数解析通过、命令实际执行前开始计时：无权限用户不触发冷却，参数错误不消耗冷却
+- 状态为进程内内存，模块卸载时自动清理；跨进程共享 / 重启持久化不在范围内
+- 声明在注册期校验（fail-fast）：时长语法非法、`cooldown_key=` 非白名单值、`cooldown_reply=` 未搭配 `cooldown=` 均抛 `ValueError`
+
 ### 依赖注入（Depends）
 
 公共依赖（数据库会话、配置读取等）可抽为依赖函数，处理器以
