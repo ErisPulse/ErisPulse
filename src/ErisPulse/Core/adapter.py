@@ -1962,6 +1962,14 @@ class AdapterManager(ManagerBase):
                         user_id=data.get("user_id", "") if isinstance(data, dict) else "",
                     )
                 )
+                from .Event.trace import trace_step
+
+                trace_step(
+                    "middleware",
+                    "dropped",
+                    "core.trace.middleware_veto",
+                    middleware=mw_name,
+                )
                 lifecycle.fire(
                     EVENT_ADAPTER_EVENT_BLOCKED,
                     {

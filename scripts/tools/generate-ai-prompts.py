@@ -240,6 +240,7 @@ SECTION_PUBLISH_AND_TOOLS = Section(
     title="发布与工具",
     entries=[
         DocEntry("发布模块到模块商店", "developer-guide/publishing.md"),
+        DocEntry("模块测试（ErisPulse-Testing）", "developer-guide/testing.md"),
         DocEntry("CLI 命令参考", "user-guide/cli-reference.md"),
     ],
 )

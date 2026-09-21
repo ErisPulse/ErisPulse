@@ -25,6 +25,13 @@ from .meta import meta
 from .notice import notice
 from . import overrides
 from .request import request
+from .trace import (
+    final_verdict,
+    format_dispatch_trace,
+    get_dispatch_trace,
+    start_dispatch_trace,
+    trace_step,
+)
 from .session_type import (
     # 标准类型常量
     RECEIVE_TYPES,
@@ -128,6 +135,11 @@ __all__ = [
     "meta",
     "notice",
     "overrides",
+    "final_verdict",
+    "format_dispatch_trace",
+    "get_dispatch_trace",
+    "start_dispatch_trace",
+    "trace_step",
     "register_custom_type",
     "register_event_method",
     # 平台事件方法扩展
