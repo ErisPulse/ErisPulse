@@ -211,6 +211,37 @@ class SQLDialect:
             [table_name],
         )
 
+    def create_index_sql(self, table: str, index: str, column: str) -> str:
+        """
+        生成普通索引创建 DDL
+
+        基类语义为"不存在则创建"（``IF NOT EXISTS``）；不支持该语法的方言
+        （MySQL）覆写本方法为裸 ``CREATE INDEX``，幂等由 :meth:`has_index_sql`
+        存在性预检承接。
+
+        :param table: 表名（未引用）
+        :param index: 索引名（未引用）
+        :param column: 列名（未引用）
+        :return: CREATE INDEX 语句
+        """
+        return (
+            f"CREATE INDEX IF NOT EXISTS {self.quote(index)} "
+            f"ON {self.quote(table)} ({self.quote(column)})"
+        )
+
+    def has_index_sql(self, table: str, index: str) -> tuple[str, list[str]]:
+        """
+        生成索引存在性查询（内部 ``?`` 占位符）
+
+        :param table: 表名（未引用）
+        :param index: 索引名（未引用）
+        :return: (SQL, 参数列表)
+        """
+        return (
+            "SELECT name FROM sqlite_master WHERE type='index' AND name=?",
+            [index],
+        )
+
     # 列类型翻译
 
     # 首词类型映射（大小写不敏感，保留括号参数与后缀）

@@ -66,6 +66,14 @@ class PostgresDialect(SQLDialect):
             [table_name],
         )
 
+    def has_index_sql(self, table: str, index: str) -> tuple[str, list[str]]:
+        """{!--< internal-use >!--} pg_indexes 查询当前 schema"""
+        return (
+            "SELECT indexname FROM pg_indexes "
+            "WHERE schemaname = current_schema() AND tablename = ? AND indexname = ?",
+            [table, index],
+        )
+
     def autoincrement_column(self, base_type: str) -> str:
         """{!--< internal-use >!--} ``SERIAL/BIGSERIAL PRIMARY KEY``"""
         base = "BIGSERIAL" if base_type.upper().startswith("BIG") else "SERIAL"

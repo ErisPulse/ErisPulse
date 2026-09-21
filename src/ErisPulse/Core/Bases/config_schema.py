@@ -21,6 +21,7 @@ ErisPulse 通用配置 Schema 模块
 {!--< /tips >!--}
 """
 
+import builtins
 import inspect
 import json
 import os
@@ -29,7 +30,8 @@ import sys
 from collections.abc import Mapping
 from dataclasses import MISSING, dataclass, field, fields, is_dataclass
 from functools import cache
-from typing import Any, ClassVar
+from types import NoneType, UnionType
+from typing import Any, ClassVar, Optional, Union, get_args, get_origin
 
 from ..i18n import i18n
 
@@ -232,7 +234,21 @@ def _type_default(type_hint) -> object:
     return ""
 
 
-def python_type_category(type_hint) -> str:
+# PEP 563 字符串注解求值的受限命名空间（仅类型构造所需的最小集合，不暴露任意内置）
+_HINT_EVAL_GLOBALS: dict[str, Any] = {
+    "__builtins__": {
+        name: getattr(builtins, name)
+        for name in ("int", "float", "bool", "str", "bytes", "list", "dict", "tuple", "set")
+    },
+    "Any": Any,
+    "Optional": Optional,
+    "Union": Union,
+    "List": list,
+    "Dict": dict,
+}
+
+
+def python_type_category(type_hint: Any) -> str:
     """
     识别 Python 类型注解的类别（声明式字段层的类型映射同源注册表）
 
@@ -240,24 +256,48 @@ def python_type_category(type_hint) -> str:
     （SQL 方言列类型映射，见 ``Core/Bases/model.py``）从同一类别派生各自的
     目标类型——一份识别逻辑，两侧消费。
 
-    :param type_hint: Python 类型注解
+    结构化判定（``typing.get_origin`` / ``issubclass``）：参数化泛型
+    （``list[int]`` / ``dict[str, int]``）按容器类别识别；``Optional[X]`` 与
+    ``X | None`` 取首个非 ``None`` 参数递归；PEP 563 字符串注解（``from
+    __future__ import annotations`` 下的 ``__annotations__`` 形态）在受限
+    命名空间内求值后同样处理；无法识别的注解回落 ``"str"``。
+
+    :param type_hint: Python 类型注解（类型对象、typing 形态或字符串注解）
     :return: 类别名（"int" / "float" / "bool" / "list" / "dict" / "str"）
 
     {!--< tips >!--}
     1. 新增受支持的注解类别时，本函数与两个下游映射需同步扩展
     {!--< /tips >!--}
     """
-    type_str = str(type_hint).lower()
-    if "int" in type_str:
-        return "int"
-    if "float" in type_str:
-        return "float"
-    if "bool" in type_str:
-        return "bool"
-    if "list" in type_str:
-        return "list"
-    if "dict" in type_str:
-        return "dict"
+    if isinstance(type_hint, str):
+        try:
+            type_hint = eval(type_hint, _HINT_EVAL_GLOBALS)
+        except Exception:
+            return "str"
+    origin = get_origin(type_hint)
+    if origin is not None:
+        if origin is list:
+            return "list"
+        if origin is dict:
+            return "dict"
+        if origin in (Union, UnionType):
+            args = [arg for arg in get_args(type_hint) if arg is not NoneType]
+            if args:
+                return python_type_category(args[0])
+        return "str"
+    if isinstance(type_hint, type):
+        if issubclass(type_hint, bool):  # bool 是 int 子类，须先于 int 判定
+            return "bool"
+        if issubclass(type_hint, int):
+            return "int"
+        if issubclass(type_hint, float):
+            return "float"
+        if issubclass(type_hint, str):
+            return "str"
+        if issubclass(type_hint, list):
+            return "list"
+        if issubclass(type_hint, dict):
+            return "dict"
     return "str"
 
 

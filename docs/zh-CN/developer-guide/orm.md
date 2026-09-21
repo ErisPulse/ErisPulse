@@ -48,7 +48,7 @@ first = await User.where(User.name == "Alice").first()
 total = await User.count(User.age > 18)
 
 user.age = 21
-await user.save()                              # 按主键更新（先约束校验）
+await user.save()                              # 按主键更新（先约束校验）；主键缺失时退化为插入（自增主键同样回填到实例）
 await user.delete()                            # 按主键删除
 
 await User.update_all(User.age > 18, role="adult")  # 批量更新
@@ -61,6 +61,16 @@ await User.delete_all(User.age > 100)               # 批量删除
 await User.where((User.age > 18) & User.name.in_(["Alice", "Bob"])).all()
 ```
 
+## 事务
+
+ORM 读写与框架存储层共用同一事务路由：处于 `storage.atransaction()` 环境事务内时，`create` / `save` / `delete` 与查询自动复用事务连接，随事务统一提交或回滚，不会独立提交。
+
+```python
+async with storage.atransaction():
+    await User.create(name="Alice")
+    ...  # 块内抛异常时，上面的 INSERT 一并回滚
+```
+
 ## 与声明式配置类的关系
 
 模型声明与 `ConfigClass`（`@dataclass + field(metadata=...)`）**共享同一套底层**——约束词表、校验器引擎（`validate_field_constraints`）、类型类别注册表（`python_type_category`）；但类基座有意分立：配置字段是普通值（TOML 往返、一次加载热更新），模型字段是列描述符（类访问 = 查询表达式、逐行实例）。一份声明语法，两个各司其职的基座。
@@ -68,7 +78,7 @@ await User.where((User.age > 18) & User.name.in_(["Alice", "Bob"])).all()
 ## 边界与注意事项
 
 - 后端由全局存储配置决定；模型可用 `__storage__` 类属性覆写为自定义 `BaseStorage` 实例（测试注入用）
-- `list` / `dict` 字段以 JSON 文本列存储，读写自动序列化
+- `list` / `dict` 字段（含参数化泛型如 `list[int]`、`dict[str, int]`）按容器类别以 JSON 文本列存储，读写自动序列化
 - 写入（`create` / `save`）前自动执行约束校验，失败抛 `ValueError`（本地化消息）
 - 自动迁移（schema diff）与关系映射为后续版本能力
 - 触发存储连接失败时的行为与存储层一致：不崩溃框架，冷却后自动重连
