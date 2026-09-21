@@ -4,9 +4,9 @@
 
 ## Установка ErisPulse
 
-### Сценарий установки с одним нажатием (рекомендуется)
+### Скрипт установки с одним нажатием (рекомендуется)
 
-Сценарий автоматически определяет вашу среду (Docker, Python, uv) и предлагает вам выбрать наиболее подходящий способ установки.
+Скрипт автоматически определяет вашу среду (Docker, Python, uv) и направляет вас к наиболее подходящему способу установки.
 
 Windows (PowerShell):
 ```powershell
@@ -18,27 +18,27 @@ macOS / Linux:
 curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
 ```
 
-Сценарий поможет вам выполнить следующие действия:
+Скрипт поможет вам выполнить следующие шаги:
 
 - **Установка с помощью Docker** (рекомендуется, если Docker обнаружен): выбор источника образа (Docker Hub / GHCR), канал версий (стабильная / предварительная), настройка панели управления Dashboard, настройка портов
-- **Традиционная установка**: автоматическое создание виртуальной среды, выбор версии ErisPulse, необязательная установка модуля панели управления Dashboard
+- **Традиционная установка**: автоматическое создание виртуального окружения, выбор версии ErisPulse, необязательная установка модуля панели управления Dashboard
 
 ### Использование Docker
 
-В образе Docker уже включены фреймворк ErisPulse и панель управления Dashboard.
+Docker-образ уже содержит в себе фреймворк ErisPulse и панель управления Dashboard.
 
 ```bash
-# Загрузка docker-compose.yml
+# Скачать docker-compose.yml
 curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-# Установка токена Dashboard и запуск
+# Установить токен Dashboard и запустить
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
 <details>
-<summary>Не удается получить доступ к Docker Hub?</summary>
+<summary>Доступность Docker Hub ограничена?</summary>
 
-Используйте образ из GitHub Container Registry, изменив параметр image в файле `docker-compose.yml`:
+Используйте образ из GitHub Container Registry, изменив параметр `image` в файле `docker-compose.yml`:
 
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
@@ -50,13 +50,21 @@ image: ghcr.io/erispulse/erispulse:latest
 
 ### Установка с помощью pip
 
-Убедитесь, что у вас установлен Python версии >= 3.10, затем выполните установку с помощью pip:
+Убедитесь, что ваша версия Python >= 3.10, затем установите с помощью pip:
 
 ```bash
 pip install ErisPulse
 ```
 
 Если у вас уже установлен [uv](https://github.com/astral-sh/uv), вы также можете использовать `uv pip install ErisPulse`, что обеспечит более быструю установку.
+
+Если вы хотите установить только командную строку `epsdk` глобально, не загрязняя окружение проекта, рекомендуется использовать `uv tool install`:
+
+```bash
+uv tool install ErisPulse
+```
+
+После установки команда `epsdk` будет доступна глобально: при запуске в каталоге проекта она автоматически определит проектный `.venv` (команда `epsdk install` установит в проектное окружение, а `epsdk run` запустит с использованием проектного окружения), а сам фреймворк будет предоставлен из окружения инструмента. Подробнее см. [справочник по установке](user-guide/installation.md).
 
 ## Инициализация проекта
 

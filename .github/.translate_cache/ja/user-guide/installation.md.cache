@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "a60955b24db5c8925d2dffe7ba297507",
-  "file_hash": "a60955b24db5c8925d2dffe7ba297507",
-  "translated_at": "2026-09-07T12:23:19.109697",
+  "hash": "3044ee885c1e743ff683095b14cc7fe1",
+  "file_hash": "3044ee885c1e743ff683095b14cc7fe1",
+  "translated_at": "2026-09-21T11:17:23.108719",
   "target_lang": "ja",
   "chunks": [
     {
@@ -14,8 +14,8 @@
       "translation": "## システム要件\n\n- Python 3.10 以上\n- pip または uv（推奨）\n- 十分なディスク容量（少なくとも 100MB）"
     },
     {
-      "hash": "d588381833d7a59395c1506d42a2270e",
-      "translation": "## インストール方法\n\n### 方法1：pipを使用したインストール\n\n```bash\n# ErisPulseのインストール\npip install ErisPulse\n\n# 最新バージョンへのアップグレード\npip install ErisPulse --upgrade\n```\n\n### 方法2：uvを使用したインストール（推奨）\n\nuvは、より高速なPythonツールチェーンであり、開発環境での使用が推奨されています。\n\n#### uvのインストール\n\n```bash\n# pipを使用してuvをインストール\npip install uv\n\n# インストールの確認\nuv --version\n```\n\n#### 仮想環境の作成\n\n```bash\n# プロジェクトディレクトリの作成\nmkdir my_bot && cd my_bot\n\n# Python 3.12のインストール\nuv python install 3.12\n\n# 仮想環境の作成\nuv venv\n```\n\n#### 仮想環境の有効化\n\n```bash\n# Windows\n.venv\\Scripts\\activate\n\n# Linux/Mac\nsource .venv/bin/activate\n```\n\n#### ErisPulseのインストール\n\n```bash\n# ErisPulseのインストール\nuv pip install ErisPulse --upgrade\n```"
+      "hash": "a5c38fb5214f1c38b7a570258c9d958b",
+      "translation": "## インストール方法\n\n### 方法1：pipを使用したインストール\n\n```bash\n# ErisPulseのインストール\npip install ErisPulse\n\n# 最新バージョンへのアップグレード\npip install ErisPulse --upgrade\n```\n\n### 方法2：uvを使用したインストール（推奨）\n\nuvはより高速なPythonツールチェーンであり、開発環境での使用が推奨されます。\n\n#### uvのインストール\n\n```bash\n# pipを使用してuvをインストール\npip install uv\n\n# インストールの確認\nuv --version\n```\n\n#### 仮想環境の作成\n\n```bash\n# プロジェクトディレクトリの作成\nmkdir my_bot && cd my_bot\n\n# Python 3.12のインストール\nuv python install 3.12\n\n# 仮想環境の作成\nuv venv\n```\n\n#### 仮想環境の有効化\n\n```bash\n# Windows\n.venv\\Scripts\\activate\n\n# Linux/Mac\nsource .venv/bin/activate\n```\n\n#### ErisPulseのインストール\n\n```bash\n# ErisPulseのインストール\nuv pip install ErisPulse --upgrade\n```\n\n### 方法3：uv toolを使用したインストール（グローバルCLI、推奨）\n\n`epsdk`をグローバルなコマンドラインツールとして使用したい場合、`uv tool install`が最もクリーンな方法です。epsdkは独立したツール環境で動作し、プロジェクト環境を汚染しません。\n\n```bash\n# インストール（.venvを有効化せずにepsdkがすぐに使用可能）\nuv tool install ErisPulse\n\n# アップグレード（またはepsdk self-updateを使用して自動的にこの経路をたどる）\nuv tool upgrade ErisPulse\n```\n\n> [!NOTE]\n> ツール環境内のepsdkは、プロジェクトディレクトリ内で実行された際にプロジェクトの`.venv`を自動的に認識します。`epsdk install`はコンポーネントをプロジェクト環境にインストールし、`epsdk run`はプロジェクト環境を使用してロボットを実行します。フレームワーク本体はツール環境から提供され、両者は互いに干渉しません。"
     },
     {
       "hash": "358f974f4ee2f44daa4450252b751cdc",
