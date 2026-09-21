@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1674,
+  "total_keywords": 1675,
   "keywords": {
     "0 Успешно (OK)": [
       {
@@ -177,7 +177,7 @@
     "1. Обработка исключений": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 847,
+        "line": 859,
         "level": 3,
         "title": "1. Обработка исключений"
       }
@@ -589,7 +589,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 865,
+        "line": 877,
         "level": 3,
         "title": "2. Логирование"
       }
@@ -1197,7 +1197,7 @@
     "3. Условная обработка": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 881,
+        "line": 893,
         "level": 3,
         "title": "3. Условная обработка"
       }
@@ -3419,7 +3419,7 @@
     "block-настройка для команд и ответов": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 420,
+        "line": 429,
         "level": 3,
         "title": "block-настройка для команд и ответов"
       }
@@ -3459,7 +3459,7 @@
     "config": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 232,
+        "line": 237,
         "level": 3,
         "title": "config"
       }
@@ -3507,7 +3507,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 371,
+        "line": 379,
         "level": 3,
         "title": "create"
       }
@@ -3531,7 +3531,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 510,
+        "line": 519,
         "level": 3,
         "title": "doctor"
       }
@@ -3579,7 +3579,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 422,
+        "line": 430,
         "level": 3,
         "title": "i18n"
       }
@@ -3587,7 +3587,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 324,
+        "line": 329,
         "level": 3,
         "title": "init"
       }
@@ -3619,7 +3619,7 @@
     "list": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 169,
+        "line": 174,
         "level": 3,
         "title": "list"
       }
@@ -3627,7 +3627,7 @@
     "list-remote": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 198,
+        "line": 203,
         "level": 3,
         "title": "list-remote"
       }
@@ -3651,7 +3651,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 286,
+        "line": 291,
         "level": 3,
         "title": "run"
       }
@@ -3707,7 +3707,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 459,
+        "line": 467,
         "level": 3,
         "title": "types"
       }
@@ -4153,7 +4153,7 @@
     "Быстрая инициализация": [
       {
         "document": "quick-start.md",
-        "line": 76,
+        "line": 84,
         "level": 3,
         "title": "Быстрая инициализация"
       }
@@ -4349,7 +4349,7 @@
     "Включение автодополнения в IDE (по желанию)": [
       {
         "document": "quick-start.md",
-        "line": 127,
+        "line": 135,
         "level": 2,
         "title": "Включение автодополнения в IDE (по желанию)"
       }
@@ -4513,7 +4513,7 @@
     "Встроенные слова подтверждения": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 761,
+        "line": 773,
         "level": 3,
         "title": "Встроенные слова подтверждения"
       }
@@ -4553,7 +4553,7 @@
     "Выбор меню (choose)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 660,
+        "line": 672,
         "level": 3,
         "title": "Выбор меню (choose)"
       }
@@ -4582,12 +4582,12 @@
         "title": "Выбор хранилища"
       }
     ],
-    "Вывод компонентов": [
+    "Вывод списка компонентов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 567,
+        "line": 576,
         "level": 3,
-        "title": "Вывод компонентов"
+        "title": "Вывод списка компонентов"
       }
     ],
     "Выгрузка и полная выгрузка (purge)": [
@@ -4646,12 +4646,12 @@
         "title": "Высокоуровневые методы (рекомендуется)"
       }
     ],
-    "Генерация типовых аннотаций": [
+    "Генерация типов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 642,
+        "line": 651,
         "level": 3,
-        "title": "Генерация типовых аннотаций"
+        "title": "Генерация типов"
       }
     ],
     "Генерация типовых заглушек (автодополнение в IDE)": [
@@ -4697,7 +4697,7 @@
     "Глобальные параметры": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 494,
+        "line": 502,
         "level": 2,
         "title": "Глобальные параметры"
       }
@@ -4789,7 +4789,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 898,
+        "line": 910,
         "level": 2,
         "title": "Далее"
       },
@@ -4801,13 +4801,13 @@
       },
       {
         "document": "quick-start.md",
-        "line": 174,
+        "line": 182,
         "level": 2,
         "title": "Далее"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 152,
+        "line": 167,
         "level": 2,
         "title": "Далее"
       }
@@ -4913,7 +4913,7 @@
     "Диагностика окружения": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 508,
+        "line": 517,
         "level": 2,
         "title": "Диагностика окружения"
       }
@@ -4969,7 +4969,7 @@
     "Добавление друга": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 438,
+        "line": 447,
         "level": 3,
         "title": "Добавление друга"
       }
@@ -5161,7 +5161,7 @@
     "Доступ к данным события": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 768,
+        "line": 780,
         "level": 2,
         "title": "Доступ к данным события"
       }
@@ -5377,7 +5377,7 @@
     "Запрос на групповое приглашение": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 488,
+        "line": 497,
         "level": 3,
         "title": "Запрос на групповое приглашение"
       }
@@ -5385,7 +5385,7 @@
     "Запрос на добавление друга": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 472,
+        "line": 481,
         "level": 3,
         "title": "Запрос на добавление друга"
       }
@@ -5411,7 +5411,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 526,
+        "line": 535,
         "level": 3,
         "title": "Запрос состояния бота"
       }
@@ -5451,13 +5451,13 @@
     "Запуск проекта": [
       {
         "document": "quick-start.md",
-        "line": 117,
+        "line": 125,
         "level": 2,
         "title": "Запуск проекта"
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 619,
+        "line": 628,
         "level": 3,
         "title": "Запуск проекта"
       }
@@ -5465,7 +5465,7 @@
     "Запуск теста": [
       {
         "document": "user-guide/installation.md",
-        "line": 92,
+        "line": 107,
         "level": 3,
         "title": "Запуск теста"
       }
@@ -5619,13 +5619,13 @@
     "Инициализация проекта": [
       {
         "document": "quick-start.md",
-        "line": 61,
+        "line": 69,
         "level": 2,
         "title": "Инициализация проекта"
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 652,
+        "line": 661,
         "level": 3,
         "title": "Инициализация проекта"
       }
@@ -5633,7 +5633,7 @@
     "Инициализация проекта и установка модулей": [
       {
         "document": "user-guide/installation.md",
-        "line": 68,
+        "line": 83,
         "level": 2,
         "title": "Инициализация проекта и установка модулей"
       }
@@ -5711,7 +5711,7 @@
     "Интерактивная инициализация (рекомендуется)": [
       {
         "document": "quick-start.md",
-        "line": 63,
+        "line": 71,
         "level": 3,
         "title": "Интерактивная инициализация (рекомендуется)"
       }
@@ -5719,7 +5719,7 @@
     "Интерактивная обработка": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 548,
+        "line": 557,
         "level": 2,
         "title": "Интерактивная обработка"
       }
@@ -5727,13 +5727,13 @@
     "Интерактивная установка": [
       {
         "document": "quick-start.md",
-        "line": 109,
+        "line": 117,
         "level": 3,
         "title": "Интерактивная установка"
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 539,
+        "line": 548,
         "level": 2,
         "title": "Интерактивная установка"
       }
@@ -6037,7 +6037,7 @@
     "Использование метода reply для отправки ответа": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 550,
+        "line": 559,
         "level": 3,
         "title": "Использование метода reply для отправки ответа"
       }
@@ -6274,6 +6274,14 @@
         "title": "Командная система"
       }
     ],
+    "Команды генерации типовых файлов": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 461,
+        "level": 2,
+        "title": "Команды генерации типовых файлов"
+      }
+    ],
     "Команды диагностики": [
       {
         "document": "user-guide/cli-reference.md",
@@ -6282,34 +6290,26 @@
         "title": "Команды диагностики"
       }
     ],
-    "Команды информации": [
+    "Команды настройки": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 162,
+        "line": 231,
         "level": 2,
-        "title": "Команды информации"
+        "title": "Команды настройки"
       }
     ],
-    "Команды конфигурации": [
+    "Команды получения информации": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 226,
+        "line": 166,
         "level": 2,
-        "title": "Команды конфигурации"
-      }
-    ],
-    "Команды типовых аннотаций": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 453,
-        "level": 2,
-        "title": "Команды типовых аннотаций"
+        "title": "Команды получения информации"
       }
     ],
     "Команды управления запуском": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 275,
+        "line": 280,
         "level": 2,
         "title": "Команды управления запуском"
       }
@@ -6325,17 +6325,17 @@
     "Команды управления проектом": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 317,
+        "line": 322,
         "level": 2,
         "title": "Команды управления проектом"
       }
     ],
-    "Команды языка": [
+    "Команды языкового пакета": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 416,
+        "line": 424,
         "level": 2,
-        "title": "Команды языка"
+        "title": "Команды языкового пакета"
       }
     ],
     "Комбинация правил и фоновое выполнение": [
@@ -6451,7 +6451,7 @@
     "Конфигурационный файл": [
       {
         "document": "quick-start.md",
-        "line": 158,
+        "line": 166,
         "level": 2,
         "title": "Конфигурационный файл"
       }
@@ -6731,7 +6731,7 @@
     "Лучшие практики обработки событий": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 845,
+        "line": 857,
         "level": 2,
         "title": "Лучшие практики обработки событий"
       }
@@ -7286,20 +7286,20 @@
         "title": "Многофункциональная адаптация"
       }
     ],
+    "Многошаговый диалог (conversation)": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 746,
+        "level": 3,
+        "title": "Многошаговый диалог (conversation)"
+      }
+    ],
     "Многоэлементное сообщение": [
       {
         "document": "advanced/message-builder.md",
         "line": 153,
         "level": 3,
         "title": "Многоэлементное сообщение"
-      }
-    ],
-    "Многоэтапный диалог (conversation)": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 734,
-        "level": 3,
-        "title": "Многоэтапный диалог (conversation)"
       }
     ],
     "Многоязычная поддержка": [
@@ -7567,7 +7567,7 @@
     "Настройка компонентов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 593,
+        "line": 602,
         "level": 3,
         "title": "Настройка компонентов"
       }
@@ -7873,7 +7873,7 @@
     "Обновление компонентов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 606,
+        "line": 615,
         "level": 3,
         "title": "Обновление компонентов"
       }
@@ -8041,7 +8041,7 @@
     "Обработка мета-событий": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 499,
+        "line": 508,
         "level": 2,
         "title": "Обработка мета-событий"
       }
@@ -8177,7 +8177,7 @@
     "Обработка событий запросов": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 470,
+        "line": 479,
         "level": 2,
         "title": "Обработка событий запросов"
       }
@@ -8217,7 +8217,7 @@
     "Обработка событий уведомлений": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 436,
+        "line": 445,
         "level": 2,
         "title": "Обработка событий уведомлений"
       }
@@ -8479,7 +8479,7 @@
     "Ожидание ответа пользователя": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 578,
+        "line": 587,
         "level": 3,
         "title": "Ожидание ответа пользователя"
       }
@@ -8487,7 +8487,7 @@
     "Ожидание ответа с обратным вызовом": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 622,
+        "line": 634,
         "level": 3,
         "title": "Ожидание ответа с обратным вызовом"
       }
@@ -8495,7 +8495,7 @@
     "Ожидание ответа с проверкой": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 595,
+        "line": 607,
         "level": 3,
         "title": "Ожидание ответа с проверкой"
       }
@@ -8511,7 +8511,7 @@
     "Ожидание произвольного события (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 713,
+        "line": 725,
         "level": 3,
         "title": "Ожидание произвольного события (wait_for)"
       }
@@ -9537,7 +9537,7 @@
     "Ошибка конфигурации": [
       {
         "document": "user-guide/installation.md",
-        "line": 118,
+        "line": 133,
         "level": 3,
         "title": "Ошибка конфигурации"
       }
@@ -9545,7 +9545,7 @@
     "Ошибка создания виртуального окружения в Debian/Ubuntu": [
       {
         "document": "user-guide/installation.md",
-        "line": 140,
+        "line": 155,
         "level": 3,
         "title": "Ошибка создания виртуального окружения в Debian/Ubuntu"
       }
@@ -9553,7 +9553,7 @@
     "Ошибка установки": [
       {
         "document": "user-guide/installation.md",
-        "line": 110,
+        "line": 125,
         "level": 3,
         "title": "Ошибка установки"
       }
@@ -9561,7 +9561,7 @@
     "Ошибка установки модуля": [
       {
         "document": "user-guide/installation.md",
-        "line": 125,
+        "line": 140,
         "level": 3,
         "title": "Ошибка установки модуля"
       }
@@ -9768,12 +9768,12 @@
         "title": "Переопределение с помощью переменных окружения"
       }
     ],
-    "Переопределение событий: изменение поведения любого типа событий без изменения кода модуля": [
+    "Переопределение событий: изменение поведения произвольных типов событий без изменения кода модуля": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 327,
+        "line": 332,
         "level": 2,
-        "title": "Переопределение событий: изменение поведения любого типа событий без изменения кода модуля"
+        "title": "Переопределение событий: изменение поведения произвольных типов событий без изменения кода модуля"
       }
     ],
     "Переподключение и RESUME": [
@@ -9879,7 +9879,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 816,
+        "line": 828,
         "level": 3,
         "title": "Платформенные расширения"
       }
@@ -10267,7 +10267,7 @@
     "Подтверждение диалога (confirm)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 643,
+        "line": 655,
         "level": 3,
         "title": "Подтверждение диалога (confirm)"
       }
@@ -11269,13 +11269,13 @@
     "Проверка установки": [
       {
         "document": "user-guide/installation.md",
-        "line": 83,
+        "line": 98,
         "level": 2,
         "title": "Проверка установки"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 85,
+        "line": 100,
         "level": 3,
         "title": "Проверка установки"
       }
@@ -11307,7 +11307,7 @@
     "Просмотр доступных модулей": [
       {
         "document": "quick-start.md",
-        "line": 103,
+        "line": 111,
         "level": 3,
         "title": "Просмотр доступных модулей"
       }
@@ -11522,20 +11522,20 @@
         "title": "Распространение приложений через Docker-образы"
       }
     ],
-    "Распространенные сценарии": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 552,
-        "level": 2,
-        "title": "Распространенные сценарии"
-      }
-    ],
     "Распространённые места конфигурации": [
       {
         "document": "user-guide/README.md",
         "line": 31,
         "level": 3,
         "title": "Распространённые места конфигурации"
+      }
+    ],
+    "Распространённые способы использования": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 561,
+        "level": 2,
+        "title": "Распространённые способы использования"
       }
     ],
     "Расширение для всех платформ (шаблон \"*\")": [
@@ -12123,7 +12123,7 @@
     "Сбор формы (collect)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 693,
+        "line": 705,
         "level": 3,
         "title": "Сбор формы (collect)"
       }
@@ -12638,6 +12638,14 @@
         "title": "Сколько времени занимает проверка?"
       }
     ],
+    "Скрипт установки с одним нажатием (рекомендуется)": [
+      {
+        "document": "quick-start.md",
+        "line": 7,
+        "level": 3,
+        "title": "Скрипт установки с одним нажатием (рекомендуется)"
+      }
+    ],
     "Следующие шаги": [
       {
         "document": "user-guide/configuration.md",
@@ -12665,7 +12673,7 @@
     "Смена языка": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 629,
+        "line": 638,
         "level": 3,
         "title": "Смена языка"
       }
@@ -12801,7 +12809,7 @@
     "События heartbeat": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 517,
+        "line": 526,
         "level": 3,
         "title": "События heartbeat"
       }
@@ -12841,7 +12849,7 @@
     "События подключения": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 501,
+        "line": 510,
         "level": 3,
         "title": "События подключения"
       }
@@ -12989,7 +12997,7 @@
     "Создание проекта вручную": [
       {
         "document": "quick-start.md",
-        "line": 86,
+        "line": 94,
         "level": 3,
         "title": "Создание проекта вручную"
       }
@@ -13005,7 +13013,7 @@
     "Создание шаблона": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 662,
+        "line": 671,
         "level": 3,
         "title": "Создание шаблона"
       }
@@ -13264,12 +13272,12 @@
         "title": "Способ 1: Локальный процесс (рекомендуется)"
       }
     ],
-    "Способ 1: Установка через pip": [
+    "Способ 1: Установка с помощью pip": [
       {
         "document": "user-guide/installation.md",
         "line": 14,
         "level": 3,
-        "title": "Способ 1: Установка через pip"
+        "title": "Способ 1: Установка с помощью pip"
       }
     ],
     "Способ 2: Официальная онлайн-точка подключения": [
@@ -13280,20 +13288,28 @@
         "title": "Способ 2: Официальная онлайн-точка подключения"
       }
     ],
-    "Способ 2: Установка через uv (рекомендуется)": [
+    "Способ 2: Установка с помощью uv (рекомендуется)": [
       {
         "document": "user-guide/installation.md",
         "line": 24,
         "level": 3,
-        "title": "Способ 2: Установка через uv (рекомендуется)"
+        "title": "Способ 2: Установка с помощью uv (рекомендуется)"
       }
     ],
     "Способ 3: Использование клиентского приложения ErisPulse-App (без терминала)": [
       {
         "document": "user-guide/installation.md",
-        "line": 72,
+        "line": 87,
         "level": 3,
         "title": "Способ 3: Использование клиентского приложения ErisPulse-App (без терминала)"
+      }
+    ],
+    "Способ 3: Установка с помощью uv tool (глобальный CLI, рекомендуется)": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 68,
+        "level": 3,
+        "title": "Способ 3: Установка с помощью uv tool (глобальный CLI, рекомендуется)"
       }
     ],
     "Способ Docker": [
@@ -13693,7 +13709,7 @@
     "Стратегия выполнения PowerShell в Windows": [
       {
         "document": "user-guide/installation.md",
-        "line": 132,
+        "line": 147,
         "level": 3,
         "title": "Стратегия выполнения PowerShell в Windows"
       }
@@ -13769,7 +13785,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 146,
+        "line": 154,
         "level": 2,
         "title": "Структура проекта"
       }
@@ -13796,14 +13812,6 @@
         "line": 197,
         "level": 3,
         "title": "Сценарии использования"
-      }
-    ],
-    "Сценарий установки с одним нажатием (рекомендуется)": [
-      {
-        "document": "quick-start.md",
-        "line": 7,
-        "level": 3,
-        "title": "Сценарий установки с одним нажатием (рекомендуется)"
       }
     ],
     "Сырые сообщения и построение сообщений": [
@@ -14131,7 +14139,7 @@
     "Увеличение участников группы": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 450,
+        "line": 459,
         "level": 3,
         "title": "Увеличение участников группы"
       }
@@ -14147,7 +14155,7 @@
     "Удаление компонентов": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 583,
+        "line": 592,
         "level": 3,
         "title": "Удаление компонентов"
       }
@@ -14209,7 +14217,7 @@
     "Уменьшение участников группы": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 460,
+        "line": 469,
         "level": 3,
         "title": "Уменьшение участников группы"
       }
@@ -14369,7 +14377,7 @@
     "Управление цепочкой: присвоение и блокировка": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 385,
+        "line": 394,
         "level": 2,
         "title": "Управление цепочкой: присвоение и блокировка"
       }
@@ -14455,13 +14463,13 @@
     "Установка модуля": [
       {
         "document": "quick-start.md",
-        "line": 95,
+        "line": 103,
         "level": 2,
         "title": "Установка модуля"
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 554,
+        "line": 563,
         "level": 3,
         "title": "Установка модуля"
       }
@@ -14477,7 +14485,7 @@
     "Установка через CLI": [
       {
         "document": "quick-start.md",
-        "line": 97,
+        "line": 105,
         "level": 3,
         "title": "Установка через CLI"
       }
@@ -14506,20 +14514,20 @@
         "title": "Файл конфигурации аккаунта"
       }
     ],
+    "Фильтрация области: почему мой модуль не получает сообщения": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 301,
+        "level": 2,
+        "title": "Фильтрация области: почему мой модуль не получает сообщения"
+      }
+    ],
     "Фильтрация по ключевым словам": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 148,
         "level": 3,
         "title": "Фильтрация по ключевым словам"
-      }
-    ],
-    "Фильтрация по области: почему мой модуль не получает сообщения": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 301,
-        "level": 2,
-        "title": "Фильтрация по области: почему мой модуль не получает сообщения"
       }
     ],
     "Фильтрация по чёрному списку": [
@@ -14763,7 +14771,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 108,
+        "line": 123,
         "level": 2,
         "title": "Часто задаваемые вопросы"
       }
@@ -14787,7 +14795,7 @@
     "Часто используемые методы объекта Event": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 770,
+        "line": 782,
         "level": 3,
         "title": "Часто используемые методы объекта Event"
       }

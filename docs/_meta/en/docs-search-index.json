@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1631,
+  "total_keywords": 1633,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -3953,7 +3953,7 @@
     "Check Installation": [
       {
         "document": "user-guide/installation.md",
-        "line": 83,
+        "line": 100,
         "level": 3,
         "title": "Check Installation"
       }
@@ -4315,7 +4315,7 @@
     "Common Usage": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 552,
+        "line": 560,
         "level": 2,
         "title": "Common Usage"
       }
@@ -4473,7 +4473,7 @@
     "Configuration Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 226,
+        "line": 230,
         "level": 2,
         "title": "Configuration Commands"
       }
@@ -4495,7 +4495,7 @@
     "Configuration Errors": [
       {
         "document": "user-guide/installation.md",
-        "line": 116,
+        "line": 133,
         "level": 3,
         "title": "Configuration Errors"
       }
@@ -4545,7 +4545,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 158,
+        "line": 166,
         "level": 2,
         "title": "Configuration File"
       }
@@ -4678,12 +4678,12 @@
         "title": "Configuration Options"
       }
     ],
-    "Configuring Components": [
+    "Configure Components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 593,
+        "line": 601,
         "level": 3,
-        "title": "Configuring Components"
+        "title": "Configure Components"
       }
     ],
     "Configuring Lazy Loading": [
@@ -5074,6 +5074,14 @@
         "title": "Counting and Existence Check"
       }
     ],
+    "Create Scaffold": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 670,
+        "level": 3,
+        "title": "Create Scaffold"
+      }
+    ],
     "Create Tasks": [
       {
         "document": "ecosystem/cron.md",
@@ -5096,14 +5104,6 @@
         "line": 38,
         "level": 4,
         "title": "Create a Virtual Environment"
-      }
-    ],
-    "Creating Scaffolds": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 662,
-        "level": 3,
-        "title": "Creating Scaffolds"
       }
     ],
     "Creating a Conversation": [
@@ -5219,7 +5219,7 @@
     "Debian/Ubuntu Virtual Environment Creation Failed": [
       {
         "document": "user-guide/installation.md",
-        "line": 138,
+        "line": 155,
         "level": 3,
         "title": "Debian/Ubuntu Virtual Environment Creation Failed"
       }
@@ -5805,7 +5805,7 @@
     "Enable IDE Completion (Optional)": [
       {
         "document": "quick-start.md",
-        "line": 127,
+        "line": 135,
         "level": 2,
         "title": "Enable IDE Completion (Optional)"
       }
@@ -5829,7 +5829,7 @@
     "Environment Diagnosis": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 508,
+        "line": 516,
         "level": 2,
         "title": "Environment Diagnosis"
       }
@@ -6629,7 +6629,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 106,
+        "line": 123,
         "level": 2,
         "title": "FAQ"
       }
@@ -6998,12 +6998,12 @@
         "title": "General request"
       }
     ],
-    "Generating Type Stubs": [
+    "Generate Type Stubs": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 642,
+        "line": 650,
         "level": 3,
-        "title": "Generating Type Stubs"
+        "title": "Generate Type Stubs"
       }
     ],
     "Get Adapter Instance": [
@@ -7103,7 +7103,7 @@
     "Global Parameters": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 494,
+        "line": 501,
         "level": 2,
         "title": "Global Parameters"
       }
@@ -7689,7 +7689,7 @@
     "Information Query Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 162,
+        "line": 165,
         "level": 2,
         "title": "Information Query Commands"
       }
@@ -7725,17 +7725,15 @@
     "Initialize Project": [
       {
         "document": "quick-start.md",
-        "line": 61,
+        "line": 69,
         "level": 2,
         "title": "Initialize Project"
-      }
-    ],
-    "Initializing Projects": [
+      },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 652,
+        "line": 660,
         "level": 3,
-        "title": "Initializing Projects"
+        "title": "Initialize Project"
       }
     ],
     "Inline Query Event": [
@@ -7756,16 +7754,18 @@
     ],
     "Install ErisPulse": [
       {
-        "document": "quick-start.md",
-        "line": 5,
-        "level": 2,
-        "title": "Install ErisPulse"
-      },
-      {
         "document": "user-guide/installation.md",
         "line": 61,
         "level": 4,
         "title": "Install ErisPulse"
+      }
+    ],
+    "Install Modules": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 562,
+        "level": 3,
+        "title": "Install Modules"
       }
     ],
     "Install uv": [
@@ -7779,7 +7779,7 @@
     "Installation Failed": [
       {
         "document": "user-guide/installation.md",
-        "line": 108,
+        "line": 125,
         "level": 3,
         "title": "Installation Failed"
       }
@@ -7824,17 +7824,19 @@
         "title": "Installation and Activation"
       }
     ],
+    "Installing ErisPulse": [
+      {
+        "document": "quick-start.md",
+        "line": 5,
+        "level": 2,
+        "title": "Installing ErisPulse"
+      }
+    ],
     "Installing Modules": [
       {
         "document": "quick-start.md",
-        "line": 95,
+        "line": 103,
         "level": 2,
-        "title": "Installing Modules"
-      },
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 554,
-        "level": 3,
         "title": "Installing Modules"
       }
     ],
@@ -7849,7 +7851,7 @@
     "Installing via CLI": [
       {
         "document": "quick-start.md",
-        "line": 97,
+        "line": 105,
         "level": 3,
         "title": "Installing via CLI"
       }
@@ -7911,7 +7913,7 @@
     "Interactive Initialization (Recommended)": [
       {
         "document": "quick-start.md",
-        "line": 63,
+        "line": 71,
         "level": 3,
         "title": "Interactive Initialization (Recommended)"
       }
@@ -7919,13 +7921,13 @@
     "Interactive Installation": [
       {
         "document": "quick-start.md",
-        "line": 109,
+        "line": 117,
         "level": 3,
         "title": "Interactive Installation"
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 539,
+        "line": 547,
         "level": 2,
         "title": "Interactive Installation"
       }
@@ -8045,7 +8047,7 @@
     "Language Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 416,
+        "line": 423,
         "level": 2,
         "title": "Language Commands"
       }
@@ -8182,6 +8184,14 @@
         "title": "Link Control: Claiming and Blocking"
       }
     ],
+    "List Components": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 575,
+        "level": 3,
+        "title": "List Components"
+      }
+    ],
     "List Platforms": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -8276,14 +8286,6 @@
         "line": 37,
         "level": 3,
         "title": "Listening to Private Messages"
-      }
-    ],
-    "Listing Components": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 567,
-        "level": 3,
-        "title": "Listing Components"
       }
     ],
     "Loading Strategy": [
@@ -8485,7 +8487,7 @@
     "Manual Project Creation": [
       {
         "document": "quick-start.md",
-        "line": 86,
+        "line": 94,
         "level": 3,
         "title": "Manual Project Creation"
       }
@@ -8968,12 +8970,12 @@
         "title": "Meta Module"
       }
     ],
-    "Method 1: Install Using pip": [
+    "Method 1: Install with pip": [
       {
         "document": "user-guide/installation.md",
         "line": 14,
         "level": 3,
-        "title": "Method 1: Install Using pip"
+        "title": "Method 1: Install with pip"
       }
     ],
     "Method 1: Local Process (Recommended)": [
@@ -8992,12 +8994,12 @@
         "title": "Method 1: The `via` Parameter in `reply()`"
       }
     ],
-    "Method 2: Install Using uv (Recommended)": [
+    "Method 2: Install with uv (Recommended)": [
       {
         "document": "user-guide/installation.md",
         "line": 24,
         "level": 3,
-        "title": "Method 2: Install Using uv (Recommended)"
+        "title": "Method 2: Install with uv (Recommended)"
       }
     ],
     "Method 2: Official Online Endpoint": [
@@ -9014,6 +9016,14 @@
         "line": 181,
         "level": 3,
         "title": "Method 2: `event.send_chain()`"
+      }
+    ],
+    "Method 3: Install with uv tool (Global CLI, Recommended)": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 68,
+        "level": 3,
+        "title": "Method 3: Install with uv tool (Global CLI, Recommended)"
       }
     ],
     "Method Chaining": [
@@ -9067,7 +9077,7 @@
     "Method Three: Using the ErisPulse-App Client (No Terminal Required)": [
       {
         "document": "user-guide/installation.md",
-        "line": 72,
+        "line": 89,
         "level": 3,
         "title": "Method Three: Using the ErisPulse-App Client (No Terminal Required)"
       }
@@ -9219,7 +9229,7 @@
     "Module Installation Failed": [
       {
         "document": "user-guide/installation.md",
-        "line": 123,
+        "line": 140,
         "level": 3,
         "title": "Module Installation Failed"
       }
@@ -9583,7 +9593,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 174,
+        "line": 182,
         "level": 2,
         "title": "Next Steps"
       },
@@ -9595,7 +9605,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 150,
+        "line": 167,
         "level": 2,
         "title": "Next Steps"
       }
@@ -10427,7 +10437,7 @@
     "Project Initialization and Module Installation": [
       {
         "document": "user-guide/installation.md",
-        "line": 68,
+        "line": 85,
         "level": 2,
         "title": "Project Initialization and Module Installation"
       }
@@ -10435,7 +10445,7 @@
     "Project Management Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 317,
+        "line": 321,
         "level": 2,
         "title": "Project Management Commands"
       }
@@ -10449,7 +10459,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 146,
+        "line": 154,
         "level": 2,
         "title": "Project Structure"
       }
@@ -10641,7 +10651,7 @@
     "Quick Initialization": [
       {
         "document": "quick-start.md",
-        "line": 76,
+        "line": 84,
         "level": 3,
         "title": "Quick Initialization"
       }
@@ -11636,10 +11646,18 @@
         "title": "Rule Propagation"
       }
     ],
+    "Run Project": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 627,
+        "level": 3,
+        "title": "Run Project"
+      }
+    ],
     "Run Tests": [
       {
         "document": "user-guide/installation.md",
-        "line": 90,
+        "line": 107,
         "level": 3,
         "title": "Run Tests"
       }
@@ -11652,18 +11670,10 @@
         "title": "Running Mode"
       }
     ],
-    "Running Projects": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 619,
-        "level": 3,
-        "title": "Running Projects"
-      }
-    ],
     "Running the Project": [
       {
         "document": "quick-start.md",
-        "line": 117,
+        "line": 125,
         "level": 2,
         "title": "Running the Project"
       }
@@ -11687,7 +11697,7 @@
     "Runtime Control Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 275,
+        "line": 279,
         "level": 2,
         "title": "Runtime Control Commands"
       }
@@ -12838,6 +12848,14 @@
         "title": "Supported i18n Fields"
       }
     ],
+    "Switch Language": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 637,
+        "level": 3,
+        "title": "Switch Language"
+      }
+    ],
     "Switch Manually in Code": [
       {
         "document": "advanced/i18n.md",
@@ -12860,14 +12878,6 @@
         "line": 17,
         "level": 3,
         "title": "Switch via Environment Variable"
-      }
-    ],
-    "Switching Language": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 629,
-        "level": 3,
-        "title": "Switching Language"
       }
     ],
     "Sync API Connection": [
@@ -13103,7 +13113,7 @@
     "Type Stub Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 453,
+        "line": 460,
         "level": 2,
         "title": "Type Stub Commands"
       }
@@ -13148,20 +13158,20 @@
         "title": "Unified Module Access Entry"
       }
     ],
+    "Uninstall Components": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 591,
+        "level": 3,
+        "title": "Uninstall Components"
+      }
+    ],
     "Uninstall Process": [
       {
         "document": "advanced/startup.md",
         "line": 306,
         "level": 2,
         "title": "Uninstall Process"
-      }
-    ],
-    "Uninstalling Components": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 583,
-        "level": 3,
-        "title": "Uninstalling Components"
       }
     ],
     "Unique Event Types": [
@@ -13296,12 +13306,12 @@
         "title": "Updating Data"
       }
     ],
-    "Upgrading Components": [
+    "Upgrade Components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 606,
+        "line": 614,
         "level": 3,
-        "title": "Upgrading Components"
+        "title": "Upgrade Components"
       }
     ],
     "Usage": [
@@ -13562,12 +13572,12 @@
         "title": "Using in Transactions"
       }
     ],
-    "Using pip": [
+    "Using pip Installation": [
       {
         "document": "quick-start.md",
         "line": 51,
         "level": 3,
-        "title": "Using pip"
+        "title": "Using pip Installation"
       }
     ],
     "Using with Send": [
@@ -13619,7 +13629,7 @@
     "Verification of Installation": [
       {
         "document": "user-guide/installation.md",
-        "line": 81,
+        "line": 98,
         "level": 2,
         "title": "Verification of Installation"
       }
@@ -13643,7 +13653,7 @@
     "Viewing Available Modules": [
       {
         "document": "quick-start.md",
-        "line": 103,
+        "line": 111,
         "level": 3,
         "title": "Viewing Available Modules"
       }
@@ -13927,7 +13937,7 @@
     "Windows PowerShell Execution Policy": [
       {
         "document": "user-guide/installation.md",
-        "line": 130,
+        "line": 147,
         "level": 3,
         "title": "Windows PowerShell Execution Policy"
       }
@@ -14357,7 +14367,7 @@
     "config": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 232,
+        "line": 236,
         "level": 3,
         "title": "config"
       }
@@ -14413,7 +14423,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 371,
+        "line": 378,
         "level": 3,
         "title": "create"
       }
@@ -14461,7 +14471,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 510,
+        "line": 518,
         "level": 3,
         "title": "doctor"
       }
@@ -14509,7 +14519,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 422,
+        "line": 429,
         "level": 3,
         "title": "i18n"
       }
@@ -14525,7 +14535,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 324,
+        "line": 328,
         "level": 3,
         "title": "init"
       }
@@ -14557,7 +14567,7 @@
     "list": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 169,
+        "line": 173,
         "level": 3,
         "title": "list"
       }
@@ -14565,7 +14575,7 @@
     "list-remote": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 198,
+        "line": 202,
         "level": 3,
         "title": "list-remote"
       }
@@ -14629,7 +14639,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 286,
+        "line": 290,
         "level": 3,
         "title": "run"
       }
@@ -14693,7 +14703,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 459,
+        "line": 466,
         "level": 3,
         "title": "types"
       }

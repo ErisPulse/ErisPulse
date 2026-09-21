@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1633,
+  "total_keywords": 1637,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2779,7 +2779,7 @@
     "Debian/Ubuntu 虛擬環境建立失敗": [
       {
         "document": "user-guide/installation.md",
-        "line": 141,
+        "line": 159,
         "level": 3,
         "title": "Debian/Ubuntu 虛擬環境建立失敗"
       }
@@ -3841,7 +3841,7 @@
     "Windows PowerShell 執行策略": [
       {
         "document": "user-guide/installation.md",
-        "line": 133,
+        "line": 151,
         "level": 3,
         "title": "Windows PowerShell 執行策略"
       }
@@ -4225,7 +4225,7 @@
     "config": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 230,
+        "line": 237,
         "level": 3,
         "title": "config"
       }
@@ -4281,7 +4281,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 365,
+        "line": 379,
         "level": 3,
         "title": "create"
       }
@@ -4329,7 +4329,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 500,
+        "line": 519,
         "level": 3,
         "title": "doctor"
       }
@@ -4385,7 +4385,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 416,
+        "line": 430,
         "level": 3,
         "title": "i18n"
       }
@@ -4393,7 +4393,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 318,
+        "line": 329,
         "level": 3,
         "title": "init"
       }
@@ -4425,7 +4425,7 @@
     "list": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 169,
+        "line": 174,
         "level": 3,
         "title": "list"
       }
@@ -4433,7 +4433,7 @@
     "list-remote": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 198,
+        "line": 203,
         "level": 3,
         "title": "list-remote"
       }
@@ -4537,7 +4537,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 282,
+        "line": 291,
         "level": 3,
         "title": "run"
       }
@@ -4625,7 +4625,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 451,
+        "line": 467,
         "level": 3,
         "title": "types"
       }
@@ -4905,7 +4905,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 174,
+        "line": 182,
         "level": 2,
         "title": "下一步"
       },
@@ -4917,7 +4917,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 153,
+        "line": 171,
         "level": 2,
         "title": "下一步"
       }
@@ -5468,24 +5468,10 @@
         "title": "互動對話進階"
       }
     ],
-    "互動式初始化（推薦）": [
-      {
-        "document": "quick-start.md",
-        "line": 63,
-        "level": 3,
-        "title": "互動式初始化（推薦）"
-      }
-    ],
     "互動式安裝": [
       {
-        "document": "quick-start.md",
-        "line": 109,
-        "level": 3,
-        "title": "互動式安裝"
-      },
-      {
         "document": "user-guide/cli-reference.md",
-        "line": 529,
+        "line": 548,
         "level": 2,
         "title": "互動式安裝"
       }
@@ -5534,6 +5520,22 @@
         "line": 66,
         "level": 3,
         "title": "五、我要為 ErisPulse 貢獻"
+      }
+    ],
+    "交互式初始化（推薦）": [
+      {
+        "document": "quick-start.md",
+        "line": 71,
+        "level": 3,
+        "title": "交互式初始化（推薦）"
+      }
+    ],
+    "交互式安裝": [
+      {
+        "document": "quick-start.md",
+        "line": 117,
+        "level": 3,
+        "title": "交互式安裝"
       }
     ],
     "什麼是適配器": [
@@ -5828,14 +5830,6 @@
         "title": "保留錯誤段"
       }
     ],
-    "信息查詢命令": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 162,
-        "level": 2,
-        "title": "信息查詢命令"
-      }
-    ],
     "修改表結構": [
       {
         "document": "advanced/sql-builder.md",
@@ -6075,7 +6069,7 @@
     "全局參數": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 484,
+        "line": 502,
         "level": 2,
         "title": "全局參數"
       }
@@ -6171,7 +6165,7 @@
     "切換語言": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 619,
+        "line": 638,
         "level": 3,
         "title": "切換語言"
       }
@@ -6195,16 +6189,16 @@
     "列出組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 557,
+        "line": 576,
         "level": 3,
         "title": "列出組件"
       }
     ],
     "初始化專案": [
       {
-        "document": "quick-start.md",
-        "line": 61,
-        "level": 2,
+        "document": "user-guide/cli-reference.md",
+        "line": 661,
+        "level": 3,
         "title": "初始化專案"
       }
     ],
@@ -6240,9 +6234,9 @@
     ],
     "初始化項目": [
       {
-        "document": "user-guide/cli-reference.md",
-        "line": 642,
-        "level": 3,
+        "document": "quick-start.md",
+        "line": 69,
+        "level": 2,
         "title": "初始化項目"
       }
     ],
@@ -6380,14 +6374,6 @@
         "title": "包名必須以 `ErisPulse-` 開頭嗎？"
       }
     ],
-    "包管理命令": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 9,
-        "level": 2,
-        "title": "包管理命令"
-      }
-    ],
     "匹配條目語法（全系統統一）": [
       {
         "document": "advanced/scope.md",
@@ -6399,7 +6385,7 @@
     "升級組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 596,
+        "line": 615,
         "level": 3,
         "title": "升級組件"
       }
@@ -6431,7 +6417,7 @@
     "卸載組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 573,
+        "line": 592,
         "level": 3,
         "title": "卸載組件"
       }
@@ -6838,12 +6824,12 @@
         "title": "啟動鏈路總覽"
       }
     ],
-    "啟用 IDE 自動完成（可選）": [
+    "啟用 IDE 補全（可選）": [
       {
         "document": "quick-start.md",
-        "line": 127,
+        "line": 135,
         "level": 2,
-        "title": "啟用 IDE 自動完成（可選）"
+        "title": "啟用 IDE 補全（可選）"
       }
     ],
     "單個方法註冊": [
@@ -7101,7 +7087,7 @@
     "執行測試": [
       {
         "document": "user-guide/installation.md",
-        "line": 93,
+        "line": 111,
         "level": 3,
         "title": "執行測試"
       }
@@ -7570,6 +7556,14 @@
         "title": "失敗重試 + 超時取消"
       }
     ],
+    "套件管理命令": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 9,
+        "level": 2,
+        "title": "套件管理命令"
+      }
+    ],
     "好友上線事件": [
       {
         "document": "platform-guide/ideaura.md",
@@ -7795,7 +7789,7 @@
     "安裝失敗": [
       {
         "document": "user-guide/installation.md",
-        "line": 111,
+        "line": 129,
         "level": 3,
         "title": "安裝失敗"
       }
@@ -7824,16 +7818,18 @@
         "title": "安裝方式（桌面端：Windows / Linux / macOS）"
       }
     ],
-    "安裝模組": [
+    "安裝模塊": [
       {
         "document": "quick-start.md",
-        "line": 95,
+        "line": 103,
         "level": 2,
-        "title": "安裝模組"
-      },
+        "title": "安裝模塊"
+      }
+    ],
+    "安裝模組": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 544,
+        "line": 563,
         "level": 3,
         "title": "安裝模組"
       }
@@ -7990,6 +7986,14 @@
         "line": 109,
         "level": 4,
         "title": "將元組轉為字典"
+      }
+    ],
+    "專案管理命令": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 322,
+        "level": 2,
+        "title": "專案管理命令"
       }
     ],
     "對最終用戶": [
@@ -8333,7 +8337,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 109,
+        "line": 127,
         "level": 2,
         "title": "常見問題"
       }
@@ -8349,7 +8353,7 @@
     "常見用法": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 542,
+        "line": 561,
         "level": 2,
         "title": "常見用法"
       }
@@ -8555,7 +8559,7 @@
     "建立腳手架": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 652,
+        "line": 671,
         "level": 3,
         "title": "建立腳手架"
       }
@@ -8686,18 +8690,10 @@
         "title": "快速上手"
       }
     ],
-    "快速入門": [
-      {
-        "document": "quick-start.md",
-        "line": 1,
-        "level": 1,
-        "title": "快速入門"
-      }
-    ],
     "快速初始化": [
       {
         "document": "quick-start.md",
-        "line": 76,
+        "line": 84,
         "level": 3,
         "title": "快速初始化"
       }
@@ -8763,6 +8759,12 @@
         "document": "ecosystem/cron.md",
         "line": 23,
         "level": 2,
+        "title": "快速開始"
+      },
+      {
+        "document": "quick-start.md",
+        "line": 1,
+        "level": 1,
         "title": "快速開始"
       }
     ],
@@ -8862,6 +8864,14 @@
         "title": "所有权（owner）系統"
       }
     ],
+    "手動創建項目": [
+      {
+        "document": "quick-start.md",
+        "line": 94,
+        "level": 3,
+        "title": "手動創建項目"
+      }
+    ],
     "手動呼叫 Request DSL": [
       {
         "document": "platform-guide/onebot11.md",
@@ -8882,14 +8892,6 @@
         "line": 874,
         "level": 3,
         "title": "手動建構回應（舊版方式仍然相容）"
-      }
-    ],
-    "手動建立專案": [
-      {
-        "document": "quick-start.md",
-        "line": 86,
-        "level": 3,
-        "title": "手動建立專案"
       }
     ],
     "手動恢復（不用自動機制時）": [
@@ -9565,9 +9567,17 @@
     "方式三：使用 ErisPulse-App 客戶端（免終端）": [
       {
         "document": "user-guide/installation.md",
-        "line": 72,
+        "line": 90,
         "level": 3,
         "title": "方式三：使用 ErisPulse-App 客戶端（免終端）"
+      }
+    ],
+    "方式三：使用 uv tool 安裝（全域 CLI，推薦）": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 68,
+        "level": 3,
+        "title": "方式三：使用 uv tool 安裝（全域 CLI，推薦）"
       }
     ],
     "方式二：event.send_chain()": [
@@ -9920,12 +9930,12 @@
         "title": "架構設計"
       }
     ],
-    "查看可用模組": [
+    "查看可用模塊": [
       {
         "document": "quick-start.md",
-        "line": 103,
+        "line": 111,
         "level": 3,
-        "title": "查看可用模組"
+        "title": "查看可用模塊"
       }
     ],
     "查詢 Bot 狀態": [
@@ -10467,7 +10477,7 @@
     "模組安裝失敗": [
       {
         "document": "user-guide/installation.md",
-        "line": 126,
+        "line": 144,
         "level": 3,
         "title": "模組安裝失敗"
       }
@@ -10609,7 +10619,7 @@
     "檢查安裝": [
       {
         "document": "user-guide/installation.md",
-        "line": 86,
+        "line": 104,
         "level": 3,
         "title": "檢查安裝"
       }
@@ -11285,7 +11295,7 @@
     "環境診斷": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 498,
+        "line": 517,
         "level": 2,
         "title": "環境診斷"
       }
@@ -11369,7 +11379,7 @@
     "生成類型存根": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 632,
+        "line": 651,
         "level": 3,
         "title": "生成類型存根"
       }
@@ -12520,6 +12530,14 @@
         "title": "聲明式配置（推薦）"
       }
     ],
+    "臨床診斷命令": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 18,
+        "level": 2,
+        "title": "臨床診斷命令"
+      }
+    ],
     "自動存檔": [
       {
         "document": "advanced/conversation.md",
@@ -12992,14 +13010,6 @@
         "title": "設計邊界：哪些資源不隨卸載清理"
       }
     ],
-    "診斷命令": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 18,
-        "level": 2,
-        "title": "診斷命令"
-      }
-    ],
     "註冊 API": [
       {
         "document": "ecosystem/dashboard.md",
@@ -13099,7 +13109,7 @@
     "語言命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 410,
+        "line": 424,
         "level": 2,
         "title": "語言命令"
       }
@@ -13296,6 +13306,14 @@
         "title": "資料持久化"
       }
     ],
+    "資訊查詢命令": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 166,
+        "level": 2,
+        "title": "資訊查詢命令"
+      }
+    ],
     "質量檢查清單": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -13486,14 +13504,6 @@
         "title": "适配器生命週期"
       }
     ],
-    "透過 CLI 安裝": [
-      {
-        "document": "quick-start.md",
-        "line": 97,
-        "level": 3,
-        "title": "透過 CLI 安裝"
-      }
-    ],
     "透過 Dashboard 安裝模組": [
       {
         "document": "user-guide/deployment.md",
@@ -13644,6 +13654,14 @@
         "title": "通知類型判斷"
       }
     ],
+    "通過 CLI 安裝": [
+      {
+        "document": "quick-start.md",
+        "line": 105,
+        "level": 3,
+        "title": "通過 CLI 安裝"
+      }
+    ],
     "通配符": [
       {
         "document": "advanced/lifecycle.md",
@@ -13752,10 +13770,18 @@
         "title": "進程監督與硬重啟"
       }
     ],
+    "運行專案": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 628,
+        "level": 3,
+        "title": "運行專案"
+      }
+    ],
     "運行控制命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 271,
+        "line": 280,
         "level": 2,
         "title": "運行控制命令"
       }
@@ -13795,14 +13821,8 @@
     "運行項目": [
       {
         "document": "quick-start.md",
-        "line": 117,
+        "line": 125,
         "level": 2,
-        "title": "運行項目"
-      },
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 609,
-        "level": 3,
         "title": "運行項目"
       }
     ],
@@ -14061,7 +14081,7 @@
     "配置命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 224,
+        "line": 231,
         "level": 2,
         "title": "配置命令"
       }
@@ -14088,6 +14108,14 @@
         "line": 106,
         "level": 2,
         "title": "配置懶加載"
+      }
+    ],
+    "配置文件": [
+      {
+        "document": "quick-start.md",
+        "line": 166,
+        "level": 2,
+        "title": "配置文件"
       }
     ],
     "配置文件位置": [
@@ -14118,12 +14146,6 @@
       {
         "document": "advanced/scope.md",
         "line": 65,
-        "level": 2,
-        "title": "配置檔案"
-      },
-      {
-        "document": "quick-start.md",
-        "line": 158,
         "level": 2,
         "title": "配置檔案"
       }
@@ -14187,7 +14209,7 @@
     "配置組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 583,
+        "line": 602,
         "level": 3,
         "title": "配置組件"
       }
@@ -14293,7 +14315,7 @@
     "配置錯誤": [
       {
         "document": "user-guide/installation.md",
-        "line": 119,
+        "line": 137,
         "level": 3,
         "title": "配置錯誤"
       }
@@ -14765,7 +14787,7 @@
     "項目初始化與模組安裝": [
       {
         "document": "user-guide/installation.md",
-        "line": 68,
+        "line": 86,
         "level": 2,
         "title": "項目初始化與模組安裝"
       }
@@ -14778,14 +14800,6 @@
         "title": "項目模板"
       }
     ],
-    "項目管理命令": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 311,
-        "level": 2,
-        "title": "項目管理命令"
-      }
-    ],
     "項目結構": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -14795,7 +14809,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 146,
+        "line": 154,
         "level": 2,
         "title": "項目結構"
       }
@@ -14817,7 +14831,7 @@
     "類型存根命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 445,
+        "line": 461,
         "level": 2,
         "title": "類型存根命令"
       }
@@ -14833,7 +14847,7 @@
     "驗證安裝": [
       {
         "document": "user-guide/installation.md",
-        "line": 84,
+        "line": 102,
         "level": 2,
         "title": "驗證安裝"
       }

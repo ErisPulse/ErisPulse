@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1782,
+  "total_keywords": 1793,
   "keywords": {
     "ErisPulse API 文档": [
       {
@@ -146,10 +146,18 @@
         "title": "[ErisPulse.CLI.commands.upgrade](ErisPulse/CLI/commands/upgrade.md)"
       }
     ],
-    "[ErisPulse.CLI.console](ErisPulse/CLI/console.md)": [
+    "[ErisPulse.CLI.commands.version](ErisPulse/CLI/commands/version.md)": [
       {
         "document": "api-reference/auto_api/README.md",
         "line": 117,
+        "level": 3,
+        "title": "[ErisPulse.CLI.commands.version](ErisPulse/CLI/commands/version.md)"
+      }
+    ],
+    "[ErisPulse.CLI.console](ErisPulse/CLI/console.md)": [
+      {
+        "document": "api-reference/auto_api/README.md",
+        "line": 122,
         "level": 3,
         "title": "[ErisPulse.CLI.console](ErisPulse/CLI/console.md)"
       }
@@ -157,7 +165,7 @@
     "[ErisPulse.CLI.constants](ErisPulse/CLI/constants.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 122,
+        "line": 127,
         "level": 3,
         "title": "[ErisPulse.CLI.constants](ErisPulse/CLI/constants.md)"
       }
@@ -165,7 +173,7 @@
     "[ErisPulse.CLI.hints](ErisPulse/CLI/hints.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 127,
+        "line": 132,
         "level": 3,
         "title": "[ErisPulse.CLI.hints](ErisPulse/CLI/hints.md)"
       }
@@ -173,7 +181,7 @@
     "[ErisPulse.CLI.i18n.__init__](ErisPulse/CLI/i18n/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 132,
+        "line": 137,
         "level": 3,
         "title": "[ErisPulse.CLI.i18n.__init__](ErisPulse/CLI/i18n/__init__.md)"
       }
@@ -181,7 +189,7 @@
     "[ErisPulse.CLI.i18n.locales.__init__](ErisPulse/CLI/i18n/locales/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 137,
+        "line": 142,
         "level": 3,
         "title": "[ErisPulse.CLI.i18n.locales.__init__](ErisPulse/CLI/i18n/locales/__init__.md)"
       }
@@ -189,7 +197,7 @@
     "[ErisPulse.CLI.i18n.locales.en](ErisPulse/CLI/i18n/locales/en.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 142,
+        "line": 147,
         "level": 3,
         "title": "[ErisPulse.CLI.i18n.locales.en](ErisPulse/CLI/i18n/locales/en.md)"
       }
@@ -197,7 +205,7 @@
     "[ErisPulse.CLI.i18n.locales.ja](ErisPulse/CLI/i18n/locales/ja.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 147,
+        "line": 152,
         "level": 3,
         "title": "[ErisPulse.CLI.i18n.locales.ja](ErisPulse/CLI/i18n/locales/ja.md)"
       }
@@ -205,7 +213,7 @@
     "[ErisPulse.CLI.i18n.locales.ru](ErisPulse/CLI/i18n/locales/ru.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 152,
+        "line": 157,
         "level": 3,
         "title": "[ErisPulse.CLI.i18n.locales.ru](ErisPulse/CLI/i18n/locales/ru.md)"
       }
@@ -213,7 +221,7 @@
     "[ErisPulse.CLI.i18n.locales.zh_cn](ErisPulse/CLI/i18n/locales/zh_cn.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 157,
+        "line": 162,
         "level": 3,
         "title": "[ErisPulse.CLI.i18n.locales.zh_cn](ErisPulse/CLI/i18n/locales/zh_cn.md)"
       }
@@ -221,7 +229,7 @@
     "[ErisPulse.CLI.i18n.locales.zh_tw](ErisPulse/CLI/i18n/locales/zh_tw.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 162,
+        "line": 167,
         "level": 3,
         "title": "[ErisPulse.CLI.i18n.locales.zh_tw](ErisPulse/CLI/i18n/locales/zh_tw.md)"
       }
@@ -229,7 +237,7 @@
     "[ErisPulse.CLI.registry](ErisPulse/CLI/registry.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 167,
+        "line": 172,
         "level": 3,
         "title": "[ErisPulse.CLI.registry](ErisPulse/CLI/registry.md)"
       }
@@ -237,7 +245,7 @@
     "[ErisPulse.CLI.utils.__init__](ErisPulse/CLI/utils/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 172,
+        "line": 177,
         "level": 3,
         "title": "[ErisPulse.CLI.utils.__init__](ErisPulse/CLI/utils/__init__.md)"
       }
@@ -245,7 +253,7 @@
     "[ErisPulse.CLI.utils.config_wizard](ErisPulse/CLI/utils/config_wizard.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 177,
+        "line": 182,
         "level": 3,
         "title": "[ErisPulse.CLI.utils.config_wizard](ErisPulse/CLI/utils/config_wizard.md)"
       }
@@ -253,7 +261,7 @@
     "[ErisPulse.CLI.utils.display](ErisPulse/CLI/utils/display.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 182,
+        "line": 187,
         "level": 3,
         "title": "[ErisPulse.CLI.utils.display](ErisPulse/CLI/utils/display.md)"
       }
@@ -261,7 +269,7 @@
     "[ErisPulse.CLI.utils.package_manager](ErisPulse/CLI/utils/package_manager.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 187,
+        "line": 192,
         "level": 3,
         "title": "[ErisPulse.CLI.utils.package_manager](ErisPulse/CLI/utils/package_manager.md)"
       }
@@ -269,7 +277,7 @@
     "[ErisPulse.CLI.utils.scaffold_text](ErisPulse/CLI/utils/scaffold_text.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 192,
+        "line": 197,
         "level": 3,
         "title": "[ErisPulse.CLI.utils.scaffold_text](ErisPulse/CLI/utils/scaffold_text.md)"
       }
@@ -277,7 +285,7 @@
     "[ErisPulse.Core.Bases.__init__](ErisPulse/Core/Bases/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 197,
+        "line": 202,
         "level": 3,
         "title": "[ErisPulse.Core.Bases.__init__](ErisPulse/Core/Bases/__init__.md)"
       }
@@ -285,7 +293,7 @@
     "[ErisPulse.Core.Bases.adapter](ErisPulse/Core/Bases/adapter.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 202,
+        "line": 207,
         "level": 3,
         "title": "[ErisPulse.Core.Bases.adapter](ErisPulse/Core/Bases/adapter.md)"
       }
@@ -293,7 +301,7 @@
     "[ErisPulse.Core.Bases.client](ErisPulse/Core/Bases/client.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 207,
+        "line": 212,
         "level": 3,
         "title": "[ErisPulse.Core.Bases.client](ErisPulse/Core/Bases/client.md)"
       }
@@ -301,7 +309,7 @@
     "[ErisPulse.Core.Bases.config_schema](ErisPulse/Core/Bases/config_schema.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 212,
+        "line": 217,
         "level": 3,
         "title": "[ErisPulse.Core.Bases.config_schema](ErisPulse/Core/Bases/config_schema.md)"
       }
@@ -309,7 +317,7 @@
     "[ErisPulse.Core.Bases.converter](ErisPulse/Core/Bases/converter.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 217,
+        "line": 222,
         "level": 3,
         "title": "[ErisPulse.Core.Bases.converter](ErisPulse/Core/Bases/converter.md)"
       }
@@ -317,7 +325,7 @@
     "[ErisPulse.Core.Bases.errors](ErisPulse/Core/Bases/errors.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 222,
+        "line": 227,
         "level": 3,
         "title": "[ErisPulse.Core.Bases.errors](ErisPulse/Core/Bases/errors.md)"
       }
@@ -325,7 +333,7 @@
     "[ErisPulse.Core.Bases.i18n_schema](ErisPulse/Core/Bases/i18n_schema.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 227,
+        "line": 232,
         "level": 3,
         "title": "[ErisPulse.Core.Bases.i18n_schema](ErisPulse/Core/Bases/i18n_schema.md)"
       }
@@ -333,7 +341,7 @@
     "[ErisPulse.Core.Bases.kv_builder](ErisPulse/Core/Bases/kv_builder.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 232,
+        "line": 237,
         "level": 3,
         "title": "[ErisPulse.Core.Bases.kv_builder](ErisPulse/Core/Bases/kv_builder.md)"
       }
@@ -341,7 +349,7 @@
     "[ErisPulse.Core.Bases.manager](ErisPulse/Core/Bases/manager.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 237,
+        "line": 242,
         "level": 3,
         "title": "[ErisPulse.Core.Bases.manager](ErisPulse/Core/Bases/manager.md)"
       }
@@ -349,7 +357,7 @@
     "[ErisPulse.Core.Bases.module](ErisPulse/Core/Bases/module.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 242,
+        "line": 247,
         "level": 3,
         "title": "[ErisPulse.Core.Bases.module](ErisPulse/Core/Bases/module.md)"
       }
@@ -357,7 +365,7 @@
     "[ErisPulse.Core.Bases.router](ErisPulse/Core/Bases/router.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 247,
+        "line": 252,
         "level": 3,
         "title": "[ErisPulse.Core.Bases.router](ErisPulse/Core/Bases/router.md)"
       }
@@ -365,7 +373,7 @@
     "[ErisPulse.Core.Bases.send_builder](ErisPulse/Core/Bases/send_builder.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 252,
+        "line": 257,
         "level": 3,
         "title": "[ErisPulse.Core.Bases.send_builder](ErisPulse/Core/Bases/send_builder.md)"
       }
@@ -373,7 +381,7 @@
     "[ErisPulse.Core.Bases.send_rules](ErisPulse/Core/Bases/send_rules.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 257,
+        "line": 262,
         "level": 3,
         "title": "[ErisPulse.Core.Bases.send_rules](ErisPulse/Core/Bases/send_rules.md)"
       }
@@ -381,7 +389,7 @@
     "[ErisPulse.Core.Bases.sql_base](ErisPulse/Core/Bases/sql_base.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 262,
+        "line": 267,
         "level": 3,
         "title": "[ErisPulse.Core.Bases.sql_base](ErisPulse/Core/Bases/sql_base.md)"
       }
@@ -389,7 +397,7 @@
     "[ErisPulse.Core.Bases.storage](ErisPulse/Core/Bases/storage.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 267,
+        "line": 272,
         "level": 3,
         "title": "[ErisPulse.Core.Bases.storage](ErisPulse/Core/Bases/storage.md)"
       }
@@ -397,7 +405,7 @@
     "[ErisPulse.Core.Bases.websocket](ErisPulse/Core/Bases/websocket.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 272,
+        "line": 277,
         "level": 3,
         "title": "[ErisPulse.Core.Bases.websocket](ErisPulse/Core/Bases/websocket.md)"
       }
@@ -405,7 +413,7 @@
     "[ErisPulse.Core.Event.__init__](ErisPulse/Core/Event/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 277,
+        "line": 282,
         "level": 3,
         "title": "[ErisPulse.Core.Event.__init__](ErisPulse/Core/Event/__init__.md)"
       }
@@ -413,7 +421,7 @@
     "[ErisPulse.Core.Event.base](ErisPulse/Core/Event/base.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 282,
+        "line": 287,
         "level": 3,
         "title": "[ErisPulse.Core.Event.base](ErisPulse/Core/Event/base.md)"
       }
@@ -421,7 +429,7 @@
     "[ErisPulse.Core.Event.command](ErisPulse/Core/Event/command.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 287,
+        "line": 292,
         "level": 3,
         "title": "[ErisPulse.Core.Event.command](ErisPulse/Core/Event/command.md)"
       }
@@ -429,7 +437,7 @@
     "[ErisPulse.Core.Event.interaction](ErisPulse/Core/Event/interaction.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 292,
+        "line": 297,
         "level": 3,
         "title": "[ErisPulse.Core.Event.interaction](ErisPulse/Core/Event/interaction.md)"
       }
@@ -437,7 +445,7 @@
     "[ErisPulse.Core.Event.message](ErisPulse/Core/Event/message.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 297,
+        "line": 302,
         "level": 3,
         "title": "[ErisPulse.Core.Event.message](ErisPulse/Core/Event/message.md)"
       }
@@ -445,7 +453,7 @@
     "[ErisPulse.Core.Event.message_builder](ErisPulse/Core/Event/message_builder.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 302,
+        "line": 307,
         "level": 3,
         "title": "[ErisPulse.Core.Event.message_builder](ErisPulse/Core/Event/message_builder.md)"
       }
@@ -453,7 +461,7 @@
     "[ErisPulse.Core.Event.meta](ErisPulse/Core/Event/meta.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 307,
+        "line": 312,
         "level": 3,
         "title": "[ErisPulse.Core.Event.meta](ErisPulse/Core/Event/meta.md)"
       }
@@ -461,7 +469,7 @@
     "[ErisPulse.Core.Event.notice](ErisPulse/Core/Event/notice.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 312,
+        "line": 317,
         "level": 3,
         "title": "[ErisPulse.Core.Event.notice](ErisPulse/Core/Event/notice.md)"
       }
@@ -469,7 +477,7 @@
     "[ErisPulse.Core.Event.overrides](ErisPulse/Core/Event/overrides.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 317,
+        "line": 322,
         "level": 3,
         "title": "[ErisPulse.Core.Event.overrides](ErisPulse/Core/Event/overrides.md)"
       }
@@ -477,7 +485,7 @@
     "[ErisPulse.Core.Event.request](ErisPulse/Core/Event/request.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 322,
+        "line": 327,
         "level": 3,
         "title": "[ErisPulse.Core.Event.request](ErisPulse/Core/Event/request.md)"
       }
@@ -485,7 +493,7 @@
     "[ErisPulse.Core.Event.session_type](ErisPulse/Core/Event/session_type.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 327,
+        "line": 332,
         "level": 3,
         "title": "[ErisPulse.Core.Event.session_type](ErisPulse/Core/Event/session_type.md)"
       }
@@ -493,7 +501,7 @@
     "[ErisPulse.Core.Event.wrapper](ErisPulse/Core/Event/wrapper.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 332,
+        "line": 337,
         "level": 3,
         "title": "[ErisPulse.Core.Event.wrapper](ErisPulse/Core/Event/wrapper.md)"
       }
@@ -501,7 +509,7 @@
     "[ErisPulse.Core.__init__](ErisPulse/Core/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 337,
+        "line": 342,
         "level": 3,
         "title": "[ErisPulse.Core.__init__](ErisPulse/Core/__init__.md)"
       }
@@ -509,7 +517,7 @@
     "[ErisPulse.Core.adapter](ErisPulse/Core/adapter.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 342,
+        "line": 347,
         "level": 3,
         "title": "[ErisPulse.Core.adapter](ErisPulse/Core/adapter.md)"
       }
@@ -517,7 +525,7 @@
     "[ErisPulse.Core.assets.__init__](ErisPulse/Core/assets/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 347,
+        "line": 352,
         "level": 3,
         "title": "[ErisPulse.Core.assets.__init__](ErisPulse/Core/assets/__init__.md)"
       }
@@ -525,7 +533,7 @@
     "[ErisPulse.Core.client](ErisPulse/Core/client.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 352,
+        "line": 357,
         "level": 3,
         "title": "[ErisPulse.Core.client](ErisPulse/Core/client.md)"
       }
@@ -533,7 +541,7 @@
     "[ErisPulse.Core.config](ErisPulse/Core/config.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 357,
+        "line": 362,
         "level": 3,
         "title": "[ErisPulse.Core.config](ErisPulse/Core/config.md)"
       }
@@ -541,7 +549,7 @@
     "[ErisPulse.Core.constants](ErisPulse/Core/constants.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 362,
+        "line": 367,
         "level": 3,
         "title": "[ErisPulse.Core.constants](ErisPulse/Core/constants.md)"
       }
@@ -549,7 +557,7 @@
     "[ErisPulse.Core.i18n.__init__](ErisPulse/Core/i18n/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 367,
+        "line": 372,
         "level": 3,
         "title": "[ErisPulse.Core.i18n.__init__](ErisPulse/Core/i18n/__init__.md)"
       }
@@ -557,7 +565,7 @@
     "[ErisPulse.Core.i18n.constants](ErisPulse/Core/i18n/constants.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 372,
+        "line": 377,
         "level": 3,
         "title": "[ErisPulse.Core.i18n.constants](ErisPulse/Core/i18n/constants.md)"
       }
@@ -565,7 +573,7 @@
     "[ErisPulse.Core.i18n.locales.__init__](ErisPulse/Core/i18n/locales/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 377,
+        "line": 382,
         "level": 3,
         "title": "[ErisPulse.Core.i18n.locales.__init__](ErisPulse/Core/i18n/locales/__init__.md)"
       }
@@ -573,7 +581,7 @@
     "[ErisPulse.Core.i18n.locales.en](ErisPulse/Core/i18n/locales/en.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 382,
+        "line": 387,
         "level": 3,
         "title": "[ErisPulse.Core.i18n.locales.en](ErisPulse/Core/i18n/locales/en.md)"
       }
@@ -581,7 +589,7 @@
     "[ErisPulse.Core.i18n.locales.ja](ErisPulse/Core/i18n/locales/ja.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 387,
+        "line": 392,
         "level": 3,
         "title": "[ErisPulse.Core.i18n.locales.ja](ErisPulse/Core/i18n/locales/ja.md)"
       }
@@ -589,7 +597,7 @@
     "[ErisPulse.Core.i18n.locales.ru](ErisPulse/Core/i18n/locales/ru.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 392,
+        "line": 397,
         "level": 3,
         "title": "[ErisPulse.Core.i18n.locales.ru](ErisPulse/Core/i18n/locales/ru.md)"
       }
@@ -597,7 +605,7 @@
     "[ErisPulse.Core.i18n.locales.zh_cn](ErisPulse/Core/i18n/locales/zh_cn.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 397,
+        "line": 402,
         "level": 3,
         "title": "[ErisPulse.Core.i18n.locales.zh_cn](ErisPulse/Core/i18n/locales/zh_cn.md)"
       }
@@ -605,7 +613,7 @@
     "[ErisPulse.Core.i18n.locales.zh_tw](ErisPulse/Core/i18n/locales/zh_tw.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 402,
+        "line": 407,
         "level": 3,
         "title": "[ErisPulse.Core.i18n.locales.zh_tw](ErisPulse/Core/i18n/locales/zh_tw.md)"
       }
@@ -613,7 +621,7 @@
     "[ErisPulse.Core.lifecycle](ErisPulse/Core/lifecycle.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 407,
+        "line": 412,
         "level": 3,
         "title": "[ErisPulse.Core.lifecycle](ErisPulse/Core/lifecycle.md)"
       }
@@ -621,7 +629,7 @@
     "[ErisPulse.Core.logger](ErisPulse/Core/logger.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 412,
+        "line": 417,
         "level": 3,
         "title": "[ErisPulse.Core.logger](ErisPulse/Core/logger.md)"
       }
@@ -629,7 +637,7 @@
     "[ErisPulse.Core.master](ErisPulse/Core/master.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 417,
+        "line": 422,
         "level": 3,
         "title": "[ErisPulse.Core.master](ErisPulse/Core/master.md)"
       }
@@ -637,7 +645,7 @@
     "[ErisPulse.Core.module](ErisPulse/Core/module.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 422,
+        "line": 427,
         "level": 3,
         "title": "[ErisPulse.Core.module](ErisPulse/Core/module.md)"
       }
@@ -645,7 +653,7 @@
     "[ErisPulse.Core.router](ErisPulse/Core/router.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 427,
+        "line": 432,
         "level": 3,
         "title": "[ErisPulse.Core.router](ErisPulse/Core/router.md)"
       }
@@ -653,7 +661,7 @@
     "[ErisPulse.Core.scope](ErisPulse/Core/scope.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 432,
+        "line": 437,
         "level": 3,
         "title": "[ErisPulse.Core.scope](ErisPulse/Core/scope.md)"
       }
@@ -661,7 +669,7 @@
     "[ErisPulse.Core.storage.__init__](ErisPulse/Core/storage/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 437,
+        "line": 442,
         "level": 3,
         "title": "[ErisPulse.Core.storage.__init__](ErisPulse/Core/storage/__init__.md)"
       }
@@ -669,7 +677,7 @@
     "[ErisPulse.Core.storage.mysql](ErisPulse/Core/storage/mysql.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 442,
+        "line": 447,
         "level": 3,
         "title": "[ErisPulse.Core.storage.mysql](ErisPulse/Core/storage/mysql.md)"
       }
@@ -677,7 +685,7 @@
     "[ErisPulse.Core.storage.postgres](ErisPulse/Core/storage/postgres.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 447,
+        "line": 452,
         "level": 3,
         "title": "[ErisPulse.Core.storage.postgres](ErisPulse/Core/storage/postgres.md)"
       }
@@ -685,7 +693,7 @@
     "[ErisPulse.Core.storage.sqlite](ErisPulse/Core/storage/sqlite.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 452,
+        "line": 457,
         "level": 3,
         "title": "[ErisPulse.Core.storage.sqlite](ErisPulse/Core/storage/sqlite.md)"
       }
@@ -693,7 +701,7 @@
     "[ErisPulse.Core.text_match](ErisPulse/Core/text_match.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 457,
+        "line": 462,
         "level": 3,
         "title": "[ErisPulse.Core.text_match](ErisPulse/Core/text_match.md)"
       }
@@ -701,7 +709,7 @@
     "[ErisPulse.Core.transcript](ErisPulse/Core/transcript.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 462,
+        "line": 467,
         "level": 3,
         "title": "[ErisPulse.Core.transcript](ErisPulse/Core/transcript.md)"
       }
@@ -709,7 +717,7 @@
     "[ErisPulse.__init__](ErisPulse/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 467,
+        "line": 472,
         "level": 3,
         "title": "[ErisPulse.__init__](ErisPulse/__init__.md)"
       }
@@ -717,7 +725,7 @@
     "[ErisPulse.__main__](ErisPulse/__main__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 472,
+        "line": 477,
         "level": 3,
         "title": "[ErisPulse.__main__](ErisPulse/__main__.md)"
       }
@@ -725,7 +733,7 @@
     "[ErisPulse.finders.__init__](ErisPulse/finders/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 477,
+        "line": 482,
         "level": 3,
         "title": "[ErisPulse.finders.__init__](ErisPulse/finders/__init__.md)"
       }
@@ -733,7 +741,7 @@
     "[ErisPulse.finders.adapter](ErisPulse/finders/adapter.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 482,
+        "line": 487,
         "level": 3,
         "title": "[ErisPulse.finders.adapter](ErisPulse/finders/adapter.md)"
       }
@@ -741,7 +749,7 @@
     "[ErisPulse.finders.bases.finder](ErisPulse/finders/bases/finder.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 487,
+        "line": 492,
         "level": 3,
         "title": "[ErisPulse.finders.bases.finder](ErisPulse/finders/bases/finder.md)"
       }
@@ -749,7 +757,7 @@
     "[ErisPulse.finders.module](ErisPulse/finders/module.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 492,
+        "line": 497,
         "level": 3,
         "title": "[ErisPulse.finders.module](ErisPulse/finders/module.md)"
       }
@@ -757,7 +765,7 @@
     "[ErisPulse.loaders.__init__](ErisPulse/loaders/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 497,
+        "line": 502,
         "level": 3,
         "title": "[ErisPulse.loaders.__init__](ErisPulse/loaders/__init__.md)"
       }
@@ -765,7 +773,7 @@
     "[ErisPulse.loaders.adapter](ErisPulse/loaders/adapter.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 502,
+        "line": 507,
         "level": 3,
         "title": "[ErisPulse.loaders.adapter](ErisPulse/loaders/adapter.md)"
       }
@@ -773,7 +781,7 @@
     "[ErisPulse.loaders.bases.loader](ErisPulse/loaders/bases/loader.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 507,
+        "line": 512,
         "level": 3,
         "title": "[ErisPulse.loaders.bases.loader](ErisPulse/loaders/bases/loader.md)"
       }
@@ -781,7 +789,7 @@
     "[ErisPulse.loaders.module](ErisPulse/loaders/module.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 512,
+        "line": 517,
         "level": 3,
         "title": "[ErisPulse.loaders.module](ErisPulse/loaders/module.md)"
       }
@@ -789,7 +797,7 @@
     "[ErisPulse.loaders.plugin_folder](ErisPulse/loaders/plugin_folder.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 517,
+        "line": 522,
         "level": 3,
         "title": "[ErisPulse.loaders.plugin_folder](ErisPulse/loaders/plugin_folder.md)"
       }
@@ -797,7 +805,7 @@
     "[ErisPulse.loaders.strategy](ErisPulse/loaders/strategy.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 522,
+        "line": 527,
         "level": 3,
         "title": "[ErisPulse.loaders.strategy](ErisPulse/loaders/strategy.md)"
       }
@@ -805,7 +813,7 @@
     "[ErisPulse.loaders.strict](ErisPulse/loaders/strict.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 527,
+        "line": 532,
         "level": 3,
         "title": "[ErisPulse.loaders.strict](ErisPulse/loaders/strict.md)"
       }
@@ -813,7 +821,7 @@
     "[ErisPulse.runtime.__init__](ErisPulse/runtime/__init__.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 532,
+        "line": 537,
         "level": 3,
         "title": "[ErisPulse.runtime.__init__](ErisPulse/runtime/__init__.md)"
       }
@@ -821,7 +829,7 @@
     "[ErisPulse.runtime.config_schema](ErisPulse/runtime/config_schema.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 537,
+        "line": 542,
         "level": 3,
         "title": "[ErisPulse.runtime.config_schema](ErisPulse/runtime/config_schema.md)"
       }
@@ -829,7 +837,7 @@
     "[ErisPulse.runtime.context](ErisPulse/runtime/context.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 542,
+        "line": 547,
         "level": 3,
         "title": "[ErisPulse.runtime.context](ErisPulse/runtime/context.md)"
       }
@@ -837,7 +845,7 @@
     "[ErisPulse.runtime.diagnostics](ErisPulse/runtime/diagnostics.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 547,
+        "line": 552,
         "level": 3,
         "title": "[ErisPulse.runtime.diagnostics](ErisPulse/runtime/diagnostics.md)"
       }
@@ -845,7 +853,7 @@
     "[ErisPulse.runtime.example_config](ErisPulse/runtime/example_config.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 552,
+        "line": 557,
         "level": 3,
         "title": "[ErisPulse.runtime.example_config](ErisPulse/runtime/example_config.md)"
       }
@@ -853,7 +861,7 @@
     "[ErisPulse.runtime.exceptions](ErisPulse/runtime/exceptions.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 557,
+        "line": 562,
         "level": 3,
         "title": "[ErisPulse.runtime.exceptions](ErisPulse/runtime/exceptions.md)"
       }
@@ -861,7 +869,7 @@
     "[ErisPulse.runtime.file_watcher](ErisPulse/runtime/file_watcher.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 562,
+        "line": 567,
         "level": 3,
         "title": "[ErisPulse.runtime.file_watcher](ErisPulse/runtime/file_watcher.md)"
       }
@@ -869,7 +877,7 @@
     "[ErisPulse.runtime.frame_config](ErisPulse/runtime/frame_config.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 567,
+        "line": 572,
         "level": 3,
         "title": "[ErisPulse.runtime.frame_config](ErisPulse/runtime/frame_config.md)"
       }
@@ -877,7 +885,7 @@
     "[ErisPulse.runtime.hints](ErisPulse/runtime/hints.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 572,
+        "line": 577,
         "level": 3,
         "title": "[ErisPulse.runtime.hints](ErisPulse/runtime/hints.md)"
       }
@@ -885,7 +893,7 @@
     "[ErisPulse.runtime.memory](ErisPulse/runtime/memory.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 577,
+        "line": 582,
         "level": 3,
         "title": "[ErisPulse.runtime.memory](ErisPulse/runtime/memory.md)"
       }
@@ -893,7 +901,7 @@
     "[ErisPulse.runtime.owner_cleanup](ErisPulse/runtime/owner_cleanup.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 582,
+        "line": 587,
         "level": 3,
         "title": "[ErisPulse.runtime.owner_cleanup](ErisPulse/runtime/owner_cleanup.md)"
       }
@@ -901,7 +909,7 @@
     "[ErisPulse.runtime.plugin_reload](ErisPulse/runtime/plugin_reload.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 587,
+        "line": 592,
         "level": 3,
         "title": "[ErisPulse.runtime.plugin_reload](ErisPulse/runtime/plugin_reload.md)"
       }
@@ -909,7 +917,7 @@
     "[ErisPulse.runtime.tasks](ErisPulse/runtime/tasks.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 592,
+        "line": 597,
         "level": 3,
         "title": "[ErisPulse.runtime.tasks](ErisPulse/runtime/tasks.md)"
       }
@@ -917,7 +925,7 @@
     "[ErisPulse.runtime.version](ErisPulse/runtime/version.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 597,
+        "line": 602,
         "level": 3,
         "title": "[ErisPulse.runtime.version](ErisPulse/runtime/version.md)"
       }
@@ -925,7 +933,7 @@
     "[ErisPulse.sdk](ErisPulse/sdk.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 602,
+        "line": 607,
         "level": 3,
         "title": "[ErisPulse.sdk](ErisPulse/sdk.md)"
       }
@@ -1170,6 +1178,14 @@
         "line": 1,
         "level": 1,
         "title": "`ErisPulse.CLI.commands.upgrade` 模块"
+      }
+    ],
+    "`ErisPulse.CLI.commands.version` 模块": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/commands/version.md",
+        "line": 1,
+        "level": 1,
+        "title": "`ErisPulse.CLI.commands.version` 模块"
       }
     ],
     "`ErisPulse.CLI.console` 模块": [
@@ -2735,7 +2751,7 @@
     "`__init__(python_executable: 'str | None' = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 108,
+        "line": 175,
         "level": 5,
         "title": "`__init__(python_executable: 'str | None' = None)`"
       }
@@ -3063,7 +3079,7 @@
     "`_build_install_command(package_spec: str, upgrade: bool = True)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 343,
+        "line": 410,
         "level": 5,
         "title": "`_build_install_command(package_spec: str, upgrade: bool = True)`"
       }
@@ -3119,7 +3135,7 @@
     "`_build_subprocess_env()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 158,
+        "line": 225,
         "level": 5,
         "title": "`_build_subprocess_env()`"
       }
@@ -3229,7 +3245,7 @@
     "`_check_sdk_compatibility(min_sdk_version: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 420,
+        "line": 487,
         "level": 5,
         "title": "`_check_sdk_compatibility(min_sdk_version: str)`"
       }
@@ -3477,7 +3493,7 @@
     "`_compare_versions(version1: str, version2: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 407,
+        "line": 474,
         "level": 5,
         "title": "`_compare_versions(version1: str, version2: str)`"
       }
@@ -3729,7 +3745,7 @@
     "`_detect_uv()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 294,
+        "line": 361,
         "level": 5,
         "title": "`_detect_uv()`"
       }
@@ -3915,7 +3931,7 @@
     "`_ensure_pip_available(target_python: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 381,
+        "line": 448,
         "level": 5,
         "title": "`_ensure_pip_available(target_python: str)`"
       }
@@ -3971,7 +3987,7 @@
     "`_execute_backend(base_cmd: list[str], args: list[str], description: str, backend: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 330,
+        "line": 397,
         "level": 5,
         "title": "`_execute_backend(base_cmd: list[str], args: list[str], description: str, backend: str)`"
       }
@@ -4035,7 +4051,7 @@
     "`_fetch_remote_packages_sync(url: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 178,
+        "line": 245,
         "level": 5,
         "title": "`_fetch_remote_packages_sync(url: str)`"
       }
@@ -4059,7 +4075,7 @@
     "`_find_installed_package_by_name(name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 247,
+        "line": 314,
         "level": 5,
         "title": "`_find_installed_package_by_name(name: str)`"
       }
@@ -4363,7 +4379,7 @@
     "`_get_proxy_for_url(url: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 148,
+        "line": 215,
         "level": 5,
         "title": "`_get_proxy_for_url(url: str)`"
       }
@@ -4371,7 +4387,7 @@
     "`_get_pypi_version_sync(package_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 266,
+        "line": 333,
         "level": 5,
         "title": "`_get_pypi_version_sync(package_name: str)`"
       }
@@ -4379,7 +4395,7 @@
     "`_get_pypi_versions_sync()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 514,
+        "line": 581,
         "level": 5,
         "title": "`_get_pypi_versions_sync()`"
       }
@@ -4395,7 +4411,7 @@
     "`_get_system_proxy()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 129,
+        "line": 196,
         "level": 5,
         "title": "`_get_system_proxy()`"
       }
@@ -4403,7 +4419,7 @@
     "`_get_target_python()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 317,
+        "line": 384,
         "level": 5,
         "title": "`_get_target_python()`"
       }
@@ -4419,7 +4435,7 @@
     "`_get_uv_command()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 306,
+        "line": 373,
         "level": 5,
         "title": "`_get_uv_command()`"
       }
@@ -4483,7 +4499,7 @@
     "`_http_get(url: str, timeout: int = 15)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 167,
+        "line": 234,
         "level": 5,
         "title": "`_http_get(url: str, timeout: int = 15)`"
       }
@@ -4775,7 +4791,7 @@
     "`_is_module_enabled(module_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 217,
+        "line": 284,
         "level": 5,
         "title": "`_is_module_enabled(module_name: str)`"
       }
@@ -4799,7 +4815,7 @@
     "`_is_pre_release(version: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 532,
+        "line": 599,
         "level": 5,
         "title": "`_is_pre_release(version: str)`"
       }
@@ -4869,7 +4885,7 @@
     "`_is_uv_disabled()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 287,
+        "line": 354,
         "level": 5,
         "title": "`_is_uv_disabled()`"
       }
@@ -5239,7 +5255,7 @@
     "`_normalize_name(name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 227,
+        "line": 294,
         "level": 5,
         "title": "`_normalize_name(name: str)`"
       }
@@ -5423,7 +5439,7 @@
     "`_parse_size(size_str: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 119,
+        "line": 186,
         "level": 5,
         "title": "`_parse_size(size_str: str)`"
       }
@@ -5439,7 +5455,7 @@
     "`_parse_windows_proxy(proxy_server: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 138,
+        "line": 205,
         "level": 5,
         "title": "`_parse_windows_proxy(proxy_server: str)`"
       }
@@ -5602,6 +5618,14 @@
         "line": 167,
         "level": 3,
         "title": "`_prompt_field(name: str, field_schema: dict, current, has_value: bool = False)`"
+      }
+    ],
+    "`_ps_quote(text: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
+        "line": 79,
+        "level": 3,
+        "title": "`_ps_quote(text: str)`"
       }
     ],
     "`_purge_installed_modules(top_level: list[str])`": [
@@ -6165,7 +6189,7 @@
     "`_run_pip_command_with_output(args: list[str], description: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 361,
+        "line": 428,
         "level": 5,
         "title": "`_run_pip_command_with_output(args: list[str], description: str)`"
       }
@@ -6205,7 +6229,7 @@
     "`_sanitize_proxy_url(url: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 98,
+        "line": 165,
         "level": 5,
         "title": "`_sanitize_proxy_url(url: str)`"
       }
@@ -6432,6 +6456,14 @@
         "title": "`_source_label(has_value: bool, value, bool_text: str = '')`"
       }
     ],
+    "`_spawn_windows_tool_update(cmd: 'list[str]', target_version: 'str | None', current_version: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
+        "line": 613,
+        "level": 5,
+        "title": "`_spawn_windows_tool_update(cmd: 'list[str]', target_version: 'str | None', current_version: str)`"
+      }
+    ],
     "`_split_path(path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/scope.md",
@@ -6550,12 +6582,12 @@
         "title": "`_t(key: str)`"
       }
     ],
-    "`_target_from_class(kind: str, name: str, cls, package = None, source = 'entrypoint')`": [
+    "`_target_from_class(kind: Literal['adapter', 'module'], name: str, cls, package = None, source = 'entrypoint')`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/config_wizard.md",
         "line": 60,
         "level": 3,
-        "title": "`_target_from_class(kind: str, name: str, cls, package = None, source = 'entrypoint')`"
+        "title": "`_target_from_class(kind: Literal['adapter', 'module'], name: str, cls, package = None, source = 'entrypoint')`"
       }
     ],
     "`_terminal_height()`": [
@@ -6745,7 +6777,7 @@
     "`_version_key(version: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 395,
+        "line": 462,
         "level": 5,
         "title": "`_version_key(version: str)`"
       }
@@ -6888,6 +6920,14 @@
         "line": 175,
         "level": 5,
         "title": "`add(platform: str | None, user_id: str, persist: bool = True)`"
+      }
+    ],
+    "`add_arguments(parser)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/commands/version.md",
+        "line": 27,
+        "level": 5,
+        "title": "`add_arguments(parser)`"
       }
     ],
     "`add_arguments(parser: ArgumentParser)`": [
@@ -7431,7 +7471,7 @@
     "`async _fetch_remote_packages(url: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 188,
+        "line": 255,
         "level": 5,
         "title": "`async _fetch_remote_packages(url: str)`"
       }
@@ -7439,7 +7479,7 @@
     "`async _find_package_by_alias(alias: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 237,
+        "line": 304,
         "level": 5,
         "title": "`async _find_package_by_alias(alias: str)`"
       }
@@ -7471,7 +7511,7 @@
     "`async _get_package_info(package_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 430,
+        "line": 497,
         "level": 5,
         "title": "`async _get_package_info(package_name: str)`"
       }
@@ -7479,7 +7519,7 @@
     "`async _get_pypi_package_version(package_name: str, force_refresh: bool = False)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 276,
+        "line": 343,
         "level": 5,
         "title": "`async _get_pypi_package_version(package_name: str, force_refresh: bool = False)`"
       }
@@ -8195,7 +8235,7 @@
     "`async check_package_updates()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 257,
+        "line": 324,
         "level": 5,
         "title": "`async check_package_updates()`"
       }
@@ -8527,7 +8567,7 @@
     "`async get_pypi_versions()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 523,
+        "line": 590,
         "level": 5,
         "title": "`async get_pypi_versions()`"
       }
@@ -8535,7 +8575,7 @@
     "`async get_remote_packages(force_refresh: bool = False)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 198,
+        "line": 265,
         "level": 5,
         "title": "`async get_remote_packages(force_refresh: bool = False)`"
       }
@@ -9486,6 +9526,22 @@
         "title": "`build_base_event(raw_event: dict, raw_type: str = '')`"
       }
     ],
+    "`build_uv_tool_update_command(uv_cmd: 'list[str]', target_version: 'str | None')`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
+        "line": 68,
+        "level": 3,
+        "title": "`build_uv_tool_update_command(uv_cmd: 'list[str]', target_version: 'str | None')`"
+      }
+    ],
+    "`build_windows_tool_update_script(cmd: 'list[str]', parent_pid: int, msg_done: str, msg_failed: str, press_key: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
+        "line": 89,
+        "level": 3,
+        "title": "`build_windows_tool_update_script(cmd: 'list[str]', parent_pid: int, msg_done: str, msg_failed: str, press_key: str)`"
+      }
+    ],
     "`cancel()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
@@ -9821,7 +9877,7 @@
     "`class CommandHighlighter(RegexHighlighter)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/console.md",
-        "line": 46,
+        "line": 55,
         "level": 3,
         "title": "`class CommandHighlighter(RegexHighlighter)`"
       }
@@ -10277,7 +10333,7 @@
     "`class PackageManager`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 84,
+        "line": 151,
         "level": 3,
         "title": "`class PackageManager`"
       }
@@ -10600,6 +10656,14 @@
         "line": 17,
         "level": 3,
         "title": "`class UpgradeCommand(Command)`"
+      }
+    ],
+    "`class VersionCommand(Command)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/commands/version.md",
+        "line": 17,
+        "level": 3,
+        "title": "`class VersionCommand(Command)`"
       }
     ],
     "`class Violation`": [
@@ -11276,6 +11340,14 @@
         "title": "`disable(name: str)`"
       }
     ],
+    "`disable_banner()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/console.md",
+        "line": 21,
+        "level": 3,
+        "title": "`disable_banner()`"
+      }
+    ],
     "`disable_docs()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
@@ -11454,6 +11526,12 @@
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/base.md",
         "line": 42,
+        "level": 5,
+        "title": "`execute(args)`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/commands/version.md",
+        "line": 34,
         "level": 5,
         "title": "`execute(args)`"
       }
@@ -12109,7 +12187,7 @@
     "`get_installed_packages()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 208,
+        "line": 275,
         "level": 5,
         "title": "`get_installed_packages()`"
       }
@@ -12117,7 +12195,7 @@
     "`get_installed_version()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 505,
+        "line": 572,
         "level": 5,
         "title": "`get_installed_version()`"
       }
@@ -12895,7 +12973,7 @@
     "`install_direct(pip_args: list[str], description: str = 'pip install')`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 453,
+        "line": 520,
         "level": 5,
         "title": "`install_direct(pip_args: list[str], description: str = 'pip install')`"
       }
@@ -12911,7 +12989,7 @@
     "`install_package(package_names: list[str], upgrade: bool = False, pre: bool = False, extra_pip_args: list[str] | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 440,
+        "line": 507,
         "level": 5,
         "title": "`install_package(package_names: list[str], upgrade: bool = False, pre: bool = False, extra_pip_args: list[str] | None = None)`"
       }
@@ -13240,6 +13318,14 @@
         "line": 664,
         "level": 5,
         "title": "`is_supervised()`"
+      }
+    ],
+    "`is_uv_tool_env()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
+        "line": 120,
+        "level": 3,
+        "title": "`is_uv_tool_env()`"
       }
     ],
     "`is_valid_send_type(send_type: str)`": [
@@ -13947,7 +14033,7 @@
     "`print_banner()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/console.md",
-        "line": 21,
+        "line": 28,
         "level": 3,
         "title": "`print_banner()`"
       }
@@ -13987,7 +14073,7 @@
     "`print_suggestion(title: str, suggestions: list[str], hint: str | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/console.md",
-        "line": 30,
+        "line": 39,
         "level": 3,
         "title": "`print_suggestion(title: str, suggestions: list[str], hint: str | None = None)`"
       }
@@ -14675,7 +14761,7 @@
     "`search_package(query: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 495,
+        "line": 562,
         "level": 5,
         "title": "`search_package(query: str)`"
       }
@@ -15485,7 +15571,7 @@
     "`uninstall_package(package_names: list[str], skip_confirm: bool = False)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 464,
+        "line": 531,
         "level": 5,
         "title": "`uninstall_package(package_names: list[str], skip_confirm: bool = False)`"
       }
@@ -15713,7 +15799,7 @@
     "`update_self(target_version: str | None = None, force: bool = False)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 546,
+        "line": 630,
         "level": 5,
         "title": "`update_self(target_version: str | None = None, force: bool = False)`"
       }
@@ -15721,7 +15807,7 @@
     "`upgrade_all()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 475,
+        "line": 542,
         "level": 5,
         "title": "`upgrade_all()`"
       }
@@ -15729,7 +15815,7 @@
     "`upgrade_package(package_names: list[str], pre: bool = False)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 484,
+        "line": 551,
         "level": 5,
         "title": "`upgrade_package(package_names: list[str], pre: bool = False)`"
       }
@@ -15845,9 +15931,17 @@
     "`warn_if_uv_isolated()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 68,
+        "line": 107,
         "level": 3,
         "title": "`warn_if_uv_isolated()`"
+      }
+    ],
+    "`warn_if_uv_tool_env_without_project()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
+        "line": 134,
+        "level": 3,
+        "title": "`warn_if_uv_tool_env_without_project()`"
       }
     ],
     "`warning(msg)`": [
@@ -16282,6 +16376,12 @@
         "title": "方法列表"
       },
       {
+        "document": "api-reference/auto_api/ErisPulse/CLI/commands/version.md",
+        "line": 24,
+        "level": 4,
+        "title": "方法列表"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/CLI/i18n/__init__.md",
         "line": 70,
         "level": 4,
@@ -16301,7 +16401,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 95,
+        "line": 162,
         "level": 4,
         "title": "方法列表"
       },
@@ -16973,6 +17073,12 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/upgrade.md",
+        "line": 5,
+        "level": 2,
+        "title": "模块概述"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/commands/version.md",
         "line": 5,
         "level": 2,
         "title": "模块概述"
@@ -17658,8 +17764,14 @@
         "title": "类列表"
       },
       {
+        "document": "api-reference/auto_api/ErisPulse/CLI/commands/version.md",
+        "line": 14,
+        "level": 2,
+        "title": "类列表"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/CLI/console.md",
-        "line": 43,
+        "line": 52,
         "level": 2,
         "title": "类列表"
       },
@@ -17683,7 +17795,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 81,
+        "line": 148,
         "level": 2,
         "title": "类列表"
       },

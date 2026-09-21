@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1671,
+  "total_keywords": 1672,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -10,12 +10,12 @@
         "title": "0 成功（OK）"
       }
     ],
-    "1 本レールインストールスクリプト（推奨）": [
+    "1 本化インストールスクリプト（推奨）": [
       {
         "document": "quick-start.md",
         "line": 7,
         "level": 3,
-        "title": "1 本レールインストールスクリプト（推奨）"
+        "title": "1 本化インストールスクリプト（推奨）"
       }
     ],
     "1. BaseAdapter 層（通常はオーバーライド不要）": [
@@ -2755,17 +2755,17 @@
     "CLI によるインストール": [
       {
         "document": "quick-start.md",
-        "line": 97,
+        "line": 105,
         "level": 3,
         "title": "CLI によるインストール"
       }
     ],
-    "CLI コマンドリファレンス": [
+    "CLIコマンドリファレンス": [
       {
         "document": "user-guide/cli-reference.md",
         "line": 1,
         "level": 1,
-        "title": "CLI コマンドリファレンス"
+        "title": "CLIコマンドリファレンス"
       }
     ],
     "CORS 設定": [
@@ -2867,7 +2867,7 @@
     "Debian/Ubuntu 仮想環境の作成失敗": [
       {
         "document": "user-guide/installation.md",
-        "line": 138,
+        "line": 153,
         "level": 3,
         "title": "Debian/Ubuntu 仮想環境の作成失敗"
       }
@@ -3263,7 +3263,7 @@
     "IDE補完の有効化（オプション）": [
       {
         "document": "quick-start.md",
-        "line": 127,
+        "line": 135,
         "level": 2,
         "title": "IDE補完の有効化（オプション）"
       }
@@ -4105,7 +4105,7 @@
     "Windows PowerShell 実行ポリシー": [
       {
         "document": "user-guide/installation.md",
-        "line": 130,
+        "line": 145,
         "level": 3,
         "title": "Windows PowerShell 実行ポリシー"
       }
@@ -4481,7 +4481,7 @@
     "config": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 232,
+        "line": 237,
         "level": 3,
         "title": "config"
       }
@@ -4537,7 +4537,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 371,
+        "line": 379,
         "level": 3,
         "title": "create"
       }
@@ -4585,7 +4585,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 510,
+        "line": 519,
         "level": 3,
         "title": "doctor"
       }
@@ -4657,7 +4657,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 422,
+        "line": 430,
         "level": 3,
         "title": "i18n"
       }
@@ -4673,7 +4673,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 324,
+        "line": 329,
         "level": 3,
         "title": "init"
       }
@@ -4705,7 +4705,7 @@
     "list": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 169,
+        "line": 174,
         "level": 3,
         "title": "list"
       }
@@ -4713,7 +4713,7 @@
     "list-remote": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 198,
+        "line": 203,
         "level": 3,
         "title": "list-remote"
       }
@@ -4774,12 +4774,12 @@
         "title": "owner コンテキストメカニズム"
       }
     ],
-    "pip を使用したインストール": [
+    "pip を使用してインストール": [
       {
         "document": "quick-start.md",
         "line": 51,
         "level": 3,
-        "title": "pip を使用したインストール"
+        "title": "pip を使用してインストール"
       }
     ],
     "pip 方式": [
@@ -4825,7 +4825,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 286,
+        "line": 291,
         "level": 3,
         "title": "run"
       }
@@ -4913,7 +4913,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 459,
+        "line": 467,
         "level": 3,
         "title": "types"
       }
@@ -5911,13 +5911,13 @@
     "インストールの確認": [
       {
         "document": "user-guide/installation.md",
-        "line": 81,
+        "line": 96,
         "level": 2,
         "title": "インストールの確認"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 83,
+        "line": 98,
         "level": 3,
         "title": "インストールの確認"
       }
@@ -5925,7 +5925,7 @@
     "インストール失敗": [
       {
         "document": "user-guide/installation.md",
-        "line": 108,
+        "line": 123,
         "level": 3,
         "title": "インストール失敗"
       }
@@ -5957,7 +5957,7 @@
     "インタラクティブなインストール": [
       {
         "document": "quick-start.md",
-        "line": 109,
+        "line": 117,
         "level": 3,
         "title": "インタラクティブなインストール"
       }
@@ -5973,7 +5973,7 @@
     "インタラクティブな初期化（推奨）": [
       {
         "document": "quick-start.md",
-        "line": 63,
+        "line": 71,
         "level": 3,
         "title": "インタラクティブな初期化（推奨）"
       }
@@ -6309,7 +6309,7 @@
     "グローバルパラメータ": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 494,
+        "line": 502,
         "level": 2,
         "title": "グローバルパラメータ"
       }
@@ -6593,7 +6593,7 @@
     "コンポーネントのアップグレード": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 606,
+        "line": 615,
         "level": 3,
         "title": "コンポーネントのアップグレード"
       }
@@ -6601,7 +6601,7 @@
     "コンポーネントのアンインストール": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 583,
+        "line": 592,
         "level": 3,
         "title": "コンポーネントのアンインストール"
       }
@@ -6609,7 +6609,7 @@
     "コンポーネントのリスト表示": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 567,
+        "line": 576,
         "level": 3,
         "title": "コンポーネントのリスト表示"
       }
@@ -6617,7 +6617,7 @@
     "コンポーネントの設定": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 593,
+        "line": 602,
         "level": 3,
         "title": "コンポーネントの設定"
       }
@@ -6991,7 +6991,7 @@
     "タイプストアブの生成": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 642,
+        "line": 651,
         "level": 3,
         "title": "タイプストアブの生成"
       }
@@ -6999,7 +6999,7 @@
     "タイプストアブコマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 453,
+        "line": 461,
         "level": 2,
         "title": "タイプストアブコマンド"
       }
@@ -7299,7 +7299,7 @@
     "テストの実行": [
       {
         "document": "user-guide/installation.md",
-        "line": 90,
+        "line": 105,
         "level": 3,
         "title": "テストの実行"
       }
@@ -7873,7 +7873,7 @@
     "ファスト初期化": [
       {
         "document": "quick-start.md",
-        "line": 76,
+        "line": 84,
         "level": 3,
         "title": "ファスト初期化"
       }
@@ -7918,12 +7918,12 @@
         "title": "フックブレークポイント一覧"
       }
     ],
-    "フットスタジの作成": [
+    "フットスタンドの作成": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 662,
+        "line": 671,
         "level": 3,
-        "title": "フットスタジの作成"
+        "title": "フットスタンドの作成"
       }
     ],
     "フレームワーク内部のパラメータ検証（ValueError）": [
@@ -8201,13 +8201,13 @@
     "プロジェクトの初期化": [
       {
         "document": "quick-start.md",
-        "line": 61,
+        "line": 69,
         "level": 2,
         "title": "プロジェクトの初期化"
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 652,
+        "line": 661,
         "level": 3,
         "title": "プロジェクトの初期化"
       }
@@ -8215,7 +8215,7 @@
     "プロジェクトの初期化とモジュールのインストール": [
       {
         "document": "user-guide/installation.md",
-        "line": 68,
+        "line": 83,
         "level": 2,
         "title": "プロジェクトの初期化とモジュールのインストール"
       }
@@ -8223,13 +8223,13 @@
     "プロジェクトの実行": [
       {
         "document": "quick-start.md",
-        "line": 117,
+        "line": 125,
         "level": 2,
         "title": "プロジェクトの実行"
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 619,
+        "line": 628,
         "level": 3,
         "title": "プロジェクトの実行"
       }
@@ -8251,7 +8251,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 146,
+        "line": 154,
         "level": 2,
         "title": "プロジェクト構造"
       }
@@ -8259,7 +8259,7 @@
     "プロジェクト管理コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 317,
+        "line": 322,
         "level": 2,
         "title": "プロジェクト管理コマンド"
       }
@@ -8995,13 +8995,13 @@
     "モジュールのインストール": [
       {
         "document": "quick-start.md",
-        "line": 95,
+        "line": 103,
         "level": 2,
         "title": "モジュールのインストール"
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 554,
+        "line": 563,
         "level": 3,
         "title": "モジュールのインストール"
       }
@@ -9079,7 +9079,7 @@
     "モジュールインストール失敗": [
       {
         "document": "user-guide/installation.md",
-        "line": 123,
+        "line": 138,
         "level": 3,
         "title": "モジュールインストール失敗"
       }
@@ -9889,7 +9889,7 @@
     "一般的な使い方": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 552,
+        "line": 561,
         "level": 2,
         "title": "一般的な使い方"
       }
@@ -10559,7 +10559,7 @@
     "利用可能なモジュールの確認": [
       {
         "document": "quick-start.md",
-        "line": 103,
+        "line": 111,
         "level": 3,
         "title": "利用可能なモジュールの確認"
       }
@@ -11367,7 +11367,7 @@
     "実行制御コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 275,
+        "line": 280,
         "level": 2,
         "title": "実行制御コマンド"
       }
@@ -11548,12 +11548,12 @@
         "title": "対話の作成"
       }
     ],
-    "対話形式のインストール": [
+    "対話形式でのインストール": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 539,
+        "line": 548,
         "level": 2,
-        "title": "対話形式のインストール"
+        "title": "対話形式でのインストール"
       }
     ],
     "対象読者": [
@@ -11647,7 +11647,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 106,
+        "line": 121,
         "level": 2,
         "title": "常見問題"
       }
@@ -11739,7 +11739,7 @@
     "情報照会コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 162,
+        "line": 166,
         "level": 2,
         "title": "情報照会コマンド"
       }
@@ -11859,7 +11859,7 @@
     "手動でのプロジェクト作成": [
       {
         "document": "quick-start.md",
-        "line": 86,
+        "line": 94,
         "level": 3,
         "title": "手動でのプロジェクト作成"
       }
@@ -12297,9 +12297,17 @@
     "方法3：ErisPulse-Appクライアントの使用（ターミナル不要）": [
       {
         "document": "user-guide/installation.md",
-        "line": 72,
+        "line": 87,
         "level": 3,
         "title": "方法3：ErisPulse-Appクライアントの使用（ターミナル不要）"
+      }
+    ],
+    "方法3：uv toolを使用したインストール（グローバルCLI、推奨）": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 68,
+        "level": 3,
+        "title": "方法3：uv toolを使用したインストール（グローバルCLI、推奨）"
       }
     ],
     "方法速查表": [
@@ -12933,13 +12941,13 @@
       },
       {
         "document": "quick-start.md",
-        "line": 174,
+        "line": 182,
         "level": 2,
         "title": "次のステップ"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 150,
+        "line": 165,
         "level": 2,
         "title": "次のステップ"
       }
@@ -13125,7 +13133,7 @@
     "環境診断": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 508,
+        "line": 517,
         "level": 2,
         "title": "環境診断"
       }
@@ -13725,7 +13733,7 @@
     "言語の切り替え": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 629,
+        "line": 638,
         "level": 3,
         "title": "言語の切り替え"
       }
@@ -13733,7 +13741,7 @@
     "言語コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 416,
+        "line": 424,
         "level": 2,
         "title": "言語コマンド"
       }
@@ -13847,7 +13855,7 @@
     "設定エラー": [
       {
         "document": "user-guide/installation.md",
-        "line": 116,
+        "line": 131,
         "level": 3,
         "title": "設定エラー"
       }
@@ -13881,7 +13889,7 @@
     "設定コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 226,
+        "line": 231,
         "level": 2,
         "title": "設定コマンド"
       }
@@ -13895,7 +13903,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 158,
+        "line": 166,
         "level": 2,
         "title": "設定ファイル"
       }

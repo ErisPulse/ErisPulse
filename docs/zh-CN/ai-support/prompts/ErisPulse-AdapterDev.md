@@ -417,6 +417,14 @@ pip install ErisPulse
 
 如果你已安装 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安装速度更快。
 
+只想把 `epsdk` 命令行工具装到全局、不污染项目环境时，推荐 `uv tool install`：
+
+```bash
+uv tool install ErisPulse
+```
+
+安装后 `epsdk` 全局可用：在项目目录内运行时会自动感知项目 `.venv`（`epsdk install` 装进项目环境、`epsdk run` 用项目环境运行），框架本体由工具环境提供。详见[安装参考](user-guide/installation.md)。
+
 ## 初始化项目
 
 ### 交互式初始化（推荐）
@@ -6107,6 +6115,10 @@ epsdk self-update --pre
 epsdk self-update -f
 ```
 
+> [!NOTE]
+> 通过 `uv tool install ErisPulse` 安装时，本命令自动改走 `uv tool upgrade ErisPulse`（指定版本时为 `uv tool install ErisPulse==<版本> --force`），直接 pip 升级工具环境会被 uv 的清单还原抹掉。
+> Windows 下更新在新控制台窗口中进行：当前 CLI 需先退出以解除工具环境文件占用，窗口提示完成后重新打开终端即可。
+
 ---
 
 ## 信息查询命令
@@ -6115,6 +6127,7 @@ epsdk self-update -f
 |------|------|------|------|
 | `list` | `l`, `ls` | `[--type/-t {modules,adapters,all}] [--outdated/-o]` | 列出已安装的组件 |
 | `list-remote` | `lsr` | `[--type/-t {modules,adapters,all}] [--refresh/-r]` | 列出远程可用的组件 |
+| `version` | `ver` | | 显示 SDK 与 Python 版本信息（与 `-V` 等效） |
 
 ### list
 
@@ -6315,6 +6328,9 @@ epsdk init --no-venv -n my_bot
 
 init 产物：`main.py`、`pyproject.toml`（依赖清单）、`config/config.toml` + `config.full.example`、`config/ssl/`、`logs/`、`.gitignore`、`README.md`；选择创建虚拟环境时额外生成 `.venv` 并将 `erispulse` 与所选适配器安装其中。
 
+> [!NOTE]
+> `.gitignore` 为分组式模板：Python 字节码与构建产物、虚拟环境与 `.env`、工具缓存、编辑器与系统文件，并**整体排除 `config/` 与 `logs/` 运行时目录**——`config.toml` 含适配器令牌等敏感信息，不建议入库；共享配置骨架请使用 `config.full.example`。
+
 > [!WARNING]
 > **不要使用 `uv run epsdk run` 运行机器人**。`uv run` 在无 `pyproject.toml` 的目录执行时创建**一次性隔离环境**——在其中通过 `epsdk install` 安装的适配器不会持久化。请在项目目录内使用 `epsdk run`（自动使用项目 `.venv`），或先激活虚拟环境再运行。
 
@@ -6451,6 +6467,7 @@ epsdk types --force
 | `--version` | `-V` | 显示版本信息 |
 | `--verbose` | `-v` | 显示详细输出（可叠加 `-vv`/`-vvv`） |
 | `--no-color` | | 禁用彩色输出（适合 CI / 日志采集） |
+| `--no-banner` | | 跳过启动 Banner（脚本化调用 / CI 场景；非交互终端与 `ERISPULSE_NO_BANNER=1` 下自动静默） |
 | `--yes` | `-y` | 自动确认所有交互提示（非交互式运行） |
 
 ---

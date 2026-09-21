@@ -57,7 +57,7 @@ ErisPulse CLI 配置向导共享工具
 ---
 
 
-### `_target_from_class(kind: str, name: str, cls, package = None, source = 'entrypoint')`
+### `_target_from_class(kind: Literal['adapter', 'module'], name: str, cls, package = None, source = 'entrypoint')`
 
 从目标类构造 ConfigTarget（读取类属性声明，不实例化）
 

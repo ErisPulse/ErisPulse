@@ -18,11 +18,20 @@ CLI 控制台模块
 ## 函数列表
 
 
+### `disable_banner()`
+
+禁用后续 Banner 输出（--no-banner 全局旗标调用）
+
+---
+
+
 ### `print_banner()`
 
 输出 ErisPulse 启动 Banner
 
 根据终端宽度选择完整版或精简版 Banner，且仅在首次调用时输出。
+非交互终端（管道 / CI）、``ERISPULSE_NO_BANNER`` 环境变量或
+``--no-banner`` 旗标下自动静默，避免污染脚本输出与日志采集。
 
 ---
 
