@@ -464,6 +464,11 @@ DEFAULT_MESSAGE_IGNORE_SELF: Final[bool] = True
 #           命令治理（cooldown=，2.9 后续特性）声明复用同一时长语法，改动需同步评估。
 COMMAND_ARG_DURATION_UNITS: Final[dict] = {"s": 1.0, "m": 60.0, "h": 3600.0, "d": 86400.0}
 
+# 命令治理 / 处理器节流共用的键粒度白名单。
+# 使用位置: Core/Event/command.py（cooldown_key= / rate_limit_key=）与
+# Core/Event/throttle.py（throttle_key=）；修改影响三者的注册期校验
+GOVERNANCE_KEY_KINDS: Final[frozenset] = frozenset({"user", "session", "global"})
+
 # ==============================================================================
 # 事件处理器默认值
 #
@@ -1077,6 +1082,7 @@ __all__ = [
     "BOT_STATUS_ONLINE",
     "CLEANUP_CALLBACK_TIMEOUT_SECS",
     "COMMAND_ARG_DURATION_UNITS",
+    "GOVERNANCE_KEY_KINDS",
     "CONFIG_CACHE_TIMEOUT_SECS",
     "CONFIG_KEY_ADAPTER_STATUS",
     "CONFIG_KEY_ADAPTER_STATUS_OF",
