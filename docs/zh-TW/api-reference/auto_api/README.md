@@ -19,10 +19,10 @@
 
 ## 统计信息
 
-- **模块总数**: 116
-- **类总数**: 150（包括 5 个嵌套类）
-- **函数总数**: 274
-- **方法总数**: 1413
+- **模块总数**: 120
+- **类总数**: 159（包括 5 个嵌套类）
+- **函数总数**: 308
+- **方法总数**: 1461
 
 ---
 
@@ -216,7 +216,7 @@
 
 ### [ErisPulse.Core.Bases.config_schema](ErisPulse/Core/Bases/config_schema.md)
 
-3 个类 | 24 个函数
+3 个类 | 28 个函数
 
 
 ### [ErisPulse.Core.Bases.converter](ErisPulse/Core/Bases/converter.md)
@@ -244,6 +244,11 @@
 1 个类 | 11 个方法
 
 
+### [ErisPulse.Core.Bases.model](ErisPulse/Core/Bases/model.md)
+
+5 个类 | 36 个方法 | 3 个函数
+
+
 ### [ErisPulse.Core.Bases.module](ErisPulse/Core/Bases/module.md)
 
 3 个类 | 12 个方法
@@ -266,7 +271,7 @@
 
 ### [ErisPulse.Core.Bases.sql_base](ErisPulse/Core/Bases/sql_base.md)
 
-5 个类 | 67 个方法 | 3 个函数
+5 个类 | 70 个方法 | 3 个函数
 
 
 ### [ErisPulse.Core.Bases.storage](ErisPulse/Core/Bases/storage.md)
@@ -291,7 +296,12 @@
 
 ### [ErisPulse.Core.Event.command](ErisPulse/Core/Event/command.md)
 
-1 个类 | 28 个方法
+1 个类 | 31 个方法
+
+
+### [ErisPulse.Core.Event.command_args](ErisPulse/Core/Event/command_args.md)
+
+3 个类 | 13 个函数
 
 
 ### [ErisPulse.Core.Event.interaction](ErisPulse/Core/Event/interaction.md)
@@ -334,6 +344,11 @@
 1 个类 | 15 个函数
 
 
+### [ErisPulse.Core.Event.trace](ErisPulse/Core/Event/trace.md)
+
+5 个函数
+
+
 ### [ErisPulse.Core.Event.wrapper](ErisPulse/Core/Event/wrapper.md)
 
 5 个类 | 105 个方法 | 17 个函数
@@ -367,6 +382,11 @@
 ### [ErisPulse.Core.constants](ErisPulse/Core/constants.md)
 
 模块文档
+
+
+### [ErisPulse.Core.di](ErisPulse/Core/di.md)
+
+1 个类 | 1 个方法 | 4 个函数
 
 
 ### [ErisPulse.Core.i18n.__init__](ErisPulse/Core/i18n/__init__.md)
@@ -446,12 +466,12 @@
 
 ### [ErisPulse.Core.storage.mysql](ErisPulse/Core/storage/mysql.md)
 
-2 个类 | 19 个方法
+2 个类 | 22 个方法
 
 
 ### [ErisPulse.Core.storage.postgres](ErisPulse/Core/storage/postgres.md)
 
-2 个类 | 18 个方法
+2 个类 | 20 个方法
 
 
 ### [ErisPulse.Core.storage.sqlite](ErisPulse/Core/storage/sqlite.md)
@@ -551,7 +571,7 @@
 
 ### [ErisPulse.runtime.diagnostics](ErisPulse/runtime/diagnostics.md)
 
-7 个函数
+12 个函数
 
 
 ### [ErisPulse.runtime.example_config](ErisPulse/runtime/example_config.md)

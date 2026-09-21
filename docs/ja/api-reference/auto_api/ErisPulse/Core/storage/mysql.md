@@ -56,9 +56,30 @@ MySQL 方言实现
 ---
 
 
+##### `create_index_sql(table: str, index: str, column: str)`
+
+> **内部方法** 裸 CREATE INDEX（MySQL 不支持 IF NOT EXISTS，幂等由 has_index_sql 预检承接）
+
+---
+
+
+##### `has_index_sql(table: str, index: str)`
+
+> **内部方法** information_schema 索引查询当前数据库
+
+---
+
+
 ##### `autoincrement_column(base_type: str)`
 
 > **内部方法** ``INT/BIGINT AUTO_INCREMENT PRIMARY KEY``
+
+---
+
+
+##### `last_insert_id_sql()`
+
+> **内部方法** 连接级 LAST_INSERT_ID()
 
 ---
 

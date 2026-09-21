@@ -21,6 +21,7 @@ ErisPulse 命令处理模块
 > 2. 支持命令权限控制（master / permission 函数 / 覆写系统 ACL）
 > 3. 支持命令帮助系统
 > 4. 支持等待用户回复交互
+> 5. 支持声明式参数与选项（``args=`` / ``options=``）：自动类型转换、本地化错误提示与 usage 生成
 
 ---
 
@@ -108,7 +109,7 @@ permission 时调用：逐级去掉末尾 token 查找已注册祖先，返回�
 ---
 
 
-##### `__call__(name: str | list[str] | None = None, aliases: list[str] | None = None, group: str | None = None, priority: int = 0, permission: Callable | None = None, help: str | None = None, usage: str | None = None, hidden: bool = False, master: bool = False)`
+##### `__call__(name: str | list[str] | None = None, aliases: list[str] | None = None, group: str | None = None, priority: int = 0, permission: Callable | None = None, help: str | None = None, usage: str | None = None, hidden: bool = False, master: bool = False, args: str | None = None, options: dict | None = None, cooldown: str | None = None, cooldown_key: str = 'user', cooldown_reply: str | None = None)`
 
 命令装饰器
 
@@ -117,7 +118,37 @@ permission 时调用：逐级去掉末尾 token 查找已注册祖先，返回�
 - **permission** (`权限检查函数，返回True时允许执行命令`): - **help**: 命令帮助信息
 - **usage** (`命令使用方法`): - **hidden**: 是否在帮助中隐藏命令
 - **master** (`是否仅允许框架主人执行（框架自动检查`): ``master.is_master(event)``）
-**返回值**: 装饰器函数
+- **args** (`声明式位置参数定义，如`): ``"<count:int> [sides:int=6]"``。类型支持
+    ``str`` / ``int`` / ``float`` / ``bool`` / ``literal``（枚举，``<mode:literal=fast|slow>``）/
+    ``duration``（如 ``90s``、``1h30m``）/ ``rest``（剩余全部文本，须在最后）。
+    可选条目未声明默认值（``[name:type]``）时回填处理器签名同名参数的默认值。
+    声明后框架在权限检查通过后自动解析并按名注入处理器参数，用户输入错误时
+    自动回复本地化提示与用法（不会抛异常崩溃）；不声明则保持原行为
+- **options** (`声明式选项定义，如`): ``{"verbose": "-v/--verbose", "label": "--label"}``。
+    键为处理器参数名，值为旗标形式（多个别名以 ``/`` 分隔）：注解为 ``bool`` 的参数
+    为布尔旗标；其余（缺省按 ``str``）为带值选项，支持 ``--label hello`` 与
+    ``--label=hello`` 取值，类型跟随处理器注解。选项先于位置参数解析——``rest``
+    覆盖剔除选项后的剩余文本。声明参数名必须存在于处理器签名中（否则注册期抛 ValueError）
+- **cooldown** (`命令冷却声明（EPRFC-2026-001`): 方向七），时长语法与 ``args=`` 的
+    ``duration`` 类型一致（如 ``"30s"``、``"1h30m"``、``"1d"``）。冷却命中时命令
+    默认静默丢弃（对称于作用域静默），命令仍保持已认领状态（不漏给低优先级
+    消息处理器）；冷却在全部权限检查与参数解析通过、命令实际执行前开始计时，
+    参数错误不消耗冷却。进程内内存状态，模块卸载时自动清理
+- **cooldown_key** (`冷却键粒度：``"user"``（默认，同一用户全局共享）/`): ``"session"``
+    （同一会话共享）/ ``"global"``（所有用户所有会话共享）。``user`` / ``session``
+    复用 ``platform:bot:目标`` 会话键体系。非法值注册期抛 ValueError
+- **cooldown_reply** (`冷却命中时的回复文案（可选）。缺省静默丢弃；指定后冷却`): 命中即回复该文案（原文发送，不做格式化）
+**返回值** (`装饰器函数`): 
+**示例**:
+```python
+>>> @command("roll", args="<count:int> [sides:int=6]",
+...          options={"verbose": "-v/--verbose", "label": "--label"})
+... async def roll(event, count: int, sides: int = 6, verbose: bool = False, label: str = ""):
+...     await event.reply(f"掷了 {count} 次 {sides} 面骰")
+>>> @command("daily", cooldown="1d", cooldown_key="user", cooldown_reply="今天已签到")
+... async def daily(event):
+...     await event.reply("签到成功！")
+```
 
 ---
 
@@ -234,6 +265,44 @@ permission 时调用：逐级去掉末尾 token 查找已注册祖先，返回�
 内部使用的方法
 
 - **event** (`事件数据`): - **error**: 错误信息
+
+---
+
+
+##### `async _send_args_error(event: dict[str, Any], text: str)`
+
+发送命令参数错误消息（args= / options= 解析失败时的本地化提示 + 用法）
+
+> **内部方法**
+内部使用的方法
+
+- **event** (`事件数据`): - **text**: 已本地化的错误文本（含用法行）
+
+---
+
+
+##### `_cooldown_scope_key(kind: str, event: 'Event')`
+
+> **内部方法**
+计算冷却作用域键（复用 ``platform:bot:目标`` 会话键体系）
+
+- **kind** (`粒度（user`): / session / global，注册期已校验）
+- **event** (`事件数据`): **返回值**: 作用域键字符串
+
+---
+
+
+##### `_usage_line(cmd_name: str, effective: dict, display_prefix: str | None = None)`
+
+> **内部方法**
+计算命令的生效 usage 行（帮助展示与参数错误提示共用）
+
+优先取开发者声明的 ``usage=``（含覆写）；未声明且注册了 ``args=`` /
+``options=`` 时按声明自动生成；否则回退 ``{前缀}{命令名}``。
+
+- **cmd_name** (`命令名`): - **effective**: 合并覆写后的命令生效参数
+- **display_prefix** (`显示用前缀（None`): 时取配置前缀首个）
+**返回值** (`usage`): 字符串
 
 ---
 
