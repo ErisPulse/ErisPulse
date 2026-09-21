@@ -74,6 +74,22 @@
 
 ---
 
+## [2.8.4] - 2026/09/19
+> 正式发布
+
+**版本摘要**
+本版本聚焦 CLI 脚手架与环境系统：`init` 支持指定任意目录、生成 `pyproject.toml` 依赖清单并可选创建项目 `.venv`（框架与适配器安装进虚拟环境）；`run` / `install` / `uninstall` / `upgrade` / `list` 全命令感知项目虚拟环境；新增 uv 隔离环境检测与 git / .gitignore / README 脚手架。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 升级原因：CLI 体验优化，框架运行时行为不变；新项目建议直接以 `epsdk init` 建立自包含环境
+
+**注意事项**
+- 新项目由 `pyproject.toml` 声明依赖：请使用 `epsdk run`（自动使用项目 `.venv`）运行机器人，**不要** `uv run epsdk run`——`uv run` 在无项目目录时会创建一次性隔离环境，其中安装的包不会持久化
+- `epsdk install` 在项目内会同步回写 `pyproject.toml` 依赖清单（uv 后端走 `uv add`）
+
+---
+
 ## [2.8.4-dev.0] - 2026/09/19
 > 开发版
 
