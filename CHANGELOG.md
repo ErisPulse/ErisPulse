@@ -74,6 +74,23 @@
 
 ---
 
+## [2.8.5] - 2026/09/21
+> 正式发布
+
+**版本摘要**
+本版本确立 `uv tool install ErisPulse` 为受支持的全局 CLI 安装方式：`self-update` 自动识别工具环境并改走 `uv tool upgrade` 通道（Windows 以分离进程解决自更新文件占用）；`init` 生成的 `.gitignore` 升级为分组式完整模板（整体排除 `config/` 运行时目录）；并补充 `version` 子命令、`--no-banner` 旗标与非交互终端 Banner 自动静默。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 升级原因：CLI 安装通道与脚手架治理，框架运行时行为不变；推荐 uv 用户改用 `uv tool install ErisPulse`（见安装文档「方式三」）
+
+**注意事项**
+- `init` 生成的 `.gitignore` 现在整体排除 `config/`（含 `config.toml`）——配置含适配器令牌等敏感信息，不建议入库；共享配置骨架请使用 `config.full.example`
+- 经 `uv tool install` 安装的用户：SDK 自更新请使用 `epsdk self-update`（自动走 `uv tool upgrade`），勿在工具环境内手动 pip 升级；Windows 下更新在新窗口完成、当前终端自动退出属预期行为
+- `run` / `install` 在「工具环境 + 无项目环境」场景会提示先 `epsdk init`——组件应装进项目 `.venv` 而非工具环境
+
+---
+
 ## [2.8.5-dev.0] - 2026/09/21
 > 开发版
 
