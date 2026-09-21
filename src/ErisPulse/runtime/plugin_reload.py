@@ -26,7 +26,7 @@ class _PluginChangeHandler(FileSystemEventHandler):
     插件文件变更处理器：.py 变更时调度重载协程
     """
 
-    def __init__(self, loop: asyncio.AbstractEventLoop, on_change: Callable[[str], Coroutine[Any, Any, None]]):
+    def __init__(self, loop: asyncio.AbstractEventLoop | None, on_change: Callable[[str], Coroutine[Any, Any, None]]):
         self._loop = loop
         self._on_change = on_change
         self._last_trigger = 0.0
@@ -40,6 +40,9 @@ class _PluginChangeHandler(FileSystemEventHandler):
         self._last_trigger = now
         if event.src_path.endswith(".py"):
             logger.info(f"plugin file changed: {event.src_path}")
+            if self._loop is None or self._loop.is_closed():
+                logger.warning("plugin reload skipped: event loop not running")
+                return
             try:
                 asyncio.run_coroutine_threadsafe(
                     self._on_change(event.src_path), self._loop

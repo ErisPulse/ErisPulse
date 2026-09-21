@@ -78,13 +78,14 @@
 > 正式发布
 
 **版本摘要**
-本版本确立 `uv tool install ErisPulse` 为受支持的全局 CLI 安装方式：`self-update` 自动识别工具环境并改走 `uv tool upgrade` 通道（Windows 以分离进程解决自更新文件占用）；`init` 生成的 `.gitignore` 升级为分组式完整模板（整体排除 `config/` 运行时目录）；并补充 `version` 子命令、`--no-banner` 旗标与非交互终端 Banner 自动静默。
+本版本确立 `uv tool install ErisPulse` 为受支持的全局 CLI 安装方式：`self-update` 自动识别工具环境并改走 `uv tool upgrade` 通道（Windows 以分离进程解决自更新文件占用）；`init` 生成的 `.gitignore` 升级为分组式完整模板（整体排除 `config/` 运行时目录）；并补充 `version` 子命令、`--no-banner` 旗标与非交互终端 Banner 自动静默；`init` 不再在配置中预写适配器启停状态（未配置即默认启用，避免误导）。
 
 **升级建议**
 - **是否建议升级**：建议升级
 - 升级原因：CLI 安装通道与脚手架治理，框架运行时行为不变；推荐 uv 用户改用 `uv tool install ErisPulse`（见安装文档「方式三」）
 
 **注意事项**
+- `init` 生成的配置不再预写 `ErisPulse.adapters.status`——未配置的适配器默认启用（安装后运行时自动写回 true），此前预写的 `= false` 会让用户误以为已安装、且日后安装时被意外禁用
 - `init` 生成的 `.gitignore` 现在整体排除 `config/`（含 `config.toml`）——配置含适配器令牌等敏感信息，不建议入库；共享配置骨架请使用 `config.full.example`
 - 经 `uv tool install` 安装的用户：SDK 自更新请使用 `epsdk self-update`（自动走 `uv tool upgrade`），勿在工具环境内手动 pip 升级；Windows 下更新在新窗口完成、当前终端自动退出属预期行为
 - `run` / `install` 在「工具环境 + 无项目环境」场景会提示先 `epsdk init`——组件应装进项目 `.venv` 而非工具环境
@@ -102,6 +103,7 @@
 - 升级原因：CLI 安装通道与脚手架治理，框架运行时行为不变；推荐 uv 用户改用 `uv tool install ErisPulse`（见安装文档「方式三」）
 
 **注意事项**
+- `init` 生成的配置不再预写 `ErisPulse.adapters.status`——未配置的适配器默认启用（安装后运行时自动写回 true），此前预写的 `= false` 会让用户误以为已安装、且日后安装时被意外禁用
 - `init` 生成的 `.gitignore` 现在整体排除 `config/`（含 `config.toml`）——配置含适配器令牌等敏感信息，不建议入库；如需共享配置骨架请使用 `config.full.example`
 - 经 `uv tool install` 安装的用户：SDK 自更新请使用 `epsdk self-update`（自动走 `uv tool upgrade`），勿在工具环境内手动 pip 升级；Windows 下更新在新窗口完成、当前终端自动退出属预期行为
 - `run` / `install` 在「工具环境 + 无项目环境」场景会提示先 `epsdk init`——组件应装进项目 `.venv` 而非工具环境
@@ -123,6 +125,7 @@
 - @YingXinche
   - `CLI/commands/init` `git init` 环节补齐错误处理：git 未安装时明确提示并跳过（此前静默无输出），仓库创建失败时输出 git 错误信息
   - `CLI/i18n` 补上 `cli.uv.isolated_warning` 五语言翻译（2.8.4 起该键未注册，uv 隔离环境警告会直接显示原始键名）
+  - `CLI/commands/init` 不再预写适配器启停状态：`config.toml` 移除 `[ErisPulse.adapters.status]` 静态段、交互适配器选择不再为未选中项写 `false`——框架语义为未配置即默认启用（安装后自动写回 true），预写 `false` 会把"未安装"伪装成"已安装但禁用"，误导用户且日后安装即被禁用；`runtime/example_config` 的 `config.full.example` 状态段同步改为中性注释示例（不再罗列具体适配器名，`_GEN` 递增至 2 触发用户文件自动刷新）
   - `CLI/utils` 清理 `basedpyright` 既有类型错误至 0：`_run_pip_command_with_output` 的 `install_cmd` / `backend_name` 提前初始化消除 possibly-unbound，`config_wizard._target_from_class` 的 `kind` 参数收窄为 `Literal["adapter", "module"]`
 
 ### 优化

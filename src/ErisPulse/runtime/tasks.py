@@ -269,8 +269,12 @@ __all__ = [
 _FACTORY_INSTALLED_LOOPS: weakref.WeakSet[asyncio.AbstractEventLoop] = weakref.WeakSet()
 
 
-def _owner_aware_task_factory(loop: asyncio.AbstractEventLoop, coro: Coroutine[Any, Any, Any], **kwargs: Any) -> asyncio.Task[Any]:
-    """{!--< internal-use >!--} 任务创建钩子：归属上下文内的任务自动登记（供卸载兜底取消）"""
+def _owner_aware_task_factory(loop: asyncio.AbstractEventLoop, coro: Any, **kwargs: Any) -> asyncio.Task[Any]:
+    """{!--< internal-use >!--} 任务创建钩子：归属上下文内的任务自动登记（供卸载兜底取消）
+
+    ``**kwargs`` 必须保留并向 :class:`asyncio.Task` 透传：Python 3.13 起
+    事件循环以 ``factory(loop, coro, **kwargs)`` 调用任务工厂（携带 context）。
+    """
     task = asyncio.Task(coro, **kwargs)
     owner = current_owner.get()
     if owner is not None:
@@ -294,6 +298,8 @@ def install_owner_task_factory(loop: asyncio.AbstractEventLoop) -> bool:
     """
     if loop in _FACTORY_INSTALLED_LOOPS:
         return False
-    loop.set_task_factory(_owner_aware_task_factory)
+    # 协议标注（typeshed _TaskFactory）未覆盖 3.13 的 **kwargs 调用形态，
+    # 运行时签名以 3.10–3.13 实际调用约定为准，此处断言绕开协议收窄
+    loop.set_task_factory(cast(Any, _owner_aware_task_factory))
     _FACTORY_INSTALLED_LOOPS.add(loop)
     return True

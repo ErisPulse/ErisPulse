@@ -215,9 +215,6 @@ class InitCommand(Command):
                     f.write("port = 8000\n\n")
                     f.write("[ErisPulse.logger]\n")
                     f.write('level = "INFO"\n')
-                    if adapter_list:
-                        f.write("\n[ErisPulse.adapters.status]\n")
-                        f.writelines(f"{adapter} = false\n" for adapter in adapter_list)
 
             example_file = project_path / "config" / "config.full.example"
             if not example_file.exists():
@@ -585,9 +582,8 @@ class InitCommand(Command):
             else:
                 console.print(f"[warning]  {i18n.t('cli.init.invalid_index', idx=idx)}[/]")
 
-        for name, _ in adapter_list:
-            if name not in enabled:
-                config.setConfig(f"ErisPulse.adapters.status.{name}", False)
+        # 未选中的适配器不写 status=false：未配置即默认启用（安装后自动写回 true），
+        # 预写 false 会把"未安装"伪装成"已安装但禁用"，误导用户且日后安装即被禁用
 
         console.print(f"[dim]  {i18n.t('cli.init.adapters_enabled', count=len(enabled))}[/]")
 

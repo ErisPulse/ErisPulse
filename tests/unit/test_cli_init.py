@@ -319,3 +319,22 @@ class TestUvToolSelfUpdate:
         from ErisPulse.CLI.utils.package_manager import _ps_quote
 
         assert _ps_quote("it's ok") == "it''s ok"
+
+
+class TestInitConfigNoAdapterStatus:
+    """init 不预写 adapters.status（未配置 = 默认启用，预写 false 误导）"""
+
+    def test_config_toml_has_no_adapter_status(self, init_cmd, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        init_cmd._init_project("mybot", ["some-adapter"], create_venv=False)
+        text = (tmp_path / "mybot" / "config" / "config.toml").read_text(encoding="utf-8")
+        assert "adapters.status" not in text
+        assert "some-adapter" not in text
+
+    def test_full_example_has_no_concrete_adapter_names(self, init_cmd, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        init_cmd._init_project("mybot", ["some-adapter"], create_venv=False)
+        text = (tmp_path / "mybot" / "config" / "config.full.example").read_text(encoding="utf-8")
+        assert "[ErisPulse.adapters.status]" in text  # 语义说明保留
+        assert "some-adapter" not in text  # 但不罗列具体适配器
+        assert "yunhu" not in text.split("[ErisPulse.adapters.status]")[1].split("[ErisPulse.modules.status]")[0]

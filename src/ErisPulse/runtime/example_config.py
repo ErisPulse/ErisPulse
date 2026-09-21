@@ -20,7 +20,7 @@ from pathlib import Path
 FULL_EXAMPLE_FILENAME = "config.full.example"
 
 # 生成器版本：模板/静态段结构变化时递增，驱动带标记文件的一次性刷新
-_GEN = 1
+_GEN = 2
 
 # 首行标记前缀（语言无关，供自动刷新判定）
 _MARKER_PREFIX = "# ErisPulse full config reference (auto-maintained by framework, gen="
@@ -41,9 +41,9 @@ def render_full_example(adapter_list=None, st=None) -> str:
 
     首行为自维护标记（供运行时按 gen 刷新判定）；其后为静态框架配置段
     （文案跟随 CLI / Core 语言，缺失回退英文）与已安装组件声明式配置段。
-    无适配器列表时给出通用示例适配器注释。
 
-    :param adapter_list: 适配器名称列表（``epsdk init`` 从商店抓取；None 用示例）
+    :param adapter_list: [已废弃] 适配器名称列表；状态示例段不再罗列具体适配器
+        （未配置即默认启用，预写 false 会误导），保留参数仅为兼容既有调用方
     :param st: ScaffoldText 实例（None 时按当前语言构造）
     :return: 完整配置示例字符串
     """
@@ -157,19 +157,9 @@ def render_full_example(adapter_list=None, st=None) -> str:
             st.t("cfg.section.adapter_status"),
             "",
             "[ErisPulse.adapters.status]",
+            "# <适配器名> = true / false   # 未配置的适配器默认启用；仅在此显式管理启停",
         ]
     )
-
-    if adapter_list:
-        lines.extend(f"# {adapter} = false" for adapter in adapter_list)
-    else:
-        lines.extend(
-            [
-                "# yunhu = false",
-                "# telegram = false",
-                "# onebot11 = false",
-            ]
-        )
 
     lines.extend(
         [
