@@ -21,7 +21,9 @@ ErisPulse 命令处理模块
 
 import asyncio
 import inspect
+import re
 import time
+from collections import deque
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any
 
@@ -44,6 +46,10 @@ from ..constants import (
     DETAIL_TYPE_USER,
     UNKNOWN_PLATFORM,
 )
+
+# 冷却 / 限流键粒度白名单（cooldown_key= / rate_limit_key=，EPRFC-2026-001 方向七）：
+# user=同一用户 / session=同一会话 / global=全局共享（与 throttle_key 共用 constants 定义）
+from ..constants import GOVERNANCE_KEY_KINDS as _COOLDOWN_KEY_KINDS
 from ..di import extract_depends, resolve_depends
 from ..i18n import i18n
 from . import overrides
@@ -60,9 +66,45 @@ from .interaction import InteractionCancelled, interaction
 from .session_type import get_send_type_and_target_id, infer_receive_type
 from .trace import trace_step
 
-# 冷却键粒度白名单（cooldown_key=，EPRFC-2026-001 方向七）：
-# user=同一用户 / session=同一会话 / global=全局共享
-_COOLDOWN_KEY_KINDS = frozenset({"user", "session", "global"})
+_WINDOW_AMOUNT_RE = re.compile(r"^(\d+(?:\.\d+)?)?\s*([a-zA-Z]+)$")
+_RATE_LIMIT_RE = re.compile(
+    r"^(\d+)\s*/\s*((?:\d+(?:\.\d+)?)?\s*(?:seconds?|s|minutes?|m|hours?|h|days?|d))\s*$", re.IGNORECASE
+)
+_RATE_LIMIT_UNITS = {
+    "second": 1.0, "seconds": 1.0, "s": 1.0,
+    "minute": 60.0, "minutes": 60.0, "m": 60.0,
+    "hour": 3600.0, "hours": 3600.0, "h": 3600.0,
+    "day": 86400.0, "days": 86400.0, "d": 86400.0,
+}
+
+
+def parse_rate_limit(spec: str) -> "tuple[int, float]":
+    """
+    解析限流声明（如 ``"5/minute"``、``"10/s"``）为 (次数, 窗口秒)
+
+    滑动窗口语义：窗口内至多放行 ``次数`` 次，超出静默丢弃。单位支持
+    second / minute / hour / day（含单字母缩写，大小写不敏感）。
+
+    :param spec: 限流声明字符串
+    :return: (limit, window_seconds)
+    :raises ValueError: 语法非法或次数非正时
+    """
+    match = _RATE_LIMIT_RE.match(spec or "")
+    if not match:
+        raise ValueError(f"invalid rate limit spec: {spec!r}")
+    limit = int(match.group(1))
+    window_str = match.group(2)
+    # 窗口串 = 可选数值 + 单位词（如 "minute" / "0.3s" / "2 hours"）
+    amount = _WINDOW_AMOUNT_RE.match(window_str)
+    if amount is None:
+        raise ValueError(f"invalid rate limit window: {window_str!r}")
+    numeric = amount.group(1) or "1"
+    window = float(numeric) * _RATE_LIMIT_UNITS[amount.group(2).lower()]
+    if limit <= 0:
+        raise ValueError(f"rate limit count must be positive: {spec!r}")
+    if window <= 0:
+        raise ValueError(f"rate limit window must be positive: {spec!r}")
+    return limit, window
 
 
 class CommandHandler:
@@ -81,6 +123,8 @@ class CommandHandler:
         # 键为 f"{main_name}\x00{scope_key}"（main_name 前缀供注销时按命令清理），
         # 值为冷却结束时刻（time.monotonic() 秒）。进程内内存，模块卸载自动清理
         self._cooldowns: dict[str, float] = {}
+        # 命令限流状态（rate_limit= 滑动窗口）：键同冷却；值为窗口内放行时刻 deque
+        self._rate_limits: dict[str, deque] = {}
         # 已注册命令名/别名的最大 token 数（命令名支持空格分隔的子命令形式，
         # 如 "admin add"；匹配阶段据此决定最长前缀尝试次数，注册/注销时重算）
         self._max_name_tokens: int = 1
@@ -220,6 +264,11 @@ class CommandHandler:
         cooldown: str | None = None,
         cooldown_key: str = "user",
         cooldown_reply: str | None = None,
+        rate_limit: str | None = None,
+        rate_limit_key: str = "user",
+        rate_limit_reply: str | None = None,
+        deprecated: str | None = None,
+        deprecated_reject: bool = False,
     ):
         """
         命令装饰器
@@ -254,6 +303,15 @@ class CommandHandler:
             复用 ``platform:bot:目标`` 会话键体系。非法值注册期抛 ValueError
         :param cooldown_reply: 冷却命中时的回复文案（可选）。缺省静默丢弃；指定后冷却
             命中即回复该文案（原文发送，不做格式化）
+        :param rate_limit: 滑动窗口限流声明（EPRFC-2026-001 方向七），如 ``"5/minute"`` /
+            ``"10/s"`` / ``"100/day"``——窗口内至多执行次数，超出默认静默丢弃（命令仍被
+            认领）；与 ``cooldown=`` 共享会话键体系，可同时声明（冷却先判、限流后判）
+        :param rate_limit_key: 限流键粒度：``"user"``（默认）/ ``"session"`` / ``"global"``
+        :param rate_limit_reply: 限流命中时的回复文案（可选，缺省静默丢弃）
+        :param deprecated: 命令废弃声明（EPRFC-2026-001 方向七）：非空文案即标记废弃——
+            调用时自动回复该文案（help 列表显示废弃标记），默认仍继续执行
+        :param deprecated_reject: 废弃命令拒绝执行（默认 False 继续执行；True 时回复
+            废弃文案后不再执行处理器）
         :return: 装饰器函数
 
         :example:
@@ -264,6 +322,10 @@ class CommandHandler:
         >>> @command("daily", cooldown="1d", cooldown_key="user", cooldown_reply="今天已签到")
         ... async def daily(event):
         ...     await event.reply("签到成功！")
+        >>> @command("search", rate_limit="5/minute", rate_limit_key="user")
+        ... async def search(event): ...
+        >>> @command("oldcmd", deprecated="请用 /newcmd", deprecated_reject=True)
+        ... async def old(event): ...
         """
 
         def decorator(func: Callable):
@@ -310,6 +372,45 @@ class CommandHandler:
             elif cooldown_reply:
                 raise ValueError(
                     i18n.t("core.command.cooldown.reply_without_cooldown", cmd=main_name)
+                )
+
+            # 限流声明（rate_limit=）注册期解析与校验（fail-fast）
+            rate_limit_spec: tuple[int, float] | None = None
+            if rate_limit:
+                try:
+                    rate_limit_spec = parse_rate_limit(rate_limit)
+                except ValueError as e:
+                    raise ValueError(
+                        i18n.t("core.command.rate_limit.invalid", cmd=main_name, error=e)
+                    ) from e
+                if rate_limit_key not in _COOLDOWN_KEY_KINDS:
+                    raise ValueError(
+                        i18n.t(
+                            "core.command.rate_limit.invalid_key",
+                            cmd=main_name,
+                            key=rate_limit_key,
+                            kinds=", ".join(sorted(_COOLDOWN_KEY_KINDS)),
+                        )
+                    )
+            elif rate_limit_reply:
+                raise ValueError(
+                    i18n.t("core.command.rate_limit.reply_without_limit", cmd=main_name)
+                )
+
+            # 废弃声明（deprecated=）注册期校验：非空文案；reject 须搭配声明
+            if deprecated is not None and not isinstance(deprecated, str):
+                raise ValueError(
+                    i18n.t("core.command.deprecated.invalid", cmd=main_name)
+                )
+            if deprecated is not None and not deprecated.strip():
+                raise ValueError(
+                    i18n.t("core.command.deprecated.invalid", cmd=main_name)
+                )
+            if deprecated_reject and not deprecated:
+                raise ValueError(
+                    i18n.t(
+                        "core.command.deprecated.reject_without_deprecated", cmd=main_name
+                    )
                 )
             # 依赖注入声明（Depends）：与 args=/options= 参数重名即注册期冲突（fail-fast）
             depends = extract_depends(func)
@@ -385,6 +486,11 @@ class CommandHandler:
                     "cooldown_seconds": cooldown_seconds,
                     "cooldown_key": cooldown_key,
                     "cooldown_reply": cooldown_reply,
+                    "rate_limit_spec": rate_limit_spec,
+                    "rate_limit_key": rate_limit_key,
+                    "rate_limit_reply": rate_limit_reply,
+                    "deprecated": deprecated,
+                    "deprecated_reject": deprecated_reject,
                 }
 
                 # 注册别名映射（name列表中的额外名称）
@@ -468,9 +574,10 @@ class CommandHandler:
             if cmd_name in self.permissions:
                 del self.permissions[cmd_name]
 
-            # 清理该命令的冷却状态（模块卸载自动清理，进程内内存不外泄）
+            # 清理该命令的冷却 / 限流状态（模块卸载自动清理）
             prefix = main_name + "\x00"
             self._cooldowns = {k: v for k, v in self._cooldowns.items() if not k.startswith(prefix)}
+            self._rate_limits = {k: v for k, v in self._rate_limits.items() if not k.startswith(prefix)}
 
             # 最后移除命令本身
             del self.commands[cmd_name]
@@ -506,9 +613,10 @@ class CommandHandler:
 
             self.permissions.pop(cmd_name, None)
 
-            # 清理该命令的冷却状态（模块卸载自动清理）
+            # 清理该命令的冷却 / 限流状态（模块卸载自动清理）
             prefix = main_name + "\x00"
             self._cooldowns = {k: v for k, v in self._cooldowns.items() if not k.startswith(prefix)}
+            self._rate_limits = {k: v for k, v in self._rate_limits.items() if not k.startswith(prefix)}
 
             del self.commands[cmd_name]
 
@@ -1145,6 +1253,86 @@ class CommandHandler:
                 # 执行前即开始计时：实际冷却窗口不受处理耗时影响
                 self._cooldowns[cooldown_entry] = _now + _effective["cooldown_seconds"]
 
+            # 限流判定（rate_limit=，滑动窗口）：与冷却同位次序——权限与参数
+            # 通过后、实际执行前计数；窗口满时默认静默丢弃（可选回复），
+            # 命令保持已认领（不漏给低优先级消息处理器）
+            if _effective.get("rate_limit_spec"):
+                _now = time.monotonic()
+                _limit, _window = _effective["rate_limit_spec"]
+                _rl_scope = self._cooldown_scope_key(
+                    _effective.get("rate_limit_key", "user"), event
+                )
+                _rl_entry = f"{cmd_info['main_name']}\x00{_rl_scope}"
+                _dq = self._rate_limits.setdefault(_rl_entry, deque())
+                while _dq and _dq[0] <= _now - _window:
+                    _dq.popleft()
+                if len(_dq) >= _limit:
+                    logger.trace(
+                        i18n.t(
+                            "core.command.rate_limit_hit",
+                            cmd_name=actual_cmd_name,
+                            scope=_rl_scope,
+                            limit=_limit,
+                            window=_window,
+                            platform=event.get("platform", UNKNOWN_PLATFORM),
+                            user_id=event.get("user_id", ""),
+                        )
+                    )
+                    trace_step(
+                        "rate_limit",
+                        "dropped",
+                        "core.trace.rate_limit_dropped",
+                        command=actual_cmd_name,
+                        limit=str(_limit),
+                        window=f"{_window:g}",
+                    )
+                    if _effective.get("rate_limit_reply"):
+                        await self._send_args_error(event, _effective["rate_limit_reply"])
+                    return True
+                _dq.append(_now)
+
+            # 废弃声明（deprecated=）：调用时自动回复废弃文案；默认继续执行，
+            # deprecated_reject=True 时拒绝执行（命令已认领，不漏给消息处理器）
+            if _effective.get("deprecated"):
+                _dep_text = _effective["deprecated"]
+                await self._send_args_error(event, _dep_text)
+                if _effective.get("deprecated_reject"):
+                    logger.trace(
+                        i18n.t(
+                            "core.command.deprecated_rejected",
+                            cmd_name=actual_cmd_name,
+                            platform=event.get("platform", UNKNOWN_PLATFORM),
+                            user_id=event.get("user_id", ""),
+                        )
+                    )
+                    trace_step(
+                        "deprecated",
+                        "rejected",
+                        "core.trace.deprecated_rejected",
+                        command=actual_cmd_name,
+                    )
+                    # 钩子: 命令执行失败（废弃拒绝，后台发射）
+                    from ..lifecycle import lifecycle
+
+                    lifecycle.fire(
+                        "command.executed",
+                        {
+                            "command": actual_cmd_name,
+                            "args": args,
+                            "platform": event.get("platform", UNKNOWN_PLATFORM),
+                            "user_id": event.get("user_id", ""),
+                            "success": False,
+                            "error": "deprecated",
+                        },
+                    )
+                    return True
+                trace_step(
+                    "deprecated",
+                    "notice",
+                    "core.trace.deprecated_notice",
+                    command=actual_cmd_name,
+                )
+
             try:
                 # 把注册时记录的 owner 注入上下文，让用户 handler 内部的
                 # wait_reply / 日志等能正确归因到具体业务模块。
@@ -1396,6 +1584,8 @@ class CommandHandler:
         self.aliases.clear()
         self.groups.clear()
         self.permissions.clear()
+        self._cooldowns.clear()
+        self._rate_limits.clear()
         self._recompute_max_name_tokens()
         interaction.clear()
         # 从共享 handler 中注销命令分发器（不清除其他 handler 的消息处理器）
@@ -1630,6 +1820,18 @@ class CommandHandler:
             effective = self.get_command(command_name, event=event)
             if effective:
                 help_text = effective.get("help", i18n.t("core.event.command.no_help"))
+                # 废弃命令：帮助文本前加废弃标记与文案
+                if effective.get("deprecated"):
+                    help_text = (
+                        i18n.t("core.event.command.deprecated_mark")
+                        + " "
+                        + help_text
+                        + "\n"
+                        + i18n.t(
+                            "core.event.command.help_deprecated",
+                            text=effective["deprecated"],
+                        )
+                    )
                 # usage 优先取声明值；注册了 args=/options= 且未声明 usage 时自动生成
                 usage = self._usage_line(command_name, effective, display_prefix)
                 return i18n.t(
@@ -1674,6 +1876,8 @@ class CommandHandler:
                 _help_text = commands_to_show[_name].get(
                     "help", i18n.t("core.event.command.no_help_item")
                 )
+                if commands_to_show[_name].get("deprecated"):
+                    _help_text = i18n.t("core.event.command.deprecated_mark") + " " + _help_text
                 if depth:
                     help_lines.append(
                         "  " * (depth + 1)

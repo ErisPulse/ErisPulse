@@ -17,6 +17,7 @@ from typing import Any
 from ..constants import DETAIL_TYPE_GROUP, DETAIL_TYPE_PRIVATE, EVENT_TYPE_MESSAGE
 from ..text_match import compile_text_matcher
 from .base import BaseEventHandler
+from .throttle import make_throttle_condition
 
 
 def _combine_conditions(
@@ -48,19 +49,34 @@ class MessageHandler:
     def __init__(self):
         self.handler = BaseEventHandler(EVENT_TYPE_MESSAGE, "message")
 
-    def on_message(self, priority: int = 0, pattern: str | None = None, regex: str | None = None):
+    def on_message(
+        self,
+        priority: int = 0,
+        pattern: str | None = None,
+        regex: str | None = None,
+        throttle: str | None = None,
+        throttle_key: str = "user",
+    ):
         """
         消息事件装饰器
 
         :param priority: 处理器优先级
         :param pattern: glob 通配符（``*`` / ``?`` / ``[seq]``），消息文本须匹配才触发
         :param regex: 正则表达式，消息文本须匹配（search）才触发；与 pattern 同时给定时须都匹配
+        :param throttle: 节流间隔声明（如 ``"2s"`` / ``"1h30m"``，duration 语法）——
+            同键事件在间隔内至多处理一条，其余静默丢弃（EPRFC-2026-001 方向八）
+        :param throttle_key: 节流键粒度：``user``（默认）/ ``session`` / ``global``
         :return: 装饰器函数
         """
 
         def decorator(func: Callable):
+            throttle_cond = (
+                make_throttle_condition(throttle, throttle_key, func.__qualname__)
+                if throttle
+                else None
+            )
             self.handler.register(
-                func, priority, compile_text_matcher(pattern, regex)
+                func, priority, _combine_conditions(compile_text_matcher(pattern, regex), throttle_cond)
             )
             return func
 
@@ -84,13 +100,23 @@ class MessageHandler:
         """
         return self.handler.unregister(handler)
 
-    def on_private_message(self, priority: int = 0, pattern: str | None = None, regex: str | None = None):
+    def on_private_message(
+        self,
+        priority: int = 0,
+        pattern: str | None = None,
+        regex: str | None = None,
+        throttle: str | None = None,
+        throttle_key: str = "user",
+    ):
         """
         私聊消息事件装饰器
 
         :param priority: 处理器优先级
         :param pattern: glob 通配符（``*`` / ``?`` / ``[seq]``），消息文本须匹配才触发
         :param regex: 正则表达式，消息文本须匹配（search）才触发；与 pattern 同时给定时须都匹配
+        :param throttle: 节流间隔声明（如 ``"2s"`` / ``"1h30m"``，duration 语法）——
+            同键事件在间隔内至多处理一条，其余静默丢弃（EPRFC-2026-001 方向八）
+        :param throttle_key: 节流键粒度：``user``（默认）/ ``session`` / ``global``
         :return: 装饰器函数
         """
 
@@ -98,8 +124,13 @@ class MessageHandler:
             return event.get("detail_type") == DETAIL_TYPE_PRIVATE
 
         def decorator(func: Callable):
+            throttle_cond = (
+                make_throttle_condition(throttle, throttle_key, func.__qualname__)
+                if throttle
+                else None
+            )
             self.handler.register(
-                func, priority, _combine_conditions(condition, compile_text_matcher(pattern, regex))
+                func, priority, _combine_conditions(condition, compile_text_matcher(pattern, regex), throttle_cond)
             )
             return func
 
@@ -114,13 +145,23 @@ class MessageHandler:
         """
         return self.handler.unregister(handler)
 
-    def on_group_message(self, priority: int = 0, pattern: str | None = None, regex: str | None = None):
+    def on_group_message(
+        self,
+        priority: int = 0,
+        pattern: str | None = None,
+        regex: str | None = None,
+        throttle: str | None = None,
+        throttle_key: str = "user",
+    ):
         """
         群聊消息事件装饰器
 
         :param priority: 处理器优先级
         :param pattern: glob 通配符（``*`` / ``?`` / ``[seq]``），消息文本须匹配才触发
         :param regex: 正则表达式，消息文本须匹配（search）才触发；与 pattern 同时给定时须都匹配
+        :param throttle: 节流间隔声明（如 ``"2s"`` / ``"1h30m"``，duration 语法）——
+            同键事件在间隔内至多处理一条，其余静默丢弃（EPRFC-2026-001 方向八）
+        :param throttle_key: 节流键粒度：``user``（默认）/ ``session`` / ``global``
         :return: 装饰器函数
         """
 
@@ -128,8 +169,13 @@ class MessageHandler:
             return event.get("detail_type") == DETAIL_TYPE_GROUP
 
         def decorator(func: Callable):
+            throttle_cond = (
+                make_throttle_condition(throttle, throttle_key, func.__qualname__)
+                if throttle
+                else None
+            )
             self.handler.register(
-                func, priority, _combine_conditions(condition, compile_text_matcher(pattern, regex))
+                func, priority, _combine_conditions(condition, compile_text_matcher(pattern, regex), throttle_cond)
             )
             return func
 
@@ -144,13 +190,23 @@ class MessageHandler:
         """
         return self.handler.unregister(handler)
 
-    def on_at_message(self, priority: int = 0, pattern: str | None = None, regex: str | None = None):
+    def on_at_message(
+        self,
+        priority: int = 0,
+        pattern: str | None = None,
+        regex: str | None = None,
+        throttle: str | None = None,
+        throttle_key: str = "user",
+    ):
         """
         @消息事件装饰器
 
         :param priority: 处理器优先级
         :param pattern: glob 通配符（``*`` / ``?`` / ``[seq]``），消息文本须匹配才触发
         :param regex: 正则表达式，消息文本须匹配（search）才触发；与 pattern 同时给定时须都匹配
+        :param throttle: 节流间隔声明（如 ``"2s"`` / ``"1h30m"``，duration 语法）——
+            同键事件在间隔内至多处理一条，其余静默丢弃（EPRFC-2026-001 方向八）
+        :param throttle_key: 节流键粒度：``user``（默认）/ ``session`` / ``global``
         :return: 装饰器函数
         """
 
@@ -168,8 +224,13 @@ class MessageHandler:
             return False
 
         def decorator(func: Callable):
+            throttle_cond = (
+                make_throttle_condition(throttle, throttle_key, func.__qualname__)
+                if throttle
+                else None
+            )
             self.handler.register(
-                func, priority, _combine_conditions(condition, compile_text_matcher(pattern, regex))
+                func, priority, _combine_conditions(condition, compile_text_matcher(pattern, regex), throttle_cond)
             )
             return func
 
