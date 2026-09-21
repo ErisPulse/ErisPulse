@@ -9,6 +9,9 @@ CLI 控制台模块
 {!--< /tips >!--}
 """
 
+import os
+import sys
+
 from rich.console import Console
 from rich.highlighter import RegexHighlighter
 from rich.theme import Theme
@@ -37,6 +40,15 @@ _BANNER_MINI = (
 
 
 _banner_printed = False
+_banner_disabled = False
+
+
+def disable_banner():
+    """
+    禁用后续 Banner 输出（--no-banner 全局旗标调用）
+    """
+    global _banner_disabled
+    _banner_disabled = True
 
 
 def print_banner():
@@ -44,9 +56,14 @@ def print_banner():
     输出 ErisPulse 启动 Banner
 
     根据终端宽度选择完整版或精简版 Banner，且仅在首次调用时输出。
+    非交互终端（管道 / CI）、``ERISPULSE_NO_BANNER`` 环境变量或
+    ``--no-banner`` 旗标下自动静默，避免污染脚本输出与日志采集。
     """
     global _banner_printed
-    if _banner_printed:
+    if _banner_printed or _banner_disabled:
+        return
+    if not sys.stdout.isatty() or os.environ.get("ERISPULSE_NO_BANNER"):
+        _banner_printed = True
         return
     _banner_printed = True
     width = console.width
@@ -121,6 +138,7 @@ def print_suggestion(title: str, suggestions: list[str], hint: str | None = None
 
 __all__ = [
     "console",
+    "disable_banner",
     "print_banner",
     "print_suggestion",
 ]

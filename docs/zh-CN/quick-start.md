@@ -58,6 +58,14 @@ pip install ErisPulse
 
 如果你已安装 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安装速度更快。
 
+只想把 `epsdk` 命令行工具装到全局、不污染项目环境时，推荐 `uv tool install`：
+
+```bash
+uv tool install ErisPulse
+```
+
+安装后 `epsdk` 全局可用：在项目目录内运行时会自动感知项目 `.venv`（`epsdk install` 装进项目环境、`epsdk run` 用项目环境运行），框架本体由工具环境提供。详见[安装参考](user-guide/installation.md)。
+
 ## 初始化项目
 
 ### 交互式初始化（推荐）

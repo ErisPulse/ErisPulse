@@ -67,6 +67,12 @@ class CLI:
             help=i18n.t("cli.parser.no_color_help"),
         )
         parser.add_argument(
+            "--no-banner",
+            action="store_true",
+            default=False,
+            help=i18n.t("cli.parser.no_banner_help"),
+        )
+        parser.add_argument(
             "--yes",
             "-y",
             action="store_true",
@@ -302,6 +308,11 @@ class CLI:
         # --no-color：禁用 Rich 控制台着色（CI / 日志采集场景）
         if getattr(args, "no_color", False):
             console.no_color = True
+        # --no-banner：跳过启动 Banner（脚本化调用场景）
+        if getattr(args, "no_banner", False):
+            from .console import disable_banner
+
+            disable_banner()
 
         print_banner()
 

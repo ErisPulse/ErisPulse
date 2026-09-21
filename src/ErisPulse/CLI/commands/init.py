@@ -258,7 +258,40 @@ class InitCommand(Command):
             gitignore_file = project_path / ".gitignore"
             if not gitignore_file.exists():
                 with gitignore_file.open("w", encoding="utf-8") as f:
-                    f.write("__pycache__/\n*.py[cod]\n.venv/\nlogs/\nconfig/ssl/*.pem\n*.egg-info/\n.env\n")
+                    f.write(
+                        "# Python\n"
+                        "__pycache__/\n"
+                        "*.py[cod]\n"
+                        "*$py.class\n"
+                        "build/\n"
+                        "dist/\n"
+                        "*.egg-info/\n"
+                        ".eggs/\n"
+                        "\n"
+                        "# 虚拟环境与本地环境\n"
+                        ".venv/\n"
+                        "venv/\n"
+                        "env/\n"
+                        ".env\n"
+                        "\n"
+                        "# 工具缓存\n"
+                        ".pytest_cache/\n"
+                        ".mypy_cache/\n"
+                        ".ruff_cache/\n"
+                        ".coverage\n"
+                        "coverage.xml\n"
+                        "htmlcov/\n"
+                        "\n"
+                        "# ErisPulse 运行时数据（配置与日志含敏感信息，不入库）\n"
+                        "config/\n"
+                        "logs/\n"
+                        "\n"
+                        "# 编辑器与系统文件\n"
+                        ".idea/\n"
+                        ".vscode/\n"
+                        "*.swp\n"
+                        ".DS_Store\n"
+                    )
                 console.print(f"[success]  {i18n.t('cli.init.gitignore_created')}[/]")
 
             # ---- README.md ----
@@ -296,11 +329,27 @@ class InitCommand(Command):
 
             # ---- git 仓库 ----
             if git_init:
+                import shutil as _shutil
                 import subprocess as _subprocess
 
-                result = _subprocess.run(["git", "init"], cwd=str(project_path), capture_output=True, text=True, check=False)
-                if result.returncode == 0:
-                    console.print(f"[success]  {i18n.t('cli.init.git_inited')}[/]")
+                if _shutil.which("git") is None:
+                    console.print(
+                        f"[warning]  {i18n.t('cli.init.git_not_found')}[/]"
+                    )
+                else:
+                    result = _subprocess.run(
+                        ["git", "init"],
+                        cwd=str(project_path),
+                        capture_output=True,
+                        text=True,
+                        check=False,
+                    )
+                    if result.returncode == 0:
+                        console.print(f"[success]  {i18n.t('cli.init.git_inited')}[/]")
+                    else:
+                        console.print(
+                            f"[warning]  {i18n.t('cli.init.git_failed', error=(result.stderr or result.stdout).strip()[:120])}[/]"
+                        )
 
             console.print(f"[success]  {i18n.t('cli.init.display_success', name=display_name)}[/]")
             console.print()

@@ -74,6 +74,48 @@
 
 ---
 
+## [2.8.5-dev.0] - 2026/09/21
+> 开发版
+
+**版本摘要**
+本版本确立 `uv tool install ErisPulse` 为受支持的全局 CLI 安装方式：`self-update` 自动识别工具环境并改走 `uv tool upgrade` 通道（Windows 以分离进程解决自更新文件占用）；`init` 生成的 `.gitignore` 升级为分组式完整模板（整体排除 `config/` 运行时目录）；并补充 `version` 子命令、`--no-banner` 旗标与非交互终端 Banner 自动静默等 CLI 规范化细节。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 升级原因：CLI 安装通道与脚手架治理，框架运行时行为不变；推荐 uv 用户改用 `uv tool install ErisPulse`（见安装文档「方式三」）
+
+**注意事项**
+- `init` 生成的 `.gitignore` 现在整体排除 `config/`（含 `config.toml`）——配置含适配器令牌等敏感信息，不建议入库；如需共享配置骨架请使用 `config.full.example`
+- 经 `uv tool install` 安装的用户：SDK 自更新请使用 `epsdk self-update`（自动走 `uv tool upgrade`），勿在工具环境内手动 pip 升级；Windows 下更新在新窗口完成、当前终端自动退出属预期行为
+- `run` / `install` 在「工具环境 + 无项目环境」场景会提示先 `epsdk init`——组件应装进项目 `.venv` 而非工具环境
+
+### 新增
+
+- @YingXinche
+  - `CLI/utils/package_manager` uv tool 环境一等支持（`uv tool install ErisPulse` 场景）：
+    - `is_uv_tool_env()` 基于解释器路径特征识别工具环境（不依赖环境变量，uv tool shim 下同样生效）
+    - `self-update` 在工具环境下自动改走 `uv tool upgrade ErisPulse`（指定版本时 `uv tool install ErisPulse==<版本> --force`）——pip 直接升级工具环境会被 uv 清单还原抹掉
+    - Windows 下自更新走分离进程（`build_windows_tool_update_script` 生成 PowerShell 脚本、新控制台窗口执行）：当前 CLI 就运行在待替换的工具环境内，直接升级会因文件占用失败（os error 5）；脚本等待当前进程退出后执行更新、报告结果并自删除，POSIX 保持原地直接更新
+    - `run` / `install` 在「工具环境 + 无项目环境」场景提示先 `epsdk init` 创建项目环境（`warn_if_uv_tool_env_without_project()`），避免组件误装进工具环境被后续 upgrade 清除
+  - `CLI/commands/version` 新增 `version` 子命令（别名 `ver`）：显示 SDK 与 Python 运行时版本信息，与 `epsdk -V` 等效
+  - `CLI/console` Banner 静默机制：非交互终端（管道 / CI）、`ERISPULSE_NO_BANNER` 环境变量或新增的 `--no-banner` 全局旗标下不再输出启动 Banner（Rich 在管道输出下本就自动去除 ANSI 颜色并遵循标准 `NO_COLOR`，本次补齐 Banner 维度），脚本化调用与日志采集不再被污染
+  - `CLI/i18n` 五语言新增词条：`--no-banner` 帮助、`version` 命令描述、uv tool 环境提示、Windows 分离更新说明、git 初始化失败提示
+
+### 修复
+
+- @YingXinche
+  - `CLI/commands/init` `git init` 环节补齐错误处理：git 未安装时明确提示并跳过（此前静默无输出），仓库创建失败时输出 git 错误信息
+  - `CLI/i18n` 补上 `cli.uv.isolated_warning` 五语言翻译（2.8.4 起该键未注册，uv 隔离环境警告会直接显示原始键名）
+  - `CLI/utils` 清理 `basedpyright` 既有类型错误至 0：`_run_pip_command_with_output` 的 `install_cmd` / `backend_name` 提前初始化消除 possibly-unbound，`config_wizard._target_from_class` 的 `kind` 参数收窄为 `Literal["adapter", "module"]`
+
+### 优化
+
+- @YingXinche
+  - `CLI/commands/init` 生成的 `.gitignore` 模板升级为分组式清单：Python 字节码与构建产物、虚拟环境与 `.env`、工具缓存（pytest/mypy/ruff/coverage）、**整体排除 `config/` 与 `logs/` 运行时目录**（敏感配置不入库）、编辑器与系统文件
+  - 文档同步：`user-guide/installation.md` 新增「方式三：uv tool 安装（全局 CLI，推荐）」、`quick-start.md` 安装段补充 uv tool 入口、`user-guide/cli-reference.md` 更新 version / `--no-banner` / self-update / init 相关说明
+
+---
+
 ## [2.8.4] - 2026/09/19
 > 正式发布
 
