@@ -16,6 +16,7 @@ from ..console import console
 from ..i18n import i18n
 from ..utils import PackageManager, config_wizard
 from ..utils.display import interactive_select_table
+from ..utils.package_manager import resolve_target_python, warn_if_uv_isolated
 
 
 class InstallCommand(Command):
@@ -33,7 +34,8 @@ class InstallCommand(Command):
         """
         初始化安装命令，创建包管理器实例
         """
-        self.package_manager = PackageManager()
+        py_exec, _py_source = resolve_target_python()
+        self.package_manager = PackageManager(python_executable=py_exec)
 
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument("package", nargs="*", help=i18n.t("cli.install.package_help"))
@@ -203,6 +205,7 @@ class InstallCommand(Command):
         return extra
 
     def execute(self, args):
+        warn_if_uv_isolated()
         self.package_manager.no_uv = getattr(args, "no_uv", False)
         editable_paths = getattr(args, "editable", None)
         requirement_file = getattr(args, "requirement", None)

@@ -70,14 +70,21 @@ class PackageManager:
             pass
         return url
 
-    def __init__(self):
-        """初始化包管理器，设置缓存、查找器、代理与 uv 相关状态"""
+    def __init__(self, python_executable: "str | None" = None):
+        """
+        初始化包管理器，设置缓存、查找器、代理与 uv 相关状态
+
+        :param python_executable: [str | None] 显式指定目标 Python 解释器
+            （如项目 .venv 内的解释器）。指定后查找器与安装/卸载目标环境
+            全部指向该解释器；None 时按 _get_target_python() 自动解析
+        """
         self._cache = {}
         self._cache_time = {}
         self._pypi_cache = {}  # PyPI版本缓存
         self._pypi_cache_time = {}  # PyPI版本缓存时间
         # 使用目标 Python 解释器（虚拟环境）创建查找器，确保与安装/卸载目标环境一致，
         # 避免“安装在 venv 但查询读取 pipx env”这类跨环境错位问题
+        self._explicit_python = python_executable
         target_python = self._get_target_python()
         self._module_finder = ModuleFinder(python_executable=target_python)
         self._adapter_finder = AdapterFinder(python_executable=target_python)
@@ -569,6 +576,11 @@ class PackageManager:
 
         :return: [str] 目标 Python 解释器路径
         """
+        # 显式指定（如 init 创建的项目 .venv 解释器）优先于一切自动解析
+        explicit = getattr(self, "_explicit_python", None)
+        if explicit:
+            return explicit
+
         venv = os.environ.get("VIRTUAL_ENV")
         if not venv:
             return sys.executable
@@ -1521,3 +1533,171 @@ input(T["press_key"])
             console.print(f"[error]{i18n.t('cli.package.sdk_update_failed')}[/]")
 
         return success
+
+
+# ==================== 项目环境基建（2.8.4）====================
+
+
+def create_project_venv(project_dir: Path) -> "str | None":
+    """
+    在项目目录创建 `.venv` 虚拟环境
+
+    优先使用 uv（`uv venv`，秒级、无 pip）；uv 不可用时回退
+    `python -m venv`（自带 pip）。
+
+    :param project_dir: 项目目录（.venv 创建于其下）
+    :return: 成功时返回 .venv 的 Python 解释器路径；失败返回 None
+    """
+    venv_dir = Path(project_dir) / ".venv"
+    pm = PackageManager()
+    uv_cmd = None if pm.no_uv else pm._get_uv_command()
+    if uv_cmd:
+        result = subprocess.run(
+            [*uv_cmd, "venv", str(venv_dir)],
+            cwd=str(project_dir),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            console.print(f"[warning]  uv venv 失败：{result.stderr.strip()[:200]}[/]")
+    else:
+        result = subprocess.run(
+            [sys.executable, "-m", "venv", str(venv_dir)],
+            cwd=str(project_dir),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            console.print(f"[warning]  python -m venv 失败：{result.stderr.strip()[:200]}[/]")
+
+    if sys.platform == "win32":
+        py = venv_dir / "Scripts" / "python.exe"
+    else:
+        py = venv_dir / "bin" / "python"
+    return str(py) if py.exists() else None
+
+
+def uv_add(project_dir: Path, packages: "list[str]") -> bool:
+    """
+    在项目目录执行 `uv add <packages>`（安装依赖并同步写入 pyproject.toml）
+
+    uv 会自动创建/使用项目 `.venv` 并生成 uv.lock——安装与依赖声明
+    一步完成，天然免疫 `uv sync` 的未声明包清理。
+
+    :param project_dir: 项目目录（须已生成 pyproject.toml）
+    :param packages: 包名列表
+    :return: 是否成功
+    """
+    pm = PackageManager()
+    if pm.no_uv:
+        return False
+    uv_cmd = pm._get_uv_command()
+    if not uv_cmd:
+        return False
+    result = subprocess.run(
+        [*uv_cmd, "add", *packages],
+        cwd=str(project_dir),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.returncode == 0
+
+
+def append_pyproject_dependencies(project_dir: Path, packages: "list[str]") -> bool:
+    """
+    手动向 pyproject.toml 的 project.dependencies 追加依赖（pip 回退路径用）
+
+    使用 tomlkit 保留文件注释与格式。
+
+    :param project_dir: 项目目录
+    :param packages: 依赖包名列表
+    :return: 是否成功（pyproject 不存在 / 解析失败返回 False）
+    """
+    import tomlkit
+    import tomllib
+
+    pyproject = Path(project_dir) / "pyproject.toml"
+    if not pyproject.exists():
+        return False
+    try:
+        with pyproject.open("rb") as f:
+            doc = tomllib.load(f)
+        deps: list = doc.get("project", {}).get("dependencies", [])
+        added = False
+        for pkg in packages:
+            if not any(str(d).split("[;")[0].split("==")[0].split(">=")[0].strip().lower() == pkg.lower() for d in deps):
+                deps.append(pkg)
+                added = True
+        if not added:
+            return True
+        # tomllib 读的是普通 dict——用 tomlkit 重新解析原文件以保留格式后写回
+        doc_kit = tomlkit.parse(pyproject.read_text(encoding="utf-8"))
+        proj = doc_kit.get("project")
+        if proj is None:
+            return False
+        proj["dependencies"] = deps
+        pyproject.write_text(tomlkit.dumps(doc_kit), encoding="utf-8")
+        return True
+    except Exception as e:
+        console.print(f"[warning]  pyproject.toml 依赖回写失败：{e}[/]")
+        return False
+
+
+
+def resolve_target_python(project_dir: "Path | None" = None) -> "tuple[str, str]":
+    """
+    解析目标 Python 解释器（CLI 各命令统一入口）
+
+    优先级：`ERISPULSE_PYTHON` 环境变量 > 项目 `.venv` 内解释器 >
+    `VIRTUAL_ENV` > 当前解释器。
+
+    :param project_dir: 项目目录（默认当前目录）；在该目录下探测 `.venv`
+    :return: (解释器路径, 来源描述)——来源用于提示用户当前操作所作用的环境
+    """
+    project_dir = Path(project_dir) if project_dir else Path.cwd()
+    env_var = os.environ.get("ERISPULSE_PYTHON")
+    if env_var and Path(env_var).exists():
+        return env_var, "ERISPULSE_PYTHON"
+    if sys.platform == "win32":
+        candidate = project_dir / ".venv" / "Scripts" / "python.exe"
+    else:
+        candidate = project_dir / ".venv" / "bin" / "python"
+    if candidate.exists():
+        return str(candidate), "项目 .venv"
+    venv = os.environ.get("VIRTUAL_ENV")
+    if venv:
+        if sys.platform == "win32":
+            venv_py = Path(venv) / "Scripts" / "python.exe"
+        else:
+            venv_py = Path(venv) / "bin" / "python"
+        if venv_py.exists():
+            return str(venv_py), "VIRTUAL_ENV"
+    return sys.executable, "当前解释器"
+
+
+def warn_if_uv_isolated() -> bool:
+    """
+    检测当前是否处于 uv 无项目的隔离运行上下文并输出警告
+
+    `uv run` 在**无 pyproject.toml** 的目录执行时，命令运行于一次性
+    隔离环境——其中安装的包不会持久化。通过 `UV` 环境变量识别 uv
+    上下文，结合 cwd 项目文件缺失判定隔离场景。
+
+    :return: 是否处于隔离场景（True = 已输出警告）
+    """
+    import tomllib
+
+    if "UV" not in os.environ:
+        return False
+    if Path("pyproject.toml").exists():
+        return False
+    console.print(
+        "[warning]  "
+        + i18n.t("cli.uv.isolated_warning")
+        + "[/]"
+    )
+    _ = tomllib  # 保留显式依赖提示位（pyproject 探测未来可深化）
+    return True
