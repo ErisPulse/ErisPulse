@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "a60955b24db5c8925d2dffe7ba297507",
-  "file_hash": "a60955b24db5c8925d2dffe7ba297507",
-  "translated_at": "2026-09-07T12:14:52.032967",
+  "hash": "3044ee885c1e743ff683095b14cc7fe1",
+  "file_hash": "3044ee885c1e743ff683095b14cc7fe1",
+  "translated_at": "2026-09-21T11:17:20.644449",
   "target_lang": "en",
   "chunks": [
     {
@@ -14,8 +14,8 @@
       "translation": "## System Requirements\n\n- Python 3.10 or higher\n- pip or uv (recommended)\n- Sufficient disk space (at least 100MB)"
     },
     {
-      "hash": "d588381833d7a59395c1506d42a2270e",
-      "translation": "## Installation Methods\n\n### Method 1: Install Using pip\n\n```bash\n# Install ErisPulse\npip install ErisPulse\n\n# Upgrade to the latest version\npip install ErisPulse --upgrade\n```\n\n### Method 2: Install Using uv (Recommended)\n\nuv is a faster Python toolchain, recommended for development environments.\n\n#### Install uv\n\n```bash\n# Install uv using pip\npip install uv\n\n# Verify the installation\nuv --version\n```\n\n#### Create a Virtual Environment\n\n```bash\n# Create a project directory\nmkdir my_bot && cd my_bot\n\n# Install Python 3.12\nuv python install 3.12\n\n# Create a virtual environment\nuv venv\n```\n\n#### Activate the Virtual Environment\n\n```bash\n# Windows\n.venv\\Scripts\\activate\n\n# Linux/Mac\nsource .venv/bin/activate\n```\n\n#### Install ErisPulse\n\n```bash\n# Install ErisPulse\nuv pip install ErisPulse --upgrade\n```"
+      "hash": "a5c38fb5214f1c38b7a570258c9d958b",
+      "translation": "## Installation Methods\n\n### Method 1: Install with pip\n\n```bash\n# Install ErisPulse\npip install ErisPulse\n\n# Upgrade to the latest version\npip install ErisPulse --upgrade\n```\n\n### Method 2: Install with uv (Recommended)\n\nuv is a faster Python toolchain, recommended for development environments.\n\n#### Install uv\n\n```bash\n# Install uv with pip\npip install uv\n\n# Verify installation\nuv --version\n```\n\n#### Create a Virtual Environment\n\n```bash\n# Create a project directory\nmkdir my_bot && cd my_bot\n\n# Install Python 3.12\nuv python install 3.12\n\n# Create a virtual environment\nuv venv\n```\n\n#### Activate the Virtual Environment\n\n```bash\n# Windows\n.venv\\Scripts\\activate\n\n# Linux/Mac\nsource .venv/bin/activate\n```\n\n#### Install ErisPulse\n\n```bash\n# Install ErisPulse\nuv pip install ErisPulse --upgrade\n```\n\n### Method 3: Install with uv tool (Global CLI, Recommended)\n\nIf you only want to use `epsdk` as a global command-line tool, `uv tool install` is the cleanest approach—`epsdk` runs in an isolated tool environment, without polluting any project environments:\n\n```bash\n# Install (epsdk is immediately available, no need to activate any virtual environment)\nuv tool install ErisPulse\n\n# Upgrade (or directly use `epsdk self-update`, which will automatically use this channel)\nuv tool upgrade ErisPulse\n```\n\n> [!NOTE]\n> When running `epsdk` in a project directory, the tool environment automatically detects the project's `.venv`:\n> `epsdk install` installs components into the project environment, and `epsdk run` uses the project environment to run the bot.\n> The framework itself remains provided by the tool environment, with no interference between the two."
     },
     {
       "hash": "358f974f4ee2f44daa4450252b751cdc",
