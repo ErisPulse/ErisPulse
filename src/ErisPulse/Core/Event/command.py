@@ -44,12 +44,13 @@ from ..constants import (
     DEFAULT_WAIT_TIMEOUT_SECS,
     DETAIL_TYPE_PRIVATE,
     DETAIL_TYPE_USER,
+    GOVERNANCE_KEY_KINDS,
     UNKNOWN_PLATFORM,
 )
 
 # 冷却 / 限流键粒度白名单（cooldown_key= / rate_limit_key=，EPRFC-2026-001 方向七）：
 # user=同一用户 / session=同一会话 / global=全局共享（与 throttle_key 共用 constants 定义）
-from ..constants import GOVERNANCE_KEY_KINDS as _COOLDOWN_KEY_KINDS
+from ..constants import GOVERNANCE_KEY_KINDS as _KEY_KINDS
 from ..di import extract_depends, resolve_depends
 from ..i18n import i18n
 from . import overrides
@@ -65,46 +66,6 @@ from .command_args import (
 from .interaction import InteractionCancelled, interaction
 from .session_type import get_send_type_and_target_id, infer_receive_type
 from .trace import trace_step
-
-_WINDOW_AMOUNT_RE = re.compile(r"^(\d+(?:\.\d+)?)?\s*([a-zA-Z]+)$")
-_RATE_LIMIT_RE = re.compile(
-    r"^(\d+)\s*/\s*((?:\d+(?:\.\d+)?)?\s*(?:seconds?|s|minutes?|m|hours?|h|days?|d))\s*$", re.IGNORECASE
-)
-_RATE_LIMIT_UNITS = {
-    "second": 1.0, "seconds": 1.0, "s": 1.0,
-    "minute": 60.0, "minutes": 60.0, "m": 60.0,
-    "hour": 3600.0, "hours": 3600.0, "h": 3600.0,
-    "day": 86400.0, "days": 86400.0, "d": 86400.0,
-}
-
-
-def parse_rate_limit(spec: str) -> "tuple[int, float]":
-    """
-    解析限流声明（如 ``"5/minute"``、``"10/s"``）为 (次数, 窗口秒)
-
-    滑动窗口语义：窗口内至多放行 ``次数`` 次，超出静默丢弃。单位支持
-    second / minute / hour / day（含单字母缩写，大小写不敏感）。
-
-    :param spec: 限流声明字符串
-    :return: (limit, window_seconds)
-    :raises ValueError: 语法非法或次数非正时
-    """
-    match = _RATE_LIMIT_RE.match(spec or "")
-    if not match:
-        raise ValueError(f"invalid rate limit spec: {spec!r}")
-    limit = int(match.group(1))
-    window_str = match.group(2)
-    # 窗口串 = 可选数值 + 单位词（如 "minute" / "0.3s" / "2 hours"）
-    amount = _WINDOW_AMOUNT_RE.match(window_str)
-    if amount is None:
-        raise ValueError(f"invalid rate limit window: {window_str!r}")
-    numeric = amount.group(1) or "1"
-    window = float(numeric) * _RATE_LIMIT_UNITS[amount.group(2).lower()]
-    if limit <= 0:
-        raise ValueError(f"rate limit count must be positive: {spec!r}")
-    if window <= 0:
-        raise ValueError(f"rate limit window must be positive: {spec!r}")
-    return limit, window
 
 
 class CommandHandler:
@@ -125,6 +86,8 @@ class CommandHandler:
         self._cooldowns: dict[str, float] = {}
         # 命令限流状态（rate_limit= 滑动窗口）：键同冷却；值为窗口内放行时刻 deque
         self._rate_limits: dict[str, deque] = {}
+        # 配额内存计数（usage=）：storage 持久化的读缓存/回退；键为 命令+键+周期
+        self._usage_counts: dict[str, int] = {}
         # 已注册命令名/别名的最大 token 数（命令名支持空格分隔的子命令形式，
         # 如 "admin add"；匹配阶段据此决定最长前缀尝试次数，注册/注销时重算）
         self._max_name_tokens: int = 1
@@ -232,6 +195,96 @@ class CommandHandler:
                 return permission
         return None
 
+    # ==================== 命令治理声明解析（cooldown / rate_limit / usage）====================
+
+    # 限流声明："次数/窗口"，窗口支持可选数值前缀与单字母/全称单位（如
+    # "5/minute"、"10/s"、"3/2m"）；键粒度白名单引自 constants（throttle 共用）
+    _KEY_KINDS = GOVERNANCE_KEY_KINDS
+    _RATE_LIMIT_RE = re.compile(
+        r"^(\d+)\s*/\s*((?:\d+(?:\.\d+)?)?\s*(?:seconds?|s|minutes?|m|hours?|h|days?|d))\s*$",
+        re.IGNORECASE,
+    )
+    _WINDOW_AMOUNT_RE = re.compile(r"^(\d+(?:\.\d+)?)?\s*([a-zA-Z]+)$")
+    _RATE_LIMIT_UNITS = {
+        "second": 1.0, "seconds": 1.0, "s": 1.0,
+        "minute": 60.0, "minutes": 60.0, "m": 60.0,
+        "hour": 3600.0, "hours": 3600.0, "h": 3600.0,
+        "day": 86400.0, "days": 86400.0, "d": 86400.0,
+    }
+    # 配额声明的自然周期单位（minute / hour / day）与周期键格式
+    _USAGE_UNITS = {"minute": "minute", "minutes": "minute", "m": "minute",
+                    "hour": "hour", "hours": "hour", "h": "hour",
+                    "day": "day", "days": "day", "d": "day"}
+    _USAGE_PERIOD_FMT = {
+        "minute": "%Y-%m-%dT%H:%M",
+        "hour": "%Y-%m-%dT%H",
+        "day": "%Y-%m-%d",
+    }
+
+    @classmethod
+    def parse_rate_limit(cls, spec: str) -> "tuple[int, float]":
+        """
+        解析限流声明（如 ``"5/minute"``、``"10/s"``）为 (次数, 窗口秒)
+
+        滑动窗口语义：窗口内至多放行 ``次数`` 次，超出静默丢弃。单位支持
+        second / minute / hour / day（含单字母缩写与可选数值前缀，大小写不敏感）。
+
+        :param spec: 限流声明字符串
+        :return: (limit, window_seconds)
+        :raises ValueError: 语法非法或数值非正时
+        """
+        match = cls._RATE_LIMIT_RE.match(spec or "")
+        if not match:
+            raise ValueError(f"invalid rate limit spec: {spec!r}")
+        limit = int(match.group(1))
+        window_str = match.group(2)
+        # 窗口串 = 可选数值 + 单位词（如 "minute" / "0.3s" / "2 hours"）
+        amount = cls._WINDOW_AMOUNT_RE.match(window_str)
+        if amount is None:
+            raise ValueError(f"invalid rate limit window: {window_str!r}")
+        numeric = amount.group(1) or "1"
+        window = float(numeric) * cls._RATE_LIMIT_UNITS[amount.group(2).lower()]
+        if limit <= 0:
+            raise ValueError(f"rate limit count must be positive: {spec!r}")
+        if window <= 0:
+            raise ValueError(f"rate limit window must be positive: {spec!r}")
+        return limit, window
+
+    @classmethod
+    def parse_usage(cls, spec: str) -> "tuple[int, str] | str":
+        """
+        解析配额声明（如 ``"3/day"``）为 (次数, 周期单位)
+
+        自然周期语义：周期边界对齐本地时区的自然分钟 / 小时 / 日（如 day 为
+        当日 00:00 起，次日自动重置），与 :meth:`parse_rate_limit` 的滑动窗口
+        相区分（rate_limit 防瞬时刷屏，usage_limit 管业务配额）。
+
+        :param spec: 配额声明字符串
+        :return: (limit, unit)；语法非法时返回错误描述字符串（调用方包装 ValueError）
+        """
+        match = cls._RATE_LIMIT_RE.match(spec or "")
+        if not match:
+            return f"invalid usage spec: {spec!r}"
+        limit = int(match.group(1))
+        unit = cls._USAGE_UNITS.get(match.group(2).lower().lstrip("0123456789. "))
+        if unit is None:
+            return f"unknown usage period: {spec!r} (minute/hour/day)"
+        if limit <= 0:
+            return f"usage count must be positive: {spec!r}"
+        return limit, unit
+
+    @staticmethod
+    def usage_period_key(unit: str) -> str:
+        """
+        计算当前自然周期的标识键（本地时区）
+
+        :param unit: 周期单位（minute / hour / day）
+        :return: 周期键（如 ``"2026-09-21"``），周期切换键随之变化即自动重置
+        """
+        import time as _time
+
+        return _time.strftime(CommandHandler._USAGE_PERIOD_FMT[unit], _time.localtime())
+
     # ==================== 作用域上下文（scope 委托） ====================
 
     @staticmethod
@@ -267,6 +320,9 @@ class CommandHandler:
         rate_limit: str | None = None,
         rate_limit_key: str = "user",
         rate_limit_reply: str | None = None,
+        usage_limit: str | None = None,
+        usage_limit_key: str = "user",
+        usage_limit_reply: str | None = None,
         deprecated: str | None = None,
         deprecated_reject: bool = False,
     ):
@@ -308,6 +364,12 @@ class CommandHandler:
             认领）；与 ``cooldown=`` 共享会话键体系，可同时声明（冷却先判、限流后判）
         :param rate_limit_key: 限流键粒度：``"user"``（默认）/ ``"session"`` / ``"global"``
         :param rate_limit_reply: 限流命中时的回复文案（可选，缺省静默丢弃）
+        :param usage_limit: 自然周期配额声明（如 ``"3/day"`` / ``"5/hour"`` / ``"10/minute"``）——
+            每键在自然周期（分钟 / 小时 / 日，本地时区）内至多执行 ``次数``，周期切换自动
+            重置；计数经 storage KV 持久化，重启不丢（与 ``rate_limit=`` 滑动窗口的
+            区别：rate_limit 防瞬时刷屏，usage 管业务配额如"每日签到 3 次"）
+        :param usage_limit_key: 配额键粒度：``"user"``（默认）/ ``"session"`` / ``"global"``
+        :param usage_limit_reply: 配额用尽时的回复文案（可选，缺省静默丢弃）
         :param deprecated: 命令废弃声明（EPRFC-2026-001 方向七）：非空文案即标记废弃——
             调用时自动回复该文案（help 列表显示废弃标记），默认仍继续执行
         :param deprecated_reject: 废弃命令拒绝执行（默认 False 继续执行；True 时回复
@@ -360,13 +422,13 @@ class CommandHandler:
                     raise ValueError(
                         i18n.t("core.command.cooldown.invalid", cmd=main_name, error=e)
                     ) from e
-                if cooldown_key not in _COOLDOWN_KEY_KINDS:
+                if cooldown_key not in _KEY_KINDS:
                     raise ValueError(
                         i18n.t(
                             "core.command.cooldown.invalid_key",
                             cmd=main_name,
                             key=cooldown_key,
-                            kinds=", ".join(sorted(_COOLDOWN_KEY_KINDS)),
+                            kinds=", ".join(sorted(_KEY_KINDS)),
                         )
                     )
             elif cooldown_reply:
@@ -378,23 +440,48 @@ class CommandHandler:
             rate_limit_spec: tuple[int, float] | None = None
             if rate_limit:
                 try:
-                    rate_limit_spec = parse_rate_limit(rate_limit)
+                    rate_limit_spec = self.parse_rate_limit(rate_limit)
                 except ValueError as e:
                     raise ValueError(
                         i18n.t("core.command.rate_limit.invalid", cmd=main_name, error=e)
                     ) from e
-                if rate_limit_key not in _COOLDOWN_KEY_KINDS:
+                if rate_limit_key not in _KEY_KINDS:
                     raise ValueError(
                         i18n.t(
                             "core.command.rate_limit.invalid_key",
                             cmd=main_name,
                             key=rate_limit_key,
-                            kinds=", ".join(sorted(_COOLDOWN_KEY_KINDS)),
+                            kinds=", ".join(sorted(_KEY_KINDS)),
                         )
                     )
             elif rate_limit_reply:
                 raise ValueError(
                     i18n.t("core.command.rate_limit.reply_without_limit", cmd=main_name)
+                )
+
+            # 配额声明（usage=）注册期解析与校验（fail-fast）：自然周期
+            usage_spec: tuple[int, str] | None = None
+            if usage_limit:
+                _parsed_usage = self.parse_usage(usage_limit)
+                if isinstance(_parsed_usage, str):
+                    raise ValueError(
+                        i18n.t(
+                            "core.command.usage.invalid", cmd=main_name, error=_parsed_usage
+                        )
+                    )
+                usage_spec = _parsed_usage
+                if usage_limit_key not in _KEY_KINDS:
+                    raise ValueError(
+                        i18n.t(
+                            "core.command.usage.invalid_key",
+                            cmd=main_name,
+                            key=usage_limit_key,
+                            kinds=", ".join(sorted(_KEY_KINDS)),
+                        )
+                    )
+            elif usage_limit_reply:
+                raise ValueError(
+                    i18n.t("core.command.usage.reply_without_usage", cmd=main_name)
                 )
 
             # 废弃声明（deprecated=）注册期校验：非空文案；reject 须搭配声明
@@ -489,6 +576,9 @@ class CommandHandler:
                     "rate_limit_spec": rate_limit_spec,
                     "rate_limit_key": rate_limit_key,
                     "rate_limit_reply": rate_limit_reply,
+                    "usage_spec": usage_spec,
+                    "usage_limit_key": usage_limit_key,
+                    "usage_limit_reply": usage_limit_reply,
                     "deprecated": deprecated,
                     "deprecated_reject": deprecated_reject,
                 }
@@ -578,6 +668,7 @@ class CommandHandler:
             prefix = main_name + "\x00"
             self._cooldowns = {k: v for k, v in self._cooldowns.items() if not k.startswith(prefix)}
             self._rate_limits = {k: v for k, v in self._rate_limits.items() if not k.startswith(prefix)}
+            self._usage_counts = {k: v for k, v in self._usage_counts.items() if not k.startswith(prefix)}
 
             # 最后移除命令本身
             del self.commands[cmd_name]
@@ -617,6 +708,7 @@ class CommandHandler:
             prefix = main_name + "\x00"
             self._cooldowns = {k: v for k, v in self._cooldowns.items() if not k.startswith(prefix)}
             self._rate_limits = {k: v for k, v in self._rate_limits.items() if not k.startswith(prefix)}
+            self._usage_counts = {k: v for k, v in self._usage_counts.items() if not k.startswith(prefix)}
 
             del self.commands[cmd_name]
 
@@ -1291,6 +1383,64 @@ class CommandHandler:
                     return True
                 _dq.append(_now)
 
+            # 配额判定（usage=，自然周期）：与限流同位次序；计数经 storage KV
+            # 持久化（重启不丢），存储异常时回退进程内内存计数（不阻塞命令）
+            if _effective.get("usage_spec"):
+                _u_limit, _u_unit = _effective["usage_spec"]
+                _u_scope = self._cooldown_scope_key(
+                    _effective.get("usage_limit_key", "user"), event
+                )
+                _u_period = self.usage_period_key(_u_unit)
+                _SEP = "\x00"
+                _u_key = _SEP.join((cmd_info['main_name'], _u_scope, _u_period))
+                _used = self._usage_counts.get(_u_key, 0)
+                _persisted = False
+                from ..storage import storage
+                try:
+
+                    # wait_for 兜底：后台桥接 loop 不可用（如裸 asyncio.run 测试
+                    # 场景）时限时回退内存计数，避免分发路径卡死
+                    _stored = await asyncio.wait_for(
+                        storage.aget(f"erispulse.usage{chr(0)}{_u_key}"), timeout=1.0
+                    )
+                    if isinstance(_stored, int) and _stored > _used:
+                        _used = _stored
+                    _persisted = True
+                except Exception as e:
+                    logger.trace(f"usage quota storage fallback: {e}")
+                if _used >= _u_limit:
+                    logger.trace(
+                        i18n.t(
+                            "core.command.usage_hit",
+                            cmd_name=actual_cmd_name,
+                            scope=_u_scope,
+                            limit=_u_limit,
+                            period=_u_period,
+                            platform=event.get("platform", UNKNOWN_PLATFORM),
+                            user_id=event.get("user_id", ""),
+                        )
+                    )
+                    trace_step(
+                        "usage",
+                        "dropped",
+                        "core.trace.usage_dropped",
+                        command=actual_cmd_name,
+                        limit=str(_u_limit),
+                        period=_u_period,
+                    )
+                    if _effective.get("usage_limit_reply"):
+                        await self._send_args_error(event, _effective["usage_limit_reply"])
+                    return True
+                self._usage_counts[_u_key] = _used + 1
+                if _persisted:
+                    try:
+                        await asyncio.wait_for(
+                            storage.aset(f"erispulse.usage{chr(0)}{_u_key}", _used + 1),
+                            timeout=1.0,
+                        )
+                    except Exception as e:
+                        logger.trace(f"usage quota persist failed: {e}")
+
             # 废弃声明（deprecated=）：调用时自动回复废弃文案；默认继续执行，
             # deprecated_reject=True 时拒绝执行（命令已认领，不漏给消息处理器）
             if _effective.get("deprecated"):
@@ -1586,6 +1736,7 @@ class CommandHandler:
         self.permissions.clear()
         self._cooldowns.clear()
         self._rate_limits.clear()
+        self._usage_counts.clear()
         self._recompute_max_name_tokens()
         interaction.clear()
         # 从共享 handler 中注销命令分发器（不清除其他 handler 的消息处理器）

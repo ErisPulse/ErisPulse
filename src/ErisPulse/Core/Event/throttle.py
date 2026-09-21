@@ -23,9 +23,6 @@ from ..constants import GOVERNANCE_KEY_KINDS
 from ..i18n import i18n
 from .command_args import parse_duration
 
-# 节流键粒度（与命令冷却 / 限流共用一份白名单）
-_KEY_KINDS = GOVERNANCE_KEY_KINDS
-
 
 def _scope_key(kind: str, event: Any) -> str:
     """
@@ -67,12 +64,12 @@ def make_throttle_condition(
         interval = parse_duration(throttle)
     except ValueError as e:
         raise ValueError(i18n.t("core.event.throttle.invalid", error=e)) from e
-    if throttle_key not in _KEY_KINDS:
+    if throttle_key not in GOVERNANCE_KEY_KINDS:
         raise ValueError(
             i18n.t(
                 "core.event.throttle.invalid_key",
                 key=throttle_key,
-                kinds=", ".join(sorted(_KEY_KINDS)),
+                kinds=", ".join(sorted(GOVERNANCE_KEY_KINDS)),
             )
         )
 
