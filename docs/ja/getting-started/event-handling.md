@@ -87,17 +87,17 @@ async def combined_handler(event: Event):
 
 `wait_reply` はこの2つのパラメータもサポートしています（[返信の待ち機能](../developer-guide/modules/event-wrapper.md#返信の待ち機能)を参照）。
 
-## コマンドイベントの処理
+## コマンドイベント処理
 
 ### 基本コマンド
 
 ```python
 from ErisPulse.Core.Event import command
 
-@command("help", help="ヘルプ情報を表示します")
+@command("help", help="ヘルプ情報を表示")
 async def help_handler(event):
     help_text = """
-利用可能なコマンド:
+利用可能なコマンド：
 /help - ヘルプを表示
 /ping - 接続をテスト
 /info - 情報を表示
@@ -105,76 +105,169 @@ async def help_handler(event):
     await event.reply(help_text)
 ```
 
-### コマンドのエイリアス
+### コマンドエイリアス
 
 ```python
-@command(["help", "h"], aliases=["ヘルプ"], help="ヘルプ情報を表示します")
+@command(["help", "h"], aliases=["帮助"], help="ヘルプ情報を表示")
 async def help_handler(event):
     await event.reply("ヘルプ情報...")
 ```
 
-ユーザーは以下のいずれかで呼び出すことができます：
+ユーザーは以下のいずれかの方法で呼び出すことができます：
 - `/help`
 - `/h`
-- `/ヘルプ`
+- `/帮助`
 
-### コマンドの引数
+### コマンド引数
 
 ```python
-@command("echo", help="メッセージを繰り返します")
+@command("echo", help="メッセージを返信")
 async def echo_handler(event):
     # コマンド引数を取得
     args = event.get_command_args()
     
     if not args:
-        await event.reply("繰り返したいメッセージを入力してください")
+        await event.reply("返信するメッセージを入力してください")
     else:
         await event.reply(f"あなたが言った: {' '.join(args)}")
 ```
 
-引数は、大文字小文字を区別する設定が無効であっても、ユーザー入力のまま保持されます（コマンド名のマッチングは正規化されますが、引数の内容には影響しません）。
+引数は、大文字小文字を区別せず設定しても、ユーザー入力の元の大文字小文字が保持されます（コマンド名のマッチングは正規化されますが、引数内容には影響しません）。
+
+### 宣言的引数とオプション（args= / options=）
+
+手動で引数を解析するには、型変換やエラーメッセージの処理を自分で行う必要があります。`args=` / `options=` を宣言すると、権限チェックが通過した後にフレームワークがコマンド引数を自動的に解析し、**名前でハンドラに注入**します。ユーザーの入力が間違っている場合、自動的にローカライズされたエラーメッセージと使い方が返され、例外が発生してクラッシュすることはありません。また、`/help <コマンド>` でも自動的に使い方が表示されます。
+
+```python
+@command(
+    "roll",
+    args="<count:int> [sides:int=6]",
+    options={"verbose": "-v/--verbose", "label": "--label"},
+    help="サイコロを振る",
+)
+async def roll_handler(event, count: int, sides: int = 6, verbose: bool = False, label: str = ""):
+    total = sum(random.randint(1, sides) for _ in range(count))
+    await event.reply(f"{count}回 {sides}面サイコロを振った、合計点数：{total}")
+```
+
+`args=` 位置引数の構文：`<count:int>` は必須、`[sides:int=6]` はオプション（デフォルト値あり）。サポートされる型は以下の通りです：
+
+| 型 | 入力例 | 説明 |
+|------|---------|------|
+| `str` | `hello` | テキスト（デフォルト型） |
+| `int` / `float` | `3` / `0.5` | 数値 |
+| `bool` | `はい` / `yes` / `はい` / `да` / `true` / `no` / `キャンセル` | ブール値、イベントの確認（`Event.confirm()`）で使用する確認語のリストを再利用 |
+| `literal` | `<mode:literal=fast|slow>` | 列挙、指定された値のみを受け入れる；オプション形式ではデフォルトで最初の値を使用 |
+| `duration` | `90s`、`1h30m`、`1d` | 時間、秒に換算されるfloat |
+| `rest` | `<text:rest>` | 残りのすべてのテキスト（最後に位置する必要がある） |
+
+`options=` は辞書形式で宣言されます：キーはハンドラの引数名、値はフラグ形式（複数のエイリアスは `/` で区切る）。`bool` と注釈された引数はブールフラグ（存在すれば `True`）；それ以外（デフォルトでは `str`）は値付きオプションで、`--label hello` と `--label=hello` の両方の形式がサポートされ、型はハンドラの注釈に従います。オプションは先に認識され、残りのトークンは `args=` で解析されます（`rest` はオプションを除外した後の残りのテキストをカバーします）。
+
+**動作の要点**：
+
+- 権限チェックは引数解析より先に実行される—権限がないユーザーは解析をトリガーしない
+- 解析失敗（型が合わない / 必須引数が不足 / 引数が多すぎる / 無効なオプション）は、ローカライズされたエラーメッセージと使い方を自動的に返し、コマンドは引き続き認識される
+- 宣言された引数名はハンドラの署名に存在しなければならない、そうでなければ登録時に `ValueError` が発生する
+- `args=` / `options=` を宣言しないコマンドは、動作が完全に変化しない（後方互換性）
+
+### コマンドクールダウン（cooldown=）
+
+手動でクールダウンを実装する代わりに、`cooldown=` を宣言して代替できます。時間の書式は `args=` の `duration` 型と同じ（例：`"30s"`、`"1h30m"`、`"1d"`）：
+
+```python
+@command("daily", cooldown="1d", cooldown_key="user", cooldown_reply="今日のログイン済み")
+async def daily_handler(event):
+    await event.reply("ログイン完了！")
+```
+
+`cooldown_key=` はクールダウンの粒度を制御します：`"user"`（デフォルト、同一ユーザーで共有）、`"session"`（同一セッションで共有、グループ内）、`"global"`（すべてのユーザーとセッションで共有）。
+
+**動作の要点**：
+
+- クールダウンがヒットした場合、デフォルトでは**静かに無視**される（作用域に応じて静かに無視）
+- `cooldown_reply=` を宣言すると、ヒット時にその文言を返す
+- コマンドがヒットすると認識される—クールダウンがヒットしたコマンドは、低優先度のメッセージハンドラに漏れることはない
+- クールダウンは、すべての権限チェックと引数解析が完了し、コマンドが実際に実行される前に開始される：権限がないユーザーはクールダウンをトリガーせず、引数エラーはクールダウンを消費しない
+- 状態はプロセス内のメモリに保持され、モジュールのアンロード時に自動的にクリーンアップされる；プロセス間共有 / 再起動時の永続化は対象外
+- 宣言時に検証（fail-fast）：時間の書式が不正、`cooldown_key=` がホワイトリストの値でない、`cooldown_reply=` が `cooldown=` と併用されていない場合、すべて `ValueError` が発生する
+
+### 依存注入（Depends）
+
+共通の依存（データベースセッション、設定の読み取りなど）は、依存関数に抽出し、ハンドラに `Depends(依存関数)` をデフォルト値として宣言することで、フレームワークがコンテキストオブジェクトを用いて依存関数を自動的に呼び出し、名前で注入する：
+
+```python
+from ErisPulse.Core import Depends
+
+async def get_session(event):
+    return await sdk.module.call("DB", "get_session")
+
+@command("admin")
+async def admin_handler(event, db=Depends(get_session)):
+    ...
+```
+
+**リクエストレベルのキャッシュ**がデフォルトで有効です：1回のイベント配信内では、同じ依存関数は1回しか解析されず、すべての注入ポイントで結果を共有します（例えば `get_db` は1回のイベント内で1回だけデータベースセッションを確立）。リクエスト間では自動的に再利用されません。`Depends(get_db, use_cache=False)` を使用して、個々の依存のキャッシュを無効にできます。
+
+フレームワークのすべての注入ポイントをオーバーライドできる—コマンドハンドラ、イベントハンドラ（`message.on_message()` など）、ライフサイクルフック（`sdk.lifecycle.on`）、SSEルートハンドラ。依存関数の最初の引数は注入ポイントのコンテキストオブジェクト（イベントの場合は `Event`、ライフサイクルの場合はイベント `data`、ルートの場合は `HttpRequest` / `SseEmitter`）です；同期と非同期の依存関数の両方を宣言できます。
+
+**他のモジュールのサービスを宣言する**（構文糖）：
+
+```python
+@command("query")
+async def query_handler(event, session=Depends.module("DB", "get_session")):
+    ...
+```
+
+`Depends.module(モジュール名, メソッド名, *固定引数)` は、依存関数内で `sdk.module.call(...)` を呼び出すのと同じです。モジュールのインスタンス化（`__init__`）は対象外です—インスタンス化時にはコンテキストオブジェクトがありません；FastAPI が提供する HTTP ルートは FastAPI の元の `fastapi.Depends` を使用してください。
+
+**動作の要点**：
+
+- 宣言時に検証（fail-fast）：依存が呼び出せない、または `args=` / `options=` 引数と重複する場合、`ValueError` が発生する
+- 依存関数が発生させる例外は、ハンドラ自身の例外と同じ口径で処理される（コマンドは自動的にエラーを返す）
+- `Depends` を宣言しないハンドラはゼロオーバーヘッド（配信時に反射が一切行われない）
+- FastAPI が提供する HTTP ルートは FastAPI の元の `fastapi.Depends` を使用してください
 
 ### コマンドグループ
 
 ```python
-@command("admin.reload", group="admin", help="モジュールを再読み込みします")
+@command("admin.reload", group="admin", help="モジュールを再読み込み")
 async def reload_handler(event):
     await event.reply("モジュールを再読み込みしました")
 
-@command("admin.stop", group="admin", help="ロボットを停止します")
+@command("admin.stop", group="admin", help="ロボットを停止")
 async def stop_handler(event):
     await event.reply("ロボットを停止しました")
 ```
 
-`group` パラメータはヘルプリストの分類にのみ使用されます。上記の例では、`admin.reload` は**1つの全体のコマンド名**です（ドットは命名スタイルに過ぎず、ユーザーは `/admin.reload` を入力する必要があります）。
+`group` パラメータはヘルプリストの分類にのみ使用されます；上記の例では `admin.reload` は**全体のコマンド名**です（ドットは命名規則に過ぎず、ユーザーは `/admin.reload` を入力する必要があります）。
 
 ### サブコマンド
 
-コマンド名は**スペース区切りの複数トークン**形式をサポートし、`/admin add`、`/admin user ban` のようなサブコマンドを実現できます：
+コマンド名は**スペース区切りの複数トークン形式**をサポートし、`/admin add`、`/admin user ban` のようなサブコマンドを実現できます：
 
 ```python
 @command("admin", help="管理コマンド")
 async def admin_handler(event):
-    await event.reply("使い方: /admin add | /admin remove")
+    await event.reply("使い方：/admin add | /admin remove")
 
-@command("admin add", help="管理者を追加します")
+@command("admin add", help="管理者を追加")
 async def admin_add_handler(event):
     target = event.get_command_args()[0]
     await event.reply(f"{target} を追加しました")
 
-@command("admin remove", aliases=["a remove"], help="管理者を削除します")
+@command("admin remove", aliases=["a remove"], help="管理者を削除")
 async def admin_remove_handler(event):
     await event.reply("削除しました")
 ```
 
-マッチングルール（**最長接頭辞マッチ**）：
+マッチングルール（**最長前接辞マッチ**）：
 
-- `/admin add x` は `admin add` に優先的にマッチし、`event.get_command_args()` は `["x"]`（サブコマンド名の後の引数）を返します。
-- `admin` のみが登録されている場合、`/admin add x` は `admin` にマッチし、`get_command_args()` は `["add", "x"]`（従来の動作）を返します。
-- 別名は複数トークン形式（`a remove`）もサポートされ、単一トークンの別名（`a`）もサブコマンドに指定できます。
-- 父子コマンドが同時に登録されている場合、未登録のサブコマンド入力（`/admin list x`）は親コマンドに降格します。
+- `/admin add x` は `admin add` に優先的にマッチし、`event.get_command_args()` は `["x"]` を返す（サブコマンド名の後の引数）
+- `admin` のみ登録されている場合、`/admin add x` は `admin` にマッチし、`get_command_args()` は `["add", "x"]` を返す（過去の動作のまま）
+- エイリアスは複数トークン形式（例：`a remove`）をサポートし、単一トークンエイリアス（例：`a`）もサブコマンドに指定可能
+- 父子コマンドが同時に登録されている場合、未登録のサブコマンド入力（例：`/admin list x`）は親コマンドに降格される
 
-**権限継承**：サブコマンドが `permission` を宣言していない場合、直近に権限を宣言した祖先コマンドを自動的に継承します——`/admin` に保護を宣言すれば、その下のすべてのサブコマンドも自動的に保護されます。サブコマンド自身が宣言した権限が優先されます：
+**権限継承**：サブコマンドが `permission` を宣言していない場合、直近で権限を宣言した祖先コマンドの権限を自動的に継承します—`/admin` を保護すれば、その下のすべてのサブコマンドも自動的に保護されます；サブコマンド自身が宣言した権限が優先されます：
 
 ```python
 def is_admin(event):
@@ -184,28 +277,28 @@ def is_admin(event):
 async def admin_handler(event):
     ...
 
-# permissionの再宣言は不要、is_adminを自動的に継承
-@command("admin add", help="管理者を追加します")
+# permission を再宣言する必要はなく、is_admin を自動的に継承します
+@command("admin add", help="管理者を追加")
 async def admin_add_handler(event):
     ...
 ```
 
-注意：`master=True` と `hidden` は**継承されません**。必要に応じてサブコマンドで個別に宣言してください。ユーザーアクセス制御（ホワイトリスト/ブラックリスト）はコマンド全名でマッチし、globルール（`"admin*"`）でサブコマンド全体をカバーすることも可能です。
+注意：`master=True` と `hidden` は**継承されません**、必要に応じてサブコマンドで個別に宣言してください；ユーザー ACL（ホワイトリスト/ブラックリスト）はコマンドの完全名でマッチし、`glob` ルール（例：`"admin*"`）でサブコマンド全体をカバーできます。
 
-`/help`のコマンド概要では、サブコマンドは表示可能な親コマンドに自動的にインデント表示されます（`admin` → `admin add`は1段階インデント、`admin user` → `admin user ban`は2段階インデント）。
+`/help` のコマンド一覧では、サブコマンドは表示可能な親コマンドの下に自動的にインデント表示されます（`admin` → `admin add` は1段階インデント、`admin user` → `admin user ban` は2段階インデント）。
 
-### コマンドの権限とアクセス制御
+### コマンド権限とアクセス制御
 
-コマンドの権限は3段階で、上から下へ順次判定されます（**上層が拒否されたら下層は判定されません**）：
+コマンドの権限は3層に分かれ、上から下へ順に判定されます（**上層が拒否すると下層は見ない**）：
 
 ```python
-# ① コマンド権限 ACL（ユーザ側設定）：コマンドのユーザーホワイト/ブラックリストで、拒否時は「権限不足」を返します
-# ② master=True —— フレームワークのオーナーのみ実行可能（フレームワークが自動的にチェックし、拒否時は「権限不足」を返します）
-@command("restart", master=True, help="モジュールを再起動します")
+# ① コマンド権限 ACL（ユーザー側設定）：コマンドごとのユーザーのホワイトリスト/ブラックリスト、拒否時は「権限不足」を返す
+# ② master=True —— フレームワークのオーナーのみ実行可能（フレームワークが自動的にチェック、拒否時は「権限不足」を返す）
+@command("restart", master=True, help="モジュールを再起動")
 async def restart_handler(event):
     await event.reply("モジュールを再起動しました")
 
-# ③ permission=関数呼び出し —— コマンド自身の制御ロジック（Trueを返す場合のみ実行されます）
+# ③ permission=呼び出し関数 —— コマンド自身の制御ロジック（True を返す場合にのみ実行）
 def is_admin(event):
     return event.get_user_id() in {"user123", "user456"}
 
@@ -214,37 +307,38 @@ async def panel_handler(event):
     await event.reply("管理パネルへようこそ")
 ```
 
-**コマンドユーザーアクセス制御**（`ErisPulse.event.command.acl`）：ユーザーは任意のコマンドにユーザーホワイト/ブラックリストを設定でき、コマンド名は正確またはglobパターン（`"roll*"`など）で、拒否時は「権限不足」を返します：
+**コマンドユーザー ACL**（`ErisPulse.event.command.acl`）：ユーザーは任意のコマンドにユーザーのホワイトリスト/ブラックリストを設定でき、コマンド名は正確なマッチと glob モード（例：`"roll*"`）をサポートし、拒否時は「権限不足」を返す：
 
 ```toml
-# config.toml —— restartコマンドは123456のみ実行可能；666は一律拒否
+# config.toml —— restart コマンドは 123456 にのみ実行を許可；666 は一律拒否
 [ErisPulse.event.command.acl.restart]
 allow = ["onebot11:123456"]
 deny = ["onebot11:666"]
 ```
 
-判定順序：`deny`が一致 → 拒否；`allow`が非空で一致しない → 拒否；ACLが設定されていない場合、`event.command.default_allow`（`false` = 厳格モード、ACLがないと拒否；`true`の場合は開発者にデフォルトの`master=True` / `permission`を委ねる）に従います。実行時API（コマンド名はglobパターンに対応）：
+判定順序：`deny` がヒット → 拒否；`allow` が空でないかつヒットしない → 拒否；ACL が設定されていない場合は `event.command.default_allow`（`false` = 严格モード、ACL がない場合は拒否；`true` の場合、開発者のデフォルト `master=True` / `permission` に委ねる）に従う。実行時 API（コマンド名は glob をサポート）：
 
 ```python
 from ErisPulse.Core.Event import command
 
 command.allow_user("restart", "onebot11", "123456")   # 許可リスト
 command.deny_user("restart", "onebot11", "666")       # 拒否リスト
-command.remove_acl("restart")                          # ホワイト/ブラックリストを削除
+command.remove_acl("restart")                          # ホワイトリスト/ブラックリストを削除
 command.get_acl("restart")                             # 現在のリストを取得
 ```
 
-> コマンドハンドラはイベントパッケージからインポートされます：`from ErisPulse.Core.Event import command`；またはSDKイベントパッケージからアクセスすることもできます：`sdk.Event.command`（これらは同一のシングルトンです）。モジュール内では通常、コマンドデコレータと共にインポートされています（`from ErisPulse.Core.Event import command`）。
+> コマンドハンドラはイベントパッケージからインポート：`from ErisPulse.Core.Event import command`；SDK イベントパッケージを経由してアクセスすることも可能：`sdk.Event.command`（両者は同一のシングルトン）。
+> モジュール内では通常、コマンドデコレータ経由でインポートされている（`from ErisPulse.Core.Event import command`）。
 
-コマンドやユーザ間の**イベントレベル**のアクセス制御（特定の人の、特定のグループの、特定のBotのメッセージを受信するか）は、**スコープのアイデンティティ次元**（`scope.identity`）で行います。**モジュールレベル**の可用性（どのモジュールが使えるか）は、**スコープのモジュール次元**（`scope.platforms / bots / sessions`）で行います。
-詳細は[スコープ（scope）](../advanced/scope.md)を参照してください。
+コマンド間 / ユーザー間の**イベントレベル**のアクセス制御（特定のユーザー / グループ / Bot のメッセージを受信するか否か）は、作用域の**アイデンティティ次元**（`scope.identity`）を用いる；**モジュールレベル**の可用性（どのモジュールが使えるか）は、作用域の**モジュール次元**（`scope.platforms / bots / sessions`）を用いる。
+詳細は[作用域（scope）](../advanced/scope.md)を参照してください。
 
-> 推奨：コマンド内部でビジネスロジックを連動させる必要がある場合は`master=True` / `permission`を使用してください。純粋にユーザー/グループによるアクセス制御を行う場合はスコープアイデンティティ次元を使用してください。モジュールの可用性を制御する場合はスコープモジュール次元を使用してください。
+> おすすめ：コマンド内部でビジネスロジックと連動する必要がある場合は `master=True` / `permission` を使用する；純粋にユーザー / グループでアクセス制御を行う場合は作用域アイデンティティ次元を使用する；モジュールの可用性を制御する場合は作用域モジュール次元を使用する。
 
-### コマンドの優先度
+### コマンド優先度
 
 ```python
-# 优先度数値が大きいほど、実行が早くなります
+# 優先度の数値が大きいほど、実行が早くなる
 @message.on_message(priority=10)
 async def high_priority_handler(event):
     await event.reply("高優先度のハンドラ")
@@ -254,48 +348,48 @@ async def low_priority_handler(event):
     await event.reply("低優先度のハンドラ")
 ```
 
-### 並列イベント処理
+### 並行イベント処理
 
-ErisPulseのイベントシステムは**同優先度並列、異なる優先度直列**のスケジューリングモデルを採用しています：
+ErisPulse のイベントシステムは**同優先度で並行、異なる優先度で直列**のスケジューリングモデルを採用しています：
 
 ```
 イベント到着
     ↓
-priority=10 組: [ハンドラC || ハンドラD] 並列 → 結果をマージ
-    ↓ (中断されていない場合)
-priority=0 組: [ハンドラA || ハンドラB] 並列 → 結果をマージ
+priority=10 組: [ハンドラC || ハンドラD] 並行 → 結果を結合
+    ↓ (中断しない場合)
+priority=0 組: [ハンドラA || ハンドラB] 並行 → 結果を結合
     ↓
 ...
 ```
 
-- **同優先度並列**：優先度が同じ複数のハンドラは同時に実行され、スループットが向上します
-- **跨優先度直列**：異なる優先度のグループは順番に実行され（数値が大きいほど先に実行）、高優先度のハンドラが先に実行されるようにします
-- **Copy-On-Write**：ハンドラが変更しない場合はコピーを作成せず、ゼロオーバーヘッドを確保します
-- **競合処理**：同優先度の複数ハンドラが同じフィールドを変更した場合、最後に変更した値を使用し、警告ログを記録します
-- **中断メカニズム**：任意のハンドラが `event.done()`（デフォルト）または `event.done(claim=False)` を呼び出した後、以降の低優先度グループはスキップされます。認領とブロックの違いは下記の[「リンク制御：認領とブロック」](#リンク制御認領とブロック)を参照してください。
+- **同優先度で並行**：優先度が同じ複数のハンドラは同時に実行され、スループットが向上
+- **跨優先度で直列**：異なる優先度のグループは順番に実行される（数値が大きいほど先に実行）、高優先度ハンドラが先に実行されることを保証
+- **Copy-On-Write**：ハンドラが変更しない限りコピーを作成せず、ゼロオーバーヘッドを保証
+- **衝突処理**：同優先度の複数ハンドラが同じフィールドを変更した場合、最後の変更値を使用し、警告ログを記録
+- **中断メカニズム**：任意のハンドラが `event.done()`（デフォルト）または `event.done(claim=False)` を呼び出した後、以降の低優先度グループをスキップする。認領とブロックの違いは下記の[「リンク制御：認領とブロック」](#リンク制御認領とブロック)を参照してください。
 
 ```python
-# 例：同優先度ハンドラが並列実行される
+# 例：同優先度ハンドラが並行実行される
 @message.on_message(priority=0)
 async def handler_a(event):
-    # タスクAを処理
+    # 作業 A を処理
     event['result_a'] = process_a()
 
 @message.on_message(priority=0)
 async def handler_b(event):
-    # handler_aと並列に実行される
+    # handler_a と並行実行
     event['result_b'] = process_b()
 
-# 異なる優先度で直列実行される
+# 異なる優先度で直列実行
 @message.on_message(priority=10)
 async def handler_c(event):
-    # 一番優先度が高い、最初に実行される
+    # 最も優先度が高い、最初に実行される
     pass
 ```
 
-> **並列上限**：すべてのマッチするハンドラのTaskは**即座に作成**されますが、シグナルマネージャによって**同時に実行される数**が制限されます。デフォルト上限は **64**（`ErisPulse.framework.handler_max_concurrency`、ホットアップデートが可能です）。上限を超えるTaskはシグナルマネージャで待機し、前の処理が完了してから実行されます。イベントの急増時に、これが「圧力緩和弁」になります。
+> **並行上限**：すべてのマッチするハンドラの Task は**即座に作成**されるが、シグナルマニュアルで**同時に実行される数**を制限し、デフォルト上限は **64**（`ErisPulse.framework.handler_max_concurrency`、ホットアップデート可能）。上限を超えた Task はシグナルマニュアル上でキューイングされ、前の処理が完了した後に実行される。イベントのピーク時に、これが「圧力緩和弁」になります。
 >
-> **遅いログ**：単一のハンドラが1秒以上かかる場合、フレームワークはログにWARNINGを出力します（`handler_slow`）。`wait_reply`の待機時間は処理時間から除外され、ユーザーの返信を待つことで誤った遅延とみなされることはありません。
+> **遅延ログ**：個々のハンドラの処理時間が **1秒**を超える場合、フレームワークはログに WARNING（`handler_slow`）を出力します。`wait_reply` の待機時間は処理時間から除外され、ユーザーの返信待ちで誤って遅延と判定されることはありません。
 
 ## スコープフィルタリング：なぜ私のモジュールはメッセージを受け取らないのか
 

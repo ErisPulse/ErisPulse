@@ -51,28 +51,54 @@ The framework keeps disk writes minimal:
 
 ## Environment Variable Override
 
-The framework supports overriding `ErisPulse.*` configuration items using environment variables (suitable for Docker / containerization / CI deployment, no need to modify `config.toml`).
+The framework supports **overriding** `ErisPulse.*` configuration items using environment variables (ideal for Docker / containerized / CI deployments, without modifying `config.toml`).
 
-Naming rule: Replace the dot-separated path `ErisPulse.<section>.<key>` with all uppercase, replace `.` with `_`, and add the `ERISPULSE_` prefix:
+Naming convention: Convert the dot-separated path `ErisPulse.<section>.<key>` into all uppercase, replace `.` with `_`, and add the `ERISPULSE_` prefix:
 
 | Configuration Item | Environment Variable | Example Value |
-|--------|---------|--------|
+|--------------------|----------------------|---------------|
 | `ErisPulse.server.port` | `ERISPULSE_SERVER_PORT` | `9000` |
 | `ErisPulse.server.host` | `ERISPULSE_SERVER_HOST` | `0.0.0.0` |
 | `ErisPulse.logger.level` | `ERISPULSE_LOGGER_LEVEL` | `DEBUG` |
 | `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |
 
 Behavior description:
-- **Highest Priority**: Environment variables override "configuration file" and "default values," automatically converting to the original value type (`bool` / `int` / `float` / comma-separated `list` / string)
-- **Non-Persistent**: The override only takes effect at runtime and is not written back to `config.toml`
-- **Supports Hot Updates**: After modifying the environment variable during runtime, combined with configuration listener reload, it can take effect
+- **Highest priority**: Environment variables override both "configuration file" and "default values", with automatic type conversion (based on original value type: `bool` / `int` / `float` / comma-separated `list` / string)
+- **Non-persistent**: Overrides only take effect during runtime and are not written back to `config.toml`
+- **Supports hot reload**: After modifying environment variables during runtime, configuration reload via monitoring will take effect
 
 ```bash
-# Docker Deployment Example: No need to modify config.toml, directly override port
+# Example for Docker deployment: Override port without modifying config.toml
 ERISPULSE_SERVER_PORT=9000 docker compose up -d
 ```
 
-> Note: `ErisPulse.server.port` and other framework configurations accessed via `get_server_config()` and other APIs are affected by environment variable overrides.
+> Note: Framework configurations like `ErisPulse.server.port` are read through APIs such as `get_server_config()`, and are affected by environment variable overrides.
+
+### Module Configuration Environment Variable Binding (2.9.0+)
+
+Module-specific declarative configurations (`ConfigClass`) support field-level environment variable binding—declare `env` in `field(metadata=...)`:
+
+```python
+@dataclass
+class MyConfig(BaseConfig):
+    api_key: str = field(default="", metadata={
+        "description": "API Key",
+        "env": "MYMODULE_API_KEY",   # Environment variable binding
+    })
+    retries: int = field(default=3, metadata={"env": "MYMODULE_RETRIES"})
+```
+
+Behavior description:
+
+- **Priority**: Environment variable > `config.toml` > declared default value (this priority remains after configuration file hot reload)
+- **Type conversion**: Environment variable values are automatically converted based on field annotations—`str` remains unchanged, `int` / `float` / `bool` (`true` / `1` / `yes` / `on`) are automatically converted, `list` / `dict` are parsed via JSON; if conversion fails, the override is ignored (falling back to configuration file / default value) and a warning is issued
+- **One declaration, everywhere effective**: Configuration reading, hot reload, and validation use the same pipeline; the configuration panel schema will mark the `env` name, and `config.toml` template comments will also indicate available environment variables (the template does not write actual values of environment variables, avoiding leakage)
+- **Fully compatible**: Fields without `env` declaration behave unchanged; directly instantiating `ConfigClass` (without framework configuration pipeline) is not affected by environment variables
+
+```bash
+# Example for Docker deployment: Inject module key without modifying config.toml
+MYMODULE_API_KEY=sk-xxx docker compose up -d
+```
 
 ## Configuration Hot Update
 

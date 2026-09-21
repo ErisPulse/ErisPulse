@@ -9,17 +9,17 @@
 ```python
 from ErisPulse import sdk
 
-# 通過名稱獲取適配器
+# 透過名稱獲取適配器
 adapter = sdk.adapter.get("platform_name")
 
-# 或者也可以直接通過屬性訪問
+# 或者也可以直接透過屬性存取
 adapter = sdk.adapter.platform_name
 ```
 
 ### 使用適配器事件監聽
-> 一般情況下，更建議使用 `Event` 模塊進行事件的監聽/處理;
+> 一般情況下，更建議使用`Event`模組進行事件的監聽/處理;
 >
-> 同時 `Event` 模塊提供了強大的包裝器，可以為您的模塊開發帶來更多便利
+> 同時`Event`模組提供了強大的包裝器，可以為您的模組開發帶來更多便利
 
 ```python
 # 監聽 OneBot12 標準事件
@@ -47,12 +47,12 @@ platforms = sdk.adapter.platforms
 # 檢查適配器是否存在
 exists = sdk.adapter.exists("platform_name")
 
-# 啟用/禁用適配器
+# 啟用/停用適配器
 sdk.adapter.enable("platform_name")
 sdk.adapter.disable("platform_name")
 
 # 啟動/關閉適配器
-# 以下方法都只展示了傳入參數的情況，無參數時代表啟動/停止全部已註冊適配器
+# 以下方法都只展示了傳入參數的情況，無參數時代表啟動/停止全部已註冊的適配器
 await sdk.adapter.startup(["platform1", "platform2"])
 await sdk.adapter.shutdown(["platform1", "platform2"])
 
@@ -65,7 +65,7 @@ running = sdk.adapter.list_running()
 
 ## 中間件
 
-中間件在事件分發到處理程序之前執行，可以對事件資料進行修改、過濾或記錄。
+中間件在事件分發到處理器之前執行，可以對事件資料進行修改、過濾或記錄。
 
 ### 註冊中間件
 
@@ -81,6 +81,7 @@ async def my_middleware(event):
 - **執行順序**：中間件按註冊順序執行（先註冊先執行）
 - **資料傳遞**：每個中間件接收上一個中間件返回的 `event` 資料；如果某個中間件返回 `None`，則忽略該返回值並保留原資料繼續傳遞（同時輸出 `warning` 級別日誌）
 - **修改資料**：中間件可以修改事件資料並返回修改後的字典
+- **事件否決**：中間件顯式返回 `False` 時否決事件——事件被丟棄，不進入任何處理器、無任何出站副作用；否決時輸出 TRACE 日誌並觸發 `adapter.event.blocked` 生命週期鉤子（攜帶中間件名與完整事件）
 
 ```python
 @sdk.adapter.middleware
@@ -93,12 +94,13 @@ async def filter_spam(event):
     if event.get("detail_type") == "private":
         text = event.get("alt_message", "")
         if "垃圾廣告" in text:
-            return None   # 返回 None 不會阻止事件傳播，僅忽略此返回值
+            return False  # 否決：事件被丟棄，不進入任何處理器
     return event
 ```
 
-> **注意**：中間件目前不支援阻斷事件傳播。如需過濾特定事件，請在事件處理程序中透過條件判斷實現。  
-> 但您可以在Event模組中設定高優先級處理程序，然後在處理程序內使用設定 `event.mark_processed()` 來阻斷低優先級事件處理程序。
+> **注意**：只有顯式返回 `False` 才否決事件（返回空字典 / `0` / `""` 等 falsy 值不否決）；
+> 返回 `None` 仍然是放行且載荷不變。否決後的事件可透過監聽
+> `adapter.event.blocked` 鉤子進行審計與排查"事件為什麼沒響應"。
 
 ## Send 消息發送
 
@@ -108,10 +110,10 @@ async def filter_spam(event):
 # 獲取適配器
 adapter = sdk.adapter.get("platform")
 
-# 發送文字消息
+# 發送文字訊息
 await adapter.Send.To("user", "123").Text("Hello")
 
-# 發送圖片消息
+# 發送圖片訊息
 await adapter.Send.To("group", "456").Image("https://example.com/image.jpg")
 ```
 
@@ -141,24 +143,24 @@ info = sdk.adapter.send_info("onebot11", "Text")
 #         {"name": "text", "type": "str", "default": null, "annotation": "str"}
 #     ],
 #     "return_type": "Awaitable[Any]",
-#     "docstring": "發送文字消息..."
+#     "docstring": "發送文字訊息..."
 # }
 ```
 
 ### 鏈式修飾
 
 ```python
-# @用戶
+# @使用者
 await adapter.Send.To("group", "456").At("789").Text("你好")
 
 # @全體成員
 await adapter.Send.To("group", "456").AtAll().Text("大家好")
 
-# 回覆消息
+# 回覆訊息
 await adapter.Send.To("group", "456").Reply("msg_id").Text("回覆內容")
 
 # 組合使用
-await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("回覆@的消息")
+await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("回覆@的訊息")
 ```
 
 ## API 調用
@@ -211,7 +213,7 @@ class MyAdapter(BaseAdapter):
         pass
     
     async def call_api(self, endpoint: str, **params):
-        """呼叫平台 API（必須實現）"""
+        """調用平台 API（必須實現）"""
         pass
 ```
 
@@ -235,7 +237,7 @@ class MyAdapter(BaseAdapter):
 
 ## Bot 狀態管理
 
-適配器透過發送 OneBot12 標準的 **`meta` 事件** 來告知框架 Bot 的連線狀態。系統會自動從中提取 Bot 信息進行狀態追蹤。
+適配器透過發送 OneBot12 標準的 **`meta` 事件**來告知框架 Bot 的連接狀態。系統自動從中提取 Bot 資訊進行狀態追蹤。
 
 ### meta 事件類型
 
@@ -243,15 +245,15 @@ class MyAdapter(BaseAdapter):
 
 | `type` | `detail_type` | 說明 | 觸發時機 |
 |--------|--------------|------|---------|
-| `meta` | `connect` | Bot 連線上線 | 適配器與平台建立連線成功後 |
+| `meta` | `connect` | Bot 連接上線 | 適配器與平台建立連接成功後 |
 | `meta` | `heartbeat` | Bot 心跳 | 定期發送（建議 30-60 秒） |
-| `meta` | `disconnect` | Bot 斷開連線 | 檢測到連線斷開時 |
+| `meta` | `disconnect` | Bot 斷開連接 | 檢測到連接斷開時 |
 
-### self 字段擴展
+### self 欄位擴展
 
-ErisPulse 在 OneBot12 標準的 `self` 字段上擴展了以下可選字段：
+ErisPulse 在 OneBot12 標準的 `self` 欄位上擴展了以下可選欄位：
 
-| 字段 | 類型 | 說明 |
+| 欄位 | 類型 | 說明 |
 |------|------|------|
 | `self.platform` | string | 平台名稱（OB12 標準） |
 | `self.user_id` | string | Bot 用戶 ID（OB12 標準） |
@@ -261,7 +263,7 @@ ErisPulse 在 OneBot12 標準的 `self` 字段上擴展了以下可選字段：
 
 ### meta 事件格式
 
-#### connect — 連線上線
+#### connect — 連接上線
 
 ```python
 await adapter.emit({
@@ -299,9 +301,9 @@ await adapter.emit({
 })
 ```
 
-系統處理：更新 `last_active` 時間（心跳中也支援更新元信息）。
+系統處理：更新 `last_active` 時間（心跳中也支援更新元資訊）。
 
-#### disconnect — 斷開連線
+#### disconnect — 斷開連接
 
 ```python
 await adapter.emit({
@@ -321,17 +323,17 @@ await adapter.emit({
 
 ### 普通事件的自動發現
 
-除了 `meta` 事件外，普通事件（`message`/`notice`/`request`）中的 `self` 字段也會自動發現並註冊 Bot、更新活躍時間。這意味著即使適配器不發送 `connect` 事件，框架也能從第一條普通事件中發現 Bot。
+除了 `meta` 事件外，普通事件（`message`/`notice`/`request`）中的 `self` 欄位也會自動發現並註冊 Bot、更新活躍時間。這意味著即使適配器不發送 `connect` 事件，框架也能從第一條普通事件中發現 Bot。
 
 ### 適配器接入示例
 
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
-        # 與平台建立連線...
+        # 與平台建立連接...
         connection = await self._connect()
         
-        # 連線成功，發送 connect 事件
+        # 連接成功，發送 connect 事件
         await adapter.emit({
             "id": str(uuid4()),
             "time": int(time.time()),
@@ -349,7 +351,7 @@ class MyAdapter(BaseAdapter):
         })
     
     async def on_disconnect(self):
-        # 斷開連線，發送 disconnect 事件
+        # 斷開連接，發送 disconnect 事件
         await adapter.emit({
             "id": str(uuid4()),
             "time": int(time.time()),
@@ -402,12 +404,12 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 | 狀態 | 說明 |
 |------|------|
 | `online` | 在線（持續收到事件或適配器主動標記） |
-| `offline` | 離線（適配器主動標記或系統關閉時自動設置） |
+| `offline` | 離線（適配器主動標記或系統關閉時自動設定） |
 | `unknown` | 未知（僅註冊但未確認狀態） |
 
 ### 生命週期事件
 
-| 事件名 | 觸發時機 | 數據 |
+| 事件名 | 觸發時機 | 資料 |
 |--------|---------|------|
 | `adapter.bot.online` | 首次自動發現新 Bot | `{platform, bot_id, status}` |
 | `adapter.status.change` | 適配器狀態變化（starting/started/stopping/stopped/stop_failed） | `{platform, status}` |

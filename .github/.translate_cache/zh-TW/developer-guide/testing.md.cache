@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "hash": "95aac683920d643a2894a9f5eea9cc21",
+  "file_hash": "95aac683920d643a2894a9f5eea9cc21",
+  "translated_at": "2026-09-21T14:38:12.032238",
+  "target_lang": "zh-TW",
+  "chunks": [
+    {
+      "hash": "0d32ab8a819a71d9861b453db5ac1dc2",
+      "translation": "# 模組測試（ErisPulse-Testing）\n\n[ErisPulse-Testing](https://github.com/wsu2059q/ErisPulse-Testing) 是官方測試工具包（RFC EPRFC-2026-001 方向三）：\n提供 `TestBot`、測試事件工廠、出站訊息捕獲與斷言介面，讓模組測試像寫普通 pytest 一樣簡單。\n\n```bash\npip install ErisPulse-Testing\n```\n\n> 單向依賴框架的開發期工具，執行時零介入。真連適配器平台的冒煙測試請使用框架倉庫的 `tests/devs/test_adapter.py`。"
+    },
+    {
+      "hash": "f737589ee49948d2216f43e9ab8c7843",
+      "translation": "## 快速開始\n\n```python\nimport pytest\nfrom ErisPulse.Core.Event.command import command\nfrom ErisPulse_Testing import TestBot, create_command_event\n\nasync def test_daily(make_testbot):\n    async with make_testbot(prefix=\"/\") as bot:\n        @command(\"daily\", cooldown=\"1d\", cooldown_reply=\"今天已簽到\")\n        async def daily(event):\n            await event.reply(\"簽到成功！\")\n\n        await bot.dispatch(create_command_event(\"daily\", user_id=\"123\"))\n        assert bot.last_reply.text == \"簽到成功！\"\n\n        await bot.dispatch(create_command_event(\"daily\", user_id=\"123\"))\n        bot.assert_reply_contains(\"今天已簽到\")   # 第二次命中冷卻\n```\n\n`TestBot` 推薦以 `async with` 使用：啟動時註冊 MockAdapter（捕獲全部出站）、\n關閉事件去重、應用配置覆寫；退出時自動清理框架全域狀態，用例之間互不污染。\n\n配套 pytest fixtures（安裝後自動可用）：\n\n- `testbot`：function 級標準 TestBot（platform=`test`、前綴 `/`）\n- `make_testbot(**kwargs)`：自定義參數工廠（`prefix` / `config` / `platform` / `bot_id` ...）\n\n建議在測試專案配置 `asyncio_mode = \"auto\"`（`[tool.pytest.ini_options]`），\n或給用例加 `@pytest.mark.asyncio`。"
+    },
+    {
+      "hash": "400a3213b8c02cfac92d11e343a82dce",
+      "translation": "## 事件工廠\n\n| 函數 | 說明 |\n|------|------|\n| `create_message_event(text, user_id=..., group_id=None, ...)` | 消息事件；`group_id` 為空即為私聊 |\n| `create_command_event(\"roll 3\", prefix=\"/\")` | 命令消息（自動加前綴，已帶前綴不重複） |\n| `create_notice_event(type, ...)` | 通知事件（如 `friend_add`） |\n| `create_request_event(type, ...)` | 請求事件（如好友申請） |\n| `create_meta_event(\"connect\", ...)` | meta 事件（connect 可讓 Bot 上線） |\n\n所有事件使用 uuid 唯一 `id`，天然避開框架的事件去重。"
+    },
+    {
+      "hash": "3fcd0d3630620233520ae9441fc0104d",
+      "translation": "## TestBot API\n\n### 分發\n\n```python\ntrace = await bot.dispatch(event)          # 分發並等待處理器落地，返回決策鏈\nawait bot.dispatch(event, drain=False)     # 交互首消息：不等待（wait_reply 處理器長駐）\nawait bot.send_message(\"你好\")             # 消息分發快捷方式\nawait bot.reply_as(\"18\", user_id=\"u1\")     # 模擬 wait_reply 用戶回覆（自動等 waiter 就緒）\n```\n\n`dispatch()` 在 emit 後 gather 全部在途處理器 Task，返回即處理完成——**測試裡不需要 sleep**。\n\n### 出站斷言\n\n```python\nbot.replies                # 全部出站（SentMessage 列表）\nbot.last_reply.text        # 最近一條回覆的文本\nbot.replies_to(\"123\")      # 按目標過濾\nbot.clear_replies()        # 階段間隔離斷言\nbot.assert_replied()                       # 存在出站\nbot.assert_replied(contains=\"簽到\", to=\"123\")\nbot.assert_not_replied()                   # 無任何出站\nbot.assert_reply_contains(\"簽到成功\")       # 存在包含指定文本的出站\nawait bot.wait_for_reply(timeout=2)        # 等待異步回覆出現\n```\n\n`SentMessage` 字段：`text`（首個 text 段）、`segments`（完整消息段）、\n`target_type` / `target_id` / `bot_id`（發送上下文）、`has_modifier(\"at\")` 等。\n\n### 模組加載\n\n```python\nawait bot.load_module(\"MyModule\")   # entry-point 已註冊的包名\nawait bot.load_module(MyModule)     # 或 BaseModule 子類（自動 register + load）\nawait bot.unload_module(\"MyModule\")\n```\n\n`on_load` 內註冊的命令 / 事件處理器隨模組歸屬，卸載時自動清理，可直接斷言\"卸載後命令失效\"。\n\n### 依賴替換\n\n```python\nwith bot.patch_dependency(get_session, fake_session) as mock:\n    await bot.dispatch(create_command_event(\"query\"))\n    assert mock.called\n```\n\n替換的是命令註冊表中 `Depends(get_session)` 聲明引用的函數，with 退出自動還原。\n\n### 配置覆寫\n\n```python\nbot = TestBot(prefix=\"//\", config={\n    \"ErisPulse.event.command.case_sensitive\": False,\n    \"MyModule.api_key\": \"test-key\",     # 模組配置（self.cfg 可讀）\n})\n```\n\n經配置記憶體層注入（不落盤），命令前綴等隨熱更新立即生效。"
+    },
+    {
+      "hash": "9022c961091ba4611e26fdaccc2c2bd2",
+      "translation": "## 分發決策鏈（排查「命令為什麼沒觸發」）\n\n`dispatch()` 返回 `DispatchTrace`——本次分發經過的每個判斷點的因果鏈：\n\n```python\ntrace = await bot.dispatch(create_command_event(\"dailyx\", user_id=\"123\"))\n\ntrace.verdict        # executed / rejected / dropped / failed / no_match / passed\ntrace.explain()      # 逐行因果說明（當前語言）\ntrace.command        # 命中的命令名（未命中為 None）\ntrace.steps(\"cooldown\")  # 按階段過濾判定記錄\n\ntrace.assert_executed(\"daily\")  # 斷言執行（失敗時附完整因果鏈）\ntrace.assert_rejected()         # 斷言被權限類判定拒絕\ntrace.assert_dropped()          # 斷言被靜默丟棄（冷卻等）\ntrace.assert_no_match()         # 斷言未命中命令\n```\n\n判定覆蓋：命令文本判定、命令命中（未命中附拼寫建議）、作用域、用戶 ACL、\n主人檢查、權限函數、冷卻靜默丟棄、參數解析、執行結果、中間件否決。\n\n生產環境同樣可用框架內建的 `ErisPulse.Core.Event.trace`（`start_dispatch_trace()` /\n`format_dispatch_trace()`）採集與渲染決策鏈。"
+    }
+  ]
+}

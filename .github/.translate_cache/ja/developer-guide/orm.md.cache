@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "hash": "78036019e77157ecce23a491a460a197",
+  "file_hash": "78036019e77157ecce23a491a460a197",
+  "translated_at": "2026-09-21T14:42:47.580993",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "436e5f0a864bb691cd650d32514a9996",
+      "translation": "# データモデル層（ORM）\n\n2.9.0 からフレームワークに宣言的データモデル層が内蔵されています。`Model` を継承し、`Field` でフィールドを宣言することで、自動的なテーブル作成と CRUD 操作（挿入、削除、更新、検索）が可能になります。モデルは、内蔵ストレージ層の上に直接構築されています。SQLite / MySQL / PostgreSQL は `ErisPulse.storage.backend` で設定され、**バックエンドを切り替えてもモデルコードを変更する必要はありません**。"
+    },
+    {
+      "hash": "c1b572c8a25677998e6ff5138ed757d1",
+      "translation": "## モデルの宣言\n\n```python\nfrom ErisPulse.Core.Bases import Model, Field\n\nclass User(Model):\n    id: int = Field(primary_key=True, autoincrement=True)\n    name: str = Field(max_length=64)\n    age: int = Field(default=0, ge=0, le=150)\n    role: str = Field(default=\"user\", choices=[\"user\", \"admin\"])\n    tags: list = Field(default_factory=list)          # JSON 列、読み書き時に自動的にシリアライズ\n    bio: str = Field(default=\"\", description={\"i18n\": \"user.bio\", \"default\": \"自己紹介\"})\n```\n\n- テーブル名はデフォルトでクラス名を snake_case に変換（`UserProfile → user_profile`）し、`__tablename__ = \"xxx\"` で上書き可能\n- `Field` の制約語は宣言型設定クラスと同じ（`choices` / `ge` / `le` / `max_length`、`description` は i18n 辞書もサポート）；バリデータエンジンは設定検証と同じソース"
+    },
+    {
+      "hash": "2250175b6f3cfb6c4ae127c1ca94f673",
+      "translation": "## フィールドパラメータ\n\n| パラメータ | 説明 |\n|------|------|\n| `default` | 既定値（提供されていない場合、かつ自動増分でない → NOT NULL が必須） |\n| `default_factory` | 変更可能な既定値の工場（例: `list`） |\n| `primary_key` | 主キー |\n| `autoincrement` | 自動増分主キー（暗黙の主キー、`create` 後に自動で戻り値を埋め込む） |\n| `max_length` | 文字列の最大長さ（生成される `VARCHAR(n)`、書き込み時の検証） |\n| `nullable` | NULL を許可するかどうか（デフォルトは False） |\n| `index` | 普通のインデックスを生成 |\n| `unique` | 一意制約 |\n| `choices` / `ge` / `le` | 列挙 / 数値範囲（書き込み時の検証） |\n| `description` | 説明（i18n ディクショナリ、構成クラスと同じ形式） |\n| `column_type` | SQL 列の型定義を上書き |"
+    },
+    {
+      "hash": "e66d4fa207a283a011577d62cf31457f",
+      "translation": "## 建表と CRUD\n\n```python\nawait User.create_table()                      # 幂等（IF NOT EXISTS）\n\nuser = await User.create(name=\"Alice\", age=20) # 挿入（自動増分主キーは自動的に戻り値として返される）\ngot = await User.get(id=user.id)               # 等値検索で最初の1件を取得\n\nusers = await User.where(User.age > 18).order_by(\"-age\").limit(10).all()\nfirst = await User.where(User.name == \"Alice\").first()\ntotal = await User.count(User.age > 18)\n\nuser.age = 21\nawait user.save()                              # 主キーに基づいて更新（事前制約検証）；主キーが存在しない場合は挿入に降格（自動増分主キーもインスタンスに戻り値として返される）\nawait user.delete()                            # 主キーに基づいて削除\n\nawait User.update_all(User.age > 18, role=\"adult\")  # バッチ更新\nawait User.delete_all(User.age > 100)               # バッチ削除\n```\n\nクエリ式は `> >= < <= == !=`、`in_([...])`、`&`（AND）/ `|`（OR）による組み合わせをサポートします：\n\n```python\nawait User.where((User.age > 18) & User.name.in_([\"Alice\", \"Bob\"])).all()\n```"
+    },
+    {
+      "hash": "169054700cd60a4cc73604923c492e9a",
+      "translation": "## トランザクション\n\nORM の読み書きとフレームワークのストレージ層は、同じトランザクションルーティングを使用します。`storage.atransaction()` 環境のトランザクション内では、`create` / `save` / `delete` とクエリは自動的にトランザクション接続を再利用し、トランザクションに合わせて一括でコミットまたはロールバックされます。個別にコミットされることはありません。\n\n```python\nasync with storage.atransaction():\n    await User.create(name=\"Alice\")\n    ...  # ブロック内で例外が発生した場合、上記の INSERT もロールバックされます\n```"
+    },
+    {
+      "hash": "d3213f4ba15862cae2a37aff953f3c34",
+      "translation": "## 宣言的構成クラスとの関係\n\nモデルの宣言と `ConfigClass`（`@dataclass + field(metadata=...)`）は**同じ下層の基盤を共有**しています。これは、制約辞書、検証エンジン（`validate_field_constraints`）、型カテゴリ登録表（`python_type_category`）です。しかし、クラスの基盤は意図的に分離されています。構成フィールドは通常の値（TOMLを経由した読み書き、1回の読み込み後のホットアップデート）であり、モデルフィールドは列記述子（クラスアクセス = クエリ式、行ごとのインスタンス）です。1つの宣言構文で、2つの役割を果たす基盤が存在します。"
+    },
+    {
+      "hash": "cc29020da1e377ef8ada6594097eb1c7",
+      "translation": "## 境界と注意事項\n\n- バックエンドはグローバルストレージ設定によって決定されます。モデルは `__storage__` クラス属性を用いて、カスタムの `BaseStorage` インスタンスにオーバーライドすることができます（テスト用の注入用）\n- `list` / `dict` フィールド（パラメータ化されたジェネリック、例えば `list[int]`、`dict[str, int]` を含む）は、コンテナの種類に応じて JSON テキストとして列に格納され、読み書きは自動的にシリアライズされます。\n- 書き込み（`create` / `save`）の前に自動的に制約検証が実行され、失敗した場合は `ValueError` が発生します（ローカライズされたメッセージ）。\n- 自動マイグレーション（スキーマの差分）とリレーションマッピングは、今後のバージョンで追加される機能です。\n- ストレージ接続の失敗時に発生する動作は、ストレージ層と一致します：フレームワークはクラッシュせず、冷却後に自動的に再接続されます。"
+    }
+  ]
+}

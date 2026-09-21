@@ -100,7 +100,7 @@ async def help_handler(event):
     help_text = """
 可用命令：
 /help - 顯示幫助
-/ping - 測試連接
+/ping - 測試連線
 /info - 查看資訊
     """
     await event.reply(help_text)
@@ -114,7 +114,7 @@ async def help_handler(event):
     await event.reply("幫助資訊...")
 ```
 
-用戶可以使用以下任何方式呼叫：
+使用者可以使用以下任何方式呼叫：
 - `/help`
 - `/h`
 - `/幫助`
@@ -124,7 +124,7 @@ async def help_handler(event):
 ```python
 @command("echo", help="回顯訊息")
 async def echo_handler(event):
-    # 獲取命令參數
+    # 取得命令參數
     args = event.get_command_args()
     
     if not args:
@@ -133,8 +133,99 @@ async def echo_handler(event):
         await event.reply(f"你說了: {' '.join(args)}")
 ```
 
-參數保留用戶輸入的原始大小寫（即使配置為大小寫不敏感，
-命令名匹配歸一也不會影響參數內容）。
+參數保留使用者輸入的原始大小寫（即使設定為大小寫不敏感，命令名匹配歸一也不會影響參數內容）。
+
+### 聲明式參數與選項（args= / options=）
+
+手動解析參數需要自己處理類型轉換與錯誤提示。聲明 `args=` / `options=` 後，框架在權限檢查通過後自動解析命令參數並**按名注入處理器**；使用者輸入錯誤時自動回覆本地化提示與用法（不會拋異常崩潰），`/help <命令>` 也會自動展示用法：
+
+```python
+@command(
+    "roll",
+    args="<count:int> [sides:int=6]",
+    options={"verbose": "-v/--verbose", "label": "--label"},
+    help="擲骰子",
+)
+async def roll_handler(event, count: int, sides: int = 6, verbose: bool = False, label: str = ""):
+    total = sum(random.randint(1, sides) for _ in range(count))
+    await event.reply(f"擲了 {count} 次 {sides} 面骰，總點數：{total}")
+```
+
+`args=` 位置參數語法：`<count:int>` 必填、`[sides:int=6]` 可選（含預設值）。支援類型：
+
+| 類型 | 範例輸入 | 說明 |
+|------|---------|------|
+| `str` | `hello` | 文本（缺省類型） |
+| `int` / `float` | `3` / `0.5` | 數值 |
+| `bool` | `是` / `yes` / `はい` / `да` / `true` / `no` / `取消` | 布林值，重用互動確認（`Event.confirm()`）的確認詞表 |
+| `literal` | `<mode:literal=fast|slow>` | 陣列，僅接受列出的值；可選形式預設取首個 |
+| `duration` | `90s`、`1h30m`、`1d` | 時長，按秒折算為 float |
+| `rest` | `<text:rest>` | 剩餘全部文本（必須位於最後） |
+
+`options=` 選項為字典式聲明：鍵為處理器參數名，值為旗標形式（多個別名以 `/` 分隔）。註解為 `bool` 的參數是布林旗標（出現即 `True`）；其餘（缺省按 `str`）是帶值選項，支援 `--label hello` 與 `--label=hello` 兩種取值，類型跟隨處理器註解。選項先被識別剔除，剩餘 token 再按 `args=` 解析（`rest` 覆蓋剔除選項後的剩餘文本）。
+
+**行為要點**：
+
+- 權限檢查先於參數解析——無權限使用者不會觸發解析
+- 解析失敗（類型不符 / 缺少參數 / 參數過多 / 未知選項）自動回覆本地化錯誤 + 用法，命令仍被認領
+- 聲明的參數名必須存在於處理器簽名中，否則註冊期拋 `ValueError`
+- 不聲明 `args=` / `options=` 的命令行為完全不變（向後相容）
+
+### 命令冷卻（cooldown=）
+
+手寫冷卻計時可用 `cooldown=` 聲明替代。時長語法與 `args=` 的 `duration` 類型一致（如 `"30s"`、`"1h30m"`、`"1d"`）：
+
+```python
+@command("daily", cooldown="1d", cooldown_key="user", cooldown_reply="今天已簽到")
+async def daily_handler(event):
+    await event.reply("簽到成功！")
+```
+
+`cooldown_key=` 控制冷卻粒度：`"user"`（預設，同一使用者共享）、`"session"`（同一會話共享，如同一群）、`"global"`（所有使用者所有會話共享）。
+
+**行為要點**：
+
+- 冷卻命中預設**靜默丟棄**（對稱於作用域靜默）；聲明 `cooldown_reply=` 後命中即回覆該文案
+- 命令命中即認領——冷卻命中的命令不會漏給低優先級訊息處理器
+- 冷卻在全部權限檢查與參數解析通過、命令實際執行前開始計時：無權限使用者不觸發冷卻，參數錯誤不消耗冷卻
+- 狀態為進程內記憶體，模組卸載時自動清理；跨進程共享 / 重啟持久化不在範圍內
+- 聲明在註冊期校驗（fail-fast）：時長語法非法、`cooldown_key=` 非白名單值、`cooldown_reply=` 未搭配 `cooldown=` 均拋 `ValueError`
+
+### 依賴注入（Depends）
+
+公共依賴（資料庫會話、設定讀取等）可抽為依賴函數，處理器以 `Depends(依賴函數)` 作為參數預設值聲明，框架在呼叫前以上下文物件呼叫依賴函數並按名注入：
+
+```python
+from ErisPulse.Core import Depends
+
+async def get_session(event):
+    return await sdk.module.call("DB", "get_session")
+
+@command("admin")
+async def admin_handler(event, db=Depends(get_session)):
+    ...
+```
+
+預設開啟**請求級快取**：同一次事件分發內，相同依賴函數只解析一次、所有注入點共享結果（如 `get_db` 在一次事件中只建一次資料庫會話）；跨請求自動不複用。可用 `Depends(get_db, use_cache=False)` 關閉單條依賴的快取。
+
+覆蓋全部框架注入點——命令處理器、事件處理器（`message.on_message()` 等）、生命週期鈎子（`sdk.lifecycle.on`）、SSE 路由處理器。依賴函數的第一個參數是注入點上下文物件（事件場景為 `Event`，生命週期為事件 `data`，路由為 `HttpRequest` / `SseEmitter`）；同步與異步依賴函數均可聲明。
+
+**聲明其它模組的服務**（語法糖）：
+
+```python
+@command("query")
+async def query_handler(event, session=Depends.module("DB", "get_session")):
+    ...
+```
+
+`Depends.module(模組名, 方法名, *固定參數)` 等價於在依賴函數內呼叫 `sdk.module.call(...)`。模組實例化（`__init__`）不在覆蓋範圍——實例化時無上下文物件；FastAPI 承載的 HTTP 路由請用 FastAPI 原生 `fastapi.Depends`。
+
+**行為要點**：
+
+- 聲明在註冊期校驗（fail-fast）：依賴不可呼叫、或與 `args=` / `options=` 參數重名時拋 `ValueError`
+- 依賴函數拋出的異常與處理器自身異常同口徑處理（命令自動回覆錯誤）
+- 不聲明 `Depends` 的處理器零開銷（分發期無任何反射）
+- FastAPI 承載的 HTTP 路由請使用 FastAPI 原生 `fastapi.Depends`
 
 ### 命令組
 
@@ -148,8 +239,7 @@ async def stop_handler(event):
     await event.reply("機器人已停止")
 ```
 
-`group` 參數僅用於幫助列表歸類；上面示例中的 `admin.reload` 是一個**整體命令名**
-（點號只是命名風格，用戶需輸入 `/admin.reload`）。
+`group` 參數僅用於幫助列表歸類；上面示例中的 `admin.reload` 是一個**整體命令名**（點號只是命名風格，使用者需輸入 `/admin.reload`）。
 
 ### 子命令
 
@@ -160,10 +250,10 @@ async def stop_handler(event):
 async def admin_handler(event):
     await event.reply("用法：/admin add | /admin remove")
 
-@command("admin add", help="添加管理員")
+@command("admin add", help="新增管理員")
 async def admin_add_handler(event):
     target = event.get_command_args()[0]
-    await event.reply(f"已添加 {target}")
+    await event.reply(f"已新增 {target}")
 
 @command("admin remove", aliases=["a remove"], help="移除管理員")
 async def admin_remove_handler(event):
@@ -172,13 +262,12 @@ async def admin_remove_handler(event):
 
 匹配規則（**最長前綴匹配**）：
 
-- `/admin add x` 優先命中 `admin add`，`event.get_command_args()` 返回 `["x"]`（子命令名之後的參數）
-- 僅註冊了 `admin` 時，`/admin add x` 命中 `admin`，`get_command_args()` 返回 `["add", "x"]`（歷史行為不變）
+- `/admin add x` 優先命中 `admin add`，`event.get_command_args()` 回傳 `["x"]`（子命令名之後的參數）
+- 僅註冊了 `admin` 時，`/admin add x` 命中 `admin`，`get_command_args()` 回傳 `["add", "x"]`（歷史行為不變）
 - 別名支援多 token 形式（如 `a remove`），也可用單 token 別名（如 `a`）指向子命令
 - 父子命令同時註冊時，未註冊的子命令輸入（如 `/admin list x`）回落到父命令
 
-**權限繼承**：子命令未聲明 `permission` 時，自動繼承父鏈上最近聲明了權限的祖先命令——
-保護 `/admin` 即自動保護其下全部子命令；子命令自身聲明的權限優先：
+**權限繼承**：子命令未聲明 `permission` 時，自動繼承父鏈上最近聲明了權限的祖先命令——保護 `/admin` 即自動保護其下全部子命令；子命令自身聲明的權限優先：
 
 ```python
 def is_admin(event):
@@ -189,29 +278,27 @@ async def admin_handler(event):
     ...
 
 # 無需重複聲明 permission，自動繼承 is_admin
-@command("admin add", help="添加管理員")
+@command("admin add", help="新增管理員")
 async def admin_add_handler(event):
     ...
 ```
 
-注意：`master=True` 與 `hidden` **不會**繼承，需要時請在子命令上單獨聲明；
-用戶 ACL（黑白名單）按命令全名匹配，glob 规則如 `"admin*"` 可覆蓋整組子命令。
+注意：`master=True` 與 `hidden` **不會**繼承，需要時請在子命令上單獨聲明；使用者 ACL（黑白名單）按命令全名匹配，glob 规則如 `"admin*"` 可覆蓋整組子命令。
 
-`/help` 的命令總覽中，子命令會自動掛到可見的父命令下縮進展示
-（`admin` → `admin add` 縮進一級，`admin user` → `admin user ban` 縮進兩級）。
+`/help` 的命令總覽中，子命令會自動掛到可見的父命令下縮進展示（`admin` → `admin add` 縮進一級，`admin user` → `admin user ban` 縮進兩級）。
 
 ### 命令權限與訪問控制
 
 命令權限分三層，從上到下逐層判定（**上層拒絕則不再看下層**）：
 
 ```python
-# ① 命令權限 ACL（用戶側配置）：按命令的用戶黑白名單，拒絕時回覆"權限不足"
+# ① 命令權限 ACL（使用者側設定）：按命令的使用者黑白名單，拒絕時回覆"權限不足"
 # ② master=True —— 僅框架主人可執行（框架自動檢查，拒絕時回覆"權限不足"）
-@command("restart", master=True, help="重新啟動模組")
+@command("restart", master=True, help="重啟模組")
 async def restart_handler(event):
-    await event.reply("模組已重新啟動")
+    await event.reply("模組已重啟")
 
-# ③ permission=調用函數 —— 命令自身的控制邏輯（返回 True 才執行）
+# ③ permission=呼叫函數 —— 命令自身的控制邏輯（回傳 True 才執行）
 def is_admin(event):
     return event.get_user_id() in {"user123", "user456"}
 
@@ -220,8 +307,7 @@ async def panel_handler(event):
     await event.reply("歡迎來到管理面板")
 ```
 
-**命令用戶 ACL**（`ErisPulse.event.command.acl`）：用戶可為任意命令配置用戶黑白名單，
-命令名支援精確與 glob 模式（如 `"roll*"`），拒絕時回覆"權限不足"：
+**命令使用者 ACL**（`ErisPulse.event.command.acl`）：使用者可為任意命令設定使用者黑白名單，命令名支援精確與 glob 模式（如 `"roll*"`），拒絕時回覆"權限不足"：
 
 ```toml
 # config.toml —— 僅允許 123456 執行 restart；666 一律拒絕
@@ -230,9 +316,7 @@ allow = ["onebot11:123456"]
 deny = ["onebot11:666"]
 ```
 
-判定順序：`deny` 命中 → 拒絕；`allow` 非空且未命中 → 拒絕；未配置 ACL 時遵循
-`event.command.default_allow`（`false` = 嚴格模式，無 ACL 即拒；`true` 時交給開發者預設
-`master=True` / `permission`）。運行時 API（命令名支援 glob）：
+判定順序：`deny` 命中 → 拒絕；`allow` 非空且未命中 → 拒絕；未設定 ACL 時遵循 `event.command.default_allow`（`false` = 嚴格模式，無 ACL 即拒；`true` 時交給開發者預設 `master=True` / `permission`）。執行時 API（命令名支援 glob）：
 
 ```python
 from ErisPulse.Core.Event import command
@@ -243,17 +327,11 @@ command.remove_acl("restart")                          # 清除黑白名單
 command.get_acl("restart")                             # 查詢當前名單
 ```
 
-> 命令處理器從事件包導入：`from ErisPulse.Core.Event import command`；
-> 也可經 SDK 事件包訪問：`sdk.Event.command`（兩者為同一單例）。
-> 在模組內通常已隨命令裝飾器導入（`from ErisPulse.Core.Event import command`）。
+> 命令處理器從事件包導入：`from ErisPulse.Core.Event import command`；也可經 SDK 事件包訪問：`sdk.Event.command`（兩者為同一單例）。在模組內通常已隨命令裝飾器導入（`from ErisPulse.Core.Event import command`）。
 
-跨命令 / 跨用戶的**事件級**訪問控制（某人 / 某群 / 某 Bot 的訊息收不收）
-走作用域**身份維度**（`scope.identity`）；**模組級**可用性（哪些模組能用）
-走作用域**模組維度**（`scope.platforms / bots / sessions`）。
-詳見[作用域（scope）](../advanced/scope.md)。
+跨命令 / 跨使用者的**事件級**訪問控制（某人 / 某群 / 某 Bot 的訊息收不收）走作用域**身份維度**（`scope.identity`）；**模組級**可用性（哪些模組能用）走作用域**模組維度**（`scope.platforms / bots / sessions`）。詳見[作用域（scope）](../advanced/scope.md)。
 
-> 建議：命令內部需要聯動業務邏輯的用 `master=True` / `permission`；純按用戶 / 群做
-> 訪問控制的用作用域身份維度；控制模組可用性的用作用域模組維度。
+> 建議：命令內部需要聯動業務邏輯的用 `master=True` / `permission`；純按使用者 / 群做訪問控制的用作用域身份維度；控制模組可用性的用作用域模組維度。
 
 ### 命令優先級
 
@@ -275,9 +353,9 @@ ErisPulse 事件系統採用**同優先級並行、不同優先級串行**的調
 ```
 事件到達
     ↓
-priority=10 組: [處理器C ||處理器D] 並行 → 合併結果
+priority=10 組: [處理器C || 處理器D] 並行 → 合併結果
     ↓ (如未中斷)
-priority=0 組: [處理器A ||處理器B] 並行 → 合併結果
+priority=0 組: [處理器A || 處理器B] 並行 → 合併結果
     ↓
 ...
 ```
@@ -285,11 +363,11 @@ priority=0 組: [處理器A ||處理器B] 並行 → 合併結果
 - **同優先級並行**：優先級相同的多個處理器會同時執行，提高吞吐量
 - **跨級串行**：不同優先級的組按順序執行（數值越大越先執行），確保高優先級處理器先運行
 - **Copy-On-Write**：處理器無修改時不建立副本，確保零開銷
-- **衝突處理**：同優先級多處理器修改同一字段時，使用最後修改值並記錄警告日誌
-- **中斷機制**：任意處理器調用 `event.done()`（預設）或 `event.done(claim=False)` 後，跳過後續低優先級組。認領與阻斷的區別見下文[「鏈路控制：認領與阻斷」](#鏈路控制認領與阻斷)
+- **衝突處理**：同優先級多處理器修改同一欄位時，使用最後修改值並記錄警告日誌
+- **中斷機制**：任意處理器呼叫 `event.done()`（預設）或 `event.done(claim=False)` 後，跳過後續低優先級組。認領與阻斷的區別見下文[「鏈路控制：認領與阻斷」](#鏈路控制認領與阻斷)
 
 ```python
-# 示例：同優先級處理器並行執行
+# 範例：同優先級處理器並行執行
 @message.on_message(priority=0)
 async def handler_a(event):
     # 處理任務A

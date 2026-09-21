@@ -9,16 +9,15 @@
 ```python
 from ErisPulse import sdk
 
-# 名称でアダプターを取得
+# 名前でアダプターを取得
 adapter = sdk.adapter.get("platform_name")
 
-# または属性で直接アクセスすることもできます
+# または、属性として直接アクセスすることもできます
 adapter = sdk.adapter.platform_name
 ```
 
 ### アダプターイベントの監視
-> 通常、`Event` モジュールを使用してイベントの監視/処理を行うことを推奨します。
->
+> 通常、`Event` モジュールを使ってイベントの監視/処理を行うことを推奨します。
 > また、`Event` モジュールは強力なラッパーを提供しており、モジュール開発に多くの利便性をもたらします。
 
 ```python
@@ -52,7 +51,7 @@ sdk.adapter.enable("platform_name")
 sdk.adapter.disable("platform_name")
 
 # アダプターを起動/停止
-# 以下は引数を渡した場合の例です。引数なしの場合は、登録済みのすべてのアダプターを起動/停止します
+# 以下のメソッドは引数の指定のみを示しており、引数なしの場合はすべての登録されたアダプターを起動/停止します
 await sdk.adapter.startup(["platform1", "platform2"])
 await sdk.adapter.shutdown(["platform1", "platform2"])
 
@@ -65,7 +64,7 @@ running = sdk.adapter.list_running()
 
 ## ミドルウェア
 
-ミドルウェアは、イベントがハンドラに配信される前に実行され、イベントデータの変更、フィルタリング、または記録が可能です。
+ミドルウェアは、イベントがハンドラに配信される前に実行され、イベントデータを変更、フィルタ、または記録することができます。
 
 ### ミドルウェアの登録
 
@@ -78,9 +77,10 @@ async def my_middleware(event):
 
 ### ミドルウェアの実行モデル
 
-- **実行順序**: ミドルウェアは登録順に実行されます（先に登録されたものが先に実行されます）
-- **データの伝達**: 各ミドルウェアは、前のミドルウェアから返された `event` データを受け取ります。もし、あるミドルウェアが `None` を返した場合、その返値は無視され、元のデータが引き続き伝達されます（`warning` レベルのログが出力されます）
-- **データの変更**: ミドルウェアはイベントデータを変更し、変更後の辞書を返すことができます
+- **実行順序**：ミドルウェアは登録順に実行されます（先に登録されたものから先に実行）
+- **データの伝達**：各ミドルウェアは、前のミドルウェアから返された `event` データを受け取ります。もし、あるミドルウェアが `None` を返した場合、その返り値は無視され、元のデータが引き続き伝達されます（`warning` レベルのログが出力されます）
+- **データの変更**：ミドルウェアはイベントデータを変更し、変更後の辞書を返すことができます
+- **イベントの拒否**：ミドルウェアが明示的に `False` を返した場合、イベントは拒否されます——イベントはハンドラに進まず、出力副作用も一切ありません。拒否された場合は、`TRACE` ログが出力され、`adapter.event.blocked` ライフサイクルフックがトリガーされ、ミドルウェア名と完全なイベントが渡されます
 
 ```python
 @sdk.adapter.middleware
@@ -93,12 +93,12 @@ async def filter_spam(event):
     if event.get("detail_type") == "private":
         text = event.get("alt_message", "")
         if "スパム広告" in text:
-            return None   # None を返してもイベントの配信を阻止するわけではなく、単にその返値を無視します
+            return False  # 拒否：イベントはハンドラに進まず、出力副作用も一切ありません
     return event
 ```
 
-> **注意**: ミドルウェアは現在、イベントの配信を阻止する機能をサポートしていません。特定のイベントをフィルタリングする必要がある場合は、イベントハンドラ内で条件分岐によって実現してください。
-> ただし、Event モジュールで優先度の高いハンドラを設定し、ハンドラ内で `event.mark_processed()` を使用することで、低優先度のイベントハンドラを阻止することができます。
+> **注意**：イベントを拒否するのは、明示的に `False` を返した場合のみです（空の辞書 / `0` / `""` などの falsy 値を返しても拒否されません）。
+> `None` を返してもイベントは許可され、負荷は変化しません。拒否されたイベントは、`adapter.event.blocked` フックを監視することで、なぜイベントが反応しなかったのかを監査・調査することができます。
 
 ## Send メッセージ送信
 
@@ -125,7 +125,7 @@ await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
 ```
 
-### 送信メソッドのサポート確認
+### 送信メソッドの照会
 
 ```python
 # プラットフォームがサポートするすべての送信メソッドをリストアップ
@@ -141,7 +141,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 #         {"name": "text", "type": "str", "default": null, "annotation": "str"}
 #     ],
 #     "return_type": "Awaitable[Any]",
-#     "docstring": "テキストメッセージを送信します..."
+#     "docstring": "テキストメッセージを送信..."
 # }
 ```
 
@@ -154,7 +154,7 @@ await adapter.Send.To("group", "456").At("789").Text("こんにちは")
 # @全員
 await adapter.Send.To("group", "456").AtAll().Text("皆さんこんにちは")
 
-# メッセージへの返信
+# メッセージに返信
 await adapter.Send.To("group", "456").Reply("msg_id").Text("返信内容")
 
 # 組み合わせ
@@ -165,7 +165,7 @@ await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("返信@メ
 
 ### call_api メソッド
 
-> **注意**: `call_api` は、プラットフォームのネイティブ API を直接呼び出すための低レベルメソッドです。各プラットフォームのパラメータや戻り値は異なりますので、対応するプラットフォームアダプターのドキュメントを参照してください。**メッセージ送信には Send DSL を使用することを推奨します**。Send DSL がサポートしていない場面（プラットフォーム特有のデータの取得、プラットフォーム管理インターフェースの呼び出し等）でのみ `call_api` を使用してください。
+> **注意**：`call_api` は、プラットフォームのネイティブ API を直接呼び出す低レベルメソッドです。各プラットフォームのパラメータと戻り値は異なる可能性があるため、対応するプラットフォームアダプタードキュメントを参照してください。**Send DSL を使用することを推奨します**。Send DSL がサポートしていない場面（プラットフォーム固有のデータの取得、プラットフォーム管理インターフェースの呼び出しなど）でのみ `call_api` を使用してください。
 
 ```python
 # プラットフォーム API を呼び出す
@@ -176,7 +176,7 @@ result = await adapter.call_api(
     recvType="user"
 )
 
-# レスポンスの標準化
+# 標準化されたレスポンス
 {
     "status": "ok",
     "retcode": 0,
@@ -199,19 +199,19 @@ class MyAdapter(BaseAdapter):
     def __init__(self):
         super().__init__()
         self.sdk = sdk
-        # アダプターを初期化
+        # アダプターの初期化
         pass
     
     async def start(self):
-        """アダプターを起動する（必須）"""
+        """アダプターの起動（必須実装）"""
         pass
     
     async def shutdown(self):
-        """アダプターを停止する（必須）"""
+        """アダプターの停止（必須実装）"""
         pass
     
     async def call_api(self, endpoint: str, **params):
-        """プラットフォーム API を呼び出す（必須）"""
+        """プラットフォーム API の呼び出し（必須実装）"""
         pass
 ```
 
@@ -235,33 +235,33 @@ class MyAdapter(BaseAdapter):
 
 ## Bot 状態管理
 
-アダプターは、OneBot12 標準の **`meta` イベント**を送信することで、フレームワークに Bot の接続状態を通知します。システムは、このイベントから Bot 情報を抽出して状態を追跡します。
+アダプターは、OneBot12 標準の **`meta` イベント**を送信することで、フレームワークに Bot の接続状態を通知します。システムは、このイベントから Bot 情報を自動的に抽出し、状態を追跡します。
 
-### meta イベントタイプ
+### meta イベントの種類
 
-アダプターは以下の 3 種類の `meta` イベントを送信する必要があります：
+アダプターは、以下の 3 種類の `meta` イベントを送信する必要があります：
 
 | `type` | `detail_type` | 説明 | 発生タイミング |
 |--------|--------------|------|---------|
-| `meta` | `connect` | Bot 接続オンライン | アダプターがプラットフォームとの接続を確立した直後 |
-| `meta` | `heartbeat` | Bot ハートビート | 定期的に送信（推奨 30-60 秒） |
-| `meta` | `disconnect` | Bot 接続切断 | 接続が切断されたと検出されたとき |
+| `meta` | `connect` | Bot が接続/オンライン | アダプターがプラットフォームとの接続を確立した直後 |
+| `meta` | `heartbeat` | Bot のハートビート | 定期的に送信（推奨 30-60 秒） |
+| `meta` | `disconnect` | Bot が切断 | 接続が切断されたことを検知したとき |
 
 ### self フィールドの拡張
 
-ErisPulse は OneBot12 標準の `self` フィールドに、以下のオプションフィールドを拡張しています：
+ErisPulse は、OneBot12 標準の `self` フィールドに以下のオプションフィールドを拡張しています：
 
 | フィールド | 型 | 説明 |
 |------|------|------|
 | `self.platform` | string | プラットフォーム名（OB12 標準） |
 | `self.user_id` | string | Bot ユーザー ID（OB12 標準） |
-| `self.user_name` | string | Bot 昵称（ErisPulse 拡張） |
+| `self.user_name` | string | Bot ニックネーム（ErisPulse 拡張） |
 | `self.avatar` | string | Bot アバター URL（ErisPulse 拡張） |
-| `self.account_id` | string | マルチアカウント識別子（ErisPulse 拡張） |
+| `self.account_id` | string | 多アカウント識別子（ErisPulse 拡張） |
 
-### meta イベントフォーマット
+### meta イベント形式
 
-#### connect — 接続オンライン
+#### connect — 接続/オンライン
 
 ```python
 await adapter.emit({
@@ -281,7 +281,7 @@ await adapter.emit({
 })
 ```
 
-システム処理: Bot を登録し、`online` としてマークし、`adapter.bot.online` ライフサイクルイベントをトリガーします。
+システム処理：Bot を登録し、`online` にマークし、`adapter.bot.online` ライフサイクルイベントをトリガー。
 
 #### heartbeat — ハートビート
 
@@ -299,9 +299,9 @@ await adapter.emit({
 })
 ```
 
-システム処理: `last_active` 時間を更新（ハートビートではメタ情報の更新もサポート）。
+システム処理：`last_active` 時間を更新（ハートビート中でも元情報の更新がサポートされています）。
 
-#### disconnect — 接続切断
+#### disconnect — 切断/オフライン
 
 ```python
 await adapter.emit({
@@ -317,11 +317,11 @@ await adapter.emit({
 })
 ```
 
-システム処理: Bot を `offline` としてマークし、`adapter.bot.offline` ライフサイクルイベントをトリガーします。
+システム処理：Bot を `offline` にマークし、`adapter.bot.offline` ライフサイクルイベントをトリガー。
 
-### 通常イベントの自動発見
+### 一般イベントの自動発見
 
-`meta` イベント以外にも、通常イベント（`message`/`notice`/`request`）の `self` フィールドから Bot を自動的に発見し、登録して活性時間を更新します。つまり、アダプターが `connect` イベントを送信しなくても、フレームワークは最初の通常イベントから Bot を発見できます。
+`meta` イベント以外にも、一般イベント（`message`/`notice`/`request`）の `self` フィールドから Bot を自動的に発見し、登録して活性時間を更新します。つまり、アダプターが `connect` イベントを送信しなくても、フレームワークは最初の一般イベントから Bot を発見することができます。
 
 ### アダプター接続例
 
@@ -349,7 +349,7 @@ class MyAdapter(BaseAdapter):
         })
     
     async def on_disconnect(self):
-        # 接続切断、disconnect イベントを送信
+        # 切断、disconnect イベントを送信
         await adapter.emit({
             "id": str(uuid4()),
             "time": int(time.time()),
@@ -363,10 +363,10 @@ class MyAdapter(BaseAdapter):
         })
 ```
 
-### Bot 状態の取得
+### Bot 状態の照会
 
 ```python
-# すべてのアダプターと Bot の完全な状態を取得（WebUI に優しい形式）
+# すべてのアダプターと Bot の完全な状態を取得（WebUI に優しい）
 summary = sdk.adapter.get_status_summary()
 # {
 #     "adapters": {
@@ -401,15 +401,15 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 
 | 状態 | 説明 |
 |------|------|
-| `online` | イベントを継続的に受信しているか、アダプターが手動でオンラインとしてマークしている |
-| `offline` | アダプターが手動でオフラインとしてマークした、またはシステムの停止時に自動的に設定される |
-| `unknown` | 登録されているが状態が確認されていない |
+| `online` | イベントを継続的に受信している、またはアダプターが明示的にオンラインとマークした状態 |
+| `offline` | アダプターが明示的にオフラインとマークした、またはシステムが停止時に自動的に設定される状態 |
+| `unknown` | 登録されているが、状態が確認されていない状態 |
 
 ### ライフサイクルイベント
 
 | イベント名 | 発生タイミング | データ |
 |--------|---------|------|
-| `adapter.bot.online` | 新しい Bot が初めて自動的に発見されたとき | `{platform, bot_id, status}` |
+| `adapter.bot.online` | 新しい Bot が自動的に発見されたとき | `{platform, bot_id, status}` |
 | `adapter.status.change` | アダプターの状態が変化したとき（starting/started/stopping/stopped/stop_failed） | `{platform, status}` |
 
 ```python
@@ -418,16 +418,16 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 def on_bot_online(event):
     print(f"Bot オンライン: {event['data']['platform']}/{event['data']['bot_id']}")
 
-# アダプター状態変化イベントを監視
+# アダプターの状態変化を監視
 @sdk.lifecycle.on("adapter.status.change")
 def on_status_change(event):
-    print(f"アダプター状態: {event['data']['platform']} -> {event['data']['status']}")
+    print(f"アダプターの状態: {event['data']['platform']} -> {event['data']['status']}")
 ```
 
-> システムの停止時（`shutdown`）に、すべての Bot は自動的に `offline` としてマークされます。
+> システムが停止するとき（`shutdown`）には、すべての Bot が自動的に `offline` にマークされます。
 
 ## 関連ドキュメント
 
 - [コアモジュール API](core-modules.md) - コアモジュール API
 - [イベントシステム API](event-system.md) - Event モジュール API
-- [アダプター開発ガイド](../developer-guide/adapters/) - プラットフォームアダプターの開発ガイド
+- [アダプター開発ガイド](../developer-guide/adapters/) - プラットフォームアダプターの開発

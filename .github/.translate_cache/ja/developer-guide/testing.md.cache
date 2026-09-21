@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "hash": "95aac683920d643a2894a9f5eea9cc21",
+  "file_hash": "95aac683920d643a2894a9f5eea9cc21",
+  "translated_at": "2026-09-21T14:42:26.864921",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "0d32ab8a819a71d9861b453db5ac1dc2",
+      "translation": "# モジュールテスト（ErisPulse-Testing）\n\n[ErisPulse-Testing](https://github.com/wsu2059q/ErisPulse-Testing) は公式のテストツールキット（RFC EPRFC-2026-001 方向三）です：\n`TestBot`、テストイベントファクトリー、出力メッセージのキャプチャとアサーション機能を提供し、通常の pytest と同じようにモジュールのテストを簡単に行えます。\n\n```bash\npip install ErisPulse-Testing\n```\n\n> フレームワークの開発期のツールであり、実行時には介入しません。実際のアダプタープラットフォームのスモークテストを行うには、フレームワークリポジトリの `tests/devs/test_adapter.py` を使用してください。"
+    },
+    {
+      "hash": "f737589ee49948d2216f43e9ab8c7843",
+      "translation": "## 快速開始\n\n```python\nimport pytest\nfrom ErisPulse.Core.Event.command import command\nfrom ErisPulse_Testing import TestBot, create_command_event\n\nasync def test_daily(make_testbot):\n    async with make_testbot(prefix=\"/\") as bot:\n        @command(\"daily\", cooldown=\"1d\", cooldown_reply=\"今日のログイン完了\")\n        async def daily(event):\n            await event.reply(\"ログイン完了！\")\n\n        await bot.dispatch(create_command_event(\"daily\", user_id=\"123\"))\n        assert bot.last_reply.text == \"ログイン完了！\"\n\n        await bot.dispatch(create_command_event(\"daily\", user_id=\"123\"))\n        bot.assert_reply_contains(\"今日のログイン完了\")   # クールダウンの2回目のヒット\n```\n\n`TestBot` は `async with` で使用することを推奨します。起動時に MockAdapter を登録（すべての出力イベントをキャプチャ）、イベントの重複を無効化し、設定のオーバーライドを適用します。終了時にはフレームワークのグローバル状態を自動的にクリーンアップし、テストケース間で相互に汚染されないようにします。\n\npytest fixtures（インストール後に自動的に利用可能）：\n\n- `testbot`：function 級の標準 TestBot（platform=`test`、プレフィックス `/`）\n- `make_testbot(**kwargs)`：カスタムパラメータのファクトリ（`prefix` / `config` / `platform` / `bot_id` ...）\n\nテストプロジェクトの設定で `asyncio_mode = \"auto\"` を設定すること（`[tool.pytest.ini_options]`）を推奨します。または、テストケースに `@pytest.mark.asyncio` を追加してください。"
+    },
+    {
+      "hash": "400a3213b8c02cfac92d11e343a82dce",
+      "translation": "## イベント工場\n\n| 関数 | 説明 |\n|------|------|\n| `create_message_event(text, user_id=..., group_id=None, ...)` | メッセージイベント；`group_id` が空の場合はプライベートチャット |\n| `create_command_event(\"roll 3\", prefix=\"/\")` | コマンドメッセージ（自動的にプレフィックスを追加、すでにプレフィックスが付いている場合は重複しない） |\n| `create_notice_event(type, ...)` | 通知イベント（例：`friend_add`） |\n| `create_request_event(type, ...)` | 要求イベント（例：友達申請） |\n| `create_meta_event(\"connect\", ...)` | meta イベント（`connect` は Bot をオンラインにすることができる） |\n\nすべてのイベントは uuid を使用して一意の `id` を持つため、フレームワークのイベント重複回避を自然に回避します。"
+    },
+    {
+      "hash": "3fcd0d3630620233520ae9441fc0104d",
+      "translation": "## TestBot API\n\n### 分发\n\n```python\ntrace = await bot.dispatch(event)          # イベントの処理を分派し、タスクの終了を待機して返す\nawait bot.dispatch(event, drain=False)     # メッセージの最初の返信：待機しない（wait_reply ハンドラは常駐）\nawait bot.send_message(\"你好\")             # メッセージの分派のショートカット\nawait bot.reply_as(\"18\", user_id=\"u1\")     # wait_reply のユーザーの返信をシミュレート（自動で waiter の準備完了を待つ）\n```\n\n`dispatch()` は emit 後にすべての処理タスクを gather し、返却された時点で処理が完了するため、**テストでは sleep は不要**です。\n\n### 出力メッセージの検証\n\n```python\nbot.replies                # すべての出力メッセージ（SentMessage のリスト）\nbot.last_reply.text        # 最後の返信メッセージのテキスト\nbot.replies_to(\"123\")      # 目標を基準にフィルタリング\nbot.clear_replies()        # 段階間で検証を隔離\nbot.assert_replied()                       # 出力メッセージが存在する\nbot.assert_replied(contains=\"签到\", to=\"123\")\nbot.assert_not_replied()                   # 何も出力されていない\nbot.assert_reply_contains(\"签到成功\")       # 指定されたテキストを含む出力メッセージが存在する\nawait bot.wait_for_reply(timeout=2)        # 異步返信が現れるまで待つ\n```\n\n`SentMessage` のフィールド：`text`（最初のテキストセグメント）、`segments`（完全なメッセージセグメント）、\n`target_type` / `target_id` / `bot_id`（送信の上下文）、`has_modifier(\"at\")` など。\n\n### モジュールのロード\n\n```python\nawait bot.load_module(\"MyModule\")   # entry-point が登録済みのパッケージ名\nawait bot.load_module(MyModule)     # または BaseModule のサブクラス（自動で register + load）\nawait bot.unload_module(\"MyModule\")\n```\n\n`on_load` 内で登録されたコマンド / イベントハンドラはモジュールに属し、アンロード時に自動的にクリーンアップされるため、\"アンロード後にコマンドが無効になる\"ことを直接検証できます。\n\n### 依存関係の置換\n\n```python\nwith bot.patch_dependency(get_session, fake_session) as mock:\n    await bot.dispatch(create_command_event(\"query\"))\n    assert mock.called\n```\n\nコマンド登録表の `Depends(get_session)` で宣言された関数を置換します。with ブロックを抜けると自動で元に戻ります。\n\n### 設定の上書き\n\n```python\nbot = TestBot(prefix=\"//\", config={\n    \"ErisPulse.event.command.case_sensitive\": False,\n    \"MyModule.api_key\": \"test-key\",     # モジュールの設定（self.cfg で読み取れる）\n})\n```\n\n設定はメモリ上に注入され（ファイルに書き込まれない）、コマンドの前処理で即座に反映されます。"
+    },
+    {
+      "hash": "9022c961091ba4611e26fdaccc2c2bd2",
+      "translation": "## 分配決定チェーン（「なぜコマンドが実行されなかったか」のトラブルシューティング）\n\n`dispatch()` は `DispatchTrace` を返します。これは、今回の分配処理で経由した各判定ポイントの因果関係のチェーンです：\n\n```python\ntrace = await bot.dispatch(create_command_event(\"dailyx\", user_id=\"123\"))\n\ntrace.verdict        # executed / rejected / dropped / failed / no_match / passed\ntrace.explain()      # 因果の説明を1行ずつ出力（現在の言語）\ntrace.command        # 命中したコマンド名（未命中の場合は None）\ntrace.steps(\"cooldown\")  # 階段ごとに判定記録をフィルタリング\n\ntrace.assert_executed(\"daily\")  # 実行を断言（失敗時には因果関係のチェーンを含む）\ntrace.assert_rejected()         # 権限系の判定で拒否されたことを断言\ntrace.assert_dropped()          # 冷却などにより静かにドロップされたことを断言\ntrace.assert_no_match()         # コマンドが一致しなかったことを断言\n```\n\n判定のカバレッジ：コマンドテキストの判定、コマンドの一致（未一致の場合には類似コマンドの提案を含む）、スコープ、ユーザー ACL、オーナーチェック、権限関数、冷却による静かなドロップ、パラメータ解析、実行結果、ミドルウェアによる否決。\n\n本番環境でも、フレームワーク内に用意されている `ErisPulse.Core.Event.trace`（`start_dispatch_trace()` / `format_dispatch_trace()`）を使用して、決定チェーンの収集とレンダリングが可能です。"
+    }
+  ]
+}

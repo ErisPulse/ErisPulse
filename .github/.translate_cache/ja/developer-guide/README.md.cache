@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "af3d7fde0143996c1708eb99bdc3badf",
-  "file_hash": "af3d7fde0143996c1708eb99bdc3badf",
-  "translated_at": "2026-09-07T11:09:46.990479",
+  "hash": "5452ce2bc9f91267c6cb36c9bc9f86e5",
+  "file_hash": "5452ce2bc9f91267c6cb36c9bc9f86e5",
+  "translated_at": "2026-09-21T14:41:32.817664",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# 開発者ガイド\n\nこのガイドは、ErisPulse の機能を拡張するためのカスタムモジュールやアダプターを開発する方法を説明します。"
     },
     {
-      "hash": "477828ae297d0b08fc3af76894260a7f",
-      "translation": "## 内容リスト\n\n### モジュール開発\n\n1. [モジュール開発入門](modules/getting-started.md) - 最初のモジュールを作成する\n2. [モジュールのコアコンセプト](modules/core-concepts.md) - モジュールのコアコンセプトとアーキテクチャ\n3. [Event ウェラーラップの詳細](modules/event-wrapper.md) - Event オブジェクトの完全な説明\n4. [モジュールのベストプラクティス](modules/best-practices.md) - 高品質なモジュールを開発するための提案\n\n### アダプター開発\n\n1. [アダプター開発入門](adapters/getting-started.md) - 最初のアダプターを作成する\n2. [アダプターのコアコンセプト](adapters/core-concepts.md) - アダプターのコアコンセプト\n3. [SendDSL 詳解](adapters/send-dsl.md) - Send メッセージ送信 DSL の完全な説明\n4. [イベントコンバーター](adapters/converter.md) - イベントコンバーターの実装\n5. [アダプターのベストプラクティス](adapters/best-practices.md) - 高品質なアダプターを開発するための提案\n\n### リリースガイド\n\n- [リリースとモジュールストアガイド](publishing.md) - あなたの作品を PyPI と ErisPulse モジュールストアに公開する方法"
+      "hash": "ea2f7329c845f9eafa71d08511c0b230",
+      "translation": "## 内容リスト\n\n### モジュール開発\n\n1. [モジュール開発入門](modules/getting-started.md) - 最初のモジュールを作成する\n2. [モジュールのコアコンセプト](modules/core-concepts.md) - モジュールのコアコンセプトとアーキテクチャ\n3. [Event 包装クラスの詳細](modules/event-wrapper.md) - Event オブジェクトの完全な説明\n4. [モジュールのベストプラクティス](modules/best-practices.md) - 高品質なモジュールを開発するための提案\n\n### データモデル\n\n1. [データモデル層（ORM）](orm.md) - 宣言的モデル、自動テーブル作成と追加・削除・更新・検索\n\n### アダプタ開発\n\n1. [アダプタ開発入門](adapters/getting-started.md) - 最初のアダプタを作成する\n2. [アダプタのコアコンセプト](adapters/core-concepts.md) - アダプタのコアコンセプト\n3. [SendDSL 詳解](adapters/send-dsl.md) - Send メッセージ送信 DSL の完全な説明\n4. [イベントコンバーター](adapters/converter.md) - イベントコンバーターの実装\n5. [アダプタのベストプラクティス](adapters/best-practices.md) - 高品質なアダプタを開発するための提案\n\n### テストとトラブルシューティング\n\n1. [モジュールテスト（ErisPulse-Testing）](testing.md) - TestBot、イベントファクトリーとアサーション面\n\n### リリースガイド\n\n- [リリースとモジュールストアガイド](publishing.md) - あなたの作品を PyPI と ErisPulse モジュールストアに公開する方法"
     },
     {
       "hash": "a69f12905cab94d5d7c997a0184db083",

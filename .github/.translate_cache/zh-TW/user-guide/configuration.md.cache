@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "33b7abf9b7e8cd63b4934aa4d8651ff1",
-  "file_hash": "33b7abf9b7e8cd63b4934aa4d8651ff1",
-  "translated_at": "2026-09-13T09:33:38.649423",
+  "hash": "9add0a9ae9c8ce44383e9d3588a55088",
+  "file_hash": "9add0a9ae9c8ce44383e9d3588a55088",
+  "translated_at": "2026-09-21T14:39:31.636740",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -22,8 +22,8 @@
       "translation": "## 註釋保留與最小化落盤\n\nconfig.toml 中的**註釋與鍵順序在框架寫入後完整保留**：無論是程式碼 `setConfig()`、\nCLI 配置向導儲存還是適配器/模組首次生成配置範本，框架都只修改涉及的鍵，\n你寫的註釋、整理的順序不會被抹掉或重排（基於 tomlkit 註釋保留往返實現）。\n\n框架對落盤內容保持克制：\n\n- **框架預設配置不自動落盤**：`gc`、`scope`、`transcript` 等內建預設值僅駐記憶體，\n  config.toml 只包含你顯式設定的鍵，保持最小化。完整可配置項參考專案內的\n  `config/config.full.example`，按需複製到 config.toml 修改即可（未配置項一律走內建預設值，行為不變）\n- **`config.full.example` 自動維護**：無論是否執行過 `epsdk init`，只要啟動框架\n  （`epsdk run` / `main.py`），都會在 `config/config.full.example` 缺失時自动生成\n  完整配置參考；文件首行為框架自維護標記，生成器內容更新（如新增配置項、新裝\n  組件）時啟動會刷新一次，刪除/改動首行即轉為手動接管、框架不再覆蓋\n- **適配器/模組配置範本**：首次初始化時以帶註釋的範本落盤（字段描述即註釋）；\n  聲明為 `example` 標誌的字段不落盤，僅記錄在 config.full.example 供參考"
     },
     {
-      "hash": "53be5e2fcd6467c1f4785e4646b4da59",
-      "translation": "## 環境變數覆蓋\n\n框架支援用環境變數**覆蓋** `ErisPulse.*` 配置項（適合 Docker / 容器化 / CI 部署，無需修改 `config.toml`）。\n\n命名規則：把點分路徑 `ErisPulse.<section>.<key>` 改為全大寫、`.` 替換為 `_`，並加上 `ERISPULSE_` 前綴：\n\n| 配置項 | 環境變數 | 示例值 |\n|--------|---------|--------|\n| `ErisPulse.server.port` | `ERISPULSE_SERVER_PORT` | `9000` |\n| `ErisPulse.server.host` | `ERISPULSE_SERVER_HOST` | `0.0.0.0` |\n| `ErisPulse.logger.level` | `ERISPULSE_LOGGER_LEVEL` | `DEBUG` |\n| `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |\n\n行為說明：\n- **優先級最高**：環境變數覆蓋「配置文件」與「預設值」，按原值類型自動轉換（`bool` / `int` / `float` / 逗號分隔的 `list` / 字串）\n- **不持久化**：覆蓋只在運行期生效，不會寫回 `config.toml`\n- **支援熱更新**：運行中修改環境變數後，配合配置監聽的重載即可生效\n\n```bash\n# Docker 部署示例：不修改 config.toml，直接覆蓋端口\nERISPULSE_SERVER_PORT=9000 docker compose up -d\n```\n\n> 註：`ErisPulse.server.port` 這類框架配置走 `get_server_config()` 等 API 讀取，均受環境變數覆蓋影響。"
+      "hash": "44f0de6e1fcab909893ef13dab0e35e7",
+      "translation": "## 環境變數覆蓋\n\n框架支援使用環境變數**覆蓋** `ErisPulse.*` 配置項（適合 Docker / 容器化 / CI 部署，無需修改 `config.toml`）。\n\n命名規則：將點分路徑 `ErisPulse.<section>.<key>` 改為全大寫、`.` 替換為 `_`，並加上 `ERISPULSE_` 前綴：\n\n| 配置項 | 環境變數 | 示例值 |\n|--------|---------|--------|\n| `ErisPulse.server.port` | `ERISPULSE_SERVER_PORT` | `9000` |\n| `ErisPulse.server.host` | `ERISPULSE_SERVER_HOST` | `0.0.0.0` |\n| `ErisPulse.logger.level` | `ERISPULSE_LOGGER_LEVEL` | `DEBUG` |\n| `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |\n\n行為說明：\n- **優先級最高**：環境變數覆蓋「配置文件」與「預設值」，按原值類型自動轉換（`bool` / `int` / `float` / 逗號分隔的 `list` / 字串）\n- **不持久化**：覆蓋只在運行期生效，不會寫回 `config.toml`\n- **支援熱更新**：運行中修改環境變數後，配合配置監聽的重載即可生效\n\n```bash\n# Docker 部署示例：不修改 config.toml，直接覆蓋端口\nERISPULSE_SERVER_PORT=9000 docker compose up -d\n```\n\n> 註：`ErisPulse.server.port` 這類框架配置走 `get_server_config()` 等 API 讀取，均受環境變數覆蓋影響。\n\n### 模組配置的環境變數綁定（2.9.0+）\n\n模組自己的宣告式配置（`ConfigClass`）支援欄位級環境變數綁定——在 `field(metadata=...)` 中宣告 `env`：\n\n```python\n@dataclass\nclass MyConfig(BaseConfig):\n    api_key: str = field(default=\"\", metadata={\n        \"description\": \"API 密鑰\",\n        \"env\": \"MYMODULE_API_KEY\",   # 環境變數綁定\n    })\n    retries: int = field(default=3, metadata={\"env\": \"MYMODULE_RETRIES\"})\n```\n\n行為說明：\n\n- **優先級**：環境變數 > `config.toml` > 宣告預設值（配置文件熱更新後同樣保持此優先級）\n- **類型轉換**：環境變數值按欄位註解自動轉換——`str` 原樣、`int` / `float` / `bool`（`true` / `1` / `yes` / `on`）自動轉換、`list` / `dict` 走 JSON 解析；轉換失敗時忽略該覆蓋（回退配置文件 / 預設值）並輸出告警\n- **宣告一次、處處生效**：配置讀取、熱更新、校驗使用同一管道；配置面板 Schema 會標註 `env` 名，`config.toml` 模板註釋也會提示可用的環境變數（模板不寫入環境變數的實際值，避免洩露）\n- **完全相容**：未宣告 `env` 的欄位行為不變；直接實例化 ConfigClass（不經框架配置管道）不受環境變數影響\n\n```bash\n# Docker 部署示例：不修改 config.toml，直接注入模組密鑰\nMYMODULE_API_KEY=sk-xxx docker compose up -d\n```"
     },
     {
       "hash": "e368337767376176b5edd46dcd377e09",

@@ -8,16 +8,24 @@
 
 1. [モジュール開発入門](modules/getting-started.md) - 最初のモジュールを作成する
 2. [モジュールのコアコンセプト](modules/core-concepts.md) - モジュールのコアコンセプトとアーキテクチャ
-3. [Event ウェラーラップの詳細](modules/event-wrapper.md) - Event オブジェクトの完全な説明
+3. [Event 包装クラスの詳細](modules/event-wrapper.md) - Event オブジェクトの完全な説明
 4. [モジュールのベストプラクティス](modules/best-practices.md) - 高品質なモジュールを開発するための提案
 
-### アダプター開発
+### データモデル
 
-1. [アダプター開発入門](adapters/getting-started.md) - 最初のアダプターを作成する
-2. [アダプターのコアコンセプト](adapters/core-concepts.md) - アダプターのコアコンセプト
+1. [データモデル層（ORM）](orm.md) - 宣言的モデル、自動テーブル作成と追加・削除・更新・検索
+
+### アダプタ開発
+
+1. [アダプタ開発入門](adapters/getting-started.md) - 最初のアダプタを作成する
+2. [アダプタのコアコンセプト](adapters/core-concepts.md) - アダプタのコアコンセプト
 3. [SendDSL 詳解](adapters/send-dsl.md) - Send メッセージ送信 DSL の完全な説明
 4. [イベントコンバーター](adapters/converter.md) - イベントコンバーターの実装
-5. [アダプターのベストプラクティス](adapters/best-practices.md) - 高品質なアダプターを開発するための提案
+5. [アダプタのベストプラクティス](adapters/best-practices.md) - 高品質なアダプタを開発するための提案
+
+### テストとトラブルシューティング
+
+1. [モジュールテスト（ErisPulse-Testing）](testing.md) - TestBot、イベントファクトリーとアサーション面
 
 ### リリースガイド
 
