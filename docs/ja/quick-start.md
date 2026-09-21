@@ -4,28 +4,28 @@
 
 ## ErisPulse のインストール
 
-### 1 本レールインストールスクリプト（推奨）
+### 1 本化インストールスクリプト（推奨）
 
-インストールスクリプトは、Docker、Python、uv などの環境を自動的に検出し、最適なインストール方法を選択するよう誘導します。
+インストールスクリプトは、Docker、Python、uv などの環境を自動的に検出し、最適なインストール方法を選択するように誘導します。
 
-Windows (PowerShell):
+**Windows (PowerShell):**
 ```powershell
 irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
 ```
 
-macOS / Linux:
+**macOS / Linux:**
 ```bash
 curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
 ```
 
-スクリプトは、以下の手順を誘導します：
+スクリプトは以下の手順を誘導します：
 
-- **Docker インストール**（Docker が検出された場合に推奨）：イメージソース（Docker Hub / GHCR）、バージョンチャネル（安定版 / プレビュー版）、Dashboard 管理パネルの設定、ポートの設定を選択
-- **従来のインストール**：仮想環境の自動作成、ErisPulse のバージョン選択、オプションで Dashboard 管理パネルモジュールのインストール
+- **Docker インストール**（Docker が検出された場合に推奨）：イメージソース（Docker Hub / GHCR）、バージョンチャネル（安定版 / プリリリース版）、Dashboard 管理パネルの設定、ポート設定
+- **従来のインストール**：自動的に仮想環境を作成、ErisPulse のバージョンを選択、オプションで Dashboard 管理パネルモジュールをインストール
 
 ### Docker を使用する
 
-Docker イメージには、ErisPulse フレームワークと Dashboard 管理パネルが事前インストールされています。
+Docker イメージには、ErisPulse フレームワークと Dashboard 管理パネルが事前にインストールされています。
 
 ```bash
 # docker-compose.yml をダウンロード
@@ -36,9 +36,9 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
 <details>
-<summary>Docker Hub が利用できない場合</summary>
+<summary>Docker Hub が利用できない場合？</summary>
 
-GitHub Container Registry のイメージを使用するには、`docker-compose.yml` の image を次のように変更します：
+GitHub Container Registry のイメージを使用する場合は、`docker-compose.yml` の image を次のように変更します：
 
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
@@ -46,17 +46,25 @@ image: ghcr.io/erispulse/erispulse:latest
 
 </details>
 
-起動後、`http://<host>:8000/Dashboard` にアクセスし、設定したトークンでログインします。
+起動後、`http://<host>:8000/Dashboard` にアクセスし、設定したトークンでログインしてください。
 
-### pip を使用したインストール
+### pip を使用してインストール
 
-Python のバージョンが 3.10 以上であることを確認し、pip を使用してインストールします：
+Python のバージョンが 3.10 以上であることを確認した上で、pip を使用してインストールします：
 
 ```bash
 pip install ErisPulse
 ```
 
 既に [uv](https://github.com/astral-sh/uv) をインストールしている場合は、`uv pip install ErisPulse` を使用することで、より高速にインストールできます。
+
+プロジェクト環境を汚染せずに `epsdk` コマンドラインツールをグローバルにインストールしたい場合は、`uv tool install` を推奨します：
+
+```bash
+uv tool install ErisPulse
+```
+
+インストール後、`epsdk` がグローバルに利用可能になります。プロジェクトディレクトリ内で実行すると、`.venv` を自動的に検知します（`epsdk install` でプロジェクト環境にインストール、`epsdk run` でプロジェクト環境で実行）。フレームワーク本体はツール環境から提供されます。詳しくは[インストールの参考](user-guide/installation.md)をご覧ください。
 
 ## プロジェクトの初期化
 

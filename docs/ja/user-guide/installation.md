@@ -23,7 +23,7 @@ pip install ErisPulse --upgrade
 
 ### 方法2：uvを使用したインストール（推奨）
 
-uvは、より高速なPythonツールチェーンであり、開発環境での使用が推奨されています。
+uvはより高速なPythonツールチェーンであり、開発環境での使用が推奨されます。
 
 #### uvのインストール
 
@@ -64,6 +64,21 @@ source .venv/bin/activate
 # ErisPulseのインストール
 uv pip install ErisPulse --upgrade
 ```
+
+### 方法3：uv toolを使用したインストール（グローバルCLI、推奨）
+
+`epsdk`をグローバルなコマンドラインツールとして使用したい場合、`uv tool install`が最もクリーンな方法です。epsdkは独立したツール環境で動作し、プロジェクト環境を汚染しません。
+
+```bash
+# インストール（.venvを有効化せずにepsdkがすぐに使用可能）
+uv tool install ErisPulse
+
+# アップグレード（またはepsdk self-updateを使用して自動的にこの経路をたどる）
+uv tool upgrade ErisPulse
+```
+
+> [!NOTE]
+> ツール環境内のepsdkは、プロジェクトディレクトリ内で実行された際にプロジェクトの`.venv`を自動的に認識します。`epsdk install`はコンポーネントをプロジェクト環境にインストールし、`epsdk run`はプロジェクト環境を使用してロボットを実行します。フレームワーク本体はツール環境から提供され、両者は互いに干渉しません。
 
 ## プロジェクトの初期化とモジュールのインストール
 

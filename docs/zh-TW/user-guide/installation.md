@@ -38,7 +38,7 @@ uv --version
 #### 建立虛擬環境
 
 ```bash
-# 建立專案目錄
+# 建立專案資料夾
 mkdir my_bot && cd my_bot
 
 # 安裝 Python 3.12
@@ -64,6 +64,24 @@ source .venv/bin/activate
 # 安裝 ErisPulse
 uv pip install ErisPulse --upgrade
 ```
+
+### 方式三：使用 uv tool 安裝（全域 CLI，推薦）
+
+如果只想將 `epsdk` 當作全域命令列工具使用，`uv tool install` 是最乾淨的方式——
+epsdk 在獨立的工具環境中運行，不會污染任何專案環境：
+
+```bash
+# 安裝（epsdk 立即可用，無需激活任何虛擬環境）
+uv tool install ErisPulse
+
+# 升級（或直接使用 epsdk self-update，會自動走此通道）
+uv tool upgrade ErisPulse
+```
+
+> [!NOTE]
+> 工具環境中的 epsdk 在專案資料夾內運行時會自動感知專案 `.venv`：
+> `epsdk install` 將元件安裝進專案環境、`epsdk run` 使用專案環境運行機器人，
+> 框架本體仍由工具環境提供，兩邊互不干擾。
 
 ## 項目初始化與模組安裝
 

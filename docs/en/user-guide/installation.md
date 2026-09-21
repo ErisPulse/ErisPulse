@@ -11,7 +11,7 @@
 
 ## Installation Methods
 
-### Method 1: Install Using pip
+### Method 1: Install with pip
 
 ```bash
 # Install ErisPulse
@@ -21,17 +21,17 @@ pip install ErisPulse
 pip install ErisPulse --upgrade
 ```
 
-### Method 2: Install Using uv (Recommended)
+### Method 2: Install with uv (Recommended)
 
 uv is a faster Python toolchain, recommended for development environments.
 
 #### Install uv
 
 ```bash
-# Install uv using pip
+# Install uv with pip
 pip install uv
 
-# Verify the installation
+# Verify installation
 uv --version
 ```
 
@@ -64,6 +64,23 @@ source .venv/bin/activate
 # Install ErisPulse
 uv pip install ErisPulse --upgrade
 ```
+
+### Method 3: Install with uv tool (Global CLI, Recommended)
+
+If you only want to use `epsdk` as a global command-line tool, `uv tool install` is the cleanest approach—`epsdk` runs in an isolated tool environment, without polluting any project environments:
+
+```bash
+# Install (epsdk is immediately available, no need to activate any virtual environment)
+uv tool install ErisPulse
+
+# Upgrade (or directly use `epsdk self-update`, which will automatically use this channel)
+uv tool upgrade ErisPulse
+```
+
+> [!NOTE]
+> When running `epsdk` in a project directory, the tool environment automatically detects the project's `.venv`:
+> `epsdk install` installs components into the project environment, and `epsdk run` uses the project environment to run the bot.
+> The framework itself remains provided by the tool environment, with no interference between the two.
 
 ## Project Initialization and Module Installation
 

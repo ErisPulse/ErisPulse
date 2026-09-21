@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "a60955b24db5c8925d2dffe7ba297507",
-  "file_hash": "a60955b24db5c8925d2dffe7ba297507",
-  "translated_at": "2026-09-07T12:30:14.024469",
+  "hash": "3044ee885c1e743ff683095b14cc7fe1",
+  "file_hash": "3044ee885c1e743ff683095b14cc7fe1",
+  "translated_at": "2026-09-21T11:17:24.242548",
   "target_lang": "ru",
   "chunks": [
     {
@@ -14,8 +14,8 @@
       "translation": "## Требования к системе\n\n- Python 3.10 или выше\n- pip или uv (рекомендуется)\n- Достаточное свободное место на диске (не менее 100 МБ)"
     },
     {
-      "hash": "d588381833d7a59395c1506d42a2270e",
-      "translation": "## Способы установки\n\n### Способ 1: Установка через pip\n\n```bash\n# Установка ErisPulse\npip install ErisPulse\n\n# Обновление до последней версии\npip install ErisPulse --upgrade\n```\n\n### Способ 2: Установка через uv (рекомендуется)\n\nuv — это более быстрая Python-среда, рекомендуемая для рабочих сред.\n\n#### Установка uv\n\n```bash\n# Установка uv через pip\npip install uv\n\n# Проверка установки\nuv --version\n```\n\n#### Создание виртуального окружения\n\n```bash\n# Создание директории проекта\nmkdir my_bot && cd my_bot\n\n# Установка Python 3.12\nuv python install 3.12\n\n# Создание виртуального окружения\nuv venv\n```\n\n#### Активация виртуального окружения\n\n```bash\n# Windows\n.venv\\Scripts\\activate\n\n# Linux/Mac\nsource .venv/bin/activate\n```\n\n#### Установка ErisPulse\n\n```bash\n# Установка ErisPulse\nuv pip install ErisPulse --upgrade\n```"
+      "hash": "a5c38fb5214f1c38b7a570258c9d958b",
+      "translation": "## Способы установки\n\n### Способ 1: Установка с помощью pip\n\n```bash\n# Установка ErisPulse\npip install ErisPulse\n\n# Обновление до последней версии\npip install ErisPulse --upgrade\n```\n\n### Способ 2: Установка с помощью uv (рекомендуется)\n\nuv — это более быстрая Python-инструментальная цепочка, рекомендуемая для среды разработки.\n\n#### Установка uv\n\n```bash\n# Установка uv с помощью pip\npip install uv\n\n# Проверка установки\nuv --version\n```\n\n#### Создание виртуального окружения\n\n```bash\n# Создание каталога проекта\nmkdir my_bot && cd my_bot\n\n# Установка Python 3.12\nuv python install 3.12\n\n# Создание виртуального окружения\nuv venv\n```\n\n#### Активация виртуального окружения\n\n```bash\n# Windows\n.venv\\Scripts\\activate\n\n# Linux/Mac\nsource .venv/bin/activate\n```\n\n#### Установка ErisPulse\n\n```bash\n# Установка ErisPulse\nuv pip install ErisPulse --upgrade\n```\n\n### Способ 3: Установка с помощью uv tool (глобальный CLI, рекомендуется)\n\nЕсли вы хотите использовать `epsdk` как глобальный командную строку, `uv tool install` — самый чистый способ: `epsdk` работает в независимой среде инструментов, не загрязняя любые проектные окружения:\n\n```bash\n# Установка (epsdk сразу доступен, без необходимости активации виртуального окружения)\nuv tool install ErisPulse\n\n# Обновление (или просто используйте epsdk self-update, автоматически будет использоваться этот канал)\nuv tool upgrade ErisPulse\n```\n\n> [!NOTE]\n> В среде инструментов `epsdk` автоматически распознает `.venv` проекта при запуске в каталоге проекта: `epsdk install` установит компоненты в проектное окружение, а `epsdk run` будет использовать проектное окружение для запуска робота, при этом сам фреймворк по-прежнему предоставляется средой инструментов, и обе стороны не влияют друг на друга."
     },
     {
       "hash": "358f974f4ee2f44daa4450252b751cdc",

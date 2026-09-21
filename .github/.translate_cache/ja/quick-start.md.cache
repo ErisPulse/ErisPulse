@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "2421db50d9e9f4a9b427ad8f413bb58c",
-  "file_hash": "2421db50d9e9f4a9b427ad8f413bb58c",
-  "translated_at": "2026-09-07T10:37:46.520503",
+  "hash": "3a1a5f0f029c5264ade67a1409f45a72",
+  "file_hash": "3a1a5f0f029c5264ade67a1409f45a72",
+  "translated_at": "2026-09-21T11:17:28.549774",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# すぐに始める\n\n> **これはあなたの最初の一歩です。** 5 分でゼロから ErisPulse ロボットを立ち上げましょう。"
     },
     {
-      "hash": "89b0ad750e3c1ae469f9c09815104a99",
-      "translation": "## ErisPulse のインストール\n\n### 1 本レールインストールスクリプト（推奨）\n\nインストールスクリプトは、Docker、Python、uv などの環境を自動的に検出し、最適なインストール方法を選択するよう誘導します。\n\nWindows (PowerShell):\n```powershell\nirm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1\n```\n\nmacOS / Linux:\n```bash\ncurl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh\n```\n\nスクリプトは、以下の手順を誘導します：\n\n- **Docker インストール**（Docker が検出された場合に推奨）：イメージソース（Docker Hub / GHCR）、バージョンチャネル（安定版 / プレビュー版）、Dashboard 管理パネルの設定、ポートの設定を選択\n- **従来のインストール**：仮想環境の自動作成、ErisPulse のバージョン選択、オプションで Dashboard 管理パネルモジュールのインストール\n\n### Docker を使用する\n\nDocker イメージには、ErisPulse フレームワークと Dashboard 管理パネルが事前インストールされています。\n\n```bash\n# docker-compose.yml をダウンロード\ncurl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml\n\n# Dashboard トークンを設定して起動\nERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d\n```\n\n<details>\n<summary>Docker Hub が利用できない場合</summary>\n\nGitHub Container Registry のイメージを使用するには、`docker-compose.yml` の image を次のように変更します：\n\n```yaml\nimage: ghcr.io/erispulse/erispulse:latest\n```\n\n</details>\n\n起動後、`http://<host>:8000/Dashboard` にアクセスし、設定したトークンでログインします。\n\n### pip を使用したインストール\n\nPython のバージョンが 3.10 以上であることを確認し、pip を使用してインストールします：\n\n```bash\npip install ErisPulse\n```\n\n既に [uv](https://github.com/astral-sh/uv) をインストールしている場合は、`uv pip install ErisPulse` を使用することで、より高速にインストールできます。"
+      "hash": "ee3c16ccd3e627a52b86cacaa4916188",
+      "translation": "## ErisPulse のインストール\n\n### 1 本化インストールスクリプト（推奨）\n\nインストールスクリプトは、Docker、Python、uv などの環境を自動的に検出し、最適なインストール方法を選択するように誘導します。\n\n**Windows (PowerShell):**\n```powershell\nirm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1\n```\n\n**macOS / Linux:**\n```bash\ncurl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh\n```\n\nスクリプトは以下の手順を誘導します：\n\n- **Docker インストール**（Docker が検出された場合に推奨）：イメージソース（Docker Hub / GHCR）、バージョンチャネル（安定版 / プリリリース版）、Dashboard 管理パネルの設定、ポート設定\n- **従来のインストール**：自動的に仮想環境を作成、ErisPulse のバージョンを選択、オプションで Dashboard 管理パネルモジュールをインストール\n\n### Docker を使用する\n\nDocker イメージには、ErisPulse フレームワークと Dashboard 管理パネルが事前にインストールされています。\n\n```bash\n# docker-compose.yml をダウンロード\ncurl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml\n\n# Dashboard トークンを設定して起動\nERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d\n```\n\n<details>\n<summary>Docker Hub が利用できない場合？</summary>\n\nGitHub Container Registry のイメージを使用する場合は、`docker-compose.yml` の image を次のように変更します：\n\n```yaml\nimage: ghcr.io/erispulse/erispulse:latest\n```\n\n</details>\n\n起動後、`http://<host>:8000/Dashboard` にアクセスし、設定したトークンでログインしてください。\n\n### pip を使用してインストール\n\nPython のバージョンが 3.10 以上であることを確認した上で、pip を使用してインストールします：\n\n```bash\npip install ErisPulse\n```\n\n既に [uv](https://github.com/astral-sh/uv) をインストールしている場合は、`uv pip install ErisPulse` を使用することで、より高速にインストールできます。\n\nプロジェクト環境を汚染せずに `epsdk` コマンドラインツールをグローバルにインストールしたい場合は、`uv tool install` を推奨します：\n\n```bash\nuv tool install ErisPulse\n```\n\nインストール後、`epsdk` がグローバルに利用可能になります。プロジェクトディレクトリ内で実行すると、`.venv` を自動的に検知します（`epsdk install` でプロジェクト環境にインストール、`epsdk run` でプロジェクト環境で実行）。フレームワーク本体はツール環境から提供されます。詳しくは[インストールの参考](user-guide/installation.md)をご覧ください。"
     },
     {
       "hash": "7e317def5cef55f71b87c93ecb0233fd",
