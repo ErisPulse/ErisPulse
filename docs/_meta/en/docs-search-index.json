@@ -4315,7 +4315,7 @@
     "Common Usage": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 530,
+        "line": 552,
         "level": 2,
         "title": "Common Usage"
       }
@@ -4678,12 +4678,12 @@
         "title": "Configuration Options"
       }
     ],
-    "Configure Components": [
+    "Configuring Components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 571,
+        "line": 593,
         "level": 3,
-        "title": "Configure Components"
+        "title": "Configuring Components"
       }
     ],
     "Configuring Lazy Loading": [
@@ -5074,14 +5074,6 @@
         "title": "Counting and Existence Check"
       }
     ],
-    "Create Scaffold": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 640,
-        "level": 3,
-        "title": "Create Scaffold"
-      }
-    ],
     "Create Tasks": [
       {
         "document": "ecosystem/cron.md",
@@ -5104,6 +5096,14 @@
         "line": 38,
         "level": 4,
         "title": "Create a Virtual Environment"
+      }
+    ],
+    "Creating Scaffolds": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 662,
+        "level": 3,
+        "title": "Creating Scaffolds"
       }
     ],
     "Creating a Conversation": [
@@ -5829,7 +5829,7 @@
     "Environment Diagnosis": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 486,
+        "line": 508,
         "level": 2,
         "title": "Environment Diagnosis"
       }
@@ -6998,12 +6998,12 @@
         "title": "General request"
       }
     ],
-    "Generate Type Stubs": [
+    "Generating Type Stubs": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 620,
+        "line": 642,
         "level": 3,
-        "title": "Generate Type Stubs"
+        "title": "Generating Type Stubs"
       }
     ],
     "Get Adapter Instance": [
@@ -7103,7 +7103,7 @@
     "Global Parameters": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 472,
+        "line": 494,
         "level": 2,
         "title": "Global Parameters"
       }
@@ -7728,12 +7728,14 @@
         "line": 61,
         "level": 2,
         "title": "Initialize Project"
-      },
+      }
+    ],
+    "Initializing Projects": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 630,
+        "line": 652,
         "level": 3,
-        "title": "Initialize Project"
+        "title": "Initializing Projects"
       }
     ],
     "Inline Query Event": [
@@ -7764,14 +7766,6 @@
         "line": 61,
         "level": 4,
         "title": "Install ErisPulse"
-      }
-    ],
-    "Install Modules": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 532,
-        "level": 3,
-        "title": "Install Modules"
       }
     ],
     "Install uv": [
@@ -7835,6 +7829,12 @@
         "document": "quick-start.md",
         "line": 95,
         "level": 2,
+        "title": "Installing Modules"
+      },
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 554,
+        "level": 3,
         "title": "Installing Modules"
       }
     ],
@@ -7925,7 +7925,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 517,
+        "line": 539,
         "level": 2,
         "title": "Interactive Installation"
       }
@@ -8045,7 +8045,7 @@
     "Language Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 394,
+        "line": 416,
         "level": 2,
         "title": "Language Commands"
       }
@@ -8182,14 +8182,6 @@
         "title": "Link Control: Claiming and Blocking"
       }
     ],
-    "List Components": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 545,
-        "level": 3,
-        "title": "List Components"
-      }
-    ],
     "List Platforms": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -8284,6 +8276,14 @@
         "line": 37,
         "level": 3,
         "title": "Listening to Private Messages"
+      }
+    ],
+    "Listing Components": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 567,
+        "level": 3,
+        "title": "Listing Components"
       }
     ],
     "Loading Strategy": [
@@ -10435,7 +10435,7 @@
     "Project Management Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 312,
+        "line": 317,
         "level": 2,
         "title": "Project Management Commands"
       }
@@ -11636,14 +11636,6 @@
         "title": "Rule Propagation"
       }
     ],
-    "Run Project": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 597,
-        "level": 3,
-        "title": "Run Project"
-      }
-    ],
     "Run Tests": [
       {
         "document": "user-guide/installation.md",
@@ -11658,6 +11650,14 @@
         "line": 417,
         "level": 3,
         "title": "Running Mode"
+      }
+    ],
+    "Running Projects": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 619,
+        "level": 3,
+        "title": "Running Projects"
       }
     ],
     "Running the Project": [
@@ -12838,14 +12838,6 @@
         "title": "Supported i18n Fields"
       }
     ],
-    "Switch Language": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 607,
-        "level": 3,
-        "title": "Switch Language"
-      }
-    ],
     "Switch Manually in Code": [
       {
         "document": "advanced/i18n.md",
@@ -12868,6 +12860,14 @@
         "line": 17,
         "level": 3,
         "title": "Switch via Environment Variable"
+      }
+    ],
+    "Switching Language": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 629,
+        "level": 3,
+        "title": "Switching Language"
       }
     ],
     "Sync API Connection": [
@@ -13103,7 +13103,7 @@
     "Type Stub Commands": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 431,
+        "line": 453,
         "level": 2,
         "title": "Type Stub Commands"
       }
@@ -13148,20 +13148,20 @@
         "title": "Unified Module Access Entry"
       }
     ],
-    "Uninstall Components": [
-      {
-        "document": "user-guide/cli-reference.md",
-        "line": 561,
-        "level": 3,
-        "title": "Uninstall Components"
-      }
-    ],
     "Uninstall Process": [
       {
         "document": "advanced/startup.md",
         "line": 306,
         "level": 2,
         "title": "Uninstall Process"
+      }
+    ],
+    "Uninstalling Components": [
+      {
+        "document": "user-guide/cli-reference.md",
+        "line": 583,
+        "level": 3,
+        "title": "Uninstalling Components"
       }
     ],
     "Unique Event Types": [
@@ -13296,12 +13296,12 @@
         "title": "Updating Data"
       }
     ],
-    "Upgrade Components": [
+    "Upgrading Components": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 584,
+        "line": 606,
         "level": 3,
-        "title": "Upgrade Components"
+        "title": "Upgrading Components"
       }
     ],
     "Usage": [
@@ -14413,7 +14413,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 349,
+        "line": 371,
         "level": 3,
         "title": "create"
       }
@@ -14461,7 +14461,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 488,
+        "line": 510,
         "level": 3,
         "title": "doctor"
       }
@@ -14509,7 +14509,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 400,
+        "line": 422,
         "level": 3,
         "title": "i18n"
       }
@@ -14525,7 +14525,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 319,
+        "line": 324,
         "level": 3,
         "title": "init"
       }
@@ -14629,7 +14629,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 281,
+        "line": 286,
         "level": 3,
         "title": "run"
       }
@@ -14693,7 +14693,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 437,
+        "line": 459,
         "level": 3,
         "title": "types"
       }

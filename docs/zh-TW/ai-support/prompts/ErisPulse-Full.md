@@ -3074,13 +3074,18 @@ epsdk config MyModule
 
 ## 運行控制命令
 
+> [!TIP]  
+> `epsdk run` 會自動檢測並使用項目目錄下的 `.venv` 虛擬環境來運行機器人  
+> （也可透過 `ERISPULSE_PYTHON` 環境變數顯式指定解釋器）。`epsdk install` /  
+> `uninstall` / `upgrade` / `list` 同樣作用於項目虛擬環境。
+
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
 | `run` | `r` | `[script] [--reload]` | 運行指定腳本或 SDK |
 
 ### run
 
-運行 ErisPulse 項目腳本或直接啟動 SDK。支援熱重載模式。
+執行 ErisPulse 項目腳本或直接啟動 SDK。支援熱重載模式。
 
 **別名：** `r`
 
@@ -3088,63 +3093,78 @@ epsdk config MyModule
 
 | 參數 | 說明 |
 |------|------|
-| `[script]` | 要運行的腳本檔案，不指定則運行 SDK |
-| `--reload` | 啟用熱重載模式，監控檔案變化自動重啟 |
+| `[script]` | 要執行的腳本檔案，不指定則執行 SDK |
+| `--reload` | 啟用熱重載模式，監控檔案變更自動重啟 |
 
-**示例：**
+**範例：**
 
 ```bash
-# 直接運行 SDK
+# 直接執行 SDK
 epsdk run
 
-# 運行指定腳本檔案
+# 執行指定腳本檔案
 epsdk run main.py
 
-# 熱重載模式運行（檔案變更自動重啟）
+# 熱重載模式執行（檔案變更自動重啟）
 epsdk run main.py --reload
 
 # SDK 熱重載模式
 epsdk run --reload
 ```
 
----
-
 ## 項目管理命令
 
 | 命令 | 別名 | 參數 | 說明 |
 |------|------|------|------|
-| `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | 初始化 ErisPulse 項目 |
+| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | 初始化 ErisPulse 項目 |
 | `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | 創建模組/適配器腳手架 |
 
 ### init
 
-初始化一個新的 ErisPulse 項目。支援互動式與快速模式。
+初始化一個新的 ErisPulse 項目。支援互動式與快速模式，2.8.4 起生成 `pyproject.toml`（依賴清單）、可選創建項目 `.venv` 虛擬環境並安裝框架與適配器，並支援**指定任意目錄**。
 
 **參數：**
 
 | 參數 | 短參數 | 說明 |
 |------|--------|------|
+| `[path]` | | 目標路徑（可包含父目錄，如 `../apps/mybot`；純名稱等價 `--project-name`） |
 | `--project-name` | `-n` | 項目名稱 |
-| `--quick` | `-q` | 快速模式，跳過互動式向導 |
+| `--path` | | 項目父目錄（與 `-n` 組合指定創建位置） |
+| `--quick` | `-q` | 快速模式，跳過互動式向導（預設創建 `.venv` 並安裝依賴） |
 | `--force` | `-f` | 強制覆蓋現有配置檔案 |
-| `--here` | | 在當前目錄初始化，不建立子目錄 |
+| `--here` | | 在當前目錄初始化，不創建子目錄 |
 | `--no-uv` | | 使用 pip 代替 uv |
+| `--no-venv` | | 跳過虛擬環境創建與依賴安裝 |
 
-**範例：**
+**示例：**
 
 ```bash
 # 互動式初始化
 epsdk init
 
-# 快速初始化
+# 快速初始化（當前目錄下創建 my_bot/，含 pyproject.toml + .venv）
 epsdk init -q -n my_bot
+
+# 指定任意目錄初始化（../apps/mybot）
+epsdk init ../apps/mybot
+
+# 組合父目錄與項目名
+epsdk init -n my_bot --path ../apps
 
 # 強制覆蓋已有配置
 epsdk init -f
 
 # 在當前目錄初始化
 epsdk init --here -n my_bot
+
+# 只生成項目結構，不創建虛擬環境
+epsdk init --no-venv -n my_bot
 ```
+
+init 產物：`main.py`、`pyproject.toml`（依賴清單）、`config/config.toml` + `config.full.example`、`config/ssl/`、`logs/`、`.gitignore`、`README.md`；選擇創建虛擬環境時額外生成 `.venv` 並將 `erispulse` 與所選適配器安裝其中。
+
+> [!WARNING]
+> **不要使用 `uv run epsdk run` 運行機器人**。`uv run` 在無 `pyproject.toml` 的目錄執行時創建**一次性隔離環境**——在其中通過 `epsdk install` 安裝的適配器不會持久化。請在項目目錄內使用 `epsdk run`（自動使用項目 `.venv`），或先激活虛擬環境再運行。
 
 ### create
 
@@ -3164,7 +3184,7 @@ epsdk init --here -n my_bot
 | `--force` | `-f` | 強制覆蓋已存在的目錄 |
 | `--local` | | 創建本地插件（僅 `module` 可用）：生成 `plugins/<name>/` 包結構，免打包安裝 |
 
-**範例：**
+**示例：**
 
 ```bash
 # 互動式創建（引導選擇類型和填寫資訊）
@@ -3188,6 +3208,8 @@ epsdk create module -n MyModule -o ./projects
 # 強制覆蓋已有目錄
 epsdk create module -n MyModule -f
 ```
+
+---
 
 ## 語言命令
 

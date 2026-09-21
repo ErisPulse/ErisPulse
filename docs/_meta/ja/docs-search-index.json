@@ -4537,7 +4537,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 349,
+        "line": 371,
         "level": 3,
         "title": "create"
       }
@@ -4585,7 +4585,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 488,
+        "line": 510,
         "level": 3,
         "title": "doctor"
       }
@@ -4657,7 +4657,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 400,
+        "line": 422,
         "level": 3,
         "title": "i18n"
       }
@@ -4673,7 +4673,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 319,
+        "line": 324,
         "level": 3,
         "title": "init"
       }
@@ -4825,7 +4825,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 281,
+        "line": 286,
         "level": 3,
         "title": "run"
       }
@@ -4913,7 +4913,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 437,
+        "line": 459,
         "level": 3,
         "title": "types"
       }
@@ -6309,7 +6309,7 @@
     "グローバルパラメータ": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 472,
+        "line": 494,
         "level": 2,
         "title": "グローバルパラメータ"
       }
@@ -6593,7 +6593,7 @@
     "コンポーネントのアップグレード": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 584,
+        "line": 606,
         "level": 3,
         "title": "コンポーネントのアップグレード"
       }
@@ -6601,23 +6601,23 @@
     "コンポーネントのアンインストール": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 561,
+        "line": 583,
         "level": 3,
         "title": "コンポーネントのアンインストール"
       }
     ],
-    "コンポーネントの一覧表示": [
+    "コンポーネントのリスト表示": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 545,
+        "line": 567,
         "level": 3,
-        "title": "コンポーネントの一覧表示"
+        "title": "コンポーネントのリスト表示"
       }
     ],
     "コンポーネントの設定": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 571,
+        "line": 593,
         "level": 3,
         "title": "コンポーネントの設定"
       }
@@ -6991,7 +6991,7 @@
     "タイプストアブの生成": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 620,
+        "line": 642,
         "level": 3,
         "title": "タイプストアブの生成"
       }
@@ -6999,7 +6999,7 @@
     "タイプストアブコマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 431,
+        "line": 453,
         "level": 2,
         "title": "タイプストアブコマンド"
       }
@@ -7360,12 +7360,12 @@
         "title": "テーブル管理"
       }
     ],
-    "ディアグノスティクスコマンド": [
+    "ディアグノスティックコマンド": [
       {
         "document": "user-guide/cli-reference.md",
         "line": 18,
         "level": 2,
-        "title": "ディアグノスティクスコマンド"
+        "title": "ディアグノスティックコマンド"
       }
     ],
     "デコレータとルールの継承": [
@@ -7921,7 +7921,7 @@
     "フットスタジの作成": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 640,
+        "line": 662,
         "level": 3,
         "title": "フットスタジの作成"
       }
@@ -8207,7 +8207,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 630,
+        "line": 652,
         "level": 3,
         "title": "プロジェクトの初期化"
       }
@@ -8229,7 +8229,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 597,
+        "line": 619,
         "level": 3,
         "title": "プロジェクトの実行"
       }
@@ -8259,7 +8259,7 @@
     "プロジェクト管理コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 312,
+        "line": 317,
         "level": 2,
         "title": "プロジェクト管理コマンド"
       }
@@ -9001,7 +9001,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 532,
+        "line": 554,
         "level": 3,
         "title": "モジュールのインストール"
       }
@@ -9886,12 +9886,12 @@
         "title": "一般的なフロー・パターン"
       }
     ],
-    "一般的な使用方法": [
+    "一般的な使い方": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 530,
+        "line": 552,
         "level": 2,
-        "title": "一般的な使用方法"
+        "title": "一般的な使い方"
       }
     ],
     "一般的な問題と注意事項": [
@@ -11551,7 +11551,7 @@
     "対話形式のインストール": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 517,
+        "line": 539,
         "level": 2,
         "title": "対話形式のインストール"
       }
@@ -13125,7 +13125,7 @@
     "環境診断": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 486,
+        "line": 508,
         "level": 2,
         "title": "環境診断"
       }
@@ -13725,7 +13725,7 @@
     "言語の切り替え": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 607,
+        "line": 629,
         "level": 3,
         "title": "言語の切り替え"
       }
@@ -13733,7 +13733,7 @@
     "言語コマンド": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 394,
+        "line": 416,
         "level": 2,
         "title": "言語コマンド"
       }

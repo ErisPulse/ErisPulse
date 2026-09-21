@@ -6224,6 +6224,11 @@ epsdk config MyModule
 
 ## 运行控制命令
 
+> [!TIP]
+> `epsdk run` 会自动检测并使用项目目录下的 `.venv` 虚拟环境运行机器人
+> （也可通过 `ERISPULSE_PYTHON` 环境变量显式指定解释器）。`epsdk install` /
+> `uninstall` / `upgrade` / `list` 同样作用于项目虚拟环境。
+
 | 命令 | 别名 | 参数 | 说明 |
 |------|------|------|------|
 | `run` | `r` | `[script] [--reload]` | 运行指定脚本或 SDK |
@@ -6263,22 +6268,25 @@ epsdk run --reload
 
 | 命令 | 别名 | 参数 | 说明 |
 |------|------|------|------|
-| `init` | — | `[--project-name/-n <name>] [--quick/-q] [--force/-f] [--here] [--no-uv]` | 初始化 ErisPulse 项目 |
+| `init` | — | `[path] [--project-name/-n <name>] [--path <dir>] [--quick/-q] [--force/-f] [--here] [--no-uv] [--no-venv]` | 初始化 ErisPulse 项目 |
 | `create` | — | `{module,adapter} [--name/-n <name>] [--description/-d <desc>] [--author/-a <name>] [--email/-e <mail>] [--homepage <url>] [--output/-o <dir>] [--force/-f]` | 创建模块/适配器脚手架 |
 
 ### init
 
-初始化一个新的 ErisPulse 项目。支持交互式与快速模式。
+初始化一个新的 ErisPulse 项目。支持交互式与快速模式，2.8.4 起生成 `pyproject.toml`（依赖清单）、可选创建项目 `.venv` 虚拟环境并安装框架与适配器，并支持**指定任意目录**。
 
 **参数：**
 
 | 参数 | 短参数 | 说明 |
 |------|--------|------|
+| `[path]` | | 目标路径（可包含父目录，如 `../apps/mybot`；纯名称等价 `--project-name`） |
 | `--project-name` | `-n` | 项目名称 |
-| `--quick` | `-q` | 快速模式，跳过交互式向导 |
+| `--path` | | 项目父目录（与 `-n` 组合指定创建位置） |
+| `--quick` | `-q` | 快速模式，跳过交互式向导（默认创建 `.venv` 并安装依赖） |
 | `--force` | `-f` | 强制覆盖现有配置文件 |
 | `--here` | | 在当前目录初始化，不创建子目录 |
 | `--no-uv` | | 使用 pip 代替 uv |
+| `--no-venv` | | 跳过虚拟环境创建与依赖安装 |
 
 **示例：**
 
@@ -6286,15 +6294,29 @@ epsdk run --reload
 # 交互式初始化
 epsdk init
 
-# 快速初始化
+# 快速初始化（当前目录下创建 my_bot/，含 pyproject.toml + .venv）
 epsdk init -q -n my_bot
+
+# 指定任意目录初始化（../apps/mybot）
+epsdk init ../apps/mybot
+
+# 组合父目录与项目名
+epsdk init -n my_bot --path ../apps
 
 # 强制覆盖已有配置
 epsdk init -f
 
 # 在当前目录初始化
 epsdk init --here -n my_bot
+
+# 只生成项目结构，不创建虚拟环境
+epsdk init --no-venv -n my_bot
 ```
+
+init 产物：`main.py`、`pyproject.toml`（依赖清单）、`config/config.toml` + `config.full.example`、`config/ssl/`、`logs/`、`.gitignore`、`README.md`；选择创建虚拟环境时额外生成 `.venv` 并将 `erispulse` 与所选适配器安装其中。
+
+> [!WARNING]
+> **不要使用 `uv run epsdk run` 运行机器人**。`uv run` 在无 `pyproject.toml` 的目录执行时创建**一次性隔离环境**——在其中通过 `epsdk install` 安装的适配器不会持久化。请在项目目录内使用 `epsdk run`（自动使用项目 `.venv`），或先激活虚拟环境再运行。
 
 ### create
 

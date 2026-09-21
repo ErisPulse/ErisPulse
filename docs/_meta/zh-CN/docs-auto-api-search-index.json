@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1775,
+  "total_keywords": 1782,
   "keywords": {
     "ErisPulse API 文档": [
       {
@@ -2515,7 +2515,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/init.md",
-        "line": 37,
+        "line": 44,
         "level": 5,
         "title": "`__init__()`"
       },
@@ -2552,12 +2552,6 @@
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/upgrade.md",
         "line": 27,
-        "level": 5,
-        "title": "`__init__()`"
-      },
-      {
-        "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 41,
         "level": 5,
         "title": "`__init__()`"
       },
@@ -2736,6 +2730,14 @@
         "line": 617,
         "level": 5,
         "title": "`__init__(parent_logger: Logger, name: str)`"
+      }
+    ],
+    "`__init__(python_executable: 'str | None' = None)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
+        "line": 108,
+        "level": 5,
+        "title": "`__init__(python_executable: 'str | None' = None)`"
       }
     ],
     "`__init__(python_executable: str | None = None)`": [
@@ -3061,7 +3063,7 @@
     "`_build_install_command(package_spec: str, upgrade: bool = True)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 272,
+        "line": 343,
         "level": 5,
         "title": "`_build_install_command(package_spec: str, upgrade: bool = True)`"
       }
@@ -3117,7 +3119,7 @@
     "`_build_subprocess_env()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 87,
+        "line": 158,
         "level": 5,
         "title": "`_build_subprocess_env()`"
       }
@@ -3227,7 +3229,7 @@
     "`_check_sdk_compatibility(min_sdk_version: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 349,
+        "line": 420,
         "level": 5,
         "title": "`_check_sdk_compatibility(min_sdk_version: str)`"
       }
@@ -3475,7 +3477,7 @@
     "`_compare_versions(version1: str, version2: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 336,
+        "line": 407,
         "level": 5,
         "title": "`_compare_versions(version1: str, version2: str)`"
       }
@@ -3539,7 +3541,7 @@
     "`_configure_adapters(project_path: Path)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/init.md",
-        "line": 90,
+        "line": 102,
         "level": 5,
         "title": "`_configure_adapters(project_path: Path)`"
       }
@@ -3727,7 +3729,7 @@
     "`_detect_uv()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 223,
+        "line": 294,
         "level": 5,
         "title": "`_detect_uv()`"
       }
@@ -3913,7 +3915,7 @@
     "`_ensure_pip_available(target_python: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 310,
+        "line": 381,
         "level": 5,
         "title": "`_ensure_pip_available(target_python: str)`"
       }
@@ -3969,7 +3971,7 @@
     "`_execute_backend(base_cmd: list[str], args: list[str], description: str, backend: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 259,
+        "line": 330,
         "level": 5,
         "title": "`_execute_backend(base_cmd: list[str], args: list[str], description: str, backend: str)`"
       }
@@ -4033,7 +4035,7 @@
     "`_fetch_remote_packages_sync(url: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 107,
+        "line": 178,
         "level": 5,
         "title": "`_fetch_remote_packages_sync(url: str)`"
       }
@@ -4057,7 +4059,7 @@
     "`_find_installed_package_by_name(name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 176,
+        "line": 247,
         "level": 5,
         "title": "`_find_installed_package_by_name(name: str)`"
       }
@@ -4277,7 +4279,7 @@
     "`_get_full_example_config(adapter_list = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/init.md",
-        "line": 56,
+        "line": 66,
         "level": 5,
         "title": "`_get_full_example_config(adapter_list = None)`"
       }
@@ -4361,7 +4363,7 @@
     "`_get_proxy_for_url(url: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 77,
+        "line": 148,
         "level": 5,
         "title": "`_get_proxy_for_url(url: str)`"
       }
@@ -4369,7 +4371,7 @@
     "`_get_pypi_version_sync(package_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 195,
+        "line": 266,
         "level": 5,
         "title": "`_get_pypi_version_sync(package_name: str)`"
       }
@@ -4377,7 +4379,7 @@
     "`_get_pypi_versions_sync()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 443,
+        "line": 514,
         "level": 5,
         "title": "`_get_pypi_versions_sync()`"
       }
@@ -4393,7 +4395,7 @@
     "`_get_system_proxy()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 58,
+        "line": 129,
         "level": 5,
         "title": "`_get_system_proxy()`"
       }
@@ -4401,7 +4403,7 @@
     "`_get_target_python()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 246,
+        "line": 317,
         "level": 5,
         "title": "`_get_target_python()`"
       }
@@ -4417,7 +4419,7 @@
     "`_get_uv_command()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 235,
+        "line": 306,
         "level": 5,
         "title": "`_get_uv_command()`"
       }
@@ -4481,7 +4483,7 @@
     "`_http_get(url: str, timeout: int = 15)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 96,
+        "line": 167,
         "level": 5,
         "title": "`_http_get(url: str, timeout: int = 15)`"
       }
@@ -4562,12 +4564,12 @@
         "title": "`_init_in_background_thread()`"
       }
     ],
-    "`_init_project(project_name: str, adapter_list: list | None = None, in_current_dir: bool = False)`": [
+    "`_init_project(project_name: str, adapter_list: list | None = None, target_dir: Path | None = None, create_venv: bool = True, git_init: bool = False, in_current_dir: bool = False)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/init.md",
-        "line": 44,
+        "line": 51,
         "level": 5,
-        "title": "`_init_project(project_name: str, adapter_list: list | None = None, in_current_dir: bool = False)`"
+        "title": "`_init_project(project_name: str, adapter_list: list | None = None, target_dir: Path | None = None, create_venv: bool = True, git_init: bool = False, in_current_dir: bool = False)`"
       }
     ],
     "`_initialize_sync()`": [
@@ -4589,7 +4591,7 @@
     "`_install_adapters(adapter_names, adapters_info)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/init.md",
-        "line": 99,
+        "line": 111,
         "level": 5,
         "title": "`_install_adapters(adapter_names, adapters_info)`"
       }
@@ -4626,12 +4628,12 @@
         "title": "`_install_search(remote_packages: dict, upgrade: bool, pre: bool)`"
       }
     ],
-    "`_interactive_init(project_name: str | None = None, force: bool = False, here: bool = False)`": [
+    "`_interactive_init(project_name: str | None = None, force: bool = False, here: bool = False, target_dir: Path | None = None, create_venv: bool = True)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/init.md",
-        "line": 78,
+        "line": 88,
         "level": 5,
-        "title": "`_interactive_init(project_name: str | None = None, force: bool = False, here: bool = False)`"
+        "title": "`_interactive_init(project_name: str | None = None, force: bool = False, here: bool = False, target_dir: Path | None = None, create_venv: bool = True)`"
       }
     ],
     "`_interactive_install(upgrade: bool = False, pre: bool = False)`": [
@@ -4773,7 +4775,7 @@
     "`_is_module_enabled(module_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 146,
+        "line": 217,
         "level": 5,
         "title": "`_is_module_enabled(module_name: str)`"
       }
@@ -4797,7 +4799,7 @@
     "`_is_pre_release(version: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 461,
+        "line": 532,
         "level": 5,
         "title": "`_is_pre_release(version: str)`"
       }
@@ -4867,7 +4869,7 @@
     "`_is_uv_disabled()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 216,
+        "line": 287,
         "level": 5,
         "title": "`_is_uv_disabled()`"
       }
@@ -5237,7 +5239,7 @@
     "`_normalize_name(name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 156,
+        "line": 227,
         "level": 5,
         "title": "`_normalize_name(name: str)`"
       }
@@ -5421,7 +5423,7 @@
     "`_parse_size(size_str: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 48,
+        "line": 119,
         "level": 5,
         "title": "`_parse_size(size_str: str)`"
       }
@@ -5437,7 +5439,7 @@
     "`_parse_windows_proxy(proxy_server: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 67,
+        "line": 138,
         "level": 5,
         "title": "`_parse_windows_proxy(proxy_server: str)`"
       }
@@ -6163,7 +6165,7 @@
     "`_run_pip_command_with_output(args: list[str], description: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 290,
+        "line": 361,
         "level": 5,
         "title": "`_run_pip_command_with_output(args: list[str], description: str)`"
       }
@@ -6203,7 +6205,7 @@
     "`_sanitize_proxy_url(url: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 31,
+        "line": 98,
         "level": 5,
         "title": "`_sanitize_proxy_url(url: str)`"
       }
@@ -6692,6 +6694,14 @@
         "title": "`_validate_project_name(name: str)`"
       }
     ],
+    "`_validate_project_path(value: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/commands/init.md",
+        "line": 24,
+        "level": 3,
+        "title": "`_validate_project_path(value: str)`"
+      }
+    ],
     "`_validate_sdk_attr_name(name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/module.md",
@@ -6735,7 +6745,7 @@
     "`_version_key(version: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 324,
+        "line": 395,
         "level": 5,
         "title": "`_version_key(version: str)`"
       }
@@ -6954,6 +6964,14 @@
         "line": 102,
         "level": 5,
         "title": "`append(session: Any, role: str, text: str, event_id: str = '', sender: str = '')`"
+      }
+    ],
+    "`append_pyproject_dependencies(project_dir: Path, packages: 'list[str]')`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
+        "line": 43,
+        "level": 3,
+        "title": "`append_pyproject_dependencies(project_dir: Path, packages: 'list[str]')`"
       }
     ],
     "`apply(owner: str, command_name: str, defaults: dict)`": [
@@ -7405,7 +7423,7 @@
     "`async _fetch_available_adapters()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/init.md",
-        "line": 69,
+        "line": 79,
         "level": 5,
         "title": "`async _fetch_available_adapters()`"
       }
@@ -7413,7 +7431,7 @@
     "`async _fetch_remote_packages(url: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 117,
+        "line": 188,
         "level": 5,
         "title": "`async _fetch_remote_packages(url: str)`"
       }
@@ -7421,7 +7439,7 @@
     "`async _find_package_by_alias(alias: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 166,
+        "line": 237,
         "level": 5,
         "title": "`async _find_package_by_alias(alias: str)`"
       }
@@ -7453,7 +7471,7 @@
     "`async _get_package_info(package_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 359,
+        "line": 430,
         "level": 5,
         "title": "`async _get_package_info(package_name: str)`"
       }
@@ -7461,7 +7479,7 @@
     "`async _get_pypi_package_version(package_name: str, force_refresh: bool = False)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 205,
+        "line": 276,
         "level": 5,
         "title": "`async _get_pypi_package_version(package_name: str, force_refresh: bool = False)`"
       }
@@ -8177,7 +8195,7 @@
     "`async check_package_updates()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 186,
+        "line": 257,
         "level": 5,
         "title": "`async check_package_updates()`"
       }
@@ -8509,7 +8527,7 @@
     "`async get_pypi_versions()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 452,
+        "line": 523,
         "level": 5,
         "title": "`async get_pypi_versions()`"
       }
@@ -8517,7 +8535,7 @@
     "`async get_remote_packages(force_refresh: bool = False)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 127,
+        "line": 198,
         "level": 5,
         "title": "`async get_remote_packages(force_refresh: bool = False)`"
       }
@@ -9987,7 +10005,7 @@
     "`class InitCommand(Command)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/init.md",
-        "line": 27,
+        "line": 34,
         "level": 3,
         "title": "`class InitCommand(Command)`"
       }
@@ -10259,7 +10277,7 @@
     "`class PackageManager`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 17,
+        "line": 84,
         "level": 3,
         "title": "`class PackageManager`"
       }
@@ -11048,6 +11066,14 @@
         "line": 428,
         "level": 5,
         "title": "`counts()`"
+      }
+    ],
+    "`create_project_venv(project_dir: Path)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
+        "line": 17,
+        "level": 3,
+        "title": "`create_project_venv(project_dir: Path)`"
       }
     ],
     "`create_storage()`": [
@@ -12083,7 +12109,7 @@
     "`get_installed_packages()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 137,
+        "line": 208,
         "level": 5,
         "title": "`get_installed_packages()`"
       }
@@ -12091,7 +12117,7 @@
     "`get_installed_version()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 434,
+        "line": 505,
         "level": 5,
         "title": "`get_installed_version()`"
       }
@@ -12869,7 +12895,7 @@
     "`install_direct(pip_args: list[str], description: str = 'pip install')`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 382,
+        "line": 453,
         "level": 5,
         "title": "`install_direct(pip_args: list[str], description: str = 'pip install')`"
       }
@@ -12885,7 +12911,7 @@
     "`install_package(package_names: list[str], upgrade: bool = False, pre: bool = False, extra_pip_args: list[str] | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 369,
+        "line": 440,
         "level": 5,
         "title": "`install_package(package_names: list[str], upgrade: bool = False, pre: bool = False, extra_pip_args: list[str] | None = None)`"
       }
@@ -14598,6 +14624,14 @@
         "title": "`resolve_min_sdk_version(component_obj: Any, name: str = '')`"
       }
     ],
+    "`resolve_target_python(project_dir: 'Path | None' = None)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
+        "line": 55,
+        "level": 3,
+        "title": "`resolve_target_python(project_dir: 'Path | None' = None)`"
+      }
+    ],
     "`run()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/cli.md",
@@ -14641,7 +14675,7 @@
     "`search_package(query: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 424,
+        "line": 495,
         "level": 5,
         "title": "`search_package(query: str)`"
       }
@@ -15451,7 +15485,7 @@
     "`uninstall_package(package_names: list[str], skip_confirm: bool = False)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 393,
+        "line": 464,
         "level": 5,
         "title": "`uninstall_package(package_names: list[str], skip_confirm: bool = False)`"
       }
@@ -15679,7 +15713,7 @@
     "`update_self(target_version: str | None = None, force: bool = False)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 475,
+        "line": 546,
         "level": 5,
         "title": "`update_self(target_version: str | None = None, force: bool = False)`"
       }
@@ -15687,7 +15721,7 @@
     "`upgrade_all()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 404,
+        "line": 475,
         "level": 5,
         "title": "`upgrade_all()`"
       }
@@ -15695,7 +15729,7 @@
     "`upgrade_package(package_names: list[str], pre: bool = False)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 413,
+        "line": 484,
         "level": 5,
         "title": "`upgrade_package(package_names: list[str], pre: bool = False)`"
       }
@@ -15768,6 +15802,14 @@
         "title": "`user()`"
       }
     ],
+    "`uv_add(project_dir: Path, packages: 'list[str]')`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
+        "line": 30,
+        "level": 3,
+        "title": "`uv_add(project_dir: Path, packages: 'list[str]')`"
+      }
+    ],
     "`validate_config(instance)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/config_schema.md",
@@ -15798,6 +15840,14 @@
         "line": 134,
         "level": 5,
         "title": "`violations()`"
+      }
+    ],
+    "`warn_if_uv_isolated()`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
+        "line": 68,
+        "level": 3,
+        "title": "`warn_if_uv_isolated()`"
       }
     ],
     "`warning(msg)`": [
@@ -15875,6 +15925,12 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/display.md",
+        "line": 14,
+        "level": 2,
+        "title": "函数列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
         "line": 14,
         "level": 2,
         "title": "函数列表"
@@ -16161,7 +16217,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/init.md",
-        "line": 34,
+        "line": 41,
         "level": 4,
         "title": "方法列表"
       },
@@ -16245,7 +16301,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 28,
+        "line": 95,
         "level": 4,
         "title": "方法列表"
       },
@@ -17543,7 +17599,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/init.md",
-        "line": 24,
+        "line": 31,
         "level": 2,
         "title": "类列表"
       },
@@ -17627,7 +17683,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/package_manager.md",
-        "line": 14,
+        "line": 81,
         "level": 2,
         "title": "类列表"
       },

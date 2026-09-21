@@ -4281,7 +4281,7 @@
     "create": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 345,
+        "line": 365,
         "level": 3,
         "title": "create"
       }
@@ -4329,7 +4329,7 @@
     "doctor": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 478,
+        "line": 500,
         "level": 3,
         "title": "doctor"
       }
@@ -4385,7 +4385,7 @@
     "i18n": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 394,
+        "line": 416,
         "level": 3,
         "title": "i18n"
       }
@@ -4393,7 +4393,7 @@
     "init": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 315,
+        "line": 318,
         "level": 3,
         "title": "init"
       }
@@ -4537,7 +4537,7 @@
     "run": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 277,
+        "line": 282,
         "level": 3,
         "title": "run"
       }
@@ -4625,7 +4625,7 @@
     "types": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 429,
+        "line": 451,
         "level": 3,
         "title": "types"
       }
@@ -5485,7 +5485,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 507,
+        "line": 529,
         "level": 2,
         "title": "互動式安裝"
       }
@@ -6075,7 +6075,7 @@
     "全局參數": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 462,
+        "line": 484,
         "level": 2,
         "title": "全局參數"
       }
@@ -6171,7 +6171,7 @@
     "切換語言": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 597,
+        "line": 619,
         "level": 3,
         "title": "切換語言"
       }
@@ -6195,7 +6195,7 @@
     "列出組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 535,
+        "line": 557,
         "level": 3,
         "title": "列出組件"
       }
@@ -6241,7 +6241,7 @@
     "初始化項目": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 620,
+        "line": 642,
         "level": 3,
         "title": "初始化項目"
       }
@@ -6399,7 +6399,7 @@
     "升級組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 574,
+        "line": 596,
         "level": 3,
         "title": "升級組件"
       }
@@ -6431,7 +6431,7 @@
     "卸載組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 551,
+        "line": 573,
         "level": 3,
         "title": "卸載組件"
       }
@@ -7833,7 +7833,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 522,
+        "line": 544,
         "level": 3,
         "title": "安裝模組"
       }
@@ -8349,7 +8349,7 @@
     "常見用法": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 520,
+        "line": 542,
         "level": 2,
         "title": "常見用法"
       }
@@ -8555,7 +8555,7 @@
     "建立腳手架": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 630,
+        "line": 652,
         "level": 3,
         "title": "建立腳手架"
       }
@@ -11285,7 +11285,7 @@
     "環境診斷": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 476,
+        "line": 498,
         "level": 2,
         "title": "環境診斷"
       }
@@ -11369,7 +11369,7 @@
     "生成類型存根": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 610,
+        "line": 632,
         "level": 3,
         "title": "生成類型存根"
       }
@@ -13099,7 +13099,7 @@
     "語言命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 388,
+        "line": 410,
         "level": 2,
         "title": "語言命令"
       }
@@ -13801,7 +13801,7 @@
       },
       {
         "document": "user-guide/cli-reference.md",
-        "line": 587,
+        "line": 609,
         "level": 3,
         "title": "運行項目"
       }
@@ -14187,7 +14187,7 @@
     "配置組件": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 561,
+        "line": 583,
         "level": 3,
         "title": "配置組件"
       }
@@ -14781,7 +14781,7 @@
     "項目管理命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 308,
+        "line": 311,
         "level": 2,
         "title": "項目管理命令"
       }
@@ -14817,7 +14817,7 @@
     "類型存根命令": [
       {
         "document": "user-guide/cli-reference.md",
-        "line": 423,
+        "line": 445,
         "level": 2,
         "title": "類型存根命令"
       }
