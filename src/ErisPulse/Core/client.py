@@ -49,7 +49,6 @@ from .lifecycle import lifecycle
 from .logger import logger
 
 
-
 class HttpResponse(BaseHttpResponse):
     """
     HTTP 响应封装
@@ -200,20 +199,6 @@ class ClientWebSocket(BaseClientWebSocket):
     """
 
     __slots__ = ("_recv_lock",)
-
-    @staticmethod
-    def _convert_aiohttp_exception(exc: Exception) -> ClientError:
-        import aiohttp
-
-        if isinstance(exc, asyncio.TimeoutError):
-            return ClientTimeoutError(str(exc))
-        if isinstance(exc, aiohttp.ClientConnectorError):
-            return ClientConnectionError(str(exc))
-        if isinstance(exc, aiohttp.ClientConnectionError):
-            return ClientConnectionError(str(exc))
-        if isinstance(exc, aiohttp.ClientError):
-            return ClientError(str(exc))
-        return ClientError(str(exc))
 
     def __init__(self, ws):
         """
@@ -402,6 +387,20 @@ class Client(BaseClient):
     >>> ws = await sdk.client.ws_connect("wss://example.com/ws")
     >>> await ws.send_text("Hello")
     """
+
+    @staticmethod
+    def _convert_aiohttp_exception(exc: Exception) -> ClientError:
+        import aiohttp
+
+        if isinstance(exc, asyncio.TimeoutError):
+            return ClientTimeoutError(str(exc))
+        if isinstance(exc, aiohttp.ClientConnectorError):
+            return ClientConnectionError(str(exc))
+        if isinstance(exc, aiohttp.ClientConnectionError):
+            return ClientConnectionError(str(exc))
+        if isinstance(exc, aiohttp.ClientError):
+            return ClientError(str(exc))
+        return ClientError(str(exc))
 
     def __init__(
         self,
@@ -824,7 +823,7 @@ class Client(BaseClient):
             raise
         except Exception as e:
             if isinstance(e, aiohttp.ClientError):
-                err = _convert_aiohttp_exception(e)
+                err = self._convert_aiohttp_exception(e)
                 err.url = str(url)
                 raise err from e
             raise ClientError(str(e), url=str(url)) from e

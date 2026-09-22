@@ -28,7 +28,7 @@ from ..i18n import i18n
 from ..logger import logger
 
 # 多循环并发（同步桥接 + 用户异步循环）时的写等待上限
-_SQLITE_BUSY_TIMEOUT_MS = 5000
+# （历史模块级常量，主体已收编为 SQLiteStorage._SQLITE_BUSY_TIMEOUT_MS）
 
 __all__ = ["SQLiteDialect", "SQLiteStorage"]
 
@@ -75,6 +75,9 @@ class SQLiteStorage(_SingletonMixin, SQLStorageBase):
     """
 
     dialect: SQLDialect = SQLiteDialect()
+
+    # 多循环并发（同步桥接 + 用户异步循环）时的写等待上限（毫秒）
+    _SQLITE_BUSY_TIMEOUT_MS = 5000
 
     # 默认全局数据库放在包内的 data/config.db
     GLOBAL_DB_PATH = str(
@@ -172,7 +175,9 @@ class SQLiteStorage(_SingletonMixin, SQLStorageBase):
         """{!--< internal-use >!--} 应用标准 PRAGMA（WAL/synchronous/busy_timeout）"""
         await conn.execute(SQLITE_JOURNAL_MODE)
         await conn.execute(SQLITE_SYNCHRONOUS_MODE)
-        await conn.execute(f"PRAGMA busy_timeout={_SQLITE_BUSY_TIMEOUT_MS}")
+        await conn.execute(
+            f"PRAGMA busy_timeout={SQLiteStorage._SQLITE_BUSY_TIMEOUT_MS}"
+        )
 
     async def _create_loop_resource(self) -> aiosqlite.Connection:
         """{!--< internal-use >!--} 当前事件循环的共享连接（autocommit 模式）"""

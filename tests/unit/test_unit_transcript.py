@@ -158,7 +158,7 @@ class TestOutboundHook:
 
 class TestRetention:
     def test_max_per_session(self, temp_sm, monkeypatch):
-        monkeypatch.setattr(_transcript_module, "_RETENTION_INTERVAL", 1)
+        monkeypatch.setattr(_transcript_module.transcript, "_RETENTION_INTERVAL", 1)
         evt = _evt()
         for i in range(10):
             transcript.append(evt, "user", f"m{i}")

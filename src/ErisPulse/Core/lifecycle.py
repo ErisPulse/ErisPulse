@@ -633,7 +633,7 @@ class LifecycleManager:
                         data = result
             except TypeError as e:
                 # 同步上下文不支持异步依赖：记日志并跳过
-                _get_logger().error(str(e))
+                self._get_logger().error(str(e))
             except Exception as e:
                 self._get_logger().error(
                     i18n.t("core.lifecycle.handler_error", event=event, error=e)
