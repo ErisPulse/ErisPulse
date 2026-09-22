@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "78036019e77157ecce23a491a460a197",
-  "file_hash": "78036019e77157ecce23a491a460a197",
-  "translated_at": "2026-09-21T14:38:52.991521",
+  "hash": "1f1a856c8334dec9226fb005ccdd8891",
+  "file_hash": "1f1a856c8334dec9226fb005ccdd8891",
+  "translated_at": "2026-09-22T05:16:34.842892",
   "target_lang": "en",
   "chunks": [
     {
@@ -30,8 +30,16 @@
       "translation": "## Relationship with Declarative Configuration Classes\n\nModel declarations and `ConfigClass` (`@dataclass + field(metadata=...)`) **share the same underlying system**—constraint vocabulary, validator engine (`validate_field_constraints`), and type category registry (`python_type_category`). However, their class bases are intentionally separated: configuration fields are ordinary values (TOML round-trip, hot reload on single load), while model fields are column descriptors (class access = query expression, row-by-row instance). One declaration syntax, two distinct bases, each serving their own purpose."
     },
     {
-      "hash": "cc29020da1e377ef8ada6594097eb1c7",
-      "translation": "## Boundaries and Considerations\n\n- The backend is determined by the global storage configuration; models can override this with a custom `BaseStorage` instance via the `__storage__` class attribute (for test injection purposes).\n- Fields of type `list` / `dict` (including parameterized generics such as `list[int]` or `dict[str, int]`) are stored as JSON text according to their container type, with automatic serialization on read and write.\n- Constraint validation is automatically executed before writing (`create` / `save`), and a failure throws a `ValueError` with a localized message.\n- Automatic migration (schema diff) and relationship mapping are planned as future features.\n- Behavior on storage connection failure is consistent with the storage layer: the framework does not crash, and automatic reconnection occurs after a cooldown period."
+      "hash": "ece411fd545d353756034181b3e6d54a",
+      "translation": "## Boundaries and Precautions\n\n- The backend is determined by the global storage configuration; models can override this with a custom `BaseStorage` instance via the `__storage__` class attribute (for test injection purposes).\n- `list` / `dict` fields (including parameterized generics such as `list[int]` and `dict[str, int]`) are stored as JSON text columns by container type, with automatic serialization on read and write.\n- Constraint validation is automatically executed before writing (`create` / `save`); failures raise a `ValueError` with localized messages.\n- Automatic migration has been delivered for **new column** scenarios (see below); column type changes, column deletion, and ORM-level relationship objects are capabilities for future versions.\n- When a storage connection failure is triggered, the behavior is consistent with the storage layer: the framework does not crash, and automatic reconnection occurs after a cooldown period."
+    },
+    {
+      "hash": "f953b044af384b87c220880e28c93b24",
+      "translation": "## Automatic Migration (Phase Two)\n\nWhen a table already exists, `create_table()` automatically compares existing columns with model fields: **new fields** automatically execute `ALTER TABLE ADD COLUMN` (migrating columns that remove the `NOT NULL` constraint and backfilling NULL for existing rows), and new fields declared with `index=True` are simultaneously indexed. There is no need to manually write migration scripts.\n\n```python\n# After v1 launch, model evolution: adding email / bio fields\nclass User(Model):\n    __tablename__ = \"orm_users\"\n\n    id: int = Field(primary_key=True, autoincrement=True)\n    name: str = Field(max_length=64)\n    age: int = Field(default=0)\n    email: str = Field(default=\"\")     # Added: next create_table() will automatically ADD COLUMN\n    bio: str = Field(default=\"\")\n\nawait User.create_table()              # Idempotent: only migrates newly added columns\n```\n\n**Boundary**: Only supports adding new columns; primary key changes, column type changes, and column removal require manual handling (to avoid destructive ALTER mistakes)."
+    },
+    {
+      "hash": "a2d5597931b212ed7b4eaaca002dcf5b",
+      "translation": "## Foreign Keys (Foundation of Relationship Mapping)\n\nThe `foreign_key=\"table.column\"` declaration establishes a column-level foreign key constraint, and DDL will generate a `REFERENCES` clause:\n\n```python\nclass Post(Model):\n    __tablename__ = \"posts\"\n\n    id: int = Field(primary_key=True, autoincrement=True)\n    author: int = Field(foreign_key=\"orm_users.id\")\n\n    content: str = Field(max_length=255)\n```\n\nForeign keys are DDL-level constraints (the database ensures referential integrity); ORM-level relationship objects (`relationship` / reverse queries) are capabilities of later versions."
     }
   ]
 }

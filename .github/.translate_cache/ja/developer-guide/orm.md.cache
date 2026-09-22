@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "78036019e77157ecce23a491a460a197",
-  "file_hash": "78036019e77157ecce23a491a460a197",
-  "translated_at": "2026-09-21T14:42:47.580993",
+  "hash": "1f1a856c8334dec9226fb005ccdd8891",
+  "file_hash": "1f1a856c8334dec9226fb005ccdd8891",
+  "translated_at": "2026-09-22T05:16:37.872034",
   "target_lang": "ja",
   "chunks": [
     {
@@ -30,8 +30,16 @@
       "translation": "## 宣言的構成クラスとの関係\n\nモデルの宣言と `ConfigClass`（`@dataclass + field(metadata=...)`）は**同じ下層の基盤を共有**しています。これは、制約辞書、検証エンジン（`validate_field_constraints`）、型カテゴリ登録表（`python_type_category`）です。しかし、クラスの基盤は意図的に分離されています。構成フィールドは通常の値（TOMLを経由した読み書き、1回の読み込み後のホットアップデート）であり、モデルフィールドは列記述子（クラスアクセス = クエリ式、行ごとのインスタンス）です。1つの宣言構文で、2つの役割を果たす基盤が存在します。"
     },
     {
-      "hash": "cc29020da1e377ef8ada6594097eb1c7",
-      "translation": "## 境界と注意事項\n\n- バックエンドはグローバルストレージ設定によって決定されます。モデルは `__storage__` クラス属性を用いて、カスタムの `BaseStorage` インスタンスにオーバーライドすることができます（テスト用の注入用）\n- `list` / `dict` フィールド（パラメータ化されたジェネリック、例えば `list[int]`、`dict[str, int]` を含む）は、コンテナの種類に応じて JSON テキストとして列に格納され、読み書きは自動的にシリアライズされます。\n- 書き込み（`create` / `save`）の前に自動的に制約検証が実行され、失敗した場合は `ValueError` が発生します（ローカライズされたメッセージ）。\n- 自動マイグレーション（スキーマの差分）とリレーションマッピングは、今後のバージョンで追加される機能です。\n- ストレージ接続の失敗時に発生する動作は、ストレージ層と一致します：フレームワークはクラッシュせず、冷却後に自動的に再接続されます。"
+      "hash": "ece411fd545d353756034181b3e6d54a",
+      "translation": "## 境界と注意事項\n\n- バックエンドはグローバルストレージ設定によって決定されます。モデルは `__storage__` クラス属性を用いて、カスタムの `BaseStorage` インスタンスに上書きすることで、テスト用の注入が可能です。\n- `list` / `dict` フィールド（パラメータ化されたジェネリック、例えば `list[int]`、`dict[str, int]` を含む）は、コンテナの種類に応じて JSON テキストとして列に格納され、読み書き時に自動的にシリアライズされます。\n- 書き込み（`create` / `save`）の前に自動的に制約検証が実行され、失敗した場合は `ValueError` がスローされます（ローカライズされたメッセージ）。\n- 自動マイグレーションは**追加列**のシナリオに対応しています（下記参照）。列の型変更、列の削除、ORMレベルの関連オブジェクトは、今後のバージョンで対応予定です。\n- ストレージ接続の失敗時に発生する動作は、ストレージ層と同一です：フレームワークがクラッシュせず、冷却後に自動的に再接続されます。"
+    },
+    {
+      "hash": "f953b044af384b87c220880e28c93b24",
+      "translation": "## 自動マイグレーション（フェーズ2）\n\n`create_table()` は、テーブルが既に存在する場合、既存の列とモデルフィールドを自動的に比較します。**追加されたフィールド**は、`ALTER TABLE ADD COLUMN`（マイグレーションで `NOT NULL` 制約を削除し、既存の行に NULL を挿入）を自動的に実行し、`index=True` を宣言した新しいフィールドは同期的にインデックスが作成されます。手動でマイグレーションスクリプトを書く必要はありません。\n\n```python\n# v1リリース後にモデルを進化させ、email / bioフィールドを追加\nclass User(Model):\n    __tablename__ = \"orm_users\"\n\n    id: int = Field(primary_key=True, autoincrement=True)\n    name: str = Field(max_length=64)\n    age: int = Field(default=0)\n    email: str = Field(default=\"\")     # 新規追加：次回の create_table() で自動的に ADD COLUMN が実行される\n    bio: str = Field(default=\"\")\n\nawait User.create_table()              # 再帰的：追加された列のみマイグレーションが実行される\n```\n\n**制限事項**：追加列のみをサポートしています。主キーの変更、列の型の変更、列の削除は手動で処理する必要があります（破壊的な ALTER による誤操作を避けるため）。"
+    },
+    {
+      "hash": "a2d5597931b212ed7b4eaaca002dcf5b",
+      "translation": "## 外部キー（リレーションマッピングの基礎）\n\n`foreign_key=\"表.列\"` は列レベルの外部キー制約を宣言し、DDL は `REFERENCES` サブクエリを生成します。\n\n```python\nclass Post(Model):\n    __tablename__ = \"posts\"\n\n    id: int = Field(primary_key=True, autoincrement=True)\n    author: int = Field(foreign_key=\"orm_users.id\")\n\n    content: str = Field(max_length=255)\n```\n\n外部キーは DDL レベルの制約（データベースが参照整合性を保証）であり、ORM レベルのリレーションオブジェクト（`relationship` / 逆参照）は、後続のバージョンでの機能です。"
     }
   ]
 }
