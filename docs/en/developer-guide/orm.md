@@ -75,10 +75,46 @@ async with storage.atransaction():
 
 Model declarations and `ConfigClass` (`@dataclass + field(metadata=...)`) **share the same underlying system**—constraint vocabulary, validator engine (`validate_field_constraints`), and type category registry (`python_type_category`). However, their class bases are intentionally separated: configuration fields are ordinary values (TOML round-trip, hot reload on single load), while model fields are column descriptors (class access = query expression, row-by-row instance). One declaration syntax, two distinct bases, each serving their own purpose.
 
-## Boundaries and Considerations
+## Boundaries and Precautions
 
 - The backend is determined by the global storage configuration; models can override this with a custom `BaseStorage` instance via the `__storage__` class attribute (for test injection purposes).
-- Fields of type `list` / `dict` (including parameterized generics such as `list[int]` or `dict[str, int]`) are stored as JSON text according to their container type, with automatic serialization on read and write.
-- Constraint validation is automatically executed before writing (`create` / `save`), and a failure throws a `ValueError` with a localized message.
-- Automatic migration (schema diff) and relationship mapping are planned as future features.
-- Behavior on storage connection failure is consistent with the storage layer: the framework does not crash, and automatic reconnection occurs after a cooldown period.
+- `list` / `dict` fields (including parameterized generics such as `list[int]` and `dict[str, int]`) are stored as JSON text columns by container type, with automatic serialization on read and write.
+- Constraint validation is automatically executed before writing (`create` / `save`); failures raise a `ValueError` with localized messages.
+- Automatic migration has been delivered for **new column** scenarios (see below); column type changes, column deletion, and ORM-level relationship objects are capabilities for future versions.
+- When a storage connection failure is triggered, the behavior is consistent with the storage layer: the framework does not crash, and automatic reconnection occurs after a cooldown period.
+
+## Automatic Migration (Phase Two)
+
+When a table already exists, `create_table()` automatically compares existing columns with model fields: **new fields** automatically execute `ALTER TABLE ADD COLUMN` (migrating columns that remove the `NOT NULL` constraint and backfilling NULL for existing rows), and new fields declared with `index=True` are simultaneously indexed. There is no need to manually write migration scripts.
+
+```python
+# After v1 launch, model evolution: adding email / bio fields
+class User(Model):
+    __tablename__ = "orm_users"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    name: str = Field(max_length=64)
+    age: int = Field(default=0)
+    email: str = Field(default="")     # Added: next create_table() will automatically ADD COLUMN
+    bio: str = Field(default="")
+
+await User.create_table()              # Idempotent: only migrates newly added columns
+```
+
+**Boundary**: Only supports adding new columns; primary key changes, column type changes, and column removal require manual handling (to avoid destructive ALTER mistakes).
+
+## Foreign Keys (Foundation of Relationship Mapping)
+
+The `foreign_key="table.column"` declaration establishes a column-level foreign key constraint, and DDL will generate a `REFERENCES` clause:
+
+```python
+class Post(Model):
+    __tablename__ = "posts"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    author: int = Field(foreign_key="orm_users.id")
+
+    content: str = Field(max_length=255)
+```
+
+Foreign keys are DDL-level constraints (the database ensures referential integrity); ORM-level relationship objects (`relationship` / reverse queries) are capabilities of later versions.

@@ -77,8 +77,48 @@ async with storage.atransaction():
 
 ## 邊界與注意事項
 
-- 後端由全域儲存配置決定；模型可使用 `__storage__` 類屬性覆寫為自訂 `BaseStorage` 實例（用於測試注入）
-- `list` / `dict` 欄位（包含參數化泛型如 `list[int]`、`dict[str, int]`）依容器類別以 JSON 文本列儲存，讀取寫入時自動序列化
-- 寫入（`create` / `save`）前自動執行約束校驗，失敗時拋出 `ValueError`（本地化訊息）
-- 自動遷移（schema diff）與關係映射為後續版本功能
-- 觸發儲存連線失敗時的行為與儲存層一致：不中斷框架，冷卻後自動重連
+- 後端由全域儲存配置決定；模型可用 `__storage__` 類屬性覆寫為自定義 `BaseStorage` 實例（測試注入用）
+- `list` / `dict` 字段（含參數化泛型如 `list[int]`、`dict[str, int]`）按容器類別以 JSON 文本列儲存，讀寫自動序列化
+- 寫入（`create` / `save`）前自動執行約束校驗，失敗拋 `ValueError`（本地化訊息）
+- 自動遷移已交付**新增欄位**場景（見下文）；欄位類型變更、刪欄與 ORM 級關係物件為後續版本能力
+- 觸發儲存連線失敗時的行為與儲存層一致：不崩潰框架，冷卻後自動重連
+
+## 自動遷移（階段二）
+
+`create_table()` 在表已存在時自動對比現有列與模型欄位：**新增欄位**自動執行
+`ALTER TABLE ADD COLUMN`（遷移欄位剔除 `NOT NULL` 約束，存量行回填 NULL），
+宣告了 `index=True` 的新欄位同步建立索引。無需手動編寫遷移腳本。
+
+```python
+# v1 上線後模型演進：新增 email / bio 欄位
+class User(Model):
+    __tablename__ = "orm_users"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    name: str = Field(max_length=64)
+    age: int = Field(default=0)
+    email: str = Field(default="")     # 新增：下次 create_table() 自動 ADD COLUMN
+    bio: str = Field(default="")
+
+await User.create_table()              # 幂等：僅遷移新增欄位
+```
+
+**邊界**：僅支援新增欄位；主鍵變更、欄位類型變更、刪欄需手動處理（避免破壞性
+ALTER 誤操作）。
+
+## 外鍵（關係映射基礎）
+
+`foreign_key="表.列"` 聲明欄位級外鍵約束，DDL 生成 `REFERENCES` 子句：
+
+```python
+class Post(Model):
+    __tablename__ = "posts"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    author: int = Field(foreign_key="orm_users.id")
+
+    content: str = Field(max_length=255)
+```
+
+外鍵為 DDL 級約束（資料庫保證引用完整性）；ORM 級關係物件（`relationship` /
+反向查詢）為後續版本功能。
