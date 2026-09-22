@@ -44,18 +44,6 @@ ErisPulse 路由系统
 ---
 
 
-### `_erispulse_version()`
-
-惰性获取 SDK 版本号（首次访问经包元数据读取，结果缓存）
-
-**返回值** (`str`): 版本号；元数据不可用时返回 "UnknownVersion"
-
-> **内部方法**
-避免在导入期为读版本号而加载 importlib.metadata 依赖链
-
----
-
-
 ## 类列表
 
 
@@ -213,6 +201,16 @@ SSE (Server-Sent Events) 路由装饰器
 
 
 #### 方法列表
+
+
+##### `_erispulse_version()`
+
+惰性获取 SDK 版本号（首次访问经包元数据读取，结果缓存）
+
+> **内部方法**
+避免在导入期为读版本号而加载 importlib.metadata 依赖链
+
+---
 
 
 ##### `__init__()`

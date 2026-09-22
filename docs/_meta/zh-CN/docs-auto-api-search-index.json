@@ -2681,7 +2681,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 218,
+        "line": 216,
         "level": 5,
         "title": "`__init__()`"
       },
@@ -2823,7 +2823,7 @@
     "`__init__(module_name: str, prefix: str, version: str | None = None, tags: list[str] | None = None, middlewares: list | None = None, router: RouterManager | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 88,
+        "line": 76,
         "level": 5,
         "title": "`__init__(module_name: str, prefix: str, version: str | None = None, tags: list[str] | None = None, middlewares: list | None = None, router: RouterManager | None = None)`"
       }
@@ -3071,7 +3071,7 @@
     "`_apply_config()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 991,
+        "line": 989,
         "level": 5,
         "title": "`_apply_config()`"
       }
@@ -3103,7 +3103,7 @@
     "`_apply_rate_limit(full_path: str, limit: str | dict)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 910,
+        "line": 908,
         "level": 5,
         "title": "`_apply_rate_limit(full_path: str, limit: str | dict)`"
       }
@@ -3255,7 +3255,7 @@
     "`_build_ssl_context_from_pem(cert_pem: str, key_pem: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1025,
+        "line": 1023,
         "level": 5,
         "title": "`_build_ssl_context_from_pem(cert_pem: str, key_pem: str)`"
       }
@@ -3349,7 +3349,7 @@
     "`_check_port_available(host: str, port: int)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1065,
+        "line": 1063,
         "level": 5,
         "title": "`_check_port_available(host: str, port: int)`"
       }
@@ -3413,7 +3413,7 @@
     "`_cleanup_expired_rate_limits()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1099,
+        "line": 1097,
         "level": 5,
         "title": "`_cleanup_expired_rate_limits()`"
       }
@@ -3805,7 +3805,7 @@
     "`_create_sse_route(full_path: str, module_name: str, handler: Callable)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 308,
+        "line": 306,
         "level": 5,
         "title": "`_create_sse_route(full_path: str, module_name: str, handler: Callable)`"
       }
@@ -4099,7 +4099,7 @@
     "`_ensure_middleware_installed()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 368,
+        "line": 366,
         "level": 5,
         "title": "`_ensure_middleware_installed()`"
       }
@@ -4147,8 +4147,8 @@
     "`_erispulse_version()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 47,
-        "level": 3,
+        "line": 206,
+        "level": 5,
         "title": "`_erispulse_version()`"
       }
     ],
@@ -4315,7 +4315,7 @@
     "`_format_display_url(url: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1118,
+        "line": 1116,
         "level": 5,
         "title": "`_format_display_url(url: str)`"
       }
@@ -4533,7 +4533,7 @@
     "`_get_local_ips()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1016,
+        "line": 1014,
         "level": 5,
         "title": "`_get_local_ips()`"
       }
@@ -4699,7 +4699,7 @@
     "`_http_decorate(full_path: str, module_name: str, methods: list[str] | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 468,
+        "line": 466,
         "level": 5,
         "title": "`_http_decorate(full_path: str, module_name: str, methods: list[str] | None = None)`"
       }
@@ -5303,7 +5303,7 @@
     "`_make_http_endpoint(handler: Callable)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 261,
+        "line": 259,
         "level": 5,
         "title": "`_make_http_endpoint(handler: Callable)`"
       }
@@ -5319,7 +5319,7 @@
     "`_make_sse_endpoint(handler: Callable)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 296,
+        "line": 294,
         "level": 5,
         "title": "`_make_sse_endpoint(handler: Callable)`"
       }
@@ -5327,7 +5327,7 @@
     "`_make_ws_auth_handler(auth_handler: Callable)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 287,
+        "line": 285,
         "level": 5,
         "title": "`_make_ws_auth_handler(auth_handler: Callable)`"
       }
@@ -5335,7 +5335,7 @@
     "`_make_ws_endpoint_fn(full_path: str, module_name: str, wrapped_handler: Callable, wrapped_auth: Callable | None, auto_accept: bool)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 653,
+        "line": 651,
         "level": 5,
         "title": "`_make_ws_endpoint_fn(full_path: str, module_name: str, wrapped_handler: Callable, wrapped_auth: Callable | None, auto_accept: bool)`"
       }
@@ -5343,7 +5343,7 @@
     "`_make_ws_handler(handler: Callable)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 275,
+        "line": 273,
         "level": 5,
         "title": "`_make_ws_handler(handler: Callable)`"
       }
@@ -5367,7 +5367,7 @@
     "`_match_path(pattern: str, path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 455,
+        "line": 453,
         "level": 5,
         "title": "`_match_path(pattern: str, path: str)`"
       }
@@ -5495,7 +5495,7 @@
     "`_normalize_path(prefix: str, path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 235,
+        "line": 233,
         "level": 5,
         "title": "`_normalize_path(prefix: str, path: str)`"
       }
@@ -5607,7 +5607,7 @@
     "`_on_router_config_changed(_data: dict)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1000,
+        "line": 998,
         "level": 5,
         "title": "`_on_router_config_changed(_data: dict)`"
       }
@@ -5655,7 +5655,7 @@
     "`_parse_rate_limit(limit: str | dict)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 919,
+        "line": 917,
         "level": 5,
         "title": "`_parse_rate_limit(limit: str | dict)`"
       }
@@ -6045,7 +6045,7 @@
     "`_register_sse_endpoint(full_path: str, module_name: str, handler: Callable)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 319,
+        "line": 317,
         "level": 5,
         "title": "`_register_sse_endpoint(full_path: str, module_name: str, handler: Callable)`"
       }
@@ -6069,7 +6069,7 @@
     "`_register_ws_endpoint(full_path: str, module_name: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None, auto_accept: bool = DEFAULT_WS_AUTO_ACCEPT)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 667,
+        "line": 665,
         "level": 5,
         "title": "`_register_ws_endpoint(full_path: str, module_name: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None, auto_accept: bool = DEFAULT_WS_AUTO_ACCEPT)`"
       }
@@ -6303,7 +6303,7 @@
     "`_resolve_path(path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 102,
+        "line": 90,
         "level": 5,
         "title": "`_resolve_path(path: str)`"
       }
@@ -6349,7 +6349,7 @@
     "`_restore_routes_from_records()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 359,
+        "line": 357,
         "level": 5,
         "title": "`_restore_routes_from_records()`"
       }
@@ -6645,7 +6645,7 @@
     "`_setup_core_routes()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 338,
+        "line": 336,
         "level": 5,
         "title": "`_setup_core_routes()`"
       }
@@ -6653,7 +6653,7 @@
     "`_setup_error_pages()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 347,
+        "line": 345,
         "level": 5,
         "title": "`_setup_error_pages()`"
       }
@@ -6747,7 +6747,7 @@
     "`_sse_decorate(full_path: str, module_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 607,
+        "line": 605,
         "level": 5,
         "title": "`_sse_decorate(full_path: str, module_name: str)`"
       }
@@ -6779,7 +6779,7 @@
     "`_start_rate_limit_cleanup()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1081,
+        "line": 1079,
         "level": 5,
         "title": "`_start_rate_limit_cleanup()`"
       }
@@ -6819,7 +6819,7 @@
     "`_stop_rate_limit_cleanup()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1091,
+        "line": 1089,
         "level": 5,
         "title": "`_stop_rate_limit_cleanup()`"
       }
@@ -6897,7 +6897,7 @@
     "`_track_owner_namespace(namespace: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 248,
+        "line": 246,
         "level": 5,
         "title": "`_track_owner_namespace(namespace: str)`"
       }
@@ -7173,7 +7173,7 @@
     "`_ws_decorate(full_path: str, module_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 477,
+        "line": 475,
         "level": 5,
         "title": "`_ws_decorate(full_path: str, module_name: str)`"
       }
@@ -7237,7 +7237,7 @@
     "`add_middleware(before: Callable | None = None, after: Callable | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 404,
+        "line": 402,
         "level": 5,
         "title": "`add_middleware(before: Callable | None = None, after: Callable | None = None)`"
       }
@@ -7295,7 +7295,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 228,
+        "line": 226,
         "level": 5,
         "title": "`app()`"
       }
@@ -8165,7 +8165,7 @@
     "`async _run_ws_hooks(ws_conn: WebSocketConnection, hook_type: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 329,
+        "line": 327,
         "level": 5,
         "title": "`async _run_ws_hooks(ws_conn: WebSocketConnection, hook_type: str)`"
       }
@@ -9665,7 +9665,7 @@
     "`async start(host: str = DEFAULT_SERVER_HOST, port: int = DEFAULT_SERVER_PORT, ssl_certfile: str | None = None, ssl_keyfile: str | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1040,
+        "line": 1038,
         "level": 5,
         "title": "`async start(host: str = DEFAULT_SERVER_HOST, port: int = DEFAULT_SERVER_PORT, ssl_certfile: str | None = None, ssl_keyfile: str | None = None)`"
       }
@@ -9681,7 +9681,7 @@
     "`async stop()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1111,
+        "line": 1109,
         "level": 5,
         "title": "`async stop()`"
       }
@@ -10517,7 +10517,7 @@
     "`class FuncMiddleware`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 62,
+        "line": 50,
         "level": 3,
         "title": "`class FuncMiddleware`"
       }
@@ -10973,7 +10973,7 @@
     "`class RouteGroup`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 69,
+        "line": 57,
         "level": 3,
         "title": "`class RouteGroup`"
       }
@@ -10981,7 +10981,7 @@
     "`class RouterManager`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 201,
+        "line": 189,
         "level": 3,
         "title": "`class RouterManager`"
       }
@@ -11841,7 +11841,7 @@
     "`delete(module_name: str, path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 544,
+        "line": 542,
         "level": 5,
         "title": "`delete(module_name: str, path: str)`"
       }
@@ -11857,7 +11857,7 @@
     "`delete(path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 152,
+        "line": 140,
         "level": 5,
         "title": "`delete(path: str)`"
       }
@@ -11949,7 +11949,7 @@
     "`disable_docs()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 969,
+        "line": 967,
         "level": 5,
         "title": "`disable_docs()`"
       }
@@ -12395,7 +12395,7 @@
     "`get(module_name: str, path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 511,
+        "line": 509,
         "level": 5,
         "title": "`get(module_name: str, path: str)`"
       }
@@ -12439,7 +12439,7 @@
     "`get(path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 122,
+        "line": 110,
         "level": 5,
         "title": "`get(path: str)`"
       }
@@ -12553,7 +12553,7 @@
     "`get_app()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 1007,
+        "line": 1005,
         "level": 5,
         "title": "`get_app()`"
       }
@@ -12991,7 +12991,7 @@
     "`get_module_routes(module_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 787,
+        "line": 785,
         "level": 5,
         "title": "`get_module_routes(module_name: str)`"
       }
@@ -12999,7 +12999,7 @@
     "`get_module_urls(module_name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 814,
+        "line": 812,
         "level": 5,
         "title": "`get_module_urls(module_name: str)`"
       }
@@ -13007,7 +13007,7 @@
     "`get_module_urls_matching(prefix: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 852,
+        "line": 850,
         "level": 5,
         "title": "`get_module_urls_matching(prefix: str)`"
       }
@@ -13431,7 +13431,7 @@
     "`group(module_name: str, prefix: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 888,
+        "line": 886,
         "level": 5,
         "title": "`group(module_name: str, prefix: str)`"
       }
@@ -13439,7 +13439,7 @@
     "`group(prefix: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 182,
+        "line": 170,
         "level": 5,
         "title": "`group(prefix: str)`"
       }
@@ -13593,7 +13593,7 @@
     "`http(module_name: str, path: str, methods: list[str] | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 486,
+        "line": 484,
         "level": 5,
         "title": "`http(module_name: str, path: str, methods: list[str] | None = None)`"
       }
@@ -13601,7 +13601,7 @@
     "`http(path: str, methods: list[str] | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 111,
+        "line": 99,
         "level": 5,
         "title": "`http(path: str, methods: list[str] | None = None)`"
       }
@@ -14237,7 +14237,7 @@
     "`list_namespaces()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 766,
+        "line": 764,
         "level": 5,
         "title": "`list_namespaces()`"
       }
@@ -14421,7 +14421,7 @@
     "`middleware()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 377,
+        "line": 375,
         "level": 5,
         "title": "`middleware()`"
       }
@@ -14815,7 +14815,7 @@
     "`post(module_name: str, path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 522,
+        "line": 520,
         "level": 5,
         "title": "`post(module_name: str, path: str)`"
       }
@@ -14823,7 +14823,7 @@
     "`post(path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 132,
+        "line": 120,
         "level": 5,
         "title": "`post(path: str)`"
       }
@@ -14911,7 +14911,7 @@
     "`put(module_name: str, path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 533,
+        "line": 531,
         "level": 5,
         "title": "`put(module_name: str, path: str)`"
       }
@@ -14919,7 +14919,7 @@
     "`put(path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 142,
+        "line": 130,
         "level": 5,
         "title": "`put(path: str)`"
       }
@@ -15139,7 +15139,7 @@
     "`register_home_entry(name: str | dict, url: str, icon_svg: str = '')`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 415,
+        "line": 413,
         "level": 5,
         "title": "`register_home_entry(name: str | dict, url: str, icon_svg: str = '')`"
       }
@@ -15147,7 +15147,7 @@
     "`register_http_route(module_name: str, path: str, handler: Callable, methods: list[str] | None = None, rate_limit: str | dict | None = None, summary: str | None = None, description: str | None = None, tags: list[str] | None = None, response_model: type | None = None, deprecated: bool | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 616,
+        "line": 614,
         "level": 5,
         "title": "`register_http_route(module_name: str, path: str, handler: Callable, methods: list[str] | None = None, rate_limit: str | dict | None = None, summary: str | None = None, description: str | None = None, tags: list[str] | None = None, response_model: type | None = None, deprecated: bool | None = None)`"
       }
@@ -15179,7 +15179,7 @@
     "`register_sse(module_name: str, path: str, handler: Callable)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 706,
+        "line": 704,
         "level": 5,
         "title": "`register_sse(module_name: str, path: str, handler: Callable)`"
       }
@@ -15187,7 +15187,7 @@
     "`register_webhook()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 636,
+        "line": 634,
         "level": 5,
         "title": "`register_webhook()`"
       }
@@ -15195,7 +15195,7 @@
     "`register_websocket(module_name: str, path: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None, auto_accept: bool = True)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 676,
+        "line": 674,
         "level": 5,
         "title": "`register_websocket(module_name: str, path: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None, auto_accept: bool = True)`"
       }
@@ -15765,7 +15765,7 @@
     "`set_docs_info(title: str | None = None, description: str | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 981,
+        "line": 979,
         "level": 5,
         "title": "`set_docs_info(title: str | None = None, description: str | None = None)`"
       }
@@ -15919,7 +15919,7 @@
     "`setup_cors(allow_origins: list[str] | None = None, allow_methods: list[str] | None = None, allow_headers: list[str] | None = None, allow_credentials: bool = False, max_age: int = DEFAULT_CORS_MAX_AGE_SECS, expose_headers: list[str] | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 931,
+        "line": 929,
         "level": 5,
         "title": "`setup_cors(allow_origins: list[str] | None = None, allow_methods: list[str] | None = None, allow_headers: list[str] | None = None, allow_credentials: bool = False, max_age: int = DEFAULT_CORS_MAX_AGE_SECS, expose_headers: list[str] | None = None)`"
       }
@@ -15935,7 +15935,7 @@
     "`setup_security_headers(headers: dict[str, str] | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 953,
+        "line": 951,
         "level": 5,
         "title": "`setup_security_headers(headers: dict[str, str] | None = None)`"
       }
@@ -15983,7 +15983,7 @@
     "`sse(module_name: str, path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 578,
+        "line": 576,
         "level": 5,
         "title": "`sse(module_name: str, path: str)`"
       }
@@ -15991,7 +15991,7 @@
     "`sse(path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 173,
+        "line": 161,
         "level": 5,
         "title": "`sse(path: str)`"
       }
@@ -16535,7 +16535,7 @@
     "`unregister_all_by_namespace(namespace: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 742,
+        "line": 740,
         "level": 5,
         "title": "`unregister_all_by_namespace(namespace: str)`"
       }
@@ -16543,7 +16543,7 @@
     "`unregister_all_by_owner(owner: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 751,
+        "line": 749,
         "level": 5,
         "title": "`unregister_all_by_owner(owner: str)`"
       }
@@ -16631,7 +16631,7 @@
     "`unregister_home_entries_by_owner(owner: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 446,
+        "line": 444,
         "level": 5,
         "title": "`unregister_home_entries_by_owner(owner: str)`"
       }
@@ -16639,7 +16639,7 @@
     "`unregister_http_route(module_name: str, path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 643,
+        "line": 641,
         "level": 5,
         "title": "`unregister_http_route(module_name: str, path: str)`"
       }
@@ -16663,7 +16663,7 @@
     "`unregister_sse(module_name: str, path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 732,
+        "line": 730,
         "level": 5,
         "title": "`unregister_sse(module_name: str, path: str)`"
       }
@@ -16671,7 +16671,7 @@
     "`unregister_websocket(module_name: str, path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 696,
+        "line": 694,
         "level": 5,
         "title": "`unregister_websocket(module_name: str, path: str)`"
       }
@@ -16873,7 +16873,7 @@
     "`ws(module_name: str, path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 555,
+        "line": 553,
         "level": 5,
         "title": "`ws(module_name: str, path: str)`"
       }
@@ -16881,7 +16881,7 @@
     "`ws(path: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 162,
+        "line": 150,
         "level": 5,
         "title": "`ws(path: str)`"
       }
@@ -17727,13 +17727,13 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 85,
+        "line": 73,
         "level": 4,
         "title": "方法列表"
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 215,
+        "line": 203,
         "level": 4,
         "title": "方法列表"
       },
@@ -19031,7 +19031,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/router.md",
-        "line": 59,
+        "line": 47,
         "level": 2,
         "title": "类列表"
       },
