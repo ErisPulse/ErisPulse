@@ -56,6 +56,14 @@ class MySQLDialect(SQLDialect):
             f"ON DUPLICATE KEY UPDATE {value_col} = VALUES({value_col})"
         )
 
+    def table_columns_sql(self, table_name: str) -> tuple[str, list[str]]:
+        """{!--< internal-use >!--} information_schema 列举表现有列名"""
+        return (
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_schema = DATABASE() AND table_name = ?",
+            [table_name],
+        )
+
     def has_table_sql(self, table_name: str) -> tuple[str, list[str]]:
         """{!--< internal-use >!--} information_schema 查询当前数据库"""
         return (

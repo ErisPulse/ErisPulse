@@ -15,9 +15,10 @@ from collections.abc import Callable
 from typing import Any
 
 from ..constants import DETAIL_TYPE_GROUP, DETAIL_TYPE_PRIVATE, EVENT_TYPE_MESSAGE
+from ..i18n import i18n
 from ..text_match import compile_text_matcher
 from .base import BaseEventHandler
-from .throttle import make_throttle_condition
+from .throttle import make_debounce_wrapper, make_throttle_condition
 
 
 def _combine_conditions(
@@ -56,6 +57,8 @@ class MessageHandler:
         regex: str | None = None,
         throttle: str | None = None,
         throttle_key: str = "user",
+        debounce: str | None = None,
+        debounce_key: str = "user",
     ):
         """
         消息事件装饰器
@@ -66,10 +69,18 @@ class MessageHandler:
         :param throttle: 节流间隔声明（如 ``"2s"`` / ``"1h30m"``，duration 语法）——
             同键事件在间隔内至多处理一条，其余静默丢弃（EPRFC-2026-001 方向八）
         :param throttle_key: 节流键粒度：``user``（默认）/ ``session`` / ``global``
+        :param debounce: 防抖窗口声明（如 ``"2s"``，duration 语法）——同键事件窗口内只
+            执行最后一条，前序待执行任务被取消（EPRFC-2026-001 方向八）；与
+            ``throttle=`` 互斥（同时声明注册期抛 ValueError）
+        :param debounce_key: 防抖键粒度：``user``（默认）/ ``session`` / ``global``
         :return: 装饰器函数
         """
 
         def decorator(func: Callable):
+            if debounce and throttle:
+                raise ValueError(i18n.t("core.event.throttle.debounce_conflict", handler=func.__qualname__))
+            if debounce:
+                func = make_debounce_wrapper(func, debounce, debounce_key, func.__qualname__)
             throttle_cond = (
                 make_throttle_condition(throttle, throttle_key, func.__qualname__)
                 if throttle
@@ -107,6 +118,8 @@ class MessageHandler:
         regex: str | None = None,
         throttle: str | None = None,
         throttle_key: str = "user",
+        debounce: str | None = None,
+        debounce_key: str = "user",
     ):
         """
         私聊消息事件装饰器
@@ -117,6 +130,10 @@ class MessageHandler:
         :param throttle: 节流间隔声明（如 ``"2s"`` / ``"1h30m"``，duration 语法）——
             同键事件在间隔内至多处理一条，其余静默丢弃（EPRFC-2026-001 方向八）
         :param throttle_key: 节流键粒度：``user``（默认）/ ``session`` / ``global``
+        :param debounce: 防抖窗口声明（如 ``"2s"``，duration 语法）——同键事件窗口内只
+            执行最后一条，前序待执行任务被取消（EPRFC-2026-001 方向八）；与
+            ``throttle=`` 互斥（同时声明注册期抛 ValueError）
+        :param debounce_key: 防抖键粒度：``user``（默认）/ ``session`` / ``global``
         :return: 装饰器函数
         """
 
@@ -124,6 +141,10 @@ class MessageHandler:
             return event.get("detail_type") == DETAIL_TYPE_PRIVATE
 
         def decorator(func: Callable):
+            if debounce and throttle:
+                raise ValueError(i18n.t("core.event.throttle.debounce_conflict", handler=func.__qualname__))
+            if debounce:
+                func = make_debounce_wrapper(func, debounce, debounce_key, func.__qualname__)
             throttle_cond = (
                 make_throttle_condition(throttle, throttle_key, func.__qualname__)
                 if throttle
@@ -152,6 +173,8 @@ class MessageHandler:
         regex: str | None = None,
         throttle: str | None = None,
         throttle_key: str = "user",
+        debounce: str | None = None,
+        debounce_key: str = "user",
     ):
         """
         群聊消息事件装饰器
@@ -162,6 +185,10 @@ class MessageHandler:
         :param throttle: 节流间隔声明（如 ``"2s"`` / ``"1h30m"``，duration 语法）——
             同键事件在间隔内至多处理一条，其余静默丢弃（EPRFC-2026-001 方向八）
         :param throttle_key: 节流键粒度：``user``（默认）/ ``session`` / ``global``
+        :param debounce: 防抖窗口声明（如 ``"2s"``，duration 语法）——同键事件窗口内只
+            执行最后一条，前序待执行任务被取消（EPRFC-2026-001 方向八）；与
+            ``throttle=`` 互斥（同时声明注册期抛 ValueError）
+        :param debounce_key: 防抖键粒度：``user``（默认）/ ``session`` / ``global``
         :return: 装饰器函数
         """
 
@@ -169,6 +196,10 @@ class MessageHandler:
             return event.get("detail_type") == DETAIL_TYPE_GROUP
 
         def decorator(func: Callable):
+            if debounce and throttle:
+                raise ValueError(i18n.t("core.event.throttle.debounce_conflict", handler=func.__qualname__))
+            if debounce:
+                func = make_debounce_wrapper(func, debounce, debounce_key, func.__qualname__)
             throttle_cond = (
                 make_throttle_condition(throttle, throttle_key, func.__qualname__)
                 if throttle
@@ -197,6 +228,8 @@ class MessageHandler:
         regex: str | None = None,
         throttle: str | None = None,
         throttle_key: str = "user",
+        debounce: str | None = None,
+        debounce_key: str = "user",
     ):
         """
         @消息事件装饰器
@@ -207,6 +240,10 @@ class MessageHandler:
         :param throttle: 节流间隔声明（如 ``"2s"`` / ``"1h30m"``，duration 语法）——
             同键事件在间隔内至多处理一条，其余静默丢弃（EPRFC-2026-001 方向八）
         :param throttle_key: 节流键粒度：``user``（默认）/ ``session`` / ``global``
+        :param debounce: 防抖窗口声明（如 ``"2s"``，duration 语法）——同键事件窗口内只
+            执行最后一条，前序待执行任务被取消（EPRFC-2026-001 方向八）；与
+            ``throttle=`` 互斥（同时声明注册期抛 ValueError）
+        :param debounce_key: 防抖键粒度：``user``（默认）/ ``session`` / ``global``
         :return: 装饰器函数
         """
 
@@ -224,6 +261,10 @@ class MessageHandler:
             return False
 
         def decorator(func: Callable):
+            if debounce and throttle:
+                raise ValueError(i18n.t("core.event.throttle.debounce_conflict", handler=func.__qualname__))
+            if debounce:
+                func = make_debounce_wrapper(func, debounce, debounce_key, func.__qualname__)
             throttle_cond = (
                 make_throttle_condition(throttle, throttle_key, func.__qualname__)
                 if throttle

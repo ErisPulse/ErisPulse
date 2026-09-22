@@ -52,6 +52,10 @@ class SQLiteDialect(SQLDialect):
         """{!--< internal-use >!--} sqlite3.OperationalError: no such table"""
         return isinstance(exc, sqlite3.OperationalError) and "no such table" in str(exc)
 
+    def table_columns_sql(self, table_name: str) -> tuple[str, list[str]]:
+        """{!--< internal-use >!--} PRAGMA 列举表现有列名（表名经标识符校验，直接内插）"""
+        return f"PRAGMA table_info({table_name})", []
+
 
 class SQLiteStorage(_SingletonMixin, SQLStorageBase):
     """

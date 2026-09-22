@@ -82,6 +82,8 @@ class Field:
     :param le: 数值上界（写入校验）
     :param description: 字段描述（i18n 字典格式与配置类一致，预留文档/面板用）
     :param column_type: 覆写 SQL 列类型定义（如 ``"TEXT"``）；默认按类型注册表派生
+    :param foreign_key: 列级外键约束（``"表.列"``，如 ``"users.id"``）——DDL 生成
+        ``REFERENCES`` 约束（关系映射的基础设施；ORM 级关系对象后续版本交付）
 
     :example:
     >>> id: int = Field(primary_key=True, autoincrement=True)
@@ -104,6 +106,7 @@ class Field:
         le: int | float | None = None,
         description: dict | None = None,
         column_type: str | None = None,
+        foreign_key: str | None = None,
     ):
         if autoincrement:
             primary_key = True
@@ -120,6 +123,7 @@ class Field:
         self.le = le
         self.description = description
         self.column_type = column_type
+        self.foreign_key = foreign_key
         self.name: str = ""
         self.owner: type[Model] | None = None
         self.category: str = "str"
@@ -203,6 +207,12 @@ class Field:
             parts.append("UNIQUE")
         if self.default is not _UNSET and not self.autoincrement:
             parts.append(f"DEFAULT {self._sql_literal(self.default)}")
+        if self.foreign_key:
+            # 关系映射基础（EPRFC-2026-001 阶段二）：列级外键约束
+            # 格式 "表.列"（如 "users.id"）→ REFERENCES users(id)
+            ref_table, _, ref_col = (self.foreign_key or "").partition(".")
+            if ref_table and ref_col:
+                parts.append(f"REFERENCES {ref_table}({ref_col})")
         return " ".join(parts)
 
     def _sql_literal(self, value: Any) -> str:
@@ -597,17 +607,22 @@ class Model:
     @classmethod
     async def create_table(cls) -> bool:
         """
-        自动建表（幂等：CREATE TABLE IF NOT EXISTS；方言翻译由存储层承接）
+        自动建表 + 自动迁移（幂等）
 
-        声明了 ``index=True`` 的字段会同步生成普通索引（MySQL 等不支持
-        ``IF NOT EXISTS`` 建索引的方言由存在性预检保证幂等）。
+        表不存在时 ``CREATE TABLE IF NOT EXISTS``；已存在时对比现有列与
+        模型字段，为**新增字段**自动执行 ``ALTER TABLE ADD COLUMN``（阶段二
+        自动迁移）：非主键、剔除 NOT NULL 约束（存量行回填 NULL），主键与
+        类型变更不在自动迁移范围（需手工处理）。迁移列同步创建其声明的索引。
 
         :return: 是否成功
         """
         storage = cls._get_storage()
         cols = {name: f.column_definition() for name, f in cls._fields.items()}
-        if not await storage.aCreateTable(cls.table_name(), cols):
-            return False
+        if not await storage.aHasTable(cls.table_name()):
+            if not await storage.aCreateTable(cls.table_name(), cols):
+                return False
+        else:
+            await cls._migrate_new_columns(storage)
         dialect = storage.dialect
         for name, field_obj in cls._fields.items():
             if field_obj.index:
@@ -619,6 +634,35 @@ class Model:
                         "dml", dialect.create_index_sql(cls.table_name(), idx, name), []
                     )
         return True
+
+    @classmethod
+    async def _migrate_new_columns(cls, storage) -> list[str]:
+        """
+        {!--< internal-use >!--}
+        自动迁移：为表中新增的模型字段执行 ``ALTER TABLE ADD COLUMN``
+
+        迁移列剔除 NOT NULL 约束（存量行回填 NULL），跳过主键（主键变更
+        需重建表，不属于自动迁移范围）。
+
+        :param storage: 存储实例
+        :return: 本次新增的列名列表
+        """
+        existing = set(await storage.aGetTableColumns(cls.table_name()))
+        if not existing:
+            return []  # 列举失败（存储未就绪等）：跳过迁移避免误加重复列
+        operations = []
+        added: list[str] = []
+        for name, field_obj in cls._fields.items():
+            if name in existing or getattr(field_obj, "primary_key", False):
+                continue
+            ddl = field_obj.column_definition().replace(" NOT NULL", "").replace(
+                " not null", ""
+            )
+            operations.append(("add_column", (name, ddl)))
+            added.append(name)
+        if operations:
+            await storage._run_alter(cls.table_name(), operations)
+        return added
 
     @classmethod
     async def drop_table(cls) -> bool:

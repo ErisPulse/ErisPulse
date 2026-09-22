@@ -1573,6 +1573,35 @@ class SQLStorageBase(BaseStorage):
             logger.error(i18n.t("core.storage.has_table_failed", table=table_name, error=e))
             return False
 
+    async def aGetTableColumns(self, table_name: str) -> list[str]:
+        """
+        异步列举表的现有列名（ORM 自动迁移用）
+
+        :param table_name: 表名
+        :return: 列名列表；查询失败时返回空列表
+        """
+        if not self._is_ready():
+            return []
+        try:
+            sql, params = self.dialect.table_columns_sql(table_name)
+            rows, col_names = await self._execute_query("all", sql, params)
+            names: list[str] = []
+            # 名称列定位：sqlite PRAGMA 为 name 列；information_schema 单列
+            name_idx = col_names.index("name") if "name" in (col_names or []) else 0
+            for row in rows or []:
+                if isinstance(row, dict):
+                    name = row.get("name") or row.get("column_name")
+                elif isinstance(row, (tuple, list)) and len(row) > name_idx:
+                    name = row[name_idx]
+                else:
+                    name = None
+                if name:
+                    names.append(str(name))
+            return names
+        except Exception as e:
+            logger.error(i18n.t("core.storage.get_columns_failed", table=table_name, error=e))
+            return []
+
     def AlterTable(self, table_name: str) -> AlterTableBuilder:
         """
         获取 ALTER TABLE 构建器

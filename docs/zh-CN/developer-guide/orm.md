@@ -80,5 +80,45 @@ async with storage.atransaction():
 - 后端由全局存储配置决定；模型可用 `__storage__` 类属性覆写为自定义 `BaseStorage` 实例（测试注入用）
 - `list` / `dict` 字段（含参数化泛型如 `list[int]`、`dict[str, int]`）按容器类别以 JSON 文本列存储，读写自动序列化
 - 写入（`create` / `save`）前自动执行约束校验，失败抛 `ValueError`（本地化消息）
-- 自动迁移（schema diff）与关系映射为后续版本能力
+- 自动迁移已交付**新增列**场景（见下文）；列类型变更、删列与 ORM 级关系对象为后续版本能力
 - 触发存储连接失败时的行为与存储层一致：不崩溃框架，冷却后自动重连
+
+## 自动迁移（阶段二）
+
+`create_table()` 在表已存在时自动对比现有列与模型字段：**新增字段**自动执行
+`ALTER TABLE ADD COLUMN`（迁移列剔除 `NOT NULL` 约束，存量行回填 NULL），
+声明了 `index=True` 的新字段同步建索引。无需手工写迁移脚本。
+
+```python
+# v1 上线后模型演进：新增 email / bio 字段
+class User(Model):
+    __tablename__ = "orm_users"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    name: str = Field(max_length=64)
+    age: int = Field(default=0)
+    email: str = Field(default="")     # 新增：下次 create_table() 自动 ADD COLUMN
+    bio: str = Field(default="")
+
+await User.create_table()              # 幂等：仅迁移新增列
+```
+
+**边界**：仅支持新增列；主键变更、列类型变更、删列需手工处理（避免破坏性
+ALTER 误操作）。
+
+## 外键（关系映射基础）
+
+`foreign_key="表.列"` 声明列级外键约束，DDL 生成 `REFERENCES` 子句：
+
+```python
+class Post(Model):
+    __tablename__ = "posts"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    author: int = Field(foreign_key="orm_users.id")
+
+    content: str = Field(max_length=255)
+```
+
+外键为 DDL 级约束（数据库保证引用完整性）；ORM 级关系对象（`relationship` /
+反向查询）为后续版本能力。

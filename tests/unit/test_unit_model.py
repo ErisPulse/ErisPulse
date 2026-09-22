@@ -391,3 +391,67 @@ class TestDialectIndexSql:
         where_sql, where_params = qs._where_clause(d)
         assert where_sql == " WHERE `age` > ?" and where_params == [18]
         assert qs._order_clause(d) == " ORDER BY `age` DESC"
+
+
+@pytest.mark.asyncio
+async def test_auto_migration_adds_new_columns(sm):
+    """阶段二自动迁移：已存在表新增字段 → ADD COLUMN，存量行回填 NULL，新列可读写"""
+    from ErisPulse.Core.Bases.model import Field, Model
+
+    User = make_user_model(sm)
+    await User.create_table()
+    alice = await User.create(name="Alice", age=20)
+    assert alice.id is not None
+
+    # 模型演进：新增两个字段（email 带默认、bio 普通列）
+    namespace = {
+        "__annotations__": {"id": int, "name": str, "age": int, "tags": list, "email": str, "bio": str},
+        "__storage__": sm,
+        "__tablename__": User.__tablename__,
+        "__module__": User.__module__,
+        "id": Field(primary_key=True, autoincrement=True),
+        "name": Field(max_length=64),
+        "age": Field(default=0, ge=0, le=150),
+        "tags": Field(default_factory=list),
+        "email": Field(default=""),
+        "bio": Field(default=""),
+    }
+    NewUser = type("User", (Model,), namespace)
+    assert await NewUser.create_table()
+
+    columns = await sm.aGetTableColumns(NewUser.table_name())
+    assert "email" in columns and "bio" in columns
+    # 存量行迁移列回填默认/NULL，新行可写入新列
+    got = await NewUser.get(id=alice.id)
+    assert got.name == "Alice"
+    fresh = await NewUser.create(name="Bob", age=30, email="b@x.io", bio="hi")
+    got2 = await NewUser.get(id=fresh.id)
+    assert got2.email == "b@x.io"
+
+
+@pytest.mark.asyncio
+async def test_foreign_key_ddl(sm):
+    """关系映射基础：foreign_key="users.id" 生成 REFERENCES 约束，插入受外键约束"""
+    from ErisPulse.Core.Bases.model import Field, Model
+
+    class FkUser(Model):
+        __storage__ = sm
+        __tablename__ = "fk_users"
+
+        id: int = Field(primary_key=True, autoincrement=True)
+        name: str = Field(max_length=64)
+
+    class FkPost(Model):
+        __storage__ = sm
+        __tablename__ = "fk_posts"
+
+        id: int = Field(primary_key=True, autoincrement=True)
+        author: int = Field(foreign_key="fk_users.id")
+
+    assert await FkUser.create_table()
+    assert await FkPost.create_table()
+
+    alice = await FkUser.create(name="Alice")
+    await FkPost.create(author=alice.id)  # 合法引用
+    posts = await FkPost.where(FkPost.author == alice.id).all()
+    assert len(posts) == 1
