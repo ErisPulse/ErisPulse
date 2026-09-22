@@ -188,3 +188,67 @@ class TestThrottleBehavior:
         message_handler.unregister(h)
         await _dispatch(_msg("b"))
         assert calls == [1]
+
+
+class TestDebounce:
+    """debounce= 防抖：窗口内同键事件只执行最后一条"""
+
+    async def test_only_last_event_executes(self):
+        calls = []
+
+        @message_handler.on_message(debounce="0.5s")
+        async def h(event):
+            calls.append(event.get_alt_message())
+
+        await _dispatch(_msg("first"))
+        await _dispatch(_msg("second"))
+        await _dispatch(_msg("third"))
+        assert calls == []  # 窗口内：全部挂起，未执行
+        await asyncio.sleep(0.7)
+        assert calls == ["third"]  # 窗口耗尽：只执行最后一条
+
+    async def test_window_expiry_executes_each(self):
+        calls = []
+
+        @message_handler.on_message(debounce="0.3s")
+        async def h(event):
+            calls.append(event.get_alt_message())
+
+        await _dispatch(_msg("a"))
+        await asyncio.sleep(0.45)
+        await _dispatch(_msg("b"))
+        await asyncio.sleep(0.45)
+        assert calls == ["a", "b"]  # 无后续事件：各自到期执行
+
+    async def test_user_key_isolation(self):
+        calls = []
+
+        @message_handler.on_message(debounce="0.5s", debounce_key="user")
+        async def h(event):
+            calls.append(event.get_user_id())
+
+        await _dispatch(_msg("a", user_id="u1"))
+        await _dispatch(_msg("b", user_id="u2"))  # 不同用户独立窗口
+        await asyncio.sleep(0.7)
+        assert sorted(calls) == ["u1", "u2"]
+
+    async def test_debounce_throttle_mutually_exclusive(self):
+        with pytest.raises(ValueError):
+
+            @message_handler.on_message(throttle="1s", debounce="1s")
+            async def h(event):
+                pass
+
+    async def test_invalid_duration_rejected(self):
+        with pytest.raises(ValueError):
+
+            @message_handler.on_message(debounce="abc")
+            async def h2(event):
+                pass
+
+    async def test_invalid_key_rejected(self):
+        with pytest.raises(ValueError):
+
+            @message_handler.on_message(debounce="1s", debounce_key="room")
+            async def h3(event):
+                pass

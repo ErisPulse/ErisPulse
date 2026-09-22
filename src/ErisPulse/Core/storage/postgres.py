@@ -58,6 +58,14 @@ class PostgresDialect(SQLDialect):
             f"ON CONFLICT ({key_col}) DO UPDATE SET {value_col} = EXCLUDED.{value_col}"
         )
 
+    def table_columns_sql(self, table_name: str) -> tuple[str, list[str]]:
+        """{!--< internal-use >!--} information_schema 列举表现有列名"""
+        return (
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_schema = current_schema() AND table_name = ?",
+            [table_name],
+        )
+
     def has_table_sql(self, table_name: str) -> tuple[str, list[str]]:
         """{!--< internal-use >!--} information_schema 查询当前 schema"""
         return (

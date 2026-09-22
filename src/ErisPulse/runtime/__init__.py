@@ -29,6 +29,11 @@ from .diagnostics import (
     format_diagnostic_block,
     log_diagnostic,
 )
+from .troubleshoot import (
+    explain_event,
+    explain_module,
+    format_report,
+)
 from .exceptions import (
     ExceptionHandler,
     async_exception_handler,
@@ -126,6 +131,9 @@ __all__ = [
     "set_erispulse_section",
     "update_erispulse_config",
     "validate_config",
+    "explain_event",
+    "explain_module",
+    "format_report",
 ]
 
 
