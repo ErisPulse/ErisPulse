@@ -18,22 +18,7 @@ ErisPulse 生命周期管理模块
 
 ---
 
-## 函数列表
-
-
-### `_get_logger()`
-
-延迟导入 logger，避免循环依赖（lifecycle → logger → config → lifecycle）
-
----
-
-
 ## 类列表
-
-
-### `class _NullLogger`
-
-静默日志器，在 logger 模块尚未初始化时作为替代
 
 
 ### `class LifecycleManager`
@@ -59,7 +44,22 @@ ErisPulse 生命周期管理模块
 > >>> await lifecycle.submit_event("module.load", data={"module_name": "Test"})
 
 
+#### 嵌套类
+
+
+##### `class _NullLogger`
+
+静默日志器，在 logger 模块尚未初始化时作为替代
+
+
 #### 方法列表
+
+
+##### `_get_logger()`
+
+延迟导入 logger，避免循环依赖（lifecycle → logger → config → lifecycle）
+
+---
 
 
 ##### `on(event: str)`

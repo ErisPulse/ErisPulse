@@ -11,30 +11,6 @@ ErisPulse 适配器系统
 
 ---
 
-## 函数列表
-
-
-### `_extract_message_text(data: Any)`
-
-> **内部方法**
-从事件 message 段提取纯文本（仅 text 段拼接），无文本时返回空串
-
-- **data** (`事件数据`): **返回值**: 纯文本内容
-
----
-
-
-### `_warn_deprecated_kwarg(owner: str, old: str, new: str)`
-
-> **内部方法**
-当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
-
-- **owner** (`所属方法名（如`): "AdapterManager.get"）
-- **old** (`已弃用的旧参数名`): - **new**: 推荐使用的新参数名
-
----
-
-
 ## 类列表
 
 
@@ -52,6 +28,27 @@ ErisPulse 适配器系统
 
 
 #### 方法列表
+
+
+##### `_extract_message_text(data: Any)`
+
+> **内部方法**
+从事件 message 段提取纯文本（仅 text 段拼接），无文本时返回空串
+
+- **data** (`事件数据`): **返回值**: 纯文本内容
+
+---
+
+
+##### `_warn_deprecated_kwarg(owner: str, old: str, new: str)`
+
+> **内部方法**
+当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
+
+- **owner** (`所属方法名（如`): "AdapterManager.get"）
+- **old** (`已弃用的旧参数名`): - **new**: 推荐使用的新参数名
+
+---
 
 
 ##### `_shutdown_timeout()`
