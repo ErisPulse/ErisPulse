@@ -85,6 +85,8 @@ ErisPulse 数据模型层（ORM）—— 声明式模型与 Active Record CRUD
 - **choices** (`枚举选项（写入校验）`): - **ge**: 数值下界（写入校验）
 - **le** (`数值上界（写入校验）`): - **description**: 字段描述（i18n 字典格式与配置类一致，预留文档/面板用）
 - **column_type** (`覆写`): SQL 列类型定义（如 ``"TEXT"``）；默认按类型注册表派生
+- **foreign_key** (`列级外键约束（``"表.列"``，如`): ``"users.id"``）——DDL 生成
+    ``REFERENCES`` 约束（关系映射的基础设施；ORM 级关系对象后续版本交付）
 
 **示例**:
 ```python
@@ -312,12 +314,27 @@ IN 条件（``User.id.in_([1, 2, 3])``）
 
 ##### `async create_table()`
 
-自动建表（幂等：CREATE TABLE IF NOT EXISTS；方言翻译由存储层承接）
+自动建表 + 自动迁移（幂等）
 
-声明了 ``index=True`` 的字段会同步生成普通索引（MySQL 等不支持
-``IF NOT EXISTS`` 建索引的方言由存在性预检保证幂等）。
+表不存在时 ``CREATE TABLE IF NOT EXISTS``；已存在时对比现有列与
+模型字段，为**新增字段**自动执行 ``ALTER TABLE ADD COLUMN``（阶段二
+自动迁移）：非主键、剔除 NOT NULL 约束（存量行回填 NULL），主键与
+类型变更不在自动迁移范围（需手工处理）。迁移列同步创建其声明的索引。
 
 **返回值**: 是否成功
+
+---
+
+
+##### `async _migrate_new_columns(storage)`
+
+> **内部方法**
+自动迁移：为表中新增的模型字段执行 ``ALTER TABLE ADD COLUMN``
+
+迁移列剔除 NOT NULL 约束（存量行回填 NULL），跳过主键（主键变更
+需重建表，不属于自动迁移范围）。
+
+- **storage** (`存储实例`): **返回值**: 本次新增的列名列表
 
 ---
 

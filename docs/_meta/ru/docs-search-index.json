@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1702,
+  "total_keywords": 1704,
   "keywords": {
     "0 Успешно (OK)": [
       {
@@ -177,7 +177,7 @@
     "1. Обработка исключений": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 1023,
+        "line": 1028,
         "level": 3,
         "title": "1. Обработка исключений"
       }
@@ -589,7 +589,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 1041,
+        "line": 1046,
         "level": 3,
         "title": "2. Логирование"
       }
@@ -1197,7 +1197,7 @@
     "3. Условная обработка": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 1057,
+        "line": 1062,
         "level": 3,
         "title": "3. Условная обработка"
       }
@@ -2859,7 +2859,7 @@
     "Middleware: изменение или отклонение до распределения": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 434,
+        "line": 438,
         "level": 2,
         "title": "Middleware: изменение или отклонение до распределения"
       }
@@ -3768,6 +3768,14 @@
         "title": "Автоматическая документация"
       }
     ],
+    "Автоматическая миграция (шаг 2)": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 86,
+        "level": 2,
+        "title": "Автоматическая миграция (шаг 2)"
+      }
+    ],
     "Автоматическая отмена при тайм-ауте (Timeout)": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -4056,14 +4064,6 @@
         "line": 151,
         "level": 4,
         "title": "Базовая информация о событии"
-      }
-    ],
-    "Базовая команда": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 92,
-        "level": 3,
-        "title": "Базовая команда"
       }
     ],
     "Базовая отправка": [
@@ -4374,6 +4374,14 @@
         "title": "Вложенный класс `Send`"
       }
     ],
+    "Внешние ключи (основа для отношений)": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 106,
+        "level": 2,
+        "title": "Внешние ключи (основа для отношений)"
+      }
+    ],
     "Внутренняя разбивка цепочки热 обновления": [
       {
         "document": "user-guide/configuration.md",
@@ -4514,12 +4522,12 @@
         "title": "Встроенные значения по умолчанию"
       }
     ],
-    "Встроенные подтверждающие слова": [
+    "Встроенные слова подтверждения": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 937,
+        "line": 942,
         "level": 3,
-        "title": "Встроенные подтверждающие слова"
+        "title": "Встроенные слова подтверждения"
       }
     ],
     "Встроенные шрифты": [
@@ -4557,7 +4565,7 @@
     "Выбор меню (choose)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 833,
+        "line": 839,
         "level": 3,
         "title": "Выбор меню (choose)"
       }
@@ -4749,7 +4757,7 @@
     "Группы команд": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 267,
+        "line": 270,
         "level": 3,
         "title": "Группы команд"
       }
@@ -4787,7 +4795,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 1074,
+        "line": 1079,
         "level": 2,
         "title": "Далее"
       },
@@ -4862,12 +4870,12 @@
         "title": "Декларативная конфигурация (рекомендуется)"
       }
     ],
-    "Декларативные аргументы и опции (`args=` / `options=`)": [
+    "Декларативные аргументы и опции (args= / options=)": [
       {
         "document": "getting-started/event-handling.md",
         "line": 137,
         "level": 3,
-        "title": "Декларативные аргументы и опции (`args=` / `options=`)"
+        "title": "Декларативные аргументы и опции (args= / options=)"
       }
     ],
     "Декларативные ключи перевода (v2.7.0+)": [
@@ -4997,7 +5005,7 @@
     "Добавление друга": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 608,
+        "line": 614,
         "level": 3,
         "title": "Добавление друга"
       }
@@ -5189,7 +5197,7 @@
     "Доступ к данным события": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 944,
+        "line": 949,
         "level": 2,
         "title": "Доступ к данным события"
       }
@@ -5335,7 +5343,7 @@
     "Зависимости (Depends)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 231,
+        "line": 234,
         "level": 3,
         "title": "Зависимости (Depends)"
       }
@@ -5423,7 +5431,7 @@
     "Запрос на добавление друга": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 642,
+        "line": 648,
         "level": 3,
         "title": "Запрос на добавление друга"
       }
@@ -5431,7 +5439,7 @@
     "Запрос на приглашение в группу": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 658,
+        "line": 664,
         "level": 3,
         "title": "Запрос на приглашение в группу"
       }
@@ -5459,7 +5467,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 696,
+        "line": 702,
         "level": 3,
         "title": "Запрос состояния бота"
       }
@@ -5751,7 +5759,7 @@
     "Интерактивная обработка": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 718,
+        "line": 724,
         "level": 2,
         "title": "Интерактивная обработка"
       }
@@ -6077,7 +6085,7 @@
     "Использование метода reply для отправки ответа": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 720,
+        "line": 726,
         "level": 3,
         "title": "Использование метода reply для отправки ответа"
       }
@@ -6112,6 +6120,14 @@
         "line": 209,
         "level": 3,
         "title": "Использование перевода"
+      }
+    ],
+    "Использование подстановочных знаков и регулярных выражений": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 66,
+        "level": 3,
+        "title": "Использование подстановочных знаков и регулярных выражений"
       }
     ],
     "Использование примеров": [
@@ -6771,7 +6787,7 @@
     "Лучшие практики обработки событий": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 1021,
+        "line": 1026,
         "level": 2,
         "title": "Лучшие практики обработки событий"
       }
@@ -7326,20 +7342,20 @@
         "title": "Многофункциональная адаптация"
       }
     ],
-    "Многошаговый диалог (conversation)": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 910,
-        "level": 3,
-        "title": "Многошаговый диалог (conversation)"
-      }
-    ],
     "Многоэлементное сообщение": [
       {
         "document": "advanced/message-builder.md",
         "line": 153,
         "level": 3,
         "title": "Многоэлементное сообщение"
+      }
+    ],
+    "Многоэтапный диалог (conversation)": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 915,
+        "level": 3,
+        "title": "Многоэтапный диалог (conversation)"
       }
     ],
     "Многоязычная поддержка": [
@@ -7380,6 +7396,14 @@
         "line": 80,
         "level": 3,
         "title": "Модель выполнения промежуточного обработчика"
+      }
+    ],
+    "Модель данных (ORM)": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 1,
+        "level": 1,
+        "title": "Модель данных (ORM)"
       }
     ],
     "Модель нескольких аккаунтов": [
@@ -7556,6 +7580,38 @@
         "title": "Мониторинг процессов и жесткий перезапуск"
       }
     ],
+    "Наблюдение за всеми сообщениями": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 25,
+        "level": 3,
+        "title": "Наблюдение за всеми сообщениями"
+      }
+    ],
+    "Наблюдение за личными сообщениями": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 37,
+        "level": 3,
+        "title": "Наблюдение за личными сообщениями"
+      }
+    ],
+    "Наблюдение за сообщениями в группе": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 46,
+        "level": 3,
+        "title": "Наблюдение за сообщениями в группе"
+      }
+    ],
+    "Наблюдение за сообщениями с упоминанием": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 56,
+        "level": 3,
+        "title": "Наблюдение за сообщениями с упоминанием"
+      }
+    ],
     "Навигационная регистрация": [
       {
         "document": "advanced/conversation.md",
@@ -7623,7 +7679,7 @@
     "Настройки block для команд и ответов": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 590,
+        "line": 596,
         "level": 3,
         "title": "Настройки block для команд и ответов"
       }
@@ -8040,6 +8096,14 @@
         "title": "Обработка групповых сообщений (по @)"
       }
     ],
+    "Обработка запросов": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 646,
+        "level": 2,
+        "title": "Обработка запросов"
+      }
+    ],
     "Обработка изменений настроек бота": [
       {
         "document": "platform-guide/yunhu.md",
@@ -8089,7 +8153,7 @@
     "Обработка мета-событий": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 669,
+        "line": 675,
         "level": 2,
         "title": "Обработка мета-событий"
       }
@@ -8180,14 +8244,6 @@
         "title": "Обработка редактирования сообщений"
       }
     ],
-    "Обработка с помощью подстановочных знаков и регулярных выражений": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 66,
-        "level": 3,
-        "title": "Обработка с помощью подстановочных знаков и регулярных выражений"
-      }
-    ],
     "Обработка событий": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -8216,14 +8272,6 @@
         "title": "Обработка событий взаимодействия"
       }
     ],
-    "Обработка событий запроса": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 640,
-        "level": 2,
-        "title": "Обработка событий запроса"
-      }
-    ],
     "Обработка событий кнопок A2UI": [
       {
         "document": "platform-guide/yunhu.md",
@@ -8232,12 +8280,12 @@
         "title": "Обработка событий кнопок A2UI"
       }
     ],
-    "Обработка событий команд": [
+    "Обработка событий команды": [
       {
         "document": "getting-started/event-handling.md",
         "line": 90,
         "level": 2,
-        "title": "Обработка событий команд"
+        "title": "Обработка событий команды"
       }
     ],
     "Обработка событий контекстного меню": [
@@ -8248,20 +8296,12 @@
         "title": "Обработка событий контекстного меню"
       }
     ],
-    "Обработка событий сообщений": [
+    "Обработка событий сообщения": [
       {
         "document": "getting-started/event-handling.md",
         "line": 17,
         "level": 2,
-        "title": "Обработка событий сообщений"
-      }
-    ],
-    "Обработка событий уведомлений": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 606,
-        "level": 2,
-        "title": "Обработка событий уведомлений"
+        "title": "Обработка событий сообщения"
       }
     ],
     "Обработка сообщений в канале": [
@@ -8276,6 +8316,14 @@
         "line": 399,
         "level": 3,
         "title": "Обработка сообщений в канале"
+      }
+    ],
+    "Обработка уведомлений": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 612,
+        "level": 2,
+        "title": "Обработка уведомлений"
       }
     ],
     "Обработка уведомлений (реакции и т.д.)": [
@@ -8488,12 +8536,12 @@
         "title": "Ограничение скорости"
       }
     ],
-    "Ограничение скорости обработчиков (throttle=)": [
+    "Ограничение скорости обработчиков (throttle=) и дебаунс (debounce=)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 216,
+        "line": 213,
         "level": 3,
-        "title": "Ограничение скорости обработчиков (throttle=)"
+        "title": "Ограничение скорости обработчиков (throttle=) и дебаунс (debounce=)"
       }
     ],
     "Ограничения и замечания": [
@@ -8545,25 +8593,9 @@
     "Ожидание ответа пользователя": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 748,
+        "line": 754,
         "level": 3,
         "title": "Ожидание ответа пользователя"
-      }
-    ],
-    "Ожидание ответа с обратным вызовом": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 795,
-        "level": 3,
-        "title": "Ожидание ответа с обратным вызовом"
-      }
-    ],
-    "Ожидание ответа с проверкой": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 768,
-        "level": 3,
-        "title": "Ожидание ответа с проверкой"
       }
     ],
     "Ожидание ответа: wait_reply": [
@@ -8577,9 +8609,25 @@
     "Ожидание произвольного события (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 889,
+        "line": 894,
         "level": 3,
         "title": "Ожидание произвольного события (wait_for)"
+      }
+    ],
+    "Ожидание с обратным вызовом": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 801,
+        "level": 3,
+        "title": "Ожидание с обратным вызовом"
+      }
+    ],
+    "Ожидание с проверкой": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 774,
+        "level": 3,
+        "title": "Ожидание с проверкой"
       }
     ],
     "Операции запросов": [
@@ -9024,6 +9072,14 @@
         "title": "Основные возможности"
       }
     ],
+    "Основные команды": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 92,
+        "level": 3,
+        "title": "Основные команды"
+      }
+    ],
     "Основные компоненты": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -9342,12 +9398,12 @@
         "title": "Отношение к i18n CLI"
       }
     ],
-    "Отношение к классам декларативной конфигурации": [
+    "Отношение к декларативным конфигурационным классам": [
       {
         "document": "developer-guide/orm.md",
         "line": 74,
         "level": 2,
-        "title": "Отношение к классам декларативной конфигурации"
+        "title": "Отношение к декларативным конфигурационным классам"
       }
     ],
     "Отношение к стандартным методам SendDSL": [
@@ -9546,22 +9602,6 @@
         "title": "Отправка сообщения с указанием аккаунта"
       }
     ],
-    "Отслеживание всех сообщений": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 25,
-        "level": 3,
-        "title": "Отслеживание всех сообщений"
-      }
-    ],
-    "Отслеживание групповых сообщений": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 46,
-        "level": 3,
-        "title": "Отслеживание групповых сообщений"
-      }
-    ],
     "Отслеживание жизненного цикла бота": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -9576,22 +9616,6 @@
         "line": 438,
         "level": 3,
         "title": "Отслеживание изменений участников"
-      }
-    ],
-    "Отслеживание личных сообщений": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 37,
-        "level": 3,
-        "title": "Отслеживание личных сообщений"
-      }
-    ],
-    "Отслеживание сообщений с упоминанием": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 56,
-        "level": 3,
-        "title": "Отслеживание сообщений с упоминанием"
       }
     ],
     "Отслеживание цепочки: trace-id": [
@@ -9653,7 +9677,7 @@
     "Параллельная обработка событий": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 391,
+        "line": 395,
         "level": 3,
         "title": "Параллельная обработка событий"
       }
@@ -9764,12 +9788,12 @@
         "title": "Параметры подключения"
       }
     ],
-    "Параметры полей": [
+    "Параметры поля": [
       {
         "document": "developer-guide/orm.md",
         "line": 22,
         "level": 2,
-        "title": "Параметры полей"
+        "title": "Параметры поля"
       }
     ],
     "Параметры события": [
@@ -9780,12 +9804,12 @@
         "title": "Параметры события"
       }
     ],
-    "Перезапись событий: без изменения кода модуля, перезапись поведения любого типа событий": [
+    "Перезапись событий: без изменения кода модуля, перезаписать поведение любого типа событий": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 494,
+        "line": 500,
         "level": 2,
-        "title": "Перезапись событий: без изменения кода модуля, перезапись поведения любого типа событий"
+        "title": "Перезапись событий: без изменения кода модуля, перезаписать поведение любого типа событий"
       }
     ],
     "Перезапуск": [
@@ -9945,7 +9969,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 992,
+        "line": 997,
         "level": 3,
         "title": "Платформенные расширения"
       }
@@ -10253,7 +10277,7 @@
     "Подкоманды": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 281,
+        "line": 284,
         "level": 3,
         "title": "Подкоманды"
       }
@@ -10341,7 +10365,7 @@
     "Подтверждение диалога (confirm)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 816,
+        "line": 822,
         "level": 3,
         "title": "Подтверждение диалога (confirm)"
       }
@@ -10655,7 +10679,7 @@
     "Права доступа и управление доступом команд": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 327,
+        "line": 330,
         "level": 3,
         "title": "Права доступа и управление доступом команд"
       }
@@ -11231,7 +11255,7 @@
     "Приоритет команд": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 378,
+        "line": 382,
         "level": 3,
         "title": "Приоритет команд"
       }
@@ -11524,12 +11548,12 @@
         "title": "Процесс удаления"
       }
     ],
-    "Псевдонимы команд": [
+    "Псевдонимы команды": [
       {
         "document": "getting-started/event-handling.md",
         "line": 108,
         "level": 3,
-        "title": "Псевдонимы команд"
+        "title": "Псевдонимы команды"
       }
     ],
     "Публикация": [
@@ -12221,7 +12245,7 @@
     "Сбор анкеты (collect)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 869,
+        "line": 874,
         "level": 3,
         "title": "Сбор анкеты (collect)"
       }
@@ -12867,7 +12891,7 @@
     "Событие подключения": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 671,
+        "line": 677,
         "level": 3,
         "title": "Событие подключения"
       }
@@ -12888,12 +12912,12 @@
         "title": "Событие редактирования сообщения"
       }
     ],
-    "Событие тикера": [
+    "Событие таймера": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 687,
+        "line": 693,
         "level": 3,
-        "title": "Событие тикера"
+        "title": "Событие таймера"
       }
     ],
     "Событийное ленивое активирование (activate_on)": [
@@ -14301,7 +14325,7 @@
     "Увеличение участников группы": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 620,
+        "line": 626,
         "level": 3,
         "title": "Увеличение участников группы"
       }
@@ -14379,7 +14403,7 @@
     "Уменьшение участников группы": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 630,
+        "line": 636,
         "level": 3,
         "title": "Уменьшение участников группы"
       }
@@ -14457,7 +14481,7 @@
     "Управление командами (cooldown= / rate_limit= / deprecated=)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 175,
+        "line": 173,
         "level": 3,
         "title": "Управление командами (cooldown= / rate_limit= / deprecated=)"
       }
@@ -14547,17 +14571,9 @@
     "Управление цепочкой: присвоение и блокировка": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 555,
+        "line": 561,
         "level": 2,
         "title": "Управление цепочкой: присвоение и блокировка"
-      }
-    ],
-    "Уровень модели данных (ORM)": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 1,
-        "level": 1,
-        "title": "Уровень модели данных (ORM)"
       }
     ],
     "Ускорение загрузки образа в Китае": [
@@ -14716,20 +14732,20 @@
         "title": "Файл конфигурации аккаунта"
       }
     ],
-    "Фильтрация области видимости: почему мой модуль не получил сообщение": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 464,
-        "level": 2,
-        "title": "Фильтрация области видимости: почему мой модуль не получил сообщение"
-      }
-    ],
     "Фильтрация по ключевым словам": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 148,
         "level": 3,
         "title": "Фильтрация по ключевым словам"
+      }
+    ],
+    "Фильтрация по области действия: почему мой модуль не получил сообщение": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 470,
+        "level": 2,
+        "title": "Фильтрация по области действия: почему мой модуль не получил сообщение"
       }
     ],
     "Фильтрация по чёрному списку": [
@@ -14904,12 +14920,12 @@
         "title": "Цепочка привязки (contextvar-передача)"
       }
     ],
-    "Цепочка принятия решения по команде: почему команда не сработала": [
+    "Цепочка принятия решений по распределению команд: почему команда не сработала": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 458,
+        "line": 462,
         "level": 2,
-        "title": "Цепочка принятия решения по команде: почему команда не сработала"
+        "title": "Цепочка принятия решений по распределению команд: почему команда не сработала"
       }
     ],
     "Цепочка проверки и динамическое добавление/удаление": [
@@ -15005,7 +15021,7 @@
     "Часто используемые методы объекта Event": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 946,
+        "line": 951,
         "level": 3,
         "title": "Часто используемые методы объекта Event"
       }

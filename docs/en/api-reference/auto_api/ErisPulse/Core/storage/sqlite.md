@@ -42,6 +42,13 @@ SQLite 方言实现
 ---
 
 
+##### `table_columns_sql(table_name: str)`
+
+> **内部方法** PRAGMA 列举表现有列名（表名经标识符校验，直接内插）
+
+---
+
+
 ### `class SQLiteStorage(_SingletonMixin, SQLStorageBase)`
 
 SQLite 存储管理器（aiosqlite 异步原生实现）

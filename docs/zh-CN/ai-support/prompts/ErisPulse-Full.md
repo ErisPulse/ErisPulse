@@ -1330,7 +1330,7 @@ async def old_handler(event): ...
 - 状态为进程内内存，模块卸载时自动清理；跨进程共享 / 重启持久化不在范围内
 - 声明在注册期校验（fail-fast）：语法非法、键粒度非白名单值、reply 未搭配主声明均抛 `ValueError`
 
-### 处理器节流（throttle=）
+### 处理器节流（throttle=）与防抖（debounce=）
 
 消息处理器防刷屏声明——同键事件在间隔内至多处理一条，其余静默丢弃：
 
@@ -1341,10 +1341,19 @@ from ErisPulse import sdk
 async def handler(event): ...
 ```
 
+防抖与节流互补：**窗口内只执行最后一条**，前序待执行任务自动取消（适合
+"停止输入后再处理"的搜索联想类场景）：
+
+```python
+@sdk.message.on_message(debounce="2s", debounce_key="user")
+async def search(event): ...
+```
+
 `on_message` / `on_private_message` / `on_group_message` / `on_at_message`
-均支持；`throttle_key=` 与命令治理同一套键粒度（user / session / global），
-时长语法与 `duration` 一致。节流与 `pattern=` / `regex=` 等既有条件叠加
-生效（全部满足才触发）；间隔内丢弃仅记 TRACE 日志；声明在注册期校验。
+均支持；`throttle_key=` / `debounce_key=` 与命令治理同一套键粒度
+（user / session / global），时长语法与 `duration` 一致。节流与 `pattern=` /
+`regex=` 等既有条件叠加生效（全部满足才触发）；间隔内丢弃仅记 TRACE 日志；
+声明在注册期校验；`throttle=` 与 `debounce=` 语义互斥（同时声明抛 `ValueError`）。
 
 ### 依赖注入（Depends）
 
@@ -1595,6 +1604,8 @@ async def firewall(data):
 一条命令消息依次经过：**命令文本判定 → 命令名/别名命中（未命中附拼写建议）→ 命中即认领 → 作用域 → 用户 ACL → 主人 → 权限 → 冷却/限流 → 参数解析 → 执行**。任何一步不满足即终止；治理命中（冷却/限流）默认静默丢弃，权限类拒绝会回复用户。
 
 测试中 `ErisPulse-Testing` 的 `dispatch()` 直接返回这条决策链（`DispatchTrace`，`trace.explain()` 输出逐行因果），生产环境可用 `ErisPulse.Core.Event.start_dispatch_trace()` 采集同样的记录。
+
+此外 `ErisPulse.runtime` 提供两组排查诊断 API：`explain_module(模块名)` 回答"模块为什么没加载"（未注册 / 懒加载 / 配置禁用 / 依赖缺失 / SDK 版本不满足，逐项给原因），`explain_event(事件)` 回答"事件为什么没响应"（适配器未注册 / 身份拉黑 / 模块会话屏蔽 / 命令未命中）；配 `format_report()` 渲染人类可读结论。
 
 ## 作用域过滤：为什么我的模块没收到消息
 
