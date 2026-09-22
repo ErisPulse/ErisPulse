@@ -11,20 +11,6 @@ ErisPulse 模块系统
 
 ---
 
-## 函数列表
-
-
-### `_warn_deprecated_kwarg(owner: str, old: str, new: str)`
-
-> **内部方法**
-当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
-
-- **owner** (`所属方法名（如`): "ModuleManager.get"）
-- **old** (`已弃用的旧参数名`): - **new**: 推荐使用的新参数名
-
----
-
-
 ## 类列表
 
 
@@ -41,6 +27,17 @@ ErisPulse 模块系统
 
 
 #### 方法列表
+
+
+##### `_warn_deprecated_kwarg(owner: str, old: str, new: str)`
+
+> **内部方法**
+当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
+
+- **owner** (`所属方法名（如`): "ModuleManager.get"）
+- **old** (`已弃用的旧参数名`): - **new**: 推荐使用的新参数名
+
+---
 
 
 ##### `_unload_timeout()`

@@ -67,44 +67,6 @@ ErisPulse 作用域（scope）
 
 ---
 
-## 函数列表
-
-
-### `_is_identity_binding(binding)`
-
-> **内部方法**
-读取身份绑定的策略（deny 优先于 allow）
-
-- **binding** (`绑定字典（{"allow":`): true} 或 {"deny": true}）
-**返回值** (`"allow"`): / "deny"；未配置或格式非法时返回 None
-
----
-
-
-### `_normalize_action_rule(rule)`
-
-> **内部方法**
-归一化出站动作规则
-
-合法输入形态：
-
-- ``True`` → ``{}``（无限制，等价未配置）
-- ``False`` → ``{"deny": True}``（全禁）
-- dict → 仅保留 ``allow``（字符串列表）与 ``deny``（布尔或字符串列表）键
-
-- **rule** (`配置中的动作规则（bool`): / dict）
-**返回值** (`规范化规则字典；allow`): / deny 类型非法时返回 None
-
----
-
-
-### `_deep_merge(dst: dict, src: dict)`
-
-> **内部方法** 把 src 深合并进 dst（原地修改）
-
----
-
-
 ## 类列表
 
 
@@ -126,6 +88,41 @@ ErisPulse 作用域（scope）
 
 
 #### 方法列表
+
+
+##### `_is_identity_binding(binding)`
+
+> **内部方法**
+读取身份绑定的策略（deny 优先于 allow）
+
+- **binding** (`绑定字典（{"allow":`): true} 或 {"deny": true}）
+**返回值** (`"allow"`): / "deny"；未配置或格式非法时返回 None
+
+---
+
+
+##### `_normalize_action_rule(rule)`
+
+> **内部方法**
+归一化出站动作规则
+
+合法输入形态：
+
+- ``True`` → ``{}``（无限制，等价未配置）
+- ``False`` → ``{"deny": True}``（全禁）
+- dict → 仅保留 ``allow``（字符串列表）与 ``deny``（布尔或字符串列表）键
+
+- **rule** (`配置中的动作规则（bool`): / dict）
+**返回值** (`规范化规则字典；allow`): / deny 类型非法时返回 None
+
+---
+
+
+##### `_deep_merge(dst: dict, src: dict)`
+
+> **内部方法** 把 src 深合并进 dst（原地修改）
+
+---
 
 
 ##### `_warn_invalid(path: str, actual: str)`
@@ -334,7 +331,7 @@ False
 ``allow`` 列表非空且 ``name`` 未命中（或未提供）→ 拒绝；其余放行。
 结果带 LRU 缓存，配置变更 / set / delete 时自动失效。
 
-- **owner** (`模块名（owner）`): - **action**: 动作类型，取值 ``_ACTION_NAMES``（"send" / "api" / "request"）
+- **owner** (`模块名（owner）`): - **action**: 动作类型，取值 ``self._ACTION_NAMES``（"send" / "api" / "request"）
 - **name** (`具体调用名（send`): 传发送方法名如 "Text" / "Image"，
              api 传标准动作名如 "get_group_info"；request 无需提供）
 **返回值** (`是否允许执行`): 

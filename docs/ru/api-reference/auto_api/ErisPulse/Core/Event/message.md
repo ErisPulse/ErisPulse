@@ -17,17 +17,6 @@ ErisPulse 消息处理模块
 
 ---
 
-## 函数列表
-
-
-### `_combine_conditions()`
-
-> **内部方法**
-组合多个条件函数为"全部满足"；过滤掉 None
-
----
-
-
 ## 类列表
 
 
@@ -39,6 +28,14 @@ ErisPulse 消息处理模块
 
 
 #### 方法列表
+
+
+##### `_combine_conditions()`
+
+> **内部方法**
+组合多个条件函数为"全部满足"；过滤掉 None
+
+---
 
 
 ##### `on_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user', debounce: str | None = None, debounce_key: str = 'user')`
