@@ -21,8 +21,8 @@
 
 - **模块总数**: 122
 - **类总数**: 158（包括 6 个嵌套类）
-- **函数总数**: 306
-- **方法总数**: 1477
+- **函数总数**: 305
+- **方法总数**: 1478
 
 ---
 
@@ -456,7 +456,7 @@
 
 ### [ErisPulse.Core.router](ErisPulse/Core/router.md)
 
-3 个类 | 74 个方法 | 3 个函数
+3 个类 | 75 个方法 | 2 个函数
 
 
 ### [ErisPulse.Core.scope](ErisPulse/Core/scope.md)
