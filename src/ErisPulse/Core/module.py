@@ -1481,7 +1481,7 @@ class ModuleManager(ManagerBase):
                     meta.update(declared)
                 elif declared is not None and hasattr(declared, "to_dict"):
                     # ModuleMeta 声明类：内部解析只依赖 to_dict() 输出
-                    meta.update(declared.to_dict())
+                    meta.update(declared.to_dict())  # pyright: ignore[reportAttributeAccessIssue]
             except Exception:
                 pass
         # 2. 注册时传入的 info
