@@ -71,100 +71,8 @@ from . import text_match
 from .constants import CONFIG_ROOT_KEY
 from .i18n import i18n
 
-# 模块维度桶：platforms / bots / sessions（优先级 会话 > Bot > 平台）
-_BUCKET_PLATFORMS = "platforms"
-_BUCKET_BOTS = "bots"
-_BUCKET_SESSIONS = "sessions"
-
-# 身份维度桶：adapters / bots / sessions / users（优先级 用户 > 会话 > Bot > 适配器）
-_IDENTITY_ADAPTERS = "adapters"
-_IDENTITY_BOTS = "bots"
-_IDENTITY_SESSIONS = "sessions"
-_IDENTITY_USERS = "users"
-
 # 默认 LRU 缓存大小
 DEFAULT_CACHE_SIZE = 1024
-
-# ④ 出站维度：模块可限制的动作集合
-# "send"=消息发送（Event.reply / Send DSL）、"api"=标准 API 动作（Api DSL / call_api）、
-# "request"=请求操作（Request DSL accept/reject）、"call"=模块间调用（module.call）
-_ACTION_NAMES = ("send", "api", "request", "call")
-
-# 出站动作规则的合法键（其余键视为未知配置并告警）
-_ACTION_RULE_KEYS = ("allow", "deny")
-
-# get(path) 的哨兵：区分"节点不存在"与"节点值为 None"
-_MISSING = object()
-
-
-def _is_identity_binding(binding) -> str | None:
-    """
-    {!--< internal-use >!--}
-    读取身份绑定的策略（deny 优先于 allow）
-
-    :param binding: 绑定字典（{"allow": true} 或 {"deny": true}）
-    :return: "allow" / "deny"；未配置或格式非法时返回 None
-    """
-    if not isinstance(binding, dict):
-        return None
-    if binding.get("deny"):
-        return "deny"
-    if binding.get("allow"):
-        return "allow"
-    return None
-
-
-def _normalize_action_rule(rule) -> dict | None:
-    """
-    {!--< internal-use >!--}
-    归一化出站动作规则
-
-    合法输入形态：
-
-    - ``True`` → ``{}``（无限制，等价未配置）
-    - ``False`` → ``{"deny": True}``（全禁）
-    - dict → 仅保留 ``allow``（字符串列表）与 ``deny``（布尔或字符串列表）键
-
-    :param rule: 配置中的动作规则（bool / dict）
-    :return: 规范化规则字典；allow / deny 类型非法时返回 None
-    """
-    if isinstance(rule, bool):
-        return {} if rule else {"deny": True}
-    if not isinstance(rule, dict):
-        return None
-    result: dict = {}
-    allow = rule.get("allow")
-    deny = rule.get("deny")
-    if allow is not None:
-        if isinstance(allow, str):
-            allow = [allow]
-        if not isinstance(allow, list) or not all(isinstance(entry, str) for entry in allow):
-            return None
-        result["allow"] = list(allow)
-    if deny is not None:
-        if isinstance(deny, str):
-            deny = [deny]
-        if isinstance(deny, bool):
-            result["deny"] = deny
-        elif isinstance(deny, list) and all(isinstance(entry, str) for entry in deny):
-            result["deny"] = list(deny)
-        else:
-            return None
-    return result
-
-
-def _deep_merge(dst: dict, src: dict) -> None:
-    """{!--< internal-use >!--} 把 src 深合并进 dst（原地修改）"""
-    for key, value in src.items():
-        if isinstance(value, dict) and isinstance(dst.get(key), dict):
-            _deep_merge(dst[key], value)
-        else:
-            dst[key] = value
-
-
-# 运行时删除哨兵：persist=False 的 delete 在覆盖层中记录为删除标记，
-# 配置树重建后重放时仍能保持"已删除"语义
-_RUNTIME_DELETED = object()
 
 
 class ScopeManager:
@@ -184,19 +92,112 @@ class ScopeManager:
     命令 ACL / 参数覆写由命令系统自持（``ErisPulse.event.command``）。
     """
 
+    # ==================== 内部常量（作用域配置词表） ====================
+
+    # 模块维度桶：platforms / bots / sessions（优先级 会话 > Bot > 平台）
+    _BUCKET_PLATFORMS = "platforms"
+    _BUCKET_BOTS = "bots"
+    _BUCKET_SESSIONS = "sessions"
+
+    # 身份维度桶：adapters / bots / sessions / users（优先级 用户 > 会话 > Bot > 适配器）
+    _IDENTITY_ADAPTERS = "adapters"
+    _IDENTITY_BOTS = "bots"
+    _IDENTITY_SESSIONS = "sessions"
+    _IDENTITY_USERS = "users"
+
+    # ④ 出站维度：模块可限制的动作集合
+    # "send"=消息发送（Event.reply / Send DSL）、"api"=标准 API 动作（Api DSL / call_api）、
+    # "request"=请求操作（Request DSL accept/reject）、"call"=模块间调用（module.call）
+    _ACTION_NAMES = ("send", "api", "request", "call")
+
+    # 出站动作规则的合法键（其余键视为未知配置并告警）
+    _ACTION_RULE_KEYS = ("allow", "deny")
+
+    # get(path) 的哨兵：区分"节点不存在"与"节点值为 None"
+    _MISSING = object()
+
+    # 运行时删除哨兵：persist=False 的 delete 在覆盖层中记录为删除标记，
+    # 配置树重建后重放时仍能保持"已删除"语义
+    _RUNTIME_DELETED = object()
+
+    @staticmethod
+    def _is_identity_binding(binding) -> str | None:
+        """
+        {!--< internal-use >!--}
+        读取身份绑定的策略（deny 优先于 allow）
+
+        :param binding: 绑定字典（{"allow": true} 或 {"deny": true}）
+        :return: "allow" / "deny"；未配置或格式非法时返回 None
+        """
+        if not isinstance(binding, dict):
+            return None
+        if binding.get("deny"):
+            return "deny"
+        if binding.get("allow"):
+            return "allow"
+        return None
+
+    @staticmethod
+    def _normalize_action_rule(rule) -> dict | None:
+        """
+        {!--< internal-use >!--}
+        归一化出站动作规则
+
+        合法输入形态：
+
+        - ``True`` → ``{}``（无限制，等价未配置）
+        - ``False`` → ``{"deny": True}``（全禁）
+        - dict → 仅保留 ``allow``（字符串列表）与 ``deny``（布尔或字符串列表）键
+
+        :param rule: 配置中的动作规则（bool / dict）
+        :return: 规范化规则字典；allow / deny 类型非法时返回 None
+        """
+        if isinstance(rule, bool):
+            return {} if rule else {"deny": True}
+        if not isinstance(rule, dict):
+            return None
+        result: dict = {}
+        allow = rule.get("allow")
+        deny = rule.get("deny")
+        if allow is not None:
+            if isinstance(allow, str):
+                allow = [allow]
+            if not isinstance(allow, list) or not all(isinstance(entry, str) for entry in allow):
+                return None
+            result["allow"] = list(allow)
+        if deny is not None:
+            if isinstance(deny, str):
+                deny = [deny]
+            if isinstance(deny, bool):
+                result["deny"] = deny
+            elif isinstance(deny, list) and all(isinstance(entry, str) for entry in deny):
+                result["deny"] = list(deny)
+            else:
+                return None
+        return result
+
+    @staticmethod
+    def _deep_merge(dst: dict, src: dict) -> None:
+        """{!--< internal-use >!--} 把 src 深合并进 dst（原地修改）"""
+        for key, value in src.items():
+            if isinstance(value, dict) and isinstance(dst.get(key), dict):
+                ScopeManager._deep_merge(dst[key], value)
+            else:
+                dst[key] = value
+
     def __init__(self, cache_size: int = DEFAULT_CACHE_SIZE):
         self._cache_size = max(1, int(cache_size))
         # 统一配置树（随配置热更新整体重建）：
         # {platforms, bots, sessions, identity, actions}
         self._data: dict = {
-            _BUCKET_PLATFORMS: {},
-            _BUCKET_BOTS: {},
-            _BUCKET_SESSIONS: {},
+            self._BUCKET_PLATFORMS: {},
+            self._BUCKET_BOTS: {},
+            self._BUCKET_SESSIONS: {},
             "identity": {
-                _IDENTITY_ADAPTERS: {},
-                _IDENTITY_BOTS: {},
-                _IDENTITY_SESSIONS: {},
-                _IDENTITY_USERS: {},
+                self._IDENTITY_ADAPTERS: {},
+                self._IDENTITY_BOTS: {},
+                self._IDENTITY_SESSIONS: {},
+                self._IDENTITY_USERS: {},
             },
             "actions": {},
         }
@@ -282,9 +283,9 @@ class ScopeManager:
         known_keys = {
             "default_allow",
             "cache_size",
-            _BUCKET_PLATFORMS,
-            _BUCKET_BOTS,
-            _BUCKET_SESSIONS,
+            self._BUCKET_PLATFORMS,
+            self._BUCKET_BOTS,
+            self._BUCKET_SESSIONS,
             "identity",
             "actions",
         }
@@ -292,20 +293,20 @@ class ScopeManager:
             if key not in known_keys:
                 self._warn_invalid(f"scope.{key}", "unknown key")
 
-        platforms = self._validated_bucket(scope_config, _BUCKET_PLATFORMS)
-        bots = self._validated_bucket(scope_config, _BUCKET_BOTS)
-        sessions = self._validated_bucket(scope_config, _BUCKET_SESSIONS)
+        platforms = self._validated_bucket(scope_config, self._BUCKET_PLATFORMS)
+        bots = self._validated_bucket(scope_config, self._BUCKET_BOTS)
+        sessions = self._validated_bucket(scope_config, self._BUCKET_SESSIONS)
         identity = self._validated_bucket(scope_config, "identity")
 
         self._data = {
-            _BUCKET_PLATFORMS: platforms,
-            _BUCKET_BOTS: bots,
-            _BUCKET_SESSIONS: sessions,
+            self._BUCKET_PLATFORMS: platforms,
+            self._BUCKET_BOTS: bots,
+            self._BUCKET_SESSIONS: sessions,
             "identity": {
-                _IDENTITY_ADAPTERS: self._validated_bucket(identity, _IDENTITY_ADAPTERS),
-                _IDENTITY_BOTS: self._validated_bucket(identity, _IDENTITY_BOTS),
-                _IDENTITY_SESSIONS: self._validated_bucket(identity, _IDENTITY_SESSIONS),
-                _IDENTITY_USERS: self._validated_bucket(identity, _IDENTITY_USERS),
+                self._IDENTITY_ADAPTERS: self._validated_bucket(identity, self._IDENTITY_ADAPTERS),
+                self._IDENTITY_BOTS: self._validated_bucket(identity, self._IDENTITY_BOTS),
+                self._IDENTITY_SESSIONS: self._validated_bucket(identity, self._IDENTITY_SESSIONS),
+                self._IDENTITY_USERS: self._validated_bucket(identity, self._IDENTITY_USERS),
             },
             "actions": self._validated_actions(scope_config),
         }
@@ -320,7 +321,7 @@ class ScopeManager:
             parts = self._split_path(path)
             if not parts:
                 continue
-            if value is _RUNTIME_DELETED:
+            if value is self._RUNTIME_DELETED:
                 parent = self._node_at(".".join(parts[:-1])) if len(parts) > 1 else self._data
                 if isinstance(parent, dict):
                     parent.pop(parts[-1], None)
@@ -334,7 +335,7 @@ class ScopeManager:
                 node = child
             last = parts[-1]
             if isinstance(value, dict) and isinstance(node.get(last), dict):
-                _deep_merge(node[last], copy.deepcopy(value))
+                self._deep_merge(node[last], copy.deepcopy(value))
             else:
                 node[last] = copy.deepcopy(value)
 
@@ -395,16 +396,16 @@ class ScopeManager:
                 continue
             owner_rules: dict[str, dict] = {}
             for action, rule in rules.items():
-                if action not in _ACTION_NAMES:
+                if action not in self._ACTION_NAMES:
                     self._warn_invalid(
                         f"scope.actions.{owner}.{action}",
-                        f"unknown action (expected one of {_ACTION_NAMES})",
+                        f"unknown action (expected one of {self._ACTION_NAMES})",
                     )
                     continue
-                unknown = [k for k in rule if k not in _ACTION_RULE_KEYS] if isinstance(rule, dict) else []
+                unknown = [k for k in rule if k not in self._ACTION_RULE_KEYS] if isinstance(rule, dict) else []
                 for bad_key in unknown:
                     self._warn_invalid(f"scope.actions.{owner}.{action}.{bad_key}", "unknown key")
-                normalized = _normalize_action_rule(rule)
+                normalized = self._normalize_action_rule(rule)
                 if normalized is None:
                     self._warn_invalid(f"scope.actions.{owner}.{action}", type(rule).__name__)
                     continue
@@ -487,21 +488,21 @@ class ScopeManager:
         :param session_id: 会话 ID（群 / 频道 / 私聊），None 表示不匹配会话级
         :return: 生效绑定 {"modules": [...], "blocked": [...]}，无绑定时返回 None
         """
-        chain: list[tuple[str, str]] = [(_BUCKET_PLATFORMS, platform)]
+        chain: list[tuple[str, str]] = [(self._BUCKET_PLATFORMS, platform)]
         if bot_id:
-            chain.append((_BUCKET_BOTS, bot_id))
+            chain.append((self._BUCKET_BOTS, bot_id))
         if session_id:
-            chain.append((_BUCKET_SESSIONS, session_id))
+            chain.append((self._BUCKET_SESSIONS, session_id))
 
-        platforms = self._data.get(_BUCKET_PLATFORMS, {})
-        bots = self._data.get(_BUCKET_BOTS, {})
-        sessions = self._data.get(_BUCKET_SESSIONS, {})
+        platforms = self._data.get(self._BUCKET_PLATFORMS, {})
+        bots = self._data.get(self._BUCKET_BOTS, {})
+        sessions = self._data.get(self._BUCKET_SESSIONS, {})
 
         result: dict | None = None
         for bucket, key in chain:
-            if bucket == _BUCKET_PLATFORMS:
+            if bucket == self._BUCKET_PLATFORMS:
                 cfg = platforms.get(platform)
-            elif bucket == _BUCKET_BOTS:
+            elif bucket == self._BUCKET_BOTS:
                 plat = bots.get(platform)
                 cfg = plat.get(key) if isinstance(plat, dict) else None
             else:
@@ -625,42 +626,42 @@ class ScopeManager:
 
         # 用户级
         if user_id:
-            plat_users = identity.get(_IDENTITY_USERS, {}).get(platform)
+            plat_users = identity.get(self._IDENTITY_USERS, {}).get(platform)
             if isinstance(plat_users, dict):
-                policy = _is_identity_binding(plat_users.get(str(user_id)))
+                policy = self._is_identity_binding(plat_users.get(str(user_id)))
                 if policy:
                     return policy
                 for key, binding in plat_users.items():
                     if text_match.compile_entry_matcher(str(key))(str(user_id)):
-                        policy = _is_identity_binding(binding)
+                        policy = self._is_identity_binding(binding)
                         if policy:
                             return policy
         # 会话级
         if session_id:
-            plat_sessions = identity.get(_IDENTITY_SESSIONS, {}).get(platform)
+            plat_sessions = identity.get(self._IDENTITY_SESSIONS, {}).get(platform)
             if isinstance(plat_sessions, dict):
-                policy = _is_identity_binding(plat_sessions.get(str(session_id)))
+                policy = self._is_identity_binding(plat_sessions.get(str(session_id)))
                 if policy:
                     return policy
                 for key, binding in plat_sessions.items():
                     if text_match.compile_entry_matcher(str(key))(str(session_id)):
-                        policy = _is_identity_binding(binding)
+                        policy = self._is_identity_binding(binding)
                         if policy:
                             return policy
         # Bot 级
         if bot_id:
-            plat_bots = identity.get(_IDENTITY_BOTS, {}).get(platform)
+            plat_bots = identity.get(self._IDENTITY_BOTS, {}).get(platform)
             if isinstance(plat_bots, dict):
-                policy = _is_identity_binding(plat_bots.get(str(bot_id)))
+                policy = self._is_identity_binding(plat_bots.get(str(bot_id)))
                 if policy:
                     return policy
                 for key, binding in plat_bots.items():
                     if text_match.compile_entry_matcher(str(key))(str(bot_id)):
-                        policy = _is_identity_binding(binding)
+                        policy = self._is_identity_binding(binding)
                         if policy:
                             return policy
         # 适配器级
-        policy = _is_identity_binding(identity.get(_IDENTITY_ADAPTERS, {}).get(platform))
+        policy = self._is_identity_binding(identity.get(self._IDENTITY_ADAPTERS, {}).get(platform))
         if policy:
             return policy
         return None
@@ -722,7 +723,7 @@ class ScopeManager:
         结果带 LRU 缓存，配置变更 / set / delete 时自动失效。
 
         :param owner: 模块名（owner）
-        :param action: 动作类型，取值 ``_ACTION_NAMES``（"send" / "api" / "request"）
+        :param action: 动作类型，取值 ``self._ACTION_NAMES``（"send" / "api" / "request"）
         :param name: 具体调用名（send 传发送方法名如 "Text" / "Image"，
                      api 传标准动作名如 "get_group_info"；request 无需提供）
         :return: 是否允许执行
@@ -735,9 +736,9 @@ class ScopeManager:
         """
         if not owner:
             return True
-        if action not in _ACTION_NAMES:
+        if action not in self._ACTION_NAMES:
             raise ValueError(
-                i18n.t("core.scope.unknown_action", action=action, actions=", ".join(_ACTION_NAMES))
+                i18n.t("core.scope.unknown_action", action=action, actions=", ".join(self._ACTION_NAMES))
             )
         self._stats["action_checks"] += 1
 
@@ -757,7 +758,7 @@ class ScopeManager:
     def _compute_action_allowed(self, owner: str, action: str, name: str | None) -> bool:
         """{!--< internal-use >!--} 计算出站动作是否允许（无缓存）"""
         raw = self._data.get("actions", {}).get(owner, {}).get(action)
-        rule = _normalize_action_rule(raw) if raw is not None else {}
+        rule = self._normalize_action_rule(raw) if raw is not None else {}
         if not rule:
             return True
         deny = rule.get("deny")
@@ -837,25 +838,25 @@ class ScopeManager:
 
     # ==================== 维度化便捷读写（参数签名，IDE 友好） ====================
 
-    @staticmethod
-    def _module_path(platform: str, bot_id: str | None, session_id: str | None) -> str:
+    @classmethod
+    def _module_path(cls, platform: str, bot_id: str | None, session_id: str | None) -> str:
         """{!--< internal-use >!--} 模块维度路径（会话 > Bot > 平台）"""
         if session_id:
-            return f"{_BUCKET_SESSIONS}.{platform}.{session_id}"
+            return f"{cls._BUCKET_SESSIONS}.{platform}.{session_id}"
         if bot_id:
-            return f"{_BUCKET_BOTS}.{platform}.{bot_id}"
-        return f"{_BUCKET_PLATFORMS}.{platform}"
+            return f"{cls._BUCKET_BOTS}.{platform}.{bot_id}"
+        return f"{cls._BUCKET_PLATFORMS}.{platform}"
 
-    @staticmethod
-    def _identity_path(platform: str, bot_id: str | None, session_id: str | None, user_id: str | None) -> str:
+    @classmethod
+    def _identity_path(cls, platform: str, bot_id: str | None, session_id: str | None, user_id: str | None) -> str:
         """{!--< internal-use >!--} 身份维度路径（用户 > 会话 > Bot > 适配器）"""
         if user_id:
-            return f"identity.{_IDENTITY_USERS}.{platform}.{user_id}"
+            return f"identity.{cls._IDENTITY_USERS}.{platform}.{user_id}"
         if session_id:
-            return f"identity.{_IDENTITY_SESSIONS}.{platform}.{session_id}"
+            return f"identity.{cls._IDENTITY_SESSIONS}.{platform}.{session_id}"
         if bot_id:
-            return f"identity.{_IDENTITY_BOTS}.{platform}.{bot_id}"
-        return f"identity.{_IDENTITY_ADAPTERS}.{platform}"
+            return f"identity.{cls._IDENTITY_BOTS}.{platform}.{bot_id}"
+        return f"identity.{cls._IDENTITY_ADAPTERS}.{platform}"
 
     # ---- ① 模块维度 ----
 
@@ -1048,9 +1049,9 @@ class ScopeManager:
         >>> scope.set_action("MyModule", "send", allow=["Text"])           # 仅允许发文本
         >>> scope.set_action("MyModule", "api", deny=["set_*", "leave_*"]) # 禁管理类 API
         """
-        if action not in _ACTION_NAMES:
+        if action not in self._ACTION_NAMES:
             raise ValueError(
-                i18n.t("core.scope.unknown_action", action=action, actions=", ".join(_ACTION_NAMES))
+                i18n.t("core.scope.unknown_action", action=action, actions=", ".join(self._ACTION_NAMES))
             )
         if not module:
             raise ValueError(i18n.t("core.scope.module_required"))
@@ -1164,7 +1165,7 @@ class ScopeManager:
             node = child
         last = parts[-1]
         if isinstance(value, dict) and isinstance(node.get(last), dict):
-            _deep_merge(node[last], value)
+            self._deep_merge(node[last], value)
         else:
             node[last] = value
         self._invalidate_cache()
@@ -1214,7 +1215,7 @@ class ScopeManager:
             self._apply_tree(snapshot)
         else:
             # 运行时删除：记录删除标记，配置树重建后重放删除
-            self._runtime_overrides[path] = _RUNTIME_DELETED
+            self._runtime_overrides[path] = self._RUNTIME_DELETED
             self._record_runtime_owner(path)
         return True
 
@@ -1243,14 +1244,14 @@ class ScopeManager:
     def clear(self) -> None:
         """清空所有作用域配置（仅内存生效，不持久化；含运行时覆盖层）"""
         self._data = {
-            _BUCKET_PLATFORMS: {},
-            _BUCKET_BOTS: {},
-            _BUCKET_SESSIONS: {},
+            self._BUCKET_PLATFORMS: {},
+            self._BUCKET_BOTS: {},
+            self._BUCKET_SESSIONS: {},
             "identity": {
-                _IDENTITY_ADAPTERS: {},
-                _IDENTITY_BOTS: {},
-                _IDENTITY_SESSIONS: {},
-                _IDENTITY_USERS: {},
+                self._IDENTITY_ADAPTERS: {},
+                self._IDENTITY_BOTS: {},
+                self._IDENTITY_SESSIONS: {},
+                self._IDENTITY_USERS: {},
             },
             "actions": {},
         }
@@ -1287,9 +1288,9 @@ class ScopeManager:
         return copy.deepcopy(self._data)
 
     def __repr__(self) -> str:
-        platforms = list(self._data.get(_BUCKET_PLATFORMS, {}).keys())
-        bots = list(self._data.get(_BUCKET_BOTS, {}).keys())
-        sessions = list(self._data.get(_BUCKET_SESSIONS, {}).keys())
+        platforms = list(self._data.get(self._BUCKET_PLATFORMS, {}).keys())
+        bots = list(self._data.get(self._BUCKET_BOTS, {}).keys())
+        sessions = list(self._data.get(self._BUCKET_SESSIONS, {}).keys())
         actions = list(self._data.get("actions", {}).keys())
         return (
             f"<ScopeManager platforms={platforms} bots={bots} sessions={sessions} "

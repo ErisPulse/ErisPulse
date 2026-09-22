@@ -31,35 +31,9 @@ from .i18n import i18n
 from .lifecycle import lifecycle
 from .logger import logger
 
-# 已记录过的弃用警告（owner, old_kwarg），每个组合只警告一次，避免热路径日志刷屏
-_DEPRECATED_KWARG_WARNED: set[tuple[str, str]] = set()
-
 # 模块类型 TypeVar，用于 get() 的泛型返回，让用户可通过类型注解获得 IDE 补全
 # 用法： my_module: MyModule = sdk.module.get("MyModule")
 _TModule = TypeVar("_TModule", bound=BaseModule)
-
-
-def _warn_deprecated_kwarg(owner: str, old: str, new: str) -> None:
-    """
-    {!--< internal-use >!--}
-    当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
-
-    :param owner: 所属方法名（如 "ModuleManager.get"）
-    :param old: 已弃用的旧参数名
-    :param new: 推荐使用的新参数名
-    """
-    key = (owner, old)
-    if key in _DEPRECATED_KWARG_WARNED:
-        return
-    _DEPRECATED_KWARG_WARNED.add(key)
-    logger.warning(
-        i18n.t(
-            "core.deprecated.kwarg",
-            owner=owner,
-            old=old,
-            new=new,
-        )
-    )
 
 
 class ModuleManager(ManagerBase):
@@ -74,6 +48,32 @@ class ModuleManager(ManagerBase):
     3. 通过get方法获取模块实例
     {!--< /tips >!--}
     """
+
+    # 已记录过的弃用警告（owner, old_kwarg），每个组合只警告一次，避免热路径日志刷屏
+    _DEPRECATED_KWARG_WARNED: set[tuple[str, str]] = set()
+
+    @staticmethod
+    def _warn_deprecated_kwarg(owner: str, old: str, new: str) -> None:
+        """
+        {!--< internal-use >!--}
+        当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
+
+        :param owner: 所属方法名（如 "ModuleManager.get"）
+        :param old: 已弃用的旧参数名
+        :param new: 推荐使用的新参数名
+        """
+        key = (owner, old)
+        if key in ModuleManager._DEPRECATED_KWARG_WARNED:
+            return
+        ModuleManager._DEPRECATED_KWARG_WARNED.add(key)
+        logger.warning(
+            i18n.t(
+                "core.deprecated.kwarg",
+                owner=owner,
+                old=old,
+                new=new,
+            )
+        )
 
     @staticmethod
     def _is_subclass(klass: type, base_cls: type) -> bool:
@@ -267,13 +267,13 @@ class ModuleManager(ManagerBase):
         """
         # 兼容旧关键字参数（已弃用，建议改用位置参数或新参数名）
         if module_name is not None:
-            _warn_deprecated_kwarg("ModuleManager.register", "module_name", "name")
+            self._warn_deprecated_kwarg("ModuleManager.register", "module_name", "name")
             name = module_name
         if module_class is not None:
-            _warn_deprecated_kwarg("ModuleManager.register", "module_class", "class_type")
+            self._warn_deprecated_kwarg("ModuleManager.register", "module_class", "class_type")
             class_type = module_class
         if module_info is not None:
-            _warn_deprecated_kwarg("ModuleManager.register", "module_info", "info")
+            self._warn_deprecated_kwarg("ModuleManager.register", "module_info", "info")
             info = module_info
         # 缺少必要参数时按原契约报错
         if not isinstance(name, str) or not name:
@@ -371,7 +371,7 @@ class ModuleManager(ManagerBase):
         """
         # 兼容旧关键字参数（已弃用）
         if module_name is not None:
-            _warn_deprecated_kwarg("ModuleManager.load", "module_name", "name")
+            self._warn_deprecated_kwarg("ModuleManager.load", "module_name", "name")
             name = module_name
         if name is None:
             return False
@@ -566,7 +566,7 @@ class ModuleManager(ManagerBase):
         """
         # 兼容旧关键字参数（已弃用）
         if module_name is not None:
-            _warn_deprecated_kwarg("ModuleManager.unload", "module_name", "name")
+            self._warn_deprecated_kwarg("ModuleManager.unload", "module_name", "name")
             name = module_name
         module_name = name
         # purge 模式下收集被卸载模块的弱引用，卸载完成后诊断是否可回收
@@ -1018,7 +1018,7 @@ class ModuleManager(ManagerBase):
         >>> my_module = module.get("MyModule")
         """
         if module_name is not None:
-            _warn_deprecated_kwarg("ModuleManager.get", "module_name", "name")
+            self._warn_deprecated_kwarg("ModuleManager.get", "module_name", "name")
             name = module_name
         if name is None:
             return None
@@ -1041,7 +1041,7 @@ class ModuleManager(ManagerBase):
         {!--< /tips >!--}
         """
         if module_name is not None:
-            _warn_deprecated_kwarg("ModuleManager.exists", "module_name", "name")
+            self._warn_deprecated_kwarg("ModuleManager.exists", "module_name", "name")
             name = module_name
         if name is None:
             return False
@@ -1060,7 +1060,7 @@ class ModuleManager(ManagerBase):
         ...     ...
         """
         if module_name is not None:
-            _warn_deprecated_kwarg("ModuleManager.is_loaded", "module_name", "name")
+            self._warn_deprecated_kwarg("ModuleManager.is_loaded", "module_name", "name")
             name = module_name
         if name is None:
             return False
@@ -1079,7 +1079,7 @@ class ModuleManager(ManagerBase):
         >>>     print("MyModule 正在运行")
         """
         if module_name is not None:
-            _warn_deprecated_kwarg("ModuleManager.is_running", "module_name", "name")
+            self._warn_deprecated_kwarg("ModuleManager.is_running", "module_name", "name")
             name = module_name
         if name is None:
             return False
@@ -1159,7 +1159,7 @@ class ModuleManager(ManagerBase):
         {!--< /tips >!--}
         """
         if module_name is not None:
-            _warn_deprecated_kwarg("ModuleManager.is_enabled", "module_name", "name")
+            self._warn_deprecated_kwarg("ModuleManager.is_enabled", "module_name", "name")
             name = module_name
         if name is None:
             return False
@@ -1185,7 +1185,7 @@ class ModuleManager(ManagerBase):
         :return: [bool] 操作是否成功
         """
         if module_name is not None:
-            _warn_deprecated_kwarg("ModuleManager.enable", "module_name", "name")
+            self._warn_deprecated_kwarg("ModuleManager.enable", "module_name", "name")
             name = module_name
         if name is None:
             return False
@@ -1207,7 +1207,7 @@ class ModuleManager(ManagerBase):
         :return: [bool] 操作是否成功
         """
         if module_name is not None:
-            _warn_deprecated_kwarg("ModuleManager.disable", "module_name", "name")
+            self._warn_deprecated_kwarg("ModuleManager.disable", "module_name", "name")
             name = module_name
         if name is None:
             return False
@@ -1334,7 +1334,7 @@ class ModuleManager(ManagerBase):
         {!--< /internal-use >!--}
         """
         if module_name is not None:
-            _warn_deprecated_kwarg("ModuleManager.unregister", "module_name", "name")
+            self._warn_deprecated_kwarg("ModuleManager.unregister", "module_name", "name")
             name = module_name
         if name is None:
             return False
@@ -1429,7 +1429,7 @@ class ModuleManager(ManagerBase):
         >>> info = module.get_info("MyModule")
         """
         if module_name is not None:
-            _warn_deprecated_kwarg("ModuleManager.get_info", "module_name", "name")
+            self._warn_deprecated_kwarg("ModuleManager.get_info", "module_name", "name")
             name = module_name
         if name is None:
             return None
@@ -1465,7 +1465,7 @@ class ModuleManager(ManagerBase):
         >>> meta["description"]  # 当前语言下的模块简介
         """
         if module_name is not None:
-            _warn_deprecated_kwarg("ModuleManager.get_meta", "module_name", "name")
+            self._warn_deprecated_kwarg("ModuleManager.get_meta", "module_name", "name")
             name = module_name
         if name is None or name not in self._module_classes:
             return None
