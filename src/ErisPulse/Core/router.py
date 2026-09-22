@@ -66,8 +66,6 @@ from .i18n import i18n
 from .lifecycle import lifecycle
 from .logger import logger
 
-ERISPULSE_VERSION: str | None = None  # 惰性解析缓存，见 _erispulse_version()
-
 # Web 栈是否已懒加载完成
 _WEB_STACK_LOADED: bool = False
 
@@ -155,35 +153,13 @@ def _web_stack_required(fn: Callable[..., Any]) -> Callable[..., Any]:
     return _sync_wrapper
 
 
-def _erispulse_version() -> str:
-    """
-    惰性获取 SDK 版本号（首次访问经包元数据读取，结果缓存）
-
-    :return: str 版本号；元数据不可用时返回 "UnknownVersion"
-
-    {!--< internal-use >!--}
-    避免在导入期为读版本号而加载 importlib.metadata 依赖链
-    {!--< /internal-use >!--}
-    """
-    global ERISPULSE_VERSION
-    if ERISPULSE_VERSION is None:
-        import importlib.metadata
-
-        try:
-            ERISPULSE_VERSION = importlib.metadata.version("ErisPulse")
-        except importlib.metadata.PackageNotFoundError:
-            ERISPULSE_VERSION = "UnknownVersion"
-    return ERISPULSE_VERSION
+_REQUEST_LIKE_NAMES = frozenset({"request", "req"})
 
 
 HTTPHandler: TypeAlias = Callable
 # WebSocket 尚未加载（懒加载），使用字符串前向引用避免在导入期解析。
 WebSocketHandler: TypeAlias = "Callable[[WebSocket], Awaitable[Any]]"
 RoutePath: TypeAlias = str
-
-# 用于自动注入的请求参数名集合
-_REQUEST_LIKE_NAMES = frozenset({"request", "req"})
-
 
 class FuncMiddleware:
     """
@@ -373,6 +349,27 @@ class RouterManager:
     {!--< /tips >!--}
     """
 
+    # 惰性解析缓存，见 self._erispulse_version()
+    ERISPULSE_VERSION: str | None = None
+
+    @staticmethod
+    def _erispulse_version() -> str:
+        """
+        惰性获取 SDK 版本号（首次访问经包元数据读取，结果缓存）
+
+        {!--< internal-use >!--}
+        避免在导入期为读版本号而加载 importlib.metadata 依赖链
+        {!--< /internal-use >!--}
+        """
+        if RouterManager.ERISPULSE_VERSION is None:
+            import importlib.metadata
+
+            try:
+                RouterManager.ERISPULSE_VERSION = importlib.metadata.version("ErisPulse")
+            except importlib.metadata.PackageNotFoundError:
+                RouterManager.ERISPULSE_VERSION = "UnknownVersion"
+        return RouterManager.ERISPULSE_VERSION
+
     def __init__(self):
         """
         初始化路由管理器
@@ -427,7 +424,7 @@ class RouterManager:
             self._app = FastAPI(
                 title="ErisPulse Router",
                 description=i18n.t("core.router.app_description"),
-                version=_erispulse_version(),
+                version=self._erispulse_version(),
             )
             self._setup_core_routes()
             self._setup_error_pages()
@@ -901,7 +898,7 @@ class RouterManager:
                 })
 
             html = render_root_page(
-                version=_erispulse_version(),
+                version=self._erispulse_version(),
                 sub_text=i18n.t("core.router.root_page_text"),
                 docs_link=i18n.t("core.router.link_docs"),
                 community_link=i18n.t("core.router.link_community"),

@@ -117,7 +117,7 @@ class AdapterManager(ManagerBase):
         key = (owner, old)
         if key in AdapterManager._DEPRECATED_KWARG_WARNED:
             return
-        AdapterManager.AdapterManager._DEPRECATED_KWARG_WARNED.add(key)
+        AdapterManager._DEPRECATED_KWARG_WARNED.add(key)
         logger.warning(
             i18n.t(
                 "core.deprecated.kwarg",

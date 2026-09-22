@@ -46,6 +46,9 @@ TRANSCRIPT_TEXT_MAX_CHARS = 2000
 
 
 
+_MODULE_RETENTION_INTERVAL = 32
+
+
 class TranscriptManager:
     """
     会话收件箱管理器
@@ -55,7 +58,7 @@ class TranscriptManager:
     """
 
     # 保留策略：每 N 次追加触发一次过期清理
-    _RETENTION_INTERVAL = 32
+    _RETENTION_INTERVAL = _MODULE_RETENTION_INTERVAL
 
     def __init__(self):
         self._table_ready: bool = False
