@@ -140,7 +140,7 @@
           "icon": "fa-code"
         },
         {
-          "title": "Уровень модели данных (ORM)",
+          "title": "Модель данных (ORM)",
           "path": "developer-guide/orm.md",
           "level": 1,
           "icon": "fa-code"

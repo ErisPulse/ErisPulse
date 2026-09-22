@@ -64,7 +64,7 @@
           "icon": "fa-list-check"
         },
         {
-          "title": "Introduction to Event Handling",
+          "title": "Getting Started with Event Handling",
           "path": "getting-started/event-handling.md",
           "level": 1,
           "icon": "fa-bolt-lightning"

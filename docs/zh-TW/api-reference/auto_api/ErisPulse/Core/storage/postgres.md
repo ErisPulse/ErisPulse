@@ -42,6 +42,13 @@ PostgreSQL 方言实现
 ---
 
 
+##### `table_columns_sql(table_name: str)`
+
+> **内部方法** information_schema 列举表现有列名
+
+---
+
+
 ##### `has_table_sql(table_name: str)`
 
 > **内部方法** information_schema 查询当前 schema

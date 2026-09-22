@@ -41,7 +41,7 @@ ErisPulse 消息处理模块
 #### 方法列表
 
 
-##### `on_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user')`
+##### `on_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user', debounce: str | None = None, debounce_key: str = 'user')`
 
 消息事件装饰器
 
@@ -50,6 +50,10 @@ ErisPulse 消息处理模块
 - **throttle** (`节流间隔声明（如`): ``"2s"`` / ``"1h30m"``，duration 语法）——
     同键事件在间隔内至多处理一条，其余静默丢弃（EPRFC-2026-001 方向八）
 - **throttle_key** (`节流键粒度：``user``（默认）/`): ``session`` / ``global``
+- **debounce** (`防抖窗口声明（如`): ``"2s"``，duration 语法）——同键事件窗口内只
+    执行最后一条，前序待执行任务被取消（EPRFC-2026-001 方向八）；与
+    ``throttle=`` 互斥（同时声明注册期抛 ValueError）
+- **debounce_key** (`防抖键粒度：``user``（默认）/`): ``session`` / ``global``
 **返回值**: 装饰器函数
 
 ---
@@ -73,7 +77,7 @@ ErisPulse 消息处理模块
 ---
 
 
-##### `on_private_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user')`
+##### `on_private_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user', debounce: str | None = None, debounce_key: str = 'user')`
 
 私聊消息事件装饰器
 
@@ -82,6 +86,10 @@ ErisPulse 消息处理模块
 - **throttle** (`节流间隔声明（如`): ``"2s"`` / ``"1h30m"``，duration 语法）——
     同键事件在间隔内至多处理一条，其余静默丢弃（EPRFC-2026-001 方向八）
 - **throttle_key** (`节流键粒度：``user``（默认）/`): ``session`` / ``global``
+- **debounce** (`防抖窗口声明（如`): ``"2s"``，duration 语法）——同键事件窗口内只
+    执行最后一条，前序待执行任务被取消（EPRFC-2026-001 方向八）；与
+    ``throttle=`` 互斥（同时声明注册期抛 ValueError）
+- **debounce_key** (`防抖键粒度：``user``（默认）/`): ``session`` / ``global``
 **返回值**: 装饰器函数
 
 ---
@@ -96,7 +104,7 @@ ErisPulse 消息处理模块
 ---
 
 
-##### `on_group_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user')`
+##### `on_group_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user', debounce: str | None = None, debounce_key: str = 'user')`
 
 群聊消息事件装饰器
 
@@ -105,6 +113,10 @@ ErisPulse 消息处理模块
 - **throttle** (`节流间隔声明（如`): ``"2s"`` / ``"1h30m"``，duration 语法）——
     同键事件在间隔内至多处理一条，其余静默丢弃（EPRFC-2026-001 方向八）
 - **throttle_key** (`节流键粒度：``user``（默认）/`): ``session`` / ``global``
+- **debounce** (`防抖窗口声明（如`): ``"2s"``，duration 语法）——同键事件窗口内只
+    执行最后一条，前序待执行任务被取消（EPRFC-2026-001 方向八）；与
+    ``throttle=`` 互斥（同时声明注册期抛 ValueError）
+- **debounce_key** (`防抖键粒度：``user``（默认）/`): ``session`` / ``global``
 **返回值**: 装饰器函数
 
 ---
@@ -119,7 +131,7 @@ ErisPulse 消息处理模块
 ---
 
 
-##### `on_at_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user')`
+##### `on_at_message(priority: int = 0, pattern: str | None = None, regex: str | None = None, throttle: str | None = None, throttle_key: str = 'user', debounce: str | None = None, debounce_key: str = 'user')`
 
 @消息事件装饰器
 
@@ -128,6 +140,10 @@ ErisPulse 消息处理模块
 - **throttle** (`节流间隔声明（如`): ``"2s"`` / ``"1h30m"``，duration 语法）——
     同键事件在间隔内至多处理一条，其余静默丢弃（EPRFC-2026-001 方向八）
 - **throttle_key** (`节流键粒度：``user``（默认）/`): ``session`` / ``global``
+- **debounce** (`防抖窗口声明（如`): ``"2s"``，duration 语法）——同键事件窗口内只
+    执行最后一条，前序待执行任务被取消（EPRFC-2026-001 方向八）；与
+    ``throttle=`` 互斥（同时声明注册期抛 ValueError）
+- **debounce_key** (`防抖键粒度：``user``（默认）/`): ``session`` / ``global``
 **返回值**: 装饰器函数
 
 ---
