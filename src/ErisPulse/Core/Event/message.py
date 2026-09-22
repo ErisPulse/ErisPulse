@@ -21,25 +21,6 @@ from .base import BaseEventHandler
 from .throttle import make_debounce_wrapper, make_throttle_condition
 
 
-def _combine_conditions(
-    *conditions: Callable[[Any], bool] | None,
-) -> Callable[[Any], bool] | None:
-    """
-    {!--< internal-use >!--}
-    组合多个条件函数为"全部满足"；过滤掉 None
-    """
-    valid = [c for c in conditions if c is not None]
-    if not valid:
-        return None
-    if len(valid) == 1:
-        return valid[0]
-
-    def combined(event: Any) -> bool:
-        return all(c(event) for c in valid)
-
-    return combined
-
-
 class MessageHandler:
     """
     消息事件处理器
@@ -49,6 +30,25 @@ class MessageHandler:
 
     def __init__(self):
         self.handler = BaseEventHandler(EVENT_TYPE_MESSAGE, "message")
+
+    @staticmethod
+    def _combine_conditions(
+        *conditions: Callable[[Any], bool] | None,
+    ) -> Callable[[Any], bool] | None:
+        """
+        {!--< internal-use >!--}
+        组合多个条件函数为"全部满足"；过滤掉 None
+        """
+        valid = [c for c in conditions if c is not None]
+        if not valid:
+            return None
+        if len(valid) == 1:
+            return valid[0]
+
+        def combined(event: Any) -> bool:
+            return all(c(event) for c in valid)
+
+        return combined
 
     def on_message(
         self,
@@ -87,7 +87,7 @@ class MessageHandler:
                 else None
             )
             self.handler.register(
-                func, priority, _combine_conditions(compile_text_matcher(pattern, regex), throttle_cond)
+                func, priority, self._combine_conditions(compile_text_matcher(pattern, regex), throttle_cond)
             )
             return func
 
@@ -151,7 +151,7 @@ class MessageHandler:
                 else None
             )
             self.handler.register(
-                func, priority, _combine_conditions(condition, compile_text_matcher(pattern, regex), throttle_cond)
+                func, priority, self._combine_conditions(condition, compile_text_matcher(pattern, regex), throttle_cond)
             )
             return func
 
@@ -206,7 +206,7 @@ class MessageHandler:
                 else None
             )
             self.handler.register(
-                func, priority, _combine_conditions(condition, compile_text_matcher(pattern, regex), throttle_cond)
+                func, priority, self._combine_conditions(condition, compile_text_matcher(pattern, regex), throttle_cond)
             )
             return func
 
@@ -271,7 +271,7 @@ class MessageHandler:
                 else None
             )
             self.handler.register(
-                func, priority, _combine_conditions(condition, compile_text_matcher(pattern, regex), throttle_cond)
+                func, priority, self._combine_conditions(condition, compile_text_matcher(pattern, regex), throttle_cond)
             )
             return func
 

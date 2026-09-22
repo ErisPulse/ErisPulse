@@ -48,70 +48,15 @@ from .lifecycle import lifecycle
 from .logger import logger
 from .text_match import compile_entry_matcher, compile_text_matcher
 
-# 已记录过的弃用警告（owner, old_kwarg），每个组合只警告一次，避免热路径日志刷屏
-_DEPRECATED_KWARG_WARNED: set[tuple[str, str]] = set()
-
 # 适配器类型 TypeVar，用于 get() 的泛型返回，让用户可通过类型注解获得 IDE 补全
 # 用法： adapter: MyAdapter = sdk.adapter.get("MyPlatform")
 _TAdapter = TypeVar("_TAdapter", bound=BaseAdapter)
 
-
-def _extract_message_text(data: Any) -> str:
-    """
-    {!--< internal-use >!--}
-    从事件 message 段提取纯文本（仅 text 段拼接），无文本时返回空串
-
-    :param data: 事件数据
-    :return: 纯文本内容
-    """
-    segments = data.get("message")
-    if not isinstance(segments, list):
-        return ""
-    parts = []
-    for seg in segments:
-        if isinstance(seg, dict) and seg.get("type") == "text":
-            t = (seg.get("data") or {}).get("text", "")
-            if t:
-                parts.append(t)
-    return " ".join(parts)
-
-
-def _warn_deprecated_kwarg(owner: str, old: str, new: str) -> None:
-    """
-    {!--< internal-use >!--}
-    当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
-
-    :param owner: 所属方法名（如 "AdapterManager.get"）
-    :param old: 已弃用的旧参数名
-    :param new: 推荐使用的新参数名
-    """
-    key = (owner, old)
-    if key in _DEPRECATED_KWARG_WARNED:
-        return
-    _DEPRECATED_KWARG_WARNED.add(key)
-    logger.warning(
-        i18n.t(
-            "core.deprecated.kwarg",
-            owner=owner,
-            old=old,
-            new=new,
-        )
-    )
-
-
-# 按事件类型分类的日志器
+# 按事件类型分类的日志器（被 Core/Bases/adapter.py 跨模块引用，保留模块级）
 _msg_logger = logger.get_child("Message", relative=False)
 _notice_logger = logger.get_child("Notice", relative=False)
 _request_logger = logger.get_child("Request", relative=False)
 _meta_logger = logger.get_child("Meta", relative=False)
-
-# 事件类型 -> 日志器 映射
-_event_loggers = {
-    "message": _msg_logger,
-    "notice": _notice_logger,
-    "request": _request_logger,
-    "meta": _meta_logger,
-}
 
 
 class AdapterManager(ManagerBase):
@@ -127,6 +72,60 @@ class AdapterManager(ManagerBase):
     4. 通过on装饰器注册OneBot12协议事件处理器
     {!--< /tips >!--}
     """
+
+    # 已记录过的弃用警告（owner, old_kwarg），每个组合只警告一次，避免热路径日志刷屏
+    _DEPRECATED_KWARG_WARNED: set[tuple[str, str]] = set()
+
+    # 事件类型 -> 日志器 映射
+    _event_loggers = {
+        "message": _msg_logger,
+        "notice": _notice_logger,
+        "request": _request_logger,
+        "meta": _meta_logger,
+    }
+
+    @staticmethod
+    def _extract_message_text(data: Any) -> str:
+        """
+        {!--< internal-use >!--}
+        从事件 message 段提取纯文本（仅 text 段拼接），无文本时返回空串
+
+        :param data: 事件数据
+        :return: 纯文本内容
+        """
+        segments = data.get("message")
+        if not isinstance(segments, list):
+            return ""
+        parts = []
+        for seg in segments:
+            if isinstance(seg, dict) and seg.get("type") == "text":
+                txt = (seg.get("data") or {}).get("text", "")
+                if txt:
+                    parts.append(txt)
+        return " ".join(parts)
+
+    @staticmethod
+    def _warn_deprecated_kwarg(owner: str, old: str, new: str) -> None:
+        """
+        {!--< internal-use >!--}
+        当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
+
+        :param owner: 所属方法名（如 "AdapterManager.get"）
+        :param old: 已弃用的旧参数名
+        :param new: 推荐使用的新参数名
+        """
+        key = (owner, old)
+        if key in AdapterManager._DEPRECATED_KWARG_WARNED:
+            return
+        AdapterManager.AdapterManager._DEPRECATED_KWARG_WARNED.add(key)
+        logger.warning(
+            i18n.t(
+                "core.deprecated.kwarg",
+                owner=owner,
+                old=old,
+                new=new,
+            )
+        )
 
     @staticmethod
     def _is_subclass(klass: type, base_cls: type) -> bool:
@@ -476,15 +475,15 @@ class AdapterManager(ManagerBase):
         """
         # 兼容旧关键字参数（已弃用，建议改用位置参数或新参数名）
         if platform is not None:
-            _warn_deprecated_kwarg("AdapterManager.register", "platform", "name")
+            self._warn_deprecated_kwarg("AdapterManager.register", "platform", "name")
             name = platform
         if adapter_class is not None:
-            _warn_deprecated_kwarg(
+            self._warn_deprecated_kwarg(
                 "AdapterManager.register", "adapter_class", "class_type"
             )
             class_type = adapter_class
         if adapter_info is not None:
-            _warn_deprecated_kwarg("AdapterManager.register", "adapter_info", "info")
+            self._warn_deprecated_kwarg("AdapterManager.register", "adapter_info", "info")
             info = adapter_info
         # 缺少必要参数时按原契约报错
         if not isinstance(name, str) or not name:
@@ -1396,7 +1395,7 @@ class AdapterManager(ManagerBase):
         :return: 平台是否已注册（即 adapter.register() 已被调用）
         """
         if platform is not None:
-            _warn_deprecated_kwarg("AdapterManager.exists", "platform", "name")
+            self._warn_deprecated_kwarg("AdapterManager.exists", "platform", "name")
             name = platform
         if name is None:
             return False
@@ -1422,7 +1421,7 @@ class AdapterManager(ManagerBase):
         {!--< /tips >!--}
         """
         if platform is not None:
-            _warn_deprecated_kwarg("AdapterManager.is_enabled", "platform", "name")
+            self._warn_deprecated_kwarg("AdapterManager.is_enabled", "platform", "name")
             name = platform
         if name is None:
             return False
@@ -1447,7 +1446,7 @@ class AdapterManager(ManagerBase):
         :return: [bool] 操作是否成功
         """
         if platform is not None:
-            _warn_deprecated_kwarg("AdapterManager.enable", "platform", "name")
+            self._warn_deprecated_kwarg("AdapterManager.enable", "platform", "name")
             name = platform
         if name is None:
             return False
@@ -1472,7 +1471,7 @@ class AdapterManager(ManagerBase):
         :return: [bool] 操作是否成功
         """
         if platform is not None:
-            _warn_deprecated_kwarg("AdapterManager.disable", "platform", "name")
+            self._warn_deprecated_kwarg("AdapterManager.disable", "platform", "name")
             name = platform
         if name is None:
             return False
@@ -1503,7 +1502,7 @@ class AdapterManager(ManagerBase):
         {!--< /internal-use >!--}
         """
         if platform is not None:
-            _warn_deprecated_kwarg("AdapterManager.unregister", "platform", "name")
+            self._warn_deprecated_kwarg("AdapterManager.unregister", "platform", "name")
             name = platform
         if name is None:
             return False
@@ -1834,7 +1833,7 @@ class AdapterManager(ManagerBase):
                 alt_msg = alt_msg[:LOG_MESSAGE_TRUNCATE_CHARS] + "..."
             _msg_logger.event(f"[Recv] {platform}/{detail_type}({user_id}): {alt_msg}")
         else:
-            _logger = _event_loggers.get(event_type, _meta_logger)
+            _logger = self._event_loggers.get(event_type, _meta_logger)
             _logger.event(f"[Recv] {platform}/{detail_type}")
 
         # 事件准入（scope 身份维度）：被拒绝的事件在分发入口完全丢弃——
@@ -1873,7 +1872,7 @@ class AdapterManager(ManagerBase):
             try:
                 from .transcript import transcript as _transcript
 
-                _alt = data.get("alt_message", "") or _extract_message_text(data)
+                _alt = data.get("alt_message", "") or self._extract_message_text(data)
                 if _alt:
                     _transcript.append(
                         data, "user", _alt, event_id=trace_id,
@@ -2712,7 +2711,7 @@ class AdapterManager(ManagerBase):
         >>> adapter = adapter.get("MyPlatform")
         """
         if platform is not None:
-            _warn_deprecated_kwarg("AdapterManager.get", "platform", "name")
+            self._warn_deprecated_kwarg("AdapterManager.get", "platform", "name")
             name = platform
         if name is None:
             return None
@@ -2738,7 +2737,7 @@ class AdapterManager(ManagerBase):
         >>>     print("onebot11 适配器正在运行")
         """
         if platform is not None:
-            _warn_deprecated_kwarg("AdapterManager.is_running", "platform", "name")
+            self._warn_deprecated_kwarg("AdapterManager.is_running", "platform", "name")
             name = platform
         if name is None:
             return False

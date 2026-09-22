@@ -49,19 +49,6 @@ from .lifecycle import lifecycle
 from .logger import logger
 
 
-def _convert_aiohttp_exception(exc: Exception) -> ClientError:
-    import aiohttp
-
-    if isinstance(exc, asyncio.TimeoutError):
-        return ClientTimeoutError(str(exc))
-    if isinstance(exc, aiohttp.ClientConnectorError):
-        return ClientConnectionError(str(exc))
-    if isinstance(exc, aiohttp.ClientConnectionError):
-        return ClientConnectionError(str(exc))
-    if isinstance(exc, aiohttp.ClientError):
-        return ClientError(str(exc))
-    return ClientError(str(exc))
-
 
 class HttpResponse(BaseHttpResponse):
     """
@@ -213,6 +200,20 @@ class ClientWebSocket(BaseClientWebSocket):
     """
 
     __slots__ = ("_recv_lock",)
+
+    @staticmethod
+    def _convert_aiohttp_exception(exc: Exception) -> ClientError:
+        import aiohttp
+
+        if isinstance(exc, asyncio.TimeoutError):
+            return ClientTimeoutError(str(exc))
+        if isinstance(exc, aiohttp.ClientConnectorError):
+            return ClientConnectionError(str(exc))
+        if isinstance(exc, aiohttp.ClientConnectionError):
+            return ClientConnectionError(str(exc))
+        if isinstance(exc, aiohttp.ClientError):
+            return ClientError(str(exc))
+        return ClientError(str(exc))
 
     def __init__(self, ws):
         """
@@ -641,7 +642,7 @@ class Client(BaseClient):
                     return response
 
             except asyncio.TimeoutError as e:
-                last_exc = _convert_aiohttp_exception(e)
+                last_exc = self._convert_aiohttp_exception(e)
                 self._stats["total_errors"] += 1
                 elapsed = time.monotonic() - start
                 if attempt < retries:
@@ -665,7 +666,7 @@ class Client(BaseClient):
                         )
                     )
             except aiohttp.ClientConnectionError as e:
-                last_exc = _convert_aiohttp_exception(e)
+                last_exc = self._convert_aiohttp_exception(e)
                 self._stats["total_errors"] += 1
                 elapsed = time.monotonic() - start
                 if attempt < retries:
@@ -690,7 +691,7 @@ class Client(BaseClient):
                         )
                     )
             except aiohttp.ClientError as e:
-                last_exc = _convert_aiohttp_exception(e)
+                last_exc = self._convert_aiohttp_exception(e)
                 self._stats["total_errors"] += 1
                 elapsed = time.monotonic() - start
                 if attempt < retries:

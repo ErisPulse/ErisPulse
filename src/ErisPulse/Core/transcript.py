@@ -44,8 +44,6 @@ from .storage import storage
 # 入站/出站文本预览的最大保留长度（字符）
 TRANSCRIPT_TEXT_MAX_CHARS = 2000
 
-# 保留清理的触发间隔（每 N 次 append 执行一次，避免高频清理）
-_RETENTION_INTERVAL = 32
 
 
 class TranscriptManager:
@@ -55,6 +53,9 @@ class TranscriptManager:
     以 ``platform:detail_type:target_id`` 为会话键记录消息流，
     存储于独立 SQLite 表，支持条数上限与 TTL 双重保留策略。
     """
+
+    # 保留策略：每 N 次追加触发一次过期清理
+    _RETENTION_INTERVAL = 32
 
     def __init__(self):
         self._table_ready: bool = False
@@ -214,7 +215,7 @@ class TranscriptManager:
 
         # 惰性保留清理
         self._append_count += 1
-        if self._append_count % _RETENTION_INTERVAL == 0:
+        if self._append_count % self._RETENTION_INTERVAL == 0:
             cfg = self._config()
             self._retention(
                 key,

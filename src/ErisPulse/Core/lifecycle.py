@@ -36,38 +36,6 @@ from .di import call_with_depends_sync, extract_depends, resolve_depends
 from .i18n import i18n
 
 
-class _NullLogger:
-    """静默日志器，在 logger 模块尚未初始化时作为替代"""
-
-    def trace(self, *args, **kwargs):
-        pass
-
-    def debug(self, *args, **kwargs):
-        pass
-
-    def info(self, *args, **kwargs):
-        pass
-
-    def warning(self, *args, **kwargs):
-        pass
-
-    def error(self, *args, **kwargs):
-        pass
-
-    def critical(self, *args, **kwargs):
-        pass
-
-
-def _get_logger():
-    """延迟导入 logger，避免循环依赖（lifecycle → logger → config → lifecycle）"""
-    try:
-        from .logger import logger
-
-        return logger
-    except (ImportError, AttributeError):
-        return _NullLogger()
-
-
 class LifecycleManager:
     """
     生命周期管理器
@@ -93,6 +61,37 @@ class LifecycleManager:
     >>> await lifecycle.submit_event("module.load", data={"module_name": "Test"})
     {!--< /tips >!--}
     """
+
+    class _NullLogger:
+        """静默日志器，在 logger 模块尚未初始化时作为替代"""
+
+        def trace(self, *args, **kwargs):
+            pass
+
+        def debug(self, *args, **kwargs):
+            pass
+
+        def info(self, *args, **kwargs):
+            pass
+
+        def warning(self, *args, **kwargs):
+            pass
+
+        def error(self, *args, **kwargs):
+            pass
+
+        def critical(self, *args, **kwargs):
+            pass
+
+    @staticmethod
+    def _get_logger():
+        """延迟导入 logger，避免循环依赖（lifecycle → logger → config → lifecycle）"""
+        try:
+            from .logger import logger
+
+            return logger
+        except (ImportError, AttributeError):
+            return LifecycleManager._NullLogger()
 
     # 预定义的标准事件列表
     STANDARD_EVENTS = {
@@ -351,23 +350,23 @@ class LifecycleManager:
         total_count = len(self._hooks.get("*", [])) + len(self._hooks.get(event, []))
         for i in range(len(parts) - 1, 0, -1):
             total_count += len(self._hooks.get(".".join(parts[:i]), []))
-        _get_logger().trace(i18n.t("core.lifecycle.emit_enter", event=event, count=total_count))
+        self._get_logger().trace(i18n.t("core.lifecycle.emit_enter", event=event, count=total_count))
 
         # 通配符处理器
         if "*" in self._hooks:
-            _get_logger().trace(i18n.t("core.lifecycle.emit_wildcard", event=event, count=len(self._hooks["*"])))
+            self._get_logger().trace(i18n.t("core.lifecycle.emit_wildcard", event=event, count=len(self._hooks["*"])))
             data = await self._execute_handlers("*", event, data)
 
         # 完整事件名处理器
         if event in self._hooks:
-            _get_logger().trace(i18n.t("core.lifecycle.emit_exact", event=event, count=len(self._hooks[event])))
+            self._get_logger().trace(i18n.t("core.lifecycle.emit_exact", event=event, count=len(self._hooks[event])))
             data = await self._execute_handlers(event, event, data)
 
         # 父级事件处理器（点式结构）
         for i in range(len(parts) - 1, 0, -1):
             parent_event = ".".join(parts[:i])
             if parent_event in self._hooks:
-                _get_logger().trace(
+                self._get_logger().trace(
                     i18n.t("core.lifecycle.emit_parent", parent=parent_event, event=event)
                 )
                 data = await self._execute_handlers(parent_event, event, data)
@@ -480,16 +479,16 @@ class LifecycleManager:
         >>> await lifecycle.submit_event("maintenance", data={"action": "reload"}, to="Chat")
         """
         if event_type is None:
-            _get_logger().error(i18n.t("core.lifecycle.event_type_none"))
+            self._get_logger().error(i18n.t("core.lifecycle.event_type_none"))
             return
 
         if not isinstance(event_type, str) or not event_type:
-            _get_logger().error(
+            self._get_logger().error(
                 i18n.t("core.lifecycle.event_type_empty", type=event_type)
             )
             return
 
-        _get_logger().trace(i18n.t("core.lifecycle.submit_event_enter", event=event_type, source=source))
+        self._get_logger().trace(i18n.t("core.lifecycle.submit_event_enter", event=event_type, source=source))
 
         if timestamp is None:
             timestamp = time.time()
@@ -574,7 +573,7 @@ class LifecycleManager:
                 handler, "__qualname__", getattr(handler, "__name__", str(handler))
             )
             try:
-                _get_logger().trace(
+                self._get_logger().trace(
                     i18n.t("core.lifecycle.handler_exec", handler=hname, priority=priority, event=event)
                 )
                 _t = time.monotonic()
@@ -589,12 +588,12 @@ class LifecycleManager:
                     result = handler(data, **call_kwargs)
                 _elapsed = time.monotonic() - _t
                 if _elapsed > HANDLER_SLOW_THRESHOLD_SECS:
-                    _get_logger().warning(
+                    self._get_logger().warning(
                         f"[Lifecycle] Slow handler {hname} for event '{event}' took {_elapsed:.4f}s"
                     )
                 return result
             except Exception as e:
-                _get_logger().error(
+                self._get_logger().error(
                     i18n.t("core.lifecycle.handler_error", event=event, error=e)
                 )
                 return None
@@ -636,7 +635,7 @@ class LifecycleManager:
                 # 同步上下文不支持异步依赖：记日志并跳过
                 _get_logger().error(str(e))
             except Exception as e:
-                _get_logger().error(
+                self._get_logger().error(
                     i18n.t("core.lifecycle.handler_error", event=event, error=e)
                 )
         return data
