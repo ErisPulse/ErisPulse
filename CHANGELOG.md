@@ -74,6 +74,26 @@
 
 ---
 
+## [2.8.6] - 2026/09/22
+> 正式发布
+
+**版本摘要**
+本版本为 Python 3.10 兼容性修复版：移除 CLI 环境基建中 `tomllib`（Python 3.11+ 标准库）的直接依赖，统一改用项目既有依赖 tomlkit 解析——修复 3.10 环境下 `epsdk init` / `epsdk install` 回写 `pyproject.toml` 依赖清单时报 `No module named 'tomllib'` 的问题。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 升级原因：Python 3.10 用户在 2.8.5 上使用 `epsdk init` / `epsdk install` 会遇到 `ModuleNotFoundError`，本版本修复；其余 Python 版本行为不变
+
+**注意事项**
+- 无破坏性变更；`pyproject.toml` 依赖清单回写行为不变（仍由 tomlkit 保留注释与格式）
+
+### 修复
+
+- @YingXinche
+  - `CLI/utils/package_manager` `append_pyproject_dependencies` 移除 `tomllib` 依赖（Python 3.11+ 标准库，3.10 无）——改为 tomlkit 单次解析直接改写（其文档结构为 dict 子类，读取语义与 tomllib 一致，且省去一次重复解析）；`warn_if_uv_isolated` 内无用的 `tomllib` 占位导入一并移除
+
+---
+
 ## [2.8.5] - 2026/09/21
 > 正式发布
 
