@@ -21,8 +21,6 @@ ErisPulse 命令处理模块
 
 import asyncio
 import inspect
-import re
-import time
 from collections import deque
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any
@@ -63,6 +61,19 @@ from .command_args import (
     parse_duration,
     parse_options_spec,
 )
+from .governance import (
+    GovernanceGate,
+    cooldown_scope_key,
+)
+from .governance import (
+    parse_rate_limit as _parse_rate_limit_impl,
+)
+from .governance import (
+    parse_usage as _parse_usage_impl,
+)
+from .governance import (
+    usage_period_key as _usage_period_key_impl,
+)
 from .interaction import InteractionCancelled, interaction
 from .session_type import get_send_type_and_target_id, infer_receive_type
 from .trace import trace_step
@@ -80,14 +91,9 @@ class CommandHandler:
         self.aliases: dict[str, str] = {}  # 别名映射
         self.groups: dict[str, list[str]] = {}  # 命令组
         self.permissions: dict[str, Callable] = {}  # 权限检查函数
-        # 命令冷却状态（cooldown= 声明，EPRFC-2026-001 方向七）：
-        # 键为 f"{main_name}\x00{scope_key}"（main_name 前缀供注销时按命令清理），
-        # 值为冷却结束时刻（time.monotonic() 秒）。进程内内存，模块卸载自动清理
-        self._cooldowns: dict[str, float] = {}
-        # 命令限流状态（rate_limit= 滑动窗口）：键同冷却；值为窗口内放行时刻 deque
-        self._rate_limits: dict[str, deque] = {}
-        # 配额内存计数（usage=）：storage 持久化的读缓存/回退；键为 命令+键+周期
-        self._usage_counts: dict[str, int] = {}
+        # 命令治理状态（cooldown / rate_limit / usage，EPRFC-2026-001 方向七）：
+        # 状态表与判定拆分至 GovernanceGate 持有，经下方同名 property 透出
+        self._gate = GovernanceGate()
         # 已注册命令名/别名的最大 token 数（命令名支持空格分隔的子命令形式，
         # 如 "admin add"；匹配阶段据此决定最长前缀尝试次数，注册/注销时重算）
         self._max_name_tokens: int = 1
@@ -111,6 +117,23 @@ class CommandHandler:
         # 确保命令 /xxx 始终优先于 on_message / on_group_message 触发
         self._bound_handler: BaseEventHandler | None = None
         self._dispatcher_registered: bool = False
+
+    # 命令治理状态表（真实持有在 GovernanceGate）：
+    # property 透出保持既有访问路径（tests 直接 clear / 读写条目）不变
+    @property
+    def _cooldowns(self) -> dict[str, float]:
+        """{!--< internal-use >!--} 命令冷却状态表（cooldown= 声明）"""
+        return self._gate._cooldowns
+
+    @property
+    def _rate_limits(self) -> dict[str, deque]:
+        """{!--< internal-use >!--} 命令限流状态表（rate_limit= 滑动窗口）"""
+        return self._gate._rate_limits
+
+    @property
+    def _usage_counts(self) -> dict[str, int]:
+        """{!--< internal-use >!--} 配额内存计数表（usage= 持久化读缓存）"""
+        return self._gate._usage_counts
 
     def _refresh_command_config(self) -> None:
         """
@@ -197,29 +220,8 @@ class CommandHandler:
 
     # ==================== 命令治理声明解析（cooldown / rate_limit / usage）====================
 
-    # 限流声明："次数/窗口"，窗口支持可选数值前缀与单字母/全称单位（如
-    # "5/minute"、"10/s"、"3/2m"）；键粒度白名单引自 constants（throttle 共用）
+    # 键粒度白名单（cooldown_key= / rate_limit_key=，与 throttle 共用 constants 定义）
     _KEY_KINDS = GOVERNANCE_KEY_KINDS
-    _RATE_LIMIT_RE = re.compile(
-        r"^(\d+)\s*/\s*((?:\d+(?:\.\d+)?)?\s*(?:seconds?|s|minutes?|m|hours?|h|days?|d))\s*$",
-        re.IGNORECASE,
-    )
-    _WINDOW_AMOUNT_RE = re.compile(r"^(\d+(?:\.\d+)?)?\s*([a-zA-Z]+)$")
-    _RATE_LIMIT_UNITS = {
-        "second": 1.0, "seconds": 1.0, "s": 1.0,
-        "minute": 60.0, "minutes": 60.0, "m": 60.0,
-        "hour": 3600.0, "hours": 3600.0, "h": 3600.0,
-        "day": 86400.0, "days": 86400.0, "d": 86400.0,
-    }
-    # 配额声明的自然周期单位（minute / hour / day）与周期键格式
-    _USAGE_UNITS = {"minute": "minute", "minutes": "minute", "m": "minute",
-                    "hour": "hour", "hours": "hour", "h": "hour",
-                    "day": "day", "days": "day", "d": "day"}
-    _USAGE_PERIOD_FMT = {
-        "minute": "%Y-%m-%dT%H:%M",
-        "hour": "%Y-%m-%dT%H",
-        "day": "%Y-%m-%d",
-    }
 
     @classmethod
     def parse_rate_limit(cls, spec: str) -> "tuple[int, float]":
@@ -233,22 +235,7 @@ class CommandHandler:
         :return: (limit, window_seconds)
         :raises ValueError: 语法非法或数值非正时
         """
-        match = cls._RATE_LIMIT_RE.match(spec or "")
-        if not match:
-            raise ValueError(f"invalid rate limit spec: {spec!r}")
-        limit = int(match.group(1))
-        window_str = match.group(2)
-        # 窗口串 = 可选数值 + 单位词（如 "minute" / "0.3s" / "2 hours"）
-        amount = cls._WINDOW_AMOUNT_RE.match(window_str)
-        if amount is None:
-            raise ValueError(f"invalid rate limit window: {window_str!r}")
-        numeric = amount.group(1) or "1"
-        window = float(numeric) * cls._RATE_LIMIT_UNITS[amount.group(2).lower()]
-        if limit <= 0:
-            raise ValueError(f"rate limit count must be positive: {spec!r}")
-        if window <= 0:
-            raise ValueError(f"rate limit window must be positive: {spec!r}")
-        return limit, window
+        return _parse_rate_limit_impl(spec)
 
     @classmethod
     def parse_usage(cls, spec: str) -> "tuple[int, str] | str":
@@ -262,16 +249,7 @@ class CommandHandler:
         :param spec: 配额声明字符串
         :return: (limit, unit)；语法非法时返回错误描述字符串（调用方包装 ValueError）
         """
-        match = cls._RATE_LIMIT_RE.match(spec or "")
-        if not match:
-            return f"invalid usage spec: {spec!r}"
-        limit = int(match.group(1))
-        unit = cls._USAGE_UNITS.get(match.group(2).lower().lstrip("0123456789. "))
-        if unit is None:
-            return f"unknown usage period: {spec!r} (minute/hour/day)"
-        if limit <= 0:
-            return f"usage count must be positive: {spec!r}"
-        return limit, unit
+        return _parse_usage_impl(spec)
 
     @staticmethod
     def usage_period_key(unit: str) -> str:
@@ -285,9 +263,7 @@ class CommandHandler:
         :return: 周期键（如 ``"2026-09-21"``）
         {!--< /internal-use >!--}
         """
-        import time as _time
-
-        return _time.strftime(CommandHandler._USAGE_PERIOD_FMT[unit], _time.localtime())
+        return _usage_period_key_impl(unit)
 
     # ==================== 作用域上下文（scope 委托） ====================
 
@@ -668,11 +644,8 @@ class CommandHandler:
             if cmd_name in self.permissions:
                 del self.permissions[cmd_name]
 
-            # 清理该命令的冷却 / 限流状态（模块卸载自动清理）
-            prefix = main_name + "\x00"
-            self._cooldowns = {k: v for k, v in self._cooldowns.items() if not k.startswith(prefix)}
-            self._rate_limits = {k: v for k, v in self._rate_limits.items() if not k.startswith(prefix)}
-            self._usage_counts = {k: v for k, v in self._usage_counts.items() if not k.startswith(prefix)}
+            # 清理该命令的冷却 / 限流 / 配额状态（模块卸载自动清理）
+            self._gate.clear_command(main_name)
 
             # 最后移除命令本身
             del self.commands[cmd_name]
@@ -708,11 +681,8 @@ class CommandHandler:
 
             self.permissions.pop(cmd_name, None)
 
-            # 清理该命令的冷却 / 限流状态（模块卸载自动清理）
-            prefix = main_name + "\x00"
-            self._cooldowns = {k: v for k, v in self._cooldowns.items() if not k.startswith(prefix)}
-            self._rate_limits = {k: v for k, v in self._rate_limits.items() if not k.startswith(prefix)}
-            self._usage_counts = {k: v for k, v in self._usage_counts.items() if not k.startswith(prefix)}
+            # 清理该命令的冷却 / 限流 / 配额状态（模块卸载自动清理）
+            self._gate.clear_command(main_name)
 
             del self.commands[cmd_name]
 
@@ -1314,136 +1284,23 @@ class CommandHandler:
                     )
                     return True
 
-            # 冷却判定（cooldown=，EPRFC-2026-001 方向七）：位于全部权限检查
-            # 与参数解析之后——无权限用户不触发冷却计时，参数错误不消耗冷却。
-            # 命中默认静默丢弃（对称于作用域静默）；命令已在命中时认领，
-            # 保持不漏给低优先级消息处理器
-            if _effective.get("cooldown_seconds"):
-                scope_key = self._cooldown_scope_key(
-                    _effective.get("cooldown_key", "user"), event
-                )
-                cooldown_entry = f"{cmd_info['main_name']}\x00{scope_key}"
-                _now = time.monotonic()
-                _deadline = self._cooldowns.get(cooldown_entry, 0.0)
-                if _now < _deadline:
-                    trace_step(
-                        "cooldown",
-                        "dropped",
-                        "core.trace.cooldown_dropped",
-                        command=actual_cmd_name,
-                        remain=f"{_deadline - _now:.1f}",
-                    )
-                    logger.trace(
-                        i18n.t(
-                            "core.command.cooldown_hit",
-                            cmd_name=actual_cmd_name,
-                            scope=scope_key,
-                            remain=f"{_deadline - _now:.1f}",
-                            platform=event.get("platform", UNKNOWN_PLATFORM),
-                            user_id=event.get("user_id", ""),
-                        )
-                    )
-                    if _effective.get("cooldown_reply"):
-                        await self._send_args_error(event, _effective["cooldown_reply"])
-                    return True
-                # 执行前即开始计时：实际冷却窗口不受处理耗时影响
-                self._cooldowns[cooldown_entry] = _now + _effective["cooldown_seconds"]
-
-            # 限流判定（rate_limit=，滑动窗口）：与冷却同位次序——权限与参数
-            # 通过后、实际执行前计数；窗口满时默认静默丢弃（可选回复），
-            # 命令保持已认领（不漏给低优先级消息处理器）
-            if _effective.get("rate_limit_spec"):
-                _now = time.monotonic()
-                _limit, _window = _effective["rate_limit_spec"]
-                _rl_scope = self._cooldown_scope_key(
-                    _effective.get("rate_limit_key", "user"), event
-                )
-                _rl_entry = f"{cmd_info['main_name']}\x00{_rl_scope}"
-                _dq = self._rate_limits.setdefault(_rl_entry, deque())
-                while _dq and _dq[0] <= _now - _window:
-                    _dq.popleft()
-                if len(_dq) >= _limit:
-                    logger.trace(
-                        i18n.t(
-                            "core.command.rate_limit_hit",
-                            cmd_name=actual_cmd_name,
-                            scope=_rl_scope,
-                            limit=_limit,
-                            window=_window,
-                            platform=event.get("platform", UNKNOWN_PLATFORM),
-                            user_id=event.get("user_id", ""),
-                        )
-                    )
-                    trace_step(
-                        "rate_limit",
-                        "dropped",
-                        "core.trace.rate_limit_dropped",
-                        command=actual_cmd_name,
-                        limit=str(_limit),
-                        window=f"{_window:g}",
-                    )
-                    if _effective.get("rate_limit_reply"):
-                        await self._send_args_error(event, _effective["rate_limit_reply"])
-                    return True
-                _dq.append(_now)
-
-            # 配额判定（usage=，自然周期）：与限流同位次序；计数经 storage KV
-            # 持久化（重启不丢），存储异常时回退进程内内存计数（不阻塞命令）
-            if _effective.get("usage_spec"):
-                _u_limit, _u_unit = _effective["usage_spec"]
-                _u_scope = self._cooldown_scope_key(
-                    _effective.get("usage_limit_key", "user"), event
-                )
-                _u_period = self.usage_period_key(_u_unit)
-                _SEP = "\x00"
-                _u_key = _SEP.join((cmd_info['main_name'], _u_scope, _u_period))
-                _used = self._usage_counts.get(_u_key, 0)
-                _persisted = False
-                from ..storage import storage
-                try:
-
-                    # wait_for 兜底：后台桥接 loop 不可用（如裸 asyncio.run 测试
-                    # 场景）时限时回退内存计数，避免分发路径卡死
-                    _stored = await asyncio.wait_for(
-                        storage.aget(f"erispulse.usage{chr(0)}{_u_key}"), timeout=1.0
-                    )
-                    if isinstance(_stored, int) and _stored > _used:
-                        _used = _stored
-                    _persisted = True
-                except Exception as e:
-                    logger.trace(f"usage quota storage fallback: {e}")
-                if _used >= _u_limit:
-                    logger.trace(
-                        i18n.t(
-                            "core.command.usage_hit",
-                            cmd_name=actual_cmd_name,
-                            scope=_u_scope,
-                            limit=_u_limit,
-                            period=_u_period,
-                            platform=event.get("platform", UNKNOWN_PLATFORM),
-                            user_id=event.get("user_id", ""),
-                        )
-                    )
-                    trace_step(
-                        "usage",
-                        "dropped",
-                        "core.trace.usage_dropped",
-                        command=actual_cmd_name,
-                        limit=str(_u_limit),
-                        period=_u_period,
-                    )
-                    if _effective.get("usage_limit_reply"):
-                        await self._send_args_error(event, _effective["usage_limit_reply"])
-                    return True
-                self._usage_counts[_u_key] = _used + 1
-                if _persisted:
-                    try:
-                        await asyncio.wait_for(
-                            storage.aset(f"erispulse.usage{chr(0)}{_u_key}", _used + 1),
-                            timeout=1.0,
-                        )
-                    except Exception as e:
-                        logger.trace(f"usage quota persist failed: {e}")
+            # 治理判定（cooldown / rate_limit / usage，EPRFC-2026-001 方向七）：
+            # 位于全部权限检查与参数解析之后——无权限用户不触发计时，
+            # 参数错误不消耗。命中默认静默丢弃（对称于作用域静默；声明了
+            # *_reply= 时回复）；命令已在命中时认领，保持不漏给低优先级
+            # 消息处理器。判定实现见 GovernanceGate（Core/Event/governance.py）
+            if await self._gate.check_cooldown(
+                cmd_info["main_name"], actual_cmd_name, _effective, event, self._send_args_error
+            ):
+                return True
+            if await self._gate.check_rate_limit(
+                cmd_info["main_name"], actual_cmd_name, _effective, event, self._send_args_error
+            ):
+                return True
+            if await self._gate.check_usage(
+                cmd_info["main_name"], actual_cmd_name, _effective, event, self._send_args_error
+            ):
+                return True
 
             # 废弃声明（deprecated=）：调用时自动回复废弃文案；默认继续执行，
             # deprecated_reject=True 时拒绝执行（命令已认领，不漏给消息处理器）
@@ -1579,66 +1436,14 @@ class CommandHandler:
         """
         await interaction.resolve(event)
 
-    async def _send_permission_denied(self, event: dict[str, Any]):
+    async def _send_event_text(self, event: dict[str, Any], text: str, *, error_log_key: str) -> None:
         """
-        发送权限拒绝消息
-
         {!--< internal-use >!--}
-        内部使用的方法
+        向事件来源会话发送文本（各 _send_* 提示的公共发送通道）
 
         :param event: 事件数据
-        """
-        try:
-            platform = event.get("platform")
-
-            # 使用会话类型管理模块获取发送类型和目标ID
-            send_type, target_id = get_send_type_and_target_id(event, platform)
-
-            if platform and hasattr(adapter, platform):
-                adapter_instance = getattr(adapter, platform)
-                bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
-                send_dsl = adapter_instance.Send.To(send_type, target_id)
-                if bot_id:
-                    send_dsl = send_dsl.Using(bot_id)
-                await send_dsl.Text(i18n.t("core.event.command.permission_denied"))
-        except Exception as e:
-            logger.error(i18n.t("core.event.command.send_permission_denied_failed", error=e))
-
-    async def _send_command_error(self, event: dict[str, Any], error: str):
-        """
-        发送命令错误消息
-
-        {!--< internal-use >!--}
-        内部使用的方法
-
-        :param event: 事件数据
-        :param error: 错误信息
-        """
-        try:
-            platform = event.get("platform")
-
-            # 使用会话类型管理模块获取发送类型和目标ID
-            send_type, target_id = get_send_type_and_target_id(event, platform)
-
-            if platform and hasattr(adapter, platform):
-                adapter_instance = getattr(adapter, platform)
-                bot_id = event.get("self", {}).get("account_id", "") or event.get("self", {}).get("user_id", "")
-                send_dsl = adapter_instance.Send.To(send_type, target_id)
-                if bot_id:
-                    send_dsl = send_dsl.Using(bot_id)
-                await send_dsl.Text(i18n.t("core.event.command.execution_failed", error=error))
-        except Exception as e:
-            logger.error(i18n.t("core.event.command.send_error_failed", error=e))
-
-    async def _send_args_error(self, event: dict[str, Any], text: str):
-        """
-        发送命令参数错误消息（args= / options= 解析失败时的本地化提示 + 用法）
-
-        {!--< internal-use >!--}
-        内部使用的方法
-
-        :param event: 事件数据
-        :param text: 已本地化的错误文本（含用法行）
+        :param text: 已本地化的待发送文本
+        :param error_log_key: 发送失败时的错误日志 i18n 键
         """
         try:
             platform = event.get("platform")
@@ -1654,7 +1459,54 @@ class CommandHandler:
                     send_dsl = send_dsl.Using(bot_id)
                 await send_dsl.Text(text)
         except Exception as e:
-            logger.error(i18n.t("core.event.command.send_error_failed", error=e))
+            logger.error(i18n.t(error_log_key, error=e))
+
+    async def _send_permission_denied(self, event: dict[str, Any]):
+        """
+        发送权限拒绝消息
+
+        {!--< internal-use >!--}
+        内部使用的方法
+
+        :param event: 事件数据
+        """
+        await self._send_event_text(
+            event,
+            i18n.t("core.event.command.permission_denied"),
+            error_log_key="core.event.command.send_permission_denied_failed",
+        )
+
+    async def _send_command_error(self, event: dict[str, Any], error: str):
+        """
+        发送命令错误消息
+
+        {!--< internal-use >!--}
+        内部使用的方法
+
+        :param event: 事件数据
+        :param error: 错误信息
+        """
+        await self._send_event_text(
+            event,
+            i18n.t("core.event.command.execution_failed", error=error),
+            error_log_key="core.event.command.send_error_failed",
+        )
+
+    async def _send_args_error(self, event: dict[str, Any], text: str):
+        """
+        发送命令参数错误消息（args= / options= 解析失败时的本地化提示 + 用法）
+
+        {!--< internal-use >!--}
+        内部使用的方法
+
+        :param event: 事件数据
+        :param text: 已本地化的错误文本（含用法行）
+        """
+        await self._send_event_text(
+            event,
+            text,
+            error_log_key="core.event.command.send_error_failed",
+        )
 
     @staticmethod
     def _cooldown_scope_key(kind: str, event: "Event") -> str:
@@ -1666,16 +1518,7 @@ class CommandHandler:
         :param event: 事件数据
         :return: 作用域键字符串
         """
-        if kind == "global":
-            return "global"
-        platform = event.get("platform", UNKNOWN_PLATFORM)
-        bot_id = event.get_self_account_id() or ""
-        if kind == "session":
-            from ..scope import scope
-
-            target = scope.session_id_from_event(event) or ""
-            return f"{platform}:{bot_id}:{target}"
-        return f"{platform}:{bot_id}:{event.get('user_id', '')}"
+        return cooldown_scope_key(kind, event)
 
     def _usage_line(self, cmd_name: str, effective: dict, display_prefix: str | None = None) -> str:
         """
@@ -1738,9 +1581,7 @@ class CommandHandler:
         self.aliases.clear()
         self.groups.clear()
         self.permissions.clear()
-        self._cooldowns.clear()
-        self._rate_limits.clear()
-        self._usage_counts.clear()
+        self._gate.clear_all()
         self._recompute_max_name_tokens()
         interaction.clear()
         # 从共享 handler 中注销命令分发器（不清除其他 handler 的消息处理器）
