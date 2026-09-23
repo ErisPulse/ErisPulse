@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "3044ee885c1e743ff683095b14cc7fe1",
-  "file_hash": "3044ee885c1e743ff683095b14cc7fe1",
-  "translated_at": "2026-09-21T11:17:23.108719",
+  "hash": "941cc1622a4d0a015f06a0c7fef322b6",
+  "file_hash": "941cc1622a4d0a015f06a0c7fef322b6",
+  "translated_at": "2026-09-23T13:02:22.626722",
   "target_lang": "ja",
   "chunks": [
     {
@@ -26,8 +26,8 @@
       "translation": "## インストールの確認\n\n### インストールの確認\n\n```bash\n# ErisPulse のバージョンを確認\nepsdk --version\n```\n\n### テストの実行\n\n```bash\n# プロジェクトを実行\nepsdk run main.py\n```\n\n上記のような出力が表示された場合、インストールが正常に完了しています。\n\n```\n[INFO] ErisPulse の初期化を開始しています...\n[INFO] アダプタをロードしました: Yunhu\n[INFO] モジュールをロードしました: MyModule\n[INFO] ErisPulse の初期化が完了しました\n```"
     },
     {
-      "hash": "5534551169739058f16aeba5442783c0",
-      "translation": "## 常見問題\n\n### インストール失敗\n\n1. Python のバージョンが 3.10 以上かどうかを確認してください（推奨バージョンは 3.10 - 3.13）\n2. `pip install` の代わりに `uv pip install ErisPulse` を試してください\n3. 権限エラーが発生した場合は、`pip install --user ErisPulse` を試すか、仮想環境を使用してください\n4. 企業のプロキシ環境で SSL 証明書エラーが発生した場合は、`pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse` を試してください\n5. ネットワーク接続が正常であることを確認し、pip ソースがアクセス可能であることを確認してください\n\n### 設定エラー\n\n1. `config.toml` の構文が正しいかどうかを確認してください（TOML 形式はインデントや引用符に敏感です）\n2. 必須の設定項目がすべて記入されていることを確認してください\n3. ターミナルのログを確認して詳細なエラー情報を取得してください\n4. `epsdk init` を使用して設定ファイルを再生成してください\n\n### モジュールインストール失敗\n\n1. モジュール名のスペルが正しいことを確認してください（大文字・小文字が区別されます）\n2. ネットワーク接続を確認してください\n3. `epsdk list-remote` を使用して利用可能なモジュール一覧を確認してください\n4. モジュールが現在使用している SDK バージョンと互換性があることを確認してください\n\n### Windows PowerShell 実行ポリシー\n\nPowerShell で「このシステムではスクリプトの実行が禁止されています」というメッセージが表示された場合：\n\n```powershell\nSet-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser\n```\n\n### Debian/Ubuntu 仮想環境の作成失敗\n\nインストールスクリプトで「仮想環境の作成に失敗しました」と表示され、エラーメッセージに `ensurepip is not available` が含まれている場合は、Debian/Ubuntu ではデフォルトで `python3-venv` がインストールされていないためです（システム Python の `ensurepip` が無効化されています）：\n\n```bash\nsudo apt install python3.13-venv   # 実際の Python バージョンに応じて対応パッケージをインストール\n# または、汎用的なメタパッケージをインストール：\nsudo apt install python3-venv\n```\n\nインストール後にインストールスクリプトを再実行してください。新しいインストールスクリプトでは、この問題が検出された場合、自動的に対応するシステムパッケージのインストールを促すか、`uv venv` を使用して `ensurepip` に依存しない仮想環境を作成することもできます。"
+      "hash": "727664c87a983ef55dd04fd57ec28a48",
+      "translation": "## よくある質問\n\n### インストール失敗\n\n1. Python のバージョンが 3.10 以上であるか確認してください（推奨バージョンは 3.10 - 3.14。3.14t free-threaded は GIL なしビルドで、現時点では正式サポート対象外です。フレームワークは実験的な CI スモークテストにより継続的に監視しています）\n2. `pip install` の代わりに `uv pip install ErisPulse` を使用してみてください\n3. 権限エラーが発生する場合は、`pip install --user ErisPulse` を試すか、仮想環境を使用してください\n4. 企業のプロキシ環境で SSL 証明書エラーが発生した場合は、`pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse` を試してください\n5. ネットワーク接続が正常であることを確認し、pip ソースがアクセス可能であることを確認してください\n\n### 設定エラー\n\n1. `config.toml` の構文が正しいか確認してください（TOML 形式はインデントや引用符に敏感です）\n2. 必須の設定項目がすべて記入されているか確認してください\n3. 端末ログを確認し、詳細なエラー情報を取得してください\n4. `epsdk init` を使用して設定ファイルを再生成してください\n\n### モジュールのインストール失敗\n\n1. モジュール名のスペルが正しいか確認してください（大文字・小文字が区別されます）\n2. ネットワーク接続を確認してください\n3. `epsdk list-remote` を使用して利用可能なモジュールリストを確認してください\n4. モジュールが現在使用している SDK バージョンと互換性があるか確認してください\n\n### Windows PowerShell 実行ポリシー\n\nPowerShell で「ファイルをロードできません。このシステムではスクリプトの実行が禁止されています」というメッセージが表示された場合：\n\n```powershell\nSet-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser\n```\n\n### Debian/Ubuntu 仮想環境作成失敗\n\nインストールスクリプトで「仮想環境の作成に失敗しました」と表示され、エラーメッセージに `ensurepip is not available` が含まれている場合は、Debian/Ubuntu ではデフォルトで `python3-venv` がインストールされていないため（システム Python の `ensurepip` が無効になっています）です：\n\n```bash\nsudo apt install python3.13-venv   # 実際の Python バージョンに合わせて対応するパッケージをインストール\n# または、汎用的なメタパッケージをインストール：\nsudo apt install python3-venv\n```\n\nインストール後、再度インストールスクリプトを実行してください。新しいインストールスクリプトでは、この問題を検出すると自動的に対応するシステムパッケージのインストールを試みるか、ユーザーに尋ねます。また、`uv venv`（`ensurepip` に依存しない）を使用することもできます。"
     },
     {
       "hash": "f8f13704538cc520848853879c0ee83f",
