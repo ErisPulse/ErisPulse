@@ -20,9 +20,9 @@
 ## 统计信息
 
 - **模块总数**: 127
-- **类总数**: 161（包括 4 个嵌套类）
-- **函数总数**: 315
-- **方法总数**: 1487
+- **类总数**: 164（包括 4 个嵌套类）
+- **函数总数**: 316
+- **方法总数**: 1491
 
 ---
 
@@ -251,7 +251,7 @@
 
 ### [ErisPulse.Core.Bases.model](ErisPulse/Core/Bases/model.md)
 
-5 个类 | 37 个方法 | 3 个函数
+8 个类 | 41 个方法 | 4 个函数
 
 
 ### [ErisPulse.Core.Bases.module](ErisPulse/Core/Bases/module.md)

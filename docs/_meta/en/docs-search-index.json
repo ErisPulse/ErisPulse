@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1661,
+  "total_keywords": 1662,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -5338,6 +5338,14 @@
         "title": "Declared Arguments and Options (`args=` / `options=`)"
       }
     ],
+    "Declaring Models": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 5,
+        "level": 2,
+        "title": "Declaring Models"
+      }
+    ],
     "Declaring i18n Fields": [
       {
         "document": "advanced/i18n.md",
@@ -6918,12 +6926,12 @@
         "title": "For Module Developers"
       }
     ],
-    "Foreign Keys (Foundation of Relationship Mapping)": [
+    "Foreign Keys (Foundation for Relationship Mapping)": [
       {
         "document": "developer-guide/orm.md",
         "line": 106,
         "level": 2,
-        "title": "Foreign Keys (Foundation of Relationship Mapping)"
+        "title": "Foreign Keys (Foundation for Relationship Mapping)"
       }
     ],
     "Form Message Segment (yunhu_user_form)": [
@@ -9274,14 +9282,6 @@
         "title": "Mode 2: iframe Embedding"
       }
     ],
-    "Model Declaration": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 5,
-        "level": 2,
-        "title": "Model Declaration"
-      }
-    ],
     "Modifiers": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -11272,6 +11272,14 @@
         "line": 353,
         "level": 2,
         "title": "Related Links"
+      }
+    ],
+    "Relationship Mapping (relationship)": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 120,
+        "level": 2,
+        "title": "Relationship Mapping (relationship)"
       }
     ],
     "Relationship between self.user_id and Using": [

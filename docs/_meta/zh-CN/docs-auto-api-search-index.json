@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1926,
+  "total_keywords": 1932,
   "keywords": {
     "ErisPulse API 文档": [
       {
@@ -2952,6 +2952,14 @@
         "title": "`__init__(python_executable: str | None = None)`"
       }
     ],
+    "`__init__(related: str | type[Model], foreign_key: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
+        "line": 338,
+        "level": 5,
+        "title": "`__init__(related: str | type[Model], foreign_key: str)`"
+      }
+    ],
     "`__init__(request)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/router.md",
@@ -3145,7 +3153,7 @@
     "`_annotation()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 101,
+        "line": 118,
         "level": 5,
         "title": "`_annotation()`"
       }
@@ -3703,7 +3711,7 @@
     "`_combine(conditions: tuple)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 66,
+        "line": 83,
         "level": 3,
         "title": "`_combine(conditions: tuple)`"
       }
@@ -4725,7 +4733,7 @@
     "`_get_storage()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 287,
+        "line": 393,
         "level": 5,
         "title": "`_get_storage()`"
       }
@@ -5857,7 +5865,7 @@
     "`_pk_field()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 266,
+        "line": 372,
         "level": 5,
         "title": "`_pk_field()`"
       }
@@ -6033,7 +6041,7 @@
     "`_quote_ident(name: str, dialect: SQLDialect | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 59,
+        "line": 60,
         "level": 3,
         "title": "`_quote_ident(name: str, dialect: SQLDialect | None = None)`"
       }
@@ -6194,6 +6202,14 @@
         "line": 665,
         "level": 5,
         "title": "`_register_ws_endpoint(full_path: str, module_name: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None, auto_accept: bool = DEFAULT_WS_AUTO_ACCEPT)`"
+      }
+    ],
+    "`_related_model(owner: type)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
+        "line": 347,
+        "level": 5,
+        "title": "`_related_model(owner: type)`"
       }
     ],
     "`_reload(_data: dict | None = None)`": [
@@ -6503,7 +6519,7 @@
     "`_row_to_instance(row: dict)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 294,
+        "line": 400,
         "level": 5,
         "title": "`_row_to_instance(row: dict)`"
       }
@@ -6861,7 +6877,7 @@
     "`_sql_literal(value: Any)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 150,
+        "line": 167,
         "level": 5,
         "title": "`_sql_literal(value: Any)`"
       }
@@ -7091,7 +7107,7 @@
     "`_validate()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 308,
+        "line": 414,
         "level": 5,
         "title": "`_validate()`"
       }
@@ -7099,7 +7115,7 @@
     "`_validate_column(name: str)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 52,
+        "line": 53,
         "level": 3,
         "title": "`_validate_column(name: str)`"
       }
@@ -7389,7 +7405,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 365,
+        "line": 471,
         "level": 5,
         "title": "`all()`"
       }
@@ -7999,7 +8015,7 @@
     "`async _insert_and_backfill(instance: Model)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 393,
+        "line": 499,
         "level": 5,
         "title": "`async _insert_and_backfill(instance: Model)`"
       }
@@ -8023,7 +8039,7 @@
     "`async _migrate_new_columns(storage)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 329,
+        "line": 435,
         "level": 5,
         "title": "`async _migrate_new_columns(storage)`"
       }
@@ -8599,7 +8615,7 @@
     "`async all()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 209,
+        "line": 226,
         "level": 5,
         "title": "`async all()`"
       }
@@ -8859,13 +8875,13 @@
     "`async count()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 223,
+        "line": 240,
         "level": 5,
         "title": "`async count()`"
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 407,
+        "line": 513,
         "level": 5,
         "title": "`async count()`"
       }
@@ -8873,7 +8889,13 @@
     "`async create()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 381,
+        "line": 287,
+        "level": 5,
+        "title": "`async create()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
+        "line": 487,
         "level": 5,
         "title": "`async create()`"
       }
@@ -8881,7 +8903,7 @@
     "`async create_table()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 315,
+        "line": 421,
         "level": 5,
         "title": "`async create_table()`"
       }
@@ -8889,13 +8911,13 @@
     "`async delete()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 239,
+        "line": 256,
         "level": 5,
         "title": "`async delete()`"
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 437,
+        "line": 543,
         "level": 5,
         "title": "`async delete()`"
       }
@@ -8917,7 +8939,7 @@
     "`async delete_all()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 414,
+        "line": 520,
         "level": 5,
         "title": "`async delete_all()`"
       }
@@ -8941,7 +8963,7 @@
     "`async drop_table()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 342,
+        "line": 448,
         "level": 5,
         "title": "`async drop_table()`"
       }
@@ -8981,7 +9003,7 @@
     "`async first()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 216,
+        "line": 233,
         "level": 5,
         "title": "`async first()`"
       }
@@ -8997,7 +9019,7 @@
     "`async get()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 372,
+        "line": 478,
         "level": 5,
         "title": "`async get()`"
       }
@@ -9219,7 +9241,7 @@
     "`async has_table()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 349,
+        "line": 455,
         "level": 5,
         "title": "`async has_table()`"
       }
@@ -9673,7 +9695,7 @@
     "`async save()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 428,
+        "line": 534,
         "level": 5,
         "title": "`async save()`"
       },
@@ -9919,7 +9941,7 @@
     "`async update()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 230,
+        "line": 247,
         "level": 5,
         "title": "`async update()`"
       }
@@ -9927,7 +9949,7 @@
     "`async update_all()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 421,
+        "line": 527,
         "level": 5,
         "title": "`async update_all()`"
       }
@@ -10515,7 +10537,7 @@
     "`class ColumnExpr`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 157,
+        "line": 174,
         "level": 3,
         "title": "`class ColumnExpr`"
       }
@@ -10563,7 +10585,7 @@
     "`class Condition`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 172,
+        "line": 189,
         "level": 3,
         "title": "`class Condition`"
       }
@@ -10667,7 +10689,7 @@
     "`class Field`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 76,
+        "line": 93,
         "level": 3,
         "title": "`class Field`"
       }
@@ -10923,7 +10945,7 @@
     "`class Model`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 248,
+        "line": 354,
         "level": 3,
         "title": "`class Model`"
       }
@@ -11107,9 +11129,17 @@
     "`class QuerySet`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 189,
+        "line": 206,
         "level": 3,
         "title": "`class QuerySet`"
+      }
+    ],
+    "`class Relationship`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
+        "line": 305,
+        "level": 3,
+        "title": "`class Relationship`"
       }
     ],
     "`class ReloadHandler(FileSystemEventHandler)`": [
@@ -11552,6 +11582,22 @@
         "title": "`class _PriorityQueue`"
       }
     ],
+    "`class _RelatedMany(QuerySet)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
+        "line": 265,
+        "level": 3,
+        "title": "`class _RelatedMany(QuerySet)`"
+      }
+    ],
+    "`class _RelatedOne`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
+        "line": 299,
+        "level": 3,
+        "title": "`class _RelatedOne`"
+      }
+    ],
     "`class _RemoteDist`": [
       {
         "document": "api-reference/auto_api/ErisPulse/finders/bases/finder.md",
@@ -11747,7 +11793,7 @@
     "`column_definition()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 143,
+        "line": 160,
         "level": 5,
         "title": "`column_definition()`"
       }
@@ -11755,7 +11801,7 @@
     "`columns()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 280,
+        "line": 386,
         "level": 5,
         "title": "`columns()`"
       }
@@ -11771,7 +11817,7 @@
     "`compile(dialect: SQLDialect | None = None)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 180,
+        "line": 197,
         "level": 5,
         "title": "`compile(dialect: SQLDialect | None = None)`"
       }
@@ -12187,7 +12233,7 @@
     "`effective_default()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 115,
+        "line": 132,
         "level": 5,
         "title": "`effective_default()`"
       }
@@ -13831,7 +13877,7 @@
     "`in_(values: list | tuple)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 165,
+        "line": 182,
         "level": 5,
         "title": "`in_(values: list | tuple)`"
       }
@@ -14099,7 +14145,7 @@
     "`is_json()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 129,
+        "line": 146,
         "level": 5,
         "title": "`is_json()`"
       }
@@ -14911,7 +14957,7 @@
     "`order_by()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 202,
+        "line": 219,
         "level": 5,
         "title": "`order_by()`"
       }
@@ -15458,6 +15504,14 @@
         "title": "`rejections()`"
       }
     ],
+    "`relationship(related: str | type[Model], foreign_key: str)`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
+        "line": 67,
+        "level": 3,
+        "title": "`relationship(related: str | type[Model], foreign_key: str)`"
+      }
+    ],
     "`release()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
@@ -15697,7 +15751,7 @@
     "`required()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 108,
+        "line": 125,
         "level": 5,
         "title": "`required()`"
       }
@@ -16225,7 +16279,7 @@
     "`sql_type()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 136,
+        "line": 153,
         "level": 5,
         "title": "`sql_type()`"
       }
@@ -16581,7 +16635,7 @@
     "`table_name()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 273,
+        "line": 379,
         "level": 5,
         "title": "`table_name()`"
       }
@@ -16597,7 +16651,7 @@
     "`to_db_value(value: Any)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 122,
+        "line": 139,
         "level": 5,
         "title": "`to_db_value(value: Any)`"
       }
@@ -16605,7 +16659,7 @@
     "`to_dict()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 301,
+        "line": 407,
         "level": 5,
         "title": "`to_dict()`"
       },
@@ -17137,7 +17191,13 @@
     "`where()`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 356,
+        "line": 275,
+        "level": 5,
+        "title": "`where()`"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
+        "line": 462,
         "level": 5,
         "title": "`where()`"
       }
@@ -17227,7 +17287,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 49,
+        "line": 50,
         "level": 2,
         "title": "函数列表"
       },
@@ -17699,31 +17759,43 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 98,
+        "line": 115,
         "level": 4,
         "title": "方法列表"
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 162,
+        "line": 179,
         "level": 4,
         "title": "方法列表"
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 177,
+        "line": 194,
         "level": 4,
         "title": "方法列表"
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 199,
+        "line": 216,
         "level": 4,
         "title": "方法列表"
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 263,
+        "line": 272,
+        "level": 4,
+        "title": "方法列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
+        "line": 335,
+        "level": 4,
+        "title": "方法列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
+        "line": 369,
         "level": 4,
         "title": "方法列表"
       },
@@ -19177,7 +19249,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/model.md",
-        "line": 73,
+        "line": 90,
         "level": 2,
         "title": "类列表"
       },

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1701,
+  "total_keywords": 1702,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -11324,14 +11324,6 @@
         "title": "基礎返信"
       }
     ],
-    "境界と注意事項": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 78,
-        "level": 2,
-        "title": "境界と注意事項"
-      }
-    ],
     "変換プロセス": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -14388,6 +14380,14 @@
         "title": "転送機能"
       }
     ],
+    "辺界と注意事項": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 78,
+        "level": 2,
+        "title": "辺界と注意事項"
+      }
+    ],
     "近接マッピング原則": [
       {
         "document": "advanced/i18n.md",
@@ -14872,6 +14872,14 @@
         "line": 1,
         "level": 1,
         "title": "開発者ガイド"
+      }
+    ],
+    "関係マッピング（relationship）": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 120,
+        "level": 2,
+        "title": "関係マッピング（relationship）"
       }
     ],
     "関連ドキュメント": [
