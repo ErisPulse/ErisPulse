@@ -70,110 +70,6 @@ ErisPulse SDK 主类
 > - context: 模块上下文管理（owner_scope / get_current_owner / trace-id / 消息事务账本）
 
 
-#### 嵌套类
-
-
-##### `class Initializer`
-
-初始化协调器
-
-协调适配器和模块的加载流程，提供统一的初始化接口
-
-> **提示**
-> 使用方式：
-> >>> initializer = Initializer(sdk_instance)
-> >>> success = await initializer.init()
-
-
-###### 方法列表
-
-
-####### `__init__(sdk_instance: SDK)`
-
-初始化协调器
-
-- **sdk_instance** (`SDK`): 实例
-
----
-
-
-####### `__getattr__(name: str)`
-
-将未找到的属性委托给 SDK 实例（如 logger、adapter 等）
-
----
-
-
-####### `async init()`
-
-初始化所有模块和适配器
-
-执行步骤:
-1. 并行发现适配器和模块
-2. 注册适配器
-3. 启动适配器
-4. 注册模块
-5. 初始化模块
-6. 启动路由服务器
-
-**返回值** (`bool`): 初始化是否成功
-
-**异常**: `ImportError` - 当加载失败时抛出
-
----
-
-
-##### `class Uninitializer`
-
-反初始化协调器
-
-协调适配器和模块的卸载流程，提供统一的反初始化接口
-
-> **提示**
-> 使用方式：
-> >>> uninitializer = Uninitializer(sdk_instance)
-> >>> success = await uninitializer.uninit()
-
-
-###### 方法列表
-
-
-####### `__init__(sdk_instance: SDK)`
-
-反初始化协调器
-
-- **sdk_instance** (`SDK`): 实例
-
----
-
-
-####### `__getattr__(name: str)`
-
-将未找到的属性委托给 SDK 实例（如 logger、adapter 等）
-
----
-
-
-####### `async uninit()`
-
-执行反初始化
-
-执行步骤:
-1. 关闭所有适配器实例
-2. 卸载所有模块
-3. 停止路由服务器
-4. 清理所有事件处理器
-5. 清理适配器管理器和模块管理器
-6. 清理 LazyModule 引用
-7. 清理单例残留状态
-8. 清理 SDK 模块属性
-9. 重置初始化状态
-
-**返回值** (`bool`): 反初始化是否成功
-
----
-
-
 #### 方法列表
 
 
@@ -245,22 +141,7 @@ ErisPulse SDK 主类
 ##### `_start_proactive_gc()`
 
 > **内部方法**
-启动主动 GC 后台任务
-
-定期执行 Python GC 和内部资源回收（离线 Bot 清理等），
-防止长期运行时的内存增长。
-
-GC 行为由多项框架配置控制（均支持热更新，变更时即时重启任务）：
-
-- ``proactive_gc_interval``: 回收间隔秒数（0 禁用）
-- ``proactive_gc_generation``: 常规轮次回收分代（0/1/2，钳制到 0..2）
-- ``proactive_gc_full_every``: 每 N 轮做一次全量回收（0 禁用）
-- ``proactive_gc_memory_growth_mb``: 全量回收的内存增长门限（0 不设限）
-- ``proactive_gc_idle_only``: 事件洪峰时跳过 Python GC（避免停顿竞争）
-- ``proactive_gc_gen0_min``: gen0 垃圾量下限，低于则跳过回收（空转轮次零开销）
-
-初始化阶段已调用 ``gc.freeze()`` 将框架对象移入永久代，
-此处 ``gc.collect()`` 仅扫描运行期新建对象。
+启动主动 GC 后台任务（实现见 ``runtime/proactive_gc.start_proactive_gc``）
 
 ---
 
@@ -268,7 +149,7 @@ GC 行为由多项框架配置控制（均支持热更新，变更时即时重�
 ##### `_stop_proactive_gc()`
 
 > **内部方法**
-停止主动 GC 后台任务，并反注册配置变更钩子
+停止主动 GC 后台任务并反注册配置钩子（实现见 ``runtime/proactive_gc.stop_proactive_gc``）
 
 ---
 
@@ -276,10 +157,7 @@ GC 行为由多项框架配置控制（均支持热更新，变更时即时重�
 ##### `_read_gc_config()`
 
 > **内部方法**
-读取并钳制主动 GC 相关框架配置
-
-**返回值** (```(interval,`): generation, full_every, growth_mb, idle_only, gen0_min)``
-         元组，值均已钳制到合法范围；``interval`` 为秒（支持小数）
+读取并钳制主动 GC 框架配置（实现见 ``runtime/proactive_gc.read_gc_config``）
 
 ---
 
@@ -287,10 +165,7 @@ GC 行为由多项框架配置控制（均支持热更新，变更时即时重�
 ##### `_on_gc_config_event(_data: dict)`
 
 > **内部方法**
-``config.set`` / ``config.updated`` 回调：proactive_gc_* 配置变化时重启 GC 任务
-
-相比旧实现"每轮重读"，此钩子使配置变更（含 0→N 重新启用）即时生效。
-从后台线程（如 config watcher）触发时，调度回主事件循环再重启。
+proactive_gc_* 配置变更时重启 GC 任务（实现见 ``runtime/proactive_gc.on_gc_config_event``）
 
 ---
 
@@ -298,9 +173,7 @@ GC 行为由多项框架配置控制（均支持热更新，变更时即时重�
 ##### `_has_handler_backlog()`
 
 > **内部方法**
-事件处理器洪峰检测
-
-**返回值** (`存在未完成的`): pending handler task 时返回 True
+事件处理器洪峰检测（实现见 ``runtime/proactive_gc.has_handler_backlog``）
 
 ---
 
@@ -308,15 +181,7 @@ GC 行为由多项框架配置控制（均支持热更新，变更时即时重�
 ##### `_run_full_gc_collection(gc_module: Any, baseline: float | None, growth_mb: int)`
 
 > **内部方法**
-执行一次全量回收（受内存增长门限约束）
-
-优先使用 tracemalloc 追踪值，不可用则回退 RSS。当 ``growth_mb > 0``
-且距上次全量回收基线增长不足时跳过回收，避免内存稳定时空转。
-
-- **gc_module** (```gc```): 模块（便于测试注入）
-- **baseline** (`上次全量回收后的内存基线（MB），None`): 表示首次
-- **growth_mb** (`内存增长门限（MB），0`): 表示不设门限
-**返回值** (```(collected,`): 新基线)``
+执行一次全量回收（实现见 ``runtime/proactive_gc.run_full_gc_collection``）
 
 ---
 
