@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1662,
+  "total_keywords": 1670,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -5267,7 +5267,7 @@
     "Debugging Tips": [
       {
         "document": "developer-guide/README.md",
-        "line": 71,
+        "line": 72,
         "level": 3,
         "title": "Debugging Tips"
       }
@@ -5507,7 +5507,7 @@
     "Development Mode": [
       {
         "document": "developer-guide/README.md",
-        "line": 63,
+        "line": 64,
         "level": 3,
         "title": "Development Mode"
       }
@@ -5523,7 +5523,7 @@
     "Development Preparation": [
       {
         "document": "developer-guide/README.md",
-        "line": 34,
+        "line": 35,
         "level": 2,
         "title": "Development Preparation"
       }
@@ -5531,7 +5531,7 @@
     "Development Tools": [
       {
         "document": "developer-guide/README.md",
-        "line": 54,
+        "line": 55,
         "level": 2,
         "title": "Development Tools"
       }
@@ -5539,7 +5539,7 @@
     "Development Type Selection": [
       {
         "document": "developer-guide/README.md",
-        "line": 43,
+        "line": 44,
         "level": 2,
         "title": "Development Type Selection"
       }
@@ -6966,6 +6966,14 @@
         "title": "Forwarded Message Segment (ideaura_forwarded)"
       }
     ],
+    "Framework Built-in trace Module": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 72,
+        "level": 3,
+        "title": "Framework Built-in trace Module"
+      }
+    ],
     "Framework Configuration": [
       {
         "document": "user-guide/configuration.md",
@@ -7100,6 +7108,14 @@
         "line": 38,
         "level": 2,
         "title": "General Interface"
+      }
+    ],
+    "General Recommendations": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 107,
+        "level": 2,
+        "title": "General Recommendations"
       }
     ],
     "General request": [
@@ -7748,6 +7764,14 @@
         "line": 57,
         "level": 3,
         "title": "IV. Ecosystem & Official Client"
+      }
+    ],
+    "Identifying Governance Silent Matches": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 103,
+        "level": 3,
+        "title": "Identifying Governance Silent Matches"
       }
     ],
     "Image Download and Storage": [
@@ -9454,6 +9478,14 @@
         "title": "Module Testing (ErisPulse-Testing)"
       }
     ],
+    "Module Troubleshooting Guide": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 1,
+        "level": 1,
+        "title": "Module Troubleshooting Guide"
+      }
+    ],
     "Module Usage Example": [
       {
         "document": "advanced/lifecycle.md",
@@ -10629,7 +10661,7 @@
     "Project Templates": [
       {
         "document": "developer-guide/README.md",
-        "line": 56,
+        "line": 57,
         "level": 3,
         "title": "Project Templates"
       }
@@ -10653,7 +10685,7 @@
     "Publish Your Module": [
       {
         "document": "developer-guide/README.md",
-        "line": 82,
+        "line": 83,
         "level": 2,
         "title": "Publish Your Module"
       }
@@ -10677,7 +10709,7 @@
     "Publishing Guide": [
       {
         "document": "developer-guide/README.md",
-        "line": 30,
+        "line": 31,
         "level": 3,
         "title": "Publishing Guide"
       }
@@ -11163,7 +11195,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 86,
+        "line": 87,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11954,6 +11986,30 @@
         "line": 1,
         "level": 1,
         "title": "Sandbox Platform Feature Documentation"
+      }
+    ],
+    "Scenario 1: Module Not Loaded": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 13,
+        "level": 2,
+        "title": "Scenario 1: Module Not Loaded"
+      }
+    ],
+    "Scenario 2: Event Not Responding": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 35,
+        "level": 2,
+        "title": "Scenario 2: Event Not Responding"
+      }
+    ],
+    "Scenario 3: Command Not Triggered (Dispatch Decision Chain)": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 56,
+        "level": 2,
+        "title": "Scenario 3: Command Not Triggered (Dispatch Decision Chain)"
       }
     ],
     "Scheduled Tasks": [
@@ -13202,6 +13258,14 @@
         "line": 26,
         "level": 3,
         "title": "Testing and Troubleshooting"
+      }
+    ],
+    "Testing: TestBot.dispatch returns DispatchTrace": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 60,
+        "level": 3,
+        "title": "Testing: TestBot.dispatch returns DispatchTrace"
       }
     ],
     "Timeouts and Retries": [
