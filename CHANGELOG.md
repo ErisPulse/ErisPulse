@@ -43,6 +43,7 @@
   - `Core/Event/message` 处理器防抖声明化（EPRFC-2026-001 方向八）：`@message.on_message(debounce="2s", debounce_key="user")`——同键事件窗口内只执行最后一条，前序待执行任务自动取消；`on_message` / `on_private_message` / `on_group_message` / `on_at_message` 四装饰器均支持；与 `throttle=` 语义互斥（同时声明注册期抛 ValueError）；`functools.wraps` 保留原签名使 Depends 声明继续生效
   - `runtime/troubleshoot` 模块排查诊断（EPRFC-2026-001 方向五·场景一/二）：`explain_module(name)` 诊断"模块为什么没加载"（未注册 / 懒加载正常态 / 配置禁用 / 依赖缺失 / SDK 版本不满足 / on_load 异常指引）；`explain_event(event)` 诊断"事件为什么没响应"（适配器未注册 / 身份作用域拒绝 / 模块会话屏蔽 / 命令未命中识别）；`format_report()` 渲染人类可读结论；导出 `ErisPulse.runtime.explain_module / explain_event / format_report`
   - `Core/Bases/config_schema` 配置环境变量映射（EPRFC-2026-001 方向九）：声明式配置字段以 `field(metadata={"env": "MYMODULE_API_KEY"})` 绑定环境变量，优先级 环境变量 > config.toml > 声明默认值；值按字段注解自动转换（str/int/float/bool，list/dict 走 JSON），转换失败忽略覆盖并告警；读取、热更新、校验同一管道保证声明一处处处生效；配置面板 Schema 标注 env 名、config.toml 模板注释提示可用环境变量（不写入实际值防泄露）；未声明 env 的字段行为完全不变，Docker / CI 场景免改配置文件
+  - `pyproject` 正式支持 Python 3.14：classifiers 与 CI 测试矩阵纳入 3.14（3.14.6 全量测试通过）；3.14t（free-threaded / 无 GIL 构建）暂不列入正式支持——框架在 3.14.6t 上可完整导入、全部单测依赖均有 cp314t wheel，CI 以实验性冒烟作业持续监测（`continue-on-error`，依赖不可得时自动跳过）
   - `Core/Event/command` `args=` / `options=` 声明与 `Depends` 参数重名时注册期抛 `ValueError`（fail-fast）
 
 ### 修复
