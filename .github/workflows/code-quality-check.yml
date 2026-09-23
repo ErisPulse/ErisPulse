@@ -103,7 +103,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
       - name: Generate App Token
         id: app-token
@@ -265,6 +265,33 @@ jobs:
                 body: message
               });
             }
+
+  free-threaded-smoke:
+    # Experimental Python 3.14t (free-threaded / no-GIL) smoke: monitoring signal only,
+    # NOT a supported platform. Skips gracefully when the ecosystem lacks cp314t wheels.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Smoke test on Python 3.14t (free-threaded)
+        run: |
+          uv python install 3.14t
+          if uv run --python 3.14t --isolated python -c "import ErisPulse" 2>uv_314t_err.log; then
+            echo "3.14t import smoke passed; running unit tests..."
+            uv run --python 3.14t --isolated pytest tests/unit -p no:cacheprovider -q --no-cov
+          else
+            echo "::warning::Python 3.14t smoke skipped: cp314t dependency wheels unavailable"
+            cat uv_314t_err.log || true
+            exit 0
+          fi
 
   typecheck:
     runs-on: ubuntu-latest
