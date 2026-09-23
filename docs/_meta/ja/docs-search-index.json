@@ -2864,12 +2864,12 @@
         "title": "Dashboard 管理面板"
       }
     ],
-    "Debian/Ubuntu 仮想環境の作成失敗": [
+    "Debian/Ubuntu 仮想環境作成失敗": [
       {
         "document": "user-guide/installation.md",
         "line": 153,
         "level": 3,
-        "title": "Debian/Ubuntu 仮想環境の作成失敗"
+        "title": "Debian/Ubuntu 仮想環境作成失敗"
       }
     ],
     "Discord": [
@@ -5198,6 +5198,12 @@
       {
         "document": "getting-started/first-bot.md",
         "line": 118,
+        "level": 2,
+        "title": "よくある質問"
+      },
+      {
+        "document": "user-guide/installation.md",
+        "line": 121,
         "level": 2,
         "title": "よくある質問"
       }
@@ -9160,6 +9166,14 @@
         "title": "モジュールのインストール"
       }
     ],
+    "モジュールのインストール失敗": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 138,
+        "level": 3,
+        "title": "モジュールのインストール失敗"
+      }
+    ],
     "モジュールのオンデマンドロード": [
       {
         "document": "advanced/startup.md",
@@ -9236,14 +9250,6 @@
         "line": 521,
         "level": 2,
         "title": "モジュールの設定"
-      }
-    ],
-    "モジュールインストール失敗": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 138,
-        "level": 3,
-        "title": "モジュールインストール失敗"
       }
     ],
     "モジュールクラスでの使用": [
@@ -11884,12 +11890,6 @@
       {
         "document": "ai-support/README.md",
         "line": 126,
-        "level": 2,
-        "title": "常見問題"
-      },
-      {
-        "document": "user-guide/installation.md",
-        "line": 121,
         "level": 2,
         "title": "常見問題"
       }

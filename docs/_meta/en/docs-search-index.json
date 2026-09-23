@@ -6714,12 +6714,6 @@
         "line": 118,
         "level": 2,
         "title": "FAQ"
-      },
-      {
-        "document": "user-guide/installation.md",
-        "line": 123,
-        "level": 2,
-        "title": "FAQ"
       }
     ],
     "Failed Response Example": [
@@ -7002,6 +6996,12 @@
       {
         "document": "developer-guide/publishing.md",
         "line": 173,
+        "level": 2,
+        "title": "Frequently Asked Questions"
+      },
+      {
+        "document": "user-guide/installation.md",
+        "line": 123,
         "level": 2,
         "title": "Frequently Asked Questions"
       }
