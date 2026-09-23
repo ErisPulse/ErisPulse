@@ -29,7 +29,8 @@ ErisPulse 数据模型层（ORM）—— 声明式模型与 Active Record CRUD
 > （默认使用全局 ``ErisPulse.Core.storage`` 单例）
 > 5. 处于 ``storage.atransaction()`` 环境事务内时，读写自动复用事务连接，
 > 随事务统一提交/回滚
-> 6. 自动迁移（schema diff）与关系映射为后续版本能力，本层不包含
+> 6. 关系映射：``relationship()`` 声明 has-many / belongs-to，实例上链式查询
+> 或直接 await（见 :class:`Relationship`）
 
 **示例**:
 ```python
@@ -59,6 +60,22 @@ ErisPulse 数据模型层（ORM）—— 声明式模型与 Active Record CRUD
 ### `_quote_ident(name: str, dialect: SQLDialect | None = None)`
 
 标识符引用（优先方言引号；无方言时回落双引号记号，SQLite/Postgres 通用）
+
+---
+
+
+### `relationship(related: str | type[Model], foreign_key: str)`
+
+声明模型关系（:class:`Relationship` 的工厂函数，与 ``Field(...)`` 同风格）
+
+- **related** (`对方模型（类名字符串或类）`): - **foreign_key**: 外键列名（声明在对方表为 has-many，本表为 belongs-to）
+**返回值** (`关系描述符`): 
+**示例**:
+```python
+>>> class User(Model):
+...     messages = relationship("Message", foreign_key="user_id")
+>>> msgs = await user.messages.all()
+```
 
 ---
 
@@ -241,6 +258,95 @@ IN 条件（``User.id.in_([1, 2, 3])``）
 删除符合条件的行
 
 **返回值**: 受影响行数
+
+---
+
+
+### `class _RelatedMany(QuerySet)`
+
+> **内部方法**
+has-many 关系查询集：在 :class:`QuerySet` 全部链式能力之上，
+附带 ``create`` 自动回填本表主键到对方外键列
+
+
+#### 方法列表
+
+
+##### `where()`
+
+追加对方表字段的条件过滤（与关系外键条件 AND 组合）
+
+**示例**:
+```python
+>>> await user.posts.where(Post.title == "hi").all()
+```
+
+---
+
+
+##### `async create()`
+
+创建对方表的一行并自动填入本实例主键
+
+**示例**:
+```python
+>>> await user.messages.create(content="hi")   # user_id 自动 = user.id
+```
+
+---
+
+
+### `class _RelatedOne`
+
+> **内部方法**
+belongs-to 单条等待器：``author = await msg.author`` 即解析为对方实例或 None
+
+
+### `class Relationship`
+
+模型关系声明描述符（has-many / belongs-to）
+
+在模型类体中以类属性形式声明，实例上使用；方向按**外键列声明在哪张表**
+自动判定，惰性解析（首次访问时查注册表），无需预注册顺序：
+
+>>> class User(Model):
+...     id: int = Field(primary_key=True, autoincrement=True)
+...     name: str = Field(max_length=64)
+...     messages = relationship("Message", foreign_key="user_id")   # has-many
+
+>>> class Message(Model):
+...     id: int = Field(primary_key=True, autoincrement=True)
+...     user_id: int = Field(foreign_key="users.id")
+...     content: str = Field()
+...     author = relationship("User", foreign_key="user_id")        # belongs-to
+
+> **提示**
+> 1. 外键列声明在**对方表** → has-many：返回 :class:`QuerySet`，全部链式能力
+> 可用（``await user.messages.order_by("-id").limit(10).all()`` / ``.first()``
+> / ``.count()`` / ``.delete()``），且 ``await user.messages.create(...)``
+> 自动回填本表主键到对方外键列
+> 2. 外键列声明在**本表** → belongs-to：``author = await msg.author`` 直接
+> await 得到对方实例（无匹配返回 None；外键值为 None 时跳过查询返回 None）
+> 3. ``related`` 传类名字符串（按类名注册表惰性解析，两侧模型定义顺序无关）
+> 或直接传模型类
+> 4. 关系查询与对方模型走同一存储后端（不支持跨后端关联）
+
+
+#### 方法列表
+
+
+##### `__init__(related: str | type[Model], foreign_key: str)`
+
+声明模型关系
+
+- **related** (`对方模型（类名或类）`): - **foreign_key**: 外键列名（本表或对方表，判定方向）
+
+---
+
+
+##### `_related_model(owner: type)`
+
+解析对方模型（类名字符串按注册表惰性查找）
 
 ---
 
