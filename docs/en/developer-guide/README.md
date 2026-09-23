@@ -8,8 +8,8 @@ This guide helps you develop custom modules and adapters to extend the functiona
 
 1. [Getting Started with Module Development](modules/getting-started.md) - Create your first module
 2. [Core Concepts of Modules](modules/core-concepts.md) - Core concepts and architecture of modules
-3. [Event Wrapper Class Explained](modules/event-wrapper.md) - Complete explanation of the Event object
-4. [Module Best Practices](modules/best-practices.md) - Recommendations for developing high-quality modules
+3. [Event Wrapper Class Explained](modules/event-wrapper.md) - Complete documentation of the Event object
+4. [Best Practices for Modules](modules/best-practices.md) - Recommendations for developing high-quality modules
 
 ### Data Models
 
@@ -19,17 +19,18 @@ This guide helps you develop custom modules and adapters to extend the functiona
 
 1. [Getting Started with Adapter Development](adapters/getting-started.md) - Create your first adapter
 2. [Core Concepts of Adapters](adapters/core-concepts.md) - Core concepts of adapters
-3. [SendDSL Explained](adapters/send-dsl.md) - Complete explanation of the Send message sending DSL
+3. [SendDSL Explained](adapters/send-dsl.md) - Complete documentation of the Send message DSL
 4. [Event Converters](adapters/converter.md) - Implementing event converters
-5. [Adapter Best Practices](adapters/best-practices.md) - Recommendations for developing high-quality adapters
+5. [Best Practices for Adapters](adapters/best-practices.md) - Recommendations for developing high-quality adapters
 
 ### Testing and Troubleshooting
 
 1. [Module Testing (ErisPulse-Testing)](testing.md) - TestBot, event factories, and assertion utilities
+2. [Module Troubleshooting Guide](module-troubleshooting.md) - Methods for locating issues when a module fails to load, events don't respond, or commands don't trigger
 
 ### Publishing Guide
 
-- [Publishing and Module Store Guide](publishing.md) - Publishing your work to PyPI and the ErisPulse Module Store
+- [Publishing Guide and Module Store Guide](publishing.md) - How to publish your work to PyPI and the ErisPulse module store
 
 ## Development Preparation
 
