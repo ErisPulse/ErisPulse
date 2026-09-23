@@ -80,7 +80,7 @@ async with storage.atransaction():
 - 后端由全局存储配置决定；模型可用 `__storage__` 类属性覆写为自定义 `BaseStorage` 实例（测试注入用）
 - `list` / `dict` 字段（含参数化泛型如 `list[int]`、`dict[str, int]`）按容器类别以 JSON 文本列存储，读写自动序列化
 - 写入（`create` / `save`）前自动执行约束校验，失败抛 `ValueError`（本地化消息）
-- 自动迁移已交付**新增列**场景（见下文）；列类型变更、删列与 ORM 级关系对象为后续版本能力
+- 自动迁移已交付**新增列**场景（见下文）；列类型变更与删列需手工处理
 - 触发存储连接失败时的行为与存储层一致：不崩溃框架，冷却后自动重连
 
 ## 自动迁移（阶段二）
@@ -120,5 +120,56 @@ class Post(Model):
     content: str = Field(max_length=255)
 ```
 
-外键为 DDL 级约束（数据库保证引用完整性）；ORM 级关系对象（`relationship` /
-反向查询）为后续版本能力。
+## 关系映射（relationship）
+
+在模型类体中以类属性声明 `relationship()`，**方向按外键列声明在哪张表自动判定**：
+
+```python
+from ErisPulse.Core.Bases import Model, Field, relationship
+
+class User(Model):
+    __tablename__ = "orm_users"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    name: str = Field(max_length=64)
+
+    posts = relationship("Post", foreign_key="author")   # 外键在对方表 → has-many
+
+class Post(Model):
+    __tablename__ = "posts"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    author: int = Field(foreign_key="orm_users.id")
+    content: str = Field(max_length=255)
+
+    writer = relationship("User", foreign_key="author")  # 外键在本表 → belongs-to
+```
+
+**has-many**：实例属性返回查询集，`QuerySet` 全部链式能力可用，
+`create` 自动回填本表主键到对方外键列：
+
+```python
+alice = await User.get(name="Alice")
+
+posts = await alice.posts.all()                          # 该用户的全部文章
+latest = await alice.posts.order_by("-id").first()
+total = await alice.posts.count()
+hot = await alice.posts.where(Post.content != "").all()  # 追加对方表字段条件
+await alice.posts.delete()                               # 只删该用户的
+
+new_post = await alice.posts.create(content="hi")        # author 自动 = alice.id
+```
+
+**belongs-to**：直接 `await` 得到对方实例（无匹配或外键为 NULL 返回 `None`）：
+
+```python
+post = await Post.get(id=1)
+writer = await post.writer          # User 实例或 None
+await writer.posts.count()          # 双向互通
+```
+
+**要点**：
+
+- `related` 传类名字符串（按模型类名注册表惰性解析，两侧定义顺序无关）或直接传模型类
+- 关系查询与对方模型使用各自的存储后端（不支持跨后端 JOIN——关系查询是独立的两条 SQL）
+- 关系查询不缓存，每次访问都是即时查询；改用 `User.where(...)` 仍可做任意自定义查询
