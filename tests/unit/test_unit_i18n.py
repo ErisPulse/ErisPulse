@@ -212,7 +212,8 @@ class TestI18nManager:
     def test_detect_from_env_lang(self):
         """测试从环境变量检测语言"""
         with (
-            patch.dict(os.environ, {"LANG": "ja_JP.UTF-8"}),
+            # ERISPULSE_LANG 置空：套件钉子会让探测短路，须在场景内显式解除
+            patch.dict(os.environ, {"ERISPULSE_LANG": "", "LANG": "ja_JP.UTF-8"}),
             patch.object(I18nManager, "_detect_windows_locale", return_value=None),
         ):
             manager = I18nManager()
@@ -224,7 +225,7 @@ class TestI18nManager:
     def test_detect_from_env_lc_all(self):
         """测试从LC_ALL检测语言"""
         with (
-            patch.dict(os.environ, {"LC_ALL": "ru_RU.UTF-8", "LANG": ""}),
+            patch.dict(os.environ, {"ERISPULSE_LANG": "", "LC_ALL": "ru_RU.UTF-8", "LANG": ""}),
             patch.object(I18nManager, "_detect_windows_locale", return_value=None),
         ):
             manager = I18nManager()
@@ -238,6 +239,7 @@ class TestI18nManager:
             patch.dict(
                 os.environ,
                 {
+                    "ERISPULSE_LANG": "",
                     "LANGUAGE": "ja_JP.UTF-8",
                     "LC_ALL": "ru_RU.UTF-8",
                     "LANG": "en_US.UTF-8",

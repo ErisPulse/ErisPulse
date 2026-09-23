@@ -16,8 +16,33 @@ import pytest
 # 添加 src 目录到 Python 路径
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+# 测试套件语言钉子：文案断言（错误提示 / 帮助文本等）按 zh-CN 书写，
+# 与维护者本机的语言环境（ERISPULSE_LANG / cli_state / config.toml）解耦——
+# i18n 对该变量的消费是动态读取且优先级高于持久化设置，import 时即可生效。
+# setdefault：维护者可用环境变量显式覆盖为其他语言跑套件
+os.environ.setdefault("ERISPULSE_LANG", "zh-CN")
+
 
 # ==================== 测试环境设置 ====================
+
+@pytest.fixture(scope="session", autouse=True)
+def _pin_test_language() -> Generator[None, None, None]:
+    """
+    会话级钉死 i18n 实例语言为 zh-CN（与套件文案断言一致）
+
+    单靠 ERISPULSE_LANG 不够——"手动设置"优先级高于它，先于钉子执行的
+    语言类测试（test_unit_i18n）会经 set_language 改写实例状态；虽由
+    `_isolate_i18n_state` 按用例还原，但还原基准须是被钉住的状态。
+
+    {!--< internal-use >!--}
+    """
+    try:
+        from ErisPulse.Core.i18n import i18n as _i18n
+
+        _i18n.set_language("zh-CN", persist=False)
+    except Exception:
+        pass
+    yield
 
 
 @pytest.fixture(scope="function", autouse=True)
