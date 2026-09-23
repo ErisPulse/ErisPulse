@@ -172,7 +172,7 @@ class TestHandlerStillRunningWatchdog:
 
         try:
             with patch.object(
-                base_module, "HANDLER_SLOW_THRESHOLD_SECS", 0.02
+                base_module, "HANDLER_SLOW_THRESHOLD_SECS", 0.5
             ), caplog.at_level(logging.WARNING):
                 data = {
                     "id": "watchdog_2",
@@ -192,9 +192,10 @@ class TestHandlerStillRunningWatchdog:
 
         msgs = [r.getMessage() for r in caplog.records if r.levelno >= logging.WARNING]
         # 执行中告警的判定特征：阈值数值出现在含 handler 名的同一条 WARNING 中
-        # （结束统计不含 threshold 数值）
+        # （结束统计不含 threshold 数值）。阈值取 0.5s：处理器 5ms 完成，
+        # 100 倍余量，避免负载抖动导致 5ms sleep 被拉过阈值而误报
         assert not any(
-            "fast_handler" in m and "0.02" in m for m in msgs
+            "fast_handler" in m and "0.5" in m for m in msgs
         ), f"快速处理器不应触发执行中告警: {msgs}"
 
 
