@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1665,
+  "total_keywords": 1673,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -7474,6 +7474,30 @@
         "title": "基類"
       }
     ],
+    "場景一：模組未載入": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 13,
+        "level": 2,
+        "title": "場景一：模組未載入"
+      }
+    ],
+    "場景三：命令未觸發（分發決策鏈）": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 56,
+        "level": 2,
+        "title": "場景三：命令未觸發（分發決策鏈）"
+      }
+    ],
+    "場景二：事件沒響應": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 35,
+        "level": 2,
+        "title": "場景二：事件沒響應"
+      }
+    ],
     "外鍵（關係映射基礎）": [
       {
         "document": "developer-guide/orm.md",
@@ -9474,14 +9498,6 @@
         "title": "數據持久化"
       }
     ],
-    "數據模型": [
-      {
-        "document": "developer-guide/README.md",
-        "line": 14,
-        "level": 3,
-        "title": "數據模型"
-      }
-    ],
     "數據模型層（ORM）": [
       {
         "document": "developer-guide/orm.md",
@@ -10298,6 +10314,14 @@
         "title": "根頁面"
       }
     ],
+    "框架內建 trace 模組": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 72,
+        "level": 3,
+        "title": "框架內建 trace 模組"
+      }
+    ],
     "框架內部參數校驗（ValueError）": [
       {
         "document": "advanced/errors.md",
@@ -10622,6 +10646,14 @@
         "title": "模組按需載入"
       }
     ],
+    "模組排查指南": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 1,
+        "level": 1,
+        "title": "模組排查指南"
+      }
+    ],
     "模組核心概念": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -10832,6 +10864,14 @@
         "line": 39,
         "level": 2,
         "title": "歸屬資源全景"
+      }
+    ],
+    "治理類靜默命中的辨別": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 103,
+        "level": 3,
+        "title": "治理類靜默命中的辨別"
       }
     ],
     "注意事項": [
@@ -11176,6 +11216,14 @@
         "line": 463,
         "level": 2,
         "title": "測試"
+      }
+    ],
+    "測試中：TestBot.dispatch 返回 DispatchTrace": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 60,
+        "level": 3,
+        "title": "測試中：TestBot.dispatch 返回 DispatchTrace"
       }
     ],
     "測試命令": [
@@ -11711,7 +11759,7 @@
     "發布你的模組": [
       {
         "document": "developer-guide/README.md",
-        "line": 82,
+        "line": 83,
         "level": 2,
         "title": "發布你的模組"
       }
@@ -11727,7 +11775,7 @@
     "發布指南": [
       {
         "document": "developer-guide/README.md",
-        "line": 30,
+        "line": 31,
         "level": 3,
         "title": "發布指南"
       }
@@ -12139,7 +12187,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 86,
+        "line": 87,
         "level": 2,
         "title": "相關文件"
       },
@@ -13337,7 +13385,7 @@
     "調試技巧": [
       {
         "document": "developer-guide/README.md",
-        "line": 71,
+        "line": 72,
         "level": 3,
         "title": "調試技巧"
       }
@@ -13516,6 +13564,14 @@
         "line": 73,
         "level": 3,
         "title": "資料持久化"
+      }
+    ],
+    "資料模型": [
+      {
+        "document": "developer-guide/README.md",
+        "line": 14,
+        "level": 3,
+        "title": "資料模型"
       }
     ],
     "資訊查詢命令": [
@@ -13708,14 +13764,6 @@
         "title": "退出碼 42 契約"
       }
     ],
-    "适配器開發": [
-      {
-        "document": "developer-guide/README.md",
-        "line": 18,
-        "level": 3,
-        "title": "适配器開發"
-      }
-    ],
     "透過 Dashboard 安裝模組": [
       {
         "document": "user-guide/deployment.md",
@@ -13794,6 +13842,14 @@
         "line": 111,
         "level": 3,
         "title": "通用字段（所有事件類型）"
+      }
+    ],
+    "通用建議": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 107,
+        "level": 2,
+        "title": "通用建議"
       }
     ],
     "通知事件": [
@@ -14186,6 +14242,14 @@
         "line": 1,
         "level": 1,
         "title": "適配器系統 API"
+      }
+    ],
+    "適配器開發": [
+      {
+        "document": "developer-guide/README.md",
+        "line": 18,
+        "level": 3,
+        "title": "適配器開發"
       }
     ],
     "適配器開發入門": [
@@ -14871,7 +14935,7 @@
     "開發工具": [
       {
         "document": "developer-guide/README.md",
-        "line": 54,
+        "line": 55,
         "level": 2,
         "title": "開發工具"
       }
@@ -14895,7 +14959,7 @@
     "開發模式": [
       {
         "document": "developer-guide/README.md",
-        "line": 63,
+        "line": 64,
         "level": 3,
         "title": "開發模式"
       }
@@ -14911,7 +14975,7 @@
     "開發準備": [
       {
         "document": "developer-guide/README.md",
-        "line": 34,
+        "line": 35,
         "level": 2,
         "title": "開發準備"
       }
@@ -14927,7 +14991,7 @@
     "開發類型選擇": [
       {
         "document": "developer-guide/README.md",
-        "line": 43,
+        "line": 44,
         "level": 2,
         "title": "開發類型選擇"
       }
@@ -15031,7 +15095,7 @@
     "項目模板": [
       {
         "document": "developer-guide/README.md",
-        "line": 56,
+        "line": 57,
         "level": 3,
         "title": "項目模板"
       }

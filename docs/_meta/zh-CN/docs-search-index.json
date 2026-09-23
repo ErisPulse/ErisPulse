@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1633,
+  "total_keywords": 1641,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -6851,7 +6851,7 @@
     "发布你的模块": [
       {
         "document": "developer-guide/README.md",
-        "line": 82,
+        "line": 83,
         "level": 2,
         "title": "发布你的模块"
       }
@@ -6867,7 +6867,7 @@
     "发布指南": [
       {
         "document": "developer-guide/README.md",
-        "line": 30,
+        "line": 31,
         "level": 3,
         "title": "发布指南"
       }
@@ -7618,6 +7618,30 @@
         "line": 153,
         "level": 4,
         "title": "在适配器中使用"
+      }
+    ],
+    "场景一：模块没加载": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 13,
+        "level": 2,
+        "title": "场景一：模块没加载"
+      }
+    ],
+    "场景三：命令没触发（分发决策链）": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 56,
+        "level": 2,
+        "title": "场景三：命令没触发（分发决策链）"
+      }
+    ],
+    "场景二：事件没响应": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 35,
+        "level": 2,
+        "title": "场景二：事件没响应"
       }
     ],
     "基本使用": [
@@ -9211,7 +9235,7 @@
     "开发准备": [
       {
         "document": "developer-guide/README.md",
-        "line": 34,
+        "line": 35,
         "level": 2,
         "title": "开发准备"
       }
@@ -9219,7 +9243,7 @@
     "开发工具": [
       {
         "document": "developer-guide/README.md",
-        "line": 54,
+        "line": 55,
         "level": 2,
         "title": "开发工具"
       }
@@ -9243,7 +9267,7 @@
     "开发模式": [
       {
         "document": "developer-guide/README.md",
-        "line": 63,
+        "line": 64,
         "level": 3,
         "title": "开发模式"
       }
@@ -9259,7 +9283,7 @@
     "开发类型选择": [
       {
         "document": "developer-guide/README.md",
-        "line": 43,
+        "line": 44,
         "level": 2,
         "title": "开发类型选择"
       }
@@ -11178,6 +11202,14 @@
         "title": "根页面"
       }
     ],
+    "框架内置 trace 模块": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 72,
+        "level": 3,
+        "title": "框架内置 trace 模块"
+      }
+    ],
     "框架内部参数校验（ValueError）": [
       {
         "document": "advanced/errors.md",
@@ -11366,6 +11398,14 @@
         "title": "模块按需加载"
       }
     ],
+    "模块排查指南": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 1,
+        "level": 1,
+        "title": "模块排查指南"
+      }
+    ],
     "模块核心概念": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -11486,6 +11526,14 @@
         "line": 94,
         "level": 3,
         "title": "模式二：iframe 嵌入"
+      }
+    ],
+    "治理类静默命中的辨别": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 103,
+        "level": 3,
+        "title": "治理类静默命中的辨别"
       }
     ],
     "注册 API": [
@@ -11650,6 +11698,14 @@
         "line": 26,
         "level": 3,
         "title": "测试与排查"
+      }
+    ],
+    "测试中：TestBot.dispatch 返回 DispatchTrace": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 60,
+        "level": 3,
+        "title": "测试中：TestBot.dispatch 返回 DispatchTrace"
       }
     ],
     "测试命令": [
@@ -12523,7 +12579,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 86,
+        "line": 87,
         "level": 2,
         "title": "相关文档"
       },
@@ -13473,7 +13529,7 @@
     "调试技巧": [
       {
         "document": "developer-guide/README.md",
-        "line": 71,
+        "line": 72,
         "level": 3,
         "title": "调试技巧"
       }
@@ -14138,6 +14194,14 @@
         "line": 111,
         "level": 3,
         "title": "通用字段（所有事件类型）"
+      }
+    ],
+    "通用建议": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 107,
+        "level": 2,
+        "title": "通用建议"
       }
     ],
     "通用接口": [
@@ -14939,7 +15003,7 @@
     "项目模板": [
       {
         "document": "developer-guide/README.md",
-        "line": 56,
+        "line": 57,
         "level": 3,
         "title": "项目模板"
       }

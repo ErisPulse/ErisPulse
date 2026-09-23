@@ -3856,6 +3856,298 @@ You can add GitHub Stars, Downloads, and other badges as needed. The logo can al
 
 
 
+### 数据模型层（ORM）
+
+# Data Model Layer (ORM)
+
+Starting from version 2.9.0, the framework includes a built-in declarative data model layer: by inheriting `Model` and declaring fields with `Field`, you gain automatic table creation and CRUD capabilities. The model is built directly on top of the built-in storage layer—SQLite / MySQL / PostgreSQL is determined by `ErisPulse.storage.backend` configuration. **Switching the backend does not require modifying model code**.
+
+## Declaring Models
+
+```python
+from ErisPulse.Core.Bases import Model, Field
+
+class User(Model):
+    id: int = Field(primary_key=True, autoincrement=True)
+    name: str = Field(max_length=64)
+    age: int = Field(default=0, ge=0, le=150)
+    role: str = Field(default="user", choices=["user", "admin"])
+    tags: list = Field(default_factory=list)          # JSON column, automatically serialized on read/write
+    bio: str = Field(default="", description={"i18n": "user.bio", "default": "Biography"})
+```
+
+- The table name defaults to the class name in snake_case (`UserProfile → user_profile`), and can be overwritten using `__tablename__ = "xxx"`
+- The constraint word table of `Field` is consistent with the declarative configuration class (`choices` / `ge` / `le` / `max_length`, `description` also supports i18n dictionary); the validator engine is the same as configuration validation
+
+## Field Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `default` | Default value (required NOT NULL if not provided and not auto-increment) |
+| `default_factory` | Factory for mutable default values (e.g. `list`) |
+| `primary_key` | Primary key |
+| `autoincrement` | Auto-incrementing primary key (implicitly a primary key; auto-filled after `create`) |
+| `max_length` | Maximum string length (generates `VARCHAR(n)`, validates on write) |
+| `nullable` | Whether NULL is allowed (default False) |
+| `index` | Generates a regular index |
+| `unique` | Unique constraint |
+| `choices` / `ge` / `le` | Enum / numeric range (validates on write) |
+| `description` | Description (i18n dictionary, same format as configuration class) |
+| `column_type` | Override SQL column type definition |
+
+## Table Creation and CRUD
+
+```python
+await User.create_table()                      # Idempotent (IF NOT EXISTS)
+
+user = await User.create(name="Alice", age=20) # Insert (auto-incremented primary key auto-filled)
+got = await User.get(id=user.id)               # Equal-value query for the first record
+
+users = await User.where(User.age > 18).order_by("-age").limit(10).all()
+first = await User.where(User.name == "Alice").first()
+total = await User.count(User.age > 18)
+
+user.age = 21
+await user.save()                              # Update by primary key (first constraint validation); if primary key is missing, it falls back to insert (auto-incremented primary key is still filled back into the instance)
+await user.delete()                            # Delete by primary key
+
+await User.update_all(User.age > 18, role="adult")  # Batch update
+await User.delete_all(User.age > 100)               # Batch delete
+```
+
+Query expressions support `> >= < <= == !=`, `in_([...])`, and combination with `&` (AND) / `|` (OR):
+
+```python
+await User.where((User.age > 18) & User.name.in_(["Alice", "Bob"])).all()
+```
+
+## Transactions
+
+ORM read/write operations share the same transaction routing as the framework’s storage layer: when inside an `storage.atransaction()` environment, `create` / `save` / `delete` and queries automatically reuse the transaction connection, committing or rolling back together with the transaction, and do not submit independently.
+
+```python
+async with storage.atransaction():
+    await User.create(name="Alice")
+    ...  # If an exception is thrown within the block, the above INSERT is rolled back as well
+```
+
+## Relationship with Declarative Configuration Classes
+
+Model declaration and `ConfigClass` (`@dataclass + field(metadata=...)`) **share the same underlying system**—constraint word table, validator engine (`validate_field_constraints`), type category registry (`python_type_category`); but the class base is intentionally separated: configuration fields are ordinary values (TOML round-trip, hot reload on one-time load), while model fields are column descriptors (class access = query expression, row-by-row instance). One declaration syntax, two distinct bases.
+
+## Boundaries and Precautions
+
+- The backend is determined by global storage configuration; models can overwrite the `__storage__` class attribute to use a custom `BaseStorage` instance (for testing injection)
+- `list` / `dict` fields (including parameterized generics like `list[int]`, `dict[str, int]`) are stored as JSON text columns based on container categories, automatically serialized on read/write
+- Constraint validation is automatically executed before writing (`create` / `save`), and throws `ValueError` if it fails (localized message)
+- Automatic migration is delivered for **new column** scenarios (see below); column type changes and column deletion require manual handling
+- When storage connection fails, the behavior is consistent with the storage layer: the framework does not crash, and automatically reconnects after cooling
+
+## Automatic Migration (Phase Two)
+
+`create_table()` automatically compares existing columns with model fields when the table already exists: **new fields** automatically execute `ALTER TABLE ADD COLUMN` (migrate column to remove `NOT NULL` constraint, fill NULL for existing rows), and new fields with `index=True` are also indexed. No manual migration scripts are required.
+
+```python
+# After v1 launch, model evolution: add email / bio fields
+class User(Model):
+    __tablename__ = "orm_users"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    name: str = Field(max_length=64)
+    age: int = Field(default=0)
+    email: str = Field(default="")     # New: next `create_table()` will automatically ADD COLUMN
+    bio: str = Field(default="")
+
+await User.create_table()              # Idempotent: only migrate new columns
+```
+
+**Boundary**: Only supports adding new columns; primary key changes, column type changes, and column deletion require manual handling (to avoid destructive `ALTER` misoperations).
+
+## Foreign Keys (Foundation for Relationship Mapping)
+
+`foreign_key="table.column"` declares column-level foreign key constraints, and DDL generates `REFERENCES` clause:
+
+```python
+class Post(Model):
+    __tablename__ = "posts"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    author: int = Field(foreign_key="orm_users.id")
+
+    content: str = Field(max_length=255)
+```
+
+## Relationship Mapping (relationship)
+
+In the model class body, declare `relationship()` as a class attribute; **the direction is automatically determined by where the foreign key column is declared**:
+
+```python
+from ErisPulse.Core.Bases import Model, Field, relationship
+
+class User(Model):
+    __tablename__ = "orm_users"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    name: str = Field(max_length=64)
+
+    posts = relationship("Post", foreign_key="author")   # Foreign key in the other table → has-many
+
+class Post(Model):
+    __tablename__ = "posts"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    author: int = Field(foreign_key="orm_users.id")
+    content: str = Field(max_length=255)
+
+    writer = relationship("User", foreign_key="author")  # Foreign key in this table → belongs-to
+```
+
+**Has-Many**: The instance attribute returns a query set, and all `QuerySet` chaining capabilities are available. `create` automatically fills the primary key of this table into the foreign key column of the other table:
+
+```python
+alice = await User.get(name="Alice")
+
+posts = await alice.posts.all()                          # All posts of this user
+latest = await alice.posts.order_by("-id").first()
+total = await alice.posts.count()
+hot = await alice.posts.where(Post.content != "").all()  # Add conditions on the other table's fields
+await alice.posts.delete()                               # Delete only this user's posts
+
+new_post = await alice.posts.create(content="hi")        # author automatically = alice.id
+```
+
+**Belongs-To**: Directly `await` to get the other instance (returns `None` if no match or foreign key is NULL):
+
+```python
+post = await Post.get(id=1)
+writer = await post.writer          # User instance or None
+await writer.posts.count()          # Bidirectional access
+```
+
+**Key Points**:
+
+- `related` accepts a class name string (lazily resolved by the model class name registry, order of definition on both sides is irrelevant) or directly passes the model class
+- Relationship queries and the other model use their respective storage backends (cross-backend JOIN is not supported—relationship queries are two independent SQL statements)
+- Relationship queries are not cached; each access is an immediate query; use `User.where(...)` for any custom query
+
+
+
+### 模块排查指南
+
+# Module Troubleshooting Guide
+
+When a module "doesn't respond," it can be categorized into three types of issues, each with corresponding framework diagnostic tools (RFC EPRFC-2026-001 Direction Five):
+
+| Symptom | Diagnostic Tool | Diagnostic Level |
+|---------|----------------|------------------|
+| Module not loaded | `ErisPulse.runtime.explain_module(name)` | Registration and loading chain |
+| Event not handled | `ErisPulse.runtime.explain_event(event)` | Distribution entry point check |
+| Command not triggered | Distribution decision chain (test side `DispatchTrace` / framework built-in `trace`) | Command determination chain |
+
+Both diagnostic functions are **pure read** operations, do not change any state, and can be called at any time; they return a machine-readable dict, which can be rendered into human-readable text using `format_report()`.
+
+## Scenario 1: Module Not Loaded
+
+```python
+from ErisPulse.runtime import explain_module, format_report
+
+report = explain_module("MyModule")
+print(format_report(report))
+```
+
+`explain_module()` checks each item and provides a conclusion, covering the following reasons:
+
+| Check Item | Description |
+|-------|------|
+| Not Registered | The package is not installed, the entry-point group name is incorrect, or the registered name does not match the query name |
+| Lazy Loading Not Instantiated | **Normal state, not a fault**: The lazy-loaded module is instantiated only when it is first called (e.g., `module.call` / command triggered) |
+| Configuration Disabled | `ErisPulse.modules.status.<module_name> = false` (default enabled if not configured) |
+| Dependencies Not Loaded | There are modules in the module's declared `depends` list that are not ready |
+| SDK Version Not Satisfied | The module's metadata declares a `min_sdk_version` higher than the current framework version |
+| on_load Exception | Registered normally but not loaded and none of the above reasons apply—check the ERROR record corresponding to the module name in the startup log |
+
+The returned dict contains structured fields: `registered` / `loaded` / `lazy` / `enabled` (`None` means default enabled if not configured) / `missing_dependencies` / `sdk_version_ok` / `conclusion` (a one-sentence conclusion) / `reasons` (list of reasons).
+
+## Scenario 2: Event Not Responding
+
+```python
+from ErisPulse.runtime import explain_event, format_report
+
+report = explain_event(event)   # Event received within the processor or the original event dict
+print(format_report(report))
+```
+
+`explain_event()` outputs conclusions in the actual order of checks at the distribution entry point:
+
+1. **Platform Adapter Not Registered**: The adapter instance corresponding to `platform` does not exist—the event never enters the framework.
+2. **Identity Dimension Rejected by Scope**: The user/session/Bot/adapter is blacklisted—the event is completely discarded at the distribution entry point. See [Module Configuration](../user-guide/configuration.md) for scope configuration.
+3. **Module Blocked by Session**: Distinguish between the current session's `available_modules` (available) and `blocked_modules` (blocked by scope).
+4. **Text Resembles Command but Not Matched**: The text has a command prefix but does not match any registered command—check the prefix configuration and command name.
+
+If all entry point checks pass but there is still no response, the conclusion will guide you to further check two places:
+
+- **Processor Filter Conditions**: Conditions such as `detail_type` / `pattern=` / `regex=` are not satisfied;
+- **Middleware Rejection**: Middleware explicitly returning `False` will discard the event at the event level and trigger the `adapter.event.blocked` lifecycle hook (carrying the middleware name and the full event)—you can register this hook to audit "who discarded the event."
+
+## Scenario 3: Command Not Triggered (Dispatch Decision Chain)
+
+For a message with a prefix to truly execute a command, it must sequentially pass through: command text determination → command match (with spelling suggestions if not matched) → scope → user ACL → owner check → permission function → cooldown / rate limiting / usage silent discard → deprecated rejection and notification → parameter parsing → execution. The framework records each decision point as a causal chain, providing a conclusion on "why the command was not triggered."
+
+### Testing: TestBot.dispatch returns DispatchTrace
+
+It is recommended to use tests to reproduce issues and directly read the causal chain (tool usage is described in [Module Testing](testing.md)):
+
+```python
+trace = await bot.dispatch(create_command_event("dailyx", user_id="123"))
+
+trace.verdict          # executed / rejected / dropped / failed / no_match / passed
+print(trace.explain()) # Line-by-line causal explanation (in current language)
+trace.assert_no_match()
+```
+
+### Framework Built-in trace Module
+
+The decision chain is provided by `ErisPulse.Core.Event.trace`, with **zero overhead** by default — decision points are skipped when not within a collection context, and the production path remains unaffected:
+
+```python
+from ErisPulse.Core.Event import (
+    start_dispatch_trace,
+    format_dispatch_trace,
+    final_verdict,
+)
+
+with start_dispatch_trace() as records:
+    ...  # Collect dispatch events (including their derived handler tasks) within the collection context
+
+print(format_dispatch_trace(records))   # Human-readable causal chain (in current language)
+print(final_verdict(records))           # Overall conclusion
+```
+
+The values of `final_verdict()` are:
+
+| Conclusion | Meaning |
+|------------|---------|
+| `executed` | The command was executed |
+| `rejected` | Rejected by permission-related checks (scope / ACL / owner / permission function) |
+| `dropped` | Silently discarded (cooldown / rate limiting / usage / middleware rejection) |
+| `failed` | Execution failed |
+| `no_match` | Message has a prefix but does not match any command |
+| `passed` | Not a command text, passed to the message handler |
+
+The records are in machine-readable dict format (`stage` / `verdict` / `message_key` / `params`), and custom display can filter by `stage` (e.g., only show `cooldown`).
+
+### Identifying Governance Silent Matches
+
+When `cooldown=`, `rate_limit=`, or `usage_limit=` are triggered, they are **silently discarded by default** (the command is still claimed, not passed to lower-priority handlers), which can be mistaken for a "broken command": the phenomenon is that some users can use it while others get no response, and the corresponding `stage`'s `dropped` record appears in the decision chain. Deprecated commands (`deprecated=`) automatically reply with the deprecation message upon invocation (rejected from execution when `deprecated_reject=True`).
+
+## General Recommendations
+
+- Before troubleshooting, set the log level to `DEBUG` / `TRACE` (see [Developer Guide](README.md#Debugging_Tips) for configuration). This will show internal framework processes such as module loading, route registration, and event dispatching;
+- `explain_module` / `explain_event` can be called at any time and are purely read-only with no side effects, making them suitable for direct attachment to operations commands or management panels;
+- For issues related to commands not triggering, first write a `DispatchTrace` assertion test to reproduce the problem—when assertions like `assert_executed` / `assert_rejected` fail, a complete causal chain will be automatically provided.
+
+
+
 =====
 发布与工具
 =====

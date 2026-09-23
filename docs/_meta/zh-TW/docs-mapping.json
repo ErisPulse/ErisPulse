@@ -119,7 +119,7 @@
     "開發者指南": {
       "description": "模組和適配器開發指南",
       "icon": "fa-code",
-      "count": 13,
+      "count": 14,
       "documents": [
         {
           "title": "開發者指南",
@@ -142,6 +142,12 @@
         {
           "title": "數據模型層（ORM）",
           "path": "developer-guide/orm.md",
+          "level": 1,
+          "icon": "fa-code"
+        },
+        {
+          "title": "模組排查指南",
+          "path": "developer-guide/module-troubleshooting.md",
           "level": 1,
           "icon": "fa-code"
         }

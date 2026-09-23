@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1705,
+  "total_keywords": 1713,
   "keywords": {
     "0 Успешно (OK)": [
       {
@@ -4230,6 +4230,14 @@
         "title": "Быстрый старт"
       }
     ],
+    "В процессе тестирования: TestBot.dispatch возвращает DispatchTrace": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 60,
+        "level": 3,
+        "title": "В процессе тестирования: TestBot.dispatch возвращает DispatchTrace"
+      }
+    ],
     "В1: Почему при отправке `private` нужно преобразовывать в `user`?": [
       {
         "document": "standards/session-types.md",
@@ -4538,6 +4546,14 @@
         "title": "Встроенные шрифты"
       }
     ],
+    "Встроенный модуль trace в рамке": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 72,
+        "level": 3,
+        "title": "Встроенный модуль trace в рамке"
+      }
+    ],
     "Вход в режим построения": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -4581,7 +4597,7 @@
     "Выбор типа разработки": [
       {
         "document": "developer-guide/README.md",
-        "line": 43,
+        "line": 44,
         "level": 2,
         "title": "Выбор типа разработки"
       }
@@ -5735,7 +5751,7 @@
     "Инструменты разработки": [
       {
         "document": "developer-guide/README.md",
-        "line": 54,
+        "line": 55,
         "level": 2,
         "title": "Инструменты разработки"
       }
@@ -8454,6 +8470,14 @@
         "title": "Общие правила и обратные вызовы для пачки"
       }
     ],
+    "Общие рекомендации": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 107,
+        "level": 2,
+        "title": "Общие рекомендации"
+      }
+    ],
     "Общий request": [
       {
         "document": "advanced/http-client.md",
@@ -8884,6 +8908,14 @@
         "line": 17,
         "level": 1,
         "title": "Описание функциональных возможностей платформы — универсальный адаптер-мост Webhook"
+      }
+    ],
+    "Определение скрытого срабатывания правил управления": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 103,
+        "level": 3,
+        "title": "Определение скрытого срабатывания правил управления"
       }
     ],
     "Оптимизация производительности": [
@@ -10033,7 +10065,7 @@
     "Подготовка к разработке": [
       {
         "document": "developer-guide/README.md",
-        "line": 34,
+        "line": 35,
         "level": 2,
         "title": "Подготовка к разработке"
       }
@@ -11559,7 +11591,7 @@
     "Публикация вашего модуля": [
       {
         "document": "developer-guide/README.md",
-        "line": 82,
+        "line": 83,
         "level": 2,
         "title": "Публикация вашего модуля"
       }
@@ -11955,7 +11987,7 @@
     "Режим разработки": [
       {
         "document": "developer-guide/README.md",
-        "line": 63,
+        "line": 64,
         "level": 3,
         "title": "Режим разработки"
       }
@@ -12106,6 +12138,14 @@
         "title": "Руководство для разработчиков"
       }
     ],
+    "Руководство по диагностике модулей": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 1,
+        "level": 1,
+        "title": "Руководство по диагностике модулей"
+      }
+    ],
     "Руководство по наблюдателям": [
       {
         "document": "advanced/startup.md",
@@ -12117,7 +12157,7 @@
     "Руководство по публикации": [
       {
         "document": "developer-guide/README.md",
-        "line": 30,
+        "line": 31,
         "level": 3,
         "title": "Руководство по публикации"
       }
@@ -12361,7 +12401,7 @@
       },
       {
         "document": "developer-guide/README.md",
-        "line": 86,
+        "line": 87,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -13043,7 +13083,7 @@
     "Советы по отладке": [
       {
         "document": "developer-guide/README.md",
-        "line": 71,
+        "line": 72,
         "level": 3,
         "title": "Советы по отладке"
       }
@@ -13982,6 +14022,30 @@
         "line": 197,
         "level": 3,
         "title": "Сценарии использования"
+      }
+    ],
+    "Сценарий 1: Модуль не загружен": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 13,
+        "level": 2,
+        "title": "Сценарий 1: Модуль не загружен"
+      }
+    ],
+    "Сценарий 2: Событие не отвечает": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 35,
+        "level": 2,
+        "title": "Сценарий 2: Событие не отвечает"
+      }
+    ],
+    "Сценарий 3: Команда не была запущена (цепочка принятия решений при диспетчеризации)": [
+      {
+        "document": "developer-guide/module-troubleshooting.md",
+        "line": 56,
+        "level": 2,
+        "title": "Сценарий 3: Команда не была запущена (цепочка принятия решений при диспетчеризации)"
       }
     ],
     "Сырые сообщения и построение сообщений": [
@@ -15077,7 +15141,7 @@
     "Шаблоны проектов": [
       {
         "document": "developer-guide/README.md",
-        "line": 56,
+        "line": 57,
         "level": 3,
         "title": "Шаблоны проектов"
       }

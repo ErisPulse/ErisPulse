@@ -3925,6 +3925,302 @@ version = "1.0.0"
 
 
 
+### 数据模型层（ORM）
+
+# 數據模型層（ORM）
+
+自 2.9.0 版本起，框架內建了宣告式數據模型層：繼承 `Model` 並使用 `Field` 聲明欄位，即可獲得自動建表與增刪改查能力。模型直接建構在內建儲存層之上——SQLite / MySQL / PostgreSQL 由 `ErisPulse.storage.backend` 配置決定，**切換後端無需修改模型程式碼**。
+
+## 聲明模型
+
+```python
+from ErisPulse.Core.Bases import Model, Field
+
+class User(Model):
+    id: int = Field(primary_key=True, autoincrement=True)
+    name: str = Field(max_length=64)
+    age: int = Field(default=0, ge=0, le=150)
+    role: str = Field(default="user", choices=["user", "admin"])
+    tags: list = Field(default_factory=list)          # JSON 列，讀寫自動序列化
+    bio: str = Field(default="", description={"i18n": "user.bio", "default": "簡介"})
+```
+
+- 表名預設取類名 snake_case（`UserProfile → user_profile`），可用 `__tablename__ = "xxx"` 覆蓋
+- `Field` 的約束詞表與宣告式配置類一致（`choices` / `ge` / `le` / `max_length`，`description` 同樣支援 i18n 字典）；校驗引擎與配置校驗同源
+
+## 字段參數
+
+| 參數 | 說明 |
+|------|------|
+| `default` | 預設值（未提供且非自增 → 必填 NOT NULL） |
+| `default_factory` | 可變預設值工廠（如 `list`） |
+| `primary_key` | 主鍵 |
+| `autoincrement` | 自增主鍵（隱含主鍵，`create` 後自動回填） |
+| `max_length` | 字串最大長度（生成 `VARCHAR(n)`，寫入驗證） |
+| `nullable` | 是否允許 NULL（預設 False） |
+| `index` | 生成普通索引 |
+| `unique` | 唯一約束 |
+| `choices` / `ge` / `le` | 列舉 / 數值範圍（寫入驗證） |
+| `description` | 描述（i18n 字典，與配置類同格式） |
+| `column_type` | 覆寫 SQL 列類型定義 |
+
+## 建表與 CRUD
+
+```python
+await User.create_table()                      # 幂等（IF NOT EXISTS）
+
+user = await User.create(name="Alice", age=20) # 插入（自增主鍵自動回填）
+got = await User.get(id=user.id)               # 等值查詢首條
+
+users = await User.where(User.age > 18).order_by("-age").limit(10).all()
+first = await User.where(User.name == "Alice").first()
+total = await User.count(User.age > 18)
+
+user.age = 21
+await user.save()                              # 按主鍵更新（先約束校驗）；主鍵缺失時退化為插入（自增主鍵同樣回填到實例）
+await user.delete()                            # 按主鍵刪除
+
+await User.update_all(User.age > 18, role="adult")  # 批量更新
+await User.delete_all(User.age > 100)               # 批量刪除
+```
+
+查詢表達式支援 `> >= < <= == !=`、`in_([...])`，以及 `&`（與）/ `|`（或）組合：
+
+```python
+await User.where((User.age > 18) & User.name.in_(["Alice", "Bob"])).all()
+```
+
+## 事務
+
+ORM 的讀寫與框架儲存層共用同一個事務路由：當處於 `storage.atransaction()` 環境的事務內時，`create` / `save` / `delete` 與查詢會自動複用事務連接，並隨事務統一提交或回滾，不會獨立提交。
+
+```python
+async with storage.atransaction():
+    await User.create(name="Alice")
+    ...  # 塊內拋異常時，上面的 INSERT 一併回滾
+```
+
+## 與宣告式配置類的關係
+
+模型宣告與 `ConfigClass`（`@dataclass + field(metadata=...)`）**共享同一套底層**——約束詞表、校驗器引擎（`validate_field_constraints`）、類型類別註冊表（`python_type_category`）；但類基座有意分離：配置欄位是普通值（TOML 往返、一次載入熱更新），模型欄位是欄位描述符（類存取 = 查詢表達式、逐行實例）。一份宣告語法，兩個各司其職的基座。
+
+## 邊界與注意事項
+
+- 後端由全域儲存配置決定；模型可用 `__storage__` 類屬性覆寫為自訂 `BaseStorage` 實例（用於測試注入）
+- `list` / `dict` 欄位（含參數化泛型如 `list[int]`、`dict[str, int]`）按容器類別以 JSON 文本列儲存，讀寫自動序列化
+- 寫入（`create` / `save`）前自動執行約束校驗，失敗拋 `ValueError`（本地化訊息）
+- 自動遷移已交付**新增欄位**場景（見下文）；欄位類型變更與刪欄需手動處理
+- 觸發儲存連線失敗時的行為與儲存層一致：不崩潰框架，冷卻後自動重連
+
+## 自動遷移（階段二）
+
+`create_table()` 在表已存在時自動對比現有列與模型欄位：**新增欄位**自動執行
+`ALTER TABLE ADD COLUMN`（遷移欄位剔除 `NOT NULL` 約束，存量行回填 NULL），
+宣告了 `index=True` 的新欄位同步建立索引。無需手動編寫遷移腳本。
+
+```python
+# v1 上線後模型演進：新增 email / bio 欄位
+class User(Model):
+    __tablename__ = "orm_users"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    name: str = Field(max_length=64)
+    age: int = Field(default=0)
+    email: str = Field(default="")     # 新增：下次 create_table() 自動 ADD COLUMN
+    bio: str = Field(default="")
+
+await User.create_table()              # 幂等：僅遷移新增欄位
+```
+
+**邊界**：僅支援新增欄位；主鍵變更、欄位類型變更、刪欄需手動處理（避免破壞性
+ALTER 誤操作）。
+
+## 外鍵（關係映射基礎）
+
+`foreign_key="表.列"` 聲明欄位級外鍵約束，DDL 會生成 `REFERENCES` 子句：
+
+```python
+class Post(Model):
+    __tablename__ = "posts"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    author: int = Field(foreign_key="orm_users.id")
+
+    content: str = Field(max_length=255)
+```
+
+## 關係映射（relationship）
+
+在模型類體中以類屬性宣告 `relationship()`，**方向依外鍵欄位宣告在哪張表自動判定**：
+
+```python
+from ErisPulse.Core.Bases import Model, Field, relationship
+
+class User(Model):
+    __tablename__ = "orm_users"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    name: str = Field(max_length=64)
+
+    posts = relationship("Post", foreign_key="author")   # 外鍵在對方表 → has-many
+
+class Post(Model):
+    __tablename__ = "posts"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    author: int = Field(foreign_key="orm_users.id")
+    content: str = Field(max_length=255)
+
+    writer = relationship("User", foreign_key="author")  # 外鍵在本表 → belongs-to
+```
+
+**has-many**：實例屬性返回查詢集，`QuerySet` 全部鏈式能力可用，  
+`create` 自動回填本表主鍵到對方外鍵欄位：
+
+```python
+alice = await User.get(name="Alice")
+
+posts = await alice.posts.all()                          # 該用戶的全部文章
+latest = await alice.posts.order_by("-id").first()
+total = await alice.posts.count()
+hot = await alice.posts.where(Post.content != "").all()  # 追加對方表欄位條件
+await alice.posts.delete()                               # 只刪該用戶的
+
+new_post = await alice.posts.create(content="hi")        # author 自動 = alice.id
+```
+
+**belongs-to**：直接 `await` 得到對方實例（無匹配或外鍵為 NULL 返回 `None`）：
+
+```python
+post = await Post.get(id=1)
+writer = await post.writer          # User 實例或 None
+await writer.posts.count()          # 雙向互通
+```
+
+**要點**：
+
+- `related` 傳入類名字串（按模型類名註冊表惰性解析，兩側定義順序無關）或直接傳模型類
+- 關係查詢與對方模型使用各自的儲存後端（不支援跨後端 JOIN——關係查詢是獨立的兩條 SQL）
+- 關係查詢不快取，每次存取都是即時查詢；改用 `User.where(...)` 仍可做任意自訂查詢
+
+
+
+### 模块排查指南
+
+# 模組排查指南
+
+當模組「沒有反應」時，可依症狀分為三類問題，每類皆有對應的框架診斷工具（RFC EPRFC-2026-001 方向五）：
+
+| 症狀 | 診斷工具 | 定位層面 |
+|------|---------|---------|
+| 模組未載入 | `ErisPulse.runtime.explain_module(name)` | 注冊與載入鏈 |
+| 事件未響應 | `ErisPulse.runtime.explain_event(event)` | 分發入口檢查 |
+| 命令未觸發 | 分發決策鏈（測試端 `DispatchTrace` / 框架內建 `trace`） | 命令判定鏈 |
+
+這兩個診斷函數皆為**純讀取**操作，不會改變任何狀態，可在任意時刻調用；返回機器可讀的 dict，搭配 `format_report()` 可渲染為人類可讀的文本。
+
+## 場景一：模組未載入
+
+```python
+from ErisPulse.runtime import explain_module, format_report
+
+report = explain_module("MyModule")
+print(format_report(report))
+```
+
+`explain_module()` 會逐一檢查並提供結論，涵蓋以下原因：
+
+| 檢查項目 | 說明 |
+|-------|------|
+| 未註冊 | 套件未安裝、entry-point 組名錯誤，或註冊名稱與查詢名稱不一致 |
+| 慢載入未實例化 | **正常狀態而非故障**：慢載入模組首次被呼叫（`module.call` / 命令觸發等）時才實例化 |
+| 配置已停用 | `ErisPulse.modules.status.<模組名> = false`（未配置即預設啟用） |
+| 依賴未載入 | 模組宣告的 `depends` 列表中有模組未就緒 |
+| SDK 版本不符 | 模組元數據宣告的 `min_sdk_version` 高於目前框架版本 |
+| on_load 異常 | 登記正常但未載入且無上述原因——檢查啟動日誌中模組名對應的 ERROR 記錄 |
+
+回傳 dict 的結構化欄位：`registered` / `loaded` / `lazy` / `enabled`（`None` 表示未配置即預設啟用）/ `missing_dependencies` / `sdk_version_ok` / `conclusion`（一句話結論）/ `reasons`（原因清單）。
+
+## 場景二：事件沒響應
+
+```python
+from ErisPulse.runtime import explain_event, format_report
+
+report = explain_event(event)   # 在處理器內拿到的 Event 或原始事件 dict
+print(format_report(report))
+```
+
+`explain_event()` 按分發入口的實際檢查順序輸出結論：
+
+1. **平台適配器未註冊**：`platform` 對應的適配器實例不存在——事件根本沒進入框架。
+2. **身份維度被作用域拒絕**：用戶 / 會話 / Bot / 適配器被拉黑——事件在分發入口被完全丟棄。作用域配置見[模組配置](../user-guide/configuration.md)。
+3. **模組被會話屏蔽**：區分當前會話 `available_modules`（可用）與 `blocked_modules`（被作用域屏蔽）。
+4. **文本形如命令但未命中**：帶命令前綴但不是任何註冊命令——檢查前綴配置與命令名。
+
+入口檢查全部通過仍無響應時，結論會指引繼續檢查兩處：
+
+- **處理器過濾條件**：`detail_type` / `pattern=` / `regex=` 等條件不滿足；
+- **中間件否決**：中間件顯式返回 `False` 會在事件層面丟棄，並觸發 `adapter.event.blocked` 生命週期鉤子（攜帶中間件名與完整事件）——可註冊該鉤子審計「是誰丟棄了事件」。
+
+## 場景三：命令未觸發（分發決策鏈）
+
+一條帶前綴的消息要真正執行命令，需依次通過：命令文本判定 → 命令命中（未命中附拼寫建議）→ 作用域 → 用戶 ACL → 主人檢查 → 權限函數 → 冷卻 / 限流 / 用量靜默丟棄 → 廢棄拒絕與提示 → 參數解析 → 執行。框架把每個判定点記錄為因果鏈，給出「為什麼沒觸發」的結論。
+
+### 測試中：TestBot.dispatch 返回 DispatchTrace
+
+推薦用測試復現問題後直接讀取因果鏈（工具用法見[模組測試](testing.md)）：
+
+```python
+trace = await bot.dispatch(create_command_event("dailyx", user_id="123"))
+
+trace.verdict          # executed / rejected / dropped / failed / no_match / passed
+print(trace.explain()) # 逐行因果說明（當前語言）
+trace.assert_no_match()
+```
+
+### 框架內建 trace 模組
+
+決策鏈由 `ErisPulse.Core.Event.trace` 提供，預設**零開銷**——未處於採集上下文時判定点直接跳過，生產路徑無感知：
+
+```python
+from ErisPulse.Core.Event import (
+    start_dispatch_trace,
+    format_dispatch_trace,
+    final_verdict,
+)
+
+with start_dispatch_trace() as records:
+    ...  # 采集上下文內發生的分發（含其派生的處理器任務）
+
+print(format_dispatch_trace(records))   # 人類可讀因果鏈（當前語言）
+print(final_verdict(records))           # 總結論
+```
+
+`final_verdict()` 的取值：
+
+| 結論 | 含義 |
+|------|------|
+| `executed` | 命令已執行 |
+| `rejected` | 被權限類判定拒絕（作用域 / ACL / 主人 / 權限函數） |
+| `dropped` | 被靜默丟棄（冷卻 / 限流 / 用量 / 中間件否決） |
+| `failed` | 執行出錯 |
+| `no_match` | 帶前綴但未命中任何命令 |
+| `passed` | 非命令文本，放行給訊息處理器 |
+
+記錄為機器可讀 dict（`stage` / `verdict` / `message_key` / `params`），自定義展示時可按 `stage` 過濾（如只看 `cooldown`）。
+
+### 治理類靜默命中的辨別
+
+`cooldown=` / `rate_limit=` / `usage_limit=` 命中時**預設靜默丟棄**（命令仍被認領，不漏給低优先級處理器），容易誤判為「命令壞了」：現象是部分使用者可用、部分使用者無回應，且決策鏈中出現對應 `stage` 的 `dropped` 記錄。`deprecated=` 命令則表現為呼叫時自動回覆廢棄文案（`deprecated_reject=True` 時拒絕執行）。
+
+## 通用建議
+
+- 排查前先把日誌調到 `DEBUG` / `TRACE`（配置見[開發者指南](README.md#調試技巧)），可以看到模組載入、路由註冊、事件分發等框架內部流程；
+- `explain_module` / `explain_event` 隨時可調、純讀無副作用，適合直接掛到運維命令或管理面板；
+- "命令沒觸發"類問題優先寫一個 `DispatchTrace` 斷言測試復現——`assert_executed` / `assert_rejected` 等斷言失敗時會自動附上完整因果鏈。
+
+
+
 =====
 发布与工具
 =====
