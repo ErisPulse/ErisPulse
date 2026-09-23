@@ -128,7 +128,7 @@ epsdk run main.py
 
 ### 安裝失敗
 
-1. 檢查 Python 版本是否 >= 3.10（推薦 3.10 - 3.13）
+1. 檢查 Python 版本是否 >= 3.10（推薦 3.10 - 3.14；3.14t free-threaded 無 GIL 建構暫未列入正式支援，框架以實驗性 CI 冒煙持續監測）
 2. 嘗試使用 `uv pip install ErisPulse` 替代 `pip install`
 3. 如果提示權限錯誤，嘗試 `pip install --user ErisPulse` 或使用虛擬環境
 4. 如果在企業代理環境下遇到 SSL 證書錯誤，嘗試 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org ErisPulse`
@@ -139,14 +139,14 @@ epsdk run main.py
 1. 檢查 `config.toml` 語法是否正確（TOML 格式對縮進和引號敏感）
 2. 確認所有必需的配置項都已填寫
 3. 查看終端日誌獲取詳細錯誤資訊
-4. 使用 `epsdk init` 重新生成配置文件
+4. 使用 `epsdk init` 重新生成配置檔案
 
 ### 模組安裝失敗
 
 1. 確認模組名稱拼寫正確（大小寫敏感）
 2. 檢查網路連接
 3. 使用 `epsdk list-remote` 查看可用模組列表
-4. 確認模組與你當前 SDK 版本相容
+4. 確認模組與你目前 SDK 版本相容
 
 ### Windows PowerShell 執行策略
 
