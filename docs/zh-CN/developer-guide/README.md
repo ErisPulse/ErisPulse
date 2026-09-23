@@ -26,6 +26,7 @@
 ### 测试与排查
 
 1. [模块测试（ErisPulse-Testing）](testing.md) - TestBot、事件工厂与断言面
+2. [模块排查指南](module-troubleshooting.md) - 模块没加载 / 事件没响应 / 命令没触发的定位方法
 
 ### 发布指南
 

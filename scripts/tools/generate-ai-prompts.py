@@ -403,6 +403,10 @@ PROMPT_SPECS: list[PromptSpec] = [
                     DocEntry(
                         "模块开发最佳实践", "developer-guide/modules/best-practices.md"
                     ),
+                    DocEntry("数据模型层（ORM）", "developer-guide/orm.md"),
+                    DocEntry(
+                        "模块排查指南", "developer-guide/module-troubleshooting.md"
+                    ),
                 ],
             ),
             SECTION_PUBLISH_AND_TOOLS,
@@ -520,6 +524,10 @@ PROMPT_SPECS: list[PromptSpec] = [
                     ),
                     DocEntry(
                         "模块开发最佳实践", "developer-guide/modules/best-practices.md"
+                    ),
+                    DocEntry("数据模型层（ORM）", "developer-guide/orm.md"),
+                    DocEntry(
+                        "模块排查指南", "developer-guide/module-troubleshooting.md"
                     ),
                 ],
             ),

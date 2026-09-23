@@ -327,6 +327,8 @@ class DocsIndexGenerator:
         "developer-guide/publishing.md": 10,
         "developer-guide/adapters/converter.md": 11,
         "developer-guide/testing.md": 12,
+        "developer-guide/orm.md": 13,
+        "developer-guide/module-troubleshooting.md": 14,
         # 平台特性指南
         "platform-guide/README.md": 1,
         "platform-guide/onebot11.md": 2,
