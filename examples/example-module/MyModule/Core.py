@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from ErisPulse import SDK
 from ErisPulse.Core import Depends
-from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, Field, I18nKey, Model, ModuleMeta
+from ErisPulse.Core.Bases import BaseConfig, BaseI18n, BaseModule, Field, I18nKey, Model, ModuleMeta, relationship
 from ErisPulse.Core.Event import Event, command, message, notice
 from ErisPulse.runtime import off_cleanup, on_cleanup
 
@@ -293,9 +293,14 @@ class Main(BaseModule):
             "search",
             rate_limit="5/minute",
             rate_limit_key="user",
-            help="搜索示例（限流声明）",
+            usage_limit="100/day",
+            usage_limit_key="user",
+            help="搜索示例（限流 + 配额声明）",
         )
         async def search_command(event: Event):
+            # rate_limit= 滑动窗口防瞬时刷屏（秒/分钟级）；
+            # usage_limit= 自然周期业务配额（当日 0 点起算，次日自动重置）——
+            # 两者语义不同可同时声明（冷却先判，均位于权限与参数解析通过之后）
             await event.reply("搜索结果")
 
         # 依赖注入（推荐写法）：公共依赖抽为函数，处理器以 Depends(...) 声明，
@@ -313,8 +318,26 @@ class Main(BaseModule):
             content: str = Field(max_length=255)
             created_by: str = Field(default="")
 
-        async def _init_note_table(self):
-            await self.NoteRecord.create_table()
+            # has-many：外键（note_id）声明在对方表 → 返回查询集，
+            # await note.attachments.all() / .count() / .create(note 补全主键)
+            attachments = relationship("NoteAttachment", foreign_key="note_id")
+
+        class NoteAttachment(Model):
+            __tablename__ = "mymodule_note_attachments"
+
+            id: int = Field(primary_key=True, autoincrement=True)
+            note_id: int = Field(foreign_key="mymodule_notes.id")
+            url: str = Field(max_length=255)
+
+            # belongs-to：外键声明在本表 → await att.note 直接得到 NoteRecord 或 None
+            note = relationship("NoteRecord", foreign_key="note_id")
+
+        async def _init_note_tables():
+            """建表（幂等）：模块加载时调用一次；关系用法见上方 relationship 注释"""
+            await NoteRecord.create_table()
+            await NoteAttachment.create_table()
+
+        await _init_note_tables()
 
         @command("greet", args="[name:str]", help="问候示例（依赖注入）")
         async def greet_command(event: Event, name: str = "", user_name=Depends(get_user_name)):
@@ -337,7 +360,10 @@ class Main(BaseModule):
                 await event.reply("我收到了你的@消息！")
 
         # pattern（glob 通配符）/ regex（正则）二选一：不匹配的消息不会触发
-        @message.on_message(pattern="签到*")
+        # 处理器节流（推荐写法）：throttle= 声明防刷屏——同键事件在间隔内
+        # 至多处理一条，其余静默丢弃；与 pattern= / regex= 条件叠加生效；
+        # debounce=（窗口内只执行最后一条）语义互斥，同声明注册期报错
+        @message.on_message(pattern="签到*", throttle="5s", throttle_key="user")
         async def signin_handler(event: Event):
             await event.reply("签到成功")
 
