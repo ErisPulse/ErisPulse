@@ -75,13 +75,13 @@ async with storage.atransaction():
 
 モデルの宣言と `ConfigClass`（`@dataclass + field(metadata=...)`）は**同じ下層の基盤を共有**しています。これは、制約辞書、検証エンジン（`validate_field_constraints`）、型カテゴリ登録表（`python_type_category`）です。しかし、クラスの基盤は意図的に分離されています。構成フィールドは通常の値（TOMLを経由した読み書き、1回の読み込み後のホットアップデート）であり、モデルフィールドは列記述子（クラスアクセス = クエリ式、行ごとのインスタンス）です。1つの宣言構文で、2つの役割を果たす基盤が存在します。
 
-## 境界と注意事項
+## 辺界と注意事項
 
-- バックエンドはグローバルストレージ設定によって決定されます。モデルは `__storage__` クラス属性を用いて、カスタムの `BaseStorage` インスタンスに上書きすることで、テスト用の注入が可能です。
-- `list` / `dict` フィールド（パラメータ化されたジェネリック、例えば `list[int]`、`dict[str, int]` を含む）は、コンテナの種類に応じて JSON テキストとして列に格納され、読み書き時に自動的にシリアライズされます。
-- 書き込み（`create` / `save`）の前に自動的に制約検証が実行され、失敗した場合は `ValueError` がスローされます（ローカライズされたメッセージ）。
-- 自動マイグレーションは**追加列**のシナリオに対応しています（下記参照）。列の型変更、列の削除、ORMレベルの関連オブジェクトは、今後のバージョンで対応予定です。
-- ストレージ接続の失敗時に発生する動作は、ストレージ層と同一です：フレームワークがクラッシュせず、冷却後に自動的に再接続されます。
+- バックエンドはグローバルなストレージ設定によって決定されます。モデルは `__storage__` クラス属性を用いて、カスタムの `BaseStorage` インスタンスに上書きすることができます（テスト用の注入に使用）。
+- `list` / `dict` フィールド（パラメータ化されたジェネリック、例えば `list[int]`、`dict[str, int]`）は、コンテナの種類に応じて JSON テキストとして列に格納され、読み書き時に自動的にシリアライズされます。
+- `create` / `save` の前に自動的に制約検証が実行され、失敗した場合は `ValueError`（ローカライズされたメッセージ）が送出されます。
+- 自動マイグレーションは**追加の列**の場面に対して提供されています（下記を参照）；列の型の変更や列の削除は手動で処理する必要があります。
+- ストレージ接続の失敗が発生した際の動作は、ストレージ層と一致します：フレームワークはクラッシュせず、冷却後に自動的に再接続されます。
 
 ## 自動マイグレーション（フェーズ2）
 
@@ -105,7 +105,7 @@ await User.create_table()              # 再帰的：追加された列のみマ
 
 ## 外部キー（リレーションマッピングの基礎）
 
-`foreign_key="表.列"` は列レベルの外部キー制約を宣言し、DDL は `REFERENCES` サブクエリを生成します。
+`foreign_key="テーブル.列"` は、列レベルの外部キー制約を宣言し、DDL 生成時に `REFERENCES` 子句を生成します。
 
 ```python
 class Post(Model):
@@ -117,4 +117,55 @@ class Post(Model):
     content: str = Field(max_length=255)
 ```
 
-外部キーは DDL レベルの制約（データベースが参照整合性を保証）であり、ORM レベルのリレーションオブジェクト（`relationship` / 逆参照）は、後続のバージョンでの機能です。
+## 関係マッピング（relationship）
+
+モデルクラス内で `relationship()` をクラス属性として宣言することで、**外キー列がどのテーブルに宣言されているかによって自動的に方向が判定されます**：
+
+```python
+from ErisPulse.Core.Bases import Model, Field, relationship
+
+class User(Model):
+    __tablename__ = "orm_users"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    name: str = Field(max_length=64)
+
+    posts = relationship("Post", foreign_key="author")   # 外キーが相手のテーブルにある → has-many
+
+class Post(Model):
+    __tablename__ = "posts"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    author: int = Field(foreign_key="orm_users.id")
+    content: str = Field(max_length=255)
+
+    writer = relationship("User", foreign_key="author")  # 外キーがこのテーブルにある → belongs-to
+```
+
+**has-many**：インスタンス属性はクエリセットを返し、`QuerySet` の全チェイン機能が利用可能で、`create` は自動的に本テーブルの主キーを相手の外キー列に埋め込みます：
+
+```python
+alice = await User.get(name="Alice")
+
+posts = await alice.posts.all()                          # このユーザーの全記事
+latest = await alice.posts.order_by("-id").first()
+total = await alice.posts.count()
+hot = await alice.posts.where(Post.content != "").all()  # 相手のテーブルのフィールド条件を追加
+await alice.posts.delete()                               # このユーザーのものだけ削除
+
+new_post = await alice.posts.create(content="hi")        # author は自動的に alice.id に設定
+```
+
+**belongs-to**：`await` を直接実行すると相手のインスタンスが得られます（一致するものがない場合や外キーが NULL の場合は `None` を返します）：
+
+```python
+post = await Post.get(id=1)
+writer = await post.writer          # User インスタンスまたは None
+await writer.posts.count()          # 双方向にアクセス可能
+```
+
+**ポイント**：
+
+- `related` にはクラス名の文字列（モデルクラス名の登録表を惰性で解析）または直接モデルクラスを渡すことができます。
+- 関係のクエリと相手のモデルはそれぞれ独自のストレージバックエンドを使用します（バックエンド間の JOIN はサポートされていません。関係のクエリは独立した 2 つの SQL です）。
+- 関係のクエリはキャッシュされず、アクセスするたびに即時クエリが実行されます。`User.where(...)` を使用して任意のカスタムクエリを行うことも可能です。

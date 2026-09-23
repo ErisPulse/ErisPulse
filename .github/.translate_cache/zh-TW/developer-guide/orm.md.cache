@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "1f1a856c8334dec9226fb005ccdd8891",
-  "file_hash": "1f1a856c8334dec9226fb005ccdd8891",
-  "translated_at": "2026-09-22T05:16:35.960397",
+  "hash": "e2c70d572fe464d20c02c75b7b8c4b48",
+  "file_hash": "e2c70d572fe464d20c02c75b7b8c4b48",
+  "translated_at": "2026-09-23T03:07:50.403057",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -30,16 +30,20 @@
       "translation": "## 與宣告式配置類的關係\n\n模型宣告與 `ConfigClass`（`@dataclass + field(metadata=...)`）**共享同一套底層**——約束詞表、校驗器引擎（`validate_field_constraints`）、類型類別註冊表（`python_type_category`）；但類基座有意分離：配置欄位是普通值（TOML 往返、一次載入熱更新），模型欄位是欄位描述符（類存取 = 查詢表達式、逐行實例）。一份宣告語法，兩個各司其職的基座。"
     },
     {
-      "hash": "ece411fd545d353756034181b3e6d54a",
-      "translation": "## 邊界與注意事項\n\n- 後端由全域儲存配置決定；模型可用 `__storage__` 類屬性覆寫為自定義 `BaseStorage` 實例（測試注入用）\n- `list` / `dict` 字段（含參數化泛型如 `list[int]`、`dict[str, int]`）按容器類別以 JSON 文本列儲存，讀寫自動序列化\n- 寫入（`create` / `save`）前自動執行約束校驗，失敗拋 `ValueError`（本地化訊息）\n- 自動遷移已交付**新增欄位**場景（見下文）；欄位類型變更、刪欄與 ORM 級關係物件為後續版本能力\n- 觸發儲存連線失敗時的行為與儲存層一致：不崩潰框架，冷卻後自動重連"
+      "hash": "83b151efd5506e40c80bbe2615b0b9de",
+      "translation": "## 邊界與注意事項\n\n- 後端由全域儲存配置決定；模型可用 `__storage__` 類屬性覆寫為自訂 `BaseStorage` 實例（用於測試注入）\n- `list` / `dict` 欄位（含參數化泛型如 `list[int]`、`dict[str, int]`）按容器類別以 JSON 文本列儲存，讀寫自動序列化\n- 寫入（`create` / `save`）前自動執行約束校驗，失敗拋 `ValueError`（本地化訊息）\n- 自動遷移已交付**新增欄位**場景（見下文）；欄位類型變更與刪欄需手動處理\n- 觸發儲存連線失敗時的行為與儲存層一致：不崩潰框架，冷卻後自動重連"
     },
     {
       "hash": "f953b044af384b87c220880e28c93b24",
       "translation": "## 自動遷移（階段二）\n\n`create_table()` 在表已存在時自動對比現有列與模型欄位：**新增欄位**自動執行\n`ALTER TABLE ADD COLUMN`（遷移欄位剔除 `NOT NULL` 約束，存量行回填 NULL），\n宣告了 `index=True` 的新欄位同步建立索引。無需手動編寫遷移腳本。\n\n```python\n# v1 上線後模型演進：新增 email / bio 欄位\nclass User(Model):\n    __tablename__ = \"orm_users\"\n\n    id: int = Field(primary_key=True, autoincrement=True)\n    name: str = Field(max_length=64)\n    age: int = Field(default=0)\n    email: str = Field(default=\"\")     # 新增：下次 create_table() 自動 ADD COLUMN\n    bio: str = Field(default=\"\")\n\nawait User.create_table()              # 幂等：僅遷移新增欄位\n```\n\n**邊界**：僅支援新增欄位；主鍵變更、欄位類型變更、刪欄需手動處理（避免破壞性\nALTER 誤操作）。"
     },
     {
-      "hash": "a2d5597931b212ed7b4eaaca002dcf5b",
-      "translation": "## 外鍵（關係映射基礎）\n\n`foreign_key=\"表.列\"` 聲明欄位級外鍵約束，DDL 生成 `REFERENCES` 子句：\n\n```python\nclass Post(Model):\n    __tablename__ = \"posts\"\n\n    id: int = Field(primary_key=True, autoincrement=True)\n    author: int = Field(foreign_key=\"orm_users.id\")\n\n    content: str = Field(max_length=255)\n```\n\n外鍵為 DDL 級約束（資料庫保證引用完整性）；ORM 級關係物件（`relationship` /\n反向查詢）為後續版本功能。"
+      "hash": "8d8f77fbe5afc0cade2492dd9eeb48f7",
+      "translation": "## 外鍵（關係映射基礎）\n\n`foreign_key=\"表.列\"` 聲明欄位級外鍵約束，DDL 會生成 `REFERENCES` 子句：\n\n```python\nclass Post(Model):\n    __tablename__ = \"posts\"\n\n    id: int = Field(primary_key=True, autoincrement=True)\n    author: int = Field(foreign_key=\"orm_users.id\")\n\n    content: str = Field(max_length=255)\n```"
+    },
+    {
+      "hash": "3bc63b2b6aa493301f11e1712a5b2615",
+      "translation": "## 關係映射（relationship）\n\n在模型類體中以類屬性宣告 `relationship()`，**方向依外鍵欄位宣告在哪張表自動判定**：\n\n```python\nfrom ErisPulse.Core.Bases import Model, Field, relationship\n\nclass User(Model):\n    __tablename__ = \"orm_users\"\n\n    id: int = Field(primary_key=True, autoincrement=True)\n    name: str = Field(max_length=64)\n\n    posts = relationship(\"Post\", foreign_key=\"author\")   # 外鍵在對方表 → has-many\n\nclass Post(Model):\n    __tablename__ = \"posts\"\n\n    id: int = Field(primary_key=True, autoincrement=True)\n    author: int = Field(foreign_key=\"orm_users.id\")\n    content: str = Field(max_length=255)\n\n    writer = relationship(\"User\", foreign_key=\"author\")  # 外鍵在本表 → belongs-to\n```\n\n**has-many**：實例屬性返回查詢集，`QuerySet` 全部鏈式能力可用，  \n`create` 自動回填本表主鍵到對方外鍵欄位：\n\n```python\nalice = await User.get(name=\"Alice\")\n\nposts = await alice.posts.all()                          # 該用戶的全部文章\nlatest = await alice.posts.order_by(\"-id\").first()\ntotal = await alice.posts.count()\nhot = await alice.posts.where(Post.content != \"\").all()  # 追加對方表欄位條件\nawait alice.posts.delete()                               # 只刪該用戶的\n\nnew_post = await alice.posts.create(content=\"hi\")        # author 自動 = alice.id\n```\n\n**belongs-to**：直接 `await` 得到對方實例（無匹配或外鍵為 NULL 返回 `None`）：\n\n```python\npost = await Post.get(id=1)\nwriter = await post.writer          # User 實例或 None\nawait writer.posts.count()          # 雙向互通\n```\n\n**要點**：\n\n- `related` 傳入類名字串（按模型類名註冊表惰性解析，兩側定義順序無關）或直接傳模型類\n- 關係查詢與對方模型使用各自的儲存後端（不支援跨後端 JOIN——關係查詢是獨立的兩條 SQL）\n- 關係查詢不快取，每次存取都是即時查詢；改用 `User.where(...)` 仍可做任意自訂查詢"
     }
   ]
 }
