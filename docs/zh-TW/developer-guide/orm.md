@@ -77,10 +77,10 @@ async with storage.atransaction():
 
 ## 邊界與注意事項
 
-- 後端由全域儲存配置決定；模型可用 `__storage__` 類屬性覆寫為自定義 `BaseStorage` 實例（測試注入用）
-- `list` / `dict` 字段（含參數化泛型如 `list[int]`、`dict[str, int]`）按容器類別以 JSON 文本列儲存，讀寫自動序列化
+- 後端由全域儲存配置決定；模型可用 `__storage__` 類屬性覆寫為自訂 `BaseStorage` 實例（用於測試注入）
+- `list` / `dict` 欄位（含參數化泛型如 `list[int]`、`dict[str, int]`）按容器類別以 JSON 文本列儲存，讀寫自動序列化
 - 寫入（`create` / `save`）前自動執行約束校驗，失敗拋 `ValueError`（本地化訊息）
-- 自動遷移已交付**新增欄位**場景（見下文）；欄位類型變更、刪欄與 ORM 級關係物件為後續版本能力
+- 自動遷移已交付**新增欄位**場景（見下文）；欄位類型變更與刪欄需手動處理
 - 觸發儲存連線失敗時的行為與儲存層一致：不崩潰框架，冷卻後自動重連
 
 ## 自動遷移（階段二）
@@ -108,7 +108,7 @@ ALTER 誤操作）。
 
 ## 外鍵（關係映射基礎）
 
-`foreign_key="表.列"` 聲明欄位級外鍵約束，DDL 生成 `REFERENCES` 子句：
+`foreign_key="表.列"` 聲明欄位級外鍵約束，DDL 會生成 `REFERENCES` 子句：
 
 ```python
 class Post(Model):
@@ -120,5 +120,56 @@ class Post(Model):
     content: str = Field(max_length=255)
 ```
 
-外鍵為 DDL 級約束（資料庫保證引用完整性）；ORM 級關係物件（`relationship` /
-反向查詢）為後續版本功能。
+## 關係映射（relationship）
+
+在模型類體中以類屬性宣告 `relationship()`，**方向依外鍵欄位宣告在哪張表自動判定**：
+
+```python
+from ErisPulse.Core.Bases import Model, Field, relationship
+
+class User(Model):
+    __tablename__ = "orm_users"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    name: str = Field(max_length=64)
+
+    posts = relationship("Post", foreign_key="author")   # 外鍵在對方表 → has-many
+
+class Post(Model):
+    __tablename__ = "posts"
+
+    id: int = Field(primary_key=True, autoincrement=True)
+    author: int = Field(foreign_key="orm_users.id")
+    content: str = Field(max_length=255)
+
+    writer = relationship("User", foreign_key="author")  # 外鍵在本表 → belongs-to
+```
+
+**has-many**：實例屬性返回查詢集，`QuerySet` 全部鏈式能力可用，  
+`create` 自動回填本表主鍵到對方外鍵欄位：
+
+```python
+alice = await User.get(name="Alice")
+
+posts = await alice.posts.all()                          # 該用戶的全部文章
+latest = await alice.posts.order_by("-id").first()
+total = await alice.posts.count()
+hot = await alice.posts.where(Post.content != "").all()  # 追加對方表欄位條件
+await alice.posts.delete()                               # 只刪該用戶的
+
+new_post = await alice.posts.create(content="hi")        # author 自動 = alice.id
+```
+
+**belongs-to**：直接 `await` 得到對方實例（無匹配或外鍵為 NULL 返回 `None`）：
+
+```python
+post = await Post.get(id=1)
+writer = await post.writer          # User 實例或 None
+await writer.posts.count()          # 雙向互通
+```
+
+**要點**：
+
+- `related` 傳入類名字串（按模型類名註冊表惰性解析，兩側定義順序無關）或直接傳模型類
+- 關係查詢與對方模型使用各自的儲存後端（不支援跨後端 JOIN——關係查詢是獨立的兩條 SQL）
+- 關係查詢不快取，每次存取都是即時查詢；改用 `User.where(...)` 仍可做任意自訂查詢
