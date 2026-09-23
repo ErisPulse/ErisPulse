@@ -38,6 +38,27 @@ ErisPulse 命令处理模块
 #### 方法列表
 
 
+##### `_cooldowns()`
+
+> **内部方法** 命令冷却状态表（cooldown= 声明）
+
+---
+
+
+##### `_rate_limits()`
+
+> **内部方法** 命令限流状态表（rate_limit= 滑动窗口）
+
+---
+
+
+##### `_usage_counts()`
+
+> **内部方法** 配额内存计数表（usage= 持久化读缓存）
+
+---
+
+
 ##### `_refresh_command_config()`
 
 从配置读取命令解析相关参数
@@ -297,6 +318,17 @@ second / minute / hour / day（含单字母缩写与可选数值前缀，大小�
 :meth:`~ErisPulse.Core.Event.interaction.InteractionManager.resolve`。
 
 - **event**: 消息事件数据
+
+---
+
+
+##### `async _send_event_text(event: dict[str, Any], text: str)`
+
+> **内部方法**
+向事件来源会话发送文本（各 _send_* 提示的公共发送通道）
+
+- **event** (`事件数据`): - **text**: 已本地化的待发送文本
+- **error_log_key** (`发送失败时的错误日志`): i18n 键
 
 ---
 
