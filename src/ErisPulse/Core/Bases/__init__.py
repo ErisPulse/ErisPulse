@@ -44,7 +44,7 @@ from .config_schema import (
     BotAccountConfig,
     I18nConfig,
 )
-from .model import BaseModel, ColumnExpr, Condition, Field, Model, QuerySet
+from .model import BaseModel, ColumnExpr, Condition, Field, Model, QuerySet, relationship
 from .i18n_schema import (
     BaseI18n,
     I18nKey,
@@ -94,6 +94,7 @@ __all__ = [
     "ModuleMeta",
     "ModuleNotAvailableError",
     "QuerySet",
+    "relationship",
     "RequestDSL",
     "SendBuilder",
     "SendContext",

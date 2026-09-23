@@ -23,7 +23,8 @@ ErisPulse 数据模型层（ORM）—— 声明式模型与 Active Record CRUD
    （默认使用全局 ``ErisPulse.Core.storage`` 单例）
 5. 处于 ``storage.atransaction()`` 环境事务内时，读写自动复用事务连接，
    随事务统一提交/回滚
-6. 自动迁移（schema diff）与关系映射为后续版本能力，本层不包含
+6. 关系映射：``relationship()`` 声明 has-many / belongs-to，实例上链式查询
+   或直接 await（见 :class:`Relationship`）
 {!--< /tips >!--}
 
 :example:
@@ -470,6 +471,166 @@ class QuerySet:
         return int(await storage._execute_query("dml", sql, where_params))
 
 
+class _RelatedMany(QuerySet):
+    """
+    {!--< internal-use >!--}
+    has-many 关系查询集：在 :class:`QuerySet` 全部链式能力之上，
+    附带 ``create`` 自动回填本表主键到对方外键列
+    """
+
+    def __init__(self, model: type[Model], condition: Condition | None, instance: Model, fk: str):
+        super().__init__(model, condition)
+        self._owner = instance
+        self._fk = fk
+
+    def where(self, *conditions: Condition) -> _RelatedMany:
+        """
+        追加对方表字段的条件过滤（与关系外键条件 AND 组合）
+
+        :example:
+        >>> await user.posts.where(Post.title == "hi").all()
+        """
+        for cond in conditions:
+            self._condition = cond if self._condition is None else self._condition & cond
+        return self
+
+    async def create(self, **kwargs: Any) -> Any:
+        """
+        创建对方表的一行并自动填入本实例主键
+
+        :example:
+        >>> await user.messages.create(content="hi")   # user_id 自动 = user.id
+        """
+        pk = type(self._owner)._pk_field()
+        if pk is None or self._owner.__dict__.get(pk.name) is None:
+            raise ValueError(
+                f"{type(self._owner).__name__} has no primary key value; "
+                f"cannot backfill {self._fk!r} via relationship create"
+            )
+        kwargs[self._fk] = self._owner.__dict__.get(pk.name)
+        return await self._model.create(**kwargs)
+
+
+class _RelatedOne:
+    """
+    {!--< internal-use >!--}
+    belongs-to 单条等待器：``author = await msg.author`` 即解析为对方实例或 None
+    """
+
+    __slots__ = ("_query",)
+
+    def __init__(self, query: QuerySet):
+        self._query = query
+
+    def __await__(self):
+        return self._query.first().__await__()
+
+
+class Relationship:
+    """
+    模型关系声明描述符（has-many / belongs-to）
+
+    在模型类体中以类属性形式声明，实例上使用；方向按**外键列声明在哪张表**
+    自动判定，惰性解析（首次访问时查注册表），无需预注册顺序：
+
+    >>> class User(Model):
+    ...     id: int = Field(primary_key=True, autoincrement=True)
+    ...     name: str = Field(max_length=64)
+    ...     messages = relationship("Message", foreign_key="user_id")   # has-many
+
+    >>> class Message(Model):
+    ...     id: int = Field(primary_key=True, autoincrement=True)
+    ...     user_id: int = Field(foreign_key="users.id")
+    ...     content: str = Field()
+    ...     author = relationship("User", foreign_key="user_id")        # belongs-to
+
+    {!--< tips >!--}
+    1. 外键列声明在**对方表** → has-many：返回 :class:`QuerySet`，全部链式能力
+       可用（``await user.messages.order_by("-id").limit(10).all()`` / ``.first()``
+       / ``.count()`` / ``.delete()``），且 ``await user.messages.create(...)``
+       自动回填本表主键到对方外键列
+    2. 外键列声明在**本表** → belongs-to：``author = await msg.author`` 直接
+       await 得到对方实例（无匹配返回 None；外键值为 None 时跳过查询返回 None）
+    3. ``related`` 传类名字符串（按类名注册表惰性解析，两侧模型定义顺序无关）
+       或直接传模型类
+    4. 关系查询与对方模型走同一存储后端（不支持跨后端关联）
+    {!--< /tips >!--}
+    """
+
+    def __init__(self, related: str | type[Model], foreign_key: str):
+        """
+        声明模型关系
+
+        :param related: 对方模型（类名或类）
+        :param foreign_key: 外键列名（本表或对方表，判定方向）
+        """
+        self._related_name = related.__name__ if isinstance(related, type) else related
+        self._foreign_key = foreign_key
+        self._resolved: type[Model] | None = related if isinstance(related, type) else None
+        self.name: str | None = None
+
+    def __set_name__(self, owner: type, name: str) -> None:
+        self.name = name
+
+    def _related_model(self, owner: type) -> type[Model]:
+        """解析对方模型（类名字符串按注册表惰性查找）"""
+        if self._resolved is not None:
+            return self._resolved
+        model = Model._model_registry.get(self._related_name)
+        if model is None:
+            raise ValueError(
+                f"unknown related model {self._related_name!r} for "
+                f"{owner.__name__}.{self.name} (import the model module first)"
+            )
+        self._resolved = model
+        return model
+
+    def __get__(self, instance: Model | None, owner: type | None = None) -> Any:
+        if instance is None:
+            return self  # 类访问返回描述符自身（供内省）
+
+        host = type(instance)
+        related = self._related_model(host)
+        fk = self._foreign_key
+
+        if fk in host._fields:
+            # belongs-to：外键在本表 → 对方主键 = 本表外键值
+            related_pk = related._pk_field()
+            if related_pk is None:
+                raise ValueError(f"{related.__name__} has no primary key for relationship {host.__name__}.{self.name}")
+            own_value = instance.__dict__.get(fk)
+            if own_value is None:
+                return _RelatedOne(QuerySet(related, ColumnExpr(related_pk.name)._cond("=", None)))
+            return _RelatedOne(QuerySet(related, ColumnExpr(related_pk.name)._cond("=", own_value)))
+
+        if fk not in related._fields:
+            raise ValueError(
+                f"foreign key column {fk!r} is declared on neither {host.__name__} "
+                f"nor {related.__name__} (relationship {host.__name__}.{self.name})"
+            )
+        # has-many：外键在对方表 → 对方外键 = 本表主键值
+        own_pk = host._pk_field()
+        if own_pk is None:
+            raise ValueError(f"{host.__name__} needs a primary key for relationship {self.name!r}")
+        return _RelatedMany(related, ColumnExpr(fk)._cond("=", instance.__dict__.get(own_pk.name)), instance, fk)
+
+
+def relationship(related: str | type[Model], foreign_key: str) -> Relationship:
+    """
+    声明模型关系（:class:`Relationship` 的工厂函数，与 ``Field(...)`` 同风格）
+
+    :param related: 对方模型（类名字符串或类）
+    :param foreign_key: 外键列名（声明在对方表为 has-many，本表为 belongs-to）
+    :return: 关系描述符
+
+    :example:
+    >>> class User(Model):
+    ...     messages = relationship("Message", foreign_key="user_id")
+    >>> msgs = await user.messages.all()
+    """
+    return Relationship(related, foreign_key)
+
+
 class Model:
     """
     模型基类（Active Record）
@@ -490,6 +651,9 @@ class Model:
     __storage__: ClassVar[BaseStorage | None] = None
 
     _fields: ClassVar[dict[str, Field]] = {}
+    # 关系解析注册表：{模型类名: 模型类}（__init_subclass__ 自动登记，
+    # 供 Relationship 按类名字符串惰性解析，声明顺序无关）
+    _model_registry: ClassVar[dict[str, type[Model]]] = {}
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
@@ -503,6 +667,7 @@ class Model:
         if not _IDENTIFIER_RE.fullmatch(table):
             raise ValueError(f"invalid table name: {table!r}")
         cls.__tablename__ = table
+        Model._model_registry[cls.__name__] = cls
 
     @classmethod
     def _pk_field(cls) -> Field | None:
@@ -750,6 +915,15 @@ class Model:
             cols.append(name)
             params.append(field_obj.to_db_value(value))
 
+        if not cols:
+            # 全默认行（所有可写列均缺省）：空列 INSERT 各后端语法不一
+            # （sqlite/pg 的 DEFAULT VALUES、mysql 的 () VALUES ()），统一显式 NULL 最稳
+            for name, field_obj in cls._fields.items():
+                if field_obj.autoincrement:
+                    continue
+                cols.append(name)
+                params.append(None)
+
         quoted = [_quote_ident(c, dialect) for c in cols]
         marks = ", ".join("?" for _ in cols)
         sql = f"INSERT INTO {_quote_ident(cls.table_name(), dialect)} ({', '.join(quoted)}) VALUES ({marks})"
@@ -866,7 +1040,7 @@ def _combine(conditions: tuple) -> Condition | None:
     return condition
 
 
-__all__ = ["BaseModel", "ColumnExpr", "Condition", "Field", "Model", "QuerySet"]
+__all__ = ["BaseModel", "ColumnExpr", "Condition", "Field", "Model", "QuerySet", "Relationship", "relationship"]
 
 # 向后兼容/命名对齐别名：Bases 层 Base* 惯例
 BaseModel = Model

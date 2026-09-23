@@ -15,7 +15,7 @@ from typing import Optional
 
 import pytest
 
-from ErisPulse.Core.Bases import Field, Model
+from ErisPulse.Core.Bases import Field, Model, relationship
 from ErisPulse.Core.Bases.config_schema import (
     python_type_category,
     validate_field_constraints,
@@ -455,3 +455,158 @@ async def test_foreign_key_ddl(sm):
     await FkPost.create(author=alice.id)  # 合法引用
     posts = await FkPost.where(FkPost.author == alice.id).all()
     assert len(posts) == 1
+
+
+# ==================== 关系映射（relationship）====================
+
+def make_relation_models(sm):
+    """构造 has-many / belongs-to 双向模型（User 1—N Post）"""
+
+    class RelUser(Model):
+        __storage__ = sm
+        __tablename__ = "rel_users"
+
+        id: int = Field(primary_key=True, autoincrement=True)
+        name: str = Field(max_length=64)
+
+        posts = relationship("RelPost", foreign_key="author")  # has-many
+
+    class RelPost(Model):
+        __storage__ = sm
+        __tablename__ = "rel_posts"
+
+        id: int = Field(primary_key=True, autoincrement=True)
+        author: int = Field(foreign_key="rel_users.id")
+        title: str = Field(max_length=64)
+
+        writer = relationship("RelUser", foreign_key="author")  # belongs-to
+
+    return RelUser, RelPost
+
+
+@pytest.mark.asyncio
+async def test_relationship_has_many_queryset(sm):
+    """has-many：返回 QuerySet，链式 / first / count / delete 全能力可用"""
+    RelUser, RelPost = make_relation_models(sm)
+    assert await RelUser.create_table()
+    assert await RelPost.create_table()
+
+    alice = await RelUser.create(name="Alice")
+    bob = await RelUser.create(name="Bob")
+    await RelPost.create(author=alice.id, title="a1")
+    await RelPost.create(author=alice.id, title="a2")
+    await RelPost.create(author=bob.id, title="b1")
+
+    titles = [p.title for p in await alice.posts.all()]
+    assert titles == ["a1", "a2"]  # 只含自己的行
+    assert await alice.posts.count() == 2
+    assert (await alice.posts.order_by("-id").first()).title == "a2"
+
+    # 链式过滤（对对方表字段）
+    assert [p.title for p in await alice.posts.where(RelPost.title == "a1").all()] == ["a1"]
+
+    # 关系删除
+    await alice.posts.delete()
+    assert await alice.posts.count() == 0
+    assert await RelPost.count() == 1  # bob 的不受影响
+
+
+@pytest.mark.asyncio
+async def test_relationship_has_many_create_backfills_fk(sm):
+    """has-many：关系 create 自动回填本表主键到对方外键列"""
+    RelUser, RelPost = make_relation_models(sm)
+    await RelUser.create_table()
+    await RelPost.create_table()
+
+    alice = await RelUser.create(name="Alice")
+    post = await alice.posts.create(title="hello")
+    assert post.author == alice.id
+    assert (await alice.posts.count()) == 1
+
+
+@pytest.mark.asyncio
+async def test_relationship_belongs_to(sm):
+    """belongs-to：await 单条解析；外键无匹配 → None；可空外键为 NULL → None"""
+    RelUser, RelPost = make_relation_models(sm)
+    await RelUser.create_table()
+    await RelPost.create_table()
+
+    alice = await RelUser.create(name="Alice")
+    post = await RelPost.create(author=alice.id, title="t")
+
+    writer = await post.writer
+    assert writer is not None and writer.name == "Alice"  # 反查到 User 实例
+    assert (await writer.posts.count()) == 1  # 双向互通
+
+    missing = await RelPost.create(author=alice.id + 999, title="ghost")
+    assert await missing.writer is None  # 外键无匹配
+
+    # 可空外键：NULL 行的 belongs-to 跳过查询直接 None
+    class RelNullablePost(Model):
+        __storage__ = sm
+        __tablename__ = "rel_nullable_posts"
+
+        id: int = Field(primary_key=True, autoincrement=True)
+        author: int | None = Field(foreign_key="rel_users.id", nullable=True, default=None)
+        writer = relationship(RelUser, foreign_key="author")
+
+    await RelNullablePost.create_table()
+    orphan = await RelNullablePost.create()
+    assert await orphan.writer is None
+
+
+@pytest.mark.asyncio
+async def test_relationship_class_access_and_errors(sm):
+    """类访问返回描述符自身；未注册模型 / 外键双不在 → 访问时 ValueError"""
+    from ErisPulse.Core.Bases.model import Relationship
+
+    RelUser, RelPost = make_relation_models(sm)
+    await RelUser.create_table()
+    await RelPost.create_table()
+
+    assert isinstance(RelUser.posts, Relationship)  # 类访问不解析、不报错
+    assert isinstance(RelPost.writer, Relationship)
+
+    alice = await RelUser.create(name="A")
+
+    class Loose(Model):
+        __storage__ = sm
+        __tablename__ = "rel_loose"
+
+        id: int = Field(primary_key=True)
+        ghost = relationship("NoSuchModel", foreign_key="x")
+
+    loose = Loose()
+    with pytest.raises(ValueError, match="unknown related model"):
+        _ = loose.ghost  # 访问时才惰性解析 → 抛错
+
+    class Odd(Model):
+        __storage__ = sm
+        __tablename__ = "rel_odd"
+
+        id: int = Field(primary_key=True)
+        weird = relationship("RelUser", foreign_key="nonexistent")
+
+    odd = Odd()
+    with pytest.raises(ValueError, match="neither"):
+        _ = odd.weird  # 外键列两侧都不存在 → 抛错
+
+
+@pytest.mark.asyncio
+async def test_relationship_accepts_model_class(sm):
+    """related 直接传模型类（非字符串）同样可用"""
+    RelUser, RelPost = make_relation_models(sm)
+    await RelUser.create_table()
+    await RelPost.create_table()
+
+    class Direct(Model):
+        __storage__ = sm
+        __tablename__ = "rel_direct"
+        id: int = Field(primary_key=True, autoincrement=True)
+        author: int = Field(foreign_key="rel_users.id")
+        writer2 = relationship(RelUser, foreign_key="author")
+
+    await Direct.create_table()
+    alice = await RelUser.create(name="A")
+    row = await Direct.create(author=alice.id)
+    assert (await row.writer2).name == "A"
