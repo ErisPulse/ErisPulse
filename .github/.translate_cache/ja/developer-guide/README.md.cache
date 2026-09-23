@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "5452ce2bc9f91267c6cb36c9bc9f86e5",
-  "file_hash": "5452ce2bc9f91267c6cb36c9bc9f86e5",
-  "translated_at": "2026-09-21T14:41:32.817664",
+  "hash": "48d5a7e2a8fbdac7a601cf9abddfa45c",
+  "file_hash": "48d5a7e2a8fbdac7a601cf9abddfa45c",
+  "translated_at": "2026-09-23T07:37:22.504362",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# 開発者ガイド\n\nこのガイドは、ErisPulse の機能を拡張するためのカスタムモジュールやアダプターを開発する方法を説明します。"
     },
     {
-      "hash": "ea2f7329c845f9eafa71d08511c0b230",
-      "translation": "## 内容リスト\n\n### モジュール開発\n\n1. [モジュール開発入門](modules/getting-started.md) - 最初のモジュールを作成する\n2. [モジュールのコアコンセプト](modules/core-concepts.md) - モジュールのコアコンセプトとアーキテクチャ\n3. [Event 包装クラスの詳細](modules/event-wrapper.md) - Event オブジェクトの完全な説明\n4. [モジュールのベストプラクティス](modules/best-practices.md) - 高品質なモジュールを開発するための提案\n\n### データモデル\n\n1. [データモデル層（ORM）](orm.md) - 宣言的モデル、自動テーブル作成と追加・削除・更新・検索\n\n### アダプタ開発\n\n1. [アダプタ開発入門](adapters/getting-started.md) - 最初のアダプタを作成する\n2. [アダプタのコアコンセプト](adapters/core-concepts.md) - アダプタのコアコンセプト\n3. [SendDSL 詳解](adapters/send-dsl.md) - Send メッセージ送信 DSL の完全な説明\n4. [イベントコンバーター](adapters/converter.md) - イベントコンバーターの実装\n5. [アダプタのベストプラクティス](adapters/best-practices.md) - 高品質なアダプタを開発するための提案\n\n### テストとトラブルシューティング\n\n1. [モジュールテスト（ErisPulse-Testing）](testing.md) - TestBot、イベントファクトリーとアサーション面\n\n### リリースガイド\n\n- [リリースとモジュールストアガイド](publishing.md) - あなたの作品を PyPI と ErisPulse モジュールストアに公開する方法"
+      "hash": "320eb128f6e1fc910011103bd09fa231",
+      "translation": "## 内容リスト\n\n### モジュール開発\n\n1. [モジュール開発入門](modules/getting-started.md) - 最初のモジュールを作成する\n2. [モジュールのコアコンセプト](modules/core-concepts.md) - モジュールのコアコンセプトとアーキテクチャ\n3. [Event 包装クラスの詳細](modules/event-wrapper.md) - Event オブジェクトの完全な説明\n4. [モジュールのベストプラクティス](modules/best-practices.md) - 高品質なモジュールを開発するための提案\n\n### データモデル\n\n1. [データモデル層（ORM）](orm.md) - 宣言的モデル、自動テーブル作成、追加・削除・更新・検索\n\n### アダプタ開発\n\n1. [アダプタ開発入門](adapters/getting-started.md) - 最初のアダプタを作成する\n2. [アダプタのコアコンセプト](adapters/core-concepts.md) - アダプタのコアコンセプト\n3. [SendDSL 詳解](adapters/send-dsl.md) - Send メッセージ送信 DSL の完全な説明\n4. [イベントコンバーター](adapters/converter.md) - イベントコンバーターの実装\n5. [アダプタのベストプラクティス](adapters/best-practices.md) - 高品質なアダプタを開発するための提案\n\n### テストとトラブルシューティング\n\n1. [モジュールテスト（ErisPulse-Testing）](testing.md) - TestBot、イベントファクトリー、アサーション面\n2. [モジュールトラブルシューティングガイド](module-troubleshooting.md) - モジュールがロードされない / イベントが反応しない / コマンドがトリガーされない問題の解決方法\n\n### パブリッシングガイド\n\n- [パブリッシュとモジュールストアガイド](publishing.md) - あなたの作品を PyPI および ErisPulse モジュールストアに公開する方法"
     },
     {
       "hash": "a69f12905cab94d5d7c997a0184db083",

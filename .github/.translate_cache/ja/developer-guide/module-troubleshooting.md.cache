@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "hash": "5296ab5e162bbe403d630d153562fec1",
+  "file_hash": "5296ab5e162bbe403d630d153562fec1",
+  "translated_at": "2026-09-23T07:37:51.198874",
+  "target_lang": "ja",
+  "chunks": [
+    {
+      "hash": "e7ee1375b57c8f4dbb50b50a7bfe7e55",
+      "translation": "# モジュールトラブルシューティングガイド\n\nモジュールが「反応しない」場合、症状に応じて3つの問題に分類され、それぞれに該当するフレームワーク診断ツール（RFC EPRFC-2026-001 方向五）があります。\n\n| 症状 | 診断ツール | 定位のレベル |\n|------|---------|---------|\n| モジュールがロードされない | `ErisPulse.runtime.explain_module(name)` | 登録とロードのチェーン |\n| イベントが反応しない | `ErisPulse.runtime.explain_event(event)` | ディスパッチのエントリポイントの確認 |\n| コマンドが発動しない | ディスパッチの意思決定チェーン（テスト側の `DispatchTrace` / フレームワーク内蔵の `trace`） | コマンドの判定チェーン |\n\n2つの診断関数はいずれも**読み取り専用**操作であり、状態を一切変更せず、いつでも呼び出すことができます。返り値は機械可読な dict で、`format_report()` と組み合わせることで人間が読めるテキストにレンダリングされます。"
+    },
+    {
+      "hash": "68b8a2d39c9da82c2710f7523960f0ac",
+      "translation": "## シナリオ1：モジュールがロードされていない\n\n```python\nfrom ErisPulse.runtime import explain_module, format_report\n\nreport = explain_module(\"MyModule\")\nprint(format_report(report))\n```\n\n`explain_module()` は、順次チェックを行い、以下の理由を含む結論を提示します。\n\n| 検査項目 | 説明 |\n|-------|------|\n| 未登録 | パッケージがインストールされていない、entry-pointのグループ名が間違っている、または登録名とクエリ名が一致していない |\n| ラグ遅延ロードがインスタンス化されていない | **正常な状態であり、故障ではありません**：ラグ遅延ロードモジュールは、最初に呼び出されたとき（`module.call` / コマンドがトリガーされるなど）にインスタンス化されます |\n| 設定で無効化されている | `ErisPulse.modules.status.<モジュール名> = false`（未設定の場合はデフォルトで有効） |\n| 依存モジュールがロードされていない | モジュールが宣言した `depends` リストに含まれるモジュールが準備ができていない |\n| SDKバージョンが満たされていない | モジュールのメタデータで宣言された `min_sdk_version` が現在のフレームワークバージョンより高い |\n| on_load 例外 | 登録は正常だがロードされておらず、上記の理由もない場合——起動ログでモジュール名に対応する ERROR 記録を確認してください |\n\n返却される dict の構造化フィールドは以下の通りです：`registered` / `loaded` / `lazy` / `enabled`（`None` は未設定でデフォルトで有効を意味します）/ `missing_dependencies` / `sdk_version_ok` / `conclusion`（一文の結論）/ `reasons`（原因のリスト）。"
+    },
+    {
+      "hash": "302576495f7a3d4711d0f7f09d5f1ee8",
+      "translation": "## シナリオ2：イベントが応答しない\n\n```python\nfrom ErisPulse.runtime import explain_event, format_report\n\nreport = explain_event(event)   # プロセッサ内で取得した Event または元のイベント dict\nprint(format_report(report))\n```\n\n`explain_event()` は、イベントが実際に分発された順序に従って結果を出力します：\n\n1. **プラットフォームアダプタが登録されていない**：`platform` に対応するアダプタインスタンスが存在しない —— イベントはフレームワークにそもそも届いていない。\n2. **アイデンティティの次元がスコープによって拒否されている**：ユーザー / 会話 / Bot / アダプタがブロックされている —— イベントは分発の入口で完全に破棄される。スコープの設定は[モジュール設定](../user-guide/configuration.md)を参照してください。\n3. **モジュールが会話によってブロックされている**：現在の会話 `available_modules`（利用可能）と `blocked_modules`（スコープによってブロックされている）を区別する。\n4. **コマンドのようなテキストだが、マッチしない**：コマンドのプレフィックスを持ちながら、登録されたコマンドに一致しない —— プレフィックスの設定とコマンド名を確認してください。\n\n入口のチェックがすべて通過しても応答がない場合、以下の2か所をさらに確認するよう指示されます：\n\n- **プロセッサのフィルタ条件**：`detail_type` / `pattern=` / `regex=` などの条件が満たされていない；\n- **ミドルウェアによる拒否**：ミドルウェアが明示的に `False` を返すと、イベントはイベントレベルで破棄され、`adapter.event.blocked` のライフサイクルフックがトリガーされる（ミドルウェア名と完全なイベントを含む）——このフックを登録することで「誰がイベントを破棄したか」を監査できる。"
+    },
+    {
+      "hash": "815d5cdc03af80d1ccd59fc81701a19c",
+      "translation": "## シナリオ3：コマンドがトリガーされない（配信決定チェーン）\n\nプレフィックス付きのメッセージが実際にコマンドを実行するには、次のように順番に通過する必要があります：コマンドテキスト判定 → コマンド一致（一致しなかった場合はスペル補正付き）→ スコープ → ユーザーACL → ホストチェック → 権限関数 → クールダウン / 限流 / 使用量による静かにドロップ → 廃棄拒否と通知 → パラメータ解析 → 実行。フレームワークは各判定ポイントを因果チェーンとして記録し、「なぜトリガーされなかったのか」の結論を提供します。\n\n### テスト中：TestBot.dispatch が DispatchTrace を返す\n\n問題をテストで再現した後は、直接因果チェーンを読み取ることを推奨します（ツールの使い方は[モジュールテスト](testing.md)を参照）：\n\n```python\ntrace = await bot.dispatch(create_command_event(\"dailyx\", user_id=\"123\"))\n\ntrace.verdict          # executed / rejected / dropped / failed / no_match / passed\nprint(trace.explain()) # 因果の逐次説明（現在の言語）\ntrace.assert_no_match()\n```\n\n### フレームワークが内包する trace モジュール\n\n決定チェーンは `ErisPulse.Core.Event.trace` によって提供され、デフォルトで**ゼロオーバーヘッド**です——収集コンテキストにない場合は判定ポイントは直接スキップされ、本番経路上では感知されません：\n\n```python\nfrom ErisPulse.Core.Event import (\n    start_dispatch_trace,\n    format_dispatch_trace,\n    final_verdict,\n)\n\nwith start_dispatch_trace() as records:\n    ...  # 収集コンテキスト内で発生した配信（その派生したハンドラタスクを含む）\n\nprint(format_dispatch_trace(records))   # 人間が読める因果チェーン（現在の言語）\nprint(final_verdict(records))           # 総合的な結論\n```\n\n`final_verdict()` の値：\n\n| 結論 | 含意 |\n|------|------|\n| `executed` | コマンドが実行された |\n| `rejected` | 権限クラスによる拒否（スコープ / ACL / ホスト / 権限関数） |\n| `dropped` | 静かにドロップされた（クールダウン / 限流 / 使用量 / ミドルウェアによる拒否） |\n| `failed` | 実行時にエラーが発生した |\n| `no_match` | プレフィックス付きだが、どのコマンドにも一致しなかった |\n| `passed` | コマンドテキストではなく、メッセージハンドラに渡す |\n\n記録は機械が読める dict として（`stage` / `verdict` / `message_key` / `params`）、`stage` でフィルタリングして表示できます（例：`cooldown` だけを見る）。\n\n### 治理系の静かに一致した判定の識別\n\n`cooldown=` / `rate_limit=` / `usage_limit=` が一致した場合、**デフォルトで静かにドロップ**されます（コマンドは引き続き認識され、低優先度のハンドラには渡されません）。これは「コマンドが壊れている」誤解されやすい状況です：現象としては一部のユーザーでは使えるが、一部のユーザーでは応答がなく、決定チェーンに該当する `stage` の `dropped` 記録が表示されます。`deprecated=` コマンドは、呼び出し時に自動的に廃棄文案を返します（`deprecated_reject=True` の場合、実行を拒否します）。"
+    },
+    {
+      "hash": "2564121c34f0d750ad084b9dc57b1191",
+      "translation": "## 一般的アドバイス\n\n- 問題を調査する前に、ログレベルを `DEBUG` / `TRACE` に設定してください（設定方法は[開発者ガイド](README.md#デバッグのテクニック)を参照）。これにより、モジュールのロード、ルートの登録、イベントの配信など、フレームワークの内部処理を確認できます。\n- `explain_module` / `explain_event` はいつでも呼び出せて副作用がなく、運用用のコマンドや管理パネルに直接追加するのに適しています。\n- 「コマンドがトリガーされない」問題については、まず `DispatchTrace` の断言テストを作成して再現性を確認してください。`assert_executed` / `assert_rejected` などの断言が失敗した場合、フレームワークは自動的に完全な因果関係のチェーンを表示します。"
+    }
+  ]
+}
