@@ -143,7 +143,7 @@ __all__ = [
     "config",  # 配置模块单例
     "compile_entry_matcher",  # 统一匹配条目编译
     "compile_text_matcher",  # 统一文本匹配（pattern/regex）
-    "env",  # 配置管理器别名
+    "env",  # 存储管理器别名（= storage，v1 遗留名）
     "extract_text",  # 事件纯文本提取
     "i18n",  # 国际化模块单例
     "lifecycle",  # 生命周期模块单例
