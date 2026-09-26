@@ -59,11 +59,11 @@ CLI 配置向導儲存還是適配器/模組首次生成配置範本，框架都
 
 ## 環境變數覆蓋
 
-框架支援使用環境變數**覆蓋** `ErisPulse.*` 配置項（適合 Docker / 容器化 / CI 部署，無需修改 `config.toml`）。
+框架支援使用環境變數**覆蓋** `ErisPulse.*` 配置項目（適合 Docker / 容器化 / CI 部署，無需修改 `config.toml`）。
 
 命名規則：將點分路徑 `ErisPulse.<section>.<key>` 改為全大寫、`.` 替換為 `_`，並加上 `ERISPULSE_` 前綴：
 
-| 配置項 | 環境變數 | 示例值 |
+| 配置項目 | 環境變數 | 範例值 |
 |--------|---------|--------|
 | `ErisPulse.server.port` | `ERISPULSE_SERVER_PORT` | `9000` |
 | `ErisPulse.server.host` | `ERISPULSE_SERVER_HOST` | `0.0.0.0` |
@@ -71,9 +71,9 @@ CLI 配置向導儲存還是適配器/模組首次生成配置範本，框架都
 | `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |
 
 行為說明：
-- **優先級最高**：環境變數覆蓋「配置文件」與「預設值」，按原值類型自動轉換（`bool` / `int` / `float` / 逗號分隔的 `list` / 字串）
-- **不持久化**：覆蓋只在運行期生效，不會寫回 `config.toml`
-- **支援熱更新**：運行中修改環境變數後，配合配置監聽的重載即可生效
+- **優先級最高**：環境變數覆蓋「配置檔案」與「預設值」，按原值類型自動轉換（`bool` / `int` / `float` / 逗號分隔的 `list` / 字串）
+- **不持久化**：覆蓋僅在執行期生效，不會寫回 `config.toml`
+- **支援熱更新**：執行中修改環境變數後，配合配置監聽的重載即可生效
 
 ```bash
 # Docker 部署示例：不修改 config.toml，直接覆蓋端口
@@ -82,9 +82,9 @@ ERISPULSE_SERVER_PORT=9000 docker compose up -d
 
 > 註：`ErisPulse.server.port` 這類框架配置走 `get_server_config()` 等 API 讀取，均受環境變數覆蓋影響。
 
-### 模組配置的環境變數綁定（2.9.0+）
+### 模塊配置的環境變數綁定（2.9.0+）
 
-模組自己的宣告式配置（`ConfigClass`）支援欄位級環境變數綁定——在 `field(metadata=...)` 中宣告 `env`：
+模塊自己的宣告式配置（`ConfigClass`）支援欄位級環境變數綁定——在 `field(metadata=...)` 中宣告 `env`：
 
 ```python
 @dataclass
@@ -98,15 +98,20 @@ class MyConfig(BaseConfig):
 
 行為說明：
 
-- **優先級**：環境變數 > `config.toml` > 宣告預設值（配置文件熱更新後同樣保持此優先級）
-- **類型轉換**：環境變數值按欄位註解自動轉換——`str` 原樣、`int` / `float` / `bool`（`true` / `1` / `yes` / `on`）自動轉換、`list` / `dict` 走 JSON 解析；轉換失敗時忽略該覆蓋（回退配置文件 / 預設值）並輸出告警
-- **宣告一次、處處生效**：配置讀取、熱更新、校驗使用同一管道；配置面板 Schema 會標註 `env` 名，`config.toml` 模板註釋也會提示可用的環境變數（模板不寫入環境變數的實際值，避免洩露）
+- **優先級**：環境變數 > `config.toml` > 宣告預設值（配置檔案熱更新後同樣保持此優先級）
+- **類型轉換**：環境變數值按欄位註解自動轉換——`str` 原樣、`int` / `float` / `bool`（`true` / `1` / `yes` / `on`）自動轉換、`list` / `dict` 走 JSON 解析；轉換失敗時忽略該覆蓋（回退配置檔案 / 預設值）並輸出告警
+- **宣告一次、處處生效**：配置讀取、熱更新、驗證使用同一管道；配置面板 Schema 會標註 `env` 名，`config.toml` 模板註釋也會提示可用的環境變數（模板不寫入環境變數的實際值，避免洩露）
 - **完全相容**：未宣告 `env` 的欄位行為不變；直接實例化 ConfigClass（不經框架配置管道）不受環境變數影響
 
 ```bash
-# Docker 部署示例：不修改 config.toml，直接注入模組密鑰
+# Docker 部署示例：不修改 config.toml，直接注入模塊密鑰
 MYMODULE_API_KEY=sk-xxx docker compose up -d
 ```
+
+> **配置類 vs 模型欄位怎麼選？** 配置類管「模塊怎麼運作」（行為參數、熱更新），  
+> ORM 的 `Field()` 管「使用者產生了什麼資料」（資料庫表、查詢）。兩者共享同一套  
+> 約束詞表與驗證器引擎；對照表見  
+> [資料模型層 · 兩種宣告何時用哪個](../developer-guide/orm.md#兩種宣告何時用哪個)。
 
 ## 配置熱更新
 
