@@ -56,6 +56,7 @@ from .router import router, RouterManager, RouteGroup
 from .config import config, ConfigManager
 from .i18n import i18n, I18nManager
 from .master import master, MasterManager, MasterProvider
+from .ownership import OwnershipManager, ownership
 from .di import Depends
 from .scope import scope, ScopeManager
 from .text_match import compile_entry_matcher, compile_text_matcher, extract_text
@@ -149,6 +150,7 @@ __all__ = [
     "lifecycle",  # 生命周期模块单例
     "logger",  # 日志模块单例
     "master",  # 框架主人模块单例
+    "ownership",  # 归属权统一门面单例
     "module",  # 模块模块单例
     "router",  # 路由模块单例
     "scope",  # 作用域模块单例

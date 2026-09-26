@@ -91,6 +91,9 @@ class CommandHandler:
         self.aliases: dict[str, str] = {}  # 别名映射
         self.groups: dict[str, list[str]] = {}  # 命令组
         self.permissions: dict[str, Callable] = {}  # 权限检查函数
+        # 影子命令目录（方向十一）：影子 owner 注册的命令进此目录而非真实
+        # 分发表——避免静默顶掉 v1 的同名命令；供 diff 对比视图消费
+        self._shadow_catalog: dict[str, dict] = {}
         # 命令治理状态（cooldown / rate_limit / usage，EPRFC-2026-001 方向七）：
         # 状态表与判定拆分至 GovernanceGate 持有，经下方同名 property 透出
         self._gate = GovernanceGate()
@@ -337,19 +340,22 @@ class CommandHandler:
         :param cooldown_key: 冷却键粒度：``"user"``（默认，同一用户全局共享）/ ``"session"``
             （同一会话共享）/ ``"global"``（所有用户所有会话共享）。``user`` / ``session``
             复用 ``platform:bot:目标`` 会话键体系。非法值注册期抛 ValueError
-        :param cooldown_reply: 冷却命中时的回复文案（可选）。缺省静默丢弃；指定后冷却
-            命中即回复该文案（原文发送，不做格式化）
+        :param cooldown_reply: 冷却命中时的回复文案（可选）。缺省静默丢弃；指定后
+            按边沿触发回复——进入冷却后的首次命中回复一次，同冷却窗口内的后续
+            命中保持静默（避免连击时治理回复本身刷屏；原文发送，不做格式化）
         :param rate_limit: 滑动窗口限流声明（EPRFC-2026-001 方向七），如 ``"5/minute"`` /
             ``"10/s"`` / ``"100/day"``——窗口内至多执行次数，超出默认静默丢弃（命令仍被
             认领）；与 ``cooldown=`` 共享会话键体系，可同时声明（冷却先判、限流后判）
         :param rate_limit_key: 限流键粒度：``"user"``（默认）/ ``"session"`` / ``"global"``
-        :param rate_limit_reply: 限流命中时的回复文案（可选，缺省静默丢弃）
+        :param rate_limit_reply: 限流命中时的回复文案（可选，缺省静默丢弃；边沿触发——
+            窗口从"未满"再次变为"已满"的首次命中才回复一次，窗口有放行即重置）
         :param usage_limit: 自然周期配额声明（如 ``"3/day"`` / ``"5/hour"`` / ``"10/minute"``）——
             每键在自然周期（分钟 / 小时 / 日，本地时区）内至多执行 ``次数``，周期切换自动
             重置；计数经 storage KV 持久化，重启不丢（与 ``rate_limit=`` 滑动窗口的
             区别：rate_limit 防瞬时刷屏，usage 管业务配额如"每日签到 3 次"）
         :param usage_limit_key: 配额键粒度：``"user"``（默认）/ ``"session"`` / ``"global"``
-        :param usage_limit_reply: 配额用尽时的回复文案（可选，缺省静默丢弃）
+        :param usage_limit_reply: 配额用尽时的回复文案（可选，缺省静默丢弃；边沿触发——
+            每个自然周期至多回复一次，周期切换后重新可回复）
         :param deprecated: 命令废弃声明（EPRFC-2026-001 方向七）：非空文案即标记废弃——
             调用时自动回复该文案（help 列表显示废弃标记），默认仍继续执行
         :param deprecated_reject: 废弃命令拒绝执行（默认 False 继续执行；True 时回复
@@ -505,6 +511,37 @@ class CommandHandler:
                             names=", ".join(missing),
                         )
                     )
+
+            # 影子命令分流（方向十一）：影子 owner 的命令不进真实分发表
+            # （否则会静默顶掉 v1 的同名命令），只登记影子命令目录供对比视图。
+            # 分流点位于全部 fail-fast 校验之后——影子与真实模块看到一致的
+            # 注册期报错行为
+            try:
+                from ..ownership import ownership as _ownership
+
+                if _ownership.is_shadow(current_owner.get()):
+                    for cmd_name in cmd_names:
+                        self._shadow_catalog[cmd_name] = {
+                            "func": func,
+                            "help": help,
+                            "usage": usage,
+                            "group": group,
+                            "hidden": hidden,
+                            "main_name": main_name,
+                            "owner": current_owner.get(),
+                            "args_spec": args_spec,
+                            "options_spec": options_spec,
+                        }
+                    logger.debug(
+                        i18n.t(
+                            "core.command.shadow_command_cataloged",
+                            cmd_name=main_name,
+                            owner=current_owner.get() or "-",
+                        )
+                    )
+                    return func
+            except Exception:
+                pass
 
             # 添加别名
             alias_list = aliases or []

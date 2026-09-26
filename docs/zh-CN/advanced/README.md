@@ -8,6 +8,7 @@
 - [懒加载系统](lazy-loading.md) - 懒加载模块系统的工作原理、配置与事件驱动懒激活（activate_on）
 - [作用域（scope）](scope.md) - 三维作用域控制：模块可用性 / 事件准入 / 出站动作限制（含方法级细粒度规则与绑定继承 merge）
 - [归属权（owner）系统](ownership.md) - 资源归属与自动回收：owner 上下文机制、归属资源全景、卸载清理序列与设计边界
+- [影子模块与灰度转正](shadow.md) - 模块新版本独立 owner 并行试运行：出站拦截记账、行为 diff 对比、promote 转正与失败回滚
 - [交互会话系统](interaction.md) - wait_reply / 会话定时器 / 多路等待 / 会话互斥租约 / 收件箱 / 消息事务 / 链路追踪
 - [模块间通信](module-communication.md) - RPC 协议化（module.call）、服务契约与目录、定向事件、冷启动回放、事件幂等去重
 - [国际化 (i18n)](i18n.md) - 多语言支持、翻译注册与语言检测

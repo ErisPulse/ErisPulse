@@ -1132,6 +1132,25 @@ class SQLStorageBase(BaseStorage):
                 return self._loads(rows[0][0])
         return default
 
+    def _shadow_overlay(self) -> "Any | None":
+        """
+        {!--< internal-use >!--}
+        影子存储覆盖层（方向十一）：当前 owner 属影子时返回其覆盖层，
+        否则 None。KV 三件套（aget / aset / adelete）据此实现"写隔离、
+        读透传、删为墓碑"；ORM 读写不在覆盖层语义内（文档声明）。
+        """
+        try:
+            from ...runtime.context import get_current_owner
+            from ..ownership import ownership as _ownership
+            from ..shadow import shadow_manager
+
+            owner = get_current_owner()
+            if owner and _ownership.is_shadow(owner):
+                return shadow_manager.overlay(owner)
+        except Exception:
+            pass
+        return None
+
     async def aget(self, key: str, default: Any = None, *, conn: Any = None) -> Any:
         """
         异步获取存储项的值
@@ -1146,6 +1165,16 @@ class SQLStorageBase(BaseStorage):
         :example:
         >>> timeout = await storage.aget("network.timeout", 30)
         """
+        # 影子覆盖层（方向十一）：读先查覆盖层——命中返回影子值，墓碑视为
+        # 已删除（回退 default），未命中透传真库
+        _overlay = self._shadow_overlay()
+        if _overlay is not None:
+            state, value = _overlay.read(key)
+            if state == "hit":
+                return value
+            if state == "tombstone":
+                return default
+
         if not self._is_ready():
             return default
 
@@ -1206,9 +1235,17 @@ class SQLStorageBase(BaseStorage):
         :param conn: 内部参数：事务连接路由（勿手动传入）
         :return: 操作是否成功
 
-        :example:
-        >>> await storage.aset("user.settings.theme", "dark")
-        """
+    :example:
+    >>> await storage.aset("user.settings.theme", "dark")
+    """
+        # 影子覆盖层（方向十一）：影子 owner 的写进内存覆盖层、不落库
+        # （事务连接内写首版透传，保证与事务状态一致）
+        _overlay = self._shadow_overlay()
+        if _overlay is not None and conn is None:
+            _overlay.write(key, value)
+            logger.trace(f"shadow overlay set: key={key}")
+            return True
+
         if not self._is_ready():
             return False
         try:
@@ -1263,9 +1300,16 @@ class SQLStorageBase(BaseStorage):
         :param conn: 内部参数：事务连接路由（勿手动传入）
         :return: 操作是否成功
 
-        :example:
-        >>> await storage.adelete("user.settings.theme")
-        """
+    :example:
+    >>> await storage.adelete("user.settings.theme")
+    """
+        # 影子覆盖层（方向十一）：影子 owner 的删写为墓碑、不触真库
+        _overlay = self._shadow_overlay()
+        if _overlay is not None and conn is None:
+            _overlay.delete(key)
+            logger.trace(f"shadow overlay delete: key={key}")
+            return True
+
         if not self._is_ready():
             return False
 

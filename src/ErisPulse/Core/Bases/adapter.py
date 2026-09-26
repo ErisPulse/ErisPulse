@@ -222,6 +222,47 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
         if not _scope.is_action_allowed(_owner or "", "send", name=method_name):
             return _action_denied_response(send_dsl._adapter, "send")
 
+        # 影子模块出站拦截（方向十一）：影子 owner 的发送不触网，记入影子
+        # 账本供 diff 对比；返回成功形状的假响应（已完成 Task）保持 await 语义
+        if _owner:
+            from ..ownership import ownership as _ownership
+
+            if _ownership.is_shadow(_owner):
+                from ...runtime.context import current_trace_id
+                from ..shadow import shadow_ledger
+
+                _preview = ""
+                if args:
+                    _preview = str(args[0])
+                    if len(_preview) > LOG_MESSAGE_TRUNCATE_CHARS:
+                        _preview = _preview[:LOG_MESSAGE_TRUNCATE_CHARS] + "..."
+                shadow_ledger.record(
+                    _owner,
+                    {
+                        "kind": "send",
+                        "platform": getattr(send_dsl._adapter, "_platform", "") or "",
+                        "method": method_name,
+                        "detail_type": send_dsl._target_type or "",
+                        "target_id": send_dsl._target_id or "",
+                        "bot_id": send_dsl._account_id or "",
+                        "trace_id": current_trace_id.get(),
+                        "preview": _preview,
+                    },
+                )
+                try:
+                    fake = send_dsl._adapter.make_response(
+                        message="shadow (not sent)",
+                    )
+                except Exception:
+                    fake = {
+                        "status": STATUS_OK,
+                        "retcode": RETCODE_OK,
+                        "data": None,
+                        "message_id": "",
+                        "message": "shadow (not sent)",
+                    }
+                return asyncio.ensure_future(_noop_async(fake))
+
         # 标记进入规则包装执行，防止内部委托方法（Text → Raw_ob12）重复包装
         send_dsl._in_rule_wrap = True
         try:

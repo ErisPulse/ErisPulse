@@ -17,6 +17,7 @@ import sys
 import threading
 import time
 import weakref
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, cast
 
 from ..Core.Bases.errors import ModuleNotAvailableError
@@ -109,6 +110,33 @@ def _validate_sdk_attr_name(name: str) -> bool:
         logger.error(i18n.t("loader.module.reserved_name", name=name))
         return False
     return True
+
+
+@dataclass
+class _ReloadSnapshot:
+    """
+    {!--< internal-use >!--}
+    热重载回滚快照（引用级别，无深拷贝）
+
+    记录重载开始前与目标模块相关的全部注册状态：注册表条目、实例、
+    懒加载代理、sdk 属性与将被 purge 的 sys.modules 条目对象。任一重载
+    步骤失败时按原序恢复，旧实例继续服务。
+
+    尽力而为语义：``on_unload`` 已执行的副作用（断开的连接、取消的任务）
+    不可撤销——恢复后旧实例处于"已收尾"状态；第三方在运行期持有的旧实例
+    引用不在恢复范围。
+    {!--< /internal-use >!--}
+    """
+
+    module_obj: Any = None            # _last_module_objs 旧条目（模块对象）
+    module_class: Any = None          # _module_classes 条目
+    module_info: Any = None           # _module_info 条目
+    module_services: Any = None       # _module_services 条目
+    instance: Any = None              # _modules 实例
+    was_loaded: bool = False          # 快照时是否处于已加载态
+    lazy_proxy: Any = None            # _lazy_modules 懒代理
+    had_sdk_attr: bool = False        # 快照时 sdk 上是否挂有同名属性
+    sys_modules: "dict[str, Any]" = field(default_factory=dict)  # 将被 purge 的条目对象
 
 
 class ModuleLoader(BaseLoader):
@@ -314,19 +342,40 @@ class ModuleLoader(BaseLoader):
             for dep in dependents
         }
 
+        # 快照：任一重载步骤失败时恢复旧注册状态，旧实例继续服务
+        # （尽力而为语义：on_unload 已执行的副作用不可撤销，恢复后旧实例
+        # 处于已收尾态，详见 _restore_reload_snapshot）
+        purge_names = [module_name] if is_plugin else list(top_level)
+        snapshot = self._capture_reload_state(
+            module_name, manager_instance, sdk_instance, purge_names
+        )
+        dependent_snapshots = {
+            dep: self._capture_reload_state(
+                dep,
+                manager_instance,
+                sdk_instance,
+                self._dependent_purge_names(dep, manager_instance),
+            )
+            for dep in dependents
+        }
+
         # 1. 卸载旧实例（触发 on_unload；级联卸载依赖者）
         try:
             await manager_instance.unload(module_name)
         except Exception as e:
             logger.error(i18n.t("loader.module.reload_unload_failed", name=module_name, error=e))
 
-        # 2. 重载自身（按来源选择发现路径）
+        # 2. 重载自身（按来源选择发现路径）；失败恢复快照，旧实例继续服务
         if is_plugin:
             if not await self._reload_single_plugin(module_name, manager_instance, sdk_instance):
+                self._restore_reload_snapshot(snapshot, module_name, manager_instance, sdk_instance)
+                self._restore_failed_dependents(dependent_snapshots, manager_instance, sdk_instance)
                 return False
         elif not await self._reload_single_module(
             module_name, manager_instance, sdk_instance, top_level
         ):
+            self._restore_reload_snapshot(snapshot, module_name, manager_instance, sdk_instance)
+            self._restore_failed_dependents(dependent_snapshots, manager_instance, sdk_instance)
             return False
 
         # 3. 级联重载依赖者（近 → 远，依赖者在其依赖就绪后重载）
@@ -342,7 +391,135 @@ class ModuleLoader(BaseLoader):
                     logger.error(i18n.t("loader.module.reload_dependent_failed", name=dep, error=e))
             # 未加载且非插件来源的依赖者：跳过（懒加载会在下次访问时使用新依赖）
 
+        # 级联失败的依赖者：快照时已加载而重载后仍未回到加载态 → 恢复旧注册
+        self._restore_failed_dependents(dependent_snapshots, manager_instance, sdk_instance)
+
         return True
+
+    @staticmethod
+    def _dependent_purge_names(dep: str, manager_instance: Any) -> "list[str]":
+        """
+        {!--< internal-use >!--}
+        推断依赖者的 sys.modules 清理名单（快照采集用）
+
+        :param dep: 依赖者模块名
+        :param manager_instance: 模块管理器实例
+        :return: 顶层模块名列表
+        """
+        info = (getattr(manager_instance, "_module_info", {}) or {}).get(dep) or {}
+        meta = info.get("meta", {}) or {}
+        if meta.get("source") == MODULE_SOURCE_PLUGIN_FOLDER:
+            return [dep]
+        return list(meta.get("top_level") or []) or [dep]
+
+    def _capture_reload_state(
+        self,
+        module_name: str,
+        manager_instance: Any,
+        sdk_instance: Any,
+        purge_names: "list[str]",
+    ) -> _ReloadSnapshot:
+        """
+        {!--< internal-use >!--}
+        采集单模块的重载回滚快照（引用级别，无深拷贝）
+
+        :param module_name: 模块名
+        :param manager_instance: 模块管理器实例
+        :param sdk_instance: SDK 实例
+        :param purge_names: 重载流程将要从 sys.modules 移除的顶层模块名
+        :return: 回滚快照
+        """
+        sys_entries: "dict[str, Any]" = {}
+        for mod_name, mod in list(sys.modules.items()):
+            if any(mod_name == n or mod_name.startswith(f"{n}.") for n in purge_names):
+                sys_entries[mod_name] = mod
+
+        classes = getattr(manager_instance, "_module_classes", None) or {}
+        infos = getattr(manager_instance, "_module_info", None) or {}
+        instances = getattr(manager_instance, "_modules", None) or {}
+        loaded = getattr(manager_instance, "_loaded_modules", None)
+        lazies = getattr(manager_instance, "_lazy_modules", None) or {}
+        services = getattr(manager_instance, "_module_services", None) or {}
+        sdk_dict = getattr(sdk_instance, "__dict__", {})
+
+        return _ReloadSnapshot(
+            module_obj=self._last_module_objs.get(module_name),
+            module_class=classes.get(module_name),
+            module_info=infos.get(module_name),
+            module_services=services.get(module_name),
+            instance=instances.get(module_name),
+            was_loaded=bool(loaded is not None and module_name in loaded and module_name in instances),
+            lazy_proxy=lazies.get(module_name),
+            had_sdk_attr=module_name in sdk_dict,
+            sys_modules=sys_entries,
+        )
+
+    def _restore_reload_snapshot(
+        self,
+        snapshot: _ReloadSnapshot,
+        module_name: str,
+        manager_instance: Any,
+        sdk_instance: Any,
+    ) -> None:
+        """
+        {!--< internal-use >!--}
+        恢复重载快照（任一重载步骤失败时调用）
+
+        恢复顺序：sys.modules 条目 → 注册存根 → 懒加载态 / 已加载态 →
+        sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日志，不阻断
+        其余恢复）。
+
+        :param snapshot: 重载前采集的快照
+        :param module_name: 模块名
+        :param manager_instance: 模块管理器实例
+        :param sdk_instance: SDK 实例
+        """
+        logger.warning(i18n.t("loader.module.reload_rolled_back", name=module_name))
+        for mod_name, mod in snapshot.sys_modules.items():
+            sys.modules[mod_name] = mod
+        if snapshot.module_class is not None or snapshot.module_info is not None:
+            try:
+                manager_instance.register(module_name, snapshot.module_class, snapshot.module_info)
+            except Exception:
+                pass
+        if snapshot.lazy_proxy is not None:
+            try:
+                manager_instance.register_lazy(module_name, snapshot.lazy_proxy)
+            except Exception:
+                pass
+        if snapshot.was_loaded and snapshot.instance is not None:
+            try:
+                manager_instance._modules[module_name] = snapshot.instance
+                manager_instance._loaded_modules.add(module_name)
+                manager_instance._module_services[module_name] = snapshot.module_services
+            except Exception:
+                pass
+            if snapshot.had_sdk_attr:
+                try:
+                    setattr(sdk_instance, module_name, snapshot.instance)
+                except Exception:
+                    pass
+        self._last_module_objs[module_name] = snapshot.module_obj
+
+    def _restore_failed_dependents(
+        self,
+        dependent_snapshots: "dict[str, _ReloadSnapshot]",
+        manager_instance: Any,
+        sdk_instance: Any,
+    ) -> None:
+        """
+        {!--< internal-use >!--}
+        恢复重载失败的依赖者：快照时已加载而重载后仍未回到加载态的依赖者，
+        恢复其旧注册状态（否则级联卸载后依赖者处于裸奔态）
+
+        :param dependent_snapshots: 依赖者快照（模块名 → 快照）
+        :param manager_instance: 模块管理器实例
+        :param sdk_instance: SDK 实例
+        """
+        loaded = getattr(manager_instance, "_loaded_modules", None)
+        for dep, dep_snapshot in dependent_snapshots.items():
+            if dep_snapshot.was_loaded and (loaded is None or dep not in loaded):
+                self._restore_reload_snapshot(dep_snapshot, dep, manager_instance, sdk_instance)
 
     async def _reload_single_plugin(self, plugin_name: str, manager_instance: Any, sdk_instance: Any) -> bool:
         """
@@ -2053,6 +2230,9 @@ class ModuleActivator(LazyModule):
             # 失败：保留 stub（用户再次触发可冷却重试），记录失败时间供冷却判定
             object.__setattr__(self, "_activation_failed", True)
             object.__setattr__(self, "_activation_failed_at", time.monotonic())
+            # 加载失败的半卸载（模块重载完备性）会按 owner 回收触发器 stub——
+            # 此处重新武装，保证冷却结束后用户再次触发仍可自动重试
+            self._rearm_stubs()
             logger.error(
                 i18n.t(
                     "loader.activate.activation_failed",
@@ -2077,6 +2257,17 @@ class ModuleActivator(LazyModule):
                 pass
         self._event_stubs.clear()
         self._command_stubs.clear()
+
+    def _rearm_stubs(self) -> None:
+        """
+        重新武装触发器 stub（激活失败路径调用）
+
+        加载失败的半卸载（模块重载完备性）会按 owner 回收事件处理器与
+        占位命令——此处先清残留再重建，保证冷却结束后用户再次触发仍可
+        自动重试（stub 丢失 = 模块失联无恢复路径）。
+        """
+        self._deregister_stubs()
+        self._register_stubs()
 
     # ------------------------------------------------------------------
     # 事件转发

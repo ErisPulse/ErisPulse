@@ -52,6 +52,18 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
     )
     _owner = handler_info.get("owner") or current_owner.get()
 
+    # 影子模块隔离（方向十一）：影子 handler 收到的是事件的内层副本（带
+    # _shadow 标记）——影子对副本的改写 / mark_processed / stop 不会传播回
+    # 原事件（多处理器路径的外层副本与合并循环因此对本 handler 变为 no-op）
+    try:
+        from ..ownership import ownership as _ownership
+
+        if _ownership.is_shadow(_owner):
+            event = Event(dict(event))
+            event["_shadow"] = True
+    except Exception:
+        pass
+
     # 切换到本 handler 的局部 wait 记录器。
     # 结束后把局部记录回填给外层 Task 级记录器（若有），便于统一判定 slow-log。
     _outer_waits = handler_waits.get()

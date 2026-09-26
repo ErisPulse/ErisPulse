@@ -54,6 +54,7 @@ with owner_scope("MyModule"):
 | 路由中间件 | `@router.middleware()` / `add_middleware()` | `router.unregister_all_by_owner()` |
 | Dashboard 首页入口 | `router.register_home_entry()` | `unregister_home_entries_by_owner()` |
 | 自定义会话类型 | `register_custom_type()` | `unregister_custom_types_by_owner()` |
+| 平台事件方法注入 | `register_event_method()` / `register_event_mixin()` | `unregister_event_methods_by_owner()`（模块卸载自动回收，旧闭包不再泄漏） |
 | 后台任务 | `self.spawn()` | `cancel_owner_tasks()` |
 | 外部归属清理钩子（工具模块托管） | `runtime.on_cleanup(cb)` | `run_owner_cleanups()`（卸载/禁用/适配器关闭链内触发） |
 | 生命周期钩子 | `lifecycle.register()` | `lifecycle.unregister_by_owner()` |
@@ -85,21 +86,65 @@ flowchart TD
     A["unload / disable"] --> B["on_unload()（超时保护）"]
     B --> C["兜底取消后台任务（cancel_owner_tasks）"]
     C --> C1["外部归属清理钩子<br/>（工具模块 on_cleanup 登记，run_owner_cleanups 触发）"]
-    C1 --> D["_cleanup_module_registrations"]
+    C1 --> D["_cleanup_module_registrations<br/>＝ 归属权门面 ownership.reclaim_sync()"]
     D --> D1["i18n 翻译域"]
-    D1 --> D2["路由：命名空间 + owner 兜底<br/>（含中间件 / 首页入口）"]
+    D1 --> D2["路由：命名空间 + owner 兜底<br/>（按路由对象同一性精确删除，<br/>含中间件 / 首页入口）"]
     D2 --> D3["适配器事件处理器 / 中间件"]
     D3 --> D4["命令 + 事件处理器"]
     D4 --> D5["自定义会话类型"]
-    D5 --> D6["运行时事件覆写（persist=False）"]
+    D5 --> D5b["平台事件方法注入"]
+    D5b --> D6["运行时事件覆写（persist=False）"]
     D6 --> D7["主人身源 provider"]
     D7 --> D8["生命周期钩子"]
     D8 --> E["移除 SDK 属性 + 懒加载代理"]
+    E --> F["自动轻审计：孤儿 owner 告警"]
 ```
 
 `sdk.uninit()` 退出时另有全局兜底：全部适配器 shutdown → 全部模块 unload →
 `router.stop()`（清空路由/中间件/首页入口）→ `cancel_all_background_tasks()` →
 清空事件处理器与钩子。
+
+## 归属权统一门面（ownership）
+
+清理链的十六个步骤收敛在归属权统一门面 `ErisPulse.Core.ownership` 下，
+四个动词覆盖"注销、计数、扫描、审计"——子系统各自的 `*_by_owner` 注销
+函数保持不变，作为门面的内部实现：
+
+| 动词 | 用途 |
+|------|------|
+| `ownership.reclaim(owner)` | 统一注销 owner 名下全部资源（任务取消 → 清理钩子 → 注册类资源；异步完整版） |
+| `ownership.reclaim_sync(owner)` | 注册类资源注销（同步版，供同步卸载路径） |
+| `ownership.counts(owner=None)` | 只读统计 owner 在册资源（None 为全部 owner） |
+| `ownership.orphans()` | 孤儿扫描：资源在册而 owner 已注销（泄漏实锤清单） |
+| `ownership.audit(owner, deep=)` | 泄漏审计报告（计数 + 孤儿 + 可选 gc 实例普查） |
+
+```python
+from ErisPulse.Core import ownership
+
+ownership.reclaim_sync("MyModule")       # {'commands': 1, 'routes_http': 2, ...}
+ownership.counts("MyModule")             # 在册资源计数
+ownership.orphans()                      # [{"owner": "ghost", "total": 2, ...}]
+```
+
+**审计入口**：
+
+- 卸载 / 重载后**自动轻审计**：发现孤儿 owner 资源即 WARNING 告警（零开销计数扫描）
+- `sdk.module.audit(name, deep=True)`：模块实例 gc 普查——实例不可回收时
+  给出引用方类型（定位"谁攥着旧实例"）；有全局暂停开销，仅显式排障使用
+- 深普查属显式操作，不设配置键、不做自动修复
+
+## 热重载失败回滚
+
+热重载改为"**卸载前快照 → 失败自动恢复**"：新版本语法错误、依赖缺失、
+加载失败时，旧实例与注册状态（注册表条目、sdk 属性、sys.modules 条目）
+自动还原，服务不中断，日志提示"已回滚到旧实例继续服务"。
+
+尽力而为语义（文档化的边界）：
+
+- `on_unload` 已执行的副作用（断开的连接、取消的任务）不可撤销——
+  恢复后旧实例处于"已收尾"状态，需再次触发加载才能完全可用
+- 第三方在运行期手动缓存的对旧实例的引用不在恢复范围
+- 目标包已被卸载（entry-point 消失）视作卸载成功，不做回滚
 
 ## 设计边界：哪些资源不随卸载清理
 

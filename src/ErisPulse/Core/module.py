@@ -403,6 +403,7 @@ class ModuleManager(ManagerBase):
 
                 sdk_to_use = sdk
 
+            instance = None
             token = current_owner.set(module_name)
             try:
                 if params:
@@ -432,6 +433,9 @@ class ModuleManager(ManagerBase):
                         await call_with_depends(instance.on_load, {"module_name": module_name})
                     except Exception as e:
                         logger.error(i18n.t("core.module.on_load_failed", name=module_name, error=e))
+                        # 半卸载：on_load 半途注册的资源（处理器/路由/任务/i18n）
+                        # 不回收会成为"有主孤儿"（实例从未进入注册表，purge 无从追踪）
+                        await self._half_unload_failed_module(module_name, instance)
                         return False
             finally:
                 current_owner.reset(token)
@@ -490,6 +494,12 @@ class ModuleManager(ManagerBase):
             logger.error(i18n.t("core.module.systemexit", name=module_name, code=e.code))
             return False
         except Exception as e:
+            # 半卸载：构造成功但后续阶段（moduleInfo 注入 / i18n 预注册 /
+            # on_load 前的准备）抛异常时，实例与注册资源同样需要回收
+            try:
+                await self._half_unload_failed_module(module_name, instance)
+            except Exception:
+                pass
             await lifecycle.submit_event(
                 "module.load",
                 data={
@@ -734,171 +744,204 @@ class ModuleManager(ManagerBase):
             self.unregister_lazy(module_name)
 
             logger.info(i18n.t("core.module.unload_success", name=module_name))
+
+            # 自动轻审计：资源在册而 owner 已注销 = 泄漏实锤（gc 深普查仅
+            # epsdk audit --deep 显式触发，此处只做零开销计数扫描）
+            try:
+                from .ownership import ownership as ownership_service
+
+                orphans = ownership_service.orphans()
+                if orphans:
+                    logger.warning(
+                        f"ownership audit: {len(orphans)} orphan owner(s) after unload "
+                        f"of '{module_name}': {[o['owner'] for o in orphans]}"
+                    )
+            except Exception:
+                pass
+
             return True
 
         except Exception as e:
             logger.error(i18n.t("core.module.unload_failed", name=module_name, error=e))
             return False
 
+    async def _half_unload_failed_module(self, module_name: str, instance: Any) -> None:
+        """
+        {!--< internal-use >!--}
+        加载失败（on_load 异常 / 构造后阶段异常）时的半卸载
+
+        对已构造实例按正常卸载同序触发资源回收（on_unload → 取消归属
+        任务 → 外部清理钩子 → 框架资源注销），保证 ``__init__`` /
+        ``on_load`` 半途注册的资源不成为"有主孤儿"。
+
+        与正常卸载的差异：不触碰 ``_modules`` / ``_loaded_modules`` /
+        ``_module_services`` 与 sdk 属性——失败路径从未写入这些注册表；
+        ``on_unload`` 已执行的副作用（断连等）与正常卸载一致不可撤销，
+        但实例与注册资源不再泄漏。
+
+        :param module_name: 模块注册名
+        :param instance: 已构造的实例（构造函数本身抛异常时为 None）
+        """
+        if instance is not None and hasattr(instance, "on_unload"):
+            try:
+                await asyncio.wait_for(
+                    call_with_depends(instance.on_unload, {"module_name": module_name}),
+                    timeout=self._unload_timeout(),
+                )
+            except asyncio.TimeoutError:
+                logger.warning(
+                    i18n.t(
+                        "core.module.on_unload_timeout",
+                        name=module_name,
+                        timeout=self._unload_timeout(),
+                    )
+                )
+            except Exception as e:
+                logger.error(i18n.t("core.module.on_unload_failed", name=module_name, error=e))
+
+        # 归属权统一回收：取消归属任务 → 外部清理钩子 → 全部注册类资源
+        try:
+            from .ownership import ownership
+
+            await ownership.reclaim(module_name)
+        except Exception:
+            self._cleanup_module_registrations(module_name)
+
     def _cleanup_module_registrations(self, module_name: str) -> None:
         """
         {!--< internal-use >!--}
         清理模块在加载上下文内注册的全部框架资源（unload / disable 共用）
 
-        涵盖：i18n 翻译域、路由（命名空间 + owner 兜底：中间件 / 首页入口 /
-        非命名空间路由）、适配器事件处理器与中间件、命令与事件处理器、
-        自定义会话类型、主人身份源 provider、生命周期钩子。
-        每步失败仅记录日志，不中断后续清理（与卸载流程兜底风格一致）。
+        委托归属权统一门面（``Core/ownership``）完成：i18n 翻译域、路由
+        （命名空间 + owner 兜底：中间件 / 首页入口 / 非命名空间路由）、
+        适配器事件处理器与中间件、命令与事件处理器、自定义会话类型、
+        平台事件方法注入、事件覆写、scope 覆写、交互会话等待、主人身份源
+        provider、生命周期钩子。每步失败仅记录日志，不中断后续清理。
 
         :param module_name: 模块名
         """
-        # 清理该模块注册的 i18n 翻译键（防止热重载后翻译键泄漏）
         try:
-            i18n.unregister_domain(module_name)
+            from .ownership import ownership
+
+            reclaimed = ownership.reclaim_sync(module_name)
+            if reclaimed:
+                logger.debug(f"ownership reclaimed for module '{module_name}': {reclaimed}")
         except Exception:
-            pass
+            # 门面不可用时退化为最小清理（i18n 域），保证卸载流程不中断
+            try:
+                i18n.unregister_domain(module_name)
+            except Exception:
+                pass
 
-        from .router import router
+    def audit(self, module_name: str, deep: bool = False) -> "dict[str, Any]":
+        """
+        归属权泄漏审计（透传归属权统一门面）
 
-        result = router.unregister_all_by_namespace(module_name)
-        if result["http_count"] > 0 or result["websocket_count"] > 0:
-            logger.debug(
-                i18n.t(
-                    "core.module.unload_routes_cleaned",
-                    name=module_name,
-                    http=result["http_count"],
-                    ws=result["websocket_count"],
-                )
-            )
+        :param module_name: 目标模块名
+        :param deep: 附带 gc 实例普查（weakref 存活检查 + 引用方类型；
+                     有全局暂停开销，仅显式排障使用）
+        :return: 审计报告 dict（owner / counts / orphans / 深普查结果）
 
-        # 按 owner 兜底清理归属资源：中间件 / 首页入口 / 非命名空间路由
-        owner_result = router.unregister_all_by_owner(module_name)
-        if any(
-            owner_result.get(k, 0) > 0
-            for k in ("http_count", "websocket_count", "middleware_count", "home_entry_count")
-        ):
-            logger.debug(
-                i18n.t(
-                    "core.module.unload_owner_resources_cleaned",
-                    name=module_name,
-                    http=owner_result.get("http_count", 0),
-                    ws=owner_result.get("websocket_count", 0),
-                    middleware=owner_result.get("middleware_count", 0),
-                    home_entries=owner_result.get("home_entry_count", 0),
-                )
-            )
+        :example:
+        >>> report = sdk.module.audit("roll", deep=True)
+        >>> report["instance_recyclable"]
+        True
+        """
+        from .ownership import ownership
 
-        # 兜底移除模块注册的适配器事件处理器与中间件（避免卸载后仍被分发触发）
+        return ownership.audit(module_name, deep=deep)
+
+    # ==================== 影子模块（方向十一） ====================
+
+    def is_shadow_module(self, module_name: str) -> bool:
+        """
+        判断模块名是否为影子 owner（拓扑 / Dashboard 展示用）
+
+        :param module_name: 模块名
+        :return: 是否为影子 owner
+        """
         try:
-            if self._sdk is not None:
-                adapter_removed = self._sdk.adapter.unregister_handlers_by_owner(module_name)
-                if adapter_removed > 0:
-                    logger.debug(
-                        i18n.t(
-                            "core.module.unload_adapter_handlers_cleaned",
-                            name=module_name,
-                            count=adapter_removed,
-                        )
-                    )
+            from .shadow import shadow_manager
+
+            return shadow_manager.real_name_of(module_name) is not None
         except Exception:
-            pass
+            return False
 
-        # 兜底注销模块注册的自定义会话类型
-        try:
-            from .Event import unregister_custom_types_by_owner
+    async def shadow_start(
+        self,
+        module_name: str,
+        source: "str | Any",
+        owner: "str | None" = None,
+    ) -> str:
+        """
+        启动影子：把新版代码以独立 owner 装载为 ``module_name`` 的影子实例
+        （运行时 API；模块代码零改动，影子的出站被拦截记账、不真正发出）
 
-            types_removed = unregister_custom_types_by_owner(module_name)
-            if types_removed > 0:
-                logger.debug(
-                    i18n.t(
-                        "core.module.unload_session_types_cleaned",
-                        name=module_name,
-                        count=types_removed,
-                    )
-                )
-        except Exception:
-            pass
+        :param module_name: 被 shadow 的已加载模块名
+        :param source: 新版代码路径（目录含 ``__init__.py`` 或单 ``.py`` 文件；
+                       建议放在 plugins 目录之外）
+        :param owner: 影子 owner 名（默认取路径名）
+        :return: 影子 owner 名
 
-        # 兜底清理模块运行时写入（persist=False）的事件覆写
-        try:
-            from .Event import overrides
+        :example:
+        >>> await sdk.module.shadow_start("roll", source="downloads/roll_v2")
+        'roll_shadow'
+        """
+        from .shadow import shadow_manager
 
-            override_removed = overrides.unregister_by_owner(module_name)
-            if override_removed > 0:
-                logger.debug(
-                    i18n.t(
-                        "core.module.unload_overrides_cleaned",
-                        name=module_name,
-                        count=override_removed,
-                    )
-                )
-        except Exception:
-            pass
+        return await shadow_manager.start(
+            module_name, source, manager=self, sdk=self._sdk, owner=owner
+        )
 
-        # 兜底清理模块运行时写入（persist=False）的作用域绑定
-        try:
-            from .scope import scope as scope_manager
+    async def promote_shadow(self, module_name: str) -> bool:
+        """
+        影子转正：卸载当前版本 → 影子以真名注册加载 → 失败自动回滚
 
-            scope_removed = scope_manager.unregister_by_owner(module_name)
-            if scope_removed > 0:
-                logger.debug(
-                    i18n.t(
-                        "core.module.unload_scope_bindings_cleaned",
-                        name=module_name,
-                        count=scope_removed,
-                    )
-                )
-        except Exception:
-            pass
+        转正永远由人确认（无自动晋升）；复用重载快照机制保证失败时旧实例
+        继续服务（尽力而为语义：on_unload 已执行的副作用不可撤销）。转正后
+        请尽快持久化安装新版本（pip 升级 / 替换插件文件），使重启后仍生效。
 
-        from .Event import command, interaction, message, meta, notice, request
+        :param module_name: 原模块名
+        :return: 是否转正成功
+        :raises ValueError: 该模块未绑定影子时
 
-        total_cleaned = 0
-        total_cleaned += command.unregister_by_owner(module_name)
-        for event_handler in [message, notice, request, meta]:
-            total_cleaned += event_handler.handler.unregister_by_owner(module_name)
-        if total_cleaned > 0:
-            logger.debug(
-                i18n.t(
-                    "core.module.unload_handlers_cleaned",
-                    name=module_name,
-                    count=total_cleaned,
-                )
-            )
+        :example:
+        >>> await sdk.module.promote_shadow("roll")
+        """
+        from .shadow import shadow_manager
 
-        # 取消模块挂起的交互会话（wait_reply / 租约），等待方立即收到取消而非干等超时
-        # （command.unregister_by_owner 内已含此步，此处兜底直连交互管理器的其他归属条目）
-        try:
-            interaction.cancel_by_owner(module_name)
-        except Exception:
-            pass
+        loader = getattr(self._sdk, "_module_loader", None) if self._sdk else None
+        return await shadow_manager.promote(module_name, self, self._sdk, loader)
 
-        # 自动注销模块在加载上下文内注册的主人身源 provider（作用域清理）
-        try:
-            from .master import master
+    async def dismiss_shadow(self, module_name: str) -> bool:
+        """
+        放弃影子：回收影子资源并解除绑定（原模块不受影响）
 
-            provider_removed = master.unregister_by_owner(module_name)
-            if provider_removed > 0:
-                logger.debug(
-                    i18n.t(
-                        "core.module.unload_providers_cleaned",
-                        name=module_name,
-                        count=provider_removed,
-                    )
-                )
-        except Exception:
-            pass
+        :param module_name: 原模块名
+        :return: 是否成功（未绑定影子时 False）
 
-        # 清理该模块注册的生命周期钩子，避免闭包引用导致内存泄漏
-        lifecycle_removed = lifecycle.unregister_by_owner(module_name)
-        if lifecycle_removed > 0:
-            logger.debug(
-                i18n.t(
-                    "core.module.lifecycle_hooks_cleaned",
-                    name=module_name,
-                    count=lifecycle_removed,
-                )
-            )
+        :example:
+        >>> await sdk.module.dismiss_shadow("roll")
+        """
+        from .shadow import shadow_manager
+
+        return await shadow_manager.dismiss(module_name, self)
+
+    def shadow_diff(self, module_name: str) -> "dict[str, Any]":
+        """
+        影子与线上的行为对比（影子意向出站 × transcript 实际发送，按 trace_id 对齐）
+
+        :param module_name: 原模块名
+        :return: 对比报告 dict（shadow_owner / count / aligned）
+
+        :example:
+        >>> report = sdk.module.shadow_diff("roll")
+        >>> report["count"]
+        3
+        """
+        from .shadow import shadow_manager
+
+        return shadow_manager.diff(module_name)
 
     def _purge_module_stub(self, module_name: str) -> tuple[str, Any, Any]:
         """
@@ -1726,6 +1769,7 @@ class ModuleManager(ManagerBase):
                 "loaded": name in self._loaded_modules,
                 "enabled": parse_bool_config(config.getConfig(CONFIG_KEY_MODULE_STATUS_OF.format(name), True)),
                 "load_strategy": strategy,
+                "shadow": self.is_shadow_module(name),
                 "info": info_entry,
                 "commands": sorted(commands_by_owner.get(name, [])),
                 "services": sorted(service_names or []),

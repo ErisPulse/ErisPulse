@@ -72,6 +72,7 @@ from .wrapper import (
     register_event_method,
     register_event_mixin,
     unregister_event_method,
+    unregister_event_methods_by_owner,
     unregister_platform_event_methods,
 )
 
@@ -148,5 +149,6 @@ __all__ = [
     "unregister_custom_type",
     "unregister_custom_types_by_owner",
     "unregister_event_method",
+    "unregister_event_methods_by_owner",
     "unregister_platform_event_methods",
 ]

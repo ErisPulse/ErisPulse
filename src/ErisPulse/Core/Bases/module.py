@@ -355,7 +355,15 @@ class BaseModule(ABC):
             )
         from .config_schema import dict_to_dataclass
 
+        shadow_source = getattr(self, "_shadow_source", None)
         data = config_mgr.getConfig(self._get_config_key())
+        if data is None and shadow_source:
+            # 影子模块配置继承（方向十一）：主配置缺失时回退原模块配置节，
+            # 灌入影子的配置节后落盘（否则灰度读不到线上同款配置，失真）
+            inherited = config_mgr.getConfig(shadow_source)
+            if inherited:
+                config_mgr.setConfig(self._get_config_key(), inherited)
+                data = config_mgr.getConfig(self._get_config_key()) or {}
         if data is None:
             # 配置不存在时生成默认模板后重试
             self._ensure_config_exists()

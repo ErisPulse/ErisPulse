@@ -298,6 +298,30 @@ class LifecycleManager:
                     counts[owner] = counts.get(owner, 0) + 1
         return counts
 
+    def _is_shadow_owner(self, owner: "str | None") -> bool:
+        """
+        {!--< internal-use >!--}
+        判断 owner 是否为影子模块 owner（方向十一；惰性导入避免加载链耦合）
+        """
+        try:
+            from .ownership import ownership as _ownership
+
+            return _ownership.is_shadow(owner)
+        except Exception:
+            return False
+
+    def _is_shadow_module_event(self, data: Any) -> bool:
+        """
+        {!--< internal-use >!--}
+        判断事件数据是否携带影子模块的 module_name（module.* 生命周期静默用；
+        兼容 submit_event 包装形态 {"data": {"module_name": ...}} 与扁平形态）
+        """
+        if not isinstance(data, dict):
+            return False
+        inner = data.get("data") if isinstance(data.get("data"), dict) else data
+        name = inner.get("module_name") if isinstance(inner, dict) else None
+        return self._is_shadow_owner(name)
+
     # ==================== 触发 API ====================
 
     async def emit(self, event: str, data: Any = None, *, to: str | None = None) -> Any:
@@ -332,6 +356,11 @@ class LifecycleManager:
             _tid = current_trace_id.get()
             if _tid:
                 data["_trace_id"] = _tid
+
+        # 影子模块生命周期静默（方向十一）：影子自身的 module.* 事件不广播
+        # （影子对框架对外不可见；定向投递 to= 不受影响）
+        if (event == "module" or event.startswith("module.")) and self._is_shadow_module_event(data):
+            return data
 
         if to is not None:
             if not to:
@@ -391,6 +420,10 @@ class LifecycleManager:
         :example:
         >>> result = lifecycle.emit_sync("config.set", {"key": "test"})
         """
+        # 影子模块生命周期静默（方向十一）：同 emit 的静默语义
+        if (event == "module" or event.startswith("module.")) and self._is_shadow_module_event(data):
+            return data
+
         if to is not None:
             if not to:
                 raise ValueError(i18n.t("core.lifecycle.to_required"))
@@ -563,7 +596,10 @@ class LifecycleManager:
         selected = [
             (priority, handler, h_owner, depends)
             for priority, handler, h_owner, depends in self._hooks[hook_name]
-            if owner_filter is None or h_owner == owner_filter
+            # 影子钩子不参与广播（方向十一）：影子对框架对外不可见；
+            # 定向投递（owner_filter 指定）不受限
+            if (owner_filter is None or h_owner == owner_filter)
+            and not (owner_filter is None and self._is_shadow_owner(h_owner))
         ]
         if not selected:
             return data
@@ -620,6 +656,9 @@ class LifecycleManager:
         """
         for _, handler, _owner, depends in self._hooks[hook_name]:
             if owner_filter is not None and _owner != owner_filter:
+                continue
+            # 影子钩子不参与广播（方向十一）；定向投递不受限
+            if owner_filter is None and self._is_shadow_owner(_owner):
                 continue
             try:
                 call_kwargs = call_with_depends_sync(handler, data) if depends else {}

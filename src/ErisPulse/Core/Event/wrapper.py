@@ -108,6 +108,22 @@ class EventData(TypedDict, total=False):
 # platform 为 "*" 时表示跨所有平台生效（通配符）
 _platform_event_methods: dict[str, dict[str, Callable]] = {}
 
+# owner 归属索引: {owner: {(platform, method_name)}}——注册发生在模块 owner
+# 上下文（如模块 on_load）内时记录，模块卸载时按 owner 注销（作用域清理）
+_event_method_owners: dict[str, "set[tuple[str, str]]"] = {}
+
+
+def _record_event_method_owner(platform: str, name: str) -> None:
+    """{!--< internal-use >!--} 记录事件方法注入的 owner 归属（非 owner 上下文不记录）"""
+    try:
+        from ...runtime.context import current_owner
+
+        owner = current_owner.get()
+    except Exception:
+        return
+    if owner:
+        _event_method_owners.setdefault(owner, set()).add((platform, name))
+
 
 def register_event_mixin(platform: str, mixin_cls: type) -> int:
     """
@@ -141,6 +157,7 @@ def register_event_mixin(platform: str, mixin_cls: type) -> int:
         if name.startswith("_"):
             continue
         _platform_event_methods[platform][name] = func
+        _record_event_method_owner(platform, name)
         registered += 1
 
     logger.trace(i18n.t("core.event.registered_extensions", platform=platform, count=registered))
@@ -179,6 +196,7 @@ def register_event_method(platform: str):
             return func
 
         _platform_event_methods[platform][name] = func
+        _record_event_method_owner(platform, name)
         logger.trace(i18n.t("core.event.registered_extension", platform=platform, name=name))
         return func
 
@@ -214,9 +232,35 @@ def unregister_platform_event_methods(platform: str) -> int:
     if platform in _platform_event_methods:
         count = len(_platform_event_methods[platform])
         del _platform_event_methods[platform]
+        for owner_entries in _event_method_owners.values():
+            for entry in [
+                entry for entry in owner_entries if entry[0] == platform
+            ]:
+                owner_entries.discard(entry)
         logger.trace(i18n.t("core.event.unregistered_extensions", platform=platform, count=count))
         return count
     return 0
+
+
+def unregister_event_methods_by_owner(owner: str) -> int:
+    """
+    注销指定 owner（模块）注册的全部平台事件方法
+
+    模块在加载上下文（on_load）内通过 :func:`register_event_method` /
+    :func:`register_event_mixin` 注入的方法，由框架在模块卸载时自动调用
+    本方法清理（作用域清理）——避免旧闭包持有已卸载模块实例造成泄漏。
+
+    :param owner: owner 名（模块名）
+    :return: 被注销的方法数量
+    """
+    entries = _event_method_owners.pop(owner, None)
+    if not entries:
+        return 0
+    removed = 0
+    for platform, name in sorted(entries):
+        if unregister_event_method(platform, name):
+            removed += 1
+    return removed
 
 
 def get_platform_event_methods(platform: str) -> list[str]:
