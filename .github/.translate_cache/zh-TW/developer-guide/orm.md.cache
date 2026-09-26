@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "e2c70d572fe464d20c02c75b7b8c4b48",
-  "file_hash": "e2c70d572fe464d20c02c75b7b8c4b48",
-  "translated_at": "2026-09-23T03:07:50.403057",
+  "hash": "04bffcfc851acbb0f15be9d65fe92ffc",
+  "file_hash": "04bffcfc851acbb0f15be9d65fe92ffc",
+  "translated_at": "2026-09-26T20:50:37.705562",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -26,8 +26,8 @@
       "translation": "## 事務\n\nORM 的讀寫與框架儲存層共用同一個事務路由：當處於 `storage.atransaction()` 環境的事務內時，`create` / `save` / `delete` 與查詢會自動複用事務連接，並隨事務統一提交或回滾，不會獨立提交。\n\n```python\nasync with storage.atransaction():\n    await User.create(name=\"Alice\")\n    ...  # 塊內拋異常時，上面的 INSERT 一併回滾\n```"
     },
     {
-      "hash": "d3213f4ba15862cae2a37aff953f3c34",
-      "translation": "## 與宣告式配置類的關係\n\n模型宣告與 `ConfigClass`（`@dataclass + field(metadata=...)`）**共享同一套底層**——約束詞表、校驗器引擎（`validate_field_constraints`）、類型類別註冊表（`python_type_category`）；但類基座有意分離：配置欄位是普通值（TOML 往返、一次載入熱更新），模型欄位是欄位描述符（類存取 = 查詢表達式、逐行實例）。一份宣告語法，兩個各司其職的基座。"
+      "hash": "5477d56cc10a478d00cac9d6046afee9",
+      "translation": "## 與宣告式配置類的關係\n\n模型宣告與 `ConfigClass`（`@dataclass + field(metadata=...)`）**共享同一套底層**——約束詞表、校驗器引擎（`validate_field_constraints`）、類型類別註冊表（`python_type_category`）；但類基座有意分離：配置欄位是普通值（TOML 往返、一次載入熱更新），模型欄位是欄位描述符（類存取 = 查詢表達式、逐行實例）。一份宣告語法，兩個各司其職的基座。\n\n### 兩種宣告何時用哪個\n\n| 維度 | 配置類 `field(metadata=...)` | 模型欄位 `Field()` |\n|------|------------------------------|---------------------|\n| 適用場景 | 模組行為參數（少量、人工可讀、需熱更新） | 業務資料記錄（多行、程式讀寫、需查詢） |\n| 存儲形態 | `config.toml`（註解保留、TOML 往返） | 資料庫表（自動建表、SQL 方言） |\n| 值形態 | 普通值（`dataclass` 屬性直讀） | 描述符（類存取 = 欄位表達式，實例存取 = 行值） |\n| 約束宣告 | `metadata={\"choices\": ..., \"min\": ..., \"max\": ...}` | `Field(choices=..., ge=..., le=..., max_length=...)` |\n| 共享底層 | 校驗器引擎 + 約束詞表 + 類型類別註冊表（同一套） | 同左 |\n\n經驗法則：**「模組如何運作」用配置類，「使用者產生了什麼資料」用模型**。"
     },
     {
       "hash": "83b151efd5506e40c80bbe2615b0b9de",

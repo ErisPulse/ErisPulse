@@ -49,11 +49,11 @@ The framework keeps disk writes minimal:
 - **`config.full.example` is automatically maintained**: Regardless of whether `epsdk init` has been executed, as long as the framework is started (`epsdk run` / `main.py`), `config/config.full.example` will be automatically generated if missing. The first line of the file is a framework-maintained marker. When the generator content updates (e.g., new configuration items, newly installed components), it will be refreshed at startup. Deleting or modifying the first line switches to manual takeover, and the framework will no longer overwrite.
 - **Adapter/Module Configuration Templates**: First initialization saves a template with comments (field descriptions are comments); fields marked as `example` do not write to disk, only recorded in `config.full.example` for reference
 
-## Environment Variable Override
+## Environment Variable Overrides
 
-The framework supports **overriding** `ErisPulse.*` configuration items using environment variables (ideal for Docker / containerized / CI deployments, without modifying `config.toml`).
+The framework supports overriding `ErisPulse.*` configuration items using environment variables (ideal for Docker / containerized / CI deployments, without modifying `config.toml`).
 
-Naming convention: Convert the dot-separated path `ErisPulse.<section>.<key>` into all uppercase, replace `.` with `_`, and add the `ERISPULSE_` prefix:
+Naming convention: Convert the dot-separated path `ErisPulse.<section>.<key>` to all uppercase, replace `.` with `_`, and add the `ERISPULSE_` prefix:
 
 | Configuration Item | Environment Variable | Example Value |
 |--------------------|----------------------|---------------|
@@ -63,18 +63,18 @@ Naming convention: Convert the dot-separated path `ErisPulse.<section>.<key>` in
 | `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |
 
 Behavior description:
-- **Highest priority**: Environment variables override both "configuration file" and "default values", with automatic type conversion (based on original value type: `bool` / `int` / `float` / comma-separated `list` / string)
-- **Non-persistent**: Overrides only take effect during runtime and are not written back to `config.toml`
-- **Supports hot reload**: After modifying environment variables during runtime, configuration reload via monitoring will take effect
+- **Highest priority**: Environment variables override both "configuration file" and "default values", automatically converting to the original value type (`bool` / `int` / `float` / comma-separated `list` / string)
+- **Non-persistent**: The override only takes effect during runtime and does not write back to `config.toml`
+- **Supports hot reload**: After modifying environment variables during runtime, configuration reload with monitoring will take effect
 
 ```bash
 # Example for Docker deployment: Override port without modifying config.toml
 ERISPULSE_SERVER_PORT=9000 docker compose up -d
 ```
 
-> Note: Framework configurations like `ErisPulse.server.port` are read through APIs such as `get_server_config()`, and are affected by environment variable overrides.
+> Note: Framework configuration such as `ErisPulse.server.port` is read via APIs like `get_server_config()`, and is affected by environment variable overrides.
 
-### Module Configuration Environment Variable Binding (2.9.0+)
+### Environment Variable Binding for Module Configuration (2.9.0+)
 
 Module-specific declarative configurations (`ConfigClass`) support field-level environment variable binding—declare `env` in `field(metadata=...)`:
 
@@ -90,15 +90,17 @@ class MyConfig(BaseConfig):
 
 Behavior description:
 
-- **Priority**: Environment variable > `config.toml` > declared default value (this priority remains after configuration file hot reload)
-- **Type conversion**: Environment variable values are automatically converted based on field annotations—`str` remains unchanged, `int` / `float` / `bool` (`true` / `1` / `yes` / `on`) are automatically converted, `list` / `dict` are parsed via JSON; if conversion fails, the override is ignored (falling back to configuration file / default value) and a warning is issued
-- **One declaration, everywhere effective**: Configuration reading, hot reload, and validation use the same pipeline; the configuration panel schema will mark the `env` name, and `config.toml` template comments will also indicate available environment variables (the template does not write actual values of environment variables, avoiding leakage)
-- **Fully compatible**: Fields without `env` declaration behave unchanged; directly instantiating `ConfigClass` (without framework configuration pipeline) is not affected by environment variables
+- **Priority**: Environment variable > `config.toml` > declared default value (this priority is maintained even after configuration file hot reload)
+- **Type conversion**: Environment variable values are automatically converted according to field annotations—`str` remains unchanged, `int` / `float` / `bool` (`true` / `1` / `yes` / `on`) are automatically converted, `list` / `dict` are parsed via JSON; if conversion fails, the override is ignored (fallback to configuration file / default value) and a warning is issued
+- **One declaration, everywhere effective**: Configuration reading, hot reload, and validation use the same pipeline; the configuration panel Schema will mark the `env` name, and `config.toml` template comments will also prompt available environment variables (the template does not write actual values of environment variables to avoid leakage)
+- **Fully compatible**: Fields without `env` declaration behave unchanged; directly instantiating ConfigClass (without using the framework configuration pipeline) is not affected by environment variables
 
 ```bash
 # Example for Docker deployment: Inject module key without modifying config.toml
 MYMODULE_API_KEY=sk-xxx docker compose up -d
 ```
+
+> **When to choose Configuration Class vs Model Field?** Configuration classes manage "how the module operates" (behavior parameters, hot reload), while ORM's `Field()` manages "what data the user generates" (database tables, queries). Both share the same set of constraint keywords and validator engine; see the comparison table in [Data Model Layer · When to Use Which Declaration](../developer-guide/orm.md#when-to-use-which-declaration).
 
 ## Configuration Hot Update
 

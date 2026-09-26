@@ -38,11 +38,11 @@ with owner_scope("MyModule"):
 
 ## 歸屬資源全景
 
-模組在載入上下文內註冊的以下資源均記錄歸屬，卸載/停用時自動回收：
+模組在載入上下文內註冊的以下資源均記錄歸屬，卸載/禁用時自動回收：
 
-| 資源 | 註冊方式 | 清理呼叫 |
+| 資源 | 註冊方式 | 清理調用 |
 |------|----------|----------|
-| 命令 | `@command()` / 命令 dict 宣告 | `command.unregister_by_owner()` |
+| 命令 | `@command()` / 命令 dict 聲明 | `command.unregister_by_owner()` |
 | 事件處理器 | `@message` / `@notice` / `@request` / `@meta` | `handler.unregister_by_owner()` |
 | 適配器事件監聽 | `sdk.adapter.on()` / `raw=True` | `adapter.unregister_handlers_by_owner()` |
 | 適配器中間件 | `@sdk.adapter.middleware` | 同上 |
@@ -50,19 +50,20 @@ with owner_scope("MyModule"):
 | 路由中間件 | `@router.middleware()` / `add_middleware()` | `router.unregister_all_by_owner()` |
 | Dashboard 首頁入口 | `router.register_home_entry()` | `unregister_home_entries_by_owner()` |
 | 自定義會話類型 | `register_custom_type()` | `unregister_custom_types_by_owner()` |
-| 背景任務 | `self.spawn()` | `cancel_owner_tasks()` |
-| 外部歸屬清理鈎子（工具模組托管） | `runtime.on_cleanup(cb)` | `run_owner_cleanups()`（卸載/停用/適配器關閉鏈內觸發） |
+| 平台事件方法注入 | `register_event_method()` / `register_event_mixin()` | `unregister_event_methods_by_owner()`（模組卸載自動回收，舊閉包不再泄漏） |
+| 後台任務 | `self.spawn()` | `cancel_owner_tasks()` |
+| 外部歸屬清理鈎子（工具模組托管） | `runtime.on_cleanup(cb)` | `run_owner_cleanups()`（卸載/禁用/適配器關閉鏈內觸發） |
 | 生命週期鈎子 | `lifecycle.register()` | `lifecycle.unregister_by_owner()` |
 | 主人身源 provider | `master.provider` | `master.unregister_by_owner()` |
-| i18n 翻譯鍵 | `I18nClass` 宣告（domain=模組名） | `i18n.unregister_domain()` |
+| i18n 翻譯鍵 | `I18nClass` 聲明（domain=模組名） | `i18n.unregister_domain()` |
 | 事件覆寫（執行時） | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
 | 互動會話（wait_reply 等待 / 租約） | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()`（等待方立即收到取消） |
-| 上下文資料 | `runtime/context` 按 owner 記錄 | 按模組精確清理 |
+| 上下文數據 | `runtime/context` 按 owner 記錄 | 按模組精確清理 |
 
 適配器側的對應資源（以平台名為 owner）在適配器 `shutdown()` / `restart()`
 時由 `_cleanup_adapter_resources` 回收，另含：
 
-| 資源 | 清理呼叫 |
+| 資源 | 清理調用 |
 |------|----------|
 | 適配器自有的 `on()` 處理器與中間件 | `adapter.unregister_handlers_by_owner(platform)` |
 | 平台事件方法擴展（`EventMixin`） | `unregister_platform_event_methods(platform)` |
@@ -71,31 +72,74 @@ with owner_scope("MyModule"):
 | i18n 翻譯域（domain=配置鍵） | `i18n.unregister_domain(配置鍵)` |
 | 細顆粒命名空間路由 | `router.unregister_all_by_owner(platform)` |
 
-## 卸載/停用清理序列
+## 卸載 / 禁用清理序列
 
-`unload()` 與 `disable()` 共用同一條清理鏈（每步獨立 try/except，
-失敗僅記日誌，**不中斷後續清理**）：
+`unload()` 與 `disable()` 共用同一条清理鏈（每步獨立 try/except，失敗僅記日誌，**不中斷後續清理**）：
 
 ```mermaid
 flowchart TD
     A["unload / disable"] --> B["on_unload()（超時保護）"]
     B --> C["兜底取消背景任務（cancel_owner_tasks）"]
-    C --> C1["外部歸屬清理鈎子<br/>（工具模組 on_cleanup 登記，run_owner_cleanups 觸發）"]
-    C1 --> D["_cleanup_module_registrations"]
+    C --> C1["外部歸屬清理鉤子<br/>（工具模組 on_cleanup 登記，run_owner_cleanups 觸發）"]
+    C1 --> D["_cleanup_module_registrations<br/>＝ 歸屬權門面 ownership.reclaim_sync()"]
     D --> D1["i18n 翻譯域"]
-    D1 --> D2["路由：命名空間 + owner 兜底<br/>（含中間件 / 首頁入口）"]
+    D1 --> D2["路由：命名空間 + owner 兜底<br/>（按路由物件同一性精確刪除，<br/>含中間件 / 首頁入口）"]
     D2 --> D3["適配器事件處理器 / 中間件"]
     D3 --> D4["命令 + 事件處理器"]
     D4 --> D5["自定義會話類型"]
-    D5 --> D6["執行時事件覆寫（persist=False）"]
+    D5 --> D5b["平台事件方法注入"]
+    D5b --> D6["運行時事件覆寫（persist=False）"]
     D6 --> D7["主人身源 provider"]
-    D7 --> D8["生命週期鈎子"]
-    D8 --> E["移除 SDK 屬性 + 慢載入代理"]
+    D7 --> D8["生命週期鉤子"]
+    D8 --> E["移除 SDK 屬性 + 懶加載代理"]
+    E --> F["自動輕審計：孤兒 owner 告警"]
 ```
 
-`sdk.uninit()` 退出時另有全域兜底：全部適配器 shutdown → 全部模組 unload →
-`router.stop()`（清空路由/中間件/首頁入口）→ `cancel_all_background_tasks()` →
-清空事件處理器與鈎子。
+`sdk.uninit()` 退出時另有全局兜底：全部適配器 shutdown → 全部模組 unload →
+`router.stop()`（清空路由 / 中間件 / 首頁入口）→ `cancel_all_background_tasks()` →
+清空事件處理器與鉤子。
+
+## 歸屬權統一門面（ownership）
+
+清理鏈的十六個步驟收斂在歸屬權統一門面 `ErisPulse.Core.ownership` 下，  
+四個動詞覆蓋「註銷、計數、掃描、審計」——子系統各自的 `*_by_owner` 註銷  
+函數保持不變，作為門面的內部實現：
+
+| 動詞 | 用途 |
+|------|------|
+| `ownership.reclaim(owner)` | 統一註銷 owner 名下全部資源（任務取消 → 清理鉤子 → 註冊類資源；異步完整版） |
+| `ownership.reclaim_sync(owner)` | 註冊類資源註銷（同步版，供同步卸載路徑） |
+| `ownership.counts(owner=None)` | 只讀統計 owner 在冊資源（None 為全部 owner） |
+| `ownership.orphans()` | 孤兒掃描：資源在冊而 owner 已註銷（泄漏實錘清單） |
+| `ownership.audit(owner, deep=)` | 泄漏審計報告（計數 + 孤兒 + 可選 gc 實例普查） |
+
+```python
+from ErisPulse.Core import ownership
+
+ownership.reclaim_sync("MyModule")       # {'commands': 1, 'routes_http': 2, ...}
+ownership.counts("MyModule")             # 在冊資源計數
+ownership.orphans()                      # [{"owner": "ghost", "total": 2, ...}]
+```
+
+**審計入口**：
+
+- 卸載 / 重載後**自動輕審計**：發現孤兒 owner 資源即 WARNING 告警（零開銷計數掃描）
+- `sdk.module.audit(name, deep=True)`：模組實例 gc 普查——實例不可回收時  
+  給出引用方類型（定位「誰攥著舊實例」）；有全局暫停開銷，僅顯式排障使用
+- 深普查屬顯式操作，不設配置鍵、不做自動修復
+
+## 熱重載失敗回滾
+
+熱重載改為 "**卸載前快照 → 失敗自動恢復**"：當新版本出現語法錯誤、依賴缺失、
+加載失敗時，舊實例與註冊狀態（註冊表條目、sdk 屬性、sys.modules 條目）
+會自動還原，服務不中斷，並在日誌中提示「已回滾到舊實例繼續服務」。
+
+盡力而為語義（文件化的邊界）：
+
+- `on_unload` 已執行的副作用（斷開的連接、取消的任務）不可撤銷——
+  恢復後舊實例處於「已收尾」狀態，需再次觸發加載才能完全可用
+- 第三方在執行期手動緩存的對舊實例的引用不在恢復範圍內
+- 目標包已被卸載（entry-point 消失）視作卸載成功，不做回滾
 
 ## 設計邊界：哪些資源不隨卸載清理
 
