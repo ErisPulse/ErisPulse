@@ -4004,6 +4004,18 @@ async with storage.atransaction():
 
 模型宣告與 `ConfigClass`（`@dataclass + field(metadata=...)`）**共享同一套底層**——約束詞表、校驗器引擎（`validate_field_constraints`）、類型類別註冊表（`python_type_category`）；但類基座有意分離：配置欄位是普通值（TOML 往返、一次載入熱更新），模型欄位是欄位描述符（類存取 = 查詢表達式、逐行實例）。一份宣告語法，兩個各司其職的基座。
 
+### 兩種宣告何時用哪個
+
+| 維度 | 配置類 `field(metadata=...)` | 模型欄位 `Field()` |
+|------|------------------------------|---------------------|
+| 適用場景 | 模組行為參數（少量、人工可讀、需熱更新） | 業務資料記錄（多行、程式讀寫、需查詢） |
+| 存儲形態 | `config.toml`（註解保留、TOML 往返） | 資料庫表（自動建表、SQL 方言） |
+| 值形態 | 普通值（`dataclass` 屬性直讀） | 描述符（類存取 = 欄位表達式，實例存取 = 行值） |
+| 約束宣告 | `metadata={"choices": ..., "min": ..., "max": ...}` | `Field(choices=..., ge=..., le=..., max_length=...)` |
+| 共享底層 | 校驗器引擎 + 約束詞表 + 類型類別註冊表（同一套） | 同左 |
+
+經驗法則：**「模組如何運作」用配置類，「使用者產生了什麼資料」用模型**。
+
 ## 邊界與注意事項
 
 - 後端由全域儲存配置決定；模型可用 `__storage__` 類屬性覆寫為自訂 `BaseStorage` 實例（用於測試注入）
@@ -10923,11 +10935,11 @@ with owner_scope("MyModule"):
 
 ## 歸屬資源全景
 
-模組在載入上下文內註冊的以下資源均記錄歸屬，卸載/停用時自動回收：
+模組在載入上下文內註冊的以下資源均記錄歸屬，卸載/禁用時自動回收：
 
-| 資源 | 註冊方式 | 清理呼叫 |
+| 資源 | 註冊方式 | 清理調用 |
 |------|----------|----------|
-| 命令 | `@command()` / 命令 dict 宣告 | `command.unregister_by_owner()` |
+| 命令 | `@command()` / 命令 dict 聲明 | `command.unregister_by_owner()` |
 | 事件處理器 | `@message` / `@notice` / `@request` / `@meta` | `handler.unregister_by_owner()` |
 | 適配器事件監聽 | `sdk.adapter.on()` / `raw=True` | `adapter.unregister_handlers_by_owner()` |
 | 適配器中間件 | `@sdk.adapter.middleware` | 同上 |
@@ -10935,19 +10947,20 @@ with owner_scope("MyModule"):
 | 路由中間件 | `@router.middleware()` / `add_middleware()` | `router.unregister_all_by_owner()` |
 | Dashboard 首頁入口 | `router.register_home_entry()` | `unregister_home_entries_by_owner()` |
 | 自定義會話類型 | `register_custom_type()` | `unregister_custom_types_by_owner()` |
-| 背景任務 | `self.spawn()` | `cancel_owner_tasks()` |
-| 外部歸屬清理鈎子（工具模組托管） | `runtime.on_cleanup(cb)` | `run_owner_cleanups()`（卸載/停用/適配器關閉鏈內觸發） |
+| 平台事件方法注入 | `register_event_method()` / `register_event_mixin()` | `unregister_event_methods_by_owner()`（模組卸載自動回收，舊閉包不再泄漏） |
+| 後台任務 | `self.spawn()` | `cancel_owner_tasks()` |
+| 外部歸屬清理鈎子（工具模組托管） | `runtime.on_cleanup(cb)` | `run_owner_cleanups()`（卸載/禁用/適配器關閉鏈內觸發） |
 | 生命週期鈎子 | `lifecycle.register()` | `lifecycle.unregister_by_owner()` |
 | 主人身源 provider | `master.provider` | `master.unregister_by_owner()` |
-| i18n 翻譯鍵 | `I18nClass` 宣告（domain=模組名） | `i18n.unregister_domain()` |
+| i18n 翻譯鍵 | `I18nClass` 聲明（domain=模組名） | `i18n.unregister_domain()` |
 | 事件覆寫（執行時） | `overrides.*.set(persist=False)` | `overrides.unregister_by_owner()` |
 | 互動會話（wait_reply 等待 / 租約） | `event.wait_reply()` / `sdk.interaction.acquire()` | `interaction.cancel_by_owner()`（等待方立即收到取消） |
-| 上下文資料 | `runtime/context` 按 owner 記錄 | 按模組精確清理 |
+| 上下文數據 | `runtime/context` 按 owner 記錄 | 按模組精確清理 |
 
 適配器側的對應資源（以平台名為 owner）在適配器 `shutdown()` / `restart()`
 時由 `_cleanup_adapter_resources` 回收，另含：
 
-| 資源 | 清理呼叫 |
+| 資源 | 清理調用 |
 |------|----------|
 | 適配器自有的 `on()` 處理器與中間件 | `adapter.unregister_handlers_by_owner(platform)` |
 | 平台事件方法擴展（`EventMixin`） | `unregister_platform_event_methods(platform)` |
@@ -10956,31 +10969,74 @@ with owner_scope("MyModule"):
 | i18n 翻譯域（domain=配置鍵） | `i18n.unregister_domain(配置鍵)` |
 | 細顆粒命名空間路由 | `router.unregister_all_by_owner(platform)` |
 
-## 卸載/停用清理序列
+## 卸載 / 禁用清理序列
 
-`unload()` 與 `disable()` 共用同一條清理鏈（每步獨立 try/except，
-失敗僅記日誌，**不中斷後續清理**）：
+`unload()` 與 `disable()` 共用同一条清理鏈（每步獨立 try/except，失敗僅記日誌，**不中斷後續清理**）：
 
 ```mermaid
 flowchart TD
     A["unload / disable"] --> B["on_unload()（超時保護）"]
     B --> C["兜底取消背景任務（cancel_owner_tasks）"]
-    C --> C1["外部歸屬清理鈎子<br/>（工具模組 on_cleanup 登記，run_owner_cleanups 觸發）"]
-    C1 --> D["_cleanup_module_registrations"]
+    C --> C1["外部歸屬清理鉤子<br/>（工具模組 on_cleanup 登記，run_owner_cleanups 觸發）"]
+    C1 --> D["_cleanup_module_registrations<br/>＝ 歸屬權門面 ownership.reclaim_sync()"]
     D --> D1["i18n 翻譯域"]
-    D1 --> D2["路由：命名空間 + owner 兜底<br/>（含中間件 / 首頁入口）"]
+    D1 --> D2["路由：命名空間 + owner 兜底<br/>（按路由物件同一性精確刪除，<br/>含中間件 / 首頁入口）"]
     D2 --> D3["適配器事件處理器 / 中間件"]
     D3 --> D4["命令 + 事件處理器"]
     D4 --> D5["自定義會話類型"]
-    D5 --> D6["執行時事件覆寫（persist=False）"]
+    D5 --> D5b["平台事件方法注入"]
+    D5b --> D6["運行時事件覆寫（persist=False）"]
     D6 --> D7["主人身源 provider"]
-    D7 --> D8["生命週期鈎子"]
-    D8 --> E["移除 SDK 屬性 + 慢載入代理"]
+    D7 --> D8["生命週期鉤子"]
+    D8 --> E["移除 SDK 屬性 + 懶加載代理"]
+    E --> F["自動輕審計：孤兒 owner 告警"]
 ```
 
-`sdk.uninit()` 退出時另有全域兜底：全部適配器 shutdown → 全部模組 unload →
-`router.stop()`（清空路由/中間件/首頁入口）→ `cancel_all_background_tasks()` →
-清空事件處理器與鈎子。
+`sdk.uninit()` 退出時另有全局兜底：全部適配器 shutdown → 全部模組 unload →
+`router.stop()`（清空路由 / 中間件 / 首頁入口）→ `cancel_all_background_tasks()` →
+清空事件處理器與鉤子。
+
+## 歸屬權統一門面（ownership）
+
+清理鏈的十六個步驟收斂在歸屬權統一門面 `ErisPulse.Core.ownership` 下，  
+四個動詞覆蓋「註銷、計數、掃描、審計」——子系統各自的 `*_by_owner` 註銷  
+函數保持不變，作為門面的內部實現：
+
+| 動詞 | 用途 |
+|------|------|
+| `ownership.reclaim(owner)` | 統一註銷 owner 名下全部資源（任務取消 → 清理鉤子 → 註冊類資源；異步完整版） |
+| `ownership.reclaim_sync(owner)` | 註冊類資源註銷（同步版，供同步卸載路徑） |
+| `ownership.counts(owner=None)` | 只讀統計 owner 在冊資源（None 為全部 owner） |
+| `ownership.orphans()` | 孤兒掃描：資源在冊而 owner 已註銷（泄漏實錘清單） |
+| `ownership.audit(owner, deep=)` | 泄漏審計報告（計數 + 孤兒 + 可選 gc 實例普查） |
+
+```python
+from ErisPulse.Core import ownership
+
+ownership.reclaim_sync("MyModule")       # {'commands': 1, 'routes_http': 2, ...}
+ownership.counts("MyModule")             # 在冊資源計數
+ownership.orphans()                      # [{"owner": "ghost", "total": 2, ...}]
+```
+
+**審計入口**：
+
+- 卸載 / 重載後**自動輕審計**：發現孤兒 owner 資源即 WARNING 告警（零開銷計數掃描）
+- `sdk.module.audit(name, deep=True)`：模組實例 gc 普查——實例不可回收時  
+  給出引用方類型（定位「誰攥著舊實例」）；有全局暫停開銷，僅顯式排障使用
+- 深普查屬顯式操作，不設配置鍵、不做自動修復
+
+## 熱重載失敗回滾
+
+熱重載改為 "**卸載前快照 → 失敗自動恢復**"：當新版本出現語法錯誤、依賴缺失、
+加載失敗時，舊實例與註冊狀態（註冊表條目、sdk 屬性、sys.modules 條目）
+會自動還原，服務不中斷，並在日誌中提示「已回滾到舊實例繼續服務」。
+
+盡力而為語義（文件化的邊界）：
+
+- `on_unload` 已執行的副作用（斷開的連接、取消的任務）不可撤銷——
+  恢復後舊實例處於「已收尾」狀態，需再次觸發加載才能完全可用
+- 第三方在執行期手動緩存的對舊實例的引用不在恢復範圍內
+- 目標包已被卸載（entry-point 消失）視作卸載成功，不做回滾
 
 ## 設計邊界：哪些資源不隨卸載清理
 
@@ -11150,6 +11206,91 @@ class CronModule(BaseModule):
 只有你私有容器裡持有的對方句柄才需要 `on_cleanup`。
 模組開發視角的速查版見
 [最佳實踐 · 工具模組](../developer-guide/modules/best-practices.md#工具模組托管別人東西時要接住卸載通知)。
+
+
+
+### 影子模块与灰度转正
+
+# 影子模組與灰度轉正
+
+影子 = 同一模組的**新版本**，以獨立 owner（如 `roll_shadow`）與線上舊版並存試運行：它收到真實事件的**副本**、其出站被**攔截記帳**而非真正發出——在 `shadow_diff` 裡對比兩個版本的行為，確認無害後 `promote` 一鍵轉正，`dismiss` 隨時放棄。**模組程式碼零變動，全程運行時 API 驅動**：與 `load / unload / reload` 同類的運維動作，Dashboard / 自訂管理模組直接調用，沒有任何設定項要寫。
+
+{!--< tips >!--}
+1. 啟動：``await sdk.module.shadow_start("roll", source="路徑/到/v2")``
+   ——新版程式碼以獨立 owner（預設取路徑名）與舊版並存
+2. 影子不參與真實分發與依賴圖：同名命令進影子目錄、路由只登記不掛載、
+   生命週期廣播靜默、`module.call` 與依賴解析仍指向 v1
+3. 轉正永遠由人確認：``await sdk.module.promote_shadow("roll")``，失敗
+   自動回滾舊實例繼續服務；``dismiss_shadow`` 隨時放棄
+{!--< /tips >!--}
+
+## 快速上手
+
+```python
+# v2 代碼：普通模組寫法，零影子感知（任意目錄，如 downloads/roll_v2/）
+```
+
+```python
+# 線上機器人裡（Dashboard / 管理模組呼叫），一行啟動灰度：
+await sdk.module.shadow_start("roll", source="downloads/roll_v2")
+# → 影子以獨立 owner "roll_v2" 與 v1 並存，出站被攔截記帳
+
+# 試運行期間對比行為：
+report = sdk.module.shadow_diff("roll")
+# {"shadow_owner": "roll_v2", "count": 3, "aligned": [...]}
+```
+
+- **v1 實際發送**：來自收件箱（transcript）的 bot 時間線
+- **v2 意向發送**：影子帳本（出站閘記錄的"想發什麼"）
+- 兩者按 `trace_id` 對齊——同一條訊息，兩個版本各自為什麼觸發/沒觸發、
+  想發什麼/實際發了什麼，一目了然
+
+確認無誤後轉正：
+
+```python
+await sdk.module.promote_shadow("roll")   # 轉正，失敗自動回滾 v1
+await sdk.module.dismiss_shadow("roll")   # 或：放棄影子
+```
+
+## 五道隔離閘
+
+| 閘 | 機制 |
+|----|------|
+| 事件副本 | 影子處理器收到事件的**獨立副本**（帶 `shadow` 標記）——影子的改寫 / 認領 / 停止傳播只作用於副本，不影響原事件鏈 |
+| 出站閘門 | 影子的 `Send` DSL 與 `Api` 調用全部攔截記賬（成功形狀假回應），不真正發出——影子不會重複回覆 |
+| 存儲覆蓋層 | 影子的 KV 寫入進入記憶體覆蓋層並丟棄落庫；讀取先查覆蓋層、未命中透傳真庫（灰度對著真實數據跑）；刪除記墓碑 |
+| 路由屏蔽 | 影子的 HTTP/WS/SSE 路由只登記不掛載；同名命令進入影子命令目錄、平台事件方法注入禁止 |
+| 生命週期靜默 | 影子不廣播自身的生命週期事件、不參與生態依賴圖（`module.call` 與依賴解析仍指向 v1，避免半成品被依賴） |
+
+配置繼承：影子預設**繼承原模組的配置節**（否則灰度失真），轉正後配置原地生效。
+
+## 誠實邊界（無法攔阻的）
+
+- 走框架的發送 / API / KV 存儲 / 統一 HTTP 客戶端**全部可以攔阻**；
+  模塊繞過框架裸起 `aiohttp`、開線程寫外部系統——框架攔不住
+- **ORM 讀寫不在覆蓋層語義內**（按行 overlay 無法在 SQL 層乾淨實現）——
+  影子期間建議避免依賴 ORM 寫隔離
+- **影子源為本地路徑**：新版代碼以路徑導入、獨立 owner 裝載；同一 PyPI 包
+  在同解釋器內受 `sys.modules` 單鍵限制，無法新舊兩版本並存
+- 泄漏審計器（`sdk.module.audit`）可見影子資源歸屬；繞過框架的副作用
+  至少不會無聲
+
+## 轉正與回滾
+
+`promote` 流程：快照當前版本（含級聯依賴者）→ 完全卸載 → 以影子名稱註冊  
+加載 → 任一步失敗自動回滾、舊實例繼續服務（盡力而為語意：`on_unload` 已  
+執行的副作用不可撤銷，回滾後舊實例處於已收尾態）。轉正成功的影子資源被  
+回收、綁定解除；原模組配置節原地生效。
+
+**持久化提醒**：promote 是運行時切換——重啟後仍以 v2 運行，需要將新版本  
+**持久化安裝**（`pip install -U` 新版本 / 替換插件檔案）。運行時切換不會  
+替你完成套件管理。
+
+## 相關文件
+
+- [所有權（owner）系統](ownership.md)——影子以獨立 owner 隔離的機制基礎
+- [互動會話](interaction.md)——`trace_id` 與收件箱（diff 對齊的資料來源）
+- [作用域（scope）](scope.md)——事件准入與出站控制面
 
 
 

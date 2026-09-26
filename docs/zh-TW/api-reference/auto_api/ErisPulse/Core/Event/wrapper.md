@@ -21,6 +21,13 @@ ErisPulse 事件包装类
 ## 函数列表
 
 
+### `_record_event_method_owner(platform: str, name: str)`
+
+> **内部方法** 记录事件方法注入的 owner 归属（非 owner 上下文不记录）
+
+---
+
+
 ### `register_event_mixin(platform: str, mixin_cls: type)`
 
 注册一个类的所有公开方法到指定平台
@@ -90,6 +97,20 @@ ErisPulse 事件包装类
 适配器关闭时应调用此方法清理注册的方法。
 
 - **platform** (`平台名称`): **返回值**: 被注销的方法数量
+
+---
+
+
+### `unregister_event_methods_by_owner(owner: str)`
+
+注销指定 owner（模块）注册的全部平台事件方法
+
+模块在加载上下文（on_load）内通过 :func:`register_event_method` /
+:func:`register_event_mixin` 注入的方法，由框架在模块卸载时自动调用
+本方法清理（作用域清理）——避免旧闭包持有已卸载模块实例造成泄漏。
+
+- **owner** (`owner`): 名（模块名）
+**返回值**: 被注销的方法数量
 
 ---
 

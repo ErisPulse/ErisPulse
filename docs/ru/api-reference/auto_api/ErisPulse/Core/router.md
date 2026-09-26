@@ -463,6 +463,45 @@ POST 等非 GET 请求仍然返回 JSON 格式的错误响应。
 ---
 
 
+##### `_shadow_registration()`
+
+> **内部方法**
+当前注册上下文是否属于影子 owner（方向十一：只登记不挂载）
+
+---
+
+
+##### `_mount_route(route: Any)`
+
+> **内部方法**
+把 route 挂载到 Starlette app（全路由唯一挂载点）
+
+影子 owner 注册的路由只登记不挂载：route 由调用方经
+``_save_route_object`` 留档，counts 审计可见、reclaim 可清，
+但对真实流量不可达。
+
+- **route** (`APIRoute`): / WebSocketRoute 路由对象
+**返回值** (`路由对象（供`): WS 等调用方留存）
+
+---
+
+
+##### `_save_route_object(namespace: str, full_path: str, kind: str, route: Any)`
+
+> **内部方法**
+记录 route 对象引用（kind ∈ {"http", "ws", "sse"}）
+
+---
+
+
+##### `_take_saved_routes(namespace: str, full_path: str, kind: str)`
+
+> **内部方法**
+取出指定类型的已保存 route 对象（其它类型的索引条目保留）
+
+---
+
+
 ##### `_http_decorate(full_path: str, module_name: str, methods: list[str] | None = None)`
 
 HTTP 路由装饰器内部实现

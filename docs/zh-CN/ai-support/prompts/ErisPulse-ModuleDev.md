@@ -3982,6 +3982,18 @@ async with storage.atransaction():
 
 模型声明与 `ConfigClass`（`@dataclass + field(metadata=...)`）**共享同一套底层**——约束词表、校验器引擎（`validate_field_constraints`）、类型类别注册表（`python_type_category`）；但类基座有意分立：配置字段是普通值（TOML 往返、一次加载热更新），模型字段是列描述符（类访问 = 查询表达式、逐行实例）。一份声明语法，两个各司其职的基座。
 
+### 两种声明何时用哪个
+
+| 维度 | 配置类 `field(metadata=...)` | 模型字段 `Field()` |
+|------|------------------------------|---------------------|
+| 适用场景 | 模块行为参数（少量、人工可读、需热更新） | 业务数据记录（多行、程序读写、需查询） |
+| 存储形态 | `config.toml`（注释保留、TOML 往返） | 数据库表（自动建表、SQL 方言） |
+| 值形态 | 普通值（`dataclass` 属性直读） | 描述符（类访问 = 列表达式，实例访问 = 行值） |
+| 约束声明 | `metadata={"choices": ..., "min": ..., "max": ...}` | `Field(choices=..., ge=..., le=..., max_length=...)` |
+| 共享底层 | 校验器引擎 + 约束词表 + 类型类别注册表（同一套） | 同左 |
+
+经验法则：**"模块怎么运转"用配置类，"用户产生了什么数据"用模型**。
+
 ## 边界与注意事项
 
 - 后端由全局存储配置决定；模型可用 `__storage__` 类属性覆写为自定义 `BaseStorage` 实例（测试注入用）
@@ -10857,6 +10869,7 @@ with owner_scope("MyModule"):
 | 路由中间件 | `@router.middleware()` / `add_middleware()` | `router.unregister_all_by_owner()` |
 | Dashboard 首页入口 | `router.register_home_entry()` | `unregister_home_entries_by_owner()` |
 | 自定义会话类型 | `register_custom_type()` | `unregister_custom_types_by_owner()` |
+| 平台事件方法注入 | `register_event_method()` / `register_event_mixin()` | `unregister_event_methods_by_owner()`（模块卸载自动回收，旧闭包不再泄漏） |
 | 后台任务 | `self.spawn()` | `cancel_owner_tasks()` |
 | 外部归属清理钩子（工具模块托管） | `runtime.on_cleanup(cb)` | `run_owner_cleanups()`（卸载/禁用/适配器关闭链内触发） |
 | 生命周期钩子 | `lifecycle.register()` | `lifecycle.unregister_by_owner()` |
@@ -10888,21 +10901,65 @@ flowchart TD
     A["unload / disable"] --> B["on_unload()（超时保护）"]
     B --> C["兜底取消后台任务（cancel_owner_tasks）"]
     C --> C1["外部归属清理钩子<br/>（工具模块 on_cleanup 登记，run_owner_cleanups 触发）"]
-    C1 --> D["_cleanup_module_registrations"]
+    C1 --> D["_cleanup_module_registrations<br/>＝ 归属权门面 ownership.reclaim_sync()"]
     D --> D1["i18n 翻译域"]
-    D1 --> D2["路由：命名空间 + owner 兜底<br/>（含中间件 / 首页入口）"]
+    D1 --> D2["路由：命名空间 + owner 兜底<br/>（按路由对象同一性精确删除，<br/>含中间件 / 首页入口）"]
     D2 --> D3["适配器事件处理器 / 中间件"]
     D3 --> D4["命令 + 事件处理器"]
     D4 --> D5["自定义会话类型"]
-    D5 --> D6["运行时事件覆写（persist=False）"]
+    D5 --> D5b["平台事件方法注入"]
+    D5b --> D6["运行时事件覆写（persist=False）"]
     D6 --> D7["主人身源 provider"]
     D7 --> D8["生命周期钩子"]
     D8 --> E["移除 SDK 属性 + 懒加载代理"]
+    E --> F["自动轻审计：孤儿 owner 告警"]
 ```
 
 `sdk.uninit()` 退出时另有全局兜底：全部适配器 shutdown → 全部模块 unload →
 `router.stop()`（清空路由/中间件/首页入口）→ `cancel_all_background_tasks()` →
 清空事件处理器与钩子。
+
+## 归属权统一门面（ownership）
+
+清理链的十六个步骤收敛在归属权统一门面 `ErisPulse.Core.ownership` 下，
+四个动词覆盖"注销、计数、扫描、审计"——子系统各自的 `*_by_owner` 注销
+函数保持不变，作为门面的内部实现：
+
+| 动词 | 用途 |
+|------|------|
+| `ownership.reclaim(owner)` | 统一注销 owner 名下全部资源（任务取消 → 清理钩子 → 注册类资源；异步完整版） |
+| `ownership.reclaim_sync(owner)` | 注册类资源注销（同步版，供同步卸载路径） |
+| `ownership.counts(owner=None)` | 只读统计 owner 在册资源（None 为全部 owner） |
+| `ownership.orphans()` | 孤儿扫描：资源在册而 owner 已注销（泄漏实锤清单） |
+| `ownership.audit(owner, deep=)` | 泄漏审计报告（计数 + 孤儿 + 可选 gc 实例普查） |
+
+```python
+from ErisPulse.Core import ownership
+
+ownership.reclaim_sync("MyModule")       # {'commands': 1, 'routes_http': 2, ...}
+ownership.counts("MyModule")             # 在册资源计数
+ownership.orphans()                      # [{"owner": "ghost", "total": 2, ...}]
+```
+
+**审计入口**：
+
+- 卸载 / 重载后**自动轻审计**：发现孤儿 owner 资源即 WARNING 告警（零开销计数扫描）
+- `sdk.module.audit(name, deep=True)`：模块实例 gc 普查——实例不可回收时
+  给出引用方类型（定位"谁攥着旧实例"）；有全局暂停开销，仅显式排障使用
+- 深普查属显式操作，不设配置键、不做自动修复
+
+## 热重载失败回滚
+
+热重载改为"**卸载前快照 → 失败自动恢复**"：新版本语法错误、依赖缺失、
+加载失败时，旧实例与注册状态（注册表条目、sdk 属性、sys.modules 条目）
+自动还原，服务不中断，日志提示"已回滚到旧实例继续服务"。
+
+尽力而为语义（文档化的边界）：
+
+- `on_unload` 已执行的副作用（断开的连接、取消的任务）不可撤销——
+  恢复后旧实例处于"已收尾"状态，需再次触发加载才能完全可用
+- 第三方在运行期手动缓存的对旧实例的引用不在恢复范围
+- 目标包已被卸载（entry-point 消失）视作卸载成功，不做回滚
 
 ## 设计边界：哪些资源不随卸载清理
 
@@ -11072,6 +11129,90 @@ class CronModule(BaseModule):
 只有你私有容器里持有的对方句柄才需要 `on_cleanup`。
 模块开发视角的速查版见
 [最佳实践 · 工具模块](../developer-guide/modules/best-practices.md#工具模块托管别人东西时要接住卸载通知)。
+
+
+
+### 影子模块与灰度转正
+
+# 影子模块与灰度转正
+
+影子 = 同一模块的**新版本**，以独立 owner（如 `roll_shadow`）与线上旧版
+并存试运行：它收到真实事件的**副本**、其出站被**拦截记账**而非真正发出——
+在 `shadow_diff` 里对比两个版本的行为，确认无害后 `promote` 一键转正，
+`dismiss` 随时放弃。**模块代码零改动，全程运行时 API 驱动**：与
+`load / unload / reload` 同类的运维动作，Dashboard / 自定义管理模块直接
+调用，没有任何配置项要写。
+
+{!--< tips >!--}
+1. 启动：``await sdk.module.shadow_start("roll", source="路径/到/v2")``
+   ——新版代码以独立 owner（默认取路径名）与旧版并存
+2. 影子不参与真实分发与依赖图：同名命令进影子目录、路由只登记不挂载、
+   生命周期广播静默、`module.call` 与依赖解析仍指向 v1
+3. 转正永远由人确认：``await sdk.module.promote_shadow("roll")``，失败
+   自动回滚旧实例继续服务；``dismiss_shadow`` 随时放弃
+{!--< /tips >!--}
+
+## 快速上手
+
+```python
+# v2 代码：普通模块写法，零影子感知（任意目录，如 downloads/roll_v2/）
+```
+
+```python
+# 线上机器人里（Dashboard / 管理模块调用），一行启动灰度：
+await sdk.module.shadow_start("roll", source="downloads/roll_v2")
+# → 影子以独立 owner "roll_v2" 与 v1 并存，出站被拦截记账
+
+# 试运行期间对比行为：
+report = sdk.module.shadow_diff("roll")
+# {"shadow_owner": "roll_v2", "count": 3, "aligned": [...]}
+```
+
+- **v1 实际发送**：来自收件箱（transcript）的 bot 时间线
+- **v2 意向发送**：影子账本（出站闸记录的"想发什么"）
+- 两者按 `trace_id` 对齐——同一条消息，两个版本各自为什么触发/没触发、
+  想发什么/实际发了什么，一目了然
+
+确认无误后转正：
+
+```python
+await sdk.module.promote_shadow("roll")   # 转正，失败自动回滚 v1
+await sdk.module.dismiss_shadow("roll")   # 或：放弃影子
+```
+
+## 五道隔离闸
+
+| 闸 | 机制 |
+|----|------|
+| 事件副本 | 影子处理器收到事件的**独立副本**（带 `shadow` 标记）——影子的改写 / 认领 / 停止传播只作用于副本，不影响原事件链 |
+| 出站闸门 | 影子的 `Send` DSL 与 `Api` 调用全部拦截记账（成功形状假响应），不真正发出——影子不会重复回复 |
+| 存储覆盖层 | 影子的 KV 写进入内存覆盖层并丢弃落库；读先查覆盖层、未命中透传真库（灰度对着真实数据跑）；删除记墓碑 |
+| 路由屏蔽 | 影子的 HTTP/WS/SSE 路由只登记不挂载；同名命令进影子命令目录、平台事件方法注入禁止 |
+| 生命周期静默 | 影子不广播自身的生命周期事件、不参与生态依赖图（`module.call` 与依赖解析仍指向 v1，避免半成品被依赖） |
+
+配置继承：影子默认**继承原模块的配置节**（否则灰度失真），转正后配置原地生效。
+
+## 诚实边界（拦不住的）
+
+- 走框架的发送 / API / KV 存储 / 统一 HTTP 客户端**全部拦得住**；
+  模块绕过框架裸起 `aiohttp`、开线程写外部系统——框架拦不住
+- **ORM 读写不在覆盖层语义内**（按行 overlay 无法在 SQL 层干净实现）——
+  影子期间建议避免依赖 ORM 写隔离
+- **影子源为本地路径**：新版代码以路径导入、独立 owner 装载；同一 PyPI 包
+  在同解释器内受 `sys.modules` 单键限制，无法新旧两版本并存
+- 泄漏审计器（`sdk.module.audit`）可见影子资源归属；绕过框架的副作用
+  至少不会无声
+
+## 转正与回滚
+
+`promote` 流程：快照当前版本（含级联依赖者）→ 完全卸载 → 影子以真名注册
+加载 → 任一步失败自动回滚、旧实例继续服务（尽力而为语义：`on_unload` 已
+执行的副作用不可撤销，回滚后旧实例处于已收尾态）。转正成功的影子资源被
+回收、绑定解除；原模块配置节原地生效。
+
+**持久化提醒**：promote 是运行时切换——重启后仍以 v2 运行，需要把新版本
+**持久化安装**（`pip install -U` 新版本 / 替换插件文件）。运行时切换不会
+替你完成包管理。
 
 
 

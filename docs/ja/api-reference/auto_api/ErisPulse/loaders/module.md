@@ -105,6 +105,20 @@ dict 声明，简写不产生元数据条目，天然被 dict 覆盖）。
 ## 类列表
 
 
+### `class _ReloadSnapshot`
+
+> **内部方法**
+热重载回滚快照（引用级别，无深拷贝）
+
+记录重载开始前与目标模块相关的全部注册状态：注册表条目、实例、
+懒加载代理、sdk 属性与将被 purge 的 sys.modules 条目对象。任一重载
+步骤失败时按原序恢复，旧实例继续服务。
+
+尽力而为语义：``on_unload`` 已执行的副作用（断开的连接、取消的任务）
+不可撤销——恢复后旧实例处于"已收尾"状态；第三方在运行期持有的旧实例
+引用不在恢复范围。
+
+
 ### `class ModuleLoader(BaseLoader)`
 
 模块加载器
@@ -179,6 +193,57 @@ PyPI 模块依赖者卸载后直接重新实例化。
 - **module_name** (`模块名（entry-point`): 名称或插件名）
 - **manager_instance** (`模块管理器实例`): - **sdk_instance**: SDK 实例
 **返回值**: 是否重载成功
+
+---
+
+
+##### `_dependent_purge_names(dep: str, manager_instance: Any)`
+
+> **内部方法**
+推断依赖者的 sys.modules 清理名单（快照采集用）
+
+- **dep** (`依赖者模块名`): - **manager_instance**: 模块管理器实例
+**返回值**: 顶层模块名列表
+
+---
+
+
+##### `_capture_reload_state(module_name: str, manager_instance: Any, sdk_instance: Any, purge_names: 'list[str]')`
+
+> **内部方法**
+采集单模块的重载回滚快照（引用级别，无深拷贝）
+
+- **module_name** (`模块名`): - **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+- **purge_names** (`重载流程将要从`): sys.modules 移除的顶层模块名
+**返回值**: 回滚快照
+
+---
+
+
+##### `_restore_reload_snapshot(snapshot: _ReloadSnapshot, module_name: str, manager_instance: Any, sdk_instance: Any)`
+
+> **内部方法**
+恢复重载快照（任一重载步骤失败时调用）
+
+恢复顺序：sys.modules 条目 → 注册存根 → 懒加载态 / 已加载态 →
+sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日志，不阻断
+其余恢复）。
+
+- **snapshot** (`重载前采集的快照`): - **module_name**: 模块名
+- **manager_instance** (`模块管理器实例`): - **sdk_instance**: SDK 实例
+
+---
+
+
+##### `_restore_failed_dependents(dependent_snapshots: 'dict[str, _ReloadSnapshot]', manager_instance: Any, sdk_instance: Any)`
+
+> **内部方法**
+恢复重载失败的依赖者：快照时已加载而重载后仍未回到加载态的依赖者，
+恢复其旧注册状态（否则级联卸载后依赖者处于裸奔态）
+
+- **dependent_snapshots** (`依赖者快照（模块名`): → 快照）
+- **manager_instance** (`模块管理器实例`): - **sdk_instance**: SDK 实例
 
 ---
 
@@ -619,6 +684,17 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 ##### `_deregister_stubs()`
 
 注销所有触发器 stub
+
+---
+
+
+##### `_rearm_stubs()`
+
+重新武装触发器 stub（激活失败路径调用）
+
+加载失败的半卸载（模块重载完备性）会按 owner 回收事件处理器与
+占位命令——此处先清残留再重建，保证冷却结束后用户再次触发仍可
+自动重试（stub 丢失 = 模块失联无恢复路径）。
 
 ---
 

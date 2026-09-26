@@ -366,7 +366,7 @@
     "高度なトピック": {
       "description": "フレームワークの高度な機能を深く理解する",
       "icon": "fa-fire",
-      "count": 16,
+      "count": 17,
       "documents": [
         {
           "title": "高級トピック",
@@ -429,7 +429,7 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "所属権（owner）システム",
+          "title": "所有者（owner）システム",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
@@ -439,6 +439,12 @@
           "path": "advanced/interaction.md",
           "level": 1,
           "icon": "fa-fire"
+        },
+        {
+          "title": "シャドウモジュールとグレーディングから本番への移行",
+          "path": "advanced/shadow.md",
+          "level": 1,
+          "icon": "fa-eye"
         },
         {
           "title": "モジュール間通信",

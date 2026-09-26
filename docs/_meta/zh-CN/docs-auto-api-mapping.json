@@ -1,12 +1,12 @@
 {
   "version": "1.0",
   "total_categories": 1,
-  "total_documents": 128,
+  "total_documents": 130,
   "categories": {
     "自动生成 API": {
       "description": "核心 API 和接口文档",
       "icon": "fa-microchip",
-      "count": 128,
+      "count": 130,
       "documents": [
         {
           "title": "`ErisPulse.__init__` 模块",
@@ -363,6 +363,12 @@
               "icon": "fa-book"
             },
             {
+              "title": "`ErisPulse.Core.ownership` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/ownership.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
               "title": "`ErisPulse.Core.router` 模块",
               "path": "api-reference/auto_api/ErisPulse/Core/router.md",
               "level": 1,
@@ -371,6 +377,12 @@
             {
               "title": "`ErisPulse.Core.scope` 模块",
               "path": "api-reference/auto_api/ErisPulse/Core/scope.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.Core.shadow` 模块",
+              "path": "api-reference/auto_api/ErisPulse/Core/shadow.md",
               "level": 1,
               "icon": "fa-book"
             },

@@ -181,3 +181,18 @@ target 语义与交互会话等待键一致（复用 session_type 的目标推�
 
 ---
 
+
+##### `get_by_trace(trace_id: str, limit: int = 20)`
+
+按链路 ID 查询出站记录（影子模块 diff 对齐用，方向十一）
+
+- **trace_id** (`事件链路`): ID（事件 ``id``）
+- **limit** (`返回的最大条数`): **返回值** (`消息列表（role`): / text / ts / event_id），时间升序
+
+**示例**:
+```python
+>>> transcript.get_by_trace("evt-abc123")
+```
+
+---
+

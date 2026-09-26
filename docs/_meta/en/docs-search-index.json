@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1670,
+  "total_keywords": 1676,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -3017,7 +3017,7 @@
     "Attribution Chain (contextvar Propagation)": [
       {
         "document": "advanced/ownership.md",
-        "line": 111,
+        "line": 150,
         "level": 3,
         "title": "Attribution Chain (contextvar Propagation)"
       }
@@ -3105,7 +3105,7 @@
     "Automatic Migration (Phase Two)": [
       {
         "document": "developer-guide/orm.md",
-        "line": 86,
+        "line": 98,
         "level": 2,
         "title": "Automatic Migration (Phase Two)"
       }
@@ -3680,12 +3680,12 @@
         "title": "Bot Status Values"
       }
     ],
-    "Boundaries and Precautions": [
+    "Boundaries and Notes": [
       {
         "document": "developer-guide/orm.md",
-        "line": 78,
+        "line": 90,
         "level": 2,
-        "title": "Boundaries and Precautions"
+        "title": "Boundaries and Notes"
       }
     ],
     "Branches and Jumps": [
@@ -3841,7 +3841,7 @@
     "Cancellation Chain (Task Registry)": [
       {
         "document": "advanced/ownership.md",
-        "line": 124,
+        "line": 163,
         "level": 3,
         "title": "Cancellation Chain (Task Registry)"
       }
@@ -3849,7 +3849,7 @@
     "Cancellation Timing (Module Unload)": [
       {
         "document": "advanced/ownership.md",
-        "line": 133,
+        "line": 172,
         "level": 3,
         "title": "Cancellation Timing (Module Unload)"
       }
@@ -4113,7 +4113,7 @@
     "Command Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 480,
+        "line": 482,
         "level": 3,
         "title": "Command Configuration"
       }
@@ -4205,7 +4205,7 @@
     "Command Parsing Configuration (event.command)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 636,
+        "line": 638,
         "level": 2,
         "title": "Command Parsing Configuration (event.command)"
       }
@@ -4363,7 +4363,7 @@
     "Complete Configuration Example": [
       {
         "document": "user-guide/configuration.md",
-        "line": 173,
+        "line": 175,
         "level": 2,
         "title": "Complete Configuration Example"
       }
@@ -4615,7 +4615,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 103,
+        "line": 105,
         "level": 2,
         "title": "Configuration Hot Update"
       }
@@ -5181,7 +5181,7 @@
     "Custom Identity Source (provider)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 286,
+        "line": 288,
         "level": 3,
         "title": "Custom Identity Source (provider)"
       }
@@ -5443,7 +5443,7 @@
     "Design Boundaries: Resources Not Cleaned on Unload": [
       {
         "document": "advanced/ownership.md",
-        "line": 94,
+        "line": 133,
         "level": 2,
         "title": "Design Boundaries: Resources Not Cleaned on Unload"
       }
@@ -5475,7 +5475,7 @@
     "Determination Chain and Runtime Additions/Removals": [
       {
         "document": "user-guide/configuration.md",
-        "line": 272,
+        "line": 274,
         "level": 3,
         "title": "Determination Chain and Runtime Additions/Removals"
       }
@@ -5499,7 +5499,7 @@
     "Development Methods": [
       {
         "document": "README.md",
-        "line": 78,
+        "line": 79,
         "level": 2,
         "title": "Development Methods"
       }
@@ -5704,14 +5704,6 @@
         "title": "Document Information"
       }
     ],
-    "Document List": [
-      {
-        "document": "advanced/README.md",
-        "line": 5,
-        "level": 2,
-        "title": "Document List"
-      }
-    ],
     "Documentation": [
       {
         "document": "developer-guide/publishing.md",
@@ -5779,6 +5771,12 @@
       }
     ],
     "Documentation List": [
+      {
+        "document": "advanced/README.md",
+        "line": 5,
+        "level": 2,
+        "title": "Documentation List"
+      },
       {
         "document": "api-reference/README.md",
         "line": 5,
@@ -5922,12 +5920,20 @@
         "title": "Environment Diagnosis"
       }
     ],
-    "Environment Variable Override": [
+    "Environment Variable Binding for Module Configuration (2.9.0+)": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 77,
+        "level": 3,
+        "title": "Environment Variable Binding for Module Configuration (2.9.0+)"
+      }
+    ],
+    "Environment Variable Overrides": [
       {
         "document": "user-guide/configuration.md",
         "line": 52,
         "level": 2,
-        "title": "Environment Variable Override"
+        "title": "Environment Variable Overrides"
       }
     ],
     "Environment Variables": [
@@ -6111,7 +6117,7 @@
     "Event Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 478,
+        "line": 480,
         "level": 2,
         "title": "Event Configuration"
       }
@@ -6605,7 +6611,7 @@
     "Exemption List": [
       {
         "document": "user-guide/configuration.md",
-        "line": 417,
+        "line": 419,
         "level": 4,
         "title": "Exemption List"
       }
@@ -6784,6 +6790,14 @@
         "title": "Filtering Conditions"
       }
     ],
+    "Five Isolation Gates": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 39,
+        "level": 2,
+        "title": "Five Isolation Gates"
+      }
+    ],
     "Fixed Bugs": [
       {
         "document": "bug-tracker.md",
@@ -6923,7 +6937,7 @@
     "Foreign Keys (Foundation for Relationship Mapping)": [
       {
         "document": "developer-guide/orm.md",
-        "line": 106,
+        "line": 118,
         "level": 2,
         "title": "Foreign Keys (Foundation for Relationship Mapping)"
       }
@@ -6971,7 +6985,7 @@
     "Framework Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 364,
+        "line": 366,
         "level": 2,
         "title": "Framework Configuration"
       }
@@ -7145,7 +7159,7 @@
     "Get Help": [
       {
         "document": "README.md",
-        "line": 91,
+        "line": 92,
         "level": 2,
         "title": "Get Help"
       }
@@ -7327,7 +7341,7 @@
     "Guide to Utility Modules: Managing Handles for Other Modules": [
       {
         "document": "advanced/ownership.md",
-        "line": 195,
+        "line": 234,
         "level": 2,
         "title": "Guide to Utility Modules: Managing Handles for Other Modules"
       }
@@ -7634,6 +7648,14 @@
         "title": "Home Entry"
       }
     ],
+    "Honest Boundaries (Can't Be Blocked)": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 51,
+        "level": 2,
+        "title": "Honest Boundaries (Can't Be Blocked)"
+      }
+    ],
     "Hook Breakpoints Overview": [
       {
         "document": "advanced/lifecycle.md",
@@ -7648,6 +7670,14 @@
         "line": 279,
         "level": 2,
         "title": "Hot Module Reload Architecture"
+      }
+    ],
+    "Hot Reload Failure Rollback": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 123,
+        "level": 2,
+        "title": "Hot Reload Failure Rollback"
       }
     ],
     "Hot Restart of Adapters": [
@@ -7718,12 +7748,12 @@
         "title": "HttpResponse"
       }
     ],
-    "I. I Want to Use a Bot": [
+    "I. I Want to Use a Robot": [
       {
         "document": "README.md",
         "line": 13,
         "level": 3,
-        "title": "I. I Want to Use a Bot"
+        "title": "I. I Want to Use a Robot"
       }
     ],
     "I18nClass Key Path Rules": [
@@ -7758,12 +7788,12 @@
         "title": "III. I Want to Deeply Understand the Principles"
       }
     ],
-    "IV. Ecosystem & Official Client": [
+    "IV. Ecosystem & Official Clients": [
       {
         "document": "README.md",
-        "line": 57,
+        "line": 58,
         "level": 3,
-        "title": "IV. Ecosystem & Official Client"
+        "title": "IV. Ecosystem & Official Clients"
       }
     ],
     "Identifying Governance Silent Matches": [
@@ -8011,7 +8041,7 @@
     "Intended Audience": [
       {
         "document": "advanced/README.md",
-        "line": 27,
+        "line": 28,
         "level": 2,
         "title": "Intended Audience"
       }
@@ -8119,7 +8149,7 @@
     "Internal Breakdown of Hot Update Chain": [
       {
         "document": "user-guide/configuration.md",
-        "line": 125,
+        "line": 127,
         "level": 3,
         "title": "Internal Breakdown of Hot Update Chain"
       }
@@ -8135,7 +8165,7 @@
     "Internal Implementation: How Ownership Works": [
       {
         "document": "advanced/ownership.md",
-        "line": 107,
+        "line": 146,
         "level": 2,
         "title": "Internal Implementation: How Ownership Works"
       }
@@ -8159,7 +8189,7 @@
     "Internationalization Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 507,
+        "line": 509,
         "level": 2,
         "title": "Internationalization Configuration"
       }
@@ -8541,7 +8571,7 @@
     "Logging Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 316,
+        "line": 318,
         "level": 2,
         "title": "Logging Configuration"
       }
@@ -8679,7 +8709,7 @@
     "Master System Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 246,
+        "line": 248,
         "level": 2,
         "title": "Master System Configuration"
       }
@@ -8743,7 +8773,7 @@
     "Message Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 496,
+        "line": 498,
         "level": 3,
         "title": "Message Configuration"
       }
@@ -9333,7 +9363,7 @@
     "Module Author Guide": [
       {
         "document": "advanced/ownership.md",
-        "line": 149,
+        "line": 188,
         "level": 2,
         "title": "Module Author Guide"
       }
@@ -9341,17 +9371,9 @@
     "Module Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 518,
+        "line": 520,
         "level": 2,
         "title": "Module Configuration"
-      }
-    ],
-    "Module Configuration Environment Variable Binding (2.9.0+)": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 77,
-        "level": 3,
-        "title": "Module Configuration Environment Variable Binding (2.9.0+)"
       }
     ],
     "Module Design": [
@@ -9775,7 +9797,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 638,
+        "line": 640,
         "level": 2,
         "title": "Next Steps"
       },
@@ -9841,7 +9863,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 173,
+        "line": 212,
         "level": 3,
         "title": "Notes"
       },
@@ -10093,7 +10115,7 @@
     "Others": [
       {
         "document": "README.md",
-        "line": 85,
+        "line": 86,
         "level": 2,
         "title": "Others"
       }
@@ -10172,14 +10194,6 @@
         "title": "Overview"
       }
     ],
-    "Overview of Owned Resources": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 37,
-        "level": 2,
-        "title": "Overview of Owned Resources"
-      }
-    ],
     "Overview of SDK Top-Level Entry Points": [
       {
         "document": "advanced/startup.md",
@@ -10202,6 +10216,14 @@
         "line": 1,
         "level": 1,
         "title": "Ownership (owner) System"
+      }
+    ],
+    "Ownership Facade (ownership)": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 97,
+        "level": 2,
+        "title": "Ownership Facade (ownership)"
       }
     ],
     "POST": [
@@ -10559,7 +10581,7 @@
     "Prerequisites": [
       {
         "document": "advanced/README.md",
-        "line": 35,
+        "line": 36,
         "level": 2,
         "title": "Prerequisites"
       }
@@ -10599,7 +10621,7 @@
     "Proactive GC Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 385,
+        "line": 387,
         "level": 3,
         "title": "Proactive GC Configuration"
       }
@@ -10664,6 +10686,14 @@
         "line": 57,
         "level": 3,
         "title": "Project Templates"
+      }
+    ],
+    "Promote and Rollback": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 59,
+        "level": 2,
+        "title": "Promote and Rollback"
       }
     ],
     "Protocol Methods": [
@@ -10886,6 +10916,12 @@
         "title": "Quick Start"
       },
       {
+        "document": "advanced/shadow.md",
+        "line": 12,
+        "level": 2,
+        "title": "Quick Start"
+      },
+      {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 45,
         "level": 2,
@@ -11003,7 +11039,7 @@
     "Recommended Practices": [
       {
         "document": "advanced/ownership.md",
-        "line": 151,
+        "line": 190,
         "level": 3,
         "title": "Recommended Practices"
       }
@@ -11107,7 +11143,7 @@
     "Registration Timing → Ownership Result Comparison Table": [
       {
         "document": "advanced/ownership.md",
-        "line": 180,
+        "line": 219,
         "level": 3,
         "title": "Registration Timing → Ownership Result Comparison Table"
       }
@@ -11154,6 +11190,12 @@
       {
         "document": "advanced/router.md",
         "line": 414,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "advanced/shadow.md",
+        "line": 65,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11283,7 +11325,7 @@
     "Related Links": [
       {
         "document": "README.md",
-        "line": 97,
+        "line": 98,
         "level": 2,
         "title": "Related Links"
       },
@@ -11309,7 +11351,7 @@
     "Relationship Mapping (relationship)": [
       {
         "document": "developer-guide/orm.md",
-        "line": 120,
+        "line": 132,
         "level": 2,
         "title": "Relationship Mapping (relationship)"
       }
@@ -11330,12 +11372,12 @@
         "title": "Relationship with CLI i18n"
       }
     ],
-    "Relationship with Declarative Configuration Classes": [
+    "Relationship with Declarative Configuration Class": [
       {
         "document": "developer-guide/orm.md",
         "line": 74,
         "level": 2,
-        "title": "Relationship with Declarative Configuration Classes"
+        "title": "Relationship with Declarative Configuration Class"
       }
     ],
     "Relationship with Other Systems": [
@@ -11634,6 +11676,14 @@
         "line": 258,
         "level": 2,
         "title": "Resetting the Builder"
+      }
+    ],
+    "Resource Ownership Overview": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 37,
+        "level": 2,
+        "title": "Resource Ownership Overview"
       }
     ],
     "Response": [
@@ -12031,7 +12081,7 @@
     "Scope Configuration (scope)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 547,
+        "line": 549,
         "level": 2,
         "title": "Scope Configuration (scope)"
       }
@@ -12349,7 +12399,7 @@
     "Server Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 227,
+        "line": 229,
         "level": 2,
         "title": "Server Configuration"
       }
@@ -12430,6 +12480,14 @@
         "line": 39,
         "level": 2,
         "title": "Severity Classification"
+      }
+    ],
+    "Shadow Modules and Gradual Promotion": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 1,
+        "level": 1,
+        "title": "Shadow Modules and Gradual Promotion"
       }
     ],
     "Shutdown Adapters": [
@@ -12817,7 +12875,7 @@
     "Storage Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 429,
+        "line": 431,
         "level": 2,
         "title": "Storage Configuration"
       }
@@ -12863,7 +12921,7 @@
     "Strict Mode": [
       {
         "document": "user-guide/configuration.md",
-        "line": 400,
+        "line": 402,
         "level": 3,
         "title": "Strict Mode"
       }
@@ -13359,7 +13417,7 @@
     "Troubleshooting Approach": [
       {
         "document": "advanced/ownership.md",
-        "line": 144,
+        "line": 183,
         "level": 3,
         "title": "Troubleshooting Approach"
       }
@@ -13407,7 +13465,7 @@
     "Unified Event Override Configuration (event.overrides)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 593,
+        "line": 595,
         "level": 2,
         "title": "Unified Event Override Configuration (event.overrides)"
       }
@@ -13499,7 +13557,7 @@
     "Unload/Disable Cleanup Sequence": [
       {
         "document": "advanced/ownership.md",
-        "line": 71,
+        "line": 72,
         "level": 2,
         "title": "Unload/Disable Cleanup Sequence"
       }
@@ -13665,7 +13723,7 @@
     "User Priority: Master Scope Decided by User": [
       {
         "document": "user-guide/configuration.md",
-        "line": 311,
+        "line": 313,
         "level": 3,
         "title": "User Priority: Master Scope Decided by User"
       }
@@ -13899,7 +13957,7 @@
     "V. I Want to Contribute to ErisPulse": [
       {
         "document": "README.md",
-        "line": 69,
+        "line": 70,
         "level": 3,
         "title": "V. I Want to Contribute to ErisPulse"
       }
@@ -14170,6 +14228,14 @@
         "line": 345,
         "level": 3,
         "title": "When to Use Hard Restart?"
+      }
+    ],
+    "When to Use Which Declaration": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 78,
+        "level": 3,
+        "title": "When to Use Which Declaration"
       }
     ],
     "Where Parameter Passing Rules": [
