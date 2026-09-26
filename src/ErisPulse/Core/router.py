@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     import uvicorn
     from fastapi import FastAPI, Request, Response, WebSocket, WebSocketDisconnect
     from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
-    from fastapi.routing import APIRoute
+    from fastapi.routing import APIRoute, APIWebSocketRoute
     from starlette.routing import WebSocketRoute
 
 from ..runtime.context import current_owner
@@ -107,6 +107,7 @@ def _load_web_stack() -> None:
         StreamingResponse as _StreamingResponse,
     )
     from fastapi.routing import APIRoute as _APIRoute
+    from fastapi.routing import APIWebSocketRoute as _APIWebSocketRoute
     from starlette.routing import WebSocketRoute as _WebSocketRoute
 
     _g = globals()
@@ -120,6 +121,7 @@ def _load_web_stack() -> None:
     _g["JSONResponse"] = _JSONResponse
     _g["StreamingResponse"] = _StreamingResponse
     _g["APIRoute"] = _APIRoute
+    _g["APIWebSocketRoute"] = _APIWebSocketRoute
     _g["WebSocketRoute"] = _WebSocketRoute
     _WEB_STACK_LOADED = True
     logger.trace(i18n.t("core.router.web_stack_loaded"))
@@ -385,6 +387,11 @@ class RouterManager:
             str, dict[str, tuple[Callable, Callable | None, bool]]
         ] = defaultdict(dict)
         self._sse_routes: dict[str, dict[str, Callable]] = defaultdict(dict)
+        # 路由对象索引: {(namespace, full_path): [(kind, route 对象), ...]}
+        # kind ∈ {"http", "ws", "sse"}。注销时按对象同一性（id）精确删除，
+        # 避免跨命名空间 / 跨类型（HTTP 与 SSE 同 path）的同路径路由被误删；
+        # 无索引引用的历史路由保留按 path 过滤的兜底逻辑
+        self._route_objects: dict[tuple[str, str], "list[tuple[str, Any]]"] = defaultdict(list)
         # 资源归属者 -> 其注册的命名空间集合。
         # 适配器/模块加载期间若设置了 current_owner，注册路由时会自动记录归属，
         # 以便按 owner 兜底清理（热重载等场景）。
@@ -733,7 +740,8 @@ class RouterManager:
                 in ("summary", "description", "tags", "response_model", "deprecated")
             },
         )
-        self.app.router.routes.append(route)
+        self._mount_route(route)
+        self._save_route_object(module_name, full_path, "sse", route)
 
     def _register_sse_endpoint(
         self,
@@ -1291,6 +1299,64 @@ class RouterManager:
             return path.startswith(prefix + "/")
         return pattern == path
 
+    # 路由对象索引存取（按对象同一性精确注销的支撑，见 _route_objects）
+
+    def _shadow_registration(self) -> bool:
+        """
+        {!--< internal-use >!--}
+        当前注册上下文是否属于影子 owner（方向十一：只登记不挂载）
+        """
+        try:
+            from ...runtime.context import get_current_owner
+            from .ownership import ownership as _ownership
+
+            return _ownership.is_shadow(get_current_owner())
+        except Exception:
+            return False
+
+    def _mount_route(self, route: Any) -> Any:
+        """
+        {!--< internal-use >!--}
+        把 route 挂载到 Starlette app（全路由唯一挂载点）
+
+        影子 owner 注册的路由只登记不挂载：route 由调用方经
+        ``_save_route_object`` 留档，counts 审计可见、reclaim 可清，
+        但对真实流量不可达。
+
+        :param route: APIRoute / WebSocketRoute 路由对象
+        :return: 路由对象（供 WS 等调用方留存）
+        """
+        if self._shadow_registration():
+            logger.trace(
+                f"shadow route registered (not mounted): {getattr(route, 'path', '?')}"
+            )
+            return route
+        self.app.router.routes.append(route)
+        return route
+
+    def _save_route_object(self, namespace: str, full_path: str, kind: str, route: Any) -> None:
+        """
+        {!--< internal-use >!--}
+        记录 route 对象引用（kind ∈ {"http", "ws", "sse"}）
+        """
+        self._route_objects[(namespace, full_path)].append((kind, route))
+
+    def _take_saved_routes(self, namespace: str, full_path: str, kind: str) -> "list[Any]":
+        """
+        {!--< internal-use >!--}
+        取出指定类型的已保存 route 对象（其它类型的索引条目保留）
+        """
+        entries = self._route_objects.get((namespace, full_path))
+        if not entries:
+            return []
+        taken = [route for entry_kind, route in entries if entry_kind == kind]
+        remaining = [(entry_kind, route) for entry_kind, route in entries if entry_kind != kind]
+        if remaining:
+            self._route_objects[(namespace, full_path)] = remaining
+        else:
+            self._route_objects.pop((namespace, full_path), None)
+        return taken
+
     # 装饰器路由
 
     @_web_stack_required
@@ -1318,10 +1384,13 @@ class RouterManager:
                 name=f"{module_name}_{full_path.replace('/', '_')}",
                 **route_kwargs,
             )
-            self.app.router.routes.append(route)
+            self._mount_route(route)
+            self._save_route_object(module_name, full_path, "http", route)
 
             for m in resolved_methods:
                 self._http_routes[module_name].setdefault(full_path, {})[m] = func
+
+            self._track_owner_namespace(module_name)
 
             rate_limit = kwargs.get("rate_limit")
             if rate_limit:
@@ -1558,7 +1627,8 @@ class RouterManager:
             name=f"{module_name}_{path.replace('/', '_')}_{methods[0].lower()}",
             **route_kwargs,
         )
-        self.app.router.routes.append(route)
+        self._mount_route(route)
+        self._save_route_object(module_name, full_path, "http", route)
 
         # 按方法存储处理器
         if full_path not in self._http_routes[module_name]:
@@ -1613,12 +1683,21 @@ class RouterManager:
             )
             del http_routes[full_path]
 
-            # 从路由列表中移除匹配的路由
-            self.app.router.routes = [
-                route
-                for route in self.app.router.routes
-                if not (isinstance(route, APIRoute) and route.path == full_path)
-            ]
+            # 从路由列表中移除匹配的路由（有对象索引时按对象同一性精确删除，
+            # 避免误删其它命名空间 / SSE 的同 path 路由）
+            saved_ids = {id(r) for r in self._take_saved_routes(module_name, full_path, "http")}
+            if saved_ids:
+                self.app.router.routes = [
+                    route
+                    for route in self.app.router.routes
+                    if not (isinstance(route, APIRoute) and id(route) in saved_ids)
+                ]
+            else:
+                self.app.router.routes = [
+                    route
+                    for route in self.app.router.routes
+                    if not (isinstance(route, APIRoute) and route.path == full_path)
+                ]
 
             return True
         except Exception as e:
@@ -1749,11 +1828,13 @@ class RouterManager:
             full_path, module_name, wrapped_handler, wrapped_auth, auto_accept
         )
 
-        self.app.add_api_websocket_route(
+        ws_route = APIWebSocketRoute(
             path=full_path,
             endpoint=websocket_endpoint,
             name=f"{module_name}_{full_path.replace('/', '_')}",
         )
+        self._mount_route(ws_route)
+        self._save_route_object(module_name, full_path, "ws", ws_route)
         self._websocket_routes[module_name][full_path] = (
             handler,
             auth_handler,
@@ -1885,15 +1966,25 @@ class RouterManager:
                 logger.trace(i18n.t("core.router.unregister_sse", path=full_path))
                 del sse_routes[full_path]
 
-                self.app.router.routes = [
-                    route
-                    for route in self.app.router.routes
-                    if not (
-                        isinstance(route, APIRoute)
-                        and route.path == full_path
-                        and "GET" in (route.methods or set())
-                    )
-                ]
+                saved_ids = {
+                    id(r) for r in self._take_saved_routes(module_name, full_path, "sse")
+                }
+                if saved_ids:
+                    self.app.router.routes = [
+                        route
+                        for route in self.app.router.routes
+                        if not (isinstance(route, APIRoute) and id(route) in saved_ids)
+                    ]
+                else:
+                    self.app.router.routes = [
+                        route
+                        for route in self.app.router.routes
+                        if not (
+                            isinstance(route, APIRoute)
+                            and route.path == full_path
+                            and "GET" in (route.methods or set())
+                        )
+                    ]
                 return True
 
             logger.trace(
@@ -1914,17 +2005,30 @@ class RouterManager:
         """
         result = {"http_count": 0, "websocket_count": 0, "sse_count": 0}
 
-        # 清理 HTTP 路由
+        # 清理 HTTP 路由（有对象索引时按对象同一性精确删除，避免误删
+        # 其它命名空间 / SSE 的同 path 路由；无索引的历史路由按 path 兜底）
         if namespace in self._http_routes:
             paths = list(self._http_routes[namespace].keys())
             for path in paths:
                 self._http_routes[namespace].pop(path, None)
                 result["http_count"] += 1
-            self.app.router.routes = [
-                route
-                for route in self.app.router.routes
-                if not (isinstance(route, APIRoute) and route.path in paths)
-            ]
+            saved_ids = {
+                id(route)
+                for path in paths
+                for route in self._take_saved_routes(namespace, path, "http")
+            }
+            if saved_ids:
+                self.app.router.routes = [
+                    route
+                    for route in self.app.router.routes
+                    if not (isinstance(route, APIRoute) and id(route) in saved_ids)
+                ]
+            else:
+                self.app.router.routes = [
+                    route
+                    for route in self.app.router.routes
+                    if not (isinstance(route, APIRoute) and route.path in paths)
+                ]
             if namespace in self._http_routes:
                 del self._http_routes[namespace]
 
@@ -1933,11 +2037,23 @@ class RouterManager:
             for path in paths:
                 self._websocket_routes[namespace].pop(path, None)
                 result["websocket_count"] += 1
-            self.app.router.routes = [
-                route
-                for route in self.app.router.routes
-                if not (isinstance(route, WebSocketRoute) and route.path in paths)
-            ]
+            saved_ids = {
+                id(route)
+                for path in paths
+                for route in self._take_saved_routes(namespace, path, "ws")
+            }
+            if saved_ids:
+                self.app.router.routes = [
+                    route
+                    for route in self.app.router.routes
+                    if not (isinstance(route, WebSocketRoute) and id(route) in saved_ids)
+                ]
+            else:
+                self.app.router.routes = [
+                    route
+                    for route in self.app.router.routes
+                    if not (isinstance(route, WebSocketRoute) and route.path in paths)
+                ]
             if namespace in self._websocket_routes:
                 del self._websocket_routes[namespace]
 
@@ -1946,15 +2062,27 @@ class RouterManager:
             for path in paths:
                 self._sse_routes[namespace].pop(path, None)
                 result["sse_count"] += 1
-            self.app.router.routes = [
-                route
-                for route in self.app.router.routes
-                if not (
-                    isinstance(route, APIRoute)
-                    and "GET" in (route.methods or set())
-                    and route.path in paths
-                )
-            ]
+            saved_ids = {
+                id(route)
+                for path in paths
+                for route in self._take_saved_routes(namespace, path, "sse")
+            }
+            if saved_ids:
+                self.app.router.routes = [
+                    route
+                    for route in self.app.router.routes
+                    if not (isinstance(route, APIRoute) and id(route) in saved_ids)
+                ]
+            else:
+                self.app.router.routes = [
+                    route
+                    for route in self.app.router.routes
+                    if not (
+                        isinstance(route, APIRoute)
+                        and "GET" in (route.methods or set())
+                        and route.path in paths
+                    )
+                ]
             if namespace in self._sse_routes:
                 del self._sse_routes[namespace]
 

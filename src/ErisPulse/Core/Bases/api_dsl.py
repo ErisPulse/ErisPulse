@@ -113,6 +113,33 @@ class ApiDSL:
 
         if not _scope.is_action_allowed(get_current_owner() or "", "api", name=action):
             return await _action_denied_response(self._adapter, "api")
+
+        # 影子模块 Api 拦截（方向十一）：影子 owner 的 API 调用不触网，记入
+        # 影子账本；返回成功形状的假响应（数据体为 None，真实调用不可得）
+        _shadow_owner = get_current_owner()
+        if _shadow_owner:
+            from ..ownership import ownership as _ownership
+
+            if _ownership.is_shadow(_shadow_owner):
+                from ...runtime.context import current_trace_id
+                from ..shadow import shadow_ledger
+
+                shadow_ledger.record(
+                    _shadow_owner,
+                    {
+                        "kind": "api",
+                        "platform": getattr(self._adapter, "_platform", "") or "",
+                        "method": action,
+                        "params": {
+                            k: str(v)[:120] for k, v in list(params.items())[:8]
+                        },
+                        "trace_id": current_trace_id.get(),
+                    },
+                )
+                return self._adapter.make_response(
+                    message="shadow (not called)",
+                )
+
         return await self._adapter.call_api(action, **params)
 
     # ==================== 用户相关动作 ====================

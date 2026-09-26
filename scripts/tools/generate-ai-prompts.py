@@ -260,6 +260,7 @@ SECTION_ADVANCED_MODULE = Section(
         DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
         DocEntry("统一控制面（scope）", "advanced/scope.md"),
         DocEntry("归属权（owner）系统", "advanced/ownership.md"),
+        DocEntry("影子模块与灰度转正", "advanced/shadow.md"),
         DocEntry("启动流程与手动控制", "advanced/startup.md"),
     ],
 )
@@ -274,6 +275,7 @@ SECTION_ADVANCED_ADAPTER = Section(
         DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
         DocEntry("统一控制面（scope）", "advanced/scope.md"),
         DocEntry("归属权（owner）系统", "advanced/ownership.md"),
+        DocEntry("影子模块与灰度转正", "advanced/shadow.md"),
         DocEntry("模块间通信", "advanced/module-communication.md"),
         DocEntry("启动流程与手动控制", "advanced/startup.md"),
     ],
@@ -294,6 +296,7 @@ SECTION_ADVANCED_FULL = Section(
         DocEntry("国际化（i18n）系统", "advanced/i18n.md"),
         DocEntry("统一控制面（scope）", "advanced/scope.md"),
         DocEntry("归属权（owner）系统", "advanced/ownership.md"),
+        DocEntry("影子模块与灰度转正", "advanced/shadow.md"),
         DocEntry("启动流程与手动控制", "advanced/startup.md"),
     ],
 )

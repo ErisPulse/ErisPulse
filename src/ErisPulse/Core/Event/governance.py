@@ -104,6 +104,9 @@ def parse_usage(spec: str) -> "tuple[int, str] | str":
     return limit, unit
 
 
+# 配额周期键由 check_usage 分发期计算（服务器本地时区的自然周期）
+
+
 def usage_period_key(unit: str) -> str:
     """
     计算当前自然周期的标识键（本地时区）
@@ -149,7 +152,9 @@ class GovernanceGate:
     {!--< internal-use >!--}
     判定均位于全部权限检查与参数解析通过之后、实际执行之前：
     无权限用户不触发计时，参数错误不消耗；命中默认静默丢弃
-    （命令已认领，不漏给低优先级消息处理器），声明了 ``*_reply=`` 时回复。
+    （命令已认领，不漏给低优先级消息处理器），声明了 ``*_reply=`` 时在
+    状态翻转后的首次命中回复一次（边沿触发：同窗口 / 同周期的后续命中
+    保持静默，避免连击时治理回复本身刷屏）。
     {!--< /internal-use >!--}
     """
 
@@ -160,6 +165,12 @@ class GovernanceGate:
         self._cooldowns: dict[str, float] = {}
         self._rate_limits: dict[str, deque] = {}
         self._usage_counts: dict[str, int] = {}
+        # 边沿回复标记：cooldown → 已回复窗口的截止时刻（窗口切换即失效）；
+        # rate_limit → 已回复的键集合（窗口再次放行即清除，翻转后可重新回复）；
+        # usage → 键 → 已回复的自然周期键（周期切换即失效）
+        self._cooldown_replied: dict[str, float] = {}
+        self._rate_limit_replied: "set[str]" = set()
+        self._usage_replied: dict[str, str] = {}
 
     def clear_command(self, main_name: str) -> None:
         """
@@ -172,12 +183,22 @@ class GovernanceGate:
         for table in (self._cooldowns, self._rate_limits, self._usage_counts):
             for key in [key for key in table if key.startswith(prefix)]:
                 del table[key]
+        for table in (self._cooldown_replied, self._usage_replied):
+            for key in [key for key in table if key.startswith(prefix)]:
+                del table[key]
+        for key in [
+            key for key in self._rate_limit_replied if key.startswith(prefix)
+        ]:
+            self._rate_limit_replied.discard(key)
 
     def clear_all(self) -> None:
         """{!--< internal-use >!--} 清空全部治理状态（_clear_commands 调用）"""
         self._cooldowns.clear()
         self._rate_limits.clear()
         self._usage_counts.clear()
+        self._cooldown_replied.clear()
+        self._rate_limit_replied.clear()
+        self._usage_replied.clear()
 
     async def check_cooldown(
         self,
@@ -223,7 +244,9 @@ class GovernanceGate:
                 )
             )
             if effective.get("cooldown_reply"):
-                await send_reply(event, effective["cooldown_reply"])
+                if self._cooldown_replied.get(cooldown_entry) != deadline:
+                    self._cooldown_replied[cooldown_entry] = deadline
+                    await send_reply(event, effective["cooldown_reply"])
             return True
         self._cooldowns[cooldown_entry] = now + effective["cooldown_seconds"]
         return False
@@ -277,10 +300,14 @@ class GovernanceGate:
                 limit=str(limit),
                 window=f"{window:g}",
             )
-            if effective.get("rate_limit_reply"):
+            if effective.get("rate_limit_reply") and (
+                rl_entry not in self._rate_limit_replied
+            ):
+                self._rate_limit_replied.add(rl_entry)
                 await send_reply(event, effective["rate_limit_reply"])
             return True
         dq.append(now)
+        self._rate_limit_replied.discard(rl_entry)
         return False
 
     async def check_usage(
@@ -345,7 +372,10 @@ class GovernanceGate:
                 limit=str(u_limit),
                 period=u_period,
             )
-            if effective.get("usage_limit_reply"):
+            if effective.get("usage_limit_reply") and (
+                self._usage_replied.get(u_key) != u_period
+            ):
+                self._usage_replied[u_key] = u_period
                 await send_reply(event, effective["usage_limit_reply"])
             return True
         self._usage_counts[u_key] = used + 1

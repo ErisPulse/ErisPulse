@@ -2,7 +2,7 @@
 > 开发版
 
 **版本摘要**
-本版本开启 2.9「模块开发体验」主线（EPRFC-2026-001）：命令系统支持声明式参数与选项（`args=` / `options=`），框架自动完成类型转换与按名注入，输入错误自动回复本地化提示与用法；统一依赖注入（`Depends`）覆盖命令 / 事件 / 生命周期 / SSE 路由全部注入点；中间件获得事件否决权（显式返回 `False` 即在事件层面丢弃，配套 `adapter.event.blocked` 钩子审计）；声明式配置支持环境变量绑定（`metadata={"env": ...}`，Docker / CI 免改配置文件）；命令治理声明化（`cooldown=` / `rate_limit=` / `deprecated=`，方向七全量）、处理器节流与防抖（`throttle=` / `debounce=`，方向八全量）、分发决策链追踪（`Core/Event/trace`，方向五场景三）、模块排查诊断（`runtime.troubleshoot`，方向五场景一/二）、ORM 阶段二自动迁移（新增列 ADD COLUMN）与列级外键（`foreign_key=`）。均为新增能力，现有模块无需任何改动。
+本版本开启 2.9「模块开发体验」主线（EPRFC-2026-001）：命令系统支持声明式参数与选项（`args=` / `options=`），框架自动完成类型转换与按名注入，输入错误自动回复本地化提示与用法；统一依赖注入（`Depends`）覆盖命令 / 事件 / 生命周期 / SSE 路由全部注入点；中间件获得事件否决权（显式返回 `False` 即在事件层面丢弃，配套 `adapter.event.blocked` 钩子审计）；声明式配置支持环境变量绑定（`metadata={"env": ...}`，Docker / CI 免改配置文件）；命令治理声明化（`cooldown=` / `rate_limit=` / `usage_limit=` / `deprecated=`，回复边沿触发防连击刷屏）、处理器节流与防抖（`throttle=` / `debounce=`）、分发决策链追踪与模块排查诊断、内置 ORM（自动迁移 + 关系映射）；模块重载完备性（失败自动回滚 + 归属权泄漏审计）与影子模块灰度转正（API 驱动）随方向十/十一落地。均为新增能力，现有模块无需任何改动。
 
 **升级建议**
 - **是否建议升级**：建议升级
@@ -15,6 +15,8 @@
 - 声明参数名必须存在于处理器签名中，否则注册期抛 `ValueError`（fail-fast）
 - 中间件只有显式返回 `False` 才否决事件；返回空字典 / `0` 等 falsy 值不否决（保持历史行为）
 - 依赖注入声明（`Depends`）与 `args=` / `options=` 参数重名时注册期抛 `ValueError`；生命周期钩子的同步执行路径（`emit_sync`）不支持异步依赖（记错误日志并跳过）；FastAPI 承载的 HTTP 路由使用 FastAPI 原生 `fastapi.Depends`
+- 热重载失败自动回滚旧实例继续服务（尽力而为语义：`on_unload` 已执行的副作用不可撤销，恢复后旧实例处于已收尾态）；卸载 / 重载后如检测到孤儿 owner 资源将以 WARNING 告警，`sdk.module.audit(name, deep=True)` 可定位引用方
+- 命令治理的 `*_reply=` 为边沿触发：同一冷却窗口 / 限流窗口 / 自然周期内至多回复一次（状态翻转后的首次命中），窗口重置后重新可回复——避免连击时治理回复本身刷屏
 
 ### 新增
 
@@ -36,13 +38,19 @@
     - `rate_limit=`：滑动窗口限流 `"次数/窗口"`（如 `"5/minute"` / `"10/s"` / `"3/2m"`，窗口支持小数秒）；窗口满默认静默丢弃，`rate_limit_reply=` 可选回复；与 cooldown 可同时声明（冷却先判，冷却命中不占限流窗口）
     - `usage_limit=`：业务用量配额 `"次数/周期"`（如 `"3/day"`，周期支持 minute / hour / day），按本地时区自然周期对齐（day 为当日 00:00 起）、周期切换自动重置；与 `rate_limit=` 相区分——rate_limit 防瞬时刷屏，usage_limit 管每日配额类业务限制；窗口满默认静默丢弃，`usage_limit_reply=` 可选回复
     - `deprecated=`：调用自动回复废弃文案（默认继续执行）；`deprecated_reject=True` 拒绝执行（`command.executed` 钩子记 `success=False, error="deprecated"`）；`/help` 列表与单命令帮助自动显示废弃标记与文案
-    - 四者键粒度（`*_key=`）统一为 user（默认）/ session / global 三选一，复用 `platform:bot:目标` 会话键体系；命中均默认静默丢弃（对称于作用域静默，命令仍被认领不漏给低优先级处理器）；判定位于全部权限检查与参数解析通过、实际执行前（无权限不触发、参数错误不消耗）；状态为进程内内存，模块卸载（unregister / unregister_by_owner / _clear_commands）自动清理；`Core/Event/command_args` 新增公开 `parse_duration()`、`command` 新增 `parse_rate_limit()`（注册期解析，口径统一）
+    - 四者键粒度（`*_key=`）统一为 user（默认）/ session / global 三选一，复用 `platform:bot:目标` 会话键体系；命中均默认静默丢弃（对称于作用域静默，命令仍被认领不漏给低优先级处理器），声明 `*_reply=` 时**边沿触发**回复——同一冷却窗口 / 限流窗口 / 自然周期内至多回复一次（状态翻转后的首次命中），避免连击刷屏；判定位于全部权限检查与参数解析通过、实际执行前（无权限不触发、参数错误不消耗）；状态为进程内内存，模块卸载（unregister / unregister_by_owner / _clear_commands）自动清理；`Core/Event/command_args` 新增公开 `parse_duration()`、`command` 新增 `parse_rate_limit()`（注册期解析，口径统一）
   - `Core/Event/message` 处理器节流声明化（EPRFC-2026-001 方向八）：`@message.on_message(throttle="2s", throttle_key="user")` 替代手写防刷屏——同键事件在间隔内至多处理一条，其余静默丢弃（TRACE 日志）；`on_message` / `on_private_message` / `on_group_message` / `on_at_message` 四个装饰器均支持，节流与 `pattern=` / `regex=` / detail_type 条件叠加生效；实现为既有处理器条件机制上的框架包装器（`Core/Event/throttle.make_throttle_condition()`），节流状态随条件闭库存活、处理器注销后由 GC 回收
   - `Core/Bases/model` ORM 阶段二自动迁移（EPRFC-2026-001 滚动项提前交付）：`create_table()` 幂等建表升级——表已存在时对比现有列与模型字段，为新增字段自动执行 `ALTER TABLE ADD COLUMN`（剔除 NOT NULL 约束由存量行回填 NULL；主键与列类型变更不在自动迁移范围需手工处理）；三后端列枚举支持（`aGetTableColumns`：sqlite PRAGMA / MySQL 与 PostgreSQL information_schema）
   - `Core/Bases/model` 关系映射：`Field(foreign_key="users.id")` 列级外键约束（DDL 生成 `REFERENCES` 子句）+ `relationship()` 关系对象——在模型类体声明 `posts = relationship("Post", foreign_key="author")`，方向按外键列归属自动判定：has-many 返回查询集（`QuerySet` 全部链式能力可用，`create` 自动回填本表主键到对方外键列），belongs-to 直接 `await` 得对方实例（无匹配 / 外键 NULL 返回 `None`）；`related` 按类名注册表惰性解析（两侧模型定义顺序无关），从 `ErisPulse.Core.Bases` 导入（`relationship`）
   - `Core/Event/message` 处理器防抖声明化（EPRFC-2026-001 方向八）：`@message.on_message(debounce="2s", debounce_key="user")`——同键事件窗口内只执行最后一条，前序待执行任务自动取消；`on_message` / `on_private_message` / `on_group_message` / `on_at_message` 四装饰器均支持；与 `throttle=` 语义互斥（同时声明注册期抛 ValueError）；`functools.wraps` 保留原签名使 Depends 声明继续生效
   - `runtime/troubleshoot` 模块排查诊断（EPRFC-2026-001 方向五·场景一/二）：`explain_module(name)` 诊断"模块为什么没加载"（未注册 / 懒加载正常态 / 配置禁用 / 依赖缺失 / SDK 版本不满足 / on_load 异常指引）；`explain_event(event)` 诊断"事件为什么没响应"（适配器未注册 / 身份作用域拒绝 / 模块会话屏蔽 / 命令未命中识别）；`format_report()` 渲染人类可读结论；导出 `ErisPulse.runtime.explain_module / explain_event / format_report`
   - `Core/Bases/config_schema` 配置环境变量映射（EPRFC-2026-001 方向九）：声明式配置字段以 `field(metadata={"env": "MYMODULE_API_KEY"})` 绑定环境变量，优先级 环境变量 > config.toml > 声明默认值；值按字段注解自动转换（str/int/float/bool，list/dict 走 JSON），转换失败忽略覆盖并告警；读取、热更新、校验同一管道保证声明一处处处生效；配置面板 Schema 标注 env 名、config.toml 模板注释提示可用环境变量（不写入实际值防泄露）；未声明 env 的字段行为完全不变，Docker / CI 场景免改配置文件
+  - `Core/ownership` 归属权统一门面 + 模块重载完备性（EPRFC-2026-001 方向十）：
+    - 盲区修复：`register_event_method` / `register_event_mixin` 注入的平台事件方法随模块卸载自动注销（旧实现残留全局表、闭包持有已卸载实例导致 GC 泄漏）；`on_load` 失败自动执行半卸载——对已构造实例按正常卸载同序回收 `__init__` / `on_load` 半途注册的资源（不再成为"有主孤儿"），失败后可立即重新加载；懒激活失败路径自动重新武装触发器 stub（冷却重试不受半卸载影响）
+    - reload 快照回滚：热重载改为"卸载前快照 → 失败自动恢复"——新版本语法错误 / 依赖缺失 / 加载失败时旧实例与注册状态（含 sys.modules 条目、sdk 属性）自动还原继续服务（尽力而为语义：`on_unload` 已执行的副作用不可撤销，恢复后旧实例处于已收尾态）；级联重载失败的依赖者同样恢复旧注册
+    - 路由注销精确化：注销按 (namespace, path) 的路由对象同一性删除（注册时保存 route 引用），修复跨命名空间同 path 路由被误删、HTTP 与 SSE 同 path 跨类型互删的问题（无对象索引的历史路由保留 path 过滤兜底）
+    - 泄漏审计：`ownership.reclaim / reclaim_sync / counts / orphans / audit` 统一动词（各子系统 `*_by_owner` 收敛为其内部 SPI）；`sdk.module.audit(name, deep=True)` 输出归属资源计数 / 孤儿 owner 清单 / gc 实例普查（含引用方类型定位）；卸载后自动轻审计，发现孤儿 owner 资源即 WARNING 告警（gc 普查仅显式触发）
+  - `Core/shadow` 影子模块与灰度转正（EPRFC-2026-001 方向十一）：同一模块的新版本以独立 owner（如 `roll_shadow`）与线上旧版并存试运行——影子收到真实事件**副本**（改写 / 认领不外溢）、出站 `Send` / `Api` 拦截记账不真正发出、KV 写入进内存覆盖层（读透传真库）、路由只登记不挂载、同名命令进影子目录、生命周期广播静默。**运行时 API 驱动，模块代码零改动、无配置项**：`sdk.module.shadow_start(name, source=新版代码路径)` 启动影子（影子默认继承原模块配置节）；`shadow_diff(name)` 按 trace_id 对齐"v1 实际发送 × v2 意向发送"；`promote_shadow(name)` 一键转正（完全卸载旧版 → 影子以真名转正，失败自动回滚；转正永远由人确认）；`dismiss_shadow(name)` 放弃影子。诚实边界：影子源为本地路径（PyPI 同包双版本受 sys.modules 限制）、绕过框架的裸 aiohttp / 线程与 ORM 写不在拦截范围（文档明示，泄漏审计可见）
   - `pyproject` 正式支持 Python 3.14：classifiers 与 CI 测试矩阵纳入 3.14（3.14.6 全量测试通过）；3.14t（free-threaded / 无 GIL 构建）暂不列入正式支持——框架在 3.14.6t 上可完整导入、全部单测依赖均有 cp314t wheel，CI 以实验性冒烟作业持续监测（`continue-on-error`，依赖不可得时自动跳过）
   - `Core/Event/command` `args=` / `options=` 声明与 `Depends` 参数重名时注册期抛 `ValueError`（fail-fast）
 

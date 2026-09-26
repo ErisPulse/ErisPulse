@@ -108,6 +108,11 @@ class MyConfig(BaseConfig):
 MYMODULE_API_KEY=sk-xxx docker compose up -d
 ```
 
+> **配置类 vs 模型字段怎么选？** 配置类管"模块怎么运转"（行为参数、热更新），
+> ORM 的 `Field()` 管"用户产生了什么数据"（数据库表、查询）。两者共享同一套
+> 约束词表与校验器引擎；对照表见
+> [数据模型层 · 两种声明何时用哪个](../developer-guide/orm.md#两种声明何时用哪个)。
+
 ## 配置热更新
 
 从 2.7.0 起，框架对配置热更新做了**系统化支持**。外部修改 `config.toml` 后（后台 watcher 每 5 秒检测一次），或代码调用 `setConfig()` 后，各组件自动响应：

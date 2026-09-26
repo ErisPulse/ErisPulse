@@ -371,7 +371,54 @@ class TranscriptManager:
         target_id = data.get("target_id") or ""
         if not target_id:
             return
-        self.append(self._ctx_key(data), "bot", str(preview), sender=str(data.get("bot_id") or ""))
+        # event_id 落 trace_id：影子 diff（方向十一）按链路 ID 对齐
+        # 影子意向发送与真实发送时间线
+        self.append(
+            self._ctx_key(data),
+            "bot",
+            str(preview),
+            event_id=str(data.get("trace_id") or ""),
+            sender=str(data.get("bot_id") or ""),
+        )
+
+    def get_by_trace(self, trace_id: str, limit: int = 20) -> "list[dict[str, Any]]":
+        """
+        按链路 ID 查询出站记录（影子模块 diff 对齐用，方向十一）
+
+        :param trace_id: 事件链路 ID（事件 ``id``）
+        :param limit: 返回的最大条数
+        :return: 消息列表（role / text / ts / event_id），时间升序
+
+        :example:
+        >>> transcript.get_by_trace("evt-abc123")
+        """
+        if not trace_id or not self._ensure_table():
+            return []
+        try:
+            rows = (
+                storage.Table(TRANSCRIPT_TABLE)
+                .Select("role", "text", "ts", "event_id")
+                .Where("event_id = ?", str(trace_id))
+                .OrderBy("ts", desc=True)
+                .Limit(max(1, int(limit)))
+                .ToDict()
+                .Execute()
+            )
+            if not isinstance(rows, list):
+                return []
+            return [
+                {
+                    "role": r.get("role", ""),
+                    "text": r.get("text", ""),
+                    "ts": r.get("ts", 0.0),
+                    "event_id": r.get("event_id", ""),
+                }
+                for r in reversed(rows)
+                if isinstance(r, dict)
+            ]
+        except Exception as e:
+            logger.trace(i18n.t("core.transcript.get_failed", error=e))
+            return []
 
 
 transcript: TranscriptManager = TranscriptManager()

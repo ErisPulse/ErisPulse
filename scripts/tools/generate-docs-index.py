@@ -363,6 +363,7 @@ class DocsIndexGenerator:
         "advanced/i18n.md": 11,
         "advanced/scope.md": 12,
         "advanced/ownership.md": 13,
+        "advanced/shadow.md": 14,
         "advanced/interaction.md": 14,
         "advanced/module-communication.md": 15,
         "advanced/storage-backends.md": 16,
@@ -514,6 +515,7 @@ class DocsIndexGenerator:
         "advanced/i18n.md": "fa-language",
         "advanced/scope.md": "fa-shield-halved",
         "advanced/ownership.md": "fa-user-tag",
+        "advanced/shadow.md": "fa-eye",
         "advanced/storage-backends.md": "fa-server",
         "advanced/errors.md": "fa-triangle-exclamation",
         # AI 辅助开发
