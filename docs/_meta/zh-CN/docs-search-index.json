@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1641,
+  "total_keywords": 1648,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -4945,7 +4945,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 659,
+        "line": 664,
         "level": 2,
         "title": "下一步"
       },
@@ -5036,6 +5036,14 @@
         "title": "与声明式配置类的关系"
       }
     ],
+    "两种声明何时用哪个": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 78,
+        "level": 3,
+        "title": "两种声明何时用哪个"
+      }
+    ],
     "两种注入模式": [
       {
         "document": "ecosystem/dashboard.md",
@@ -5047,7 +5055,7 @@
     "严格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 413,
+        "line": 418,
         "level": 3,
         "title": "严格模式"
       }
@@ -5133,7 +5141,7 @@
     "主人系统配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 255,
+        "line": 260,
         "level": 2,
         "title": "主人系统配置"
       }
@@ -5141,7 +5149,7 @@
     "主动 GC 配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 398,
+        "line": 403,
         "level": 3,
         "title": "主动 GC 配置"
       }
@@ -5503,7 +5511,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 491,
+        "line": 496,
         "level": 2,
         "title": "事件配置"
       }
@@ -5591,9 +5599,17 @@
     "五、我要为 ErisPulse 贡献": [
       {
         "document": "README.md",
-        "line": 69,
+        "line": 70,
         "level": 3,
         "title": "五、我要为 ErisPulse 贡献"
+      }
+    ],
+    "五道隔离闸": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 47,
+        "level": 2,
+        "title": "五道隔离闸"
       }
     ],
     "交互会话系统": [
@@ -5833,7 +5849,7 @@
     "作用域配置（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 560,
+        "line": 565,
         "level": 2,
         "title": "作用域配置（scope）"
       }
@@ -6187,7 +6203,7 @@
     "关系映射（relationship）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 123,
+        "line": 135,
         "level": 2,
         "title": "关系映射（relationship）"
       }
@@ -6219,7 +6235,7 @@
     "其他": [
       {
         "document": "README.md",
-        "line": 87,
+        "line": 88,
         "level": 2,
         "title": "其他"
       }
@@ -6311,7 +6327,7 @@
     "内部实现：归属如何工作": [
       {
         "document": "advanced/ownership.md",
-        "line": 119,
+        "line": 164,
         "level": 2,
         "title": "内部实现：归属如何工作"
       }
@@ -6523,7 +6539,7 @@
     "判定链与运行时增删": [
       {
         "document": "user-guide/configuration.md",
-        "line": 281,
+        "line": 286,
         "level": 3,
         "title": "判定链与运行时增删"
       }
@@ -6539,7 +6555,7 @@
     "前置知识": [
       {
         "document": "advanced/README.md",
-        "line": 35,
+        "line": 36,
         "level": 2,
         "title": "前置知识"
       }
@@ -6679,7 +6695,7 @@
     "卸载/禁用清理序列": [
       {
         "document": "advanced/ownership.md",
-        "line": 78,
+        "line": 79,
         "level": 2,
         "title": "卸载/禁用清理序列"
       }
@@ -7095,7 +7111,7 @@
     "取消时序（模块卸载）": [
       {
         "document": "advanced/ownership.md",
-        "line": 152,
+        "line": 197,
         "level": 3,
         "title": "取消时序（模块卸载）"
       }
@@ -7103,7 +7119,7 @@
     "取消链（任务登记表）": [
       {
         "document": "advanced/ownership.md",
-        "line": 139,
+        "line": 184,
         "level": 3,
         "title": "取消链（任务登记表）"
       }
@@ -7387,7 +7403,7 @@
     "命令解析配置（event.command）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 657,
+        "line": 662,
         "level": 2,
         "title": "命令解析配置（event.command）"
       }
@@ -7403,7 +7419,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 493,
+        "line": 498,
         "level": 3,
         "title": "命令配置"
       }
@@ -7427,7 +7443,7 @@
     "四、生态与官方客户端": [
       {
         "document": "README.md",
-        "line": 57,
+        "line": 58,
         "level": 3,
         "title": "四、生态与官方客户端"
       }
@@ -7535,7 +7551,7 @@
     "国际化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 520,
+        "line": 525,
         "level": 2,
         "title": "国际化配置"
       }
@@ -8113,7 +8129,7 @@
     "外键（关系映射基础）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 109,
+        "line": 121,
         "level": 2,
         "title": "外键（关系映射基础）"
       }
@@ -8469,7 +8485,7 @@
     "存储配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 442,
+        "line": 447,
         "level": 2,
         "title": "存储配置"
       }
@@ -8651,7 +8667,7 @@
     "完整配置示例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 182,
+        "line": 187,
         "level": 2,
         "title": "完整配置示例"
       }
@@ -8845,7 +8861,7 @@
     "工具模块指南：托管其它模块的句柄": [
       {
         "document": "advanced/ownership.md",
-        "line": 224,
+        "line": 269,
         "level": 2,
         "title": "工具模块指南：托管其它模块的句柄"
       }
@@ -9251,7 +9267,7 @@
     "开发方式": [
       {
         "document": "README.md",
-        "line": 80,
+        "line": 81,
         "level": 2,
         "title": "开发方式"
       }
@@ -9435,9 +9451,17 @@
     "归因链（contextvar 传播）": [
       {
         "document": "advanced/ownership.md",
-        "line": 123,
+        "line": 168,
         "level": 3,
         "title": "归因链（contextvar 传播）"
+      }
+    ],
+    "归属权统一门面（ownership）": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 107,
+        "level": 2,
+        "title": "归属权统一门面（ownership）"
       }
     ],
     "归属权（owner）系统": [
@@ -9454,6 +9478,14 @@
         "line": 43,
         "level": 2,
         "title": "归属资源全景"
+      }
+    ],
+    "影子模块与灰度转正": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 1,
+        "level": 1,
+        "title": "影子模块与灰度转正"
       }
     ],
     "循环对话": [
@@ -9519,6 +9551,12 @@
       }
     ],
     "快速上手": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 19,
+        "level": 2,
+        "title": "快速上手"
+      },
       {
         "document": "ecosystem/takumi.md",
         "line": 36,
@@ -9985,7 +10023,7 @@
     "排查思路": [
       {
         "document": "advanced/ownership.md",
-        "line": 163,
+        "line": 208,
         "level": 3,
         "title": "排查思路"
       }
@@ -10009,7 +10047,7 @@
     "推荐写法": [
       {
         "document": "advanced/ownership.md",
-        "line": 172,
+        "line": 217,
         "level": 3,
         "title": "推荐写法"
       }
@@ -10581,7 +10619,7 @@
     "日志配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 329,
+        "line": 334,
         "level": 2,
         "title": "日志配置"
       }
@@ -10691,7 +10729,7 @@
     "服务器配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 236,
+        "line": 241,
         "level": 2,
         "title": "服务器配置"
       }
@@ -11229,7 +11267,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 377,
+        "line": 382,
         "level": 2,
         "title": "框架配置"
       }
@@ -11313,7 +11351,7 @@
     "模块作者指南": [
       {
         "document": "advanced/ownership.md",
-        "line": 170,
+        "line": 215,
         "level": 2,
         "title": "模块作者指南"
       }
@@ -11477,7 +11515,7 @@
     "模块配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 531,
+        "line": 536,
         "level": 2,
         "title": "模块配置"
       }
@@ -11587,7 +11625,7 @@
     "注册时机 → 归属结果对照表": [
       {
         "document": "advanced/ownership.md",
-        "line": 208,
+        "line": 253,
         "level": 3,
         "title": "注册时机 → 归属结果对照表"
       }
@@ -11623,7 +11661,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 194,
+        "line": 239,
         "level": 3,
         "title": "注意事项"
       },
@@ -12067,7 +12105,7 @@
     "消息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 509,
+        "line": 514,
         "level": 3,
         "title": "消息配置"
       }
@@ -12131,9 +12169,17 @@
     "热更新链路内部拆解": [
       {
         "document": "user-guide/configuration.md",
-        "line": 133,
+        "line": 138,
         "level": 3,
         "title": "热更新链路内部拆解"
+      }
+    ],
+    "热重载失败回滚": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 136,
+        "level": 2,
+        "title": "热重载失败回滚"
       }
     ],
     "版本更新说明": [
@@ -12369,7 +12415,7 @@
     "用户优先：主人生效范围由用户最终决定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 323,
+        "line": 328,
         "level": 3,
         "title": "用户优先：主人生效范围由用户最终决定"
       }
@@ -12536,6 +12582,12 @@
         "title": "相关文档"
       },
       {
+        "document": "advanced/shadow.md",
+        "line": 81,
+        "level": 2,
+        "title": "相关文档"
+      },
+      {
         "document": "advanced/sql-builder.md",
         "line": 438,
         "level": 2,
@@ -12647,7 +12699,7 @@
     "相关链接": [
       {
         "document": "README.md",
-        "line": 99,
+        "line": 100,
         "level": 2,
         "title": "相关链接"
       },
@@ -12937,7 +12989,7 @@
     "统一事件覆写配置（event.overrides）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 610,
+        "line": 615,
         "level": 2,
         "title": "统一事件覆写配置（event.overrides）"
       }
@@ -13113,7 +13165,7 @@
     "自动迁移（阶段二）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 86,
+        "line": 98,
         "level": 2,
         "title": "自动迁移（阶段二）"
       }
@@ -13153,7 +13205,7 @@
     "自定义身份源（provider）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 295,
+        "line": 300,
         "level": 3,
         "title": "自定义身份源（provider）"
       }
@@ -13193,7 +13245,7 @@
     "获取帮助": [
       {
         "document": "README.md",
-        "line": 93,
+        "line": 94,
         "level": 2,
         "title": "获取帮助"
       }
@@ -13345,7 +13397,7 @@
     "设计边界：哪些资源不随卸载清理": [
       {
         "document": "advanced/ownership.md",
-        "line": 104,
+        "line": 149,
         "level": 2,
         "title": "设计边界：哪些资源不随卸载清理"
       }
@@ -13364,6 +13416,14 @@
         "line": 18,
         "level": 2,
         "title": "诊断命令"
+      }
+    ],
+    "诚实边界（拦不住的）": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 59,
+        "level": 2,
+        "title": "诚实边界（拦不住的）"
       }
     ],
     "语言命令": [
@@ -13537,7 +13597,7 @@
     "豁免清单": [
       {
         "document": "user-guide/configuration.md",
-        "line": 430,
+        "line": 435,
         "level": 4,
         "title": "豁免清单"
       }
@@ -13748,6 +13808,14 @@
         "title": "转换流程"
       }
     ],
+    "转正与回滚": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 70,
+        "level": 2,
+        "title": "转正与回滚"
+      }
+    ],
     "输出控制": [
       {
         "document": "api-reference/core-modules.md",
@@ -13767,7 +13835,7 @@
     "边界与注意事项": [
       {
         "document": "developer-guide/orm.md",
-        "line": 78,
+        "line": 90,
         "level": 2,
         "title": "边界与注意事项"
       }
@@ -13977,7 +14045,7 @@
     "适用对象": [
       {
         "document": "advanced/README.md",
-        "line": 27,
+        "line": 28,
         "level": 2,
         "title": "适用对象"
       }
@@ -14511,7 +14579,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 111,
+        "line": 116,
         "level": 2,
         "title": "配置热更新"
       }

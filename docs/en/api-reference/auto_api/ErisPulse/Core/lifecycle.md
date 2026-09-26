@@ -185,6 +185,23 @@ ErisPulse 生命周期管理模块
 ---
 
 
+##### `_is_shadow_owner(owner: 'str | None')`
+
+> **内部方法**
+判断 owner 是否为影子模块 owner（方向十一；惰性导入避免加载链耦合）
+
+---
+
+
+##### `_is_shadow_module_event(data: Any)`
+
+> **内部方法**
+判断事件数据是否携带影子模块的 module_name（module.* 生命周期静默用；
+兼容 submit_event 包装形态 {"data": {"module_name": ...}} 与扁平形态）
+
+---
+
+
 ##### `async emit(event: str, data: Any = None)`
 
 触发事件（异步）

@@ -366,7 +366,7 @@
     "Продвинутые темы": {
       "description": "Глубокое изучение продвинутых функций фреймворка",
       "icon": "fa-fire",
-      "count": 16,
+      "count": 17,
       "documents": [
         {
           "title": "Расширенные темы",
@@ -439,6 +439,12 @@
           "path": "advanced/interaction.md",
           "level": 1,
           "icon": "fa-fire"
+        },
+        {
+          "title": "Теневые модули и постепенный переход на новый вариант",
+          "path": "advanced/shadow.md",
+          "level": 1,
+          "icon": "fa-eye"
         },
         {
           "title": "Коммуникация между модулями",

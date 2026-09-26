@@ -366,7 +366,7 @@
     "進階主題": {
       "description": "深入理解框架的進階特性",
       "icon": "fa-fire",
-      "count": 16,
+      "count": 17,
       "documents": [
         {
           "title": "高級主題",
@@ -439,6 +439,12 @@
           "path": "advanced/interaction.md",
           "level": 1,
           "icon": "fa-fire"
+        },
+        {
+          "title": "影子模組與灰度轉正",
+          "path": "advanced/shadow.md",
+          "level": 1,
+          "icon": "fa-eye"
         },
         {
           "title": "模組間通信",

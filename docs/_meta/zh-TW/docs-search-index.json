@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1673,
+  "total_keywords": 1680,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -4919,7 +4919,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 658,
+        "line": 663,
         "level": 2,
         "title": "下一步"
       },
@@ -5061,7 +5061,7 @@
     "主人系統配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 254,
+        "line": 259,
         "level": 2,
         "title": "主人系統配置"
       }
@@ -5069,7 +5069,7 @@
     "主動 GC 配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 397,
+        "line": 402,
         "level": 3,
         "title": "主動 GC 配置"
       }
@@ -5397,7 +5397,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 490,
+        "line": 495,
         "level": 2,
         "title": "事件配置"
       }
@@ -5559,9 +5559,17 @@
     "五、我要為 ErisPulse 貢獻": [
       {
         "document": "README.md",
-        "line": 67,
+        "line": 68,
         "level": 3,
         "title": "五、我要為 ErisPulse 貢獻"
+      }
+    ],
+    "五道隔離閘": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 42,
+        "level": 2,
+        "title": "五道隔離閘"
       }
     ],
     "交互式初始化（推薦）": [
@@ -5631,7 +5639,7 @@
     "伺服器配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 235,
+        "line": 240,
         "level": 2,
         "title": "伺服器配置"
       }
@@ -5671,7 +5679,7 @@
     "作用域配置（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 559,
+        "line": 564,
         "level": 2,
         "title": "作用域配置（scope）"
       }
@@ -5821,7 +5829,7 @@
     "使用者優先：主人生效範圍由使用者最終決定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 322,
+        "line": 327,
         "level": 3,
         "title": "使用者優先：主人生效範圍由使用者最終決定"
       }
@@ -6103,7 +6111,7 @@
     "內部實現：所有權如何工作": [
       {
         "document": "advanced/ownership.md",
-        "line": 115,
+        "line": 159,
         "level": 2,
         "title": "內部實現：所有權如何工作"
       }
@@ -6148,6 +6156,14 @@
         "title": "全局配置（EmailAdapter）"
       }
     ],
+    "兩種宣告何時用哪個": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 78,
+        "level": 3,
+        "title": "兩種宣告何時用哪個"
+      }
+    ],
     "兩種注入模式": [
       {
         "document": "ecosystem/dashboard.md",
@@ -6159,7 +6175,7 @@
     "其他": [
       {
         "document": "README.md",
-        "line": 83,
+        "line": 84,
         "level": 2,
         "title": "其他"
       }
@@ -6333,7 +6349,7 @@
     "判定鏈與運行時增刪": [
       {
         "document": "user-guide/configuration.md",
-        "line": 280,
+        "line": 285,
         "level": 3,
         "title": "判定鏈與運行時增刪"
       }
@@ -6365,7 +6381,7 @@
     "前置知識": [
       {
         "document": "advanced/README.md",
-        "line": 35,
+        "line": 36,
         "level": 2,
         "title": "前置知識"
       }
@@ -6480,12 +6496,12 @@
         "title": "協議方法"
       }
     ],
-    "卸載/停用清理序列": [
+    "卸載 / 禁用清理序列": [
       {
         "document": "advanced/ownership.md",
-        "line": 74,
+        "line": 75,
         "level": 2,
-        "title": "卸載/停用清理序列"
+        "title": "卸載 / 禁用清理序列"
       }
     ],
     "卸載流程": [
@@ -6633,7 +6649,7 @@
     "取消時序（模組卸載）": [
       {
         "document": "advanced/ownership.md",
-        "line": 148,
+        "line": 192,
         "level": 3,
         "title": "取消時序（模組卸載）"
       }
@@ -6641,7 +6657,7 @@
     "取消鏈（任務登記表）": [
       {
         "document": "advanced/ownership.md",
-        "line": 135,
+        "line": 179,
         "level": 3,
         "title": "取消鏈（任務登記表）"
       }
@@ -6833,7 +6849,7 @@
     "命令解析配置（event.command）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 656,
+        "line": 661,
         "level": 2,
         "title": "命令解析配置（event.command）"
       }
@@ -6877,7 +6893,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 492,
+        "line": 497,
         "level": 3,
         "title": "命令配置"
       }
@@ -6949,7 +6965,7 @@
     "嚴格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 412,
+        "line": 417,
         "level": 3,
         "title": "嚴格模式"
       }
@@ -6957,7 +6973,7 @@
     "四、生態與官方客戶端": [
       {
         "document": "README.md",
-        "line": 55,
+        "line": 56,
         "level": 3,
         "title": "四、生態與官方客戶端"
       }
@@ -7097,7 +7113,7 @@
     "國際化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 519,
+        "line": 524,
         "level": 2,
         "title": "國際化配置"
       }
@@ -7501,7 +7517,7 @@
     "外鍵（關係映射基礎）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 109,
+        "line": 121,
         "level": 2,
         "title": "外鍵（關係映射基礎）"
       }
@@ -7853,7 +7869,7 @@
     "存儲配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 441,
+        "line": 446,
         "level": 2,
         "title": "存儲配置"
       }
@@ -8039,7 +8055,7 @@
     "完整配置示例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 181,
+        "line": 186,
         "level": 2,
         "title": "完整配置示例"
       }
@@ -8263,7 +8279,7 @@
     "工具模組指南：托管其它模組的句柄": [
       {
         "document": "advanced/ownership.md",
-        "line": 220,
+        "line": 264,
         "level": 2,
         "title": "工具模組指南：托管其它模組的句柄"
       }
@@ -8730,6 +8746,14 @@
         "title": "引導式註冊"
       }
     ],
+    "影子模組與灰度轉正": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 1,
+        "level": 1,
+        "title": "影子模組與灰度轉正"
+      }
+    ],
     "後台執行": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -8817,6 +8841,12 @@
       }
     ],
     "快速上手": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 14,
+        "level": 2,
+        "title": "快速上手"
+      },
       {
         "document": "ecosystem/takumi.md",
         "line": 32,
@@ -9221,7 +9251,7 @@
     "排查思路": [
       {
         "document": "advanced/ownership.md",
-        "line": 159,
+        "line": 203,
         "level": 3,
         "title": "排查思路"
       }
@@ -9245,7 +9275,7 @@
     "推薦寫法": [
       {
         "document": "advanced/ownership.md",
-        "line": 168,
+        "line": 212,
         "level": 3,
         "title": "推薦寫法"
       }
@@ -9863,7 +9893,7 @@
     "日誌配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 328,
+        "line": 333,
         "level": 2,
         "title": "日誌配置"
       }
@@ -10341,7 +10371,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 376,
+        "line": 381,
         "level": 2,
         "title": "框架配置"
       }
@@ -10536,6 +10566,14 @@
         "title": "標準遵循檢查清單"
       }
     ],
+    "模塊配置的環境變數綁定（2.9.0+）": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 85,
+        "level": 3,
+        "title": "模塊配置的環境變數綁定（2.9.0+）"
+      }
+    ],
     "模式一：HTML/JS 注入（推薦）": [
       {
         "document": "ecosystem/dashboard.md",
@@ -10585,7 +10623,7 @@
     "模組作者指南": [
       {
         "document": "advanced/ownership.md",
-        "line": 166,
+        "line": 210,
         "level": 2,
         "title": "模組作者指南"
       }
@@ -10725,17 +10763,9 @@
     "模組配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 530,
+        "line": 535,
         "level": 2,
         "title": "模組配置"
-      }
-    ],
-    "模組配置的環境變數綁定（2.9.0+）": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 85,
-        "level": 3,
-        "title": "模組配置的環境變數綁定（2.9.0+）"
       }
     ],
     "模組開發": [
@@ -10853,9 +10883,17 @@
     "歸因鏈（contextvar 傳播）": [
       {
         "document": "advanced/ownership.md",
-        "line": 119,
+        "line": 163,
         "level": 3,
         "title": "歸因鏈（contextvar 傳播）"
+      }
+    ],
+    "歸屬權統一門面（ownership）": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 102,
+        "level": 2,
+        "title": "歸屬權統一門面（ownership）"
       }
     ],
     "歸屬資源全景": [
@@ -10889,7 +10927,7 @@
       },
       {
         "document": "advanced/ownership.md",
-        "line": 190,
+        "line": 234,
         "level": 3,
         "title": "注意事項"
       },
@@ -11325,9 +11363,17 @@
     "熱更新鏈路內部拆解": [
       {
         "document": "user-guide/configuration.md",
-        "line": 133,
+        "line": 138,
         "level": 3,
         "title": "熱更新鏈路內部拆解"
+      }
+    ],
+    "熱重載失敗回滾": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 131,
+        "level": 2,
+        "title": "熱重載失敗回滾"
       }
     ],
     "版本更新說明": [
@@ -11467,7 +11513,7 @@
     "獲取幫助": [
       {
         "document": "README.md",
-        "line": 89,
+        "line": 90,
         "level": 2,
         "title": "獲取幫助"
       }
@@ -12144,6 +12190,12 @@
         "title": "相關文件"
       },
       {
+        "document": "advanced/shadow.md",
+        "line": 76,
+        "level": 2,
+        "title": "相關文件"
+      },
+      {
         "document": "advanced/sql-builder.md",
         "line": 438,
         "level": 2,
@@ -12255,7 +12307,7 @@
     "相關連結": [
       {
         "document": "README.md",
-        "line": 95,
+        "line": 96,
         "level": 2,
         "title": "相關連結"
       },
@@ -12545,7 +12597,7 @@
     "統一事件覆寫配置（event.overrides）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 609,
+        "line": 614,
         "level": 2,
         "title": "統一事件覆寫配置（event.overrides）"
       }
@@ -12809,7 +12861,7 @@
     "自動遷移（階段二）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 86,
+        "line": 98,
         "level": 2,
         "title": "自動遷移（階段二）"
       }
@@ -12849,7 +12901,7 @@
     "自訂身份源（provider）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 294,
+        "line": 299,
         "level": 3,
         "title": "自訂身份源（provider）"
       }
@@ -13249,7 +13301,7 @@
     "訊息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 508,
+        "line": 513,
         "level": 3,
         "title": "訊息配置"
       }
@@ -13265,7 +13317,7 @@
     "設計邊界：哪些資源不隨卸載清理": [
       {
         "document": "advanced/ownership.md",
-        "line": 100,
+        "line": 144,
         "level": 2,
         "title": "設計邊界：哪些資源不隨卸載清理"
       }
@@ -13305,7 +13357,7 @@
     "註冊時機 → 所有權結果對照表": [
       {
         "document": "advanced/ownership.md",
-        "line": 204,
+        "line": 248,
         "level": 3,
         "title": "註冊時機 → 所有權結果對照表"
       }
@@ -13380,6 +13432,14 @@
         "line": 54,
         "level": 2,
         "title": "語言檢測機制"
+      }
+    ],
+    "誠實邊界（無法攔阻的）": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 54,
+        "level": 2,
+        "title": "誠實邊界（無法攔阻的）"
       }
     ],
     "調試技巧": [
@@ -13537,7 +13597,7 @@
     "豁免清單": [
       {
         "document": "user-guide/configuration.md",
-        "line": 429,
+        "line": 434,
         "level": 4,
         "title": "豁免清單"
       }
@@ -13722,6 +13782,14 @@
         "line": 747,
         "level": 3,
         "title": "轉換流程"
+      }
+    ],
+    "轉正與回滾": [
+      {
+        "document": "advanced/shadow.md",
+        "line": 65,
+        "level": 2,
+        "title": "轉正與回滾"
       }
     ],
     "轉發功能": [
@@ -14105,7 +14173,7 @@
     "適用對象": [
       {
         "document": "advanced/README.md",
-        "line": 27,
+        "line": 28,
         "level": 2,
         "title": "適用對象"
       }
@@ -14303,7 +14371,7 @@
     "邊界與注意事項": [
       {
         "document": "developer-guide/orm.md",
-        "line": 78,
+        "line": 90,
         "level": 2,
         "title": "邊界與注意事項"
       }
@@ -14443,7 +14511,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 111,
+        "line": 116,
         "level": 2,
         "title": "配置熱更新"
       }
@@ -14943,7 +15011,7 @@
     "開發方式": [
       {
         "document": "README.md",
-        "line": 76,
+        "line": 77,
         "level": 2,
         "title": "開發方式"
       }
@@ -14999,7 +15067,7 @@
     "關係映射（relationship）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 123,
+        "line": 135,
         "level": 2,
         "title": "關係映射（relationship）"
       }

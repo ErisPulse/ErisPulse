@@ -366,7 +366,7 @@
     "Advanced Topics": {
       "description": "Deep dive into advanced framework features",
       "icon": "fa-fire",
-      "count": 16,
+      "count": 17,
       "documents": [
         {
           "title": "Advanced Topics",
@@ -439,6 +439,12 @@
           "path": "advanced/interaction.md",
           "level": 1,
           "icon": "fa-fire"
+        },
+        {
+          "title": "Shadow Modules and Gradual Promotion",
+          "path": "advanced/shadow.md",
+          "level": 1,
+          "icon": "fa-eye"
         },
         {
           "title": "Inter-Module Communication",

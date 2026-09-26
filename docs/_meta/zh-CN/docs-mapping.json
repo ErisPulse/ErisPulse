@@ -366,7 +366,7 @@
     "高级主题": {
       "description": "深入理解框架的高级特性",
       "icon": "fa-fire",
-      "count": 16,
+      "count": 17,
       "documents": [
         {
           "title": "高级主题",
@@ -439,6 +439,12 @@
           "path": "advanced/interaction.md",
           "level": 1,
           "icon": "fa-fire"
+        },
+        {
+          "title": "影子模块与灰度转正",
+          "path": "advanced/shadow.md",
+          "level": 1,
+          "icon": "fa-eye"
         },
         {
           "title": "模块间通信",

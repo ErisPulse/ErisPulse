@@ -249,17 +249,132 @@ ErisPulse 模块系统
 ---
 
 
+##### `async _half_unload_failed_module(module_name: str, instance: Any)`
+
+> **内部方法**
+加载失败（on_load 异常 / 构造后阶段异常）时的半卸载
+
+对已构造实例按正常卸载同序触发资源回收（on_unload → 取消归属
+任务 → 外部清理钩子 → 框架资源注销），保证 ``__init__`` /
+``on_load`` 半途注册的资源不成为"有主孤儿"。
+
+与正常卸载的差异：不触碰 ``_modules`` / ``_loaded_modules`` /
+``_module_services`` 与 sdk 属性——失败路径从未写入这些注册表；
+``on_unload`` 已执行的副作用（断连等）与正常卸载一致不可撤销，
+但实例与注册资源不再泄漏。
+
+- **module_name** (`模块注册名`): - **instance**: 已构造的实例（构造函数本身抛异常时为 None）
+
+---
+
+
 ##### `_cleanup_module_registrations(module_name: str)`
 
 > **内部方法**
 清理模块在加载上下文内注册的全部框架资源（unload / disable 共用）
 
-涵盖：i18n 翻译域、路由（命名空间 + owner 兜底：中间件 / 首页入口 /
-非命名空间路由）、适配器事件处理器与中间件、命令与事件处理器、
-自定义会话类型、主人身份源 provider、生命周期钩子。
-每步失败仅记录日志，不中断后续清理（与卸载流程兜底风格一致）。
+委托归属权统一门面（``Core/ownership``）完成：i18n 翻译域、路由
+（命名空间 + owner 兜底：中间件 / 首页入口 / 非命名空间路由）、
+适配器事件处理器与中间件、命令与事件处理器、自定义会话类型、
+平台事件方法注入、事件覆写、scope 覆写、交互会话等待、主人身份源
+provider、生命周期钩子。每步失败仅记录日志，不中断后续清理。
 
 - **module_name**: 模块名
+
+---
+
+
+##### `audit(module_name: str, deep: bool = False)`
+
+归属权泄漏审计（透传归属权统一门面）
+
+- **module_name** (`目标模块名`): - **deep**: 附带 gc 实例普查（weakref 存活检查 + 引用方类型；
+             有全局暂停开销，仅显式排障使用）
+**返回值** (`审计报告`): dict（owner / counts / orphans / 深普查结果）
+
+**示例**:
+```python
+>>> report = sdk.module.audit("roll", deep=True)
+>>> report["instance_recyclable"]
+True
+```
+
+---
+
+
+##### `is_shadow_module(module_name: str)`
+
+判断模块名是否为影子 owner（拓扑 / Dashboard 展示用）
+
+- **module_name** (`模块名`): **返回值** (`是否为影子`): owner
+
+---
+
+
+##### `async shadow_start(module_name: str, source: 'str | Any', owner: 'str | None' = None)`
+
+启动影子：把新版代码以独立 owner 装载为 ``module_name`` 的影子实例
+（运行时 API；模块代码零改动，影子的出站被拦截记账、不真正发出）
+
+- **module_name** (`被`): shadow 的已加载模块名
+- **source** (`新版代码路径（目录含`): ``__init__.py`` 或单 ``.py`` 文件；
+               建议放在 plugins 目录之外）
+- **owner** (`影子`): owner 名（默认取路径名）
+**返回值** (`影子`): owner 名
+
+**示例**:
+```python
+>>> await sdk.module.shadow_start("roll", source="downloads/roll_v2")
+'roll_shadow'
+```
+
+---
+
+
+##### `async promote_shadow(module_name: str)`
+
+影子转正：卸载当前版本 → 影子以真名注册加载 → 失败自动回滚
+
+转正永远由人确认（无自动晋升）；复用重载快照机制保证失败时旧实例
+继续服务（尽力而为语义：on_unload 已执行的副作用不可撤销）。转正后
+请尽快持久化安装新版本（pip 升级 / 替换插件文件），使重启后仍生效。
+
+- **module_name** (`原模块名`): **返回值** (`是否转正成功`): **异常**: `ValueError` - 该模块未绑定影子时
+
+**示例**:
+```python
+>>> await sdk.module.promote_shadow("roll")
+```
+
+---
+
+
+##### `async dismiss_shadow(module_name: str)`
+
+放弃影子：回收影子资源并解除绑定（原模块不受影响）
+
+- **module_name** (`原模块名`): **返回值** (`是否成功（未绑定影子时`): False）
+
+**示例**:
+```python
+>>> await sdk.module.dismiss_shadow("roll")
+```
+
+---
+
+
+##### `shadow_diff(module_name: str)`
+
+影子与线上的行为对比（影子意向出站 × transcript 实际发送，按 trace_id 对齐）
+
+- **module_name** (`原模块名`): **返回值** (`对比报告`): dict（shadow_owner / count / aligned）
+
+**示例**:
+```python
+>>> report = sdk.module.shadow_diff("roll")
+>>> report["count"]
+3
+```
 
 ---
 
