@@ -161,6 +161,8 @@ ErisPulse 数据模型层（ORM）—— 声明式模型与 Active Record CRUD
 
 单列 DDL 定义（统一记号）
 
+- **nullable_override** (`覆写可空性渲染（如自动迁移为存量行回填`): 而强制省略 NOT NULL）；None 表示按字段声明
+
 ---
 
 
@@ -194,6 +196,13 @@ IN 条件（``User.id.in_([1, 2, 3])``）
 #### 方法列表
 
 
+##### `__bool__()`
+
+禁用真值判断：条件对象只能传给 :meth:`Model.where` 等查询入口
+
+---
+
+
 ##### `compile(dialect: SQLDialect | None = None)`
 
 编译为 (WHERE 片段, 参数列表)；片段为空串表示无条件
@@ -208,6 +217,10 @@ IN 条件（``User.id.in_([1, 2, 3])``）
 链式查询集（惰性构建，await 终结符执行）
 
 ``User.where(...).order_by("-age").limit(10).all()``
+
+注意：链式方法（where / order_by / limit / offset）**就地修改**当前实例
+并返回自身——复用中间 QuerySet 对象会让条件互相串染；需要分支查询时，
+请各自从 :meth:`Model.where` 重新构建。
 
 > **内部方法**
 由 :meth:`Model.where` 创建；update / delete 亦经由 QuerySet 应用条件
@@ -234,12 +247,18 @@ IN 条件（``User.id.in_([1, 2, 3])``）
 
 执行查询，返回首个实例（无结果为 None）
 
+在查询集**副本**上附加 ``LIMIT 1``，不修改原查询集——同一实例先
+``first()`` 再 ``all()`` 仍返回全量结果。
+
 ---
 
 
 ##### `async count()`
 
-符合条件的行数
+统计满足查询条件的总行数
+
+语义说明：count **不受 limit / offset 影响**——返回满足 where 条件的
+全部行数（"符合条件的有多少条"），而非分页窗口内的条数。
 
 ---
 
@@ -399,7 +418,7 @@ belongs-to 单条等待器：``author = await msg.author`` 即解析为对方实
 
 ##### `_row_to_instance(row: dict)`
 
-行 dict → 实例（JSON 列反序列化）
+行 dict → 实例（JSON 列反序列化；bool 类别跨后端归一化为 bool）
 
 ---
 
@@ -534,6 +553,11 @@ INSERT 一行并按需回填自增主键到实例（:meth:`create` 与 :meth:`sa
 ##### `async save()`
 
 按主键更新本行（先约束校验）；主键缺失时退化为插入（自增主键同样回填到本实例）
+
+注意：本方法为**整行覆盖**语义——更新除主键外的全部列、无脏检查；
+并发场景下会覆盖其他写入方对同一行的修改（丢失更新），且每次写全列。
+需要部分列更新请用 ``Model.where(...).update(**values)`` 或
+``update_all(...)``；乐观锁需自行以版本列条件实现。
 
 **返回值**: 受影响行数
 

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1680,
+  "total_keywords": 1683,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3990,12 +3990,12 @@
         "title": "[BUG-017] WebSocket 路由 auto_accept 標誌在服務重啟後丟失"
       }
     ],
-    "[BUG-018] HTTP/WS 客戶端併發調用導致崩潰與連接泄漏": [
+    "[BUG-018] HTTP/WS 客戶端併發呼叫導致崩潰與連接泄漏": [
       {
         "document": "bug-tracker.md",
         "line": 466,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS 客戶端併發調用導致崩潰與連接泄漏"
+        "title": "[BUG-018] HTTP/WS 客戶端併發呼叫導致崩潰與連接泄漏"
       }
     ],
     "[BUG-019] 適配器熱重載時路由衝突導致重載失敗": [
@@ -4022,12 +4022,12 @@
         "title": "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式"
       }
     ],
-    "[BUG-022] _resolve_account() 賬戶解析迴歸（_accounts_data 未填充）": [
+    "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）": [
       {
         "document": "bug-tracker.md",
         "line": 568,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() 賬戶解析迴歸（_accounts_data 未填充）"
+        "title": "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）"
       }
     ],
     "[BUG-023] 修改賬戶配置後適配器緩存未刷新導致賬戶解析失敗": [
@@ -4132,6 +4132,30 @@
         "line": 946,
         "level": 3,
         "title": "[BUG-037] 空格子命令名注册后永远无法被触发"
+      }
+    ],
+    "[BUG-038] ORM 自管事务在 PostgreSQL 上提交被跳过，插入数据静默丢失": [
+      {
+        "document": "bug-tracker.md",
+        "line": 970,
+        "level": 3,
+        "title": "[BUG-038] ORM 自管事务在 PostgreSQL 上提交被跳过，插入数据静默丢失"
+      }
+    ],
+    "[BUG-039] ORM 布尔字段 DDL 默认值 `1/0` 导致 PostgreSQL 建表失败": [
+      {
+        "document": "bug-tracker.md",
+        "line": 994,
+        "level": 3,
+        "title": "[BUG-039] ORM 布尔字段 DDL 默认值 `1/0` 导致 PostgreSQL 建表失败"
+      }
+    ],
+    "[BUG-040] `aGetTableColumns` 执行类型错误，PostgreSQL 上自动迁移静默失效": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1016,
+        "level": 3,
+        "title": "[BUG-040] `aGetTableColumns` 执行类型错误，PostgreSQL 上自动迁移静默失效"
       }
     ],
     "__init__.py": [

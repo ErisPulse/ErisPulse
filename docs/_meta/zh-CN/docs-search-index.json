@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1648,
+  "total_keywords": 1651,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -4158,6 +4158,30 @@
         "line": 949,
         "level": 3,
         "title": "[BUG-037] 空格子命令名注册后永远无法被触发"
+      }
+    ],
+    "[BUG-038] ORM 自管事务在 PostgreSQL 上提交被跳过，插入数据静默丢失": [
+      {
+        "document": "bug-tracker.md",
+        "line": 973,
+        "level": 3,
+        "title": "[BUG-038] ORM 自管事务在 PostgreSQL 上提交被跳过，插入数据静默丢失"
+      }
+    ],
+    "[BUG-039] ORM 布尔字段 DDL 默认值 `1/0` 导致 PostgreSQL 建表失败": [
+      {
+        "document": "bug-tracker.md",
+        "line": 997,
+        "level": 3,
+        "title": "[BUG-039] ORM 布尔字段 DDL 默认值 `1/0` 导致 PostgreSQL 建表失败"
+      }
+    ],
+    "[BUG-040] `aGetTableColumns` 执行类型错误，PostgreSQL 上自动迁移静默失效": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1019,
+        "level": 3,
+        "title": "[BUG-040] `aGetTableColumns` 执行类型错误，PostgreSQL 上自动迁移静默失效"
       }
     ],
     "__init__.py": [

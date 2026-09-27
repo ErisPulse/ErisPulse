@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1717,
+  "total_keywords": 1720,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -4120,42 +4120,42 @@
         "title": "Windows PowerShell 実行ポリシー"
       }
     ],
-    "[BUG-001] イベントハンドラの重複登録によりイベントが複数回処理される": [
+    "[BUG-001] 重複登録されたイベントハンドラーがイベントを複数回処理する": [
       {
         "document": "bug-tracker.md",
-        "line": 117,
+        "line": 115,
         "level": 3,
-        "title": "[BUG-001] イベントハンドラの重複登録によりイベントが複数回処理される"
+        "title": "[BUG-001] 重複登録されたイベントハンドラーがイベントを複数回処理する"
       }
     ],
-    "[BUG-002] Init コマンドでアダプタの設定パスの型エラー": [
+    "[BUG-002] Init コマンドのアダプター設定パスの型エラー": [
       {
         "document": "bug-tracker.md",
-        "line": 137,
+        "line": 135,
         "level": 3,
-        "title": "[BUG-002] Init コマンドでアダプタの設定パスの型エラー"
+        "title": "[BUG-002] Init コマンドのアダプター設定パスの型エラー"
       }
     ],
     "[BUG-003] 再起動後にコマンドイベントが無効になる": [
       {
         "document": "bug-tracker.md",
-        "line": 161,
+        "line": 159,
         "level": 3,
         "title": "[BUG-003] 再起動後にコマンドイベントが無効になる"
       }
     ],
-    "[BUG-004] ライフサイクルイベントハンドラがクリアされない": [
+    "[BUG-004] ライフサイクルイベントハンドラーがクリアされない": [
       {
         "document": "bug-tracker.md",
-        "line": 181,
+        "line": 179,
         "level": 3,
-        "title": "[BUG-004] ライフサイクルイベントハンドラがクリアされない"
+        "title": "[BUG-004] ライフサイクルイベントハンドラーがクリアされない"
       }
     ],
     "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない": [
       {
         "document": "bug-tracker.md",
-        "line": 201,
+        "line": 199,
         "level": 3,
         "title": "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない"
       }
@@ -4163,47 +4163,47 @@
     "[BUG-006] adapter.clear() が _started_instances をクリアしないため、再起動後に状態が正しくない": [
       {
         "document": "bug-tracker.md",
-        "line": 221,
+        "line": 219,
         "level": 3,
         "title": "[BUG-006] adapter.clear() が _started_instances をクリアしないため、再起動後に状態が正しくない"
       }
     ],
-    "[BUG-007] command.wait_reply() が非推奨の asyncio.get_event_loop() を使用している": [
+    "[BUG-007] command.wait_reply() で廃止された asyncio.get_event_loop() を使用している": [
       {
         "document": "bug-tracker.md",
-        "line": 241,
+        "line": 239,
         "level": 3,
-        "title": "[BUG-007] command.wait_reply() が非推奨の asyncio.get_event_loop() を使用している"
+        "title": "[BUG-007] command.wait_reply() で廃止された asyncio.get_event_loop() を使用している"
       }
     ],
-    "[BUG-008] Bot オンラインイベントが shutdown プロセス中に重複送信される": [
+    "[BUG-008] Bot のオフラインイベントが shutdown 過程で繰り返し送信される": [
       {
         "document": "bug-tracker.md",
-        "line": 261,
+        "line": 259,
         "level": 3,
-        "title": "[BUG-008] Bot オンラインイベントが shutdown プロセス中に重複送信される"
+        "title": "[BUG-008] Bot のオフラインイベントが shutdown 過程で繰り返し送信される"
       }
     ],
     "[BUG-009] LazyModule の同期アクセスで BaseModule が初期化完了前にアクセスされる": [
       {
         "document": "bug-tracker.md",
-        "line": 281,
+        "line": 279,
         "level": 3,
         "title": "[BUG-009] LazyModule の同期アクセスで BaseModule が初期化完了前にアクセスされる"
       }
     ],
-    "[BUG-010] 複数スレッドでの設定書き込みによりデータが失われる": [
+    "[BUG-010] 複数スレッドでの設定書き込みがデータの消失を引き起こす": [
       {
         "document": "bug-tracker.md",
-        "line": 301,
+        "line": 299,
         "level": 3,
-        "title": "[BUG-010] 複数スレッドでの設定書き込みによりデータが失われる"
+        "title": "[BUG-010] 複数スレッドでの設定書き込みがデータの消失を引き起こす"
       }
     ],
     "[BUG-011] Windows で CTRL+C でプログラムを停止できない": [
       {
         "document": "bug-tracker.md",
-        "line": 324,
+        "line": 322,
         "level": 3,
         "title": "[BUG-011] Windows で CTRL+C でプログラムを停止できない"
       }
@@ -4211,31 +4211,31 @@
     "[BUG-012] ホットリスタート後に更新されたモジュールの Python コードが有効にならない": [
       {
         "document": "bug-tracker.md",
-        "line": 348,
+        "line": 346,
         "level": 3,
         "title": "[BUG-012] ホットリスタート後に更新されたモジュールの Python コードが有効にならない"
       }
     ],
-    "[BUG-013] モジュールロード戦略のソートロジックが誤っている": [
+    "[BUG-013] モジュールロード戦略のソートロジックにバグがある": [
       {
         "document": "bug-tracker.md",
-        "line": 368,
+        "line": 366,
         "level": 3,
-        "title": "[BUG-013] モジュールロード戦略のソートロジックが誤っている"
+        "title": "[BUG-013] モジュールロード戦略のソートロジックにバグがある"
       }
     ],
-    "[BUG-014] アダプタミドルウェアが None を返すとイベントデータが失われる": [
+    "[BUG-014] アダプターのミドルウェアが None を返すとイベントデータが失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 388,
+        "line": 386,
         "level": 3,
-        "title": "[BUG-014] アダプタミドルウェアが None を返すとイベントデータが失われる"
+        "title": "[BUG-014] アダプターのミドルウェアが None を返すとイベントデータが失われる"
       }
     ],
     "[BUG-015] 設定ファイルのパスが作業ディレクトリに依存している": [
       {
         "document": "bug-tracker.md",
-        "line": 408,
+        "line": 406,
         "level": 3,
         "title": "[BUG-015] 設定ファイルのパスが作業ディレクトリに依存している"
       }
@@ -4243,161 +4243,185 @@
     "[BUG-016] BaseStorage がストレージ値の None とキーの存在しないことを混同する": [
       {
         "document": "bug-tracker.md",
-        "line": 428,
+        "line": 426,
         "level": 3,
         "title": "[BUG-016] BaseStorage がストレージ値の None とキーの存在しないことを混同する"
       }
     ],
-    "[BUG-017] WebSocket ルーティング auto_accept フラグがサービス再起動後に失われる": [
+    "[BUG-017] WebSocket ルートの auto_accept フラグがサービス再起動後に失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 448,
+        "line": 446,
         "level": 3,
-        "title": "[BUG-017] WebSocket ルーティング auto_accept フラグがサービス再起動後に失われる"
+        "title": "[BUG-017] WebSocket ルートの auto_accept フラグがサービス再起動後に失われる"
       }
     ],
     "[BUG-018] HTTP/WS クライアントの並行呼び出しによるクラッシュと接続漏れ": [
       {
         "document": "bug-tracker.md",
-        "line": 468,
+        "line": 466,
         "level": 3,
         "title": "[BUG-018] HTTP/WS クライアントの並行呼び出しによるクラッシュと接続漏れ"
       }
     ],
-    "[BUG-019] アダプタのホットリロード時にルーティングの競合によりリロードが失敗する": [
+    "[BUG-019] アダプターのホットリロード時にルートの競合が発生してリロードが失敗する": [
       {
         "document": "bug-tracker.md",
-        "line": 496,
+        "line": 494,
         "level": 3,
-        "title": "[BUG-019] アダプタのホットリロード時にルーティングの競合によりリロードが失敗する"
+        "title": "[BUG-019] アダプターのホットリロード時にルートの競合が発生してリロードが失敗する"
       }
     ],
-    "[BUG-020] サブプロセスモード `ep run <script>` がスクリプト所在ディレクトリのサブパッケージを見つけられない": [
+    "[BUG-020] サブプロセスモード `ep run <script>` でスクリプトが存在するディレクトリのサブパッケージが見つからない": [
       {
         "document": "bug-tracker.md",
-        "line": 520,
+        "line": 518,
         "level": 3,
-        "title": "[BUG-020] サブプロセスモード `ep run <script>` がスクリプト所在ディレクトリのサブパッケージを見つけられない"
+        "title": "[BUG-020] サブプロセスモード `ep run <script>` でスクリプトが存在するディレクトリのサブパッケージが見つからない"
       }
     ],
     "[BUG-021] SQL クエリビルダーが合法なワイルドカードとリスト式を拒否する": [
       {
         "document": "bug-tracker.md",
-        "line": 540,
+        "line": 538,
         "level": 3,
         "title": "[BUG-021] SQL クエリビルダーが合法なワイルドカードとリスト式を拒否する"
       }
     ],
-    "[BUG-022] _resolve_account() アカウント解析のリグレッション（_accounts_data 未充填）": [
+    "[BUG-022] _resolve_account() のアカウント解決のバグ（_accounts_data が埋め込まれていない）": [
       {
         "document": "bug-tracker.md",
-        "line": 570,
+        "line": 568,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() アカウント解析のリグレッション（_accounts_data 未充填）"
+        "title": "[BUG-022] _resolve_account() のアカウント解決のバグ（_accounts_data が埋め込まれていない）"
       }
     ],
-    "[BUG-023] アカウント設定を変更した後、アダプタのキャッシュが更新されずアカウント解析が失敗する": [
+    "[BUG-023] アカウント設定を変更した後、アダプターのキャッシュが更新されずアカウント解決に失敗する": [
       {
         "document": "bug-tracker.md",
-        "line": 609,
+        "line": 607,
         "level": 3,
-        "title": "[BUG-023] アカウント設定を変更した後、アダプタのキャッシュが更新されずアカウント解析が失敗する"
+        "title": "[BUG-023] アカウント設定を変更した後、アダプターのキャッシュが更新されずアカウント解決に失敗する"
       }
     ],
     "[BUG-024] storage.set() で大数 ID キーを書き込むと OOM Kill が発生する": [
       {
         "document": "bug-tracker.md",
-        "line": 629,
+        "line": 627,
         "level": 3,
         "title": "[BUG-024] storage.set() で大数 ID キーを書き込むと OOM Kill が発生する"
       }
     ],
-    "[BUG-025] on_config_update コールバックがコアルーティングされない": [
+    "[BUG-025] on_config_update コールバックがコアルートに接続されていない": [
       {
         "document": "bug-tracker.md",
-        "line": 675,
+        "line": 673,
         "level": 3,
-        "title": "[BUG-025] on_config_update コールバックがコアルーティングされない"
+        "title": "[BUG-025] on_config_update コールバックがコアルートに接続されていない"
       }
     ],
     "[BUG-026] notice/request イベント reply 目標の推定が間違っている": [
       {
         "document": "bug-tracker.md",
-        "line": 705,
+        "line": 703,
         "level": 3,
         "title": "[BUG-026] notice/request イベント reply 目標の推定が間違っている"
       }
     ],
-    "[BUG-027] ルーティングリクエスト制限のクリーンアップタスクが固定ウィンドウを使用して長時間の制限ルールが無効になる": [
+    "[BUG-027] ルート制限クリーンアップタスクが固定ウィンドウを使用して長時間の制限ルールが無効になる": [
       {
         "document": "bug-tracker.md",
-        "line": 736,
+        "line": 734,
         "level": 3,
-        "title": "[BUG-027] ルーティングリクエスト制限のクリーンアップタスクが固定ウィンドウを使用して長時間の制限ルールが無効になる"
+        "title": "[BUG-027] ルート制限クリーンアップタスクが固定ウィンドウを使用して長時間の制限ルールが無効になる"
       }
     ],
-    "[BUG-029] 設定の監視タスクが未完成の TOML をブロードキャストし、エラーを静かに飲み込む": [
+    "[BUG-029] 設定監視タスクが未完成の TOML をブロードキャストし、例外を静かに飲み込む": [
       {
         "document": "bug-tracker.md",
-        "line": 768,
+        "line": 766,
         "level": 3,
-        "title": "[BUG-029] 設定の監視タスクが未完成の TOML をブロードキャストし、エラーを静かに飲み込む"
+        "title": "[BUG-029] 設定監視タスクが未完成の TOML をブロードキャストし、例外を静かに飲み込む"
       }
     ],
-    "[BUG-030] 設定の watcher 競合により setConfig の遅延書き込みが静かにデータを失う": [
+    "[BUG-030] 設定 watcher の競合により setConfig の遅延書き込みが静かにデータを失う": [
       {
         "document": "bug-tracker.md",
-        "line": 804,
+        "line": 802,
         "level": 3,
-        "title": "[BUG-030] 設定の watcher 競合により setConfig の遅延書き込みが静かにデータを失う"
+        "title": "[BUG-030] 設定 watcher の競合により setConfig の遅延書き込みが静かにデータを失う"
       }
     ],
-    "[BUG-032] 設定の遅延書き込み中に「書き込み直後読み取り」で古い値を取得する": [
+    "[BUG-032] 設定の遅延書き込み中に「書き込み直後に読む」で古い値が読まれる": [
       {
         "document": "bug-tracker.md",
-        "line": 840,
+        "line": 838,
         "level": 3,
-        "title": "[BUG-032] 設定の遅延書き込み中に「書き込み直後読み取り」で古い値を取得する"
+        "title": "[BUG-032] 設定の遅延書き込み中に「書き込み直後に読む」で古い値が読まれる"
       }
     ],
-    "[BUG-033] wait_reply が保留中の返信を高優先度のハンドラに食い尽くされる": [
+    "[BUG-033] wait_reply で待機中の返信が高優先度のハンドラーに食い込まれる": [
       {
         "document": "bug-tracker.md",
-        "line": 862,
+        "line": 860,
         "level": 3,
-        "title": "[BUG-033] wait_reply が保留中の返信を高優先度のハンドラに食い尽くされる"
+        "title": "[BUG-033] wait_reply で待機中の返信が高優先度のハンドラーに食い込まれる"
       }
     ],
-    "[BUG-034] persist=False のスコープのランタイムバインディングが任意の後続の設定書き込みで静かに上書きされる": [
+    "[BUG-034] persist=False のスコープは任意の後続の設定書き込みによって静かに上書きされる": [
       {
         "document": "bug-tracker.md",
-        "line": 884,
+        "line": 882,
         "level": 3,
-        "title": "[BUG-034] persist=False のスコープのランタイムバインディングが任意の後続の設定書き込みで静かに上書きされる"
+        "title": "[BUG-034] persist=False のスコープは任意の後続の設定書き込みによって静かに上書きされる"
       }
     ],
-    "[BUG-035] 設定パネルの select 項目と dict フィールドが [object Object] と表示される": [
+    "[BUG-035] 設定パネルの select 選択肢と dict フィールドが [object Object] にレンダリングされる": [
       {
         "document": "bug-tracker.md",
-        "line": 904,
+        "line": 902,
         "level": 3,
-        "title": "[BUG-035] 設定パネルの select 項目と dict フィールドが [object Object] と表示される"
+        "title": "[BUG-035] 設定パネルの select 選択肢と dict フィールドが [object Object] にレンダリングされる"
       }
     ],
-    "[BUG-036] 複数インスタンスで共有する設定ディレクトリで設定の書き込みが偶発的に失敗する (ENOENT)": [
+    "[BUG-036] 複数インスタンスで共有された設定ディレクトリで設定の書き込みが不定期に失敗する（ENOENT）": [
       {
         "document": "bug-tracker.md",
-        "line": 922,
+        "line": 920,
         "level": 3,
-        "title": "[BUG-036] 複数インスタンスで共有する設定ディレクトリで設定の書き込みが偶発的に失敗する (ENOENT)"
+        "title": "[BUG-036] 複数インスタンスで共有された設定ディレクトリで設定の書き込みが不定期に失敗する（ENOENT）"
       }
     ],
     "[BUG-037] 空白文字を含むコマンド名を登録した後、決してトリガーされない": [
       {
         "document": "bug-tracker.md",
-        "line": 948,
+        "line": 946,
         "level": 3,
         "title": "[BUG-037] 空白文字を含むコマンド名を登録した後、決してトリガーされない"
+      }
+    ],
+    "[BUG-038] ORM 自己管理トランザクションが PostgreSQL でコミットがスキップされ、挿入データが静かに失われる": [
+      {
+        "document": "bug-tracker.md",
+        "line": 970,
+        "level": 3,
+        "title": "[BUG-038] ORM 自己管理トランザクションが PostgreSQL でコミットがスキップされ、挿入データが静かに失われる"
+      }
+    ],
+    "[BUG-039] ORM ブール型フィールドの DDL デフォルト値 `1/0` が PostgreSQL でテーブル作成に失敗する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 994,
+        "level": 3,
+        "title": "[BUG-039] ORM ブール型フィールドの DDL デフォルト値 `1/0` が PostgreSQL でテーブル作成に失敗する"
+      }
+    ],
+    "[BUG-040] `aGetTableColumns` の実行型エラーで PostgreSQL 上の自動マイグレーションが静かに無効になる": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1016,
+        "level": 3,
+        "title": "[BUG-040] `aGetTableColumns` の実行型エラーで PostgreSQL 上の自動マイグレーションが静かに無効になる"
       }
     ],
     "__init__.py": [
@@ -10511,7 +10535,7 @@
     "修正済みのバグ": [
       {
         "document": "bug-tracker.md",
-        "line": 115,
+        "line": 113,
         "level": 2,
         "title": "修正済みのバグ"
       }

@@ -41,6 +41,7 @@ ErisPulse 数据模型层（ORM）—— 声明式模型与 Active Record CRUD
 
 from __future__ import annotations
 
+import copy
 import json
 import re
 from typing import Any, ClassVar
@@ -194,15 +195,22 @@ class Field:
             return f"VARCHAR({self.max_length})"
         return base
 
-    def column_definition(self) -> str:
-        """单列 DDL 定义（统一记号）"""
+    def column_definition(self, *, nullable_override: "bool | None" = None) -> str:
+        """单列 DDL 定义（统一记号）
+
+        :param nullable_override: 覆写可空性渲染（如自动迁移为存量行回填
+            而强制省略 NOT NULL）；None 表示按字段声明
+        """
         parts = [self.sql_type()]
         if self.autoincrement:
             # 自增主键交给方言钩子（aCreateTable 翻译 AUTOINCREMENT 记号）
             parts = ["INTEGER PRIMARY KEY AUTOINCREMENT"]
         elif self.primary_key:
             parts.append("PRIMARY KEY")
-        if not self.nullable and not self.primary_key:
+        emit_not_null = not self.nullable and not self.primary_key
+        if nullable_override is not None:
+            emit_not_null = not nullable_override
+        if emit_not_null:
             parts.append("NOT NULL")
         if self.unique and not self.primary_key:
             parts.append("UNIQUE")
@@ -221,7 +229,9 @@ class Field:
         if value is None:
             return "NULL"
         if isinstance(value, bool):
-            return "1" if value else "0"
+            # TRUE/FALSE 三方言通用（sqlite ≥3.23 / MySQL / PostgreSQL）——
+            # 数字字面量 1/0 会被 PostgreSQL 的 BOOLEAN 列拒绝
+            return "TRUE" if value else "FALSE"
         if isinstance(value, (int, float)):
             return str(value)
         if self.is_json:
@@ -293,6 +303,13 @@ class Condition:
         self.left = left
         self.right = right
 
+    def __bool__(self) -> bool:
+        """禁用真值判断：条件对象只能传给 :meth:`Model.where` 等查询入口"""
+        raise TypeError(
+            "Condition cannot be used as a boolean — pass it to Model.where(...) "
+            "instead (e.g. `User.where(User.age > 18).all()`, not `if User.age > 18:`)"
+        )
+
     def __and__(self, other: Condition) -> Condition:
         return Condition(combinator="AND", left=self, right=other)
 
@@ -352,6 +369,10 @@ class QuerySet:
     链式查询集（惰性构建，await 终结符执行）
 
     ``User.where(...).order_by("-age").limit(10).all()``
+
+    注意：链式方法（where / order_by / limit / offset）**就地修改**当前实例
+    并返回自身——复用中间 QuerySet 对象会让条件互相串染；需要分支查询时，
+    请各自从 :meth:`Model.where` 重新构建。
 
     {!--< internal-use >!--}
     由 :meth:`Model.where` 创建；update / delete 亦经由 QuerySet 应用条件
@@ -422,13 +443,23 @@ class QuerySet:
         return [self._model._row_to_instance(dict(zip(cols or [], row, strict=False))) for row in rows]
 
     async def first(self) -> Any | None:
-        """执行查询，返回首个实例（无结果为 None）"""
-        self.limit(1)
-        results = await self.all()
+        """执行查询，返回首个实例（无结果为 None）
+
+        在查询集**副本**上附加 ``LIMIT 1``，不修改原查询集——同一实例先
+        ``first()`` 再 ``all()`` 仍返回全量结果。
+        """
+        clone = copy.copy(self)
+        clone.limit(1)
+        results = await clone.all()
         return results[0] if results else None
 
     async def count(self) -> int:
-        """符合条件的行数"""
+        """
+        统计满足查询条件的总行数
+
+        语义说明：count **不受 limit / offset 影响**——返回满足 where 条件的
+        全部行数（"符合条件的有多少条"），而非分页窗口内的条数。
+        """
         storage = self._model._get_storage()
         dialect = storage.dialect
         where_sql, where_params = self._where_clause(dialect)
@@ -593,6 +624,24 @@ class Relationship:
         related = self._related_model(host)
         fk = self._foreign_key
 
+        # 跨后端关系告警（方向四）：两侧模型绑定不同存储后端时，外键值
+        # 对不上会静默产生空/错误结果——尽早提醒
+        try:
+            _host_storage = host._get_storage()
+            _related_storage = related._get_storage()
+            _host_dialect = getattr(getattr(_host_storage, "dialect", None), "name", "")
+            _related_dialect = getattr(getattr(_related_storage, "dialect", None), "name", "")
+            if _host_dialect and _related_dialect and _host_dialect != _related_dialect:
+                from .logger import logger as _logger
+
+                _logger.warning(
+                    f"relationship {host.__name__}.{self.name!r} spans storage "
+                    f"backends ({_host_dialect} vs {_related_dialect}); related "
+                    f"queries may return empty or inconsistent results"
+                )
+        except Exception:
+            pass
+
         if fk in host._fields:
             # belongs-to：外键在本表 → 对方主键 = 本表外键值
             related_pk = related._pk_field()
@@ -663,7 +712,7 @@ class Model:
                 {n: a for n, a in vars(klass).items() if isinstance(a, Field)}
             )
         cls._fields = collected
-        table = getattr(cls, "__tablename__", None) or _SNAKE_RE.sub("_", cls.__name__).lower()
+        table = cls.__tablename__ or _SNAKE_RE.sub("_", cls.__name__).lower()
         if not _IDENTIFIER_RE.fullmatch(table):
             raise ValueError(f"invalid table name: {table!r}")
         cls.__tablename__ = table
@@ -709,14 +758,20 @@ class Model:
 
     @classmethod
     def _row_to_instance(cls, row: dict) -> Model:
-        """行 dict → 实例（JSON 列反序列化）"""
+        """行 dict → 实例（JSON 列反序列化；bool 类别跨后端归一化为 bool）"""
         for name, value in row.items():
             field_obj = cls._fields.get(name)
-            if field_obj is not None and field_obj.is_json and isinstance(value, str):
+            if field_obj is None:
+                continue
+            if field_obj.is_json and isinstance(value, str):
                 try:
                     row[name] = json.loads(value)
                 except (ValueError, TypeError):
                     pass
+            elif field_obj.category == "bool" and value is not None:
+                # sqlite 无原生 BOOLEAN（存 0/1，读回 int）——统一转 bool，
+                # 保证 `instance.active is True` 等跨后端一致的判等语义
+                row[name] = bool(value)
         for name, field_obj in cls._fields.items():
             row.setdefault(name, field_obj.effective_default())
         instance = cls.__new__(cls)
@@ -820,9 +875,9 @@ class Model:
         for name, field_obj in cls._fields.items():
             if name in existing or getattr(field_obj, "primary_key", False):
                 continue
-            ddl = field_obj.column_definition().replace(" NOT NULL", "").replace(
-                " not null", ""
-            )
+            # 自动迁移强制可空（存量行回填 NULL），经参数化生成 DDL
+            # （勿用字符串替换改写——列类型覆写可能包含任意子串）
+            ddl = field_obj.column_definition(nullable_override=True)
             operations.append(("add_column", (name, ddl)))
             added.append(name)
         if operations:
@@ -953,15 +1008,18 @@ class Model:
             return
 
         conn = await storage._acquire_txn_conn()
+        tx_handle = None
         try:
-            await storage._begin_txn(conn)
+            # 接收句柄并回传给提交/回滚：asyncpg 等句柄式方言的提交
+            # 依赖 handle（漏传 = 提交被跳过，连接释放即回滚）
+            tx_handle = await storage._begin_txn(conn)
             await storage._execute_query("dml", sql, params, conn=conn)
             row, _ = await storage._execute_query(
                 "one", storage.dialect.last_insert_id_sql(), [], conn=conn
             )
-            await storage._commit_txn(conn)
+            await storage._commit_txn(conn, tx_handle)
         except Exception:
-            await storage._rollback_txn(conn)
+            await storage._rollback_txn(conn, tx_handle)
             raise
         finally:
             await storage._release_txn_conn(conn)
@@ -988,6 +1046,11 @@ class Model:
     async def save(self) -> int:
         """
         按主键更新本行（先约束校验）；主键缺失时退化为插入（自增主键同样回填到本实例）
+
+        注意：本方法为**整行覆盖**语义——更新除主键外的全部列、无脏检查；
+        并发场景下会覆盖其他写入方对同一行的修改（丢失更新），且每次写全列。
+        需要部分列更新请用 ``Model.where(...).update(**values)`` 或
+        ``update_all(...)``；乐观锁需自行以版本列条件实现。
 
         :return: 受影响行数
         """
