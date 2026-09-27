@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1676,
+  "total_keywords": 1680,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -5912,6 +5912,14 @@
         "title": "Entering Build Mode"
       }
     ],
+    "Entry Template": [
+      {
+        "document": "bug-tracker.md",
+        "line": 65,
+        "level": 2,
+        "title": "Entry Template"
+      }
+    ],
     "Environment Diagnosis": [
       {
         "document": "user-guide/cli-reference.md",
@@ -8194,14 +8202,6 @@
         "title": "Internationalization Configuration"
       }
     ],
-    "Item Template": [
-      {
-        "document": "bug-tracker.md",
-        "line": 65,
-        "level": 2,
-        "title": "Item Template"
-      }
-    ],
     "Jinja Template Example": [
       {
         "document": "ecosystem/takumi.md",
@@ -8640,6 +8640,14 @@
         "line": 612,
         "level": 3,
         "title": "Management Interface"
+      }
+    ],
+    "Mandatory Fields": [
+      {
+        "document": "bug-tracker.md",
+        "line": 16,
+        "level": 3,
+        "title": "Mandatory Fields"
       }
     ],
     "Manual Call to Request DSL": [
@@ -11642,12 +11650,6 @@
     ],
     "Required Fields": [
       {
-        "document": "bug-tracker.md",
-        "line": 16,
-        "level": 3,
-        "title": "Required Fields"
-      },
-      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 754,
         "level": 3,
@@ -14316,20 +14318,20 @@
         "title": "Yunhu User Platform Features Documentation"
       }
     ],
-    "[BUG-001] Event handler duplicate registration causes event to be processed multiple times": [
+    "[BUG-001] Event handler registration duplication causes event to be processed multiple times": [
       {
         "document": "bug-tracker.md",
         "line": 117,
         "level": 3,
-        "title": "[BUG-001] Event handler duplicate registration causes event to be processed multiple times"
+        "title": "[BUG-001] Event handler registration duplication causes event to be processed multiple times"
       }
     ],
-    "[BUG-002] Init command adapter configuration path type error": [
+    "[BUG-002] Adapter configuration path type error in Init command": [
       {
         "document": "bug-tracker.md",
         "line": 137,
         "level": 3,
-        "title": "[BUG-002] Init command adapter configuration path type error"
+        "title": "[BUG-002] Adapter configuration path type error in Init command"
       }
     ],
     "[BUG-003] Commands fail after restart": [
@@ -14340,28 +14342,28 @@
         "title": "[BUG-003] Commands fail after restart"
       }
     ],
-    "[BUG-004] Lifecycle event handler not cleaned up": [
+    "[BUG-004] Lifecycle event handlers not cleaned up": [
       {
         "document": "bug-tracker.md",
         "line": 181,
         "level": 3,
-        "title": "[BUG-004] Lifecycle event handler not cleaned up"
+        "title": "[BUG-004] Lifecycle event handlers not cleaned up"
       }
     ],
-    "[BUG-005] Event.is_friend_add/is_friend_delete's detail_type does not match OB12 standard": [
+    "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard": [
       {
         "document": "bug-tracker.md",
         "line": 201,
         "level": 3,
-        "title": "[BUG-005] Event.is_friend_add/is_friend_delete's detail_type does not match OB12 standard"
+        "title": "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard"
       }
     ],
-    "[BUG-006] adapter.clear() does not clean up _started_instances, causing incorrect status after restart": [
+    "[BUG-006] adapter.clear() does not clean up _started_instances causing incorrect state after restart": [
       {
         "document": "bug-tracker.md",
         "line": 221,
         "level": 3,
-        "title": "[BUG-006] adapter.clear() does not clean up _started_instances, causing incorrect status after restart"
+        "title": "[BUG-006] adapter.clear() does not clean up _started_instances causing incorrect state after restart"
       }
     ],
     "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()": [
@@ -14372,12 +14374,12 @@
         "title": "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()"
       }
     ],
-    "[BUG-008] Bot offline events are repeatedly submitted during shutdown": [
+    "[BUG-008] Bot offline event is repeatedly submitted during shutdown": [
       {
         "document": "bug-tracker.md",
         "line": 261,
         "level": 3,
-        "title": "[BUG-008] Bot offline events are repeatedly submitted during shutdown"
+        "title": "[BUG-008] Bot offline event is repeatedly submitted during shutdown"
       }
     ],
     "[BUG-009] LazyModule synchronous access to BaseModule causes incomplete initialization": [
@@ -14388,28 +14390,28 @@
         "title": "[BUG-009] LazyModule synchronous access to BaseModule causes incomplete initialization"
       }
     ],
-    "[BUG-010] Multi-threaded configuration write causes data loss": [
+    "[BUG-010] Multi-threaded configuration system write causes data loss": [
       {
         "document": "bug-tracker.md",
         "line": 301,
         "level": 3,
-        "title": "[BUG-010] Multi-threaded configuration write causes data loss"
+        "title": "[BUG-010] Multi-threaded configuration system write causes data loss"
       }
     ],
-    "[BUG-011] Windows Ctrl+C cannot stop the program": [
+    "[BUG-011] Windows Ctrl+C does not stop the program": [
       {
         "document": "bug-tracker.md",
         "line": 324,
         "level": 3,
-        "title": "[BUG-011] Windows Ctrl+C cannot stop the program"
+        "title": "[BUG-011] Windows Ctrl+C does not stop the program"
       }
     ],
-    "[BUG-012] Hot reload does not activate updated module's Python code": [
+    "[BUG-012] Hot restart does not activate updated module Python code": [
       {
         "document": "bug-tracker.md",
         "line": 348,
         "level": 3,
-        "title": "[BUG-012] Hot reload does not activate updated module's Python code"
+        "title": "[BUG-012] Hot restart does not activate updated module Python code"
       }
     ],
     "[BUG-013] Module loading strategy sorting logic error": [
@@ -14436,12 +14438,12 @@
         "title": "[BUG-015] Configuration file path depends on working directory"
       }
     ],
-    "[BUG-016] BaseStorage confuses storing value None with key not existing": [
+    "[BUG-016] BaseStorage confuses storing None value with missing key": [
       {
         "document": "bug-tracker.md",
         "line": 428,
         "level": 3,
-        "title": "[BUG-016] BaseStorage confuses storing value None with key not existing"
+        "title": "[BUG-016] BaseStorage confuses storing None value with missing key"
       }
     ],
     "[BUG-017] WebSocket route auto_accept flag lost after service restart": [
@@ -14452,12 +14454,12 @@
         "title": "[BUG-017] WebSocket route auto_accept flag lost after service restart"
       }
     ],
-    "[BUG-018] Concurrent HTTP/WS client calls cause crashes and connection leaks": [
+    "[BUG-018] HTTP/WS client concurrent calls cause crashes and connection leaks": [
       {
         "document": "bug-tracker.md",
         "line": 468,
         "level": 3,
-        "title": "[BUG-018] Concurrent HTTP/WS client calls cause crashes and connection leaks"
+        "title": "[BUG-018] HTTP/WS client concurrent calls cause crashes and connection leaks"
       }
     ],
     "[BUG-019] Adapter hot reload causes route conflicts leading to reload failure": [
@@ -14476,28 +14478,28 @@
         "title": "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in the script's directory"
       }
     ],
-    "[BUG-021] SQL query builder rejects valid wildcard and list expressions": [
+    "[BUG-021] SQL query builder rejects legitimate wildcards and list expressions": [
       {
         "document": "bug-tracker.md",
         "line": 540,
         "level": 3,
-        "title": "[BUG-021] SQL query builder rejects valid wildcard and list expressions"
+        "title": "[BUG-021] SQL query builder rejects legitimate wildcards and list expressions"
       }
     ],
-    "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)": [
+    "[BUG-022] _resolve_account() account resolution regression (_accounts_data not filled)": [
       {
         "document": "bug-tracker.md",
         "line": 570,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)"
+        "title": "[BUG-022] _resolve_account() account resolution regression (_accounts_data not filled)"
       }
     ],
-    "[BUG-023] Adapter cache not refreshed after account configuration change leads to account resolution failure": [
+    "[BUG-023] After modifying account configuration, adapter cache is not refreshed causing account resolution failure": [
       {
         "document": "bug-tracker.md",
         "line": 609,
         "level": 3,
-        "title": "[BUG-023] Adapter cache not refreshed after account configuration change leads to account resolution failure"
+        "title": "[BUG-023] After modifying account configuration, adapter cache is not refreshed causing account resolution failure"
       }
     ],
     "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill": [
@@ -14516,60 +14518,60 @@
         "title": "[BUG-025] on_config_update callback not called by core router"
       }
     ],
-    "[BUG-026] notice/request event reply target inferred incorrectly": [
+    "[BUG-026] notice/request event reply target inference error": [
       {
         "document": "bug-tracker.md",
         "line": 705,
         "level": 3,
-        "title": "[BUG-026] notice/request event reply target inferred incorrectly"
+        "title": "[BUG-026] notice/request event reply target inference error"
       }
     ],
-    "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limiting rules to fail": [
+    "[BUG-027] Router rate-limiting cleanup task uses fixed window causing long-window rate-limiting rules to fail": [
       {
         "document": "bug-tracker.md",
         "line": 736,
         "level": 3,
-        "title": "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limiting rules to fail"
+        "title": "[BUG-027] Router rate-limiting cleanup task uses fixed window causing long-window rate-limiting rules to fail"
       }
     ],
-    "[BUG-029] Configuration listener broadcasts incomplete TOML and silently swallows exceptions": [
+    "[BUG-029] Configuration listener task broadcasts incomplete TOML and silently swallows exceptions": [
       {
         "document": "bug-tracker.md",
         "line": 768,
         "level": 3,
-        "title": "[BUG-029] Configuration listener broadcasts incomplete TOML and silently swallows exceptions"
+        "title": "[BUG-029] Configuration listener task broadcasts incomplete TOML and silently swallows exceptions"
       }
     ],
-    "[BUG-030] Configuration watcher race condition causes setConfig delay write silently drop data": [
+    "[BUG-030] Configuration watcher race condition causes setConfig delayed write silently drops data": [
       {
         "document": "bug-tracker.md",
         "line": 804,
         "level": 3,
-        "title": "[BUG-030] Configuration watcher race condition causes setConfig delay write silently drop data"
+        "title": "[BUG-030] Configuration watcher race condition causes setConfig delayed write silently drops data"
       }
     ],
-    "[BUG-032] Config delay write period \"write then read immediately\" reads old value": [
+    "[BUG-032] Configuration delay write period \"write after read\" reads old value": [
       {
         "document": "bug-tracker.md",
         "line": 840,
         "level": 3,
-        "title": "[BUG-032] Config delay write period \"write then read immediately\" reads old value"
+        "title": "[BUG-032] Configuration delay write period \"write after read\" reads old value"
       }
     ],
-    "[BUG-033] wait_reply hangs and is starved by high-priority handlers": [
+    "[BUG-033] wait_reply hangs replies are starved by high-priority processors": [
       {
         "document": "bug-tracker.md",
         "line": 862,
         "level": 3,
-        "title": "[BUG-033] wait_reply hangs and is starved by high-priority handlers"
+        "title": "[BUG-033] wait_reply hangs replies are starved by high-priority processors"
       }
     ],
-    "[BUG-034] Runtime binding with persist=False is silently overridden by any subsequent configuration write": [
+    "[BUG-034] Scope persist=False runtime binding is silently overwritten by any subsequent configuration write": [
       {
         "document": "bug-tracker.md",
         "line": 884,
         "level": 3,
-        "title": "[BUG-034] Runtime binding with persist=False is silently overridden by any subsequent configuration write"
+        "title": "[BUG-034] Scope persist=False runtime binding is silently overwritten by any subsequent configuration write"
       }
     ],
     "[BUG-035] Configuration panel select options and dict fields render as [object Object]": [
@@ -14580,20 +14582,44 @@
         "title": "[BUG-035] Configuration panel select options and dict fields render as [object Object]"
       }
     ],
-    "[BUG-036] Configuration write fails occasionally with ENOENT in multi-instance shared config directory": [
+    "[BUG-036] Multi-instance shared configuration directory causes occasional configuration write failures (ENOENT)": [
       {
         "document": "bug-tracker.md",
         "line": 922,
         "level": 3,
-        "title": "[BUG-036] Configuration write fails occasionally with ENOENT in multi-instance shared config directory"
+        "title": "[BUG-036] Multi-instance shared configuration directory causes occasional configuration write failures (ENOENT)"
       }
     ],
-    "[BUG-037] Command names with space cannot be triggered after registration": [
+    "[BUG-037] Space-separated command names registered but never triggered": [
       {
         "document": "bug-tracker.md",
         "line": 948,
         "level": 3,
-        "title": "[BUG-037] Command names with space cannot be triggered after registration"
+        "title": "[BUG-037] Space-separated command names registered but never triggered"
+      }
+    ],
+    "[BUG-038] ORM self-managed transactions are skipped on PostgreSQL, data insertion silently lost": [
+      {
+        "document": "bug-tracker.md",
+        "line": 972,
+        "level": 3,
+        "title": "[BUG-038] ORM self-managed transactions are skipped on PostgreSQL, data insertion silently lost"
+      }
+    ],
+    "[BUG-039] ORM boolean field DDL default value `1/0` causes PostgreSQL table creation failure": [
+      {
+        "document": "bug-tracker.md",
+        "line": 996,
+        "level": 3,
+        "title": "[BUG-039] ORM boolean field DDL default value `1/0` causes PostgreSQL table creation failure"
+      }
+    ],
+    "[BUG-040] `aGetTableColumns` executes with type error, PostgreSQL auto-migration silently fails": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1018,
+        "level": 3,
+        "title": "[BUG-040] `aGetTableColumns` executes with type error, PostgreSQL auto-migration silently fails"
       }
     ],
     "__init__.py": [

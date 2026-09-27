@@ -1628,7 +1628,8 @@ class SQLStorageBase(BaseStorage):
             return []
         try:
             sql, params = self.dialect.table_columns_sql(table_name)
-            rows, col_names = await self._execute_query("all", sql, params)
+            # kind 用 "select"（方言漏斗无 "all"；"all" 会落 dml 分支返回状态整数）
+            rows, col_names = await self._execute_query("select", sql, params)
             names: list[str] = []
             # 名称列定位：sqlite PRAGMA 为 name 列；information_schema 单列
             name_idx = col_names.index("name") if "name" in (col_names or []) else 0
