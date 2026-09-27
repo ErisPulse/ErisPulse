@@ -590,6 +590,23 @@ class ScopeManager:
             from .i18n import i18n
 
             self._logger_trace(i18n.t("core.scope.denied", module=module_name))
+            # 拦截可观测（方向十一配套）：广播 scope.blocked 生命周期事件
+            # （fire 无监听者时零开销，不拖热路径）
+            try:
+                from .lifecycle import lifecycle as _lifecycle
+
+                _lifecycle.fire(
+                    "scope.blocked",
+                    {
+                        "dimension": "module",
+                        "module": module_name,
+                        "platform": platform,
+                        "bot_id": bot_id or "",
+                        "session_id": session_id or "",
+                    },
+                )
+            except Exception:
+                pass
         return allowed
 
     def _compute_allowed(self, platform: str, bot_id: str | None, session_id: str | None, module_key: str) -> bool:
@@ -709,6 +726,22 @@ class ScopeManager:
         self._put_cache(self._identity_cache, cache_key, result)
         if not result:
             self._stats["identity_denied"] += 1
+            # 拦截可观测（方向十一）：身份维度拒绝广播 scope.blocked
+            try:
+                from .lifecycle import lifecycle as _lifecycle
+
+                _lifecycle.fire(
+                    "scope.blocked",
+                    {
+                        "dimension": "identity",
+                        "platform": platform or "",
+                        "bot_id": bot_id or "",
+                        "session_id": session_id or "",
+                        "user_id": user_id or "",
+                    },
+                )
+            except Exception:
+                pass
         return result
 
     # ==================== ③ 出站维度 ====================
