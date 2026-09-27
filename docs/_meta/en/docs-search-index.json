@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1680,
+  "total_keywords": 1678,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -51,7 +51,7 @@
     "1. Configuration Hierarchy and Overriding": [
       {
         "document": "advanced/scope.md",
-        "line": 283,
+        "line": 311,
         "level": 3,
         "title": "1. Configuration Hierarchy and Overriding"
       }
@@ -653,7 +653,7 @@
     "2. Module/Command Not Responding": [
       {
         "document": "advanced/scope.md",
-        "line": 289,
+        "line": 318,
         "level": 3,
         "title": "2. Module/Command Not Responding"
       }
@@ -1082,14 +1082,6 @@
         "title": "3. Missing `self` Field"
       }
     ],
-    "3. Outbound Action Denied When Troubleshooting": [
-      {
-        "document": "advanced/scope.md",
-        "line": 303,
-        "level": 3,
-        "title": "3. Outbound Action Denied When Troubleshooting"
-      }
-    ],
     "3. Platform Type Mapping": [
       {
         "document": "standards/session-types.md",
@@ -1192,6 +1184,14 @@
         "line": 300,
         "level": 3,
         "title": "3. Trigger Build"
+      }
+    ],
+    "3. Troubleshooting Outbound Actions Rejected": [
+      {
+        "document": "advanced/scope.md",
+        "line": 333,
+        "level": 3,
+        "title": "3. Troubleshooting Outbound Actions Rejected"
       }
     ],
     "3.1 Common Fields": [
@@ -1477,7 +1477,7 @@
     "4. Session Identifier Isolation Across Platforms": [
       {
         "document": "advanced/scope.md",
-        "line": 314,
+        "line": 344,
         "level": 3,
         "title": "4. Session Identifier Isolation Across Platforms"
       }
@@ -2705,7 +2705,7 @@
     "Adapter Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 181,
+        "line": 182,
         "level": 3,
         "title": "Adapter Lifecycle"
       }
@@ -2857,7 +2857,7 @@
     "Advanced: Dictionary-style Dot-Path Fallback": [
       {
         "document": "advanced/scope.md",
-        "line": 256,
+        "line": 262,
         "level": 3,
         "title": "Advanced: Dictionary-style Dot-Path Fallback"
       }
@@ -3153,7 +3153,7 @@
     "Background Task Ownership and Automatic Cancellation": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 404,
+        "line": 405,
         "level": 2,
         "title": "Background Task Ownership and Automatic Cancellation"
       }
@@ -3579,7 +3579,7 @@
     "Binding Inheritance (merge)": [
       {
         "document": "advanced/scope.md",
-        "line": 101,
+        "line": 107,
         "level": 3,
         "title": "Binding Inheritance (merge)"
       }
@@ -3793,7 +3793,7 @@
     "Cache and Hot Reload": [
       {
         "document": "advanced/scope.md",
-        "line": 271,
+        "line": 299,
         "level": 2,
         "title": "Cache and Hot Reload"
       }
@@ -4229,7 +4229,7 @@
     "Command System": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 233,
+        "line": 234,
         "level": 3,
         "title": "Command System"
       }
@@ -4280,14 +4280,6 @@
         "line": 111,
         "level": 3,
         "title": "Common Fields (All Event Types)"
-      }
-    ],
-    "Common Issues and Considerations": [
-      {
-        "document": "advanced/scope.md",
-        "line": 281,
-        "level": 2,
-        "title": "Common Issues and Considerations"
       }
     ],
     "Common Methods": [
@@ -4355,7 +4347,7 @@
     "Complete API Reference": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 348,
+        "line": 349,
         "level": 2,
         "title": "Complete API Reference"
       }
@@ -4489,7 +4481,7 @@
     "Configuration Changes": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 156,
+        "line": 157,
         "level": 3,
         "title": "Configuration Changes"
       }
@@ -4563,7 +4555,7 @@
     "Configuration File": [
       {
         "document": "advanced/scope.md",
-        "line": 48,
+        "line": 54,
         "level": 2,
         "title": "Configuration File"
       },
@@ -4593,7 +4585,7 @@
     "Configuration Format Validation": [
       {
         "document": "advanced/scope.md",
-        "line": 277,
+        "line": 305,
         "level": 2,
         "title": "Configuration Format Validation"
       }
@@ -5005,7 +4997,7 @@
     "Core Initialization": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 139,
+        "line": 140,
         "level": 3,
         "title": "Core Initialization"
       }
@@ -5275,7 +5267,7 @@
     "Decision (Three Questions)": [
       {
         "document": "advanced/scope.md",
-        "line": 185,
+        "line": 191,
         "level": 3,
         "title": "Decision (Three Questions)"
       }
@@ -5283,7 +5275,7 @@
     "Decision Semantics": [
       {
         "document": "advanced/scope.md",
-        "line": 154,
+        "line": 160,
         "level": 3,
         "title": "Decision Semantics"
       }
@@ -6397,7 +6389,7 @@
     "Event Reception and Processing": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 193,
+        "line": 194,
         "level": 3,
         "title": "Event Reception and Processing"
       }
@@ -6809,7 +6801,7 @@
     "Fixed Bugs": [
       {
         "document": "bug-tracker.md",
-        "line": 115,
+        "line": 113,
         "level": 2,
         "title": "Fixed Bugs"
       }
@@ -7028,6 +7020,14 @@
         "title": "Frequently Asked Questions"
       }
     ],
+    "Frequently Asked Questions and Precautions": [
+      {
+        "document": "advanced/scope.md",
+        "line": 309,
+        "level": 2,
+        "title": "Frequently Asked Questions and Precautions"
+      }
+    ],
     "Friend Addition": [
       {
         "document": "getting-started/event-handling.md",
@@ -7119,7 +7119,7 @@
     "General": [
       {
         "document": "advanced/scope.md",
-        "line": 244,
+        "line": 250,
         "level": 3,
         "title": "General"
       }
@@ -7253,7 +7253,7 @@
     "Global Fallback: `default_allow`": [
       {
         "document": "advanced/scope.md",
-        "line": 37,
+        "line": 43,
         "level": 2,
         "title": "Global Fallback: `default_allow`"
       }
@@ -7365,7 +7365,7 @@
     "HTTP Client": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 306,
+        "line": 307,
         "level": 3,
         "title": "HTTP Client"
       }
@@ -7413,7 +7413,7 @@
     "HTTP Routing": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 248,
+        "line": 249,
         "level": 3,
         "title": "HTTP Routing"
       }
@@ -7664,12 +7664,12 @@
         "title": "Honest Boundaries (Can't Be Blocked)"
       }
     ],
-    "Hook Breakpoints Overview": [
+    "Hook Breakpoint Overview": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 113,
+        "line": 114,
         "level": 2,
-        "title": "Hook Breakpoints Overview"
+        "title": "Hook Breakpoint Overview"
       }
     ],
     "Hot Module Reload Architecture": [
@@ -8154,6 +8154,14 @@
         "title": "Interactive Session System"
       }
     ],
+    "Interception Observability: `scope.blocked` Event": [
+      {
+        "document": "advanced/scope.md",
+        "line": 277,
+        "level": 2,
+        "title": "Interception Observability: `scope.blocked` Event"
+      }
+    ],
     "Internal Breakdown of Hot Update Chain": [
       {
         "document": "user-guide/configuration.md",
@@ -8181,7 +8189,7 @@
     "Internationalization": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 316,
+        "line": 317,
         "level": 3,
         "title": "Internationalization"
       }
@@ -8409,7 +8417,7 @@
     "Listener Query (has_handlers)": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 101,
+        "line": 102,
         "level": 3,
         "title": "Listener Query (has_handlers)"
       }
@@ -8725,7 +8733,7 @@
     "Matching Entry Syntax (Unified Across the System)": [
       {
         "document": "advanced/scope.md",
-        "line": 24,
+        "line": 30,
         "level": 2,
         "title": "Matching Entry Syntax (Unified Across the System)"
       }
@@ -9019,7 +9027,7 @@
     "Message Sending": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 218,
+        "line": 219,
         "level": 3,
         "title": "Message Sending"
       },
@@ -9427,7 +9435,7 @@
     "Module Lifecycle": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 171,
+        "line": 172,
         "level": 3,
         "title": "Module Lifecycle"
       },
@@ -9516,12 +9524,12 @@
         "title": "Module Troubleshooting Guide"
       }
     ],
-    "Module Usage Example": [
+    "Module Usage Examples": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 377,
+        "line": 378,
         "level": 2,
-        "title": "Module Usage Example"
+        "title": "Module Usage Examples"
       }
     ],
     "Module-Level Control": [
@@ -9865,7 +9873,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 435,
+        "line": 436,
         "level": 2,
         "title": "Notes"
       },
@@ -9989,7 +9997,7 @@
     "One-Time Registration (once)": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 87,
+        "line": 88,
         "level": 3,
         "title": "One-Time Registration (once)"
       }
@@ -11159,7 +11167,7 @@
     "Registration and Unregistration": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 350,
+        "line": 351,
         "level": 3,
         "title": "Registration and Unregistration"
       }
@@ -11179,7 +11187,7 @@
       },
       {
         "document": "advanced/lifecycle.md",
-        "line": 445,
+        "line": 446,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11901,7 +11909,7 @@
     "Rule Forms (Inline Table)": [
       {
         "document": "advanced/scope.md",
-        "line": 137,
+        "line": 143,
         "level": 3,
         "title": "Rule Forms (Inline Table)"
       }
@@ -11949,7 +11957,7 @@
     "Runtime API": [
       {
         "document": "advanced/scope.md",
-        "line": 175,
+        "line": 181,
         "level": 2,
         "title": "Runtime API"
       }
@@ -12709,7 +12717,7 @@
     "Standard Event Definitions": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 322,
+        "line": 323,
         "level": 2,
         "title": "Standard Event Definitions"
       }
@@ -12885,7 +12893,7 @@
     "Storage Connection Status": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 284,
+        "line": 285,
         "level": 3,
         "title": "Storage Connection Status"
       }
@@ -13339,7 +13347,7 @@
     "Topology API": [
       {
         "document": "advanced/scope.md",
-        "line": 318,
+        "line": 348,
         "level": 2,
         "title": "Topology API"
       }
@@ -13411,7 +13419,7 @@
     "Triggering": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 358,
+        "line": 359,
         "level": 3,
         "title": "Triggering"
       }
@@ -13929,7 +13937,7 @@
     "Utilities": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 367,
+        "line": 368,
         "level": 3,
         "title": "Utilities"
       }
@@ -14095,7 +14103,7 @@
     "WebSocket": [
       {
         "document": "advanced/lifecycle.md",
-        "line": 263,
+        "line": 264,
         "level": 3,
         "title": "WebSocket"
       }
@@ -14318,26 +14326,26 @@
         "title": "Yunhu User Platform Features Documentation"
       }
     ],
-    "[BUG-001] Event handler registration duplication causes event to be processed multiple times": [
+    "[BUG-001] Event handler registration duplication causing multiple event processing": [
       {
         "document": "bug-tracker.md",
-        "line": 117,
+        "line": 115,
         "level": 3,
-        "title": "[BUG-001] Event handler registration duplication causes event to be processed multiple times"
+        "title": "[BUG-001] Event handler registration duplication causing multiple event processing"
       }
     ],
-    "[BUG-002] Adapter configuration path type error in Init command": [
+    "[BUG-002] Init command adapter configuration path type error": [
       {
         "document": "bug-tracker.md",
-        "line": 137,
+        "line": 135,
         "level": 3,
-        "title": "[BUG-002] Adapter configuration path type error in Init command"
+        "title": "[BUG-002] Init command adapter configuration path type error"
       }
     ],
     "[BUG-003] Commands fail after restart": [
       {
         "document": "bug-tracker.md",
-        "line": 161,
+        "line": 159,
         "level": 3,
         "title": "[BUG-003] Commands fail after restart"
       }
@@ -14345,7 +14353,7 @@
     "[BUG-004] Lifecycle event handlers not cleaned up": [
       {
         "document": "bug-tracker.md",
-        "line": 181,
+        "line": 179,
         "level": 3,
         "title": "[BUG-004] Lifecycle event handlers not cleaned up"
       }
@@ -14353,231 +14361,231 @@
     "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard": [
       {
         "document": "bug-tracker.md",
-        "line": 201,
+        "line": 199,
         "level": 3,
         "title": "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard"
       }
     ],
-    "[BUG-006] adapter.clear() does not clean up _started_instances causing incorrect state after restart": [
+    "[BUG-006] adapter.clear() not clearing _started_instances causing incorrect state after restart": [
       {
         "document": "bug-tracker.md",
-        "line": 221,
+        "line": 219,
         "level": 3,
-        "title": "[BUG-006] adapter.clear() does not clean up _started_instances causing incorrect state after restart"
+        "title": "[BUG-006] adapter.clear() not clearing _started_instances causing incorrect state after restart"
       }
     ],
     "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()": [
       {
         "document": "bug-tracker.md",
-        "line": 241,
+        "line": 239,
         "level": 3,
         "title": "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()"
       }
     ],
-    "[BUG-008] Bot offline event is repeatedly submitted during shutdown": [
+    "[BUG-008] Bot offline event duplicated during shutdown": [
       {
         "document": "bug-tracker.md",
-        "line": 261,
+        "line": 259,
         "level": 3,
-        "title": "[BUG-008] Bot offline event is repeatedly submitted during shutdown"
+        "title": "[BUG-008] Bot offline event duplicated during shutdown"
       }
     ],
-    "[BUG-009] LazyModule synchronous access to BaseModule causes incomplete initialization": [
+    "[BUG-009] LazyModule synchronous access to BaseModule causing incomplete initialization": [
       {
         "document": "bug-tracker.md",
-        "line": 281,
+        "line": 279,
         "level": 3,
-        "title": "[BUG-009] LazyModule synchronous access to BaseModule causes incomplete initialization"
+        "title": "[BUG-009] LazyModule synchronous access to BaseModule causing incomplete initialization"
       }
     ],
-    "[BUG-010] Multi-threaded configuration system write causes data loss": [
+    "[BUG-010] Multi-threaded configuration system write causing data loss": [
       {
         "document": "bug-tracker.md",
-        "line": 301,
+        "line": 299,
         "level": 3,
-        "title": "[BUG-010] Multi-threaded configuration system write causes data loss"
+        "title": "[BUG-010] Multi-threaded configuration system write causing data loss"
       }
     ],
-    "[BUG-011] Windows Ctrl+C does not stop the program": [
+    "[BUG-011] Windows Ctrl+C unable to stop program": [
       {
         "document": "bug-tracker.md",
-        "line": 324,
+        "line": 322,
         "level": 3,
-        "title": "[BUG-011] Windows Ctrl+C does not stop the program"
+        "title": "[BUG-011] Windows Ctrl+C unable to stop program"
       }
     ],
-    "[BUG-012] Hot restart does not activate updated module Python code": [
+    "[BUG-012] Hot restart after module update not生效": [
       {
         "document": "bug-tracker.md",
-        "line": 348,
+        "line": 346,
         "level": 3,
-        "title": "[BUG-012] Hot restart does not activate updated module Python code"
+        "title": "[BUG-012] Hot restart after module update not生效"
       }
     ],
-    "[BUG-013] Module loading strategy sorting logic error": [
+    "[BUG-013] Module load strategy sorting logic error": [
       {
         "document": "bug-tracker.md",
-        "line": 368,
+        "line": 366,
         "level": 3,
-        "title": "[BUG-013] Module loading strategy sorting logic error"
+        "title": "[BUG-013] Module load strategy sorting logic error"
       }
     ],
-    "[BUG-014] Adapter middleware returning None causes event data loss": [
+    "[BUG-014] Adapter middleware returning None causing event data loss": [
       {
         "document": "bug-tracker.md",
-        "line": 388,
+        "line": 386,
         "level": 3,
-        "title": "[BUG-014] Adapter middleware returning None causes event data loss"
+        "title": "[BUG-014] Adapter middleware returning None causing event data loss"
       }
     ],
     "[BUG-015] Configuration file path depends on working directory": [
       {
         "document": "bug-tracker.md",
-        "line": 408,
+        "line": 406,
         "level": 3,
         "title": "[BUG-015] Configuration file path depends on working directory"
       }
     ],
-    "[BUG-016] BaseStorage confuses storing None value with missing key": [
+    "[BUG-016] BaseStorage confusing storing None value with missing key": [
       {
         "document": "bug-tracker.md",
-        "line": 428,
+        "line": 426,
         "level": 3,
-        "title": "[BUG-016] BaseStorage confuses storing None value with missing key"
+        "title": "[BUG-016] BaseStorage confusing storing None value with missing key"
       }
     ],
     "[BUG-017] WebSocket route auto_accept flag lost after service restart": [
       {
         "document": "bug-tracker.md",
-        "line": 448,
+        "line": 446,
         "level": 3,
         "title": "[BUG-017] WebSocket route auto_accept flag lost after service restart"
       }
     ],
-    "[BUG-018] HTTP/WS client concurrent calls cause crashes and connection leaks": [
+    "[BUG-018] HTTP/WS client concurrent calls causing crashes and connection leaks": [
       {
         "document": "bug-tracker.md",
-        "line": 468,
+        "line": 466,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS client concurrent calls cause crashes and connection leaks"
+        "title": "[BUG-018] HTTP/WS client concurrent calls causing crashes and connection leaks"
       }
     ],
-    "[BUG-019] Adapter hot reload causes route conflicts leading to reload failure": [
+    "[BUG-019] Adapter hot reload route conflict causing reload failure": [
       {
         "document": "bug-tracker.md",
-        "line": 496,
+        "line": 494,
         "level": 3,
-        "title": "[BUG-019] Adapter hot reload causes route conflicts leading to reload failure"
+        "title": "[BUG-019] Adapter hot reload route conflict causing reload failure"
       }
     ],
-    "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in the script's directory": [
+    "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in script directory": [
       {
         "document": "bug-tracker.md",
-        "line": 520,
+        "line": 518,
         "level": 3,
-        "title": "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in the script's directory"
+        "title": "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in script directory"
       }
     ],
-    "[BUG-021] SQL query builder rejects legitimate wildcards and list expressions": [
+    "[BUG-021] SQL query builder rejects valid wildcards and list expressions": [
       {
         "document": "bug-tracker.md",
-        "line": 540,
+        "line": 538,
         "level": 3,
-        "title": "[BUG-021] SQL query builder rejects legitimate wildcards and list expressions"
+        "title": "[BUG-021] SQL query builder rejects valid wildcards and list expressions"
       }
     ],
-    "[BUG-022] _resolve_account() account resolution regression (_accounts_data not filled)": [
+    "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)": [
       {
         "document": "bug-tracker.md",
-        "line": 570,
+        "line": 568,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() account resolution regression (_accounts_data not filled)"
+        "title": "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)"
       }
     ],
-    "[BUG-023] After modifying account configuration, adapter cache is not refreshed causing account resolution failure": [
+    "[BUG-023] Adapter cache not refreshed after account configuration change causing account resolution failure": [
       {
         "document": "bug-tracker.md",
-        "line": 609,
+        "line": 607,
         "level": 3,
-        "title": "[BUG-023] After modifying account configuration, adapter cache is not refreshed causing account resolution failure"
+        "title": "[BUG-023] Adapter cache not refreshed after account configuration change causing account resolution failure"
       }
     ],
     "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill": [
       {
         "document": "bug-tracker.md",
-        "line": 629,
+        "line": 627,
         "level": 3,
         "title": "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill"
       }
     ],
-    "[BUG-025] on_config_update callback not called by core router": [
+    "[BUG-025] on_config_update callback not triggered by core routes": [
       {
         "document": "bug-tracker.md",
-        "line": 675,
+        "line": 673,
         "level": 3,
-        "title": "[BUG-025] on_config_update callback not called by core router"
+        "title": "[BUG-025] on_config_update callback not triggered by core routes"
       }
     ],
     "[BUG-026] notice/request event reply target inference error": [
       {
         "document": "bug-tracker.md",
-        "line": 705,
+        "line": 703,
         "level": 3,
         "title": "[BUG-026] notice/request event reply target inference error"
       }
     ],
-    "[BUG-027] Router rate-limiting cleanup task uses fixed window causing long-window rate-limiting rules to fail": [
+    "[BUG-027] Route rate-limiting cleanup task uses fixed window causing long-window rules to fail": [
       {
         "document": "bug-tracker.md",
-        "line": 736,
+        "line": 734,
         "level": 3,
-        "title": "[BUG-027] Router rate-limiting cleanup task uses fixed window causing long-window rate-limiting rules to fail"
+        "title": "[BUG-027] Route rate-limiting cleanup task uses fixed window causing long-window rules to fail"
       }
     ],
-    "[BUG-029] Configuration listener task broadcasts incomplete TOML and silently swallows exceptions": [
+    "[BUG-029] Configuration listener broadcasts incomplete TOML and silently swallows exceptions": [
       {
         "document": "bug-tracker.md",
-        "line": 768,
+        "line": 766,
         "level": 3,
-        "title": "[BUG-029] Configuration listener task broadcasts incomplete TOML and silently swallows exceptions"
+        "title": "[BUG-029] Configuration listener broadcasts incomplete TOML and silently swallows exceptions"
       }
     ],
-    "[BUG-030] Configuration watcher race condition causes setConfig delayed write silently drops data": [
+    "[BUG-030] Configuration watcher race causes setConfig delay write to silently drop data": [
       {
         "document": "bug-tracker.md",
-        "line": 804,
+        "line": 802,
         "level": 3,
-        "title": "[BUG-030] Configuration watcher race condition causes setConfig delayed write silently drops data"
+        "title": "[BUG-030] Configuration watcher race causes setConfig delay write to silently drop data"
       }
     ],
-    "[BUG-032] Configuration delay write period \"write after read\" reads old value": [
+    "[BUG-032] Configuration delay write period \"write-then-read\" reads old values": [
       {
         "document": "bug-tracker.md",
-        "line": 840,
+        "line": 838,
         "level": 3,
-        "title": "[BUG-032] Configuration delay write period \"write after read\" reads old value"
+        "title": "[BUG-032] Configuration delay write period \"write-then-read\" reads old values"
       }
     ],
-    "[BUG-033] wait_reply hangs replies are starved by high-priority processors": [
+    "[BUG-033] wait_reply hung reply is starved by high-priority handlers": [
       {
         "document": "bug-tracker.md",
-        "line": 862,
+        "line": 860,
         "level": 3,
-        "title": "[BUG-033] wait_reply hangs replies are starved by high-priority processors"
+        "title": "[BUG-033] wait_reply hung reply is starved by high-priority handlers"
       }
     ],
-    "[BUG-034] Scope persist=False runtime binding is silently overwritten by any subsequent configuration write": [
+    "[BUG-034] Scope persist=False runtime binding is silently overridden by subsequent configuration writes": [
       {
         "document": "bug-tracker.md",
-        "line": 884,
+        "line": 882,
         "level": 3,
-        "title": "[BUG-034] Scope persist=False runtime binding is silently overwritten by any subsequent configuration write"
+        "title": "[BUG-034] Scope persist=False runtime binding is silently overridden by subsequent configuration writes"
       }
     ],
     "[BUG-035] Configuration panel select options and dict fields render as [object Object]": [
       {
         "document": "bug-tracker.md",
-        "line": 904,
+        "line": 902,
         "level": 3,
         "title": "[BUG-035] Configuration panel select options and dict fields render as [object Object]"
       }
@@ -14585,41 +14593,17 @@
     "[BUG-036] Multi-instance shared configuration directory causes occasional configuration write failures (ENOENT)": [
       {
         "document": "bug-tracker.md",
-        "line": 922,
+        "line": 920,
         "level": 3,
         "title": "[BUG-036] Multi-instance shared configuration directory causes occasional configuration write failures (ENOENT)"
       }
     ],
-    "[BUG-037] Space-separated command names registered but never triggered": [
+    "[BUG-037] Empty space command name registration never triggers": [
       {
         "document": "bug-tracker.md",
-        "line": 948,
+        "line": 946,
         "level": 3,
-        "title": "[BUG-037] Space-separated command names registered but never triggered"
-      }
-    ],
-    "[BUG-038] ORM self-managed transactions are skipped on PostgreSQL, data insertion silently lost": [
-      {
-        "document": "bug-tracker.md",
-        "line": 972,
-        "level": 3,
-        "title": "[BUG-038] ORM self-managed transactions are skipped on PostgreSQL, data insertion silently lost"
-      }
-    ],
-    "[BUG-039] ORM boolean field DDL default value `1/0` causes PostgreSQL table creation failure": [
-      {
-        "document": "bug-tracker.md",
-        "line": 996,
-        "level": 3,
-        "title": "[BUG-039] ORM boolean field DDL default value `1/0` causes PostgreSQL table creation failure"
-      }
-    ],
-    "[BUG-040] `aGetTableColumns` executes with type error, PostgreSQL auto-migration silently fails": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1018,
-        "level": 3,
-        "title": "[BUG-040] `aGetTableColumns` executes with type error, PostgreSQL auto-migration silently fails"
+        "title": "[BUG-037] Empty space command name registration never triggers"
       }
     ],
     "__init__.py": [
@@ -15233,7 +15217,7 @@
     "① Module Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 198,
+        "line": 204,
         "level": 3,
         "title": "① Module Dimension"
       }
@@ -15241,7 +15225,7 @@
     "① Module Level": [
       {
         "document": "advanced/scope.md",
-        "line": 83,
+        "line": 89,
         "level": 2,
         "title": "① Module Level"
       }
@@ -15249,7 +15233,7 @@
     "② Identity Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 217,
+        "line": 223,
         "level": 3,
         "title": "② Identity Dimension"
       }
@@ -15257,7 +15241,7 @@
     "② Identity Dimension (Event Admission)": [
       {
         "document": "advanced/scope.md",
-        "line": 117,
+        "line": 123,
         "level": 2,
         "title": "② Identity Dimension (Event Admission)"
       }
@@ -15265,7 +15249,7 @@
     "③ Outbound Dimension": [
       {
         "document": "advanced/scope.md",
-        "line": 230,
+        "line": 236,
         "level": 3,
         "title": "③ Outbound Dimension"
       }
@@ -15273,7 +15257,7 @@
     "③ Outbound Dimension (Limiting Module Initiated Outbound Calls)": [
       {
         "document": "advanced/scope.md",
-        "line": 133,
+        "line": 139,
         "level": 2,
         "title": "③ Outbound Dimension (Limiting Module Initiated Outbound Calls)"
       }

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1651,
+  "total_keywords": 1649,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -337,7 +337,7 @@
     "1. 配置层级与覆盖": [
       {
         "document": "advanced/scope.md",
-        "line": 331,
+        "line": 357,
         "level": 3,
         "title": "1. 配置层级与覆盖"
       }
@@ -719,7 +719,7 @@
     "2. 模块/命令没反应": [
       {
         "document": "advanced/scope.md",
-        "line": 338,
+        "line": 364,
         "level": 3,
         "title": "2. 模块/命令没反应"
       }
@@ -1013,7 +1013,7 @@
     "3. 出站动作被拒时排查": [
       {
         "document": "advanced/scope.md",
-        "line": 353,
+        "line": 379,
         "level": 3,
         "title": "3. 出站动作被拒时排查"
       }
@@ -1397,7 +1397,7 @@
     "4. 会话标识跨平台隔离": [
       {
         "document": "advanced/scope.md",
-        "line": 364,
+        "line": 390,
         "level": 3,
         "title": "4. 会话标识跨平台隔离"
       }
@@ -4160,30 +4160,6 @@
         "title": "[BUG-037] 空格子命令名注册后永远无法被触发"
       }
     ],
-    "[BUG-038] ORM 自管事务在 PostgreSQL 上提交被跳过，插入数据静默丢失": [
-      {
-        "document": "bug-tracker.md",
-        "line": 973,
-        "level": 3,
-        "title": "[BUG-038] ORM 自管事务在 PostgreSQL 上提交被跳过，插入数据静默丢失"
-      }
-    ],
-    "[BUG-039] ORM 布尔字段 DDL 默认值 `1/0` 导致 PostgreSQL 建表失败": [
-      {
-        "document": "bug-tracker.md",
-        "line": 997,
-        "level": 3,
-        "title": "[BUG-039] ORM 布尔字段 DDL 默认值 `1/0` 导致 PostgreSQL 建表失败"
-      }
-    ],
-    "[BUG-040] `aGetTableColumns` 执行类型错误，PostgreSQL 上自动迁移静默失效": [
-      {
-        "document": "bug-tracker.md",
-        "line": 1019,
-        "level": 3,
-        "title": "[BUG-040] `aGetTableColumns` 执行类型错误，PostgreSQL 上自动迁移静默失效"
-      }
-    ],
     "__init__.py": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -4825,7 +4801,7 @@
       },
       {
         "document": "advanced/scope.md",
-        "line": 235,
+        "line": 236,
         "level": 3,
         "title": "① 模块维度"
       }
@@ -4833,7 +4809,7 @@
     "② 身份维度": [
       {
         "document": "advanced/scope.md",
-        "line": 259,
+        "line": 260,
         "level": 3,
         "title": "② 身份维度"
       }
@@ -4841,7 +4817,7 @@
     "② 身份维度（事件准入）": [
       {
         "document": "advanced/scope.md",
-        "line": 144,
+        "line": 145,
         "level": 2,
         "title": "② 身份维度（事件准入）"
       }
@@ -4849,7 +4825,7 @@
     "③ 出站维度": [
       {
         "document": "advanced/scope.md",
-        "line": 272,
+        "line": 273,
         "level": 3,
         "title": "③ 出站维度"
       }
@@ -4857,7 +4833,7 @@
     "③ 出站维度（限制模块发起出站调用）": [
       {
         "document": "advanced/scope.md",
-        "line": 161,
+        "line": 162,
         "level": 2,
         "title": "③ 出站维度（限制模块发起出站调用）"
       }
@@ -6555,7 +6531,7 @@
     "判定语义": [
       {
         "document": "advanced/scope.md",
-        "line": 187,
+        "line": 188,
         "level": 3,
         "title": "判定语义"
       }
@@ -6571,7 +6547,7 @@
     "判定（三问）": [
       {
         "document": "advanced/scope.md",
-        "line": 222,
+        "line": 223,
         "level": 3,
         "title": "判定（三问）"
       }
@@ -9061,7 +9037,7 @@
     "常见问题与注意事项": [
       {
         "document": "advanced/scope.md",
-        "line": 329,
+        "line": 355,
         "level": 2,
         "title": "常见问题与注意事项"
       }
@@ -9969,9 +9945,17 @@
     "拓扑树 API": [
       {
         "document": "advanced/scope.md",
-        "line": 369,
+        "line": 395,
         "level": 2,
         "title": "拓扑树 API"
+      }
+    ],
+    "拦截可观测：`scope.blocked` 事件": [
+      {
+        "document": "advanced/scope.md",
+        "line": 316,
+        "level": 2,
+        "title": "拦截可观测：`scope.blocked` 事件"
       }
     ],
     "指定发送账号": [
@@ -12997,7 +12981,7 @@
     "绑定继承（merge）": [
       {
         "document": "advanced/scope.md",
-        "line": 128,
+        "line": 129,
         "level": 3,
         "title": "绑定继承（merge）"
       }
@@ -13053,7 +13037,7 @@
     "缓存与热更新": [
       {
         "document": "advanced/scope.md",
-        "line": 315,
+        "line": 341,
         "level": 2,
         "title": "缓存与热更新"
       }
@@ -13349,7 +13333,7 @@
     "规则形态（内联表）": [
       {
         "document": "advanced/scope.md",
-        "line": 168,
+        "line": 169,
         "level": 3,
         "title": "规则形态（内联表）"
       }
@@ -13875,7 +13859,7 @@
     "运行时 API": [
       {
         "document": "advanced/scope.md",
-        "line": 211,
+        "line": 212,
         "level": 2,
         "title": "运行时 API"
       }
@@ -14259,7 +14243,7 @@
     "通用": [
       {
         "document": "advanced/scope.md",
-        "line": 286,
+        "line": 287,
         "level": 3,
         "title": "通用"
       }
@@ -14589,7 +14573,7 @@
     "配置格式校验": [
       {
         "document": "advanced/scope.md",
-        "line": 323,
+        "line": 349,
         "level": 2,
         "title": "配置格式校验"
       }
@@ -15157,7 +15141,7 @@
     "高级：字典式点分路径兜底": [
       {
         "document": "advanced/scope.md",
-        "line": 298,
+        "line": 299,
         "level": 3,
         "title": "高级：字典式点分路径兜底"
       }

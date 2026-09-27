@@ -16044,7 +16044,7 @@ async def on_message_received(data): ...
 async def on_any(data): ...
 ```
 
-- 目標 owner 無已註冊鈎子 → 事件**靜默丟棄**（可用 `has_handlers()` 提前探測）
+- 目標 owner 無已註冊鈎子 → 事件**不被消費**（可用 `has_handlers()` 提前探測）
 - `data` 為 dict 時自動攜帶 `_trace_id`（不覆蓋已有值）
 - `emit_sync` / `submit_event` 同樣支援 `to=` 參數
 - 模組間通訊的三層模型（RPC / 定向 / 廣播）見
@@ -16111,7 +16111,7 @@ sequenceDiagram
 | `core.init.complete` | SDK 初始化完成 | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(僅失敗時)}` |
 | `core.uninit.complete` | SDK 反初始化完成 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(僅失敗時)}` |
 
-**示例：啟動進度展示**
+**範例：啟動進度展示**
 
 ```python
 @sdk.lifecycle.on("core.init.stage")
@@ -16126,7 +16126,7 @@ def show_stage(data):
 | `config.set` | 配置項被修改 | `{"key": str, "old_value": Any, "new_value": Any}` |
 | `config.updated` | 外部編輯 config.toml 後檢測到整樹變更 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
-**示例：配置審計**
+**範例：配置審計**
 
 ```python
 @sdk.lifecycle.on("config.set")
@@ -16165,7 +16165,7 @@ def audit_config(data):
 | `adapter.event.dispatched` | 事件分發完成 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
 | `event.pre_process` | 事件處理器開始執行前 | `{"event_type": str, "platform": str, "detail_type": str}` |
 
-**示例：事件統計**
+**範例：事件統計**
 
 ```python
 event_counter = {}
@@ -16188,7 +16188,7 @@ def log_unhandled(data):
 | `message.sending` | 訊息即將發送 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 | `message.sent` | 訊息發送完成 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
-**示例：訊息發送審計**
+**範例：訊息發送審計**
 
 ```python
 @sdk.lifecycle.on("message.sending")
@@ -16203,7 +16203,7 @@ def log_sending(data):
 | `command.matched` | 命令被匹配並即將執行 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
 | `command.executed` | 命令執行完成 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(僅失敗時)}` |
 
-**示例：命令統計**
+**範例：命令統計**
 
 ```python
 @sdk.lifecycle.on("command.matched")
@@ -16218,7 +16218,7 @@ def count_commands(data):
 | `server.request` | HTTP 請求接收 | `{"method": str, "path": str, "client_ip": str}` |
 | `server.response` | HTTP 回應發送 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
-**示例：請求日誌**
+**範例：請求日誌**
 
 ```python
 @sdk.lifecycle.on("server.response")
@@ -16235,7 +16235,7 @@ def log_http(data):
 | `server.websocket.connect` | WebSocket 連接建立 | `{"path": str, "module_name": str, "client_ip": str}` |
 | `server.websocket.disconnect` | WebSocket 連接斷開 | `{"path": str, "module_name": str, "reason": str, "error": str(僅異常時)}` |
 
-**示例：WebSocket 連接監控**
+**範例：WebSocket 連接監控**
 
 ```python
 @sdk.lifecycle.on("server.websocket.connect")
@@ -16253,11 +16253,11 @@ def on_ws_disconnect(data):
 
 | 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
-| `storage.ready` | 儲存後端連接池就緒（每事件迴圈首次建池成功） | `{"backend": str}` |
+| `storage.ready` | 儲存後端連接池就緒（每事件循環首次建池成功） | `{"backend": str}` |
 | `storage.unreachable` | 連接重試耗盡進入冷卻期（期間操作快速失敗） | `{"backend": str, "error": str, "cooldown": float}` |
 | `storage.recovered` | 冷卻結束重連成功，儲存恢復可用 | `{"backend": str}` |
 
-**示例：儲存故障告警**
+**範例：儲存故障告警**
 
 ```python
 @sdk.lifecycle.on("storage.unreachable")
@@ -16340,7 +16340,7 @@ STANDARD_EVENTS = {
 | `lifecycle.list_hooks()` | 列出所有已註冊鈎子及處理器數量 |
 | `lifecycle.clear()` | 清除所有處理器和計時器 |
 
-## 模組中使用示例
+## 模組中使用範例
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -18537,17 +18537,17 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-作用域回答四個問題：**哪些模組可用、誰的事件收不收、某模組處理什麼文字、
+作用域回答四個問題：**哪些模組可用、誰的事件收不收、某模組處理什麼文本、
 模組能向外做什麼**。
 控制權完全交給使用者：在模組 / 適配器 / 處理器 / 出站呼叫註冊的**上層**（配置
-`ErisPulse.scope` 或執行時 `sdk.scope`）統一宣告，事件管線在入口、處理器過濾
+`ErisPulse.scope` 或執行時 `sdk.scope`）統一聲明，事件管線在入口、處理器過濾
 與出站閘口自動讀取並執行。
 
 | 維度 | 控制什麼 | 拒絕行為 | 配置路徑 |
 |------|---------|---------|---------|
-| **① 模組** | 哪些模組可用（平台 / Bot / 會話三級） | 靜默忽略（不回覆；命中的命令仍被認領阻斷） | `scope.platforms / bots / sessions` |
-| **② 身份** | 事件收不收（適配器 / Bot / 會話 / 用戶四級） | 入口完全丟棄（靜默） | `scope.identity.*` |
-| **③ 出站** | 模組能發起哪些出站呼叫（訊息 / API / 請求，方法級白名單黑名單） | 失敗回應（`retcode=34601`） | `scope.actions` |
+| **① 模組** | 哪些模組可用（平台 / Bot / 會話三級） | 被過濾模組不觸發、不回覆（攔截廣播 `scope.blocked` 事件；命中的命令仍被認領阻斷） | `scope.platforms / bots / sessions` |
+| **② 身份** | 事件收不收（適配器 / Bot / 會話 / 用戶四級） | 入口完全丟棄（攔截廣播 `scope.blocked` 事件） | `scope.identity.*` |
+| **③ 出站** | 模組能發起哪些出站呼叫（訊息 / API / 請求，方法級白黑名單） | 失敗回應（`retcode=34601`） | `scope.actions` |
 
 > **相關系統**：命令是特殊的訊息事件處理器，其用戶黑白名單（ACL）與
 > 實現參數覆寫由命令系統自持（`ErisPulse.event.command`），
@@ -18560,23 +18560,23 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 3. 讀寫：維度化參數方法（IDE 可補全）——
    `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`；
    另有字典式兜底 `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
-4. 事件處理器文字條件覆寫見
+4. 事件處理器文本條件覆寫見
    [事件處理入門 · 事件覆寫](../getting-started/event-handling.md#事件覆寫不改模組代碼覆寫任意事件類型的行為)；
    命令 ACL / 參數覆寫見[事件處理入門](../getting-started/event-handling.md)
 {!--< /tips >!--}
 
 ## 匹配條目語法（全系統統一）
 
-作用域所有「名字列表」（模組名、身份鍵、出站條目）共用同一套匹配語法
+作用域所有"名字列表"（模組名、身份鍵、出站條目）共用同一套匹配語法
 （`ErisPulse.Core.text_match`）：
 
 | 語法 | 示例 | 說明 |
 |------|------|------|
 | 精確名 | `"Chat"` | 全值比較，**大小寫不敏感** |
-| glob | `"Tool*"`、`"spam_*"` | `*` 任意串 / `?` 單字元 / `[seq]` 字元集，大小寫不敏感 |
-| 正則 | `"re:^Danger.*"` | 以 `re:` 前綴宣告，正則 `search` 匹配，預設大小寫不敏感 |
+| glob | `"Tool*"`、`"spam_*"` | `*` 任意串 / `?` 单字符 / `[seq]` 字符集，大小寫不敏感 |
+| 正則 | `"re:^Danger.*"` | 以 `re:` 前綴聲明，正則 `search` 匹配，預設大小寫不敏感 |
 
-- 非法正則**靜默降級**為「不匹配」（不拋錯、不崩潰）
+- 非法正則**靜默降級**為"不匹配"（不拋錯、不崩潰）
 - 裝飾器參數（`pattern=` / `regex=`）為固定語義：`pattern` 是 glob、`regex` 是正則源碼
   （不加 `re:` 前綴）；作用域配置裡的正則條目**必須**帶 `re:` 前綴
 
@@ -18588,10 +18588,10 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 - **模組維度**：未命中任何綁定 → `default_allow` 決定放行 / 拒絕
 - **身份維度**：未命中任何策略 → `default_allow` 決定放行 / 拒絕
 
-設為 `false` 即開啟「隱式拒絕」嚴格模式：白名單式管理，
+設為 `false` 即開啟"隱式拒絕"嚴格模式：白名單式管理，
 **沒顯式允許的一律拒絕**。
 
-> **例外**：③ 出站維度**不受** `default_allow` 影響——它是獨立的收紧開關，
+> **例外**：③ 出站維度**不受** `default_allow` 影響——它是獨立的緊收開關，
 > 預設全允許，僅顯式規則才限制（框架層 owner 為空的呼叫恆放行）。
 > 這樣嚴格的全局模式不會意外掐斷所有模組的訊息回覆。
 > 命令 ACL 有獨立的 `ErisPulse.event.command.default_allow` 兜底，互不影響。
@@ -18601,7 +18601,7 @@ CLI 擁有**獨立**的國際化模組（`ErisPulse.CLI.i18n`），與框架核�
 ```toml
 [ErisPulse.scope]
 default_allow = true        # 全局兜底（false = 隱式拒絕嚴格模式）
-cache_size = 1024           # LRU 缓存大小
+cache_size = 1024           # LRU 緩存大小
 
 # ── ① 模組維度（優先級：會話 > Bot > 平台）──
 [ErisPulse.scope.platforms.onebot11]
@@ -18624,7 +18624,7 @@ deny = true
 allow = ["u_admin"]           # 用戶鍵支援 glob / re: 正則
 deny = ["u_bad", "spam_*"]
 
-# ── ③ 出站維度（預設全允許，顯式收緊才禁）──
+# ── ③ 出站維度（預設全允許，顯式緊收才禁）──
 [ErisPulse.scope.actions.MyModule]
 send = { deny = true }                                    # 全禁發送
 api = { allow = ["get_*"] }                               # 僅允許查詢類標準 API
@@ -18633,8 +18633,8 @@ request = { deny = true }                                 # 禁止處理請求
 
 ## ① 模組維度
 
-回答「某個上下文裡，哪些模組可用」。預設全部開放；配置綁定後才開始過濾，
-**模組與適配器無需任何修改**。
+回答"某個上下文裡，哪些模組可用"。預設全部開放；配置綁定後才開始過濾，
+**模組與適配器無需任何改動**。
 
 ```mermaid
 flowchart TD
@@ -18642,22 +18642,23 @@ flowchart TD
     B --> C{"解析鏈：會話級 > Bot 級 > 平台級<br/>（子級 merge = true 時逐級並集）"}
     C -->|"命中"| D["blocked 命中 → 拒絕<br/>modules 非空 → 僅白名單放行<br/>都空 → default_allow"]
     C -->|"未命中"| E["default_allow（預設 true = 放行）"]
-    D -->|"拒絕"| Z["靜默忽略<br/>（不回覆、僅 TRACE 日誌；命中的命令仍被認領阻斷）"]
+    D -->|"拒絕"| Z["不回覆<br/>（攔截廣播 `scope.blocked` 事件；命中的命令仍被認領阻斷）"]
 ```
 
 - **解析優先級：會話級 > Bot 級 > 平台級**，高優先級綁定**整體覆蓋**低優先級；
   子級綁定寫 `merge = true` 時改為與低優先級**逐條目並集**（modules / blocked 各自合併，
   `merge` 本身是控制鍵，不算條目）
-- **靜默語義**：被過濾模組的命令與處理器不觸發、不回覆，僅 TRACE 級日誌可見
-  （`core.scope.denied`）；命中的**命令**仍會被認領阻斷——命令文字不再漏給
-  低優先級訊息處理器，消除「命令被拒後訊息處理器又回應一次」的雙重回應歧義
+- **預設語義**：被過濾模組的命令與處理器不觸發、不回覆，TRACE 級日誌可見
+  （`core.scope.denied`）；攔截同時廣播 `scope.blocked` 生命週期事件（訂閱
+  即可觀測誰被擋、為何被擋）；命中的**命令**仍會被認領阻斷——命令文本不再漏給
+  低優先級訊息處理器，消除"命令被拒後訊息處理器又回應一次"的雙重回應歧義
 - **框架級處理器**（`scope_exempt=True` 或 owner 為空）不受影響；模組名為空（框架層資源）恆放行
 - **會話感知幫助與命令查詢**：命令查詢 API（`command.help` /
   `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`，
   以及 `module.get_commands_overview`）均支援可選 `event=` 或顯式
   `platform=` / `bot_id=` / `session_id=` 關鍵字——當前會話不可用模組的命令
-  不再出現在結果中（`get_command` 回傳 None、單命令幫助按「未註冊」處理，
-  與靜默語義一致）；不傳上下文則保持全量行為
+  不再出現在結果中（`get_command` 返回 None、單命令幫助按"未註冊"處理，
+  與預設語義一致）；不傳上下文則保持全量行為
 
 ### 綁定繼承（merge）
 
@@ -18677,13 +18678,13 @@ merge = true                    # 該 Bot 實際生效 = ["Chat", "Tool", "Music
 
 ## ② 身份維度（事件准入）
 
-回答「誰的事件收不收」。被拒絕的事件在**分發入口完全丟棄**——
+回答"誰的事件收不收"。被拒絕的事件在**分發入口完全丟棄**——
 不進入中間件與任何處理器（含框架級），僅 TRACE 級日誌可見（`core.scope.identity_denied`）。
 
 - **解析優先級：用戶 > 會話 > Bot > 適配器**，取最具體的已配置策略；deny 優先於 allow
 - 每級綁定是二元策略：`{ allow = true }` 或 `{ deny = true }`
 - 用戶鍵支援 glob / 正則（如 `"spam_*"` 拉黑一批垃圾用戶）
-- 典型用法——上級 deny、個人 allow 做「例外放行」：
+- 典型用法——上級 deny、個人 allow 做"例外放行"：
 
 ```toml
 [ErisPulse.scope.identity.adapters.onebot11]
@@ -18728,7 +18729,7 @@ request = { deny = true }                               # 禁止處理請求 acc
 3. `allow` 列表非空且呼叫名未命中（或呼叫無名稱）→ 拒絕
 4. 其餘放行
 
-被拒呼叫不發起任何網路請求，直接回傳標準失敗回應
+被拒呼叫不發起任何網路請求，直接返回標準失敗回應
 （`retcode = 34601`，見 [api-response §5.3](../standards/api-response.md#53-框架擴展返回碼34xxx-平台錯誤段的低三位自定義)）。
 三個動作互相獨立，可只限其一。
 
@@ -18787,7 +18788,7 @@ scope.delete_module("onebot11", bot_id="123456")
 > **運行時綁定（`persist=False`）語義**：運行時綁定保存在獨立的覆蓋層中，
 > **任意後續配置寫入 / 配置檔案熱更新都不會沖掉它們**（配置樹重建後按寫入順序
 > 自動重放，含運行時刪除）。它們不落盤，進程重啟後丟失；模組卸載時該模組寫入的
-> 運行時綁定會被兜底清理。隨後對同一路徑執行 `persist=True` 寫入（使用者持久化語義）
+> 運行時綁定會被兜底清理。隨後對同一路徑執行 `persist=True` 寫入（用戶持久化語義）
 > 將取代運行時規則。
 
 ### ② 身份維度
@@ -18806,7 +18807,7 @@ scope.delete_identity("onebot11", user_id="u_bad")
 ### ③ 出站維度
 
 ```python
-# 設定限制規則（allow: str|list；deny: bool|str|list；整規則替換語義）
+# 設置限制規則（allow: str|list；deny: bool|str|list；整規則替換語義）
 scope.set_action("MyModule", "send", deny=True)                    # 全禁發送
 scope.set_action("MyModule", "send", allow=["Text"])               # 僅允許發文本
 scope.set_action("MyModule", "api", deny=["set_*", "leave_*"])     # 禁管理類 API
@@ -18846,18 +18847,43 @@ del scope["platforms.onebot11"]      # 刪
 "actions.MyModule" in scope          # 存在性
 ```
 
+## 拦截可觀測：`scope.blocked` 事件
+
+作用域攔截（模組過濾 / 身份拒絕）發生時會廣播生命週期事件 **`scope.blocked`**，
+讓"誰被擋、在哪一層被擋"可訂閱、可統計、可在 Dashboard 呈現——攔截預設
+不回覆，但不再是不可知的黑盒。
+
+| 字段 | 說明 |
+|------|------|
+| `dimension` | `"module"`（模組維度過濾）/ `"identity"`（身份准入拒絕） |
+| `module` | 被過濾的模組名（僅模組維度） |
+| `platform` / `bot_id` / `session_id` / `user_id` | 攔截發生的來源上下文 |
+
+```python
+from ErisPulse.Core.lifecycle import lifecycle
+
+@lifecycle.on("scope.blocked")
+def on_blocked(data):
+    print(f"已攔截：{data['dimension']} {data.get('module') or data.get('user_id')}")
+```
+
+- 事件經 `fire` 後台廣播（無監聽者時零開銷，不拖熱路徑）
+- 緩存命中的重複攔截**不**重複廣播——同一組合只在緩存失效時廣播一次
+- 與 `adapter.event.blocked`（中間件否決）相區分：那個是事件級丟棄，本
+  事件是作用域准入門的模組 / 身份過濾
+
 ## 緩存與熱更新
 
 - `is_allowed` / `is_identity_allowed` / `is_action_allowed` 結果帶 **LRU 緩存**
   （`scope.cache_size` 可調），`set` / `delete` /
   配置熱更新（`config.updated` / `config.set`）自動失效
 - 所有維度配置改了**立即生效**，無需重啟
-- 作用域是「逐事件」判斷，不跨事件記憶：配置變了，下一個事件即按新規則
+- 作用域是"逐事件"判斷，不跨事件記憶：配置變了，下一條事件即按新規則
 
 ## 配置格式校驗
 
-載入 / 熱更新時逐節校驗配置格式：類型錯誤的節（如 `platforms` 寫成了字串）、
-非法的出站規則（如 `allow` 寫成數字）、未知動作名、未知的頂層鍵（如 `alow` 拼錯）
+加載 / 熱更新時逐節校驗配置格式：類型錯誤的節（如 `platforms` 寫成了字串）、
+非法的出站規則（如 `allow` 寫成數字）、未知動作名、未知的頂層鍵（如 `alow` 拼寫錯誤）
 會輸出 **WARNING** 並忽略對應節 / 條目，其餘合法配置照常生效——寫錯不再靜默失效。
 
 ## 常見問題與注意事項
@@ -18865,7 +18891,7 @@ del scope["platforms.onebot11"]      # 刪
 ### 1. 配置層級與覆蓋
 
 - 模組維度：會話級 > Bot 級 > 平台級，**整體覆蓋**（子級 `merge = true` 時逐條目並集）。
-  想「平台允許 Chat，Bot 再加 Music」，可在 Bot 級寫 `merge = true`，或同時列出兩者
+  想"平台允許 Chat，Bot 再加 Music"，可在 Bot 級寫 `merge = true`，或同時列出兩者
 - 身份維度：用戶 > 會話 > Bot > 適配器，取**最具體**的已配置策略（可做例外放行）
 - 命令用戶黑白名單：精確命令名優先於 glob 鍵（見 `event.command.acl`）
 
@@ -18878,11 +18904,11 @@ from ErisPulse import sdk
 
 print(sdk.scope.is_allowed(event.get_platform(), bot_id, "MyModule", session_id))
 print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, user_id))
-print(sdk.scope.stats())   # module_filtered / identity_denied > 0 說明被靜默過濾
+print(sdk.scope.stats())   # module_filtered / identity_denied > 0 說明有攔截記錄
 ```
 
-被過濾是**靜默**的（模組維度與身份維度不回覆，避免暴露規則），但統計會累計；
-命令維度被 ACL 拒絕會顯式回覆「權限不足」。
+被過濾預設不回覆（模組維度與身份維度，避免暴露規則），但會廣播 `scope.blocked` 生命週期事件、統計持續累計；
+命令維度被 ACL 拒絕會顯式回覆"權限不足"。
 
 ### 3. 出站動作被拒時排查
 
@@ -18890,10 +18916,10 @@ print(sdk.scope.stats())   # module_filtered / identity_denied > 0 說明被靜�
 from ErisPulse import sdk
 
 print(sdk.scope.get("actions.MyModule"))
-print(sdk.scope.stats())   # action_denied > 0 說明有呼叫被擋截
+print(sdk.scope.stats())   # action_denied > 0 說明有呼叫被攔截
 ```
 
-擋截是**顯式**的：被拒呼叫回傳 `retcode = 34601` 的標準失敗回應（不發起網路請求）。
+攔截是**顯式**的：被拒呼叫返回 `retcode = 34601` 的標準失敗回應（不發起網路請求）。
 
 ### 4. 會話標識跨平台隔離
 
