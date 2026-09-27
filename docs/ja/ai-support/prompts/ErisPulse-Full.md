@@ -15817,11 +15817,11 @@ flowchart TD
 
 # ライフサイクル管理
 
-ErisPulse は、システム各コンポーネントの実行状態を監視し、監査、統計、カスタムロジックなどの拡張機能を実現するための統一されたフック/ライフサイクルシステムを提供しています。
+ErisPulse は、システムの各コンポーネントの実行状態を監視し、監査、統計、カスタムロジックなどの拡張機能を実現するための統一されたフック/ライフサイクルシステムを提供します。
 
-システムは以下の3種類のトリガ方法をサポートしています：
-- `await lifecycle.emit("event", data)` — 精簡版、任意のデータを渡す（`to="Owner"` の場合、特定の宛先に投送）
-- `lifecycle.emit_sync("event", data)` — 同期版（非非同期コンテキスト用）
+システムは以下の3つのトリガ方法をサポートしています：
+- `await lifecycle.emit("event", data)` — 精簡版、任意のデータを渡す（`to="Owner"` で指定送信）
+- `lifecycle.emit_sync("event", data)` — 同期版（非非同期コンテキストで使用）
 - `await lifecycle.submit_event("event", ...)` — 旧版との互換性、標準イベント形式を自動構築
 
 ## イベント処理メカニズム
@@ -15831,7 +15831,7 @@ ErisPulse は、システム各コンポーネントの実行状態を監視し�
 ```python
 from ErisPulse import sdk
 
-# デコレータ形式
+# デコレータ方式
 @sdk.lifecycle.on("module.load")
 async def on_module_load(data):
     print(f"モジュールのロード: {data}")
@@ -15842,9 +15842,9 @@ sdk.lifecycle.register("module.load", on_module_load, priority=10)
 # 登録解除
 sdk.lifecycle.unregister("module.load", on_module_load)
 
-# 所有者ごとの一括登録解除（モジュール/アダプタのアンロード時にフレームワークが自動的に呼び出す）
+# 所有者毎に一括解除（モジュール/アダプターのアンロード時にフレームワークが自動的に呼び出す）
 removed = sdk.lifecycle.unregister_by_owner("MyModule")
-print(f"クリーンアップされたライフサイクルフック数: {removed}")
+print(f"クリーンアップしたライフサイクルフック: {removed}")
 ```
 
 ### 優先度
@@ -15863,9 +15863,9 @@ async def second_handler(data):
 
 ### 点構造イベント
 
-特定のイベントをトリガすると、その親イベントもトリガされます：
-- `module.load` をトリガすると、`module` もトリガされます。
-- `adapter.event.receive` をトリガすると、`adapter.event` と `adapter` もトリガされます。
+具体的なイベントをトリガーすると、その親イベントもトリガーされます：
+- `module.load` をトリガーすると、`module` もトリガーされます
+- `adapter.event.receive` をトリガーすると、`adapter.event` と `adapter` もトリガーされます
 
 ### ワイルドカード
 
@@ -15874,110 +15874,111 @@ async def second_handler(data):
 ```python
 @sdk.lifecycle.on("*")
 async def on_anything(data):
-    print(f"イベント受信: {data}")
+    print(f"イベントを受信: {data}")
 ```
 
-### 定向配信（emit to=）
+### 定向送信（emit to=）
 
 > [!NOTE]
 > この機能は ErisPulse **2.8.0+** が必要です。
 
-`emit()` で `to` パラメータを指定すると、定向配信モードになります：イベントは、その所有者（owner）として登録されたハンドラにのみ配信されます（モジュールは `on_load` 内で登録されたフックは自動的に自身の所有者として登録されます）。他のモジュールやワイルドカード `*` ハンドラはイベントを感知しません。
+`emit()` に `to` パラメータを指定すると、定向送信モードになります：イベントは、その所有者（owner）として登録されたハンドラにのみ配信されます（モジュールは `on_load` 内で登録されたフックは自動的に自身の所有者になります）。他のモジュールやワイルドカード `*` ハンドラは感知しません。
 
 ```python
-# 投递側：イベントは Chat モジュールが登録したハンドラにのみ投递
+# 送信元：イベントは Chat モジュールが登録したハンドラにのみ送信
 await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
 
-# 訂正側（Chat モジュール内）：同名のハンドラを登録し、owner は登録時に自動的に記録されます
+# 受信元（Chat モジュール内）：同名のハンドラを登録し、owner は登録時に自動的に記録されます
 @sdk.lifecycle.on("message_received")
 async def on_message_received(data): ...
 
-@sdk.lifecycle.on("message")   # 点構造の親プレフィックスも同様に効きます（owner でフィルタリング）
+@sdk.lifecycle.on("message")   # 点式の親プレフィックスも同様に有効（owner でフィルタリング）
 async def on_any(data): ...
 ```
 
-- 目標の owner に登録されたハンドラがない場合 → イベントは**静かに破棄**されます（`has_handlers()` で事前に検出可能です）。
-- `data` が dict の場合、自動的に `_trace_id` を付与します（既存値を上書きしません）。
-- `emit_sync` / `submit_event` も `to=` パラメータをサポートしています。
-- モジュール間通信の3層モデル（RPC / 定向 / ブロードキャスト）については、[モジュール間通信](module-communication.md)を参照してください。
+- 目標の owner に登録されたハンドラがない場合 → イベントは**消費されません**（`has_handlers()` で事前に検出できます）
+- `data` が dict の場合、自動的に `_trace_id` を含みます（既存の値は上書きされません）
+- `emit_sync` / `submit_event` でも `to=` パラメータをサポートします
+- モジュール間通信の3層モデル（RPC / 定向 / ブロードキャスト）は
+  [モジュール間通信](module-communication.md) を参照してください
 
-### 一回限りの登録（once）
+### 1回限りの登録（once）
 
-2.7.0 から、`lifecycle.once()` で登録されたハンドラは**一度トリガされた後、自動的に登録解除**されます。これは「最初の準備完了」のような一回限りのフックに適しています。
+2.7.0 から、`lifecycle.once()` で登録されたハンドラは**1回実行後に自動的に登録解除**されます。これは「初回準備完了」のような1回限りのフックに適しています：
 
 ```python
 @sdk.lifecycle.once("core.init.complete")
 async def on_first_ready(data):
-    print("最初の準備完了、以降はトリガされません")
+    print("初回準備完了、以降はトリガーされません")
 ```
 
-- `on()` と同じ優先度パラメータの意味（`priority` 数値が大きいほど先に実行されます）。
-- 自動的に登録解除され、手動での `unregister` は不要です。
-- 同期/非同期のハンドラが両方サポートされています。
+- `on()` と同じ優先度パラメータの意味（`priority` 数値が大きいほど先に実行）
+- 自動的に登録解除、手動の `unregister` は不要
+- 同期/非同期ハンドラの両方をサポート
 
-### 監視者検索（has_handlers）
+### 監視者クエリ（has_handlers）
 
-ホットパスの短絡処理では、`has_handlers()` を使って監視者が存在するか事前に判断し、不要なイベントのループやタスクのスケジューリングを避けることができます。
+ホットパスの短絡処理では、`has_handlers()` を使って事前に監視者がいるかどうかを判断し、不要なイベントのループとタスクのスケジューリングを避けることができます：
 
 ```python
 if sdk.lifecycle.has_handlers("message.sending"):
     await sdk.lifecycle.emit("message.sending", send_ctx)
 ```
 
-- **正確なイベント名、ワイルドカード `*`、親イベント**の3つのマッチングをカバーしています。
-- 監視者がいない場合、`False` を返し、`emit` を安全にスキップできます。
+- **正確なイベント名、ワイルドカード `*`、親イベント**の3種類のマッチングをカバー
+- 監視者がいない場合、`False` を返し、`emit` を安全にスキップできます
 
-## フックブレークポイント一覧
+## フックの断点一覧
 
 プラットフォームからフレームワークにメッセージが届き、処理が完了する典型的なライフサイクルイベントの順序：
 
 ```mermaid
 sequenceDiagram
     participant P as プラットフォーム
-    participant A as アダプタ
-    participant F as フレームワークコア
-    participant M as モジュールハンドラ
+    participant A as アダプター
+    participant F as フレームワークのコア
+    participant M as モジュールのハンドラ
 
-    P->>A: ネイティブイベント到着
+    P->>A: プラットフォームのイベントが到着
     A->>F: adapter.event.receive（初期段階）
     F->>F: event.pre_process（ハンドラ実行前）
-    F->>M: ハンドラに配分（コマンド/メッセージ/通知など）
+    F->>M: ハンドラに分发（コマンド/メッセージ/通知など）
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending（送信前）
     F->>A: SendDSL で送信
     A->>P: プラットフォームに送信
     A->>F: message.sent（送信完了）
-    F->>F: adapter.event.dispatched（配分完了）
+    F->>F: adapter.event.dispatched（分发完了）
 ```
 
-フレームワークは以下のフックブレークポイントを内蔵しており、ユーザーは `@sdk.lifecycle.on()` で任意のブレークポイントを監視してカスタムロジックを実装できます。
+フレームワークは以下のフックの断点を内蔵しており、ユーザーは `@sdk.lifecycle.on()` で任意の断点を監視してカスタムロジックを実装できます。
 
 ### コア初期化
 
-| フック名 | トリガタイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `core.init.start` | SDK 初期化開始 | `{}` |
-| `core.init.stage` | 初期化各段階開始（バックグラウンドで発行） | `{"stage": str}`、値は `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
-| `core.init.complete` | SDK 初期化完了 | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(失敗時のみ)}` |
-| `core.uninit.complete` | SDK 反初期化完了 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(失敗時のみ)}` |
+| `core.init.start` | SDK の初期化開始 | `{}` |
+| `core.init.stage` | 初期化の各段階開始（バックグラウンドで発行） | `{"stage": str}`、値は `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
+| `core.init.complete` | SDK の初期化完了 | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(失敗時のみ)}` |
+| `core.uninit.complete` | SDK の反初期化完了 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(失敗時のみ)}` |
 
-**例：起動進捗表示**
+**例：起動の進行状況表示**
 
 ```python
 @sdk.lifecycle.on("core.init.stage")
 def show_stage(data):
-    print(f"[起動] 階段に進入: {data['stage']}")
+    print(f"[起動] 階段に到達: {data['stage']}")
 ```
 
-### 設定変更
+### 設定の変更
 
-| フック名 | トリガタイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
 | `config.set` | 設定項目が変更された | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | 外部で config.toml を編集した後に木全体の変更を検出 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.updated` | 外部から config.toml を編集した後にツリー全体の変更を検出 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
-**例：設定監査**
+**例：設定の監査**
 
 ```python
 @sdk.lifecycle.on("config.set")
@@ -15985,38 +15986,38 @@ def audit_config(data):
     print(f"[監査] {data['key']}: {data['old_value']} -> {data['new_value']}")
 ```
 
-### モジュールライフサイクル
+### モジュールのライフサイクル
 
-| フック名 | トリガタイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
 | `module.register` | モジュールクラスがマネージャーに登録された | `{"module_name": str, "success": bool}` |
-| `module.load` | モジュールのロードが完了した（インスタンス化成功） | `{"module_name": str, "success": bool}` |
-| `module.init` | モジュールの初期化が完了した（遅延ロード含む） | `{"module_name": str, "success": bool}` |
+| `module.load` | モジュールのロード完了（インスタンス化成功） | `{"module_name": str, "success": bool}` |
+| `module.init` | モジュールの初期化完了（遅延ロードも含む） | `{"module_name": str, "success": bool}` |
 | `module.unload` | モジュールのアンロード | `{"module_name": str, "success": bool}` |
-| `module.reload` | モジュールのホットリロードが完了した（依存モジュールの再ロード含む） | `{"module_name": str, "success": bool}` |
+| `module.reload` | モジュールのホットリロード完了（依存するモジュールも再ロード） | `{"module_name": str, "success": bool}` |
 
-### アダプタライフサイクル
+### アダプターのライフサイクル
 
-| フック名 | トリガタイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `adapter.load` | アダプタの登録が完了した | `{"platform": str, "success": bool}` |
-| `adapter.start` | アダプタの起動 | `{"platforms": [str]}` |
-| `adapter.status.change` | アダプタのステータスが変化した | `{"platform": str, "status": str, "retry_count": int, "error": str(失敗時のみ)}` |
-| `adapter.stop` | アダプタの停止 | `{"platforms": [str]}` |
-| `adapter.stopped` | アダプタの停止が完了した | `{"platforms": [str]}` |
+| `adapter.load` | アダプターの登録完了 | `{"platform": str, "success": bool}` |
+| `adapter.start` | アダプターの起動 | `{"platforms": [str]}` |
+| `adapter.status.change` | アダプターの状態変化 | `{"platform": str, "status": str, "retry_count": int, "error": str(失敗時のみ)}` |
+| `adapter.stop` | アダプターの停止 | `{"platforms": [str]}` |
+| `adapter.stopped` | アダプターの停止完了 | `{"platforms": [str]}` |
 | `adapter.bot.online` | Bot のオンライン | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
 | `adapter.bot.offline` | Bot のオフライン | `{"platform": str, "bot_id": str, "status": str}` |
 
-### イベント受信と処理
+### イベントの受信と処理
 
-| フック名 | トリガタイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `adapter.event.receive` | 外部プラットフォームイベントを受信した（初期段階） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
-| `adapter.event.blocked` | ミドルウェアがイベントを拒否した（`False` を返した場合、イベントは処理されず破棄される） | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
-| `adapter.event.dispatched` | イベントの配分が完了した | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
-| `event.pre_process` | イベントハンドラが実行される前に | `{"event_type": str, "platform": str, "detail_type": str}` |
+| `adapter.event.receive` | 外部プラットフォームイベントの受信（初期段階） | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.blocked` | ミドルウェアがイベントをブロック（`False` を返すと、イベントは処理されず他のハンドラにも渡されない） | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
+| `adapter.event.dispatched` | イベントの分发完了 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
+| `event.pre_process` | イベントハンドラの実行前 | `{"event_type": str, "platform": str, "detail_type": str}` |
 
-**例：イベント統計**
+**例：イベントの統計**
 
 ```python
 event_counter = {}
@@ -16032,14 +16033,14 @@ def log_unhandled(data):
         print(f"[未処理] {data['platform']}/{data['event_type']}")
 ```
 
-### メッセージ送信
+### メッセージの送信
 
-| フック名 | トリガタイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `message.sending` | メッセージが送信される直前 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
-| `message.sent` | メッセージの送信が完了した | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sending` | メッセージの送信直前 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | メッセージの送信完了 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
-**例：メッセージ送信監査**
+**例：メッセージ送信の監査**
 
 ```python
 @sdk.lifecycle.on("message.sending")
@@ -16049,12 +16050,12 @@ def log_sending(data):
 
 ### コマンドシステム
 
-| フック名 | トリガタイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `command.matched` | コマンドがマッチし、実行される直前 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
-| `command.executed` | コマンドの実行が完了した | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(失敗時のみ)}` |
+| `command.matched` | コマンドがマッチして実行直前 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
+| `command.executed` | コマンドの実行完了 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(失敗時のみ)}` |
 
-**例：コマンド統計**
+**例：コマンドの統計**
 
 ```python
 @sdk.lifecycle.on("command.matched")
@@ -16064,10 +16065,10 @@ def count_commands(data):
 
 ### HTTP ルーティング
 
-| フック名 | トリガタイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `server.request` | HTTP リクエストを受け取った | `{"method": str, "path": str, "client_ip": str}` |
-| `server.response` | HTTP レスポンスを送信した | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
+| `server.request` | HTTPリクエストの受信 | `{"method": str, "path": str, "client_ip": str}` |
+| `server.response` | HTTPレスポンスの送信 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
 **例：リクエストログ**
 
@@ -16079,14 +16080,14 @@ def log_http(data):
 
 ### WebSocket
 
-| フック名 | トリガタイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
 | `server.start` | ルーティングサーバーの起動 | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str(失敗時のみ)}` |
 | `server.stop` | ルーティングサーバーの停止 | `{}` |
-| `server.websocket.connect` | WebSocket 接続が確立した | `{"path": str, "module_name": str, "client_ip": str}` |
-| `server.websocket.disconnect` | WebSocket 接続が切断した | `{"path": str, "module_name": str, "reason": str, "error": str(異常時のみ)}` |
+| `server.websocket.connect` | WebSocket接続の確立 | `{"path": str, "module_name": str, "client_ip": str}` |
+| `server.websocket.disconnect` | WebSocket接続の切断 | `{"path": str, "module_name": str, "reason": str, "error": str(例外時のみ)}` |
 
-**例：WebSocket 接続監視**
+**例：WebSocket接続の監視**
 
 ```python
 @sdk.lifecycle.on("server.websocket.connect")
@@ -16100,41 +16101,41 @@ def on_ws_disconnect(data):
 
 ### ストレージ接続状態
 
-ストレージバックエンドの接続プールの確立、障害、および回復（すべてバックグラウンドで発行され、ストレージ操作をブロックしません）：
+ストレージバックエンドの接続プールの確立、障害、回復（すべてバックグラウンドで発行され、ストレージ操作をブロックしません）：
 
-| フック名 | トリガタイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `storage.ready` | ストレージバックエンドの接続プールが準備完了（各イベントループで最初にプールが成功した場合） | `{"backend": str}` |
-| `storage.unreachable` | 接続リトライが尽きてクールダウン期間に入る（この間、操作は即時失敗する） | `{"backend": str, "error": str, "cooldown": float}` |
-| `storage.recovered` | クールダウンが終了し、再接続に成功し、ストレージが再利用可能になった | `{"backend": str}` |
+| `storage.ready` | ストレージバックエンドの接続プールが準備完了（各イベントループで最初にプール確立に成功した場合） | `{"backend": str}` |
+| `storage.unreachable` | 接続リトライが尽きてクールダウン期間に入る（この間は操作は即座に失敗する） | `{"backend": str, "error": str, "cooldown": float}` |
+| `storage.recovered` | クールダウン終了後、再接続に成功し、ストレージが再利用可能になる | `{"backend": str}` |
 
-**例：ストレージ障害アラート**
+**例：ストレージ障害のアラート**
 
 ```python
 @sdk.lifecycle.on("storage.unreachable")
 def alert_storage_down(data):
-    print(f"[アラート] ストレージバックエンド {data['backend']} が利用不可: {data['error']}、{data['cooldown']}s 後に自動再接続")
+    print(f"[アラート] ストレージバックエンド {data['backend']} が利用不能: {data['error']}、{data['cooldown']}秒後に自動再接続")
 
 @sdk.lifecycle.on("storage.recovered")
 def notify_storage_back(data):
     print(f"[回復] ストレージバックエンド {data['backend']} が再利用可能になりました")
 ```
 
-### HTTP クライアント
+### HTTPクライアント
 
 `sdk.client` のリクエストと接続イベント（すべてバックグラウンドで発行）：
 
-| フック名 | トリガタイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `client.request.success` | HTTP リクエストが成功した | `{"method": str, "url": str, "status": int, "elapsed": float}` |
-| `client.request.failed` | HTTP リクエストがリトライを尽して最終的に失敗した | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
-| `client.ws.connect` | WebSocket 接続が確立した | `{"url": str}` |
+| `client.request.success` | HTTPリクエストが成功 | `{"method": str, "url": str, "status": int, "elapsed": float}` |
+| `client.request.failed` | HTTPリクエストがリトライを尽して最終的に失敗 | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
+| `client.ws.connect` | WebSocket接続の確立 | `{"url": str}` |
 
 ### 国際化
 
-| フック名 | トリガタイミング | データ |
+| フック名 | トリガータイミング | データ |
 |---------|---------|------|
-| `i18n.language.changed` | フレームワークの言語が切り替わった（`i18n.set_language`） | `{"language": str, "previous": str}` |
+| `i18n.language.changed` | フレームワークの言語が切り替わる（`i18n.set_language`） | `{"language": str, "previous": str}` |
 
 ## 標準イベント定義
 
@@ -16162,34 +16163,34 @@ STANDARD_EVENTS = {
 }
 ```
 
-## 完全な API リファレンス
+## 完全なAPIリファレンス
 
 ### 登録と解除
 
 | メソッド | 説明 |
 |------|------|
-| `@lifecycle.on(event, *, priority=0)` | デコレータでハンドラを登録します |
-| `lifecycle.register(event, handler, *, priority=0)` | プログラム的に登録します |
-| `lifecycle.unregister(event, handler=None)` | ハンドラの登録を解除します（handler=None の場合、該当イベントのすべてのハンドラを解除します） |
+| `@lifecycle.on(event, *, priority=0)` | デコレータでハンドラを登録 |
+| `lifecycle.register(event, handler, *, priority=0)` | プログラム的に登録 |
+| `lifecycle.unregister(event, handler=None)` | 登録解除（handler=None の場合は、そのイベントのすべてのハンドラを解除） |
 
-### トリガ
+### トリガー
 
 | メソッド | 説明 |
 |------|------|
-| `await lifecycle.emit(event, data=None, *, to=None)` | 非同期でトリガします。ハンドラは**並列実行**されます（互いにブロックせず、返却時にすべて完了）。返り値が None でない場合は、優先度順に data が置き換えられます。`to` で owner を指定すると、宛先に投げられます。 |
-| `lifecycle.fire(event, data=None, *, to=None)` | **バックグラウンドで発行（投げた後は即座に終了）**：ハンドラはバックグラウンドタスクで並列実行され、待機せず、返り値もありません。ハンドラがいない場合、オーバーヘッドはゼロです。高頻度のホットパスや純粋な観測イベントに適しています。シャットダウンシーケンスや順序に敏感な消費（例：`config.set`）は `emit` を使用してください。 |
-| `lifecycle.emit_sync(event, data=None, *, to=None)` | 同期でトリガします。非同期ハンドラは create_task でスケジュールされます。 |
-| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 旧版との互換性のために、標準イベント形式を自動的に構築します。`background=True` の場合、`fire` でバックグラウンドで発行されます。 |
+| `await lifecycle.emit(event, data=None, *, to=None)` | 非同期でトリガー、ハンドラは**並列に実行**（互いにブロッキングせず、戻り値はすべて完了時に返る）、`to` パラメータを指定すると、owner に限定して送信 |
+| `lifecycle.fire(event, data=None, *, to=None)` | **バックグラウンドで発行（投げたらすぐ）**：ハンドラはバックグラウンドタスクで並列に実行、待機せず、戻り値なし；ハンドラがいない場合、コストゼロ。高頻度のホットパスや純粋な観測イベントに適している。停止シーケンスや順序依存の消費（例: `config.set`）は `emit` を使用 |
+| `lifecycle.emit_sync(event, data=None, *, to=None)` | 同期でトリガー、非同期ハンドラは `create_task` でスケジュール |
+| `await lifecycle.submit_event(event_type, *, source, msg, data, to=None, background=False)` | 旧版との互換性、標準イベント形式を自動構築；`background=True` の場合は `fire` でバックグラウンドで発行 |
 
 ### ユーティリティ
 
 | メソッド | 説明 |
 |------|------|
-| `lifecycle.start_timer(timer_id)` | タイマーを開始します。 |
-| `lifecycle.get_duration(timer_id)` | 経過時間を取得します（秒）。 |
-| `lifecycle.stop_timer(timer_id)` | タイマーを停止し、経過時間を返します。 |
-| `lifecycle.list_hooks()` | すべての登録されたフックとハンドラ数をリストアップします。 |
-| `lifecycle.clear()` | すべてのハンドラとタイマーをクリアします。 |
+| `lifecycle.start_timer(timer_id)` | タイマーを開始 |
+| `lifecycle.get_duration(timer_id)` | 経過時間を取得（秒） |
+| `lifecycle.stop_timer(timer_id)` | タイマーを停止し、経過時間を返す |
+| `lifecycle.list_hooks()` | すべての登録されたフックとハンドラ数を表示 |
+| `lifecycle.clear()` | すべてのハンドラとタイマーをクリア |
 
 ## モジュールでの使用例
 
@@ -16223,19 +16224,19 @@ class Main(BaseModule):
 > [!NOTE]
 > この機能は ErisPulse **2.8.0+** が必要です。
 
-モジュールが作成した asyncio バックグラウンドタスクが `on_unload` でキャンセルされない場合、`self` の参照が保持され、モジュールインスタンスが回収されず（ホットリロード後に古いインスタンスが残る）。フレームワークは以下のバックアップメカニズムを提供しています：
+モジュールが作成した asyncio バックグラウンドタスクは、`on_unload` でキャンセルしない場合、`self` の参照を保持し、モジュールインスタンスが回収されず（ホットリロード後に古いインスタンスが残る）。フレームワークは以下のバックアップメカニズムを提供します：
 
-- **`self.spawn(coro)`**（モジュール内推奨）：タスクはモジュール名に自動的に所有者として登録され、モジュールのアンロード時にフレームワークが `on_unload` **後に**未終了のタスクをバックアップでキャンセルし、警告を記録します。
-- **`spawn_background(coro)`**（`ErisPulse.runtime`）：自動的に現在の `owner_scope` コンテキストをキャプチャします。`cancel_owner_tasks(owner)` で所有者ごとにキャンセルし、`cancel_all_background_tasks()` は `sdk.uninit()` のバックアップで使用します。
-- **アダプタ**：プラットフォーム名の下のバックグラウンドタスクも同様にバックアップでキャンセルされます。
+- **`self.spawn(coro)`**（モジュール内で推奨）：タスクはモジュール名に自動的に所有者として割り当てられ、モジュールのアンロード時にフレームワークが `on_unload` **後に**未終了のタスクをバックアップでキャンセルし、警告を記録します
+- **`spawn_background(coro)`**（`ErisPulse.runtime`）：現在の `owner_scope` コンテキストを自動的にキャプチャします；`cancel_owner_tasks(owner)` で所有者に属するタスクをキャンセル、`cancel_all_background_tasks()` は `sdk.uninit()` のバックアップ用
+- **アダプター**：プラットフォーム名の下のバックグラウンドタスクも同様にバックアップでキャンセル
 
 ```python
 async def on_load(self, event):
-    # 推奨：バックグラウンドタスクは self.spawn() を使用し、アンロード時にフレームワークがバックアップでキャンセルします
+    # 推奨：バックグラウンドタスクは self.spawn() を使用し、アンロード時にフレームワークがバックアップで自動キャンセル
     self.spawn(self._poll())
 
 async def on_unload(self, event):
-    # 精密制御の場合は、明示的にキャンセルして終了を待つ必要があります
+    # 精密制御の場面では、手動でキャンセルし、終了処理を待つことを推奨
     if self._poll_task:
         self._poll_task.cancel()
         await asyncio.gather(self._poll_task, return_exceptions=True)
@@ -16247,17 +16248,17 @@ async def _poll(self):
 ```
 
 > [!IMPORTANT]
-> フレームワークのバックアップは**強制キャンセル**（`cancel_owner_tasks`）です。これは `on_unload` の返り値の後に実行されます。そのため、優雅な終了が必要なタスク（バッファのフラッシュ、状態の永続化、接続の閉じる）は、`on_unload` で明示的に `cancel()` + `await` する必要があります——バックアップが終了ロジックを保持することを期待しないでください。フレームワークは「`self` を保持するタスクが残らない」ことを保証しますが、「優雅」を保証するわけではありません。`await` の結果が必要なタスクは直接 `await` し、バックグラウンドタスクに投げないでください。
+> フレームワークのバックアップは**強制キャンセル**（`cancel_owner_tasks`）です。これは `on_unload` の返り値後に発生します。したがって、優雅に終了処理が必要なタスク（バッファのフラッシュ、ステートの永続化、接続の終了）は**必ず** `on_unload` で `cancel()` + `await` で完了させる必要があります——バックアップが終了処理を保持することを期待しないでください。フレームワークは「`self` を保持するタスクが残らないようにする」ことを保証しますが、「優雅に」は保証しません。`await` の結果が必要なタスクは、`await` してバックグラウンドタスクに投げないでください。
 
 ## 注意事項
 
-1. **ハンドラは同期または非同期**：システムは自動的に正しく呼び出します。
-2. **データの渡し方**：`emit()` モードでは、ハンドラが None 以外の値を返すと、後続のハンドラに渡される data が変更されます。
-3. **イベント名の命名規則**：点構造の命名を推奨し、親イベントの監視がしやすくなります。
-4. **エラーの隔離**：個々のハンドラの例外は他のハンドラの実行に影響しません。
-5. **同期トリガの制限**：`emit_sync()` では、非同期ハンドラは fire-and-forget でスケジュールされ、返り値は戻されません。
-6. **ライフサイクルのクリーンアップ**：`sdk.uninit()` を呼び出すと、すべての登録されたハンドラとタイマーがクリーンアップされます。
-7. **ロード優先性**：フレームワークの初期化段階でイベントを監視したい場合は、高優先度を設定し、遅延ロードを無効にすることを推奨します。
+1. **ハンドラは同期または非同期**：システムは自動的に識別し、適切に呼び出します
+2. **データの渡し方**：`emit()` モードでは、ハンドラが `None` 以外の値を返すと、次のハンドラに渡される `data` を変更します
+3. **イベント名の命名規則**：点構造のイベント名を使用することを推奨し、親イベントの監視が容易になります
+4. **エラーの隔離**：1つのハンドラのエラーは他のハンドラの実行に影響しません
+5. **同期トリガーの制限**：`emit_sync()` では、非同期ハンドラは fire-and-forget でスケジュールされ、返り値は戻りません
+6. **ライフサイクルのクリーンアップ**：`sdk.uninit()` を呼び出すと、すべての登録されたハンドラとタイマーがクリーンアップされます
+7. **ロードの優先性**：フレームワークの初期化段階でイベントを監視したい場合は、高優先度を設定し、遅延ロードを無効にすることを推奨します
 
 
 
@@ -18322,31 +18323,31 @@ CLI には**独立**した国際化モジュール (`ErisPulse.CLI.i18n`) があ
 
 # スコープ (scope)
 
-> [!NOTE]  
+> [!NOTE]
 > この機能は ErisPulse **2.8.0+** が必要です。
 
-スコープは以下の4つの質問に答えます：**どのモジュールが利用可能か、どのイベントを受信するか、特定のモジュールがどのテキストを処理するか、モジュールが外部に何ができるか**。  
-コントロール権はすべてユーザーに委ねられ、モジュール / アダプター / プロセッサ / 出力呼び出しの登録の**上位**（`ErisPulse.scope` の設定または実行時 `sdk.scope`）で一括して宣言されます。イベントパイプラインはエントリ、プロセッサフィルタ、出力ゲートで自動的に読み取り、実行されます。
+スコープは以下の4つの質問に答えます：**どのモジュールが利用可能か、どのイベントを受け取るか、特定のモジュールがどのようなテキストを処理するか、モジュールが外部に何ができるか**。  
+コントロールはすべてユーザーに委ねられます。モジュール / アダプタ / プロセッサ / 出力呼び出しの登録の**上層**（`ErisPulse.scope` または実行時 `sdk.scope` での設定）で一括して宣言し、イベントパイプラインはエントリ、プロセッサフィルタ、出力ゲートで自動的に読み取り、実行します。
 
-| ディメンション | コントロール対象 | 拒否動作 | 設定パス |
+| 次元 | コントロール対象 | 拒否される動作 | 設定パス |
 |------|---------|---------|---------|
-| **① モジュール** | 利用可能なモジュール（プラットフォーム / Bot / セッションの3段階） | 静かに無視（返答なし；一致したコマンドは引き続き認領され、ブロックされる） | `scope.platforms / bots / sessions` |
-| **② 身元** | イベントの受信（アダプター / Bot / セッション / ユーザーの4段階） | エントリで完全に破棄（静かに） | `scope.identity.*` |
-| **③ 出力** | モジュールがどのような出力呼び出しを開始できるか（メッセージ / API / リクエスト、メソッドレベルのホワイト/ブラックリスト） | 失敗応答（`retcode=34601`） | `scope.actions` |
+| **① モジュール** | 利用可能なモジュール（プラットフォーム / Bot / セッションの3段階） | フィルタされたモジュールはトリガーされず、返信されません（ブロードキャスト `scope.blocked` イベントをブロック；一致したコマンドは引き続き認定され、ブロックされます） | `scope.platforms / bots / sessions` |
+| **② 身分** | イベントの受信可否（アダプタ / Bot / セッション / ユーザーの4段階） | エントリで完全に破棄されます（ブロードキャスト `scope.blocked` イベントをブロック） | `scope.identity.*` |
+| **③ 出力** | モジュールがどの出力呼び出し（メッセージ / API / 要求、メソッドレベルのホワイトリスト/ブラックリスト）を発行できるか | 失敗応答（`retcode=34601`） | `scope.actions` |
 
-> **関連システム**：コマンドは特殊なメッセージイベントハンドラであり、そのユーザーブラック/ホワイトリスト（ACL）と実装パラメータのオーバーライドはコマンドシステムが保持します（`ErisPulse.event.command`）。  
-> [イベント処理入門](../getting-started/event-handling.md) と [設定ガイド](../user-guide/configuration.md) を参照してください。
+> **関連システム**：コマンドは特別なメッセージイベントプロセッサであり、そのユーザーのホワイトリスト/ブラックリスト（ACL）と実装パラメータのオーバーライドはコマンドシステムが独自に管理します（`ErisPulse.event.command`）。  
+> [イベント処理の入門](../getting-started/event-handling.md) および [設定ガイド](../user-guide/configuration.md) を参照してください。
 
 {!--< tips >!--}
-1. `from ErisPulse.Core import scope` をインポートしてシングルトンを使用（`sdk.scope` は同じオブジェクト）
+1. 単例を `from ErisPulse.Core import scope` でインポート（`sdk.scope` は同じオブジェクト）
 2. 判定：`scope.is_allowed(...)` / `scope.is_identity_allowed(...)` /  
-   `scope.is_action_allowed(...)` はそれぞれ①②③の3つのゲートに対応
-3. 読み書き：ディメンション化されたパラメータメソッド（IDEで補完可能）——  
+   `scope.is_action_allowed(...)` はそれぞれ ①②③ の3つのゲートに対応します
+3. 読み書き：次元化されたパラメータメソッド（IDEで補完可能）——  
    `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`；  
-   また、辞書形式のバックアップ `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
-4. イベントハンドラのテキスト条件オーバーライドは  
-   [イベント処理入門 · イベントオーバーライド](../getting-started/event-handling.md#イベントオーバーライド-モジュールコードを変更せずに任意のイベントタイプの動作をオーバーライド) を参照。  
-   コマンド ACL / パラメータオーバーライドは [イベント処理入門](../getting-started/event-handling.md) を参照
+   また、辞書式のバックアップメソッドとして `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)` もあります
+4. イベントプロセッサのテキスト条件オーバーライドについては、  
+   [イベント処理の入門 · イベントオーバーライド](../getting-started/event-handling.md#イベントオーバーライド-モジュールコードを変更せずに任意のイベントタイプの挙動をオーバーライド) を参照してください。  
+   コマンド ACL / パラメータオーバーライドについては、[イベント処理の入門](../getting-started/event-handling.md) を参照してください。
 {!--< /tips >!--}
 
 ## マッチング条目構文（全システム共通）
@@ -18412,27 +18413,25 @@ request = { deny = true }                                 # リクエスト処�
 
 ## ① モジュール次元
 
-あるコンテキストで、どのモジュールが利用可能かを回答します。デフォルトではすべて開放されており、設定バインド後からフィルタリングが始まります。**モジュールとアダプターは変更を必要としません**。
+「あるコンテキストの中で、どのモジュールが利用可能か？」という質問に答える。デフォルトではすべてが開放されており、設定のバインディングが有効になってからフィルタリングが開始されるため、**モジュールとアダプタは一切変更不要**。
 
 ```mermaid
 flowchart TD
     A["イベントがモジュールのハンドラ/コマンドに到達"] --> B{"scope.is_allowed<br/>(platform, bot, module, session)"}
-    B --> C{"解析チェーン：セッションレベル > Botレベル > プラットフォームレベル<br/>（子レベル merge = true の場合は各項目を並列に）"}
-    C -->|"一致"| D["blocked に一致 → 拒否<br/>modules が空でない → ホワイトリストのみ許可<br/>どちらも空 → default_allow"]
-    C -->|"一致しない"| E["default_allow（デフォルト true = 許可）"]
-    D -->|"拒否"| Z["静かに無視<br/>（返答なし、TRACEレベルのログのみ表示；一致したコマンドは引き続き認領され、ブロックされる）"]
+    B --> C{"解析の優先順位：セッションレベル > Bot レベル > プラットフォームレベル<br/>（子レベルで merge = true の場合、各レベルで逐次合併）"}
+    C -->|"一致"| D["blocked に一致 → 拒否<br/>modules が空でない → 限定された白名単のみ許可<br/>両方空 → default_allow"]
+    C -->|"不一致"| E["default_allow（デフォルトは true = 許可）"]
+    D -->|"拒否"| Z["返信なし<br/>（ブロードキャスト `scope.blocked` イベントをブロック；一致したコマンドは引き続き認領され、ブロックされる）"]
 ```
 
-- **解析優先度：セッションレベル > Botレベル > プラットフォームレベル**。高優先度のバインドは低優先度を**全体的に上書き**します。  
-  子レベルのバインドに `merge = true` を書くと、低優先度と**各項目を並列に**します（`modules` / `blocked` はそれぞれマージされ、`merge` 自体は制御キーとして扱われ、項目には含まれません）
-- **静かの意味**：フィルタリングされたモジュールのコマンドとハンドラは実行されず、返答もされず、`core.scope.denied` のTRACEレベルのログのみが表示されます。  
-  一致した**コマンド**は引き続き認領され、ブロックされます——コマンドが拒否された後に低優先度のメッセージハンドラが再度応答する「二重応答」の矛盾を排除します
-- **フレームワークレベルのハンドラ**（`scope_exempt=True` または owner が空）は影響を受けません；モジュール名が空（フレームワーク層のリソース）は常に許可されます
-- **セッション感知のヘルプとコマンド照会**：コマンド照会API（`command.help` / `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`、および `module.get_commands_overview`）は、オプションの `event=` または明示的な `platform=` / `bot_id=` / `session_id=` キーワードをサポートします——現在のセッションで利用できないモジュールのコマンドは結果に含まれません（`get_command` は None を返し、単一コマンドのヘルプは「未登録」として扱われ、静かの意味と一致）；コンテキストを渡さない場合は、全量の動作が維持されます
+- **解析の優先順位：セッションレベル > Bot レベル > プラットフォームレベル**。高優先度のバインディングは低優先度を**全体的に上書き**する。子レベルで `merge = true` を設定すると、低優先度と**各項目ごとの合併**（modules / blocked はそれぞれ独立に合併）に変更される（`merge` 自体は制御キーであり、項目としてはカウントされない）。
+- **デフォルトの意味**：フィルタリングされたモジュールのコマンドとハンドラはトリガされず、返信もされない。TRACE レベルのログで確認可能（`core.scope.denied`）。同時に `scope.blocked` ライフサイクルイベントがブロードキャストされ、何がブロックされたのか、なぜブロックされたのかをサブスクライブすることで観測可能。一致した**コマンド**は引き続き認領され、ブロックされる——コマンドのテキストは低優先度のメッセージハンドラに漏れることなく、二重応答の曖昧さ（コマンドが拒否された後にメッセージハンドラが再度反応する）を解消する。
+- **フレームワークレベルのハンドラ**（`scope_exempt=True` または owner が空）は影響を受けない。モジュール名が空（フレームワーク層のリソース）の場合は常に許可される。
+- **セッション感知によるヘルプとコマンド照会**：コマンド照会 API（`command.help` / `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`、および `module.get_commands_overview`）は、オプションで `event=` または明示的に `platform=` / `bot_id=` / `session_id=` を指定できる。現在のセッションで利用できないモジュールのコマンドは結果に含まれない（`get_command` は None を返し、単一のコマンドヘルプは「未登録」として扱われる。これはデフォルトの意味と一致する）。コンテキストを渡さない場合は、全量の動作を維持する。
 
-### バインド継承（merge）
+### バインディングの継承（merge）
 
-デフォルトでは、上書きの意味が明確で予測可能です。上位レベルの内容に**追加**したい場合は、子レベルに `merge = true` を書きます：
+デフォルトの上書きの意味は明確で予測可能である。上位レベルのバインディングに**追加**したい場合は、子レベルで `merge = true` を設定する：
 
 ```toml
 [ErisPulse.scope.platforms.onebot11]
@@ -18440,11 +18439,11 @@ modules = ["Chat", "Tool"]      # プラットフォームレベル：Chat、Too
 
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Music"]
-merge = true                    # この Bot で実行される = ["Chat", "Tool", "Music"]
+merge = true                    # その Bot で実効する = ["Chat", "Tool", "Music"]
 ```
 
-- 合併ルール：`modules` と `blocked` は**並列に**マージされます；バインド内では `blocked` が `modules` より優先されます
-- 鏈式のマージ：プラットフォーム → Bot → セッションの順に段階的に追加され、各段階で `merge` または上書きを個別に決定します
+- 合併ルール：`modules` と `blocked` はそれぞれ**合併**される。バインディング内では `blocked` は `modules` よりも優先される。
+- 鏈式の合併：プラットフォーム → Bot → セッションの順に段階的に追加され、各レベルで `merge` または上書きを個別に決定する。
 
 ## ② 身元次元（イベント受信）
 
@@ -18605,6 +18604,29 @@ del scope["platforms.onebot11"]      # 削除
 "actions.MyModule" in scope          # 存在確認
 ```
 
+## 拦截の可観測性: `scope.blocked` イベント
+
+スコープのブロッキング（モジュールフィルタリング / アイデンティティ拒否）が発生すると、ライフサイクルイベント **`scope.blocked`** がブロードキャストされます。  
+これにより、「誰がブロックされたのか、どの層でブロックされたのか」をサブスクライブし、統計を取ることができ、ダッシュボード上に表示することも可能になります。ブロッキングはデフォルトではレスポンスを返しませんが、もはやブラックボックスではなくなります。
+
+| フィールド | 説明 |
+|------|------|
+| `dimension` | `"module"`（モジュール次元のフィルタリング）/ `"identity"`（アイデンティティのアクセス拒否） |
+| `module` | フィルタリングされたモジュール名（モジュール次元のみ） |
+| `platform` / `bot_id` / `session_id` / `user_id` | ブロッキングが発生したソースコンテキスト |
+
+```python
+from ErisPulse.Core.lifecycle import lifecycle
+
+@lifecycle.on("scope.blocked")
+def on_blocked(data):
+    print(f"ブロックされました：{data['dimension']} {data.get('module') or data.get('user_id')}")
+```
+
+- イベントは `fire` バックグラウンドでブロードキャストされます（リスナーがいない場合、オーバーヘッドはゼロで、ホットパスを遅らせません）
+- キャッシュヒットによる重複ブロッキングは**再ブロードキャストされません**——同じコンビネーションはキャッシュが失効した場合にのみ1回だけブロードキャストされます
+- `adapter.event.blocked`（ミドルウェアによる拒否）とは区別されます：前者はイベントレベルでの破棄であり、本イベントはスコープのアクセス制御におけるモジュール / アイデンティティのフィルタリングです。
+
 ## キャッシュとホットアップデート
 
 - `is_allowed` / `is_identity_allowed` / `is_action_allowed` の結果は **LRUキャッシュ**（`scope.cache_size` で調整可能）が付いており、`set` / `delete` /  
@@ -18616,43 +18638,43 @@ del scope["platforms.onebot11"]      # 削除
 
 ロード時またはホットアップデート時に、各セクションの設定フォーマットを検証します：型エラーのセクション（例：`platforms` が文字列になっている）、不正な出力ルール（例：`allow` が数字になっている）、未知のアクション名、未知のトップレベルのキー（例：`alow` のスペルミス）は **WARNING** として出力され、対応するセクション / 条目は無視され、他の合法な設定は正常に有効になります——間違った設定は静かに無効になることはありません。
 
-## 一般的な問題と注意事項
+## 常見問題與注意事項
 
-### 1. 設定の階層と上書き
+### 1. 配置層級與覆蓋
 
-- モジュール次元：セッションレベル > Botレベル > プラットフォームレベル、**全体上書き**（子レベルで `merge = true` の場合は各項目を並列に）。  
-  「プラットフォームで Chat を許可し、Bot で Music を追加したい」場合は、Bot レベルで `merge = true` を書くか、両方をリストに書く
-- 身元次元：ユーザー > セッション > Bot > アダプター、**最も具体的な**設定された戦略を取る（例外許可が可能）
-- コマンドのユーザーブラック/ホワイトリスト：正確なコマンド名が glob キーに優先されます（`event.command.acl` を参照）
+- モジュール次元：セッションレベル > Bot レベル > プラットフォームレベル。**全体的な上書き**（子レベルで `merge = true` の場合、各項目を並列にマージ）。
+  「プラットフォームで Chat を許可し、Bot で Music を追加したい」場合は、Bot レベルで `merge = true` を設定するか、両方を明示的にリストに追加します。
+- 身元次元：ユーザー > セッション > Bot > アダプター。**最も具体的な**設定された戦略を採用します（例外として許可する場合も可能）。
+- コマンドのユーザーブラックリスト/ホワイトリスト：正確なコマンド名が glob キーに優先されます（`event.command.acl` を参照）。
 
-### 2. モジュール/コマンドが反応しない
+### 2. モジュール/コマンドが反応しない場合
 
-まず、モジュール自体ではなくスコープの問題を疑う：
+まず、モジュール自体ではなく作用域を疑ってください：
 
 ```python
 from ErisPulse import sdk
 
 print(sdk.scope.is_allowed(event.get_platform(), bot_id, "MyModule", session_id))
 print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, user_id))
-print(sdk.scope.stats())   # module_filtered / identity_denied > 0 は静かにフィルタされていることを示す
+print(sdk.scope.stats())   # module_filtered / identity_denied > 0 なら、フィルタリング記録があります
 ```
 
-フィルタリングは**静か**です（モジュール次元と身元次元では返答せず、ルールを暴露しない）、統計は累積されます；ACL で拒否されたコマンドは「権限不足」という明示的な返答をします。
+フィルタリングされた場合、デフォルトでは返信されません（モジュール次元と身元次元で、ルールを露出しないようにします）。ただし、`scope.blocked` ライフサイクルイベントがブロードキャストされ、統計は継続的に累積されます。コマンド次元で ACL に拒否された場合は、「権限不足」という明示的な返信がされます。
 
-### 3. 出力アクションが拒否されたときのトラブルシューティング
+### 3. 出力アクションが拒否された場合のトラブルシューティング
 
 ```python
 from ErisPulse import sdk
 
 print(sdk.scope.get("actions.MyModule"))
-print(sdk.scope.stats())   # action_denied > 0 は呼び出しがブロックされていることを示す
+print(sdk.scope.stats())   # action_denied > 0 なら、呼び出しがブロックされています
 ```
 
-ブロックは**明示的**です：拒否された呼び出しは `retcode = 34601` の標準の失敗応答を返し（ネットワークリクエストを開始しない）。
+ブロックは**明示的**です：拒否された呼び出しは `retcode = 34601` の標準的な失敗レスポンスを返し、ネットワークリクエストは発生しません。
 
-### 4. セッション識別子のプラットフォーム間隔離
+### 4. セッション識別子のプラットフォーム間の隔離
 
-`(platform, session_id)` の組み合わせが唯一の識別子です。`scope.sessions.onebot11."789"` は onebot11 でのみ有効で、telegram で同じ `789` のセッションには影響しません。身元次元のユーザー識別子も同様です。
+`(platform, session_id)` の組み合わせが一意の識別子です。`scope.sessions.onebot11."789"` は onebot11 上でのみ有効で、Telegram 上で同じ `789` であるセッションには影響しません。身元次元のユーザー識別子も同様です。
 
 ## トポロジツリーAPI
 

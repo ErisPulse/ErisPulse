@@ -15978,7 +15978,7 @@ async def on_message_received(data): ...
 async def on_any(data): ...
 ```
 
-- 目标 owner 无已注册钩子 → 事件**静默丢弃**（可用 `has_handlers()` 提前探测）
+- 目标 owner 无已注册钩子 → 事件**不被消费**（可用 `has_handlers()` 提前探测）
 - `data` 为 dict 时自动携带 `_trace_id`（不覆盖已有值）
 - `emit_sync` / `submit_event` 同样支持 `to=` 参数
 - 模块间通信的三层模型（RPC / 定向 / 广播）见
@@ -18448,8 +18448,8 @@ CLI 拥有**独立**的国际化模块（`ErisPulse.CLI.i18n`），与框架核�
 
 | 维度 | 控制什么 | 拒绝行为 | 配置路径 |
 |------|---------|---------|---------|
-| **① 模块** | 哪些模块可用（平台 / Bot / 会话三级） | 静默忽略（不回复；命中的命令仍被认领阻断） | `scope.platforms / bots / sessions` |
-| **② 身份** | 事件收不收（适配器 / Bot / 会话 / 用户四级） | 入口完全丢弃（静默） | `scope.identity.*` |
+| **① 模块** | 哪些模块可用（平台 / Bot / 会话三级） | 被过滤模块不触发、不回复（拦截广播 `scope.blocked` 事件；命中的命令仍被认领阻断） | `scope.platforms / bots / sessions` |
+| **② 身份** | 事件收不收（适配器 / Bot / 会话 / 用户四级） | 入口完全丢弃（拦截广播 `scope.blocked` 事件） | `scope.identity.*` |
 | **③ 出站** | 模块能发起哪些出站调用（消息 / API / 请求，方法级白黑名单） | 失败响应（`retcode=34601`） | `scope.actions` |
 
 > **相关系统**：命令是特殊的消息事件处理器，其用户黑白名单（ACL）与
@@ -18545,14 +18545,15 @@ flowchart TD
     B --> C{"解析链：会话级 > Bot 级 > 平台级<br/>（子级 merge = true 时逐级并集）"}
     C -->|"命中"| D["blocked 命中 → 拒绝<br/>modules 非空 → 仅白名单放行<br/>都空 → default_allow"]
     C -->|"未命中"| E["default_allow（默认 true = 放行）"]
-    D -->|"拒绝"| Z["静默忽略<br/>（不回复、仅 TRACE 日志；命中的命令仍被认领阻断）"]
+    D -->|"拒绝"| Z["不回复<br/>（拦截广播 `scope.blocked` 事件；命中的命令仍被认领阻断）"]
 ```
 
 - **解析优先级：会话级 > Bot 级 > 平台级**，高优先级绑定**整体覆盖**低优先级；
   子级绑定写 `merge = true` 时改为与低优先级**逐条目并集**（modules / blocked 各自合并，
   `merge` 本身是控制键，不算条目）
-- **静默语义**：被过滤模块的命令与处理器不触发、不回复，仅 TRACE 级日志可见
-  （`core.scope.denied`）；命中的**命令**仍会被认领阻断——命令文本不再漏给
+- **默认语义**：被过滤模块的命令与处理器不触发、不回复，TRACE 级日志可见
+  （`core.scope.denied`）；拦截同时广播 `scope.blocked` 生命周期事件（订阅
+  即可观测谁被拦、为何被拦）；命中的**命令**仍会被认领阻断——命令文本不再漏给
   低优先级消息处理器，消除"命令被拒后消息处理器又响应一次"的双重响应歧义
 - **框架级处理器**（`scope_exempt=True` 或 owner 为空）不受影响；模块名为空（框架层资源）始终放行
 - **会话感知帮助与命令查询**：命令查询 API（`command.help` /
@@ -18560,7 +18561,7 @@ flowchart TD
   以及 `module.get_commands_overview`）均支持可选 `event=` 或显式
   `platform=` / `bot_id=` / `session_id=` 关键字——当前会话不可用模块的命令
   不再出现在结果中（`get_command` 返回 None、单命令帮助按"未注册"处理，
-  与静默语义一致）；不传上下文则保持全量行为
+  与默认语义一致）；不传上下文则保持全量行为
 
 ### 绑定继承（merge）
 
@@ -18749,6 +18750,31 @@ del scope["platforms.onebot11"]      # 删
 "actions.MyModule" in scope          # 存在性
 ```
 
+## 拦截可观测：`scope.blocked` 事件
+
+作用域拦截（模块过滤 / 身份拒绝）发生时会广播生命周期事件 **`scope.blocked`**，
+让"谁被拦、在哪一层被拦"可订阅、可统计、可在 Dashboard 呈现——拦截默认
+不回复，但不再是不可知的黑盒。
+
+| 字段 | 说明 |
+|------|------|
+| `dimension` | `"module"`（模块维度过滤）/ `"identity"`（身份准入拒绝） |
+| `module` | 被过滤的模块名（仅模块维度） |
+| `platform` / `bot_id` / `session_id` / `user_id` | 拦截发生的来源上下文 |
+
+```python
+from ErisPulse.Core.lifecycle import lifecycle
+
+@lifecycle.on("scope.blocked")
+def on_blocked(data):
+    print(f"已拦截：{data['dimension']} {data.get('module') or data.get('user_id')}")
+```
+
+- 事件经 `fire` 后台广播（无监听者时零开销，不拖热路径）
+- 缓存命中的重复拦截**不**重复广播——同一组合只在缓存失效时广播一次
+- 与 `adapter.event.blocked`（中间件否决）相区分：那个是事件级丢弃，本
+  事件是作用域准入门的模块 / 身份过滤
+
 ## 缓存与热更新
 
 - `is_allowed` / `is_identity_allowed` / `is_action_allowed` 结果带 **LRU 缓存**
@@ -18781,10 +18807,10 @@ from ErisPulse import sdk
 
 print(sdk.scope.is_allowed(event.get_platform(), bot_id, "MyModule", session_id))
 print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, user_id))
-print(sdk.scope.stats())   # module_filtered / identity_denied > 0 说明被静默过滤
+print(sdk.scope.stats())   # module_filtered / identity_denied > 0 说明有拦截记录
 ```
 
-被过滤是**静默**的（模块维度与身份维度不回复，避免暴露规则），但统计会累计；
+被过滤默认不回复（模块维度与身份维度，避免暴露规则），但会广播 `scope.blocked` 生命周期事件、统计持续累计；
 命令维度被 ACL 拒绝会显式回复"权限不足"。
 
 ### 3. 出站动作被拒时排查
