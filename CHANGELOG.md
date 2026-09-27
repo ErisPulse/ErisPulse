@@ -1,5 +1,5 @@
-## [2.9.0-dev.0] - 2026/09/15
-> 开发版
+## [2.9.0-dev.0] - 2026/09/25
+> 开发版（预发布）
 
 **版本摘要**
 本版本开启 2.9「模块开发体验」主线（EPRFC-2026-001）：命令系统支持声明式参数与选项（`args=` / `options=`），框架自动完成类型转换与按名注入，输入错误自动回复本地化提示与用法；统一依赖注入（`Depends`）覆盖命令 / 事件 / 生命周期 / SSE 路由全部注入点；中间件获得事件否决权（显式返回 `False` 即在事件层面丢弃，配套 `adapter.event.blocked` 钩子审计）；声明式配置支持环境变量绑定（`metadata={"env": ...}`，Docker / CI 免改配置文件）；命令治理声明化（`cooldown=` / `rate_limit=` / `usage_limit=` / `deprecated=`，回复边沿触发防连击刷屏）、处理器节流与防抖（`throttle=` / `debounce=`）、分发决策链追踪与模块排查诊断、内置 ORM（自动迁移 + 关系映射）；模块重载完备性（失败自动回滚 + 归属权泄漏审计）与影子模块灰度转正（API 驱动）随方向十/十一落地。均为新增能力，现有模块无需任何改动。
@@ -52,6 +52,7 @@
     - 泄漏审计：`ownership.reclaim / reclaim_sync / counts / orphans / audit` 统一动词（各子系统 `*_by_owner` 收敛为其内部 SPI）；`sdk.module.audit(name, deep=True)` 输出归属资源计数 / 孤儿 owner 清单 / gc 实例普查（含引用方类型定位）；卸载后自动轻审计，发现孤儿 owner 资源即 WARNING 告警（gc 普查仅显式触发）
   - `Core/shadow` 影子模块与灰度转正（EPRFC-2026-001 方向十一）：同一模块的新版本以独立 owner（如 `roll_shadow`）与线上旧版并存试运行——影子收到真实事件**副本**（改写 / 认领不外溢）、出站 `Send` / `Api` 拦截记账不真正发出、KV 写入进内存覆盖层（读透传真库）、路由只登记不挂载、同名命令进影子目录、生命周期广播静默。**运行时 API 驱动，模块代码零改动、无配置项**：`sdk.module.shadow_start(name, source=新版代码路径)` 启动影子（影子默认继承原模块配置节）；`shadow_diff(name)` 按 trace_id 对齐"v1 实际发送 × v2 意向发送"；`promote_shadow(name)` 一键转正（完全卸载旧版 → 影子以真名转正，失败自动回滚；转正永远由人确认）；`dismiss_shadow(name)` 放弃影子。诚实边界：影子源为本地路径（PyPI 同包双版本受 sys.modules 限制）、绕过框架的裸 aiohttp / 线程与 ORM 写不在拦截范围（文档明示，泄漏审计可见）
   - `pyproject` 正式支持 Python 3.14：classifiers 与 CI 测试矩阵纳入 3.14（3.14.6 全量测试通过）；3.14t（free-threaded / 无 GIL 构建）暂不列入正式支持——框架在 3.14.6t 上可完整导入、全部单测依赖均有 cp314t wheel，CI 以实验性冒烟作业持续监测（`continue-on-error`，依赖不可得时自动跳过）
+  - `Core/scope` / `Core/lifecycle` 新增 `scope.blocked` 生命周期事件：作用域拦截（模块过滤 / 身份拒绝）发生时后台广播，携带拦截维度与来源上下文（platform / bot / session / user / module），让"谁被拦、在哪一层被拦"可订阅、可统计、可在 Dashboard 呈现；事件经 `fire` 后台广播、无监听者时零开销，缓存命中不重复广播
   - `Core/Event/command` `args=` / `options=` 声明与 `Depends` 参数重名时注册期抛 `ValueError`（fail-fast）
 
 ### 修复

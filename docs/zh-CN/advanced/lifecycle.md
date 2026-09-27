@@ -81,7 +81,7 @@ async def on_message_received(data): ...
 async def on_any(data): ...
 ```
 
-- 目标 owner 无已注册钩子 → 事件**静默丢弃**（可用 `has_handlers()` 提前探测）
+- 目标 owner 无已注册钩子 → 事件**不被消费**（可用 `has_handlers()` 提前探测）
 - `data` 为 dict 时自动携带 `_trace_id`（不覆盖已有值）
 - `emit_sync` / `submit_event` 同样支持 `to=` 参数
 - 模块间通信的三层模型（RPC / 定向 / 广播）见

@@ -118,6 +118,7 @@ class LifecycleManager:
             "websocket.disconnect",
         ],
         "event": ["pre_process"],
+        "scope": ["blocked"],
         "message": ["sending", "sent"],
         "command": ["matched", "executed"],
         "config": ["set", "updated"],
