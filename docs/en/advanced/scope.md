@@ -1,24 +1,30 @@
 # Scope
 
-> [!NOTE]
+> [!NOTE]  
 > This feature requires ErisPulse **2.8.0+**.
 
-The scope answers four questions: **which modules are available, whether events are received, what text a module processes, and what a module can do externally**.  
-The control is entirely given to the user: at the **upper level** (configured via `ErisPulse.scope` or dynamically via `sdk.scope`) during module / adapter / processor / outbound call registration, the event pipeline automatically reads and executes the configuration at the entry, processor filtering, and outbound gate.
+Scope answers four questions: **which modules are available, whether events from certain sources should be received, what text a module processes, and what actions a module can perform externally**.  
+Control is entirely user-driven: at the **upper level** of module / adapter / processor / outbound call registration (configured via `ErisPulse.scope` or runtime `sdk.scope`), declarations are made, and the event pipeline automatically reads and executes them at entry, processor filtering, and outbound gate.
 
-| Dimension | Controls | Rejection Behavior | Configuration Path |
-|-----------|----------|--------------------|--------------------|
-| **① Module** | Which modules are available (platform / Bot / session three levels) | Silently ignored (no reply; matched commands are still claimed and blocked) | `scope.platforms / bots / sessions` |
-| **② Identity** | Whether events are received (adapter / Bot / session / user four levels) | Completely discarded at entry (silent) | `scope.identity.*` |
-| **③ Outbound** | Which outbound calls a module can initiate (message / API / request, method-level white/black list) | Failed response (`retcode=34601`) | `scope.actions` |
+| Dimension | What is controlled | Rejection behavior | Configuration path |
+|-----------|--------------------|--------------------|--------------------|
+| **① Module** | Which modules are available (platform / Bot / session three levels) | Filtered modules do not trigger or reply (intercept broadcast `scope.blocked` event; matched commands are still claimed and blocked) | `scope.platforms / bots / sessions` |
+| **② Identity** | Whether to receive events (adapter / Bot / session / user four levels) | Completely discard at entry (intercept broadcast `scope.blocked` event) | `scope.identity.*` |
+| **③ Outbound** | Which outbound calls a module can initiate (messages / API / requests, method-level white/blacklists) | Fail response (`retcode=34601`) | `scope.actions` |
 
-> **Related systems**: Commands are special message event processors, and their user white/black lists (ACL) and implementation parameter overrides are managed by the command system (`ErisPulse.event.command`). See [Getting Started with Event Handling](../getting-started/event-handling.md) and [Configuration Guide](../user-guide/configuration.md).
+> **Related systems**: Commands are special message event processors, with their user allow/deny lists (ACL) and implementation parameter overrides handled by the command system itself (`ErisPulse.event.command`).  
+> See [Event Handling Introduction](../getting-started/event-handling.md) and [Configuration Guide](../user-guide/configuration.md).
 
 {!--< tips >!--}
 1. Import the singleton via `from ErisPulse.Core import scope` (same object as `sdk.scope`)
-2. Check permissions: `scope.is_allowed(...)` / `scope.is_identity_allowed(...)` / `scope.is_action_allowed(...)` correspond to the three gates ①②③
-3. Read/Write: Dimensional parameter methods (IDE can auto-complete) — `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`; there are also dictionary-style fallback methods `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
-4. Event handler text condition overrides are described in [Getting Started with Event Handling · Event Overriding](../getting-started/event-handling.md#event-overriding-do-not-modify-module-code-to-override-behavior-of-any-event-type); command ACL / parameter overrides are described in [Getting Started with Event Handling](../getting-started/event-handling.md)
+2. Check permissions: `scope.is_allowed(...)` / `scope.is_identity_allowed(...)` /  
+   `scope.is_action_allowed(...)` correspond to the three gates ①②③
+3. Read/write: dimension-specific parameter methods (IDE can auto-complete) —  
+   `scope.set_module(...)` / `scope.set_identity(...)` / `scope.set_action(...)`;  
+   Additionally, there are dictionary-style fallback methods `scope.get(path)` / `scope.set(path, v)` / `scope.delete(path)`
+4. Event handler text condition overrides are covered in  
+   [Event Handling Introduction · Event Overriding](../getting-started/event-handling.md#event-overriding-does-not-change-module-code-overriding-the-behavior-of-any-event-type);  
+   command ACL / parameter overrides are covered in [Event Handling Introduction](../getting-started/event-handling.md)
 {!--< /tips >!--}
 
 ## Matching Entry Syntax (Unified Across the System)
@@ -82,37 +88,37 @@ request = { deny = true }                                 # Disable request hand
 
 ## ① Module Level
 
-Answer the question: "In a certain context, which modules are available?" By default, all modules are allowed; filtering only begins after configuration binding. **No changes are required for modules or adapters.**
+Answer the question: "In a certain context, which modules are available?" By default, all modules are open; filtering starts only after configuration is bound. **No changes are required for modules or adapters.**
 
 ```mermaid
 flowchart TD
     A["Event arrives at a module's handler/command"] --> B{"scope.is_allowed<br/>(platform, bot, module, session)"}
-    B --> C{"Resolution Chain: Session-level > Bot-level > Platform-level<br/> (When sub-level merge = true, merge step-by-step as union)"}
-    C -->|"Matched"| D["blocked matched → Deny<br/>modules non-empty → Only whitelist allowed<br/>Both empty → default_allow"]
-    C -->|"Not Matched"| E["default_allow (default true = allow)"]
-    D -->|"Deny"| Z["Silently ignore<br/> (No reply, only TRACE log visible; matched commands are still blocked)"]
+    B --> C{"Resolution chain: session level > bot level > platform level<br/> (when merge = true, merge each level)"}
+    C -->|"Matched"| D["blocked matched → deny<br/>modules non-empty → only whitelist allowed<br/>both empty → default_allow"]
+    C -->|"Not matched"| E["default_allow (default true = allow)"]
+    D -->|"Deny"| Z["No reply<br/> (blocks broadcast `scope.blocked` event; matched commands are still claimed and blocked)"]
 ```
 
-- **Resolution Priority: Session-level > Bot-level > Platform-level**, higher priority bindings **completely override** lower priority ones. When a sub-level binding sets `merge = true`, it instead performs a **per-item union** with the lower priority (both `modules` and `blocked` are merged individually; `merge` itself is a control key and not counted as an item).
-- **Silent Semantics**: Commands and handlers from filtered modules are not triggered or replied to, only TRACE-level logs are visible (`core.scope.denied`). **Matched commands** are still blocked from being claimed—command text is no longer passed to lower-level message handlers, eliminating the ambiguity of "double response" where a command is rejected but then the message handler responds again.
-- **Framework-level handlers** (`scope_exempt=True` or owner is empty) are unaffected; modules with empty names (framework-level resources) are always allowed.
-- **Session-aware help and command queries**: Command query APIs (`command.help` / `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`, and `module.get_commands_overview`) all support optional `event=` or explicit `platform=` / `bot_id=` / `session_id=` keywords—commands from modules unavailable in the current session no longer appear in the results (`get_command` returns None, single command help is treated as "not registered", consistent with silent semantics). If no context is provided, the behavior remains full.
+- **Resolution priority: session level > bot level > platform level.** Higher-level bindings **completely override** lower-level ones; when sub-level bindings write `merge = true`, they instead perform **item-by-item union** with lower levels (merge `modules` / `blocked` separately; `merge` itself is a control key and does not count as an item).
+- **Default semantics:** Commands and handlers of filtered modules do not trigger or reply; TRACE-level logs are visible (`core.scope.denied`). Blocking also broadcasts the `scope.blocked` lifecycle event (subscribers can observe who is blocked and why). **Matched commands are still claimed and blocked**—command text is no longer passed to lower-level message handlers, eliminating the ambiguity of "double response" where a command is rejected but then the message handler responds again.
+- **Framework-level handlers** (`scope_exempt=True` or owner is empty) are unaffected; module names that are empty (framework-level resources) are always allowed.
+- **Session-aware help and command query:** Command query APIs (`command.help` / `get_command` / `get_commands` / `get_group_commands` / `get_visible_commands`, and `module.get_commands_overview`) all support optional `event=` or explicit `platform=` / `bot_id=` / `session_id=` keywords—commands from modules not available in the current session no longer appear in the results (`get_command` returns None, single-command help is treated as "not registered," consistent with default semantics); if no context is provided, the behavior remains full.
 
 ### Binding Inheritance (merge)
 
-The default semantics of complete override are clear and predictable; when you need to **add** to the parent level, set `merge = true` in the sub-level:
+By default, the semantics of complete override are clear and predictable; when you need to **add** to the parent binding, set `merge = true` in the sub-level:
 
 ```toml
 [ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Tool"]      # Platform-level: allow Chat, Tool
+modules = ["Chat", "Tool"]      # Platform level: allow Chat, Tool
 
 [ErisPulse.scope.bots.onebot11."123456"]
 modules = ["Music"]
-merge = true                    # The effective modules for this Bot = ["Chat", "Tool", "Music"]
+merge = true                    # The actual effective modules for this Bot = ["Chat", "Tool", "Music"]
 ```
 
-- **Merge Rules**: `modules` and `blocked` are merged individually as **unions**; within the binding, `blocked` still takes precedence over `modules`.
-- **Chained Merging**: Platform → Bot → Session are merged step-by-step, with each level independently deciding whether to merge or override.
+- **Merge rules:** `modules` and `blocked` each take the **union**; within a binding, `blocked` still takes precedence over `modules`.
+- **Chained merging:** Platform → Bot → Session levels are merged step by step, with each level independently deciding whether to merge or override.
 
 ## ② Identity Dimension (Event Admission)
 
@@ -268,6 +274,28 @@ del scope["platforms.onebot11"]      # Delete
 "actions.MyModule" in scope          # Existence check
 ```
 
+## Interception Observability: `scope.blocked` Event
+
+When scope interception (module filtering / identity rejection) occurs, the **`scope.blocked`** lifecycle event is broadcast, allowing subscription to and statistics on "who was blocked and at which layer" and presenting this information in the Dashboard. Interception does not reply by default, but it is no longer an opaque black box.
+
+| Field | Description |
+|-------|-------------|
+| `dimension` | `"module"` (module dimension filtering) / `"identity"` (identity admission rejection) |
+| `module` | The name of the filtered module (only for module dimension) |
+| `platform` / `bot_id` / `session_id` / `user_id` | The source context where the interception occurred |
+
+```python
+from ErisPulse.Core.lifecycle import lifecycle
+
+@lifecycle.on("scope.blocked")
+def on_blocked(data):
+    print(f"Intercepted: {data['dimension']} {data.get('module') or data.get('user_id')}")
+```
+
+- The event is broadcast in the background via `fire` (zero overhead if there are no listeners, does not slow down hot paths)
+- Repeated interceptions with cache hits are **not** broadcast repeatedly — the same combination is only broadcast once when the cache expires
+- Distinct from `adapter.event.blocked` (middleware rejection): the latter is event-level discarding, while this event is module / identity filtering at the scope admission gate
+
 ## Cache and Hot Reload
 
 - `is_allowed` / `is_identity_allowed` / `is_action_allowed` results include **LRU cache** (`scope.cache_size` is adjustable), and `set` / `delete` / configuration hot reload (`config.updated` / `config.set`) automatically invalidate
@@ -278,42 +306,44 @@ del scope["platforms.onebot11"]      # Delete
 
 Configuration format is validated per section during loading / hot reload: sections with type errors (e.g., `platforms` written as a string), invalid outbound rules (e.g., `allow` written as a number), unknown action names, or unknown top-level keys (e.g., `alow` with a typo) will output a **WARNING** and ignore the corresponding section / entry, while other valid configurations remain effective—mistakes no longer silently fail.
 
-## Common Issues and Considerations
+## Frequently Asked Questions and Precautions
 
 ### 1. Configuration Hierarchy and Overriding
 
-- Module dimension: session-level > Bot-level > platform-level, **full override** (with `merge = true` at sub-levels, entries are merged step-by-step). To "platform allows Chat, Bot adds Music," set `merge = true` at Bot level, or list both at once
-- Identity dimension: user > session > Bot > adapter, taking the **most specific** configured policy (can be used for exceptional allowance)
-- Command user whitelist/blacklist: exact command name takes precedence over glob keys (see `event.command.acl`)
+- Module Level: Session > Bot > Platform, **Overall Override** (when `merge = true` at the sub-level, merge each item by union).
+  If you want "Platform allows Chat, Bot adds Music", you can set `merge = true` at the Bot level, or list both.
+- Identity Level: User > Session > Bot > Adapter, take the **most specific** configured policy (exceptions can be allowed).
+- Command User Whitelist/Blacklist: Exact command name takes precedence over glob key (see `event.command.acl`).
 
 ### 2. Module/Command Not Responding
 
-First suspect scope rather than the module itself:
+First suspect the scope rather than the module itself:
 
 ```python
 from ErisPulse import sdk
 
 print(sdk.scope.is_allowed(event.get_platform(), bot_id, "MyModule", session_id))
 print(sdk.scope.is_identity_allowed(event.get_platform(), bot_id, session_id, user_id))
-print(sdk.scope.stats())   # If module_filtered / identity_denied > 0, it means it was silently filtered
+print(sdk.scope.stats())   # module_filtered / identity_denied > 0 indicates there are blocking records
 ```
 
-Filtered is **silent** (module and identity dimensions do not reply, preventing rule exposure), but statistics accumulate; ACL-rejected command dimensions reply "permission denied" explicitly.
+Filtered requests default to no reply (at both module and identity levels, to avoid exposing rules), but will broadcast the `scope.blocked` lifecycle event and continuously accumulate statistics;
+ACL-rejected commands will explicitly reply with "Insufficient permissions".
 
-### 3. Outbound Action Denied When Troubleshooting
+### 3. Troubleshooting Outbound Actions Rejected
 
 ```python
 from ErisPulse import sdk
 
 print(sdk.scope.get("actions.MyModule"))
-print(sdk.scope.stats())   # If action_denied > 0, some calls were blocked
+print(sdk.scope.stats())   # action_denied > 0 indicates there are blocked calls
 ```
 
-Block is **explicit**: denied calls return the standard failure response (`retcode = 34601`, no network request initiated).
+Blocking is **explicit**: rejected calls return a standard failure response with `retcode = 34601` (no network request is initiated).
 
 ### 4. Session Identifier Isolation Across Platforms
 
-The `(platform, session_id)` combination is the unique identifier. `scope.sessions.onebot11."789"` only applies to onebot11, not affecting a session with the same `789` on Telegram. The same applies to identity dimension user keys.
+The combination of `(platform, session_id)` is the unique identifier. `scope.sessions.onebot11."789"` only applies to onebot11 and does not affect the session with `789` on telegram. The same applies to user keys at the identity level.
 
 ## Topology API
 

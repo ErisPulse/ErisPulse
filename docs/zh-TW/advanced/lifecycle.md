@@ -81,7 +81,7 @@ async def on_message_received(data): ...
 async def on_any(data): ...
 ```
 
-- 目標 owner 無已註冊鈎子 → 事件**靜默丟棄**（可用 `has_handlers()` 提前探測）
+- 目標 owner 無已註冊鈎子 → 事件**不被消費**（可用 `has_handlers()` 提前探測）
 - `data` 為 dict 時自動攜帶 `_trace_id`（不覆蓋已有值）
 - `emit_sync` / `submit_event` 同樣支援 `to=` 參數
 - 模組間通訊的三層模型（RPC / 定向 / 廣播）見
@@ -148,7 +148,7 @@ sequenceDiagram
 | `core.init.complete` | SDK 初始化完成 | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(僅失敗時)}` |
 | `core.uninit.complete` | SDK 反初始化完成 | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(僅失敗時)}` |
 
-**示例：啟動進度展示**
+**範例：啟動進度展示**
 
 ```python
 @sdk.lifecycle.on("core.init.stage")
@@ -163,7 +163,7 @@ def show_stage(data):
 | `config.set` | 配置項被修改 | `{"key": str, "old_value": Any, "new_value": Any}` |
 | `config.updated` | 外部編輯 config.toml 後檢測到整樹變更 | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
-**示例：配置審計**
+**範例：配置審計**
 
 ```python
 @sdk.lifecycle.on("config.set")
@@ -202,7 +202,7 @@ def audit_config(data):
 | `adapter.event.dispatched` | 事件分發完成 | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
 | `event.pre_process` | 事件處理器開始執行前 | `{"event_type": str, "platform": str, "detail_type": str}` |
 
-**示例：事件統計**
+**範例：事件統計**
 
 ```python
 event_counter = {}
@@ -225,7 +225,7 @@ def log_unhandled(data):
 | `message.sending` | 訊息即將發送 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 | `message.sent` | 訊息發送完成 | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
-**示例：訊息發送審計**
+**範例：訊息發送審計**
 
 ```python
 @sdk.lifecycle.on("message.sending")
@@ -240,7 +240,7 @@ def log_sending(data):
 | `command.matched` | 命令被匹配並即將執行 | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
 | `command.executed` | 命令執行完成 | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(僅失敗時)}` |
 
-**示例：命令統計**
+**範例：命令統計**
 
 ```python
 @sdk.lifecycle.on("command.matched")
@@ -255,7 +255,7 @@ def count_commands(data):
 | `server.request` | HTTP 請求接收 | `{"method": str, "path": str, "client_ip": str}` |
 | `server.response` | HTTP 回應發送 | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
 
-**示例：請求日誌**
+**範例：請求日誌**
 
 ```python
 @sdk.lifecycle.on("server.response")
@@ -272,7 +272,7 @@ def log_http(data):
 | `server.websocket.connect` | WebSocket 連接建立 | `{"path": str, "module_name": str, "client_ip": str}` |
 | `server.websocket.disconnect` | WebSocket 連接斷開 | `{"path": str, "module_name": str, "reason": str, "error": str(僅異常時)}` |
 
-**示例：WebSocket 連接監控**
+**範例：WebSocket 連接監控**
 
 ```python
 @sdk.lifecycle.on("server.websocket.connect")
@@ -290,11 +290,11 @@ def on_ws_disconnect(data):
 
 | 鈎子名稱 | 觸發時機 | 資料 |
 |---------|---------|------|
-| `storage.ready` | 儲存後端連接池就緒（每事件迴圈首次建池成功） | `{"backend": str}` |
+| `storage.ready` | 儲存後端連接池就緒（每事件循環首次建池成功） | `{"backend": str}` |
 | `storage.unreachable` | 連接重試耗盡進入冷卻期（期間操作快速失敗） | `{"backend": str, "error": str, "cooldown": float}` |
 | `storage.recovered` | 冷卻結束重連成功，儲存恢復可用 | `{"backend": str}` |
 
-**示例：儲存故障告警**
+**範例：儲存故障告警**
 
 ```python
 @sdk.lifecycle.on("storage.unreachable")
@@ -377,7 +377,7 @@ STANDARD_EVENTS = {
 | `lifecycle.list_hooks()` | 列出所有已註冊鈎子及處理器數量 |
 | `lifecycle.clear()` | 清除所有處理器和計時器 |
 
-## 模組中使用示例
+## 模組中使用範例
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
