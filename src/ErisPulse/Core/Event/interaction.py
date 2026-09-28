@@ -493,8 +493,9 @@ class InteractionManager:
         self._remove(key)
         # 会话定时器联动：用户已回复，该会话挂起的 remind 自动取消（escalate 不受影响）
         self._cancel_reminders_for_key(key, only_reply_cancellable=True)
-        if not entry.future.done():
-            entry.future.set_result(event)
+        fut = entry.future
+        if fut is not None and not fut.done():
+            fut.set_result(event)
 
         # 认领事件（认领 + 阻断），阻止低优先级处理器再介入；
         # ErisPulse.event.wait_reply.block = false 时仅认领不阻断（观察者可见）

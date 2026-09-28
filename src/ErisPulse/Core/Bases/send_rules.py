@@ -23,7 +23,12 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
-from ..constants import RETCODE_NOT_IMPLEMENTED, STATUS_FAILED, STATUS_OK
+from ..constants import (
+    RETCODE_NOT_IMPLEMENTED,
+    SEND_RULE_PRIORITY_THRESHOLD,
+    STATUS_FAILED,
+    STATUS_OK,
+)
 from ..i18n import i18n
 from ..logger import logger
 
@@ -306,7 +311,8 @@ class _PriorityQueue:
     """
 
     _inflight: int = 0
-    _threshold: int = 64
+    # 默认值收编 Core/constants.SEND_RULE_PRIORITY_THRESHOLD
+    _threshold: int = SEND_RULE_PRIORITY_THRESHOLD
 
     @classmethod
     def is_busy(cls) -> bool:

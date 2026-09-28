@@ -19,7 +19,13 @@ from rich.panel import Panel
 from ...runtime.file_watcher import FileSystemEventHandler, PollingObserver
 from ..base import Command
 from ..console import console
-from ..constants import ENV_SUPERVISED, HARD_RESTART_EXIT_CODE
+from ..constants import (
+    ENV_SUPERVISED,
+    HARD_RESTART_EXIT_CODE,
+    RUN_CRASH_BACKOFF_MAX_SECS,
+    RUN_CRASH_BACKOFF_PER_CRASH_SECS,
+    RUN_RESTART_PAUSE_SECS,
+)
 from ..i18n import i18n
 from ..utils.package_manager import (
     resolve_target_python,
@@ -152,7 +158,6 @@ class RunCommand(Command):
             self._run_internal(reload_mode)
 
     _RESTART_EXIT_CODE = HARD_RESTART_EXIT_CODE
-    _MAX_CRASH_BACKOFF = 60.0
 
     def _run_internal(self, reload_mode: bool):
         """
@@ -213,7 +218,7 @@ class RunCommand(Command):
                 if process.returncode == self._RESTART_EXIT_CODE:
                     console.print(f"[info]{i18n.t('cli.run.restart_request')}[/]")
                     crash_count = 0
-                    time.sleep(0.5)
+                    time.sleep(RUN_RESTART_PAUSE_SECS)
                     continue
 
                 if process.returncode == 0:
@@ -224,7 +229,7 @@ class RunCommand(Command):
                 # 非硬重启/非正常退出码：模块/适配器内部错误导致子进程异常终止
                 # 不退出主进程，等待后自动重试
                 crash_count += 1
-                backoff = min(self._MAX_CRASH_BACKOFF, 3.0 * crash_count)
+                backoff = min(RUN_CRASH_BACKOFF_MAX_SECS, RUN_CRASH_BACKOFF_PER_CRASH_SECS * crash_count)
                 console.print(
                     f"[warning]{i18n.t('cli.run.process_crashed', code=process.returncode)}[/]"
                 )

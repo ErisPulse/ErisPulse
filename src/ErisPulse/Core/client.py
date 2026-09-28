@@ -599,6 +599,7 @@ class Client(BaseClient):
             data = self._build_form_data(data, files)
 
         last_exc: ClientError | None = None
+        last_cause: BaseException | None = None
         start = time.monotonic()
         for attempt in range(retries + 1):
             start = time.monotonic()
@@ -642,6 +643,7 @@ class Client(BaseClient):
 
             except asyncio.TimeoutError as e:
                 last_exc = self._convert_aiohttp_exception(e)
+                last_cause = e
                 self._stats["total_errors"] += 1
                 elapsed = time.monotonic() - start
                 if attempt < retries:
@@ -666,6 +668,7 @@ class Client(BaseClient):
                     )
             except aiohttp.ClientConnectionError as e:
                 last_exc = self._convert_aiohttp_exception(e)
+                last_cause = e
                 self._stats["total_errors"] += 1
                 elapsed = time.monotonic() - start
                 if attempt < retries:
@@ -691,6 +694,7 @@ class Client(BaseClient):
                     )
             except aiohttp.ClientError as e:
                 last_exc = self._convert_aiohttp_exception(e)
+                last_cause = e
                 self._stats["total_errors"] += 1
                 elapsed = time.monotonic() - start
                 if attempt < retries:
@@ -719,6 +723,7 @@ class Client(BaseClient):
                 raise
             except Exception as e:
                 last_exc = ClientError(str(e))
+                last_cause = e
                 self._stats["total_errors"] += 1
                 elapsed = time.monotonic() - start
                 if attempt < retries:
@@ -765,7 +770,7 @@ class Client(BaseClient):
                 "elapsed": time.monotonic() - start,
             },
         )
-        raise last_exc
+        raise last_exc from last_cause
 
     # ---- WebSocket 连接 ----
 

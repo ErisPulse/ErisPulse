@@ -21,6 +21,7 @@ from .config import config
 from .constants import (
     ADAPTER_RETRY_BACKOFF_INTERVALS,
     ADAPTER_RETRY_FIXED_DELAY_SECS,
+    ADAPTER_START_TASK_JOIN_TIMEOUT_SECS,
     ADAPTER_STATUS_DISABLED,
     ADAPTER_STATUS_SKIPPED_DEPENDENCY,
     ADAPTER_STATUS_START_FAILED,
@@ -741,7 +742,7 @@ class AdapterManager(ManagerBase):
                     logger.info(
                         i18n.t("core.adapter.task_cancelled", platform=platform)
                     )
-                    return
+                    raise  # 保持取消传播：等待方（shutdown 等）须能区分"已取消"与"自然结束"
                 except Exception as e:
                     retry_count += 1
                     logger.error(
@@ -830,13 +831,21 @@ class AdapterManager(ManagerBase):
             bots_to_offline = []  # [(platform, bot_id), ...]
 
             # 取消目标平台的后台启动任务
+            cancelled_tasks: list[asyncio.Task] = []
             for platform in platforms:
                 task = self._adapter_tasks.pop(platform, None)
                 if task and not task.done():
                     task.cancel()
+                    cancelled_tasks.append(task)
                     logger.trace(
                         i18n.t("core.adapter.task_cancelled_debug", platform=platform)
                     )
+            # 等待被取消的启动任务真正退出再继续关闭：_run_adapter 持有
+            # _starting_lock 且可能仍在写状态，与 shutdown 并发会交错
+            if cancelled_tasks:
+                await asyncio.wait(
+                    cancelled_tasks, timeout=ADAPTER_START_TASK_JOIN_TIMEOUT_SECS
+                )
 
             for platform in platforms:
                 adapter_instance = self._adapters[platform]
@@ -2222,7 +2231,9 @@ class AdapterManager(ManagerBase):
                 async with _sem:
                     await func(data)
             except asyncio.CancelledError:
-                pass
+                # 保持取消传播：清理与耗时统计在 finally 完成，异常本身向上
+                # 抛出，使取消方（shutdown / cancel_owner_tasks）能正确感知
+                raise
             except Exception as e:
                 logger.error(
                     i18n.t(
@@ -2321,10 +2332,20 @@ class AdapterManager(ManagerBase):
             task.add_done_callback(self._pending_handler_tasks.discard)
             return task
         except RuntimeError:
-            task = asyncio.ensure_future(_safe_run())
-            self._pending_handler_tasks.add(task)
-            task.add_done_callback(self._pending_handler_tasks.discard)
-            return task
+            # 无运行中的事件循环（跨线程调用等）：ensure_future 兜底同样会抛
+            # RuntimeError，且线程上若存在"已设但未运行"的循环，任务会落到
+            # 死循环上静默不执行。改走 spawn_background（优先调度回已注册
+            # 主循环并留痕），仍失败则记错误放弃（返回 None 由调用方兜底）
+            from ..runtime.tasks import spawn_background
+
+            try:
+                future = spawn_background(_safe_run())
+            except RuntimeError as e:
+                logger.error(
+                    i18n.t("core.adapter.handler_schedule_failed", handler=_func_name, error=e)
+                )
+                return None
+            return future if isinstance(future, asyncio.Task) else None
 
     # ==================== Bot状态管理 ====================
 

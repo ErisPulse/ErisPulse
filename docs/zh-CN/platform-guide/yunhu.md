@@ -24,7 +24,8 @@ YunhuAdapter 是基于云湖协议构建的适配器，整合了所有云湖功�
 - **官方服务端API全集**（Api DSL 扩展方法）：编辑消息、批量发送、消息列表、用户/全局看板、群成员禁言、移除群成员、群消息类型控制、群标签 CRUD、用户打标签
 - **标准 keyboard 段**（跨平台交互组件标准）：{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}} 段自动转换为云湖 buttons；.Buttons(rows) / .Keyboard(rows) 修饰器接受通用结构（原生结构向后兼容）
 - **交互回调标准字段**：按钮点击/A2UI 事件包含 interaction_id / utton_data 标准字段
-- **spawn_background 任务归属**：WS 连接任务改用 untime.spawn_background
+- **spawn_background 任务归属**：WS 连接任务改用 
+untime.spawn_background
 - **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
 
 ### 平台扩展动作（call / Api 方法）
@@ -55,7 +56,7 @@ async def handle_button(event):
         interaction_id = event["interaction_id"]
 ```
 
-> 完整标准说明见 [跨平台交互组件标准](../../standards/standardization-guide.md)。
+> 完整标准说明见 [跨平台交互组件标准](../standards/standardization-guide.md)。
 
 ---
 ## 支持的消息发送类型

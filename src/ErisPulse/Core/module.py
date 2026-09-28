@@ -388,6 +388,8 @@ class ModuleManager(ManagerBase):
 
         logger.trace(i18n.t("core.module.start_loading", name=module_name))
 
+        # 半卸载兜底用：提前绑定（except 路径上可能尚未走到构造语句）
+        instance: Any = None
         try:
             module_class = self._module_classes[module_name]
 
@@ -403,7 +405,6 @@ class ModuleManager(ManagerBase):
 
                 sdk_to_use = sdk
 
-            instance = None
             token = current_owner.set(module_name)
             try:
                 if params:
@@ -496,10 +497,11 @@ class ModuleManager(ManagerBase):
         except Exception as e:
             # 半卸载：构造成功但后续阶段（moduleInfo 注入 / i18n 预注册 /
             # on_load 前的准备）抛异常时，实例与注册资源同样需要回收
-            try:
-                await self._half_unload_failed_module(module_name, instance)
-            except Exception:
-                pass
+            if instance is not None:
+                try:
+                    await self._half_unload_failed_module(module_name, instance)
+                except Exception:
+                    pass
             await lifecycle.submit_event(
                 "module.load",
                 data={
@@ -925,7 +927,7 @@ class ModuleManager(ManagerBase):
         """
         from .shadow import shadow_manager
 
-        return await shadow_manager.dismiss(module_name, self)
+        return await shadow_manager.dismiss(module_name, self, self._sdk)
 
     def shadow_diff(self, module_name: str) -> "dict[str, Any]":
         """

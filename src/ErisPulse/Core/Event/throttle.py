@@ -83,9 +83,19 @@ def make_throttle_condition(
 
     from .. import logger
 
+    from ..constants import GOVERNANCE_STATE_MAX_ENTRIES
+
+    def _sweep(now: float) -> None:
+        """{!--< internal-use >!--} 机会式清扫：超容量时移除间隔已过的条目（下次命中会重新记录）"""
+        if len(_last_pass) <= GOVERNANCE_STATE_MAX_ENTRIES:
+            return
+        for key in [k for k, ts in _last_pass.items() if now - ts >= interval]:
+            _last_pass.pop(key, None)
+
     def condition(event: Any) -> bool:
         key = _scope_key(throttle_key, event)
         now = time.monotonic()
+        _sweep(now)
         last = _last_pass.get(key)
         if last is not None and now - last < interval:
             logger.trace(
@@ -142,18 +152,29 @@ def make_debounce_wrapper(
     async def wrapper(event: Any, **kwargs: Any) -> None:
         key = _scope_key(debounce_key, event)
         old = _pending.pop(key, None)
-        if old is not None and not old.done():
+        # 只取消仍在等待窗口的待执行任务；已越过 sleep 进入业务处理器的任务
+        # 不再掐断——半途取消会把业务处理器停在任意 await 点，产生不可控的
+        # 部分副作用（旧任务自然结束，新事件作为新的待执行任务重新计时）
+        if old is not None and not old.done() and not getattr(old, "_debounce_started", False):
             old.cancel()
 
         async def _run():
             await asyncio.sleep(delay)
             _pending.pop(key, None)
+            _mark_started()
             token = current_owner.set(_owner) if _owner else None
             try:
                 await func(event, **kwargs)
             finally:
                 if token is not None:
                     current_owner.reset(token)
+
+        def _mark_started() -> None:
+            # 越过 sleep 即标记"已开始执行"：此后新事件不再取消本任务
+            # （set 于 _pending.pop 之后、func 之前，同循环内无 await 间隔，无竞态）
+            task = asyncio.current_task()
+            if task is not None:
+                task._debounce_started = True  # type: ignore[attr-defined]
 
         _pending[key] = asyncio.create_task(_run())
 

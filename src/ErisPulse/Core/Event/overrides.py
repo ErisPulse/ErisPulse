@@ -156,12 +156,14 @@ def _replay_runtime() -> None:
                 continue
             if cmd:
                 # 命令级：整体替换该命令子表
-                base = dict(_command.get(owner)) if isinstance(_command.get(owner), dict) else {}
+                existing = _command.get(owner)
+                base = dict(existing) if isinstance(existing, dict) else {}
                 base[cmd] = copy.deepcopy(value)
                 _command[owner] = base
             else:
                 # 模块级标量：替换标量参数，保留命令级子表
-                entry = _command.get(owner) if isinstance(_command.get(owner), dict) else {}
+                entry_existing = _command.get(owner)
+                entry = entry_existing if isinstance(entry_existing, dict) else {}
                 subs = {k: v for k, v in entry.items() if isinstance(v, dict)}
                 _command[owner] = {**copy.deepcopy(value), **subs}
         elif kind == _ACL_SECTION:
@@ -237,7 +239,7 @@ def _apply(tree: dict) -> None:
                 if not isinstance(cfg, dict):
                     _warn_invalid(f"event.overrides.command.{owner}", type(cfg).__name__)
                     continue
-                entry: dict = {}
+                cfg_entry: dict = {}
                 for key, value in cfg.items():
                     if isinstance(value, dict):
                         bad = [k for k in value if k not in _COMMAND_PARAMS]
@@ -245,13 +247,13 @@ def _apply(tree: dict) -> None:
                             _warn_invalid(f"event.overrides.command.{owner}.{key}.{bad_key}", "unknown param")
                         cleaned = {k: v for k, v in value.items() if k in _COMMAND_PARAMS}
                         if cleaned:
-                            entry[key] = cleaned
+                            cfg_entry[key] = cleaned
                     elif key in _COMMAND_PARAMS:
-                        entry[key] = value
+                        cfg_entry[key] = value
                     else:
                         _warn_invalid(f"event.overrides.command.{owner}.{key}", "unknown param")
-                if entry:
-                    new_command[owner] = entry
+                if cfg_entry:
+                    new_command[owner] = cfg_entry
 
     # acl（command 专属）：命令用户黑白名单
     new_acl: dict[str, dict] = {}
@@ -807,7 +809,7 @@ def unregister_by_owner(caller: str) -> int:
 
 # 订阅配置热更新：event 配置变更时自动重建覆写缓存
 try:
-    from .lifecycle import lifecycle
+    from ..lifecycle import lifecycle
 
     lifecycle.register("config.updated", _reload)
     lifecycle.register("config.set", _reload)

@@ -218,6 +218,7 @@ class TestUvToolEnv:
 
         monkeypatch.chdir(tmp_path)
         # 有项目 .venv 时即使处于工具环境也不提示
+        (tmp_path / ".venv").mkdir()
         monkeypatch.setattr(_sys, "prefix", str(tmp_path / "uv" / "tools" / "ErisPulse"))
         assert pm_module.warn_if_uv_tool_env_without_project() is False
 

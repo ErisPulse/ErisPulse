@@ -238,7 +238,7 @@ def get_interaction_id(self) -> str: ...  # interaction_id
 | 表态/表情回应（reactions） | QQBot / Telegram / Discord / Kook | 高 | 动作 + 事件两侧标准化 |
 | 群管理动作（禁言/踢人/审批） | QQBot / 云湖 / OB11 | 高 | 多数已实现为平台动作，待抽取标准签名 |
 | 公告/看板 | 云湖 / Telegram / Discord | 中 | `set_announcement` 类动作 |
-| 文件上传标准（file_id 两段式） | 各平台 | 中 | 见 API 动作标准（当前降级可用） |
+| 文件资源模型（file_id 两段式） | 各平台 | 低（暂缓） | 发送直传 `SendDSL.File(file, filename)` 已是标准路径（URL/路径/bytes 直传，见[发送方法规范 §2.1](send-method-spec.md)）；file_id 模型仅当后端天然具备时透传，见 [API 动作标准 §3.5](api-action-spec.md) |
 | 卡片 card | Kook / 云湖 | 低 | 结构差异大，见 §5.5 |
 | 表单 form | 云湖 | 低 | 平台特有，保持 `{platform}_` 前缀 |
 | 媒体转码/大小探测 | 各平台 | 低 | 适配器内部实现，不对外标准化 |
@@ -248,7 +248,8 @@ def get_interaction_id(self) -> str: ...  # interaction_id
 开发新适配器时，按此清单对照实现（★ 为必须，其余推荐）：
 
 - [ ] ★ 事件转换为 OneBot12 标准结构，继承 `BaseConverter`
-- [ ] ★ 标准消息段收发支持（text/image/mention/reply/keyboard…）
+- [ ] ★ 标准消息段收发支持（text/image/mention/reply/keyboard…；媒体段按
+      [发送方法规范 §2.1](send-method-spec.md) 的形态分级与降级阶梯处理）
 - [ ] ★ 实现 `Raw_ob12`（含标准段 → 平台结构转换；标准 `keyboard` 段必做）
 - [ ] ★ 返回标准响应结构（`make_response`/`make_error`）
 - [ ] ★ 多账户：`AccountConfigClass(BotAccountConfig)` + `_resolve_account`

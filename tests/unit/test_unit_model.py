@@ -259,6 +259,46 @@ class TestDeclaration:
 
         assert UserProfile.table_name() == "user_profile"
 
+    def test_subclass_gets_own_table_name(self):
+        """子类未声明 __tablename__ 时按自身类名派生，不得静默共享父表"""
+
+        class BaseTbl(Model):
+            id: int = Field(primary_key=True)
+
+        class ChildTbl(BaseTbl):
+            extra: str = Field(default="")
+
+        assert BaseTbl.table_name() == "base_tbl"
+        assert ChildTbl.table_name() == "child_tbl"
+
+    def test_subclass_explicit_tablename_wins(self):
+        """子类显式声明 __tablename__ 时以声明为准（共享表是显式意图）"""
+
+        class SharedBase(Model):
+            __tablename__ = "shared_tbl"
+            id: int = Field(primary_key=True)
+
+        class SharedChild(SharedBase):
+            __tablename__ = "shared_tbl"
+
+        assert SharedChild.table_name() == SharedBase.table_name() == "shared_tbl"
+
+    def test_registry_name_collision_warns(self, caplog):
+        """注册表同名类冲突：后者覆盖前者并告警（relationship 解析歧义提示）"""
+        import re as re_mod
+
+        class CollideA(Model):
+            id: int = Field(primary_key=True)
+
+        with caplog.at_level("WARNING"):
+            class CollideA(Model):  # noqa: F811 同名再声明
+                pass
+
+        assert Model._model_registry["CollideA"].table_name() == "collide_a"
+        assert any(
+            re_mod.search("name collision.*CollideA", r.getMessage()) for r in caplog.records
+        )
+
     def test_tablename_override_validated(self):
         class T1(Model):
             __tablename__ = "custom_t"
@@ -556,6 +596,36 @@ async def test_relationship_belongs_to(sm):
 
 
 @pytest.mark.asyncio
+async def test_relationship_belongs_to_null_fk_skips_query(sm, monkeypatch):
+    """belongs-to 外键为 None：短路返回 None，不发起 pk IS NULL 查询"""
+    RelUser, RelPost = make_relation_models(sm)
+    await RelUser.create_table()
+    await RelPost.create_table()
+
+    class RelNullablePost(Model):
+        __storage__ = sm
+        __tablename__ = "rel_nullable_posts"
+
+        id: int = Field(primary_key=True, autoincrement=True)
+        author: int | None = Field(foreign_key="rel_users.id", nullable=True, default=None)
+        writer = relationship(RelUser, foreign_key="author")
+
+    await RelNullablePost.create_table()
+    orphan = await RelNullablePost.create()
+
+    calls = []
+    original = sm._execute_query
+
+    async def counting_execute(kind, *args, **kwargs):
+        calls.append(kind)
+        return await original(kind, *args, **kwargs)
+
+    monkeypatch.setattr(sm, "_execute_query", counting_execute)
+    assert await orphan.writer is None
+    assert calls == []  # 未发起任何查询
+
+
+@pytest.mark.asyncio
 async def test_relationship_class_access_and_errors(sm):
     """类访问返回描述符自身；未注册模型 / 外键双不在 → 访问时 ValueError"""
     from ErisPulse.Core.Bases.model import Relationship
@@ -610,3 +680,24 @@ async def test_relationship_accepts_model_class(sm):
     alice = await RelUser.create(name="A")
     row = await Direct.create(author=alice.id)
     assert (await row.writer2).name == "A"
+
+
+@pytest.mark.asyncio
+async def test_insert_none_with_default_backfills_instance(sm):
+    """运行值 None + 声明默认值：客户端应用默认值随 INSERT 提交，实例与行一致"""
+    class BackfillUser(Model):
+        __storage__ = sm
+        __tablename__ = "backfill_users"
+
+        id: int = Field(primary_key=True, autoincrement=True)
+        name: str = Field(max_length=32)
+        nickname: str = Field(default="anon", nullable=False)
+
+    assert await BackfillUser.create_table()
+    user = BackfillUser(name="A")
+    user.nickname = None  # 手工置 None：此前省列交 DB 默认，实例停留 None
+    await user.save()
+    assert user.nickname == "anon"  # 实例已回填声明默认值
+
+    row = await BackfillUser.where(BackfillUser.name == "A").first()
+    assert row.nickname == "anon"  # 行内容一致

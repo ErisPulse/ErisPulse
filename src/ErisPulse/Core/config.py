@@ -136,7 +136,10 @@ class ConfigManager:
         {!--< internal-use >!--}
         {!--< /internal-use >!--}
         """
-        old_config_path = "config.toml"
+        # 相对 CONFIG_FILE 锚定（Windows 服务 / 计划任务的启动目录不定，
+        # CWD 相对路径会让迁移行为漂移）：旧文件 = config/config.toml 同级的
+        # config.toml，说明文件写在配置目录内
+        old_config_path = str(Path(self.CONFIG_FILE).parent.parent / "config.toml")
 
         if not Path(old_config_path).exists():
             return
@@ -178,7 +181,9 @@ class ConfigManager:
 - 如需修改配置，请编辑 `config/config.toml`
 """
 
-            with Path("config.readme.md").open("w", encoding="utf-8") as f:
+            with (Path(self.CONFIG_FILE).parent / "config.readme.md").open(
+                "w", encoding="utf-8"
+            ) as f:
                 f.write(readme_content)
 
             Path(old_config_path).unlink()
@@ -546,13 +551,8 @@ class ConfigManager:
                         )
                     except (ImportError, AttributeError):
                         pass
-                    # 清理临时文件
-                    temp_file = self.CONFIG_FILE + ".tmp"
-                    if Path(temp_file).exists():
-                        try:
-                            Path(temp_file).unlink()
-                        except Exception:
-                            pass
+                    # 临时文件清理由 _atomic_write_text 的 mkstemp 唯一命名 +
+                    # 失败即删语义负责，此处无需（也不能）按旧固定名清理
 
     def _register_atexit(self) -> None:
         """
@@ -672,8 +672,14 @@ class ConfigManager:
                     "config_file": self.CONFIG_FILE,
                 },
             )
-        except Exception:
-            pass
+        except Exception as e:
+            # 广播失败留痕：订阅方的 config.updated 感知不到会静默失效
+            try:
+                from .logger import logger
+
+                logger.debug(i18n.t("core.config.emit_failed", error=e))
+            except (ImportError, AttributeError):
+                pass
 
     # ==================== 配置读写 ====================
 
@@ -732,8 +738,9 @@ class ConfigManager:
             if overlay:
                 if isinstance(value, dict):
                     return self._deep_merge(value, overlay)
-                if value is default:
-                    return overlay
+                # 非字典（标量或键缺失）：flush 后该键将变为子表，直接返回
+                # 叠加结果，避免刷盘前读到旧标量（写后立读不一致的边角）
+                return overlay
             return value
 
     def _walk_cache(self, key: str, default: Any) -> Any:

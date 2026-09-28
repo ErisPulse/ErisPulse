@@ -206,7 +206,7 @@ class MasterManager:
         except (AttributeError, TypeError):
             # 绑定方法等无 __dict__ 的可调用对象无法挂载注销函数，
             # 注册仍生效；请改用模块级函数，或自行记录注销入口
-            logger.debug(f"provider {fn!r} cannot carry unregister(); use a module-level function")
+            logger.debug(i18n.t("core.master.provider_not_unregisterable", provider=repr(fn)))
         return fn
 
     def _drop_provider(self, fn: MasterProvider) -> None:

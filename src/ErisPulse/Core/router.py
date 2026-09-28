@@ -1307,7 +1307,7 @@ class RouterManager:
         当前注册上下文是否属于影子 owner（方向十一：只登记不挂载）
         """
         try:
-            from ...runtime.context import get_current_owner
+            from ..runtime.context import get_current_owner
             from .ownership import ownership as _ownership
 
             return _ownership.is_shadow(get_current_owner())
@@ -2793,7 +2793,9 @@ class RouterManager:
                 log_level="warning",
                 ssl_certfile=None if ssl_context else ssl_certfile,
                 ssl_keyfile=None if ssl_context else ssl_keyfile,
-                ssl_context_factory=(lambda ctx=ssl_context: ctx)
+                ssl_context_factory=(
+                    lambda _config, _default_factory, _ctx=ssl_context: _ctx
+                )
                 if ssl_context
                 else None,
             )
@@ -2983,7 +2985,9 @@ class RouterManager:
                 self._server_task.cancel()
                 try:
                     await self._server_task
-                except (asyncio.CancelledError, Exception):
+                except asyncio.CancelledError:
+                    pass  # 目标任务被取消即预期结果（非本协程被取消，无需重抛）
+                except Exception:
                     pass
                 logger.warning(i18n.t("core.router.stop_timeout"))
             except Exception as e:

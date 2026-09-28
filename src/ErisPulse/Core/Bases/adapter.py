@@ -394,14 +394,22 @@ def _wrap_send_method(method_name: str, original_method: Callable, send_dsl: "Se
             # message.sent 绑定到包装任务完成（覆盖整体重试流程），
             # 不绑定到首次内部 result（避免失败重试时提前触发）
             if _has_sent_hooks:
-                wrapped.add_done_callback(lambda t: asyncio.ensure_future(_emit_hooks_done(t)))
+                from ...runtime.tasks import spawn_background
+
+                wrapped.add_done_callback(
+                    lambda t: spawn_background(_emit_hooks_done(t))
+                )
             if _ledger is not None:
                 wrapped.add_done_callback(_record_receipt)
             return wrapped
 
         # 无规则：保持原有行为，message.sent 在单次发送完成后触发
         if _has_sent_hooks:
-            result.add_done_callback(lambda t: asyncio.ensure_future(_emit_hooks_done(t)))
+            from ...runtime.tasks import spawn_background
+
+            result.add_done_callback(
+                lambda t: spawn_background(_emit_hooks_done(t))
+            )
         if _ledger is not None:
             result.add_done_callback(_record_receipt)
         return result

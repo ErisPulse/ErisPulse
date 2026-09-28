@@ -152,8 +152,8 @@ async def cancel_owner_tasks(owner: str | None, *, timeout: float = DEFAULT_OWNE
                 asyncio.gather(*pending, return_exceptions=True),
                 timeout=timeout,
             )
-        except (asyncio.TimeoutError, Exception):
-            # 超时或等待异常：任务已处于 cancelled 状态，最终会自行结束
+        except asyncio.TimeoutError:
+            # 超时：任务已处于 cancelled 状态，最终会自行结束
             pass
     return cancelled
 
@@ -233,6 +233,12 @@ def spawn_background(coro: Awaitable[_T] | Coroutine[_T, Any, Any], *, owner: st
             except RuntimeError:
                 pass
         # 兜底：创建一个临时事件循环同步执行，确保协程不会丢失。
+        # 业务协程若绑定了主循环资源（存储连接 / ContextVar 关联 Task），
+        # 在异循环上执行可能报 "attached to a different loop"，留痕供排查
+        from ..Core.i18n import i18n as _i18n
+        from ..Core.logger import logger
+
+        logger.warning(_i18n.t("runtime.tasks.temp_loop_fallback", owner=task_owner or "-"))
         _loop = asyncio.new_event_loop()
         try:
             _loop.run_until_complete(coro)

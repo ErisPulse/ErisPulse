@@ -457,3 +457,100 @@ class TestUsageLimit:
         command_handler._usage_counts["us_clean\x00scope\x00period"] = 5
         command_handler.unregister_by_owner("us_mod")
         assert command_handler._usage_counts == {}
+
+    async def test_concurrent_same_key_no_lost_update(self, monkeypatch):
+        """同键并发配额判定：读改写跨 await 需互斥，恰好放行 limit 次（无丢失更新）"""
+        import asyncio
+
+        from ErisPulse.Core.Bases.sql_base import SQLStorageBase
+        from ErisPulse.Core.Event.wrapper import Event
+
+        stored = self._stored
+
+        async def slow_aget(self, key, default=None, **kwargs):
+            await asyncio.sleep(0)  # 制造并发交错窗口
+            return stored.get(key, default)
+
+        monkeypatch.setattr(SQLStorageBase, "aget", slow_aget)
+
+        limit = 5
+        gate = command_handler._gate
+        ev = Event({"platform": "p", "self": {"platform": "p", "user_id": "b1"}, "user_id": "ucc"})
+        results = []
+
+        async def one():
+            blocked = await gate.check_usage(
+                "cc_conc", "cc_conc", {"usage_spec": (limit, "day")}, ev, AsyncMock()
+            )
+            results.append(blocked)
+
+        await asyncio.gather(*(one() for _ in range(20)))
+        assert results.count(False) == limit  # 恰好放行 limit 次
+        assert results.count(True) == 20 - limit
+
+    async def test_persist_failure_warns_once_per_command(self, monkeypatch):
+        """存储持久化失败（aset 返回 False）时告警，且每命令只告警一次"""
+        from ErisPulse.Core.Bases.sql_base import SQLStorageBase
+        from ErisPulse.Core.Event import governance as governance_module
+
+        calls = []
+
+        @command_handler("us_warn", usage_limit="5/day")
+        async def us_warn(event):
+            calls.append(1)
+
+        async def failing_aset(self, key, value, **kwargs):
+            return False  # 存储不可达时的快速失败语义
+
+        monkeypatch.setattr(SQLStorageBase, "aset", failing_aset)
+        with patch.object(governance_module.logger, "warning") as warn_mock:
+            await _dispatch("/us_warn")
+            await _dispatch("/us_warn")
+        assert len(calls) == 2
+        warn_calls = [c for c in warn_mock.call_args_list if "us_warn" in str(c)]
+        assert len(warn_calls) == 1
+
+    def test_state_tables_sweep_expired_entries(self, monkeypatch):
+        """冷却/限流状态表超容量时机会式清扫已失效条目"""
+        import time as time_mod
+
+        from ErisPulse.Core.Event import governance as governance_module
+
+        monkeypatch.setattr(governance_module, "GOVERNANCE_STATE_MAX_ENTRIES", 4)
+        gate = command_handler._gate
+        gate.clear_all()
+        now = time_mod.monotonic()
+        for i in range(6):
+            gate._cooldowns[f"live{i}\x00s"] = now + 60  # 未过期
+        gate._cooldowns["stale\x00s"] = now - 1  # 已过期
+        gate._cooldown_replied["stale\x00s"] = now - 1
+        for i in range(6):
+            gate._rate_limits[f"rl{i}\x00s"] = __import__("collections").deque([now])
+        gate._rate_limits["empty\x00s"] = __import__("collections").deque()  # 空 deque
+
+        gate._maybe_sweep(now)
+        assert "stale\x00s" not in gate._cooldowns
+        assert "stale\x00s" not in gate._cooldown_replied
+        assert "empty\x00s" not in gate._rate_limits
+        assert len([k for k in gate._cooldowns if k.startswith("live")]) == 6
+        gate.clear_all()
+
+    def test_usage_period_sweep_removes_stale_periods(self, monkeypatch):
+        """配额表超容量时清除已过自然周期的条目（含锁表与边沿回复表）"""
+        from ErisPulse.Core.Event import governance as governance_module
+
+        monkeypatch.setattr(governance_module, "GOVERNANCE_STATE_MAX_ENTRIES", 1)
+        gate = command_handler._gate
+        gate.clear_all()
+        cur = command_handler.usage_period_key("day")
+        gate._usage_counts[f"a\x00u1\x00{cur}"] = 1
+        gate._usage_counts["b\x00u1\x002020-01-01"] = 1
+        gate._usage_locks["b\x00u1\x002020-01-01"] = asyncio.Lock()
+        gate._usage_replied[f"a\x00u1\x00{cur}"] = cur
+        gate._usage_replied["b\x00u1\x002020-01-01"] = "2020-01-01"
+
+        gate._sweep_usage_period(cur, "\x00")
+        assert set(gate._usage_counts) == {f"a\x00u1\x00{cur}"}
+        assert set(gate._usage_replied) == {f"a\x00u1\x00{cur}"}
+        assert "b\x00u1\x002020-01-01" not in gate._usage_locks
+        gate.clear_all()

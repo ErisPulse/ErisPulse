@@ -226,6 +226,15 @@ class ScopeManager:
         self._runtime_overrides: dict[str, Any] = {}
         # 运行时写入归属：路径 → 调用方（模块卸载时兜底清理）
         self._runtime_owners: dict[str, str] = {}
+        # 持久化基线：磁盘上 scope 节的镜像（不含任何运行时绑定）。
+        # 持久化写入只在该基线上应用本次变更后提交，避免把 _data 中
+        # persist=False 的运行时值顺带落盘（卸载注销后从磁盘"复活"）
+        self._persisted_tree: dict = {}
+        # 预编译匹配器缓存（热路径性能）：LRU 未命中的判定每次都要编译
+        # glob/正则，配置条目多时开销放大；以条目内容元组为键，随
+        # _invalidate_cache 一并失效（配置树重建 / set / delete）
+        self._compiled_lists: dict[tuple[str, ...], Callable[[str], bool] | None] = {}
+        self._entry_matchers: dict[tuple[str, str, str], Callable[[str], bool]] = {}
         self._load_config()
         # 订阅配置热更新：scope 配置变更时自动重建配置树
         try:
@@ -279,6 +288,16 @@ class ScopeManager:
             self._warn_invalid("scope", type(tree).__name__)
         self._default_allow = bool(scope_config.get("default_allow", True))
 
+        # cache_size：判定 LRU 容量（淘汰时动态读取，缩容在下一次写入时生效）
+        raw_cache_size = scope_config.get("cache_size")
+        if raw_cache_size is not None:
+            try:
+                size = max(1, int(raw_cache_size))
+            except (TypeError, ValueError):
+                self._warn_invalid("scope.cache_size", type(raw_cache_size).__name__)
+            else:
+                self._cache_size = size
+
         # 未知顶层键告警（常见于拼写错误，如 alow / defalut_allow）
         known_keys = {
             "default_allow",
@@ -310,6 +329,8 @@ class ScopeManager:
             },
             "actions": self._validated_actions(scope_config),
         }
+        # 持久化基线以磁盘加载的（校验后）树为准——不含任何运行时绑定
+        self._persisted_tree = copy.deepcopy(self._data)
         # 重放运行时覆盖层：persist=False 的绑定在任意配置写入触发的
         # 树重建后保持有效（Issue #432）
         self._replay_runtime_overrides()
@@ -338,6 +359,28 @@ class ScopeManager:
                 self._deep_merge(node[last], copy.deepcopy(value))
             else:
                 node[last] = copy.deepcopy(value)
+
+    @staticmethod
+    def _walk_to(tree: dict, parts: list[str]) -> dict:
+        """{!--< internal-use >!--} 沿 parts 逐层下行（缺失的中间节建空 dict），返回目标父节"""
+        node = tree
+        for part in parts:
+            child = node.get(part)
+            if not isinstance(child, dict):
+                child = {}
+                node[part] = child
+            node = child
+        return node
+
+    def _restore_inmemory(self, snapshot: dict) -> None:
+        """{!--< internal-use >!--}
+        持久化内部热更新以旧盘配置重建了 _data，用内存最终态快照恢复（写后立读）。
+        与 :meth:`_apply_tree` 不同：快照含运行时值，直接恢复不触碰持久化基线
+        """
+        self._data = snapshot
+        self._default_allow = bool(snapshot.get("default_allow", True))
+        self._invalidate_cache()
+
 
     def _record_runtime_owner(self, path: str) -> None:
         """{!--< internal-use >!--} 记录运行时写入的调用方归属（模块卸载时兜底清理）"""
@@ -429,7 +472,13 @@ class ScopeManager:
         try:
             if isinstance(data, dict) and data.get("key") is not None:
                 key = str(data["key"])
-                if key and key != CONFIG_ROOT_KEY and not key.startswith(f"{CONFIG_ROOT_KEY}.scope"):
+                scope_prefix = f"{CONFIG_ROOT_KEY}.scope."
+                if (
+                    key
+                    and key != CONFIG_ROOT_KEY
+                    and key != f"{CONFIG_ROOT_KEY}.scope"
+                    and not key.startswith(scope_prefix)
+                ):
                     return
                 self._load_config()
                 return
@@ -447,21 +496,56 @@ class ScopeManager:
         self._load_config()
 
     def _invalidate_cache(self) -> None:
-        """{!--< internal-use >!--} 清空 LRU 结果缓存"""
+        """{!--< internal-use >!--} 清空 LRU 结果缓存与预编译匹配器缓存"""
         self._cache.clear()
         self._identity_cache.clear()
         self._action_cache.clear()
+        self._compiled_lists.clear()
+        self._entry_matchers.clear()
 
     # ==================== ① 模块维度 ====================
 
-    @staticmethod
-    def _normalize(cfg: dict) -> tuple[Callable[[str], bool] | None, Callable[[str], bool] | None]:
+    def _compiled_list_matcher(self, entries) -> "Callable[[str], bool] | None":
+        """
+        {!--< internal-use >!--}
+        编译匹配条目列表为判定函数（带内容元组键的预编译缓存）
+
+        :param entries: 匹配条目列表（空 / 非列表返回 None，不限制）
+        :return: ``fn(text: str) -> bool`` 或 None
+        """
+        if not isinstance(entries, list) or not entries:
+            return None
+        cache_key = tuple(str(e) for e in entries)
+        matcher = self._compiled_lists.get(cache_key)
+        if matcher is None:
+            matcher = text_match.compile_entry_list([str(e) for e in entries])
+            self._compiled_lists[cache_key] = matcher
+        return matcher
+
+    def _entry_matcher(self, bucket: str, platform: str, key: str) -> "Callable[[str], bool]":
+        """
+        {!--< internal-use >!--}
+        编译单个身份匹配条目（带 (桶, 平台, 条目) 键的预编译缓存）
+
+        :param bucket: 身份桶标识（adapters / bots / sessions / users）
+        :param platform: 平台名称
+        :param key: 匹配条目（精确 / glob / re: 正则）
+        :return: ``fn(text: str) -> bool``
+        """
+        cache_key = (bucket, platform, key)
+        matcher = self._entry_matchers.get(cache_key)
+        if matcher is None:
+            matcher = text_match.compile_entry_matcher(key)
+            self._entry_matchers[cache_key] = matcher
+        return matcher
+
+    def _normalize(self, cfg: dict) -> "tuple[Callable[[str], bool] | None, Callable[[str], bool] | None]":
         """
         {!--< internal-use >!--}
         归一化绑定配置为 (modules 匹配器, blocked 匹配器)
 
         条目统一走 :func:`text_match.compile_entry_list`（精确 / glob / re: 正则，
-        大小写不敏感）。空列表返回 None（不限制）。
+        大小写不敏感）。空列表返回 None（不限制）。编译结果带预编译缓存。
 
         :param cfg: 绑定配置字典（可含 modules / blocked 字段）
         :return: (modules 匹配器, blocked 匹配器)
@@ -472,7 +556,7 @@ class ScopeManager:
             modules = [modules]
         if isinstance(blocked, str):
             blocked = [blocked]
-        return text_match.compile_entry_list(modules), text_match.compile_entry_list(blocked)
+        return self._compiled_list_matcher(list(modules)), self._compiled_list_matcher(list(blocked))
 
     def _effective_module_cfg(self, platform: str, bot_id: str | None, session_id: str | None) -> dict | None:
         """
@@ -591,7 +675,10 @@ class ScopeManager:
 
             self._logger_trace(i18n.t("core.scope.denied", module=module_name))
             # 拦截可观测（方向十一配套）：广播 scope.blocked 生命周期事件
-            # （fire 无监听者时零开销，不拖热路径）
+            # （fire 无监听者时零开销，不拖热路径）。
+            # 观测口径——边沿采样：事件仅在 LRU 缓存未命中且判定为拦截时
+            # 发射，同一 (platform, bot, session, module) 持续拦截期间只有
+            # 首条触发事件；按事件计数做告警会低估拦截总量
             try:
                 from .lifecycle import lifecycle as _lifecycle
 
@@ -649,7 +736,7 @@ class ScopeManager:
                 if policy:
                     return policy
                 for key, binding in plat_users.items():
-                    if text_match.compile_entry_matcher(str(key))(str(user_id)):
+                    if self._entry_matcher(self._IDENTITY_USERS, platform, str(key))(str(user_id)):
                         policy = self._is_identity_binding(binding)
                         if policy:
                             return policy
@@ -661,7 +748,7 @@ class ScopeManager:
                 if policy:
                     return policy
                 for key, binding in plat_sessions.items():
-                    if text_match.compile_entry_matcher(str(key))(str(session_id)):
+                    if self._entry_matcher(self._IDENTITY_SESSIONS, platform, str(key))(str(session_id)):
                         policy = self._is_identity_binding(binding)
                         if policy:
                             return policy
@@ -673,7 +760,7 @@ class ScopeManager:
                 if policy:
                     return policy
                 for key, binding in plat_bots.items():
-                    if text_match.compile_entry_matcher(str(key))(str(bot_id)):
+                    if self._entry_matcher(self._IDENTITY_BOTS, platform, str(key))(str(bot_id)):
                         policy = self._is_identity_binding(binding)
                         if policy:
                             return policy
@@ -727,6 +814,7 @@ class ScopeManager:
         if not result:
             self._stats["identity_denied"] += 1
             # 拦截可观测（方向十一）：身份维度拒绝广播 scope.blocked
+            # （同模块维度：边沿采样口径，缓存命中不重复发射）
             try:
                 from .lifecycle import lifecycle as _lifecycle
 
@@ -797,12 +885,12 @@ class ScopeManager:
         deny = rule.get("deny")
         if deny is True:
             return False
-        if isinstance(deny, list) and deny and name and text_match.compile_entry_list(deny)(name):
+        deny_matcher = self._compiled_list_matcher(deny)
+        if deny_matcher and name and deny_matcher(name):
             return False
-        allow = rule.get("allow")
-        if isinstance(allow, list) and allow:
-            if not name or not text_match.compile_entry_list(allow)(name):
-                return False
+        allow_matcher = self._compiled_list_matcher(rule.get("allow"))
+        if allow_matcher and (not name or not allow_matcher(name)):
+            return False
         return True
 
     # ==================== 通用工具 ====================
@@ -1100,14 +1188,11 @@ class ScopeManager:
                 rule["deny"] = list(deny)
         path = f"actions.{module}.{action}"
         # 参数化方法为整体替换语义：本次调用描述该动作完整的限制规则
-        # （先删后写，避免通用 set 的 dict 深合并残留旧的 deny / allow 键）
-        self.delete(path, persist=False)
+        # （先删后写，避免通用 set 的 dict 深合并残留旧的 deny / allow 键；
+        # 删除按同口径持久化，防止旧规则键残留在持久化基线上）
+        self.delete(path, persist=persist)
         if rule:
             self.set(path, rule, persist=persist)
-        elif persist:
-            from ..runtime.frame_config import set_erispulse_section as _ses
-
-            _ses("scope.actions", self._data.get("actions", {}))
 
     def get_action(self, module: str, action: str, default=None):
         """
@@ -1205,11 +1290,23 @@ class ScopeManager:
         if persist:
             # 用户持久化语义：清除该路径的运行时覆盖记录（持久化值优先）
             self._clear_runtime_overrides(path)
+            # 在持久化基线（磁盘真相，不含运行时绑定）上应用本次变更后提交。
+            # 禁止把整棵 _data 快照落盘：那会把 persist=False 的运行时值顺带
+            # 写入用户配置，且模块卸载注销运行时绑定后会从磁盘"复活"
+            persisted = copy.deepcopy(self._persisted_tree)
+            node = self._walk_to(persisted, parts[:-1])
+            last = parts[-1]
+            if isinstance(value, dict) and isinstance(node.get(last), dict):
+                self._deep_merge(node[last], copy.deepcopy(value))
+            else:
+                node[last] = copy.deepcopy(value)
             # 先快照内存最终态：持久化内部同步触发的热更新会以（延迟刷盘期的）
-            # 旧配置重建配置树，写后用快照重放保证"写后立读"
+            # 旧配置重建配置树，写后用快照恢复保证"写后立读"
             snapshot = copy.deepcopy(self._data)
-            update_erispulse_config({"scope": snapshot})
-            self._apply_tree(snapshot)
+            update_erispulse_config({"scope": persisted})
+            # 基线以本次提交为准（update 内部热更新可能以旧盘内容重建过基线）
+            self._persisted_tree = persisted
+            self._restore_inmemory(snapshot)
         else:
             # 运行时绑定：记录覆盖层，配置树重建后按序重放（不落盘）
             self._runtime_overrides[path] = copy.deepcopy(value)
@@ -1242,10 +1339,17 @@ class ScopeManager:
         if persist:
             self._clear_runtime_overrides(path)
             parent_path = ".".join(parts[:-1])
+            # 在持久化基线（磁盘真相，不含运行时绑定）上应用删除，并把基线
+            # 子树的深拷贝交给持久化层：传 _data 活引用会把延迟刷盘期间对
+            # 兄弟键的运行时修改一并落盘
+            persisted = copy.deepcopy(self._persisted_tree)
+            p_parent = self._walk_to(persisted, parts[:-1]) if len(parts) > 1 else persisted
+            p_parent.pop(parts[-1], None)
+            # 同 set：持久化内部热更新以旧盘配置重建 _data 后，用快照恢复内存最终态
             snapshot = copy.deepcopy(self._data)
-            set_erispulse_section(f"scope.{parent_path}" if parent_path else "scope", parent)
-            # 同 set：持久化内部热更新回读旧值后，用快照重放内存最终态
-            self._apply_tree(snapshot)
+            set_erispulse_section(f"scope.{parent_path}" if parent_path else "scope", p_parent)
+            self._persisted_tree = persisted
+            self._restore_inmemory(snapshot)
         else:
             # 运行时删除：记录删除标记，配置树重建后重放删除
             self._runtime_overrides[path] = self._RUNTIME_DELETED

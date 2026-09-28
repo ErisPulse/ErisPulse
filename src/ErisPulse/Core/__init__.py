@@ -22,6 +22,10 @@ from .Bases import (
     BaseModel,
     Model,
     Field,
+    QuerySet,
+    Condition,
+    ColumnExpr,
+    relationship,
 )
 from .Bases.sql_base import AlterTableBuilder, SQLDialect, SQLQueryBuilder, SQLStorageBase
 from .Bases import HttpRequest, WebSocketConnection, WebSocketConnectionBase, WSMessage
@@ -85,6 +89,10 @@ __all__ = [
     "BaseQueryBuilder",  # 查询构建器基类
     "BaseModel",  # ORM 模型基类（= Model）
     "Model",  # ORM 模型基类（Active Record）
+    "QuerySet",  # ORM 查询集（Model.where() 返回值，链式查询）
+    "Condition",  # ORM 查询条件节点
+    "ColumnExpr",  # ORM 列查询表达式（模型类属性访问返回值）
+    "relationship",  # ORM 关系声明（has-many / belongs-to）
     "Field",  # ORM 字段声明描述符
     "BaseStorage",  # 存储基类
     "BatchContext",  # 批量发送上下文类

@@ -158,8 +158,13 @@ class LifecycleManager:
 
         def decorator(func: Callable) -> Callable:
             owner = current_owner.get()
-            self._hooks.setdefault(event, []).append((priority, func, owner, extract_depends(func)))
-            self._hooks[event].sort(key=lambda x: x[0], reverse=True)
+            # copy-on-write：构建新列表后整体替换——emit_sync 在 config watcher
+            # 线程遍历 _hooks 的同时主线程可能注册，原地 append + sort 会让遍历
+            # 方读到中间态；替换后读侧持有的旧列表不可变，天然安全
+            hooks = list(self._hooks.get(event, ()))
+            hooks.append((priority, func, owner, extract_depends(func)))
+            hooks.sort(key=lambda x: x[0], reverse=True)
+            self._hooks[event] = hooks
             return func
 
         return decorator
@@ -178,8 +183,11 @@ class LifecycleManager:
         if not isinstance(event, str) or not event:
             raise ValueError(i18n.t("core.lifecycle.event_name_required"))
         owner = current_owner.get()
-        self._hooks.setdefault(event, []).append((priority, handler, owner, extract_depends(handler)))
-        self._hooks[event].sort(key=lambda x: x[0], reverse=True)
+        # 同上：copy-on-write 注册
+        hooks = list(self._hooks.get(event, ()))
+        hooks.append((priority, handler, owner, extract_depends(handler)))
+        hooks.sort(key=lambda x: x[0], reverse=True)
+        self._hooks[event] = hooks
 
     def once(self, event: str, *, priority: int = 0) -> Callable:
         """
@@ -199,19 +207,23 @@ class LifecycleManager:
 
         def decorator(func: Callable) -> Callable:
             if inspect.iscoroutinefunction(func):
-                async def wrapper(data):
+                async def async_wrapper(data):
                     try:
                         return await func(data)
                     finally:
-                        self.unregister(event, wrapper)
+                        self.unregister(event, async_wrapper)
+
+                registered = async_wrapper
             else:
-                def wrapper(data):
+                def sync_wrapper(data):
                     try:
                         return func(data)
                     finally:
-                        self.unregister(event, wrapper)
+                        self.unregister(event, sync_wrapper)
 
-            self.register(event, wrapper, priority=priority)
+                registered = sync_wrapper
+
+            self.register(event, registered, priority=priority)
             return func
 
         return decorator
@@ -626,7 +638,12 @@ class LifecycleManager:
                 _elapsed = time.monotonic() - _t
                 if _elapsed > HANDLER_SLOW_THRESHOLD_SECS:
                     self._get_logger().warning(
-                        f"[Lifecycle] Slow handler {hname} for event '{event}' took {_elapsed:.4f}s"
+                        i18n.t(
+                            "core.lifecycle.handler_slow",
+                            handler=hname,
+                            event=event,
+                            elapsed=f"{_elapsed:.4f}",
+                        )
                     )
                 return result
             except Exception as e:

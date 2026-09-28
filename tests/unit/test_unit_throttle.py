@@ -252,3 +252,27 @@ class TestDebounce:
             @message_handler.on_message(debounce="1s", debounce_key="room")
             async def h3(event):
                 pass
+
+
+class TestDebounceRunningGuard:
+    """防抖：已越过窗口进入业务处理的任务不再被新事件掐断"""
+
+    async def test_running_handler_not_aborted(self):
+        from ErisPulse.Core.Event.throttle import make_debounce_wrapper
+
+        done = []
+
+        async def handler(event):
+            await asyncio.sleep(0.15)
+            done.append(event.get("id"))
+
+        wrapper = make_debounce_wrapper(handler, "0.05s", "user", "h")
+        ev1 = {"platform": "p", "self": {"user_id": "b"}, "user_id": "u", "id": "e1"}
+        ev2 = {"platform": "p", "self": {"user_id": "b"}, "user_id": "u", "id": "e2"}
+
+        await wrapper(ev1)
+        await asyncio.sleep(0.08)  # 越过窗口：handler(e1) 已开始执行
+        await wrapper(ev2)         # 新事件：不得掐断执行中的 handler
+
+        await asyncio.sleep(0.4)
+        assert done == ["e1", "e2"]  # e1 自然完成（未被半途取消），e2 重新计时后执行

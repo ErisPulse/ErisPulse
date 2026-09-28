@@ -33,6 +33,7 @@ from ..constants import (
     STORAGE_POOL_CREATE_BACKOFF_SECS,
     STORAGE_POOL_CREATE_RETRIES,
     STORAGE_POOL_FAIL_COOLDOWN_SECS,
+    STORAGE_CLOSE_OTHER_LOOP_TIMEOUT_SECS,
 )
 from ..i18n import i18n
 from ..lifecycle import lifecycle
@@ -241,6 +242,16 @@ class SQLDialect:
             "SELECT name FROM sqlite_master WHERE type='index' AND name=?",
             [index],
         )
+
+    def table_columns_sql(self, table_name: str) -> tuple[str, list[str]]:
+        """
+        生成表列名枚举查询（ORM 自动迁移用）
+
+        :param table_name: 表名
+        :return: (SQL, 参数列表)；无方言实现的查询返回空列结果由调用方兜底
+        :raises NotImplementedError: 方言未实现列枚举时
+        """
+        raise NotImplementedError(f"dialect {self.name} does not implement table_columns_sql")
 
     # 列类型翻译
 
@@ -1627,6 +1638,9 @@ class SQLStorageBase(BaseStorage):
         if not self._is_ready():
             return []
         try:
+            # 表名经内插进 PRAGMA / information_schema 查询，先做标识符校验
+            # （与其它表级 API 的防御口径一致）
+            _validate_identifier(table_name, context="table_name")
             sql, params = self.dialect.table_columns_sql(table_name)
             # kind 用 "select"（方言漏斗无 "all"；"all" 会落 dml 分支返回状态整数）
             rows, col_names = await self._execute_query("select", sql, params)
@@ -1663,9 +1677,12 @@ class SQLStorageBase(BaseStorage):
 
     async def aclose(self) -> None:
         """
-        异步关闭当前事件循环上绑定的连接资源（连接池/共享连接）
+        异步关闭连接资源（连接池/共享连接）
 
-        事务专用连接不受影响（由事务自行管理）。
+        关闭当前事件循环上绑定的资源；其它事件循环（如同步桥接循环）上
+        绑定的资源经线程安全方式调度到对应循环关闭——uninit 时主循环与
+        桥接循环两侧的连接池均得到释放。对应循环已停止时仅解除引用，
+        交由垃圾回收兜底。事务专用连接不受影响（由事务自行管理）。
 
         :example:
         >>> await storage.aclose()
@@ -1673,12 +1690,37 @@ class SQLStorageBase(BaseStorage):
         self._ensure_resource_state()
         loop = asyncio.get_running_loop()
         with self._resources_lock:
-            resource = self._loop_resources.pop(loop, None)
-        if resource is not None:
+            others: list[tuple[Any, Any]] = [
+                (lp, res) for lp, res in self._loop_resources.items() if lp is not loop
+            ]
+            for lp, _res in others:
+                self._loop_resources.pop(lp, None)
+            current = self._loop_resources.pop(loop, None)
+        if current is not None:
             try:
-                await self._destroy_loop_resource(resource)
+                await self._destroy_loop_resource(current)
             except Exception as e:
                 logger.trace(i18n.t("core.storage.aclose_failed", error=e))
+        for other_loop, resource in others:
+            if resource is None or other_loop.is_closed():
+                continue
+            if other_loop.is_running():
+                try:
+                    close_future = asyncio.run_coroutine_threadsafe(
+                        self._destroy_loop_resource(resource), other_loop
+                    )
+                    await asyncio.wait_for(
+                        asyncio.wrap_future(close_future),
+                        timeout=STORAGE_CLOSE_OTHER_LOOP_TIMEOUT_SECS,
+                    )
+                    continue
+                except Exception as e:
+                    logger.trace(i18n.t("core.storage.aclose_failed", error=e))
+            else:
+                logger.trace(
+                    f"aclose: loop resource dropped without destroy (loop not running): "
+                    f"{self.dialect.name}"
+                )
 
     # 属性式访问（保留旧版就绪守卫语义）
 

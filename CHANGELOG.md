@@ -1,3 +1,50 @@
+## [2.9.0-dev.1] - 2026/09/27
+> 开发版（预发布）
+
+**版本摘要**
+本版本为 2.9「模块开发体验」主线的健壮性打磨版：修复 `args=` 可选参数回填失效、scope `persist=False` 运行时绑定被顺带落盘且模块卸载后“复活”（BUG-038）等新增特性缺陷与存量问题，加固取消传播、配额并发、治理状态表容量、ORM 表名继承等薄弱点；并修复三处被 `try/except` 静默吞掉的导入接线错误——归属权任务取消、事件覆写配置热更新订阅、影子路由挂载判定此前从未生效。均为缺陷修复与内部加固，无新增能力、无 API 变更。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 升级原因：使用 2.9.0-dev.0 且启用命令治理 / 影子模块 / 归属权审计的部署存在已确认功能缺陷（归属任务恒不取消、影子路由被真实挂载）；存量版本用户同样受益于 scope 持久化语义修复（BUG-038）
+
+**注意事项**
+- 无 API 变更；`scope` 持久化为语义回归修复——`persist=False` 的运行时绑定自此严格不落盘，此前被误写入用户 `config.toml` 的残留值不会自动清理，如已受污染请手工删除对应键
+- 修复前启动过影子模块的部署，用户配置中可能残留 `ErisPulse.modules.status.<影子owner>=False`；若日后有真实插件与该影子重名会被误禁用，建议顺手清理
+
+### 新增
+
+- @YingXinche
+  - `Core` 聚合导出补齐 ORM 查询面：`QuerySet` / `Condition` / `ColumnExpr` / `relationship` 自 `ErisPulse.Core` 直接导入（此前需经 `ErisPulse.Core.Bases`）
+  - `docs/standards` 发送方法规范新增**媒体发送协议标准**（§2.1）：定义 `file` 参数的必须/应当形态（URL / 本地路径 / `bytes` 必须支持，`file://` 与 base64 应当支持）、形态判定顺序、`File` 文件名推导顺序、平台限制声明义务与能力降级阶梯（近缘类型降级或 `retcode=10002`，禁抛异常/静默丢弃）；事件转换标准的媒体段 `file` / `url` / `filename` 字段方向语义同步补充；新增 CI 门禁：i18n 五语言键一致性、docs 内部链接、MySQL / PostgreSQL 双后端存储与 ORM 真机验证（原手动发布门禁转为随 PR 持续验证）
+
+### 修复
+
+- @YingXinche
+  - `Core/Event/command` 修复 `args=` 可选条目未声明默认值时注入 `None` 静默覆盖处理器自身默认值：注册期解析漏传处理器，文档承诺的“回填处理器签名同名参数默认值”从未生效（如 `[sides:int]` + `def roll(event, count, sides=6)` 省略实参时得 `None` 而非 `6`）
+  - `Core/scope` 修复 `persist=False` 运行时绑定被顺带落盘：任意 `persist=True` 写入此前会把整棵内存树（含运行时绑定）做差量写入用户配置，模块卸载注销运行时绑定后这些值还会从磁盘"复活"；现以持久化基线（磁盘真相镜像）承接持久化写入，运行时绑定永不落盘。`delete(persist=True)` 同口径修复：提交持久化基线子树而非内存活引用，延迟刷盘期间对兄弟键的运行时修改不再被一并写入；`set_action` 整体替换语义下旧规则键不再残留在持久化内容中
+  - `Core/scope` 修复 `cache_size` 配置项设置不生效（此前仅入合法键白名单的死配置）；`scope.blocked` 事件口径明确为边沿采样（缓存命中不重复发射，按事件计数统计拦截会低估）
+  - `Core/di` 修复 `Depends.module` 固定参数含 dict / list 时请求级缓存键不可哈希、分发期抛 `TypeError`：参数递归冻结为可哈希结构；含不可哈希对象时退化为按依赖函数对象缓存，不再报错
+  - `Core/Event/governance` 修复 `usage_limit=` 配额并发丢失更新：同键"读取 → 计数 → 写回"跨 await 无互斥，同一用户并发触发会互相覆盖计数、突破配额上限（现按键加互斥锁，并发下恰好放行声明次数）；存储持久化失败时显式告警（每命令一次），不再静默降级为纯内存计数
+  - `Core/Event/governance` / `Core/Event/throttle` 治理与节流状态表新增容量上限与机会式清扫（冷却过期 / 限流窗口清空 / 配额周期切换即清理，上限 `GOVERNANCE_STATE_MAX_ENTRIES`），修复 7x24 常驻进程下状态表随 用户数×时间 无界增长；防抖（`debounce=`）新事件不再取消已越过等待窗口、正在执行的业务处理器（防半途取消停在任意 await 点产生部分副作用）
+  - `Core/Event/base` 影子模块事件隔离改为深拷贝：影子 handler 对嵌套结构（如 `message` 段）的改写不再传播回原事件；`Core/Event/command` 影子命令分流判定失败不再静默转真实注册（import 失败显式告警，判定异常如实上抛——此前静默落回真实注册恰好与机制目的相反）
+  - `Core/shadow` 影子启动仅在源位于插件发现目录内时才写 `ErisPulse.modules.status.<owner>=False`——推荐用法（源在目录外）不再向用户配置写入无效状态记录；`promote_shadow` / `dismiss_shadow` 后清理挂在 `sdk` 上的影子实例属性残留（此前指向已回收实例）
+  - `Core/Bases/model` 修复 ORM 子类静默共享父表：`__tablename__` 只认子类自身声明，未声明时按本类名派生（此前子类全部 CRUD 静默落在父表上）；模型注册表同名冲突告警（`relationship` 按类名解析可能歧义）；belongs-to 外键为 `None` 时短路返回 `None` 不再发起 `pk IS NULL` 查询（对齐文档承诺）；索引名超 63 字符时截断并追加稳定哈希后缀（修复 PostgreSQL 长表名列名组合下存在性预检永不命中、每次建表重复 `CREATE INDEX` 失败）；修复 relationship 跨后端告警的 logger 导入路径错误（此前该告警从未真正输出）；INSERT 时运行值为 None 且声明了默认值的列改为客户端应用默认值随插入提交（此前省列交数据库默认，插入后实例 `__dict__` 停留在 `None` 与行不一致）
+  - `Core/Bases/sql_base` `aclose()` 关闭全部事件循环上的连接资源：其它循环（同步桥接循环）上的连接池经线程安全调度到对应循环关闭——修复 uninit 后桥接侧连接池滞留至进程退出；`aGetTableColumns` 补表名标识符校验（与其它表级 API 防御口径一致）
+  - `Core/adapter` 取消语义修复：适配器启动任务与事件处理器任务的 `CancelledError` 不再被吞（保持取消传播，等待方能区分"已取消"与"自然结束"）；`shutdown()` 取消启动任务后等待其真正退出再继续关闭流程，消除 start 与 shutdown 在同一实例上的并发交错
+  - `sdk` `init_task()` 在无运行事件循环时改为调度到已注册主循环（线程安全），主循环亦不可用时抛明确错误——不再新建永不运行的循环并返回永不完成的悬挂 Task
+  - `runtime/sdk_initializer` uninit 跨循环清理失败改按异常类型（`RuntimeError`）判定并全部记日志；不再按异常消息子串匹配（消息被本地化 / 库改写即误判为成功且无任何日志）
+  - `Core/Bases/adapter` `message.sent` 生命周期钩子改经 `spawn_background` 调度（引用持有 + owner 归属追踪），不再产生可被 GC 回收、异常无人接管的无引用任务
+  - `Core/ownership` / `Core/Event/overrides` / `Core/router` 修复三处运行时导入的相对层级错误（被 `try/except` 静默吞掉的存量缺陷）：归属权任务取消与资源审计的 `runtime.tasks` / `runtime.owner_cleanup` 导入从未生效（`reclaim_tasks` 计数恒 0、任务从不被取消）；事件覆写缓存的配置热更新订阅从未注册；影子路由"只登记不挂载"判定恒为 `False`（影子路由会被真实挂载）。三处现均真实生效
+  - `Core/scope` 判定热路径匹配器预编译缓存：模块绑定与身份 / 出站条目的 glob / `re:` 正则编译结果按条目内容缓存、随配置树重建失效——配置条目多时 LRU 未命中判定不再每次重复编译
+  - `Core/config` 旧配置迁移路径按配置文件位置锚定（不再依赖 CWD，Windows 服务 / 计划任务等启动目录不定的场景迁移行为不再漂移）；`config.updated` 广播失败留痕（此前静默吞掉，订阅方无感知失效）；`getConfig` 缓存值为标量且存在后代待写键时返回叠加子树（刷盘后该键将变为子表，消除写后立读不一致的边角）
+  - `Core/lifecycle` 生命周期钩子注册改为 copy-on-write（config watcher 线程遍历钩子表与主线程注册并发时不再读到中间态）；慢处理器日志改走 i18n
+  - `Core/adapter` 事件处理器调度在无运行事件循环时改走 `spawn_background`（优先调度回已注册主循环并留痕）——此前 `ensure_future` 兜底同样抛错，且线程上存在"已设但未运行"的循环时任务会落到死循环上静默不执行
+  - `loaders` 热重载失败回滚时清理失败加载新引入的 `sys.modules` 子模块条目（防下次加载经 import 机制复用半初始化的模块对象）
+  - `Core/Bases/config_schema` 配置环境变量的类型判定统一走 `python_type_category`（结构化判定）——`Literal["list", "dict"]` 等注解不再因字符串子串匹配被误判为 JSON 列
+  - `runtime` 内部加固：后台任务异循环临时兜底补告警日志；主动 GC 循环异常留痕（此前空转无痕）；异步关停噪音折叠状态表限量（`EXCEPTION_NOISE_STATE_MAX_ENTRIES`，防超长驻留进程无界增长）；文件监控（PollingObserver）补发 `on_created` / `on_deleted` 事件（轮询实现此前声明但从不触发，`on_moved` 明确为不触发——移动表现为删除 + 创建）
+  - `Core/Event/command_args` 声明串最后一个条目之后的尾部垃圾 fail-fast 报错（此前被静默忽略）；`Core/Event/command` 重复导入去重；`Core/ownership` 删除未使用的 `_step` 死代码；`Core/config` 删除旧固定名临时文件清理死代码（原子写已改用 mkstemp 唯一命名）；`Core/client` 请求失败异常补 `raise ... from` 链路保留原始堆栈
+
 ## [2.9.0-dev.0] - 2026/09/25
 > 开发版（预发布）
 
@@ -61,7 +108,6 @@
   - `Core/adapter` 修复慢事件日志指向错误：框架桥接分发层（`BaseEventHandler._process_event` 挂载到适配器总线的整体耗时）超阈值时以框架函数名发 WARNING，用户无法据此定位真正的慢处理器（现降级为 TRACE——慢的根因由内层 EventHandler 告警，消除重复与误导）
   - `Core/Event/base` 慢事件日志重构为三层业务定位，Event 分发链路只透传不再出现在告警中：① 执行中看门狗——处理器超阈值仍未完成时采样其协程等待链，直接报告"当前停在哪个文件哪一行"（如 `当前位于 QvQChat/AIEngine/client.py:88 in chat`，无论等待的是 AI / HTTP 还是任何第三方库，且卡死处理器此前完全无告警、现同样触发）；② 结束统计——处理器名附带定义位置标注（入口 `Main._handle_message (QvQChat/Main.py:123)`）、命令分发场景附上 `[command=roll]` 标明具体慢命令、总耗时与 owner 归属；③ 标准库帧（asyncio sleep 等）自动跳过，直达业务等待点
   - `runtime/diagnostics` 新增 `handler_source_loc`（处理器定义位置标注）与 `deepest_user_frame`（协程等待链采样，沿 `cr_await` 下钻 + framework/stdlib 帧过滤）两个定位工具
-
 ## [2.8.6] - 2026/09/22
 > 正式发布
 

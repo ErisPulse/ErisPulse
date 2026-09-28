@@ -14,6 +14,7 @@ import datetime
 import inspect
 import json as _json
 import logging
+from typing import Any
 from collections import deque
 from collections.abc import Callable
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
@@ -95,9 +96,8 @@ def _format_message(msg: object, args: tuple) -> str:
         return str(msg)
     try:
         # 与 logging.makeRecord 一致：单个 Mapping 参数先扁平化再格式化
-        if len(args) == 1 and isinstance(args[0], dict):
-            args = args[0]
-        return str(msg) % args
+        fmt_args: Any = args[0] if len(args) == 1 and isinstance(args[0], dict) else args
+        return str(msg) % fmt_args
     except Exception:
         return str(msg)
 

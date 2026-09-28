@@ -42,6 +42,7 @@ ErisPulse 数据模型层（ORM）—— 声明式模型与 Active Record CRUD
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import re
 from typing import Any, ClassVar
@@ -225,7 +226,15 @@ class Field:
         return " ".join(parts)
 
     def _sql_literal(self, value: Any) -> str:
-        """默认值的 DDL 字面量（仅声明性默认值，运行值走参数绑定）"""
+        """默认值的 DDL 字面量（仅声明性默认值，运行值走参数绑定）
+
+        {!--< tips >!--}
+        已知局限：反斜杠按字面渲染（仅 ``''`` 转义）。MySQL 默认
+        sql_mode 下 ``\\`` 是字符串转义符，含反斜杠的声明默认值在 MySQL
+        上的 DDL 语义会偏移；本层无方言信息（统一记号由 aCreateTable
+        翻译），如需精确跨方言行为请避免在声明默认值中使用反斜杠。
+        {!--< /tips >!--}
+        """
         if value is None:
             return "NULL"
         if isinstance(value, bool):
@@ -545,16 +554,25 @@ class _RelatedMany(QuerySet):
 class _RelatedOne:
     """
     {!--< internal-use >!--}
-    belongs-to 单条等待器：``author = await msg.author`` 即解析为对方实例或 None
+    belongs-to 单条等待器：``author = await msg.author`` 即解析为对方实例或 None。
+    外键值为 None 时以短路模式构造（await 直接返回 None，不发起查询）
     """
 
-    __slots__ = ("_query",)
+    __slots__ = ("_query", "_short_circuit")
 
-    def __init__(self, query: QuerySet):
+    def __init__(self, query: QuerySet, short_circuit: bool = False):
         self._query = query
+        self._short_circuit = short_circuit
 
     def __await__(self):
+        if self._short_circuit:
+            return _related_none().__await__()
         return self._query.first().__await__()
+
+
+async def _related_none() -> None:
+    """{!--< internal-use >!--} belongs-to 外键为 None 时的短路返回值"""
+    return None
 
 
 class Relationship:
@@ -632,7 +650,7 @@ class Relationship:
             _host_dialect = getattr(getattr(_host_storage, "dialect", None), "name", "")
             _related_dialect = getattr(getattr(_related_storage, "dialect", None), "name", "")
             if _host_dialect and _related_dialect and _host_dialect != _related_dialect:
-                from .logger import logger as _logger
+                from ..logger import logger as _logger
 
                 _logger.warning(
                     f"relationship {host.__name__}.{self.name!r} spans storage "
@@ -649,7 +667,12 @@ class Relationship:
                 raise ValueError(f"{related.__name__} has no primary key for relationship {host.__name__}.{self.name}")
             own_value = instance.__dict__.get(fk)
             if own_value is None:
-                return _RelatedOne(QuerySet(related, ColumnExpr(related_pk.name)._cond("=", None)))
+                # 外键为 None：对方主键不可能匹配，短路返回 None 不发起查询
+                # （docstring 承诺的行为；此前会执行一遍 pk IS NULL 查询）
+                return _RelatedOne(
+                    QuerySet(related, ColumnExpr(related_pk.name)._cond("=", None)),
+                    short_circuit=True,
+                )
             return _RelatedOne(QuerySet(related, ColumnExpr(related_pk.name)._cond("=", own_value)))
 
         if fk not in related._fields:
@@ -712,10 +735,24 @@ class Model:
                 {n: a for n, a in vars(klass).items() if isinstance(a, Field)}
             )
         cls._fields = collected
-        table = cls.__tablename__ or _SNAKE_RE.sub("_", cls.__name__).lower()
+        # 只认子类自身声明的 __tablename__（cls.__tablename__ 会取到父类已
+        # 固化的表名，导致子类静默共享父表）；未声明时按本类名 snake 派生
+        table = cls.__dict__.get("__tablename__") or _SNAKE_RE.sub("_", cls.__name__).lower()
         if not _IDENTIFIER_RE.fullmatch(table):
             raise ValueError(f"invalid table name: {table!r}")
         cls.__tablename__ = table
+        # 注册表按类名索引（供 relationship 字符串解析）：跨模块同名类后者
+        # 覆盖前者，重名告警提示 relationship 解析可能歧义
+        existing = Model._model_registry.get(cls.__name__)
+        if existing is not None and existing is not cls:
+            from ..logger import logger as _logger
+
+            _logger.warning(
+                f"model registry name collision: '{cls.__name__}' declared by both "
+                f"{existing.__module__}.{existing.__qualname__} and "
+                f"{cls.__module__}.{cls.__qualname__}; relationship('{cls.__name__}') "
+                f"now resolves to the latter"
+            )
         Model._model_registry[cls.__name__] = cls
 
     @classmethod
@@ -846,7 +883,7 @@ class Model:
         dialect = storage.dialect
         for name, field_obj in cls._fields.items():
             if field_obj.index:
-                idx = f"idx_{cls.table_name()}_{name}"
+                idx = cls._index_name(cls.table_name(), name)
                 exists_sql, exists_params = dialect.has_index_sql(cls.table_name(), idx)
                 row, _ = await storage._execute_query("one", exists_sql, exists_params)
                 if row is None:
@@ -854,6 +891,19 @@ class Model:
                         "dml", dialect.create_index_sql(cls.table_name(), idx, name), []
                     )
         return True
+
+    @classmethod
+    def _index_name(cls, table: str, column: str) -> str:
+        """{!--< internal-use >!--}
+        索引名派生：``idx_<表>_<列>``。超过 63 字符（PostgreSQL 标识符上限，
+        超长会被静默截断导致存在性预检永不命中、每次建表重复 CREATE INDEX
+        失败）时截断并追加稳定哈希后缀，保证跨运行确定性
+        """
+        name = f"idx_{table}_{column}"
+        if len(name) <= 63:
+            return name
+        suffix = hashlib.md5(name.encode("utf-8")).hexdigest()[:8]
+        return f"{name[:54]}_{suffix}"
 
     @classmethod
     async def _migrate_new_columns(cls, storage) -> list[str]:
@@ -962,11 +1012,19 @@ class Model:
         cols, params = [], []
         for name, field_obj in cls._fields.items():
             value = instance.__dict__.get(name)
-            # 自增主键由数据库生成；可空字段 NULL 交由数据库默认
+            # 自增主键由数据库生成
             if field_obj.autoincrement and value is None:
                 continue
-            if value is None and (field_obj.nullable or field_obj.default is not _UNSET):
-                continue
+            if value is None:
+                # 声明了非 None 运行默认值：客户端应用后随 INSERT 提交，保证
+                # 插入后实例与行一致（省列交 DB 默认会让实例 __dict__ 停留在
+                # None）；仅可空 / 无默认时才省列交数据库 NULL 默认
+                fallback = field_obj.effective_default()
+                if fallback is not None:
+                    setattr(instance, name, fallback)
+                    value = fallback
+                elif field_obj.nullable or field_obj.default is not _UNSET:
+                    continue
             cols.append(name)
             params.append(field_obj.to_db_value(value))
 

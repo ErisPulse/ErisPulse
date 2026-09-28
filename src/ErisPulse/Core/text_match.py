@@ -81,7 +81,7 @@ def compile_entry_matcher(entry: str) -> Callable[[str], bool]:
 
     if entry.startswith(REGEX_PREFIX):
         regex_obj = _compile_regex(entry[len(REGEX_PREFIX):])
-        if regex_obj is _INVALID_REGEX:
+        if not isinstance(regex_obj, re.Pattern):
             return lambda _text: False
         return lambda text: regex_obj.search(text) is not None
 

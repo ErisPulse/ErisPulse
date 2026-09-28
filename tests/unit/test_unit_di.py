@@ -152,6 +152,37 @@ class TestDependsUnit:
         fake_call.assert_awaited_once_with("DB", "get_session", timeout=3)
         assert kwargs == {"db": "CONN"}
 
+    def test_depends_module_cache_key_hashable_with_structured_args(self):
+        """Depends.module 固定参数含 dict/list 时缓存键可哈希（分发期 `in` 判定不抛 TypeError）"""
+        dep = Depends.module("DB", "query", {"filters": ["a", 1]}, flags={"limit": 10})
+        hash(dep.cache_key)  # 不可哈希会在此抛 TypeError
+        same = Depends.module("DB", "query", {"filters": ["a", 1]}, flags={"limit": 10})
+        assert dep.cache_key == same.cache_key  # 同声明共享请求级缓存
+        diff = Depends.module("DB", "query", {"filters": ["a", 2]}, flags={"limit": 10})
+        assert dep.cache_key != diff.cache_key
+
+    @pytest.mark.asyncio
+    async def test_depends_module_unhashable_args_degrades_to_no_cache(self):
+        """固定参数含不可哈希对象：退化为不缓存（cache_key=None），解析不报错"""
+        from ErisPulse.Core.di import _di_cache
+
+        class Obj:
+            __hash__ = None
+
+        dep = Depends.module("DB", "query", Obj())
+        assert dep.cache_key is None
+
+        token = _di_cache.set({})
+        try:
+            fake_call = AsyncMock(return_value="R")
+            with patch("ErisPulse.Core.module.module.call", new=fake_call):
+                kwargs = await resolve_depends({"d": dep}, "CTX")
+            assert kwargs == {"d": "R"}
+            # 退化为以依赖函数对象为缓存键（各 Depends.module 声明天然唯一），不再抛 TypeError
+            assert list(_di_cache.get().values()) == ["R"]
+        finally:
+            _di_cache.reset(token)
+
     @pytest.mark.asyncio
     async def test_call_with_depends_load_unload(self):
         """模块生命周期方法（on_load/on_unload）的 Depends 注入"""

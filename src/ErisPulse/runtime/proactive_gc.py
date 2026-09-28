@@ -133,8 +133,15 @@ def start_proactive_gc(sdk: SDK) -> None:
                     pass
             except asyncio.CancelledError:
                 break
-            except Exception:
-                # GC 异常不应中断循环
+            except Exception as e:
+                # GC 异常不应中断循环，但持续异常需留痕（空转无痕难排查）
+                try:
+                    from ..Core.i18n import i18n as _i18n
+                    from ..Core.logger import logger
+
+                    logger.debug(_i18n.t("runtime.gc.loop_error", error=e))
+                except Exception:
+                    pass
                 continue
 
     try:

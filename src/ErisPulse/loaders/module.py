@@ -137,6 +137,9 @@ class _ReloadSnapshot:
     lazy_proxy: Any = None            # _lazy_modules 懒代理
     had_sdk_attr: bool = False        # 快照时 sdk 上是否挂有同名属性
     sys_modules: "dict[str, Any]" = field(default_factory=dict)  # 将被 purge 的条目对象
+    # 模块命名空间下重载前已存在的 sys.modules 键（回滚时区分"既有"与
+    # "失败加载新引入"，后者才需要清理）
+    pre_sys_prefix_keys: "set[str]" = field(default_factory=set)
 
 
 class ModuleLoader(BaseLoader):
@@ -433,6 +436,12 @@ class ModuleLoader(BaseLoader):
         for mod_name, mod in list(sys.modules.items()):
             if any(mod_name == n or mod_name.startswith(f"{n}.") for n in purge_names):
                 sys_entries[mod_name] = mod
+        prefix = getattr(self._last_module_objs.get(module_name), "__name__", None)
+        pre_prefix_keys = {
+            name
+            for name in sys.modules
+            if prefix and (name == prefix or name.startswith(prefix + "."))
+        }
 
         classes = getattr(manager_instance, "_module_classes", None) or {}
         infos = getattr(manager_instance, "_module_info", None) or {}
@@ -452,6 +461,7 @@ class ModuleLoader(BaseLoader):
             lazy_proxy=lazies.get(module_name),
             had_sdk_attr=module_name in sdk_dict,
             sys_modules=sys_entries,
+            pre_sys_prefix_keys=pre_prefix_keys,
         )
 
     def _restore_reload_snapshot(
@@ -477,6 +487,25 @@ class ModuleLoader(BaseLoader):
         logger.warning(i18n.t("loader.module.reload_rolled_back", name=module_name))
         for mod_name, mod in snapshot.sys_modules.items():
             sys.modules[mod_name] = mod
+        # 清理失败加载新引入的 sys.modules 子模块条目：只恢复旧条目会留下
+        # 半新模块对象，下次加载经 import 机制复用时拿到半初始化状态。
+        # 判定基准是快照采集的"既有键集合"（快照未含 purge 名单外的既有
+        # 条目，不能拿 sys_modules 本身当基准，否则会误删既有模块）
+        try:
+            if snapshot.pre_sys_prefix_keys:
+                stale = [
+                    name
+                    for name in sys.modules
+                    if name not in snapshot.pre_sys_prefix_keys
+                    and any(
+                        name == p or name.startswith(p + ".")
+                        for p in snapshot.pre_sys_prefix_keys
+                    )
+                ]
+                for name in stale:
+                    sys.modules.pop(name, None)
+        except Exception:
+            pass
         if snapshot.module_class is not None or snapshot.module_info is not None:
             try:
                 manager_instance.register(module_name, snapshot.module_class, snapshot.module_info)
