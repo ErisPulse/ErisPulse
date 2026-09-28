@@ -16,6 +16,7 @@ import time
 from collections.abc import Callable, Coroutine
 from typing import Any
 
+from ..Core.i18n import i18n
 from ..Core.logger import logger
 from .file_watcher import FileSystemEventHandler, PollingObserver
 
@@ -39,7 +40,7 @@ class _PluginChangeHandler(FileSystemEventHandler):
             return
         self._last_trigger = now
         if event.src_path.endswith(".py"):
-            logger.info(f"plugin file changed: {event.src_path}")
+            logger.info(i18n.t("runtime.plugin.file_changed", path=event.src_path))
             if self._loop is None or self._loop.is_closed():
                 logger.warning("plugin reload skipped: event loop not running")
                 return
@@ -133,7 +134,7 @@ class PluginReloadWatcher:
             observer.schedule(handler, d, recursive=True)
         observer.start()
         self._observer = observer
-        logger.info(f"plugin hot reload watching: {self._dirs}")
+        logger.info(i18n.t("runtime.plugin.watching", dirs=self._dirs))
         return True
 
     def stop(self) -> None:

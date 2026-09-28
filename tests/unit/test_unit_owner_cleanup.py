@@ -233,3 +233,55 @@ class TestRuntimeOverridesOwner:
         assert overrides.unregister_by_owner("MyModule") == 0
         assert overrides.message.get("Target") == {"pattern": "b*"}
         overrides.message.delete("Target")
+
+
+# ==================== 导入接线回归（相对导入层级错误曾被 try/except 静默吞掉）====================
+
+
+class TestImportWiring:
+    """归属权 / 覆写 / 路由子系统的运行时导入真实生效（BUG 复现用）"""
+
+    async def test_reclaim_tasks_actually_cancels(self):
+        """reclaim_tasks 真正取消归属后台任务（此前 `.runtime` 两点导入错误被吞，计数恒 0）"""
+        import asyncio
+
+        from ErisPulse.Core.ownership import ownership
+        from ErisPulse.runtime.context import owner_scope
+        from ErisPulse.runtime.tasks import spawn_background
+
+        started = asyncio.Event()
+
+        async def worker():
+            started.set()
+            await asyncio.sleep(30)
+
+        with owner_scope("wiring_owner"):
+            task = spawn_background(worker())
+        await asyncio.wait_for(started.wait(), timeout=2)
+        result = await ownership.reclaim_tasks("wiring_owner")
+        assert result["tasks_cancelled"] >= 1
+        assert task.cancelled() or (task.done() and not task.cancelled())
+
+    def test_overrides_subscribes_config_hot_reload(self):
+        """事件覆写缓存订阅 config 热更新（此前 `.lifecycle` 导入错误被静默吞掉）"""
+        import ErisPulse.Core.Event.overrides as _overrides  # noqa: F401 触发模块级订阅
+        from ErisPulse.Core.lifecycle import lifecycle as lifecycle_manager
+
+        assert lifecycle_manager.has_handlers("config.updated")
+        assert lifecycle_manager.has_handlers("config.set")
+
+    def test_router_shadow_detection_true_for_shadow_owner(self):
+        """影子 owner 上下文下路由判定为影子（此前 `...runtime` 三点导入错误使判定恒 False）"""
+        from ErisPulse.Core import router as router_module
+        from ErisPulse.Core.ownership import ownership
+        from ErisPulse.runtime.context import owner_scope
+
+        instance = router_module  # _shadow_registration 为 RouterManager 实例方法
+        ownership.register_shadow("wiring_shadow_owner")
+        try:
+            with owner_scope("wiring_shadow_owner"):
+                assert instance._shadow_registration() is True
+            with owner_scope("normal_owner"):
+                assert instance._shadow_registration() is False
+        finally:
+            ownership.unregister_shadow("wiring_shadow_owner")

@@ -45,10 +45,6 @@ from ..constants import (
     GOVERNANCE_KEY_KINDS,
     UNKNOWN_PLATFORM,
 )
-
-# 冷却 / 限流键粒度白名单（cooldown_key= / rate_limit_key=，EPRFC-2026-001 方向七）：
-# user=同一用户 / session=同一会话 / global=全局共享（与 throttle_key 共用 constants 定义）
-from ..constants import GOVERNANCE_KEY_KINDS as _KEY_KINDS
 from ..di import extract_depends, resolve_depends
 from ..i18n import i18n
 from . import overrides
@@ -77,6 +73,10 @@ from .governance import (
 from .interaction import InteractionCancelled, interaction
 from .session_type import get_send_type_and_target_id, infer_receive_type
 from .trace import trace_step
+
+# 冷却 / 限流键粒度白名单（cooldown_key= / rate_limit_key=，EPRFC-2026-001 方向七）：
+# user=同一用户 / session=同一会话 / global=全局共享（与 throttle_key 共用 constants 定义）
+_KEY_KINDS = GOVERNANCE_KEY_KINDS
 
 
 class CommandHandler:
@@ -394,7 +394,7 @@ class CommandHandler:
 
             # 声明式参数/选项（args= / options=）注册期解析与校验（fail-fast）：
             # 语法错误或处理器签名不匹配直接抛 ValueError，避免到分发期才发现
-            args_spec = parse_args_spec(args) if args else None
+            args_spec = parse_args_spec(args, func) if args else None
             options_spec = parse_options_spec(options, func) if options else None
             declared = [entry.name for entry in (args_spec or [])] + list((options_spec or {}).keys())
 
@@ -515,33 +515,37 @@ class CommandHandler:
             # 影子命令分流（方向十一）：影子 owner 的命令不进真实分发表
             # （否则会静默顶掉 v1 的同名命令），只登记影子命令目录供对比视图。
             # 分流点位于全部 fail-fast 校验之后——影子与真实模块看到一致的
-            # 注册期报错行为
+            # 注册期报错行为。
+            # 注意：判定失败绝不能静默转真实注册（恰好与机制目的相反），
+            # import 失败显式告警，is_shadow 判定异常如实上抛
             try:
                 from ..ownership import ownership as _ownership
-
-                if _ownership.is_shadow(current_owner.get()):
-                    for cmd_name in cmd_names:
-                        self._shadow_catalog[cmd_name] = {
-                            "func": func,
-                            "help": help,
-                            "usage": usage,
-                            "group": group,
-                            "hidden": hidden,
-                            "main_name": main_name,
-                            "owner": current_owner.get(),
-                            "args_spec": args_spec,
-                            "options_spec": options_spec,
-                        }
-                    logger.debug(
-                        i18n.t(
-                            "core.command.shadow_command_cataloged",
-                            cmd_name=main_name,
-                            owner=current_owner.get() or "-",
-                        )
+            except Exception as e:
+                _ownership = None
+                logger.warning(
+                    i18n.t("core.command.shadow_check_unavailable", error=e)
+                )
+            if _ownership is not None and _ownership.is_shadow(current_owner.get()):
+                for cmd_name in cmd_names:
+                    self._shadow_catalog[cmd_name] = {
+                        "func": func,
+                        "help": help,
+                        "usage": usage,
+                        "group": group,
+                        "hidden": hidden,
+                        "main_name": main_name,
+                        "owner": current_owner.get(),
+                        "args_spec": args_spec,
+                        "options_spec": options_spec,
+                    }
+                logger.debug(
+                    i18n.t(
+                        "core.command.shadow_command_cataloged",
+                        cmd_name=main_name,
+                        owner=current_owner.get() or "-",
                     )
-                    return func
-            except Exception:
-                pass
+                )
+                return func
 
             # 添加别名
             alias_list = aliases or []

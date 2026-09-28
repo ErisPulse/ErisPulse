@@ -58,7 +58,7 @@ class EventData(TypedDict, total=False):
 
     {!--< tips >!--}
     所有字段均为可选（total=False），实际字段取决于事件类型。
-    详见 [适配器标准化转换规范](../../standards/event-conversion.md)
+    详见 docs/zh-CN/standards/event-conversion.md（适配器标准化转换规范）
     {!--< /tips >!--}
 
     :ivar id: str 事件唯一标识符

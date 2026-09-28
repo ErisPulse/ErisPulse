@@ -694,9 +694,15 @@ class Uninitializer:
             # 清理生命周期事件处理器（即使在失败时也要清理）
             self.lifecycle._hooks.clear()
 
-            if "attached to a different loop" in str(e):
-                # 这是一个常见的错误，通常是由于SDK在另一个事件循环中运行而导致的。
-                # 在这种情况下，我们直接返回True即可
+            # 跨循环清理失败（RuntimeError，典型为 "Future attached to a
+            # different loop"）：SDK 初始化于另一循环时资源本就无法在当前
+            # 循环释放，生命周期钩子已清理，视为可接受完成；其余异常如实
+            # 判定失败。不再按异常消息子串匹配（消息被本地化 / 库改写即误
+            # 判，且吞掉真实错误不留日志）
+            if isinstance(e, RuntimeError):
+                self.logger.warning(
+                    i18n.t("core.sdk.uninit.cross_loop_cleanup", error=e)
+                )
                 return True
             self.logger.error(i18n.t("core.sdk.uninit.critical_error", error=e))
             return False

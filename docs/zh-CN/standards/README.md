@@ -111,6 +111,17 @@ ErisPulse 采用 OneBot12 作为核心事件标准，并在此基础上进行了
 - [ ] 修饰方法返回 self
 - [ ] 参数命名符合规范
 
+### 媒体发送（Image / Voice / Video / File）
+
+
+- [ ] `file` 参数必须形态全部支持：HTTP(S) URL / 本地路径 / `bytes`
+- [ ] 形态判定顺序符合规范（bytes → URL → `file://` → 路径）
+- [ ] `File` 的文件名按推导顺序生成（显式 `filename` > URL basename > 路径 basename > 平台默认）
+- [ ] 平台媒体限制已在适配器文档声明
+- [ ] 不支持的媒体类型按降级阶梯处理（近缘类型降级或 `retcode=10002`，不抛异常、不静默丢弃）
+
+> 详细协议见 [发送方法规范 §2.1](send-method-spec.md#21-媒体消息发送协议image--voice--video--file)
+
 ### 请求操作
 
 

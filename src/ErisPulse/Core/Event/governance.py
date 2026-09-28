@@ -21,7 +21,7 @@ from collections import deque
 from typing import TYPE_CHECKING, Any
 
 from .. import logger
-from ..constants import UNKNOWN_PLATFORM
+from ..constants import GOVERNANCE_STATE_MAX_ENTRIES, UNKNOWN_PLATFORM
 from ..i18n import i18n
 from .trace import trace_step
 
@@ -171,6 +171,43 @@ class GovernanceGate:
         self._cooldown_replied: dict[str, float] = {}
         self._rate_limit_replied: "set[str]" = set()
         self._usage_replied: dict[str, str] = {}
+        # 配额判定的每键互斥锁：串行化 storage 读改写，防并发事件丢失更新
+        self._usage_locks: dict[str, asyncio.Lock] = {}
+        # 持久化失败已告警的命令主名（每命令只告警一次，恢复成功后解除）
+        self._usage_persist_warned: "set[str]" = set()
+
+    def _maybe_sweep(self, now: float) -> None:
+        """
+        {!--< internal-use >!--}
+        机会式清扫：状态表超容量上限时移除已失效条目，防止 7x24 常驻进程下
+        状态表随 用户数x时间 无界增长（容量上限见 ``constants.GOVERNANCE_STATE_MAX_ENTRIES``）
+
+        :param now: 当前 ``time.monotonic()`` 时刻
+        """
+        if len(self._cooldowns) > GOVERNANCE_STATE_MAX_ENTRIES:
+            stale = [k for k, deadline in self._cooldowns.items() if deadline <= now]
+            for key in stale:
+                self._cooldowns.pop(key, None)
+                self._cooldown_replied.pop(key, None)
+        if len(self._cooldown_replied) > GOVERNANCE_STATE_MAX_ENTRIES:
+            for key in [k for k, deadline in self._cooldown_replied.items() if deadline <= now]:
+                self._cooldown_replied.pop(key, None)
+        if len(self._rate_limits) > GOVERNANCE_STATE_MAX_ENTRIES:
+            for key in [k for k, dq in self._rate_limits.items() if not dq]:
+                self._rate_limits.pop(key, None)
+
+    def _sweep_usage_period(self, u_period: str, sep: str) -> None:
+        """{!--< internal-use >!--} 配额表超容量时清除已过自然周期的条目（周期切换即失效）"""
+        if len(self._usage_counts) <= GOVERNANCE_STATE_MAX_ENTRIES and len(self._usage_replied) <= GOVERNANCE_STATE_MAX_ENTRIES:
+            return
+        suffix = sep + u_period
+        for key in [k for k in self._usage_counts if not k.endswith(suffix)]:
+            self._usage_counts.pop(key, None)
+            lock = self._usage_locks.get(key)
+            if lock is not None and not lock.locked():
+                self._usage_locks.pop(key, None)
+        for key in [k for k in self._usage_replied if not k.endswith(suffix)]:
+            self._usage_replied.pop(key, None)
 
     def clear_command(self, main_name: str) -> None:
         """
@@ -190,6 +227,11 @@ class GovernanceGate:
             key for key in self._rate_limit_replied if key.startswith(prefix)
         ]:
             self._rate_limit_replied.discard(key)
+        for key in [key for key in self._usage_locks if key.startswith(prefix)]:
+            lock = self._usage_locks.get(key)
+            if lock is not None and not lock.locked():
+                self._usage_locks.pop(key, None)
+        self._usage_persist_warned.discard(main_name)
 
     def clear_all(self) -> None:
         """{!--< internal-use >!--} 清空全部治理状态（_clear_commands 调用）"""
@@ -199,6 +241,8 @@ class GovernanceGate:
         self._cooldown_replied.clear()
         self._rate_limit_replied.clear()
         self._usage_replied.clear()
+        self._usage_locks.clear()
+        self._usage_persist_warned.clear()
 
     async def check_cooldown(
         self,
@@ -224,6 +268,7 @@ class GovernanceGate:
         scope_key = cooldown_scope_key(effective.get("cooldown_key", "user"), event)
         cooldown_entry = f"{main_name}\x00{scope_key}"
         now = time.monotonic()
+        self._maybe_sweep(now)
         deadline = self._cooldowns.get(cooldown_entry, 0.0)
         if now < deadline:
             trace_step(
@@ -274,6 +319,7 @@ class GovernanceGate:
         if not effective.get("rate_limit_spec"):
             return False
         now = time.monotonic()
+        self._maybe_sweep(now)
         limit, window = effective["rate_limit_spec"]
         rl_scope = cooldown_scope_key(effective.get("rate_limit_key", "user"), event)
         rl_entry = f"{main_name}\x00{rl_scope}"
@@ -337,9 +383,37 @@ class GovernanceGate:
         u_period = usage_period_key(u_unit)
         sep = "\x00"
         u_key = sep.join((main_name, u_scope, u_period))
+        from ..storage import storage
+
+        # 每键互斥锁：读改写（内存计数 + storage 读写）跨 await，不加锁时
+        # 同一用户的并发事件会互相覆盖计数、突破配额上限
+        lock = self._usage_locks.get(u_key)
+        if lock is None:
+            lock = self._usage_locks.setdefault(u_key, asyncio.Lock())
+        async with lock:
+            return await self._check_usage_locked(
+                main_name, actual_cmd_name, effective, event, send_reply,
+                u_limit, u_scope, u_period, u_key, sep, storage,
+            )
+
+    async def _check_usage_locked(
+        self,
+        main_name: str,
+        actual_cmd_name: str,
+        effective: dict[str, Any],
+        event: "Event",
+        send_reply: Any,
+        u_limit: int,
+        u_scope: str,
+        u_period: str,
+        u_key: str,
+        sep: str,
+        storage: Any,
+    ) -> bool:
+        """{!--< internal-use >!--} 配额判定主体（持有 ``u_key`` 互斥锁时调用）"""
+        self._sweep_usage_period(u_period, sep)
         used = self._usage_counts.get(u_key, 0)
         persisted = False
-        from ..storage import storage
 
         try:
             # wait_for 兜底：后台桥接 loop 不可用（如裸 asyncio.run 测试
@@ -381,10 +455,20 @@ class GovernanceGate:
         self._usage_counts[u_key] = used + 1
         if persisted:
             try:
-                await asyncio.wait_for(
+                # aset 内部吞异常返回 False（存储不可达时的快速失败语义），
+                # 返回 False 说明持久化已降级为内存计数，显式告警避免"重启不丢"静默失效
+                ok = await asyncio.wait_for(
                     storage.aset(f"erispulse.usage{chr(0)}{u_key}", used + 1),
                     timeout=1.0,
                 )
+                if ok is False:
+                    if main_name not in self._usage_persist_warned:
+                        self._usage_persist_warned.add(main_name)
+                        logger.warning(
+                            i18n.t("core.command.usage_persist_failed", cmd=actual_cmd_name)
+                        )
             except Exception as e:
                 logger.trace(f"usage quota persist failed: {e}")
+        else:
+            self._usage_persist_warned.discard(main_name)
         return False

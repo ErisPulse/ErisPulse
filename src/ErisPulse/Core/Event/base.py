@@ -10,6 +10,7 @@ ErisPulse 事件处理基础模块
 """
 
 import asyncio
+import copy
 import inspect
 import time as _time
 from collections.abc import Callable
@@ -52,17 +53,17 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
     )
     _owner = handler_info.get("owner") or current_owner.get()
 
-    # 影子模块隔离（方向十一）：影子 handler 收到的是事件的内层副本（带
-    # _shadow 标记）——影子对副本的改写 / mark_processed / stop 不会传播回
-    # 原事件（多处理器路径的外层副本与合并循环因此对本 handler 变为 no-op）
+    # 影子模块隔离（方向十一）：影子 handler 收到的是事件的深拷贝副本（带
+    # _shadow 标记）——影子对副本的改写（含嵌套 message 段等内层结构）/
+    # mark_processed / stop 不会传播回原事件（多处理器路径的外层副本与合并
+    # 循环因此对本 handler 变为 no-op）。仅影子路径付出深拷贝成本
     try:
         from ..ownership import ownership as _ownership
-
-        if _ownership.is_shadow(_owner):
-            event = Event(dict(event))
-            event["_shadow"] = True
     except Exception:
-        pass
+        _ownership = None
+    if _ownership is not None and _ownership.is_shadow(_owner):
+        event = Event(copy.deepcopy(dict(event)))
+        event["_shadow"] = True
 
     # 切换到本 handler 的局部 wait 记录器。
     # 结束后把局部记录回填给外层 Task 级记录器（若有），便于统一判定 slow-log。

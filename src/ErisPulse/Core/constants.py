@@ -26,6 +26,12 @@ from typing import Final
 # 修改影响: 适配器启动失败后的重连速度。设为空列表则每次使用 fixed_delay。
 ADAPTER_RETRY_BACKOFF_INTERVALS: Final[list] = [60, 10 * 60, 30 * 60, 60 * 60]
 
+# shutdown() 取消适配器后台启动任务后的等待退出超时（秒）。
+# 使用位置: Core/adapter.py -> AdapterManager.shutdown()。
+# 修改影响: 调大→shutdown 更久等待卡住的 start()；调小→超时后带残留任务继续
+#           关闭流程（start 与 shutdown 可能短暂并发）。
+ADAPTER_START_TASK_JOIN_TIMEOUT_SECS: Final[float] = 5.0
+
 # 超出退避列表后的固定重试间隔（秒），默认 3 小时。
 # 修改影响: 长时间连接失败时的重连频率。
 ADAPTER_RETRY_FIXED_DELAY_SECS: Final[int] = 3 * 60 * 60
@@ -264,6 +270,23 @@ STORAGE_POOL_CREATE_BACKOFF_SECS: Final[float] = 1.5
 # 修改影响: 连接不可达时存储恢复探测的频率。
 STORAGE_POOL_FAIL_COOLDOWN_SECS: Final[float] = 30.0
 
+# aclose() 关闭其它事件循环（如同步桥接循环）上连接资源的等待超时（秒）。
+# 使用位置: Core/Bases/sql_base.py -> aclose()。
+# 修改影响: 调大→关闭时更久等待远端连接释放；调小→超时放弃（引用已解除，
+#           连接留待 GC 兜底）。
+STORAGE_CLOSE_OTHER_LOOP_TIMEOUT_SECS: Final[float] = 5.0
+
+# 异步关停噪音折叠状态表的容量上限：超过即淘汰最旧条目，防超长驻留进程下无界增长。
+# 使用位置: runtime/exceptions.py -> _fold_async_noise()。
+# 修改影响: 调大→更多噪音键去重记忆；调小→极端噪音种类下折叠去重效果减弱。
+EXCEPTION_NOISE_STATE_MAX_ENTRIES: Final[int] = 128
+
+# 出站规则优先级阈值的默认值：在途规则数达到阈值后，后续同优先级规则
+# 后写胜出（防规则堆积时行为不可预测）。
+# 使用位置: Core/Bases/send_rules.py -> SendRuleGate._threshold 类属性默认
+# 值（可被 rules["priority_threshold"] 配置覆写）。
+SEND_RULE_PRIORITY_THRESHOLD: Final[int] = 64
+
 # ==============================================================================
 # 路由限流
 #
@@ -468,6 +491,15 @@ COMMAND_ARG_DURATION_UNITS: Final[dict] = {"s": 1.0, "m": 60.0, "h": 3600.0, "d"
 # 使用位置: Core/Event/command.py（cooldown_key= / rate_limit_key=）与
 # Core/Event/throttle.py（throttle_key=）；修改影响三者的注册期校验
 GOVERNANCE_KEY_KINDS: Final[frozenset] = frozenset({"user", "session", "global"})
+
+# 命令治理 / 处理器节流状态表的单表容量上限：超过后机会式清扫已失效条目
+# （冷却过期、限流窗口清空、配额周期切换、节流间隔已过），防止 7x24 常驻
+# 进程下状态表随 用户数x时间 无界增长。
+# 使用位置: Core/Event/governance.py（GovernanceGate._maybe_sweep 及各 check_*）
+#           Core/Event/throttle.py（节流条件闭包内的 _last_pass 清扫）。
+# 修改影响: 调大→更多内存驻留；调小→清扫更频繁，过小可能导致边沿回复
+#           （*_reply=）在极端容量压力下重复触发一次。
+GOVERNANCE_STATE_MAX_ENTRIES: Final[int] = 4096
 
 # ==============================================================================
 # 事件处理器默认值
@@ -1083,6 +1115,11 @@ __all__ = [
     "CLEANUP_CALLBACK_TIMEOUT_SECS",
     "COMMAND_ARG_DURATION_UNITS",
     "GOVERNANCE_KEY_KINDS",
+    "GOVERNANCE_STATE_MAX_ENTRIES",
+    "ADAPTER_START_TASK_JOIN_TIMEOUT_SECS",
+    "STORAGE_CLOSE_OTHER_LOOP_TIMEOUT_SECS",
+    "EXCEPTION_NOISE_STATE_MAX_ENTRIES",
+    "SEND_RULE_PRIORITY_THRESHOLD",
     "CONFIG_CACHE_TIMEOUT_SECS",
     "CONFIG_KEY_ADAPTER_STATUS",
     "CONFIG_KEY_ADAPTER_STATUS_OF",

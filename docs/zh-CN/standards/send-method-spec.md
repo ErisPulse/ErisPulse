@@ -2,26 +2,38 @@
 
 本文档定义了 ErisPulse 适配器中 Send 类发送方法的命名规范、参数规范和反向转换要求。
 
+## 0. 关键词约定
+
+本文档中的 **必须（MUST）**、**应当（SHOULD）**、**可以（MAY）** 按以下语义解释（参照 RFC 2119）：
+
+| 关键词 | 语义 | 违反后果 |
+|--------|------|---------|
+| **必须** | 强制要求，框架行为/跨平台一致性依赖它 | 适配器视为不符合标准，模块代码可能无法工作 |
+| **应当** | 强烈推荐；除非有充分理由，否则遵循 | 偏离时须在适配器文档中说明原因与替代行为 |
+| **可以** | 可选项，按平台能力自行决定 | 无 |
+
 ## 1. 标准方法命名
 
 所有发送方法使用 **大驼峰命名法（PascalCase）**，首字母大写。
 
 ### 1.1 标准发送方法
 
-| 方法名 | 说明 | 参数类型 |
-|-------|------|---------|
-| `Text` | 发送文本消息 | `str` |
-| `Image` | 发送图片 | `bytes` \| `str` (URL/路径) |
-| `Voice` | 发送语音 | `bytes` \| `str` (URL/路径) |
-| `Video` | 发送视频 | `bytes` \| `str` (URL/路径) |
-| `File` | 发送文件 | `bytes` \| `str` (URL/路径) |
-| `At` | @用户/群组 | `str` (user_id) |
-| `Face` | 发送表情 | `str` (emoji) |
-| `Reply` | 回复消息 | `str` (message_id) |
-| `Forward` | 转发消息 | `str` (message_id) |
-| `Markdown` | 发送 Markdown 消息 | `str` |
-| `HTML` | 发送 HTML 消息 | `str` |
-| `Card` | 发送卡片消息 | `dict` |
+| 方法名 | 说明 | 参数类型 | 实现要求 |
+|-------|------|---------|---------|
+| `Text` | 发送文本消息 | `str` | 必须 |
+| `Image` | 发送图片 | `str` \| `bytes` | 必须（基类已内置，见 §6.4） |
+| `Voice` | 发送语音 | `str` \| `bytes` | 必须（基类已内置；平台不支持语音时按 §2.1.5 降级） |
+| `Video` | 发送视频 | `str` \| `bytes` | 必须（基类已内置；平台不支持视频时按 §2.1.5 降级） |
+| `File` | 发送文件 | `str` \| `bytes`，`filename: str \| None = None` | 必须（基类已内置） |
+| `At` | @用户/群组 | `str` (user_id) | 修饰方法，按需 |
+| `Face` | 发送表情 | `str` (emoji) | 可以 |
+| `Reply` | 回复消息 | `str` (message_id) | 修饰方法，按需 |
+| `Forward` | 转发消息 | `str` (message_id) | 可以 |
+| `Markdown` | 发送 Markdown 消息 | `str` | 可以 |
+| `HTML` | 发送 HTML 消息 | `str` | 可以 |
+| `Card` | 发送卡片消息 | `dict` | 可以 |
+
+> 标准方法（`Text`/`Image`/`Voice`/`Video`/`File`）由基类 `SendDSL` 内置并默认委托 `Raw_ob12`，适配器**无需重复实现**即可获得类型签名；仅当平台需要特殊逻辑时才覆盖单个方法（见 §6.4）。
 
 ### 1.2 链式修饰方法
 
@@ -56,85 +68,82 @@
 
 ## 2. 参数规范详解
 
-### 2.1 媒体消息参数规范
+### 2.1 媒体消息发送协议（`Image` / `Voice` / `Video` / `File`）
 
-媒体消息（`Image`、`Voice`、`Video`、`File`）支持两种参数类型：
+本节是媒体发送的**统一协议标准**：模块以同一份代码调用四个媒体方法，适配器负责把
+`file` 参数的各种形态转换为平台原生上传/发送行为。
 
-#### 2.1.1 字符串参数（URL 或文件路径）
+#### 2.1.1 `file` 参数的合法形态
 
-**格式：** `str`
+| 形态 | 示例 | 适配器要求 |
+|------|------|-----------|
+| HTTP(S) URL | `https://example.com/image.jpg` | **必须**接受 |
+| 本地文件路径 | `/path/to/file.jpg`、`C:\path\to\file.jpg` | **必须**接受 |
+| 二进制数据 | `b"\x89PNG..."` | **必须**接受 |
+| `file://` URI | `file:///path/to/file.jpg` | **应当**接受（可转发为本地路径处理） |
+| Base64 字符串 / Data URI | `iVBORw0KGgo=...`、`data:image/png;base64,...` | **应当**接受（与 OneBot12 生态惯例兼容） |
 
-**支持类型：**
-- **URL**：网络资源地址（如 `https://example.com/image.jpg`）
-- **文件路径**：本地文件路径（如 `/path/to/file.jpg` 或 `C:\\path\\to\\file.jpg`）
+> 适配器**必须**在三种必须形态上行为一致——模块无论传 URL、路径还是 bytes，
+> 收到的都是同一条消息。平台无法直接使用某形态时（如平台 API 不支持引用外部 URL），
+> 由适配器自行下载/读取后上传，**不得**要求模块换形态重试。
 
-**使用场景：**
-- 文件已在网络上，直接发送 URL
-- 文件在本地磁盘，发送文件路径
-- 希望适配器自动处理文件上传
+#### 2.1.2 形态判定顺序
 
-**推荐：** 优先使用 URL，如果 URL 不可用则使用本地文件路径
+适配器实现媒体参数处理时，**应当**按以下顺序判定形态：
 
-**示例：**
+1. `bytes` 类型 → 直接上传
+2. 字符串以 `http://` / `https://` 开头 → 按 URL 处理（直接引用或下载后上传，按平台能力）
+3. 字符串以 `file://` 开头 → 剥离前缀按本地路径处理
+4. 其余字符串 → 按本地路径处理（存在则读取上传；不存在则返回标准错误响应）
+
 ```python
-# 使用 URL
-send.Image("https://example.com/image.jpg")
-
-# 使用本地文件路径
-send.Image("/path/to/local/image.jpg")
-send.Image("C:\\path\\to\\local\\image.jpg")
+def _resolve_media(self, file: "str | bytes") -> bytes:
+    """形态判定与归一化（示例）"""
+    if isinstance(file, (bytes, bytearray)):
+        return bytes(file)
+    if file.startswith(("http://", "https://")):
+        return self._download(file)          # 平台不能引用 URL 时下载
+    if file.startswith("file://"):
+        file = file[len("file://"):]
+    with open(file, "rb") as f:              # 本地路径
+        return f.read()
 ```
 
-#### 2.1.2 二进制数据参数
+#### 2.1.3 `File` 的文件名语义
 
-**格式：** `bytes`
+`File` 方法签名：`File(file, filename=None)`（`filename` 为可选参数，基类已内置）。
 
-**使用场景：**
-- 文件已在内存中（如从网络下载、从其他来源读取）
-- 需要处理后再发送（如图片压缩、格式转换）
-- 避免重复读取文件
+文件名**推导顺序**（适配器在未显式提供 `filename` 时按此生成）：
 
-**注意事项：**
-- 大文件上传可能消耗较多内存
-- 建议设置合理的文件大小限制
+1. 显式 `filename` 参数（最高优先）
+2. URL 的 basename（如 `https://host/a/b/report.pdf` → `report.pdf`，须剥离 query string）
+3. 本地路径的 basename（如 `/tmp/data/backup.zip` → `backup.zip`）
+4. 平台默认生成（如 `file_{timestamp}`；**应当**保留真实扩展名——扩展名影响平台侧的
+   类型识别与预览行为）
 
-**示例：**
-```python
-# 从网络读取后发送
-import requests
-image_data = requests.get("https://example.com/image.jpg").content
-send.Image(image_data)
+> `Image` / `Voice` / `Video` 同样**可以**接受 `filename`（经消息段 `data.filename` 传递），
+> 但仅 `File` 的文件名有跨平台语义保证。
 
-# 从文件读取后发送
-with open("/path/to/local/image.jpg", "rb") as f:
-    image_data = f.read()
-send.Image(image_data)
-```
+#### 2.1.4 平台限制的声明义务
 
-#### 2.1.3 参数处理优先级
+各平台对媒体的大小上限、格式（MIME）、时长（音视频）等约束不同。适配器**应当**：
 
-当适配器接收到媒体消息参数时，应按以下顺序处理：
+- 在适配器文档中声明支持的媒体类型与限制范围
+- 超限或不支持的输入返回**标准错误响应**（`status: "failed"`；`retcode` 使用
+  `10002` 或平台语义化错误码，`message` 说明原因），**不得**抛出异常中断模块逻辑
 
-1. **URL 参数**：直接使用 URL 发送(部分平台适配器可能存在URL下载后再上传的操作)
-2. **文件路径**：检测是否为本地路径，若是则上传文件
-3. **二进制数据**：直接上传二进制数据
+#### 2.1.5 能力降级阶梯
 
-**适配器实现建议：**
-```python
-def Image(self, image: Union[bytes, str]):
-    if isinstance(image, str):
-        # 判断是 URL 还是本地路径
-        if image.startswith(("http://", "https://")):
-            # URL 直接发送
-            return self._send_image_by_url(image)
-        else:
-            # 本地路径，读取后上传
-            with open(image, "rb") as f:
-                return self._upload_image(f.read())
-    elif isinstance(image, bytes):
-        # 二进制数据，直接上传
-        return self._upload_image(image)
-```
+平台不支持某个媒体**类型**时，按以下阶梯降级（遵循总纲"能力降级不报错"原则）：
+
+| 场景 | 降级行为 |
+|------|---------|
+| `Voice` 不支持语音消息 | **应当**按 `File`（或平台近缘形态）发送；无法表达时返回 `retcode=10002` |
+| `Video` 不支持视频消息 | 同上 |
+| 媒体类型完全不支持（无文件能力） | 返回 `retcode=10002`，`message` 注明不支持的数据类型 |
+| 形态不支持（如无法处理 base64） | 返回 `retcode=10002`，**可以**在 `message` 中提示模块改用 URL/bytes |
+
+**禁止**的行为：静默丢弃（无返回）、抛出异常、要求模块编写平台分支处理。
 
 ### 2.2 @用户参数规范
 
@@ -209,7 +218,8 @@ def Raw_ob12(self, message):  # ✅ 发送 OneBot12 格式
 | 参数名 | 说明 | 类型 |
 |-------|------|------|
 | `text` | 文本内容 | `str` |
-| `url` / `file` | 文件 URL 或二进制数据 | `str` / `bytes` |
+| `file` | 媒体内容（URL / 路径 / 二进制，见 §2.1.1） | `str` / `bytes` |
+| `filename` | 文件名（`File` 可选，见 §2.1.3） | `str` / `None` |
 | `user_id` | 用户 ID | `str` / `int` |
 | `group_id` | 群组 ID | `str` / `int` |
 | `message_id` | 消息 ID | `str` |
@@ -280,10 +290,10 @@ def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
 | OneBot12 消息段 | 转换要求 |
 |----------------|---------|
 | `text` | 直接使用 `data.text` |
-| `image` | 根据 `data.file` 类型处理：URL 直接使用，bytes 上传，本地路径读取后上传 |
+| `image` | `data.file` 按 §2.1 媒体协议处理（三必须形态 + 判定顺序） |
 | `audio` | 同 image 处理逻辑 |
 | `video` | 同 image 处理逻辑 |
-| `file` | 同 image 处理逻辑，注意 `data.filename` |
+| `file` | 同 image 处理逻辑；文件名按 §2.1.3 推导顺序处理 `data.filename` |
 | `mention` | 转换为平台的 @用户 机制（如 Telegram 的 `entities`，云湖的 `at_uid`） |
 | `reply` | 转换为平台的回复引用机制 |
 | `face` | 转换为平台的表情发送机制，不支持则跳过 |
@@ -408,7 +418,8 @@ class YunhuSend(SendDSL):
 
 ## 7. 方法发现
 
-模块开发者可以通过 API 查询适配器支持的发送方法：
+模块开发者可以通过 API 查询适配器支持的发送方法（**不要**在模块中硬编码某平台的方法
+清单——各适配器的扩展方法随版本演进，以运行时发现为准）：
 
 ```python
 from ErisPulse import adapter
@@ -429,21 +440,6 @@ info = adapter.send_info("myplatform", "Form")
 
 ---
 
-## 8. 已注册的发送方法扩展
-
-| 平台 | 方法名 | 说明 |
-|------|--------|------|
-| onebot12 | `Mention` | @用户（OneBot12 风格） |
-| onebot12 | `Sticker` | 发送贴纸 |
-| onebot12 | `Location` | 发送位置 |
-| onebot12 | `Recall` | 撤回消息 |
-| onebot12 | `Edit` | 编辑消息 |
-| onebot12 | `Batch` | 批量发送 |
-
-> **注意**：发送方法不加平台前缀，不同平台的同名方法可以有不同的实现。
-
----
-
 ## 9. 适配器开发注意事项
 
 关于如何正确重写 `BaseAdapter`、`Send`、`Request` 的 `__init__`，详见 [适配器开发入门 - `__init__` 注意事项](../developer-guide/adapters/getting-started.md#init-注意事项)。
@@ -460,6 +456,13 @@ info = adapter.send_info("myplatform", "Form")
 - [ ] 修饰方法（`At`, `Reply`, `AtAll`）返回 `self`
 - [ ] 平台扩展方法使用 PascalCase，无平台前缀
 - [ ] 所有方法有完整的类型注解和文档字符串
+
+### 媒体发送协议
+- [ ] `file` 参数**必须形态**全部支持：HTTP(S) URL / 本地路径 / `bytes`（见 §2.1.1）
+- [ ] 形态判定顺序符合 §2.1.2（bytes → URL → `file://` → 路径）
+- [ ] `File` 的文件名推导顺序符合 §2.1.3（显式 `filename` > URL basename > 路径 basename > 平台默认）
+- [ ] 平台的媒体限制（大小 / MIME / 时长）已在适配器文档声明（§2.1.4）
+- [ ] 不支持的媒体类型按 §2.1.5 降级阶梯处理：近缘类型降级或返回 `retcode=10002`，不抛异常、不静默丢弃
 
 ### 反向转换
 - [ ] `Raw_ob12` **已实现**（必须，不可跳过）

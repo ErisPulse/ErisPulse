@@ -52,6 +52,11 @@ class FileSystemEventHandler:
         """
         文件移动事件回调
 
+        {!--< tips >!--}
+        轮询实现（PollingObserver）基于 mtime 比较，不触发本回调——移动
+        表现为旧路径 ``on_deleted`` + 新路径 ``on_created``。
+        {!--< /tips >!--}
+
         :param event: [FileChangeEvent] 文件变更事件
         """
 
@@ -173,19 +178,41 @@ class PollingObserver:
         """
         轮询主循环：比较 mtime 并在变更时回调处理器
 
+        除修改外补发创建 / 删除事件：本轮新出现的文件回调 ``on_created``，
+        stat 失败（已删除）的文件回调 ``on_deleted``。移动 = 旧路径删除 +
+        新路径创建（``on_moved`` 在轮询实现下不触发）。
+
         {!--< internal-use >!--}
         """
         while not self._stop_event.wait(self._interval):
             for handler, path, recursive in self._watches:
+                seen: set[str] = set()
                 for file_path in self._walk_py(path, recursive):
+                    seen.add(file_path)
                     try:
                         mtime = Path(file_path).stat().st_mtime
                     except OSError:
-                        self._mtimes.pop(file_path, None)
+                        # stat 失败（列目录后被删的竞态）：有基准记录才视为删除
+                        if self._mtimes.pop(file_path, None) is not None:
+                            handler.on_deleted(FileChangeEvent(file_path))
                         continue
-                    if self._mtimes.get(file_path) != mtime:
+                    if file_path not in self._mtimes:
+                        self._mtimes[file_path] = mtime
+                        handler.on_created(FileChangeEvent(file_path))
+                        continue
+                    if self._mtimes[file_path] != mtime:
                         self._mtimes[file_path] = mtime
                         handler.on_modified(FileChangeEvent(file_path))
+                # 差集检测删除：被删除的文件不会出现在本轮 os.walk 结果里
+                known_prefix = str(Path(path))
+                gone = [
+                    known
+                    for known in self._mtimes
+                    if known not in seen and known.startswith(known_prefix)
+                ]
+                for known in gone:
+                    self._mtimes.pop(known, None)
+                    handler.on_deleted(FileChangeEvent(known))
 
 
 __all__ = ["FileChangeEvent", "FileSystemEventHandler", "PollingObserver"]

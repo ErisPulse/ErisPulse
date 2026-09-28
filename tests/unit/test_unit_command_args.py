@@ -314,6 +314,15 @@ class TestBinding:
         assert ei.value.params.get("arg") == "flag"
         assert "flag" in str(ei.value)
 
+    def test_trailing_garbage_rejected(self):
+        """声明串最后一个条目之后的非空白内容 → fail-fast 报错（不得静默忽略）"""
+        with pytest.raises(ValueError):
+            parse_args_spec("<count:int> garbage-junk")
+        with pytest.raises(ValueError):
+            parse_args_spec("<a:int> [b:int=1] tail")
+        # 正常声明不受影响
+        assert len(parse_args_spec("<a:int> [b:int=1]")) == 2
+
     def test_optional_without_default_backfills_handler_default(self):
         """[name:type] 未声明默认值时回填处理器签名默认值，而非注入 None"""
 
@@ -390,6 +399,23 @@ class TestDispatchInjection:
 
         await _dispatch("/roll2 3")
         assert calls == [(3, 6)]
+
+    @pytest.mark.asyncio
+    async def test_optional_without_declared_default_backfills_handler_default(self):
+        """[name:type] 未声明默认值：注册期回填处理器签名默认值，省略实参不注入 None"""
+
+        @command_handler("roll2b", args="<count:int> [sides:int]")
+        async def roll(event, count: int, sides: int = 6):
+            calls.append((count, sides))
+
+        calls = []
+        await _dispatch("/roll2b 3")
+        assert calls == [(3, 6)]
+
+        calls = []
+        await _dispatch("/roll2b 3 20")
+        assert calls == [(3, 20)]
+
 
     @pytest.mark.asyncio
     async def test_options_flag_and_value(self):

@@ -8,6 +8,7 @@ promote 失败回滚（v1 复活）。
 """
 
 import asyncio
+import importlib
 import types
 
 import pytest
@@ -129,6 +130,32 @@ class TestEventCopyIsolation:
 
         assert seen["shadow_marker"] is True
         assert normal_ran == [True]  # 原事件未被影子的认领吞掉
+
+    async def test_shadow_nested_mutation_does_not_propagate(self):
+        """影子的嵌套结构改写不传播回原事件（深拷贝隔离，message 段是典型嵌套）"""
+        ownership.register_shadow("sh_deep")
+        seen = {"shadow_text": None, "normal_text": None}
+
+        async def shadow_handler(event):
+            event["message"][0]["data"]["text"] = "MUTATED_BY_SHADOW"
+            seen["shadow_text"] = event["message"][0]["data"]["text"]
+
+        async def normal_handler(event):
+            seen["normal_text"] = event["message"][0]["data"]["text"]
+
+        with owner_scope("sh_deep"):
+            message.handler.register(shadow_handler, priority=10)
+        with owner_scope("v1_deep"):
+            message.handler.register(normal_handler, priority=0)
+
+        from ErisPulse.Core.adapter import adapter as adapter_manager
+
+        with patch_getConfig():
+            await adapter_manager.emit(_msg("hello"))
+            await asyncio.sleep(0.05)
+
+        assert seen["shadow_text"] == "MUTATED_BY_SHADOW"
+        assert seen["normal_text"] == "hello"  # 原事件的嵌套内容不受影子改写影响
 
     def test_event_copy_helper(self):
         e = Event({"a": 1})
@@ -369,6 +396,68 @@ class TestPromote:
 
         with pytest.raises(RuntimeError):
             asyncio.run(shadow_manager.start("ghost_mod", str(src), manager=manager, sdk=None))
+
+    @staticmethod
+    def _mk_v2_src(path):
+        path.write_text(
+            "from ErisPulse.Core.Bases.module import BaseModule\n"
+            "class RollV2(BaseModule):\n"
+            "    async def on_load(self, ctx=None):\n"
+            "        self.loaded = 'v2'\n"
+            "    async def on_unload(self, ctx=None):\n"
+            "        pass\n",
+            encoding="utf-8",
+        )
+
+    def _start_with_plugin_dirs(self, manager, src, plugins_root, monkeypatch, setconfig_calls):
+        from ErisPulse.loaders.module import ModuleLoader
+
+        config_pkg = importlib.import_module("ErisPulse.Core.config")
+
+        def fake_set_config(key, value, **kwargs):
+            setconfig_calls.append((key, value))
+            return True
+
+        monkeypatch.setattr(config_pkg.config, "setConfig", fake_set_config)
+        sdk = types.SimpleNamespace()
+        loader = ModuleLoader()
+        monkeypatch.setattr(loader._plugin_loader, "get_plugins_dirs", lambda: [plugins_root])
+        owner = asyncio.run(
+            shadow_manager.start("Roll", str(src), manager=manager, sdk=sdk, loader=loader)
+        )
+        return owner
+
+    def _fresh_loaded_roll(self):
+        manager = self._fresh_manager()
+        manager.register("Roll", _V1)
+        assert asyncio.run(manager.load("Roll")) is True
+        return manager
+
+    def test_start_source_in_plugins_dir_disables_status(self, tmp_path, monkeypatch):
+        """影子源位于插件发现目录内：写 status=False 防止下次启动被独立装载"""
+        plugins_root = tmp_path / "plugins"
+        plugins_root.mkdir()
+        src = plugins_root / "roll_v3.py"
+        self._mk_v2_src(src)
+        manager = self._fresh_loaded_roll()
+
+        calls = []
+        owner = self._start_with_plugin_dirs(manager, src, plugins_root, monkeypatch, calls)
+        assert owner == "roll_v3"
+        assert ("ErisPulse.modules.status.roll_v3", False) in calls
+
+    def test_start_source_outside_plugins_dir_keeps_config_clean(self, tmp_path, monkeypatch):
+        """影子源在插件目录外（推荐位置）：不写用户配置的 status 禁用"""
+        plugins_root = tmp_path / "plugins"
+        plugins_root.mkdir()
+        src = tmp_path / "roll_v4.py"
+        self._mk_v2_src(src)
+        manager = self._fresh_loaded_roll()
+
+        calls = []
+        owner = self._start_with_plugin_dirs(manager, src, plugins_root, monkeypatch, calls)
+        assert owner == "roll_v4"
+        assert ("ErisPulse.modules.status.roll_v4", False) not in calls
 
     def test_promote_success(self):
         from ErisPulse.loaders.module import ModuleLoader

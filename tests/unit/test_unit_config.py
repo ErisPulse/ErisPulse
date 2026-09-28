@@ -1734,3 +1734,31 @@ class TestNestedDataclassConfig:
 
 
 
+
+
+class TestScalarWithDescendantDirty:
+    """getConfig 标量边角：标量缓存值 + 后代脏键 → 返回叠加子树（flush 后该键将变为子表）"""
+
+    @pytest.fixture
+    def mgr(self):
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".toml", delete=False, encoding="utf-8") as f:
+            f.write('[test]\nkey = "value"\n')
+            temp_path = f.name
+        manager = ConfigManager(config_file=temp_path)
+        yield manager
+        if manager._write_timer:
+            manager._write_timer.cancel()
+        manager._watcher_stop.set()
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+    def test_scalar_overlay_returned(self, mgr):
+        manager = mgr
+        mgr.setConfig("edge.scalar", 5)
+        mgr._flush_config()  # 落盘：edge.scalar = 5 进入缓存树
+        mgr.setConfig("edge.scalar.sub", "x")  # 后代键进入脏队列（未刷盘）
+
+        value = mgr.getConfig("edge.scalar")
+        assert value == {"sub": "x"}  # 不再返回旧标量 5（写后立读一致）
+
+        mgr._dirty_keys.clear()  # 清理脏队列，避免污染其它用例

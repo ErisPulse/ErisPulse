@@ -965,3 +965,105 @@ class TestRuntimeOverrideSurvival:
         assert mgr._runtime_owners == {}
         # 内存中的绑定同步移除
         assert mgr.is_allowed("p", "b1", "X") is True
+
+
+class TestPersistBaseline:
+    """持久化基线：persist=False 的运行时绑定不得被持久化写入顺带落盘"""
+
+    @staticmethod
+    def _mgr_from_disk(bindings: dict) -> ScopeManager:
+        """以模拟磁盘内容走真实加载路径（同时建立 _data 与持久化基线）"""
+        mgr = ScopeManager()
+        with patch("ErisPulse.runtime.get_config", return_value=bindings):
+            mgr._load_config()
+        return mgr
+
+    def test_runtime_override_not_leaked_by_persist_write(self):
+        """无关 persist=True 写入的持久化内容不含 persist=False 的运行时值"""
+        mgr = self._mgr_from_disk({"platforms": {}, "bots": {}, "sessions": {}, "identity": {}, "actions": {}})
+        mgr.set("bots.p.shadow_mod", {"modules": ["Chat"], "blocked": []}, persist=False)
+        written = {}
+        with patch.object(scope_module, "update_erispulse_config", side_effect=lambda c: written.update(c)):
+            mgr.set("identity.users.u1", {"deny": True})
+        assert "shadow_mod" not in written["scope"].get("bots", {}).get("p", {})
+        assert written["scope"]["identity"]["users"]["u1"] == {"deny": True}
+        # 内存态运行时绑定不受影响
+        assert mgr.get("bots.p.shadow_mod") == {"modules": ["Chat"], "blocked": []}
+
+    def test_unloaded_runtime_binding_not_resurrected_from_disk(self):
+        """运行时绑定被卸载注销后，配置重载不得从磁盘"复活"（persist 写入曾把它带上盘）"""
+        from unittest.mock import patch as _patch
+
+        mgr = self._mgr_from_disk({"platforms": {}, "bots": {}, "sessions": {}, "identity": {}, "actions": {}})
+        with _patch("ErisPulse.runtime.context.current_owner") as mock_ctx:
+            mock_ctx.get.return_value = "ShadowMod"
+            mgr.set("bots.p.shadow_mod", {"modules": ["Chat"], "blocked": []}, persist=False)
+        with patch.object(scope_module, "update_erispulse_config", side_effect=lambda c: None):
+            mgr.set("identity.users.u1", {"deny": True})
+        # 模块卸载：注销运行时绑定
+        assert mgr.unregister_by_owner("ShadowMod") >= 1
+        # 配置重载（读磁盘真相）
+        with patch("ErisPulse.runtime.get_config", return_value={"platforms": {}, "bots": {}}):
+            mgr._on_config_updated({})
+        assert mgr.get("bots.p.shadow_mod") is None
+
+    def test_delete_persist_submits_persisted_subtree(self):
+        """delete(persist=True) 提交持久化基线子树：运行时兄弟键不落盘"""
+        mgr = self._mgr_from_disk(
+            {"platforms": {}, "bots": {"p": {"b1": {"modules": ["A"], "blocked": []}}}, "sessions": {}, "identity": {}, "actions": {}}
+        )
+        mgr.set("bots.p.b1.runtime_extra", {"deny": True}, persist=False)
+        written = {}
+        with patch.object(scope_module, "set_erispulse_section", side_effect=lambda path, value: written.update({path: value})):
+            assert mgr.delete("bots.p.b1.modules") is True
+        submitted = written["scope.bots.p.b1"]
+        assert "modules" not in submitted
+        assert "runtime_extra" not in submitted  # 活引用会把运行时兄弟键带落盘
+        assert submitted == {"blocked": []}
+
+    def test_set_action_replace_keeps_disk_clean(self):
+        """set_action 整体替换语义：旧规则键不残留在持久化基线"""
+        mgr = self._mgr_from_disk(
+            {"platforms": {}, "bots": {}, "sessions": {}, "identity": {}, "actions": {"m1": {"send": {"deny": ["x"]}}}}
+        )
+        written = {}
+        with patch.object(scope_module, "update_erispulse_config", side_effect=lambda c: written.update(c)):
+            mgr.set_action("m1", "send", allow=["y"], deny=None)
+        disk_send = written["scope"]["actions"]["m1"]["send"]
+        assert disk_send == {"allow": ["y"]}
+
+    def test_cache_size_config_applies(self):
+        """scope.cache_size 配置项生效（此前为接受但不生效的死配置）"""
+        mgr = self._mgr_from_disk({"cache_size": 3, "platforms": {}, "bots": {}, "sessions": {}, "identity": {}, "actions": {}})
+        assert mgr._cache_size == 3
+        for i in range(6):
+            mgr.is_allowed(f"p{i}", "b", "Chat")
+        assert len(mgr._cache) <= 3
+
+
+class TestMatcherPrecompile:
+    """匹配器预编译缓存：随 _invalidate_cache 失效（热路径性能）"""
+
+    def test_compiled_matchers_cached_and_cleared(self):
+        mgr = ScopeManager()
+        with patch("ErisPulse.runtime.get_config", return_value={"platforms": {}, "bots": {}}):
+            mgr._load_config()
+        assert mgr._compiled_lists == {} and mgr._entry_matchers == {}
+
+        mgr.set("platforms.p", {"modules": ["re:^chat"], "blocked": ["Spam*"]}, persist=False)
+        mgr.is_allowed("p", "b", "ChatAI")  # 触发一次判定（缓存未命中路径）
+        assert mgr._compiled_lists  # 编译结果已缓存
+
+        with patch("ErisPulse.runtime.get_config", return_value={"identity": {"users": {"p": {"re:^u_": {"deny": True}}}}, "platforms": {}, "bots": {}}):
+            mgr._on_config_updated({})
+        assert mgr._compiled_lists == {} and mgr._entry_matchers == {}  # 配置树重建即失效
+
+    def test_identity_entry_matcher_cached(self):
+        mgr = ScopeManager()
+        with patch("ErisPulse.runtime.get_config", return_value={"platforms": {}, "bots": {}}):
+            mgr._load_config()
+        with patch("ErisPulse.runtime.get_config", return_value={"platforms": {}, "bots": {}, "identity": {"users": {"p": {"re:^u_\d+$": {"deny": True}}}}}):
+            mgr._on_config_updated({})
+        assert mgr.is_identity_allowed("p", "b", "s", "u_123") is False
+        assert len(mgr._entry_matchers) == 1
+        assert mgr.is_identity_allowed("p", "b", "s", "alice") is True

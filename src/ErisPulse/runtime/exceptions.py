@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from ..Core.i18n import i18n
+from ..Core.constants import EXCEPTION_NOISE_STATE_MAX_ENTRIES
 from .hints import (
     suggest_for_attribute_error,
     suggest_for_connection_error,
@@ -261,6 +262,8 @@ _ASYNC_NOISE_FOLD_WINDOW_SECS: float = 2.0
 
 # 噪音折叠状态: {消息 -> (累计次数, 首次时间戳)}
 _async_noise_state: dict[str, tuple[int, float]] = {}
+# 折叠状态表容量上限（超过即淘汰最旧），取值见 Core/constants.py
+_ASYNC_NOISE_STATE_MAX_ENTRIES: int = EXCEPTION_NOISE_STATE_MAX_ENTRIES
 
 
 def _log_async_noise(message: str) -> None:
@@ -290,6 +293,12 @@ def _fold_async_noise(message: str) -> None:
     if count > 0 and now - first_seen < _ASYNC_NOISE_FOLD_WINDOW_SECS:
         _async_noise_state[key] = (count + 1, first_seen)
         return
+    # 状态表限量：超上限时淘汰最旧条目，防超长驻留进程下无界增长
+    if len(_async_noise_state) >= _ASYNC_NOISE_STATE_MAX_ENTRIES:
+        for oldest in sorted(_async_noise_state.items(), key=lambda kv: kv[1][1])[
+            : len(_async_noise_state) - _ASYNC_NOISE_STATE_MAX_ENTRIES + 1
+        ]:
+            _async_noise_state.pop(oldest[0], None)
     _async_noise_state[key] = (1, now)
     suffix = i18n.t("core.exceptions.folded_suffix", count=count) if count else ""
     _log_async_noise(f"Async - {key}{suffix}")

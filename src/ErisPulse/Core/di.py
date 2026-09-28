@@ -34,6 +34,20 @@ from .i18n import i18n
 _di_cache: ContextVar[dict[Any, Any] | None] = ContextVar("_di_cache", default=None)
 
 
+def _freeze_key(value: Any) -> Any:
+    """{!--< internal-use >!--}
+    把依赖声明的固定参数递归冻结为可哈希的稳定结构（请求级缓存键用）：
+    dict → 排序条目元组、list/tuple → 元组、set → 排序表示元组；其余叶子原样保留
+    """
+    if isinstance(value, dict):
+        return tuple(sorted((k, _freeze_key(v)) for k, v in value.items()))
+    if isinstance(value, (list, tuple)):
+        return tuple(_freeze_key(v) for v in value)
+    if isinstance(value, (set, frozenset)):
+        return tuple(sorted(repr(_freeze_key(v)) for v in value))
+    return value
+
+
 @dataclass(frozen=True)
 class Depends:
     """
@@ -84,9 +98,17 @@ class Depends:
                 return await result
             return result
 
+        # 缓存键以冻结后的声明元组构造；含不可哈希的固定参数（自定义对象等）
+        # 时退化为不缓存（cache_key=None），避免分发期 `in` 判定抛 TypeError
+        try:
+            key: Any = ("module", module_name, method, _freeze_key(args), tuple(sorted((k, _freeze_key(v)) for k, v in kwargs.items())))
+            hash(key)
+        except TypeError:
+            key = None
+
         return Depends(
             dependency=_call_module,
-            cache_key=("module", module_name, method, args, tuple(sorted(kwargs.items()))),
+            cache_key=key,
         )
 
 

@@ -250,6 +250,11 @@ def parse_args_spec(spec: str, handler: Callable[..., Any] | None = None) -> lis
         )
     if spec.strip() and not entries:
         raise ValueError(i18n.t("core.command.args.bad_spec", spec=spec, reason=spec.strip()[:32]))
+    # 尾部垃圾校验：最后一个条目之后不得再有非空白内容（fail-fast 补洞，
+    # 如 "<count:int> garbage" 原先被静默接受、垃圾被无声忽略）
+    tail = spec[consumed:]
+    if tail.strip():
+        raise ValueError(i18n.t("core.command.args.bad_spec", spec=spec, reason=tail.strip()[:32]))
 
     # 顺序规则：rest 必须最后；可选条目之后不得再出现必填条目
     seen_optional = False

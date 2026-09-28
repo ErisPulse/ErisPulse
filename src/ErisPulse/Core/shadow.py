@@ -25,6 +25,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from .i18n import i18n
 from .logger import logger
 
 __all__ = [
@@ -38,6 +39,23 @@ __all__ = [
 # 影子账本每个 owner 的最大保留条数（内存环形，超出丢弃最旧）
 # 使用位置: ShadowLedger.record；修改影响: diff 对比的数据窗口大小
 SHADOW_LEDGER_MAX_PER_OWNER = 500
+
+
+def _source_in_plugin_dirs(plugin_loader: Any, source: Path) -> bool:
+    """{!--< internal-use >!--}
+    判断影子源路径是否位于插件发现目录内（位于其内时才需要写 status 禁用，
+    防止下次启动被普通发现机制当作独立模块装载）
+
+    :param plugin_loader: 插件加载器（提供 ``get_plugins_dirs()``）
+    :param source: 影子源路径
+    :return: 源位于任一插件目录内时 True（判定失败按 False 处理——宁可不
+        写配置也不误禁同名真实插件）
+    """
+    try:
+        src = source.resolve()
+        return any(src.is_relative_to(d.resolve()) for d in plugin_loader.get_plugins_dirs())
+    except Exception:
+        return False
 
 
 class ShadowLedger:
@@ -201,6 +219,22 @@ class ShadowManager:
             self._overlays[shadow_owner] = overlay
         return overlay
 
+    @staticmethod
+    def _cleanup_sdk_attr(sdk: Any, owner: str) -> None:
+        """{!--< internal-use >!--}
+        清理 start 时挂在 sdk 上的影子实例属性（转正 / 放弃后残留会指向已回收实例）
+
+        :param sdk: SDK 实例（None 时跳过）
+        :param owner: 影子 owner 名
+        """
+        if sdk is None:
+            return
+        try:
+            if owner[:1].isalpha() and owner.isidentifier() and hasattr(sdk, owner):
+                delattr(sdk, owner)
+        except Exception:
+            pass
+
     # ---- 启动 ----
 
     async def start(
@@ -282,17 +316,19 @@ class ShadowManager:
         if owner[:1].isalpha() and owner.isidentifier():
             setattr(sdk, owner, instance)
 
-        # 影子源若恰好位于 plugins 目录，禁用其启用状态，
-        # 防止下次启动被普通发现机制当作独立模块装载
-        try:
-            from .config import config as config_service
+        # 影子源若恰好位于插件发现目录内，禁用其启用状态，防止下次启动被
+        # 普通发现机制当作独立模块装载；源在目录外（推荐位置）时不写用户配置
+        if _source_in_plugin_dirs(plugin_loader, src):
+            try:
+                from .config import config as config_service
+                from .constants import CONFIG_KEY_MODULE_STATUS_OF
 
-            config_service.setConfig(f"ErisPulse.modules.status.{owner}", False)
-        except Exception:
-            pass
+                config_service.setConfig(CONFIG_KEY_MODULE_STATUS_OF.format(owner), False)
+            except Exception as e:
+                logger.warning(i18n.t("core.shadow.status_disable_failed", owner=owner, error=e))
 
         self.bind(real_name, owner)
-        logger.info(f"shadow module '{owner}' started (shadowing '{real_name}')")
+        logger.info(i18n.t("core.shadow.started", owner=owner, real_name=real_name))
         return owner
 
     # ---- 转正 / 放弃 / 对比 ----
@@ -360,7 +396,7 @@ class ShadowManager:
             if module_obj is not None:
                 loader._last_module_objs[real_name] = module_obj
         except Exception as e:
-            logger.error(f"promote of '{real_name}' failed — rolling back current version: {e}")
+            logger.error(i18n.t("core.shadow.promote_failed", real_name=real_name, error=e))
             loader._restore_reload_snapshot(v1_snapshot, real_name, manager, sdk)
             loader._restore_failed_dependents(dep_snapshots, manager, sdk)
             return False
@@ -377,15 +413,19 @@ class ShadowManager:
         except Exception:
             pass
         self.unbind(shadow_owner)
-        logger.info(f"module '{real_name}' promoted from shadow '{shadow_owner}'")
+        self._cleanup_sdk_attr(sdk, shadow_owner)
+        logger.info(i18n.t("core.shadow.promoted", real_name=real_name, owner=shadow_owner))
         return True
 
-    async def dismiss(self, real_name: str, manager: Any) -> bool:
+    async def dismiss(
+        self, real_name: str, manager: Any, sdk: "Any | None" = None
+    ) -> bool:
         """
         放弃影子：回收影子资源、解除绑定、清空账本与命令目录
 
         :param real_name: 原模块名
         :param manager: 模块管理器实例
+        :param sdk: SDK 实例（可选；传入时清理挂在 sdk 上的影子实例属性残留）
         :return: 是否成功
         """
         info = self._shadows.get(real_name)
@@ -411,7 +451,8 @@ class ShadowManager:
                 command_service._shadow_catalog.pop(key, None)
         except Exception:
             pass
-        logger.info(f"shadow '{shadow_owner}' dismissed (module '{real_name}' untouched)")
+        self._cleanup_sdk_attr(sdk, shadow_owner)
+        logger.info(i18n.t("core.shadow.dismissed", owner=shadow_owner, real_name=real_name))
         return True
 
     def diff(self, real_name: str, transcript: "Any | None" = None) -> "dict[str, Any]":

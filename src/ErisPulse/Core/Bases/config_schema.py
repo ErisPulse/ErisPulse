@@ -652,21 +652,23 @@ def _env_override_value(f):
     if raw is None or raw == "":
         return MISSING
 
-    type_str = str(f.type).lower()
+    # 类型判定与模板/校验共用 python_type_category（结构化判定）：
+    # 字符串子串匹配会把 Literal["list", ...] 等注解误判为 JSON 列
+    category = python_type_category(f.type)
     logger = _get_config_logger()
     try:
-        if "list" in type_str or "dict" in type_str:
+        if category in ("list", "dict"):
             value = json.loads(raw)
             if not isinstance(value, (list, dict)):
                 raise ValueError(raw[:50])
         else:
             value = _coerce_value(raw, f.type)
             # 转换后类型必须匹配注解（_coerce_value 失败时原样返回字符串）
-            if "bool" in type_str and not isinstance(value, bool):
+            if category == "bool" and not isinstance(value, bool):
                 raise ValueError(raw[:50])
-            if "int" in type_str and (isinstance(value, bool) or not isinstance(value, int)):
+            if category == "int" and (isinstance(value, bool) or not isinstance(value, int)):
                 raise ValueError(raw[:50])
-            if "float" in type_str and (isinstance(value, bool) or not isinstance(value, (int, float))):
+            if category == "float" and (isinstance(value, bool) or not isinstance(value, (int, float))):
                 raise ValueError(raw[:50])
         return value
     except (ValueError, TypeError) as e:

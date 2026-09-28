@@ -43,8 +43,19 @@ ADAPTER_ENTRY_POINT_GROUP: str = "erispulse.adapter"
 # PyPI JSON API URL 模板（仅 CLI 做包查询 / 自更新检查时使用）。
 PYPI_PACKAGE_JSON_URL_TEMPLATE: str = "https://pypi.org/pypi/{package}/json"
 
+# run 命令子进程监督的退避参数。
+# 使用位置: CLI/commands/run.py -> 监督循环。
+# 修改影响: 每次崩溃的重试间隔 = min(MAX, PER_CRASH x 崩溃次数)；
+#           RESTART_PAUSE 为硬重启请求后的短暂停顿（让端口等资源释放）。
+RUN_CRASH_BACKOFF_MAX_SECS: float = 60.0
+RUN_CRASH_BACKOFF_PER_CRASH_SECS: float = 3.0
+RUN_RESTART_PAUSE_SECS: float = 0.5
+
 __all__ = [
     "ADAPTER_ENTRY_POINT_GROUP",
+    "RUN_CRASH_BACKOFF_MAX_SECS",
+    "RUN_CRASH_BACKOFF_PER_CRASH_SECS",
+    "RUN_RESTART_PAUSE_SECS",
     "ENV_SUPERVISED",
     "HARD_RESTART_EXIT_CODE",
     "MODULE_ENTRY_POINT_GROUP",

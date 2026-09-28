@@ -114,13 +114,13 @@ class OwnershipManager:
         """
         result = {"tasks_cancelled": 0, "cleanups_run": 0}
         try:
-            from .runtime.tasks import cancel_owner_tasks
+            from ..runtime.tasks import cancel_owner_tasks
 
             result["tasks_cancelled"] = await cancel_owner_tasks(owner)
         except Exception:
             pass
         try:
-            from .runtime.owner_cleanup import run_owner_cleanups
+            from ..runtime.owner_cleanup import run_owner_cleanups
 
             result["cleanups_run"] = await run_owner_cleanups(owner)
         except Exception:
@@ -144,14 +144,6 @@ class OwnershipManager:
         {"routes_http": 2, "commands": 1, ...}
         """
         result: "dict[str, int]" = {}
-
-        def _step(key: str, fn: Any) -> None:
-            try:
-                value = fn()
-                if isinstance(value, int):
-                    result[key] = value
-            except Exception:
-                pass
 
         try:
             from .i18n import i18n as i18n_service
@@ -280,7 +272,7 @@ class OwnershipManager:
                 pass
 
         try:
-            from .runtime import tasks as tasks_module
+            from ..runtime import tasks as tasks_module
 
             for o, task_set in (getattr(tasks_module, "_owner_tasks", {}) or {}).items():
                 _add(o, "tasks", len(task_set or ()))
@@ -288,7 +280,7 @@ class OwnershipManager:
             pass
 
         try:
-            from .runtime.owner_cleanup import _owner_cleanups
+            from ..runtime.owner_cleanup import _owner_cleanups
 
             for o, hooks in (_owner_cleanups or {}).items():
                 _add(o, "cleanups", len(hooks or ()))

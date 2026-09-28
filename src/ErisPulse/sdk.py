@@ -14,6 +14,7 @@ example:
 from __future__ import annotations
 
 import asyncio
+import concurrent.futures
 import importlib
 import inspect
 import os
@@ -595,13 +596,16 @@ class SDK:
         *,
         before_init: Callable[[], Any] | None = None,
         after_init: Callable[[], Any] | None = None,
-    ) -> asyncio.Task:
+    ) -> "asyncio.Task | concurrent.futures.Future":
         """
         SDK 初始化入口，返回 Task 对象
 
         :param before_init: 初始化前回调（同步或异步）
         :param after_init: 初始化成功后回调（同步或异步）
-        :return: asyncio.Task 初始化任务
+        :return: asyncio.Task 初始化任务（在事件循环内调用时）；并发 Future
+            （无运行循环但主循环已注册时，经线程安全方式调度回主循环）
+        :raises RuntimeError: 当前无运行中的事件循环且主循环未注册——
+            此前本场景会新建一个永不运行的循环并返回永不完成的悬挂 Task
         """
 
         async def _async_init():
@@ -632,13 +636,15 @@ class SDK:
         try:
             return asyncio.create_task(_async_init())
         except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            try:
-                return loop.create_task(_async_init())
-            except Exception:
-                loop.close()
-                raise
+            from .runtime.tasks import _get_main_loop
+
+            loop = _get_main_loop()
+            if loop is not None and loop.is_running():
+                return asyncio.run_coroutine_threadsafe(_async_init(), loop)
+            raise RuntimeError(
+                "init_task() requires a running event loop: call it from async code, "
+                "or start the SDK main loop first (e.g. run()/init())"
+            ) from None
 
     async def load_module(self, module_name: str) -> bool:
         """

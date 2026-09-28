@@ -141,15 +141,35 @@
 | 类型 | 说明 | data 字段 |
 |------|------|----------|
 | `text` | 纯文本 | `text: str` |
-| `image` | 图片 | `file: str/bytes`, `url: str` |
-| `audio` | 音频 | `file: str/bytes`, `url: str` |
-| `video` | 视频 | `file: str/bytes`, `url: str` |
-| `file` | 文件 | `file: str/bytes`, `url: str`, `filename: str` |
+| `image` | 图片 | `file`, `url: str` |
+| `audio` | 音频 | `file`, `url: str` |
+| `video` | 视频 | `file`, `url: str` |
+| `file` | 文件 | `file`, `url: str`, `filename: str` |
 | `mention` | @用户 | `user_id: str`, `user_name: str` |
 | `reply` | 回复 | `message_id: str` |
 | `face` | 表情 | `id: str` |
 | `location` | 位置 | `latitude: float`, `longitude: float` |
 | `keyboard` | 按钮/内联键盘 | `rows: list[list[button]]`（见 4.1.1） |
+
+**媒体段 `file` 字段格式**（发送方向，`image` / `audio` / `video` / `file` 通用）：
+
+| 形态 | 示例 | 适配器要求 |
+|------|------|-----------|
+| HTTP(S) URL | `https://example.com/a.png` | **必须**接受 |
+| 本地文件路径 | `/tmp/a.png`、`C:\tmp\a.png` | **必须**接受 |
+| 二进制数据 | `bytes` | **必须**接受 |
+| `file://` URI / Base64 / Data URI | `file:///tmp/a.png`、`data:image/png;base64,...` | **应当**接受 |
+
+> 完整的媒体发送协议（形态判定顺序、文件名推导、能力降级阶梯）见
+> [发送方法规范 §2.1](send-method-spec.md#21-媒体消息发送协议image--voice--video--file)。
+
+**字段方向语义**：
+
+- `file`：**发送方向**的内容来源（上述形态）；**接收方向**由适配器填平台可取回的形态
+  （通常为可下载 URL，或 `get_file` 类动作可用的资源标识）
+- `url`：接收方向的平台回链（适配器转换平台事件时尽可能填入，供模块直接取用）；发送方向可不填
+- `filename`：`file` 段的文件名（发送方向可选，缺省时适配器按
+  [发送方法规范 §2.1.3](send-method-spec.md) 的推导顺序生成；接收方向**应当**填平台原始文件名）
 
 ```json
 {
