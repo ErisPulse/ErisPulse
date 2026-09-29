@@ -228,32 +228,33 @@ def get_interaction_id(self) -> str: ...  # interaction_id
 
 ## 6. 未來候選（Roadmap）
 
-以下能力已在 ≥2 平台出現或預期出現，按優先級推進標準化：
+以下功能已在 ≥2 平台出現或預期出現，將依優先級推動標準化：
 
-| 候選 | 涉及平台 | 優先級 | 備註 |
+| 候選 | 涉及平台 | 优先级 | 備註 |
 |------|---------|--------|------|
 | select 下拉選擇 | Discord / Telegram | 高 | 結構草案見 §5.4 |
 | 表態/表情回應（reactions） | QQBot / Telegram / Discord / Kook | 高 | 動作 + 事件兩側標準化 |
 | 群管理動作（禁言/踢人/審批） | QQBot / 雲湖 / OB11 | 高 | 多數已實現為平台動作，待抽取標準簽名 |
 | 公告/看板 | 雲湖 / Telegram / Discord | 中 | `set_announcement` 類動作 |
-| 檔案上傳標準（file_id 兩段式） | 各平台 | 中 | 見 API 動作標準（當前降級可用） |
+| 文件資源模型（file_id 兩段式） | 各平台 | 低（暫緩） | 發送直傳 `SendDSL.File(file, filename)` 已是標準路徑（URL/路徑/bytes 直傳，見[發送方法規範 §2.1](send-method-spec.md)）；file_id 模型僅當後端天然具備時透傳，見 [API 動作標準 §3.5](api-action-spec.md) |
 | 卡片 card | Kook / 雲湖 | 低 | 結構差異大，見 §5.5 |
 | 表單 form | 雲湖 | 低 | 平台特有，保持 `{platform}_` 前綴 |
 | 媒體轉碼/大小探測 | 各平台 | 低 | 適配器內部實現，不對外標準化 |
 
-## 7. 新適配器開發者的標準 Checkl ist
+## 7. 新適配器開發者的標準 Checklist
 
-開發新適配器時，請依照此清單逐一對照實現（★ 為必須，其餘為推薦）：
+開發新適配器時，請依此清單對照實現（★ 為必須，其餘推薦）：
 
-- [ ] ★ 將事件轉換為 OneBot12 標準結構，繼承 `BaseConverter`
-- [ ] ★ 支援標準消息段的收發（text/image/mention/reply/keyboard…）
+- [ ] ★ 事件轉換為 OneBot12 標準結構，繼承 `BaseConverter`
+- [ ] ★ 標準消息段收發支援（text/image/mention/reply/keyboard…；媒體段依
+      [發送方法規範 §2.1](send-method-spec.md) 的形態分級與降級階梯處理）
 - [ ] ★ 實現 `Raw_ob12`（含標準段 → 平台結構轉換；標準 `keyboard` 段必做）
 - [ ] ★ 返回標準回應結構（`make_response`/`make_error`）
-- [ ] ★ 支援多帳號：`AccountConfigClass(BotAccountConfig)` + `_resolve_account`
+- [ ] ★ 多帳號：`AccountConfigClass(BotAccountConfig)` + `_resolve_account`
 - [ ] ★ Send 類繼承 `BaseAdapter.Send`，使用 `_apply_modifiers`/`send_context`
-- [ ] ☆ API DSL：標準動作映射到平台 API（詳見 API 動作標準）
+- [ ] ☆ Api DSL：標準動作對應到平台 API（參見 API 動作標準）
 - [ ] ☆ Request DSL：請求事件包含 `request_id` + `accept/reject`
-- [ ] ☆ 互動元件：`keyboard` 段轉換 + 互動回調標準欄位 + `.Keyboard()`/.Buttons()` 修飾器（適配器 Send 類實現）
+- [ ] ☆ 互動元件：`keyboard` 段轉換 + 互動回調標準欄位 + `.Keyboard()`/.Buttons()` 修飾器（適配器 Send 類實作）
 - [ ] ☆ EventMixin：`get_raw_event()` / `get_button_data()` 等平台擴展方法
 - [ ] ☆ 生命週期任務使用 `runtime.spawn_background`
 - [ ] ☆ 配置讀取使用 `self.cfg`

@@ -141,15 +141,35 @@
 | 類型 | 說明 | data 字段 |
 |------|------|----------|
 | `text` | 純文本 | `text: str` |
-| `image` | 圖片 | `file: str/bytes`, `url: str` |
-| `audio` | 音頻 | `file: str/bytes`, `url: str` |
-| `video` | 視頻 | `file: str/bytes`, `url: str` |
-| `file` | 文件 | `file: str/bytes`, `url: str`, `filename: str` |
+| `image` | 圖片 | `file`, `url: str` |
+| `audio` | 音頻 | `file`, `url: str` |
+| `video` | 視頻 | `file`, `url: str` |
+| `file` | 文件 | `file`, `url: str`, `filename: str` |
 | `mention` | @用戶 | `user_id: str`, `user_name: str` |
 | `reply` | 回覆 | `message_id: str` |
 | `face` | 表情 | `id: str` |
 | `location` | 位置 | `latitude: float`, `longitude: float` |
 | `keyboard` | 按鈕/內聯鍵盤 | `rows: list[list[button]]`（見 4.1.1） |
+
+**媒體段 `file` 字段格式**（發送方向，`image` / `audio` / `video` / `file` 通用）：
+
+| 形態 | 示例 | 适配器要求 |
+|------|------|-----------|
+| HTTP(S) URL | `https://example.com/a.png` | **必須**接受 |
+| 本地文件路徑 | `/tmp/a.png`、`C:\tmp\a.png` | **必須**接受 |
+| 二進制數據 | `bytes` | **必須**接受 |
+| `file://` URI / Base64 / Data URI | `file:///tmp/a.png`、`data:image/png;base64,...` | **應當**接受 |
+
+> 完整的媒體發送協議（形態判定順序、文件名推導、能力降級階梯）見
+> [發送方法規範 §2.1](send-method-spec.md#21-媒體消息發送協議image--voice--video--file)。
+
+**字段方向語義**：
+
+- `file`：**發送方向**的內容來源（上述形態）；**接收方向**由适配器填平台可取回的形態
+  （通常為可下載 URL，或 `get_file` 類動作可用的資源標識）
+- `url`：接收方向的平台回鏈（适配器轉換平台事件時盡可能填入，供模塊直接取用）；發送方向可不填
+- `filename`：`file` 段的文件名（發送方向可選，缺省時适配器按
+  [發送方法規範 §2.1.3](send-method-spec.md) 的推導順序生成；接收方向**應當**填平台原始文件名）
 
 ```json
 {
@@ -162,8 +182,8 @@
 
 ### 4.1.1 keyboard 按鈕/內聯鍵盤段（跨平台通用）
 
-按鈕/內聯鍵盤在多個平台（Telegram / 雲湖 / QQBot / Kook / Discord 等）均有對應能力，
-屬於**跨平台通用概念**，因此作為標準消息段（無平台前綴）。適配器應將標準段轉換為
+按鈕/內聯鍵盤在多個平台（Telegram / 云湖 / QQBot / Kook / Discord 等）均有對應能力，
+屬於**跨平台通用概念**，因此作為標準消息段（無平台前綴）。适配器應將標準段轉換為
 平台原生結構；平台原生擴展段（如 `telegram_inline_keyboard`）繼續保留透傳。
 
 ```json
@@ -188,14 +208,14 @@
 | `rows[][].label` | str | 是 | 按鈕顯示文本 |
 | `rows[][].type` | str | 是 | `callback`（點擊回傳數據）/ `link`（跳轉URL） |
 | `rows[][].data` | str | 是 | 回調數據（type=callback）或跳轉地址（type=link） |
-| `rows[][].*` | Any | 否 | 平台特有可選字段（如 `web_app`、`menus`），適配器按能力映射或忽略 |
+| `rows[][].*` | Any | 否 | 平台特有可選字段（如 `web_app`、`menus`），适配器按能力映射或忽略 |
 
-**適配器轉換參考**（完整映射與互動回調事件標準見 [跨平台互動組件標準](standardization-guide.md)）：
+**适配器轉換參考**（完整映射與交互回調事件標準見 [跨平台交互組件標準](standardization-guide.md)）：
 
 | 平台 | 標準段 → 平台原生 |
 |------|------------------|
 | Telegram | `inline_keyboard`：`[{text, callback_data \| url}]` |
-| 雲湖 | `buttons`：`[{label, action_type: 2=回調 \| 1=跳轉, ...}]` |
+| 云湖 | `buttons`：`[{label, action_type: 2=回調 \| 1=跳轉, ...}]` |
 | QQBot | `keyboard.content.rows`：`[{label, type: 2=回調 \| 0=跳轉, data}]`（需 markdown 類型消息） |
 | Kook | 卡片 action-group 模塊 |
 | Discord | components：`action_row` + `buttons`（custom_id/url） |
@@ -205,7 +225,7 @@
 平台特有的消息段需要添加平台前綴：
 
 ```json
-// 雲湖 - 表單
+// 云湖 - 表單
 {"type": "yunhu_form", "data": {"form_id": "123456", "form_name": "報名表"}}
 
 // Telegram - 貼紙
@@ -214,8 +234,8 @@
 
 **擴展消息段要求**：
 1. **data 內部字段不加前綴**：`{"type": "yunhu_form", "data": {"form_id": "..."}}` 而非 `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
-2. **提供降級方案**：模組可能不識別擴展消息段，適配器應在 `alt_message` 中提供文本替代
-3. **文件完整**：每個擴展消息段必須在適配器文件中說明 `type`、`data` 結構和使用場景
+2. **提供降級方案**：模塊可能不識別擴展消息段，适配器應在 `alt_message` 中提供文本替代
+3. **文檔完備**：每個擴展消息段必須在适配器文檔中說明 `type`、`data` 結構和使用場景
 
 ## 5. 未知事件處理
 

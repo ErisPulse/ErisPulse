@@ -74,17 +74,20 @@ ErisPulse 採用 OneBot12 作為核心事件標準，並在此基礎上進行了
 
 ## 標準遵循檢查清單
 
+
 ### 事件轉換
+
 
 - [ ] 所有標準欄位已正確映射
 - [ ] 平台特有欄位已添加前綴
 - [ ] 時間戳已轉換為10位秒級
-- [ ] 原始數據保存在 {platform}_raw
+- [ ] 原始資料保存在 {platform}_raw
 - [ ] 原始事件類型保存在 {platform}_raw_type
 - [ ] 消息段的 alt_message 已生成
 - [ ] 請求事件包含 request_id 欄位
 
 ### API 回應
+
 
 - [ ] 包含 status 欄位
 - [ ] 包含 retcode 欄位
@@ -95,16 +98,29 @@ ErisPulse 採用 OneBot12 作為核心事件標準，並在此基礎上進行了
 
 ### 發送方法命名
 
+
 - [ ] 使用大駝峰命名法（PascalCase）
-- [ ] 返回 Task 對象
-- [ ] 修飾方法返回 self
+- [ ] 回傳 Task 物件
+- [ ] 修飾方法回傳 self
 - [ ] 參數命名符合規範
+
+### 媒體發送（Image / Voice / Video / File）
+
+
+- [ ] `file` 參數必須全部支援形態：HTTP(S) URL / 本地路徑 / `bytes`
+- [ ] 形態判定順序符合規範（bytes → URL → `file://` → 路徑）
+- [ ] `File` 的檔案名稱按推導順序生成（顯式 `filename` > URL basename > 路徑 basename > 平台預設）
+- [ ] 平台媒體限制已在適配器文件中聲明
+- [ ] 不支援的媒體類型按降級階梯處理（近緣類型降級或 `retcode=10002`，不拋出異常、不靜默丟棄）
+
+> 詳細協定見 [發送方法規範 §2.1](send-method-spec.md#21-媒體消息發送協定image--voice--video--file)
 
 ### 請求操作
 
-- [ ] HandleRequest 類已實現 _do_accept / _do_reject
-- [ ] 操作返回標準 API 回應格式
-- [ ] 不支援的操作返回 retcode=10002
+
+- [ ] HandleRequest 類已實作 _do_accept / _do_reject
+- [ ] 操作回傳標準 API 回應格式
+- [ ] 不支援的操作回傳 retcode=10002
 
 ## 相關文件
 

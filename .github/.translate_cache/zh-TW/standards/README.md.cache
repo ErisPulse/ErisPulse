@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "c7680c2ede1516963d4bf565f5fe81f6",
-  "file_hash": "c7680c2ede1516963d4bf565f5fe81f6",
-  "translated_at": "2026-09-12T10:39:58.125559",
+  "hash": "38e0837f5721fcb52a7ea7858e152850",
+  "file_hash": "38e0837f5721fcb52a7ea7858e152850",
+  "translated_at": "2026-09-29T05:41:44.756982",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -26,8 +26,8 @@
       "translation": "## 遵循標準的好處\n\n### 對適配器開發者\n\n- 清晰的轉換規則\n- 統一的回應格式\n- 易於調試和測試\n\n### 對模組開發者\n\n- 一致的事件介面\n- 可預測的 API 行為\n- 簡化的跨平台開發\n\n### 對最終用戶\n\n- 穩定的系統行為\n- 統一的訊息格式\n- 良好的相容性"
     },
     {
-      "hash": "12e1dbdd4343a9c452ab87f8b832247e",
-      "translation": "## 標準遵循檢查清單\n\n### 事件轉換\n\n- [ ] 所有標準欄位已正確映射\n- [ ] 平台特有欄位已添加前綴\n- [ ] 時間戳已轉換為10位秒級\n- [ ] 原始數據保存在 {platform}_raw\n- [ ] 原始事件類型保存在 {platform}_raw_type\n- [ ] 消息段的 alt_message 已生成\n- [ ] 請求事件包含 request_id 欄位\n\n### API 回應\n\n- [ ] 包含 status 欄位\n- [ ] 包含 retcode 欄位\n- [ ] 包含 data 欄位\n- [ ] 包含 message_id 欄位\n- [ ] 包含 message 欄位\n- [ ] 回傳碼遵循 OneBot12 規範\n\n### 發送方法命名\n\n- [ ] 使用大駝峰命名法（PascalCase）\n- [ ] 返回 Task 對象\n- [ ] 修飾方法返回 self\n- [ ] 參數命名符合規範\n\n### 請求操作\n\n- [ ] HandleRequest 類已實現 _do_accept / _do_reject\n- [ ] 操作返回標準 API 回應格式\n- [ ] 不支援的操作返回 retcode=10002"
+      "hash": "2cb750de3a1bfa5b42a4d6d7e693bcc2",
+      "translation": "## 標準遵循檢查清單\n\n\n### 事件轉換\n\n\n- [ ] 所有標準欄位已正確映射\n- [ ] 平台特有欄位已添加前綴\n- [ ] 時間戳已轉換為10位秒級\n- [ ] 原始資料保存在 {platform}_raw\n- [ ] 原始事件類型保存在 {platform}_raw_type\n- [ ] 消息段的 alt_message 已生成\n- [ ] 請求事件包含 request_id 欄位\n\n### API 回應\n\n\n- [ ] 包含 status 欄位\n- [ ] 包含 retcode 欄位\n- [ ] 包含 data 欄位\n- [ ] 包含 message_id 欄位\n- [ ] 包含 message 欄位\n- [ ] 回傳碼遵循 OneBot12 規範\n\n### 發送方法命名\n\n\n- [ ] 使用大駝峰命名法（PascalCase）\n- [ ] 回傳 Task 物件\n- [ ] 修飾方法回傳 self\n- [ ] 參數命名符合規範\n\n### 媒體發送（Image / Voice / Video / File）\n\n\n- [ ] `file` 參數必須全部支援形態：HTTP(S) URL / 本地路徑 / `bytes`\n- [ ] 形態判定順序符合規範（bytes → URL → `file://` → 路徑）\n- [ ] `File` 的檔案名稱按推導順序生成（顯式 `filename` > URL basename > 路徑 basename > 平台預設）\n- [ ] 平台媒體限制已在適配器文件中聲明\n- [ ] 不支援的媒體類型按降級階梯處理（近緣類型降級或 `retcode=10002`，不拋出異常、不靜默丟棄）\n\n> 詳細協定見 [發送方法規範 §2.1](send-method-spec.md#21-媒體消息發送協定image--voice--video--file)\n\n### 請求操作\n\n\n- [ ] HandleRequest 類已實作 _do_accept / _do_reject\n- [ ] 操作回傳標準 API 回應格式\n- [ ] 不支援的操作回傳 retcode=10002"
     },
     {
       "hash": "e3c1e79fb398b2f460229813e0179b94",

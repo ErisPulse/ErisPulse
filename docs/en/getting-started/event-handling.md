@@ -465,35 +465,36 @@ In testing, `ErisPulse-Testing`'s `dispatch()` directly returns this decision ch
 
 Additionally, `ErisPulse.runtime` provides two sets of diagnostic APIs: `explain_module(module name)` answers "why the module wasn't loaded" (not registered / lazy-loaded / disabled by configuration / missing dependencies / SDK version not met, each item provides a reason), `explain_event(event)` answers "why the event wasn't responded to" (adapter not registered / identity blacklisted / module session blocked / command not matched); combined with `format_report()` to render human-readable conclusions.
 
-## Scope Filtering: Why My Module Didn't Receive Messages
+## Scope Filtering: Why Didn't My Module Receive the Message?
 
-After an event arrives, there are two **silent** filters (neither replies nor errors):
+After an event arrives, there are two **silent** filters (neither reply nor error):
 
-1. **Identity Dimension** (`ErisPulse.scope.identity`): When an event enters the distribution entry point, it is judged whether to receive it based on user > group > bot > adapter.
-   Events rejected by this dimension are **entirely discarded**, and no handler (including the command dispatcher) is triggered.
-2. **Module Dimension** (`ErisPulse.scope`): When an event reaches a module's handler/command, it is judged based on session > bot > platform whether the module is available, and **skips silently** if it does not pass.
+1. **Identity dimension** (`ErisPulse.scope.identity`): When an event enters the distribution entry point, it is determined whether to accept or reject based on User > Group > Bot > Adapter.
+   The rejected **entire event** is directly discarded, and no handler (including the command dispatcher) will be triggered.
+2. **Module dimension** (`ErisPulse.scope`): When an event reaches a module's handler/command, it is determined whether the module is available based on Session > Bot > Platform.
+   If it **fails the check, it is silently skipped**.
 
 ```toml
-# Example 1: All messages in a certain group are not propagated
+# Example 1: No message propagation in a specific group
 [ErisPulse.scope.identity.sessions.onebot11."group_123"]
 deny = true
 
-# Example 2: Blocking MyModule in a certain bot
+# Example 2: Blocking MyModule on a specific Bot
 [ErisPulse.scope.bots.onebot11."123456"]
 blocked = ["MyModule"]
 ```
 
-At this point, when messages from that group arrive, `MyModule`'s command and event handlers **will not be scheduled**. This is not a bug, but a filtering mechanism—when troubleshooting "module not responding," first check the identity and module binding of the scope.
+At this point, when a message arrives from that group, `MyModule`'s command and event handlers **will not be scheduled**. This is not a bug but a filtering mechanism—when troubleshooting why a module is not responding, first check the identity and module binding of the scope.
 
-- Filter logs are only visible at the **TRACE** level (`core.scope.identity_denied` / `core.scope.denied`), and are not visible at the default INFO level
-- Framework-level handlers (such as the command dispatcher `scope_exempt=True`) are not affected by the **module dimension**, but are affected by the **identity dimension** (the entire event has been discarded)
-- Before command execution, there is a third filter: command user ACL (rejects with "insufficient permission," see the previous section)
-- The fourth filter is **event overwriting** (see the next section)
+- Filter logs are only visible at **TRACE** level (`core.scope.identity_denied` / `core.scope.denied`); default INFO level does not show any traces.
+- Framework-level handlers (such as the command dispatcher with `scope_exempt=True`) are not affected by the **module dimension** but are affected by the **identity dimension** (the entire event has already been discarded).
+- There is a third filter before command execution: command user ACL (replies with "Permission denied" when rejected, see previous section).
+- The fourth filter is **event overwriting** (see next section).
 
 > [!NOTE]
-> **Relationship between scope filtering and event claiming (claim)**: The two silent filters occur before the handler is **scheduled**—handlers that are filtered out do not have a chance to execute, and naturally do not participate in the `event.done()` / `mark_processed()` claiming status. Whether an event has been claimed is determined only by **actual execution** of the handler (command match claims, reply match claims, explicit calls); event rejection itself neither claims nor blocks (silently skips, the message continues through the rest of the dispatch chain).
+> **The relationship between scope filtering and event claiming (claim)**: Both silent filters occur before the handler is scheduled—the filtered-out handlers have no chance to execute and therefore do not participate in the claim status of `event.done()` / `mark_processed()`. Whether an event has been claimed is determined only by the **actually executed** handler (command matching claims, reply matching claims, explicit calls); scope rejection neither claims nor blocks (silently skipped, the message continues through the remaining distribution chain).
 
-> Scope configuration, matching syntax, and runtime API are detailed in [Scope](../../advanced/scope.md).
+> For scope configuration, matching syntax, and runtime API, see [Scope](../advanced/scope.md).
 
 ## Event Overwriting: Overwrite Any Event Type Behavior Without Modifying Module Code
 
