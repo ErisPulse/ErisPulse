@@ -99,7 +99,7 @@
 | 類型 | 數量 |
 |------|------|
 | 適配器 | 6 |
-| 配置系統 | 10 |
+| 配置系統 | 11 |
 | 事件系統 | 7 |
 | CLI | 3 |
 | 儲存 | 3 |
@@ -108,7 +108,8 @@
 | 客戶端 | 1 |
 | 運行時 | 1 |
 
-> 注：單條 Bug 可歸屬多個類型，上表按主類型統計。
+> 注：單條 Bug 可歸屬多個類型，上表按主類型統計。  
+> 注：BUG-028 / BUG-031 編號空缺（登記時廢棄，為保持既有編號穩定不回收重排）。  
 
 ---
 
@@ -136,10 +137,10 @@
 
 ### [BUG-002] Init 命令適配器配置路徑類型錯誤
 
-**問題**: 使用 `ep init` 命令進行交互式初始化時，選擇配置適配器會出現類型錯誤：
+**問題**: 使用 `ep init` 命令進行互動式初始化時，選擇配置適配器會出現類型錯誤：
 
 ```
-交互式初始化失敗: unsupported operand type(s) for /: 'str' and 'str'
+互動式初始化失敗: unsupported operand type(s) for /: 'str' and 'str'
 ```
 
 **原因**: 2.3.7 版本調整配置文件路徑時，方法參數類型不一致。`_configure_adapters_interactive_sync` 接收 `str` 類型參數，但內部使用 `Path` 的 `/` 操作符拼接路徑。
@@ -471,7 +472,7 @@
 - 多協程並發調用 `ClientWebSocket.receive()` 時 aiohttp 抛出 `Concurrent call to receive() is not allowed`
 - `_get_http_session()` / `_get_ws_session()` 並發調用可能創建多個 session 且 `_drain_sessions()` 未關閉舊連接，造成連接泄漏
 - `request()` 的異常捕獲順序錯誤：`except ClientConnectionError`（ErisPulse 異常）永不觸發，aiohttp 的連接錯誤被通用 `except Exception` 接住，導致"連接重試 + session 重建"邏輯（死代碼）從未執行
-- `send_json()` 忽略 `mode="binary"` 參數；`_get_ws_session()` 未傳入預設請求頭
+- `send_json()` 忽略 `mode="binary"` 參數；`_get_ws_session()` 未傳入默認請求頭
 
 **原因**: 客戶端初次實現（2.4.6-dev.5）缺少並發保護與異常分類，對 aiohttp 異常體系與 ErisPulse 自定義異常的繼承關係處理不當。
 
@@ -483,7 +484,7 @@
 1. 新增 `_recv_lock` 序列化所有 `receive()` / `receive_text()` / `receive_bytes()` 調用
 2. 新增 `_session_lock` 保護 session 創建；`_drain_sessions()` 改為異步方法並真正關閉舊 session
 3. 重構 `request()` 異常捕獲順序：`asyncio.TimeoutError` → `aiohttp.ClientConnectionError`（觸發 session 重建）→ `aiohttp.ClientError` → `ClientError`（透傳）→ `Exception`
-4. 修復 `send_json()` 的 mode 處理、`_get_ws_session()` 預設請求頭透傳、`close()` 的並發競態、`HttpResponse.__aexit__` 重複 `release()`
+4. 修復 `send_json()` 的 mode 處理、`_get_ws_session()` 默認請求頭透傳、`close()` 的並發競態、`HttpResponse.__aexit__` 重複 `release()`
 
 **修復日期**: 2026/06/12
 
@@ -567,7 +568,7 @@
 
 ---
 
-### [BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）
+### [BUG-022] _resolve_account() 賬戶解析迴歸（_accounts_data 未填充）
 
 **問題**: 2.5.2 配置系統重構後，聲明了 `AccountConfigClass` 的多賬戶適配器在調用 `wait_reply`、`reply` 等需要發送消息的方法時，報錯 `ValueError("未聲明 AccountConfigClass，無法解析賬戶")`。即使適配器正確配置了多賬戶資訊，賬戶解析仍然失敗。
 
@@ -630,12 +631,12 @@ if self.AccountConfigClass is not None:
 
 **問題**: 調用 `storage.set()` 寫入包含大純數字段（如 QQ 群號 `871684833`）的嵌套鍵路徑時，進程被容器 OOM Kill（退出碼 -9），服務直接崩潰無法恢復。
 
-**原因**: `_set_nested_value` 的遞歸實現中，嵌套鍵路徑裡的純數字段被 `isdigit()` 誤判為列表索引，觸發 `current.extend([None] * (index - len(current) + 1))`，試圖分配數億元素的列表，瞬間耗盡內存。
+**原因**: `_set_nested_value` 的遞歸實現中，嵌套鍵路徑裡的純數字段被 `isdigit()` 误判為列表索引，觸發 `current.extend([None] * (index - len(current) + 1))`，試圖分配數億元素的列表，瞬間耗盡內存。
 
 **根因鏈路**:
 ```
 鍵路徑包含純數字段（如群號 871684833）
-  → isdigit() 誤判為數組索引
+  → isdigit() 误判為數組索引
     → extend([None] * (871684833 - len(current) + 1))
       → 試圖分配數億元素
         → 內存耗盡 → 容器 OOM Kill（退出碼 -9）
@@ -706,7 +707,7 @@ await sdk.storage.aset("groups.871684833.name", "某群")
 
 **問題**: 在群通知事件（如成員加群 `group_member_increase`）中調用 `event.reply()`，消息被發送到觸發事件的用戶私聊，而非事件所在的群。好友通知事件同理，回覆目標可能錯亂。
 
-**原因**: `infer_receive_type()` 將事件的 `detail_type` 直接當作會話類型返回。對於 message 事件這是正確的（`detail_type` 值 `private`/`group` 即會話類型），但 notice/request 事件的 `detail_type` 是語義子類型（如 `group_member_increase`、`friend_increase`），不是會話類型。後續的 `convert_to_send_type()` 和 `get_id_field()` 在映射表中找不到該值，回退到預設的 `"user"` / `"user_id"`，導致回覆目標錯亂。
+**原因**: `infer_receive_type()` 將事件的 `detail_type` 直接當作會話類型返回。對於 message 事件這是正確的（`detail_type` 值 `private`/`group` 即會話類型），但 notice/request 事件的 `detail_type` 是語義子類型（如 `group_member_increase`、`friend_increase`），不是會話類型。後續的 `convert_to_send_type()` 和 `get_id_field()` 在映射表中找不到該值，回退到默認的 `"user"` / `"user_id"`，導致回覆目標錯亂。
 
 **根因鏈路**:
 ```
@@ -753,7 +754,7 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 **修復版本**: 2.7.0-dev.5
 
-**修復內容**: 新增 `_rate_limit_windows: dict[str, int]` 按 store key 記錄每路由實際窗口；`_apply_rate_limit` 首次創建條目時寫入窗口；`_cleanup_expired_rate_limits` 改為按各 key 自身窗口清理（缺失時回退預設值）；清理刪除條目與 `stop()` 時同步維護兩個字典。
+**修復內容**: 新增 `_rate_limit_windows: dict[str, int]` 按 store key 記錄每路由實際窗口；`_apply_rate_limit` 首次創建條目時寫入窗口；`_cleanup_expired_rate_limits` 改為按各 key 自身窗口清理（缺失時回退默認值）；清理刪除條目與 `stop()` 時同步維護兩個字典。
 
 **修復日期**: 2026/07/31
 
@@ -767,7 +768,7 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 ### [BUG-029] 配置監聽任務廣播半成品 TOML 並靜默吞掉異常
 
-**問題**: 用戶手動編輯 `config.toml` 保存到一半（產生瞬時的語法錯誤）時，配置監聽後台線程會檢測到 mtime 變化、重載配置，但加載失敗後仍以空配置 `{}` 發射 `config.updated` 事件，導致適配器/模塊的 `on_config_update` 收到空配置、誤以為所有配置項被清空而回退預設值。此外監聽循環用 `except Exception: pass` 靜默吞掉所有異常，watcher 故障無從排查。
+**問題**: 用戶手動編輯 `config.toml` 保存到一半（產生瞬時的語法錯誤）時，配置監聽後台線程會檢測到 mtime 變化、重載配置，但加載失敗後仍以空配置 `{}` 廣播 `config.updated` 事件，導致適配器/模塊的 `on_config_update` 收到空配置、誤以為所有配置項被清空而回退預設值。此外監聽循環用 `except Exception: pass` 靜默吞掉所有異常，watcher 故障無從排查。
 
 **原因**: 兩個缺陷疊加：
 1. `_load_config` 在 TOML 語法錯誤/權限錯誤時把 `self._cache` 擦寫為 `{}`，但後台監聽線程 `_watch_loop` 與緩存超時路徑 `_check_cache_validity` 都在調用 `_load_config()` 後**無條件**執行 `_emit_config_updated()`，把"加載失敗產生的空緩存"當作真實變更廣播。
@@ -778,8 +779,8 @@ _apply_rate_limit 解析 window=3600（100/hour）
 用戶保存到一半 → TOML 語法錯誤
   → _load_config() 擦寫 _cache = {}
     → _watch_loop 無條件 _emit_config_updated(new_config={})
-      → 適配器/模塊 on_config_update 收到空配置
-        → 誤判配置被清空，回退預設值
+      → 适配器/模块 on_config_update 收到空配置
+        → 误判配置被清空，回退默认值
 ```
 
 **影響版本**: 2.6.2-dev.1 - 2.7.0-dev.4
@@ -787,13 +788,13 @@ _apply_rate_limit 解析 window=3600（100/hour）
 **修復版本**: 2.7.0-dev.5
 
 **修復內容**:
-1. `_load_config` 改為返回 `bool`；TOML 語法錯誤/權限/其他錯誤時**保留上次有效緩存**（不再擦寫為 `{}`），僅記錄診斷日誌並返回 `False`
-2. `_watch_loop` 與 `_check_cache_validity` 僅在 `_load_config()` 返回 `True` 時才發射 `config.updated`
-3. `_watch_loop` 的 `except Exception` 改為以 warning 級別記錄（新增 i18n 鍵 `core.config.watcher_error`，五語言同步）
+1. `_load_config` 改為返回 `bool`；TOML 语法错误/权限/其他错误时**保留上次有效缓存**（不再擦写为 `{}`），仅记录诊断日志并返回 `False`
+2. `_watch_loop` 与 `_check_cache_validity` 仅在 `_load_config()` 返回 `True` 时才发射 `config.updated`
+3. `_watch_loop` 的 `except Exception` 改为以 warning 级别记录（新增 i18n 键 `core.config.watcher_error`，五语言同步）
 
 **修復日期**: 2026/07/31
 
-**回歸測試**: `tests/unit/test_unit_config.py` → `test_malformed_toml_preserves_last_valid_cache`、`test_permission_denied_logs_clear_message`（更新為驗證保留緩存 + 返回 False）
+**回歸測試**: `tests/unit/test_unit_config.py` → `test_malformed_toml_preserves_last_valid_cache`、`test_permission_denied_logs_clear_message`（更新为验证保留缓存 + 返回 False）
 
 **嚴重性**: 🟡 中等
 
@@ -803,16 +804,16 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 ### [BUG-030] 配置 watcher 競態導致 setConfig 延遲寫入靜默丟數據
 
-**問題**: 多個用戶報告使用 `config.setConfig(key, value)`（預設 `immediate=False`）後，自己的模塊配置未寫入 `config.toml`，而其它模塊的配置正常。設置 `immediate=True`（強制刷盤）可避開。表現為：運行期寫入的配置在下次重啟後丟失，啟動期模板生成的配置保留。
+**問題**: 多個用戶報告使用 `config.setConfig(key, value)`（預設 `immediate=False`）後，自己的模塊配置未寫入 `config.toml`，而其它模塊的配置正常。設置 `immediate=True`（強制刷盤）可避免。表現為：運行期寫入的配置在下次重啟後丟失，啟動期模板生成的配置保留。
 
 **原因**: 兩個疊加缺陷：
-1. **邏輯缺陷**：`_watch_loop` 在 `_check_file_change()` 返回 `True` 時無條件 `_dirty_keys.clear()` 丟棄所有待寫鍵。但 `_check_file_change()` 僅用 `!=` 對比 mtime，框架自身的 `_flush_config` 寫盤也會改變 mtime——雖然 `_flush_config` 在寫盤後更新 `_config_mtime`，但 watcher 線程在文件寫入與 mtime 賦值之間（以及粗粒度文件系統上）仍可能觀測到 mtime 差值，誤判為"外部修改"並清空全部待寫鍵。
+1. **邏輯缺陷**：`_watch_loop` 在 `_check_file_change()` 返回 `True` 時無條件 `_dirty_keys.clear()` 丟棄所有待寫鍵。但 `_check_file_change()` 僅用 `!=` 對比 mtime，框架自身的 `_flush_config` 寫盤也會改變 mtime——雖然 `_flush_config` 在寫盤後更新 `_config_mtime`，但 watcher 線程在文件寫入與 mtime 給值之間（以及粗粒度文件系統上）仍可能觀測到 mtime 差值，誤判為"外部修改"並清空全部待寫鍵。
 2. **線程缺陷**：`_watch_loop` 操作 `_write_timer`/`_dirty_keys` 時未持有 `_lock`，與 `setConfig`（持鎖寫 `_dirty_keys`）、`_schedule_write`（持鎖寫 `_write_timer`）存在數據競爭。
 
 **根因鏈路**:
 ```
 模塊A setConfig(immediate=True) → flush 寫盤，mtime 變化
-  → 用戶模塊 setConfig(immediate=False) → 進入 _dirty_keys，5s 後刷盤
+  → 用戶模塊 setConfig(immediate=False) → 進入 _dirty_keys，5s 后刷盤
     → watcher 輪詢，_check_file_change 觀測到先前自身寫入的 mtime 差值
       → _dirty_keys.clear() → 用戶模塊的待寫鍵被靜默丟棄
         → 重啟後配置缺失
@@ -824,7 +825,7 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 **修復內容**:
 1. 新增 `_last_self_write_mtime` 字段，`_flush_config` 寫盤後同步記錄；`_check_file_change` 在 mtime 變化時先對比該值，匹配則判定為自身寫入返回 `False`
-2. `_watch_loop` 整段持 `_lock`；真正外部修改時保留 `_dirty_keys`（merge 語義），下次 flush 與外部內容合併（臟鍵優先），不再 `clear()`
+2. `_watch_loop` 整段持 `_lock`；真正外部修改時保留 `_dirty_keys`（merge 語義），下次 flush 與外部內容合并（臟鍵優先），不再 `clear()`
 3. `getConfig`/`_check_cache_validity` 路徑不受影響（其 reload 本就不清臟鍵）
 
 **修復日期**: 2026/08/06
@@ -837,21 +838,21 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 ---
 
-### [BUG-032] 配置延遲刷盤期間「寫后立读」讀到舊值
+### [BUG-032] 配置延遲刷盤期間「寫后立讀」讀到舊值
 
 **問題**: `config.setConfig()`（預設 `immediate=False` 延遲約 5 秒刷盤）寫入點分鍵後，立即讀取其**父級/祖先節點**（如 `set_erispulse_section("scope.actions.MyModule", {...})` 後調用 `get_erispulse_config()`）返回的是舊值，寫入的子鍵"消失"，直到刷盤後才可見。作用域配置熱更新等"寫-讀-寫"場景受影響（2.8.0 測試插件 `/t_section` 用例暴露）。
 
-**原因**: `setConfig` 將點分鍵以**扁平形式**存入待寫隊列 `_dirty_keys`，僅 `getConfig` 的**精確鍵查詢**命中待寫隊列；樹形路徑查詢（`getConfig("ErisPulse.scope")`）只走緩存樹，不疊加待寫值——延遲刷盤（`_flush_config` 才將臟鍵合併進緩存並清隊列）期間形成讀-你-寫斷層。
+**原因**: `setConfig` 將點分鍵以**扁平形式**存入待寫隊列 `_dirty_keys`，僅 `getConfig` 的**精確鍵查詢**命中待寫隊列；樹形路徑查詢（`getConfig("ErisPulse.scope")`）只走緩存樹，不叠加待寫值——延遲刷盤（`_flush_config` 才將臟鍵合并進緩存並清隊列）期間形成讀-你-寫斷層。
 
 **影響版本**: 2.6.0 - 2.8.0-dev.1
 
 **修復版本**: 2.8.0-dev.1
 
-**修復內容**: `getConfig` 引入待寫疊加語義——① 精確命中待寫鍵直接返回（原有行為不變）；② 待寫鍵是查詢鍵的祖先 → 取最長待寫祖先，在其值子樹內解析剩餘路徑；③ 待寫鍵是查詢鍵的後代 → 構建疊加子樹（`_dirty_overlay`）與緩存子樹深合併（`_deep_merge`，override 优先，不修改原緩存對象）。無待寫鍵時走原快路徑，零額外開銷。
+**修復內容**: `getConfig` 引入待寫叠加語義——① 精確命中待寫鍵直接返回（原有行為不變）；② 待寫鍵是查詢鍵的祖先 → 取最長待寫祖先，在其值子樹內解析剩餘路徑；③ 待寫鍵是查詢鍵的後代 → 構建叠加子樹（`_dirty_overlay`）與緩存子樹深合并（`_deep_merge`，override 优先，不修改原缓存对象）。无待写键时走原快路径，零额外开销。
 
 **修復日期**: 2026/09/04
 
-**回歸測試**: `tests/unit/test_unit_config.py` → `test_get_config_overlays_dirty_descendant`、`test_get_config_overlay_merges_with_cache_siblings`、`test_get_config_overlay_new_branch`、`test_get_config_dirty_ancestor_query`、`test_get_config_dirty_exact_key_still_wins`
+**回歸測試**: `tests/unit/test_unit_config.py` → `test_get_config_overlays_dirty_descendant`、`test_get_config_overlay_merges_with_cache_siblings`、`test_get_config_dirty_ancestor_query`、`test_get_config_dirty_exact_key_still_wins`
 
 **嚴重性**: 🟡 中等
 
@@ -925,7 +926,7 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 **原因**: 根因链路：`_flush_config` / `setConfigTemplate` 使用**固定名**臨時文件 `config.toml.tmp` 承載新內容，`write()` 後不 `fsync` 直接 `rename()`。兩個 ErisPulse 實例共享同一配置目錄時，B 實例 `open("w")` 可能 **truncate** A 實例正在寫的臨時文件 → A rename 時目標已被 B 取走或內容被截斷，報 ENOENT（即用戶日誌中的連續兩條錯誤）。已報告案例中僅表現為寫入失敗告警（舊配置保留）；若交錯時序更極端，rename 可能輸出空/半截的 `config.toml`（屬潛在風險，尚未在真實環境爆發）。單實例場景下 ext4 延遲分配同樣存在「rename 元數據先於數據塊落盤」的崩潰窗口（SIGKILL / 斷電）。`_file_lock` 為進程內 `threading.RLock`，對跨進程/跨容器寫入無約束。
 
-**影响版本**: 2.2.0-dev.0 - 2.8.0
+**影響版本**: 2.2.0-dev.0 - 2.8.0
 
 **修復版本**: 2.8.1
 
@@ -933,11 +934,11 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 **修復日期**: 2026/09/13
 
-**复现步骤**: ① 兩個容器掛載同一宿主機 `config/` 目錄並同時運行 ErisPulse；② 任一實例觸發配置寫入（如模塊註冊預設配置）；③ 觀察日誌出現 ENOENT 寫失敗告警，本次寫入被丟棄（舊配置保留）。
+**复现步骤**: ① 两个容器挂载同一宿主机 `config/` 目录并同时运行 ErisPulse；② 任一实例触发配置写入（如模块注册默认配置）；③ 观察日志出现 ENOENT 写失败告警，本次写入被丢弃（旧配置保留）。
 
-**关联**: 用戶報告（1Panel 容器 ×2）
+**关联**: 用户报告（1Panel 容器 ×2）
 
-**回歸測試**: `tests/unit/test_unit_config_atomic_write.py`（內容完整寫入/無臨時文件殘留/寫失敗保原文件/雙實例併發寫入文件始終合法/鎖文件創建/多實例告警/遷移原子寫入）
+**回歸測試**: `tests/unit/test_unit_config_atomic_write.py`（內容完整寫入/無臨時文件殘留/寫失敗保原文件/雙實例並發寫入文件始終合法/鎖文件創建/多實例告警/遷移原子寫入）
 
 **嚴重性**: 🟢 輕微
 
@@ -945,13 +946,13 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 ---
 
-### [BUG-037] 空格子命令名註冊后永远无法被触发
+### [BUG-037] 空格子命令名注册后永远无法被触发
 
-**問題**: 以空格分隔的多 token 命令名註冊子命令（如 `@command("admin add")`）後，命令可正常註冊並出現在幫助列表中，但用戶發送 `/admin add` 時機器人永遠無響應——輸入被父 token 命令匹配為 `admin` + 參數 `["add"]`；若父 token 也未註冊則完全無響應。僅當使用點分命名（`admin.reload`，整體為單 token）時可避開。
+**問題**: 以空格分隔的多 token 命令名注册子命令（如 `@command("admin add")`）后，命令可正常注册并出现在帮助列表中，但用户发送 `/admin add` 时机器人永远无响应——输入被父 token 命令匹配为 `admin` + 参数 `["add"]`；若父 token 也未注册则完全无响应。仅当使用点分命名（`admin.reload`，整体为单 token）时可规避。
 
-**原因**: 根因链路：`CommandHandler.__call__` 將任意命令名（含空格形式）原樣存入平鋪的 `self.commands` 字典 → 分發階段 `_try_execute_command` 僅取消息首 token 匹配（`cmd_name = parts[0]`）→ 多 token 命令名作為字典鍵永遠查不到。註冊與匹配兩階段對命令名的空间假设不一致，且无任何注册期告警（静默失效）。
+**原因**: 根因链路：`CommandHandler.__call__` 将任意命令名（含空格形式）原样存入平铺的 `self.commands` 字典 → 分发阶段 `_try_execute_command` 仅取消息首 token 匹配（`cmd_name = parts[0]`）→ 多 token 命令名作为字典键永远查不到。注册与匹配两阶段对命令名的空间假设不一致，且无任何注册期告警（静默失效）。
 
-**影响版本**: 引入命令系统起 - 2.8.0
+**影響版本**: 引入命令系统起 - 2.8.0
 
 **修復版本**: 2.8.1
 
@@ -959,10 +960,58 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 **修復日期**: 2026/09/13
 
-**复现步骤**: ① 模块内 `@command("admin add")` 注册；② 发送 `/admin add x`；③ 修復前无响应（或被同时注册的 `/admin` 以参数形式接住），修復后 `admin add` 触发且 `get_command_args()` 为 `["x"]`。
+**复现步骤**: ① 模块内 `@command("admin add")` 注册；② 发送 `/admin add x`；③ 修复前无响应（或被同时注册的 `/admin` 以参数形式接住），修复后 `admin add` 触发且 `get_command_args()` 为 `["x"]`。
 
 **回歸測試**: `tests/unit/test_unit_command_subcommand.py`（最长前缀匹配/仅子命令触发/三级嵌套/大小写敏感两模式/单与多 token 别名/事件载荷全名/生命周期钩子全名/权限继承六例/ACL glob 全名/master/注销回落与缓存重算）
 
 **嚴重性**: 🟡 中等
 
 **類型**: 事件系統
+
+---
+
+### [BUG-038] persist=False 运行时绑定被持久化写入顺带落盘，模块卸载后从磁盘"复活"
+
+**問題**: 以 `scope.set(path, value, persist=False)` 写入的运行时绑定（文档承诺不落盘、进程重启即失效、模块卸载时清理）会随任意一次无关的 `persist=True` 写入（默认值，如模块 `set_module` / WebUI 保存配置）被差量写入用户 `config.toml`；此后即使模块卸载注销了运行时绑定，下次配置重载时该绑定仍从磁盘"复活"继续生效、进程重启后依然存在——与"运行时绑定不落盘"的语义契约相反，且极难排查。
+
+**原因**: 根因链路：`ScopeManager.set()` 先把值写入内存配置树 `_data`（运行时绑定同样直接写入 `_data`）→ 持久化分支对**整棵 `_data`** 做深拷贝快照提交给 `update_erispulse_config` 差量落盘 → 快照中混入了 `persist=False` 绑定的值。`delete(persist=True)` 同源：把 `_data` 的活引用（`parent` 节点）交给延迟写脏队列，延迟刷盘期间对该节点下兄弟键的运行时修改会被一并落盘，且活引用在脏队列滞留期间存在跨写污染窗口。
+
+**影響版本**: 2.8.0-dev.2 - 2.9.0-dev.0
+
+**修復版本**: 2.9.0-dev.1
+
+**修復內容**: 引入持久化基线 `_persisted_tree`（配置树重建时以磁盘加载、校验后的树刷新）作为磁盘真相镜像：`set(persist=True)` 只在基线上应用本次变更后提交差量，运行时绑定永不进入持久化内容；"写后立读"改用内存最终态快照直接恢复，不再经 `_apply_tree` 重建以免污染基线。`delete(persist=True)` 同口径：在基线上应用删除并把基线子树的深拷贝交给持久化层；`set_action` 整体替换语义先按同口径删除再写入，旧规则键不残留在持久化内容中。
+
+**修復日期**: 2026/09/27
+
+**复现步骤**: ① 模块内执行 `scope.set("bots.p.debug_mode", {"blocked": ["X"]}, persist=False)`；② 触发任意持久化写入（如另一模块调用 `set_module`）；③ 打开 `config/config.toml`，可见 `debug_mode` 已被写入（修复前）；④ 卸载该模块（运行时绑定被注销）后触发配置重载，`scope.get("bots.p.debug_mode")` 仍返回绑定值。
+
+**回歸測試**: `tests/unit/test_unit_scope.py::TestPersistBaseline`（运行时绑定不随无关持久化写入落盘 / 卸载注销后配置重载不复活 / delete 提交基线子树不带运行时兄弟键 / set_action 替换不留残留键 / cache_size 配置生效）
+
+**嚴重性**: 🔴 嚴重
+
+**類型**: 配置系統
+
+---
+
+### [BUG-039] 整节写与点分写并存时读写不一致（点分覆写丢失）
+
+**問題**: 延迟刷盘窗口内，同节并存整节写（`setConfig("Mod", {...})`，如 `BaseModule.cfg` 写回）与点分写（`setConfig("Mod.key", v)`，如配置热更 / 测试工具覆写）时有两个变体：变体 A（读路径）——`getConfig("Mod")` 整节读取返回旧整节待写快照，看不到更晚的点分覆写（点分读取路径正常）；变体 B（写路径，更重）——点分写在前、整节写在后（测试工具注入覆写 → 模块 `self.cfg = ...` 写回的常见时序）时，flush 按插入序应用脏键，整节写整体替换该节，**点分覆写在磁盘上永久丢失**。生产环境"配置热更 + 模块运行时写回"组合即可触发，与测试环境无关（ErisPulse-DailyCard 测试反馈暴露）。
+
+**原因**: `getConfig` 第①段（精确命中 `_dirty_keys`）提前 `return self._dirty_keys[key]`，完全绕过第④段 `_dirty_overlay` 后代叠加；`_flush_config` 按 `_dirty_keys` 插入序应用脏键，整节写恰好排在点分写之后时点分值被整体替换。另：第①段返回脏队列**原对象引用**，调用方原地修改返回 dict 会直接改动待落盘状态。
+
+**影響版本**: 2.6.0 - 2.9.0-dev.1
+
+**修復版本**: 2.9.0-dev.1
+
+**修復內容**: 脏窗口内统一为**特异性优先**语义——点分（更具体）待写值优先于整节（较宽）待写值，读路径与落盘路径同口径：① `getConfig` 精确命中待写键后仍叠加 `_dirty_overlay` 后代待写值（非 dict 值返回叠加子树，与③+④标量边角同口径）；② `_flush_config` 脏键按路径深度排序应用（整节/祖先先、点分/后代后，稳定排序保持同深度写入时序）。代价：同一脏窗口内（约 5 秒）整节写回无法覆盖仍挂起的点分写——读路径修复后读-改-写自然携带点分值，实际影响面极小。③ 涉及待写值的 `getConfig` 返回（精确命中 / 祖先子树 / 叠加合并）改为 `copy.deepcopy` 隔离拷贝，不再泄漏脏队列内部引用；无脏键快路径与纯缓存读行为不变。
+
+**修復日期**: 2026/09/28
+
+**复现步骤**: ① `setConfig("FB.y", 1)`；② `setConfig("FB", {"z": 2})`；③ `force_save()`——修复前磁盘只剩 `[FB] z = 2`（y 丢失），修复后 `{"y": 1, "z": 2}`；变体 A：步骤①②后不落盘直接 `getConfig("FB")`——修复前不含 `y`，修复后可见。
+
+**回歸測試**: `tests/unit/test_unit_config.py::TestSectionAndDottedDirtyConsistency`（变体 A 两种插入序 / 变体 B 落盘与顺序无关 / 三层混合存活 / 隔离拷贝 / 祖先子树隔离）
+
+**嚴重性**: 🟡 中等
+
+**類型**: 配置系統

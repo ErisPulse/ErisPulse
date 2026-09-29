@@ -17,15 +17,15 @@ YunhuAdapter は、雲湖プロトコルに基づいて構築されたアダプ�
 - チェーン修飾子対応：`.Reply()` などのチェーン修飾子メソッドをサポートしています。
 - OneBot12互換：OneBot12形式のメッセージ送信をサポートしています。
 
-## v5 フレームワーク更新（4.4.0）
+## v5 ファンダメンタルの更新（4.4.0）
 
-このアダプタは v5 フレームワークへの対応を完了しました（段階的アップグレード、API 互換性を保持）：
+このアダプタは v5 ファンダメンタルへの対応を完了しました（段階的アップグレード、API は互換性を保つ）：
 
-- **公式サーバーサイド API 全集**（Api DSL 拡張メソッド）：メッセージ編集、一括送信、メッセージ一覧、ユーザー/グローバルダッシュボード、グループメンバーのミュート、グループメンバーの削除、グループメッセージタイプ制限、グループタグの CRUD、ユーザーへのタグ付与
-- **標準 keyboard 段**（クロスプラットフォーム対応のインタラクティブコンポーネント）：{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}} 段は自動的に Yunhu の buttons に変換されます。.Buttons(rows) / .Keyboard(rows) 修飾子は汎用構造を受け付けます（ネイティブ構造は後方互換性を保持）
-- **インタラクティブコールバックの標準フィールド**：ボタンクリック/A2UI イベントには interaction_id / button_data という標準フィールドが含まれます
+- **公式のサービス側 API 全集**（Api DSL 拡張メソッド）：メッセージ編集、一括送信、メッセージリスト、ユーザー／グローバルダッシュボード、グループメンバーのミュート、グループメンバーの削除、グループメッセージの種類制限、グループタグの CRUD、ユーザーへのタグ付与
+- **標準 keyboard 段**（クロスプラットフォーム対応のインタラクションコンポーネント標準）：{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}} 段は自動的に Yunhu の buttons に変換されます。.Buttons(rows) / .Keyboard(rows) 修飾子は汎用構造を受け付けます（ネイティブ構造は後方互換性を保ちます）
+- **インタラクションのコールバック標準フィールド**：ボタンクリック/A2UI イベントには interaction_id / button_data の標準フィールドが含まれます
 - **spawn_background によるタスクの所属**：WS 接続タスクは runtime.spawn_background を使用します
-- **フレームワークのソフト依存性**：ErisPulse>=2.7.1 を実行時に検出し、警告を出力します。起動時にバージョンログを出力します
+- **フレームワークのソフト依存**：ErisPulse>=2.7.1 を実行時に検出し、警告を出力します。起動時にバージョンログを出力します
 
 ### プラットフォーム拡張アクション（call / Api メソッド）
 
@@ -33,19 +33,19 @@ YunhuAdapter は、雲湖プロトコルに基づいて構築されたアダプ�
 from ErisPulse import sdk
 yunhu = sdk.adapter.get("yunhu")
 
-# Api メソッド（公式サーバーサイド API）
+# Api メソッド（公式のサービス側 API）
 await yunhu.Api.edit_message(msg_id, recv_id, "group", "text", {"text": "新内容"})
 await yunhu.Api.batch_send(["userId1", "userId2"], "text", {"text": "公告"})
 await yunhu.Api.get_message_list(group_id, "group", before=10)
 await yunhu.Api.set_user_board(chat_id, "group", "看板内容", expire_time=3600)
 await yunhu.Api.dismiss_global_board()
-await yunhu.Api.gag_group_member(group_id, user_id, 600)      # 600秒間ミュート、0=解除
+await yunhu.Api.gag_group_member(group_id, user_id, 600)      # 600秒間のミュート、0=解除
 await yunhu.Api.remove_group_member(group_id, user_id)
 await yunhu.Api.set_group_msg_type_limit(group_id, "text,image")
 await yunhu.Api.create_group_tag(group_id, "VIP", color="#FF5733")
 await yunhu.Api.add_user_tag(group_id, user_id, "VIP")
 
-# ボタンクリックコールバック（標準フィールド）
+# ボタンクリックのコールバック（標準フィールド）
 from ErisPulse.Core.Event import notice
 
 @notice.on_notice()
@@ -55,7 +55,7 @@ async def handle_button(event):
         interaction_id = event["interaction_id"]
 ```
 
-> 詳細な標準仕様は [クロスプラットフォーム対応インタラクティブコンポーネント標準](../../standards/standardization-guide.md) を参照してください。
+> 完全な標準説明は [クロスプラットフォーム対応のインタラクションコンポーネント標準](../standards/standardization-guide.md) を参照してください。
 
 ## 支援されるメッセージ送信タイプ
 

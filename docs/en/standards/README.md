@@ -76,9 +76,9 @@ Standardized specifications help:
 - [ ] Platform-specific fields have been prefixed
 - [ ] Timestamps have been converted to 10-digit second-level
 - [ ] Raw data has been saved in {platform}_raw
-- [ ] Original event type has been saved in {platform}_raw_type
+- [ ] Raw event type has been saved in {platform}_raw_type
 - [ ] alt_message for message segments has been generated
-- [ ] Request events include the request_id field
+- [ ] Request events contain the request_id field
 
 ### API Response
 
@@ -89,17 +89,27 @@ Standardized specifications help:
 - [ ] Contains message field
 - [ ] Return codes follow the OneBot12 specification
 
-### Send Method Naming
+### Sending Method Naming
 
 - [ ] Uses PascalCase naming convention
 - [ ] Returns a Task object
 - [ ] Modifier methods return self
-- [ ] Parameter names conform to standards
+- [ ] Parameter naming conforms to the specification
+
+### Media Sending (Image / Voice / Video / File)
+
+- [ ] The `file` parameter must support all forms: HTTP(S) URL / local path / `bytes`
+- [ ] Form determination follows the specification order (bytes → URL → `file://` → path)
+- [ ] The filename for `File` is generated in the following order (explicit `filename` > URL basename > path basename > platform default)
+- [ ] Platform media limits are declared in the adapter documentation
+- [ ] Unsupported media types are handled via a degradation ladder (nearby types degraded or `retcode=10002`, no exceptions thrown, no silent discarding)
+
+> See [Sending Method Specification §2.1](send-method-spec.md#21-media-message-sending-protocolimage--voice--video--file) for detailed protocol
 
 ### Request Operations
 
 - [ ] HandleRequest class has implemented _do_accept / _do_reject
-- [ ] Operations return standard API response format
+- [ ] Operation returns standard API response format
 - [ ] Unsupported operations return retcode=10002
 
 ## Related Documentation

@@ -207,36 +207,36 @@ def get_interaction_id(self) -> str: ...  # interaction_id
 
 ## 6. 今後の候補（Roadmap）
 
-以下の機能は、2 つ以上のプラットフォームで既に実装済みまたは予定されており、優先順位に従って標準化を進めています：
+以下の機能は、2 つ以上のプラットフォームで既に存在するか、または予定されており、優先順位に従って標準化を進めています。
 
-| 候補 | 涉及プラットフォーム | 优先度 | 備考 |
+| 候補 | 涉及プラットフォーム | 優先度 | 備考 |
 |------|---------|--------|------|
 | select ドロップダウン選択 | Discord / Telegram | 高 | 構造の草案は §5.4 を参照 |
-| 表情反応（reactions） | QQBot / Telegram / Discord / Kook | 高 | アクションとイベント両方の標準化 |
-| 群管理アクション（ミュート/キック/承認） | QQBot / 云湖 / OB11 | 高 | 既にプラットフォームアクションとして実装されているものが多いため、標準的な署名を抽出する予定 |
-| 公告/看板 | 云湖 / Telegram / Discord | 中 | `set_announcement` 類のアクション |
-| ファイルアップロード標準（file_id 二段式） | 各プラットフォーム | 中 | API アクション標準を参照（現在は降格して利用可能） |
-| カード card | Kook / 云湖 | 低 | 構造に大きな差異があるため、§5.5 を参照 |
-| フォーム form | 云湖 | 低 | プラットフォーム固有のもので、`{platform}_` プレフィックスを保持 |
-| メディア変換/サイズ検出 | 各プラットフォーム | 低 | アダプター内部で実装され、外部に標準化は行わない予定 |
+| 意見表明/絵文字応答（reactions） | QQBot / Telegram / Discord / Kook | 高 | 動作とイベントの両側の標準化 |
+| 群管理操作（ミュート/キック/承認） | QQBot / 云湖 / OB11 | 高 | 多数はプラットフォームの操作として実装済み、標準的な署名の抽出を待つ |
+| 公告/看板 | 云湖 / Telegram / Discord | 中 | `set_announcement` 類の操作 |
+| ファイルリソースモデル（file_id 二段式） | 各プラットフォーム | 低（保留） | 送信直送 `SendDSL.File(file, filename)` は既に標準的な経路（URL/パス/バイト直送、[送信メソッド規格 §2.1](send-method-spec.md) 参照）；file_id モデルは後端が天然に備えている場合にのみ透過的に使用、[API 動作標準 §3.5](api-action-spec.md) 参照 |
+| カード card | Kook / 云湖 | 低 | 構造の差が大きい、§5.5 を参照 |
+| フォーム form | 云湖 | 低 | プラットフォーム固有、`{platform}_` プレフィックスを保持 |
+| メディア変換/サイズ検出 | 各プラットフォーム | 低 | アダプタ内部での実装、外部には標準化しない |
 
 ## 7. 新しいアダプター開発者の標準チェックリスト
 
 新しいアダプターを開発する際は、以下のチェックリストを確認して実装してください（★ は必須、その他の項目は推奨）：
 
-- [ ] ★ イベントを OneBot12 の標準構造に変換し、`BaseConverter` を継承する
-- [ ] ★ 標準メッセージセグメントの送受信をサポート（text/image/mention/reply/keyboard…）
-- [ ] ★ `Raw_ob12` を実装する（標準セグメント → プラットフォーム構造の変換；標準 `keyboard` セグメントは必須）
+- [ ] ★ イベントを OneBot12 標準構造に変換し、`BaseConverter` を継承する
+- [ ] ★ 標準メッセージセグメントの送受信をサポート（text/image/mention/reply/keyboard…；メディアセグメントは [送信方法規格 §2.1](send-method-spec.md) の形態分類と階層処理に従う）
+- [ ] ★ `Raw_ob12` を実装する（標準セグメント → プラットフォーム構造の変換；標準 `keyboard` セグメントは必ず実装）
 - [ ] ★ 標準レスポンス構造を返す（`make_response`/`make_error`）
-- [ ] ★ 多アカウント対応：`AccountConfigClass(BotAccountConfig)` + `_resolve_account`
+- [ ] ★ 複数アカウント対応：`AccountConfigClass(BotAccountConfig)` + `_resolve_account`
 - [ ] ★ Send クラスは `BaseAdapter.Send` を継承し、`_apply_modifiers`/`send_context` を使用する
-- [ ] ☆ API DSL：標準アクションをプラットフォーム API にマッピングする（API アクション標準を参照）
-- [ ] ☆ Request DSL：リクエストイベントに `request_id` と `accept/reject` を含める
+- [ ] ☆ Api DSL：標準アクションをプラットフォームAPIにマッピングする（API 動作標準を参照）
+- [ ] ☆ Request DSL：リクエストイベントには `request_id` と `accept/reject` を含める
 - [ ] ☆ インタラクティブコンポーネント：`keyboard` セグメントの変換 + インタラクティブコールバックの標準フィールド + `.Keyboard()`/.Buttons()` 修飾子（アダプターの Send クラスで実装）
 - [ ] ☆ EventMixin：`get_raw_event()` / `get_button_data()` などのプラットフォーム拡張メソッド
 - [ ] ☆ ライフサイクルタスクは `runtime.spawn_background` を使用する
-- [ ] ☆ 設定の読み込みは `self.cfg` を使用する
-- [ ] ☆ フレームワークのソフト依存：ErisPulse のハード依存を宣言せず、実行時のバージョン検証を行う
+- [ ] ☆ 設定読み込みは `self.cfg` を使用する
+- [ ] ☆ フレームワークのソフト依存：ErisPulse のハード依存を宣言せず、ランタイムでのバージョン検証を行う
 - [ ] ☆ i18n：設定フィールドとログの多言語対応
 - [ ] ☆ platform-guide プラットフォームドキュメント + アダプターリポジトリの platform-features.md
 

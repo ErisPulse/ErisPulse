@@ -207,38 +207,38 @@ Card structures vary greatly (Kook full-featured card module vs Yunhu html vs QQ
 
 ## 6. Future Candidates (Roadmap)
 
-The following capabilities have appeared or are expected to appear on ≥2 platforms and are being prioritized for standardization:
+The following capabilities have appeared or are expected to appear on ≥2 platforms, and are prioritized for standardization:
 
-| Candidate | Platforms Involved | Priority | Notes |
-|-----------|--------------------|----------|-------|
-| select dropdown selection | Discord / Telegram | High | Structural draft available in §5.4 |
-| Reactions (emoji reactions) | QQBot / Telegram / Discord / Kook | High | Standardization of actions and events on both sides |
-| Group management actions (mute/kick/approve) | QQBot / Yunhu / OB11 | High | Most implemented as platform actions, awaiting standardized signatures |
+| Candidate | Involved Platforms | Priority | Notes |
+|-----------|-------------------|----------|-------|
+| select dropdown selection | Discord / Telegram | High | Structural draft in §5.4 |
+| Reactions/emoji responses | QQBot / Telegram / Discord / Kook | High | Standardization of actions and events on both sides |
+| Group management actions (mute/kick/approve) | QQBot / Yunhu / OB11 | High | Most have been implemented as platform actions, awaiting extraction of standardized signatures |
 | Announcements/boards | Yunhu / Telegram / Discord | Medium | `set_announcement`-like actions |
-| File upload standard (two-part file_id) | All platforms | Medium | See API action standard (currently available as a downgrade) |
-| Card | Kook / Yunhu | Low | Large structural differences, see §5.5 |
+| File resource model (two-stage file_id) | All platforms | Low (postponed) | Direct upload `SendDSL.File(file, filename)` is already a standard path (URL/path/bytes direct upload, see [Send Method Specification §2.1](send-method-spec.md)); the file_id model is only passed through when the backend naturally supports it, see [API Action Standard §3.5](api-action-spec.md) |
+| Card | Kook / Yunhu | Low | Significant structural differences, see §5.5 |
 | Form | Yunhu | Low | Platform-specific, maintain `{platform}_` prefix |
-| Media transcoding/size detection | All platforms | Low | Implemented internally by adapters, not standardized externally |
+| Media transcoding/size detection | All platforms | Low | Implemented internally by adapters, not exposed for standardization |
 
 ## 7. Standard Checklist for New Adapter Developers
 
-When developing a new adapter, please refer to this checklist to ensure implementation (★ indicates required, others are recommended):
+When developing a new adapter, please follow this checklist for implementation (★ indicates required, others are recommended):
 
-- [ ] ★ Convert events into the OneBot12 standard structure, inherit `BaseConverter`
-- [ ] ★ Support standard message segment sending and receiving (text/image/mention/reply/keyboard…)
+- [ ] ★ Convert events into OneBot12 standard structure, inherit `BaseConverter`
+- [ ] ★ Support for standard message segment sending and receiving (text/image/mention/reply/keyboard…; media segments handled with hierarchical up/downgrading according to the form in [Sending Method Specification §2.1](send-method-spec.md))
 - [ ] ★ Implement `Raw_ob12` (including standard segment → platform structure conversion; standard `keyboard` segment must be implemented)
 - [ ] ★ Return standard response structure (`make_response`/`make_error`)
 - [ ] ★ Multi-account: `AccountConfigClass(BotAccountConfig)` + `_resolve_account`
-- [ ] ★ `Send` class inherits `BaseAdapter.Send`, use `_apply_modifiers`/`send_context`
-- [ ] ☆ Api DSL: Map standard actions to platform APIs (see API Action Standards)
+- [ ] ★ Send class inherits `BaseAdapter.Send`, use `_apply_modifiers`/`send_context`
+- [ ] ☆ API DSL: Map standard actions to platform APIs (see API Action Standards)
 - [ ] ☆ Request DSL: Request events include `request_id` + `accept/reject`
-- [ ] ☆ Interactive components: `keyboard` segment conversion + standard fields for interactive callbacks + `.Keyboard()`/.Buttons()` decorators (implemented in adapter's `Send` class)
+- [ ] ☆ Interactive components: `keyboard` segment conversion + standard interactive callback fields + `.Keyboard()`/.Buttons()` decorators (implemented in adapter's Send class)
 - [ ] ☆ EventMixin: Platform extension methods such as `get_raw_event()` / `get_button_data()`
 - [ ] ☆ Use `runtime.spawn_background` for lifecycle tasks
 - [ ] ☆ Use `self.cfg` for configuration reading
 - [ ] ☆ Framework soft dependencies: Do not declare hard dependency on ErisPulse + runtime version detection
-- [ ] ☆ i18n: Multi-language for configuration fields and logs
-- [ ] ☆ Platform documentation (`platform-guide`) + `platform-features.md` in adapter repository
+- [ ] ☆ i18n: Multi-language configuration fields and logs
+- [ ] ☆ Platform documentation + adapter repository platform-features.md
 
 ## 8. Related Documentation
 

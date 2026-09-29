@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "c7680c2ede1516963d4bf565f5fe81f6",
-  "file_hash": "c7680c2ede1516963d4bf565f5fe81f6",
-  "translated_at": "2026-09-12T10:39:55.100744",
+  "hash": "38e0837f5721fcb52a7ea7858e152850",
+  "file_hash": "38e0837f5721fcb52a7ea7858e152850",
+  "translated_at": "2026-09-29T05:42:23.040532",
   "target_lang": "en",
   "chunks": [
     {
@@ -26,8 +26,8 @@
       "translation": "## Benefits of Following Standards\n\n### For Adapter Developers\n\n- Clear conversion rules\n- Unified response format\n- Easy debugging and testing\n\n### For Module Developers\n\n- Consistent event interface\n- Predictable API behavior\n- Simplified cross-platform development\n\n### For End Users\n\n- Stable system behavior\n- Uniform message format\n- Good compatibility"
     },
     {
-      "hash": "12e1dbdd4343a9c452ab87f8b832247e",
-      "translation": "## Standard Compliance Checklist\n\n### Event Transformation\n\n- [ ] All standard fields have been correctly mapped\n- [ ] Platform-specific fields have been prefixed\n- [ ] Timestamps have been converted to 10-digit second-level\n- [ ] Raw data has been saved in {platform}_raw\n- [ ] Original event type has been saved in {platform}_raw_type\n- [ ] alt_message for message segments has been generated\n- [ ] Request events include the request_id field\n\n### API Response\n\n- [ ] Contains status field\n- [ ] Contains retcode field\n- [ ] Contains data field\n- [ ] Contains message_id field\n- [ ] Contains message field\n- [ ] Return codes follow the OneBot12 specification\n\n### Send Method Naming\n\n- [ ] Uses PascalCase naming convention\n- [ ] Returns a Task object\n- [ ] Modifier methods return self\n- [ ] Parameter names conform to standards\n\n### Request Operations\n\n- [ ] HandleRequest class has implemented _do_accept / _do_reject\n- [ ] Operations return standard API response format\n- [ ] Unsupported operations return retcode=10002"
+      "hash": "2cb750de3a1bfa5b42a4d6d7e693bcc2",
+      "translation": "## Standard Compliance Checklist\n\n### Event Transformation\n\n- [ ] All standard fields have been correctly mapped\n- [ ] Platform-specific fields have been prefixed\n- [ ] Timestamps have been converted to 10-digit second-level\n- [ ] Raw data has been saved in {platform}_raw\n- [ ] Raw event type has been saved in {platform}_raw_type\n- [ ] alt_message for message segments has been generated\n- [ ] Request events contain the request_id field\n\n### API Response\n\n- [ ] Contains status field\n- [ ] Contains retcode field\n- [ ] Contains data field\n- [ ] Contains message_id field\n- [ ] Contains message field\n- [ ] Return codes follow the OneBot12 specification\n\n### Sending Method Naming\n\n- [ ] Uses PascalCase naming convention\n- [ ] Returns a Task object\n- [ ] Modifier methods return self\n- [ ] Parameter naming conforms to the specification\n\n### Media Sending (Image / Voice / Video / File)\n\n- [ ] The `file` parameter must support all forms: HTTP(S) URL / local path / `bytes`\n- [ ] Form determination follows the specification order (bytes → URL → `file://` → path)\n- [ ] The filename for `File` is generated in the following order (explicit `filename` > URL basename > path basename > platform default)\n- [ ] Platform media limits are declared in the adapter documentation\n- [ ] Unsupported media types are handled via a degradation ladder (nearby types degraded or `retcode=10002`, no exceptions thrown, no silent discarding)\n\n> See [Sending Method Specification §2.1](send-method-spec.md#21-media-message-sending-protocolimage--voice--video--file) for detailed protocol\n\n### Request Operations\n\n- [ ] HandleRequest class has implemented _do_accept / _do_reject\n- [ ] Operation returns standard API response format\n- [ ] Unsupported operations return retcode=10002"
     },
     {
       "hash": "e3c1e79fb398b2f460229813e0179b94",
