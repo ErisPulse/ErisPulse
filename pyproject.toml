@@ -93,30 +93,23 @@ test = [
     "pytest-cov>=4.0.0",
     "pytest-asyncio>=0.21.0",
     "pytest-xdist>=3.0.0",
+    "pytest-timeout>=2.1.0",
     "pytest-mock>=3.10.0",
-    "pytest-benchmark>=4.0.0",
     "httpx>=0.24.0",
 ]
 
 [dependency-groups]
+# 测试依赖统一维护于 [project.optional-dependencies].test（公开 extras，
+# 生态可 pip install ErisPulse[test]）；此处的 test 组已删除以免双处漂移。
 dev = [
     "pyclean>=3.6.0",
     "ruff>=0.1.7",
     "basedpyright>=1.20.0",
     "typing_extensions>=4.7.0; python_version < '3.11'",
 ]
-test = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "pytest-asyncio>=0.21.0",
-    "pytest-xdist>=3.0.0",
-    "pytest-mock>=3.10.0",
-    "pytest-benchmark>=4.0.0",
-    "httpx>=0.24.0",
-]
 
 [tool.uv]
-default-groups = ["dev", "test"]
+default-groups = ["dev"]
 
 [project.scripts]
 ep-init = "ErisPulse.__init__:init_sync"
@@ -143,7 +136,7 @@ include = [
 target-version = "py310"
 line-length = 120
 
-include = ["src/**/*.py", "tests/**/*.py"]
+include = ["src/**/*.py", "tests/**/*.py", "scripts/**/*.py", "examples/**/*.py"]
 
 extend-exclude = [
     "__pycache__",
@@ -222,6 +215,13 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401", "PLC0415", "I001"]  # 导出式 __init__ 经常按需导入
+# 旧版生成/翻译脚本：存量风格债渐进收编（新脚本 check_i18n_locales/check_docs_links/
+# release_check/_common 已全净）。TODO: 逐步修复后移除本段。
+"scripts/tools/translate-docs.py" = ["PERF401", "PTH", "UP035", "B", "RET505", "FURB", "RUF013", "UP008", "A001", "SIM"]
+"scripts/tools/check-translation.py" = ["PERF401", "PTH", "UP035", "B", "RET505", "FURB", "RUF013", "SIM"]
+"scripts/tools/generate-api-docs.py" = ["PERF401", "PTH", "UP035", "B", "RET505", "FURB", "RUF013", "A001", "SIM", "W29", "E501"]
+"scripts/tools/generate-docs-index.py" = ["PERF401", "PTH", "UP035", "B", "RET505", "FURB", "RUF013", "RUF015", "SIM"]
+"scripts/tools/generate-type-stubs.py" = ["PERF401", "PTH", "UP035", "B", "RET505", "FURB", "RUF013", "ANN", "A001", "PLW0603", "SIM", "W29"]
 "tests/**/*.py" = [
     # 断言/夹具相关（测试代码天然模式）
     "S101", "PLR2004", "SLF001", "ARG", "ANN", "PTH",
@@ -296,6 +296,8 @@ python_classes = "Test*"
 python_functions = "test_*"
 minversion = "7.0"
 addopts = [
+        "--timeout=120",
+        "--timeout-method=thread",
     "-v",
     "--strict-markers",
     "--strict-config",

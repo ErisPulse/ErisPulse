@@ -14,14 +14,12 @@ import types
 import pytest
 
 from ErisPulse.Core.Event.wrapper import (
-    _platform_event_methods,
     get_platform_event_methods,
     register_event_method,
     unregister_event_methods_by_owner,
     unregister_platform_event_methods,
 )
 from ErisPulse.runtime.context import owner_scope
-
 
 # ==================== A1：事件方法 owner 回收 ====================
 
@@ -149,7 +147,6 @@ class TestOnLoadFailureHalfUnload:
         import asyncio
 
         from ErisPulse.Core.Event import message
-        from ErisPulse.Core.module import ModuleManager
 
         manager = self._make_manager()
         registered = []
@@ -174,7 +171,6 @@ class TestOnLoadFailureHalfUnload:
     def test_module_reloadable_after_failed_load(self):
         import asyncio
 
-        from ErisPulse.Core.module import ModuleManager
 
         manager = self._make_manager()
         attempts = {"n": 0}
@@ -198,7 +194,7 @@ class RichFakeManager:
     """带完整注册表的 Fake 管理器（回滚断言用）"""
 
     def __init__(self):
-        self.calls: "list[tuple]" = []
+        self.calls: list[tuple] = []
         self._module_classes = {"Weather": object}
         self._module_info = {"Weather": {"meta": {"name": "Weather"}}}
         self._modules = {"Weather": "old_instance"}

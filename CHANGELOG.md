@@ -16,6 +16,7 @@
 
 - @YingXinche
   - `Core` 聚合导出补齐 ORM 查询面：`QuerySet` / `Condition` / `ColumnExpr` / `relationship` 自 `ErisPulse.Core` 直接导入（此前需经 `ErisPulse.Core.Bases`）
+  - 仓库与发布设施治理：`uv.lock` 入库（CI 依赖解析与安全审计自此可复现）；新增发布三面版本一致性校验（`release_check.py`：pyproject == CHANGELOG == tag，挂入发布工作流首步）；修复 PyPI 发布工作流发布成功后必失败的死步骤；Docker `latest` 标签改为仅 stable tag 触发并按 tag 固定包版本；CI 新增 pytest 并行（xdist）与单测超时保护（pytest-timeout）；测试设施治理（conftest 死代码清理、命令/事件清理逻辑收敛共享 fixture、会话级 config.toml 防污染恢复）；example-adapter 的 Converter 更新为 `BaseConverter` 写法并以导入冒烟测试守护（模板/示例同步从人肉变为可校验）
   - `docs/standards` 发送方法规范新增**媒体发送协议标准**（§2.1）：定义 `file` 参数的必须/应当形态（URL / 本地路径 / `bytes` 必须支持，`file://` 与 base64 应当支持）、形态判定顺序、`File` 文件名推导顺序、平台限制声明义务与能力降级阶梯（近缘类型降级或 `retcode=10002`，禁抛异常/静默丢弃）；事件转换标准的媒体段 `file` / `url` / `filename` 字段方向语义同步补充；新增 CI 门禁：i18n 五语言键一致性、docs 内部链接、MySQL / PostgreSQL 双后端存储与 ORM 真机验证（原手动发布门禁转为随 PR 持续验证）
 
 ### 修复
@@ -38,6 +39,7 @@
   - `Core/ownership` / `Core/Event/overrides` / `Core/router` 修复三处运行时导入的相对层级错误（被 `try/except` 静默吞掉的存量缺陷）：归属权任务取消与资源审计的 `runtime.tasks` / `runtime.owner_cleanup` 导入从未生效（`reclaim_tasks` 计数恒 0、任务从不被取消）；事件覆写缓存的配置热更新订阅从未注册；影子路由"只登记不挂载"判定恒为 `False`（影子路由会被真实挂载）。三处现均真实生效
   - `Core/scope` 判定热路径匹配器预编译缓存：模块绑定与身份 / 出站条目的 glob / `re:` 正则编译结果按条目内容缓存、随配置树重建失效——配置条目多时 LRU 未命中判定不再每次重复编译
   - `Core/config` 旧配置迁移路径按配置文件位置锚定（不再依赖 CWD，Windows 服务 / 计划任务等启动目录不定的场景迁移行为不再漂移）；`config.updated` 广播失败留痕（此前静默吞掉，订阅方无感知失效）；`getConfig` 缓存值为标量且存在后代待写键时返回叠加子树（刷盘后该键将变为子表，消除写后立读不一致的边角）
+  - `Core/config` 修复整节写与点分写并存的读写不一致（BUG-039）：`getConfig` 精确命中待写键时提前返回、绕过后代待写值叠加——整节读取看不到更晚的点分覆写（点分读取正常）；`_flush_config` 按插入序应用脏键——点分写在前、整节写在后（配置热更 / 测试覆写 + 模块 `self.cfg` 写回的常见时序）时点分覆写在磁盘上被整节写永久丢失。现统一为特异性优先语义（同节点分待写值在脏窗口内优先，读路径叠加与落盘深度排序同口径）；涉及待写值的 `getConfig` 返回改为隔离深拷贝，调用方原地修改返回 dict 不再改动待落盘状态
   - `Core/lifecycle` 生命周期钩子注册改为 copy-on-write（config watcher 线程遍历钩子表与主线程注册并发时不再读到中间态）；慢处理器日志改走 i18n
   - `Core/adapter` 事件处理器调度在无运行事件循环时改走 `spawn_background`（优先调度回已注册主循环并留痕）——此前 `ensure_future` 兜底同样抛错，且线程上存在"已设但未运行"的循环时任务会落到死循环上静默不执行
   - `loaders` 热重载失败回滚时清理失败加载新引入的 `sys.modules` 子模块条目（防下次加载经 import 机制复用半初始化的模块对象）

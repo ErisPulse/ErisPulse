@@ -196,7 +196,7 @@ class Field:
             return f"VARCHAR({self.max_length})"
         return base
 
-    def column_definition(self, *, nullable_override: "bool | None" = None) -> str:
+    def column_definition(self, *, nullable_override: bool | None = None) -> str:
         """单列 DDL 定义（统一记号）
 
         :param nullable_override: 覆写可空性渲染（如自动迁移为存量行回填
@@ -572,7 +572,7 @@ class _RelatedOne:
 
 async def _related_none() -> None:
     """{!--< internal-use >!--} belongs-to 外键为 None 时的短路返回值"""
-    return None
+    return
 
 
 class Relationship:

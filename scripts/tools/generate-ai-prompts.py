@@ -15,52 +15,15 @@ ErisPulse AI Prompt 生成器
 """
 
 import argparse
-import sys
-import threading
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
+
+from _common import Logger  # scripts/tools 公共日志器
 
 # ---------------------------------------------------------------------------
 # 日志器
 # ---------------------------------------------------------------------------
 
-
-class Logger:
-    """线程安全的标准输出日志器"""
-
-    _lock = threading.Lock()
-
-    @classmethod
-    def log(cls, msg: str):
-        """
-        输出一行日志
-
-        :param msg: 日志内容
-        """
-        with cls._lock:
-            sys.stdout.write(msg + "\n")
-            sys.stdout.flush()
-
-    @classmethod
-    def progress(cls, filename: str, status: str, detail: str = ""):
-        """
-        输出单条 prompt 生成进度
-
-        :param filename: 输出文件名
-        :param status: 状态标识（gen/skip/fail/miss 等）
-        :param detail: 附加详情，可选
-        """
-        tag = {
-            "gen": "[GEN]",
-            "skip": "[SKIP]",
-            "fail": "[FAIL]",
-            "miss": "[MISS]",
-        }.get(status, f"[{status.upper()}]")
-        line = f"  {tag} {filename}"
-        if detail:
-            line += f"  {detail}"
-        cls.log(line)
 
 # ---------------------------------------------------------------------------
 # 数据模型
@@ -591,7 +554,7 @@ class PromptGenerator:
         self,
         docs_dir: str | Path,
         output_dir: str | Path,
-        lang: Optional[str] = None,
+        lang: str | None = None,
         *,
         verbose: bool = False,
     ):
@@ -831,7 +794,7 @@ def main() -> None:
     Logger.log("ErisPulse AI Prompt 生成器")
     Logger.log("=" * 60)
     Logger.log(f"文档目录: {docs_dir}")
-    Logger.log(f"语言: {args.lang if args.lang else '全部'}")
+    Logger.log(f"语言: {args.lang or '全部'}")
     Logger.log(f"详细模式: {'开启' if args.verbose else '关闭'}")
     Logger.log("")
 

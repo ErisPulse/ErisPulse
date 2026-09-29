@@ -1,62 +1,51 @@
 """
-MyAdapter转换器
+MyAdapter 转换器
 
-用于在平台特定消息格式和ErisPulse标准格式之间进行转换
+负责在平台特定事件格式和 ErisPulse 标准格式（OneBot12）之间进行转换。
+继承 `BaseConverter` 以复用公共字段构造（`build_base_event`）与消息段助手
+（`text` / `at` / `image`），与 CLI 脚手架模板（`epsdk create adapter`）保持同一写法。
 """
 
-import time
-import uuid
+from ErisPulse.Core.Bases import BaseConverter
 
 
-class MyPlatformConverter:
+class MyAdapterConverter(BaseConverter):
     """
-    MyAdapter转换器类
+    MyAdapter 转换器类
 
-    负责将平台特定的事件格式转换为ErisPulse标准格式（OneBot12）
+    将平台原生事件转换为 OneBot12 标准格式；平台特有字段按扩展命名规范
+    放入 `{platform}_raw` / `{platform}_raw_type`（由 `build_base_event` 统一处理）。
     """
 
-    def __init__(self, platform: str = "myplatform"):
-        self.platform = platform
+    def __init__(self):
+        super().__init__(platform="myplatform")
 
-    def convert(self, raw_event: dict) -> dict:
+    def convert(self, raw_event: dict) -> dict | None:
         """
         将平台原生事件转换为 OneBot12 标准格式
 
         :param raw_event: 平台原始事件数据
-        :return: OneBot12 标准格式事件字典
+        :return: OneBot12 标准格式事件字典；无法识别时返回 None
         """
         if not isinstance(raw_event, dict):
             return None
 
         event_type = raw_event.get("type", "")
-
-        base_event = {
-            "id": str(raw_event.get("event_id", uuid.uuid4())),
-            "time": raw_event.get("timestamp", int(time.time())),
-            "platform": self.platform,
-            "self": {
-                "platform": self.platform,
-                "user_id": str(raw_event.get("bot_id", "")),
-            },
-            f"{self.platform}_raw": raw_event,
-            f"{self.platform}_raw_type": event_type,
-        }
+        base = self.build_base_event(raw_event, event_type)
 
         if event_type == "message":
-            base_event["type"] = "message"
-            base_event["detail_type"] = (
+            base["type"] = "message"
+            base["detail_type"] = (
                 "group" if raw_event.get("group_id") else "private"
             )
-            base_event["user_id"] = str(raw_event.get("sender_id", ""))
-            base_event["message"] = [
-                {"type": "text", "data": {"text": raw_event.get("content", "")}}
-            ]
-            base_event["alt_message"] = raw_event.get("content", "")
-        elif event_type == "notification":
-            base_event["type"] = "notice"
-            base_event["detail_type"] = "notify"
-        else:
-            base_event["type"] = "unknown"
-            base_event["detail_type"] = "unknown"
+            base["user_id"] = str(raw_event.get("sender_id", ""))
+            base["message"] = [self.text(raw_event.get("content", ""))]
+            base["alt_message"] = raw_event.get("content", "")
+            return base
 
-        return base_event
+        if event_type == "notification":
+            base["type"] = "notice"
+            base["detail_type"] = "notify"
+            return base
+
+        return None

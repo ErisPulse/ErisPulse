@@ -6,17 +6,19 @@
 
 ```
 docs/_meta/
-├── docs-mapping.json           # 语言索引（主索引）
-├── en/
-│   ├── docs-mapping.json       # 英文文档映射
-│   └── docs-search-index.json  # 英文搜索索引
-├── zh-CN/
-│   ├── docs-mapping.json       # 简体中文文档映射
-│   └── docs-search-index.json  # 简体中文搜索索引
-└── zh-TW/
-    ├── docs-mapping.json       # 繁体中文文档映射
-    └── docs-search-index.json  # 繁体中文搜索索引
+├── docs-mapping.json                        # 语言索引（主索引）
+├── docs-auto-api-mapping.json               # API 文档映射（仅 zh-CN，由 generate-api-docs 生成）
+├── docs-auto-api-search-index.json          # API 文档搜索索引（仅 zh-CN）
+├── en/  ├─ docs-mapping.json / docs-search-index.json
+├── ja/  └─ （同上）
+├── ru/  └─ （同上）
+├── zh-CN/ ─ docs-mapping.json / docs-search-index.json
+└── zh-TW/ ─ docs-mapping.json / docs-search-index.json
 ```
+
+> 现状：**5 种语言**（zh-CN / zh-TW / en / ja / ru），每种语言约 **81 篇**文档；
+> 由 `scripts/tools/generate-docs-index.py` 在 CI（auto-update-docs workflow）中自动重新生成，
+> **不要手工编辑**本目录下的 json 产物。
 
 ## 主索引：docs-mapping.json
 
@@ -26,18 +28,18 @@ docs/_meta/
 ```json
 {
   "version": "1.0",
-  "total_languages": 3,
+  "total_languages": 5,
   "languages": {
     "en": {
-      "docs_count": 46,
+      "docs_count": 81,
       "mapping_path": "_meta/en/docs-mapping.json"
     },
     "zh-CN": {
-      "docs_count": 46,
+      "docs_count": 81,
       "mapping_path": "_meta/zh-CN/docs-mapping.json"
     },
     "zh-TW": {
-      "docs_count": 46,
+      "docs_count": 81,
       "mapping_path": "_meta/zh-TW/docs-mapping.json"
     }
   }

@@ -169,12 +169,12 @@ class GovernanceGate:
         # rate_limit → 已回复的键集合（窗口再次放行即清除，翻转后可重新回复）；
         # usage → 键 → 已回复的自然周期键（周期切换即失效）
         self._cooldown_replied: dict[str, float] = {}
-        self._rate_limit_replied: "set[str]" = set()
+        self._rate_limit_replied: set[str] = set()
         self._usage_replied: dict[str, str] = {}
         # 配额判定的每键互斥锁：串行化 storage 读改写，防并发事件丢失更新
         self._usage_locks: dict[str, asyncio.Lock] = {}
         # 持久化失败已告警的命令主名（每命令只告警一次，恢复成功后解除）
-        self._usage_persist_warned: "set[str]" = set()
+        self._usage_persist_warned: set[str] = set()
 
     def _maybe_sweep(self, now: float) -> None:
         """

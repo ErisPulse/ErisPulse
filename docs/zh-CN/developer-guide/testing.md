@@ -1,6 +1,6 @@
 # 模块测试（ErisPulse-Testing）
 
-[ErisPulse-Testing](https://github.com/wsu2059q/ErisPulse-Testing) 是官方测试工具包（RFC EPRFC-2026-001 方向三）：
+[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) 是官方测试工具包（RFC EPRFC-2026-001 方向三）：
 提供 `TestBot`、测试事件工厂、出站消息捕获与断言面，让模块测试像写普通 pytest 一样简单。
 
 ```bash
@@ -52,6 +52,10 @@ async def test_daily(make_testbot):
 
 所有事件使用 uuid 唯一 `id`，天然避开框架的事件去重。
 
+注意：合成事件**不含平台原始报文**（`event.get_raw()` 返回空 dict）。判断群聊 /
+私聊等场景请用 `event.is_group_message()` / `event.get_detail_type()` /
+`event.get_group_id()` 等访问器，不要读 raw。
+
 ## TestBot API
 
 ### 分发
@@ -85,14 +89,16 @@ await bot.wait_for_reply(timeout=2)        # 等待异步回复出现
 ### 模块加载
 
 ```python
-await bot.load_module("MyModule")   # entry-point 已注册的包名
-await bot.load_module(MyModule)     # 或 BaseModule 子类（自动 register + load）
+await bot.load_module("MyModule")   # 已注册的模块名（需框架 sdk.init() 完成 entry-point 发现）
+await bot.load_module(MyModule)     # 或 BaseModule 子类（自动 register + load，推荐）
 await bot.unload_module("MyModule")
 ```
 
 `on_load` 内注册的命令 / 事件处理器随模块归属，卸载时自动清理，可直接断言"卸载后命令失效"。
+注意：字符串形式**不做 entry-point 扫描**（TestBot 不初始化框架发现流程）；测试软依赖
+模块请直接传类对象（或自行 `module.register` 后传名字）。
 
-### 依赖替换
+### 依赖替换（需 EP>=2.9.0-dev）
 
 ```python
 with bot.patch_dependency(get_session, fake_session) as mock:
@@ -111,9 +117,18 @@ bot = TestBot(prefix="//", config={
 })
 ```
 
-经配置内存层注入（不落盘），命令前缀等随热更新立即生效。
+经配置内存层注入，命令前缀等随热更新立即生效。两点注意：
 
-## 分发决策链（排查"命令为什么没触发"）
+1. **落盘**：覆写会随框架的延迟写盘策略（默认约 5 秒）落到 cwd 的
+   `config/config.toml`——被测项目仓库请把 `config/` 加入 `.gitignore`；
+2. **与模块运行时写回的冲突（已知限制）**：被测模块以整节写回配置
+   （`self.cfg = ...`，如订阅列表）与这里的点分覆写并存时，存在 ConfigManager
+   的读写一致性问题——模块整节读取可能看不到覆写值，覆写也可能在落盘时被
+   整节写回覆盖（已在 ErisPulse 2.9.0-dev.1 修复，2.8.x 仍受影响）。涉及
+   "运行时写回配置"的用例，在 2.8.x 上建议在 fixture 里以整节写回方式重置
+   相关配置节。
+
+## 分发决策链（排查"命令为什么没触发"；需 EP>=2.9.0-dev）
 
 `dispatch()` 返回 `DispatchTrace`——本次分发经过的每个判定点的因果链：
 

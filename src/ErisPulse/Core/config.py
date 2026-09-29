@@ -16,6 +16,7 @@ ErisPulse 配置中心
 """
 
 import atexit
+import copy
 import os
 import tempfile
 import threading
@@ -477,8 +478,12 @@ class ConfigManager:
                     else:
                         doc = tomlkit.document()
 
-                    # 应用待写入的更改（注释保留：仅触碰脏键所在行，其余原样保留）
-                    for key, value in self._dirty_keys.items():
+                    # 应用待写入的更改（注释保留：仅触碰脏键所在行，其余原样保留）。
+                    # 按键特异性排序：路径浅者（整节/祖先）先应用、深者（点分/后代）
+                    # 后应用——同节点分写不被整节写吞掉（与 getConfig ①④的叠加
+                    # 语义同口径）；sorted 稳定排序保持同深度内的写入时序
+                    pending = sorted(self._dirty_keys.items(), key=lambda kv: kv[0].count("."))
+                    for key, value in pending:
                         self._set_doc_path(doc, key.split("."), value)
 
                     # 原子写入：唯一临时文件 + fsync + os.replace（多实例/断电安全）
@@ -689,11 +694,15 @@ class ConfigManager:
 
         支持点分隔符路径（如 ``"module.sub.key"``）。当存在待写入队列
         （延迟刷盘未落盘的 ``setConfig``）时，读取结果会**叠加待写值**，
-        保证"写后立读"一致性：
+        保证"写后立读"一致性（同节点分写优先于整节待写值可见，
+        与 ``_flush_config`` 的特异性排序同口径）：
 
-        - 查询键精确命中待写队列 → 直接返回待写值
-        - 待写键是查询键的祖先 → 在待写值子树内继续解析
+        - 查询键精确命中待写队列 → 叠加其后代待写值后返回
+        - 待写键是查询键的祖先 → 在待写值子树内继续解析剩余路径
         - 待写键是查询键的后代 → 以待写值深合并覆盖缓存子树
+
+        涉及待写值的返回值为隔离深拷贝：调用方原地修改返回的 dict
+        不会改动待落盘状态。
 
         :param key: str 配置键, 支持点分隔符如 "module.sub.key"
         :param default: Any 默认值 (默认: None)
@@ -708,11 +717,19 @@ class ConfigManager:
             if not self._dirty_keys:
                 return self._walk_cache(key, default)
 
-            # ① 精确命中待写队列
-            if key in self._dirty_keys:
-                return self._dirty_keys[key]
-
             keys = key.split(".")
+
+            # ① 精确命中待写队列：仍叠加后代待写值（点分写更具体，
+            #    优先于整节待写值可见），并返回隔离拷贝
+            if key in self._dirty_keys:
+                value = self._dirty_keys[key]
+                overlay = self._dirty_overlay(keys)
+                if overlay:
+                    if isinstance(value, dict):
+                        return copy.deepcopy(self._deep_merge(value, overlay))
+                    # 非字典（标量）：flush 后该键将变为子表，直接返回叠加子树
+                    return copy.deepcopy(overlay)
+                return copy.deepcopy(value)
 
             # ② 待写键是查询键的祖先：取最长（最具体）的待写祖先，
             #    在其值子树内解析剩余路径
@@ -728,7 +745,8 @@ class ConfigManager:
                     if not isinstance(node, dict) or rk not in node:
                         return default
                     node = node[rk]
-                value = node
+                # 子树取自待写队列，同样返回隔离拷贝
+                value = copy.deepcopy(node)
             else:
                 # ③ 常规缓存树查询
                 value = self._walk_cache(key, default)
@@ -737,10 +755,10 @@ class ConfigManager:
             overlay = self._dirty_overlay(keys)
             if overlay:
                 if isinstance(value, dict):
-                    return self._deep_merge(value, overlay)
+                    return copy.deepcopy(self._deep_merge(value, overlay))
                 # 非字典（标量或键缺失）：flush 后该键将变为子表，直接返回
                 # 叠加结果，避免刷盘前读到旧标量（写后立读不一致的边角）
-                return overlay
+                return copy.deepcopy(overlay)
             return value
 
     def _walk_cache(self, key: str, default: Any) -> Any:

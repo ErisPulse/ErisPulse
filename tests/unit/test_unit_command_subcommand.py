@@ -26,42 +26,26 @@ command_module = importlib.import_module("ErisPulse.Core.Event.command")
 
 
 @pytest.fixture(autouse=True)
-def clean_state():
-    from ErisPulse.Core.adapter import adapter
-    from ErisPulse.Core.Event import _clear_all_handlers
+def clean_state(_clean_event_command_state):
+    """子命令：清理命令/事件系统状态（公共核心 + 参数解析默认态、交互与覆写通道）"""
+    from ErisPulse.Core.Event.command import command as command_handler
     from ErisPulse.Core.Event.message import message as message_handler
+    from ErisPulse.Core.Event.interaction import interaction
+    from ErisPulse.Core.Event import overrides as overrides_mod
 
-    _clear_all_handlers()
-    command_handler.commands.clear()
-    command_handler.aliases.clear()
-    command_handler.groups.clear()
-    command_handler.permissions.clear()
     command_handler._max_name_tokens = 1
     command_handler.block = True
     interaction.clear()
     overrides_mod._command.clear()
     overrides_mod.clear()
-    adapter._onebot_handlers.clear()
-    adapter._raw_handlers.clear()
-    adapter._onebot_middlewares.clear()
-    adapter._bots.clear()
     message_handler.handler.handlers.clear()
     message_handler.handler._handler_map.clear()
     yield
-    _clear_all_handlers()
-    command_handler.commands.clear()
-    command_handler.aliases.clear()
-    command_handler.groups.clear()
-    command_handler.permissions.clear()
     command_handler._max_name_tokens = 1
     command_handler.block = True
     interaction.clear()
     overrides_mod._command.clear()
     overrides_mod.clear()
-    adapter._onebot_handlers.clear()
-    adapter._raw_handlers.clear()
-    adapter._onebot_middlewares.clear()
-    adapter._bots.clear()
     message_handler.handler.handlers.clear()
     message_handler.handler._handler_map.clear()
 

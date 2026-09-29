@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from typing import ClassVar
 
 from ErisPulse.Core import BaseAdapter, RequestDSL, SendDSL
-from ErisPulse.Core.Bases import BaseConfig, BotAccountConfig, BaseI18n, I18nKey
+from ErisPulse.Core.Bases import BaseConfig, BaseI18n, I18nKey
 
 
 class MyAdapter(BaseAdapter):
@@ -114,7 +114,7 @@ class MyAdapter(BaseAdapter):
 
     def on_config_update(self, old_config, new_config):
         """配置热更新回调"""
-        self.logger.info(f"适配器配置已更新")
+        self.logger.info("适配器配置已更新")
         if old_config:
             self.logger.info(f"旧配置: {old_config}")
         self.logger.info(f"新配置: {new_config}")
@@ -232,7 +232,6 @@ class MyAdapter(BaseAdapter):
 
         使用 make_response / make_error 构造标准化响应
         """
-        cfg = self.cfg
         try:
             raise NotImplementedError(f"需要实现平台特定的API调用: {endpoint}")
         except Exception as e:

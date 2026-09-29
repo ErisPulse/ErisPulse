@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 ORM 真机验证（方向四：内置 ORM 在 mysql / postgres 上发布前验证）
 

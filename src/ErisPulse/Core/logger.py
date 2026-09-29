@@ -14,11 +14,11 @@ import datetime
 import inspect
 import json as _json
 import logging
-from typing import Any
 from collections import deque
 from collections.abc import Callable
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 from pathlib import Path
+from typing import Any
 
 from rich.console import Console
 from rich.highlighter import NullHighlighter

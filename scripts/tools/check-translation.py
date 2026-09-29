@@ -10,38 +10,21 @@ ErisPulse 翻译质量检查器
     python scripts/tools/check-translation.py --json
 """
 
+import argparse
+import json
 import os
 import re
-import json
-import argparse
 import sys
-from pathlib import Path
-from typing import Dict, List, Optional
 from datetime import datetime
-import threading
+from pathlib import Path
+
+from _common import IGNORE_DIRS, LEAK_PATTERN, Logger, count_fences  # scripts/tools 公共设施
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     try:
         sys.stdout.reconfigure(encoding="utf-8")
     except Exception:
         pass
-
-
-class Logger:
-    """线程安全的标准输出日志器"""
-
-    _lock = threading.Lock()
-
-    @classmethod
-    def log(cls, msg: str):
-        """
-        输出一行日志
-
-        :param msg: 日志内容
-        """
-        with cls._lock:
-            sys.stdout.write(msg + "\n")
-            sys.stdout.flush()
 
 
 def _has_chinese_chars(text: str) -> bool:
@@ -92,7 +75,7 @@ def _strip_non_prose(line: str) -> str:
     return cleaned
 
 
-def extract_headings(content: str) -> List[Dict]:
+def extract_headings(content: str) -> list[dict]:
     """
     从 Markdown 内容中提取标题结构
 
@@ -115,7 +98,7 @@ def extract_headings(content: str) -> List[Dict]:
     return headings
 
 
-def detect_garbled(content: str, target_lang: str) -> List[Dict]:
+def detect_garbled(content: str, target_lang: str) -> list[dict]:
     """
     检测翻译文件中的乱码与未翻译残留
 
@@ -164,41 +147,10 @@ def detect_garbled(content: str, target_lang: str) -> List[Dict]:
     return issues
 
 
-# 译文中的翻译提示词泄露特征（模型偶发将翻译规则回显进译文）。
-# 仅匹配绝不可能出现在正文中的“提示词残留”，避免误伤正常内容。
-# 覆盖 zh-CN / zh-TW / en / ja / ru 全部已观测变体（与 translate-docs.py 对齐）。
-LEAK_PATTERN = re.compile(
-    r"(?:return|send)\s+the\s+(?:complete\s+)?translated\s+Markdown|"
-    r"once\s+again,?\s+(?:please\s+)?(?:note|adhere|follow|if\s+the\s+document)|"
-    r"reminder:?\s+if\s+the\s+document\s+contains\s+(?:a\s+)?language|"
-    r"format\s+requirement\s+in\s+point\s+\d+\s+above|"
-    r"Path\s+Replacement\s+Rules?|"
-    r"language\s+switch(?:ing)?\s+line|"
-    r"replace\s+`?docs/[a-z-]+/`?\s+in\s+document\s+links|"
-    r"for\s+example:\s+`?docs/[a-z-]+/.*should\s+be\s+changed\s+to|"
-    r"for\s+links\s+pointing\s+to\s+non-current\s+language\s+version\s+files|"
-    r"(?:this\s+)?ensures?\s+(?:that\s+)?links\s+point\s+to\s+the\s+correct\s+language\s+version|"
-    r"请直接返回翻译后的完整|"
-    r"請直接返回翻譯後的完整|"
-    r"再次提醒：?如果(?:文档|文檔|文件)|"
-    r"上方第\s*8\s*[条條]|"
-    r"语言切换行本地化|"
-    r"你是一个专业的技术文档翻译专家|"
-    r"请将以下Markdown文档翻译成|"
-    r"这段中文提示|"
-    r"各言語の切り替え行|"
-    r"言語切り替え行がある場合|"
-    r"上記の第8条|"
-    r"翻訳後の完全なMarkdown|"
-    r"верните непосредственно переведенный|"
-    r"еще раз напоминаем|"
-    r"переведенный полный Markdown-документ|"
-    r"строки переключения языка",
-    re.IGNORECASE,
-)
+# 泄露特征正则迁移至 _common.LEAK_PATTERN（单一事实源超集；此前与 translate-docs 双份维护已漂移）
 
 
-def detect_prompt_leaks(content: str) -> List[str]:
+def detect_prompt_leaks(content: str) -> list[str]:
     """
     检测译文中残留的翻译提示词（模型回显的规则）。
 
@@ -223,7 +175,7 @@ class TranslationChecker:
 
     MIN_RATIO = 0.25
     WARN_RATIO = 0.35
-    IGNORE_DIRS = ["ai-support/prompts", "api-reference/auto_api", "_meta"]
+    # IGNORE_DIRS 引用 _common.IGNORE_DIRS（模块级，消除第三份复制）
     LANG_NAMES = {
         "zh-CN": "简体中文",
         "zh-TW": "繁体中文",
@@ -246,7 +198,7 @@ class TranslationChecker:
         self.cache_dir = Path(cache_dir)
         self.summary = {"checked": 0, "errors": 0, "warnings": 0, "missing": 0}
 
-    def _scan_source(self) -> List[Path]:
+    def _scan_source(self) -> list[Path]:
         """
         扫描源语言目录下的所有 Markdown 文件
 
@@ -261,7 +213,7 @@ class TranslationChecker:
                 for d in dirs
                 if not any(
                     Path(root) / d == self.source_dir / ig.replace("/", os.sep)
-                    for ig in self.IGNORE_DIRS
+                    for ig in IGNORE_DIRS
                 )
             ]
             for fn in fns:
@@ -269,7 +221,7 @@ class TranslationChecker:
                     files.append(Path(root) / fn)
         return sorted(files)
 
-    def check_file(self, src: Path, tgt: Path, lang: str, rel: str) -> List[Dict]:
+    def check_file(self, src: Path, tgt: Path, lang: str, rel: str) -> list[dict]:
         """
         检查单个源文件与其对应目标文件的差异
 
@@ -327,8 +279,8 @@ class TranslationChecker:
         # 翻译不应增删代码块；数量不一致说明存在丢围栏/多围栏的损坏
         # （如闭合围栏被误删导致后续内容被吞进代码块——此类损坏恰好
         # 保持偶数，仅查奇偶会漏报，必须精确比对）
-        src_fences = len(re.findall(r"^`{3,}", src_content, re.MULTILINE))
-        tgt_fences = len(re.findall(r"^`{3,}", tgt_content, re.MULTILINE))
+        src_fences = count_fences(src_content)
+        tgt_fences = count_fences(tgt_content)
         if src_fences != tgt_fences:
             issues.append(
                 {
@@ -370,7 +322,7 @@ class TranslationChecker:
                 return True
         return False
 
-    def run(self, langs: Optional[List[str]] = None, fix: bool = False) -> Dict:
+    def run(self, langs: list[str] | None = None, fix: bool = False) -> dict:
         """
         执行翻译质量检查
 
@@ -394,12 +346,12 @@ class TranslationChecker:
         Logger.log(f"检查语言: {', '.join(langs)}")
         Logger.log("")
 
-        all_results: Dict[str, Dict[str, List[Dict]]] = {}
+        all_results: dict[str, dict[str, list[dict]]] = {}
         fixed = 0
 
         for lang in langs:
             Logger.log(f"--- {self.LANG_NAMES.get(lang, lang)} ({lang}) ---")
-            lang_results: Dict[str, List[Dict]] = {}
+            lang_results: dict[str, list[dict]] = {}
             sources = self._scan_source()
 
             for src in sources:
@@ -422,7 +374,7 @@ class TranslationChecker:
                         if fix and issue["severity"] == "error":
                             if self._delete_cache(rel, lang):
                                 fixed += 1
-                                Logger.log(f"    -> 已删除缓存")
+                                Logger.log("    -> 已删除缓存")
 
             # root README：与 translate-docs.py 一致，源为 README.zh-CN.md；
             # 英文版即主 README（README.md），其余语言为 README.{lang}.md
@@ -513,7 +465,7 @@ class TranslationChecker:
                                     if cand and cand.exists():
                                         cand.unlink()
                                         fixed += 1
-                                        Logger.log(f"    -> 已删除缓存")
+                                        Logger.log("    -> 已删除缓存")
 
             if not lang_results:
                 Logger.log("  [OK] 无问题")

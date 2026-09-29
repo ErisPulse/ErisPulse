@@ -8,8 +8,6 @@ scope.blocked 生命周期事件单元测试（方向十一配套：拦截可观
 import asyncio
 import importlib
 
-import pytest
-
 from ErisPulse.Core.scope import ScopeManager
 
 # importlib.import_module 返回真实子模块（Core.scope 包属性被单例遮蔽）

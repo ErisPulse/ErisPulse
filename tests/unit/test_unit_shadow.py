@@ -13,11 +13,11 @@ import types
 
 import pytest
 
+from ErisPulse.Core.Bases import BaseAdapter
+from ErisPulse.Core.Bases.module import BaseModule
 from ErisPulse.Core.Event import message
 from ErisPulse.Core.Event.command import command as command_handler
 from ErisPulse.Core.Event.wrapper import Event
-from ErisPulse.Core.Bases import BaseAdapter
-from ErisPulse.Core.Bases.module import BaseModule
 from ErisPulse.Core.module import ModuleManager
 from ErisPulse.Core.ownership import ownership
 from ErisPulse.Core.shadow import shadow_ledger, shadow_manager
@@ -25,29 +25,23 @@ from ErisPulse.runtime.context import owner_scope
 
 
 @pytest.fixture(autouse=True)
-def clean_state():
-    from ErisPulse.Core.adapter import adapter as adapter_manager
-    from ErisPulse.Core.Event import _clear_all_handlers
+def clean_state(_clean_event_command_state):
+    """影子模块：清理命令/事件系统状态（公共核心 + 影子目录/账本/归属权）"""
+    from ErisPulse.Core.Event.command import command as command_handler
+    from ErisPulse.Core.shadow import shadow_ledger, shadow_manager
+    from ErisPulse.Core.ownership import ownership
 
-    def _clean():
-        _clear_all_handlers()
-        command_handler.commands.clear()
-        command_handler.aliases.clear()
-        command_handler.groups.clear()
-        command_handler.permissions.clear()
+    def _extras() -> None:
         command_handler._shadow_catalog.clear()
         command_handler._gate.clear_all()
-        adapter_manager._onebot_handlers.clear()
-        adapter_manager._raw_handlers.clear()
-        adapter_manager._bots.clear()
         shadow_ledger._entries.clear()
         shadow_manager._shadows.clear()
         shadow_manager._overlays.clear()
         ownership._shadow_owners.clear()
 
-    _clean()
+    _extras()
     yield
-    _clean()
+    _extras()
 
 
 def _msg(text, user_id="u1"):
@@ -67,7 +61,7 @@ def _msg(text, user_id="u1"):
 class _FakeAdapter(BaseAdapter):
     def __init__(self, sdk=None):
         super().__init__()
-        self.api_calls: "list[str]" = []
+        self.api_calls: list[str] = []
 
     async def start(self):
         pass

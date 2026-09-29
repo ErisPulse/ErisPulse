@@ -15,56 +15,17 @@ ErisPulse API 文档生成器
     python scripts/tools/generate-api-docs.py --src src --output docs/api-reference/auto_api
 """
 
-import os
-import ast
-import re
 import argparse
+import ast
+import os
+import re
 import shutil
-import sys
-import threading
 from pathlib import Path
-from typing import List, Dict, Tuple, Optional
+
+from _common import Logger  # scripts/tools 公共日志器
 
 
-class Logger:
-    """线程安全的标准输出日志器"""
-
-    _lock = threading.Lock()
-
-    @classmethod
-    def log(cls, msg: str):
-        """
-        输出一行日志
-
-        :param msg: 日志内容
-        """
-        with cls._lock:
-            sys.stdout.write(msg + "\n")
-            sys.stdout.flush()
-
-    @classmethod
-    def progress(cls, rel_path: str, status: str, detail: str = ""):
-        """
-        输出单条 API 文档生成进度
-
-        :param rel_path: 文件相对路径
-        :param status: 状态标识（gen/clean/done/fail 等）
-        :param detail: 附加详情，可选
-        """
-        tag = {
-            "gen": "[GEN]",
-            "clean": "[DEL]",
-            "copy": "[COPY]",
-            "done": "[DONE]",
-            "fail": "[FAIL]",
-        }.get(status, f"[{status.upper()}]")
-        line = f"  {tag} {rel_path}"
-        if detail:
-            line += f"  {detail}"
-        cls.log(line)
-
-
-def process_docstring_for_markdown(docstring: str) -> Optional[str]:
+def process_docstring_for_markdown(docstring: str) -> str | None:
     """
     将文档字符串转换为纯 Markdown 格式
 
@@ -84,28 +45,28 @@ def process_docstring_for_markdown(docstring: str) -> Optional[str]:
     """
     if not docstring:
         return None
-    
+
     # 检查忽略标签
     if "{!--< ignore >!--}" in docstring:
         return None
-    
+
     lines = docstring.split('\n')
     result = []
     in_code_block = False
     in_tip_block = False
     tip_content = []
-    
+
     for line in lines:
         # 处理代码块
         if '```' in line:
             in_code_block = not in_code_block
             result.append(line)
             continue
-        
+
         if in_code_block:
             result.append(line)
             continue
-        
+
         # 处理提示块（多行）
         # 单行 tips 标签也会命中此分支，当 tips 标签后还有内容时
         # 收集为单元素列表；后续若无 /tips 结束标签，在循环结束后补处理
@@ -113,13 +74,13 @@ def process_docstring_for_markdown(docstring: str) -> Optional[str]:
             in_tip_block = True
             tip_content = [line.split("{!--< tips >!--}")[-1].strip()]
             continue
-        
+
         if "{!--< /tips >!--}" in line:
             in_tip_block = False
             before_end = line.split("{!--< /tips >!--}")[0].strip()
             if before_end:
                 tip_content.append(before_end)
-            
+
             if tip_content:
                 result.append("> **提示**")
                 for tip_line in tip_content:
@@ -128,35 +89,35 @@ def process_docstring_for_markdown(docstring: str) -> Optional[str]:
                 result.append("")
             tip_content = []
             continue
-        
+
         if in_tip_block:
             tip_content.append(line.strip())
             continue
-        
+
         # 处理内部使用标签
         if "{!--< internal-use >!--}" in line:
             content = line.split("{!--< internal-use >!--}")[-1].strip()
             result.append(f"> **内部方法** {content}".rstrip())
             continue
-        
+
         # 处理过时标签
         if "{!--< deprecated >!--}" in line:
             content = line.split("{!--< deprecated >!--}")[-1].strip()
             result.append(f"> **已弃用** {content}".rstrip())
             continue
-        
+
         # 处理实验性功能标签
         if "{!--< experimental >!--}" in line:
             content = line.split("{!--< experimental >!--}")[-1].strip()
             result.append(f"> **实验性功能** {content}".rstrip())
             continue
-        
+
         # 跳过处理过的标签行
         if "{!--<" in line and ">!--}" in line:
             continue
-        
+
         result.append(line)
-    
+
     # 处理未闭合的单行 tips（无 /tips 结束标签的情况）
     if in_tip_block and tip_content:
         result.append("> **提示**")
@@ -164,10 +125,10 @@ def process_docstring_for_markdown(docstring: str) -> Optional[str]:
             if tip_line:
                 result.append(f"> {tip_line}")
         result.append("")
-    
+
     # 处理参数说明
     processed = "\n".join(result)
-    
+
     # 转换 :param 格式
     # 支持带括号: :param name: [type] description
     # 支持不带括号: :param name: type description (type 为首个单词)
@@ -187,7 +148,7 @@ def process_docstring_for_markdown(docstring: str) -> Optional[str]:
         r"- **\1**: \2",
         processed
     )
-    
+
     # 转换多行 :return: 格式
     # :return:
     #     type: description
@@ -200,7 +161,7 @@ def process_docstring_for_markdown(docstring: str) -> Optional[str]:
         ),
         processed
     )
-    
+
     # 转换 :return 格式
     # 带括号: :return: [type] description
     # 不带括号: :return: type description
@@ -219,14 +180,14 @@ def process_docstring_for_markdown(docstring: str) -> Optional[str]:
         r"**返回值**: \1",
         processed
     )
-    
+
     # 转换 :raises 格式
     processed = re.sub(
         r":raises (\S+):\s*(.*)",
         r"**异常**: `\1` - \2",
         processed
     )
-    
+
     # 转换 :example 格式（支持多行，以 >>> 开头的行）
     example_pattern = r":example:\s*\n((?:>>>.*(?:\n|$))+)"
     processed = re.sub(
@@ -235,14 +196,14 @@ def process_docstring_for_markdown(docstring: str) -> Optional[str]:
         processed,
         flags=re.DOTALL
     )
-    
+
     # 清理多余的空行
     processed = re.sub(r"\n{3,}", "\n\n", processed.strip())
-    
+
     return processed
 
 
-def extract_class_info(class_node: ast.ClassDef, is_nested: bool = False) -> Dict:
+def extract_class_info(class_node: ast.ClassDef, is_nested: bool = False) -> dict:
     """
     提取类的信息，包括嵌套类
 
@@ -251,16 +212,16 @@ def extract_class_info(class_node: ast.ClassDef, is_nested: bool = False) -> Dic
     :return: 类信息字典
     """
     class_doc = ast.get_docstring(class_node)
-    
+
     methods = []
     nested_classes = []
-    
+
     # 提取类方法和嵌套类
     for item in class_node.body:
         # 提取方法
         if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
             method_doc = ast.get_docstring(item)
-            
+
             if method_doc:  # 只有方法有文档才添加
                 # 获取函数签名
                 args = []
@@ -268,7 +229,7 @@ def extract_class_info(class_node: ast.ClassDef, is_nested: bool = False) -> Dic
                     [arg.arg for arg in item.args.args][-len(item.args.defaults):],
                     item.args.defaults
                 )) if item.args.defaults else {}
-                
+
                 for arg in item.args.args:
                     if arg.arg == "self" or arg.arg == "cls":
                         continue
@@ -279,29 +240,29 @@ def extract_class_info(class_node: ast.ClassDef, is_nested: bool = False) -> Dic
                         default_val = ast.unparse(defaults[arg.arg])
                         arg_str += f" = {default_val}"
                     args.append(arg_str)
-                
+
                 signature = f"{item.name}({', '.join(args)})"
                 if isinstance(item, ast.AsyncFunctionDef):
                     signature = f"async {signature}"
-                
+
                 methods.append({
                     "name": item.name,
                     "signature": signature,
                     "doc": method_doc,
                     "is_async": isinstance(item, ast.AsyncFunctionDef)
                 })
-        
+
         # 递归提取嵌套类
         elif isinstance(item, ast.ClassDef):
             nested_class_info = extract_class_info(item, is_nested=True)
             # 只添加有文档或方法/嵌套类的嵌套类
             if nested_class_info["doc"] or nested_class_info["methods"] or nested_class_info.get("nested_classes"):
                 nested_classes.append(nested_class_info)
-    
+
     # 获取类签名
     bases = [ast.unparse(base) for base in class_node.bases] if class_node.bases else []
     class_signature = f"class {class_node.name}({', '.join(bases)})" if bases else f"class {class_node.name}"
-    
+
     return {
         "name": class_node.name,
         "signature": class_signature,
@@ -312,14 +273,14 @@ def extract_class_info(class_node: ast.ClassDef, is_nested: bool = False) -> Dic
     }
 
 
-def parse_python_file(file_path: str) -> Tuple[Optional[str], List[Dict], List[Dict]]:
+def parse_python_file(file_path: str) -> tuple[str | None, list[dict], list[dict]]:
     """
     解析Python文件，提取模块文档、类和函数信息
 
     :param file_path: Python文件路径
     :return: (模块文档, 类列表, 函数列表)
     """
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         source = f.read()
 
     try:
@@ -327,27 +288,27 @@ def parse_python_file(file_path: str) -> Tuple[Optional[str], List[Dict], List[D
     except SyntaxError:
         Logger.progress(file_path, "fail", "语法错误")
         return None, [], []
-    
+
     # 提取模块文档
     module_doc = ast.get_docstring(module)
-    
+
     classes = []
     functions = []
-    
+
     # 遍历AST节点
     for node in module.body:
         # 处理类定义
         if isinstance(node, ast.ClassDef):
             class_info = extract_class_info(node, is_nested=False)
-            
+
             # 只有类有文档或者有方法或嵌套类时才添加类
             if class_info["doc"] or class_info["methods"] or class_info.get("nested_classes"):
                 classes.append(class_info)
-        
+
         # 处理函数定义
         elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             func_doc = ast.get_docstring(node)
-            
+
             if func_doc:
                 # 获取函数签名
                 args = []
@@ -355,7 +316,7 @@ def parse_python_file(file_path: str) -> Tuple[Optional[str], List[Dict], List[D
                     [arg.arg for arg in node.args.args][-len(node.args.defaults):],
                     node.args.defaults
                 )) if node.args.defaults else {}
-                
+
                 for arg in node.args.args:
                     arg_str = arg.arg
                     if arg.annotation:
@@ -364,22 +325,22 @@ def parse_python_file(file_path: str) -> Tuple[Optional[str], List[Dict], List[D
                         default_val = ast.unparse(defaults[arg.arg])
                         arg_str += f" = {default_val}"
                     args.append(arg_str)
-                
+
                 signature = f"{node.name}({', '.join(args)})"
                 if isinstance(node, ast.AsyncFunctionDef):
                     signature = f"async {signature}"
-                
+
                 functions.append({
                     "name": node.name,
                     "signature": signature,
                     "doc": func_doc,
                     "is_async": isinstance(node, ast.AsyncFunctionDef)
                 })
-    
+
     return module_doc, classes, functions
 
 
-def generate_class_markdown(cls: Dict, base_heading_level: int = 3) -> str:
+def generate_class_markdown(cls: dict, base_heading_level: int = 3) -> str:
     """
     生成类的Markdown文档，包括嵌套类
 
@@ -388,11 +349,11 @@ def generate_class_markdown(cls: Dict, base_heading_level: int = 3) -> str:
     :return: Markdown格式的类文档字符串
     """
     content = []
-    
+
     # 处理类文档
     processed_class_doc = process_docstring_for_markdown(cls["doc"]) if cls["doc"] else None
-    class_doc = processed_class_doc if processed_class_doc else f"{cls['name']} 类提供相关功能。"
-    
+    class_doc = processed_class_doc or f"{cls['name']} 类提供相关功能。"
+
     # 类标题
     heading_prefix = "#" * base_heading_level
     content.append(f"""{heading_prefix} `{cls['signature']}`
@@ -400,28 +361,28 @@ def generate_class_markdown(cls: Dict, base_heading_level: int = 3) -> str:
 {class_doc}
 
 """)
-    
+
     # 嵌套类（在方法之前显示）
     if cls.get("nested_classes"):
         nested_heading_level = base_heading_level + 1
         nested_heading_prefix = "#" * nested_heading_level
         content.append(f"{nested_heading_prefix} 嵌套类\n\n")
-        
+
         for nested_cls in cls["nested_classes"]:
             # 递归生成嵌套类文档
             nested_content = generate_class_markdown(nested_cls, nested_heading_level + 1)
             content.append(nested_content)
-    
+
     # 类方法
     if cls["methods"]:
         methods_heading_level = base_heading_level + 1
         methods_heading_prefix = "#" * methods_heading_level
         content.append(f"{methods_heading_prefix} 方法列表\n\n")
-        
+
         for method in cls["methods"]:
             # signature 已包含 async 前缀，无需重复添加
             processed_doc = process_docstring_for_markdown(method["doc"])
-            
+
             method_heading_level = methods_heading_level + 1
             method_heading_prefix = "#" * method_heading_level
             content.append(f"""{method_heading_prefix} `{method['signature']}`
@@ -431,12 +392,12 @@ def generate_class_markdown(cls: Dict, base_heading_level: int = 3) -> str:
 ---
 
 """)
-    
+
     return "\n".join(content)
 
 
-def generate_markdown(module_path: str, module_doc: Optional[str],
-                     classes: List[Dict], functions: List[Dict]) -> str:
+def generate_markdown(module_path: str, module_doc: str | None,
+                     classes: list[dict], functions: list[dict]) -> str:
     """
     生成Markdown格式API文档
 
@@ -447,10 +408,10 @@ def generate_markdown(module_path: str, module_doc: Optional[str],
     :return: Markdown格式的文档字符串
     """
     content = []
-    
+
     # 处理模块文档
     processed_module_doc = process_docstring_for_markdown(module_doc) if module_doc else None
-    
+
     # 文档头部
     content.append(f"""# `{module_path}` 模块
 
@@ -459,20 +420,20 @@ def generate_markdown(module_path: str, module_doc: Optional[str],
 ## 模块概述
 
 """)
-    
+
     # 模块文档
     if processed_module_doc:
         content.append(f"{processed_module_doc}\n\n---\n")
     else:
         content.append("该模块暂无概述信息。\n\n---\n")
-    
+
     # 函数部分
     if functions:
         content.append("## 函数列表\n\n")
         for func in functions:
             # signature 已包含 async 前缀，无需重复添加
             processed_doc = process_docstring_for_markdown(func["doc"])
-            
+
             content.append(f"""### `{func['signature']}`
 
 {processed_doc}
@@ -480,7 +441,7 @@ def generate_markdown(module_path: str, module_doc: Optional[str],
 ---
 
 """)
-    
+
     # 类部分
     if classes:
         content.append("## 类列表\n\n")
@@ -488,11 +449,11 @@ def generate_markdown(module_path: str, module_doc: Optional[str],
             # 使用辅助函数生成类文档（包括嵌套类）
             class_content = generate_class_markdown(cls, base_heading_level=3)
             content.append(class_content)
-    
+
     return "\n".join(content)
 
 
-def count_nested_classes(classes: List[Dict]) -> int:
+def count_nested_classes(classes: list[dict]) -> int:
     """
     递归统计嵌套类数量
 
@@ -509,7 +470,7 @@ def count_nested_classes(classes: List[Dict]) -> int:
     return count
 
 
-def count_all_methods(classes: List[Dict]) -> int:
+def count_all_methods(classes: list[dict]) -> int:
     """
     递归统计所有类的方法数量（包括嵌套类）
 
@@ -526,7 +487,7 @@ def count_all_methods(classes: List[Dict]) -> int:
     return count
 
 
-def generate_index_markdown(modules_info: Dict[str, Dict]) -> str:
+def generate_index_markdown(modules_info: dict[str, dict]) -> str:
     """
     生成API文档索引页
 
@@ -534,7 +495,7 @@ def generate_index_markdown(modules_info: Dict[str, Dict]) -> str:
     :return: Markdown格式的索引文档字符串
     """
     content = []
-    
+
     # 统计信息（包括类的方法和嵌套类）
     total_modules = len(modules_info)
     total_classes = sum(len(info.get('classes', [])) for info in modules_info.values())
@@ -543,7 +504,7 @@ def generate_index_markdown(modules_info: Dict[str, Dict]) -> str:
     total_methods = sum(count_all_methods(info.get('classes', [])) for info in modules_info.values())
     # 统计所有嵌套类
     total_nested_classes = sum(count_nested_classes(info.get('classes', [])) for info in modules_info.values())
-    
+
     content.append(f"""# ErisPulse API 文档
 
 ---
@@ -559,7 +520,7 @@ def generate_index_markdown(modules_info: Dict[str, Dict]) -> str:
 > 
 > 如需修改 API 文档，请在源代码中更新对应模块、类和函数的 docstring。
 > 
-> 自动生成脚本位置：`scripts/tools/update-api-docs.py`
+> 自动生成脚本位置：`scripts/tools/generate-api-docs.py`
 
 ---
 
@@ -575,21 +536,21 @@ def generate_index_markdown(modules_info: Dict[str, Dict]) -> str:
 ## 模块列表
 
 """)
-    
+
     # 按模块路径排序
     sorted_modules = sorted(modules_info.keys())
-    
+
     for module_path in sorted_modules:
         info = modules_info[module_path]
         classes = info.get('classes', [])
         functions = info.get('functions', [])
-        
+
         # 计算类的方法总数
         methods_count = sum(len(cls.get('methods', [])) for cls in classes)
-        
+
         # 计算相对路径
         md_path = module_path.replace('.', '/') + '.md'
-        
+
         # 统计标识
         badges = []
         if classes:
@@ -599,17 +560,17 @@ def generate_index_markdown(modules_info: Dict[str, Dict]) -> str:
         if functions:
             badges.append(f"{len(functions)} 个函数")
         badge_str = ' | '.join(badges) if badges else "模块文档"
-        
+
         content.append(f"""### [{module_path}]({md_path})
 
 {badge_str}
 
 """)
-    
+
     return "\n".join(content)
 
 
-def generate_api_docs(src_dir: str, output_dir: str) -> Dict[str, Dict]:
+def generate_api_docs(src_dir: str, output_dir: str) -> dict[str, dict]:
     """
     生成API文档
 
@@ -682,7 +643,7 @@ def generate_api_docs(src_dir: str, output_dir: str) -> Dict[str, Dict]:
     return modules_info
 
 
-def get_available_languages(docs_dir: Path) -> List[str]:
+def get_available_languages(docs_dir: Path) -> list[str]:
     """
     获取可用的语言列表
 
@@ -744,7 +705,7 @@ if __name__ == "__main__":
     Logger.log("ErisPulse API 文档生成器")
     Logger.log("=" * 60)
     Logger.log(f"源代码目录: {args.src}")
-    Logger.log(f"语言: {args.lang if args.lang else '全部'}")
+    Logger.log(f"语言: {args.lang or '全部'}")
     Logger.log("")
 
     # 如果指定了语言，只为该语言生成

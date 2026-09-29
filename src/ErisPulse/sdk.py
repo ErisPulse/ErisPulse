@@ -596,7 +596,7 @@ class SDK:
         *,
         before_init: Callable[[], Any] | None = None,
         after_init: Callable[[], Any] | None = None,
-    ) -> "asyncio.Task | concurrent.futures.Future":
+    ) -> asyncio.Task | concurrent.futures.Future:
         """
         SDK 初始化入口，返回 Task 对象
 

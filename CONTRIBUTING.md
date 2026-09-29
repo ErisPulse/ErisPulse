@@ -79,7 +79,7 @@ cd ErisPulse
 Use `uv` to sync the project environment:
 
 ```bash
-uv sync
+uv sync --extra test
 # Activate venv: source .venv/bin/activate (macOS/Linux) or .venv\Scripts\activate (Windows)
 ```
 
@@ -106,22 +106,22 @@ ErisPulse/
 ├── config/                  # Default config
 ├── docs/                    # Multilingual docs (zh-CN / en / ja / ru / zh-TW)
 ├── examples/                # Example code
-├── tests/                   # Tests (unit / integration / performance / stress)
+├── tests/                   # Tests (unit / integration / performance / stress / devs)
 ├── scripts/                 # Utility scripts
 ├── workers/                 # Background workers
 ├── pyproject.toml           # Project & dependency config
-└── pytest.ini               # Test config
+└── pyproject.toml           # Test config (in [tool.pytest.ini_options])
 ```
 
 ## Type Stub Generation
 
-We have a script for generating `.pyi` stub files. You won't see `.pyi` files in the repository. If you need these annotations, run `python3 scripts/tools/generate-type-stubs.py` — it generates `.pyi` files locally. Before committing, clean them up with `python3 scripts/tools/generate-type-stubs.py --clean-only`.
+> The stub generator (`scripts/tools/generate-type-stubs.py`) currently has known defects and is **suspended** (same note as zh-CN; it is not run in the release pipeline either). Do not run it, and never commit generated `.pyi` files.
 
 ## Testing & Linting
 
 ### Run Tests
 
-The project uses `pytest` (config in `pytest.ini`, with coverage, `asyncio-mode=auto`, and test markers). Run in the virtual environment:
+The project uses `pytest` (config in `pyproject.toml` under `[tool.pytest.ini_options]`, with coverage, `asyncio-mode=auto`, and test markers). Run in the virtual environment:
 
 ```bash
 # All tests (with coverage report)
@@ -137,6 +137,21 @@ uv run pytest tests/unit/test_xxx.py::TestClass::test_method
 ```
 
 Filter by marker with `-m`. Common markers: `unit`, `integration`, `e2e`, `adapter`, `module`, `event`, `lifecycle`, `config`, `storage`, `logger`, `router`.
+
+> `tests/devs/` holds manual developer verification scripts (real-machine storage/ORM checks); they are excluded from pytest collection and run standalone.
+
+### CI Gate Scripts (run locally before pushing)
+
+```bash
+# i18n five-language key parity (Core + CLI locales; hard CI gate)
+python scripts/tools/check_i18n_locales.py
+# docs internal relative links (hard CI gate)
+python scripts/tools/check_docs_links.py
+# release version consistency (pyproject == CHANGELOG latest entry)
+python scripts/tools/release_check.py
+```
+
+See `AGENTS.md` for the full contributor rulebook, and `.pre-commit-config.yaml` for the available local hooks (`pre-commit install` to enable).
 
 ### Lint & Format
 
@@ -261,7 +276,7 @@ cd ErisPulse
 使用 `uv` 同步项目环境：
 
 ```bash
-uv sync
+uv sync --extra test
 # 激活虚拟环境: source .venv/bin/activate (macOS/Linux) 或 .venv\Scripts\activate (Windows)
 ```
 
@@ -288,11 +303,11 @@ ErisPulse/
 ├── config/                  # 默认配置
 ├── docs/                    # 多语言文档 (zh-CN / en / ja / ru / zh-TW)
 ├── examples/                # 示例代码
-├── tests/                   # 测试代码 (unit / integration / performance / stress)
+├── tests/                   # 测试代码 (unit / integration / performance / stress / devs)
 ├── scripts/                 # 工具脚本
 ├── workers/                 # 后台 Worker
 ├── pyproject.toml           # 项目与依赖配置
-└── pytest.ini               # 测试配置
+└── pyproject.toml           # 测试配置（[tool.pytest.ini_options]）
 ```
 
 ## 注解存根生成
@@ -310,7 +325,7 @@ ErisPulse/
 
 ### 运行测试
 
-项目使用 `pytest`，配置见 `pytest.ini`（已开启覆盖率、`asyncio-mode=auto` 及各类测试标记）。在虚拟环境中执行：
+项目使用 `pytest`，配置见 `pyproject.toml` 的 `[tool.pytest.ini_options]`（已开启覆盖率、`asyncio-mode=auto` 及各类测试标记）。在虚拟环境中执行：
 
 ```bash
 # 运行全部测试（含覆盖率报告）
@@ -326,6 +341,21 @@ uv run pytest tests/unit/test_xxx.py::TestClass::test_method
 ```
 
 可用 `-m` 按标记筛选，常用标记：`unit`、`integration`、`e2e`、`adapter`、`module`、`event`、`lifecycle`、`config`、`storage`、`logger`、`router`。
+
+> `tests/devs/` 为手动开发者验证脚本（存储/ORM 真机检查），不参与 pytest 收集，单独执行。
+
+### CI 门禁脚本（推送前建议本地先跑）
+
+```bash
+# i18n 五语言键一致性（Core + CLI locales；CI 硬门禁）
+python scripts/tools/check_i18n_locales.py
+# docs 内部相对链接（CI 硬门禁）
+python scripts/tools/check_docs_links.py
+# 发布版本一致性（pyproject == CHANGELOG 最新条目）
+python scripts/tools/release_check.py
+```
+
+完整贡献规则见 `AGENTS.md`；本地钩子见 `.pre-commit-config.yaml`（`pre-commit install` 启用）。
 
 ### 代码检查与格式化
 
@@ -460,7 +490,7 @@ cd ErisPulse
 使用 `uv` 同步專案環境：
 
 ```bash
-uv sync
+uv sync --extra test
 # 啟用虛擬環境: source .venv/bin/activate (macOS/Linux) 或 .venv\Scripts\activate (Windows)
 ```
 
@@ -487,22 +517,22 @@ ErisPulse/
 ├── config/                  # 預設設定
 ├── docs/                    # 多語言文件 (zh-CN / en / ja / ru / zh-TW)
 ├── examples/                # 範例程式碼
-├── tests/                   # 測試程式碼 (unit / integration / performance / stress)
+├── tests/                   # 測試程式碼 (unit / integration / performance / stress / devs)
 ├── scripts/                 # 工具腳本
 ├── workers/                 # 背景 Worker
 ├── pyproject.toml           # 專案與相依性設定
-└── pytest.ini               # 測試設定
+└── pyproject.toml           # 測試設定（[tool.pytest.ini_options]）
 ```
 
 ## 型別存根生成
 
-我們有一個用於生成 `.pyi` 存根檔案的腳本，在倉庫中您看不到 `.pyi` 檔案。如果您需要使用這些註解，請執行 `python3 scripts/tools/generate-type-stubs.py`，它將在本地生成 `.pyi` 檔案。提交時，請確保已清理本地 `.pyi` 檔案，使用 `python3 scripts/tools/generate-type-stubs.py --clean-only` 完成清理。
+> 存根生成器（`scripts/tools/generate-type-stubs.py`）存在缺陷，目前已暫停使用（與簡體中文段落一致，發布管線亦不執行）。請勿執行，也不要將生成的 `.pyi` 檔案提交到倉庫。
 
 ## 測試與程式碼檢查
 
 ### 執行測試
 
-專案使用 `pytest`，設定見 `pytest.ini`（已開啟覆蓋率、`asyncio-mode=auto` 及各類測試標記）。在虛擬環境中執行：
+專案使用 `pytest`，設定見 `pyproject.toml` 的 `[tool.pytest.ini_options]`（已開啟覆蓋率、`asyncio-mode=auto` 及各類測試標記）。在虛擬環境中執行：
 
 ```bash
 # 執行全部測試（含覆蓋率報告）
@@ -518,6 +548,18 @@ uv run pytest tests/unit/test_xxx.py::TestClass::test_method
 ```
 
 可用 `-m` 按標記篩選，常用標記：`unit`、`integration`、`e2e`、`adapter`、`module`、`event`、`lifecycle`、`config`、`storage`、`logger`、`router`。
+
+> `tests/devs/` 為手動開發者驗證腳本（儲存/ORM 真機檢查），不參與 pytest 收集，單獨執行。
+
+### CI 閘門腳本（推送前建議本地先跑）
+
+```bash
+python scripts/tools/check_i18n_locales.py   # i18n 五語言鍵一致性（CI 硬閘門）
+python scripts/tools/check_docs_links.py     # docs 內部相對連結（CI 硬閘門）
+python scripts/tools/release_check.py        # 發布版本一致性
+```
+
+完整貢獻規則見 `AGENTS.md`；本地鉤子見 `.pre-commit-config.yaml`。
 
 ### 程式碼檢查與格式化
 
@@ -652,7 +694,7 @@ cd ErisPulse
 `uv` を使ってプロジェクト環境を同期：
 
 ```bash
-uv sync
+uv sync --extra test
 # 仮想環境を有効化: source .venv/bin/activate (macOS/Linux) または .venv\Scripts\activate (Windows)
 ```
 
@@ -679,22 +721,22 @@ ErisPulse/
 ├── config/                  # デフォルト設定
 ├── docs/                    # 多言語ドキュメント (zh-CN / en / ja / ru / zh-TW)
 ├── examples/                # サンプルコード
-├── tests/                   # テストコード (unit / integration / performance / stress)
+├── tests/                   # テストコード (unit / integration / performance / stress / devs)
 ├── scripts/                 # ユーティリティスクリプト
 ├── workers/                 # バックグラウンド Worker
 ├── pyproject.toml           # プロジェクト & 依存関係設定
-└── pytest.ini               # テスト設定
+└── pyproject.toml           # テスト設定（[tool.pytest.ini_options]）
 ```
 
 ## 型スタブ生成
 
-`.pyi` スタブファイルを生成するスクリプトがあります。リポジトリには `.pyi` ファイルは含まれません。これらの注釈が必要な場合は `python3 scripts/tools/generate-type-stubs.py` を実行すると、ローカルに `.pyi` ファイルが生成されます。コミット前に `python3 scripts/tools/generate-type-stubs.py --clean-only` でクリーンアップしてください。
+> スタブジェネレーター（`scripts/tools/generate-type-stubs.py`）には既知の欠陥があり、現在は使用停止中です（簡体字中国語の節と同じ）。実行しないでください。生成された `.pyi` ファイルをコミットしないでください。
 
 ## テストとリント
 
 ### テストの実行
 
-プロジェクトは `pytest` を使用（設定は `pytest.ini`、カバレッジ、`asyncio-mode=auto`、各種テストマーカーあり）。仮想環境で実行：
+プロジェクトは `pytest` を使用（設定は `pyproject.toml` の `[tool.pytest.ini_options]`、カバレッジ、`asyncio-mode=auto`、各種テストマーカーあり）。仮想環境で実行：
 
 ```bash
 # 全テスト実行（カバレッジレポート付き）
@@ -710,6 +752,18 @@ uv run pytest tests/unit/test_xxx.py::TestClass::test_method
 ```
 
 `-m` でマーカー絞り込み可能。主要マーカー：`unit`、`integration`、`e2e`、`adapter`、`module`、`event`、`lifecycle`、`config`、`storage`、`logger`、`router`。
+
+> `tests/devs/` は手動検証スクリプト（ストレージ/ORM 実機チェック）で、pytest 収集対象外です。
+
+### CI ゲートスクリプト（push 前にローカル実行を推奨）
+
+```bash
+python scripts/tools/check_i18n_locales.py   # i18n 5言語キー整合（CI ハードゲート）
+python scripts/tools/check_docs_links.py     # docs 内部リンク（CI ハードゲート）
+python scripts/tools/release_check.py        # リリースバージョン整合
+```
+
+貢献ルール一式は `AGENTS.md`、ローカルフックは `.pre-commit-config.yaml` を参照。
 
 ### リントとフォーマット
 
@@ -834,7 +888,7 @@ cd ErisPulse
 Используйте `uv` для синхронизации среды проекта:
 
 ```bash
-uv sync
+uv sync --extra test
 # Активация venv: source .venv/bin/activate (macOS/Linux) или .venv\Scripts\activate (Windows)
 ```
 
@@ -861,22 +915,22 @@ ErisPulse/
 ├── config/                  # Конфигурация по умолчанию
 ├── docs/                    # Многоязычная документация (zh-CN / en / ja / ru / zh-TW)
 ├── examples/                # Примеры кода
-├── tests/                   # Тесты (unit / integration / performance / stress)
+├── tests/                   # Тесты (unit / integration / performance / stress / devs)
 ├── scripts/                 # Вспомогательные скрипты
 ├── workers/                 # Фоновые Worker
 ├── pyproject.toml           # Конфигурация проекта и зависимостей
-└── pytest.ini               # Конфигурация тестов
+└── pyproject.toml           # Конфигурация тестов ([tool.pytest.ini_options])
 ```
 
 ## Генерация заглушек типов
 
-У нас есть скрипт для генерации файлов заглушек `.pyi`. В репозитории вы не найдёте `.pyi`-файлов. Если нужны эти аннотации, выполните `python3 scripts/tools/generate-type-stubs.py` — он сгенерирует `.pyi`-файлы локально. Перед коммитом очистите их командой `python3 scripts/tools/generate-type-stubs.py --clean-only`.
+> Генератор заглушек (`scripts/tools/generate-type-stubs.py`) содержит известные дефекты и **приостановлен** (как в упрощённом китайском разделе; в конвейере публикации он тоже не запускается). Не запускайте его и не коммитьте сгенерированные `.pyi`-файлы.
 
 ## Тестирование и линтинг
 
 ### Запуск тестов
 
-Проект использует `pytest` (конфиг в `pytest.ini`, с покрытием, `asyncio-mode=auto` и тестовыми маркерами). Запускайте в виртуальном окружении:
+Проект использует `pytest` (конфиг в `pyproject.toml`, секция `[tool.pytest.ini_options]`, с покрытием, `asyncio-mode=auto` и тестовыми маркерами). Запускайте в виртуальном окружении:
 
 ```bash
 # Все тесты (с отчётом покрытия)
@@ -892,6 +946,18 @@ uv run pytest tests/unit/test_xxx.py::TestClass::test_method
 ```
 
 Фильтрация по маркеру через `-m`. Основные маркеры: `unit`, `integration`, `e2e`, `adapter`, `module`, `event`, `lifecycle`, `config`, `storage`, `logger`, `router`.
+
+> `tests/devs/` — ручные скрипты проверки (реальные СУБД для хранилища/ORM); pytest их не собирает.
+
+### Скрипты гейт-проверок CI (рекомендуется запускать локально перед push)
+
+```bash
+python scripts/tools/check_i18n_locales.py   # соответствие ключей i18n (жёсткий гейт CI)
+python scripts/tools/check_docs_links.py     # внутренние ссылки docs (жёсткий гейт CI)
+python scripts/tools/release_check.py        # согласованность версий релиза
+```
+
+Полные правила — в `AGENTS.md`; локальные хуки — `.pre-commit-config.yaml`.
 
 ### Линт и форматирование
 
