@@ -391,7 +391,7 @@ class RouterManager:
         # kind ∈ {"http", "ws", "sse"}。注销时按对象同一性（id）精确删除，
         # 避免跨命名空间 / 跨类型（HTTP 与 SSE 同 path）的同路径路由被误删；
         # 无索引引用的历史路由保留按 path 过滤的兜底逻辑
-        self._route_objects: dict[tuple[str, str], "list[tuple[str, Any]]"] = defaultdict(list)
+        self._route_objects: dict[tuple[str, str], list[tuple[str, Any]]] = defaultdict(list)
         # 资源归属者 -> 其注册的命名空间集合。
         # 适配器/模块加载期间若设置了 current_owner，注册路由时会自动记录归属，
         # 以便按 owner 兜底清理（热重载等场景）。
@@ -1341,7 +1341,7 @@ class RouterManager:
         """
         self._route_objects[(namespace, full_path)].append((kind, route))
 
-    def _take_saved_routes(self, namespace: str, full_path: str, kind: str) -> "list[Any]":
+    def _take_saved_routes(self, namespace: str, full_path: str, kind: str) -> list[Any]:
         """
         {!--< internal-use >!--}
         取出指定类型的已保存 route 对象（其它类型的索引条目保留）

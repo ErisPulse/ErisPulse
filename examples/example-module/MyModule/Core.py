@@ -58,7 +58,12 @@ class Main(BaseModule):
     # 翻译键集合以嵌套类形式声明，框架自动识别 I18nClass 并注册到 i18n 系统
     # 属性名会与模块名拼接为完整键路径（如 MyModule.greeting）
     class I18nClass(BaseI18n):
-        """MyModule 翻译键声明"""
+        """MyModule 翻译键声明
+
+        此处省略 ``key=``，由属性名 + 类名前缀自动派生完整键
+        （如 ``module.MyModule.greeting``）。等价写法是显式传
+        ``key=...``（CLI 脚手架模板采用该风格），二者效果一致。
+        """
 
         greeting_prompt: I18nKey = I18nKey(
             default="Please enter your name:",

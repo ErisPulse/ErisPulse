@@ -15,52 +15,14 @@ ErisPulse 文档索引生成器
     python scripts/tools/generate-docs-index.py --docs docs --output docs/_meta
 """
 
+import argparse
+import json
 import os
 import re
-import json
-import argparse
-import sys
-import threading
-from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from datetime import datetime
 from pathlib import Path
 
-
-class Logger:
-    """线程安全的标准输出日志器"""
-
-    _lock = threading.Lock()
-
-    @classmethod
-    def log(cls, msg: str):
-        """
-        输出一行日志
-
-        :param msg: 日志内容
-        """
-        with cls._lock:
-            sys.stdout.write(msg + "\n")
-            sys.stdout.flush()
-
-    @classmethod
-    def progress(cls, rel_path: str, status: str, detail: str = ""):
-        """
-        输出单条文档解析进度
-
-        :param rel_path: 文件相对路径
-        :param status: 状态标识（parse/skip/warn/done 等）
-        :param detail: 附加详情，可选
-        """
-        tag = {
-            "parse": "[PARSE]",
-            "skip": "[SKIP]",
-            "warn": "[WARN]",
-            "done": "[DONE]",
-        }.get(status, f"[{status.upper()}]")
-        line = f"  {tag} {rel_path}"
-        if detail:
-            line += f"  {detail}"
-        cls.log(line)
+from _common import Logger  # scripts/tools 公共日志器
 
 
 class DocsIndexGenerator:
@@ -595,7 +557,7 @@ class DocsIndexGenerator:
         "runtime": "fa-gears",
     }
 
-    def __init__(self, docs_dir: str, output_dir: str, lang: Optional[str] = None):
+    def __init__(self, docs_dir: str, output_dir: str, lang: str | None = None):
         """
         初始化索引生成器
 
@@ -606,8 +568,8 @@ class DocsIndexGenerator:
         self.docs_dir = Path(docs_dir).resolve()
         self.output_dir = Path(output_dir).resolve()
         self.lang = lang
-        self.docs_mapping: Dict = {}
-        self.docs_search_index: Dict = {}
+        self.docs_mapping: dict = {}
+        self.docs_search_index: dict = {}
 
         # 如果指定了语言，实际文档目录是 docs/{lang}
         if self.lang:
@@ -636,7 +598,7 @@ class DocsIndexGenerator:
             self.CATEGORY_PRIORITY = lang_config["priority"]
 
     @staticmethod
-    def get_available_languages(docs_dir: Path) -> List[str]:
+    def get_available_languages(docs_dir: Path) -> list[str]:
         """
         获取可用的语言列表
 
@@ -710,7 +672,7 @@ class DocsIndexGenerator:
             return self.CATEGORY_ICONS.get("getting-started", "fa-folder")
         return self.CATEGORY_ICONS.get(category_dir, "fa-folder")
 
-    def get_doc_icon(self, doc_path: str, category_name: str, subgroup_key: Optional[str] = None) -> str:
+    def get_doc_icon(self, doc_path: str, category_name: str, subgroup_key: str | None = None) -> str:
         """
         根据文档路径获取图标类名
 
@@ -743,7 +705,7 @@ class DocsIndexGenerator:
         """
         return self.SUBGROUP_ICONS.get(subgroup_key, "fa-folder")
 
-    def parse_headings(self, content: str) -> List[Dict]:
+    def parse_headings(self, content: str) -> list[dict]:
         """
         解析 Markdown 文档中的标题
 
@@ -775,7 +737,7 @@ class DocsIndexGenerator:
 
         return headings
 
-    def get_document_title(self, headings: List[Dict], file_path: Path) -> str:
+    def get_document_title(self, headings: list[dict], file_path: Path) -> str:
         """
         获取文档标题（第一个一级标题）
 
@@ -795,7 +757,7 @@ class DocsIndexGenerator:
         # 如果没有一级标题，使用第一个标题
         return headings[0]["text"]
 
-    def scan_docs(self) -> List[Dict]:
+    def scan_docs(self) -> list[dict]:
         """
         扫描文档目录，收集所有 Markdown 文件
 
@@ -834,7 +796,7 @@ class DocsIndexGenerator:
 
         return files
 
-    def parse_document(self, file_info: Dict) -> Optional[Dict]:
+    def parse_document(self, file_info: dict) -> dict | None:
         """
         解析单个文档
 
@@ -844,7 +806,7 @@ class DocsIndexGenerator:
         file_path = file_info["path"]
 
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
         except Exception as e:
             Logger.progress(file_info["relative_path"], "warn", f"读取失败: {e}")
@@ -875,8 +837,8 @@ class DocsIndexGenerator:
         }
 
     def generate_mapping_index(
-        self, documents: List[Dict], deprecated: bool = False
-    ) -> Dict:
+        self, documents: list[dict], deprecated: bool = False
+    ) -> dict:
         """
         生成文档映射索引
 
@@ -993,7 +955,7 @@ class DocsIndexGenerator:
 
         return result
 
-    def generate_search_index(self, documents: List[Dict]) -> Dict:
+    def generate_search_index(self, documents: list[dict]) -> dict:
         """
         生成文档搜索索引
 
@@ -1029,7 +991,7 @@ class DocsIndexGenerator:
             "keywords": sorted_keywords,
         }
 
-    def save_index(self, index: Dict, filename: str):
+    def save_index(self, index: dict, filename: str):
         """
         保存索引到文件
 
@@ -1136,7 +1098,7 @@ class DocsIndexGenerator:
         parsed = []
         for file_path in files:
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     content = f.read()
             except Exception as e:
                 Logger.progress(
@@ -1348,7 +1310,7 @@ def main():
             total_docs = 0
             if lang_mapping_file.exists():
                 try:
-                    with open(lang_mapping_file, "r", encoding="utf-8") as f:
+                    with open(lang_mapping_file, encoding="utf-8") as f:
                         lang_data = json.load(f)
                         total_docs = sum(
                             cat.get("count", 0)

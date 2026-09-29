@@ -12,8 +12,8 @@ import traceback
 from pathlib import Path
 from typing import Any
 
-from ..Core.i18n import i18n
 from ..Core.constants import EXCEPTION_NOISE_STATE_MAX_ENTRIES
+from ..Core.i18n import i18n
 from .hints import (
     suggest_for_attribute_error,
     suggest_for_connection_error,

@@ -291,7 +291,7 @@ class TestDeclaration:
             id: int = Field(primary_key=True)
 
         with caplog.at_level("WARNING"):
-            class CollideA(Model):  # noqa: F811 同名再声明
+            class CollideA(Model):
                 pass
 
         assert Model._model_registry["CollideA"].table_name() == "collide_a"

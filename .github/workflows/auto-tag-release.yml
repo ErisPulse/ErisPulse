@@ -3,6 +3,11 @@ name: 🎀 Eris Version Management
 permissions:
   contents: write
 
+# 连续 push 时不取消进行中的发布
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 on:
   workflow_dispatch:
   push:
@@ -24,6 +29,9 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
+
+      - name: Release consistency check
+        run: python scripts/tools/release_check.py
 
       - name: Setup Python
         uses: actions/setup-python@v7
@@ -158,6 +166,8 @@ jobs:
 
       - name: Setup pybuild
         if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
+        # TODO(供应链): 上游未见发布版本号，暂只能引用 @main；上游发布 release 后
+        # 应立即 pin 到具体 tag/commit digest（发布工作流不宜浮动引用第三方 action）
         uses: pybuild-org/pybuild@main
 
       - name: Build standalone executables (pybuild v2)

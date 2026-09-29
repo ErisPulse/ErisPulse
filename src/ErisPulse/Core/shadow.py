@@ -20,8 +20,8 @@ Dashboard / 自定义管理模块调用这些 API，无需用户手写任何配�
 {!--< /tips >!--}
 """
 
-from collections import deque
 import sys
+from collections import deque
 from pathlib import Path
 from typing import Any
 
@@ -67,7 +67,7 @@ class ShadowLedger:
     """
 
     def __init__(self) -> None:
-        self._entries: "dict[str, deque[dict[str, Any]]]" = {}
+        self._entries: dict[str, deque[dict[str, Any]]] = {}
 
     def record(self, owner: str, entry: "dict[str, Any]") -> None:
         """
@@ -107,8 +107,8 @@ class ShadowOverlay:
     """
 
     def __init__(self) -> None:
-        self._data: "dict[str, Any]" = {}
-        self._tombstones: "set[str]" = set()
+        self._data: dict[str, Any] = {}
+        self._tombstones: set[str] = set()
 
     def write(self, key: str, value: Any) -> None:
         """写入覆盖层"""
@@ -147,9 +147,9 @@ class ShadowManager:
 
     def __init__(self) -> None:
         # 原模块名 → 影子绑定信息
-        self._shadows: "dict[str, dict[str, str]]" = {}
+        self._shadows: dict[str, dict[str, str]] = {}
         # 影子 owner → 覆盖层
-        self._overlays: "dict[str, ShadowOverlay]" = {}
+        self._overlays: dict[str, ShadowOverlay] = {}
 
     # ---- 绑定查询 ----
 
@@ -479,7 +479,7 @@ class ShadowManager:
             except Exception:
                 transcript = None
 
-        aligned: "list[dict[str, Any]]" = []
+        aligned: list[dict[str, Any]] = []
         for entry in entries:
             tid = entry.get("trace_id")
             actual = transcript.get_by_trace(tid) if (transcript is not None and tid) else []

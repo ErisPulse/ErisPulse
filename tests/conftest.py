@@ -2,14 +2,19 @@
 pytest 配置文件
 
 提供测试夹具（fixtures）和测试钩子
+
+{!--< tips >!--}
+1. 本文件只保留全测试套件共用的设施：语言钉子、事件去重开关、i18n 隔离、
+   storage 会话收尾、命令/事件系统共享清理与少量活跃 fixture
+2. 命令治理类测试的状态清理统一引用 :func:`_clean_event_command_state`
+   （此前 9 个测试文件各自复制约 30 行几乎相同的清理体）
+{!--< /tips >!--}
 """
 
-import asyncio
 import os
 import sys
 from collections.abc import AsyncGenerator, Generator
 from pathlib import Path
-from unittest.mock import AsyncMock
 
 import pytest
 
@@ -76,107 +81,6 @@ def _reset_event_dedupe() -> Generator[None, None, None]:
         pass
 
 
-@pytest.fixture(scope="session")
-def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
-    """
-    创建事件循环
-
-    为整个测试会话提供一个单一的事件循环
-    """
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    yield loop
-    loop.close()
-
-
-@pytest.fixture(scope="session")
-def test_data_dir(tmp_path_factory) -> Path:
-    """
-    创建测试数据目录
-
-    为测试提供临时数据目录
-    """
-    test_dir = tmp_path_factory.mktemp("test_data")
-    test_dir.mkdir(parents=True, exist_ok=True)
-    return test_dir
-
-
-@pytest.fixture(scope="session")
-def test_config_file(test_data_dir: Path) -> Path:
-    """
-    创建测试配置文件
-
-    为测试提供临时配置文件
-    """
-    config_file = test_data_dir / "test_config.toml"
-    config_file.write_text("""
-[ErisPulse]
-[ErisPulse.server]
-host = "127.0.0.1"
-port = 8888
-
-[ErisPulse.logger]
-level = "DEBUG"
-log_files = []
-memory_limit = 100
-
-[ErisPulse.storage]
-max_snapshot = 5
-
-[ErisPulse.framework]
-enable_lazy_loading = false
-
-[ErisPulse.modules]
-TestModule1 = true
-TestModule2 = false
-
-[ErisPulse.adapters]
-TestAdapter1 = true
-TestAdapter2 = false
-
-[ErisPulse.event]
-[ErisPulse.event.command]
-prefix = "/"
-case_sensitive = false
-allow_space_prefix = false
-
-[ErisPulse.event.message]
-ignore_self = true
-""")
-    return config_file
-
-
-@pytest.fixture(scope="function")
-def clean_environment(test_data_dir: Path) -> Generator[None, None, None]:
-    """
-    清理测试环境
-
-    在测试前后清理环境
-    """
-    # 备份原始环境
-    original_cwd = os.getcwd()
-    original_env = os.environ.copy()
-
-    # 设置测试环境
-    os.chdir(str(test_data_dir))
-
-    yield
-
-    # 恢复原始环境
-    os.chdir(original_cwd)
-    os.environ.clear()
-    os.environ.update(original_env)
-
-    # 清理临时文件
-    import glob
-
-    for db_file in glob.glob(str(test_data_dir / "*.db")):
-        try:
-            os.remove(db_file)
-        except OSError:
-            pass
-
-
 @pytest.fixture(scope="session", autouse=True)
 def _close_storage_on_teardown() -> Generator[None, None, None]:
     """
@@ -191,6 +95,45 @@ def _close_storage_on_teardown() -> Generator[None, None, None]:
         if hasattr(_storage, "close"):
             _storage.close()
     except Exception:
+        pass
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _protect_repo_config() -> Generator[None, None, None]:
+    """
+    会话级备份/还原仓库根 config/config.toml
+
+    问题背景：单测的 ``persist=True`` 写入（scope / overrides ACL 等）落在
+    进程 cwd 的真实用户配置上且测试结束不清理——残留的 ACL / 覆写节会让
+    后续测试运行（以及本地真实开发）被静默改变行为（如命令被 ACL 拒绝）。
+
+    会话开始备份、结束还原；开始时不存在的文件在结束时移除。
+
+    {!--< internal-use >!--}
+    """
+    from ErisPulse.Core.constants import DEFAULT_CONFIG_FILE_PATH
+
+    config_path = Path(DEFAULT_CONFIG_FILE_PATH)
+    backup: bytes | None = None
+    if config_path.exists():
+        backup = config_path.read_bytes()
+    yield
+    try:
+        # 先丢弃未刷盘的脏写入（防止还原后被 atexit/延迟刷盘再次覆盖）
+        try:
+            import importlib
+
+            _config_pkg = importlib.import_module("ErisPulse.Core.config")
+            with _config_pkg.config._lock:
+                _config_pkg.config._dirty_keys.clear()
+        except Exception:
+            pass
+        if backup is not None:
+            config_path.parent.mkdir(parents=True, exist_ok=True)
+            config_path.write_bytes(backup)
+        elif config_path.exists():
+            config_path.unlink()
+    except OSError:
         pass
 
 
@@ -258,7 +201,41 @@ def _isolate_i18n_state() -> Generator[None, None, None]:
         pass
 
 
-# ==================== SDK 测试夹具 ====================
+# ==================== 命令/事件系统共享清理 ====================
+
+
+@pytest.fixture
+def _clean_event_command_state() -> Generator[None, None, None]:
+    """
+    命令/事件系统单例状态的共享清理（setup + teardown 对称执行）
+
+    覆盖各命令治理类测试文件 clean_state 的公共核心（命令四表 + 事件处理器
+    + 适配器事件通道）；文件特有的增量清理（冷却表 / scope / interaction /
+    影子账本等）在各自的 autouse fixture 中引用本 fixture 后追加。
+
+    {!--< internal-use >!--}
+    """
+    from ErisPulse.Core.Event import _clear_all_handlers
+    from ErisPulse.Core.Event.command import command as command_handler
+    from ErisPulse.Core.adapter import adapter
+
+    def _clean() -> None:
+        _clear_all_handlers()
+        command_handler.commands.clear()
+        command_handler.aliases.clear()
+        command_handler.groups.clear()
+        command_handler.permissions.clear()
+        adapter._onebot_handlers.clear()
+        adapter._raw_handlers.clear()
+        adapter._onebot_middlewares.clear()
+        adapter._bots.clear()
+
+    _clean()
+    yield
+    _clean()
+
+
+# ==================== SDK / 日志 / 网络测试夹具 ====================
 
 
 @pytest.fixture
@@ -283,269 +260,72 @@ async def mock_sdk(clean_environment, test_config_file: Path) -> AsyncGenerator:
         pytest.skip(f"SDK 初始化异常: {e}")
 
 
-@pytest.fixture
-def real_sdk(clean_environment, test_config_file: Path):
+@pytest.fixture(scope="session")
+def test_data_dir(tmp_path_factory) -> Path:
     """
-    创建真实的 SDK 实例
-
-    为集成测试提供真实的 SDK 对象
+    创建测试数据目录（mock_sdk 链路的临时目录）
     """
-    from ErisPulse import sdk as _sdk
-
-    return _sdk
+    return tmp_path_factory.mktemp("test_data")
 
 
-# ==================== 模块管理器测试夹具 ====================
-
-
-@pytest.fixture
-def mock_module_manager():
+@pytest.fixture(scope="session")
+def test_config_file(test_data_dir: Path) -> Path:
     """
-    创建模拟的模块管理器
+    创建测试配置文件（mock_sdk 链路使用）
     """
-    from ErisPulse.Core.module import ModuleManager
-
-    manager = ModuleManager()
-    manager._module_classes = {}
-    manager._modules = {}
-    manager._loaded_modules = set()
-    manager._module_info = {}
-
-    return manager
-
-
-@pytest.fixture
-def mock_base_module():
-    """
-    创建模拟的 BaseModule 子类
-    """
-    from ErisPulse.Core.Bases import BaseModule
-
-    class MockModule(BaseModule):
-        def __init__(self, sdk):
-            self.sdk = sdk
-            self.load_called = False
-            self.unload_called = False
-            self.test_data = {}
-
-        async def on_load(self, event):
-            self.load_called = True
-            self.test_data["load_event"] = event
-            return True
-
-        async def on_unload(self, event):
-            self.unload_called = True
-            self.test_data["unload_event"] = event
-            return True
-
-    return MockModule
-
-
-# ==================== 适配器管理器测试夹具 ====================
-
-
-@pytest.fixture
-def mock_adapter_manager():
-    """
-    创建模拟的适配器管理器
-    """
-    from ErisPulse.Core.adapter import AdapterManager
-
-    manager = AdapterManager()
-    manager._adapters = {}
-    manager._started_instances = set()
-    manager._adapter_info = {}
-    manager._onebot_handlers = {}
-    manager._raw_handlers = {}
-    manager._onebot_middlewares = []
-
-    return manager
-
-
-@pytest.fixture
-def mock_base_adapter():
-    """
-    创建模拟的 BaseAdapter 子类
-    """
-    from ErisPulse.Core.Bases import BaseAdapter
-
-    class MockAdapter(BaseAdapter):
-        def __init__(self, sdk):
-            super().__init__()
-            self.sdk = sdk
-            self.start_called = False
-            self.shutdown_called = False
-            self.call_api_log = []
-            self.test_data = {}
-
-        async def start(self):
-            self.start_called = True
-            self.test_data["start_time"] = "mocked"
-
-        async def shutdown(self):
-            self.shutdown_called = True
-            self.test_data["shutdown_time"] = "mocked"
-
-        async def call_api(self, endpoint: str, **params):
-            self.call_api_log.append({"endpoint": endpoint, "params": params})
-            return {
-                "status": "ok",
-                "retcode": 0,
-                "data": {"mocked": True},
-                "message_id": "test_msg_id",
-                "message": "",
-                "mock_raw": params,
-            }
-
-    return MockAdapter
-
-
-# ==================== 事件系统测试夹具 ====================
-
-
-@pytest.fixture
-def mock_event_data():
-    """
-    创建标准的事件数据
-    """
-    return {
-        "id": "test_event_123",
-        "time": 1234567890,
-        "type": "message",
-        "detail_type": "private",
-        "platform": "test_platform",
-        "self": {"platform": "test_platform", "user_id": "test_bot_id"},
-        "user_id": "test_user_id",
-        "user_nickname": "TestUser",
-        "message": [{"type": "text", "data": {"text": "test message"}}],
-        "alt_message": "test message",
-        "test_raw": {},
-        "test_raw_type": "test_event",
-    }
-
-
-@pytest.fixture
-def mock_command_event_data():
-    """
-    创建命令事件数据
-    """
-    event_data = {
-        "id": "test_cmd_event_123",
-        "time": 1234567890,
-        "type": "message",
-        "detail_type": "private",
-        "platform": "test_platform",
-        "self": {"platform": "test_platform", "user_id": "test_bot_id"},
-        "user_id": "test_user_id",
-        "user_nickname": "TestUser",
-        "message": [{"type": "text", "data": {"text": "/test arg1 arg2"}}],
-        "alt_message": "/test arg1 arg2",
-    }
-    return event_data
-
-
-@pytest.fixture
-def mock_notice_event_data():
-    """
-    创建通知事件数据
-    """
-    return {
-        "id": "test_notice_123",
-        "time": 1234567890,
-        "type": "notice",
-        "detail_type": "friend_increase",
-        "platform": "test_platform",
-        "self": {"platform": "test_platform", "user_id": "test_bot_id"},
-        "user_id": "test_user_id",
-        "user_nickname": "TestUser",
-        "test_raw": {},
-        "test_raw_type": "friend_add",
-    }
-
-
-@pytest.fixture
-def mock_request_event_data():
-    """
-    创建请求事件数据
-    """
-    return {
-        "id": "test_request_123",
-        "time": 1234567890,
-        "type": "request",
-        "detail_type": "friend",
-        "platform": "test_platform",
-        "self": {"platform": "test_platform", "user_id": "test_bot_id"},
-        "user_id": "test_user_id",
-        "user_nickname": "TestUser",
-        "comment": "请添加好友",
-        "test_raw": {},
-        "test_raw_type": "friend_request",
-    }
-
-
-# ==================== 配置和存储测试夹具 ====================
-
-
-@pytest.fixture
-def mock_config_file(tmp_path: Path):
-    """
-    创建临时配置文件
-    """
-    config_file = tmp_path / "test_config.toml"
+    config_file = test_data_dir / "test_config.toml"
     config_file.write_text("""
-[test_section]
-test_key = "test_value"
-number_key = 123
-bool_key = true
+[ErisPulse]
+[ErisPulse.server]
+host = "127.0.0.1"
+port = 8888
 
-[nested]
-[sub_section]
-nested_key = "nested_value"
+[ErisPulse.logger]
+level = "DEBUG"
+log_files = []
+memory_limit = 100
+
+[ErisPulse.storage]
+max_snapshot = 5
+
+[ErisPulse.framework]
+enable_lazy_loading = false
+
+[ErisPulse.modules]
+TestModule1 = true
+TestModule2 = false
+
+[ErisPulse.adapters]
+TestAdapter1 = true
+TestAdapter2 = false
+
+[ErisPulse.event]
+[ErisPulse.event.command]
+prefix = "/"
+case_sensitive = false
+allow_space_prefix = false
+
+[ErisPulse.event.message]
+ignore_self = true
 """)
     return config_file
 
 
-@pytest.fixture
-def mock_storage_db(tmp_path: Path):
+@pytest.fixture(scope="function")
+def clean_environment(test_data_dir: Path) -> Generator[None, None, None]:
     """
-    创建临时存储数据库
+    清理测试环境（chdir 到临时目录并快照/还原环境变量，mock_sdk 链路使用）
     """
-    db_file = tmp_path / "test_storage.db"
+    original_cwd = os.getcwd()
+    original_env = os.environ.copy()
 
-    # 初始化数据库
-    import sqlite3
+    os.chdir(str(test_data_dir))
 
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS config (
-        key TEXT PRIMARY KEY,
-        value TEXT NOT NULL
-    )
-    """)
+    yield
 
-    # 插入测试数据
-    import json
-
-    test_data = {
-        "test.key1": "value1",
-        "test.key2": {"nested": "data"},
-        "test.key3": 123,
-    }
-
-    for key, value in test_data.items():
-        cursor.execute(
-            "INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
-            (key, json.dumps(value) if isinstance(value, (dict, list)) else str(value)),
-        )
-
-    conn.commit()
-    conn.close()
-
-    return db_file
-
-
-# ==================== 日志测试夹具 ====================
+    os.chdir(original_cwd)
+    os.environ.clear()
+    os.environ.update(original_env)
 
 
 @pytest.fixture
@@ -578,45 +358,6 @@ def mock_logger():
     return logger
 
 
-# ==================== WebSocket 测试夹具 ====================
-
-
-@pytest.fixture
-def mock_websocket():
-    """
-    创建模拟的 WebSocket 连接
-    """
-
-    websocket = AsyncMock()
-    websocket.accept = AsyncMock()
-    websocket.close = AsyncMock()
-    websocket.send_text = AsyncMock()
-    websocket.receive_text = AsyncMock()
-    websocket.receive_json = AsyncMock()
-    websocket.client = type("Client", (), {"host": "127.0.0.1", "port": 12345})()
-
-    return websocket
-
-
-# ==================== FastAPI 测试客户端 ====================
-
-
-@pytest.fixture
-async def test_client():
-    """
-    创建 FastAPI 测试客户端
-    """
-    from fastapi.testclient import TestClient
-
-    from ErisPulse.Core.router import router
-
-    client = TestClient(router.app)
-    return client
-
-
-# ==================== 网络测试夹具 ====================
-
-
 @pytest.fixture
 def free_port():
     """
@@ -635,23 +376,9 @@ def free_port():
 # ==================== pytest 配置和钩子 ====================
 
 
-def pytest_configure(config):
-    """
-    pytest 配置钩子
-
-    在测试会话开始前执行
-    """
-    # 注册自定义标记
-    config.addinivalue_line("markers", "unit: 单元测试标记")
-    config.addinivalue_line("markers", "integration: 集成测试标记")
-    config.addinivalue_line("markers", "e2e: 端到端测试标记")
-
-
 def pytest_collection_modifyitems(config, items):
     """
-    修改测试收集结果
-
-    为测试添加默认标记
+    修改测试收集结果：按文件路径 / 测试名自动补标记
     """
     for item in items:
         # 根据文件路径添加标记
@@ -675,17 +402,3 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(pytest.mark.event)
         elif "lifecycle" in item.name.lower():
             item.add_marker(pytest.mark.lifecycle)
-
-
-def pytest_runtest_setup(item):
-    """
-    测试执行前的钩子
-    """
-    # 可以在这里添加测试前的准备逻辑
-
-
-def pytest_runtest_teardown(item, nextitem):
-    """
-    测试执行后的钩子
-    """
-    # 可以在这里添加测试后的清理逻辑

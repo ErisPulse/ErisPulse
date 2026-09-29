@@ -1,7 +1,7 @@
 from .Core import MyAdapter
-from .Converter import MyPlatformConverter
+from .Converter import MyAdapterConverter
 
 __all__ = [
     "MyAdapter",
-    "MyPlatformConverter",
+    "MyAdapterConverter",
 ]

@@ -1762,3 +1762,89 @@ class TestScalarWithDescendantDirty:
         assert value == {"sub": "x"}  # 不再返回旧标量 5（写后立读一致）
 
         mgr._dirty_keys.clear()  # 清理脏队列，避免污染其它用例
+
+
+class TestSectionAndDottedDirtyConsistency:
+    """整节写与点分写并存的读写一致性（BUG-039 回归）
+
+    脏窗口内统一为特异性优先语义：同节点分待写值优先于整节待写值，
+    读路径（getConfig ①④叠加）与落盘路径（flush 深度排序）同口径。
+    """
+
+    @pytest.fixture
+    def mgr(self, tmp_path):
+        cfg_file = tmp_path / "config.toml"
+        cfg_file.write_text("", encoding="utf-8")
+        manager = ConfigManager(config_file=str(cfg_file))
+        manager._dirty_keys.clear()
+        yield manager
+        if manager._write_timer:
+            manager._write_timer.cancel()
+        manager._watcher_stop.set()
+
+    @staticmethod
+    def _read_disk(manager) -> dict:
+        with open(manager.CONFIG_FILE, encoding="utf-8") as f:
+            return tomlkit.parse(f.read()).unwrap()
+
+    def test_dotted_read_visible_after_section_write(self, mgr):
+        """变体 A（读路径）：整节写后，整节读取仍能看到更晚的点分覆写"""
+        mgr.setConfig("mod.opt", "dotted")  # 点分写（如 TestBot 覆写 / 配置热更）
+        mgr.setConfig("mod", {"other": 1})  # 整节写（如模块 cfg 写回）
+
+        assert mgr.getConfig("mod") == {"opt": "dotted", "other": 1}
+        assert mgr.getConfig("mod.opt") == "dotted"  # 点分读取路径一致
+
+    def test_dotted_read_visible_reverse_insertion(self, mgr):
+        """变体 A 反向插入序：整节写在前、点分覆写在后，整节读同样可见"""
+        mgr.setConfig("mod", {"other": 1})
+        mgr.setConfig("mod.opt", "dotted")
+
+        assert mgr.getConfig("mod") == {"opt": "dotted", "other": 1}
+
+    def test_dotted_survives_flush_after_section_write(self, mgr):
+        """变体 B（写路径）：点分写在前、整节写在后，flush 后点分值不丢"""
+        mgr.setConfig("FB.y", 1)
+        mgr.setConfig("FB", {"z": 2})
+        mgr.force_save()
+
+        assert self._read_disk(mgr)["FB"] == {"y": 1, "z": 2}
+        assert mgr.getConfig("FB") == {"y": 1, "z": 2}
+
+    def test_flush_order_independent(self, mgr):
+        """落盘结果与写入插入序无关（特异性排序）"""
+        mgr.setConfig("FB", {"z": 2})
+        mgr.setConfig("FB.y", 1)
+        mgr.force_save()
+
+        assert self._read_disk(mgr)["FB"] == {"y": 1, "z": 2}
+
+    def test_three_level_mixed_flush(self, mgr):
+        """三层混合（整节 / 一层点分 / 二层点分）flush 后全部存活"""
+        mgr.setConfig("S.k", "leaf")
+        mgr.setConfig("S.sub.deep", 7)
+        mgr.setConfig("S", {"whole": True})
+        mgr.force_save()
+
+        assert self._read_disk(mgr)["S"] == {"k": "leaf", "sub": {"deep": 7}, "whole": True}
+
+    def test_dirty_read_returns_isolated_copy(self, mgr):
+        """脏窗口内读取返回隔离拷贝：原地修改返回 dict 不影响待落盘内容"""
+        mgr.setConfig("mod", {"a": 1})
+        section = mgr.getConfig("mod")
+        section["a"] = 999
+        section["injected"] = True
+
+        assert mgr._dirty_keys["mod"] == {"a": 1}
+        mgr.force_save()
+        assert self._read_disk(mgr)["mod"] == {"a": 1}
+
+    def test_ancestor_subtree_read_isolated(self, mgr):
+        """祖先待写子树内解析（②路径）同样返回隔离拷贝"""
+        mgr.setConfig("a.b", {"c": {"d": 1}})
+        node = mgr.getConfig("a.b.c")
+        node["d"] = 999
+
+        assert mgr._dirty_keys["a.b"] == {"c": {"d": 1}}
+        mgr.force_save()
+        assert self._read_disk(mgr)["a"] == {"b": {"c": {"d": 1}}}

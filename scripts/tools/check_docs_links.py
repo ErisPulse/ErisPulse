@@ -43,7 +43,7 @@ def iter_md_files(root: Path):
     yield from sorted(root.rglob("*.md"))
 
 
-def check_file(path: Path, allow_missing_anchor: bool) -> list[str]:
+def check_file(path: Path) -> list[str]:
     problems: list[str] = []
     raw = path.read_text(encoding="utf-8")
     text = strip_fence_blocks(raw)
@@ -79,7 +79,7 @@ def main() -> int:
         if "ai-support" in md.parts or "auto_api" in md.parts:
             continue  # 自动生成目录，不检查（死链修源头后由 CI 重新生成）
         checked += 1
-        problems.extend(check_file(md, False))
+        problems.extend(check_file(md))
 
     print(f"已检查 {checked} 个 Markdown 文件（{root}）")
     if problems:

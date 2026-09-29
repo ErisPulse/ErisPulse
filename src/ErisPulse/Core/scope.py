@@ -889,9 +889,7 @@ class ScopeManager:
         if deny_matcher and name and deny_matcher(name):
             return False
         allow_matcher = self._compiled_list_matcher(rule.get("allow"))
-        if allow_matcher and (not name or not allow_matcher(name)):
-            return False
-        return True
+        return not (allow_matcher and (not name or not allow_matcher(name)))
 
     # ==================== 通用工具 ====================
 

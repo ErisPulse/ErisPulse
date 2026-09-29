@@ -24,15 +24,13 @@ config_module = importlib.import_module("ErisPulse.Core.config")
 
 
 @pytest.fixture(autouse=True)
-def clean_state():
-    from ErisPulse.Core.adapter import adapter
-    from ErisPulse.Core.Event import _clear_all_handlers
+def clean_state(_clean_event_command_state):
+    """命令 ACL：清理命令/事件系统状态（公共核心 + 交互/覆写/作用域通道）"""
+    from ErisPulse.Core.Event.command import command as command_handler
+    from ErisPulse.Core.Event.message import message as message_handler
+    from ErisPulse.Core.Event.interaction import interaction
+    from ErisPulse.Core.Event import overrides as overrides_mod
 
-    _clear_all_handlers()
-    command_handler.commands.clear()
-    command_handler.aliases.clear()
-    command_handler.groups.clear()
-    command_handler.permissions.clear()
     interaction.clear()
     overrides_mod._command.clear()
     overrides_mod.clear()
@@ -40,16 +38,7 @@ def clean_state():
     scope_manager._data["bots"].clear()
     message_handler.handler.handlers.clear()
     message_handler.handler._handler_map.clear()
-    adapter._onebot_handlers.clear()
-    adapter._raw_handlers.clear()
-    adapter._onebot_middlewares.clear()
-    adapter._bots.clear()
     yield
-    _clear_all_handlers()
-    command_handler.commands.clear()
-    command_handler.aliases.clear()
-    command_handler.groups.clear()
-    command_handler.permissions.clear()
     interaction.clear()
     overrides_mod._command.clear()
     overrides_mod.clear()
@@ -57,10 +46,6 @@ def clean_state():
     scope_manager._data["bots"].clear()
     message_handler.handler.handlers.clear()
     message_handler.handler._handler_map.clear()
-    adapter._onebot_handlers.clear()
-    adapter._raw_handlers.clear()
-    adapter._onebot_middlewares.clear()
-    adapter._bots.clear()
 
 
 def _msg(text, platform="onebot11", bot_id="bot_x", user_id="u1", group_id=None):

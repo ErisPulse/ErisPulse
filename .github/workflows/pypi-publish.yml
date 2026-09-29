@@ -16,27 +16,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Version check
-        id: version
-        run: |
-          CURRENT_TAG=${GITHUB_REF#refs/tags/}
-          echo "Current version: $CURRENT_TAG"
-
-          if [[ $CURRENT_TAG =~ \.dev|\.alpha|\.beta ]]; then
-            BASE_VERSION=$(echo $CURRENT_TAG | sed -E 's/([0-9]+)$//')
-            PREV_TAG=$(git tag --sort=-v:refname | grep "^$BASE_VERSION" | grep -v "$CURRENT_TAG" | head -n 1)
-
-            if [ -z "$PREV_TAG" ]; then
-              echo "Previous version not found"
-              exit 1
-            fi
-            echo "Found previous pre-release version: $PREV_TAG"
-            git checkout $PREV_TAG
-            echo "use_current=false" >> $GITHUB_OUTPUT
-          else
-            echo "Stable release"
-            echo "use_current=true" >> $GITHUB_OUTPUT
-          fi
+      # 发布前置一致性校验：pyproject version == CHANGELOG 最新条目
+      # （旧 Version check 步骤读取 refs/tags/，但本 workflow 仅 workflow_dispatch
+      # 触发、该变量永不含 tag，属死代码，已删除）
+      - name: Release consistency check
+        run: python scripts/tools/release_check.py
 
       - name: Setup environment
         uses: actions/setup-python@v7
@@ -89,8 +73,3 @@ jobs:
           packages-dir: dist/
           verbose: true
 
-      - name: Read recipient list
-        id: get_emails
-        run: |
-          emails=$(cat .github/config/notify.json | jq -c '.emails')
-          echo "emails=$emails" >> $GITHUB_OUTPUT

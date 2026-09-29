@@ -148,7 +148,7 @@ def temp_storage(tmp_path):
 def temp_lifecycle():
     """创建临时 LifecycleManager"""
     mgr = LifecycleManager()
-    mgr._handlers.clear()
+    mgr._hooks.clear()  # LifecycleManager 的钩子表现属性为 _hooks（旧名 _handlers 已不存在）
     mgr._timers.clear()
     yield mgr
 

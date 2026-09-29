@@ -1,1 +1,19 @@
-docker-entrypoint.sh text eol=lf
+# 换行策略：跨平台脚本与源码强制 LF（Windows 检出 CRLF 会使 bash 脚本报  错误）
+* text=auto
+*.sh text eol=lf
+*.py text eol=lf
+*.toml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.lock text eol=lf
+
+# 二进制标记
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.db binary
+*.zip binary
+*.whl binary

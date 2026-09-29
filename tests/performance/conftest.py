@@ -43,7 +43,7 @@ def bench_adapter():
 @pytest.fixture
 def bench_lifecycle():
     mgr = LifecycleManager()
-    mgr._handlers.clear()
+    mgr._hooks.clear()  # LifecycleManager 的钩子表现属性为 _hooks（旧名 _handlers 已不存在）
     mgr._timers.clear()
     return mgr
 

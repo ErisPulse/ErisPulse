@@ -19,25 +19,15 @@ config_module = importlib.import_module("ErisPulse.Core.config")
 
 
 @pytest.fixture(autouse=True)
-def clean_state():
-    from ErisPulse.Core.adapter import adapter
-    from ErisPulse.Core.Event import _clear_all_handlers
+def clean_state(_clean_event_command_state):
+    """节流：清理事件系统状态（公共核心 + 消息处理器通道）"""
+    from ErisPulse.Core.Event.message import message as message_handler
 
-    _clear_all_handlers()
     message_handler.handler.handlers.clear()
     message_handler.handler._handler_map.clear()
-    adapter._onebot_handlers.clear()
-    adapter._raw_handlers.clear()
-    adapter._onebot_middlewares.clear()
-    adapter._bots.clear()
     yield
-    _clear_all_handlers()
     message_handler.handler.handlers.clear()
     message_handler.handler._handler_map.clear()
-    adapter._onebot_handlers.clear()
-    adapter._raw_handlers.clear()
-    adapter._onebot_middlewares.clear()
-    adapter._bots.clear()
 
 
 def _msg(text, user_id="u1", group_id=None, mention_bot=False):

@@ -13,8 +13,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from ErisPulse.Core.Event.command import command as command_handler
 from ErisPulse.Core.Event import governance as governance_module
+from ErisPulse.Core.Event.command import command as command_handler
 
 # importlib.import_module 返回真实子模块（Core.config 包属性被 ConfigManager 单例遮蔽）
 config_module = importlib.import_module("ErisPulse.Core.config")
@@ -24,16 +24,11 @@ _replies: "list[str]" = []
 
 
 @pytest.fixture(autouse=True)
-def clean_state():
-    from ErisPulse.Core.adapter import adapter
-    from ErisPulse.Core.Event import _clear_all_handlers
+def clean_state(_clean_event_command_state):
+    """治理边沿回复：清理命令/事件系统状态（公共核心 + 治理三表/回复标记与本地回收列表）"""
+    from ErisPulse.Core.Event.command import command as command_handler
 
-    def _clean():
-        _clear_all_handlers()
-        command_handler.commands.clear()
-        command_handler.aliases.clear()
-        command_handler.groups.clear()
-        command_handler.permissions.clear()
+    def _extras() -> None:
         command_handler._cooldowns.clear()
         command_handler._rate_limits.clear()
         command_handler._usage_counts.clear()
@@ -42,15 +37,11 @@ def clean_state():
         command_handler._gate._usage_replied.clear()
         command_handler._max_name_tokens = 1
         command_handler.block = True
-        adapter._onebot_handlers.clear()
-        adapter._raw_handlers.clear()
-        adapter._onebot_middlewares.clear()
-        adapter._bots.clear()
         _replies.clear()
 
-    _clean()
+    _extras()
     yield
-    _clean()
+    _extras()
 
 
 def _msg(text, platform="onebot11", bot_id="bot_x", user_id="u1", group_id=None):

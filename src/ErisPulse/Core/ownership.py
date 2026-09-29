@@ -47,7 +47,7 @@ class OwnershipManager:
         # 影子 owner 集合：ShadowManager 装配影子模块时登记、dismiss 时移除。
         # 八道隔离闸（事件副本 / 命令目录 / 出站记账 / 存储覆盖层 / 生命周期
         # 静默 / 路由只登记）统一以此集合为判定来源
-        self._shadow_owners: "set[str]" = set()
+        self._shadow_owners: set[str] = set()
 
     # ==================== 影子判定面 ====================
 
@@ -143,7 +143,7 @@ class OwnershipManager:
         >>> ownership.reclaim_sync("roll")
         {"routes_http": 2, "commands": 1, ...}
         """
-        result: "dict[str, int]" = {}
+        result: dict[str, int] = {}
 
         try:
             from .i18n import i18n as i18n_service
@@ -206,7 +206,7 @@ class OwnershipManager:
             pass
 
         try:
-            from .Event import meta, message, notice, request
+            from .Event import message, meta, notice, request
 
             result["handlers_message"] = message.handler.unregister_by_owner(owner)
             result["handlers_notice"] = notice.handler.unregister_by_owner(owner)
@@ -252,7 +252,7 @@ class OwnershipManager:
         >>> ownership.counts("roll")
         {"commands": 1, "lifecycle_hooks": 2}
         """
-        table: "dict[str, dict[str, int]]" = {}
+        table: dict[str, dict[str, int]] = {}
 
         def _add(o: Any, kind: str, n: int) -> None:
             if o is None or n <= 0:
@@ -365,7 +365,7 @@ class OwnershipManager:
             pass
 
         try:
-            from .Event import meta, message, notice, request
+            from .Event import message, meta, notice, request
 
             for handler_box, kind in (
                 (message.handler, "handlers_message"),
@@ -440,7 +440,7 @@ class OwnershipManager:
         >>> ownership.orphans()
         [{"owner": "ghost_module", "total": 2, "resources": {"commands": 1, ...}}]
         """
-        registered: "set[str]" = set()
+        registered: set[str] = set()
         try:
             from .module import module as module_manager
 
@@ -479,7 +479,7 @@ class OwnershipManager:
         >>> ownership.audit("roll", deep=True)
         {"owner": "roll", "counts": {...}, "orphans": [], "instance_recyclable": True}
         """
-        report: "dict[str, Any]" = {
+        report: dict[str, Any] = {
             "owner": owner,
             "counts": self.counts(owner) if owner else self.counts(),
             "orphans": self.orphans(),

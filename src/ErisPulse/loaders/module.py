@@ -432,10 +432,11 @@ class ModuleLoader(BaseLoader):
         :param purge_names: 重载流程将要从 sys.modules 移除的顶层模块名
         :return: 回滚快照
         """
-        sys_entries: "dict[str, Any]" = {}
-        for mod_name, mod in list(sys.modules.items()):
-            if any(mod_name == n or mod_name.startswith(f"{n}.") for n in purge_names):
-                sys_entries[mod_name] = mod
+        sys_entries: dict[str, Any] = {
+            mod_name: mod
+            for mod_name, mod in list(sys.modules.items())
+            if any(mod_name == n or mod_name.startswith(f"{n}.") for n in purge_names)
+        }
         prefix = getattr(self._last_module_objs.get(module_name), "__name__", None)
         pre_prefix_keys = {
             name

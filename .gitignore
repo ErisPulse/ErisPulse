@@ -5,7 +5,6 @@ plugins/
 venvs
 config.full.example
 config.toml
-uv.lock
 snapshots/
 logs/
 config.db*
@@ -239,3 +238,5 @@ pyvenv.cfg
 
 # 但保留源中文文档
 !docs/zh-CN/
+
+.zcode/

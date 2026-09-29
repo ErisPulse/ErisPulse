@@ -32,12 +32,11 @@ import json
 import os
 import re
 import sys
-import threading
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
 
+from _common import LEAK_PATTERN, Logger, count_fences  # scripts/tools 公共设施
 from openai import AsyncOpenAI
 
 # 流式输出含 emoji 等字符，非 UTF-8 控制台（如 Windows GBK）会触发
@@ -57,43 +56,9 @@ class FatalApiError(Exception):
     pass
 
 
-class Logger:
-    _lock = threading.Lock()
-
-    @classmethod
-    def log(cls, msg: str):
-        with cls._lock:
-            sys.stdout.write(msg + "\n")
-            sys.stdout.flush()
-
-    @classmethod
-    def write(cls, text: str):
-        with cls._lock:
-            sys.stdout.write(text)
-            sys.stdout.flush()
-
-    @classmethod
-    def progress(cls, rel_path: str, target_lang: str, status: str, detail: str = ""):
-        tag = {
-            "skip": "[SKIP]",
-            "trans": "[TRANS]",
-            "done": "[DONE]",
-            "fail": "[FAIL]",
-            "retry": "[RETRY]",
-            "check": "[CHECK]",
-            "check_pass": "[PASS]",
-            "check_fail": "[CHK!]",
-            "rate_limit": "[429]",
-        }.get(status, f"[{status.upper()}]")
-        line = f"  {tag} {rel_path} -> {target_lang}"
-        if detail:
-            line += f"  {detail}"
-        cls.log(line)
-
-
 class FileBuffer:
     def __init__(self):
-        self.parts: List[str] = []
+        self.parts: list[str] = []
 
     def write(self, text: str):
         self.parts.append(text)
@@ -131,27 +96,8 @@ class DocsTranslator:
     # 模型偶发把翻译提示词/规则回显进译文（曾污染多语言文档并随缓存复用复活）。
     # 以下特征均为"绝不可能出现在正常文档正文中的提示词残留"，宁严勿漏。
     # 覆盖 zh-CN / zh-TW / en / ja / ru 全部已观测变体。
-    LEAK_PATTERNS = re.compile(
-        r"请直接返回翻译后的完整"  # zh-CN：旧提示词"请直接返回翻译后的完整Markdown内容/文件"
-        r"|請直接返回翻譯後的完整"  # zh-TW：同上繁体变体
-        r"|再次提醒：?如果(?:文档|文檔|文件)"  # zh：回显的"再次提醒"段
-        r"|上方第\s*8\s*[条條]"  # zh：引用提示词中的规则编号
-        r"|语言切换行本地化"  # zh：旧提示词小节标题
-        r"|你是一个专业的技术文档翻译专家"  # zh：提示词角色设定句
-        r"|请将以下\s*Markdown"  # zh：旧提示词开头
-        r"|(?:return|send)\s+the\s+(?:complete\s+)?translated\s+Markdown"  # en
-        r"|once\s+again,?\s+if\s+the\s+document\s+contains"  # en
-        r"|format\s+requirement\s+in\s+point\s+\d+\s+above"  # en
-        r"|Path\s+Replacement\s+Rules"  # en：旧提示词小节标题
-        r"|各言語の切り替え行"  # ja
-        r"|言語切り替え行がある場合"  # ja：另一变体
-        r"|上記の第8条"  # ja：引用提示词规则编号
-        r"|翻訳後の完全な"  # ja
-        r"|верните\s+непосредственно"  # ru
-        r"|еще\s+раз\s+напоминаем"  # ru
-        r"|строки\s+переключения\s+языка",  # ru
-        re.IGNORECASE,
-    )
+    # 泄露正则迁移至 _common.LEAK_PATTERN（单一事实源，此前与 check-translation 漂移）
+
 
     def __init__(self, config_path: str):
         self.config = self.load_config(config_path)
@@ -163,8 +109,8 @@ class DocsTranslator:
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.notes_dir.mkdir(parents=True, exist_ok=True)
 
-        self.providers: List[Dict] = []
-        self.clients: List[AsyncOpenAI] = []
+        self.providers: list[dict] = []
+        self.clients: list[AsyncOpenAI] = []
         # 请求级超时：防止流式响应挂起拖垮整轮翻译
         # （max_retries=0：重试由脚本自管，含 429 指数退避，避免 SDK 内部长阻塞）
         self.request_timeout = self._setting("request_timeout", 180)
@@ -256,7 +202,7 @@ class DocsTranslator:
         i = index % len(self.clients)
         return self.clients[i], self.providers[i]
 
-    def load_config(self, config_path: str) -> Dict:
+    def load_config(self, config_path: str) -> dict:
         config_file = Path(config_path)
         if not config_file.exists():
             return {
@@ -284,7 +230,7 @@ class DocsTranslator:
                 "translate_code_comments": True,
                 "cache_dir": ".github/.translate_cache",
             }
-        with open(config_file, "r", encoding="utf-8") as f:
+        with open(config_file, encoding="utf-8") as f:
             return json.load(f)
 
     def calculate_file_hash(self, file_path: Path) -> str:
@@ -301,9 +247,7 @@ class DocsTranslator:
     ROOT_README_SOURCE = "README.zh-CN.md"
 
     def _is_root_readme(self, file_path: Path) -> bool:
-        return file_path.name == self.ROOT_README_SOURCE and file_path.parent == Path(
-            "."
-        )
+        return file_path.name == self.ROOT_README_SOURCE and file_path.parent == Path()
 
     def _build_lang_switcher_line(self, target_lang: str) -> str:
         """构建语言切换行：当前目标语言使用粗体，其他语言为链接。"""
@@ -342,7 +286,7 @@ class DocsTranslator:
         if self._is_root_readme(file_path):
             if target_lang == "en":
                 return self.cache_dir / "README.md.cache"
-            elif target_lang == "zh-CN":
+            if target_lang == "zh-CN":
                 return self.cache_dir / "README.zh-CN.md.cache"
             return self.cache_dir / f"README.{target_lang}.md.cache"
         rel_path = self._get_rel_path(file_path)
@@ -352,7 +296,7 @@ class DocsTranslator:
         cache_key = self.get_cache_key(file_path, target_lang)
         if not cache_key.exists():
             return True
-        with open(cache_key, "r", encoding="utf-8") as f:
+        with open(cache_key, encoding="utf-8") as f:
             cache_data = json.load(f)
         current_hash = self.calculate_file_hash(file_path)
         return cache_data.get("hash") != current_hash
@@ -362,7 +306,7 @@ class DocsTranslator:
         file_path: Path,
         target_lang: str,
         hash_value: str,
-        chunk_translations: Optional[List[Dict]] = None,
+        chunk_translations: list[dict] | None = None,
     ):
         """
         保存翻译缓存
@@ -391,7 +335,7 @@ class DocsTranslator:
     _CHUNK_HEADING_RE = re.compile(r"^#{1,2}\s+")
 
     @classmethod
-    def _split_into_chunks(cls, content: str) -> List[str]:
+    def _split_into_chunks(cls, content: str) -> list[str]:
         """
         将 Markdown 按一级/二级标题分块
 
@@ -403,8 +347,8 @@ class DocsTranslator:
         :return: 分块文本列表
         """
         lines = content.split("\n")
-        chunks: List[str] = []
-        current: List[str] = []
+        chunks: list[str] = []
+        current: list[str] = []
         in_code = False
 
         for line in lines:
@@ -440,7 +384,7 @@ class DocsTranslator:
 
     def _load_cached_chunks(
         self, file_path: Path, target_lang: str
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """
         从缓存加载分块翻译，返回 {chunk_hash: translation}
 
@@ -454,11 +398,11 @@ class DocsTranslator:
         if not cache_key.exists():
             return {}
         try:
-            with open(cache_key, "r", encoding="utf-8") as f:
+            with open(cache_key, encoding="utf-8") as f:
                 data = json.load(f)
             chunks = data.get("chunks")
             if isinstance(chunks, list):
-                safe_chunks: Dict[str, str] = {}
+                safe_chunks: dict[str, str] = {}
                 dropped = 0
                 for c in chunks:
                     if not (
@@ -481,36 +425,18 @@ class DocsTranslator:
             pass
         return {}
 
-    def load_review_notes(self, file_path: Path, target_lang: str) -> List[str]:
+    def load_review_notes(self, file_path: Path, target_lang: str) -> list[str]:
         rel_path = self._get_rel_path(file_path)
         notes_file = self.notes_dir / target_lang / f"{rel_path}.notes.json"
         if not notes_file.exists():
             return []
         try:
-            with open(notes_file, "r", encoding="utf-8") as f:
+            with open(notes_file, encoding="utf-8") as f:
                 notes = json.load(f)
             return notes if isinstance(notes, list) else []
         except Exception:
             return []
 
-    def load_reference_translation(
-        self, file_path: Path, target_lang: str
-    ) -> Optional[str]:
-        if self._is_root_readme(file_path):
-            if target_lang == "en":
-                ref_file = Path("README.md")
-            else:
-                ref_file = Path(f"README.{target_lang}.md")
-        else:
-            rel_path = file_path.relative_to(self.source_dir)
-            ref_file = Path("docs") / target_lang / rel_path
-        if not ref_file.exists():
-            return None
-        try:
-            with open(ref_file, "r", encoding="utf-8") as f:
-                return f.read()
-        except Exception:
-            return None
 
     def _build_path_replacement_hint(self, target_lang: str) -> str:
         source_lang = self.config["source_lang"]
@@ -526,7 +452,7 @@ class DocsTranslator:
         self,
         target_lang: str,
         file_name: str = "",
-        review_notes: List[str] = None,
+        review_notes: list[str] = None,
     ) -> str:
         """构建翻译请求的系统消息（承载全部翻译规则）。
 
@@ -568,8 +494,7 @@ class DocsTranslator:
         content: str,
         target_lang: str,
         file_name: str = "",
-        review_notes: List[str] = None,
-        reference_translation: str = None,
+        review_notes: list[str] = None,
     ) -> str:
         """构建翻译请求的用户消息（仅含待翻译内容，用标记包裹）。
 
@@ -581,7 +506,6 @@ class DocsTranslator:
         :param target_lang: 目标语言代码
         :param file_name: 源文件名（透传给系统消息构建）
         :param review_notes: 人工审查备注（由系统消息承载）
-        :param reference_translation: 预留的参考翻译（当前未启用）
         :return: 用户消息文本
         """
         return (
@@ -590,22 +514,18 @@ class DocsTranslator:
         )
 
 
-    _FENCE_LINE_RE = re.compile(r"^\s*(?:`{3,}|~{3,})")
-
     @classmethod
     def count_fences(cls, text: str) -> int:
         """
-        统计围栏行数（`` ``` `` / `` ~~~ ``，含任意 info string）
+        统计围栏行数（委托 ``_common.count_fences``——围栏语义全工具链统一）
 
         :param text: Markdown 文本
         :return: 围栏行数量
         """
-        return sum(
-            1 for line in text.split("\n") if cls._FENCE_LINE_RE.match(line)
-        )
+        return count_fences(text)
 
     @classmethod
-    def detect_prompt_leaks(cls, text: str) -> List[str]:
+    def detect_prompt_leaks(cls, text: str) -> list[str]:
         """
         检测文本中残留的翻译提示词（模型回显的规则文本）
 
@@ -615,7 +535,7 @@ class DocsTranslator:
         :param text: 待检测文本（译文块 / 缓存块 / 整文档译文）
         :return: 命中的泄露特征片段列表（去重后）
         """
-        return sorted({m.group(0) for m in cls.LEAK_PATTERNS.finditer(text)})
+        return sorted({m.group(0) for m in LEAK_PATTERN.finditer(text)})
 
     @classmethod
     def _strip_response_wrapper(cls, content: str) -> str:
@@ -661,11 +581,10 @@ class DocsTranslator:
         content: str,
         target_lang: str,
         file_name: str,
-        review_notes: List[str] = None,
-        reference_translation: str = None,
-        buffer: Optional[FileBuffer] = None,
+        review_notes: list[str] = None,
+        buffer: FileBuffer | None = None,
         provider_index: int = 0,
-    ) -> Optional[str]:
+    ) -> str | None:
         try:
             client, provider = self._pick_client(provider_index)
             model = provider.get("model", "gpt-4")
@@ -677,7 +596,6 @@ class DocsTranslator:
                 target_lang,
                 file_name,
                 review_notes=review_notes,
-                reference_translation=reference_translation,
             )
 
             translated_content = []
@@ -708,7 +626,7 @@ class DocsTranslator:
             finish_reason = None
             has_reasoning = False
             has_content = False
-            out = buffer if buffer else Logger
+            out = buffer or Logger
 
             async for chunk in stream:
                 choice = chunk.choices[0]
@@ -780,7 +698,7 @@ class DocsTranslator:
         target_lang: str,
         rel_path: str,
         provider_index: int = 0,
-    ) -> tuple[bool, List[str], str]:
+    ) -> tuple[bool, list[str], str]:
         """
         AI 评审翻译质量（判定协议）
 
@@ -882,14 +800,6 @@ class DocsTranslator:
             Logger.log(f"  [WARN] AI评审失败: {e}")
             return True, [], f"评审异常: {e}"
 
-    def _validate_translation(
-        self,
-        source_content: str,
-        translated_content: str,
-        target_lang: str,
-        rel_path: str,
-    ) -> List[str]:
-        return []
 
     def _localize_links(
         self, content: str, target_lang: str, file_name: str = ""
@@ -934,7 +844,7 @@ class DocsTranslator:
         provider_name = self.providers[pidx].get("name", "?") if self.providers else "?"
 
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
 
             if not force and not self.is_file_changed(file_path, target_lang):
@@ -945,9 +855,6 @@ class DocsTranslator:
             Logger.progress(rel_path, target_lang, "trans", f"[{provider_name}]")
 
             review_notes = self.load_review_notes(file_path, target_lang)
-            reference_translation = self.load_reference_translation(
-                file_path, target_lang
-            )
 
             # ---- 分块增量翻译 ----
             # 按 ## 标题将文档拆分为块，仅翻译哈希变化的块，未变化的复用缓存。
@@ -957,7 +864,7 @@ class DocsTranslator:
                 file_path, target_lang
             )
             total_chunks = len(source_chunks)
-            translated_chunks_list: List[str] = []
+            translated_chunks_list: list[str] = []
             changed_count = 0
 
             for ci, chunk in enumerate(source_chunks):
@@ -1276,7 +1183,7 @@ class DocsTranslator:
             self.stats["failed_files"] += 1
             return False
 
-    def scan_files(self) -> List[Path]:
+    def scan_files(self) -> list[Path]:
         files = []
         readme_path = Path(self.ROOT_README_SOURCE)
         if readme_path.exists():
@@ -1298,10 +1205,10 @@ class DocsTranslator:
 
     async def translate(
         self,
-        target_langs: Optional[List[str]] = None,
+        target_langs: list[str] | None = None,
         force: bool = False,
         no_check: bool = False,
-        time_budget: Optional[float] = None,
+        time_budget: float | None = None,
     ):
         self.stats["start_time"] = time.time()
 

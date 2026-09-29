@@ -82,7 +82,6 @@ def make_throttle_condition(
     _last_pass: dict[str, float] = {}
 
     from .. import logger
-
     from ..constants import GOVERNANCE_STATE_MAX_ENTRIES
 
     def _sweep(now: float) -> None:

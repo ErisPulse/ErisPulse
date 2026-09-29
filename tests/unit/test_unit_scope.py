@@ -1062,7 +1062,7 @@ class TestMatcherPrecompile:
         mgr = ScopeManager()
         with patch("ErisPulse.runtime.get_config", return_value={"platforms": {}, "bots": {}}):
             mgr._load_config()
-        with patch("ErisPulse.runtime.get_config", return_value={"platforms": {}, "bots": {}, "identity": {"users": {"p": {"re:^u_\d+$": {"deny": True}}}}}):
+        with patch("ErisPulse.runtime.get_config", return_value={"platforms": {}, "bots": {}, "identity": {"users": {"p": {r"re:^u_\d+$": {"deny": True}}}}}):
             mgr._on_config_updated({})
         assert mgr.is_identity_allowed("p", "b", "s", "u_123") is False
         assert len(mgr._entry_matchers) == 1
