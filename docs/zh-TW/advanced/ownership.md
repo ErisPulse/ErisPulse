@@ -261,16 +261,16 @@ class MyModule(BaseModule):
 > 原則：**所有權跟隨註冊瞬間的 `current_owner` 上下文**；任何異步延遲、
 > 執行緒池、獨立迴圈都會脫離該上下文——需要所有權時請顯式進入 `owner_scope`。
 
-## 工具模組指南：托管其它模組的句柄
+## 工具模組指南：託管其他模組的句柄
 
-**場景**：定時任務、註冊表、連接池這類「工具模組」會替其它模組保管東西——
-對方在 `on_load` 裡呼叫 `sdk.Cron.on_trigger(handler)`，你的容器裡就存下了
-一個指向對方實例的回調。框架會自動清理對方註冊的一切框架資源，但清理不了
-你**私有容器裡的引用**：對方卸載後你的容器還拉著它的實例，它就無法被
-GC 回收（記憶體洩漏，`purge` 泄漏診斷報"不可回收"）。
+**場景**：定時任務、註冊表、連接池之類的「工具模組」會替其他模組保管物件——
+對方在 `on_load` 中呼叫 `sdk.Cron.on_trigger(handler)`，你的容器中就會儲存下
+一個指向對方實例的回調。框架會自動清理對方註冊的所有框架資源，但無法清理
+你**私有容器中的引用**：對方卸載後你的容器仍持有它的實例，它就無法被
+GC 回收（記憶體洩漏，`purge` 泄漏診斷報告「不可回收」）。
 
-**解法**：在登記對方東西的同一個函數裡呼叫 `on_cleanup()`，
-框架會在對方卸載 / 停用時自動回調你的清理函數：
+**解法**：在登記對方物件的同一個函數中呼叫 `on_cleanup()`，
+框架會在對方卸載 / 禁用時自動回呼你的清理函數：
 
 ```python
 from ErisPulse.Core.Bases import BaseModule
@@ -278,20 +278,20 @@ from ErisPulse.runtime import off_cleanup, on_cleanup
 
 class CronModule(BaseModule):
     def __init__(self):
-        self._entries = {}  # {模組名: 該模組托管的回調列表}
+        self._entries = {}  # {模組名: 該模組託管的回調列表}
 
     def on_trigger(self, handler):
         # 自動識別呼叫方模組名（on_load 直接呼叫 / module.call 均正確），
-        # 回傳值是解析出的 owner，可直接用作記名鍵
+        # 返回值是解析出的 owner，可直接用作記名鍵
         owner = on_cleanup(self._drop)
         self._entries.setdefault(owner, []).append(handler)
 
     def _drop(self, owner: str):
-        """對方模組被卸載/停用時由框架自動呼叫：拋棄它的句柄即可"""
+        """對方模組被卸載/禁用時由框架自動呼叫：拋棄它的句柄即可"""
         self._entries.pop(owner, None)
 
     async def on_unload(self, event):
-        off_cleanup(self._drop)  # ③ 自己卸載前註銷鈎子，避免鈎子表持有 self
+        off_cleanup(self._drop)  # ③ 自己卸載前註銷鉤子，避免鉤子表持有 self
 ```
 
 框架保證的行為：
@@ -299,13 +299,13 @@ class CronModule(BaseModule):
 | 關注點 | 行為 |
 |--------|------|
 | 觸發時機 | 對方模組 unload / disable，或適配器關閉——均在框架清理鏈內觸發，早於 purge 泄漏診斷 |
-| 調用方識別 | 直接呼叫取 `current_owner`；經 `module.call()` 被呼叫取呼叫方（`current_caller`）；也可 `on_cleanup(cb, owner="模組名")` 显式指定 |
-| 回調簽名 | `cb(owner: str)`，同步 / 異步均可；異步帶超時保護（`CLEANUP_CALLBACK_TIMEOUT_SECS`，預設 10 秒） |
-| 容錯 | 單個回調異常 / 超時只記日誌，不受影響其餘鈎子與清理鏈 |
+| 呼叫方識別 | 直接呼叫取 `current_owner`；經 `module.call()` 被呼叫取呼叫方（`current_caller`）；也可 `on_cleanup(cb, owner="模組名")` 明確指定。**強制校驗**：owner 無法解析（三種來源均缺失）時拋 `ValueError`——私有工具模組應在自身載入上下文中登記鉤子 |
+| 回呼簽名 | `cb(owner: str)`，同步 / 異步均可；異步帶超時保護（`CLEANUP_CALLBACK_TIMEOUT_SECS`，預設 10 秒） |
+| 容錯 | 單個回呼異常 / 超時只記錄日誌，不影響其餘鉤子與清理鏈 |
 | 重複登記 | 同一 `(owner, callback)` 幂等去重 |
 
 **什麼時候不需要**：如果對方註冊的是框架資源（命令、事件處理器、路由、
-背景任務……），框架已自動清理（見上文[歸屬資源全景](#歸屬資源全景)）。
-只有你私有容器裡持有的對方句柄才需要 `on_cleanup`。
+後台任務……），框架已自動清理（見上文[歸屬資源全景](#歸屬資源全景)）。
+只有你私有容器中持有的對方句柄才需要 `on_cleanup`。
 模組開發視角的速查版見
-[最佳實踐 · 工具模組](../developer-guide/modules/best-practices.md#工具模組托管別人東西時要接住卸載通知)。
+[最佳實踐 · 工具模組](../developer-guide/modules/best-practices.md#工具模組託管別人東西時要接住卸載通知)。

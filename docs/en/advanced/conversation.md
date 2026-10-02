@@ -1,10 +1,10 @@
 # Conversation Multi-turn Conversations
 
-The `Conversation` class provides convenient methods for multi-turn interactions within the same session, suitable for scenarios such as guided operations, information collection, and conversational question answering.
+The `Conversation` class provides convenient methods for multi-turn interactions within the same session, suitable for scenarios such as guided operations, information collection, and conversational question-answering.
 
 ## Creating a Conversation
 
-Create a conversation using the `conversation()` method of the `Event` object:
+Create a conversation using the `conversation()` method of an `Event` object:
 
 ```python
 from ErisPulse.Core.Event import command
@@ -15,14 +15,14 @@ async def quiz_handler(event):
 
     await conv.say("🎮 Welcome to the quiz!")
 
-    answer = await conv.choose("Question 1: Who created Python?", [
+    answer = await conv.choose("Question 1: Who is the creator of Python?", [
         "Guido van Rossum",
         "James Gosling",
         "Dennis Ritchie",
     ])
 
     if answer is None:
-        await conv.say("Time's up, try again next time!")
+        await conv.say("Timeout, try again next time!")
         return
 
     if answer == 0:
@@ -37,7 +37,7 @@ async def quiz_handler(event):
 
 ### say(content, **kwargs)
 
-Send a message, returning `self` to support method chaining:
+Send a message and return `self` to support method chaining:
 
 ```python
 await conv.say("First line").say("Second line").say("Third line")
@@ -51,15 +51,15 @@ await conv.say("https://example.com/image.jpg", method="Image")
 
 ### wait(prompt=None, timeout=None)
 
-Wait for the user's reply, returning an `Event` object or `None` (if timeout occurs):
+Wait for a user reply and return an `Event` object or `None` (timeout):
 
 ```python
-# Simple wait
+# Simple waiting
 resp = await conv.wait()
 if resp:
     text = resp.get_text()
 
-# Wait after sending a prompt
+# Send a prompt and wait
 resp = await conv.wait(prompt="Please enter your name:")
 
 # Use custom timeout (overrides the default conversation timeout)
@@ -68,7 +68,7 @@ resp = await conv.wait(prompt="Please reply within 10 seconds:", timeout=10)
 
 ### confirm(prompt=None, **kwargs)
 
-Wait for user confirmation (yes/no), returning `True` / `False` / `None` (if timeout occurs):
+Wait for user confirmation (Yes/No), return `True` / `False` / `None` (timeout):
 
 ```python
 result = await conv.confirm("Are you sure you want to delete all data?")
@@ -77,16 +77,16 @@ if result is True:
 elif result is False:
     await conv.say("Cancelled")
 else:
-    await conv.say("Timed out without reply")
+    await conv.say("No reply within timeout")
 ```
 
-Built-in recognized confirmation words: `yes/y/是/确认/确定/好/ok/true/对/嗯/行/同意/没问题/可以/当然...`
+Built-in recognized confirmation words: `是/yes/y/确认/确定/好/ok/true/对/嗯/行/同意/没问题/可以/当然...`
 
-Built-in recognized denial words: `no/n/否/取消/不/不要/不行/cancel/false/错/不对/别/拒绝...`
+Built-in recognized negation words: `否/no/n/取消/不/不要/不行/cancel/false/错/不对/别/拒绝...`
 
 ### choose(prompt, options, **kwargs)
 
-Wait for the user to select from options, returning the option index (0-based) or `None`:
+Wait for the user to select from options, return the option index (0-based) or `None`:
 
 ```python
 choice = await conv.choose("Please select a color:", ["Red", "Green", "Blue"])
@@ -97,10 +97,10 @@ if choice is not None:
 
 Users can select by entering a number (`1`/`2`/`3`) or the option text (`Red`).
 
-`options_format="auto"` (default) automatically selects the built-in style based on the method: Markdown→unordered list, Html→ordered list, others→plain text list.
-Also supports `"list"`,"`inline`", "`md`", "`html`", or a custom function.
+`options_format="auto"` (default) automatically selects the built-in style based on method: Markdown→unordered list, Html→ordered list, others→plain text list.
+Also supports `"list"`、`"inline"`、`"md"`、`"html"` or a custom function.
 
-Supports `merge_prompt=True` to merge into a single message, and placeholder to control the option insertion position (default `{options}`, customizable via `placeholder`):
+Supports `merge_prompt=True` to merge into a single message, and placeholder control for option insertion position (default `{options}`, customizable via `placeholder`):
 
 ```python
 choice = await conv.choose(
@@ -120,7 +120,7 @@ choice = await conv.choose(
 
 ### collect(fields, **kwargs)
 
-Collect information in multiple steps, returning a data dictionary or `None`:
+Collect information in multiple steps, return a data dictionary or `None`:
 
 ```python
 data = await conv.collect([
@@ -141,7 +141,7 @@ Field configuration:
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `key` | Field key name (required) | - |
+| `key` | Field key (required) | - |
 | `prompt` | Prompt message | `"Please enter {key}"` |
 | `validator` | Validation function, receives Event, returns bool | None |
 | `retry_prompt` | Retry prompt on validation failure | `"Invalid input, please re-enter"` |
@@ -153,14 +153,14 @@ Field configuration:
 ```python
 data = await conv.collect([
     {"key": "has_car", "prompt": "Do you have a car? (Yes/No)"},
-    {"key": "car_brand", "prompt": "Please enter the car brand",
+    {"key": "car_brand", "prompt": "Please enter car model",
      "condition": lambda d: d.get("has_car", "").lower() in ("yes", "y", "是")},
 ])
 ```
 
 ### stop()
 
-Manually end the conversation, setting `is_active` to `False`:
+Manually end the conversation, set `is_active` to `False`:
 
 ```python
 conv.stop()
@@ -172,7 +172,7 @@ Whether the conversation is active:
 
 ```python
 if conv.is_active:
-    await conv.say("The conversation is still ongoing")
+    await conv.say("The conversation is still active")
 ```
 
 ## Active State Management
@@ -185,23 +185,23 @@ stateDiagram-v2
     active --> active: say / wait / confirm / choose / collect
     active --> inactive: stop()
     active --> inactive: wait() timeout
-    active --> inactive: collect() timeout or retries exhausted
+    active --> inactive: collect() timeout or exhausted retries
     inactive --> [*]
 ```
 
-The conversation will automatically become inactive in the following cases:
+The conversation automatically becomes inactive in the following cases:
 
-1. The `stop()` method is called
-2. `wait()` times out and returns `None`
-3. `collect()` returns `None` due to any step timing out or exhausting retries
+1. `stop()` method is called
+2. `wait()` returns `None` due to timeout
+3. `collect()` returns `None` due to timeout or exhausted retries in any step
 
-After becoming inactive, all interactive methods (`wait`/`confirm`/`choose`/`collect`) will immediately return `None` and will not continue to wait for user input.
+After becoming inactive, all interactive methods (`wait`/`confirm`/`choose`/`collect`) immediately return `None` without waiting for user input.
 
-## Branches and Jumps
+## Branching and Jumping
 
-### `@conv.branch(name)` Decorator
+### @conv.branch(name) Decorator
 
-Use `branch()` to register a conversation branch, and use `goto()` to jump between branches:
+Use `branch()` to register conversation branches and `goto()` to jump between them:
 
 ```python
 @command("menu")
@@ -225,14 +225,14 @@ async def menu_handler(event):
 
     @conv.branch("profile")
     async def profile():
-        await conv.say("=== Personal Info ===\nName: Alice\n0. Return")
+        await conv.say("=== Personal Info ===\nName: Alice\n0. Back")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
 
     @conv.branch("settings")
     async def settings():
-        await conv.say("=== Settings ===\n1. Notification Toggle\n0. Return")
+        await conv.say("=== Settings ===\n1. Notification Toggle\n0. Back")
         resp = await conv.wait()
         if resp and resp.get_text().strip() == "0":
             await conv.goto("main")
@@ -246,14 +246,14 @@ Start the conversation, defaulting to the first registered branch:
 
 ```python
 await conv.start()          # Start from the first branch
-await conv.start("settings") # Start from the specified branch
+await conv.start("settings") # Start from a specified branch
 ```
 
 ## Context and Persistence
 
 ### conv.context
 
-Each conversation instance has a built-in `context` dictionary to share state across branches:
+Each conversation instance has a built-in `context` dictionary for sharing state across branches:
 
 ```python
 @conv.branch("step1")
@@ -263,22 +263,22 @@ async def step1():
 
 @conv.branch("step2")
 async def step2():
-    name = conv.context.get("username", "unknown")
+    name = conv.context.get("username", "Unknown")
     await conv.say(f"Hello, {name}!")
 ```
 
 ### save() / resume() / clear_saved()
 
-Conversations support persistence, allowing them to be resumed after timeout or interruption:
+Conversations support persistence, allowing recovery after timeout or interruption:
 
 ```python
-# Save conversation state (usually not called manually, see "Auto Checkpoints" below)
+# Save conversation state (usually not called manually, see "Automatic Checkpoints" below)
 await conv.save()
 
 # ... later in the same session ...
 conv2 = event.conversation()
 if await conv2.resume():
-    await conv2.say("Welcome back! Continuing from the previous conversation")
+    await conv2.say("Welcome back! Continuing previous conversation")
 else:
     await conv2.say("No previous conversation found")
 
@@ -286,22 +286,25 @@ else:
 await conv.clear_saved()
 ```
 
-Storage keys include a target dimension (`conversation:{platform}:{user_id}:{target_id}`), ensuring conversations for the same user in different sessions do not overwrite each other; old-format archives (without target) are automatically migrated during `resume()`.
+Storage keys include target dimension (`conversation:{platform}:{user_id}:{target_id}`), ensuring conversations for the same user in different sessions do not overlap; old format (without target) archives are automatically migrated during `resume()`.
 
 ## Automatic Checkpoints and Restart Recovery
 
 ### Automatic Archiving
 
-The framework automatically maintains checkpoints at the following moments, typically without needing to manually call `save()`:
+The framework automatically maintains checkpoints at the following times, usually without manual `save()` calls:
 
-| Moment | Behavior |
-|--------|----------|
-| `goto()` / `start()` to switch branches | Automatically save (current branch + context) |
-| `stop()` / `wait()` timeout / `collect()` failure | Automatically clear (end of conversation state) |
+| Time | Behavior |
+|------|----------|
+| `goto()` / `start()` branch jump | Automatic save (current branch + context) |
+| `stop()` / `wait()` timeout / `collect()` failure | Automatic clear (conversation terminal state) |
 
 ### Checkpoint TTL
 
-Checkpoints are timestamped, and those exceeding `ErisPulse.interaction.checkpoint_ttl` (default 24 hours) are automatically discarded during recovery:
+Archives include timestamps, and those exceeding `ErisPulse.interaction.checkpoint_ttl` (default 24 hours) are cleaned up:
+
+- **Lazy discard**: If an archive is found expired during resume, it is automatically discarded
+- **Background proactive cleanup**: The framework has a periodic GC task (lazy-started after first use of checkpoints) that actively enumerates and deletes expired archives, preventing indefinite accumulation of expired checkpoints in storage during long-running operations. Archives cleaned up by the background task are treated as "no checkpoint" if messages are received later
 
 ```toml
 [ErisPulse.interaction]
@@ -310,14 +313,14 @@ checkpoint_ttl = 86400  # seconds
 
 ### Automatic Recovery on Restart
 
-After a framework restart, in-progress conversations (waiting coroutines in memory) are lost, but checkpoints remain. By registering a **resume factory** via `register_resume_handler`, the framework can automatically resume conversations when the first message of a session arrives after restart:
+After a framework restart, in-progress conversations (waiting coroutines in memory) are lost, but checkpoints remain. Register a **resume factory** using `register_resume_handler` so the framework can automatically resume conversations when the first message from that session is received:
 
 ```python
 from ErisPulse.Core.Event.wrapper import Conversation
 
-@Conversation.register_resume_handler()  # Optional: platform="onebot11" to limit platform
+@Conversation.register_resume_handler()  # Optional: can pass platform="onebot11" to limit platform
 def make_conversation(event) -> Conversation:
-    # Factory responsibility: Rebuild conversation and re-register all branches
+    # Factory responsibility: rebuild conversation and re-register all branches
     conv = event.conversation(timeout=60)
 
     @conv.branch("menu")
@@ -327,14 +330,14 @@ def make_conversation(event) -> Conversation:
     return conv
 ```
 
-After registration, when a user previously in the `menu` branch sends their first message after a restart, the framework automatically: restores context → claims the message → continues the conversation from the saved branch. If no factory is registered, this mechanism incurs zero overhead.
+After registration, when a user previously in the `menu` branch sends the first message after a restart, the framework automatically: restores context → claims the message → continues the conversation from the archived branch. Without a registered factory, this mechanism incurs zero overhead.
 
 ### Resume Equals Takeover
 
 When `resume()` succeeds, the framework automatically performs two actions:
 
-1. **Session takeover**: Automatically acquires the session's mutual exclusion lease—other modules can detect "this user is currently engaged in a conversation" via `sdk.interaction.get_owner_of(event)`; if the session is already occupied by another module, recovery is abandoned (returns False), preventing conflicts between two conversations.
-2. **History retrieval**: Retrieves the most recent 10 messages from the session's inbox to `conv.recent_history` (ensuring continuous LLM context after AI module recovery); `resume(with_history=0)` can disable this.
+1. **Session takeover**: Automatically acquire the session's mutual exclusion lease—other modules can detect "this user is currently in conversation" via `sdk.interaction.get_owner_of(event)`; if the session is already occupied, resume is abandoned (returns False), preventing conflicts between conversations
+2. **History retrieval**: Retrieve the last 10 messages from the session inbox into `conv.recent_history` (ensuring continuous context for AI modules after recovery); `resume(with_history=0)` can disable this
 
 ```python
 if await conv.resume(with_history=20):
@@ -342,7 +345,7 @@ if await conv.resume(with_history=20):
         print(m["role"], ":", m["text"])
 ```
 
-### Manual Recovery (when not using automatic mechanism)
+### Manual Resume (Without Automatic Mechanism)
 
 ```python
 @command("continue")
@@ -353,7 +356,7 @@ async def continue_handler(event):
         conv.goto(conv.get_current_branch())
 ```
 
-## Typical Flow Patterns
+## Typical Workflow Patterns
 
 ### Guided Registration
 
@@ -362,18 +365,18 @@ async def continue_handler(event):
 async def register_handler(event):
     conv = event.conversation(timeout=60)
 
-    await conv.say("Welcome to register!")
+    await conv.say("Welcome to registration!")
 
     data = await conv.collect([
-        {"key": "username", "prompt": "Please enter a username (3-20 characters)",
+        {"key": "username", "prompt": "Please enter username (3-20 characters)",
          "validator": lambda e: 3 <= len(e.get_text().strip()) <= 20},
-        {"key": "email", "prompt": "Please enter your email address",
+        {"key": "email", "prompt": "Please enter email address",
          "validator": lambda e: "@" in e.get_text() and "." in e.get_text(),
-         "retry_prompt": "Invalid email format, please try again"},
+         "retry_prompt": "Invalid email format, please re-enter"},
     ])
 
     if not data:
-        await event.reply("Registration canceled")
+        await event.reply("Registration cancelled")
         return
 
     confirmed = await conv.confirm(
@@ -383,7 +386,7 @@ async def register_handler(event):
     if confirmed:
         await conv.say("✅ Registration successful!")
     else:
-        await conv.say("❌ Registration canceled")
+        await conv.say("❌ Registration cancelled")
 ```
 
 ### Looping Conversation
@@ -392,7 +395,7 @@ async def register_handler(event):
 @command("chat")
 async def chat_handler(event):
     conv = event.conversation(timeout=120)
-    await conv.say("Entering chat mode, type 'exit' to end")
+    await conv.say("Entering conversation mode, type 'exit' to end")
 
     while conv.is_active:
         resp = await conv.wait()
@@ -413,7 +416,7 @@ async def chat_handler(event):
             await conv.say(f"You said: {text}")
 ```
 
-## Related Documents
+## Related Documentation
 
 - [Event Wrapper Class](../developer-guide/modules/event-wrapper.md) - All methods of the Event object
-- [Introduction to Event Handling](../getting-started/event-handling.md) - Basics of event handling
+- [Event Handling Introduction](../getting-started/event-handling.md) - Basics of event handling

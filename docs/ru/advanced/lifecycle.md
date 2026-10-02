@@ -110,55 +110,55 @@ if sdk.lifecycle.has_handlers("message.sending"):
 - Проверка охватывает **точное имя события**, шаблон `*` и родительские события
 - Возвращает `False`, если слушателей нет, что позволяет безопасно пропустить `emit`
 
-## Список точек останова хуков
+## Обзор точек остановки хука
 
-Типичный порядок событий жизненного цикла при обработке сообщения от платформы до завершения:
+Типичный цикл событий жизненного цикла сообщения от поступления из платформы в фреймворк до завершения обработки:
 
 ```mermaid
 sequenceDiagram
     participant P as Платформа
     participant A as Адаптер
     participant F as Ядро фреймворка
-    participant M as Обработчики модуля
+    participant M as Обработчик модуля
 
     P->>A: Пришло событие от платформы
     A->>F: adapter.event.receive (самый ранний)
-    F->>F: event.pre_process (перед выполнением обработчиков)
-    F->>M: Доставка в обработчики (команды/сообщения/уведомления)
+    F->>F: event.pre_process (перед выполнением обработчика)
+    F->>M: Доставка в обработчик (команды/сообщения/уведомления и т.д.)
     M->>M: command.matched / command.executed
     M->>F: event.reply()
     F->>F: message.sending (перед отправкой)
-    F->>A: DSL-отправка
+    F->>A: DSL отправки
     A->>P: Отправка на платформу
     A->>F: message.sent (отправка завершена)
     F->>F: adapter.event.dispatched (доставка завершена)
 ```
 
-Фреймворк включает следующие точки останова хуков, которые можно прослушивать с помощью `@sdk.lifecycle.on()` для реализации пользовательской логики.
+В фреймворке встроены следующие точки остановки хука, пользователь может слушать любую точку остановки для реализации пользовательской логики через `@sdk.lifecycle.on()`.
 
-### Ядро инициализации
+### Основная инициализация
 
-| Название хука | Триггер | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
 | `core.init.start` | Начало инициализации SDK | `{}` |
-| `core.init.stage` | Начало этапа инициализации (отправляется в фоне) | `{"stage": str}`, значения: `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
-| `core.init.complete` | Завершение инициализации SDK | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str (только при ошибке)}` |
-| `core.uninit.complete` | Завершение обратной инициализации SDK | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str (только при ошибке)}` |
+| `core.init.stage` | Начало этапа инициализации (выдается в фоне) | `{"stage": str}`; значения: `discovery` / `adapter_register` / `adapter_start` / `module_register` / `module_init` / `adapter_start_deferred` / `router_start` |
+| `core.init.complete` | Завершение инициализации SDK | `{"duration": float, "success": bool, "stages": {stage: float}, "adapters": {"enabled": [str], "disabled": [str]}, "modules": {"enabled": [str], "disabled": [str]}, "error": str(только при неудаче)}` |
+| `core.uninit.complete` | Завершение обратной инициализации SDK | `{"duration": float, "success": bool, "adapters_closed": int, "modules_unloaded": int, "module_properties_cleared": int, "module_properties_to_clear": [str], "error": str(только при неудаче)}` |
 
 **Пример: отображение прогресса запуска**
 
 ```python
 @sdk.lifecycle.on("core.init.stage")
 def show_stage(data):
-    print(f"[Запуск] Этап: {data['stage']}")
+    print(f"[Запуск] Вход в этап: {data['stage']}")
 ```
 
-### Изменения конфигурации
+### Изменение конфигурации
 
-| Название хука | Триггер | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
 | `config.set` | Изменение конфигурационного параметра | `{"key": str, "old_value": Any, "new_value": Any}` |
-| `config.updated` | Обнаружено изменение всей конфигурации после редактирования `config.toml` | `{"old_config": dict, "new_config": dict, "config_file": str}` |
+| `config.updated` | Обнаружено изменение всей конфигурации после редактирования config.toml | `{"old_config": dict, "new_config": dict, "config_file": str}` |
 
 **Пример: аудит конфигурации**
 
@@ -170,34 +170,34 @@ def audit_config(data):
 
 ### Жизненный цикл модуля
 
-| Название хука | Триггер | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
 | `module.register` | Регистрация класса модуля в менеджере | `{"module_name": str, "success": bool}` |
 | `module.load` | Завершение загрузки модуля (успешное инстанцирование) | `{"module_name": str, "success": bool}` |
 | `module.init` | Завершение инициализации модуля (включая ленивую загрузку) | `{"module_name": str, "success": bool}` |
 | `module.unload` | Выгрузка модуля | `{"module_name": str, "success": bool}` |
-| `module.reload` | Завершение горячей перезагрузки модуля (включая перезагрузку зависимостей) | `{"module_name": str, "success": bool}` |
+| `module.reload` | Завершение горячей перезагрузки модуля (включая перезагрузку зависимостей) | `{"module_name": str, "success": bool, "full": bool}`; при полной перезагрузке (`reload_all`) `module_name` равно `"All"`, в payload дополнительно присутствует `"results": dict[str, bool]` |
 
 ### Жизненный цикл адаптера
 
-| Название хука | Триггер | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
 | `adapter.load` | Завершение регистрации адаптера | `{"platform": str, "success": bool}` |
 | `adapter.start` | Запуск адаптера | `{"platforms": [str]}` |
-| `adapter.status.change` | Изменение статуса адаптера | `{"platform": str, "status": str, "retry_count": int, "error": str (только при ошибке)}` |
+| `adapter.status.change` | Изменение состояния адаптера | `{"platform": str, "status": str, "retry_count": int, "error": str(только при неудаче)}`; возможные значения status: `starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
 | `adapter.stop` | Остановка адаптера | `{"platforms": [str]}` |
 | `adapter.stopped` | Завершение остановки адаптера | `{"platforms": [str]}` |
 | `adapter.bot.online` | Онлайн бота | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
 | `adapter.bot.offline` | Оффлайн бота | `{"platform": str, "bot_id": str, "status": str}` |
 
-### Приём и обработка событий
+### Прием и обработка событий
 
-| Название хука | Триггер | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
-| `adapter.event.receive` | Получение события с внешней платформы (самый ранний) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
-| `adapter.event.blocked` | Промежуточный слой отклонил событие (возврат `False`, событие отбрасывается) | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
-| `adapter.event.dispatched` | Завершение доставки события | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
-| `event.pre_process` | Перед началом выполнения обработчиков события | `{"event_type": str, "platform": str, "detail_type": str}` |
+| `adapter.event.receive` | Получено событие от внешней платформы (самый ранний) | `{"platform": str, "event_type": str, "raw_event_type": str}` |
+| `adapter.event.blocked` | Промежуточное ПО отклонило событие (возвращает `False`, событие отбрасывается и не попадает в обработчики) | `{"middleware": str, "platform": str, "event_type": str, "detail_type": str, "event": dict, "_trace_id": str}` |
+| `adapter.event.dispatched` | Завершена доставка события | `{"platform": str, "event_type": str, "raw_event_type": str, "onebot_handlers_count": int}` |
+| `event.pre_process` | Начало выполнения обработчика события | `{"event_type": str, "platform": str, "detail_type": str}` |
 
 **Пример: статистика событий**
 
@@ -215,12 +215,12 @@ def log_unhandled(data):
         print(f"[Необработано] {data['platform']}/{data['event_type']}")
 ```
 
-### Отправка сообщений
+### Отправка сообщения
 
-| Название хука | Триггер | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
 | `message.sending` | Сообщение готовится к отправке | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
-| `message.sent` | Сообщение отправлено | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
+| `message.sent` | Сообщение успешно отправлено | `{"platform": str, "method": str, "detail_type": str, "target_id": str, "bot_id": str}` |
 
 **Пример: аудит отправки сообщений**
 
@@ -232,10 +232,10 @@ def log_sending(data):
 
 ### Командная система
 
-| Название хука | Триггер | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
-| `command.matched` | Команда найдена и готовится к выполнению | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
-| `command.executed` | Команда выполнена | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str (только при ошибке)}` |
+| `command.matched` | Команда соответствует шаблону и готова к выполнению | `{"command": str, "args": list[str], "platform": str, "user_id": str}` |
+| `command.executed` | Команда успешно выполнена | `{"command": str, "args": list[str], "platform": str, "user_id": str, "success": bool, "error": str(только при неудаче)}` |
 
 **Пример: статистика команд**
 
@@ -245,9 +245,9 @@ def count_commands(data):
     print(f"[Команда] /{data['command']} от {data['user_id']}@{data['platform']}")
 ```
 
-### HTTP-роутинг
+### HTTP-маршрутизация
 
-| Название хука | Триггер | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
 | `server.request` | Получен HTTP-запрос | `{"method": str, "path": str, "client_ip": str}` |
 | `server.response` | Отправлен HTTP-ответ | `{"method": str, "path": str, "status_code": int, "client_ip": str}` |
@@ -262,12 +262,12 @@ def log_http(data):
 
 ### WebSocket
 
-| Название хука | Триггер | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
-| `server.start` | Запуск сервера роутинга | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str (только при ошибке)}` |
-| `server.stop` | Остановка сервера роутинга | `{}` |
+| `server.start` | Запуск сервера маршрутизации | `{"base_url": str, "host": str, "port": int, "success": bool, "error": str(только при неудаче)}` |
+| `server.stop` | Остановка сервера маршрутизации | `{}` |
 | `server.websocket.connect` | Установлено WebSocket-соединение | `{"path": str, "module_name": str, "client_ip": str}` |
-| `server.websocket.disconnect` | WebSocket-соединение разорвано | `{"path": str, "module_name": str, "reason": str, "error": str (только при аномалии)}` |
+| `server.websocket.disconnect` | WebSocket-соединение разорвано | `{"path": str, "module_name": str, "reason": str, "error": str(только при аномалии)}` |
 
 **Пример: мониторинг WebSocket-соединений**
 
@@ -283,20 +283,20 @@ def on_ws_disconnect(data):
 
 ### Состояние подключения к хранилищу
 
-События о подключении к хранилищу (все триггеры происходят в фоне, не блокируют операции):
+Создание, сбой и восстановление пула подключений к хранилищу (все события отправляются в фоне, не блокируют операции с хранилищем):
 
-| Название хука | Триггер | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
-| `storage.ready` | Соединение с хранилищем готово (первое успешное создание пула в цикле) | `{"backend": str}` |
-| `storage.unreachable` | Повторные попытки подключения исчерпаны, вступает период охлаждения | `{"backend": str, "error": str, "cooldown": float}` |
-| `storage.recovered` | Охлаждение закончено, подключение восстановлено | `{"backend": str}` |
+| `storage.ready` | Пул подключений к хранилищу готов (первое успешное создание пула в каждом цикле событий) | `{"backend": str}` |
+| `storage.unreachable` | Повторные попытки подключения исчерпаны, вступает период охлаждения (в течение которого операции быстро завершаются с ошибкой) | `{"backend": str, "error": str, "cooldown": float}` |
+| `storage.recovered` | Охлаждение закончено, повторное подключение успешно, хранилище снова доступно | `{"backend": str}` |
 
-**Пример: оповещение об отказе хранилища**
+**Пример: предупреждение о сбое хранилища**
 
 ```python
 @sdk.lifecycle.on("storage.unreachable")
 def alert_storage_down(data):
-    print(f"[Предупреждение] Хранилище {data['backend']} недоступно: {data['error']}, автоматическая переподключение через {data['cooldown']}s")
+    print(f"[Предупреждение] Хранилище {data['backend']} недоступно: {data['error']}, автоматическое повторное подключение через {data['cooldown']} секунд")
 
 @sdk.lifecycle.on("storage.recovered")
 def notify_storage_back(data):
@@ -305,17 +305,17 @@ def notify_storage_back(data):
 
 ### HTTP-клиент
 
-События запросов и подключений через `sdk.client` (все триггеры происходят в фоне):
+События запросов и подключений клиента `sdk.client` (все события отправляются в фоне):
 
-| Название хука | Триггер | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
-| `client.request.success` | HTTP-запрос успешен | `{"method": str, "url": str, "status": int, "elapsed": float}` |
-| `client.request.failed` | HTTP-запрос не удался после исчерпания попыток | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
+| `client.request.success` | HTTP-запрос успешно выполнен | `{"method": str, "url": str, "status": int, "elapsed": float}` |
+| `client.request.failed` | HTTP-запрос не выполнен после исчерпания попыток повтора | `{"method": str, "url": str, "error": str, "attempts": int, "elapsed": float}` |
 | `client.ws.connect` | Установлено WebSocket-соединение | `{"url": str}` |
 
-### Межкультурная локализация
+### Международная локализация
 
-| Название хука | Триггер | Данные |
+| Имя хука | Точка остановки | Данные |
 |---------|---------|------|
 | `i18n.language.changed` | Смена языка фреймворка (`i18n.set_language`) | `{"language": str, "previous": str}` |
 

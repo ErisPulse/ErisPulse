@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "e81b387bf6241d50fc0a29b589e16431",
-  "file_hash": "e81b387bf6241d50fc0a29b589e16431",
-  "translated_at": "2026-09-10T07:03:03.757084",
+  "hash": "9efdfac27dc74b56cf968047dca46018",
+  "file_hash": "9efdfac27dc74b56cf968047dca46018",
+  "translated_at": "2026-10-02T11:09:24.027873",
   "target_lang": "en",
   "chunks": [
     {
@@ -22,8 +22,8 @@
       "translation": "## Connection Failure Behavior\n\nThe framework's startup and operation **do not depend on database reachability**—MySQL / PostgreSQL connection failures will not cause the framework to crash or fail to start:\n\n1. Instant pool creation failure triggers automatic exponential backoff retry (default 3 attempts)\n2. After exhausting retries → logs a WARNING (including reason and cooldown duration), the framework starts / continues running as normal, with only storage operations temporarily unavailable\n3. During the cooldown period (default 30 seconds), subsequent storage operations **fail quickly** (without blocking or slowing down other functions)\n4. Automatic reconnection attempt after cooldown ends—once the database recovers, storage becomes available again without requiring a restart\n\nLog example: `mysql connection pool creation failed after 3 retries, automatic reconnection in 30 seconds; storage operations will fail quickly during this period, while other framework functions remain unaffected`"
     },
     {
-      "hash": "5e228c9acaa842fed2641f61482b3281",
-      "translation": "## Native Asynchronous API\n\n```python\n# KV operations\nawait sdk.storage.aset(\"app.name\", \"MyApp\")\nvalue = await sdk.storage.aget(\"app.name\")\nkeys = await sdk.storage.aget_all_keys()\n\n# Table operations\nawait sdk.storage.aCreateTable(\"users\", {\n    \"id\": \"INTEGER PRIMARY KEY AUTOINCREMENT\",\n    \"name\": \"TEXT NOT NULL\",\n})\nrows = await sdk.storage.Table(\"users\").Select(\"name\").ToDict().aExecute()\n\n# Asynchronous transaction\nasync with sdk.storage.atransaction():\n    await sdk.storage.aset(\"key1\", \"value1\")\n    await sdk.storage.Table(\"users\").Insert({\"name\": \"Alice\"}).aExecute()\n```\n\nSynchronous APIs (`get/set/transaction/Table(...).Execute()`) remain available, internally executed in the background event loop via `AsyncBridge`. However, calling them within asynchronous handlers will briefly block the event loop; prefer the `a`-prefixed asynchronous methods. For a complete method comparison, see [SQL Query Builder](sql-builder.md)."
+      "hash": "66ed20d51a58850c2d3f76f52a31217f",
+      "translation": "## Asynchronous Native APIs\n\n```python\n# KV operations\nawait sdk.storage.aset(\"app.name\", \"MyApp\")\nvalue = await sdk.storage.aget(\"app.name\")\nkeys = await sdk.storage.aget_all_keys()\n\n# Table operations\nawait sdk.storage.aCreateTable(\"users\", {\n    \"id\": \"INTEGER PRIMARY KEY AUTOINCREMENT\",\n    \"name\": \"TEXT NOT NULL\",\n})\nrows = await sdk.storage.Table(\"users\").Select(\"name\").ToDict().aExecute()\n\n# Asynchronous transactions\nasync with sdk.storage.atransaction():\n    await sdk.storage.aset(\"key1\", \"value1\")\n    await sdk.storage.Table(\"users\").Insert({\"name\": \"Alice\"}).aExecute()\n```\n\nSynchronous APIs (`get/set/transaction/Table(...).Execute()`) are still available, internally executed via the `AsyncBridge` background event loop bridge. Calling them in asynchronous handlers will briefly block the event loop, and **a one-time warning will be output on the first call** (\"It is recommended to use asynchronous methods with the 'a' prefix\"), and asynchronous methods with the 'a' prefix are recommended. Two boundaries must be known:\n\n- **Synchronous interfaces cannot be called again within the bridged thread**: Synchronous interfaces are executed within the bridged thread, and calling them again will throw a `RuntimeError` (reentrancy protection to avoid self-deadlock).\n- **Calling after the bridged target loop is closed will fail**: After `uninit()`, do not call storage interfaces again.\n\nSee [SQL Query Builder](sql-builder.md) for a complete method comparison."
     },
     {
       "hash": "fb0f5a54e8e15925c34bc9789399f653",

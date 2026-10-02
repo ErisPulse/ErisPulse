@@ -164,3 +164,11 @@ except ErisPulseError as e:
 - 模組開發：按需精確捕獲（上表），最外層可用 `ErisPulseError` 兜底
 - 異常均已從 `ErisPulse.Core` 聚合導出（含 `SessionOccupiedError` / `InteractionCancelled` / `StrictModeError`），也可從 `ErisPulse.Core.Bases.errors` 導入
 - 完整定義見 `src/ErisPulse/Core/Bases/errors.py`
+
+## 關閉雜訊折疊
+
+長期駐留的進程在關閉（或後台循環被取消）時，事件循環通常會刷出一批無處理價值的
+`Task was destroyed but it is pending!` 類似的解釋器雜訊。框架內建**同類雜訊折疊**：
+2 秒視窗內的同類訊息降級為 TRACE 並合併計數，只輸出一次，結尾帶有
+「（另有 N 次同類訊息被折疊）」後綴。這是刻意的降噪行為——看到折疊後綴不代表
+框架吞掉了真實異常，業務異常（上表各類）照常完整輸出。

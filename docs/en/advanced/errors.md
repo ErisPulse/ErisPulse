@@ -157,3 +157,7 @@ except ErisPulseError as e:
 - For module development: catch as needed (see table above), use `ErisPulseError` as a fallback at the outermost layer
 - All exceptions are aggregated and exported from `ErisPulse.Core` (including `SessionOccupiedError` / `InteractionCancelled` / `StrictModeError`), or can be imported from `ErisPulse.Core.Bases.errors`
 - Full definitions are in `src/ErisPulse/Core/Bases/errors.py`
+
+## Noise Folding on Shutdown
+
+When long-running processes are shut down (or background loops are canceled), the event loop often generates a batch of noise messages such as `Task was destroyed but it is pending!` that have little value for troubleshooting. The framework includes built-in **noise folding** functionality: within a 2-second window, similar messages are downgraded to TRACE level, merged, and counted, with only one output being generated, followed by a suffix indicating 「(N more similar messages were folded)」. This is a deliberate noise reduction measure—seeing the folding suffix does not mean the framework has swallowed real exceptions. Business exceptions (all types listed above) are still fully output as usual.

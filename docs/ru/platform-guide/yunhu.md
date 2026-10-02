@@ -19,27 +19,27 @@ YunhuAdapter — это адаптер, построенный на базе п�
 
 ## Обновление парадигмы v5 (4.4.0)
 
-Адаптер был обновлен до соответствия парадигме v5 (инкрементальное обновление, совместимость API):
+Адаптер успешно завершил выравнивание по парадигме v5 (инкрементальное обновление, совместимость API):
 
-- **Полный набор официальных серверных API** (расширения методов DSL Api): редактирование сообщений, пакетная отправка, список сообщений, панели пользователей/глобальные панели, ограничение участников группы, удаление участников группы, контроль типов сообщений в группе, CRUD-операции с тегами групп, добавление тегов пользователям
-- **Стандартный сегмент keyboard** (стандартный компонент взаимодействия между платформами): сегмент {"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}} автоматически преобразуется в buttons облака; декораторы .Buttons(rows) / .Keyboard(rows) принимают общую структуру (оригинальная структура обратно совместима)
-- **Стандартные поля для обратного вызова взаимодействия**: события нажатия кнопок/A2UI включают стандартные поля interaction_id / button_data
-- **Принадлежность задачи spawn_background**: задачи WS-подключения теперь используют runtime.spawn_background
-- **Мягкие зависимости фреймворка**: во время выполнения проверяется наличие ErisPulse>=2.7.1 и выводится соответствующее уведомление; при запуске выводится лог версии
+- **Полный набор API-интерфейсов сервера** (расширения методов DSL Api): редактирование сообщений, массовая отправка, список сообщений, панели пользователей/глобальные панели, подавление голосов участников группы, удаление участников группы, управление типами сообщений в группе, CRUD-операции с тегами групп, добавление тегов пользователям
+- **Стандартный сегмент keyboard** (стандартный компонент взаимодействия между платформами): Автоматическое преобразование сегмента `{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}}` в cloud lake buttons; декораторы .Buttons(rows) / .Keyboard(rows) принимают общую структуру (оригинальная структура обратно совместима)
+- **Стандартные поля для обратных вызовов взаимодействия**: кнопка нажата/A2UI событие включает стандартные поля interaction_id / button_data
+- **Принадлежность задачи spawn_background**: задача WS-соединения теперь использует runtime.spawn_background
+- **Мягкая зависимость от фреймворка**: во время выполнения проверяется наличие ErisPulse>=2.7.1 и выводится предупреждение; при запуске выводится лог версии
 
-### Платформенные расширенные действия (call / методы Api)
+### Платформенные расширенные действия (call / метод Api)
 
 ```python
 from ErisPulse import sdk
 yunhu = sdk.adapter.get("yunhu")
 
-# Методы Api (официальные серверные API)
+# Методы Api (официальный серверный API)
 await yunhu.Api.edit_message(msg_id, recv_id, "group", "text", {"text": "Новый контент"})
 await yunhu.Api.batch_send(["userId1", "userId2"], "text", {"text": "Анонс"})
 await yunhu.Api.get_message_list(group_id, "group", before=10)
-await yunhu.Api.set_user_board(chat_id, "group", "Содержание панели", expire_time=3600)
+await yunhu.Api.set_user_board(chat_id, "group", "Контент панели", expire_time=3600)
 await yunhu.Api.dismiss_global_board()
-await yunhu.Api.gag_group_member(group_id, user_id, 600)      # Запрет на 600 секунд, 0=отмена
+await yunhu.Api.gag_group_member(group_id, user_id, 600)      # Подавление голоса на 600 секунд, 0=отмена
 await yunhu.Api.remove_group_member(group_id, user_id)
 await yunhu.Api.set_group_msg_type_limit(group_id, "text,image")
 await yunhu.Api.create_group_tag(group_id, "VIP", color="#FF5733")
@@ -51,11 +51,11 @@ from ErisPulse.Core.Event import notice
 @notice.on_notice()
 async def handle_button(event):
     if event.get("platform") == "yunhu" and event.get("button_data"):
-        data = event["button_data"]     # Единый доступ к данным между платформами
+        data = event["button_data"]     # Единый способ получения для всех платформ
         interaction_id = event["interaction_id"]
 ```
 
-> Подробное описание стандарта доступно в [Стандарте компонентов взаимодействия между платформами](../../standards/standardization-guide.md).
+> Полное описание стандарта см. в [Стандарте компонентов взаимодействия между платформами](../standards/standardization-guide.md).
 
 ## Поддерживаемые типы отправки сообщений
 
