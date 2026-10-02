@@ -28,8 +28,8 @@ from ErisPulse.runtime.context import owner_scope
 def clean_state(_clean_event_command_state):
     """影子模块：清理命令/事件系统状态（公共核心 + 影子目录/账本/归属权）"""
     from ErisPulse.Core.Event.command import command as command_handler
-    from ErisPulse.Core.shadow import shadow_ledger, shadow_manager
     from ErisPulse.Core.ownership import ownership
+    from ErisPulse.Core.shadow import shadow_ledger, shadow_manager
 
     def _extras() -> None:
         command_handler._shadow_catalog.clear()

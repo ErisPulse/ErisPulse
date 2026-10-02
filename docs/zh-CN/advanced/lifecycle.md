@@ -179,7 +179,7 @@ def audit_config(data):
 | `module.load` | 模块加载完成（实例化成功） | `{"module_name": str, "success": bool}` |
 | `module.init` | 模块初始化完毕（含懒加载） | `{"module_name": str, "success": bool}` |
 | `module.unload` | 模块卸载 | `{"module_name": str, "success": bool}` |
-| `module.reload` | 模块热重载完成（含级联重载依赖者） | `{"module_name": str, "success": bool}` |
+| `module.reload` | 模块热重载完成（含级联重载依赖者） | `{"module_name": str, "success": bool, "full": bool}`；全量重载（`reload_all`）时 `module_name` 为 `"All"`，payload 额外携带 `"results": dict[str, bool]` |
 
 ### 适配器生命周期
 
@@ -187,7 +187,7 @@ def audit_config(data):
 |---------|---------|------|
 | `adapter.load` | 适配器注册完成 | `{"platform": str, "success": bool}` |
 | `adapter.start` | 适配器启动 | `{"platforms": [str]}` |
-| `adapter.status.change` | 适配器状态变化 | `{"platform": str, "status": str, "retry_count": int, "error": str(仅失败时)}` |
+| `adapter.status.change` | 适配器状态变化 | `{"platform": str, "status": str, "retry_count": int, "error": str(仅失败时)}`；status 完整取值：`starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
 | `adapter.stop` | 适配器关闭 | `{"platforms": [str]}` |
 | `adapter.stopped` | 适配器关闭完成 | `{"platforms": [str]}` |
 | `adapter.bot.online` | Bot 上线 | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |

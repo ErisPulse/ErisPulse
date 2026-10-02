@@ -50,12 +50,17 @@ PYPI_PACKAGE_JSON_URL_TEMPLATE: str = "https://pypi.org/pypi/{package}/json"
 RUN_CRASH_BACKOFF_MAX_SECS: float = 60.0
 RUN_CRASH_BACKOFF_PER_CRASH_SECS: float = 3.0
 RUN_RESTART_PAUSE_SECS: float = 0.5
+# 连续同退出码崩溃达到该次数后，输出一次排查指引（疑似确定性故障，
+# 退避重试无意义）。使用位置: CLI/commands/run.py -> 监督循环；
+# 修改影响: 数值越小越早提示，越大越保守（0/负数禁用提示）。
+RUN_PERSISTENT_CRASH_HINT_THRESHOLD: int = 3
 
 __all__ = [
     "ADAPTER_ENTRY_POINT_GROUP",
     "RUN_CRASH_BACKOFF_MAX_SECS",
     "RUN_CRASH_BACKOFF_PER_CRASH_SECS",
     "RUN_RESTART_PAUSE_SECS",
+    "RUN_PERSISTENT_CRASH_HINT_THRESHOLD",
     "ENV_SUPERVISED",
     "HARD_RESTART_EXIT_CODE",
     "MODULE_ENTRY_POINT_GROUP",

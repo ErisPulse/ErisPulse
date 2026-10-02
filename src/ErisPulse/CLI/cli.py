@@ -305,6 +305,11 @@ class CLI:
         args, unknown = self.parser.parse_known_args()
         args._unknown_args = unknown
 
+        # --yes/-y：assume-yes 模式，由统一交互封装（utils/interactive）消费
+        from .utils.interactive import set_assume_yes
+
+        set_assume_yes(bool(getattr(args, "yes", False)))
+
         # --no-color：禁用 Rich 控制台着色（CI / 日志采集场景）
         if getattr(args, "no_color", False):
             console.no_color = True
@@ -375,6 +380,13 @@ class CLI:
             console.print(f"\n[warning]{i18n.t('cli.run.user_interrupted')}[/]")
             sys.exit(1)
         except Exception as e:
+            from .utils.interactive import NonInteractiveError
+
+            if isinstance(e, NonInteractiveError):
+                # 非交互环境遇到无法自动应答的提示：明确报错而非 EOF 崩溃
+                console.print(f"[error]{e}[/]")
+                console.print(f"[hint]{i18n.t('cli.interactive.non_tty_hint')}[/]")
+                sys.exit(1)
             console.print(f"[error]{i18n.t('cli.run.exec_error', error=e)}[/]")
             # 场景化友好提示：根据异常类型给出下一步建议
             from .hints import suggest_for_exception

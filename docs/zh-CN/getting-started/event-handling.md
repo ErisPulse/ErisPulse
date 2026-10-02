@@ -177,9 +177,9 @@ async def roll_handler(event, count: int, sides: int = 6, verbose: bool = False,
 - 声明的参数名必须存在于处理器签名中，否则注册期抛 `ValueError`
 - 不声明 `args=` / `options=` 的命令行为完全不变（向后兼容）
 
-### 命令治理（cooldown= / rate_limit= / deprecated=）
+### 命令治理（cooldown= / rate_limit= / usage_limit= / deprecated=）
 
-手写冷却计时、限流窗口、废弃提示可用声明替代，三者可任意组合。
+手写冷却计时、限流窗口、使用配额、废弃提示可用声明替代，四者可任意组合。
 
 **冷却**——时长语法与 `args=` 的 `duration` 类型一致（如 `"30s"`、`"1h30m"`、`"1d"`）：
 
@@ -197,6 +197,19 @@ async def search_handler(event):
     await event.reply("搜索结果")
 ```
 
+**配额**——周期内总次数上限（如 `"100/day"`、`"10/hour"`、`"500/30d"`），超限拒绝执行：
+
+```python
+@command("translate", usage_limit="100/day", usage_limit_key="user",
+         usage_limit_reply="今日翻译次数已用完")
+async def translate_handler(event):
+    ...
+```
+
+与冷却/限流不同，配额计数**经存储持久化**（KV 键 `erispulse.usage.<key>`，重启不丢）：
+存储不可达时自动退化为纯内存计数并告警（此时配额重启清零）。计数随配额周期
+切换自动清零，模块卸载时清理。
+
 **废弃**——调用时自动回复废弃文案，`deprecated_reject=True` 拒绝执行：
 
 ```python
@@ -209,13 +222,13 @@ async def old_handler(event): ...
 
 **行为要点**：
 
-- 冷却 / 限流命中默认**静默丢弃**（对称于作用域静默）；声明 `cooldown_reply=` / `rate_limit_reply=` 后命中即回复该文案
+- 冷却 / 限流 / 配额命中默认**静默丢弃**（对称于作用域静默）；声明 `cooldown_reply=` / `rate_limit_reply=` / `usage_limit_reply=` 后命中即回复该文案
 - 命令命中即认领——治理命中的命令不会漏给低优先级消息处理器
 - 治理判定位于全部权限检查与参数解析通过、实际执行前：无权限用户不触发，参数错误不消耗
-- 同时声明冷却与限流时冷却先判（冷却命中不占限流窗口）
+- 同时声明冷却与限流时冷却先判（冷却命中不占限流窗口）；配额在冷却/限流判定之后
 - `deprecated=` 默认回复文案后**继续执行**；`deprecated_reject=True` 拒绝执行（`command.executed` 钩子记 `success=False, error="deprecated"`）
 - `/help` 列表与单命令帮助自动显示废弃标记与文案
-- 状态为进程内内存，模块卸载时自动清理；跨进程共享 / 重启持久化不在范围内
+- 冷却与限流状态为进程内内存，模块卸载时自动清理；跨进程共享 / 重启持久化不在范围内（**usage 配额计数除外**——经存储持久化，见上节）
 - 声明在注册期校验（fail-fast）：语法非法、键粒度非白名单值、reply 未搭配主声明均抛 `ValueError`
 
 ### 处理器节流（throttle=）与防抖（debounce=）
@@ -242,6 +255,10 @@ async def search(event): ...
 （user / session / global），时长语法与 `duration` 一致。节流与 `pattern=` /
 `regex=` 等既有条件叠加生效（全部满足才触发）；间隔内丢弃仅记 TRACE 日志；
 声明在注册期校验；`throttle=` 与 `debounce=` 语义互斥（同时声明抛 `ValueError`）。
+
+> **防抖不半途掐断业务**：只有尚未越过等待窗口的待执行任务会被取消；已经
+> 越窗、正在执行中的处理器不会被新事件取消（避免停在任意 await 点产生
+> 部分副作用）。
 
 ### 依赖注入（Depends）
 
@@ -489,7 +506,7 @@ async def firewall(data):
 
 ## 命令分发决策链：为什么命令没触发
 
-一条命令消息依次经过：**命令文本判定 → 命令名/别名命中（未命中附拼写建议）→ 命中即认领 → 作用域 → 用户 ACL → 主人 → 权限 → 冷却/限流 → 参数解析 → 执行**。任何一步不满足即终止；治理命中（冷却/限流）默认静默丢弃，权限类拒绝会回复用户。
+一条命令消息依次经过：**命令文本判定 → 命令名/别名命中（未命中附拼写建议）→ 命中即认领 → 作用域 → 用户 ACL → 主人 → 权限 → 冷却/限流 → 配额（usage）→ 废弃（deprecated，notice/rejected）→ 参数解析 → 执行**（中间件可在事件层否决，见上一节）。任何一步不满足即终止；治理命中（冷却/限流/配额）默认静默丢弃，权限类拒绝会回复用户，废弃按声明回复或拒绝。
 
 测试中 `ErisPulse-Testing` 的 `dispatch()` 直接返回这条决策链（`DispatchTrace`，`trace.explain()` 输出逐行因果），生产环境可用 `ErisPulse.Core.Event.start_dispatch_trace()` 采集同样的记录。
 

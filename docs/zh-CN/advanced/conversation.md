@@ -301,7 +301,10 @@ await conv.clear_saved()
 
 ### 检查点 TTL
 
-存档带时间戳，超过 `ErisPulse.interaction.checkpoint_ttl`（默认 24 小时）的存档在恢复时自动丢弃：
+存档带时间戳，超过 `ErisPulse.interaction.checkpoint_ttl`（默认 24 小时）的存档会被清理：
+
+- **惰性丢弃**：恢复时发现存档已过期，自动丢弃
+- **后台主动清理**：框架有周期 GC 任务（首次使用检查点后惰性启动）主动枚举并删除过期存档，避免长期运行时 storage 中过期检查点无限累积。被主动清理的存档若之后收到会话消息，按"无检查点"处理
 
 ```toml
 [ErisPulse.interaction]

@@ -505,7 +505,12 @@ class TestProactiveGCIntegration:
 
         sdk = SDK()
 
-        with patch("ErisPulse.sdk.DEFAULT_PROACTIVE_GC_INTERVAL_SECS", 0.01):
+        # GC 实现已外迁 runtime/proactive_gc，间隔经 get_framework_config 读取
+        # （常量 patch 旧位置 ErisPulse.sdk.* 已失效）；直接钉定快速间隔
+        with patch(
+            "ErisPulse.runtime.get_framework_config",
+            return_value={"proactive_gc_interval": 0.01},
+        ):
             sdk._start_proactive_gc()
             await asyncio.sleep(0.05)
 

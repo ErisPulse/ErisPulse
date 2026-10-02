@@ -103,6 +103,7 @@ __all__ = [
     "get_logger_config",
     "get_master_config",
     "get_owner_tasks",
+    "get_current_trace_id",
     "get_rss_mb",
     "get_send_receipts",
     "get_server_config",

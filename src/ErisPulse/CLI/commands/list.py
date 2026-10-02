@@ -56,6 +56,7 @@ class ListCommand(Command):
 
         # 仅在需要时一次性拉取远程索引，避免逐包重复 asyncio.run / 网络请求
         remote_packages = None
+        remote_unavailable = False
         if outdated_only:
             try:
                 remote_packages = asyncio.run(
@@ -63,15 +64,29 @@ class ListCommand(Command):
                 )
             except Exception:
                 remote_packages = None
+            # 索引拉取失败（异常或双源均空）：区分"全是最新"与"无法检查"
+            remote_unavailable = remote_packages is None or not (
+                remote_packages.get("modules") or remote_packages.get("adapters")
+            )
 
         if pkg_type == "all":
-            self._print_installed_packages("modules", outdated_only, remote_packages)
-            self._print_installed_packages("adapters", outdated_only, remote_packages)
+            self._print_installed_packages(
+                "modules", outdated_only, remote_packages, remote_unavailable
+            )
+            self._print_installed_packages(
+                "adapters", outdated_only, remote_packages, remote_unavailable
+            )
         else:
-            self._print_installed_packages(pkg_type, outdated_only, remote_packages)
+            self._print_installed_packages(
+                pkg_type, outdated_only, remote_packages, remote_unavailable
+            )
 
     def _print_installed_packages(
-        self, pkg_type: str, outdated_only: bool = False, remote_packages: dict | None = None
+        self,
+        pkg_type: str,
+        outdated_only: bool = False,
+        remote_packages: dict | None = None,
+        remote_unavailable: bool = False,
     ):
         """
         以表格形式打印已安装的模块或适配器
@@ -79,6 +94,7 @@ class ListCommand(Command):
         :param pkg_type: [str] 组件类型 (modules 或 adapters)
         :param outdated_only: [bool] 是否仅显示可升级的包 (默认: False)
         :param remote_packages: [Optional[dict]] 预取的远程索引，避免逐包重复拉取 (默认: None)
+        :param remote_unavailable: [bool] 远程索引是否不可达（空结果区分文案用，默认: False）
         """
         installed = self.package_manager.get_installed_packages()
 
@@ -121,6 +137,10 @@ class ListCommand(Command):
                 )
                 # 展示模块注册的脚本入口
                 self._print_package_scripts(installed["modules"])
+            elif outdated_only and remote_unavailable:
+                console.print(f"[dim]  {i18n.t('cli.list.outdated_unavailable')}[/]")
+            elif outdated_only:
+                console.print(f"[dim]  {i18n.t('cli.list.no_outdated')}[/]")
             else:
                 console.print(f"[dim]  {i18n.t('cli.list.no_modules')}[/]")
                 console.print(f"[dim]  {i18n.t('cli.list.empty_hint')}[/]")
@@ -134,6 +154,7 @@ class ListCommand(Command):
             )
             table.add_column(i18n.t("cli.list.header_package"), min_width=20)
             table.add_column(i18n.t("cli.list.header_version"), width=10)
+            table.add_column(i18n.t("cli.list.header_status"), width=8)
             table.add_column(i18n.t("cli.list.header_desc"))
 
             count = 0
@@ -142,10 +163,16 @@ class ListCommand(Command):
                     info["package"], info["version"], remote_packages
                 ):
                     continue
+                status = (
+                    f"[green]{i18n.t('cli.list.status_enabled')}[/]"
+                    if info.get("enabled", True)
+                    else f"[yellow]{i18n.t('cli.list.status_disabled')}[/]"
+                )
                 table.add_row(
                     name,
                     info["package"],
                     info["version"],
+                    status,
                     info["summary"],
                 )
                 count += 1
@@ -155,6 +182,10 @@ class ListCommand(Command):
                 console.print(
                     f"[dim]  {i18n.t('cli.list.count_adapters', count=count)}[/]"
                 )
+            elif outdated_only and remote_unavailable:
+                console.print(f"[dim]  {i18n.t('cli.list.outdated_unavailable')}[/]")
+            elif outdated_only:
+                console.print(f"[dim]  {i18n.t('cli.list.no_outdated')}[/]")
             else:
                 console.print(f"[dim]  {i18n.t('cli.list.no_adapters')}[/]")
                 console.print(f"[dim]  {i18n.t('cli.list.empty_hint')}[/]")
@@ -182,12 +213,15 @@ class ListCommand(Command):
         """
         if remote_packages is None:
             remote_packages = asyncio.run(self.package_manager.get_remote_packages())
+        # 仅"远端更新"才算可升级：本地 dev/git 安装版本比远端新时不再误报
+        from ...runtime.version import compare_versions
+
         for module_info in remote_packages["modules"].values():
             if module_info["package"] == package_name:
-                return module_info["version"] != current_version
+                return compare_versions(module_info["version"], current_version) > 0
         for adapter_info in remote_packages["adapters"].values():
             if adapter_info["package"] == package_name:
-                return adapter_info["version"] != current_version
+                return compare_versions(adapter_info["version"], current_version) > 0
         return False
 
     def _print_package_scripts(self, packages: dict) -> None:

@@ -215,9 +215,9 @@ def _clean_event_command_state() -> Generator[None, None, None]:
 
     {!--< internal-use >!--}
     """
+    from ErisPulse.Core.adapter import adapter
     from ErisPulse.Core.Event import _clear_all_handlers
     from ErisPulse.Core.Event.command import command as command_handler
-    from ErisPulse.Core.adapter import adapter
 
     def _clean() -> None:
         _clear_all_handlers()

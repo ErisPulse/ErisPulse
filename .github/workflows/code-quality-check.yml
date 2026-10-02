@@ -37,7 +37,7 @@ jobs:
         run: uv sync
 
       - name: Run ruff check
-        continue-on-error: true
+        id: ruff-check
         run: |
           echo "Running Ruff code check..."
           ruff_output=$(uv run ruff check src/ tests/ 2>&1; echo "RUFF_EXIT_CODE=$?")
@@ -54,8 +54,11 @@ jobs:
             echo "has_ruff_issues=false" >> $GITHUB_OUTPUT
           fi
 
+          # 正式门禁：发现问题即失败（评论仍会发出，见下一步）
+          exit $exit_code
+
       - name: Post Ruff check results to PR
-        if: steps.ruff-check.outputs.has_ruff_issues == 'true' && github.event_name == 'pull_request'
+        if: always() && steps.ruff-check.outputs.has_ruff_issues == 'true' && github.event_name == 'pull_request'
         uses: actions/github-script@v6
         with:
           github-token: ${{ steps.app-token.outputs.token }}
@@ -74,7 +77,7 @@ jobs:
 
             const message = `## Ruff Code Check Results
 
-            > ⚠️ This check does not block merging, for reference only
+            > 🚫 Blocking check: merge is blocked until the issues below are fixed
 
             \`\`\`
             ${process.env.RUFF_OUTPUT}
@@ -266,6 +269,26 @@ jobs:
               });
             }
 
+  integration-check:
+    # 集成测试（真实组件，非 mock）此前只在本地运行；单机单版本常态跑，
+    # 失败阻塞合并
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install project dependencies
+        run: uv sync --extra test
+
+      - name: Run integration tests
+        run: uv run pytest tests/integration -p no:cacheprovider -n auto --tb=short -q --no-cov
+
   free-threaded-smoke:
     # Experimental Python 3.14t (free-threaded / no-GIL) smoke: monitoring signal only,
     # NOT a supported platform. Skips gracefully when the ecosystem lacks cp314t wheels.
@@ -309,10 +332,9 @@ jobs:
         run: uv sync
 
       - name: Run basedpyright type check
+        # 正式门禁：src/ErisPulse 基线 0 error（Any/Unknown 豁免由
+        # pyproject 配置管理），新增错误必须清零
         run: uv run basedpyright src/ErisPulse
-        # 类型检查为增量门槛：存量告警不阻塞，新增错误必须清零。
-        # 由 PR 提交者本地核对（CONTRIBUTING: 两套检查），CI 仅作基线留档。
-        continue-on-error: true
 
   security-audit:
     runs-on: ubuntu-latest

@@ -8,7 +8,7 @@ import asyncio
 import sys
 from argparse import ArgumentParser
 
-from rich.prompt import Confirm, Prompt
+from rich.prompt import Prompt
 from rich.text import Text
 
 from ..base import Command
@@ -16,6 +16,7 @@ from ..console import console
 from ..i18n import i18n
 from ..utils import PackageManager, config_wizard
 from ..utils.display import interactive_select_table
+from ..utils.interactive import confirm
 from ..utils.package_manager import (
     resolve_target_python,
     warn_if_uv_isolated,
@@ -251,6 +252,7 @@ class InstallCommand(Command):
             if success:
                 # 非交互路径不进入向导，仅提示后续配置入口
                 console.print(f"[dim]  {i18n.t('cli.install.configure_hint')}[/]")
+                console.print(f"[hint]  {i18n.t('cli.install.done_hint')}[/]")
 
             if not success:
                 sys.exit(1)
@@ -294,7 +296,7 @@ class InstallCommand(Command):
             elif choice == "4":
                 self._install_custom(upgrade, pre)
 
-            if not Confirm.ask(f"\n  [cyan]{i18n.t('cli.install.continue_install')}[/]", default=False):
+            if not confirm(f"\n  [cyan]{i18n.t('cli.install.continue_install')}[/]", default=False):
                 break
 
     def _install_adapters(self, remote_packages: dict, upgrade: bool, pre: bool):
@@ -341,7 +343,7 @@ class InstallCommand(Command):
 
         selected_names = [name for name, _ in selected]
         console.print(f"\n  [dim]{i18n.t('cli.install.selected', selected=', '.join(selected_names))}[/]")
-        if Confirm.ask(
+        if confirm(
             f"  [cyan]{i18n.t('cli.install.confirm_adapters', count=len(selected_names))}[/]",
             default=True,
         ):
@@ -390,7 +392,7 @@ class InstallCommand(Command):
 
         selected_names = [name for name, _ in selected]
         console.print(f"\n  [dim]{i18n.t('cli.install.selected', selected=', '.join(selected_names))}[/]")
-        if Confirm.ask(
+        if confirm(
             f"  [cyan]{i18n.t('cli.install.confirm_modules', count=len(selected_names))}[/]",
             default=True,
         ):
@@ -495,7 +497,7 @@ class InstallCommand(Command):
             except ValueError:
                 continue
 
-        if selected and Confirm.ask(
+        if selected and confirm(
             f"  [cyan]{i18n.t('cli.install.confirm_search_install', count=len(selected))}[/]",
             default=True,
         ):
@@ -514,7 +516,7 @@ class InstallCommand(Command):
         if package_name.lower() == "q":
             return
         if package_name:
-            if Confirm.ask(
+            if confirm(
                 f"  [cyan]{i18n.t('cli.install.confirm_custom_install', package_name=package_name)}[/]",
                 default=True,
             ):
@@ -534,6 +536,7 @@ class InstallCommand(Command):
         """
         if not config_wizard.is_interactive():
             console.print(f"[dim]  {i18n.t('cli.install.configure_hint')}[/]")
+            console.print(f"[hint]  {i18n.t('cli.install.done_hint')}[/]")
             return
 
         resolved = []
@@ -545,3 +548,4 @@ class InstallCommand(Command):
             config_wizard.post_install_configure(resolved)
         except Exception as e:
             console.print(f"[warning]  {i18n.t('cli.config.post_install_failed', error=e)}[/]")
+        console.print(f"[hint]  {i18n.t('cli.install.done_hint')}[/]")

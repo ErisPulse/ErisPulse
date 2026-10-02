@@ -637,7 +637,7 @@ class ModuleManager(ManagerBase):
         )
         return success
 
-    async def reload(self, name: str) -> bool:
+    async def reload(self, name: str, *, full: bool = False) -> bool:
         """
         热重载单个模块（支持任意来源：本地插件 / PyPI 安装包）
 
@@ -646,20 +646,59 @@ class ModuleManager(ManagerBase):
         本地插件（``plugins/`` 目录）来源重扫描插件目录；PyPI 安装包来源
         重新查询 entry-point 并重导入模块代码（pip 升级后调用即可生效）。
 
+        ``full=True`` 启用全量重载：``sys.modules`` 清理名单在元数据之外
+        叠加旧模块对象顶层包名（元数据缺失也能彻底刷新 import 缓存），
+        且依赖者模块同样重导代码。
+
         :param name: 模块名（entry-point 名称或插件名）
+        :param full: 是否全量重载（默认 False）
         :return: 是否重载成功（SDK 未初始化时返回 False）
 
         :example:
         >>> await sdk.module.reload("dice")      # 本地插件
         >>> await sdk.module.reload("Weather")   # PyPI 安装包模块
+        >>> await sdk.module.reload("Weather", full=True)  # 全量重载
         """
         loader = getattr(self._sdk, "_module_loader", None) if self._sdk else None
         if loader is None:
             logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
             return False
-        success = await loader.reload_module(name, self, self._sdk)
-        await lifecycle.emit(EVENT_MODULE_RELOAD, {"module_name": name, "success": success})
+        success = await loader.reload_module(name, self, self._sdk, full=full)
+        await lifecycle.emit(
+            EVENT_MODULE_RELOAD, {"module_name": name, "success": success, "full": full}
+        )
         return success
+
+    async def reload_all(self) -> "dict[str, bool]":
+        """
+        全量热重载所有已注册模块（尽力而为语义）
+
+        经模块加载器执行 卸载全部 → 清理全部 ``sys.modules`` 子树 →
+        重新发现/注册 → 按依赖拓扑序加载 → 此前已加载的懒加载模块重新
+        激活 流程，一次刷新全部模块代码（pip 批量升级后调用即可全部生效）。
+        单模块失败仅记录诊断并跳过，不影响其余模块；无整体回滚——
+        on_unload 副作用不可撤销，与单模块热重载语义一致。
+
+        :return: 模块注册名 → 是否重载成功（发现阶段即失败的模块不在结果中；
+                 SDK 未初始化时返回空字典）
+
+        :example:
+        >>> await sdk.module.reload_all()
+        """
+        loader = getattr(self._sdk, "_module_loader", None) if self._sdk else None
+        if loader is None:
+            logger.warning(i18n.t("core.sdk.hot_reload.no_loader"))
+            return {}
+        results = await loader.reload_all(self, self._sdk)
+        await lifecycle.emit(
+            EVENT_MODULE_RELOAD,
+            {
+                "module_name": "All",
+                "success": all(results.values()) if results else True,
+                "results": results,
+            },
+        )
+        return results
 
     async def _unload_single_module(self, module_name: str) -> bool:
         """

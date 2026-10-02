@@ -19,12 +19,12 @@ from pathlib import Path
 from typing import Any
 
 from rich.panel import Panel
-from rich.prompt import Confirm
 
 from ...finders import AdapterFinder, ModuleFinder
 from ..console import console
 from ..constants import PYPI_PACKAGE_JSON_URL_TEMPLATE
 from ..i18n import i18n
+from .interactive import confirm
 
 # 版本号解析与比较的唯一实现在 runtime/version.py（PEP 440 子集，纯标准库）；
 # 本模块经下方方法级委托复用同一解析口径，避免双正则导致判定分歧
@@ -310,6 +310,9 @@ class PackageManager:
                 )
             else:
                 console.print(f"[dim]{i18n.t('cli.package.no_proxy_detected')}[/]")
+            # 拉取失败不入缓存：失败结果缓存会把瞬时网络问题放大成 1 小时的
+            # "索引不可达"，且期间连告警都不再出现
+            return result
 
         self._cache[cache_key] = result
         self._cache_time[cache_key] = time.time()
@@ -954,7 +957,7 @@ class PackageManager:
                         border_style="yellow",
                     )
                 )
-                if not Confirm.ask(
+                if not confirm(
                     i18n.t("cli.package.confirm_install"), default=False
                 ):
                     console.print(f"[info]{i18n.t('cli.package.install_cancelled')}[/]")
@@ -978,7 +981,7 @@ class PackageManager:
                             border_style="warning",
                         )
                     )
-                    if not Confirm.ask(
+                    if not confirm(
                         i18n.t("cli.package.confirm_install"), default=False
                     ):
                         console.print(
@@ -1078,7 +1081,7 @@ class PackageManager:
             package_list = "\n".join(
                 [f"  - [package]{pkg}[/]" for pkg in packages_to_uninstall]
             )
-            if not Confirm.ask(
+            if not confirm(
                 i18n.t("cli.package.confirm_uninstall", packages=package_list),
                 default=False,
             ):
@@ -1127,7 +1130,7 @@ class PackageManager:
             )
         )
 
-        if not Confirm.ask(i18n.t("cli.package.confirm_upgrade_all"), default=False):
+        if not confirm(i18n.t("cli.package.confirm_upgrade_all"), default=False):
             console.print(f"[info]{i18n.t('cli.package.operation_cancelled')}[/]")
             return False
 
@@ -1231,7 +1234,7 @@ class PackageManager:
                             border_style="warning",
                         )
                     )
-                    if not Confirm.ask(
+                    if not confirm(
                         i18n.t("cli.package.confirm_upgrade"), default=False
                     ):
                         console.print(
