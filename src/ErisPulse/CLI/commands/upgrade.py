@@ -7,11 +7,11 @@ Upgrade 命令实现
 import sys
 from argparse import ArgumentParser
 
-from rich.prompt import Confirm
-
 from ..base import Command
+from ..console import console
 from ..i18n import i18n
 from ..utils import PackageManager
+from ..utils.interactive import confirm
 from ..utils.package_manager import resolve_target_python, warn_if_uv_isolated
 
 
@@ -50,15 +50,21 @@ class UpgradeCommand(Command):
     def execute(self, args):
         warn_if_uv_isolated()
         self.package_manager.no_uv = getattr(args, "no_uv", False)
+        upgraded = False
         if args.package:
             # 升级指定包
             success = self.package_manager.upgrade_package(args.package, pre=args.pre)
             if not success:
                 sys.exit(1)
+            upgraded = True
         # 升级所有包
-        elif args.force or Confirm.ask(
+        elif args.force or confirm(
             i18n.t("cli.upgrade.confirm_all"), default=False
         ):
             success = self.package_manager.upgrade_all()
             if not success:
                 sys.exit(1)
+            upgraded = True
+        if upgraded:
+            # 生效方式提示：升级只更新磁盘代码，运行中的进程需重启或热重载
+            console.print(f"[hint]{i18n.t('cli.upgrade.done_hint')}[/]")

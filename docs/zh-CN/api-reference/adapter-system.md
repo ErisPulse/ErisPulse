@@ -412,7 +412,7 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 | 事件名 | 触发时机 | 数据 |
 |--------|---------|------|
 | `adapter.bot.online` | 首次自动发现新 Bot | `{platform, bot_id, status}` |
-| `adapter.status.change` | 适配器状态变化（starting/started/stopping/stopped/stop_failed） | `{platform, status}` |
+| `adapter.status.change` | 适配器状态变化 | `{platform, status}`，status 完整取值：`starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency`（所依赖的适配器未就绪而跳过启动）/ `disabled`（配置禁用） |
 
 ```python
 # 监听 Bot 上线事件

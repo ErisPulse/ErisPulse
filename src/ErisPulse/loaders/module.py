@@ -294,7 +294,9 @@ class ModuleLoader(BaseLoader):
             if plugin_name in disabled_list:
                 disabled_list.remove(plugin_name)
 
-    async def reload_module(self, module_name: str, manager_instance: Any, sdk_instance: Any) -> bool:
+    async def reload_module(
+        self, module_name: str, manager_instance: Any, sdk_instance: Any, *, full: bool = False
+    ) -> bool:
         """
         热重载单个模块（支持任意来源：本地插件 / PyPI 安装包）
 
@@ -304,12 +306,19 @@ class ModuleLoader(BaseLoader):
         entry-point 并按顶层模块名清理 ``sys.modules`` 后重导入
         （pip 升级后重载即可生效）。
 
-        依赖该模块的模块会**级联重载**：本地插件依赖者走完整重载流程，
-        PyPI 模块依赖者卸载后直接重新实例化。
+        依赖该模块的模块会**级联重载**：本地插件依赖者与 ``full=True``
+        时的 PyPI 依赖者走完整重载流程（重新导入代码）；默认模式下
+        PyPI 依赖者卸载后直接重新实例化。
+
+        ``full=True`` 启用全量重载：``sys.modules`` 清理名单在
+        ``top_level`` 元数据之外叠加旧模块对象的顶层包名——元数据缺失
+        （部分打包产物无 top_level.txt）时仍能彻底清理 import 缓存，
+        确保重载后运行的是最新代码。
 
         :param module_name: 模块名（entry-point 名称或插件名）
         :param manager_instance: 模块管理器实例
         :param sdk_instance: SDK 实例
+        :param full: 是否全量重载（默认 False；True 时依赖者同样重导代码）
         :return: 是否重载成功
         """
         old_obj = self._last_module_objs.get(module_name)
@@ -328,6 +337,12 @@ class ModuleLoader(BaseLoader):
                 top_level = self._finder.get_top_level_modules(meta["package"])
             except Exception:
                 top_level = []
+        if not is_plugin and not top_level:
+            # top_level 元数据缺失且无法推导：默认重载清不了 import 缓存，
+            # 重导入会复用旧模块对象（假重载），显式告警并给出出路
+            logger.warning(
+                i18n.t("loader.module.reload_top_missing", name=module_name)
+            )
 
         # 收集依赖者（BFS 由近及远）：级联重载顺序 = 自身 → 直接依赖者 → 间接依赖者
         dependents = manager_instance._collect_dependents(module_name)
@@ -349,15 +364,22 @@ class ModuleLoader(BaseLoader):
         # （尽力而为语义：on_unload 已执行的副作用不可撤销，恢复后旧实例
         # 处于已收尾态，详见 _restore_reload_snapshot）
         purge_names = [module_name] if is_plugin else list(top_level)
+        if not is_plugin and full:
+            purge_names = self._enhance_purge_names(purge_names, old_obj)
         snapshot = self._capture_reload_state(
             module_name, manager_instance, sdk_instance, purge_names
         )
+        dependent_purges: dict[str, list[str]] = {}
+        for dep in dependents:
+            dep_purge = self._dependent_purge_names(dep, manager_instance)
+            if full and dependent_sources.get(dep) != MODULE_SOURCE_PLUGIN_FOLDER:
+                dep_purge = self._enhance_purge_names(
+                    dep_purge, self._last_module_objs.get(dep)
+                )
+            dependent_purges[dep] = dep_purge
         dependent_snapshots = {
             dep: self._capture_reload_state(
-                dep,
-                manager_instance,
-                sdk_instance,
-                self._dependent_purge_names(dep, manager_instance),
+                dep, manager_instance, sdk_instance, dependent_purges[dep]
             )
             for dep in dependents
         }
@@ -375,16 +397,26 @@ class ModuleLoader(BaseLoader):
                 self._restore_failed_dependents(dependent_snapshots, manager_instance, sdk_instance)
                 return False
         elif not await self._reload_single_module(
-            module_name, manager_instance, sdk_instance, top_level
+            module_name, manager_instance, sdk_instance, top_level if not full else purge_names
         ):
             self._restore_reload_snapshot(snapshot, module_name, manager_instance, sdk_instance)
             self._restore_failed_dependents(dependent_snapshots, manager_instance, sdk_instance)
             return False
 
+        # 懒加载模块被重载强制激活：状态变化显式留痕（原为懒加载态，重载后保持已加载）
+        loaded_now = getattr(manager_instance, "_loaded_modules", None) or set()
+        if not snapshot.was_loaded and module_name in loaded_now:
+            logger.info(i18n.t("loader.module.reload_lazy_forced", name=module_name))
+
         # 3. 级联重载依赖者（近 → 远，依赖者在其依赖就绪后重载）
         for dep in dependents:
             if dependent_sources.get(dep) == MODULE_SOURCE_PLUGIN_FOLDER:
                 await self._reload_single_plugin(dep, manager_instance, sdk_instance)
+            elif full and dep in dependent_purges:
+                # full 模式：PyPI 依赖者同样完整重导（重新导入代码并重建注册）
+                await self._reload_single_module(
+                    dep, manager_instance, sdk_instance, dependent_purges[dep]
+                )
             elif dep in getattr(manager_instance, "_module_classes", {}):
                 # PyPI 依赖者：类注册仍在，直接重新实例化加载
                 try:
@@ -398,6 +430,126 @@ class ModuleLoader(BaseLoader):
         self._restore_failed_dependents(dependent_snapshots, manager_instance, sdk_instance)
 
         return True
+
+    async def reload_all(self, manager_instance: Any, sdk_instance: Any) -> "dict[str, bool]":
+        """
+        全量热重载所有已注册模块（尽力而为语义）
+
+        执行 记录已加载态 → 卸载全部模块 → 清理全部已安装包与本地插件的
+        ``sys.modules`` 子树 → 重新发现/注册 → 按依赖拓扑序加载 →
+        此前处于已加载态的懒加载模块重新激活 流程，一次刷新全部模块代码
+        （pip 批量升级后调用即可全部生效）。
+
+        单模块失败仅记录诊断并跳过（发现 / 注册 / 初始化阶段的逐模块容错
+        由加载管线内建），不影响其余模块；不提供整体回滚——on_unload
+        副作用不可撤销，与单模块热重载的尽力而为语义一致。
+
+        :param manager_instance: 模块管理器实例
+        :param sdk_instance: SDK 实例
+        :return: 模块注册名 → 是否重载成功（发现阶段即失败的模块不在结果中）
+        """
+        was_loaded = set(getattr(manager_instance, "_loaded_modules", None) or [])
+        objs_before = dict(self._last_module_objs)
+        logger.info(
+            i18n.t("loader.module.reload_all_start", count=len(objs_before))
+        )
+
+        # 1. 卸载全部模块（触发 on_unload 与资源回收；purge 一并清理
+        # 注册存根与插件来源的 sys.modules，保证后续重新注册干净）
+        try:
+            await manager_instance.unload(None, purge=True)
+        except Exception as e:
+            logger.error(i18n.t("loader.module.reload_all_failed", error=e))
+
+        # 2. 清理全部已安装包的 sys.modules 子树（含元数据缺失时的顶层段兜底）
+        installed_top: set[str] = set()
+        for obj in objs_before.values():
+            meta = (getattr(obj, "moduleInfo", {}) or {}).get("meta", {}) or {}
+            if meta.get("source") == MODULE_SOURCE_PLUGIN_FOLDER:
+                continue
+            installed_top.update(meta.get("top_level") or [])
+            prefix = getattr(obj, "__name__", None)
+            if prefix and prefix.split(".")[0]:
+                installed_top.add(prefix.split(".")[0])
+        if installed_top:
+            self._purge_installed_modules(list(installed_top))
+        import importlib
+
+        importlib.invalidate_caches()
+        self._finder.clear_cache()
+
+        # 3. 重新发现并注册（load 内含 entry-point 与插件目录合并、
+        # 逐模块失败诊断；禁用模块按配置保持禁用）
+        try:
+            objs, _enabled, _disabled = await self.load(manager_instance)
+        except Exception as e:
+            logger.error(i18n.t("loader.module.reload_all_failed", error=e))
+            return {}
+
+        modules = list(objs.keys())
+        await self.register_to_manager(modules, objs, manager_instance)
+
+        # 4. 按拓扑序初始化（懒加载策略保持懒挂载；单模块失败隔离跳过）
+        await self.initialize_modules(modules, objs, manager_instance, sdk_instance)
+
+        # 5. 此前处于已加载态的懒加载模块重新激活（保持重载前活性）
+        results: dict[str, bool] = {}
+        loaded_now = set(getattr(manager_instance, "_loaded_modules", None) or [])
+        for name, obj in objs.items():
+            meta_name = obj.moduleInfo["meta"]["name"]
+            if (
+                name in was_loaded
+                and meta_name not in loaded_now
+                and manager_instance.exists(meta_name)
+            ):
+                try:
+                    ok = await manager_instance.load(meta_name)
+                    if ok:
+                        setattr(sdk_instance, meta_name, manager_instance.get(meta_name))
+                        logger.info(
+                            i18n.t("loader.module.reload_lazy_activated", name=meta_name)
+                        )
+                    results[meta_name] = bool(ok)
+                except Exception as e:
+                    logger.error(
+                        i18n.t("loader.module.reload_load_failed", name=meta_name, error=e)
+                    )
+                    results[meta_name] = False
+            else:
+                results[meta_name] = True
+
+        failed = sorted(n for n, ok in results.items() if not ok)
+        logger.info(
+            i18n.t(
+                "loader.module.reload_all_done",
+                total=len(results),
+                success=len(results) - len(failed),
+                failed=", ".join(failed) if failed else "-",
+            )
+        )
+        return results
+
+    @staticmethod
+    def _enhance_purge_names(names: "list[str]", old_obj: Any) -> "list[str]":
+        """
+        {!--< internal-use >!--}
+        全量重载的 ``sys.modules`` 清理名单增强：叠加旧模块对象的顶层包名
+
+        部分打包产物缺失 ``top_level`` 元数据，仅按元数据清理会漏掉
+        import 缓存（假重载）；旧模块对象 ``__name__`` 的顶层段是可推导
+        的最后兜底。
+
+        :param names: 依据元数据得出的顶层模块名列表
+        :param old_obj: 重载前的模块对象（可为 None）
+        :return: 增强后的顶层模块名列表
+        """
+        result = list(names)
+        prefix = getattr(old_obj, "__name__", None)
+        if prefix:
+            root = prefix.split(".")[0]
+            if root and root not in result:
+                result.append(root)
+        return result
 
     @staticmethod
     def _dependent_purge_names(dep: str, manager_instance: Any) -> "list[str]":
@@ -663,6 +815,14 @@ class ModuleLoader(BaseLoader):
             module_obj = sys.modules[loaded_obj.__module__]
         except Exception as e:
             logger.error(i18n.t("loader.module.reload_load_failed", name=module_name, error=e))
+            # 与首次加载失败同规格输出诊断块（用户帧提取 + 排查提示）
+            from ..runtime.diagnostics import log_diagnostic
+
+            log_diagnostic(
+                e,
+                hint_key="loader.module.diag_hint",
+                hint_params={"name": module_name},
+            )
             return False
 
         # 重新注册并加载

@@ -24,6 +24,7 @@ from ..constants import (
     HARD_RESTART_EXIT_CODE,
     RUN_CRASH_BACKOFF_MAX_SECS,
     RUN_CRASH_BACKOFF_PER_CRASH_SECS,
+    RUN_PERSISTENT_CRASH_HINT_THRESHOLD,
     RUN_RESTART_PAUSE_SECS,
 )
 from ..i18n import i18n
@@ -205,6 +206,11 @@ class RunCommand(Command):
         ]
 
         crash_count = 0
+        # 连续同退出码崩溃计数：达到阈值输出一次排查指引（确定性故障
+        # 退避重试无意义，与其反复失败不如引导留现场）
+        consecutive_same_code = 0
+        last_crash_code: int | None = None
+        crash_hint_shown = False
         process = None
         try:
             while True:
@@ -229,6 +235,20 @@ class RunCommand(Command):
                 # 非硬重启/非正常退出码：模块/适配器内部错误导致子进程异常终止
                 # 不退出主进程，等待后自动重试
                 crash_count += 1
+                if process.returncode == last_crash_code:
+                    consecutive_same_code += 1
+                else:
+                    consecutive_same_code = 1
+                    last_crash_code = process.returncode
+                if (
+                    not crash_hint_shown
+                    and RUN_PERSISTENT_CRASH_HINT_THRESHOLD > 0
+                    and consecutive_same_code >= RUN_PERSISTENT_CRASH_HINT_THRESHOLD
+                ):
+                    crash_hint_shown = True
+                    console.print(
+                        f"[hint]{i18n.t('cli.run.persistent_crash_hint', count=consecutive_same_code, code=process.returncode)}[/]"
+                    )
                 backoff = min(RUN_CRASH_BACKOFF_MAX_SECS, RUN_CRASH_BACKOFF_PER_CRASH_SECS * crash_count)
                 console.print(
                     f"[warning]{i18n.t('cli.run.process_crashed', code=process.returncode)}[/]"

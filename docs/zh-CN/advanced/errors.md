@@ -166,3 +166,11 @@ except ErisPulseError as e:
 - 模块开发：按需精确捕获（上表），最外层可用 `ErisPulseError` 兜底
 - 异常均已从 `ErisPulse.Core` 聚合导出（含 `SessionOccupiedError` / `InteractionCancelled` / `StrictModeError`），也可从 `ErisPulse.Core.Bases.errors` 导入
 - 完整定义见 `src/ErisPulse/Core/Bases/errors.py`
+
+## 关停噪音折叠
+
+长期驻留进程在关停（或后台循环被取消）时，事件循环常会刷出一批无处置价值的
+`Task was destroyed but it is pending!` 类解释器噪音。框架内置**同类噪音折叠**：
+2 秒窗口内的同类消息降级为 TRACE 并合并计数，只输出一次，结尾带
+「（另有 N 次同类消息被折叠）」后缀。这是刻意的降噪行为——看到折叠后缀不代表
+框架吞掉了真实异常，业务异常（上表各类）照常完整输出。

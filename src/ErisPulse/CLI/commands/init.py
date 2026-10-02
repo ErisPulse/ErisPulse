@@ -11,7 +11,6 @@ import sys
 from argparse import ArgumentParser
 from pathlib import Path
 
-from rich.prompt import Confirm, IntPrompt
 from rich.text import Text
 
 from ..base import Command
@@ -19,6 +18,7 @@ from ..console import console
 from ..i18n import i18n
 from ..utils import PackageManager
 from ..utils.display import _input, prompt_validated, section_header
+from ..utils.interactive import confirm, select
 from ..utils.package_manager import (
     append_pyproject_dependencies,
     create_project_venv,
@@ -432,7 +432,11 @@ class InitCommand(Command):
                     f"    [bold]2.[/] {i18n.t('cli.init.location_option_new')}     [dim]— {i18n.t('cli.init.location_desc_new')}[/]"
                 )
                 console.print()
-                location_choice = IntPrompt.ask(i18n.t("cli.create.select_prompt"), default=2, choices=["1", "2"])
+                location_choice = int(
+                    select(
+                        i18n.t("cli.create.select_prompt"), choices=["1", "2"], default="2"
+                    )
+                )
                 console.print()
                 in_current_dir = location_choice == 1
 
@@ -458,7 +462,7 @@ class InitCommand(Command):
                 project_name = p.name
                 project_path = (Path(target_dir) if target_dir else Path()) / project_name
                 if project_path.exists() and not force:
-                    if not Confirm.ask(
+                    if not confirm(
                         f"  [cyan]{i18n.t('cli.init.dir_overwrite_prompt', name=project_name)}[/]",
                         default=False,
                     ):
@@ -467,10 +471,10 @@ class InitCommand(Command):
 
             # 虚拟环境与 git 仓库问询
             if not getattr(self, "no_venv", False):
-                create_venv = Confirm.ask(
+                create_venv = confirm(
                     f"  [cyan]{i18n.t('cli.init.venv_prompt')}[/]", default=True
                 )
-            git_init = Confirm.ask(
+            git_init = confirm(
                 f"  [cyan]{i18n.t('cli.init.git_prompt')}[/]", default=False
             )
 
@@ -521,7 +525,7 @@ class InitCommand(Command):
                     console.print(f"[warning]  {i18n.t('cli.init.invalid_port', port=new_port)}[/]")
                     new_port = _input(">")
 
-            if Confirm.ask(
+            if confirm(
                 f"\n  [cyan]{i18n.t('cli.init.configure_adapters_prompt')}[/]",
                 default=True,
             ):
@@ -587,7 +591,7 @@ class InitCommand(Command):
 
         console.print(f"[dim]  {i18n.t('cli.init.adapters_enabled', count=len(enabled))}[/]")
 
-        if enabled and Confirm.ask(f"  [cyan]{i18n.t('cli.init.install_selected_prompt')}[/]", default=True):
+        if enabled and confirm(f"  [cyan]{i18n.t('cli.init.install_selected_prompt')}[/]", default=True):
             self._install_adapters(enabled, adapters)
 
     def _install_adapters(self, adapter_names, adapters_info):

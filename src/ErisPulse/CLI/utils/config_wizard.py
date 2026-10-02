@@ -20,7 +20,7 @@ import sys
 from types import SimpleNamespace
 from typing import Literal
 
-from rich.prompt import Confirm, Prompt
+from rich.prompt import Prompt
 
 # Core i18n 单例：用于将字段 description/placeholder 解析为 CLI 同语言
 from ErisPulse.Core.i18n import i18n as _core_i18n
@@ -28,6 +28,7 @@ from ErisPulse.Core.i18n import i18n as _core_i18n
 from ..console import console
 from ..i18n import i18n
 from .display import section_header
+from .interactive import confirm
 
 # 配置状态常量
 STATUS_OK = "ok"
@@ -424,7 +425,7 @@ def _prompt_field(name: str, field_schema: dict, current, has_value: bool = Fals
             print_label = _with_source(label, _source_label(has_value, current, bool_text))
             console.print(print_label)
             # prompt 用字段名（"是否启用 {name}？"），避免与 label 描述重复
-            return Confirm.ask(
+            return confirm(
                 f"    {i18n.t('cli.config.enable_prompt', name=name)}",
                 default=bool_val,
             )
@@ -724,7 +725,7 @@ def _run_accounts_section(target: ConfigTarget, config) -> dict:
             account_name = _pick_account_name(list(accounts.keys()))
             if account_name is None:
                 continue
-            if Confirm.ask(
+            if confirm(
                 f"    {i18n.t('cli.config.account_delete_confirm', name=account_name)}",
                 default=False,
             ):
@@ -788,7 +789,7 @@ def run_wizard(target: ConfigTarget, config=None) -> bool:
                 if not errors:
                     break
                 console.print(f"[error]  {i18n.t('cli.config.validation_failed', errors='; '.join(errors))}[/]")
-                if not Confirm.ask(f"  [cyan]{i18n.t('cli.config.retry_edit')}[/]", default=True):
+                if not confirm(f"  [cyan]{i18n.t('cli.config.retry_edit')}[/]", default=True):
                     # 放弃重填：中止整个向导，不写入任何配置（避免产生
                     # "已启用但配置不完整"的半成品状态）
                     console.print(f"[warning]  {i18n.t('cli.config.abandoned')}[/]")
@@ -811,7 +812,7 @@ def run_wizard(target: ConfigTarget, config=None) -> bool:
 
             status_key = f"ErisPulse.adapters.status.{target.name}"
             current_status = config.getConfig(status_key)
-            enabled = Confirm.ask(
+            enabled = confirm(
                 f"  [cyan]{i18n.t('cli.config.adapter_enable_prompt', name=target.name)}[/]",
                 default=True if current_status is None else parse_bool_config(current_status),
             )
@@ -868,7 +869,7 @@ def post_install_configure(dist_names: list[str] | None, config=None, *, interac
         section_header(i18n.t("cli.config.post_install_header"))
         for target in candidates:
             try:
-                if not Confirm.ask(
+                if not confirm(
                     f"  [cyan]{i18n.t('cli.config.post_install_prompt', kind=target.kind_label, name=target.name)}[/]",
                     default=True,
                 ):

@@ -278,7 +278,7 @@ flowchart TD
 
 ## 模块热重载架构
 
-热重载对**全部模块来源**一致：本地插件可监控文件变更自动触发，任意模块也可通过 `sdk.reload_module()` / `sdk.module.reload()` 手动重载（PyPI 安装包模块在 pip 升级后调用即可生效）：
+热重载对**全部模块来源**一致：本地插件可监控文件变更自动触发，任意模块也可通过 `sdk.reload_module()` / `sdk.module.reload()` 手动重载（PyPI 安装包模块在 pip 升级后调用即可生效）；`sdk.reload_all_modules()` / `sdk.module.reload_all()` 可一次全量重载所有已注册模块（pip 批量升级后调用即可全部生效）：
 
 ```mermaid
 flowchart TD
@@ -288,15 +288,15 @@ flowchart TD
     D --> E["变更去抖（默认 1 秒）"]
     E --> F["_handle_change 解析插件名<br/>（单文件 / 包形式）"]
     F --> G["asyncio.run_coroutine_threadsafe<br/>调度回主事件循环"]
-    G --> H["sdk.reload_module(name)<br/>（也可对任意模块手动调用）"]
+    G --> H["sdk.reload_module(name, full=…)<br/>（也可对任意模块手动调用）"]
     H --> I["卸载旧实例（触发 on_unload）<br/>收集依赖者准备级联重载"]
     I --> J{"模块来源？"}
     J -->|"plugin_folder"| K["清理注册与插件 sys.modules<br/>重扫描 plugins/ 目录"]
-    J -->|"PyPI 安装包"| L["清理注册 + 按 top_level<br/>清理包 sys.modules 子树<br/>刷新导入缓存后重查 entry-point"]
+    J -->|"PyPI 安装包"| L["清理注册 + 按 top_level 清理包<br/>sys.modules 子树（full=True 时叠加<br/>旧模块对象顶层段兜底）<br/>刷新导入缓存后重查 entry-point"]
     K --> M["重新 register + load"]
     L --> M
     M --> N["挂载新实例到 sdk 属性"]
-    N --> O["级联重载依赖者<br/>（插件完整重载 / PyPI 重新实例化）"]
+    N --> O["级联重载依赖者<br/>（插件完整重载 / PyPI 重新实例化；<br/>full=True 时依赖者同样重导代码）"]
     K -.->|"文件已删除"| P["从加载结果移除"]
     L -.->|"entry-point 已消失（已卸载）"| P
 ```
@@ -305,3 +305,10 @@ flowchart TD
 
 - **本地插件**（`moduleInfo.meta.source == "plugin_folder"`）：清理插件名对应 `sys.modules` 后重扫描 `plugins/` 目录；文件已删除则从加载结果移除
 - **PyPI 安装包**：按 `meta.top_level` 清理包的 `sys.modules` 子树，刷新导入缓存（突破 entry-point 60 秒缓存）后重查并重新导入；entry-point 已消失（pip 卸载）则从加载结果移除
+
+**全量重载（`full=True`）与整体重载（`reload_all_modules`）：**
+
+- `top_level` 元数据缺失且无法推导时，默认重载**不清理** import 缓存（重导入复用旧模块对象，即"假重载"），框架会显式告警并建议改用 `full=True`——全量重载会叠加旧模块对象顶层包名兜底清理，确保重载后运行最新代码
+- `full=True` 时 PyPI 依赖者级联走完整重载（重导代码），默认模式仅重新实例化（既有语义）
+- 重载会把原本懒加载的模块强制激活（无提示的差异已改为显式日志）；`reload_all_modules()` 则保持懒加载策略、仅将重载前处于已加载态的模块重新激活
+- `reload_all_modules()` 按依赖拓扑序重新加载，单模块失败仅记录诊断并跳过（无整体回滚——on_unload 副作用不可撤销，与单模块热重载的尽力而为语义一致）；重载失败已回滚的场景同样如此，日志会明确提示旧实例处于已收尾状态

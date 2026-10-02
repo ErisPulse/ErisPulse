@@ -95,7 +95,7 @@ class DoctorCommand(Command):
             pip_note = (
                 i18n.t("cli.doctor.venv_pip_ok")
                 if venv_pip.exists()
-                else "uv（pip 不可用，uv 后端替代）"
+                else i18n.t("cli.doctor.venv_pip_uv")
             )
             rows.append(
                 (
@@ -132,6 +132,52 @@ class DoctorCommand(Command):
                 )
             )
             failed = True
+
+        # 4.5 组件配置健康（配置文件存在 ≠ 必填项齐全：复用配置向导的
+        # schema 状态检测，"装好了跑不起来"多因适配器必填项缺失）
+        try:
+            from ..utils.config_wizard import (
+                STATUS_INCOMPLETE,
+                get_target_status,
+                load_config_targets,
+            )
+
+            incomplete: list[str] = []
+            for target in load_config_targets():
+                status, _errors = get_target_status(target)
+                # 仅"待完善"（开了但必填项缺失）判 FAIL；完全未配置属
+                # 用户尚未开始配置，不算故障
+                if status == STATUS_INCOMPLETE:
+                    incomplete.append(target.name)
+            if incomplete:
+                failed = True
+                rows.append(
+                    (
+                        self._status(False),
+                        i18n.t("cli.doctor.component_config"),
+                        i18n.t(
+                            "cli.doctor.component_config_incomplete",
+                            names=", ".join(incomplete),
+                        ),
+                    )
+                )
+            else:
+                rows.append(
+                    (
+                        self._status(True),
+                        i18n.t("cli.doctor.component_config"),
+                        i18n.t("cli.doctor.component_config_ok"),
+                    )
+                )
+        except Exception:
+            # 发现失败（如依赖缺失）不阻塞其余诊断项
+            rows.append(
+                (
+                    self._status(True),
+                    i18n.t("cli.doctor.component_config"),
+                    i18n.t("cli.doctor.component_config_skipped"),
+                )
+            )
 
         # 5. PyPI 连通性
         try:

@@ -159,6 +159,7 @@ __all__ = [
     "logger",  # 日志模块单例
     "master",  # 框架主人模块单例
     "ownership",  # 归属权统一门面单例
+    "OwnershipManager",  # 归属权管理器类
     "module",  # 模块模块单例
     "router",  # 路由模块单例
     "scope",  # 作用域模块单例

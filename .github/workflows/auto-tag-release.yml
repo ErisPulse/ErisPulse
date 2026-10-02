@@ -166,9 +166,9 @@ jobs:
 
       - name: Setup pybuild
         if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
-        # TODO(供应链): 上游未见发布版本号，暂只能引用 @main；上游发布 release 后
-        # 应立即 pin 到具体 tag/commit digest（发布工作流不宜浮动引用第三方 action）
-        uses: pybuild-org/pybuild@main
+        # 供应链：pin 到上游日期 tag（上游以日期发 tag，无语义版本）。
+        # 升级时手动更新此引用并核对上游变更。
+        uses: pybuild-org/pybuild@20260804-074152
 
       - name: Build standalone executables (pybuild v2)
         id: pybuild

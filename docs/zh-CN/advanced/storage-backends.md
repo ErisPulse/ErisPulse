@@ -101,8 +101,14 @@ async with sdk.storage.atransaction():
 
 同步 API（`get/set/transaction/Table(...).Execute()`）继续可用，内部经
 `AsyncBridge` 后台事件循环桥接执行——在异步 handler 中调用会短暂阻塞
-该事件循环，推荐优先使用 a 前缀异步方法。完整方法对照见
-[SQL 查询构建器](sql-builder.md)。
+该事件循环，**首次调用会输出一次性告警**（"建议改用 a 前缀异步方法"），
+推荐优先使用 a 前缀异步方法。两条边界必须知晓：
+
+- **桥接线程内禁止再调同步接口**：同步接口在桥接线程内执行，此时再调
+  同步接口会抛 `RuntimeError`（防重入保护，避免自死锁）
+- **桥接目标循环关闭后调用会失败**：`uninit()` 之后不要再调用存储接口
+
+完整方法对照见 [SQL 查询构建器](sql-builder.md)。
 
 ## 方言行为差异
 

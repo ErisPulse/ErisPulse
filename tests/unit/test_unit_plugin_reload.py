@@ -98,8 +98,9 @@ class TestSDKLoaderWiring:
 
         captured = {}
 
-        async def fake_reload(module_name, manager_instance, sdk_instance):
+        async def fake_reload(module_name, manager_instance, sdk_instance, *, full=False):
             captured["args"] = (module_name, manager_instance, sdk_instance)
+            captured["full"] = full
             return True
 
         sdk._module_loader.reload_module = fake_reload
@@ -108,3 +109,41 @@ class TestSDKLoaderWiring:
         assert name == "dice"
         assert manager is sdk.module
         assert sdk_instance is sdk
+        assert captured["full"] is False
+
+    def test_reload_module_full_passthrough(self):
+        """full=True 透传到加载器"""
+        from ErisPulse import SDK
+
+        sdk = SDK()
+        sdk.Initializer(sdk)
+
+        captured = {}
+
+        async def fake_reload(module_name, manager_instance, sdk_instance, *, full=False):
+            captured["full"] = full
+            return True
+
+        sdk._module_loader.reload_module = fake_reload
+        assert asyncio.run(sdk.reload_module("Weather", full=True)) is True
+        assert captured["full"] is True
+
+    def test_reload_all_modules_passthrough(self):
+        """reload_all_modules 透传 manager 与 sdk 自身；未初始化时返回空字典"""
+        from ErisPulse import SDK
+
+        sdk = SDK()
+        assert asyncio.run(sdk.reload_all_modules()) == {}
+
+        sdk.Initializer(sdk)
+        captured = {}
+
+        class FakeLoader:
+            async def reload_all(self, manager_instance, sdk_instance):
+                captured["args"] = (manager_instance, sdk_instance)
+                return {"Alpha": True, "Beta": False}
+
+        sdk._module_loader = FakeLoader()
+        results = asyncio.run(sdk.reload_all_modules())
+        assert results == {"Alpha": True, "Beta": False}
+        assert captured["args"] == (sdk.module, sdk)

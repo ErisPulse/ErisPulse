@@ -240,3 +240,7 @@ pyvenv.cfg
 !docs/zh-CN/
 
 .zcode/
+
+.github/assets/ErisPulseFilm1.mp4
+.github/assets/score1.wav
+.github/assets/score2.wav

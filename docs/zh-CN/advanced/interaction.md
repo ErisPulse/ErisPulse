@@ -98,7 +98,8 @@ async def ticket_command(event):
 ```
 
 - `event.remind(delay, text=None, *, callback=None)`：到期向当前会话发送 `text`
-  （或执行 `callback(event)`，支持同步 / 异步）
+  （或执行 `callback(event)`，支持同步 / 异步）。**强制校验**：`text` 与
+  `callback` 必须二选一（都不给抛 `ValueError`）
 - 返回 `Reminder` 句柄：`reminder.cancel()` 手动取消、`reminder.expired` 查询状态
 - 用户在该会话**回复后自动取消**——这正是"提醒"语义：
   提醒只在用户沉默时出现
@@ -143,7 +144,8 @@ elif which == 1:
 - `event.expect(...)` 构造**期望描述**（不注册任何等待）：支持
   `pattern` / `regex` / `validator` / `user`（限定回复者）/ `session`（任何人可答）
 - `event.select(*expectations, timeout=60)`：统一注册 → 任一命中即返回
-  `(下标, 回复事件)` → 未命中的等待自动取消；全部超时返回 `(None, None)`
+  `(下标, 回复事件)` → 未命中的等待自动取消；全部超时返回 `(None, None)`。
+  **强制校验**：至少传入一条 expectation，否则抛 `ValueError`
 - 命中的事件已被框架认领（`mark_processed`），不会被其他处理器重复消费
 
 {!--< tips >!--}

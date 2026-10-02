@@ -117,7 +117,7 @@ class TestPromptField:
         from ErisPulse.CLI.utils import config_wizard
 
         ask = Mock(return_value=False)
-        monkeypatch.setattr(config_wizard.Confirm, "ask", ask)
+        monkeypatch.setattr(config_wizard, "confirm", ask)
         result = config_wizard._prompt_field("enabled", {"type": "boolean", "required": False}, True)
         assert result is False
         ask.assert_called_once()
@@ -315,7 +315,7 @@ class TestPostInstallConfigure:
             package="ErisPulse_Yunhu.Adapter",
         )
         monkeypatch.setattr(config_wizard, "load_config_targets", Mock(return_value=[target]))
-        monkeypatch.setattr(config_wizard.Confirm, "ask", Mock(return_value=False))
+        monkeypatch.setattr(config_wizard, "confirm", Mock(return_value=False))
         run_wizard = Mock()
         monkeypatch.setattr(config_wizard, "run_wizard", run_wizard)
 
@@ -329,7 +329,7 @@ class TestPostInstallConfigure:
 
         target = config_wizard.ConfigTarget("module", "MyModule", config_class=FakeGlobalConfig, package="MyModule")
         monkeypatch.setattr(config_wizard, "load_config_targets", Mock(return_value=[target]))
-        monkeypatch.setattr(config_wizard.Confirm, "ask", Mock(return_value=True))
+        monkeypatch.setattr(config_wizard, "confirm", Mock(return_value=True))
         run_wizard = Mock(return_value=True)
         monkeypatch.setattr(config_wizard, "run_wizard", run_wizard)
 
@@ -344,7 +344,7 @@ class TestPostInstallConfigure:
         target = config_wizard.ConfigTarget("adapter", "A", config_class=None, account_class=None, package="pkg-a")
         confirm = Mock()
         monkeypatch.setattr(config_wizard, "load_config_targets", Mock(return_value=[target]))
-        monkeypatch.setattr(config_wizard.Confirm, "ask", confirm)
+        monkeypatch.setattr(config_wizard, "confirm", confirm)
 
         config_wizard.post_install_configure(["pkg-a"], interactive=True)
         confirm.assert_not_called()
@@ -378,7 +378,7 @@ class TestRunWizard:
             "_run_accounts_section",
             Mock(return_value={"bot1": {"bot_id": "1", "bot_token": "t1", "enabled": True, "name": "bot1"}}),
         )
-        monkeypatch.setattr(config_wizard.Confirm, "ask", Mock(return_value=True))
+        monkeypatch.setattr(config_wizard, "confirm", Mock(return_value=True))
 
         assert config_wizard.run_wizard(target, fake_config) is True
 
@@ -420,7 +420,7 @@ class TestRunWizard:
             "fill_config_fields",
             Mock(return_value={"token": "", "mode": "server"}),  # token 必填为空 → 校验失败
         )
-        monkeypatch.setattr(config_wizard.Confirm, "ask", Mock(return_value=False))  # 放弃重填
+        monkeypatch.setattr(config_wizard, "confirm", Mock(return_value=False))  # 放弃重填
 
         assert config_wizard.run_wizard(target, fake_config) is False
         fake_config.setConfig.assert_not_called()
@@ -440,7 +440,7 @@ class TestRunWizard:
             "fill_config_fields",
             Mock(return_value={"token": "t", "mode": "client"}),
         )
-        monkeypatch.setattr(config_wizard, "Confirm", MagicMock(ask=Mock(return_value=True)))
+        monkeypatch.setattr(config_wizard, "confirm", Mock(return_value=True))
 
         target = config_wizard.ConfigTarget("module", "MyModule", config_class=FakeGlobalConfig)
         assert config_wizard.run_wizard(target, _make_fake_config()) is True

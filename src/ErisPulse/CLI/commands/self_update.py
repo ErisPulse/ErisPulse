@@ -9,7 +9,7 @@ import sys
 from argparse import ArgumentParser
 
 from rich.box import SIMPLE
-from rich.prompt import Confirm, Prompt
+from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import Text
 
@@ -18,6 +18,7 @@ from ..console import console
 from ..i18n import i18n
 from ..utils import PackageManager
 from ..utils.display import _input, section_header
+from ..utils.interactive import confirm
 
 
 class SelfUpdateCommand(Command):
@@ -82,7 +83,7 @@ class SelfUpdateCommand(Command):
             )
             sys.exit(0)
         elif not args.force:
-            if not Confirm.ask(
+            if not confirm(
                 i18n.t(
                     "cli.self_update.confirm_update",
                     current=current_version,
@@ -114,7 +115,7 @@ class SelfUpdateCommand(Command):
                 console.print(
                     f"[warning]{i18n.t('cli.self_update.version_not_found', version=specified_version)}[/]"
                 )
-                if not Confirm.ask(
+                if not confirm(
                     i18n.t("cli.self_update.confirm_continue"), default=False
                 ):
                     return None
@@ -197,7 +198,7 @@ class SelfUpdateCommand(Command):
                 console.print(
                     f"[warning]{i18n.t('cli.self_update.version_not_found', version=target_version)}[/]"
                 )
-                if not Confirm.ask(
+                if not confirm(
                     i18n.t("cli.self_update.confirm_continue"), default=False
                 ):
                     return None
