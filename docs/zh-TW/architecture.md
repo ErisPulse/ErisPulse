@@ -46,8 +46,8 @@ graph TB
 | **Adapter** | 適配器管理器，管理多平台適配器的註冊、啟動和關閉 |
 | **Module** | 模組管理器，管理插件的註冊、加載和卸載，支援依賴聲明和拓撲排序 |
 | **Lifecycle** | 生命週期管理器，提供事件驅動的生命週期鉤子 |
-| **Storage** | 基於 SQLite 的鍵值儲存系統，支援通用 SQL 串連查詢 |
-| **Config** | TOML 格式的配置文件管理 |
+| **Storage** | 基於 SQLite 的鍵值儲存系統，支援通用 SQL 串流查詢 |
+| **Config** | TOML 格式的配置檔案管理 |
 | **Logger** | 模組化日誌系統，支援子日誌器 |
 | **Router** | HTTP/WebSocket 路由管理，透過抽象層封裝底層後端（目前為 FastAPI + Uvicorn），支援裝飾器路由、中間件、分組、限流、CORS |
 | **Client** | 統一 HTTP/WS 客戶端（2.8.0 前為 `HttpClient`，保留相容別名），透過抽象層封裝底層請求庫（目前為 aiohttp），提供請求統計、重試、日誌、WebSocket 客戶端、ErisPulse 異常體系等功能。客戶端和伺服器 WebSocket 共享 `WebSocketConnectionBase` 基類 |
@@ -59,19 +59,19 @@ graph TB
 ```mermaid
 flowchart TD
     A["sdk.init()"] --> B["準備執行環境"]
-    B --> B1["載入配置文件"]
-    B1 --> B2["設定全域例外處理"]
+    B --> B1["載入配置檔案"]
+    B1 --> B2["設定全域異常處理"]
     B2 --> C["適配器 & 模組發現"]
-    C --> D{"平行加載"}
+    C --> D{"並行加載"}
     D --> D1["從 PyPI 加載適配器"]
     D --> D2["從 PyPI 加載模組"]
     D1 & D2 --> E["註冊適配器"]
     E --> E1["啟動適配器"]
     E1 --> F["註冊模組"]
     F --> F1{"依賴驗證"}
-    F1 -->|"缺少依賴"| F2["跳過該模組並記錄警告"]
+    F1 -->|"缺失依賴"| F2["跳過該模組並記錄警告"]
     F1 -->|"依賴滿足"| F3["拓撲排序<br/>（Kahn 算法 + 優先級）"]
-    F3 --> G["依序初始化模組<br/>（實例化 + on_load）"]
+    F3 --> G["按序初始化模組<br/>（實例化 + on_load）"]
     F2 --> G
     G --> H["啟動路由伺服器"]
     H --> K["運行就緒"]
@@ -83,7 +83,7 @@ flowchart TD
 
 ## 事件處理流程
 
-下圖展示了訊息從平台到處理器的完整傳遞路徑：
+下圖展示了訊息從平台到處理器的完整轉流路徑：
 
 ```mermaid
 flowchart LR
@@ -114,10 +114,10 @@ sequenceDiagram
     participant E as Event 模組層<br/>_process_event
 
     P->>A: 原生事件
-    A->>A: 提取 platform/type/detail_type + 原始欄位
+    A->>A: 提取 platform/type/detail_type + 原始字段
     A->>A: [Recv] 接收日誌
     A->>A: lifecycle.adapter.event.receive（最早期鉤子）
-    A->>A: 處理 self 欄位（meta 分支 / Bot 自動註冊）
+    A->>A: 處理 self 字段（meta 分支 / Bot 自動註冊）
     A->>A: 中間件鏈（串行，可改寫事件資料）
     A->>A: 收集 handler（具體類型 + 通配符 *）
     A->>A: 身份准入 + 作用域過濾（建立 Task 前，靜默丟棄/跳過）
@@ -128,23 +128,23 @@ sequenceDiagram
     E->>E: lifecycle.event.pre_process
     E->>E: ignore_self（訊息事件預設忽略自身）
     E->>E: 按優先級分組：高→低、組間串行、組內併發
-    E->>E: 組內副本執行 + 欄位合併（衝突警告）
+    E->>E: 組內副本執行 + 字段合併（衝突告警）
     E->>E: 組後檢查 stop() 阻斷更低優先級
-    T->>T: 慢日誌（超過 1s 警告，wait_reply 時間白名單）
+    T->>T: 慢日誌（超過 1s 告警，wait_reply 時間白名單）
 ```
 
 **每一步框架做了什麼、你能干預什麼：**
 
 | 階段 | 框架做了什麼 | 你能干預的 |
 |------|-------------|-----------|
-| 接收 | 提取標準欄位，保留 `{platform}_raw` 原始資料；寫 `[Recv]` 日誌 | 監聽 `adapter.event.receive` 拿到最早期事件 |
-| self 欄位 | meta 事件走 connect/disconnect/heartbeat 分支；普通事件自動註冊 Bot 並觸發 `adapter.bot.online` | 監聽 `adapter.bot.online` / `bot.offline` |
+| 接收 | 提取標準字段，保留 `{platform}_raw` 原始資料；寫 `[Recv]` 日誌 | 監聽 `adapter.event.receive` 拿到最早期事件 |
+| self 字段 | meta 事件走 connect/disconnect/heartbeat 分支；普通事件自動註冊 Bot 並觸發 `adapter.bot.online` | 監聽 `adapter.bot.online` / `bot.offline` |
 | 中間件 | **串行**執行，返回值非 None 則取代事件資料 | 註冊中間件改寫/攔截事件 |
 | 分發收集 | 先取具體類型 handler，再取 `*` 通配符 handler | — |
 | 身份維度 | 分發入口按 用戶>會話>Bot>適配器 判定事件收不收（`scope.is_identity_allowed`），**拒絕則整個事件丟棄** | `ErisPulse.scope.identity` 綁定 |
 | 作用域過濾 | 按模組 owner 判定 `scope.is_allowed`（會話級>Bot級>平台級），**不通過則靜默跳過** | 配置作用域白名單/黑名單 |
 | 調度 | 每個匹配 handler 獨立 `asyncio.Task`，`emit()` **不等待** handler 完成即返回 | — |
-| 優先級 | 高優先級組先執行；**組間串行、組內併發**（組內各自持有事件副本，改欄位合併回原事件，衝突打 WARNING） | `@command(..., priority=N)` / 註冊時指定 priority |
+| 優先級 | 高優先級組先執行；**組間串行、組內併發**（組內各自持有事件副本，改字段合併回原事件，衝突打 WARNING） | `@command(..., priority=N)` / 註冊時指定 priority |
 | 阻斷 | 每處理完一組檢查 `event.is_stopped()`，命中則**不再執行更低優先級** | `event.mark_processed(stop=True)` / `event.done()` |
 
 > **常見誤區**：
@@ -217,7 +217,7 @@ flowchart TD
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-`activate_on` 允許模組在**首個匹配事件/命令到達時**才加載，避免常駐記憶體，同時確保事件不遺失：
+`activate_on` 允許模組在**首個匹配事件/命令到達時**才加載，避免常駐記憶體，同時確保事件不丟失：
 
 ```mermaid
 flowchart LR
@@ -229,7 +229,7 @@ flowchart LR
         S2 --> S2d["{'command': {'name': 'dice', 'help': ...,<br/>'aliases': [...], 'hidden': ...}}<br/>→ 命令觸發（dict 聲明）"]
     end
 
-    subgraph Runtime["執行期"]
+    subgraph Runtime["運行期"]
         R1["ModuleActivator 註冊 stub"] --> R1a["事件 stub → message/notice/request/meta 管理器<br/>優先級 ACTIVATION_STUB_PRIORITY（極低）"]
         R1 --> R1b["命令 stub → 命令管理器<br/>佔位命令（鏡像 dict 聲明的 help/usage/group/aliases/hidden）"]
         R1a --> R2{"觸發事件到達"}
@@ -261,8 +261,8 @@ flowchart TD
     B --> C["單檔案：dice.py → 插件名 = 檔案名"]
     B --> D["包形式：weather/（含 __init__.py）→ 插件名 = 目錄名"]
     B --> E["忽略：__pycache__ / _ 開頭 / 非 .py / 無 __init__.py 目錄"]
-    C --> F["匯入模組（spec_from_file_location）"]
-    D --> G["匯入模組（sys.path + import_module）"]
+    C --> F["導入模組（spec_from_file_location）"]
+    D --> G["導入模組（sys.path + import_module）"]
     F --> H["識別模組類：Main（BaseModule 子類）優先，回落首個子類"]
     G --> H
     H --> I["構造與 entry-point 一致的 moduleInfo"]
@@ -274,11 +274,11 @@ flowchart TD
 
 - 插件名來源：單檔案取檔案名，包形式取目錄名
 - 本地插件 `moduleInfo.meta.source == "plugin_folder"`，與 PyPI 安裝包模組無縫共存
-- 同名時本地優先（便於本地覆蓋除錯），被禁用時同時移除同名 entry-point 條目
+- 同名時本地優先（便於本地覆蓋調試），被禁用時同時移除同名 entry-point 條目
 
 ## 模組熱重載架構
 
-熱重載對**全部模組來源**一致：本地插件可監控檔案變更自動觸發，任意模組也可透過 `sdk.reload_module()` / `sdk.module.reload()` 手動重載（PyPI 安裝包模組在 pip 升級後呼叫即可生效）：
+熱重載對**全部模組來源**一致：本地插件可監控檔案變更自動觸發，任意模組也可透過 `sdk.reload_module()` / `sdk.module.reload()` 手動重載（PyPI 安裝包模組在 pip 升級後呼叫即可生效）；`sdk.reload_all_modules()` / `sdk.module.reload_all()` 可一次全量重載所有已註冊模組（pip 批量升級後呼叫即可全部生效）：
 
 ```mermaid
 flowchart TD
@@ -288,15 +288,15 @@ flowchart TD
     D --> E["變更去抖（預設 1 秒）"]
     E --> F["_handle_change 解析插件名<br/>（單檔案 / 包形式）"]
     F --> G["asyncio.run_coroutine_threadsafe<br/>調度回主事件迴圈"]
-    G --> H["sdk.reload_module(name)<br/>（也可對任意模組手動呼叫）"]
+    G --> H["sdk.reload_module(name, full=…)<br/>（也可對任意模組手動呼叫）"]
     H --> I["卸載舊實例（觸發 on_unload）<br/>收集依賴者準備級聯重載"]
     I --> J{"模組來源？"}
     J -->|"plugin_folder"| K["清理註冊與插件 sys.modules<br/>重掃描 plugins/ 目錄"]
-    J -->|"PyPI 安裝包"| L["清理註冊 + 按 top_level<br/>清理包 sys.modules 子樹<br/>刷新匯入快取後重查 entry-point"]
+    J -->|"PyPI 安裝包"| L["清理註冊 + 按 top_level 清理包<br/>sys.modules 子樹（full=True 時疊加<br/>舊模組物件頂層段兜底）<br/>刷新導入快取後重查 entry-point"]
     K --> M["重新 register + load"]
     L --> M
     M --> N["掛載新實例到 sdk 屬性"]
-    N --> O["級聯重載依賴者<br/>（插件完整重載 / PyPI 重新實例化）"]
+    N --> O["級聯重載依賴者<br/>（插件完整重載 / PyPI 重新實例化；<br/>full=True 時依賴者同樣重導程式碼）"]
     K -.->|"檔案已刪除"| P["從加載結果移除"]
     L -.->|"entry-point 已消失（已卸載）"| P
 ```
@@ -304,4 +304,11 @@ flowchart TD
 **兩種來源的差異僅在發現階段**，註冊、加載、級聯重載完全一致：
 
 - **本地插件**（`moduleInfo.meta.source == "plugin_folder"`）：清理插件名對應 `sys.modules` 後重掃描 `plugins/` 目錄；檔案已刪除則從加載結果移除
-- **PyPI 安裝包**：按 `meta.top_level` 清理包的 `sys.modules` 子樹，刷新匯入快取（突破 entry-point 60 秒快取）後重查並重新匯入；entry-point 已消失（pip 卸載）則從加載結果移除
+- **PyPI 安裝包**：按 `meta.top_level` 清理包的 `sys.modules` 子樹，刷新導入快取（突破 entry-point 60 秒快取）後重查並重新導入；entry-point 已消失（pip 卸載）則從加載結果移除
+
+**全量重載（`full=True`）與整體重載（`reload_all_modules`）：**
+
+- `top_level` 元數據缺失且無法推導時，預設重載**不清理** import 快取（重導入複用舊模組物件，即"假重載"），框架會顯式告警並建議改用 `full=True`——全量重載會疊加舊模組物件頂層包名兜底清理，確保重載後運行最新程式碼
+- `full=True` 時 PyPI 依賴者級聯走完整重載（重導程式碼），預設模式僅重新實例化（既有語義）
+- 重載會把原本懶加載的模組強制激活（無提示的差異已改為顯式日誌）；`reload_all_modules()` 則保持懶加載策略、僅將重載前處於已加載態的模組重新激活
+- `reload_all_modules()` 按依賴拓撲序重新加載，單模組失敗僅記錄診斷並跳過（無整體回滾——on_unload 副作用不可撤銷，與單模組熱重載的盡力而為語義一致）；重載失敗已回滾的場景同樣如此，日誌會明確提示舊實例處於已收尾狀態

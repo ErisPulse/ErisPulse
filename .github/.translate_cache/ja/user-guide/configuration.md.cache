@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "dbc8f1e1299fda3843205abe239e12fa",
-  "file_hash": "dbc8f1e1299fda3843205abe239e12fa",
-  "translated_at": "2026-09-26T20:49:56.155891",
+  "hash": "f4f8aed99b7f6c9f7ac95a6b8d24d22f",
+  "file_hash": "f4f8aed99b7f6c9f7ac95a6b8d24d22f",
+  "translated_at": "2026-10-02T11:07:45.581361",
   "target_lang": "ja",
   "chunks": [
     {
@@ -14,8 +14,8 @@
       "translation": "## 設定ファイルの場所\n\n設定ファイルはプロジェクトのルートディレクトリの `config/` フォルダ内にあります：\n\n```\nproject/\n├── config/\n│   └── config.toml\n├── main.py\n```\n\n### 複数インスタンスの注意点とロックファイル\n\nフレームワークの起動時に `config/` ディレクトリに `.erispulse_config.lock` ロックファイルを作成し、プロセスの終了まで保持します（複数のインスタンスが設定ディレクトリを共有しているかどうかを検出するため）。ログに「設定ファイルが他の ErisPulse インスタンスによって同時に使用されている可能性がある」というアラートが表示された場合、**2 つ以上の ErisPulse プロセスが同一の設定ファイルを書き込んでいる**ことを意味します（典型的な状況：複数のコンテナが同一のホストマシン `config/` ディレクトリをマウントしている）— 並行的な書き込みは互いに上書きする可能性があるため、各インスタンスに独立した設定ディレクトリを使用してください。"
     },
     {
-      "hash": "e572693b30658e94967b5faec4248aee",
-      "translation": "## 設定の読み込みエラー処理\n\nフレームワークは `config.toml` の読み込み時に、3 種類のエラー状態を区別し、**操作可能な診断情報を提供**します。静かにデフォルト設定に回復するのではなく、明確なエラーメッセージを出力します。\n\n| エラー状態 | 発生条件 | フレームワークの動作 |\n|---------|---------|---------|\n| ファイルの欠落 | `config.toml` が存在しない | 初回起動時は正常に動作し、空の設定を使用（警告を出さない） |\n| TOML 構文エラー | ファイルは存在するが構文が不正（例：引用符が欠けている、括弧が閉じられていない） | **行番号/列番号と原因**を出力し、デフォルト設定に回復する旨を通知 |\n| 権限/その他のエラー | 読み取り権限がない、IO エラーなど | **明確な原因**を出力し、デフォルト設定に回復する旨を通知 |\n\nたとえば、誤って設定を `port = 8000`（文字列の引用符が欠けている）と記述した場合、ログには次のような内容が出力されます：\n\n```\n[ERROR] [Config] 設定ファイル config/config.toml の構文エラー（第 3 行 第 1 列）: ...\n[WARNING] [Config] 設定ファイルの読み込みに失敗しました。前回有効な設定を使用して続行します。今回のファイルの変更は有効になりません。— 設定ファイルを修正して再読み込みまたは再起動してください。\n```\n\nこのように、**INFO レベルのログ**でも問題をすぐに特定でき、「なぜ設定を変更しても効果がないのか」という困惑を解消します。\n\n> **実行中に設定ファイルを誤って編集した場合**？ ロボットが実行中の間に `config.toml` を手動で編集して構文エラーを含ませた場合、フレームワークは次回の書き込み（設定のマージ）時に「設定ファイルが破損しました（構文エラー、第 X 行）、マージ書き込みできません。— まず設定ファイルを修正して再起動してください」と出力します。不明瞭な「書き込み失敗」ではなく、明確なエラーメッセージになります。書き込み保留中の設定項目は保持され、失われることはありません。"
+      "hash": "c7415e0952873a87e47a603240234bff",
+      "translation": "## 設定の読み込みエラー処理\n\nフレームワークは `config.toml` を読み込む際に、3 種類のエラー状態を区別し、**操作可能な診断情報**を提供します。静かにデフォルト設定に回帰するのではなく、明確なエラー情報を出力します。\n\n| エラー状態 | 発生条件 | フレームワークの動作 |\n|---------|---------|---------|\n| ファイルが存在しない | `config.toml` が存在しない | 初回起動時は正常に空の設定を使用し、警告を出さない |\n| TOML 構文エラー | ファイルは存在するが形式が不正（例：引用符が足りない、括弧が閉じていない） | **行番号/列番号と原因**を出力し、**前回有効な設定を保持して実行を継続**（今回のファイルの変更は無効） |\n| 権限/その他のエラー | 読み取り権限がない、IO エラーなど | **明確な原因**を出力し、**前回有効な設定を保持して実行を継続** |\n\n> **「前回有効な設定」はデフォルト設定とは異なる**：ファイルが破損した場合、フレームワークは**今回の起動前の最後に解析に成功した設定**（実行中にホットアップデートでファイルを破損させた場合は旧値を保持）を使用します。デフォルト設定にリセットされることはないため、障害対応時に「設定がリセットされた」と仮定しないでください。\n\nたとえば、誤って `port = 8000`（文字列の引用符が抜けている）と記述した場合、ログには次のような出力がされます：\n\n```\n[ERROR] [Config] 設定ファイル config/config.toml の構文エラー（第 3 行 第 1 列）: ...\n[WARNING] [Config] 設定ファイルの読み込みに失敗しました。前回有効な設定を使用して実行を継続します。今回のファイルの変更は無効です。修正後、再読み込みまたは再起動してください。\n```\n\nこれにより、**デフォルトの INFO レベル**でも問題を即座に特定でき、「なぜ設定を変更しても効果がないのか」を混乱させません。\n\n> **実行中に設定ファイルを破損させた場合？** ロボットが実行中の間に `config.toml` を手動で編集し構文エラーを導入した場合、フレームワークは次回の書き込み（設定のマージ）時に「設定ファイルが破損しました（構文エラー、第 X 行）、マージ書き込みができないため、まず設定ファイルを修正してから再起動してください」と出力します。混乱を招く「書き込みに失敗しました」ではなく、明確なエラーメッセージになります。書き込み待機中の設定項目は保持され、失われることはありません。"
     },
     {
       "hash": "444a261b03691bc046e2d1496dfbf548",
@@ -34,8 +34,8 @@
       "translation": "## 完全な設定例\n\n```toml\n[ErisPulse.server]\nhost = \"0.0.0.0\"\nport = 8000\nauto_start = true\nssl_certfile = \"\"\nssl_keyfile = \"\"\n\n[ErisPulse.master]\n# users には2つの書式がサポートされています（どちらか一方を選択してください）：\n#   グローバルな所有者（すべてのプラットフォームに適用）：users = [\"123456\", \"789012\"]\n#   プラットフォームごとに所有者を指定：users = { yunhu = [\"123456\"], telegram = [\"789012\"] }\nusers = {}\n\n[ErisPulse.logger]\nlevel = \"INFO\"\nformat = \"rich\"\nlog_files = []\nlog_dir = \"\"\nlog_rotation = \"size\"\nlog_max_size_mb = 10\nlog_backup_count = 5\nlog_rotation_when = \"midnight\"\nmemory_limit = 1000\nexclude_levels = []\n\n[ErisPulse.framework]\nenable_lazy_loading = true\nuninit_timeout = 30\nstrict_mode = 0\n\n[ErisPulse.framework.strict_mode_exceptions]\nmodules = []\nadapters = []\n\n[ErisPulse.storage]\nbackend = \"sqlite\"\nuse_global_db = false\n\n[ErisPulse.event.command]\nprefix = \"/\"\ncase_sensitive = true\nallow_space_prefix = false\nmust_at_bot = false\n\n[ErisPulse.event.message]\nignore_self = true\n\n[ErisPulse.i18n]\nlanguage = \"auto\"\n```"
     },
     {
-      "hash": "ec20193781dee7926a21d0bd12e57072",
-      "translation": "## サーバーの設定\n\n```toml\n[ErisPulse.server]\nhost = \"0.0.0.0\"\nport = 8000\nauto_start = true\nssl_certfile = \"/path/to/cert.pem\"\nssl_keyfile = \"/path/to/key.pem\"\n```\n\n| 設定項目 | 型 | デフォルト値 | 説明 |\n|---------|------|---------|------|\n| host | string | 0.0.0.0 | 監視するアドレス。0.0.0.0 はすべてのインターフェースを意味します |\n| port | integer | 8000 | 監視するポート番号 |\n| auto_start | boolean | true | `sdk.init()` 時にルーティングサーバーを自動的に起動するかどうか。`false` に設定するとルーティングサーバーの起動をスキップできます（純粋なイベント/WebUI なしの状況） |\n| ssl_certfile | string | 空 | SSL 証明書ファイルのパス |\n| ssl_keyfile | string | 空 | SSL 秘密鍵ファイルのパス |"
+      "hash": "30aaf545ed8e64985b67ea45391b0099",
+      "translation": "## サーバー設定\n\n```toml\n[ErisPulse.server]\nhost = \"0.0.0.0\"\nport = 8000\nauto_start = true\nssl_certfile = \"/path/to/cert.pem\"\nssl_keyfile = \"/path/to/key.pem\"\n# コンテナ / ファイルマウントがない環境では、PEM 内容をインラインで記述可能（certfile/keyfile パスよりも優先）\n# ssl_cert = \"\"\"-----BEGIN CERTIFICATE-----\n# ...\n# -----END CERTIFICATE-----\"\"\"\n# ssl_key = \"\"\"-----BEGIN PRIVATE KEY-----\n# ...\n# -----END PRIVATE KEY-----\"\"\"\n```\n\n| 設定項目 | 型 | デフォルト値 | 説明 |\n|---------|------|---------|------|\n| host | string | 0.0.0.0 | 監視するアドレス。0.0.0.0 はすべてのインターフェースを意味します |\n| port | integer | 8000 | 監視するポート番号 |\n| auto_start | boolean | true | `sdk.init()` 時に自動的にルーティングサーバーを起動するかどうか。`false` に設定するとルーティングサーバーの起動をスキップ（純粋なイベント/WebUI なしの場面） |\n| ssl_certfile | string | 空 | SSL 証明書ファイルのパス |\n| ssl_keyfile | string | 空 | SSL 秘密鍵ファイルのパス |\n| ssl_cert | string | 空 | **インライン PEM 証明書内容**（パスではなく）。`ssl_key` と併用する場合、`ssl_certfile`/`ssl_keyfile` より優先されます。フレームワークは SSL コンテキストを構築するために一時的にファイルを書き込み、すぐに削除します |\n| ssl_key | string | 空 | **インライン PEM 秘密鍵内容**（パスではなく）、上記と同じ意味 |\n\n> **ポートの占有は致命的なエラーではありません**：起動時に `port` が既に占有されている場合、フレームワークはルーティングサーバーの起動をスキップし、警告を出しますが、**アダプターとモジュールは通常通り動作します**（HTTP/WS/SSE ルーティングと WebUI は利用できません）。\"ロボットは動作するが WebUI が開かない\"という問題が発生した場合、まずポート番号を確認してください。"
     },
     {
       "hash": "d57abe550a9cf5ed291d424f3e10aacb",

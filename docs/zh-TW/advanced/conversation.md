@@ -292,16 +292,19 @@ await conv.clear_saved()
 
 ### 自動存檔
 
-框架在以下時機自動維護檢查點，通常無需手動呼叫 `save()`：
+框架在以下時機自動維護檢查點，通常無需手動調用 `save()`：
 
 | 時機 | 行為 |
 |------|------|
-| `goto()` / `start()` 跳轉分支 | 自動保存（目前分支 + context） |
+| `goto()` / `start()` 跳轉分支 | 自動保存（當前分支 + context） |
 | `stop()` / `wait()` 超時 / `collect()` 失敗 | 自動清除（對話終態） |
 
 ### 檢查點 TTL
 
-存檔帶時間戳，超過 `ErisPulse.interaction.checkpoint_ttl`（預設 24 小時）的存檔在恢復時自動丟棄：
+存檔帶時間戳，超過 `ErisPulse.interaction.checkpoint_ttl`（預設 24 小時）的存檔會被清理：
+
+- **惰性丟棄**：恢復時發現存檔已過期，自動丟棄
+- **後台主動清理**：框架有周期 GC 任務（首次使用檢查點後惰性啟動）主動枚舉並刪除過期存檔，避免長期運行時 storage 中過期檢查點無限累積。被主動清理的存檔若之後收到會話消息，按"無檢查點"處理
 
 ```toml
 [ErisPulse.interaction]
@@ -310,7 +313,7 @@ checkpoint_ttl = 86400  # 秒
 
 ### 重啟自動恢復
 
-框架重啟後，進行中的對話（記憶體中的等待協程）會丟失，但檢查點仍在。透過 `register_resume_handler` 註冊**恢復工廠**，框架即可在重啟後收到該會話首條訊息時自動續接對話：
+框架重啟後，進行中的對話（記憶體中的等待協程）會丟失，但檢查點仍在。透過 `register_resume_handler` 註冊**恢復工廠**，框架即可在重啟後收到該會話首條消息時自動續接對話：
 
 ```python
 from ErisPulse.Core.Event.wrapper import Conversation
@@ -327,14 +330,14 @@ def make_conversation(event) -> Conversation:
     return conv
 ```
 
-註冊後，重啟前處於 `menu` 分支的使用者發來首條訊息時，框架自動：恢復 context → 認領該訊息 → 從存檔分支繼續對話。未註冊工廠時此機制零開銷。
+註冊後，重啟前處於 `menu` 分支的使用者發來首條消息時，框架自動：恢復 context → 認領該消息 → 從存檔分支繼續對話。未註冊工廠時此機制零開銷。
 
 ### 恢復即接管
 
 `resume()` 成功時框架自動完成兩件事：
 
-1. **會話接管**：自動 acquire 該會話的互斥租約——其他模組可透過 `sdk.interaction.get_owner_of(event)` 感知"這個使用者正被對話佔用"；會話已被其他模組佔用時放棄恢復（回傳 False），避免兩個對話打架
-2. **歷史帶回**：從會話收件箱取最近 10 條訊息到 `conv.recent_history`（AI 模組恢復後 LLM 上下文不斷檔）；`resume(with_history=0)` 可關閉
+1. **會話接管**：自動 acquire 該會話的互斥租約——其他模組可透過 `sdk.interaction.get_owner_of(event)` 感知"這個使用者正被對話占用"；會話已被其他模組占用時放棄恢復（返回 False），避免兩個對話打架
+2. **歷史帶回**：從會話收件箱取最近 10 條消息到 `conv.recent_history`（AI 模組恢復後 LLM 上下文不斷檔）；`resume(with_history=0)` 可關閉
 
 ```python
 if await conv.resume(with_history=20):

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "e81b387bf6241d50fc0a29b589e16431",
-  "file_hash": "e81b387bf6241d50fc0a29b589e16431",
-  "translated_at": "2026-09-10T07:02:49.344681",
+  "hash": "9efdfac27dc74b56cf968047dca46018",
+  "file_hash": "9efdfac27dc74b56cf968047dca46018",
+  "translated_at": "2026-10-02T11:09:43.571886",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -22,8 +22,8 @@
       "translation": "## 連接失敗行為\n\n框架啟動與運行**不依賴資料庫可達**——MySQL / PostgreSQL 連接失敗不會導致框架崩潰或無法啟動：\n\n1. 建池瞬時失敗自動指數退避重試（預設 3 次）\n2. 重試耗盡 → 記錄 WARNING（含原因與冷卻時長），框架照常啟動 / 繼續運行，僅儲存操作暫不可用\n3. 冷卻期（預設 30 秒）內後續儲存操作**快速失敗**（不阻塞、不拖慢其餘功能）\n4. 冷卻結束自動重連嘗試——資料庫恢復後儲存隨之恢復，無需重啟\n\n日誌範例：`mysql 連接池建立最終失敗（已重試 3 次），30 秒後自動重連；期間儲存操作將快速失敗，框架其餘功能不受影響`"
     },
     {
-      "hash": "5e228c9acaa842fed2641f61482b3281",
-      "translation": "## 異步原生 API\n\n```python\n# KV 操作\nawait sdk.storage.aset(\"app.name\", \"MyApp\")\nvalue = await sdk.storage.aget(\"app.name\")\nkeys = await sdk.storage.aget_all_keys()\n\n# 表操作\nawait sdk.storage.aCreateTable(\"users\", {\n    \"id\": \"INTEGER PRIMARY KEY AUTOINCREMENT\",\n    \"name\": \"TEXT NOT NULL\",\n})\nrows = await sdk.storage.Table(\"users\").Select(\"name\").ToDict().aExecute()\n\n# 異步事務\nasync with sdk.storage.atransaction():\n    await sdk.storage.aset(\"key1\", \"value1\")\n    await sdk.storage.Table(\"users\").Insert({\"name\": \"Alice\"}).aExecute()\n```\n\n同步 API（`get/set/transaction/Table(...).Execute()`）繼續可用，內部經\n`AsyncBridge` 後台事件循環橋接執行——在異步 handler 中調用會短暫阻塞\n該事件循環，推薦優先使用 a 前綴異步方法。完整方法對照見\n[SQL 查詢建構器](sql-builder.md)。"
+      "hash": "66ed20d51a58850c2d3f76f52a31217f",
+      "translation": "## 異步原生 API\n\n```python\n# KV 操作\nawait sdk.storage.aset(\"app.name\", \"MyApp\")\nvalue = await sdk.storage.aget(\"app.name\")\nkeys = await sdk.storage.aget_all_keys()\n\n# 表操作\nawait sdk.storage.aCreateTable(\"users\", {\n    \"id\": \"INTEGER PRIMARY KEY AUTOINCREMENT\",\n    \"name\": \"TEXT NOT NULL\",\n})\nrows = await sdk.storage.Table(\"users\").Select(\"name\").ToDict().aExecute()\n\n# 異步事務\nasync with sdk.storage.atransaction():\n    await sdk.storage.aset(\"key1\", \"value1\")\n    await sdk.storage.Table(\"users\").Insert({\"name\": \"Alice\"}).aExecute()\n```\n\n同步 API（`get/set/transaction/Table(...).Execute()`）繼續可用，內部經\n`AsyncBridge` 後台事件循環橋接執行——在異步 handler 中調用會短暫阻塞\n該事件循環，**首次調用會輸出一次性告警**（\"建議改用 a 前綴異步方法\"），\n推薦優先使用 a 前綴異步方法。兩條邊界必須知曉：\n\n- **橋接線程內禁止再調同步介面**：同步介面在橋接線程內執行，此時再調\n  同步介面會拋 `RuntimeError`（防重入保護，避免自死鎖）\n- **橋接目標循環關閉後調用會失敗**：`uninit()` 之後不要再調用儲存介面\n\n完整方法對照見 [SQL 查詢建構器](sql-builder.md)。"
     },
     {
       "hash": "fb0f5a54e8e15925c34bc9789399f653",

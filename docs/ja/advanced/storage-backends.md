@@ -78,15 +78,15 @@ pool_max = 10
 
 ログ例: `mysql 接続プールの作成が最終的に失敗しました（再試行を 3 回行いました）。30 秒後に自動的に再接続を試みます。この間、ストレージ操作は即時失敗しますが、フレームワークの他の機能には影響しません。`
 
-## 異同步ネイティブAPI
+## 異スレッド API
 
 ```python
-# KV操作
+# KV 操作
 await sdk.storage.aset("app.name", "MyApp")
 value = await sdk.storage.aget("app.name")
 keys = await sdk.storage.aget_all_keys()
 
-# テーブル操作
+# 表操作
 await sdk.storage.aCreateTable("users", {
     "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
     "name": "TEXT NOT NULL",
@@ -99,10 +99,12 @@ async with sdk.storage.atransaction():
     await sdk.storage.Table("users").Insert({"name": "Alice"}).aExecute()
 ```
 
-同期API（`get/set/transaction/Table(...).Execute()`）は引き続き使用可能で、内部では
-`AsyncBridge` がバックグラウンドイベントループをブリッジして実行します。非同期ハンドラ内で同期APIを呼び出すと、
-イベントループが一時的にブロックされるため、a接頭辞の非同期メソッドを優先して使用することを推奨します。完全なメソッドの対照表は
-[SQLクエリビルダー](sql-builder.md)をご覧ください。
+同期 API (`get/set/transaction/Table(...).Execute()`) は引き続き使用可能です。内部では `AsyncBridge` がバックグラウンドイベントループを橋渡しして実行しています。非同期ハンドラ内で同期 API を呼び出すと、イベントループが一時的にブロックされます。**初回呼び出し時に一回限りの警告**（「a 前置きの非同期メソッドの使用を推奨」）が出力されます。非同期メソッドの使用を推奨します。以下の境界条件に注意してください：
+
+- **橋渡しスレッド内では再び同期インターフェースを呼び出せない**：同期インターフェースは橋渡しスレッド内で実行され、この状態で再度同期インターフェースを呼び出すと `RuntimeError` が発生します（再入防止の保護により、自己デッドロックを回避します）。
+- **橋渡し対象のループが閉じた後に呼び出すと失敗する**：`uninit()` の後にストレージインターフェースを呼び出さないでください。
+
+完全なメソッド対照は [SQL クエリビルダ](sql-builder.md) を参照してください。
 
 ## 方言の動作の違い
 

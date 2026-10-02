@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "979526b72b2120821026eb8f71d11faf",
-  "file_hash": "979526b72b2120821026eb8f71d11faf",
-  "translated_at": "2026-09-10T15:01:37.027839",
+  "hash": "9da3182a6702ae32c9dd8759870329a1",
+  "file_hash": "9da3182a6702ae32c9dd8759870329a1",
+  "translated_at": "2026-10-02T11:08:17.661226",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -24,6 +24,10 @@
     {
       "hash": "8eaca1242409a60af7738ec15e3a570e",
       "translation": "## 捕獲建議\n\n```python\nfrom ErisPulse.Core import ErisPulseError  # 基類已從 Core 聚合導出\n\ntry:\n    ...\nexcept ErisPulseError as e:\n    ...  # 統一兜底：所有框架自定義異常\n```\n\n- 模組開發：按需精確捕獲（上表），最外層可用 `ErisPulseError` 兜底\n- 異常均已從 `ErisPulse.Core` 聚合導出（含 `SessionOccupiedError` / `InteractionCancelled` / `StrictModeError`），也可從 `ErisPulse.Core.Bases.errors` 導入\n- 完整定義見 `src/ErisPulse/Core/Bases/errors.py`"
+    },
+    {
+      "hash": "5495899f8f8b18b238a580e7f8350e54",
+      "translation": "## 關閉雜訊折疊\n\n長期駐留的進程在關閉（或後台循環被取消）時，事件循環通常會刷出一批無處理價值的\n`Task was destroyed but it is pending!` 類似的解釋器雜訊。框架內建**同類雜訊折疊**：\n2 秒視窗內的同類訊息降級為 TRACE 並合併計數，只輸出一次，結尾帶有\n「（另有 N 次同類訊息被折疊）」後綴。這是刻意的降噪行為——看到折疊後綴不代表\n框架吞掉了真實異常，業務異常（上表各類）照常完整輸出。"
     }
   ]
 }

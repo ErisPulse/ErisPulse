@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "e81b387bf6241d50fc0a29b589e16431",
-  "file_hash": "e81b387bf6241d50fc0a29b589e16431",
-  "translated_at": "2026-09-10T07:03:04.577944",
+  "hash": "9efdfac27dc74b56cf968047dca46018",
+  "file_hash": "9efdfac27dc74b56cf968047dca46018",
+  "translated_at": "2026-10-02T11:15:14.025148",
   "target_lang": "ja",
   "chunks": [
     {
@@ -22,8 +22,8 @@
       "translation": "## 接続失敗時の動作\n\nフレームワークの起動と実行は**データベースの利用可能性に依存しません**。MySQL / PostgreSQL への接続失敗は、フレームワークのクラッシュや起動不能を引き起こしません。\n\n1. プール作成時の瞬時失敗は、指数関数的退避再試行（デフォルト 3 回）で自動的に処理されます。\n2. 再試行回数をすべて使用した場合 → WARNING ログを記録（原因とクールダウン期間を含む）、フレームワークは通常通り起動 / 継続的に動作しますが、ストレージ操作は一時的に利用できません。\n3. クールダウン期間（デフォルト 30 秒）内では、その後のストレージ操作は**即時失敗**します（ブロックされず、他の機能の遅延もありません）。\n4. クールダウン終了後は自動的に再接続を試みます。データベースが復旧するとストレージも復旧し、フレームワークの再起動は不要です。\n\nログ例: `mysql 接続プールの作成が最終的に失敗しました（再試行を 3 回行いました）。30 秒後に自動的に再接続を試みます。この間、ストレージ操作は即時失敗しますが、フレームワークの他の機能には影響しません。`"
     },
     {
-      "hash": "5e228c9acaa842fed2641f61482b3281",
-      "translation": "## 異同步ネイティブAPI\n\n```python\n# KV操作\nawait sdk.storage.aset(\"app.name\", \"MyApp\")\nvalue = await sdk.storage.aget(\"app.name\")\nkeys = await sdk.storage.aget_all_keys()\n\n# テーブル操作\nawait sdk.storage.aCreateTable(\"users\", {\n    \"id\": \"INTEGER PRIMARY KEY AUTOINCREMENT\",\n    \"name\": \"TEXT NOT NULL\",\n})\nrows = await sdk.storage.Table(\"users\").Select(\"name\").ToDict().aExecute()\n\n# 異スレッドトランザクション\nasync with sdk.storage.atransaction():\n    await sdk.storage.aset(\"key1\", \"value1\")\n    await sdk.storage.Table(\"users\").Insert({\"name\": \"Alice\"}).aExecute()\n```\n\n同期API（`get/set/transaction/Table(...).Execute()`）は引き続き使用可能で、内部では\n`AsyncBridge` がバックグラウンドイベントループをブリッジして実行します。非同期ハンドラ内で同期APIを呼び出すと、\nイベントループが一時的にブロックされるため、a接頭辞の非同期メソッドを優先して使用することを推奨します。完全なメソッドの対照表は\n[SQLクエリビルダー](sql-builder.md)をご覧ください。"
+      "hash": "66ed20d51a58850c2d3f76f52a31217f",
+      "translation": "## 異スレッド API\n\n```python\n# KV 操作\nawait sdk.storage.aset(\"app.name\", \"MyApp\")\nvalue = await sdk.storage.aget(\"app.name\")\nkeys = await sdk.storage.aget_all_keys()\n\n# 表操作\nawait sdk.storage.aCreateTable(\"users\", {\n    \"id\": \"INTEGER PRIMARY KEY AUTOINCREMENT\",\n    \"name\": \"TEXT NOT NULL\",\n})\nrows = await sdk.storage.Table(\"users\").Select(\"name\").ToDict().aExecute()\n\n# 異スレッドトランザクション\nasync with sdk.storage.atransaction():\n    await sdk.storage.aset(\"key1\", \"value1\")\n    await sdk.storage.Table(\"users\").Insert({\"name\": \"Alice\"}).aExecute()\n```\n\n同期 API (`get/set/transaction/Table(...).Execute()`) は引き続き使用可能です。内部では `AsyncBridge` がバックグラウンドイベントループを橋渡しして実行しています。非同期ハンドラ内で同期 API を呼び出すと、イベントループが一時的にブロックされます。**初回呼び出し時に一回限りの警告**（「a 前置きの非同期メソッドの使用を推奨」）が出力されます。非同期メソッドの使用を推奨します。以下の境界条件に注意してください：\n\n- **橋渡しスレッド内では再び同期インターフェースを呼び出せない**：同期インターフェースは橋渡しスレッド内で実行され、この状態で再度同期インターフェースを呼び出すと `RuntimeError` が発生します（再入防止の保護により、自己デッドロックを回避します）。\n- **橋渡し対象のループが閉じた後に呼び出すと失敗する**：`uninit()` の後にストレージインターフェースを呼び出さないでください。\n\n完全なメソッド対照は [SQL クエリビルダ](sql-builder.md) を参照してください。"
     },
     {
       "hash": "fb0f5a54e8e15925c34bc9789399f653",

@@ -82,8 +82,8 @@ reply = await event.wait_reply(session=True, prompt="哪位大神幫忙答一下
 
 ## 會話定時器：remind / escalate
 
-將「超時」從回傳值轉為可編排的原語。定時器掛在互動會話上，  
-隨模組卸載 / 適配器關閉自動取消，單會話活躍 remind 上限 5 個。
+將「超時」從回傳值變成可編排的原語。定時器掛在互動會話上，  
+隨模組卸載 / 適配器關閉自動取消，單一會話活躍 remind 上限 5 個。
 
 ### remind：沒回覆就提醒
 
@@ -91,17 +91,18 @@ reply = await event.wait_reply(session=True, prompt="哪位大神幫忙答一下
 @command("ticket")
 async def ticket_command(event):
     await event.reply("工單已提交，處理結果會在這裡通知")
-    # 5 分鐘無回覆則溫和催一次；使用者任何回覆都會自動取消它
+    # 5 分鐘無回覆則溫和催一次；用戶任何回覆都會自動取消它
     event.remind(300, "還在嗎？有結果了會第一時間告訴你")
     reply = await event.wait_reply(timeout=3600)
     ...
 ```
 
 - `event.remind(delay, text=None, *, callback=None)`：到期向當前會話發送 `text`  
-  （或執行 `callback(event)`，支援同步 / 異步）
+  （或執行 `callback(event)`，支援同步 / 異步）。**強制校驗**：`text` 與  
+  `callback` 必須二選一（都不給則拋 `ValueError`）
 - 回傳 `Reminder` 句柄：`reminder.cancel()` 手動取消、`reminder.expired` 查詢狀態
-- 使用者在該會話**回覆後自動取消**——這正是「提醒」語意：  
-  提醒只在使用者沉默時出現
+- 用戶在該會話**回覆後自動取消**——這正是「提醒」語意：  
+  提醒只在用戶沉默時出現
 - `Conversation` 內同樣可用：`conv.remind(120, "還在考慮嗎？")`
 
 ### escalate：到點必達的升級
@@ -110,19 +111,20 @@ async def ticket_command(event):
 event.escalate(1800, lambda e: notify_master(f"工單 30 分鐘未處理：{event.get_command_args()}"))
 ```
 
-與 `remind` 的唯一區別：**不受使用者回覆取消**——升級動作（通知主人、轉人工）  
-是「超時必達」的承諾，僅手動 `cancel()` / 模組卸載 / 適配器關閉才取消。
+與 `remind` 的唯一區別：**不受用戶回覆取消**——升級動作（通知主人、轉人工）  
+是「超時必達」承諾，僅手動 `cancel()` / 模組卸載 / 適配器關閉才取消。
 
 | | `remind` | `escalate` |
 |---|---|---|
 | 到期行為 | 發文本 / 執行 callback | 執行 callback |
-| 使用者回覆 | **自動取消** | 不受影響 |
+| 用戶回覆 | **自動取消** | 不受影響 |
 | 歸屬清理（卸載 / 關平台） | 取消 | 取消 |
-| 單會話上限 | 5 | 不限（隨歸屬清理兜底） |
+| 單一會話上限 | 5 | 不限（隨歸屬清理兜底） |
 
 ## 多路等待：expect + select
 
-同時掛起多條期望，**先到先得**——典型場景：等管理員審批的同時等用戶撤回、多人協作投票。
+同時掛起多條期望，**先到先得**——典型場景：等管理員審批的同時等使用者撤回、
+多人協作投票。
 
 ```python
 which, reply = await event.select(
@@ -142,11 +144,12 @@ elif which == 1:
 - `event.expect(...)` 建構**期望描述**（不註冊任何等待）：支援
   `pattern` / `regex` / `validator` / `user`（限定回覆者）/ `session`（任何人可答）
 - `event.select(*expectations, timeout=60)`：統一註冊 → 任一命中即返回
-  `(下標, 回覆事件)` → 未命中的等待自動取消；全部超時返回 `(None, None)`
+  `(下標, 回覆事件)` → 未命中的等待自動取消；全部超時返回 `(None, None)`。
+  **強制校驗**：至少傳入一條 expectation，否則拋 `ValueError`
 - 命中的事件已被框架認領（`mark_processed`），不會被其他處理器重複消費
 
 {!--< tips >!--}
-`select` 與多線程 `asyncio.wait` 手工編排相比：期望未命中時自動清理、
+`select` 與多執行緒 `asyncio.wait` 手工編排相比：期望未命中時自動清理、
 命中事件自動認領、權限複查與歸屬清理全部生效——不需要自己管任何 Future。
 {!--< /tips >!--}
 

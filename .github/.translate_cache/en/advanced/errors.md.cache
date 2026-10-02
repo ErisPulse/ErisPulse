@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "979526b72b2120821026eb8f71d11faf",
-  "file_hash": "979526b72b2120821026eb8f71d11faf",
-  "translated_at": "2026-09-10T15:02:12.174431",
+  "hash": "9da3182a6702ae32c9dd8759870329a1",
+  "file_hash": "9da3182a6702ae32c9dd8759870329a1",
+  "translated_at": "2026-10-02T11:09:09.635039",
   "target_lang": "en",
   "chunks": [
     {
@@ -24,6 +24,10 @@
     {
       "hash": "8eaca1242409a60af7738ec15e3a570e",
       "translation": "## Handling Recommendations\n\n```python\nfrom ErisPulse.Core import ErisPulseError  # Base class is aggregated from Core\n\ntry:\n    ...\nexcept ErisPulseError as e:\n    ...  # General catch-all: all framework custom exceptions\n```\n\n- For module development: catch as needed (see table above), use `ErisPulseError` as a fallback at the outermost layer\n- All exceptions are aggregated and exported from `ErisPulse.Core` (including `SessionOccupiedError` / `InteractionCancelled` / `StrictModeError`), or can be imported from `ErisPulse.Core.Bases.errors`\n- Full definitions are in `src/ErisPulse/Core/Bases/errors.py`"
+    },
+    {
+      "hash": "5495899f8f8b18b238a580e7f8350e54",
+      "translation": "## Noise Folding on Shutdown\n\nWhen long-running processes are shut down (or background loops are canceled), the event loop often generates a batch of noise messages such as `Task was destroyed but it is pending!` that have little value for troubleshooting. The framework includes built-in **noise folding** functionality: within a 2-second window, similar messages are downgraded to TRACE level, merged, and counted, with only one output being generated, followed by a suffix indicating 「(N more similar messages were folded)」. This is a deliberate noise reduction measure—seeing the folding suffix does not mean the framework has swallowed real exceptions. Business exceptions (all types listed above) are still fully output as usual."
     }
   ]
 }

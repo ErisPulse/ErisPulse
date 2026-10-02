@@ -90,28 +90,26 @@ Please follow the format below when adding a new bug entry:
 ## Statistics Overview
 
 | Severity | Count |
-|--------|------|
-| 🔴 Severe | 16 |
-| 🟡 Medium | 17 |
+|----------|-------|
+| 🔴 Critical | 16 |
+| 🟡 Medium | 18 |
 | 🟢 Minor | 3 |
-| **Total** | **36** |
+| **Total** | **37** |
 
 | Type | Count |
-|------|------|
-| Adapter | 6 |
+|------|-------|
+| Adapters | 6 |
 | Configuration System | 11 |
 | Event System | 7 |
 | CLI | 3 |
 | Storage | 3 |
-| Loader | 3 |
-| Router | 2 |
+| Loader System | 3 |
+| Routing | 2 |
 | Client | 1 |
 | Runtime | 1 |
 
-> Note: A single bug can belong to multiple types; the table above is counted by primary type.
-> Note: Bug IDs BUG-028 / BUG-031 are missing (abandoned during registration, not recycled or renumbered to maintain existing ID stability).
-
----
+> Note: A single bug may belong to multiple types; the table above is counted by the primary type.
+> Note: Bug IDs BUG-028 / BUG-031 are missing (abandoned during registration, and not recycled or renumbered to maintain the stability of existing IDs).
 
 ## Fixed Bugs
 

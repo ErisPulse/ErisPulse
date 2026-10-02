@@ -78,7 +78,7 @@ The framework's startup and operation **do not depend on database reachability**
 
 Log example: `mysql connection pool creation failed after 3 retries, automatic reconnection in 30 seconds; storage operations will fail quickly during this period, while other framework functions remain unaffected`
 
-## Native Asynchronous API
+## Asynchronous Native APIs
 
 ```python
 # KV operations
@@ -93,13 +93,18 @@ await sdk.storage.aCreateTable("users", {
 })
 rows = await sdk.storage.Table("users").Select("name").ToDict().aExecute()
 
-# Asynchronous transaction
+# Asynchronous transactions
 async with sdk.storage.atransaction():
     await sdk.storage.aset("key1", "value1")
     await sdk.storage.Table("users").Insert({"name": "Alice"}).aExecute()
 ```
 
-Synchronous APIs (`get/set/transaction/Table(...).Execute()`) remain available, internally executed in the background event loop via `AsyncBridge`. However, calling them within asynchronous handlers will briefly block the event loop; prefer the `a`-prefixed asynchronous methods. For a complete method comparison, see [SQL Query Builder](sql-builder.md).
+Synchronous APIs (`get/set/transaction/Table(...).Execute()`) are still available, internally executed via the `AsyncBridge` background event loop bridge. Calling them in asynchronous handlers will briefly block the event loop, and **a one-time warning will be output on the first call** ("It is recommended to use asynchronous methods with the 'a' prefix"), and asynchronous methods with the 'a' prefix are recommended. Two boundaries must be known:
+
+- **Synchronous interfaces cannot be called again within the bridged thread**: Synchronous interfaces are executed within the bridged thread, and calling them again will throw a `RuntimeError` (reentrancy protection to avoid self-deadlock).
+- **Calling after the bridged target loop is closed will fail**: After `uninit()`, do not call storage interfaces again.
+
+See [SQL Query Builder](sql-builder.md) for a complete method comparison.
 
 ## Dialect Behavior Differences
 
