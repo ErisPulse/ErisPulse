@@ -724,7 +724,7 @@ class Logger:
 
         JSON 模式下返回结构化 dict 列表，Rich 模式下返回字符串列表。
 
-        :param module_name (可选): 模块名称，None表示获取所有日志
+        :param module_name: 模块名称（可选），None 表示获取所有日志
         :return: dict 日志内容
         """
         if module_name is None:

@@ -4,12 +4,14 @@ ErisPulse KV 查询构建器
 将链式 SQL 操作（Table/Insert/Select/Where 等）映射为 KV 键前缀操作。
 任何实现了 BaseStorage KV 接口的后端（Redis、内存字典等）均可使用。
 
-键命名规则：
+键命名规则::
+
     _table:{table_name}:schema    — 表结构定义（列名 → 类型）
     _table:{table_name}:next_id   — 自增 ID 计数器
     _table:{table_name}:data:{id} — 行数据（JSON 序列化）
 
-使用方式：
+使用方式::
+
     >>> storage = MyKVStorage()
     >>> qb = KVQueryBuilder(storage, "users")
     >>> qb.Insert({"name": "Alice", "age": 30}).Execute()
