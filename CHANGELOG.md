@@ -99,6 +99,11 @@
   - `docs` 实现细节补全（对照 i18n 日志键逐项核实）：命令配额 `usage_limit=` 入门文档（唯一经存储持久化的治理状态）、适配器状态全集（补 `start_failed` / `skipped-dependency` / `disabled`）、路由端口占用非致命与内联 PEM 证书（`ssl_cert` / `ssl_key`）、存储同步接口桥接告警与防重入 `RuntimeError`、配置损坏回退"上次有效配置"语义（原文档误写为"回退默认配置"）、对话检查点后台主动 GC、命令分发决策链补配额与废弃阶段、交互组件强制契约（`remind` 二选一 / `select` 至少一条期望 / `on_cleanup` owner 解析失败抛错）、关停噪音折叠机制
   - `docs/standards` 发送方法规范新增**媒体发送协议标准**（§2.1）：定义 `file` 参数的必须/应当形态（URL / 本地路径 / `bytes` 必须支持，`file://` 与 base64 应当支持）、形态判定顺序、`File` 文件名推导顺序、平台限制声明义务与能力降级阶梯（近缘类型降级或 `retcode=10002`，禁抛异常/静默丢弃）；事件转换标准的媒体段 `file` / `url` / `filename` 字段方向语义同步补充；新增 CI 门禁：i18n 五语言键一致性、docs 内部链接、MySQL / PostgreSQL 双后端存储与 ORM 真机验证（原手动发布门禁转为随 PR 持续验证）
 
+### 优化
+
+- @YingXinche
+  - `docs` API 参考文档渲染整体修复（重写 `generate-api-docs.py` 的 docstring → Markdown 转换）：示例块自动剥离 `>>>` / `...` doctest 前缀渲染为 `python` 代码块并收入预期输出行（此前 1100+ 行前缀原样出现在文档中）；`:param` / `:return` 说明仅在首词形似类型标识且后接中文时才回显为代码类型（此前约 1600 处中文描述被整体反引号误标为类型，如 `` `初始化前回调` ``）；相邻字段说明不再被正则跨行粘连进同一条目；`.. code-block:: <lang>` 指令与行尾 `::` 字面块自动转为围栏代码块（此前 TOML / Python 示例以纯文本泄漏，`#` 注释被渲染为一级标题）；提示块（`{!--< tips >!--}`）内的示例与代码块同样转换；方法签名补全此前被静默丢弃的参数形态（`*args`、仅关键字参数、`**kwargs`、位置仅限 `/`，此前 116 个含仅关键字参数的方法签名显示为空参）并附返回值注解，property / staticmethod / classmethod 显式标注（property 不再显示为 `()` 调用形态）；顺带修复脚本 `Logger` 调用与公共日志器签名不匹配导致的生成即崩，CI「Update API docs」步骤自此恢复实际生效
+
 ### 修复
 
 - @YingXinche
