@@ -4,19 +4,19 @@
 
 ## 事件類型概覽
 
-ErisPulse 支持以下事件類型：
+ErisPulse 支援以下事件類型：
 
-| 事件類型 | 說明 | 應用場景 |
+| 事件類型 | 說明 | 適用場景 |
 |---------|------|---------|
-| 消息事件 | 用戶發送的任何消息 | 聊天機器人、內容過濾 |
-| 命令事件 | 以命令前綴開頭的消息 | 命令處理、功能入口 |
-| 通知事件 | 系統通知（好友添加、群成員變化等） | 歡迎消息、狀態通知 |
-| 請求事件 | 用戶請求（好友請求、群邀請） | 自動處理請求 |
+| 消息事件 | 使用者傳送的任何訊息 | 聊天機器人、內容過濾 |
+| 命令事件 | 以命令前綴開頭的訊息 | 命令處理、功能入口 |
+| 通知事件 | 系統通知（好友添加、群組成員變更等） | 歡迎訊息、狀態通知 |
+| 請求事件 | 使用者請求（好友請求、群組邀請） | 自動處理請求 |
 | 元事件 | 系統級事件（連接、心跳） | 連接監控、狀態檢查 |
 
 ## 消息事件處理
 
-> **提示**: 建議在事件處理器中使用 `Event` 類型註解，以獲得 IDE 自動補全和類型檢查支持。
+> **提示**: 建議在事件處理器中使用 `Event` 類型註解，以獲得 IDE 自動補全和類型檢查支援。
 
 ```python
 from ErisPulse.Core.Event import Event  # 導入事件類型用於註解
@@ -86,7 +86,7 @@ async def combined_handler(event: Event):
     pass
 ```
 
-`wait_reply` 同樣支援這兩個參數（見[等待回覆功能](../developer-guide/modules/event-wrapper.md#等待回覆功能)）。
+`wait_reply` 同樣支援這兩個參數（見[等待回覆](../developer-guide/modules/event-wrapper.md#等待回覆功能)）。
 
 ## 命令事件處理
 
@@ -95,13 +95,13 @@ async def combined_handler(event: Event):
 ```python
 from ErisPulse.Core.Event import command
 
-@command("help", help="顯示幫助信息")
+@command("help", help="顯示幫助資訊")
 async def help_handler(event):
     help_text = """
 可用命令：
 /help - 顯示幫助
 /ping - 測試連接
-/info - 查看信息
+/info - 查看資訊
     """
     await event.reply(help_text)
 ```
@@ -109,12 +109,12 @@ async def help_handler(event):
 ### 命令別名
 
 ```python
-@command(["help", "h"], aliases=["幫助"], help="顯示幫助信息")
+@command(["help", "h"], aliases=["幫助"], help="顯示幫助資訊")
 async def help_handler(event):
-    await event.reply("幫助信息...")
+    await event.reply("幫助資訊...")
 ```
 
-用戶可以使用以下任何方式呼叫：
+使用者可以使用以下任何方式呼叫：
 - `/help`
 - `/h`
 - `/幫助`
@@ -122,25 +122,22 @@ async def help_handler(event):
 ### 命令參數
 
 ```python
-@command("echo", help="回顯消息")
+@command("echo", help="回顯訊息")
 async def echo_handler(event):
-    # 獲取命令參數
+    # 取得命令參數
     args = event.get_command_args()
     
     if not args:
-        await event.reply("請輸入要回顯的消息")
+        await event.reply("請輸入要回顯的訊息")
     else:
         await event.reply(f"你說了: {' '.join(args)}")
 ```
 
-參數保留用戶輸入的原始大小寫（即使配置為大小寫不敏感，
-命令名匹配歸一也不會影響參數內容）。
+參數保留使用者輸入的原始大小寫（即使設定為大小寫不敏感，命令名匹配歸一也不會影響參數內容）。
 
 ### 聲明式參數與選項（args= / options=）
 
-手動解析參數需要自己處理類型轉換與錯誤提示。聲明 `args=` / `options=` 後，
-框架在權限檢查通過後自動解析命令參數並**按名注入處理器**；用戶輸入錯誤時
-自動回覆本地化提示與用法（不會拋異常崩潰），`/help <命令>` 也會自動展示用法：
+手動解析參數需要自行處理類型轉換與錯誤提示。聲明 `args=` / `options=` 後，框架在權限檢查通過後自動解析命令參數並**按名注入處理器**；使用者輸入錯誤時自動回覆本地化提示與用法（不會拋異常崩潰），`/help <命令>` 也會自動展示用法：
 
 ```python
 @command(
@@ -154,32 +151,29 @@ async def roll_handler(event, count: int, sides: int = 6, verbose: bool = False,
     await event.reply(f"擲了 {count} 次 {sides} 面骰，總點數：{total}")
 ```
 
-`args=` 位置參數語法：`<count:int>` 必填、`[sides:int=6]` 可選（含預設值）。支援類型：
+`args=` 位置參數語法：`<count:int>` 必填、`[sides:int=6]` 可選（含預設值）。支援的類型：
 
 | 類型 | 範例輸入 | 說明 |
 |------|---------|------|
 | `str` | `hello` | 文本（缺省類型） |
 | `int` / `float` | `3` / `0.5` | 數值 |
-| `bool` | `是` / `yes` / `はい` / `да` / `true` / `no` / `取消` | 布爾值，複用互動確認（`Event.confirm()`）的確認詞表 |
-| `literal` | `<mode:literal=fast|slow>` | 枚舉，僅接受列出的值；可選形式預設取首個 |
+| `bool` | `是` / `yes` / `はい` / `да` / `true` / `no` / `取消` | 布林值，重用互動確認（`Event.confirm()`）的確認詞表 |
+| `literal` | `<mode:literal=fast|slow>` | 陣列，僅接受列出的值；可選形式預設取首個 |
 | `duration` | `90s`、`1h30m`、`1d` | 時長，按秒折算為 float |
 | `rest` | `<text:rest>` | 剩餘全部文本（必須位於最後） |
 
-`options=` 選項為字典式聲明：鍵為處理器參數名，值為旗標形式（多個別名以 `/` 分隔）。
-註解為 `bool` 的參數是布爾旗標（出現即 `True`）；其餘（缺省按 `str`）是帶值選項，
-支援 `--label hello` 與 `--label=hello` 兩種取值，類型跟隨處理器註解。
-選項先被識別剔除，剩餘 token 再按 `args=` 解析（`rest` 覆蓋剔除選項後的剩餘文本）。
+`options=` 選項為字典式聲明：鍵為處理器參數名，值為旗標形式（多個別名以 `/` 分隔）。註解為 `bool` 的參數是布林旗標（出現即 `True`）；其餘（缺省按 `str`）是帶值選項，支援 `--label hello` 與 `--label=hello` 兩種取值，類型跟隨處理器註解。選項先被識別剔除，剩餘 token 再按 `args=` 解析（`rest` 覆蓋剔除選項後的剩餘文本）。
 
 **行為要點**：
 
-- 權限檢查先於參數解析——無權限用戶不會觸發解析
+- 權限檢查先於參數解析——無權限使用者不會觸發解析
 - 解析失敗（類型不符 / 缺少參數 / 參數過多 / 未知選項）自動回覆本地化錯誤 + 用法，命令仍被認領
 - 聲明的參數名必須存在於處理器簽名中，否則註冊期拋 `ValueError`
-- 不聲明 `args=` / `options=` 的命令行為完全不變（向後兼容）
+- 不聲明 `args=` / `options=` 的命令行為完全不變（向後相容）
 
-### 命令治理（cooldown= / rate_limit= / deprecated=）
+### 命令治理（cooldown= / rate_limit= / usage_limit= / deprecated=）
 
-手寫冷卻計時、限流窗口、廢棄提示可用聲明替代，三者可任意組合。
+手寫冷卻計時、限流視窗、使用配額、廢棄提示可用聲明替代，四者可任意組合。
 
 **冷卻**——時長語法與 `args=` 的 `duration` 類型一致（如 `"30s"`、`"1h30m"`、`"1d"`）：
 
@@ -189,13 +183,26 @@ async def daily_handler(event):
     await event.reply("簽到成功！")
 ```
 
-**限流**——滑動窗口聲明 `"次數/窗口"`（如 `"5/minute"`、`"10/s"`、`"3/2m"`）：
+**限流**——滑動視窗聲明 `"次數/視窗"`（如 `"5/minute"`、`"10/s"`、`"3/2m"`）：
 
 ```python
 @command("search", rate_limit="5/minute", rate_limit_key="user")
 async def search_handler(event):
     await event.reply("搜索結果")
 ```
+
+**配額**——周期內總次數上限（如 `"100/day"`、`"10/hour"`、`"500/30d"`），超限拒絕執行：
+
+```python
+@command("translate", usage_limit="100/day", usage_limit_key="user",
+         usage_limit_reply="今日翻譯次數已用完")
+async def translate_handler(event):
+    ...
+```
+
+與冷卻/限流不同，配額計數**經儲存持久化**（KV 鍵 `erispulse.usage.<key>`，重啟不丟）：
+儲存不可達時自動退化為純記憶體計數並告警（此時配額重啟清零）。計數隨配額周期
+切換自動清零，模組卸載時清理。
 
 **廢棄**——呼叫時自動回覆廢棄文案，`deprecated_reject=True` 拒絕執行：
 
@@ -204,23 +211,23 @@ async def search_handler(event):
 async def old_handler(event): ...
 ```
 
-鍵粒度（`cooldown_key=` / `rate_limit_key=`）：`"user"`（預設，同一用戶共享）、
-`"session"`（同一會話共享，如同一群）、`"global"`（所有用戶所有會話共享）。
+鍵粒度（`cooldown_key=` / `rate_limit_key=`）：`"user"`（預設，同一使用者共享）、
+`"session"`（同一會話共享，如同一群）、`"global"`（所有使用者所有會話共享）。
 
 **行為要點**：
 
-- 冷卻 / 限流命中預設**靜默丟棄**（對稱於作用域靜默）；聲明 `cooldown_reply=` / `rate_limit_reply=` 後命中即回覆該文案
-- 命令命中即認領——治理命中的命令不會漏給低优先級消息處理器
-- 治理判定位於全部權限檢查與參數解析通過、實際執行前：無權限用戶不觸發，參數錯誤不消耗
-- 同時聲明冷卻與限流時冷卻先判（冷卻命中不占限流窗口）
+- 冷卻 / 限流 / 配額命中預設**靜默丟棄**（對稱於作用域靜默）；聲明 `cooldown_reply=` / `rate_limit_reply=` / `usage_limit_reply=` 後命中即回覆該文案
+- 命令命中即認領——治理命中的命令不會漏給低優先級訊息處理器
+- 治理判定位於全部權限檢查與參數解析通過、實際執行前：無權限使用者不觸發，參數錯誤不消耗
+- 同時聲明冷卻與限流時冷卻先判（冷卻命中不佔限流視窗）；配額在冷卻/限流判定之後
 - `deprecated=` 預設回覆文案後**繼續執行**；`deprecated_reject=True` 拒絕執行（`command.executed` 鉤子記 `success=False, error="deprecated"`）
 - `/help` 列表與單命令幫助自動顯示廢棄標記與文案
-- 狀態為進程內記憶體，模組卸載時自動清理；跨進程共享 / 重啟持久化不在範圍內
+- 冷卻與限流狀態為進程內記憶體，模組卸載時自動清理；跨進程共享 / 重啟持久化不在範圍內（**usage 配額計數除外**——經儲存持久化，見上節）
 - 聲明在註冊期校驗（fail-fast）：語法非法、鍵粒度非白名單值、reply 未搭配主聲明均拋 `ValueError`
 
 ### 處理器節流（throttle=）與防抖（debounce=）
 
-消息處理器防刷屏聲明——同鍵事件在間隔內至多處理一條，其餘靜默丟棄：
+訊息處理器防刷屏聲明——同鍵事件在間隔內至多處理一條，其餘靜默丟棄：
 
 ```python
 from ErisPulse import sdk
@@ -229,8 +236,8 @@ from ErisPulse import sdk
 async def handler(event): ...
 ```
 
-防抖與節流互補：**窗口內只執行最後一條**，前序待執行任務自動取消（適合
-"停止輸入後再處理"的搜索聯想類場景）：
+防抖與節流互補：**視窗內只執行最後一條**，前序待執行任務自動取消（適合
+"停止輸入後再處理"的搜尋聯想類場景）：
 
 ```python
 @sdk.message.on_message(debounce="2s", debounce_key="user")
@@ -243,11 +250,15 @@ async def search(event): ...
 `regex=` 等既有條件疊加生效（全部滿足才觸發）；間隔內丟棄僅記 TRACE 日誌；
 聲明在註冊期校驗；`throttle=` 與 `debounce=` 語義互斥（同時聲明拋 `ValueError`）。
 
+> **防抖不半途掐斷業務**：只有尚未越過等待視窗的待執行任務會被取消；已經
+> 越窗、正在執行中的處理器不會被新事件取消（避免停在任意 await 點產生
+> 部分副作用）。
+
 ### 依賴注入（Depends）
 
-公共依賴（數據庫會話、配置讀取等）可抽為依賴函數，處理器以
-`Depends(依賴函數)` 作為參數預設值聲明，框架在調用前以上下文對象
-調用依賴函數並按名注入：
+公共依賴（資料庫會話、設定讀取等）可抽為依賴函數，處理器以
+`Depends(依賴函數)` 作為參數預設值聲明，框架在呼叫前以上下文物件
+呼叫依賴函數並按名注入：
 
 ```python
 from ErisPulse.Core import Depends
@@ -261,12 +272,12 @@ async def admin_handler(event, db=Depends(get_session)):
 ```
 
 預設開啟**請求級快取**：同一次事件分發內，相同依賴函數只解析一次、所有
-注入點共享結果（如 `get_db` 在一次事件中只建一次數據庫會話）；跨請求自動
-不複用。可用 `Depends(get_db, use_cache=False)` 關閉單條依賴的快取。
+注入點共享結果（如 `get_db` 在一次事件中只建一次資料庫會話）；跨請求自動
+不復用。可用 `Depends(get_db, use_cache=False)` 關閉單條依賴的快取。
 
 覆蓋全部框架注入點——命令處理器、事件處理器（`message.on_message()` 等）、
 生命週期鉤子（`sdk.lifecycle.on`）、SSE 路由處理器。依賴函數的第一個參數
-是注入點上下文對象（事件場景為 `Event`，生命週期為事件 `data`，
+是注入點上下文物件（事件場景為 `Event`，生命週期為事件 `data`，
 路由為 `HttpRequest` / `SseEmitter`）；同步與異步依賴函數均可聲明。
 
 **聲明其它模組的服務**（語法糖）：
@@ -277,13 +288,13 @@ async def query_handler(event, session=Depends.module("DB", "get_session")):
     ...
 ```
 
-`Depends.module(模組名, 方法名, *固定參數)` 等價於在依賴函數內調用
+`Depends.module(模組名, 方法名, *固定參數)` 等價於在依賴函數內呼叫
 `sdk.module.call(...)`。模組實例化（`__init__`）不在覆蓋範圍——實例化時無
-上下文對象；FastAPI 承載的 HTTP 路由請用 FastAPI 原生 `fastapi.Depends`。
+上下文物件；FastAPI 承載的 HTTP 路由請用 FastAPI 原生 `fastapi.Depends`。
 
 **行為要點**：
 
-- 聲明在註冊期校驗（fail-fast）：依賴不可調用、或與 `args=` / `options=` 參數重名時拋 `ValueError`
+- 聲明在註冊期校驗（fail-fast）：依賴不可呼叫、或與 `args=` / `options=` 參數重名時拋 `ValueError`
 - 依賴函數拋出的異常與處理器自身異常同口徑處理（命令自動回覆錯誤）
 - 不聲明 `Depends` 的處理器零開銷（分發期無任何反射）
 - FastAPI 承載的 HTTP 路由請使用 FastAPI 原生 `fastapi.Depends`
@@ -301,7 +312,7 @@ async def stop_handler(event):
 ```
 
 `group` 參數僅用於幫助列表歸類；上面示例中的 `admin.reload` 是一個**整體命令名**
-（點號只是命名風格，用戶需輸入 `/admin.reload`）。
+（點號只是命名風格，使用者需輸入 `/admin.reload`）。
 
 ### 子命令
 
@@ -312,10 +323,10 @@ async def stop_handler(event):
 async def admin_handler(event):
     await event.reply("用法：/admin add | /admin remove")
 
-@command("admin add", help="添加管理員")
+@command("admin add", help="新增管理員")
 async def admin_add_handler(event):
     target = event.get_command_args()[0]
-    await event.reply(f"已添加 {target}")
+    await event.reply(f"已新增 {target}")
 
 @command("admin remove", aliases=["a remove"], help="移除管理員")
 async def admin_remove_handler(event):
@@ -324,8 +335,8 @@ async def admin_remove_handler(event):
 
 匹配規則（**最長前綴匹配**）：
 
-- `/admin add x` 優先命中 `admin add`，`event.get_command_args()` 返回 `["x"]`（子命令名之後的參數）
-- 僅註冊了 `admin` 時，`/admin add x` 命中 `admin`，`get_command_args()` 返回 `["add", "x"]`（歷史行為不變）
+- `/admin add x` 優先命中 `admin add`，`event.get_command_args()` 回傳 `["x"]`（子命令名之後的參數）
+- 僅註冊了 `admin` 時，`/admin add x` 命中 `admin`，`get_command_args()` 回傳 `["add", "x"]`（歷史行為不變）
 - 別名支援多 token 形式（如 `a remove`），也可用單 token 別名（如 `a`）指向子命令
 - 父子命令同時註冊時，未註冊的子命令輸入（如 `/admin list x`）回落到父命令
 
@@ -341,38 +352,38 @@ async def admin_handler(event):
     ...
 
 # 無需重複聲明 permission，自動繼承 is_admin
-@command("admin add", help="添加管理員")
+@command("admin add", help="新增管理員")
 async def admin_add_handler(event):
     ...
 ```
 
 注意：`master=True` 與 `hidden` **不會**繼承，需要時請在子命令上單獨聲明；
-用戶 ACL（黑白名單）按命令全名匹配，glob 規則如 `"admin*"` 可覆蓋整組子命令。
+使用者 ACL（黑白名單）按命令全名匹配，glob 規則如 `"admin*"` 可覆蓋整組子命令。
 
-`/help` 的命令總覽中，子命令會自動掛到可見的父命令下縮進展示
-（`admin` → `admin add` 縮進一級，`admin user` → `admin user ban` 縮進兩級）。
+`/help` 的命令總覽中，子命令會自動掛到可見的父命令下縮排展示
+（`admin` → `admin add` 縮排一級，`admin user` → `admin user ban` 縮排兩級）。
 
-### 命令權限與訪問控制
+### 命令權限與存取控制
 
 命令權限分三層，從上到下逐層判定（**上層拒絕則不再看下層**）：
 
 ```python
-# ① 命令權限 ACL（用戶側配置）：按命令的用戶黑白名單，拒絕時回覆"權限不足"
+# ① 命令權限 ACL（使用者側設定）：按命令的使用者黑白名單，拒絕時回覆"權限不足"
 # ② master=True —— 僅框架主人可執行（框架自動檢查，拒絕時回覆"權限不足"）
 @command("restart", master=True, help="重啟模組")
 async def restart_handler(event):
     await event.reply("模組已重啟")
 
-# ③ permission=呼叫函數 —— 命令自身的控制邏輯（返回 True 才執行）
+# ③ permission=呼叫函數 —— 命令自身的控制邏輯（回傳 True 才執行）
 def is_admin(event):
     return event.get_user_id() in {"user123", "user456"}
 
-@command("panel", permission=is_admin, help="管理面板")
+@command("panel", permission=is_admin, help="管理介面")
 async def panel_handler(event):
-    await event.reply("歡迎來到管理面板")
+    await event.reply("歡迎來到管理介面")
 ```
 
-**命令用戶 ACL**（`ErisPulse.event.command.acl`）：用戶可為任意命令配置用戶黑白名單，
+**命令使用者 ACL**（`ErisPulse.event.command.acl`）：使用者可為任意命令設定使用者黑白名單，
 命令名支援精確與 glob 模式（如 `"roll*"`），拒絕時回覆"權限不足"：
 
 ```toml
@@ -382,9 +393,9 @@ allow = ["onebot11:123456"]
 deny = ["onebot11:666"]
 ```
 
-判定順序：`deny` 命中 → 拒絕；`allow` 非空且未命中 → 拒絕；未配置 ACL 時遵循
+判定順序：`deny` 命中 → 拒絕；`allow` 非空且未命中 → 拒絕；未設定 ACL 時遵循
 `event.command.default_allow`（`false` = 嚴格模式，無 ACL 即拒；`true` 時交給開發者預設
-`master=True` / `permission`）。運行時 API（命令名支援 glob）：
+`master=True` / `permission`）。執行時 API（命令名支援 glob）：
 
 ```python
 from ErisPulse.Core.Event import command
@@ -396,16 +407,16 @@ command.get_acl("restart")                             # 查詢當前名單
 ```
 
 > 命令處理器從事件包導入：`from ErisPulse.Core.Event import command`；
-> 也可經 SDK 事件包訪問：`sdk.Event.command`（兩者為同一單例）。
+> 也可經 SDK 事件包存取：`sdk.Event.command`（兩者為同一單例）。
 > 在模組內通常已隨命令裝飾器導入（`from ErisPulse.Core.Event import command`）。
 
-跨命令 / 跨用戶的**事件級**訪問控制（某人 / 某群 / 某 Bot 的消息收不收）
+跨命令 / 跨使用者的**事件級**存取控制（某人 / 某群 / 某 Bot 的訊息收不收）
 走作用域**身份維度**（`scope.identity`）；**模組級**可用性（哪些模組能用）
 走作用域**模組維度**（`scope.platforms / bots / sessions`）。
 詳見[作用域（scope）](../advanced/scope.md)。
 
-> 建議：命令內部需要聯動業務邏輯的用 `master=True` / `permission`；純按用戶 / 群做
-> 訪問控制的用作用域身份維度；控制模組可用性的用作用域模組維度。
+> 建議：命令內部需要聯動業務邏輯的用 `master=True` / `permission`；純按使用者 / 群做
+> 存取控制的用作用域身份維度；控制模組可用性的用作用域模組維度。
 
 ### 命令優先級
 
@@ -441,7 +452,7 @@ priority=0 組: [處理器A || 處理器B] 並行 → 合併結果
 - **中斷機制**：任意處理器呼叫 `event.done()`（預設）或 `event.done(claim=False)` 後，跳過後續低優先級組。認領與阻斷的區別見下文[「鏈路控制：認領與阻斷」](#鏈路控制認領與阻斷)
 
 ```python
-# 示例：同優先級處理器並行執行
+# 範例：同優先級處理器並行執行
 @message.on_message(priority=0)
 async def handler_a(event):
     # 處理任務A
@@ -474,70 +485,69 @@ from ErisPulse.Core import adapter
 async def firewall(data):
     if _is_banned(data.get("user_id")):
         return False          # 否決：事件被丟棄，不進入任何處理器，無出站副作用
-    data["checked"] = True    # 返回 dict：改寫載體（與歷史行為一致）
-    # 返回 None：放行，載體不變（歷史行為）
+    data["checked"] = True    # 返回 dict：改寫載荷（與歷史行為一致）
+    # 返回 None：放行，載荷不變（歷史行為）
     return data
 ```
 
-| 回傳值 | 行為 |
+| 返回值 | 行為 |
 |--------|------|
 | `False` | **否決**：事件立即丟棄，不進入任何處理器 |
-| `dict` | 改寫事件載體後繼續分發 |
-| `None` | 放行，載體不變 |
+| `dict` | 改寫事件載荷後繼續分發 |
+| `None` | 放行，載荷不變 |
 
-否決時框架輸出 TRACE 日誌並觸發 `adapter.event.blocked` 生命週期鉤子（攜帶中間件名與完整事件），供審計「事件為什麼沒響應」。
+否決時框架輸出 TRACE 日誌並觸發 `adapter.event.blocked` 生命週期鉤子（攜帶中間件名與完整事件），供審計「事件為什麼沒有回應」。
 
-## 命令分發決策鏈：為什麼命令沒觸發
+## 命令分發決策鏈：為什麼命令沒有觸發
 
-一條命令消息依次經過：**命令文本判定 → 命令名/別名命中（未命中附拼寫建議）→ 命中即認領 → 作用域 → 用戶 ACL → 主人 → 權限 → 冷卻/限流 → 參數解析 → 執行**。任何一步不滿足即終止；治理命中（冷卻/限流）預設靜默丟棄，權限類拒絕會回覆用戶。
+一條命令訊息依序經過：**命令文本判定 → 命令名/別名命中（未命中附拼寫建議）→ 命中即認領 → 作用域 → 用戶 ACL → 主人 → 權限 → 冷卻/限流 → 配額（usage）→ 棄用（deprecated，notice/rejected）→ 參數解析 → 執行**（中間件可在事件層否決，見上一節）。任何一步不滿足即終止；治理命中（冷卻/限流/配額）預設靜默丟棄，權限類拒絕會回覆用戶，棄用按聲明回覆或拒絕。
 
-測試中 `ErisPulse-Testing` 的 `dispatch()` 直接回傳這條決策鏈（`DispatchTrace`，`trace.explain()` 輸出逐行因果），生產環境可用 `ErisPulse.Core.Event.start_dispatch_trace()` 采集同樣的記錄。
+測試中 `ErisPulse-Testing` 的 `dispatch()` 直接返回這條決策鏈（`DispatchTrace`，`trace.explain()` 輸出逐行因果），生產環境可用 `ErisPulse.Core.Event.start_dispatch_trace()` 採集同樣的記錄。
 
-此外 `ErisPulse.runtime` 提供兩組排查診斷 API：`explain_module(模組名)` 回答"模組為什麼沒加載"（未註冊 / 懶加載 / 配置禁用 / 依賴缺失 / SDK 版本不滿足，逐項給原因），`explain_event(事件)` 回答"事件為什麼沒響應"（適配器未註冊 / 身份拉黑 / 模組會話屏蔽 / 命令未命中）；配 `format_report()` 渲染人類可讀結論。
+此外 `ErisPulse.runtime` 提供兩組排查診斷 API：`explain_module(模組名)` 回答「模組為什麼沒有載入」（未註冊 / 懶加載 / 配置禁用 / 依賴缺失 / SDK 版本不滿足，逐項給原因），`explain_event(事件)` 回答「事件為什麼沒有響應」（適配器未註冊 / 身份拉黑 / 模組會話屏蔽 / 命令未命中）；配 `format_report()` 渲染人類可讀結論。
 
-## 作用域篩選：為什麼我的模組沒有收到訊息
+## 作用域過濾：為什麼我的模組沒收到訊息
 
-事件到達後有兩道**靜默**篩選（都不回應、不報錯）：
+事件到達後有兩道**靜默**過濾（都不回應、不報錯）：
 
-1. **身份維度**（`ErisPulse.scope.identity`）：事件進入分發入口時，按 使用者 > 群組 > Bot > 適配器 判定是否接收。
+1. **身份維度**（`ErisPulse.scope.identity`）：事件進入分發入口時，按 用戶 > 群 > Bot > 適配器 判定是否接收。
    被拒絕的**整個事件**直接丟棄，任何處理器（含命令分發器）都不會觸發。
 2. **模組維度**（`ErisPulse.scope`）：事件到達某模組的處理器/命令時，按 會話 > Bot > 平台 判定
    該模組是否可用，**不通過就靜默跳過**。
 
 ```toml
-# 例1：某群組所有訊息不傳播
+# 例1：某群所有訊息不傳播
 [ErisPulse.scope.identity.sessions.onebot11."group_123"]
 deny = true
 
-# 例2：將 MyModule 屏蔽在某個 Bot
+# 例2：把 MyModule 屏蔽在某個 Bot
 [ErisPulse.scope.bots.onebot11."123456"]
 blocked = ["MyModule"]
 ```
 
-此時該群組的訊息到達時，`MyModule` 的命令與事件處理器**都不會被調度**。這不是 bug，而是篩選機制——排查「模組沒有反應」時，應優先檢查作用域的身份與模組綁定。
+此時該群的訊息到達時，`MyModule` 的命令與事件處理器**都不會被調度**。這不是 bug，而是過濾機制——排查「模組沒有反應」時，優先檢查作用域的身份與模組綁定。
 
-- 篩選日誌只在 **TRACE** 級可見（`core.scope.identity_denied` / `core.scope.denied`），預設 INFO 級看不到任何痕跡
+- 過濾日誌只在 **TRACE** 級可見（`core.scope.identity_denied` / `core.scope.denied`），預設 INFO 級看不到任何痕跡
 - 框架級處理器（如命令分發器 `scope_exempt=True`）不受**模組維度**影響，但受**身份維度**影響（整個事件已丟棄）
-- 命令執行前還有第三道：命令使用者 ACL（拒絕時回應「權限不足」，見上節）
+- 命令執行前還有第三道：命令用戶 ACL（拒絕時回應「權限不足」，見上節）
 - 第四道是**事件覆寫**（見下節）
 
 > [!NOTE]
-> **作用域篩選與事件認領（claim）的關係**：兩道靜默篩選都發生在處理器
-> **調度之前**——被篩選跳過的處理器沒有機會執行，自然也不參與
+> **作用域過濾與事件認領（claim）的關係**：兩道靜默過濾都發生在處理器
+> **調度之前**——被過濾跳過的處理器沒有機會執行，自然也不參與
 > `event.done()` / `mark_processed()` 的認領狀態。事件是否已被認領，
-> 只由**實際執行**的處理器（命令命中認領、回應命中認領、顯式呼叫）決定；
+> 只由**實際執行**的處理器（命令命中認領、回應命中認領、顯式調用）決定；
 > 作用域拒絕本身既不認領也不阻斷（靜默跳過，訊息繼續走完剩餘分發鏈）。
 
-> 作用域配置、匹配語法、執行時 API 請見 [作用域（scope）](../advanced/scope.md)。
+> 作用域配置、匹配語法、執行時 API 見 [作用域（scope）](../advanced/scope.md)。
 
 ## 事件覆寫：不改模組代碼，覆寫任意事件類型的行為
 
-> [!NOTE]
+> [!NOTE]  
 > 本特性需要 ErisPulse **2.8.0+**。
 
-事件處理器在註冊時聲明的參數（`pattern` / `regex` / `master` / `hidden` 等）只是**開發者預設**。
-統一覆寫系統讓用戶按**事件類型**覆寫任意模組的行為——OneBot12 標準類型
-（meta / message / notice / request）與 ErisPulse 擴展類型（command）各自擁有專屬的可覆寫參數：
+事件處理器在註冊時聲明的參數（`pattern` / `regex` / `master` / `hidden` 等）只是**開發者預設**。  
+統一覆寫系統讓用戶按**事件類型**覆寫任意模組的行為——OneBot12 標準類型（meta / message / notice / request）與 ErisPulse 擴展類型（command）各自擁有專屬的可覆寫參數：
 
 | 事件類型 | 可覆寫參數 | 作用 |
 |---------|-----------|------|
@@ -570,8 +580,7 @@ allow = ["onebot11:u_vip"]
 acl_default_allow = true
 ```
 
-運行時 API（`from ErisPulse.Core.Event import overrides` 或 `sdk.Event.overrides`，
-**類型子命名空間**——每類型對稱的 `set` / `get` / `delete` 三件套）：
+執行時 API（`from ErisPulse.Core.Event import overrides` 或 `sdk.Event.overrides`，**類型子命名空間**——每類型對稱的 `set` / `get` / `delete` 三件套）：
 
 ```python
 from ErisPulse.Core.Event import overrides
@@ -589,9 +598,9 @@ overrides.message.delete("ChatModule")  # 恢復開發者預設
 - `detail_types`：事件缺 `detail_type` 時放行（不誤殺未知事件）
 - `pattern` / `regex`：無文本的事件（connect / heartbeat 等）不受約束，直接放行
 - `command` 覆寫鍵 `master` 同步映射存儲鍵 `must_master`；禁用命令統一走 `acl` deny
-- **鍵名映射說明**：`overrides.command.set("My", "restart", master=True)` 的參數名
-  `master` 僅為配置別名，實際存儲鍵與 `get()` 返回值中的鍵名統一為 **`must_master`**
-  （`get()` 返回 `{"must_master": true}`）——運行時判斷讀取的是存儲鍵，請勿按
+- **鍵名映射說明**：`overrides.command.set("My", "restart", master=True)` 的參數名  
+  `master` 僅為配置別名，實際存儲鍵與 `get()` 返回值中的鍵名統一為 **`must_master`**  
+  （`get()` 返回 `{"must_master": true}`）——執行時判斷讀取的是存儲鍵，請勿按  
   `master` 鍵名讀取
 - 配置改了立即生效（熱更新），格式校驗告警（未知參數 / 壞條目忽略）
 
@@ -604,13 +613,13 @@ ErisPulse 將「認領」與「阻斷」兩個正交語義解耦，透過 `event
 
 **兩個概念的準確定義：**
 
-- **認領（claim）**：標記事件已被本處理器處理（寫入 `_processed`）。命令分發器看到已認領的事件會**跳過去重**——避免同一消息被多個命令處理器重複處理。典型場景：命令匹配成功後認領，阻止命令分發器再介入。
+- **認領（claim）**：標記事件已被本處理器處理（寫入 `_processed`）。命令分發器看到已認領的事件會**跳過去重**——避免同一訊息被多個命令處理器重複處理。典型場景：命令匹配成功後認領，阻止命令分發器再介入。
 - **阻斷（stop）**：阻止事件向**更低優先級**處理器傳播（寫入 `_propagation_stopped`）。低優先級處理器（如 `on_message`）將不再看到該事件。典型場景：高優先級處理器已完整處理事件，不希望低優先級再執行。
 
 | `event.done(...)` | 認領 | 阻斷 | 場景 |
 |-------------------|------|------|------|
 | `event.done()` | ✔ | ✔ | 命令 / 處理器處理完的標準做法 |
-| `event.done(stop=False)` | ✔ | ✘ | 僅認領，讓低優先級仍會執行（日誌 / 統計） |
+| `event.done(stop=False)` | ✔ | ✘ | 僅認領，讓低優先級觀察者（日誌 / 統計）繼續看到 |
 | `event.done(claim=False)` | ✘ | ✔ | 僅阻斷（如防火牆 / 限流），但不做命令去重 |
 
 `event.done(claim=, stop=)` 是 `event.mark_processed(claim=, stop=)` 的別名，二者參數與行為完全等價。
@@ -632,19 +641,19 @@ async def firewall(event):
 
 ### 命令與回覆的 block 配置
 
-**命令命中即認領**：消息一旦匹配到已註冊命令名（含子命令/別名），無論後續作用域或權限判定結果如何，都會被認領並預設阻斷傳播——被權限拒絕的命令再也不會漏給低優先級消息處理器（消除"命令被拒後 on_message 又響應一次"的雙重響應）。
+**命令命中即認領**：訊息一旦匹配到已註冊命令名（含子命令/別名），無論後續作用域或權限判定結果如何，都會被認領並預設阻斷傳播——被權限拒絕的命令再也不會漏給低優先級訊息處理器（消除「命令被拒後 on_message 又回應一次」的雙重回應）。
 
-可透過配置放行阻斷，讓低優先級觀察者（日誌 / 審計 / 權限）也能看到這些消息：
+可透過配置放行阻斷，讓低優先級觀察者（日誌 / 審計 / 權限）也能看到這些訊息：
 
 ```toml
 [ErisPulse.event.command]
-block = false   # 命令消息繼續流向低優先級處理器（認領不受影響，不會重複消費）
+block = false   # 命令訊息繼續流向低優先級處理器（認領不受影響，不會重複消費）
 
 [ErisPulse.event.wait_reply]
 block = false   # 被 wait_reply 消費的回覆繼續流向低優先級處理器
 ```
 
-> 注意：`block` 只控制**阻斷**（stop），不影響**認領**（claim）——命中的命令永遠不會被消息處理器重複消費；未命中任何命令的消息照常流向消息處理器。
+> 注意：`block` 只控制**阻斷**（stop），不受影響**認領**（claim）——命中的命令永遠不會被訊息處理器重複消費；未命中任何命令的訊息照常流向訊息處理器。
 
 ## 通知事件處理
 
@@ -694,7 +703,7 @@ async def friend_request_handler(event):
     
     sdk.logger.info(f"收到好友請求: {user_id}, 附言: {comment}")
     
-    # 可以透過適配器 API 處理請求
+    # 可以通過適配器 API 處理請求
     # 具體實現請參考各適配器文件
 ```
 
@@ -738,7 +747,7 @@ async def heartbeat_handler(event):
 
 ### Bot 狀態查詢
 
-當適配器發送 meta 事件後，框架自動追蹤 Bot 狀態，你可以隨時查詢：
+當適配器發送 meta 事件後，框架會自動追蹤 Bot 狀態，你可以隨時查詢：
 
 ```python
 from ErisPulse import sdk
@@ -762,13 +771,13 @@ summary = sdk.adapter.get_status_summary()
 
 ### 使用 reply 方法發送回覆
 
-`event.reply()` 方法支援多種修飾參數，方便發送帶有 @、回覆等功能的消息：
+`event.reply()` 方法支援多種修飾參數，方便發送帶有 @、回覆等功能的訊息：
 
 ```python
 # 簡單回覆
 await event.reply("你好")
 
-# 發送不同類型的消息
+# 發送不同類型的訊息
 await event.reply("http://example.com/image.jpg", method="Image")  # 圖片
 await event.reply("http://example.com/voice.mp3", method="Voice")  # 語音
 
@@ -778,13 +787,13 @@ await event.reply("你好", at_users=["user123"])
 # @多個用戶
 await event.reply("大家好", at_users=["user1", "user2", "user3"])
 
-# 回覆消息
+# 回覆訊息
 await event.reply("回覆內容", reply_to="msg_id")
 
 # @全體成員
 await event.reply("公告", at_all=True)
 
-# 組合使用：@用戶 + 回覆消息
+# 組合使用：@用戶 + 回覆訊息
 await event.reply("內容", at_users=["user1"], reply_to="msg_id")
 ```
 
@@ -807,8 +816,8 @@ async def ask_handler(event):
 
 > [!TIP]
 > **等待期間命令仍然可用**（2.8.3+）：以命令前綴開頭且命中已註冊命令的
-> 消息（如 `/cancel`）會**執行命令**而非作為回覆內容，等待繼續掛起——
-> 用戶可以隨時取消/切換，命令執行完仍可繼續回覆。需要"等待吞掉一切文本"
+> 訊息（如 `/cancel`）會**執行命令**而非作為回覆內容，等待繼續掛起——
+> 用戶可以隨時取消/切換，命令執行完仍可繼續回覆。需要"等待吞掉一切文字"
 > 的旧行為時：配置 `ErisPulse.event.wait_reply.cmdpass = true`，或單次
 > `wait_reply(cmdpass=True)`。
 
@@ -862,7 +871,7 @@ async def confirm_handler(event):
 
 ### 確認對話 (confirm)
 
-等待用戶確認或否定，自動識別內建中英文確認詞：
+等待用戶確認或否認，自動識別內建中英文確認詞：
 
 ```python
 @command("confirm", help="確認操作")
@@ -879,7 +888,7 @@ if await event.confirm("繼續嗎？", yes_words={"go", "繼續"}, no_words={"st
 
 ### 選擇菜單 (choose)
 
-用戶可回覆選項編號或選項文本：
+用戶可回覆選項編號或選項文字：
 
 ```python
 @command("choose", help="選擇")
@@ -896,7 +905,7 @@ async def choose_handler(event):
         await event.reply("超時未選擇")
 ```
 
-**合併模式**：`merge_prompt=True` 時將選項拼入提示消息，用用戶指定的 `method` 一條消息發送：
+**合併模式**：`merge_prompt=True` 時將選項拼入提示訊息，用用戶指定的 `method` 一條訊息發送：
 
 ```python
 # 用 Markdown 發送合併後的提示 + 選項
@@ -910,8 +919,8 @@ choice = await event.choose(
 
 > `{options}` 占位符控制選項插入位置；不寫則追加到 prompt 末尾。
 > 可透過 `placeholder` 參數自定義占位符（如 `placeholder="[choices]"`）。
-> `options_format="auto"`（預設）根據 method 自動選擇樣式：Markdown→無序列表，Html→有序列表，其他→純文本列表。
-> 文本類方法（Text/Markdown/Html 等）預設合併選項到末尾；非文本方法（Image 等）預設拆分為兩條消息。
+> `options_format="auto"`（預設）根據 method 自動選擇樣式：Markdown→無序列表，Html→有序列表，其他→純文字列表。
+> 文本類方法（Text/Markdown/Html 等）預設合併選項到末尾；非文本方法（Image 等）預設拆分為兩條訊息。
 
 ### 收集表單 (collect)
 
@@ -924,11 +933,11 @@ async def register_handler(event):
         {"key": "name", "prompt": "請輸入姓名："},
         {"key": "age", "prompt": "請輸入年齡：", 
          "validator": lambda e: e.get_text().isdigit()},
-        {"key": "email", "prompt": "請輸入郵箱："}
+        {"key": "email", "prompt": "請輸入電子郵箱："}
     ])
     
     if data:
-        await event.reply(f"註冊成功！\n姓名：{data['name']}\n年齡：{data['age']}\n郵箱：{data['email']}")
+        await event.reply(f"註冊成功！\n姓名：{data['name']}\n年齡：{data['age']}\n電子郵箱：{data['email']}")
     else:
         await event.reply("註冊超時或輸入無效")
 ```
@@ -956,7 +965,7 @@ async def wait_member_handler(event):
 
 ### 多輪對話 (conversation)
 
-創建可互動的多輪對話上下文：
+建立可互動的多輪對話上下文：
 
 ```python
 @command("survey", help="問卷調查")
@@ -986,7 +995,7 @@ async def survey_handler(event):
 ErisPulse 內建了中英文確認詞集合：
 
 - **確認詞** (`CONFIRM_YES_WORDS`): 是、yes、y、確認、確定、好、好的、ok、true、對、嗯、行、同意、沒問題...
-- **否定詞** (`CONFIRM_NO_WORDS`): 否、no、n、取消、不、不要、不行、cancel、false、錯、拒絕、不可以...
+- **否認詞** (`CONFIRM_NO_WORDS`): 否、no、n、取消、不、不要、不行、cancel、false、錯、拒絕、不可以...
 
 ## 事件數據訪問
 
@@ -995,13 +1004,13 @@ ErisPulse 內建了中英文確認詞集合：
 ```python
 @command("info")
 async def info_handler(event):
-    # 基礎資訊
+    # 基礎信息
     event_id = event.get_id()
     event_time = event.get_time()
     event_type = event.get_type()
     detail_type = event.get_detail_type()
     
-    # 發送者資訊
+    # 發送者信息
     user_id = event.get_user_id()
     nickname = event.get_user_nickname()
     
@@ -1010,18 +1019,18 @@ async def info_handler(event):
     alt_message = event.get_alt_message()
     text = event.get_text()
     
-    # 群組資訊
+    # 群組信息
     group_id = event.get_group_id()
     
-    # 機器人資訊
+    # 机器人信息
     self_id = event.get_self_user_id()
     self_platform = event.get_self_platform()
     
-    # 原始資料
+    # 原始數據
     raw_data = event.get_raw()
     raw_type = event.get_raw_type()
     
-    # 平台資訊
+    # 平台信息
     platform = event.get_platform()
     
     # 消息類型判斷
@@ -1029,7 +1038,7 @@ async def info_handler(event):
     is_group = event.is_group_message()
     is_at = event.is_at_message()
     
-    # 命令資訊
+    # 命令信息
     if event.is_command():
         cmd_name = event.get_command_name()
         cmd_args = event.get_command_args()
@@ -1038,7 +1047,7 @@ async def info_handler(event):
 
 ### 平台擴展方法
 
-除了內建方法外，各平台適配器還會註冊平台專有方法，方便你訪問平台特有的資料。
+除了內置方法外，各平台適配器還會註冊平台專有方法，方便你訪問平台特有的數據。
 
 ```python
 from ErisPulse.Core.Event import message
@@ -1093,12 +1102,12 @@ async def message_handler(event):
     user_id = event.get_user_id()
     text = event.get_text()
     
-    sdk.logger.info(f"處理消息: {user_id} - {text}")
+    sdk.logger.info(f"處理訊息: {user_id} - {text}")
     
     # 使用模組自己的日誌
     from ErisPulse import sdk
     logger = sdk.logger.get_child("MyHandler")
-    logger.debug(f"詳細調試資訊")
+    logger.debug(f"詳細除錯資訊")
 ```
 
 ### 3. 條件處理
@@ -1107,20 +1116,20 @@ async def message_handler(event):
 @message.on_message(priority=0)
 async def conditional_handler(event):
     """條件處理 - 在處理器內部判斷"""
-    # 只處理特定用戶的消息
+    # 只處理特定使用者的訊息
     if event.get_user_id() in ["bot1", "bot2"]:
         return
     
-    # 只處理包含特定關鍵詞的消息
-    if "關鍵詞" not in event.get_text():
+    # 只處理包含特定關鍵字的訊息
+    if "關鍵字" not in event.get_text():
         return
     
-    await event.reply("條件滿足，處理消息")
+    await event.reply("條件滿足，處理訊息")
 ```
 
 ## 下一步
 
-- [常見任務範例](common-tasks.md) - 學習常用功能的實現（含消息發送進階：重試/超時/批量）
-- [平台特性指南](../platform-guide/README.md) - Send DSL 鏈式發送、發送規則、批量建構的完整說明
-- [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md) - 深入了解 Event 對象
-- [用戶使用指南](../user-guide/) - 了解配置和模組管理
+- [常見任務範例](common-tasks.md) - 學習常用功能的實現（含訊息發送進階：重試/超時/批量）
+- [平台特性指南](../platform-guide/README.md) - Send DSL 串接式發送、發送規則、批量建構的完整說明
+- [Event 包裝類詳解](../developer-guide/modules/event-wrapper.md) - 深入了解 Event 物件
+- [使用者使用指南](../user-guide/) - 了解設定和模組管理
