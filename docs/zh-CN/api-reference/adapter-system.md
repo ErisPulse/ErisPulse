@@ -61,6 +61,11 @@ is_running = sdk.adapter.is_running("platform_name")
 
 # 列出所有正在运行的适配器
 running = sdk.adapter.list_running()
+
+# 读取适配器元信息（对齐 module.get_meta，供面板 / 商店等消费）
+info = sdk.adapter.get_info("platform_name")   # 注册信息（meta + 类名，json-safe）
+meta = sdk.adapter.get_meta("platform_name")   # 介绍元信息（description 支持 i18n 解析）
+raw = sdk.adapter.get_meta("platform_name", resolve_i18n=False)  # 透传原始 i18n 字典
 ```
 
 ## 中间件

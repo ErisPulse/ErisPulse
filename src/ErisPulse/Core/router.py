@@ -55,6 +55,7 @@ from .constants import (
     DEFAULT_WS_AUTO_ACCEPT,
     FALLBACK_IPV4,
     FALLBACK_IPV6_HOST,
+    ROUTER_RELOAD_STARTUP_TIMEOUT_SECS,
     SERVER_SHUTDOWN_TIMEOUT_SECS,
     WILDCARD_IPV4,
     WILDCARD_IPV6,
@@ -399,6 +400,8 @@ class RouterManager:
         self.base_url = ""
         self._server_task: asyncio.Task | None = None
         self._uvicorn_server: uvicorn.Server | None = None
+        # 最近一次 start() 的服务器参数（reload() 缺省参数的沿用来源）
+        self._server_params: dict[str, Any] = {}
         self._local_ips: list[dict[str, str]] = []
         self._route_middlewares: dict[str, list] = defaultdict(list)
         self._global_middlewares: list = []
@@ -2764,6 +2767,16 @@ class RouterManager:
             self._get_local_ips()
             self._apply_config()
 
+            # 记录本次启动参数（reload() 缺省参数的沿用来源）
+            self._server_params = {
+                "host": host,
+                "port": port,
+                "ssl_certfile": ssl_certfile,
+                "ssl_keyfile": ssl_keyfile,
+                "ssl_cert": ssl_cert,
+                "ssl_key": ssl_key,
+            }
+
             # 同步探测端口是否可用。uvicorn 在端口被占用时会执行 sys.exit(3)，
             # 其 SystemExit 会被事件循环重新抛出并取消所有任务，导致进程异常退出并
             # 刷屏大量 "Task was destroyed but it is pending"。此处先同步探测，
@@ -2866,6 +2879,177 @@ class RouterManager:
                 return
             logger.error(i18n.t("core.router.start_failed", error=e))
             raise
+
+    async def _stop_uvicorn_listener(self) -> None:
+        """
+        仅停止 uvicorn 监听（不清理路由等应用状态，供 reload 复用）
+
+        与 :meth:`stop` 的区别：stop 面向完整关停（路由 / 限流任务 / 命名
+        空间一并清理），本方法只停服务器进程本体，模块注册的路由全部保留。
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        if self._uvicorn_server:
+            self._uvicorn_server.should_exit = True
+        if self._server_task:
+            try:
+                await asyncio.wait_for(
+                    self._server_task, timeout=SERVER_SHUTDOWN_TIMEOUT_SECS
+                )
+            except asyncio.TimeoutError:
+                self._server_task.cancel()
+                try:
+                    await self._server_task
+                except asyncio.CancelledError:
+                    pass
+                except Exception:
+                    pass
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                pass
+        self._server_task = None
+        self._uvicorn_server = None
+
+    async def _launch_uvicorn(self, params: dict[str, Any]) -> bool:
+        """
+        以给定参数构建并启动 uvicorn 服务器（reload 复用）
+
+        内联 PEM 优先于证书路径（与 :meth:`start` 同口径）；启动后等待
+        uvicorn 完成监听绑定，启动失败（端口被抢占、绑定异常）返回 False。
+
+        :param params: 服务器参数（host / port / ssl_certfile / ssl_keyfile
+                       / ssl_cert / ssl_key）
+        :return: bool 服务器是否成功进入监听状态
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        ssl_context = None
+        if params.get("ssl_cert") and params.get("ssl_key"):
+            try:
+                ssl_context = self._build_ssl_context_from_pem(
+                    params["ssl_cert"], params["ssl_key"]
+                )
+                logger.debug(i18n.t("core.router.ssl_inline_applied"))
+            except Exception as e:
+                logger.error(i18n.t("core.router.ssl_inline_invalid", error=e))
+                return False
+        use_https = bool(ssl_context or params.get("ssl_certfile"))
+
+        config = uvicorn.Config(
+            self.app,
+            host=params["host"],
+            port=params["port"],
+            log_level="warning",
+            ssl_certfile=None if ssl_context else params.get("ssl_certfile"),
+            ssl_keyfile=None if ssl_context else params.get("ssl_keyfile"),
+            ssl_context_factory=(
+                lambda _config, _default_factory, _ctx=ssl_context: _ctx
+            )
+            if ssl_context
+            else None,
+        )
+        self._uvicorn_server = uvicorn.Server(config)
+        self.base_url = f"http{'s' if use_https else ''}://{params['host']}:{params['port']}"
+        self._server_task = asyncio.create_task(self._uvicorn_server._serve())
+
+        # 等待监听就绪（绑定失败会令 serve 任务以异常结束）
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + ROUTER_RELOAD_STARTUP_TIMEOUT_SECS
+        while loop.time() < deadline:
+            if self._uvicorn_server.started:
+                return True
+            if self._server_task.done():
+                return False
+            await asyncio.sleep(0.05)
+        return bool(self._uvicorn_server.started)
+
+    @_web_stack_required
+    async def reload(
+        self,
+        host: str | None = None,
+        port: int | None = None,
+        ssl_certfile: str | None = None,
+        ssl_keyfile: str | None = None,
+        *,
+        ssl_cert: str | None = None,
+        ssl_key: str | None = None,
+    ) -> bool:
+        """
+        运行时热重载路由服务器（host / port / SSL），无需进程重启
+
+        复用同一 FastAPI 应用实例，模块已注册的 http / ws / sse 路由全部
+        保留。参数缺省时沿用当前生效配置（``start()`` 记录的参数）。
+
+        切换顺序保证 **返回 False = 旧服务保持可用**：先验证新 SSL 配置
+        可构建，再停止旧监听并以新参数重建；新监听启动失败（端口被抢占、
+        绑定异常）时以旧配置重新拉起服务。
+
+        :param host: str | None 监听地址（缺省沿用当前值）
+        :param port: int | None 监听端口（缺省沿用当前值）
+        :param ssl_certfile: str | None SSL证书路径（缺省沿用当前值）
+        :param ssl_keyfile: str | None SSL密钥路径（缺省沿用当前值）
+        :param ssl_cert: str | None SSL证书 PEM 文本内容（优先于 ssl_certfile）
+        :param ssl_key: str | None SSL密钥 PEM 文本内容（优先于 ssl_keyfile）
+        :return: bool 重载是否成功；False 时旧配置服务保持可用
+
+        :example:
+        >>> await router.reload(port=9000)  # 修改监听端口
+        >>> await router.reload(ssl_cert=new_pem, ssl_key=new_key)  # 热更换证书
+        """
+        if not _WEB_STACK_LOADED:
+            logger.warning(i18n.t("core.router.reload_keep_old", error="web stack not loaded"))
+            return False
+        if not self._server_task or self._server_task.done() or not self._uvicorn_server:
+            logger.warning(i18n.t("core.router.reload_not_running"))
+            return False
+
+        current = self._server_params
+        new_params = {
+            "host": host if host is not None else current.get("host", DEFAULT_SERVER_HOST),
+            "port": port if port is not None else current.get("port", DEFAULT_SERVER_PORT),
+            "ssl_certfile": (
+                ssl_certfile if ssl_certfile is not None else current.get("ssl_certfile")
+            ),
+            "ssl_keyfile": (
+                ssl_keyfile if ssl_keyfile is not None else current.get("ssl_keyfile")
+            ),
+            "ssl_cert": ssl_cert if ssl_cert is not None else current.get("ssl_cert"),
+            "ssl_key": ssl_key if ssl_key is not None else current.get("ssl_key"),
+        }
+
+        # 先验证：内联 PEM 能否构建 SSLContext（无副作用，失败即回绝）
+        if new_params["ssl_cert"] and new_params["ssl_key"]:
+            try:
+                self._build_ssl_context_from_pem(new_params["ssl_cert"], new_params["ssl_key"])
+            except Exception as e:
+                logger.error(i18n.t("core.router.ssl_inline_invalid", error=e))
+                logger.warning(i18n.t("core.router.reload_keep_old", error="invalid ssl cert"))
+                return False
+
+        # 停止旧监听（路由全部保留）
+        await self._stop_uvicorn_listener()
+
+        # 新端点探测：被占用则回退旧配置（旧监听已释放，探测结果可信）
+        try:
+            self._check_port_available(new_params["host"], new_params["port"])
+        except RuntimeError as e:
+            logger.error(str(e))
+            logger.warning(i18n.t("core.router.reload_keep_old", error="port in use"))
+            await self._launch_uvicorn(current)
+            return False
+
+        if not await self._launch_uvicorn(new_params):
+            # 新配置启动失败（启动窗口期端口被抢占等）→ 以旧配置恢复服务
+            logger.warning(i18n.t("core.router.reload_keep_old", error="startup failed"))
+            await self._launch_uvicorn(current)
+            return False
+
+        self._server_params = new_params
+        logger.info(i18n.t("core.router.reloaded", url=self._format_display_url(self.base_url)))
+        return True
 
     def _check_port_available(self, host: str, port: int) -> None:
         """

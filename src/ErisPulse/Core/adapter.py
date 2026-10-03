@@ -2700,6 +2700,73 @@ class AdapterManager(ManagerBase):
         result = {"adapters": adapters_summary}
         return _json_safe(result) if json_safe else result
 
+    def get_info(self, platform: str) -> dict[str, Any] | None:
+        """
+        获取适配器的注册信息（json-safe）
+
+        与 :meth:`get_meta` 的区别：本方法返回注册时的完整信息字典
+        （``meta`` + 来源描述），供 Dashboard 适配器详情、依赖诊断等
+        消费；meta 结构与 loader 注册时收集的一致（name / version /
+        description / author / license / package / min_sdk_version /
+        depends / optional_modules / top_level）。
+
+        **json-safe**：``adapter_class`` 以类名字符串返回（不暴露类对象），
+        其余值经 ``json_safe`` 净化，可直接 JSON 序列化。
+
+        :param platform: 平台名
+        :return: 注册信息字典；适配器未注册时返回 None
+
+        :example:
+        >>> info = adapter.get_info("onebot11")
+        >>> info["meta"]["version"]
+        """
+        info = self._adapter_info.get(platform)
+        if not isinstance(info, dict):
+            return None
+
+        from .config import json_safe as _json_safe
+
+        adapter_class = info.get("adapter_class")
+        result = {k: v for k, v in info.items() if k != "adapter_class"}
+        result["adapter_class"] = (
+            getattr(adapter_class, "__name__", None) if adapter_class is not None else None
+        )
+        return _json_safe(result)
+
+    def get_meta(self, platform: str, *, resolve_i18n: bool = True) -> dict[str, Any] | None:
+        """
+        获取适配器的介绍元信息（对齐 :meth:`ModuleManager.get_meta` 语义）
+
+        元信息是适配器的**通用介绍数据**，供 help、Dashboard 适配器列表、
+        适配器商店等各类界面 / 生态模块消费。来源为注册时传入的
+        ``info["meta"]``，缺失字段自动补全 ``name``。
+
+        **i18n 支持**：字段值可为纯字符串，或 i18n 字典
+        ``{"i18n": "key.path", "default": "兜底文本"}``（与配置 description
+        约定一致）。``resolve_i18n=True``（默认）时解析为当前语言文本；
+        ``False`` 时透传原始字典。
+
+        :param platform: 平台名
+        :param resolve_i18n: 是否解析 i18n 字典为当前语言文本（默认 True）
+        :return: 元信息字典；适配器未注册时返回 None
+
+        :example:
+        >>> meta = adapter.get_meta("onebot11")
+        >>> meta["description"]  # 当前语言下的适配器简介
+        """
+        info = self._adapter_info.get(platform)
+        if not isinstance(info, dict):
+            return None
+
+        meta: dict[str, Any] = dict(info.get("meta") or {})
+        meta.setdefault("name", platform)
+
+        if resolve_i18n:
+            from .module import ModuleManager
+
+            meta = {k: ModuleManager._resolve_meta_value(v) for k, v in meta.items()}
+        return meta
+
     # ==================== 工具方法 ====================
 
     def get(

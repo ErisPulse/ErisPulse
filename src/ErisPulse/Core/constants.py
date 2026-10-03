@@ -58,6 +58,9 @@ DEFAULT_SERVER_AUTO_START: Final[bool] = True
 # 路由服务器关闭时的超时时间（秒）。
 # 修改影响: Ctrl+C 后等待 uvicorn 关闭的耐心时间。超时后强制终止。
 SERVER_SHUTDOWN_TIMEOUT_SECS: Final[float] = 5.0
+# RouterManager.reload() 热重载时等待新 uvicorn 实例完成启动的超时上限；
+# 超时视为启动失败并回退旧配置（修改影响：过大延长失败感知，过小误判慢启动）
+ROUTER_RELOAD_STARTUP_TIMEOUT_SECS: Final[float] = 10.0
 
 # ==============================================================================
 # 配置键模板
@@ -1263,6 +1266,7 @@ __all__ = [
     "RETCODE_PERMISSION_DENIED",
     "RETCODE_SDK_FAILURE",
     "SERVER_SHUTDOWN_TIMEOUT_SECS",
+    "ROUTER_RELOAD_STARTUP_TIMEOUT_SECS",
     "SQLITE_JOURNAL_MODE",
     "SQLITE_SYNCHRONOUS_MODE",
     "STATUS_FAILED",

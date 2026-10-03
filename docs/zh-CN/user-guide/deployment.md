@@ -281,6 +281,21 @@ epsdk self-update
 epsdk upgrade
 ```
 
+### 运行时热重载服务器配置
+
+修改监听地址 / 端口 / SSL 证书后无需重启进程，在任意协程中调用 `router.reload()`：
+
+```python
+await sdk.router.reload(port=9000)                                # 换端口
+await sdk.router.reload(ssl_cert=new_pem, ssl_key=new_key)        # 热更换证书（证书续期场景）
+await sdk.router.reload(host="0.0.0.0", port=9000)                # 缺省参数沿用当前配置
+```
+
+- 复用同一 FastAPI 应用，模块注册的 HTTP / WebSocket / SSE 路由全部保留
+- 先验证新配置（证书可构建、端口可用）再切换；失败时以旧配置恢复服务并返回 `False`，
+  保证返回 `False` = 旧服务保持可用
+- 服务器未运行时返回 `False`（首次启动请使用 `sdk.router.start()`）
+
 ### 备份
 
 定期备份 `config/` 目录：

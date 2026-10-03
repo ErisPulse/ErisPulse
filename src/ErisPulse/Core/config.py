@@ -40,6 +40,31 @@ ConfigValue: TypeAlias = Any
 ConfigKey: TypeAlias = str
 
 
+class _DeletedValue:
+    """
+    ``delete()`` 在脏队列中的"待移除"标记
+
+    与 ``setConfig(key, None)`` 的置空不同，此标记表示键将从文件中删除。
+    脏队列的读路径会对值做深拷贝，标记必须在此过程中保持单例身份，
+    供 ``is`` 判别。
+
+    {!--< internal-use >!--}
+    {!--< /internal-use >!--}
+    """
+
+    def __deepcopy__(self, memo):
+        return self
+
+    def __copy__(self):
+        return self
+
+    def __repr__(self):
+        return "<DELETED>"
+
+
+_DELETED = _DeletedValue()
+
+
 class ConfigManager:
     def __init__(self, config_file: str = DEFAULT_CONFIG_FILE_PATH):
         """
@@ -292,6 +317,11 @@ class ConfigManager:
                 else:
                     found = False
                     break
+            if value is _DELETED:
+                # 待删除键：缓存中已不存在 → 删除已是既成事实，标记可丢弃
+                if not found:
+                    del self._dirty_keys[key]
+                continue
             if found and current == value:
                 del self._dirty_keys[key]
 
@@ -439,6 +469,52 @@ class ConfigManager:
         node[keys[-1]] = value
 
     @staticmethod
+    def _delete_doc_path(doc: Any, keys: list[str]) -> None:
+        """
+        在 tomlkit 文档树中按点分路径删除键
+
+        中间层缺失或非表时视为已删除（幂等）；仅触碰目标键所在行，
+        文件其余内容与注释保持不变。删除子表的最后一个键后，空表头
+        原样保留（与后续重设同名键的行为兼容）。
+
+        :param doc: tomlkit 文档/表对象
+        :param keys: 点分路径拆分后的键列表
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        node = doc
+        for k in keys[:-1]:
+            child = node.get(k)
+            if not isinstance(child, Table):
+                return
+            node = child
+        try:
+            del node[keys[-1]]
+        except KeyError:
+            pass
+
+    def _remove_cache_path(self, keys: list[str]) -> None:
+        """
+        从内存缓存中按点分路径移除键（delete 时的即时视图更新）
+
+        仅移除目标键本身，不裁剪因此变空的祖先表——与落盘后
+        ``_doc_to_plain_dict`` 的重建结果保持一致。
+
+        :param keys: 点分路径拆分后的键列表
+
+        {!--< internal-use >!--}
+        {!--< /internal-use >!--}
+        """
+        node = self._cache
+        for k in keys[:-1]:
+            if not isinstance(node, dict) or k not in node:
+                return
+            node = node[k]
+        if isinstance(node, dict):
+            node.pop(keys[-1], None)
+
+    @staticmethod
     def _doc_to_plain_dict(doc: Any) -> dict[str, Any]:
         """
         将 tomlkit 文档转为 plain dict 缓存
@@ -484,7 +560,10 @@ class ConfigManager:
                     # 语义同口径）；sorted 稳定排序保持同深度内的写入时序
                     pending = sorted(self._dirty_keys.items(), key=lambda kv: kv[0].count("."))
                     for key, value in pending:
-                        self._set_doc_path(doc, key.split("."), value)
+                        if value is _DELETED:
+                            self._delete_doc_path(doc, key.split("."))
+                        else:
+                            self._set_doc_path(doc, key.split("."), value)
 
                     # 原子写入：唯一临时文件 + fsync + os.replace（多实例/断电安全）
                     self._atomic_write_text(tomlkit.dumps(doc))
@@ -724,6 +803,9 @@ class ConfigManager:
             if key in self._dirty_keys:
                 value = self._dirty_keys[key]
                 overlay = self._dirty_overlay(keys)
+                if value is _DELETED:
+                    # 待删除键：视图为空，但后代待写值（删后重设）仍可见
+                    return copy.deepcopy(overlay) if overlay else default
                 if overlay:
                     if isinstance(value, dict):
                         return copy.deepcopy(self._deep_merge(value, overlay))
@@ -740,6 +822,9 @@ class ConfigManager:
                 ):
                     dirty_ancestor = (dirty_key, dirty_value)
             if dirty_ancestor is not None:
+                if dirty_ancestor[1] is _DELETED:
+                    # 查询键位于待删除子树内 → 视图已不存在
+                    return default
                 node = dirty_ancestor[1]
                 for rk in keys[len(dirty_ancestor[0].split(".")) :]:
                     if not isinstance(node, dict) or rk not in node:
@@ -788,6 +873,9 @@ class ConfigManager:
         prefix = ".".join(keys) + "."
         overlay: dict[str, Any] = {}
         for dirty_key, dirty_value in self._dirty_keys.items():
+            if dirty_value is _DELETED:
+                # 待删除键不进入叠加视图（其缓存条目已在 delete 时移除）
+                continue
             if not dirty_key.startswith(prefix):
                 continue
             node = overlay
@@ -862,6 +950,107 @@ class ConfigManager:
                 pass
             return False
 
+    def getAllConfig(self) -> dict[str, Any]:
+        """
+        返回全量配置快照（深拷贝）
+
+        替代直接读取私有 ``_cache``：返回值为隔离副本，调用方原地修改
+        不影响框架配置状态。视图口径与 :meth:`getConfig` 一致——缓存 +
+        待写队列按特异性排序重放（与 ``_flush_config`` 落盘结果严格一致，
+        延迟的 ``setConfig`` / ``delConfig`` 均已反映，删除的键不出现）。
+
+        :return: dict 全量配置快照
+
+        :example:
+        >>> config = sdk.config.getAllConfig()
+        >>> config["ErisPulse"]["server"]["port"]
+        """
+        with self._lock:
+            self._check_cache_validity()
+            snapshot = copy.deepcopy(self._cache)
+
+            # 按 flush 的特异性排序重放待写队列：路径浅者（整节/祖先）先
+            # 应用、深者（点分/后代）后应用，删除标记移除对应路径——
+            # 快照与落盘结果保持同一口径
+            pending = sorted(self._dirty_keys.items(), key=lambda kv: kv[0].count("."))
+            for key, value in pending:
+                keys = key.split(".")
+                if value is _DELETED:
+                    node = snapshot
+                    for k in keys[:-1]:
+                        if not isinstance(node, dict) or k not in node:
+                            break
+                        node = node[k]
+                    else:
+                        if isinstance(node, dict):
+                            node.pop(keys[-1], None)
+                    continue
+                node = snapshot
+                for k in keys[:-1]:
+                    child = node.get(k)
+                    if not isinstance(child, dict):
+                        child = {}
+                        node[k] = child
+                    node = child
+                node[keys[-1]] = copy.deepcopy(value)
+
+            return snapshot
+
+    def delConfig(self, key: str, *, immediate: bool = False) -> bool:
+        """
+        删除配置键（支持点分隔符路径），按 setConfig 同样的脏队列语义落盘
+
+        与 ``setConfig(key, None)`` 的"置空但键仍在"不同：delete 会把键
+        从配置文件中移除。存在性按当前读取视图判定（缓存 + 待写叠加，
+        与 :meth:`getConfig` 同口径——待写整节内的键、已删除的键均如实
+        判定）。落盘走 tomlkit 增量修改路径，文件其余内容与注释不受
+        影响；删除复用 ``config.set`` 事件广播（``new_value=None``），
+        现有监听方（如适配器的 ``on_config_update``）零改动即可感知。
+
+        :param key: str 配置键, 支持点分隔符如 "module.sub.key"
+        :param immediate: bool 是否立即写入磁盘 (默认: False, 延迟写入)
+        :return: bool 键是否存在（存在则已调度删除；不存在返回 False）
+
+        :example:
+        >>> sdk.config.delConfig("ErisPulse.modules.status.OldModule")
+        >>> sdk.config.delConfig("OneBot.deprecated_key", immediate=True)
+        """
+        missing = object()
+        try:
+            with self._lock:
+                old_value = self.getConfig(key, missing)
+                if old_value is missing:
+                    return False
+                self._dirty_keys[key] = _DELETED
+                self._remove_cache_path(key.split("."))
+
+                if immediate:
+                    self._flush_config()
+                else:
+                    self._schedule_write()
+
+            from .lifecycle import lifecycle
+            from .logger import logger
+
+            logger.trace(f"config.delete: key={key}")
+            lifecycle.emit_sync(
+                "config.set",
+                {
+                    "key": key,
+                    "old_value": old_value,
+                    "new_value": None,
+                },
+            )
+            return True
+        except Exception as e:
+            try:
+                from .logger import logger
+
+                logger.error(i18n.t("core.config.delete_failed", key=key, error=e))
+            except (ImportError, AttributeError):
+                pass
+            return False
+
     def force_save(self) -> None:
         """
         强制立即保存所有待写入的配置到磁盘
@@ -915,6 +1104,30 @@ class ConfigManager:
 
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, lambda: self.setConfig(key, value, immediate))
+
+    async def agetAllConfig(self) -> dict[str, Any]:
+        """
+        异步返回全量配置快照
+
+        :return: dict 全量配置快照（深拷贝）
+        """
+        import asyncio
+
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self.getAllConfig)
+
+    async def adelConfig(self, key: str, *, immediate: bool = False) -> bool:
+        """
+        异步删除配置键
+
+        :param key: str 配置键, 支持点分隔符
+        :param immediate: bool 是否立即写入磁盘
+        :return: bool 键是否存在（存在则已调度删除）
+        """
+        import asyncio
+
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, lambda: self.delConfig(key, immediate=immediate))
 
     def setConfigTemplate(self, key: str, toml_text: str, immediate: bool = True) -> bool:
         """

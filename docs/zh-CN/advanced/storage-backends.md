@@ -11,6 +11,7 @@ ErisPulse 内置三种异步原生存储后端，通过配置一键切换，**AP
 {!--< tips >!--}
 1. 异步是原生主接口（`aget/aset/atransaction/aExecute`），同步 API 为兼容层
 2. 框架自身的配置持久化、会话收件箱、对话检查点等全部走同一存储后端——切换后端即整体迁移
+3. `[mysql]` extra 已包含 `cryptography`——MySQL 8 默认的 `caching_sha2_password` 认证必需，缺失时连接池初始化会失败
 {!--< /tips >!--}
 
 ## 后端选择

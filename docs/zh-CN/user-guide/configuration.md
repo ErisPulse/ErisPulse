@@ -186,6 +186,34 @@ flowchart TD
 | 路由 | `config.updated` | `cors.*` / `security.*` 变更**仅告警**（需重启） |
 
 
+## 配置读取与删除 API
+
+### getAllConfig：全量配置快照
+
+替代直接读取私有 `_cache`（外部读私有属性不受版本兼容保护）：
+
+```python
+config = sdk.config.getAllConfig()     # 深拷贝快照，原地修改不影响框架状态
+config["ErisPulse"]["server"]["port"]
+```
+
+视图口径与 `getConfig` 一致：未落盘的 `setConfig` / `delete` 均已反映，
+与延迟刷盘后的文件内容严格一致。
+
+### delConfig：删除配置键
+
+`setConfig(key, None)` 只是置空、键仍保留在文件中；`delConfig` 会把键从文件中**移除**：
+
+```python
+sdk.config.delConfig("ErisPulse.modules.status.OldModule")            # 延迟写入
+sdk.config.delConfig("OneBot.deprecated_key", immediate=True)         # 立即落盘
+```
+
+- 支持点分路径；键不存在时返回 `False`
+- 落盘走注释保留路径，文件其余内容与顺序不受影响
+- 复用 `config.set` 事件广播（`new_value=None`）：适配器 / 模块的
+  `on_config_update` 等现有监听方零改动即可感知删除
+
 ## 完整配置示例
 
 ```toml

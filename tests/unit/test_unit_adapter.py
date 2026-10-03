@@ -3140,3 +3140,78 @@ class TestAdapterOnConditions:
         await asyncio.sleep(0.05)
 
         assert received == ["x"]
+
+
+class TestAdapterMetaAPI:
+    """适配器元信息公开读取 API（get_info / get_meta，对齐 module 侧语义）"""
+
+    META = {
+        "name": "onebot11",
+        "version": "1.2.0",
+        "description": {"i18n": "adapter.onebot11.description", "default": "OneBot11 适配器"},
+        "author": "ErisPulse",
+        "depends": [],
+    }
+
+    @pytest.fixture
+    def manager(self):
+        """创建带注册信息的适配器管理器实例"""
+        manager = AdapterManager()
+        manager._adapters.clear()
+        manager._started_instances.clear()
+        manager._adapter_info.clear()
+        manager._onebot_handlers.clear()
+        manager._raw_handlers.clear()
+        manager._onebot_middlewares.clear()
+
+        class FakeAdapter:
+            __name__ = "OneBot11Adapter"
+
+        manager._adapter_info["onebot11"] = {
+            "meta": dict(self.META),
+            "adapter_class": FakeAdapter,
+        }
+        return manager
+
+    def test_get_info_returns_json_safe_dict(self, manager):
+        """get_info 返回 json-safe 结构：adapter_class 以类名字符串返回"""
+
+        class Weird:
+            pass
+
+        manager._adapter_info["weird"] = {"meta": {"name": "weird"}, "adapter_class": Weird()}
+
+        info = manager.get_info("onebot11")
+        assert info["meta"]["version"] == "1.2.0"
+        assert info["adapter_class"] == "FakeAdapter"
+        # 任意对象经 json_safe 净化后可 JSON 序列化
+        import json
+
+        assert isinstance(json.dumps(manager.get_info("weird")), str)
+
+    def test_get_info_missing_platform_returns_none(self, manager):
+        """未注册平台返回 None"""
+        assert manager.get_info("nope") is None
+
+    def test_get_meta_resolves_i18n_by_default(self, manager):
+        """get_meta 默认解析 i18n 字典为兜底/当前语言文本"""
+        meta = manager.get_meta("onebot11")
+        assert meta["description"] == "OneBot11 适配器"
+        assert meta["name"] == "onebot11"
+
+    def test_get_meta_resolve_i18n_false_passthrough(self, manager):
+        """resolve_i18n=False 时透传原始 i18n 字典"""
+        meta = manager.get_meta("onebot11", resolve_i18n=False)
+        assert meta["description"] == {
+            "i18n": "adapter.onebot11.description",
+            "default": "OneBot11 适配器",
+        }
+
+    def test_get_meta_missing_platform_returns_none(self, manager):
+        """未注册平台返回 None"""
+        assert manager.get_meta("nope") is None
+
+    def test_get_meta_fills_name_default(self, manager):
+        """meta 缺 name 时以平台名补全"""
+        manager._adapter_info["bare"] = {"meta": {}}
+        assert manager.get_meta("bare")["name"] == "bare"

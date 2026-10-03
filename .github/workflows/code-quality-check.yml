@@ -309,7 +309,8 @@ jobs:
           uv python install 3.14t
           if uv run --python 3.14t --isolated python -c "import ErisPulse" 2>uv_314t_err.log; then
             echo "3.14t import smoke passed; running unit tests..."
-            uv run --python 3.14t --isolated pytest tests/unit -p no:cacheprovider -q --no-cov
+            # --isolated 环境只装运行依赖，不装任何依赖组/extras，测试依赖须经 --extra test 显式带入
+            uv run --python 3.14t --isolated --extra test pytest tests/unit -p no:cacheprovider -q --no-cov
           else
             echo "::warning::Python 3.14t smoke skipped: cp314t dependency wheels unavailable"
             cat uv_314t_err.log || true
@@ -329,7 +330,9 @@ jobs:
           enable-cache: true
 
       - name: Install dependencies
-        run: uv sync
+        # 全量 extras：存储后端驱动（aiomysql/asyncpg）为惰性可选导入，
+        # 缺装时 basedpyright 会对 Core/storage/* 误报 reportMissingImports
+        run: uv sync --all-extras
 
       - name: Run basedpyright type check
         # 正式门禁：src/ErisPulse 基线 0 error（Any/Unknown 豁免由

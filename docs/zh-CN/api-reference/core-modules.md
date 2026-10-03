@@ -97,6 +97,9 @@ TOML 格式的配置文件管理，支持点号分隔的键路径。
 | 方法 | 说明 |
 |------|------|
 | `getConfig(key, default)` | 读取配置，支持点号路径如 `"MyModule.subkey"` |
+| `getAllConfig()` | 全量配置快照（深拷贝，含未落盘的待写值视图） |
+| `adelConfig(key, immediate)` | 异步删除配置键 |
+| `delConfig(key, immediate=False)` | 删除配置键（区别于置空），从文件中移除；触发 `config.set` 事件（`new_value=None`） |
 | `setConfig(key, value, immediate=False)` | 写入配置。`immediate=True` 时立即保存到文件 |
 | `force_save()` | 强制将内存中的配置写入文件 |
 | `reload()` | 从文件重新加载配置 |
@@ -111,11 +114,15 @@ TOML 格式的配置文件管理，支持点号分隔的键路径。
 config = sdk.config.getConfig("MyModule", {})
 value = sdk.config.getConfig("MyModule.timeout", 30)
 
+snapshot = sdk.config.getAllConfig()          # 全量快照（深拷贝）
+sdk.config.delConfig("MyModule.deprecated")  # 删除键（延迟写入）
+
 sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
 > `setConfig` 默认采用延迟写入（每 5 秒批量保存），设置 `immediate=True` 可立即持久化到配置文件。配置变更会触发 `config.set` 生命周期事件。
+> `delete` 同样支持延迟写入与 `config.set` 事件（`new_value=None`），现有 `on_config_update` 监听方零改动即可感知删除。
 
 ## Logger 模块
 
@@ -211,6 +218,8 @@ sdk.logger.set_memory_limit(1000)
 | `is_running(platform)` | 检查适配器是否正在运行 |
 | `list_running()` | 列出所有正在运行的适配器 |
 | `platforms` | 获取所有平台名称列表 |
+| `get_info(platform)` | 适配器注册信息（json-safe：meta + 类名） |
+| `get_meta(platform, resolve_i18n=True)` | 适配器介绍元信息（对齐 `module.get_meta`，支持 i18n 解析） |
 
 ### 适配器事件
 

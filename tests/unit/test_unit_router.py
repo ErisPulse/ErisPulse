@@ -1164,3 +1164,163 @@ class TestInlinePemSsl:
         # 路径参数保留（向后兼容）
         assert "ssl_certfile" in sig.parameters
         assert "ssl_keyfile" in sig.parameters
+
+
+class TestRouterReload:
+    """reload() 热重载：参数缺省沿用、先验证后切换、失败保旧（False = 旧服务保持可用）"""
+
+    @pytest.fixture
+    def router_manager(self):
+        return RouterManager()
+
+    @staticmethod
+    def _make_running(manager, host="127.0.0.1", port=8000):
+        """构造"正在运行"的服务器状态"""
+        manager._server_params = {
+            "host": host,
+            "port": port,
+            "ssl_certfile": None,
+            "ssl_keyfile": None,
+            "ssl_cert": None,
+            "ssl_key": None,
+        }
+        manager._uvicorn_server = MagicMock()
+        manager._uvicorn_server.started = True
+        manager._server_task = asyncio.create_task(asyncio.sleep(3600))
+        manager.base_url = f"http://{host}:{port}"
+        return manager
+
+    @staticmethod
+    def _launch_recorder(manager, results):
+        """构造记录调用参数的 _launch_uvicorn 桩：results 依次弹出作为返回值
+
+        与真实实现同口径地更新 base_url（成功路径的副作用）"""
+        calls: list[dict] = []
+
+        async def fake_launch(params):
+            calls.append(dict(params))
+            ok = results.pop(0) if results else True
+            if ok:
+                scheme = "https" if (params.get("ssl_certfile") or params.get("ssl_cert")) else "http"
+                manager.base_url = f"{scheme}://{params['host']}:{params['port']}"
+            return ok
+
+        return fake_launch, calls
+
+    @pytest.mark.asyncio
+    async def test_reload_not_running_returns_false(self, router_manager):
+        """服务器未运行时 reload 不可用（应使用 start）"""
+        assert await router_manager.reload(port=9000) is False
+
+    @pytest.mark.asyncio
+    async def test_reload_invalid_inline_ssl_rejects_before_stop(self, router_manager):
+        """内联 PEM 无效：切换前回绝，旧服务完全未受影响"""
+        self._make_running(router_manager)
+        with patch.object(
+            router_manager, "_stop_uvicorn_listener", new=AsyncMock()
+        ) as stop_mock:
+            assert await router_manager.reload(ssl_cert="not-a-pem", ssl_key="not-a-key") is False
+        stop_mock.assert_not_awaited()
+        assert router_manager._uvicorn_server is not None
+        assert router_manager._server_params["port"] == 8000
+
+    @pytest.mark.asyncio
+    async def test_reload_port_busy_falls_back_to_old(self, router_manager):
+        """新端口被占用：以旧配置重新拉起服务并返回 False"""
+        self._make_running(router_manager, port=8000)
+        fake_launch, calls = self._launch_recorder(router_manager, [True])
+        stop_mock = AsyncMock()
+
+        def busy_probe(host, port):
+            raise RuntimeError("port busy")
+
+        with (
+            patch.object(router_manager, "_launch_uvicorn", side_effect=fake_launch),
+            patch.object(router_manager, "_check_port_available", side_effect=busy_probe),
+            patch.object(router_manager, "_stop_uvicorn_listener", new=stop_mock),
+        ):
+            assert await router_manager.reload(port=9999) is False
+
+        stop_mock.assert_awaited_once()  # 旧监听已先停止
+        assert router_manager._uvicorn_server is not None  # 旧配置已重新拉起
+        assert calls and calls[0]["port"] == 8000  # 回退参数为旧配置
+        assert router_manager.base_url == "http://127.0.0.1:8000"
+
+    @pytest.mark.asyncio
+    async def test_reload_launch_failure_restores_old(self, router_manager):
+        """新配置启动失败（启动窗口被抢占等）：以旧配置恢复服务"""
+        self._make_running(router_manager, port=8000)
+        fake_launch, calls = self._launch_recorder(router_manager, [False, True])
+
+        with (
+            patch.object(router_manager, "_stop_uvicorn_listener", new=AsyncMock()),
+            patch.object(router_manager, "_launch_uvicorn", side_effect=fake_launch),
+        ):
+            assert await router_manager.reload(port=9999) is False
+
+        assert [c["port"] for c in calls] == [9999, 8000]  # 新配置失败后回退旧配置
+
+    @pytest.mark.asyncio
+    async def test_reload_success_updates_params_and_base_url(self, router_manager):
+        """重载成功：参数记录与 base_url 同步更新"""
+        self._make_running(router_manager, host="127.0.0.1", port=8000)
+        fake_launch, calls = self._launch_recorder(router_manager, [True])
+
+        with (
+            patch.object(router_manager, "_stop_uvicorn_listener", new=AsyncMock()),
+            patch.object(router_manager, "_launch_uvicorn", side_effect=fake_launch),
+        ):
+            assert await router_manager.reload(port=9000) is True
+
+        assert router_manager._server_params["port"] == 9000
+        assert router_manager._server_params["host"] == "127.0.0.1"  # 未指定则沿用
+        assert router_manager.base_url == "http://127.0.0.1:9000"
+        assert calls == [
+            {
+                "host": "127.0.0.1",
+                "port": 9000,
+                "ssl_certfile": None,
+                "ssl_keyfile": None,
+                "ssl_cert": None,
+                "ssl_key": None,
+            }
+        ]
+
+    @pytest.mark.asyncio
+    async def test_reload_no_args_reuses_current_params(self, router_manager):
+        """无参调用：完全沿用当前生效配置"""
+        self._make_running(router_manager, host="0.0.0.0", port=8000)
+        fake_launch, calls = self._launch_recorder(router_manager, [True])
+
+        with (
+            patch.object(router_manager, "_stop_uvicorn_listener", new=AsyncMock()),
+            patch.object(router_manager, "_launch_uvicorn", side_effect=fake_launch),
+        ):
+            assert await router_manager.reload() is True
+
+        assert calls[0]["host"] == "0.0.0.0"
+        assert calls[0]["port"] == 8000
+
+    @pytest.mark.asyncio
+    async def test_reload_with_mocked_uvicorn_end_to_end(self, router_manager):
+        """uvicorn mock 全链路：旧监听退出 → 新实例构建并进入监听状态"""
+        self._make_running(router_manager)
+        old_server = router_manager._uvicorn_server
+
+        new_server = MagicMock()
+        new_server.started = True
+        new_server._serve = AsyncMock(return_value=None)
+
+        def make_server(_config):
+            return new_server
+
+        with (
+            patch.object(router_module.uvicorn, "Server", side_effect=make_server),
+            patch.object(router_module.uvicorn, "Config", return_value=MagicMock()),
+        ):
+            assert await router_manager.reload(port=9001) is True
+
+        assert old_server.should_exit is True
+        assert router_manager._uvicorn_server is new_server
+        assert router_manager._server_params["port"] == 9001
+        assert router_manager.base_url == "http://127.0.0.1:9001"

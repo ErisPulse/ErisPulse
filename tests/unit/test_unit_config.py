@@ -1848,3 +1848,160 @@ class TestSectionAndDottedDirtyConsistency:
         assert mgr._dirty_keys["a.b"] == {"c": {"d": 1}}
         mgr.force_save()
         assert self._read_disk(mgr)["a"] == {"b": {"c": {"d": 1}}}
+
+
+class TestGetAllConfigAndDelConfig:
+    """公开 getAllConfig（全量快照）与 delConfig（键删除）API
+
+    get_all 替代外部读私有 _cache：深拷贝 + 脏叠加视图（与 getConfig 口径
+    一致）；delete 将键从文件中移除（区别于 setConfig(key, None) 的置空），
+    走 tomlkit 增量路径保留注释，复用 config.set 事件广播（new_value=None）。
+    """
+
+    @pytest.fixture
+    def mgr(self, tmp_path):
+        cfg_file = tmp_path / "config.toml"
+        cfg_file.write_text("", encoding="utf-8")
+        manager = ConfigManager(config_file=str(cfg_file))
+        manager._dirty_keys.clear()
+        yield manager
+        if manager._write_timer:
+            manager._write_timer.cancel()
+        manager._watcher_stop.set()
+
+    @staticmethod
+    def _read_disk_text(manager) -> str:
+        with open(manager.CONFIG_FILE, encoding="utf-8") as f:
+            return f.read()
+
+    # ==================== get_all ====================
+
+    def test_get_all_returns_deep_copy(self, mgr):
+        """快照为隔离副本：原地修改返回值不影响框架配置状态"""
+        mgr.setConfig("app", {"name": "demo", "opts": {"a": 1}})
+        mgr.force_save()
+
+        snapshot = mgr.getAllConfig()
+        snapshot["app"]["name"] = "hacked"
+        snapshot["app"]["opts"]["a"] = 999
+        snapshot["injected"] = True
+
+        assert mgr.getConfig("app.name") == "demo"
+        assert mgr.getConfig("app.opts.a") == 1
+        assert "injected" not in mgr.getAllConfig()
+
+    def test_get_all_reflects_pending_writes(self, mgr):
+        """延迟写未落盘时，快照与 getConfig 视图一致（脏叠加）"""
+        mgr.setConfig("pending.section", {"x": 1})
+        mgr.setConfig("pending.leaf", "v")
+
+        assert mgr.getAllConfig()["pending"] == mgr.getConfig("pending")
+        assert mgr.getAllConfig()["pending"]["leaf"] == "v"
+
+    def test_get_all_excludes_deleted_keys(self, mgr):
+        """已 delete 的键（未落盘）不出现在快照中"""
+        mgr.setConfig("mod.status", {"Old": False, "Keep": True})
+        mgr.delConfig("mod.status.Old")
+
+        assert "Old" not in mgr.getAllConfig()["mod"]["status"]
+        assert mgr.getAllConfig()["mod"]["status"]["Keep"] is True
+
+    # ==================== delete ====================
+
+    def test_delete_existing_key_immediate_removes_from_disk(self, mgr):
+        """immediate 删除：键从文件中移除，getConfig 返回 None"""
+        mgr.setConfig("OneBot.deprecated", "x")
+        mgr.force_save()
+        assert mgr.getConfig("OneBot.deprecated") == "x"
+
+        assert mgr.delConfig("OneBot.deprecated", immediate=True) is True
+
+        assert mgr.getConfig("OneBot.deprecated") is None
+        assert "deprecated" not in self._read_disk_text(mgr)
+
+    def test_delete_missing_key_returns_false(self, mgr):
+        """不存在的键返回 False 且不产生脏队列"""
+        assert mgr.delConfig("no.such.key") is False
+        assert "no.such.key" not in mgr._dirty_keys
+
+    def test_deferred_delete_visible_in_view_before_flush(self, mgr):
+        """延迟删除：落盘前读取视图已不见该键；flush 后文件中移除"""
+        mgr.setConfig("ErisPulse.modules.status", {"Old": False})
+        mgr.force_save()
+
+        assert mgr.delConfig("ErisPulse.modules.status.Old") is True
+        assert mgr.getConfig("ErisPulse.modules.status.Old") is None
+        assert "Old" in self._read_disk_text(mgr)  # 尚未落盘
+
+        mgr.force_save()
+        assert "Old" not in self._read_disk_text(mgr)
+        assert mgr.getConfig("ErisPulse.modules.status") == {}
+
+    def test_delete_emits_config_set_event_with_none(self, mgr):
+        """删除复用 config.set 事件广播（new_value=None），监听方零改动"""
+        from ErisPulse.Core.lifecycle import lifecycle
+
+        mgr.setConfig("mod.key", "v1")
+        mgr.force_save()
+
+        received = []
+
+        def listener(data):
+            received.append(data)
+
+        lifecycle.register("config.set", listener)
+        try:
+            assert mgr.delConfig("mod.key", immediate=True) is True
+        finally:
+            lifecycle.unregister("config.set", listener)
+
+        assert len(received) == 1
+        assert received[0]["key"] == "mod.key"
+        assert received[0]["old_value"] == "v1"
+        assert received[0]["new_value"] is None
+
+    def test_delete_preserves_comments_and_sibling_keys(self, mgr):
+        """删除仅触碰目标键所在行：其余键与既有注释原样保留"""
+        mgr.setConfig("test", {"key": "value", "gone": 1, "other": True})
+        mgr.force_save()
+
+        assert mgr.delConfig("test.gone", immediate=True) is True
+
+        text = self._read_disk_text(mgr)
+        assert 'key = "value"' in text
+        assert "other = true" in text
+        assert "gone" not in text
+
+    def test_delete_then_reset_same_key(self, mgr):
+        """删除后重设同名键：flush 后以新值落盘"""
+        mgr.setConfig("mod.flag", True)
+        mgr.force_save()
+
+        assert mgr.delConfig("mod.flag", immediate=True) is True
+        mgr.setConfig("mod.flag", "reborn")
+        mgr.force_save()
+
+        assert mgr.getConfig("mod.flag") == "reborn"
+        assert 'flag = "reborn"' in self._read_disk_text(mgr)
+
+    def test_delete_pending_ancestor_descendant_view(self, mgr):
+        """删除待写祖先时：后代视图为空，删后重设的后代待写值可见"""
+        mgr.setConfig("a.b", 1)
+        mgr.force_save()
+
+        assert mgr.delConfig("a") is True
+        assert mgr.getConfig("a.b") is None  # 位于待删除子树内
+
+        mgr.setConfig("a.b", 2)  # 删后重设后代
+        assert mgr.getConfig("a.b") == 2
+
+        mgr.force_save()
+        assert mgr.getConfig("a") == {"b": 2}
+
+    def test_double_delete_returns_false(self, mgr):
+        """重复删除同一键：第二次返回 False（视图中已不存在）"""
+        mgr.setConfig("k.v", 1)
+        mgr.force_save()
+
+        assert mgr.delConfig("k.v") is True
+        assert mgr.delConfig("k.v") is False

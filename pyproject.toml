@@ -84,6 +84,8 @@ Changelog = "https://github.com/ErisPulse/ErisPulse/blob/main/CHANGELOG.md"
 # 存储后端可选驱动：pip install ErisPulse[mysql] / ErisPulse[postgres]
 mysql = [
     "aiomysql>=0.2.0",
+    # MySQL 8 默认 caching_sha2_password 认证要求（缺失时连接池初始化失败）
+    "cryptography>=41.0.0",
 ]
 postgres = [
     "asyncpg>=0.29.0",

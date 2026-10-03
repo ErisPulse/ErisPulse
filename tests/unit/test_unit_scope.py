@@ -7,6 +7,7 @@
 
 import asyncio
 import importlib
+import time
 from unittest.mock import patch
 
 import pytest
@@ -16,6 +17,19 @@ from ErisPulse.Core.scope import ScopeManager
 # importlib.import_module 返回真实子模块（Core.scope / Core.config 包属性被单例遮蔽）
 scope_module = importlib.import_module("ErisPulse.Core.scope")
 config_module = importlib.import_module("ErisPulse.Core.config")
+
+
+async def wait_until(predicate, timeout: float = 5.0, interval: float = 0.01) -> bool:
+    """
+    有界等待异步条件成立（替代固定 sleep——CI 高负载下 50ms 不足以完成
+    含存储同步桥接的分发链路，会产生偶发失败）
+    """
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if predicate():
+            return True
+        await asyncio.sleep(interval)
+    return predicate()
 
 
 @pytest.fixture(scope="module")
@@ -613,10 +627,9 @@ class TestScopeSessionDispatch:
 
             # 群 g1：ModuleA 被会话级白名单排除 → 不触发
             await adapter.emit(_make_msg("hi", group_id="g1"))
-            await asyncio.sleep(0.05)
             # 群 g2：无会话绑定 → 回退允许全部 → 触发
             await adapter.emit(_make_msg("hi", group_id="g2"))
-            await asyncio.sleep(0.05)
+            assert await wait_until(lambda: len(received) >= 1)
 
         assert received == ["A"]  # 仅 g2 触发
 
@@ -644,9 +657,8 @@ class TestScopeSessionDispatch:
 
             with patch.object(config_module.config, "getConfig", return_value="/"):
                 await adapter.emit(_make_msg("/alpha", group_id="g1"))
-                await asyncio.sleep(0.05)
                 await adapter.emit(_make_msg("/alpha", group_id="g2"))
-                await asyncio.sleep(0.05)
+                assert await wait_until(lambda: len(received) >= 1)
 
         assert received == ["A"]  # 仅 g2 触发
 
