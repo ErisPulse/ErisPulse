@@ -594,7 +594,7 @@ class PromptGenerator:
         for spec in PROMPT_SPECS:
             content = self._generate(spec)
             self._write_prompt(spec.filename, content)
-            Logger.progress(spec.filename, "gen", f"{len(content):,} 字符")
+            Logger.log(f"  [GEN] {spec.filename}  {len(content):,} 字符")
 
     # ---- 核心生成逻辑 ----
 
@@ -683,7 +683,7 @@ class PromptGenerator:
         full_path = self.actual_docs_dir / rel_path
         if not full_path.exists():
             if self.verbose:
-                Logger.progress(rel_path, "miss", "文件不存在")
+                Logger.log(f"  [MISS] {rel_path}  文件不存在")
             return ""
         content = full_path.read_text(encoding="utf-8")
         return self._strip_nav_sections(content)

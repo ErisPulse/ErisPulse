@@ -124,9 +124,9 @@ class TypeStubGenerator:
             try:
                 pyi_file.unlink()
                 self.cleaned_files.add(pyi_file)
-                Logger.progress(rel, "clean")
+                Logger.log(f"  [CLEAN] {rel}")
             except Exception as e:
-                Logger.progress(rel, "fail", str(e))
+                Logger.log(f"  [FAIL] {rel}  {e}")
 
         # 清理缓存
         cache_files = list(self.cache_dir.rglob("*.hash"))
@@ -157,7 +157,7 @@ class TypeStubGenerator:
                 processed += 1
             except Exception as e:
                 rel = str(py_file.relative_to(self.src_dir)).replace("\\", "/")
-                Logger.progress(rel, "fail", str(e))
+                Logger.log(f"  [FAIL] {rel}  {e}")
 
         return {
             "total": total,
@@ -196,7 +196,7 @@ class TypeStubGenerator:
                     cached_hash = f.read().strip()
                     if cached_hash == content_hash and stub_path.exists():
                         self.skipped_files.add(stub_path)
-                        Logger.progress(rel_str, "skip")
+                        Logger.log(f"  [SKIP] {rel_str}")
                         return
 
         # 读取并解析源文件
@@ -206,7 +206,7 @@ class TypeStubGenerator:
         try:
             tree = ast.parse(source)
         except SyntaxError as e:
-            Logger.progress(rel_str, "fail", f"语法错误: {e}")
+            Logger.log(f"  [FAIL] {rel_str}  语法错误: {e}")
             return
 
         # 生成类型存根内容
@@ -223,9 +223,9 @@ class TypeStubGenerator:
             f.write(content_hash)
 
         self.generated_files.add(stub_path)
-        Logger.progress(rel_str, "gen")
+        Logger.log(f"  [GEN] {rel_str}")
 
-    def _generate_stub_content(self, tree: ast.AST, source_file: Path) -> str:
+    def _generate_stub_content(self, tree: ast.Module, source_file: Path) -> str:
         """
         生成类型存根文件内容
 
@@ -349,7 +349,7 @@ class TypeStubGenerator:
         import re as _re
 
         result: list[str] = []
-        src_dir = source_file.parent if source_file else None
+        src_dir = source_file.parent
 
         for line in lines:
             stripped = line.strip()
@@ -433,7 +433,7 @@ class TypeStubGenerator:
 
         return "Any"
 
-    def _extract_imports(self, tree: ast.AST) -> list[str]:
+    def _extract_imports(self, tree: ast.Module) -> list[str]:
         """
         提取所有导入语句（顶层导入和 TYPE_CHECKING 块中的导入）
 
@@ -443,7 +443,7 @@ class TypeStubGenerator:
         imports = []
         seen_imports = set()
 
-        def _process_import_node(node):
+        def _process_import_node(node: ast.Import | ast.ImportFrom):
             """
             处理单个导入节点
 
@@ -571,7 +571,7 @@ class TypeStubGenerator:
 
         return decorator_lines
 
-    def _generate_method_def(self, node: ast.FunctionDef) -> str:
+    def _generate_method_def(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> str:
         """
         生成方法定义
 
@@ -611,7 +611,7 @@ class TypeStubGenerator:
 
         return '\n'.join(result_lines)
 
-    def _generate_function_def(self, node: ast.FunctionDef) -> str:
+    def _generate_function_def(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> str:
         """
         生成函数定义
 
@@ -650,7 +650,7 @@ class TypeStubGenerator:
 
         return '\n'.join(result_lines)
 
-    def _generate_params(self, node: ast.FunctionDef) -> str:
+    def _generate_params(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> str:
         """
         生成参数列表字符串
 
@@ -707,7 +707,7 @@ class TypeStubGenerator:
 
         return f"({', '.join(params)})"
 
-    def _generate_param(self, arg: ast.arg, node: ast.FunctionDef,
+    def _generate_param(self, arg: ast.arg, node: ast.FunctionDef | ast.AsyncFunctionDef,
                         is_vararg: bool = False, is_kwarg: bool = False) -> str:
         """
         生成单个参数声明
@@ -797,7 +797,7 @@ class TypeStubGenerator:
             elts = [self._get_annotation(elt) for elt in annotation.elts]
             return f"[{', '.join(elts)}]"
         if isinstance(annotation, ast.Dict):
-            keys = [self._get_annotation(k) for k in annotation.keys]
+            keys = [self._get_annotation(k) for k in annotation.keys if k is not None]
             values = [self._get_annotation(v) for v in annotation.values]
             kv_pairs = [f"{k}: {v}" for k, v in zip(keys, values)]
             return f"{{{', '.join(kv_pairs)}}}"
@@ -833,7 +833,7 @@ class TypeStubGenerator:
             return self._get_attribute_name(target)
         return "..."
 
-    def _should_ignore(self, node: ast.AST) -> bool:
+    def _should_ignore(self, node: ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
         """
         检查是否应该忽略此节点
 
