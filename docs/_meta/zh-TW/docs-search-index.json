@@ -3880,172 +3880,172 @@
         "title": "Windows PowerShell 執行策略"
       }
     ],
-    "[BUG-001] 事件处理器重复注册导致事件被多次处理": [
+    "[BUG-001] 事件處理器重複註冊導致事件被多次處理": [
       {
         "document": "bug-tracker.md",
         "line": 118,
         "level": 3,
-        "title": "[BUG-001] 事件处理器重复注册导致事件被多次处理"
+        "title": "[BUG-001] 事件處理器重複註冊導致事件被多次處理"
       }
     ],
-    "[BUG-002] Init 命令适配器配置路径类型错误": [
+    "[BUG-002] Init 命令適配器配置路徑類型錯誤": [
       {
         "document": "bug-tracker.md",
         "line": 138,
         "level": 3,
-        "title": "[BUG-002] Init 命令适配器配置路径类型错误"
+        "title": "[BUG-002] Init 命令適配器配置路徑類型錯誤"
       }
     ],
-    "[BUG-003] 重启后命令事件失效": [
+    "[BUG-003] 重啟後命令事件失效": [
       {
         "document": "bug-tracker.md",
         "line": 162,
         "level": 3,
-        "title": "[BUG-003] 重启后命令事件失效"
+        "title": "[BUG-003] 重啟後命令事件失效"
       }
     ],
-    "[BUG-004] 生命周期事件处理器未清理": [
+    "[BUG-004] 生命週期事件處理器未清理": [
       {
         "document": "bug-tracker.md",
         "line": 182,
         "level": 3,
-        "title": "[BUG-004] 生命周期事件处理器未清理"
+        "title": "[BUG-004] 生命週期事件處理器未清理"
       }
     ],
-    "[BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 与 OB12 标准不一致": [
+    "[BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致": [
       {
         "document": "bug-tracker.md",
         "line": 202,
         "level": 3,
-        "title": "[BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 与 OB12 标准不一致"
+        "title": "[BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致"
       }
     ],
-    "[BUG-006] adapter.clear() 未清理 _started_instances 导致重启后状态不正确": [
+    "[BUG-006] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確": [
       {
         "document": "bug-tracker.md",
         "line": 222,
         "level": 3,
-        "title": "[BUG-006] adapter.clear() 未清理 _started_instances 导致重启后状态不正确"
+        "title": "[BUG-006] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確"
       }
     ],
-    "[BUG-007] command.wait_reply() 使用已弃用的 asyncio.get_event_loop()": [
+    "[BUG-007] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()": [
       {
         "document": "bug-tracker.md",
         "line": 242,
         "level": 3,
-        "title": "[BUG-007] command.wait_reply() 使用已弃用的 asyncio.get_event_loop()"
+        "title": "[BUG-007] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()"
       }
     ],
-    "[BUG-008] Bot 离线事件在 shutdown 过程中被重复提交": [
+    "[BUG-008] Bot 離線事件在 shutdown 過程中被重複提交": [
       {
         "document": "bug-tracker.md",
         "line": 262,
         "level": 3,
-        "title": "[BUG-008] Bot 离线事件在 shutdown 过程中被重复提交"
+        "title": "[BUG-008] Bot 離線事件在 shutdown 過程中被重複提交"
       }
     ],
-    "[BUG-009] LazyModule 同步访问 BaseModule 导致未初始化完成": [
+    "[BUG-009] LazyModule 同步訪問 BaseModule 導致未初始化完成": [
       {
         "document": "bug-tracker.md",
         "line": 282,
         "level": 3,
-        "title": "[BUG-009] LazyModule 同步访问 BaseModule 导致未初始化完成"
+        "title": "[BUG-009] LazyModule 同步訪問 BaseModule 導致未初始化完成"
       }
     ],
-    "[BUG-010] 配置系统多线程写入导致数据丢失": [
+    "[BUG-010] 配置系統多線程寫入導致數據丟失": [
       {
         "document": "bug-tracker.md",
         "line": 302,
         "level": 3,
-        "title": "[BUG-010] 配置系统多线程写入导致数据丢失"
+        "title": "[BUG-010] 配置系統多線程寫入導致數據丟失"
       }
     ],
-    "[BUG-011] Windows 下 CTRL+C 无法停止程序": [
+    "[BUG-011] Windows 下 CTRL+C 無法停止程序": [
       {
         "document": "bug-tracker.md",
         "line": 325,
         "level": 3,
-        "title": "[BUG-011] Windows 下 CTRL+C 无法停止程序"
+        "title": "[BUG-011] Windows 下 CTRL+C 無法停止程序"
       }
     ],
-    "[BUG-012] 热重启后已更新模块的 Python 代码未生效": [
+    "[BUG-012] 熱重啟後已更新模組的 Python 代碼未生效": [
       {
         "document": "bug-tracker.md",
         "line": 349,
         "level": 3,
-        "title": "[BUG-012] 热重启后已更新模块的 Python 代码未生效"
+        "title": "[BUG-012] 熱重啟後已更新模組的 Python 代碼未生效"
       }
     ],
-    "[BUG-013] 模块加载策略排序逻辑错误": [
+    "[BUG-013] 模組加載策略排序邏輯錯誤": [
       {
         "document": "bug-tracker.md",
         "line": 369,
         "level": 3,
-        "title": "[BUG-013] 模块加载策略排序逻辑错误"
+        "title": "[BUG-013] 模組加載策略排序邏輯錯誤"
       }
     ],
-    "[BUG-014] 适配器中间件返回 None 导致事件数据丢失": [
+    "[BUG-014] 適配器中間件返回 None 導致事件數據丟失": [
       {
         "document": "bug-tracker.md",
         "line": 389,
         "level": 3,
-        "title": "[BUG-014] 适配器中间件返回 None 导致事件数据丢失"
+        "title": "[BUG-014] 適配器中間件返回 None 導致事件數據丟失"
       }
     ],
-    "[BUG-015] 配置文件路径依赖工作目录": [
+    "[BUG-015] 配置文件路徑依賴工作目錄": [
       {
         "document": "bug-tracker.md",
         "line": 409,
         "level": 3,
-        "title": "[BUG-015] 配置文件路径依赖工作目录"
+        "title": "[BUG-015] 配置文件路徑依賴工作目錄"
       }
     ],
-    "[BUG-016] BaseStorage 将存储值 None 与键不存在混淆": [
+    "[BUG-016] BaseStorage 將存儲值 None 與鍵不存在混淆": [
       {
         "document": "bug-tracker.md",
         "line": 429,
         "level": 3,
-        "title": "[BUG-016] BaseStorage 将存储值 None 与键不存在混淆"
+        "title": "[BUG-016] BaseStorage 將存儲值 None 與鍵不存在混淆"
       }
     ],
-    "[BUG-017] WebSocket 路由 auto_accept 标志在服务重启后丢失": [
+    "[BUG-017] WebSocket 路由 auto_accept 標誌在服務重啟後丟失": [
       {
         "document": "bug-tracker.md",
         "line": 449,
         "level": 3,
-        "title": "[BUG-017] WebSocket 路由 auto_accept 标志在服务重启后丢失"
+        "title": "[BUG-017] WebSocket 路由 auto_accept 標誌在服務重啟後丟失"
       }
     ],
-    "[BUG-018] HTTP/WS 客户端并发调用导致崩溃与连接泄漏": [
+    "[BUG-018] HTTP/WS 客戶端併發調用導致崩潰與連接泄漏": [
       {
         "document": "bug-tracker.md",
         "line": 469,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS 客户端并发调用导致崩溃与连接泄漏"
+        "title": "[BUG-018] HTTP/WS 客戶端併發調用導致崩潰與連接泄漏"
       }
     ],
-    "[BUG-019] 适配器热重载时路由冲突导致重载失败": [
+    "[BUG-019] 適配器熱重載時路由衝突導致重載失敗": [
       {
         "document": "bug-tracker.md",
         "line": 497,
         "level": 3,
-        "title": "[BUG-019] 适配器热重载时路由冲突导致重载失败"
+        "title": "[BUG-019] 適配器熱重載時路由衝突導致重載失敗"
       }
     ],
-    "[BUG-020] 子进程模式 `ep run <script>` 找不到脚本所在目录的子包": [
+    "[BUG-020] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子包": [
       {
         "document": "bug-tracker.md",
         "line": 521,
         "level": 3,
-        "title": "[BUG-020] 子进程模式 `ep run <script>` 找不到脚本所在目录的子包"
+        "title": "[BUG-020] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子包"
       }
     ],
-    "[BUG-021] SQL 查询构建器拒绝合法通配符和列表达式": [
+    "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式": [
       {
         "document": "bug-tracker.md",
         "line": 541,
         "level": 3,
-        "title": "[BUG-021] SQL 查询构建器拒绝合法通配符和列表达式"
+        "title": "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式"
       }
     ],
     "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）": [
@@ -4056,68 +4056,68 @@
         "title": "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）"
       }
     ],
-    "[BUG-023] 修改账户配置后适配器缓存未刷新导致账户解析失败": [
+    "[BUG-023] 修改賬戶配置後適配器緩存未刷新導致賬戶解析失敗": [
       {
         "document": "bug-tracker.md",
         "line": 610,
         "level": 3,
-        "title": "[BUG-023] 修改账户配置后适配器缓存未刷新导致账户解析失败"
+        "title": "[BUG-023] 修改賬戶配置後適配器緩存未刷新導致賬戶解析失敗"
       }
     ],
-    "[BUG-024] storage.set() 写入大数字 ID 键时触发 OOM Kill": [
+    "[BUG-024] storage.set() 寫入大數字 ID 鍵時觸發 OOM Kill": [
       {
         "document": "bug-tracker.md",
         "line": 630,
         "level": 3,
-        "title": "[BUG-024] storage.set() 写入大数字 ID 键时触发 OOM Kill"
+        "title": "[BUG-024] storage.set() 寫入大數字 ID 鍵時觸發 OOM Kill"
       }
     ],
-    "[BUG-025] on_config_update 回调未被核心路由": [
+    "[BUG-025] on_config_update 回調未被核心路由": [
       {
         "document": "bug-tracker.md",
         "line": 676,
         "level": 3,
-        "title": "[BUG-025] on_config_update 回调未被核心路由"
+        "title": "[BUG-025] on_config_update 回調未被核心路由"
       }
     ],
-    "[BUG-026] notice/request 事件 reply 目标推断错误": [
+    "[BUG-026] notice/request 事件 reply 目標推斷錯誤": [
       {
         "document": "bug-tracker.md",
         "line": 706,
         "level": 3,
-        "title": "[BUG-026] notice/request 事件 reply 目标推断错误"
+        "title": "[BUG-026] notice/request 事件 reply 目標推斷錯誤"
       }
     ],
-    "[BUG-027] 路由限流清理任务使用固定窗口导致长窗口限流规则失效": [
+    "[BUG-027] 路由限流清理任務使用固定窗口導致長窗口限流規則失效": [
       {
         "document": "bug-tracker.md",
         "line": 737,
         "level": 3,
-        "title": "[BUG-027] 路由限流清理任务使用固定窗口导致长窗口限流规则失效"
+        "title": "[BUG-027] 路由限流清理任務使用固定窗口導致長窗口限流規則失效"
       }
     ],
-    "[BUG-029] 配置监听任务广播半成品 TOML 并静默吞掉异常": [
+    "[BUG-029] 配置監聽任務廣播半成品 TOML 並靜默吞掉異常": [
       {
         "document": "bug-tracker.md",
         "line": 769,
         "level": 3,
-        "title": "[BUG-029] 配置监听任务广播半成品 TOML 并静默吞掉异常"
+        "title": "[BUG-029] 配置監聽任務廣播半成品 TOML 並靜默吞掉異常"
       }
     ],
-    "[BUG-030] 配置 watcher 竞态导致 setConfig 延迟写入静默丢数据": [
+    "[BUG-030] 配置 watcher 競態導致 setConfig 延遲寫入靜默丟數據": [
       {
         "document": "bug-tracker.md",
         "line": 805,
         "level": 3,
-        "title": "[BUG-030] 配置 watcher 竞态导致 setConfig 延迟写入静默丢数据"
+        "title": "[BUG-030] 配置 watcher 競態導致 setConfig 延遲寫入靜默丟數據"
       }
     ],
-    "[BUG-032] 配置延迟刷盘期间「写后立读」读到旧值": [
+    "[BUG-032] 配置延遲刷盤期間「寫後立讀」讀到舊值": [
       {
         "document": "bug-tracker.md",
         "line": 841,
         "level": 3,
-        "title": "[BUG-032] 配置延迟刷盘期间「写后立读」读到旧值"
+        "title": "[BUG-032] 配置延遲刷盤期間「寫後立讀」讀到舊值"
       }
     ],
     "[BUG-033] wait_reply 挂起的回复被高优先级处理器饿死": [
@@ -4152,28 +4152,28 @@
         "title": "[BUG-036] 多实例共享配置目录时配置写入偶发失败（ENOENT）"
       }
     ],
-    "[BUG-037] 空格子命令名註冊後永遠無法被觸發": [
+    "[BUG-037] 空格子命令名注册后永远无法被触发": [
       {
         "document": "bug-tracker.md",
         "line": 949,
         "level": 3,
-        "title": "[BUG-037] 空格子命令名註冊後永遠無法被觸發"
+        "title": "[BUG-037] 空格子命令名注册后永远无法被触发"
       }
     ],
-    "[BUG-038] persist=False 運行時綁定被持久化寫入順帶落盤，模組卸載後從磁盤\"復活\"": [
+    "[BUG-038] persist=False 运行时绑定被持久化写入顺带落盘，模块卸载后从磁盘\"复活\"": [
       {
         "document": "bug-tracker.md",
         "line": 973,
         "level": 3,
-        "title": "[BUG-038] persist=False 運行時綁定被持久化寫入順帶落盤，模組卸載後從磁盤\"復活\""
+        "title": "[BUG-038] persist=False 运行时绑定被持久化写入顺带落盘，模块卸载后从磁盘\"复活\""
       }
     ],
-    "[BUG-039] 整節寫與點分寫並存時讀寫不一致（點分覆寫丟失）": [
+    "[BUG-039] 整节写与点分写并存时读写不一致（点分覆写丢失）": [
       {
         "document": "bug-tracker.md",
         "line": 997,
         "level": 3,
-        "title": "[BUG-039] 整節寫與點分寫並存時讀寫不一致（點分覆寫丟失）"
+        "title": "[BUG-039] 整节写与点分写并存时读写不一致（点分覆写丢失）"
       }
     ],
     "__init__.py": [
@@ -8350,12 +8350,12 @@
         "title": "工具模組：托管别人东西时要接住\"卸载通知\""
       }
     ],
-    "已修复的 Bug": [
+    "已修復的 Bug": [
       {
         "document": "bug-tracker.md",
         "line": 116,
         "level": 2,
-        "title": "已修复的 Bug"
+        "title": "已修復的 Bug"
       }
     ],
     "已對接平台功能清單": [

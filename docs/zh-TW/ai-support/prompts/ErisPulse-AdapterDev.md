@@ -6273,8 +6273,8 @@ async def test_daily(make_testbot):
 
 ```python
 trace = await bot.dispatch(event)          # 分發並等待處理器落地，返回決策鏈
-await bot.dispatch(event, drain=False)     # 交互首訊息：不等待（wait_reply 處理器長駐）
-await bot.send_message("你好")             # 訊息分發快捷方式
+await bot.dispatch(event, drain=False)     # 互動首消息：不等待（wait_reply 處理器長駐）
+await bot.send_message("你好")             # 消息分發快捷方式
 await bot.reply_as("18", user_id="u1")     # 模擬 wait_reply 用戶回覆（自動等 waiter 就緒）
 ```
 
@@ -6294,7 +6294,7 @@ bot.assert_reply_contains("簽到成功")       # 存在包含指定文本的出
 await bot.wait_for_reply(timeout=2)        # 等待異步回覆出現
 ```
 
-`SentMessage` 字段：`text`（首個 text 段）、`segments`（完整訊息段）、
+`SentMessage` 字段：`text`（首個 text 段）、`segments`（完整消息段）、
 `target_type` / `target_id` / `bot_id`（發送上下文）、`has_modifier("at")` 等。
 
 ### 模組加載
@@ -6306,7 +6306,7 @@ await bot.unload_module("MyModule")
 ```
 
 `on_load` 內註冊的命令 / 事件處理器隨模組歸屬，卸載時自動清理，可直接斷言"卸載後命令失效"。
-注意：字串形式**不做 entry-point 扫描**（TestBot 不初始化框架發現流程）；測試軟依賴
+注意：字串形式**不做 entry-point 掃描**（TestBot 不初始化框架發現流程）；測試軟依賴
 模組請直接傳類物件（或自行 `module.register` 後傳名字）。
 
 ### 依賴替換（需 EP>=2.9.0-dev）
@@ -6317,7 +6317,7 @@ with bot.patch_dependency(get_session, fake_session) as mock:
     assert mock.called
 ```
 
-替換的是命令註冊表中 `Depends(get_session)` 聲明引用的函數，with 退出自動還原。
+替換的是命令註冊表中 `Depends(get_session)` 声明引用的函數，with 退出自動還原。
 
 ### 配置覆寫
 
@@ -6328,14 +6328,14 @@ bot = TestBot(prefix="//", config={
 })
 ```
 
-經配置記憶體層注入，命令前綴等隨熱更新立即生效。兩點注意：
+經配置內存層注入，命令前綴等隨熱更新立即生效。兩點注意：
 
 1. **落盤**：覆寫會隨框架的延遲寫盤策略（預設約 5 秒）落到 cwd 的
-   `config/config.toml`——被測專案倉庫請把 `config/` 加入 `.gitignore`；
+   `config/config.toml`——被測項目倉庫請把 `config/` 加入 `.gitignore`；
 2. **與模組運行時寫回的衝突（已知限制）**：被測模組以整節寫回配置
    （`self.cfg = ...`，如訂閱列表）與這裡的點分覆寫並存時，存在 ConfigManager
    的讀寫一致性問題——模組整節讀取可能看不到覆寫值，覆寫也可能在落盤時被
-   整節寫回覆蓋（已在 ErisPulse 2.9.0-dev.1 修復，2.8.x 仍受影響）。涉及
+   整節寫回覆蓋（已在 ErisPulse 2.9.0-dev.2 修復，2.8.x 仍受影響）。涉及
    "運行時寫回配置"的用例，在 2.8.x 上建議在 fixture 裡以整節寫回方式重置
    相關配置節。
 

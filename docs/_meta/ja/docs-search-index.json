@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1727,
+  "total_keywords": 1728,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -4140,12 +4140,12 @@
         "title": "Windows PowerShell 実行ポリシー"
       }
     ],
-    "[BUG-001] イベントハンドラが重複登録され、イベントが複数回処理される": [
+    "[BUG-001] 重複登録されたイベントハンドラがイベントを複数回処理する": [
       {
         "document": "bug-tracker.md",
         "line": 118,
         "level": 3,
-        "title": "[BUG-001] イベントハンドラが重複登録され、イベントが複数回処理される"
+        "title": "[BUG-001] 重複登録されたイベントハンドラがイベントを複数回処理する"
       }
     ],
     "[BUG-002] Init コマンドのアダプタ設定パスの型エラー": [
@@ -4164,12 +4164,12 @@
         "title": "[BUG-003] 再起動後にコマンドイベントが無効になる"
       }
     ],
-    "[BUG-004] ライフサイクルイベントハンドラがクリアされない": [
+    "[BUG-004] ライフサイクルイベントハンドラがクリーンアップされない": [
       {
         "document": "bug-tracker.md",
         "line": 182,
         "level": 3,
-        "title": "[BUG-004] ライフサイクルイベントハンドラがクリアされない"
+        "title": "[BUG-004] ライフサイクルイベントハンドラがクリーンアップされない"
       }
     ],
     "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない": [
@@ -4180,44 +4180,44 @@
         "title": "[BUG-005] Event.is_friend_add/is_friend_delete の detail_type が OB12 標準と一致しない"
       }
     ],
-    "[BUG-006] adapter.clear() が _started_instances をクリアしないため、再起動後に状態が正しくない": [
+    "[BUG-006] adapter.clear() が _started_instances をクリーンアップしないため、再起動後に状態が正しくない": [
       {
         "document": "bug-tracker.md",
         "line": 222,
         "level": 3,
-        "title": "[BUG-006] adapter.clear() が _started_instances をクリアしないため、再起動後に状態が正しくない"
+        "title": "[BUG-006] adapter.clear() が _started_instances をクリーンアップしないため、再起動後に状態が正しくない"
       }
     ],
-    "[BUG-007] command.wait_reply() で廃止された asyncio.get_event_loop() を使用している": [
+    "[BUG-007] command.wait_reply() が廃止された asyncio.get_event_loop() を使用している": [
       {
         "document": "bug-tracker.md",
         "line": 242,
         "level": 3,
-        "title": "[BUG-007] command.wait_reply() で廃止された asyncio.get_event_loop() を使用している"
+        "title": "[BUG-007] command.wait_reply() が廃止された asyncio.get_event_loop() を使用している"
       }
     ],
-    "[BUG-008] Bot オンラインイベントが shutdown 過程中に重複送信される": [
+    "[BUG-008] Bot オフラインイベントが shutdown プロセス中に繰り返し送信される": [
       {
         "document": "bug-tracker.md",
         "line": 262,
         "level": 3,
-        "title": "[BUG-008] Bot オンラインイベントが shutdown 過程中に重複送信される"
+        "title": "[BUG-008] Bot オフラインイベントが shutdown プロセス中に繰り返し送信される"
       }
     ],
-    "[BUG-009] LazyModule が同期アクセスで BaseModule を初期化していない": [
+    "[BUG-009] LazyModule 同期アクセスで BaseModule が初期化完了していない": [
       {
         "document": "bug-tracker.md",
         "line": 282,
         "level": 3,
-        "title": "[BUG-009] LazyModule が同期アクセスで BaseModule を初期化していない"
+        "title": "[BUG-009] LazyModule 同期アクセスで BaseModule が初期化完了していない"
       }
     ],
-    "[BUG-010] 複数スレッドでの書き込みで設定データが失われる": [
+    "[BUG-010] 複数スレッドでの構成書き込みがデータの消失を引き起こす": [
       {
         "document": "bug-tracker.md",
         "line": 302,
         "level": 3,
-        "title": "[BUG-010] 複数スレッドでの書き込みで設定データが失われる"
+        "title": "[BUG-010] 複数スレッドでの構成書き込みがデータの消失を引き起こす"
       }
     ],
     "[BUG-011] Windows で CTRL+C でプログラムを停止できない": [
@@ -4228,20 +4228,20 @@
         "title": "[BUG-011] Windows で CTRL+C でプログラムを停止できない"
       }
     ],
-    "[BUG-012] ホットリスタート後に更新されたモジュールの Python コードが効果がない": [
+    "[BUG-012] ホットリスタート後に更新されたモジュールの Python コードが有効にならない": [
       {
         "document": "bug-tracker.md",
         "line": 349,
         "level": 3,
-        "title": "[BUG-012] ホットリスタート後に更新されたモジュールの Python コードが効果がない"
+        "title": "[BUG-012] ホットリスタート後に更新されたモジュールの Python コードが有効にならない"
       }
     ],
-    "[BUG-013] モジュールのロード戦略のソートロジックが間違っている": [
+    "[BUG-013] モジュールロード戦略のソートロジックが誤っている": [
       {
         "document": "bug-tracker.md",
         "line": 369,
         "level": 3,
-        "title": "[BUG-013] モジュールのロード戦略のソートロジックが間違っている"
+        "title": "[BUG-013] モジュールロード戦略のソートロジックが誤っている"
       }
     ],
     "[BUG-014] アダプタミドルウェアが None を返すとイベントデータが失われる": [
@@ -4260,180 +4260,180 @@
         "title": "[BUG-015] 設定ファイルのパスが作業ディレクトリに依存する"
       }
     ],
-    "[BUG-016] BaseStorage はストレージ値が None とキーが存在しないことを混同する": [
+    "[BUG-016] BaseStorage がストレージ値 None とキーの存在しないことを混同する": [
       {
         "document": "bug-tracker.md",
         "line": 429,
         "level": 3,
-        "title": "[BUG-016] BaseStorage はストレージ値が None とキーが存在しないことを混同する"
+        "title": "[BUG-016] BaseStorage がストレージ値 None とキーの存在しないことを混同する"
       }
     ],
-    "[BUG-017] WebSocketルートの auto_accept フラグがサービス再起動後に失われる": [
+    "[BUG-017] WebSocket ルートの auto_accept フラグがサービスの再起動後に失われる": [
       {
         "document": "bug-tracker.md",
         "line": 449,
         "level": 3,
-        "title": "[BUG-017] WebSocketルートの auto_accept フラグがサービス再起動後に失われる"
+        "title": "[BUG-017] WebSocket ルートの auto_accept フラグがサービスの再起動後に失われる"
       }
     ],
-    "[BUG-018] HTTP/WSクライアントの並行呼び出しによるクラッシュと接続リーク": [
+    "[BUG-018] HTTP/WS クライアントの並行呼び出しによるクラッシュと接続漏れ": [
       {
         "document": "bug-tracker.md",
         "line": 469,
         "level": 3,
-        "title": "[BUG-018] HTTP/WSクライアントの並行呼び出しによるクラッシュと接続リーク"
+        "title": "[BUG-018] HTTP/WS クライアントの並行呼び出しによるクラッシュと接続漏れ"
       }
     ],
-    "[BUG-019] アダプタのホットリロード時にルートの競合によりリロードに失敗する": [
+    "[BUG-019] アダプタのホットリロード時にルートの競合が発生しリロードに失敗する": [
       {
         "document": "bug-tracker.md",
         "line": 497,
         "level": 3,
-        "title": "[BUG-019] アダプタのホットリロード時にルートの競合によりリロードに失敗する"
+        "title": "[BUG-019] アダプタのホットリロード時にルートの競合が発生しリロードに失敗する"
       }
     ],
-    "[BUG-020] サブプロセスモード `ep run <script>` でスクリプトの子パッケージが見つからない": [
+    "[BUG-020] 子プロセスモード `ep run <script>` でスクリプトの子パッケージが見つからない": [
       {
         "document": "bug-tracker.md",
         "line": 521,
         "level": 3,
-        "title": "[BUG-020] サブプロセスモード `ep run <script>` でスクリプトの子パッケージが見つからない"
+        "title": "[BUG-020] 子プロセスモード `ep run <script>` でスクリプトの子パッケージが見つからない"
       }
     ],
-    "[BUG-021] SQLクエリビルダーが合法的なワイルドカードとリスト式を拒否する": [
+    "[BUG-021] SQL クエリビルダーが合法なワイルドカードとリスト式を拒否する": [
       {
         "document": "bug-tracker.md",
         "line": 541,
         "level": 3,
-        "title": "[BUG-021] SQLクエリビルダーが合法的なワイルドカードとリスト式を拒否する"
+        "title": "[BUG-021] SQL クエリビルダーが合法なワイルドカードとリスト式を拒否する"
       }
     ],
-    "[BUG-022] _resolve_account() アカウント解決のバグ（_accounts_data が埋め込まれていない）": [
+    "[BUG-022] _resolve_account() アカウント解決のバグ（_accounts_data が未入力）": [
       {
         "document": "bug-tracker.md",
-        "line": 570,
+        "line": 571,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() アカウント解決のバグ（_accounts_data が埋め込まれていない）"
+        "title": "[BUG-022] _resolve_account() アカウント解決のバグ（_accounts_data が未入力）"
       }
     ],
     "[BUG-023] アカウント設定を変更した後、アダプタのキャッシュが更新されずアカウント解決に失敗する": [
       {
         "document": "bug-tracker.md",
-        "line": 609,
+        "line": 610,
         "level": 3,
         "title": "[BUG-023] アカウント設定を変更した後、アダプタのキャッシュが更新されずアカウント解決に失敗する"
       }
     ],
-    "[BUG-024] storage.set() で大数 ID キーを書き込むと OOM Kill が発生する": [
+    "[BUG-024] storage.set() で大数 ID キーを書き込むと OOM Kill を引き起こす": [
       {
         "document": "bug-tracker.md",
-        "line": 629,
+        "line": 630,
         "level": 3,
-        "title": "[BUG-024] storage.set() で大数 ID キーを書き込むと OOM Kill が発生する"
+        "title": "[BUG-024] storage.set() で大数 ID キーを書き込むと OOM Kill を引き起こす"
       }
     ],
-    "[BUG-025] on_config_update コールバックがコアルーティングに接続されていない": [
+    "[BUG-025] on_config_update カルバックがコアルートにルーティングされない": [
       {
         "document": "bug-tracker.md",
-        "line": 675,
+        "line": 676,
         "level": 3,
-        "title": "[BUG-025] on_config_update コールバックがコアルーティングに接続されていない"
+        "title": "[BUG-025] on_config_update カルバックがコアルートにルーティングされない"
       }
     ],
-    "[BUG-026] notice/request イベントの reply 目標が誤って推定される": [
+    "[BUG-026] notice/request イベント reply 目標の推定が間違っている": [
       {
         "document": "bug-tracker.md",
-        "line": 705,
+        "line": 706,
         "level": 3,
-        "title": "[BUG-026] notice/request イベントの reply 目標が誤って推定される"
+        "title": "[BUG-026] notice/request イベント reply 目標の推定が間違っている"
       }
     ],
-    "[BUG-027] ルーティングのリクエスト制限クリーンアップタスクが固定ウィンドウを使用して長時間のルールが無効になる": [
+    "[BUG-027] ルートリミットクリーンアップタスクが固定ウィンドウを使用して長時間のリミットルールを無効にする": [
       {
         "document": "bug-tracker.md",
-        "line": 736,
+        "line": 737,
         "level": 3,
-        "title": "[BUG-027] ルーティングのリクエスト制限クリーンアップタスクが固定ウィンドウを使用して長時間のルールが無効になる"
+        "title": "[BUG-027] ルートリミットクリーンアップタスクが固定ウィンドウを使用して長時間のリミットルールを無効にする"
       }
     ],
-    "[BUG-029] 設定監視タスクが未完成の TOML をブロードキャストし、例外を静かに飲み込む": [
+    "[BUG-029] 設定監視タスクが半完成の TOML をブロードキャストし、例外を静かに飲み込む": [
       {
         "document": "bug-tracker.md",
-        "line": 768,
+        "line": 769,
         "level": 3,
-        "title": "[BUG-029] 設定監視タスクが未完成の TOML をブロードキャストし、例外を静かに飲み込む"
+        "title": "[BUG-029] 設定監視タスクが半完成の TOML をブロードキャストし、例外を静かに飲み込む"
       }
     ],
-    "[BUG-030] 設定 watcher の競合により setConfig 延期書き込みが静かにデータを失う": [
+    "[BUG-030] 設定 watcher 競合により setConfig 延期書き込みが静かにデータを失う": [
       {
         "document": "bug-tracker.md",
         "line": 804,
         "level": 3,
-        "title": "[BUG-030] 設定 watcher の競合により setConfig 延期書き込みが静かにデータを失う"
+        "title": "[BUG-030] 設定 watcher 競合により setConfig 延期書き込みが静かにデータを失う"
       }
     ],
-    "[BUG-032] 設定の遅延書き込み中に「書き込み直後に読み取り」で古い値が返される": [
+    "[BUG-032] 設定遅延書き込み中に「書き込み直後読み取り」で旧値が読み取られる": [
       {
         "document": "bug-tracker.md",
         "line": 840,
         "level": 3,
-        "title": "[BUG-032] 設定の遅延書き込み中に「書き込み直後に読み取り」で古い値が返される"
+        "title": "[BUG-032] 設定遅延書き込み中に「書き込み直後読み取り」で旧値が読み取られる"
       }
     ],
-    "[BUG-033] wait_reply が待機中の返信が高優先度のハンドラに食い込まれる": [
+    "[BUG-033] wait_reply で待機中の返信が高優先度のハンドラに食い込まれる": [
       {
         "document": "bug-tracker.md",
         "line": 862,
         "level": 3,
-        "title": "[BUG-033] wait_reply が待機中の返信が高優先度のハンドラに食い込まれる"
+        "title": "[BUG-033] wait_reply で待機中の返信が高優先度のハンドラに食い込まれる"
       }
     ],
-    "[BUG-034] persist=False のランタイムバインディングが任意の後続の設定書き込みによって破壊される": [
+    "[BUG-034] persist=False の実行時バインディングが任意の後続の構成書き込みによって静かに上書きされる": [
       {
         "document": "bug-tracker.md",
         "line": 884,
         "level": 3,
-        "title": "[BUG-034] persist=False のランタイムバインディングが任意の後続の設定書き込みによって破壊される"
+        "title": "[BUG-034] persist=False の実行時バインディングが任意の後続の構成書き込みによって静かに上書きされる"
       }
     ],
-    "[BUG-035] 設定パネルの select 選択肢と dict フィールドが [object Object] にレンダリングされる": [
+    "[BUG-035] 配置パネルの select 項目と dict フィールドが [object Object] にレンダリングされる": [
       {
         "document": "bug-tracker.md",
         "line": 904,
         "level": 3,
-        "title": "[BUG-035] 設定パネルの select 選択肢と dict フィールドが [object Object] にレンダリングされる"
+        "title": "[BUG-035] 配置パネルの select 項目と dict フィールドが [object Object] にレンダリングされる"
       }
     ],
-    "[BUG-036] 複数インスタンスで共有の設定ディレクトリを使用する場合、設定の書き込みが偶発的に失敗する（ENOENT）": [
+    "[BUG-036] 複数インスタンスが共有する構成ディレクトリでの構成書き込みが偶発的に失敗する（ENOENT）": [
       {
         "document": "bug-tracker.md",
         "line": 922,
         "level": 3,
-        "title": "[BUG-036] 複数インスタンスで共有の設定ディレクトリを使用する場合、設定の書き込みが偶発的に失敗する（ENOENT）"
+        "title": "[BUG-036] 複数インスタンスが共有する構成ディレクトリでの構成書き込みが偶発的に失敗する（ENOENT）"
       }
     ],
-    "[BUG-037] 空白区切りのコマンド名で登録したサブコマンドは決してトリガーされない": [
+    "[BUG-037] 空白区切りのコマンド名で登録されたサブコマンドは決してトリガーされない": [
       {
         "document": "bug-tracker.md",
         "line": 948,
         "level": 3,
-        "title": "[BUG-037] 空白区切りのコマンド名で登録したサブコマンドは決してトリガーされない"
+        "title": "[BUG-037] 空白区切りのコマンド名で登録されたサブコマンドは決してトリガーされない"
       }
     ],
-    "[BUG-038] persist=False のランタイムバインディングが永続化書き込みに伴い磁盤に復活する": [
+    "[BUG-038] persist=False の実行時バインディングが永続化書き込みに伴って磁 disk に復活する": [
       {
         "document": "bug-tracker.md",
         "line": 972,
         "level": 3,
-        "title": "[BUG-038] persist=False のランタイムバインディングが永続化書き込みに伴い磁盤に復活する"
+        "title": "[BUG-038] persist=False の実行時バインディングが永続化書き込みに伴って磁 disk に復活する"
       }
     ],
-    "[BUG-039] 節全体の書き込みと点分書き込みが混在する場合、読み書きが不一致になる（点分の上書きが失われる）": [
+    "[BUG-039] 整節書き込みと点分書き込みが混在するときの読み書きの不一致（点分覆写が失われる）": [
       {
         "document": "bug-tracker.md",
         "line": 996,
         "level": 3,
-        "title": "[BUG-039] 節全体の書き込みと点分書き込みが混在する場合、読み書きが不一致になる（点分の上書きが失われる）"
+        "title": "[BUG-039] 整節書き込みと点分書き込みが混在するときの読み書きの不一致（点分覆写が失われる）"
       }
     ],
     "__init__.py": [
@@ -5758,14 +5758,6 @@
         "line": 87,
         "level": 3,
         "title": "イベントパラメータ"
-      }
-    ],
-    "イベントファクトリー": [
-      {
-        "document": "developer-guide/testing.md",
-        "line": 42,
-        "level": 2,
-        "title": "イベントファクトリー"
       }
     ],
     "イベントフロー": [
@@ -7498,22 +7490,6 @@
         "line": 18,
         "level": 2,
         "title": "ディアグノスティックコマンド"
-      }
-    ],
-    "ディスパッチ": [
-      {
-        "document": "developer-guide/testing.md",
-        "line": 58,
-        "level": 3,
-        "title": "ディスパッチ"
-      }
-    ],
-    "ディスパッチの決定チェーン（\"なぜコマンドが実行されなかったのか\"を調査する場合；EP>=2.9.0-dev が必要）": [
-      {
-        "document": "developer-guide/testing.md",
-        "line": 121,
-        "level": 2,
-        "title": "ディスパッチの決定チェーン（\"なぜコマンドが実行されなかったのか\"を調査する場合；EP>=2.9.0-dev が必要）"
       }
     ],
     "デコレータとルールの継承": [
@@ -9288,14 +9264,6 @@
         "title": "モジュールのライフサイクル"
       }
     ],
-    "モジュールのロード": [
-      {
-        "document": "developer-guide/testing.md",
-        "line": 86,
-        "level": 3,
-        "title": "モジュールのロード"
-      }
-    ],
     "モジュールの公開": [
       {
         "document": "developer-guide/README.md",
@@ -10286,6 +10254,14 @@
         "title": "事件基础信息"
       }
     ],
+    "事件工場": [
+      {
+        "document": "developer-guide/testing.md",
+        "line": 42,
+        "level": 2,
+        "title": "事件工場"
+      }
+    ],
     "事件拡張メソッド": [
       {
         "document": "platform-guide/onebot11.md",
@@ -10548,14 +10524,6 @@
         "title": "例外体系"
       }
     ],
-    "依存の置換（EP>=2.9.0-dev が必要）": [
-      {
-        "document": "developer-guide/testing.md",
-        "line": 97,
-        "level": 3,
-        "title": "依存の置換（EP>=2.9.0-dev が必要）"
-      }
-    ],
     "依存注入（Depends）": [
       {
         "document": "getting-started/event-handling.md",
@@ -10572,6 +10540,14 @@
         "title": "依存関係の宣言（オプション、2.8.0以降）"
       }
     ],
+    "依赖替换（需 EP>=2.9.0-dev）": [
+      {
+        "document": "developer-guide/testing.md",
+        "line": 97,
+        "level": 3,
+        "title": "依赖替换（需 EP>=2.9.0-dev）"
+      }
+    ],
     "保留エラーセグメント": [
       {
         "document": "standards/api-response.md",
@@ -10580,12 +10556,12 @@
         "title": "保留エラーセグメント"
       }
     ],
-    "修正済みのバグ": [
+    "修正済みバグ": [
       {
         "document": "bug-tracker.md",
         "line": 116,
         "level": 2,
-        "title": "修正済みのバグ"
+        "title": "修正済みバグ"
       }
     ],
     "修飾の組み合わせ": [
@@ -10784,14 +10760,6 @@
         "title": "再起動時の自動復元"
       }
     ],
-    "出力アサーション": [
-      {
-        "document": "developer-guide/testing.md",
-        "line": 69,
-        "level": 3,
-        "title": "出力アサーション"
-      }
-    ],
     "出力プロトコル": [
       {
         "document": "platform-guide/webhook.md",
@@ -10822,6 +10790,30 @@
         "line": 116,
         "level": 2,
         "title": "出向監査：誰が誰を呼び出すか"
+      }
+    ],
+    "出站断言": [
+      {
+        "document": "developer-guide/testing.md",
+        "line": 69,
+        "level": 3,
+        "title": "出站断言"
+      }
+    ],
+    "分发": [
+      {
+        "document": "developer-guide/testing.md",
+        "line": 58,
+        "level": 3,
+        "title": "分发"
+      }
+    ],
+    "分发决策链（\"命令为什么没触发\"の調査；需 EP>=2.9.0-dev）": [
+      {
+        "document": "developer-guide/testing.md",
+        "line": 121,
+        "level": 2,
+        "title": "分发决策链（\"命令为什么没触发\"の調査；需 EP>=2.9.0-dev）"
       }
     ],
     "分岐とジャンプ": [
@@ -12140,6 +12132,14 @@
         "title": "快速参考"
       }
     ],
+    "快速开始": [
+      {
+        "document": "developer-guide/testing.md",
+        "line": 12,
+        "level": 2,
+        "title": "快速开始"
+      }
+    ],
     "快速構築モード（静的）": [
       {
         "document": "advanced/message-builder.md",
@@ -13284,6 +13284,14 @@
         "title": "標準遵守チェックリスト"
       }
     ],
+    "模块加载": [
+      {
+        "document": "developer-guide/testing.md",
+        "line": 86,
+        "level": 3,
+        "title": "模块加载"
+      }
+    ],
     "権限制御": [
       {
         "document": "getting-started/common-tasks.md",
@@ -14234,14 +14242,6 @@
         "title": "設定のホットアップデート"
       }
     ],
-    "設定の上書き": [
-      {
-        "document": "developer-guide/testing.md",
-        "line": 107,
-        "level": 3,
-        "title": "設定の上書き"
-      }
-    ],
     "設定の翻訳登録": [
       {
         "document": "advanced/i18n.md",
@@ -14920,12 +14920,6 @@
     ],
     "速習": [
       {
-        "document": "developer-guide/testing.md",
-        "line": 12,
-        "level": 2,
-        "title": "速習"
-      },
-      {
         "document": "ecosystem/cron.md",
         "line": 23,
         "level": 2,
@@ -14994,6 +14988,14 @@
         "line": 490,
         "level": 2,
         "title": "配布"
+      }
+    ],
+    "配置覆写": [
+      {
+        "document": "developer-guide/testing.md",
+        "line": 107,
+        "level": 3,
+        "title": "配置覆写"
       }
     ],
     "重大度の分類": [
