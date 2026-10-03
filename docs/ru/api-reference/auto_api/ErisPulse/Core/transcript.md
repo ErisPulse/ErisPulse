@@ -16,17 +16,24 @@ ErisPulse 会话收件箱（transcript）
 - **查询**：``event.history(n)`` 或 ``sdk.transcript.get(event, n)``。
 
 > **提示**
-> 配置（``ErisPulse.transcript``）::
+> 配置（``ErisPulse.transcript``）:
+> ```
 > [ErisPulse.transcript]
 > enabled = true          # 是否启用（关闭后停止写入，历史仍可查询）
 > max_per_session = 50    # 每会话保留的最大条数
 > ttl_hours = 168         # 全局过期时间（小时），过期记录惰性清理
-> 使用方式::
+> ```
+>
+> 使用方式:
+> ```
 > from ErisPulse.Core import transcript
+> 
 > # 查询当前会话最近 20 条消息（含用户与机器人）
 > messages = await event.history(20)   # 或 transcript.get(event, 20)
 > for m in messages:
-> print(m["role"], m["text"])
+>     print(m["role"], m["text"])
+> ```
+>
 
 ---
 
@@ -44,127 +51,142 @@ ErisPulse 会话收件箱（transcript）
 #### 方法列表
 
 
-##### `_config()`
+##### `_config() -> dict[str, Any]`
 
-> **内部方法** 读取 transcript 配置节
+**内部方法** 读取 transcript 配置节
 
 ---
 
 
-##### `enabled()`
+##### `enabled -> bool`（property）
 
 是否启用自动记录（ErisPulse.transcript.enabled）
 
 ---
 
 
-##### `session_key_from_event(event: Any)`
+##### `session_key_from_event(event: Any) -> str`（staticmethod）
 
 从事件推导会话键（platform:detail_type:target_id）
 
 target 语义与交互会话等待键一致（复用 session_type 的目标推导，
 私聊为 user_id，群聊 / 频道等对应目标 ID）。
 
-- **event** (`事件数据（Event`): 或 dict）
+- **event**: 事件数据（Event 或 dict）
+
 **返回值**: 会话键字符串
 
 ---
 
 
-##### `_ctx_key(ctx: dict)`
+##### `_ctx_key(ctx: dict) -> str`（staticmethod）
 
-> **内部方法** 从 message.sent 发送上下文推导会话键
-
----
-
-
-##### `_ensure_table()`
-
-> **内部方法** 惰性建表（含旧表 sender 列迁移）
+**内部方法** 从 message.sent 发送上下文推导会话键
 
 ---
 
 
-##### `_migrate_add_sender()`
+##### `_ensure_table() -> bool`
 
-> **内部方法** 旧表缺 sender 列时自动补列（2.8.0 新增）
-
----
-
-
-##### `_retention(session_key: str, max_per_session: int, ttl_hours: float)`
-
-> **内部方法** 保留策略：每会话条数上限 + 全局 TTL（惰性触发）
+**内部方法** 惰性建表（含旧表 sender 列迁移）
 
 ---
 
 
-##### `append(session: Any, role: str, text: str, event_id: str = '', sender: str = '')`
+##### `_migrate_add_sender() -> None`
+
+**内部方法** 旧表缺 sender 列时自动补列（2.8.0 新增）
+
+---
+
+
+##### `_retention(session_key: str, max_per_session: int, ttl_hours: float) -> None`
+
+**内部方法** 保留策略：每会话条数上限 + 全局 TTL（惰性触发）
+
+---
+
+
+##### `append(session: Any, role: str, text: str, event_id: str = '', sender: str = '') -> bool`
 
 记录一条消息到会话收件箱
 
-- **session** (`事件数据（Event`): / dict，自动推导会话键）或会话键字符串
-- **role** (`消息角色（"user"`): / "bot"）
-- **text** (`消息文本（超长自动截断）`): - **event_id**: 关联的事件 ID（可选）
-- **sender** (`发送者标识（user_id，可选，回放时还原消息来源）`): **返回值** (`是否写入成功（未启用时返回`): False）
+- **session**: 事件数据（Event / dict，自动推导会话键）或会话键字符串
+- **role**: 消息角色（"user" / "bot"）
+- **text**: 消息文本（超长自动截断）
+- **event_id**: 关联的事件 ID（可选）
+- **sender**: 发送者标识（user_id，可选，回放时还原消息来源）
+
+**返回值**: 是否写入成功（未启用时返回 False）
 
 **示例**:
+
 ```python
->>> transcript.append(event, "user", "你好")
+transcript.append(event, "user", "你好")
 ```
 
 ---
 
 
-##### `get(session: Any, n: int = 20)`
+##### `get(session: Any, n: int = 20) -> list[dict[str, Any]]`
 
 查询会话近期消息（按时间升序）
 
-- **session** (`事件数据或会话键字符串`): - **n**: 返回的最大条数
-**返回值** (`消息列表，每条含`): role / text / ts / event_id；无记录时返回空列表
+- **session**: 事件数据或会话键字符串
+- **n**: 返回的最大条数
+
+**返回值**: 消息列表，每条含 role / text / ts / event_id；无记录时返回空列表
 
 **示例**:
+
 ```python
->>> messages = transcript.get(event, 20)
->>> for m in messages:
-...     print(m["role"], ":", m["text"])
+messages = transcript.get(event, 20)
+for m in messages:
+    print(m["role"], ":", m["text"])
 ```
 
 ---
 
 
-##### `recent(seconds: float, limit: int = 200)`
+##### `recent(seconds: float, limit: int = 200) -> list[dict[str, Any]]`
 
 查询全部会话中最近一段时间内的消息（跨会话，按时间升序）
 
 冷启动回放（``get_load_strategy(replay=...)``）的数据源；
 每条记录额外携带 ``session_key``，用于还原消息来源会话。
 
-- **seconds** (`回溯时长（秒）`): - **limit**: 最大返回条数（防止模块冷启动被打爆）
-**返回值** (`消息列表（role`): / text / ts / sender / session_key）
+- **seconds**: 回溯时长（秒）
+- **limit**: 最大返回条数（防止模块冷启动被打爆）
+
+**返回值**: 消息列表（role / text / ts / sender / session_key）
 
 **示例**:
+
 ```python
->>> transcript.recent(300)  # 最近 5 分钟
+transcript.recent(300)  # 最近 5 分钟
 ```
 
 ---
 
 
-##### `clear(session: Any)`
+##### `clear(session: Any) -> int`
 
 清空指定会话的收件箱
 
-- **session** (`事件数据或会话键字符串`): **返回值** (`删除的记录数`): 
+- **session**: 事件数据或会话键字符串
+
+**返回值**: 删除的记录数
+
 **示例**:
+
 ```python
->>> transcript.clear(event)
+transcript.clear(event)
 ```
 
 ---
 
 
-##### `attach()`
+##### `attach() -> bool`
 
 挂接出站自动记录（message.sent 钩子，框架初始化时调用）
 
@@ -175,23 +197,26 @@ target 语义与交互会话等待键一致（复用 session_type 的目标推�
 ---
 
 
-##### `async _on_message_sent(data: Any)`
+##### `async _on_message_sent(data: Any) -> None`
 
-> **内部方法** message.sent 钩子：记录机器人出站文本
+**内部方法** message.sent 钩子：记录机器人出站文本
 
 ---
 
 
-##### `get_by_trace(trace_id: str, limit: int = 20)`
+##### `get_by_trace(trace_id: str, limit: int = 20) -> 'list[dict[str, Any]]'`
 
 按链路 ID 查询出站记录（影子模块 diff 对齐用，方向十一）
 
-- **trace_id** (`事件链路`): ID（事件 ``id``）
-- **limit** (`返回的最大条数`): **返回值** (`消息列表（role`): / text / ts / event_id），时间升序
+- **trace_id**: 事件链路 ID（事件 ``id``）
+- **limit**: 返回的最大条数
+
+**返回值**: 消息列表（role / text / ts / event_id），时间升序
 
 **示例**:
+
 ```python
->>> transcript.get_by_trace("evt-abc123")
+transcript.get_by_trace("evt-abc123")
 ```
 
 ---

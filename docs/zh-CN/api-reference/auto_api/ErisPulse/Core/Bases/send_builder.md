@@ -49,14 +49,14 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 #### 方法列表
 
 
-##### `elapsed()`
+##### `elapsed -> float`（property）
 
 已耗时（秒）
 
 ---
 
 
-##### `to_dict()`
+##### `to_dict() -> dict[str, Any]`
 
 转为可序列化字典（用于日志/上报）
 
@@ -78,14 +78,15 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 - ``OnProgress``：每条完成时触发，接收 :class:`BatchContext`
 
 **示例**:
+
 ```python
->>> results = await (adapter.Send.To("user", "123")
-...                  .Build()
-...                  .Text("第一句")
-...                  .Image("pic.jpg")
-...                  .Retry(2)
-...                  .send_all())
->>> # results = [Text结果, Image结果]
+results = await (adapter.Send.To("user", "123")
+                 .Build()
+                 .Text("第一句")
+                 .Image("pic.jpg")
+                 .Retry(2)
+                 .send_all())
+# results = [Text结果, Image结果]
 ```
 
 
@@ -96,28 +97,30 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 
 从 SendDSL 实例构建批量发送器
 
-- **send_dsl** (`进入`): Build 前的 SendDSL 实例（继承其上下文与规则）
+- **send_dsl**: 进入 Build 前的 SendDSL 实例（继承其上下文与规则）
 
 ---
 
 
-##### `At(user_id: str)`
+##### `At(user_id: str) -> 'SendBuilder'`
 
 @指定用户（作用于整批所有消息）
 
-- **user_id** (`要@的用户ID`): **返回值**: SendBuilder实例自身
+- **user_id**: 要@的用户ID
+
+**返回值** (`SendBuilder`): 实例自身
 
 ---
 
 
-##### `AtAll()`
+##### `AtAll() -> 'SendBuilder'`
 
 @全体成员（作用于整批所有消息）
 
 ---
 
 
-##### `Reply(message_id: str)`
+##### `Reply(message_id: str) -> 'SendBuilder'`
 
 回复指定消息（作用于整批所有消息）
 
@@ -126,38 +129,38 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 ---
 
 
-##### `Sequential()`
+##### `Sequential() -> 'SendBuilder'`
 
 切换为串行执行（按意图顺序依次发送）
 
 保证消息到达顺序，但总耗时为各条耗时之和。
 
-**返回值**: SendBuilder实例自身
+**返回值** (`SendBuilder`): 实例自身
 
 ---
 
 
-##### `Parallel()`
+##### `Parallel() -> 'SendBuilder'`
 
 切换为并行执行（默认）
 
 并发发送所有意图，总耗时约等于最慢的一条。不保证消息到达顺序。
 
-**返回值**: SendBuilder实例自身
+**返回值** (`SendBuilder`): 实例自身
 
 ---
 
 
-##### `Retry(times: int = 1)`
+##### `Retry(times: int = 1) -> 'SendBuilder'`
 
 设置每条发送的失败重试次数（作用于每条，非整批重试）
 
-- **times** (`重试次数（不含首次），默认`): 1
+- **times**: 重试次数（不含首次），默认 1
 
 ---
 
 
-##### `Timeout(seconds: float)`
+##### `Timeout(seconds: float) -> 'SendBuilder'`
 
 设置每条发送的单次超时时间
 
@@ -166,7 +169,7 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 ---
 
 
-##### `Defer(seconds: float = 1.0)`
+##### `Defer(seconds: float = 1.0) -> 'SendBuilder'`
 
 延迟执行整批发送
 
@@ -175,7 +178,7 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 ---
 
 
-##### `Hook(callback: Callable)`
+##### `Hook(callback: Callable) -> 'SendBuilder'`
 
 附加整批成功后的回调
 
@@ -186,7 +189,7 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 ---
 
 
-##### `OnError(callback: Callable)`
+##### `OnError(callback: Callable) -> 'SendBuilder'`
 
 设置批次失败回调
 
@@ -197,7 +200,7 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 ---
 
 
-##### `OnProgress(callback: Callable)`
+##### `OnProgress(callback: Callable) -> 'SendBuilder'`
 
 设置批次进度回调
 
@@ -218,14 +221,14 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 ---
 
 
-##### `send_all()`
+##### `send_all() -> asyncio.Task`
 
 执行整批发送
 
 根据执行模式（默认并行 / .Sequential() 串行）发送所有意图，
 失败的条目自动重试（沿用 Retry 规则），其他条目继续发送。
 
-**返回值** (```asyncio.Task``，await`): 后返回每条结果的列表（按意图顺序）
+**返回值**: ``asyncio.Task``，await 后返回每条结果的列表（按意图顺序）
 
 ---
 
@@ -244,12 +247,12 @@ Timeout/Retry（失败继续、重试失败的），整批层面统一 Hook/OnEr
 
 在 SendDSL 实例的类上解析发送方法（大小写不敏感）
 
-**返回值** (`未绑定的方法对象，或`): None（未找到）
+**返回值**: 未绑定的方法对象，或 None（未找到）
 
 ---
 
 
-##### `async _emit_lifecycle(event: str)`
+##### `async _emit_lifecycle(event: str) -> None`
 
 触发整批的生命周期事件
 

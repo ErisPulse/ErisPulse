@@ -33,25 +33,31 @@ ErisPulse 请求处理模块
 
 通用请求事件装饰器
 
-- **priority** (`处理器优先级`): **返回值**: 装饰器函数
+- **priority**: 处理器优先级
+
+**返回值**: 装饰器函数
 
 ---
 
 
-##### `unregister(handler: Callable)`
+##### `unregister(handler: Callable) -> bool`
 
 取消注册的事件处理器
 
-- **handler** (`要取消注册的处理器`): **返回值**: 是否成功取消注册
+- **handler**: 要取消注册的处理器
+
+**返回值**: 是否成功取消注册
 
 ---
 
 
-##### `remove_request_handler(handler: Callable)`
+##### `remove_request_handler(handler: Callable) -> bool`
 
 取消注册通用请求事件处理器
 
-- **handler** (`要取消注册的处理器`): **返回值**: 是否成功取消注册
+- **handler**: 要取消注册的处理器
+
+**返回值**: 是否成功取消注册
 
 ---
 
@@ -60,16 +66,20 @@ ErisPulse 请求处理模块
 
 好友请求事件装饰器
 
-- **priority** (`处理器优先级`): **返回值**: 装饰器函数
+- **priority**: 处理器优先级
+
+**返回值**: 装饰器函数
 
 ---
 
 
-##### `remove_friend_request_handler(handler: Callable)`
+##### `remove_friend_request_handler(handler: Callable) -> bool`
 
 取消注册好友请求事件处理器
 
-- **handler** (`要取消注册的处理器`): **返回值**: 是否成功取消注册
+- **handler**: 要取消注册的处理器
+
+**返回值**: 是否成功取消注册
 
 ---
 
@@ -78,23 +88,27 @@ ErisPulse 请求处理模块
 
 群邀请请求事件装饰器
 
-- **priority** (`处理器优先级`): **返回值**: 装饰器函数
+- **priority**: 处理器优先级
+
+**返回值**: 装饰器函数
 
 ---
 
 
-##### `remove_group_request_handler(handler: Callable)`
+##### `remove_group_request_handler(handler: Callable) -> bool`
 
 取消注册群邀请请求事件处理器
 
-- **handler** (`要取消注册的处理器`): **返回值**: 是否成功取消注册
+- **handler**: 要取消注册的处理器
+
+**返回值**: 是否成功取消注册
 
 ---
 
 
 ##### `_clear_request_handlers()`
 
-> **内部方法**
+**内部方法**
 清除所有已注册的请求处理器
 
 **返回值**: 被清除的处理器数量

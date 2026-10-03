@@ -20,14 +20,15 @@ ErisPulse 适配器基础模块
 
 ### `_action_denied_response(adapter: 'BaseAdapter', action: str)`
 
-> **内部方法**
+**内部方法**
 构造"出站动作被控制面禁用"的标准失败响应（已完成的 task）
 
 被禁用的出站调用不发起任何网络请求，直接返回该响应。
 SendDSL / ApiDSL / RequestDSL 在授权闸口处调用。
 
-- **adapter** (`适配器实例（用于`): make_error 构造标准响应）
-- **action** (`被禁用的动作类型（send`): / api / request）
+- **adapter**: 适配器实例（用于 make_error 构造标准响应）
+- **action**: 被禁用的动作类型（send / api / request）
+
 **返回值**: asyncio.Task（已完成，值为标准错误响应）
 
 ---
@@ -35,22 +36,23 @@ SendDSL / ApiDSL / RequestDSL 在授权闸口处调用。
 
 ### `async _noop_async(value)`
 
-> **内部方法** 立即返回值的协程（用于构造已完成 task）
+**内部方法** 立即返回值的协程（用于构造已完成 task）
 
 ---
 
 
-### `_has_rules(send_dsl: 'SendDSL')`
+### `_has_rules(send_dsl: 'SendDSL') -> bool`
 
 判断 SendDSL 实例是否附加了发送规则
 
 - **send_dsl** (`SendDSL`): 实例
+
 **返回值**: 是否存在任意已设置的规则
 
 ---
 
 
-### `_copy_rules(rules: dict)`
+### `_copy_rules(rules: dict) -> dict`
 
 复制规则字典（深拷贝可变值，如 hooks 列表）
 
@@ -58,7 +60,9 @@ SendDSL / ApiDSL / RequestDSL 在授权闸口处调用。
 标量值（retry/timeout/defer 等）浅拷贝即可，
 仅 hooks 列表需要创建新列表。
 
-- **rules** (`原始规则字典`): **返回值**: 独立的规则字典副本
+- **rules**: 原始规则字典
+
+**返回值**: 独立的规则字典副本
 
 ---
 
@@ -67,22 +71,24 @@ SendDSL / ApiDSL / RequestDSL 在授权闸口处调用。
 
 将任意返回值包装为 Task（用于重试路径的兼容处理）
 
-- **result** (`原始方法返回值`): **返回值**: asyncio.Task
+- **result**: 原始方法返回值
+
+**返回值**: asyncio.Task
 
 ---
 
 
-### `_append_send_receipt(ledger: list, response: Any, ctx: dict)`
+### `_append_send_receipt(ledger: list, response: Any, ctx: dict) -> None`
 
-> **内部方法**
+**内部方法**
 从发送响应提取回执并记入消息事务账本
 
 仅当响应为 dict 且含非空 ``message_id`` 时记录（标准 API 响应格式）；
 消息事务撤回时按账本逆序调用适配器 ``delete_message``。
 
-- **ledger** (`当前事务的账本列表（send_receipts`): ContextVar 值）
-- **response** (`发送方法返回的响应（标准格式为`): dict）
-- **ctx** (`发送上下文（platform`): / bot_id / trace_id 等）
+- **ledger**: 当前事务的账本列表（send_receipts ContextVar 值）
+- **response**: 发送方法返回的响应（标准格式为 dict）
+- **ctx**: 发送上下文（platform / bot_id / trace_id 等）
 
 ---
 
@@ -129,9 +135,11 @@ SendDSL / ApiDSL / RequestDSL 在授权闸口处调用。
 
 初始化DSL发送器
 
-- **adapter** (`所属适配器实例`): - **target_type**: 目标类型(可选)
-- **target_id** (`目标ID(可选)`): - **account_id**: 发送账号(可选)
-- **rules** (`已附加的发送规则字典(可选，用于`): To/Using/Account 传播)
+- **adapter**: 所属适配器实例
+- **target_type**: 目标类型(可选)
+- **target_id**: 目标ID(可选)
+- **account_id**: 发送账号(可选)
+- **rules**: 已附加的发送规则字典(可选，用于 To/Using/Account 传播)
 
 ---
 
@@ -143,52 +151,66 @@ SendDSL / ApiDSL / RequestDSL 在授权闸口处调用。
 1. 如果找到匹配的方法（忽略大小写），返回该方法
 2. 如果没找到，打印警告并抛出 AttributeError
 
-- **name** (`属性名`): **返回值** (`匹配的方法或属性`): **异常**: `AttributeError` - 当属性不存在时抛出
+- **name**: 属性名
+
+**返回值**: 匹配的方法或属性
+
+**异常**: `AttributeError` - 当属性不存在时抛出
 
 ---
 
 
-##### `At(user_id: str)`
+##### `At(user_id: str) -> 'Self'`
 
 @指定用户（可链式多次调用）
 
-- **user_id** (`要@的用户ID`): **返回值** (`SendDSL实例自身，支持链式调用`): 
+- **user_id**: 要@的用户ID
+
+**返回值** (`SendDSL`): 实例自身，支持链式调用
+
 **示例**:
+
 ```python
->>> await adapter.Send.To("group", "123").At("456").Text("Hello")
->>> await adapter.Send.To("group", "123").At("456").At("789").Text("@多人")
+await adapter.Send.To("group", "123").At("456").Text("Hello")
+await adapter.Send.To("group", "123").At("456").At("789").Text("@多人")
 ```
 
 ---
 
 
-##### `AtAll()`
+##### `AtAll() -> 'Self'`
 
 @全体成员
 
-**返回值** (`SendDSL实例自身，支持链式调用`): 
+**返回值** (`SendDSL`): 实例自身，支持链式调用
+
 **示例**:
+
 ```python
->>> await adapter.Send.To("group", "123").AtAll().Text("公告")
+await adapter.Send.To("group", "123").AtAll().Text("公告")
 ```
 
 ---
 
 
-##### `Reply(message_id: str)`
+##### `Reply(message_id: str) -> 'Self'`
 
 回复指定消息
 
-- **message_id** (`要回复的消息ID`): **返回值** (`SendDSL实例自身，支持链式调用`): 
+- **message_id**: 要回复的消息ID
+
+**返回值** (`SendDSL`): 实例自身，支持链式调用
+
 **示例**:
+
 ```python
->>> await adapter.Send.To("group", "123").Reply("msg_456").Text("回复内容")
+await adapter.Send.To("group", "123").Reply("msg_456").Text("回复内容")
 ```
 
 ---
 
 
-##### `_apply_modifiers(message)`
+##### `_apply_modifiers(message) -> list[dict]`
 
 将 At/AtAll/Reply 修饰器应用到消息段
 
@@ -198,131 +220,152 @@ SendDSL / ApiDSL / RequestDSL 在授权闸口处调用。
 3. reply (回复)
 
 - **message** (`OneBot12`): 消息段（dict 或 list[dict]）
-**返回值** (`合并后的消息段列表`): 
+
+**返回值**: 合并后的消息段列表
+
 **示例**:
+
 ```python
->>> segments = self._apply_modifiers([
->>>     {"type": "text", "data": {"text": "Hello"}}
->>> ])
+segments = self._apply_modifiers([
+    {"type": "text", "data": {"text": "Hello"}}
+])
 ```
 
 ---
 
 
-##### `send_context()`
+##### `send_context -> dict`（property）
 
 获取当前发送上下文（目标信息 + 发送账号）
 
-**返回值** (`包含`): target_type, target_id, account_id 的字典
+**返回值**: 包含 target_type, target_id, account_id 的字典
 
 **示例**:
+
 ```python
->>> ctx = self.send_context
->>> # {"target_type": "group", "target_id": "123", "account_id": "bot1"}
->>> await self._api_call(
->>>     endpoint="/send_message",
->>>     message=segments,
->>>     **self.send_context,
->>>     **kwargs
->>> )
+ctx = self.send_context
+# {"target_type": "group", "target_id": "123", "account_id": "bot1"}
+await self._api_call(
+    endpoint="/send_message",
+    message=segments,
+    **self.send_context,
+    **kwargs
+)
 ```
 
 ---
 
 
-##### `Raw_ob12(message)`
+##### `Raw_ob12(message, **kwargs) -> Awaitable[Any]`
 
 发送 OneBot12 格式消息段（必须由适配器子类重写）
 
 - **message** (`OneBot12`): 消息段列表或单个消息段
-- **kwargs** (`其他参数`): **返回值**: asyncio.Task
+- **kwargs**: 其他参数
+
+**返回值**: asyncio.Task
 
 ---
 
 
-##### `Text(text: str)`
+##### `Text(text: str) -> Awaitable[Any]`
 
 发送文本消息
 
 默认实现委托给 :meth:`Raw_ob12`，适配器可覆盖以提供平台特定逻辑。
 
-- **text** (`文本内容`): **返回值** (`asyncio.Task，await`): 后返回标准响应格式
+- **text**: 文本内容
+
+**返回值**: asyncio.Task，await 后返回标准响应格式
 
 **示例**:
+
 ```python
->>> await adapter.Send.To("user", "123").Text("Hello")
+await adapter.Send.To("user", "123").Text("Hello")
 ```
 
 ---
 
 
-##### `Image(file: str | bytes)`
+##### `Image(file: str | bytes) -> Awaitable[Any]`
 
 发送图片消息
 
 默认实现委托给 :meth:`Raw_ob12`，适配器可覆盖以提供平台特定逻辑。
 
-- **file** (`图片文件（URL、路径或二进制数据）`): **返回值** (`asyncio.Task，await`): 后返回标准响应格式
+- **file**: 图片文件（URL、路径或二进制数据）
+
+**返回值**: asyncio.Task，await 后返回标准响应格式
 
 **示例**:
+
 ```python
->>> await adapter.Send.To("user", "123").Image("https://example.com/img.png")
+await adapter.Send.To("user", "123").Image("https://example.com/img.png")
 ```
 
 ---
 
 
-##### `Voice(file: str | bytes)`
+##### `Voice(file: str | bytes) -> Awaitable[Any]`
 
 发送语音消息
 
 默认实现委托给 :meth:`Raw_ob12`（OneBot12 ``audio`` 段），
 适配器可覆盖以提供平台特定逻辑。
 
-- **file** (`语音文件（URL、路径或二进制数据）`): **返回值** (`asyncio.Task，await`): 后返回标准响应格式
+- **file**: 语音文件（URL、路径或二进制数据）
+
+**返回值**: asyncio.Task，await 后返回标准响应格式
 
 **示例**:
+
 ```python
->>> await adapter.Send.To("user", "123").Voice("https://example.com/voice.mp3")
+await adapter.Send.To("user", "123").Voice("https://example.com/voice.mp3")
 ```
 
 ---
 
 
-##### `Video(file: str | bytes)`
+##### `Video(file: str | bytes) -> Awaitable[Any]`
 
 发送视频消息
 
 默认实现委托给 :meth:`Raw_ob12`，适配器可覆盖以提供平台特定逻辑。
 
-- **file** (`视频文件（URL、路径或二进制数据）`): **返回值** (`asyncio.Task，await`): 后返回标准响应格式
+- **file**: 视频文件（URL、路径或二进制数据）
+
+**返回值**: asyncio.Task，await 后返回标准响应格式
 
 **示例**:
+
 ```python
->>> await adapter.Send.To("user", "123").Video("https://example.com/video.mp4")
+await adapter.Send.To("user", "123").Video("https://example.com/video.mp4")
 ```
 
 ---
 
 
-##### `File(file: str | bytes, filename: str | None = None)`
+##### `File(file: str | bytes, filename: str | None = None) -> Awaitable[Any]`
 
 发送文件
 
 默认实现委托给 :meth:`Raw_ob12`，适配器可覆盖以提供平台特定逻辑。
 
-- **file** (`文件（URL、路径或二进制数据）`): - **filename**: 文件名（可选，部分平台需要）
-**返回值** (`asyncio.Task，await`): 后返回标准响应格式
+- **file**: 文件（URL、路径或二进制数据）
+- **filename**: 文件名（可选，部分平台需要）
+
+**返回值**: asyncio.Task，await 后返回标准响应格式
 
 **示例**:
+
 ```python
->>> await adapter.Send.To("user", "123").File("https://example.com/doc.pdf")
+await adapter.Send.To("user", "123").File("https://example.com/doc.pdf")
 ```
 
 ---
 
 
-##### `To(target_type: str | None = None, target_id: str | int | None = None)`
+##### `To(target_type: str | None = None, target_id: str | int | None = None) -> 'Self'`
 
 设置消息目标
 
@@ -331,72 +374,86 @@ SendDSL / ApiDSL / RequestDSL 在授权闸口处调用。
 - 如果只提供 ``target_id``（字符串或数字）但未指定类型，默认推断为 ``"user"``
 - 发送类型（``"user"``/``"group"``/``"channel"``/``"guild"``/``"thread"``）保持原样
 
-- **target_type** (`目标类型（接收类型或发送类型均可，None`): 时自动推断）
-- **target_id** (`目标ID（可选）`): **返回值** (`SendDSL`): 实例
+- **target_type**: 目标类型（接收类型或发送类型均可，None 时自动推断）
+- **target_id**: 目标ID（可选）
+
+**返回值** (`SendDSL`): 实例
 
 **示例**:
+
 ```python
->>> # 标准用法（直接指定发送类型）
->>> adapter.Send.To("user", "123").Text("Hello")
->>> # 自动转换 private → user
->>> adapter.Send.To("private", "123").Text("Hello")
->>> # 简化形式（默认推断为 user）
->>> adapter.Send.To("123").Text("Hello")
+# 标准用法（直接指定发送类型）
+adapter.Send.To("user", "123").Text("Hello")
+# 自动转换 private → user
+adapter.Send.To("private", "123").Text("Hello")
+# 简化形式（默认推断为 user）
+adapter.Send.To("123").Text("Hello")
 ```
 
 ---
 
 
-##### `Using(account_id: str | int)`
+##### `Using(account_id: str | int) -> 'Self'`
 
 设置发送账号
 
-- **_account_id** (`发送账号`): **返回值** (`SendDSL实例`): 
+- **_account_id**: 发送账号
+
+**返回值** (`SendDSL`): 实例
+
 **示例**:
+
 ```python
->>> adapter.Send.Using("bot1").To("123").Text("Hello")
->>> adapter.Send.To("123").Using("bot1").Text("Hello")  # 支持乱序
+adapter.Send.Using("bot1").To("123").Text("Hello")
+adapter.Send.To("123").Using("bot1").Text("Hello")  # 支持乱序
 ```
 
 ---
 
 
-##### `Account(account_id: str | int)`
+##### `Account(account_id: str | int) -> 'Self'`
 
 设置发送账号
 
-- **_account_id** (`发送账号`): **返回值** (`SendDSL实例`): 
+- **_account_id**: 发送账号
+
+**返回值** (`SendDSL`): 实例
+
 **示例**:
+
 ```python
->>> adapter.Send.Account("bot1").To("123").Text("Hello")
->>> adapter.Send.To("123").Account("bot1").Text("Hello")  # 支持乱序
+adapter.Send.Account("bot1").To("123").Text("Hello")
+adapter.Send.To("123").Account("bot1").Text("Hello")  # 支持乱序
 ```
 
 ---
 
 
-##### `Hook(callback: Callable)`
+##### `Hook(callback: Callable) -> 'Self'`
 
 附加发送成功后的回调钩子
 
 仅当发送最终成功（包括重试成功）时执行，失败/超时/取消不触发。
 可链式多次调用以添加多个 Hook，按添加顺序依次执行。
 
-- **callback** (`回调函数，签名为`): ``callback(result)``，可为同步或协程函数
-**返回值** (`SendDSL实例自身，支持链式调用`): 
+- **callback**: 回调函数，签名为 ``callback(result)``，可为同步或协程函数
+
+**返回值** (`SendDSL`): 实例自身，支持链式调用
+
 **示例**:
+
 ```python
->>> await adapter.Send.To("user", "123").Hook(lambda r: print("发送成功！")).Text("你好")
->>>
->>> async def on_success(result):
-...     print(f"消息ID: {result.get('message_id')}")
->>> await adapter.Send.To("user", "123").Hook(on_success).Text("异步回调")
+await adapter.Send.To("user", "123").Hook(lambda r: print("发送成功！")).Text("你好")
+
+async def on_success(result):
+    print(f"消息ID: {result.get('message_id')}")
+await adapter.Send.To("user", "123").Hook(on_success).Text("异步回调")
 ```
 
 ---
 
 
-##### `Retry(times: int = 1)`
+##### `Retry(times: int = 1) -> 'Self'`
 
 设置失败自动重试次数
 
@@ -405,51 +462,61 @@ SendDSL / ApiDSL / RequestDSL 在授权闸口处调用。
 - 发送超时（配合 :meth:`Timeout` 使用）
 - 发送返回 ``status == "failed"`` 的响应
 
-- **times** (`重试次数（不含首次发送），默认`): 1
-**返回值** (`SendDSL实例自身，支持链式调用`): 
+- **times**: 重试次数（不含首次发送），默认 1
+
+**返回值** (`SendDSL`): 实例自身，支持链式调用
+
 **示例**:
+
 ```python
->>> # 首次失败后重试2次，共3次尝试
->>> await adapter.Send.To("user", "123").Retry(2).Text("带重试")
+# 首次失败后重试2次，共3次尝试
+await adapter.Send.To("user", "123").Retry(2).Text("带重试")
 ```
 
 ---
 
 
-##### `Timeout(seconds: float)`
+##### `Timeout(seconds: float) -> 'Self'`
 
 设置单次发送超时时间
 
 超时后取消当前尝试。若同时设置了 :meth:`Retry`，超时也会触发重试。
 
-- **seconds** (`超时秒数`): **返回值** (`SendDSL实例自身，支持链式调用`): 
+- **seconds**: 超时秒数
+
+**返回值** (`SendDSL`): 实例自身，支持链式调用
+
 **示例**:
+
 ```python
->>> await adapter.Send.To("user", "123").Timeout(10).Text("带超时")
+await adapter.Send.To("user", "123").Timeout(10).Text("带超时")
 ```
 
 ---
 
 
-##### `Defer(seconds: float = 1.0)`
+##### `Defer(seconds: float = 1.0) -> 'Self'`
 
 延迟发送
 
 在实际发起发送前等待 ``seconds`` 秒。用于延迟提醒、定时消息等场景。
 注意：此延迟为进程内定时，重启进程会丢失，不提供持久化。
 
-- **seconds** (`延迟秒数，默认`): 1.0
-**返回值** (`SendDSL实例自身，支持链式调用`): 
+- **seconds**: 延迟秒数，默认 1.0
+
+**返回值** (`SendDSL`): 实例自身，支持链式调用
+
 **示例**:
+
 ```python
->>> # 5秒后发送
->>> await adapter.Send.To("user", "123").Defer(5).Text("迟到消息")
+# 5秒后发送
+await adapter.Send.To("user", "123").Defer(5).Text("迟到消息")
 ```
 
 ---
 
 
-##### `Priority(level: int = 0)`
+##### `Priority(level: int = 0, *, drop_if_busy: bool = False) -> 'Self'`
 
 设置消息优先级
 
@@ -460,52 +527,60 @@ SendDSL / ApiDSL / RequestDSL 在授权闸口处调用。
 超过阈值（默认 64，可通过 :meth:`PriorityThreshold` 调整），
 直接放弃本次发送（返回 ``stage="dropped"``），避免队列堆积。
 
-- **level** (`优先级数值，越大越优先（默认`): 0）
-- **drop_if_busy** (`是否在队列积压时丢弃本消息（默认`): False）
-**返回值** (`SendDSL实例自身，支持链式调用`): 
+- **level**: 优先级数值，越大越优先（默认 0）
+- **drop_if_busy**: 是否在队列积压时丢弃本消息（默认 False）
+
+**返回值** (`SendDSL`): 实例自身，支持链式调用
+
 **示例**:
+
 ```python
->>> # 低优先级消息，积压时自动丢弃
->>> await adapter.Send.To("user", "123").Priority(-1, drop_if_busy=True).Text("可放弃的通知")
+# 低优先级消息，积压时自动丢弃
+await adapter.Send.To("user", "123").Priority(-1, drop_if_busy=True).Text("可放弃的通知")
 ```
 
 ---
 
 
-##### `PriorityThreshold(threshold: int)`
+##### `PriorityThreshold(threshold: int) -> 'Self'`
 
 设置优先级丢弃的积压阈值（全局生效）
 
 配合 :meth:`Priority` 的 ``drop_if_busy=True`` 使用。
 
-- **threshold** (`在途发送任务数阈值，超过则丢弃新消息`): **返回值**: SendDSL实例自身，支持链式调用
+- **threshold**: 在途发送任务数阈值，超过则丢弃新消息
+
+**返回值** (`SendDSL`): 实例自身，支持链式调用
 
 ---
 
 
-##### `OnProgress(callback: Callable)`
+##### `OnProgress(callback: Callable) -> 'Self'`
 
 设置进度回调
 
 在发送的各个阶段（pending/sending/retrying/success/failed/timeout/cancelled/dropped）
 调用，传入实时更新的 :class:`SendContext`。可据此实现监控、日志、介入决策。
 
-- **callback** (`回调函数，签名为`): ``callback(ctx: SendContext)``，
+- **callback**: 回调函数，签名为 ``callback(ctx: SendContext)``，
+
     可为同步或协程函数
-**返回值** (`SendDSL实例自身，支持链式调用`): 
+**返回值** (`SendDSL`): 实例自身，支持链式调用
+
 **示例**:
+
 ```python
->>> def on_progress(ctx):
-...     print(f"阶段: {ctx.stage}, 尝试: {ctx.attempt + 1}/{ctx.max_attempts}")
-...     if ctx.stage == "failed":
-...         print(f"错误: {ctx.error!r}")
->>> task = adapter.Send.To("user", "123").Retry(3).Timeout(10).OnProgress(on_progress).Text("监控")
+def on_progress(ctx):
+    print(f"阶段: {ctx.stage}, 尝试: {ctx.attempt + 1}/{ctx.max_attempts}")
+    if ctx.stage == "failed":
+        print(f"错误: {ctx.error!r}")
+task = adapter.Send.To("user", "123").Retry(3).Timeout(10).OnProgress(on_progress).Text("监控")
 ```
 
 ---
 
 
-##### `OnError(callback: Callable)`
+##### `OnError(callback: Callable) -> 'Self'`
 
 设置错误回调
 
@@ -516,14 +591,17 @@ SendDSL / ApiDSL / RequestDSL 在授权闸口处调用。
 与 :meth:`OnProgress` 的区别：OnProgress 在每个阶段都触发，
 OnError 仅在最终失败时触发一次。
 
-- **callback** (`回调函数，签名为`): ``callback(ctx: SendContext)``，
+- **callback**: 回调函数，签名为 ``callback(ctx: SendContext)``，
+
     可为同步或协程函数
-**返回值** (`SendDSL实例自身，支持链式调用`): 
+**返回值** (`SendDSL`): 实例自身，支持链式调用
+
 **示例**:
+
 ```python
->>> async def on_error(ctx):
-...     await admin_notify(f"发送失败: {ctx.target_id} {ctx.error!r}")
->>> await adapter.Send.To("user", "123").Retry(2).OnError(on_error).Text("带错误处理")
+async def on_error(ctx):
+    await admin_notify(f"发送失败: {ctx.target_id} {ctx.error!r}")
+await adapter.Send.To("user", "123").Retry(2).OnError(on_error).Text("带错误处理")
 ```
 
 ---
@@ -538,26 +616,27 @@ OnError 仅在最终失败时触发一次。
 
 进入 Build 之前的 At/AtAll/Reply 修饰器和已设置的规则会继承到整批。
 
-**返回值** (`:class:`SendBuilder``): 实例
+**返回值**: :class:`SendBuilder` 实例
 
 **示例**:
+
 ```python
->>> # 构建多条消息，统一发送
->>> results = await (
-...     adapter.Send.To("user", "123").Build().Text("第一句").Image("pic.jpg").Text("第二句").send_all()
-... )
->>> # results = [Text结果, Image结果, Text结果]
->>>
->>> # 串行执行 + 重试失败的
->>> await (
-...     adapter.Send.To("group", "456")
-...     .Build()
-...     .Sequential()
-...     .Retry(2)
-...     .Text("保证顺序1")
-...     .Text("保证顺序2")
-...     .send_all()
-... )
+# 构建多条消息，统一发送
+results = await (
+    adapter.Send.To("user", "123").Build().Text("第一句").Image("pic.jpg").Text("第二句").send_all()
+)
+# results = [Text结果, Image结果, Text结果]
+
+# 串行执行 + 重试失败的
+await (
+    adapter.Send.To("group", "456")
+    .Build()
+    .Sequential()
+    .Retry(2)
+    .Text("保证顺序1")
+    .Text("保证顺序2")
+    .send_all()
+)
 ```
 
 ---
@@ -586,32 +665,38 @@ OnError 仅在最终失败时触发一次。
 
 初始化请求操作 DSL
 
-- **adapter** (`所属适配器实例`): - **request_id**: 请求ID
-- **account_id** (`执行操作的`): Bot 账号
+- **adapter**: 所属适配器实例
+- **request_id**: 请求ID
+- **account_id**: 执行操作的 Bot 账号
 
 ---
 
 
-##### `__call__(request_id: str)`
+##### `__call__(request_id: str) -> 'Self'`
 
 设置请求ID，返回新的 RequestDSL 实例
 
 使得 ``adapter.Request("req_id")`` 可以直接调用
 
-- **request_id** (`请求ID`): **返回值** (`新的`): RequestDSL 实例
+- **request_id**: 请求ID
+
+**返回值**: 新的 RequestDSL 实例
 
 ---
 
 
-##### `Using(account_id: str | int)`
+##### `Using(account_id: str | int) -> 'Self'`
 
 指定执行操作的 Bot 账号
 
-- **account_id** (`账号标识`): **返回值** (`新的`): RequestDSL 实例
+- **account_id**: 账号标识
+
+**返回值**: 新的 RequestDSL 实例
 
 **示例**:
+
 ```python
->>> adapter.Request("req_123").Using("bot1").accept()
+adapter.Request("req_123").Using("bot1").accept()
 ```
 
 ---
@@ -619,85 +704,95 @@ OnError 仅在最终失败时触发一次。
 
 ##### `_guard_request()`
 
-> **内部方法**
+**内部方法**
 请求操作授权闸口（scope.actions.<owner>.request）
 
-**返回值** (`None`): 表示放行；否则为已完成的标准拒绝响应 task
+**返回值**: None 表示放行；否则为已完成的标准拒绝响应 task
 
 ---
 
 
-##### `accept()`
+##### `accept(**kwargs) -> Awaitable[Any]`
 
 同意请求
 
-- **kwargs** (`平台扩展参数（如`): comment 备注）
-**返回值** (`asyncio.Task，await`): 后返回标准响应格式
+- **kwargs**: 平台扩展参数（如 comment 备注）
+
+**返回值**: asyncio.Task，await 后返回标准响应格式
 
 **示例**:
+
 ```python
->>> result = await adapter.Request("req_123").accept()
->>> result = await adapter.Request("req_123").accept(comment="欢迎")
+result = await adapter.Request("req_123").accept()
+result = await adapter.Request("req_123").accept(comment="欢迎")
 ```
 
 ---
 
 
-##### `reject()`
+##### `reject(**kwargs) -> Awaitable[Any]`
 
 拒绝请求
 
-- **kwargs** (`平台扩展参数（如`): comment 拒绝理由）
-**返回值** (`asyncio.Task，await`): 后返回标准响应格式
+- **kwargs**: 平台扩展参数（如 comment 拒绝理由）
+
+**返回值**: asyncio.Task，await 后返回标准响应格式
 
 **示例**:
+
 ```python
->>> result = await adapter.Request("req_123").reject()
->>> result = await adapter.Request("req_123").reject(comment="暂不添加")
+result = await adapter.Request("req_123").reject()
+result = await adapter.Request("req_123").reject(comment="暂不添加")
 ```
 
 ---
 
 
-##### `async _do_accept()`
+##### `async _do_accept(**kwargs) -> dict[str, Any]`
 
 同意请求的具体实现（适配器子类重写）
 
-- **kwargs** (`平台扩展参数`): **返回值**: 标准响应格式
+- **kwargs**: 平台扩展参数
+
+**返回值**: 标准响应格式
 
 ---
 
 
-##### `async _do_reject()`
+##### `async _do_reject(**kwargs) -> dict[str, Any]`
 
 拒绝请求的具体实现（适配器子类重写）
 
-- **kwargs** (`平台扩展参数`): **返回值**: 标准响应格式
+- **kwargs**: 平台扩展参数
+
+**返回值**: 标准响应格式
 
 ---
 
 
-##### `_not_implemented_response(action: str)`
+##### `_not_implemented_response(action: str) -> dict[str, Any]`
 
 生成「未实现」的标准错误响应
 
-- **action** (`操作名称（accept/reject）`): **返回值**: 标准错误响应字典
+- **action**: 操作名称（accept/reject）
+
+**返回值**: 标准错误响应字典
 
 ---
 
 
-##### `_create_task(coro)`
+##### `_create_task(coro) -> Awaitable[Any]`
 
 创建 asyncio.Task
 
 ---
 
 
-##### `request_context()`
+##### `request_context -> dict`（property）
 
 获取当前请求操作上下文
 
-**返回值** (`包含`): request_id, account_id 的字典
+**返回值**: 包含 request_id, account_id 的字典
 
 ---
 
@@ -765,20 +860,24 @@ OnError 仅在最终失败时触发一次。
 ###### 方法列表
 
 
-####### `Example(text: str)`
+####### `Example(text: str) -> Awaitable[Any]`
 
 示例消息发送方法
 
-- **text** (`文本内容`): **返回值** (`异步任务`): 
+- **text**: 文本内容
+
+**返回值**: 异步任务
+
 **示例**:
+
 ```python
->>> await adapter.Send.To("123").Example("Hello")
+await adapter.Send.To("123").Example("Hello")
 ```
 
 ---
 
 
-####### `Raw_ob12(message)`
+####### `Raw_ob12(message, **kwargs: Any) -> Awaitable[Any]`
 
 发送 OneBot12 格式消息段（必须由适配器子类重写）
 
@@ -790,31 +889,35 @@ OnError 仅在最终失败时触发一次。
 - self.send_context - 获取发送上下文 (target_type, target_id, account_id)
 
 - **message** (`OneBot12`): 格式的消息段数组或单个消息段
+
     [
         {"type": "text", "data": {"text": "Hello"}},
         {"type": "image", "data": {"file": "https://..."}},
     ]
-- **kwargs** (`其他参数`): **返回值** (`asyncio.Task，await`): 后返回标准响应格式
+- **kwargs**: 其他参数
+
+**返回值**: asyncio.Task，await 后返回标准响应格式
 
 **示例**:
+
 ```python
->>> # 用户调用
->>> await adapter.Send.To("user", "123").Raw_ob12([
->>>     {"type": "text", "data": {"text": "Hello"}},
->>>     {"type": "image", "data": {"file": "https://..."}}
->>> ])
->>>
->>> # 适配器子类重写示例（推荐：使用框架辅助方法）
->>> def Raw_ob12(self, message, **kwargs):
->>>     async def _do_send():
->>>         segments = self._apply_modifiers(message)
->>>         return await self._api_call(
->>>             endpoint="/send_message",
->>>             message=segments,
->>>             **self.send_context,
->>>             **kwargs
->>>         )
->>>     return asyncio.create_task(_do_send())
+# 用户调用
+await adapter.Send.To("user", "123").Raw_ob12([
+    {"type": "text", "data": {"text": "Hello"}},
+    {"type": "image", "data": {"file": "https://..."}}
+])
+
+# 适配器子类重写示例（推荐：使用框架辅助方法）
+def Raw_ob12(self, message, **kwargs):
+    async def _do_send():
+        segments = self._apply_modifiers(message)
+        return await self._api_call(
+            endpoint="/send_message",
+            message=segments,
+            **self.send_context,
+            **kwargs
+        )
+    return asyncio.create_task(_do_send())
 ```
 
 ---
@@ -823,43 +926,47 @@ OnError 仅在最终失败时触发一次。
 #### 方法列表
 
 
-##### `_load_accounts()`
+##### `_load_accounts() -> dict | None`
 
-> **内部方法**
+**内部方法**
 加载账户配置（可被子类覆写）
 
 子类可覆写此方法实现自定义账户加载逻辑（如全局配置合并、旧格式迁移等）。
 返回 None 时使用默认配置存储读取逻辑。
 
-**返回值** (`账户配置字典，或`): None 表示使用默认逻辑
+**返回值**: 账户配置字典，或 None 表示使用默认逻辑
 
 ---
 
 
 ##### `_load_config()`
 
-> **内部方法**
+**内部方法**
 加载适配器配置（可被子类覆写）
 
 子类可覆写此方法实现自定义配置加载逻辑（如旧格式迁移等）。
 返回 None 时使用默认配置存储读取逻辑。
 
-**返回值** (`配置实例，或`): None 表示使用默认逻辑
+**返回值**: 配置实例，或 None 表示使用默认逻辑
 
 ---
 
 
-##### `async call_api(endpoint: str)`
+##### `async call_api(endpoint: str, **params: Any) -> Any`
 
 调用平台API的抽象方法
 
-- **endpoint** (`API端点`): - **params**: API参数
-**返回值** (`API调用结果`): **异常**: `NotImplementedError` - 必须由子类实现
+- **endpoint** (`API`): 端点
+- **params** (`API`): 参数
+
+**返回值** (`API`): 调用结果
+
+**异常**: `NotImplementedError` - 必须由子类实现
 
 ---
 
 
-##### `async start()`
+##### `async start() -> None`
 
 启动适配器的抽象方法
 
@@ -868,7 +975,7 @@ OnError 仅在最终失败时触发一次。
 ---
 
 
-##### `async shutdown()`
+##### `async shutdown() -> None`
 
 关闭适配器的抽象方法
 
@@ -877,14 +984,15 @@ OnError 仅在最终失败时触发一次。
 ---
 
 
-##### `cfg()`
+##### `cfg`（property）
 
 类型安全的配置对象（实时读取）
 
 每次访问都从配置存储读取最新值，确保用户修改配置后立即生效。
 返回的 dataclass 实例是只读快照，修改它不会回写存储。
 
-**返回值** (`AdapterConfig`): / BaseConfig 实例
+**返回值**: AdapterConfig / BaseConfig 实例
+
 **异常**: `AttributeError` - 未声明 ConfigClass 时抛出
 
 > **提示**
@@ -901,7 +1009,7 @@ OnError 仅在最终失败时触发一次。
 ---
 
 
-##### `config()`
+##### `config`（property）
 
 ``self.cfg`` 的兼容别名
 
@@ -910,13 +1018,14 @@ OnError 仅在最终失败时触发一次。
 ---
 
 
-##### `accounts()`
+##### `accounts -> dict`（property）
 
 类型安全的账户配置字典（实时读取）
 
 每次访问都从配置存储读取最新值，确保用户修改账户配置后立即生效。
 
-**返回值** (`账户配置字典`): {name: config_instance}
+**返回值**: 账户配置字典 {name: config_instance}
+
 **异常**: `AttributeError` - 未声明 AccountConfigClass 时抛出
 
 ---
@@ -929,7 +1038,7 @@ OnError 仅在最终失败时触发一次。
 ---
 
 
-##### `enabled_accounts()`
+##### `enabled_accounts -> dict`（property）
 
 仅返回 enabled=True 的账户
 
@@ -938,7 +1047,7 @@ OnError 仅在最终失败时触发一次。
 ---
 
 
-##### `platform()`
+##### `platform -> str`（property）
 
 获取平台名称
 
@@ -947,7 +1056,7 @@ OnError 仅在最终失败时触发一次。
 ---
 
 
-##### `_get_config_key()`
+##### `_get_config_key() -> str`
 
 配置键名（默认用类名，可被子类覆写）
 
@@ -958,7 +1067,7 @@ OnError 仅在最终失败时触发一次。
 
 ##### `_get_logger()`
 
-> **内部方法**
+**内部方法**
 获取 logger，兼容 sdk 未注入的场景
 
 此处刻意使用函数内导入：模块顶层已有 ``logger``，但函数内动态导入可让测试
@@ -971,7 +1080,7 @@ OnError 仅在最终失败时触发一次。
 
 确保全局配置模板存在，不存在则生成默认配置
 
-> **内部方法**
+**内部方法**
 会先行调用 _ensure_i18n_registered() 注册声明的翻译键，
 确保配置描述引用的 i18n 键在生成模板时已可用。
 
@@ -985,7 +1094,7 @@ OnError 仅在最终失败时触发一次。
 使用适配器配置键名（默认为类名）作为键名前缀和 domain，便于统一卸载。
 方法是幂等的，多次调用不会产生副作用（重复注册会覆盖旧值）。
 
-> **内部方法**
+**内部方法**
 由 __init__() 在生成配置之前隐式调用。
 
 ---
@@ -998,7 +1107,7 @@ OnError 仅在最终失败时触发一次。
 适配器声明 ``EventMixin`` 时，框架自动将其注册到适配器的平台
 （即 ``self._platform``），而不是通配符。
 
-> **内部方法**
+**内部方法**
 由 __init__() 隐式调用。
 
 ---
@@ -1008,12 +1117,12 @@ OnError 仅在最终失败时触发一次。
 
 确保多账户配置模板存在，不存在则生成默认账户配置
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `_resolve_account(account_id: str | None = None)`
+##### `_resolve_account(account_id: str | None = None) -> tuple`
 
 解析目标账户
 
@@ -1024,43 +1133,51 @@ OnError 仅在最终失败时触发一次。
 
 匹配字段优先级：账户名 > dataclass 中名为 bot_id 的字段 > 任意 str 类型字段
 
-- **account_id** (`账户标识（账户名、bot_id`): 等）
-**返回值** (`(账户名,`): 账户配置实例) 元组
+- **account_id**: 账户标识（账户名、bot_id 等）
+
+**返回值**: (账户名, 账户配置实例) 元组
+
 **异常**: `ValueError` - 未找到可用账户时抛出
 
 ---
 
 
-##### `async emit_meta(detail_type: str, bot_id: str)`
+##### `async emit_meta(detail_type: str, bot_id: str, **extra_info)`
 
 发送 meta 事件的便捷方法
 
-- **detail_type** (`"connect"`): | "disconnect" | "heartbeat"
+- **detail_type**: "connect" | "disconnect" | "heartbeat"
 - **bot_id** (`Bot`): 用户 ID
-- **extra_info** (`扩展字段（user_name,`): nickname, avatar 等）
+- **extra_info**: 扩展字段（user_name, nickname, avatar 等）
 
 ---
 
 
-##### `make_response()`
+##### `make_response(*, status: str = STATUS_OK, retcode: int = RETCODE_OK, data = None, message_id: str = '', message: str = '', raw = None) -> dict`
 
 构造标准化响应
 
-- **status** (`状态码（"ok"`): | "failed"）
-- **retcode** (`返回码`): - **data**: 响应数据
-- **message_id** (`消息`): ID
-- **message** (`响应消息`): - **raw**: 原始平台响应
+- **status**: 状态码（"ok" | "failed"）
+- **retcode**: 返回码
+- **data**: 响应数据
+- **message_id**: 消息 ID
+- **message**: 响应消息
+- **raw**: 原始平台响应
+
 **返回值**: 标准响应字典
 
 ---
 
 
-##### `make_error(retcode: int = RETCODE_SDK_FAILURE, message: str = '', raw = None)`
+##### `make_error(retcode: int = RETCODE_SDK_FAILURE, message: str = '', raw = None) -> dict`
 
 构造错误响应
 
-- **retcode** (`错误码`): - **message**: 错误消息
-- **raw** (`原始平台响应`): **返回值**: 标准错误响应字典
+- **retcode**: 错误码
+- **message**: 错误消息
+- **raw**: 原始平台响应
+
+**返回值**: 标准错误响应字典
 
 ---
 
@@ -1071,31 +1188,34 @@ OnError 仅在最终失败时触发一次。
 
 子类可覆写此方法以响应配置热更新。默认实现为空操作。
 
-- **old_config** (`变更前的配置实例`): - **new_config**: 变更后的配置实例
+- **old_config**: 变更前的配置实例
+- **new_config**: 变更后的配置实例
 
 ---
 
 
-##### `async on_dependency_ready(module_name: str)`
+##### `async on_dependency_ready(module_name: str) -> None`
 
 软依赖模块就绪回调（可选实现）
 
 当 ``optional_modules`` 中声明的模块被加载（含启动晚于适配器、
 热重载后再加载）时调用。子类可覆写以启用对应可选功能。
 
-- **module_name** (`就绪的模块名`): 
+- **module_name**: 就绪的模块名
+
 **示例**:
+
 ```python
->>> optional_modules = ["TranslateEngine"]
->>> async def on_dependency_ready(self, module_name):
-...     if module_name == "TranslateEngine":
-...         self._translate = self.sdk.TranslateEngine
+optional_modules = ["TranslateEngine"]
+async def on_dependency_ready(self, module_name):
+    if module_name == "TranslateEngine":
+        self._translate = self.sdk.TranslateEngine
 ```
 
 ---
 
 
-##### `async on_dependency_lost(module_name: str)`
+##### `async on_dependency_lost(module_name: str) -> None`
 
 软依赖模块丢失回调（可选实现）
 
@@ -1107,23 +1227,27 @@ OnError 仅在最终失败时触发一次。
 ---
 
 
-##### `send(target_type: str, target_id: str, message: Any)`
+##### `send(target_type: str, target_id: str, message: Any, **kwargs: Any) -> asyncio.Task`
 
 发送消息的便捷方法，返回一个 asyncio Task
 
-- **target_type** (`目标类型`): - **target_id**: 目标ID
-- **message** (`消息内容`): - **kwargs**: 其他参数
+- **target_type**: 目标类型
+- **target_id**: 目标ID
+- **message**: 消息内容
+- **kwargs**: 其他参数
+
     - method: 发送方法名(默认为"Text")
 **返回值** (`asyncio.Task`): 对象，用户可以自主决定是否等待
 
 **异常**: `AttributeError` - 当发送方法不存在时抛出
 
 **示例**:
+
 ```python
->>> task = adapter.send("user", "123", "Hello")
->>> # 用户可以选择等待: result = await task
->>> # 或者不等待让其在后台执行
->>> await adapter.send("group", "456", "Hello", method="Markdown")  # 直接等待
+task = adapter.send("user", "123", "Hello")
+# 用户可以选择等待: result = await task
+# 或者不等待让其在后台执行
+await adapter.send("group", "456", "Hello", method="Markdown")  # 直接等待
 ```
 
 ---

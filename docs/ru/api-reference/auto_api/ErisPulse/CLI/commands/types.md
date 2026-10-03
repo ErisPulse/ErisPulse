@@ -21,51 +21,58 @@ Types 命令实现
 ## 函数列表
 
 
-### `_is_send_method(name: str, func: Any)`
+### `_is_send_method(name: str, func: Any) -> bool`
 
 判断一个类属性是否是"发送方法"
 
 发送方法的特征：公开（非下划线开头）、可调用、不在排除集合中。
 
-- **name** (`属性名`): - **func**: 属性值
+- **name**: 属性名
+- **func**: 属性值
+
 **返回值**: 是否为发送方法
 
 ---
 
 
-### `_is_module_method(name: str, func: Any)`
+### `_is_module_method(name: str, func: Any) -> bool`
 
 判断一个类属性是否是模块的公开方法
 
-- **name** (`属性名`): - **func**: 属性值
+- **name**: 属性名
+- **func**: 属性值
+
 **返回值**: 是否为公开方法
 
 ---
 
 
-### `_safe_type_name(cls: type, fallback: str)`
+### `_safe_type_name(cls: type, fallback: str) -> str`
 
 获取类的类型名用于存根导入，处理无法导入的情况
 
-- **cls** (`类对象`): - **fallback**: 无法确定时的兜底名
+- **cls**: 类对象
+- **fallback**: 无法确定时的兜底名
+
 **返回值**: 存根中使用的类型名
 
 ---
 
 
-### `_build_send_class_stub(send_cls: type)`
+### `_build_send_class_stub(send_cls: type) -> str`
 
 为适配器的 Send 子类构造存根代码
 
 扫描 Send 类的平台特有方法，生成继承 SendDSL 的子类声明。
 
 - **send_cls** (`Send`): 类对象
+
 **返回值**: 存根代码片段
 
 ---
 
 
-### `_pascal_case_ep_name(name: str)`
+### `_pascal_case_ep_name(name: str) -> str`
 
 将 entry-point 名转换为 PascalCase 类型名
 
@@ -75,7 +82,8 @@ Types 命令实现
 - ``my_adapter`` → ``MyAdapter``
 - ``ErisPulse-Dashboard`` → ``ErisPulseDashboard``
 
-- **name** (`entry-point`): 名称
+- **name**: entry-point 名称
+
 **返回值** (`PascalCase`): 类型名
 
 ---
@@ -94,25 +102,29 @@ types 命令
 #### 方法列表
 
 
-##### `_collect_adapters()`
+##### `_collect_adapters() -> list[dict]`
 
 扫描所有已安装的适配器，收集类型信息
 
-**返回值** (`适配器信息列表`): [{"name": str, "class": type, "module_path": str, "qualname": str}, ...]
+**返回值**: 适配器信息列表
+
+    [{"name": str, "class": type, "module_path": str, "qualname": str}, ...]
 
 ---
 
 
-##### `_collect_modules()`
+##### `_collect_modules() -> list[dict]`
 
 扫描所有已安装的模块，收集类型信息
 
-**返回值** (`模块信息列表`): [{"name": str, "class": type, "module_path": str, "qualname": str, "methods": list[str]}, ...]
+**返回值**: 模块信息列表
+
+    [{"name": str, "class": type, "module_path": str, "qualname": str, "methods": list[str]}, ...]
 
 ---
 
 
-##### `_introspect_remote(python_executable: str, group: str, kind: str)`
+##### `_introspect_remote(python_executable: str, group: str, kind: str) -> list[dict]`
 
 在目标 Python 环境中内省 entry-points 及其类信息
 
@@ -123,23 +135,25 @@ types 命令
 - **python_executable** (`str`): 目标 Python 解释器路径
 - **group** (`str`): entry-point 组名
 - **kind** (`str`): "adapter" 或 "module"，决定内省内容
+
 **返回值** (`list[dict`): ] 内省结果列表
 
 ---
 
 
-##### `_build_introspect_script(group: str, kind: str)`
+##### `_build_introspect_script(group: str, kind: str) -> str`（staticmethod）
 
 构造在目标环境中运行的内省脚本
 
 - **group** (`str`): entry-point 组名
 - **kind** (`str`): "adapter" 或 "module"
+
 **返回值** (`str`): Python 脚本字符串
 
 ---
 
 
-##### `_generate_stub(adapters_info: list[dict], modules_info: list[dict])`
+##### `_generate_stub(adapters_info: list[dict], modules_info: list[dict]) -> str`
 
 生成完整的存根文件内容
 
@@ -149,7 +163,9 @@ types 命令
 
 所有导入都在 ``TYPE_CHECKING`` 下，运行时零开销、零行为改变。
 
-- **adapters_info** (`适配器信息`): - **modules_info**: 模块信息
+- **adapters_info**: 适配器信息
+- **modules_info**: 模块信息
+
 **返回值**: 存根文件内容
 
 ---

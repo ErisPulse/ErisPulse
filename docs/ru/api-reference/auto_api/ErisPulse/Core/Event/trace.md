@@ -22,7 +22,7 @@
 ## 函数列表
 
 
-### `start_dispatch_trace()`
+### `start_dispatch_trace() -> Iterator[list[dict[str, Any]]]`
 
 开启一次分发决策链采集
 
@@ -34,7 +34,7 @@
 ---
 
 
-### `get_dispatch_trace()`
+### `get_dispatch_trace() -> list[dict[str, Any]]`
 
 读取当前采集上下文中的记录（不在采集上下文时返回空列表）
 
@@ -43,31 +43,37 @@
 ---
 
 
-### `trace_step(stage: str, verdict: str, message_key: str | None = None)`
+### `trace_step(stage: str, verdict: str, message_key: str | None = None, **details: Any) -> None`
 
 记录一个判定点（未处于采集上下文时零开销直接返回）
 
-- **stage** (`判定阶段标识（如`): ``command_match`` / ``permission`` / ``cooldown``）
-- **verdict** (`判定结论（``ok```): / ``rejected`` / ``dropped`` / ``failed`` / ``passed``）
-- **message_key** (`该判定的本地化说明键（i18n，可空）`): - **details**: 判定上下文参数（命令名、原因、耗时等）
+- **stage**: 判定阶段标识（如 ``command_match`` / ``permission`` / ``cooldown``）
+- **verdict**: 判定结论（``ok`` / ``rejected`` / ``dropped`` / ``failed`` / ``passed``）
+- **message_key**: 该判定的本地化说明键（i18n，可空）
+- **details**: 判定上下文参数（命令名、原因、耗时等）
 
 ---
 
 
-### `format_dispatch_trace(records: list[dict[str, Any]])`
+### `format_dispatch_trace(records: list[dict[str, Any]]) -> str`
 
 将决策记录渲染为人类可读的因果链文本（当前语言）
 
-- **records** (`决策记录列表`): **返回值**: 逐行文本；无记录时返回提示文案
+- **records**: 决策记录列表
+
+**返回值**: 逐行文本；无记录时返回提示文案
 
 ---
 
 
-### `final_verdict(records: list[dict[str, Any]])`
+### `final_verdict(records: list[dict[str, Any]]) -> str`
 
 从决策记录推断最终结论
 
-- **records** (`决策记录列表`): **返回值** (```executed``（已执行）/`): ``rejected``（被权限类判定拒绝）/
+- **records**: 决策记录列表
+
+**返回值**: ``executed``（已执行）/ ``rejected``（被权限类判定拒绝）/
+
     ``dropped``（被冷却等静默丢弃）/ ``failed``（执行出错）/
     ``no_match``（带前缀但未命中任何命令）/ ``passed``（非命令文本，
     放行给消息处理器）/ ``unknown``（无记录）

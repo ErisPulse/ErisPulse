@@ -14,39 +14,42 @@ Create 命令实现
 ## 函数列表
 
 
-### `_camel_to_snake(name: str)`
+### `_camel_to_snake(name: str) -> str`
 
 将 PascalCase/CamelCase 名称转换为 snake_case
 
 - **name** (`str`): 原始名称
+
 **返回值** (`str`): 转换后的 snake_case 名称
 
 ---
 
 
-### `_to_converter_name(name: str)`
+### `_to_converter_name(name: str) -> str`
 
 根据适配器名称生成转换器类名
 
 - **name** (`str`): 适配器名称
+
 **返回值** (`str`): 转换器类名（名称后追加 Converter）
 
 ---
 
 
-### `_validate_name(name: str)`
+### `_validate_name(name: str) -> bool`
 
 校验项目/模块/适配器名称是否合法
 
 名称必须以字母开头，且只能包含字母、数字和下划线。
 
 - **name** (`str`): 待校验的名称
+
 **返回值** (`bool`): 合法返回 True，否则 False
 
 ---
 
 
-### `_copy_erispulse_logo(project_dir: Path)`
+### `_copy_erispulse_logo(project_dir: Path) -> None`
 
 将 ErisPulseLogo.png 拷贝到项目的 .github/assets/ 目录
 
@@ -55,11 +58,12 @@ Create 命令实现
 ---
 
 
-### `_scaffold_text(name: str)`
+### `_scaffold_text(name: str) -> dict`
 
 构建当前语言的脚手架文案映射，并预填充 {name} 占位符
 
 - **name** (`str`): 模块/适配器名称
+
 **返回值** (`dict`): ScaffoldText.all() 的文案字典（含占位符替换）
 
 ---
@@ -78,7 +82,7 @@ create 命令
 #### 方法列表
 
 
-##### `_interactive_select_type()`
+##### `_interactive_select_type() -> str`
 
 交互式选择创建类型（Module 或 Adapter）
 
@@ -87,7 +91,7 @@ create 命令
 ---
 
 
-##### `_ask_missing(args, field_name: str, prompt_text: str, default: str = '')`
+##### `_ask_missing(args, field_name: str, prompt_text: str, default: str = '') -> str`
 
 获取参数值，若缺失则交互式提示输入
 
@@ -95,6 +99,7 @@ create 命令
 - **field_name** (`str`): 参数字段名
 - **prompt_text** (`str`): 提示文本
 - **default** (`str`): 默认值 (默认: "")
+
 **返回值** (`str`): 获取到的参数值
 
 ---
@@ -106,6 +111,7 @@ create 命令
 
 - **args** (`Any`): 解析后的命令参数对象
 - **name** (`str`): 模块名称
+
 **返回值** (`None`): 无返回值
 
 ---
@@ -117,6 +123,7 @@ create 命令
 
 - **args** (`Any`): 解析后的命令参数对象
 - **name** (`str`): 模块名称
+
 **返回值** (`None`): 无返回值
 
 ---
@@ -128,6 +135,7 @@ create 命令
 
 - **args** (`Any`): 解析后的命令参数对象
 - **name** (`str`): 适配器名称
+
 **返回值** (`None`): 无返回值
 
 ---

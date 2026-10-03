@@ -23,9 +23,13 @@ ErisPulse SDK 主模块
 
 惰性解析 ``__version__``（首次访问时经包元数据读取）
 
-- **name** (`属性名`): **返回值** (`属性值`): **异常**: `AttributeError` - 未知属性时抛出
+- **name**: 属性名
 
-> **内部方法**
+**返回值**: 属性值
+
+**异常**: `AttributeError` - 未知属性时抛出
+
+**内部方法**
 避免在 ``import ErisPulse`` 时为读取版本号而加载 importlib.metadata
 及其依赖链（email/zipfile/asyncio 等，冷启动约数十毫秒）
 

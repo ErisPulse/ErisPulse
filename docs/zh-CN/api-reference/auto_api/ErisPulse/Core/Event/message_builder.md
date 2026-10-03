@@ -43,77 +43,83 @@ OneBot12 消息段构建器
 #### 方法列表
 
 
-##### `custom(segment_type: str, data: dict[str, Any])`
+##### `custom(segment_type: str, data: dict[str, Any]) -> 'MessageBuilder'`
 
 添加自定义消息段
 
 用于添加平台扩展消息段或其他非标准消息段
 
-- **segment_type** (`消息段类型（如`): "yunhu_form"）
-- **data** (`消息段数据`): **返回值** (`MessageBuilder`): 实例
+- **segment_type**: 消息段类型（如 "yunhu_form"）
+- **data**: 消息段数据
+
+**返回值** (`MessageBuilder`): 实例
 
 **示例**:
+
 ```python
->>> MessageBuilder().custom("yunhu_form", {"form_id": "123"}).build()
+MessageBuilder().custom("yunhu_form", {"form_id": "123"}).build()
 ```
 
 ---
 
 
-##### `build()`
+##### `build() -> list[dict[str, Any]]`
 
 构建消息段列表
 
 **返回值** (`OneBot12`): 标准消息段列表
 
 **示例**:
+
 ```python
->>> segments = MessageBuilder().text("Hello").image("url").build()
->>> # [{"type": "text", "data": {"text": "Hello"}}, {"type": "image", "data": {"file": "url"}}]
+segments = MessageBuilder().text("Hello").image("url").build()
+# [{"type": "text", "data": {"text": "Hello"}}, {"type": "image", "data": {"file": "url"}}]
 ```
 
 ---
 
 
-##### `copy()`
+##### `copy() -> 'MessageBuilder'`
 
 复制当前构建器（深拷贝消息段列表）
 
-**返回值** (`新的`): MessageBuilder 实例
+**返回值**: 新的 MessageBuilder 实例
 
 **示例**:
+
 ```python
->>> base = MessageBuilder().text("基础内容")
->>> msg1 = base.copy().image("img1").build()
->>> msg2 = base.copy().image("img2").build()
+base = MessageBuilder().text("基础内容")
+msg1 = base.copy().image("img1").build()
+msg2 = base.copy().image("img2").build()
 ```
 
 ---
 
 
-##### `clear()`
+##### `clear() -> 'MessageBuilder'`
 
 清空已添加的消息段
 
 **返回值** (`MessageBuilder`): 实例自身
 
 **示例**:
+
 ```python
->>> builder = MessageBuilder().text("将被清除")
->>> builder.clear().text("新内容").build()
+builder = MessageBuilder().text("将被清除")
+builder.clear().text("新内容").build()
 ```
 
 ---
 
 
-##### `__len__()`
+##### `__len__() -> int`
 
 返回已添加的消息段数量
 
 ---
 
 
-##### `__bool__()`
+##### `__bool__() -> bool`
 
 是否有消息段
 

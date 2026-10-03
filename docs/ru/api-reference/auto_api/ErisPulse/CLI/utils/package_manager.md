@@ -14,79 +14,87 @@ ErisPulse SDK 包管理器
 ## 函数列表
 
 
-### `create_project_venv(project_dir: Path)`
+### `create_project_venv(project_dir: Path) -> 'str | None'`
 
 在项目目录创建 `.venv` 虚拟环境
 
 优先使用 uv（`uv venv`，秒级、无 pip）；uv 不可用时回退
 `python -m venv`（自带 pip）。
 
-- **project_dir** (`项目目录（.venv`): 创建于其下）
-**返回值** (`成功时返回`): .venv 的 Python 解释器路径；失败返回 None
+- **project_dir**: 项目目录（.venv 创建于其下）
+
+**返回值**: 成功时返回 .venv 的 Python 解释器路径；失败返回 None
 
 ---
 
 
-### `uv_add(project_dir: Path, packages: 'list[str]')`
+### `uv_add(project_dir: Path, packages: 'list[str]') -> bool`
 
 在项目目录执行 `uv add <packages>`（安装依赖并同步写入 pyproject.toml）
 
 uv 会自动创建/使用项目 `.venv` 并生成 uv.lock——安装与依赖声明
 一步完成，天然免疫 `uv sync` 的未声明包清理。
 
-- **project_dir** (`项目目录（须已生成`): pyproject.toml）
-- **packages** (`包名列表`): **返回值**: 是否成功
+- **project_dir**: 项目目录（须已生成 pyproject.toml）
+- **packages**: 包名列表
+
+**返回值**: 是否成功
 
 ---
 
 
-### `append_pyproject_dependencies(project_dir: Path, packages: 'list[str]')`
+### `append_pyproject_dependencies(project_dir: Path, packages: 'list[str]') -> bool`
 
 手动向 pyproject.toml 的 project.dependencies 追加依赖（pip 回退路径用）
 
 使用 tomlkit 保留文件注释与格式。
 
-- **project_dir** (`项目目录`): - **packages**: 依赖包名列表
-**返回值** (`是否成功（pyproject`): 不存在 / 解析失败返回 False）
+- **project_dir**: 项目目录
+- **packages**: 依赖包名列表
+
+**返回值**: 是否成功（pyproject 不存在 / 解析失败返回 False）
 
 ---
 
 
-### `resolve_target_python(project_dir: 'Path | None' = None)`
+### `resolve_target_python(project_dir: 'Path | None' = None) -> 'tuple[str, str]'`
 
 解析目标 Python 解释器（CLI 各命令统一入口）
 
 优先级：`ERISPULSE_PYTHON` 环境变量 > 项目 `.venv` 内解释器 >
 `VIRTUAL_ENV` > 当前解释器。
 
-- **project_dir** (`项目目录（默认当前目录）；在该目录下探测`): `.venv`
-**返回值** (`(解释器路径,`): 来源描述)——来源用于提示用户当前操作所作用的环境
+- **project_dir**: 项目目录（默认当前目录）；在该目录下探测 `.venv`
+
+**返回值**: (解释器路径, 来源描述)——来源用于提示用户当前操作所作用的环境
 
 ---
 
 
-### `build_uv_tool_update_command(uv_cmd: 'list[str]', target_version: 'str | None')`
+### `build_uv_tool_update_command(uv_cmd: 'list[str]', target_version: 'str | None') -> 'list[str]'`
 
 构建 uv tool 通道的 SDK 自更新命令
 
 - **uv_cmd** (`list[str`): ] uv 命令前缀（如 ["uv"]）
 - **target_version** (`str | None`): 目标版本号；None 表示升级到最新
+
 **返回值** (`list[str`): ] 完整命令列表
 
 ---
 
 
-### `_ps_quote(text: str)`
+### `_ps_quote(text: str) -> str`
 
 转义 PowerShell 单引号字符串中的单引号
 
 - **text** (`str`): 原始文本
+
 **返回值** (`str`): 可安全嵌入 PowerShell 单引号字面量的文本
 
 ---
 
 
-### `build_windows_tool_update_script(cmd: 'list[str]', parent_pid: int, msg_done: str, msg_failed: str, press_key: str)`
+### `build_windows_tool_update_script(cmd: 'list[str]', parent_pid: int, msg_done: str, msg_failed: str, press_key: str) -> str`
 
 生成 Windows 分离更新用的 PowerShell 脚本文本
 
@@ -99,12 +107,13 @@ uv tool 更新命令 → 报告结果 → 自删除 → 等待用户按键，防
 - **msg_done** (`str`): 更新成功提示
 - **msg_failed** (`str`): 更新失败提示
 - **press_key** (`str`): 退出前按键提示
+
 **返回值** (`str`): PowerShell 脚本文本
 
 ---
 
 
-### `warn_if_uv_isolated()`
+### `warn_if_uv_isolated() -> bool`
 
 检测当前是否处于 uv 无项目的隔离运行上下文并输出警告
 
@@ -112,12 +121,12 @@ uv tool 更新命令 → 报告结果 → 自删除 → 等待用户按键，防
 隔离环境——其中安装的包不会持久化。通过 `UV` 环境变量识别 uv
 上下文，结合 cwd 项目文件缺失判定隔离场景。
 
-**返回值** (`是否处于隔离场景（True`): = 已输出警告）
+**返回值**: 是否处于隔离场景（True = 已输出警告）
 
 ---
 
 
-### `is_uv_tool_env()`
+### `is_uv_tool_env() -> bool`
 
 检测当前解释器是否位于 `uv tool install` 创建的工具环境中
 
@@ -131,7 +140,7 @@ uv tool 的入口 shim 执行时不会设置 UV 变量。
 ---
 
 
-### `warn_if_uv_tool_env_without_project()`
+### `warn_if_uv_tool_env_without_project() -> bool`
 
 检测「uv tool 环境运行 + 无项目环境」场景并输出提示
 
@@ -162,11 +171,12 @@ ErisPulse包管理器
 #### 方法列表
 
 
-##### `_sanitize_proxy_url(url: str)`
+##### `_sanitize_proxy_url(url: str) -> str`（staticmethod）
 
 对代理URL中的密码进行脱敏处理
 
 - **url** (`str`): 原始代理URL
+
 **返回值** (`str`): 密码被替换为 *** 的脱敏URL
 
 ---
@@ -177,23 +187,25 @@ ErisPulse包管理器
 初始化包管理器，设置缓存、查找器、代理与 uv 相关状态
 
 - **python_executable** (`str | None`): 显式指定目标 Python 解释器
+
     （如项目 .venv 内的解释器）。指定后查找器与安装/卸载目标环境
     全部指向该解释器；None 时按 _get_target_python() 自动解析
 
 ---
 
 
-##### `_parse_size(size_str: str)`
+##### `_parse_size(size_str: str) -> float`（staticmethod）
 
 将带单位的尺寸字符串解析为字节数
 
 - **size_str** (`str`): 尺寸字符串，如 "10MB"
+
 **返回值** (`float`): 对应的字节数，无法解析时返回 0
 
 ---
 
 
-##### `_get_system_proxy()`
+##### `_get_system_proxy() -> dict[str, str] | None`
 
 获取系统代理配置，优先读取环境变量，其次读取Windows注册表
 
@@ -202,27 +214,29 @@ ErisPulse包管理器
 ---
 
 
-##### `_parse_windows_proxy(proxy_server: str)`
+##### `_parse_windows_proxy(proxy_server: str) -> dict[str, str]`（staticmethod）
 
 解析Windows注册表中的代理服务器字符串为协议到URL的映射
 
 - **proxy_server** (`str`): Windows代理服务器字符串
+
 **返回值** (`Dict[str, str`): ] 协议到代理URL的映射
 
 ---
 
 
-##### `_get_proxy_for_url(url: str)`
+##### `_get_proxy_for_url(url: str) -> str | None`
 
 根据URL的协议获取对应的代理地址
 
 - **url** (`str`): 目标URL
+
 **返回值** (`Optional[str`): ] 对应的代理URL，无匹配代理时返回 None
 
 ---
 
 
-##### `_build_subprocess_env()`
+##### `_build_subprocess_env() -> dict[str, str]`
 
 构建子进程环境变量，未设置时注入系统代理配置
 
@@ -231,48 +245,52 @@ ErisPulse包管理器
 ---
 
 
-##### `_http_get(url: str, timeout: int = 15)`
+##### `_http_get(url: str, timeout: int = 15) -> str | None`
 
 发起HTTP GET请求并返回响应文本，自动应用系统代理
 
 - **url** (`str`): 请求URL
 - **timeout** (`int`): 超时时间(秒) (默认: 15)
+
 **返回值** (`Optional[str`): ] 响应文本，请求失败时返回 None
 
 ---
 
 
-##### `_fetch_remote_packages_sync(url: str)`
+##### `_fetch_remote_packages_sync(url: str) -> dict | None`
 
 同步获取并解析远程包列表JSON
 
 - **url** (`str`): 远程包列表URL
+
 **返回值** (`Optional[dict`): ] 解析后的包列表字典，失败时返回 None
 
 ---
 
 
-##### `async _fetch_remote_packages(url: str)`
+##### `async _fetch_remote_packages(url: str) -> dict | None`
 
 异步获取远程包列表
 
 - **url** (`str`): 远程包列表URL
+
 **返回值** (`Optional[dict`): ] 解析后的包列表字典，失败时返回 None
 
 ---
 
 
-##### `async get_remote_packages(force_refresh: bool = False)`
+##### `async get_remote_packages(force_refresh: bool = False) -> dict`
 
 获取远程包列表，带缓存机制
 
 - **force_refresh** (`bool`): 是否强制刷新缓存 (默认: False)
+
 **返回值** (`dict`): 包含 modules 和 adapters 信息的字典
 
 ---
 
 
-##### `get_installed_packages()`
+##### `get_installed_packages() -> dict[str, dict[str, dict[str, str]]]`
 
 获取已安装的模块和适配器信息
 
@@ -281,47 +299,51 @@ ErisPulse包管理器
 ---
 
 
-##### `_is_module_enabled(module_name: str)`
+##### `_is_module_enabled(module_name: str) -> bool`
 
 检查指定模块是否已启用
 
 - **module_name** (`str`): 模块名称
+
 **返回值** (`bool`): 模块已启用返回 True，无法判断时默认返回 True
 
 ---
 
 
-##### `_normalize_name(name: str)`
+##### `_normalize_name(name: str) -> str`
 
 将名称标准化为小写并去除首尾空白
 
 - **name** (`str`): 原始名称
+
 **返回值** (`str`): 标准化后的名称
 
 ---
 
 
-##### `async _find_package_by_alias(alias: str)`
+##### `async _find_package_by_alias(alias: str) -> str | None`
 
 通过别名查找实际的包名，依次匹配已安装包和远程包
 
 - **alias** (`str`): 别名或包名
+
 **返回值** (`Optional[str`): ] 实际的包名，未找到时返回 None
 
 ---
 
 
-##### `_find_installed_package_by_name(name: str)`
+##### `_find_installed_package_by_name(name: str) -> str | None`
 
 在已安装的模块和适配器中按名称查找实际包名
 
 - **name** (`str`): 包名或别名
+
 **返回值** (`Optional[str`): ] 已安装的实际包名，未找到时返回 None
 
 ---
 
 
-##### `async check_package_updates()`
+##### `async check_package_updates() -> dict[str, tuple[str, str]]`
 
 检查已安装包的可用更新
 
@@ -330,35 +352,37 @@ ErisPulse包管理器
 ---
 
 
-##### `_get_pypi_version_sync(package_name: str)`
+##### `_get_pypi_version_sync(package_name: str) -> str | None`
 
 同步从PyPI获取指定包的最新版本号
 
 - **package_name** (`str`): 包名
+
 **返回值** (`Optional[str`): ] 最新版本号，失败时返回 None
 
 ---
 
 
-##### `async _get_pypi_package_version(package_name: str, force_refresh: bool = False)`
+##### `async _get_pypi_package_version(package_name: str, force_refresh: bool = False) -> str | None`
 
 异步获取指定包的PyPI最新版本，带缓存机制
 
 - **package_name** (`str`): 包名
 - **force_refresh** (`bool`): 是否强制刷新缓存 (默认: False)
+
 **返回值** (`Optional[str`): ] 最新版本号，失败时返回 None
 
 ---
 
 
-##### `_is_uv_disabled()`
+##### `_is_uv_disabled() -> bool`
 
 是否禁用 uv：CLI --no-uv 优先，其次环境变量 ERISPULSE_NO_UV
 
 ---
 
 
-##### `_detect_uv()`
+##### `_detect_uv() -> list[str] | None`
 
 检测可用的 uv 命令。
 
@@ -370,7 +394,7 @@ ErisPulse包管理器
 ---
 
 
-##### `_get_uv_command()`
+##### `_get_uv_command() -> list[str] | None`
 
 返回应使用的 uv 命令前缀。
 
@@ -381,7 +405,7 @@ ErisPulse包管理器
 ---
 
 
-##### `_get_target_python()`
+##### `_get_target_python() -> str`
 
 返回应当作为安装目标的 Python 解释器路径。
 
@@ -394,7 +418,7 @@ ErisPulse包管理器
 ---
 
 
-##### `_execute_backend(base_cmd: list[str], args: list[str], description: str, backend: str)`
+##### `_execute_backend(base_cmd: list[str], args: list[str], description: str, backend: str) -> bool`
 
 使用指定的后端 (uv/pip) 执行命令并实时输出到当前终端。
 
@@ -402,12 +426,13 @@ ErisPulse包管理器
 - **args** (`List[str`): ] 传递给后端的子命令与参数
 - **description** (`str`): 展示给用户的操作描述
 - **backend** (`str`): 后端名称 (uv/pip)，用于展示与错误提示
+
 **返回值** (`bool`): 执行成功返回 True
 
 ---
 
 
-##### `_build_install_command(package_spec: str, upgrade: bool = True)`
+##### `_build_install_command(package_spec: str, upgrade: bool = True) -> tuple[list[str], str]`
 
 构建安装命令（uv 优先，回退 pip），供各安装场景复用。
 
@@ -420,12 +445,13 @@ ErisPulse包管理器
 
 - **package_spec** (`str`): 包描述，如 "ErisPulse==1.0.0"
 - **upgrade** (`bool`): 是否添加 --upgrade 参数 (默认: True)
+
 **返回值** (`Tuple[List[str`): , str]] (完整安装命令列表, 后端名称 uv/pip)
 
 ---
 
 
-##### `_run_pip_command_with_output(args: list[str], description: str)`
+##### `_run_pip_command_with_output(args: list[str], description: str) -> bool`
 
 执行 pip 类操作 (install/uninstall)。
 
@@ -440,12 +466,13 @@ ErisPulse包管理器
 
 - **args** (`List[str`): ] pip 子命令与参数，如 ["install", "--upgrade", pkg]
 - **description** (`str`): 展示给用户的操作描述
+
 **返回值** (`bool`): 执行成功返回 True
 
 ---
 
 
-##### `_ensure_pip_available(target_python: str)`
+##### `_ensure_pip_available(target_python: str) -> bool`
 
 确保目标 Python 环境可用 pip
 
@@ -454,24 +481,26 @@ uv 创建的 venv 默认不含 pip（uv 自身可装包）。当 uv 不可用或
 “No module named pip” 的错误。这里通过 ``python -m ensurepip`` 自举安装。
 
 - **target_python** (`str`): 目标 Python 解释器路径
+
 **返回值** (`bool`): pip 可用返回 True，无法 bootstrap 返回 False
 
 ---
 
 
-##### `_version_key(version: str)`
+##### `_version_key(version: str) -> tuple`
 
 将版本号解析为可比较的元组键
 
 委托 :func:`ErisPulse.runtime.version.version_key`（框架内唯一实现）。
 
 - **version** (`str`): 版本号字符串
+
 **返回值** (`tuple`): 逐段可比较的比较键元组
 
 ---
 
 
-##### `_compare_versions(version1: str, version2: str)`
+##### `_compare_versions(version1: str, version2: str) -> int`
 
 比较两个版本号的大小
 
@@ -479,32 +508,35 @@ uv 创建的 venv 默认不含 pip（uv 自身可装包）。当 uv 不可用或
 
 - **version1** (`str`): 第一个版本号
 - **version2** (`str`): 第二个版本号
+
 **返回值** (`int`): version1 大于/等于/小于 version2 时分别返回 1/0/-1
 
 ---
 
 
-##### `_check_sdk_compatibility(min_sdk_version: str)`
+##### `_check_sdk_compatibility(min_sdk_version: str) -> tuple[bool, str]`
 
 检查当前SDK版本是否满足最低版本要求
 
 - **min_sdk_version** (`str`): 所需的最低SDK版本
+
 **返回值** (`Tuple[bool, str`): ] (是否兼容, 提示信息)
 
 ---
 
 
-##### `async _get_package_info(package_name: str)`
+##### `async _get_package_info(package_name: str) -> dict[str, Any] | None`
 
 从远程包列表中获取指定包的详细信息
 
 - **package_name** (`str`): 包名
+
 **返回值** (`Optional[Dict[str, Any`): ]] 包信息字典，未找到时返回 None
 
 ---
 
 
-##### `install_package(package_names: list[str], upgrade: bool = False, pre: bool = False, extra_pip_args: list[str] | None = None)`
+##### `install_package(package_names: list[str], upgrade: bool = False, pre: bool = False, extra_pip_args: list[str] | None = None) -> bool`
 
 安装一个或多个包，支持别名映射、未验证包确认和SDK兼容性检查
 
@@ -512,34 +544,37 @@ uv 创建的 venv 默认不含 pip（uv 自身可装包）。当 uv 不可用或
 - **upgrade** (`bool`): 是否升级已安装的包 (默认: False)
 - **pre** (`bool`): 是否允许预发布版本 (默认: False)
 - **extra_pip_args** (`Optional[List[str`): ]] 附加的pip参数 (默认: None)
+
 **返回值** (`bool`): 全部安装成功返回 True
 
 ---
 
 
-##### `install_direct(pip_args: list[str], description: str = 'pip install')`
+##### `install_direct(pip_args: list[str], description: str = 'pip install') -> bool`
 
 直接使用给定参数执行pip安装
 
 - **pip_args** (`List[str`): ] pip install 的参数列表
 - **description** (`str`): 展示给用户的操作描述 (默认: "pip install")
+
 **返回值** (`bool`): 执行成功返回 True
 
 ---
 
 
-##### `uninstall_package(package_names: list[str], skip_confirm: bool = False)`
+##### `uninstall_package(package_names: list[str], skip_confirm: bool = False) -> bool`
 
 卸载一个或多个包，支持别名映射和确认提示
 
 - **package_names** (`List[str`): ] 待卸载的包名或别名列表
 - **skip_confirm** (`bool`): 是否跳过确认提示 (默认: False)
+
 **返回值** (`bool`): 全部卸载成功返回 True
 
 ---
 
 
-##### `upgrade_all()`
+##### `upgrade_all() -> bool`
 
 检查并升级所有有可用更新的ErisPulse包
 
@@ -548,28 +583,30 @@ uv 创建的 venv 默认不含 pip（uv 自身可装包）。当 uv 不可用或
 ---
 
 
-##### `upgrade_package(package_names: list[str], pre: bool = False)`
+##### `upgrade_package(package_names: list[str], pre: bool = False) -> bool`
 
 升级指定包到最新版本
 
 - **package_names** (`List[str`): ] 待升级的包名或别名列表
 - **pre** (`bool`): 是否允许预发布版本 (默认: False)
+
 **返回值** (`bool`): 全部升级成功返回 True
 
 ---
 
 
-##### `search_package(query: str)`
+##### `search_package(query: str) -> dict[str, list[dict[str, str]]]`
 
 在已安装和远程包中搜索匹配查询的包
 
 - **query** (`str`): 搜索关键词
+
 **返回值** (`Dict[str, List[Dict[str, str`): ]] 包含 installed 和 remote 匹配结果的字典
 
 ---
 
 
-##### `get_installed_version()`
+##### `get_installed_version() -> str`
 
 获取已安装的ErisPulse SDK版本号
 
@@ -578,7 +615,7 @@ uv 创建的 venv 默认不含 pip（uv 自身可装包）。当 uv 不可用或
 ---
 
 
-##### `_get_pypi_versions_sync()`
+##### `_get_pypi_versions_sync() -> list[dict[str, Any]]`
 
 同步从PyPI获取ErisPulse的所有可用版本，按版本号降序排列
 
@@ -587,7 +624,7 @@ uv 创建的 venv 默认不含 pip（uv 自身可装包）。当 uv 不可用或
 ---
 
 
-##### `async get_pypi_versions()`
+##### `async get_pypi_versions() -> list[dict[str, Any]]`
 
 异步获取ErisPulse在PyPI上的所有可用版本
 
@@ -596,7 +633,7 @@ uv 创建的 venv 默认不含 pip（uv 自身可装包）。当 uv 不可用或
 ---
 
 
-##### `_is_pre_release(version: str)`
+##### `_is_pre_release(version: str) -> bool`
 
 判断版本号是否为预发布版本
 
@@ -605,12 +642,13 @@ uv 创建的 venv 默认不含 pip（uv 自身可装包）。当 uv 不可用或
 post 版本 (1.0.post1) 与本地版本 (1.0+local) 不视为预发布版本
 
 - **version** (`str`): 版本号字符串
+
 **返回值** (`bool`): 是预发布版本时返回 True
 
 ---
 
 
-##### `_spawn_windows_tool_update(cmd: 'list[str]', target_version: 'str | None', current_version: str)`
+##### `_spawn_windows_tool_update(cmd: 'list[str]', target_version: 'str | None', current_version: str) -> bool`
 
 Windows 下以分离进程执行 uv tool 自更新
 
@@ -622,17 +660,19 @@ Windows 下以分离进程执行 uv tool 自更新
 - **cmd** (`list[str`): ] uv tool 更新命令
 - **target_version** (`str | None`): 目标版本号（None 表示最新）
 - **current_version** (`str`): 当前已安装版本号
+
 **返回值** (`bool`): 更新进程启动成功返回 True（结果以新窗口输出为准）
 
 ---
 
 
-##### `update_self(target_version: str | None = None, force: bool = False)`
+##### `update_self(target_version: str | None = None, force: bool = False) -> bool`
 
 更新ErisPulse SDK到指定版本或最新版本
 
 - **target_version** (`Optional[str`): ] 目标版本号，为空则更新到最新版本 (默认: None)
 - **force** (`bool`): 是否强制更新到当前已安装的目标版本 (默认: False)
+
 **返回值** (`bool`): 更新成功返回 True
 
 ---

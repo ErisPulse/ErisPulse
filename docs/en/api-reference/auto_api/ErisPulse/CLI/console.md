@@ -36,7 +36,7 @@ CLI 控制台模块
 ---
 
 
-### `print_suggestion(title: str, suggestions: list[str], hint: str | None = None)`
+### `print_suggestion(title: str, suggestions: list[str], hint: str | None = None) -> None`
 
 输出错误提示与建议
 

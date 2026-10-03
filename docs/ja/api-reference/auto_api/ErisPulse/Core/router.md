@@ -21,24 +21,25 @@ ErisPulse 路由系统
 ## 函数列表
 
 
-### `_load_web_stack()`
+### `_load_web_stack() -> None`
 
 懒加载 FastAPI / Uvicorn / Starlette
 
-> **内部方法**
+**内部方法**
 将 web 栈依赖推迟到路由实际服务时才导入。幂等：重复调用仅做一次实际导入。
 
 ---
 
 
-### `_web_stack_required(fn: Callable[..., Any])`
+### `_web_stack_required(fn: Callable[..., Any]) -> Callable[..., Any]`
 
 装饰器：在被装饰方法执行前确保 web 栈已加载
 
-> **内部方法**
+**内部方法**
 自动适配同步与异步方法。
 
 - **fn** (`Callable`): 被装饰的方法
+
 **返回值** (`Callable`): 包装后的方法
 
 ---
@@ -51,7 +52,7 @@ ErisPulse 路由系统
 
 函数式路由中间件包装
 
-> **内部方法**
+**内部方法**
 
 
 ### `class RouteGroup`
@@ -62,11 +63,12 @@ ErisPulse 路由系统
 > 通过 sdk.router.group() 创建，支持版本前缀和嵌套分组
 
 **示例**:
+
 ```python
->>> api = sdk.router.group("MyModule", "/api", version="1", tags=["API"])
->>> @api.get("/users")
-... async def users(request):
-...     return {"users": []}
+api = sdk.router.group("MyModule", "/api", version="1", tags=["API"])
+@api.get("/users")
+async def users(request):
+    return {"users": []}
 ```
 
 
@@ -80,74 +82,79 @@ ErisPulse 路由系统
 - **module_name** (`str`): 模块名称 (路径前缀)
 - **prefix** (`str`): 路由前缀
 - **version** (`str`): 版本号 (可选, 如 "1")
-- **tags** (`list[str]`): API 文档标签 (可选)
+- **tags**: list[str] API 文档标签 (可选)
 - **middlewares** (`list`): 分组级中间件 (可选)
 - **router** (`RouterManager`): 路由管理器实例
 
 ---
 
 
-##### `_resolve_path(path: str)`
+##### `_resolve_path(path: str) -> str`
 
 解析完整路径
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `http(path: str, methods: list[str] | None = None)`
+##### `http(path: str, methods: list[str] | None = None, **kwargs)`
 
 HTTP 路由装饰器
 
 - **path** (`str`): 路由路径
-- **methods** (`list[str]`): HTTP 方法列表 (默认: ["POST"])
+- **methods**: list[str] HTTP 方法列表 (默认: ["POST"])
+
 **返回值** (`Callable`): 装饰器
 
 ---
 
 
-##### `get(path: str)`
+##### `get(path: str, **kwargs)`
 
 GET 路由装饰器
 
 - **path** (`str`): 路由路径
+
 **返回值** (`Callable`): 装饰器
 
 ---
 
 
-##### `post(path: str)`
+##### `post(path: str, **kwargs)`
 
 POST 路由装饰器
 
 - **path** (`str`): 路由路径
+
 **返回值** (`Callable`): 装饰器
 
 ---
 
 
-##### `put(path: str)`
+##### `put(path: str, **kwargs)`
 
 PUT 路由装饰器
 
 - **path** (`str`): 路由路径
+
 **返回值** (`Callable`): 装饰器
 
 ---
 
 
-##### `delete(path: str)`
+##### `delete(path: str, **kwargs)`
 
 DELETE 路由装饰器
 
 - **path** (`str`): 路由路径
+
 **返回值** (`Callable`): 装饰器
 
 ---
 
 
-##### `ws(path: str)`
+##### `ws(path: str, **kwargs)`
 
 WebSocket 路由装饰器
 
@@ -158,7 +165,7 @@ WebSocket 路由装饰器
 ---
 
 
-##### `sse(path: str)`
+##### `sse(path: str, **kwargs)`
 
 SSE (Server-Sent Events) 路由装饰器
 
@@ -167,20 +174,22 @@ SSE (Server-Sent Events) 路由装饰器
 ---
 
 
-##### `group(prefix: str)`
+##### `group(prefix: str, **kwargs) -> RouteGroup`
 
 创建嵌套分组
 
 - **prefix** (`str`): 子路由前缀
+
 **返回值** (`RouteGroup`): 嵌套分组实例
 
 **示例**:
+
 ```python
->>> api = sdk.router.group("MyModule", "/api", version="1")
->>> users = api.group("/users")
->>> @users.get("/")
-... async def list_users(request):
-...     ...
+api = sdk.router.group("MyModule", "/api", version="1")
+users = api.group("/users")
+@users.get("/")
+async def list_users(request):
+    ...
 ```
 
 ---
@@ -203,11 +212,11 @@ SSE (Server-Sent Events) 路由装饰器
 #### 方法列表
 
 
-##### `_erispulse_version()`
+##### `_erispulse_version() -> str`（staticmethod）
 
 惰性获取 SDK 版本号（首次访问经包元数据读取，结果缓存）
 
-> **内部方法**
+**内部方法**
 避免在导入期为读版本号而加载 importlib.metadata 依赖链
 
 ---
@@ -223,29 +232,30 @@ SSE (Server-Sent Events) 路由装饰器
 ---
 
 
-##### `app()`
+##### `app -> FastAPI`（property）
 
 FastAPI 应用实例（惰性创建，首次访问时加载 web 栈并注册核心路由）
 
 ---
 
 
-##### `_normalize_path(prefix: str, path: str)`
+##### `_normalize_path(prefix: str, path: str) -> str`
 
 标准化路径，确保格式正确
 
 - **prefix** (`str`): 路径前缀（如模块名）
 - **path** (`str`): 路径部分
+
 **返回值** (`str`): 标准化后的完整路径
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `_track_owner_namespace(namespace: str)`
+##### `_track_owner_namespace(namespace: str) -> None`
 
-> **内部方法**
+**内部方法**
 若当前处于加载上下文（current_owner 已设置），记录命名空间归属，
 以便后续按 owner 兜底清理路由。
 
@@ -256,7 +266,7 @@ FastAPI 应用实例（惰性创建，首次访问时加载 web 栈并注册核�
 ---
 
 
-##### `_make_http_endpoint(handler: Callable)`
+##### `_make_http_endpoint(handler: Callable) -> Callable`
 
 根据处理器签名创建 FastAPI 兼容的 HTTP 端点
 
@@ -265,47 +275,47 @@ FastAPI 应用实例（惰性创建，首次访问时加载 web 栈并注册核�
 - HttpRequest / 无注解且名称类似 request → 注入 HttpRequest 包装
 - 其他类型 / 非请求参数名 → 不注入
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `_make_ws_handler(handler: Callable)`
+##### `_make_ws_handler(handler: Callable) -> Callable`
 
 根据处理器签名创建 WebSocket 处理器包装
 
 - fastapi.WebSocket 注解 → 提取 .raw 透传
 - WebSocketConnection / 无注解 → 直接传递 WebSocketConnection
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `_make_ws_auth_handler(auth_handler: Callable)`
+##### `_make_ws_auth_handler(auth_handler: Callable) -> Callable`
 
 根据签名创建 WebSocket 认证处理器包装
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `_make_sse_endpoint(handler: Callable)`
+##### `_make_sse_endpoint(handler: Callable) -> Callable`
 
 根据处理器签名创建 SSE 端点包装器
 
 自动检测处理器是否需要 HttpRequest 参数。
 为处理器创建 SseEmitter 实例，通过回调桥接 SSE 协议到底层 StreamingResponse。
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `_create_sse_route(full_path: str, module_name: str, handler: Callable)`
+##### `_create_sse_route(full_path: str, module_name: str, handler: Callable, **kwargs) -> None`
 
-> **内部方法**
+**内部方法**
 在当前 app 实例上创建 SSE 路由（纯路由创建，不做重复检查、不写记录）
 
 供 ``_register_sse_endpoint``（新注册）与 ``_restore_routes_from_records``（恢复）
@@ -314,39 +324,39 @@ FastAPI 应用实例（惰性创建，首次访问时加载 web 栈并注册核�
 ---
 
 
-##### `_register_sse_endpoint(full_path: str, module_name: str, handler: Callable)`
+##### `_register_sse_endpoint(full_path: str, module_name: str, handler: Callable, **kwargs) -> None`
 
 SSE 路由注册内部实现
 
-> **内部方法**
+**内部方法**
 包含重复检查、owner 追踪、记录写入；路由创建委托 :meth:`_create_sse_route`。
 
 ---
 
 
-##### `async _run_ws_hooks(ws_conn: WebSocketConnection, hook_type: str)`
+##### `async _run_ws_hooks(ws_conn: WebSocketConnection, hook_type: str, **kwargs) -> None`（staticmethod）
 
 执行 WebSocket 生命周期钩子
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `_setup_core_routes()`
+##### `_setup_core_routes() -> None`
 
 设置系统核心路由
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `_setup_error_pages()`
+##### `_setup_error_pages() -> None`
 
 设置错误页面
 
-> **内部方法**
+**内部方法**
 为 GET 请求添加 ErisPulse 主题化错误页面。
 POST 等非 GET 请求仍然返回 JSON 格式的错误响应。
 所有错误码共用同一套 HTML 模板（``render_error_page``），仅注入不同的标题/描述。
@@ -354,11 +364,11 @@ POST 等非 GET 请求仍然返回 JSON 格式的错误响应。
 ---
 
 
-##### `_restore_routes_from_records()`
+##### `_restore_routes_from_records() -> None`
 
 将内部记录中已有的路由重新注册到当前 FastAPI 实例
 
-> **内部方法**
+**内部方法**
 
 ---
 
@@ -367,16 +377,17 @@ POST 等非 GET 请求仍然返回 JSON 格式的错误响应。
 
 确保 FastAPI 级中间件已安装
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `middleware()`
+##### `middleware(*paths: str)`
 
 路由中间件装饰器
 
 - **paths** (`str`): 路径匹配模式 (支持通配符), 留空则为全局中间件
+
 **返回值** (`Callable`): 装饰器
 
 > **提示**
@@ -386,20 +397,21 @@ POST 等非 GET 请求仍然返回 JSON 格式的错误响应。
 > paths 参数为 glob 模式路径匹配，如 "/MyModule/*"，而非 (module_name, pattern)
 
 **示例**:
+
 ```python
->>> @sdk.router.middleware()
-... async def log_all(request):
-...     return request
->>>
->>> @sdk.router.middleware("/MyModule/api/*")
-... async def auth_check(request):
-...     return request
+@sdk.router.middleware()
+async def log_all(request):
+    return request
+
+@sdk.router.middleware("/MyModule/api/*")
+async def auth_check(request):
+    return request
 ```
 
 ---
 
 
-##### `add_middleware(before: Callable | None = None, after: Callable | None = None)`
+##### `add_middleware(before: Callable | None = None, after: Callable | None = None, *paths: str)`
 
 添加中间件函数
 
@@ -410,191 +422,203 @@ POST 等非 GET 请求仍然返回 JSON 格式的错误响应。
 ---
 
 
-##### `register_home_entry(name: str | dict, url: str, icon_svg: str = '')`
+##### `register_home_entry(name: str | dict, url: str, icon_svg: str = '') -> None`
 
 在根路由页面注册一个入口按钮
 
-- **name** (`str`): | dict 按钮显示文本。纯文本直接传入字符串；
+- **name** (`str | dict`): 按钮显示文本。纯文本直接传入字符串；
+
               也可传入 i18n 字典格式: {"i18n": "key", "default": "兜底"}
 - **url** (`str`): 按钮链接地址
 - **icon_svg** (`str`): 可选 SVG 图标标记
 
 **示例**:
+
 ```python
->>> # 纯文本
->>> router.register_home_entry(name="Dashboard", url="/Dashboard")
->>>
->>> # i18n 字典格式
->>> router.register_home_entry(
-...     name={"i18n": "core.router.entry_dashboard", "default": "Dashboard"},
-...     url="/Dashboard",
-... )
->>>
->>> # 带 SVG 图标
->>> router.register_home_entry(
-...     name="控制台",
-...     url="/console",
-...     icon_svg='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 17l6-6-6-6"/></svg>',
-... )
+# 纯文本
+router.register_home_entry(name="Dashboard", url="/Dashboard")
+
+# i18n 字典格式
+router.register_home_entry(
+    name={"i18n": "core.router.entry_dashboard", "default": "Dashboard"},
+    url="/Dashboard",
+)
+
+# 带 SVG 图标
+router.register_home_entry(
+    name="控制台",
+    url="/console",
+    icon_svg='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 17l6-6-6-6"/></svg>',
+)
 ```
 
 ---
 
 
-##### `unregister_home_entries_by_owner(owner: str)`
+##### `unregister_home_entries_by_owner(owner: str) -> int`
 
 移除指定归属者注册的全部首页入口按钮
 
-- **owner** (`归属者（模块名或适配器平台名）`): **返回值** (`int`): 移除的入口数量
+- **owner**: 归属者（模块名或适配器平台名）
+
+**返回值** (`int`): 移除的入口数量
 
 ---
 
 
-##### `_match_path(pattern: str, path: str)`
+##### `_match_path(pattern: str, path: str) -> bool`（staticmethod）
 
 通配符路径匹配
 
 - **pattern** (`str`): 匹配模式
 - **path** (`str`): 实际路径
+
 **返回值** (`bool`): 是否匹配
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `_shadow_registration()`
+##### `_shadow_registration() -> bool`
 
-> **内部方法**
+**内部方法**
 当前注册上下文是否属于影子 owner（方向十一：只登记不挂载）
 
 ---
 
 
-##### `_mount_route(route: Any)`
+##### `_mount_route(route: Any) -> Any`
 
-> **内部方法**
+**内部方法**
 把 route 挂载到 Starlette app（全路由唯一挂载点）
 
 影子 owner 注册的路由只登记不挂载：route 由调用方经
 ``_save_route_object`` 留档，counts 审计可见、reclaim 可清，
 但对真实流量不可达。
 
-- **route** (`APIRoute`): / WebSocketRoute 路由对象
-**返回值** (`路由对象（供`): WS 等调用方留存）
+- **route**: APIRoute / WebSocketRoute 路由对象
+
+**返回值**: 路由对象（供 WS 等调用方留存）
 
 ---
 
 
-##### `_save_route_object(namespace: str, full_path: str, kind: str, route: Any)`
+##### `_save_route_object(namespace: str, full_path: str, kind: str, route: Any) -> None`
 
-> **内部方法**
+**内部方法**
 记录 route 对象引用（kind ∈ {"http", "ws", "sse"}）
 
 ---
 
 
-##### `_take_saved_routes(namespace: str, full_path: str, kind: str)`
+##### `_take_saved_routes(namespace: str, full_path: str, kind: str) -> list[Any]`
 
-> **内部方法**
+**内部方法**
 取出指定类型的已保存 route 对象（其它类型的索引条目保留）
 
 ---
 
 
-##### `_http_decorate(full_path: str, module_name: str, methods: list[str] | None = None)`
+##### `_http_decorate(full_path: str, module_name: str, methods: list[str] | None = None, **kwargs)`
 
 HTTP 路由装饰器内部实现
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `_ws_decorate(full_path: str, module_name: str)`
+##### `_ws_decorate(full_path: str, module_name: str, **kwargs)`
 
 WebSocket 路由装饰器内部实现
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `http(module_name: str, path: str, methods: list[str] | None = None)`
+##### `http(module_name: str, path: str, methods: list[str] | None = None, **kwargs)`
 
 HTTP 路由装饰器
 
 - **module_name** (`str`): 模块名称 (必填, 作为路径前缀)
 - **path** (`str`): 路由路径
-- **methods** (`list[str]`): HTTP 方法列表 (默认: ["POST"])
+- **methods**: list[str] HTTP 方法列表 (默认: ["POST"])
 - **rate_limit** (`str|dict`): 限流规则 (可选)
-- **summary** (`str`): API 摘要 (可选, 用于文档)
-- **description** (`str`): API 描述 (可选, 用于文档)
-- **tags** (`list[str]`): API 标签 (可选, 用于文档分组)
+- **summary**: str API 摘要 (可选, 用于文档)
+- **description**: str API 描述 (可选, 用于文档)
+- **tags**: list[str] API 标签 (可选, 用于文档分组)
 - **response_model** (`type`): 响应模型 (可选)
 - **deprecated** (`bool`): 是否废弃 (可选)
+
 **返回值** (`Callable`): 装饰器
 
 **示例**:
+
 ```python
->>> @sdk.router.http("MyModule", "/api/data", methods=["GET", "POST"])
-... async def handle_data(request):
-...     return {"ok": True}
+@sdk.router.http("MyModule", "/api/data", methods=["GET", "POST"])
+async def handle_data(request):
+    return {"ok": True}
 ```
 
 ---
 
 
-##### `get(module_name: str, path: str)`
+##### `get(module_name: str, path: str, **kwargs)`
 
 GET 路由装饰器
 
 - **module_name** (`str`): 模块名称 (必填)
 - **path** (`str`): 路由路径
+
 **返回值** (`Callable`): 装饰器
 
 ---
 
 
-##### `post(module_name: str, path: str)`
+##### `post(module_name: str, path: str, **kwargs)`
 
 POST 路由装饰器
 
 - **module_name** (`str`): 模块名称 (必填)
 - **path** (`str`): 路由路径
+
 **返回值** (`Callable`): 装饰器
 
 ---
 
 
-##### `put(module_name: str, path: str)`
+##### `put(module_name: str, path: str, **kwargs)`
 
 PUT 路由装饰器
 
 - **module_name** (`str`): 模块名称 (必填)
 - **path** (`str`): 路由路径
+
 **返回值** (`Callable`): 装饰器
 
 ---
 
 
-##### `delete(module_name: str, path: str)`
+##### `delete(module_name: str, path: str, **kwargs)`
 
 DELETE 路由装饰器
 
 - **module_name** (`str`): 模块名称 (必填)
 - **path** (`str`): 路由路径
+
 **返回值** (`Callable`): 装饰器
 
 ---
 
 
-##### `ws(module_name: str, path: str)`
+##### `ws(module_name: str, path: str, **kwargs)`
 
 WebSocket 路由装饰器
 
 - **module_name** (`str`): 模块名称 (必填)
-- **path** (`str`): WebSocket 路径
+- **path**: str WebSocket 路径
 - **auth_handler** (`Callable`): 认证函数 (可选)
 - **auto_accept** (`bool`): 是否自动 accept (默认: True)
 
@@ -603,65 +627,69 @@ WebSocket 路由装饰器
 > 仅在需要完全控制连接流程时才设置 auto_accept=False。
 
 **示例**:
+
 ```python
->>> @sdk.router.ws("MyModule", "/ws/chat")
-... async def chat(websocket):
-...     await websocket.send_text("Hello!")
+@sdk.router.ws("MyModule", "/ws/chat")
+async def chat(websocket):
+    await websocket.send_text("Hello!")
 ```
 
 ---
 
 
-##### `sse(module_name: str, path: str)`
+##### `sse(module_name: str, path: str, **kwargs)`
 
 SSE (Server-Sent Events) 路由装饰器
 
 - **module_name** (`str`): 模块名称 (必填)
-- **path** (`str`): SSE 端点路径
-- **summary** (`str`): API 摘要 (可选)
-- **description** (`str`): API 描述 (可选)
-- **tags** (`list[str]`): API 标签 (可选)
+- **path**: str SSE 端点路径
+- **summary**: str API 摘要 (可选)
+- **description**: str API 描述 (可选)
+- **tags**: list[str] API 标签 (可选)
 
 **示例**:
-```python
->>> @sdk.router.sse("MyModule", "/events")
-... async def event_stream(sse):
-...     while True:
-...         await sse.send({"msg": "hello"})
-...         await asyncio.sleep(1)
 
->>> @sdk.router.sse("MyModule", "/logs")
-... async def log_stream(request, sse):
-...     token = request.query_params.get("token")
-...     while True:
-...         line = await get_next_log(token)
-...         await sse.send(line, event="log")
+```python
+@sdk.router.sse("MyModule", "/events")
+async def event_stream(sse):
+    while True:
+        await sse.send({"msg": "hello"})
+        await asyncio.sleep(1)
+```
+
+```python
+@sdk.router.sse("MyModule", "/logs")
+async def log_stream(request, sse):
+    token = request.query_params.get("token")
+    while True:
+        line = await get_next_log(token)
+        await sse.send(line, event="log")
 ```
 
 ---
 
 
-##### `_sse_decorate(full_path: str, module_name: str)`
+##### `_sse_decorate(full_path: str, module_name: str, **kwargs)`
 
 SSE 路由装饰器内部实现
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `register_http_route(module_name: str, path: str, handler: Callable, methods: list[str] | None = None, rate_limit: str | dict | None = None, summary: str | None = None, description: str | None = None, tags: list[str] | None = None, response_model: type | None = None, deprecated: bool | None = None)`
+##### `register_http_route(module_name: str, path: str, handler: Callable, methods: list[str] | None = None, rate_limit: str | dict | None = None, summary: str | None = None, description: str | None = None, tags: list[str] | None = None, response_model: type | None = None, deprecated: bool | None = None) -> None`
 
 注册HTTP路由
 
 - **module_name** (`str`): 模块名称
 - **path** (`str`): 路由路径
 - **handler** (`Callable`): 处理函数
-- **methods** (`list[str]`): HTTP方法列表(默认["POST"])
+- **methods**: list[str] HTTP方法列表(默认["POST"])
 - **rate_limit** (`str|dict|None`): 限流规则 (可选, 如 "10/minute")
-- **summary** (`str`): API 摘要 (可选)
-- **description** (`str`): API 描述 (可选)
-- **tags** (`list[str]`): API 标签 (可选)
+- **summary**: str API 摘要 (可选)
+- **description**: str API 描述 (可选)
+- **tags**: list[str] API 标签 (可选)
 - **response_model** (`type`): 响应模型 (可选)
 - **deprecated** (`bool`): 是否废弃 (可选)
 
@@ -670,54 +698,58 @@ SSE 路由装饰器内部实现
 ---
 
 
-##### `register_webhook()`
+##### `register_webhook(*args, **kwargs) -> None`
 
 兼容性方法：注册HTTP路由（适配器旧接口）
 
 ---
 
 
-##### `unregister_http_route(module_name: str, path: str)`
+##### `unregister_http_route(module_name: str, path: str) -> bool`
 
 取消注册HTTP路由
 
-- **module_name** (`模块名称`): - **path**: 路由路径
+- **module_name**: 模块名称
+- **path**: 路由路径
+
 **返回值** (`bool`): 是否成功取消注册
 
 ---
 
 
-##### `_make_ws_endpoint_fn(full_path: str, module_name: str, wrapped_handler: Callable, wrapped_auth: Callable | None, auto_accept: bool)`
+##### `_make_ws_endpoint_fn(full_path: str, module_name: str, wrapped_handler: Callable, wrapped_auth: Callable | None, auto_accept: bool) -> Callable[[WebSocket], Awaitable[None]]`
 
-> **内部方法**
+**内部方法**
 构建 WebSocket 端点处理函数（注册与恢复路由共用同一实现）
 
-- **full_path** (`完整路由路径`): - **module_name**: 模块名
-- **wrapped_handler** (`已包装的`): WebSocket 处理器
-- **wrapped_auth** (`已包装的鉴权处理器（可为`): None）
-- **auto_accept** (`是否自动`): accept 连接
+- **full_path**: 完整路由路径
+- **module_name**: 模块名
+- **wrapped_handler**: 已包装的 WebSocket 处理器
+- **wrapped_auth**: 已包装的鉴权处理器（可为 None）
+- **auto_accept**: 是否自动 accept 连接
+
 **返回值** (`WebSocket`): 端点协程函数
 
 ---
 
 
-##### `_register_ws_endpoint(full_path: str, module_name: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None, auto_accept: bool = DEFAULT_WS_AUTO_ACCEPT)`
+##### `_register_ws_endpoint(full_path: str, module_name: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None, auto_accept: bool = DEFAULT_WS_AUTO_ACCEPT) -> None`
 
 WebSocket 路由注册内部实现
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `register_websocket(module_name: str, path: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None, auto_accept: bool = True)`
+##### `register_websocket(module_name: str, path: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None, auto_accept: bool = True) -> None`
 
 注册WebSocket路由
 
 - **module_name** (`str`): 模块名称
-- **path** (`str`): WebSocket路径
-- **handler** (`Callable[[WebSocket],`): Awaitable[Any]] 主处理函数
-- **auth_handler** (`Optional[Callable[[WebSocket],`): Awaitable[bool]]] 认证函数
+- **path**: str WebSocket路径
+- **handler**: Callable[[WebSocket], Awaitable[Any]] 主处理函数
+- **auth_handler**: Optional[Callable[[WebSocket], Awaitable[bool]]] 认证函数
 - **auto_accept** (`bool`): 是否自动调用 websocket.accept()，默认 True
 
 > **提示**
@@ -730,17 +762,19 @@ WebSocket 路由注册内部实现
 ---
 
 
-##### `unregister_websocket(module_name: str, path: str)`
+##### `unregister_websocket(module_name: str, path: str) -> bool`
 
 取消注册WebSocket路由
 
-- **module_name** (`模块名称`): - **path**: WebSocket路径
+- **module_name**: 模块名称
+- **path** (`WebSocket`): 路径
+
 **返回值** (`bool`): 是否成功取消注册
 
 ---
 
 
-##### `register_sse(module_name: str, path: str, handler: Callable)`
+##### `register_sse(module_name: str, path: str, handler: Callable, **kwargs) -> None`
 
 注册 SSE (Server-Sent Events) 路由
 
@@ -749,43 +783,48 @@ SSE 路由为 HTTP GET 端点，返回 ``text/event-stream`` 流式响应。
 通过 ``sse.send()`` 推送事件，调用 ``sse.close()`` 断开连接。
 
 - **module_name** (`str`): 模块名称
-- **path** (`str`): SSE 端点路径
+- **path**: str SSE 端点路径
 - **handler** (`Callable`): 事件处理器, 签名: ``async def handler(sse)`` 或 ``async def handler(request, sse)``
 
 **异常**: `ValueError` - 当路径已注册时抛出
 
 **示例**:
+
 ```python
->>> async def event_stream(sse):
-...     for i in range(10):
-...         await sse.send({"count": i})
-...         await asyncio.sleep(1)
->>> router.register_sse("MyModule", "/events", event_stream)
+async def event_stream(sse):
+    for i in range(10):
+        await sse.send({"count": i})
+        await asyncio.sleep(1)
+router.register_sse("MyModule", "/events", event_stream)
 ```
 
 ---
 
 
-##### `unregister_sse(module_name: str, path: str)`
+##### `unregister_sse(module_name: str, path: str) -> bool`
 
 取消注册 SSE 路由
 
-- **module_name** (`模块名称`): - **path**: SSE 路径
+- **module_name**: 模块名称
+- **path** (`SSE`): 路径
+
 **返回值** (`bool`): 是否成功取消注册
 
 ---
 
 
-##### `unregister_all_by_namespace(namespace: str)`
+##### `unregister_all_by_namespace(namespace: str) -> dict[str, int]`
 
 清理指定命名空间下的所有路由
 
-- **namespace** (`命名空间（适配器名或模块名）`): **返回值** (`dict`): 清理统计 {"http_count": int, "websocket_count": int, "sse_count": int}
+- **namespace**: 命名空间（适配器名或模块名）
+
+**返回值** (`dict`): 清理统计 {"http_count": int, "websocket_count": int, "sse_count": int}
 
 ---
 
 
-##### `unregister_all_by_owner(owner: str)`
+##### `unregister_all_by_owner(owner: str) -> dict[str, int]`
 
 清理指定归属者注册的所有路由 / 中间件 / 首页入口
 
@@ -795,20 +834,23 @@ SSE 路由为 HTTP GET 端点，返回 ``text/event-stream`` 流式响应。
 的适配器热重载场景，也用于模块卸载时的兜底清理（覆盖中间件与
 首页入口等不携带命名空间的资源）。
 
-- **owner** (`归属者（适配器平台名或模块名）`): **返回值** (`dict`): 清理统计 {"http_count", "websocket_count", "sse_count", "middleware_count", "home_entry_count"}
+- **owner**: 归属者（适配器平台名或模块名）
+
+**返回值** (`dict`): 清理统计 {"http_count", "websocket_count", "sse_count", "middleware_count", "home_entry_count"}
 
 ---
 
 
-##### `list_namespaces()`
+##### `list_namespaces() -> dict[str, dict[str, list[str]]]`
 
 列出所有已注册的命名空间及其路由
 
-**返回值** (`dict`): {namespace: {"http": [paths], "websocket": [paths], "sse": [paths]}}
+**返回值**: dict {namespace: {"http": [paths], "websocket": [paths], "sse": [paths]}}
 
 **示例**:
+
 ```python
->>> router.list_namespaces()
+router.list_namespaces()
 {
     "onebot11": {
         "http": ["/onebot11/webhook", "/onebot11/callback"],
@@ -821,7 +863,7 @@ SSE 路由为 HTTP GET 端点，返回 ``text/event-stream`` 流式响应。
 ---
 
 
-##### `get_module_routes(module_name: str)`
+##### `get_module_routes(module_name: str) -> dict[str, list[dict]]`
 
 获取指定命名空间的详细路由信息
 
@@ -830,14 +872,18 @@ SSE 路由为 HTTP GET 端点，返回 ``text/event-stream`` 流式响应。
 - WebSocket 路由包含路径和是否需要认证
 - SSE 路由包含路径和流式标记
 
-- **module_name** (`模块/平台名称`): **返回值** (`{"http":`): [...], "websocket": [...], "sse": [...]}
+- **module_name**: 模块/平台名称
+
+**返回值**: {"http": [...], "websocket": [...], "sse": [...]}
+
    http: [{"path": str, "methods": [str]}]
    websocket: [{"path": str, "auth": bool}]
    sse: [{"path": str, "streaming": true}]
 
 **示例**:
+
 ```python
->>> router.get_module_routes("onebot11")
+router.get_module_routes("onebot11")
 {
     "http": [{"path": "/onebot11/webhook", "methods": ["POST"]}],
     "websocket": [{"path": "/onebot11/ws", "auth": true}],
@@ -848,7 +894,7 @@ SSE 路由为 HTTP GET 端点，返回 ``text/event-stream`` 流式响应。
 ---
 
 
-##### `get_module_urls(module_name: str)`
+##### `get_module_urls(module_name: str) -> dict[str, Any]`
 
 获取指定命名空间的完整连接 URL
 
@@ -856,16 +902,21 @@ SSE 路由为 HTTP GET 端点，返回 ``text/event-stream`` 流式响应。
 HTTP 路由使用 base_url 前缀，WebSocket 路由自动将 http/https 转换为 ws/wss，
 SSE 路由使用 base_url 前缀（HTTP）。
 
-- **module_name** (`模块/平台名称`): **返回值** (`{`): "base_url": str,
+- **module_name**: 模块/平台名称
+
+**返回值**: {
+
+    "base_url": str,
     "http": [{"path": str, "method": str, "url": str}],
     "websocket": [{"path": str, "url": str}],
     "sse": [{"path": str, "url": str}]
 }
 
 **示例**:
+
 ```python
->>> # 假设 base_url = "http://localhost:8080"
->>> router.get_module_urls("onebot11")
+# 假设 base_url = "http://localhost:8080"
+router.get_module_urls("onebot11")
 {
     "base_url": "http://localhost:8080",
     "http": [
@@ -886,24 +937,28 @@ SSE 路由使用 base_url 前缀（HTTP）。
 ---
 
 
-##### `get_module_urls_matching(prefix: str)`
+##### `get_module_urls_matching(prefix: str) -> dict[str, Any]`
 
 获取指定前缀的所有命名空间的聚合连接 URL
 
 适配器多账户场景下，路由可能注册为 ``yunhu_bot1``、``yunhu_bot2`` 等命名空间。
 此方法按前缀匹配聚合所有相关命名空间的路由信息。
 
-- **prefix** (`命名空间前缀（如`): "yunhu"）
-**返回值** (`{`): "base_url": str,
+- **prefix**: 命名空间前缀（如 "yunhu"）
+
+**返回值**: {
+
+    "base_url": str,
     "http": [{"path": str, "method": str, "url": str, "namespace": str}],
     "websocket": [{"path": str, "url": str, "namespace": str}],
     "sse": [{"path": str, "url": str, "namespace": str}]
 }
 
 **示例**:
+
 ```python
->>> # 命名空间: yunhu_bot1, yunhu_bot2, onebot11
->>> router.get_module_urls_matching("yunhu")
+# 命名空间: yunhu_bot1, yunhu_bot2, onebot11
+router.get_module_urls_matching("yunhu")
 {
     "base_url": "http://localhost:8080",
     "http": [
@@ -922,23 +977,25 @@ SSE 路由使用 base_url 前缀（HTTP）。
 ---
 
 
-##### `group(module_name: str, prefix: str)`
+##### `group(module_name: str, prefix: str, **kwargs) -> RouteGroup`
 
 创建路由分组
 
 - **module_name** (`str`): 模块名称 (必填)
 - **prefix** (`str`): 路由前缀
 - **version** (`str`): 版本号 (可选)
-- **tags** (`list[str]`): API 标签 (可选)
+- **tags**: list[str] API 标签 (可选)
 - **middlewares** (`list`): 分组中间件 (可选)
+
 **返回值** (`RouteGroup`): 路由分组实例
 
 **示例**:
+
 ```python
->>> api = sdk.router.group("MyModule", "/api", version="1")
->>> @api.get("/users")
-... async def users(request):
-...     return {"users": []}
+api = sdk.router.group("MyModule", "/api", version="1")
+@api.get("/users")
+async def users(request):
+    return {"users": []}
 ```
 
 ---
@@ -948,19 +1005,20 @@ SSE 路由使用 base_url 前缀（HTTP）。
 
 为路由应用限流
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `_parse_rate_limit(limit: str | dict)`
+##### `_parse_rate_limit(limit: str | dict) -> tuple[int, int]`（staticmethod）
 
 解析限流规则
 
 - **limit** (`str|dict`): 限流规则
-**返回值** (`tuple[int,`): int] (max_requests, window_seconds)
 
-> **内部方法**
+**返回值**: tuple[int, int] (max_requests, window_seconds)
+
+**内部方法**
 
 ---
 
@@ -977,11 +1035,12 @@ SSE 路由使用 base_url 前缀（HTTP）。
 - **expose_headers** (`list[str]`): 暴露的响应头 (可选)
 
 **示例**:
+
 ```python
->>> sdk.router.setup_cors(
-...     allow_origins=["https://example.com"],
-...     allow_methods=["GET", "POST"],
-... )
+sdk.router.setup_cors(
+    allow_origins=["https://example.com"],
+    allow_methods=["GET", "POST"],
+)
 ```
 
 ---
@@ -991,13 +1050,14 @@ SSE 路由使用 base_url 前缀（HTTP）。
 
 配置安全响应头
 
-- **headers** (`dict[str,`): str] 自定义安全头 (可选, 会合并默认值)
+- **headers** (`dict[str, str]`): 自定义安全头 (可选, 会合并默认值)
 
 **示例**:
+
 ```python
->>> sdk.router.setup_security_headers({
-...     "Strict-Transport-Security": "max-age=31536000",
-... })
+sdk.router.setup_security_headers({
+    "Strict-Transport-Security": "max-age=31536000",
+})
 ```
 
 ---
@@ -1008,8 +1068,9 @@ SSE 路由使用 base_url 前缀（HTTP）。
 关闭 API 文档端点（生产环境推荐）
 
 **示例**:
+
 ```python
->>> sdk.router.disable_docs()
+sdk.router.disable_docs()
 ```
 
 ---
@@ -1029,19 +1090,19 @@ SSE 路由使用 base_url 前缀（HTTP）。
 
 从配置文件自动应用 CORS 和安全头
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `_on_router_config_changed(_data: dict)`
+##### `_on_router_config_changed(_data: dict) -> None`
 
 router 中间件配置变更回调：CORS/安全头需重启进程才能生效
 
 ---
 
 
-##### `get_app()`
+##### `get_app() -> FastAPI`
 
 获取FastAPI应用实例
 
@@ -1050,31 +1111,32 @@ router 中间件配置变更回调：CORS/安全头需重启进程才能生效
 ---
 
 
-##### `_get_local_ips()`
+##### `_get_local_ips() -> None`
 
 获取本机局域网IP地址
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `_build_ssl_context_from_pem(cert_pem: str, key_pem: str)`
+##### `_build_ssl_context_from_pem(cert_pem: str, key_pem: str)`（staticmethod）
 
-> **内部方法**
+**内部方法**
 从 PEM 文本内容构建 SSLContext
 
 将证书/密钥写入临时文件（load_cert_chain 需要文件路径），加载完成后
 立即删除临时文件——PEM 内容不落盘残留。
 
-- **cert_pem** (`证书`): PEM 文本
-- **key_pem** (`密钥`): PEM 文本
+- **cert_pem**: 证书 PEM 文本
+- **key_pem**: 密钥 PEM 文本
+
 **返回值**: ssl.SSLContext
 
 ---
 
 
-##### `async start(host: str = DEFAULT_SERVER_HOST, port: int = DEFAULT_SERVER_PORT, ssl_certfile: str | None = None, ssl_keyfile: str | None = None)`
+##### `async start(host: str = DEFAULT_SERVER_HOST, port: int = DEFAULT_SERVER_PORT, ssl_certfile: str | None = None, ssl_keyfile: str | None = None, *, ssl_cert: str | None = None, ssl_key: str | None = None) -> None`
 
 启动路由服务器
 
@@ -1086,20 +1148,22 @@ SSL 支持两种配置方式（内容优先于路径）：
 
 - **host** (`str`): 监听地址(默认"0.0.0.0")
 - **port** (`int`): 监听端口(默认8000)
-- **ssl_certfile** (`str`): | None SSL证书路径
-- **ssl_keyfile** (`str`): | None SSL密钥路径
-- **ssl_cert** (`str`): | None SSL证书 PEM 文本内容（优先于 ssl_certfile）
-- **ssl_key** (`str`): | None SSL密钥 PEM 文本内容（优先于 ssl_keyfile）
+- **ssl_certfile**: str | None SSL证书路径
+- **ssl_keyfile**: str | None SSL密钥路径
+- **ssl_cert**: str | None SSL证书 PEM 文本内容（优先于 ssl_certfile）
+- **ssl_key**: str | None SSL密钥 PEM 文本内容（优先于 ssl_keyfile）
 
 **异常**: `RuntimeError` - 当服务器已在运行时抛出
 
-.. note::
-    端口被占用时不视为致命错误：服务器不启动，但机器人继续运行。
+.. note:
+```
+端口被占用时不视为致命错误：服务器不启动，但机器人继续运行。
+```
 
 ---
 
 
-##### `_check_port_available(host: str, port: int)`
+##### `_check_port_available(host: str, port: int) -> None`
 
 检测端口是否被占用（有进程正在监听）
 
@@ -1115,9 +1179,9 @@ SSL 支持两种配置方式（内容优先于路径）：
 ---
 
 
-##### `_start_rate_limit_cleanup()`
+##### `_start_rate_limit_cleanup() -> None`
 
-> **内部方法**
+**内部方法**
 启动限流存储的定期清理后台任务
 
 定期扫描 _rate_limit_store，移除窗口已过期的 IP 记录，防止长期运行时无限增长。
@@ -1125,17 +1189,17 @@ SSL 支持两种配置方式（内容优先于路径）：
 ---
 
 
-##### `_stop_rate_limit_cleanup()`
+##### `_stop_rate_limit_cleanup() -> None`
 
-> **内部方法**
+**内部方法**
 停止限流存储定期清理任务
 
 ---
 
 
-##### `_cleanup_expired_rate_limits()`
+##### `_cleanup_expired_rate_limits() -> int`
 
-> **内部方法**
+**内部方法**
 清除过期的限流记录
 
 扫描 _rate_limit_store，移除所有时间戳均已超出限流窗口的条目。
@@ -1145,18 +1209,19 @@ SSL 支持两种配置方式（内容优先于路径）：
 ---
 
 
-##### `async stop()`
+##### `async stop() -> None`
 
 停止服务器并清理所有路由
 
 ---
 
 
-##### `_format_display_url(url: str)`
+##### `_format_display_url(url: str) -> str`
 
 格式化URL显示
 
 - **url** (`str`): 原始URL
+
 **返回值** (`str`): 格式化后的URL
 
 ---

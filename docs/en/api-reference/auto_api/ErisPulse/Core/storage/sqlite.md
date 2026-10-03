@@ -28,23 +28,23 @@ SQLite 方言实现
 #### 方法列表
 
 
-##### `autoincrement_column(base_type: str)`
+##### `autoincrement_column(base_type: str) -> str`
 
-> **内部方法** SQLite 原生支持 AUTOINCREMENT 后缀
-
----
-
-
-##### `is_missing_table_error(exc: BaseException)`
-
-> **内部方法** sqlite3.OperationalError: no such table
+**内部方法** SQLite 原生支持 AUTOINCREMENT 后缀
 
 ---
 
 
-##### `table_columns_sql(table_name: str)`
+##### `is_missing_table_error(exc: BaseException) -> bool`
 
-> **内部方法** PRAGMA 列举表现有列名（表名经标识符校验，直接内插）
+**内部方法** sqlite3.OperationalError: no such table
+
+---
+
+
+##### `table_columns_sql(table_name: str) -> tuple[str, list[str]]`
+
+**内部方法** PRAGMA 列举表现有列名（表名经标识符校验，直接内插）
 
 ---
 
@@ -68,23 +68,23 @@ SQLite 存储管理器（aiosqlite 异步原生实现）
 #### 方法列表
 
 
-##### `_check_use_global_db_changed()`
+##### `_check_use_global_db_changed() -> str | None`
 
-> **内部方法** use_global_db 配置变更检查
-
----
-
-
-##### `_ensure_directories()`
-
-> **内部方法** 确保必要的目录存在
+**内部方法** use_global_db 配置变更检查
 
 ---
 
 
-##### `_init_db()`
+##### `_ensure_directories() -> None`
 
-> **内部方法**
+**内部方法** 确保必要的目录存在
+
+---
+
+
+##### `_init_db() -> None`
+
+**内部方法**
 初始化数据库（创建默认 config 键值表）
 
 **异常**: `sqlite3.OperationalError` - 数据库文件无法创建或打开时
@@ -92,83 +92,84 @@ SQLite 存储管理器（aiosqlite 异步原生实现）
 ---
 
 
-##### `async _apply_pragmas(conn: aiosqlite.Connection)`
+##### `async _apply_pragmas(conn: aiosqlite.Connection) -> None`（staticmethod）
 
-> **内部方法** 应用标准 PRAGMA（WAL/synchronous/busy_timeout）
-
----
-
-
-##### `async _create_loop_resource()`
-
-> **内部方法** 当前事件循环的共享连接（autocommit 模式）
+**内部方法** 应用标准 PRAGMA（WAL/synchronous/busy_timeout）
 
 ---
 
 
-##### `async _destroy_loop_resource(resource: aiosqlite.Connection)`
+##### `async _create_loop_resource() -> aiosqlite.Connection`
 
-> **内部方法** 关闭共享连接
-
----
-
-
-##### `async _acquire_resource_conn(resource: aiosqlite.Connection)`
-
-> **内部方法** 共享连接直接复用（游标级并发安全）
+**内部方法** 当前事件循环的共享连接（autocommit 模式）
 
 ---
 
 
-##### `async _release_resource_conn(resource: aiosqlite.Connection, conn: Any)`
+##### `async _destroy_loop_resource(resource: aiosqlite.Connection) -> None`
 
-> **内部方法** 共享连接无需归还
-
----
-
-
-##### `async _open_txn_conn()`
-
-> **内部方法** 事务使用专用连接（与共享连接互不干扰）
+**内部方法** 关闭共享连接
 
 ---
 
 
-##### `async _close_txn_conn(conn: aiosqlite.Connection)`
+##### `async _acquire_resource_conn(resource: aiosqlite.Connection) -> Any`
 
-> **内部方法** 关闭事务专用连接
-
----
-
-
-##### `async _begin_txn(conn: Any)`
-
-> **内部方法** BEGIN TRANSACTION
+**内部方法** 共享连接直接复用（游标级并发安全）
 
 ---
 
 
-##### `async _commit_txn(conn: Any, handle: Any = None)`
+##### `async _release_resource_conn(resource: aiosqlite.Connection, conn: Any) -> None`
 
-> **内部方法** COMMIT
-
----
-
-
-##### `async _rollback_txn(conn: Any, handle: Any = None)`
-
-> **内部方法** ROLLBACK
+**内部方法** 共享连接无需归还
 
 ---
 
 
-##### `async _exec_query_on(kind: str, sql: str, params: Any, conn: Any)`
+##### `async _open_txn_conn() -> aiosqlite.Connection`
 
-> **内部方法**
+**内部方法** 事务使用专用连接（与共享连接互不干扰）
+
+---
+
+
+##### `async _close_txn_conn(conn: aiosqlite.Connection) -> None`
+
+**内部方法** 关闭事务专用连接
+
+---
+
+
+##### `async _begin_txn(conn: Any) -> None`
+
+**内部方法** BEGIN TRANSACTION
+
+---
+
+
+##### `async _commit_txn(conn: Any, handle: Any = None) -> None`
+
+**内部方法** COMMIT
+
+---
+
+
+##### `async _rollback_txn(conn: Any, handle: Any = None) -> None`
+
+**内部方法** ROLLBACK
+
+---
+
+
+##### `async _exec_query_on(kind: str, sql: str, params: Any, conn: Any) -> Any`
+
+**内部方法**
 SQLite 执行漏斗
 
-- **kind** (`"select"`): / "one" / "count" / "dml" / "dml_multi"
-**返回值** (`select/one`): 返回 (行, 列名列表或None)；其余返回受影响行数
+- **kind**: "select" / "one" / "count" / "dml" / "dml_multi"
+
+**返回值**: select/one 返回 (行, 列名列表或None)；其余返回受影响行数
 
 ---
 

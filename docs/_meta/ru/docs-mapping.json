@@ -20,13 +20,13 @@
           "icon": "fa-bolt"
         },
         {
-          "title": "Архитектурный обзор",
+          "title": "Обзор архитектуры",
           "path": "architecture.md",
           "level": 1,
           "icon": "fa-sitemap"
         },
         {
-          "title": "Трекер ошибок",
+          "title": "Bug Tracker",
           "path": "bug-tracker.md",
           "level": 1,
           "icon": "fa-bug"
@@ -549,13 +549,13 @@
           "icon": "fa-arrow-right-arrow-left"
         },
         {
-          "title": "Стандартизированный протокол преобразования адаптеров",
+          "title": "Стандартизированные правила преобразования адаптеров",
           "path": "standards/event-conversion.md",
           "level": 1,
           "icon": "fa-shuffle"
         },
         {
-          "title": "Спецификация метода отправки ErisPulse",
+          "title": "Спецификация методов отправки ErisPulse",
           "path": "standards/send-method-spec.md",
           "level": 1,
           "icon": "fa-paper-plane"

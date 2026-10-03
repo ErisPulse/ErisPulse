@@ -26,17 +26,18 @@
 子类可覆写 on_modified 等回调以响应文件变更事件。
 
 **示例**:
+
 ```python
->>> class MyHandler(FileSystemEventHandler):
-...     def on_modified(self, event):
-...         print(f"changed: {event.src_path}")
+class MyHandler(FileSystemEventHandler):
+    def on_modified(self, event):
+        print(f"changed: {event.src_path}")
 ```
 
 
 #### 方法列表
 
 
-##### `on_modified(event: 'FileChangeEvent')`
+##### `on_modified(event: 'FileChangeEvent') -> None`
 
 文件修改事件回调
 
@@ -45,7 +46,7 @@
 ---
 
 
-##### `on_created(event: 'FileChangeEvent')`
+##### `on_created(event: 'FileChangeEvent') -> None`
 
 文件创建事件回调
 
@@ -54,7 +55,7 @@
 ---
 
 
-##### `on_deleted(event: 'FileChangeEvent')`
+##### `on_deleted(event: 'FileChangeEvent') -> None`
 
 文件删除事件回调
 
@@ -63,9 +64,13 @@
 ---
 
 
-##### `on_moved(event: 'FileChangeEvent')`
+##### `on_moved(event: 'FileChangeEvent') -> None`
 
 文件移动事件回调
+
+> **提示**
+> 轮询实现（PollingObserver）基于 mtime 比较，不触发本回调——移动
+> 表现为旧路径 ``on_deleted`` + 新路径 ``on_created``。
 
 - **event** (`FileChangeEvent`): 文件变更事件
 
@@ -105,10 +110,11 @@
 - **interval** (`float`): 轮询间隔（秒） (默认: 1.0)
 
 **示例**:
+
 ```python
->>> observer = PollingObserver()
->>> observer.schedule(MyHandler(), ".", recursive=True)
->>> observer.start()
+observer = PollingObserver()
+observer.schedule(MyHandler(), ".", recursive=True)
+observer.start()
 ```
 
 
@@ -124,7 +130,7 @@
 ---
 
 
-##### `schedule(event_handler: FileSystemEventHandler, path: str, recursive: bool = False)`
+##### `schedule(event_handler: FileSystemEventHandler, path: str, recursive: bool = False) -> None`
 
 注册事件处理器与监控目录
 
@@ -135,54 +141,59 @@
 ---
 
 
-##### `start()`
+##### `start() -> None`
 
 记录初始快照后启动后台轮询线程
 
 ---
 
 
-##### `stop()`
+##### `stop() -> None`
 
 请求停止轮询线程
 
 ---
 
 
-##### `join()`
+##### `join() -> None`
 
 等待轮询线程结束
 
 ---
 
 
-##### `_walk_py(path: str, recursive: bool)`
+##### `_walk_py(path: str, recursive: bool)`（staticmethod）
 
 遍历目录下的 .py 文件
 
-> **内部方法**
+**内部方法**
 
 - **path** (`str`): 目录路径
 - **recursive** (`bool`): 是否递归子目录
+
 **返回值** (`Generator`): .py 文件路径生成器
 
 ---
 
 
-##### `_snapshot()`
+##### `_snapshot() -> None`
 
 记录所有 .py 文件的当前 mtime，作为变更比较基准
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `_run()`
+##### `_run() -> None`
 
 轮询主循环：比较 mtime 并在变更时回调处理器
 
-> **内部方法**
+除修改外补发创建 / 删除事件：本轮新出现的文件回调 ``on_created``，
+stat 失败（已删除）的文件回调 ``on_deleted``。移动 = 旧路径删除 +
+新路径创建（``on_moved`` 在轮询实现下不触发）。
+
+**内部方法**
 
 ---
 

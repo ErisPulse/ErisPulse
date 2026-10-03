@@ -29,22 +29,23 @@ ErisPulse 模块基础模块
 > 4. 兼容直接返回 dict 的旧写法
 
 **示例**:
+
 ```python
->>> @staticmethod
-... def get_meta() -> ModuleMeta:
-...     return ModuleMeta(
-...         name="天气",
-...         description="查询城市天气",
-...         group="工具",
-...         tags=["天气", "查询"],
-...     )
+@staticmethod
+def get_meta() -> ModuleMeta:
+    return ModuleMeta(
+        name="天气",
+        description="查询城市天气",
+        group="工具",
+        tags=["天气", "查询"],
+    )
 ```
 
 
 #### 方法列表
 
 
-##### `to_dict()`
+##### `to_dict() -> dict[str, Any]`
 
 转为字典（内部解析入口，过滤 None 字段）
 
@@ -78,7 +79,7 @@ on_load / on_unload 事件数据
 #### 方法列表
 
 
-##### `get_meta()`
+##### `get_meta() -> 'ModuleMeta | dict[str, Any]'`（staticmethod）
 
 获取模块介绍元信息（描述这个模块是什么、属于哪一类等）
 
@@ -113,79 +114,100 @@ on_load / on_unload 事件数据
 > 若需要"模块简介 + 该模块注册的命令"的聚合数据，可用
 > ``sdk.module.get_commands_overview()``。
 
-**返回值** (`元信息（ModuleMeta`): 实例或 dict），模块未声明时返回空 dict
+**返回值**: 元信息（ModuleMeta 实例或 dict），模块未声明时返回空 dict
 
-:example:
+**示例**:
+
 推荐写法（配置类）：
->>> class MyModule(BaseModule):
-...     @staticmethod
-...     def get_meta() -> ModuleMeta:
-...         return ModuleMeta(
-...             name="天气",
-...             description="查询城市天气",
-...             group="工具",
-...             tags=["天气", "查询"],
-...         )
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_meta() -> ModuleMeta:
+        return ModuleMeta(
+            name="天气",
+            description="查询城市天气",
+            group="工具",
+            tags=["天气", "查询"],
+        )
+```
 
 兼容写法（dict）：
->>> class MyModule(BaseModule):
-...     @staticmethod
-...     def get_meta() -> dict:
-...         return {
-...             "name": "天气",
-...             "description": "查询城市天气",
-...         }
+```python
+class MyModule(BaseModule):
+    @staticmethod
+    def get_meta() -> dict:
+        return {
+            "name": "天气",
+            "description": "查询城市天气",
+        }
+```
 
 ---
 
 
-##### `get_load_strategy()`
+##### `get_load_strategy() -> ModuleLoadStrategy | dict[str, Any]`（staticmethod）
 
 获取模块加载策略
 
 支持返回 ModuleLoadStrategy 对象或字典
 所有属性统一处理，没有任何预定义字段
 
-**返回值** (`加载策略对象或字典`): > **提示**
+**返回值**: 加载策略对象或字典
+
+> **提示**
 > 常用配置项：
 > - lazy_load: bool, 是否懒加载（默认 True）
 > - priority: int, 加载优先级（默认 0，数值越大优先级越高）
 > 使用方式：
-> >>> class MyModule(BaseModule):
-> ...     @staticmethod
-> ...     def get_load_strategy() -> ModuleLoadStrategy:
-> ...         return ModuleLoadStrategy(
-> ...             lazy_load=False,
-> ...             priority=100
-> ...         )
+> ```python
+> class MyModule(BaseModule):
+>     @staticmethod
+>     def get_load_strategy() -> ModuleLoadStrategy:
+>         return ModuleLoadStrategy(
+>             lazy_load=False,
+>             priority=100
+>         )
+> ```
+>
 > 或使用字典：
-> >>> class MyModule(BaseModule):
-> ...     @staticmethod
-> ...     def get_load_strategy() -> dict:
-> ...         return {
-> ...             "lazy_load": False,
-> ...             "priority": 100
-> ...         }
+> ```python
+> class MyModule(BaseModule):
+>     @staticmethod
+>     def get_load_strategy() -> dict:
+>         return {
+>             "lazy_load": False,
+>             "priority": 100
+>         }
+> ```
+>
 
 ---
 
 
-##### `async on_load(event: dict[str, Any])`
+##### `async on_load(event: dict[str, Any]) -> bool`
 
 当模块被加载时调用
 
-- **event** (`事件内容`): **返回值** (`处理结果`): > **提示**
+- **event**: 事件内容
+
+**返回值**: 处理结果
+
+> **提示**
 > 其中，event事件内容为:
 > `{ "module_name": "模块名" }`
 
 ---
 
 
-##### `async on_unload(event: dict[str, Any])`
+##### `async on_unload(event: dict[str, Any]) -> bool`
 
 当模块被卸载时调用
 
-- **event** (`事件内容`): **返回值** (`处理结果`): > **提示**
+- **event**: 事件内容
+
+**返回值**: 处理结果
+
+> **提示**
 > 其中，event事件内容为:
 > `{ "module_name": "模块名" }`
 
@@ -203,22 +225,25 @@ on_load / on_unload 事件数据
 需要精细控制生命周期的任务，建议在 ``on_unload`` 中自行取消
 并等待收尾；本方法作为兜底保障。
 
-- **coro** (`待执行的协程`): **返回值** (`创建出的`): asyncio.Task（可忽略）
+- **coro**: 待执行的协程
+
+**返回值**: 创建出的 asyncio.Task（可忽略）
 
 **示例**:
+
 ```python
->>> async def _poll(self):
-...     while True:
-...         await asyncio.sleep(5)
-...
->>> async def on_load(self, event):
-...     self.spawn(self._poll())
+async def _poll(self):
+    while True:
+        await asyncio.sleep(5)
+
+async def on_load(self, event):
+    self.spawn(self._poll())
 ```
 
 ---
 
 
-##### `_get_config_key()`
+##### `_get_config_key() -> str`
 
 配置键名
 
@@ -235,7 +260,7 @@ on_load / on_unload 事件数据
 
 确保配置模板存在，不存在则生成默认配置
 
-> **内部方法**
+**内部方法**
 会先行调用 _ensure_i18n_registered() 注册声明的翻译键，
 确保配置描述引用的 i18n 键在生成模板时已可用。
 
@@ -249,13 +274,13 @@ on_load / on_unload 事件数据
 使用模块注册名作为键名前缀和 domain，便于统一卸载。
 方法是幂等的，多次调用不会产生副作用（重复注册会覆盖旧值）。
 
-> **内部方法**
+**内部方法**
 由 ModuleManager.load() 或首次访问 self.cfg 时隐式调用。
 
 ---
 
 
-##### `cfg()`
+##### `cfg`（property）
 
 类型安全的配置对象（实时读取）
 
@@ -263,6 +288,7 @@ on_load / on_unload 事件数据
 返回的 dataclass 实例是只读快照，修改它不会回写存储。
 
 **返回值** (`ConfigClass`): 对应的 dataclass 实例
+
 **异常**: `AttributeError` - 未声明 ConfigClass 时抛出
 
 ---
@@ -281,7 +307,8 @@ on_load / on_unload 事件数据
 
 子类可覆写此方法以响应配置热更新。默认实现为空操作。
 
-- **old_config** (`变更前的配置实例`): - **new_config**: 变更后的配置实例
+- **old_config**: 变更前的配置实例
+- **new_config**: 变更后的配置实例
 
 ---
 

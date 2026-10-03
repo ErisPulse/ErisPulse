@@ -16,6 +16,6 @@ StorageManager 等单例）。因此 CLI 需要的常量在此独立维护，**�
 镜像一份，由 ``tests/unit/test_unit_cli.py::TestCrossProcessContracts``
 钉死——任一侧漂移即测试失败。
 
-> **内部方法**
+**内部方法**
 
 ---

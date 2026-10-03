@@ -14,14 +14,14 @@ Init 命令实现
 ## 函数列表
 
 
-### `_validate_project_name(name: str)`
+### `_validate_project_name(name: str) -> bool`
 
 项目名称校验：仅允许字母、数字、下划线、连字符和点号
 
 ---
 
 
-### `_validate_project_path(value: str)`
+### `_validate_project_path(value: str) -> bool`
 
 项目路径校验：末段（项目名）须为合法名称，父目录部分不限制
 
@@ -48,7 +48,7 @@ init 命令
 ---
 
 
-##### `_init_project(project_name: str, adapter_list: list | None = None, target_dir: Path | None = None, create_venv: bool = True, git_init: bool = False, in_current_dir: bool = False)`
+##### `_init_project(project_name: str, adapter_list: list | None = None, target_dir: Path | None = None, create_venv: bool = True, git_init: bool = False, in_current_dir: bool = False) -> bool`
 
 创建项目目录结构并生成配置文件、依赖清单与虚拟环境
 
@@ -58,12 +58,13 @@ init 命令
 - **create_venv** (`bool`): 是否创建虚拟环境并安装依赖 (默认: True)
 - **git_init** (`bool`): 是否初始化 git 仓库 (默认: False)
 - **in_current_dir** (`bool`): 是否在当前目录初始化 (默认: False)
+
 **返回值** (`bool`): 初始化成功返回 True，失败返回 False
 
 ---
 
 
-##### `_get_full_example_config(adapter_list = None)`
+##### `_get_full_example_config(adapter_list = None)`（staticmethod）
 
 生成完整的配置示例文本
 
@@ -71,6 +72,7 @@ init 命令
 含自维护首行标记、静态框架段与已安装组件声明式段）。此处仅保留调用入口。
 
 - **adapter_list** (`list`): 适配器名称列表 (默认: None)
+
 **返回值** (`str`): 完整配置示例字符串
 
 ---
@@ -85,7 +87,7 @@ init 命令
 ---
 
 
-##### `_interactive_init(project_name: str | None = None, force: bool = False, here: bool = False, target_dir: Path | None = None, create_venv: bool = True)`
+##### `_interactive_init(project_name: str | None = None, force: bool = False, here: bool = False, target_dir: Path | None = None, create_venv: bool = True) -> bool`
 
 交互式初始化项目，引导用户配置项目位置及基本参数
 
@@ -94,6 +96,7 @@ init 命令
 - **here** (`bool`): 是否在当前目录初始化 (默认: False)
 - **target_dir** (`Path | None`): 项目父目录 (默认: None)
 - **create_venv** (`bool`): 是否创建虚拟环境并安装依赖 (默认: True)
+
 **返回值** (`bool`): 初始化成功返回 True，失败返回 False
 
 ---

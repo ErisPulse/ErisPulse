@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1681,
+  "total_keywords": 1684,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -8,6 +8,14 @@
         "line": 64,
         "level": 4,
         "title": "0 成功（OK）"
+      }
+    ],
+    "0. 關鍵詞約定": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 5,
+        "level": 2,
+        "title": "0. 關鍵詞約定"
       }
     ],
     "1. BaseAdapter 層（大多數情況不需要重寫）": [
@@ -241,7 +249,7 @@
     "1. 標準方法命名": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 5,
+        "line": 15,
         "level": 2,
         "title": "1. 標準方法命名"
       }
@@ -257,7 +265,7 @@
     "1. 異常處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 1070,
+        "line": 1079,
         "level": 3,
         "title": "1. 異常處理"
       }
@@ -353,17 +361,17 @@
     "1.1 標準發送方法": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 9,
+        "line": 19,
         "level": 3,
         "title": "1.1 標準發送方法"
       }
     ],
-    "1.2 串接修飾方法": [
+    "1.2 鏈式修飾方法": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 26,
+        "line": 38,
         "level": 3,
-        "title": "1.2 串接修飾方法"
+        "title": "1.2 鏈式修飾方法"
       }
     ],
     "1.2 類型映射關係": [
@@ -377,7 +385,7 @@
     "1.3 協議方法": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 34,
+        "line": 46,
         "level": 3,
         "title": "1.3 協議方法"
       }
@@ -385,7 +393,7 @@
     "1.4 推薦的擴展命名約定": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 44,
+        "line": 56,
         "level": 3,
         "title": "1.4 推薦的擴展命名約定"
       }
@@ -409,7 +417,7 @@
     "10. 相關文件": [
       {
         "document": "standards/event-conversion.md",
-        "line": 542,
+        "line": 562,
         "level": 2,
         "title": "10. 相關文件"
       }
@@ -417,7 +425,7 @@
     "10. 适配器實現檢查清單": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 447,
+        "line": 446,
         "level": 2,
         "title": "10. 适配器實現檢查清單"
       }
@@ -425,7 +433,7 @@
     "11. 消息建構器（MessageBuilder）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 464,
+        "line": 470,
         "level": 2,
         "title": "11. 消息建構器（MessageBuilder）"
       }
@@ -441,7 +449,7 @@
     "11.1 導入": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 468,
+        "line": 474,
         "level": 3,
         "title": "11.1 導入"
       }
@@ -449,7 +457,7 @@
     "11.2 鏈式呼叫建構": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 476,
+        "line": 482,
         "level": 3,
         "title": "11.2 鏈式呼叫建構"
       }
@@ -457,7 +465,7 @@
     "11.3 快速建構單段": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 493,
+        "line": 499,
         "level": 3,
         "title": "11.3 快速建構單段"
       }
@@ -465,7 +473,7 @@
     "11.4 配合 Event.reply_ob12 使用": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 504,
+        "line": 510,
         "level": 3,
         "title": "11.4 配合 Event.reply_ob12 使用"
       }
@@ -473,7 +481,7 @@
     "11.5 支援的消息段方法": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 519,
+        "line": 525,
         "level": 3,
         "title": "11.5 支援的消息段方法"
       }
@@ -481,7 +489,7 @@
     "11.6 工具方法": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 534,
+        "line": 540,
         "level": 3,
         "title": "11.6 工具方法"
       }
@@ -489,7 +497,7 @@
     "12. 相關文件": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 551,
+        "line": 557,
         "level": 2,
         "title": "12. 相關文件"
       }
@@ -569,7 +577,7 @@
     "2. 參數規範詳解": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 57,
+        "line": 69,
         "level": 2,
         "title": "2. 參數規範詳解"
       }
@@ -655,7 +663,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 1088,
+        "line": 1097,
         "level": 3,
         "title": "2. 日誌記錄"
       }
@@ -842,12 +850,12 @@
         "title": "2.1 OneBot12 標準類型"
       }
     ],
-    "2.1 媒體消息參數規範": [
+    "2.1 媒體訊息發送協定（`Image` / `Voice` / `Video` / `File`）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 59,
+        "line": 71,
         "level": 3,
-        "title": "2.1 媒體消息參數規範"
+        "title": "2.1 媒體訊息發送協定（`Image` / `Voice` / `Video` / `File`）"
       }
     ],
     "2.1 必須字段": [
@@ -866,36 +874,52 @@
         "title": "2.1 標準字段"
       }
     ],
-    "2.1.1 字符串參數（URL 或文件路徑）": [
+    "2.1.1 `file` 參數的合法形態": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 63,
+        "line": 76,
         "level": 4,
-        "title": "2.1.1 字符串參數（URL 或文件路徑）"
+        "title": "2.1.1 `file` 參數的合法形態"
       }
     ],
-    "2.1.2 二進制數據參數": [
+    "2.1.2 形態判定順序": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 88,
+        "line": 90,
         "level": 4,
-        "title": "2.1.2 二進制數據參數"
+        "title": "2.1.2 形態判定順序"
       }
     ],
-    "2.1.3 參數處理優先級": [
+    "2.1.3 `File` 的檔案名語義": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 114,
+        "line": 112,
         "level": 4,
-        "title": "2.1.3 參數處理優先級"
+        "title": "2.1.3 `File` 的檔案名語義"
       }
     ],
-    "2.2 @用戶參數規範": [
+    "2.1.4 平台限制的聲明義務": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 139,
+        "line": 127,
+        "level": 4,
+        "title": "2.1.4 平台限制的聲明義務"
+      }
+    ],
+    "2.1.5 能力降級階梯": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 135,
+        "level": 4,
+        "title": "2.1.5 能力降級階梯"
+      }
+    ],
+    "2.2 @使用者參數規範": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 148,
         "level": 3,
-        "title": "2.2 @用戶參數規範"
+        "title": "2.2 @使用者參數規範"
       }
     ],
     "2.2 ErisPulse 擴展類型": [
@@ -922,12 +946,12 @@
         "title": "2.2 消息事件字段"
       }
     ],
-    "2.3 回覆消息參數規範": [
+    "2.3 回覆訊息參數規範": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 160,
+        "line": 169,
         "level": 3,
-        "title": "2.3 回覆消息參數規範"
+        "title": "2.3 回覆訊息參數規範"
       }
     ],
     "2.3 請求事件示例": [
@@ -1037,7 +1061,7 @@
     "3. 平台特有方法命名": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 176,
+        "line": 185,
         "level": 2,
         "title": "3. 平台特有方法命名"
       }
@@ -1109,7 +1133,7 @@
     "3. 條件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 1104,
+        "line": 1113,
         "level": 3,
         "title": "3. 條件處理"
       }
@@ -1405,7 +1429,7 @@
     "4. 參數命名規範": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 207,
+        "line": 216,
         "level": 2,
         "title": "4. 參數命名規範"
       }
@@ -1549,7 +1573,7 @@
     "4.1.1 keyboard 按鈕/內聯鍵盤段（跨平台通用）": [
       {
         "document": "standards/event-conversion.md",
-        "line": 163,
+        "line": 183,
         "level": 3,
         "title": "4.1.1 keyboard 按鈕/內聯鍵盤段（跨平台通用）"
       }
@@ -1565,7 +1589,7 @@
     "4.2 平台擴展消息段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 203,
+        "line": 223,
         "level": 3,
         "title": "4.2 平台擴展消息段"
       }
@@ -1661,7 +1685,7 @@
     "5. 未知事件處理": [
       {
         "document": "standards/event-conversion.md",
-        "line": 220,
+        "line": 240,
         "level": 2,
         "title": "5. 未知事件處理"
       }
@@ -1685,7 +1709,7 @@
     "5. 返回值規範": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 218,
+        "line": 228,
         "level": 2,
         "title": "5. 返回值規範"
       }
@@ -1877,7 +1901,7 @@
     "6. 反向轉換規範（OneBot12 → 平台）": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 225,
+        "line": 235,
         "level": 2,
         "title": "6. 反向轉換規範（OneBot12 → 平台）"
       }
@@ -1909,7 +1933,7 @@
     "6. 擴展命名規範": [
       {
         "document": "standards/event-conversion.md",
-        "line": 237,
+        "line": 257,
         "level": 2,
         "title": "6. 擴展命名規範"
       }
@@ -1949,7 +1973,7 @@
     "6.1 欄位命名": [
       {
         "document": "standards/event-conversion.md",
-        "line": 239,
+        "line": 259,
         "level": 3,
         "title": "6.1 欄位命名"
       }
@@ -1965,7 +1989,7 @@
     "6.1 轉換模型": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 229,
+        "line": 239,
         "level": 3,
         "title": "6.1 轉換模型"
       }
@@ -1973,7 +1997,7 @@
     "6.2 `Raw_ob12` 實現規範": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 246,
+        "line": 256,
         "level": 3,
         "title": "6.2 `Raw_ob12` 實現規範"
       }
@@ -1989,7 +2013,7 @@
     "6.2 消息段類型命名": [
       {
         "document": "standards/event-conversion.md",
-        "line": 258,
+        "line": 278,
         "level": 3,
         "title": "6.2 消息段類型命名"
       }
@@ -1997,7 +2021,7 @@
     "6.3 原始數據欄位命名": [
       {
         "document": "standards/event-conversion.md",
-        "line": 264,
+        "line": 284,
         "level": 3,
         "title": "6.3 原始數據欄位命名"
       }
@@ -2013,7 +2037,7 @@
     "6.3 消息段轉換規則": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 274,
+        "line": 284,
         "level": 3,
         "title": "6.3 消息段轉換規則"
       }
@@ -2021,7 +2045,7 @@
     "6.3.1 標準消息段轉換": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 276,
+        "line": 286,
         "level": 4,
         "title": "6.3.1 標準消息段轉換"
       }
@@ -2029,7 +2053,7 @@
     "6.3.2 平台擴展消息段轉換": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 292,
+        "line": 302,
         "level": 4,
         "title": "6.3.2 平台擴展消息段轉換"
       }
@@ -2037,7 +2061,7 @@
     "6.3.3 複合消息段處理": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 316,
+        "line": 326,
         "level": 4,
         "title": "6.3.3 複合消息段處理"
       }
@@ -2045,7 +2069,7 @@
     "6.4 `Raw_ob12` 與標準方法的關係": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 334,
+        "line": 344,
         "level": 3,
         "title": "6.4 `Raw_ob12` 與標準方法的關係"
       }
@@ -2053,7 +2077,7 @@
     "6.4 平台特有欄位示例": [
       {
         "document": "standards/event-conversion.md",
-        "line": 278,
+        "line": 298,
         "level": 3,
         "title": "6.4 平台特有欄位示例"
       }
@@ -2061,7 +2085,7 @@
     "6.5 實現範例": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 356,
+        "line": 366,
         "level": 3,
         "title": "6.5 實現範例"
       }
@@ -2069,7 +2093,7 @@
     "6.5 嵌套擴展欄位": [
       {
         "document": "standards/event-conversion.md",
-        "line": 295,
+        "line": 315,
         "level": 3,
         "title": "6.5 嵌套擴展欄位"
       }
@@ -2077,7 +2101,7 @@
     "6.6 `self` 欄位擴展": [
       {
         "document": "standards/event-conversion.md",
-        "line": 318,
+        "line": 338,
         "level": 3,
         "title": "6.6 `self` 欄位擴展"
       }
@@ -2090,18 +2114,18 @@
         "title": "7. 實現 Request 類（請求操作）"
       }
     ],
-    "7. 新適配器開發者的標準 Checkl ist": [
+    "7. 新適配器開發者的標準 Checklist": [
       {
         "document": "standards/standardization-guide.md",
         "line": 244,
         "level": 2,
-        "title": "7. 新適配器開發者的標準 Checkl ist"
+        "title": "7. 新適配器開發者的標準 Checklist"
       }
     ],
     "7. 方法發現": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 407,
+        "line": 419,
         "level": 2,
         "title": "7. 方法發現"
       }
@@ -2109,7 +2133,7 @@
     "7. 會話類型擴展": [
       {
         "document": "standards/event-conversion.md",
-        "line": 330,
+        "line": 350,
         "level": 2,
         "title": "7. 會話類型擴展"
       }
@@ -2202,14 +2226,6 @@
         "title": "8. 工具方法"
       }
     ],
-    "8. 已註冊的發送方法擴展": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 430,
-        "level": 2,
-        "title": "8. 已註冊的發送方法擴展"
-      }
-    ],
     "8. 建立包入口": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -2221,7 +2237,7 @@
     "8. 模組開發者指南": [
       {
         "document": "standards/event-conversion.md",
-        "line": 364,
+        "line": 384,
         "level": 2,
         "title": "8. 模組開發者指南"
       }
@@ -2235,7 +2251,7 @@
       },
       {
         "document": "standards/standardization-guide.md",
-        "line": 264,
+        "line": 265,
         "level": 2,
         "title": "8. 相關文件"
       }
@@ -2251,7 +2267,7 @@
     "8.1 訪問擴展字段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 366,
+        "line": 386,
         "level": 3,
         "title": "8.1 訪問擴展字段"
       }
@@ -2259,7 +2275,7 @@
     "8.2 處理擴展消息段": [
       {
         "document": "standards/event-conversion.md",
-        "line": 395,
+        "line": 415,
         "level": 3,
         "title": "8.2 處理擴展消息段"
       }
@@ -2267,7 +2283,7 @@
     "8.3 最佳實踐": [
       {
         "document": "standards/event-conversion.md",
-        "line": 416,
+        "line": 436,
         "level": 3,
         "title": "8.3 最佳實踐"
       }
@@ -2275,7 +2291,7 @@
     "8.4 請求事件處理": [
       {
         "document": "standards/event-conversion.md",
-        "line": 432,
+        "line": 452,
         "level": 3,
         "title": "8.4 請求事件處理"
       }
@@ -2283,7 +2299,7 @@
     "9. notice / request 事件的會話類型推斷": [
       {
         "document": "standards/event-conversion.md",
-        "line": 477,
+        "line": 497,
         "level": 2,
         "title": "9. notice / request 事件的會話類型推斷"
       }
@@ -2315,7 +2331,7 @@
     "9. 適配器開發注意事項": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 443,
+        "line": 442,
         "level": 2,
         "title": "9. 適配器開發注意事項"
       }
@@ -2323,7 +2339,7 @@
     "9.1 問題背景": [
       {
         "document": "standards/event-conversion.md",
-        "line": 479,
+        "line": 499,
         "level": 3,
         "title": "9.1 問題背景"
       }
@@ -2331,7 +2347,7 @@
     "9.2 推斷規則": [
       {
         "document": "standards/event-conversion.md",
-        "line": 494,
+        "line": 514,
         "level": 3,
         "title": "9.2 推斷規則"
       }
@@ -2339,7 +2355,7 @@
     "9.3 `event.reply()` 目標推斷": [
       {
         "document": "standards/event-conversion.md",
-        "line": 507,
+        "line": 527,
         "level": 3,
         "title": "9.3 `event.reply()` 目標推斷"
       }
@@ -2347,7 +2363,7 @@
     "9.4 適配器開發建議": [
       {
         "document": "standards/event-conversion.md",
-        "line": 529,
+        "line": 549,
         "level": 3,
         "title": "9.4 適配器開發建議"
       }
@@ -2429,7 +2445,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 87,
+        "line": 89,
         "level": 3,
         "title": "API 回應"
       }
@@ -2637,7 +2653,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 739,
+        "line": 748,
         "level": 3,
         "title": "Bot 狀態查詢"
       }
@@ -2924,12 +2940,14 @@
         "line": 306,
         "level": 2,
         "title": "Event Mixin 扩展方法"
-      },
+      }
+    ],
+    "Event Mixin 擴展方法": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 540,
         "level": 2,
-        "title": "Event Mixin 扩展方法"
+        "title": "Event Mixin 擴展方法"
       }
     ],
     "Event Mixin 方法": [
@@ -2975,7 +2993,7 @@
     "Event 對象常用方法": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 993,
+        "line": 1002,
         "level": 3,
         "title": "Event 對象常用方法"
       }
@@ -3337,7 +3355,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 251,
+        "line": 252,
         "level": 3,
         "title": "OneBot12訊息支援"
       },
@@ -3693,7 +3711,7 @@
     "TestBot API": [
       {
         "document": "developer-guide/testing.md",
-        "line": 55,
+        "line": 57,
         "level": 2,
         "title": "TestBot API"
       }
@@ -3854,250 +3872,250 @@
         "title": "Windows PowerShell 執行策略"
       }
     ],
-    "[BUG-001] 事件處理器重複註冊導致事件被多次處理": [
+    "[BUG-001] 事件处理器重复注册导致事件被多次处理": [
       {
         "document": "bug-tracker.md",
-        "line": 117,
+        "line": 118,
         "level": 3,
-        "title": "[BUG-001] 事件處理器重複註冊導致事件被多次處理"
+        "title": "[BUG-001] 事件处理器重复注册导致事件被多次处理"
       }
     ],
-    "[BUG-002] Init 命令適配器配置路徑類型錯誤": [
+    "[BUG-002] Init 命令适配器配置路径类型错误": [
       {
         "document": "bug-tracker.md",
-        "line": 137,
+        "line": 138,
         "level": 3,
-        "title": "[BUG-002] Init 命令適配器配置路徑類型錯誤"
+        "title": "[BUG-002] Init 命令适配器配置路径类型错误"
       }
     ],
-    "[BUG-003] 重啟後命令事件失效": [
+    "[BUG-003] 重启后命令事件失效": [
       {
         "document": "bug-tracker.md",
-        "line": 161,
+        "line": 162,
         "level": 3,
-        "title": "[BUG-003] 重啟後命令事件失效"
+        "title": "[BUG-003] 重启后命令事件失效"
       }
     ],
-    "[BUG-004] 生命週期事件處理器未清理": [
+    "[BUG-004] 生命周期事件处理器未清理": [
       {
         "document": "bug-tracker.md",
-        "line": 181,
+        "line": 182,
         "level": 3,
-        "title": "[BUG-004] 生命週期事件處理器未清理"
+        "title": "[BUG-004] 生命周期事件处理器未清理"
       }
     ],
-    "[BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致": [
+    "[BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 与 OB12 标准不一致": [
       {
         "document": "bug-tracker.md",
-        "line": 201,
+        "line": 202,
         "level": 3,
-        "title": "[BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 與 OB12 標準不一致"
+        "title": "[BUG-005] Event.is_friend_add/is_friend_delete 的 detail_type 与 OB12 标准不一致"
       }
     ],
-    "[BUG-006] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確": [
+    "[BUG-006] adapter.clear() 未清理 _started_instances 导致重启后状态不正确": [
       {
         "document": "bug-tracker.md",
-        "line": 221,
+        "line": 222,
         "level": 3,
-        "title": "[BUG-006] adapter.clear() 未清理 _started_instances 導致重啟後狀態不正確"
+        "title": "[BUG-006] adapter.clear() 未清理 _started_instances 导致重启后状态不正确"
       }
     ],
-    "[BUG-007] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()": [
+    "[BUG-007] command.wait_reply() 使用已弃用的 asyncio.get_event_loop()": [
       {
         "document": "bug-tracker.md",
-        "line": 241,
+        "line": 242,
         "level": 3,
-        "title": "[BUG-007] command.wait_reply() 使用已棄用的 asyncio.get_event_loop()"
+        "title": "[BUG-007] command.wait_reply() 使用已弃用的 asyncio.get_event_loop()"
       }
     ],
-    "[BUG-008] Bot 離線事件在 shutdown 過程中被重複提交": [
+    "[BUG-008] Bot 离线事件在 shutdown 过程中被重复提交": [
       {
         "document": "bug-tracker.md",
-        "line": 261,
+        "line": 262,
         "level": 3,
-        "title": "[BUG-008] Bot 離線事件在 shutdown 過程中被重複提交"
+        "title": "[BUG-008] Bot 离线事件在 shutdown 过程中被重复提交"
       }
     ],
-    "[BUG-009] LazyModule 同步訪問 BaseModule 導致未初始化完成": [
+    "[BUG-009] LazyModule 同步访问 BaseModule 导致未初始化完成": [
       {
         "document": "bug-tracker.md",
-        "line": 281,
+        "line": 282,
         "level": 3,
-        "title": "[BUG-009] LazyModule 同步訪問 BaseModule 導致未初始化完成"
+        "title": "[BUG-009] LazyModule 同步访问 BaseModule 导致未初始化完成"
       }
     ],
-    "[BUG-010] 配置系統多線程寫入導致數據丟失": [
+    "[BUG-010] 配置系统多线程写入导致数据丢失": [
       {
         "document": "bug-tracker.md",
-        "line": 301,
+        "line": 302,
         "level": 3,
-        "title": "[BUG-010] 配置系統多線程寫入導致數據丟失"
+        "title": "[BUG-010] 配置系统多线程写入导致数据丢失"
       }
     ],
-    "[BUG-011] Windows 下 CTRL+C 無法停止程序": [
+    "[BUG-011] Windows 下 CTRL+C 无法停止程序": [
       {
         "document": "bug-tracker.md",
-        "line": 324,
+        "line": 325,
         "level": 3,
-        "title": "[BUG-011] Windows 下 CTRL+C 無法停止程序"
+        "title": "[BUG-011] Windows 下 CTRL+C 无法停止程序"
       }
     ],
-    "[BUG-012] 熱重啟後已更新模塊的 Python 代碼未生效": [
+    "[BUG-012] 热重启后已更新模块的 Python 代码未生效": [
       {
         "document": "bug-tracker.md",
-        "line": 348,
+        "line": 349,
         "level": 3,
-        "title": "[BUG-012] 熱重啟後已更新模塊的 Python 代碼未生效"
+        "title": "[BUG-012] 热重启后已更新模块的 Python 代码未生效"
       }
     ],
-    "[BUG-013] 模塊加載策略排序邏輯錯誤": [
+    "[BUG-013] 模块加载策略排序逻辑错误": [
       {
         "document": "bug-tracker.md",
-        "line": 368,
+        "line": 369,
         "level": 3,
-        "title": "[BUG-013] 模塊加載策略排序邏輯錯誤"
+        "title": "[BUG-013] 模块加载策略排序逻辑错误"
       }
     ],
-    "[BUG-014] 適配器中間件返回 None 導致事件數據丟失": [
+    "[BUG-014] 适配器中间件返回 None 导致事件数据丢失": [
       {
         "document": "bug-tracker.md",
-        "line": 388,
+        "line": 389,
         "level": 3,
-        "title": "[BUG-014] 適配器中間件返回 None 導致事件數據丟失"
+        "title": "[BUG-014] 适配器中间件返回 None 导致事件数据丢失"
       }
     ],
-    "[BUG-015] 配置文件路徑依賴工作目錄": [
+    "[BUG-015] 配置文件路径依赖工作目录": [
       {
         "document": "bug-tracker.md",
-        "line": 408,
+        "line": 409,
         "level": 3,
-        "title": "[BUG-015] 配置文件路徑依賴工作目錄"
+        "title": "[BUG-015] 配置文件路径依赖工作目录"
       }
     ],
-    "[BUG-016] BaseStorage 將存儲值 None 與鍵不存在混淆": [
+    "[BUG-016] BaseStorage 将存储值 None 与键不存在混淆": [
       {
         "document": "bug-tracker.md",
-        "line": 428,
+        "line": 429,
         "level": 3,
-        "title": "[BUG-016] BaseStorage 將存儲值 None 與鍵不存在混淆"
+        "title": "[BUG-016] BaseStorage 将存储值 None 与键不存在混淆"
       }
     ],
-    "[BUG-017] WebSocket 路由 auto_accept 標誌在服務重啟後丟失": [
+    "[BUG-017] WebSocket 路由 auto_accept 标志在服务重启后丢失": [
       {
         "document": "bug-tracker.md",
-        "line": 448,
+        "line": 449,
         "level": 3,
-        "title": "[BUG-017] WebSocket 路由 auto_accept 標誌在服務重啟後丟失"
+        "title": "[BUG-017] WebSocket 路由 auto_accept 标志在服务重启后丢失"
       }
     ],
-    "[BUG-018] HTTP/WS 客戶端並發調用導致崩潰與連接泄漏": [
+    "[BUG-018] HTTP/WS 客户端并发调用导致崩溃与连接泄漏": [
       {
         "document": "bug-tracker.md",
-        "line": 468,
+        "line": 469,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS 客戶端並發調用導致崩潰與連接泄漏"
+        "title": "[BUG-018] HTTP/WS 客户端并发调用导致崩溃与连接泄漏"
       }
     ],
-    "[BUG-019] 適配器熱重載時路由衝突導致重載失敗": [
+    "[BUG-019] 适配器热重载时路由冲突导致重载失败": [
       {
         "document": "bug-tracker.md",
-        "line": 496,
+        "line": 497,
         "level": 3,
-        "title": "[BUG-019] 適配器熱重載時路由衝突導致重載失敗"
+        "title": "[BUG-019] 适配器热重载时路由冲突导致重载失败"
       }
     ],
-    "[BUG-020] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子包": [
+    "[BUG-020] 子进程模式 `ep run <script>` 找不到脚本所在目录的子包": [
       {
         "document": "bug-tracker.md",
-        "line": 520,
+        "line": 521,
         "level": 3,
-        "title": "[BUG-020] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子包"
+        "title": "[BUG-020] 子进程模式 `ep run <script>` 找不到脚本所在目录的子包"
       }
     ],
-    "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式": [
+    "[BUG-021] SQL 查询构建器拒绝合法通配符和列表达式": [
       {
         "document": "bug-tracker.md",
-        "line": 540,
+        "line": 541,
         "level": 3,
-        "title": "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式"
+        "title": "[BUG-021] SQL 查询构建器拒绝合法通配符和列表达式"
       }
     ],
     "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）": [
       {
         "document": "bug-tracker.md",
-        "line": 570,
+        "line": 571,
         "level": 3,
         "title": "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）"
       }
     ],
-    "[BUG-023] 修改賬戶配置後適配器緩存未刷新導致賬戶解析失敗": [
+    "[BUG-023] 修改账户配置后适配器缓存未刷新导致账户解析失败": [
       {
         "document": "bug-tracker.md",
-        "line": 609,
+        "line": 610,
         "level": 3,
-        "title": "[BUG-023] 修改賬戶配置後適配器緩存未刷新導致賬戶解析失敗"
+        "title": "[BUG-023] 修改账户配置后适配器缓存未刷新导致账户解析失败"
       }
     ],
-    "[BUG-024] storage.set() 寫入大數字 ID 鍵時觸發 OOM Kill": [
+    "[BUG-024] storage.set() 写入大数字 ID 键时触发 OOM Kill": [
       {
         "document": "bug-tracker.md",
-        "line": 629,
+        "line": 630,
         "level": 3,
-        "title": "[BUG-024] storage.set() 寫入大數字 ID 鍵時觸發 OOM Kill"
+        "title": "[BUG-024] storage.set() 写入大数字 ID 键时触发 OOM Kill"
       }
     ],
-    "[BUG-025] on_config_update 回調未被核心路由": [
+    "[BUG-025] on_config_update 回调未被核心路由": [
       {
         "document": "bug-tracker.md",
-        "line": 675,
+        "line": 676,
         "level": 3,
-        "title": "[BUG-025] on_config_update 回調未被核心路由"
+        "title": "[BUG-025] on_config_update 回调未被核心路由"
       }
     ],
-    "[BUG-026] notice/request 事件 reply 目標推斷錯誤": [
+    "[BUG-026] notice/request 事件 reply 目标推断错误": [
       {
         "document": "bug-tracker.md",
-        "line": 705,
+        "line": 706,
         "level": 3,
-        "title": "[BUG-026] notice/request 事件 reply 目標推斷錯誤"
+        "title": "[BUG-026] notice/request 事件 reply 目标推断错误"
       }
     ],
-    "[BUG-027] 路由限流清理任務使用固定窗口導致長窗口限流規則失效": [
+    "[BUG-027] 路由限流清理任务使用固定窗口导致长窗口限流规则失效": [
       {
         "document": "bug-tracker.md",
-        "line": 736,
+        "line": 737,
         "level": 3,
-        "title": "[BUG-027] 路由限流清理任務使用固定窗口導致長窗口限流規則失效"
+        "title": "[BUG-027] 路由限流清理任务使用固定窗口导致长窗口限流规则失效"
       }
     ],
-    "[BUG-029] 配置監聽任務廣播半成品 TOML 並靜默吞掉異常": [
+    "[BUG-029] 配置监听任务广播半成品 TOML 并静默吞掉异常": [
       {
         "document": "bug-tracker.md",
-        "line": 768,
+        "line": 769,
         "level": 3,
-        "title": "[BUG-029] 配置監聽任務廣播半成品 TOML 並靜默吞掉異常"
+        "title": "[BUG-029] 配置监听任务广播半成品 TOML 并静默吞掉异常"
       }
     ],
-    "[BUG-030] 配置 watcher 競態導致 setConfig 延遲寫入靜默丟數據": [
+    "[BUG-030] 配置 watcher 竞态导致 setConfig 延迟写入静默丢数据": [
       {
         "document": "bug-tracker.md",
-        "line": 804,
+        "line": 805,
         "level": 3,
-        "title": "[BUG-030] 配置 watcher 競態導致 setConfig 延遲寫入靜默丟數據"
+        "title": "[BUG-030] 配置 watcher 竞态导致 setConfig 延迟写入静默丢数据"
       }
     ],
-    "[BUG-032] 配置延遲刷盤期間「寫后立读」讀到舊值": [
+    "[BUG-032] 配置延迟刷盘期间「写后立读」读到旧值": [
       {
         "document": "bug-tracker.md",
-        "line": 840,
+        "line": 841,
         "level": 3,
-        "title": "[BUG-032] 配置延遲刷盤期間「寫后立读」讀到舊值"
+        "title": "[BUG-032] 配置延迟刷盘期间「写后立读」读到旧值"
       }
     ],
     "[BUG-033] wait_reply 挂起的回复被高优先级处理器饿死": [
       {
         "document": "bug-tracker.md",
-        "line": 862,
+        "line": 863,
         "level": 3,
         "title": "[BUG-033] wait_reply 挂起的回复被高优先级处理器饿死"
       }
@@ -4105,7 +4123,7 @@
     "[BUG-034] 作用域 persist=False 运行时绑定被任意后续配置写入静默冲掉": [
       {
         "document": "bug-tracker.md",
-        "line": 884,
+        "line": 885,
         "level": 3,
         "title": "[BUG-034] 作用域 persist=False 运行时绑定被任意后续配置写入静默冲掉"
       }
@@ -4113,7 +4131,7 @@
     "[BUG-035] 配置面板 select 选项与字典字段渲染为 [object Object]": [
       {
         "document": "bug-tracker.md",
-        "line": 904,
+        "line": 905,
         "level": 3,
         "title": "[BUG-035] 配置面板 select 选项与字典字段渲染为 [object Object]"
       }
@@ -4121,17 +4139,33 @@
     "[BUG-036] 多实例共享配置目录时配置写入偶发失败（ENOENT）": [
       {
         "document": "bug-tracker.md",
-        "line": 922,
+        "line": 923,
         "level": 3,
         "title": "[BUG-036] 多实例共享配置目录时配置写入偶发失败（ENOENT）"
       }
     ],
-    "[BUG-037] 空格子命令名註冊后永远无法被触发": [
+    "[BUG-037] 空格子命令名註冊後永遠無法被觸發": [
       {
         "document": "bug-tracker.md",
-        "line": 948,
+        "line": 949,
         "level": 3,
-        "title": "[BUG-037] 空格子命令名註冊后永远无法被触发"
+        "title": "[BUG-037] 空格子命令名註冊後永遠無法被觸發"
+      }
+    ],
+    "[BUG-038] persist=False 運行時綁定被持久化寫入順帶落盤，模組卸載後從磁盤\"復活\"": [
+      {
+        "document": "bug-tracker.md",
+        "line": 973,
+        "level": 3,
+        "title": "[BUG-038] persist=False 運行時綁定被持久化寫入順帶落盤，模組卸載後從磁盤\"復活\""
+      }
+    ],
+    "[BUG-039] 整節寫與點分寫並存時讀寫不一致（點分覆寫丟失）": [
+      {
+        "document": "bug-tracker.md",
+        "line": 997,
+        "level": 3,
+        "title": "[BUG-039] 整節寫與點分寫並存時讀寫不一致（點分覆寫丟失）"
       }
     ],
     "__init__.py": [
@@ -4353,7 +4387,7 @@
     "escalate：到點必達的升級": [
       {
         "document": "advanced/interaction.md",
-        "line": 107,
+        "line": 108,
         "level": 3,
         "title": "escalate：到點必達的升級"
       }
@@ -4574,12 +4608,12 @@
         "title": "secret 脫敏與配置校驗"
       }
     ],
-    "self 欄位擴展": [
+    "self 字段擴展": [
       {
         "document": "api-reference/adapter-system.md",
         "line": 252,
         "level": 3,
-        "title": "self 欄位擴展"
+        "title": "self 字段擴展"
       }
     ],
     "self-update": [
@@ -4901,7 +4935,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 1121,
+        "line": 1130,
         "level": 2,
         "title": "下一步"
       },
@@ -4919,7 +4953,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 663,
+        "line": 676,
         "level": 2,
         "title": "下一步"
       },
@@ -4941,7 +4975,7 @@
     "不支援的標準動作": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 307,
+        "line": 308,
         "level": 3,
         "title": "不支援的標準動作"
       }
@@ -4981,7 +5015,7 @@
     "並行事件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 423,
+        "line": 434,
         "level": 3,
         "title": "並行事件處理"
       }
@@ -5037,7 +5071,7 @@
     "中間件：分發前改寫或否決": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 466,
+        "line": 477,
         "level": 2,
         "title": "中間件：分發前改寫或否決"
       }
@@ -5061,7 +5095,7 @@
     "主人系統配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 259,
+        "line": 272,
         "level": 2,
         "title": "主人系統配置"
       }
@@ -5069,7 +5103,7 @@
     "主動 GC 配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 402,
+        "line": 415,
         "level": 3,
         "title": "主動 GC 配置"
       }
@@ -5093,7 +5127,7 @@
     "事件中的Bot標識": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 684,
+        "line": 686,
         "level": 3,
         "title": "事件中的Bot標識"
       }
@@ -5193,7 +5227,7 @@
     "事件數據訪問": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 991,
+        "line": 1000,
         "level": 2,
         "title": "事件數據訪問"
       }
@@ -5307,7 +5341,7 @@
     "事件處理最佳實踐": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 1068,
+        "line": 1077,
         "level": 2,
         "title": "事件處理最佳實踐"
       }
@@ -5359,7 +5393,7 @@
     "事件覆寫：不改模組代碼，覆寫任意事件類型的行為": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 533,
+        "line": 544,
         "level": 2,
         "title": "事件覆寫：不改模組代碼，覆寫任意事件類型的行為"
       }
@@ -5373,7 +5407,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 77,
+        "line": 78,
         "level": 3,
         "title": "事件轉換"
       }
@@ -5397,7 +5431,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 495,
+        "line": 508,
         "level": 2,
         "title": "事件配置"
       }
@@ -5521,7 +5555,7 @@
     "互動式處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 761,
+        "line": 770,
         "level": 2,
         "title": "互動式處理"
       }
@@ -5639,7 +5673,7 @@
     "伺服器配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 240,
+        "line": 242,
         "level": 2,
         "title": "伺服器配置"
       }
@@ -5668,18 +5702,18 @@
         "title": "何時重新產生"
       }
     ],
-    "作用域過濾：為什麼我的模組沒收到消息": [
+    "作用域過濾：為什麼我的模組沒收到訊息": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 498,
+        "line": 509,
         "level": 2,
-        "title": "作用域過濾：為什麼我的模組沒收到消息"
+        "title": "作用域過濾：為什麼我的模組沒收到訊息"
       }
     ],
     "作用域配置（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 564,
+        "line": 577,
         "level": 2,
         "title": "作用域配置（scope）"
       }
@@ -5722,14 +5756,6 @@
         "title": "使用 Send DSL 指定帳戶"
       }
     ],
-    "使用 event.reply() 自動回覆（會根據平台自動選擇正確的發送方式）": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 451,
-        "level": 1,
-        "title": "使用 event.reply() 自動回覆（會根據平台自動選擇正確的發送方式）"
-      }
-    ],
     "使用 pip 安裝": [
       {
         "document": "quick-start.md",
@@ -5741,7 +5767,7 @@
     "使用 reply 方法發送回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 763,
+        "line": 772,
         "level": 3,
         "title": "使用 reply 方法發送回覆"
       }
@@ -5749,7 +5775,7 @@
     "使用Send DSL指定Bot": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 662,
+        "line": 664,
         "level": 3,
         "title": "使用Send DSL指定Bot"
       }
@@ -5829,7 +5855,7 @@
     "使用者優先：主人生效範圍由使用者最終決定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 327,
+        "line": 340,
         "level": 3,
         "title": "使用者優先：主人生效範圍由使用者最終決定"
       }
@@ -5872,18 +5898,18 @@
         "title": "依賴宣告（可選，2.8.0+）"
       }
     ],
-    "依賴替換": [
+    "依賴替換（需 EP>=2.9.0-dev）": [
       {
         "document": "developer-guide/testing.md",
-        "line": 95,
+        "line": 99,
         "level": 3,
-        "title": "依賴替換"
+        "title": "依賴替換（需 EP>=2.9.0-dev）"
       }
     ],
     "依賴注入（Depends）": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 246,
+        "line": 257,
         "level": 3,
         "title": "依賴注入（Depends）"
       }
@@ -6025,7 +6051,7 @@
     "元事件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 712,
+        "line": 721,
         "level": 2,
         "title": "元事件處理"
       }
@@ -6079,7 +6105,7 @@
     "內建確認詞": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 984,
+        "line": 993,
         "level": 3,
         "title": "內建確認詞"
       }
@@ -6191,7 +6217,7 @@
     "典型流程模式": [
       {
         "document": "advanced/conversation.md",
-        "line": 356,
+        "line": 359,
         "level": 2,
         "title": "典型流程模式"
       }
@@ -6231,7 +6257,7 @@
     "出站斷言": [
       {
         "document": "developer-guide/testing.md",
-        "line": 68,
+        "line": 70,
         "level": 3,
         "title": "出站斷言"
       }
@@ -6247,17 +6273,17 @@
     "分發": [
       {
         "document": "developer-guide/testing.md",
-        "line": 57,
+        "line": 59,
         "level": 3,
         "title": "分發"
       }
     ],
-    "分發決策鏈（排查「命令為什麼沒觸發」）": [
+    "分發決策鏈（排查「命令為什麼沒觸發」；需 EP>=2.9.0-dev）": [
       {
         "document": "developer-guide/testing.md",
-        "line": 116,
+        "line": 129,
         "level": 2,
-        "title": "分發決策鏈（排查「命令為什麼沒觸發」）"
+        "title": "分發決策鏈（排查「命令為什麼沒觸發」；需 EP>=2.9.0-dev）"
       }
     ],
     "切換語言": [
@@ -6349,7 +6375,7 @@
     "判定鏈與運行時增刪": [
       {
         "document": "user-guide/configuration.md",
-        "line": 285,
+        "line": 298,
         "level": 3,
         "title": "判定鏈與運行時增刪"
       }
@@ -6633,7 +6659,7 @@
     "反向轉換": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 456,
+        "line": 462,
         "level": 3,
         "title": "反向轉換"
       }
@@ -6753,17 +6779,17 @@
     "命令優先級": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 410,
+        "line": 421,
         "level": 3,
         "title": "命令優先級"
       }
     ],
-    "命令分發決策鏈：為什麼命令沒觸發": [
+    "命令分發決策鏈：為什麼命令沒有觸發": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 490,
+        "line": 501,
         "level": 2,
-        "title": "命令分發決策鏈：為什麼命令沒觸發"
+        "title": "命令分發決策鏈：為什麼命令沒有觸發"
       }
     ],
     "命令別名": [
@@ -6790,12 +6816,12 @@
         "title": "命令基礎"
       }
     ],
-    "命令權限與訪問控制": [
+    "命令權限與存取控制": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 355,
+        "line": 366,
         "level": 3,
-        "title": "命令權限與訪問控制"
+        "title": "命令權限與存取控制"
       }
     ],
     "命令沒有響應？": [
@@ -6806,12 +6832,12 @@
         "title": "命令沒有響應？"
       }
     ],
-    "命令治理（cooldown= / rate_limit= / deprecated=）": [
+    "命令治理（cooldown= / rate_limit= / usage_limit= / deprecated=）": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 180,
+        "line": 174,
         "level": 3,
-        "title": "命令治理（cooldown= / rate_limit= / deprecated=）"
+        "title": "命令治理（cooldown= / rate_limit= / usage_limit= / deprecated=）"
       }
     ],
     "命令系統": [
@@ -6825,7 +6851,7 @@
     "命令組": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 291,
+        "line": 302,
         "level": 3,
         "title": "命令組"
       }
@@ -6833,7 +6859,7 @@
     "命令與回覆的 block 配置": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 633,
+        "line": 642,
         "level": 3,
         "title": "命令與回覆的 block 配置"
       }
@@ -6849,7 +6875,7 @@
     "命令解析配置（event.command）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 661,
+        "line": 674,
         "level": 2,
         "title": "命令解析配置（event.command）"
       }
@@ -6893,7 +6919,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 497,
+        "line": 510,
         "level": 3,
         "title": "命令配置"
       }
@@ -6965,7 +6991,7 @@
     "嚴格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 417,
+        "line": 430,
         "level": 3,
         "title": "嚴格模式"
       }
@@ -7113,7 +7139,7 @@
     "國際化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 524,
+        "line": 537,
         "level": 2,
         "title": "國際化配置"
       }
@@ -7525,7 +7551,7 @@
     "多Bot配置": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 629,
+        "line": 631,
         "level": 2,
         "title": "多Bot配置"
       }
@@ -7645,7 +7671,7 @@
     "多路等待：expect + select": [
       {
         "document": "advanced/interaction.md",
-        "line": 123,
+        "line": 124,
         "level": 2,
         "title": "多路等待：expect + select"
       }
@@ -7653,7 +7679,7 @@
     "多輪對話 (conversation)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 957,
+        "line": 966,
         "level": 3,
         "title": "多輪對話 (conversation)"
       }
@@ -7733,7 +7759,7 @@
     "好友添加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 651,
+        "line": 660,
         "level": 3,
         "title": "好友添加"
       }
@@ -7749,7 +7775,7 @@
     "好友請求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 685,
+        "line": 694,
         "level": 3,
         "title": "好友請求"
       }
@@ -7802,10 +7828,26 @@
         "title": "媒體檔案處理"
       }
     ],
+    "媒體發送協議": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 455,
+        "level": 3,
+        "title": "媒體發送協議"
+      }
+    ],
+    "媒體發送（Image / Voice / Video / File）": [
+      {
+        "document": "standards/README.md",
+        "line": 107,
+        "level": 3,
+        "title": "媒體發送（Image / Voice / Video / File）"
+      }
+    ],
     "子命令": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 306,
+        "line": 317,
         "level": 3,
         "title": "子命令"
       }
@@ -7869,7 +7911,7 @@
     "存儲配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 446,
+        "line": 459,
         "level": 2,
         "title": "存儲配置"
       }
@@ -8055,7 +8097,7 @@
     "完整配置示例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 186,
+        "line": 188,
         "level": 2,
         "title": "完整配置示例"
       }
@@ -8276,12 +8318,12 @@
         "title": "工具方法"
       }
     ],
-    "工具模組指南：托管其它模組的句柄": [
+    "工具模組指南：託管其他模組的句柄": [
       {
         "document": "advanced/ownership.md",
         "line": 264,
         "level": 2,
-        "title": "工具模組指南：托管其它模組的句柄"
+        "title": "工具模組指南：託管其他模組的句柄"
       }
     ],
     "工具模組：托管别人东西时要接住\"卸载通知\"": [
@@ -8292,12 +8334,12 @@
         "title": "工具模組：托管别人东西时要接住\"卸载通知\""
       }
     ],
-    "已修復的 Bug": [
+    "已修复的 Bug": [
       {
         "document": "bug-tracker.md",
-        "line": 115,
+        "line": 116,
         "level": 2,
-        "title": "已修復的 Bug"
+        "title": "已修复的 Bug"
       }
     ],
     "已對接平台功能清單": [
@@ -8407,7 +8449,7 @@
     "帶回調的等待回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 842,
+        "line": 851,
         "level": 3,
         "title": "帶回調的等待回覆"
       }
@@ -8423,7 +8465,7 @@
     "帶驗證的等待回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 815,
+        "line": 824,
         "level": 3,
         "title": "帶驗證的等待回覆"
       }
@@ -8559,7 +8601,7 @@
     "平台擴展動作": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 314,
+        "line": 315,
         "level": 3,
         "title": "平台擴展動作"
       }
@@ -8601,7 +8643,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 1039,
+        "line": 1048,
         "level": 3,
         "title": "平台擴展方法"
       }
@@ -8741,7 +8783,7 @@
     "引導式註冊": [
       {
         "document": "advanced/conversation.md",
-        "line": 358,
+        "line": 361,
         "level": 3,
         "title": "引導式註冊"
       }
@@ -8781,7 +8823,7 @@
     "循環對話": [
       {
         "document": "advanced/conversation.md",
-        "line": 389,
+        "line": 392,
         "level": 3,
         "title": "循環對話"
       }
@@ -8797,7 +8839,7 @@
     "心跳事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 730,
+        "line": 739,
         "level": 3,
         "title": "心跳事件"
       }
@@ -8957,7 +8999,7 @@
     "恢復即接管": [
       {
         "document": "advanced/conversation.md",
-        "line": 332,
+        "line": 335,
         "level": 3,
         "title": "恢復即接管"
       }
@@ -9067,7 +9109,7 @@
     "手動恢復（不用自動機制時）": [
       {
         "document": "advanced/conversation.md",
-        "line": 345,
+        "line": 348,
         "level": 3,
         "title": "手動恢復（不用自動機制時）"
       }
@@ -9100,12 +9142,6 @@
       {
         "document": "platform-guide/telegram.md",
         "line": 390,
-        "level": 2,
-        "title": "扩展字段說明"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 577,
         "level": 2,
         "title": "扩展字段說明"
       },
@@ -9205,7 +9241,7 @@
     "按鈕參數說明": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 142,
+        "line": 143,
         "level": 3,
         "title": "按鈕參數說明"
       },
@@ -9374,6 +9410,12 @@
         "line": 355,
         "level": 3,
         "title": "擴展欄位說明"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 577,
+        "level": 2,
+        "title": "擴展欄位說明"
       }
     ],
     "擴展：添加更多功能": [
@@ -9427,7 +9469,7 @@
     "支援的標準動作": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 294,
+        "line": 295,
         "level": 3,
         "title": "支援的標準動作"
       }
@@ -9499,7 +9541,7 @@
     "支援的訊息發送類型": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 60,
+        "line": 61,
         "level": 2,
         "title": "支援的訊息發送類型"
       }
@@ -9515,7 +9557,7 @@
     "收集表單 (collect)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 916,
+        "line": 925,
         "level": 3,
         "title": "收集表單 (collect)"
       }
@@ -9841,7 +9883,7 @@
     "方言行為差異": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 107,
+        "line": 113,
         "level": 2,
         "title": "方言行為差異"
       }
@@ -9887,7 +9929,7 @@
     "日誌資訊": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 706,
+        "line": 708,
         "level": 3,
         "title": "日誌資訊"
       },
@@ -9901,7 +9943,7 @@
     "日誌配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 333,
+        "line": 346,
         "level": 2,
         "title": "日誌配置"
       }
@@ -10003,7 +10045,7 @@
     "會話互斥：acquire / hold / get_owner_of": [
       {
         "document": "advanced/interaction.md",
-        "line": 153,
+        "line": 156,
         "level": 2,
         "title": "會話互斥：acquire / hold / get_owner_of"
       }
@@ -10019,7 +10061,7 @@
     "會話收件箱：event.history": [
       {
         "document": "advanced/interaction.md",
-        "line": 186,
+        "line": 189,
         "level": 2,
         "title": "會話收件箱：event.history"
       }
@@ -10259,7 +10301,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 361,
+        "line": 362,
         "level": 3,
         "title": "核心差異點"
       },
@@ -10379,7 +10421,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 381,
+        "line": 394,
         "level": 2,
         "title": "框架配置"
       }
@@ -10431,7 +10473,7 @@
     "標準 API 動作（ApiDSL）": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 267,
+        "line": 268,
         "level": 2,
         "title": "標準 API 動作（ApiDSL）"
       }
@@ -10577,7 +10619,7 @@
     "模塊配置的環境變數綁定（2.9.0+）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 85,
+        "line": 87,
         "level": 3,
         "title": "模塊配置的環境變數綁定（2.9.0+）"
       }
@@ -10639,7 +10681,7 @@
     "模組加載": [
       {
         "document": "developer-guide/testing.md",
-        "line": 85,
+        "line": 87,
         "level": 3,
         "title": "模組加載"
       }
@@ -10771,7 +10813,7 @@
     "模組配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 535,
+        "line": 548,
         "level": 2,
         "title": "模組配置"
       }
@@ -10854,14 +10896,6 @@
         "line": 125,
         "level": 4,
         "title": "檢查平台狀態"
-      }
-    ],
-    "檢查是否是按鈕點擊事件": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 443,
-        "level": 1,
-        "title": "檢查是否是按鈕點擊事件"
       }
     ],
     "檢查表是否存在": [
@@ -11055,7 +11089,7 @@
     "消息事務：message_tx": [
       {
         "document": "advanced/interaction.md",
-        "line": 202,
+        "line": 205,
         "level": 2,
         "title": "消息事務：message_tx"
       }
@@ -11133,6 +11167,12 @@
       }
     ],
     "消息發送": [
+      {
+        "document": "advanced/lifecycle.md",
+        "line": 221,
+        "level": 3,
+        "title": "消息發送"
+      },
       {
         "document": "platform-guide/qqbot.md",
         "line": 59,
@@ -11371,7 +11411,7 @@
     "熱更新鏈路內部拆解": [
       {
         "document": "user-guide/configuration.md",
-        "line": 138,
+        "line": 140,
         "level": 3,
         "title": "熱更新鏈路內部拆解"
       }
@@ -11453,7 +11493,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 357,
+        "line": 358,
         "level": 2,
         "title": "特有事件類型"
       },
@@ -11470,14 +11510,6 @@
         "line": 435,
         "level": 3,
         "title": "特有消息段類型"
-      }
-    ],
-    "特殊字段示例": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 378,
-        "level": 3,
-        "title": "特殊字段示例"
       }
     ],
     "特殊欄位示例": [
@@ -11498,6 +11530,12 @@
       {
         "document": "platform-guide/matrix.md",
         "line": 206,
+        "level": 3,
+        "title": "特殊欄位範例"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 379,
         "level": 3,
         "title": "特殊欄位範例"
       }
@@ -11569,9 +11607,17 @@
     "環境變數覆蓋": [
       {
         "document": "user-guide/configuration.md",
-        "line": 60,
+        "line": 62,
         "level": 2,
         "title": "環境變數覆蓋"
+      }
+    ],
+    "生命周期事件": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 410,
+        "level": 3,
+        "title": "生命周期事件"
       }
     ],
     "生命週期事件": [
@@ -11579,12 +11625,6 @@
         "document": "advanced/http-client.md",
         "line": 225,
         "level": 2,
-        "title": "生命週期事件"
-      },
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 410,
-        "level": 3,
         "title": "生命週期事件"
       },
       {
@@ -11842,26 +11882,20 @@
         "title": "發布與模組商店指南"
       }
     ],
-    "發送 A2UI 消息": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 498,
-        "level": 3,
-        "title": "發送 A2UI 消息"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 506,
-        "level": 1,
-        "title": "發送 A2UI 消息"
-      }
-    ],
     "發送 Embed 訊息": [
       {
         "document": "platform-guide/discord.md",
         "line": 435,
         "level": 3,
         "title": "發送 Embed 訊息"
+      }
+    ],
+    "發送A2UI訊息": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 506,
+        "level": 1,
+        "title": "發送A2UI訊息"
       }
     ],
     "發送KMarkdown和卡片訊息": [
@@ -11902,20 +11936,20 @@
         "title": "發送媒體訊息"
       }
     ],
-    "發送帶按鈕的消息到用戶私聊": [
+    "發送帶按鈕的訊息到使用者私聊": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 495,
         "level": 1,
-        "title": "發送帶按鈕的消息到用戶私聊"
+        "title": "發送帶按鈕的訊息到使用者私聊"
       }
     ],
-    "發送帶按鈕的消息到群組": [
+    "發送帶按鈕的訊息到群組": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 492,
         "level": 1,
-        "title": "發送帶按鈕的消息到群組"
+        "title": "發送帶按鈕的訊息到群組"
       }
     ],
     "發送成功後執行邏輯": [
@@ -11943,7 +11977,7 @@
       },
       {
         "document": "standards/send-method-spec.md",
-        "line": 449,
+        "line": 448,
         "level": 3,
         "title": "發送方法"
       }
@@ -11951,9 +11985,17 @@
     "發送方法命名": [
       {
         "document": "standards/README.md",
-        "line": 96,
+        "line": 99,
         "level": 3,
         "title": "發送方法命名"
+      }
+    ],
+    "發送方法回傳值": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 342,
+        "level": 2,
+        "title": "發送方法回傳值"
       }
     ],
     "發送方法返回值": [
@@ -11996,12 +12038,6 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 351,
-        "level": 2,
-        "title": "發送方法返回值"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 341,
         "level": 2,
         "title": "發送方法返回值"
       },
@@ -12151,7 +12187,7 @@
     "相關文件": [
       {
         "document": "advanced/conversation.md",
-        "line": 416,
+        "line": 419,
         "level": 2,
         "title": "相關文件"
       },
@@ -12163,7 +12199,7 @@
       },
       {
         "document": "advanced/interaction.md",
-        "line": 234,
+        "line": 237,
         "level": 2,
         "title": "相關文件"
       },
@@ -12217,7 +12253,7 @@
       },
       {
         "document": "advanced/storage-backends.md",
-        "line": 147,
+        "line": 153,
         "level": 2,
         "title": "相關文件"
       },
@@ -12301,7 +12337,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 109,
+        "line": 125,
         "level": 2,
         "title": "相關文件"
       },
@@ -12341,7 +12377,7 @@
     "確認對話 (confirm)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 863,
+        "line": 872,
         "level": 3,
         "title": "確認對話 (confirm)"
       }
@@ -12397,7 +12433,7 @@
     "等待任意事件 (wait_for)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 936,
+        "line": 945,
         "level": 3,
         "title": "等待任意事件 (wait_for)"
       }
@@ -12437,7 +12473,7 @@
     "等待用戶回覆": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 791,
+        "line": 800,
         "level": 3,
         "title": "等待用戶回覆"
       }
@@ -12465,7 +12501,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 715,
+        "line": 717,
         "level": 3,
         "title": "管理介面"
       },
@@ -12605,7 +12641,7 @@
     "統一事件覆寫配置（event.overrides）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 614,
+        "line": 627,
         "level": 2,
         "title": "統一事件覆寫配置（event.overrides）"
       }
@@ -12624,14 +12660,6 @@
         "line": 149,
         "level": 3,
         "title": "統一的模組獲取入口"
-      }
-    ],
-    "統計概覽": [
-      {
-        "document": "bug-tracker.md",
-        "line": 90,
-        "level": 2,
-        "title": "統計概覽"
       }
     ],
     "綁定繼承（merge）": [
@@ -12690,10 +12718,18 @@
         "title": "繼承關係"
       }
     ],
+    "统计概览": [
+      {
+        "document": "bug-tracker.md",
+        "line": 90,
+        "level": 2,
+        "title": "统计概览"
+      }
+    ],
     "群成員增加": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 663,
+        "line": 672,
         "level": 3,
         "title": "群成員增加"
       }
@@ -12701,7 +12737,7 @@
     "群成員減少": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 673,
+        "line": 682,
         "level": 3,
         "title": "群成員減少"
       }
@@ -12733,7 +12769,7 @@
     "群組管理方法": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 85,
+        "line": 86,
         "level": 3,
         "title": "群組管理方法"
       }
@@ -12741,7 +12777,7 @@
     "群組管理範例": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 189,
+        "line": 190,
         "level": 3,
         "title": "群組管理範例"
       }
@@ -12757,7 +12793,7 @@
     "群邀請請求": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 701,
+        "line": 710,
         "level": 3,
         "title": "群邀請請求"
       }
@@ -12781,7 +12817,7 @@
     "聲明式參數與選項（args= / options=）": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 139,
+        "line": 138,
         "level": 3,
         "title": "聲明式參數與選項（args= / options=）"
       }
@@ -12885,7 +12921,7 @@
     "自訂 SQL 後端": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 121,
+        "line": 127,
         "level": 2,
         "title": "自訂 SQL 後端"
       }
@@ -12909,7 +12945,7 @@
     "自訂身份源（provider）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 299,
+        "line": 312,
         "level": 3,
         "title": "自訂身份源（provider）"
       }
@@ -12949,7 +12985,7 @@
     "與其他系統的關係": [
       {
         "document": "advanced/interaction.md",
-        "line": 227,
+        "line": 230,
         "level": 2,
         "title": "與其他系統的關係"
       }
@@ -12973,7 +13009,7 @@
     "舊配置相容": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 731,
+        "line": 733,
         "level": 3,
         "title": "舊配置相容"
       }
@@ -12984,14 +13020,6 @@
         "line": 1,
         "level": 1,
         "title": "花楓咖啡館（RockyChat）平台特性文件"
-      }
-    ],
-    "處理A2UI按鈕事件": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 469,
-        "level": 1,
-        "title": "處理A2UI按鈕事件"
       }
     ],
     "處理互動事件": [
@@ -13011,25 +13039,9 @@
     "處理器節流（throttle=）與防抖（debounce=）": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 221,
+        "line": 228,
         "level": 3,
         "title": "處理器節流（throttle=）與防抖（debounce=）"
-      }
-    ],
-    "處理快捷選單事件": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 459,
-        "level": 1,
-        "title": "處理快捷選單事件"
-      }
-    ],
-    "處理機器人設定變更": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 464,
-        "level": 1,
-        "title": "處理機器人設定變更"
       }
     ],
     "處理私聊訊息": [
@@ -13118,12 +13130,12 @@
         "title": "表單消息段 (yunhu_user_form)"
       }
     ],
-    "表情包/貼紙消息段 (yunhu_expression)": [
+    "表情包/貼紙訊息段 (yunhu_expression)": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 589,
         "level": 3,
-        "title": "表情包/貼紙消息段 (yunhu_expression)"
+        "title": "表情包/貼紙訊息段 (yunhu_expression)"
       }
     ],
     "表管理": [
@@ -13249,7 +13261,7 @@
     "訊息查詢方法": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 105,
+        "line": 106,
         "level": 3,
         "title": "訊息查詢方法"
       }
@@ -13257,7 +13269,7 @@
     "訊息查詢範例": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 232,
+        "line": 233,
         "level": 3,
         "title": "訊息查詢範例"
       }
@@ -13282,14 +13294,6 @@
         "title": "訊息段類型"
       }
     ],
-    "訊息發送": [
-      {
-        "document": "advanced/lifecycle.md",
-        "line": 221,
-        "level": 3,
-        "title": "訊息發送"
-      }
-    ],
     "訊息管理方法": [
       {
         "document": "platform-guide/telegram.md",
@@ -13309,7 +13313,7 @@
     "訊息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 513,
+        "line": 526,
         "level": 3,
         "title": "訊息配置"
       }
@@ -13405,7 +13409,7 @@
     "註釋保留與最小化落盤": [
       {
         "document": "user-guide/configuration.md",
-        "line": 42,
+        "line": 44,
         "level": 2,
         "title": "註釋保留與最小化落盤"
       }
@@ -13499,7 +13503,7 @@
     "請求事件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 683,
+        "line": 692,
         "level": 2,
         "title": "請求事件處理"
       }
@@ -13515,7 +13519,7 @@
     "請求操作": [
       {
         "document": "standards/README.md",
-        "line": 103,
+        "line": 118,
         "level": 3,
         "title": "請求操作"
       },
@@ -13605,7 +13609,7 @@
     "豁免清單": [
       {
         "document": "user-guide/configuration.md",
-        "line": 434,
+        "line": 447,
         "level": 4,
         "title": "豁免清單"
       }
@@ -13969,7 +13973,7 @@
     "通知事件處理": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 649,
+        "line": 658,
         "level": 2,
         "title": "通知事件處理"
       }
@@ -14033,7 +14037,7 @@
     "連接事件": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 714,
+        "line": 723,
         "level": 3,
         "title": "連接事件"
       }
@@ -14371,7 +14375,7 @@
     "選擇菜單 (choose)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 880,
+        "line": 889,
         "level": 3,
         "title": "選擇菜單 (choose)"
       }
@@ -14519,7 +14523,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 116,
+        "line": 118,
         "level": 2,
         "title": "配置熱更新"
       }
@@ -14577,7 +14581,7 @@
     "配置覆寫": [
       {
         "document": "developer-guide/testing.md",
-        "line": 105,
+        "line": 109,
         "level": 3,
         "title": "配置覆寫"
       }
@@ -14627,7 +14631,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 631,
+        "line": 633,
         "level": 3,
         "title": "配置說明"
       },
@@ -14707,7 +14711,7 @@
     "重啟自動恢復": [
       {
         "document": "advanced/conversation.md",
-        "line": 311,
+        "line": 314,
         "level": 3,
         "title": "重啟自動恢復"
       }
@@ -14885,7 +14889,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 167,
+        "line": 168,
         "level": 3,
         "title": "鏈式修飾方法（可組合使用）"
       },
@@ -14963,7 +14967,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 176,
+        "line": 177,
         "level": 3,
         "title": "鏈式呼叫範例"
       }
@@ -14987,7 +14991,7 @@
     "鏈路控制：認領與阻斷": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 598,
+        "line": 607,
         "level": 2,
         "title": "鏈路控制：認領與阻斷"
       }
@@ -14995,7 +14999,7 @@
     "鏈路追蹤：trace-id": [
       {
         "document": "advanced/interaction.md",
-        "line": 216,
+        "line": 219,
         "level": 2,
         "title": "鏈路追蹤：trace-id"
       }
@@ -15110,6 +15114,14 @@
         "line": 108,
         "level": 4,
         "title": "關閉適配器"
+      }
+    ],
+    "關閉雜訊折疊": [
+      {
+        "document": "advanced/errors.md",
+        "line": 168,
+        "level": 2,
+        "title": "關閉雜訊折疊"
       }
     ],
     "雙模式機制": [

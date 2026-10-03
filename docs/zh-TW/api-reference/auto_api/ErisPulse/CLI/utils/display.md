@@ -14,7 +14,7 @@ ErisPulse CLI 显示工具
 ## 函数列表
 
 
-### `_terminal_height()`
+### `_terminal_height() -> int`
 
 获取终端高度（行数）
 
@@ -23,7 +23,7 @@ ErisPulse CLI 显示工具
 ---
 
 
-### `_page_size()`
+### `_page_size() -> int`
 
 根据终端高度计算每页显示的行数
 
@@ -32,25 +32,28 @@ ErisPulse CLI 显示工具
 ---
 
 
-### `_input(prompt_label: str = '>')`
+### `_input(prompt_label: str = '>') -> str`
 
 读取用户输入，遇到EOF或中断时返回 "q"
 
 - **prompt_label** (`str`): 提示标签 (默认: ">")
+
 **返回值** (`str`): 用户输入内容（已去除首尾空白）
 
 ---
 
 
-### `prompt_validated(message: str, default: str = '', validate: Callable[[str], bool | str | None] | None = None, error_msg: str | None = None)`
+### `prompt_validated(message: str, default: str = '', validate: Callable[[str], bool | str | None] | None = None, error_msg: str | None = None) -> str`
 
 交互式输入，校验失败时保留上次输入并重新提示，直到通过校验。
 
 - **message** (`str`): 提示文本
 - **default** (`str`): 初始默认值（也作为校验失败后保留的可编辑值） (默认: "")
 - **validate** (`Callable`): 校验函数；返回 True/None 表示通过，
+
                  返回 False 使用 error_msg，返回字符串则作为本次错误提示 (默认: None)
 - **error_msg** (`str`): validate 返回 False 时的默认错误提示
+
 **返回值** (`str`): 通过校验的输入值
 
 ---
@@ -93,7 +96,7 @@ ErisPulse CLI 显示工具
 ---
 
 
-### `paginated_table(table: Table, items: list[Any], row_builder, page_size: int | None = None)`
+### `paginated_table(table: Table, items: list[Any], row_builder, page_size: int | None = None) -> int`
 
 将列表项分页渲染到表格中，支持翻页交互
 
@@ -101,12 +104,13 @@ ErisPulse CLI 显示工具
 - **items** (`List[Any`): ] 待渲染的数据项列表
 - **row_builder** (`Callable`): 行构建函数，接收 (table, index, item)
 - **page_size** (`Optional[int`): ] 每页行数，为空则自动计算 (默认: None)
+
 **返回值** (`int`): 已展示的项数
 
 ---
 
 
-### `interactive_select_table(title_text: str, items: list[Any], columns: list, row_builder, page_size: int | None = None)`
+### `interactive_select_table(title_text: str, items: list[Any], columns: list, row_builder, page_size: int | None = None) -> list[Any]`
 
 渲染可交互多选的分页表格，支持按序号选择、翻页与确认
 
@@ -115,6 +119,7 @@ ErisPulse CLI 显示工具
 - **columns** (`list`): 表格列配置列表
 - **row_builder** (`Callable`): 行构建函数，接收 (table, index, item, selected)
 - **page_size** (`Optional[int`): ] 每页行数，为空则自动计算 (默认: None)
+
 **返回值** (`List[Any`): ] 用户选中的数据项列表
 
 ---

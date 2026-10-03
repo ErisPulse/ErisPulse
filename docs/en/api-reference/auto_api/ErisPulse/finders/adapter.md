@@ -27,22 +27,25 @@ ErisPulse 适配器发现器
 
 > **提示**
 > 使用方式：
-> >>> finder = AdapterFinder()
-> >>> # 查找所有适配器
-> >>> adapters = finder.find_all()
-> >>> # 按名称查找
-> >>> adapter = finder.find_by_name("my_adapter")
-> >>> # 获取适配器映射
-> >>> adapter_map = finder.get_entry_point_map()
-> >>> # 检查适配器是否存在
-> >>> if "my_adapter" in finder:
-> ...     print("适配器存在")
+> ```python
+> finder = AdapterFinder()
+> # 查找所有适配器
+> adapters = finder.find_all()
+> # 按名称查找
+> adapter = finder.find_by_name("my_adapter")
+> # 获取适配器映射
+> adapter_map = finder.get_entry_point_map()
+> # 检查适配器是否存在
+> if "my_adapter" in finder:
+>     print("适配器存在")
+> ```
+>
 
 
 #### 方法列表
 
 
-##### `_get_entry_point_group()`
+##### `_get_entry_point_group() -> str`
 
 获取 entry-point 组名
 
@@ -51,7 +54,7 @@ ErisPulse 适配器发现器
 ---
 
 
-##### `get_all_names()`
+##### `get_all_names() -> list[str]`
 
 获取所有适配器名称
 
@@ -60,7 +63,7 @@ ErisPulse 适配器发现器
 ---
 
 
-##### `get_all_packages()`
+##### `get_all_packages() -> list[str]`
 
 获取所有适配器所属的 PyPI 包名
 
@@ -69,36 +72,43 @@ ErisPulse 适配器发现器
 ---
 
 
-##### `get_package_for_adapter(adapter_name: str)`
+##### `get_package_for_adapter(adapter_name: str) -> str | None`
 
 获取指定适配器所属的 PyPI 包名
 
-- **adapter_name** (`适配器名称`): **返回值** (`PyPI`): 包名，未找到返回 None
+- **adapter_name**: 适配器名称
+
+**返回值** (`PyPI`): 包名，未找到返回 None
 
 ---
 
 
-##### `get_adapter_info(adapter_name: str)`
+##### `get_adapter_info(adapter_name: str) -> dict[str, Any] | None`
 
 获取适配器的完整信息
 
-- **adapter_name** (`适配器名称`): **返回值** (`适配器信息字典，未找到返回`): None
+- **adapter_name**: 适配器名称
+
+**返回值**: 适配器信息字典，未找到返回 None
 
 **返回值**:
+
 - `Dict`: {
 - `"name"`: 适配器名称,
 - `"package"`: PyPI 包名,
 - `"version"`: 版本号,
-- `"entry_point"`: entry-point 对象    }
+- `"entry_point"`: entry-point 对象
+    }
 
 ---
 
 
-##### `get_adapters_by_package(package_name: str)`
+##### `get_adapters_by_package(package_name: str) -> list[str]`
 
 获取指定 PyPI 包下的所有适配器名称
 
 - **package_name** (`PyPI`): 包名
+
 **返回值**: 适配器名称列表
 
 ---

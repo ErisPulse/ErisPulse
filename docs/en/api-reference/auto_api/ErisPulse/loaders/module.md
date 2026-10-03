@@ -19,18 +19,19 @@ ErisPulse 模块加载器
 ## 函数列表
 
 
-### `_validate_sdk_attr_name(name: str)`
+### `_validate_sdk_attr_name(name: str) -> bool`
 
-> **内部方法**
+**内部方法**
 验证模块名称是否可以安全地作为 SDK 属性挂载
 
-- **name** (`模块名称（entry-point`): name）
-**返回值** (`True`): 如果名称安全，False 如果应拒绝
+- **name**: 模块名称（entry-point name）
+
+**返回值**: True 如果名称安全，False 如果应拒绝
 
 ---
 
 
-### `parse_activate_on(activate_on: Any)`
+### `parse_activate_on(activate_on: Any) -> tuple[list[tuple[str, str | None]], list[str]]`
 
 解析 activate_on 触发器声明
 
@@ -45,25 +46,28 @@ ErisPulse 模块加载器
 - ``list``：以上各项的混合列表
 
 - **activate_on** (`activate_on`): 声明值（str / dict / list）
-**返回值** (```(event_triggers,`): command_triggers)``
+
+**返回值**: ``(event_triggers, command_triggers)``
+
     - event_triggers: ``[(event_type, detail_type | None), ...]``
     - command_triggers: ``[命令名, ...]``（已去重，保持声明顺序）
 
 **示例**:
+
 ```python
->>> event_triggers, command_triggers = parse_activate_on(
-...     ["message", {"notice": "group_member_increase"}, {"command": "roll"}]
-... )
->>> event_triggers
+event_triggers, command_triggers = parse_activate_on(
+    ["message", {"notice": "group_member_increase"}, {"command": "roll"}]
+)
+event_triggers
 [('message', None), ('notice', 'group_member_increase')]
->>> command_triggers
+command_triggers
 ['roll']
 ```
 
 ---
 
 
-### `_collect_command_names(value: Any, command_triggers: list[str], seen: set[str])`
+### `_collect_command_names(value: Any, command_triggers: list[str], seen: set[str]) -> None`
 
 收集命令触发器名称（支持 str / list / dict 三种形式）
 
@@ -71,13 +75,14 @@ ErisPulse 模块加载器
 - ``list``：命令名列表（元素为 str 或 dict）
 - ``dict``：命令声明（含 ``name`` 字段，缺省时告警并忽略）
 
-- **value** (```command```): 键的值
-- **command_triggers** (`命令名列表（就地追加）`): - **seen**: 已收集命令名集合（去重，保持声明顺序）
+- **value**: ``command`` 键的值
+- **command_triggers**: 命令名列表（就地追加）
+- **seen**: 已收集命令名集合（去重，保持声明顺序）
 
 ---
 
 
-### `_extract_command_meta(activate_on: Any)`
+### `_extract_command_meta(activate_on: Any) -> dict[str, dict[str, Any]]`
 
 提取命令触发器的元数据声明（dict 形式）
 
@@ -87,16 +92,17 @@ aliases / hidden）；简写与列表形式不携带，其帮助文本由 ``_com
 dict 声明，简写不产生元数据条目，天然被 dict 覆盖）。
 
 - **activate_on** (`activate_on`): 声明值
-**返回值** (```{命令名:`): {"help": ..., "usage": ..., "group": ..., "aliases": [...], "hidden": ...}}``
+
+**返回值**: ``{命令名: {"help": ..., "usage": ..., "group": ..., "aliases": [...], "hidden": ...}}``
 
 ---
 
 
-### `_extract_command_meta_value(value: Any, meta: dict[str, dict[str, Any]])`
+### `_extract_command_meta_value(value: Any, meta: dict[str, dict[str, Any]]) -> None`
 
 递归收集 dict 形式的命令元数据声明
 
-- **value** (```command```): 键的值
+- **value**: ``command`` 键的值
 - **meta**: 命令元数据字典（就地追加）
 
 ---
@@ -107,7 +113,7 @@ dict 声明，简写不产生元数据条目，天然被 dict 覆盖）。
 
 ### `class _ReloadSnapshot`
 
-> **内部方法**
+**内部方法**
 热重载回滚快照（引用级别，无深拷贝）
 
 记录重载开始前与目标模块相关的全部注册状态：注册表条目、实例、
@@ -127,8 +133,11 @@ dict 声明，简写不产生元数据条目，天然被 dict 覆盖）。
 
 > **提示**
 > 使用方式：
-> >>> loader = ModuleLoader()
-> >>> module_objs, enabled, disabled = await loader.load(module_manager)
+> ```python
+> loader = ModuleLoader()
+> module_objs, enabled, disabled = await loader.load(module_manager)
+> ```
+>
 
 
 #### 方法列表
@@ -141,7 +150,7 @@ dict 声明，简写不产生元数据条目，天然被 dict 覆盖）。
 ---
 
 
-##### `_get_entry_point_group()`
+##### `_get_entry_point_group() -> str`
 
 获取 entry-point 组名
 
@@ -150,11 +159,15 @@ dict 声明，简写不产生元数据条目，天然被 dict 覆盖）。
 ---
 
 
-##### `async load(manager_instance: Any)`
+##### `async load(manager_instance: Any) -> tuple[dict[str, Any], list[str], list[str]]`
 
 从 entry-points 加载对象（使用 ModuleFinder）
 
-- **manager_instance** (`管理器实例`): **返回值** (`dict[str,`): Any]: 对象字典
+- **manager_instance**: 管理器实例
+
+**返回值**:
+
+    dict[str, Any]: 对象字典
     list[str]: 启用列表
     list[str]: 禁用列表
 
@@ -163,21 +176,23 @@ dict 声明，简写不产生元数据条目，天然被 dict 覆盖）。
 ---
 
 
-##### `_merge_plugin_folder(objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any)`
+##### `_merge_plugin_folder(objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any) -> None`
 
-> **内部方法**
+**内部方法**
 发现本地插件文件夹并并入加载结果
 
 本地插件优先：与 entry-point 模块同名时，本地插件覆盖安装包条目
 （便于本地覆盖调试）。启用状态沿用 ``ErisPulse.modules.status``。
 
-- **objs** (`模块对象字典（原地修改）`): - **enabled_list**: 启用列表（原地修改）
-- **disabled_list** (`禁用列表（原地修改）`): - **manager_instance**: 模块管理器实例
+- **objs**: 模块对象字典（原地修改）
+- **enabled_list**: 启用列表（原地修改）
+- **disabled_list**: 禁用列表（原地修改）
+- **manager_instance**: 模块管理器实例
 
 ---
 
 
-##### `async reload_module(module_name: str, manager_instance: Any, sdk_instance: Any)`
+##### `async reload_module(module_name: str, manager_instance: Any, sdk_instance: Any, *, full: bool = False) -> bool`
 
 热重载单个模块（支持任意来源：本地插件 / PyPI 安装包）
 
@@ -187,105 +202,163 @@ dict 声明，简写不产生元数据条目，天然被 dict 覆盖）。
 entry-point 并按顶层模块名清理 ``sys.modules`` 后重导入
 （pip 升级后重载即可生效）。
 
-依赖该模块的模块会**级联重载**：本地插件依赖者走完整重载流程，
-PyPI 模块依赖者卸载后直接重新实例化。
+依赖该模块的模块会**级联重载**：本地插件依赖者与 ``full=True``
+时的 PyPI 依赖者走完整重载流程（重新导入代码）；默认模式下
+PyPI 依赖者卸载后直接重新实例化。
 
-- **module_name** (`模块名（entry-point`): 名称或插件名）
-- **manager_instance** (`模块管理器实例`): - **sdk_instance**: SDK 实例
+``full=True`` 启用全量重载：``sys.modules`` 清理名单在
+``top_level`` 元数据之外叠加旧模块对象的顶层包名——元数据缺失
+（部分打包产物无 top_level.txt）时仍能彻底清理 import 缓存，
+确保重载后运行的是最新代码。
+
+- **module_name**: 模块名（entry-point 名称或插件名）
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+- **full**: 是否全量重载（默认 False；True 时依赖者同样重导代码）
+
 **返回值**: 是否重载成功
 
 ---
 
 
-##### `_dependent_purge_names(dep: str, manager_instance: Any)`
+##### `async reload_all(manager_instance: Any, sdk_instance: Any) -> 'dict[str, bool]'`
 
-> **内部方法**
+全量热重载所有已注册模块（尽力而为语义）
+
+执行 记录已加载态 → 卸载全部模块 → 清理全部已安装包与本地插件的
+``sys.modules`` 子树 → 重新发现/注册 → 按依赖拓扑序加载 →
+此前处于已加载态的懒加载模块重新激活 流程，一次刷新全部模块代码
+（pip 批量升级后调用即可全部生效）。
+
+单模块失败仅记录诊断并跳过（发现 / 注册 / 初始化阶段的逐模块容错
+由加载管线内建），不影响其余模块；不提供整体回滚——on_unload
+副作用不可撤销，与单模块热重载的尽力而为语义一致。
+
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+
+**返回值**: 模块注册名 → 是否重载成功（发现阶段即失败的模块不在结果中）
+
+---
+
+
+##### `_enhance_purge_names(names: 'list[str]', old_obj: Any) -> 'list[str]'`（staticmethod）
+
+**内部方法**
+全量重载的 ``sys.modules`` 清理名单增强：叠加旧模块对象的顶层包名
+
+部分打包产物缺失 ``top_level`` 元数据，仅按元数据清理会漏掉
+import 缓存（假重载）；旧模块对象 ``__name__`` 的顶层段是可推导
+的最后兜底。
+
+- **names**: 依据元数据得出的顶层模块名列表
+- **old_obj**: 重载前的模块对象（可为 None）
+
+**返回值**: 增强后的顶层模块名列表
+
+---
+
+
+##### `_dependent_purge_names(dep: str, manager_instance: Any) -> 'list[str]'`（staticmethod）
+
+**内部方法**
 推断依赖者的 sys.modules 清理名单（快照采集用）
 
-- **dep** (`依赖者模块名`): - **manager_instance**: 模块管理器实例
+- **dep**: 依赖者模块名
+- **manager_instance**: 模块管理器实例
+
 **返回值**: 顶层模块名列表
 
 ---
 
 
-##### `_capture_reload_state(module_name: str, manager_instance: Any, sdk_instance: Any, purge_names: 'list[str]')`
+##### `_capture_reload_state(module_name: str, manager_instance: Any, sdk_instance: Any, purge_names: 'list[str]') -> _ReloadSnapshot`
 
-> **内部方法**
+**内部方法**
 采集单模块的重载回滚快照（引用级别，无深拷贝）
 
-- **module_name** (`模块名`): - **manager_instance**: 模块管理器实例
+- **module_name**: 模块名
+- **manager_instance**: 模块管理器实例
 - **sdk_instance** (`SDK`): 实例
-- **purge_names** (`重载流程将要从`): sys.modules 移除的顶层模块名
+- **purge_names**: 重载流程将要从 sys.modules 移除的顶层模块名
+
 **返回值**: 回滚快照
 
 ---
 
 
-##### `_restore_reload_snapshot(snapshot: _ReloadSnapshot, module_name: str, manager_instance: Any, sdk_instance: Any)`
+##### `_restore_reload_snapshot(snapshot: _ReloadSnapshot, module_name: str, manager_instance: Any, sdk_instance: Any) -> None`
 
-> **内部方法**
+**内部方法**
 恢复重载快照（任一重载步骤失败时调用）
 
 恢复顺序：sys.modules 条目 → 注册存根 → 懒加载态 / 已加载态 →
 sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日志，不阻断
 其余恢复）。
 
-- **snapshot** (`重载前采集的快照`): - **module_name**: 模块名
-- **manager_instance** (`模块管理器实例`): - **sdk_instance**: SDK 实例
+- **snapshot**: 重载前采集的快照
+- **module_name**: 模块名
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
 
 ---
 
 
-##### `_restore_failed_dependents(dependent_snapshots: 'dict[str, _ReloadSnapshot]', manager_instance: Any, sdk_instance: Any)`
+##### `_restore_failed_dependents(dependent_snapshots: 'dict[str, _ReloadSnapshot]', manager_instance: Any, sdk_instance: Any) -> None`
 
-> **内部方法**
+**内部方法**
 恢复重载失败的依赖者：快照时已加载而重载后仍未回到加载态的依赖者，
 恢复其旧注册状态（否则级联卸载后依赖者处于裸奔态）
 
-- **dependent_snapshots** (`依赖者快照（模块名`): → 快照）
-- **manager_instance** (`模块管理器实例`): - **sdk_instance**: SDK 实例
+- **dependent_snapshots**: 依赖者快照（模块名 → 快照）
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
 
 ---
 
 
-##### `async _reload_single_plugin(plugin_name: str, manager_instance: Any, sdk_instance: Any)`
+##### `async _reload_single_plugin(plugin_name: str, manager_instance: Any, sdk_instance: Any) -> bool`
 
-> **内部方法**
+**内部方法**
 重载单个本地插件：清理注册 → 清模块缓存 → 重新发现 → 注册并加载
 
-- **plugin_name** (`插件名`): - **manager_instance**: 模块管理器实例
+- **plugin_name**: 插件名
+- **manager_instance**: 模块管理器实例
 - **sdk_instance** (`SDK`): 实例
+
 **返回值**: 是否重载成功
 
 ---
 
 
-##### `async _reload_single_module(module_name: str, manager_instance: Any, sdk_instance: Any, top_level: list[str])`
+##### `async _reload_single_module(module_name: str, manager_instance: Any, sdk_instance: Any, top_level: list[str]) -> bool`
 
-> **内部方法**
+**内部方法**
 重载单个 PyPI 安装包模块：清理注册 → 清模块缓存 → 重新发现导入 → 注册并加载
 
-- **module_name** (`模块名（entry-point`): 名称）
-- **manager_instance** (`模块管理器实例`): - **sdk_instance**: SDK 实例
-- **top_level** (`顶层`): Python 模块名列表（重导入前清理 sys.modules）
+- **module_name**: 模块名（entry-point 名称）
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+- **top_level**: 顶层 Python 模块名列表（重导入前清理 sys.modules）
+
 **返回值**: 是否重载成功
 
 ---
 
 
-##### `_purge_installed_modules(top_level: list[str])`
+##### `_purge_installed_modules(top_level: list[str]) -> None`
 
-> **内部方法**
+**内部方法**
 从 sys.modules 移除安装包模块相关子树，强制下次导入重新执行
 
-- **top_level** (`顶层`): Python 模块名列表
+- **top_level**: 顶层 Python 模块名列表
 
 ---
 
 
-##### `_purge_plugin_modules(plugin_name: str)`
+##### `_purge_plugin_modules(plugin_name: str) -> None`
 
-> **内部方法**
+**内部方法**
 从 sys.modules 移除插件相关模块，强制下次导入重新执行
 
 - **plugin_name**: 插件名
@@ -293,7 +366,7 @@ sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日�
 ---
 
 
-##### `_build_module_info(entry_point: Any, loaded_obj: Any, meta_name: str)`
+##### `_build_module_info(entry_point: Any, loaded_obj: Any, meta_name: str) -> dict[str, Any] | None`
 
 构造模块 moduleInfo（首次加载与热重载共用）
 
@@ -301,25 +374,31 @@ sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日�
 读取加载策略并组装与 entry-point 一致的元信息，
 同时挂载到模块对象供管理器读取。
 
-- **entry_point** (`entry-point`): 对象
-- **loaded_obj** (`entry-point`): 加载出的模块类
-- **meta_name** (`模块名`): **返回值** (`moduleInfo`): 字典；严格模式跳过时返回 None
+- **entry_point**: entry-point 对象
+- **loaded_obj**: entry-point 加载出的模块类
+- **meta_name**: 模块名
 
-> **内部方法**
+**返回值** (`moduleInfo`): 字典；严格模式跳过时返回 None
+
+**内部方法**
 内部方法，供 _process_entry_point 与热重载复用
 
 ---
 
 
-##### `async _process_entry_point(entry_point: Any, objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any)`
+##### `async _process_entry_point(entry_point: Any, objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any) -> tuple[dict[str, Any], list[str], list[str], bool]`
 
 处理单个模块 entry-point
 
-- **entry_point** (`entry-point`): 对象
-- **objs** (`模块对象字典`): - **enabled_list**: 启用的模块列表
-- **disabled_list** (`停用的模块列表`): - **manager_instance**: 模块管理器实例
+- **entry_point**: entry-point 对象
+- **objs**: 模块对象字典
+- **enabled_list**: 启用的模块列表
+- **disabled_list**: 停用的模块列表
+- **manager_instance**: 模块管理器实例
 
-**返回值** (`dict[str,`): Any]: 更新后的模块对象字典
+**返回值**:
+
+    dict[str, Any]: 更新后的模块对象字典
     list[str]: 更新后的启用模块列表
     list[str]: 更新后的禁用模块列表
     bool: 是否为新模块
@@ -329,56 +408,66 @@ sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日�
 ---
 
 
-##### `_extract_strategy_value(strategy: Any, key: str, default: Any)`
+##### `_extract_strategy_value(strategy: Any, key: str, default: Any) -> Any`
 
 从策略对象或字典中提取值
 
-- **strategy** (`策略对象（dict`): 或 ModuleLoadStrategy）
-- **key** (`键名`): - **default**: 默认值
-**返回值** (`提取到的值或默认值`): > **内部方法**
+- **strategy**: 策略对象（dict 或 ModuleLoadStrategy）
+- **key**: 键名
+- **default**: 默认值
+
+**返回值**: 提取到的值或默认值
+
+**内部方法**
 内部方法，统一处理 dict 和 ModuleLoadStrategy 两种策略类型
 
 ---
 
 
-##### `_get_global_lazy_loading()`
+##### `_get_global_lazy_loading() -> bool`
 
 获取全局懒加载配置
 
-**返回值** (`是否启用懒加载（默认`): True）
+**返回值**: 是否启用懒加载（默认 True）
 
-> **内部方法**
+**内部方法**
 内部方法，用于获取全局懒加载配置
 
 ---
 
 
-##### `_resolve_strategy(module_class: type)`
+##### `_resolve_strategy(module_class: type) -> Any`
 
 按优先级从模块类解析加载策略
 
 优先级：should_eager_load()（旧版兼容） → get_load_strategy()
 
-- **module_class** (`模块类`): **返回值** (`策略对象或`): None
+- **module_class**: 模块类
 
-> **内部方法**
+**返回值**: 策略对象或 None
+
+**内部方法**
 内部方法，用于解析模块的加载策略
 
 ---
 
 
-##### `_apply_global_lazy_loading(strategy: Any, lazy_load: bool)`
+##### `_apply_global_lazy_loading(strategy: Any, lazy_load: bool) -> Any`
 
 应用全局懒加载配置到策略
 
-- **strategy** (`原始策略`): - **lazy_load**: 懒加载值
-**返回值** (`修改后的策略`): > **内部方法**
+- **strategy**: 原始策略
+- **lazy_load**: 懒加载值
+
+**返回值**: 修改后的策略
+
+**内部方法**
 内部方法，用于应用全局配置覆盖
 
 ---
 
 
-##### `_get_load_strategy(module_class: type)`
+##### `_get_load_strategy(module_class: type) -> Any`
 
 获取模块加载策略
 
@@ -391,58 +480,73 @@ sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日�
 全局配置会覆盖模块策略中的 lazy_load 设置
 
 - **module_class** (`Type`): 模块类
-**返回值** (`加载策略对象或字典`): > **内部方法**
+
+**返回值**: 加载策略对象或字典
+
+**内部方法**
 内部方法，用于获取模块的加载策略
 
 ---
 
 
-##### `async register_to_manager(modules: list[str], module_objs: dict[str, Any], manager_instance: Any)`
+##### `async register_to_manager(modules: list[str], module_objs: dict[str, Any], manager_instance: Any) -> bool`
 
 将模块类注册到管理器
 
-- **modules** (`模块名称列表`): - **module_objs**: 模块对象字典
-- **manager_instance** (`模块管理器实例`): **返回值** (`模块注册是否成功`): > **提示**
+- **modules**: 模块名称列表
+- **module_objs**: 模块对象字典
+- **manager_instance**: 模块管理器实例
+
+**返回值**: 模块注册是否成功
+
+> **提示**
 > 此方法由初始化协调器调用，仅注册模块类，不进行实例化
 
 ---
 
 
-##### `_validate_dependencies(modules: list, module_objs: dict)`
+##### `_validate_dependencies(modules: list, module_objs: dict) -> dict`
 
 验证所有模块的依赖是否满足
 
 - **modules** (`list`): 模块名称列表
 - **module_objs** (`dict`): 模块对象字典
+
 **返回值** (`dict`): 缺少依赖的模块映射 {模块名: [缺少的依赖列表]}
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `_topological_sort(modules: list, module_objs: dict)`
+##### `_topological_sort(modules: list, module_objs: dict) -> list`
 
 基于依赖关系和优先级的拓扑排序
 
 - **modules** (`list`): 模块名称列表
 - **module_objs** (`dict`): 模块对象字典
+
 **返回值** (`list`): 排序后的模块 meta_name 列表
 
 **异常**: `RuntimeError` - 当检测到循环依赖时
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `async initialize_modules(modules: list[str], module_objs: dict[str, Any], manager_instance: Any, sdk_instance: Any)`
+##### `async initialize_modules(modules: list[str], module_objs: dict[str, Any], manager_instance: Any, sdk_instance: Any) -> bool`
 
 初始化模块（创建实例并挂载到 SDK）
 
-- **modules** (`模块名称列表`): - **module_objs**: 模块对象字典
-- **manager_instance** (`模块管理器实例`): - **sdk_instance**: SDK 实例
-**返回值** (`模块初始化是否成功`): > **提示**
+- **modules**: 模块名称列表
+- **module_objs**: 模块对象字典
+- **manager_instance**: 模块管理器实例
+- **sdk_instance** (`SDK`): 实例
+
+**返回值**: 模块初始化是否成功
+
+> **提示**
 > 此方法处理模块的实际初始化和挂载
 > 支持模块间依赖声明和拓扑排序加载
 
@@ -464,93 +568,94 @@ sdk 属性 → 重载快照对象。每步独立容错（单步失败仅记日�
 #### 方法列表
 
 
-##### `__init__(module_name: str, module_class: type, sdk_ref: Any, module_info: dict[str, Any], manager_instance: Any)`
+##### `__init__(module_name: str, module_class: type, sdk_ref: Any, module_info: dict[str, Any], manager_instance: Any) -> None`
 
 初始化懒加载包装器
 
 - **module_name** (`str`): 模块名称
 - **module_class** (`Type`): 模块类
-- **sdk_ref** (`Any`): SDK 引用
-- **module_info** (`dict[str,`): Any] 模块信息字典
+- **sdk_ref**: Any SDK 引用
+- **module_info** (`dict[str, Any]`): 模块信息字典
 - **manager_instance**: 模块管理器实例
 
 ---
 
 
-##### `async _initialize()`
+##### `async _initialize() -> None`
 
 实际初始化模块
 
 **异常**: `Exception` - 当模块初始化失败时抛出
 
-> **内部方法**
+**内部方法**
 内部方法，执行实际的模块初始化
 
 ---
 
 
-##### `_ensure_initialized()`
+##### `_ensure_initialized() -> None`
 
 确保模块已初始化
 
-> **内部方法**
+**内部方法**
 内部方法，检查并确保模块已初始化
-> **内部方法**
+**内部方法**
 
 设计说明：
 - 支持同步/异步透明的懒加载机制，用户无需感知差异
 - BaseModule 在异步上下文中通过辅助线程完成初始化
 - BaseModule 在同步上下文中使用 asyncio.run() 确保初始化完成
 - 非 BaseModule 保持原有逻辑，支持同步初始化
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `_init_in_background_thread()`
+##### `_init_in_background_thread() -> None`
 
 在辅助线程中运行异步初始化，当前线程同步等待完成
 
-> **内部方法**
+**内部方法**
 当 _ensure_initialized 在已有事件循环中被调用时，无法使用
 run_until_complete (会死锁)。通过在新线程中创建独立的事件循环
 来运行异步初始化，同时当前线程通过 threading.Event 同步等待。
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `_initialize_sync()`
+##### `_initialize_sync() -> None`
 
 同步初始化模块
 
-> **内部方法**
+**内部方法**
 内部方法，在同步上下文中初始化模块
 
 ---
 
 
-##### `async _complete_async_init()`
+##### `async _complete_async_init() -> None`
 
 完成异步初始化部分
 
-> **内部方法**
+**内部方法**
 内部方法，处理模块的异步初始化部分
 
 ---
 
 
-##### `__getattr__(name: str)`
+##### `__getattr__(name: str) -> Any`
 
 属性访问时触发初始化（仅在 __getattribute__ 未命中时调用）
 
 - **name** (`str`): 属性名
+
 **返回值** (`Any`): 属性值
 
 ---
 
 
-##### `__setattr__(name: str, value: Any)`
+##### `__setattr__(name: str, value: Any) -> None`
 
 属性设置
 
@@ -560,7 +665,7 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 ---
 
 
-##### `__delattr__(name: str)`
+##### `__delattr__(name: str) -> None`
 
 属性删除
 
@@ -569,21 +674,22 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 ---
 
 
-##### `__getattribute__(name: str)`
+##### `__getattribute__(name: str) -> Any`
 
 属性访问，初始化后直接委托给实际实例
 
 - **name** (`str`): 属性名
+
 **返回值** (`Any`): 属性值
 
-> **内部方法**
+**内部方法**
 这是极热路径（Python 内部、hasattr、repr 等都会走这里），
 因此必须保持轻量：不做日志、不做多余的属性查找。
 
 ---
 
 
-##### `__dir__()`
+##### `__dir__() -> list[str]`
 
 返回模块属性列表
 
@@ -592,7 +698,7 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 ---
 
 
-##### `__repr__()`
+##### `__repr__() -> str`
 
 返回模块表示字符串
 
@@ -601,11 +707,13 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 ---
 
 
-##### `__call__()`
+##### `__call__(*args, **kwargs)`
 
 代理函数调用
 
-- **args** (`位置参数`): - **kwargs**: 关键字参数
+- **args**: 位置参数
+- **kwargs**: 关键字参数
+
 **返回值**: 调用结果
 
 ---
@@ -631,27 +739,28 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 #### 方法列表
 
 
-##### `__init__(module_name: str, module_class: type, sdk_ref: Any, module_info: dict[str, Any], manager_instance: Any)`
+##### `__init__(module_name: str, module_class: type, sdk_ref: Any, module_info: dict[str, Any], manager_instance: Any, *, activate_on: Any) -> None`
 
 初始化事件驱动懒激活包装器
 
 - **module_name** (`str`): 模块名称
 - **module_class** (`Type`): 模块类
-- **sdk_ref** (`Any`): SDK 引用
-- **module_info** (`dict[str,`): Any] 模块信息字典
-- **manager_instance** (`模块管理器实例`): - **activate_on**: 触发器声明（str / dict / list）
+- **sdk_ref**: Any SDK 引用
+- **module_info** (`dict[str, Any]`): 模块信息字典
+- **manager_instance**: 模块管理器实例
+- **activate_on**: 触发器声明（str / dict / list）
 
 ---
 
 
-##### `_register_stubs()`
+##### `_register_stubs() -> None`
 
 注册事件与命令触发器 stub
 
 ---
 
 
-##### `_command_stub_help(cmd_name: str)`
+##### `_command_stub_help(cmd_name: str) -> str`
 
 生成命令触发占位命令的帮助文本（模块未加载时展示）
 
@@ -663,12 +772,14 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 4. 包元数据的 ``Summary``（PyPI 包简介；本地插件无包信息时跳过）
 5. 通用提示（说明该命令首次使用会自动加载对应模块）
 
-- **cmd_name** (`命令名`): **返回值**: 帮助文本
+- **cmd_name**: 命令名
+
+**返回值**: 帮助文本
 
 ---
 
 
-##### `async _activate()`
+##### `async _activate() -> bool`
 
 激活模块
 
@@ -681,14 +792,14 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 ---
 
 
-##### `_deregister_stubs()`
+##### `_deregister_stubs() -> None`
 
 注销所有触发器 stub
 
 ---
 
 
-##### `_rearm_stubs()`
+##### `_rearm_stubs() -> None`
 
 重新武装触发器 stub（激活失败路径调用）
 
@@ -699,33 +810,36 @@ run_until_complete (会死锁)。通过在新线程中创建独立的事件循�
 ---
 
 
-##### `async _activate_and_forward(event_handler: Any, event: Any)`
+##### `async _activate_and_forward(event_handler: Any, event: Any) -> None`
 
 激活模块并把首个匹配事件转发给该模块的真实处理器
 
-- **event_handler** (`事件管理器（BaseEventHandler）`): - **event**: 触发事件
+- **event_handler**: 事件管理器（BaseEventHandler）
+- **event**: 触发事件
 
 ---
 
 
-##### `async _forward_event(event_handler: Any, event: Any)`
+##### `async _forward_event(event_handler: Any, event: Any) -> None`
 
 定向转发事件给本模块在事件管理器中注册的真实处理器
 
 按优先级降序逐个调用（stub 本身已注销，不会重复触发）
 
-- **event_handler** (`事件管理器（BaseEventHandler）`): - **event**: 事件数据
+- **event_handler**: 事件管理器（BaseEventHandler）
+- **event**: 事件数据
 
 ---
 
 
-##### `async _activate_and_forward_command(cmd_name: str, event: Any)`
+##### `async _activate_and_forward_command(cmd_name: str, event: Any) -> None`
 
 激活模块并重跑命令匹配，使真实命令（已注册）接管本次触发
 
 命令 stub 已被占位匹配并认领事件，需清空认领标记后重新进入命令分发
 
-- **cmd_name** (`命令名`): - **event**: 消息事件
+- **cmd_name**: 命令名
+- **event**: 消息事件
 
 ---
 

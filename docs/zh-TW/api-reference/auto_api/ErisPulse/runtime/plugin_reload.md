@@ -23,7 +23,7 @@ ErisPulse 本地插件热重载监控
 
 ### `class _PluginChangeHandler(FileSystemEventHandler)`
 
-> **内部方法**
+**内部方法**
 插件文件变更处理器：.py 变更时调度重载协程
 
 
@@ -43,23 +43,25 @@ ErisPulse 本地插件热重载监控
 
 封装轮询文件监控器，监控插件文件夹变更并触发对应插件的重载回调。
 
-- **on_reload** (`重载回调（接收插件名，返回协程），在主事件循环中执行`): - **interval**: 轮询间隔（秒，默认 1.0）
+- **on_reload**: 重载回调（接收插件名，返回协程），在主事件循环中执行
+- **interval**: 轮询间隔（秒，默认 1.0）
 
 **示例**:
+
 ```python
->>> async def handle(name):
-...     await sdk.reload_module(name)
->>> watcher = PluginReloadWatcher(handle)
->>> watcher.start()
->>> # ... 运行中 ...
->>> watcher.stop()
+async def handle(name):
+    await sdk.reload_module(name)
+watcher = PluginReloadWatcher(handle)
+watcher.start()
+# ... 运行中 ...
+watcher.stop()
 ```
 
 
 #### 方法列表
 
 
-##### `is_running()`
+##### `is_running -> bool`（property）
 
 监控器是否已启动
 
@@ -68,7 +70,7 @@ ErisPulse 本地插件热重载监控
 ---
 
 
-##### `_plugin_dirs()`
+##### `_plugin_dirs() -> list[str]`
 
 解析插件目录列表（与 PluginFolderLoader 同源）
 
@@ -77,31 +79,31 @@ ErisPulse 本地插件热重载监控
 ---
 
 
-##### `start()`
+##### `start() -> bool`
 
 启动插件文件监控
 
-**返回值** (`是否启动成功（无插件目录或已在运行返回`): False）
+**返回值**: 是否启动成功（无插件目录或已在运行返回 False）
 
 ---
 
 
-##### `stop()`
+##### `stop() -> None`
 
 停止插件文件监控
 
 ---
 
 
-##### `async _handle_change(src_path: str)`
+##### `async _handle_change(src_path: str) -> None`
 
-> **内部方法**
+**内部方法**
 将文件路径解析为插件名并触发重载回调
 
 ---
 
 
-##### `async close()`
+##### `async close() -> None`
 
 停止监控并等待后台线程结束
 

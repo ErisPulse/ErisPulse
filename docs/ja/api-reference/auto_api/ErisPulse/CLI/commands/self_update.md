@@ -31,7 +31,7 @@ self-update 命令
 ---
 
 
-##### `_select_target_version(versions, specified_version: str | None = None, include_pre: bool = False)`
+##### `_select_target_version(versions, specified_version: str | None = None, include_pre: bool = False) -> str | None`
 
 交互式选择目标更新版本
 
@@ -44,7 +44,7 @@ self-update 命令
 ---
 
 
-##### `_select_from_version_list(versions, include_pre: bool = False)`
+##### `_select_from_version_list(versions, include_pre: bool = False) -> str | None`
 
 以分页列表形式展示版本并供用户选择
 
@@ -56,7 +56,7 @@ self-update 命令
 ---
 
 
-##### `_parse_version_input(user_input: str, version_list: list)`
+##### `_parse_version_input(user_input: str, version_list: list) -> str | None`
 
 解析用户输入的版本序号或版本号字符串
 

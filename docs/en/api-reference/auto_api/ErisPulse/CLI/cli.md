@@ -31,11 +31,11 @@ ErisPulse 命令行接口主类
 ---
 
 
-##### `_create_parser()`
+##### `_create_parser() -> ArgumentParser`
 
 创建命令行参数解析器
 
-**返回值** (`配置好的`): ArgumentParser 实例
+**返回值**: 配置好的 ArgumentParser 实例
 
 ---
 
@@ -64,7 +64,7 @@ ErisPulse 命令行接口主类
 ---
 
 
-##### `_print_quickstart()`
+##### `_print_quickstart() -> None`
 
 打印 Quick Start 面板
 
@@ -74,7 +74,7 @@ ErisPulse 命令行接口主类
 ---
 
 
-##### `_check_command_typo()`
+##### `_check_command_typo() -> None`
 
 在 argparse 解析之前检查命令拼写
 
@@ -84,7 +84,7 @@ argparse 的子命令 choices 验证遇到无效命令时会直接打印错误�
 ---
 
 
-##### `_maybe_show_language_hint()`
+##### `_maybe_show_language_hint() -> None`
 
 在前几次启动时提醒用户确认语言
 
@@ -99,6 +99,7 @@ argparse 的子命令 choices 验证遇到无效命令时会直接打印错误�
 运行 CLI
 
 **异常**: `KeyboardInterrupt` - 用户中断时抛出
+
 **异常**: `Exception` - 命令执行失败时抛出
 
 ---

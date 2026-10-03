@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1678,
+  "total_keywords": 1682,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -8,6 +8,14 @@
         "line": 66,
         "level": 4,
         "title": "0 Success (OK)"
+      }
+    ],
+    "0. Keyword Conventions": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 5,
+        "level": 2,
+        "title": "0. Keyword Conventions"
       }
     ],
     "1. BaseAdapter Level (Most Cases Do Not Require Overriding)": [
@@ -139,7 +147,7 @@
     "1. Exception Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 1023,
+        "line": 1032,
         "level": 3,
         "title": "1. Exception Handling"
       }
@@ -243,7 +251,7 @@
     "1. Standard Method Naming": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 5,
+        "line": 15,
         "level": 2,
         "title": "1. Standard Method Naming"
       }
@@ -353,7 +361,7 @@
     "1.1 Standard Send Methods": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 9,
+        "line": 19,
         "level": 3,
         "title": "1.1 Standard Send Methods"
       }
@@ -361,7 +369,7 @@
     "1.2 Chained Modifier Methods": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 26,
+        "line": 38,
         "level": 3,
         "title": "1.2 Chained Modifier Methods"
       }
@@ -377,7 +385,7 @@
     "1.3 Protocol Methods": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 34,
+        "line": 46,
         "level": 3,
         "title": "1.3 Protocol Methods"
       }
@@ -385,7 +393,7 @@
     "1.4 Recommended Extension Naming Convention": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 44,
+        "line": 56,
         "level": 3,
         "title": "1.4 Recommended Extension Naming Convention"
       }
@@ -393,7 +401,7 @@
     "10. Adapter Implementation Checklist": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 455,
+        "line": 444,
         "level": 2,
         "title": "10. Adapter Implementation Checklist"
       }
@@ -409,7 +417,7 @@
     "10. Related Documents": [
       {
         "document": "standards/event-conversion.md",
-        "line": 542,
+        "line": 577,
         "level": 2,
         "title": "10. Related Documents"
       }
@@ -422,12 +430,12 @@
         "title": "10. SSE (Server-Sent Events) Support"
       }
     ],
-    "11. Message Builder (MessageBuilder)": [
+    "11. Message Builder (`MessageBuilder`)": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 474,
+        "line": 470,
         "level": 2,
-        "title": "11. Message Builder (MessageBuilder)"
+        "title": "11. Message Builder (`MessageBuilder`)"
       }
     ],
     "11. Related Documentation": [
@@ -441,7 +449,7 @@
     "11.1 Import": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 478,
+        "line": 474,
         "level": 3,
         "title": "11.1 Import"
       }
@@ -449,7 +457,7 @@
     "11.2 Chainable Construction": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 486,
+        "line": 482,
         "level": 3,
         "title": "11.2 Chainable Construction"
       }
@@ -457,23 +465,23 @@
     "11.3 Quick Single Segment Construction": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 503,
+        "line": 499,
         "level": 3,
         "title": "11.3 Quick Single Segment Construction"
       }
     ],
-    "11.4 Use with Event.reply_ob12": [
+    "11.4 Use with `Event.reply_ob12`": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 514,
+        "line": 510,
         "level": 3,
-        "title": "11.4 Use with Event.reply_ob12"
+        "title": "11.4 Use with `Event.reply_ob12`"
       }
     ],
     "11.5 Supported Message Segment Methods": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 529,
+        "line": 525,
         "level": 3,
         "title": "11.5 Supported Message Segment Methods"
       }
@@ -481,17 +489,17 @@
     "11.6 Utility Methods": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 544,
+        "line": 540,
         "level": 3,
         "title": "11.6 Utility Methods"
       }
     ],
-    "12. Related Documentation": [
+    "12. Related Documents": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 563,
+        "line": 559,
         "level": 2,
-        "title": "12. Related Documentation"
+        "title": "12. Related Documents"
       }
     ],
     "1xxxx Request Error": [
@@ -574,6 +582,14 @@
         "title": "2. Create pyproject.toml"
       }
     ],
+    "2. Detailed Parameter Specification": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 69,
+        "level": 2,
+        "title": "2. Detailed Parameter Specification"
+      }
+    ],
     "2. Error Code Specification": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -637,7 +653,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 1041,
+        "line": 1050,
         "level": 3,
         "title": "2. Logging"
       }
@@ -656,14 +672,6 @@
         "line": 318,
         "level": 3,
         "title": "2. Module/Command Not Responding"
-      }
-    ],
-    "2. Parameter Specification Details": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 57,
-        "level": 2,
-        "title": "2. Parameter Specification Details"
       }
     ],
     "2. Publish to PyPI": [
@@ -834,12 +842,20 @@
         "title": "2. systemd (Linux Server)"
       }
     ],
-    "2.1 Media Message Parameter Specification": [
+    "2.1 Mandatory Fields": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 13,
+        "level": 3,
+        "title": "2.1 Mandatory Fields"
+      }
+    ],
+    "2.1 Media Message Sending Protocol (`Image` / `Voice` / `Video` / `File`)": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 59,
+        "line": 71,
         "level": 3,
-        "title": "2.1 Media Message Parameter Specification"
+        "title": "2.1 Media Message Sending Protocol (`Image` / `Voice` / `Video` / `File`)"
       }
     ],
     "2.1 OneBot12 Standard Types": [
@@ -850,14 +866,6 @@
         "title": "2.1 OneBot12 Standard Types"
       }
     ],
-    "2.1 Required Fields": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 13,
-        "level": 3,
-        "title": "2.1 Required Fields"
-      }
-    ],
     "2.1 Standard Fields": [
       {
         "document": "standards/request-action-spec.md",
@@ -866,36 +874,52 @@
         "title": "2.1 Standard Fields"
       }
     ],
-    "2.1.1 String Parameters (URL or File Path)": [
+    "2.1.1 Valid Forms of the `file` Parameter": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 63,
+        "line": 75,
         "level": 4,
-        "title": "2.1.1 String Parameters (URL or File Path)"
+        "title": "2.1.1 Valid Forms of the `file` Parameter"
       }
     ],
-    "2.1.2 Binary Data Parameters": [
+    "2.1.2 Form Determination Order": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 88,
+        "line": 87,
         "level": 4,
-        "title": "2.1.2 Binary Data Parameters"
+        "title": "2.1.2 Form Determination Order"
       }
     ],
-    "2.1.3 Parameter Processing Priority": [
+    "2.1.3 File Name Semantics for `File`": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 114,
+        "line": 109,
         "level": 4,
-        "title": "2.1.3 Parameter Processing Priority"
+        "title": "2.1.3 File Name Semantics for `File`"
       }
     ],
-    "2.2 @ User Parameter Specification": [
+    "2.1.4 Declaration of Platform Limitations": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 139,
+        "line": 122,
+        "level": 4,
+        "title": "2.1.4 Declaration of Platform Limitations"
+      }
+    ],
+    "2.1.5 Capability Degradation Hierarchy": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 129,
+        "level": 4,
+        "title": "2.1.5 Capability Degradation Hierarchy"
+      }
+    ],
+    "2.2 @User Parameter Specification": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 142,
         "level": 3,
-        "title": "2.2 @ User Parameter Specification"
+        "title": "2.2 @User Parameter Specification"
       }
     ],
     "2.2 ErisPulse Extended Types": [
@@ -909,7 +933,7 @@
     "2.2 Message Event Fields": [
       {
         "document": "standards/event-conversion.md",
-        "line": 30,
+        "line": 31,
         "level": 3,
         "title": "2.2 Message Event Fields"
       }
@@ -922,18 +946,18 @@
         "title": "2.2 `request_id` Field"
       }
     ],
-    "2.3 Notification Event Fields": [
+    "2.3 Notice Event Fields": [
       {
         "document": "standards/event-conversion.md",
-        "line": 38,
+        "line": 40,
         "level": 3,
-        "title": "2.3 Notification Event Fields"
+        "title": "2.3 Notice Event Fields"
       }
     ],
     "2.3 Reply Message Parameter Specification": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 160,
+        "line": 163,
         "level": 3,
         "title": "2.3 Reply Message Parameter Specification"
       }
@@ -949,7 +973,7 @@
     "2.4 Request Event Fields": [
       {
         "document": "standards/event-conversion.md",
-        "line": 45,
+        "line": 48,
         "level": 3,
         "title": "2.4 Request Event Fields"
       }
@@ -989,7 +1013,7 @@
     "3. Conditional Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 1057,
+        "line": 1066,
         "level": 3,
         "title": "3. Conditional Handling"
       }
@@ -1013,7 +1037,7 @@
     "3. Event Format Examples": [
       {
         "document": "standards/event-conversion.md",
-        "line": 59,
+        "line": 63,
         "level": 2,
         "title": "3. Event Format Examples"
       }
@@ -1101,7 +1125,7 @@
     "3. Platform-Specific Method Naming": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 176,
+        "line": 179,
         "level": 2,
         "title": "3. Platform-Specific Method Naming"
       }
@@ -1213,7 +1237,7 @@
     "3.1 Message Event (message)": [
       {
         "document": "standards/event-conversion.md",
-        "line": 61,
+        "line": 65,
         "level": 3,
         "title": "3.1 Message Event (message)"
       }
@@ -1269,7 +1293,7 @@
     "3.2 Notice Event (notice)": [
       {
         "document": "standards/event-conversion.md",
-        "line": 94,
+        "line": 99,
         "level": 3,
         "title": "3.2 Notice Event (notice)"
       }
@@ -1301,7 +1325,7 @@
     "3.3 Request Event (request)": [
       {
         "document": "standards/event-conversion.md",
-        "line": 115,
+        "line": 121,
         "level": 3,
         "title": "3.3 Request Event (request)"
       }
@@ -1445,7 +1469,7 @@
     "4. Message Segment Standard": [
       {
         "document": "standards/event-conversion.md",
-        "line": 136,
+        "line": 143,
         "level": 2,
         "title": "4. Message Segment Standard"
       }
@@ -1469,7 +1493,7 @@
     "4. Parameter Naming Convention": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 207,
+        "line": 210,
         "level": 2,
         "title": "4. Parameter Naming Convention"
       }
@@ -1541,25 +1565,25 @@
     "4.1 Standard Message Segments": [
       {
         "document": "standards/event-conversion.md",
-        "line": 138,
+        "line": 145,
         "level": 3,
         "title": "4.1 Standard Message Segments"
       }
     ],
-    "4.1.1 keyboard Button / Inline Keyboard Segment (Cross-Platform Compatible)": [
+    "4.1.1 keyboard Button/Inline Keyboard Segment (Cross-Platform Universal)": [
       {
         "document": "standards/event-conversion.md",
-        "line": 164,
+        "line": 191,
         "level": 3,
-        "title": "4.1.1 keyboard Button / Inline Keyboard Segment (Cross-Platform Compatible)"
+        "title": "4.1.1 keyboard Button/Inline Keyboard Segment (Cross-Platform Universal)"
       }
     ],
-    "4.2 Platform-Extended Message Segments": [
+    "4.2 Platform Extension Message Segments": [
       {
         "document": "standards/event-conversion.md",
-        "line": 202,
+        "line": 229,
         "level": 3,
-        "title": "4.2 Platform-Extended Message Segments"
+        "title": "4.2 Platform Extension Message Segments"
       }
     ],
     "4.2 Specify Bot Account (Multi-account Mode)": [
@@ -1653,7 +1677,7 @@
     "5. Handling Unknown Events": [
       {
         "document": "standards/event-conversion.md",
-        "line": 219,
+        "line": 246,
         "level": 2,
         "title": "5. Handling Unknown Events"
       }
@@ -1685,7 +1709,7 @@
     "5. Return Value Specification": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 218,
+        "line": 222,
         "level": 2,
         "title": "5. Return Value Specification"
       }
@@ -1885,7 +1909,7 @@
     "6. Extension Naming Convention": [
       {
         "document": "standards/event-conversion.md",
-        "line": 235,
+        "line": 264,
         "level": 2,
         "title": "6. Extension Naming Convention"
       }
@@ -1933,7 +1957,7 @@
     "6. Reverse Conversion Specification (OneBot12 → Platform)": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 225,
+        "line": 229,
         "level": 2,
         "title": "6. Reverse Conversion Specification (OneBot12 → Platform)"
       }
@@ -1949,7 +1973,7 @@
     "6.1 Conversion Model": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 229,
+        "line": 233,
         "level": 3,
         "title": "6.1 Conversion Model"
       }
@@ -1957,7 +1981,7 @@
     "6.1 Field Naming": [
       {
         "document": "standards/event-conversion.md",
-        "line": 237,
+        "line": 266,
         "level": 3,
         "title": "6.1 Field Naming"
       }
@@ -1981,7 +2005,7 @@
     "6.2 Message Segment Type Naming": [
       {
         "document": "standards/event-conversion.md",
-        "line": 256,
+        "line": 285,
         "level": 3,
         "title": "6.2 Message Segment Type Naming"
       }
@@ -1989,7 +2013,7 @@
     "6.2 `Raw_ob12` Implementation Specification": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 246,
+        "line": 250,
         "level": 3,
         "title": "6.2 `Raw_ob12` Implementation Specification"
       }
@@ -2005,7 +2029,7 @@
     "6.3 Message Segment Conversion Rules": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 274,
+        "line": 278,
         "level": 3,
         "title": "6.3 Message Segment Conversion Rules"
       }
@@ -2013,7 +2037,7 @@
     "6.3 Raw Data Field Naming": [
       {
         "document": "standards/event-conversion.md",
-        "line": 262,
+        "line": 291,
         "level": 3,
         "title": "6.3 Raw Data Field Naming"
       }
@@ -2021,7 +2045,7 @@
     "6.3.1 Standard Message Segment Conversion": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 276,
+        "line": 280,
         "level": 4,
         "title": "6.3.1 Standard Message Segment Conversion"
       }
@@ -2029,7 +2053,7 @@
     "6.3.2 Platform Extension Message Segment Conversion": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 292,
+        "line": 296,
         "level": 4,
         "title": "6.3.2 Platform Extension Message Segment Conversion"
       }
@@ -2037,23 +2061,23 @@
     "6.3.3 Handling Composite Message Segments": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 316,
+        "line": 320,
         "level": 4,
         "title": "6.3.3 Handling Composite Message Segments"
       }
     ],
-    "6.4 Platform-Specific Field Examples": [
+    "6.4 Examples of Platform-Specific Fields": [
       {
         "document": "standards/event-conversion.md",
-        "line": 276,
+        "line": 305,
         "level": 3,
-        "title": "6.4 Platform-Specific Field Examples"
+        "title": "6.4 Examples of Platform-Specific Fields"
       }
     ],
     "6.4 Relationship Between `Raw_ob12` and Standard Methods": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 334,
+        "line": 338,
         "level": 3,
         "title": "6.4 Relationship Between `Raw_ob12` and Standard Methods"
       }
@@ -2061,7 +2085,7 @@
     "6.5 Implementation Example": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 356,
+        "line": 360,
         "level": 3,
         "title": "6.5 Implementation Example"
       }
@@ -2069,17 +2093,17 @@
     "6.5 Nested Extension Fields": [
       {
         "document": "standards/event-conversion.md",
-        "line": 293,
+        "line": 322,
         "level": 3,
         "title": "6.5 Nested Extension Fields"
       }
     ],
-    "6.6 `self` Field Extension": [
+    "6.6 Extension of `self` Field": [
       {
         "document": "standards/event-conversion.md",
-        "line": 316,
+        "line": 345,
         "level": 3,
-        "title": "6.6 `self` Field Extension"
+        "title": "6.6 Extension of `self` Field"
       }
     ],
     "7. Core API Reference": [
@@ -2109,7 +2133,7 @@
     "7. Method Discovery": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 409,
+        "line": 413,
         "level": 2,
         "title": "7. Method Discovery"
       }
@@ -2125,7 +2149,7 @@
     "7. Session Type Extension": [
       {
         "document": "standards/event-conversion.md",
-        "line": 330,
+        "line": 359,
         "level": 2,
         "title": "7. Session Type Extension"
       }
@@ -2205,17 +2229,9 @@
     "8. Module Developer Guide": [
       {
         "document": "standards/event-conversion.md",
-        "line": 364,
+        "line": 395,
         "level": 2,
         "title": "8. Module Developer Guide"
-      }
-    ],
-    "8. Registered Send Method Extensions": [
-      {
-        "document": "standards/send-method-spec.md",
-        "line": 432,
-        "level": 2,
-        "title": "8. Registered Send Method Extensions"
       }
     ],
     "8. Related Documentation": [
@@ -2242,26 +2258,26 @@
         "title": "8. Utility Methods"
       }
     ],
-    "8.1 Accessing Extended Fields": [
+    "8.1 Accessing Extension Fields": [
       {
         "document": "standards/event-conversion.md",
-        "line": 366,
+        "line": 397,
         "level": 3,
-        "title": "8.1 Accessing Extended Fields"
+        "title": "8.1 Accessing Extension Fields"
       }
     ],
-    "8.2 Handling Extended Message Segments": [
+    "8.2 Handling Extension Message Segments": [
       {
         "document": "standards/event-conversion.md",
-        "line": 395,
+        "line": 426,
         "level": 3,
-        "title": "8.2 Handling Extended Message Segments"
+        "title": "8.2 Handling Extension Message Segments"
       }
     ],
     "8.3 Best Practices": [
       {
         "document": "standards/event-conversion.md",
-        "line": 416,
+        "line": 447,
         "level": 3,
         "title": "8.3 Best Practices"
       }
@@ -2269,7 +2285,7 @@
     "8.4 Request Event Handling": [
       {
         "document": "standards/event-conversion.md",
-        "line": 432,
+        "line": 463,
         "level": 3,
         "title": "8.4 Request Event Handling"
       }
@@ -2277,7 +2293,7 @@
     "9. Adapter Development Notes": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 447,
+        "line": 436,
         "level": 2,
         "title": "9. Adapter Development Notes"
       }
@@ -2309,7 +2325,7 @@
     "9. Session Type Inference for notice / request Events": [
       {
         "document": "standards/event-conversion.md",
-        "line": 477,
+        "line": 510,
         "level": 2,
         "title": "9. Session Type Inference for notice / request Events"
       }
@@ -2325,7 +2341,7 @@
     "9.1 Problem Background": [
       {
         "document": "standards/event-conversion.md",
-        "line": 479,
+        "line": 512,
         "level": 3,
         "title": "9.1 Problem Background"
       }
@@ -2333,7 +2349,7 @@
     "9.2 Inference Rules": [
       {
         "document": "standards/event-conversion.md",
-        "line": 494,
+        "line": 527,
         "level": 3,
         "title": "9.2 Inference Rules"
       }
@@ -2341,7 +2357,7 @@
     "9.3 `event.reply()` Target Inference": [
       {
         "document": "standards/event-conversion.md",
-        "line": 507,
+        "line": 540,
         "level": 3,
         "title": "9.3 `event.reply()` Target Inference"
       }
@@ -2349,7 +2365,7 @@
     "9.4 Adapter Development Recommendations": [
       {
         "document": "standards/event-conversion.md",
-        "line": 529,
+        "line": 562,
         "level": 3,
         "title": "9.4 Adapter Development Recommendations"
       }
@@ -2368,6 +2384,14 @@
         "line": 126,
         "level": 2,
         "title": "@Robot Detection Mechanism (Important)"
+      }
+    ],
+    "@conv.branch(name) Decorator": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 202,
+        "level": 3,
+        "title": "@conv.branch(name) Decorator"
       }
     ],
     "A2UI Message Segment (a2ui)": [
@@ -2758,20 +2782,20 @@
         "title": "Adapter Sending Meta Events"
       }
     ],
-    "Adapter Standardization Conversion Specification": [
-      {
-        "document": "standards/event-conversion.md",
-        "line": 1,
-        "level": 1,
-        "title": "Adapter Standardization Conversion Specification"
-      }
-    ],
     "Adapter Standardization Guide (General Overview)": [
       {
         "document": "standards/standardization-guide.md",
         "line": 1,
         "level": 1,
         "title": "Adapter Standardization Guide (General Overview)"
+      }
+    ],
+    "Adapter Standardization Specification": [
+      {
+        "document": "standards/event-conversion.md",
+        "line": 1,
+        "level": 1,
+        "title": "Adapter Standardization Specification"
       }
     ],
     "Adapter System API": [
@@ -2940,6 +2964,14 @@
         "title": "Asynchronous Native API"
       }
     ],
+    "Asynchronous Native APIs": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 81,
+        "level": 2,
+        "title": "Asynchronous Native APIs"
+      }
+    ],
     "Asynchronous Processing": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -3030,14 +3062,6 @@
         "title": "Authentication and API Calls"
       }
     ],
-    "Auto-respond using event.reply() (will automatically select the correct sending method based on the platform)": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 450,
-        "level": 1,
-        "title": "Auto-respond using event.reply() (will automatically select the correct sending method based on the platform)"
-      }
-    ],
     "Automatic Archiving": [
       {
         "document": "advanced/conversation.md",
@@ -3113,7 +3137,7 @@
     "Automatic Recovery on Restart": [
       {
         "document": "advanced/conversation.md",
-        "line": 311,
+        "line": 314,
         "level": 3,
         "title": "Automatic Recovery on Restart"
       }
@@ -3164,6 +3188,14 @@
         "line": 281,
         "level": 3,
         "title": "Backup"
+      }
+    ],
+    "Backward Compatibility for Old Configuration": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 733,
+        "level": 3,
+        "title": "Backward Compatibility for Old Configuration"
       }
     ],
     "Base Classes": [
@@ -3608,12 +3640,12 @@
         "title": "Bot Command Message Segment (ideaura_command)"
       }
     ],
-    "Bot Identification in Events": [
+    "Bot Identifier in Events": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 683,
+        "line": 686,
         "level": 3,
-        "title": "Bot Identification in Events"
+        "title": "Bot Identifier in Events"
       }
     ],
     "Bot Information": [
@@ -3667,7 +3699,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 699,
+        "line": 708,
         "level": 3,
         "title": "Bot Status Query"
       }
@@ -3688,12 +3720,12 @@
         "title": "Boundaries and Notes"
       }
     ],
-    "Branches and Jumps": [
+    "Branching and Jumping": [
       {
         "document": "advanced/conversation.md",
         "line": 200,
         "level": 2,
-        "title": "Branches and Jumps"
+        "title": "Branching and Jumping"
       }
     ],
     "Browsing and Discovery": [
@@ -3731,7 +3763,7 @@
     "Built-in confirmation words": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 937,
+        "line": 946,
         "level": 3,
         "title": "Built-in confirmation words"
       }
@@ -3747,7 +3779,7 @@
     "Button Parameter Description": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 142,
+        "line": 143,
         "level": 3,
         "title": "Button Parameter Description"
       },
@@ -3886,12 +3918,28 @@
         "title": "Chain Startup Overview"
       }
     ],
+    "Chainable Call Examples": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 177,
+        "level": 3,
+        "title": "Chainable Call Examples"
+      }
+    ],
     "Chainable Modifier Methods (Return self, can be combined)": [
       {
         "document": "platform-guide/email.md",
         "line": 113,
         "level": 3,
         "title": "Chainable Modifier Methods (Return self, can be combined)"
+      }
+    ],
+    "Chainable Modifier Methods (can be combined)": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 168,
+        "level": 3,
+        "title": "Chainable Modifier Methods (can be combined)"
       }
     ],
     "Chainable Queries": [
@@ -3972,14 +4020,6 @@
         "line": 125,
         "level": 4,
         "title": "Check Platform Status"
-      }
-    ],
-    "Check if it is a button click event": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 442,
-        "level": 1,
-        "title": "Check if it is a button click event"
       }
     ],
     "Checking if a Table Exists": [
@@ -4113,7 +4153,7 @@
     "Command Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 482,
+        "line": 495,
         "level": 3,
         "title": "Command Configuration"
       }
@@ -4137,23 +4177,31 @@
     "Command Dispatch Decision Chain: Why a Command Didn't Trigger": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 460,
+        "line": 469,
         "level": 2,
         "title": "Command Dispatch Decision Chain: Why a Command Didn't Trigger"
       }
     ],
-    "Command Governance (`cooldown=` / `rate_limit=` / `deprecated=`)": [
+    "Command Event Handling": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 90,
+        "level": 2,
+        "title": "Command Event Handling"
+      }
+    ],
+    "Command Governance (cooldown= / rate_limit= / usage_limit= / deprecated=)": [
       {
         "document": "getting-started/event-handling.md",
         "line": 173,
         "level": 3,
-        "title": "Command Governance (`cooldown=` / `rate_limit=` / `deprecated=`)"
+        "title": "Command Governance (cooldown= / rate_limit= / usage_limit= / deprecated=)"
       }
     ],
     "Command Groups": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 269,
+        "line": 282,
         "level": 3,
         "title": "Command Groups"
       }
@@ -4205,7 +4253,7 @@
     "Command Parsing Configuration (event.command)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 638,
+        "line": 650,
         "level": 2,
         "title": "Command Parsing Configuration (event.command)"
       }
@@ -4213,7 +4261,7 @@
     "Command Permissions and Access Control": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 329,
+        "line": 342,
         "level": 3,
         "title": "Command Permissions and Access Control"
       }
@@ -4221,7 +4269,7 @@
     "Command Priority": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 380,
+        "line": 389,
         "level": 3,
         "title": "Command Priority"
       }
@@ -4237,7 +4285,7 @@
     "Command and Reply Block Configuration": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 593,
+        "line": 602,
         "level": 3,
         "title": "Command and Reply Block Configuration"
       }
@@ -4245,7 +4293,7 @@
     "Comment Retention and Minimal Disk Write": [
       {
         "document": "user-guide/configuration.md",
-        "line": 42,
+        "line": 45,
         "level": 2,
         "title": "Comment Retention and Minimal Disk Write"
       }
@@ -4296,14 +4344,6 @@
         "title": "Common Methods"
       }
     ],
-    "Common Methods of Event Object": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 946,
-        "level": 3,
-        "title": "Common Methods of Event Object"
-      }
-    ],
     "Common Parameters": [
       {
         "document": "ecosystem/takumi.md",
@@ -4336,6 +4376,14 @@
         "title": "Common Usage"
       }
     ],
+    "Common methods of Event object": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 955,
+        "level": 3,
+        "title": "Common methods of Event object"
+      }
+    ],
     "Compatibility": [
       {
         "document": "developer-guide/publishing.md",
@@ -4355,17 +4403,9 @@
     "Complete Configuration Example": [
       {
         "document": "user-guide/configuration.md",
-        "line": 175,
+        "line": 179,
         "level": 2,
         "title": "Complete Configuration Example"
-      }
-    ],
-    "Complete Decision Chain for Reply Matching": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 63,
-        "level": 3,
-        "title": "Complete Decision Chain for Reply Matching"
       }
     ],
     "Complete Email Event": [
@@ -4410,6 +4450,14 @@
         "line": 173,
         "level": 2,
         "title": "Complete Manual Startup Example"
+      }
+    ],
+    "Complete Matching Chain for Reply": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 63,
+        "level": 3,
+        "title": "Complete Matching Chain for Reply"
       }
     ],
     "Complete Module Example": [
@@ -4536,14 +4584,6 @@
         "title": "Configuration Example"
       }
     ],
-    "Configuration Explanation": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 630,
-        "level": 3,
-        "title": "Configuration Explanation"
-      }
-    ],
     "Configuration Field Descriptions": [
       {
         "document": "platform-guide/wechatmp.md",
@@ -4566,18 +4606,18 @@
         "title": "Configuration File"
       }
     ],
-    "Configuration File Documentation": [
+    "Configuration File Guide": [
       {
         "document": "user-guide/configuration.md",
         "line": 1,
         "level": 1,
-        "title": "Configuration File Documentation"
+        "title": "Configuration File Guide"
       }
     ],
     "Configuration File Location": [
       {
         "document": "user-guide/configuration.md",
-        "line": 6,
+        "line": 7,
         "level": 2,
         "title": "Configuration File Location"
       }
@@ -4607,7 +4647,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 105,
+        "line": 109,
         "level": 2,
         "title": "Configuration Hot Update"
       }
@@ -4630,6 +4670,12 @@
         "line": 22,
         "level": 2,
         "title": "Configuration Instructions"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 633,
+        "level": 3,
+        "title": "Configuration Instructions"
       }
     ],
     "Configuration Item Description": [
@@ -4643,7 +4689,7 @@
     "Configuration Loading Error Handling": [
       {
         "document": "user-guide/configuration.md",
-        "line": 21,
+        "line": 22,
         "level": 2,
         "title": "Configuration Loading Error Handling"
       }
@@ -4697,7 +4743,7 @@
     "Configuration Overwrite": [
       {
         "document": "developer-guide/testing.md",
-        "line": 103,
+        "line": 105,
         "level": 3,
         "title": "Configuration Overwrite"
       }
@@ -4721,7 +4767,7 @@
     "Confirmation dialog (confirm)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 819,
+        "line": 828,
         "level": 3,
         "title": "Confirmation dialog (confirm)"
       }
@@ -4729,7 +4775,7 @@
     "Connection Event": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 674,
+        "line": 683,
         "level": 3,
         "title": "Connection Event"
       }
@@ -4961,7 +5007,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 360,
+        "line": 362,
         "level": 3,
         "title": "Core Differences"
       },
@@ -5170,12 +5216,12 @@
         "title": "Custom Fonts"
       }
     ],
-    "Custom Identity Source (provider)": [
+    "Custom Identity Source (Provider)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 288,
+        "line": 303,
         "level": 3,
-        "title": "Custom Identity Source (provider)"
+        "title": "Custom Identity Source (Provider)"
       }
     ],
     "Custom Message Segment Types": [
@@ -5197,7 +5243,7 @@
     "Custom SQL Backend": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 117,
+        "line": 122,
         "level": 2,
         "title": "Custom SQL Backend"
       }
@@ -5322,12 +5368,12 @@
         "title": "Declarative Translation Keys (v2.7.0+)"
       }
     ],
-    "Declared Arguments and Options (`args=` / `options=`)": [
+    "Declared Parameters and Options (args= / options=)": [
       {
         "document": "getting-started/event-handling.md",
         "line": 137,
         "level": 3,
-        "title": "Declared Arguments and Options (`args=` / `options=`)"
+        "title": "Declared Parameters and Options (args= / options=)"
       }
     ],
     "Declaring Models": [
@@ -5400,20 +5446,20 @@
         "title": "Dependency Declaration (Optional, 2.8.0+)"
       }
     ],
-    "Dependency Injection (`Depends`)": [
+    "Dependency Injection (Depends)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 233,
+        "line": 246,
         "level": 3,
-        "title": "Dependency Injection (`Depends`)"
+        "title": "Dependency Injection (Depends)"
       }
     ],
-    "Dependency Replacement": [
+    "Dependency Replacement (requires EP>=2.9.0-dev)": [
       {
         "document": "developer-guide/testing.md",
-        "line": 93,
+        "line": 95,
         "level": 3,
-        "title": "Dependency Replacement"
+        "title": "Dependency Replacement (requires EP>=2.9.0-dev)"
       }
     ],
     "Deployment": [
@@ -5440,6 +5486,14 @@
         "title": "Design Boundaries: Resources Not Cleaned on Unload"
       }
     ],
+    "Detailed Event Handling Chain": [
+      {
+        "document": "architecture.md",
+        "line": 105,
+        "level": 3,
+        "title": "Detailed Event Handling Chain"
+      }
+    ],
     "Detailed Explanation of Each Step": [
       {
         "document": "advanced/startup.md",
@@ -5448,28 +5502,20 @@
         "title": "Detailed Explanation of Each Step"
       }
     ],
-    "Detailed Explanation of the Event Handling Chain": [
-      {
-        "document": "architecture.md",
-        "line": 105,
-        "level": 3,
-        "title": "Detailed Explanation of the Event Handling Chain"
-      }
-    ],
-    "Detailed Initialization Stages": [
+    "Detailed Initialization Phases": [
       {
         "document": "architecture.md",
         "line": 80,
         "level": 3,
-        "title": "Detailed Initialization Stages"
+        "title": "Detailed Initialization Phases"
       }
     ],
-    "Determination Chain and Runtime Additions/Removals": [
+    "Determination Chain and Runtime Add/Remove": [
       {
         "document": "user-guide/configuration.md",
-        "line": 274,
+        "line": 289,
         "level": 3,
-        "title": "Determination Chain and Runtime Additions/Removals"
+        "title": "Determination Chain and Runtime Add/Remove"
       }
     ],
     "Developer Guide": [
@@ -5555,7 +5601,7 @@
     "Dialect Behavior Differences": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 104,
+        "line": 109,
         "level": 2,
         "title": "Dialect Behavior Differences"
       }
@@ -5608,12 +5654,20 @@
         "title": "Discord Platform Feature Documentation"
       }
     ],
-    "Dispatch Decision Chain (Troubleshooting \"Why wasn't the command triggered?\")": [
+    "Dispatch Decision Chain (for troubleshooting \"why command didn't trigger\"; requires EP>=2.9.0-dev)": [
       {
         "document": "developer-guide/testing.md",
-        "line": 114,
+        "line": 119,
         "level": 2,
-        "title": "Dispatch Decision Chain (Troubleshooting \"Why wasn't the command triggered?\")"
+        "title": "Dispatch Decision Chain (for troubleshooting \"why command didn't trigger\"; requires EP>=2.9.0-dev)"
+      }
+    ],
+    "Dispatching": [
+      {
+        "document": "developer-guide/testing.md",
+        "line": 57,
+        "level": 3,
+        "title": "Dispatching"
       }
     ],
     "Distributing Applications via Docker Images": [
@@ -5622,14 +5676,6 @@
         "line": 193,
         "level": 2,
         "title": "Distributing Applications via Docker Images"
-      }
-    ],
-    "Distribution": [
-      {
-        "document": "developer-guide/testing.md",
-        "line": 55,
-        "level": 3,
-        "title": "Distribution"
       }
     ],
     "Do I want to list my module here too?": [
@@ -5685,6 +5731,12 @@
       },
       {
         "document": "platform-guide/onebot12.md",
+        "line": 7,
+        "level": 2,
+        "title": "Document Information"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
         "line": 7,
         "level": 2,
         "title": "Document Information"
@@ -5751,12 +5803,6 @@
       },
       {
         "document": "platform-guide/terminal.md",
-        "line": 7,
-        "level": 2,
-        "title": "Documentation Information"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
         "line": 7,
         "level": 2,
         "title": "Documentation Information"
@@ -5872,12 +5918,12 @@
         "title": "Email with Attachments"
       }
     ],
-    "Emoji/Sticker Message Segment (yunhu_expression)": [
+    "Emoticon/Sticker Message Segment (yunhu_expression)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 588,
+        "line": 589,
         "level": 3,
-        "title": "Emoji/Sticker Message Segment (yunhu_expression)"
+        "title": "Emoticon/Sticker Message Segment (yunhu_expression)"
       }
     ],
     "Enable IDE Completion (Optional)": [
@@ -5920,20 +5966,12 @@
         "title": "Environment Diagnosis"
       }
     ],
-    "Environment Variable Binding for Module Configuration (2.9.0+)": [
+    "Environment Variable Override": [
       {
         "document": "user-guide/configuration.md",
-        "line": 77,
-        "level": 3,
-        "title": "Environment Variable Binding for Module Configuration (2.9.0+)"
-      }
-    ],
-    "Environment Variable Overrides": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 52,
+        "line": 55,
         "level": 2,
-        "title": "Environment Variable Overrides"
+        "title": "Environment Variable Override"
       }
     ],
     "Environment Variables": [
@@ -6117,7 +6155,7 @@
     "Event Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 480,
+        "line": 493,
         "level": 2,
         "title": "Event Configuration"
       }
@@ -6157,7 +6195,7 @@
     "Event Data Access": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 944,
+        "line": 953,
         "level": 2,
         "title": "Event Data Access"
       }
@@ -6206,12 +6244,12 @@
         "title": "Event Extension Methods (WebhookEventMixin)"
       }
     ],
-    "Event Factory": [
+    "Event Factories": [
       {
         "document": "developer-guide/testing.md",
         "line": 41,
         "level": 2,
-        "title": "Event Factory"
+        "title": "Event Factories"
       }
     ],
     "Event Flow": [
@@ -6255,7 +6293,7 @@
     "Event Handling Best Practices": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 1021,
+        "line": 1030,
         "level": 2,
         "title": "Event Handling Best Practices"
       }
@@ -6349,7 +6387,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 539,
+        "line": 540,
         "level": 2,
         "title": "Event Mixin Extension Methods"
       }
@@ -6365,7 +6403,7 @@
     "Event Overwriting: Overwrite Any Event Type Behavior Without Modifying Module Code": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 498,
+        "line": 507,
         "level": 2,
         "title": "Event Overwriting: Overwrite Any Event Type Behavior Without Modifying Module Code"
       }
@@ -6446,14 +6484,6 @@
         "line": 262,
         "level": 2,
         "title": "Event Type Mapping"
-      }
-    ],
-    "Event Type Overview": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 5,
-        "level": 2,
-        "title": "Event Type Overview"
       }
     ],
     "Event Types": [
@@ -6568,6 +6598,14 @@
         "title": "Exception Hierarchy"
       }
     ],
+    "Exception List": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 432,
+        "level": 4,
+        "title": "Exception List"
+      }
+    ],
     "Exception Overview": [
       {
         "document": "advanced/errors.md",
@@ -6606,14 +6644,6 @@
         "line": 291,
         "level": 3,
         "title": "Executing Logic After Successful Send (Hook)"
-      }
-    ],
-    "Exemption List": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 419,
-        "level": 4,
-        "title": "Exemption List"
       }
     ],
     "Exit Code 42 Contract": [
@@ -6680,12 +6710,6 @@
         "title": "Extension Field Description"
       },
       {
-        "document": "platform-guide/yunhu.md",
-        "line": 576,
-        "level": 2,
-        "title": "Extension Field Description"
-      },
-      {
         "document": "platform-guide/yunhu_user.md",
         "line": 426,
         "level": 2,
@@ -6696,6 +6720,12 @@
       {
         "document": "platform-guide/email.md",
         "line": 208,
+        "level": 2,
+        "title": "Extension Field Descriptions"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 577,
         "level": 2,
         "title": "Extension Field Descriptions"
       }
@@ -6801,7 +6831,7 @@
     "Fixed Bugs": [
       {
         "document": "bug-tracker.md",
-        "line": 113,
+        "line": 114,
         "level": 2,
         "title": "Fixed Bugs"
       }
@@ -6810,12 +6840,6 @@
       {
         "document": "platform-guide/ideaura.md",
         "line": 67,
-        "level": 3,
-        "title": "Fluent Call Examples"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 175,
         "level": 3,
         "title": "Fluent Call Examples"
       },
@@ -6878,12 +6902,6 @@
       {
         "document": "platform-guide/matrix.md",
         "line": 106,
-        "level": 3,
-        "title": "Fluent Modifier Methods (Combinable)"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 166,
         "level": 3,
         "title": "Fluent Modifier Methods (Combinable)"
       },
@@ -6953,7 +6971,7 @@
     "Form collection (collect)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 869,
+        "line": 878,
         "level": 3,
         "title": "Form collection (collect)"
       }
@@ -6985,7 +7003,7 @@
     "Framework Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 366,
+        "line": 379,
         "level": 2,
         "title": "Framework Configuration"
       }
@@ -7031,7 +7049,7 @@
     "Friend Addition": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 611,
+        "line": 620,
         "level": 3,
         "title": "Friend Addition"
       }
@@ -7071,7 +7089,7 @@
     "Friend Request": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 645,
+        "line": 654,
         "level": 3,
         "title": "Friend Request"
       }
@@ -7180,6 +7198,14 @@
         "title": "Get Method Detailed Information"
       }
     ],
+    "Get an Adapter": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 7,
+        "level": 3,
+        "title": "Get an Adapter"
+      }
+    ],
     "Getting Started": [
       {
         "document": "getting-started/README.md",
@@ -7224,14 +7250,6 @@
         "line": 146,
         "level": 4,
         "title": "Getting a Single Record"
-      }
-    ],
-    "Getting an Adapter": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 7,
-        "level": 3,
-        "title": "Getting an Adapter"
       }
     ],
     "Global Configuration": [
@@ -7285,7 +7303,7 @@
     "Group Invitation Request": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 661,
+        "line": 670,
         "level": 3,
         "title": "Group Invitation Request"
       }
@@ -7293,7 +7311,7 @@
     "Group Management Examples": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 188,
+        "line": 190,
         "level": 3,
         "title": "Group Management Examples"
       }
@@ -7301,7 +7319,7 @@
     "Group Management Methods": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 85,
+        "line": 86,
         "level": 3,
         "title": "Group Management Methods"
       }
@@ -7309,7 +7327,7 @@
     "Group Member Decrease": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 633,
+        "line": 642,
         "level": 3,
         "title": "Group Member Decrease"
       }
@@ -7317,7 +7335,7 @@
     "Group Member Increase": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 623,
+        "line": 632,
         "level": 3,
         "title": "Group Member Increase"
       }
@@ -7346,18 +7364,10 @@
         "title": "Group/Channel Information"
       }
     ],
-    "Guide to Utility Modules: Managing Handles for Other Modules": [
-      {
-        "document": "advanced/ownership.md",
-        "line": 234,
-        "level": 2,
-        "title": "Guide to Utility Modules: Managing Handles for Other Modules"
-      }
-    ],
     "Guided Registration": [
       {
         "document": "advanced/conversation.md",
-        "line": 358,
+        "line": 361,
         "level": 3,
         "title": "Guided Registration"
       }
@@ -7426,28 +7436,12 @@
         "title": "HTTPStatusError"
       }
     ],
-    "Handler Throttling (`throttle=`) and Debouncing (`debounce=`)": [
+    "Handler Throttling (throttle=) and Debouncing (debounce=)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 213,
+        "line": 224,
         "level": 3,
-        "title": "Handler Throttling (`throttle=`) and Debouncing (`debounce=`)"
-      }
-    ],
-    "Handling A2UI Button Events": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 468,
-        "level": 1,
-        "title": "Handling A2UI Button Events"
-      }
-    ],
-    "Handling Bot Setting Changes": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 463,
-        "level": 1,
-        "title": "Handling Bot Setting Changes"
+        "title": "Handler Throttling (throttle=) and Debouncing (debounce=)"
       }
     ],
     "Handling Channel Messages": [
@@ -7462,14 +7456,6 @@
         "line": 400,
         "level": 3,
         "title": "Handling Channel Messages"
-      }
-    ],
-    "Handling Command Events": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 90,
-        "level": 2,
-        "title": "Handling Command Events"
       }
     ],
     "Handling Edit and Delete Notifications for Private Messages": [
@@ -7518,30 +7504,6 @@
         "title": "Handling Message Edits"
       }
     ],
-    "Handling Message Events": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 17,
-        "level": 2,
-        "title": "Handling Message Events"
-      }
-    ],
-    "Handling Meta Events": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 672,
-        "level": 2,
-        "title": "Handling Meta Events"
-      }
-    ],
-    "Handling Notice Events": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 609,
-        "level": 2,
-        "title": "Handling Notice Events"
-      }
-    ],
     "Handling Notification Events (like emoji reactions)": [
       {
         "document": "platform-guide/kook.md",
@@ -7580,22 +7542,6 @@
         "title": "Handling Recommendations"
       }
     ],
-    "Handling Request Events": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 643,
-        "level": 2,
-        "title": "Handling Request Events"
-      }
-    ],
-    "Handling Shortcut Menu Events": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 458,
-        "level": 1,
-        "title": "Handling Shortcut Menu Events"
-      }
-    ],
     "Handling Unsupported Types": [
       {
         "document": "platform-guide/onebot11.md",
@@ -7621,7 +7567,7 @@
     "Heartbeat Event": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 690,
+        "line": 699,
         "level": 3,
         "title": "Heartbeat Event"
       }
@@ -7664,20 +7610,12 @@
         "title": "Honest Boundaries (Can't Be Blocked)"
       }
     ],
-    "Hook Breakpoint Overview": [
+    "Hook Breakpoints Overview": [
       {
         "document": "advanced/lifecycle.md",
         "line": 114,
         "level": 2,
-        "title": "Hook Breakpoint Overview"
-      }
-    ],
-    "Hot Module Reload Architecture": [
-      {
-        "document": "architecture.md",
-        "line": 279,
-        "level": 2,
-        "title": "Hot Module Reload Architecture"
+        "title": "Hook Breakpoints Overview"
       }
     ],
     "Hot Reload Failure Rollback": [
@@ -7892,17 +7830,19 @@
         "title": "Inheritance Structure"
       }
     ],
+    "Initialization Flow": [
+      {
+        "document": "architecture.md",
+        "line": 55,
+        "level": 2,
+        "title": "Initialization Flow"
+      }
+    ],
     "Initialization Process": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 20,
         "level": 3,
-        "title": "Initialization Process"
-      },
-      {
-        "document": "architecture.md",
-        "line": 55,
-        "level": 2,
         "title": "Initialization Process"
       },
       {
@@ -8100,6 +8040,14 @@
         "title": "Interaction — `Core/Event/interaction.py`"
       }
     ],
+    "Interactive Handling": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 730,
+        "level": 2,
+        "title": "Interactive Handling"
+      }
+    ],
     "Interactive Initialization (Recommended)": [
       {
         "document": "quick-start.md",
@@ -8138,14 +8086,6 @@
         "title": "Interactive Methods"
       }
     ],
-    "Interactive Processing": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 721,
-        "level": 2,
-        "title": "Interactive Processing"
-      }
-    ],
     "Interactive Session System": [
       {
         "document": "advanced/interaction.md",
@@ -8165,7 +8105,7 @@
     "Internal Breakdown of Hot Update Chain": [
       {
         "document": "user-guide/configuration.md",
-        "line": 127,
+        "line": 131,
         "level": 3,
         "title": "Internal Breakdown of Hot Update Chain"
       }
@@ -8205,7 +8145,7 @@
     "Internationalization Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 509,
+        "line": 522,
         "level": 2,
         "title": "Internationalization Configuration"
       }
@@ -8298,14 +8238,6 @@
         "title": "Learning Path"
       }
     ],
-    "Legacy Configuration Compatibility": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 730,
-        "level": 3,
-        "title": "Legacy Configuration Compatibility"
-      }
-    ],
     "Lifecycle Events": [
       {
         "document": "advanced/http-client.md",
@@ -8369,7 +8301,7 @@
     "Link Control: Claiming and Blocking": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 558,
+        "line": 567,
         "level": 2,
         "title": "Link Control: Claiming and Blocking"
       }
@@ -8510,12 +8442,6 @@
     ],
     "Log Information": [
       {
-        "document": "platform-guide/yunhu.md",
-        "line": 705,
-        "level": 3,
-        "title": "Log Information"
-      },
-      {
         "document": "platform-guide/yunhu_user.md",
         "line": 602,
         "level": 3,
@@ -8579,15 +8505,23 @@
     "Logging Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 318,
+        "line": 331,
         "level": 2,
         "title": "Logging Configuration"
+      }
+    ],
+    "Logging Information": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 708,
+        "level": 3,
+        "title": "Logging Information"
       }
     ],
     "Looping Conversation": [
       {
         "document": "advanced/conversation.md",
-        "line": 389,
+        "line": 392,
         "level": 3,
         "title": "Looping Conversation"
       }
@@ -8639,7 +8573,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 714,
+        "line": 717,
         "level": 3,
         "title": "Management Interface"
       },
@@ -8648,14 +8582,6 @@
         "line": 612,
         "level": 3,
         "title": "Management Interface"
-      }
-    ],
-    "Mandatory Fields": [
-      {
-        "document": "bug-tracker.md",
-        "line": 16,
-        "level": 3,
-        "title": "Mandatory Fields"
       }
     ],
     "Manual Call to Request DSL": [
@@ -8690,14 +8616,6 @@
         "title": "Manual Project Creation"
       }
     ],
-    "Manual Recovery (when not using automatic mechanism)": [
-      {
-        "document": "advanced/conversation.md",
-        "line": 345,
-        "level": 3,
-        "title": "Manual Recovery (when not using automatic mechanism)"
-      }
-    ],
     "Manual Registration of Custom Translations (Old Approach)": [
       {
         "document": "advanced/i18n.md",
@@ -8722,10 +8640,18 @@
         "title": "Manual Response Construction (Legacy Method Still Compatible)"
       }
     ],
+    "Manual Resume (Without Automatic Mechanism)": [
+      {
+        "document": "advanced/conversation.md",
+        "line": 348,
+        "level": 3,
+        "title": "Manual Resume (Without Automatic Mechanism)"
+      }
+    ],
     "Master System Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 248,
+        "line": 263,
         "level": 2,
         "title": "Master System Configuration"
       }
@@ -8770,12 +8696,28 @@
         "title": "Media File Notes"
       }
     ],
+    "Media Sending (Image / Voice / Video / File)": [
+      {
+        "document": "standards/README.md",
+        "line": 99,
+        "level": 3,
+        "title": "Media Sending (Image / Voice / Video / File)"
+      }
+    ],
     "Media Sending Methods": [
       {
         "document": "platform-guide/telegram.md",
         "line": 96,
         "level": 3,
         "title": "Media Sending Methods"
+      }
+    ],
+    "Media Sending Protocol": [
+      {
+        "document": "standards/send-method-spec.md",
+        "line": 453,
+        "level": 3,
+        "title": "Media Sending Protocol"
       }
     ],
     "Mention Message Segment": [
@@ -8789,7 +8731,7 @@
     "Message Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 498,
+        "line": 511,
         "level": 3,
         "title": "Message Configuration"
       }
@@ -8840,6 +8782,14 @@
         "line": 261,
         "level": 3,
         "title": "Message Event Example"
+      }
+    ],
+    "Message Event Handling": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 17,
+        "level": 2,
+        "title": "Message Event Handling"
       }
     ],
     "Message Event Methods": [
@@ -8937,7 +8887,7 @@
     "Message Query Examples": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 231,
+        "line": 233,
         "level": 3,
         "title": "Message Query Examples"
       }
@@ -8945,7 +8895,7 @@
     "Message Query Methods": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 105,
+        "line": 106,
         "level": 3,
         "title": "Message Query Methods"
       }
@@ -9078,12 +9028,12 @@
         "title": "Message Statistics"
       }
     ],
-    "Message Transaction: `message_tx`": [
+    "Message Transaction: message_tx": [
       {
         "document": "advanced/interaction.md",
         "line": 184,
         "level": 2,
-        "title": "Message Transaction: `message_tx`"
+        "title": "Message Transaction: message_tx"
       }
     ],
     "Message Type Detection": [
@@ -9122,6 +9072,14 @@
         "line": 1,
         "level": 1,
         "title": "MessageBuilder Explained"
+      }
+    ],
+    "Meta Event Handling": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 681,
+        "level": 2,
+        "title": "Meta Event Handling"
       }
     ],
     "Meta Event Types": [
@@ -9307,7 +9265,7 @@
     "Middleware: Rewrite or Reject Before Distribution": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 436,
+        "line": 445,
         "level": 2,
         "title": "Middleware: Rewrite or Reject Before Distribution"
       }
@@ -9387,9 +9345,17 @@
     "Module Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 520,
+        "line": 533,
         "level": 2,
         "title": "Module Configuration"
+      }
+    ],
+    "Module Configuration Environment Variable Binding (2.9.0+)": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 81,
+        "level": 3,
+        "title": "Module Configuration Environment Variable Binding (2.9.0+)"
       }
     ],
     "Module Design": [
@@ -9424,6 +9390,14 @@
         "title": "Module Discovery Mechanism"
       }
     ],
+    "Module Hot Reload Architecture": [
+      {
+        "document": "architecture.md",
+        "line": 279,
+        "level": 2,
+        "title": "Module Hot Reload Architecture"
+      }
+    ],
     "Module Installation Failed": [
       {
         "document": "user-guide/installation.md",
@@ -9455,7 +9429,7 @@
     "Module Loading": [
       {
         "document": "developer-guide/testing.md",
-        "line": 83,
+        "line": 84,
         "level": 3,
         "title": "Module Loading"
       }
@@ -9610,20 +9584,20 @@
         "title": "Multi-Account Support"
       }
     ],
+    "Multi-Bot Configuration": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 631,
+        "level": 2,
+        "title": "Multi-Bot Configuration"
+      }
+    ],
     "Multi-Instance Deployment": [
       {
         "document": "user-guide/deployment.md",
         "line": 254,
         "level": 2,
         "title": "Multi-Instance Deployment"
-      }
-    ],
-    "Multi-Instance Warning and Lock File": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 17,
-        "level": 3,
-        "title": "Multi-Instance Warning and Lock File"
       }
     ],
     "Multi-Platform Adaptation": [
@@ -9658,28 +9632,28 @@
         "title": "Multi-language Coverage"
       }
     ],
-    "Multi-path Waiting: `expect` + `select`": [
+    "Multi-path Waiting: expect + select": [
       {
         "document": "advanced/interaction.md",
         "line": 111,
         "level": 2,
-        "title": "Multi-path Waiting: `expect` + `select`"
+        "title": "Multi-path Waiting: expect + select"
       }
     ],
     "Multi-turn conversation (conversation)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 910,
+        "line": 919,
         "level": 3,
         "title": "Multi-turn conversation (conversation)"
       }
     ],
-    "Multiple Bot Configuration": [
+    "Multiple Instance Warning and Lock File": [
       {
-        "document": "platform-guide/yunhu.md",
-        "line": 628,
-        "level": 2,
-        "title": "Multiple Bot Configuration"
+        "document": "user-guide/configuration.md",
+        "line": 18,
+        "level": 3,
+        "title": "Multiple Instance Warning and Lock File"
       }
     ],
     "Must package names start with `ErisPulse-`?": [
@@ -9704,14 +9678,6 @@
         "line": 523,
         "level": 2,
         "title": "Naming Convention"
-      }
-    ],
-    "Native Asynchronous API": [
-      {
-        "document": "advanced/storage-backends.md",
-        "line": 81,
-        "level": 2,
-        "title": "Native Asynchronous API"
       }
     ],
     "Native Renderer": [
@@ -9795,7 +9761,7 @@
       },
       {
         "document": "getting-started/event-handling.md",
-        "line": 1074,
+        "line": 1083,
         "level": 2,
         "title": "Next Steps"
       },
@@ -9813,7 +9779,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 640,
+        "line": 652,
         "level": 2,
         "title": "Next Steps"
       },
@@ -9838,6 +9804,14 @@
         "line": 138,
         "level": 3,
         "title": "Node Tree Example"
+      }
+    ],
+    "Noise Folding on Shutdown": [
+      {
+        "document": "advanced/errors.md",
+        "line": 161,
+        "level": 2,
+        "title": "Noise Folding on Shutdown"
       }
     ],
     "Non-persistent example Fields (v2.8.0+)": [
@@ -9908,6 +9882,14 @@
         "line": 130,
         "level": 3,
         "title": "Notice Event Additional Fields"
+      }
+    ],
+    "Notice Event Handling": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 618,
+        "level": 2,
+        "title": "Notice Event Handling"
       }
     ],
     "Notice Event Methods": [
@@ -10039,7 +10021,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 250,
+        "line": 252,
         "level": 3,
         "title": "OneBot12 Message Support"
       },
@@ -10139,7 +10121,7 @@
     "Outbound Assertions": [
       {
         "document": "developer-guide/testing.md",
-        "line": 66,
+        "line": 68,
         "level": 3,
         "title": "Outbound Assertions"
       }
@@ -10210,6 +10192,14 @@
         "title": "Overview"
       }
     ],
+    "Overview of Event Types": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 5,
+        "level": 2,
+        "title": "Overview of Event Types"
+      }
+    ],
     "Overview of SDK Top-Level Entry Points": [
       {
         "document": "advanced/startup.md",
@@ -10269,7 +10259,7 @@
     "Parallel Event Handling": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 393,
+        "line": 402,
         "level": 3,
         "title": "Parallel Event Handling"
       }
@@ -10393,17 +10383,17 @@
     "Platform Extension Actions": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 313,
+        "line": 315,
         "level": 3,
         "title": "Platform Extension Actions"
       }
     ],
-    "Platform Extension Actions (call / Api Methods)": [
+    "Platform Extension Actions (call / Api methods)": [
       {
         "document": "platform-guide/yunhu.md",
         "line": 30,
         "level": 3,
-        "title": "Platform Extension Actions (call / Api Methods)"
+        "title": "Platform Extension Actions (call / Api methods)"
       }
     ],
     "Platform Extension Fields": [
@@ -10554,20 +10544,20 @@
         "title": "Platform-specific Event Types"
       }
     ],
-    "Platform-specific Extension Methods": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 992,
-        "level": 3,
-        "title": "Platform-specific Extension Methods"
-      }
-    ],
     "Platform-specific Methods": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 545,
         "level": 3,
         "title": "Platform-specific Methods"
+      }
+    ],
+    "Platform-specific methods": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 1001,
+        "level": 3,
+        "title": "Platform-specific methods"
       }
     ],
     "Platforms Supported": [
@@ -10637,7 +10627,7 @@
     "Proactive GC Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 387,
+        "line": 400,
         "level": 3,
         "title": "Proactive GC Configuration"
       }
@@ -10824,6 +10814,14 @@
         "title": "Quality Checklist"
       }
     ],
+    "Query Bot Status": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 367,
+        "level": 3,
+        "title": "Query Bot Status"
+      }
+    ],
     "Query Methods": [
       {
         "document": "platform-guide/onebot11.md",
@@ -10840,12 +10838,12 @@
         "title": "Query Registered Methods"
       }
     ],
-    "Querying Bot Status": [
+    "Query Supported Sending Methods": [
       {
         "document": "api-reference/adapter-system.md",
-        "line": 367,
+        "line": 129,
         "level": 3,
-        "title": "Querying Bot Status"
+        "title": "Query Supported Sending Methods"
       }
     ],
     "Querying Data": [
@@ -10862,14 +10860,6 @@
         "line": 535,
         "level": 4,
         "title": "Querying Registered Platform Methods"
-      }
-    ],
-    "Querying Supported Sending Methods": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 129,
-        "level": 3,
-        "title": "Querying Supported Sending Methods"
       }
     ],
     "Quick Build Mode (Static)": [
@@ -11108,6 +11098,14 @@
         "title": "Register API"
       }
     ],
+    "Register Middleware": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 70,
+        "level": 3,
+        "title": "Register Middleware"
+      }
+    ],
     "Registering Commands": [
       {
         "document": "api-reference/event-system.md",
@@ -11140,14 +11138,6 @@
         "title": "Registering Handlers"
       }
     ],
-    "Registering Middleware": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 70,
-        "level": 3,
-        "title": "Registering Middleware"
-      }
-    ],
     "Registering an Entry": [
       {
         "document": "advanced/router.md",
@@ -11174,8 +11164,20 @@
     ],
     "Related Documentation": [
       {
+        "document": "advanced/conversation.md",
+        "line": 419,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
         "document": "advanced/http-client.md",
         "line": 482,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "advanced/interaction.md",
+        "line": 214,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11223,7 +11225,7 @@
       },
       {
         "document": "advanced/storage-backends.md",
-        "line": 142,
+        "line": 147,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11307,7 +11309,7 @@
       },
       {
         "document": "standards/README.md",
-        "line": 105,
+        "line": 115,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -11319,18 +11321,6 @@
       }
     ],
     "Related Documents": [
-      {
-        "document": "advanced/conversation.md",
-        "line": 416,
-        "level": 2,
-        "title": "Related Documents"
-      },
-      {
-        "document": "advanced/interaction.md",
-        "line": 214,
-        "level": 2,
-        "title": "Related Documents"
-      },
       {
         "document": "advanced/sql-builder.md",
         "line": 436,
@@ -11526,6 +11516,14 @@
         "title": "Request Correlation ID (X-Request-ID)"
       }
     ],
+    "Request Event Handling": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 652,
+        "level": 2,
+        "title": "Request Event Handling"
+      }
+    ],
     "Request Event Methods": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -11599,7 +11597,7 @@
     "Request Operations": [
       {
         "document": "standards/README.md",
-        "line": 99,
+        "line": 109,
         "level": 3,
         "title": "Request Operations"
       }
@@ -11658,6 +11656,12 @@
     ],
     "Required Fields": [
       {
+        "document": "bug-tracker.md",
+        "line": 16,
+        "level": 3,
+        "title": "Required Fields"
+      },
+      {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 754,
         "level": 3,
@@ -11715,7 +11719,7 @@
     "Resume Equals Takeover": [
       {
         "document": "advanced/conversation.md",
-        "line": 332,
+        "line": 335,
         "level": 3,
         "title": "Resume Equals Takeover"
       }
@@ -11774,12 +11778,6 @@
         "title": "Return Values of Send Methods"
       },
       {
-        "document": "platform-guide/yunhu.md",
-        "line": 340,
-        "level": 2,
-        "title": "Return Values of Send Methods"
-      },
-      {
         "document": "platform-guide/yunhu_user.md",
         "line": 204,
         "level": 2,
@@ -11797,7 +11795,7 @@
     "Reverse Conversion": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 464,
+        "line": 460,
         "level": 3,
         "title": "Reverse Conversion"
       }
@@ -12091,17 +12089,17 @@
     "Scope Configuration (scope)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 549,
+        "line": 562,
         "level": 2,
         "title": "Scope Configuration (scope)"
       }
     ],
-    "Scope Filtering: Why My Module Didn't Receive Messages": [
+    "Scope Filtering: Why My Module Didn't Receive the Message": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 468,
+        "line": 477,
         "level": 2,
-        "title": "Scope Filtering: Why My Module Didn't Receive Messages"
+        "title": "Scope Filtering: Why My Module Didn't Receive the Message"
       }
     ],
     "Search Functionality": [
@@ -12147,9 +12145,17 @@
     "Selection menu (choose)": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 836,
+        "line": 845,
         "level": 3,
         "title": "Selection menu (choose)"
+      }
+    ],
+    "Send A2UI message": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 506,
+        "level": 1,
+        "title": "Send A2UI message"
       }
     ],
     "Send Message": [
@@ -12184,14 +12190,6 @@
         "title": "Send Method Chaining"
       }
     ],
-    "Send Method Naming": [
-      {
-        "document": "standards/README.md",
-        "line": 92,
-        "level": 3,
-        "title": "Send Method Naming"
-      }
-    ],
     "Send Method Return Values": [
       {
         "document": "platform-guide/discord.md",
@@ -12216,12 +12214,18 @@
         "line": 470,
         "level": 2,
         "title": "Send Method Return Values"
+      },
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 342,
+        "level": 2,
+        "title": "Send Method Return Values"
       }
     ],
     "Send Methods": [
       {
         "document": "standards/send-method-spec.md",
-        "line": 457,
+        "line": 446,
         "level": 3,
         "title": "Send Methods"
       }
@@ -12266,6 +12270,22 @@
         "title": "Send Rule System"
       }
     ],
+    "Send message with buttons to group": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 492,
+        "level": 1,
+        "title": "Send message with buttons to group"
+      }
+    ],
+    "Send message with buttons to private chat": [
+      {
+        "document": "platform-guide/yunhu.md",
+        "line": 495,
+        "level": 1,
+        "title": "Send message with buttons to private chat"
+      }
+    ],
     "SendDSL Explained": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -12296,20 +12316,6 @@
         "line": 176,
         "level": 4,
         "title": "Sender Information"
-      }
-    ],
-    "Sending A2UI Messages": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 497,
-        "level": 3,
-        "title": "Sending A2UI Messages"
-      },
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 505,
-        "level": 1,
-        "title": "Sending A2UI Messages"
       }
     ],
     "Sending Embed Messages": [
@@ -12350,6 +12356,14 @@
         "title": "Sending Media Messages"
       }
     ],
+    "Sending Method Naming": [
+      {
+        "document": "standards/README.md",
+        "line": 92,
+        "level": 3,
+        "title": "Sending Method Naming"
+      }
+    ],
     "Sending Method Return Values": [
       {
         "document": "platform-guide/email.md",
@@ -12374,22 +12388,6 @@
         "title": "Sending Rendered Results"
       }
     ],
-    "Sending a Message with Buttons to a Group": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 491,
-        "level": 1,
-        "title": "Sending a Message with Buttons to a Group"
-      }
-    ],
-    "Sending a Message with Buttons to a User's Private Chat": [
-      {
-        "document": "platform-guide/yunhu.md",
-        "line": 494,
-        "level": 1,
-        "title": "Sending a Message with Buttons to a User's Private Chat"
-      }
-    ],
     "Sending a Reply": [
       {
         "document": "getting-started/first-bot.md",
@@ -12409,7 +12407,7 @@
     "Server Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 229,
+        "line": 233,
         "level": 2,
         "title": "Server Configuration"
       }
@@ -12460,28 +12458,28 @@
         "title": "Session Identifiers"
       }
     ],
-    "Session Inbox: `event.history`": [
+    "Session Inbox: event.history": [
       {
         "document": "advanced/interaction.md",
         "line": 169,
         "level": 2,
-        "title": "Session Inbox: `event.history`"
+        "title": "Session Inbox: event.history"
       }
     ],
-    "Session Mutual Exclusion: `acquire` / `hold` / `get_owner_of`": [
+    "Session Mutual Exclusion: acquire / hold / get_owner_of": [
       {
         "document": "advanced/interaction.md",
         "line": 138,
         "level": 2,
-        "title": "Session Mutual Exclusion: `acquire` / `hold` / `get_owner_of`"
+        "title": "Session Mutual Exclusion: acquire / hold / get_owner_of"
       }
     ],
-    "Session Timers: `remind` / `escalate`": [
+    "Session Timers: remind / escalate": [
       {
         "document": "advanced/interaction.md",
         "line": 75,
         "level": 2,
-        "title": "Session Timers: `remind` / `escalate`"
+        "title": "Session Timers: remind / escalate"
       }
     ],
     "Severity Classification": [
@@ -12593,9 +12591,17 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 377,
+        "line": 379,
         "level": 3,
         "title": "Special Field Examples"
+      }
+    ],
+    "Specify Sending Account": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 119,
+        "level": 3,
+        "title": "Specify Sending Account"
       }
     ],
     "Specifying Account for Sending": [
@@ -12604,14 +12610,6 @@
         "line": 952,
         "level": 3,
         "title": "Specifying Account for Sending"
-      }
-    ],
-    "Specifying Sending Account": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 119,
-        "level": 3,
-        "title": "Specifying Sending Account"
       }
     ],
     "SseEmitter API": [
@@ -12677,7 +12675,7 @@
     "Standard API Actions (ApiDSL)": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 266,
+        "line": 268,
         "level": 2,
         "title": "Standard API Actions (ApiDSL)"
       }
@@ -12885,7 +12883,7 @@
     "Storage Configuration": [
       {
         "document": "user-guide/configuration.md",
-        "line": 431,
+        "line": 444,
         "level": 2,
         "title": "Storage Configuration"
       }
@@ -12931,7 +12929,7 @@
     "Strict Mode": [
       {
         "document": "user-guide/configuration.md",
-        "line": 402,
+        "line": 415,
         "level": 3,
         "title": "Strict Mode"
       }
@@ -12947,7 +12945,7 @@
     "Subcommands": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 283,
+        "line": 296,
         "level": 3,
         "title": "Subcommands"
       }
@@ -13073,7 +13071,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 60,
+        "line": 61,
         "level": 2,
         "title": "Supported Message Sending Types"
       }
@@ -13119,7 +13117,7 @@
     "Supported Standard Actions": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 293,
+        "line": 295,
         "level": 3,
         "title": "Supported Standard Actions"
       }
@@ -13293,7 +13291,7 @@
     "TestBot API": [
       {
         "document": "developer-guide/testing.md",
-        "line": 53,
+        "line": 55,
         "level": 2,
         "title": "TestBot API"
       }
@@ -13342,6 +13340,14 @@
         "line": 180,
         "level": 2,
         "title": "Timeouts and Retries"
+      }
+    ],
+    "Tool Module Guide: Handling References to Other Modules": [
+      {
+        "document": "advanced/ownership.md",
+        "line": 234,
+        "level": 2,
+        "title": "Tool Module Guide: Handling References to Other Modules"
       }
     ],
     "Topology API": [
@@ -13464,18 +13470,18 @@
         "title": "Type Stub Generation (IDE Completion)"
       }
     ],
-    "Typical Flow Patterns": [
+    "Typical Workflow Patterns": [
       {
         "document": "advanced/conversation.md",
-        "line": 356,
+        "line": 359,
         "level": 2,
-        "title": "Typical Flow Patterns"
+        "title": "Typical Workflow Patterns"
       }
     ],
     "Unified Event Override Configuration (event.overrides)": [
       {
         "document": "user-guide/configuration.md",
-        "line": 595,
+        "line": 608,
         "level": 2,
         "title": "Unified Event Override Configuration (event.overrides)"
       }
@@ -13545,7 +13551,7 @@
       },
       {
         "document": "platform-guide/yunhu.md",
-        "line": 356,
+        "line": 358,
         "level": 2,
         "title": "Unique Event Types"
       },
@@ -13607,7 +13613,7 @@
     "Unsupported Standard Actions": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 306,
+        "line": 308,
         "level": 3,
         "title": "Unsupported Standard Actions"
       }
@@ -13714,6 +13720,14 @@
         "title": "Usage Instructions"
       }
     ],
+    "Use Adapter Event Listeners": [
+      {
+        "document": "api-reference/adapter-system.md",
+        "line": 19,
+        "level": 3,
+        "title": "Use Adapter Event Listeners"
+      }
+    ],
     "User Data Storage": [
       {
         "document": "getting-started/common-tasks.md",
@@ -13733,7 +13747,7 @@
     "User Priority: Master Scope Decided by User": [
       {
         "document": "user-guide/configuration.md",
-        "line": 313,
+        "line": 327,
         "level": 3,
         "title": "User Priority: Master Scope Decided by User"
       }
@@ -13760,14 +13774,6 @@
         "line": 82,
         "level": 3,
         "title": "UserAPI Example"
-      }
-    ],
-    "Using Adapter Event Listeners": [
-      {
-        "document": "api-reference/adapter-system.md",
-        "line": 19,
-        "level": 3,
-        "title": "Using Adapter Event Listeners"
       }
     ],
     "Using Discord-Specific Methods": [
@@ -13843,7 +13849,7 @@
     "Using Send DSL to Specify Bot": [
       {
         "document": "platform-guide/yunhu.md",
-        "line": 661,
+        "line": 664,
         "level": 3,
         "title": "Using Send DSL to Specify Bot"
       }
@@ -13918,12 +13924,12 @@
         "title": "Using pip Installation"
       }
     ],
-    "Using the reply method to send responses": [
+    "Using the reply method to send replies": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 723,
+        "line": 732,
         "level": 3,
-        "title": "Using the reply method to send responses"
+        "title": "Using the reply method to send replies"
       }
     ],
     "Using with Send": [
@@ -14028,6 +14034,14 @@
         "title": "Wait Reply Functionality"
       }
     ],
+    "Wait for any event (wait_for)": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 898,
+        "level": 3,
+        "title": "Wait for any event (wait_for)"
+      }
+    ],
     "Waiting for Replies": [
       {
         "document": "api-reference/event-system.md",
@@ -14036,12 +14050,12 @@
         "title": "Waiting for Replies"
       }
     ],
-    "Waiting for Reply: `wait_reply`": [
+    "Waiting for Reply: wait_reply": [
       {
         "document": "advanced/interaction.md",
         "line": 12,
         "level": 2,
-        "title": "Waiting for Reply: `wait_reply`"
+        "title": "Waiting for Reply: wait_reply"
       }
     ],
     "Waiting for Results": [
@@ -14052,18 +14066,10 @@
         "title": "Waiting for Results"
       }
     ],
-    "Waiting for any event (wait_for)": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 889,
-        "level": 3,
-        "title": "Waiting for any event (wait_for)"
-      }
-    ],
     "Waiting for user reply": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 751,
+        "line": 760,
         "level": 3,
         "title": "Waiting for user reply"
       }
@@ -14071,7 +14077,7 @@
     "Waiting reply with callback": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 798,
+        "line": 807,
         "level": 3,
         "title": "Waiting reply with callback"
       }
@@ -14079,7 +14085,7 @@
     "Waiting reply with validation": [
       {
         "document": "getting-started/event-handling.md",
-        "line": 771,
+        "line": 780,
         "level": 3,
         "title": "Waiting reply with validation"
       }
@@ -14272,20 +14278,20 @@
         "title": "Why is a Standard Needed?"
       }
     ],
+    "Wildcard and Regex Listening": [
+      {
+        "document": "getting-started/event-handling.md",
+        "line": 66,
+        "level": 3,
+        "title": "Wildcard and Regex Listening"
+      }
+    ],
     "Wildcards": [
       {
         "document": "advanced/lifecycle.md",
         "line": 53,
         "level": 3,
         "title": "Wildcards"
-      }
-    ],
-    "Wildcards and Regular Expression Listening": [
-      {
-        "document": "getting-started/event-handling.md",
-        "line": 66,
-        "level": 3,
-        "title": "Wildcards and Regular Expression Listening"
       }
     ],
     "Windows PowerShell Execution Policy": [
@@ -14326,194 +14332,194 @@
         "title": "Yunhu User Platform Features Documentation"
       }
     ],
-    "[BUG-001] Event handler registration duplication causing multiple event processing": [
+    "[BUG-001] Event handler registration duplication causes multiple event triggers": [
       {
         "document": "bug-tracker.md",
-        "line": 115,
+        "line": 116,
         "level": 3,
-        "title": "[BUG-001] Event handler registration duplication causing multiple event processing"
+        "title": "[BUG-001] Event handler registration duplication causes multiple event triggers"
       }
     ],
     "[BUG-002] Init command adapter configuration path type error": [
       {
         "document": "bug-tracker.md",
-        "line": 135,
+        "line": 136,
         "level": 3,
         "title": "[BUG-002] Init command adapter configuration path type error"
       }
     ],
-    "[BUG-003] Commands fail after restart": [
+    "[BUG-003] Commands fail to trigger after restart": [
       {
         "document": "bug-tracker.md",
-        "line": 159,
+        "line": 160,
         "level": 3,
-        "title": "[BUG-003] Commands fail after restart"
+        "title": "[BUG-003] Commands fail to trigger after restart"
       }
     ],
-    "[BUG-004] Lifecycle event handlers not cleaned up": [
+    "[BUG-004] Lifecycle event handlers not cleared": [
       {
         "document": "bug-tracker.md",
-        "line": 179,
+        "line": 180,
         "level": 3,
-        "title": "[BUG-004] Lifecycle event handlers not cleaned up"
+        "title": "[BUG-004] Lifecycle event handlers not cleared"
       }
     ],
     "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard": [
       {
         "document": "bug-tracker.md",
-        "line": 199,
+        "line": 200,
         "level": 3,
         "title": "[BUG-005] Event.is_friend_add/is_friend_delete detail_type inconsistent with OB12 standard"
       }
     ],
-    "[BUG-006] adapter.clear() not clearing _started_instances causing incorrect state after restart": [
+    "[BUG-006] adapter.clear() does not clear _started_instances, causing incorrect state after restart": [
       {
         "document": "bug-tracker.md",
-        "line": 219,
+        "line": 220,
         "level": 3,
-        "title": "[BUG-006] adapter.clear() not clearing _started_instances causing incorrect state after restart"
+        "title": "[BUG-006] adapter.clear() does not clear _started_instances, causing incorrect state after restart"
       }
     ],
     "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()": [
       {
         "document": "bug-tracker.md",
-        "line": 239,
+        "line": 240,
         "level": 3,
         "title": "[BUG-007] command.wait_reply() uses deprecated asyncio.get_event_loop()"
       }
     ],
-    "[BUG-008] Bot offline event duplicated during shutdown": [
+    "[BUG-008] Bot offline event is repeatedly submitted during shutdown": [
       {
         "document": "bug-tracker.md",
-        "line": 259,
+        "line": 260,
         "level": 3,
-        "title": "[BUG-008] Bot offline event duplicated during shutdown"
+        "title": "[BUG-008] Bot offline event is repeatedly submitted during shutdown"
       }
     ],
-    "[BUG-009] LazyModule synchronous access to BaseModule causing incomplete initialization": [
+    "[BUG-009] LazyModule synchronous access to BaseModule leads to incomplete initialization": [
       {
         "document": "bug-tracker.md",
-        "line": 279,
+        "line": 280,
         "level": 3,
-        "title": "[BUG-009] LazyModule synchronous access to BaseModule causing incomplete initialization"
+        "title": "[BUG-009] LazyModule synchronous access to BaseModule leads to incomplete initialization"
       }
     ],
-    "[BUG-010] Multi-threaded configuration system write causing data loss": [
+    "[BUG-010] Multi-threaded configuration system write leads to data loss": [
       {
         "document": "bug-tracker.md",
-        "line": 299,
+        "line": 300,
         "level": 3,
-        "title": "[BUG-010] Multi-threaded configuration system write causing data loss"
+        "title": "[BUG-010] Multi-threaded configuration system write leads to data loss"
       }
     ],
-    "[BUG-011] Windows Ctrl+C unable to stop program": [
+    "[BUG-011] Windows Ctrl+C cannot stop the program": [
       {
         "document": "bug-tracker.md",
-        "line": 322,
+        "line": 323,
         "level": 3,
-        "title": "[BUG-011] Windows Ctrl+C unable to stop program"
+        "title": "[BUG-011] Windows Ctrl+C cannot stop the program"
       }
     ],
-    "[BUG-012] Hot restart after module update not生效": [
+    "[BUG-012] Hot restart does not activate updated module Python code": [
       {
         "document": "bug-tracker.md",
-        "line": 346,
+        "line": 347,
         "level": 3,
-        "title": "[BUG-012] Hot restart after module update not生效"
+        "title": "[BUG-012] Hot restart does not activate updated module Python code"
       }
     ],
-    "[BUG-013] Module load strategy sorting logic error": [
+    "[BUG-013] Module loading strategy sorting logic error": [
       {
         "document": "bug-tracker.md",
-        "line": 366,
+        "line": 367,
         "level": 3,
-        "title": "[BUG-013] Module load strategy sorting logic error"
+        "title": "[BUG-013] Module loading strategy sorting logic error"
       }
     ],
-    "[BUG-014] Adapter middleware returning None causing event data loss": [
+    "[BUG-014] Adapter middleware returning None causes event data loss": [
       {
         "document": "bug-tracker.md",
-        "line": 386,
+        "line": 387,
         "level": 3,
-        "title": "[BUG-014] Adapter middleware returning None causing event data loss"
+        "title": "[BUG-014] Adapter middleware returning None causes event data loss"
       }
     ],
     "[BUG-015] Configuration file path depends on working directory": [
       {
         "document": "bug-tracker.md",
-        "line": 406,
+        "line": 407,
         "level": 3,
         "title": "[BUG-015] Configuration file path depends on working directory"
       }
     ],
-    "[BUG-016] BaseStorage confusing storing None value with missing key": [
+    "[BUG-016] BaseStorage confuses storing None value with missing key": [
       {
         "document": "bug-tracker.md",
-        "line": 426,
+        "line": 427,
         "level": 3,
-        "title": "[BUG-016] BaseStorage confusing storing None value with missing key"
+        "title": "[BUG-016] BaseStorage confuses storing None value with missing key"
       }
     ],
     "[BUG-017] WebSocket route auto_accept flag lost after service restart": [
       {
         "document": "bug-tracker.md",
-        "line": 446,
+        "line": 447,
         "level": 3,
         "title": "[BUG-017] WebSocket route auto_accept flag lost after service restart"
       }
     ],
-    "[BUG-018] HTTP/WS client concurrent calls causing crashes and connection leaks": [
+    "[BUG-018] Concurrent calls to HTTP/WS client cause crashes and connection leaks": [
       {
         "document": "bug-tracker.md",
-        "line": 466,
+        "line": 467,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS client concurrent calls causing crashes and connection leaks"
+        "title": "[BUG-018] Concurrent calls to HTTP/WS client cause crashes and connection leaks"
       }
     ],
-    "[BUG-019] Adapter hot reload route conflict causing reload failure": [
+    "[BUG-019] Adapter hot reload causes route conflicts and reload failure": [
       {
         "document": "bug-tracker.md",
-        "line": 494,
+        "line": 495,
         "level": 3,
-        "title": "[BUG-019] Adapter hot reload route conflict causing reload failure"
+        "title": "[BUG-019] Adapter hot reload causes route conflicts and reload failure"
       }
     ],
-    "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in script directory": [
+    "[BUG-020] Subprocess mode `ep run <script>` cannot find sub-packages in the script's directory": [
       {
         "document": "bug-tracker.md",
-        "line": 518,
+        "line": 519,
         "level": 3,
-        "title": "[BUG-020] Subprocess mode `ep run <script>` cannot find subpackages in script directory"
+        "title": "[BUG-020] Subprocess mode `ep run <script>` cannot find sub-packages in the script's directory"
       }
     ],
-    "[BUG-021] SQL query builder rejects valid wildcards and list expressions": [
+    "[BUG-021] SQL Query Builder rejects valid wildcard and list expressions": [
       {
         "document": "bug-tracker.md",
-        "line": 538,
+        "line": 539,
         "level": 3,
-        "title": "[BUG-021] SQL query builder rejects valid wildcards and list expressions"
+        "title": "[BUG-021] SQL Query Builder rejects valid wildcard and list expressions"
       }
     ],
     "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)": [
       {
         "document": "bug-tracker.md",
-        "line": 568,
+        "line": 569,
         "level": 3,
         "title": "[BUG-022] _resolve_account() account resolution regression (_accounts_data not populated)"
       }
     ],
-    "[BUG-023] Adapter cache not refreshed after account configuration change causing account resolution failure": [
+    "[BUG-023] Cache not refreshed after account configuration modification leads to account resolution failure": [
       {
         "document": "bug-tracker.md",
-        "line": 607,
+        "line": 608,
         "level": 3,
-        "title": "[BUG-023] Adapter cache not refreshed after account configuration change causing account resolution failure"
+        "title": "[BUG-023] Cache not refreshed after account configuration modification leads to account resolution failure"
       }
     ],
     "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill": [
       {
         "document": "bug-tracker.md",
-        "line": 627,
+        "line": 628,
         "level": 3,
         "title": "[BUG-024] storage.set() writing large numeric ID keys triggers OOM Kill"
       }
@@ -14521,7 +14527,7 @@
     "[BUG-025] on_config_update callback not triggered by core routes": [
       {
         "document": "bug-tracker.md",
-        "line": 673,
+        "line": 674,
         "level": 3,
         "title": "[BUG-025] on_config_update callback not triggered by core routes"
       }
@@ -14529,63 +14535,63 @@
     "[BUG-026] notice/request event reply target inference error": [
       {
         "document": "bug-tracker.md",
-        "line": 703,
+        "line": 704,
         "level": 3,
         "title": "[BUG-026] notice/request event reply target inference error"
       }
     ],
-    "[BUG-027] Route rate-limiting cleanup task uses fixed window causing long-window rules to fail": [
+    "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limit rules to fail": [
       {
         "document": "bug-tracker.md",
-        "line": 734,
+        "line": 735,
         "level": 3,
-        "title": "[BUG-027] Route rate-limiting cleanup task uses fixed window causing long-window rules to fail"
+        "title": "[BUG-027] Route rate limiting cleanup task uses fixed window causing long window rate limit rules to fail"
       }
     ],
-    "[BUG-029] Configuration listener broadcasts incomplete TOML and silently swallows exceptions": [
+    "[BUG-029] Configuration listener task broadcasts incomplete TOML and silently swallows exceptions": [
       {
         "document": "bug-tracker.md",
-        "line": 766,
+        "line": 767,
         "level": 3,
-        "title": "[BUG-029] Configuration listener broadcasts incomplete TOML and silently swallows exceptions"
+        "title": "[BUG-029] Configuration listener task broadcasts incomplete TOML and silently swallows exceptions"
       }
     ],
-    "[BUG-030] Configuration watcher race causes setConfig delay write to silently drop data": [
+    "[BUG-030] Configuration watcher race condition causes setConfig delayed write silently drops data": [
       {
         "document": "bug-tracker.md",
-        "line": 802,
+        "line": 803,
         "level": 3,
-        "title": "[BUG-030] Configuration watcher race causes setConfig delay write to silently drop data"
+        "title": "[BUG-030] Configuration watcher race condition causes setConfig delayed write silently drops data"
       }
     ],
-    "[BUG-032] Configuration delay write period \"write-then-read\" reads old values": [
+    "[BUG-032] Configuration delay write period \"write after read\" reads old value": [
       {
         "document": "bug-tracker.md",
-        "line": 838,
+        "line": 839,
         "level": 3,
-        "title": "[BUG-032] Configuration delay write period \"write-then-read\" reads old values"
+        "title": "[BUG-032] Configuration delay write period \"write after read\" reads old value"
       }
     ],
-    "[BUG-033] wait_reply hung reply is starved by high-priority handlers": [
+    "[BUG-033] wait_reply hangs replies are starved by high-priority handlers": [
       {
         "document": "bug-tracker.md",
-        "line": 860,
+        "line": 861,
         "level": 3,
-        "title": "[BUG-033] wait_reply hung reply is starved by high-priority handlers"
+        "title": "[BUG-033] wait_reply hangs replies are starved by high-priority handlers"
       }
     ],
-    "[BUG-034] Scope persist=False runtime binding is silently overridden by subsequent configuration writes": [
+    "[BUG-034] Scope persist=False runtime binding is silently overwritten by any subsequent configuration write": [
       {
         "document": "bug-tracker.md",
-        "line": 882,
+        "line": 883,
         "level": 3,
-        "title": "[BUG-034] Scope persist=False runtime binding is silently overridden by subsequent configuration writes"
+        "title": "[BUG-034] Scope persist=False runtime binding is silently overwritten by any subsequent configuration write"
       }
     ],
     "[BUG-035] Configuration panel select options and dict fields render as [object Object]": [
       {
         "document": "bug-tracker.md",
-        "line": 902,
+        "line": 903,
         "level": 3,
         "title": "[BUG-035] Configuration panel select options and dict fields render as [object Object]"
       }
@@ -14593,17 +14599,33 @@
     "[BUG-036] Multi-instance shared configuration directory causes occasional configuration write failures (ENOENT)": [
       {
         "document": "bug-tracker.md",
-        "line": 920,
+        "line": 921,
         "level": 3,
         "title": "[BUG-036] Multi-instance shared configuration directory causes occasional configuration write failures (ENOENT)"
       }
     ],
-    "[BUG-037] Empty space command name registration never triggers": [
+    "[BUG-037] Space-separated command names registered but never triggered": [
       {
         "document": "bug-tracker.md",
-        "line": 946,
+        "line": 947,
         "level": 3,
-        "title": "[BUG-037] Empty space command name registration never triggers"
+        "title": "[BUG-037] Space-separated command names registered but never triggered"
+      }
+    ],
+    "[BUG-038] persist=False runtime binding is written to disk along with persistent write, \"revived\" from disk after module unload": [
+      {
+        "document": "bug-tracker.md",
+        "line": 971,
+        "level": 3,
+        "title": "[BUG-038] persist=False runtime binding is written to disk along with persistent write, \"revived\" from disk after module unload"
+      }
+    ],
+    "[BUG-039] Conflicting reads and writes of sections and dot-separated keys (dot-separated overwrite lost)": [
+      {
+        "document": "bug-tracker.md",
+        "line": 995,
+        "level": 3,
+        "title": "[BUG-039] Conflicting reads and writes of sections and dot-separated keys (dot-separated overwrite lost)"
       }
     ],
     "__init__.py": [
@@ -14614,28 +14636,12 @@
         "title": "__init__.py"
       }
     ],
-    "`@conv.branch(name)` Decorator": [
-      {
-        "document": "advanced/conversation.md",
-        "line": 202,
-        "level": 3,
-        "title": "`@conv.branch(name)` Decorator"
-      }
-    ],
     "`__init__` Notes": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 388,
         "level": 2,
         "title": "`__init__` Notes"
-      }
-    ],
-    "`escalate`: Guaranteed escalation at a specific time": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 96,
-        "level": 3,
-        "title": "`escalate`: Guaranteed escalation at a specific time"
       }
     ],
     "`hasattr` / `dir` Support": [
@@ -14660,14 +14666,6 @@
         "line": 38,
         "level": 3,
         "title": "`keep_running` Parameter"
-      }
-    ],
-    "`remind`: Remind if no reply": [
-      {
-        "document": "advanced/interaction.md",
-        "line": 79,
-        "level": 3,
-        "title": "`remind`: Remind if no reply"
       }
     ],
     "`t()` Method Details": [
@@ -14734,12 +14732,12 @@
         "title": "confirm(prompt=None, **kwargs)"
       }
     ],
-    "connect — Connection Online": [
+    "connect — Connect Online": [
       {
         "document": "api-reference/adapter-system.md",
         "line": 265,
         "level": 4,
-        "title": "connect — Connection Online"
+        "title": "connect — Connect Online"
       }
     ],
     "conv.context": [
@@ -14790,12 +14788,12 @@
         "title": "detail_type Mapping"
       }
     ],
-    "disconnect — Disconnection": [
+    "disconnect — Disconnect": [
       {
         "document": "api-reference/adapter-system.md",
         "line": 305,
         "level": 4,
-        "title": "disconnect — Disconnection"
+        "title": "disconnect — Disconnect"
       }
     ],
     "discord_embed Message Segment": [
@@ -14836,6 +14834,14 @@
         "line": 413,
         "level": 3,
         "title": "dump_state()"
+      }
+    ],
+    "escalate: Guaranteed Delivery at a Certain Time": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 96,
+        "level": 3,
+        "title": "escalate: Guaranteed Delivery at a Certain Time"
       }
     ],
     "get() Method": [
@@ -15004,6 +15010,14 @@
         "line": 19,
         "level": 2,
         "title": "pyproject.toml Configuration"
+      }
+    ],
+    "remind: Remind if No Reply": [
+      {
+        "document": "advanced/interaction.md",
+        "line": 79,
+        "level": 3,
+        "title": "remind: Remind if No Reply"
       }
     ],
     "run": [

@@ -20,7 +20,7 @@
           "icon": "fa-bolt"
         },
         {
-          "title": "架構概要",
+          "title": "アーキテクチャ概要",
           "path": "architecture.md",
           "level": 1,
           "icon": "fa-sitemap"
@@ -343,7 +343,7 @@
           "icon": "fa-book"
         },
         {
-          "title": "アダプターシステム API",
+          "title": "アダプタシステム API",
           "path": "api-reference/adapter-system.md",
           "level": 1,
           "icon": "fa-network-wired"

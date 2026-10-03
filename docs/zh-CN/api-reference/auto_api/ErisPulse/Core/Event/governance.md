@@ -23,20 +23,23 @@ ErisPulse 命令治理模块
 ## 函数列表
 
 
-### `parse_rate_limit(spec: str)`
+### `parse_rate_limit(spec: str) -> 'tuple[int, float]'`
 
 解析限流声明（如 ``"5/minute"``、``"10/s"``）为 (次数, 窗口秒)
 
 滑动窗口语义：窗口内至多放行 ``次数`` 次，超出静默丢弃。单位支持
 second / minute / hour / day（含单字母缩写与可选数值前缀，大小写不敏感）。
 
-- **spec** (`限流声明字符串`): **返回值** (`(limit,`): window_seconds)
+- **spec**: 限流声明字符串
+
+**返回值**: (limit, window_seconds)
+
 **异常**: `ValueError` - 语法非法或数值非正时
 
 ---
 
 
-### `parse_usage(spec: str)`
+### `parse_usage(spec: str) -> 'tuple[int, str] | str'`
 
 解析配额声明（如 ``"3/day"``）为 (次数, 周期单位)
 
@@ -44,31 +47,36 @@ second / minute / hour / day（含单字母缩写与可选数值前缀，大小�
 当日 00:00 起，次日自动重置），与 :func:`parse_rate_limit` 的滑动窗口
 相区分（rate_limit 防瞬时刷屏，usage_limit 管业务配额）。
 
-- **spec** (`配额声明字符串`): **返回值** (`(limit,`): unit)；语法非法时返回错误描述字符串（调用方包装 ValueError）
+- **spec**: 配额声明字符串
+
+**返回值**: (limit, unit)；语法非法时返回错误描述字符串（调用方包装 ValueError）
 
 ---
 
 
-### `usage_period_key(unit: str)`
+### `usage_period_key(unit: str) -> str`
 
 计算当前自然周期的标识键（本地时区）
 
-> **内部方法**
+**内部方法**
 供分发期配额判定使用；周期切换键随之变化即自动重置
 
-- **unit** (`周期单位（minute`): / hour / day）
-**返回值** (`周期键（如`): ``"2026-09-21"``）
+- **unit**: 周期单位（minute / hour / day）
+
+**返回值**: 周期键（如 ``"2026-09-21"``）
 
 ---
 
 
-### `cooldown_scope_key(kind: str, event: 'Event')`
+### `cooldown_scope_key(kind: str, event: 'Event') -> str`
 
-> **内部方法**
+**内部方法**
 计算冷却作用域键（复用 ``platform:bot:目标`` 会话键体系）
 
-- **kind** (`粒度（user`): / session / global，注册期已校验）
-- **event** (`事件数据`): **返回值**: 作用域键字符串
+- **kind**: 粒度（user / session / global，注册期已校验）
+- **event**: 事件数据
+
+**返回值**: 作用域键字符串
 
 ---
 
@@ -83,7 +91,7 @@ second / minute / hour / day（含单字母缩写与可选数值前缀，大小�
 持有冷却 / 限流 / 配额三张进程内状态表，提供分发期三段判定与生命周期清理。
 由 CommandHandler 组合持有（``self._gate``），状态表经其同名 property 透出。
 
-> **内部方法**
+**内部方法**
 判定均位于全部权限检查与参数解析通过之后、实际执行之前：
 无权限用户不触发计时，参数错误不消耗；命中默认静默丢弃
 （命令已认领，不漏给低优先级消息处理器），声明了 ``*_reply=`` 时在
@@ -94,9 +102,27 @@ second / minute / hour / day（含单字母缩写与可选数值前缀，大小�
 #### 方法列表
 
 
-##### `clear_command(main_name: str)`
+##### `_maybe_sweep(now: float) -> None`
 
-> **内部方法**
+**内部方法**
+机会式清扫：状态表超容量上限时移除已失效条目，防止 7x24 常驻进程下
+状态表随 用户数x时间 无界增长（容量上限见 ``constants.GOVERNANCE_STATE_MAX_ENTRIES``）
+
+- **now**: 当前 ``time.monotonic()`` 时刻
+
+---
+
+
+##### `_sweep_usage_period(u_period: str, sep: str) -> None`
+
+**内部方法** 配额表超容量时清除已过自然周期的条目（周期切换即失效）
+
+---
+
+
+##### `clear_command(main_name: str) -> None`
+
+**内部方法**
 按命令主名前缀清理三张状态表（模块卸载自动清理）
 
 - **main_name**: 命令主名
@@ -104,50 +130,66 @@ second / minute / hour / day（含单字母缩写与可选数值前缀，大小�
 ---
 
 
-##### `clear_all()`
+##### `clear_all() -> None`
 
-> **内部方法** 清空全部治理状态（_clear_commands 调用）
+**内部方法** 清空全部治理状态（_clear_commands 调用）
 
 ---
 
 
-##### `async check_cooldown(main_name: str, actual_cmd_name: str, effective: dict[str, Any], event: 'Event', send_reply: Any)`
+##### `async check_cooldown(main_name: str, actual_cmd_name: str, effective: dict[str, Any], event: 'Event', send_reply: Any) -> bool`
 
-> **内部方法**
+**内部方法**
 冷却判定（cooldown=）：执行前即开始计时，实际冷却窗口不受处理耗时影响
 
-- **main_name** (`命令主名（状态表键前缀）`): - **actual_cmd_name**: 实际调用的命令名（日志 / trace 展示）
-- **effective** (`合并覆写后的命令生效参数`): - **event**: 事件数据
-- **send_reply** (`回复回调（``await`): send_reply(event, text)``）
-**返回值** (`True`): 表示已拦截（静默丢弃或已回复）
+- **main_name**: 命令主名（状态表键前缀）
+- **actual_cmd_name**: 实际调用的命令名（日志 / trace 展示）
+- **effective**: 合并覆写后的命令生效参数
+- **event**: 事件数据
+- **send_reply**: 回复回调（``await send_reply(event, text)``）
+
+**返回值**: True 表示已拦截（静默丢弃或已回复）
 
 ---
 
 
-##### `async check_rate_limit(main_name: str, actual_cmd_name: str, effective: dict[str, Any], event: 'Event', send_reply: Any)`
+##### `async check_rate_limit(main_name: str, actual_cmd_name: str, effective: dict[str, Any], event: 'Event', send_reply: Any) -> bool`
 
-> **内部方法**
+**内部方法**
 限流判定（rate_limit=，滑动窗口）：与冷却同位次序——权限与参数通过后、
 实际执行前计数；窗口满时默认静默丢弃（可选回复）
 
-- **main_name** (`命令主名（状态表键前缀）`): - **actual_cmd_name**: 实际调用的命令名（日志 / trace 展示）
-- **effective** (`合并覆写后的命令生效参数`): - **event**: 事件数据
-- **send_reply** (`回复回调（``await`): send_reply(event, text)``）
-**返回值** (`True`): 表示已拦截（静默丢弃或已回复）
+- **main_name**: 命令主名（状态表键前缀）
+- **actual_cmd_name**: 实际调用的命令名（日志 / trace 展示）
+- **effective**: 合并覆写后的命令生效参数
+- **event**: 事件数据
+- **send_reply**: 回复回调（``await send_reply(event, text)``）
+
+**返回值**: True 表示已拦截（静默丢弃或已回复）
 
 ---
 
 
-##### `async check_usage(main_name: str, actual_cmd_name: str, effective: dict[str, Any], event: 'Event', send_reply: Any)`
+##### `async check_usage(main_name: str, actual_cmd_name: str, effective: dict[str, Any], event: 'Event', send_reply: Any) -> bool`
 
-> **内部方法**
+**内部方法**
 配额判定（usage=，自然周期）：与限流同位次序；计数经 storage KV
 持久化（重启不丢），存储异常时回退进程内内存计数（不阻塞命令）
 
-- **main_name** (`命令主名（状态表键前缀）`): - **actual_cmd_name**: 实际调用的命令名（日志 / trace 展示）
-- **effective** (`合并覆写后的命令生效参数`): - **event**: 事件数据
-- **send_reply** (`回复回调（``await`): send_reply(event, text)``）
-**返回值** (`True`): 表示已拦截（静默丢弃或已回复）
+- **main_name**: 命令主名（状态表键前缀）
+- **actual_cmd_name**: 实际调用的命令名（日志 / trace 展示）
+- **effective**: 合并覆写后的命令生效参数
+- **event**: 事件数据
+- **send_reply**: 回复回调（``await send_reply(event, text)``）
+
+**返回值**: True 表示已拦截（静默丢弃或已回复）
+
+---
+
+
+##### `async _check_usage_locked(main_name: str, actual_cmd_name: str, effective: dict[str, Any], event: 'Event', send_reply: Any, u_limit: int, u_scope: str, u_period: str, u_key: str, sep: str, storage: Any) -> bool`
+
+**内部方法** 配额判定主体（持有 ``u_key`` 互斥锁时调用）
 
 ---
 

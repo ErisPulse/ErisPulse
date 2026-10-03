@@ -16,7 +16,7 @@ config.full.example 完整配置参考生成器（runtime / CLI 共用）
   自动刷新（新增配置项 / 新装组件的配置段会补进来）
 - 用户删除/改动首行标记 → 视为手动接管，框架不再触碰该文件
 
-> **内部方法**
+**内部方法**
 
 ---
 
@@ -30,7 +30,7 @@ config.full.example 完整配置参考生成器（runtime / CLI 共用）
 ---
 
 
-### `render_full_example(adapter_list = None, st = None)`
+### `render_full_example(adapter_list = None, st = None) -> str`
 
 生成完整的配置示例文本
 
@@ -38,14 +38,16 @@ config.full.example 完整配置参考生成器（runtime / CLI 共用）
 （文案跟随 CLI / Core 语言，缺失回退英文）与已安装组件声明式配置段。
 
 - **adapter_list** (`已废弃`): 适配器名称列表；状态示例段不再罗列具体适配器
+
     （未配置即默认启用，预写 false 会误导），保留参数仅为兼容既有调用方
 - **st** (`ScaffoldText`): 实例（None 时按当前语言构造）
+
 **返回值**: 完整配置示例字符串
 
 ---
 
 
-### `_component_sections(st)`
+### `_component_sections(st) -> list[str]`
 
 渲染已安装适配器/模块的声明式配置段（追加到 full.example 末尾）
 
@@ -55,12 +57,13 @@ config.full.example 完整配置参考生成器（runtime / CLI 共用）
 仅记录在本示例文件中供用户按需启用）。
 
 - **st** (`ScaffoldText`): 文案工具实例
+
 **返回值**: 行列表（无已配置组件时为空）
 
 ---
 
 
-### `ensure_full_example(config_dir: str | Path | None = None)`
+### `ensure_full_example(config_dir: str | Path | None = None) -> Path | None`
 
 确保 config.full.example 存在 / 随生成器版本刷新
 
@@ -68,8 +71,9 @@ config.full.example 完整配置参考生成器（runtime / CLI 共用）
 - 首行为本模块标记且 ``gen`` 与当前不一致 → 刷新（补新增配置项与组件段）
 - 首行非本模块标记（用户手动接管）或 gen 一致 → 不触碰
 
-- **config_dir** (`配置目录（None`): 时取 ``cwd/config``）
-**返回值** (`被写入的路径；无需写入时返回`): None
+- **config_dir**: 配置目录（None 时取 ``cwd/config``）
+
+**返回值**: 被写入的路径；无需写入时返回 None
 
 ---
 

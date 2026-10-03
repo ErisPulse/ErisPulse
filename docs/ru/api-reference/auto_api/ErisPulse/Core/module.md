@@ -29,20 +29,21 @@ ErisPulse 模块系统
 #### 方法列表
 
 
-##### `_warn_deprecated_kwarg(owner: str, old: str, new: str)`
+##### `_warn_deprecated_kwarg(owner: str, old: str, new: str) -> None`（staticmethod）
 
-> **内部方法**
+**内部方法**
 当检测到使用已弃用的旧关键字参数时，记录一次弃用日志并说明迁移方式
 
-- **owner** (`所属方法名（如`): "ModuleManager.get"）
-- **old** (`已弃用的旧参数名`): - **new**: 推荐使用的新参数名
+- **owner**: 所属方法名（如 "ModuleManager.get"）
+- **old**: 已弃用的旧参数名
+- **new**: 推荐使用的新参数名
 
 ---
 
 
-##### `_unload_timeout()`
+##### `_unload_timeout() -> float`（staticmethod）
 
-> **内部方法**
+**内部方法**
 读取模块 on_unload 优雅收尾的超时（秒）
 
 复用 ``ErisPulse.framework.uninit_timeout`` 配置（反初始化流程的统一超时预算，
@@ -53,19 +54,20 @@ ErisPulse 模块系统
 ---
 
 
-##### `set_sdk_ref(sdk)`
+##### `set_sdk_ref(sdk) -> bool`
 
 设置 SDK 引用
 
 - **sdk** (`SDK`): 实例
+
 **返回值** (`bool`): 是否设置成功
 
 ---
 
 
-##### `_register_config_change_routing()`
+##### `_register_config_change_routing() -> None`
 
-> **内部方法**
+**内部方法**
 注册 config.set / config.updated 事件订阅，将配置变更路由到各模块的 on_config_update
 
 - ``config.set``：代码或 Dashboard 调用 setConfig 时即时触发（单 key 变更）
@@ -74,25 +76,25 @@ ErisPulse 模块系统
 ---
 
 
-##### `_on_config_set(data: dict)`
+##### `_on_config_set(data: dict) -> None`
 
-> **内部方法**
+**内部方法**
 处理 config.set 事件：找出受影响的模块并触发 on_config_update
 
 ---
 
 
-##### `_on_config_updated(data: dict)`
+##### `_on_config_updated(data: dict) -> None`
 
-> **内部方法**
+**内部方法**
 处理 config.updated 事件：对比新旧配置树，找出配置变化的模块并触发 on_config_update
 
 ---
 
 
-##### `_cleanup_lazy(module_name: str)`
+##### `_cleanup_lazy(module_name: str) -> None`
 
-> **内部方法**
+**内部方法**
 清理模块的懒加载代理与 SDK 属性（模块未实例化时也有效）
 
 - **module_name**: 模块名称
@@ -100,95 +102,111 @@ ErisPulse 模块系统
 ---
 
 
-##### `_resolve_config_key(instance: Any)`
+##### `_resolve_config_key(instance: Any) -> str`（staticmethod）
 
-> **内部方法**
+**内部方法**
 解析模块的配置键名（优先用注入的注册名，回退类名）
 
 ---
 
 
-##### `_notify_config_update(instance: Any, module_name: str, old_dict: dict | None, new_dict: dict | None)`
+##### `_notify_config_update(instance: Any, module_name: str, old_dict: dict | None, new_dict: dict | None) -> None`
 
-> **内部方法**
+**内部方法**
 调用模块的 on_config_update 回调，传入类型安全的配置对象
 
-- **instance** (`模块实例`): - **module_name**: 模块名（用于日志）
-- **old_dict** (`变更前的配置字典（可能为`): None）
-- **new_dict** (`变更后的配置字典（可能为`): None）
+- **instance**: 模块实例
+- **module_name**: 模块名（用于日志）
+- **old_dict**: 变更前的配置字典（可能为 None）
+- **new_dict**: 变更后的配置字典（可能为 None）
 
 ---
 
 
-##### `register(name: str | None = None, class_type: type | None = None, info: dict | None = None)`
+##### `register(name: str | None = None, class_type: type | None = None, info: dict | None = None, *, module_name: str | None = None, module_class: type | None = None, module_info: dict | None = None) -> bool`
 
 注册模块类
 
-- **name** (`模块名称`): - **class_type**: 模块类
-- **info** (`模块信息`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+- **name**: 模块名称
+- **class_type**: 模块类
+- **info**: 模块信息
+- **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
 - **module_class** (`已弃用`): 兼容旧关键字参数，等同 class_type
 - **module_info** (`已弃用`): 兼容旧关键字参数，等同 info
-**返回值** (`是否注册成功`): **异常**: `TypeError` - 当模块类无效时抛出
+
+**返回值**: 是否注册成功
+
+**异常**: `TypeError` - 当模块类无效时抛出
 
 **示例**:
+
 ```python
->>> module.register("MyModule", MyModuleClass)
+module.register("MyModule", MyModuleClass)
 ```
 
 ---
 
 
-##### `register_lazy(name: str, lazy_proxy: Any)`
+##### `register_lazy(name: str, lazy_proxy: Any) -> None`
 
 注册懒加载代理
 
-- **name** (`模块名称`): - **lazy_proxy**: 懒加载代理对象（LazyModule）
+- **name**: 模块名称
+- **lazy_proxy**: 懒加载代理对象（LazyModule）
 
-> **内部方法**
+**内部方法**
 由加载器在创建 LazyModule 后调用。注册后 get() 会返回该代理，
 从而使“懒加载对用户透明”：已注册但未加载的模块不再返回 None。
 
 ---
 
 
-##### `unregister_lazy(name: str)`
+##### `unregister_lazy(name: str) -> None`
 
 取消注册懒加载代理
 
-- **name** (`模块名称`): > **内部方法**
+- **name**: 模块名称
+
+**内部方法**
 卸载/取消注册模块时调用，保持 _lazy_modules 与实际挂载状态一致。
 
 ---
 
 
-##### `async load(name: str | None = None)`
+##### `async load(name: str | None = None, *, module_name: str | None = None) -> bool`
 
 加载指定模块（标准化加载逻辑）
 
-- **name** (`模块名称`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
-**返回值** (`是否加载成功`): 
+- **name**: 模块名称
+- **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+
+**返回值**: 是否加载成功
+
 **示例**:
+
 ```python
->>> await module.load("MyModule")
+await module.load("MyModule")
 ```
 
 ---
 
 
-##### `_collect_dependents(name: str)`
+##### `_collect_dependents(name: str) -> list[str]`
 
-> **内部方法**
+**内部方法**
 收集直接或间接依赖指定模块的模块闭包（BFS）
 
 返回顺序为由近及远（直接依赖者在前、间接依赖者在后）；
 卸载时应按相反顺序执行，保证每个依赖者卸载时其依赖仍可用。
 
-- **name** (`目标模块名`): **返回值** (`依赖者模块名列表（不含`): name 本身）
+- **name**: 目标模块名
+
+**返回值**: 依赖者模块名列表（不含 name 本身）
 
 ---
 
 
-##### `async unload(name: str | None = None)`
+##### `async unload(name: str | None = None, *, module_name: str | None = None, purge: bool = False) -> bool`
 
 卸载指定模块或所有模块
 
@@ -205,20 +223,24 @@ ErisPulse 模块系统
   可被 GC 回收（解决 NoneBot 式卸载后插件与依赖内存不释放的问题）；
   级联卸载的依赖者同样被 purge。卸载后重新加载需重新 `register()`
 
-- **name** (`模块名称，None表示卸载所有模块（默认None）`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
-- **purge** (`是否一并删除注册存根并清理`): sys.modules（默认 False）
-**返回值** (`是否卸载成功`): 
+- **name**: 模块名称，None表示卸载所有模块（默认None）
+- **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+- **purge**: 是否一并删除注册存根并清理 sys.modules（默认 False）
+
+**返回值**: 是否卸载成功
+
 **示例**:
+
 ```python
->>> await module.unload("MyModule")  # 卸载单个模块（依赖者级联卸载）
->>> await module.unload("MyModule", purge=True)  # 彻底卸载（释放类引用）
->>> await module.unload()  # 卸载所有模块
+await module.unload("MyModule")  # 卸载单个模块（依赖者级联卸载）
+await module.unload("MyModule", purge=True)  # 彻底卸载（释放类引用）
+await module.unload()  # 卸载所有模块
 ```
 
 ---
 
 
-##### `async reload(name: str)`
+##### `async reload(name: str, *, full: bool = False) -> bool`
 
 热重载单个模块（支持任意来源：本地插件 / PyPI 安装包）
 
@@ -227,31 +249,64 @@ ErisPulse 模块系统
 本地插件（``plugins/`` 目录）来源重扫描插件目录；PyPI 安装包来源
 重新查询 entry-point 并重导入模块代码（pip 升级后调用即可生效）。
 
-- **name** (`模块名（entry-point`): 名称或插件名）
-**返回值** (`是否重载成功（SDK`): 未初始化时返回 False）
+``full=True`` 启用全量重载：``sys.modules`` 清理名单在元数据之外
+叠加旧模块对象顶层包名（元数据缺失也能彻底刷新 import 缓存），
+且依赖者模块同样重导代码。
+
+- **name**: 模块名（entry-point 名称或插件名）
+- **full**: 是否全量重载（默认 False）
+
+**返回值**: 是否重载成功（SDK 未初始化时返回 False）
 
 **示例**:
+
 ```python
->>> await sdk.module.reload("dice")      # 本地插件
->>> await sdk.module.reload("Weather")   # PyPI 安装包模块
+await sdk.module.reload("dice")      # 本地插件
+await sdk.module.reload("Weather")   # PyPI 安装包模块
+await sdk.module.reload("Weather", full=True)  # 全量重载
 ```
 
 ---
 
 
-##### `async _unload_single_module(module_name: str)`
+##### `async reload_all() -> 'dict[str, bool]'`
 
-> **内部方法**
-卸载单个模块
+全量热重载所有已注册模块（尽力而为语义）
 
-- **module_name** (`模块名称`): **返回值**: 是否卸载成功
+经模块加载器执行 卸载全部 → 清理全部 ``sys.modules`` 子树 →
+重新发现/注册 → 按依赖拓扑序加载 → 此前已加载的懒加载模块重新
+激活 流程，一次刷新全部模块代码（pip 批量升级后调用即可全部生效）。
+单模块失败仅记录诊断并跳过，不影响其余模块；无整体回滚——
+on_unload 副作用不可撤销，与单模块热重载语义一致。
+
+**返回值**: 模块注册名 → 是否重载成功（发现阶段即失败的模块不在结果中；
+
+         SDK 未初始化时返回空字典）
+
+**示例**:
+
+```python
+await sdk.module.reload_all()
+```
 
 ---
 
 
-##### `async _half_unload_failed_module(module_name: str, instance: Any)`
+##### `async _unload_single_module(module_name: str) -> bool`
 
-> **内部方法**
+**内部方法**
+卸载单个模块
+
+- **module_name**: 模块名称
+
+**返回值**: 是否卸载成功
+
+---
+
+
+##### `async _half_unload_failed_module(module_name: str, instance: Any) -> None`
+
+**内部方法**
 加载失败（on_load 异常 / 构造后阶段异常）时的半卸载
 
 对已构造实例按正常卸载同序触发资源回收（on_unload → 取消归属
@@ -263,14 +318,15 @@ ErisPulse 模块系统
 ``on_unload`` 已执行的副作用（断连等）与正常卸载一致不可撤销，
 但实例与注册资源不再泄漏。
 
-- **module_name** (`模块注册名`): - **instance**: 已构造的实例（构造函数本身抛异常时为 None）
+- **module_name**: 模块注册名
+- **instance**: 已构造的实例（构造函数本身抛异常时为 None）
 
 ---
 
 
-##### `_cleanup_module_registrations(module_name: str)`
+##### `_cleanup_module_registrations(module_name: str) -> None`
 
-> **内部方法**
+**内部方法**
 清理模块在加载上下文内注册的全部框架资源（unload / disable 共用）
 
 委托归属权统一门面（``Core/ownership``）完成：i18n 翻译域、路由
@@ -284,54 +340,62 @@ provider、生命周期钩子。每步失败仅记录日志，不中断后续清
 ---
 
 
-##### `audit(module_name: str, deep: bool = False)`
+##### `audit(module_name: str, deep: bool = False) -> 'dict[str, Any]'`
 
 归属权泄漏审计（透传归属权统一门面）
 
-- **module_name** (`目标模块名`): - **deep**: 附带 gc 实例普查（weakref 存活检查 + 引用方类型；
+- **module_name**: 目标模块名
+- **deep**: 附带 gc 实例普查（weakref 存活检查 + 引用方类型；
+
              有全局暂停开销，仅显式排障使用）
-**返回值** (`审计报告`): dict（owner / counts / orphans / 深普查结果）
+**返回值**: 审计报告 dict（owner / counts / orphans / 深普查结果）
 
 **示例**:
+
 ```python
->>> report = sdk.module.audit("roll", deep=True)
->>> report["instance_recyclable"]
+report = sdk.module.audit("roll", deep=True)
+report["instance_recyclable"]
 True
 ```
 
 ---
 
 
-##### `is_shadow_module(module_name: str)`
+##### `is_shadow_module(module_name: str) -> bool`
 
 判断模块名是否为影子 owner（拓扑 / Dashboard 展示用）
 
-- **module_name** (`模块名`): **返回值** (`是否为影子`): owner
+- **module_name**: 模块名
+
+**返回值**: 是否为影子 owner
 
 ---
 
 
-##### `async shadow_start(module_name: str, source: 'str | Any', owner: 'str | None' = None)`
+##### `async shadow_start(module_name: str, source: 'str | Any', owner: 'str | None' = None) -> str`
 
 启动影子：把新版代码以独立 owner 装载为 ``module_name`` 的影子实例
 （运行时 API；模块代码零改动，影子的出站被拦截记账、不真正发出）
 
-- **module_name** (`被`): shadow 的已加载模块名
-- **source** (`新版代码路径（目录含`): ``__init__.py`` 或单 ``.py`` 文件；
+- **module_name**: 被 shadow 的已加载模块名
+- **source**: 新版代码路径（目录含 ``__init__.py`` 或单 ``.py`` 文件；
+
                建议放在 plugins 目录之外）
-- **owner** (`影子`): owner 名（默认取路径名）
-**返回值** (`影子`): owner 名
+- **owner**: 影子 owner 名（默认取路径名）
+
+**返回值**: 影子 owner 名
 
 **示例**:
+
 ```python
->>> await sdk.module.shadow_start("roll", source="downloads/roll_v2")
+await sdk.module.shadow_start("roll", source="downloads/roll_v2")
 'roll_shadow'
 ```
 
 ---
 
 
-##### `async promote_shadow(module_name: str)`
+##### `async promote_shadow(module_name: str) -> bool`
 
 影子转正：卸载当前版本 → 影子以真名注册加载 → 失败自动回滚
 
@@ -339,84 +403,100 @@ True
 继续服务（尽力而为语义：on_unload 已执行的副作用不可撤销）。转正后
 请尽快持久化安装新版本（pip 升级 / 替换插件文件），使重启后仍生效。
 
-- **module_name** (`原模块名`): **返回值** (`是否转正成功`): **异常**: `ValueError` - 该模块未绑定影子时
+- **module_name**: 原模块名
+
+**返回值**: 是否转正成功
+
+**异常**: `ValueError` - 该模块未绑定影子时
 
 **示例**:
+
 ```python
->>> await sdk.module.promote_shadow("roll")
+await sdk.module.promote_shadow("roll")
 ```
 
 ---
 
 
-##### `async dismiss_shadow(module_name: str)`
+##### `async dismiss_shadow(module_name: str) -> bool`
 
 放弃影子：回收影子资源并解除绑定（原模块不受影响）
 
-- **module_name** (`原模块名`): **返回值** (`是否成功（未绑定影子时`): False）
+- **module_name**: 原模块名
+
+**返回值**: 是否成功（未绑定影子时 False）
 
 **示例**:
+
 ```python
->>> await sdk.module.dismiss_shadow("roll")
+await sdk.module.dismiss_shadow("roll")
 ```
 
 ---
 
 
-##### `shadow_diff(module_name: str)`
+##### `shadow_diff(module_name: str) -> 'dict[str, Any]'`
 
 影子与线上的行为对比（影子意向出站 × transcript 实际发送，按 trace_id 对齐）
 
-- **module_name** (`原模块名`): **返回值** (`对比报告`): dict（shadow_owner / count / aligned）
+- **module_name**: 原模块名
+
+**返回值**: 对比报告 dict（shadow_owner / count / aligned）
 
 **示例**:
+
 ```python
->>> report = sdk.module.shadow_diff("roll")
->>> report["count"]
+report = sdk.module.shadow_diff("roll")
+report["count"]
 3
 ```
 
 ---
 
 
-##### `_purge_module_stub(module_name: str)`
+##### `_purge_module_stub(module_name: str) -> tuple[str, Any, Any]`
 
-> **内部方法**
+**内部方法**
 删除模块注册存根，释放模块类引用（并清理插件来源的 sys.modules）
 
 返回 (module_name, class_weakref, instance_weakref) 供回收诊断。
 
-- **module_name** (`模块名`): **返回值** (`供`): `_report_purge_recyclability` 消费的弱引用三元组
+- **module_name**: 模块名
+
+**返回值**: 供 `_report_purge_recyclability` 消费的弱引用三元组
 
 ---
 
 
-##### `_purge_sys_modules(module_name: str, top_level: list[str])`
+##### `_purge_sys_modules(module_name: str, top_level: list[str]) -> None`（staticmethod）
 
-> **内部方法**
+**内部方法**
 从 sys.modules 移除插件自身模块与其子包（保守：不清理第三方/共享库）
 
-- **module_name** (`插件模块名`): - **top_level**: 顶层包名列表（用于清理包内子模块）
+- **module_name**: 插件模块名
+- **top_level**: 顶层包名列表（用于清理包内子模块）
 
 ---
 
 
-##### `_report_purge_recyclability(refs: list[tuple[str, Any, Any]])`
+##### `_report_purge_recyclability(refs: list[tuple[str, Any, Any]]) -> None`
 
-> **内部方法**
+**内部方法**
 purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出引用方
 
-- **refs** (``_purge_module_stub``): 产出的 (name, class_ref, instance_ref) 列表
+- **refs**: `_purge_module_stub` 产出的 (name, class_ref, instance_ref) 列表
 
 ---
 
 
-##### `get(name: str | None = None)`
+##### `get(name: str | None = None, *, module_name: str | None = None) -> '_TModule | Any | None'`
 
 获取模块实例或懒加载代理
 
-- **name** (`模块名称`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
-**返回值** (`模块实例`): / 懒加载代理 / None
+- **name**: 模块名称
+- **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+
+**返回值**: 模块实例 / 懒加载代理 / None
 
 > **提示**
 > 不会触发加载。返回值优先级：
@@ -428,22 +508,28 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
 > 由于框架通过 entry_points 动态发现模块，入口点无法静态获知
 > 具体模块类型；返回值为泛型 ``_TModule``（默认基类）。
 > 若调用方与模块同项目且能导入模块类，可添加类型注解获得更精确补全：
-> >>> my_module: MyModule = sdk.module.get("MyModule")
+> ```python
+> my_module: MyModule = sdk.module.get("MyModule")
+> ```
+>
 
 **示例**:
+
 ```python
->>> my_module = module.get("MyModule")
+my_module = module.get("MyModule")
 ```
 
 ---
 
 
-##### `exists(name: str | None = None)`
+##### `exists(name: str | None = None, *, module_name: str | None = None) -> bool`
 
 检查模块是否已注册
 
-- **name** (`模块名称`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
-**返回值** (`模块是否已注册（即`): module.register() 已被调用）
+- **name**: 模块名称
+- **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+
+**返回值**: 模块是否已注册（即 module.register() 已被调用）
 
 > **提示**
 > exists() 只检查模块类是否已注册到管理器，用于验证模块是否可以加载。
@@ -452,95 +538,115 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
 ---
 
 
-##### `is_loaded(name: str | None = None)`
+##### `is_loaded(name: str | None = None, *, module_name: str | None = None) -> bool`
 
 检查模块是否已加载
 
-- **name** (`模块名称`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
-**返回值** (`模块是否已加载`): 
+- **name**: 模块名称
+- **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+
+**返回值**: 模块是否已加载
+
 **示例**:
+
 ```python
->>> if module.is_loaded("MyModule"):
-...     ...
+if module.is_loaded("MyModule"):
+    ...
 ```
 
 ---
 
 
-##### `is_running(name: str | None = None)`
+##### `is_running(name: str | None = None, *, module_name: str | None = None) -> bool`
 
 检查模块是否正在运行（已加载）
 
-- **name** (`模块名称`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
-**返回值** (`模块是否正在运行`): 
+- **name**: 模块名称
+- **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+
+**返回值**: 模块是否正在运行
+
 **示例**:
+
 ```python
->>> if module.is_running("MyModule"):
->>>     print("MyModule 正在运行")
+if module.is_running("MyModule"):
+    print("MyModule 正在运行")
 ```
 
 ---
 
 
-##### `list_running()`
+##### `list_running() -> list[str]`
 
 列出所有正在运行的模块（已加载）
 
-**返回值** (`模块名称列表`): 
+**返回值**: 模块名称列表
+
 **示例**:
+
 ```python
->>> running = module.list_running()
->>> print("正在运行的模块:", running)
+running = module.list_running()
+print("正在运行的模块:", running)
 ```
 
 ---
 
 
-##### `list_registered()`
+##### `list_registered() -> list[str]`
 
 列出所有已注册的模块
 
-**返回值** (`模块名称列表`): 
+**返回值**: 模块名称列表
+
 **示例**:
+
 ```python
->>> registered = module.list_registered()
+registered = module.list_registered()
 ```
 
 ---
 
 
-##### `list_loaded()`
+##### `list_loaded() -> list[str]`
 
 列出所有已加载的模块
 
-**返回值** (`模块名称列表`): 
+**返回值**: 模块名称列表
+
 **示例**:
+
 ```python
->>> loaded = module.list_loaded()
+loaded = module.list_loaded()
 ```
 
 ---
 
 
-##### `_config_register(module_name: str, enabled: bool = DEFAULT_MODULE_ENABLED)`
+##### `_config_register(module_name: str, enabled: bool = DEFAULT_MODULE_ENABLED) -> bool`
 
 注册新模块信息
 
-> **内部方法**
+**内部方法**
 此方法仅供内部使用
 
-- **module_name** (`模块名称`): - **enabled**: 是否启用模块 (默认: DEFAULT_MODULE_ENABLED)
+- **module_name**: 模块名称
+- **enabled**: 是否启用模块 (默认: DEFAULT_MODULE_ENABLED)
+
 **返回值**: 是否操作成功
 
 ---
 
 
-##### `is_enabled(name: str | None = None)`
+##### `is_enabled(name: str | None = None, *, module_name: str | None = None) -> bool`
 
 检查模块是否启用
 
-- **name** (`模块名称`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
-**返回值** (`模块是否启用`): > **提示**
+- **name**: 模块名称
+- **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+
+**返回值**: 模块是否启用
+
+> **提示**
 > 模块启用条件：
 > 1. 模块在配置文件中（ErisPulse.modules.status.{module_name} 存在）
 > 2. 配置值为启用状态
@@ -549,50 +655,56 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
 ---
 
 
-##### `enable(name: str | None = None)`
+##### `enable(name: str | None = None, *, module_name: str | None = None) -> bool`
 
 启用模块
 
 - **name** (`str`): 模块名称
 - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+
 **返回值** (`bool`): 操作是否成功
 
 ---
 
 
-##### `disable(name: str | None = None)`
+##### `disable(name: str | None = None, *, module_name: str | None = None) -> bool`
 
 禁用模块
 
 - **name** (`str`): 模块名称
 - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+
 **返回值** (`bool`): 操作是否成功
 
 ---
 
 
-##### `unregister(name: str | None = None)`
+##### `unregister(name: str | None = None, *, module_name: str | None = None) -> bool`
 
 取消注册模块
 
-- **name** (`模块名称`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
-**返回值** (`是否取消成功`): > **内部方法**
+- **name**: 模块名称
+- **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+
+**返回值**: 是否取消成功
+
+**内部方法**
 注意：此方法仅取消注册，不卸载已加载的模块
 
 ---
 
 
-##### `clear()`
+##### `clear() -> None`
 
 清除所有模块实例和类
 
-> **内部方法**
+**内部方法**
 此方法用于反初始化时完全重置模块管理器状态
 
 ---
 
 
-##### `list_items()`
+##### `list_items() -> dict[str, bool]`
 
 列出所有模块状态
 
@@ -603,21 +715,25 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
 ---
 
 
-##### `get_info(name: str | None = None)`
+##### `get_info(name: str | None = None, *, module_name: str | None = None) -> dict | None`
 
 获取模块信息
 
-- **name** (`模块名称`): - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
-**返回值** (`模块信息字典，不存在则返回None`): 
+- **name**: 模块名称
+- **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
+
+**返回值**: 模块信息字典，不存在则返回None
+
 **示例**:
+
 ```python
->>> info = module.get_info("MyModule")
+info = module.get_info("MyModule")
 ```
 
 ---
 
 
-##### `get_meta(name: str | None = None)`
+##### `get_meta(name: str | None = None, *, resolve_i18n: bool = True, module_name: str | None = None) -> dict | None`
 
 获取模块的介绍元信息（描述这个模块是什么、属于哪一类等）
 
@@ -631,38 +747,42 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
 
 解析优先级：模块类声明的 ``get_meta()`` > 注册时传入的 ``info``，缺失字段自动补全。
 
-- **name** (`模块名称`): - **resolve_i18n**: 是否解析 i18n 字典为当前语言文本（默认 True）
+- **name**: 模块名称
+- **resolve_i18n**: 是否解析 i18n 字典为当前语言文本（默认 True）
 - **module_name** (`已弃用`): 兼容旧关键字参数，等同 name
-**返回值** (`元信息字典，模块未注册时返回`): None
+
+**返回值**: 元信息字典，模块未注册时返回 None
 
 **示例**:
+
 ```python
->>> meta = module.get_meta("Weather")
->>> meta["description"]  # 当前语言下的模块简介
+meta = module.get_meta("Weather")
+meta["description"]  # 当前语言下的模块简介
 ```
 
 ---
 
 
-##### `_resolve_meta_value(value: Any)`
+##### `_resolve_meta_value(value: Any) -> Any`（staticmethod）
 
-> **内部方法**
+**内部方法**
 解析元信息字段值：i18n 字典 → 当前语言文本；其余原样返回
 
-- **value** (`原始值（str`): 或 {"i18n": ..., "default": ...}）
+- **value**: 原始值（str 或 {"i18n": ..., "default": ...}）
+
 **返回值**: 解析后的值
 
 ---
 
 
-##### `_commands_of(module_name: str)`
+##### `_commands_of(module_name: str) -> list[str]`
 
-> **内部方法** 列出该模块注册的主命令名
+**内部方法** 列出该模块注册的主命令名
 
 ---
 
 
-##### `get_commands_overview()`
+##### `get_commands_overview(*, event: Any = None, platform: str | None = None, bot_id: str | None = None, session_id: str | None = None) -> dict[str, dict[str, Any]]`
 
 获取命令总览（模块 meta + 其注册的命令，按模块聚合）
 
@@ -673,67 +793,75 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
 传入作用域上下文（``event`` 或 ``platform`` / ``bot_id`` / ``session_id``
 任一）时，当前会话不可用模块不进入总览（会话感知总览）。
 
-- **event** (`可选，事件上下文（Event`): 或 dict）
-- **platform** (`可选，平台名（与`): event 叠加时显式参数优先）
-- **bot_id** (`可选，Bot`): 标识
-- **session_id** (`可选，会话标识`): **返回值** (`{模块名:`): {"meta": {...}, "commands": [{name, aliases, group, help, hidden}]}}
+- **event**: 可选，事件上下文（Event 或 dict）
+- **platform**: 可选，平台名（与 event 叠加时显式参数优先）
+- **bot_id**: 可选，Bot 标识
+- **session_id**: 可选，会话标识
+
+**返回值**: {模块名: {"meta": {...}, "commands": [{name, aliases, group, help, hidden}]}}
 
 **示例**:
+
 ```python
->>> overview = module.get_commands_overview()
->>> overview["Weather"]["meta"]["description"]
+overview = module.get_commands_overview()
+overview["Weather"]["meta"]["description"]
 "查询城市天气"
->>> overview["Weather"]["commands"][0]["name"]
+overview["Weather"]["commands"][0]["name"]
 "weather"
->>> overview = module.get_commands_overview(event=event)   # 会话感知
+overview = module.get_commands_overview(event=event)   # 会话感知
 ```
 
 ---
 
 
-##### `get_status_summary()`
+##### `get_status_summary() -> dict[str, Any]`
 
 获取模块的完整状态摘要
 
 便于WebUI展示所有模块的注册、加载和启用状态，
 包含已禁用模块以便于管理。
 
-**返回值** (`状态摘要字典`): 
+**返回值**: 状态摘要字典
+
 **示例**:
+
 ```python
->>> summary = module.get_status_summary()
->>> # {
->>> #     "modules": {
->>> #         "MyModule": {
->>> #             "status": "loaded",
->>> #             "enabled": True,
->>> #             "is_base_module": True
->>> #         },
->>> #         "DisabledModule": {
->>> #             "status": "disabled",
->>> #             "enabled": False,
->>> #             "is_base_module": None
->>> #         }
->>> #     }
->>> # }
+summary = module.get_status_summary()
+# {
+#     "modules": {
+#         "MyModule": {
+#             "status": "loaded",
+#             "enabled": True,
+#             "is_base_module": True
+#         },
+#         "DisabledModule": {
+#             "status": "disabled",
+#             "enabled": False,
+#             "is_base_module": None
+#         }
+#     }
+# }
 ```
 
 ---
 
 
-##### `get_topology()`
+##### `get_topology(*, json_safe: bool = True) -> dict[str, Any]`
 
 获取模块的拓扑树数据（便于 WebUI 展示）
 
 聚合每个模块拥有的命令、事件处理器、路由与生命周期钩子，
 按 owner（模块名）归并，展示模块与资源的归属关系。
 
-- **json_safe** (`是否输出可直接`): JSON 序列化的安全结构（默认 True）。
+- **json_safe**: 是否输出可直接 JSON 序列化的安全结构（默认 True）。
+
                   安全模式下 ``info`` 只保留纯数据的 ``meta`` 子表
                   （丢弃 ``module_class`` / ``strategy`` 等运行时对象），
                   并对整树做序列化兜底净化。
 
-**返回值** (`拓扑树字典`): {"modules": {name: {
+**返回值**: 拓扑树字典
+
+    {"modules": {name: {
         "loaded": bool, "enabled": bool,
         "load_strategy": {"lazy": bool|None, "priority": int|None},
         "info": dict|None,
@@ -746,96 +874,109 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
     }}}
 
 **示例**:
+
 ```python
->>> topology = module.get_topology()
->>> print(topology["modules"]["Chat"]["commands"])
+topology = module.get_topology()
+print(topology["modules"]["Chat"]["commands"])
 ["chat"]
 ```
 
 ---
 
 
-##### `_parse_replay_duration(value: Any)`
+##### `_parse_replay_duration(value: Any) -> float`（classmethod）
 
-> **内部方法**
+**内部方法**
 解析回放时长声明（``"5m"`` / ``"1h"`` / ``"300"``）
 
-- **value** (`时长值`): **返回值**: 秒数
+- **value**: 时长值
+
+**返回值**: 秒数
 
 ---
 
 
-##### `_build_replay_event(record: dict[str, Any])`
+##### `_build_replay_event(record: dict[str, Any]) -> Any | None`
 
-> **内部方法**
+**内部方法**
 从收件箱记录构造回放合成事件
 
 合成事件带 ``replayed: True`` 标志（处理器可据此跳过副作用）；
 ``user_id`` 优先取记录的 sender，私聊场景回退为 target。
 
-- **record** (`收件箱记录（role`): / text / ts / sender / session_key）
-**返回值** (`合成事件（Event）；无法解析会话键时返回`): None
+- **record**: 收件箱记录（role / text / ts / sender / session_key）
+
+**返回值**: 合成事件（Event）；无法解析会话键时返回 None
 
 ---
 
 
-##### `async _replay_events(module_name: str, replay: Any)`
+##### `async _replay_events(module_name: str, replay: Any) -> None`
 
-> **内部方法**
+**内部方法**
 执行冷启动事件回放：收件箱最近消息 → 仅分发给该模块的处理器
 
-- **module_name** (`模块名`): - **replay**: 回放时长声明（"5m" / "1h" / 秒数）
+- **module_name**: 模块名
+- **replay**: 回放时长声明（"5m" / "1h" / 秒数）
 
 ---
 
 
-##### `_resolve_services(module_name: str)`
+##### `_resolve_services(module_name: str) -> 'list[dict[str, Any]] | None'`
 
-> **内部方法**
+**内部方法**
 解析模块的服务契约（get_meta().services），规范化为字典列表
 
-- **module_name** (`模块名称`): **返回值** (```[{"name":`): ..., "description": <str|i18n dict|None>}, ...]``；
+- **module_name**: 模块名称
+
+**返回值**: ``[{"name": ..., "description": <str|i18n dict|None>}, ...]``；
+
     未声明时返回 None（公开方法全开放）
 
 ---
 
 
-##### `_service_names(module_name: str)`
+##### `_service_names(module_name: str) -> 'list[str] | None'`
 
-> **内部方法**
+**内部方法**
 获取服务白名单（名字列表）
 
-- **module_name** (`模块名称`): **返回值** (`服务名列表；未声明时返回`): None
+- **module_name**: 模块名称
+
+**返回值**: 服务名列表；未声明时返回 None
 
 ---
 
 
-##### `_docstring_first_line(func: Any)`
+##### `_docstring_first_line(func: Any) -> str`（staticmethod）
 
-> **内部方法**
+**内部方法**
 提取函数 docstring 的摘要行（服务介绍的自动兜底）
 
 兼容规范的多行 docstring（空行开头）：取**第一个非空行**，
 跳过 doctest 装饰行（``>>>`` / ``...``）。无 docstring 时返回空串。
 
-- **func** (`函数`): / 绑定方法
+- **func**: 函数 / 绑定方法
+
 **返回值**: 摘要文本（可能为空串）
 
 ---
 
 
-##### `_service_description(module_name: str, entry: dict[str, Any])`
+##### `_service_description(module_name: str, entry: dict[str, Any]) -> str`
 
-> **内部方法**
+**内部方法**
 解析服务介绍：显式声明（i18n 字典解析）> 方法 docstring 首行 > 空串
 
-- **module_name** (`模块名`): - **entry**: 规范化服务条目（{"name", "description"}）
+- **module_name**: 模块名
+- **entry**: 规范化服务条目（{"name", "description"}）
+
 **返回值**: 介绍文本
 
 ---
 
 
-##### `services(module_name: str | None = None)`
+##### `services(module_name: str | None = None) -> dict[str, list[dict[str, str]]]`
 
 服务目录：列出模块通过 ``get_meta().services`` 声明的对外服务
 
@@ -843,38 +984,45 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
 每个服务附带方法签名字符串与介绍文本：
 
 - **介绍来源**：``services`` 中 ``{"name", "description"}`` 的显式声明
+
   （支持 i18n 字典，解析为当前语言）> 方法 docstring 首行 > 空串
 - **签名**：``inspect.signature`` 提取
 
 为后续 MCP 化（调用点暴露给 AI）与生态服务发现提供数据基础。
 
-- **module_name** (`仅查询指定模块；None`): 时列出全部已注册模块中声明了服务的
-**返回值** (```{模块名:`): [{"name", "signature", "description"}]}``
+- **module_name**: 仅查询指定模块；None 时列出全部已注册模块中声明了服务的
+
+**返回值**: ``{模块名: [{"name", "signature", "description"}]}``
 
 **示例**:
+
 ```python
->>> sdk.module.services()
+sdk.module.services()
 {'Chat': [{'name': 'get_history',
            'signature': '(session_id, n=20)',
            'description': '查询会话历史'}]}
->>> sdk.module.services("Chat")
+sdk.module.services("Chat")
 {'Chat': [{'name': 'get_history', ...}]}
 ```
 
 ---
 
 
-##### `async _resolve_call_target(module_name: str)`
+##### `async _resolve_call_target(module_name: str) -> Any`
 
-> **内部方法**
+**内部方法**
 解析模块间调用的目标实例（含懒加载模块唤醒）
 
-- **module_name** (`模块名称`): **返回值** (`模块实例`): **异常**: `ModuleNotAvailableError` - 模块未注册 / 未启用 / 唤醒失败时
+- **module_name**: 模块名称
+
+**返回值**: 模块实例
+
+**异常**: `ModuleNotAvailableError` - 模块未注册 / 未启用 / 唤醒失败时
 
 ---
 
 
-##### `async call(module_name: str, method: str)`
+##### `async call(module_name: str, method: str, *args: Any, timeout: float | None = None, **kwargs: Any) -> Any`
 
 跨模块调用目标模块的服务方法（协议化 RPC）
 
@@ -888,56 +1036,75 @@ purge 卸载后诊断模块类/实例是否可回收，泄漏时告警并列出�
 读取），供被调方识别调用来源；
 协程方法带超时语义（超时抛 :class:`ModuleCallTimeoutError`）。
 
-- **module_name** (`目标模块名`): - **method**: 目标方法名
-- **args** (`位置参数（透传给目标方法）`): - **timeout**: 超时秒数（默认 30 秒；None 表示不限时；仅对协程方法生效）
-- **kwargs** (`关键字参数（透传给目标方法）`): **返回值** (`目标方法的返回值`): **异常**: `ModuleNotAvailableError` - 目标模块未注册 / 未启用 / 唤醒失败
+- **module_name**: 目标模块名
+- **method**: 目标方法名
+- **args**: 位置参数（透传给目标方法）
+- **timeout**: 超时秒数（默认 30 秒；None 表示不限时；仅对协程方法生效）
+- **kwargs**: 关键字参数（透传给目标方法）
+
+**返回值**: 目标方法的返回值
+
+**异常**: `ModuleNotAvailableError` - 目标模块未注册 / 未启用 / 唤醒失败
+
 **异常**: `ServiceNotProvidedError` - 方法不在目标模块的 ``services`` 白名单内（或为私有方法 / 不存在）
+
 **异常**: `ModuleCallError` - 调用方被 scope 出站规则拒绝
+
 **异常**: `ModuleCallTimeoutError` - 协程方法超时
 
 **示例**:
+
 ```python
->>> result = await sdk.module.call("Chat", "get_history", session_id, n=20)
+result = await sdk.module.call("Chat", "get_history", session_id, n=20)
+```
 
 > **提示**
-> 服务方在 ``get_meta().services`` 声明契约收紧调用面（缺省时公开方法全开放）::
+> 服务方在 ``get_meta().services`` 声明契约收紧调用面（缺省时公开方法全开放）:
+> ```
 > class ChatModule(BaseModule):
-> @staticmethod
-> def get_meta() -> ModuleMeta:
-> return ModuleMeta(services=["get_history", "translate"])
-> async def get_history(self, session_id, n=20): ...
-```
+>     @staticmethod
+>     def get_meta() -> ModuleMeta:
+>         return ModuleMeta(services=["get_history", "translate"])
+> 
+>     async def get_history(self, session_id, n=20): ...
+> ```
+>
 
 ---
 
 
-##### `__getattr__(module_name: str)`
+##### `__getattr__(module_name: str) -> Any`
 
 通过属性访问获取模块实例
 
 - **module_name** (`str`): 模块名称
+
 **返回值** (`Any`): 模块实例
+
 **异常**: `AttributeError` - 当模块不存在或未启用时
 
 **示例**:
+
 ```python
->>> my_module = module.MyModule
+my_module = module.MyModule
 ```
 
 ---
 
 
-##### `__contains__(module_name: str)`
+##### `__contains__(module_name: str) -> bool`
 
 检查模块是否存在且处于启用状态
 
 - **module_name** (`str`): 模块名称
+
 **返回值** (`bool`): 模块是否存在且启用
 
 **示例**:
+
 ```python
->>> if "MyModule" in module:
-...     ...
+if "MyModule" in module:
+    ...
 ```
 
 ---

@@ -48,7 +48,7 @@ CLI 命令基类
 ---
 
 
-##### `help()`
+##### `help -> str`（property）
 
 获取帮助信息
 

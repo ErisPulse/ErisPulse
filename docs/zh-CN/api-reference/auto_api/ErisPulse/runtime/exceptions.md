@@ -15,9 +15,9 @@ ErisPulse 全局异常处理系统
 ## 函数列表
 
 
-### `_t(key: str)`
+### `_t(key: str, **kwargs) -> str`
 
-> **内部方法**
+**内部方法**
 尝试用 i18n 翻译，失败时用英文 fallback
 
 ---
@@ -25,15 +25,15 @@ ErisPulse 全局异常处理系统
 
 ### `_get_error_logger()`
 
-> **内部方法**
+**内部方法**
 获取错误日志输出函数，优先使用框架 logger，失败时 fallback 到 stderr
 
 ---
 
 
-### `_log_async_noise(message: str)`
+### `_log_async_noise(message: str) -> None`
 
-> **内部方法**
+**内部方法**
 记录异步关停场景的低级别噪音日志（TRACE），无框架 logger 时静默丢弃
 
 这类消息仅在退出/关停时产生，降级为 TRACE 既避免刷屏，也保留排查线索
@@ -42,34 +42,36 @@ ErisPulse 全局异常处理系统
 ---
 
 
-### `_fold_async_noise(message: str)`
+### `_fold_async_noise(message: str) -> None`
 
-> **内部方法**
+**内部方法**
 折叠相同噪音消息：窗口内重复只输出一次，并附带被折叠的累计次数
 
 ---
 
 
-### `global_exception_handler(exc_type: type[Exception], exc_value: Exception, exc_traceback: Any)`
+### `global_exception_handler(exc_type: type[Exception], exc_value: Exception, exc_traceback: Any) -> None`
 
 全局异常处理器
 
-- **exc_type** (`异常类型`): - **exc_value**: 异常值
+- **exc_type**: 异常类型
+- **exc_value**: 异常值
 - **exc_traceback**: 追踪信息
 
 ---
 
 
-### `async_exception_handler(loop: asyncio.AbstractEventLoop, context: dict[str, Any])`
+### `async_exception_handler(loop: asyncio.AbstractEventLoop, context: dict[str, Any]) -> None`
 
 异步异常处理器
 
-- **loop** (`事件循环`): - **context**: 上下文字典
+- **loop**: 事件循环
+- **context**: 上下文字典
 
 ---
 
 
-### `setup_exception_handling()`
+### `setup_exception_handling() -> None`
 
 设置全局异常处理系统
 
@@ -89,26 +91,31 @@ ExceptionHandler 类提供相关功能。
 #### 方法列表
 
 
-##### `format_exception(exc_type: type[Exception], exc_value: Exception, exc_traceback: Any)`
+##### `format_exception(exc_type: type[Exception], exc_value: Exception, exc_traceback: Any) -> str`（staticmethod）
 
 格式化异常信息
 
-- **exc_type** (`异常类型`): - **exc_value**: 异常值
-- **exc_traceback** (`追踪信息`): **返回值**: 格式化后的异常信息
+- **exc_type**: 异常类型
+- **exc_value**: 异常值
+- **exc_traceback**: 追踪信息
+
+**返回值**: 格式化后的异常信息
 
 ---
 
 
-##### `format_async_exception(exception: Exception)`
+##### `format_async_exception(exception: Exception) -> str`（staticmethod）
 
 格式化异步异常信息
 
-- **exception** (`异常对象`): **返回值**: 格式化后的异常信息
+- **exception**: 异常对象
+
+**返回值**: 格式化后的异常信息
 
 ---
 
 
-##### `generate_hints(exc_value: BaseException, exc_traceback: Any = None)`
+##### `generate_hints(exc_value: BaseException, exc_traceback: Any = None) -> list[str]`（staticmethod）
 
 为异常生成友好的提示行
 
@@ -121,18 +128,23 @@ ExceptionHandler 类提供相关功能。
 - RuntimeError: 事件循环相关多种场景
 - RecursionError / TimeoutError / ConnectionError: 常见运行期错误
 
-- **exc_value** (`异常对象`): - **exc_traceback**: traceback 对象（可选，用于上下文推断）
+- **exc_value**: 异常对象
+- **exc_traceback** (`traceback`): 对象（可选，用于上下文推断）
+
 **返回值**: 提示行列表，无提示时为空列表
 
 ---
 
 
-##### `format_exception_with_hints(exc_type: type[Exception], exc_value: Exception, exc_traceback: Any)`
+##### `format_exception_with_hints(exc_type: type[Exception], exc_value: Exception, exc_traceback: Any) -> str`（staticmethod）
 
 格式化异常信息并附带友好提示
 
-- **exc_type** (`异常类型`): - **exc_value**: 异常值
-- **exc_traceback** (`追踪信息`): **返回值**: 格式化后的异常信息（可能包含多行提示）
+- **exc_type**: 异常类型
+- **exc_value**: 异常值
+- **exc_traceback**: 追踪信息
+
+**返回值**: 格式化后的异常信息（可能包含多行提示）
 
 ---
 
