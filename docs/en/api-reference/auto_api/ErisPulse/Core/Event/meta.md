@@ -32,25 +32,31 @@ ErisPulse 元事件处理模块
 
 通用元事件装饰器
 
-- **priority** (`处理器优先级`): **返回值**: 装饰器函数
+- **priority**: 处理器优先级
+
+**返回值**: 装饰器函数
 
 ---
 
 
-##### `unregister(handler: Callable)`
+##### `unregister(handler: Callable) -> bool`
 
 取消注册的事件处理器
 
-- **handler** (`要取消注册的处理器`): **返回值**: 是否成功取消注册
+- **handler**: 要取消注册的处理器
+
+**返回值**: 是否成功取消注册
 
 ---
 
 
-##### `remove_meta_handler(handler: Callable)`
+##### `remove_meta_handler(handler: Callable) -> bool`
 
 取消注册通用元事件处理器
 
-- **handler** (`要取消注册的处理器`): **返回值**: 是否成功取消注册
+- **handler**: 要取消注册的处理器
+
+**返回值**: 是否成功取消注册
 
 ---
 
@@ -59,16 +65,20 @@ ErisPulse 元事件处理模块
 
 连接事件装饰器
 
-- **priority** (`处理器优先级`): **返回值**: 装饰器函数
+- **priority**: 处理器优先级
+
+**返回值**: 装饰器函数
 
 ---
 
 
-##### `remove_connect_handler(handler: Callable)`
+##### `remove_connect_handler(handler: Callable) -> bool`
 
 取消注册连接事件处理器
 
-- **handler** (`要取消注册的处理器`): **返回值**: 是否成功取消注册
+- **handler**: 要取消注册的处理器
+
+**返回值**: 是否成功取消注册
 
 ---
 
@@ -77,16 +87,20 @@ ErisPulse 元事件处理模块
 
 断开连接事件装饰器
 
-- **priority** (`处理器优先级`): **返回值**: 装饰器函数
+- **priority**: 处理器优先级
+
+**返回值**: 装饰器函数
 
 ---
 
 
-##### `remove_disconnect_handler(handler: Callable)`
+##### `remove_disconnect_handler(handler: Callable) -> bool`
 
 取消注册断开连接事件处理器
 
-- **handler** (`要取消注册的处理器`): **返回值**: 是否成功取消注册
+- **handler**: 要取消注册的处理器
+
+**返回值**: 是否成功取消注册
 
 ---
 
@@ -95,23 +109,27 @@ ErisPulse 元事件处理模块
 
 心跳事件装饰器
 
-- **priority** (`处理器优先级`): **返回值**: 装饰器函数
+- **priority**: 处理器优先级
+
+**返回值**: 装饰器函数
 
 ---
 
 
-##### `remove_heartbeat_handler(handler: Callable)`
+##### `remove_heartbeat_handler(handler: Callable) -> bool`
 
 取消注册心跳事件处理器
 
-- **handler** (`要取消注册的处理器`): **返回值**: 是否成功取消注册
+- **handler**: 要取消注册的处理器
+
+**返回值**: 是否成功取消注册
 
 ---
 
 
 ##### `_clear_meta_handlers()`
 
-> **内部方法**
+**内部方法**
 清除所有已注册的元事件处理器
 
 **返回值**: 被清除的处理器数量

@@ -29,26 +29,39 @@ ErisPulse 依赖注入模块
 ## 函数列表
 
 
-### `extract_depends(func: Callable)`
+### `_freeze_key(value: Any) -> Any`
+
+**内部方法**
+把依赖声明的固定参数递归冻结为可哈希的稳定结构（请求级缓存键用）：
+dict → 排序条目元组、list/tuple → 元组、set → 排序表示元组；其余叶子原样保留
+
+---
+
+
+### `extract_depends(func: Callable) -> dict[str, Depends]`
 
 注册期提取处理器签名中以 ``Depends(...)`` 为默认值的参数（fail-fast）
 
 在处理器注册时调用一次（命令装饰器 / ``BaseEventHandler.register`` /
 ``lifecycle.register`` / 路由注册），分发期零反射开销。
 
-- **func** (`处理器函数`): **返回值** (`参数名`): → Depends 声明（无依赖声明时为空 dict）
+- **func**: 处理器函数
+
+**返回值**: 参数名 → Depends 声明（无依赖声明时为空 dict）
+
 **异常**: `ValueError` - 依赖不可调用
 
 **示例**:
+
 ```python
->>> extract_depends(admin)
+extract_depends(admin)
 {"db": Depends(dependency=<function get_db>)}
 ```
 
 ---
 
 
-### `async resolve_depends(depends: dict[str, Depends], ctx: Any)`
+### `async resolve_depends(depends: dict[str, Depends], ctx: Any) -> dict[str, Any]`
 
 分发期解析依赖：以上下文对象调用各依赖函数，返回处理器关键字参数
 
@@ -60,13 +73,15 @@ ErisPulse 依赖注入模块
 ``use_cache=False`` 或不在作用域内（lifecycle / 路由独立调用链）时
 每次解析。
 
-- **depends** (`:func:`extract_depends``): 的提取结果
-- **ctx** (`注入点上下文对象（作为依赖函数第一参数）`): **返回值** (`参数名`): → 依赖函数返回值
+- **depends**: :func:`extract_depends` 的提取结果
+- **ctx**: 注入点上下文对象（作为依赖函数第一参数）
+
+**返回值**: 参数名 → 依赖函数返回值
 
 ---
 
 
-### `async call_with_depends(func: Callable)`
+### `async call_with_depends(func: Callable, *args: Any) -> Any`
 
 以 Depends 注入调用模块生命周期方法（``on_load`` / ``on_unload`` 等）
 
@@ -75,21 +90,27 @@ ErisPulse 依赖注入模块
 依赖声明的解析失败原样向上传播（on_load 失败即加载失败，on_unload
 失败由调用方记录日志）。
 
-- **func** (`生命周期方法（绑定方法）`): - **args**: 透传的位置参数（第一参为上下文对象）
+- **func**: 生命周期方法（绑定方法）
+- **args**: 透传的位置参数（第一参为上下文对象）
+
 **返回值**: 方法返回值
 
 ---
 
 
-### `call_with_depends_sync(func: Callable)`
+### `call_with_depends_sync(func: Callable, *args: Any) -> Any`
 
 同步上下文版本的 Depends 注入调用（``emit_sync`` / 同步 ``disable`` 等）
 
 仅支持同步依赖；声明了异步依赖时抛 ``TypeError``（携带本地化原因），
 由调用方决定跳过或降级。
 
-- **func** (`生命周期方法（绑定方法）`): - **args**: 透传的位置参数（第一参为上下文对象）
-**返回值** (`方法返回值`): **异常**: `TypeError` - 声明了异步依赖（同步上下文无法 await）
+- **func**: 生命周期方法（绑定方法）
+- **args**: 透传的位置参数（第一参为上下文对象）
+
+**返回值**: 方法返回值
+
+**异常**: `TypeError` - 声明了异步依赖（同步上下文无法 await）
 
 ---
 
@@ -101,38 +122,46 @@ ErisPulse 依赖注入模块
 
 依赖声明标记（作为处理器参数默认值使用）
 
-- **dependency** (`依赖函数（同步或异步），签名`): ``dependency(ctx)``——
+- **dependency**: 依赖函数（同步或异步），签名 ``dependency(ctx)``——
+
     ``ctx`` 为注入点上下文对象（Event / data / HttpRequest 等），
     返回值按参数名注入处理器
-- **use_cache** (`请求级缓存开关（默认开启）：同一次事件分发内，`): 相同依赖函数只解析一次、所有注入点共享结果（如数据库会话复用）；
+- **use_cache**: 请求级缓存开关（默认开启）：同一次事件分发内，
+
+    相同依赖函数只解析一次、所有注入点共享结果（如数据库会话复用）；
     置 ``False`` 每次注入都重新解析
 
 **示例**:
+
 ```python
->>> async def get_db(event):
-...     return await sdk.module.call("DB", "get_session")
->>> @command("admin")
-... async def admin(event, db=Depends(get_db)):
-...     ...
+async def get_db(event):
+    return await sdk.module.call("DB", "get_session")
+@command("admin")
+async def admin(event, db=Depends(get_db)):
+    ...
 ```
 
 
 #### 方法列表
 
 
-##### `module(module_name: str, method: str)`
+##### `module(module_name: str, method: str, *args: Any, **kwargs: Any) -> 'Depends'`（staticmethod）
 
 声明模块服务依赖（语法糖）：等价于在依赖函数内调用 ``sdk.module.call(...)``
 
-- **module_name** (`目标模块名`): - **method**: 目标服务方法名（须在目标模块 get_meta().services 契约内）
-- **args** (`透传给目标方法的固定位置参数`): - **kwargs**: 透传给目标方法的固定关键字参数
+- **module_name**: 目标模块名
+- **method**: 目标服务方法名（须在目标模块 get_meta().services 契约内）
+- **args**: 透传给目标方法的固定位置参数
+- **kwargs**: 透传给目标方法的固定关键字参数
+
 **返回值** (`Depends`): 声明（上下文对象被忽略——模块调用不依赖注入点上下文）
 
 **示例**:
+
 ```python
->>> @command("admin")
-... async def admin(event, db=Depends.module("DB", "get_session")):
-...     ...
+@command("admin")
+async def admin(event, db=Depends.module("DB", "get_session")):
+    ...
 ```
 
 ---

@@ -39,16 +39,18 @@ config 命令
 按名称定位目标并直接进入向导
 
 - **targets** (`ConfigTarget`): 列表
-- **name** (`目标名（适配器平台名/模块名，或适配器配置键）`): - **config**: ConfigManager 实例
+- **name**: 目标名（适配器平台名/模块名，或适配器配置键）
+- **config** (`ConfigManager`): 实例
 
 ---
 
 
-##### `_status_text(status: str)`
+##### `_status_text(status: str) -> str`
 
 将状态常量渲染为带颜色的显示文本
 
 - **status** (`get_target_status`): 返回的状态常量
+
 **返回值** (`rich`): 标记的状态文本
 
 ---

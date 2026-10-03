@@ -31,42 +31,46 @@ OneBot12 事件转换器基类
 #### 方法列表
 
 
-##### `build_base_event(raw_event: dict, raw_type: str = '')`
+##### `build_base_event(raw_event: dict, raw_type: str = '') -> dict`
 
 构建 OneBot12 标准事件的公共字段（id / time / platform / self / raw）
 
-- **raw_event** (`平台原始事件`): - **raw_type**: 平台原始事件类型
+- **raw_event**: 平台原始事件
+- **raw_type**: 平台原始事件类型
+
 **返回值**: 含公共字段的事件字典
 
 ---
 
 
-##### `text(text: str)`
+##### `text(text: str) -> dict`（staticmethod）
 
 构造文本消息段
 
 ---
 
 
-##### `at(user_id: str)`
+##### `at(user_id: str) -> dict`（staticmethod）
 
 构造 @ 消息段
 
 ---
 
 
-##### `image(file: str)`
+##### `image(file: str) -> dict`（staticmethod）
 
 构造图片消息段
 
 ---
 
 
-##### `convert(raw_event: dict)`
+##### `convert(raw_event: dict) -> dict | None`
 
 将平台原生事件转换为 OneBot12 标准格式
 
-- **raw_event** (`平台原始事件数据`): **返回值** (`OneBot12`): 标准格式事件字典；无法识别时返回 None
+- **raw_event**: 平台原始事件数据
+
+**返回值** (`OneBot12`): 标准格式事件字典；无法识别时返回 None
 
 ---
 

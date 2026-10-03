@@ -35,13 +35,22 @@ ErisPulse 生命周期管理模块
 
 > **提示**
 > 两种注册方式等价：
-> >>> @lifecycle.on("module.load")
-> ... async def on_load(data):
-> ...     print(data)
-> >>> lifecycle.register("module.load", on_load)
+> ```python
+> @lifecycle.on("module.load")
+> async def on_load(data):
+>     print(data)
+> ```
+>
+> ```python
+> lifecycle.register("module.load", on_load)
+> ```
+>
 > 两种触发方式等价：
-> >>> await lifecycle.emit("module.load", {"module_name": "Test"})
-> >>> await lifecycle.submit_event("module.load", data={"module_name": "Test"})
+> ```python
+> await lifecycle.emit("module.load", {"module_name": "Test"})
+> await lifecycle.submit_event("module.load", data={"module_name": "Test"})
+> ```
+>
 
 
 #### 嵌套类
@@ -55,38 +64,40 @@ ErisPulse 生命周期管理模块
 #### 方法列表
 
 
-##### `_get_logger()`
+##### `_get_logger()`（staticmethod）
 
 延迟导入 logger，避免循环依赖（lifecycle → logger → config → lifecycle）
 
 ---
 
 
-##### `on(event: str)`
+##### `on(event: str, *, priority: int = 0) -> Callable`
 
 注册事件处理器（装饰器模式）
 
 - **event** (`str`): 事件名称，支持点式结构和通配符
 - **priority** (`int`): 优先级，数值越大越先执行 (默认: 0)
+
 **返回值** (`Callable`): 装饰器
 
 **异常**: `ValueError` - 当事件名无效时抛出
 
 **示例**:
+
 ```python
->>> @lifecycle.on("module.load")
-... async def on_module_load(data):
-...     print(f"模块加载: {data}")
->>>
->>> @lifecycle.on("adapter.*")
-... def on_adapter_event(data):
-...     pass
+@lifecycle.on("module.load")
+async def on_module_load(data):
+    print(f"模块加载: {data}")
+
+@lifecycle.on("adapter.*")
+def on_adapter_event(data):
+    pass
 ```
 
 ---
 
 
-##### `register(event: str, handler: Callable)`
+##### `register(event: str, handler: Callable, *, priority: int = 0)`
 
 注册事件处理器（函数调用模式）
 
@@ -95,44 +106,49 @@ ErisPulse 生命周期管理模块
 - **priority** (`int`): 优先级，数值越大越先执行 (默认: 0)
 
 **示例**:
+
 ```python
->>> lifecycle.register("config.set", my_handler, priority=10)
+lifecycle.register("config.set", my_handler, priority=10)
 ```
 
 ---
 
 
-##### `once(event: str)`
+##### `once(event: str, *, priority: int = 0) -> Callable`
 
 注册一次性事件处理器（触发一次后自动注销）
 
 - **event** (`str`): 事件名称
 - **priority** (`int`): 优先级 (默认: 0)
+
 **返回值** (`Callable`): 装饰器
 
 **示例**:
+
 ```python
->>> @lifecycle.once("core.init.complete")
-... async def on_first_ready(data):
-...     print("首次就绪")
+@lifecycle.once("core.init.complete")
+async def on_first_ready(data):
+    print("首次就绪")
 ```
 
 ---
 
 
-##### `has_handlers(event: str)`
+##### `has_handlers(event: str) -> bool`
 
 检查指定事件是否已有注册的处理器（含通配符 ``*`` 与父级事件）
 
 可用于热路径短路：发射事件前先判断有无监听者，避免无谓的字典遍历与任务调度。
 
 - **event** (`str`): 事件名称
+
 **返回值** (`bool`): 存在任意匹配处理器时返回 True
 
 **示例**:
+
 ```python
->>> if lifecycle.has_handlers("message.sending"):
-...     await lifecycle.emit("message.sending", data)
+if lifecycle.has_handlers("message.sending"):
+    await lifecycle.emit("message.sending", data)
 ```
 
 ---
@@ -146,63 +162,68 @@ ErisPulse 生命周期管理模块
 - **handler** (`Callable`): 指定取消的处理器，为 None 时取消该事件所有处理器
 
 **示例**:
+
 ```python
->>> lifecycle.unregister("config.set", my_handler)  # 取消指定处理器
->>> lifecycle.unregister("config.set")               # 取消所有处理器
+lifecycle.unregister("config.set", my_handler)  # 取消指定处理器
+lifecycle.unregister("config.set")               # 取消所有处理器
 ```
 
 ---
 
 
-##### `unregister_by_owner(owner: str)`
+##### `unregister_by_owner(owner: str) -> int`
 
 取消指定 owner 注册的所有事件处理器
 
 用于模块/适配器卸载时自动清理其注册的钩子，避免闭包引用导致内存泄漏。
 
-- **owner** (`模块或适配器名称`): **返回值** (`int`): 被移除的处理器数量
+- **owner**: 模块或适配器名称
+
+**返回值** (`int`): 被移除的处理器数量
 
 **示例**:
+
 ```python
->>> lifecycle.unregister_by_owner("MyModule")
+lifecycle.unregister_by_owner("MyModule")
 ```
 
 ---
 
 
-##### `get_owner_counts()`
+##### `get_owner_counts() -> dict[str, int]`
 
 统计各 owner 注册的生命周期钩子数量（便于拓扑树展示）
 
-**返回值** (`{owner:`): 钩子数量} 字典
+**返回值**: {owner: 钩子数量} 字典
 
 **示例**:
+
 ```python
->>> lifecycle.get_owner_counts()
+lifecycle.get_owner_counts()
 {"MyModule": 3, "onebot11": 2}
 ```
 
 ---
 
 
-##### `_is_shadow_owner(owner: 'str | None')`
+##### `_is_shadow_owner(owner: 'str | None') -> bool`
 
-> **内部方法**
+**内部方法**
 判断 owner 是否为影子模块 owner（方向十一；惰性导入避免加载链耦合）
 
 ---
 
 
-##### `_is_shadow_module_event(data: Any)`
+##### `_is_shadow_module_event(data: Any) -> bool`
 
-> **内部方法**
+**内部方法**
 判断事件数据是否携带影子模块的 module_name（module.* 生命周期静默用；
 兼容 submit_event 包装形态 {"data": {"module_name": ...}} 与扁平形态）
 
 ---
 
 
-##### `async emit(event: str, data: Any = None)`
+##### `async emit(event: str, data: Any = None, *, to: str | None = None) -> Any`
 
 触发事件（异步）
 
@@ -219,20 +240,23 @@ ErisPulse 生命周期管理模块
 - **event** (`str`): 事件名称
 - **data** (`Any`): 事件数据（dict 时自动附加 `_trace_id`）
 - **to** (`str`): 定向投递目标拥有者（模块名 / 适配器平台名），None 广播
+
 **返回值** (`Any`): 经过所有处理器处理后的数据
+
 **异常**: `ValueError` - ``to`` 为空字符串时
 
 **示例**:
+
 ```python
->>> result = await lifecycle.emit("config.set", {"key": "test", "value": 42})
->>> # 定向投递给 Chat 模块注册的钩子
->>> await lifecycle.emit("maintenance", {"action": "reload"}, to="Chat")
+result = await lifecycle.emit("config.set", {"key": "test", "value": 42})
+# 定向投递给 Chat 模块注册的钩子
+await lifecycle.emit("maintenance", {"action": "reload"}, to="Chat")
 ```
 
 ---
 
 
-##### `emit_sync(event: str, data: Any = None)`
+##### `emit_sync(event: str, data: Any = None, *, to: str | None = None) -> Any`
 
 触发事件（同步，精简版）
 
@@ -244,18 +268,21 @@ ErisPulse 生命周期管理模块
 - **event** (`str`): 事件名称
 - **data** (`Any`): 事件数据
 - **to** (`str`): 定向投递目标拥有者，None 广播
+
 **返回值** (`Any`): 处理后的数据
+
 **异常**: `ValueError` - ``to`` 为空字符串时
 
 **示例**:
+
 ```python
->>> result = lifecycle.emit_sync("config.set", {"key": "test"})
+result = lifecycle.emit_sync("config.set", {"key": "test"})
 ```
 
 ---
 
 
-##### `fire(event: str, data: Any = None)`
+##### `fire(event: str, data: Any = None, *, to: str | None = None) -> None`
 
 触发事件（后台，扔桶即走）——观测类事件的零成本发射
 
@@ -264,25 +291,28 @@ ErisPulse 生命周期管理模块
 有监听者时仅付出一次任务调度成本。适用于高频热路径与纯观测事件
 （如 ``server.request`` / ``storage.ready``）。
 
-.. warning::
-    后台事件**不保证执行时机**：emit 返回 ≠ 处理器已执行；
-    框架关停期间后台任务会被取消——关停序列（uninit）中的
-    事件请改用 :meth:`emit`。顺序敏感的消费（如 ``config.set``
-    驱动的作用域重建）同样必须用 :meth:`emit`。
+.. warning:
+```
+后台事件**不保证执行时机**：emit 返回 ≠ 处理器已执行；
+框架关停期间后台任务会被取消——关停序列（uninit）中的
+事件请改用 :meth:`emit`。顺序敏感的消费（如 ``config.set``
+驱动的作用域重建）同样必须用 :meth:`emit`。
+```
 
 - **event** (`str`): 事件名称
 - **data** (`Any`): 事件数据（dict 时自动附加 `_trace_id`）
 - **to** (`str`): 定向投递目标拥有者，None 广播
 
 **示例**:
+
 ```python
->>> lifecycle.fire("server.request", {"method": "GET", "path": "/"})
+lifecycle.fire("server.request", {"method": "GET", "path": "/"})
 ```
 
 ---
 
 
-##### `async submit_event(event_type: str)`
+##### `async submit_event(event_type: str, *, source: str = DEFAULT_EVENT_SOURCE, msg: str = '', data: dict | None = None, timestamp: float | None = None, to: str | None = None, background: bool = False) -> None`
 
 提交生命周期事件（兼容旧版 API）
 
@@ -301,15 +331,16 @@ ErisPulse 生命周期管理模块
 **异常**: `ValueError` - ``to`` 为空字符串时
 
 **示例**:
+
 ```python
->>> await lifecycle.submit_event("module.load", data={"module_name": "Test"})
->>> await lifecycle.submit_event("maintenance", data={"action": "reload"}, to="Chat")
+await lifecycle.submit_event("module.load", data={"module_name": "Test"})
+await lifecycle.submit_event("maintenance", data={"action": "reload"}, to="Chat")
 ```
 
 ---
 
 
-##### `start_timer(timer_id: str)`
+##### `start_timer(timer_id: str) -> None`
 
 开始计时
 
@@ -318,27 +349,29 @@ ErisPulse 生命周期管理模块
 ---
 
 
-##### `get_duration(timer_id: str)`
+##### `get_duration(timer_id: str) -> float`
 
 获取指定计时器的持续时间
 
 - **timer_id** (`str`): 计时器ID
+
 **返回值** (`float`): 持续时间(秒)
 
 ---
 
 
-##### `stop_timer(timer_id: str)`
+##### `stop_timer(timer_id: str) -> float`
 
 停止计时并返回持续时间
 
 - **timer_id** (`str`): 计时器ID
+
 **返回值** (`float`): 持续时间(秒)
 
 ---
 
 
-##### `async _execute_handlers(hook_name: str, event: str, data: Any, owner_filter: str | None = None)`
+##### `async _execute_handlers(hook_name: str, event: str, data: Any, owner_filter: str | None = None) -> Any`
 
 执行匹配事件的处理（异步，处理器并行）
 
@@ -351,12 +384,13 @@ ErisPulse 生命周期管理模块
 - **event** (`str`): 实际事件名
 - **data** (`Any`): 事件数据
 - **owner_filter** (`str`): 仅执行该拥有者注册的处理器（定向传播，None 不限）
+
 **返回值** (`Any`): 处理器链处理结果
 
 ---
 
 
-##### `_execute_handlers_sync(hook_name: str, event: str, data: Any, owner_filter: str | None = None)`
+##### `_execute_handlers_sync(hook_name: str, event: str, data: Any, owner_filter: str | None = None) -> Any`
 
 执行匹配的事件处理器（同步）
 
@@ -364,6 +398,7 @@ ErisPulse 生命周期管理模块
 - **event** (`str`): 实际事件名
 - **data** (`Any`): 事件数据
 - **owner_filter** (`str`): 仅执行该拥有者注册的处理器（定向传播，None 不限）
+
 **返回值** (`Any`): 处理后的数据
 
 ---
@@ -374,23 +409,25 @@ ErisPulse 生命周期管理模块
 清除所有已注册的处理器和计时器
 
 **示例**:
+
 ```python
->>> lifecycle.clear()
+lifecycle.clear()
 ```
 
 ---
 
 
-##### `list_hooks()`
+##### `list_hooks() -> dict[str, int]`
 
 列出所有已注册的钩子及其处理器数量
 
 **返回值** (`dict`): 钩子名称到处理器数量的映射
 
 **示例**:
+
 ```python
->>> info = lifecycle.list_hooks()
->>> # {"module.load": 2, "adapter.start": 1}
+info = lifecycle.list_hooks()
+# {"module.load": 2, "adapter.start": 1}
 ```
 
 ---

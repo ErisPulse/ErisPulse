@@ -96,7 +96,7 @@
           "icon": "fa-download"
         },
         {
-          "title": "Configuration File Documentation",
+          "title": "Configuration File Guide",
           "path": "user-guide/configuration.md",
           "level": 1,
           "icon": "fa-sliders"
@@ -549,7 +549,7 @@
           "icon": "fa-arrow-right-arrow-left"
         },
         {
-          "title": "Adapter Standardization Conversion Specification",
+          "title": "Adapter Standardization Specification",
           "path": "standards/event-conversion.md",
           "level": 1,
           "icon": "fa-shuffle"

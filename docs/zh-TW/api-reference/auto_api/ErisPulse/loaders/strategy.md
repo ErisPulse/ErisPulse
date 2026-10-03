@@ -28,31 +28,42 @@ ErisPulse 模块加载策略
 
 > **提示**
 > 使用方式：
-> >>> strategy = ModuleLoadStrategy(
-> ...     lazy_load=False,
-> ...     priority=100,
-> ...     custom_option=123
-> ... )
+> ```python
+> strategy = ModuleLoadStrategy(
+>     lazy_load=False,
+>     priority=100,
+>     custom_option=123
+> )
+> ```
+>
 > eager_load 也是一个合法的属性，但不建议使用，其含义与 lazy_load 相反
-> >>> strategy.lazy_load
+> ```python
+> strategy.lazy_load
 > False
-> >>> strategy.priority
+> strategy.priority
 > 100
-> >>> strategy.custom_option
+> strategy.custom_option
 > 123
+> ```
+>
 > 从字典创建：
-> >>> config = {"lazy_load": False, "priority": 100}
-> >>> strategy = ModuleLoadStrategy.from_dict(config)
+> ```python
+> config = {"lazy_load": False, "priority": 100}
+> strategy = ModuleLoadStrategy.from_dict(config)
+> ```
+>
 
 
 #### 方法列表
 
 
-##### `__init__()`
+##### `__init__(**kwargs)`
 
 初始化策略，所有参数统一存储
 
-- **kwargs** (`策略配置项，任意键值对`): > **提示**
+- **kwargs**: 策略配置项，任意键值对
+
+> **提示**
 > 常用配置项：
 > - lazy_load: bool, 是否懒加载（默认 True）
 > - priority: int, 加载优先级（默认 0，数值越大优先级越高）
@@ -60,40 +71,45 @@ ErisPulse 模块加载策略
 ---
 
 
-##### `__getattr__(name: str)`
+##### `__getattr__(name: str) -> Any`
 
 获取属性值
 
-- **name** (`属性名`): **返回值** (`属性值，如果不存在则返回`): None
+- **name**: 属性名
 
-> **内部方法**
+**返回值**: 属性值，如果不存在则返回 None
+
+**内部方法**
 内部方法，用于动态属性访问
 
 ---
 
 
-##### `__setattr__(name: str, value: Any)`
+##### `__setattr__(name: str, value: Any) -> None`
 
 设置属性值
 
-- **name** (`属性名`): - **value**: 属性值
+- **name**: 属性名
+- **value**: 属性值
 
-> **内部方法**
+**内部方法**
 内部方法，用于动态属性设置
 
 ---
 
 
-##### `__contains__(name: str)`
+##### `__contains__(name: str) -> bool`
 
 检查属性是否存在
 
-- **name** (`属性名`): **返回值**: 是否存在该属性
+- **name**: 属性名
+
+**返回值**: 是否存在该属性
 
 ---
 
 
-##### `__repr__()`
+##### `__repr__() -> str`
 
 返回策略的字符串表示
 
@@ -102,14 +118,21 @@ ErisPulse 模块加载策略
 ---
 
 
-##### `from_dict(config: dict[str, Any])`
+##### `from_dict(config: dict[str, Any]) -> 'ModuleLoadStrategy'`（classmethod）
 
 从字典创建策略实例
 
-- **config** (`配置字典`): **返回值** (`策略实例`): > **提示**
+- **config**: 配置字典
+
+**返回值**: 策略实例
+
+> **提示**
 > 示例：
-> >>> config = {"lazy_load": False, "priority": 100}
-> >>> strategy = ModuleLoadStrategy.from_dict(config)
+> ```python
+> config = {"lazy_load": False, "priority": 100}
+> strategy = ModuleLoadStrategy.from_dict(config)
+> ```
+>
 
 ---
 

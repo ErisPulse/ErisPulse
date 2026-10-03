@@ -35,11 +35,12 @@ HTTP 请求抽象封装
 > 通过 .raw 属性可访问底层框架原生 Request 对象
 
 **示例**:
+
 ```python
->>> @sdk.router.get("MyModule", "/api/data")
-... async def get_data(request: HttpRequest):
-...     body = await request.json()
-...     return {"method": request.method, "body": body}
+@sdk.router.get("MyModule", "/api/data")
+async def get_data(request: HttpRequest):
+    body = await request.json()
+    return {"method": request.method, "body": body}
 ```
 
 
@@ -53,79 +54,79 @@ HTTP 请求抽象封装
 ---
 
 
-##### `method()`
+##### `method -> str`（property）
 
 HTTP 方法
 
-**返回值** (`str`): HTTP 方法名 (GET, POST, PUT, DELETE 等)
+**返回值**: str HTTP 方法名 (GET, POST, PUT, DELETE 等)
 
 ---
 
 
-##### `url()`
+##### `url`（property）
 
 完整请求 URL
 
-**返回值** (`object`): URL 对象 (支持 str() 转换)
+**返回值**: object URL 对象 (支持 str() 转换)
 
 ---
 
 
-##### `base_url()`
+##### `base_url`（property）
 
 基础 URL
 
-**返回值** (`object`): URL 对象
+**返回值**: object URL 对象
 
 ---
 
 
-##### `headers()`
+##### `headers`（property）
 
 请求头 (大小写不敏感)
 
-**返回值** (`object`): Headers 对象 (支持 .get(key) 和 in 操作符)
+**返回值**: object Headers 对象 (支持 .get(key) 和 in 操作符)
 
 ---
 
 
-##### `query_params()`
+##### `query_params`（property）
 
 查询参数
 
-**返回值** (`object`): QueryParams 对象 (支持 .get(key) 和 .items())
+**返回值**: object QueryParams 对象 (支持 .get(key) 和 .items())
 
 ---
 
 
-##### `path_params()`
+##### `path_params -> dict[str, Any]`（property）
 
 路径参数
 
-**返回值** (`dict[str,`): Any] 路径参数字典
+**返回值** (`dict[str, Any]`): 路径参数字典
 
 ---
 
 
-##### `cookies()`
+##### `cookies -> dict[str, str]`（property）
 
 Cookie 字典
 
-**返回值** (`dict[str,`): str] Cookie 键值对
+**返回值**: dict[str, str] Cookie 键值对
 
 ---
 
 
-##### `client()`
+##### `client`（property）
 
 客户端地址
 
-**返回值** (`object`): | None 包含 .host 和 .port 属性的地址对象
+**返回值** (`object | None`): 包含 .host 和 .port 属性的地址对象
 
 ---
 
 
-##### `state()`
+##### `state`（property）
 
 请求级状态存储
 
@@ -134,7 +135,7 @@ Cookie 字典
 ---
 
 
-##### `app()`
+##### `app`（property）
 
 ASGI 应用实例
 
@@ -143,40 +144,40 @@ ASGI 应用实例
 ---
 
 
-##### `session()`
+##### `session -> dict[str, Any]`（property）
 
 会话数据
 
-**返回值** (`dict[str,`): Any] 会话数据 (需要 SessionMiddleware)
+**返回值** (`dict[str, Any]`): 会话数据 (需要 SessionMiddleware)
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `auth()`
+##### `auth -> Any`（property）
 
 认证信息
 
 **返回值** (`Any`): 认证数据 (需要 AuthenticationMiddleware)
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `user()`
+##### `user -> Any`（property）
 
 用户信息
 
 **返回值** (`Any`): 用户数据 (需要 AuthenticationMiddleware)
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `raw()`
+##### `raw`（property）
 
 底层框架原生 Request 对象
 
@@ -185,7 +186,7 @@ ASGI 应用实例
 ---
 
 
-##### `async body()`
+##### `async body() -> bytes`
 
 读取请求体原始字节
 
@@ -194,7 +195,7 @@ ASGI 应用实例
 ---
 
 
-##### `async json()`
+##### `async json() -> Any`
 
 解析请求体为 JSON
 
@@ -203,13 +204,14 @@ ASGI 应用实例
 ---
 
 
-##### `async form()`
+##### `async form(**kwargs)`
 
 解析表单数据
 
 - **max_files** (`int`): 最大文件数 (默认: 1000)
 - **max_fields** (`int`): 最大字段数 (默认: 1000)
-**返回值** (`object`): FormData 对象
+
+**返回值**: object FormData 对象
 
 ---
 
@@ -218,19 +220,19 @@ ASGI 应用实例
 
 流式读取请求体
 
-**返回值** (`async`): generator 逐块返回请求体字节
+**返回值**: async generator 逐块返回请求体字节
 
 ---
 
 
-##### `async close()`
+##### `async close() -> None`
 
 关闭请求资源
 
 ---
 
 
-##### `async is_disconnected()`
+##### `async is_disconnected() -> bool`
 
 检查客户端是否已断开连接
 
@@ -239,13 +241,14 @@ ASGI 应用实例
 ---
 
 
-##### `url_for()`
+##### `url_for(name: str, /, **path_params: Any)`
 
 根据路由名反向生成 URL
 
 - **name** (`str`): 路由名称
 - **path_params** (`Any`): 路径参数
-**返回值** (`object`): URL 对象
+
+**返回值**: object URL 对象
 
 ---
 
@@ -266,14 +269,15 @@ ASGI 应用实例
 > 3. 所有 send/receive 方法与 fastapi.WebSocket 完全一致
 
 **示例**:
+
 ```python
->>> @sdk.router.ws("MyModule", "/ws/chat")
-... async def chat(ws: WebSocketConnection):
-...     @ws.on_disconnect
-...     async def on_close(ws, reason="unknown"):
-...         print(f"Disconnected: {reason}")
-...     async for msg in ws.iter_text():
-...         await ws.send_text(f"Echo: {msg}")
+@sdk.router.ws("MyModule", "/ws/chat")
+async def chat(ws: WebSocketConnection):
+    @ws.on_disconnect
+    async def on_close(ws, reason="unknown"):
+        print(f"Disconnected: {reason}")
+    async for msg in ws.iter_text():
+        await ws.send_text(f"Echo: {msg}")
 ```
 
 
@@ -287,52 +291,52 @@ ASGI 应用实例
 ---
 
 
-##### `base_url()`
+##### `base_url`（property）
 
 基础 URL
 
-**返回值** (`object`): URL 对象
+**返回值**: object URL 对象
 
 ---
 
 
-##### `query_params()`
+##### `query_params`（property）
 
 查询参数
 
-**返回值** (`object`): QueryParams 对象
+**返回值**: object QueryParams 对象
 
 ---
 
 
-##### `path_params()`
+##### `path_params -> dict[str, Any]`（property）
 
 路径参数
 
-**返回值** (`dict[str,`): Any] 路径参数字典
+**返回值** (`dict[str, Any]`): 路径参数字典
 
 ---
 
 
-##### `cookies()`
+##### `cookies -> dict[str, str]`（property）
 
 Cookie 字典
 
-**返回值** (`dict[str,`): str] Cookie 键值对
+**返回值**: dict[str, str] Cookie 键值对
 
 ---
 
 
-##### `client()`
+##### `client`（property）
 
 客户端地址
 
-**返回值** (`object`): | None 包含 .host 和 .port 属性的地址对象
+**返回值** (`object | None`): 包含 .host 和 .port 属性的地址对象
 
 ---
 
 
-##### `state()`
+##### `state`（property）
 
 连接级状态存储
 
@@ -341,7 +345,7 @@ Cookie 字典
 ---
 
 
-##### `app()`
+##### `app`（property）
 
 ASGI 应用实例
 
@@ -350,16 +354,16 @@ ASGI 应用实例
 ---
 
 
-##### `session()`
+##### `session -> dict[str, Any]`（property）
 
 会话数据
 
-**返回值** (`dict[str,`): Any] 会话数据
+**返回值** (`dict[str, Any]`): 会话数据
 
 ---
 
 
-##### `auth()`
+##### `auth -> Any`（property）
 
 认证信息
 
@@ -368,7 +372,7 @@ ASGI 应用实例
 ---
 
 
-##### `user()`
+##### `user -> Any`（property）
 
 用户信息
 
@@ -377,27 +381,27 @@ ASGI 应用实例
 ---
 
 
-##### `async accept(subprotocol: str | None = None, headers: Iterable[tuple[bytes, bytes]] | None = None)`
+##### `async accept(subprotocol: str | None = None, headers: Iterable[tuple[bytes, bytes]] | None = None) -> None`
 
 接受 WebSocket 连接
 
-- **subprotocol** (`str`): | None 子协议 (可选)
-- **headers** (`Iterable[tuple[bytes,`): bytes]] | None 额外响应头 (可选)
+- **subprotocol** (`str | None`): 子协议 (可选)
+- **headers**: Iterable[tuple[bytes, bytes]] | None 额外响应头 (可选)
 
 ---
 
 
-##### `async close(code: int = 1000, reason: str | None = None)`
+##### `async close(code: int = 1000, reason: str | None = None) -> None`
 
 关闭 WebSocket 连接
 
 - **code** (`int`): 关闭码 (默认: 1000)
-- **reason** (`str`): | None 关闭原因 (可选)
+- **reason** (`str | None`): 关闭原因 (可选)
 
 ---
 
 
-##### `async receive_text()`
+##### `async receive_text() -> str`
 
 接收文本消息
 
@@ -406,7 +410,7 @@ ASGI 应用实例
 ---
 
 
-##### `async receive_bytes()`
+##### `async receive_bytes() -> bytes`
 
 接收二进制消息
 
@@ -415,17 +419,18 @@ ASGI 应用实例
 ---
 
 
-##### `async receive_json(mode: str = 'text')`
+##### `async receive_json(mode: str = 'text') -> Any`
 
 接收 JSON 消息
 
 - **mode** (`str`): 接收模式 ("text" 或 "binary") (默认: "text")
+
 **返回值** (`Any`): 解析后的 JSON 数据
 
 ---
 
 
-##### `async send_text(data: str)`
+##### `async send_text(data: str) -> None`
 
 发送文本消息
 
@@ -434,7 +439,7 @@ ASGI 应用实例
 ---
 
 
-##### `async send_bytes(data: bytes)`
+##### `async send_bytes(data: bytes) -> None`
 
 发送二进制消息
 
@@ -443,7 +448,7 @@ ASGI 应用实例
 ---
 
 
-##### `async send_json(data: Any, mode: str = 'text')`
+##### `async send_json(data: Any, mode: str = 'text') -> None`
 
 发送 JSON 消息
 
@@ -457,20 +462,20 @@ ASGI 应用实例
 
 低级 ASGI receive
 
-**返回值** (`dict`): ASGI 消息
+**返回值**: dict ASGI 消息
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `async send(message)`
+##### `async send(message) -> None`
 
 低级 ASGI send
 
-- **message** (`dict`): ASGI 消息
+- **message**: dict ASGI 消息
 
-> **内部方法**
+**内部方法**
 
 ---
 
@@ -492,12 +497,13 @@ SSE (Server-Sent Events) 事件发送器 — 服务器无关的 SSE 协议实现
 > 4. 调用 ``close()`` 优雅关闭连接
 
 **示例**:
+
 ```python
->>> @sdk.router.sse("MyModule", "/events")
-... async def event_stream(sse: SseEmitter):
-...     while True:
-...         await sse.send({"msg": "hello"}, event="update")
-...         await asyncio.sleep(1)
+@sdk.router.sse("MyModule", "/events")
+async def event_stream(sse: SseEmitter):
+    while True:
+        await sse.send({"msg": "hello"}, event="update")
+        await asyncio.sleep(1)
 ```
 
 
@@ -506,13 +512,14 @@ SSE (Server-Sent Events) 事件发送器 — 服务器无关的 SSE 协议实现
 
 ##### `__init__(on_send, on_close = None, request = None)`
 
-- **on_send** (`回调函数，接收格式化后的`): SSE 文本并发送到底层传输层
-- **on_close** (`可选回调函数，连接关闭时调用`): - **request**: 可选，底层 HTTP 请求对象
+- **on_send**: 回调函数，接收格式化后的 SSE 文本并发送到底层传输层
+- **on_close**: 可选回调函数，连接关闭时调用
+- **request**: 可选，底层 HTTP 请求对象
 
 ---
 
 
-##### `request()`
+##### `request`（property）
 
 底层 HTTP 请求对象
 
@@ -524,7 +531,7 @@ SSE (Server-Sent Events) 事件发送器 — 服务器无关的 SSE 协议实现
 ---
 
 
-##### `closed()`
+##### `closed -> bool`（property）
 
 连接是否已关闭
 
@@ -533,7 +540,7 @@ SSE (Server-Sent Events) 事件发送器 — 服务器无关的 SSE 协议实现
 ---
 
 
-##### `async send(data = None, event: str | None = None, id: str | None = None, retry: int | None = None)`
+##### `async send(data = None, event: str | None = None, id: str | None = None, retry: int | None = None) -> None`
 
 发送一个 SSE 事件
 
@@ -544,21 +551,25 @@ SSE (Server-Sent Events) 事件发送器 — 服务器无关的 SSE 协议实现
 - ``data:`` 行（事件数据，多行自动拆分）
 - 末尾双换行结束一个事件
 
-- **data** (`事件数据。非`): str 类型自动 JSON 序列化。为 None 时仅发送事件类型
-- **event** (`可选事件类型名`): - **id**: 可选事件 ID，不传则自动生成
-- **retry** (`可选重试间隔（毫秒）`): **异常**: `RuntimeError` - 连接已关闭时抛出
+- **data**: 事件数据。非 str 类型自动 JSON 序列化。为 None 时仅发送事件类型
+- **event**: 可选事件类型名
+- **id**: 可选事件 ID，不传则自动生成
+- **retry**: 可选重试间隔（毫秒）
+
+**异常**: `RuntimeError` - 连接已关闭时抛出
 
 **示例**:
+
 ```python
->>> await sse.send({"msg": "hello"})
->>> await sse.send("plain text", event="notice")
->>> await sse.send({"error": "boom"}, event="error", id="err-1")
+await sse.send({"msg": "hello"})
+await sse.send("plain text", event="notice")
+await sse.send({"error": "boom"}, event="error", id="err-1")
 ```
 
 ---
 
 
-##### `async close()`
+##### `async close() -> None`
 
 关闭 SSE 连接
 

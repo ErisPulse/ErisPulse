@@ -14,7 +14,7 @@
 语言代码沿用 CLI i18n 的 5 种：zh-CN / zh-TW / en / ja / ru。
 用户语言未知时回退英文（en）。
 
-> **内部方法**
+**内部方法**
 
 ---
 
@@ -39,25 +39,26 @@
 ---
 
 
-##### `_detect_lang()`
+##### `_detect_lang() -> str`（staticmethod）
 
 从 CLI i18n 检测当前语言，失败回退默认
 
 ---
 
 
-##### `t(key: str)`
+##### `t(key: str, **kwargs: Any) -> str`
 
 获取指定文案键在目标语言下的文本
 
-- **key** (`文案键（见`): ``_TRANSLATIONS`` / ``_EN_FALLBACK``）
-- **kwargs** (`填充占位符（如`): ``name=``/``event=``/``content=``）
+- **key**: 文案键（见 ``_TRANSLATIONS`` / ``_EN_FALLBACK``）
+- **kwargs**: 填充占位符（如 ``name=``/``event=``/``content=``）
+
 **返回值**: 文本；未知键返回键名
 
 ---
 
 
-##### `all()`
+##### `all() -> dict[str, str]`
 
 返回当前语言下所有文案（未格式化）
 

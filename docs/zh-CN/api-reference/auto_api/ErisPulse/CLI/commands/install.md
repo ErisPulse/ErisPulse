@@ -31,7 +31,7 @@ install 命令
 ---
 
 
-##### `_build_extra_pip_args(args)`
+##### `_build_extra_pip_args(args) -> list`
 
 根据解析后的命令行参数构建额外的 pip 安装参数列表
 
@@ -78,7 +78,7 @@ install 命令
 
 搜索并安装
 
-> **内部方法**
+**内部方法**
 
 - **remote_packages** (`dict`): 远程包列表
 - **upgrade** (`bool`): 是否升级

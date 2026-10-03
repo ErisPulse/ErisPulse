@@ -20,94 +20,113 @@ ErisPulse 会话类型管理模块
 ## 函数列表
 
 
-### `register_custom_type(receive_type: str, send_type: str, id_field: str, platform: str | None = None)`
+### `register_custom_type(receive_type: str, send_type: str, id_field: str, platform: str | None = None) -> bool`
 
 注册自定义会话类型
 
 注册期间若处于模块加载 / 适配器启动上下文（current_owner 已设置），
 会自动记录归属，模块卸载或适配器关闭时自动注销对应类型。
 
-- **receive_type** (`接收事件类型（detail_type）`): - **send_type**: 发送目标类型
-- **id_field** (`对应的ID字段名`): - **platform**: 平台名称（可选，用于区分同名不同平台的类型）
+- **receive_type**: 接收事件类型（detail_type）
+- **send_type**: 发送目标类型
+- **id_field**: 对应的ID字段名
+- **platform**: 平台名称（可选，用于区分同名不同平台的类型）
+
 **返回值**: 是否注册成功
 
 ---
 
 
-### `unregister_custom_type(receive_type: str, platform: str | None = None)`
+### `unregister_custom_type(receive_type: str, platform: str | None = None) -> bool`
 
 注销自定义会话类型
 
-- **receive_type** (`接收事件类型`): - **platform**: 平台名称
+- **receive_type**: 接收事件类型
+- **platform**: 平台名称
+
 **返回值**: 是否注销成功
 
 ---
 
 
-### `unregister_custom_types_by_owner(owner: str)`
+### `unregister_custom_types_by_owner(owner: str) -> int`
 
 注销指定归属者注册的全部自定义会话类型
 
 供模块卸载 / 适配器关闭时兜底清理，避免适配器重载或模块卸载后
 旧的自定义类型映射残留。
 
-- **owner** (`归属者（模块名或适配器平台名）`): **返回值**: 注销的类型数量
+- **owner**: 归属者（模块名或适配器平台名）
+
+**返回值**: 注销的类型数量
 
 ---
 
 
-### `get_id_field(receive_type: str, platform: str | None = None)`
+### `get_id_field(receive_type: str, platform: str | None = None) -> str`
 
 根据接收类型获取对应的ID字段名
 
-- **receive_type** (`接收事件类型`): - **platform**: 平台名称（可选）
-**返回值**: ID字段名
+- **receive_type**: 接收事件类型
+- **platform**: 平台名称（可选）
+
+**返回值** (`ID`): 字段名
 
 ---
 
 
-### `get_receive_type(id_field: str, platform: str | None = None)`
+### `get_receive_type(id_field: str, platform: str | None = None) -> str`
 
 根据ID字段获取对应的接收类型
 
-- **id_field** (`ID字段名`): - **platform**: 平台名称（可选）
+- **id_field** (`ID`): 字段名
+- **platform**: 平台名称（可选）
+
 **返回值**: 接收类型
 
 ---
 
 
-### `convert_to_send_type(receive_type: str | None, platform: str | None = None)`
+### `convert_to_send_type(receive_type: str | None, platform: str | None = None) -> str`
 
 将接收类型转换为发送目标类型
 
-- **receive_type** (`接收事件类型（``None```): 时返回默认值 ``"user"``）
-- **platform** (`平台名称（可选）`): **返回值** (`发送目标类型`): 
+- **receive_type**: 接收事件类型（``None`` 时返回默认值 ``"user"``）
+- **platform**: 平台名称（可选）
+
+**返回值**: 发送目标类型
+
 **示例**:
+
 ```python
->>> convert_to_send_type("private")  # 返回 "user"
->>> convert_to_send_type("group")   # 返回 "group"
->>> convert_to_send_type(None)       # 返回 "user"
+convert_to_send_type("private")  # 返回 "user"
+convert_to_send_type("group")   # 返回 "group"
+convert_to_send_type(None)       # 返回 "user"
 ```
 
 ---
 
 
-### `convert_to_receive_type(send_type: str, platform: str | None = None)`
+### `convert_to_receive_type(send_type: str, platform: str | None = None) -> str`
 
 将发送目标类型转换为接收类型
 
-- **send_type** (`发送目标类型`): - **platform**: 平台名称（可选）
-**返回值** (`接收类型`): 
+- **send_type**: 发送目标类型
+- **platform**: 平台名称（可选）
+
+**返回值**: 接收类型
+
 **示例**:
+
 ```python
->>> convert_to_receive_type("user")   # 返回 "private"
->>> convert_to_receive_type("group")  # 返回 "group"
+convert_to_receive_type("user")   # 返回 "private"
+convert_to_receive_type("group")  # 返回 "group"
 ```
 
 ---
 
 
-### `infer_receive_type(event: dict, platform: str | None = None)`
+### `infer_receive_type(event: dict, platform: str | None = None) -> str`
 
 根据事件数据自动推断接收类型
 
@@ -117,75 +136,90 @@ ErisPulse 会话类型管理模块
    不是会话类型，此时根据 ID 字段推断
 3. 最后根据存在的 ID 字段，按优先级返回
 
-- **event** (`事件数据字典`): - **platform**: 平台名称（可选）
-**返回值** (`推断的接收类型`): 
+- **event**: 事件数据字典
+- **platform**: 平台名称（可选）
+
+**返回值**: 推断的接收类型
+
 **示例**:
+
 ```python
->>> # 消息事件：detail_type 就是会话类型
->>> event = {"type": "message", "detail_type": "group", "group_id": "123"}
->>> infer_receive_type(event)  # 返回 "group"
->>>
->>> # 通知事件：detail_type 是语义子类型，从 ID 字段推断
->>> event = {"type": "notice", "detail_type": "group_member_increase", "group_id": "123"}
->>> infer_receive_type(event)  # 返回 "group"（而非 "group_member_increase"）
->>>
->>> event = {"type": "notice", "detail_type": "friend_increase", "user_id": "456"}
->>> infer_receive_type(event)  # 返回 "private"
+# 消息事件：detail_type 就是会话类型
+event = {"type": "message", "detail_type": "group", "group_id": "123"}
+infer_receive_type(event)  # 返回 "group"
+
+# 通知事件：detail_type 是语义子类型，从 ID 字段推断
+event = {"type": "notice", "detail_type": "group_member_increase", "group_id": "123"}
+infer_receive_type(event)  # 返回 "group"（而非 "group_member_increase"）
+
+event = {"type": "notice", "detail_type": "friend_increase", "user_id": "456"}
+infer_receive_type(event)  # 返回 "private"
 ```
 
 ---
 
 
-### `get_target_id(event: dict, platform: str | None = None)`
+### `get_target_id(event: dict, platform: str | None = None) -> str`
 
 获取事件的目标ID（根据推断的会话类型）
 
-- **event** (`事件数据字典`): - **platform**: 平台名称（可选）
-**返回值** (`目标ID`): 
+- **event**: 事件数据字典
+- **platform**: 平台名称（可选）
+
+**返回值**: 目标ID
+
 **示例**:
+
 ```python
->>> event = {"detail_type": "group", "group_id": "123"}
->>> get_target_id(event)  # 返回 "123"
+event = {"detail_type": "group", "group_id": "123"}
+get_target_id(event)  # 返回 "123"
 ```
 
 ---
 
 
-### `get_send_type_and_target_id(event: dict, platform: str | None = None)`
+### `get_send_type_and_target_id(event: dict, platform: str | None = None) -> tuple[str, str]`
 
 获取发送类型和目标ID（一步完成类型转换和ID获取）
 
-- **event** (`事件数据字典`): - **platform**: 平台名称（可选）
-**返回值** (`(发送类型,`): 目标ID)
+- **event**: 事件数据字典
+- **platform**: 平台名称（可选）
+
+**返回值**: (发送类型, 目标ID)
 
 **示例**:
+
 ```python
->>> event = {"detail_type": "private", "user_id": "123"}
->>> get_send_type_and_target_id(event)  # 返回 ("user", "123")
+event = {"detail_type": "private", "user_id": "123"}
+get_send_type_and_target_id(event)  # 返回 ("user", "123")
 ```
 
 ---
 
 
-### `is_standard_type(receive_type: str)`
+### `is_standard_type(receive_type: str) -> bool`
 
 检查是否为标准接收类型
 
-- **receive_type** (`接收事件类型`): **返回值**: 是否为标准类型
+- **receive_type**: 接收事件类型
+
+**返回值**: 是否为标准类型
 
 ---
 
 
-### `is_valid_send_type(send_type: str)`
+### `is_valid_send_type(send_type: str) -> bool`
 
 检查是否为有效的发送类型
 
-- **send_type** (`发送目标类型`): **返回值**: 是否为有效类型
+- **send_type**: 发送目标类型
+
+**返回值**: 是否为有效类型
 
 ---
 
 
-### `get_standard_types()`
+### `get_standard_types() -> set[str]`
 
 获取所有标准接收类型
 
@@ -194,7 +228,7 @@ ErisPulse 会话类型管理模块
 ---
 
 
-### `get_send_types()`
+### `get_send_types() -> set[str]`
 
 获取所有发送类型
 
@@ -203,11 +237,13 @@ ErisPulse 会话类型管理模块
 ---
 
 
-### `clear_custom_types(platform: str | None = None)`
+### `clear_custom_types(platform: str | None = None) -> int`
 
 清除自定义类型映射
 
-- **platform** (`平台名称（可选，如果指定则只清除该平台的类型）`): **返回值**: 清除的类型数量
+- **platform**: 平台名称（可选，如果指定则只清除该平台的类型）
+
+**返回值**: 清除的类型数量
 
 ---
 

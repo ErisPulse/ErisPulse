@@ -38,71 +38,86 @@ ErisPulse 管理器基类
 #### 方法列表
 
 
-##### `register(name: str, class_type: type, info: dict | None = None)`
+##### `register(name: str, class_type: type, info: dict | None = None) -> bool`
 
 注册类
 
-- **name** (`名称`): - **class_type**: 类类型
-- **info** (`额外信息`): **返回值**: 是否注册成功
+- **name**: 名称
+- **class_type**: 类类型
+- **info**: 额外信息
+
+**返回值**: 是否注册成功
 
 ---
 
 
-##### `unregister(name: str)`
+##### `unregister(name: str) -> bool`
 
 取消注册
 
-- **name** (`名称`): **返回值**: 是否取消成功
+- **name**: 名称
+
+**返回值**: 是否取消成功
 
 ---
 
 
-##### `get(name: str)`
+##### `get(name: str) -> Any`
 
 获取实例
 
-- **name** (`名称`): **返回值** (`实例或`): None
+- **name**: 名称
+
+**返回值**: 实例或 None
 
 ---
 
 
-##### `exists(name: str)`
+##### `exists(name: str) -> bool`
 
 检查是否存在（在配置中注册）
 
-- **name** (`名称`): **返回值**: 是否存在
+- **name**: 名称
+
+**返回值**: 是否存在
 
 ---
 
 
-##### `is_enabled(name: str)`
+##### `is_enabled(name: str) -> bool`
 
 检查是否启用
 
-- **name** (`名称`): **返回值**: 是否启用
+- **name**: 名称
+
+**返回值**: 是否启用
 
 ---
 
 
-##### `enable(name: str)`
+##### `enable(name: str) -> bool`
 
 启用
 
-- **name** (`名称`): **返回值**: 是否成功
+- **name**: 名称
+
+**返回值**: 是否成功
 
 ---
 
 
-##### `disable(name: str)`
+##### `disable(name: str) -> bool`
 
 禁用
 
-- **name** (`名称`): **返回值**: 是否成功
+- **name**: 名称
+
+**返回值**: 是否成功
 
 ---
 
 
-##### `list_registered()`
+##### `list_registered() -> list[str]`
 
 列出所有已注册的项
 
@@ -111,28 +126,30 @@ ErisPulse 管理器基类
 ---
 
 
-##### `list_items()`
+##### `list_items() -> dict[str, bool]`
 
 列出所有项及其状态
 
-**返回值** (`{名称:`): 是否启用} 字典
+**返回值**: {名称: 是否启用} 字典
 
 ---
 
 
-##### `is_running(name: str)`
+##### `is_running(name: str) -> bool`
 
 检查项是否正在运行
 
 对于适配器：检查是否已启动
 对于模块：检查是否已加载
 
-- **name** (`名称`): **返回值**: 是否正在运行
+- **name**: 名称
+
+**返回值**: 是否正在运行
 
 ---
 
 
-##### `list_running()`
+##### `list_running() -> list[str]`
 
 列出所有正在运行的项
 

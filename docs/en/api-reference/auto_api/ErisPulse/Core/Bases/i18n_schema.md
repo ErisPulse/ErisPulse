@@ -28,48 +28,56 @@ ErisPulse i18n 键声明 Schema 模块
 
 单个 i18n 翻译键的声明
 
-- **default** (`兜底文本（语言无关）。当所有已注册语言均未覆盖此键时，`): 作为最后的显示文本。**不会注册到任何语言**。
+- **default**: 兜底文本（语言无关）。当所有已注册语言均未覆盖此键时，
+
+                作为最后的显示文本。**不会注册到任何语言**。
                 各国开发者可使用自己母语填写此字段，框架不做任何假设。
-- **key** (`完整的翻译键路径（如`): ``"mymodule.welcome"``）。
+- **key**: 完整的翻译键路径（如 ``"mymodule.welcome"``）。
+
             省略时使用属性名 + 调用方提供的前缀自动生成。
-- **zh_CN** (`简体中文翻译`): - **zh_TW**: 繁体中文翻译
-- **en** (`英文翻译`): - **ja**: 日文翻译
-- **ru** (`俄文翻译`): 使用示例::
+- **zh_CN**: 简体中文翻译
+- **zh_TW**: 繁体中文翻译
+- **en**: 英文翻译
+- **ja**: 日文翻译
+- **ru**: 俄文翻译
 
-    from ErisPulse.Core.Bases import BaseI18n, I18nKey
+使用示例:
+```
+from ErisPulse.Core.Bases import BaseI18n, I18nKey
 
-    class MyModule(BaseModule):
-        class I18nClass(BaseI18n):
-            # 自动生成键: mymodule.welcome
-            welcome: I18nKey = I18nKey(
-                default="Welcome",        # 语言无关的兜底
-                zh_CN="欢迎",
-                zh_TW="歡迎",
-                en="Welcome",
-                ja="ようこそ",
-                ru="Добро пожаловать",
-            )
+class MyModule(BaseModule):
+    class I18nClass(BaseI18n):
+        # 自动生成键: mymodule.welcome
+        welcome: I18nKey = I18nKey(
+            default="Welcome",        # 语言无关的兜底
+            zh_CN="欢迎",
+            zh_TW="歡迎",
+            en="Welcome",
+            ja="ようこそ",
+            ru="Добро пожаловать",
+        )
 
-            # 显式指定键路径
-            deep: I18nKey = I18nKey(
-                key="mymodule.deep.nested.key",
-                default="Default text",
-                zh_CN="默认文本",
-                zh_TW="預設文本",
-                en="Default text",
-                ja="デフォルトテキスト",
-                ru="Текст по умолчанию",
-            )
+        # 显式指定键路径
+        deep: I18nKey = I18nKey(
+            key="mymodule.deep.nested.key",
+            default="Default text",
+            zh_CN="默认文本",
+            zh_TW="預設文本",
+            en="Default text",
+            ja="デフォルトテキスト",
+            ru="Текст по умолчанию",
+        )
+```
 
 
 #### 方法列表
 
 
-##### `explicit_key()`
+##### `explicit_key -> str | None`（property）
 
 获取显式指定的键路径（如有）
 
-**返回值** (`显式键名字符串，或`): None 表示使用前缀+属性名自动生成
+**返回值**: 显式键名字符串，或 None 表示使用前缀+属性名自动生成
 
 ---
 
@@ -91,80 +99,86 @@ i18n 键声明集合的基类
 > 6. ``I18nKey.default`` 是语言无关的兜底文本，不参与注册；
 > 实际翻译必须通过 ``zh_CN=`` / ``en=`` 等参数显式声明
 
-使用示例::
+使用示例:
+```
+from ErisPulse.Core.Bases import BaseModule, BaseI18n, I18nKey
 
-    from ErisPulse.Core.Bases import BaseModule, BaseI18n, I18nKey
-
-    class MyModule(BaseModule):
-        class I18nClass(BaseI18n):
-            welcome: I18nKey = I18nKey(
-                default="Welcome",
-                zh_CN="欢迎",
-                zh_TW="歡迎",
-                en="Welcome",
-                ja="ようこそ",
-                ru="Добро пожаловать",
-            )
-            goodbye: I18nKey = I18nKey(
-                default="Bye",
-                zh_CN="再见",
-                zh_TW="再見",
-                en="Goodbye",
-                ja="さようなら",
-                ru="До свидания",
-            )
-
-也可独立使用（手动注册）::
-
-    class MyKeys(BaseI18n):
-        hello: I18nKey = I18nKey(
-            default="Hello",
-            zh_CN="你好",
-            zh_TW="你好",
-            en="Hello",
-            ja="こんにちは",
-            ru="Привет",
+class MyModule(BaseModule):
+    class I18nClass(BaseI18n):
+        welcome: I18nKey = I18nKey(
+            default="Welcome",
+            zh_CN="欢迎",
+            zh_TW="歡迎",
+            en="Welcome",
+            ja="ようこそ",
+            ru="Добро пожаловать",
         )
+        goodbye: I18nKey = I18nKey(
+            default="Bye",
+            zh_CN="再见",
+            zh_TW="再見",
+            en="Goodbye",
+            ja="さようなら",
+            ru="До свидания",
+        )
+```
 
-    MyKeys.register(prefix="myapp.", domain="myapp")
+也可独立使用（手动注册）:
+```
+class MyKeys(BaseI18n):
+    hello: I18nKey = I18nKey(
+        default="Hello",
+        zh_CN="你好",
+        zh_TW="你好",
+        en="Hello",
+        ja="こんにちは",
+        ru="Привет",
+    )
+
+MyKeys.register(prefix="myapp.", domain="myapp")
+```
 
 
 #### 方法列表
 
 
-##### `_collect_keys()`
+##### `_collect_keys() -> dict[str, I18nKey]`（classmethod）
 
 收集类中所有声明的 I18nKey
 
 遍历 MRO（含父类继承），收集所有非下划线开头的 I18nKey 类属性。
 子类同名属性会覆盖父类（与 Python 属性查找语义一致）。
 
-**返回值** (```{属性名:`): I18nKey 实例}`` 字典
+**返回值**: ``{属性名: I18nKey 实例}`` 字典
 
 ---
 
 
-##### `register(prefix: str = '', domain: str = 'app')`
+##### `register(prefix: str = '', domain: str = 'app') -> int`（classmethod）
 
 注册所有翻译键到 i18n 系统
 
 仅注册 :class:`I18nKey` 中显式声明的语言翻译。
 ``default`` 字段是语言无关的兜底文本，不参与注册。
 
-- **prefix** (`键名前缀（通常是模块名`): + ``.``，如 ``"mymodule."``）。
+- **prefix**: 键名前缀（通常是模块名 + ``.``，如 ``"mymodule."``）。
+
               仅对未显式指定 ``key`` 的翻译键生效。
 - **domain** (`i18n`): 域标识，用于卸载时按域统一清理。
+
               建议使用模块名。
-**返回值** (`注册的翻译条目总数`): 
+**返回值**: 注册的翻译条目总数
+
 **示例**:
+
 ```python
->>> class MyKeys(BaseI18n):
-...     hello: I18nKey = I18nKey(
-...         default="Hello",
-...         zh_CN="你好",
-...         en="Hello",
-...     )
->>> MyKeys.register(prefix="myapp.", domain="myapp")
+class MyKeys(BaseI18n):
+    hello: I18nKey = I18nKey(
+        default="Hello",
+        zh_CN="你好",
+        en="Hello",
+    )
+MyKeys.register(prefix="myapp.", domain="myapp")
 2  # zh-CN + en
 ```
 

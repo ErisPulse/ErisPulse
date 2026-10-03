@@ -32,11 +32,12 @@ doctor 命令
 ---
 
 
-##### `_status(ok: bool)`
+##### `_status(ok: bool) -> str`（staticmethod）
 
 生成诊断项的状态标记文本（OK / FAIL，不使用 emoji）
 
 - **ok** (`bool`): 诊断项是否正常
+
 **返回值** (`str`): 带样式的状态标记文本
 
 ---

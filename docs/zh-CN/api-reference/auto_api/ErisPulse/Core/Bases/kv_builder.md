@@ -10,15 +10,19 @@ ErisPulse KV 查询构建器
 将链式 SQL 操作（Table/Insert/Select/Where 等）映射为 KV 键前缀操作。
 任何实现了 BaseStorage KV 接口的后端（Redis、内存字典等）均可使用。
 
-键命名规则：
-    _table:{table_name}:schema    — 表结构定义（列名 → 类型）
-    _table:{table_name}:next_id   — 自增 ID 计数器
-    _table:{table_name}:data:{id} — 行数据（JSON 序列化）
+键命名规则:
+```
+_table:{table_name}:schema    — 表结构定义（列名 → 类型）
+_table:{table_name}:next_id   — 自增 ID 计数器
+_table:{table_name}:data:{id} — 行数据（JSON 序列化）
+```
 
-使用方式：
-    >>> storage = MyKVStorage()
-    >>> qb = KVQueryBuilder(storage, "users")
-    >>> qb.Insert({"name": "Alice", "age": 30}).Execute()
+使用方式:
+```
+storage = MyKVStorage()
+qb = KVQueryBuilder(storage, "users")
+qb.Insert({"name": "Alice", "age": 30}).Execute()
+```
 
 > **提示**
 > 1. 查询性能取决于 get_all_keys() 的效率
@@ -41,21 +45,21 @@ ErisPulse KV 查询构建器
 #### 方法列表
 
 
-##### `_get_next_id()`
+##### `_get_next_id() -> int`
 
 获取并递增自增 ID
 
 ---
 
 
-##### `_scan_rows()`
+##### `_scan_rows() -> list[tuple[int, dict]]`
 
 扫描所有行，返回 [(row_id, row_data), ...]
 
 ---
 
 
-##### `_match_row(row: dict)`
+##### `_match_row(row: dict) -> bool`
 
 检查行是否满足所有 WHERE 条件
 
@@ -69,7 +73,7 @@ ErisPulse KV 查询构建器
 ---
 
 
-##### `_eval_clause(row: dict, clause: str)`
+##### `_eval_clause(row: dict, clause: str) -> bool`
 
 评估单条已绑定的 WHERE 子句
 
@@ -79,35 +83,35 @@ clause 中的占位符 `?` 已在 `_bind_clauses` 中替换为实际值。
 ---
 
 
-##### `_coerce_value(expected: Any, actual: Any)`
+##### `_coerce_value(expected: Any, actual: Any) -> Any`（staticmethod）
 
 根据 actual 的类型，将 expected 转换为同类型
 
 ---
 
 
-##### `_safe_cmp(a: Any, b: Any)`
+##### `_safe_cmp(a: Any, b: Any) -> int`（staticmethod）
 
 安全比较，处理 None
 
 ---
 
 
-##### `_require_data(expected: type[T], key: str)`
+##### `_require_data(expected: type[T], key: str) -> T`
 
-> **内部方法** 校验构建器数据形态并返回（同步/异步执行路径共用，兼作类型收窄）
+**内部方法** 校验构建器数据形态并返回（同步/异步执行路径共用，兼作类型收窄）
 
 ---
 
 
-##### `async _ascan_rows()`
+##### `async _ascan_rows() -> list[tuple[int, dict]]`
 
 异步扫描所有行
 
 ---
 
 
-##### `async aExecute()`
+##### `async aExecute() -> list[tuple] | int`
 
 异步执行查询
 

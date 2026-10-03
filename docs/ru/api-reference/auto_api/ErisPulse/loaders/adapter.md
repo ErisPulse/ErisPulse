@@ -27,8 +27,11 @@ ErisPulse 适配器加载器
 
 > **提示**
 > 使用方式：
-> >>> loader = AdapterLoader()
-> >>> adapter_objs, enabled, disabled = await loader.load(adapter_manager)
+> ```python
+> loader = AdapterLoader()
+> adapter_objs, enabled, disabled = await loader.load(adapter_manager)
+> ```
+>
 
 
 #### 方法列表
@@ -41,7 +44,7 @@ ErisPulse 适配器加载器
 ---
 
 
-##### `_get_entry_point_group()`
+##### `_get_entry_point_group() -> str`
 
 获取 entry-point 组名
 
@@ -50,11 +53,15 @@ ErisPulse 适配器加载器
 ---
 
 
-##### `async load(manager_instance: Any)`
+##### `async load(manager_instance: Any) -> tuple[dict[str, Any], list[str], list[str]]`
 
 从 entry-points 加载对象（使用 AdapterFinder）
 
-- **manager_instance** (`管理器实例`): **返回值** (`dict[str,`): Any]: 对象字典
+- **manager_instance**: 管理器实例
+
+**返回值**:
+
+    dict[str, Any]: 对象字典
     list[str]: 启用列表
     list[str]: 禁用列表
 
@@ -63,15 +70,19 @@ ErisPulse 适配器加载器
 ---
 
 
-##### `async _process_entry_point(entry_point: Any, objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any)`
+##### `async _process_entry_point(entry_point: Any, objs: dict[str, Any], enabled_list: list[str], disabled_list: list[str], manager_instance: Any) -> tuple[dict[str, Any], list[str], list[str], bool]`
 
 处理单个适配器 entry-point
 
-- **entry_point** (`entry-point`): 对象
-- **objs** (`适配器对象字典`): - **enabled_list**: 启用的适配器列表
-- **disabled_list** (`停用的适配器列表`): - **manager_instance**: 适配器管理器实例
+- **entry_point**: entry-point 对象
+- **objs**: 适配器对象字典
+- **enabled_list**: 启用的适配器列表
+- **disabled_list**: 停用的适配器列表
+- **manager_instance**: 适配器管理器实例
 
-**返回值** (`dict[str,`): Any]: 更新后的适配器对象字典
+**返回值**:
+
+    dict[str, Any]: 更新后的适配器对象字典
     list[str]: 更新后的启用适配器列表
     list[str]: 更新后的禁用适配器列表
     bool: 是否为新适配器
@@ -81,12 +92,17 @@ ErisPulse 适配器加载器
 ---
 
 
-##### `async register_to_manager(adapters: list[str], adapter_objs: dict[str, Any], manager_instance: Any)`
+##### `async register_to_manager(adapters: list[str], adapter_objs: dict[str, Any], manager_instance: Any) -> bool`
 
 将适配器注册到管理器
 
-- **adapters** (`适配器名称列表`): - **adapter_objs**: 适配器对象字典
-- **manager_instance** (`适配器管理器实例`): **返回值** (`适配器注册是否成功`): > **提示**
+- **adapters**: 适配器名称列表
+- **adapter_objs**: 适配器对象字典
+- **manager_instance**: 适配器管理器实例
+
+**返回值**: 适配器注册是否成功
+
+> **提示**
 > 此方法由初始化协调器调用
 
 ---

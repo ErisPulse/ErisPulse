@@ -31,18 +31,19 @@ list 命令
 ---
 
 
-##### `_print_installed_packages(pkg_type: str, outdated_only: bool = False, remote_packages: dict | None = None)`
+##### `_print_installed_packages(pkg_type: str, outdated_only: bool = False, remote_packages: dict | None = None, remote_unavailable: bool = False)`
 
 以表格形式打印已安装的模块或适配器
 
 - **pkg_type** (`str`): 组件类型 (modules 或 adapters)
 - **outdated_only** (`bool`): 是否仅显示可升级的包 (默认: False)
 - **remote_packages** (`Optional[dict`): ] 预取的远程索引，避免逐包重复拉取 (默认: None)
+- **remote_unavailable** (`bool`): 远程索引是否不可达（空结果区分文案用，默认: False）
 
 ---
 
 
-##### `_is_package_outdated(package_name: str, current_version: str, remote_packages: dict | None = None)`
+##### `_is_package_outdated(package_name: str, current_version: str, remote_packages: dict | None = None) -> bool`
 
 判断指定包是否存在较新的远程版本
 
@@ -55,7 +56,7 @@ list 命令
 ---
 
 
-##### `_print_package_scripts(packages: dict)`
+##### `_print_package_scripts(packages: dict) -> None`
 
 发现并展示已安装模块包注册的 console_scripts 入口
 

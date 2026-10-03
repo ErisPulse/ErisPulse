@@ -320,7 +320,7 @@ flowchart TD
 
 ## 模块热重载架构
 
-热重载对**全部模块来源**一致：本地插件可监控文件变更自动触发，任意模块也可通过 `sdk.reload_module()` / `sdk.module.reload()` 手动重载（PyPI 安装包模块在 pip 升级后调用即可生效）：
+热重载对**全部模块来源**一致：本地插件可监控文件变更自动触发，任意模块也可通过 `sdk.reload_module()` / `sdk.module.reload()` 手动重载（PyPI 安装包模块在 pip 升级后调用即可生效）；`sdk.reload_all_modules()` / `sdk.module.reload_all()` 可一次全量重载所有已注册模块（pip 批量升级后调用即可全部生效）：
 
 ```mermaid
 flowchart TD
@@ -330,15 +330,15 @@ flowchart TD
     D --> E["变更去抖（默认 1 秒）"]
     E --> F["_handle_change 解析插件名<br/>（单文件 / 包形式）"]
     F --> G["asyncio.run_coroutine_threadsafe<br/>调度回主事件循环"]
-    G --> H["sdk.reload_module(name)<br/>（也可对任意模块手动调用）"]
+    G --> H["sdk.reload_module(name, full=…)<br/>（也可对任意模块手动调用）"]
     H --> I["卸载旧实例（触发 on_unload）<br/>收集依赖者准备级联重载"]
     I --> J{"模块来源？"}
     J -->|"plugin_folder"| K["清理注册与插件 sys.modules<br/>重扫描 plugins/ 目录"]
-    J -->|"PyPI 安装包"| L["清理注册 + 按 top_level<br/>清理包 sys.modules 子树<br/>刷新导入缓存后重查 entry-point"]
+    J -->|"PyPI 安装包"| L["清理注册 + 按 top_level 清理包<br/>sys.modules 子树（full=True 时叠加<br/>旧模块对象顶层段兜底）<br/>刷新导入缓存后重查 entry-point"]
     K --> M["重新 register + load"]
     L --> M
     M --> N["挂载新实例到 sdk 属性"]
-    N --> O["级联重载依赖者<br/>（插件完整重载 / PyPI 重新实例化）"]
+    N --> O["级联重载依赖者<br/>（插件完整重载 / PyPI 重新实例化；<br/>full=True 时依赖者同样重导代码）"]
     K -.->|"文件已删除"| P["从加载结果移除"]
     L -.->|"entry-point 已消失（已卸载）"| P
 ```
@@ -347,6 +347,13 @@ flowchart TD
 
 - **本地插件**（`moduleInfo.meta.source == "plugin_folder"`）：清理插件名对应 `sys.modules` 后重扫描 `plugins/` 目录；文件已删除则从加载结果移除
 - **PyPI 安装包**：按 `meta.top_level` 清理包的 `sys.modules` 子树，刷新导入缓存（突破 entry-point 60 秒缓存）后重查并重新导入；entry-point 已消失（pip 卸载）则从加载结果移除
+
+**全量重载（`full=True`）与整体重载（`reload_all_modules`）：**
+
+- `top_level` 元数据缺失且无法推导时，默认重载**不清理** import 缓存（重导入复用旧模块对象，即"假重载"），框架会显式告警并建议改用 `full=True`——全量重载会叠加旧模块对象顶层包名兜底清理，确保重载后运行最新代码
+- `full=True` 时 PyPI 依赖者级联走完整重载（重导代码），默认模式仅重新实例化（既有语义）
+- 重载会把原本懒加载的模块强制激活（无提示的差异已改为显式日志）；`reload_all_modules()` 则保持懒加载策略、仅将重载前处于已加载态的模块重新激活
+- `reload_all_modules()` 按依赖拓扑序重新加载，单模块失败仅记录诊断并跳过（无整体回滚——on_unload 副作用不可撤销，与单模块热重载的尽力而为语义一致）；重载失败已回滚的场景同样如此，日志会明确提示旧实例处于已收尾状态
 
 
 
@@ -1234,9 +1241,9 @@ async def roll_handler(event, count: int, sides: int = 6, verbose: bool = False,
 - 声明的参数名必须存在于处理器签名中，否则注册期抛 `ValueError`
 - 不声明 `args=` / `options=` 的命令行为完全不变（向后兼容）
 
-### 命令治理（cooldown= / rate_limit= / deprecated=）
+### 命令治理（cooldown= / rate_limit= / usage_limit= / deprecated=）
 
-手写冷却计时、限流窗口、废弃提示可用声明替代，三者可任意组合。
+手写冷却计时、限流窗口、使用配额、废弃提示可用声明替代，四者可任意组合。
 
 **冷却**——时长语法与 `args=` 的 `duration` 类型一致（如 `"30s"`、`"1h30m"`、`"1d"`）：
 
@@ -1254,6 +1261,19 @@ async def search_handler(event):
     await event.reply("搜索结果")
 ```
 
+**配额**——周期内总次数上限（如 `"100/day"`、`"10/hour"`、`"500/30d"`），超限拒绝执行：
+
+```python
+@command("translate", usage_limit="100/day", usage_limit_key="user",
+         usage_limit_reply="今日翻译次数已用完")
+async def translate_handler(event):
+    ...
+```
+
+与冷却/限流不同，配额计数**经存储持久化**（KV 键 `erispulse.usage.<key>`，重启不丢）：
+存储不可达时自动退化为纯内存计数并告警（此时配额重启清零）。计数随配额周期
+切换自动清零，模块卸载时清理。
+
 **废弃**——调用时自动回复废弃文案，`deprecated_reject=True` 拒绝执行：
 
 ```python
@@ -1266,13 +1286,13 @@ async def old_handler(event): ...
 
 **行为要点**：
 
-- 冷却 / 限流命中默认**静默丢弃**（对称于作用域静默）；声明 `cooldown_reply=` / `rate_limit_reply=` 后命中即回复该文案
+- 冷却 / 限流 / 配额命中默认**静默丢弃**（对称于作用域静默）；声明 `cooldown_reply=` / `rate_limit_reply=` / `usage_limit_reply=` 后命中即回复该文案
 - 命令命中即认领——治理命中的命令不会漏给低优先级消息处理器
 - 治理判定位于全部权限检查与参数解析通过、实际执行前：无权限用户不触发，参数错误不消耗
-- 同时声明冷却与限流时冷却先判（冷却命中不占限流窗口）
+- 同时声明冷却与限流时冷却先判（冷却命中不占限流窗口）；配额在冷却/限流判定之后
 - `deprecated=` 默认回复文案后**继续执行**；`deprecated_reject=True` 拒绝执行（`command.executed` 钩子记 `success=False, error="deprecated"`）
 - `/help` 列表与单命令帮助自动显示废弃标记与文案
-- 状态为进程内内存，模块卸载时自动清理；跨进程共享 / 重启持久化不在范围内
+- 冷却与限流状态为进程内内存，模块卸载时自动清理；跨进程共享 / 重启持久化不在范围内（**usage 配额计数除外**——经存储持久化，见上节）
 - 声明在注册期校验（fail-fast）：语法非法、键粒度非白名单值、reply 未搭配主声明均抛 `ValueError`
 
 ### 处理器节流（throttle=）与防抖（debounce=）
@@ -1299,6 +1319,10 @@ async def search(event): ...
 （user / session / global），时长语法与 `duration` 一致。节流与 `pattern=` /
 `regex=` 等既有条件叠加生效（全部满足才触发）；间隔内丢弃仅记 TRACE 日志；
 声明在注册期校验；`throttle=` 与 `debounce=` 语义互斥（同时声明抛 `ValueError`）。
+
+> **防抖不半途掐断业务**：只有尚未越过等待窗口的待执行任务会被取消；已经
+> 越窗、正在执行中的处理器不会被新事件取消（避免停在任意 await 点产生
+> 部分副作用）。
 
 ### 依赖注入（Depends）
 
@@ -1546,7 +1570,7 @@ async def firewall(data):
 
 ## 命令分发决策链：为什么命令没触发
 
-一条命令消息依次经过：**命令文本判定 → 命令名/别名命中（未命中附拼写建议）→ 命中即认领 → 作用域 → 用户 ACL → 主人 → 权限 → 冷却/限流 → 参数解析 → 执行**。任何一步不满足即终止；治理命中（冷却/限流）默认静默丢弃，权限类拒绝会回复用户。
+一条命令消息依次经过：**命令文本判定 → 命令名/别名命中（未命中附拼写建议）→ 命中即认领 → 作用域 → 用户 ACL → 主人 → 权限 → 冷却/限流 → 配额（usage）→ 废弃（deprecated，notice/rejected）→ 参数解析 → 执行**（中间件可在事件层否决，见上一节）。任何一步不满足即终止；治理命中（冷却/限流/配额）默认静默丢弃，权限类拒绝会回复用户，废弃按声明回复或拒绝。
 
 测试中 `ErisPulse-Testing` 的 `dispatch()` 直接返回这条决策链（`DispatchTrace`，`trace.explain()` 输出逐行因果），生产环境可用 `ErisPulse.Core.Event.start_dispatch_trace()` 采集同样的记录。
 
@@ -1585,7 +1609,7 @@ blocked = ["MyModule"]
 > 只由**实际执行**的处理器（命令命中认领、回复命中认领、显式调用）决定；
 > 作用域拒绝本身既不认领也不阻断（静默跳过，消息继续走完剩余分发链）。
 
-> 作用域配置、匹配语法、运行时 API 见 [作用域（scope）](../../advanced/scope.md)。
+> 作用域配置、匹配语法、运行时 API 见 [作用域（scope）](../advanced/scope.md)。
 
 ## 事件覆写：不改模块代码，覆写任意事件类型的行为
 
@@ -6166,7 +6190,7 @@ services:
 
 # 模块测试（ErisPulse-Testing）
 
-[ErisPulse-Testing](https://github.com/wsu2059q/ErisPulse-Testing) 是官方测试工具包（RFC EPRFC-2026-001 方向三）：
+[ErisPulse-Testing](https://github.com/ErisPulse/ErisPulse-Testing) 是官方测试工具包（RFC EPRFC-2026-001 方向三）：
 提供 `TestBot`、测试事件工厂、出站消息捕获与断言面，让模块测试像写普通 pytest 一样简单。
 
 ```bash
@@ -6218,6 +6242,10 @@ async def test_daily(make_testbot):
 
 所有事件使用 uuid 唯一 `id`，天然避开框架的事件去重。
 
+注意：合成事件**不含平台原始报文**（`event.get_raw()` 返回空 dict）。判断群聊 /
+私聊等场景请用 `event.is_group_message()` / `event.get_detail_type()` /
+`event.get_group_id()` 等访问器，不要读 raw。
+
 ## TestBot API
 
 ### 分发
@@ -6251,14 +6279,16 @@ await bot.wait_for_reply(timeout=2)        # 等待异步回复出现
 ### 模块加载
 
 ```python
-await bot.load_module("MyModule")   # entry-point 已注册的包名
-await bot.load_module(MyModule)     # 或 BaseModule 子类（自动 register + load）
+await bot.load_module("MyModule")   # 已注册的模块名（需框架 sdk.init() 完成 entry-point 发现）
+await bot.load_module(MyModule)     # 或 BaseModule 子类（自动 register + load，推荐）
 await bot.unload_module("MyModule")
 ```
 
 `on_load` 内注册的命令 / 事件处理器随模块归属，卸载时自动清理，可直接断言"卸载后命令失效"。
+注意：字符串形式**不做 entry-point 扫描**（TestBot 不初始化框架发现流程）；测试软依赖
+模块请直接传类对象（或自行 `module.register` 后传名字）。
 
-### 依赖替换
+### 依赖替换（需 EP>=2.9.0-dev）
 
 ```python
 with bot.patch_dependency(get_session, fake_session) as mock:
@@ -6277,9 +6307,18 @@ bot = TestBot(prefix="//", config={
 })
 ```
 
-经配置内存层注入（不落盘），命令前缀等随热更新立即生效。
+经配置内存层注入，命令前缀等随热更新立即生效。两点注意：
 
-## 分发决策链（排查"命令为什么没触发"）
+1. **落盘**：覆写会随框架的延迟写盘策略（默认约 5 秒）落到 cwd 的
+   `config/config.toml`——被测项目仓库请把 `config/` 加入 `.gitignore`；
+2. **与模块运行时写回的冲突（已知限制）**：被测模块以整节写回配置
+   （`self.cfg = ...`，如订阅列表）与这里的点分覆写并存时，存在 ConfigManager
+   的读写一致性问题——模块整节读取可能看不到覆写值，覆写也可能在落盘时被
+   整节写回覆盖（已在 ErisPulse 2.9.0-dev.1 修复，2.8.x 仍受影响）。涉及
+   "运行时写回配置"的用例，在 2.8.x 上建议在 fixture 里以整节写回方式重置
+   相关配置节。
+
+## 分发决策链（排查"命令为什么没触发"；需 EP>=2.9.0-dev）
 
 `dispatch()` 返回 `DispatchTrace`——本次分发经过的每个判定点的因果链：
 
@@ -7068,6 +7107,11 @@ is_running = sdk.adapter.is_running("platform_name")
 
 # 列出所有正在运行的适配器
 running = sdk.adapter.list_running()
+
+# 读取适配器元信息（对齐 module.get_meta，供面板 / 商店等消费）
+info = sdk.adapter.get_info("platform_name")   # 注册信息（meta + 类名，json-safe）
+meta = sdk.adapter.get_meta("platform_name")   # 介绍元信息（description 支持 i18n 解析）
+raw = sdk.adapter.get_meta("platform_name", resolve_i18n=False)  # 透传原始 i18n 字典
 ```
 
 ## 中间件
@@ -7419,7 +7463,7 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 | 事件名 | 触发时机 | 数据 |
 |--------|---------|------|
 | `adapter.bot.online` | 首次自动发现新 Bot | `{platform, bot_id, status}` |
-| `adapter.status.change` | 适配器状态变化（starting/started/stopping/stopped/stop_failed） | `{platform, status}` |
+| `adapter.status.change` | 适配器状态变化 | `{platform, status}`，status 完整取值：`starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency`（所依赖的适配器未就绪而跳过启动）/ `disabled`（配置禁用） |
 
 ```python
 # 监听 Bot 上线事件
@@ -7538,6 +7582,9 @@ TOML 格式的配置文件管理，支持点号分隔的键路径。
 | 方法 | 说明 |
 |------|------|
 | `getConfig(key, default)` | 读取配置，支持点号路径如 `"MyModule.subkey"` |
+| `getAllConfig()` | 全量配置快照（深拷贝，含未落盘的待写值视图） |
+| `adelConfig(key, immediate)` | 异步删除配置键 |
+| `delConfig(key, immediate=False)` | 删除配置键（区别于置空），从文件中移除；触发 `config.set` 事件（`new_value=None`） |
 | `setConfig(key, value, immediate=False)` | 写入配置。`immediate=True` 时立即保存到文件 |
 | `force_save()` | 强制将内存中的配置写入文件 |
 | `reload()` | 从文件重新加载配置 |
@@ -7552,11 +7599,15 @@ TOML 格式的配置文件管理，支持点号分隔的键路径。
 config = sdk.config.getConfig("MyModule", {})
 value = sdk.config.getConfig("MyModule.timeout", 30)
 
+snapshot = sdk.config.getAllConfig()          # 全量快照（深拷贝）
+sdk.config.delConfig("MyModule.deprecated")  # 删除键（延迟写入）
+
 sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
 > `setConfig` 默认采用延迟写入（每 5 秒批量保存），设置 `immediate=True` 可立即持久化到配置文件。配置变更会触发 `config.set` 生命周期事件。
+> `delete` 同样支持延迟写入与 `config.set` 事件（`new_value=None`），现有 `on_config_update` 监听方零改动即可感知删除。
 
 ## Logger 模块
 
@@ -7652,6 +7703,8 @@ sdk.logger.set_memory_limit(1000)
 | `is_running(platform)` | 检查适配器是否正在运行 |
 | `list_running()` | 列出所有正在运行的适配器 |
 | `platforms` | 获取所有平台名称列表 |
+| `get_info(platform)` | 适配器注册信息（json-safe：meta + 类名） |
+| `get_meta(platform, resolve_i18n=True)` | 适配器介绍元信息（对齐 `module.get_meta`，支持 i18n 解析） |
 
 ### 适配器事件
 
@@ -9067,7 +9120,7 @@ def audit_config(data):
 | `module.load` | 模块加载完成（实例化成功） | `{"module_name": str, "success": bool}` |
 | `module.init` | 模块初始化完毕（含懒加载） | `{"module_name": str, "success": bool}` |
 | `module.unload` | 模块卸载 | `{"module_name": str, "success": bool}` |
-| `module.reload` | 模块热重载完成（含级联重载依赖者） | `{"module_name": str, "success": bool}` |
+| `module.reload` | 模块热重载完成（含级联重载依赖者） | `{"module_name": str, "success": bool, "full": bool}`；全量重载（`reload_all`）时 `module_name` 为 `"All"`，payload 额外携带 `"results": dict[str, bool]` |
 
 ### 适配器生命周期
 
@@ -9075,7 +9128,7 @@ def audit_config(data):
 |---------|---------|------|
 | `adapter.load` | 适配器注册完成 | `{"platform": str, "success": bool}` |
 | `adapter.start` | 适配器启动 | `{"platforms": [str]}` |
-| `adapter.status.change` | 适配器状态变化 | `{"platform": str, "status": str, "retry_count": int, "error": str(仅失败时)}` |
+| `adapter.status.change` | 适配器状态变化 | `{"platform": str, "status": str, "retry_count": int, "error": str(仅失败时)}`；status 完整取值：`starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
 | `adapter.stop` | 适配器关闭 | `{"platforms": [str]}` |
 | `adapter.stopped` | 适配器关闭完成 | `{"platforms": [str]}` |
 | `adapter.bot.online` | Bot 上线 | `{"platform": str, "bot_id": str, "info": dict, "status": str}` |
@@ -10911,7 +10964,7 @@ class CronModule(BaseModule):
 | 关注点 | 行为 |
 |--------|------|
 | 触发时机 | 对方模块 unload / disable，或适配器关闭——均在框架清理链内触发，早于 purge 泄漏诊断 |
-| 调用方识别 | 直接调用取 `current_owner`；经 `module.call()` 被调用取调用方（`current_caller`）；也可 `on_cleanup(cb, owner="模块名")` 显式指定 |
+| 调用方识别 | 直接调用取 `current_owner`；经 `module.call()` 被调用取调用方（`current_caller`）；也可 `on_cleanup(cb, owner="模块名")` 显式指定。**强制校验**：owner 无法解析（三种来源均缺失）时抛 `ValueError`——私有工具模块应在自身加载上下文内登记钩子 |
 | 回调签名 | `cb(owner: str)`，同步 / 异步均可；异步带超时保护（`CLEANUP_CALLBACK_TIMEOUT_SECS`，默认 10 秒） |
 | 容错 | 单个回调异常 / 超时只记日志，不影响其余钩子与清理链 |
 | 重复登记 | 同一 `(owner, callback)` 幂等去重 |
@@ -12195,15 +12248,35 @@ A: 对于不通用或平台特有的类型，使用 `{platform}_raw` 和 `{platf
 | 类型 | 说明 | data 字段 |
 |------|------|----------|
 | `text` | 纯文本 | `text: str` |
-| `image` | 图片 | `file: str/bytes`, `url: str` |
-| `audio` | 音频 | `file: str/bytes`, `url: str` |
-| `video` | 视频 | `file: str/bytes`, `url: str` |
-| `file` | 文件 | `file: str/bytes`, `url: str`, `filename: str` |
+| `image` | 图片 | `file`, `url: str` |
+| `audio` | 音频 | `file`, `url: str` |
+| `video` | 视频 | `file`, `url: str` |
+| `file` | 文件 | `file`, `url: str`, `filename: str` |
 | `mention` | @用户 | `user_id: str`, `user_name: str` |
 | `reply` | 回复 | `message_id: str` |
 | `face` | 表情 | `id: str` |
 | `location` | 位置 | `latitude: float`, `longitude: float` |
 | `keyboard` | 按钮/内联键盘 | `rows: list[list[button]]`（见 4.1.1） |
+
+**媒体段 `file` 字段格式**（发送方向，`image` / `audio` / `video` / `file` 通用）：
+
+| 形态 | 示例 | 适配器要求 |
+|------|------|-----------|
+| HTTP(S) URL | `https://example.com/a.png` | **必须**接受 |
+| 本地文件路径 | `/tmp/a.png`、`C:\tmp\a.png` | **必须**接受 |
+| 二进制数据 | `bytes` | **必须**接受 |
+| `file://` URI / Base64 / Data URI | `file:///tmp/a.png`、`data:image/png;base64,...` | **应当**接受 |
+
+> 完整的媒体发送协议（形态判定顺序、文件名推导、能力降级阶梯）见
+> [发送方法规范 §2.1](send-method-spec.md#21-媒体消息发送协议image--voice--video--file)。
+
+**字段方向语义**：
+
+- `file`：**发送方向**的内容来源（上述形态）；**接收方向**由适配器填平台可取回的形态
+  （通常为可下载 URL，或 `get_file` 类动作可用的资源标识）
+- `url`：接收方向的平台回链（适配器转换平台事件时尽可能填入，供模块直接取用）；发送方向可不填
+- `filename`：`file` 段的文件名（发送方向可选，缺省时适配器按
+  [发送方法规范 §2.1.3](send-method-spec.md) 的推导顺序生成；接收方向**应当**填平台原始文件名）
 
 ```json
 {
@@ -12810,26 +12883,38 @@ ErisPulse 框架当前使用的 `346xx` 码：
 
 本文档定义了 ErisPulse 适配器中 Send 类发送方法的命名规范、参数规范和反向转换要求。
 
+## 0. 关键词约定
+
+本文档中的 **必须（MUST）**、**应当（SHOULD）**、**可以（MAY）** 按以下语义解释（参照 RFC 2119）：
+
+| 关键词 | 语义 | 违反后果 |
+|--------|------|---------|
+| **必须** | 强制要求，框架行为/跨平台一致性依赖它 | 适配器视为不符合标准，模块代码可能无法工作 |
+| **应当** | 强烈推荐；除非有充分理由，否则遵循 | 偏离时须在适配器文档中说明原因与替代行为 |
+| **可以** | 可选项，按平台能力自行决定 | 无 |
+
 ## 1. 标准方法命名
 
 所有发送方法使用 **大驼峰命名法（PascalCase）**，首字母大写。
 
 ### 1.1 标准发送方法
 
-| 方法名 | 说明 | 参数类型 |
-|-------|------|---------|
-| `Text` | 发送文本消息 | `str` |
-| `Image` | 发送图片 | `bytes` \| `str` (URL/路径) |
-| `Voice` | 发送语音 | `bytes` \| `str` (URL/路径) |
-| `Video` | 发送视频 | `bytes` \| `str` (URL/路径) |
-| `File` | 发送文件 | `bytes` \| `str` (URL/路径) |
-| `At` | @用户/群组 | `str` (user_id) |
-| `Face` | 发送表情 | `str` (emoji) |
-| `Reply` | 回复消息 | `str` (message_id) |
-| `Forward` | 转发消息 | `str` (message_id) |
-| `Markdown` | 发送 Markdown 消息 | `str` |
-| `HTML` | 发送 HTML 消息 | `str` |
-| `Card` | 发送卡片消息 | `dict` |
+| 方法名 | 说明 | 参数类型 | 实现要求 |
+|-------|------|---------|---------|
+| `Text` | 发送文本消息 | `str` | 必须 |
+| `Image` | 发送图片 | `str` \| `bytes` | 必须（基类已内置，见 §6.4） |
+| `Voice` | 发送语音 | `str` \| `bytes` | 必须（基类已内置；平台不支持语音时按 §2.1.5 降级） |
+| `Video` | 发送视频 | `str` \| `bytes` | 必须（基类已内置；平台不支持视频时按 §2.1.5 降级） |
+| `File` | 发送文件 | `str` \| `bytes`，`filename: str \| None = None` | 必须（基类已内置） |
+| `At` | @用户/群组 | `str` (user_id) | 修饰方法，按需 |
+| `Face` | 发送表情 | `str` (emoji) | 可以 |
+| `Reply` | 回复消息 | `str` (message_id) | 修饰方法，按需 |
+| `Forward` | 转发消息 | `str` (message_id) | 可以 |
+| `Markdown` | 发送 Markdown 消息 | `str` | 可以 |
+| `HTML` | 发送 HTML 消息 | `str` | 可以 |
+| `Card` | 发送卡片消息 | `dict` | 可以 |
+
+> 标准方法（`Text`/`Image`/`Voice`/`Video`/`File`）由基类 `SendDSL` 内置并默认委托 `Raw_ob12`，适配器**无需重复实现**即可获得类型签名；仅当平台需要特殊逻辑时才覆盖单个方法（见 §6.4）。
 
 ### 1.2 链式修饰方法
 
@@ -12864,85 +12949,82 @@ ErisPulse 框架当前使用的 `346xx` 码：
 
 ## 2. 参数规范详解
 
-### 2.1 媒体消息参数规范
+### 2.1 媒体消息发送协议（`Image` / `Voice` / `Video` / `File`）
 
-媒体消息（`Image`、`Voice`、`Video`、`File`）支持两种参数类型：
+本节是媒体发送的**统一协议标准**：模块以同一份代码调用四个媒体方法，适配器负责把
+`file` 参数的各种形态转换为平台原生上传/发送行为。
 
-#### 2.1.1 字符串参数（URL 或文件路径）
+#### 2.1.1 `file` 参数的合法形态
 
-**格式：** `str`
+| 形态 | 示例 | 适配器要求 |
+|------|------|-----------|
+| HTTP(S) URL | `https://example.com/image.jpg` | **必须**接受 |
+| 本地文件路径 | `/path/to/file.jpg`、`C:\path\to\file.jpg` | **必须**接受 |
+| 二进制数据 | `b"\x89PNG..."` | **必须**接受 |
+| `file://` URI | `file:///path/to/file.jpg` | **应当**接受（可转发为本地路径处理） |
+| Base64 字符串 / Data URI | `iVBORw0KGgo=...`、`data:image/png;base64,...` | **应当**接受（与 OneBot12 生态惯例兼容） |
 
-**支持类型：**
-- **URL**：网络资源地址（如 `https://example.com/image.jpg`）
-- **文件路径**：本地文件路径（如 `/path/to/file.jpg` 或 `C:\\path\\to\\file.jpg`）
+> 适配器**必须**在三种必须形态上行为一致——模块无论传 URL、路径还是 bytes，
+> 收到的都是同一条消息。平台无法直接使用某形态时（如平台 API 不支持引用外部 URL），
+> 由适配器自行下载/读取后上传，**不得**要求模块换形态重试。
 
-**使用场景：**
-- 文件已在网络上，直接发送 URL
-- 文件在本地磁盘，发送文件路径
-- 希望适配器自动处理文件上传
+#### 2.1.2 形态判定顺序
 
-**推荐：** 优先使用 URL，如果 URL 不可用则使用本地文件路径
+适配器实现媒体参数处理时，**应当**按以下顺序判定形态：
 
-**示例：**
+1. `bytes` 类型 → 直接上传
+2. 字符串以 `http://` / `https://` 开头 → 按 URL 处理（直接引用或下载后上传，按平台能力）
+3. 字符串以 `file://` 开头 → 剥离前缀按本地路径处理
+4. 其余字符串 → 按本地路径处理（存在则读取上传；不存在则返回标准错误响应）
+
 ```python
-# 使用 URL
-send.Image("https://example.com/image.jpg")
-
-# 使用本地文件路径
-send.Image("/path/to/local/image.jpg")
-send.Image("C:\\path\\to\\local\\image.jpg")
+def _resolve_media(self, file: "str | bytes") -> bytes:
+    """形态判定与归一化（示例）"""
+    if isinstance(file, (bytes, bytearray)):
+        return bytes(file)
+    if file.startswith(("http://", "https://")):
+        return self._download(file)          # 平台不能引用 URL 时下载
+    if file.startswith("file://"):
+        file = file[len("file://"):]
+    with open(file, "rb") as f:              # 本地路径
+        return f.read()
 ```
 
-#### 2.1.2 二进制数据参数
+#### 2.1.3 `File` 的文件名语义
 
-**格式：** `bytes`
+`File` 方法签名：`File(file, filename=None)`（`filename` 为可选参数，基类已内置）。
 
-**使用场景：**
-- 文件已在内存中（如从网络下载、从其他来源读取）
-- 需要处理后再发送（如图片压缩、格式转换）
-- 避免重复读取文件
+文件名**推导顺序**（适配器在未显式提供 `filename` 时按此生成）：
 
-**注意事项：**
-- 大文件上传可能消耗较多内存
-- 建议设置合理的文件大小限制
+1. 显式 `filename` 参数（最高优先）
+2. URL 的 basename（如 `https://host/a/b/report.pdf` → `report.pdf`，须剥离 query string）
+3. 本地路径的 basename（如 `/tmp/data/backup.zip` → `backup.zip`）
+4. 平台默认生成（如 `file_{timestamp}`；**应当**保留真实扩展名——扩展名影响平台侧的
+   类型识别与预览行为）
 
-**示例：**
-```python
-# 从网络读取后发送
-import requests
-image_data = requests.get("https://example.com/image.jpg").content
-send.Image(image_data)
+> `Image` / `Voice` / `Video` 同样**可以**接受 `filename`（经消息段 `data.filename` 传递），
+> 但仅 `File` 的文件名有跨平台语义保证。
 
-# 从文件读取后发送
-with open("/path/to/local/image.jpg", "rb") as f:
-    image_data = f.read()
-send.Image(image_data)
-```
+#### 2.1.4 平台限制的声明义务
 
-#### 2.1.3 参数处理优先级
+各平台对媒体的大小上限、格式（MIME）、时长（音视频）等约束不同。适配器**应当**：
 
-当适配器接收到媒体消息参数时，应按以下顺序处理：
+- 在适配器文档中声明支持的媒体类型与限制范围
+- 超限或不支持的输入返回**标准错误响应**（`status: "failed"`；`retcode` 使用
+  `10002` 或平台语义化错误码，`message` 说明原因），**不得**抛出异常中断模块逻辑
 
-1. **URL 参数**：直接使用 URL 发送(部分平台适配器可能存在URL下载后再上传的操作)
-2. **文件路径**：检测是否为本地路径，若是则上传文件
-3. **二进制数据**：直接上传二进制数据
+#### 2.1.5 能力降级阶梯
 
-**适配器实现建议：**
-```python
-def Image(self, image: Union[bytes, str]):
-    if isinstance(image, str):
-        # 判断是 URL 还是本地路径
-        if image.startswith(("http://", "https://")):
-            # URL 直接发送
-            return self._send_image_by_url(image)
-        else:
-            # 本地路径，读取后上传
-            with open(image, "rb") as f:
-                return self._upload_image(f.read())
-    elif isinstance(image, bytes):
-        # 二进制数据，直接上传
-        return self._upload_image(image)
-```
+平台不支持某个媒体**类型**时，按以下阶梯降级（遵循总纲"能力降级不报错"原则）：
+
+| 场景 | 降级行为 |
+|------|---------|
+| `Voice` 不支持语音消息 | **应当**按 `File`（或平台近缘形态）发送；无法表达时返回 `retcode=10002` |
+| `Video` 不支持视频消息 | 同上 |
+| 媒体类型完全不支持（无文件能力） | 返回 `retcode=10002`，`message` 注明不支持的数据类型 |
+| 形态不支持（如无法处理 base64） | 返回 `retcode=10002`，**可以**在 `message` 中提示模块改用 URL/bytes |
+
+**禁止**的行为：静默丢弃（无返回）、抛出异常、要求模块编写平台分支处理。
 
 ### 2.2 @用户参数规范
 
@@ -13017,7 +13099,8 @@ def Raw_ob12(self, message):  # ✅ 发送 OneBot12 格式
 | 参数名 | 说明 | 类型 |
 |-------|------|------|
 | `text` | 文本内容 | `str` |
-| `url` / `file` | 文件 URL 或二进制数据 | `str` / `bytes` |
+| `file` | 媒体内容（URL / 路径 / 二进制，见 §2.1.1） | `str` / `bytes` |
+| `filename` | 文件名（`File` 可选，见 §2.1.3） | `str` / `None` |
 | `user_id` | 用户 ID | `str` / `int` |
 | `group_id` | 群组 ID | `str` / `int` |
 | `message_id` | 消息 ID | `str` |
@@ -13088,10 +13171,10 @@ def Raw_ob12(self, message_segments: List[Dict]) -> asyncio.Task:
 | OneBot12 消息段 | 转换要求 |
 |----------------|---------|
 | `text` | 直接使用 `data.text` |
-| `image` | 根据 `data.file` 类型处理：URL 直接使用，bytes 上传，本地路径读取后上传 |
+| `image` | `data.file` 按 §2.1 媒体协议处理（三必须形态 + 判定顺序） |
 | `audio` | 同 image 处理逻辑 |
 | `video` | 同 image 处理逻辑 |
-| `file` | 同 image 处理逻辑，注意 `data.filename` |
+| `file` | 同 image 处理逻辑；文件名按 §2.1.3 推导顺序处理 `data.filename` |
 | `mention` | 转换为平台的 @用户 机制（如 Telegram 的 `entities`，云湖的 `at_uid`） |
 | `reply` | 转换为平台的回复引用机制 |
 | `face` | 转换为平台的表情发送机制，不支持则跳过 |
@@ -13216,7 +13299,8 @@ class YunhuSend(SendDSL):
 
 ## 7. 方法发现
 
-模块开发者可以通过 API 查询适配器支持的发送方法：
+模块开发者可以通过 API 查询适配器支持的发送方法（**不要**在模块中硬编码某平台的方法
+清单——各适配器的扩展方法随版本演进，以运行时发现为准）：
 
 ```python
 from ErisPulse import adapter
@@ -13237,21 +13321,6 @@ info = adapter.send_info("myplatform", "Form")
 
 ---
 
-## 8. 已注册的发送方法扩展
-
-| 平台 | 方法名 | 说明 |
-|------|--------|------|
-| onebot12 | `Mention` | @用户（OneBot12 风格） |
-| onebot12 | `Sticker` | 发送贴纸 |
-| onebot12 | `Location` | 发送位置 |
-| onebot12 | `Recall` | 撤回消息 |
-| onebot12 | `Edit` | 编辑消息 |
-| onebot12 | `Batch` | 批量发送 |
-
-> **注意**：发送方法不加平台前缀，不同平台的同名方法可以有不同的实现。
-
----
-
 ## 9. 适配器开发注意事项
 
 关于如何正确重写 `BaseAdapter`、`Send`、`Request` 的 `__init__`，详见 [适配器开发入门 - `__init__` 注意事项](../developer-guide/adapters/getting-started.md#init-注意事项)。
@@ -13268,6 +13337,13 @@ info = adapter.send_info("myplatform", "Form")
 - [ ] 修饰方法（`At`, `Reply`, `AtAll`）返回 `self`
 - [ ] 平台扩展方法使用 PascalCase，无平台前缀
 - [ ] 所有方法有完整的类型注解和文档字符串
+
+### 媒体发送协议
+- [ ] `file` 参数**必须形态**全部支持：HTTP(S) URL / 本地路径 / `bytes`（见 §2.1.1）
+- [ ] 形态判定顺序符合 §2.1.2（bytes → URL → `file://` → 路径）
+- [ ] `File` 的文件名推导顺序符合 §2.1.3（显式 `filename` > URL basename > 路径 basename > 平台默认）
+- [ ] 平台的媒体限制（大小 / MIME / 时长）已在适配器文档声明（§2.1.4）
+- [ ] 不支持的媒体类型按 §2.1.5 降级阶梯处理：近缘类型降级或返回 `retcode=10002`，不抛异常、不静默丢弃
 
 ### 反向转换
 - [ ] `Raw_ob12` **已实现**（必须，不可跳过）
@@ -16947,7 +17023,7 @@ async def handle_button(event):
         interaction_id = event["interaction_id"]
 ```
 
-> 完整标准说明见 [跨平台交互组件标准](../../standards/standardization-guide.md)。
+> 完整标准说明见 [跨平台交互组件标准](../standards/standardization-guide.md)。
 
 ---
 ## 支持的消息发送类型

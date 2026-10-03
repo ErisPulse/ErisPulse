@@ -24,14 +24,17 @@ Initializer（核心初始化编排）与 Uninitializer（优雅反初始化编�
 
 > **提示**
 > 使用方式：
-> >>> initializer = Initializer(sdk_instance)
-> >>> success = await initializer.init()
+> ```python
+> initializer = Initializer(sdk_instance)
+> success = await initializer.init()
+> ```
+>
 
 
 #### 方法列表
 
 
-##### `__init__(sdk_instance: SDK)`
+##### `__init__(sdk_instance: SDK) -> None`
 
 初始化协调器
 
@@ -47,7 +50,7 @@ Initializer（核心初始化编排）与 Uninitializer（优雅反初始化编�
 ---
 
 
-##### `async init()`
+##### `async init() -> bool`
 
 初始化所有模块和适配器
 
@@ -74,14 +77,17 @@ Initializer（核心初始化编排）与 Uninitializer（优雅反初始化编�
 
 > **提示**
 > 使用方式：
-> >>> uninitializer = Uninitializer(sdk_instance)
-> >>> success = await uninitializer.uninit()
+> ```python
+> uninitializer = Uninitializer(sdk_instance)
+> success = await uninitializer.uninit()
+> ```
+>
 
 
 #### 方法列表
 
 
-##### `__init__(sdk_instance: SDK)`
+##### `__init__(sdk_instance: SDK) -> None`
 
 反初始化协调器
 
@@ -97,7 +103,7 @@ Initializer（核心初始化编排）与 Uninitializer（优雅反初始化编�
 ---
 
 
-##### `async uninit()`
+##### `async uninit() -> bool`
 
 执行反初始化
 

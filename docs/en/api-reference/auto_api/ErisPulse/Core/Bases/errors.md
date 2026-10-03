@@ -39,12 +39,13 @@ ErisPulse 基础异常
 :attribute attempts: 已尝试的请求次数（重试耗尽时提供）
 
 **示例**:
+
 ```python
->>> from ErisPulse.Core.Bases.errors import ClientError
->>> try:
-...     resp = await sdk.client.get("https://example.com")
-... except ClientError as e:
-...     print(f"请求失败: {e} url={e.url}")
+from ErisPulse.Core.Bases.errors import ClientError
+try:
+    resp = await sdk.client.get("https://example.com")
+except ClientError as e:
+    print(f"请求失败: {e} url={e.url}")
 ```
 
 
@@ -55,11 +56,12 @@ ErisPulse 基础异常
 DNS 解析失败、连接被拒绝、网络不可达等连接层错误。
 
 **示例**:
+
 ```python
->>> try:
-...     resp = await sdk.client.get("https://unreachable.example.com")
-... except ClientConnectionError:
-...     print("无法连接到服务器")
+try:
+    resp = await sdk.client.get("https://unreachable.example.com")
+except ClientConnectionError:
+    print("无法连接到服务器")
 ```
 
 
@@ -70,11 +72,12 @@ DNS 解析失败、连接被拒绝、网络不可达等连接层错误。
 连接超时或请求超时。
 
 **示例**:
+
 ```python
->>> try:
-...     resp = await sdk.client.get("https://slow.example.com", timeout=5)
-... except ClientTimeoutError:
-...     print("请求超时")
+try:
+    resp = await sdk.client.get("https://slow.example.com", timeout=5)
+except ClientTimeoutError:
+    print("请求超时")
 ```
 
 
@@ -84,15 +87,16 @@ HTTP 状态码异常
 
 服务器返回了错误的状态码 (4xx/5xx)。
 
-- **status** (`int`): HTTP 状态码
+- **status**: int HTTP 状态码
 - **message** (`str`): 错误消息
 
 **示例**:
+
 ```python
->>> try:
-...     resp = await sdk.client.get("https://example.com/404")
-... except HTTPStatusError as e:
-...     print(f"状态码: {e.status}")
+try:
+    resp = await sdk.client.get("https://example.com/404")
+except HTTPStatusError as e:
+    print(f"状态码: {e.status}")
 ```
 
 
@@ -183,15 +187,16 @@ WebSocket 断开连接异常
 客户端和服务端 WebSocket 均可使用此异常表示连接断开。
 
 - **code** (`int`): 关闭码 (默认: 1000)
-- **reason** (`str`): | None 关闭原因 (可选)
+- **reason** (`str | None`): 关闭原因 (可选)
 
 **示例**:
+
 ```python
->>> from ErisPulse.Core.Bases.errors import WebSocketDisconnect
->>> try:
-...     msg = await ws.receive_text()
-... except WebSocketDisconnect as e:
-...     print(f"断开: code={e.code}, reason={e.reason}")
+from ErisPulse.Core.Bases.errors import WebSocketDisconnect
+try:
+    msg = await ws.receive_text()
+except WebSocketDisconnect as e:
+    print(f"断开: code={e.code}, reason={e.reason}")
 ```
 
 

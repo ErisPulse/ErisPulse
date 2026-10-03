@@ -26,6 +26,25 @@ Dashboard / 自定义管理模块调用这些 API，无需用户手写任何配�
 
 ---
 
+## 函数列表
+
+
+### `_source_in_plugin_dirs(plugin_loader: Any, source: Path) -> bool`
+
+**内部方法**
+判断影子源路径是否位于插件发现目录内（位于其内时才需要写 status 禁用，
+防止下次启动被普通发现机制当作独立模块装载）
+
+- **plugin_loader**: 插件加载器（提供 ``get_plugins_dirs()``）
+- **source**: 影子源路径
+
+**返回值**: 源位于任一插件目录内时 True（判定失败按 False 处理——宁可不
+
+    写配置也不误禁同名真实插件）
+
+---
+
+
 ## 类列表
 
 
@@ -40,31 +59,32 @@ Dashboard / 自定义管理模块调用这些 API，无需用户手写任何配�
 #### 方法列表
 
 
-##### `record(owner: str, entry: 'dict[str, Any]')`
+##### `record(owner: str, entry: 'dict[str, Any]') -> None`
 
 记录一条影子意向出站
 
-- **owner** (`影子`): owner 名
-- **entry** (`出站条目（kind/platform/method/target/trace_id/preview`): 等）
+- **owner**: 影子 owner 名
+- **entry**: 出站条目（kind/platform/method/target/trace_id/preview 等）
 
 ---
 
 
-##### `entries(owner: str)`
+##### `entries(owner: str) -> 'list[dict[str, Any]]'`
 
 读取影子 owner 的全部在账条目（时间序）
 
-- **owner** (`影子`): owner 名
+- **owner**: 影子 owner 名
+
 **返回值**: 条目列表（无在账条目时为空列表）
 
 ---
 
 
-##### `clear(owner: str)`
+##### `clear(owner: str) -> None`
 
 清空影子 owner 的账本
 
-- **owner** (`影子`): owner 名
+- **owner**: 影子 owner 名
 
 ---
 
@@ -81,25 +101,28 @@ Dashboard / 自定义管理模块调用这些 API，无需用户手写任何配�
 #### 方法列表
 
 
-##### `write(key: str, value: Any)`
+##### `write(key: str, value: Any) -> None`
 
 写入覆盖层
 
 ---
 
 
-##### `delete(key: str)`
+##### `delete(key: str) -> None`
 
 写入墓碑（影子视角的删除）
 
 ---
 
 
-##### `read(key: str)`
+##### `read(key: str) -> 'tuple[str, Any]'`
 
 查询覆盖层
 
-- **key** (`存储键（含嵌套路径原样匹配）`): **返回值** (`(状态,`): 值)；状态 "hit"（影子值）/ "tombstone"（影子已删除，
+- **key**: 存储键（含嵌套路径原样匹配）
+
+**返回值**: (状态, 值)；状态 "hit"（影子值）/ "tombstone"（影子已删除，
+
          不应透传真库）/ "miss"（未命中，透传真库）
 
 ---
@@ -118,55 +141,72 @@ start（启动影子）/ promote（转正）/ dismiss（放弃）/ diff（对比
 #### 方法列表
 
 
-##### `shadow_owner_of(real_name: str)`
+##### `shadow_owner_of(real_name: str) -> 'str | None'`
 
 查询原模块当前绑定的影子 owner 名
 
-- **real_name** (`原模块名`): **返回值** (`影子`): owner 名（未绑定为 None）
+- **real_name**: 原模块名
+
+**返回值**: 影子 owner 名（未绑定为 None）
 
 ---
 
 
-##### `real_name_of(shadow_owner: str)`
+##### `real_name_of(shadow_owner: str) -> 'str | None'`
 
 查询影子 owner 对应的原模块名
 
-- **shadow_owner** (`影子`): owner 名
-**返回值** (`原模块名（非影子为`): None）
+- **shadow_owner**: 影子 owner 名
+
+**返回值**: 原模块名（非影子为 None）
 
 ---
 
 
-##### `bind(real_name: str, shadow_owner: str)`
+##### `bind(real_name: str, shadow_owner: str) -> None`
 
 登记 绑定关系（影子启动成功后调用；同时向归属权登记影子状态）
 
-- **real_name** (`原模块名`): - **shadow_owner**: 影子 owner 名
+- **real_name**: 原模块名
+- **shadow_owner**: 影子 owner 名
 
 ---
 
 
-##### `unbind(shadow_owner: str)`
+##### `unbind(shadow_owner: str) -> 'str | None'`
 
 解除影子绑定（dismiss / 转正后调用；同步移除归属权影子状态）
 
-- **shadow_owner** (`影子`): owner 名
-**返回值** (`对应原模块名（未绑定为`): None）
+- **shadow_owner**: 影子 owner 名
+
+**返回值**: 对应原模块名（未绑定为 None）
 
 ---
 
 
-##### `overlay(shadow_owner: str)`
+##### `overlay(shadow_owner: str) -> ShadowOverlay`
 
 获取影子 owner 的存储覆盖层（惰性创建）
 
-- **shadow_owner** (`影子`): owner 名
+- **shadow_owner**: 影子 owner 名
+
 **返回值**: 覆盖层实例
 
 ---
 
 
-##### `async start(real_name: str, source: 'str | Path', manager: Any, sdk: Any, owner: 'str | None' = None, loader: 'Any | None' = None)`
+##### `_cleanup_sdk_attr(sdk: Any, owner: str) -> None`（staticmethod）
+
+**内部方法**
+清理 start 时挂在 sdk 上的影子实例属性（转正 / 放弃后残留会指向已回收实例）
+
+- **sdk** (`SDK`): 实例（None 时跳过）
+- **owner**: 影子 owner 名
+
+---
+
+
+##### `async start(real_name: str, source: 'str | Path', manager: Any, sdk: Any, owner: 'str | None' = None, loader: 'Any | None' = None) -> str`
 
 启动影子：把新版代码以独立 owner 装载为 ``real_name`` 的影子实例
 
@@ -174,26 +214,32 @@ source 为新版代码的**目录或单 .py 文件路径**（推荐放在 plugin
 之外，避免被普通发现机制当作独立模块装载）。影子以独立 owner 运行：
 收到真实事件副本、出站被拦截记账、配置继承原模块配置节。
 
-- **real_name** (`被`): shadow 的已加载模块名
-- **source** (`新版代码路径（目录含`): ``__init__.py`` 或单 ``.py`` 文件）
-- **manager** (`模块管理器实例`): - **sdk**: SDK 实例
-- **owner** (`影子`): owner 名（默认取路径名，非法时回退
+- **real_name**: 被 shadow 的已加载模块名
+- **source**: 新版代码路径（目录含 ``__init__.py`` 或单 ``.py`` 文件）
+- **manager**: 模块管理器实例
+- **sdk** (`SDK`): 实例
+- **owner**: 影子 owner 名（默认取路径名，非法时回退
+
               ``f"{real_name}_shadow"``）
-- **loader** (`模块加载器实例（None`): 时自动取 ``sdk._module_loader``）
-**返回值** (`影子`): owner 名
+- **loader**: 模块加载器实例（None 时自动取 ``sdk._module_loader``）
+
+**返回值**: 影子 owner 名
+
 **异常**: `RuntimeError` - 原模块未加载 / 影子已存在 / 源路径无效 /
+
                       影子装载失败
 
 **示例**:
+
 ```python
->>> await sdk.module.shadow_start("roll", source="downloads/roll_v2")
+await sdk.module.shadow_start("roll", source="downloads/roll_v2")
 'roll_shadow'
 ```
 
 ---
 
 
-##### `async promote(real_name: str, manager: Any, sdk: Any, loader: 'Any | None' = None)`
+##### `async promote(real_name: str, manager: Any, sdk: Any, loader: 'Any | None' = None) -> bool`
 
 转正：卸载当前版本 → 影子以真名注册加载 → 失败自动回滚继续服务
 
@@ -201,33 +247,40 @@ source 为新版代码的**目录或单 .py 文件路径**（推荐放在 plugin
 转正后建议尽快把新版本持久化安装（pip 升级 / 替换插件文件），
 使重启后仍然生效——运行时切换不会替你完成包管理。
 
-- **real_name** (`原模块名`): - **manager**: 模块管理器实例
+- **real_name**: 原模块名
+- **manager**: 模块管理器实例
 - **sdk** (`SDK`): 实例
-- **loader** (`模块加载器实例（None`): 时自动取 ``sdk._module_loader``）
+- **loader**: 模块加载器实例（None 时自动取 ``sdk._module_loader``）
+
 **返回值**: 是否转正成功
 
 ---
 
 
-##### `async dismiss(real_name: str, manager: Any)`
+##### `async dismiss(real_name: str, manager: Any, sdk: 'Any | None' = None) -> bool`
 
 放弃影子：回收影子资源、解除绑定、清空账本与命令目录
 
-- **real_name** (`原模块名`): - **manager**: 模块管理器实例
+- **real_name**: 原模块名
+- **manager**: 模块管理器实例
+- **sdk** (`SDK`): 实例（可选；传入时清理挂在 sdk 上的影子实例属性残留）
+
 **返回值**: 是否成功
 
 ---
 
 
-##### `diff(real_name: str, transcript: 'Any | None' = None)`
+##### `diff(real_name: str, transcript: 'Any | None' = None) -> 'dict[str, Any]'`
 
 行为对比：影子意向出站 × 真实发送时间线（按 trace_id 对齐）
 
 内容保真度受 transcript 出站 preview（50 字符截断）限制——逐字段
 对比以影子账本为准，transcript 仅作"实际发送发生"的佐证源。
 
-- **real_name** (`原模块名`): - **transcript**: 收件箱单例（None 时惰性导入）
-**返回值** (`{"shadow_owner",`): "count", "aligned": [{"shadow", "actual"}]}
+- **real_name**: 原模块名
+- **transcript**: 收件箱单例（None 时惰性导入）
+
+**返回值**: {"shadow_owner", "count", "aligned": [{"shadow", "actual"}]}
 
 ---
 

@@ -25,32 +25,35 @@
 ## 函数列表
 
 
-### `_scope_key(kind: str, event: Any)`
+### `_scope_key(kind: str, event: Any) -> str`
 
 计算节流作用域键（复用 ``platform:bot:目标`` 会话键体系）
 
-- **kind** (`粒度（user`): / session / global，装饰期已校验）
-- **event** (`事件数据（Event`): 包装或原始 dict 均可）
+- **kind**: 粒度（user / session / global，装饰期已校验）
+- **event**: 事件数据（Event 包装或原始 dict 均可）
+
 **返回值**: 作用域键字符串
 
 ---
 
 
-### `make_throttle_condition(throttle: str, throttle_key: str = 'user', handler_name: str = '')`
+### `make_throttle_condition(throttle: str, throttle_key: str = 'user', handler_name: str = '') -> Callable[[Any], bool]`
 
 构造节流条件函数（处理器条件机制的包装器）
 
-- **throttle** (`节流间隔声明（如`): ``"2s"`` / ``"1h30m"``，与 duration 语法一致）
-- **throttle_key** (`键粒度：``user``（默认）/`): ``session`` / ``global``
-- **handler_name** (`处理器名（TRACE`): 日志展示用）
-**返回值** (`条件函数——间隔已过返回`): True（放行并刷新时间戳），
+- **throttle**: 节流间隔声明（如 ``"2s"`` / ``"1h30m"``，与 duration 语法一致）
+- **throttle_key**: 键粒度：``user``（默认）/ ``session`` / ``global``
+- **handler_name**: 处理器名（TRACE 日志展示用）
+
+**返回值**: 条件函数——间隔已过返回 True（放行并刷新时间戳），
+
     间隔内返回 False（处理器被跳过，事件静默丢弃）
 **异常**: `ValueError` - 声明非法（时长语法 / 粒度白名单）时装饰期抛出
 
 ---
 
 
-### `make_debounce_wrapper(func: Callable, debounce: str, debounce_key: str = 'user', handler_name: str = '')`
+### `make_debounce_wrapper(func: Callable, debounce: str, debounce_key: str = 'user', handler_name: str = '') -> Callable`
 
 构造防抖调用包装器（窗口内同键事件只执行最后一条）
 
@@ -58,9 +61,13 @@
 最后一条事件的处理。``functools.wraps`` 保留原签名（``__wrapped__``），
 使注册期 ``extract_depends`` 仍能从原函数提取 Depends 声明。
 
-- **func** (`原事件处理器（async）`): - **debounce**: 防抖窗口声明（如 ``"2s"``，duration 语法）
-- **debounce_key** (`键粒度：``user``（默认）/`): ``session`` / ``global``
-- **handler_name** (`处理器名（日志展示用）`): **返回值** (`async`): 包装器——立即返回，真实执行延迟到窗口耗尽
+- **func**: 原事件处理器（async）
+- **debounce**: 防抖窗口声明（如 ``"2s"``，duration 语法）
+- **debounce_key**: 键粒度：``user``（默认）/ ``session`` / ``global``
+- **handler_name**: 处理器名（日志展示用）
+
+**返回值** (`async`): 包装器——立即返回，真实执行延迟到窗口耗尽
+
 **异常**: `ValueError` - 声明非法（时长语法 / 粒度白名单）时装饰期抛出
 
 ---

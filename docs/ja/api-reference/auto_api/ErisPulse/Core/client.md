@@ -35,10 +35,11 @@ HTTP 响应封装
 > 通过 .raw 属性可访问底层原生响应对象
 
 **示例**:
+
 ```python
->>> resp = await sdk.client.get("https://httpbin.org/get")
->>> print(resp.status)
->>> data = await resp.json()
+resp = await sdk.client.get("https://httpbin.org/get")
+print(resp.status)
+data = await resp.json()
 ```
 
 
@@ -52,7 +53,7 @@ HTTP 响应封装
 ---
 
 
-##### `status()`
+##### `status -> int`（property）
 
 HTTP 状态码
 
@@ -61,16 +62,16 @@ HTTP 状态码
 ---
 
 
-##### `reason()`
+##### `reason -> str | None`（property）
 
 状态描述
 
-**返回值** (`str`): | None 状态原因短语
+**返回值** (`str | None`): 状态原因短语
 
 ---
 
 
-##### `headers()`
+##### `headers`（property）
 
 响应头
 
@@ -79,34 +80,34 @@ HTTP 状态码
 ---
 
 
-##### `content_type()`
+##### `content_type -> str | None`（property）
 
 Content-Type 值
 
-**返回值** (`str`): | None 内容类型
+**返回值** (`str | None`): 内容类型
 
 ---
 
 
-##### `charset()`
+##### `charset -> str | None`（property）
 
 字符编码
 
-**返回值** (`str`): | None 编码名称
+**返回值** (`str | None`): 编码名称
 
 ---
 
 
-##### `url()`
+##### `url`（property）
 
 响应 URL (可能因重定向而与请求 URL 不同)
 
-**返回值** (`object`): URL 对象
+**返回值**: object URL 对象
 
 ---
 
 
-##### `raw()`
+##### `raw`（property）
 
 底层框架原生 Response 对象
 
@@ -115,7 +116,7 @@ Content-Type 值
 ---
 
 
-##### `async read()`
+##### `async read() -> bytes`
 
 读取响应体原始字节 (自动缓存)
 
@@ -137,10 +138,11 @@ Content-Type 值
 > 3. 通过 .raw 属性可访问底层 aiohttp.ClientWebSocketResponse
 
 **示例**:
+
 ```python
->>> ws = await sdk.client.ws_connect("wss://example.com/ws")
->>> async for text in ws.iter_text():
-...     await ws.send_text(f"Echo: {text}")
+ws = await sdk.client.ws_connect("wss://example.com/ws")
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
 ```
 
 
@@ -154,7 +156,7 @@ Content-Type 值
 ---
 
 
-##### `closed()`
+##### `closed -> bool`（property）
 
 连接是否已关闭
 
@@ -163,7 +165,7 @@ Content-Type 值
 ---
 
 
-##### `async send_text(data: str)`
+##### `async send_text(data: str) -> None`
 
 发送文本消息
 
@@ -172,7 +174,7 @@ Content-Type 值
 ---
 
 
-##### `async send_bytes(data: bytes)`
+##### `async send_bytes(data: bytes) -> None`
 
 发送二进制消息
 
@@ -181,7 +183,7 @@ Content-Type 值
 ---
 
 
-##### `async send_json(data: Any, mode: str = 'text')`
+##### `async send_json(data: Any, mode: str = 'text') -> None`
 
 发送 JSON 消息
 
@@ -191,16 +193,16 @@ Content-Type 值
 ---
 
 
-##### `_convert_ws_msg(msg)`
+##### `_convert_ws_msg(msg) -> WSMessage`
 
 转换 aiohttp WSMessage 为 ErisPulse WSMessage
 
-> **内部方法**
+**内部方法**
 
 ---
 
 
-##### `async receive()`
+##### `async receive() -> WSMessage`
 
 接收原始消息
 
@@ -209,45 +211,51 @@ Content-Type 值
 ---
 
 
-##### `async receive_text()`
+##### `async receive_text() -> str`
 
 接收文本消息
 
 **返回值** (`str`): 文本内容
+
 **异常**: `WebSocketDisconnect` - 连接断开时
+
 **异常**: `WebSocketError` - 收到非文本消息时
 
 ---
 
 
-##### `async receive_bytes()`
+##### `async receive_bytes() -> bytes`
 
 接收二进制消息
 
 **返回值** (`bytes`): 二进制内容
+
 **异常**: `WebSocketDisconnect` - 连接断开时
+
 **异常**: `WebSocketError` - 收到非二进制消息时
 
 ---
 
 
-##### `async receive_json(mode: str = 'text')`
+##### `async receive_json(mode: str = 'text') -> Any`
 
 接收 JSON 消息
 
 - **mode** (`str`): 接收模式 ("text" 或 "binary") (默认: "text")
+
 **返回值** (`Any`): 解析后的 JSON 数据
+
 **异常**: `WebSocketDisconnect` - 连接断开时
 
 ---
 
 
-##### `async close(code: int = WS_CLOSE_NORMAL, reason: str | None = None)`
+##### `async close(code: int = WS_CLOSE_NORMAL, reason: str | None = None) -> None`
 
 关闭 WebSocket 连接
 
 - **code** (`int`): 关闭码 (默认: 1000)
-- **reason** (`str`): | None 关闭原因 (可选)
+- **reason** (`str | None`): 关闭原因 (可选)
 
 ---
 
@@ -267,27 +275,28 @@ HTTP/WS 客户端 (基于 aiohttp)
 > 5. 所有请求自动通过 lifecycle 发送事件，可用于监控
 
 **示例**:
+
 ```python
->>> resp = await sdk.client.get("https://httpbin.org/get")
->>> data = await resp.json()
->>>
->>> ws = await sdk.client.ws_connect("wss://example.com/ws")
->>> await ws.send_text("Hello")
+resp = await sdk.client.get("https://httpbin.org/get")
+data = await resp.json()
+
+ws = await sdk.client.ws_connect("wss://example.com/ws")
+await ws.send_text("Hello")
 ```
 
 
 #### 方法列表
 
 
-##### `__init__()`
+##### `__init__(*, timeout: float | None = None, connect_timeout: float | None = None, max_retries: int | None = None, retry_delay: float | None = None, headers: dict[str, str] | None = None, user_agent: str | None = None, proxy: str | None = None)`
 
-- **timeout** (`float`): | None 请求总超时 (秒) (默认: 30)
-- **connect_timeout** (`float`): | None 连接超时 (秒) (默认: 10)
+- **timeout** (`float | None`): 请求总超时 (秒) (默认: 30)
+- **connect_timeout** (`float | None`): 连接超时 (秒) (默认: 10)
 - **max_retries** (`int`): 最大重试次数 (默认: 1)
 - **retry_delay** (`float`): 重试间隔 (秒) (默认: 1)
-- **headers** (`dict[str,`): str] 全局默认请求头 (可选)
-- **user_agent** (`str`): User-Agent 字符串 (可选)
-- **proxy** (`str`): | None 代理 URL（如 http://127.0.0.1:7890），为 None 时自动检测环境变量
+- **headers** (`dict[str, str]`): 全局默认请求头 (可选)
+- **user_agent**: str User-Agent 字符串 (可选)
+- **proxy** (`str | None`): 代理 URL（如 http://127.0.0.1:7890），为 None 时自动检测环境变量
 
 ---
 
@@ -304,151 +313,167 @@ HTTP/WS 客户端 (基于 aiohttp)
 从 data 和 files 构建 multipart/form-data 请求体
 
 - **data** (`Any`): 表单数据 (dict 时合并进 FormData)
-- **files** (`dict[str,`): Any] 文件字段
-**返回值** (`aiohttp.FormData`): multipart 表单对象
+- **files** (`dict[str, Any]`): 文件字段
+
+**返回值**: aiohttp.FormData multipart 表单对象
 
 **异常**: `ValueError` - data 为非 dict 类型且不为 None
 
 ---
 
 
-##### `async request(method: str, url: str)`
+##### `async request(method: str, url: str, *, params: dict[str, str] | None = None, headers: dict[str, str] | None = None, data: Any = None, json: Any = None, files: dict[str, Any] | None = None, timeout: float | None = None, max_retries: int | None = None, **kwargs) -> HttpResponse`
 
 发送 HTTP 请求
 
-- **method** (`str`): HTTP 方法 (GET, POST, PUT, DELETE, PATCH 等)
+- **method**: str HTTP 方法 (GET, POST, PUT, DELETE, PATCH 等)
 - **url** (`str`): 请求 URL
-- **params** (`dict[str,`): str] | None 查询参数 (可选)
-- **headers** (`dict[str,`): str] | None 额外请求头 (可选)
+- **params** (`dict[str, str] | None`): 查询参数 (可选)
+- **headers** (`dict[str, str] | None`): 额外请求头 (可选)
 - **data** (`Any`): 请求体 (表单或原始数据) (可选)
-- **json** (`Any`): JSON 请求体 (可选)
-- **files** (`dict[str,`): Any] | None 文件上传字段 (可选, 自动构建 multipart/form-data)
-- **timeout** (`float`): | None 本次请求超时 (秒) (可选, 覆盖默认值)
-- **max_retries** (`int`): | None 本次最大重试次数 (可选, 覆盖默认值)
-- **kwargs** (`传递给底层请求的额外参数`): **返回值** (`HttpResponse`): 响应对象
+- **json**: Any JSON 请求体 (可选)
+- **files** (`dict[str, Any] | None`): 文件上传字段 (可选, 自动构建 multipart/form-data)
+- **timeout** (`float | None`): 本次请求超时 (秒) (可选, 覆盖默认值)
+- **max_retries** (`int | None`): 本次最大重试次数 (可选, 覆盖默认值)
+- **kwargs**: 传递给底层请求的额外参数
+
+**返回值** (`HttpResponse`): 响应对象
 
 **异常**: `ClientConnectionError` - 连接失败
+
 **异常**: `ClientTimeoutError` - 请求超时
+
 **异常**: `ClientError` - 其他客户端错误
 
 **示例**:
+
 ```python
->>> resp = await client.request("GET", "https://httpbin.org/get", params={"q": "test"})
+resp = await client.request("GET", "https://httpbin.org/get", params={"q": "test"})
 ```
 
 ---
 
 
-##### `async ws_connect(url: str)`
+##### `async ws_connect(url: str, *, headers: dict[str, str] | None = None, heartbeat: float | None = DEFAULT_WS_CLIENT_HEARTBEAT_SECS, timeout: float = DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS, **kwargs) -> ClientWebSocket`
 
 建立 WebSocket 连接
 
-- **url** (`str`): WebSocket 服务器 URL
-- **headers** (`dict[str,`): str] | None 额外请求头 (可选)
-- **heartbeat** (`float`): | None 心跳间隔秒数 (可选)
+- **url**: str WebSocket 服务器 URL
+- **headers** (`dict[str, str] | None`): 额外请求头 (可选)
+- **heartbeat** (`float | None`): 心跳间隔秒数 (可选)
 - **timeout** (`float`): 连接超时秒数 (默认: DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS)
-- **kwargs** (`传递给底层`): ws_connect 的额外参数
-**返回值** (`ClientWebSocket`): WebSocket 连接对象
+- **kwargs**: 传递给底层 ws_connect 的额外参数
+
+**返回值**: ClientWebSocket WebSocket 连接对象
 
 **异常**: `ClientConnectionError` - 连接失败
+
 **异常**: `ClientError` - 其他客户端错误
 
 **示例**:
+
 ```python
->>> ws = await sdk.client.ws_connect("wss://example.com/ws", heartbeat=30)
->>> async for text in ws.iter_text():
-...     await ws.send_text(f"Echo: {text}")
+ws = await sdk.client.ws_connect("wss://example.com/ws", heartbeat=30)
+async for text in ws.iter_text():
+    await ws.send_text(f"Echo: {text}")
 ```
 
 ---
 
 
-##### `async get(url: str)`
+##### `async get(url: str, *, params: dict[str, str] | None = None, headers: dict[str, str] | None = None, **kwargs) -> HttpResponse`
 
 发送 GET 请求
 
 - **url** (`str`): 请求 URL
-- **params** (`dict[str,`): str] | None 查询参数 (可选)
-- **headers** (`dict[str,`): str] | None 额外请求头 (可选)
+- **params** (`dict[str, str] | None`): 查询参数 (可选)
+- **headers** (`dict[str, str] | None`): 额外请求头 (可选)
+
 **返回值** (`HttpResponse`): 响应对象
 
 **示例**:
+
 ```python
->>> resp = await client.get("https://httpbin.org/get", params={"q": "test"})
->>> data = await resp.json()
+resp = await client.get("https://httpbin.org/get", params={"q": "test"})
+data = await resp.json()
 ```
 
 ---
 
 
-##### `async post(url: str)`
+##### `async post(url: str, *, data: Any = None, json: Any = None, files: dict[str, Any] | None = None, headers: dict[str, str] | None = None, **kwargs) -> HttpResponse`
 
 发送 POST 请求
 
 - **url** (`str`): 请求 URL
 - **data** (`Any`): 请求体 (表单或原始数据) (可选)
-- **json** (`Any`): JSON 请求体 (可选)
-- **files** (`dict[str,`): Any] | None 文件上传字段 (可选, 自动构建 multipart/form-data)
-- **headers** (`dict[str,`): str] | None 额外请求头 (可选)
+- **json**: Any JSON 请求体 (可选)
+- **files** (`dict[str, Any] | None`): 文件上传字段 (可选, 自动构建 multipart/form-data)
+- **headers** (`dict[str, str] | None`): 额外请求头 (可选)
+
 **返回值** (`HttpResponse`): 响应对象
 
 **示例**:
+
 ```python
->>> resp = await client.post("https://httpbin.org/post", json={"key": "value"})
+resp = await client.post("https://httpbin.org/post", json={"key": "value"})
 ```
 
 ---
 
 
-##### `async put(url: str)`
+##### `async put(url: str, *, data: Any = None, json: Any = None, files: dict[str, Any] | None = None, headers: dict[str, str] | None = None, **kwargs) -> HttpResponse`
 
 发送 PUT 请求
 
 - **url** (`str`): 请求 URL
 - **data** (`Any`): 请求体 (可选)
-- **json** (`Any`): JSON 请求体 (可选)
-- **files** (`dict[str,`): Any] | None 文件上传字段 (可选, 自动构建 multipart/form-data)
-- **headers** (`dict[str,`): str] | None 额外请求头 (可选)
+- **json**: Any JSON 请求体 (可选)
+- **files** (`dict[str, Any] | None`): 文件上传字段 (可选, 自动构建 multipart/form-data)
+- **headers** (`dict[str, str] | None`): 额外请求头 (可选)
+
 **返回值** (`HttpResponse`): 响应对象
 
 ---
 
 
-##### `async delete(url: str)`
+##### `async delete(url: str, *, headers: dict[str, str] | None = None, **kwargs) -> HttpResponse`
 
 发送 DELETE 请求
 
 - **url** (`str`): 请求 URL
-- **headers** (`dict[str,`): str] | None 额外请求头 (可选)
+- **headers** (`dict[str, str] | None`): 额外请求头 (可选)
+
 **返回值** (`HttpResponse`): 响应对象
 
 ---
 
 
-##### `async patch(url: str)`
+##### `async patch(url: str, *, data: Any = None, json: Any = None, files: dict[str, Any] | None = None, headers: dict[str, str] | None = None, **kwargs) -> HttpResponse`
 
 发送 PATCH 请求
 
 - **url** (`str`): 请求 URL
 - **data** (`Any`): 请求体 (可选)
-- **json** (`Any`): JSON 请求体 (可选)
-- **files** (`dict[str,`): Any] | None 文件上传字段 (可选, 自动构建 multipart/form-data)
-- **headers** (`dict[str,`): str] | None 额外请求头 (可选)
+- **json**: Any JSON 请求体 (可选)
+- **files** (`dict[str, Any] | None`): 文件上传字段 (可选, 自动构建 multipart/form-data)
+- **headers** (`dict[str, str] | None`): 额外请求头 (可选)
+
 **返回值** (`HttpResponse`): 响应对象
 
 ---
 
 
-##### `stats()`
+##### `stats -> dict[str, int]`（property）
 
 请求统计
 
-**返回值** (`dict[str,`): int] 统计数据 (total_requests, total_errors 等)
+**返回值** (`dict[str, int]`): 统计数据 (total_requests, total_errors 等)
 
 ---
 
 
-##### `reset_stats()`
+##### `reset_stats() -> None`
 
 重置统计数据
 

@@ -19,39 +19,41 @@
 ## 函数列表
 
 
-### `get_rss_mb()`
+### `get_rss_mb() -> float | None`
 
 获取当前进程的驻留集大小（RSS），单位 MB
 
 优先使用 ``psutil``；若不可用则在 Linux 上读取 ``/proc/self/status``；
 其余平台返回 ``None``。
 
-**返回值** (`RSS（MB），不可用时为`): ``None``
+**返回值**: RSS（MB），不可用时为 ``None``
 
 ---
 
 
-### `get_traced_mb()`
+### `get_traced_mb() -> float | None`
 
 获取 tracemalloc 当前追踪的 Python 分配内存，单位 MB
 
-**返回值** (`已追踪内存（MB），未启用`): tracemalloc 时为 ``None``
+**返回值**: 已追踪内存（MB），未启用 tracemalloc 时为 ``None``
 
 ---
 
 
-### `snapshot(label: str = '')`
+### `snapshot(label: str = '') -> dict[str, Any]`
 
 采集一次内存快照
 
-- **label** (`快照标签，用于跨次快照计算同名标签的`): RSS 增量
-**返回值** (`包含`): ``label`` / ``rss_mb`` / ``traced_mb`` / ``delta_mb`` 的字典；
+- **label**: 快照标签，用于跨次快照计算同名标签的 RSS 增量
+
+**返回值**: 包含 ``label`` / ``rss_mb`` / ``traced_mb`` / ``delta_mb`` 的字典；
+
          无法采集的项为 ``None``
 
 ---
 
 
-### `log_snapshot(label: str = '')`
+### `log_snapshot(label: str = '') -> None`
 
 记录一次内存快照到 TRACE 级日志
 

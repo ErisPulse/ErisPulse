@@ -28,12 +28,13 @@ WebSocket 消息抽象
 用于客户端 WebSocket 的低级消息接收。
 
 **示例**:
+
 ```python
->>> async for msg in ws.iter_messages():
-...     if msg.type == WSMessage.TEXT:
-...         print(msg.data)
-...     elif msg.type == WSMessage.CLOSE:
-...         break
+async for msg in ws.iter_messages():
+    if msg.type == WSMessage.TEXT:
+        print(msg.data)
+    elif msg.type == WSMessage.CLOSE:
+        break
 ```
 
 
@@ -61,11 +62,12 @@ send/receive 由子类实现，iter 方法提供基于 receive 的默认实现�
 > 3. 使用 on_disconnect/on_error 注册生命周期回调
 
 **示例**:
+
 ```python
->>> # 服务端和客户端共享相同的接口
->>> await ws.send_text("Hello")
->>> async for msg in ws.iter_text():
-...     await ws.send_text(f"Echo: {msg}")
+# 服务端和客户端共享相同的接口
+await ws.send_text("Hello")
+async for msg in ws.iter_text():
+    await ws.send_text(f"Echo: {msg}")
 ```
 
 
@@ -79,25 +81,25 @@ send/receive 由子类实现，iter 方法提供基于 receive 的默认实现�
 ---
 
 
-##### `url()`
+##### `url`（property）
 
 连接 URL
 
-**返回值** (`object`): URL 对象
+**返回值**: object URL 对象
 
 ---
 
 
-##### `headers()`
+##### `headers`（property）
 
 请求头
 
-**返回值** (`object`): Headers 对象
+**返回值**: object Headers 对象
 
 ---
 
 
-##### `raw()`
+##### `raw`（property）
 
 底层框架原生对象
 
@@ -106,7 +108,7 @@ send/receive 由子类实现，iter 方法提供基于 receive 的默认实现�
 ---
 
 
-##### `async send_text(data: str)`
+##### `async send_text(data: str) -> None`
 
 发送文本消息
 
@@ -115,7 +117,7 @@ send/receive 由子类实现，iter 方法提供基于 receive 的默认实现�
 ---
 
 
-##### `async send_bytes(data: bytes)`
+##### `async send_bytes(data: bytes) -> None`
 
 发送二进制消息
 
@@ -124,7 +126,7 @@ send/receive 由子类实现，iter 方法提供基于 receive 的默认实现�
 ---
 
 
-##### `async send_json(data: Any, mode: str = 'text')`
+##### `async send_json(data: Any, mode: str = 'text') -> None`
 
 发送 JSON 消息
 
@@ -134,32 +136,36 @@ send/receive 由子类实现，iter 方法提供基于 receive 的默认实现�
 ---
 
 
-##### `async receive_text()`
+##### `async receive_text() -> str`
 
 接收文本消息
 
 **返回值** (`str`): 文本内容
+
 **异常**: `WebSocketDisconnect` - 连接断开时
 
 ---
 
 
-##### `async receive_bytes()`
+##### `async receive_bytes() -> bytes`
 
 接收二进制消息
 
 **返回值** (`bytes`): 二进制内容
+
 **异常**: `WebSocketDisconnect` - 连接断开时
 
 ---
 
 
-##### `async receive_json(mode: str = 'text')`
+##### `async receive_json(mode: str = 'text') -> Any`
 
 接收 JSON 消息
 
 - **mode** (`str`): 接收模式 ("text" 或 "binary") (默认: "text")
+
 **返回值** (`Any`): 解析后的 JSON 数据
+
 **异常**: `WebSocketDisconnect` - 连接断开时
 
 ---
@@ -169,7 +175,7 @@ send/receive 由子类实现，iter 方法提供基于 receive 的默认实现�
 
 迭代文本消息直到断开
 
-**返回值** (`async`): generator 逐条返回文本消息
+**返回值**: async generator 逐条返回文本消息
 
 ---
 
@@ -178,7 +184,7 @@ send/receive 由子类实现，iter 方法提供基于 receive 的默认实现�
 
 迭代二进制消息直到断开
 
-**返回值** (`async`): generator 逐条返回二进制消息
+**返回值**: async generator 逐条返回二进制消息
 
 ---
 
@@ -187,17 +193,17 @@ send/receive 由子类实现，iter 方法提供基于 receive 的默认实现�
 
 迭代 JSON 消息直到断开
 
-**返回值** (`async`): generator 逐条返回 JSON 数据
+**返回值**: async generator 逐条返回 JSON 数据
 
 ---
 
 
-##### `async close(code: int = 1000, reason: str | None = None)`
+##### `async close(code: int = 1000, reason: str | None = None) -> None`
 
 关闭 WebSocket 连接
 
 - **code** (`int`): 关闭码 (默认: 1000)
-- **reason** (`str`): | None 关闭原因 (可选)
+- **reason** (`str | None`): 关闭原因 (可选)
 
 ---
 
@@ -211,10 +217,11 @@ send/receive 由子类实现，iter 方法提供基于 receive 的默认实现�
 - **handler** (`Callable`): 断开连接时的回调函数，签名: (ws, reason="") -> None
 
 **示例**:
+
 ```python
->>> @ws.on_disconnect
-... async def handle_disconnect(ws, reason="unknown"):
-...     print(f"Disconnected: {reason}")
+@ws.on_disconnect
+async def handle_disconnect(ws, reason="unknown"):
+    print(f"Disconnected: {reason}")
 ```
 
 ---
@@ -227,10 +234,11 @@ send/receive 由子类实现，iter 方法提供基于 receive 的默认实现�
 - **handler** (`Callable`): 发生错误时的回调函数，签名: (ws, error="") -> None
 
 **示例**:
+
 ```python
->>> @ws.on_error
-... async def handle_error(ws, error=""):
-...     print(f"Error: {error}")
+@ws.on_error
+async def handle_error(ws, error=""):
+    print(f"Error: {error}")
 ```
 
 ---

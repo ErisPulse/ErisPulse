@@ -30,36 +30,39 @@ ErisPulse 通用配置 Schema 模块
 ## 函数列表
 
 
-### `get_field_docstrings(config_class: type)`
+### `get_field_docstrings(config_class: type) -> dict[str, str]`
 
 从配置类 docstring 提取字段描述（description 兜底来源）
 
 支持两种常见风格（可混用，Google 段优先覆盖）：
 
-- reST::
+- reST:
+```
+'''适配器配置
 
-    '''适配器配置
+:ivar token: API 访问令牌
+:ivar mode: 运行模式
+'''
+```
 
-    :ivar token: API 访问令牌
-    :ivar mode: 运行模式
-    '''
+- Google:
+```
+'''适配器配置
 
-- Google::
+Attributes:
+    token: API 访问令牌
+    mode: 运行模式
+'''
+```
 
-    '''适配器配置
+- **config_class**: 配置 dataclass 类
 
-    Attributes:
-        token: API 访问令牌
-        mode: 运行模式
-    '''
-
-- **config_class** (`配置`): dataclass 类
-**返回值** (`dict`): {字段名: 描述文本}
+**返回值**: dict {字段名: 描述文本}
 
 ---
 
 
-### `_resolve_description_text(meta: Mapping | None, fallback: str = '')`
+### `_resolve_description_text(meta: Mapping | None, fallback: str = '') -> str`
 
 从 metadata 提取人类可读的描述文本
 
@@ -72,12 +75,13 @@ description 可以是:
 
 - **meta** (`field.metadata`): 字典
 - **fallback** (`description`): 缺失/为空时的兜底文本（docstring 描述）
+
 **返回值**: 人类可读的描述字符串
 
 ---
 
 
-### `_resolve_description_schema(meta: Mapping | None, fallback: str = '')`
+### `_resolve_description_schema(meta: Mapping | None, fallback: str = '') -> str | dict`
 
 从 metadata 提取 schema 可用的描述信息
 
@@ -88,52 +92,56 @@ description 可以是:
 
 - **meta** (`field.metadata`): 字典
 - **fallback** (`description`): 缺失/为空时的兜底文本（docstring 描述）
-**返回值** (`字符串或`): i18n 描述字典
+
+**返回值**: 字符串或 i18n 描述字典
 
 ---
 
 
-### `_get_ui_meta(meta: Mapping | None)`
+### `_get_ui_meta(meta: Mapping | None) -> dict`
 
 从 metadata 获取 UI 配置（兼容新旧键名）
 
 优先级: "ui"（新） > "webui"（旧，保留兼容）
 
 - **meta** (`field.metadata`): 字典
+
 **返回值** (`UI`): 元数据字典
 
 ---
 
 
-### `_resolve_nested_dataclass(config_class: type, f)`
+### `_resolve_nested_dataclass(config_class: type, f) -> type | None`
 
 解析字段类型，若为嵌套 dataclass 则返回该类型，否则返回 None
 
 支持直接类型注解与字符串注解（延迟求值 / ``from __future__ import
 annotations``）；字符串注解从类所在模块全局与类属性（含嵌套类声明）按名解析。
 
-- **config_class** (`外层配置`): dataclass 类（或其实例的类）
-- **f** (`dataclass`): Field 对象
-**返回值** (`嵌套`): dataclass 类型，非嵌套字段返回 None
+- **config_class**: 外层配置 dataclass 类（或其实例的类）
+- **f**: dataclass Field 对象
 
-> **内部方法**
+**返回值**: 嵌套 dataclass 类型，非嵌套字段返回 None
+
+**内部方法**
 
 ---
 
 
-### `_type_default(type_hint)`
+### `_type_default(type_hint) -> object`
 
 根据类型注解返回合理的默认值
 
-> **内部方法**
+**内部方法**
 
 - **type_hint** (`Python`): 类型注解
-**返回值** (`对应类型的默认值（int→0,`): float→0.0, bool→False, list→[], dict→{}, str→""）
+
+**返回值**: 对应类型的默认值（int→0, float→0.0, bool→False, list→[], dict→{}, str→""）
 
 ---
 
 
-### `python_type_category(type_hint: Any)`
+### `python_type_category(type_hint: Any) -> str`
 
 识别 Python 类型注解的类别（声明式字段层的类型映射同源注册表）
 
@@ -148,7 +156,8 @@ __future__ import annotations`` 下的 ``__annotations__`` 形态）在受限
 命名空间内求值后同样处理；无法识别的注解回落 ``"str"``。
 
 - **type_hint** (`Python`): 类型注解（类型对象、typing 形态或字符串注解）
-**返回值** (`类别名（"int"`): / "float" / "bool" / "list" / "dict" / "str"）
+
+**返回值**: 类别名（"int" / "float" / "bool" / "list" / "dict" / "str"）
 
 > **提示**
 > 1. 新增受支持的注解类别时，本函数与两个下游映射需同步扩展
@@ -156,25 +165,27 @@ __future__ import annotations`` 下的 ``__annotations__`` 形态）在受限
 ---
 
 
-### `_python_type_to_toml_type(type_hint)`
+### `_python_type_to_toml_type(type_hint) -> str`
 
 将 Python 类型注解转为 TOML 类型字符串
 
-> **内部方法**
+**内部方法**
 
 - **type_hint** (`Python`): 类型注解
+
 **返回值** (`TOML`): 类型名（integer/float/boolean/array/table/string）
 
 ---
 
 
-### `_format_toml_value(value)`
+### `_format_toml_value(value) -> str`
 
 将 Python 值格式化为 TOML 值字符串
 
-> **内部方法**
+**内部方法**
 
 - **value** (`Python`): 值（str/int/float/bool/list/dict 等）
+
 **返回值** (`TOML`): 格式的字符串
 
 ---
@@ -184,21 +195,24 @@ __future__ import annotations`` 下的 ``__annotations__`` 形态）在受限
 
 获取 dataclass 字段的默认值
 
-> **内部方法**
+**内部方法**
 
-- **f** (`dataclass`): Field 对象
-**返回值** (`字段的默认值（优先`): default，其次 default_factory，最后根据类型推断）
+- **f**: dataclass Field 对象
+
+**返回值**: 字段的默认值（优先 default，其次 default_factory，最后根据类型推断）
 
 ---
 
 
-### `_is_empty(value)`
+### `_is_empty(value) -> bool`
 
 判断值是否为空（None / 空字符串 / 空列表 / 空字典）
 
-> **内部方法**
+**内部方法**
 
-- **value** (`任意值`): **返回值**: 是否为空
+- **value**: 任意值
+
+**返回值**: 是否为空
 
 ---
 
@@ -207,15 +221,17 @@ __future__ import annotations`` 下的 ``__annotations__`` 形态）在受限
 
 将值强制转换为目标类型（如 str→int、str→bool）
 
-> **内部方法**
+**内部方法**
 
-- **value** (`原始值`): - **type_hint**: 目标类型注解
+- **value**: 原始值
+- **type_hint**: 目标类型注解
+
 **返回值**: 转换后的值（转换失败时返回原值）
 
 ---
 
 
-### `dataclass_to_defaults_dict(config_class: type)`
+### `dataclass_to_defaults_dict(config_class: type) -> dict`
 
 从 dataclass 类生成默认值字典
 
@@ -223,12 +239,13 @@ __future__ import annotations`` 下的 ``__annotations__`` 形态）在受限
 嵌套 dataclass 字段递归展开为普通字典。
 
 - **config_class** (`dataclass`): 类
+
 **返回值**: 默认值字典
 
 ---
 
 
-### `dataclass_to_toml_with_comments(config_class: type, existing_values: dict | None = None, include_example: bool = False, _prefix: str = '')`
+### `dataclass_to_toml_with_comments(config_class: type, existing_values: dict | None = None, include_example: bool = False, _prefix: str = '') -> str`
 
 将 dataclass class 转为带注释的 TOML 文本
 
@@ -238,9 +255,12 @@ description 若为 i18n 字典，则使用其 default/fallback 文本；
 嵌套 dataclass 字段渲染为 ``[子表]`` 节（递归，注释同样保留）。
 
 - **config_class** (`dataclass`): 类
-- **existing_values** (`已有的配置值（覆盖默认值）`): - **include_example**: 是否包含 ``example`` 字段（默认排除，
+- **existing_values**: 已有的配置值（覆盖默认值）
+- **include_example**: 是否包含 ``example`` 字段（默认排除，
+
     example 字段仅进 config.full.example，不写入 config.toml）
-- **_prefix** (`递归用：当前嵌套路径前缀（如`): ``"stalker_mode."``）
+- **_prefix**: 递归用：当前嵌套路径前缀（如 ``"stalker_mode."``）
+
 **返回值** (`TOML`): 文本字符串
 
 ---
@@ -250,21 +270,22 @@ description 若为 i18n 字典，则使用其 default/fallback 文本；
 
 读取字段声明的环境变量覆盖值（``metadata: {"env": "NAME"}``）
 
-> **内部方法**
+**内部方法**
 优先级：环境变量 > config.toml > 声明默认值。环境变量值为字符串，
 按字段注解转换——``int`` / ``float`` / ``bool`` 复用 :func:`_coerce_value`，
 ``list`` / ``dict`` 走 JSON 解析，``str`` 原样。转换失败（如整型字段
 收到非数字）时输出警告并回退（视为未覆盖）。
 
-- **f** (`dataclass`): Field 对象
-**返回值** (`覆盖值；未声明`): env / 环境变量不存在 / 转换失败时返回 MISSING
+- **f**: dataclass Field 对象
+
+**返回值**: 覆盖值；未声明 env / 环境变量不存在 / 转换失败时返回 MISSING
 
 ---
 
 
 ### `_get_config_logger()`
 
-> **内部方法** 延迟获取日志器（避免循环依赖）
+**内部方法** 延迟获取日志器（避免循环依赖）
 
 ---
 
@@ -280,13 +301,14 @@ description 若为 i18n 字典，则使用其 default/fallback 文本；
 - 环境变量覆盖（``metadata: {"env": "NAME"}``）：优先级 环境变量 > data > default
 
 - **config_class** (`dataclass`): 类
-- **data** (`字典数据（通常来自`): TOML 解析）
+- **data**: 字典数据（通常来自 TOML 解析）
+
 **返回值** (`dataclass`): 实例
 
 ---
 
 
-### `_notify_instance_config_update(instance: Any, old_dict: dict | None, new_dict: dict | None)`
+### `_notify_instance_config_update(instance: Any, old_dict: dict | None, new_dict: dict | None, *, i18n_key: str, log_params: dict) -> None`
 
 调用实例的 ``on_config_update`` 回调，传入类型安全的配置对象
 
@@ -297,18 +319,18 @@ description 若为 i18n 字典，则使用其 default/fallback 文本；
 供 ``ModuleManager`` 与 ``AdapterManager`` 的配置热更新路由共用，
 避免在两处重复实现字典→dataclass 转换 + 异常兜底逻辑。
 
-> **内部方法**
+**内部方法**
 
-- **instance** (`模块/适配器实例（需实现`): ``on_config_update``）
-- **old_dict** (`变更前的配置字典（可能为`): None）
-- **new_dict** (`变更后的配置字典（可能为`): None）
-- **i18n_key** (`回调异常日志的`): i18n 键（如 ``core.module.config_update_failed``）
-- **log_params** (`异常日志的额外格式化参数（如`): ``{"name": "MyModule"}``）
+- **instance**: 模块/适配器实例（需实现 ``on_config_update``）
+- **old_dict**: 变更前的配置字典（可能为 None）
+- **new_dict**: 变更后的配置字典（可能为 None）
+- **i18n_key**: 回调异常日志的 i18n 键（如 ``core.module.config_update_failed``）
+- **log_params**: 异常日志的额外格式化参数（如 ``{"name": "MyModule"}``）
 
 ---
 
 
-### `validate_field_constraints(label: str, value: Any)`
+### `validate_field_constraints(label: str, value: Any, *, required: bool = False, choices: 'list | tuple | None' = None, min_value: 'int | float | None' = None, max_value: 'int | float | None' = None, max_length: 'int | None' = None) -> 'list[str]'`
 
 字段约束校验共享引擎（声明式字段层的校验器同源实现）
 
@@ -317,12 +339,15 @@ description 若为 i18n 字典，则使用其 default/fallback 文本；
 枚举、数值范围、字符串长度。参数由各消费方从自己的声明形态解析
 （config 从 metadata/ui 元数据，ORM 从 Field 参数）。
 
-- **label** (`字段标签（错误信息定位用，如字段名）`): - **value**: 待校验的值
-- **required** (`是否必填（非空）`): - **choices**: 枚举选项（None 不校验）
-- **min_value** (`数值下界（None`): 不校验）
-- **max_value** (`数值上界（None`): 不校验）
-- **max_length** (`字符串最大长度（None`): 不校验）
-**返回值** (`本地化错误列表（空列表`): = 通过）
+- **label**: 字段标签（错误信息定位用，如字段名）
+- **value**: 待校验的值
+- **required**: 是否必填（非空）
+- **choices**: 枚举选项（None 不校验）
+- **min_value**: 数值下界（None 不校验）
+- **max_value**: 数值上界（None 不校验）
+- **max_length**: 字符串最大长度（None 不校验）
+
+**返回值**: 本地化错误列表（空列表 = 通过）
 
 > **提示**
 > 1. 空值（None/空串/空容器）跳过除 required 外的全部检查——与
@@ -331,7 +356,7 @@ description 若为 i18n 字典，则使用其 default/fallback 文本；
 ---
 
 
-### `validate_config(instance)`
+### `validate_config(instance) -> list[str]`
 
 校验 dataclass 实例
 
@@ -344,31 +369,33 @@ description 若为 i18n 字典，则使用其 default/fallback 文本；
 错误信息使用其 fallback/default 文本。
 
 - **instance** (`dataclass`): 实例
+
 **返回值**: 错误信息列表
 
 ---
 
 
-### `_schema_fields(config_class: type)`
+### `_schema_fields(config_class: type) -> dict`
 
 递归生成配置类的字段 schema（嵌套 dataclass 字段以 ``fields`` 子树承载）
 
 - **config_class** (`dataclass`): 类
-**返回值** (`{字段名:`): 字段 schema} 字典
 
-> **内部方法**
+**返回值**: {字段名: 字段 schema} 字典
 
----
-
-
-### `_apply_ui_meta(field_schema: dict, ui_meta: dict)`
-
-> **内部方法** 将 UI 元数据合并进字段 schema
+**内部方法**
 
 ---
 
 
-### `get_config_schema(config_class: type)`
+### `_apply_ui_meta(field_schema: dict, ui_meta: dict) -> None`
+
+**内部方法** 将 UI 元数据合并进字段 schema
+
+---
+
+
+### `get_config_schema(config_class: type) -> dict`
 
 从 dataclass 生成 WebUI 可用的 JSON Schema
 
@@ -380,12 +407,13 @@ description 若为 i18n 字典则原样透传，WebUI 根据语言键查找翻�
 面板可渲染为嵌套分组而非整棵平铺。
 
 - **config_class** (`dataclass`): 类
+
 **返回值** (`schema`): 字典
 
 ---
 
 
-### `register_config_i18n(config_class: type, lang: str, translations: dict[str, str] | None = None, domain: str = 'config')`
+### `register_config_i18n(config_class: type, lang: str, translations: dict[str, str] | None = None, domain: str = 'config') -> int`
 
 将配置类的字段描述注册到 i18n 系统
 
@@ -397,24 +425,26 @@ description 若为 i18n 字典则原样透传，WebUI 根据语言键查找翻�
    （description.default 是语言无关的兜底文本，调用者自行决定注册到哪种语言）
 2. 手动模式：提供 translations 字典（{i18n_key: translated_text}）
 
-使用示例::
+使用示例:
+```
+# 将默认文本注册为中文翻译
+register_config_i18n(MyAdapterConfig, "zh-CN")
 
-    # 将默认文本注册为中文翻译
-    register_config_i18n(MyAdapterConfig, "zh-CN")
+# 将默认文本注册为英文翻译
+register_config_i18n(MyAdapterConfig, "en")
 
-    # 将默认文本注册为英文翻译
-    register_config_i18n(MyAdapterConfig, "en")
-
-    # 手动提供英文翻译（覆盖默认文本）
-    register_config_i18n(MyAdapterConfig, "en", {
-        "my_adapter.endpoint": "API Endpoint",
-        "my_adapter.token": "Platform Token",
-    })
+# 手动提供英文翻译（覆盖默认文本）
+register_config_i18n(MyAdapterConfig, "en", {
+    "my_adapter.endpoint": "API Endpoint",
+    "my_adapter.token": "Platform Token",
+})
+```
 
 - **config_class** (`dataclass`): 配置类
-- **lang** (`语言代码（如`): "zh-CN", "en"）
-- **translations** (`手动提供的翻译字典，None`): 则自动提取
+- **lang**: 语言代码（如 "zh-CN", "en"）
+- **translations**: 手动提供的翻译字典，None 则自动提取
 - **domain** (`i18n`): 域标识，默认 "config"
+
 **返回值**: 注册的翻译条目数
 
 ---
@@ -429,21 +459,22 @@ description 若为 i18n 字典则原样透传，WebUI 根据语言键查找翻�
 - 仅含 ``default`` 的字典 ``{"default": "文本"}``（语言无关文本，
   如动态生成的选项标签）解析为 default 文本
 
-- **value** (`原始值（str`): 或 i18n 字典 / default 兜底字典）
+- **value**: 原始值（str 或 i18n 字典 / default 兜底字典）
 - **i18n_mgr** (`I18nManager`): 实例
+
 **返回值**: 解析后的字符串
 
 ---
 
 
-### `_resolve_fields_i18n(fields_dict: dict)`
+### `_resolve_fields_i18n(fields_dict: dict) -> None`
 
-> **内部方法** 递归解析字段树中的 i18n 文本（含嵌套 dataclass 子树）
+**内部方法** 递归解析字段树中的 i18n 文本（含嵌套 dataclass 子树）
 
 ---
 
 
-### `resolve_config_schema(config_class: type, resolve_i18n: bool = True)`
+### `resolve_config_schema(config_class: type, resolve_i18n: bool = True) -> dict`
 
 获取配置 Schema，可选地将所有 i18n 文本字段解析为当前语言的文本
 
@@ -461,25 +492,30 @@ description 若为 i18n 字典则原样透传，WebUI 根据语言键查找翻�
 嵌套 dataclass 字段子树同步解析。纯字符串值会被原样透传（向后兼容）。
 
 - **config_class** (`dataclass`): 配置类
-- **resolve_i18n** (`是否将`): i18n 文本解析为当前语言
+- **resolve_i18n**: 是否将 i18n 文本解析为当前语言
+
 **返回值** (`schema`): 字典
 
 ---
 
 
-### `redact_secret(value: Any)`
+### `redact_secret(value: Any) -> Any`
 
 脱敏标记为 ``secret`` 的配置值
 
 非空值统一替换为固定掩码 ``***``；空值（空串 / None / 空集合）原样返回，
 便于日志、模板生成等场景避免泄露敏感信息。
 
-- **value** (`原始值`): **返回值** (`脱敏后的值`): 
+- **value**: 原始值
+
+**返回值**: 脱敏后的值
+
 **示例**:
+
 ```python
->>> redact_secret("sk-xxxxxxxx")
+redact_secret("sk-xxxxxxxx")
 '***'
->>> redact_secret("")
+redact_secret("")
 ''
 ```
 
@@ -496,19 +532,20 @@ description 若为 i18n 字典则原样透传，WebUI 根据语言键查找翻�
 适用于任何模块/项目的单账户或全局配置场景。
 继承此类即可获得 TOML 序列化、校验、WebUI Schema 等能力。
 
-使用示例::
-
-    @dataclass
-    class MyModuleConfig(BaseConfig):
-        api_key: str = field(
-            default="",
-            metadata={
-                "description": {"i18n": "my_module.api_key", "default": "API 密钥"},
-                "required": True,
-                "secret": True,
-                "ui": {"widget": "password", "group": "connection", "order": 1},
-            },
-        )
+使用示例:
+```
+@dataclass
+class MyModuleConfig(BaseConfig):
+    api_key: str = field(
+        default="",
+        metadata={
+            "description": {"i18n": "my_module.api_key", "default": "API 密钥"},
+            "required": True,
+            "secret": True,
+            "ui": {"widget": "password", "group": "connection", "order": 1},
+        },
+    )
+```
 
 
 ### `class BotAccountConfig`
@@ -518,18 +555,19 @@ description 若为 i18n 字典则原样透传，WebUI 根据语言键查找翻�
 适用于需要管理多个账户的场景（如多 Bot）。
 继承此类自动获得 enabled/name 基础字段。
 
-使用示例::
-
-    @dataclass
-    class MyBotConfig(BotAccountConfig):
-        bot_id: str = field(
-            default="",
-            metadata={
-                "description": {"i18n": "my_adapter.bot_id", "default": "Bot ID"},
-                "required": True,
-                "ui": {"widget": "text", "group": "basic", "order": 1},
-            },
-        )
+使用示例:
+```
+@dataclass
+class MyBotConfig(BotAccountConfig):
+    bot_id: str = field(
+        default="",
+        metadata={
+            "description": {"i18n": "my_adapter.bot_id", "default": "Bot ID"},
+            "required": True,
+            "ui": {"widget": "text", "group": "basic", "order": 1},
+        },
+    )
+```
 
 
 ### `class I18nConfig`

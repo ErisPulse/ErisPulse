@@ -33,16 +33,17 @@ ErisPulse 数据模型层（ORM）—— 声明式模型与 Active Record CRUD
 > 或直接 await（见 :class:`Relationship`）
 
 **示例**:
+
 ```python
->>> from ErisPulse.Core.Bases import Model, Field
->>>
->>> class User(Model):
-...     id: int = Field(primary_key=True, autoincrement=True)
-...     name: str = Field(max_length=64)
-...     age: int = Field(default=0, ge=0, le=150)
->>> await User.create_table()
->>> alice = await User.create(name="Alice", age=20)
->>> adults = await User.where(User.age > 18).all()
+from ErisPulse.Core.Bases import Model, Field
+
+class User(Model):
+    id: int = Field(primary_key=True, autoincrement=True)
+    name: str = Field(max_length=64)
+    age: int = Field(default=0, ge=0, le=150)
+await User.create_table()
+alice = await User.create(name="Alice", age=20)
+adults = await User.where(User.age > 18).all()
 ```
 
 ---
@@ -50,37 +51,48 @@ ErisPulse 数据模型层（ORM）—— 声明式模型与 Active Record CRUD
 ## 函数列表
 
 
-### `_validate_column(name: str)`
+### `_validate_column(name: str) -> str`
 
 列名合法性校验（防注入；与 sql_base 的标识符校验同一口径）
 
 ---
 
 
-### `_quote_ident(name: str, dialect: SQLDialect | None = None)`
+### `_quote_ident(name: str, dialect: SQLDialect | None = None) -> str`
 
 标识符引用（优先方言引号；无方言时回落双引号记号，SQLite/Postgres 通用）
 
 ---
 
 
-### `relationship(related: str | type[Model], foreign_key: str)`
+### `async _related_none() -> None`
+
+**内部方法** belongs-to 外键为 None 时的短路返回值
+
+---
+
+
+### `relationship(related: str | type[Model], foreign_key: str) -> Relationship`
 
 声明模型关系（:class:`Relationship` 的工厂函数，与 ``Field(...)`` 同风格）
 
-- **related** (`对方模型（类名字符串或类）`): - **foreign_key**: 外键列名（声明在对方表为 has-many，本表为 belongs-to）
-**返回值** (`关系描述符`): 
+- **related**: 对方模型（类名字符串或类）
+- **foreign_key**: 外键列名（声明在对方表为 has-many，本表为 belongs-to）
+
+**返回值**: 关系描述符
+
 **示例**:
+
 ```python
->>> class User(Model):
-...     messages = relationship("Message", foreign_key="user_id")
->>> msgs = await user.messages.all()
+class User(Model):
+    messages = relationship("Message", foreign_key="user_id")
+msgs = await user.messages.all()
 ```
 
 ---
 
 
-### `_combine(conditions: tuple)`
+### `_combine(conditions: tuple) -> Condition | None`
 
 多条件 AND 组合（类级 CRUD 快捷入口用）
 
@@ -94,81 +106,95 @@ ErisPulse 数据模型层（ORM）—— 声明式模型与 Active Record CRUD
 
 模型字段描述符（声明式列定义）
 
-- **default** (`字段默认值（未提供且非自增主键`): → 必填 NOT NULL）
-- **primary_key** (`是否主键`): - **autoincrement**: 是否自增主键（隐含 primary_key，整型）
-- **max_length** (`字符串最大长度（生成`): VARCHAR(n)，并参与写入校验）
-- **nullable** (`是否允许`): NULL（默认 False → NOT NULL）
-- **index** (`是否生成普通索引`): - **unique**: 是否唯一约束
-- **choices** (`枚举选项（写入校验）`): - **ge**: 数值下界（写入校验）
-- **le** (`数值上界（写入校验）`): - **description**: 字段描述（i18n 字典格式与配置类一致，预留文档/面板用）
-- **column_type** (`覆写`): SQL 列类型定义（如 ``"TEXT"``）；默认按类型注册表派生
-- **foreign_key** (`列级外键约束（``"表.列"``，如`): ``"users.id"``）——DDL 生成
+- **default**: 字段默认值（未提供且非自增主键 → 必填 NOT NULL）
+- **primary_key**: 是否主键
+- **autoincrement**: 是否自增主键（隐含 primary_key，整型）
+- **max_length**: 字符串最大长度（生成 VARCHAR(n)，并参与写入校验）
+- **nullable**: 是否允许 NULL（默认 False → NOT NULL）
+- **index**: 是否生成普通索引
+- **unique**: 是否唯一约束
+- **choices**: 枚举选项（写入校验）
+- **ge**: 数值下界（写入校验）
+- **le**: 数值上界（写入校验）
+- **description**: 字段描述（i18n 字典格式与配置类一致，预留文档/面板用）
+- **column_type**: 覆写 SQL 列类型定义（如 ``"TEXT"``）；默认按类型注册表派生
+- **foreign_key**: 列级外键约束（``"表.列"``，如 ``"users.id"``）——DDL 生成
+
     ``REFERENCES`` 约束（关系映射的基础设施；ORM 级关系对象后续版本交付）
 
 **示例**:
+
 ```python
->>> id: int = Field(primary_key=True, autoincrement=True)
->>> name: str = Field(max_length=64)
+id: int = Field(primary_key=True, autoincrement=True)
+name: str = Field(max_length=64)
 ```
 
 
 #### 方法列表
 
 
-##### `_annotation()`
+##### `_annotation() -> Any`
 
 字段注解（__set_name__ 阶段从 owner __annotations__ 反查）
 
 ---
 
 
-##### `required()`
+##### `required -> bool`（property）
 
 是否必填（无默认值且非自增）
 
 ---
 
 
-##### `effective_default()`
+##### `effective_default() -> Any`
 
 运行时默认值（default 优先，其次 default_factory，否则 None）
 
 ---
 
 
-##### `to_db_value(value: Any)`
+##### `to_db_value(value: Any) -> Any`
 
 写入数据库的参数值（JSON 列序列化；其余原样）
 
 ---
 
 
-##### `is_json()`
+##### `is_json -> bool`（property）
 
 是否 JSON 序列化列
 
 ---
 
 
-##### `sql_type()`
+##### `sql_type() -> str`
 
 列类型定义（方言翻译前的统一记号，由 aCreateTable 翻译）
 
 ---
 
 
-##### `column_definition()`
+##### `column_definition(*, nullable_override: bool | None = None) -> str`
 
 单列 DDL 定义（统一记号）
 
-- **nullable_override** (`覆写可空性渲染（如自动迁移为存量行回填`): 而强制省略 NOT NULL）；None 表示按字段声明
+- **nullable_override**: 覆写可空性渲染（如自动迁移为存量行回填
+
+    而强制省略 NOT NULL）；None 表示按字段声明
 
 ---
 
 
-##### `_sql_literal(value: Any)`
+##### `_sql_literal(value: Any) -> str`
 
 默认值的 DDL 字面量（仅声明性默认值，运行值走参数绑定）
+
+> **提示**
+> 已知局限：反斜杠按字面渲染（仅 ``''`` 转义）。MySQL 默认
+> sql_mode 下 ``\`` 是字符串转义符，含反斜杠的声明默认值在 MySQL
+> 上的 DDL 语义会偏移；本层无方言信息（统一记号由 aCreateTable
+> 翻译），如需精确跨方言行为请避免在声明默认值中使用反斜杠。
 
 ---
 
@@ -181,7 +207,7 @@ ColumnExpr 类提供相关功能。
 #### 方法列表
 
 
-##### `in_(values: list | tuple)`
+##### `in_(values: list | tuple) -> Condition`
 
 IN 条件（``User.id.in_([1, 2, 3])``）
 
@@ -196,14 +222,14 @@ IN 条件（``User.id.in_([1, 2, 3])``）
 #### 方法列表
 
 
-##### `__bool__()`
+##### `__bool__() -> bool`
 
 禁用真值判断：条件对象只能传给 :meth:`Model.where` 等查询入口
 
 ---
 
 
-##### `compile(dialect: SQLDialect | None = None)`
+##### `compile(dialect: SQLDialect | None = None) -> tuple[str, list[Any]]`
 
 编译为 (WHERE 片段, 参数列表)；片段为空串表示无条件
 
@@ -222,28 +248,28 @@ IN 条件（``User.id.in_([1, 2, 3])``）
 并返回自身——复用中间 QuerySet 对象会让条件互相串染；需要分支查询时，
 请各自从 :meth:`Model.where` 重新构建。
 
-> **内部方法**
+**内部方法**
 由 :meth:`Model.where` 创建；update / delete 亦经由 QuerySet 应用条件
 
 
 #### 方法列表
 
 
-##### `order_by()`
+##### `order_by(*fields: str) -> QuerySet`
 
 排序（``"age"`` 升序 / ``"-age"`` 降序）
 
 ---
 
 
-##### `async all()`
+##### `async all() -> list[Any]`
 
 执行查询，返回模型实例列表
 
 ---
 
 
-##### `async first()`
+##### `async first() -> Any | None`
 
 执行查询，返回首个实例（无结果为 None）
 
@@ -253,7 +279,7 @@ IN 条件（``User.id.in_([1, 2, 3])``）
 ---
 
 
-##### `async count()`
+##### `async count() -> int`
 
 统计满足查询条件的总行数
 
@@ -263,7 +289,7 @@ IN 条件（``User.id.in_([1, 2, 3])``）
 ---
 
 
-##### `async update()`
+##### `async update(**values: Any) -> int`
 
 批量更新符合条件的行
 
@@ -272,7 +298,7 @@ IN 条件（``User.id.in_([1, 2, 3])``）
 ---
 
 
-##### `async delete()`
+##### `async delete() -> int`
 
 删除符合条件的行
 
@@ -283,7 +309,7 @@ IN 条件（``User.id.in_([1, 2, 3])``）
 
 ### `class _RelatedMany(QuerySet)`
 
-> **内部方法**
+**内部方法**
 has-many 关系查询集：在 :class:`QuerySet` 全部链式能力之上，
 附带 ``create`` 自动回填本表主键到对方外键列
 
@@ -291,25 +317,27 @@ has-many 关系查询集：在 :class:`QuerySet` 全部链式能力之上，
 #### 方法列表
 
 
-##### `where()`
+##### `where(*conditions: Condition) -> _RelatedMany`
 
 追加对方表字段的条件过滤（与关系外键条件 AND 组合）
 
 **示例**:
+
 ```python
->>> await user.posts.where(Post.title == "hi").all()
+await user.posts.where(Post.title == "hi").all()
 ```
 
 ---
 
 
-##### `async create()`
+##### `async create(**kwargs: Any) -> Any`
 
 创建对方表的一行并自动填入本实例主键
 
 **示例**:
+
 ```python
->>> await user.messages.create(content="hi")   # user_id 自动 = user.id
+await user.messages.create(content="hi")   # user_id 自动 = user.id
 ```
 
 ---
@@ -317,8 +345,9 @@ has-many 关系查询集：在 :class:`QuerySet` 全部链式能力之上，
 
 ### `class _RelatedOne`
 
-> **内部方法**
-belongs-to 单条等待器：``author = await msg.author`` 即解析为对方实例或 None
+**内部方法**
+belongs-to 单条等待器：``author = await msg.author`` 即解析为对方实例或 None。
+外键值为 None 时以短路模式构造（await 直接返回 None，不发起查询）
 
 
 ### `class Relationship`
@@ -328,16 +357,20 @@ belongs-to 单条等待器：``author = await msg.author`` 即解析为对方实
 在模型类体中以类属性形式声明，实例上使用；方向按**外键列声明在哪张表**
 自动判定，惰性解析（首次访问时查注册表），无需预注册顺序：
 
->>> class User(Model):
-...     id: int = Field(primary_key=True, autoincrement=True)
-...     name: str = Field(max_length=64)
-...     messages = relationship("Message", foreign_key="user_id")   # has-many
+```python
+class User(Model):
+    id: int = Field(primary_key=True, autoincrement=True)
+    name: str = Field(max_length=64)
+    messages = relationship("Message", foreign_key="user_id")   # has-many
+```
 
->>> class Message(Model):
-...     id: int = Field(primary_key=True, autoincrement=True)
-...     user_id: int = Field(foreign_key="users.id")
-...     content: str = Field()
-...     author = relationship("User", foreign_key="user_id")        # belongs-to
+```python
+class Message(Model):
+    id: int = Field(primary_key=True, autoincrement=True)
+    user_id: int = Field(foreign_key="users.id")
+    content: str = Field()
+    author = relationship("User", foreign_key="user_id")        # belongs-to
+```
 
 > **提示**
 > 1. 外键列声明在**对方表** → has-many：返回 :class:`QuerySet`，全部链式能力
@@ -358,12 +391,13 @@ belongs-to 单条等待器：``author = await msg.author`` 即解析为对方实
 
 声明模型关系
 
-- **related** (`对方模型（类名或类）`): - **foreign_key**: 外键列名（本表或对方表，判定方向）
+- **related**: 对方模型（类名或类）
+- **foreign_key**: 外键列名（本表或对方表，判定方向）
 
 ---
 
 
-##### `_related_model(owner: type)`
+##### `_related_model(owner: type) -> type[Model]`
 
 解析对方模型（类名字符串按注册表惰性查找）
 
@@ -376,68 +410,70 @@ belongs-to 单条等待器：``author = await msg.author`` 即解析为对方实
 
 继承并声明 :class:`Field` 类属性即可获得自动建表与 CRUD 能力：
 
->>> class User(Model):
-...     id: int = Field(primary_key=True, autoincrement=True)
-...     name: str = Field(max_length=64)
->>> await User.create_table()
->>> user = await User.create(name="Alice")
->>> user.name = "Bob"
->>> await user.save()
+```python
+class User(Model):
+    id: int = Field(primary_key=True, autoincrement=True)
+    name: str = Field(max_length=64)
+await User.create_table()
+user = await User.create(name="Alice")
+user.name = "Bob"
+await user.save()
+```
 
 
 #### 方法列表
 
 
-##### `_pk_field()`
+##### `_pk_field() -> Field | None`（classmethod）
 
 主键字段（Field 实例不可作类属性暴露——描述符协议会劫持类访问）
 
 ---
 
 
-##### `table_name()`
+##### `table_name() -> str`（classmethod）
 
 表名（snake_case 自动派生或 ``__tablename__`` 覆写）
 
 ---
 
 
-##### `columns()`
+##### `columns() -> dict[str, Field]`（classmethod）
 
 字段声明表（{字段名: Field}）
 
 ---
 
 
-##### `_get_storage()`
+##### `_get_storage() -> SQLStorageBase`（classmethod）
 
 解析存储后端（覆写优先，否则全局单例）
 
 ---
 
 
-##### `_row_to_instance(row: dict)`
+##### `_row_to_instance(row: dict) -> Model`（classmethod）
 
 行 dict → 实例（JSON 列反序列化；bool 类别跨后端归一化为 bool）
 
 ---
 
 
-##### `to_dict()`
+##### `to_dict() -> dict`
 
 导出行数据（JSON 列已反序列化）
 
 ---
 
 
-##### `_validate()`
+##### `_validate() -> None`
 
 写入前逐字段约束校验（共享校验器引擎），失败抛 ValueError
 
 ---
 
 
-##### `async create_table()`
+##### `async create_table() -> bool`（classmethod）
 
 自动建表 + 自动迁移（幂等）
 
@@ -451,34 +487,46 @@ belongs-to 单条等待器：``author = await msg.author`` 即解析为对方实
 ---
 
 
-##### `async _migrate_new_columns(storage)`
+##### `_index_name(table: str, column: str) -> str`（classmethod）
 
-> **内部方法**
+**内部方法**
+索引名派生：``idx_<表>_<列>``。超过 63 字符（PostgreSQL 标识符上限，
+超长会被静默截断导致存在性预检永不命中、每次建表重复 CREATE INDEX
+失败）时截断并追加稳定哈希后缀，保证跨运行确定性
+
+---
+
+
+##### `async _migrate_new_columns(storage) -> list[str]`（classmethod）
+
+**内部方法**
 自动迁移：为表中新增的模型字段执行 ``ALTER TABLE ADD COLUMN``
 
 迁移列剔除 NOT NULL 约束（存量行回填 NULL），跳过主键（主键变更
 需重建表，不属于自动迁移范围）。
 
-- **storage** (`存储实例`): **返回值**: 本次新增的列名列表
+- **storage**: 存储实例
+
+**返回值**: 本次新增的列名列表
 
 ---
 
 
-##### `async drop_table()`
+##### `async drop_table() -> bool`（classmethod）
 
 删表（危险操作，仅测试与显式维护场景使用）
 
 ---
 
 
-##### `async has_table()`
+##### `async has_table() -> bool`（classmethod）
 
 表是否存在
 
 ---
 
 
-##### `where()`
+##### `where(*conditions: Condition) -> QuerySet`（classmethod）
 
 条件查询入口（``User.where(User.age > 18)`` → :class:`QuerySet`）
 
@@ -487,14 +535,14 @@ belongs-to 单条等待器：``author = await msg.author`` 即解析为对方实
 ---
 
 
-##### `all()`
+##### `all() -> QuerySet`（classmethod）
 
 无条件查询集（等价 ``cls.where()``）
 
 ---
 
 
-##### `async get()`
+##### `async get(**eq_kwargs: Any) -> Any | None`（classmethod）
 
 等值查询首条（``User.get(id=1)``）；无结果返回 None
 
@@ -503,7 +551,7 @@ belongs-to 单条等待器：``author = await msg.author`` 即解析为对方实
 ---
 
 
-##### `async create()`
+##### `async create(**kwargs: Any) -> Any`（classmethod）
 
 插入一行并返回实例（自增主键自动回填）
 
@@ -515,9 +563,9 @@ belongs-to 单条等待器：``author = await msg.author`` 即解析为对方实
 ---
 
 
-##### `async _insert_and_backfill(instance: Model)`
+##### `async _insert_and_backfill(instance: Model) -> None`（classmethod）
 
-> **内部方法**
+**内部方法**
 INSERT 一行并按需回填自增主键到实例（:meth:`create` 与 :meth:`save` 共用）
 
 列参数构建（自增主键交由数据库、可空/有默认字段 None 跳过、JSON 序列化）
@@ -529,28 +577,28 @@ INSERT 一行并按需回填自增主键到实例（:meth:`create` 与 :meth:`sa
 ---
 
 
-##### `async count()`
+##### `async count(*conditions: Condition) -> int`（classmethod）
 
 行数统计（``await User.count(User.age > 18)``）
 
 ---
 
 
-##### `async delete_all()`
+##### `async delete_all(*conditions: Condition) -> int`（classmethod）
 
 批量删除（``await User.delete_all(User.age > 18)``；无条件则全表删除）
 
 ---
 
 
-##### `async update_all()`
+##### `async update_all(*conditions: Condition, **values: Any) -> int`（classmethod）
 
 批量更新（``await User.update_all(User.age > 18, name="adult")``）
 
 ---
 
 
-##### `async save()`
+##### `async save() -> int`
 
 按主键更新本行（先约束校验）；主键缺失时退化为插入（自增主键同样回填到本实例）
 
@@ -564,11 +612,12 @@ INSERT 一行并按需回填自增主键到实例（:meth:`create` 与 :meth:`sa
 ---
 
 
-##### `async delete()`
+##### `async delete() -> int`
 
 按主键删除本行
 
 **异常**: `ValueError` - 模型无主键或实例主键为空时
+
 **返回值**: 受影响行数
 
 ---

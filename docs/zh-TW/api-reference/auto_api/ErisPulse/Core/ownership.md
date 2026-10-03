@@ -48,44 +48,45 @@ ErisPulse 归属权统一门面
 #### 方法列表
 
 
-##### `register_shadow(owner: str)`
+##### `register_shadow(owner: str) -> None`
 
 登记影子 owner（ShadowManager 装配影子模块时调用）
 
-- **owner** (`影子`): owner 名（如 ``"roll_shadow"``）
+- **owner**: 影子 owner 名（如 ``"roll_shadow"``）
 
 ---
 
 
-##### `unregister_shadow(owner: str)`
+##### `unregister_shadow(owner: str) -> None`
 
 移除影子 owner 登记（影子转正 / 放弃时调用）
 
-- **owner** (`影子`): owner 名
+- **owner**: 影子 owner 名
 
 ---
 
 
-##### `is_shadow(owner: 'str | None')`
+##### `is_shadow(owner: 'str | None') -> bool`
 
 判定 owner 是否为影子模块 owner（八道隔离闸的统一判定入口）
 
 - **owner** (`owner`): 名
-**返回值** (`是否为已登记的影子`): owner
+
+**返回值**: 是否为已登记的影子 owner
 
 ---
 
 
-##### `shadow_owners()`
+##### `shadow_owners() -> 'frozenset[str]'`
 
 当前全部影子 owner（只读视图）
 
-**返回值** (`影子`): owner 名集合
+**返回值**: 影子 owner 名集合
 
 ---
 
 
-##### `async reclaim(owner: str)`
+##### `async reclaim(owner: str) -> 'dict[str, int]'`
 
 统一注销 owner 名下的全部资源（异步完整版）
 
@@ -93,29 +94,33 @@ ErisPulse 归属权统一门面
 注册类资源。模块卸载 / 禁用的标准回收路径。
 
 - **owner** (`owner`): 名（模块名或适配器平台名）
-**返回值** (`各类资源注销数量（键见`): :meth:`reclaim_sync`，另含
+
+**返回值**: 各类资源注销数量（键见 :meth:`reclaim_sync`，另含
+
          ``tasks_cancelled`` / ``cleanups_run``）
 
 **示例**:
+
 ```python
->>> from ErisPulse.Core import ownership
->>> await ownership.reclaim("roll")
+from ErisPulse.Core import ownership
+await ownership.reclaim("roll")
 ```
 
 ---
 
 
-##### `async reclaim_tasks(owner: str)`
+##### `async reclaim_tasks(owner: str) -> 'dict[str, int]'`
 
 注销 owner 的进行中工作：归属后台任务取消 + 外部清理钩子触发
 
 - **owner** (`owner`): 名
-**返回值** (`{"tasks_cancelled":`): int, "cleanups_run": int}
+
+**返回值**: {"tasks_cancelled": int, "cleanups_run": int}
 
 ---
 
 
-##### `reclaim_sync(owner: str)`
+##### `reclaim_sync(owner: str) -> 'dict[str, int]'`
 
 注销 owner 的全部注册类资源（同步版，不含任务取消）
 
@@ -125,34 +130,40 @@ ErisPulse 归属权统一门面
 每步独立容错，单步失败不阻断后续回收。
 
 - **owner** (`owner`): 名（模块名或适配器平台名）
-**返回值** (`各类资源注销数量`): 
+
+**返回值**: 各类资源注销数量
+
 **示例**:
+
 ```python
->>> ownership.reclaim_sync("roll")
+ownership.reclaim_sync("roll")
 {"routes_http": 2, "commands": 1, ...}
 ```
 
 ---
 
 
-##### `counts(owner: 'str | None' = None)`
+##### `counts(owner: 'str | None' = None) -> Any`
 
 统计 owner 在册的归属资源（只读，无副作用）
 
 - **owner** (`owner`): 名；None 时返回全部 owner 的计数
-**返回值** (```owner```): 给定时为 {资源类: 数量}；None 时为
+
+**返回值**: ``owner`` 给定时为 {资源类: 数量}；None 时为
+
          {owner: {资源类: 数量}}（未挂任何资源的 owner 不出现）
 
 **示例**:
+
 ```python
->>> ownership.counts("roll")
+ownership.counts("roll")
 {"commands": 1, "lifecycle_hooks": 2}
 ```
 
 ---
 
 
-##### `orphans()`
+##### `orphans() -> 'list[dict[str, Any]]'`
 
 孤儿 owner 扫描：资源仍在册、而 owner（模块 / 适配器）已注销
 
@@ -160,31 +171,36 @@ ErisPulse 归属权统一门面
 孤儿资源（如工具模块私有容器持有的句柄、第三方库内部的引用）
 框架无法自动回收，但本扫描让它们**可见**。
 
-**返回值** (`{"owner": str, "total": int, "resources": {资源类: 数量}}, ...`): 按 owner 名排序；无孤儿时为空列表
+**返回值** (`{"owner": str, "total": int, "resources": {资源类: 数量}}, ...`):
+
+         按 owner 名排序；无孤儿时为空列表
 
 **示例**:
+
 ```python
->>> from ErisPulse.Core import ownership
->>> ownership.orphans()
+from ErisPulse.Core import ownership
+ownership.orphans()
 [{"owner": "ghost_module", "total": 2, "resources": {"commands": 1, ...}}]
 ```
 
 ---
 
 
-##### `audit(owner: 'str | None' = None, deep: bool = False)`
+##### `audit(owner: 'str | None' = None, deep: bool = False) -> 'dict[str, Any]'`
 
 泄漏审计：计数 + 孤儿扫描（+ 可选 gc 实例普查）
 
-- **owner** (`目标`): owner（模块名）；None 时审计全局（全部 owner 计数）
-- **deep** (`对模块实例做`): weakref 存活普查——``gc.collect()`` 后检查
+- **owner**: 目标 owner（模块名）；None 时审计全局（全部 owner 计数）
+- **deep**: 对模块实例做 weakref 存活普查——``gc.collect()`` 后检查
+
              实例是否可回收，不可回收时给出引用方类型（有全局暂停
              开销，仅显式使用）
-**返回值** (`审计报告`): dict（owner / counts / orphans / 深普查结果）
+**返回值**: 审计报告 dict（owner / counts / orphans / 深普查结果）
 
 **示例**:
+
 ```python
->>> ownership.audit("roll", deep=True)
+ownership.audit("roll", deep=True)
 {"owner": "roll", "counts": {...}, "orphans": [], "instance_recyclable": True}
 ```
 

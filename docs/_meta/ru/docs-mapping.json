@@ -20,13 +20,13 @@
           "icon": "fa-bolt"
         },
         {
-          "title": "Архитектурный обзор",
+          "title": "Обзор архитектуры",
           "path": "architecture.md",
           "level": 1,
           "icon": "fa-sitemap"
         },
         {
-          "title": "Трекер ошибок",
+          "title": "Bug Tracker",
           "path": "bug-tracker.md",
           "level": 1,
           "icon": "fa-bug"
@@ -96,7 +96,7 @@
           "icon": "fa-download"
         },
         {
-          "title": "Описание конфигурационного файла",
+          "title": "Конфигурационный файл",
           "path": "user-guide/configuration.md",
           "level": 1,
           "icon": "fa-sliders"
@@ -453,7 +453,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Системы хранения данных",
+          "title": "Хранилище",
           "path": "advanced/storage-backends.md",
           "level": 1,
           "icon": "fa-server"
@@ -549,13 +549,13 @@
           "icon": "fa-arrow-right-arrow-left"
         },
         {
-          "title": "Стандартизированный протокол преобразования адаптеров",
+          "title": "Стандартизированные правила преобразования адаптеров",
           "path": "standards/event-conversion.md",
           "level": 1,
           "icon": "fa-shuffle"
         },
         {
-          "title": "Спецификация метода отправки ErisPulse",
+          "title": "Спецификация методов отправки ErisPulse",
           "path": "standards/send-method-spec.md",
           "level": 1,
           "icon": "fa-paper-plane"

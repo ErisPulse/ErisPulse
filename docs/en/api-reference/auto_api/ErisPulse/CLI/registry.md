@@ -42,30 +42,36 @@ CLI 命令注册器
 
 注册命令
 
-- **command** (`要注册的命令实例`): **异常**: `ValueError` - 命令名称已存在时抛出
+- **command**: 要注册的命令实例
+
+**异常**: `ValueError` - 命令名称已存在时抛出
 
 ---
 
 
-##### `resolve(name: str)`
+##### `resolve(name: str) -> str | None`
 
 将命令名或别名解析为规范命令名
 
-- **name** (`命令名或别名`): **返回值** (`str`): 规范命令名，未找到返回 None
+- **name**: 命令名或别名
+
+**返回值** (`str`): 规范命令名，未找到返回 None
 
 ---
 
 
-##### `get(name: str)`
+##### `get(name: str) -> Command | None`
 
 获取命令（支持通过别名查找）
 
-- **name** (`命令名称或别名`): **返回值** (`命令实例，未找到返回`): None
+- **name**: 命令名称或别名
+
+**返回值**: 命令实例，未找到返回 None
 
 ---
 
 
-##### `get_all()`
+##### `get_all() -> list[Command]`
 
 获取所有命令
 
@@ -74,7 +80,7 @@ CLI 命令注册器
 ---
 
 
-##### `list_all()`
+##### `list_all() -> list[str]`
 
 列出所有命令名称
 
@@ -83,7 +89,7 @@ CLI 命令注册器
 ---
 
 
-##### `list_builtin()`
+##### `list_builtin() -> list[str]`
 
 列出内置命令名称
 
@@ -92,7 +98,7 @@ CLI 命令注册器
 ---
 
 
-##### `list_aliases()`
+##### `list_aliases() -> dict[str, str]`
 
 列出所有命令别名映射
 
@@ -101,11 +107,13 @@ CLI 命令注册器
 ---
 
 
-##### `exists(name: str)`
+##### `exists(name: str) -> bool`
 
 检查命令是否存在（支持别名）
 
-- **name** (`命令名称或别名`): **返回值**: 命令是否存在
+- **name**: 命令名称或别名
+
+**返回值**: 命令是否存在
 
 ---
 

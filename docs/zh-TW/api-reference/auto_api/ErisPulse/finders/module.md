@@ -27,22 +27,25 @@ ErisPulse 模块发现器
 
 > **提示**
 > 使用方式：
-> >>> finder = ModuleFinder()
-> >>> # 查找所有模块
-> >>> modules = finder.find_all()
-> >>> # 按名称查找
-> >>> module = finder.find_by_name("my_module")
-> >>> # 获取模块映射
-> >>> module_map = finder.get_entry_point_map()
-> >>> # 检查模块是否存在
-> >>> if "my_module" in finder:
-> ...     print("模块存在")
+> ```python
+> finder = ModuleFinder()
+> # 查找所有模块
+> modules = finder.find_all()
+> # 按名称查找
+> module = finder.find_by_name("my_module")
+> # 获取模块映射
+> module_map = finder.get_entry_point_map()
+> # 检查模块是否存在
+> if "my_module" in finder:
+>     print("模块存在")
+> ```
+>
 
 
 #### 方法列表
 
 
-##### `_get_entry_point_group()`
+##### `_get_entry_point_group() -> str`
 
 获取 entry-point 组名
 
@@ -51,7 +54,7 @@ ErisPulse 模块发现器
 ---
 
 
-##### `get_all_names()`
+##### `get_all_names() -> list[str]`
 
 获取所有模块名称
 
@@ -60,7 +63,7 @@ ErisPulse 模块发现器
 ---
 
 
-##### `get_all_packages()`
+##### `get_all_packages() -> list[str]`
 
 获取所有模块所属的 PyPI 包名
 
@@ -69,36 +72,43 @@ ErisPulse 模块发现器
 ---
 
 
-##### `get_package_for_module(module_name: str)`
+##### `get_package_for_module(module_name: str) -> str | None`
 
 获取指定模块所属的 PyPI 包名
 
-- **module_name** (`模块名称`): **返回值** (`PyPI`): 包名，未找到返回 None
+- **module_name**: 模块名称
+
+**返回值** (`PyPI`): 包名，未找到返回 None
 
 ---
 
 
-##### `get_module_info(module_name: str)`
+##### `get_module_info(module_name: str) -> dict[str, Any] | None`
 
 获取模块的完整信息
 
-- **module_name** (`模块名称`): **返回值** (`模块信息字典，未找到返回`): None
+- **module_name**: 模块名称
+
+**返回值**: 模块信息字典，未找到返回 None
 
 **返回值**:
+
 - `Dict`: {
 - `"name"`: 模块名称,
 - `"package"`: PyPI 包名,
 - `"version"`: 版本号,
-- `"entry_point"`: entry-point 对象    }
+- `"entry_point"`: entry-point 对象
+    }
 
 ---
 
 
-##### `get_modules_by_package(package_name: str)`
+##### `get_modules_by_package(package_name: str) -> list[str]`
 
 获取指定 PyPI 包下的所有模块名称
 
 - **package_name** (`PyPI`): 包名
+
 **返回值**: 模块名称列表
 
 ---

@@ -26,18 +26,21 @@ mysql / postgres 连接失败时快速失败（冷却后自动重连），不影
 ## 函数列表
 
 
-### `create_storage()`
+### `create_storage() -> BaseStorage`
 
 根据配置创建存储后端实例
 
 读取 ``ErisPulse.storage.backend`` 配置项，实例化对应后端。
 驱动缺失时报错并提示安装命令。
 
-**返回值** (`存储后端实例`): **异常**: `ValueError` - 配置了未知的后端名称时
+**返回值**: 存储后端实例
+
+**异常**: `ValueError` - 配置了未知的后端名称时
 
 **示例**:
+
 ```python
->>> storage = create_storage()
+storage = create_storage()
 ```
 
 ---

@@ -23,19 +23,21 @@ ErisPulse CLI 配置向导共享工具
 ## 函数列表
 
 
-### `_normalize_dist_name(name: str | None)`
+### `_normalize_dist_name(name: str | None) -> str`
 
 按 PEP 503 规范化 PyPI 发行包名称
 
 大小写不敏感，``-`` / ``_`` / ``.`` 连续序列统一为单个 ``-``，
 用于安装包名与 entry-point 所属包名的宽松匹配。
 
-- **name** (`原始包名`): **返回值**: 规范化后的包名
+- **name**: 原始包名
+
+**返回值**: 规范化后的包名
 
 ---
 
 
-### `is_interactive()`
+### `is_interactive() -> bool`
 
 检测当前是否处于可交互的终端环境
 
@@ -44,7 +46,7 @@ ErisPulse CLI 配置向导共享工具
 ---
 
 
-### `_resolve_adapter_config_key(cls)`
+### `_resolve_adapter_config_key(cls) -> str`
 
 在不实例化适配器类的前提下解析其配置键
 
@@ -52,33 +54,40 @@ ErisPulse CLI 配置向导共享工具
 时以伪 self 对象调用（大多数覆写是 self 属性的纯函数），
 调用失败则回退类名。
 
-- **cls** (`适配器类`): **返回值**: 配置键名字符串
+- **cls**: 适配器类
+
+**返回值**: 配置键名字符串
 
 ---
 
 
-### `_target_from_class(kind: Literal['adapter', 'module'], name: str, cls, package = None, source = 'entrypoint')`
+### `_target_from_class(kind: Literal['adapter', 'module'], name: str, cls, package = None, source = 'entrypoint') -> ConfigTarget | None`
 
 从目标类构造 ConfigTarget（读取类属性声明，不实例化）
 
-- **kind** (`目标类型`): - **name**: 目标名
-- **cls** (`适配器/模块类`): - **package**: 所属包名
-- **source** (`来源标识`): **返回值** (`ConfigTarget；类不合法时返回`): None
+- **kind**: 目标类型
+- **name**: 目标名
+- **cls**: 适配器/模块类
+- **package**: 所属包名
+- **source**: 来源标识
+
+**返回值**: ConfigTarget；类不合法时返回 None
 
 ---
 
 
-### `_plugin_module_class(module_obj)`
+### `_plugin_module_class(module_obj) -> type | None`
 
 从本地插件模块对象中提取模块类
 
-- **module_obj** (`插件模块对象（声明`): ``moduleInfo`` 字典）
-**返回值** (`模块类；未声明或类型不合法时返回`): None
+- **module_obj**: 插件模块对象（声明 ``moduleInfo`` 字典）
+
+**返回值**: 模块类；未声明或类型不合法时返回 None
 
 ---
 
 
-### `load_config_targets()`
+### `load_config_targets() -> list[ConfigTarget]`
 
 发现当前环境中所有可配置目标
 
@@ -90,12 +99,15 @@ ErisPulse CLI 配置向导共享工具
 ---
 
 
-### `get_target_status(target: ConfigTarget, config = None)`
+### `get_target_status(target: ConfigTarget, config = None) -> tuple[str, list[str]]`
 
 检查目标的配置状态
 
-- **target** (`ConfigTarget`): - **config**: ConfigManager 实例（None 时使用全局单例）
-**返回值** (`(状态,`): 错误列表)。状态取值：
+- **target**: ConfigTarget
+- **config** (`ConfigManager`): 实例（None 时使用全局单例）
+
+**返回值**: (状态, 错误列表)。状态取值：
+
     - ok：已配置且校验通过
     - incomplete：必填项缺失或校验失败
     - unconfigured：配置键不存在（从未生成）
@@ -104,12 +116,13 @@ ErisPulse CLI 配置向导共享工具
 ---
 
 
-### `_sort_fields(schema_fields: dict)`
+### `_sort_fields(schema_fields: dict) -> list[tuple[str, dict]]`
 
 按 schema 的 order 元数据稳定排序字段（未声明 order 的保持声明顺序靠前）
 
-- **schema_fields** (`get_config_schema()["fields"]`): 字典
-**返回值** (`(字段名,`): 字段 schema) 列表
+- **schema_fields**: get_config_schema()["fields"] 字典
+
+**返回值**: (字段名, 字段 schema) 列表
 
 ---
 
@@ -118,48 +131,57 @@ ErisPulse CLI 配置向导共享工具
 
 将用户输入字符串转换为目标类型的标量值
 
-- **raw** (`原始输入`): - **type_name**: TOML 类型名（integer/float/boolean/string）
-**返回值** (`转换后的值；无法转换时抛出`): ValueError
+- **raw**: 原始输入
+- **type_name** (`TOML`): 类型名（integer/float/boolean/string）
+
+**返回值**: 转换后的值；无法转换时抛出 ValueError
 
 ---
 
 
-### `_plain_options(options: list)`
+### `_plain_options(options: list) -> list`
 
 提取 select 选项的纯值列表（兼容字符串与 {label, value} 字典两种格式）
 
 - **options** (`schema`): 中的 options 列表
+
 **返回值**: 选项值列表
 
 ---
 
 
-### `_option_label(option)`
+### `_option_label(option) -> str`
 
 获取 select 选项的显示标签
 
-- **option** (`单个选项（字符串或`): {label, value} 字典）
+- **option**: 单个选项（字符串或 {label, value} 字典）
+
 **返回值**: 标签字符串
 
 ---
 
 
-### `_with_source(label: str, source: str)`
+### `_with_source(label: str, source: str) -> str`
 
 在 label 行尾追加来源标注（当前值 / 默认值）
 
-- **label** (`已构造的字段标签行`): - **source**: 来源标注文本（空则不追加）
+- **label**: 已构造的字段标签行
+- **source**: 来源标注文本（空则不追加）
+
 **返回值**: 带标注的显示文本
 
 ---
 
 
-### `_source_label(has_value: bool, value, bool_text: str = '')`
+### `_source_label(has_value: bool, value, bool_text: str = '') -> str`
 
 生成字段值来源标注文本（当前值 / 默认值）
 
-- **has_value** (`字段是否已有当前配置值（存储中存在）`): - **value**: 值（布尔传入 bool_text 已本地化）
-- **bool_text** (`布尔值本地化"是/否"文本`): **返回值**: 标注字符串；无值则返回空串
+- **has_value**: 字段是否已有当前配置值（存储中存在）
+- **value**: 值（布尔传入 bool_text 已本地化）
+- **bool_text**: 布尔值本地化"是/否"文本
+
+**返回值**: 标注字符串；无值则返回空串
 
 ---
 
@@ -173,25 +195,29 @@ ErisPulse CLI 配置向导共享工具
 空输入表示保留当前值（secret 字段不回显当前值）。
 值来源（已有配置 / schema 默认）以 ``(当前：x)`` / ``(默认：x)`` 标注。
 
-- **name** (`字段名`): - **field_schema**: 字段 schema（来自 resolve_config_schema）
-- **current** (`当前值（默认值兜底为`): schema default）
-- **has_value** (`字段是否已有当前配置值（决定标注"当前"/"默认"）`): **返回值**: 用户确认后的字段值
+- **name**: 字段名
+- **field_schema**: 字段 schema（来自 resolve_config_schema）
+- **current**: 当前值（默认值兜底为 schema default）
+- **has_value**: 字段是否已有当前配置值（决定标注"当前"/"默认"）
+
+**返回值**: 用户确认后的字段值
 
 ---
 
 
-### `_values_equal(a, b)`
+### `_values_equal(a, b) -> bool`
 
 宽松比较两个标量是否相等（容忍 int/str 形式差异）
 
-- **a** (`值`): a
-- **b** (`值`): b
+- **a**: 值 a
+- **b**: 值 b
+
 **返回值**: 是否相等
 
 ---
 
 
-### `fill_config_fields(config_class, current_values: dict)`
+### `fill_config_fields(config_class, current_values: dict) -> dict`
 
 渲染整个配置类的表单并收集用户输入
 
@@ -199,77 +225,87 @@ ErisPulse CLI 配置向导共享工具
 嵌套 dataclass 字段（schema 含 ``fields`` 子树）递归渲染为子表单。
 
 - **config_class** (`dataclass`): 配置类
-- **current_values** (`当前存储的配置字典（作为各字段初值）`): **返回值**: 收集后的配置字典
+- **current_values**: 当前存储的配置字典（作为各字段初值）
+
+**返回值**: 收集后的配置字典
 
 ---
 
 
-### `_fill_from_schema_fields(fields_dict: dict, values: dict)`
+### `_fill_from_schema_fields(fields_dict: dict, values: dict) -> None`
 
-> **内部方法**
+**内部方法**
 按 schema 字段树渲染表单并就地收集到 values（嵌套子树递归）
 
 ---
 
 
-### `_validate_dataclass(config_class, data: dict)`
+### `_validate_dataclass(config_class, data: dict) -> list[str]`
 
 校验字典是否能通过配置类的完整约束
 
 - **config_class** (`dataclass`): 配置类
-- **data** (`配置字典`): **返回值**: 错误列表（空列表表示通过）
+- **data**: 配置字典
+
+**返回值**: 错误列表（空列表表示通过）
 
 ---
 
 
-### `_prompt_account_name(existing: dict, default: str = '')`
+### `_prompt_account_name(existing: dict, default: str = '') -> str | None`
 
 询问新的账户名（非空且不与现有账户重名）
 
-- **existing** (`现有账户字典`): - **default**: 默认账户名
-**返回值** (`合法账户名；用户中断返回`): None
+- **existing**: 现有账户字典
+- **default**: 默认账户名
+
+**返回值**: 合法账户名；用户中断返回 None
 
 ---
 
 
-### `_pick_account_name(names: list[str])`
+### `_pick_account_name(names: list[str]) -> str | None`
 
 从账户名列表中交互选择一个账户
 
 显示 ``1. xxx`` 编号列表，输入序号选择；空输入返回（None），
 非法序号重新询问。
 
-- **names** (`账户名列表`): **返回值** (`选中的账户名；用户留空/中断返回`): None
+- **names**: 账户名列表
+
+**返回值**: 选中的账户名；用户留空/中断返回 None
 
 ---
 
 
-### `_resolve_accounts_key(target: ConfigTarget, config)`
+### `_resolve_accounts_key(target: ConfigTarget, config) -> str`
 
 解析适配器多账户配置的存储键
 
 新键为 ``<config_key>.accounts``；旧版使用 ``<config_key>.bots``，
 仅当新键不存在而旧键存在时回退（兼容既有 config.toml）。
 
-- **target** (`适配器`): ConfigTarget
+- **target**: 适配器 ConfigTarget
 - **config** (`ConfigManager`): 实例
+
 **返回值**: 账户配置存储键
 
 ---
 
 
-### `_run_accounts_section(target: ConfigTarget, config)`
+### `_run_accounts_section(target: ConfigTarget, config) -> dict`
 
 运行多账户配置环节（添加 / 编辑 / 删除循环）
 
-- **target** (`适配器`): ConfigTarget
+- **target**: 适配器 ConfigTarget
 - **config** (`ConfigManager`): 实例
-**返回值** (`编辑后的账户字典`): {账户名: 字段字典}
+
+**返回值**: 编辑后的账户字典 {账户名: 字段字典}
 
 ---
 
 
-### `run_wizard(target: ConfigTarget, config = None)`
+### `run_wizard(target: ConfigTarget, config = None) -> bool`
 
 对单个目标运行交互式配置向导
 
@@ -278,13 +314,15 @@ ErisPulse CLI 配置向导共享工具
 （立即落盘），末尾统一打印保存结果；全局表单校验失败且放弃重填
 时直接中止（不写入任何配置）。
 
-- **target** (`ConfigTarget`): - **config**: ConfigManager 实例（None 时使用全局单例）
+- **target**: ConfigTarget
+- **config** (`ConfigManager`): 实例（None 时使用全局单例）
+
 **返回值**: 是否成功写入了配置
 
 ---
 
 
-### `post_install_configure(dist_names: list[str] | None, config = None)`
+### `post_install_configure(dist_names: list[str] | None, config = None, *, interactive: bool | None = None) -> None`
 
 安装完成后衔接配置向导
 
@@ -292,8 +330,9 @@ ErisPulse CLI 配置向导共享工具
 仅对包含配置声明的目标逐个询问是否立即配置。非交互环境跳过并
 打印 ``epsdk config <name>`` 指引。
 
-- **dist_names** (`本次成功安装的发行包名列表`): - **config**: ConfigManager 实例（None 时使用全局单例）
-- **interactive** (`是否交互（None`): 时自动检测 TTY）
+- **dist_names**: 本次成功安装的发行包名列表
+- **config** (`ConfigManager`): 实例（None 时使用全局单例）
+- **interactive**: 是否交互（None 时自动检测 TTY）
 
 ---
 
@@ -312,25 +351,27 @@ ErisPulse CLI 配置向导共享工具
 #### 方法列表
 
 
-##### `__init__(kind: Literal['adapter', 'module'], name: str)`
+##### `__init__(kind: Literal['adapter', 'module'], name: str, *, config_class = None, account_class = None, config_key: str = '', package: str | None = None, source: str = 'entrypoint')`
 
-- **kind** (`目标类型："adapter"`): | "module"
-- **name** (`目标名（适配器为平台名，模块为注册名）`): - **config_class**: ConfigClass 声明（未声明为 None）
+- **kind**: 目标类型："adapter" | "module"
+- **name**: 目标名（适配器为平台名，模块为注册名）
+- **config_class** (`ConfigClass`): 声明（未声明为 None）
 - **account_class** (`AccountConfigClass`): 声明（仅适配器，未声明为 None）
-- **config_key** (`配置存储键（适配器默认类名，模块为注册名）`): - **package**: 所属 PyPI 包名（本地插件为 None）
-- **source** (`来源："entrypoint"`): | "plugins"
+- **config_key**: 配置存储键（适配器默认类名，模块为注册名）
+- **package**: 所属 PyPI 包名（本地插件为 None）
+- **source**: 来源："entrypoint" | "plugins"
 
 ---
 
 
-##### `configurable()`
+##### `configurable -> bool`（property）
 
 是否包含任何配置声明
 
 ---
 
 
-##### `kind_label()`
+##### `kind_label -> str`（property）
 
 目标类型显示名（适配器/模块）
 

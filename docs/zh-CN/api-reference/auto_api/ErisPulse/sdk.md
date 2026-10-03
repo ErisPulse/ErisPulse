@@ -11,9 +11,12 @@ ErisPulse SDK 主类
 
 > **提示**
 > example:
-> >>> from ErisPulse import sdk
-> >>> await sdk.init()
-> >>> await sdk.adapter.startup()
+> ```python
+> from ErisPulse import sdk
+> await sdk.init()
+> await sdk.adapter.startup()
+> ```
+>
 
 ---
 
@@ -22,13 +25,17 @@ ErisPulse SDK 主类
 
 ### `_resolve_core(attr: str)`
 
-> **内部方法**
+**内部方法**
 动态解析核心模块单例引用
 
 每次访问时通过 import 系统获取最新单例，确保软重启后 SDK 始终
 指向当前有效的模块级单例对象。
 
-- **attr** (`核心属性名`): **返回值** (`对应的单例对象`): **异常**: `AttributeError` - 当属性名不在核心映射中时
+- **attr**: 核心属性名
+
+**返回值**: 对应的单例对象
+
+**异常**: `AttributeError` - 当属性名不在核心映射中时
 
 ---
 
@@ -83,7 +90,7 @@ ErisPulse SDK 主类
 ---
 
 
-##### `version()`
+##### `version -> str`（property）
 
 获取当前 ErisPulse 安装版本
 
@@ -93,15 +100,16 @@ ErisPulse SDK 主类
 **返回值** (`str`): 版本号字符串，未安装时返回 "UnknownVersion"
 
 **示例**:
+
 ```python
->>> print(sdk.version)
+print(sdk.version)
 '2.6.2'
 ```
 
 ---
 
 
-##### `__dir__()`
+##### `__dir__() -> list[str]`
 
 列出实例属性（含核心模块动态属性）
 
@@ -121,72 +129,76 @@ ErisPulse SDK 主类
 当属性不在实例 __dict__ 中时调用。对核心属性名使用动态 import 解析，
 确保软重启后始终获取最新单例。对未知属性提供友好的错误提示。
 
-- **name** (`属性名`): **返回值** (`属性值`): **异常**: `AttributeError` - 当属性不存在时
+- **name**: 属性名
+
+**返回值**: 属性值
+
+**异常**: `AttributeError` - 当属性不存在时
 
 ---
 
 
-##### `__repr__()`
+##### `__repr__() -> str`
 
 返回 SDK 的字符串表示
 
 展示版本、初始化状态、适配器/模块计数，便于调试时一眼查看运行状态。
 适配器/模块计数失败时静默降级为只显示版本与初始化状态。
 
-**返回值** (`str`): SDK 的字符串表示
+**返回值**: str SDK 的字符串表示
 
 ---
 
 
-##### `_start_proactive_gc()`
+##### `_start_proactive_gc() -> None`
 
-> **内部方法**
+**内部方法**
 启动主动 GC 后台任务（实现见 ``runtime/proactive_gc.start_proactive_gc``）
 
 ---
 
 
-##### `_stop_proactive_gc()`
+##### `_stop_proactive_gc() -> None`
 
-> **内部方法**
+**内部方法**
 停止主动 GC 后台任务并反注册配置钩子（实现见 ``runtime/proactive_gc.stop_proactive_gc``）
 
 ---
 
 
-##### `_read_gc_config()`
+##### `_read_gc_config() -> tuple[float, int, int, int, bool, int]`（staticmethod）
 
-> **内部方法**
+**内部方法**
 读取并钳制主动 GC 框架配置（实现见 ``runtime/proactive_gc.read_gc_config``）
 
 ---
 
 
-##### `_on_gc_config_event(_data: dict)`
+##### `_on_gc_config_event(_data: dict) -> None`
 
-> **内部方法**
+**内部方法**
 proactive_gc_* 配置变更时重启 GC 任务（实现见 ``runtime/proactive_gc.on_gc_config_event``）
 
 ---
 
 
-##### `_has_handler_backlog()`
+##### `_has_handler_backlog() -> bool`（staticmethod）
 
-> **内部方法**
+**内部方法**
 事件处理器洪峰检测（实现见 ``runtime/proactive_gc.has_handler_backlog``）
 
 ---
 
 
-##### `_run_full_gc_collection(gc_module: Any, baseline: float | None, growth_mb: int)`
+##### `_run_full_gc_collection(gc_module: Any, baseline: float | None, growth_mb: int) -> tuple[int, float | None]`（staticmethod）
 
-> **内部方法**
+**内部方法**
 执行一次全量回收（实现见 ``runtime/proactive_gc.run_full_gc_collection``）
 
 ---
 
 
-##### `dump_state()`
+##### `dump_state() -> dict`
 
 导出框架当前运行状态的快照
 
@@ -195,7 +207,7 @@ proactive_gc_* 配置变更时重启 GC 任务（实现见 ``runtime/proactive_g
 ---
 
 
-##### `async init()`
+##### `async init(*, before_init: Callable[[], Any] | None = None, after_init: Callable[[], Any] | None = None) -> bool`
 
 SDK 初始化入口
 
@@ -203,29 +215,32 @@ SDK 初始化入口
 会记录一条警告并直接返回 True。如需强制重新初始化，请先
 调用 ``sdk.uninit()`` 或使用 ``sdk.restart()``。
 
-- **before_init** (`初始化前回调（同步或异步），在环境准备之前执行`): - **after_init**: 初始化成功后回调（同步或异步），在初始化完成后执行
-**返回值** (`bool`): SDK 初始化是否成功（已初始化时返回 True）
+- **before_init**: 初始化前回调（同步或异步），在环境准备之前执行
+- **after_init**: 初始化成功后回调（同步或异步），在初始化完成后执行
+
+**返回值**: bool SDK 初始化是否成功（已初始化时返回 True）
 
 **示例**:
+
 ```python
->>> success = await sdk.init()
->>> if success:
->>>     await sdk.adapter.startup()
->>>
->>> # 使用回调
->>> async def setup():
-...     print("初始化前")
->>> async def ready():
-...     print("初始化完成")
->>> await sdk.init(before_init=setup, after_init=ready)
+success = await sdk.init()
+if success:
+    await sdk.adapter.startup()
+
+# 使用回调
+async def setup():
+    print("初始化前")
+async def ready():
+    print("初始化完成")
+await sdk.init(before_init=setup, after_init=ready)
 ```
 
 ---
 
 
-##### `async _prepare_environment()`
+##### `async _prepare_environment() -> bool`
 
-> **内部方法**
+**内部方法**
 准备运行环境
 
 初始化配置和全局异常处理
@@ -235,44 +250,55 @@ SDK 初始化入口
 ---
 
 
-##### `init_sync()`
+##### `init_sync(*, before_init: Callable[[], Any] | None = None, after_init: Callable[[], Any] | None = None) -> bool`
 
 SDK 初始化入口（同步版本）
 
 用于命令行直接调用，自动在事件循环中运行异步初始化
 
-- **before_init** (`初始化前回调（同步或异步）`): - **after_init**: 初始化成功后回调（同步或异步）
-**返回值** (`bool`): SDK 初始化是否成功
+- **before_init**: 初始化前回调（同步或异步）
+- **after_init**: 初始化成功后回调（同步或异步）
+
+**返回值**: bool SDK 初始化是否成功
 
 ---
 
 
-##### `init_task()`
+##### `init_task(*, before_init: Callable[[], Any] | None = None, after_init: Callable[[], Any] | None = None) -> asyncio.Task | concurrent.futures.Future`
 
 SDK 初始化入口，返回 Task 对象
 
-- **before_init** (`初始化前回调（同步或异步）`): - **after_init**: 初始化成功后回调（同步或异步）
-**返回值** (`asyncio.Task`): 初始化任务
+- **before_init**: 初始化前回调（同步或异步）
+- **after_init**: 初始化成功后回调（同步或异步）
+
+**返回值** (`asyncio.Task`): 初始化任务（在事件循环内调用时）；并发 Future
+
+    （无运行循环但主循环已注册时，经线程安全方式调度回主循环）
+**异常**: `RuntimeError` - 当前无运行中的事件循环且主循环未注册——
+
+    此前本场景会新建一个永不运行的循环并返回永不完成的悬挂 Task
 
 ---
 
 
-##### `async load_module(module_name: str)`
+##### `async load_module(module_name: str) -> bool`
 
 手动加载指定模块
 
 - **module_name** (`str`): 要加载的模块名称
+
 **返回值** (`bool`): 加载是否成功
 
 **示例**:
+
 ```python
->>> await sdk.load_module("MyModule")
+await sdk.load_module("MyModule")
 ```
 
 ---
 
 
-##### `async run(keep_running: bool = True)`
+##### `async run(keep_running: bool = True, *, before_init: Callable[[], Any] | None = None, after_init: Callable[[], Any] | None = None, on_ready: Callable[[], Any] | None = None) -> None`
 
 无头模式运行 ErisPulse
 
@@ -288,39 +314,43 @@ SDK 初始化入口，返回 Task 对象
 > 1. 模块/适配器的任何错误都会被拦截，不会导致进程退出
 > 2. 只有 KeyboardInterrupt（Ctrl+C）会正常向上传播，触发优雅关闭
 > 3. 其他 BaseException（如 SystemExit）会被拦截并记录，防止意外终止
-> 回调执行顺序::
+> 回调执行顺序:
+> ```
 > before_init → 初始化 → after_init → on_ready → [挂起]
+> ```
+>
 > 回调可以是同步或异步函数，框架自动检测并 await。
 > 回调中的异常会被捕获并记录日志，不会中断启动流程。
 
 - **keep_running** (`bool`): 是否保持运行
-- **before_init** (`初始化前回调，转发给`): ``init()``
-- **after_init** (`初始化成功后回调，转发给`): ``init()``
-- **on_ready** (`初始化完成且`): ``after_init`` 执行后、挂起前的回调
+- **before_init**: 初始化前回调，转发给 ``init()``
+- **after_init**: 初始化成功后回调，转发给 ``init()``
+- **on_ready**: 初始化完成且 ``after_init`` 执行后、挂起前的回调
 
 **示例**:
+
 ```python
->>> await sdk.run(keep_running=True)
->>>
->>> # 使用 on_ready 回调
->>> async def on_startup():
-...     print("SDK 就绪，开始业务逻辑")
->>> await sdk.run(on_ready=on_startup)
->>>
->>> # 分阶段回调
->>> async def before():
-...     print("即将初始化")
->>> async def after():
-...     print("初始化完成，适配器已就绪")
->>> async def ready():
-...     print("一切就绪，开始挂起")
->>> await sdk.run(before_init=before, after_init=after, on_ready=ready)
+await sdk.run(keep_running=True)
+
+# 使用 on_ready 回调
+async def on_startup():
+    print("SDK 就绪，开始业务逻辑")
+await sdk.run(on_ready=on_startup)
+
+# 分阶段回调
+async def before():
+    print("即将初始化")
+async def after():
+    print("初始化完成，适配器已就绪")
+async def ready():
+    print("一切就绪，开始挂起")
+await sdk.run(before_init=before, after_init=after, on_ready=ready)
 ```
 
 ---
 
 
-##### `shutdown()`
+##### `shutdown() -> None`
 
 请求优雅关闭
 
@@ -329,14 +359,15 @@ SDK 初始化入口，返回 Task 对象
 也用作 SIGTERM 等信号的处理入口。
 
 **示例**:
+
 ```python
->>> sdk.shutdown()  # 任意协程中调用，触发优雅退出
+sdk.shutdown()  # 任意协程中调用，触发优雅退出
 ```
 
 ---
 
 
-##### `enable_plugin_hot_reload(interval: float = 1.0)`
+##### `enable_plugin_hot_reload(interval: float = 1.0) -> bool`
 
 启用本地插件文件夹热重载（自动监控）
 
@@ -348,20 +379,22 @@ SDK 初始化入口，返回 Task 对象
 > 自动监控仅覆盖本地插件目录；PyPI 安装包模块可通过
 > :meth:`reload_module` 手动热重载（pip 升级后调用即可）。
 
-- **interval** (`轮询间隔（秒，默认`): 1.0）
-**返回值** (`是否启动成功（无插件目录或已在运行返回`): False）
+- **interval**: 轮询间隔（秒，默认 1.0）
+
+**返回值**: 是否启动成功（无插件目录或已在运行返回 False）
 
 **示例**:
+
 ```python
->>> await sdk.init()
->>> sdk.enable_plugin_hot_reload()
->>> await sdk.run()
+await sdk.init()
+sdk.enable_plugin_hot_reload()
+await sdk.run()
 ```
 
 ---
 
 
-##### `async reload_module(module_name: str)`
+##### `async reload_module(module_name: str, *, full: bool = False) -> bool`
 
 热重载单个模块（手动触发，支持任意来源）
 
@@ -370,35 +403,65 @@ SDK 初始化入口，返回 Task 对象
 本地插件（``plugins/`` 目录）来源重扫描插件目录；PyPI 安装包来源
 重新查询 entry-point 并重导入模块代码（pip 升级后调用即可生效）。
 
-- **module_name** (`模块名（entry-point`): 名称或插件名）
-**返回值** (`是否重载成功`): 
+- **module_name**: 模块名（entry-point 名称或插件名）
+- **full**: 是否全量重载（默认 False）。True 时 ``sys.modules``
+
+    清理名单在元数据之外叠加旧模块对象顶层包名（元数据缺失也能
+    彻底刷新 import 缓存），且依赖者模块同样重导代码
+**返回值**: 是否重载成功
+
 **示例**:
+
 ```python
->>> await sdk.reload_module("dice")      # 本地插件
->>> await sdk.reload_module("Weather")   # PyPI 安装包模块
+await sdk.reload_module("dice")      # 本地插件
+await sdk.reload_module("Weather")   # PyPI 安装包模块
+await sdk.reload_module("Weather", full=True)  # 全量重载
 ```
 
 ---
 
 
-##### `async _reload_module(module_name: str)`
+##### `async reload_all_modules() -> dict[str, bool]`
 
-> **内部方法**
+全量热重载所有已注册模块（尽力而为语义）
+
+执行 卸载全部 → 清理全部 ``sys.modules`` 子树 → 重新发现/注册 →
+按依赖拓扑序加载 → 此前已加载的懒加载模块重新激活 流程，一次刷新
+全部模块代码（pip 批量升级后调用即可全部生效）。单模块失败仅记录
+诊断并跳过，不影响其余模块；无整体回滚（on_unload 副作用不可撤销，
+与单模块热重载语义一致）。
+
+**返回值**: 模块注册名 → 是否重载成功（发现阶段即失败的模块不在结果中；
+
+         SDK 未初始化时返回空字典）
+
+**示例**:
+
+```python
+await sdk.reload_all_modules()
+```
+
+---
+
+
+##### `async _reload_module(module_name: str) -> None`
+
+**内部方法**
 热重载回调（由 PluginReloadWatcher 调度），失败仅记录不抛异常
 
 ---
 
 
-##### `stop_plugin_hot_reload()`
+##### `stop_plugin_hot_reload() -> None`
 
 停止本地插件热重载监控
 
 ---
 
 
-##### `_register_signal_handlers()`
+##### `_register_signal_handlers() -> None`
 
-> **内部方法**
+**内部方法**
 注册进程信号处理器，将 SIGTERM / SIGHUP 等信号转为优雅关闭
 
 Windows 不支持 ``loop.add_signal_handler``，捕获异常后跳过
@@ -407,9 +470,9 @@ Windows 不支持 ``loop.add_signal_handler``，捕获异常后跳过
 ---
 
 
-##### `async _do_restart()`
+##### `async _do_restart() -> bool`
 
-> **内部方法**
+**内部方法**
 实际执行重启逻辑的内部方法
 
 在后台任务中运行，与调用 restart() 的事件处理器解耦
@@ -429,9 +492,9 @@ Windows 不支持 ``loop.add_signal_handler``，捕获异常后跳过
 ---
 
 
-##### `_collect_top_level_modules()`
+##### `_collect_top_level_modules() -> set[str]`
 
-> **内部方法**
+**内部方法**
 从模块和适配器管理器中收集所有已加载包的顶层 Python 模块名
 
 必须在 uninit() 之前调用，因为 uninit 会清除管理器中的注册信息
@@ -441,31 +504,33 @@ Windows 不支持 ``loop.add_signal_handler``，捕获异常后跳过
 ---
 
 
-##### `_infer_top_level(info: dict)`
+##### `_infer_top_level(info: dict) -> list[str]`（staticmethod）
 
-> **内部方法**
+**内部方法**
 从模块/适配器信息中推导顶层 Python 模块名
 
 优先使用 top_level.txt，fallback 从 entry-point value 推导
 
-- **info** (`模块或适配器信息字典`): **返回值** (`顶层`): Python 模块名列表
+- **info**: 模块或适配器信息字典
+
+**返回值**: 顶层 Python 模块名列表
 
 ---
 
 
-##### `_invalidate_module_cache(top_level_modules: set[str])`
+##### `_invalidate_module_cache(top_level_modules: set[str]) -> None`
 
-> **内部方法**
+**内部方法**
 清理 sys.modules 中属于已加载包的缓存，并刷新 importlib 缓存
 
-- **top_level_modules** (`需要清理的顶层`): Python 模块名集合
+- **top_level_modules**: 需要清理的顶层 Python 模块名集合
 
 ---
 
 
-##### `_invalidate_framework_cache()`
+##### `_invalidate_framework_cache() -> None`
 
-> **内部方法**
+**内部方法**
 清理 ErisPulse 框架自身的子模块缓存，以支持框架热更新
 
 清除所有 ErisPulse.* 子模块的 sys.modules 缓存，但保留 ErisPulse 包本身。
@@ -483,9 +548,9 @@ Windows 不支持 ``loop.add_signal_handler``，捕获异常后跳过
 ---
 
 
-##### `_invalidate_metadata_cache()`
+##### `_invalidate_metadata_cache() -> None`
 
-> **内部方法**
+**内部方法**
 清理 importlib.metadata 相关缓存，确保 entry_points() 返回最新数据
 
 当 pip install --upgrade 更新包后，importlib.metadata 的内部缓存
@@ -499,7 +564,7 @@ Windows 不支持 ``loop.add_signal_handler``，捕获异常后跳过
 ---
 
 
-##### `async restart()`
+##### `async restart() -> bool`
 
 SDK 重新启动
 
@@ -519,14 +584,15 @@ SDK 重新启动
 **返回值** (`bool`): 重启任务是否成功调度（并非重启是否完成）
 
 **示例**:
+
 ```python
->>> await sdk.restart()
+await sdk.restart()
 ```
 
 ---
 
 
-##### `is_supervised()`
+##### `is_supervised() -> bool`
 
 检测当前进程是否由外部监督者启动（CLI run 命令 / systemd / Docker 等）
 
@@ -539,7 +605,7 @@ SDK 重新启动
 ---
 
 
-##### `async hard_restart()`
+##### `async hard_restart() -> bool`
 
 硬重启：反初始化后退出进程，由外部监督者重新启动新实例
 
@@ -555,14 +621,15 @@ SDK 重新启动
 **返回值** (`bool`): 硬重启任务是否成功调度
 
 **示例**:
+
 ```python
->>> await sdk.hard_restart()
+await sdk.hard_restart()
 ```
 
 ---
 
 
-##### `get_topology()`
+##### `get_topology(*, json_safe: bool = True) -> dict[str, Any]`
 
 获取完整的拓扑树数据（便于 Dashboard 等管理界面展示）
 
@@ -571,23 +638,27 @@ SDK 重新启动
 - ``adapters``：每个适配器的运行状态、下属 Bot 状态与作用域绑定
 - ``scope``：作用域（模块 / 身份 / 文本 / 出站动作）
 
-- **json_safe** (`是否输出可直接`): JSON 序列化的安全结构（默认 True）。
+- **json_safe**: 是否输出可直接 JSON 序列化的安全结构（默认 True）。
+
                   安全模式下模块 ``info`` 只保留纯数据 meta 子表，
                   并对整树做序列化兜底净化，返回值可直接 ``json.dumps``。
 
-**返回值** (`拓扑树字典`): {"modules": {...}, "adapters": {...}, "scope": {...}}
+**返回值**: 拓扑树字典
+
+    {"modules": {...}, "adapters": {...}, "scope": {...}}
 
 **示例**:
+
 ```python
->>> topology = sdk.get_topology()
->>> topology["modules"]["Chat"]["commands"]
+topology = sdk.get_topology()
+topology["modules"]["Chat"]["commands"]
 ["chat"]
 ```
 
 ---
 
 
-##### `async uninit()`
+##### `async uninit() -> bool`
 
 SDK 反初始化
 
@@ -601,8 +672,9 @@ SDK 反初始化
 **返回值** (`bool`): 反初始化是否成功
 
 **示例**:
+
 ```python
->>> await sdk.uninit()
+await sdk.uninit()
 ```
 
 ---

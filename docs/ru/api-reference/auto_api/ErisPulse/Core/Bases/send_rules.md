@@ -27,28 +27,31 @@ SendDSL 发送规则系统
 ## 函数列表
 
 
-### `_is_success(result: Any)`
+### `_is_success(result: Any) -> bool`
 
 判断发送结果是否为成功
 
 约定：标准响应 dict 中 ``status == "ok"`` 视为成功；
 非 dict 结果（无法判断）默认视为成功，避免误触发重试。
 
-- **result** (`发送方法的返回值`): **返回值**: 是否成功
+- **result**: 发送方法的返回值
+
+**返回值**: 是否成功
 
 ---
 
 
-### `async _invoke_callback(callback: Any, ctx: Any)`
+### `async _invoke_callback(callback: Any, ctx: Any) -> None`
 
 安全调用用户回调（兼容同步/异步），异常被吞掉不影响主流程
 
-- **callback** (`用户回调（同步函数或协程函数）`): - **ctx**: 上下文对象（SendContext 或 BatchContext）
+- **callback**: 用户回调（同步函数或协程函数）
+- **ctx**: 上下文对象（SendContext 或 BatchContext）
 
 ---
 
 
-### `apply_send_rules(base_task_factory: Any)`
+### `apply_send_rules(base_task_factory: Any, *, rules: dict[str, Any], send_ctx: dict[str, Any]) -> asyncio.Task`
 
 根据 ``_rules`` 包装一次发送，返回统一处理后的 Task
 
@@ -60,10 +63,13 @@ SendDSL 发送规则系统
 5. 应用超时（Timeout）
 6. 触发 OnProgress / OnError / Hook 回调
 
-- **base_task_factory** (`无参可调用对象，每次调用返回一个新的`): ``asyncio.Task``
+- **base_task_factory**: 无参可调用对象，每次调用返回一个新的 ``asyncio.Task``
+
     （重试时需要重新发起，因此用工厂而非固定 Task）
 - **rules** (`SendDSL`): 的 ``_rules`` 字典
-- **send_ctx** (`基础发送上下文（platform/method/target_type/target_id/bot_id）`): **返回值** (`统一包装后的`): ``asyncio.Task``
+- **send_ctx**: 基础发送上下文（platform/method/target_type/target_id/bot_id）
+
+**返回值**: 统一包装后的 ``asyncio.Task``
 
 ---
 
@@ -101,20 +107,20 @@ SendDSL 发送规则系统
 #### 方法列表
 
 
-##### `elapsed()`
+##### `elapsed -> float`（property）
 
 已耗时（秒）
 
-**返回值** (`从`): started_at 到当前时间（若已结束则为 finished_at）的秒数
+**返回值**: 从 started_at 到当前时间（若已结束则为 finished_at）的秒数
 
 ---
 
 
-##### `to_dict()`
+##### `to_dict() -> dict[str, Any]`
 
 转为可序列化字典（用于日志/上报）
 
-**返回值** (`包含上下文字段的字典，error`): 字段被转为字符串
+**返回值**: 包含上下文字段的字典，error 字段被转为字符串
 
 ---
 
@@ -132,35 +138,35 @@ SendDSL 发送规则系统
 #### 方法列表
 
 
-##### `is_busy()`
+##### `is_busy() -> bool`（classmethod）
 
 判断当前是否处于积压状态
 
 ---
 
 
-##### `enter(task_id: str)`
+##### `enter(task_id: str) -> None`（classmethod）
 
 登记一个在途发送任务
 
 ---
 
 
-##### `leave(task_id: str)`
+##### `leave(task_id: str) -> None`（classmethod）
 
 注销一个在途发送任务
 
 ---
 
 
-##### `set_threshold(threshold: int)`
+##### `set_threshold(threshold: int) -> None`（classmethod）
 
 设置积压阈值
 
 ---
 
 
-##### `reset()`
+##### `reset() -> None`（classmethod）
 
 重置状态（主要用于测试）
 
