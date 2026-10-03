@@ -47,12 +47,12 @@ platforms = sdk.adapter.platforms
 # 檢查適配器是否存在
 exists = sdk.adapter.exists("platform_name")
 
-# 啟用/停用適配器
+# 啟用/禁用適配器
 sdk.adapter.enable("platform_name")
 sdk.adapter.disable("platform_name")
 
 # 啟動/關閉適配器
-# 以下方法都只展示了傳入參數的情況，無參數時代表啟動/停止全部已註冊的適配器
+# 以下方法都只展示了傳入參數的情況，無參數時代表啟動/停止全部已註冊適配器
 await sdk.adapter.startup(["platform1", "platform2"])
 await sdk.adapter.shutdown(["platform1", "platform2"])
 
@@ -81,7 +81,7 @@ async def my_middleware(event):
 - **執行順序**：中間件按註冊順序執行（先註冊先執行）
 - **資料傳遞**：每個中間件接收上一個中間件返回的 `event` 資料；如果某個中間件返回 `None`，則忽略該返回值並保留原資料繼續傳遞（同時輸出 `warning` 級別日誌）
 - **修改資料**：中間件可以修改事件資料並返回修改後的字典
-- **事件否決**：中間件顯式返回 `False` 時否決事件——事件被丟棄，不進入任何處理器、無任何出站副作用；否決時輸出 TRACE 日誌並觸發 `adapter.event.blocked` 生命週期鉤子（攜帶中間件名與完整事件）
+- **事件否決**：中間件顯式返回 `False` 時否決事件——事件被丟棄，不進入任何處理器、無任何出站副作用；否決時輸出 TRACE 日誌並觸發 `adapter.event.blocked` 生命周期鉤子（攜帶中間件名與完整事件）
 
 ```python
 @sdk.adapter.middleware
@@ -150,7 +150,7 @@ info = sdk.adapter.send_info("onebot11", "Text")
 ### 鏈式修飾
 
 ```python
-# @使用者
+# @用戶
 await adapter.Send.To("group", "456").At("789").Text("你好")
 
 # @全體成員
@@ -167,7 +167,7 @@ await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("回覆@的
 
 ### call_api 方法
 
-> **注意**：`call_api` 是直接調用平台原生 API 的底層方法，各平台的參數和返回值可能不同，請參考對應平台適配器文件。**推薦使用 Send DSL 發送訊息**，僅在 Send DSL 不支援的場景（如取得平台特有的資料、呼叫平台管理介面等）中使用 `call_api`。
+> **注意**：`call_api` 是直接調用平台原生 API 的底層方法，各平台的參數和返回值可能不同，請參考對應平台適配器文件。**推薦使用 Send DSL 發送訊息**，僅在 Send DSL 不支援的場景（如獲取平台特有的資料、調用平台管理介面等）中使用 `call_api`。
 
 ```python
 # 調用平台 API
@@ -249,11 +249,11 @@ class MyAdapter(BaseAdapter):
 | `meta` | `heartbeat` | Bot 心跳 | 定期發送（建議 30-60 秒） |
 | `meta` | `disconnect` | Bot 斷開連接 | 檢測到連接斷開時 |
 
-### self 欄位擴展
+### self 字段擴展
 
-ErisPulse 在 OneBot12 標準的 `self` 欄位上擴展了以下可選欄位：
+ErisPulse 在 OneBot12 標準的 `self` 字段上擴展了以下可選字段：
 
-| 欄位 | 類型 | 說明 |
+| 字段 | 類型 | 說明 |
 |------|------|------|
 | `self.platform` | string | 平台名稱（OB12 標準） |
 | `self.user_id` | string | Bot 用戶 ID（OB12 標準） |
@@ -283,7 +283,7 @@ await adapter.emit({
 })
 ```
 
-系統處理：註冊 Bot，標記為 `online`，觸發 `adapter.bot.online` 生命週期事件。
+系統處理：註冊 Bot，標記為 `online`，觸發 `adapter.bot.online` 生命周期事件。
 
 #### heartbeat — 心跳
 
@@ -319,11 +319,11 @@ await adapter.emit({
 })
 ```
 
-系統處理：標記 Bot 為 `offline`，觸發 `adapter.bot.offline` 生命週期事件。
+系統處理：標記 Bot 為 `offline`，觸發 `adapter.bot.offline` 生命周期事件。
 
 ### 普通事件的自動發現
 
-除了 `meta` 事件外，普通事件（`message`/`notice`/`request`）中的 `self` 欄位也會自動發現並註冊 Bot、更新活躍時間。這意味著即使適配器不發送 `connect` 事件，框架也能從第一條普通事件中發現 Bot。
+除了 `meta` 事件外，普通事件（`message`/`notice`/`request`）中的 `self` 字段也會自動發現並註冊 Bot、更新活躍時間。這意味著即使適配器不發送 `connect` 事件，框架也能從第一條普通事件中發現 Bot。
 
 ### 適配器接入示例
 
@@ -407,12 +407,12 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 | `offline` | 離線（適配器主動標記或系統關閉時自動設定） |
 | `unknown` | 未知（僅註冊但未確認狀態） |
 
-### 生命週期事件
+### 生命周期事件
 
 | 事件名 | 觸發時機 | 資料 |
 |--------|---------|------|
 | `adapter.bot.online` | 首次自動發現新 Bot | `{platform, bot_id, status}` |
-| `adapter.status.change` | 適配器狀態變化（starting/started/stopping/stopped/stop_failed） | `{platform, status}` |
+| `adapter.status.change` | 適配器狀態變化 | `{platform, status}`，status 完整取值：`starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency`（所依賴的適配器未就緒而跳過啟動）/ `disabled`（配置禁用） |
 
 ```python
 # 監聽 Bot 上線事件
