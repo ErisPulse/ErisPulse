@@ -128,11 +128,16 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
-          # ErisPulse 发版后触发官网仓库的文档静态化重建（build-docs.yml）
-          gh api repos/ErisPulse/erispulse.github.io/dispatches \
+          # ErisPulse 发版后触发官网仓库的文档静态化重建（build-docs.yml）。
+          # 前置：ERISBOT App 需安装在 ErisPulse/erispulse.github.io 仓库；
+          # 未安装/无权限时官网文档不自动重建，但不阻断发版流程。
+          if gh api repos/ErisPulse/erispulse.github.io/dispatches \
             -f event_type=docs-build \
-            --jq '.event_type // "dispatched"' \
-            && echo "Website docs rebuild dispatched"
+            --jq '.event_type // "dispatched"'; then
+            echo "Website docs rebuild dispatched"
+          else
+            echo "::warning::官网文档重建触发失败（多为 403：ERISBOT App 未安装到 ErisPulse/erispulse.github.io）。本次发版不受影响；官网文档请手动触发其 build-docs.yml"
+          fi
 
       - name: Generate AI material documents
         if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
