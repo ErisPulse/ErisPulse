@@ -123,6 +123,17 @@ jobs:
             echo "CHANGELOG.md file does not exist"
           fi
 
+      - name: Trigger website docs rebuild
+        if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          # ErisPulse 发版后触发官网仓库的文档静态化重建（build-docs.yml）
+          gh api repos/ErisPulse/erispulse.github.io/dispatches \
+            -f event_type=docs-build \
+            --jq '.event_type // "dispatched"' \
+            && echo "Website docs rebuild dispatched"
+
       - name: Generate AI material documents
         if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
         run: |
