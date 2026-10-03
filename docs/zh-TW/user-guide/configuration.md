@@ -1,5 +1,5 @@
-# 配置文件說明  
-> 本文件將介紹框架的配置文件，若有第三方模組需要配置，請參考模組的文件。
+# 配置文件說明
+> 這個文件會介紹框架的配置文件，如果有第三方模組需要配置，請參考模組的文件。
 
 ErisPulse 使用 TOML 格式的配置文件 `config/config.toml` 來管理專案配置。
 
@@ -14,37 +14,37 @@ project/
 ├── main.py
 ```
 
-### 多實例提示與鎖檔案
+### 多實例提示與鎖文件
 
-框架啟動時會在 `config/` 目錄下建立 `.erispulse_config.lock` 鎖檔案並持有至進程退出（用於偵測多實例共享配置目錄）。如果日誌出現「偵測到配置檔案可能正被另一個 ErisPulse 實例同時使用」的告警，說明有**兩個以上的 ErisPulse 進程在寫同一份配置**（典型場景：多個容器掛載了同一個主機 `config/` 目錄）—— 並發寫入會互相覆蓋，請為每個實例使用獨立的配置目錄。
+框架啟動時會在 `config/` 目錄下建立 `.erispulse_config.lock` 鎖文件並持有到進程退出（用於偵測多實例共享配置目錄）。如果日誌出現「偵測到配置文件可能正被另一個 ErisPulse 實例同時使用」的警告，說明有**兩個以上的 ErisPulse 進程在寫同一份配置**（典型場景：多個容器掛載了同一個主機 `config/` 目錄）——併發寫入會互相覆蓋，請為每個實例使用獨立的配置目錄。
 
 ## 配置載入錯誤處理
 
-框架在載入 `config.toml` 時會區分三種錯誤狀態，並提供**可操作的診斷資訊**，而不是靜默回退到預設配置：
+框架在載入 `config.toml` 時會區分三種錯誤狀態，並給出**可操作的診斷資訊**，而不是靜默回退到預設配置：
 
 | 錯誤狀態 | 觸發條件 | 框架行為 |
 |---------|---------|---------|
-| 檔案缺失 | `config.toml` 不存在 | 正常首次啟動，靜默使用空配置（不發出警告） |
-| TOML 語法錯誤 | 檔案存在但格式非法（例如少了引號、括號未閉合） | 輸出**出錯行號/列號與原因**，並**保留上次有效配置繼續運行**（本次檔案修改無效） |
+| 文件遺失 | `config.toml` 不存在 | 正常首次啟動，靜默使用空配置（不發出警告） |
+| TOML 語法錯誤 | 文件存在但格式非法（如少了引號、括號未閉合） | 輸出**出錯行號/列號與原因**，並**保留上次有效配置繼續運行**（本次文件修改不生效） |
 | 權限/其他錯誤 | 無讀取權限、IO 錯誤等 | 輸出**明確原因**，並**保留上次有效配置繼續運行** |
 
-> **注意「上次有效配置」≠ 預設配置**：檔案損壞時框架沿用**本次啟動前最後一份解析成功的配置**（運行中熱更新改壞檔案則沿用舊值），而不是將所有配置項重置為出廠預設。故障處理時不要假設「配置已被重置」。
+> **注意「上次有效配置」≠ 預設配置**：文件損壞時框架沿用**本次啟動前最後一份解析成功的配置**（運行中熱更新改壞文件則沿用舊值），而不是把所有配置項重置為出廠預設。故障處理時不要假設「配置已被重置」。
 
-例如，當你不慎把配置寫成了 `port = 8000`（缺少引號的字串）時，日誌會輸出類似：
+例如，當你不慎把配置寫成了 `port = 8000`（少了引號的字串）時，日誌會輸出類似：
 
 ```
-[ERROR] [Config] 配置檔案 config/config.toml 語法錯誤（第 3 行 第 1 列）: ...
-[WARNING] [Config] 配置檔案讀取失敗。繼續使用上次有效配置運行，本次檔案修改未生效——請修復後重新載入或重啟
+[ERROR] [Config] 配置文件 config/config.toml 語法錯誤（第 3 行 第 1 列）: ...
+[WARNING] [Config] 配置文件讀取失敗。繼續使用上次有效配置運行，本次文件修改未生效——請修復後重新載入或重啟
 ```
 
 這樣你可以在**預設 INFO 級別**下立刻定位問題，而不會困惑「為什麼我改的配置沒生效」。
 
-> **運行中改壞配置檔案？** 如果你在機器人運行期間手動編輯 `config.toml` 引入了語法錯誤，框架在下次寫入（合併配置）時會輸出「配置檔案已損壞（語法錯誤，第 X 行），無法合併寫入——請先修復配置檔案後重啟」，而不是令人困惑的「寫入失敗」。待寫入的配置項會被保留，不會遺失。
+> **運行中改壞配置文件？** 如果你在機器人運行期間手動編輯 `config.toml` 引入了語法錯誤，框架在下次寫入（合併配置）時會輸出「配置文件已損壞（語法錯誤，第 X 行），無法合併寫入——請先修復配置文件後重啟」，而不是令人困惑的「寫入失敗」。待寫入的配置項會被保留，不會丟失。
 
-## 註釋保留與最小化落盤
+## 注釋保留與最小化落盤
 
 config.toml 中的**註釋與鍵順序在框架寫入後完整保留**：無論是程式碼 `setConfig()`、
-CLI 配置向導儲存還是適配器/模組首次生成配置範本，框架都只修改涉及的鍵，
+CLI 配置向導保存還是適配器/模組首次生成配置範本，框架都只改變涉及的鍵，
 你寫的註釋、整理的順序不會被抹掉或重排（基於 tomlkit 註釋保留往返實現）。
 
 框架對落盤內容保持克制：
@@ -61,11 +61,11 @@ CLI 配置向導儲存還是適配器/模組首次生成配置範本，框架都
 
 ## 環境變數覆蓋
 
-框架支援使用環境變數**覆蓋** `ErisPulse.*` 配置項目（適合 Docker / 容器化 / CI 部署，無需修改 `config.toml`）。
+框架支援用環境變數**覆蓋** `ErisPulse.*` 配置項（適合 Docker / 容器化 / CI 部署，無需修改 `config.toml`）。
 
-命名規則：將點分路徑 `ErisPulse.<section>.<key>` 改為全大寫、`.` 替換為 `_`，並加上 `ERISPULSE_` 前綴：
+命名規則：把點分路徑 `ErisPulse.<section>.<key>` 改為全大寫、`.` 替換為 `_`，並加上 `ERISPULSE_` 前綴：
 
-| 配置項目 | 環境變數 | 範例值 |
+| 配置項 | 環境變數 | 範例值 |
 |--------|---------|--------|
 | `ErisPulse.server.port` | `ERISPULSE_SERVER_PORT` | `9000` |
 | `ErisPulse.server.host` | `ERISPULSE_SERVER_HOST` | `0.0.0.0` |
@@ -73,20 +73,20 @@ CLI 配置向導儲存還是適配器/模組首次生成配置範本，框架都
 | `ErisPulse.framework.strict_mode` | `ERISPULSE_FRAMEWORK_STRICT_MODE` | `false` |
 
 行為說明：
-- **優先級最高**：環境變數覆蓋「配置檔案」與「預設值」，按原值類型自動轉換（`bool` / `int` / `float` / 逗號分隔的 `list` / 字串）
-- **不持久化**：覆蓋僅在執行期生效，不會寫回 `config.toml`
-- **支援熱更新**：執行中修改環境變數後，配合配置監聽的重載即可生效
+- **優先級最高**：環境變數覆蓋「配置文件」與「預設值」，按原值類型自動轉換（`bool` / `int` / `float` / 逗號分隔的 `list` / 字串）
+- **不持久化**：覆蓋只在運行期生效，不會寫回 `config.toml`
+- **支援熱更新**：運行中修改環境變數後，配合配置監聽的重載即可生效
 
 ```bash
-# Docker 部署示例：不修改 config.toml，直接覆蓋端口
+# Docker 部署範例：不修改 config.toml，直接覆蓋端口
 ERISPULSE_SERVER_PORT=9000 docker compose up -d
 ```
 
 > 註：`ErisPulse.server.port` 這類框架配置走 `get_server_config()` 等 API 讀取，均受環境變數覆蓋影響。
 
-### 模塊配置的環境變數綁定（2.9.0+）
+### 模組配置的環境變數綁定（2.9.0+）
 
-模塊自己的宣告式配置（`ConfigClass`）支援欄位級環境變數綁定——在 `field(metadata=...)` 中宣告 `env`：
+模組自己的宣告式配置（`ConfigClass`）支援字段級環境變數綁定——在 `field(metadata=...)` 中聲明 `env`：
 
 ```python
 @dataclass
@@ -100,65 +100,65 @@ class MyConfig(BaseConfig):
 
 行為說明：
 
-- **優先級**：環境變數 > `config.toml` > 宣告預設值（配置檔案熱更新後同樣保持此優先級）
-- **類型轉換**：環境變數值按欄位註解自動轉換——`str` 原樣、`int` / `float` / `bool`（`true` / `1` / `yes` / `on`）自動轉換、`list` / `dict` 走 JSON 解析；轉換失敗時忽略該覆蓋（回退配置檔案 / 預設值）並輸出告警
-- **宣告一次、處處生效**：配置讀取、熱更新、驗證使用同一管道；配置面板 Schema 會標註 `env` 名，`config.toml` 模板註釋也會提示可用的環境變數（模板不寫入環境變數的實際值，避免洩露）
-- **完全相容**：未宣告 `env` 的欄位行為不變；直接實例化 ConfigClass（不經框架配置管道）不受環境變數影響
+- **優先級**：環境變數 > `config.toml` > 宣告預設值（配置文件熱更新後同樣保持此優先級）
+- **類型轉換**：環境變數值按字段註解自動轉換——`str` 原樣、`int` / `float` / `bool`（`true` / `1` / `yes` / `on`）自動轉換、`list` / `dict` 走 JSON 解析；轉換失敗時忽略該覆蓋（回退配置文件 / 預設值）並輸出警告
+- **宣告一處、處處生效**：配置讀取、熱更新、驗證使用同一管道；配置面板 Schema 會標註 `env` 名，`config.toml` 範本註釋也會提示可用的環境變數（範本不寫入環境變數的實際值，避免洩露）
+- **完全相容**：未宣告 `env` 的字段行為不變；直接實例化 ConfigClass（不經框架配置管道）不受環境變數影響
 
 ```bash
-# Docker 部署示例：不修改 config.toml，直接注入模塊密鑰
+# Docker 部署範例：不修改 config.toml，直接注入模組密鑰
 MYMODULE_API_KEY=sk-xxx docker compose up -d
 ```
 
-> **配置類 vs 模型欄位怎麼選？** 配置類管「模塊怎麼運作」（行為參數、熱更新），  
-> ORM 的 `Field()` 管「使用者產生了什麼資料」（資料庫表、查詢）。兩者共享同一套  
-> 約束詞表與驗證器引擎；對照表見  
+> **配置類 vs 模型字段怎麼選？** 配置類管「模組怎麼運轉」（行為參數、熱更新），
+> ORM 的 `Field()` 管「使用者產生了什麼資料」（資料庫表、查詢）。兩者共享同一套
+> 約束詞表與驗證器引擎；對照表見
 > [資料模型層 · 兩種宣告何時用哪個](../developer-guide/orm.md#兩種宣告何時用哪個)。
 
 ## 配置熱更新
 
-從 2.7.0 起，框架對配置熱更新做了**系統化支援**。外部修改 `config.toml` 後（後台 watcher 每 5 秒檢測一次），或程式碼呼叫 `setConfig()` 後，各組件自動響應：
+從 2.7.0 起，框架對配置熱更新做了**系統化支援**。外部修改 `config.toml` 後（後台 watcher 每 5 秒偵測一次），或程式碼呼叫 `setConfig()` 後，各元件自動響應：
 
-| 組件 | 支援熱更新的配置 | 行為 |
+| 元件 | 支援熱更新的配置 | 行為 |
 |------|----------------|------|
-| **日誌 Logger** | `logger.level` / `log_files` / `log_dir`（含分段參數）/ `memory_limit` / `format` / `exclude_levels` | 自動重新應用（帶變更檢測） |
-| **命令系統 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一條消息即生效 |
-| **適配器併發** | `framework.handler_max_concurrency` | 失效緩存信號量，按新值重建 |
+| **日誌 Logger** | `logger.level` / `log_files` / `log_dir`（含分段參數）/ `memory_limit` / `format` / `exclude_levels` | 自動重新應用（帶變更偵測） |
+| **命令系統 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一條訊息即生效 |
+| **適配器併發** | `framework.handler_max_concurrency` | 失效快取信號量，按新值重建 |
 | **主動 GC** | `framework.proactive_gc_*` | 配置變更即時重啟 GC 任務，支援運行時調整/禁用/重新啟用 |
-| **主人系統 Master** | `master.users` | 每次 `is_master()` 檢查實時讀取，無需重新啟動 |
-| **模組/適配器配置** | 各自的配置項 | 觸發 `on_config_update(old, new)` 回調 |
+| **主人系統 Master** | `master.users` | 每次 `is_master()` 檢查實時讀取，無需重啟 |
+| **模組/適配器配置** | 各自的配置項 | 觸發 `on_config_update(old, new)` 回呼 |
 
-**需重新啟動的配置**（無法安全熱切換，變更時會輸出警告「需重新啟動進程後生效」）：
+**需重啟的配置**（無法安全熱切換，變更時會輸出警告「需重啟進程後生效」）：
 
 | 配置 | 原因 |
 |------|------|
 | `router.cors.*` / `router.security.*` | 中間件在服務啟動時寫入 FastAPI，運行時無法安全熱切換 |
-| `storage.use_global_db` | SQLite 檔案句柄已在運行時打開，切換路徑不安全 |
+| `storage.use_global_db` | SQLite 檔案句柄已在運行時開啟，切換路徑不安全 |
 
-> **中途編輯保存出錯？** 若編輯 `config.toml` 時出現瞬時語法錯誤，框架會**保留上次有效配置**並輸出診斷日誌，不會把空配置廣播給各組件（避免 `on_config_update` 收到空值誤回退預設）。
+> **中途編輯保存出錯？** 若編輯 `config.toml` 時出現瞬間語法錯誤，框架會**保留上次有效配置**並輸出診斷日誌，不會把空配置廣播給各元件（避免 `on_config_update` 收到空值誤回退預設）。
 
 ### 熱更新鏈路內部拆解
 
-「改了配置，各組件怎麼知道的？」——背後是一條檢測 → 重載 → 廣播的鏈路：
+「改了配置，各元件怎麼知道的？」——背後是一條偵測 → 重載 → 廣播的鏈路：
 
 ```mermaid
 flowchart TD
     A["外部編輯 config.toml"] --> B{"誰先發現？"}
     B -->|"後台 watcher 線程<br/>每 5 秒輪詢 mtime"| C["_check_file_change 判定變更"]
-    B -->|"程式碼讀取配置時<br/>緩存超 60 秒"| C
+    B -->|"程式碼讀取配置時<br/>快取超過 60 秒"| C
     C --> D["_load_config 重新解析 TOML"]
     D --> E{"解析成功？"}
     E -->|"否（語法錯誤）"| F["保留上次有效配置<br/>不廣播，打診斷日誌"]
     E -->|"是"| G["lifecycle.emit config.updated<br/>攜帶 old_config / new_config"]
-    G --> H["各組件監聽者響應<br/>（logger / scope / 命令 / GC ...）"]
+    G --> H["各元件監聽者響應<br/>（logger / scope / 命令 / GC ...）"]
 ```
 
-**兩條檢測路徑**（取其一即可，均能兜底）：
+**兩條偵測路徑**（取其一即可，均能兜底）：
 
 | 路徑 | 機制 | 觸發時機 |
 |------|------|---------|
-| 後台 watcher | daemon 線程 `config-watcher` 每 **5 秒** `wait` 輪詢文件 `mtime` | 外部改文件後最多 5 秒內 |
-| 慵惰檢測 | 任何 `getConfig()` 讀取時，若緩存超過 **60 秒**則先查文件 | 下次讀配置時 |
+| 後台 watcher | daemon 線程 `config-watcher` 每 **5 秒** `wait` 輪詢檔案 `mtime` | 外部改檔案後最多 5 秒內 |
+| 慣性偵測 | 任何 `getConfig()` 讀取時，若快取超過 **60 秒**則先查檔案 | 下次讀配置時 |
 
 > **框架不會誤傷自己**：`setConfig()` 寫盤時會記錄「自身寫入的 mtime」，watcher 對比時把它排除，只把**外部編輯**視為變更。
 
@@ -167,25 +167,54 @@ flowchart TD
 | 事件 | 觸發者 | 數據 | 典型場景 |
 |------|--------|------|---------|
 | `config.set` | 程式碼 / Dashboard 調 `setConfig()` | `{key, old_value, new_value}` | 單鍵寫入（範本生成、狀態記錄、運行時改配置） |
-| `config.updated` | 外部編輯後 watcher/慵惰檢測捕獲 | `{old_config, new_config, config_file}` | 手改 `config.toml` |
+| `config.updated` | 外部編輯後 watcher/慣性偵測捕獲 | `{old_config, new_config, config_file}` | 手改 `config.toml` |
 
-> `setConfig()` 預設**延遲 5 秒落盤**（合併多次寫入），`immediate=True` 立即寫。watcher 檢測到外部修改後只更新記憶體緩存，**不會**把外部變更回寫文件。
+> `setConfig()` 預設**延遲 5 秒落盤**（合併多次寫入），`immediate=True` 立即寫。watcher 檢測到外部修改後只更新記憶體快取，**不會**把外部變更回寫檔案。
 
 **自動響應方清單**（兩類事件通常會都訂閱，響應內容一致）：
 
-| 組件 | 監聽 | 回應 |
+| 元件 | 監聽 | 回應 |
 |------|------|------|
-| Logger | `config.set` + `config.updated` | 級別/檔案/目錄分段/記憶體上限/格式/屏蔽等級重新應用（帶變更檢測，無變化不動） |
-| Scope | `config.updated` | 作用域綁定緩存重建 |
-| 命令系統 | `config.updated` | 前綴/大小寫/空格前綴/must_at_bot 解析參數刷新，下一條消息生效 |
+| Logger | `config.set` + `config.updated` | 級別/檔案/目錄分段/記憶體上限/格式/屏蔽等級重新應用（帶變更偵測，無變化不動） |
+| Scope | `config.updated` | 作用域綁定快取重建 |
+| 命令系統 | `config.updated` | 前綴/大小寫/空格前綴/must_at_bot 解析參數刷新，下一條訊息生效 |
 | 適配器併發 | `config.set` + `config.updated` | `handler_max_concurrency` 失效重建信號量 |
 | 主動 GC | `config.set` + `config.updated` | `proactive_gc_*` 即時重啟 GC 後台任務 |
-| 適配器 | 路由到 `on_config_update` | 各適配器 `on_config_update(old, new)` 回調 |
-| 模組 | 路由到 `on_config_update` | 各模組 `on_config_update(old, new)` 回調 |
-| 存儲 | `config.updated` | `use_global_db` 變更**僅警告**（需重新啟動） |
-| 路由 | `config.updated` | `cors.*` / `security.*` 變更**僅警告**（需重新啟動） |
+| 適配器 | 路由到 `on_config_update` | 各適配器 `on_config_update(old, new)` 回呼 |
+| 模組 | 路由到 `on_config_update` | 各模組 `on_config_update(old, new)` 回呼 |
+| 存儲 | `config.updated` | `use_global_db` 變更**僅警告**（需重啟） |
+| 路由 | `config.updated` | `cors.*` / `security.*` 變更**僅警告**（需重啟） |
 
-## 完整配置示例
+
+## 配置讀取與刪除 API
+
+### getAllConfig：全量配置快照
+
+替代直接讀取私有 `_cache`（外部讀私有屬性不受版本相容保護）：
+
+```python
+config = sdk.config.getAllConfig()     # 深拷貝快照，原地修改不影響框架狀態
+config["ErisPulse"]["server"]["port"]
+```
+
+視圖口徑與 `getConfig` 一致：未落盤的 `setConfig` / `delete` 均已反映，
+與延遲刷盤後的檔案內容嚴格一致。
+
+### delConfig：刪除配置鍵
+
+`setConfig(key, None)` 只是置空、鍵仍保留在檔案中；`delConfig` 會把鍵從檔案中**移除**：
+
+```python
+sdk.config.delConfig("ErisPulse.modules.status.OldModule")            # 延遲寫入
+sdk.config.delConfig("OneBot.deprecated_key", immediate=True)         # 立即落盤
+```
+
+- 支援點分路徑；鍵不存在時回傳 `False`
+- 落盤走註釋保留路徑，檔案其餘內容與順序不受影響
+- 復用 `config.set` 事件廣播（`new_value=None`）：適配器 / 模組的
+  `on_config_update` 等現有監聽方零改動即可感知刪除
+
+## 完整配置範例
 
 ```toml
 [ErisPulse.server]
@@ -196,7 +225,7 @@ ssl_certfile = ""
 ssl_keyfile = ""
 
 [ErisPulse.master]
-# users 支持兩種寫法（二選一）：
+# users 支援兩種寫法（二選一）：
 #   全局主人（所有平台生效）：users = ["123456", "789012"]
 #   按平台指定主人：users = { yunhu = ["123456"], telegram = ["789012"] }
 users = {}
@@ -257,17 +286,17 @@ ssl_keyfile = "/path/to/key.pem"
 # -----END PRIVATE KEY-----"""
 ```
 
-| 配置項 | 類型 | 默認值 | 說明 |
+| 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| host | string | 0.0.0.0 | 監聽地址，0.0.0.0 表示所有介面 |
-| port | integer | 8000 | 監聽端口號 |
+| host | string | 0.0.0.0 | 監聽位址，0.0.0.0 表示所有介面 |
+| port | integer | 8000 | 監聽埠號 |
 | auto_start | boolean | true | 是否在 `sdk.init()` 時自動啟動路由伺服器。設為 `false` 可跳過路由伺服器啟動（純事件/無 WebUI 場景） |
 | ssl_certfile | string | 空 | SSL 證書檔案路徑 |
 | ssl_keyfile | string | 空 | SSL 私鑰檔案路徑 |
 | ssl_cert | string | 空 | **內聯 PEM 證書內容**（非路徑）。與 `ssl_key` 成對使用時優先於 `ssl_certfile`/`ssl_keyfile`；框架臨時落盤建構 SSL 上下文後立即刪除臨時檔案 |
-| ssl_key | string | 空 | **內聯 PEM 私鑰內容**（非路徑），語意同上 |
+| ssl_key | string | 空 | **內聯 PEM 私鑰內容**（非路徑），語義同上 |
 
-> **端口佔用不是致命錯誤**：啟動時若檢測到 `port` 已被佔用，框架會跳過路由伺服器啟動並告警，**適配器與模組照常運行**（僅 HTTP/WS/SSE 路由與 WebUI 不可用）。排查「機器人能跑但 WebUI 打不開」時先確認端口。
+> **埠占用不是致命錯誤**：啟動時若偵測到 `port` 已被占用，框架會跳過路由伺服器啟動並警告，**適配器與模組照常運行**（僅 HTTP/WS/SSE 路由與 WebUI 不可用）。排查「機器人能跑但 WebUI 打不開」時先確認埠。
 
 ## 主人系統配置
 
@@ -286,7 +315,7 @@ users = ["123456", "789012"]
 |---------|------|---------|------|
 | users | array / object | 空 | 主人帳號列表。`list` 形式為全局主人（所有平台生效）；`dict` 形式按平台指定（鍵為平台名，值為該平台的主人帳號列表） |
 
-程式碼中透過 `master.is_master(event)` 或 `master.is_master(platform, user_id)` 檢查，每次呼叫實時讀取配置（支援熱更新，無需重新啟動）：
+程式碼中透過 `master.is_master(event)` 或 `master.is_master(platform, user_id)` 檢查，每次呼叫實時讀取配置（支援熱更新，無需重啟）：
 
 ```python
 from ErisPulse.Core import master
@@ -309,14 +338,14 @@ master.remove("yunhu", "123")                # 移除（預設持久化）
 master.list()                                # 匯總：{"global": [...], "<platform>": [...]}
 ```
 
-### 自訂身份源（provider）
+### 自定義身份源（provider）
 
-除配置外，還可註冊自訂身份源：`fn(platform, user_id) -> bool`，
+除配置外，還可註冊自定義身份源：`fn(platform, user_id) -> bool`，
 內建身份源（配置 + 運行時記錄）未命中時依序嘗試，任一 provider 放行即認定為主人。
 適合對接適配器管理員介面、資料庫角色等外部身份體系。
 
 註冊入口 `master.provider` 支援裝飾器 / 函數式兩種寫法，
-取消註冊統一走被註冊函數上的 `fn.unregister()`：
+註銷統一走被註冊函數上的 `fn.unregister()`：
 
 ```python
 from ErisPulse.Core import master
@@ -324,24 +353,24 @@ from ErisPulse.Core import master
 # 寫法一：裝飾器（常駐身份源，推薦）
 @master.provider
 def admin_provider(platform, user_id):
-    return user_id in {"999"}     # 自訂判定邏輯
+    return user_id in {"999"}     # 自定義判定邏輯
 
 master.is_master("yunhu", "999")   # True
-admin_provider.unregister()        # 不再需要時取消註冊
+admin_provider.unregister()        # 不再需要時註銷
 
-# 寫法二：函數式（模組載入期註冊 / 卸載期取消註冊）
+# 寫法二：函數式（模組加載期註冊 / 卸載期註銷）
 fn = master.provider(admin_provider)
 fn.unregister()
 ```
 
 > provider 異常會被捕獲並跳過，不阻斷身份判定鏈。
-> 繫結實例方法無法掛載 `unregister`，需要註冊/取消註冊配對的場景請用**模組級函數**。
+> 繫結實例方法無法掛載 `unregister`，需要註冊/註銷配對的場景請用**模組級函數**。
 
-### 使用者優先：主人生效範圍由使用者最終決定
+### 用戶優先：主人生效範圍由用戶最終決定
 
-命令的 `master=True` 只是**開發者預設**：使用者可在
+命令的 `master=True` 只是**開發者預設**：用戶可在
 `ErisPulse.event.overrides.command.<module>.<cmd>.master = true/false`
-覆寫收緊或放寬（見[統一事件覆寫配置](#統一事件覆寫配置eventoverrides)，使用者顯式配置即生效）。
+覆寫收緊或放開（見[統一事件覆寫配置](#統一事件覆寫配置eventoverrides)，用戶顯式配置即生效）。
 
 ## 日誌配置
 
@@ -360,8 +389,8 @@ exclude_levels = ["EVENT"]
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| level | string | INFO | 日誌等級：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低等級，輸出框架內部詳細除錯資訊） |
-| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文字無顏色，適合日誌採集/管道重定向）、`json`（JSON 機構化，適合 ELK 等） |
+| level | string | INFO | 日誌等級：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低等級，輸出框架內部詳細調試資訊） |
+| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文本無顏色，適合日誌採集/管道重定向）、`json`（JSON 機構化，適合 ELK 等） |
 | log_files | array | 空 | 日誌輸出檔案列表（明確路徑，不分段） |
 | log_dir | string | 空 | 日誌輸出目錄（自動建立）。設定後寫入目錄內 `erispulse.log` 並按 `log_rotation` 自動分段；與 `log_files` 互斥，`log_files` 優先 |
 | log_rotation | string | size | 分段方式：`size`（按大小）/ `date`（按時間）/ `none`（不分段） |
@@ -419,7 +448,7 @@ SDK 初始化完成後啟動主動 GC 後台任務，週期性執行 Python GC �
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
 | proactive_gc_interval | number | 300 | 回收間隔（秒），支援小數。0 表示禁用主動 GC |
-| proactive_gc_generation | integer | 0 | 常規輪次回收分代（0/1/2，限制到 0..2）。注意 `gc.collect(2)` 等價於全量回收，預設 0 保持輕量；深度回收由 `proactive_gc_full_every` 週期性觸發 |
+| proactive_gc_generation | integer | 0 | 常規輪次回收分代（0/1/2，钳制到 0..2）。注意 `gc.collect(2)` 等價於全量回收，預設 0 保持輕量；深度回收由 `proactive_gc_full_every` 週期性觸發 |
 | proactive_gc_full_every | integer | 20 | 每 N 輪做一次全量回收，0 表示禁用週期性全量。全量回收受 `proactive_gc_memory_growth_mb` 門限約束 |
 | proactive_gc_memory_growth_mb | integer | 32 | 全量回收的記憶體增長門限（MB）：對比上次全量後的記憶體基線（優先 tracemalloc，其次 RSS），僅當增長達到此值才執行全量回收。0 表示不設門限 |
 | proactive_gc_idle_only | boolean | false | 開啟後，事件洪峰（存在未完成的 pending handler）時本輪跳過 Python GC，避免停頓與訊息處理競爭；內部資源回收不受影響 |
@@ -429,24 +458,24 @@ SDK 初始化完成後啟動主動 GC 後台任務，週期性執行 Python GC �
 
 ### 嚴格模式
 
-嚴格模式控制模組/適配器在加載階段不合規或失敗時的處理策略。現代模組/適配器都應繼承對應的基類（`BaseModule`/`BaseAdapter`），未繼承基類的組件會影響框架的上下文系統與兜底清理，可能導致資源洩漏。
+嚴格模式控制模組/適配器在加載階段不合規或失敗時的處理策略。現代模組/適配器都應繼承對應的基類（`BaseModule`/`BaseAdapter`），未繼承基類的元件會影響框架的上下文系統與兜底清理，可能導致資源洩漏。
 
-> **2.5.2 變更**：預設等級從 `1`（跳過）調整為 `0`（寬鬆），以減少新用戶初次使用時遇到的加載問題。未繼承基類的組件將以 WARNING 提示並嘗試加載，而非直接拒絕。如需恢復旧行為，請顯式設定 `strict_mode = 1`。
+> **2.5.2 變更**：預設級別從 `1`（跳過）調整為 `0`（寬鬆），以減少新使用者初次使用時遇到的加載問題。未繼承基類的元件將以 WARNING 提示並嘗試加載，而非直接拒絕。如需恢復舊行為，請顯式設定 `strict_mode = 1`。
 
-| 等級 | 名稱 | 行為 |
+| 級別 | 名稱 | 行為 |
 |------|------|------|
-| 0 | 寬鬆（預設） | 違規僅警告，未繼承基類的組件仍會嘗試加載（相容舊組件） |
-| 1 | 嚴格-跳過 | 拒絕未繼承基類的組件並跳過，其餘正常啟動 |
+| 0 | 寬鬆（預設） | 違規僅警告，未繼承基類的元件仍會嘗試加載（相容舊元件） |
+| 1 | 嚴格-跳過 | 拒絕未繼承基類的元件並跳過，其餘正常啟動 |
 | 2 | 嚴格-致命 | 收集所有違規後統一報告並中止整個啟動 |
 
-各等級下，「加載/註冊/初始化階段報錯」這類組件自身崩潰始終會被跳過；區別在於：
+各級別下，「加載/註冊/初始化階段報錯」這類元件自身崩潰始終會被跳過；區別在於：
 
 - **0 → 1**：唯一行為變化是「未繼承基類」從「仍加載」變為「跳過」。
 - **1 → 2**：所有違規（未繼承基類、加載失敗、註冊失敗、初始化失敗等）升級為致命，會在啟動檢查點收集後一次性輸出違規清單並中止。
 
 #### 豁免清單
 
-如果某些組件確實暫時無法遷移（例如依賴的舊模組），可以將其加入豁免清單，被列名的組件即使不合規也會按寬鬆模式對待，繼續加載：
+如果某些元件確實暫時無法遷移（例如依賴的舊模組），可以將其加入豁免清單，被列名的元件即使不合規也會按寬鬆模式對待，繼續加載：
 
 ```toml
 [ErisPulse.framework.strict_mode_exceptions]
@@ -454,22 +483,22 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> 當某個組件被嚴格模式拒絕時，日誌會明確提示如何恢復加載（加入豁免清單或調低等級）。
+> 當某個元件被嚴格模式拒絕時，日誌會明確提示如何恢復加載（加入豁免清單或調低級別）。
 
 ## 存儲配置
 
-2.8.0 起儲存引擎支援三種非同步後端，**API 完全一致、配置一鍵切換**：
+2.8.0 起存儲引擎支援三種異步後端，**API 完全一致、配置一鍵切換**：
 
 | 後端 | 驅動 | 安裝 | 特點 |
 |------|------|------|------|
-| SQLite（預設） | aiosqlite | 開箱即用 | 零設定、單檔案、WAL 並發 |
+| SQLite（預設） | aiosqlite | 開箱即用 | 零配置、單檔案、WAL 併發 |
 | MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | 已有 MySQL 基礎設施、多實例共享 |
 | PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | 事務能力強、高併發 |
 
 ```toml
 [ErisPulse.storage]
 backend = "sqlite"        # "sqlite"（預設）/ "mysql" / "postgres"
-use_global_db = false     # 僅 SQLite：使用套件內全域資料庫 data/config.db
+use_global_db = false     # 僅 SQLite：使用包內全局資料庫 data/config.db
 
 [ErisPulse.storage.mysql]      # backend = "mysql" 時生效
 host = "127.0.0.1"
@@ -493,17 +522,17 @@ database = "erispulse"
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| backend | string | sqlite | 儲存後端：`sqlite` / `mysql` / `postgres`，切換零程式碼變更 |
-| use_global_db | boolean | false | 僅 SQLite：是否使用套件內全域資料庫而非專案獨立資料庫 |
-| storage.mysql.* | table | 見上 | MySQL 連線參數（host / port / user / password / database / charset / pool） |
-| storage.postgres.* | table | 見上 | PostgreSQL 連線參數（host / port / user / password / database / pool） |
+| backend | string | sqlite | 存儲後端：`sqlite` / `mysql` / `postgres`，切換零程式碼改動 |
+| use_global_db | boolean | false | 僅 SQLite：是否使用包內全局資料庫而非專案獨立資料庫 |
+| storage.mysql.* | table | 見上 | MySQL 連接參數（host / port / user / password / database / charset / pool） |
+| storage.postgres.* | table | 見上 | PostgreSQL 連接參數（host / port / user / password / database / pool） |
 
 也支援環境變數覆蓋（Docker / 12-factor）：`ErisPulse.storage.postgres.host` → `ERISPULSE_STORAGE_POSTGRES_HOST`。
 
 > [!TIP]
-> - 連線參數變更後需重啟框架生效；連線池建立瞬時失敗會自動指數退避重試
+> - 連接參數變更後需重啟框架生效；連接池建立瞬時失敗會自動指數退避重試
 > - 切換後端前可用驗證腳本自檢：`python tests/devs/test_storage_backend_verify.py --backend mysql`
-> - 事務 / 方言差異 / 自訂後端等完整說明見[儲存後端](../advanced/storage-backends.md)
+> - 事務 / 方言差異 / 自定義後端等完整說明見[存儲後端](../advanced/storage-backends.md)
 
 ## 事件配置
 
@@ -523,7 +552,7 @@ allow_space_prefix = false
 | allow_space_prefix | boolean | false | 是否允許空格作為前綴 |
 | must_at_bot | boolean | false | 是否必須@機器人才能觸發命令（私聊不受限制） |
 
-### 訊息配置
+### 消息配置
 
 ```toml
 [ErisPulse.event.message]
@@ -543,11 +572,11 @@ language = "auto"
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| language | string | auto | 框架內建文本的顯示語言。設為 `auto` 自動檢測系統語言，也可設為具體代碼：`zh-CN`、`zh-TW`、`en`、`ja`、`ru` |
+| language | string | auto | 框架內建文本的顯示語言。設為 `auto` 自動偵測系統語言，也可設為具體代碼：`zh-CN`、`zh-TW`、`en`、`ja`、`ru` |
 
 ## 模組配置
 
-每個模組可以在配置文件中定義自己的配置：
+每個模組可以在配置檔案中定義自己的配置：
 
 ```toml
 [MyModule]
@@ -579,14 +608,14 @@ sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 > [!NOTE]
 > 本特性需要 ErisPulse **2.8.0+**。
 
-作用域宣告"**什麼範圍內生效**"——某平台 / Bot / 會話裡哪些模組可用（① 模組維度）、
-某使用者 / 群 / Bot / 適配器的事件收不收（② 身份維度）、
+作用域宣告「**什麼範圍內生效**」——某平台 / Bot / 會話裡哪些模組可用（① 模組維度）、
+某用戶 / 群 / Bot / 適配器的事件收不收（② 身份維度）、
 模組能發起哪些出站呼叫（③ 出站維度）：
 
 ```toml
 [ErisPulse.scope]
-default_allow = true        # 全局兜底（false = 隱式拒絕嚴格模式；不受出站維度影響）
-cache_size = 1024           # LRU 緩存大小
+default_allow = true        # 全局兜底（false = 隱式拒絕嚴格模式；不影響出站維度）
+cache_size = 1024           # LRU 快取大小
 
 # ① 模組維度（優先級：會話 > Bot > 平台；條目支援精確 / glob / re: 正則）
 [ErisPulse.scope.platforms.onebot11]
@@ -598,11 +627,11 @@ blocked = ["re:^Danger"]
 modules = ["Music"]
 merge = true
 
-# ② 身份維度（優先級：使用者 > 會話 > Bot > 適配器；每級只寫 allow 或 deny 之一）
+# ② 身份維度（優先級：用戶 > 會話 > Bot > 適配器；每級只寫 allow 或 deny 之一）
 [ErisPulse.scope.identity.adapters.onebot11]
 deny = true                 # 該平台所有事件在入口丟棄
 [ErisPulse.scope.identity.users.onebot11]
-allow = ["u_admin"]         # 使用者鍵支援 glob / re: 正則
+allow = ["u_admin"]         # 用戶鍵支援 glob / re: 正則
 deny = ["u_bad", "spam_*"]
 
 # ③ 出站維度（預設全允許；規則為內聯表，條目支援精確 / glob / re: 正則）
@@ -615,7 +644,7 @@ request = { deny = true }                 # 禁止處理請求
 | 配置項 | 類型 | 說明 |
 |---------|------|------|
 | `scope.default_allow` | boolean | 全局兜底：模組/身份未命中規則的放行/拒絕（`true`） |
-| `scope.cache_size` | integer | LRU 緩存大小（預設 1024） |
+| `scope.cache_size` | integer | LRU 快取大小（預設 1024） |
 | `scope.platforms / bots / sessions` | table | ① 模組三級綁定：`{modules=[...], blocked=[...], merge=bool?}` |
 | `scope.identity.adapters / bots / sessions / users` | table | ② 身份四級綁定：`{allow=true}` / `{deny=true}` |
 | `scope.actions.<module>.<動作>` | table | ③ 出站規則：`{allow=[...], deny=true|[...]}`（動作取 send / api / request） |
@@ -633,7 +662,7 @@ OneBot12 標準類型（meta / message / notice / request）與擴展類型（co
 ```toml
 [ErisPulse.event.overrides]
 
-# message：文字觸發條件（與程式碼內條件 AND）
+# message：文本觸發條件（與程式碼內條件 AND）
 [ErisPulse.event.overrides.message.ChatModule]
 pattern = "閒聊*"
 
@@ -649,10 +678,10 @@ aliases = ["rs"]            # 生效別名
 
 # acl（command 專屬）：命令使用者黑白名單（命令名支援 glob / re: 正則，精確鍵優先）
 [ErisPulse.event.overrides.acl."roll*"]
-allow = ["onebot11:u_vip"]  # 使用者標識 "platform:user_id"
+allow = ["onebot11:u_vip"]  # 用戶標識 "platform:user_id"
 deny = ["onebot11:u_bad"]
 
-# ACL 兜底：未配置 ACL 的命令放行（true）/ 嚴格拒絕（false）
+# ACL 兜底：未配置 ACL 的命令放行（`true`）/ 嚴格拒絕（`false`）
 acl_default_allow = true
 ```
 
@@ -663,7 +692,7 @@ acl_default_allow = true
 | `event.overrides.meta.<module>` | table | `{detail_types=[...]}` |
 | `event.overrides.command.<module>` | table | 模組級參數覆寫（`hidden = true` 等標量） |
 | `event.overrides.command.<module>.<command>` | table | 命令級覆寫（命令級優先） |
-| `event.overrides.acl.<命令名>` | table | 使用者黑白名單：`{allow=[...], deny=[...]}` |
+| `event.overrides.acl.<命令名>` | table | 用戶黑白名單：`{allow=[...], deny=[...]}` |
 | `event.overrides.acl_default_allow` | boolean | ACL 兜底：未配置 ACL 的命令放行（`true`）/ 嚴格拒絕（`false`） |
 
 > 運行時 API（`from ErisPulse.Core.Event import overrides` 後按類型子命名空間呼叫

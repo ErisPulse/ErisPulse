@@ -175,6 +175,32 @@ flowchart TD
 | ストレージ | `config.updated` | `use_global_db` の変更は**警告のみ**（再起動が必要） |
 | ルーティング | `config.updated` | `cors.*` / `security.*` の変更は**警告のみ**（再起動が必要） |
 
+## 設定の読み取りと削除 API
+
+### getAllConfig：全設定のスナップショット
+
+直接にプライベートな `_cache` を読み取る代わりに（外部からプライベート属性を読み取るのはバージョン互換性の保護を受けません）：
+
+```python
+config = sdk.config.getAllConfig()     # 深いコピーのスナップショット、元の場所で変更してもフレームワークの状態に影響しません
+config["ErisPulse"]["server"]["port"]
+```
+
+`getConfig` と同様の視点で、未落盤の `setConfig` / `delete` はすべて反映されており、遅延書き込み後のファイル内容と厳密に一致します。
+
+### delConfig：設定キーの削除
+
+`setConfig(key, None)` は空に設定するだけで、キーはファイルに残ります。`delConfig` はキーをファイルから**削除**します：
+
+```python
+sdk.config.delConfig("ErisPulse.modules.status.OldModule")            # 遅延書き込み
+sdk.config.delConfig("OneBot.deprecated_key", immediate=True)         # 立即落盤
+```
+
+- ドット区切りのパスをサポートします。キーが存在しない場合は `False` を返します。
+- ファイルのコメント保持パスを使用して落盤し、ファイルの他の内容や順序には影響しません。
+- `config.set` イベントのブロードキャストを再利用します（`new_value=None`）：アダプタやモジュールの `on_config_update` 等の既存のリスナーは変更なしで削除を感知できます。
+
 ## 完全な設定例
 
 ```toml

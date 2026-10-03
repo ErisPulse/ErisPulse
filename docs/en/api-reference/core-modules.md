@@ -1,6 +1,6 @@
 # Core Module API
 
-This document provides a quick reference of the ErisPulse core module APIs, including method signatures and brief descriptions. Click the "Full Documentation" link for each module to learn detailed usage and examples.
+This document provides a quick reference for the ErisPulse core module API, including method signatures and brief descriptions. Click on the "Full Documentation" link for each module to learn detailed usage and examples.
 
 ## Storage Module
 
@@ -40,9 +40,9 @@ sdk.storage.my_key          # Equivalent to sdk.storage.get("my_key")
 sdk.storage.my_key = "val"  # Equivalent to sdk.storage.set("my_key", "val")
 ```
 
-### SQL Chained Query
+### SQL Chain Query
 
-The Storage module provides a chained-call style generic SQL query builder, supporting CRUD operations for custom tables.
+The Storage module provides a chain-call style generic SQL query builder, supporting CRUD operations for custom tables.
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -54,11 +54,11 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> For the full chained query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), refer to [SQL Query Builder](../advanced/sql-builder.md).
+> For the full chain query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), see [SQL Query Builder](../advanced/sql-builder.md).
 
 ### Storage Backend Abstraction
 
-`StorageManager` inherits from the `BaseStorage` abstract base class, supporting extensions to other storage media (Redis, MySQL, etc.).
+`StorageManager` inherits from the `BaseStorage` abstract base class, supporting extension to other storage media (Redis, MySQL, etc.).
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -66,22 +66,22 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 ### Asynchronous Interfaces
 
-Both Storage and Config modules provide asynchronous methods (prefixed with `a`), which can be safely called in asynchronous handlers. Synchronous methods are retained, requiring no changes to existing code.
+Both Storage and Config modules provide asynchronous methods (prefixed with `a`), which can be safely called in asynchronous handlers. Synchronous methods are retained and do not require modifying existing code.
 
 ```python
-# Asynchronous storage
+# Asynchronous Storage
 value = await sdk.storage.aget("key")
 await sdk.storage.aset("key", "value")
 await sdk.storage.adelete("key")
 keys = await sdk.storage.aget_all_keys()
 await sdk.storage.aclear()
 
-# Asynchronous batch operations
+# Asynchronous Batch Operations
 values = await sdk.storage.aget_multi(["k1", "k2"])
 await sdk.storage.aset_multi({"k1": "v1", "k2": "v2"})
 await sdk.storage.adelete_multi(["k1", "k2"])
 
-# Asynchronous configuration
+# Asynchronous Configuration
 value = await sdk.config.agetConfig("MyModule.key")
 await sdk.config.asetConfig("MyModule.key", "value")
 await sdk.config.aforce_save()
@@ -97,29 +97,36 @@ TOML-based configuration file management, supporting dot-separated key paths.
 | Method | Description |
 |------|------|
 | `getConfig(key, default)` | Read configuration, supports dot paths like `"MyModule.subkey"` |
-| `setConfig(key, value, immediate=False)` | Write configuration. If `immediate=True`, save immediately to file |
-| `force_save()` | Force write in-memory configuration to file |
+| `getAllConfig()` | Full configuration snapshot (deep copy, including pending values) |
+| `adelConfig(key, immediate)` | Asynchronously delete configuration key |
+| `delConfig(key, immediate=False)` | Delete configuration key (distinct from setting to empty), remove from file; triggers `config.set` event (`new_value=None`) |
+| `setConfig(key, value, immediate=False)` | Write configuration. `immediate=True` saves immediately to file |
+| `force_save()` | Forcefully write in-memory configuration to file |
 | `reload()` | Reload configuration from file |
 | `agetConfig(key, default)` | Asynchronously read configuration |
 | `asetConfig(key, value, immediate)` | Asynchronously write configuration |
 | `aforce_save()` | Asynchronously force save |
 | `areload()` | Asynchronously reload |
 
-### Example
+### Examples
 
 ```python
 config = sdk.config.getConfig("MyModule", {})
 value = sdk.config.getConfig("MyModule.timeout", 30)
 
+snapshot = sdk.config.getAllConfig()          # Full snapshot (deep copy)
+sdk.config.delConfig("MyModule.deprecated")  # Delete key (delayed write)
+
 sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` uses delayed writing by default (batch saved every 5 seconds). Setting `immediate=True` forces immediate persistence to the configuration file. Configuration changes trigger the `config.set` lifecycle event.
+> `setConfig` uses delayed write by default (batch saved every 5 seconds); setting `immediate=True` persists immediately to the config file. Configuration changes trigger the `config.set` lifecycle event.
+> `delete` also supports delayed write and `config.set` event (`new_value=None`), existing `on_config_update` listeners require zero changes to detect deletion.
 
 ## Logger Module
 
-A modular logging system based on Rich output, supporting child loggers and module-level control.
+A modular logging system based on Rich output, supporting sub-loggers and module-level control.
 
 ### Basic Usage
 
@@ -131,11 +138,11 @@ sdk.logger.error("Error message")
 sdk.logger.critical("Critical error")
 ```
 
-### Child Loggers
+### Sub-Loggers
 
 ```python
 child_logger = sdk.logger.get_child("MyModule")
-child_logger.info("Child module log")
+child_logger.info("Sub-module log")
 
 child_logger.get_child("utils")  # Supports nesting
 ```
@@ -146,20 +153,20 @@ child_logger.get_child("utils")  # Supports nesting
 sdk.logger.set_level("DEBUG")                          # Global level
 sdk.logger.set_module_level("MyModule", "DEBUG")       # Module level
 
-# Supported levels (from lowest to highest):
+# Supported levels (from low to high):
 # TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
-# TRACE is the lowest level, outputs detailed framework debug information (event dispatch, route registration, etc.)
+# TRACE is the lowest level, outputs detailed framework debug information (event dispatch, routing registration, etc.)
 sdk.logger.set_level("TRACE")                          # Enable all logs
 ```
 
 ### Log Subscription (Push Mode)
 
-For modules like Dashboard to receive structured logs in real-time, supporting level filtering and historical replay.
+For modules like Dashboard to receive structured logs in real time, supporting level filtering and historical replay.
 
-> **Explicit subscription of low-level logs**: The `min_level` of a subscriber can be lower than the global log level. In this case, low-level logs are **only pushed to matching subscribers**, not output to console, nor written to memory, thus avoiding pollution of the main log stream.
+> **Explicit subscription of low-level logs**: The `min_level` of a subscriber can be lower than the global log level. In this case, low-level logs are **only pushed to matching subscribers**, not output to the console, nor written to memory, thus avoiding pollution of the main log stream.
 >
 > ```python
-> # Global level is INFO, but can still subscribe to DEBUG logs
+> # Global level is INFO, still can individually subscribe to DEBUG logs
 > @sdk.logger.handler("debug-tracer", min_level="DEBUG")
 > def on_debug(log_data: dict): ...
 > ```
@@ -183,7 +190,7 @@ sdk.logger.remove_handler("my-handler")
 
 | Method | Description |
 |------|------|
-| `handler(id, *, min_level)(func)` | Decorator/inline call dual-use. If `id` is empty, function name is used. `min_level` can be lower than global level (low-level logs are only pushed to subscribers, not to console/memory). History logs are automatically replayed upon registration |
+| `handler(id, *, min_level)(func)` | Decorator/direct call dual-use. `id` is taken from function name if empty. `min_level` can be lower than global level (low-level logs only pushed to matching subscribers, not into console/memory). History logs are automatically replayed on registration |
 | `remove_handler(id)` | Remove subscriber |
 
 ### Output Control
@@ -211,6 +218,8 @@ Adapter manager, managing registration, startup, and shutdown of multi-platform 
 | `is_running(platform)` | Check if adapter is running |
 | `list_running()` | List all running adapters |
 | `platforms` | Get list of all platform names |
+| `get_info(platform)` | Adapter registration info (json-safe: meta + class name) |
+| `get_meta(platform, resolve_i18n=True)` | Adapter introduction meta info (aligns with `module.get_meta`, supports i18n resolution) |
 
 ### Adapter Events
 
@@ -252,7 +261,7 @@ Module manager, managing plugin registration, loading, and unloading.
 | `call(module, method, *args, timeout=None, **kwargs)` | Cross-module call to target module's service method (protocolized RPC) |
 | `list_registered()` | List registered modules |
 | `list_loaded()` | List loaded modules |
-| `get_info(name)` | Get module information |
+| `get_info(name)` | Get module info |
 | `get_status_summary()` | Get module status summary |
 
 ### Attribute Access
@@ -263,10 +272,10 @@ module = sdk.module.ModuleName
 module = sdk.ModuleName  # Equivalent shortcut
 ```
 
-### Inter-Module Call (RPC)
+### Inter-Module Calls (RPC)
 
 ```python
-# Protocolized call: typed errors / lazy module auto-wake / owner attribution / timeout semantics
+# Protocolized call: type-checked errors / lazy module auto-wake / owner attribution / timeout semantics
 result = await sdk.module.call("Chat", "get_history", session_id, n=20)
 ```
 
@@ -276,13 +285,13 @@ Difference between `module.call()` and direct service access `sdk.module.Chat.ge
 |---|---|---|
 | Target not registered/enabled | Throws `ModuleNotAvailableError` | Throws `AttributeError` |
 | Lazy-loaded module | Auto-wakes | Async initialization of module throws RuntimeError |
-| `current_owner` | Attributed to target module | Retains caller |
+| `current_owner` | Attributed to target module | Keeps caller |
 | Timeout | Default 30s, can be overridden | None |
 | Scope audit | `actions.<caller>.call` | None |
 
-### Service Contract (meta.services)
+### Service Contract (`meta.services`)
 
-Service provider declares the public white list in the `services` field of `get_meta()` (symmetrical to `commands`). After declaration, the call surface is tightened:
+Service provider declares its public white list in `get_meta()`'s `services` field (symmetrical with `commands`), tightening the call surface after declaration:
 
 ```python
 class ChatModule(BaseModule):
@@ -293,11 +302,11 @@ class ChatModule(BaseModule):
     async def get_history(self, session_id, n=20): ...
 ```
 
-- **Default = Developer-transparent**: If `services` is not declared, any **public** method can be called (backward compatibility), private methods with underscore are always prohibited; control of restrictions is mainly on the user-side scope configuration
-- After declaration: Only methods in the whitelist are callable, calling outside throws `ServiceNotProvidedError`
+- **Default = Developer-agnostic**: If `services` is not declared, any **public** method can be called (backward compatibility), private methods with underscore are always prohibited; the main control for restriction is on the user-side scope configuration
+- After declaration: Only methods in the white list are callable, an out-of-bounds call throws `ServiceNotProvidedError`
 - Caller restriction: `scope.set_action("CallerModule", "call", deny="Chat.get_history")`
 
-**Service Description (description)**: `services` supports dict form to declare description for each service (supports plain string or i18n dict), for service directory / AI call point description consumption:
+**Service Description (`description`)**: `services` supports dict form to declare description for each service (supports plain string or i18n dictionary), for service directory / AI call point description consumption:
 
 ```python
 return ModuleMeta(
@@ -309,19 +318,19 @@ return ModuleMeta(
 )
 ```
 
-Description resolution priority: **Explicit description (i18n resolved to current language) > Method docstring first line > Empty string**.
+Description resolution priority: **Explicit description (i18n resolved to current language) > First line of method docstring > Empty string**.
 
-### Service Directory (services)
+### Service Directory (`services`)
 
 ```python
 sdk.module.services()
 # {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
 #            'description': 'Get session history'}]}
 
-sdk.module.services("Chat")  # Query only specified module
+sdk.module.services("Chat")  # Query only specific module
 ```
 
-Only lists modules that explicitly declare `meta.services`. Each service includes method signature string and description text, providing data foundation for MCP (exposing call points to AI).
+Lists only modules that explicitly declare `meta.services`; each service includes method signature string and description text, providing data foundation for MCP (call points exposed to AI).
 
 > Directed event delivery belongs to the lifecycle layer: `lifecycle.emit(event, data, to="ModuleName")`, see [Inter-Module Communication](../advanced/module-communication.md).
 
@@ -336,12 +345,12 @@ Event-driven lifecycle manager, providing event submission and listening functio
 | `on(event, priority=0)` | Decorator to register event handler, supports dot matching and wildcard `*` |
 | `register(event, handler, priority=0)` | Functional registration of handler |
 | `unregister(event, handler=None)` | Remove handler |
-| `emit(event, data, to=None)` | Asynchronously trigger event; if `to` specifies owner, event is directed |
-| `emit_sync(event, data, to=None)` | Synchronously trigger event (asynchronous handlers are scheduled with create_task) |
+| `emit(event, data, to=None)` | Asynchronously trigger event; `to` specifies owner for directed delivery |
+| `emit_sync(event, data, to=None)` | Synchronously trigger event (asynchronous handlers scheduled with create_task) |
 | `submit_event(event_type, msg, data, source, to=None)` | Submit standard format event (compatible with old version) |
 | `start_timer(id)` / `stop_timer(id)` | Performance timer |
 
-### Example
+### Examples
 
 ```python
 @sdk.lifecycle.on("module.init")
@@ -354,33 +363,33 @@ async def handle_any_module_event(event_data):
 
 await sdk.lifecycle.emit("custom.event", {"key": "value"})
 
-# Directed delivery: only distributed to hooks registered by Chat module
+# Directed delivery: Only distribute to hooks registered by Chat module
 await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
 ```
 
-> For the complete list of standard events and detailed usage, see [Lifecycle Management](../advanced/lifecycle.md).
+> For the full list of standard events and detailed usage, see [Lifecycle Management](../advanced/lifecycle.md).
 
 ## Router Module
 
-HTTP/WebSocket router manager, based on FastAPI + Uvicorn, supporting decorator routes, middleware, grouping, rate limiting, CORS.
+HTTP/WebSocket routing manager, based on FastAPI + Uvicorn, supporting decorator routing, middleware, grouping, rate limiting, CORS.
 
-> For the complete router API documentation (decorator routes, WebSocket, middleware, rate limiting, CORS, security headers, etc.), see [Router Manager](../advanced/router.md).
+> For the complete routing API documentation (decorator routing, WebSocket, middleware, rate limiting, CORS, security headers, etc.), see [Router Manager](../advanced/router.md).
 
 ### Quick Reference
 
 ```python
-# HTTP route
+# HTTP Routing
 @sdk.router.get("MyModule", "/api")
 async def handler(request: HttpRequest):
     return {"status": "ok"}
 
-# WebSocket route
+# WebSocket Routing
 @sdk.router.ws("MyModule", "/ws")
 async def ws_handler(ws: WebSocketConnection):
     async for text in ws.iter_text():
         await ws.send_text(f"Echo: {text}")
 
-# Route grouping
+# Route Grouping
 group = sdk.router.group("MyModule", prefix="/v1")
 @group.get("/users")
 async def list_users(request: HttpRequest):
@@ -389,16 +398,16 @@ async def list_users(request: HttpRequest):
 
 ## HTTP Client Module
 
-Unified network client, aggregating HTTP requests, WebSocket connections, connection pool management, automatic retries, request statistics, and lifecycle event integration.
+Unified network client, aggregating HTTP requests, WebSocket connections, connection pooling, automatic retries, request statistics, and lifecycle event integration.
 
-> For the complete network client documentation (request methods, response objects, WebSocket client, exception system, etc.), see [Network Client](../advanced/http-client.md).
+> For the complete network client documentation (request methods, response objects, WebSocket client, exception hierarchy, etc.), see [Network Client](../advanced/http-client.md).
 
 ### Quick Reference
 
 ```python
 from ErisPulse.Core import client
 
-# HTTP request
+# HTTP Request
 resp = await client.get("https://api.example.com/users")
 data = await resp.json()
 
@@ -412,7 +421,7 @@ async for text in ws.iter_text():
 
 ### dump_state()
 
-Exports a snapshot of the current running state of the framework, used for debugging and diagnosis.
+Exports a snapshot of the current running state of the framework for debugging and diagnostics.
 
 ```python
 import json
@@ -435,27 +444,27 @@ The returned structure contains the status of the following subsystems:
 
 ## Interaction Session
 
-Manages wait_reply suspension and session mutual exclusion leases (`sdk.interaction`).
+Manages wait_reply hanging waits and session mutual exclusion leases (`sdk.interaction`).
 
 ### Common Methods
 
 ```python
-# Session timeout reminder: Remind after 5 minutes of no reply, reminder is automatically canceled if user replies
-reminder = event.remind(300, "Are you still there?")
+# Session timed reminder: Remind after 5 minutes of no reply, user reply automatically cancels
+reminder = event.remind(300, "Still there?")
 reminder.cancel()  # Manually cancel
 
-# Timeout escalation: Guaranteed delivery at a certain point (not canceled by reply)
+# Timeout escalation: Must trigger on time (not canceled by reply)
 event.escalate(1800, lambda e: notify_master("30 minutes not processed"))
 
 # Multi-path waiting: First come, first served
 which, reply = await event.select(
     event.expect(pattern="agree*", user="A"),
-    event.expect(pattern="reject*", user="B"),
+    event.expect(pattern="refuse*", user="B"),
     timeout=60,
 )
 
 # Session-level waiting: Reply from anyone in the same group can match
-reply = await event.wait_reply(session=True, prompt="Can someone help answer?")
+reply = await event.wait_reply(session=True, prompt="Who can help answer?")
 
 # Query current session ownership (who is interacting with this user)
 owner = sdk.interaction.get_owner_of(event)
@@ -472,23 +481,23 @@ if lease:
 with sdk.interaction.hold(event) as lease:
     ...
 
-# Session suspension statistics
+# Hanging session count
 sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'timers': 3, 'owners': {'Chat': 3}}
 ```
 
-When modules are unloaded or adapters are shut down, their suspended waits and timers are automatically canceled (waiting parties immediately return `None`), and reply matches automatically recheck scope permissions (if user is blacklisted or module is unbound, waiting is terminated).
+When a module is unloaded or an adapter is shut down, its hanging waits and timers are automatically canceled (waiting parties immediately return `None`), and reply matches automatically recheck scope permissions (if the user is blacklisted/module is unbound, the wait is terminated).
 
 > [!NOTE]
 > This section's capabilities were added in ErisPulse **2.8.0+**
 
 ## Transcript Session Inbox
 
-Automatic recording and querying of recent message streams per session (`sdk.transcript`), serving as a public base for context memory modules like AI conversation and anti-repetition.
+Automatic recording and querying of recent message streams for each session (`sdk.transcript`), serving as a common base for AI conversation, anti-spam, and other context memory modules.
 
 ### Common Methods
 
 ```python
-# Convenient query (recommended): Last 20 messages in current session (including user and bot, in ascending order)
+# Convenient query (recommended): Recent 20 messages in current session (including user and bot, ascending order by time)
 messages = await event.history(20)
 for m in messages:
     print(m["role"], ":", m["text"])
@@ -499,7 +508,7 @@ sdk.transcript.get(event, n=20)
 sdk.transcript.clear(event)
 ```
 
-Configuration (`ErisPulse.transcript`): `enabled` (default enabled), `max_per_session` (default 50 per session limit), `ttl_hours` (default 168 hours global expiration). Data is stored in a separate SQLite table, with lazy cleanup for over-limit or expired entries.
+Configuration (`ErisPulse.transcript`): `enabled` (default enabled), `max_per_session` (default 50 per session), `ttl_hours` (default 168 hours global expiration). Data is stored in a separate SQLite table, with lazy cleanup for over-limit/expired entries.
 
 > [!NOTE]
 > This section's capabilities were added in ErisPulse **2.8.0+**
@@ -508,7 +517,7 @@ Configuration (`ErisPulse.transcript`): `enabled` (default enabled), `max_per_se
 
 - [Event System API](event-system.md) - Event module API
 - [Adapter System API](adapter-system.md) - Adapter management API
-- [SQL Query Builder](../advanced/sql-builder.md) - Full documentation of SQL chained query
-- [Router Manager](../advanced/router.md) - Full router manager documentation
-- [Network Client](../advanced/http-client.md) - Full network client documentation
-- [Lifecycle Management](../advanced/lifecycle.md) - Full lifecycle documentation
+- [SQL Query Builder](../advanced/sql-builder.md) - Full documentation for SQL chain query
+- [Router Manager](../advanced/router.md) - Full documentation for router manager
+- [Network Client](../advanced/http-client.md) - Full documentation for network client
+- [Lifecycle Management](../advanced/lifecycle.md) - Full documentation for lifecycle

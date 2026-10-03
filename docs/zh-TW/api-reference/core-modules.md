@@ -4,7 +4,7 @@
 
 ## Storage 模組
 
-基於 SQLite 的鍵值儲存系統，支援通用 SQL 串流查詢。
+基於 SQLite 的鍵值儲存系統，支援通用 SQL 串連查詢。
 
 ### 基本操作
 
@@ -40,9 +40,9 @@ sdk.storage.my_key          # 等價於 sdk.storage.get("my_key")
 sdk.storage.my_key = "val"  # 等價於 sdk.storage.set("my_key", "val")
 ```
 
-### SQL 串流查詢
+### SQL 串連查詢
 
-Storage 模組提供串流呼叫風格的通用 SQL 查詢建構器，支援自訂表的 CRUD 操作。
+Storage 模組提供串連呼叫風格的通用 SQL 查詢建構器，支援自訂表的 CRUD 操作。
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -54,7 +54,7 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> 完整的串流查詢 API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、事務等）請參考 [SQL 查詢建構器](../advanced/sql-builder.md)。
+> 完整的串連查詢 API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、事務等）請參考 [SQL 查詢建構器](../advanced/sql-builder.md)。
 
 ### 儲存後端抽象
 
@@ -66,7 +66,7 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 ### 異步介面
 
-Storage 和 Config 模組均提供異步方法（前綴 `a`），可在異步處理器中安全調用。同步方法繼續保留，無需修改現有程式碼。
+Storage 和 Config 模組均提供異步方法（前綴 `a`），可在異步處理器中安全呼叫。同步方法繼續保留，無需修改現有程式碼。
 
 ```python
 # 異步儲存
@@ -97,12 +97,15 @@ TOML 格式的配置文件管理，支援點號分隔的鍵路徑。
 | 方法 | 說明 |
 |------|------|
 | `getConfig(key, default)` | 讀取配置，支援點號路徑如 `"MyModule.subkey"` |
-| `setConfig(key, value, immediate=False)` | 寫入配置。`immediate=True` 時立即儲存到檔案 |
-| `force_save()` | 強制將記憶體中的配置寫入檔案 |
-| `reload()` | 從檔案重新載入配置 |
+| `getAllConfig()` | 全量配置快照（深拷貝，含未落盤的待寫值視圖） |
+| `adelConfig(key, immediate)` | 異步刪除配置鍵 |
+| `delConfig(key, immediate=False)` | 刪除配置鍵（區別於置空），從文件中移除；觸發 `config.set` 事件（`new_value=None`） |
+| `setConfig(key, value, immediate=False)` | 寫入配置。`immediate=True` 時立即持久化到文件 |
+| `force_save()` | 強制將記憶體中的配置寫入文件 |
+| `reload()` | 從文件重新載入配置 |
 | `agetConfig(key, default)` | 異步讀取配置 |
 | `asetConfig(key, value, immediate)` | 異步寫入配置 |
-| `aforce_save()` | 異步強制儲存 |
+| `aforce_save()` | 異步強制保存 |
 | `areload()` | 異步重新載入 |
 
 ### 範例
@@ -111,11 +114,15 @@ TOML 格式的配置文件管理，支援點號分隔的鍵路徑。
 config = sdk.config.getConfig("MyModule", {})
 value = sdk.config.getConfig("MyModule.timeout", 30)
 
+snapshot = sdk.config.getAllConfig()          # 全量快照（深拷貝）
+sdk.config.delConfig("MyModule.deprecated")  # 刪除鍵（延遲寫入）
+
 sdk.config.setConfig("MyModule", {"key": "value"})
 sdk.config.setConfig("MyModule.timeout", 60, immediate=True)
 ```
 
-> `setConfig` 預設採用延遲寫入（每 5 秒批量儲存），設定 `immediate=True` 可立即持久化到配置檔案。配置變更會觸發 `config.set` 生命週期事件。
+> `setConfig` 預設採用延遲寫入（每 5 秒批量保存），設定 `immediate=True` 可立即持久化到配置文件。配置變更會觸發 `config.set` 生命週期事件。  
+> `delete` 同樣支援延遲寫入與 `config.set` 事件（`new_value=None`），現有 `on_config_update` 監聽方零變動即可感知刪除。
 
 ## Logger 模組
 
@@ -140,15 +147,15 @@ child_logger.info("子模組日誌")
 child_logger.get_child("utils")  # 支援嵌套
 ```
 
-### 日誌等級控制
+### 日誌級別控制
 
 ```python
-sdk.logger.set_level("DEBUG")                          # 全局等級
-sdk.logger.set_module_level("MyModule", "DEBUG")       # 模組等級
+sdk.logger.set_level("DEBUG")                          # 全局級別
+sdk.logger.set_module_level("MyModule", "DEBUG")       # 模組級別
 
-# 支援的等級（由低到高）：
+# 支援的級別（從低到高）：
 # TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL
-# TRACE 為最低等級，輸出框架內部詳細調試資訊（事件分發、路由註冊等）
+# TRACE 為最低級別，輸出框架內部詳細調試資訊（事件分發、路由註冊等）
 sdk.logger.set_level("TRACE")                          # 開啟全部日誌
 ```
 
@@ -156,8 +163,7 @@ sdk.logger.set_level("TRACE")                          # 開啟全部日誌
 
 供 Dashboard 等模組即時接收結構化日誌，支援等級篩選和歷史補發。
 
-> **顯式訂閱低等級日誌**：訂閱器的 `min_level` 可低於全局日誌等級。此時低等級日誌**僅推送到匹配的訂閱器**，不會輸出到控制台，也不會寫入記憶體，從而避免污染主日誌流。
->
+> **顯式訂閱低級別日誌**：訂閱器的 `min_level` 可低於全局日誌級別。此時低級別日誌**僅推送到匹配的訂閱器**，不會輸出到控制台，也不會寫入記憶體，從而避免污染主日誌流。  
 > ```python
 > # 全局為 INFO，仍可單獨訂閱 DEBUG 日誌
 > @sdk.logger.handler("debug-tracer", min_level="DEBUG")
@@ -183,7 +189,7 @@ sdk.logger.remove_handler("my-handler")
 
 | 方法 | 說明 |
 |------|------|
-| `handler(id, *, min_level)(func)` | 裝飾器/直接呼叫兩用。`id` 為空時取函數名。`min_level` 可低於全局等級（低等級日誌僅推送到匹配的訂閱器，不進控制台/記憶體）。註冊時自動補發歷史日誌 |
+| `handler(id, *, min_level)(func)` | 裝飾器/直接呼叫兩用。`id` 為空時取函數名。`min_level` 可低於全局級別（低級別日誌僅推送訂閱器，不進控制台/記憶體）。註冊時自動補發歷史日誌 |
 | `remove_handler(id)` | 移除訂閱器 |
 
 ### 輸出控制
@@ -211,6 +217,8 @@ sdk.logger.set_memory_limit(1000)
 | `is_running(platform)` | 檢查適配器是否正在運行 |
 | `list_running()` | 列出所有正在運行的適配器 |
 | `platforms` | 獲取所有平台名稱列表 |
+| `get_info(platform)` | 適配器註冊資訊（json-safe：meta + 類名） |
+| `get_meta(platform, resolve_i18n=True)` | 適配器介紹元資訊（對齊 `module.get_meta`，支援 i18n 解析） |
 
 ### 適配器事件
 
@@ -235,7 +243,7 @@ sdk.adapter.get_status_summary()
 
 > 完整的適配器管理 API 請參考 [適配器系統 API](adapter-system.md)。
 
-## 模組
+## Module 模組
 
 模組管理器，管理插件的註冊、載入和卸載。
 
@@ -243,17 +251,17 @@ sdk.adapter.get_status_summary()
 
 | 方法 | 說明 |
 |------|------|
-| `get(name)` | 取得模組實例或懶加載代理（已註冊但未加載時返回代理） |
+| `get(name)` | 獲取模組實例或懶載入代理（已註冊但未載入時返回代理） |
 | `exists(name)` | 檢查是否已註冊 |
-| `is_loaded(name)` | 檢查是否已加載 |
+| `is_loaded(name)` | 檢查是否已載入 |
 | `is_enabled(name)` | 檢查是否啟用 |
-| `enable(name)` / `disable(name)` | 啟用/停用模組 |
-| `load(name)` / `unload(name)` | 加載/卸載模組 |
-| `call(module, method, *args, timeout=None, **kwargs)` | 跨模組呼叫目標模組的服務方法（協議化 RPC） |
+| `enable(name)` / `disable(name)` | 啟用/禁用模組 |
+| `load(name)` / `unload(name)` | 載入/卸載模組 |
+| `call(module, method, *args, timeout=None, **kwargs)` | 跨模組呼叫目標模組的服務方法（協定化 RPC） |
 | `list_registered()` | 列出已註冊模組 |
-| `list_loaded()` | 列出已加載模組 |
-| `get_info(name)` | 取得模組資訊 |
-| `get_status_summary()` | 取得模組狀態摘要 |
+| `list_loaded()` | 列出已載入模組 |
+| `get_info(name)` | 獲取模組資訊 |
+| `get_status_summary()` | 獲取模組狀態摘要 |
 
 ### 屬性存取
 
@@ -266,7 +274,7 @@ module = sdk.ModuleName  # 等價快捷方式
 ### 模組間呼叫（RPC）
 
 ```python
-# 協議化呼叫：類型化錯誤 / 懶模組自動喚醒 / owner 歸因 / 超時語義
+# 協定化呼叫：類型化錯誤 / 懶模組自動喚醒 / owner 歸因 / 超時語義
 result = await sdk.module.call("Chat", "get_history", session_id, n=20)
 ```
 
@@ -275,14 +283,14 @@ result = await sdk.module.call("Chat", "get_history", session_id, n=20)
 | | `module.call()` | 裸屬性存取 |
 |---|---|---|
 | 目標未註冊/未啟用 | 抛 `ModuleNotAvailableError` | 抛 `AttributeError` |
-| 懶加載模組 | 自動喚醒 | 異步初始化模組拋 RuntimeError |
+| 懶載入模組 | 自動喚醒 | 異步初始化模組拋 RuntimeError |
 | `current_owner` | 歸因到目標模組 | 保持呼叫方 |
 | 超時 | 預設 30s，可覆蓋 | 無 |
-| scope 審計 | `actions.<呼叫方>.call` | 無 |
+| scope 审計 | `actions.<呼叫方>.call` | 無 |
 
 ### 服務契約（meta.services）
 
-服務方在 `get_meta()` 的 `services` 欄位宣告對外白名單（與 `commands` 對稱），宣告後呼叫面收緊：
+服務方在 `get_meta()` 的 `services` 字段宣告對外白名單（與 `commands` 對稱），宣告後呼叫面收緊：
 
 ```python
 class ChatModule(BaseModule):
@@ -293,11 +301,11 @@ class ChatModule(BaseModule):
     async def get_history(self, session_id, n=20): ...
 ```
 
-- **預設 = 開發者無感**：未宣告 `services` 時任意**公開**方法可被呼叫（向後相容），底線私有方法始終禁止；限制的主控制權在使用者側 scope 配置
+- **缺省 = 開發者無感**：未宣告 `services` 時任意**公開**方法可被呼叫（向後相容），底線私有方法始終禁止；限制的主控制權在使用者側 scope 配置
 - 宣告後：僅白名單內方法可呼叫，越界拋 `ServiceNotProvidedError`
 - 呼叫方限制：`scope.set_action("CallerModule", "call", deny="Chat.get_history")`
 
-**服務介紹（description）**：`services` 支援 dict 形態為每個服務宣告介紹
+**服務介紹（description）**：`services` 支援 dict 形態為每個服務宣告介紹  
 （支援純字串或 i18n 字典），供服務目錄 / AI 呼叫點描述消費：
 
 ```python
@@ -317,20 +325,20 @@ return ModuleMeta(
 ```python
 sdk.module.services()
 # {'Chat': [{'name': 'get_history', 'signature': '(session_id, n=20)',
-#            'description': '取得會話歷史'}]}
+#            'description': '獲取會話歷史'}]}
 
 sdk.module.services("Chat")  # 僅查詢指定模組
 ```
 
-僅列出**顯式宣告** `meta.services` 的模組；每個服務附方法簽名字串
+僅列出**顯式宣告** `meta.services` 的模組；每個服務附方法簽名字串  
 與介紹文字，為 MCP 化（呼叫點暴露給 AI）提供資料基礎。
 
-> 定向事件投遞屬於生命週期層：`lifecycle.emit(event, data, to="ModuleName")`，
-> 詳見 [模組間通訊](../advanced/module-communication.md)。
+> 定向事件投遞屬於生命週期層：`lifecycle.emit(event, data, to="ModuleName")`，  
+> 詳見 [模組間通信](../advanced/module-communication.md)。
 
 ## Lifecycle 模組
 
-事件驅動的生命周期管理器，提供事件提交和監聽功能。
+事件驅動的生命週期管理器，提供事件提交和監聽功能。
 
 ### API 概覽
 
@@ -361,7 +369,7 @@ await sdk.lifecycle.emit("custom.event", {"key": "value"})
 await sdk.lifecycle.emit("message_received", {"text": "hi"}, to="Chat")
 ```
 
-> 完整的標準事件列表和詳細用法請參考 [生命周期管理](../advanced/lifecycle.md)。
+> 完整的標準事件列表和詳細用法請參考 [生命週期管理](../advanced/lifecycle.md)。
 
 ## Router 模組
 
@@ -415,7 +423,7 @@ async for text in ws.iter_text():
 
 ### dump_state()
 
-匯出框架當前運行狀態的快照，用於調試和診斷。
+導出框架當前運行狀態的快照，用於調試和診斷。
 
 ```python
 import json
@@ -429,14 +437,14 @@ print(json.dumps(state, indent=2, ensure_ascii=False, default=str))
 |------|------|
 | `sdk` | SDK 初始化狀態、Python 版本、運行平台、時間戳 |
 | `adapters` | 已註冊/已啟動的適配器列表、各平台 Bot 在線狀態 |
-| `modules` | 已註冊/已啟用/已禁用/懶加載的模塊列表 |
+| `modules` | 已註冊/已啟用/已禁用/懶載入的模組列表 |
 | `events` | 各類事件處理器數量（message/notice/request/meta/commands） |
 | `router` | 伺服器運行狀態、HTTP/WebSocket 路由數量 |
 
-> [!NOTE]
+> [!NOTE]  
 > 新增於 ErisPulse **2.5.2+**
 
-## Interaction 交互會話
+## Interaction 互動會話
 
 管理 wait_reply 掛起等待與會話互斥租約（`sdk.interaction`）。
 
@@ -460,40 +468,40 @@ which, reply = await event.select(
 # 會話級等待：同群任何人的回覆均可命中
 reply = await event.wait_reply(session=True, prompt="誰能幫忙答一下？")
 
-# 查詢會話當前歸屬（誰正在與該使用者交互）
+# 查詢會話當前歸屬（誰正在與該使用者互動）
 owner = sdk.interaction.get_owner_of(event)
 
-# 聲明會話互斥租約（被佔用返回 None）
+# 聲明會話互斥租約（被占用返回 None）
 lease = sdk.interaction.acquire(event)
 if lease:
     try:
-        ...  # 獨佔交互
+        ...  # 獨佔互動
     finally:
         lease.release()
 
-# 上下文管理器形式（被佔用拋 SessionOccupiedError）
+# 上下文管理器形式（被占用拋 SessionOccupiedError）
 with sdk.interaction.hold(event) as lease:
     ...
 
-# 掛起會話統計
+# 挂起會話統計
 sdk.interaction.counts()  # {'waits': 2, 'leases': 1, 'timers': 3, 'owners': {'Chat': 3}}
 ```
 
-模組卸載 / 适配器關閉時其掛起的等待與定時器自動取消（等待方立即返回 `None`），
-回覆命中時自動复查 scope 權限（使用者被拉黑 / 模組被解綁則終止等待）。
+模組卸載 / 適配器關閉時其掛起的等待與定時器自動取消（等待方立即返回 `None`），  
+回覆命中時自動複查 scope 權限（使用者被拉黑 / 模組被解綁則終止等待）。
 
-> [!NOTE]
+> [!NOTE]  
 > 本節能力新增於 ErisPulse **2.8.0+**
 
 ## Transcript 會話收件箱
 
-每會話近期訊息流的自動記錄與查詢（`sdk.transcript`），作為 AI 對話、
-防重複發送等上下文記憶類模組的公共底座。
+每會話近期訊息流的自動記錄與查詢（`sdk.transcript`），作為 AI 對話、  
+防重複等上下文記憶類模組的公共底座。
 
 ### 常用方法
 
 ```python
-# 便捷查詢（推薦）：當前會話最近 20 條（包含使用者與機器人，時間升序）
+# 便捷查詢（推薦）：當前會話最近 20 條（含使用者與機器人，時間升序）
 messages = await event.history(20)
 for m in messages:
     print(m["role"], ":", m["text"])
@@ -504,19 +512,17 @@ sdk.transcript.get(event, n=20)
 sdk.transcript.clear(event)
 ```
 
-配置（`ErisPulse.transcript`）：`enabled`（預設開啟）、`max_per_session`（每會話上限，預設 50）、
-`ttl_hours`（全域過期時間，預設 168 小時）。資料存於獨立 SQLite 表，超出限制或過期時惰性清理。
+配置（`ErisPulse.transcript`）：`enabled`（預設開啟）、`max_per_session`（每會話上限，預設 50）、  
+`ttl_hours`（全局過期時間，預設 168 小時）。資料存獨立 SQLite 表，超限/過期惰性清理。
 
-> [!NOTE]
-> 本節功能新增於 ErisPulse **2.8.0+**
-> [!TIP]
-> 本功能依賴 SQLite，請確保環境已安裝 sqlite3 模組。
+> [!NOTE]  
+> 本節能力新增於 ErisPulse **2.8.0+**
 
 ## 相關文件
 
 - [事件系統 API](event-system.md) - Event 模組 API
 - [適配器系統 API](adapter-system.md) - Adapter 管理 API
-- [SQL 查詢建構器](../advanced/sql-builder.md) - SQL 串流查詢完整文件
+- [SQL 查詢建構器](../advanced/sql-builder.md) - SQL 串連查詢完整文件
 - [路由管理器](../advanced/router.md) - 路由管理器完整文件
 - [網路客戶端](../advanced/http-client.md) - 網路客戶端完整文件
 - [生命週期管理](../advanced/lifecycle.md) - 生命週期完整文件

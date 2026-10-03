@@ -270,7 +270,7 @@ stdout_logfile=/var/log/erispulse-bot/out.log
 # 拉取最新鏡像
 docker compose pull
 
-# 重新啟動並使用新鏡像
+# 重啟使用新鏡像
 docker compose up -d
 ```
 
@@ -280,6 +280,21 @@ docker compose up -d
 epsdk self-update
 epsdk upgrade
 ```
+
+### 運行時熱重載伺服器配置
+
+修改監聽地址 / 端口 / SSL 證書後無需重啟進程，在任意協程中呼叫 `router.reload()`：
+
+```python
+await sdk.router.reload(port=9000)                                # 更換端口
+await sdk.router.reload(ssl_cert=new_pem, ssl_key=new_key)        # 熱更換證書（證書續期場景）
+await sdk.router.reload(host="0.0.0.0", port=9000)                # 缺省參數沿用當前配置
+```
+
+- 重用同一 FastAPI 應用，模組註冊的 HTTP / WebSocket / SSE 路由全部保留
+- 先驗證新配置（證書可構建、端口可用）再切換；失敗時以舊配置恢復服務並返回 `False`，
+  保證返回 `False` = 舊服務保持可用
+- 伺服器未運行時返回 `False`（首次啟動請使用 `sdk.router.start()`）
 
 ### 備份
 

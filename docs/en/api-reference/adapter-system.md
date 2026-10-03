@@ -12,27 +12,26 @@ from ErisPulse import sdk
 # Get an adapter by name
 adapter = sdk.adapter.get("platform_name")
 
-# Or access it directly via attribute
+# Or access directly via property
 adapter = sdk.adapter.platform_name
 ```
 
 ### Use Adapter Event Listeners
-> It is generally recommended to use the `Event` module for event listening/handling;
->
-> The `Event` module also provides powerful wrappers that can bring more convenience to your module development.
+> In general, it is recommended to use the `Event` module for event listening/handling;
+> The `Event` module also provides powerful wrappers, which can bring more convenience for your module development.
 
 ```python
-# Listen to OneBot12 standard events
+# Listen for OneBot12 standard events
 @sdk.adapter.on("message")
 async def handle_message(event):
     pass
 
-# Listen to specific platform standard events
+# Listen for specific platform standard events
 @sdk.adapter.on("message", platform="yunhu")
 async def handle_yunhu_message(event):
     pass
 
-# Listen to platform native events
+# Listen for platform-native events
 @sdk.adapter.on("raw_event", raw=True, platform="yunhu")
 async def handle_raw_event(data):
     pass
@@ -52,7 +51,7 @@ sdk.adapter.enable("platform_name")
 sdk.adapter.disable("platform_name")
 
 # Start/Stop an adapter
-# The following methods only show the case of passing parameters; without parameters, it means start/stop all registered adapters
+# The following methods only show parameter cases; without parameters, they start/stop all registered adapters
 await sdk.adapter.startup(["platform1", "platform2"])
 await sdk.adapter.shutdown(["platform1", "platform2"])
 
@@ -61,6 +60,11 @@ is_running = sdk.adapter.is_running("platform_name")
 
 # List all running adapters
 running = sdk.adapter.list_running()
+
+# Read adapter metadata (aligns with module.get_meta, for consumption by panels / stores, etc.)
+info = sdk.adapter.get_info("platform_name")   # Registration information (meta + class name, json-safe)
+meta = sdk.adapter.get_meta("platform_name")   # Description metadata (description supports i18n parsing)
+raw = sdk.adapter.get_meta("platform_name", resolve_i18n=False)  # Pass-through original i18n dictionary
 ```
 
 ## Middleware
@@ -78,10 +82,10 @@ async def my_middleware(event):
 
 ### Middleware Execution Model
 
-- **Execution Order**: Middleware executes in registration order (first registered, first executed)
-- **Data Passing**: Each middleware receives the `event` data returned by the previous middleware; if a middleware returns `None`, the return value is ignored and the original data continues to be passed (while outputting a `warning` level log)
+- **Execution Order**: Middleware executes in the order of registration (earlier registration executes first)
+- **Data Passing**: Each middleware receives the `event` data returned by the previous middleware; if a middleware returns `None`, the return value is ignored while preserving the original data and outputting a `warning` level log
 - **Data Modification**: Middleware can modify event data and return the modified dictionary
-- **Event Rejection**: Middleware explicitly returns `False` to reject an event—the event is discarded, not entering any handler, and there are no outbound side effects; rejection outputs a TRACE log and triggers the `adapter.event.blocked` lifecycle hook (carrying the middleware name and full event)
+- **Event Rejection**: Middleware explicitly returns `False` to reject the event—the event is discarded and does not enter any handler, with no outbound side effects; rejection outputs a TRACE level log and triggers the `adapter.event.blocked` lifecycle hook (carrying the middleware name and complete event)
 
 ```python
 @sdk.adapter.middleware
@@ -93,13 +97,12 @@ async def add_timestamp(event):
 async def filter_spam(event):
     if event.get("detail_type") == "private":
         text = event.get("alt_message", "")
-        if "spam advertisement" in text:
-            return False  # Reject: event is discarded, not entering any handler
+        if "spam" in text:
+            return False  # Reject: event is discarded, does not enter any handler
     return event
 ```
 
-> **Note**: Only explicitly returning `False` rejects the event (returning empty dictionary / `0` / `""` and other falsy values does not reject);
-> Returning `None` still allows the event and keeps the payload unchanged. Events after rejection can be audited and traced by listening to the `adapter.event.blocked` hook to understand "why the event was not responded to".
+> **Note**: Only explicitly returning `False` rejects the event (returning falsy values such as empty dict / 0 / "" does not reject it); returning `None` still allows the event to proceed without any payload change. Events that are rejected can be audited and traced by listening to the `adapter.event.blocked` hook to investigate why an event did not respond.
 
 ## Send Message
 
@@ -129,11 +132,11 @@ await adapter.Send.Using("bot_id").To("user", "123").Text("Hello")
 ### Query Supported Sending Methods
 
 ```python
-# List all sending methods supported by the platform
+# List all supported sending methods for the platform
 methods = sdk.adapter.list_sends("onebot11")
 # Returns: ["Text", "Image", "Voice", "Markdown", ...]
 
-# Get detailed information about a method
+# Get detailed information for a specific method
 info = sdk.adapter.send_info("onebot11", "Text")
 # Returns:
 # {
@@ -146,19 +149,19 @@ info = sdk.adapter.send_info("onebot11", "Text")
 # }
 ```
 
-### Chaining Modifiers
+### Chained Modifiers
 
 ```python
-# @user
+# @User
 await adapter.Send.To("group", "456").At("789").Text("Hello")
 
-# @all members
-await adapter.Send.To("group", "456").AtAll().Text("Hello, everyone")
+# @All Members
+await adapter.Send.To("group", "456").AtAll().Text("Hello everyone")
 
-# Reply to message
+# Reply to Message
 await adapter.Send.To("group", "456").Reply("msg_id").Text("Reply content")
 
-# Combine usage
+# Combinable usage
 await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("Reply to @ message")
 ```
 
@@ -166,7 +169,7 @@ await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("Reply to @
 
 ### call_api Method
 
-> **Note**: `call_api` is a low-level method to directly call the platform's native API. The parameters and return values may vary across platforms; please refer to the corresponding platform adapter documentation. **It is recommended to use the Send DSL to send messages**, and only use `call_api` in scenarios not supported by the Send DSL (such as obtaining platform-specific data, calling platform management APIs, etc.).
+> **Note**: `call_api` is a low-level method for directly calling native platform APIs; parameters and return values may vary across platforms, please refer to the corresponding platform adapter documentation. **It is recommended to use the Send DSL for sending messages**; use `call_api` only in scenarios where the Send DSL is not supported (such as retrieving platform-specific data or calling platform management APIs).
 
 ```python
 # Call platform API
@@ -200,19 +203,19 @@ class MyAdapter(BaseAdapter):
     def __init__(self):
         super().__init__()
         self.sdk = sdk
-        # Initialize the adapter
+        # Initialize adapter
         pass
     
     async def start(self):
-        """Start the adapter (must be implemented)"""
+        """Start adapter (must implement)"""
         pass
     
     async def shutdown(self):
-        """Shutdown the adapter (must be implemented)"""
+        """Shutdown adapter (must implement)"""
         pass
     
     async def call_api(self, endpoint: str, **params):
-        """Call the platform API (must be implemented)"""
+        """Call platform API (must implement)"""
         pass
 ```
 
@@ -236,21 +239,21 @@ class MyAdapter(BaseAdapter):
 
 ## Bot Status Management
 
-Adapters inform the framework of the Bot's connection status by sending OneBot12 standard **`meta` events**. The system automatically extracts Bot information from these events for status tracking.
+Adapters inform the framework of the Bot's connection status by emitting OneBot12 standard **`meta` events**. The system automatically extracts Bot information from these events for status tracking.
 
 ### meta Event Types
 
-Adapters should send the following three `meta` events:
+Adapters should emit the following three `meta` events:
 
 | `type` | `detail_type` | Description | Trigger Timing |
 |--------|--------------|-------------|----------------|
-| `meta` | `connect` | Bot connects online | After the adapter successfully establishes a connection with the platform |
-| `meta` | `heartbeat` | Bot heartbeat | Sent periodically (recommended every 30-60 seconds) |
-| `meta` | `disconnect` | Bot disconnects | When a connection disconnection is detected |
+| `meta` | `connect` | Bot connects online | After adapter successfully establishes a connection with the platform |
+| `meta` | `heartbeat` | Bot heartbeat | Regularly sent (recommended every 30-60 seconds) |
+| `meta` | `disconnect` | Bot disconnects | When connection loss is detected |
 
 ### self Field Extension
 
-ErisPulse extends the `self` field in the OneBot12 standard with the following optional fields:
+ErisPulse extends the following optional fields on the standard OneBot12 `self` field:
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -262,7 +265,7 @@ ErisPulse extends the `self` field in the OneBot12 standard with the following o
 
 ### meta Event Format
 
-#### connect — Connect Online
+#### connect — Connection Online
 
 ```python
 await adapter.emit({
@@ -282,7 +285,7 @@ await adapter.emit({
 })
 ```
 
-System processing: Register the Bot, mark as `online`, and trigger the `adapter.bot.online` lifecycle event.
+System handling: Register Bot, mark as `online`, trigger `adapter.bot.online` lifecycle event.
 
 #### heartbeat — Heartbeat
 
@@ -300,7 +303,7 @@ await adapter.emit({
 })
 ```
 
-System processing: Update `last_active` time (the heartbeat also supports updating metadata).
+System handling: Update `last_active` time (also supports updating metadata in heartbeat).
 
 #### disconnect — Disconnect
 
@@ -318,18 +321,18 @@ await adapter.emit({
 })
 ```
 
-System processing: Mark the Bot as `offline`, and trigger the `adapter.bot.offline` lifecycle event.
+System handling: Mark Bot as `offline`, trigger `adapter.bot.offline` lifecycle event.
 
 ### Automatic Discovery of Regular Events
 
-In addition to `meta` events, the `self` field in regular events (`message`/`notice`/`request`) will also be automatically discovered and registered for the Bot, updating the active time. This means that even if the adapter does not send a `connect` event, the framework can discover the Bot from the first regular event.
+In addition to `meta` events, the `self` field in regular events (`message`/`notice`/`request`) will also automatically discover and register the Bot, updating the active time. This means that even if the adapter does not send a `connect` event, the framework can still discover the Bot from the first regular event.
 
 ### Adapter Integration Example
 
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
-        # Establish connection with the platform...
+        # Establish connection with platform...
         connection = await self._connect()
         
         # Connection successful, send connect event
@@ -390,10 +393,10 @@ all_bots = sdk.adapter.list_bots()
 # List Bots for a specific platform
 tg_bots = sdk.adapter.list_bots("telegram")
 
-# Get details of a single Bot
+# Get single Bot details
 info = sdk.adapter.get_bot_info("telegram", "123456")
 
-# Check if a Bot is online
+# Check if Bot is online
 if sdk.adapter.is_bot_online("telegram", "123456"):
     print("Bot is online")
 ```
@@ -402,8 +405,8 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 
 | Status | Description |
 |--------|-------------|
-| `online` | Online (continuously receiving events or actively marked by the adapter) |
-| `offline` | Offline (actively marked by the adapter or automatically set by the system on shutdown) |
+| `online` | Online (continuously receiving events or actively marked by adapter) |
+| `offline` | Offline (actively marked by adapter or automatically set on system shutdown) |
 | `unknown` | Unknown (registered but status not confirmed) |
 
 ### Lifecycle Events
@@ -411,24 +414,24 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 | Event Name | Trigger Timing | Data |
 |------------|----------------|------|
 | `adapter.bot.online` | First automatic discovery of new Bot | `{platform, bot_id, status}` |
-| `adapter.status.change` | Adapter status change | `{platform, status}`, status full values: `starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` (skipped due to unready dependencies) / `disabled` (configuration disabled) |
+| `adapter.status.change` | Adapter status change | `{platform, status}`, status complete values: `starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` (skipped startup due to unready dependencies) / `disabled` (configuration disabled) |
 
 ```python
-# Listen to Bot online event
+# Listen for Bot online event
 @sdk.lifecycle.on("adapter.bot.online")
 def on_bot_online(event):
     print(f"Bot online: {event['data']['platform']}/{event['data']['bot_id']}")
 
-# Listen to adapter status change
+# Listen for adapter status change
 @sdk.lifecycle.on("adapter.status.change")
 def on_status_change(event):
     print(f"Adapter status: {event['data']['platform']} -> {event['data']['status']}")
 ```
 
-> When the system shuts down (via `shutdown`), all Bots are automatically marked as `offline`.
+> On system shutdown (`shutdown`), all Bots are automatically marked as `offline`.
 
 ## Related Documentation
 
 - [Core Modules API](core-modules.md) - Core Modules API
 - [Event System API](event-system.md) - Event Module API
-- [Adapter Development Guide](../developer-guide/adapters/) - Developing Platform Adapters
+- [Adapter Development Guide](../developer-guide/adapters/) - Develop Platform Adapters

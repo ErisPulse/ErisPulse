@@ -4,7 +4,7 @@ Best practices for deploying the ErisPulse bot to a production environment.
 
 ## Docker Deployment (Recommended)
 
-ErisPulse provides an official Docker image, which includes the ErisPulse framework and Dashboard management panel, supporting both `linux/amd64` and `linux/arm64` architectures.
+ErisPulse provides an official Docker image that includes the ErisPulse framework and Dashboard management panel, supporting `linux/amd64` and `linux/arm64` architectures.
 
 ### Quick Start
 
@@ -15,7 +15,7 @@ docker pull erispulse/erispulse:latest
 # Download docker-compose.yml
 curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-# Set the Dashboard login token and start the container
+# Set Dashboard login token and start
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
@@ -29,7 +29,7 @@ If Docker Hub is inaccessible, you can pull the image from GitHub Container Regi
 docker pull ghcr.io/erispulse/erispulse:latest
 ```
 
-When using the ghcr.io image, modify the `docker-compose.yml` file to update the image:
+When using the ghcr.io image, you need to modify the `docker-compose.yml` file:
 
 ```yaml
 services:
@@ -58,7 +58,7 @@ services:
     restart: unless-stopped
 ```
 
-> It is recommended to directly use the [docker-compose.yml](https://github.com/ErisPulse/ErisPulse/blob/main/docker-compose.yml) from the repository root, which already includes the above configuration along with health checks, timezone, and language environment variables.
+> It is recommended to directly use the `docker-compose.yml` file in the repository root, which includes the above configuration and health checks, as well as timezone and language environment variables.
 
 ### Environment Variables
 
@@ -67,18 +67,18 @@ services:
 | `ERISPULSE_PORT` | `8000` | Dashboard port mapping |
 | `ERISPULSE_DASHBOARD_TOKEN` | Auto-generated | Dashboard login token (strongly recommended to set) |
 | `TZ` | `Asia/Shanghai` | Timezone |
-| `LANG` | `en_US.UTF-8` | System language, detected automatically for the startup interface language |
-| `ERISPULSE_LANG` | Empty | Force the startup interface language: `zh` / `zh_TW` / `en` / `ja` / `ru` (overrides `LANG`) |
+| `LANG` | `en_US.UTF-8` | System language, automatically detects the startup interface language |
+| `ERISPULSE_LANG` | Empty | Force startup interface language: `zh` / `zh_TW` / `en` / `ja` / `ru` (overrides `LANG`) |
 
 ### Data Persistence
 
-The `./config` directory is mounted for configuration files and databases, including:
+The `./config` directory mounts configuration files and the database, including:
 
 - `config/config.toml` — Configuration file
 - `config/config.db` — SQLite storage database
-- `config/.packages` — Persistent volume for Python site-packages, storing the framework, adapters, and installed modules (initially auto-initialized from the image's built-in backup on first startup, subsequent module installations and framework hot updates are written to this directory)
+- `config/.packages` — Persistent Python site-packages volume, stores the framework, adapters, and installed modules (automatically initialized from the image backup on first startup, subsequent module installations and framework hot updates are written to this directory)
 
-> **Framework upgrade (including pre/rc) and image self-healing**: The entrypoint performs a core package integrity self-check on each container startup. If damage is detected, it repairs according to the "user-installed version priority" principle—explicitly installed/upgraded versions in the persistent volume (e.g., pre versions installed via Dashboard) will be reinstalled from PyPI at the same version, never silently rolled back to the image's built-in version. Therefore, after Dashboard upgrades the framework, any container restart should maintain the target version.
+> **Framework Upgrade (including pre/rc) and Image Self-Healing**: The entry point performs a core package integrity self-check each time the container starts. If damaged, it repairs according to the "user-installed version priority" principle — explicitly installed/upgraded versions in the persistent volume (e.g., pre versions installed via Dashboard) are reinstalled from PyPI to the same version, never silently downgraded to the image's built-in version. Therefore, after upgrading the framework via Dashboard, any subsequent container restart should maintain the target version.
 
 ## Dashboard Management Panel
 
@@ -89,46 +89,46 @@ The ErisPulse Docker image includes the Dashboard module, providing a web-based 
 | Feature | Description |
 |---------|-------------|
 | Dashboard | System overview, CPU/memory monitoring, uptime, event statistics |
-| Bot Management | View online status and information of bots across platforms |
-| Event Viewer | Real-time event streams, with filtering by type and platform |
-| Log Viewer | Log viewer with filtering by module and level |
+| Bot Management | View online status and information of bots on various platforms |
+| Event Viewing | Real-time event stream, supports filtering by type and platform |
+| Log Viewing | Log viewer with filtering by module and level |
 | Module Management | View, load, and unload installed modules and adapters |
-| Module Store | Browse remote available packages and install them with one click |
-| Configuration Editor | Edit `config.toml` online |
-| Storage Manager | Browse and edit key-value storage data |
+| Module Store | Browse remote available packages and install with one click |
+| Configuration Editing | Edit `config.toml` online |
+| Storage Management | Browse and edit key-value storage data |
 | Backup | Export/import configuration and storage data |
-| Audit Log | Record all management operations |
+| Audit Log | Records all management operations |
 
 ### Installing Modules via Dashboard
 
-The Dashboard integrates a module store feature, allowing you to:
+The Dashboard integrates the module store feature, allowing you to:
 
-1. **Install from the store**: Browse the list of remote modules and install the desired ones with one click
-2. **Upload local packages**: Directly upload `.whl` or `.zip` files for installation, useful for testing locally developed modules
+1. **Install from Store**: Browse the list of remote modules and install the desired one with one click
+2. **Upload Local Package**: Directly upload `.whl` or `.zip` files for installation, convenient for testing personal development modules
 
-> **Quick testing process for module developers**: After deploying with Docker, use the "Upload local package" feature in the Dashboard to directly upload your built `.whl` file for testing, without manual container operations.
+> **Quick Testing Process for Module Developers**: After deploying with Docker, use the "Upload Local Package" feature in the Dashboard to directly upload your built `.whl` file for testing, without manual container operations.
 
 ## Process Supervision and Hard Restart
 
-The ErisPulse hard restart (`sdk.hard_restart()`) relies on an **external supervisor** to restart the process when the exit code is 42—the SDK itself does not restart new processes. In production environments, always configure a supervisor; otherwise, the process will not automatically recover after a hard restart:
+The hard restart of ErisPulse (`sdk.hard_restart()`) relies on an **external supervisor** restarting the process when the exit code is 42 — the SDK itself does not restart new processes. In production, you must configure a supervisor; otherwise, the process will not automatically recover after a hard restart:
 
 - Docker: `restart: unless-stopped` (restarts for any exit code, including 42)
 - systemd: `Restart=on-failure` + `RestartForceExitStatus=42`
 - PM2 / supervisord: Add 42 to the list of restartable exit codes
-- Pure Python custom supervisor: Use a loop with `Popen` and check `returncode == 42`
+- Pure Python custom supervisor: Loop `Popen` + check `returncode == 42`
 
-Complete configuration examples for each supervisor and the 42 exit code contract are available in [Startup Flow → Supervisor Guide](../advanced/startup.md#Supervisor-Guide).
+Complete configuration examples for each supervisor and the exit code 42 contract are available in [Startup Flow → Supervisor Guide](../advanced/startup.md#Supervisor-Guide).
 
 ## Health Check
 
-The SDK includes a health check endpoint:
+The SDK includes a built-in health check endpoint:
 
 ```bash
 # Health check
 curl http://localhost:8000/health
 ```
 
-Docker health checks can be added to `docker-compose.yml`:
+Docker health checks can be added in `docker-compose.yml`:
 
 ```yaml
 services:
@@ -143,7 +143,7 @@ services:
 
 ## Reverse Proxy
 
-If you need to expose the Dashboard through a reverse proxy such as Nginx:
+If you need to expose the Dashboard through a reverse proxy like Nginx:
 
 ```nginx
 server {
@@ -218,7 +218,7 @@ StandardError=journal
 WantedBy=multi-user.target
 ```
 
-Management commands:
+Management:
 
 ```bash
 sudo systemctl daemon-reload
@@ -245,8 +245,8 @@ stdout_logfile=/var/log/erispulse-bot/out.log
 ## Security Recommendations
 
 1. **Set Dashboard Token**: Use a strong random token, do not use the default value
-2. **Do Not Expose Port to Public**: Unless using a reverse proxy with SSL, restrict the Dashboard port to the internal network
-3. **Protect Data Directory**: The `config/` directory contains configuration and databases; set appropriate file permissions
+2. **Do Not Expose Port to Public Internet**: Unless using a reverse proxy + SSL, restrict the Dashboard port to the internal network
+3. **Protect Data Directory**: The `config/` directory contains configuration and database; set appropriate file permissions
 4. **Regular Updates**: Use `epsdk self-update` or pull the latest Docker image
 5. **Do Not Run as Root**: Create a dedicated user when deploying manually
 6. **Use Docker Restart Policy**: `restart: unless-stopped` ensures automatic restart after abnormal exit
@@ -255,7 +255,7 @@ stdout_logfile=/var/log/erispulse-bot/out.log
 
 When running multiple bot instances:
 
-1. Use separate project directories and `docker-compose.yml` files for each instance
+1. Use a separate project directory and `docker-compose.yml` for each instance
 2. Use different port numbers: `ERISPULSE_PORT=8001`
 3. Use different container names: `container_name: erispulse-bot2`
 
@@ -277,6 +277,20 @@ docker compose up -d
 epsdk self-update
 epsdk upgrade
 ```
+
+### Hot Reload Server Configuration at Runtime
+
+After modifying the listening address / port / SSL certificate, no process restart is needed. Call `router.reload()` in any coroutine:
+
+```python
+await sdk.router.reload(port=9000)                                # Change port
+await sdk.router.reload(ssl_cert=new_pem, ssl_key=new_key)        # Hot swap certificate (e.g., certificate renewal scenario)
+await sdk.router.reload(host="0.0.0.0", port=9000)                # Use current configuration for unspecified parameters
+```
+
+- Reuse the same FastAPI application; all registered HTTP / WebSocket / SSE routes for modules are preserved
+- Validate new configuration first (certificate can be built, port available) before switching; if it fails, restore service with the old configuration and return `False`, ensuring that `False` = old service remains available
+- Return `False` if the server is not running (use `sdk.router.start()` for initial startup)
 
 ### Backup
 

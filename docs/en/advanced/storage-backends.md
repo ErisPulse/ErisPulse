@@ -1,17 +1,18 @@
 # Storage Backends
 
-ErisPulse comes with three built-in asynchronous native storage backends, switchable with a single configuration change. **The API is completely consistent, requiring zero code changes when switching backends.**
+ErisPulse comes with three built-in asynchronous native storage backends, which can be switched with a single configuration change. **The API is completely consistent, and switching requires zero code changes**:
 
 | Backend | Driver | Installation | Features |
 |---------|--------|--------------|----------|
-| SQLite (default) | aiosqlite | Ready to use out-of-the-box | Zero configuration, single-file, WAL concurrency |
+| SQLite (Default) | aiosqlite | Ready-to-use out of the box | Zero configuration, single file, WAL concurrency |
 | MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | Suitable for existing MySQL infrastructure, shared across multiple instances |
 | PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | Strong transaction support, JSONB ecosystem, high concurrency |
 
-{!--< tips >!--}
-1. Asynchronous operations are the native primary interface (`aget/aset/atransaction/aExecute`), while synchronous APIs serve as a compatibility layer.
-2. The framework's own configuration persistence, session inbox, and conversation checkpoints all use the same storage backend—switching the backend results in a full migration.
-{!--< /tips >!--}
+<!---< tips >--->
+1. Asynchronous is the native main interface (`aget/aset/atransaction/aExecute`), while synchronous APIs are provided as a compatibility layer.
+2. The framework's own configuration persistence, session inbox, and conversation checkpoints all use the same storage backend—switching the backend means a full migration.
+3. The `[mysql]` extra includes `cryptography`—required for MySQL 8's default `caching_sha2_password` authentication; missing it will cause the connection pool initialization to fail.
+<!---< /tips >--->
 
 ## Backend Selection
 

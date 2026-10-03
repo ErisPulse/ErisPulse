@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "7c7c21cbfb0a0521b0b1b860e83f7d4e",
-  "file_hash": "7c7c21cbfb0a0521b0b1b860e83f7d4e",
-  "translated_at": "2026-09-09T16:09:51.632349",
+  "hash": "cb8cf510ba50db85b476d3de3362a9fc",
+  "file_hash": "cb8cf510ba50db85b476d3de3362a9fc",
+  "translated_at": "2026-10-03T14:20:27.282820",
   "target_lang": "ja",
   "chunks": [
     {
@@ -42,8 +42,8 @@
       "translation": "## 多インスタンスデプロイ\n\n複数のロボットインスタンスを実行する場合：\n\n1. 各インスタンスは独立したプロジェクトディレクトリと `docker-compose.yml` を使用します。\n2. 異なるポート番号を使用します：`ERISPULSE_PORT=8001`\n3. 異なるコンテナ名を使用します：`container_name: erispulse-bot2`"
     },
     {
-      "hash": "9d4cc1289c67a45fe6c328de63995cfe",
-      "translation": "## 更新とメンテナンス\n\n### Docker 方式\n\n```bash\n# 最新のイメージを取得\ndocker compose pull\n\n# 新しいイメージを使用して再起動\ndocker compose up -d\n```\n\n### pip 方式\n\n```bash\nepsdk self-update\nepsdk upgrade\n```\n\n### バックアップ\n\n`config/` ディレクトリを定期的にバックアップしてください：\n\n```bash\n# Docker 部署の場合\ntar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/\n\n# または Dashboard の「バックアップ」機能を使用してエクスポート\n```"
+      "hash": "0de22d03bc9c01297f2b04f088e120a3",
+      "translation": "## 更新と保守\n\n### Docker 方式\n\n```bash\n# 最新のイメージを取得\ndocker compose pull\n\n# 新しいイメージを使用して再起動\ndocker compose up -d\n```\n\n### pip 方式\n\n```bash\nepsdk self-update\nepsdk upgrade\n```\n\n### 実行時のサーバー設定のホットリロード\n\n監視アドレス / ポート / SSL証明書を変更した後、プロセスを再起動する必要はありません。任意のコルーチン内で `router.reload()` を呼び出してください：\n\n```python\nawait sdk.router.reload(port=9000)                                # ポートを変更\nawait sdk.router.reload(ssl_cert=new_pem, ssl_key=new_key)        # 証明書のホット交換（証明書の更新など）\nawait sdk.router.reload(host=\"0.0.0.0\", port=9000)                # 省略されたパラメータは現在の設定を引き継ぐ\n```\n\n- 同一の FastAPI アプリケーションを再利用し、モジュール登録された HTTP / WebSocket / SSE ルートはすべて保持されます。\n- 新しい設定（証明書の構築、ポートの利用可能）を先に検証してから切り替えます。失敗した場合は、以前の設定でサービスを復元して `False` を返します。\n  - `False` が返された場合、以前のサービスは利用可能です。\n- サーバーが実行されていない場合は `False` を返します（最初の起動は `sdk.router.start()` を使用してください）。\n\n### バックアップ\n\n定期的に `config/` ディレクトリをバックアップしてください：\n\n```bash\n# Docker 部署の場合\ntar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/\n\n# または Dashboard で「バックアップ」機能を使用してエクスポート\n```"
     }
   ]
 }

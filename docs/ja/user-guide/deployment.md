@@ -259,7 +259,7 @@ stdout_logfile=/var/log/erispulse-bot/out.log
 2. 異なるポート番号を使用します：`ERISPULSE_PORT=8001`
 3. 異なるコンテナ名を使用します：`container_name: erispulse-bot2`
 
-## 更新とメンテナンス
+## 更新と保守
 
 ### Docker 方式
 
@@ -278,13 +278,28 @@ epsdk self-update
 epsdk upgrade
 ```
 
+### 実行時のサーバー設定のホットリロード
+
+監視アドレス / ポート / SSL証明書を変更した後、プロセスを再起動する必要はありません。任意のコルーチン内で `router.reload()` を呼び出してください：
+
+```python
+await sdk.router.reload(port=9000)                                # ポートを変更
+await sdk.router.reload(ssl_cert=new_pem, ssl_key=new_key)        # 証明書のホット交換（証明書の更新など）
+await sdk.router.reload(host="0.0.0.0", port=9000)                # 省略されたパラメータは現在の設定を引き継ぐ
+```
+
+- 同一の FastAPI アプリケーションを再利用し、モジュール登録された HTTP / WebSocket / SSE ルートはすべて保持されます。
+- 新しい設定（証明書の構築、ポートの利用可能）を先に検証してから切り替えます。失敗した場合は、以前の設定でサービスを復元して `False` を返します。
+  - `False` が返された場合、以前のサービスは利用可能です。
+- サーバーが実行されていない場合は `False` を返します（最初の起動は `sdk.router.start()` を使用してください）。
+
 ### バックアップ
 
-`config/` ディレクトリを定期的にバックアップしてください：
+定期的に `config/` ディレクトリをバックアップしてください：
 
 ```bash
 # Docker 部署の場合
 tar czf erispulse-backup-$(date +%Y%m%d).tar.gz config/
 
-# または Dashboard の「バックアップ」機能を使用してエクスポート
+# または Dashboard で「バックアップ」機能を使用してエクスポート
 ```

@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "9efdfac27dc74b56cf968047dca46018",
-  "file_hash": "9efdfac27dc74b56cf968047dca46018",
-  "translated_at": "2026-10-02T11:15:14.025148",
+  "hash": "c79d9241a22ae109218bf2b52dc0fe18",
+  "file_hash": "c79d9241a22ae109218bf2b52dc0fe18",
+  "translated_at": "2026-10-03T14:20:28.467524",
   "target_lang": "ja",
   "chunks": [
     {
-      "hash": "a73b35a1c124a858e56480103ddc62aa",
-      "translation": "# ストレージバックエンド\n\nErisPulse には、3 種類の非同期ネイティブストレージバックエンドが内蔵されており、設定を変更することで簡単に切り替えることができます。**API は完全に同一であり、コードの変更は一切必要ありません**。\n\n| バックエンド | ドライバー | インストール | 特徴 |\n|------|------|------|------|\n| SQLite（デフォルト） | aiosqlite | インストール不要 | 零設定、単一ファイル、WAL による並行処理 |\n| MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | 既存の MySQL インフラストラクチャがある場合、複数インスタンスで共有するのに適しています |\n| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | トランザクション処理が強力、JSONB エコシステム、高並行性 |\n\n{!--< tips >!--}\n1. 非同期はネイティブの主インターフェース（`aget/aset/atransaction/aExecute`）であり、同期 API は互換性層です。\n2. フレームワーク自体の設定の永続化、会話の受信箱、対話のチェックポイントなどはすべて同じストレージバックエンドを経由します。バックエンドを切り替えることで、全体の移行が可能です。\n{!--< /tips >!--}"
+      "hash": "64f579472629a57395431e2e8ff5dde3",
+      "translation": "# ストレージバックエンド\n\nErisPulse には、構成を変更するだけで簡単に切り替えられる 3 つの非同期ネイティブストレージバックエンドが内蔵されています。**API は完全に同一で、コードの変更は一切不要**です。\n\n| バックエンド | ドライバー | インストール | 特徴 |\n|------|------|------|------|\n| SQLite（デフォルト） | aiosqlite | インストール不要 | 零設定、単一ファイル、WAL による並行処理 |\n| MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | 既存の MySQL インフラストラクチャに適しており、複数インスタンスで共有可能 |\n| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | トランザクション能力が高く、JSONB エコシステム、高並行処理対応 |\n\n{!--< tips >!--}\n1. 非同期はネイティブの主インターフェース（`aget/aset/atransaction/aExecute`）であり、同期 API は互換性層です。\n2. フレームワーク自身の設定の永続化、会話の受信箱、対話のチェックポイントなどはすべて同一のストレージバックエンドを経由します。バックエンドを切り替えることで、全体の移行が可能です。\n3. `[mysql]` extra には `cryptography` が含まれています。MySQL 8 ではデフォルトの `caching_sha2_password` 認証に必要であり、これが欠如している場合、接続プールの初期化時に失敗します。\n{!--< /tips >!--}"
     },
     {
       "hash": "76e0fd25ed7cbc2783013357bbb37f84",

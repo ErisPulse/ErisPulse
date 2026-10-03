@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "hash": "9efdfac27dc74b56cf968047dca46018",
-  "file_hash": "9efdfac27dc74b56cf968047dca46018",
-  "translated_at": "2026-10-02T11:09:24.027873",
+  "hash": "c79d9241a22ae109218bf2b52dc0fe18",
+  "file_hash": "c79d9241a22ae109218bf2b52dc0fe18",
+  "translated_at": "2026-10-03T14:20:25.737858",
   "target_lang": "en",
   "chunks": [
     {
-      "hash": "a73b35a1c124a858e56480103ddc62aa",
-      "translation": "# Storage Backends\n\nErisPulse comes with three built-in asynchronous native storage backends, switchable with a single configuration change. **The API is completely consistent, requiring zero code changes when switching backends.**\n\n| Backend | Driver | Installation | Features |\n|---------|--------|--------------|----------|\n| SQLite (default) | aiosqlite | Ready to use out-of-the-box | Zero configuration, single-file, WAL concurrency |\n| MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | Suitable for existing MySQL infrastructure, shared across multiple instances |\n| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | Strong transaction support, JSONB ecosystem, high concurrency |\n\n{!--< tips >!--}\n1. Asynchronous operations are the native primary interface (`aget/aset/atransaction/aExecute`), while synchronous APIs serve as a compatibility layer.\n2. The framework's own configuration persistence, session inbox, and conversation checkpoints all use the same storage backend—switching the backend results in a full migration.\n{!--< /tips >!--}"
+      "hash": "64f579472629a57395431e2e8ff5dde3",
+      "translation": "# Storage Backends\n\nErisPulse comes with three built-in asynchronous native storage backends, which can be switched with a single configuration change. **The API is completely consistent, and switching requires zero code changes**:\n\n| Backend | Driver | Installation | Features |\n|---------|--------|--------------|----------|\n| SQLite (Default) | aiosqlite | Ready-to-use out of the box | Zero configuration, single file, WAL concurrency |\n| MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | Suitable for existing MySQL infrastructure, shared across multiple instances |\n| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | Strong transaction support, JSONB ecosystem, high concurrency |\n\n<!---< tips >--->\n1. Asynchronous is the native main interface (`aget/aset/atransaction/aExecute`), while synchronous APIs are provided as a compatibility layer.\n2. The framework's own configuration persistence, session inbox, and conversation checkpoints all use the same storage backend—switching the backend means a full migration.\n3. The `[mysql]` extra includes `cryptography`—required for MySQL 8's default `caching_sha2_password` authentication; missing it will cause the connection pool initialization to fail.\n<!---< /tips >--->"
     },
     {
       "hash": "76e0fd25ed7cbc2783013357bbb37f84",

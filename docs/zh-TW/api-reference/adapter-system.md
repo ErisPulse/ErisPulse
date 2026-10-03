@@ -61,6 +61,11 @@ is_running = sdk.adapter.is_running("platform_name")
 
 # 列出所有正在運行的適配器
 running = sdk.adapter.list_running()
+
+# 讀取適配器元資訊（對齊 module.get_meta，供面板 / 商店等消費）
+info = sdk.adapter.get_info("platform_name")   # 注冊資訊（meta + 類名，json-safe）
+meta = sdk.adapter.get_meta("platform_name")   # 介紹元資訊（description 支持 i18n 解析）
+raw = sdk.adapter.get_meta("platform_name", resolve_i18n=False)  # 透傳原始 i18n 字典
 ```
 
 ## 中間件
@@ -81,7 +86,7 @@ async def my_middleware(event):
 - **執行順序**：中間件按註冊順序執行（先註冊先執行）
 - **資料傳遞**：每個中間件接收上一個中間件返回的 `event` 資料；如果某個中間件返回 `None`，則忽略該返回值並保留原資料繼續傳遞（同時輸出 `warning` 級別日誌）
 - **修改資料**：中間件可以修改事件資料並返回修改後的字典
-- **事件否決**：中間件顯式返回 `False` 時否決事件——事件被丟棄，不進入任何處理器、無任何出站副作用；否決時輸出 TRACE 日誌並觸發 `adapter.event.blocked` 生命周期鉤子（攜帶中間件名與完整事件）
+- **事件否決**：中間件顯式返回 `False` 時否決事件——事件被丟棄，不進入任何處理器、無任何出站副作用；否決時輸出 TRACE 日誌並觸發 `adapter.event.blocked` 生命週期鉤子（攜帶中間件名與完整事件）
 
 ```python
 @sdk.adapter.middleware
@@ -167,7 +172,7 @@ await adapter.Send.To("group", "456").At("789").Reply("msg_id").Text("回覆@的
 
 ### call_api 方法
 
-> **注意**：`call_api` 是直接調用平台原生 API 的底層方法，各平台的參數和返回值可能不同，請參考對應平台適配器文件。**推薦使用 Send DSL 發送訊息**，僅在 Send DSL 不支援的場景（如獲取平台特有的資料、調用平台管理介面等）中使用 `call_api`。
+> **注意**：`call_api` 是直接調用平台原生 API 的底層方法，各平台的參數和回傳值可能不同，請參考對應平台適配器文件。**推薦使用 Send DSL 發送訊息**，僅在 Send DSL 不支援的場景（如獲取平台特有的資料、呼叫平台管理介面等）中使用 `call_api`。
 
 ```python
 # 調用平台 API
@@ -283,7 +288,7 @@ await adapter.emit({
 })
 ```
 
-系統處理：註冊 Bot，標記為 `online`，觸發 `adapter.bot.online` 生命周期事件。
+系統處理：註冊 Bot，標記為 `online`，觸發 `adapter.bot.online` 生命週期事件。
 
 #### heartbeat — 心跳
 
@@ -319,7 +324,7 @@ await adapter.emit({
 })
 ```
 
-系統處理：標記 Bot 為 `offline`，觸發 `adapter.bot.offline` 生命周期事件。
+系統處理：標記 Bot 為 `offline`，觸發 `adapter.bot.offline` 生命週期事件。
 
 ### 普通事件的自動發現
 
@@ -407,7 +412,7 @@ if sdk.adapter.is_bot_online("telegram", "123456"):
 | `offline` | 離線（適配器主動標記或系統關閉時自動設定） |
 | `unknown` | 未知（僅註冊但未確認狀態） |
 
-### 生命周期事件
+### 生命週期事件
 
 | 事件名 | 觸發時機 | 資料 |
 |--------|---------|------|
