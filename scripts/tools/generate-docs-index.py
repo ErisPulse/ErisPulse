@@ -809,14 +809,14 @@ class DocsIndexGenerator:
             with open(file_path, encoding="utf-8") as f:
                 content = f.read()
         except Exception as e:
-            Logger.progress(file_info["relative_path"], "warn", f"读取失败: {e}")
+            Logger.log(f"  [WARN] {file_info['relative_path']}  读取失败: {e}")
             return None
 
         # 解析标题
         headings = self.parse_headings(content)
 
         if not headings:
-            Logger.progress(file_info["relative_path"], "skip", "无标题")
+            Logger.log(f"  [SKIP] {file_info['relative_path']}  无标题")
             return None
 
         # 获取文档标题
@@ -825,7 +825,7 @@ class DocsIndexGenerator:
         # 获取文件修改时间
         mod_time = datetime.fromtimestamp(file_path.stat().st_mtime).isoformat()
 
-        Logger.progress(file_info["relative_path"], "parse", title)
+        Logger.log(f"  [PARSE] {file_info['relative_path']}  {title}")
 
         return {
             "title": title,
@@ -1003,7 +1003,7 @@ class DocsIndexGenerator:
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(index, f, ensure_ascii=False, indent=2)
 
-        Logger.progress(filename, "done")
+        Logger.log(f"  [DONE] {filename}")
 
     def run(self, deprecated: bool = False):
         """
@@ -1101,11 +1101,7 @@ class DocsIndexGenerator:
                 with open(file_path, encoding="utf-8") as f:
                     content = f.read()
             except Exception as e:
-                Logger.progress(
-                    str(file_path.relative_to(self.actual_docs_dir)),
-                    "warn",
-                    f"读取失败: {e}",
-                )
+                Logger.log(f"  [WARN] {file_path.relative_to(self.actual_docs_dir)}  读取失败: {e}")
                 continue
 
             headings = self.parse_headings(content)
@@ -1317,7 +1313,7 @@ def main():
                             for cat in lang_data.get("categories", {}).values()
                         )
                 except Exception as e:
-                    Logger.progress(lang, "warn", f"无法读取映射文件: {e}")
+                    Logger.log(f"  [WARN] {lang}  无法读取映射文件: {e}")
 
             languages_index["languages"][lang] = {
                 "docs_count": total_docs,
@@ -1330,7 +1326,7 @@ def main():
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(languages_index, f, ensure_ascii=False, indent=2)
         Logger.log("")
-        Logger.progress(str(output_file), "done", "语言索引已保存")
+        Logger.log(f"  [DONE] {output_file}  语言索引已保存")
 
 
 if __name__ == "__main__":
