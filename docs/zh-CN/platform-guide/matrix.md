@@ -64,6 +64,26 @@ enabled = true
 - **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
 - Matrix 无原生按钮能力，标准 keyboard 段优雅忽略（不报错）
 
+## 端到端加密（4.3.0）
+
+4.3.0 起适配器原生支持加密房间的端到端加密（基于 matrix-nio[e2e] / vodozemac）：
+
+```toml
+[Matrix_Adapter.accounts.default]
+user_id = "@bot:matrix.org"
+password = "YOUR_PASSWORD"
+encryption_enabled = true       # 启用（默认 false，存量部署不受影响）
+trust_all_devices = true        # 自动信任未验证设备（默认；false 为严格模式）
+```
+
+- 加密房间消息收发自动解密/加密，媒体端到端加密（`m.file.encrypted`）
+- `device_id` 自动解析与持久化；会话存储于 `store_path`（默认 `data/matrix/<账户名>`，**请勿删除**，否则历史消息无法解密）
+- 事件 Mixin 新增 `event.is_encrypted()`；媒体段携带 `matrix_encrypted_file`（JWK），可用 `MatrixAdapter.decrypt_media()` 解密
+- 不支持交叉签名与服务器端密钥备份；需要 Python >= 3.10
+- 未启用或未安装 matrix-nio 时自动降级为明文模式
+
+详细说明见 [适配器 README](https://github.com/ErisPulse/ErisPulse-MatrixAdapter)。
+
 ### 标准Api动作示例
 
 ```python
