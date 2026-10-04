@@ -247,7 +247,6 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 | `ERISPULSE_DASHBOARD_TOKEN` | 空 | Dashboard 登录令牌（设置后自动写入配置）|
 | `ERISPULSE_PORT` | `8000` | Dashboard 端口映射 |
 | `ERISPULSE_TAG` | `latest` | 镜像 tag，可设为 `dev` 使用预发布镜像 |
-| `ERISPULSE_BUILD_TARGET` | `production` | 构建目标：`production`（稳定版）或 `dev`（预发布版）|
 | `CONTAINER_NAME` | `erispulse` | 容器名称 |
 | `TZ` | `Asia/Shanghai` | 容器时区 |
 | `LANG` | `en_US.UTF-8` | 系统语言，自动检测启动界面语言 |

@@ -11,3 +11,6 @@ routes = [
 GITHUB_REPO = "ErisPulse/ErisPulse"
 GITHUB_BRANCH = "Develop/v2"
 CACHE_TTL = 300
+
+[observability]
+enabled = true
