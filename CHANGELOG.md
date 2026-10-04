@@ -101,7 +101,7 @@
   - `Core/config` 配置 CRUD 补齐：新增公开 `getAllConfig()`（全量配置快照，深拷贝隔离、含未落盘待写值视图，替代外部读私有 `_cache`）与 `delConfig(key, immediate=False)`（点路径键删除——区别于 `setConfig(key, None)` 的置空，键从文件中移除；走 tomlkit 注释保留路径按脏队列语义落盘；复用 `config.set` 事件广播 `new_value=None`，现有 `on_config_update` 监听方零改动感知删除；`getAllConfig` / `getConfig` 视图与落盘结果按特异性排序严格同口径；异步族同步补齐 `agetAllConfig` / `adelConfig`）
   - `Core/adapter` 适配器元信息公开读取 API（对齐 `module.get_meta` / `get_info`，第三方此前只能绕道 `sys.modules` + `importlib.metadata` 自行拼装）：`get_meta(platform, resolve_i18n=True)` 返回介绍元信息（i18n 字典按当前语言解析，与模块侧同语义），`get_info(platform)` 返回 json-safe 注册信息（`meta` 全字段 + `adapter_class` 以类名字符串返回，不暴露类对象）
   - `Core/router` 新增 `reload()` 运行时热重载服务器配置（host / port / SSL，参数缺省沿用当前值），无需进程重启：复用同一 FastAPI 应用（模块注册的 http / ws / sse 路由全部保留）；先验证新配置（内联 PEM 可构建 SSLContext）再停止旧监听切换，新监听启动失败（端口被抢占等）以旧配置恢复服务——保证返回 `False` = 旧服务保持可用。适用 Dashboard 改端口 / 证书续期热更换等场景（避免 Windows 下 detached 重建进程的全量重启代价）
-  - `scripts/install` 一键安装脚本（install.sh / install.ps1）新增「全局 CLI 安装（uv tool）」安装方式：经 `uv tool install` 将 `epsdk` 装为全局命令，无需虚拟环境，uv 自动管理 Python（系统 Python 缺失 / 过低亦可安装）；配合 CLI 既有的项目 `.venv` 自动感知，全局一份 epsdk 即可服务所有项目。安装完成提示按安装方式区分，全局模式明确"免激活、项目目录内直接运行 epsdk（自动使用项目 .venv）"；uv 安装引导收敛为单一 `ensure_uv()`（此前两处重复实现）
+  - `scripts/install` 一键安装脚本（install.sh / install.ps1）新增「全局 CLI 安装（uv tool）」安装方式：经 `uv tool install` 将 `epsdk` 装为全局命令，无需虚拟环境，uv 自动管理 Python（系统 Python 缺失 / 过低亦可安装）；配合 CLI 既有的项目 `.venv` 自动感知，全局一份 epsdk 即可服务所有项目。安装完成提示按安装方式区分，全局模式明确"免激活、项目目录内直接运行 epsdk（自动使用项目 .venv）"，PATH 缺失时按用户 shell 给出具体追加命令；uv 安装引导收敛为单一 `ensure_uv()`（此前两处重复实现）。Docker 模式 dev 镜像通道软屏蔽（标注暂未提供、选中时提示，镜像 tag 管道已按通道打通以便将来启用）
 
 ### 优化
 
@@ -137,7 +137,7 @@
   - `Core/Bases/config_schema` 配置环境变量的类型判定统一走 `python_type_category`（结构化判定）——`Literal["list", "dict"]` 等注解不再因字符串子串匹配被误判为 JSON 列
   - `runtime` 内部加固：后台任务异循环临时兜底补告警日志；主动 GC 循环异常留痕（此前空转无痕）；异步关停噪音折叠状态表限量（`EXCEPTION_NOISE_STATE_MAX_ENTRIES`，防超长驻留进程无界增长）；文件监控（PollingObserver）补发 `on_created` / `on_deleted` 事件（轮询实现此前声明但从不触发，`on_moved` 明确为不触发——移动表现为删除 + 创建）
   - `Core/Event/command_args` 声明串最后一个条目之后的尾部垃圾 fail-fast 报错（此前被静默忽略）；`Core/Event/command` 重复导入去重；`Core/ownership` 删除未使用的 `_step` 死代码；`Core/config` 删除旧固定名临时文件清理死代码（原子写已改用 mkstemp 唯一命名）；`Core/client` 请求失败异常补 `raise ... from` 链路保留原始堆栈
-  - `scripts/install` 一键安装脚本修复 uv 安装后误报「uv 安装失败」：uv 官方安装器自新版起默认装入 `~/.local/bin`，脚本仍只把旧版安装位置 `~/.cargo/bin` 补进当前 shell 的 PATH 再验证，uv 实际安装成功却判定失败退出（Python 缺失 / 过低时的 uv 引导场景必现；Windows 脚本不受影响）
+  - `scripts/install` 一键安装脚本修复 uv 安装后误报「uv 安装失败」：uv 官方安装器自新版起默认装入 `~/.local/bin`，脚本仍只把旧版安装位置 `~/.cargo/bin` 补进当前 shell 的 PATH 再验证，uv 实际安装成功却判定失败退出（Python 缺失 / 过低时的 uv 引导场景必现；Windows 脚本不受影响）。同批修复：Docker 模式镜像 tag 未按所选通道生效（`tag` 变量赋值后从未使用，dev 通道实际拉取 `latest`）；传统安装完成后的「虚拟环境已激活」提示误导（脚本内 source 不影响用户终端，已移除该表演块）；PyPI 版本列表排序预发布版压过同版本号稳定版；macOS 自带 Bash 3.2 因 `declare -A` 直接报错（现启动时检测 Bash 4+ 并明确提示）；`curl | bash` 管道场景交互读取失效（现自动把 stdin 切回终端，无终端的无人值守环境明确报错而非中途退出）；Docker 已安装但未运行时静默隐藏安装方式（现提示启动 Docker 后重试）
 
 ## [2.9.0-dev.0] - 2026/09/25
 > 开发版（预发布）
