@@ -386,6 +386,7 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 脚本会引导您完成：
 
 - **Docker 安装**（检测到 Docker 时推荐）：选择镜像源（Docker Hub / GHCR）、版本通道（稳定版 / 预发布版）、Dashboard 管理面板配置、端口设置
+- **全局 CLI 安装（uv tool，推荐）**：将 `epsdk` 安装为全局命令，无需虚拟环境，uv 自动管理 Python（系统版本过低亦可）；项目目录内运行时自动感知项目 `.venv`
 - **传统安装**：自动创建虚拟环境、选择 ErisPulse 版本、可选安装 Dashboard 管理面板模块
 
 ### 使用 Docker

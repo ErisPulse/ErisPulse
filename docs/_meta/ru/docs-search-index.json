@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1732,
+  "total_keywords": 1730,
   "keywords": {
     "0 Успешно (OK)": [
       {
@@ -3080,6 +3080,14 @@
         "title": "Supervisor"
       }
     ],
+    "Sync API подключение": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 360,
+        "level": 2,
+        "title": "Sync API подключение"
+      }
+    ],
     "TTL контрольной точки": [
       {
         "document": "advanced/conversation.md",
@@ -4233,7 +4241,7 @@
     "Быстрая инициализация": [
       {
         "document": "quick-start.md",
-        "line": 84,
+        "line": 85,
         "level": 3,
         "title": "Быстрая инициализация"
       }
@@ -4451,7 +4459,7 @@
     "Включение автодополнения в IDE (по желанию)": [
       {
         "document": "quick-start.md",
-        "line": 135,
+        "line": 136,
         "level": 2,
         "title": "Включение автодополнения в IDE (по желанию)"
       }
@@ -4520,12 +4528,6 @@
         "title": "Возвращаемое значение методов отправки"
       },
       {
-        "document": "platform-guide/matrix.md",
-        "line": 161,
-        "level": 2,
-        "title": "Возвращаемое значение методов отправки"
-      },
-      {
         "document": "platform-guide/yunhu.md",
         "line": 341,
         "level": 2,
@@ -4550,6 +4552,12 @@
       {
         "document": "platform-guide/kook.md",
         "line": 185,
+        "level": 2,
+        "title": "Возвращаемые значения методов отправки"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 183,
         "level": 2,
         "title": "Возвращаемые значения методов отправки"
       },
@@ -4927,7 +4935,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 182,
+        "line": 183,
         "level": 2,
         "title": "Далее"
       },
@@ -4939,7 +4947,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 167,
+        "line": 169,
         "level": 2,
         "title": "Далее"
       }
@@ -5593,7 +5601,7 @@
     "Запуск проекта": [
       {
         "document": "quick-start.md",
-        "line": 125,
+        "line": 126,
         "level": 2,
         "title": "Запуск проекта"
       },
@@ -5607,7 +5615,7 @@
     "Запуск теста": [
       {
         "document": "user-guide/installation.md",
-        "line": 107,
+        "line": 109,
         "level": 3,
         "title": "Запуск теста"
       }
@@ -5753,7 +5761,7 @@
     "Инициализация проекта": [
       {
         "document": "quick-start.md",
-        "line": 69,
+        "line": 70,
         "level": 2,
         "title": "Инициализация проекта"
       },
@@ -5767,7 +5775,7 @@
     "Инициализация проекта и установка модулей": [
       {
         "document": "user-guide/installation.md",
-        "line": 83,
+        "line": 87,
         "level": 2,
         "title": "Инициализация проекта и установка модулей"
       }
@@ -5837,7 +5845,7 @@
     "Интерактивная инициализация (рекомендуется)": [
       {
         "document": "quick-start.md",
-        "line": 71,
+        "line": 72,
         "level": 3,
         "title": "Интерактивная инициализация (рекомендуется)"
       }
@@ -5853,7 +5861,7 @@
     "Интерактивная установка": [
       {
         "document": "quick-start.md",
-        "line": 117,
+        "line": 118,
         "level": 3,
         "title": "Интерактивная установка"
       },
@@ -6103,7 +6111,7 @@
     "Использование Docker": [
       {
         "document": "quick-start.md",
-        "line": 26,
+        "line": 27,
         "level": 3,
         "title": "Использование Docker"
       }
@@ -6593,7 +6601,7 @@
     "Конфигурационный файл": [
       {
         "document": "quick-start.md",
-        "line": 166,
+        "line": 167,
         "level": 2,
         "title": "Конфигурационный файл"
       },
@@ -6614,12 +6622,6 @@
       {
         "document": "ecosystem/takumi.md",
         "line": 346,
-        "level": 2,
-        "title": "Конфигурация"
-      },
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 22,
         "level": 2,
         "title": "Конфигурация"
       },
@@ -6842,6 +6844,14 @@
         "title": "Краткий справочник"
       }
     ],
+    "Криптография с конечной точкой (4.3.0)": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 67,
+        "level": 2,
+        "title": "Криптография с конечной точкой (4.3.0)"
+      }
+    ],
     "Ленивая загрузка и вызов": [
       {
         "document": "advanced/module-communication.md",
@@ -7061,7 +7071,7 @@
     "Методы Event Mixin": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 312,
+        "line": 334,
         "level": 3,
         "title": "Методы Event Mixin"
       }
@@ -7368,20 +7378,20 @@
         "title": "Механизм определения языка"
       }
     ],
-    "Механизм поддержания соединения": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 350,
-        "level": 3,
-        "title": "Механизм поддержания соединения"
-      }
-    ],
     "Механизм распределения событий": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 190,
         "level": 4,
         "title": "Механизм распределения событий"
+      }
+    ],
+    "Механизм сердцебиения": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 372,
+        "level": 3,
+        "title": "Механизм сердцебиения"
       }
     ],
     "Механизм心跳": [
@@ -8106,12 +8116,6 @@
         "title": "Обновление парадигмы v5 (4.2.0)"
       },
       {
-        "document": "platform-guide/matrix.md",
-        "line": 58,
-        "level": 2,
-        "title": "Обновление парадигмы v5 (4.2.0)"
-      },
-      {
         "document": "platform-guide/webhook.md",
         "line": 9,
         "level": 2,
@@ -8152,6 +8156,14 @@
         "title": "Обновление парадигмы v5 (4.4.0)"
       }
     ],
+    "Обновление формата v5 (4.2.0)": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 58,
+        "level": 2,
+        "title": "Обновление формата v5 (4.2.0)"
+      }
+    ],
     "Обработка взаимодействий": [
       {
         "document": "platform-guide/qqbot.md",
@@ -8163,7 +8175,7 @@
     "Обработка групповых сообщений": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 363,
+        "line": 385,
         "level": 3,
         "title": "Обработка групповых сообщений"
       }
@@ -8182,6 +8194,14 @@
         "line": 464,
         "level": 1,
         "title": "Обработка изменений настроек бота"
+      }
+    ],
+    "Обработка изменений участников": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 460,
+        "level": 3,
+        "title": "Обработка изменений участников"
       }
     ],
     "Обработка изображений": [
@@ -8303,7 +8323,7 @@
     "Обработка реакций": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 387,
+        "line": 409,
         "level": 3,
         "title": "Обработка реакций"
       }
@@ -8311,7 +8331,7 @@
     "Обработка редактирования сообщений": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 425,
+        "line": 447,
         "level": 3,
         "title": "Обработка редактирования сообщений"
       }
@@ -8821,7 +8841,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 176,
+        "line": 198,
         "level": 3,
         "title": "Описание кодов ошибок"
       },
@@ -8843,6 +8863,12 @@
         "document": "platform-guide/ideaura.md",
         "line": 394,
         "level": 3,
+        "title": "Описание конфигурации"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 22,
+        "level": 2,
         "title": "Описание конфигурации"
       },
       {
@@ -9317,7 +9343,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 189,
+        "line": 211,
         "level": 3,
         "title": "Основные отличия"
       },
@@ -9590,18 +9616,16 @@
         "title": "Отправка медиа (Image / Voice / Video / File)"
       }
     ],
-    "Отправка медиа-сообщений": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 404,
-        "level": 3,
-        "title": "Отправка медиа-сообщений"
-      }
-    ],
     "Отправка медиафайлов": [
       {
         "document": "platform-guide/kook.md",
         "line": 462,
+        "level": 3,
+        "title": "Отправка медиафайлов"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 426,
         "level": 3,
         "title": "Отправка медиафайлов"
       }
@@ -9748,14 +9772,6 @@
         "title": "Отслеживание жизненного цикла бота"
       }
     ],
-    "Отслеживание изменений участников": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 438,
-        "level": 3,
-        "title": "Отслеживание изменений участников"
-      }
-    ],
     "Отслеживание личных сообщений": [
       {
         "document": "getting-started/event-handling.md",
@@ -9775,7 +9791,7 @@
     "Ошибка конфигурации": [
       {
         "document": "user-guide/installation.md",
-        "line": 133,
+        "line": 135,
         "level": 3,
         "title": "Ошибка конфигурации"
       }
@@ -9783,7 +9799,7 @@
     "Ошибка создания виртуальной среды в Debian/Ubuntu": [
       {
         "document": "user-guide/installation.md",
-        "line": 155,
+        "line": 157,
         "level": 3,
         "title": "Ошибка создания виртуальной среды в Debian/Ubuntu"
       }
@@ -9791,7 +9807,7 @@
     "Ошибка установки": [
       {
         "document": "user-guide/installation.md",
-        "line": 125,
+        "line": 127,
         "level": 3,
         "title": "Ошибка установки"
       }
@@ -9799,7 +9815,7 @@
     "Ошибка установки модуля": [
       {
         "document": "user-guide/installation.md",
-        "line": 140,
+        "line": 142,
         "level": 3,
         "title": "Ошибка установки модуля"
       }
@@ -10226,12 +10242,6 @@
         "title": "Поддерживаемые возможности платформ"
       },
       {
-        "document": "platform-guide/matrix.md",
-        "line": 80,
-        "level": 3,
-        "title": "Поддерживаемые возможности платформ"
-      },
-      {
         "document": "platform-guide/wechatmp.md",
         "line": 18,
         "level": 3,
@@ -10239,6 +10249,12 @@
       }
     ],
     "Поддерживаемые возможности платформы": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 100,
+        "level": 3,
+        "title": "Поддерживаемые возможности платформы"
+      },
       {
         "document": "platform-guide/webhook.md",
         "line": 1,
@@ -10295,7 +10311,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 86,
+        "line": 108,
         "level": 2,
         "title": "Поддерживаемые типы отправки сообщений"
       },
@@ -10364,6 +10380,12 @@
         "title": "Поддержка OneBot12 сообщений"
       },
       {
+        "document": "platform-guide/matrix.md",
+        "line": 161,
+        "level": 3,
+        "title": "Поддержка OneBot12 сообщений"
+      },
+      {
         "document": "platform-guide/yunhu.md",
         "line": 251,
         "level": 3,
@@ -10412,14 +10434,6 @@
         "line": 906,
         "level": 2,
         "title": "Поддержка нескольких аккаунтов"
-      }
-    ],
-    "Поддержка сообщений OneBot12": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 139,
-        "level": 3,
-        "title": "Поддержка сообщений OneBot12"
       }
     ],
     "Подключение к Gateway": [
@@ -10937,7 +10951,7 @@
     "Приглашения в комнаты": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 356,
+        "line": 378,
         "level": 3,
         "title": "Приглашения в комнаты"
       }
@@ -11171,7 +11185,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 361,
+        "line": 383,
         "level": 2,
         "title": "Примеры использования"
       },
@@ -11235,7 +11249,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 206,
+        "line": 228,
         "level": 3,
         "title": "Примеры специальных полей"
       },
@@ -11248,18 +11262,16 @@
     ],
     "Примеры стандартных API-действий": [
       {
+        "document": "platform-guide/matrix.md",
+        "line": 87,
+        "level": 3,
+        "title": "Примеры стандартных API-действий"
+      },
+      {
         "document": "platform-guide/sandbox.md",
         "line": 27,
         "level": 2,
         "title": "Примеры стандартных API-действий"
-      }
-    ],
-    "Примеры стандартных действий API": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 67,
-        "level": 3,
-        "title": "Примеры стандартных действий API"
       }
     ],
     "Примеры стандартных событий": [
@@ -11293,7 +11305,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 114,
+        "line": 136,
         "level": 3,
         "title": "Примеры цепочечного вызова"
       },
@@ -11545,13 +11557,13 @@
     "Проверка установки": [
       {
         "document": "user-guide/installation.md",
-        "line": 98,
+        "line": 100,
         "level": 2,
         "title": "Проверка установки"
       },
       {
         "document": "user-guide/installation.md",
-        "line": 100,
+        "line": 102,
         "level": 3,
         "title": "Проверка установки"
       }
@@ -11599,7 +11611,7 @@
     "Просмотр доступных модулей": [
       {
         "document": "quick-start.md",
-        "line": 111,
+        "line": 112,
         "level": 3,
         "title": "Просмотр доступных модулей"
       }
@@ -11708,6 +11720,14 @@
         "line": 741,
         "level": 3,
         "title": "Процесс преобразования"
+      }
+    ],
+    "Процесс синхронизации": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 362,
+        "level": 3,
+        "title": "Процесс синхронизации"
       }
     ],
     "Процесс событий": [
@@ -11981,7 +12001,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 200,
+        "line": 222,
         "level": 3,
         "title": "Расширенные поля"
       }
@@ -12828,28 +12848,12 @@
         "title": "Синтаксис отправки с несколькими аккаунтами"
       }
     ],
-    "Синхронизация API": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 338,
-        "level": 2,
-        "title": "Синхронизация API"
-      }
-    ],
     "Синхронная инициализация": [
       {
         "document": "advanced/lazy-loading.md",
         "line": 178,
         "level": 3,
         "title": "Синхронная инициализация"
-      }
-    ],
-    "Синхронный процесс": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 340,
-        "level": 3,
-        "title": "Синхронный процесс"
       }
     ],
     "Система интерактивных сессий": [
@@ -12960,14 +12964,6 @@
         "line": 189,
         "level": 3,
         "title": "Сколько времени занимает проверка?"
-      }
-    ],
-    "Скрипт установки с одним нажатием (рекомендуется)": [
-      {
-        "document": "quick-start.md",
-        "line": 7,
-        "level": 3,
-        "title": "Скрипт установки с одним нажатием (рекомендуется)"
       }
     ],
     "Скрытие шума при завершении": [
@@ -13337,7 +13333,7 @@
     "Создание проекта вручную": [
       {
         "document": "quick-start.md",
-        "line": 94,
+        "line": 95,
         "level": 3,
         "title": "Создание проекта вручную"
       }
@@ -13512,6 +13508,12 @@
     ],
     "Специфические типы событий": [
       {
+        "document": "platform-guide/matrix.md",
+        "line": 207,
+        "level": 2,
+        "title": "Специфические типы событий"
+      },
+      {
         "document": "platform-guide/telegram.md",
         "line": 194,
         "level": 3,
@@ -13644,20 +13646,20 @@
         "title": "Способ 2: Установка с помощью uv (рекомендуется)"
       }
     ],
-    "Способ 3: Использование клиентского приложения ErisPulse-App (без терминала)": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 87,
-        "level": 3,
-        "title": "Способ 3: Использование клиентского приложения ErisPulse-App (без терминала)"
-      }
-    ],
     "Способ 3: Установка с помощью uv tool (глобальный CLI, рекомендуется)": [
       {
         "document": "user-guide/installation.md",
         "line": 68,
         "level": 3,
         "title": "Способ 3: Установка с помощью uv tool (глобальный CLI, рекомендуется)"
+      }
+    ],
+    "Способ 4: Использование клиентского приложения ErisPulse-App (без терминала)": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 91,
+        "level": 3,
+        "title": "Способ 4: Использование клиентского приложения ErisPulse-App (без терминала)"
       }
     ],
     "Способ второй: `event.send_chain()`": [
@@ -14057,7 +14059,7 @@
     "Стратегия выполнения PowerShell в Windows": [
       {
         "document": "user-guide/installation.md",
-        "line": 147,
+        "line": 149,
         "level": 3,
         "title": "Стратегия выполнения PowerShell в Windows"
       }
@@ -14133,7 +14135,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 154,
+        "line": 155,
         "level": 2,
         "title": "Структура проекта"
       }
@@ -14184,6 +14186,14 @@
         "line": 56,
         "level": 2,
         "title": "Сценарий 3: Команда не была запущена (цепочка принятия решений при диспетчеризации)"
+      }
+    ],
+    "Сценарий установки с одним нажатием (рекомендуется)": [
+      {
+        "document": "quick-start.md",
+        "line": 7,
+        "level": 3,
+        "title": "Сценарий установки с одним нажатием (рекомендуется)"
       }
     ],
     "Сырые сообщения и построение сообщений": [
@@ -14352,6 +14362,12 @@
         "line": 47,
         "level": 2,
         "title": "Типы сегментов сообщений"
+      },
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 279,
+        "level": 3,
+        "title": "Типы сегментов сообщений"
       }
     ],
     "Типы сигналов": [
@@ -14382,14 +14398,6 @@
         "line": 245,
         "level": 3,
         "title": "Типы событий `meta`"
-      }
-    ],
-    "Типы событий, специфичные для Matrix": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 185,
-        "level": 2,
-        "title": "Типы событий, специфичные для Matrix"
       }
     ],
     "Типы событий, специфичные для платформы": [
@@ -14442,12 +14450,6 @@
       {
         "document": "platform-guide/kook.md",
         "line": 310,
-        "level": 3,
-        "title": "Типы сообщений"
-      },
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 257,
         "level": 3,
         "title": "Типы сообщений"
       }
@@ -14899,7 +14901,7 @@
     "Установка модуля": [
       {
         "document": "quick-start.md",
-        "line": 103,
+        "line": 104,
         "level": 2,
         "title": "Установка модуля"
       },
@@ -14913,7 +14915,7 @@
     "Установка с помощью pip": [
       {
         "document": "quick-start.md",
-        "line": 51,
+        "line": 52,
         "level": 3,
         "title": "Установка с помощью pip"
       }
@@ -14921,7 +14923,7 @@
     "Установка через CLI": [
       {
         "document": "quick-start.md",
-        "line": 105,
+        "line": 106,
         "level": 3,
         "title": "Установка через CLI"
       }
@@ -15116,6 +15118,14 @@
         "title": "Цепочечные модификаторы"
       }
     ],
+    "Цепочечные модификаторы (можно использовать вместе)": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 128,
+        "level": 3,
+        "title": "Цепочечные модификаторы (можно использовать вместе)"
+      }
+    ],
     "Цепочечные модификаторы (можно комбинировать)": [
       {
         "document": "platform-guide/discord.md",
@@ -15218,14 +15228,6 @@
         "title": "Цепочки модификаторов"
       }
     ],
-    "Цепочные методы модификации (можно комбинировать)": [
-      {
-        "document": "platform-guide/matrix.md",
-        "line": 106,
-        "level": 3,
-        "title": "Цепочные методы модификации (можно комбинировать)"
-      }
-    ],
     "Циклический диалог": [
       {
         "document": "advanced/conversation.md",
@@ -15255,7 +15257,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 123,
+        "line": 125,
         "level": 2,
         "title": "Часто задаваемые вопросы"
       }

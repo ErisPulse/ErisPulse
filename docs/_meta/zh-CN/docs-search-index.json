@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1660,
+  "total_keywords": 1661,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2795,7 +2795,7 @@
     "Debian/Ubuntu 虚拟环境创建失败": [
       {
         "document": "user-guide/installation.md",
-        "line": 159,
+        "line": 162,
         "level": 3,
         "title": "Debian/Ubuntu 虚拟环境创建失败"
       }
@@ -2951,7 +2951,7 @@
     "Event Mixin 方法": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 315,
+        "line": 335,
         "level": 3,
         "title": "Event Mixin 方法"
       }
@@ -3363,7 +3363,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 142,
+        "line": 162,
         "level": 3,
         "title": "OneBot12消息支持"
       },
@@ -3693,7 +3693,7 @@
     "Sync API 连接": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 341,
+        "line": 361,
         "level": 2,
         "title": "Sync API 连接"
       }
@@ -3891,7 +3891,7 @@
     "Windows PowerShell 执行策略": [
       {
         "document": "user-guide/installation.md",
-        "line": 151,
+        "line": 154,
         "level": 3,
         "title": "Windows PowerShell 执行策略"
       }
@@ -4987,7 +4987,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 182,
+        "line": 183,
         "level": 2,
         "title": "下一步"
       },
@@ -4999,7 +4999,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 171,
+        "line": 174,
         "level": 2,
         "title": "下一步"
       }
@@ -5679,7 +5679,7 @@
     "交互式初始化（推荐）": [
       {
         "document": "quick-start.md",
-        "line": 71,
+        "line": 72,
         "level": 3,
         "title": "交互式初始化（推荐）"
       }
@@ -5695,7 +5695,7 @@
     "交互式安装": [
       {
         "document": "quick-start.md",
-        "line": 117,
+        "line": 118,
         "level": 3,
         "title": "交互式安装"
       },
@@ -5921,7 +5921,7 @@
     "使用 Docker": [
       {
         "document": "quick-start.md",
-        "line": 26,
+        "line": 27,
         "level": 3,
         "title": "使用 Docker"
       }
@@ -5937,7 +5937,7 @@
     "使用 pip 安装": [
       {
         "document": "quick-start.md",
-        "line": 51,
+        "line": 52,
         "level": 3,
         "title": "使用 pip 安装"
       }
@@ -6005,7 +6005,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 364,
+        "line": 384,
         "level": 2,
         "title": "使用示例"
       },
@@ -6557,7 +6557,7 @@
     "初始化项目": [
       {
         "document": "quick-start.md",
-        "line": 69,
+        "line": 70,
         "level": 2,
         "title": "初始化项目"
       },
@@ -6993,7 +6993,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 407,
+        "line": 427,
         "level": 3,
         "title": "发送媒体消息"
       }
@@ -7079,7 +7079,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 164,
+        "line": 184,
         "level": 2,
         "title": "发送方法返回值"
       },
@@ -7247,7 +7247,7 @@
     "同步流程": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 343,
+        "line": 363,
         "level": 3,
         "title": "同步流程"
       }
@@ -7311,7 +7311,7 @@
     "启用 IDE 补全（可选）": [
       {
         "document": "quick-start.md",
-        "line": 135,
+        "line": 136,
         "level": 2,
         "title": "启用 IDE 补全（可选）"
       }
@@ -8091,7 +8091,7 @@
     "处理消息编辑": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 428,
+        "line": 448,
         "level": 3,
         "title": "处理消息编辑"
       }
@@ -8131,7 +8131,7 @@
     "处理群组消息": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 366,
+        "line": 386,
         "level": 3,
         "title": "处理群组消息"
       }
@@ -8139,7 +8139,7 @@
     "处理表情回应": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 390,
+        "line": 410,
         "level": 3,
         "title": "处理表情回应"
       }
@@ -8635,7 +8635,7 @@
     "安装失败": [
       {
         "document": "user-guide/installation.md",
-        "line": 129,
+        "line": 132,
         "level": 3,
         "title": "安装失败"
       }
@@ -8667,7 +8667,7 @@
     "安装模块": [
       {
         "document": "quick-start.md",
-        "line": 103,
+        "line": 104,
         "level": 2,
         "title": "安装模块"
       },
@@ -8977,7 +8977,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 81,
+        "line": 101,
         "level": 3,
         "title": "已对接平台能力"
       },
@@ -9101,7 +9101,7 @@
       },
       {
         "document": "user-guide/installation.md",
-        "line": 127,
+        "line": 130,
         "level": 2,
         "title": "常见问题"
       }
@@ -9593,7 +9593,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 353,
+        "line": 373,
         "level": 3,
         "title": "心跳机制"
       }
@@ -9647,7 +9647,7 @@
     "快速初始化": [
       {
         "document": "quick-start.md",
-        "line": 84,
+        "line": 85,
         "level": 3,
         "title": "快速初始化"
       }
@@ -9819,7 +9819,7 @@
     "房间邀请": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 359,
+        "line": 379,
         "level": 3,
         "title": "房间邀请"
       }
@@ -9827,7 +9827,7 @@
     "手动创建项目": [
       {
         "document": "quick-start.md",
-        "line": 94,
+        "line": 95,
         "level": 3,
         "title": "手动创建项目"
       }
@@ -9909,7 +9909,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 203,
+        "line": 223,
         "level": 3,
         "title": "扩展字段"
       }
@@ -10247,7 +10247,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 89,
+        "line": 109,
         "level": 2,
         "title": "支持的消息发送类型"
       },
@@ -10548,14 +10548,6 @@
         "title": "方式一：本地进程（推荐）"
       }
     ],
-    "方式三：使用 ErisPulse-App 客户端（免终端）": [
-      {
-        "document": "user-guide/installation.md",
-        "line": 90,
-        "level": 3,
-        "title": "方式三：使用 ErisPulse-App 客户端（免终端）"
-      }
-    ],
     "方式三：使用 uv tool 安装（全局 CLI，推荐）": [
       {
         "document": "user-guide/installation.md",
@@ -10586,6 +10578,14 @@
         "line": 114,
         "level": 3,
         "title": "方式二：官方在线端点"
+      }
+    ],
+    "方式四：使用 ErisPulse-App 客户端（免终端）": [
+      {
+        "document": "user-guide/installation.md",
+        "line": 93,
+        "level": 3,
+        "title": "方式四：使用 ErisPulse-App 客户端（免终端）"
       }
     ],
     "方法列表": [
@@ -10935,7 +10935,7 @@
     "查看可用模块": [
       {
         "document": "quick-start.md",
-        "line": 111,
+        "line": 112,
         "level": 3,
         "title": "查看可用模块"
       }
@@ -11021,7 +11021,7 @@
     "标准Api动作示例": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 67,
+        "line": 87,
         "level": 3,
         "title": "标准Api动作示例"
       },
@@ -11213,7 +11213,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 192,
+        "line": 212,
         "level": 3,
         "title": "核心差异点"
       },
@@ -11355,7 +11355,7 @@
     "检查安装": [
       {
         "document": "user-guide/installation.md",
-        "line": 104,
+        "line": 107,
         "level": 3,
         "title": "检查安装"
       }
@@ -11479,7 +11479,7 @@
     "模块安装失败": [
       {
         "document": "user-guide/installation.md",
-        "line": 144,
+        "line": 147,
         "level": 3,
         "title": "模块安装失败"
       }
@@ -12075,7 +12075,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 260,
+        "line": 280,
         "level": 3,
         "title": "消息段类型"
       }
@@ -12313,7 +12313,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 188,
+        "line": 208,
         "level": 2,
         "title": "特有事件类型"
       },
@@ -12365,7 +12365,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 209,
+        "line": 229,
         "level": 3,
         "title": "特殊字段示例"
       },
@@ -12551,7 +12551,7 @@
     "监听成员变更": [
       {
         "document": "platform-guide/matrix.md",
-        "line": 441,
+        "line": 461,
         "level": 3,
         "title": "监听成员变更"
       }
@@ -12838,6 +12838,14 @@
         "line": 349,
         "level": 3,
         "title": "立即加载"
+      }
+    ],
+    "端到端加密（4.3.0）": [
+      {
+        "document": "platform-guide/matrix.md",
+        "line": 67,
+        "level": 2,
+        "title": "端到端加密（4.3.0）"
       }
     ],
     "第一步：编写第一个命令": [
@@ -13971,7 +13979,7 @@
     "运行测试": [
       {
         "document": "user-guide/installation.md",
-        "line": 111,
+        "line": 114,
         "level": 3,
         "title": "运行测试"
       }
@@ -13979,7 +13987,7 @@
     "运行项目": [
       {
         "document": "quick-start.md",
-        "line": 125,
+        "line": 126,
         "level": 2,
         "title": "运行项目"
       },
@@ -14441,7 +14449,7 @@
     "通过 CLI 安装": [
       {
         "document": "quick-start.md",
-        "line": 105,
+        "line": 106,
         "level": 3,
         "title": "通过 CLI 安装"
       }
@@ -14629,7 +14637,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 166,
+        "line": 167,
         "level": 2,
         "title": "配置文件"
       }
@@ -14821,7 +14829,7 @@
     "配置错误": [
       {
         "document": "user-guide/installation.md",
-        "line": 137,
+        "line": 140,
         "level": 3,
         "title": "配置错误"
       }
@@ -14929,7 +14937,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 109,
+        "line": 129,
         "level": 3,
         "title": "链式修饰方法（可组合使用）"
       },
@@ -15013,7 +15021,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 117,
+        "line": 137,
         "level": 3,
         "title": "链式调用示例"
       },
@@ -15121,7 +15129,7 @@
       },
       {
         "document": "platform-guide/matrix.md",
-        "line": 179,
+        "line": 199,
         "level": 3,
         "title": "错误码说明"
       },
@@ -15159,7 +15167,7 @@
     "项目初始化与模块安装": [
       {
         "document": "user-guide/installation.md",
-        "line": 86,
+        "line": 89,
         "level": 2,
         "title": "项目初始化与模块安装"
       }
@@ -15189,7 +15197,7 @@
       },
       {
         "document": "quick-start.md",
-        "line": 154,
+        "line": 155,
         "level": 2,
         "title": "项目结构"
       }
@@ -15205,7 +15213,7 @@
     "验证安装": [
       {
         "document": "user-guide/installation.md",
-        "line": 102,
+        "line": 105,
         "level": 2,
         "title": "验证安装"
       }

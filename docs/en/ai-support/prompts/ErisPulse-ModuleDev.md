@@ -371,7 +371,7 @@ flowchart TD
 
 ### One-Click Installation Script (Recommended)
 
-The installation script automatically detects your environment (Docker, Python, uv) and guides you to choose the most suitable installation method.
+The installation script automatically detects your environment (Docker, Python, uv) and guides you through the most suitable installation method.
 
 Windows (PowerShell):
 ```powershell
@@ -385,12 +385,13 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 
 The script will guide you through:
 
-- **Docker Installation** (recommended if Docker is detected): Select image source (Docker Hub / GHCR), version channel (Stable / Pre-release), Dashboard management panel configuration, port settings
-- **Traditional Installation**: Automatically create a virtual environment, select ErisPulse version, optionally install the Dashboard management panel module
+- **Docker Installation** (recommended if Docker is detected): Select image source (Docker Hub / GHCR), version channel (Stable / Preview), Dashboard management panel configuration, port settings
+- **Global CLI Installation (uv tool, recommended)**: Install `epsdk` as a global command, without virtual environments; uv automatically manages Python (even if the system version is too low); when running in a project directory, it automatically detects the project `.venv`
+- **Traditional Installation**: Automatically create a virtual environment, select ErisPulse version, optionally install Dashboard management panel module
 
 ### Using Docker
 
-The Docker image comes with the ErisPulse framework and Dashboard management panel built-in.
+The Docker image already includes the ErisPulse framework and Dashboard management panel.
 
 ```bash
 # Download docker-compose.yml
@@ -403,7 +404,7 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 <details>
 <summary>Is Docker Hub unavailable?</summary>
 
-Use the GitHub Container Registry image by modifying the `image` in `docker-compose.yml`:
+Use the GitHub Container Registry image, modify the `docker-compose.yml` file's image:
 
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
@@ -411,25 +412,25 @@ image: ghcr.io/erispulse/erispulse:latest
 
 </details>
 
-After starting, access `http://<host>:8000/Dashboard` and log in using the configured token.
+After starting, access `http://<host>:8000/Dashboard` and log in using the set token.
 
 ### Using pip Installation
 
-Ensure your Python version is >= 3.10, then install using pip:
+Ensure your Python version is >= 3.10, then use pip to install:
 
 ```bash
 pip install ErisPulse
 ```
 
-If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `uv pip install ErisPulse`, which installs faster.
+If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `uv pip install ErisPulse` for faster installation.
 
-If you only want to install the `epsdk` command-line tool globally without polluting the project environment, use `uv tool install`:
+To install the `epsdk` command-line tool globally without polluting the project environment, use `uv tool install`:
 
 ```bash
 uv tool install ErisPulse
 ```
 
-After installation, `epsdk` will be globally available: when running in a project directory, it will automatically detect the project's `.venv` (use `epsdk install` to install into the project environment, and `epsdk run` to run using the project environment); the framework itself is provided by the tool environment. See [Installation Reference](user-guide/installation.md) for more details.
+After installation, `epsdk` is globally available: when running in a project directory, it automatically detects the project `.venv` (use `epsdk install` to install into the project environment and `epsdk run` to run using the project environment), with the framework core provided by the tool environment. See [Installation Reference](user-guide/installation.md) for more details.
 
 ## Initialize Project
 

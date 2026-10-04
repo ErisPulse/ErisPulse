@@ -372,7 +372,7 @@ flowchart TD
 
 ### One-Click Installation Script (Recommended)
 
-The installation script automatically detects your environment (Docker, Python, uv) and guides you to choose the most suitable installation method.
+The installation script automatically detects your environment (Docker, Python, uv) and guides you through the most suitable installation method.
 
 Windows (PowerShell):
 ```powershell
@@ -386,12 +386,13 @@ curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.
 
 The script will guide you through:
 
-- **Docker Installation** (recommended if Docker is detected): Select image source (Docker Hub / GHCR), version channel (Stable / Pre-release), Dashboard management panel configuration, port settings
-- **Traditional Installation**: Automatically create a virtual environment, select ErisPulse version, optionally install the Dashboard management panel module
+- **Docker Installation** (recommended if Docker is detected): Select image source (Docker Hub / GHCR), version channel (Stable / Preview), Dashboard management panel configuration, port settings
+- **Global CLI Installation (uv tool, recommended)**: Install `epsdk` as a global command, without virtual environments; uv automatically manages Python (even if the system version is too low); when running in a project directory, it automatically detects the project `.venv`
+- **Traditional Installation**: Automatically create a virtual environment, select ErisPulse version, optionally install Dashboard management panel module
 
 ### Using Docker
 
-The Docker image comes with the ErisPulse framework and Dashboard management panel built-in.
+The Docker image already includes the ErisPulse framework and Dashboard management panel.
 
 ```bash
 # Download docker-compose.yml
@@ -404,7 +405,7 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 <details>
 <summary>Is Docker Hub unavailable?</summary>
 
-Use the GitHub Container Registry image by modifying the `image` in `docker-compose.yml`:
+Use the GitHub Container Registry image, modify the `docker-compose.yml` file's image:
 
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
@@ -412,25 +413,25 @@ image: ghcr.io/erispulse/erispulse:latest
 
 </details>
 
-After starting, access `http://<host>:8000/Dashboard` and log in using the configured token.
+After starting, access `http://<host>:8000/Dashboard` and log in using the set token.
 
 ### Using pip Installation
 
-Ensure your Python version is >= 3.10, then install using pip:
+Ensure your Python version is >= 3.10, then use pip to install:
 
 ```bash
 pip install ErisPulse
 ```
 
-If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `uv pip install ErisPulse`, which installs faster.
+If you have [uv](https://github.com/astral-sh/uv) installed, you can also use `uv pip install ErisPulse` for faster installation.
 
-If you only want to install the `epsdk` command-line tool globally without polluting the project environment, use `uv tool install`:
+To install the `epsdk` command-line tool globally without polluting the project environment, use `uv tool install`:
 
 ```bash
 uv tool install ErisPulse
 ```
 
-After installation, `epsdk` will be globally available: when running in a project directory, it will automatically detect the project's `.venv` (use `epsdk install` to install into the project environment, and `epsdk run` to run using the project environment); the framework itself is provided by the tool environment. See [Installation Reference](user-guide/installation.md) for more details.
+After installation, `epsdk` is globally available: when running in a project directory, it automatically detects the project `.venv` (use `epsdk install` to install into the project environment and `epsdk run` to run using the project environment), with the framework core provided by the tool environment. See [Installation Reference](user-guide/installation.md) for more details.
 
 ## Initialize Project
 
@@ -2871,31 +2872,33 @@ uv pip install ErisPulse --upgrade
 
 ### Method 3: Install with uv tool (Global CLI, Recommended)
 
-If you only want to use `epsdk` as a global command-line tool, `uv tool install` is the cleanest approach—`epsdk` runs in an isolated tool environment, without polluting any project environments:
+If you only want to use `epsdk` as a global command-line tool, `uv tool install` is the cleanest approach—epsdk runs in an isolated tool environment, without polluting any project environment:
 
 ```bash
 # Install (epsdk is immediately available, no need to activate any virtual environment)
 uv tool install ErisPulse
 
-# Upgrade (or directly use `epsdk self-update`, which will automatically use this channel)
+# Upgrade (or use `epsdk self-update`, which automatically uses this channel)
 uv tool upgrade ErisPulse
 ```
 
 > [!NOTE]
-> When running `epsdk` in a project directory, the tool environment automatically detects the project's `.venv`:
-> `epsdk install` installs components into the project environment, and `epsdk run` uses the project environment to run the bot.
+> The epsdk in the tool environment will automatically detect the project’s `.venv` when running within the project directory:
+> `epsdk install` will install components into the project environment, and `epsdk run` will use the project environment to run the bot.
 > The framework itself remains provided by the tool environment, with no interference between the two.
+>
+> The one-click installation script (`get.erisdev.com/install.sh` / `install.ps1`) also provides a "Global CLI Installation (uv tool)" option in its menu, which automatically installs uv and guides you through the setup.
 
 ## Project Initialization and Module Installation
 
-After installation, the complete workflow for project initialization, module installation, and execution is available in the [5-Minute Quick Start](../quick-start.md).
+After installation, the complete workflow for project initialization, module installation, and execution is detailed in [5-Minute Quick Start](../quick-start.md).
 
-### Method Three: Using the ErisPulse-App Client (No Terminal Required)
+### Method 4: Using the ErisPulse-App Client (No Terminal Required)
 
-Don't want to install a Python environment? [ErisPulse-App](../ecosystem/app.md) is the official cross-platform client (Android / Windows / Linux / macOS), allowing you to **run directly on your phone**. The desktop version supports minimizing to the system tray for background operation. It comes with a built-in Python runtime and ErisPulse SDK, eliminating the need for a terminal or manual configuration:
+Don't want to install a Python environment? [ErisPulse-App](../ecosystem/app.md) is the official cross-platform client (Android / Windows / Linux / macOS), allowing you to **run directly on your mobile device**. The desktop version supports minimizing to the system tray for background operation. It includes a built-in Python runtime and ErisPulse SDK, eliminating the need for terminal commands or manual configuration:
 
 - Download the appropriate version from [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) based on your platform (Android `online`/`offline` APK, Windows `setup.exe`/`zip`, Linux `tar.gz`, macOS `zip`)
-- Create and start an instance within the App, and manage adapters and modules through the native interface, or browse the module store
+- Create and launch an instance within the App, managing adapters and modules through the native interface and browsing the module store
 
 > For complete instructions, see [ErisPulse-App Installation and Usage](../ecosystem/app.md).
 
@@ -23974,12 +23977,32 @@ enabled = true
 
 - **BaseConverter Inheritance**: Common fields of converters are built by the framework's build_base_event
 - **Api DSL**: get_self_info/get_user_info/get_group_info/get_group_list/get_group_member_list/leave_group/delete_message(redact) + meta actions
-- **Message Event Supplement message_id** (event_id); Message registration table supports delete_message
-- **spawn_background Task Ownership**: Synchronous/heartbeat tasks now use runtime.spawn_background
-- **Framework Soft Dependency**: Runtime checks for ErisPulse>=2.7.1 and provides warnings; Version logs are output on startup
-- Matrix lacks native button capabilities, so standard keyboard segments are gracefully ignored (without errors)
+- **Message Event Supplement message_id** (event_id); Message registry table supports delete_message
+- **spawn_background Task Ownership**: Synchronous/heartbeat tasks use runtime.spawn_background
+- **Framework Soft Dependency**: Runtime detects ErisPulse>=2.7.1 and provides a prompt; Version logs are output on startup
+- Matrix does not have native button capabilities, the standard keyboard segment is gracefully ignored (no error reported)
 
-### Standard Api Action Examples
+## End-to-End Encryption (4.3.0)
+
+Starting from version 4.3.0, the adapter natively supports end-to-end encryption for rooms (based on matrix-nio[e2e] / vodozemac):
+
+```toml
+[Matrix_Adapter.accounts.default]
+user_id = "@bot:matrix.org"
+password = "YOUR_PASSWORD"
+encryption_enabled = true       # Enable (default false, existing deployments unaffected)
+trust_all_devices = true        # Automatically trust unverified devices (default; false for strict mode)
+```
+
+- Messages in encrypted rooms are automatically decrypted/sent encrypted, media is end-to-end encrypted (`m.file.encrypted`)
+- `device_id` is automatically parsed and persisted; session storage is located at `store_path` (default `data/matrix/<account_name>`, **do not delete**, otherwise historical messages cannot be decrypted)
+- New event Mixin adds `event.is_encrypted()`; media segments carry `matrix_encrypted_file` (JWK), which can be decrypted using `MatrixAdapter.decrypt_media()`
+- Cross-signing and server-side key backup are not supported; requires Python >= 3.10
+- If not enabled or matrix-nio is not installed, it automatically falls back to plaintext mode
+
+For detailed instructions, see the [adapter README](https://github.com/ErisPulse/ErisPulse-MatrixAdapter).
+
+### Standard API Action Examples
 
 ```python
 from ErisPulse import sdk
@@ -23987,16 +24010,16 @@ matrix = sdk.adapter.get("matrix")
 result = await matrix.Api.get_self_info()            # /account/whoami
 result = await matrix.Api.get_group_info(room_id)    # m.room.name
 result = await matrix.Api.get_group_list()           # /joined_rooms
-await matrix.Api.delete_message(event_id)            # redact (registration table completes room_id)
+await matrix.Api.delete_message(event_id)            # redact (room_id must be provided in the table)
 ```
 
 ---
 
 ### Supported Platform Capabilities
 
-- **Events**: Message events (m.room.message: text/image/file/audio/video/reply/edit), member addition/removal (m.room.member), room name change, and other state events
-- **Conversations**: Direct messages (DM rooms auto-discovered) / group chats (rooms); support sending Text/Image/File/Voice/Video/Markdown/Raw_ob12
-- **APIs**: whoami/profile/joined_rooms/room status/member list/leave/redact (see above Api DSL)
+- **Events**: Messages (m.room.message: text/image/file/audio/video/reply/edit), member additions/removals (m.room.member), room name changes, and other state events
+- **Conversations**: Direct messages (DM rooms discovered automatically) / group chats (rooms); supports sending Text/Image/File/Voice/Video/Markdown/Raw_ob12
+- **API**: whoami/profile/joined_rooms/room status/member list/leave/redact (see above API DSL)
 
 ## Supported Message Sending Types
 
