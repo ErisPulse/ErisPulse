@@ -42,6 +42,8 @@ It ships with a flexible plugin system, hot reload, a visual Dashboard, an AI Bu
 pip install ErisPulse
 ```
 
+For a global `epsdk` CLI without any virtual environment, use `uv tool install ErisPulse` instead.
+
 ### Option 2 — Docker (recommended for production)
 
 ```bash

@@ -38,6 +38,11 @@ select_install=选择安装方式:
 docker_install=Docker 安装（推荐）
 traditional_install=传统安装（pip/uv + 虚拟环境）
 uv_bootstrap_install=通过 uv 安装 Python 并配置环境
+uv_tool_mode=全局 CLI 安装（uv tool）
+uv_tool_install=全局 CLI 安装（uv tool，推荐）
+uv_tool_desc=全局安装 epsdk 命令，无需虚拟环境；uv 自动管理 Python（系统 Python 过低亦可安装），在项目目录内运行时会自动感知项目 .venv
+uv_tool_bin_hint=终端找不到 epsdk？请将 ~/.local/bin 加入 PATH 后重试
+uv_tool_usage=无需激活虚拟环境：在项目目录直接运行 epsdk 命令即可（运行框架时自动使用项目 .venv）
 fetching_versions=正在从 PyPI 获取版本信息...
 available_versions=可用版本:
 latest_stable=最新稳定版
@@ -46,6 +51,7 @@ view_all=查看所有版本
 manual_version=手动指定版本号
 pre_release=预发布
 select_default=请选择 [1-4] (默认: 1)
+select_1_n=请选择 [1-{0}]
 no_stable=没有找到稳定版本
 no_pre=没有找到预发布版本
 enter_version=请输入版本号
@@ -166,6 +172,11 @@ select_install=選擇安裝方式:
 docker_install=Docker 安裝（推薦）
 traditional_install=傳統安裝（pip/uv + 虛擬環境）
 uv_bootstrap_install=透過 uv 安裝 Python 並設定環境
+uv_tool_mode=全域 CLI 安裝（uv tool）
+uv_tool_install=全域 CLI 安裝（uv tool，推薦）
+uv_tool_desc=全域安裝 epsdk 命令，無需虛擬環境；uv 自動管理 Python（系統 Python 過低亦可安裝），在專案目錄內執行時會自動感知專案 .venv
+uv_tool_bin_hint=終端找不到 epsdk？請將 ~/.local/bin 加入 PATH 後重試
+uv_tool_usage=無需啟用虛擬環境：在專案目錄直接執行 epsdk 命令即可（執行框架時自動使用專案 .venv）
 fetching_versions=正在從 PyPI 取得版本資訊...
 available_versions=可用版本:
 latest_stable=最新穩定版
@@ -174,6 +185,7 @@ view_all=檢視所有版本
 manual_version=手動指定版本號
 pre_release=預發布
 select_default=請選擇 [1-4] (預設: 1)
+select_1_n=請選擇 [1-{0}]
 no_stable=沒有找到穩定版本
 no_pre=沒有找到預發布版本
 enter_version=請輸入版本號
@@ -213,6 +225,8 @@ use_pip=將使用 pip 進行安裝
 will_install=將安裝
 latest_version=最新版本
 install_dashboard=是否安裝 Dashboard 管理面板模組？ [Y/n]
+install_version=安裝版本
+install_latest=安裝最新版本
 installing=正在安裝
 install_success=安裝成功
 install_fail=安裝失敗
@@ -292,6 +306,11 @@ select_install=Select installation method:
 docker_install=Docker Install (Recommended)
 traditional_install=Traditional Install (pip/uv + venv)
 uv_bootstrap_install=Install Python via uv and setup environment
+uv_tool_mode=Global CLI Install (uv tool)
+uv_tool_install=Global CLI Install (uv tool, recommended)
+uv_tool_desc=Installs the epsdk command globally — no virtual environment needed; uv manages Python automatically (works even with an outdated system Python), and inside a project directory epsdk automatically detects the project .venv
+uv_tool_bin_hint=epsdk not found in your terminal? Add ~/.local/bin to PATH and retry
+uv_tool_usage=No activation needed — run the epsdk command directly in any project directory (the framework runs inside the project .venv automatically)
 fetching_versions=Fetching version info from PyPI...
 available_versions=Available versions:
 latest_stable=Latest stable
@@ -300,6 +319,7 @@ view_all=View all versions
 manual_version=Specify version manually
 pre_release=pre-release
 select_default=Select [1-4] (default: 1)
+select_1_n=Select [1-{0}]
 no_stable=No stable version found
 no_pre=No pre-release version found
 enter_version=Enter version number
@@ -420,6 +440,11 @@ select_install=インストール方法を選択:
 docker_install=Docker インストール（推奨）
 traditional_install=従来インストール（pip/uv + venv）
 uv_bootstrap_install=uv で Python をインストールして環境を構築
+uv_tool_mode=グローバル CLI インストール（uv tool）
+uv_tool_install=グローバル CLI インストール（uv tool、推奨）
+uv_tool_desc=epsdk コマンドをグローバルにインストールします。仮想環境は不要です。uv が Python を自動管理し（システム Python が古くても利用可能）、プロジェクトディレクトリ内ではプロジェクトの .venv を自動検出します
+uv_tool_bin_hint=ターミナルで epsdk が見つからない場合は、~/.local/bin を PATH に追加して再試行してください
+uv_tool_usage=アクティベートは不要です。プロジェクトディレクトリで直接 epsdk コマンドを実行してください（フレームワーク実行時はプロジェクトの .venv を自動使用します）
 fetching_versions=PyPI からバージョン情報を取得中...
 available_versions=利用可能なバージョン:
 latest_stable=最新安定版
@@ -428,6 +453,7 @@ view_all=全バージョンを表示
 manual_version=バージョンを手動指定
 pre_release=プレリリース
 select_default=選択 [1-4] (デフォルト: 1)
+select_1_n=選択 [1-{0}]
 no_stable=安定版が見つかりません
 no_pre=プレリリース版が見つかりません
 enter_version=バージョン番号を入力
@@ -467,6 +493,8 @@ use_pip=pip を使用してインストール
 will_install=インストール予定
 latest_version=最新バージョン
 install_dashboard=Dashboard モジュールをインストールしますか？ [Y/n]
+install_version=インストールバージョン
+install_latest=最新バージョンをインストール
 installing=インストール中
 install_success=インストール成功
 install_fail=インストール失敗
@@ -546,6 +574,11 @@ select_install=Выберите способ установки:
 docker_install=Установка через Docker (рекомендуется)
 traditional_install=Традиционная установка (pip/uv + venv)
 uv_bootstrap_install=Установить Python через uv и настроить среду
+uv_tool_mode=Глобальная установка CLI (uv tool)
+uv_tool_install=Глобальная установка CLI (uv tool, рекомендуется)
+uv_tool_desc=Устанавливает команду epsdk глобально — без виртуального окружения; uv автоматически управляет Python (работает даже с устаревшим системным Python), а в каталоге проекта epsdk автоматически использует его .venv
+uv_tool_bin_hint=epsdk не найден в терминале? Добавьте ~/.local/bin в PATH и повторите попытку
+uv_tool_usage=Активация не нужна — запускайте epsdk прямо в каталоге проекта (фреймворк автоматически использует его .venv)
 fetching_versions=Получение информации о версиях из PyPI...
 available_versions=Доступные версии:
 latest_stable=Последняя стабильная
@@ -554,6 +587,7 @@ view_all=Все версии
 manual_version=Указать версию вручную
 pre_release=предварительная
 select_default=Выбор [1-4] (по умолчанию: 1)
+select_1_n=Выбор [1-{0}]
 no_stable=Стабильная версия не найдена
 no_pre=Предварительная версия не найдена
 enter_version=Введите номер версии
@@ -1177,6 +1211,42 @@ install_traditional_mode() {
     return 0
 }
 
+ensure_uv() {
+    if command_exists uv; then
+        USE_UV=true
+        return 0
+    fi
+    print_info "$(t 'installing') uv..."
+    local uv_install_script="/tmp/uv_install_$$"
+    if command_exists curl; then
+        curl -LsSf https://astral.sh/uv/install.sh -o "$uv_install_script"
+    elif command_exists wget; then
+        wget -qO- https://astral.sh/uv/install.sh -O "$uv_install_script"
+    else
+        print_error "curl or wget required"
+        return 1
+    fi
+    if [ ! -f "$uv_install_script" ]; then
+        print_error "$(t 'uv_install_fail')"
+        return 1
+    fi
+    if ! sh "$uv_install_script"; then
+        rm -f "$uv_install_script"
+        print_error "$(t 'uv_install_fail')"
+        return 1
+    fi
+    rm -f "$uv_install_script"
+    # uv 官方安装器默认装入 ~/.local/bin（旧版为 ~/.cargo/bin），且不修改当前 shell 的 PATH，两处都需补进 PATH 再验证
+    export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+    if command_exists uv; then
+        USE_UV=true
+        print_success "$(t 'uv_install_success')"
+        return 0
+    fi
+    print_error "$(t 'uv_install_fail')"
+    return 1
+}
+
 install_uv_bootstrap() {
     print_header "$(t 'uv_bootstrap_mode')"
     print_info "$(t 'uv_desc')"
@@ -1184,31 +1254,7 @@ install_uv_bootstrap() {
     if [ "$USE_UV" = true ]; then
         print_success "$(t 'uv_installed')"
     else
-        print_info "$(t 'installing') uv..."
-        local uv_install_script="/tmp/uv_install_$$"
-        if command_exists curl; then
-            curl -LsSf https://astral.sh/uv/install.sh -o "$uv_install_script"
-        elif command_exists wget; then
-            wget -qO- https://astral.sh/uv/install.sh -O "$uv_install_script"
-        else
-            print_error "curl or wget required"
-            return 1
-        fi
-        if [ -f "$uv_install_script" ]; then
-            sh "$uv_install_script"
-            rm -f "$uv_install_script"
-            export PATH="$HOME/.cargo/bin:$PATH"
-            if command_exists uv; then
-                USE_UV=true
-                print_success "$(t 'uv_install_success')"
-            else
-                print_error "$(t 'uv_install_fail')"
-                return 1
-            fi
-        else
-            print_error "$(t 'uv_install_fail')"
-            return 1
-        fi
+        ensure_uv || return 1
     fi
     print_info "$(t 'installing_python')"
     if ! uv python install 3.12; then
@@ -1223,6 +1269,45 @@ install_uv_bootstrap() {
     fi
     print_success "$(t 'venv_created')"
     [ -f "$VENV_DIR/bin/activate" ] && source "$VENV_DIR/bin/activate" && print_success "$(t 'venv_activated')"
+    return 0
+}
+
+install_uv_tool_mode() {
+    print_header "$(t 'uv_tool_mode')"
+    print_info "$(t 'uv_tool_desc')"
+    echo ""
+    ensure_uv || return 1
+    show_version_menu
+    echo ""
+    [ -n "$TARGET_VERSION" ] && echo -e "${CYAN}$(t 'will_install') ErisPulse ${BOLD}${TARGET_VERSION}${NC}" || echo -e "${CYAN}$(t 'will_install') ErisPulse ${BOLD}$(t 'latest_version')${NC}"
+    read -p "$(t 'confirm_install'): " confirm
+    [[ "$confirm" =~ ^[nN]$ ]] && print_info "$(t 'cancelled')" && return 1
+    echo ""
+    print_info "$(t 'installing') ErisPulse..."
+    local pkg_spec="ErisPulse"
+    [ -n "$TARGET_VERSION" ] && pkg_spec="ErisPulse==$TARGET_VERSION"
+    if ! uv tool install "$pkg_spec"; then
+        print_error "ErisPulse $(t 'install_fail')"
+        return 1
+    fi
+    export PATH="$HOME/.local/bin:$PATH"
+    echo ""
+    print_header "$(t 'install_complete')"
+    if command_exists epsdk; then
+        print_success "epsdk $(t 'install_success')"
+    else
+        print_warning "$(t 'uv_tool_bin_hint')"
+    fi
+    echo -e "${CYAN}$(t 'uv_tool_usage')${NC}"
+    echo ""
+    echo -e "${BOLD}$(t 'quick_start'):${NC}"
+    echo -e "  1. $(t 'init_project')"
+    echo -e "  2. $(t 'install_module')"
+    echo -e "  3. $(t 'run_project')"
+    echo ""
+    echo -e "  - $(t 'tip_update')"
+    echo ""
+    print_completion_footer
     return 0
 }
 
@@ -1243,33 +1328,9 @@ main() {
         if [[ ! "$uv_install_choice" =~ ^[nN]$ ]]; then
             # Install uv if needed
             if [ "$USE_UV" != true ]; then
-                print_info "$(t 'installing') uv..."
-                local uv_install_script="/tmp/uv_install_$$"
-                if command_exists curl; then
-                    curl -LsSf https://astral.sh/uv/install.sh -o "$uv_install_script"
-                elif command_exists wget; then
-                    wget -qO- https://astral.sh/uv/install.sh -O "$uv_install_script"
-                else
-                    print_error "curl or wget required"
-                    exit 1
-                fi
-                if [ -f "$uv_install_script" ]; then
-                    sh "$uv_install_script"
-                    rm -f "$uv_install_script"
-                    export PATH="$HOME/.cargo/bin:$PATH"
-                    if command_exists uv; then
-                        USE_UV=true
-                        print_success "$(t 'uv_install_success')"
-                    else
-                        print_error "$(t 'uv_install_fail')"
-                        exit 1
-                    fi
-                else
-                    print_error "$(t 'uv_install_fail')"
-                    exit 1
-                fi
+                ensure_uv || exit 1
             fi
-            
+
             # Install Python via uv
             print_info "$(t 'installing_python')"
             if ! uv python install 3.12; then
@@ -1303,6 +1364,9 @@ main() {
         options+=("docker")
         option_num=$((option_num + 1))
     fi
+    echo -e "  ${BOLD}${option_num}${NC}. ${GREEN}$(t 'uv_tool_install')${NC}"
+    options+=("uv-tool")
+    option_num=$((option_num + 1))
     if [ "$python_ok" = true ]; then
         echo -e "  ${BOLD}${option_num}${NC}. ${GREEN}$(t 'traditional_install')${NC}"
         options+=("traditional")
@@ -1327,8 +1391,12 @@ main() {
         selected="${options[0]}"
     else
         echo ""
+        local menu_prompt menu_max
+        menu_prompt="$(t 'select_1_n')"
+        menu_max=$((option_num - 1))
+        menu_prompt="${menu_prompt//\{0\}/$menu_max}"
         while true; do
-            read -p "$(t 'select_default') [1-$((option_num - 1))]: " choice
+            read -p "$menu_prompt: " choice
             if [[ "$choice" =~ ^[0-9]+$ ]]; then
                 local idx=$((choice - 1))
                 [ $idx -ge 0 ] && [ $idx -lt ${#options[@]} ] && selected="${options[$idx]}" && break
@@ -1339,6 +1407,7 @@ main() {
     echo ""
     case "$selected" in
         docker) install_docker_mode || exit 1 ;;
+        uv-tool) install_uv_tool_mode || exit 1 ;;
         traditional) install_traditional_mode || exit 1 ;;
         uv-bootstrap)
             install_uv_bootstrap || exit 1

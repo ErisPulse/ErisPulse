@@ -34,6 +34,11 @@ $langData = @{
         docker_install = "Docker 安装（推荐）"
         traditional_install = "传统安装（pip/uv + 虚拟环境）"
         uv_bootstrap_install = "通过 uv 安装 Python 并配置环境"
+        uv_tool_mode = "全局 CLI 安装（uv tool）"
+        uv_tool_install = "全局 CLI 安装（uv tool，推荐）"
+        uv_tool_desc = "全局安装 epsdk 命令，无需虚拟环境；uv 自动管理 Python（系统 Python 过低亦可安装），在项目目录内运行时会自动感知项目 .venv"
+        uv_tool_bin_hint = "终端找不到 epsdk？请将 %USERPROFILE%\.local\bin 加入 PATH 后重试"
+        uv_tool_usage = "无需激活虚拟环境：在项目目录直接运行 epsdk 命令即可（运行框架时自动使用项目 .venv）"
         fetching_versions = "正在从 PyPI 获取版本信息..."
         available_versions = "可用版本:"
         latest_stable = "最新稳定版"
@@ -130,7 +135,7 @@ $langData = @{
         install_module = "安装模块: epsdk install <模块名>"
         run_project = "运行项目: epsdk run"
         all_versions_title = "可用版本列表"
-        select_version_or_number = "请输入版本序号 [{0}-{1}] 或版本号"
+        select_version_or_number = "请输入版本序号 [1-{0}] 或版本号"
         invalid_index = "请输入有效的序号"
         invalid_version = "请输入有效的序号或版本号"
         fetch_fail = "无法获取版本信息，将安装最新版本"
@@ -162,6 +167,11 @@ $langData = @{
         docker_install = "Docker 安裝（推薦）"
         traditional_install = "傳統安裝（pip/uv + 虛擬環境）"
         uv_bootstrap_install = "透過 uv 安裝 Python 並設定環境"
+        uv_tool_mode = "全域 CLI 安裝（uv tool）"
+        uv_tool_install = "全域 CLI 安裝（uv tool，推薦）"
+        uv_tool_desc = "全域安裝 epsdk 命令，無需虛擬環境；uv 自動管理 Python（系統 Python 過低亦可安裝），在專案目錄內執行時會自動感知專案 .venv"
+        uv_tool_bin_hint = "終端找不到 epsdk？請將 %USERPROFILE%\.local\bin 加入 PATH 後重試"
+        uv_tool_usage = "無需啟用虛擬環境：在專案目錄直接執行 epsdk 命令即可（執行框架時自動使用專案 .venv）"
         fetching_versions = "正在從 PyPI 取得版本資訊..."
         available_versions = "可用版本:"
         latest_stable = "最新穩定版"
@@ -258,7 +268,7 @@ $langData = @{
         install_module = "安裝模組: epsdk install <模組名>"
         run_project = "執行專案: epsdk run"
         all_versions_title = "可用版本列表"
-        select_version_or_number = "請輸入版本序號 [{0}-{1}] 或版本號"
+        select_version_or_number = "請輸入版本序號 [1-{0}] 或版本號"
         invalid_index = "請輸入有效的序號"
         invalid_version = "請輸入有效的序號或版本號"
         fetch_fail = "無法取得版本資訊，將安裝最新版本"
@@ -290,6 +300,11 @@ $langData = @{
         docker_install = "Docker Install (Recommended)"
         traditional_install = "Traditional Install (pip/uv + venv)"
         uv_bootstrap_install = "Install Python via uv and setup environment"
+        uv_tool_mode = "Global CLI Install (uv tool)"
+        uv_tool_install = "Global CLI Install (uv tool, recommended)"
+        uv_tool_desc = "Installs the epsdk command globally — no virtual environment needed; uv manages Python automatically (works even with an outdated system Python), and inside a project directory epsdk automatically detects the project .venv"
+        uv_tool_bin_hint = "epsdk not found in your terminal? Add %USERPROFILE%\.local\bin to PATH and retry"
+        uv_tool_usage = "No activation needed — run the epsdk command directly in any project directory (the framework runs inside the project .venv automatically)"
         fetching_versions = "Fetching version info from PyPI..."
         available_versions = "Available versions:"
         latest_stable = "Latest stable"
@@ -418,6 +433,11 @@ $langData = @{
         docker_install = "Docker インストール（推奨）"
         traditional_install = "従来インストール（pip/uv + venv）"
         uv_bootstrap_install = "uv で Python をインストールして環境を構築"
+        uv_tool_mode = "グローバル CLI インストール（uv tool）"
+        uv_tool_install = "グローバル CLI インストール（uv tool、推奨）"
+        uv_tool_desc = "epsdk コマンドをグローバルにインストールします。仮想環境は不要です。uv が Python を自動管理し（システム Python が古くても利用可能）、プロジェクトディレクトリ内ではプロジェクトの .venv を自動検出します"
+        uv_tool_bin_hint = "ターミナルで epsdk が見つからない場合は、%USERPROFILE%\.local\bin を PATH に追加して再試行してください"
+        uv_tool_usage = "アクティベートは不要です。プロジェクトディレクトリで直接 epsdk コマンドを実行してください（フレームワーク実行時はプロジェクトの .venv を自動使用します）"
         fetching_versions = "PyPI からバージョン情報を取得中..."
         available_versions = "利用可能なバージョン:"
         latest_stable = "最新安定版"
@@ -546,6 +566,11 @@ $langData = @{
         docker_install = "Установка через Docker (рекомендуется)"
         traditional_install = "Традиционная установка (pip/uv + venv)"
         uv_bootstrap_install = "Установить Python через uv и настроить среду"
+        uv_tool_mode = "Глобальная установка CLI (uv tool)"
+        uv_tool_install = "Глобальная установка CLI (uv tool, рекомендуется)"
+        uv_tool_desc = "Устанавливает команду epsdk глобально — без виртуального окружения; uv автоматически управляет Python (работает даже с устаревшим системным Python), а в каталоге проекта epsdk автоматически использует его .venv"
+        uv_tool_bin_hint = "epsdk не найден в терминале? Добавьте %USERPROFILE%\.local\bin в PATH и повторите попытку"
+        uv_tool_usage = "Активация не нужна — запускайте epsdk прямо в каталоге проекта (фреймворк автоматически использует его .venv)"
         fetching_versions = "Получение информации о версиях из PyPI..."
         available_versions = "Доступные версии:"
         latest_stable = "Последняя стабильная"
@@ -892,15 +917,15 @@ function Show-AllVersions {
     
     Write-Host ""
     while ($true) {
-        $input = Read-Host (t 'select_version_or_number' -f "1", "$index")
-        if ($input -match '^\d+$') {
-            $idx = [int]$input - 1
+        $verChoice = Read-Host ((t 'select_version_or_number') -f "$($versionList.Count)")
+        if ($verChoice -match '^\d+$') {
+            $idx = [int]$verChoice - 1
             if ($idx -ge 0 -and $idx -lt $versionList.Count) {
                 $script:TargetVersion = $versionList[$idx]
                 return
             } else { Write-Warning (t 'invalid_index') }
         } else {
-            if ($input -in $versionList) { $script:TargetVersion = $input; return }
+            if ($verChoice -in $versionList) { $script:TargetVersion = $verChoice; return }
             else { Write-Warning (t 'invalid_version') }
         }
     }
@@ -1294,30 +1319,38 @@ function Install-TraditionalMode {
     return $true
 }
 
+function Ensure-Uv {
+    if (Test-Command "uv") {
+        $script:UseUv = $true
+        return $true
+    }
+    Write-Info "$(t 'installing') uv..."
+    try {
+        irm https://astral.sh/uv/install.ps1 | iex
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "User") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+        if (Test-Command "uv") {
+            $script:UseUv = $true
+            Write-Success (t 'uv_install_success')
+            return $true
+        }
+        Write-Err (t 'uv_install_fail')
+        return $false
+    } catch {
+        Write-Err "$(t 'uv_install_fail'): $_"
+        return $false
+    }
+}
+
 function Install-UvAndPython {
     Write-Header (t 'uv_bootstrap_mode')
-    
+
     Write-Info (t 'uv_desc')
     Write-Host ""
-    
+
     if ($script:UseUv) {
         Write-Success (t 'uv_installed')
     } else {
-        Write-Info "$(t 'installing') uv..."
-        try {
-            irm https://astral.sh/uv/install.ps1 | iex
-            $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "User") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "Machine")
-            if (Test-Command "uv") {
-                $script:UseUv = $true
-                Write-Success (t 'uv_install_success')
-            } else {
-                Write-Err (t 'uv_install_fail')
-                return $false
-            }
-        } catch {
-            Write-Err "$(t 'uv_install_fail'): $_"
-            return $false
-        }
+        if (-not (Ensure-Uv)) { return $false }
     }
     
     Write-Info (t 'installing_python')
@@ -1347,6 +1380,65 @@ function Install-UvAndPython {
     return $true
 }
 
+function Install-UvToolMode {
+    Write-Header (t 'uv_tool_mode')
+
+    Write-Info (t 'uv_tool_desc')
+    Write-Host ""
+
+    if (-not (Ensure-Uv)) { return $false }
+
+    Show-VersionMenu
+
+    Write-Host ""
+    if ($script:TargetVersion) {
+        Write-Host "$(t 'will_install') ErisPulse $($script:TargetVersion)" -ForegroundColor Cyan
+    } else {
+        Write-Host "$(t 'will_install') ErisPulse $(t 'latest_version')" -ForegroundColor Cyan
+    }
+
+    $confirm = Read-Host (t 'confirm_install')
+    if ($confirm -match '^[nN]$') {
+        Write-Info (t 'cancelled')
+        return $false
+    }
+
+    Write-Host ""
+    Write-Info "$(t 'installing') ErisPulse..."
+    $pkgSpec = "ErisPulse"
+    if ($script:TargetVersion) { $pkgSpec = "ErisPulse==$($script:TargetVersion)" }
+    try {
+        & uv tool install $pkgSpec
+        if ($LASTEXITCODE -ne 0) { throw "uv tool install exit code $LASTEXITCODE" }
+    } catch {
+        Write-Err "$(t 'install_fail'): $_"
+        return $false
+    }
+
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "User") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+
+    Write-Host ""
+    Write-Header (t 'install_complete')
+    if (Test-Command "epsdk") {
+        Write-Success "epsdk $(t 'install_success')"
+    } else {
+        Write-Warning (t 'uv_tool_bin_hint')
+    }
+    Write-Host "$(t 'uv_tool_usage')" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "$(t 'quick_start'):"
+    Write-Host "  1. $(t 'init_project')" -ForegroundColor Green
+    Write-Host "  2. $(t 'install_module')" -ForegroundColor Green
+    Write-Host "  3. $(t 'run_project')" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "  - $(t 'tip_update')" -ForegroundColor Green
+    Write-Host ""
+
+    Write-CompletionFooter
+
+    return $true
+}
+
 function Main {
     Select-Language
 
@@ -1366,23 +1458,9 @@ function Main {
         if ($installUvChoice -notmatch '^[nN]$') {
             # Install uv if needed
             if (-not $script:UseUv) {
-                Write-Info "$((t 'installing')) uv..."
-                try {
-                    irm https://astral.sh/uv/install.ps1 | iex
-                    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "User") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "Machine")
-                    if (Test-Command "uv") {
-                        $script:UseUv = $true
-                        Write-Success (t 'uv_install_success')
-                    } else {
-                        Write-Err (t 'uv_install_fail')
-                        exit 1
-                    }
-                } catch {
-                    Write-Err "$((t 'uv_install_fail')): $_"
-                    exit 1
-                }
+                if (-not (Ensure-Uv)) { exit 1 }
             }
-            
+
             # Install Python via uv
             Write-Info (t 'installing_python')
             try {
@@ -1428,7 +1506,11 @@ function Main {
         $options += "docker"
         $optionNum++
     }
-    
+
+    Write-Host "  ${optionNum}. $(t 'uv_tool_install')" -ForegroundColor Green
+    $options += "uv-tool"
+    $optionNum++
+
     if ($pythonAvailable) {
         Write-Host "  ${optionNum}. $(t 'traditional_install')" -ForegroundColor Green
         $options += "traditional"
@@ -1457,7 +1539,7 @@ function Main {
     } else {
         Write-Host ""
         while ($true) {
-            $choice = Read-Host "$(t 'select_1_n' -f "$($optionNum - 1)")"
+            $choice = Read-Host ((t 'select_1_n') -f ($optionNum - 1))
             if ($choice -match '^\d+$') {
                 $idx = [int]$choice - 1
                 if ($idx -ge 0 -and $idx -lt $options.Count) {
@@ -1471,8 +1553,11 @@ function Main {
     
     Write-Host ""
     switch ($selected) {
-        "docker" { 
+        "docker" {
             if (-not (Install-DockerMode)) { exit 1 }
+        }
+        "uv-tool" {
+            if (-not (Install-UvToolMode)) { exit 1 }
         }
         "traditional" {
             if (-not (Install-TraditionalMode)) { exit 1 }
