@@ -59,12 +59,32 @@ enabled = true
 
 - **BaseConverter Inheritance**: Common fields of converters are built by the framework's build_base_event
 - **Api DSL**: get_self_info/get_user_info/get_group_info/get_group_list/get_group_member_list/leave_group/delete_message(redact) + meta actions
-- **Message Event Supplement message_id** (event_id); Message registration table supports delete_message
-- **spawn_background Task Ownership**: Synchronous/heartbeat tasks now use runtime.spawn_background
-- **Framework Soft Dependency**: Runtime checks for ErisPulse>=2.7.1 and provides warnings; Version logs are output on startup
-- Matrix lacks native button capabilities, so standard keyboard segments are gracefully ignored (without errors)
+- **Message Event Supplement message_id** (event_id); Message registry table supports delete_message
+- **spawn_background Task Ownership**: Synchronous/heartbeat tasks use runtime.spawn_background
+- **Framework Soft Dependency**: Runtime detects ErisPulse>=2.7.1 and provides a prompt; Version logs are output on startup
+- Matrix does not have native button capabilities, the standard keyboard segment is gracefully ignored (no error reported)
 
-### Standard Api Action Examples
+## End-to-End Encryption (4.3.0)
+
+Starting from version 4.3.0, the adapter natively supports end-to-end encryption for rooms (based on matrix-nio[e2e] / vodozemac):
+
+```toml
+[Matrix_Adapter.accounts.default]
+user_id = "@bot:matrix.org"
+password = "YOUR_PASSWORD"
+encryption_enabled = true       # Enable (default false, existing deployments unaffected)
+trust_all_devices = true        # Automatically trust unverified devices (default; false for strict mode)
+```
+
+- Messages in encrypted rooms are automatically decrypted/sent encrypted, media is end-to-end encrypted (`m.file.encrypted`)
+- `device_id` is automatically parsed and persisted; session storage is located at `store_path` (default `data/matrix/<account_name>`, **do not delete**, otherwise historical messages cannot be decrypted)
+- New event Mixin adds `event.is_encrypted()`; media segments carry `matrix_encrypted_file` (JWK), which can be decrypted using `MatrixAdapter.decrypt_media()`
+- Cross-signing and server-side key backup are not supported; requires Python >= 3.10
+- If not enabled or matrix-nio is not installed, it automatically falls back to plaintext mode
+
+For detailed instructions, see the [adapter README](https://github.com/ErisPulse/ErisPulse-MatrixAdapter).
+
+### Standard API Action Examples
 
 ```python
 from ErisPulse import sdk
@@ -72,16 +92,16 @@ matrix = sdk.adapter.get("matrix")
 result = await matrix.Api.get_self_info()            # /account/whoami
 result = await matrix.Api.get_group_info(room_id)    # m.room.name
 result = await matrix.Api.get_group_list()           # /joined_rooms
-await matrix.Api.delete_message(event_id)            # redact (registration table completes room_id)
+await matrix.Api.delete_message(event_id)            # redact (room_id must be provided in the table)
 ```
 
 ---
 
 ### Supported Platform Capabilities
 
-- **Events**: Message events (m.room.message: text/image/file/audio/video/reply/edit), member addition/removal (m.room.member), room name change, and other state events
-- **Conversations**: Direct messages (DM rooms auto-discovered) / group chats (rooms); support sending Text/Image/File/Voice/Video/Markdown/Raw_ob12
-- **APIs**: whoami/profile/joined_rooms/room status/member list/leave/redact (see above Api DSL)
+- **Events**: Messages (m.room.message: text/image/file/audio/video/reply/edit), member additions/removals (m.room.member), room name changes, and other state events
+- **Conversations**: Direct messages (DM rooms discovered automatically) / group chats (rooms); supports sending Text/Image/File/Voice/Video/Markdown/Raw_ob12
+- **API**: whoami/profile/joined_rooms/room status/member list/leave/redact (see above API DSL)
 
 ## Supported Message Sending Types
 

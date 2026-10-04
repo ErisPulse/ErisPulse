@@ -11,24 +11,24 @@
 
 ## インストール方法
 
-### 方法1：pipを使用したインストール
+### 方法 1: pip を使用したインストール
 
 ```bash
-# ErisPulseのインストール
+# ErisPulse のインストール
 pip install ErisPulse
 
 # 最新バージョンへのアップグレード
 pip install ErisPulse --upgrade
 ```
 
-### 方法2：uvを使用したインストール（推奨）
+### 方法 2: uv を使用したインストール（推奨）
 
-uvはより高速なPythonツールチェーンであり、開発環境での使用が推奨されます。
+uv はより高速な Python ツールチェーンであり、開発環境での使用が推奨されています。
 
-#### uvのインストール
+#### uv のインストール
 
 ```bash
-# pipを使用してuvをインストール
+# pip を使用して uv をインストール
 pip install uv
 
 # インストールの確認
@@ -41,7 +41,7 @@ uv --version
 # プロジェクトディレクトリの作成
 mkdir my_bot && cd my_bot
 
-# Python 3.12のインストール
+# Python 3.12 のインストール
 uv python install 3.12
 
 # 仮想環境の作成
@@ -58,37 +58,40 @@ uv venv
 source .venv/bin/activate
 ```
 
-#### ErisPulseのインストール
+#### ErisPulse のインストール
 
 ```bash
-# ErisPulseのインストール
+# ErisPulse のインストール
 uv pip install ErisPulse --upgrade
 ```
 
-### 方法3：uv toolを使用したインストール（グローバルCLI、推奨）
+### 方法 3: uv tool を使用したインストール（グローバル CLI、推奨）
 
-`epsdk`をグローバルなコマンドラインツールとして使用したい場合、`uv tool install`が最もクリーンな方法です。epsdkは独立したツール環境で動作し、プロジェクト環境を汚染しません。
+`epsdk` をグローバルなコマンドラインツールとして使用したい場合、`uv tool install` が最もクリーンな方法です。epsdk は独立したツール環境で動作し、プロジェクト環境を汚染しません。
 
 ```bash
-# インストール（.venvを有効化せずにepsdkがすぐに使用可能）
+# インストール（.venv をアクティブ化する必要なく、epsdk をすぐに使用可能）
 uv tool install ErisPulse
 
-# アップグレード（またはepsdk self-updateを使用して自動的にこの経路をたどる）
+# アップグレード（または `epsdk self-update` を直接実行すると、このプロセスが自動的に実行されます）
 uv tool upgrade ErisPulse
 ```
 
 > [!NOTE]
-> ツール環境内のepsdkは、プロジェクトディレクトリ内で実行された際にプロジェクトの`.venv`を自動的に認識します。`epsdk install`はコンポーネントをプロジェクト環境にインストールし、`epsdk run`はプロジェクト環境を使用してロボットを実行します。フレームワーク本体はツール環境から提供され、両者は互いに干渉しません。
+> ツール環境内の `epsdk` は、プロジェクトディレクトリ内で実行された際に、自動的にプロジェクトの `.venv` を認識します。  
+> `epsdk install` はコンポーネントをプロジェクト環境にインストールし、`epsdk run` はプロジェクト環境を使用してロボットを実行します。  
+> フレームワーク本体はツール環境から提供され、両者は互いに干渉しません。  
+> 一括インストールスクリプト（`get.erisdev.com/install.sh` / `install.ps1`）のメニューには、「グローバル CLI インストール（uv tool）」のオプションも用意されており、uv の自動インストールと手順のガイドが提供されます。
 
 ## プロジェクトの初期化とモジュールのインストール
 
-インストール後、プロジェクトの初期化、モジュールのインストール、実行の完全な手順は、[5分間のクイックスタート](../quick-start.md)をご覧ください。
+インストールが完了したら、プロジェクトの初期化、モジュールのインストール、実行の全手順は、[5分間で始める](../quick-start.md)を参照してください。
 
-### 方法3：ErisPulse-Appクライアントの使用（ターミナル不要）
+### 方法4：ErisPulse-Appクライアントを使用する（ターミナル不要）
 
-Python環境をインストールしたくないですか？[ErisPulse-App](../ecosystem/app.md) は公式の全プラットフォーム対応クライアントです（Android / Windows / Linux / macOS）。**スマートフォンで直接実行**でき、デスクトップ版はシステムトレイに最小化して常時バックグラウンドで実行可能です。内部にPythonランタイムとErisPulse SDKを内蔵しており、ターミナルや手動の設定は不要です。
+Python環境をインストールしたくないですか？[ErisPulse-App](../ecosystem/app.md) は公式の全プラットフォーム対応クライアントです（Android / Windows / Linux / macOS）。**スマートフォンで直接実行**でき、デスクトップ版はシステムトレイに最小化して常駐させることができます。Python実行環境とErisPulse SDKが内蔵されており、ターミナルや手動設定は不要です。
 
-- [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) から、対応するプラットフォームに応じてダウンロードしてください（Android `online`/`offline` APK、Windows `setup.exe`/`zip`、Linux `tar.gz`、macOS `zip`）
+- [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) から、プラットフォームに応じてダウンロードを選択してください（Android `online`/`offline` APK、Windows `setup.exe`/`zip`、Linux `tar.gz`、macOS `zip`）
 - App内でインスタンスを作成して起動し、ネイティブのインターフェースでアダプタとモジュールを管理し、モジュールストアを閲覧します
 
 > 詳細な説明は、[ErisPulse-Appのインストールと使用方法](../ecosystem/app.md)をご覧ください。

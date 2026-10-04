@@ -67,31 +67,33 @@ uv pip install ErisPulse --upgrade
 
 ### Method 3: Install with uv tool (Global CLI, Recommended)
 
-If you only want to use `epsdk` as a global command-line tool, `uv tool install` is the cleanest approach—`epsdk` runs in an isolated tool environment, without polluting any project environments:
+If you only want to use `epsdk` as a global command-line tool, `uv tool install` is the cleanest approach—epsdk runs in an isolated tool environment, without polluting any project environment:
 
 ```bash
 # Install (epsdk is immediately available, no need to activate any virtual environment)
 uv tool install ErisPulse
 
-# Upgrade (or directly use `epsdk self-update`, which will automatically use this channel)
+# Upgrade (or use `epsdk self-update`, which automatically uses this channel)
 uv tool upgrade ErisPulse
 ```
 
 > [!NOTE]
-> When running `epsdk` in a project directory, the tool environment automatically detects the project's `.venv`:
-> `epsdk install` installs components into the project environment, and `epsdk run` uses the project environment to run the bot.
+> The epsdk in the tool environment will automatically detect the project’s `.venv` when running within the project directory:
+> `epsdk install` will install components into the project environment, and `epsdk run` will use the project environment to run the bot.
 > The framework itself remains provided by the tool environment, with no interference between the two.
+>
+> The one-click installation script (`get.erisdev.com/install.sh` / `install.ps1`) also provides a "Global CLI Installation (uv tool)" option in its menu, which automatically installs uv and guides you through the setup.
 
 ## Project Initialization and Module Installation
 
-After installation, the complete workflow for project initialization, module installation, and execution is available in the [5-Minute Quick Start](../quick-start.md).
+After installation, the complete workflow for project initialization, module installation, and execution is detailed in [5-Minute Quick Start](../quick-start.md).
 
-### Method Three: Using the ErisPulse-App Client (No Terminal Required)
+### Method 4: Using the ErisPulse-App Client (No Terminal Required)
 
-Don't want to install a Python environment? [ErisPulse-App](../ecosystem/app.md) is the official cross-platform client (Android / Windows / Linux / macOS), allowing you to **run directly on your phone**. The desktop version supports minimizing to the system tray for background operation. It comes with a built-in Python runtime and ErisPulse SDK, eliminating the need for a terminal or manual configuration:
+Don't want to install a Python environment? [ErisPulse-App](../ecosystem/app.md) is the official cross-platform client (Android / Windows / Linux / macOS), allowing you to **run directly on your mobile device**. The desktop version supports minimizing to the system tray for background operation. It includes a built-in Python runtime and ErisPulse SDK, eliminating the need for terminal commands or manual configuration:
 
 - Download the appropriate version from [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) based on your platform (Android `online`/`offline` APK, Windows `setup.exe`/`zip`, Linux `tar.gz`, macOS `zip`)
-- Create and start an instance within the App, and manage adapters and modules through the native interface, or browse the module store
+- Create and launch an instance within the App, managing adapters and modules through the native interface and browsing the module store
 
 > For complete instructions, see [ErisPulse-App Installation and Usage](../ecosystem/app.md).
 

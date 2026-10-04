@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "eac68d6511353e2af7f08e8a97ac33e9",
-  "file_hash": "eac68d6511353e2af7f08e8a97ac33e9",
-  "translated_at": "2026-09-12T10:40:41.072691",
+  "hash": "909f64867580f5d0048acf77169aec9b",
+  "file_hash": "909f64867580f5d0048acf77169aec9b",
+  "translated_at": "2026-10-04T12:09:28.969631",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -22,8 +22,12 @@
       "translation": "## 配置說明\n\nMatrixAdapter 支援多帳戶配置，每個帳戶獨立配置 homeserver 和認證資訊。\n\n```toml\n# config.toml\n# 帳戶1\n[Matrix_Adapter.accounts.default]\nhomeserver = \"https://matrix.org\"          # Matrix 伺服器地址（必填）\naccess_token = \"YOUR_ACCESS_TOKEN\"          # 訪問權杖（與 user_id+password 二選一）\nuser_id = \"\"                                # Matrix 用戶 ID（如 @bot:matrix.org）\npassword = \"\"                               # Matrix 用戶密碼\nauto_accept_invites = true                  # 是否自動接受房間邀請（可選，預設為 true）\nenabled = true                              # 是否啟用（可選，預設為 true）\n\n# 帳戶2\n[Matrix_Adapter.accounts.bot2]\nhomeserver = \"https://matrix.example.com\"\naccess_token = \"ANOTHER_TOKEN\"\nenabled = true\n```\n\n> 兼容舊配置：若檢測到舊的單帳戶 `[Matrix_Adapter]` 配置（含 access_token），會自動遷移為 `accounts.default`。\n\n**配置項說明（每個帳戶）：**\n- `homeserver`：Matrix 伺服器地址（必填），預設為 `https://matrix.org`\n- `access_token`：訪問權杖，可從 Matrix 客戶端獲取。如果已有 token，直接填寫即可\n- `user_id`：Matrix 用戶 ID（如 `@bot:matrix.org`），與 `password` 配合使用進行登入\n- `password`：Matrix 用戶密碼，用於自動登入獲取 access_token\n- `auto_accept_invites`：是否自動接受房間邀請，預設為 `true`\n- `enabled`：是否啟用該帳戶（可選，預設為 true）\n\n**認證方式：**\n- 方式一（推薦）：直接提供 `access_token`\n- 方式二：提供 `user_id` 和 `password`，適配器會自動呼叫登入介面獲取 token"
     },
     {
-      "hash": "c8b191b95a8b5d30a8f7fba2d1d0e8f2",
-      "translation": "## v5 範式更新（4.2.0）\n\n- **BaseConverter 繼承**：轉換器公共欄位由框架 build_base_event 構建\n- **Api DSL**：get_self_info/get_user_info/get_group_info/get_group_list/get_group_member_list/leave_group/delete_message(redact) + 元動作\n- **消息事件補充 message_id**（event_id）；消息登記表支援 delete_message\n- **spawn_background 任務歸屬**：同步/心跳任務改用 runtime.spawn_background\n- **框架軟依賴**：運行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌\n- Matrix 無原生按鈕能力，標準 keyboard 段優雅忽略（不報錯）\n\n### 標準Api動作示例\n\n```python\nfrom ErisPulse import sdk\nmatrix = sdk.adapter.get(\"matrix\")\nresult = await matrix.Api.get_self_info()            # /account/whoami\nresult = await matrix.Api.get_group_info(room_id)    # m.room.name\nresult = await matrix.Api.get_group_list()           # /joined_rooms\nawait matrix.Api.delete_message(event_id)            # redact（登記表補全 room_id）\n```\n\n---\n\n### 已對接平台能力\n\n- **事件**：消息（m.room.message：文本/圖片/文件/音視頻/回覆/編輯）、成員增減（m.room.member）、房間名稱變更等狀態事件\n- **會話**：私聊（DM 房間自動發現）/ 群組（房間）；發送支援 Text/Image/File/Voice/Video/Markdown/Raw_ob12\n- **API**：whoami/profile/joined_rooms/房間狀態/成員列表/leave/redact（見上方 Api DSL）"
+      "hash": "f4abf66b9bfdc2b877fc4da10103c564",
+      "translation": "## v5 範式更新（4.2.0）\n\n- **BaseConverter 繼承**：轉換器公共欄位由框架 build_base_event 建構\n- **Api DSL**：get_self_info/get_user_info/get_group_info/get_group_list/get_group_member_list/leave_group/delete_message(redact) + 元動作\n- **消息事件補充 message_id**（event_id）；消息登記表支援 delete_message\n- **spawn_background 任務歸屬**：同步/心跳任務改用 runtime.spawn_background\n- **框架軟依賴**：運行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌\n- Matrix 無原生按鈕能力，標準 keyboard 段優雅忽略（不報錯）"
+    },
+    {
+      "hash": "9e2ae8f13748d414811eee2d34d9f48e",
+      "translation": "## 端到端加密（4.3.0）\n\n4.3.0 起適配器原生支援加密房間的端到端加密（基於 matrix-nio[e2e] / vodozemac）：\n\n```toml\n[Matrix_Adapter.accounts.default]\nuser_id = \"@bot:matrix.org\"\npassword = \"YOUR_PASSWORD\"\nencryption_enabled = true       # 啟用（預設 false，存量部署不受影響）\ntrust_all_devices = true        # 自動信任未驗證裝置（預設；false 為嚴格模式）\n```\n\n- 加密房間訊息收發自動解密/加密，媒體端到端加密（`m.file.encrypted`）\n- `device_id` 自動解析與持久化；會話儲存於 `store_path`（預設 `data/matrix/<帳號名>`，**請勿刪除**，否則歷史訊息無法解密）\n- 事件 Mixin 新增 `event.is_encrypted()`；媒體段攜帶 `matrix_encrypted_file`（JWK），可用 `MatrixAdapter.decrypt_media()` 解密\n- 不支援交叉簽名與伺服器端密鑰備份；需要 Python >= 3.10\n- 未啟用或未安裝 matrix-nio 時自動降級為明文模式\n\n詳細說明見 [適配器 README](https://github.com/ErisPulse/ErisPulse-MatrixAdapter)。\n\n### 標準 API 行動示例\n\n```python\nfrom ErisPulse import sdk\nmatrix = sdk.adapter.get(\"matrix\")\nresult = await matrix.Api.get_self_info()            # /account/whoami\nresult = await matrix.Api.get_group_info(room_id)    # m.room.name\nresult = await matrix.Api.get_group_list()           # /joined_rooms\nawait matrix.Api.delete_message(event_id)            # redact（登記表補全 room_id）\n```\n\n---\n\n### 已對接平台能力\n\n- **事件**：訊息（m.room.message：文字/圖片/檔案/音視頻/回覆/編輯）、成員增減（m.room.member）、房間名稱變更等狀態事件\n- **會話**：私聊（DM 房間自動發現）/ 群組（房間）；發送支援 Text/Image/File/Voice/Video/Markdown/Raw_ob12\n- **API**：whoami/profile/joined_rooms/房間狀態/成員列表/leave/redact（見上方 API DSL）"
     },
     {
       "hash": "fff45f0b977664165873f0364e6fe15c",
