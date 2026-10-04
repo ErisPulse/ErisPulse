@@ -242,6 +242,25 @@ POSIX 下额外 fsync 配置目录，尽力保证断电后替换结果不回退�
 ---
 
 
+##### `_toml_safe_value(value: Any) -> Any`（staticmethod）
+
+将待写入值转换为 TOML 可序列化形态
+
+TOML 没有 null：``setConfig`` 置空语义的 ``None`` 在落盘时等价于
+"键不存在"——标量 ``None`` 返回 ``None``（由调用方跳过该键），
+字典内的 ``None`` 叶子递归剔除（其余键值原样保留，不改变顺序之外
+的内容）。列表内的 ``None`` 属于数组元素，剔除会改变元素位置，
+保持原样交由单键隔离丢弃并告警。
+
+- **value**: 待写入的值
+
+**返回值**: 可直接交给 tomlkit 的值；标量 ``None`` 原样返回
+
+**内部方法**
+
+---
+
+
 ##### `_remove_cache_path(keys: list[str]) -> None`
 
 从内存缓存中按点分路径移除键（delete 时的即时视图更新）
